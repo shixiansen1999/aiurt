@@ -1,7 +1,7 @@
 package com.aiurt.boot.modules.training.param;
 
+import com.aiurt.common.aspect.annotation.Dict;
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.aiurt.boot.common.aspect.annotation.Dict;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.EqualsAndHashCode;

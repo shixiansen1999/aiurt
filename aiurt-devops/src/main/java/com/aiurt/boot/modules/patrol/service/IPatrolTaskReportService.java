@@ -5,6 +5,7 @@ import com.aiurt.boot.modules.patrol.entity.PatrolTaskReport;
 import com.aiurt.boot.modules.patrol.param.*;
 import com.aiurt.boot.modules.patrol.vo.PatrolPoolContentOneTreeVO;
 import com.aiurt.boot.modules.patrol.vo.PatrolPoolContentTreeVO;
+import org.jeecg.common.api.vo.Result;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;

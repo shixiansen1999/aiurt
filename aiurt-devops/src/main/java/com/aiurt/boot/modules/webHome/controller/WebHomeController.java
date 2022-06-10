@@ -1,7 +1,7 @@
 package com.aiurt.boot.modules.webHome.controller;
 
+import com.aiurt.common.aspect.annotation.AutoLog;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
-import com.aiurt.boot.common.aspect.annotation.AutoLog;
 import com.aiurt.boot.common.constant.CommonConstant;
 import com.aiurt.boot.modules.manage.entity.SpecialSituation;
 import com.aiurt.boot.modules.manage.entity.Station;
@@ -22,6 +22,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.jeecg.common.api.vo.Result;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -157,8 +158,8 @@ public class WebHomeController {
 			param.setEndTime(startTime);
 		}
 
-		Integer count = specialSituationService.lambdaQuery().between(SpecialSituation::getEndTime, param.getStartTime(), param.getEndTime()).or().ge(SpecialSituation::getEndTime, param.getEndTime()).count();
-		Map<String,Integer> map = new HashMap<>();
+		Long count = specialSituationService.lambdaQuery().between(SpecialSituation::getEndTime, param.getStartTime(), param.getEndTime()).or().ge(SpecialSituation::getEndTime, param.getEndTime()).count();
+		Map<String,Long> map = new HashMap<>();
 		map.put("specialSituationCount",count);
 		return Result.ok(map);
 

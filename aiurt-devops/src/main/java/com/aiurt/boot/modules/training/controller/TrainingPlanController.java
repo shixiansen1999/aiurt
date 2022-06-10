@@ -1,11 +1,12 @@
 package com.aiurt.boot.modules.training.controller;
 
 import cn.hutool.core.util.ObjectUtil;
+import com.aiurt.common.aspect.annotation.AutoLog;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.aiurt.boot.common.aspect.annotation.AutoLog;
+
 import com.aiurt.boot.common.constant.CommonConstant;
 import com.aiurt.boot.common.exception.SwscException;
 import com.aiurt.boot.common.system.query.QueryGenerator;
@@ -23,6 +24,7 @@ import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.shiro.SecurityUtils;
+import org.jeecg.common.api.vo.Result;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -129,7 +131,7 @@ public class TrainingPlanController {
 		Result<TrainingPlan> result = new Result<>();
 		TrainingPlan trainingPlanEntity = trainingPlanService.getById(trainingPlan.getId());
 		if (trainingPlanEntity == null) {
-			result.onnull("未找到对应实体");
+			result.error500("未找到对应实体");
 		} else {
 			boolean ok = trainingPlanService.updateById(trainingPlan);
 

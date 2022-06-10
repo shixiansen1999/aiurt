@@ -5,6 +5,7 @@ import com.aiurt.boot.modules.sysFile.entity.SysFileType;
 import com.aiurt.boot.modules.sysFile.param.SysFileTypeParam;
 import com.aiurt.boot.modules.sysFile.vo.SysFileTypeDetailVO;
 import com.aiurt.boot.modules.sysFile.vo.SysFileTypeTreeVO;
+import org.jeecg.common.api.vo.Result;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;

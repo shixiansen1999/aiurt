@@ -43,6 +43,7 @@ import com.aiurt.boot.modules.system.util.TimeUtil;
 import com.aiurt.boot.modules.system.vo.SysDepartScheduleVo;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang.StringUtils;
+import org.jeecg.common.api.vo.Result;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -163,8 +164,8 @@ public class StatisticalServiceImpl extends ServiceImpl<PatrolTaskMapper, Patrol
 //        //故障处理时长
 
 
-        return Result.ok(patrolTaskMapper.getCount(statisticsVO.getStartTime(),statisticsVO.getEndTime(),
-                statisticsVO.getTeamId(),statisticsVO.getUserName()));
+        return Result.ok(patrolTaskMapper.getCount(statisticsVO.getStartTime(), statisticsVO.getEndTime(),
+                statisticsVO.getTeamId(), statisticsVO.getUserName()));
     }
 
     @Override
@@ -224,11 +225,11 @@ public class StatisticalServiceImpl extends ServiceImpl<PatrolTaskMapper, Patrol
         DateTime now = DateUtil.date();
         iPage.getRecords().forEach(repairTaskVo -> {
             Integer status = repairTaskVo.getStatus();
-            if (status > 0 ) {//状态为验收时为已完成
+            if (status > 0) {//状态为验收时为已完成
                 repairTaskVo.setRepairStatus(1);//1 已完成
             } else if (now.getTime() > repairTaskVo.getEndTime().getTime() && status == 0) {
                 repairTaskVo.setRepairStatus(2);//2 漏检
-            }  else if (now.getTime() < repairTaskVo.getEndTime().getTime() && status == 0) {
+            } else if (now.getTime() < repairTaskVo.getEndTime().getTime() && status == 0) {
                 repairTaskVo.setRepairStatus(3);//待执行
             }
         });
@@ -272,7 +273,7 @@ public class StatisticalServiceImpl extends ServiceImpl<PatrolTaskMapper, Patrol
     }
 
     @Override
-    public PageVo getWeeklyPatrolStatisticPageVo(Integer pageNo, Integer pageSize, List<Integer> lineIds,String lineCode, DateTime now) {
+    public PageVo getWeeklyPatrolStatisticPageVo(Integer pageNo, Integer pageSize, List<Integer> lineIds, String lineCode, DateTime now) {
         PageVo pageVo = new PageVo();
         PatrolStatisticVo vo = new PatrolStatisticVo();
         //1.获取本周初始和结束时间
@@ -290,11 +291,11 @@ public class StatisticalServiceImpl extends ServiceImpl<PatrolTaskMapper, Patrol
 //        vo.setWeeklyIgnoreNum(patrolTaskMapper.countIgnoreNumByTimeAndLineIds(lineIds, startTime, endTime));
         List<PatrolTaskVO> list = page.getRecords();
         for (PatrolTaskVO record : list) {
-            if ((ObjectUtil.isNotEmpty(record.getIgnoreStatus()) && record.getIgnoreStatus() == 1) && !(Integer.valueOf(record.getTactics())==2&&StringUtils.isNotBlank(record.getIgnoreContent()))) {
+            if ((ObjectUtil.isNotEmpty(record.getIgnoreStatus()) && record.getIgnoreStatus() == 1) && !(Integer.valueOf(record.getTactics()) == 2 && StringUtils.isNotBlank(record.getIgnoreContent()))) {
                 record.setPatrolFlag(3);//漏检
             } else if (ObjectUtil.isNotEmpty(record.getWarningStatus()) && record.getWarningStatus() == 1) {
                 record.setPatrolFlag(0);//异常状态
-            } else if ((ObjectUtil.isNotEmpty(record.getTaskStatus()) && record.getTaskStatus() == 1)||((Integer.valueOf(record.getTactics())==2)&&StringUtils.isNotEmpty(record.getIgnoreContent()))) {
+            } else if ((ObjectUtil.isNotEmpty(record.getTaskStatus()) && record.getTaskStatus() == 1) || ((Integer.valueOf(record.getTactics()) == 2) && StringUtils.isNotEmpty(record.getIgnoreContent()))) {
                 record.setPatrolFlag(2);//已完成
             } else if (now.getTime() <= record.getExecutionTime().getTime()) {
                 record.setPatrolFlag(1);//待执行
@@ -310,14 +311,14 @@ public class StatisticalServiceImpl extends ServiceImpl<PatrolTaskMapper, Patrol
         Integer weeklyIgnoreNum = 0;
         for (SysDepart sysDepart : sysDepartByLineCode) {
             //查询每个班组的计划数，完成数，漏检数
-            Integer planNum = patrolTaskMapper.countPatrolNumByOrgIdAndTime(sysDepart.getId(),startTime,endTime);
-            weeklyPatrolNum+=planNum;
+            Integer planNum = patrolTaskMapper.countPatrolNumByOrgIdAndTime(sysDepart.getId(), startTime, endTime);
+            weeklyPatrolNum += planNum;
             //完成数= 本周的完成任务数+本周处理过的一周两次任务数
-            Integer completedNum = patrolTaskService.countCompletedPatrolNumByOrgIdAndTime(sysDepart.getId(),startTime,endTime);
-            weeklyCompleteNum+=completedNum;
+            Integer completedNum = patrolTaskService.countCompletedPatrolNumByOrgIdAndTime(sysDepart.getId(), startTime, endTime);
+            weeklyCompleteNum += completedNum;
             //本周漏检 = 漏检任务数-处理过的一周两次任务数
             Integer ignoreNum = patrolTaskService.countIgnoredPatrolNumByOrgIdAndTime(sysDepart.getId(), start, endTime);
-            weeklyIgnoreNum+=ignoreNum;
+            weeklyIgnoreNum += ignoreNum;
         }
         vo.setWeeklyCompleteNum(weeklyCompleteNum);
         vo.setWeeklyPatrolNum(weeklyPatrolNum);
@@ -329,10 +330,10 @@ public class StatisticalServiceImpl extends ServiceImpl<PatrolTaskMapper, Patrol
 
 
     @Override
-    public PageVo getPatrolStatisticPageVo(Integer pageNo, Integer pageSize, String lineCode,DateTime now) {
+    public PageVo getPatrolStatisticPageVo(Integer pageNo, Integer pageSize, String lineCode, DateTime now) {
         //lineIds其实是stationIds，t_patrol_pool中的line_id字段复用了，实际是station_id
         List<Integer> lineIds = stationService.getIdsByLineCode(lineCode);
-        PageVo<PatrolStatisticVo> pageVo = getWeeklyPatrolStatisticPageVo(pageNo, pageSize, lineIds,lineCode,now);
+        PageVo<PatrolStatisticVo> pageVo = getWeeklyPatrolStatisticPageVo(pageNo, pageSize, lineIds, lineCode, now);
         PatrolStatisticVo vo = pageVo.getRecords();
         DateTime startTime = DateUtil.beginOfWeek(now);
         DateTime endTime = DateUtil.endOfWeek(now);
@@ -358,9 +359,9 @@ public class StatisticalServiceImpl extends ServiceImpl<PatrolTaskMapper, Patrol
         StatisticsFaultWayVO baoVo = new StatisticsFaultWayVO();
         baoVo.setRepairWay("报修");
         for (StatisticsFaultWayVO vo : repairCountList) {
-            if (vo.getRepairWay().equals("自检")){
+            if (vo.getRepairWay().equals("自检")) {
                 ziNum = vo.getCount();
-            }else {
+            } else {
                 baoNum = vo.getCount();
             }
         }
@@ -400,7 +401,7 @@ public class StatisticalServiceImpl extends ServiceImpl<PatrolTaskMapper, Patrol
     @Override
     public Result<Map<String, List<StatisticsFaultLevelVO>>> getFaultGroupByLevel(String lineCode) {
         Date startTime = DateUtil.beginOfWeek(new Date());
-        Date endTime =  DateUtil.endOfWeek(new Date());
+        Date endTime = DateUtil.endOfWeek(new Date());
         List<StatisticsFaultLevelVO> faultLevelList = faultService.getFaultGroupByLevel(startTime, endTime, lineCode);
         Map<String, List<StatisticsFaultLevelVO>> faultMap = faultLevelList.stream().collect(Collectors.groupingBy(StatisticsFaultLevelVO::getLevel));
         return Result.ok(faultMap);
@@ -456,7 +457,7 @@ public class StatisticalServiceImpl extends ServiceImpl<PatrolTaskMapper, Patrol
     public List<SysUser> getDutyUsers(String lineCode, String orgId, DateTime dateTime) {
         String date = DateUtils.format(dateTime, "yyyy-MM-dd");
         List<String> orgIds = new ArrayList<>();
-        if (StringUtils.isNotBlank(orgId)){
+        if (StringUtils.isNotBlank(orgId)) {
             orgIds.add(orgId);
             List<SysUser> dutyUsers = scheduleRecordMapper.getDutyUserListByOrgIdsAndDate(date, orgIds);
             return dutyUsers;
@@ -475,7 +476,7 @@ public class StatisticalServiceImpl extends ServiceImpl<PatrolTaskMapper, Patrol
         return modalList;
     }
 
-    private List<FaultStatisticsModal> addFaultMaintainer(List<FaultStatisticsModal> modalList){
+    private List<FaultStatisticsModal> addFaultMaintainer(List<FaultStatisticsModal> modalList) {
         modalList.forEach(model -> {
             List<String> userIds = new ArrayList<>();
             String maintainer;
@@ -562,15 +563,15 @@ public class StatisticalServiceImpl extends ServiceImpl<PatrolTaskMapper, Patrol
                 && (patrolTask.getStatus() == null || patrolTask.getStatus() == 0)
                 && (patrolTask.getIgnoreStatus() == null
                 || patrolTask.getIgnoreStatus() == 0)
-                ) {
+        ) {
             vo.setFlag(1);
         } else {
             vo.setFlag(0);
         }
-        Patrol patrol =null;
-        if (ObjectUtil.isNotEmpty(pool)){
-            if (StringUtils.isNotEmpty(pool.getPatrolName())){
-                LambdaQueryWrapper<Patrol>wrapper= new LambdaQueryWrapper<Patrol>().eq(Patrol::getTitle,pool.getPatrolName()).last("limit 1");
+        Patrol patrol = null;
+        if (ObjectUtil.isNotEmpty(pool)) {
+            if (StringUtils.isNotEmpty(pool.getPatrolName())) {
+                LambdaQueryWrapper<Patrol> wrapper = new LambdaQueryWrapper<Patrol>().eq(Patrol::getTitle, pool.getPatrolName()).last("limit 1");
                 patrol = patrolService.getOne(wrapper);
 
             }
@@ -578,7 +579,7 @@ public class StatisticalServiceImpl extends ServiceImpl<PatrolTaskMapper, Patrol
         //标题
         vo.setTitle(pool.getPatrolName());
         //巡检表说明
-        if (ObjectUtil.isNotEmpty(patrol)){
+        if (ObjectUtil.isNotEmpty(patrol)) {
             vo.setNote(patrol.getNote());
         }
         //车站名称
@@ -631,15 +632,17 @@ public class StatisticalServiceImpl extends ServiceImpl<PatrolTaskMapper, Patrol
         DateTime today = DateTime.now();
         //查询出未完成的任务
         List<RepairTaskVo> vos = repairTaskMapper.getUncompletedRepair(lineCode, startTime, endTime);
-        if (vos.size()<1){
+        if (vos.size() < 1) {
             return null;
         }
         //从中筛选出漏检的
         List<RepairTaskVo> ignoreRepairList = new ArrayList<>();
-        vos.forEach(vo->{
-            if (today.getTime() > vo.getEndTime().getTime() && vo.getStatus()==0)
+        vos.forEach(vo -> {
+            if (today.getTime() > vo.getEndTime().getTime() && vo.getStatus() == 0) {
                 vo.setRepairStatus(2);
                 ignoreRepairList.add(vo);
+            }
+
         });
         return ignoreRepairList;
     }
@@ -653,7 +656,7 @@ public class StatisticalServiceImpl extends ServiceImpl<PatrolTaskMapper, Patrol
         DateTime endTime = DateUtil.endOfWeek(now);
         //获取当前线路所包含班组
         List<SysDepart> sysDepartByLineCode = sysDepartService.getSysDepartByLineCode(lineCode);
-        List<PatrolTaskStatisticVo>list = new ArrayList<>();
+        List<PatrolTaskStatisticVo> list = new ArrayList<>();
         Integer weeklyPatrolNum = 0;
         Integer weeklyCompleteNum = 0;
         Integer weeklyIgnoreNum = 0;
@@ -662,16 +665,16 @@ public class StatisticalServiceImpl extends ServiceImpl<PatrolTaskMapper, Patrol
             PatrolTaskStatisticVo vo = new PatrolTaskStatisticVo();
             vo.setDepartName(sysDepart.getDepartName());
             vo.setDepartId(sysDepart.getId());
-            Integer planNum = patrolTaskMapper.countPatrolNumByOrgIdAndTime(sysDepart.getId(),startTime,endTime);
-            weeklyPatrolNum+=planNum;
+            Integer planNum = patrolTaskMapper.countPatrolNumByOrgIdAndTime(sysDepart.getId(), startTime, endTime);
+            weeklyPatrolNum += planNum;
             vo.setPlanNum(planNum);
             //完成数= 本周的完成任务数+本周处理过的一周两次任务数
-            Integer completedNum = patrolTaskService.countCompletedPatrolNumByOrgIdAndTime(sysDepart.getId(),startTime,endTime);
-            weeklyCompleteNum+=completedNum;
+            Integer completedNum = patrolTaskService.countCompletedPatrolNumByOrgIdAndTime(sysDepart.getId(), startTime, endTime);
+            weeklyCompleteNum += completedNum;
             vo.setCompleteNum(completedNum);
             //本周漏检 = 漏检任务数-处理过的一周两次任务数
             Integer ignoreNum = patrolTaskService.countIgnoredPatrolNumByOrgIdAndTime(sysDepart.getId(), start, endTime);
-            weeklyIgnoreNum+=ignoreNum;
+            weeklyIgnoreNum += ignoreNum;
             vo.setIgnoreNum(ignoreNum);
             list.add(vo);
         }
@@ -684,13 +687,13 @@ public class StatisticalServiceImpl extends ServiceImpl<PatrolTaskMapper, Patrol
     }
 
     @Override
-    public List<PatrolTaskVO> getCompletedPatrol(String lineCode, String departId,DateTime now) {
+    public List<PatrolTaskVO> getCompletedPatrol(String lineCode, String departId, DateTime now) {
         DateTime startTime = DateUtil.beginOfWeek(now);
         DateTime endTime = DateUtil.endOfWeek(now);
-        List<PatrolTaskVO> records = getPatrolTask(lineCode,departId,startTime,endTime);
+        List<PatrolTaskVO> records = getPatrolTask(lineCode, departId, startTime, endTime);
         List<PatrolTaskVO> vos = new ArrayList<>();
         records.forEach(record -> {
-            if ((ObjectUtil.isNotEmpty(record.getTaskStatus()) && record.getTaskStatus() == 1)||((Integer.valueOf(record.getTactics())==2)&&StringUtils.isNotEmpty(record.getIgnoreContent()))) {
+            if ((ObjectUtil.isNotEmpty(record.getTaskStatus()) && record.getTaskStatus() == 1) || ((Integer.valueOf(record.getTactics()) == 2) && StringUtils.isNotEmpty(record.getIgnoreContent()))) {
                 record.setPatrolFlag(2);//已完成
                 vos.add(record);
             }
@@ -702,10 +705,10 @@ public class StatisticalServiceImpl extends ServiceImpl<PatrolTaskMapper, Patrol
     public List<PatrolTaskVO> getIgnoredPatrol(String lineCode, String departId, DateTime now) {
         DateTime startTime = DateUtil.beginOfWeek(now);
         DateTime endTime = DateUtil.endOfWeek(now);
-        List<PatrolTaskVO> records = getPatrolTask(lineCode,departId,startTime,endTime);
+        List<PatrolTaskVO> records = getPatrolTask(lineCode, departId, startTime, endTime);
         List<PatrolTaskVO> vos = new ArrayList<>();
         records.forEach(record -> {
-            if ((ObjectUtil.isNotEmpty(record.getIgnoreStatus()) && record.getIgnoreStatus() == 1) && !(Integer.valueOf(record.getTactics())==2&&StringUtils.isNotBlank(record.getIgnoreContent()))) {
+            if ((ObjectUtil.isNotEmpty(record.getIgnoreStatus()) && record.getIgnoreStatus() == 1) && !(Integer.valueOf(record.getTactics()) == 2 && StringUtils.isNotBlank(record.getIgnoreContent()))) {
                 record.setPatrolFlag(3);//漏检
                 vos.add(record);
             }
@@ -717,7 +720,7 @@ public class StatisticalServiceImpl extends ServiceImpl<PatrolTaskMapper, Patrol
     public List<PatrolTaskVO> getExceptionPatrol(String lineCode, DateTime now) {
         DateTime startTime = DateUtil.beginOfWeek(now);
         DateTime endTime = DateUtil.endOfWeek(now);
-        List<PatrolTaskVO> records = getPatrolTask(lineCode,null,startTime,endTime);
+        List<PatrolTaskVO> records = getPatrolTask(lineCode, null, startTime, endTime);
         List<PatrolTaskVO> vos = new ArrayList<>();
         records.forEach(record -> {
             if (ObjectUtil.isNotEmpty(record.getWarningStatus()) && record.getWarningStatus() == 1) {
@@ -730,9 +733,9 @@ public class StatisticalServiceImpl extends ServiceImpl<PatrolTaskMapper, Patrol
 
     @Override
     public List<PatrolTaskVO> getTodayPatrol(String lineCode, DateTime now) {
-        DateTime startTime =DateUtil.beginOfDay(now);
+        DateTime startTime = DateUtil.beginOfDay(now);
         DateTime endTime = DateUtil.endOfDay(now);
-        return this.getPatrolByLineCodeAndTime(lineCode,null,startTime,endTime);
+        return this.getPatrolByLineCodeAndTime(lineCode, null, startTime, endTime);
     }
 
     @Override
@@ -743,16 +746,16 @@ public class StatisticalServiceImpl extends ServiceImpl<PatrolTaskMapper, Patrol
         return this.setStatus(list);
     }
 
-    private List<RepairTaskVo>setStatus( List<RepairTaskVo> list){
+    private List<RepairTaskVo> setStatus(List<RepairTaskVo> list) {
         //4-11不予验收和不予确认状态归为已完成
         DateTime now = DateTime.now();
         list.forEach(repairTaskVo -> {
             Integer status = repairTaskVo.getStatus();
-            if (status > 0 ) {//状态为验收时为已完成
+            if (status > 0) {//状态为验收时为已完成
                 repairTaskVo.setRepairStatus(1);//1 已完成
             } else if (now.getTime() > repairTaskVo.getEndTime().getTime() && status == 0) {
                 repairTaskVo.setRepairStatus(2);//2 漏检
-            }  else if (now.getTime() < repairTaskVo.getEndTime().getTime() && status == 0) {
+            } else if (now.getTime() < repairTaskVo.getEndTime().getTime() && status == 0) {
                 repairTaskVo.setRepairStatus(3);//待执行
             }
         });
@@ -763,18 +766,18 @@ public class StatisticalServiceImpl extends ServiceImpl<PatrolTaskMapper, Patrol
     public List<PatrolTaskVO> getPlanPatrol(String lineCode, String departId, DateTime now) {
         DateTime startTime = DateUtil.beginOfWeek(now);
         DateTime endTime = DateUtil.endOfWeek(now);
-        return this.getPatrolByLineCodeAndTime(lineCode,departId,startTime,endTime);
+        return this.getPatrolByLineCodeAndTime(lineCode, departId, startTime, endTime);
     }
 
-    private List<PatrolTaskVO> getPatrolByLineCodeAndTime(String lineCode,String departId,DateTime startTime,DateTime endTime){
+    private List<PatrolTaskVO> getPatrolByLineCodeAndTime(String lineCode, String departId, DateTime startTime, DateTime endTime) {
         DateTime now = DateTime.now();
-        List<PatrolTaskVO> records = getPatrolTask(lineCode,departId,startTime,endTime);
+        List<PatrolTaskVO> records = getPatrolTask(lineCode, departId, startTime, endTime);
         for (PatrolTaskVO record : records) {
-            if ((ObjectUtil.isNotEmpty(record.getIgnoreStatus()) && record.getIgnoreStatus() == 1) && !(Integer.valueOf(record.getTactics())==2&&StringUtils.isNotBlank(record.getIgnoreContent()))) {
+            if ((ObjectUtil.isNotEmpty(record.getIgnoreStatus()) && record.getIgnoreStatus() == 1) && !(Integer.valueOf(record.getTactics()) == 2 && StringUtils.isNotBlank(record.getIgnoreContent()))) {
                 record.setPatrolFlag(3);//漏检
             } else if (ObjectUtil.isNotEmpty(record.getWarningStatus()) && record.getWarningStatus() == 1) {
                 record.setPatrolFlag(0);//异常状态
-            } else if ((ObjectUtil.isNotEmpty(record.getTaskStatus()) && record.getTaskStatus() == 1)||((Integer.valueOf(record.getTactics())==2)&&StringUtils.isNotEmpty(record.getIgnoreContent()))) {
+            } else if ((ObjectUtil.isNotEmpty(record.getTaskStatus()) && record.getTaskStatus() == 1) || ((Integer.valueOf(record.getTactics()) == 2) && StringUtils.isNotEmpty(record.getIgnoreContent()))) {
                 record.setPatrolFlag(2);//已完成
             } else if (now.getTime() <= record.getExecutionTime().getTime()) {
                 record.setPatrolFlag(1);//待执行
@@ -787,13 +790,13 @@ public class StatisticalServiceImpl extends ServiceImpl<PatrolTaskMapper, Patrol
         return records;
     }
 
-    public  List<PatrolTaskVO> getPatrolTask(String lineCode,String departId, DateTime startTime, DateTime endTime){
+    public List<PatrolTaskVO> getPatrolTask(String lineCode, String departId, DateTime startTime, DateTime endTime) {
         //其实是stationId
         List<Integer> lineIds = stationService.getIdsByLineCode(lineCode);
         PatrolPoolParam param = new PatrolPoolParam();
         param.setStartTime(startTime).setEndTime(endTime).setPageNo(1).setPageSize(5000);
         param.setStationIds(lineIds);
-        if (StringUtils.isNotBlank(departId)){
+        if (StringUtils.isNotBlank(departId)) {
             param.setOrganizationId(departId);
         }
         IPage<PatrolTaskVO> page = new Page<>(param.getPageNo(), param.getPageSize());
@@ -807,10 +810,10 @@ public class StatisticalServiceImpl extends ServiceImpl<PatrolTaskMapper, Patrol
     public List<PatrolTaskVO> getTodayCompletedPatrol(String lineCode, DateTime now) {
         DateTime startTime = DateUtil.beginOfDay(now);
         DateTime endTime = DateUtil.endOfDay(now);
-        List<PatrolTaskVO> records = getPatrolTask(lineCode,null,startTime,endTime);
+        List<PatrolTaskVO> records = getPatrolTask(lineCode, null, startTime, endTime);
         List<PatrolTaskVO> vos = new ArrayList<>();
         records.forEach(record -> {
-            if ((ObjectUtil.isNotEmpty(record.getTaskStatus()) && record.getTaskStatus() == 1)||((Integer.valueOf(record.getTactics())==2)&&StringUtils.isNotEmpty(record.getIgnoreContent()))) {
+            if ((ObjectUtil.isNotEmpty(record.getTaskStatus()) && record.getTaskStatus() == 1) || ((Integer.valueOf(record.getTactics()) == 2) && StringUtils.isNotEmpty(record.getIgnoreContent()))) {
                 record.setPatrolFlag(2);//已完成
                 vos.add(record);
             }
@@ -820,7 +823,7 @@ public class StatisticalServiceImpl extends ServiceImpl<PatrolTaskMapper, Patrol
 
     @Override
     public IPage getFaultTotalDetail(String lineCode, Integer pageNo, Integer pageSize, Date startTime, Date endTime) {
-        IPage<FaultStatisticsModal> iPage = new Page<>(pageNo,pageSize);
+        IPage<FaultStatisticsModal> iPage = new Page<>(pageNo, pageSize);
         iPage = faultMapper.selectFaultStatisticsModal(iPage, startTime, endTime, lineCode);
         this.addFaultMaintainer(iPage.getRecords());
         return iPage;

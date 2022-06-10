@@ -1,6 +1,6 @@
 package com.aiurt.boot.modules.sysFile.controller;
 
-import com.aiurt.boot.common.aspect.annotation.AutoLog;
+
 import com.aiurt.boot.common.exception.SwscException;
 import com.aiurt.boot.common.system.vo.LoginUser;
 import com.aiurt.boot.modules.sysFile.entity.SysFile;
@@ -12,11 +12,13 @@ import com.aiurt.boot.modules.sysFile.service.ISysFileService;
 import com.aiurt.boot.modules.sysFile.service.ISysFileTypeService;
 import com.aiurt.boot.modules.sysFile.vo.SysFileTypeDetailVO;
 import com.aiurt.boot.modules.sysFile.vo.SysFileTypeTreeVO;
+import com.aiurt.common.aspect.annotation.AutoLog;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.shiro.SecurityUtils;
+import org.jeecg.common.api.vo.Result;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
