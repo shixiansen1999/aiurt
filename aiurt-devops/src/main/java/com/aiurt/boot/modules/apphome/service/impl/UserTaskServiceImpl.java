@@ -1,9 +1,9 @@
 package com.aiurt.boot.modules.apphome.service.impl;
 
+import com.aiurt.common.constant.CommonConstant;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.aiurt.boot.common.constant.CommonConstant;
 import com.aiurt.boot.modules.apphome.constant.UserTaskConstant;
 import com.aiurt.boot.modules.apphome.entity.UserTask;
 import com.aiurt.boot.modules.apphome.mapper.UserTaskMapper;

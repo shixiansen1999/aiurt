@@ -165,6 +165,13 @@ public class Result<T> implements Serializable {
 		return this;
 	}
 
+	public Result<T> onnull(String message) {
+		this.message = message;
+		this.code = CommonConstant.SC_NULL_2005;
+		this.success = true;
+		return this;
+	}
+
 	/**
 	 * 无权限访问返回结果
 	 */

@@ -3,14 +3,11 @@ package com.aiurt.boot.modules.repairManage.service.impl;
 import cn.hutool.core.convert.Convert;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.StrUtil;
+import com.aiurt.common.constant.InspectionContant;
+import com.aiurt.common.util.DateUtils;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.aiurt.boot.common.api.vo.Result;
-import com.aiurt.boot.common.constant.InspectionContant;
-import com.aiurt.boot.common.exception.SwscException;
-import com.aiurt.boot.common.system.vo.LoginUser;
-import com.aiurt.boot.common.util.DateUtils;
 import com.aiurt.boot.modules.appMessage.constant.MessageConstant;
 import com.aiurt.boot.modules.appMessage.entity.Message;
 import com.aiurt.boot.modules.appMessage.param.MessageAddParam;
@@ -35,6 +32,8 @@ import com.aiurt.boot.modules.system.mapper.SysUserMapper;
 import lombok.SneakyThrows;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.shiro.SecurityUtils;
+import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -133,7 +132,7 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
         queryWrapper.eq("inspection_code_id",inspectionCode.getId())
                 .isNull("tactics")
                     .eq("del_flag", 0);
-        final Integer count = inspectionCodeContentMapper.selectCount(queryWrapper);
+        final Integer count = Math.toIntExact(inspectionCodeContentMapper.selectCount(queryWrapper));
         if (count > 0){
             return Result.error("请先完成检修策略的设置");
         }

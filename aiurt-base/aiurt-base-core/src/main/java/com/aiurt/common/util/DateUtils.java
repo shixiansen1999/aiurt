@@ -5,9 +5,7 @@ import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.GregorianCalendar;
+import java.util.*;
 
 import com.aiurt.common.constant.SymbolConstant;
 import org.springframework.util.StringUtils;
@@ -64,6 +62,19 @@ public class DateUtils extends PropertyEditorSupport {
         }
     };
 
+    private  static ThreadLocal<SimpleDateFormat> longSdf = new ThreadLocal<SimpleDateFormat>() {
+        @Override
+        protected SimpleDateFormat initialValue() {
+            return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
+        }
+    };
+
+    private  static ThreadLocal<SimpleDateFormat> shortSdf = new ThreadLocal<SimpleDateFormat>() {
+        @Override
+        protected SimpleDateFormat initialValue() {
+            return new SimpleDateFormat("yyyy-MM-dd");
+        }
+    };
     /**
      * 以毫秒表示的时间
      */
@@ -671,4 +682,92 @@ public class DateUtils extends PropertyEditorSupport {
         return calendar.get(Calendar.YEAR);
     }
 
+    /**
+     * 获得本周的第一天，周一
+     *
+     * @return
+     */
+    public static Date getWeekStartTime(Date date) {
+        Calendar c = Calendar.getInstance();
+        c.setTime(date);
+        c.setFirstDayOfWeek(Calendar.MONDAY);
+        try {
+            c.set(Calendar.DAY_OF_WEEK, Calendar.MONDAY);//周一
+            c.setTime(longSdf.get().parse(shortSdf.get().format(c.getTime()) + " 00:00:00.000"));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return c.getTime();
+    }
+
+    /**
+     * 获得本周的最后一天，周日
+     *
+     * @return
+     */
+    public static Date getWeekEndTime(Date date) {
+        Calendar c = Calendar.getInstance();
+        c.setTime(date);
+        c.setFirstDayOfWeek(Calendar.MONDAY);
+        try {
+            c.set(Calendar.DAY_OF_WEEK, Calendar.SUNDAY);//周日
+            c.setTime(longSdf.get().parse(shortSdf.get().format(c.getTime()) + " 23:59:59.999"));
+            c.set(Calendar.MILLISECOND, 0);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return c.getTime();
+    }
+
+    /**
+     * 获取明年的第一天
+     */
+    public static Date getNextYearFirstDay() {
+        Calendar lastDate = Calendar.getInstance();
+        lastDate.add(Calendar.YEAR, 1);//加一个年
+        lastDate.set(Calendar.DAY_OF_YEAR, 1);
+        return lastDate.getTime();
+    }
+
+    /**
+     * 获取date所属年的所有星期列表及开始/结束时间 开始时间：date[0]，结束时间：date[1]
+     *
+     * @param startTime
+     * @return
+     */
+    public static List<Date[]> yearWeekList(Date startTime) {
+        List<Date[]> result = new ArrayList<>();
+        Calendar calendar = Calendar.getInstance();
+        Date endtm = getYearEndTime(startTime);
+        calendar.setTime(startTime);
+        calendar.setFirstDayOfWeek(Calendar.MONDAY);
+        while (calendar.getTime().before(endtm)) {
+            Date st = getWeekStartTime(calendar.getTime());
+            Date et = getWeekEndTime(calendar.getTime());
+            result.add(new Date[]{st, et});
+            calendar.add(Calendar.WEEK_OF_YEAR, 1);
+        }
+
+        return result;
+    }
+
+
+    /**
+     * 当前年的结束时间
+     *
+     * @return
+     */
+    public static Date getYearEndTime(Date date) {
+        Calendar c = Calendar.getInstance();
+        c.setTime(date);
+        Date dt = null;
+        try {
+            c.set(Calendar.MONTH, 11);
+            c.set(Calendar.DATE, 31);
+            dt = longSdf.get().parse(shortSdf.get().format(c.getTime()) + " 23:59:59.999");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return dt;
+    }
 }

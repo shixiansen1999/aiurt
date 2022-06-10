@@ -2,7 +2,7 @@ package com.aiurt.boot.modules.apphome.service.impl;
 
 import cn.hutool.core.date.DateUtil;
 import com.aiurt.common.constant.CommonConstant;
-import com.aiurt.common.util.TokenUtils;
+import com.aiurt.common.util.DateUtils;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -26,8 +26,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
+import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.BeanUtils;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -82,7 +84,8 @@ public class AppHomeServiceImpl implements AppHomeService {
 		//任务类型  0&null: 全部 1.巡检 2.检修 3.故障
 		Integer taskType = param.getTaskType();
 		//用户id
-		String userId = TokenUtils.getUserId(req, iSysBaseAPI);
+		LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+		String userId =sysUser.getId();
 		//设置用户id与查询状态
 		PatrolAppHomeParam homeParam = new PatrolAppHomeParam()
 				.setKeyName(param.getKeyName())
@@ -156,9 +159,9 @@ public class AppHomeServiceImpl implements AppHomeService {
 			wrapper.eq(RepairTask::getStatus, 0);
 
 			//未完成
-			Integer count = repairTaskMapper.selectCount(wrapper);
+			Integer count = Math.toIntExact(repairTaskMapper.selectCount(wrapper));
 			//已完成
-			Integer count1 = repairTaskMapper.selectCount(copyWrapper);
+			Integer count1 = Math.toIntExact(repairTaskMapper.selectCount(copyWrapper));
 			pendingVO.setRepairSize(count);
 			completedVO.setRepairSize(count1);
 		}
