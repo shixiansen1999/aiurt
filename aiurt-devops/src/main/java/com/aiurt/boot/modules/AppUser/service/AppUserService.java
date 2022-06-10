@@ -18,6 +18,7 @@ import com.aiurt.boot.modules.system.service.ISysHelpService;
 import com.aiurt.boot.modules.system.service.ISysUserService;
 import org.apache.commons.lang.StringUtils;
 import org.apache.shiro.SecurityUtils;
+import org.jeecg.common.api.vo.Result;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
