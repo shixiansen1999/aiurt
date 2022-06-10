@@ -3,6 +3,7 @@ package com.aiurt.boot.modules.device.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.aiurt.boot.modules.device.entity.Device;
 import com.aiurt.boot.modules.statistical.vo.DeviceDataVo;
+import org.jeecg.common.api.vo.Result;
 
 import java.util.List;
 import java.util.Map;

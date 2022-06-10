@@ -22,6 +22,7 @@ import com.aiurt.boot.modules.secondLevelWarehouse.entity.MaterialBase;
 import com.aiurt.boot.modules.secondLevelWarehouse.service.IMaterialBaseService;
 import com.aiurt.boot.modules.statistical.vo.DeviceDataVo;
 import org.apache.commons.collections.CollectionUtils;
+import org.jeecg.common.api.vo.Result;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

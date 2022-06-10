@@ -2,12 +2,12 @@ package com.aiurt.boot.modules.device.controller;
 
 import cn.hutool.core.convert.Convert;
 import cn.hutool.core.util.StrUtil;
+import com.aiurt.common.aspect.annotation.AutoLog;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.aiurt.boot.common.aspect.annotation.AutoLog;
 import com.aiurt.boot.common.constant.CommonConstant;
 import com.aiurt.boot.common.exception.SwscException;
 import com.aiurt.boot.common.system.query.QueryGenerator;
@@ -33,6 +33,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.poi.ss.usermodel.Workbook;
+import org.jeecg.common.api.vo.Result;
 import org.jeecgframework.poi.excel.ExcelExportUtil;
 import org.jeecgframework.poi.excel.ExcelImportUtil;
 import org.jeecgframework.poi.excel.entity.ExportParams;
@@ -225,7 +226,7 @@ public class DeviceController {
         Result<Device> result = new Result<Device>();
         try {
             //code不能重复
-            final int count = deviceService.count(new LambdaQueryWrapper<Device>().eq(Device::getCode, device.getCode()).eq(Device::getDelFlag, 0).last("limit 1"));
+            final int count = (int) deviceService.count(new LambdaQueryWrapper<Device>().eq(Device::getCode, device.getCode()).eq(Device::getDelFlag, 0).last("limit 1"));
             if (count > 0){
                 return Result.error("设备编号不能重复");
             }
@@ -268,7 +269,7 @@ public class DeviceController {
         if (deviceEntity == null) {
             result.onnull("未找到对应实体");
         } else {
-            final int count = deviceService.count(new LambdaQueryWrapper<Device>().ne(Device::getId,device.getId()).eq(Device::getCode, device.getCode()).eq(Device::getDelFlag, 0).last("limit 1"));
+            final int count = (int) deviceService.count(new LambdaQueryWrapper<Device>().ne(Device::getId,device.getId()).eq(Device::getCode, device.getCode()).eq(Device::getDelFlag, 0).last("limit 1"));
             if (count > 0){
                 return Result.error("设备编号不能重复");
             }
@@ -540,7 +541,7 @@ public class DeviceController {
         listMap.add(map2);
 
 
-        Workbook workbook = ExcelExportUtil.exportExcel(listMap, String.valueOf(ExcelType.XSSF));
+        Workbook workbook = ExcelExportUtil.exportExcel(listMap, ExcelType.XSSF);
         try {
             workbook.write(response.getOutputStream());
             if (null != os) {
