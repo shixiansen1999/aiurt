@@ -1,5 +1,6 @@
 package com.aiurt.common.enums;
 
+import cn.hutool.core.util.StrUtil;
 import io.micrometer.core.instrument.util.StringUtils;
 
 import java.util.Arrays;
@@ -35,7 +36,7 @@ public enum  ScrapStatusEnum {
         this.message = message;
     }
     public static ScrapStatusEnum findByCode(int code){
-        if(StringUtils.isBlank(String.valueOf(code))){
+        if(StrUtil.isBlank(String.valueOf(code))){
             return null;
         }
         Optional<ScrapStatusEnum> ad = Arrays.asList(values()).stream().filter(item -> item.code==(code)).findFirst();
@@ -45,7 +46,7 @@ public enum  ScrapStatusEnum {
         return null;
     }
     public static String findMessage(int code){
-        if(StringUtils.isBlank(String.valueOf(code))){
+        if(StrUtil.isBlank(String.valueOf(code))){
             return null;
         }
         Optional<ScrapStatusEnum> ad = Arrays.asList(values()).stream().filter(item -> item.code==(code)).findFirst();
