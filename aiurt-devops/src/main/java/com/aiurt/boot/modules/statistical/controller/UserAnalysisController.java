@@ -1,6 +1,5 @@
 package com.aiurt.boot.modules.statistical.controller;
 
-import com.aiurt.boot.common.api.vo.Result;
 import com.aiurt.boot.common.util.DateUtils;
 import com.aiurt.boot.modules.device.service.IDeviceService;
 import com.aiurt.boot.modules.schedule.entity.ScheduleHolidays;

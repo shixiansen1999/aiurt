@@ -2,7 +2,6 @@ package com.aiurt.boot.modules.patrol.controller;
 
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.aiurt.boot.common.api.vo.Result;
 import com.aiurt.boot.common.aspect.annotation.AutoLog;
 import com.aiurt.boot.common.constant.RoleConstant;
 import com.aiurt.boot.common.exception.SwscException;

@@ -1,6 +1,5 @@
 package com.aiurt.boot.modules.fault.controller;
 
-import com.aiurt.boot.common.api.vo.Result;
 import com.aiurt.boot.common.aspect.annotation.AutoLog;
 import com.aiurt.boot.common.result.FaultCountResult;
 import com.aiurt.boot.common.result.FaultLevelResult;

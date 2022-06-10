@@ -2,7 +2,6 @@ package com.aiurt.boot.modules.system.service.impl;
 
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.aiurt.boot.common.api.vo.Result;
 import com.aiurt.boot.common.system.vo.LoginUser;
 import com.aiurt.boot.common.util.PmsUtil;
 import com.aiurt.boot.modules.system.entity.SysRole;

@@ -1,7 +1,6 @@
 package com.aiurt.boot.modules.statistical.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.aiurt.boot.common.api.vo.Result;
 import com.aiurt.boot.common.result.SpareConsumeNum;
 import com.aiurt.boot.modules.device.entity.Device;
 import com.aiurt.boot.modules.device.service.IDeviceService;

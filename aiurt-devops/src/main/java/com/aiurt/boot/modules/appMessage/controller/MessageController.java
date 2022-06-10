@@ -3,7 +3,6 @@ package com.aiurt.boot.modules.appMessage.controller;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.aiurt.boot.common.api.vo.Result;
 import com.aiurt.boot.common.aspect.annotation.AutoLog;
 import com.aiurt.boot.common.system.vo.LoginUser;
 import com.aiurt.boot.modules.appMessage.entity.Message;

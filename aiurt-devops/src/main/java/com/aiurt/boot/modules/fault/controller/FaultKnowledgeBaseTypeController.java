@@ -2,7 +2,6 @@ package com.aiurt.boot.modules.fault.controller;
 
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.aiurt.boot.common.api.vo.Result;
 import com.aiurt.boot.common.aspect.annotation.AutoLog;
 import com.aiurt.boot.common.system.query.QueryGenerator;
 import com.aiurt.boot.common.util.oConvertUtils;

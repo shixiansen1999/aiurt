@@ -8,7 +8,6 @@ import javax.servlet.http.HttpServletResponse;
 
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
-import com.aiurt.boot.common.api.vo.Result;
 import com.aiurt.boot.common.aspect.annotation.AutoLog;
 import com.aiurt.boot.common.system.query.QueryGenerator;
 import com.aiurt.boot.common.system.vo.LoginUser;

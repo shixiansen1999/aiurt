@@ -11,7 +11,6 @@ import com.aiurt.boot.modules.system.entity.SysPosition;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
-import com.aiurt.boot.common.api.vo.Result;
 import com.aiurt.boot.common.system.query.QueryGenerator;
 import com.aiurt.boot.common.util.oConvertUtils;
 import org.jeecgframework.poi.excel.ExcelImportUtil;

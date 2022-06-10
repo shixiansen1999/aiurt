@@ -1,6 +1,5 @@
 package com.aiurt.boot.modules.repairManage.controller;
 
-import com.aiurt.boot.common.api.vo.Result;
 import com.aiurt.boot.common.system.vo.LoginUser;
 import com.aiurt.boot.modules.repairManage.service.IStatisticsService;
 import com.aiurt.boot.modules.repairManage.vo.*;

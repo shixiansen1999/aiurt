@@ -11,5 +11,5 @@ import lombok.Data;
 @Data
 public class LogSubmitCount {
     @ApiModelProperty(value = "工作日志提交数量")
-    private Integer submitNum;
+    private Long submitNum;
 }

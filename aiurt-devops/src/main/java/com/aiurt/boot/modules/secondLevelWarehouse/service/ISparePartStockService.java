@@ -1,7 +1,6 @@
 package com.aiurt.boot.modules.secondLevelWarehouse.service;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.aiurt.boot.common.api.vo.Result;
 import com.aiurt.boot.common.result.SparePartStockResult;
 import com.aiurt.boot.modules.fault.param.SparePartStockParam;
 import com.aiurt.boot.modules.secondLevelWarehouse.entity.SparePartStock;

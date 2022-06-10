@@ -4,7 +4,6 @@ package com.aiurt.boot.modules.system.controller;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.aiurt.boot.common.api.vo.Result;
 import com.aiurt.boot.common.constant.CacheConstant;
 import com.aiurt.boot.common.system.query.QueryGenerator;
 import com.aiurt.boot.modules.system.entity.SysDictItem;

@@ -1,6 +1,5 @@
 package com.aiurt.boot.modules.AppUser.controller;
 
-import com.aiurt.boot.common.api.vo.Result;
 import com.aiurt.boot.common.aspect.annotation.AutoLog;
 import com.aiurt.boot.modules.AppUser.entity.UserParam;
 import com.aiurt.boot.modules.AppUser.entity.UserStatusVo;

@@ -2,7 +2,6 @@ package com.aiurt.boot.modules.fault.service;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.aiurt.boot.common.api.vo.Result;
 import com.aiurt.boot.common.result.OutsourcingPersonnelResult;
 import com.aiurt.boot.modules.fault.entity.OutsourcingPersonnel;
 import com.aiurt.boot.modules.fault.param.OutsourcingPersonnelParam;

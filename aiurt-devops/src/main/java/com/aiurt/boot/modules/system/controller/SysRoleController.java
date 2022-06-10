@@ -22,7 +22,6 @@ import com.aiurt.boot.modules.system.service.ISysPermissionDataRuleService;
 import com.aiurt.boot.modules.system.service.ISysPermissionService;
 import com.aiurt.boot.modules.system.service.ISysRolePermissionService;
 import com.aiurt.boot.modules.system.service.ISysRoleService;
-import com.aiurt.boot.common.api.vo.Result;
 import com.aiurt.boot.common.util.oConvertUtils;
 import com.aiurt.boot.modules.system.entity.SysPermission;
 import com.aiurt.boot.modules.system.entity.SysPermissionDataRule;

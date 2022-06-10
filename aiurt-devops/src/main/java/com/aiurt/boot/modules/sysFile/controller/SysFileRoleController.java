@@ -1,6 +1,5 @@
 package com.aiurt.boot.modules.sysFile.controller;
 
-import com.aiurt.boot.common.api.vo.Result;
 import com.aiurt.boot.common.aspect.annotation.AutoLog;
 import com.aiurt.boot.common.constant.CommonConstant;
 import com.aiurt.boot.common.system.vo.LoginUser;

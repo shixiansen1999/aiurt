@@ -10,7 +10,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.swing.filechooser.FileSystemView;
 
-import com.aiurt.boot.common.api.vo.Result;
 import com.aiurt.boot.modules.monitor.domain.RedisInfo;
 import com.aiurt.boot.modules.monitor.service.RedisService;
 import org.springframework.beans.factory.annotation.Autowired;

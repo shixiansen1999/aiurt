@@ -29,7 +29,6 @@ import com.aiurt.boot.modules.system.service.ISysDictService;
 import com.aiurt.boot.modules.system.service.ISysUserService;
 
 import lombok.extern.slf4j.Slf4j;
-import com.aiurt.boot.common.api.vo.Result;
 import com.aiurt.boot.common.util.PasswordUtil;
 import com.aiurt.boot.common.util.oConvertUtils;
 import org.apache.commons.lang.StringUtils;

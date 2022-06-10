@@ -1,6 +1,5 @@
 package com.aiurt.boot.modules.secondLevelWarehouse.controller;
 
-import com.aiurt.boot.common.api.vo.Result;
 import com.aiurt.boot.common.aspect.annotation.AutoLog;
 import com.aiurt.boot.modules.secondLevelWarehouse.entity.SparePartStockVO;
 import com.aiurt.boot.modules.secondLevelWarehouse.service.ISparePartStockInfoService;

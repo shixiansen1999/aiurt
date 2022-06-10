@@ -1,6 +1,5 @@
 package com.aiurt.boot.modules.standardManage.inspectionSpecification.service;
 
-import com.aiurt.boot.common.api.vo.Result;
 import com.aiurt.boot.modules.standardManage.inspectionSpecification.entity.InspectionCode;
 import com.baomidou.mybatisplus.extension.service.IService;
 

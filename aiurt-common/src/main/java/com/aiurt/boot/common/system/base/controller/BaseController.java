@@ -1,6 +1,5 @@
 package com.aiurt.boot.common.system.base.controller;
 
-import com.aiurt.boot.common.api.vo.Result;
 import com.aiurt.boot.common.system.query.QueryGenerator;
 import com.aiurt.boot.common.system.vo.LoginUser;
 import com.aiurt.boot.common.util.oConvertUtils;

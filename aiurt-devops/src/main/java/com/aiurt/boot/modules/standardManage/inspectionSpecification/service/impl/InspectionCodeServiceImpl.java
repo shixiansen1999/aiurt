@@ -1,7 +1,6 @@
 package com.aiurt.boot.modules.standardManage.inspectionSpecification.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.aiurt.boot.common.api.vo.Result;
 import com.aiurt.boot.common.constant.CommonConstant;
 import com.aiurt.boot.modules.repairManage.service.impl.RepairPoolServiceImpl;
 import com.aiurt.boot.modules.standardManage.inspectionSpecification.entity.InspectionCode;

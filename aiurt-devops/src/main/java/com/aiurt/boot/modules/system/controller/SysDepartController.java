@@ -1,7 +1,6 @@
 package com.aiurt.boot.modules.system.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.aiurt.boot.common.api.vo.Result;
 import com.aiurt.boot.common.constant.CacheConstant;
 import com.aiurt.boot.common.constant.CommonConstant;
 import com.aiurt.boot.common.system.query.QueryGenerator;

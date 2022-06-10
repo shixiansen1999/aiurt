@@ -1,7 +1,6 @@
 package com.aiurt.boot.modules.sysFile.service.impl;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.aiurt.boot.common.api.vo.Result;
 import com.aiurt.boot.common.exception.SwscException;
 import com.aiurt.boot.modules.sysFile.entity.SysFileRole;
 import com.aiurt.boot.modules.sysFile.entity.SysFileType;

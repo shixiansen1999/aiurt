@@ -3,7 +3,6 @@ package com.aiurt.boot.modules.repairManage.service.impl;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.aiurt.boot.common.api.vo.Result;
 import com.aiurt.boot.common.util.DateUtils;
 import com.aiurt.boot.modules.manage.entity.Station;
 import com.aiurt.boot.modules.manage.service.IStationService;

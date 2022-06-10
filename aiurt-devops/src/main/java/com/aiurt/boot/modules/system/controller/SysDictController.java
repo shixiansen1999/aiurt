@@ -20,7 +20,6 @@ import com.aiurt.boot.modules.system.service.ISysDictItemService;
 import com.aiurt.boot.modules.system.service.ISysDictService;
 import com.aiurt.boot.modules.system.entity.SysDictItem;
 import org.apache.shiro.SecurityUtils;
-import com.aiurt.boot.common.api.vo.Result;
 import com.aiurt.boot.common.constant.CacheConstant;
 import com.aiurt.boot.common.system.query.QueryGenerator;
 import com.aiurt.boot.common.system.vo.DictModel;

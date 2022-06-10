@@ -208,7 +208,7 @@ public class WorkLogController {
 		Result<WorkLog> result = new Result<WorkLog>();
 		WorkLog workLogDepot = workLogDepotService.getById(id);
 		if(workLogDepot==null) {
-			result.onnull("未找到对应实体");
+			result.error500("未找到对应实体");
 		}else {
 			result.setResult(workLogDepot);
 			result.setSuccess(true);

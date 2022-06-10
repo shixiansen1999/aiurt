@@ -1,11 +1,11 @@
 package com.aiurt.boot.modules.repairManage.service;
 
-import com.aiurt.boot.common.api.vo.Result;
 import com.aiurt.boot.common.system.vo.LoginUser;
 import com.aiurt.boot.modules.repairManage.entity.RepairTask;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.aiurt.boot.modules.repairManage.vo.DeviceQueryVO;
 import com.aiurt.boot.modules.repairManage.vo.ReTaskDetailVO;
+import org.jeecg.common.api.vo.Result;
 
 /**
  * @Description: 检修单列表
@@ -33,7 +33,7 @@ public interface IRepairTaskService extends IService<RepairTask> {
      * @param time
      * @return
      */
-    Result getRepairTaskByUserIdAndTime(String userId,String time);
+    Result getRepairTaskByUserIdAndTime(String userId, String time);
 
     Result queryByDevice(DeviceQueryVO deviceQueryVO);
 

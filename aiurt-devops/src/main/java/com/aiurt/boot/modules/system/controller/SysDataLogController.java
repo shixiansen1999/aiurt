@@ -6,7 +6,6 @@ import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 
 import com.aiurt.boot.modules.system.service.ISysDataLogService;
-import com.aiurt.boot.common.api.vo.Result;
 import com.aiurt.boot.common.system.query.QueryGenerator;
 import com.aiurt.boot.modules.system.entity.SysDataLog;
 import org.springframework.beans.factory.annotation.Autowired;
