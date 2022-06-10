@@ -1,6 +1,8 @@
 package com.aiurt.common.util;
 
-import com.aiurt.boot.common.exception.SwscException;
+
+
+import com.aiurt.common.exception.AiurtBootException;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
@@ -25,7 +27,7 @@ public class FileUtils {
 
             writeBytes(is, response.getOutputStream());
         }catch (Exception e) {
-            throw new SwscException("文件下载错误");
+            throw new AiurtBootException("文件下载错误");
 
         }
     }
@@ -39,7 +41,7 @@ public class FileUtils {
                 os.write(buf,0,len);
             }
         }catch (Exception e) {
-            throw new SwscException("文件下载错误");
+            throw new AiurtBootException("文件下载错误");
 
         }finally {
             if(is != null) {

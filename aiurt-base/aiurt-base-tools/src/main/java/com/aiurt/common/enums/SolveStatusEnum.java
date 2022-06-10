@@ -1,6 +1,7 @@
 package com.aiurt.common.enums;
 
-import io.micrometer.core.instrument.util.StringUtils;
+import cn.hutool.core.util.StrUtil;
+
 
 import java.util.Arrays;
 import java.util.Optional;
@@ -34,7 +35,7 @@ public enum SolveStatusEnum {
         this.message = message;
     }
     public static SolveStatusEnum findByCode(int code){
-        if(StringUtils.isBlank(String.valueOf(code))){
+        if(StrUtil.isBlank(String.valueOf(code))){
             return null;
         }
         Optional<SolveStatusEnum> ad = Arrays.asList(values()).stream().filter(item -> item.code==(code)).findFirst();
@@ -44,7 +45,7 @@ public enum SolveStatusEnum {
         return null;
     }
     public static String findMessage(int code){
-        if(StringUtils.isBlank(String.valueOf(code))){
+        if(StrUtil.isBlank(String.valueOf(code))){
             return null;
         }
         Optional<SolveStatusEnum> ad = Arrays.asList(values()).stream().filter(item -> item.code==(code)).findFirst();

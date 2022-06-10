@@ -1,6 +1,7 @@
 package com.aiurt.common.enums;
 
-import io.micrometer.core.instrument.util.StringUtils;
+
+import cn.hutool.core.util.StrUtil;
 
 import java.util.Arrays;
 import java.util.Optional;
@@ -31,7 +32,7 @@ public enum FaultLevelEnum {
         this.message = message;
     }
     public static FaultLevelEnum findByCode(int code){
-        if(StringUtils.isBlank(String.valueOf(code))){
+        if(StrUtil.isBlank(String.valueOf(code))){
             return null;
         }
         Optional<FaultLevelEnum> ad = Arrays.asList(values()).stream().filter(item -> item.code==(code)).findFirst();
@@ -41,7 +42,7 @@ public enum FaultLevelEnum {
         return null;
     }
     public static String findMessage(int code){
-        if(StringUtils.isBlank(String.valueOf(code))){
+        if(StrUtil.isBlank(String.valueOf(code))){
             return null;
         }
         Optional<FaultLevelEnum> ad = Arrays.asList(values()).stream().filter(item -> item.code==(code)).findFirst();

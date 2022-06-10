@@ -1,6 +1,7 @@
 package com.aiurt.common.enums;
 
-import io.micrometer.core.instrument.util.StringUtils;
+
+import cn.hutool.core.util.StrUtil;
 
 import java.util.Arrays;
 import java.util.Optional;
@@ -34,7 +35,7 @@ public enum WorkLogConfirmStatusEnum {
     }
 
     public static WorkLogConfirmStatusEnum findByCode(int code) {
-        if (StringUtils.isBlank(String.valueOf(code))) {
+        if (StrUtil.isBlank(String.valueOf(code))) {
             return null;
         }
         Optional<WorkLogConfirmStatusEnum> ad = Arrays.asList(values()).stream().filter(item -> item.code == (code)).findFirst();
@@ -45,7 +46,7 @@ public enum WorkLogConfirmStatusEnum {
     }
 
     public static String findMessage(int code) {
-        if (StringUtils.isBlank(String.valueOf(code))) {
+        if (StrUtil.isBlank(String.valueOf(code))) {
             return null;
         }
         Optional<WorkLogConfirmStatusEnum> ad = Arrays.asList(values()).stream().filter(item -> item.code == (code)).findFirst();
