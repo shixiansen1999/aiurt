@@ -1,25 +1,23 @@
 package com.aiurt.boot.modules.system.service.impl;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import javax.annotation.Resource;
-
 import com.aiurt.boot.common.constant.CommonConstant;
-import com.aiurt.boot.modules.system.service.ISysPermissionDataRuleService;
-
 import com.aiurt.boot.common.util.oConvertUtils;
 import com.aiurt.boot.modules.system.entity.SysPermission;
 import com.aiurt.boot.modules.system.entity.SysPermissionDataRule;
 import com.aiurt.boot.modules.system.mapper.SysPermissionDataRuleMapper;
 import com.aiurt.boot.modules.system.mapper.SysPermissionMapper;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
+import com.aiurt.boot.modules.system.service.ISysPermissionDataRuleService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import org.jeecg.common.system.query.QueryGenerator;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import javax.annotation.Resource;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * <p>
@@ -100,7 +98,7 @@ public class SysPermissionDataRuleImpl extends ServiceImpl<SysPermissionDataRule
 		SysPermissionDataRule dataRule = this.baseMapper.selectById(dataRuleId);
 		if(dataRule!=null) {
 			this.removeById(dataRuleId);
-			Integer count =  this.baseMapper.selectCount(new LambdaQueryWrapper<SysPermissionDataRule>().eq(SysPermissionDataRule::getPermissionId, dataRule.getPermissionId()));
+			Integer count = Math.toIntExact(this.baseMapper.selectCount(new LambdaQueryWrapper<SysPermissionDataRule>().eq(SysPermissionDataRule::getPermissionId, dataRule.getPermissionId())));
 			//注:同一个事务中删除后再查询是会认为数据已被删除的 若事务回滚上述删除无效
 			if(count==null || count==0) {
 				SysPermission permission = sysPermissionMapper.selectById(dataRule.getPermissionId());

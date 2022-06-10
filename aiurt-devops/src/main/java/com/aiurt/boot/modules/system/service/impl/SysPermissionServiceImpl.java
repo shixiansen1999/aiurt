@@ -8,13 +8,13 @@ import javax.annotation.Resource;
 import com.aiurt.boot.common.constant.CommonConstant;
 import com.aiurt.boot.modules.system.model.TreeModel;
 import com.aiurt.boot.common.constant.CacheConstant;
-import com.aiurt.boot.common.exception.SwscException;
 import com.aiurt.boot.modules.system.service.ISysPermissionDataRuleService;
 import com.aiurt.boot.modules.system.service.ISysPermissionService;
 import com.aiurt.boot.common.util.oConvertUtils;
 import com.aiurt.boot.modules.system.entity.SysPermission;
 import com.aiurt.boot.modules.system.entity.SysPermissionDataRule;
 import com.aiurt.boot.modules.system.mapper.SysPermissionMapper;
+import com.aiurt.common.exception.AiurtBootException;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
@@ -52,14 +52,14 @@ public class SysPermissionServiceImpl extends ServiceImpl<SysPermissionMapper, S
 	@Override
 	@Transactional
 	@CacheEvict(value = CacheConstant.SYS_DATA_PERMISSIONS_CACHE,allEntries=true)
-	public void deletePermission(String id) throws SwscException {
+	public void deletePermission(String id) throws AiurtBootException {
 		SysPermission sysPermission = this.getById(id);
 		if(sysPermission==null) {
-			throw new SwscException("未找到菜单信息");
+			throw new AiurtBootException("未找到菜单信息");
 		}
 		String pid = sysPermission.getParentId();
 		if(oConvertUtils.isNotEmpty(pid)) {
-			int count = this.count(new QueryWrapper<SysPermission>().lambda().eq(SysPermission::getParentId, pid));
+			int count = (int) this.count(new QueryWrapper<SysPermission>().lambda().eq(SysPermission::getParentId, pid));
 			if(count==1) {
 				//若父节点无其他子节点，则该父节点是叶子节点
 				this.sysPermissionMapper.setMenuLeaf(pid, 1);
@@ -89,7 +89,7 @@ public class SysPermissionServiceImpl extends ServiceImpl<SysPermissionMapper, S
 			// 再遍历刚才查出的集合, 根据每个对象,查找其是否仍有子级
 			for (int i = 0, len = permissionList.size(); i < len; i++) {
 				id = permissionList.get(i).getId();
-				num = this.count(new LambdaQueryWrapper<SysPermission>().eq(SysPermission::getParentId, id));
+				num = (int) this.count(new LambdaQueryWrapper<SysPermission>().eq(SysPermission::getParentId, id));
 				// 如果有, 则递归
 				if (num > 0) {
 					this.removeChildrenBy(id);
@@ -104,13 +104,13 @@ public class SysPermissionServiceImpl extends ServiceImpl<SysPermissionMapper, S
 	@Override
 	@CacheEvict(value = CacheConstant.SYS_DATA_PERMISSIONS_CACHE,allEntries=true)
 	//@CacheEvict(value = CacheConstant.SYS_DATA_PERMISSIONS_CACHE,allEntries=true,condition="#sysPermission.menuType==2")
-	public void deletePermissionLogical(String id) throws SwscException {
+	public void deletePermissionLogical(String id) throws AiurtBootException {
 		SysPermission sysPermission = this.getById(id);
 		if(sysPermission==null) {
-			throw new SwscException("未找到菜单信息");
+			throw new AiurtBootException("未找到菜单信息");
 		}
 		String pid = sysPermission.getParentId();
-		int count = this.count(new QueryWrapper<SysPermission>().lambda().eq(SysPermission::getParentId, pid));
+		int count = (int) this.count(new QueryWrapper<SysPermission>().lambda().eq(SysPermission::getParentId, pid));
 		if(count==1) {
 			//若父节点无其他子节点，则该父节点是叶子节点
 			this.sysPermissionMapper.setMenuLeaf(pid, 1);
@@ -121,7 +121,7 @@ public class SysPermissionServiceImpl extends ServiceImpl<SysPermissionMapper, S
 
 	@Override
 	@CacheEvict(value = CacheConstant.SYS_DATA_PERMISSIONS_CACHE,allEntries=true)
-	public void addPermission(SysPermission sysPermission) throws SwscException {
+	public void addPermission(SysPermission sysPermission) throws AiurtBootException {
 		//----------------------------------------------------------------------
 		//判断是否是一级菜单，是的话清空父菜单
 		if(CommonConstant.MENU_TYPE_0.equals(sysPermission.getMenuType())) {
@@ -141,11 +141,11 @@ public class SysPermissionServiceImpl extends ServiceImpl<SysPermissionMapper, S
 
 	@Override
 	@CacheEvict(value = CacheConstant.SYS_DATA_PERMISSIONS_CACHE,allEntries=true)
-	public void editPermission(SysPermission sysPermission) throws SwscException {
+	public void editPermission(SysPermission sysPermission) throws AiurtBootException {
 		SysPermission p = this.getById(sysPermission.getId());
 		//TODO 该节点判断是否还有子节点
 		if(p==null) {
-			throw new SwscException("未找到菜单信息");
+			throw new AiurtBootException("未找到菜单信息");
 		}else {
 			sysPermission.setUpdateTime(new Date());
 			//----------------------------------------------------------------------
@@ -154,7 +154,7 @@ public class SysPermissionServiceImpl extends ServiceImpl<SysPermissionMapper, S
 				sysPermission.setParentId("");
 			}
 			//Step2.判断菜单下级是否有菜单，无则设置为叶子节点
-			int count = this.count(new QueryWrapper<SysPermission>().lambda().eq(SysPermission::getParentId, sysPermission.getId()));
+			int count = (int) this.count(new QueryWrapper<SysPermission>().lambda().eq(SysPermission::getParentId, sysPermission.getId()));
 			if(count==0) {
 				sysPermission.setLeaf(true);
 			}
@@ -167,7 +167,7 @@ public class SysPermissionServiceImpl extends ServiceImpl<SysPermissionMapper, S
 				//a.设置新的父菜单不为叶子节点
 				this.sysPermissionMapper.setMenuLeaf(pid, 0);
 				//b.判断老的菜单下是否还有其他子菜单，没有的话则设置为叶子节点
-				int cc = this.count(new QueryWrapper<SysPermission>().lambda().eq(SysPermission::getParentId, p.getParentId()));
+				int cc = (int) this.count(new QueryWrapper<SysPermission>().lambda().eq(SysPermission::getParentId, p.getParentId()));
 				if(cc==0) {
 					if(oConvertUtils.isNotEmpty(p.getParentId())) {
 						this.sysPermissionMapper.setMenuLeaf(p.getParentId(), 1);
@@ -191,7 +191,7 @@ public class SysPermissionServiceImpl extends ServiceImpl<SysPermissionMapper, S
 	public void deletePermRuleByPermId(String id) {
 		LambdaQueryWrapper<SysPermissionDataRule> query = new LambdaQueryWrapper<>();
 		query.eq(SysPermissionDataRule::getPermissionId, id);
-		int countValue = this.permissionDataRuleService.count(query);
+		int countValue = (int) this.permissionDataRuleService.count(query);
 		if(countValue > 0) {
 			this.permissionDataRuleService.remove(query);
 		}

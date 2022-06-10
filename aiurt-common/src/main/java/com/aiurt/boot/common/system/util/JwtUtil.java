@@ -6,6 +6,7 @@ import com.aiurt.boot.common.system.vo.LoginUser;
 import com.aiurt.boot.common.system.vo.SysUserCacheInfo;
 import com.aiurt.boot.common.util.SpringContextUtils;
 import com.aiurt.boot.common.util.oConvertUtils;
+import com.aiurt.common.exception.AiurtBootException;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTDecodeException;
@@ -81,13 +82,13 @@ public class JwtUtil {
 	 *
 	 * @param request
 	 * @return
-	 * @throws SwscException
+	 * @throws AiurtBootException
 	 */
-	public static String getUserNameByToken(HttpServletRequest request) throws SwscException {
+	public static String getUserNameByToken(HttpServletRequest request) throws AiurtBootException {
 		String accessToken = request.getHeader("X-Access-Token");
 		String username = getUsername(accessToken);
 		if (oConvertUtils.isEmpty(username)) {
-			throw new SwscException("未获取到用户");
+			throw new AiurtBootException("未获取到用户");
 		}
 		return username;
 	}
