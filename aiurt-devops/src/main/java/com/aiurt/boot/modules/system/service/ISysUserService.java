@@ -1,23 +1,21 @@
 package com.aiurt.boot.modules.system.service;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-
+import com.aiurt.boot.common.system.vo.SysUserCacheInfo;
 import com.aiurt.boot.modules.statistical.vo.StaffDataVo;
 import com.aiurt.boot.modules.statistical.vo.UserScheduleVo;
 import com.aiurt.boot.modules.system.entity.SysUser;
-import com.aiurt.boot.modules.system.model.SysUserSysDepartModel;
-import com.aiurt.boot.common.system.vo.SysUserCacheInfo;
-
-import com.baomidou.mybatisplus.extension.service.IService;
 import com.aiurt.boot.modules.system.model.DepartScheduleModel;
+import com.aiurt.boot.modules.system.model.SysUserSysDepartModel;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.baomidou.mybatisplus.extension.service.IService;
+import org.jeecg.common.api.vo.Result;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * <p>

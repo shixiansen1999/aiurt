@@ -1,31 +1,28 @@
 package com.aiurt.boot.modules.system.controller;
 
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import com.aiurt.boot.common.constant.CommonConstant;
-import com.aiurt.boot.modules.system.entity.SysDict;
-import com.aiurt.boot.modules.system.model.SysDictTree;
-import com.aiurt.boot.modules.system.model.TreeSelectModel;
-import com.aiurt.boot.modules.system.vo.SysDictPage;
-import com.aiurt.boot.modules.system.service.ISysDictItemService;
-import com.aiurt.boot.modules.system.service.ISysDictService;
-import com.aiurt.boot.modules.system.entity.SysDictItem;
-import org.apache.shiro.SecurityUtils;
 import com.aiurt.boot.common.constant.CacheConstant;
+import com.aiurt.boot.common.constant.CommonConstant;
 import com.aiurt.boot.common.system.query.QueryGenerator;
 import com.aiurt.boot.common.system.vo.DictModel;
 import com.aiurt.boot.common.system.vo.LoginUser;
 import com.aiurt.boot.common.util.SqlInjectionUtil;
 import com.aiurt.boot.common.util.oConvertUtils;
+import com.aiurt.boot.modules.system.entity.SysDict;
+import com.aiurt.boot.modules.system.entity.SysDictItem;
+import com.aiurt.boot.modules.system.model.SysDictTree;
+import com.aiurt.boot.modules.system.model.TreeSelectModel;
+import com.aiurt.boot.modules.system.service.ISysDictItemService;
+import com.aiurt.boot.modules.system.service.ISysDictService;
+import com.aiurt.boot.modules.system.vo.SysDictPage;
+import com.alibaba.fastjson.JSON;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.shiro.SecurityUtils;
+import org.jeecg.common.api.vo.Result;
 import org.jeecgframework.poi.excel.ExcelImportUtil;
 import org.jeecgframework.poi.excel.def.NormalExcelConstants;
 import org.jeecgframework.poi.excel.entity.ExportParams;
@@ -34,23 +31,15 @@ import org.jeecgframework.poi.excel.view.JeecgEntityExcelView;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
 import org.springframework.web.servlet.ModelAndView;
 
-import com.alibaba.fastjson.JSON;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-
-import lombok.extern.slf4j.Slf4j;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.util.*;
 
 /**
  * <p>
@@ -73,7 +62,7 @@ public class SysDictController {
 
 	@RequestMapping(value = "/list", method = RequestMethod.GET)
 	public Result<IPage<SysDict>> queryPageList(SysDict sysDict, @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
-                                                @RequestParam(name="pageSize", defaultValue="10") Integer pageSize, HttpServletRequest req) {
+												@RequestParam(name="pageSize", defaultValue="10") Integer pageSize, HttpServletRequest req) {
 		Result<IPage<SysDict>> result = new Result<IPage<SysDict>>();
 		QueryWrapper<SysDict> queryWrapper = QueryGenerator.initQueryWrapper(sysDict, req.getParameterMap());
 		Page<SysDict> page = new Page<SysDict>(pageNo, pageSize);

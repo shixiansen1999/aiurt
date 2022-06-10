@@ -12,6 +12,7 @@ import com.aiurt.boot.modules.system.entity.SysAnnouncementSend;
 import org.apache.shiro.SecurityUtils;
 import com.aiurt.boot.common.system.vo.LoginUser;
 import com.aiurt.boot.common.util.oConvertUtils;
+import org.jeecg.common.api.vo.Result;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -55,9 +56,9 @@ public class SysAnnouncementSendController {
 	 */
 	@GetMapping(value = "/list")
 	public Result<IPage<SysAnnouncementSend>> queryPageList(SysAnnouncementSend sysAnnouncementSend,
-                                                            @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
-                                                            @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
-                                                            HttpServletRequest req) {
+															@RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
+															@RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
+															HttpServletRequest req) {
 		Result<IPage<SysAnnouncementSend>> result = new Result<IPage<SysAnnouncementSend>>();
 		QueryWrapper<SysAnnouncementSend> queryWrapper = new QueryWrapper<SysAnnouncementSend>(sysAnnouncementSend);
 		Page<SysAnnouncementSend> page = new Page<SysAnnouncementSend>(pageNo,pageSize);

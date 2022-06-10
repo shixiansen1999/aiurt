@@ -34,6 +34,7 @@ import com.aiurt.boot.modules.system.mapper.SysUserMapper;
 import lombok.SneakyThrows;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.shiro.SecurityUtils;
+import org.jeecg.common.api.vo.Result;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -132,7 +133,7 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
         queryWrapper.eq("inspection_code_id",inspectionCode.getId())
                 .isNull("tactics")
                     .eq("del_flag", 0);
-        final Integer count = inspectionCodeContentMapper.selectCount(queryWrapper);
+        final Long count = inspectionCodeContentMapper.selectCount(queryWrapper);
         if (count > 0){
             return Result.error("请先完成检修策略的设置");
         }

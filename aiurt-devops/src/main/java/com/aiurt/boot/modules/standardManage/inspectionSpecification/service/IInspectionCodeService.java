@@ -2,6 +2,7 @@ package com.aiurt.boot.modules.standardManage.inspectionSpecification.service;
 
 import com.aiurt.boot.modules.standardManage.inspectionSpecification.entity.InspectionCode;
 import com.baomidou.mybatisplus.extension.service.IService;
+import org.jeecg.common.api.vo.Result;
 
 /**
  * @Description: 检修标准管理

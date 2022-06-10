@@ -6,7 +6,7 @@ import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 
-import com.aiurt.boot.common.aspect.annotation.PermissionData;
+
 import com.aiurt.boot.common.system.util.JeecgDataAutorUtils;
 import com.aiurt.boot.common.system.util.JwtUtil;
 import com.aiurt.boot.common.system.vo.SysPermissionDataRuleModel;
@@ -18,6 +18,7 @@ import com.aiurt.boot.modules.system.service.ISysPermissionService;
 import com.aiurt.boot.modules.system.service.ISysUserService;
 import com.aiurt.boot.modules.system.entity.SysPermission;
 import com.aiurt.boot.modules.system.entity.SysPermissionDataRule;
+import com.aiurt.common.aspect.annotation.PermissionData;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;

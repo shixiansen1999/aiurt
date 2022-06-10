@@ -1,25 +1,26 @@
 package com.aiurt.boot.modules.standardManage.inspectionStrategy.controller;
 import java.time.LocalDate;
 
+import com.aiurt.boot.modules.standardManage.inspectionSpecification.entity.InspectionCode;
+import com.aiurt.boot.modules.standardManage.inspectionSpecification.service.IInspectionCodeService;
+import com.aiurt.boot.modules.standardManage.inspectionStrategy.entity.InspectionCodeContent;
+import com.aiurt.boot.modules.standardManage.inspectionStrategy.service.IinspectionCodeContentService;
+import com.aiurt.boot.modules.standardManage.inspectionStrategy.vo.InspectionCodeContentExcelVO;
+import com.aiurt.boot.modules.standardManage.safetyPrecautions.service.IsafetyPrecautionsService;
+import com.aiurt.common.aspect.annotation.AutoLog;
+import com.aiurt.common.constant.InspectionContant;
+import com.aiurt.common.util.oConvertUtils;
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.aiurt.copsms.common.api.vo.Result;
-import com.aiurt.copsms.common.aspect.annotation.AutoLog;
-import com.aiurt.copsms.common.constant.InspectionContant;
-import com.aiurt.copsms.common.system.query.QueryGenerator;
-import com.aiurt.copsms.common.util.oConvertUtils;
-import com.aiurt.copsms.modules.standardManage.inspectionSpecification.entity.InspectionCode;
-import com.aiurt.copsms.modules.standardManage.inspectionSpecification.service.IInspectionCodeService;
-import com.aiurt.copsms.modules.standardManage.inspectionStrategy.entity.InspectionCodeContent;
-import com.aiurt.copsms.modules.standardManage.inspectionStrategy.service.IinspectionCodeContentService;
-import com.aiurt.copsms.modules.standardManage.inspectionStrategy.vo.InspectionCodeContentExcelVO;
-import com.aiurt.copsms.modules.standardManage.safetyPrecautions.service.IsafetyPrecautionsService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
+import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.system.query.QueryGenerator;
 import org.jeecgframework.poi.excel.ExcelImportUtil;
 import org.jeecgframework.poi.excel.def.NormalExcelConstants;
 import org.jeecgframework.poi.excel.entity.ExportParams;
@@ -74,8 +75,6 @@ public class InspectionCodeContentController {
     @Autowired
     private IsafetyPrecautionsService isafetyPrecautionsService;
 
-//    @Value("${support.downFilePath.inspectionCodeTemplatePath}")
-//    private String excelPath;
 
     /**
      * 分页列表查询

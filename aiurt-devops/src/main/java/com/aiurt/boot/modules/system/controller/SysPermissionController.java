@@ -1,9 +1,5 @@
 package com.aiurt.boot.modules.system.controller;
 
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.aiurt.boot.common.constant.CommonConstant;
 import com.aiurt.boot.common.system.util.JwtUtil;
 import com.aiurt.boot.common.util.MD5Util;
@@ -17,7 +13,12 @@ import com.aiurt.boot.modules.system.service.ISysPermissionDataRuleService;
 import com.aiurt.boot.modules.system.service.ISysPermissionService;
 import com.aiurt.boot.modules.system.service.ISysRolePermissionService;
 import com.aiurt.boot.modules.system.util.PermissionDataUtil;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import lombok.extern.slf4j.Slf4j;
+import org.jeecg.common.api.vo.Result;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 

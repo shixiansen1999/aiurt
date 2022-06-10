@@ -6,14 +6,15 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import com.aiurt.boot.common.aspect.annotation.Dict;
 import com.aiurt.boot.common.constant.CommonConstant;
 import com.aiurt.boot.common.util.oConvertUtils;
 import com.aiurt.boot.modules.system.service.ISysDictService;
+import com.aiurt.common.aspect.annotation.Dict;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
+import org.jeecg.common.api.vo.Result;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;

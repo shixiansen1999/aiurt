@@ -1,14 +1,15 @@
 package com.aiurt.boot.modules.system.controller;
 
 
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.aiurt.boot.common.constant.CacheConstant;
 import com.aiurt.boot.common.system.query.QueryGenerator;
 import com.aiurt.boot.modules.system.entity.SysDictItem;
 import com.aiurt.boot.modules.system.service.ISysDictItemService;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.extern.slf4j.Slf4j;
+import org.jeecg.common.api.vo.Result;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.web.bind.annotation.*;
@@ -43,7 +44,7 @@ public class SysDictItemController {
 	 */
 	@RequestMapping(value = "/list", method = RequestMethod.GET)
 	public Result<IPage<SysDictItem>> queryPageList(SysDictItem sysDictItem, @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
-                                                    @RequestParam(name="pageSize", defaultValue="10") Integer pageSize, HttpServletRequest req) {
+													@RequestParam(name="pageSize", defaultValue="10") Integer pageSize, HttpServletRequest req) {
 		Result<IPage<SysDictItem>> result = new Result<IPage<SysDictItem>>();
 		QueryWrapper<SysDictItem> queryWrapper = QueryGenerator.initQueryWrapper(sysDictItem, req.getParameterMap());
 		queryWrapper.orderByAsc("sort_order");
@@ -56,7 +57,7 @@ public class SysDictItemController {
 
 	/**
 	 * @功能：新增
-	 * @param sysDict
+	 * @param sysDictItem
 	 * @return
 	 */
 	@RequestMapping(value = "/add", method = RequestMethod.POST)

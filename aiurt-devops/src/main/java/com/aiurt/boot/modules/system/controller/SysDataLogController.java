@@ -1,24 +1,22 @@
 package com.aiurt.boot.modules.system.controller;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.servlet.http.HttpServletRequest;
-
-import com.aiurt.boot.modules.system.service.ISysDataLogService;
 import com.aiurt.boot.common.system.query.QueryGenerator;
 import com.aiurt.boot.modules.system.entity.SysDataLog;
+import com.aiurt.boot.modules.system.service.ISysDataLogService;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import lombok.extern.slf4j.Slf4j;
+import org.jeecg.common.api.vo.Result;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-
-import lombok.extern.slf4j.Slf4j;
+import javax.servlet.http.HttpServletRequest;
+import java.util.ArrayList;
+import java.util.List;
 
 @RestController
 @RequestMapping("/sys/dataLog")
@@ -29,7 +27,7 @@ public class SysDataLogController {
 
 	@RequestMapping(value = "/list", method = RequestMethod.GET)
 	public Result<IPage<SysDataLog>> queryPageList(SysDataLog dataLog, @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
-                                                   @RequestParam(name="pageSize", defaultValue="10") Integer pageSize, HttpServletRequest req) {
+												   @RequestParam(name="pageSize", defaultValue="10") Integer pageSize, HttpServletRequest req) {
 		Result<IPage<SysDataLog>> result = new Result<IPage<SysDataLog>>();
 		QueryWrapper<SysDataLog> queryWrapper = QueryGenerator.initQueryWrapper(dataLog, req.getParameterMap());
 		Page<SysDataLog> page = new Page<SysDataLog>(pageNo, pageSize);

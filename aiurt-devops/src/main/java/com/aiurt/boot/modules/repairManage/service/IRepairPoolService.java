@@ -3,6 +3,7 @@ package com.aiurt.boot.modules.repairManage.service;
 import com.aiurt.boot.modules.repairManage.entity.RepairPool;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.aiurt.boot.modules.repairManage.vo.AssignVO;
+import org.jeecg.common.api.vo.Result;
 
 /**
  * @Description: 检修计划池

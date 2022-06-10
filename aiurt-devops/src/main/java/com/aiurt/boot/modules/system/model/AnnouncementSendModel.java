@@ -1,15 +1,13 @@
 package com.aiurt.boot.modules.system.model;
 
-import java.io.Serializable;
-
-import org.springframework.format.annotation.DateTimeFormat;
-
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.fasterxml.jackson.annotation.JsonFormat;
-
 import lombok.Data;
+import org.springframework.format.annotation.DateTimeFormat;
+
+import java.io.Serializable;
 
 /**
  * @Description: 用户通告阅读标记表
@@ -23,7 +21,7 @@ public class AnnouncementSendModel implements Serializable {
     private static final long serialVersionUID = 1L;
 
 	/**id*/
-	@TableId(type = IdType.ID_WORKER_STR)
+	@TableId(type = IdType.ASSIGN_ID)
 	private String id;
 	/**通告id*/
 	private String anntId;

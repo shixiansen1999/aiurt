@@ -5,13 +5,14 @@ import java.util.Date;
 
 import javax.servlet.http.HttpServletRequest;
 
-import com.aiurt.boot.common.aspect.annotation.AutoLog;
+
 import com.aiurt.boot.common.constant.CommonConstant;
 import com.aiurt.boot.common.system.vo.LoginUser;
 import com.aiurt.boot.common.util.IPUtils;
 import com.aiurt.boot.common.util.SpringContextUtils;
 import com.aiurt.boot.modules.system.service.ISysLogService;
 import com.aiurt.boot.modules.system.entity.SysLog;
+import com.aiurt.common.aspect.annotation.AutoLog;
 import org.apache.shiro.SecurityUtils;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;

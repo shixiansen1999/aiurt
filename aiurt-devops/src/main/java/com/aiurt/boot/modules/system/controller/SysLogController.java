@@ -1,26 +1,24 @@
 package com.aiurt.boot.modules.system.controller;
 
 
-import java.util.Arrays;
-
-import javax.servlet.http.HttpServletRequest;
-
-import com.aiurt.boot.modules.system.service.ISysLogService;
 import com.aiurt.boot.common.system.query.QueryGenerator;
 import com.aiurt.boot.common.util.oConvertUtils;
 import com.aiurt.boot.modules.system.entity.SysLog;
 import com.aiurt.boot.modules.system.entity.SysRole;
+import com.aiurt.boot.modules.system.service.ISysLogService;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import lombok.extern.slf4j.Slf4j;
+import org.jeecg.common.api.vo.Result;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-
-import lombok.extern.slf4j.Slf4j;
+import javax.servlet.http.HttpServletRequest;
+import java.util.Arrays;
 
 /**
  * <p>
@@ -48,7 +46,7 @@ public class SysLogController {
 	 */
 	@RequestMapping(value = "/list", method = RequestMethod.GET)
 	public Result<IPage<SysLog>> queryPageList(SysLog syslog, @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
-                                               @RequestParam(name="pageSize", defaultValue="10") Integer pageSize, HttpServletRequest req) {
+											   @RequestParam(name="pageSize", defaultValue="10") Integer pageSize, HttpServletRequest req) {
 		Result<IPage<SysLog>> result = new Result<IPage<SysLog>>();
 		QueryWrapper<SysLog> queryWrapper = QueryGenerator.initQueryWrapper(syslog, req.getParameterMap());
 		Page<SysLog> page = new Page<SysLog>(pageNo, pageSize);

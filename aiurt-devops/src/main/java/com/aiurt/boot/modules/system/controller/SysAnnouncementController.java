@@ -23,6 +23,7 @@ import com.aiurt.boot.common.system.query.QueryGenerator;
 import com.aiurt.boot.common.system.util.JwtUtil;
 import com.aiurt.boot.common.system.vo.LoginUser;
 import com.aiurt.boot.common.util.oConvertUtils;
+import org.jeecg.common.api.vo.Result;
 import org.jeecgframework.poi.excel.ExcelImportUtil;
 import org.jeecgframework.poi.excel.def.NormalExcelConstants;
 import org.jeecgframework.poi.excel.entity.ExportParams;
@@ -74,9 +75,9 @@ public class SysAnnouncementController {
 	 */
 	@RequestMapping(value = "/list", method = RequestMethod.GET)
 	public Result<IPage<SysAnnouncement>> queryPageList(SysAnnouncement sysAnnouncement,
-                                                        @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
-                                                        @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
-                                                        HttpServletRequest req) {
+														@RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
+														@RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
+														HttpServletRequest req) {
 		Result<IPage<SysAnnouncement>> result = new Result<IPage<SysAnnouncement>>();
 		sysAnnouncement.setDelFlag(CommonConstant.DEL_FLAG_0.toString());
 		QueryWrapper<SysAnnouncement> queryWrapper = new QueryWrapper<SysAnnouncement>(sysAnnouncement);

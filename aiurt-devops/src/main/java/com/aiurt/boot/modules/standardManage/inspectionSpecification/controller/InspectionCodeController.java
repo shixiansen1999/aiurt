@@ -5,11 +5,11 @@ import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 
 import cn.hutool.core.util.StrUtil;
-import com.aiurt.boot.common.aspect.annotation.AutoLog;
 import com.aiurt.boot.common.system.query.QueryGenerator;
 import com.aiurt.boot.common.system.vo.LoginUser;
 import com.aiurt.boot.modules.standardManage.inspectionSpecification.entity.InspectionCode;
 import com.aiurt.boot.modules.standardManage.inspectionSpecification.service.IInspectionCodeService;
+import com.aiurt.common.aspect.annotation.AutoLog;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -19,6 +19,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.apache.shiro.SecurityUtils;
 
+import org.jeecg.common.api.vo.Result;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -107,8 +108,8 @@ public class InspectionCodeController {
                 final QueryWrapper<InspectionCode> wrapper = new QueryWrapper<>();
                 wrapper.apply(teamId != null, "find_in_set('" + teamId + "',organization_ids)")
                         .eq("years", inspectionCode.getYears()).eq("del_flag", 0);
-                final int count = inspectionCodeService.count(wrapper);
-                if (count >= 1) {
+                final Long count = inspectionCodeService.count(wrapper);
+                if (count >= 1L) {
                     return result.error500("一个班组一年只存在一条检修规范!");
                 }
             }
