@@ -1,15 +1,15 @@
 package com.aiurt.boot.modules.standardManage.inspectionSpecification.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.swsc.copsms.common.api.vo.Result;
-import com.swsc.copsms.modules.repairManage.service.impl.RepairPoolServiceImpl;
-import com.swsc.copsms.modules.standardManage.inspectionSpecification.entity.InspectionCode;
-import com.swsc.copsms.modules.standardManage.inspectionSpecification.mapper.InspectionCodeMapper;
-import com.swsc.copsms.modules.standardManage.inspectionSpecification.service.IInspectionCodeService;
-import com.swsc.copsms.modules.standardManage.inspectionStrategy.entity.InspectionCodeContent;
-import com.swsc.copsms.modules.standardManage.inspectionStrategy.mapper.InspectionCodeContentMapper;
-import com.swsc.copsms.modules.standardManage.safetyPrecautions.entity.SafetyPrecautions;
-import com.swsc.copsms.modules.standardManage.safetyPrecautions.mapper.SafetyPrecautionsMapper;
+import com.aiurt.boot.common.api.vo.Result;
+import com.aiurt.boot.common.constant.CommonConstant;
+import com.aiurt.boot.modules.repairManage.service.impl.RepairPoolServiceImpl;
+import com.aiurt.boot.modules.standardManage.inspectionSpecification.entity.InspectionCode;
+import com.aiurt.boot.modules.standardManage.inspectionSpecification.mapper.InspectionCodeMapper;
+import com.aiurt.boot.modules.standardManage.inspectionSpecification.service.IInspectionCodeService;
+import com.aiurt.boot.modules.standardManage.inspectionStrategy.entity.InspectionCodeContent;
+import com.aiurt.boot.modules.standardManage.inspectionStrategy.mapper.InspectionCodeContentMapper;
+import com.aiurt.boot.modules.standardManage.safetyPrecautions.mapper.SafetyPrecautionsMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -77,15 +77,9 @@ public class InspectionCodeServiceImpl extends ServiceImpl<InspectionCodeMapper,
             if (inspectionCodeContent.getTactics() == null) {
                 return Result.error("检修规范:".concat(inspectionCode.getTitle()).concat(",有未设置的策略"));
             }
-            if (inspectionCodeContent.getSpId() != null) {
-                SafetyPrecautions safetyPrecautions = safetyPrecautionsMapper.selectById(inspectionCodeContent.getSpId());
-                if (safetyPrecautions.getStatus() == 0) {
-                    return Result.error("安全注意事项:".concat(safetyPrecautions.getTitle()).concat("未生效,无法生成年检修计划"));
-                }
-            }
         }
         Result result = repairPoolServiceImpl.generateTask(inspectionCode);
-        if (result.getCode() != 200) {
+        if (!result.getCode().equals(CommonConstant.SC_OK_200)) {
             return result;
         }
         inspectionCode.setGenerateStatus(1);
@@ -122,6 +116,7 @@ public class InspectionCodeServiceImpl extends ServiceImpl<InspectionCodeMapper,
         inspectionCode.setId(null);
         inspectionCode.setTitle(inspectionCode.getTitle().concat("-").concat("copy"));
         inspectionCode.setStatus(0);
+        inspectionCode.setGenerateStatus(0);
         inspectionCode.setCreateTime(new Date());
         inspectionCode.setUpdateTime(new Date());
         this.baseMapper.insert(inspectionCode);

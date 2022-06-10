@@ -1,17 +1,28 @@
 package com.aiurt.boot.modules.secondLevelWarehouse.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.swsc.copsms.modules.secondLevelWarehouse.entity.SparePartStock;
-import com.swsc.copsms.modules.secondLevelWarehouse.entity.dto.SparePartStockDTO;
-import com.swsc.copsms.modules.secondLevelWarehouse.entity.vo.SpareMaterialVO;
-import com.swsc.copsms.modules.secondLevelWarehouse.mapper.SparePartStockMapper;
-import com.swsc.copsms.modules.secondLevelWarehouse.service.ISparePartStockService;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.aiurt.boot.common.api.vo.Result;
+import com.aiurt.boot.common.enums.MaterialTypeEnum;
+import com.aiurt.boot.common.result.SparePartStockResult;
+import com.aiurt.boot.common.system.api.ISysBaseAPI;
+import com.aiurt.boot.common.util.TokenUtils;
+import com.aiurt.boot.modules.fault.param.SparePartStockParam;
+import com.aiurt.boot.modules.manage.entity.Subsystem;
+import com.aiurt.boot.modules.manage.service.ISubsystemService;
+import com.aiurt.boot.modules.secondLevelWarehouse.entity.SparePartStock;
+import com.aiurt.boot.modules.secondLevelWarehouse.entity.dto.SparePartStockDTO;
+import com.aiurt.boot.modules.secondLevelWarehouse.entity.vo.SpareMaterialVO;
+import com.aiurt.boot.modules.secondLevelWarehouse.mapper.SparePartStockMapper;
+import com.aiurt.boot.modules.secondLevelWarehouse.service.ISparePartStockService;
+import com.aiurt.boot.modules.system.entity.SysUser;
+import com.aiurt.boot.modules.system.service.ISysUserService;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.stereotype.Service;
 
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
 /**
@@ -26,15 +37,71 @@ public class SparePartStockServiceImpl extends ServiceImpl<SparePartStockMapper,
     @Resource
     private SparePartStockMapper sparePartStockMapper;
 
+    @Resource
+    private ISubsystemService subsystemService;
+
+    @Resource
+    private ISysBaseAPI iSysBaseAPI;
+
+    @Resource
+    private ISysUserService sysUserService;
+
+    /**
+     * 分页查询
+     * @param page
+     * @param sparePartStockDTO
+     * @return
+     */
     @Override
     public IPage<SparePartStockDTO> queryPageList(IPage<SparePartStockDTO> page, SparePartStockDTO sparePartStockDTO) {
         IPage<SparePartStockDTO> sparePartStockDTOIPage = sparePartStockMapper.queryPageList(page, sparePartStockDTO);
+        for (SparePartStockDTO record : sparePartStockDTOIPage.getRecords()) {
+            if(record.getMaterialType()!=null){
+                record.setMaterialTypeString(MaterialTypeEnum.getNameByCode(record.getMaterialType()));
+            }
+            if (StringUtils.isNotBlank(record.getSystemCode())){
+                record.setSystemCode(subsystemService.getOne(new QueryWrapper<Subsystem>().eq(Subsystem.SYSTEM_CODE,record.getSystemCode()),false).getSystemName());
+            }
+        }
         return sparePartStockDTOIPage;
     }
 
+    /**
+     * 物料信息-查询
+     * @param req
+     * @return
+     */
     @Override
-    public List<SpareMaterialVO> queryMaterialByWarehouse(String warehouseCode) {
+    public List<SpareMaterialVO> queryMaterialByWarehouse(HttpServletRequest req) {
+        String userId = TokenUtils.getUserId(req, iSysBaseAPI);
+        String orgId = sysUserService.getOne(new QueryWrapper<SysUser>().eq(SysUser.ID, userId), false).getOrgId();
+        List<SpareMaterialVO> list = sparePartStockMapper.queryMaterialByWarehouse(orgId);
+        list.forEach(e->{
+            e.setTypeName(MaterialTypeEnum.getNameByCode(e.getType()));
+        });
+        return list;
+    }
 
-        return sparePartStockMapper.queryMaterialByWarehouse(warehouseCode);
+    /**
+     * 查询本班组的备件信息
+     * @param param
+     * @return
+     */
+    @Override
+    public IPage<SparePartStockResult> queryStockList(IPage<SparePartStockResult> page,SparePartStockParam param) {
+        IPage<SparePartStockResult> results = sparePartStockMapper.selectStockList(page,param);
+        return results;
+    }
+
+    /**
+     * 添加备注
+     * @param id
+     * @param remark
+     * @return
+     */
+    @Override
+    public Result addRemark(Integer id, String remark) {
+        sparePartStockMapper.addRemark(id,remark);
+        return Result.ok();
     }
 }

@@ -33,8 +33,17 @@ public class PatrolPoolVO implements Serializable {
 	@ApiModelProperty(value = "巡检系统")
 	private String systemType;
 
+	@ApiModelProperty(value = "巡检系统")
+	private String systemTypeName;
+
 	@ApiModelProperty(value = "组织id")
 	private String organizationId;
+
+	@ApiModelProperty(value = "站点id")
+	private String lineId;
+
+	@ApiModelProperty(value = "站点名称")
+	private String lineName;
 
 	@ApiModelProperty(value = "指派状态 0.未指派 1.已指派")
 	private String poolStatus;
@@ -56,6 +65,9 @@ public class PatrolPoolVO implements Serializable {
 
 	@ApiModelProperty(value = "组织名称")
 	private String organizationName;
+
+	@ApiModelProperty(value = "组织名称")
+	private String code;
 
 
 	@JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd")

@@ -29,21 +29,21 @@ public class SafetyPrecautions {
 	/**主键ID*/
 	@TableId(type= IdType.AUTO)
     @ApiModelProperty(value = "主键ID")
-	public Integer id;
+	public Long id;
 	/**标题*/
-	@Excel(name = "标题", width = 15)
+	@Excel(name = "安全事项名称", width = 15)
     @ApiModelProperty(value = "标题")
 	public String title;
 	/**事项类型（数据字典获取）*/
-	@Excel(name = "事项类型（数据字典获取）", width = 15)
+	@Excel(name = "安全事项类型", width = 15,dicCode = "types_of_safety_matters" ,dicText = "item_text")
     @ApiModelProperty(value = "事项类型（数据字典获取）")
 	public Integer type;
 	/**状态 0-未生效 1-已生效*/
-	@Excel(name = "状态 0-未生效 1-已生效", width = 15)
+	@Excel(name = "状态", width = 15,replace = {"无效_0","有效_1"})
     @ApiModelProperty(value = "状态 0-未生效 1-已生效")
 	public Integer status;
 	/**内容*/
-	@Excel(name = "内容", width = 15)
+	@Excel(name = "安全事项内容", width = 15)
     @ApiModelProperty(value = "内容")
 	public String content;
 	/**删除状态*/
@@ -51,7 +51,7 @@ public class SafetyPrecautions {
     @ApiModelProperty(value = "删除状态")
 	public Integer delFlag;
 	/**创建者*/
-//	@Excel(name = "创建者", width = 15)
+	@Excel(name = "创建人", width = 15)
     @ApiModelProperty(value = "创建者")
 	public String createBy;
 	/**更新者*/
@@ -59,7 +59,7 @@ public class SafetyPrecautions {
     @ApiModelProperty(value = "更新者")
 	public String updateBy;
 	/**创建时间*/
-//	@Excel(name = "创建时间", width = 20, format = "yyyy-MM-dd HH:mm:ss")
+	@Excel(name = "创建时间", width = 20, format = "yyyy-MM-dd HH:mm:ss")
 	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
     @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
     @ApiModelProperty(value = "创建时间")

@@ -5,12 +5,12 @@ import java.util.Arrays;
 
 import javax.servlet.http.HttpServletRequest;
 
-import com.swsc.copsms.modules.system.service.ISysLogService;
-import com.swsc.copsms.common.api.vo.Result;
-import com.swsc.copsms.common.system.query.QueryGenerator;
-import com.swsc.copsms.common.util.oConvertUtils;
-import com.swsc.copsms.modules.system.entity.SysLog;
-import com.swsc.copsms.modules.system.entity.SysRole;
+import com.aiurt.boot.modules.system.service.ISysLogService;
+import com.aiurt.boot.common.api.vo.Result;
+import com.aiurt.boot.common.system.query.QueryGenerator;
+import com.aiurt.boot.common.util.oConvertUtils;
+import com.aiurt.boot.modules.system.entity.SysLog;
+import com.aiurt.boot.modules.system.entity.SysRole;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -82,7 +82,7 @@ public class SysLogController {
 		Result<SysLog> result = new Result<SysLog>();
 		SysLog sysLog = sysLogService.getById(id);
 		if(sysLog==null) {
-			result.error500("未找到对应实体");
+			result.onnull("未找到对应实体");
 		}else {
 			boolean ok = sysLogService.removeById(id);
 			if(ok) {

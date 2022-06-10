@@ -1,45 +1,218 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.swsc.copsms.modules.secondLevelWarehouse.mapper.SparePartScrapMapper">
+<mapper namespace="com.aiurt.boot.modules.secondLevelWarehouse.mapper.SparePartScrapMapper">
+    <insert id="insertBatchList" parameterType="list" useGeneratedKeys="true" keyProperty="id">
+        insert into spare_part_scrap(
+        id,material_code,num,line_code,station_code,reason,create_by,update_by
+        )
+        values
+        <foreach collection="scrapList" item="item" index="index" separator=",">
+            (#{item.id}, #{item.materialCode}, #{item.num}, #{item.lineCode},#{item.stationCode},
+              #{item.status}, #{item.createBy}, #{item.updateBy}
+            )
+        </foreach>
+    </insert>
 
     <select id="queryPageList"
-            resultType="com.swsc.copsms.modules.secondLevelWarehouse.entity.vo.SparePartScrapVO">
-        select sps.id,sps.material_code,mb.name materialName,mb.type,
-        mb.specifications,mb.country_origin countryOrigin,mb.manufacturer,
-        sps.num,sps.status,sps.reason,sps.create_time
-        from spare_part_scrap sps
-        left join material_base mb on mb.code=sps.material_code
-        where 1=1 and sps.del_flag!=1
-        <if test="sparePartScrapQuery.materialName!=null and sparePartScrapQuery.materialName!=''">
-            and mb.name like concat('%', #{sparePartLendQuery.materialName}, '%')
-        </if>
-        <if test="sparePartScrapQuery.type!=null and sparePartScrapQuery.type!=''">
-            and mb.type = #{sparePartLendQuery.type}
-        </if>
-        <if test="sparePartScrapQuery.status!=null and sparePartScrapQuery.status!=''">
-            and sps.status = #{sparePartScrapQuery.status}
-        </if>
-        order by sps.create_time desc
-
-
+            resultType="com.aiurt.boot.modules.secondLevelWarehouse.entity.vo.SparePartScrapVO">
+        SELECT DISTINCT
+            sps.id AS id,
+            sps.material_code AS materialCode,
+            mb.NAME AS materialName,
+            mb.type AS `type`,
+            mb.specifications AS specifications,
+            mb.country_origin AS countryOrigin,
+            mb.manufacturer AS manufacturer,
+            sps.num AS num,
+            sps.STATUS AS status,
+            sps.reason AS reason,
+            sps.scrap_time AS scrapTime,
+            sps.line_code AS lineCode,
+            sd.depart_name AS orgId,
+            sps.station_code AS stationCode,
+            su.realname AS createBy
+        FROM
+            spare_part_scrap sps
+            LEFT JOIN material_base mb ON mb.CODE = sps.material_code
+            LEFT JOIN sys_depart sd ON sd.id = sps.org_id
+            LEFT JOIN sys_user su ON su.id = sps.create_by
+        WHERE
+            sps.del_flag = 0
+            <if test="sparePartScrapQuery.materialName!=null and sparePartScrapQuery.materialName!=''">
+                AND mb.name like concat('%', #{sparePartScrapQuery.materialName}, '%')
+            </if>
+            <if test="sparePartScrapQuery.type!=null and sparePartScrapQuery.type!=''">
+                AND mb.type = #{sparePartScrapQuery.type}
+            </if>
+            <if test="sparePartScrapQuery.status!=null">
+                AND sps.status = #{sparePartScrapQuery.status}
+            </if>
+            <if test="sparePartScrapQuery.lineCode!=null and sparePartScrapQuery.lineCode!=''">
+                AND sps.line_code = #{sparePartScrapQuery.lineCode}
+            </if>
+            <if test="sparePartScrapQuery.stationCode!=null and sparePartScrapQuery.stationCode!=''">
+                AND sps.station_code = #{sparePartScrapQuery.stationCode}
+            </if>
+        ORDER BY
+            sps.create_time DESC
     </select>
     <select id="exportXls"
-            resultType="com.swsc.copsms.modules.secondLevelWarehouse.entity.dto.SparePartScrapExcel">
-        select sps.id,sps.material_code,mb.name materialName,mb.type,
-        mb.specifications,mb.country_origin countryOrigin,mb.manufacturer,
-        sps.num,sps.status,sps.reason,sps.create_time
-        from spare_part_scrap sps
-        left join material_base mb on mb.code=sps.material_code
-        where 1=1 and sps.del_flag!=1
-        <if test="sparePartScrapQuery.materialName!=null and sparePartScrapQuery.materialName!=''">
-            and mb.name like concat('%', #{sparePartLendQuery.materialName}, '%')
+            resultType="com.aiurt.boot.modules.secondLevelWarehouse.entity.dto.SparePartScrapExcel">
+        SELECT
+            sps.id AS id,
+            sps.material_code AS materialCode,
+            mb.NAME AS materialName,
+            mb.type AS `type`,
+            mb.specifications AS specifications,
+            mb.country_origin AS countryOrigin,
+            mb.manufacturer AS manufacturer,
+            sps.num AS num,
+            sps.STATUS AS status,
+            sps.reason AS reason,
+            sps.scrap_time AS scrapTime,
+            cl.line_name AS lineName,
+            cs.station_name AS stationName,
+            sd.depart_name AS orgId,
+            su.realname AS createBy
+        FROM
+            spare_part_scrap sps
+            LEFT JOIN material_base mb ON mb.CODE = sps.material_code
+            LEFT JOIN cs_line cl ON cl.line_code = sps.line_code
+            LEFT JOIN cs_station cs ON cs.station_code = sps.station_code
+            LEFT JOIN sys_depart sd ON sd.id = sps.org_id
+            LEFT JOIN sys_user su ON su.id = sps.create_by
+        WHERE
+            sps.del_flag =0
+            <if test="sparePartScrapQuery.materialName!=null and sparePartScrapQuery.materialName!=''">
+                AND mb.name LIKE concat('%', #{sparePartScrapQuery.materialName}, '%')
+            </if>
+            <if test="sparePartScrapQuery.type!=null and sparePartScrapQuery.type!=''">
+                AND mb.type = #{sparePartScrapQuery.type}
+            </if>
+            <if test="sparePartScrapQuery.status!=null and sparePartScrapQuery.status!=''">
+                AND sps.status = #{sparePartScrapQuery.status}
+            </if>
+            <if test="sparePartScrapQuery.lineCode!=null and sparePartScrapQuery.lineCode!=''">
+                AND sps.line_code = #{sparePartScrapQuery.lineCode}
+            </if>
+            <if test="sparePartScrapQuery.stationCode!=null and sparePartScrapQuery.stationCode!=''">
+                AND sps.station_code = #{sparePartScrapQuery.stationCode}
+            </if>
+            <if test="sparePartScrapQuery.selections!=null and sparePartScrapQuery.selections!=''">
+            and sps.id in(
+                <foreach collection="sparePartScrapQuery.selections" separator="," item="item">
+                    #{item}
+                </foreach>
+                )
+            </if>
+        ORDER BY sps.create_time DESC
+    </select>
+
+    <select id="selectDetailById" resultType="com.aiurt.boot.common.result.ScrapReportResult">
+        SELECT
+	        sps.id AS id,
+	        su.realname AS createBy,
+	        cl.line_name AS lineName,
+	        sps.material_code AS materialCode,
+	        mb.`name` AS materialName,
+	        sps.num AS num,
+	        mb.manufacturer AS manufacturer,
+	        mb.specifications AS specifications,
+	        mb.type AS materialType,
+	        sd.depart_name AS orgId
+        FROM
+	        spare_part_scrap sps
+	        LEFT JOIN sys_user su ON sps.create_by = su.id
+	        LEFT JOIN cs_line cl ON cl.line_code = sps.line_code
+	        LEFT JOIN material_base mb ON mb.`code` = sps.material_code
+	        LEFT JOIN sys_depart sd ON sd.id = sps.org_id
+        WHERE
+	        sps.id = #{id}
+    </select>
+
+    <select id="selectRepairDetailById" resultType="com.aiurt.boot.common.result.ReportRepairResult">
+        SELECT
+	        sps.id AS id,
+	        mb.`name` AS materialName,
+	        sps.num AS num,
+	        sd.depart_name AS scrapDepart,
+	        sps.scrap_reason AS scrapReason,
+	        sps.repair_time AS repairTime,
+	        sps.keep_person AS keepPerson,
+	        su.realname AS createBy
+        FROM
+	        spare_part_scrap sps
+	        LEFT JOIN sys_user su ON sps.create_by = su.id
+	        LEFT JOIN material_base mb ON mb.`code` = sps.material_code
+	        LEFT JOIN sys_depart sd ON sps.scrap_depart = sd.id
+        WHERE
+	        sps.id = #{id}
+    </select>
+
+    <select id="selectWasteDetailById" resultType="com.aiurt.boot.common.result.ReportWasteResult">
+        SELECT
+	        sps.id AS id,
+	        mb.`name` AS materialName,
+	        sps.num AS num,
+	        sps.buy_time AS buyTime,
+	        sps.service_life AS serviceLife,
+	        sps.use_life AS useLife,
+	        sps.scrap_reason AS scrapReason,
+	        sps.repair_time AS repairTime,
+	        su.realname AS createBy
+        FROM
+	        spare_part_scrap sps
+	        LEFT JOIN sys_user su ON sps.create_by = su.id
+	        LEFT JOIN material_base mb ON mb.`code` = sps.material_code
+	        LEFT JOIN sys_user s ON s.id = sps.keep_person
+        WHERE
+	        sps.id = #{id}
+    </select>
+
+    <select id="getCountConsumeNum" resultType="int">
+        SELECT
+        sum(num)
+        FROM
+        spare_part_scrap
+        WHERE
+        status = 2
+        AND del_flag = 0
+        <if test="startTime != null and endTime != null">
+            and create_time BETWEEN #{startTime} and #{endTime}
         </if>
-        <if test="sparePartScrapQuery.type!=null and sparePartScrapQuery.type!=''">
-            and mb.type = #{sparePartLendQuery.type}
+        <if test="lineId !=null and lineId!=''">
+            and line_code=#{lineId}
         </if>
-        <if test="sparePartScrapQuery.status!=null and sparePartScrapQuery.status!=''">
-            and sps.status = #{sparePartScrapQuery.status}
+        <if test="station_code !=null and station_code.length>0">
+            and station_code in
+            <foreach collection="station_code" open="(" close=")"     separator="," item="sc">
+                #{sc}
+            </foreach>
         </if>
-        order by sps.create_time desc
+    </select>
+
+    <select id="selectSpareConsumeNumByTime" resultType="com.aiurt.boot.common.result.SpareConsumeNum">
+        SELECT
+        date_format(create_time, '%m') as month , sum(num) as num
+        FROM
+        spare_part_scrap
+        WHERE
+        status = 2
+        and
+        del_flag = 0
+        <if test="startTime != null and endTime != null">
+            and create_time BETWEEN #{startTime} and #{endTime}
+        </if>
+        <if test="lineId !=null and lineId!=''">
+            and line_code=#{lineId}
+        </if>
+        <if test="station_code !=null and station_code.length>0">
+            and station_code in
+            <foreach collection="station_code" open="(" close=")"     separator="," item="sc">
+                #{sc}
+            </foreach>
+        </if>
+        GROUP BY date_format(create_time, '%Y-%m')
+        ORDER BY month ASC
     </select>
 </mapper>

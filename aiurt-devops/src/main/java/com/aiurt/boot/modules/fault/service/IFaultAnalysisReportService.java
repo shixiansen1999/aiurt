@@ -1,12 +1,12 @@
 package com.aiurt.boot.modules.fault.service;
 
-import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.swsc.copsms.common.result.FaultAnalysisReportResult;
-import com.swsc.copsms.modules.fault.dto.FaultAnalysisReportDTO;
-import com.swsc.copsms.modules.fault.entity.FaultAnalysisReport;
-import com.swsc.copsms.modules.fault.param.FaultAnalysisReportParam;
+import com.aiurt.boot.common.api.vo.Result;
+import com.aiurt.boot.common.result.FaultAnalysisReportResult;
+import com.aiurt.boot.modules.fault.dto.FaultAnalysisReportDTO;
+import com.aiurt.boot.modules.fault.entity.FaultAnalysisReport;
+import com.aiurt.boot.modules.fault.param.FaultAnalysisReportParam;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -21,17 +21,10 @@ public interface IFaultAnalysisReportService extends IService<FaultAnalysisRepor
     /**
      * 查询故障分析报告
      * @param page
-     * @param queryWrapper
      * @param param
      * @return
      */
-    IPage<FaultAnalysisReportResult> pageList(IPage<FaultAnalysisReportResult> page, Wrapper<FaultAnalysisReportResult> queryWrapper, FaultAnalysisReportParam param);
-
-    /**
-     * 根据id假删除
-     * @param id
-     */
-    void deleteById(Integer id);
+    IPage<FaultAnalysisReportResult> pageList(IPage<FaultAnalysisReportResult> page, FaultAnalysisReportParam param);
 
     /**
      * 根据code查询故障分析报告
@@ -44,7 +37,6 @@ public interface IFaultAnalysisReportService extends IService<FaultAnalysisRepor
      * 新增故障分析报告
      * @param dto
      */
-    public void add(FaultAnalysisReportDTO dto, HttpServletRequest req);
-
+    Result<?> add(FaultAnalysisReportDTO dto, HttpServletRequest req);
 
 }

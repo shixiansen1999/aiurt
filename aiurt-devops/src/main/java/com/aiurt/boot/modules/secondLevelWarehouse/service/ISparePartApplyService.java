@@ -1,14 +1,14 @@
 package com.aiurt.boot.modules.secondLevelWarehouse.service;
 
-import com.swsc.copsms.common.util.PageLimitUtil;
-import com.swsc.copsms.modules.secondLevelWarehouse.entity.SparePartApply;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.swsc.copsms.modules.secondLevelWarehouse.entity.dto.AddApplyDTO;
-import com.swsc.copsms.modules.secondLevelWarehouse.entity.dto.StockApplyExcel;
-import com.swsc.copsms.modules.secondLevelWarehouse.entity.dto.StockOutDTO;
+import com.aiurt.boot.common.api.vo.Result;
+import com.aiurt.boot.modules.secondLevelWarehouse.entity.SparePartApply;
+import com.aiurt.boot.modules.secondLevelWarehouse.entity.dto.*;
+import com.aiurt.boot.modules.secondLevelWarehouse.entity.vo.SparePartApplyVO;
 
 import javax.servlet.http.HttpServletRequest;
-import java.text.ParseException;
 import java.util.List;
 
 /**
@@ -19,12 +19,68 @@ import java.util.List;
  */
 public interface ISparePartApplyService extends IService<SparePartApply> {
 
-    void addApply(AddApplyDTO addApplyDTO);
+    /**
+     * 添加申领单
+     * @param addApplyDTO
+     * @param req
+     */
+    boolean addApply(AddApplyDTO addApplyDTO,HttpServletRequest req);
 
-    PageLimitUtil<SparePartApply> queryPageList(SparePartApply sparePartApply, Integer pageNo, Integer pageSize,
-                                                String startTime, String endTime, HttpServletRequest req) throws ParseException;
+    /**
+     * 提交申领单
+     * @param ids
+     * @param req
+     * @return
+     */
+    Result<?> submitFormByIds(String ids, HttpServletRequest req);
 
-    List<StockApplyExcel> exportXls(List<Integer> ids);
+    /**
+     * 备件申领-分页列表查询
+     * @param page
+     * @param sparePartQuery
+     * @return
+     */
+    IPage<SparePartApplyVO> queryPageList(Page<SparePartApplyVO> page, SparePartQuery sparePartQuery) ;
 
-    Boolean stockOutConfirm(StockOutDTO stockOutDTOList);
+    /**
+     * 二级库出库列表-分页列表查询
+     * @param page
+     * @param sparePartQuery
+     * @return
+     */
+    IPage<SparePartApplyVO> queryPageListLevel2(Page<SparePartApplyVO> page, SparePartQuery sparePartQuery) ;
+
+
+    /**
+     * 导出excel
+     * @param sparePartQuery
+     * @return
+     */
+    List<StockApplyExcel> exportXls(SparePartQuery sparePartQuery);
+
+
+    /**
+     * 出库确认
+     * @param stockOutDTOList
+     * @param req
+     * @return
+     */
+    void stockOutConfirm(StockOutDTO stockOutDTOList,HttpServletRequest req);
+
+    /**
+     * 导出excel
+     * @param selections 选中行的ids
+     * @return
+     */
+    List<StockOutExcel> exportStock2Xls(List<Integer> selections);
+
+    /**
+     * 编辑申领单
+     *
+     * @param editApplyDTO
+     * @param req
+     */
+    void editApply(EditApplyDTO editApplyDTO, HttpServletRequest req);
+
+
 }

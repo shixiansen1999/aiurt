@@ -1,8 +1,8 @@
 package com.aiurt.boot.modules.device.service.impl;
 
-import com.swsc.copsms.modules.device.entity.DeviceAssembly;
-import com.swsc.copsms.modules.device.mapper.DeviceAssemblyMapper;
-import com.swsc.copsms.modules.device.service.IDeviceAssemblyService;
+import com.aiurt.boot.modules.device.entity.DeviceAssembly;
+import com.aiurt.boot.modules.device.mapper.DeviceAssemblyMapper;
+import com.aiurt.boot.modules.device.service.IDeviceAssemblyService;
 import org.springframework.stereotype.Service;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;

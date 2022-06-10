@@ -5,25 +5,23 @@ import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.swsc.copsms.common.enums.MaterialTypeEnum;
-import com.swsc.copsms.modules.secondLevelWarehouse.entity.StockLevel2;
-import com.swsc.copsms.modules.secondLevelWarehouse.entity.StockLevel2Check;
-import com.swsc.copsms.modules.secondLevelWarehouse.entity.StockLevel2CheckDetail;
-import com.swsc.copsms.modules.secondLevelWarehouse.entity.dto.StockLevel2CheckDetailDTO;
-import com.swsc.copsms.modules.secondLevelWarehouse.entity.dto.StockLevel2CheckDetailEditDTO;
-import com.swsc.copsms.modules.secondLevelWarehouse.entity.dto.StockLevel2CheckDetailExcel;
-import com.swsc.copsms.modules.secondLevelWarehouse.entity.vo.StockLevel2CheckDetailVO;
-import com.swsc.copsms.modules.secondLevelWarehouse.mapper.StockLevel2CheckDetailMapper;
-import com.swsc.copsms.modules.secondLevelWarehouse.mapper.StockLevel2CheckMapper;
-import com.swsc.copsms.modules.secondLevelWarehouse.mapper.StockLevel2Mapper;
-import com.swsc.copsms.modules.secondLevelWarehouse.service.IStockLevel2CheckDetailService;
-import com.swsc.copsms.modules.secondLevelWarehouse.service.IStockLevel2CheckService;
-import com.swsc.copsms.modules.secondLevelWarehouse.service.IStockLevel2Service;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.aiurt.boot.common.enums.MaterialTypeEnum;
+import com.aiurt.boot.modules.secondLevelWarehouse.entity.StockLevel2;
+import com.aiurt.boot.modules.secondLevelWarehouse.entity.StockLevel2Check;
+import com.aiurt.boot.modules.secondLevelWarehouse.entity.StockLevel2CheckDetail;
+import com.aiurt.boot.modules.secondLevelWarehouse.entity.dto.StockLevel2CheckDetailDTO;
+import com.aiurt.boot.modules.secondLevelWarehouse.entity.dto.StockLevel2CheckDetailEditDTO;
+import com.aiurt.boot.modules.secondLevelWarehouse.entity.dto.StockLevel2CheckDetailExcel;
+import com.aiurt.boot.modules.secondLevelWarehouse.entity.vo.StockLevel2CheckDetailVO;
+import com.aiurt.boot.modules.secondLevelWarehouse.mapper.StockLevel2CheckDetailMapper;
+import com.aiurt.boot.modules.secondLevelWarehouse.mapper.StockLevel2CheckMapper;
+import com.aiurt.boot.modules.secondLevelWarehouse.service.IStockLevel2CheckDetailService;
+import com.aiurt.boot.modules.secondLevelWarehouse.service.IStockLevel2CheckService;
+import com.aiurt.boot.modules.secondLevelWarehouse.service.IStockLevel2Service;
 import org.springframework.beans.BeanUtils;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
-
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
@@ -51,6 +49,7 @@ public class StockLevel2CheckDetailServiceImpl extends ServiceImpl<StockLevel2Ch
     private IStockLevel2Service iStockLevel2Service;
     @Resource
     private IStockLevel2CheckService iStockLevel2CheckService;
+
     @Override
     public IPage<StockLevel2CheckDetailVO> queryPageList(Page<StockLevel2CheckDetailVO> page,
                                                          StockLevel2CheckDetailDTO stockLevel2CheckDetailDTO) {
@@ -61,10 +60,14 @@ public class StockLevel2CheckDetailServiceImpl extends ServiceImpl<StockLevel2Ch
                     .eq("warehouse_code", e.getWarehouseCode())
                     .eq("material_code", e.getMaterialCode()), false);
             if(ObjectUtil.isNotEmpty(one)){
-                //账面数量
-                e.setBookNum(one.getNum());
-                //账面价值
-                e.setBookPrice(e.getPrice().multiply(new BigDecimal(e.getBookNum())));
+                if (e.getBookNum()==null) {
+                    //账面数量
+                    e.setBookNum(one.getNum());
+                    if (e.getPrice()!=null){
+                        e.setBookPrice(e.getPrice().multiply(new BigDecimal(e.getBookNum())));
+                    }
+                }
+                e.setUseTime(new Date());
             }
         });
         return checkDetailVOList;
@@ -126,12 +129,12 @@ public class StockLevel2CheckDetailServiceImpl extends ServiceImpl<StockLevel2Ch
                 if (ObjectUtil.isNotEmpty(one)) {
                     //账面数量
                     e.setBookNum(one.getNum());
-                    //账面价值
-                    e.setBookPrice(e.getPrice().multiply(new BigDecimal(e.getBookNum())));
                 }
                 StockLevel2CheckDetailExcel detail = new StockLevel2CheckDetailExcel();
                 BeanUtils.copyProperties(e,detail);
-                detail.setTypeName(MaterialTypeEnum.getNameByCode(e.getType()));
+                if(e.getType()!=null){
+                    detail.setTypeName(MaterialTypeEnum.getNameByCode(e.getType()));
+                }
                 excels.add(detail);
             }
             return excels;

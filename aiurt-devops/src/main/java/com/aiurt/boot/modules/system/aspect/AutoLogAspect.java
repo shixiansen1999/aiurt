@@ -5,13 +5,13 @@ import java.util.Date;
 
 import javax.servlet.http.HttpServletRequest;
 
-import com.swsc.copsms.common.aspect.annotation.AutoLog;
-import com.swsc.copsms.common.constant.CommonConstant;
-import com.swsc.copsms.common.system.vo.LoginUser;
-import com.swsc.copsms.common.util.IPUtils;
-import com.swsc.copsms.common.util.SpringContextUtils;
-import com.swsc.copsms.modules.system.service.ISysLogService;
-import com.swsc.copsms.modules.system.entity.SysLog;
+import com.aiurt.boot.common.aspect.annotation.AutoLog;
+import com.aiurt.boot.common.constant.CommonConstant;
+import com.aiurt.boot.common.system.vo.LoginUser;
+import com.aiurt.boot.common.util.IPUtils;
+import com.aiurt.boot.common.util.SpringContextUtils;
+import com.aiurt.boot.modules.system.service.ISysLogService;
+import com.aiurt.boot.modules.system.entity.SysLog;
 import org.apache.shiro.SecurityUtils;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
@@ -37,7 +37,7 @@ public class AutoLogAspect {
 	@Autowired
 	private ISysLogService sysLogService;
 
-	@Pointcut("@annotation(com.swsc.copsms.common.aspect.annotation.AutoLog)")
+	@Pointcut("@annotation(com.aiurt.boot.common.aspect.annotation.AutoLog)")
 	public void logPointCut() {
 
 	}

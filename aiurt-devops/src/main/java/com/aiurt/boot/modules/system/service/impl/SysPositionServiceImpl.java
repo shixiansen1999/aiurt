@@ -1,9 +1,9 @@
 package com.aiurt.boot.modules.system.service.impl;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.swsc.copsms.modules.system.entity.SysPosition;
-import com.swsc.copsms.modules.system.service.ISysPositionService;
-import com.swsc.copsms.modules.system.mapper.SysPositionMapper;
+import com.aiurt.boot.modules.system.entity.SysPosition;
+import com.aiurt.boot.modules.system.service.ISysPositionService;
+import com.aiurt.boot.modules.system.mapper.SysPositionMapper;
 import org.springframework.stereotype.Service;
 
 /**

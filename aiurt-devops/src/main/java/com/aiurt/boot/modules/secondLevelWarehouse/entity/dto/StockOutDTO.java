@@ -1,6 +1,5 @@
 package com.aiurt.boot.modules.secondLevelWarehouse.entity.dto;
 
-import com.swsc.copsms.modules.secondLevelWarehouse.entity.vo.MaterialVO;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 

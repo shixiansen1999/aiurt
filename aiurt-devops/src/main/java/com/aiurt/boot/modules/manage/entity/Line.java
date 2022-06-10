@@ -23,7 +23,7 @@ import org.jeecgframework.poi.excel.annotation.Excel;
 @TableName("cs_line")
 @EqualsAndHashCode(callSuper = false)
 @Accessors(chain = true)
-@ApiModel(value="cs_line对象", description="cs_line")
+@ApiModel(value="地铁线路表对象", description="地铁线路表对象")
 public class Line {
 
 	/**id*/

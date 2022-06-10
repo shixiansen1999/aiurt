@@ -1,6 +1,6 @@
 package com.aiurt.boot.modules.standardManage.safetyPrecautions.service;
 
-import com.swsc.copsms.modules.standardManage.safetyPrecautions.entity.SafetyPrecautions;
+import com.aiurt.boot.modules.standardManage.safetyPrecautions.entity.SafetyPrecautions;
 import com.baomidou.mybatisplus.extension.service.IService;
 
 /**

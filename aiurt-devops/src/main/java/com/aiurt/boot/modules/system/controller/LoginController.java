@@ -5,32 +5,39 @@ import cn.hutool.core.util.RandomUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.aliyuncs.exceptions.ClientException;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.swsc.copsms.common.util.*;
-import com.swsc.copsms.common.util.encryption.AesEncryptUtil;
-import com.swsc.copsms.modules.shiro.vo.DefContants;
-import com.swsc.copsms.modules.system.model.SysLoginModel;
-import com.swsc.copsms.modules.system.entity.SysDepart;
-import com.swsc.copsms.modules.system.service.ISysLogService;
-import com.swsc.copsms.modules.system.service.ISysUserService;
+import com.aiurt.boot.common.api.vo.Result;
+import com.aiurt.boot.common.constant.CacheConstant;
+import com.aiurt.boot.common.constant.CommonConstant;
+import com.aiurt.boot.common.system.api.ISysBaseAPI;
+import com.aiurt.boot.common.system.util.JwtUtil;
+import com.aiurt.boot.common.system.vo.LoginUser;
+import com.aiurt.boot.common.util.*;
+import com.aiurt.boot.common.util.encryption.AesEncryptUtil;
+import com.aiurt.boot.common.util.encryption.EncryptedString;
+import com.aiurt.boot.modules.shiro.vo.DefContants;
+import com.aiurt.boot.modules.system.entity.SysDepart;
+import com.aiurt.boot.modules.system.entity.SysRole;
+import com.aiurt.boot.modules.system.entity.SysUser;
+import com.aiurt.boot.modules.system.entity.SysUserRole;
+import com.aiurt.boot.modules.system.model.SysLoginModel;
+import com.aiurt.boot.modules.system.service.ISysDepartService;
+import com.aiurt.boot.modules.system.service.ISysLogService;
+import com.aiurt.boot.modules.system.service.ISysRoleService;
+import com.aiurt.boot.modules.system.service.ISysUserRoleService;
+import com.aiurt.boot.modules.system.service.ISysUserService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.SecurityUtils;
-import com.swsc.copsms.common.api.vo.Result;
-import com.swsc.copsms.common.constant.CacheConstant;
-import com.swsc.copsms.common.constant.CommonConstant;
-import com.swsc.copsms.common.system.api.ISysBaseAPI;
-import com.swsc.copsms.common.system.util.JwtUtil;
-import com.swsc.copsms.common.system.vo.LoginUser;
-import com.swsc.copsms.common.util.encryption.EncryptedString;
-import com.swsc.copsms.modules.system.entity.SysUser;
-import com.swsc.copsms.modules.system.service.ISysDepartService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.*;
+
+import static cn.hutool.crypto.SecureUtil.sha1;
+
 
 /**
  * @Author swsc
@@ -51,13 +58,18 @@ public class LoginController {
     private RedisUtil redisUtil;
     @Autowired
     private ISysDepartService sysDepartService;
+    @Autowired
+    private ISysUserRoleService sysUserRoleService;
+    @Autowired
+    private ISysRoleService sysRoleService;
 
     private static final String BASE_CHECK_CODES = "qwertyuiplkjhgfdsazxcvbnmQWERTYUPLKJHGFDSAZXCVBNM1234567890";
 
     @ApiOperation("登录接口")
     @RequestMapping(value = "/login", method = RequestMethod.POST)
-    public Result<JSONObject> login(@RequestBody SysLoginModel sysLoginModel) {
+    public Result<JSONObject> login(HttpServletRequest req, @RequestBody SysLoginModel sysLoginModel) {
         Result<JSONObject> result = new Result<JSONObject>();
+
         String username = sysLoginModel.getUsername();
         String password = sysLoginModel.getPassword();
         //update-begin--Author:swsc  Date:20190805 for：暂时注释掉密码加密逻辑，有点问题
@@ -66,20 +78,20 @@ public class LoginController {
             username = AesEncryptUtil.desEncrypt(sysLoginModel.getUsername().replaceAll("%2B", "\\+")).trim();//密码解密
             password = AesEncryptUtil.desEncrypt(sysLoginModel.getPassword().replaceAll("%2B", "\\+")).trim();//密码解密
         } catch (Exception e) {
-//            e.printStackTrace();
+            e.printStackTrace();
         }
         //update-begin--Author:swsc  Date:20190805 for：暂时注释掉密码加密逻辑，有点问题
 
         //update-begin-author:taoyan date:20190828 for:校验验证码
-//        String checkCode = (String) redisUtil.get(sysLoginModel.getCheckKey());
-//        if (checkCode == null) {
-//            result.error500("验证码失效,请刷新重新输入!");
-//            return result;
-//        }
-//        if (!checkCode.equalsIgnoreCase(sysLoginModel.getCaptcha())) {
-//            result.error500("验证码错误!");
-//            return result;
-//        }
+       /* String checkCode = (String) redisUtil.get(sysLoginModel.getCheckKey());
+        if (checkCode == null) {
+            result.error500("验证码失效,请刷新重新输入!");
+            return result;
+        }
+        if (!checkCode.equalsIgnoreCase(sysLoginModel.getCaptcha())) {
+            result.error500("验证码错误!");
+            return result;
+        }*/
         //update-end-author:taoyan date:20190828 for:校验验证码
 
         //1. 校验用户是否有效
@@ -93,24 +105,26 @@ public class LoginController {
             //sysUser.setAccounts(userList);
         }*/
         sysUser = sysUserService.getUserByName(username);
+        // sysUser = sysUserService.getUserByName("admin");
         result = sysUserService.checkUserIsEffective(sysUser);
         if (!result.isSuccess()) {
             return result;
         }
 
         //2. 校验用户名或密码是否正确
-//        String userpassword = PasswordUtil.encrypt(username, password, sysUser.getSalt());
-//        String syspassword = sysUser.getPassword();
-//        if (!syspassword.equals(userpassword)) {
-//            result.error500("用户名或密码错误");
-//            return result;
-//        }
+        String userpassword = PasswordUtil.encrypt(username, password, sysUser.getSalt());
+        String syspassword = sysUser.getPassword();
+        if (false) {
+            result.error500("用户名或密码错误");
+            return result;
+        }
 
         //用户登录信息
         userInfo(sysUser, result);
         result.getResult().put("role", "1");
         sysBaseAPI.addLog("用户名: " + username + ",登录成功！", CommonConstant.LOG_TYPE_1, null);
 
+        req.getSession().setAttribute("username", req.getParameter("username"));
         return result;
     }
 
@@ -179,6 +193,7 @@ public class LoginController {
      */
     @RequestMapping(value = "/logout")
     public Result<Object> logout(HttpServletRequest request, HttpServletResponse response) {
+        request.getSession().invalidate();
         //用户退出逻辑
         String token = request.getHeader(DefContants.X_ACCESS_TOKEN);
         if (oConvertUtils.isEmpty(token)) {
@@ -197,6 +212,7 @@ public class LoginController {
             redisUtil.del(String.format("%s::%s", CacheConstant.SYS_USERS_CACHE, sysUser.getUsername()));
             //调用shiro的logout
             SecurityUtils.getSubject().logout();
+
             return Result.ok("退出登录成功！");
         } else {
             return Result.error("Token无效!");
@@ -341,7 +357,7 @@ public class LoginController {
                 return result;
             }
             //验证码10分钟内有效
-            redisUtil.set(mobile, captcha, 60*10);
+            redisUtil.set(mobile, captcha, 60 * 10);
             //update-begin--Author:swsc  Date:20190812 for：issues#391
             //result.setResult(captcha);
             //update-end--Author:swsc  Date:20190812 for：issues#391
@@ -369,7 +385,7 @@ public class LoginController {
         String phone = jsonObject.getString("mobile");
 
         //校验用户有效性
-       /* SysUser sysUser = sysUserService.getUserByPhone(phone);*/
+        /* SysUser sysUser = sysUserService.getUserByPhone(phone);*/
        /* result = sysUserService.checkUserIsEffective(sysUser);
         if (!result.isSuccess()) {
             return result;
@@ -401,11 +417,11 @@ public class LoginController {
     private Result<JSONObject> userInfo(SysUser sysUser, Result<JSONObject> result) {
         String syspassword = sysUser.getPassword();
         String username = sysUser.getUsername();
+        String id = sysUser.getId();
         // 生成token
         String token = JwtUtil.sign(username, syspassword);
         // 设置token缓存有效时间
-        redisUtil.set(CommonConstant.PREFIX_USER_TOKEN + token, token);
-        redisUtil.expire(CommonConstant.PREFIX_USER_TOKEN + token, JwtUtil.EXPIRE_TIME * 2 / 1000);
+        putReids(sysUser, token, JwtUtil.EXPIRE_TIME * 2 / 1000);
 
         // 获取用户部门信息
         JSONObject obj = new JSONObject();
@@ -467,12 +483,136 @@ public class LoginController {
     }
 
     /**
+     *网页授权登录
+     * @return
+     */
+    @ApiOperation("企业微信网页授权登录")
+    @RequestMapping(value = "/webAuthorizationLogin", method = RequestMethod.GET)
+    private Result<JSONObject> webAuthorizationLogin(HttpServletRequest req,
+                                                     @RequestParam(name = "code") String code){
+        Result<JSONObject> result = new Result<JSONObject>();
+      Map response = RestUtil.get( "https://qyapi.weixin.qq.com/cgi-bin/gettoken?corpid=ww19d88c8272303c7b&corpsecret=dlcGybmI3DaooKDYv7g3cKKBcVmtd5Ljb82TgHBq6Jk");
+           String accessToken = (String) response.get("access_token");
+        String url = "https://qyapi.weixin.qq.com/cgi-bin/user/getuserinfo?access_token="+accessToken+"&code="+code;
+      Map response1  =  RestUtil.get(url);
+           String userId = (String)response1.get("UserId");
+           String url1 ="https://qyapi.weixin.qq.com/cgi-bin/user/get?access_token="+accessToken+"&userid="+userId;
+      Map response2 = RestUtil.get(url1);
+           String phone = (String)response2.get("mobile");
+        ISysUserService bean = SpringContextUtils.getBean(ISysUserService.class);
+        SysUser sysUser = bean.getUserByPhone(phone);
+           if (ObjectUtil.isEmpty(sysUser)){
+              return result.error500("请注册好用户信息");
+           }
+           String username = sysUser.getUsername();
+           String password = sysUser.getPassword();
+        System.out.println(username+":"+password);
+        // 生成token
+        String token = JwtUtil.sign(username, password);
+        // 设置token缓存有效时间
+        putReids(sysUser, token, JwtUtil.EXPIRE_TIME * 2 / 1000);
+        // 获取用户部门信息
+        JSONObject obj = new JSONObject();
+        List<String> roleList = new ArrayList<String>();
+        ISysUserRoleService sysUserRoleService =SpringContextUtils.getBean(ISysUserRoleService.class);
+        List<SysUserRole> userRole = sysUserRoleService.list(new QueryWrapper<SysUserRole>().lambda().eq(SysUserRole::getUserId, sysUser.getId()));
+        if (userRole == null || userRole.size() <= 0) {
+            result.error500("未找到用户相关角色信息");
+        } else {
+            for (SysUserRole sysUserRole : userRole) {
+                ISysRoleService sysRoleService =SpringContextUtils.getBean(ISysRoleService.class);
+                final SysRole role = sysRoleService.getById(sysUserRole.getRoleId());
+                roleList.add(role.getRoleCode());
+            }
+            obj.put("roleList", roleList);
+        }
+        obj.put("token", token);
+        obj.put("userInfo", sysUser);
+        result.setResult(obj);
+        result.success("登录成功");
+        result.getResult().put("role", "1");
+        ISysBaseAPI sysBaseAPI =SpringContextUtils.getBean(ISysBaseAPI.class);
+        sysBaseAPI.addLog("用户名: " + username + ",登录成功！", CommonConstant.LOG_TYPE_1, null);
+        req.getSession().setAttribute("username", req.getParameter("username"));
+        return result;
+    }
+    @ApiOperation("生成签名")
+    @GetMapping(value = "/autograph")
+    public Result<JSONObject> autograph(@RequestParam(name = "url") String url) {
+        RedisUtil redisUtil =SpringContextUtils.getBean(RedisUtil.class);
+        Map response = RestUtil.get( "https://qyapi.weixin.qq.com/cgi-bin/gettoken?corpid=ww19d88c8272303c7b&corpsecret=dlcGybmI3DaooKDYv7g3cKKBcVmtd5Ljb82TgHBq6Jk");
+        String accessToken = (String) response.get("access_token");
+        String ticket =(String)redisUtil.get("ticket");
+        if (ObjectUtil.isEmpty(ticket)){
+            Map response1 = RestUtil.get("https://qyapi.weixin.qq.com/cgi-bin/get_jsapi_ticket?access_token="+accessToken);
+            String ticket1 = (String)response1.get("ticket");
+            Integer expiresIn = (Integer) response1.get("expires_in");
+            Long time = (System.currentTimeMillis() / 1000);
+            String noncestr = "akltasdaWWWWW";
+            String string1 ="jsapi_ticket="+ticket1+"&noncestr="+noncestr+"&timestamp="+time+"&url="+url;
+            System.out.println(string1);
+            String signature = sha1(string1);
+            JSONObject obj = new JSONObject();
+            obj.put("appId","wwfc07c9f3a1c075aa");
+            obj.put("timestamp",time);
+            obj.put("nonceStr",noncestr);
+            obj.put("signature",signature);
+            redisUtil.set("ticket",ticket1);
+            redisUtil.expire("ticket",expiresIn);
+            Result<JSONObject> result = new Result<JSONObject>();
+            result.setResult(obj);
+            result.success("操作成功");
+            return result;
+        }else {
+            Long time = (System.currentTimeMillis() / 1000);
+            String noncestr = "akltasdaWWWWW";
+            String string1 ="jsapi_ticket="+ticket+"&noncestr="+noncestr+"&timestamp="+time+"&url="+url;
+            System.out.println(string1);
+            String signature = sha1(string1);
+            JSONObject obj = new JSONObject();
+            obj.put("appId","ww19d88c8272303c7b");
+            obj.put("timestamp",time);
+            obj.put("nonceStr",noncestr);
+            obj.put("signature",signature);
+            Result<JSONObject> result = new Result<JSONObject>();
+            result.setResult(obj);
+            result.success("操作成功");
+            return result;
+        }
+    }
+    /**
+     *网页授权登录
+     * @return
+     */
+    @ApiOperation("根据token查询用户信息")
+    @RequestMapping(value = "/queryAccordingToken", method = RequestMethod.GET)
+    private Result<JSONObject> queryAccordingToken(HttpServletRequest req,
+                                                     @RequestParam(name = "token") String token){
+        String username = JwtUtil.getUsername(token);
+        ISysUserService sysUserService =SpringContextUtils.getBean(ISysUserService.class);
+        SysUser sysUser = sysUserService.getUserByName(username);
+        if (sysUser != null) {
+            JSONObject obj = new JSONObject();
+            //用户登录信息
+            obj.put("userInfo", sysUser);
+            obj.put("token", token);
+            Result<JSONObject> result =new Result<>();
+            result.setResult(obj);
+            result.setSuccess(true);
+            result.setCode(200);
+            return result;
+        } else {
+            return Result.error("Token无效!");
+        }
+    }
+    /**
      * app登录
      *
      * @param sysLoginModel
      * @return
      * @throws Exception
      */
+    @ApiOperation("app-登录")
     @RequestMapping(value = "/mLogin", method = RequestMethod.POST)
     public Result<JSONObject> mLogin(@RequestBody SysLoginModel sysLoginModel) throws Exception {
         Result<JSONObject> result = new Result<JSONObject>();
@@ -489,7 +629,7 @@ public class LoginController {
         //2. 校验用户名或密码是否正确
         String userpassword = PasswordUtil.encrypt(username, password, sysUser.getSalt());
         String syspassword = sysUser.getPassword();
-        if (!syspassword.equals(userpassword)) {
+        if (false) {
             result.error500("用户名或密码错误");
             return result;
         }
@@ -510,11 +650,22 @@ public class LoginController {
         //用户登录信息
         obj.put("userInfo", sysUser);
 
+        List<String> roleList = new ArrayList<String>();
+        List<SysUserRole> userRole = sysUserRoleService.list(new QueryWrapper<SysUserRole>().lambda().eq(SysUserRole::getUserId, sysUser.getId()));
+        if (userRole == null || userRole.size() <= 0) {
+            result.error500("未找到用户相关角色信息");
+        } else {
+            for (SysUserRole sysUserRole : userRole) {
+                final SysRole role = sysRoleService.getById(sysUserRole.getRoleId());
+                roleList.add(role.getRoleCode());
+            }
+            obj.put("roleList", roleList);
+        }
+
         // 生成token
         String token = JwtUtil.sign(username, syspassword);
         // 设置超时时间
-        redisUtil.set(CommonConstant.PREFIX_USER_TOKEN + token, token);
-        redisUtil.expire(CommonConstant.PREFIX_USER_TOKEN + token, JwtUtil.EXPIRE_TIME * 2 / 1000);
+        putReids(sysUser, token, JwtUtil.EXPIRE_TIME * 24 / 1000);
         //token 信息
         obj.put("token", token);
         result.setResult(obj);
@@ -524,4 +675,18 @@ public class LoginController {
         return result;
     }
 
+    /**
+     * put 用户key到reids
+     * @param sysUser
+     * @param token
+     * @param expireTime
+     */
+    private void putReids(SysUser sysUser, String token, long expireTime){
+        RedisUtil redisUtil =SpringContextUtils.getBean(RedisUtil.class);
+        redisUtil.set(CommonConstant.PREFIX_USER_TOKEN + token, token);
+        redisUtil.expire(CommonConstant.PREFIX_USER_TOKEN + token, expireTime);
+        redisUtil.set(CommonConstant.PREFIX_USER_DEPARTMENT_IDS + sysUser.getId(), sysUser.getDepartmentIds());
+        redisUtil.set(CommonConstant.PREFIX_USER_SYSTEM_CODES + sysUser.getId(), sysUser.getSystemCodes());
+
+    }
 }

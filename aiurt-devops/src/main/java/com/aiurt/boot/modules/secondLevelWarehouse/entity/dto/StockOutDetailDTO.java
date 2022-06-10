@@ -17,5 +17,7 @@ public class StockOutDetailDTO {
     private String materialCode;
     @ApiModelProperty("物资数量")
     private Integer materialNum;
+    @ApiModelProperty("备注")
+    private String remarks;
 
 }

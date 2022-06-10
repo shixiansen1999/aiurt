@@ -2,9 +2,9 @@ package com.aiurt.boot.modules.system.service;
 
 import java.util.List;
 
-import com.swsc.copsms.modules.system.model.TreeModel;
-import com.swsc.copsms.common.exception.SwscException;
-import com.swsc.copsms.modules.system.entity.SysPermission;
+import com.aiurt.boot.modules.system.model.TreeModel;
+import com.aiurt.boot.common.exception.SwscException;
+import com.aiurt.boot.modules.system.entity.SysPermission;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 

@@ -2,12 +2,14 @@ package com.aiurt.boot.modules.secondLevelWarehouse.service;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.swsc.copsms.modules.secondLevelWarehouse.entity.SparePartInOrder;
+import com.aiurt.boot.common.api.vo.Result;
+import com.aiurt.boot.modules.secondLevelWarehouse.entity.SparePartInOrder;
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.swsc.copsms.modules.secondLevelWarehouse.entity.dto.SparePartInExcel;
-import com.swsc.copsms.modules.secondLevelWarehouse.entity.dto.SparePartInQuery;
-import com.swsc.copsms.modules.secondLevelWarehouse.entity.vo.SparePartInVO;
+import com.aiurt.boot.modules.secondLevelWarehouse.entity.dto.SparePartInExcel;
+import com.aiurt.boot.modules.secondLevelWarehouse.entity.dto.SparePartInQuery;
+import com.aiurt.boot.modules.secondLevelWarehouse.entity.vo.SparePartInVO;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
 /**
@@ -18,7 +20,27 @@ import java.util.List;
  */
 public interface ISparePartInOrderService extends IService<SparePartInOrder> {
 
+    /**
+     * 分页查询
+     * @param page
+     * @param sparePartInQuery
+     * @return
+     */
     IPage<SparePartInVO> queryPageList(Page<SparePartInVO> page, SparePartInQuery sparePartInQuery);
 
+
+    /**
+     * excel导出
+     * @param sparePartInQuery
+     * @return
+     */
     List<SparePartInExcel> exportXls(SparePartInQuery sparePartInQuery);
+
+    /**
+     * 批量确认
+     * @param ids
+     * @param req
+     * @return
+     */
+    Result<?> confirmBatch(String ids,HttpServletRequest req);
 }

@@ -1,7 +1,6 @@
 package com.aiurt.boot.modules.secondLevelWarehouse.entity.vo;
 
-import com.swsc.copsms.modules.secondLevelWarehouse.entity.StockInOrderLevel2;
-import com.swsc.copsms.modules.secondLevelWarehouse.entity.dto.StockInOrderLevel2DTO;
+import com.aiurt.boot.modules.secondLevelWarehouse.entity.StockInOrderLevel2;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 

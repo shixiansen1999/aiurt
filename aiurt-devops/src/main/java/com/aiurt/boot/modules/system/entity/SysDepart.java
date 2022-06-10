@@ -5,7 +5,7 @@ import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.swsc.copsms.common.aspect.annotation.Dict;
+import com.aiurt.boot.common.aspect.annotation.Dict;
 import lombok.Data;
 import org.jeecgframework.poi.excel.annotation.Excel;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -107,6 +107,8 @@ public class SysDepart implements Serializable {
 
     private String type;
 
+    private String phoneNum;
+
     /**
      * 重写equals方法
      */
@@ -136,6 +138,7 @@ public class SysDepart implements Serializable {
                 Objects.equals(createBy, depart.createBy) &&
                 Objects.equals(createTime, depart.createTime) &&
                 Objects.equals(updateBy, depart.updateBy) &&
+                Objects.equals(phoneNum, depart.phoneNum) &&
                 Objects.equals(updateTime, depart.updateTime);
     }
 
@@ -148,6 +151,10 @@ public class SysDepart implements Serializable {
         return Objects.hash(super.hashCode(), id, parentId, departName,
                 departOrder, description, fullName,
                 orgType, orgCode, memo, status,
-                delFlag, createBy, createTime, updateBy, updateTime);
+                delFlag, createBy, createTime, updateBy, updateTime,phoneNum);
     }
+
+    public static final String ID = "id";
+
+    public static final String DEPART_NAME = "depart_name";
 }

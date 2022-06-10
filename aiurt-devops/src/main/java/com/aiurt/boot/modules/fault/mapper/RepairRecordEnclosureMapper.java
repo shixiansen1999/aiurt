@@ -1,7 +1,8 @@
 package com.aiurt.boot.modules.fault.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.swsc.copsms.modules.fault.entity.RepairRecordEnclosure;
+import com.aiurt.boot.modules.fault.entity.RepairRecordEnclosure;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
@@ -15,10 +16,17 @@ public interface RepairRecordEnclosureMapper extends BaseMapper<RepairRecordEncl
 
 
     /**
-     * 根据code查询附件列表
+     * 根据code查询附件/签名列表
      * @param repairRecordId
+     * @param type
      * @return
      */
-    List<String> queryDetail(Long repairRecordId);
+    List<String> queryDetail(Long repairRecordId,Integer type);
+
+    /**
+     * 删除附件
+     * @param id
+     */
+    void deleteByName(@Param("id") Long id);
 
 }

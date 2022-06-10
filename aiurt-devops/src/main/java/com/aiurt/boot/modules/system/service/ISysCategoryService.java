@@ -3,9 +3,9 @@ package com.aiurt.boot.modules.system.service;
 import java.util.List;
 import java.util.Map;
 
-import com.swsc.copsms.modules.system.model.TreeSelectModel;
-import com.swsc.copsms.common.exception.SwscException;
-import com.swsc.copsms.modules.system.entity.SysCategory;
+import com.aiurt.boot.modules.system.model.TreeSelectModel;
+import com.aiurt.boot.common.exception.SwscException;
+import com.aiurt.boot.modules.system.entity.SysCategory;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 
@@ -44,7 +44,7 @@ public interface ISysCategoryService extends IService<SysCategory> {
 	 * @param condition
 	 * @return
 	 */
-	public List<TreeSelectModel> queryListByPid(String pid, Map<String, String> condition);
+	public List<TreeSelectModel> queryListByPid(String pid, Map<String,String> condition);
 
 	/**
 	 * 根据code查询id

@@ -23,7 +23,7 @@ import org.jeecgframework.poi.excel.annotation.Excel;
 @TableName("cs_subsystem_user")
 @EqualsAndHashCode(callSuper = false)
 @Accessors(chain = true)
-@ApiModel(value="cs_subsystem_user对象", description="cs_subsystem_user")
+@ApiModel(value="子系统-技术人员对象", description="子系统-技术人员")
 public class SubsystemUser {
 
 	/**id*/

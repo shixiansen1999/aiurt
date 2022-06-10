@@ -1,16 +1,19 @@
 package com.aiurt.boot.modules.worklog.service;
 
-import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.swsc.copsms.common.api.vo.Result;
-import com.swsc.copsms.common.result.WorkLogResult;
-import com.swsc.copsms.common.system.api.ISysBaseAPI;
-import com.swsc.copsms.modules.worklog.dto.WorkLogDTO;
-import com.swsc.copsms.modules.worklog.entity.WorkLog;
+import com.aiurt.boot.common.api.vo.Result;
+import com.aiurt.boot.common.result.LogCountResult;
+import com.aiurt.boot.common.result.LogResult;
+import com.aiurt.boot.common.result.LogSubmitCount;
+import com.aiurt.boot.common.result.WorkLogResult;
+import com.aiurt.boot.modules.worklog.dto.WorkLogDTO;
+import com.aiurt.boot.modules.worklog.entity.WorkLog;
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.swsc.copsms.modules.worklog.param.WorkLogParam;
+import com.aiurt.boot.modules.worklog.param.LogCountParam;
+import com.aiurt.boot.modules.worklog.param.WorkLogParam;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.List;
 
 /**
  * @Description: 工作日志
@@ -23,24 +26,43 @@ public interface IWorkLogService extends IService<WorkLog> {
     /**
      * 添加工作日志
      * @param dto
+     * @param req
      * @return
      */
-    public Result add(WorkLogDTO dto, HttpServletRequest req);
+     Result<?> add (WorkLogDTO dto, HttpServletRequest req);
 
     /**
-     * 日志列表
+     * 工作日志上报-分页列表查询
      * @param page
-     * @param queryWrapper
      * @param param
+     * @param req
      * @return
      */
-    IPage<WorkLogResult> pageList(IPage<WorkLogResult> page, Wrapper<WorkLogResult> queryWrapper, WorkLogParam param);
+    IPage<WorkLogResult> pageList(IPage<WorkLogResult> page,WorkLogParam param, HttpServletRequest req);
+
+    /**
+     * 工作日志导出
+     * @param param
+     * @param req
+     * @return
+     */
+    List<WorkLogResult> exportXls(WorkLogParam param, HttpServletRequest req);
+
+    /**
+     * 工作日志上报-分页列表查询
+     * @param page
+     * @param param
+     * @param req
+     * @return
+     */
+    IPage<WorkLogResult> queryConfirmList(IPage<WorkLogResult> page,WorkLogParam param, HttpServletRequest req);
 
     /**
      * 根据id假删除
      * @param id
+     * @return
      */
-    public Result deleteById(Integer id);
+     Result<?> deleteById (Integer id);
 
     /**
      * 根据id查询详情
@@ -54,10 +76,43 @@ public interface IWorkLogService extends IService<WorkLog> {
      * @param id
      * @return
      */
-    Result confirm(Integer id);
+    Result<?> confirm (Integer id);
 
     /**
      * 批量确认
+     * @param ids
+     * @return
      */
-    Result<?>  checkByIds(String ids);
+    Result<?> checkByIds(String ids);
+
+
+    /**
+     * 根据当前登录人id获取巡检检修故障待办消息
+     * @param nowday
+     * @param req
+     * @return
+     */
+    Result<LogResult>  getWaitMessage(String nowday,HttpServletRequest req);
+
+    /**
+     * 编辑工作日志
+     * @param dto
+     * @return
+     */
+    Result editWorkLog(WorkLogDTO dto);
+
+    /**
+     * 日志统计
+     * @param param
+     * @return
+     */
+    List<LogCountResult> getLogCount(LogCountParam param);
+
+    /**
+     * 首页工作日志提交数量
+     * @param startTime
+     * @param endTime
+     * @return
+     */
+    Result<LogSubmitCount> getLogSubmitNum(String startTime,String endTime);
 }

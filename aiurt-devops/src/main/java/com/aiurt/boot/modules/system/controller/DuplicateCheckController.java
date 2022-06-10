@@ -2,10 +2,10 @@ package com.aiurt.boot.modules.system.controller;
 
 import javax.servlet.http.HttpServletRequest;
 
-import com.swsc.copsms.modules.system.model.DuplicateCheckVo;
-import com.swsc.copsms.modules.system.mapper.SysDictMapper;
+import com.aiurt.boot.modules.system.model.DuplicateCheckVo;
+import com.aiurt.boot.modules.system.mapper.SysDictMapper;
 import org.apache.commons.lang.StringUtils;
-import com.swsc.copsms.common.api.vo.Result;
+import com.aiurt.boot.common.api.vo.Result;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;

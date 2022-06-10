@@ -4,10 +4,10 @@ import java.util.List;
 
 import javax.annotation.Resource;
 
-import com.swsc.copsms.modules.system.model.AnnouncementSendModel;
-import com.swsc.copsms.modules.system.service.ISysAnnouncementSendService;
-import com.swsc.copsms.modules.system.entity.SysAnnouncementSend;
-import com.swsc.copsms.modules.system.mapper.SysAnnouncementSendMapper;
+import com.aiurt.boot.modules.system.model.AnnouncementSendModel;
+import com.aiurt.boot.modules.system.service.ISysAnnouncementSendService;
+import com.aiurt.boot.modules.system.entity.SysAnnouncementSend;
+import com.aiurt.boot.modules.system.mapper.SysAnnouncementSendMapper;
 import org.springframework.stereotype.Service;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;

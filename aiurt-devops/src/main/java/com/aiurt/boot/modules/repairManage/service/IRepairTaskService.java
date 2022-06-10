@@ -1,10 +1,11 @@
 package com.aiurt.boot.modules.repairManage.service;
 
-import com.swsc.copsms.common.api.vo.Result;
-import com.swsc.copsms.common.system.vo.LoginUser;
-import com.swsc.copsms.modules.repairManage.entity.RepairTask;
+import com.aiurt.boot.common.api.vo.Result;
+import com.aiurt.boot.common.system.vo.LoginUser;
+import com.aiurt.boot.modules.repairManage.entity.RepairTask;
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.swsc.copsms.modules.repairManage.vo.ReTaskDetailVO;
+import com.aiurt.boot.modules.repairManage.vo.DeviceQueryVO;
+import com.aiurt.boot.modules.repairManage.vo.ReTaskDetailVO;
 
 /**
  * @Description: 检修单列表
@@ -14,13 +15,35 @@ import com.swsc.copsms.modules.repairManage.vo.ReTaskDetailVO;
  */
 public interface IRepairTaskService extends IService<RepairTask> {
 
-    Result confirmById(String id, Integer confirmStatus, String errorContent);
+    Result confirmById(String id, Integer confirmStatus, String errorContent, String url);
 
-    Result checkById(String id, Integer receiptStatus, String errorContent);
+    Result receiptById(String id, Integer receiptStatus, String errorContent, String url);
 
     Result<ReTaskDetailVO> queryDetailById(String id);
 
-    Result<ReTaskDetailVO> getDetailByUser(LoginUser user, String startTime, String endTime);
+    Result getDetailByUser(LoginUser user, String startTime, String endTime);
 
-    Result receiveByUser(LoginUser user, String ids);
+//    Result receiveByUser(LoginUser user, String ids, String workType, String planOrderCode, String planOrderCodeUrl);
+
+    Result commit(String id, String position, String content, String urls, String deviceIds, String processContent);
+
+    /**
+     * 根据用户id和所在周的时间获取检修池内容
+     * @param userId
+     * @param time
+     * @return
+     */
+    Result getRepairTaskByUserIdAndTime(String userId,String time);
+
+    Result queryByDevice(DeviceQueryVO deviceQueryVO);
+
+
+    /**
+     * 回调
+     *
+     * @param code     回调的内容
+     * @param repairId 检修任务id
+     * @return boolean
+     */
+    boolean callback(Long repairId, String code);
 }

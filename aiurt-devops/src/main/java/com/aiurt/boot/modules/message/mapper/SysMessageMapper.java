@@ -1,6 +1,6 @@
 package com.aiurt.boot.modules.message.mapper;
 
-import com.swsc.copsms.modules.message.entity.SysMessage;
+import com.aiurt.boot.modules.message.entity.SysMessage;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import org.apache.ibatis.annotations.Mapper;
 import org.springframework.stereotype.Repository;

@@ -23,7 +23,7 @@ public class ReportAllParam implements Serializable {
 
 	@ApiModelProperty(value = "巡检人员任务表id")
 	@NotNull(message = "任务表id不能为空")
-	private Long id;
+	private Long taskId;
 
 	@ApiModelProperty(value = "巡检项每一项的list集合,不用传taskId")
 	private List<ReportOneParam> list;
@@ -31,6 +31,10 @@ public class ReportAllParam implements Serializable {
 	@ApiModelProperty(value = "保存状态 0.保存 1.提交")
 	private Integer status;
 
+	@ApiModelProperty(value = "总体附件")
+	private List<String> urlList;
 
-
+	@ApiModelProperty(value = "签名url")
+//	@NotNull(message = "签名不能为空")
+	private String url;
 }

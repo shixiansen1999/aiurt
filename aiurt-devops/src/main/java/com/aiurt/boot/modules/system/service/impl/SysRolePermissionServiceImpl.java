@@ -6,10 +6,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.swsc.copsms.modules.system.entity.SysRolePermission;
-import com.swsc.copsms.modules.system.service.ISysRolePermissionService;
-import com.swsc.copsms.common.util.oConvertUtils;
-import com.swsc.copsms.modules.system.mapper.SysRolePermissionMapper;
+import com.aiurt.boot.modules.system.entity.SysRolePermission;
+import com.aiurt.boot.modules.system.service.ISysRolePermissionService;
+import com.aiurt.boot.common.util.oConvertUtils;
+import com.aiurt.boot.modules.system.mapper.SysRolePermissionMapper;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;

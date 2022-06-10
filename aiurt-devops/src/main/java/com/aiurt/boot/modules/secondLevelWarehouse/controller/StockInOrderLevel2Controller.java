@@ -1,54 +1,41 @@
 package com.aiurt.boot.modules.secondLevelWarehouse.controller;
 
-import java.text.ParseException;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
-import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import cn.hutool.core.collection.CollUtil;
-import cn.hutool.core.util.StrUtil;
-import com.swsc.copsms.common.api.vo.Result;
-import com.swsc.copsms.common.aspect.annotation.AutoLog;
-import com.swsc.copsms.common.system.query.QueryGenerator;
-import com.swsc.copsms.common.util.TokenUtils;
-import com.swsc.copsms.common.util.oConvertUtils;
-import com.swsc.copsms.modules.secondLevelWarehouse.entity.StockInOrderLevel2;
-import com.swsc.copsms.modules.secondLevelWarehouse.entity.StockInOrderLevel2Detail;
-import com.swsc.copsms.modules.secondLevelWarehouse.entity.dto.StockInOrderLevel2DTO;
-import com.swsc.copsms.modules.secondLevelWarehouse.entity.dto.StockInOrderLevel2Excel;
-import com.swsc.copsms.modules.secondLevelWarehouse.entity.vo.StockInOrderLevel2VO;
-import com.swsc.copsms.modules.secondLevelWarehouse.mapper.StockInOrderLevel2Mapper;
-import com.swsc.copsms.modules.secondLevelWarehouse.service.IStockInOrderLevel2DetailService;
-import com.swsc.copsms.modules.secondLevelWarehouse.service.IStockInOrderLevel2Service;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.aiurt.boot.common.api.vo.Result;
+import com.aiurt.boot.common.aspect.annotation.AutoLog;
+import com.aiurt.boot.common.exception.SwscException;
+import com.aiurt.boot.modules.secondLevelWarehouse.entity.StockInOrderLevel2;
+import com.aiurt.boot.modules.secondLevelWarehouse.entity.StockInOrderLevel2Detail;
+import com.aiurt.boot.modules.secondLevelWarehouse.entity.dto.StockInOrderLevel2DTO;
+import com.aiurt.boot.modules.secondLevelWarehouse.entity.dto.StockInOrderLevel2Excel;
+import com.aiurt.boot.modules.secondLevelWarehouse.entity.vo.StockInOrderLevel2VO;
+import com.aiurt.boot.modules.secondLevelWarehouse.service.IStockInOrderLevel2DetailService;
+import com.aiurt.boot.modules.secondLevelWarehouse.service.IStockInOrderLevel2Service;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import lombok.extern.slf4j.Slf4j;
-
 import org.jeecgframework.poi.excel.ExcelImportUtil;
 import org.jeecgframework.poi.excel.def.NormalExcelConstants;
 import org.jeecgframework.poi.excel.entity.ExportParams;
 import org.jeecgframework.poi.excel.entity.ImportParams;
+import org.jeecgframework.poi.excel.entity.enmus.ExcelType;
 import org.jeecgframework.poi.excel.view.JeecgEntityExcelView;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
 import org.springframework.web.servlet.ModelAndView;
-import com.alibaba.fastjson.JSON;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
 
-import static com.swsc.copsms.common.util.DateUtils.datetimeFormat;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.validation.Valid;
+import java.io.IOException;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @Description: 二级入库单信息
@@ -57,16 +44,15 @@ import static com.swsc.copsms.common.util.DateUtils.datetimeFormat;
  * @Version: V1.0
  */
 @Slf4j
-@Api(tags = "二级入库单信息")
+@Api(tags = "二级库入库单信息")
 @RestController
 @RequestMapping("/secondLevelWarehouse/stockInOrderLevel2")
 public class StockInOrderLevel2Controller {
     @Autowired
     private IStockInOrderLevel2Service stockInOrderLevel2Service;
+
     @Autowired
     private IStockInOrderLevel2DetailService iStockInOrderLevel2DetailService;
-    @Resource
-    private StockInOrderLevel2Mapper stockInOrderLevel2Mapper;
 
     /**
      * 分页列表查询
@@ -74,7 +60,6 @@ public class StockInOrderLevel2Controller {
      * @param stockInOrderLevel2
      * @param pageNo
      * @param pageSize
-     * @param req
      * @return
      */
     @AutoLog(value = "二级入库单信息-分页列表查询")
@@ -84,8 +69,7 @@ public class StockInOrderLevel2Controller {
                                                            @RequestParam(name = "startTime", required = false) String startTime,
                                                            @RequestParam(name = "endTime", required = false) String endTime,
                                                            @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
-                                                           @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize,
-                                                           HttpServletRequest req) throws ParseException {
+                                                           @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize){
         Result<IPage<StockInOrderLevel2VO>> result = new Result<>();
         Page<StockInOrderLevel2VO> page = new Page<>(pageNo, pageSize);
         IPage<StockInOrderLevel2VO> queryPageList =
@@ -94,31 +78,26 @@ public class StockInOrderLevel2Controller {
         result.setResult(queryPageList);
         return result;
     }
-
     /**
-     * 添加
+     * 添加入库单
      *
      * @param stockInOrderLevel2DTO
      * @return
      */
-    @AutoLog(value = "新增入库单-添加")
-    @ApiOperation(value = "新增入库单-添加", notes = "新增入库单-添加")
+    @AutoLog(value = "添加入库单-添加")
+    @ApiOperation(value = "添加入库单-添加", notes = "新增入库单-添加")
     @PostMapping(value = "/add")
     public Result<StockInOrderLevel2> add(
-            @RequestBody StockInOrderLevel2DTO stockInOrderLevel2DTO, HttpServletRequest req) {
-        String tokenByRequest = TokenUtils.getTokenByRequest(req);
+            @Valid @RequestBody StockInOrderLevel2DTO stockInOrderLevel2DTO, HttpServletRequest req) {
         Result<StockInOrderLevel2> result = new Result<StockInOrderLevel2>();
-        if (StrUtil.isEmpty(stockInOrderLevel2DTO.getWarehouseCode())) {
-            result.error500("仓库编号不能为空");
-        } else {
             try {
-                stockInOrderLevel2Service.addWarehouseIn(stockInOrderLevel2DTO);
+                String s = stockInOrderLevel2Service.addWarehouseIn(stockInOrderLevel2DTO, req);
                 result.success("添加成功！");
+                result.setMessage(s);
             } catch (Exception e) {
                 log.error(e.getMessage(), e);
-                result.error500("操作失败");
+                result.error500("操作失败"+e.getMessage());
             }
-        }
 
         return result;
     }
@@ -148,25 +127,24 @@ public class StockInOrderLevel2Controller {
 
     /**
      * 导出excel
-     *
-     * @param request
-     * @param response
+     * @param selections
+     * @return
      */
     @ApiOperation("入库列表导出")
     @GetMapping(value = "/exportXls")
     public ModelAndView exportXls(
-            @ApiParam("行数据ids") @RequestParam("ids") List<Integer> ids,
-            HttpServletRequest request, HttpServletResponse response) {
+            @ApiParam(value = "行数据ids" ,required = true) @RequestParam("selections") List<Integer> selections) {
+        if(CollUtil.isEmpty(selections)){
+            throw new SwscException("行数据ids不能为空");
+        }
         // 导出Excel
         ModelAndView mv = new ModelAndView(new JeecgEntityExcelView());
-        List<StockInOrderLevel2Excel> list = stockInOrderLevel2Service.selectExcelData(ids);
-        for (int i = 0; i < list.size(); i++) {
-            list.get(i).setSerialNumber(i + 1);
-        }
+        List<StockInOrderLevel2Excel> list = stockInOrderLevel2Service.selectExcelData(selections);
+
         //导出文件名称
         mv.addObject(NormalExcelConstants.FILE_NAME, "二级入库单信息列表");
         mv.addObject(NormalExcelConstants.CLASS, StockInOrderLevel2Excel.class);
-        mv.addObject(NormalExcelConstants.PARAMS, new ExportParams("二级入库单信息列表数据", "导出人:Jeecg", "导出信息"));
+        mv.addObject(NormalExcelConstants.PARAMS, new ExportParams("二级入库单信息列表数据","导出信息",ExcelType.XSSF));
         mv.addObject(NormalExcelConstants.DATA_LIST, list);
         return mv;
     }
@@ -183,7 +161,8 @@ public class StockInOrderLevel2Controller {
         MultipartHttpServletRequest multipartRequest = (MultipartHttpServletRequest) request;
         Map<String, MultipartFile> fileMap = multipartRequest.getFileMap();
         for (Map.Entry<String, MultipartFile> entity : fileMap.entrySet()) {
-            MultipartFile file = entity.getValue();// 获取上传文件对象
+            // 获取上传文件对象
+            MultipartFile file = entity.getValue();
             ImportParams params = new ImportParams();
             params.setTitleRows(2);
             params.setHeadRows(1);

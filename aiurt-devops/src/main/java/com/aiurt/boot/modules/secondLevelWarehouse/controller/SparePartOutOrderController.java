@@ -1,43 +1,30 @@
 package com.aiurt.boot.modules.secondLevelWarehouse.controller;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import com.swsc.copsms.common.api.vo.Result;
-import com.swsc.copsms.common.aspect.annotation.AutoLog;
-import com.swsc.copsms.common.system.query.QueryGenerator;
-import com.swsc.copsms.common.util.oConvertUtils;
-import com.swsc.copsms.modules.secondLevelWarehouse.entity.SparePartOutOrder;
-import com.swsc.copsms.modules.secondLevelWarehouse.entity.dto.SparePartLendExcel;
-import com.swsc.copsms.modules.secondLevelWarehouse.entity.dto.SparePartLendQuery;
-import com.swsc.copsms.modules.secondLevelWarehouse.entity.dto.SparePartOutExcel;
-import com.swsc.copsms.modules.secondLevelWarehouse.entity.vo.SparePartOutVO;
-import com.swsc.copsms.modules.secondLevelWarehouse.service.ISparePartOutOrderService;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import lombok.extern.slf4j.Slf4j;
-
-import org.jeecgframework.poi.excel.ExcelImportUtil;
-import org.jeecgframework.poi.excel.def.NormalExcelConstants;
-import org.jeecgframework.poi.excel.entity.ExportParams;
-import org.jeecgframework.poi.excel.entity.ImportParams;
-import org.jeecgframework.poi.excel.view.JeecgEntityExcelView;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.multipart.MultipartHttpServletRequest;
-import org.springframework.web.servlet.ModelAndView;
-import com.alibaba.fastjson.JSON;
+import com.aiurt.boot.common.api.vo.Result;
+import com.aiurt.boot.common.aspect.annotation.AutoLog;
+import com.aiurt.boot.common.result.FaultSparePartResult;
+import com.aiurt.boot.common.result.SparePartResult;
+import com.aiurt.boot.modules.secondLevelWarehouse.entity.SparePartOutOrder;
+import com.aiurt.boot.modules.secondLevelWarehouse.entity.dto.SparePartLendQuery;
+import com.aiurt.boot.modules.secondLevelWarehouse.entity.dto.SparePartOutExcel;
+import com.aiurt.boot.modules.secondLevelWarehouse.entity.vo.SparePartOutVO;
+import com.aiurt.boot.modules.secondLevelWarehouse.service.ISparePartOutOrderService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import lombok.extern.slf4j.Slf4j;
+import org.jeecgframework.poi.excel.def.NormalExcelConstants;
+import org.jeecgframework.poi.excel.entity.ExportParams;
+import org.jeecgframework.poi.excel.entity.enmus.ExcelType;
+import org.jeecgframework.poi.excel.view.JeecgEntityExcelView;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.ModelAndView;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.validation.Valid;
+import java.util.List;
 
 /**
  * @Description: 备件出库表
@@ -83,11 +70,11 @@ public class SparePartOutOrderController {
     @AutoLog(value = "备件出库表-添加")
     @ApiOperation(value = "备件出库表-添加", notes = "备件出库表-添加")
     @PostMapping(value = "/add")
-    public Result<?> add(@RequestBody SparePartOutOrder sparePartOutOrder) {
+    public Result<?> add(@Valid  @RequestBody SparePartOutOrder sparePartOutOrder,
+                         HttpServletRequest req) {
         Result<?> result = new Result<SparePartOutOrder>();
         try {
-            sparePartOutOrderService.addOutOrder(result, sparePartOutOrder);
-            result.success("添加成功！");
+            result= sparePartOutOrderService.addOutOrder(result, sparePartOutOrder,req);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
             result.error500("操作失败");
@@ -95,30 +82,93 @@ public class SparePartOutOrderController {
         return result;
     }
 
-
     /**
      * 导出excel
-     *
-     * @param request
-     * @param response
+     * @param sparePartLendQuery
+     * @return
      */
     @AutoLog("备件出库信息-导出")
     @ApiOperation("备件出库信息导出")
     @GetMapping(value = "/exportXls")
-    public ModelAndView exportXls(
-            SparePartLendQuery sparePartLendQuery,
-            HttpServletRequest request, HttpServletResponse response) {
-        // 导出Excel
+    public ModelAndView exportXls(SparePartLendQuery sparePartLendQuery) {
+        //Step.2 AutoPoi 导出Excel
         ModelAndView mv = new ModelAndView(new JeecgEntityExcelView());
-        List<SparePartOutExcel> list = sparePartOutOrderService.exportXls(sparePartLendQuery);
+        List<SparePartOutExcel> sparePartOutExcelIPage = sparePartOutOrderService.exportXls(sparePartLendQuery);
         //导出文件名称
         mv.addObject(NormalExcelConstants.FILE_NAME, "备件出库信息列表");
         mv.addObject(NormalExcelConstants.CLASS, SparePartOutExcel.class);
-        mv.addObject(NormalExcelConstants.PARAMS, new ExportParams("备件出库信息列表数据", "导出人:Jeecg", "导出信息"));
-        mv.addObject(NormalExcelConstants.DATA_LIST, list);
+        mv.addObject(NormalExcelConstants.PARAMS, new ExportParams("备件出库信息列表数据","导出信息", ExcelType.XSSF));
+        mv.addObject(NormalExcelConstants.DATA_LIST, sparePartOutExcelIPage);
         return mv;
     }
 
+    /**
+     * 履历-查询故障更换备件信息
+     * @param id
+     * @return
+     */
+    @AutoLog("履历-查询故障更换备件信息")
+    @ApiOperation("履历-查询故障更换备件信息")
+    @GetMapping(value = "/selectFaultChangePart")
+    public Result<List<SparePartResult>> selectFaultChangePart(@RequestParam("id") Long id) {
+        Result<List<SparePartResult>> sparePartResultResult = sparePartOutOrderService.selectFaultChangePart(id);
+        return sparePartResultResult;
+    }
+
+    /**
+     * 导出 履历-查询故障更换备件信息
+     * @param id
+     * @return
+     */
+    @AutoLog("履历-查询故障更换备件信息")
+    @ApiOperation("履历-查询故障更换备件信息")
+    @GetMapping(value = "/exportXlsFaultChangePart")
+    public ModelAndView exportXlsFaultChangePart(@RequestParam("id") Long id) {
+        //Step.2 AutoPoi 导出Excel
+        ModelAndView mv = new ModelAndView(new JeecgEntityExcelView());
+        Result<List<SparePartResult>> sparePartResultResult = sparePartOutOrderService.selectFaultChangePart(id);
+        List<SparePartResult> result = sparePartResultResult.getResult();
+        //导出文件名称
+        mv.addObject(NormalExcelConstants.FILE_NAME, "履历-更换备件信息");
+        mv.addObject(NormalExcelConstants.CLASS, SparePartResult.class);
+        mv.addObject(NormalExcelConstants.PARAMS, new ExportParams("履历-更换备件信息",  "导出信息"));
+        mv.addObject(NormalExcelConstants.DATA_LIST, result);
+        return mv;
+    }
+
+    /**
+     * 履历-查询故障信息
+     * @param id
+     * @return
+     */
+    @AutoLog("履历-查询故障信息")
+    @ApiOperation("履历-查询故障件信息")
+    @GetMapping(value = "/selectFaultDetail")
+    public Result<List<FaultSparePartResult>> selectFaultDetail(@RequestParam("id") Long id) {
+        Result<List<FaultSparePartResult>> listResult = sparePartOutOrderService.selectFaultDetail(id);
+        return listResult;
+    }
+
+    /**
+     * 导出 履历-查询故障信息
+     * @param id
+     * @return
+     */
+    @AutoLog("履历-查询故障信息")
+    @ApiOperation("履历-查询故障信息")
+    @GetMapping(value = "/exportXlsFaultDetail")
+    public ModelAndView exportXlsFaultDetail(@RequestParam("id") Long id) {
+        //Step.2 AutoPoi 导出Excel
+        ModelAndView mv = new ModelAndView(new JeecgEntityExcelView());
+        Result<List<FaultSparePartResult>> listResult = sparePartOutOrderService.selectFaultDetail(id);
+        List<FaultSparePartResult> result = listResult.getResult();
+        //导出文件名称
+        mv.addObject(NormalExcelConstants.FILE_NAME, "履历-故障信息");
+        mv.addObject(NormalExcelConstants.CLASS, FaultSparePartResult.class);
+        mv.addObject(NormalExcelConstants.PARAMS, new ExportParams("履历-故障信息",  "导出信息"));
+        mv.addObject(NormalExcelConstants.DATA_LIST, result);
+        return mv;
+    }
 
 
 }

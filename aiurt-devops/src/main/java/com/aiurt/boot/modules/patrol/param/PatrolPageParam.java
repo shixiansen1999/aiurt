@@ -1,6 +1,6 @@
 package com.aiurt.boot.modules.patrol.param;
 
-import com.swsc.copsms.modules.patrol.entity.Patrol;
+import com.aiurt.boot.modules.patrol.entity.Patrol;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -21,10 +21,24 @@ import java.util.List;
 @Validated
 public class PatrolPageParam extends Patrol implements Serializable {
 
+	@ApiModelProperty(value = "适用系统")
+	private String types;
+
+	@ApiModelProperty(value = "巡检表名称")
+	private String title;
+
 	@ApiModelProperty(value = "创建人")
 	private String createByName;
 
+	@ApiModelProperty(value = "生效状态")
+	private Integer status;
+
 	@ApiModelProperty(value = "后端处理")
 	private List<String> userIds;
+
+	@ApiModelProperty(value = "班组名称")
+	private String organizationId;
+
+
 
 }

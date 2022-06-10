@@ -4,12 +4,12 @@ import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.swsc.copsms.common.api.vo.Result;
-import com.swsc.copsms.common.aspect.annotation.AutoLog;
-import com.swsc.copsms.common.system.query.QueryGenerator;
-import com.swsc.copsms.common.util.oConvertUtils;
-import com.swsc.copsms.modules.fault.entity.FaultEnclosure;
-import com.swsc.copsms.modules.fault.service.IFaultEnclosureService;
+import com.aiurt.boot.common.api.vo.Result;
+import com.aiurt.boot.common.aspect.annotation.AutoLog;
+import com.aiurt.boot.common.system.query.QueryGenerator;
+import com.aiurt.boot.common.util.oConvertUtils;
+import com.aiurt.boot.modules.fault.entity.FaultEnclosure;
+import com.aiurt.boot.modules.fault.service.IFaultEnclosureService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
@@ -103,10 +103,10 @@ public class FaultEnclosureController {
        Result<FaultEnclosure> result = new Result<FaultEnclosure>();
        FaultEnclosure faultEnclosureEntity = faultEnclosureService.getById(faultEnclosure.getId());
        if(faultEnclosureEntity==null) {
-           result.error500("未找到对应实体");
+           result.onnull("未找到对应实体");
        }else {
            boolean ok = faultEnclosureService.updateById(faultEnclosure);
-           //TODO 返回false说明什么？
+
            if(ok) {
                result.success("修改成功!");
            }
@@ -164,7 +164,7 @@ public class FaultEnclosureController {
        Result<FaultEnclosure> result = new Result<FaultEnclosure>();
        FaultEnclosure faultEnclosure = faultEnclosureService.getById(id);
        if(faultEnclosure==null) {
-           result.error500("未找到对应实体");
+           result.onnull("未找到对应实体");
        }else {
            result.setResult(faultEnclosure);
            result.setSuccess(true);

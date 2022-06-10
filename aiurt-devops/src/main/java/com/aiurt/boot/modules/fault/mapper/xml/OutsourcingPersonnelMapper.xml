@@ -1,32 +1,66 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.swsc.copsms.modules.fault.mapper.OutsourcingPersonnelMapper">
-    <select id="queryOutsourcingPersonnel" resultType="com.swsc.copsms.modules.fault.entity.OutsourcingPersonnel">
-        SELECT * FROM outsourcing_personnel
-        WHERE 1 = 1
+<mapper namespace="com.aiurt.boot.modules.fault.mapper.OutsourcingPersonnelMapper">
+    <select id="queryOutsourcingPersonnel" resultType="com.aiurt.boot.common.result.OutsourcingPersonnelResult">
+        SELECT op.*,
+        cst.system_name AS systemName
+        FROM outsourcing_personnel op
+        LEFT JOIN cs_subsystem cst ON op.system_code = cst.system_code
+        WHERE
+            op.del_flag = '0'
         <if test="personnel.name!= null and personnel.name!= ''">
-            AND name LIKE '%${personnel.name}%'
+            AND op.name LIKE concat('%'
+            , #{personnel.name}
+            , '%')
         </if>
         <if test="personnel.company!= null and personnel.company!= ''">
-            AND company = #{personnel.company}
+            AND op.company = #{personnel.company}
         </if>
         <if test="personnel.position!= null and personnel.position!= ''">
-            AND position LIKE '%${personnel.position}%'
+            AND op.position LIKE concat('%'
+            , #{personnel.position}
+            , '%')
         </if>
         <if test="personnel.systemCode!= null and personnel.systemCode!= ''">
-            AND system_code = #{personnel.systemCode}
+            AND op.system_code = #{personnel.systemCode}
         </if>
         <if test="personnel.connectionWay!= null and personnel.connectionWay!= ''">
-            AND connection_way LIKE '%${personnel.connectionWay}%'
+            AND op.connection_way LIKE concat('%'
+            , #{personnel.connectionWay}
+            , '%')
         </if>
-        AND del_flag = '0'
+        ORDER BY op.create_time DESC
     </select>
 
-    <update id="deleteOne" parameterType="java.lang.Integer">
-        UPDATE outsourcing_personnel SET del_flag = '1' WHERE id = #{id}
-    </update>
-
-    <select id="selectAll" resultType="com.swsc.copsms.modules.fault.entity.OutsourcingPersonnel">
-        select * from outsourcing_personnel where del_flag = '0'
+    <select id="exportXls" resultType="com.aiurt.boot.common.result.OutsourcingPersonnelResult">
+        SELECT op.*,
+        cst.system_name AS systemName
+        FROM outsourcing_personnel op
+        LEFT JOIN cs_subsystem cst ON op.system_code = cst.system_code
+        WHERE
+        op.del_flag = '0'
+        <if test="personnel.name!= null and personnel.name!= ''">
+            AND op.name LIKE concat('%'
+            , #{personnel.name}
+            , '%')
+        </if>
+        <if test="personnel.company!= null and personnel.company!= ''">
+            AND op.company = #{personnel.company}
+        </if>
+        <if test="personnel.position!= null and personnel.position!= ''">
+            AND op.position LIKE concat('%'
+            , #{personnel.position}
+            , '%')
+        </if>
+        <if test="personnel.systemCode!= null and personnel.systemCode!= ''">
+            AND op.system_code = #{personnel.systemCode}
+        </if>
+        <if test="personnel.connectionWay!= null and personnel.connectionWay!= ''">
+            AND op.connection_way LIKE concat('%'
+            , #{personnel.connectionWay}
+            , '%')
+        </if>
+        ORDER BY op.create_time DESC
     </select>
+
 </mapper>

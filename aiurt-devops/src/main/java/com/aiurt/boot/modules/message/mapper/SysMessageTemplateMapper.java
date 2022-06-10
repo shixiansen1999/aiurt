@@ -3,7 +3,7 @@ package com.aiurt.boot.modules.message.mapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Select;
-import com.swsc.copsms.modules.message.entity.SysMessageTemplate;
+import com.aiurt.boot.modules.message.entity.SysMessageTemplate;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;

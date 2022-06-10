@@ -3,8 +3,8 @@ package com.aiurt.boot.modules.monitor.service;
 import java.util.List;
 import java.util.Map;
 
-import com.swsc.copsms.modules.monitor.domain.RedisInfo;
-import com.swsc.copsms.modules.monitor.exception.RedisConnectException;
+import com.aiurt.boot.modules.monitor.domain.RedisInfo;
+import com.aiurt.boot.modules.monitor.exception.RedisConnectException;
 
 public interface RedisService {
 

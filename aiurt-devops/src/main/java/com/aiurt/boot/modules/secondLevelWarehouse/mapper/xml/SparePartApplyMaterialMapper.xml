@@ -1,14 +1,64 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.swsc.copsms.modules.secondLevelWarehouse.mapper.SparePartApplyMaterialMapper">
+<mapper namespace="com.aiurt.boot.modules.secondLevelWarehouse.mapper.SparePartApplyMaterialMapper">
+    <insert id="insertBatchList" parameterType="list" useGeneratedKeys="true" keyProperty="id">
+        insert into spare_part_out_order(
+        id,apply_code,material_code,apply_num,remarks,create_by,update_by
+        )
+        values
+        <foreach collection="applyMaterialListAdd" item="item" index="index" separator=",">
+            (#{item.id}, #{item.applyCode}, #{item.materialCode},#{item.applyNum},
+            #{item.remarks}, #{item.createBy}, #{item.updateBy}
+            )
+        </foreach>
+    </insert>
 
     <select id="queryPageList"
-            resultType="com.swsc.copsms.modules.secondLevelWarehouse.entity.dto.SpareApplyMaterialDTO">
-        select spam,id,spam.apply_code,mb.name,mb.type,
-            mb.specifications,mb.country_origin countryOrigin,
-            mb.manufacturer,mb.brand,spam.apply_num
-        from spare_part_apply_material spam
-        left join material_base mb on mb.code=spam.material_code
-        where spam.apply_code=#{applyCode}
+            resultType="com.aiurt.boot.modules.secondLevelWarehouse.entity.dto.SpareApplyMaterialDTO">
+        SELECT
+	        spam.id AS id,
+	        spam.apply_code AS code,
+	        mb.NAME AS `name`,
+	        mb.type AS `type`,
+	        spam.remarks AS remarks,
+	        mb.specifications AS specifications,
+	        mb.country_origin AS countryOrigin,
+	        mb.manufacturer AS manufacturer,
+	        mb.brand AS brand,
+	        spam.apply_num AS applyNum,
+	        spam.actual_num AS actualNum,
+	        mb.CODE AS materialCode,
+	        sa.out_warehouse_code AS outWarehouseCode,
+	        w.stock_name AS outWarehouseName,
+	        cs.system_name AS `system`,
+	        mb.unit AS unit
+        FROM
+	        spare_part_apply_material spam
+	    	LEFT JOIN spare_part_apply sa ON sa.CODE = spam.apply_code
+	    	LEFT JOIN material_base mb ON mb.CODE = spam.material_code
+	    	LEFT JOIN cs_stock_level_two w ON w.stock_code = sa.out_warehouse_code
+	    	LEFT JOIN cs_subsystem cs ON cs.system_code = mb.system_code
+        WHERE
+	        spam.apply_code = #{applyCode}
+    </select>
+
+    <select id="selectActualNum" resultType="java.lang.Integer">
+        SELECT
+	        SUM( actual_num )
+        FROM
+	        spare_part_apply_material
+        WHERE
+        	del_flag = 0
+	        AND apply_code = #{applyCode}
+    </select>
+
+    <select id="selectApplyNum" resultType="java.lang.Integer">
+        SELECT
+	        SUM( apply_num )
+        FROM
+	        spare_part_apply_material
+        WHERE
+        	del_flag = 0
+	        AND apply_code = #{applyCode}
     </select>
 </mapper>

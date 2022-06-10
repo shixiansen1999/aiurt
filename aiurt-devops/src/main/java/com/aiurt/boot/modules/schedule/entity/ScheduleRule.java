@@ -1,6 +1,5 @@
 package com.aiurt.boot.modules.schedule.entity;
 
-import java.io.Serializable;
 import java.util.Date;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
@@ -25,7 +24,7 @@ import org.jeecgframework.poi.excel.annotation.Excel;
 @TableName("schedule_rule")
 @EqualsAndHashCode(callSuper = false)
 @Accessors(chain = true)
-@ApiModel(value="schedule_rule对象", description="schedule_rule")
+@ApiModel(value="排班规则对象", description="排班规则对象")
 public class ScheduleRule {
 
 	/**id*/
@@ -48,15 +47,26 @@ public class ScheduleRule {
 	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
     @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
     @ApiModelProperty(value = "创建时间")
-	private  Date  createTime;
+    private Date createTime;
 
-	/**更新时间*/
-	@Excel(name = "更新时间", width = 20, format = "yyyy-MM-dd HH:mm:ss")
-	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
-    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
+    /**
+     * 更新时间
+     */
+    @Excel(name = "更新时间", width = 20, format = "yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd HH:mm:ss")
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @ApiModelProperty(value = "更新时间")
-	private  Date  updateTime;
+    private Date updateTime;
 
+    @TableField(exist = false)
+    private String itemNames;
+
+	@TableField(exist = false)
+	private Integer[] names;
+	@TableField(exist = false)
+	private Integer[] keys;
+	@TableField(exist = false)
+	private String way;//排班方式
 
     private static final String ID = "id";
     private static final String NAME = "name";

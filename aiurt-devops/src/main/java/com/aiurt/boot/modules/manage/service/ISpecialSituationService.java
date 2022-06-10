@@ -1,7 +1,13 @@
 package com.aiurt.boot.modules.manage.service;
 
-import com.swsc.copsms.modules.manage.entity.SpecialSituation;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.aiurt.boot.modules.manage.entity.SpecialSituation;
 import com.baomidou.mybatisplus.extension.service.IService;
+
+import java.util.List;
+import java.util.Map;
 
 /**
  * @Description: cs_special_situation
@@ -10,5 +16,7 @@ import com.baomidou.mybatisplus.extension.service.IService;
  * @Version: V1.0
  */
 public interface ISpecialSituationService extends IService<SpecialSituation> {
+    public IPage<SpecialSituation> queryByCondition(Page<SpecialSituation> page, QueryWrapper<SpecialSituation> queryWrapper, SpecialSituation specialSituation);
 
+    List<SpecialSituation> getSpecialSituationsByUserId(Map<String, Object> map);
 }

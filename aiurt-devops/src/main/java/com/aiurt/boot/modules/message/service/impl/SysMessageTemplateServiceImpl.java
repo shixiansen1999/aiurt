@@ -1,9 +1,9 @@
 package com.aiurt.boot.modules.message.service.impl;
 
-import com.swsc.copsms.modules.message.service.ISysMessageTemplateService;
-import com.swsc.copsms.common.system.base.service.impl.BaseServiceImpl;
-import com.swsc.copsms.modules.message.entity.SysMessageTemplate;
-import com.swsc.copsms.modules.message.mapper.SysMessageTemplateMapper;
+import com.aiurt.boot.modules.message.service.ISysMessageTemplateService;
+import com.aiurt.boot.common.system.base.service.impl.BaseServiceImpl;
+import com.aiurt.boot.modules.message.entity.SysMessageTemplate;
+import com.aiurt.boot.modules.message.mapper.SysMessageTemplateMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.util.List;

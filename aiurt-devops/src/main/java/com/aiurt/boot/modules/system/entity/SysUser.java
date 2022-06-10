@@ -6,7 +6,7 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableLogic;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.swsc.copsms.common.aspect.annotation.Dict;
+import com.aiurt.boot.common.aspect.annotation.Dict;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
@@ -15,7 +15,6 @@ import org.springframework.format.annotation.DateTimeFormat;
 
 import java.io.Serializable;
 import java.util.Date;
-import java.util.List;
 
 /**
  * <p>
@@ -164,9 +163,30 @@ public class SysUser implements Serializable {
      */
     private String post;
 
+    /**
+     * 部门权限
+     */
+    private String departmentIds;
 
-    @TableField(exist = false)
-    private List<SysDepart> departList;
+    /**
+    * 系统权限
+    */
+    private String systemCodes;
+
+    /**
+     * 工资编号
+     */
+    private String salaryCode;
+
+    /**
+     * 施工证编号
+     */
+    private String permitCode;
+
+    private String cardPics;
+
+    // @TableField(exist = false)
+    //private List<SysDepart> departList;
 
 
     @TableField(exist = false)
@@ -176,12 +196,9 @@ public class SysUser implements Serializable {
     private Integer showChange;
 
 
-
-    public static final String REAL_NAME = "realname";
-
     public static final String ID = "id";
 
-    public static final String DEL_FLAG = "del_flag";
+    public static final String ORG_ID = "org_id";
 
 
 }

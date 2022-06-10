@@ -2,8 +2,8 @@ package com.aiurt.boot.modules.message.service;
 
 import java.util.List;
 
-import com.swsc.copsms.common.system.base.service.BaseService;
-import com.swsc.copsms.modules.message.entity.SysMessageTemplate;
+import com.aiurt.boot.common.system.base.service.BaseService;
+import com.aiurt.boot.modules.message.entity.SysMessageTemplate;
 
 /**
  * @Description: 消息模板

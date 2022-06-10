@@ -4,11 +4,11 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.github.tobato.fastdfs.domain.fdfs.StorePath;
 import com.github.tobato.fastdfs.domain.upload.FastFile;
 import com.github.tobato.fastdfs.service.FastFileStorageClient;
-import com.swsc.copsms.modules.fastdfs.FileUtil;
-import com.swsc.copsms.modules.fastdfs.entity.FileInfo;
-import com.swsc.copsms.modules.fastdfs.mapper.FileInfoMapper;
-import com.swsc.copsms.modules.fastdfs.model.UploadFile;
-import com.swsc.copsms.modules.fastdfs.service.IFileInfoService;
+import com.aiurt.boot.modules.fastdfs.FileUtil;
+import com.aiurt.boot.modules.fastdfs.entity.FileInfo;
+import com.aiurt.boot.modules.fastdfs.mapper.FileInfoMapper;
+import com.aiurt.boot.modules.fastdfs.model.UploadFile;
+import com.aiurt.boot.modules.fastdfs.service.IFileInfoService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
@@ -40,6 +40,7 @@ public class FileInfoServiceImpl extends ServiceImpl<FileInfoMapper, FileInfo> i
     @Value("${fdfs.webUrl}")
     private String webUrl;
 
+    @Override
     public FileInfo uploadFile(MultipartFile file) throws Exception {
         FileInfo fileInfo = FileUtil.getFileInfo(file);
         FileInfo oldFileInfo = fileInfoMapper.selectOne(new QueryWrapper<FileInfo>().eq("md5", fileInfo.getMd5()));
@@ -56,6 +57,7 @@ public class FileInfoServiceImpl extends ServiceImpl<FileInfoMapper, FileInfo> i
         return fileInfo;
     }
 
+    @Override
     public FileInfo uploadFile(UploadFile uploadFile) {
         if (StringUtils.isNotBlank(uploadFile.getName()) && !uploadFile.getName().contains(FILE_SPLIT)) {
             throw new IllegalArgumentException("缺少后缀名");
@@ -75,6 +77,7 @@ public class FileInfoServiceImpl extends ServiceImpl<FileInfoMapper, FileInfo> i
         return fileInfo;
     }
 
+    @Override
     public boolean deleteFile(String md5) {
         FileInfo fileInfo = fileInfoMapper.selectOne(new QueryWrapper<FileInfo>().eq("md5", md5));
         if (fileInfo != null && StringUtils.isNotEmpty(fileInfo.getPath())) {
@@ -85,6 +88,7 @@ public class FileInfoServiceImpl extends ServiceImpl<FileInfoMapper, FileInfo> i
         return true;
     }
 
+    @Override
     public boolean deleteFileByPath(String url) {
         FileInfo fileInfo = fileInfoMapper.selectOne(new QueryWrapper<FileInfo>().eq("url", url));
         if (fileInfo != null && StringUtils.isNotEmpty(fileInfo.getPath())) {

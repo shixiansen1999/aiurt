@@ -1,6 +1,6 @@
 package com.aiurt.boot.modules.message.handle.enums;
 
-import com.swsc.copsms.common.util.oConvertUtils;
+import com.aiurt.boot.common.util.oConvertUtils;
 
 /**
  * 发送消息类型枚举

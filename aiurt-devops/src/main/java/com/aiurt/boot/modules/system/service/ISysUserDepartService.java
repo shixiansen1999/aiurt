@@ -3,9 +3,9 @@ package com.aiurt.boot.modules.system.service;
 
 import java.util.List;
 
-import com.swsc.copsms.modules.system.model.DepartIdModel;
-import com.swsc.copsms.modules.system.entity.SysUser;
-import com.swsc.copsms.modules.system.entity.SysUserDepart;
+import com.aiurt.boot.modules.system.entity.SysUser;
+import com.aiurt.boot.modules.system.model.DepartIdModel;
+import com.aiurt.boot.modules.system.entity.SysUserDepart;
 
 
 import com.baomidou.mybatisplus.extension.service.IService;

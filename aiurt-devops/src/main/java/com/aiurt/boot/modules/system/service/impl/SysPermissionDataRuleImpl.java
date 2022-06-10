@@ -6,14 +6,14 @@ import java.util.Set;
 
 import javax.annotation.Resource;
 
-import com.swsc.copsms.modules.system.service.ISysPermissionDataRuleService;
-import com.swsc.copsms.common.constant.CommonConstant;
-import com.swsc.copsms.common.system.query.QueryGenerator;
-import com.swsc.copsms.common.util.oConvertUtils;
-import com.swsc.copsms.modules.system.entity.SysPermission;
-import com.swsc.copsms.modules.system.entity.SysPermissionDataRule;
-import com.swsc.copsms.modules.system.mapper.SysPermissionDataRuleMapper;
-import com.swsc.copsms.modules.system.mapper.SysPermissionMapper;
+import com.aiurt.boot.common.constant.CommonConstant;
+import com.aiurt.boot.modules.system.service.ISysPermissionDataRuleService;
+import com.aiurt.boot.common.system.query.QueryGenerator;
+import com.aiurt.boot.common.util.oConvertUtils;
+import com.aiurt.boot.modules.system.entity.SysPermission;
+import com.aiurt.boot.modules.system.entity.SysPermissionDataRule;
+import com.aiurt.boot.modules.system.mapper.SysPermissionDataRuleMapper;
+import com.aiurt.boot.modules.system.mapper.SysPermissionMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -80,7 +80,7 @@ public class SysPermissionDataRuleImpl extends ServiceImpl<SysPermissionDataRule
 		if(set.size()==0) {
 			return null;
 		}
-		return this.baseMapper.selectList(new QueryWrapper<SysPermissionDataRule>().in("id", set).eq("status",CommonConstant.STATUS_1));
+		return this.baseMapper.selectList(new QueryWrapper<SysPermissionDataRule>().in("id", set).eq("status", CommonConstant.STATUS_1));
 	}
 
 	@Override

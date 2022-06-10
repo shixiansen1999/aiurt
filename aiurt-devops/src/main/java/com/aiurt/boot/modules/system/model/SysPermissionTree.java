@@ -4,7 +4,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import com.swsc.copsms.modules.system.entity.SysPermission;
+import com.aiurt.boot.modules.system.entity.SysPermission;
 
 public class SysPermissionTree implements Serializable {
 

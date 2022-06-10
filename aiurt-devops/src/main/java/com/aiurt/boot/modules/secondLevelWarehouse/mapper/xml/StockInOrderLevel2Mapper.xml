@@ -1,35 +1,51 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.swsc.copsms.modules.secondLevelWarehouse.mapper.StockInOrderLevel2Mapper">
+<mapper namespace="com.aiurt.boot.modules.secondLevelWarehouse.mapper.StockInOrderLevel2Mapper">
 
     <select id="queryPageList"
-            resultType="com.swsc.copsms.modules.secondLevelWarehouse.entity.vo.StockInOrderLevel2VO">
-        select si.id,si.order_code,w.warehouse_name warehouseName,su.realname operatorName,si.stock_in_time,si.note
-        from stock_in_order_level2 si
-        left join stock_level2_info w on w.warehouse_code=si.warehouse_code
-        left join sys_user su on su.id=si.create_by
-        where 1=1 and si.del_flag!=1
-        <if test="stockInOrderLevel2.orderCode!=null and stockInOrderLevel2.orderCode!=''">
-            and si.order_code = #{stockInOrderLevel2.orderCode}
-        </if>
-        <if test="stockInOrderLevel2.warehouseCode!=null and stockInOrderLevel2.warehouseCode!=''">
-            and si.warehouse_code = #{stockInOrderLevel2.warehouseCode}
-        </if>
-        <if test="startTime!=null and startTime!='' and endTime!=null and endTime!='' ">
-            and si.stock_in_time between #{startTime} and #{endTime}
-        </if>
-        order by  si.create_time desc
+            resultType="com.aiurt.boot.modules.secondLevelWarehouse.entity.vo.StockInOrderLevel2VO">
+        SELECT
+            si.id AS id,
+            si.order_code AS orderCode,
+            w.stock_name AS warehouseName,
+            su.realname AS operatorName,
+            si.stock_in_time AS stockInTime,
+            si.note AS note
+        FROM
+            stock_in_order_level2 si
+            LEFT JOIN cs_stock_level_two w ON w.stock_code = si.warehouse_code
+            LEFT JOIN sys_user su ON su.id = si.create_by
+        WHERE
+            si.del_flag =0
+            <if test="stockInOrderLevel2.orderCode!=null and stockInOrderLevel2.orderCode!=''">
+                AND si.order_code = #{stockInOrderLevel2.orderCode}
+            </if>
+            <if test="stockInOrderLevel2.warehouseCode!=null and stockInOrderLevel2.warehouseCode!=''">
+                AND si.warehouse_code = #{stockInOrderLevel2.warehouseCode}
+            </if>
+            <if test="startTime!=null and startTime!='' and endTime!=null and endTime!='' ">
+                AND si.stock_in_time BETWEEN #{startTime} AND #{endTime}
+            </if>
+        ORDER BY
+            si.create_time DESC
     </select>
     <select id="selectExcelData"
-            resultType="com.swsc.copsms.modules.secondLevelWarehouse.entity.dto.StockInOrderLevel2Excel">
-        select si.order_code,w.warehouse_name warehouseName,su.realname operatorName,si.stock_in_time,si.note
-        from stock_in_order_level2 si
-        left join stock_level2_info w on w.warehouse_code=si.warehouse_code
-        left join sys_user su on su.id=si.create_by
-        where si.id in (
-        <foreach collection="ids" separator="," item="item">
-            #{item}
-        </foreach>
-        )
+            resultType="com.aiurt.boot.modules.secondLevelWarehouse.entity.dto.StockInOrderLevel2Excel">
+        SELECT
+            si.order_code AS orderCode,
+            w.stock_name AS warehouseName,
+            su.realname AS operatorName,
+            si.stock_in_time AS stockInTime,
+            si.note AS note
+        FROM
+            stock_in_order_level2 si
+            LEFT JOIN cs_stock_level_two w ON w.stock_code = si.warehouse_code
+            LEFT JOIN sys_user su ON su.id = si.create_by
+        WHERE
+            si.id IN (
+                <foreach collection="selections" separator="," item="item">
+                    #{item}
+                </foreach>
+                )
     </select>
 </mapper>

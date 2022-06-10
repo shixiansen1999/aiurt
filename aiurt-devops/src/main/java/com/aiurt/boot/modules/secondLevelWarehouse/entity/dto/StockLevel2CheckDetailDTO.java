@@ -1,6 +1,5 @@
 package com.aiurt.boot.modules.secondLevelWarehouse.entity.dto;
 
-import com.sun.istack.NotNull;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 

@@ -6,11 +6,11 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import com.swsc.copsms.common.api.vo.Result;
-import com.swsc.copsms.common.aspect.annotation.Dict;
-import com.swsc.copsms.common.constant.CommonConstant;
-import com.swsc.copsms.common.util.oConvertUtils;
-import com.swsc.copsms.modules.system.service.ISysDictService;
+import com.aiurt.boot.common.api.vo.Result;
+import com.aiurt.boot.common.aspect.annotation.Dict;
+import com.aiurt.boot.common.constant.CommonConstant;
+import com.aiurt.boot.common.util.oConvertUtils;
+import com.aiurt.boot.modules.system.service.ISysDictService;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -29,9 +29,6 @@ import lombok.extern.slf4j.Slf4j;
 
 /**
  * @Description: 字典aop类
- * @Author: dangzhenghui
- * @Date: 2019-3-17 21:50
- * @Version: 1.0
  */
 @Aspect
 @Component
@@ -40,7 +37,7 @@ public class DictAspect {
     @Autowired
     private ISysDictService dictService;
     // 定义切点Pointcut
-    @Pointcut("execution(public * com.swsc.copsms.modules..*.*Controller.*(..))")
+    @Pointcut("execution(public * com.aiurt.boot.modules..*.*Controller.*(..))")
     public void excudeService() {
     }
 
@@ -85,18 +82,18 @@ public class DictAspect {
                 List<JSONObject> items = new ArrayList<>();
                 for (Object record : ((IPage) ((Result) result).getResult()).getRecords()) {
                     ObjectMapper mapper = new ObjectMapper();
-                    String json="{}";
+                    String json = "{}";
                     try {
                         //解决@JsonFormat注解解析不了的问题详见SysAnnouncement类的@JsonFormat
-                         json = mapper.writeValueAsString(record);
+                        json = mapper.writeValueAsString(record);
                     } catch (JsonProcessingException e) {
-                        log.error("json解析失败"+e.getMessage(),e);
+                        log.error("json解析失败" + e.getMessage(), e);
                     }
                     JSONObject item = JSONObject.parseObject(json);
                     //update-begin--Author:swsc -- Date:20190603 ----for：解决继承实体字段无法翻译问题------
                     //for (Field field : record.getClass().getDeclaredFields()) {
                     for (Field field : oConvertUtils.getAllFields(record)) {
-                    //update-end--Author:swsc  -- Date:20190603 ----for：解决继承实体字段无法翻译问题------
+                        //update-end--Author:swsc  -- Date:20190603 ----for：解决继承实体字段无法翻译问题------
                         if (field.getAnnotation(Dict.class) != null) {
                             String code = field.getAnnotation(Dict.class).dicCode();
                             String text = field.getAnnotation(Dict.class).dicText();
@@ -106,13 +103,13 @@ public class DictAspect {
                             //翻译字典值对应的txt
                             String textValue = translateDictValue(code, text, table, key);
 
-                            log.debug(" 字典Val : "+ textValue);
-                            log.debug(" __翻译字典字段__ "+field.getName() + CommonConstant.DICT_TEXT_SUFFIX+"： "+ textValue);
+                            log.debug(" 字典Val : " + textValue);
+                            log.debug(" __翻译字典字段__ " + field.getName() + CommonConstant.DICT_TEXT_SUFFIX + "： " + textValue);
                             item.put(field.getName() + CommonConstant.DICT_TEXT_SUFFIX, textValue);
                         }
                         //date类型默认转换string格式化日期
-                        if (field.getType().getName().equals("java.util.Date")&&field.getAnnotation(JsonFormat.class)==null&&item.get(field.getName())!=null){
-                            SimpleDateFormat aDate=new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                        if ("java.util.Date".equals(field.getType().getName()) && field.getAnnotation(JsonFormat.class) == null && item.get(field.getName()) != null) {
+                            SimpleDateFormat aDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
                             item.put(field.getName(), aDate.format(new Date((Long) item.get(field.getName()))));
                         }
                     }

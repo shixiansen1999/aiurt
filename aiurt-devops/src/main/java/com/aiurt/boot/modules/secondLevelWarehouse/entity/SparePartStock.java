@@ -1,8 +1,5 @@
 package com.aiurt.boot.modules.secondLevelWarehouse.entity;
 
-import java.io.Serializable;
-import java.util.Date;
-
 import com.baomidou.mybatisplus.annotation.*;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -36,12 +33,20 @@ public class SparePartStock {
     @ApiModelProperty(value = "物资编号")
 	private  String  materialCode;
 
-
-
 	/**数量*/
 	@Excel(name = "数量", width = 15)
     @ApiModelProperty(value = "数量")
 	private  Integer  num;
+
+	/**备注*/
+	@Excel(name = "备注", width = 15)
+	@ApiModelProperty(value = "备注")
+	private String remark;
+
+	/**班组id*/
+	@Excel(name = "班组id", width = 15)
+	@ApiModelProperty(value = "班组id")
+	private String orgId;
 
 	/**仓库编号*/
 	@Excel(name = "仓库编号", width = 15)
@@ -69,24 +74,24 @@ public class SparePartStock {
 	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
     @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
     @ApiModelProperty(value = "创建时间")
-	private  Date  createTime;
+	private  java.util.Date  createTime;
 
 	/**修改时间*/
 	@Excel(name = "修改时间", width = 20, format = "yyyy-MM-dd HH:mm:ss")
 	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
     @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
     @ApiModelProperty(value = "修改时间")
-	private  Date  updateTime;
+	private  java.util.Date  updateTime;
 
 
     private static final String ID = "id";
-    private static final String MATERIAL_CODE = "material_code";
+    public static final String MATERIAL_CODE = "material_code";
     private static final String NUM = "num";
     private static final String WAREHOUSE_CODE = "warehouse_code";
     private static final String DEL_FLAG = "del_flag";
     private static final String CREATE_BY = "create_by";
     private static final String UPDATE_BY = "update_by";
-    private static final String CREATE_TIME = "create_time";
+    public static final String ORG_ID = "org_id";
     private static final String UPDATE_TIME = "update_time";
 
 

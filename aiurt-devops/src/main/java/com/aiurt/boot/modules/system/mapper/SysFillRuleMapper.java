@@ -1,7 +1,7 @@
 package com.aiurt.boot.modules.system.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.swsc.copsms.modules.system.entity.SysFillRule;
+import com.aiurt.boot.modules.system.entity.SysFillRule;
 import org.apache.ibatis.annotations.Mapper;
 import org.springframework.stereotype.Repository;
 

@@ -1,8 +1,8 @@
 package com.aiurt.boot.modules.manage.service.impl;
 
-import com.swsc.copsms.modules.manage.entity.Line;
-import com.swsc.copsms.modules.manage.mapper.LineMapper;
-import com.swsc.copsms.modules.manage.service.ILineService;
+import com.aiurt.boot.modules.manage.entity.Line;
+import com.aiurt.boot.modules.manage.mapper.LineMapper;
+import com.aiurt.boot.modules.manage.service.ILineService;
 import org.springframework.stereotype.Service;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;

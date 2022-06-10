@@ -1,8 +1,8 @@
 package com.aiurt.boot.modules.fault.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.swsc.copsms.common.api.vo.Result;
-import com.swsc.copsms.modules.fault.entity.FaultKnowledgeBaseType;
+import com.aiurt.boot.common.api.vo.Result;
+import com.aiurt.boot.modules.fault.entity.FaultKnowledgeBaseType;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -19,12 +19,6 @@ public interface IFaultKnowledgeBaseTypeService extends IService<FaultKnowledgeB
      * @param baseType
      * @return
      */
-    public Result add(FaultKnowledgeBaseType baseType, HttpServletRequest req);
-
-    /**
-     * 根据id假删除
-     * @param id
-     */
-    public Result deleteById(Integer id);
+     Result add (FaultKnowledgeBaseType baseType, HttpServletRequest req);
 
 }

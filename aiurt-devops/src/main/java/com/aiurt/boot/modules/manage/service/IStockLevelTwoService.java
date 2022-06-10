@@ -1,7 +1,7 @@
 package com.aiurt.boot.modules.manage.service;
 
-import com.swsc.copsms.modules.manage.entity.StockLevelTwo;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.aiurt.boot.modules.manage.entity.StockLevelTwo;
 
 /**
  * @Description: 二级仓库基础表

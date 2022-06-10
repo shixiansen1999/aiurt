@@ -1,6 +1,6 @@
 package com.aiurt.boot.modules.standardManage.inspectionSpecification.mapper;
 
-import com.swsc.copsms.modules.standardManage.inspectionSpecification.entity.InspectionCode;
+import com.aiurt.boot.modules.standardManage.inspectionSpecification.entity.InspectionCode;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
 /**

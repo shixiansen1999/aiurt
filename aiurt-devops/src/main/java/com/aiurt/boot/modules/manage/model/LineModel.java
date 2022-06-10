@@ -1,7 +1,6 @@
 package com.aiurt.boot.modules.manage.model;
 
-import com.swsc.copsms.modules.manage.entity.Line;
-import com.swsc.copsms.modules.manage.entity.Station;
+import com.aiurt.boot.modules.manage.entity.Line;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 

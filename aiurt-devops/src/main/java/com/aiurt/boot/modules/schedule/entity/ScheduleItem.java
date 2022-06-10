@@ -1,11 +1,9 @@
 package com.aiurt.boot.modules.schedule.entity;
 
-import java.io.Serializable;
 import java.util.Date;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import com.baomidou.mybatisplus.annotation.TableField;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -25,7 +23,7 @@ import org.jeecgframework.poi.excel.annotation.Excel;
 @TableName("schedule_item")
 @EqualsAndHashCode(callSuper = false)
 @Accessors(chain = true)
-@ApiModel(value="schedule_item对象", description="schedule_item")
+@ApiModel(value="排班班次对象", description="排班班次对象")
 public class ScheduleItem {
 
 	/**id*/

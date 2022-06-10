@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.swsc.copsms.modules.system.mapper.SysDepartMapper">
+<mapper namespace="com.aiurt.boot.modules.system.mapper.SysDepartMapper">
 
-	<select id="queryUserDeparts" parameterType="String" resultType="com.swsc.copsms.modules.system.entity.SysDepart">
+	<select id="queryUserDeparts" parameterType="String" resultType="com.aiurt.boot.modules.system.entity.SysDepart">
 	   select * from sys_depart where id IN ( select dep_id from sys_user_depart where user_id = #{userId} )
 	</select>
 
     <!-- 根据username查询所拥有的部门 -->
-    <select id="queryDepartsByUsername" parameterType="String" resultType="com.swsc.copsms.modules.system.entity.SysDepart">
+    <select id="queryDepartsByUsername" parameterType="String" resultType="com.aiurt.boot.modules.system.entity.SysDepart">
         SELECT *
         FROM sys_depart
         WHERE id IN (
@@ -19,6 +19,29 @@
                 WHERE account = #{username}
             )
         )
+    </select>
+
+    <select id="getDepartData" parameterType="map" resultType="com.aiurt.boot.modules.statistical.vo.DepartDataVo">
+        select a.id , a.depart_name as name,COUNT(b.id) as num from sys_depart a left join sys_user b on a.id=b.org_id and b.del_flag=0
+        where a.org_type!=1
+        <if test="orgIds !=null and orgIds !=''">
+            and a.id in
+            <foreach collection="orgIds" open="(" close=")"     separator="," item="orgId">
+                #{orgId}
+            </foreach>
+        </if>
+        GROUP BY a.id
+    </select>
+
+    <!-- 根据lineCode查询所拥有的部门 -->
+    <select id="getSysDepartByLineCode" parameterType="String" resultType="com.aiurt.boot.modules.system.entity.SysDepart">
+        select DISTINCT d.*
+        from cs_line c left join cs_station s on c.id = s.line_id
+        inner join sys_depart d on d.id = s.team_id
+        where 1 = 1
+        <if test="_parameter !=null and _parameter!=''">
+            and c.line_code = #{lineCode}
+        </if>
     </select>
 
 </mapper>

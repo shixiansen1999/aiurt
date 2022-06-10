@@ -1,14 +1,18 @@
 package com.aiurt.boot.modules.worklog.mapper;
 
-import com.baomidou.mybatisplus.core.conditions.Wrapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.swsc.copsms.common.result.WorkLogResult;
-import com.swsc.copsms.modules.worklog.entity.WorkLog;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.swsc.copsms.modules.worklog.param.WorkLogParam;
-import io.swagger.models.auth.In;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.aiurt.boot.common.result.AssortNumResult;
+import com.aiurt.boot.common.result.LogCountResult;
+import com.aiurt.boot.common.result.WorkLogResult;
+import com.aiurt.boot.modules.apphome.vo.WorkLogVO;
+import com.aiurt.boot.modules.patrol.param.PatrolAppHomeParam;
+import com.aiurt.boot.modules.worklog.entity.WorkLog;
+import com.aiurt.boot.modules.worklog.param.LogCountParam;
+import com.aiurt.boot.modules.worklog.param.WorkLogParam;
 import org.apache.ibatis.annotations.Param;
-import org.apache.ibatis.annotations.Result;
+
+import java.util.List;
 
 /**
  * @Description: 工作日志
@@ -22,12 +26,17 @@ public interface WorkLogMapper extends BaseMapper<WorkLog> {
     /**
      * 查询日志
      * @param page
-     * @param queryWrapper
      * @param param
      * @return
      */
-    IPage<WorkLogResult> queryWorkLog(IPage<WorkLogResult> page, Wrapper<WorkLogResult> queryWrapper,
-                                      @Param("param") WorkLogParam param);
+    IPage<WorkLogResult> queryWorkLog(IPage<WorkLogResult> page, @Param("param") WorkLogParam param);
+
+    /**
+     * 工作日志导出
+     * @param param
+     * @return
+     */
+    List<WorkLogResult> exportXls(@Param("param") WorkLogParam param);
 
 
     /**
@@ -42,7 +51,7 @@ public interface WorkLogMapper extends BaseMapper<WorkLog> {
      * @param id
      * @return
      */
-    WorkLogResult selectById(Integer id);
+    WorkLogResult queryById(Integer id);
 
     /**
      * 通过id确认
@@ -57,5 +66,35 @@ public interface WorkLogMapper extends BaseMapper<WorkLog> {
      * @return
      */
     int check(String id);
+
+    /**
+     * 查询工作日志待办消息
+     * @param homeParam
+     * @return
+     */
+    List<WorkLogVO> selectAppHome(@Param("param") PatrolAppHomeParam homeParam);
+
+    /**
+     * 日志统计
+     * @param param
+     * @return
+     */
+    List<LogCountResult> selectLogCount(@Param("param") LogCountParam param);
+
+    /**
+     * 配合施工人次
+     * @param startTime
+     * @param endTime
+     * @param userName
+     * @return
+     */
+    List<AssortNumResult> getAssortNum(@Param("startTime") String startTime, @Param("entTime") String endTime,
+                                       @Param("userName") String userName);
+
+    /**
+     * 日志数量
+     * @return
+     */
+    Integer selectWorkLogCount();
 
 }

@@ -2,7 +2,7 @@ package com.aiurt.boot.modules.system.entity;
 
 import java.util.Date;
 
-import com.swsc.copsms.common.aspect.annotation.Dict;
+import com.aiurt.boot.common.aspect.annotation.Dict;
 import org.springframework.format.annotation.DateTimeFormat;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;

@@ -1,9 +1,9 @@
 package com.aiurt.boot.modules.manage.mapper;
 
 import java.util.List;
+import java.util.Map;
 
-import org.apache.ibatis.annotations.Param;
-import com.swsc.copsms.modules.manage.entity.SpecialSituation;
+import com.aiurt.boot.modules.manage.entity.SpecialSituation;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
 /**
@@ -14,4 +14,7 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
  */
 public interface SpecialSituationMapper extends BaseMapper<SpecialSituation> {
 
+    public List<SpecialSituation> queryByCondition(Map<String,Object> param);
+    public Integer queryPageTotal(Map<String,Object> param);
+    List<SpecialSituation> queryByUserId(Map<String,Object> param);
 }

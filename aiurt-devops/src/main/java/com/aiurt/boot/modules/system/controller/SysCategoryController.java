@@ -12,15 +12,15 @@ import javax.servlet.http.HttpServletResponse;
 
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.swsc.copsms.modules.system.model.TreeSelectModel;
-import com.swsc.copsms.modules.system.service.ISysCategoryService;
-import com.swsc.copsms.modules.system.entity.SysCategory;
+import com.aiurt.boot.modules.system.model.TreeSelectModel;
+import com.aiurt.boot.modules.system.service.ISysCategoryService;
+import com.aiurt.boot.modules.system.entity.SysCategory;
 import org.apache.shiro.SecurityUtils;
-import com.swsc.copsms.common.api.vo.Result;
-import com.swsc.copsms.common.system.query.QueryGenerator;
-import com.swsc.copsms.common.system.vo.DictModel;
-import com.swsc.copsms.common.system.vo.LoginUser;
-import com.swsc.copsms.common.util.oConvertUtils;
+import com.aiurt.boot.common.api.vo.Result;
+import com.aiurt.boot.common.system.query.QueryGenerator;
+import com.aiurt.boot.common.system.vo.DictModel;
+import com.aiurt.boot.common.system.vo.LoginUser;
+import com.aiurt.boot.common.util.oConvertUtils;
 import org.jeecgframework.poi.excel.ExcelImportUtil;
 import org.jeecgframework.poi.excel.def.NormalExcelConstants;
 import org.jeecgframework.poi.excel.entity.ExportParams;
@@ -121,7 +121,7 @@ public class SysCategoryController {
 		Result<SysCategory> result = new Result<SysCategory>();
 		SysCategory sysCategoryEntity = sysCategoryService.getById(sysCategory.getId());
 		if(sysCategoryEntity==null) {
-			result.error500("未找到对应实体");
+			result.onnull("未找到对应实体");
 		}else {
 			sysCategoryService.updateSysCategory(sysCategory);
 			result.success("修改成功!");
@@ -139,7 +139,7 @@ public class SysCategoryController {
 		Result<SysCategory> result = new Result<SysCategory>();
 		SysCategory sysCategory = sysCategoryService.getById(id);
 		if(sysCategory==null) {
-			result.error500("未找到对应实体");
+			result.onnull("未找到对应实体");
 		}else {
 			boolean ok = sysCategoryService.removeById(id);
 			if(ok) {
@@ -177,7 +177,7 @@ public class SysCategoryController {
 		Result<SysCategory> result = new Result<SysCategory>();
 		SysCategory sysCategory = sysCategoryService.getById(id);
 		if(sysCategory==null) {
-			result.error500("未找到对应实体");
+			result.onnull("未找到对应实体");
 		}else {
 			result.setResult(sysCategory);
 			result.setSuccess(true);

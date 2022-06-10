@@ -1,7 +1,7 @@
 package com.aiurt.boot.modules.system.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.swsc.copsms.modules.system.entity.SysPosition;
+import com.aiurt.boot.modules.system.entity.SysPosition;
 
 /**
  * @Description: 职务表

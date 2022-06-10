@@ -23,7 +23,7 @@ import org.jeecgframework.poi.excel.annotation.Excel;
 @TableName("cs_work")
 @EqualsAndHashCode(callSuper = false)
 @Accessors(chain = true)
-@ApiModel(value="cs_work对象", description="cs_work")
+@ApiModel(value="作业类型对象", description="作业类型对象")
 public class Work {
 
 	/**id*/

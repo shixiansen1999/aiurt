@@ -1,8 +1,5 @@
 package com.aiurt.boot.modules.secondLevelWarehouse.entity;
 
-import java.io.Serializable;
-import java.util.Date;
-
 import com.baomidou.mybatisplus.annotation.*;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -33,41 +30,56 @@ public class StockInOrderLevel2Detail {
 
 	@ApiModelProperty("入库单表id")
 	private Long orderId;
+
 	/**入库单号*/
 	@Excel(name = "入库单号", width = 15)
     @ApiModelProperty(value = "入库单号")
 	private String orderCode;
+
 	/**物资编号*/
 	@Excel(name = "物资编号", width = 15)
     @ApiModelProperty(value = "物资编号")
 	private String materialCode;
+
 	/**入库数量*/
 	@Excel(name = "入库数量", width = 15)
     @ApiModelProperty(value = "入库数量")
 	private Integer num;
+
 	/**删除状态(0.未删除 1.已删除)*/
 	@Excel(name = "删除状态(0.未删除 1.已删除)", width = 15)
     @ApiModelProperty(value = "删除状态(0.未删除 1.已删除)")
 	@TableLogic
 	private Integer delFlag;
+
 	/**创建人*/
 	@Excel(name = "创建人", width = 15)
     @ApiModelProperty(value = "创建人")
 	private String createBy;
+
 	/**修改人*/
 	@Excel(name = "修改人", width = 15)
     @ApiModelProperty(value = "修改人")
 	private String updateBy;
+
+	/**备注*/
+	@Excel(name = "备注", width = 15)
+	@ApiModelProperty(value = "备注")
+	private String remarks;
+
 	/**创建时间*/
 	@Excel(name = "创建时间", width = 20, format = "yyyy-MM-dd HH:mm:ss")
 	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
     @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
     @ApiModelProperty(value = "创建时间")
-	private Date createTime;
+	private java.util.Date createTime;
+
 	/**修改时间*/
 	@Excel(name = "修改时间", width = 20, format = "yyyy-MM-dd HH:mm:ss")
 	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
     @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
     @ApiModelProperty(value = "修改时间")
-	private Date updateTime;
+	private java.util.Date updateTime;
+
+	public static final String ID = "id";
 }

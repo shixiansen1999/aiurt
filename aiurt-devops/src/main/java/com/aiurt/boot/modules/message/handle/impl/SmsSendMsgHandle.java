@@ -1,6 +1,6 @@
 package com.aiurt.boot.modules.message.handle.impl;
 
-import com.swsc.copsms.modules.message.handle.ISendMsgHandle;
+import com.aiurt.boot.modules.message.handle.ISendMsgHandle;
 
 public class SmsSendMsgHandle implements ISendMsgHandle {
 

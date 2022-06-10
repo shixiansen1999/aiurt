@@ -1,9 +1,9 @@
 package com.aiurt.boot.modules.fault.service.impl;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.swsc.copsms.modules.fault.entity.RepairRecordEnclosure;
-import com.swsc.copsms.modules.fault.mapper.RepairRecordEnclosureMapper;
-import com.swsc.copsms.modules.fault.service.IRepairRecordEnclosureService;
+import com.aiurt.boot.modules.fault.entity.RepairRecordEnclosure;
+import com.aiurt.boot.modules.fault.mapper.RepairRecordEnclosureMapper;
+import com.aiurt.boot.modules.fault.service.IRepairRecordEnclosureService;
 import org.springframework.stereotype.Service;
 
 /**

@@ -1,5 +1,61 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.swsc.copsms.modules.secondLevelWarehouse.mapper.MaterialBaseMapper">
+<mapper namespace="com.aiurt.boot.modules.secondLevelWarehouse.mapper.MaterialBaseMapper">
 
+    <insert id="insertBatchList" parameterType="list" useGeneratedKeys="true" keyProperty="id">
+        insert into material_base(
+        id,picture_url,code,name,
+        type,specifications,country_origin,manufacturer,
+        brand,unit,price,create_by,update_by
+        )
+        values
+        <foreach collection="baseList" item="item" index="index" separator=",">
+            (#{item.id}, #{item.pictureUrl}, #{item.code},#{item.name},
+            #{item.type}, #{item.specifications}, #{item.countryOrigin}, #{item.manufacturer},
+            #{item.brand},#{item.unit}, #{item.price}, #{item.createBy}, #{item.updateBy}
+            )
+        </foreach>
+    </insert>
+
+    <select id="queryMaterialBase" resultType="com.aiurt.boot.modules.secondLevelWarehouse.entity.vo.MaterialBaseResult">
+        SELECT
+	        cs.system_name AS systemName,
+	        dt.`name` AS bigTypeName,
+	        dst.`name` AS smallTypeName,
+	        mb.`code` AS `code`,
+	        mb.`name` AS `name`,
+	        mb.type AS `type`,
+	        mb.specifications AS specifications,
+	        mb.manufacturer AS manufacturer,
+	        mb.unit AS unit,
+	        mb.price AS price,
+	        mb.picture_url AS pictureUrl,
+        mb.remark AS remark,
+        mb.total AS total
+        FROM
+	        material_base mb
+	        LEFT JOIN cs_subsystem cs ON mb.system_code = cs.system_code
+	        LEFT JOIN device_type dt ON dt.`code` = mb.type_code
+	        LEFT JOIN device_small_type dst ON dst.`code` = mb.small_type_code
+        WHERE
+	        mb.del_flag = 0
+            <if test="param.name != null and param.name != ''">
+                AND mb.`name` like concat('%'
+                , #{param.name}
+                , '%')
+            </if>
+            <if test="param.code != null and param.code != ''">
+                AND mb.`code` like concat('%'
+                , #{param.code}
+                , '%')
+            </if>
+            <if test="param.type != null and param.type != ''">
+                AND mb.type = #{param.type}
+            </if>
+            <if test="param.systemCode != null and param.systemCode != ''">
+                AND mb.system_code = #{param.systemCode}
+            </if>
+        ORDER BY
+            mb.id DESC
+    </select>
 </mapper>

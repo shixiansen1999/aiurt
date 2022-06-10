@@ -3,9 +3,9 @@ package com.aiurt.boot.modules.system.service.impl;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.swsc.copsms.common.system.vo.DictModel;
-import com.swsc.copsms.modules.system.mapper.SysDictMapper;
-import com.swsc.copsms.common.util.oConvertUtils;
+import com.aiurt.boot.common.system.vo.DictModel;
+import com.aiurt.boot.modules.system.mapper.SysDictMapper;
+import com.aiurt.boot.common.util.oConvertUtils;
 import org.jeecgframework.dict.service.AutoPoiDictServiceI;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

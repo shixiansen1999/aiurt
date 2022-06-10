@@ -17,12 +17,12 @@ import java.util.Date;
 
 /**
  * @Description: 巡检标准
- * @Author: swsc
+ * @Author: Mr.zhao
  * @Date:   2021-09-14
  * @Version: V1.0
  */
 @Data
-@TableName("patrol")
+@TableName("t_patrol")
 @EqualsAndHashCode(callSuper = false)
 @Accessors(chain = true)
 @ApiModel(value="patrol对象", description="巡检标准")
@@ -40,21 +40,22 @@ public class Patrol {
 	private String title;
 
 	/**适用系统*/
+	@Excel(name = "适用系统", width = 15)
     @ApiModelProperty(value = "适用系统")
 	private String types;
 
 	/**状态 	0-未生效 1-已生效*/
-	@Excel(name = "状态", width = 15)
+	@Excel(name = "状态", width = 15,replace = {"未生效_0","已生效_1"})
     @ApiModelProperty(value = "状态 	0-未生效 1-已生效")
 	private Integer status;
 
 	/**巡检频率		1.一天1次 2.一周2次 3.一周1次*/
-	@Excel(name = "巡检频率", width = 15)
+	@Excel(name = "巡检频率", width = 15,replace = {"1次/天_1","2次/周_2","1次/周_3"})
     @ApiModelProperty(value = "巡检频率		1.一天1次 2.一周2次 3.一周1次")
 	private Integer tactics;
 
 	/**年度第几周*/
-	@Excel(name = "年度第几周", width = 15)
+	@Excel(name = "周内天数", width = 15)
     @ApiModelProperty(value = "巡检频率为2与3时有值,多条英文逗号分隔")
 	private String  dayOfWeek;
 
@@ -96,19 +97,9 @@ public class Patrol {
     @ApiModelProperty(value = "修改人")
 	private String updateBy;
 
+	/**创建人*/
+	@Excel(name = "创建人", width = 15)
+	@ApiModelProperty(value = "创建人")
+	private String createByName;
 
-
-	public static final String ID = "id";
-	public static final String TITLE = "title";
-	public static final String TYPES = "types";
-	public static final String STATUS = "status";
-	public static final String TACTICS = "tactics";
-	public static final String DAY_OF_WEEK = "day_of_week";
-	public static final String ORGANIZATION_IDS = "organization_ids";
-	public static final String DEL_FLAG = "del_flag";
-	public static final String CREATE_TIME = "create_time";
-	public static final String UPDATE_TIME = "update_time";
-	public static final String CREATE_BY = "create_by";
-	public static final String UPDATE_BY = "update_by";
-	public static final String NOTE = "note";
 }

@@ -2,8 +2,8 @@ package com.aiurt.boot.modules.system.util;
 
 import java.util.List;
 
-import com.swsc.copsms.common.util.oConvertUtils;
-import com.swsc.copsms.modules.system.entity.SysPermission;
+import com.aiurt.boot.common.util.oConvertUtils;
+import com.aiurt.boot.modules.system.entity.SysPermission;
 
 /**
  * @Author: swsc

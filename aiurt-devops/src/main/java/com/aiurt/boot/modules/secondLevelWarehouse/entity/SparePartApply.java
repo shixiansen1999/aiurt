@@ -1,17 +1,17 @@
 package com.aiurt.boot.modules.secondLevelWarehouse.entity;
 
-import java.io.Serializable;
-import java.util.Date;
-
-import com.baomidou.mybatisplus.annotation.*;
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableLogic;
+import com.baomidou.mybatisplus.annotation.TableName;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
-import com.fasterxml.jackson.annotation.JsonFormat;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.jeecgframework.poi.excel.annotation.Excel;
+import org.springframework.format.annotation.DateTimeFormat;
 
 /**
  * @Description: 备件申领
@@ -31,40 +31,19 @@ public class SparePartApply {
     @ApiModelProperty(value = "自增主键id")
 	private  Long  id;
 
-
 	/**申领编号*/
 	@Excel(name = "申领编号", width = 15)
     @ApiModelProperty(value = "申领编号")
 	private  String  code;
 
-	/**申领仓库 备件库*/
-	@Excel(name = "申领仓库 备件库", width = 15)
-    @ApiModelProperty(value = "申领仓库 备件库")
-	private  String  warehouseCode;
+	/**班组*/
+	@Excel(name = "班组", width = 15)
+    @ApiModelProperty(value = "班组")
+	private  String  departId;
 
 	/**出库仓库 二级库*/
     @ApiModelProperty(value = "出库仓库 二级库")
 	private  String  outWarehouseCode;
-
-    @ApiModelProperty("备件类型")
-	@TableField(exist = false)
-	private Integer materialType;
-
-    @ApiModelProperty("备件类型名称")
-	@TableField(exist = false)
-	private String materialTypeName;
-
-    @ApiModelProperty("申领总数量")
-	@TableField(exist = false)
-	private Integer applyAllNum;
-
-    @ApiModelProperty("所属班组")
-	@TableField(exist = false)
-	private String warehouseDepartment;
-
-	@ApiModelProperty("保管人")
-	@TableField(exist = false)
-	private String keeperName;
 
 
 	/**提交状态（0-未提交 1-已提交）*/
@@ -95,20 +74,32 @@ public class SparePartApply {
     @ApiModelProperty(value = "修改人")
 	private  String  updateBy;
 
+	/**申领时间*/
+	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
+    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
+    @ApiModelProperty(value = "申领时间")
+	private  java.util.Date  applyTime;
+
+	/**出库时间*/
+	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
+    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
+    @ApiModelProperty(value = "出库时间")
+	private  java.util.Date  stockOutTime;
+
 	/**创建时间*/
 	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
     @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
     @ApiModelProperty(value = "创建时间")
-	private  Date  createTime;
+	private  java.util.Date  createTime;
 
 	/**修改时间*/
 	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
     @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
     @ApiModelProperty(value = "修改时间")
-	private  Date  updateTime;
+	private  java.util.Date  updateTime;
 
 
-    private static final String ID = "id";
+    public static final String ID = "id";
     private static final String CODE = "code";
     private static final String WAREHOUSE_CODE = "warehouse_code";
     private static final String OUT_WAREHOUSE_CODE = "out_warehouse_code";

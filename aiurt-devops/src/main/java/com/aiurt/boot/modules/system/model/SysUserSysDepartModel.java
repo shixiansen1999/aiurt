@@ -1,7 +1,7 @@
 package com.aiurt.boot.modules.system.model;
 
-import com.swsc.copsms.modules.system.entity.SysDepart;
-import com.swsc.copsms.modules.system.entity.SysUser;
+import com.aiurt.boot.modules.system.entity.SysDepart;
+import com.aiurt.boot.modules.system.entity.SysUser;
 import lombok.Data;
 
 /**

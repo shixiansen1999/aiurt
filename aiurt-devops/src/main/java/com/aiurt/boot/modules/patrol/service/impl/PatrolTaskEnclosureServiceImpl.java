@@ -1,8 +1,8 @@
 package com.aiurt.boot.modules.patrol.service.impl;
 
-import com.swsc.copsms.modules.patrol.entity.PatrolTaskEnclosure;
-import com.swsc.copsms.modules.patrol.mapper.PatrolTaskEnclosureMapper;
-import com.swsc.copsms.modules.patrol.service.IPatrolTaskEnclosureService;
+import com.aiurt.boot.modules.patrol.entity.PatrolTaskEnclosure;
+import com.aiurt.boot.modules.patrol.mapper.PatrolTaskEnclosureMapper;
+import com.aiurt.boot.modules.patrol.service.IPatrolTaskEnclosureService;
 import org.springframework.stereotype.Service;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;

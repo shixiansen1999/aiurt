@@ -8,6 +8,7 @@ import lombok.experimental.Accessors;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * @description: IgnoreTaskParam
@@ -23,7 +24,7 @@ public class IgnoreTaskParam implements Serializable {
 
 	@ApiModelProperty(value = "巡检人员任务表id")
 	@NotNull(message = "任务表id不能为空")
-	private Long id;
+	private List<Long> ids;
 
 	@ApiModelProperty(value = "漏检处理信息")
 	@NotBlank(message = "处理信息不能未空")

@@ -2,7 +2,6 @@ package com.aiurt.boot.modules.secondLevelWarehouse.entity.dto;
 
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.sun.istack.NotNull;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import org.jeecgframework.poi.excel.annotation.Excel;
@@ -38,7 +37,7 @@ public class StockLevel2CheckExcel {
     @ApiModelProperty("仓库所属部门")
     private String warehouseDepartment;
 
-    @Excel(name = "盘点人名称", width = 15)
+    @Excel(name = "盘点人", width = 15)
     @ApiModelProperty("盘点人名称")
     private String checkerName;
 

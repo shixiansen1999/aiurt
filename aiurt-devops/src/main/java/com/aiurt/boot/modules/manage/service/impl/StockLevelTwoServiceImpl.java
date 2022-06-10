@@ -1,8 +1,8 @@
 package com.aiurt.boot.modules.manage.service.impl;
 
-import com.swsc.copsms.modules.manage.entity.StockLevelTwo;
-import com.swsc.copsms.modules.manage.mapper.StockLevelTwoMapper;
-import com.swsc.copsms.modules.manage.service.IStockLevelTwoService;
+import com.aiurt.boot.modules.manage.entity.StockLevelTwo;
+import com.aiurt.boot.modules.manage.mapper.StockLevelTwoMapper;
+import com.aiurt.boot.modules.manage.service.IStockLevelTwoService;
 import org.springframework.stereotype.Service;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;

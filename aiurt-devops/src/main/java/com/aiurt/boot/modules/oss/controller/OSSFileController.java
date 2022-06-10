@@ -5,12 +5,10 @@ import javax.servlet.http.HttpServletRequest;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.swsc.copsms.modules.oss.entity.OSSFile;
-import com.swsc.copsms.modules.oss.service.IOSSFileService;
-import com.swsc.copsms.common.api.vo.Result;
-import com.swsc.copsms.common.system.query.QueryGenerator;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
+import com.aiurt.boot.modules.oss.entity.OSSFile;
+import com.aiurt.boot.modules.oss.service.IOSSFileService;
+import com.aiurt.boot.common.api.vo.Result;
+import com.aiurt.boot.common.system.query.QueryGenerator;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -65,7 +63,7 @@ public class OSSFileController {
 		Result result = new Result();
 		OSSFile file = ossFileService.getById(id);
 		if (file == null) {
-			result.error500("未找到对应实体");
+			result.onnull("未找到对应实体");
 		}
 		else {
 			boolean ok = ossFileService.delete(file);
@@ -85,7 +83,7 @@ public class OSSFileController {
 		Result<OSSFile> result = new Result<>();
 		OSSFile file = ossFileService.getById(id);
 		if (file == null) {
-			result.error500("未找到对应实体");
+			result.onnull("未找到对应实体");
 		}
 		else {
 			result.setResult(file);

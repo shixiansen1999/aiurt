@@ -1,42 +1,26 @@
 package com.aiurt.boot.modules.secondLevelWarehouse.controller;
 
-import com.alibaba.fastjson.JSON;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.swsc.copsms.common.api.vo.Result;
-import com.swsc.copsms.common.aspect.annotation.AutoLog;
-import com.swsc.copsms.common.system.query.QueryGenerator;
-import com.swsc.copsms.common.util.oConvertUtils;
-import com.swsc.copsms.modules.secondLevelWarehouse.entity.SparePartInOrder;
-import com.swsc.copsms.modules.secondLevelWarehouse.entity.dto.SparePartInExcel;
-import com.swsc.copsms.modules.secondLevelWarehouse.entity.dto.SparePartInQuery;
-import com.swsc.copsms.modules.secondLevelWarehouse.entity.dto.SparePartLendExcel;
-import com.swsc.copsms.modules.secondLevelWarehouse.entity.dto.SparePartLendQuery;
-import com.swsc.copsms.modules.secondLevelWarehouse.entity.vo.SparePartInVO;
-import com.swsc.copsms.modules.secondLevelWarehouse.service.ISparePartInOrderService;
+import com.aiurt.boot.common.api.vo.Result;
+import com.aiurt.boot.common.aspect.annotation.AutoLog;
+import com.aiurt.boot.modules.secondLevelWarehouse.entity.dto.SparePartInExcel;
+import com.aiurt.boot.modules.secondLevelWarehouse.entity.dto.SparePartInQuery;
+import com.aiurt.boot.modules.secondLevelWarehouse.entity.vo.SparePartInVO;
+import com.aiurt.boot.modules.secondLevelWarehouse.service.ISparePartInOrderService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
-import org.jeecgframework.poi.excel.ExcelImportUtil;
 import org.jeecgframework.poi.excel.def.NormalExcelConstants;
 import org.jeecgframework.poi.excel.entity.ExportParams;
-import org.jeecgframework.poi.excel.entity.ImportParams;
+import org.jeecgframework.poi.excel.entity.enmus.ExcelType;
 import org.jeecgframework.poi.excel.view.JeecgEntityExcelView;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.multipart.MultipartHttpServletRequest;
 import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 
  /**
  * @Description: 备件入库表
@@ -49,7 +33,6 @@ import java.util.Map;
 @RestController
 @RequestMapping("/secondLevelWarehouse/sparePartInOrder")
 public class SparePartInOrderController {
-
 	@Autowired
 	private ISparePartInOrderService sparePartInOrderService;
 
@@ -84,33 +67,50 @@ public class SparePartInOrderController {
 		try {
 			sparePartInOrderService.removeById(id);
 		} catch (Exception e) {
-			log.error("删除失败",e.getMessage());
+			log.error("删除失败 {}",e.getMessage());
 			return Result.error("删除失败!");
 		}
 		return Result.ok("删除成功!");
 	}
 
 
-  /**
-      * 导出excel
-   *
-   * @param request
-   * @param response
-   */
+	 /**
+	  * 导出excel
+	  * @param sparePartInQuery
+	  * @return
+	  */
   @AutoLog("备件入库信息-导出")
   @ApiOperation("备件入库导出")
   @GetMapping(value = "/exportXls")
-  public ModelAndView exportXls(SparePartInQuery sparePartInQuery,
-                                HttpServletRequest request, HttpServletResponse response) {
-      // 导出Excel
-      ModelAndView mv = new ModelAndView(new JeecgEntityExcelView());
-      List<SparePartInExcel> list = sparePartInOrderService.exportXls(sparePartInQuery);
-      //导出文件名称
+  public ModelAndView exportXls(SparePartInQuery sparePartInQuery) {
+	  //Step.2 AutoPoi 导出Excel
+	  ModelAndView mv = new ModelAndView(new JeecgEntityExcelView());
+
+	  List<SparePartInExcel> sparePartInExcelIPage = sparePartInOrderService.exportXls(sparePartInQuery);
+	  //导出文件名称
       mv.addObject(NormalExcelConstants.FILE_NAME, "备件入库表列表");
       mv.addObject(NormalExcelConstants.CLASS, SparePartInExcel.class);
-      mv.addObject(NormalExcelConstants.PARAMS, new ExportParams("备件入库表列表数据", "导出人:Jeecg", "导出信息"));
-      mv.addObject(NormalExcelConstants.DATA_LIST, list);
+      mv.addObject(NormalExcelConstants.PARAMS, new ExportParams("备件入库表列表数据","导出信息", ExcelType.XSSF));
+      mv.addObject(NormalExcelConstants.DATA_LIST, sparePartInExcelIPage);
       return mv;
+  }
+
+	 /**
+	  * 批量确认
+	  * @param ids
+	  * @return
+	  */
+  @AutoLog(value = "批量确认")
+  @ApiOperation(value="批量确认", notes="批量确认")
+  @GetMapping(value = "/confirmBatch")
+  public Result<?> confirmBatch(@RequestParam String ids,HttpServletRequest req) {
+  	try {
+  		sparePartInOrderService.confirmBatch(ids,req);
+  		return Result.ok("确认成功");
+	}catch (Exception e) {
+  		log.error("确认失败");
+  		return Result.error(e.getMessage());
+	}
   }
 
 

@@ -1,43 +1,119 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.swsc.copsms.modules.secondLevelWarehouse.mapper.SparePartLendMapper">
+<mapper namespace="com.aiurt.boot.modules.secondLevelWarehouse.mapper.SparePartLendMapper">
 
-    <select id="queryPageList" resultType="com.swsc.copsms.modules.secondLevelWarehouse.entity.vo.SparePartLendVO">
-        select spl.id,spl.material_code,mb.name materialName,mb.type materialType,
-                    mb.specifications,mb.country_origin countryOrigin,mb.manufacturer,mb.brand,mb.unit,
-                    spl.lend_time,spl.lend_num,spl.remarks,spl.back_time,spl.status,w.warehouse_name
-        from spare_part_lend spl
-        left join spare_part_stock_info w on w.warehouse_code=spl.warehouse_code
-        left join material_base mb on mb.code=spl.material_code
-        where 1=1 and spl.del_flag!=1
-        <if test="sparePartLendQuery.materialName!=null and sparePartLendQuery.materialName!=''">
-            and mb.name like concat('%', #{sparePartLendQuery.materialName}, '%')
-        </if>
-        <if test="sparePartLendQuery.type!=null and sparePartLendQuery.type!=''">
-            and mb.type = #{sparePartLendQuery.type}
-        </if>
-        <if test="sparePartLendQuery.warehouseCode!=null and sparePartLendQuery.warehouseCode!=''">
-            and spl.warehouse_code = #{sparePartLendQuery.warehouseCode}
-        </if>
-
+    <select id="queryPageList" resultType="com.aiurt.boot.modules.secondLevelWarehouse.entity.vo.SparePartLendVO">
+        SELECT
+	        spl.id AS id,
+	        cs.system_name AS `system`,
+	        spl.material_code AS materialCode,
+	        mb.`name` AS materialName,
+	        mb.type AS `type`,
+	        mb.specifications AS specifications,
+	        mb.manufacturer AS manufacturer,
+	        spl.lend_num AS lendNum,
+	        spl.lend_time AS lendTime,
+	        sd.depart_name AS lendDepart,
+	        spl.lend_person AS lendPerson,
+	        spl.confirm_num AS confirmNum,
+	        spl.lend_confirm AS lendconfirm,
+	        spl.out_time AS outTime,
+	        sdt.depart_name AS outDepart,
+	        s.realname AS createBy,
+	        spl.back_time AS backTime,
+	        spl.back_num AS backNum,
+	        spl.remarks AS remarks,
+	        spl.`status` AS status,
+            sdtt.depart_name AS orgId
+        FROM
+	        spare_part_lend spl
+            LEFT JOIN sys_depart sdtt ON sdtt.id = spl.org_id
+	        LEFT JOIN material_base mb ON mb.CODE = spl.material_code
+	        LEFT JOIN cs_subsystem cs ON cs.system_code = mb.system_code
+	        LEFT JOIN sys_depart sd ON spl.lend_depart = sd.id
+	        LEFT JOIN sys_depart sdt ON sdt.id = spl.out_depart
+	        LEFT JOIN sys_user s ON s.id = spl.create_by
+        WHERE
+	        spl.del_flag = 0
+	        <if test="param.orgId != null and param.orgId != ''">
+                AND spl.org_id = #{param.orgId}
+            </if>
+            <if test="param.type != null and param.type != ''">
+                AND mb.type = #{param.type}
+            </if>
+            <if test="param.lineCode != null and param.lineCode != ''">
+                AND w.line_code = #{param.lineCode}
+            </if>
+            <if test="param.stationCode != null and param.stationCode != ''">
+                AND w.station_code = #{param.stationCode}
+            </if>
+            <if test="param.materialName != null and param.materialName != ''">
+                AND mb.`name` LIKE concat('%', #{param.materialName}, '%')
+            </if>
+            <if test="param.status != null">
+                AND spl.`status` = #{param.status}
+            </if>
+        ORDER BY
+	        spl.create_time DESC
     </select>
-    <select id="queryExportXls" resultType="com.swsc.copsms.modules.secondLevelWarehouse.entity.dto.SparePartLendExcel">
-        select spl.material_code,mb.name materialName,mb.type,
-                    mb.specifications,mb.country_origin countryOrigin,mb.manufacturer,mb.brand,mb.unit,
-                    spl.lend_time,spl.lend_num,spl.remarks,spl.back_time,spl.status,w.warehouse_name
-        from spare_part_lend spl
-        left join spare_part_stock_info w on w.warehouse_code=spl.warehouse_code
-        left join material_base mb on mb.code=spl.material_code
-        where 1=1 and spl.del_flag!=1
-        <if test="sparePartLendQuery.materialName!=null and sparePartLendQuery.materialName!=''">
-            and mb.name like concat('%', #{sparePartLendQuery.materialName}, '%')
-        </if>
-        <if test="sparePartLendQuery.type!=null and sparePartLendQuery.type!=''">
-            and mb.type = #{sparePartLendQuery.type}
-        </if>
-        <if test="sparePartLendQuery.warehouseCode!=null and sparePartLendQuery.warehouseCode!=''">
-            and spl.warehouse_code = #{sparePartLendQuery.warehouseCode}
-        </if>
-
+    <select id="queryExportXls" resultType="com.aiurt.boot.modules.secondLevelWarehouse.entity.vo.SparePartLendVO">
+        SELECT
+            spl.id AS id,
+            cs.system_name AS `system`,
+            spl.material_code AS materialCode,
+            mb.`name` AS materialName,
+            mb.type AS `type`,
+            mb.specifications AS specifications,
+            mb.manufacturer AS manufacturer,
+            spl.lend_num AS lendNum,
+            spl.lend_time AS lendTime,
+            sd.depart_name AS lendDepart,
+            spl.lend_person AS lendPerson,
+            spl.confirm_num AS confirmNum,
+            spl.out_time AS outTime,
+            sdt.depart_name AS outDepart,
+            s.realname AS createBy,
+            spl.back_time AS backTime,
+            spl.back_num AS backNum,
+            spl.remarks AS remarks,
+            spl.`status` AS status,
+            sdtt.depart_name AS orgId
+        FROM
+            spare_part_lend spl
+            LEFT JOIN sys_depart sdtt ON sdtt.id = spl.org_id
+            LEFT JOIN material_base mb ON mb.CODE = spl.material_code
+            LEFT JOIN cs_subsystem cs ON cs.system_code = mb.system_code
+            LEFT JOIN sys_depart sd ON spl.lend_depart = sd.id
+            LEFT JOIN sys_depart sdt ON sdt.id = spl.out_depart
+            LEFT JOIN sys_user s ON s.id = spl.create_by
+        WHERE
+            spl.del_flag = 0
+            <if test="param.orgId != null and param.orgId != ''">
+                AND spl.org_id = #{param.orgId}
+            </if>
+            <if test="param.type != null and param.type != ''">
+                AND mb.type = #{param.type}
+            </if>
+            <if test="param.lineCode != null and param.lineCode != ''">
+                AND w.line_code = #{param.lineCode}
+            </if>
+            <if test="param.stationCode != null and param.stationCode != ''">
+                AND w.station_code = #{param.stationCode}
+            </if>
+            <if test="param.materialName != null and param.materialName != ''">
+                AND mb.`name` LIKE concat('%', #{param.materialName}, '%')
+            </if>
+            <if test="param.status != null and param.status != ''">
+                AND spl.`status` = #{param.status}
+            </if>
+            <if test="param.selections!=null">
+                AND spl.id IN(
+                <foreach collection="param.selections" separator="," item="item">
+                    #{item}
+                </foreach>
+                )
+            </if>
+        ORDER BY
+            spl.create_time DESC
     </select>
 </mapper>

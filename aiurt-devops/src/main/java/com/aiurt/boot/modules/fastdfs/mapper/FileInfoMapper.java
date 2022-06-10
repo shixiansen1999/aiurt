@@ -1,6 +1,6 @@
 package com.aiurt.boot.modules.fastdfs.mapper;
 
-import com.swsc.copsms.modules.fastdfs.entity.FileInfo;
+import com.aiurt.boot.modules.fastdfs.entity.FileInfo;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import org.apache.ibatis.annotations.Mapper;
 import org.springframework.stereotype.Repository;

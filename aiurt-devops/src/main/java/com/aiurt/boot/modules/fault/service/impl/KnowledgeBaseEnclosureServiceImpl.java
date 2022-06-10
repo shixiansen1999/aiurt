@@ -1,9 +1,9 @@
 package com.aiurt.boot.modules.fault.service.impl;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.swsc.copsms.modules.fault.entity.KnowledgeBaseEnclosure;
-import com.swsc.copsms.modules.fault.mapper.KnowledgeBaseEnclosureMapper;
-import com.swsc.copsms.modules.fault.service.IKnowledgeBaseEnclosureService;
+import com.aiurt.boot.modules.fault.entity.KnowledgeBaseEnclosure;
+import com.aiurt.boot.modules.fault.mapper.KnowledgeBaseEnclosureMapper;
+import com.aiurt.boot.modules.fault.service.IKnowledgeBaseEnclosureService;
 import org.springframework.stereotype.Service;
 
 /**

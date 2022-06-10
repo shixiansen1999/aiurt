@@ -1,10 +1,6 @@
 package com.aiurt.boot.modules.secondLevelWarehouse.entity;
 
-import java.io.Serializable;
-import java.util.Date;
-
 import com.baomidou.mybatisplus.annotation.*;
-import com.sun.istack.NotNull;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -54,13 +50,13 @@ public class StockLevel2Check {
 	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
     @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
     @ApiModelProperty(value = "盘点开始时间")
-	private  Date  checkStartTime;
+	private  java.util.Date  checkStartTime;
 
 	/**盘点结束时间*/
 	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
     @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
     @ApiModelProperty(value = "盘点结束时间")
-	private  Date  checkEndTime;
+	private  java.util.Date  checkEndTime;
 
 	/**备注*/
 	@Excel(name = "备注", width = 15)
@@ -88,18 +84,18 @@ public class StockLevel2Check {
 	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
     @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
     @ApiModelProperty(value = "创建时间")
-	private  Date  createTime;
+	private  java.util.Date  createTime;
 
 	/**修改时间*/
 	@Excel(name = "修改时间", width = 20, format = "yyyy-MM-dd HH:mm:ss")
 	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
     @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
     @ApiModelProperty(value = "修改时间")
-	private  Date  updateTime;
+	private  java.util.Date  updateTime;
 
 
     private static final String ID = "id";
-    private static final String STOCK_CHECK_CODE = "stock_check_code";
+    public static final String STOCK_CHECK_CODE = "stock_check_code";
     private static final String WAREHOUSE_CODE = "warehouse_code";
     private static final String CHECK_NUM = "check_num";
     private static final String CHECKER_ID = "checker_id";
@@ -111,7 +107,7 @@ public class StockLevel2Check {
     private static final String CREATE_BY = "create_by";
     private static final String UPDATE_BY = "update_by";
     private static final String CREATE_TIME = "create_time";
-    private static final String UPDATE_TIME = "update_time";
+    public static final String UPDATE_TIME = "update_time";
 
 
 }

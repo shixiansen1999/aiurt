@@ -1,85 +1,865 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.swsc.copsms.modules.fault.mapper.FaultMapper">
+<mapper namespace="com.aiurt.boot.modules.fault.mapper.FaultMapper">
+	<select id="queryFault" resultType="com.aiurt.boot.common.result.FaultResult">
+		SELECT
+			f.id AS id,
+			f.CODE AS CODE,
+			f.line_code AS lineCode,
+			f.station_code AS stationCode,
+			f.devices_ids AS devicesIds,
+			f.fault_phenomenon AS faultPhenomenon,
+			f.fault_type AS faultType,
+			f.occurrence_time AS occurrenceTime,
+			f.STATUS AS STATUS,
+			f.system_code AS systemCode,
+			f.assign_status AS assignStatus,
+			f.del_flag AS delFlag,
+			f.fault_level AS faultLevel,
+			f.detail_location AS detailLocation,
+			f.create_by AS createBy,
+			f.update_by AS updateBy,
+			f.create_time AS createTime,
+			f.repair_way AS repairWay,
+			f.update_time AS updateTime,
+			f.repair_code AS repairCode,
+			f.hang_state AS hangState,
+			f.remark AS remark,
+			f.scope AS scope,
+			su.realname AS createByName,
+			cs.station_name AS station,
+			cs.team_id AS  teamId,
+			cst.system_name AS systemName,
+			sd.depart_name AS departName,
+			cl.line_name AS lineName
+		FROM
+			fault f
+			LEFT JOIN sys_user su ON f.create_by = su.id
+			LEFT JOIN cs_station cs ON f.station_code = cs.station_code
+			LEFT JOIN cs_subsystem cst ON f.system_code = cst.system_code
+			LEFT JOIN cs_line cl ON f.line_code = cl.line_code
+			LEFT JOIN sys_depart sd ON f.org_id = sd.id
+		WHERE
+			f.del_flag = 0
+		<if test="param.systemCode != null and param.systemCode != ''">
+			AND f.system_code = #{param.systemCode}
+		</if>
+		<if test="param.hangState != null">
+			AND f.hang_state = #{param.hangState}
+		</if>
+		<if test="param.code != null and param.code != ''">
+			AND f.code like concat('%'
+			, #{param.code}
+			, '%')
+		</if>
+		<if test="param.faultPhenomenon != null and param.faultPhenomenon != ''">
+			AND f.fault_phenomenon like concat('%'
+			, #{param.faultPhenomenon}
+			, '%')
+		</if>
+		<if test="param.stationCode != null and param.stationCode != ''">
+			AND f.station_code = #{param.stationCode}
+		</if>
+		<if test="param.devicesIds != null and param.devicesIds != ''">
+			AND f.devices_ids like concat('%'
+			, #{param.devicesIds}
+			, '%')
+		</if>
+		<if test="param.repairWay != null and param.repairWay != ''">
+			AND f.repair_way = #{param.repairWay}
+		</if>
+		<if test="param.status != null">
+			AND f.status = #{param.status}
+		</if>
+		<if test="param.dayStart != null and param.dayStart != '' and param.dayEnd != null and param.dayEnd != ''">
+			AND f.create_time &gt;= #{param.dayStart}
+			AND f.create_time &lt;= #{param.dayEnd}
+		</if>
+		<if test="param.orgId != null and param.orgId != ''">
+			AND f.org_id = #{param.orgId}
+		</if>
 
+		<!--权限控制-->
+		<if test="param.departList !=null and param.departList.size() >0">
+			AND ( (f.org_id IN
+			<foreach collection="param.departList" separator="," open="(" close=")" item="id">
+				#{id}
+			</foreach>
+			<if test="param.stationCodes != null and param.stationCodes.size() > 0">
+				and f.station_code in
+				<foreach collection="param.stationCodes" separator="," open="(" close=")" item="code">
+					#{code}
+				</foreach>
+			</if>
+			) or f.create_by = #{param.userId})
+		</if>
 
-    <select id="queryFault" resultType="com.swsc.copsms.common.result.FaultResult">
-        SELECT
-        	id as id,
-        	CODE as code,
-        	line_code as lineCode,
-        	station_code as stationCode,
-        	devices_ids as devicesIds,
-        	fault_phenomenon as faultPhenomenon,
-        	fault_type as faultType,
-        	STATUS as status,
-        	system_code as systemCode,
-			assign_status as assignStatus,
-        	del_flag as delFlag,
-        	create_by as createBy,
-        	update_by as updateBy,
-        	create_time as createTime,
-			repair_way as repairWay,
-        	update_time as updateTime,
-			hang_state as hangState,
-			remark as remark
-        FROM
-        	fault
-		WHERE 1 = 1
-        <if test="param.systemCode!= null and param.systemCode!= ''">
-		 	AND system_code = #{param.systemCode}
+		<if test="param.systemCodes !=null and param.systemCodes.size() >0">
+			AND (f.system_code IN
+			<foreach collection="param.systemCodes" separator="," open="(" close=")" item="id">
+				#{id}
+			</foreach>
+			or f.create_by = #{param.userId}
+			)
 		</if>
-		<if test="param.code!= null and param.code!= ''">
-			AND code = #{param.code}
-		</if>
-		<if test="param.stationCode!= null and param.stationCode!= ''">
-			AND station_code = #{param.stationCode}
-		</if>
-		<if test="param.devicesIds!= null and param.devicesIds!= ''">
-			AND devices_ids = #{param.devicesIds}
-		</if>
-		<if test="param.repairWay!= null and param.repairWay!= ''">
-			AND repair_way = #{param.repairWay}
-		</if>
-		<if test="param.status!= null and param.status!= ''">
-			AND status = #{param.status}
-		</if>
-		<if test="param.dayStart!= null and param.dayStart!= '' and param.dayEnd!= null and param.dayEnd!= ''">
-			AND create_time &gt;= #{param.dayStart} and create_time &lt; #{param.dayEnd}
-		</if>
-			AND del_flag = '0'
-    </select>
-
-	<select id="selectByCode" resultType="com.swsc.copsms.modules.fault.entity.Fault">
-		select * from fault where code = #{code}
+		ORDER BY
+			f.create_time DESC
 	</select>
 
-	<select id="selectDetailByCode" resultType="com.swsc.copsms.common.result.FaultResult">
-		select * from fault where code = #{code}
+	<select id="exportXls" resultType="com.aiurt.boot.common.result.FaultResult">
+		SELECT
+			f.id AS id,
+			f.CODE AS CODE,
+			f.line_code AS lineCode,
+			f.station_code AS stationCode,
+			f.devices_ids AS devicesIds,
+			f.fault_phenomenon AS faultPhenomenon,
+			f.fault_type AS faultType,
+			f.occurrence_time AS occurrenceTime,
+			f.STATUS AS STATUS,
+			f.system_code AS systemCode,
+			f.assign_status AS assignStatus,
+			f.del_flag AS delFlag,
+			f.fault_level AS faultLevel,
+			f.detail_location AS detailLocation,
+			f.create_by AS createBy,
+			f.update_by AS updateBy,
+			f.create_time AS createTime,
+			f.repair_way AS repairWay,
+			f.update_time AS updateTime,
+			f.repair_code AS repairCode,
+			f.hang_state AS hangState,
+			f.remark AS remark,
+			f.scope AS scope,
+			su.realname AS createByName,
+			cs.station_name AS station,
+			cs.team_id AS  teamId,
+			cst.system_name AS systemName,
+			sd.depart_name AS departName,
+			cl.line_name AS lineName
+		FROM
+			fault f
+			LEFT JOIN sys_user su ON f.create_by = su.id
+			LEFT JOIN cs_station cs ON f.station_code = cs.station_code
+			LEFT JOIN cs_subsystem cst ON f.system_code = cst.system_code
+			LEFT JOIN cs_line cl ON f.line_code = cl.line_code
+			LEFT JOIN sys_depart sd ON f.org_id = sd.id
+		WHERE
+			f.del_flag = 0
+		<if test="param.systemCode != null and param.systemCode != ''">
+			AND f.system_code = #{param.systemCode}
+		</if>
+		<if test="param.hangState != null">
+			AND f.hang_state = #{param.hangState}
+		</if>
+		<if test="param.code != null and param.code != ''">
+			AND f.code like concat('%'
+			, #{param.code}
+			, '%')
+		</if>
+		<if test="param.faultPhenomenon != null and param.faultPhenomenon != ''">
+			AND f.fault_phenomenon like concat('%'
+			, #{param.faultPhenomenon}
+			, '%')
+		</if>
+		<if test="param.stationCode != null and param.stationCode != ''">
+			AND f.station_code = #{param.stationCode}
+		</if>
+		<if test="param.devicesIds != null and param.devicesIds != ''">
+			AND f.devices_ids like concat('%'
+			, #{param.devicesIds}
+			, '%')
+		</if>
+		<if test="param.repairWay != null and param.repairWay != ''">
+			AND f.repair_way = #{param.repairWay}
+		</if>
+		<if test="param.status != null">
+			AND f.status = #{param.status}
+		</if>
+		<if test="param.dayStart != null and param.dayStart != '' and param.dayEnd != null and param.dayEnd != ''">
+			AND f.create_time &gt;= #{param.dayStart}
+			AND f.create_time &lt;= #{param.dayEnd}
+		</if>
+		<if test="param.orgId != null and param.orgId != ''">
+			AND f.org_id = #{param.orgId}
+		</if>
+		<!--权限控制-->
+		<if test="param.departList !=null and param.departList.size() >0">
+			AND f.org_id IN
+			<foreach collection="param.departList" separator="," open="(" close=")" item="id">
+				#{id}
+			</foreach>
+		</if>
+
+		<if test="param.systemCodes !=null and param.systemCodes.size() >0">
+			AND f.system_code IN
+			<foreach collection="param.systemCodes" separator="," open="(" close=")" item="id">
+				#{id}
+			</foreach>
+		</if>
+		ORDER BY
+			f.create_time DESC
 	</select>
 
-	<select id="selectById" resultType="com.swsc.copsms.modules.fault.entity.Fault">
-		select * from fault where id = #{id}
+	<select id="selectDetailByCode" resultType="com.aiurt.boot.common.result.FaultResult">
+		SELECT
+			f.*,
+			cst.system_name AS systemName,
+			cs.station_name AS station
+		FROM
+			fault f
+		LEFT JOIN cs_station cs ON f.station_code = cs.station_code
+		LEFT JOIN cs_subsystem cst ON f.system_code = cst.system_code
+		WHERE f.code = #{code}
 	</select>
 
-	<select id="selectCodeDetail" resultType="com.swsc.copsms.common.result.FaultCodesResult">
-		select code as code , fault_phenomenon as faultPhenomenon from fault where code = #{code}
+	<select id="selectById" resultType="com.aiurt.boot.modules.fault.entity.Fault">
+		select *
+		from fault
+		where id = #{id}
 	</select>
 
-	<update id="hang">
-		UPDATE fault SET hang_state = '1', remark = #{remark} WHERE id = #{id}
+	<select id="selectCodeDetail" resultType="com.aiurt.boot.common.result.FaultCodesResult">
+		select code as code, fault_phenomenon as faultPhenomenon
+		from fault
+		where code = #{code}
+	</select>
+
+	<update id="hangById">
+		UPDATE fault
+		SET hang_state = '1',
+		    remark = #{remark}
+		WHERE id = #{id}
 	</update>
 
-	<update id="cancel">
-		UPDATE fault SET hang_state = '0' WHERE id = #{id}
+	<update id="cancelById">
+		UPDATE fault
+		SET hang_state = '0',remark = null
+		WHERE id = #{id}
 	</update>
 
-	<update id="assign">
-		UPDATE fault SET assign_status = '1' WHERE code = #{code}
+	<update id="assignByCode">
+		UPDATE fault
+		SET assign_status = '1',status = '1'
+		WHERE code = #{code}
 	</update>
 
 	<update id="assignAgain">
-		UPDATE fault SET assign_status = '2' WHERE code = #{code}
+		UPDATE fault
+		SET assign_status = '1',status = '1'
+		WHERE code = #{code}
 	</update>
+
+	<update id="updateStatus">
+		UPDATE fault
+		SET assign_status = '2',status = '2'
+		WHERE code = #{code}
+	</update>
+
+	<update id="updateByFaultCode">
+		UPDATE fault
+		SET fault_phenomenon = #{faultPhenomenon}
+		WHERE code = #{code}
+	</update>
+
+	<select id="selectAppHome" resultType="com.aiurt.boot.modules.apphome.vo.FaultHomeVO">
+		SELECT f.id               as id,
+		       f.CODE             as code,
+		       f.line_code        as lineCode,
+		       f.station_code     as stationCode,
+		       f.devices_ids      as devicesIds,
+		       f.fault_phenomenon as faultPhenomenon,
+		       f.fault_type       as faultType,
+		       f.occurrence_time  as occurrenceTime,
+		       f.STATUS           as status,
+		       f.system_code      as systemCode,
+		       f.assign_status    as assignStatus,
+		       f.del_flag         as delFlag,
+		       f.create_by        as createBy,
+		       f.update_by        as updateBy,
+		       f.create_time      as time,
+		       f.repair_way       as repairWay,
+		       f.update_time      as updateTime,
+		       f.hang_state       as hangState,
+		       f.remark           as remark,
+		       f.location         as title,
+			   f.occurrence_time  as occurrenceTime,
+			   f.fault_level      as faultLevel,
+			   r.create_time      as overTime
+		FROM fault f
+				LEFT JOIN fault_repair_record r
+				ON r.fault_code = f.code
+		WHERE
+			f.del_flag = 0
+			AND r.del_flag = 0
+			<if test="param.userId != null and param.userId != ''">
+				AND r.appoint_user_id like concat('%'
+						, #{param.userId}
+						, '%')
+			</if>
+			<if test="param.type != null">
+				AND solve_status = #{param.type}
+			</if>
+			<if test="param.startTime != null and param.endTime != null">
+				AND (f.create_time between #{param.startTime} and #{param.endTime})
+			</if>
+			<if test="param.keyName !=null and param.keyName !=''">
+				AND (
+				f.repair_code like concat('%',#{param.keyName},'%')
+				or f.fault_phenomenon like concat('%',#{param.keyName},'%')
+				)
+			</if>
+		ORDER BY
+			f.create_time DESC
+	</select>
+
+	<select id="selectAppHomeCount" resultType="java.lang.Integer">
+		SELECT
+			COUNT(*)
+		FROM
+			fault f
+		LEFT JOIN fault_repair_record r ON r.fault_code = f.CODE
+		WHERE
+			1 = 1
+		<if test="param.userId != null and param.userId != ''">
+			and r.appoint_user_id like concat('%'
+			, #{param.userId}
+			, '%')
+		</if>
+		<if test="param.startTime != null and param.endTime != null">
+			and (f.create_time between #{param.startTime} and #{param.endTime})
+		</if>
+		AND solve_status = 1
+		AND f.del_flag = 0
+		AND r.del_flag = 0
+	</select>
+
+	<select id="selectTimeOutCount" resultType="java.lang.Integer">
+		SELECT
+			COUNT(*)
+		FROM
+			fault
+		WHERE
+			del_flag = 0
+			AND `status` != 2
+			AND create_time &lt;= #{nowTime}
+		<if test="startTime != null and endTime != null">
+			AND create_time &gt;= #{startTime}
+			AND create_time &lt;= #{endTime}
+		</if>
+	</select>
+
+	<select id="selectTimeOutHangNum" resultType="java.lang.Integer">
+		SELECT
+			COUNT(*)
+		FROM
+			fault
+		WHERE
+			del_flag = 0
+			AND `status` != 2
+			AND hang_state = 1
+			AND create_time &lt;= #{nowTime}
+		<if test="startTime != null and endTime != null">
+			AND create_time &gt;= #{startTime}
+			AND create_time &lt;= #{endTime}
+		</if>
+	</select>
+
+	<select id="selectFaultCount" resultType="com.aiurt.boot.common.result.FaultCountResult">
+		SELECT
+			COUNT(*) AS sumNum,
+			cs.system_name AS systemName,
+			cs.system_code AS systemCode
+		FROM
+			fault f
+			LEFT JOIN cs_subsystem cs ON cs.system_code = f.system_code
+		WHERE
+			f.del_flag = 0
+			AND (f.create_time between #{param.dayStart} and #{param.dayEnd})
+			<if test="param.lineCode != null and param.lineCode != ''">
+				AND f.line_code = #{param.lineCode}
+			</if>
+			<if test="param.stationCode != null and param.stationCode != ''">
+				AND f.station_code = #{param.stationCode}
+			</if>
+			<if test="param.systemCode != null and param.systemCode != ''">
+				AND f.system_code = #{param.systemCode}
+			</if>
+		GROUP BY
+			f.system_code
+	</select>
+
+	<select id="selectSelfCheckNum" resultType="java.lang.Integer">
+		SELECT
+			COUNT(*)
+		FROM
+			fault
+		WHERE
+			del_flag = 0
+			AND repair_way = '自检'
+			AND (create_time between #{param.dayStart} and #{param.dayEnd})
+			<if test="param.lineCode != null and param.lineCode != ''">
+				AND line_code = #{param.lineCode}
+			</if>
+			<if test="param.stationCode != null and param.stationCode != ''">
+				AND station_code = #{param.stationCode}
+			</if>
+			<if test="param.systemCode != null and param.systemCode != ''">
+				AND system_code = #{param.systemCode}
+			</if>
+	</select>
+
+	<select id="selectLastMonthNum" resultType="java.lang.Integer">
+		SELECT
+			COUNT(*)
+		FROM
+			fault
+		WHERE
+			del_flag = 0
+			AND (create_time between #{param.dayStart} and #{param.dayEnd})
+			<if test="param.lineCode != null and param.lineCode != ''">
+				AND line_code = #{param.lineCode}
+			</if>
+			<if test="param.stationCode != null and param.stationCode != ''">
+				AND station_code = #{param.stationCode}
+			</if>
+			<if test="param.systemCode != null and param.systemCode != ''">
+				AND system_code = #{param.systemCode}
+			</if>
+	</select>
+
+	<select id="selectContrast" resultType="com.aiurt.boot.common.result.FaultCountResult">
+		SELECT
+			COUNT(1) AS sumNum,
+			cs.system_name AS systemName,
+			cs.system_code AS systemCode
+		FROM
+			fault f
+			LEFT JOIN cs_subsystem cs ON cs.system_code = f.system_code
+		WHERE
+			f.del_flag = 0
+			<if test="param.lineCode != null and param.lineCode != ''">
+				AND f.line_code = #{param.lineCode}
+			</if>
+			<if test="param.stationCode != null and param.stationCode != ''">
+				AND f.station_code = #{param.stationCode}
+			</if>
+			<if test="param.dayStart!=null">
+				and f.create_time &gt;= #{param.dayStart}
+			</if>
+			<if test="param.dayEnd!=null">
+				and f.create_time &lt;= #{param.dayEnd}
+			</if>
+			<if test="param.systemCode!=null and param.systemCode!= ''">
+				and f.system_code = #{param.systemCode}
+			</if>
+		GROUP BY
+			f.system_code
+	</select>
+
+	<select id="selectFaultNumByMonth" resultType="com.aiurt.boot.common.result.FaultMonthResult">
+		SELECT
+			COUNT(*) AS sumNum,
+			MONTH ( create_time ) AS thisMonth
+		FROM
+			fault
+		WHERE
+			del_flag = 0
+			AND (create_time between #{param.dayStart} and #{param.dayEnd})
+			<if test="param.lineCode != null and param.lineCode != ''">
+				AND line_code = #{param.lineCode}
+			</if>
+			<if test="param.stationCode != null and param.stationCode != ''">
+				AND station_code = #{param.stationCode}
+			</if>
+			<if test="param.systemCode != null and param.systemCode != ''">
+				AND system_code = #{param.systemCode}
+			</if>
+		GROUP BY
+			YEAR ( create_time ),
+			MONTH (
+			create_time)
+	</select>
+
+	<select id="selectThisMonthNum" resultType="java.lang.Integer">
+		SELECT
+			COUNT(*) AS sumNum
+		FROM
+			fault
+		WHERE
+			del_flag = 0
+			AND repair_way = '自检'
+			<if test="param.lineCode != null and param.lineCode != ''">
+				AND line_code = #{param.lineCode}
+			</if>
+			<if test="param.stationCode != null and param.stationCode != ''">
+				AND station_code = #{param.stationCode}
+			</if>
+			<if test="param.systemCode != null and param.systemCode != ''">
+				AND system_code = #{param.systemCode}
+			</if>
+			AND (create_time BETWEEN #{dayStart} AND #{dayEnd})
+	</select>
+
+	<select id="selectFaultByMonth" resultType="com.aiurt.boot.common.result.FaultMonthResult">
+		SELECT
+			COUNT(*) AS sumNum,
+			MONTH ( create_time ) AS thisMonth
+		FROM
+			fault
+		WHERE
+			del_flag = 0
+			AND (create_time between #{param.dayStart} and #{param.dayEnd})
+			<if test="param.lineCode != null and param.lineCode != ''">
+				AND line_code = #{param.lineCode}
+			</if>
+			<if test="param.stationCode != null and param.stationCode != ''">
+				AND station_code = #{param.stationCode}
+			</if>
+			<if test="param.systemCode != null and param.systemCode != ''">
+				AND system_code = #{param.systemCode}
+			</if>
+		GROUP BY
+			YEAR ( create_time ),
+		MONTH (
+			create_time)
+	</select>
+
+	<select id="selectThisMonth" resultType="java.lang.Integer">
+		SELECT
+			COUNT(*) AS sumNum
+		FROM
+			fault
+		WHERE
+			del_flag = 0
+			<if test="param.lineCode != null and param.lineCode != ''">
+				AND line_code = #{param.lineCode}
+			</if>
+			<if test="param.stationCode != null and param.stationCode != ''">
+				AND station_code = #{param.stationCode}
+			</if>
+			<if test="param.systemCode != null and param.systemCode != ''">
+				AND system_code = #{param.systemCode}
+			</if>
+			AND (create_time BETWEEN #{dayStart} AND #{dayEnd})
+	</select>
+
+	<select id="selectFirstLevelFault" resultType="com.aiurt.boot.common.result.FaultLevelResult">
+		SELECT
+			`code` AS faultCode,
+			fault_phenomenon AS faultPhenomenon,
+			create_time AS createTime
+		FROM
+			fault
+		WHERE
+			del_flag = 0
+			AND create_time &lt;= #{nowTime}
+			AND `status` != 2
+			<if test="startTime != null and endTime != null">
+				AND create_time &gt;= #{startTime}
+				AND create_time &lt;= #{endTime}
+			</if>
+	</select>
+
+	<select id="selectLevelFault" resultType="com.aiurt.boot.common.result.FaultLevelResult">
+		SELECT
+			`code` AS faultCode,
+			fault_phenomenon AS faultPhenomenon,
+			create_time AS createTime
+		FROM
+			fault
+		WHERE
+			del_flag = 0
+			AND `status` != 2
+			AND create_time >= #{nowTime}
+			AND create_time &lt;= #{powerDay}
+			<if test="startTime != null and endTime != null">
+				AND create_time &gt;= #{startTime}
+				AND create_time &lt;= #{endTime}
+			</if>
+	</select>
+
+	<select id="selectFaultDeviceDetail" resultType="com.aiurt.boot.common.result.FaultDeviceResult">
+		SELECT
+			f.create_time AS createTime,
+			f.`code` AS `code`,
+			f.fault_level AS faultLevel,
+			cs.system_name AS systemName,
+			cst.station_name AS stationName,
+			f.location AS location,
+			su.realname AS createBy
+		FROM
+			fault f
+			LEFT JOIN cs_subsystem cs ON cs.system_code = f.system_code
+			LEFT JOIN cs_station cst ON cst.station_code = f.station_code
+			LEFT JOIN sys_user su ON su.id = f.create_by
+		WHERE
+			f.del_flag = 0
+			AND f.devices_ids IN (#{id})
+			<if test="param.dayStart != null and param.dayEnd != null">
+				AND f.create_time &gt;= #{param.dayStart}
+				AND f.create_time &lt;= #{param.dayEnd}
+			</if>
+			<if test="param.createBy != null and param.createBy != ''">
+				AND su.realname = #{param.createBy}
+			</if>
+	</select>
+	<select id="getFaultCountGroupByWay" resultType="com.aiurt.boot.modules.statistical.vo.StatisticsFaultWayVO">
+		SELECT
+			t.repair_way AS repairWay,
+			COUNT(*) AS count
+		FROM fault t
+		WHERE
+			t.del_flag=0
+			AND  t.occurrence_time	BETWEEN #{startTime} AND #{endTime}
+			<if test="lineCode!=null and lineCode!=''">
+				AND  t.line_code=#{lineCode}
+			</if>
+			GROUP BY t.repair_way
+	</select>
+	<select id="getFaultCountGroupByStatus" resultType="com.aiurt.boot.modules.statistical.vo.StatisticsFaultStatusVO">
+	SELECT
+		t.status AS status,
+		COUNT(*) AS count
+	FROM fault t
+	WHERE
+		t.del_flag=0
+		AND  t.occurrence_time	BETWEEN #{startTime} AND #{endTime}
+		<if test="lineCode!=null and lineCode!=''">
+			AND  t.line_code=#{lineCode}
+		</if>
+		GROUP BY t.status
+	</select>
+	<select id="getFaultGroupByLevel" resultType="com.aiurt.boot.modules.statistical.vo.StatisticsFaultLevelVO">
+		SELECT *,
+		(CASE WHEN duration&lt;=24 THEN '三级'
+		      WHEN 24&lt;duration&lt;=48 THEN '二级'
+		      ELSE '三级' END ) AS level
+		FROM(SELECT
+				TIMESTAMPDIFF(HOUR,t.create_time,NOW()) AS duration,
+				t.code,
+				t.fault_phenomenon AS faultPhenomenon
+			FROM  fault t
+			WHERE t.del_flag = 0
+				AND t.status != 2
+				AND  t.occurrence_time	BETWEEN #{startTime} AND #{endTime}
+				<if test="lineCode!=null and lineCode!=''">
+					AND  t.line_code=#{lineCode}
+				</if>)
+        AS fault_level
+	</select>
+    <select id="getFaultCountGroupByMonth" resultType="com.aiurt.boot.modules.statistical.vo.StatisticsFaultMonthVO">
+		SELECT
+		tb1.MONTH,
+		tb2.count
+		FROM
+		(
+		SELECT
+		1 AS `month` UNION
+		SELECT
+		2 AS `month` UNION
+		SELECT
+		3 AS `month` UNION
+		SELECT
+		4 AS `month` UNION
+		SELECT
+		5 AS `month` UNION
+		SELECT
+		6 AS `month` UNION
+		SELECT
+		7 AS `month` UNION
+		SELECT
+		8 AS `month` UNION
+		SELECT
+		9 AS `month` UNION
+		SELECT
+		10 AS `month` UNION
+		SELECT
+		11 AS `month` UNION
+		SELECT
+		12 AS `month`
+		) tb1
+		LEFT JOIN (
+		SELECT MONTH
+		( t.create_time ) AS MONTH,
+		COUNT(*) AS count
+		FROM
+		fault t
+		WHERE
+		t.del_flag = 0
+		AND t.STATUS = 2
+		AND  t.occurrence_time BETWEEN #{startTime} AND #{endTime}
+		<if test="lineCode!=null and lineCode!=''">
+			AND  t.line_code=#{lineCode}
+		</if>
+		GROUP BY
+		MONTH ( t.create_time )
+		ORDER BY
+		MONTH
+		) tb2 ON tb1.MONTH = tb2.MONTH
+    </select>
+    <select id="getFaultCountGroupBySystem" resultType="com.aiurt.boot.modules.statistical.vo.StatisticsFaultSystemVO">
+      SELECT
+      t.system_name AS systemName,
+      COUNT(fault.id) AS  count
+      FROM
+      cs_subsystem t
+      LEFT JOIN fault ON t.system_code=fault.system_code
+      AND t.del_flag = 0
+      AND  fault.occurrence_time BETWEEN #{startTime} AND #{endTime}
+      GROUP BY  t.system_code
+    </select>
+
+	<select id="selectFaultStatisticsModal" resultType="com.aiurt.boot.modules.statistical.vo.FaultStatisticsModal">
+        SELECT
+			f.`code` AS `code`,
+			f.station_code AS stationCode,
+			s.station_name AS stationName,
+			f.occurrence_time AS occurrenceTime,
+			r.appoint_user_id AS appointUserId,
+			r.participate_ids AS participateIds,
+			r.solve_status AS solveStatus,
+			f.assign_status AS assignStatus,
+		f.`status` AS `status`,
+		cs.system_name as systemName
+        FROM
+        	fault f
+        LEFT JOIN fault_repair_record r ON f. CODE = r.fault_code
+        INNER JOIN cs_station s ON f.station_code = s.station_code
+		inner join cs_subsystem cs on f.system_code = cs.system_code
+        where
+		f.del_flag = 0 and (r.del_flag = 0 or r.del_flag is null)
+			<if test="startTime != null and endTime != null">
+				AND f.occurrence_time between #{startTime} and #{endTime}
+			</if>
+		<if test="lineCode !=null and lineCode !=''">
+			AND f.line_code = #{lineCode}
+		</if>
+        order by f.occurrence_time desc
+    </select>
+
+	<select id="countUnCompleteNumByLineCode" resultType="int">
+		SELECT
+			count(1)
+		FROM
+		fault f
+		WHERE
+		f.del_flag = 0
+		AND f.occurrence_time between #{startTime} and #{endTime}
+		And (f.status = 0 or f.status = 1)
+		<if test="lineCode !=null and lineCode !=''">
+			AND f.line_code = #{lineCode}
+		</if>
+	</select>
+	<select id="getFaultCompleteCount" resultType="int">
+		SELECT
+			count(1)
+		FROM
+			fault f
+		WHERE
+			f.del_flag = 0
+		AND f.status=2
+		AND f.occurrence_time between #{startTime} and #{endTime}
+		<if test="lineCode !=null and lineCode !=''">
+			AND f.line_code = #{lineCode}
+		</if>
+	</select>
+
+	<select id="getFaultCount" resultType="int">
+		SELECT
+			count(1)
+		FROM
+		fault f
+		WHERE
+		f.del_flag = 0
+		AND f.occurrence_time between #{startTime} and #{endTime}
+		<if test="lineCode !=null and lineCode !=''">
+			AND f.line_code = #{lineCode}
+		</if>
+	</select>
+	<select id="selectFaultSystemVO" resultType="com.aiurt.boot.modules.statistical.vo.FaultSystemVO">
+		SELECT
+		cs_subsystem.system_name AS systemName,
+		cs_station.station_name AS station,
+		t.occurrence_time AS occurrenceTime,
+		s.realname AS appointUser,
+		t.code as code,
+		GROUP_CONCAT(sys_user.realname) AS maintenanceUser,
+		t.status AS status
+		FROM fault t
+		LEFT JOIN cs_subsystem
+		ON t.system_code = cs_subsystem.system_code
+		LEFT JOIN cs_station
+		ON t.station_code = cs_station.station_code
+		LEFT JOIN fault_repair_record
+		ON t.code = fault_repair_record.fault_code
+		LEFT JOIN  sys_user ON FIND_IN_SET(sys_user.id,fault_repair_record.participate_ids)
+		LEFT JOIN  sys_user s ON s.id=fault_repair_record.appoint_user_id
+		WHERE t.del_flag = 0
+		AND  t.occurrence_time BETWEEN #{startTime} AND #{endTime}
+		<if test="lineCode !=null and lineCode !=''">
+			AND f.line_code = #{lineCode}
+		</if>
+		GROUP BY t.id
+	</select>
+
+	<select id="getUncompletedFault" resultType="com.aiurt.boot.modules.statistical.vo.FaultStatisticsModal">
+		SELECT
+		f.`code` AS `code`,
+		f.station_code AS stationCode,
+		s.station_name AS stationName,
+		f.occurrence_time AS occurrenceTime,
+		r.appoint_user_id AS appointUserId,
+		r.participate_ids AS participateIds,
+		r.solve_status AS solveStatus,
+		f.assign_status AS assignStatus,
+		f.`status` AS `status`,
+		cs.system_name as systemName
+		FROM
+		fault f
+		LEFT JOIN fault_repair_record r ON f. CODE = r.fault_code
+		INNER JOIN cs_station s ON f.station_code = s.station_code
+		inner join cs_subsystem cs on f.system_code = cs.system_code
+		where
+		f.del_flag = 0
+		And (f.status = 0 or f.status = 1) and (r.del_flag = 0 or r.del_flag is null)
+		<if test="startTime != null and endTime != null">
+			AND f.occurrence_time between #{startTime} and #{endTime}
+		</if>
+		<if test="lineCode !=null and lineCode !=''">
+			AND f.line_code = #{lineCode}
+		</if>
+		order by f.occurrence_time desc
+	</select>
+
+	<select id="getCompletedFault" resultType="com.aiurt.boot.modules.statistical.vo.FaultStatisticsModal">
+		SELECT
+		f.`code` AS `code`,
+		f.station_code AS stationCode,
+		s.station_name AS stationName,
+		f.occurrence_time AS occurrenceTime,
+		r.appoint_user_id AS appointUserId,
+		r.participate_ids AS participateIds,
+		r.solve_status AS solveStatus,
+		f.assign_status AS assignStatus,
+		f.`status` AS `status`,
+		cs.system_name as systemName
+		FROM
+		fault f
+		LEFT JOIN fault_repair_record r ON f. CODE = r.fault_code
+		INNER JOIN cs_station s ON f.station_code = s.station_code
+		inner join cs_subsystem cs on f.system_code = cs.system_code
+		where
+		f.del_flag = 0
+		And f.status = 2 and (r.del_flag = 0 or r.del_flag is null)
+		<if test="startTime != null and endTime != null">
+			AND f.occurrence_time between #{startTime} and #{endTime}
+		</if>
+		<if test="lineCode !=null and lineCode !=''">
+			AND f.line_code = #{lineCode}
+		</if>
+		order by f.occurrence_time desc
+	</select>
+
 
 </mapper>

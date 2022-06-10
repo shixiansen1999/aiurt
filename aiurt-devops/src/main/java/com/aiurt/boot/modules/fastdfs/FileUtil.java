@@ -5,8 +5,8 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import cn.hutool.core.util.RandomUtil;
-import com.swsc.copsms.modules.fastdfs.entity.FileInfo;
-import com.swsc.copsms.modules.fastdfs.model.UploadFile;
+import com.aiurt.boot.modules.fastdfs.entity.FileInfo;
+import com.aiurt.boot.modules.fastdfs.model.UploadFile;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.springframework.web.multipart.MultipartFile;

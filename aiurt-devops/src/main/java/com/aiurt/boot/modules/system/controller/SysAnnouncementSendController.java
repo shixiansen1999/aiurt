@@ -5,14 +5,14 @@ import java.util.Date;
 
 import javax.servlet.http.HttpServletRequest;
 
-import com.swsc.copsms.modules.system.model.AnnouncementSendModel;
-import com.swsc.copsms.modules.system.service.ISysAnnouncementSendService;
-import com.swsc.copsms.modules.system.entity.SysAnnouncementSend;
+import com.aiurt.boot.common.constant.CommonConstant;
+import com.aiurt.boot.modules.system.model.AnnouncementSendModel;
+import com.aiurt.boot.modules.system.service.ISysAnnouncementSendService;
+import com.aiurt.boot.modules.system.entity.SysAnnouncementSend;
 import org.apache.shiro.SecurityUtils;
-import com.swsc.copsms.common.api.vo.Result;
-import com.swsc.copsms.common.constant.CommonConstant;
-import com.swsc.copsms.common.system.vo.LoginUser;
-import com.swsc.copsms.common.util.oConvertUtils;
+import com.aiurt.boot.common.api.vo.Result;
+import com.aiurt.boot.common.system.vo.LoginUser;
+import com.aiurt.boot.common.util.oConvertUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -110,10 +110,10 @@ public class SysAnnouncementSendController {
 		Result<SysAnnouncementSend> result = new Result<SysAnnouncementSend>();
 		SysAnnouncementSend sysAnnouncementSendEntity = sysAnnouncementSendService.getById(sysAnnouncementSend.getId());
 		if(sysAnnouncementSendEntity==null) {
-			result.error500("未找到对应实体");
+			result.onnull("未找到对应实体");
 		}else {
 			boolean ok = sysAnnouncementSendService.updateById(sysAnnouncementSend);
-			//TODO 返回false说明什么？
+
 			if(ok) {
 				result.success("修改成功!");
 			}
@@ -132,7 +132,7 @@ public class SysAnnouncementSendController {
 		Result<SysAnnouncementSend> result = new Result<SysAnnouncementSend>();
 		SysAnnouncementSend sysAnnouncementSend = sysAnnouncementSendService.getById(id);
 		if(sysAnnouncementSend==null) {
-			result.error500("未找到对应实体");
+			result.onnull("未找到对应实体");
 		}else {
 			boolean ok = sysAnnouncementSendService.removeById(id);
 			if(ok) {
@@ -170,7 +170,7 @@ public class SysAnnouncementSendController {
 		Result<SysAnnouncementSend> result = new Result<SysAnnouncementSend>();
 		SysAnnouncementSend sysAnnouncementSend = sysAnnouncementSendService.getById(id);
 		if(sysAnnouncementSend==null) {
-			result.error500("未找到对应实体");
+			result.onnull("未找到对应实体");
 		}else {
 			result.setResult(sysAnnouncementSend);
 			result.setSuccess(true);

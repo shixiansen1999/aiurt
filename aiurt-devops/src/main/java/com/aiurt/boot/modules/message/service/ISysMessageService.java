@@ -1,7 +1,7 @@
 package com.aiurt.boot.modules.message.service;
 
-import com.swsc.copsms.common.system.base.service.BaseService;
-import com.swsc.copsms.modules.message.entity.SysMessage;
+import com.aiurt.boot.common.system.base.service.BaseService;
+import com.aiurt.boot.modules.message.entity.SysMessage;
 
 /**
  * @Description: 消息

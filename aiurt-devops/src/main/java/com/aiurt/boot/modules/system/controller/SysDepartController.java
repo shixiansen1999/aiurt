@@ -1,22 +1,25 @@
 package com.aiurt.boot.modules.system.controller;
 
-import java.io.IOException;
-import java.util.*;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import com.swsc.copsms.modules.system.model.DepartIdModel;
-import com.swsc.copsms.modules.system.model.SysDepartTreeModel;
-import com.swsc.copsms.common.constant.CommonConstant;
-import com.swsc.copsms.modules.system.entity.SysDepart;
-import com.swsc.copsms.modules.system.service.ISysDepartService;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.aiurt.boot.common.api.vo.Result;
+import com.aiurt.boot.common.constant.CacheConstant;
+import com.aiurt.boot.common.constant.CommonConstant;
+import com.aiurt.boot.common.system.query.QueryGenerator;
+import com.aiurt.boot.common.system.util.JwtUtil;
+import com.aiurt.boot.common.system.vo.LoginUser;
+import com.aiurt.boot.common.util.RoleAdditionalUtils;
+import com.aiurt.boot.modules.manage.entity.Station;
+import com.aiurt.boot.modules.manage.service.IStationService;
+import com.aiurt.boot.modules.schedule.service.IScheduleRecordService;
+import com.aiurt.boot.modules.system.entity.SysDepart;
+import com.aiurt.boot.modules.system.model.DepartIdModel;
+import com.aiurt.boot.modules.system.model.SysDepartTreeModel;
+import com.aiurt.boot.modules.system.service.ISysDepartService;
+import com.aiurt.boot.modules.system.service.ISysUserService;
+import io.swagger.annotations.ApiOperation;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.shiro.SecurityUtils;
-import com.swsc.copsms.common.api.vo.Result;
-import com.swsc.copsms.common.constant.CacheConstant;
-import com.swsc.copsms.common.system.query.QueryGenerator;
-import com.swsc.copsms.common.system.util.JwtUtil;
-import com.swsc.copsms.common.system.vo.LoginUser;
 import org.jeecgframework.poi.excel.ExcelImportUtil;
 import org.jeecgframework.poi.excel.def.NormalExcelConstants;
 import org.jeecgframework.poi.excel.entity.ExportParams;
@@ -29,9 +32,12 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
 import org.springframework.web.servlet.ModelAndView;
 
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-
-import lombok.extern.slf4j.Slf4j;
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.validation.constraints.NotNull;
+import java.io.IOException;
+import java.util.*;
 
 /**
  * <p>
@@ -47,12 +53,18 @@ public class SysDepartController {
 
     @Autowired
     private ISysDepartService sysDepartService;
+    @Autowired
+    private IStationService stationService;
+    @Autowired
+    ISysUserService sysUserService;
+    @Autowired
+    IScheduleRecordService scheduleRecordService;
 
     /**
-     * 查询13个幼儿园
-     *
+     * 获取所有部门列表
      * @return
      */
+    @ApiOperation(value = "获取所有部门列表")
     @GetMapping(value = "/rootDepartList")
     public Result<List<SysDepart>> queryRootDepar() {
         Result<List<SysDepart>> result = new Result<>();
@@ -147,10 +159,9 @@ public class SysDepartController {
         Result<SysDepart> result = new Result<SysDepart>();
         SysDepart sysDepartEntity = sysDepartService.getById(sysDepart.getId());
         if (sysDepartEntity == null) {
-            result.error500("未找到对应实体");
+            result.onnull("未找到对应实体");
         } else {
             boolean ok = sysDepartService.updateDepartDataById(sysDepart, username);
-            // TODO 返回false说明什么？
             if (ok) {
                 //清除部门树内存
                 //FindsDepartsChildrenUtil.clearSysDepartTreeList();
@@ -174,10 +185,11 @@ public class SysDepartController {
         Result<SysDepart> result = new Result<SysDepart>();
         SysDepart sysDepart = sysDepartService.getById(id);
         if (sysDepart == null) {
-            result.error500("未找到对应实体");
+            result.onnull("未找到对应实体");
         } else {
             boolean ok = sysDepartService.delete(id);
             if (ok) {
+                stationService.updateStationDeaprt(id);
                 //清除部门树内存
                 //FindsDepartsChildrenUtil.clearSysDepartTreeList();
                 // FindsDepartsChildrenUtil.clearDepartIdModel();
@@ -369,6 +381,34 @@ public class SysDepartController {
             }
         }
         return Result.error("文件导入失败！");
+    }
+
+    @Resource
+    private RoleAdditionalUtils roleAdditionalUtils;
+
+    /**
+     * 查询数据 查出加权限下的所有部门,并以列表结构数据格式响应给前端
+     *
+     * @return
+     */
+    @GetMapping(value = "/queryListByDataRole")
+    public Result<List<SysDepart>> queryListByDataRole() {
+        LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        List<String> departIdsByUserId = roleAdditionalUtils.getListDepartIdsByUserId(user.getId());
+
+        List<SysDepart> list = sysDepartService.lambdaQuery()
+                .eq(SysDepart::getDelFlag, CommonConstant.DEL_FLAG_0)
+                .in(CollectionUtils.isNotEmpty(departIdsByUserId),SysDepart::getId, departIdsByUserId)
+                .list();
+
+        return Result.ok(list);
+    }
+
+    @ApiOperation(value = "根据班组查询站点信息")
+    @GetMapping("/queryStationListByOrgId")
+    public Result<List<Station>> queryStationListByOrgId(@RequestParam("orgId")@NotNull(message = "班组id不能为空") String orgId){
+        List<Station> list = stationService.lambdaQuery().eq(Station::getDelFlag, CommonConstant.DEL_FLAG_0).eq(Station::getTeamId, orgId).list();
+        return Result.ok(list);
     }
 
 }

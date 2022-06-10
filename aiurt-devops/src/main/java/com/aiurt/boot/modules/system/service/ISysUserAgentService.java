@@ -1,6 +1,6 @@
 package com.aiurt.boot.modules.system.service;
 
-import com.swsc.copsms.modules.system.entity.SysUserAgent;
+import com.aiurt.boot.modules.system.entity.SysUserAgent;
 import com.baomidou.mybatisplus.extension.service.IService;
 
 /**

@@ -6,20 +6,26 @@ import java.util.Map;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.swsc.copsms.common.api.vo.Result;
-import com.swsc.copsms.common.aspect.annotation.AutoLog;
-import com.swsc.copsms.common.system.query.QueryGenerator;
-import com.swsc.copsms.common.util.oConvertUtils;
-import com.swsc.copsms.modules.manage.entity.StockSparePart;
-import com.swsc.copsms.modules.manage.service.IStockSparePartService;
+import com.aiurt.boot.common.api.vo.Result;
+import com.aiurt.boot.common.aspect.annotation.AutoLog;
+import com.aiurt.boot.common.system.query.QueryGenerator;
+import com.aiurt.boot.common.util.oConvertUtils;
+import com.aiurt.boot.modules.manage.entity.Line;
+import com.aiurt.boot.modules.manage.entity.Station;
+import com.aiurt.boot.modules.manage.entity.StockSparePart;
+import com.aiurt.boot.modules.manage.service.ILineService;
+import com.aiurt.boot.modules.manage.service.IStationService;
+import com.aiurt.boot.modules.manage.service.IStockSparePartService;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.extern.slf4j.Slf4j;
 
+import org.apache.commons.lang.StringUtils;
 import org.jeecgframework.poi.excel.ExcelImportUtil;
 import org.jeecgframework.poi.excel.def.NormalExcelConstants;
 import org.jeecgframework.poi.excel.entity.ExportParams;
@@ -49,6 +55,12 @@ public class StockSparePartController {
 	@Autowired
 	private IStockSparePartService stockSparePartService;
 
+	@Resource
+	private ILineService lineService;
+
+	@Resource
+	private IStationService stationService;
+
 	/**
 	  * 分页列表查询
 	 * @param stockSparePart
@@ -68,6 +80,20 @@ public class StockSparePartController {
 		QueryWrapper<StockSparePart> queryWrapper = QueryGenerator.initQueryWrapper(stockSparePart, req.getParameterMap());
 		Page<StockSparePart> page = new Page<StockSparePart>(pageNo, pageSize);
 		IPage<StockSparePart> pageList = stockSparePartService.page(page, queryWrapper);
+		for (StockSparePart record : pageList.getRecords()) {
+			if (StringUtils.isNotBlank(record.getLineCode())) {
+				Line lineCode = lineService.getOne(new QueryWrapper<Line>().eq("line_code", record.getLineCode()), false);
+				if (null!= lineCode){
+					record.setLineName(lineCode.getLineName());
+				}
+			}
+			if (StringUtils.isNotBlank(record.getStationCode())) {
+				Station stationCode = stationService.getOne(new QueryWrapper<Station>().eq("station_code", record.getStationCode()), false);
+				if(null !=stationCode){
+					record.setStationName(stationCode.getStationName());
+				}
+			}
+		}
 		result.setSuccess(true);
 		result.setResult(pageList);
 		return result;
@@ -105,10 +131,10 @@ public class StockSparePartController {
 		Result<StockSparePart> result = new Result<StockSparePart>();
 		StockSparePart stockSparePartEntity = stockSparePartService.getById(stockSparePart.getId());
 		if(stockSparePartEntity==null) {
-			result.error500("未找到对应实体");
+			result.onnull("未找到对应实体");
 		}else {
 			boolean ok = stockSparePartService.updateById(stockSparePart);
-			//TODO 返回false说明什么？
+
 			if(ok) {
 				result.success("修改成功!");
 			}
@@ -166,7 +192,7 @@ public class StockSparePartController {
 		Result<StockSparePart> result = new Result<StockSparePart>();
 		StockSparePart stockSparePart = stockSparePartService.getById(id);
 		if(stockSparePart==null) {
-			result.error500("未找到对应实体");
+			result.onnull("未找到对应实体");
 		}else {
 			result.setResult(stockSparePart);
 			result.setSuccess(true);

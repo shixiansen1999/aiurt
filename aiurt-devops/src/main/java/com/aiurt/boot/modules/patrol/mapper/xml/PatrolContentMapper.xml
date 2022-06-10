@@ -1,5 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.swsc.copsms.modules.patrol.mapper.PatrolContentMapper">
-
+<mapper namespace="com.aiurt.boot.modules.patrol.mapper.PatrolContentMapper">
+	<select id="selectExportList" resultType="com.aiurt.boot.modules.patrol.vo.importdir.PatrolContentImportVO">
+		select c2.code as parentName,
+		       c.type,
+		       c.sequence,
+		       c.status_item,
+		       c.content,
+		       c.code,
+		       c.note
+		from t_patrol_content c
+				     left join t_patrol_content c2 on (c.parent_id = c2.code and c.record_id = c2.record_id)
+		where c.record_id = #{id}
+		  and c.del_flag = 0
+		order by c.code, c.sequence asc
+	</select>
 </mapper>

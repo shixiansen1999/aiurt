@@ -1,7 +1,7 @@
 package com.aiurt.boot.modules.manage.model;
 
-import com.swsc.copsms.modules.device.entity.DeviceType;
-import com.swsc.copsms.modules.manage.entity.Subsystem;
+import com.aiurt.boot.modules.device.entity.DeviceType;
+import com.aiurt.boot.modules.manage.entity.Subsystem;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 

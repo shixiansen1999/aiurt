@@ -1,6 +1,6 @@
 package com.aiurt.boot.modules.message.entity;
 
-import com.swsc.copsms.common.system.base.entity.BaseEntity;
+import com.aiurt.boot.common.system.base.entity.BaseEntity;
 import org.jeecgframework.poi.excel.annotation.Excel;
 
 import com.baomidou.mybatisplus.annotation.TableName;

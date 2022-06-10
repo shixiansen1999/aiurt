@@ -1,33 +1,36 @@
 package com.aiurt.boot.modules.secondLevelWarehouse.controller;
 
-import java.text.ParseException;
-import java.util.List;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import cn.hutool.core.collection.CollUtil;
-import com.swsc.copsms.common.api.vo.Result;
-import com.swsc.copsms.common.aspect.annotation.AutoLog;
-import com.swsc.copsms.common.enums.MaterialApplyCommitEnum;
-import com.swsc.copsms.common.util.PageLimitUtil;
-import com.swsc.copsms.modules.secondLevelWarehouse.entity.SparePartApply;
-import com.swsc.copsms.modules.secondLevelWarehouse.entity.dto.AddApplyDTO;
-import com.swsc.copsms.modules.secondLevelWarehouse.entity.dto.StockApplyExcel;
-import com.swsc.copsms.modules.secondLevelWarehouse.entity.dto.StockOutDTO;
-import com.swsc.copsms.modules.secondLevelWarehouse.service.ISparePartApplyService;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.aiurt.boot.common.api.vo.Result;
+import com.aiurt.boot.common.aspect.annotation.AutoLog;
+import com.aiurt.boot.common.enums.MaterialApplyCommitEnum;
+import com.aiurt.boot.common.system.api.ISysBaseAPI;
+import com.aiurt.boot.common.util.TokenUtils;
+import com.aiurt.boot.modules.secondLevelWarehouse.entity.SparePartApply;
+import com.aiurt.boot.modules.secondLevelWarehouse.entity.dto.*;
+import com.aiurt.boot.modules.secondLevelWarehouse.entity.vo.SparePartApplyVO;
+import com.aiurt.boot.modules.secondLevelWarehouse.service.ISparePartApplyService;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import lombok.extern.slf4j.Slf4j;
-
 import org.jeecgframework.poi.excel.def.NormalExcelConstants;
 import org.jeecgframework.poi.excel.entity.ExportParams;
+import org.jeecgframework.poi.excel.entity.enmus.ExcelType;
 import org.jeecgframework.poi.excel.view.JeecgEntityExcelView;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
+
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.validation.Valid;
+import javax.validation.constraints.NotEmpty;
+import java.util.List;
 
 /**
  * @Description: 备件申领
@@ -42,31 +45,37 @@ import io.swagger.annotations.ApiOperation;
 public class SparePartApplyController {
     @Autowired
     private ISparePartApplyService sparePartApplyService;
+    @Resource
+    private ISysBaseAPI iSysBaseAPI;
 
     /**
-     * 分页列表查询
+     * 备件申领-分页列表查询
      *
-     * @param sparePartApply
-     * @param pageNo
-     * @param pageSize
-     * @param req
+     * @param sparePartQuery
      * @return
      */
     @AutoLog(value = "备件申领-分页列表查询")
     @ApiOperation(value = "备件申领-分页列表查询", notes = "备件申领-分页列表查询")
     @GetMapping(value = "/list")
-    public Result<PageLimitUtil<SparePartApply>> queryPageList(SparePartApply sparePartApply,
-                                                       @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
-                                                       @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize,
-                                                       @RequestParam(name = "startTime", required = false) String startTime,
-                                                       @RequestParam(name = "endTime", required = false) String endTime,
-                                                       HttpServletRequest req) throws ParseException {
-        Result<PageLimitUtil<SparePartApply>> result = new Result<PageLimitUtil<SparePartApply>>();
-		PageLimitUtil<SparePartApply> pageLimitUtil = sparePartApplyService.
-				queryPageList(sparePartApply, pageNo, pageSize, startTime, endTime,req);
-		result.setSuccess(true);
-        result.setResult(pageLimitUtil);
-        return result;
+    public Result<IPage<SparePartApplyVO>> queryPageList(SparePartQuery sparePartQuery) {
+        Page<SparePartApplyVO> page = new Page<>(sparePartQuery.getPageNo(), sparePartQuery.getPageSize());
+        IPage<SparePartApplyVO> list = sparePartApplyService.queryPageList(page, sparePartQuery);
+        return Result.ok(list);
+    }
+
+    /**
+     * 二级库出库列表-分页列表查询
+     *
+     * @param sparePartQuery
+     * @return
+     */
+    @AutoLog(value = "二级库出库列表-分页列表查询")
+    @ApiOperation(value = "二级库出库列表-分页列表查询", notes = "二级库出库列表-分页列表查询")
+    @GetMapping(value = "/listLevel2")
+    public Result<IPage<SparePartApplyVO>> queryPageListLevel2(SparePartQuery sparePartQuery) {
+        Page<SparePartApplyVO> page = new Page<>(sparePartQuery.getPageNo(), sparePartQuery.getPageSize());
+        IPage<SparePartApplyVO> list = sparePartApplyService.queryPageListLevel2(page, sparePartQuery);
+        return Result.ok(list);
     }
 
     /**
@@ -75,19 +84,38 @@ public class SparePartApplyController {
      * @param addApplyDTO
      * @return
      */
-    @AutoLog(value = "备件申领-添加")
+    @AutoLog(value = "添加申领单")
     @ApiOperation(value = "添加申领单", notes = "添加申领单")
     @PostMapping(value = "/add")
-    public Result<SparePartApply> add(@RequestBody AddApplyDTO addApplyDTO) {
-        Result<SparePartApply> result = new Result<SparePartApply>();
+    public Result<SparePartApply> add(@Valid @RequestBody AddApplyDTO addApplyDTO,
+                                      HttpServletRequest req) {
         try {
-            sparePartApplyService.addApply(addApplyDTO);
-            result.success("添加成功！");
+            sparePartApplyService.addApply(addApplyDTO, req);
+            return Result.ok("添加成功！");
         } catch (Exception e) {
             log.error(e.getMessage(), e);
-            result.error500("操作失败");
+            return Result.error("操作失败" + e.getMessage());
         }
-        return result;
+    }
+
+    /**
+     * 提交申领单
+     *
+     * @param ids
+     * @param req
+     * @return
+     */
+    @AutoLog(value = "提交申领单")
+    @ApiOperation(value = "提交申领单", notes = "提交申领单")
+    @GetMapping(value = "/submitForm")
+    public Result<?> submitForm(@RequestParam(name = "ids") String ids,
+                                HttpServletRequest req) {
+        try {
+            return sparePartApplyService.submitFormByIds(ids, req);
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            return Result.error("提交失败" + e.getMessage());
+        }
     }
 
     /**
@@ -99,23 +127,28 @@ public class SparePartApplyController {
     @AutoLog(value = "提交申领单-编辑")
     @ApiOperation(value = "提交申领单", notes = "提交申领单")
     @GetMapping(value = "/edit")
-    public Result<SparePartApply> edit(@RequestParam("ids") List<Integer> ids) {
+    public Result<SparePartApply> edit(@RequestParam("ids") List<Integer> ids,
+                                       HttpServletRequest req) {
         Result<SparePartApply> result = new Result<SparePartApply>();
+        String userId = TokenUtils.getUserId(req, iSysBaseAPI);
+
         if (CollUtil.isEmpty(ids)) {
             result.error500("ids不能为空");
         } else {
             SparePartApply sparePartApply = new SparePartApply();
-            boolean ok = sparePartApplyService.update(
-                    sparePartApply.setCommitStatus(MaterialApplyCommitEnum.COMMITTED.getCode())
-                    , new QueryWrapper<SparePartApply>().in("id", ids));
-            //TODO 返回false说明什么？
+            sparePartApply.setUpdateBy(userId);
+            sparePartApply.setCommitStatus(MaterialApplyCommitEnum.COMMITTED.getCode());
+            boolean ok = sparePartApplyService.update(sparePartApply
+                    , new QueryWrapper<SparePartApply>().in(SparePartApply.ID, ids));
             if (ok) {
                 result.success("修改成功!");
+            } else {
+                result.error500("修改失败!");
             }
         }
-
         return result;
     }
+
 
     /**
      * 通过id删除
@@ -123,14 +156,14 @@ public class SparePartApplyController {
      * @param id
      * @return
      */
-    @AutoLog(value = "备件申领-通过id删除")
-    @ApiOperation(value = "备件申领-通过id删除", notes = "备件申领-通过id删除")
+    @AutoLog(value = "备件申领/二级库出库-通过id删除")
+    @ApiOperation(value = "备件申领/二级库出库-通过id删除", notes = "备件申领/二级库出库-通过id删除")
     @DeleteMapping(value = "/delete")
     public Result<?> delete(@RequestParam(name = "id", required = true) String id) {
         try {
             sparePartApplyService.removeById(id);
         } catch (Exception e) {
-            log.error("删除失败", e.getMessage());
+            log.error("删除失败, {}", e.getMessage());
             return Result.error("删除失败!");
         }
         return Result.ok("删除成功!");
@@ -139,78 +172,77 @@ public class SparePartApplyController {
     @AutoLog("出库确认-编辑")
     @ApiOperation("出库确认")
     @PostMapping(value = "/stockOutConfirm")
-    public Result<SparePartApply> stockOutConfirm(@RequestBody StockOutDTO stockOutDTOList) {
+    public Result<?> stockOutConfirm(@RequestBody StockOutDTO stockOutDTOList,
+                                     HttpServletRequest req) {
         Result<SparePartApply> result = new Result<SparePartApply>();
-        if (CollUtil.isEmpty(stockOutDTOList.getMaterialVOList())) {
-            result.error500("出库列表不能为空");
-        } else {
-            Boolean aBoolean = sparePartApplyService.stockOutConfirm(stockOutDTOList);
-            //TODO 返回false说明什么？
-            if (aBoolean) {
-                result.success("修改成功!");
-            }
+        try {
+            sparePartApplyService.stockOutConfirm(stockOutDTOList, req);
+        } catch (Exception e) {
+            log.error("出库失败, {}", e.getMessage());
+            return Result.error("出库失败!" + e.getMessage());
         }
-
-        return result;
+        return result.success("出库成功!");
     }
-//    /**
-//     * 批量删除
-//     *
-//     * @param ids
-//     * @return
-//     */
-//    @AutoLog(value = "备件申领-批量删除")
-//    @ApiOperation(value = "备件申领-批量删除", notes = "备件申领-批量删除")
-//    @DeleteMapping(value = "/deleteBatch")
-//    public Result<SparePartApply> deleteBatch(@RequestParam(name = "ids", required = true) String ids) {
-//        Result<SparePartApply> result = new Result<SparePartApply>();
-//        if (ids == null || "".equals(ids.trim())) {
-//            result.error500("参数不识别！");
-//        } else {
-//            this.sparePartApplyService.removeByIds(Arrays.asList(ids.split(",")));
-//            result.success("删除成功!");
-//        }
-//        return result;
-//    }
 
     /**
-     * 通过id查询
+     * 编辑申领单
      *
-     * @param id
+     * @param editApplyDTO
      * @return
      */
-    @AutoLog(value = "备件申领-通过id查询")
-    @ApiOperation(value = "备件申领-通过id查询", notes = "备件申领-通过id查询")
-    @GetMapping(value = "/queryById")
-    public Result<SparePartApply> queryById(@RequestParam(name = "id", required = true) String id) {
+    @AutoLog(value = "备件申领-编辑")
+    @ApiOperation(value = "编辑申领单", notes = "编辑申领单")
+    @PostMapping(value = "/editApply")
+    public Result<SparePartApply> editApply(@Valid @RequestBody EditApplyDTO editApplyDTO,
+                                            HttpServletRequest req) {
         Result<SparePartApply> result = new Result<SparePartApply>();
-        SparePartApply sparePartApply = sparePartApplyService.getById(id);
-        if (sparePartApply == null) {
-            result.error500("未找到对应实体");
-        } else {
-            result.setResult(sparePartApply);
-            result.setSuccess(true);
+        try {
+            sparePartApplyService.editApply(editApplyDTO, req);
+            result.success("编辑成功！");
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            result.error500("编辑失败" + e.getMessage());
         }
         return result;
     }
 
     /**
-     * 导出excel
+     * 备件申领导出excel
      *
      * @param request
      * @param response
      */
-    @ApiOperation("导出excel")
+    @AutoLog(value = "备件申领导出excel")
+    @ApiOperation("备件申领导出excel")
     @GetMapping(value = "/exportXls")
     public ModelAndView exportXls(
-            @ApiParam(value = "行数据ids" ,required = true) @RequestParam("ids") List<Integer> ids,
+            SparePartQuery sparePartQuery,
             HttpServletRequest request, HttpServletResponse response) {
         ModelAndView mv = new ModelAndView(new JeecgEntityExcelView());
-        List<StockApplyExcel> list = sparePartApplyService.exportXls(ids);
+        List<StockApplyExcel> list = sparePartApplyService.exportXls(sparePartQuery);
         //导出文件名称
         mv.addObject(NormalExcelConstants.FILE_NAME, "备件申领列表");
         mv.addObject(NormalExcelConstants.CLASS, StockApplyExcel.class);
-        mv.addObject(NormalExcelConstants.PARAMS, new ExportParams("备件申领列表数据", "导出人:Jeecg", "导出信息"));
+        mv.addObject(NormalExcelConstants.PARAMS, new ExportParams("备件申领列表数据", "导出信息", ExcelType.XSSF));
+        mv.addObject(NormalExcelConstants.DATA_LIST, list);
+        return mv;
+    }
+
+    /**
+     * 二级库出库导出excel
+     *
+     * @param selections
+     * @return
+     */
+    @ApiOperation("二级库出库导出excel")
+    @GetMapping(value = "/exportStock2Xls")
+    public ModelAndView exportStock2Xls(@NotEmpty @ApiParam(value = "行数据ids", required = true) @RequestParam("selections") List<Integer> selections) {
+        ModelAndView mv = new ModelAndView(new JeecgEntityExcelView());
+        List<StockOutExcel> list = sparePartApplyService.exportStock2Xls(selections);
+        //导出文件名称
+        mv.addObject(NormalExcelConstants.FILE_NAME, "二级库出库列表");
+        mv.addObject(NormalExcelConstants.CLASS, StockOutExcel.class);
+        mv.addObject(NormalExcelConstants.PARAMS, new ExportParams("二级库出库列表数据", "导出信息", ExcelType.XSSF));
         mv.addObject(NormalExcelConstants.DATA_LIST, list);
         return mv;
     }

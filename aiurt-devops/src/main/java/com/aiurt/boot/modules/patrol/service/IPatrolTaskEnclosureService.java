@@ -1,6 +1,6 @@
 package com.aiurt.boot.modules.patrol.service;
 
-import com.swsc.copsms.modules.patrol.entity.PatrolTaskEnclosure;
+import com.aiurt.boot.modules.patrol.entity.PatrolTaskEnclosure;
 import com.baomidou.mybatisplus.extension.service.IService;
 
 /**

@@ -1,6 +1,5 @@
 package com.aiurt.boot.modules.manage.entity;
 
-import java.io.Serializable;
 import java.util.Date;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
@@ -71,6 +70,21 @@ public class StockSparePart {
     @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
     @ApiModelProperty(value = "updateTime")
 	private  Date  updateTime;
+
+	/**线路编号*/
+	@Excel(name = "线路编号", width = 15)
+	@ApiModelProperty(value = "线路编号")
+	private  String  lineCode;
+
+	/**站点编号*/
+	@Excel(name = "站点编号", width = 15)
+	@ApiModelProperty(value = "站点编号")
+	private  String  stationCode;
+
+	@TableField(exist = false)
+	private String lineName;
+	@TableField(exist = false)
+	private String stationName;
 
 
     private static final String ID = "id";

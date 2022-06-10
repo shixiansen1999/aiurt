@@ -11,19 +11,19 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.swsc.copsms.modules.message.websocket.WebSocket;
-import com.swsc.copsms.modules.system.entity.SysAnnouncement;
-import com.swsc.copsms.modules.system.service.ISysAnnouncementSendService;
-import com.swsc.copsms.modules.system.service.ISysAnnouncementService;
-import com.swsc.copsms.modules.system.entity.SysAnnouncementSend;
+import com.aiurt.boot.common.constant.CommonConstant;
+import com.aiurt.boot.modules.message.websocket.WebSocket;
+import com.aiurt.boot.modules.system.entity.SysAnnouncement;
+import com.aiurt.boot.modules.system.service.ISysAnnouncementSendService;
+import com.aiurt.boot.modules.system.service.ISysAnnouncementService;
+import com.aiurt.boot.modules.system.entity.SysAnnouncementSend;
 import org.apache.shiro.SecurityUtils;
-import com.swsc.copsms.common.api.vo.Result;
-import com.swsc.copsms.common.constant.CommonConstant;
-import com.swsc.copsms.common.constant.CommonSendStatus;
-import com.swsc.copsms.common.system.query.QueryGenerator;
-import com.swsc.copsms.common.system.util.JwtUtil;
-import com.swsc.copsms.common.system.vo.LoginUser;
-import com.swsc.copsms.common.util.oConvertUtils;
+import com.aiurt.boot.common.api.vo.Result;
+import com.aiurt.boot.common.constant.CommonSendStatus;
+import com.aiurt.boot.common.system.query.QueryGenerator;
+import com.aiurt.boot.common.system.util.JwtUtil;
+import com.aiurt.boot.common.system.vo.LoginUser;
+import com.aiurt.boot.common.util.oConvertUtils;
 import org.jeecgframework.poi.excel.ExcelImportUtil;
 import org.jeecgframework.poi.excel.def.NormalExcelConstants;
 import org.jeecgframework.poi.excel.entity.ExportParams;
@@ -132,10 +132,10 @@ public class SysAnnouncementController {
 		Result<SysAnnouncement> result = new Result<SysAnnouncement>();
 		SysAnnouncement sysAnnouncementEntity = sysAnnouncementService.getById(sysAnnouncement.getId());
 		if(sysAnnouncementEntity==null) {
-			result.error500("未找到对应实体");
+			result.onnull("未找到对应实体");
 		}else {
 			boolean ok = sysAnnouncementService.upDateAnnouncement(sysAnnouncement);
-			//TODO 返回false说明什么？
+
 			if(ok) {
 				result.success("修改成功!");
 			}
@@ -154,7 +154,7 @@ public class SysAnnouncementController {
 		Result<SysAnnouncement> result = new Result<SysAnnouncement>();
 		SysAnnouncement sysAnnouncement = sysAnnouncementService.getById(id);
 		if(sysAnnouncement==null) {
-			result.error500("未找到对应实体");
+			result.onnull("未找到对应实体");
 		}else {
 			sysAnnouncement.setDelFlag(CommonConstant.DEL_FLAG_1.toString());
 			boolean ok = sysAnnouncementService.updateById(sysAnnouncement);
@@ -198,7 +198,7 @@ public class SysAnnouncementController {
 		Result<SysAnnouncement> result = new Result<SysAnnouncement>();
 		SysAnnouncement sysAnnouncement = sysAnnouncementService.getById(id);
 		if(sysAnnouncement==null) {
-			result.error500("未找到对应实体");
+			result.onnull("未找到对应实体");
 		}else {
 			result.setResult(sysAnnouncement);
 			result.setSuccess(true);
@@ -216,7 +216,7 @@ public class SysAnnouncementController {
 		Result<SysAnnouncement> result = new Result<SysAnnouncement>();
 		SysAnnouncement sysAnnouncement = sysAnnouncementService.getById(id);
 		if(sysAnnouncement==null) {
-			result.error500("未找到对应实体");
+			result.onnull("未找到对应实体");
 		}else {
 			sysAnnouncement.setSendStatus(CommonSendStatus.PUBLISHED_STATUS_1);//发布中
 			sysAnnouncement.setSendTime(new Date());
@@ -259,7 +259,7 @@ public class SysAnnouncementController {
 		Result<SysAnnouncement> result = new Result<SysAnnouncement>();
 		SysAnnouncement sysAnnouncement = sysAnnouncementService.getById(id);
 		if(sysAnnouncement==null) {
-			result.error500("未找到对应实体");
+			result.onnull("未找到对应实体");
 		}else {
 			sysAnnouncement.setSendStatus(CommonSendStatus.REVOKE_STATUS_2);//撤销发布
 			sysAnnouncement.setCancelTime(new Date());

@@ -3,15 +3,16 @@ package com.aiurt.boot.modules.system.mapper;
 import java.util.List;
 import java.util.Map;
 
-import com.swsc.copsms.modules.system.entity.SysDict;
-import com.swsc.copsms.modules.system.model.DuplicateCheckVo;
-import com.swsc.copsms.modules.system.model.TreeSelectModel;
-import com.swsc.copsms.modules.system.entity.SysDictItem;
+import com.aiurt.boot.common.result.BelongUnitResult;
+import com.aiurt.boot.modules.system.entity.SysDict;
+import com.aiurt.boot.modules.system.model.DuplicateCheckVo;
+import com.aiurt.boot.modules.system.model.TreeSelectModel;
+import com.aiurt.boot.modules.system.entity.SysDictItem;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.annotations.Update;
-import com.swsc.copsms.common.system.vo.DictModel;
+import com.aiurt.boot.common.system.vo.DictModel;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import org.springframework.stereotype.Repository;
@@ -36,13 +37,13 @@ public interface SysDictMapper extends BaseMapper<SysDict> {
 	public Long duplicateCheckCountSqlNoDataId(DuplicateCheckVo duplicateCheckVo);
 
 	public List<DictModel> queryDictItemsByCode(@Param("code") String code);
-	public List<DictModel> queryTableDictItemsByCode(@Param("table") String table, @Param("text") String text, @Param("code") String code);
-	public List<DictModel> queryTableDictItemsByCodeAndFilter(@Param("table") String table, @Param("text") String text, @Param("code") String code, @Param("filterSql") String filterSql);
+	public List<DictModel> queryTableDictItemsByCode(@Param("table") String table,@Param("text") String text,@Param("code") String code);
+	public List<DictModel> queryTableDictItemsByCodeAndFilter(@Param("table") String table,@Param("text") String text,@Param("code") String code,@Param("filterSql") String filterSql);
 
 
-	public String queryDictTextByKey(@Param("code") String code, @Param("key") String key);
+	public String queryDictTextByKey(@Param("code") String code,@Param("key") String key);
 
-	public String queryTableDictTextByKey(@Param("table") String table, @Param("text") String text, @Param("code") String code, @Param("key") String key);
+	public String queryTableDictTextByKey(@Param("table") String table,@Param("text") String text,@Param("code") String code,@Param("key") String key);
 
 	public List<DictModel> queryTableDictByKeys(@Param("table") String table, @Param("text") String text, @Param("code") String code, @Param("keyArray") String[] keyArray);
 
@@ -66,7 +67,7 @@ public interface SysDictMapper extends BaseMapper<SysDict> {
 	 * @param keyword
 	 * @return
 	 */
-	public List<DictModel> queryTableDictItems(@Param("table") String table, @Param("text") String text, @Param("code") String code, @Param("keyword") String keyword);
+	public List<DictModel> queryTableDictItems(@Param("table") String table,@Param("text") String text,@Param("code") String code,@Param("keyword") String keyword);
 
 	/**
 	  * 根据表名、显示字段名、存储字段名 查询树
@@ -102,4 +103,7 @@ public interface SysDictMapper extends BaseMapper<SysDict> {
 	public void updateDictDelFlag(@Param("flag") int delFlag, @Param("id") String id);
 
 	List<SysDictItem> findType();
+
+
+	List<BelongUnitResult> selectBelongUnit();
 }

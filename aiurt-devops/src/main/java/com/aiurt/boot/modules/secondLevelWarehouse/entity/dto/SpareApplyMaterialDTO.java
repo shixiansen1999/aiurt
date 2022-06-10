@@ -1,10 +1,8 @@
 package com.aiurt.boot.modules.secondLevelWarehouse.entity.dto;
 
-import com.sun.istack.NotNull;
-import com.swsc.copsms.modules.secondLevelWarehouse.entity.SparePartApplyMaterial;
+import com.aiurt.boot.modules.secondLevelWarehouse.entity.SparePartApplyMaterial;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
-import org.jeecgframework.poi.excel.annotation.Excel;
 
 /**
  * @Author km
@@ -31,4 +29,22 @@ public class SpareApplyMaterialDTO extends SparePartApplyMaterial {
     /**品牌*/
     @ApiModelProperty(value = "品牌")
     private String brand;
+
+    @ApiModelProperty("所在仓库编号")
+    private String outWarehouseCode;
+
+    @ApiModelProperty("所在仓库")
+    private String outWarehouseName;
+
+    @ApiModelProperty("现有库存")
+    private Integer materialNum;
+
+    @ApiModelProperty("所属部门")
+    private String depart;
+
+    @ApiModelProperty("所属系统")
+    private String system;
+
+    @ApiModelProperty("单位")
+    private String unit;
 }

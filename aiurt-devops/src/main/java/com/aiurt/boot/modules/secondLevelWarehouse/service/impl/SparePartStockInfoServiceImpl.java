@@ -1,11 +1,13 @@
 package com.aiurt.boot.modules.secondLevelWarehouse.service.impl;
 
-import com.swsc.copsms.modules.secondLevelWarehouse.entity.SparePartStockInfo;
-import com.swsc.copsms.modules.secondLevelWarehouse.mapper.SparePartStockInfoMapper;
-import com.swsc.copsms.modules.secondLevelWarehouse.service.ISparePartStockInfoService;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.aiurt.boot.modules.secondLevelWarehouse.entity.SparePartStockVO;
+import com.aiurt.boot.modules.secondLevelWarehouse.mapper.SparePartStockInfoMapper;
+import com.aiurt.boot.modules.secondLevelWarehouse.service.ISparePartStockInfoService;
 import org.springframework.stereotype.Service;
 
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import javax.annotation.Resource;
+import java.util.List;
 
 /**
  * @Description: 备件仓库信息
@@ -14,6 +16,12 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
  * @Version: V1.0
  */
 @Service
-public class SparePartStockInfoServiceImpl extends ServiceImpl<SparePartStockInfoMapper, SparePartStockInfo> implements ISparePartStockInfoService {
+public class SparePartStockInfoServiceImpl extends ServiceImpl<SparePartStockInfoMapper, SparePartStockVO> implements ISparePartStockInfoService {
 
+    @Resource
+    private SparePartStockInfoMapper sparePartStockInfoMapper;
+    @Override
+    public List<SparePartStockVO> queryList() {
+        return  sparePartStockInfoMapper.queryList();
+    }
 }

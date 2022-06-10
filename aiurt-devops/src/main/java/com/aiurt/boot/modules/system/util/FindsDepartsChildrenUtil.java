@@ -1,9 +1,9 @@
 package com.aiurt.boot.modules.system.util;
 
-import com.swsc.copsms.modules.system.model.DepartIdModel;
-import com.swsc.copsms.modules.system.model.SysDepartTreeModel;
-import com.swsc.copsms.common.util.oConvertUtils;
-import com.swsc.copsms.modules.system.entity.SysDepart;
+import com.aiurt.boot.modules.system.model.DepartIdModel;
+import com.aiurt.boot.modules.system.model.SysDepartTreeModel;
+import com.aiurt.boot.common.util.oConvertUtils;
+import com.aiurt.boot.modules.system.entity.SysDepart;
 
 import java.util.ArrayList;
 import java.util.List;

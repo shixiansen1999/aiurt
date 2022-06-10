@@ -1,53 +1,33 @@
 package com.aiurt.boot.modules.secondLevelWarehouse.controller;
 
-import java.sql.Struct;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
-import java.util.stream.Collectors;
+import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.util.StrUtil;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.aiurt.boot.common.api.vo.Result;
+import com.aiurt.boot.common.aspect.annotation.AutoLog;
+import com.aiurt.boot.common.system.api.ISysBaseAPI;
+import com.aiurt.boot.common.util.TokenUtils;
+import com.aiurt.boot.modules.secondLevelWarehouse.entity.dto.StockLevel2CheckDetailDTO;
+import com.aiurt.boot.modules.secondLevelWarehouse.entity.dto.StockLevel2CheckDetailEditDTO;
+import com.aiurt.boot.modules.secondLevelWarehouse.entity.dto.StockLevel2CheckDetailExcel;
+import com.aiurt.boot.modules.secondLevelWarehouse.entity.vo.StockLevel2CheckDetailVO;
+import com.aiurt.boot.modules.secondLevelWarehouse.service.IStockLevel2CheckDetailService;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import lombok.extern.slf4j.Slf4j;
+import org.jeecgframework.poi.excel.def.NormalExcelConstants;
+import org.jeecgframework.poi.excel.entity.ExportParams;
+import org.jeecgframework.poi.excel.view.JeecgEntityExcelView;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.ModelAndView;
+
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
-import cn.hutool.core.collection.CollUtil;
-import cn.hutool.core.util.StrUtil;
-import com.swsc.copsms.common.api.vo.Result;
-import com.swsc.copsms.common.aspect.annotation.AutoLog;
-import com.swsc.copsms.common.system.query.QueryGenerator;
-import com.swsc.copsms.common.util.oConvertUtils;
-import com.swsc.copsms.modules.secondLevelWarehouse.entity.StockLevel2Check;
-import com.swsc.copsms.modules.secondLevelWarehouse.entity.StockLevel2CheckDetail;
-import com.swsc.copsms.modules.secondLevelWarehouse.entity.dto.StockLevel2CheckDetailDTO;
-import com.swsc.copsms.modules.secondLevelWarehouse.entity.dto.StockLevel2CheckDetailEditDTO;
-import com.swsc.copsms.modules.secondLevelWarehouse.entity.dto.StockLevel2CheckDetailExcel;
-import com.swsc.copsms.modules.secondLevelWarehouse.entity.dto.StockLevel2CheckExcel;
-import com.swsc.copsms.modules.secondLevelWarehouse.entity.vo.StockLevel2CheckDetailVO;
-import com.swsc.copsms.modules.secondLevelWarehouse.service.IStockLevel2CheckDetailService;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.swsc.copsms.modules.secondLevelWarehouse.service.IStockLevel2CheckService;
-import io.swagger.annotations.ApiParam;
-import lombok.extern.slf4j.Slf4j;
-
-import org.jeecgframework.poi.excel.ExcelImportUtil;
-import org.jeecgframework.poi.excel.def.NormalExcelConstants;
-import org.jeecgframework.poi.excel.entity.ExportParams;
-import org.jeecgframework.poi.excel.entity.ImportParams;
-import org.jeecgframework.poi.excel.view.JeecgEntityExcelView;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.multipart.MultipartHttpServletRequest;
-import org.springframework.web.servlet.ModelAndView;
-import com.alibaba.fastjson.JSON;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
+import java.util.List;
 
 /**
  * @Description: 二级库盘点列表记录
@@ -64,7 +44,8 @@ public class StockLevel2CheckDetailController {
     private IStockLevel2CheckDetailService stockLevel2CheckDetailService;
 
     @Resource
-    private IStockLevel2CheckService iStockLevel2CheckService;
+    private ISysBaseAPI iSysBaseAPI;
+
     /**
      * 分页列表查询
      *
@@ -130,6 +111,7 @@ public class StockLevel2CheckDetailController {
     public ModelAndView exportNewestStockXls(
             @ApiParam("仓库编号") @RequestParam("warehouseCode") String warehouseCode,
             HttpServletRequest request, HttpServletResponse response) {
+        String userName = TokenUtils.getUserName(request, iSysBaseAPI);
         // 导出Excel
         ModelAndView mv = new ModelAndView(new JeecgEntityExcelView());
         List<StockLevel2CheckDetailExcel> list = stockLevel2CheckDetailService.exportNewestStockXls(warehouseCode);
@@ -139,7 +121,7 @@ public class StockLevel2CheckDetailController {
         //导出文件名称
         mv.addObject(NormalExcelConstants.FILE_NAME, "最新库存数据列表");
         mv.addObject(NormalExcelConstants.CLASS, StockLevel2CheckDetailExcel.class);
-        mv.addObject(NormalExcelConstants.PARAMS, new ExportParams("最新库存数据列表数据", "导出人:Jeecg", "导出信息"));
+        mv.addObject(NormalExcelConstants.PARAMS, new ExportParams("最新库存数据列表数据", "导出人:"+userName, "导出信息"));
         mv.addObject(NormalExcelConstants.DATA_LIST, list);
         return mv;
     }

@@ -1,6 +1,6 @@
 package com.aiurt.boot.modules.standardManage.safetyPrecautions.mapper;
 
-import com.swsc.copsms.modules.standardManage.safetyPrecautions.entity.SafetyPrecautions;
+import com.aiurt.boot.modules.standardManage.safetyPrecautions.entity.SafetyPrecautions;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
 /**

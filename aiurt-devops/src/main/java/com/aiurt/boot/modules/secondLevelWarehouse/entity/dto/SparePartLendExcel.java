@@ -28,7 +28,6 @@ public class SparePartLendExcel {
     @ApiModelProperty(value = "备件名称")
     private  String  materialName;
 
-
     @ApiModelProperty(value = "备件类型")
     private  Integer  type;
     /**备件类型名称*/

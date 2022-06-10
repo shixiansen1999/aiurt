@@ -25,14 +25,18 @@ public class Stock2CheckVO {
     @ApiModelProperty(value = "盘点仓库名称")
     private  String  warehouseName;
 
-    @ApiModelProperty(value = "盘点数量")
-    private  Integer  checkAllNum;
 
     @ApiModelProperty("仓库所属部门")
     private String warehouseDepartment;
 
+    @ApiModelProperty("盘点人id")
+    private String checkerId;
+
     @ApiModelProperty("盘点人名称")
     private String checkerName;
+
+    @ApiModelProperty("盘点数量")
+    private Integer num;
 
     @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
     @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")

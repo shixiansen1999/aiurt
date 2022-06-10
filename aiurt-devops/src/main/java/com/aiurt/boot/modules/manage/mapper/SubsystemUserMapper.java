@@ -1,9 +1,6 @@
 package com.aiurt.boot.modules.manage.mapper;
 
-import java.util.List;
-
-import org.apache.ibatis.annotations.Param;
-import com.swsc.copsms.modules.manage.entity.SubsystemUser;
+import com.aiurt.boot.modules.manage.entity.SubsystemUser;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
 /**

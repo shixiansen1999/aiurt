@@ -1,46 +1,153 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.swsc.copsms.modules.secondLevelWarehouse.mapper.SparePartOutOrderMapper">
+<mapper namespace="com.aiurt.boot.modules.secondLevelWarehouse.mapper.SparePartOutOrderMapper">
+    <insert id="insertBatchList" parameterType="list" useGeneratedKeys="true" keyProperty="id">
+        insert into spare_part_out_order(
+        id,material_code,num,warehouse_code,remarks,relate_fault_code,create_by,update_by
+        )
+        values
+        <foreach collection="outOrderList" item="item" index="index" separator=",">
+            (#{item.id}, #{item.materialCode}, #{item.num},#{item.warehouseCode},
+            #{item.remarks}, #{item.relateFaultCode}, #{item.createBy}, #{item.updateBy}
+            )
+        </foreach>
+    </insert>
 
     <select id="queryPageList"
-            resultType="com.swsc.copsms.modules.secondLevelWarehouse.entity.vo.SparePartOutVO">
-        select spoo.id,spoo.material_code,mb.name materialName,mb.type,
-        mb.specifications,mb.country_origin countryOrigin,mb.manufacturer,mb.brand,
-        spoo.num,spoo.create_time,spoo.warehouse_code,w.warehouse_name
-        from spare_part_out_order spoo
-        left join spare_part_stock_info w on w.warehouse_code=spoo.warehouse_code
-        left join material_base mb on mb.code=spoo.material_code
-        where 1=1 and spoo.del_flag!=1
-        <if test="sparePartLendQuery.materialName!=null and sparePartLendQuery.materialName!=''">
-            and mb.name like concat('%', #{sparePartLendQuery.materialName}, '%')
-        </if>
-        <if test="sparePartLendQuery.type!=null and sparePartLendQuery.type!=''">
-            and mb.type = #{sparePartLendQuery.type}
-        </if>
-        <if test="sparePartLendQuery.warehouseCode!=null and sparePartLendQuery.warehouseCode!=''">
-            and spoo.warehouse_code = #{sparePartLendQuery.warehouseCode}
-        </if>
-        order by spoo.create_time desc
+            resultType="com.aiurt.boot.modules.secondLevelWarehouse.entity.vo.SparePartOutVO">
+        SELECT
+            spoo.id AS id,
+            spoo.material_code AS materialCode,
+            mb.NAME AS materialName,
+            mb.type AS `type`,
+            mb.specifications AS specifications,
+            mb.country_origin AS countryOrigin,
+            mb.manufacturer AS manufacturer,
+            mb.brand AS brand,
+            spoo.num AS num,
+            spoo.out_time AS outTime,
+            sd.depart_name AS orgId,
+            mb.unit AS unit,
+            mb.price AS price,
+            mb.system_code AS `system`,
+            spoo.remarks AS remarks
+        FROM
+            spare_part_out_order spoo
+            LEFT JOIN sys_depart sd ON sd.id = spoo.org_id
+            LEFT JOIN material_base mb ON mb.CODE = spoo.material_code
+        WHERE
+            spoo.del_flag =0
+            <if test="sparePartLendQuery.materialName!=null and sparePartLendQuery.materialName!=''">
+                AND mb.name LIKE concat('%', #{sparePartLendQuery.materialName}, '%')
+            </if>
+            <if test="sparePartLendQuery.type!=null and sparePartLendQuery.type!=''">
+                AND mb.type = #{sparePartLendQuery.type}
+            </if>
+            <if test="sparePartLendQuery.orgId!=null and sparePartLendQuery.orgId!=''">
+                AND spoo.org_id = #{sparePartLendQuery.orgId}
+            </if>
+            <if test="sparePartLendQuery.lineCode != null and sparePartLendQuery.lineCode != ''">
+                AND w.line_code = #{sparePartLendQuery.lineCode}
+            </if>
+            <if test="sparePartLendQuery.stationCode != null and sparePartLendQuery.stationCode != ''">
+                AND w.station_code = #{sparePartLendQuery.stationCode}
+            </if>
+            AND spoo.del_flag = 0
+        ORDER BY
+            spoo.create_time DESC
     </select>
-    <select id="exportXls"
-            resultType="com.swsc.copsms.modules.secondLevelWarehouse.entity.dto.SparePartOutExcel">
-        select spoo.id,spoo.material_code,mb.name materialName,mb.type,
-        mb.specifications,mb.country_origin countryOrigin,mb.manufacturer,mb.brand,
-        spoo.num,spoo.create_time,spoo.warehouse_code,w.warehouse_name
-        from spare_part_out_order spoo
-        left join spare_part_stock_info w on w.warehouse_code=spoo.warehouse_code
-        left join material_base mb on mb.code=spoo.material_code
-        where 1=1 and spoo.del_flag!=1
-        <if test="sparePartLendQuery.materialName!=null and sparePartLendQuery.materialName!=''">
-            and mb.name like concat('%', #{sparePartLendQuery.materialName}, '%')
-        </if>
-        <if test="sparePartLendQuery.type!=null and sparePartLendQuery.type!=''">
-            and mb.type = #{sparePartLendQuery.type}
-        </if>
-        <if test="sparePartLendQuery.warehouseCode!=null and sparePartLendQuery.warehouseCode!=''">
-            and spoo.warehouse_code = #{sparePartLendQuery.warehouseCode}
-        </if>
-        order by spoo.create_time desc
 
+    <select id="exportXls"
+            resultType="com.aiurt.boot.modules.secondLevelWarehouse.entity.dto.SparePartOutExcel">
+        SELECT
+            spoo.id AS id,
+            spoo.material_code AS materialCode,
+            mb.NAME AS materialName,
+            mb.type AS `type`,
+            mb.specifications AS specifications,
+            mb.country_origin AS countryOrigin,
+            mb.manufacturer AS manufacturer,
+            mb.brand AS brand,
+            spoo.num AS num,
+            spoo.out_time AS outTime,
+            sd.depart_name AS orgId,
+            mb.unit AS unit,
+            mb.price AS price,
+            mb.system_code AS `system`,
+            spoo.remarks AS remarks
+        FROM
+            spare_part_out_order spoo
+            LEFT JOIN sys_depart sd ON sd.id = spoo.org_id
+            LEFT JOIN material_base mb ON mb.CODE = spoo.material_code
+        WHERE
+            spoo.del_flag =0
+            <if test="sparePartLendQuery.materialName!=null and sparePartLendQuery.materialName!=''">
+                AND mb.name LIKE concat('%', #{sparePartLendQuery.materialName}, '%')
+            </if>
+            <if test="sparePartLendQuery.type!=null and sparePartLendQuery.type!=''">
+                AND mb.type = #{sparePartLendQuery.type}
+            </if>
+            <if test="sparePartLendQuery.lineCode != null and sparePartLendQuery.lineCode != ''">
+                AND w.line_code = #{sparePartLendQuery.lineCode}
+            </if>
+            <if test="sparePartLendQuery.stationCode != null and sparePartLendQuery.stationCode != ''">
+                AND w.station_code = #{sparePartLendQuery.stationCode}
+            </if>
+            <if test="sparePartLendQuery.selections != null">
+            AND spoo.id in(
+            <foreach collection="sparePartLendQuery.selections" separator="," item="item">
+                #{item}
+            </foreach>
+            )
+            </if>
+        ORDER BY
+            spoo.create_time DESC
+    </select>
+
+    <select id="selectByFaultChangeSparePartId" resultType="com.aiurt.boot.common.result.SparePartResult">
+        SELECT
+	        cl.line_name AS lineName,
+	        cs.station_name AS stationName,
+	        mb.`name` AS oldSparePartName,
+	        mb.type AS oldSparePartType,
+	        d.depart_name AS oldOrgId,
+	        fcsp.old_spare_part_num AS oldSparePartNum,
+	        mbe.`name` AS newSparePartName,
+	        mbe.type AS newSparePartType,
+	        sd.depart_name AS newOrgId,
+	        fcsp.new_spare_part_num AS newSparePartNum
+        FROM
+	        spare_part_out_order spoo
+	        LEFT JOIN device_change_spare_part fcsp ON spoo.fault_change_spare_part_id = fcsp.id
+	        LEFT JOIN fault f ON f.`code` = fcsp.code
+	        LEFT JOIN cs_line cl ON f.line_code = cl.line_code
+	        LEFT JOIN cs_station cs ON f.station_code = cs.station_code
+	        LEFT JOIN material_base mb ON mb.`code` = fcsp.old_spare_part_code
+	        LEFT JOIN sys_depart d ON fcsp.old_org_id = d.id
+	        LEFT JOIN material_base mbe ON mbe.`code` = fcsp.new_spare_part_code
+	        LEFT JOIN sys_depart sd ON fcsp.new_org_id = sd.id
+        WHERE
+	        spoo.fault_change_spare_part_id = #{id}
+    </select>
+
+    <select id="getFaultDetail" resultType="com.aiurt.boot.common.result.FaultSparePartResult">
+        SELECT
+	        f.occurrence_time AS occurrenceTime,
+	        cl.line_name AS lineName,
+	        cs.station_name AS stationName,
+	        f.devices_ids AS device,
+	        f.fault_type AS faultType,
+	        f.fault_phenomenon AS faultPhenomenon,
+	        f.create_time AS createTime,
+	        su.realname AS createBy
+        FROM
+	        spare_part_out_order spoo
+	        LEFT JOIN device_change_spare_part fcsp ON spoo.fault_change_spare_part_id = fcsp.id
+	        LEFT JOIN fault f ON fcsp.code = f.`code`
+	        LEFT JOIN cs_line cl ON cl.line_code = f.line_code
+	        LEFT JOIN cs_station cs ON cs.station_code = f.station_code
+	        LEFT JOIN sys_user su ON su.id = f.create_by
+        WHERE
+	        spoo.fault_change_spare_part_id = #{id}
     </select>
 </mapper>

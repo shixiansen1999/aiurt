@@ -1,8 +1,8 @@
 package com.aiurt.boot.modules.manage.service.impl;
 
-import com.swsc.copsms.modules.manage.entity.SituationUser;
-import com.swsc.copsms.modules.manage.mapper.SituationUserMapper;
-import com.swsc.copsms.modules.manage.service.ISituationUserService;
+import com.aiurt.boot.modules.manage.entity.SituationUser;
+import com.aiurt.boot.modules.manage.mapper.SituationUserMapper;
+import com.aiurt.boot.modules.manage.service.ISituationUserService;
 import org.springframework.stereotype.Service;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;

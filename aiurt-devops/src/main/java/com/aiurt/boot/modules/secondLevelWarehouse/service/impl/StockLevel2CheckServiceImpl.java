@@ -1,29 +1,27 @@
 package com.aiurt.boot.modules.secondLevelWarehouse.service.impl;
 
-import cn.hutool.core.collection.CollUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.swsc.copsms.common.api.vo.Result;
-import com.swsc.copsms.common.util.PageLimitUtil;
-import com.swsc.copsms.modules.secondLevelWarehouse.entity.StockLevel2;
-import com.swsc.copsms.modules.secondLevelWarehouse.entity.StockLevel2Check;
-import com.swsc.copsms.modules.secondLevelWarehouse.entity.StockLevel2CheckDetail;
-import com.swsc.copsms.modules.secondLevelWarehouse.entity.dto.StockLevel2CheckDTO;
-import com.swsc.copsms.modules.secondLevelWarehouse.entity.dto.StockLevel2CheckExcel;
-import com.swsc.copsms.modules.secondLevelWarehouse.entity.vo.Stock2CheckVO;
-import com.swsc.copsms.modules.secondLevelWarehouse.mapper.StockLevel2CheckDetailMapper;
-import com.swsc.copsms.modules.secondLevelWarehouse.mapper.StockLevel2CheckMapper;
-import com.swsc.copsms.modules.secondLevelWarehouse.mapper.StockLevel2Mapper;
-import com.swsc.copsms.modules.secondLevelWarehouse.service.IStockLevel2CheckService;
+import com.aiurt.boot.common.system.api.ISysBaseAPI;
+import com.aiurt.boot.common.util.TokenUtils;
+import com.aiurt.boot.modules.secondLevelWarehouse.entity.StockLevel2;
+import com.aiurt.boot.modules.secondLevelWarehouse.entity.StockLevel2Check;
+import com.aiurt.boot.modules.secondLevelWarehouse.entity.StockLevel2CheckDetail;
+import com.aiurt.boot.modules.secondLevelWarehouse.entity.dto.StockLevel2CheckDTO;
+import com.aiurt.boot.modules.secondLevelWarehouse.entity.dto.StockLevel2CheckExcel;
+import com.aiurt.boot.modules.secondLevelWarehouse.entity.vo.Stock2CheckVO;
+import com.aiurt.boot.modules.secondLevelWarehouse.mapper.StockLevel2CheckDetailMapper;
+import com.aiurt.boot.modules.secondLevelWarehouse.mapper.StockLevel2CheckMapper;
+import com.aiurt.boot.modules.secondLevelWarehouse.mapper.StockLevel2Mapper;
+import com.aiurt.boot.modules.secondLevelWarehouse.service.IStockLevel2CheckService;
 import org.springframework.stereotype.Service;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
-import java.util.Date;
 import java.util.List;
 
 /**
@@ -40,13 +38,19 @@ public class StockLevel2CheckServiceImpl extends ServiceImpl<StockLevel2CheckMap
     private StockLevel2CheckMapper stockLevel2CheckMapper;
     @Resource
     private StockLevel2CheckDetailMapper stockLevel2CheckDetailMapper;
+    @Resource
+    private ISysBaseAPI iSysBaseAPI;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void addCheck(StockLevel2Check check) {
+    public void addCheck(StockLevel2Check check, HttpServletRequest req) {
+        String userId = TokenUtils.getUserId(req, iSysBaseAPI);
+
         //模拟盘点任务单号
         String simulateCheckCode = simulateCheckCode();
 
+        check.setCreateBy(userId);
+        check.setUpdateBy(userId);
         check.setStockCheckCode(simulateCheckCode);
         stockLevel2CheckMapper.insert(check);
 
@@ -59,6 +63,8 @@ public class StockLevel2CheckServiceImpl extends ServiceImpl<StockLevel2CheckMap
             checkDetail.setStockCheckCode(check.getStockCheckCode());
             checkDetail.setWarehouseCode(check.getWarehouseCode());
             checkDetail.setMaterialCode(e.getMaterialCode());
+            checkDetail.setCreateBy(userId);
+            checkDetail.setUpdateBy(userId);
             stockLevel2CheckDetailMapper.insert(checkDetail);
         });
 
@@ -73,29 +79,36 @@ public class StockLevel2CheckServiceImpl extends ServiceImpl<StockLevel2CheckMap
                 stockLevel2CheckDTO.getWarehouseCode(),
                 stockLevel2CheckDTO.getStartTime(),
                 stockLevel2CheckDTO.getEndTime());
-        stock2CheckVOIPage.getRecords().forEach(e->{
-            List<StockLevel2CheckDetail> checkDetailList = stockLevel2CheckDetailMapper.selectList(new QueryWrapper<StockLevel2CheckDetail>()
-                    .eq("stock_check_code", e.getStockCheckCode()));
-            if(CollUtil.isNotEmpty(checkDetailList)){
-                int sum = checkDetailList.stream().filter(j->j.getActualNum()!=null)
-                        .mapToInt(StockLevel2CheckDetail::getActualNum).sum();
-                e.setCheckAllNum(sum);
-            }
-        });
+//        stock2CheckVOIPage.getRecords().forEach(e->{
+//            List<StockLevel2CheckDetail> checkDetailList = stockLevel2CheckDetailMapper.selectList(new QueryWrapper<StockLevel2CheckDetail>()
+//                    .eq("stock_check_code", e.getStockCheckCode()));
+//            if(CollUtil.isNotEmpty(checkDetailList)){
+//                int sum = checkDetailList.stream().filter(j->j.getActualNum()!=null)
+//                        .mapToInt(StockLevel2CheckDetail::getActualNum).sum();
+//                e.setCheckAllNum(sum);
+//            }
+//        });
+        List<Stock2CheckVO> records = stock2CheckVOIPage.getRecords();
+        //根据盘点任务单号计算实盘数量
+        for (Stock2CheckVO record : records) {
+            Integer num = stockLevel2CheckDetailMapper.selectActualNum(record.getStockCheckCode());
+            record.setNum(num);
+        }
 
         return  stock2CheckVOIPage;
     }
 
+    /**
+     * 二级库盘点导出
+     * @param stockLevel2CheckDTO
+     * @return
+     */
     @Override
-    public List<StockLevel2CheckExcel> exportXls(List<Integer> ids) {
-        List<StockLevel2CheckExcel> excels = stockLevel2CheckMapper.exportXls(ids);
+    public List<StockLevel2CheckExcel> exportXls(StockLevel2CheckDTO stockLevel2CheckDTO) {
+        List<StockLevel2CheckExcel> excels = stockLevel2CheckMapper.exportXls(stockLevel2CheckDTO);
         excels.forEach(e->{
-            List<StockLevel2CheckDetail> checkDetailList = stockLevel2CheckDetailMapper.selectList(new QueryWrapper<StockLevel2CheckDetail>()
-                    .eq("stock_check_code", e.getStockCheckCode()));
-            if(CollUtil.isNotEmpty(checkDetailList)){
-                int sum = checkDetailList.stream().mapToInt(StockLevel2CheckDetail::getActualNum).sum();
-                e.setCheckNum(sum);
-            }
+                Integer num = stockLevel2CheckDetailMapper.selectActualNum(e.getStockCheckCode());
+                e.setCheckNum(num);
         });
         return excels;
     }

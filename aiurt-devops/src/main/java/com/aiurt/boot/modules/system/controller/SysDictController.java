@@ -11,22 +11,22 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.swsc.copsms.modules.system.entity.SysDict;
-import com.swsc.copsms.modules.system.model.SysDictTree;
-import com.swsc.copsms.modules.system.model.TreeSelectModel;
-import com.swsc.copsms.modules.system.vo.SysDictPage;
-import com.swsc.copsms.modules.system.service.ISysDictItemService;
-import com.swsc.copsms.modules.system.service.ISysDictService;
-import com.swsc.copsms.modules.system.entity.SysDictItem;
+import com.aiurt.boot.common.constant.CommonConstant;
+import com.aiurt.boot.modules.system.entity.SysDict;
+import com.aiurt.boot.modules.system.model.SysDictTree;
+import com.aiurt.boot.modules.system.model.TreeSelectModel;
+import com.aiurt.boot.modules.system.vo.SysDictPage;
+import com.aiurt.boot.modules.system.service.ISysDictItemService;
+import com.aiurt.boot.modules.system.service.ISysDictService;
+import com.aiurt.boot.modules.system.entity.SysDictItem;
 import org.apache.shiro.SecurityUtils;
-import com.swsc.copsms.common.api.vo.Result;
-import com.swsc.copsms.common.constant.CacheConstant;
-import com.swsc.copsms.common.constant.CommonConstant;
-import com.swsc.copsms.common.system.query.QueryGenerator;
-import com.swsc.copsms.common.system.vo.DictModel;
-import com.swsc.copsms.common.system.vo.LoginUser;
-import com.swsc.copsms.common.util.SqlInjectionUtil;
-import com.swsc.copsms.common.util.oConvertUtils;
+import com.aiurt.boot.common.api.vo.Result;
+import com.aiurt.boot.common.constant.CacheConstant;
+import com.aiurt.boot.common.system.query.QueryGenerator;
+import com.aiurt.boot.common.system.vo.DictModel;
+import com.aiurt.boot.common.system.vo.LoginUser;
+import com.aiurt.boot.common.util.SqlInjectionUtil;
+import com.aiurt.boot.common.util.oConvertUtils;
 import org.jeecgframework.poi.excel.ExcelImportUtil;
 import org.jeecgframework.poi.excel.def.NormalExcelConstants;
 import org.jeecgframework.poi.excel.entity.ExportParams;
@@ -221,11 +221,11 @@ public class SysDictController {
 		Result<SysDict> result = new Result<SysDict>();
 		SysDict sysdict = sysDictService.getById(sysDict.getId());
 		if(sysdict==null) {
-			result.error500("未找到对应实体");
+			result.onnull("未找到对应实体");
 		}else {
 			sysDict.setUpdateTime(new Date());
 			boolean ok = sysDictService.updateById(sysDict);
-			//TODO 返回false说明什么？
+
 			if(ok) {
 				result.success("编辑成功!");
 			}

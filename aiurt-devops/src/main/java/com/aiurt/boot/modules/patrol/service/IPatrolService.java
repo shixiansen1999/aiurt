@@ -1,11 +1,9 @@
 package com.aiurt.boot.modules.patrol.service;
 
-import com.swsc.copsms.common.api.vo.Result;
-import com.swsc.copsms.modules.patrol.entity.Patrol;
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.swsc.copsms.modules.patrol.param.PatrolPageParam;
-
-import javax.servlet.http.HttpServletRequest;
+import com.aiurt.boot.common.api.vo.Result;
+import com.aiurt.boot.modules.patrol.entity.Patrol;
+import com.aiurt.boot.modules.patrol.param.PatrolPageParam;
 
 /**
  * @Description: 巡检标准
@@ -15,5 +13,7 @@ import javax.servlet.http.HttpServletRequest;
  */
 public interface IPatrolService extends IService<Patrol> {
 
-	Result<?> pageList(PatrolPageParam param, Integer pageNo, Integer pageSize, HttpServletRequest req);
+	Result<?> pageList(PatrolPageParam param, Integer pageNo, Integer pageSize);
+
+	Result<?> detailStrategy(Long id);
 }

@@ -1,7 +1,7 @@
 package com.aiurt.boot.modules.system.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.swsc.copsms.modules.system.entity.SysFillRule;
+import com.aiurt.boot.modules.system.entity.SysFillRule;
 
 /**
  * @Description: 填值规则

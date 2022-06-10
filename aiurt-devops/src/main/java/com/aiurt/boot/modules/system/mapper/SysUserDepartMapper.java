@@ -2,7 +2,7 @@ package com.aiurt.boot.modules.system.mapper;
 
 import java.util.List;
 
-import com.swsc.copsms.modules.system.entity.SysUserDepart;
+import com.aiurt.boot.modules.system.entity.SysUserDepart;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 

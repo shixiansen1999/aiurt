@@ -5,11 +5,11 @@ import java.util.Arrays;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.swsc.copsms.common.api.vo.Result;
-import com.swsc.copsms.common.system.base.controller.BaseController;
-import com.swsc.copsms.common.system.query.QueryGenerator;
-import com.swsc.copsms.modules.message.entity.SysMessage;
-import com.swsc.copsms.modules.message.service.ISysMessageService;
+import com.aiurt.boot.common.api.vo.Result;
+import com.aiurt.boot.common.system.base.controller.BaseController;
+import com.aiurt.boot.common.system.query.QueryGenerator;
+import com.aiurt.boot.modules.message.entity.SysMessage;
+import com.aiurt.boot.modules.message.service.ISysMessageService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;

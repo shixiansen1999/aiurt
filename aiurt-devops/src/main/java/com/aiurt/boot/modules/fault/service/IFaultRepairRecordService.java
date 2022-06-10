@@ -1,12 +1,15 @@
 package com.aiurt.boot.modules.fault.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.swsc.copsms.common.api.vo.Result;
-import com.swsc.copsms.common.result.FaultRepairRecordResult;
-import com.swsc.copsms.common.result.SpareResult;
-import com.swsc.copsms.modules.fault.dto.FaultRepairRecordDTO;
-import com.swsc.copsms.modules.fault.entity.FaultRepairRecord;
+import com.aiurt.boot.common.api.vo.Result;
+import com.aiurt.boot.common.result.FaultRepairRecordResult;
+import com.aiurt.boot.common.result.SpareResult;
+import com.aiurt.boot.modules.fault.dto.FaultRepairDTO;
+import com.aiurt.boot.modules.fault.dto.FaultRepairRecordDTO;
+import com.aiurt.boot.modules.fault.entity.FaultRepairRecord;
+import com.aiurt.boot.modules.fault.param.AssignParam;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
 /**
@@ -18,25 +21,15 @@ import java.util.List;
 public interface IFaultRepairRecordService extends IService<FaultRepairRecord> {
     /**
      * 指派
-     * @param code
-     * @param appointUserId
-     * @param workType
-     * @param planOrderCode
-     * @param planOrderImg
-     * @return
+     * @param param
      */
-    public Result assign(String code, String appointUserId, String workType, String planOrderCode, String planOrderImg);
+     Result assign(AssignParam param);
 
     /**
      * 指派
-     * @param code
-     * @param appointUserId
-     * @param workType
-     * @param planOrderCode
-     * @param planOrderImg
-     * @return
+     * @param param
      */
-    public Result assignAgain(String code, String appointUserId, String workType, String planOrderCode, String planOrderImg);
+     Result assignAgain(AssignParam param);
 
     /**
      * 根据code查询故障维修记录
@@ -48,9 +41,10 @@ public interface IFaultRepairRecordService extends IService<FaultRepairRecord> {
     /**
      * app填写维修记录
      * @param dto
+     * @param req
      * @return
      */
-    public Result addRecord(FaultRepairRecordDTO dto);
+     Result addRecord(FaultRepairRecordDTO dto,HttpServletRequest req);
 
     /**
      * 根据故障编号查询更换备件
@@ -58,5 +52,20 @@ public interface IFaultRepairRecordService extends IService<FaultRepairRecord> {
      * @return
      */
     List<SpareResult> changeSpare(String code);
+
+    /**
+     * 查询最后一条维修记录
+     * @param code
+     * @param req
+     * @return
+     */
+    FaultRepairRecordResult getDetail(String code,HttpServletRequest req);
+
+    /**
+     * 编辑维修记录
+     * @param dto
+     * @return
+     */
+    Result editRecord(FaultRepairDTO dto);
 
 }

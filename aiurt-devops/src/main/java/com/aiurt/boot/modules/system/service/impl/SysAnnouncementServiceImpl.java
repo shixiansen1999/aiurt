@@ -7,13 +7,13 @@ import java.util.List;
 
 import javax.annotation.Resource;
 
-import com.swsc.copsms.modules.system.entity.SysAnnouncement;
-import com.swsc.copsms.common.constant.CommonConstant;
-import com.swsc.copsms.modules.system.service.ISysAnnouncementService;
-import com.swsc.copsms.common.util.oConvertUtils;
-import com.swsc.copsms.modules.system.entity.SysAnnouncementSend;
-import com.swsc.copsms.modules.system.mapper.SysAnnouncementMapper;
-import com.swsc.copsms.modules.system.mapper.SysAnnouncementSendMapper;
+import com.aiurt.boot.common.constant.CommonConstant;
+import com.aiurt.boot.modules.system.entity.SysAnnouncement;
+import com.aiurt.boot.modules.system.service.ISysAnnouncementService;
+import com.aiurt.boot.common.util.oConvertUtils;
+import com.aiurt.boot.modules.system.entity.SysAnnouncementSend;
+import com.aiurt.boot.modules.system.mapper.SysAnnouncementMapper;
+import com.aiurt.boot.modules.system.mapper.SysAnnouncementSendMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 

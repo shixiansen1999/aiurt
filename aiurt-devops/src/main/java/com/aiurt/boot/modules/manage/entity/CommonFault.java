@@ -1,20 +1,19 @@
 package com.aiurt.boot.modules.manage.entity;
 
-import java.io.Serializable;
-import java.util.Date;
-
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import com.baomidou.mybatisplus.annotation.TableField;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
-import com.fasterxml.jackson.annotation.JsonFormat;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.jeecgframework.poi.excel.annotation.Excel;
+import org.springframework.format.annotation.DateTimeFormat;
+
+import java.util.Date;
 
 /**
  * @Description: cs_common_fault
@@ -26,7 +25,7 @@ import org.jeecgframework.poi.excel.annotation.Excel;
 @TableName("cs_common_fault")
 @EqualsAndHashCode(callSuper = false)
 @Accessors(chain = true)
-@ApiModel(value = "cs_common_fault对象", description = "cs_common_fault")
+@ApiModel(value = "常见故障管理对象", description = "常见故障管理对象")
 public class CommonFault {
 
     /**
@@ -34,21 +33,21 @@ public class CommonFault {
      */
     @TableId(type = IdType.AUTO)
     @ApiModelProperty(value = "id")
-    private Integer id;
+    private Long id;
 
     /**
      * 子系统id
      */
     @Excel(name = "子系统id", width = 15)
     @ApiModelProperty(value = "子系统id")
-    private Integer subId;
+    private Long subId;
 
     /**
      * 设备分类id
      */
     @Excel(name = "设备分类id", width = 15)
     @ApiModelProperty(value = "设备分类id")
-    private Integer equipId;
+    private Long equipId;
 
     /**
      * 故障现象
@@ -56,6 +55,13 @@ public class CommonFault {
     @Excel(name = "故障现象", width = 15)
     @ApiModelProperty(value = "故障现象")
     private String fault;
+
+    /**
+     * 发生次数
+     */
+    @Excel(name = "发生次数", width = 15)
+    @ApiModelProperty(value = "发生次数")
+    private Integer num;
 
     /**
      * 删除标志
@@ -82,9 +88,19 @@ public class CommonFault {
     @ApiModelProperty(value = "updateTime")
     private Date updateTime;
 
+    /**
+     * 关联故障知识库id
+     */
+    @Excel(name = "关联故障知识库id", width = 15)
+    @ApiModelProperty(value = "关联故障知识库id")
+    private Long knowledgeId;
+
+
 
     @TableField(exist = false)
     private String systemName;
     @TableField(exist = false)
     private String equipName;
+
+    public static final String ID = "id";
 }

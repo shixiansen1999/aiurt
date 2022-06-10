@@ -1,10 +1,11 @@
 package com.aiurt.boot.modules.patrol.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.swsc.copsms.common.api.vo.Result;
-import com.swsc.copsms.modules.patrol.entity.PatrolPool;
-import com.swsc.copsms.modules.patrol.param.PoolAppointParam;
-import com.swsc.copsms.modules.patrol.param.PoolPageParam;
+import com.aiurt.boot.common.api.vo.Result;
+import com.aiurt.boot.modules.patrol.entity.PatrolPool;
+import com.aiurt.boot.modules.patrol.entity.PatrolTask;
+import com.aiurt.boot.modules.patrol.param.PoolAppointParam;
+import com.aiurt.boot.modules.patrol.param.PoolPageParam;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -18,11 +19,10 @@ public interface IPatrolPoolService extends IService<PatrolPool> {
 	/**
 	 * 巡检池分页查询
 	 *
-	 * @param param
-	 * @param req
-	 * @return
+	 * @param param 参数
+	 * @return {@code Result<?>}
 	 */
-	Result<?> selectPage(PoolPageParam param, HttpServletRequest req);
+	Result<?> selectPage(PoolPageParam param);
 
 	/**
 	 * 指派人员
@@ -41,4 +41,28 @@ public interface IPatrolPoolService extends IService<PatrolPool> {
 	 * @return
 	 */
 	Result<?> receive(HttpServletRequest req, Long id);
+
+	/**
+	 * 详情
+	 * @param req
+	 * @param id
+	 * @return
+	 */
+	Result<?> detail(HttpServletRequest req, Long id);
+
+	/**
+	 * 重新指派
+	 * @param req
+	 * @param param
+	 * @return
+	 */
+	Result<?> reAppoint(HttpServletRequest req, PoolAppointParam param);
+
+	/**
+	 * 查看指派详情
+	 * @param req
+	 * @param poolId
+	 * @return
+	 */
+	Result<PatrolTask> appointDetail(HttpServletRequest req, Long poolId);
 }

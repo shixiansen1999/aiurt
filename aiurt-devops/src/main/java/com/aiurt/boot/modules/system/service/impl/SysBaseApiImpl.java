@@ -1,44 +1,42 @@
 package com.aiurt.boot.modules.system.service.impl;
 
+import cn.hutool.core.util.ObjectUtil;
+import com.alibaba.fastjson.JSONObject;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.aiurt.boot.common.constant.CacheConstant;
+import com.aiurt.boot.common.constant.CommonConstant;
+import com.aiurt.boot.common.constant.DataBaseConstant;
+import com.aiurt.boot.common.exception.SwscException;
+import com.aiurt.boot.common.system.api.ISysBaseAPI;
+import com.aiurt.boot.common.system.vo.ComboModel;
+import com.aiurt.boot.common.system.vo.DictModel;
+import com.aiurt.boot.common.system.vo.LoginUser;
+import com.aiurt.boot.common.system.vo.SysDepartModel;
+import com.aiurt.boot.common.util.IPUtils;
+import com.aiurt.boot.common.util.SpringContextUtils;
+import com.aiurt.boot.common.util.oConvertUtils;
+import com.aiurt.boot.modules.message.websocket.WebSocket;
+import com.aiurt.boot.modules.system.entity.*;
+import com.aiurt.boot.modules.system.mapper.*;
+import com.aiurt.boot.modules.system.service.ISysDepartService;
+import com.aiurt.boot.modules.system.service.ISysDictService;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.shiro.SecurityUtils;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.stereotype.Service;
+
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-
-import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
-import javax.sql.DataSource;
-
-import cn.hutool.core.util.ObjectUtil;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.swsc.copsms.modules.message.websocket.WebSocket;
-import com.swsc.copsms.modules.system.entity.*;
-import com.swsc.copsms.modules.system.mapper.*;
-import com.swsc.copsms.common.constant.CacheConstant;
-import com.swsc.copsms.common.constant.CommonConstant;
-import com.swsc.copsms.common.constant.DataBaseConstant;
-import com.swsc.copsms.common.exception.SwscException;
-import com.swsc.copsms.common.system.api.ISysBaseAPI;
-import com.swsc.copsms.common.system.vo.ComboModel;
-import com.swsc.copsms.common.system.vo.DictModel;
-import com.swsc.copsms.common.system.vo.LoginUser;
-import com.swsc.copsms.common.system.vo.SysDepartModel;
-import com.swsc.copsms.modules.system.service.ISysDepartService;
-import com.swsc.copsms.modules.system.service.ISysDictService;
-import org.apache.shiro.SecurityUtils;
-import com.swsc.copsms.common.util.IPUtils;
-import com.swsc.copsms.common.util.SpringContextUtils;
-import com.swsc.copsms.common.util.oConvertUtils;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.annotation.Cacheable;
-import org.springframework.stereotype.Service;
-import com.alibaba.fastjson.JSONObject;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-
-import lombok.extern.slf4j.Slf4j;
 
 /**
  * @Description: 底层共通业务API，提供其他独立模块调用
@@ -72,6 +70,7 @@ public class SysBaseApiImpl implements ISysBaseAPI {
 	private SysRoleMapper roleMapper;
 	@Resource
 	private SysDepartMapper departMapper;
+
 
 	@Override
 	public void addLog(String LogContent, Integer logType, Integer operatetype) {
@@ -378,4 +377,5 @@ public class SysBaseApiImpl implements ISysBaseAPI {
 		}
 		return departModelList;
 	}
+
 }

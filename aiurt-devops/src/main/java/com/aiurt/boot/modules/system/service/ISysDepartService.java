@@ -1,11 +1,13 @@
 package com.aiurt.boot.modules.system.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.swsc.copsms.modules.system.model.DepartIdModel;
-import com.swsc.copsms.modules.system.model.SysDepartTreeModel;
-import com.swsc.copsms.modules.system.entity.SysDepart;
+import com.aiurt.boot.modules.statistical.vo.DepartDataVo;
+import com.aiurt.boot.modules.system.model.DepartIdModel;
+import com.aiurt.boot.modules.system.model.SysDepartTreeModel;
+import com.aiurt.boot.modules.system.entity.SysDepart;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * <p>
@@ -34,14 +36,14 @@ public interface ISysDepartService extends IService<SysDepart>{
      * 保存部门数据
      * @param sysDepart
      */
-    void saveDepartData(SysDepart sysDepart, String username);
+    void saveDepartData(SysDepart sysDepart,String username);
 
     /**
      * 更新depart数据
      * @param sysDepart
      * @return
      */
-    Boolean updateDepartDataById(SysDepart sysDepart, String username);
+    Boolean updateDepartDataById(SysDepart sysDepart,String username);
 
     /**
      * 删除depart数据
@@ -94,4 +96,17 @@ public interface ISysDepartService extends IService<SysDepart>{
 
 
     public List<SysDepart> getDepartByArea(String area);
+
+
+    /**
+     *--------------------------大屏接口开始------------------
+     */
+    Integer getBanZuNum(Map map);
+    //获取 班组数据统计
+    List<DepartDataVo> getDepartData(Map map);
+
+    List<SysDepart> getSysDepartByLineCode(String lineCode);
+    /**
+     *--------------------------大屏接口结束------------------
+     */
 }

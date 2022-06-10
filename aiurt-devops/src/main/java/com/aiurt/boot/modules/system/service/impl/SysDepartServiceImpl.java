@@ -1,27 +1,36 @@
 package com.aiurt.boot.modules.system.service.impl;
 
+import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.swsc.copsms.common.constant.CommonConstant;
-import com.swsc.copsms.common.util.YouBianCodeUtil;
-import com.swsc.copsms.modules.system.entity.SysDepart;
-import com.swsc.copsms.modules.system.entity.SysUserDepart;
-import com.swsc.copsms.modules.system.mapper.SysDepartMapper;
-import com.swsc.copsms.modules.system.mapper.SysUserDepartMapper;
-import com.swsc.copsms.modules.system.model.DepartIdModel;
-import com.swsc.copsms.modules.system.model.SysDepartTreeModel;
-import com.swsc.copsms.modules.system.service.ISysDepartService;
-import com.swsc.copsms.modules.system.util.FindsDepartsChildrenUtil;
+import com.aiurt.boot.common.constant.CommonConstant;
+import com.aiurt.boot.common.util.DateUtils;
+import com.aiurt.boot.common.util.RoleAdditionalUtils;
+import com.aiurt.boot.common.util.YouBianCodeUtil;
+import com.aiurt.boot.modules.manage.entity.Line;
+import com.aiurt.boot.modules.manage.service.ILineService;
+import com.aiurt.boot.modules.schedule.entity.ScheduleRecord;
+import com.aiurt.boot.modules.statistical.vo.DepartDataVo;
+import com.aiurt.boot.modules.statistical.vo.UserScheduleVo;
+import com.aiurt.boot.modules.system.entity.SysDepart;
+import com.aiurt.boot.modules.system.entity.SysUser;
+import com.aiurt.boot.modules.system.entity.SysUserDepart;
+import com.aiurt.boot.modules.system.mapper.SysDepartMapper;
+import com.aiurt.boot.modules.system.mapper.SysUserDepartMapper;
+import com.aiurt.boot.modules.system.mapper.SysUserMapper;
+import com.aiurt.boot.modules.system.model.DepartIdModel;
+import com.aiurt.boot.modules.system.model.SysDepartTreeModel;
+import com.aiurt.boot.modules.system.service.ISysDepartService;
+import com.aiurt.boot.modules.system.util.FindsDepartsChildrenUtil;
 import io.netty.util.internal.StringUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.UUID;
+import javax.annotation.Resource;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * <p>
@@ -38,16 +47,30 @@ public class SysDepartServiceImpl extends ServiceImpl<SysDepartMapper, SysDepart
     private SysUserDepartMapper sysUserDepartMapper;
     @Autowired
     private SysDepartMapper sysDepartMapper;
+    @Autowired
+    private ILineService lineService;
+    @Autowired
+    private SysUserMapper sysUserMapper;
+    /*@Autowired
+    private IScheduleRecordService scheduleRecordService;*/
+
+    @Resource
+    private RoleAdditionalUtils roleAdditionalUtils;
 
     /**
      * queryTreeList 对应 queryTreeList 查询所有的部门数据,以树结构形式响应给前端
      */
-	//@Cacheable(value = CacheConstant.SYS_DEPARTS_CACHE)
+    //@Cacheable(value = CacheConstant.SYS_DEPARTS_CACHE)
     @Override
     public List<SysDepartTreeModel> queryTreeList() {
+        // DO: 2022/1/4 加入权限控制
+        //LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        //List<String> orgIds = roleAdditionalUtils.getListDepartIdsByUserId(user.getId());
+
         LambdaQueryWrapper<SysDepart> query = new LambdaQueryWrapper<SysDepart>();
         query.eq(SysDepart::getDelFlag, CommonConstant.DEL_FLAG_0.toString());
         query.orderByAsc(SysDepart::getDepartOrder);
+        //query.in(SysDepart::getId,orgIds);
         List<SysDepart> list = this.list(query);
         // 调用wrapTreeDataToTreeList方法生成树状数据
         List<SysDepartTreeModel> listResult = FindsDepartsChildrenUtil.wrapTreeDataToTreeList(list);
@@ -309,5 +332,65 @@ public class SysDepartServiceImpl extends ServiceImpl<SysDepartMapper, SysDepart
             temp.setChildren(this.list(queryWrapper));
         });
         return sysDepartList;
+    }
+
+    @Override
+    public Integer getBanZuNum(Map map) {
+        Integer num = 0;
+        if (ObjectUtil.isNotEmpty(map.get("lineId"))) {
+            String lineCode = map.get("lineId").toString();
+            Line line = lineService.getOne(new QueryWrapper<Line>().eq("line_code", lineCode));
+            List<String> banzuList = this.baseMapper.getBanzuListByLine(line.getId());
+            num = banzuList.size();
+        } else {
+            List<SysDepart> list = this.baseMapper.selectList(new QueryWrapper<>());
+            num = list.size();
+        }
+        return num;
+    }
+
+    @Override
+    public List<DepartDataVo> getDepartData(Map map) {
+        List<DepartDataVo> list = new ArrayList<>();
+        if (ObjectUtil.isNotEmpty(map.get("lineId"))) {
+            String lineCode = map.get("lineId").toString();
+            Line line = lineService.getOne(new QueryWrapper<Line>().eq("line_code", lineCode));
+            List<String> banzuList = this.baseMapper.getBanzuListByLine(line.getId());
+            if (banzuList != null && banzuList.size() > 0) {
+                String[] emp = new String[banzuList.size()];
+                int i = 0;
+                for (String ce : banzuList) {
+                    emp[i] = ce;
+                    i++;
+                }
+                map.put("orgIds", emp);
+            }
+
+
+        }
+        list = this.baseMapper.getDepartData(map);
+        list.forEach(temp -> {
+            List<SysUser> banzhang = sysUserMapper.getBanZhangByBanZu(temp.getId());
+            if (banzhang != null) {
+                temp.setBanzhang(banzhang.stream().map(SysUser::getRealname).collect(Collectors.joining(",")));
+            }
+            List<UserScheduleVo> userScheduleVos = sysUserMapper.getUserByBanZu(temp.getId());
+            for (UserScheduleVo userScheduleVo : userScheduleVos) {
+                ScheduleRecord scheduleRecord = this.baseMapper.getScheduleRecord(userScheduleVo.getUserId(), DateUtils.getToday());
+                if (scheduleRecord != null) {
+                    userScheduleVo.setIsSchedule(1);
+                }else {
+                    userScheduleVo.setIsSchedule(0);
+                }
+            }
+            temp.setUserList(userScheduleVos);
+        });
+
+        return list;
+    }
+
+    @Override
+    public List<SysDepart> getSysDepartByLineCode(String lineCode) {
+        return this.baseMapper.getSysDepartByLineCode(lineCode);
     }
 }

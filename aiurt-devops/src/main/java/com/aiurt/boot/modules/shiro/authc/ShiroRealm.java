@@ -1,8 +1,15 @@
 package com.aiurt.boot.modules.shiro.authc;
 
-import java.util.Set;
-
-import com.swsc.copsms.modules.system.service.ISysUserService;
+import com.aiurt.boot.common.constant.CommonConstant;
+import com.aiurt.boot.common.system.api.ISysBaseAPI;
+import com.aiurt.boot.common.system.util.JwtUtil;
+import com.aiurt.boot.common.system.vo.LoginUser;
+import com.aiurt.boot.common.util.RedisUtil;
+import com.aiurt.boot.common.util.SpringContextUtils;
+import com.aiurt.boot.common.util.oConvertUtils;
+import com.aiurt.boot.modules.system.service.ISysUserService;
+import com.aiurt.boot.modules.webHome.utils.UserListenerUtils;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.AuthenticationInfo;
 import org.apache.shiro.authc.AuthenticationToken;
@@ -11,18 +18,11 @@ import org.apache.shiro.authz.AuthorizationInfo;
 import org.apache.shiro.authz.SimpleAuthorizationInfo;
 import org.apache.shiro.realm.AuthorizingRealm;
 import org.apache.shiro.subject.PrincipalCollection;
-import com.swsc.copsms.common.constant.CommonConstant;
-import com.swsc.copsms.common.system.api.ISysBaseAPI;
-import com.swsc.copsms.common.system.util.JwtUtil;
-import com.swsc.copsms.common.system.vo.LoginUser;
-import com.swsc.copsms.common.util.RedisUtil;
-import com.swsc.copsms.common.util.SpringContextUtils;
-import com.swsc.copsms.common.util.oConvertUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
-import lombok.extern.slf4j.Slf4j;
+import java.util.Set;
 
 /**
  * @Description: 用户登录鉴权和获取用户授权
@@ -43,6 +43,9 @@ public class ShiroRealm extends AuthorizingRealm {
 	@Autowired
 	@Lazy
 	private RedisUtil redisUtil;
+	@Autowired
+	@Lazy
+	private UserListenerUtils userListenerUtils;
 
 	/**
 	 * 必须重写此方法，不然Shiro会报错
@@ -91,13 +94,14 @@ public class ShiroRealm extends AuthorizingRealm {
 	@Override
 	protected AuthenticationInfo doGetAuthenticationInfo(AuthenticationToken auth) throws AuthenticationException {
 		String token = (String) auth.getCredentials();
-//		if (token == null) {
-//			log.info("————————身份认证失败——————————IP地址:  "+ oConvertUtils.getIpAddrByRequest(SpringContextUtils.getHttpServletRequest()));
-//			throw new AuthenticationException("token为空!");
-//		}
+		if (token == null) {
+			log.info("————————身份认证失败——————————IP地址:  "+ oConvertUtils.getIpAddrByRequest(SpringContextUtils.getHttpServletRequest()));
+			throw new AuthenticationException("token为空!");
+		}
 		// 校验token有效性
-//		LoginUser loginUser = this.checkUserTokenIsEffect(token);
-		LoginUser loginUser = new LoginUser();
+		//9.27 qian修改添加鉴权
+		LoginUser loginUser = this.checkUserTokenIsEffect(token);
+//		LoginUser loginUser = new LoginUser();
 		return new SimpleAuthenticationInfo(loginUser, token, getName());
 	}
 
@@ -125,7 +129,7 @@ public class ShiroRealm extends AuthorizingRealm {
         }
 		// 校验token是否超时失效 & 或者账号密码是否错误
 		if (!jwtTokenRefresh(token, username, loginUser.getPassword())) {
-			throw new AuthenticationException("Token失效，请重新登录!");
+			throw new AuthenticationException("登录已过期，请重新登录!");
 		}
 
 		return loginUser;
@@ -152,15 +156,17 @@ public class ShiroRealm extends AuthorizingRealm {
 				String newAuthorization = JwtUtil.sign(userName, passWord);
 				// 设置超时时间
 				redisUtil.set(CommonConstant.PREFIX_USER_TOKEN + token, newAuthorization);
-				redisUtil.expire(CommonConstant.PREFIX_USER_TOKEN + token, JwtUtil.EXPIRE_TIME *2 / 1000);
+				redisUtil.expire(CommonConstant.PREFIX_USER_TOKEN + token, JwtUtil.EXPIRE_TIME *8 / 1000);
+				userListenerUtils.setUserToken(token,System.currentTimeMillis()+JwtUtil.EXPIRE_TIME*8);
                 log.info("——————————用户在线操作，更新token保证不掉线—————————jwtTokenRefresh——————— "+ token);
 			}
             //update-begin--Author:swsc  Date:20191005  for：解决每次请求，都重写redis中 token缓存问题
-//			else {
-//				// 设置超时时间
-//				redisUtil.set(CommonConstant.PREFIX_USER_TOKEN + token, cacheToken);
-//				redisUtil.expire(CommonConstant.PREFIX_USER_TOKEN + token, JwtUtil.EXPIRE_TIME / 1000);
-//			}
+			else {
+				// 设置超时时间
+				redisUtil.set(CommonConstant.PREFIX_USER_TOKEN + token, cacheToken);
+				redisUtil.expire(CommonConstant.PREFIX_USER_TOKEN + token, JwtUtil.EXPIRE_TIME *8/ 1000);
+				userListenerUtils.setUserToken(token,System.currentTimeMillis() + JwtUtil.EXPIRE_TIME*8);
+			}
             //update-end--Author:swsc  Date:20191005   for：解决每次请求，都重写redis中 token缓存问题
 			return true;
 		}

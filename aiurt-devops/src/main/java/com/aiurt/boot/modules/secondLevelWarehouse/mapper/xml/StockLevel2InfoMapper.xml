@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.swsc.copsms.modules.secondLevelWarehouse.mapper.StockLevel2InfoMapper">
+<mapper namespace="com.aiurt.boot.modules.secondLevelWarehouse.mapper.StockLevel2InfoMapper">
 
+    <select id="selectStockList"
+            resultType="com.aiurt.boot.modules.secondLevelWarehouse.entity.CsStockLevelTwoVO">
+        select id,stock_code warehouseCode,stock_name warehouseName,description
+        from cs_stock_level_two  where status=0 and del_flag=0
+    </select>
 </mapper>

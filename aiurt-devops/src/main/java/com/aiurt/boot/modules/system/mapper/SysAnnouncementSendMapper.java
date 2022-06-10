@@ -2,10 +2,10 @@ package com.aiurt.boot.modules.system.mapper;
 
 import java.util.List;
 
-import com.swsc.copsms.modules.system.model.AnnouncementSendModel;
+import com.aiurt.boot.modules.system.model.AnnouncementSendModel;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
-import com.swsc.copsms.modules.system.entity.SysAnnouncementSend;
+import com.aiurt.boot.modules.system.entity.SysAnnouncementSend;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;

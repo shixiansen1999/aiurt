@@ -1,7 +1,7 @@
 package com.aiurt.boot.modules.oss.entity;
 
 import com.baomidou.mybatisplus.annotation.TableName;
-import com.swsc.copsms.common.system.base.entity.BaseEntity;
+import com.aiurt.boot.common.system.base.entity.BaseEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;

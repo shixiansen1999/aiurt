@@ -6,15 +6,17 @@ import java.util.Map;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
+import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
-import com.swsc.copsms.common.api.vo.Result;
-import com.swsc.copsms.common.aspect.annotation.AutoLog;
-import com.swsc.copsms.common.system.query.QueryGenerator;
-import com.swsc.copsms.common.util.oConvertUtils;
-import com.swsc.copsms.modules.manage.entity.Collection;
-import com.swsc.copsms.modules.manage.service.ICollectionService;
+import com.aiurt.boot.common.api.vo.Result;
+import com.aiurt.boot.common.aspect.annotation.AutoLog;
+import com.aiurt.boot.common.system.query.QueryGenerator;
+import com.aiurt.boot.common.util.oConvertUtils;
+import com.aiurt.boot.modules.manage.entity.Collection;
+import com.aiurt.boot.modules.manage.service.ICollectionService;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -27,7 +29,9 @@ import org.jeecgframework.poi.excel.entity.ImportParams;
 import org.jeecgframework.poi.excel.view.JeecgEntityExcelView;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.context.support.WebApplicationContextUtils;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
 import org.springframework.web.servlet.ModelAndView;
@@ -58,8 +62,8 @@ public class CollectionController {
      * @param req
      * @return
      */
-    @AutoLog(value = "cs_collection-分页列表查询")
-    @ApiOperation(value = "cs_collection-分页列表查询", notes = "cs_collection-分页列表查询")
+    @AutoLog(value = "回收站-分页列表查询")
+    @ApiOperation(value = "回收站-分页列表查询", notes = "回收站-分页列表查询")
     @GetMapping(value = "/list")
     public Result<IPage<Collection>> queryPageList(Collection collection,
                                                    @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
@@ -68,6 +72,7 @@ public class CollectionController {
         Result<IPage<Collection>> result = new Result<IPage<Collection>>();
         QueryWrapper<Collection> queryWrapper = QueryGenerator.initQueryWrapper(collection, req.getParameterMap());
         Page<Collection> page = new Page<Collection>(pageNo, pageSize);
+        queryWrapper.eq("del_flag",0);
         IPage<Collection> pageList = collectionService.page(page, queryWrapper);
         result.setSuccess(true);
         result.setResult(pageList);
@@ -80,8 +85,8 @@ public class CollectionController {
      * @param collection
      * @return
      */
-    @AutoLog(value = "cs_collection-添加")
-    @ApiOperation(value = "cs_collection-添加", notes = "cs_collection-添加")
+    @AutoLog(value = "回收站-添加")
+    @ApiOperation(value = "回收站-添加", notes = "回收站-添加")
     @PostMapping(value = "/add")
     public Result<Collection> add(@RequestBody Collection collection) {
         Result<Collection> result = new Result<Collection>();
@@ -101,17 +106,17 @@ public class CollectionController {
      * @param collection
      * @return
      */
-    @AutoLog(value = "cs_collection-编辑")
-    @ApiOperation(value = "cs_collection-编辑", notes = "cs_collection-编辑")
+    @AutoLog(value = "回收站-编辑")
+    @ApiOperation(value = "回收站-编辑", notes = "回收站-编辑")
     @PutMapping(value = "/edit")
     public Result<Collection> edit(@RequestBody Collection collection) {
         Result<Collection> result = new Result<Collection>();
         Collection collectionEntity = collectionService.getById(collection.getId());
         if (collectionEntity == null) {
-            result.error500("未找到对应实体");
+            result.onnull("未找到对应实体");
         } else {
             boolean ok = collectionService.updateById(collection);
-            //TODO 返回false说明什么？
+
             if (ok) {
                 result.success("修改成功!");
             }
@@ -126,8 +131,8 @@ public class CollectionController {
      * @param id
      * @return
      */
-    @AutoLog(value = "cs_collection-通过id删除")
-    @ApiOperation(value = "cs_collection-通过id删除", notes = "cs_collection-通过id删除")
+    @AutoLog(value = "回收站-通过id删除")
+    @ApiOperation(value = "回收站-通过id删除", notes = "回收站-通过id删除")
     @DeleteMapping(value = "/delete")
     public Result<?> delete(@RequestParam(name = "id", required = true) String id) {
         try {
@@ -148,8 +153,8 @@ public class CollectionController {
      * @param ids
      * @return
      */
-    @AutoLog(value = "cs_collection-批量删除")
-    @ApiOperation(value = "cs_collection-批量删除", notes = "cs_collection-批量删除")
+    @AutoLog(value = "回收站-批量删除")
+    @ApiOperation(value = "回收站-批量删除", notes = "回收站-批量删除")
     @DeleteMapping(value = "/deleteBatch")
     public Result<Collection> deleteBatch(@RequestParam(name = "ids", required = true) String ids) {
         Result<Collection> result = new Result<Collection>();
@@ -174,14 +179,14 @@ public class CollectionController {
      * @param id
      * @return
      */
-    @AutoLog(value = "cs_collection-通过id查询")
-    @ApiOperation(value = "cs_collection-通过id查询", notes = "cs_collection-通过id查询")
+    @AutoLog(value = "回收站-通过id查询")
+    @ApiOperation(value = "回收站-通过id查询", notes = "回收站-通过id查询")
     @GetMapping(value = "/queryById")
     public Result<Collection> queryById(@RequestParam(name = "id", required = true) String id) {
         Result<Collection> result = new Result<Collection>();
         Collection collection = collectionService.getById(id);
         if (collection == null) {
-            result.error500("未找到对应实体");
+            result.onnull("未找到对应实体");
         } else {
             result.setResult(collection);
             result.setSuccess(true);
@@ -256,4 +261,17 @@ public class CollectionController {
         return Result.ok("文件导入失败！");
     }
 
+    @GetMapping("recovery")
+    public Result<?> recovery(HttpServletRequest request,@RequestParam(name = "ids", required = true) String ids){
+        try {
+            HttpSession session =request.getSession();
+            ServletContext context = session.getServletContext();
+            ApplicationContext ctx = WebApplicationContextUtils.getWebApplicationContext(context);
+             collectionService.recovery(ctx,ids);
+        } catch (Exception e) {
+            log.error("删除失败", e.getMessage());
+            return Result.error("恢复失败!");
+        }
+        return Result.ok("恢复成功!");
+    }
 }

@@ -1,8 +1,8 @@
 package com.aiurt.boot.modules.system.service.impl;
 
-import com.swsc.copsms.modules.system.service.ISysDataLogService;
-import com.swsc.copsms.modules.system.entity.SysDataLog;
-import com.swsc.copsms.modules.system.mapper.SysDataLogMapper;
+import com.aiurt.boot.modules.system.service.ISysDataLogService;
+import com.aiurt.boot.modules.system.entity.SysDataLog;
+import com.aiurt.boot.modules.system.mapper.SysDataLogMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;

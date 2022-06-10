@@ -1,44 +1,48 @@
 package com.aiurt.boot.modules.manage.controller;
 
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
+import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.swsc.copsms.common.api.vo.Result;
-import com.swsc.copsms.common.aspect.annotation.AutoLog;
-import com.swsc.copsms.common.system.query.QueryGenerator;
-import com.swsc.copsms.common.util.oConvertUtils;
-import com.swsc.copsms.modules.manage.entity.Line;
-import com.swsc.copsms.modules.manage.entity.Subsystem;
-import com.swsc.copsms.modules.manage.entity.SubsystemUser;
-import com.swsc.copsms.modules.manage.service.ISubsystemService;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.swsc.copsms.modules.manage.service.ISubsystemUserService;
+import com.aiurt.boot.common.api.vo.Result;
+import com.aiurt.boot.common.aspect.annotation.AutoLog;
+import com.aiurt.boot.common.constant.CommonConstant;
+import com.aiurt.boot.common.system.query.QueryGenerator;
+import com.aiurt.boot.common.util.RoleAdditionalUtils;
+import com.aiurt.boot.common.util.oConvertUtils;
+import com.aiurt.boot.modules.device.entity.DeviceType;
+import com.aiurt.boot.modules.device.service.IDeviceTypeService;
+import com.aiurt.boot.modules.manage.entity.Subsystem;
+import com.aiurt.boot.modules.manage.entity.SubsystemUser;
+import com.aiurt.boot.modules.manage.service.ISubsystemService;
+import com.aiurt.boot.modules.manage.service.ISubsystemUserService;
+import com.aiurt.boot.modules.system.entity.SysUser;
+import com.aiurt.boot.modules.system.mapper.SysUserMapper;
+import com.aiurt.boot.modules.system.service.ISysUserService;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
-
+import org.apache.commons.collections.CollectionUtils;
 import org.jeecgframework.poi.excel.ExcelImportUtil;
 import org.jeecgframework.poi.excel.def.NormalExcelConstants;
 import org.jeecgframework.poi.excel.entity.ExportParams;
 import org.jeecgframework.poi.excel.entity.ImportParams;
 import org.jeecgframework.poi.excel.view.JeecgEntityExcelView;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
 import org.springframework.web.servlet.ModelAndView;
-import com.alibaba.fastjson.JSON;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
+
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @Description: cs_subsystem
@@ -55,6 +59,16 @@ public class SubsystemController {
     private ISubsystemService subsystemService;
     @Autowired
     private ISubsystemUserService subsystemUserService;
+    @Autowired
+    private ISysUserService userService;
+
+    @Autowired
+    private IDeviceTypeService deviceTypeService;
+    @Autowired
+    private SysUserMapper userMapper;
+
+    @Resource
+    private RoleAdditionalUtils roleAdditionalUtils;
 
     /**
      * 分页列表查询
@@ -65,8 +79,8 @@ public class SubsystemController {
      * @param req
      * @return
      */
-    @AutoLog(value = "cs_subsystem-分页列表查询")
-    @ApiOperation(value = "cs_subsystem-分页列表查询", notes = "cs_subsystem-分页列表查询")
+    @AutoLog(value = "子系统信息-分页列表查询")
+    @ApiOperation(value = "子系统信息-分页列表查询", notes = "子系统信息-分页列表查询")
     @GetMapping(value = "/list")
     public Result<IPage<Subsystem>> queryPageList(Subsystem subsystem,
                                                   @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
@@ -77,8 +91,9 @@ public class SubsystemController {
         Page<Subsystem> page = new Page<Subsystem>(pageNo, pageSize);
         IPage<Subsystem> pageList = subsystemService.page(page, queryWrapper);
         pageList.getRecords().forEach(temp -> {
-            //todo 分别查询对应的技术员
-            temp.setSelectedSubSysUsers("1,2");
+            List<SubsystemUser> subsystemUsers=subsystemUserService.list(new QueryWrapper<SubsystemUser>().eq("sub_id",temp.getId()));
+            List<String> userids=subsystemUsers.stream().map(SubsystemUser::getUserId).collect(Collectors.toList());
+            temp.setSelectedSubSysUsers(String.join(",",userids));
         });
         result.setSuccess(true);
         result.setResult(pageList);
@@ -91,8 +106,8 @@ public class SubsystemController {
      * @param subsystem
      * @return
      */
-    @AutoLog(value = "cs_subsystem-添加")
-    @ApiOperation(value = "cs_subsystem-添加", notes = "cs_subsystem-添加")
+    @AutoLog(value = "子系统信息-添加")
+    @ApiOperation(value = "子系统信息-添加", notes = "子系统信息-添加")
     @PostMapping(value = "/add")
     public Result<Subsystem> add(@RequestBody Subsystem subsystem) {
         Result<Subsystem> result = new Result<Subsystem>();
@@ -113,20 +128,20 @@ public class SubsystemController {
      * @param subsystem
      * @return
      */
-    @AutoLog(value = "cs_subsystem-编辑")
-    @ApiOperation(value = "cs_subsystem-编辑", notes = "cs_subsystem-编辑")
+    @AutoLog(value = "子系统信息-编辑")
+    @ApiOperation(value = "子系统信息-编辑", notes = "子系统信息-编辑")
     @PutMapping(value = "/edit")
     public Result<Subsystem> edit(@RequestBody Subsystem subsystem) {
         Result<Subsystem> result = new Result<Subsystem>();
         Subsystem subsystemEntity = subsystemService.getById(subsystem.getId());
         if (subsystemEntity == null) {
-            result.error500("未找到对应实体");
+            result.onnull("未找到对应实体");
         } else {
             boolean ok = subsystemService.updateById(subsystem);
             //先删除 再添加
             subsystemUserService.remove(new QueryWrapper<SubsystemUser>().eq("sub_id", subsystem.getId()));
             addSubSysUser(subsystem);
-            //TODO 返回false说明什么？
+
             if (ok) {
                 result.success("修改成功!");
             }
@@ -159,8 +174,8 @@ public class SubsystemController {
      * @param id
      * @return
      */
-    @AutoLog(value = "cs_subsystem-通过id删除")
-    @ApiOperation(value = "cs_subsystem-通过id删除", notes = "cs_subsystem-通过id删除")
+    @AutoLog(value = "子系统信息-通过id删除")
+    @ApiOperation(value = "子系统信息-通过id删除", notes = "子系统信息-通过id删除")
     @DeleteMapping(value = "/delete")
     public Result<?> delete(@RequestParam(name = "id", required = true) String id) {
         try {
@@ -179,8 +194,8 @@ public class SubsystemController {
      * @param ids
      * @return
      */
-    @AutoLog(value = "cs_subsystem-批量删除")
-    @ApiOperation(value = "cs_subsystem-批量删除", notes = "cs_subsystem-批量删除")
+    @AutoLog(value = "子系统信息-批量删除")
+    @ApiOperation(value = "子系统信息-批量删除", notes = "子系统信息-批量删除")
     @DeleteMapping(value = "/deleteBatch")
     public Result<Subsystem> deleteBatch(@RequestParam(name = "ids", required = true) String ids) {
         Result<Subsystem> result = new Result<Subsystem>();
@@ -199,14 +214,14 @@ public class SubsystemController {
      * @param id
      * @return
      */
-    @AutoLog(value = "cs_subsystem-通过id查询")
-    @ApiOperation(value = "cs_subsystem-通过id查询", notes = "cs_subsystem-通过id查询")
+    @AutoLog(value = "子系统信息-通过id查询")
+    @ApiOperation(value = "子系统信息-通过id查询", notes = "子系统信息-通过id查询")
     @GetMapping(value = "/queryById")
     public Result<Subsystem> queryById(@RequestParam(name = "id", required = true) String id) {
         Result<Subsystem> result = new Result<Subsystem>();
         Subsystem subsystem = subsystemService.getById(id);
         if (subsystem == null) {
-            result.error500("未找到对应实体");
+            result.onnull("未找到对应实体");
         } else {
             result.setResult(subsystem);
             result.setSuccess(true);
@@ -283,9 +298,91 @@ public class SubsystemController {
 
     @GetMapping("subsystemSelect")
     public Result<List<Subsystem>> subsystemSelect() {
+        // DO: 2022/1/4 加入权限控制
+        //LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        //List<String> codes = roleAdditionalUtils.getListSystemCodesByUserId(user.getId());
+        //if (CollectionUtils.isEmpty(codes)){
+        //    return Result.ok(new ArrayList<>());
+        //}
         Result<List<Subsystem>> result = new Result<List<Subsystem>>();
         List<Subsystem> lineList = subsystemService.list(new LambdaQueryWrapper<Subsystem>().eq(Subsystem::getDelFlag, 0));
+                //.in(Subsystem::getSystemCode,codes));
         result.setResult(lineList);
+        return result;
+    }
+
+
+    /**
+     * @Author: lhz
+     * @Date: 2021-09-27
+     * @Version: V1.0
+     */
+    @GetMapping("subsystemSelectWithDevice")
+    public Result<List<Subsystem>> subsystemSelectWithDevice() {
+        List<Subsystem> subsystemList = subsystemService.lambdaQuery().eq(Subsystem::getDelFlag, CommonConstant.DEL_FLAG_0).list();
+
+        if (CollectionUtils.isNotEmpty(subsystemList)) {
+
+            Map<String, String> map = subsystemList.stream().collect(Collectors.toMap(Subsystem::getSystemCode, Subsystem::getSystemName));
+
+            List<DeviceType> typeList = deviceTypeService.lambdaQuery()
+                    .eq(DeviceType::getDelFlag, CommonConstant.DEL_FLAG_0)
+                    .orderByDesc(DeviceType::getCreateTime)
+                    .list();
+
+            List<SysUser> userList = userMapper.selectList(new LambdaQueryWrapper<SysUser>().eq(SysUser::getDelFlag, CommonConstant.DEL_FLAG_0)
+                    .eq(SysUser::getStatus, CommonConstant.STATUS_1));
+
+            Map<String, String> userMap = null;
+            if (CollectionUtils.isNotEmpty(userList)) {
+                userMap = userList.stream().collect(Collectors.toMap(SysUser::getId, SysUser::getRealname));
+            }
+
+            Map<String, String> finalUserMap = userMap;
+            if (finalUserMap != null) {
+                typeList.forEach(type -> {
+                    if (type.getCreateBy() != null) {
+                        String s = finalUserMap.get(type.getUpdateBy());
+                        if (s != null) {
+                            type.setCreateBy(s);
+                        }
+                    }
+                    if (type.getUpdateBy() != null) {
+
+                        String s = finalUserMap.get(type.getUpdateBy());
+                        if (s != null) {
+                            type.setUpdateBy(s);
+                        }
+                    }
+                    type.setSystemName(map.get(type.getSystemCode()));
+                });
+            }
+            Map<String, List<DeviceType>> typeMap = null;
+            if (CollectionUtils.isNotEmpty(typeList)) {
+                typeMap = typeList.stream().collect(Collectors.groupingBy(DeviceType::getSystemCode));
+            }
+
+            Map<String, List<DeviceType>> finalTypeMap = typeMap;
+
+            subsystemList.forEach(l -> {
+                        if (finalTypeMap != null) {
+                            List<DeviceType> types = finalTypeMap.get(l.getSystemCode());
+                            l.setDeviceTypeList(types!=null?types:new ArrayList<>());
+                        } else {
+                            l.setDeviceTypeList(new ArrayList<>());
+                        }
+                    }
+            );
+        }
+        return Result.ok(subsystemList);
+    }
+
+    @GetMapping("getUserData")
+    public Result<List<SysUser>> getUserData() {
+        String roleCode = "jishuyuan";
+        Result<List<SysUser>> result = new Result<List<SysUser>>();
+        List<SysUser> userList = userService.selectUsersByRoleCode(roleCode);
+        result.setResult(userList);
         return result;
     }
 

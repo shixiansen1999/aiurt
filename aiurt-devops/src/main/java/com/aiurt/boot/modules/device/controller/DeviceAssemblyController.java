@@ -1,36 +1,40 @@
 package com.aiurt.boot.modules.device.controller;
 
-import java.util.*;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import com.swsc.copsms.common.api.vo.Result;
-import com.swsc.copsms.common.aspect.annotation.AutoLog;
-import com.swsc.copsms.common.system.query.QueryGenerator;
-import com.swsc.copsms.common.util.oConvertUtils;
-import com.swsc.copsms.modules.device.entity.DeviceAssembly;
-import com.swsc.copsms.modules.device.service.IDeviceAssemblyService;
+import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.aiurt.boot.common.api.vo.Result;
+import com.aiurt.boot.common.aspect.annotation.AutoLog;
+import com.aiurt.boot.common.system.query.QueryGenerator;
+import com.aiurt.boot.common.util.oConvertUtils;
+import com.aiurt.boot.modules.device.entity.DeviceAssembly;
+import com.aiurt.boot.modules.device.service.IDeviceAssemblyService;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
-
 import org.jeecgframework.poi.excel.ExcelImportUtil;
 import org.jeecgframework.poi.excel.def.NormalExcelConstants;
 import org.jeecgframework.poi.excel.entity.ExportParams;
 import org.jeecgframework.poi.excel.entity.ImportParams;
 import org.jeecgframework.poi.excel.view.JeecgEntityExcelView;
-
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
 import org.springframework.web.servlet.ModelAndView;
-import com.alibaba.fastjson.JSON;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.BufferedOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 
  /**
  * @Description: 设备组件
@@ -45,25 +49,6 @@ import io.swagger.annotations.ApiOperation;
 public class DeviceAssemblyController {
 	@Autowired
 	private IDeviceAssemblyService deviceAssemblyService;
-
-	/**
-	  * 组件类型(下拉)
-	 * @return
-	 */
-	@AutoLog(value = "组件类型(下拉)")
-	@ApiOperation(value="组件类型(下拉)", notes="组件类型(下拉)")
-	@GetMapping(value = "/assemblyNameList")
-	public Result<HashMap<Integer,String>> assemblyNameList() {
-		//TODO 改用 /sys/dict/getDictItems/{dictCode}
-		Result<HashMap<Integer,String>> result = new Result<HashMap<Integer,String>>();
-		HashMap<Integer,String> hashMap=new HashMap<>();
-		hashMap.put(1,"可用性组件");
-		hashMap.put(2,"共享性组件");
-		hashMap.put(3,"持久性组件");
-		result.setSuccess(true);
-		result.setResult(hashMap);
-		return result;
-	}
 
 	 /**
 	  * 分页列表查询
@@ -117,10 +102,9 @@ public class DeviceAssemblyController {
 		Result<DeviceAssembly> result = new Result<DeviceAssembly>();
 		DeviceAssembly deviceAssemblyEntity = deviceAssemblyService.getById(deviceAssembly.getId());
 		if(deviceAssemblyEntity==null) {
-			result.error500("未找到对应实体");
+			result.onnull("未找到对应实体");
 		}else {
 			boolean ok = deviceAssemblyService.updateById(deviceAssembly);
-			//TODO 返回false说明什么？
 			if(ok) {
 				result.success("修改成功!");
 			}
@@ -178,7 +162,7 @@ public class DeviceAssemblyController {
 		Result<DeviceAssembly> result = new Result<DeviceAssembly>();
 		DeviceAssembly deviceAssembly = deviceAssemblyService.getById(id);
 		if(deviceAssembly==null) {
-			result.error500("未找到对应实体");
+			result.onnull("未找到对应实体");
 		}else {
 			result.setResult(deviceAssembly);
 			result.setSuccess(true);
@@ -192,6 +176,8 @@ public class DeviceAssemblyController {
    * @param request
    * @param response
    */
+  @AutoLog(value = "导出excel")
+  @ApiOperation(value = "导出excel", notes = "导出excel")
   @RequestMapping(value = "/exportXls")
   public ModelAndView exportXls(HttpServletRequest request, HttpServletResponse response) {
       // Step.1 组装查询条件
@@ -218,6 +204,28 @@ public class DeviceAssemblyController {
       return mv;
   }
 
+	 /**
+	  * 下载设备组件信息模板
+	  *
+	  * @param response
+	  * @param request
+	  * @throws IOException
+	  */
+	 @AutoLog(value = "下载设备组件信息模板")
+	 @ApiOperation(value = "下载设备组件信息模板", notes = "下载设备组件信息模板")
+	 @RequestMapping(value = "/downloadExcel", method = RequestMethod.GET)
+	 public void downloadExcel(HttpServletResponse response, HttpServletRequest request) throws IOException {
+		 ClassPathResource classPathResource =  new ClassPathResource("template/设备组件信息模板.xlsx");
+		 InputStream bis = classPathResource.getInputStream();
+		 BufferedOutputStream out = new BufferedOutputStream(response.getOutputStream());
+		 int len = 0;
+		 while ((len = bis.read()) != -1) {
+			 out.write(len);
+			 out.flush();
+		 }
+		 out.close();
+	 }
+
   /**
       * 通过excel导入数据
    *
@@ -225,6 +233,8 @@ public class DeviceAssemblyController {
    * @param response
    * @return
    */
+  @AutoLog(value = "通过excel导入数据")
+  @ApiOperation(value = "通过excel导入数据", notes = "通过excel导入数据")
   @RequestMapping(value = "/importExcel", method = RequestMethod.POST)
   public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) {
       MultipartHttpServletRequest multipartRequest = (MultipartHttpServletRequest) request;
@@ -232,7 +242,7 @@ public class DeviceAssemblyController {
       for (Map.Entry<String, MultipartFile> entity : fileMap.entrySet()) {
           MultipartFile file = entity.getValue();// 获取上传文件对象
           ImportParams params = new ImportParams();
-          params.setTitleRows(2);
+          params.setTitleRows(0);
           params.setHeadRows(1);
           params.setNeedSave(true);
           try {

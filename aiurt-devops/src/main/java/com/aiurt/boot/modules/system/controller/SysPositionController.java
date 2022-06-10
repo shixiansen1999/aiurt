@@ -4,16 +4,16 @@ import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.swsc.copsms.common.aspect.annotation.AutoLog;
-import com.swsc.copsms.common.constant.CommonConstant;
-import com.swsc.copsms.modules.system.service.ISysPositionService;
-import com.swsc.copsms.modules.system.entity.SysPosition;
+import com.aiurt.boot.common.aspect.annotation.AutoLog;
+import com.aiurt.boot.common.constant.CommonConstant;
+import com.aiurt.boot.modules.system.service.ISysPositionService;
+import com.aiurt.boot.modules.system.entity.SysPosition;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
-import com.swsc.copsms.common.api.vo.Result;
-import com.swsc.copsms.common.system.query.QueryGenerator;
-import com.swsc.copsms.common.util.oConvertUtils;
+import com.aiurt.boot.common.api.vo.Result;
+import com.aiurt.boot.common.system.query.QueryGenerator;
+import com.aiurt.boot.common.util.oConvertUtils;
 import org.jeecgframework.poi.excel.ExcelImportUtil;
 import org.jeecgframework.poi.excel.def.NormalExcelConstants;
 import org.jeecgframework.poi.excel.entity.ExportParams;
@@ -112,10 +112,10 @@ public class SysPositionController {
         Result<SysPosition> result = new Result<SysPosition>();
         SysPosition sysPositionEntity = sysPositionService.getById(sysPosition.getId());
         if (sysPositionEntity == null) {
-            result.error500("未找到对应实体");
+            result.onnull("未找到对应实体");
         } else {
             boolean ok = sysPositionService.updateById(sysPosition);
-            //TODO 返回false说明什么？
+
             if (ok) {
                 result.success("修改成功!");
             }
@@ -176,7 +176,7 @@ public class SysPositionController {
         Result<SysPosition> result = new Result<SysPosition>();
         SysPosition sysPosition = sysPositionService.getById(id);
         if (sysPosition == null) {
-            result.error500("未找到对应实体");
+            result.onnull("未找到对应实体");
         } else {
             result.setResult(sysPosition);
             result.setSuccess(true);

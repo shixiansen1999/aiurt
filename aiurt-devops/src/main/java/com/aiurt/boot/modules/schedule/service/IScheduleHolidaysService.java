@@ -1,7 +1,11 @@
 package com.aiurt.boot.modules.schedule.service;
 
-import com.swsc.copsms.modules.schedule.entity.ScheduleHolidays;
+import com.aiurt.boot.modules.schedule.entity.ScheduleHolidays;
 import com.baomidou.mybatisplus.extension.service.IService;
+
+import javax.servlet.http.HttpServletRequest;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @Description: schedule_holidays
@@ -10,5 +14,6 @@ import com.baomidou.mybatisplus.extension.service.IService;
  * @Version: V1.0
  */
 public interface IScheduleHolidaysService extends IService<ScheduleHolidays> {
-
+   List<ScheduleHolidays> getListByMonth(String date);
+   void importHolidayExcel(List<Map<Integer, String>> data , HttpServletRequest request);
 }

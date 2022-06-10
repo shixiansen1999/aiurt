@@ -1,11 +1,9 @@
 package com.aiurt.boot.modules.schedule.entity;
 
-import java.io.Serializable;
 import java.util.Date;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import com.baomidou.mybatisplus.annotation.TableField;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -25,7 +23,7 @@ import org.jeecgframework.poi.excel.annotation.Excel;
 @TableName("schedule_holidays")
 @EqualsAndHashCode(callSuper = false)
 @Accessors(chain = true)
-@ApiModel(value="schedule_holidays对象", description="schedule_holidays")
+@ApiModel(value="排班节假日对象", description="排班节假日对象")
 public class ScheduleHolidays {
 
 	/**id*/
@@ -46,14 +44,12 @@ public class ScheduleHolidays {
 	private  String  name;
 
 	/**创建时间*/
-	@Excel(name = "创建时间", width = 20, format = "yyyy-MM-dd HH:mm:ss")
 	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
     @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
     @ApiModelProperty(value = "创建时间")
 	private  Date  createTime;
 
 	/**更新时间*/
-	@Excel(name = "更新时间", width = 20, format = "yyyy-MM-dd HH:mm:ss")
 	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
     @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
     @ApiModelProperty(value = "更新时间")

@@ -1,10 +1,10 @@
 package com.aiurt.boot.modules.fault.mapper;
 
-import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.swsc.copsms.modules.fault.entity.OutsourcingPersonnel;
-import com.swsc.copsms.modules.fault.param.OutsourcingPersonnelParam;
+import com.aiurt.boot.common.result.OutsourcingPersonnelResult;
+import com.aiurt.boot.modules.fault.entity.OutsourcingPersonnel;
+import com.aiurt.boot.modules.fault.param.OutsourcingPersonnelParam;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
@@ -20,23 +20,16 @@ public interface OutsourcingPersonnelMapper extends BaseMapper<OutsourcingPerson
     /**
      * 查询委外人员
      * @param page
-     * @param queryWrapper
      * @param param
      * @return
      */
-    IPage<OutsourcingPersonnel> queryOutsourcingPersonnel(IPage<OutsourcingPersonnel> page, Wrapper<OutsourcingPersonnel> queryWrapper, @Param("personnel") OutsourcingPersonnelParam param);
-
-
-    /**
-     * 根据id删除
-     * @param id
-     * @return
-     */
-    int deleteOne(@Param("id") Integer id);
+    IPage<OutsourcingPersonnelResult> queryOutsourcingPersonnel(IPage<OutsourcingPersonnelResult> page, @Param("personnel") OutsourcingPersonnelParam param);
 
     /**
-     * 查询所有委外人员
+     * 委外人员导出
+     * @param param
      * @return
      */
-    List<OutsourcingPersonnel> selectAll();
+    List<OutsourcingPersonnelResult> exportXls(@Param("personnel") OutsourcingPersonnelParam param);
+
 }

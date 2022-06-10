@@ -4,7 +4,7 @@ import java.util.List;
 
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
-import com.swsc.copsms.modules.system.entity.SysPermissionDataRule;
+import com.aiurt.boot.modules.system.entity.SysPermissionDataRule;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import org.springframework.stereotype.Repository;
@@ -27,6 +27,6 @@ public interface SysPermissionDataRuleMapper extends BaseMapper<SysPermissionDat
 	 * @param permissionId
 	 * @return
 	 */
-	public List<String> queryDataRuleIds(@Param("username") String username, @Param("permissionId") String permissionId);
+	public List<String> queryDataRuleIds(@Param("username") String username,@Param("permissionId") String permissionId);
 
 }

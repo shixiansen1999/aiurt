@@ -5,16 +5,16 @@ import java.util.List;
 
 import javax.annotation.Resource;
 
-import com.swsc.copsms.modules.system.model.TreeModel;
-import com.swsc.copsms.common.constant.CacheConstant;
-import com.swsc.copsms.common.constant.CommonConstant;
-import com.swsc.copsms.common.exception.SwscException;
-import com.swsc.copsms.modules.system.service.ISysPermissionDataRuleService;
-import com.swsc.copsms.modules.system.service.ISysPermissionService;
-import com.swsc.copsms.common.util.oConvertUtils;
-import com.swsc.copsms.modules.system.entity.SysPermission;
-import com.swsc.copsms.modules.system.entity.SysPermissionDataRule;
-import com.swsc.copsms.modules.system.mapper.SysPermissionMapper;
+import com.aiurt.boot.common.constant.CommonConstant;
+import com.aiurt.boot.modules.system.model.TreeModel;
+import com.aiurt.boot.common.constant.CacheConstant;
+import com.aiurt.boot.common.exception.SwscException;
+import com.aiurt.boot.modules.system.service.ISysPermissionDataRuleService;
+import com.aiurt.boot.modules.system.service.ISysPermissionService;
+import com.aiurt.boot.common.util.oConvertUtils;
+import com.aiurt.boot.modules.system.entity.SysPermission;
+import com.aiurt.boot.modules.system.entity.SysPermissionDataRule;
+import com.aiurt.boot.modules.system.mapper.SysPermissionMapper;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;

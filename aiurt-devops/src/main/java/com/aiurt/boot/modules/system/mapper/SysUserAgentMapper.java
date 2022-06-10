@@ -1,6 +1,6 @@
 package com.aiurt.boot.modules.system.mapper;
 
-import com.swsc.copsms.modules.system.entity.SysUserAgent;
+import com.aiurt.boot.modules.system.entity.SysUserAgent;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import org.apache.ibatis.annotations.Mapper;
 import org.springframework.stereotype.Repository;

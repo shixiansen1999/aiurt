@@ -1,6 +1,7 @@
 package com.aiurt.boot.modules.repairManage.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -27,6 +28,18 @@ import java.util.Date;
 @ApiModel(value = "repair_pool对象", description = "检修计划池")
 public class RepairPool {
 
+//    @Excel(name = "线路",width = 30)
+    @TableField(exist = false)
+    private String lineName;
+
+//    @Excel(name = "站点",width = 30)
+    @TableField(exist = false)
+    private String stationName;
+
+//    @Excel(name = "检修班组",width = 30)
+    @TableField(exist = false)
+    private String teamName;
+
     /**
      * 主键id，自动递增
      */
@@ -37,19 +50,20 @@ public class RepairPool {
     /**
      * 检修规范ID
      */
-    @Excel(name = "检修规范ID", width = 15)
+//    @Excel(name = "检修规范ID", width = 15)
     @ApiModelProperty(value = "检修规范ID")
     public Integer inspectionCodeId;
+
+    @Excel(name = "周数", width = 20,needMerge = true)
+    @ApiModelProperty(value = "周数")
+    private Integer weeks;
 
     /**
      * 检修类型
      */
-    @Excel(name = "检修类型", width = 15)
+    @Excel(name = "检修类型",replace = {"周检_1","月检_2","双月检_3","季检_4","半年检_5","年检_6"})
     @ApiModelProperty(value = "检修类型")
     private Integer type;
-
-    @ApiModelProperty(value = "周数")
-    private Integer weeks;
 
     @ApiModelProperty(value = "类型(1-控制中心 2-车辆段 3-车站)")
     private Integer icType;
@@ -57,14 +71,14 @@ public class RepairPool {
     /**
      * 检修内容表id
      */
-    @Excel(name = "检修内容表id", width = 30)
+    @Excel(name = "检修内容", width = 50)
     @ApiModelProperty(value = "检修内容表")
     private String repairPoolContent;
 
     /**
      * 开始时间
      */
-    @Excel(name = "开始时间", width = 20, format = "yyyy-MM-dd HH:mm:ss")
+//    @Excel(name = "开始时间", width = 30, format = "yyyy-MM-dd HH:mm:ss")
     @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd HH:mm:ss")
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @ApiModelProperty(value = "开始时间")
@@ -73,7 +87,7 @@ public class RepairPool {
     /**
      * 结束时间
      */
-    @Excel(name = "结束时间", width = 20, format = "yyyy-MM-dd HH:mm:ss")
+//    @Excel(name = "结束时间", width = 30, format = "yyyy-MM-dd HH:mm:ss")
     @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd HH:mm:ss")
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @ApiModelProperty(value = "结束时间")
@@ -82,35 +96,35 @@ public class RepairPool {
     /**
      * 组织id
      */
-    @Excel(name = "组织id", width = 15)
+//    @Excel(name = "组织id", width = 15)
     @ApiModelProperty(value = "组织id")
     private String organizationId;
 
     /**
      * 检修人员id
      */
-    @Excel(name = "检修人员id", width = 15)
-    @ApiModelProperty(value = "检修人员id")
-    private String repairUserIds;
+//    @Excel(name = "检修人员id", width = 15)
+//    @ApiModelProperty(value = "检修人员id")
+//    private String repairUserIds;
 
     /**
      * 状态，0.未指派 1.已指派
      */
-    @Excel(name = "状态，0.未指派 1.已指派", width = 15)
-    @ApiModelProperty(value = "状态，0.未指派 1.已指派")
-    private Integer status;
+//    @Excel(name = "状态，0.未指派 1.已指派", width = 15)
+//    @ApiModelProperty(value = "状态，0.未指派 1.已指派")
+//    private Integer status;
 
     /**
      * 删除状态，0.未删除 1.已删除
      */
-    @Excel(name = "删除状态，0.未删除 1.已删除", width = 15)
+//    @Excel(name = "删除状态，0.未删除 1.已删除", width = 15)
     @ApiModelProperty(value = "删除状态，0.未删除 1.已删除")
     private Integer delFlag;
 
     /**
      * 创建时间，CURRENT_TIMESTAMP
      */
-    @Excel(name = "创建时间，CURRENT_TIMESTAMP", width = 20, format = "yyyy-MM-dd HH:mm:ss")
+//    @Excel(name = "创建时间，CURRENT_TIMESTAMP", width = 20, format = "yyyy-MM-dd HH:mm:ss")
     @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd HH:mm:ss")
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @ApiModelProperty(value = "创建时间，CURRENT_TIMESTAMP")
@@ -119,7 +133,7 @@ public class RepairPool {
     /**
      * 修改时间，根据当前时间戳更新
      */
-    @Excel(name = "修改时间，根据当前时间戳更新", width = 20, format = "yyyy-MM-dd HH:mm:ss")
+//    @Excel(name = "修改时间，根据当前时间戳更新", width = 20, format = "yyyy-MM-dd HH:mm:ss")
     @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd HH:mm:ss")
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @ApiModelProperty(value = "修改时间，根据当前时间戳更新")
@@ -128,17 +142,19 @@ public class RepairPool {
     /**
      * 创建人
      */
-    @Excel(name = "创建人", width = 15)
+//    @Excel(name = "创建人", width = 15)
     @ApiModelProperty(value = "创建人")
     private String createBy;
 
     /**
      * 更新人
      */
-    @Excel(name = "更新人", width = 15)
+//    @Excel(name = "更新人", width = 15)
     @ApiModelProperty(value = "更新人")
     private String updateBy;
 
+    @ApiModelProperty(value = "是否验收")
+    private Integer isReceipt;
 
     public static final String ID = "id";
 

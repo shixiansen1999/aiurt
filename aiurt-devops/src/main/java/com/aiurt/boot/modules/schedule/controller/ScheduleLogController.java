@@ -8,12 +8,12 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import com.swsc.copsms.common.api.vo.Result;
-import com.swsc.copsms.common.aspect.annotation.AutoLog;
-import com.swsc.copsms.common.system.query.QueryGenerator;
-import com.swsc.copsms.common.util.oConvertUtils;
-import com.swsc.copsms.modules.schedule.entity.ScheduleLog;
-import com.swsc.copsms.modules.schedule.service.IScheduleLogService;
+import com.aiurt.boot.common.api.vo.Result;
+import com.aiurt.boot.common.aspect.annotation.AutoLog;
+import com.aiurt.boot.common.system.query.QueryGenerator;
+import com.aiurt.boot.common.util.oConvertUtils;
+import com.aiurt.boot.modules.schedule.entity.ScheduleLog;
+import com.aiurt.boot.modules.schedule.service.IScheduleLogService;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -41,7 +41,7 @@ import io.swagger.annotations.ApiOperation;
  * @Version: V1.0
  */
 @Slf4j
-@Api(tags="schedule_log")
+@Api(tags="调班日志")
 @RestController
 @RequestMapping("/schedule/scheduleLog")
 public class ScheduleLogController {
@@ -56,8 +56,8 @@ public class ScheduleLogController {
 	 * @param req
 	 * @return
 	 */
-	@AutoLog(value = "schedule_log-分页列表查询")
-	@ApiOperation(value="schedule_log-分页列表查询", notes="schedule_log-分页列表查询")
+	@AutoLog(value = "调班日志-分页列表查询")
+	@ApiOperation(value="调班日志-分页列表查询", notes="调班日志-分页列表查询")
 	@GetMapping(value = "/list")
 	public Result<IPage<ScheduleLog>> queryPageList(ScheduleLog scheduleLog,
 									  @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
@@ -77,8 +77,8 @@ public class ScheduleLogController {
 	 * @param scheduleLog
 	 * @return
 	 */
-	@AutoLog(value = "schedule_log-添加")
-	@ApiOperation(value="schedule_log-添加", notes="schedule_log-添加")
+	@AutoLog(value = "调班日志-添加")
+	@ApiOperation(value="调班日志-添加", notes="调班日志-添加")
 	@PostMapping(value = "/add")
 	public Result<ScheduleLog> add(@RequestBody ScheduleLog scheduleLog) {
 		Result<ScheduleLog> result = new Result<ScheduleLog>();
@@ -97,17 +97,17 @@ public class ScheduleLogController {
 	 * @param scheduleLog
 	 * @return
 	 */
-	@AutoLog(value = "schedule_log-编辑")
-	@ApiOperation(value="schedule_log-编辑", notes="schedule_log-编辑")
+	@AutoLog(value = "调班日志-编辑")
+	@ApiOperation(value="调班日志-编辑", notes="调班日志-编辑")
 	@PutMapping(value = "/edit")
 	public Result<ScheduleLog> edit(@RequestBody ScheduleLog scheduleLog) {
 		Result<ScheduleLog> result = new Result<ScheduleLog>();
 		ScheduleLog scheduleLogEntity = scheduleLogService.getById(scheduleLog.getId());
 		if(scheduleLogEntity==null) {
-			result.error500("未找到对应实体");
+			result.onnull("未找到对应实体");
 		}else {
 			boolean ok = scheduleLogService.updateById(scheduleLog);
-			//TODO 返回false说明什么？
+
 			if(ok) {
 				result.success("修改成功!");
 			}
@@ -121,8 +121,8 @@ public class ScheduleLogController {
 	 * @param id
 	 * @return
 	 */
-	@AutoLog(value = "schedule_log-通过id删除")
-	@ApiOperation(value="schedule_log-通过id删除", notes="schedule_log-通过id删除")
+	@AutoLog(value = "调班日志-通过id删除")
+	@ApiOperation(value="调班日志-通过id删除", notes="调班日志-通过id删除")
 	@DeleteMapping(value = "/delete")
 	public Result<?> delete(@RequestParam(name="id",required=true) String id) {
 		try {
@@ -139,8 +139,8 @@ public class ScheduleLogController {
 	 * @param ids
 	 * @return
 	 */
-	@AutoLog(value = "schedule_log-批量删除")
-	@ApiOperation(value="schedule_log-批量删除", notes="schedule_log-批量删除")
+	@AutoLog(value = "调班日志-批量删除")
+	@ApiOperation(value="调班日志-批量删除", notes="调班日志-批量删除")
 	@DeleteMapping(value = "/deleteBatch")
 	public Result<ScheduleLog> deleteBatch(@RequestParam(name="ids",required=true) String ids) {
 		Result<ScheduleLog> result = new Result<ScheduleLog>();
@@ -158,14 +158,14 @@ public class ScheduleLogController {
 	 * @param id
 	 * @return
 	 */
-	@AutoLog(value = "schedule_log-通过id查询")
-	@ApiOperation(value="schedule_log-通过id查询", notes="schedule_log-通过id查询")
+	@AutoLog(value = "调班日志-通过id查询")
+	@ApiOperation(value="调班日志-通过id查询", notes="调班日志-通过id查询")
 	@GetMapping(value = "/queryById")
 	public Result<ScheduleLog> queryById(@RequestParam(name="id",required=true) String id) {
 		Result<ScheduleLog> result = new Result<ScheduleLog>();
 		ScheduleLog scheduleLog = scheduleLogService.getById(id);
 		if(scheduleLog==null) {
-			result.error500("未找到对应实体");
+			result.onnull("未找到对应实体");
 		}else {
 			result.setResult(scheduleLog);
 			result.setSuccess(true);

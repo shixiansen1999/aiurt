@@ -7,10 +7,10 @@ import java.util.Map;
 
 import javax.annotation.Resource;
 
-import com.swsc.copsms.common.system.api.ISysBaseAPI;
-import com.swsc.copsms.modules.system.service.ISysLogService;
-import com.swsc.copsms.modules.system.entity.SysLog;
-import com.swsc.copsms.modules.system.mapper.SysLogMapper;
+import com.aiurt.boot.common.system.api.ISysBaseAPI;
+import com.aiurt.boot.modules.system.service.ISysLogService;
+import com.aiurt.boot.modules.system.entity.SysLog;
+import com.aiurt.boot.modules.system.mapper.SysLogMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

@@ -1,45 +1,51 @@
 package com.aiurt.boot.modules.manage.controller;
 
-import java.sql.ResultSet;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
+import cn.hutool.core.util.ObjectUtil;
+import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.swsc.copsms.common.api.vo.Result;
-import com.swsc.copsms.common.aspect.annotation.AutoLog;
-import com.swsc.copsms.common.system.query.QueryGenerator;
-import com.swsc.copsms.common.util.oConvertUtils;
-import com.swsc.copsms.modules.manage.entity.Station;
-import com.swsc.copsms.modules.manage.model.StationModel;
-import com.swsc.copsms.modules.manage.service.IStationService;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.swsc.copsms.modules.system.entity.SysDepart;
-import com.swsc.copsms.modules.system.service.ISysDepartService;
+import com.aiurt.boot.common.api.vo.Result;
+import com.aiurt.boot.common.aspect.annotation.AutoLog;
+import com.aiurt.boot.common.system.query.QueryGenerator;
+import com.aiurt.boot.common.util.oConvertUtils;
+import com.aiurt.boot.modules.manage.entity.Line;
+import com.aiurt.boot.modules.manage.entity.Station;
+import com.aiurt.boot.modules.manage.entity.StationPosition;
+import com.aiurt.boot.modules.manage.model.StationModel;
+import com.aiurt.boot.modules.manage.model.StationWarning;
+import com.aiurt.boot.modules.manage.service.ILineService;
+import com.aiurt.boot.modules.manage.service.IStationPositionService;
+import com.aiurt.boot.modules.manage.service.IStationService;
+import com.aiurt.boot.modules.system.entity.SysDepart;
+import com.aiurt.boot.modules.system.entity.SysUser;
+import com.aiurt.boot.modules.system.service.ISysDepartService;
+import com.aiurt.boot.modules.system.service.ISysUserService;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
-
+import org.apache.commons.lang.StringUtils;
 import org.jeecgframework.poi.excel.ExcelImportUtil;
 import org.jeecgframework.poi.excel.def.NormalExcelConstants;
 import org.jeecgframework.poi.excel.entity.ExportParams;
 import org.jeecgframework.poi.excel.entity.ImportParams;
 import org.jeecgframework.poi.excel.view.JeecgEntityExcelView;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
 import org.springframework.web.servlet.ModelAndView;
-import com.alibaba.fastjson.JSON;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @Description: cs_station
@@ -56,6 +62,12 @@ public class StationController {
     private IStationService stationService;
     @Autowired
     private ISysDepartService departService;
+    @Autowired
+    private ISysUserService userService;
+    @Autowired
+    private IStationPositionService positionService;
+    @Autowired
+    private ILineService lineService;
 
     /**
      * 分页列表查询
@@ -66,8 +78,8 @@ public class StationController {
      * @param req
      * @return
      */
-    @AutoLog(value = "cs_station-分页列表查询")
-    @ApiOperation(value = "cs_station-分页列表查询", notes = "cs_station-分页列表查询")
+    @AutoLog(value = "站点信息-分页列表查询")
+    @ApiOperation(value = "站点信息-分页列表查询", notes = "站点信息-分页列表查询")
     @GetMapping(value = "/list")
     public Result<IPage<Station>> queryPageList(Station station,
                                                 @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
@@ -80,11 +92,27 @@ public class StationController {
         IPage<Station> pageList = stationService.page(page, queryWrapper);
         pageList.getRecords().forEach(temp -> {
             SysDepart depart = departService.getById(temp.getTeamId());
-            temp.setTeamName(depart.getDepartName());
+            if (depart != null) {
+                temp.setTeamName(depart.getDepartName());
+            }
         });
         result.setSuccess(true);
         result.setResult(pageList);
         return result;
+    }
+
+    @AutoLog("获取站点信息")
+    @ApiOperation(value = "获取站点信息", notes = "获取站点信息")
+    @GetMapping(value = "/getStations")
+    public Result<List<Station>> getStations() {
+        Result<List<Station>> result = new Result<List<Station>>();
+        List<Station> stations = stationService.getStationsInOrdered();
+        if (ObjectUtil.isNotEmpty(stations)) {
+            result.setSuccess(true);
+            result.setResult(stations);
+            return result;
+        }
+        return Result.error("未获取到站点信息");
     }
 
     /**
@@ -93,8 +121,8 @@ public class StationController {
      * @param station
      * @return
      */
-    @AutoLog(value = "cs_station-添加")
-    @ApiOperation(value = "cs_station-添加", notes = "cs_station-添加")
+    @AutoLog(value = "站点信息-添加")
+    @ApiOperation(value = "站点信息-添加", notes = "站点信息-添加")
     @PostMapping(value = "/add")
     public Result<Station> add(@RequestBody Station station) {
         Result<Station> result = new Result<Station>();
@@ -114,17 +142,17 @@ public class StationController {
      * @param station
      * @return
      */
-    @AutoLog(value = "cs_station-编辑")
-    @ApiOperation(value = "cs_station-编辑", notes = "cs_station-编辑")
+    @AutoLog(value = "站点信息-编辑")
+    @ApiOperation(value = "站点信息-编辑", notes = "站点信息-编辑")
     @PutMapping(value = "/edit")
     public Result<Station> edit(@RequestBody Station station) {
         Result<Station> result = new Result<Station>();
         Station stationEntity = stationService.getById(station.getId());
         if (stationEntity == null) {
-            result.error500("未找到对应实体");
+            result.onnull("未找到对应实体");
         } else {
             boolean ok = stationService.updateById(station);
-            //TODO 返回false说明什么？
+
             if (ok) {
                 result.success("修改成功!");
             }
@@ -139,8 +167,8 @@ public class StationController {
      * @param id
      * @return
      */
-    @AutoLog(value = "cs_station-通过id删除")
-    @ApiOperation(value = "cs_station-通过id删除", notes = "cs_station-通过id删除")
+    @AutoLog(value = "站点信息-通过id删除")
+    @ApiOperation(value = "站点信息-通过id删除", notes = "站点信息-通过id删除")
     @DeleteMapping(value = "/delete")
     public Result<?> delete(@RequestParam(name = "id", required = true) String id) {
         try {
@@ -158,8 +186,8 @@ public class StationController {
      * @param ids
      * @return
      */
-    @AutoLog(value = "cs_station-批量删除")
-    @ApiOperation(value = "cs_station-批量删除", notes = "cs_station-批量删除")
+    @AutoLog(value = "站点信息-批量删除")
+    @ApiOperation(value = "站点信息-批量删除", notes = "站点信息-批量删除")
     @DeleteMapping(value = "/deleteBatch")
     public Result<Station> deleteBatch(@RequestParam(name = "ids", required = true) String ids) {
         Result<Station> result = new Result<Station>();
@@ -178,20 +206,44 @@ public class StationController {
      * @param id
      * @return
      */
-    @AutoLog(value = "cs_station-通过id查询")
-    @ApiOperation(value = "cs_station-通过id查询", notes = "cs_station-通过id查询")
+    @AutoLog(value = "站点信息-通过id查询")
+    @ApiOperation(value = "站点信息-通过id查询", notes = "站点信息-通过id查询")
     @GetMapping(value = "/queryById")
     public Result<Station> queryById(@RequestParam(name = "id", required = true) String id) {
         Result<Station> result = new Result<Station>();
         Station station = stationService.getById(id);
         if (station == null) {
-            result.error500("未找到对应实体");
+            result.onnull("未找到对应实体");
         } else {
             result.setResult(station);
             result.setSuccess(true);
         }
         return result;
     }
+
+
+    /**
+     * 通过code查询
+     *
+     * @param code
+     * @return
+     */
+    @AutoLog(value = "cs_station-通过code查询")
+    @ApiOperation(value = "cs_station-通过code查询", notes = "cs_station-通过code查询")
+    @GetMapping(value = "/queryByCode")
+    public Result<Station> queryByCode(@RequestParam(name = "code", required = true) String code) {
+        Result<Station> result = new Result<Station>();
+        Station station = stationService.getOne(new LambdaQueryWrapper<Station>().eq(Station::getDelFlag, 0)
+                .eq(Station::getStationCode,code));
+        if (station == null) {
+            result.onnull("未找到对应实体");
+        } else {
+            result.setResult(station);
+            result.setSuccess(true);
+        }
+        return result;
+    }
+
 
     /**
      * 导出excel
@@ -273,18 +325,112 @@ public class StationController {
         }
         return result;
     }
+    @ApiOperation(value = "查询线路与站点树", notes = "查询线路与站点树")
+    @GetMapping("queryStationTree")
+    public Result<List<StationModel>> queryStationTree() {
+
+        Result<List<StationModel>> result = new Result<List<StationModel>>();
+        List<Line> lineList = lineService.list(new LambdaQueryWrapper<Line>().eq(Line::getDelFlag, 0));
+        List<Station> stationList = stationService.list(new LambdaQueryWrapper<Station>().eq(Station::getDelFlag, 0));
+        List<StationModel> treeList = new ArrayList<>();
+        if (lineList != null && lineList.size() > 0) {
+            lineList.forEach(line -> {
+                treeList.add(new StationModel(line, false));
+            });
+
+            for(StationModel stationModel : treeList){
+                List<StationModel> childrenList = new ArrayList<>();
+                stationList.forEach(station -> {
+                    if(stationModel.getId().equals(station.getLineId().toString())){
+                        childrenList.add(new StationModel(station));
+                    }
+                });
+                stationModel.setChildren(childrenList);
+            }
+        }
+        result.setResult(treeList);
+        return result;
+    }
+
     @ApiOperation(value = "根据线路id查询站点信息", notes = "根据线路id查询站点信息")
     @RequestMapping(value = "/queryStationListByLineId", method = RequestMethod.GET)
     public Result<List<Station>> queryStationListByLineId(@RequestParam(name = "lineId", required = true) String lineId) {
         Result<List<Station>> result = new Result<List<Station>>();
-        List<Station> stationList = stationService.list(new QueryWrapper<Station>().eq("line_id",lineId).eq("del_flag",0));
+        List<Station> stationList = stationService.list(new QueryWrapper<Station>().eq("line_id", lineId).eq("del_flag", 0));
         if (stationList.size() > 0 && stationList != null) {
             result.setResult(stationList);
             result.setSuccess(true);
         } else {
-            result.error500("未找到对应实体");
+            result.onnull("未找到对应实体");
         }
         return result;
     }
+
+    @ApiOperation(value = " 根据人员id或者班组id获取所在的线路和车站信息 ", notes = " 根据人员id或者班组id，获取所在的线路和车站信息 ")
+    @RequestMapping(value = "/queryStationListByTidOrUid", method = RequestMethod.GET)
+    public Result<List<Station>> queryStationListByTidOrUid(@RequestParam(name = "tid", required = false) String tid, @RequestParam(name = "uid", required = false) String uid) {
+        Result<List<Station>> result = new Result<List<Station>>();
+        List<Station> stationList = new ArrayList<>();
+        if (StringUtils.isNotEmpty(tid)) {
+            stationList = stationService.list(new QueryWrapper<Station>().eq("team_id", tid).eq("del_flag", 0));
+            stationList.forEach(station -> {
+                SysDepart depart = departService.getOne(new QueryWrapper<SysDepart>().eq("id", station.getTeamId()).eq("del_flag", 0));
+                station.setTeamName(depart != null ? depart.getDepartName() : "");
+                Line line = lineService.getById(station.getLineId());
+                station.setLineCode(line != null ? line.getLineCode() : "");
+            });
+        } else {
+            SysUser user = userService.getById(uid);
+            if (user != null) {
+                stationList = stationService.list(new QueryWrapper<Station>().eq("team_id", user.getOrgId()).eq("del_flag", 0));
+                stationList.forEach(station -> {
+                    SysDepart depart = departService.getOne(new QueryWrapper<SysDepart>().eq("id", station.getTeamId()).eq("del_flag", 0));
+                    station.setTeamName(depart != null ? depart.getDepartName() : "");
+                    Line line = lineService.getById(station.getLineId());
+                    station.setLineCode(line != null ? line.getLineCode() : "");
+                });
+            }
+        }
+        if (stationList.size() > 0 && stationList != null) {
+            result.setResult(stationList);
+        } else {
+            result.setResult(new ArrayList<>());
+        }
+        result.setSuccess(true);
+        return result;
+    }
+
+    @ApiOperation(value = "根据站点id查询站点位置信息", notes = "根据站点id查询站点位置信息")
+    @RequestMapping(value = "/queryStationPositionList", method = RequestMethod.GET)
+    public Result<List<StationPosition>> queryStationPositionList(@RequestParam(name = "stationId", required = true) String stationId) {
+        Result<List<StationPosition>> result = new Result<List<StationPosition>>();
+        List<StationPosition> stationPositionList = new ArrayList<>();
+        stationPositionList = positionService.list(new QueryWrapper<StationPosition>().eq("station_id", stationId).eq("del_flag", 0));
+        result.setResult(stationPositionList);
+        result.setSuccess(true);
+        return result;
+    }
+
+    @ApiOperation(value = "根据站点名称修改预警状态和开站状态", notes = "根据站点名称修改预警状态和开站状态")
+    @PutMapping(value = "/editWarningStatus")
+    public Result<Station> editWarningStatus(@RequestBody StationWarning stationWarning) {
+        Result<Station> result = new Result<Station>();
+        Station stationEntity = stationService.getOne(new LambdaQueryWrapper<Station>().eq(Station::getStationName, stationWarning.getStationName()));
+
+        if (stationEntity == null) {
+            result.onnull("未找到对应实体");
+        } else {
+            stationEntity.setWarningStatus(stationWarning.getStatus());
+            stationEntity.setOpenStatus(stationWarning.getOpenStatus());
+            boolean ok = stationService.updateById(stationEntity);
+
+            if (ok) {
+                result.success("修改成功!");
+            }
+        }
+
+        return result;
+    }
+
 
 }

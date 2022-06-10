@@ -1,7 +1,7 @@
 package com.aiurt.boot.modules.standardManage.inspectionStrategy.service;
 
-import com.swsc.copsms.common.api.vo.Result;
-import com.swsc.copsms.modules.standardManage.inspectionStrategy.entity.InspectionCodeContent;
+import com.aiurt.boot.common.api.vo.Result;
+import com.aiurt.boot.modules.standardManage.inspectionStrategy.entity.InspectionCodeContent;
 import com.baomidou.mybatisplus.extension.service.IService;
 
 /**

@@ -16,12 +16,12 @@ import java.util.Date;
 
 /**
  * @Description: 巡检人员任务
- * @Author: swsc
+ * @Author: Mr.zhao
  * @Date: 2021-09-17
  * @Version: V1.0
  */
 @Data
-@TableName("patrol_task")
+@TableName("t_patrol_task")
 @EqualsAndHashCode(callSuper = false)
 @Accessors(chain = true)
 @ApiModel(value = "patrol_task对象", description = "巡检人员任务")
@@ -70,6 +70,18 @@ public class PatrolTask {
 	private String staffIds;
 
 	/**
+	 * 巡检人		巡检人ids
+	 */
+	@Excel(name = "巡检人", width = 15)
+	@ApiModelProperty(value = "巡检人		巡检人ids")
+	private String staffName;
+
+
+	@ApiModelProperty(value = "异常状态")
+	@Excel(name = "异常状态", width = 10)
+	private Integer warningStatus;
+
+	/**
 	 * 故障状态		0.无故障 1.有故障
 	 */
 	@Excel(name = "故障状态", width = 15)
@@ -105,6 +117,21 @@ public class PatrolTask {
 	@Excel(name = "漏检时间		值为时间的固定字符串形式", width = 15)
 	@ApiModelProperty(value = "漏检时间		值为时间的固定字符串形式")
 	private String ignoreTime;
+
+
+	/**
+	 * 抽查信息
+	 */
+	@Excel(name = "抽查信息", width = 15)
+	@ApiModelProperty(value = "抽查信息")
+	private String spotTest;
+
+	/**
+	 * 抽查人id
+	 */
+	@Excel(name = "抽查人", width = 15)
+	@ApiModelProperty(value = "抽查人id")
+	private String spotTestUser;
 
 	/**
 	 * 删除状态	0.未删除 1已删除
@@ -145,42 +172,38 @@ public class PatrolTask {
 	@ApiModelProperty(value = "修改时间")
 	private Date updateTime;
 
+	///**
+	// * 是否手动下发任务
+	// */
+	//@Excel(name = "是否手动下发任务", width = 15)
+	//@ApiModelProperty(value = "是否手动下发任务	0.否 1.是")
+	//private Integer type;
 
-	public static final String ID = "id";
+	/**
+	 * 技术员抽查内容
+	 */
+	@Excel(name = "技术员抽查内容", width = 15)
+	@ApiModelProperty(value = "技术员抽查内容")
+	private String spotTestTechnician;
 
-	public static final String PATROL_POOL_ID = "patrol_pool_id";
-
-	public static final String CODE = "code";
-
-	public static final String COUNTS = "counts";
-
-	public static final String STATUS = "status";
-
-	public static final String STAFF_IDS = "staff_ids";
-
-	public static final String ERROR_STATUS = "error_status";
-
-	public static final String SUBMIT_TIME = "submit_time";
-
-	public static final String IGNORE_STATUS = "ignore_status";
-
-	public static final String IGNORE_CONTENT = "ignore_content";
-
-	public static final String IGNORE_TIME = "ignore_time";
-
-	public static final String DEL_FLAG = "del_flag";
-
-	public static final String CREATE_BY = "create_by";
-
-	public static final String UPDATE_BY = "update_by";
-
-	public static final String CREATE_TIME = "create_time";
-
-	public static final String UPDATE_TIME = "update_time";
+	/**
+	 * 抽查人id
+	 */
+	@Excel(name = "抽查技术员Id", width = 15)
+	@ApiModelProperty(value = "抽查技术员Id")
+	private String spotTestTechnicianId;
 
 
-	public static final String TYPE = "type";
+	/**
+	 * 提交人id
+	 */
+	@ApiModelProperty(value = "提交人id")
+	private String submitUserId;
 
-	public static final String NOTE = "note";
-
+	/**
+	 * 提交人
+	 */
+//    @Excel(name = "提交人", width = 15)
+	@ApiModelProperty(value = "提交人")
+	private String submitUserName;
 }

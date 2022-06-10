@@ -6,7 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.swsc.copsms.modules.system.entity.SysPermission;
+import com.aiurt.boot.modules.system.entity.SysPermission;
 
 /**
   * 树形列表用到

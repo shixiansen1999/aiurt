@@ -3,14 +3,14 @@ package com.aiurt.boot.modules.system.service.impl;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.swsc.copsms.modules.system.model.DepartIdModel;
-import com.swsc.copsms.modules.system.service.ISysUserDepartService;
-import com.swsc.copsms.modules.system.service.ISysDepartService;
-import com.swsc.copsms.modules.system.service.ISysUserService;
-import com.swsc.copsms.modules.system.entity.SysDepart;
-import com.swsc.copsms.modules.system.entity.SysUser;
-import com.swsc.copsms.modules.system.entity.SysUserDepart;
-import com.swsc.copsms.modules.system.mapper.SysUserDepartMapper;
+import com.aiurt.boot.modules.system.entity.SysUser;
+import com.aiurt.boot.modules.system.model.DepartIdModel;
+import com.aiurt.boot.modules.system.service.ISysUserDepartService;
+import com.aiurt.boot.modules.system.service.ISysDepartService;
+import com.aiurt.boot.modules.system.service.ISysUserService;
+import com.aiurt.boot.modules.system.entity.SysDepart;
+import com.aiurt.boot.modules.system.entity.SysUserDepart;
+import com.aiurt.boot.modules.system.mapper.SysUserDepartMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

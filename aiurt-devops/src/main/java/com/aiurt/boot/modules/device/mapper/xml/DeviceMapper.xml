@@ -1,5 +1,67 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.swsc.copsms.modules.device.mapper.DeviceMapper">
+<mapper namespace="com.aiurt.boot.modules.device.mapper.DeviceMapper">
 
+
+<select id="getById" resultType="com.aiurt.boot.modules.device.entity.Device">
+    select * from device where id = #{code} and del_flag = '0'
+</select>
+
+    <select id="getDeviceNum" parameterType="map" resultType="int">
+        select COUNT(a.id) from device a
+        where a.del_flag = 0
+        <if test="lineId !=null and lineId!=''">
+            and a.line_code=#{lineId}
+        </if>
+        <if test="station_code !=null and station_code.length>0">
+            and a.station_code in
+            <foreach collection="station_code" open="(" close=")"     separator="," item="sc">
+                #{sc}
+            </foreach>
+        </if>
+    </select>
+    <select id="getSystemDeviceData" parameterType="map" resultType="com.aiurt.boot.modules.statistical.vo.DeviceDataVo">
+        select a.system_code as code,a.system_name as name,COUNT(b.id) as value from cs_subsystem a
+        left join device b on a.system_code=b.system_code
+        where b.del_flag = 0
+        <if test="lineId !=null and lineId!=''">
+            and b.line_code=#{lineId}
+        </if>
+        <if test="station_code !=null and station_code.length>0">
+            and b.station_code in
+            <foreach collection="station_code" open="(" close=")"     separator="," item="sc">
+                #{sc}
+            </foreach>
+        </if>
+        GROUP BY a.system_code
+        ORDER BY a.id asc
+    </select>
+
+    <select id="getDeviceNumByStation" parameterType="map" resultType="com.aiurt.boot.modules.statistical.vo.DeviceDataVo">
+        select a.station_code as code,a.station_name as name,COUNT(b.id) as value from cs_station a
+        left join device b on a.station_code=b.station_code
+        where b.del_flag = 0
+        <if test="lineId !=null and lineId!=''">
+            and b.line_code=#{lineId}
+        </if>
+        <if test="station_code !=null and station_code.length>0">
+            and b.station_code in
+            <foreach collection="station_code" open="(" close=")"     separator="," item="sc">
+                #{sc}
+            </foreach>
+        </if>
+        GROUP BY a.station_code
+    </select>
+
+    <select id="queryDeviceByStationCodeAndSystemCode" resultType="com.aiurt.boot.modules.device.entity.Device">
+        select
+            code , location , name ,station_code ,system_code
+        from device where del_flag = '0'
+        <if test="stationCode !=null and stationCode!=''">
+            and station_code = #{stationCode}
+        </if>
+        <if test="systemCode !=null and systemCode!=''">
+            and system_code = #{systemCode}
+        </if>
+    </select>
 </mapper>

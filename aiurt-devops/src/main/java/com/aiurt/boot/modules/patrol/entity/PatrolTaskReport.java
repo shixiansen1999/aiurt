@@ -14,12 +14,12 @@ import org.springframework.format.annotation.DateTimeFormat;
 
 /**
  * @Description: 巡检人员巡检项报告表
- * @Author: swsc
+ * @Author: Mr.zhao
  * @Date: 2021-09-21
  * @Version: V1.0
  */
 @Data
-@TableName("patrol_task_report")
+@TableName("t_patrol_task_report")
 @EqualsAndHashCode(callSuper = false)
 @Accessors(chain = true)
 @ApiModel(value = "patrol_task_report对象", description = "巡检人员巡检项报告表")
@@ -61,12 +61,22 @@ public class PatrolTaskReport {
 	private String code;
 
 	/**
-	 * 备注		状态为异常时不可为空
+	 * 填写项信息
 	 */
-	@Excel(name = "备注", width = 15)
-	@ApiModelProperty(value = "备注		状态为异常时不可为空")
+	@Excel(name = "填写项信息", width = 15)
+	@ApiModelProperty(value = "填写项信息")
 	private String note;
 
+	/**
+	 * 异常描述
+	 */
+	@Excel(name = "异常描述", width = 15)
+	@ApiModelProperty(value = "异常描述")
+	private String unNote;
+
+
+	@ApiModelProperty(value = "保留字段")
+	private String content;
 
 	/**
 	 * 保存状态		0.保存 1.提交

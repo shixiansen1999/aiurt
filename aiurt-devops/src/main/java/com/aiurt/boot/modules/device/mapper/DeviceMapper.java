@@ -1,10 +1,12 @@
 package com.aiurt.boot.modules.device.mapper;
 
-import java.util.List;
-
-import org.apache.ibatis.annotations.Param;
-import com.swsc.copsms.modules.device.entity.Device;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.aiurt.boot.modules.device.entity.Device;
+import com.aiurt.boot.modules.statistical.vo.DeviceDataVo;
+import org.springframework.data.repository.query.Param;
+
+import java.util.List;
+import java.util.Map;
 
 /**
  * @Description: 设备
@@ -16,4 +18,15 @@ public interface DeviceMapper extends BaseMapper<Device> {
 
 //    String selectNameByCode(String code);
 
+
+    Device getById(String id);
+
+    /**
+     * 大屏
+     */
+    Integer getDeviceNum(Map map);
+    List<DeviceDataVo> getSystemDeviceData(Map map);
+    List<DeviceDataVo> getDeviceNumByStation(Map map);
+
+    List<Device> queryDeviceByStationCodeAndSystemCode(@Param("stationCode") String stationCode , @Param("systemCode") String systemCode);
 }

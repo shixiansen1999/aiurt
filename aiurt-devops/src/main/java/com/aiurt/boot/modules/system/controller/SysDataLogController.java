@@ -5,10 +5,10 @@ import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 
-import com.swsc.copsms.modules.system.service.ISysDataLogService;
-import com.swsc.copsms.common.api.vo.Result;
-import com.swsc.copsms.common.system.query.QueryGenerator;
-import com.swsc.copsms.modules.system.entity.SysDataLog;
+import com.aiurt.boot.modules.system.service.ISysDataLogService;
+import com.aiurt.boot.common.api.vo.Result;
+import com.aiurt.boot.common.system.query.QueryGenerator;
+import com.aiurt.boot.modules.system.entity.SysDataLog;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;

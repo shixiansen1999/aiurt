@@ -1,6 +1,6 @@
 package com.aiurt.boot.modules.manage.service;
 
-import com.swsc.copsms.modules.manage.entity.SituationUser;
+import com.aiurt.boot.modules.manage.entity.SituationUser;
 import com.baomidou.mybatisplus.extension.service.IService;
 
 /**

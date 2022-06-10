@@ -1,14 +1,13 @@
 package com.aiurt.boot.modules.secondLevelWarehouse.mapper;
 
-
+import org.apache.ibatis.annotations.Param;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.swsc.copsms.modules.secondLevelWarehouse.entity.SparePartInOrder;
+import com.aiurt.boot.modules.secondLevelWarehouse.entity.SparePartInOrder;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.swsc.copsms.modules.secondLevelWarehouse.entity.dto.SparePartInExcel;
-import com.swsc.copsms.modules.secondLevelWarehouse.entity.dto.SparePartInQuery;
-import com.swsc.copsms.modules.secondLevelWarehouse.entity.vo.SparePartInVO;
-import org.apache.ibatis.annotations.Param;
+import com.aiurt.boot.modules.secondLevelWarehouse.entity.dto.SparePartInExcel;
+import com.aiurt.boot.modules.secondLevelWarehouse.entity.dto.SparePartInQuery;
+import com.aiurt.boot.modules.secondLevelWarehouse.entity.vo.SparePartInVO;
 
 import java.util.List;
 
@@ -20,7 +19,25 @@ import java.util.List;
  */
 public interface SparePartInOrderMapper extends BaseMapper<SparePartInOrder> {
 
+    /**
+     * 备件入库分页查询
+     * @param page
+     * @param sparePartInQuery
+     * @return
+     */
     IPage<SparePartInVO> queryPageList(Page<SparePartInVO> page, @Param("sparePartInQuery") SparePartInQuery sparePartInQuery);
 
-    List<SparePartInExcel> exportXls(@Param("sparePartInQuery") SparePartInQuery sparePartInQuery);
+    /**
+     * 备件入库导出excel所需数据
+     * @param sparePartInQuery
+     * @return
+     */
+    List<SparePartInExcel> exportXls(@Param("sparePartInQuery")SparePartInQuery sparePartInQuery);
+
+    /**
+     * 通过id确认
+     * @param id
+     * @return
+     */
+    int confirm(String id);
 }

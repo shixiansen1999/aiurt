@@ -1,10 +1,8 @@
 package com.aiurt.boot.modules.training.service.impl;
 
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.swsc.copsms.common.api.vo.Result;
-import com.swsc.copsms.modules.training.entity.TrainingPlan;
-import com.swsc.copsms.modules.training.mapper.TrainingPlanMapper;
-import com.swsc.copsms.modules.training.service.ITrainingPlanService;
+import com.aiurt.boot.modules.training.entity.TrainingPlan;
+import com.aiurt.boot.modules.training.mapper.TrainingPlanMapper;
+import com.aiurt.boot.modules.training.service.ITrainingPlanService;
 import org.springframework.stereotype.Service;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;

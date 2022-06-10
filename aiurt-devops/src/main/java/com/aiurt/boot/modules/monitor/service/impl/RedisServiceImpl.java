@@ -8,10 +8,10 @@ import java.util.Properties;
 
 import javax.annotation.Resource;
 
-import com.swsc.copsms.common.util.oConvertUtils;
-import com.swsc.copsms.modules.monitor.domain.RedisInfo;
-import com.swsc.copsms.modules.monitor.exception.RedisConnectException;
-import com.swsc.copsms.modules.monitor.service.RedisService;
+import com.aiurt.boot.common.util.oConvertUtils;
+import com.aiurt.boot.modules.monitor.domain.RedisInfo;
+import com.aiurt.boot.modules.monitor.exception.RedisConnectException;
+import com.aiurt.boot.modules.monitor.service.RedisService;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.stereotype.Service;
 

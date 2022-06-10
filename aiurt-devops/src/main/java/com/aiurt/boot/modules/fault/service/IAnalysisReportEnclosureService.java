@@ -1,7 +1,7 @@
 package com.aiurt.boot.modules.fault.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.swsc.copsms.modules.fault.entity.AnalysisReportEnclosure;
+import com.aiurt.boot.modules.fault.entity.AnalysisReportEnclosure;
 
 /**
  * @Description: 分析报告-附件表

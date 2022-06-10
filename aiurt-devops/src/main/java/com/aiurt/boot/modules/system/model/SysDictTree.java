@@ -3,7 +3,7 @@ package com.aiurt.boot.modules.system.model;
 import java.io.Serializable;
 import java.util.Date;
 
-import com.swsc.copsms.modules.system.entity.SysDict;
+import com.aiurt.boot.modules.system.entity.SysDict;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;

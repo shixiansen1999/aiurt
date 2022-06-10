@@ -1,6 +1,5 @@
 package com.aiurt.boot.modules.patrol.param;
 
-import com.swsc.copsms.common.api.vo.PageVO;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -8,6 +7,7 @@ import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
 
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 import java.io.Serializable;
 import java.util.List;
 
@@ -19,17 +19,18 @@ import java.util.List;
 
 @Data
 @Accessors(chain = true)
-@EqualsAndHashCode(callSuper = true)
+@EqualsAndHashCode(callSuper = false)
 @ApiModel(value = "指派人员请求", description = "指派人员请求")
-public class PoolAppointParam extends PageVO implements Serializable {
+public class PoolAppointParam implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	@ApiModelProperty(value = "巡检池id")
-	@NotNull(message = "id不能为空")
+	@NotNull(message = "巡检池id不能为空")
 	private Long id;
 
 	@ApiModelProperty(value = "指派人员的集合")
-	@NotNull(message = "人员不能为空")
+	@NotNull(message = "人员数量不能少于1人")
+	@Size(min = 1,message = "人员数量不能少于1人")
 	private List<String> userIds;
 
 	@ApiModelProperty(value = "是否为手动下发任务 0.否 1.是")

@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.aiurt.boot.modules.fault.mapper.DeviceChangeSparePartMapper">
+    <select id="querySpare" resultType="com.aiurt.boot.common.result.SpareResult">
+        select * from device_change_spare_part where code = #{code} and del_flag = '0'
+    </select>
+
+    <select id="selectFaultDevice" resultType="com.aiurt.boot.common.result.FaultDeviceChangSpareResult">
+        SELECT
+	        d.id AS id,
+	        d.type AS `type`,
+	        d.create_time AS changeTime,
+	        mb.`name` AS newSparePartName,
+	        d.old_spare_part_code AS oldSparePartCode,
+	        d.old_spare_part_code AS newSparePartCode,
+	        su.realname AS createBy,
+            cs.station_name AS station,
+            csy.system_name AS systemName
+        FROM
+	        device_change_spare_part d
+	        LEFT JOIN material_base mb ON mb.`code` = d.old_spare_part_code
+	        LEFT JOIN sys_user su ON su.id = d.create_by
+            LEFT JOIN device dv ON dv.id = d.device_id
+            LEFT JOIN cs_station cs ON cs.station_code = dv.station_code
+            LEFT JOIN cs_subsystem csy ON csy.system_code = dv.system_code
+        WHERE
+			d.del_flag = 0
+			AND d.device_id IN ( #{id} )
+        <if test="param.dayStart != null and param.dayEnd != null">
+            AND d.create_time &gt;= #{param.dayStart}
+            AND d.create_time &lt;= #{param.dayEnd}
+        </if>
+        <if test="param.createBy != null and param.createBy != ''">
+            AND su.realname = #{param.createBy}
+        </if>
+    </select>
+
+
+</mapper>

@@ -1,6 +1,6 @@
 package com.aiurt.boot.modules.standardManage.inspectionStrategy.mapper;
 
-import com.swsc.copsms.modules.standardManage.inspectionStrategy.entity.InspectionCodeContent;
+import com.aiurt.boot.modules.standardManage.inspectionStrategy.entity.InspectionCodeContent;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import org.apache.ibatis.annotations.Select;
 

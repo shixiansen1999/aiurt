@@ -35,7 +35,7 @@ public class StockInOrderLevel2Excel {
     @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
     @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
     @ApiModelProperty(value = "入库时间")
-    @Excel(name = "入库时间", width = 15)
+    @Excel(name = "入库时间", width = 20, format = "yyyy-MM-dd HH:mm:ss")
     private  java.util.Date  stockInTime;
 
     /**备注*/

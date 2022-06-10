@@ -2,11 +2,13 @@ package com.aiurt.boot.modules.system.service.impl;
 
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.swsc.copsms.modules.system.entity.SysRole;
-import com.swsc.copsms.modules.system.mapper.SysRoleMapper;
-import com.swsc.copsms.modules.system.service.ISysRoleService;
-import com.swsc.copsms.common.api.vo.Result;
-import com.swsc.copsms.common.util.PmsUtil;
+import com.aiurt.boot.common.api.vo.Result;
+import com.aiurt.boot.common.system.vo.LoginUser;
+import com.aiurt.boot.common.util.PmsUtil;
+import com.aiurt.boot.modules.system.entity.SysRole;
+import com.aiurt.boot.modules.system.mapper.SysRoleMapper;
+import com.aiurt.boot.modules.system.service.ISysRoleService;
+import org.apache.shiro.SecurityUtils;
 import org.jeecgframework.poi.excel.ExcelImportUtil;
 import org.jeecgframework.poi.excel.entity.ImportParams;
 import org.springframework.stereotype.Service;
@@ -80,4 +82,10 @@ public class SysRoleServiceImpl extends ServiceImpl<SysRoleMapper, SysRole> impl
         res.setMessage("文件导入成功，但有错误。");
         return res;
     }
+
+	@Override
+	public String getRoleCode() {
+        LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        return this.baseMapper.selectRoleCode(user.getId());
+	}
 }

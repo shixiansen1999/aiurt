@@ -1,29 +1,22 @@
 package com.aiurt.boot.modules.system.controller;
 
 
-import java.util.Arrays;
-import java.util.Date;
-
-import javax.servlet.http.HttpServletRequest;
-
-import com.swsc.copsms.modules.system.entity.SysDictItem;
-import com.swsc.copsms.modules.system.service.ISysDictItemService;
-import com.swsc.copsms.common.api.vo.Result;
-import com.swsc.copsms.common.constant.CacheConstant;
-import com.swsc.copsms.common.system.query.QueryGenerator;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-
+import com.aiurt.boot.common.api.vo.Result;
+import com.aiurt.boot.common.constant.CacheConstant;
+import com.aiurt.boot.common.system.query.QueryGenerator;
+import com.aiurt.boot.modules.system.entity.SysDictItem;
+import com.aiurt.boot.modules.system.service.ISysDictItemService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.web.bind.annotation.*;
+
+import javax.servlet.http.HttpServletRequest;
+import java.util.Arrays;
+import java.util.Date;
 
 /**
  * <p>
@@ -93,11 +86,11 @@ public class SysDictItemController {
 		Result<SysDictItem> result = new Result<SysDictItem>();
 		SysDictItem sysdict = sysDictItemService.getById(sysDictItem.getId());
 		if(sysdict==null) {
-			result.error500("未找到对应实体");
+			result.onnull("未找到对应实体");
 		}else {
 			sysDictItem.setUpdateTime(new Date());
 			boolean ok = sysDictItemService.updateById(sysDictItem);
-			//TODO 返回false说明什么？
+
 			if(ok) {
 				result.success("编辑成功!");
 			}
@@ -116,7 +109,7 @@ public class SysDictItemController {
 		Result<SysDictItem> result = new Result<SysDictItem>();
 		SysDictItem joinSystem = sysDictItemService.getById(id);
 		if(joinSystem==null) {
-			result.error500("未找到对应实体");
+			result.onnull("未找到对应实体");
 		}else {
 			boolean ok = sysDictItemService.removeById(id);
 			if(ok) {

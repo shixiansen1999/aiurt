@@ -2,7 +2,6 @@ package com.aiurt.boot.modules.secondLevelWarehouse.entity.dto;
 
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
-import org.jeecgframework.poi.excel.annotation.Excel;
 
 /**
  * @Author km

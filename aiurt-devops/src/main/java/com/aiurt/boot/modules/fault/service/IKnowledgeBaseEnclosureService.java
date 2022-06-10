@@ -1,7 +1,7 @@
 package com.aiurt.boot.modules.fault.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.swsc.copsms.modules.fault.entity.KnowledgeBaseEnclosure;
+import com.aiurt.boot.modules.fault.entity.KnowledgeBaseEnclosure;
 
 /**
  * @Description: 故障知识库附件表

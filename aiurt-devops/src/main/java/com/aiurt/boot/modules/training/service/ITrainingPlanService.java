@@ -1,7 +1,6 @@
 package com.aiurt.boot.modules.training.service;
 
-import com.swsc.copsms.common.api.vo.Result;
-import com.swsc.copsms.modules.training.entity.TrainingPlan;
+import com.aiurt.boot.modules.training.entity.TrainingPlan;
 import com.baomidou.mybatisplus.extension.service.IService;
 
 /**

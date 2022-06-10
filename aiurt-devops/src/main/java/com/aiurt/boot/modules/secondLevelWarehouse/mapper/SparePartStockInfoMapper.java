@@ -1,10 +1,9 @@
 package com.aiurt.boot.modules.secondLevelWarehouse.mapper;
 
-import java.util.List;
-
-import org.apache.ibatis.annotations.Param;
-import com.swsc.copsms.modules.secondLevelWarehouse.entity.SparePartStockInfo;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.aiurt.boot.modules.secondLevelWarehouse.entity.SparePartStockVO;
+
+import java.util.List;
 
 /**
  * @Description: 备件仓库信息
@@ -12,6 +11,7 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
  * @Date:   2021-09-22
  * @Version: V1.0
  */
-public interface SparePartStockInfoMapper extends BaseMapper<SparePartStockInfo> {
+public interface SparePartStockInfoMapper extends BaseMapper<SparePartStockVO> {
 
+    List<SparePartStockVO> queryList();
 }

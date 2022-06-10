@@ -1,8 +1,8 @@
 package com.aiurt.boot.modules.manage.service.impl;
 
-import com.swsc.copsms.modules.manage.entity.Subsystem;
-import com.swsc.copsms.modules.manage.mapper.SubsystemMapper;
-import com.swsc.copsms.modules.manage.service.ISubsystemService;
+import com.aiurt.boot.modules.manage.entity.Subsystem;
+import com.aiurt.boot.modules.manage.mapper.SubsystemMapper;
+import com.aiurt.boot.modules.manage.service.ISubsystemService;
 import org.springframework.stereotype.Service;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;

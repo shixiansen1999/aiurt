@@ -1,9 +1,9 @@
 package com.aiurt.boot.modules.system.service.impl;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.swsc.copsms.modules.system.entity.SysFillRule;
-import com.swsc.copsms.modules.system.service.ISysFillRuleService;
-import com.swsc.copsms.modules.system.mapper.SysFillRuleMapper;
+import com.aiurt.boot.modules.system.entity.SysFillRule;
+import com.aiurt.boot.modules.system.service.ISysFillRuleService;
+import com.aiurt.boot.modules.system.mapper.SysFillRuleMapper;
 import org.springframework.stereotype.Service;
 
 /**

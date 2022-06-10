@@ -1,9 +1,6 @@
 package com.aiurt.boot.modules.manage.mapper;
 
-import java.util.List;
-
-import org.apache.ibatis.annotations.Param;
-import com.swsc.copsms.modules.manage.entity.Line;
+import com.aiurt.boot.modules.manage.entity.Line;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
 /**
@@ -13,5 +10,6 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
  * @Version: V1.0
  */
 public interface LineMapper extends BaseMapper<Line> {
+
 
 }

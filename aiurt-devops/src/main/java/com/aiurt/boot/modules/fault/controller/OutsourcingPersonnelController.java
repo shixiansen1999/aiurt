@@ -1,39 +1,36 @@
 package com.aiurt.boot.modules.fault.controller;
 
-import com.alibaba.fastjson.JSON;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.swsc.copsms.common.api.vo.Result;
-import com.swsc.copsms.common.aspect.annotation.AutoLog;
-import com.swsc.copsms.common.system.query.QueryGenerator;
-import com.swsc.copsms.common.util.oConvertUtils;
-import com.swsc.copsms.modules.fault.entity.OutsourcingPersonnel;
-import com.swsc.copsms.modules.fault.param.OutsourcingPersonnelParam;
-import com.swsc.copsms.modules.fault.service.IOutsourcingPersonnelService;
+import com.aiurt.boot.common.api.vo.Result;
+import com.aiurt.boot.common.aspect.annotation.AutoLog;
+import com.aiurt.boot.common.result.BelongUnitResult;
+import com.aiurt.boot.common.result.OutsourcingPersonnelResult;
+import com.aiurt.boot.modules.fault.entity.OutsourcingPersonnel;
+import com.aiurt.boot.modules.fault.param.OutsourcingPersonnelParam;
+import com.aiurt.boot.modules.fault.service.IOutsourcingPersonnelService;
+import com.aiurt.boot.modules.system.mapper.SysDictMapper;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
-import org.jeecgframework.poi.excel.ExcelImportUtil;
 import org.jeecgframework.poi.excel.def.NormalExcelConstants;
 import org.jeecgframework.poi.excel.entity.ExportParams;
-import org.jeecgframework.poi.excel.entity.ImportParams;
+import org.jeecgframework.poi.excel.entity.enmus.ExcelType;
 import org.jeecgframework.poi.excel.view.JeecgEntityExcelView;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.multipart.MultipartHttpServletRequest;
 import org.springframework.web.servlet.ModelAndView;
 
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
+import java.io.BufferedOutputStream;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
+import java.io.InputStream;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 
 /**
 * @Description: 委外人员
@@ -49,26 +46,25 @@ public class OutsourcingPersonnelController {
    @Autowired
    private IOutsourcingPersonnelService outsourcingPersonnelService;
 
-   /**
+   @Resource
+   private SysDictMapper sysDictMapper;
+
+    /**
      * 分页列表查询
-    * @param outsourcingPersonnel
-    * @param pageNo
-    * @param pageSize
-    * @param req
-    * @return
-    */
+     * @param pageNo
+     * @param pageSize
+     * @param param
+     * @return
+     */
    @AutoLog(value = "委外人员-分页列表查询")
    @ApiOperation(value="委外人员-分页列表查询", notes="委外人员-分页列表查询")
    @GetMapping(value = "/list")
-   public Result<IPage<OutsourcingPersonnel>> queryPageList(OutsourcingPersonnel outsourcingPersonnel,
-                                                            @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
-                                                            @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
-                                                            @Valid OutsourcingPersonnelParam param,
-                                                            HttpServletRequest req) {
-       Result<IPage<OutsourcingPersonnel>> result = new Result<IPage<OutsourcingPersonnel>>();
-       QueryWrapper<OutsourcingPersonnel> queryWrapper = QueryGenerator.initQueryWrapper(outsourcingPersonnel, req.getParameterMap());
-       Page<OutsourcingPersonnel> page = new Page<OutsourcingPersonnel>(pageNo, pageSize);
-       IPage<OutsourcingPersonnel> pageList = outsourcingPersonnelService.pageList(page, queryWrapper,param);
+   public Result<IPage<OutsourcingPersonnelResult>> queryPageList(@RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
+                                                                  @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
+                                                                  OutsourcingPersonnelParam param) {
+       Result<IPage<OutsourcingPersonnelResult>> result = new Result<IPage<OutsourcingPersonnelResult>>();
+       Page<OutsourcingPersonnelResult> page = new Page<OutsourcingPersonnelResult>(pageNo, pageSize);
+       IPage<OutsourcingPersonnelResult> pageList = outsourcingPersonnelService.pageList(page,param);
        result.setSuccess(true);
        result.setResult(pageList);
        return result;
@@ -82,7 +78,7 @@ public class OutsourcingPersonnelController {
    @AutoLog(value = "委外人员-添加")
    @ApiOperation(value="委外人员-添加", notes="委外人员-添加")
    @PostMapping(value = "/add")
-   public Result<OutsourcingPersonnel> add(@RequestBody OutsourcingPersonnel outsourcingPersonnel, HttpServletRequest req) {
+   public Result<OutsourcingPersonnel> add(@Valid @RequestBody OutsourcingPersonnel outsourcingPersonnel, HttpServletRequest req) {
        Result<OutsourcingPersonnel> result = new Result<OutsourcingPersonnel>();
        try {
            outsourcingPersonnelService.add(outsourcingPersonnel,req);
@@ -106,10 +102,10 @@ public class OutsourcingPersonnelController {
        Result<OutsourcingPersonnel> result = new Result<OutsourcingPersonnel>();
        OutsourcingPersonnel outsourcingPersonnelEntity = outsourcingPersonnelService.getById(outsourcingPersonnel.getId());
        if(outsourcingPersonnelEntity==null) {
-           result.error500("未找到对应实体");
+           result.onnull("未找到对应实体");
        }else {
            boolean ok = outsourcingPersonnelService.updateById(outsourcingPersonnel);
-           //TODO 返回false说明什么？
+
            if(ok) {
                result.success("修改成功!");
            }
@@ -128,7 +124,7 @@ public class OutsourcingPersonnelController {
    @DeleteMapping(value = "/delete")
    public Result<?> delete(@RequestParam(name="id",required=true) Integer id) {
        try {
-           outsourcingPersonnelService.deleteById(id);
+           outsourcingPersonnelService.removeById(id);
        } catch (Exception e) {
            log.error("删除失败",e.getMessage());
            return Result.error("删除失败!");
@@ -167,7 +163,7 @@ public class OutsourcingPersonnelController {
        Result<OutsourcingPersonnel> result = new Result<OutsourcingPersonnel>();
        OutsourcingPersonnel outsourcingPersonnel = outsourcingPersonnelService.getById(id);
        if(outsourcingPersonnel==null) {
-           result.error500("未找到对应实体");
+           result.onnull("未找到对应实体");
        }else {
            result.setResult(outsourcingPersonnel);
            result.setSuccess(true);
@@ -175,35 +171,23 @@ public class OutsourcingPersonnelController {
        return result;
    }
 
- /**
+    /**
      * 导出excel
-  *
-  * @param request
-  * @param response
-  */
- @RequestMapping(value = "/exportXls")
- public ModelAndView exportXls(HttpServletRequest request, HttpServletResponse response) {
-     // Step.1 组装查询条件
-     QueryWrapper<OutsourcingPersonnel> queryWrapper = null;
-     try {
-         String paramsStr = request.getParameter("paramsStr");
-         if (oConvertUtils.isNotEmpty(paramsStr)) {
-             String deString = URLDecoder.decode(paramsStr, "UTF-8");
-             OutsourcingPersonnel outsourcingPersonnel = JSON.parseObject(deString, OutsourcingPersonnel.class);
-             queryWrapper = QueryGenerator.initQueryWrapper(outsourcingPersonnel, request.getParameterMap());
-         }
-     } catch (UnsupportedEncodingException e) {
-         e.printStackTrace();
-     }
+     * @param param
+     * @return
+     */
+ @GetMapping(value = "/exportXls")
+ @ApiOperation(value="导出excel", notes="")
+ public ModelAndView exportXls(OutsourcingPersonnelParam param) {
 
      //Step.2 AutoPoi 导出Excel
      ModelAndView mv = new ModelAndView(new JeecgEntityExcelView());
-     List<OutsourcingPersonnel> pageList = outsourcingPersonnelService.list(queryWrapper);
+     List<OutsourcingPersonnelResult> list = outsourcingPersonnelService.exportXls(param);
      //导出文件名称
      mv.addObject(NormalExcelConstants.FILE_NAME, "委外人员列表");
-     mv.addObject(NormalExcelConstants.CLASS, OutsourcingPersonnel.class);
-     mv.addObject(NormalExcelConstants.PARAMS, new ExportParams("委外人员列表数据", "导出人:Jeecg", "导出信息"));
-     mv.addObject(NormalExcelConstants.DATA_LIST, pageList);
+     mv.addObject(NormalExcelConstants.CLASS, OutsourcingPersonnelResult.class);
+     mv.addObject(NormalExcelConstants.PARAMS, new ExportParams("委外人员列表数据", "导出信息", ExcelType.XSSF));
+     mv.addObject(NormalExcelConstants.DATA_LIST, list);
      return mv;
  }
 
@@ -214,47 +198,47 @@ public class OutsourcingPersonnelController {
   * @param response
   * @return
   */
+ @ApiOperation(value="通过excel导入数据", notes="")
  @RequestMapping(value = "/importExcel", method = RequestMethod.POST)
  public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) {
-     MultipartHttpServletRequest multipartRequest = (MultipartHttpServletRequest) request;
-     Map<String, MultipartFile> fileMap = multipartRequest.getFileMap();
-     for (Map.Entry<String, MultipartFile> entity : fileMap.entrySet()) {
-         // 获取上传文件对象
-         MultipartFile file = entity.getValue();
-         ImportParams params = new ImportParams();
-         params.setTitleRows(2);
-         params.setHeadRows(1);
-         params.setNeedSave(true);
-         try {
-             List<OutsourcingPersonnel> listOutsourcingPersonnels = ExcelImportUtil.importExcel(file.getInputStream(), OutsourcingPersonnel.class, params);
-             outsourcingPersonnelService.saveBatch(listOutsourcingPersonnels);
-             return Result.ok("文件导入成功！数据行数:" + listOutsourcingPersonnels.size());
-         } catch (Exception e) {
-             log.error(e.getMessage(),e);
-             return Result.error("文件导入失败:"+e.getMessage());
-         } finally {
-             try {
-                 file.getInputStream().close();
-             } catch (IOException e) {
-                 e.printStackTrace();
-             }
-         }
-     }
-     return Result.ok("文件导入失败！");
+     Result<?> result =  outsourcingPersonnelService.importExcel(request,response);
+     return result;
  }
 
  /**
-  * 查询所有委外人员
+  * 查询委外人员单位
   * @return
   */
- @AutoLog(value = "查询所有委外人员")
- @ApiOperation(value="查询所有委外人员", notes="查询所有委外人员")
- @GetMapping(value = "/queryAll")
- public Result<List<OutsourcingPersonnel>> queryAll() {
-     Result<List<OutsourcingPersonnel>> result = new Result<List<OutsourcingPersonnel>>();
-     List<OutsourcingPersonnel> outsourcingPersonnels = outsourcingPersonnelService.queryAll();
-     result.setResult(outsourcingPersonnels);
+ @AutoLog(value = "查询委外人员单位")
+ @ApiOperation(value="查询委外人员单位", notes="查询委外人员单位")
+ @GetMapping(value = "/selectBelongUnit")
+ public Result<List<BelongUnitResult>> selectBelongUnit() {
+     Result<List<BelongUnitResult>> result = new Result<List<BelongUnitResult>>();
+     List<BelongUnitResult> results = sysDictMapper.selectBelongUnit();
+     result.setResult(results);
      return result;
  }
+
+    /**
+     * 下载委外人员导入信息模板
+     *
+     * @param response
+     * @param request
+     * @throws IOException
+     */
+    @AutoLog(value = "委外人员导入信息模板")
+    @ApiOperation(value = "下载委外人员导入信息模板", notes = "下载委外人员导入信息模板")
+    @RequestMapping(value = "/downloadExcel", method = RequestMethod.GET)
+    public void downloadExcel(HttpServletResponse response, HttpServletRequest request) throws IOException {
+        ClassPathResource classPathResource =  new ClassPathResource("template/委外人员导入信息模板.xlsx");
+        InputStream bis = classPathResource.getInputStream();
+        BufferedOutputStream out = new BufferedOutputStream(response.getOutputStream());
+        int len = 0;
+        while ((len = bis.read()) != -1) {
+            out.write(len);
+            out.flush();
+        }
+        out.close();
+    }
 
 }

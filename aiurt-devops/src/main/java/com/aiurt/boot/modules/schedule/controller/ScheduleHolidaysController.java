@@ -8,12 +8,12 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import com.swsc.copsms.common.api.vo.Result;
-import com.swsc.copsms.common.aspect.annotation.AutoLog;
-import com.swsc.copsms.common.system.query.QueryGenerator;
-import com.swsc.copsms.common.util.oConvertUtils;
-import com.swsc.copsms.modules.schedule.entity.ScheduleHolidays;
-import com.swsc.copsms.modules.schedule.service.IScheduleHolidaysService;
+import com.aiurt.boot.common.api.vo.Result;
+import com.aiurt.boot.common.aspect.annotation.AutoLog;
+import com.aiurt.boot.common.system.query.QueryGenerator;
+import com.aiurt.boot.common.util.oConvertUtils;
+import com.aiurt.boot.modules.schedule.entity.ScheduleHolidays;
+import com.aiurt.boot.modules.schedule.service.IScheduleHolidaysService;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -41,7 +41,7 @@ import io.swagger.annotations.ApiOperation;
  * @Version: V1.0
  */
 @Slf4j
-@Api(tags="schedule_holidays")
+@Api(tags="排班节假日")
 @RestController
 @RequestMapping("/schedule/scheduleHolidays")
 public class ScheduleHolidaysController {
@@ -56,8 +56,8 @@ public class ScheduleHolidaysController {
 	 * @param req
 	 * @return
 	 */
-	@AutoLog(value = "schedule_holidays-分页列表查询")
-	@ApiOperation(value="schedule_holidays-分页列表查询", notes="schedule_holidays-分页列表查询")
+	@AutoLog(value = "排班节假日-分页列表查询")
+	@ApiOperation(value="排班节假日-分页列表查询", notes="排班节假日-分页列表查询")
 	@GetMapping(value = "/list")
 	public Result<IPage<ScheduleHolidays>> queryPageList(ScheduleHolidays scheduleHolidays,
 									  @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
@@ -77,8 +77,8 @@ public class ScheduleHolidaysController {
 	 * @param scheduleHolidays
 	 * @return
 	 */
-	@AutoLog(value = "schedule_holidays-添加")
-	@ApiOperation(value="schedule_holidays-添加", notes="schedule_holidays-添加")
+	@AutoLog(value = "排班节假日-添加")
+	@ApiOperation(value="排班节假日-添加", notes="排班节假日-添加")
 	@PostMapping(value = "/add")
 	public Result<ScheduleHolidays> add(@RequestBody ScheduleHolidays scheduleHolidays) {
 		Result<ScheduleHolidays> result = new Result<ScheduleHolidays>();
@@ -97,17 +97,17 @@ public class ScheduleHolidaysController {
 	 * @param scheduleHolidays
 	 * @return
 	 */
-	@AutoLog(value = "schedule_holidays-编辑")
-	@ApiOperation(value="schedule_holidays-编辑", notes="schedule_holidays-编辑")
+	@AutoLog(value = "排班节假日-编辑")
+	@ApiOperation(value="排班节假日-编辑", notes="排班节假日-编辑")
 	@PutMapping(value = "/edit")
 	public Result<ScheduleHolidays> edit(@RequestBody ScheduleHolidays scheduleHolidays) {
 		Result<ScheduleHolidays> result = new Result<ScheduleHolidays>();
 		ScheduleHolidays scheduleHolidaysEntity = scheduleHolidaysService.getById(scheduleHolidays.getId());
 		if(scheduleHolidaysEntity==null) {
-			result.error500("未找到对应实体");
+			result.onnull("未找到对应实体");
 		}else {
 			boolean ok = scheduleHolidaysService.updateById(scheduleHolidays);
-			//TODO 返回false说明什么？
+
 			if(ok) {
 				result.success("修改成功!");
 			}
@@ -121,8 +121,8 @@ public class ScheduleHolidaysController {
 	 * @param id
 	 * @return
 	 */
-	@AutoLog(value = "schedule_holidays-通过id删除")
-	@ApiOperation(value="schedule_holidays-通过id删除", notes="schedule_holidays-通过id删除")
+	@AutoLog(value = "排班节假日-通过id删除")
+	@ApiOperation(value="排班节假日-通过id删除", notes="排班节假日-通过id删除")
 	@DeleteMapping(value = "/delete")
 	public Result<?> delete(@RequestParam(name="id",required=true) String id) {
 		try {
@@ -139,8 +139,8 @@ public class ScheduleHolidaysController {
 	 * @param ids
 	 * @return
 	 */
-	@AutoLog(value = "schedule_holidays-批量删除")
-	@ApiOperation(value="schedule_holidays-批量删除", notes="schedule_holidays-批量删除")
+	@AutoLog(value = "排班节假日-批量删除")
+	@ApiOperation(value="排班节假日-批量删除", notes="排班节假日-批量删除")
 	@DeleteMapping(value = "/deleteBatch")
 	public Result<ScheduleHolidays> deleteBatch(@RequestParam(name="ids",required=true) String ids) {
 		Result<ScheduleHolidays> result = new Result<ScheduleHolidays>();
@@ -158,14 +158,14 @@ public class ScheduleHolidaysController {
 	 * @param id
 	 * @return
 	 */
-	@AutoLog(value = "schedule_holidays-通过id查询")
-	@ApiOperation(value="schedule_holidays-通过id查询", notes="schedule_holidays-通过id查询")
+	@AutoLog(value = "排班节假日-通过id查询")
+	@ApiOperation(value="排班节假日-通过id查询", notes="排班节假日-通过id查询")
 	@GetMapping(value = "/queryById")
 	public Result<ScheduleHolidays> queryById(@RequestParam(name="id",required=true) String id) {
 		Result<ScheduleHolidays> result = new Result<ScheduleHolidays>();
 		ScheduleHolidays scheduleHolidays = scheduleHolidaysService.getById(id);
 		if(scheduleHolidays==null) {
-			result.error500("未找到对应实体");
+			result.onnull("未找到对应实体");
 		}else {
 			result.setResult(scheduleHolidays);
 			result.setSuccess(true);

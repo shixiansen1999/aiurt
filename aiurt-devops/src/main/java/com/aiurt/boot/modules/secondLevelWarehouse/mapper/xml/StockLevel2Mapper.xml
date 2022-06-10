@@ -1,5 +1,117 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.swsc.copsms.modules.secondLevelWarehouse.mapper.StockLevel2Mapper">
+<mapper namespace="com.aiurt.boot.modules.secondLevelWarehouse.mapper.StockLevel2Mapper">
 
+    <select id="queryPageList"
+            resultType="com.aiurt.boot.modules.secondLevelWarehouse.entity.vo.StockLevel2VO">
+        SELECT
+            sl2.id AS id,
+            sl2.material_code AS materialCode,
+            mb.NAME AS materialName,
+            mb.type AS `type`,
+            sl2.num AS num,
+            mb.specifications AS specifications,
+            mb.country_origin AS countryOrigin,
+            mb.manufacturer AS manufacturer,
+            mb.brand AS brand,
+            mb.unit AS unit,
+            sl2.warehouse_code AS warehouseCode,
+            w.stock_name AS warehouseName,
+            sl2.stock_in_time AS stockInTime,
+            cs.system_name AS systemCode,
+            mb.price AS price,
+            sl2.remark AS remark,
+        su.realname AS keeperName,
+        mb.total as totalPrice
+        FROM
+            stock_level2 sl2
+            LEFT JOIN material_base mb ON mb.CODE = sl2.material_code
+            LEFT JOIN cs_stock_level_two w ON w.stock_code = sl2.warehouse_code
+            LEFT JOIN cs_subsystem cs ON cs.system_code = mb.system_code
+            LEFT JOIN sys_user su ON su.id = sl2.create_by
+        WHERE
+            sl2.del_flag =0
+            <if test="stockLevel2Query.materialCode!=null and stockLevel2Query.materialCode!=''">
+                AND sl2.material_code =#{stockLevel2Query.materialCode}
+            </if>
+            <if test="stockLevel2Query.materialName!=null and stockLevel2Query.materialName!=''">
+                AND mb.name LIKE concat('%', #{stockLevel2Query.materialName}, '%')
+            </if>
+            <if test="stockLevel2Query.warehouseCode!=null and stockLevel2Query.warehouseCode!=''">
+                AND sl2.warehouse_code = #{stockLevel2Query.warehouseCode}
+            </if>
+            <if test="stockLevel2Query.department!=null and stockLevel2Query.department!=''">
+                AND sd.id = #{stockLevel2Query.department}
+            </if>
+            <if test="stockLevel2Query.type!=null and stockLevel2Query.type!=''">
+                AND mb.type = #{stockLevel2Query.type}
+            </if>
+            <if test="stockLevel2Query.systemCode!=null and stockLevel2Query.systemCode!=''">
+                AND mb.system_code = #{stockLevel2Query.systemCode}
+            </if>
+            <if test="stockLevel2Query.startTime!=null and stockLevel2Query.endTime!=null">
+                AND sl2.stock_in_time BETWEEN #{stockLevel2Query.startTime} AND #{stockLevel2Query.endTime}
+            </if>
+        ORDER BY
+            sl2.update_time DESC
+    </select>
+
+    <select id="exportXls"
+            resultType="com.aiurt.boot.modules.secondLevelWarehouse.entity.vo.StockLevel2VO">
+        SELECT
+            sl2.id AS id,
+            sl2.material_code AS materialCode,
+            mb.NAME AS materialName,
+            mb.type AS `type`,
+            sl2.num AS num,
+            mb.specifications AS specifications,
+            mb.country_origin AS countryOrigin,
+            mb.manufacturer AS manufacturer,
+            mb.brand AS brand,
+            mb.unit AS unit,
+            sl2.warehouse_code AS warehouseCode,
+            w.stock_name AS warehouseName,
+            sl2.stock_in_time AS stockInTime,
+            cs.system_name AS systemCode,
+            mb.price AS price,
+            sl2.remark AS remark,
+            su.realname AS keeperName
+        FROM
+            stock_level2 sl2
+            LEFT JOIN material_base mb ON mb.CODE = sl2.material_code
+            LEFT JOIN cs_stock_level_two w ON w.stock_code = sl2.warehouse_code
+            LEFT JOIN cs_subsystem cs ON cs.system_code = mb.system_code
+            LEFT JOIN sys_user su ON su.id = sl2.create_by
+        WHERE
+            sl2.del_flag =0
+            <if test="stockLevel2Query.materialCode!=null and stockLevel2Query.materialCode!=''">
+                AND sl2.material_code =#{stockLevel2Query.materialCode}
+            </if>
+            <if test="stockLevel2Query.materialName!=null and stockLevel2Query.materialName!=''">
+                AND mb.name LIKE concat('%', #{stockLevel2Query.materialName}, '%')
+            </if>
+            <if test="stockLevel2Query.warehouseCode!=null and stockLevel2Query.warehouseCode!=''">
+                AND sl2.warehouse_code = #{stockLevel2Query.warehouseCode}
+            </if>
+            <if test="stockLevel2Query.department!=null and stockLevel2Query.department!=''">
+                AND sd.id = #{stockLevel2Query.department}
+            </if>
+            <if test="stockLevel2Query.type!=null and stockLevel2Query.type!=''">
+                AND mb.type = #{stockLevel2Query.type}
+            </if>
+            <if test="stockLevel2Query.systemCode!=null and stockLevel2Query.systemCode!=''">
+                AND mb.system_code = #{stockLevel2Query.systemCode}
+            </if>
+            <if test="stockLevel2Query.startTime!=null and stockLevel2Query.endTime!=null">
+                AND sl2.stock_in_time BETWEEN #{stockLevel2Query.startTime} AND #{stockLevel2Query.endTime}
+            </if>
+        ORDER BY
+            sl2.update_time DESC
+    </select>
+
+    <update id="addRemark">
+		UPDATE stock_level2
+		SET remark = #{remark}
+		WHERE id = #{id}
+	</update>
 </mapper>

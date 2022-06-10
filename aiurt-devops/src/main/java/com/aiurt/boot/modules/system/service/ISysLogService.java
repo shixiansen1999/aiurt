@@ -4,7 +4,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
-import com.swsc.copsms.modules.system.entity.SysLog;
+import com.aiurt.boot.modules.system.entity.SysLog;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 

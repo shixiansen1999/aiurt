@@ -1,13 +1,12 @@
 package com.aiurt.boot.modules.secondLevelWarehouse.entity.dto;
 
-import com.baomidou.mybatisplus.annotation.TableField;
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.swsc.copsms.modules.secondLevelWarehouse.entity.vo.MaterialVO;
+import com.aiurt.boot.modules.secondLevelWarehouse.entity.vo.MaterialVO;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
-import org.jeecgframework.poi.excel.annotation.Excel;
 import org.springframework.format.annotation.DateTimeFormat;
 
+import javax.validation.constraints.NotNull;
 import java.util.List;
 
 /**
@@ -19,6 +18,7 @@ import java.util.List;
 public class StockInOrderLevel2DTO {
     /**仓库编号*/
     @ApiModelProperty(value = "仓库编号")
+    @NotNull(message = "请选择入库仓库")
     private  String  warehouseCode;
 
     /**备注*/

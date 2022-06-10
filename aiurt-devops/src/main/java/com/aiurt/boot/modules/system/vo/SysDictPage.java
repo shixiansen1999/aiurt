@@ -1,6 +1,6 @@
 package com.aiurt.boot.modules.system.vo;
 
-import com.swsc.copsms.modules.system.entity.SysDictItem;
+import com.aiurt.boot.modules.system.entity.SysDictItem;
 import lombok.Data;
 import org.jeecgframework.poi.excel.annotation.Excel;
 import org.jeecgframework.poi.excel.annotation.ExcelCollection;

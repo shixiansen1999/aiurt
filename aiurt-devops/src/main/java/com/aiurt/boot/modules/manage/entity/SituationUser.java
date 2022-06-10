@@ -2,6 +2,7 @@ package com.aiurt.boot.modules.manage.entity;
 
 import java.util.Date;
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import io.swagger.annotations.ApiModel;
@@ -23,7 +24,7 @@ import org.jeecgframework.poi.excel.annotation.Excel;
 @TableName("cs_situation_user")
 @EqualsAndHashCode(callSuper = false)
 @Accessors(chain = true)
-@ApiModel(value="cs_situation_user对象", description="cs_situation_user")
+@ApiModel(value="发布对象", description="发布对象")
 public class SituationUser {
 
 	/**id*/
@@ -54,4 +55,7 @@ public class SituationUser {
     @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
     @ApiModelProperty(value = "更新时间")
 	private Date updateTime;
+
+	@TableField(exist = false)
+	private String userName;//技术员名称
 }

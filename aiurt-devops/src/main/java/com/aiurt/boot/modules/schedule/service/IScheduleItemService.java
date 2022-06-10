@@ -1,6 +1,6 @@
 package com.aiurt.boot.modules.schedule.service;
 
-import com.swsc.copsms.modules.schedule.entity.ScheduleItem;
+import com.aiurt.boot.modules.schedule.entity.ScheduleItem;
 import com.baomidou.mybatisplus.extension.service.IService;
 
 /**
@@ -10,5 +10,4 @@ import com.baomidou.mybatisplus.extension.service.IService;
  * @Version: V1.0
  */
 public interface IScheduleItemService extends IService<ScheduleItem> {
-
 }

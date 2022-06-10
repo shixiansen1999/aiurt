@@ -1,6 +1,6 @@
 package com.aiurt.boot.modules.device.service;
 
-import com.swsc.copsms.modules.device.entity.DeviceAssembly;
+import com.aiurt.boot.modules.device.entity.DeviceAssembly;
 import com.baomidou.mybatisplus.extension.service.IService;
 
 /**

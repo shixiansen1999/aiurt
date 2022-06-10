@@ -1,35 +1,35 @@
 package com.aiurt.boot.modules.fault.service.impl;
 
-import com.baomidou.mybatisplus.core.conditions.Wrapper;
+import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.util.ObjectUtil;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.swsc.copsms.common.api.vo.Result;
-import com.swsc.copsms.common.exception.SwscException;
-import com.swsc.copsms.common.result.FaultCodesResult;
-import com.swsc.copsms.common.result.FaultKnowledgeBaseResult;
-import com.swsc.copsms.common.system.util.JwtUtil;
-import com.swsc.copsms.common.util.TokenUtils;
-import com.swsc.copsms.modules.fault.dto.FaultKnowledgeBaseDTO;
-import com.swsc.copsms.modules.fault.entity.FaultKnowledgeBase;
-import com.swsc.copsms.modules.fault.entity.KnowledgeBaseEnclosure;
-import com.swsc.copsms.modules.fault.mapper.FaultKnowledgeBaseMapper;
-import com.swsc.copsms.modules.fault.mapper.FaultMapper;
-import com.swsc.copsms.modules.fault.mapper.KnowledgeBaseEnclosureMapper;
-import com.swsc.copsms.modules.fault.param.FaultKnowledgeBaseParam;
-import com.swsc.copsms.modules.fault.service.IFaultKnowledgeBaseService;
-import com.swsc.copsms.modules.patrol.constant.PatrolConstant;
-import com.swsc.copsms.modules.system.entity.SysUser;
-import com.swsc.copsms.modules.system.mapper.SysUserMapper;
-import org.apache.shiro.authc.AuthenticationException;
+import com.aiurt.boot.common.api.vo.Result;
+import com.aiurt.boot.common.enums.FaultTypeEnum;
+import com.aiurt.boot.common.result.FaultCodesResult;
+import com.aiurt.boot.common.result.FaultKnowledgeBaseResult;
+import com.aiurt.boot.common.system.api.ISysBaseAPI;
+import com.aiurt.boot.common.util.TokenUtils;
+import com.aiurt.boot.modules.fault.dto.FaultKnowledgeBaseDTO;
+import com.aiurt.boot.modules.fault.entity.FaultKnowledgeBase;
+import com.aiurt.boot.modules.fault.entity.KnowledgeBaseEnclosure;
+import com.aiurt.boot.modules.fault.mapper.FaultKnowledgeBaseMapper;
+import com.aiurt.boot.modules.fault.mapper.FaultMapper;
+import com.aiurt.boot.modules.fault.mapper.KnowledgeBaseEnclosureMapper;
+import com.aiurt.boot.modules.fault.param.FaultKnowledgeBaseParam;
+import com.aiurt.boot.modules.fault.service.IFaultKnowledgeBaseService;
+import com.aiurt.boot.modules.manage.entity.Subsystem;
+import com.aiurt.boot.modules.manage.service.impl.SubsystemServiceImpl;
+import org.apache.commons.lang.StringUtils;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.transaction.Transactional;
-import java.lang.reflect.Array;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
 
 /**
@@ -51,29 +51,29 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
     private FaultMapper faultMapper;
 
     @Resource
-    private SysUserMapper userMapper;
+    private ISysBaseAPI iSysBaseAPI;
 
+    @Autowired
+    private SubsystemServiceImpl subsystemService;
     /**
      * 查询故障知识库
      * @param page
-     * @param queryWrapper
      * @param param
      * @return
      */
     @Override
-    public IPage<FaultKnowledgeBaseResult> pageList(IPage<FaultKnowledgeBaseResult> page, Wrapper<FaultKnowledgeBaseResult> queryWrapper, FaultKnowledgeBaseParam param) {
-        IPage<FaultKnowledgeBaseResult> faultKnowledgeBaseIPage = baseMapper.queryFaultKnowledgeBase(page, queryWrapper, param);
-        List<FaultKnowledgeBaseResult> records = faultKnowledgeBaseIPage.getRecords();
+    public IPage<FaultKnowledgeBaseResult> pageList(IPage<FaultKnowledgeBaseResult> page,FaultKnowledgeBaseParam param) {
+        IPage<FaultKnowledgeBaseResult> iPage = baseMapper.queryFaultKnowledgeBase(page, param);
+        List<FaultKnowledgeBaseResult> records = iPage.getRecords();
         for (FaultKnowledgeBaseResult record : records) {
-            if (record.getFaultType() == 0) {
-                record.setFaultTypeDesc("设备故障");
-            }else if (record.getFaultType() == 1){
-                record.setFaultTypeDesc("外界妨害");
-            }else {
-                record.setFaultTypeDesc("其他");
+            //查询附件
+            List<String> results = enclosureMapper.selectByKnowledgeId(record.getId());
+            record.setUrlList(results);
+            if (record.getFaultType() != null) {
+                record.setFaultTypeDesc(FaultTypeEnum.findMessage(record.getFaultType()));
             }
         }
-        return faultKnowledgeBaseIPage;
+        return iPage;
     }
 
     /**
@@ -82,96 +82,54 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
      */
     @Override
     @Transactional(rollbackOn = Exception.class)
-    public void add(FaultKnowledgeBaseDTO dto, HttpServletRequest req) {
+    public Long add(FaultKnowledgeBaseDTO dto, HttpServletRequest req) {
         FaultKnowledgeBase base = new FaultKnowledgeBase();
-
-        if (dto.getTypeId() == null) {
-            throw new SwscException("类型id不能为空");
+        if (dto.getTypeId() != null) {
+            base.setTypeId(dto.getTypeId());
         }
-        base.setTypeId(dto.getTypeId());
-
-        if (dto.getFaultType() == null) {
-            throw new SwscException("故障类型不能为空");
-        }
-        base.setFaultType(dto.getFaultType());
-
-        if (dto.getSystemCode() == null || "".equals(dto.getSystemCode())) {
-            throw new SwscException("系统名称不能为空");
+        if (dto.getFaultType() != null) {
+            base.setFaultType(dto.getFaultType());
         }
         base.setSystemCode(dto.getSystemCode());
-
-        if (dto.getFaultPhenomenon() == null || "".equals(dto.getFaultPhenomenon())) {
-            throw new SwscException("故障现象不能为空");
-        }
         base.setFaultPhenomenon(dto.getFaultPhenomenon());
-
-        if (dto.getFaultReason() == null || "".equals(dto.getFaultReason())) {
-            throw new SwscException("故障原因不能为空");
-        }
         base.setFaultReason(dto.getFaultReason());
-
-        if (dto.getSolution() == null || "".equals(dto.getSolution())) {
-            throw new SwscException("故障措施不能为空");
-        }
         base.setSolution(dto.getSolution());
-
+        base.setFaultCodes(dto.getFaultCodes());
+        base.setScanNum(0);
         base.setDelFlag(0);
-
-        // 解密获得username，用于和数据库进行对比
-        String token = TokenUtils.getTokenByRequest(req);
-
-        // 解密获得username，用于和数据库进行对比
-        String username = JwtUtil.getUsername(token);
-        if (username == null) {
-            throw new AuthenticationException("token非法无效!");
-        }
-        // 查询用户信息
-        SysUser name = userMapper.getUserByName(username);
-        if (name==null){
-            throw new AuthenticationException("用户不存在!");
-        }
-        String id = name.getId();
-        base.setCreateBy(id);
-        if (dto.getTypeId()!=null) {
-            base.setUpdateBy(dto.getUpdateBy());
-        }
-        base.setCreateTime(new Date());
-        base.setUpdateTime(new Date());
+        String userId = TokenUtils.getUserId(req, iSysBaseAPI);
+        base.setCreateBy(userId);
         baseMapper.insert(base);
-
-        if (dto.getUrlList()!= null) {
-            //存储附件
+        //存储附件
+        if (CollUtil.isNotEmpty(dto.getUrlList())) {
             KnowledgeBaseEnclosure enclosure = new KnowledgeBaseEnclosure();
             List<String> urlList = dto.getUrlList();
             for (String s : urlList) {
                 enclosure.setCreateBy(base.getCreateBy());
-                if (base.getUpdateBy()!= null) {
-                    enclosure.setUpdateBy(base.getUpdateBy());
-                }
                 enclosure.setKnowledgeBaseId(base.getId());
                 enclosure.setDelFlag(0);
                 enclosure.setUrl(s);
-                enclosure.setCreateTime(new Date());
-                enclosure.setUpdateTime(new Date());
                 enclosureMapper.insert(enclosure);
             }
         }
-
+        return base.getId();
     }
 
     /**
-     * 查询关联故障列表
+     * 根据id获取关联故障
      * @param id
      * @return
      */
     @Override
-    public Result<?> getAssociateFault(Integer id) {
-        String s = baseMapper.selectCodeById(id);
-        String[] split = s.split(",");
+    public Result<List<FaultCodesResult>> getAssociateFault(Long id) {
         List<FaultCodesResult> objects = new ArrayList<>();
-        for (String s1 : split) {
-            FaultCodesResult result = faultMapper.selectCodeDetail(s1);
-            objects.add(result);
+        String s = baseMapper.selectCodeById(id);
+        if (StringUtils.isNotBlank(s)) {
+            String[] split = s.split(",");
+            for (String s1 : split) {
+                FaultCodesResult result = faultMapper.selectCodeDetail(s1);
+                objects.add(result);
+            }
         }
         return Result.ok(objects);
     }
@@ -188,13 +146,84 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
     }
 
     /**
-     * 根据id假删除
-     * @param id
+     * 根据id修改
+     * @param dto
      */
     @Override
-    public Result deleteById(Integer id) {
-        baseMapper.deleteOne(id);
-        return Result.ok();
+    @Transactional(rollbackOn = Exception.class)
+    public void updateByKnowledgeId(FaultKnowledgeBaseDTO dto, HttpServletRequest req) {
+        String userId = TokenUtils.getUserId(req, iSysBaseAPI);
+        FaultKnowledgeBase base = this.baseMapper.selectById(dto.getId());
+        if (StringUtils.isNotBlank(dto.getSystemCode())) {
+            base.setSystemCode(dto.getSystemCode());
+        }
+        if (StringUtils.isNotBlank(dto.getFaultPhenomenon())) {
+            base.setFaultPhenomenon(dto.getFaultPhenomenon());
+        }
+        if (StringUtils.isNotBlank(dto.getFaultReason())) {
+            base.setFaultReason(dto.getFaultReason());
+        }
+        if (StringUtils.isNotBlank(dto.getSolution())) {
+            base.setSolution(dto.getSolution());
+        }
+        if (StringUtils.isNotBlank(dto.getFaultCodes())) {
+            base.setFaultCodes(dto.getFaultCodes());
+        }
+        base.setUpdateBy(userId);
+        baseMapper.updateById(base);
+        //删除附件列表
+        enclosureMapper.deleteByName(dto.getId());
+        //重新插入附件列表
+        List<String> urlList = dto.getUrlList();
+        if (CollUtil.isNotEmpty(urlList)) {
+            for (String s : urlList) {
+                KnowledgeBaseEnclosure enclosure = new KnowledgeBaseEnclosure();
+                enclosure.setKnowledgeBaseId(dto.getId());
+                enclosure.setUrl(s);
+                enclosure.setDelFlag(0);
+                enclosureMapper.insert(enclosure);
+            }
+        }
     }
 
+    /**
+     * 根据id查询故障知识详情
+     * @param id
+     * @return
+     */
+    @Override
+    public FaultKnowledgeBaseResult queryDetail(Long id) {
+        FaultKnowledgeBaseResult result = baseMapper.selectByKnowledgeId(id);
+        //app浏览增加一次浏览次数
+        Integer scanNum = result.getScanNum();
+        baseMapper.updateScanNum(++scanNum,id);
+        //查询附加列表
+        List<String> results = enclosureMapper.selectByKnowledgeId(id);
+        result.setUrlList(results);
+        //获取关联故障
+        Result<List<FaultCodesResult>> associateFault = getAssociateFault(id);
+        List<FaultCodesResult> result1 = associateFault.getResult();
+        result.setFaultCodesResults(result1);
+        return result;
+    }
+
+    @Override
+    public FaultKnowledgeBaseResult getResultById(String id) {
+        FaultKnowledgeBase faultKnowledgeBase = this.getById(id);
+        FaultKnowledgeBaseResult result = new FaultKnowledgeBaseResult();
+        if (ObjectUtil.isEmpty(result)){
+            return null;
+        }
+        BeanUtils.copyProperties(faultKnowledgeBase,result);
+        if (StringUtils.isNotBlank(result.getSystemCode())){
+            Subsystem subsystem = subsystemService.getOne(new LambdaQueryWrapper<Subsystem>().eq(Subsystem::getSystemCode, result.getSystemCode()));
+            result.setSystemName(subsystem.getSystemName());
+        }
+        List<String> results = enclosureMapper.selectByKnowledgeId(result.getId());
+        result.setUrlList(results);
+        if (result.getFaultType() != null) {
+            result.setFaultTypeDesc(FaultTypeEnum.findMessage(result.getFaultType()));
+        }
+        return result;
+    }
 }

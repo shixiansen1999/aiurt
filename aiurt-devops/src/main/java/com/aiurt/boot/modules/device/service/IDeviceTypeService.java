@@ -1,7 +1,9 @@
 package com.aiurt.boot.modules.device.service;
 
-import com.swsc.copsms.modules.device.entity.DeviceType;
+import com.aiurt.boot.modules.device.entity.DeviceType;
 import com.baomidou.mybatisplus.extension.service.IService;
+
+import java.util.List;
 
 /**
  * @Description: 设备分类
@@ -11,4 +13,7 @@ import com.baomidou.mybatisplus.extension.service.IService;
  */
 public interface IDeviceTypeService extends IService<DeviceType> {
 
+    Integer existCode(String code);
+
+    List<DeviceType> getDeviceTypeBySystemCode(String systemCode);
 }

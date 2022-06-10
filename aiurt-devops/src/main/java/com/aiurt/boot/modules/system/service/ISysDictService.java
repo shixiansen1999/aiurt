@@ -3,11 +3,11 @@ package com.aiurt.boot.modules.system.service;
 import java.util.List;
 import java.util.Map;
 
-import com.swsc.copsms.modules.system.entity.SysDict;
-import com.swsc.copsms.modules.system.model.TreeSelectModel;
-import com.swsc.copsms.common.system.vo.DictModel;
+import com.aiurt.boot.modules.system.entity.SysDict;
+import com.aiurt.boot.modules.system.model.TreeSelectModel;
+import com.aiurt.boot.common.system.vo.DictModel;
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.swsc.copsms.modules.system.entity.SysDictItem;
+import com.aiurt.boot.modules.system.entity.SysDictItem;
 
 /**
  * <p>
@@ -64,7 +64,7 @@ public interface ISysDictService extends IService<SysDict> {
 	 * @param keyword
 	 * @return
 	 */
-	public List<DictModel> queryTableDictItems(String table, String text, String code, String keyword);
+	public List<DictModel> queryTableDictItems(String table, String text, String code,String keyword);
 
 	/**
 	  * 根据表名、显示字段名、存储字段名 查询树
@@ -89,7 +89,7 @@ public interface ISysDictService extends IService<SysDict> {
 	 * @param delFlag
 	 * @param id
 	 */
-	public void updateDictDelFlag(int delFlag, String id);
+	public void updateDictDelFlag(int delFlag,String id);
 
 	/**
 	 * 查询被逻辑删除的数据

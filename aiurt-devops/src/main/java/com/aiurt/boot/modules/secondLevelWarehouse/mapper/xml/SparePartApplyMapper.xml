@@ -1,18 +1,142 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.swsc.copsms.modules.secondLevelWarehouse.mapper.SparePartApplyMapper">
+<mapper namespace="com.aiurt.boot.modules.secondLevelWarehouse.mapper.SparePartApplyMapper">
 
-    <select id="selectExportXls"
-            resultType="com.swsc.copsms.modules.secondLevelWarehouse.entity.dto.StockApplyExcel">
-        select spa.code,w.warehouse_name warehouseName,w.warehouse_department warehouseDepartment,
-                spa.status,spa.create_time applyTime,spa.remarks
-         from spare_part_apply spa
-        left join warehouse w on w.warehouse_code=spa.warehouse_code
-        left join sys_user su on su.id=spa.create_by
-        where spa.id in(
-        <foreach collection="ids" separator="," item="item">
-            #{item}
-        </foreach>
+
+    <select id="queryPageList"
+            resultType="com.aiurt.boot.modules.secondLevelWarehouse.entity.vo.SparePartApplyVO">
+        SELECT
+            spa.id AS id,
+            spa.CODE AS code,
+            spa.out_warehouse_code AS outWarehouseCode,
+            sli.stock_name AS outWarehouseName,
+            spa.apply_time AS applyTime,
+            spa.stock_out_time AS stockOutTime,
+            spa.remarks AS remarks,
+            spa.STATUS AS status,
+            su.realname AS operatorName,
+            su.org_name AS department
+        FROM
+            spare_part_apply spa
+            LEFT JOIN cs_stock_level_two sli ON spa.out_warehouse_code = sli.stock_code
+            LEFT JOIN sys_user su ON su.id = spa.create_by
+        WHERE
+            spa.del_flag =0
+        <if test="sparePartQuery.code!=null and sparePartQuery.code!=''">
+            and spa.code = #{sparePartQuery.code}
+        </if>
+        <if test="sparePartQuery.outWarehouseCode!=null and sparePartQuery.outWarehouseCode!=''">
+            AND spa.out_warehouse_code = #{sparePartQuery.outWarehouseCode}
+        </if>
+        <if test="sparePartQuery.applyTimeStart!=null and sparePartQuery.applyTimeEnd!=null  ">
+            AND spa.apply_time BETWEEN #{sparePartQuery.applyTimeStart} AND #{sparePartQuery.applyTimeEnd}
+        </if>
+        <if test="sparePartQuery.stockOutStart!=null and sparePartQuery.stockOutEnd!=null">
+            AND spa.stock_out_time BETWEEN #{sparePartQuery.stockOutStart} AND #{sparePartQuery.stockOutEnd}
+        </if>
+        <if test="sparePartQuery.commitStatus!=null and sparePartQuery.commitStatus!=''">
+            AND spa.commit_status = #{sparePartQuery.commitStatus}
+        </if>
+        ORDER BY
+            spa.create_time DESC
+    </select>
+
+    <select id="queryPageListLevel2"
+            resultType="com.aiurt.boot.modules.secondLevelWarehouse.entity.vo.SparePartApplyVO">
+        SELECT
+            spa.id AS id,
+            spa.CODE AS code,
+            spa.out_warehouse_code AS outWarehouseCode,
+            sli.stock_name AS outWarehouseName,
+            spa.apply_time AS applyTime,
+            spa.stock_out_time AS stockOutTime,
+            spa.remarks AS remarks,
+            spa.STATUS AS status,
+            su.realname AS operatorName,
+            su.org_name AS department
+        FROM
+            spare_part_apply spa
+            LEFT JOIN cs_stock_level_two sli ON spa.out_warehouse_code = sli.stock_code
+            LEFT JOIN sys_user su ON su.id = spa.create_by
+        WHERE
+            spa.del_flag = 0
+            AND spa.commit_status = 1
+        <if test="sparePartQuery.code!=null and sparePartQuery.code!=''">
+            AND spa.code = #{sparePartQuery.code}
+        </if>
+        <if test="sparePartQuery.outWarehouseCode!=null and sparePartQuery.outWarehouseCode!=''">
+            AND spa.out_warehouse_code = #{sparePartQuery.outWarehouseCode}
+        </if>
+        <if test="sparePartQuery.applyTimeStart!=null and sparePartQuery.applyTimeEnd!=null">
+            AND spa.apply_time BETWEEN #{sparePartQuery.applyTimeStart} AND #{sparePartQuery.applyTimeEnd}
+        </if>
+        <if test="sparePartQuery.stockOutStart!=null and sparePartQuery.stockOutEnd!=null">
+            AND spa.stock_out_time BETWEEN #{sparePartQuery.stockOutStart} AND #{sparePartQuery.stockOutEnd}
+        </if>
+        <if test="sparePartQuery.commitStatus!=null and sparePartQuery.commitStatus!=''">
+            AND spa.commit_status = #{sparePartQuery.commitStatus}
+        </if>
+        ORDER BY
+            spa.create_time DESC
+    </select>
+
+    <select id="selectExportXls" resultType="com.aiurt.boot.modules.secondLevelWarehouse.entity.dto.StockApplyExcel">
+        SELECT
+            spa.id AS id,
+            spa.CODE AS code,
+            spa.apply_time AS applyTime,
+            spa.remarks AS remarks,
+            spa.STATUS AS status,
+            su.realname AS operatorName,
+            sli.stock_name AS warehouseName,
+            su.org_name AS department
+        FROM
+            spare_part_apply spa
+            LEFT JOIN sys_user su ON su.id = spa.create_by
+            LEFT JOIN cs_stock_level_two sli ON spa.out_warehouse_code = sli.stock_code
+        WHERE
+            spa.del_flag =0
+            <if test="sparePartQuery.code!=null and sparePartQuery.code!=''">
+                AND spa.code = #{sparePartQuery.code}
+            </if>
+            <if test="sparePartQuery.warehouseCode!=null and sparePartQuery.warehouseCode!=''">
+                AND spa.warehouse_code = #{sparePartQuery.warehouseCode}
+            </if>
+            <if test="sparePartQuery.applyTimeStart!=null and sparePartQuery.applyTimeEnd!=null  ">
+                AND spa.apply_time between #{sparePartQuery.applyTimeStart} and #{sparePartQuery.applyTimeEnd}
+            </if>
+            <if test="sparePartQuery.selections != null">
+                AND spa.id IN(
+                <foreach collection="sparePartQuery.selections" separator="," item="item">
+                    #{item}
+                </foreach>
+                )
+            </if>
+            order by  spa.create_time desc
+    </select>
+
+    <select id="selectStock2ExportXls"
+            resultType="com.aiurt.boot.modules.secondLevelWarehouse.entity.dto.StockOutExcel">
+        SELECT
+            spa.id AS id,
+            spa.CODE AS code,
+            spa.out_warehouse_code AS outWarehouseCode,
+            sli.stock_name AS outWarehouseName,
+            spa.stock_out_time AS stockOutTime,
+            spa.remarks AS remarks,
+            spa.STATUS AS status,
+            su.realname AS operatorName,
+            su.org_name AS department
+        FROM
+            spare_part_apply spa
+            LEFT JOIN cs_stock_level_two sli ON spa.out_warehouse_code = sli.stock_code
+            LEFT JOIN sys_user su ON su.id = spa.create_by
+        WHERE
+            spa.del_flag =0
+            AND spa.id IN (
+            <foreach collection="selections" separator="," item="item">
+                #{item}
+            </foreach>
         )
     </select>
 </mapper>

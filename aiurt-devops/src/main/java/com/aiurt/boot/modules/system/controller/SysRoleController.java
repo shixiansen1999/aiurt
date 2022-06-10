@@ -12,20 +12,20 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.swsc.copsms.modules.system.model.TreeModel;
-import com.swsc.copsms.common.constant.CommonConstant;
-import com.swsc.copsms.common.system.query.QueryGenerator;
-import com.swsc.copsms.common.system.vo.LoginUser;
-import com.swsc.copsms.modules.system.entity.SysRole;
-import com.swsc.copsms.modules.system.entity.SysRolePermission;
-import com.swsc.copsms.modules.system.service.ISysPermissionDataRuleService;
-import com.swsc.copsms.modules.system.service.ISysPermissionService;
-import com.swsc.copsms.modules.system.service.ISysRolePermissionService;
-import com.swsc.copsms.modules.system.service.ISysRoleService;
-import com.swsc.copsms.common.api.vo.Result;
-import com.swsc.copsms.common.util.oConvertUtils;
-import com.swsc.copsms.modules.system.entity.SysPermission;
-import com.swsc.copsms.modules.system.entity.SysPermissionDataRule;
+import com.aiurt.boot.common.constant.CommonConstant;
+import com.aiurt.boot.modules.system.model.TreeModel;
+import com.aiurt.boot.common.system.query.QueryGenerator;
+import com.aiurt.boot.common.system.vo.LoginUser;
+import com.aiurt.boot.modules.system.entity.SysRole;
+import com.aiurt.boot.modules.system.entity.SysRolePermission;
+import com.aiurt.boot.modules.system.service.ISysPermissionDataRuleService;
+import com.aiurt.boot.modules.system.service.ISysPermissionService;
+import com.aiurt.boot.modules.system.service.ISysRolePermissionService;
+import com.aiurt.boot.modules.system.service.ISysRoleService;
+import com.aiurt.boot.common.api.vo.Result;
+import com.aiurt.boot.common.util.oConvertUtils;
+import com.aiurt.boot.modules.system.entity.SysPermission;
+import com.aiurt.boot.modules.system.entity.SysPermissionDataRule;
 import org.jeecgframework.poi.excel.def.NormalExcelConstants;
 import org.jeecgframework.poi.excel.entity.ExportParams;
 import org.jeecgframework.poi.excel.entity.ImportParams;
@@ -130,11 +130,11 @@ public class SysRoleController {
 		Result<SysRole> result = new Result<SysRole>();
 		SysRole sysrole = sysRoleService.getById(role.getId());
 		if(sysrole==null) {
-			result.error500("未找到对应实体");
+			result.onnull("未找到对应实体");
 		}else {
 			role.setUpdateTime(new Date());
 			boolean ok = sysRoleService.updateById(role);
-			//TODO 返回false说明什么？
+
 			if(ok) {
 				result.success("修改成功!");
 			}
@@ -153,7 +153,7 @@ public class SysRoleController {
 		Result<SysRole> result = new Result<SysRole>();
 		SysRole sysrole = sysRoleService.getById(id);
 		if(sysrole==null) {
-			result.error500("未找到对应实体");
+			result.onnull("未找到对应实体");
 		}else {
 			boolean ok = sysRoleService.removeById(id);
 			if(ok) {
@@ -191,7 +191,7 @@ public class SysRoleController {
 		Result<SysRole> result = new Result<SysRole>();
 		SysRole sysrole = sysRoleService.getById(id);
 		if(sysrole==null) {
-			result.error500("未找到对应实体");
+			result.onnull("未找到对应实体");
 		}else {
 			result.setResult(sysrole);
 			result.setSuccess(true);

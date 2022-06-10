@@ -2,6 +2,7 @@ package com.aiurt.boot.modules.fault.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableLogic;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModel;
@@ -12,6 +13,7 @@ import lombok.experimental.Accessors;
 import org.jeecgframework.poi.excel.annotation.Excel;
 import org.springframework.format.annotation.DateTimeFormat;
 
+import javax.validation.constraints.NotBlank;
 import java.util.Date;
 
 /**
@@ -35,22 +37,32 @@ public class OutsourcingPersonnel {
 	/**名称*/
 	@Excel(name = "名称", width = 15)
     @ApiModelProperty(value = "名称")
+	@NotBlank(message = "人员名称不能为空")
 	private  String  name;
 
 	/**所属单位*/
 	@Excel(name = "所属单位", width = 15)
     @ApiModelProperty(value = "所属单位")
+	@NotBlank(message = "所属单位不能为空")
 	private  String  company;
 
 	/**职位名称*/
 	@Excel(name = "职位名称", width = 15)
     @ApiModelProperty(value = "职位名称")
+	@NotBlank(message = "职位名称不能为空")
 	private  String  position;
 
 	/**所属专业系统编号*/
 	@Excel(name = "所属专业系统编号", width = 15)
     @ApiModelProperty(value = "所属专业系统编号")
+	@NotBlank(message = "所属专业系统不能为空")
 	private  String  systemCode;
+
+	/**施工证编号*/
+	@Excel(name = "施工证编号", width = 15)
+	@ApiModelProperty(value = "施工证编号")
+	@NotBlank(message = "施工证编号不能为空")
+	private  String  certificateCode;
 
 	/**联系方式*/
 	@Excel(name = "联系方式", width = 15)
@@ -60,6 +72,7 @@ public class OutsourcingPersonnel {
 	/**删除状态：0-未删除 1-已删除*/
 	@Excel(name = "删除状态：0-未删除 1-已删除", width = 15)
     @ApiModelProperty(value = "删除状态：0-未删除 1-已删除")
+	@TableLogic
 	private  Integer  delFlag;
 
 	/**创建人*/

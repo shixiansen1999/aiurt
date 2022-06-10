@@ -2,7 +2,7 @@ package com.aiurt.boot.modules.system.service;
 
 import java.util.List;
 
-import com.swsc.copsms.modules.system.entity.SysPermissionDataRule;
+import com.aiurt.boot.modules.system.entity.SysPermissionDataRule;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 
@@ -37,7 +37,7 @@ public interface ISysPermissionDataRuleService extends IService<SysPermissionDat
 	 * @param username
 	 * @return
 	 */
-	List<SysPermissionDataRule> queryPermissionDataRules(String username, String permissionId);
+	List<SysPermissionDataRule> queryPermissionDataRules(String username,String permissionId);
 
 	/**
 	 * 新增菜单权限配置 修改菜单rule_flag

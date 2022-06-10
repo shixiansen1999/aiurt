@@ -14,12 +14,12 @@ import org.springframework.format.annotation.DateTimeFormat;
 
 /**
  * @Description: 巡检-附件表
- * @Author: swsc
+ * @Author: Mr.zhao
  * @Date:   2021-09-21
  * @Version: V1.0
  */
 @Data
-@TableName("patrol_task_enclosure")
+@TableName("t_patrol_task_enclosure")
 @EqualsAndHashCode(callSuper = false)
 @Accessors(chain = true)
 @ApiModel(value="patrol_task_enclosure对象", description="巡检-附件表")

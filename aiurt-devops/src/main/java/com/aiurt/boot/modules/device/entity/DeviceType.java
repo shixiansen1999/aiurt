@@ -1,11 +1,6 @@
 package com.aiurt.boot.modules.device.entity;
 
-import java.io.Serializable;
-import java.util.Date;
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableName;
-import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.*;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -14,6 +9,8 @@ import lombok.experimental.Accessors;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.jeecgframework.poi.excel.annotation.Excel;
+
+import java.util.List;
 
 /**
  * @Description: 设备分类
@@ -56,6 +53,7 @@ public class DeviceType {
 	/**删除状态 0-未删除 1-已删除*/
 	@Excel(name = "删除状态 0-未删除 1-已删除", width = 15)
     @ApiModelProperty(value = "删除状态 0-未删除 1-已删除")
+	@TableLogic
 	private  Integer  delFlag;
 
 	/**创建人*/
@@ -73,20 +71,28 @@ public class DeviceType {
 	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
     @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
     @ApiModelProperty(value = "创建时间")
-	private  Date  createTime;
+	private  java.util.Date  createTime;
 
 	/**修改时间*/
 	@Excel(name = "修改时间", width = 20, format = "yyyy-MM-dd HH:mm:ss")
 	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
     @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
     @ApiModelProperty(value = "修改时间")
-	private  Date  updateTime;
+	private  java.util.Date  updateTime;
 
+	/**二级分类名称*/
+	@Excel(name = "二级分类名称", width = 15)
+	@ApiModelProperty(value = "二级分类名称")
+	@TableField(exist = false)
+	private String systemName;
+
+	@TableField(exist = false)
+	private List<DeviceSmallType> deviceSmallTypeList;
 
     private static final String ID = "id";
     private static final String SYSTEM_CODE = "system_code";
-    private static final String CODE = "code";
-    private static final String NAME = "name";
+    public static final String CODE = "code";
+    public static final String NAME = "name";
     private static final String STATUS = "status";
     private static final String DEL_FLAG = "del_flag";
     private static final String CREATE_BY = "create_by";

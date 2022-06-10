@@ -2,7 +2,7 @@ package com.aiurt.boot.modules.system.mapper;
 
 import java.util.List;
 
-import com.swsc.copsms.modules.system.entity.SysUserRole;
+import com.aiurt.boot.modules.system.entity.SysUserRole;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;

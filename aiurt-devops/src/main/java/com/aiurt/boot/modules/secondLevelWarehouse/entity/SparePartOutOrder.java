@@ -1,17 +1,19 @@
 package com.aiurt.boot.modules.secondLevelWarehouse.entity;
 
-import java.io.Serializable;
-import java.util.Date;
-
-import com.baomidou.mybatisplus.annotation.*;
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableLogic;
+import com.baomidou.mybatisplus.annotation.TableName;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
-import com.fasterxml.jackson.annotation.JsonFormat;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.jeecgframework.poi.excel.annotation.Excel;
+import org.springframework.format.annotation.DateTimeFormat;
+
+import javax.validation.constraints.NotNull;
 
 /**
  * @Description: 备件出库表
@@ -34,17 +36,25 @@ public class SparePartOutOrder {
 	/**物资编号*/
 	@Excel(name = "物资编号", width = 15)
     @ApiModelProperty(value = "物资编号")
+	@NotNull
 	private  String  materialCode;
 
 	/**出库数量*/
 	@Excel(name = "出库数量", width = 15)
     @ApiModelProperty(value = "出库数量")
+	@NotNull
 	private  Integer  num;
 
-	/**仓库编号*/
-	@Excel(name = "仓库编号", width = 15)
-    @ApiModelProperty(value = "仓库编号")
-	private  String  warehouseCode;
+	@ApiModelProperty("备注")
+	private String remarks;
+
+	@ApiModelProperty("相关故障更换备件表id")
+	private Long faultChangeSparePartId;
+
+	/**所在班组*/
+	@Excel(name = "所在班组", width = 15)
+    @ApiModelProperty(value = "所在班组")
+	private  String  orgId;
 
 	/**删除状态(0.未删除 1.已删除)*/
 	@Excel(name = "删除状态(0.未删除 1.已删除)", width = 15)
@@ -62,19 +72,27 @@ public class SparePartOutOrder {
     @ApiModelProperty(value = "修改人")
 	private  String  updateBy;
 
+	/**出库时间*/
+	@Excel(name = "出库时间", width = 20, format = "yyyy-MM-dd HH:mm:ss")
+	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
+	@DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
+	@ApiModelProperty(value = "出库时间")
+	@NotNull(message = "出库时间不能为空")
+	private  java.util.Date  outTime;
+
 	/**创建时间*/
 	@Excel(name = "创建时间", width = 20, format = "yyyy-MM-dd HH:mm:ss")
 	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
     @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
     @ApiModelProperty(value = "创建时间")
-	private  Date  createTime;
+	private  java.util.Date  createTime;
 
 	/**修改时间*/
 	@Excel(name = "修改时间", width = 20, format = "yyyy-MM-dd HH:mm:ss")
 	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
     @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
     @ApiModelProperty(value = "修改时间")
-	private  Date  updateTime;
+	private  java.util.Date  updateTime;
 
 
     private static final String ID = "id";

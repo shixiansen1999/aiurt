@@ -6,12 +6,12 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.swsc.copsms.modules.message.service.ISysMessageTemplateService;
-import com.swsc.copsms.common.api.vo.Result;
-import com.swsc.copsms.common.system.base.controller.BaseController;
-import com.swsc.copsms.common.system.query.QueryGenerator;
-import com.swsc.copsms.modules.message.entity.MsgParams;
-import com.swsc.copsms.modules.message.entity.SysMessageTemplate;
+import com.aiurt.boot.modules.message.service.ISysMessageTemplateService;
+import com.aiurt.boot.common.api.vo.Result;
+import com.aiurt.boot.common.system.base.controller.BaseController;
+import com.aiurt.boot.common.system.query.QueryGenerator;
+import com.aiurt.boot.modules.message.entity.MsgParams;
+import com.aiurt.boot.modules.message.entity.SysMessageTemplate;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;

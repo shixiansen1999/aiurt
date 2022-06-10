@@ -1,6 +1,6 @@
 package com.aiurt.boot.modules.system.service;
 
-import com.swsc.copsms.modules.system.entity.SysDataLog;
+import com.aiurt.boot.modules.system.entity.SysDataLog;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 

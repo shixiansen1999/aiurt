@@ -1,7 +1,7 @@
 package com.aiurt.boot.modules.fault.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.swsc.copsms.modules.fault.entity.AnalysisReportEnclosure;
+import com.aiurt.boot.modules.fault.entity.AnalysisReportEnclosure;
 
 import java.util.List;
 

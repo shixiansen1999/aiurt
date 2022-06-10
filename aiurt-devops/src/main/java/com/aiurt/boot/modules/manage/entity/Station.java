@@ -1,7 +1,9 @@
 package com.aiurt.boot.modules.manage.entity;
 
+import java.io.Serializable;
 import java.util.Date;
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import io.swagger.annotations.ApiModel;
@@ -23,8 +25,8 @@ import org.jeecgframework.poi.excel.annotation.Excel;
 @TableName("cs_station")
 @EqualsAndHashCode(callSuper = false)
 @Accessors(chain = true)
-@ApiModel(value="cs_station对象", description="cs_station")
-public class Station {
+@ApiModel(value="站点信息对象", description="站点信息对象")
+public class Station implements Serializable {
 
 	/**id*/
 	@TableId(type= IdType.AUTO)
@@ -58,14 +60,22 @@ public class Station {
 	@Excel(name = "班组名称", width = 15)
     @ApiModelProperty(value = "班组名称")
 	private String teamName;
-	/**站点位置*/
-	@Excel(name = "站点位置", width = 15)
-    @ApiModelProperty(value = "站点位置")
-	private String position;
+	/**站点电话*/
+	@Excel(name = "站点电话", width = 15)
+	@ApiModelProperty(value = "站点电话")
+	private String phoneNum;
 	/**描述*/
 	@Excel(name = "描述", width = 15)
     @ApiModelProperty(value = "描述")
 	private String description;
+	/**经度*/
+	@Excel(name = "经度", width = 15)
+    @ApiModelProperty(value = "经度")
+	private String longitude;
+	/**纬度*/
+	@Excel(name = "纬度", width = 15)
+	@ApiModelProperty(value = "纬度")
+	private String latitude;
 	/**删除标志*/
 	@Excel(name = "删除标志", width = 15)
     @ApiModelProperty(value = "删除标志")
@@ -82,4 +92,18 @@ public class Station {
     @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
     @ApiModelProperty(value = "更新时间")
 	private Date updateTime;
+	/**预警信息状态*/
+	private Integer warningStatus;
+	/**站点图片*/
+	private String url;
+    /**
+     * 开关站状态
+     */
+    private Integer openStatus;
+	@TableField(exist = false)
+	private String lineCode;//线路编号
+
+	public static final String ID = "id";
+
+	public static final String STATION_CODE = "station_code";
 }

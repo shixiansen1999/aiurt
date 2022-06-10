@@ -1,49 +1,44 @@
 package com.aiurt.boot.modules.manage.controller;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
+import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.swsc.copsms.common.api.vo.Result;
-import com.swsc.copsms.common.aspect.annotation.AutoLog;
-import com.swsc.copsms.common.system.query.QueryGenerator;
-import com.swsc.copsms.common.util.oConvertUtils;
-import com.swsc.copsms.modules.device.entity.DeviceType;
-import com.swsc.copsms.modules.device.service.IDeviceTypeService;
-import com.swsc.copsms.modules.manage.entity.CommonFault;
-import com.swsc.copsms.modules.manage.entity.Station;
-import com.swsc.copsms.modules.manage.entity.Subsystem;
-import com.swsc.copsms.modules.manage.model.DeviceModel;
-import com.swsc.copsms.modules.manage.model.StationModel;
-import com.swsc.copsms.modules.manage.service.ICommonFaultService;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.swsc.copsms.modules.manage.service.ISubsystemService;
+import com.aiurt.boot.common.api.vo.Result;
+import com.aiurt.boot.common.aspect.annotation.AutoLog;
+import com.aiurt.boot.common.system.query.QueryGenerator;
+import com.aiurt.boot.common.util.oConvertUtils;
+import com.aiurt.boot.modules.device.entity.DeviceType;
+import com.aiurt.boot.modules.device.service.IDeviceTypeService;
+import com.aiurt.boot.modules.manage.entity.CommonFault;
+import com.aiurt.boot.modules.manage.entity.Subsystem;
+import com.aiurt.boot.modules.manage.model.DeviceModel;
+import com.aiurt.boot.modules.manage.service.ICommonFaultService;
+import com.aiurt.boot.modules.manage.service.ISubsystemService;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
-
-import org.apache.commons.lang3.StringUtils;
 import org.jeecgframework.poi.excel.ExcelImportUtil;
 import org.jeecgframework.poi.excel.def.NormalExcelConstants;
 import org.jeecgframework.poi.excel.entity.ExportParams;
 import org.jeecgframework.poi.excel.entity.ImportParams;
 import org.jeecgframework.poi.excel.view.JeecgEntityExcelView;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
 import org.springframework.web.servlet.ModelAndView;
-import com.alibaba.fastjson.JSON;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @Description: cs_common_fault
@@ -72,8 +67,8 @@ public class CommonFaultController {
      * @param req
      * @return
      */
-    @AutoLog(value = "cs_common_fault-分页列表查询")
-    @ApiOperation(value = "cs_common_fault-分页列表查询", notes = "cs_common_fault-分页列表查询")
+    @AutoLog(value = "常见故障管理-分页列表查询")
+    @ApiOperation(value = "常见故障管理-分页列表查询", notes = "常见故障管理-分页列表查询")
     @GetMapping(value = "/list")
     public Result<IPage<CommonFault>> queryPageList(CommonFault commonFault,
                                                     @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
@@ -84,15 +79,22 @@ public class CommonFaultController {
         Page<CommonFault> page = new Page<CommonFault>(pageNo, pageSize);
         if (commonFault.getSubId() != null && commonFault.getEquipId() == null) {
             Subsystem subsystem = subsystemService.getById(commonFault.getSubId());
+            if (subsystem==null){
+                return Result.ok(page);
+            }
             QueryWrapper<DeviceType> temp = new QueryWrapper<DeviceType>();
             temp.eq("system_code", subsystem.getSystemCode());
             temp.eq("status", 1);
             temp.eq("del_flag", 0);
             temp.select("id");
-            List<Object> ids = deviceTypeService.listObjs(temp);
+            /*List<Object> ids = deviceTypeService.listObjs(temp);
             if (ids != null && ids.size() > 0) {
                 queryWrapper.in("equip_id", ids);
-            }
+            }*/
+//            else{
+//                result.setSuccess(true);
+//                return result;
+//            }
         }
         IPage<CommonFault> pageList = commonFaultService.page(page, queryWrapper);
         pageList.getRecords().forEach(temp -> {
@@ -116,8 +118,8 @@ public class CommonFaultController {
      * @param commonFault
      * @return
      */
-    @AutoLog(value = "cs_common_fault-添加")
-    @ApiOperation(value = "cs_common_fault-添加", notes = "cs_common_fault-添加")
+    @AutoLog(value = "常见故障管理-添加")
+    @ApiOperation(value = "常见故障管理-添加", notes = "常见故障管理-添加")
     @PostMapping(value = "/add")
     public Result<CommonFault> add(@RequestBody CommonFault commonFault) {
         Result<CommonFault> result = new Result<CommonFault>();
@@ -137,17 +139,17 @@ public class CommonFaultController {
      * @param commonFault
      * @return
      */
-    @AutoLog(value = "cs_common_fault-编辑")
-    @ApiOperation(value = "cs_common_fault-编辑", notes = "cs_common_fault-编辑")
+    @AutoLog(value = "常见故障管理-编辑")
+    @ApiOperation(value = "常见故障管理-编辑", notes = "常见故障管理-编辑")
     @PutMapping(value = "/edit")
     public Result<CommonFault> edit(@RequestBody CommonFault commonFault) {
         Result<CommonFault> result = new Result<CommonFault>();
         CommonFault commonFaultEntity = commonFaultService.getById(commonFault.getId());
         if (commonFaultEntity == null) {
-            result.error500("未找到对应实体");
+            result.onnull("未找到对应实体");
         } else {
             boolean ok = commonFaultService.updateById(commonFault);
-            //TODO 返回false说明什么？
+
             if (ok) {
                 result.success("修改成功!");
             }
@@ -162,8 +164,8 @@ public class CommonFaultController {
      * @param id
      * @return
      */
-    @AutoLog(value = "cs_common_fault-通过id删除")
-    @ApiOperation(value = "cs_common_fault-通过id删除", notes = "cs_common_fault-通过id删除")
+    @AutoLog(value = "常见故障管理-通过id删除")
+    @ApiOperation(value = "常见故障管理-通过id删除", notes = "常见故障管理-通过id删除")
     @DeleteMapping(value = "/delete")
     public Result<?> delete(@RequestParam(name = "id", required = true) String id) {
         try {
@@ -181,8 +183,8 @@ public class CommonFaultController {
      * @param ids
      * @return
      */
-    @AutoLog(value = "cs_common_fault-批量删除")
-    @ApiOperation(value = "cs_common_fault-批量删除", notes = "cs_common_fault-批量删除")
+    @AutoLog(value = "常见故障管理-批量删除")
+    @ApiOperation(value = "常见故障管理-批量删除", notes = "常见故障管理-批量删除")
     @DeleteMapping(value = "/deleteBatch")
     public Result<CommonFault> deleteBatch(@RequestParam(name = "ids", required = true) String ids) {
         Result<CommonFault> result = new Result<CommonFault>();
@@ -201,14 +203,14 @@ public class CommonFaultController {
      * @param id
      * @return
      */
-    @AutoLog(value = "cs_common_fault-通过id查询")
-    @ApiOperation(value = "cs_common_fault-通过id查询", notes = "cs_common_fault-通过id查询")
+    @AutoLog(value = "常见故障管理-通过id查询")
+    @ApiOperation(value = "常见故障管理-通过id查询", notes = "常见故障管理-通过id查询")
     @GetMapping(value = "/queryById")
     public Result<CommonFault> queryById(@RequestParam(name = "id", required = true) String id) {
         Result<CommonFault> result = new Result<CommonFault>();
         CommonFault commonFault = commonFaultService.getById(id);
         if (commonFault == null) {
-            result.error500("未找到对应实体");
+            result.onnull("未找到对应实体");
         } else {
             result.setResult(commonFault);
             result.setSuccess(true);

@@ -3,13 +3,13 @@ package com.aiurt.boot.modules.system.service.impl;
 import java.util.List;
 import java.util.Map;
 
-import com.swsc.copsms.modules.system.model.TreeSelectModel;
-import com.swsc.copsms.common.exception.SwscException;
-import com.swsc.copsms.modules.system.service.ISysCategoryService;
-import com.swsc.copsms.common.util.YouBianCodeUtil;
-import com.swsc.copsms.common.util.oConvertUtils;
-import com.swsc.copsms.modules.system.entity.SysCategory;
-import com.swsc.copsms.modules.system.mapper.SysCategoryMapper;
+import com.aiurt.boot.modules.system.model.TreeSelectModel;
+import com.aiurt.boot.common.exception.SwscException;
+import com.aiurt.boot.modules.system.service.ISysCategoryService;
+import com.aiurt.boot.common.util.YouBianCodeUtil;
+import com.aiurt.boot.common.util.oConvertUtils;
+import com.aiurt.boot.modules.system.entity.SysCategory;
+import com.aiurt.boot.modules.system.mapper.SysCategoryMapper;
 import org.springframework.stereotype.Service;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;

@@ -1,8 +1,8 @@
 package com.aiurt.boot.modules.shiro.web;
 
-import com.swsc.copsms.modules.shiro.vo.ResponseBean;
-import com.swsc.copsms.modules.system.service.ISysUserService;
-import com.swsc.copsms.modules.system.entity.SysUser;
+import com.aiurt.boot.modules.shiro.vo.ResponseBean;
+import com.aiurt.boot.modules.system.entity.SysUser;
+import com.aiurt.boot.modules.system.service.ISysUserService;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authz.UnauthorizedException;
 import org.apache.shiro.authz.annotation.Logical;
@@ -10,8 +10,8 @@ import org.apache.shiro.authz.annotation.RequiresAuthentication;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.apache.shiro.authz.annotation.RequiresRoles;
 import org.apache.shiro.subject.Subject;
-import com.swsc.copsms.common.system.util.JwtUtil;
-import com.swsc.copsms.common.util.PasswordUtil;
+import com.aiurt.boot.common.system.util.JwtUtil;
+import com.aiurt.boot.common.util.PasswordUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;

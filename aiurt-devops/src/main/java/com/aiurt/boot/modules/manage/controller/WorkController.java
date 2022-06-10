@@ -8,12 +8,12 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import com.swsc.copsms.common.api.vo.Result;
-import com.swsc.copsms.common.aspect.annotation.AutoLog;
-import com.swsc.copsms.common.system.query.QueryGenerator;
-import com.swsc.copsms.common.util.oConvertUtils;
-import com.swsc.copsms.modules.manage.entity.Work;
-import com.swsc.copsms.modules.manage.service.IWorkService;
+import com.aiurt.boot.common.api.vo.Result;
+import com.aiurt.boot.common.aspect.annotation.AutoLog;
+import com.aiurt.boot.common.system.query.QueryGenerator;
+import com.aiurt.boot.common.util.oConvertUtils;
+import com.aiurt.boot.modules.manage.entity.Work;
+import com.aiurt.boot.modules.manage.service.IWorkService;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -56,8 +56,8 @@ public class WorkController {
 	 * @param req
 	 * @return
 	 */
-	@AutoLog(value = "cs_work-分页列表查询")
-	@ApiOperation(value="cs_work-分页列表查询", notes="cs_work-分页列表查询")
+	@AutoLog(value = "作业类型-分页列表查询")
+	@ApiOperation(value="作业类型-分页列表查询", notes="作业类型-分页列表查询")
 	@GetMapping(value = "/list")
 	public Result<IPage<Work>> queryPageList(Work work,
 									  @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
@@ -77,8 +77,8 @@ public class WorkController {
 	 * @param work
 	 * @return
 	 */
-	@AutoLog(value = "cs_work-添加")
-	@ApiOperation(value="cs_work-添加", notes="cs_work-添加")
+	@AutoLog(value = "作业类型-添加")
+	@ApiOperation(value="作业类型-添加", notes="作业类型-添加")
 	@PostMapping(value = "/add")
 	public Result<Work> add(@RequestBody Work work) {
 		Result<Work> result = new Result<Work>();
@@ -97,17 +97,17 @@ public class WorkController {
 	 * @param work
 	 * @return
 	 */
-	@AutoLog(value = "cs_work-编辑")
-	@ApiOperation(value="cs_work-编辑", notes="cs_work-编辑")
+	@AutoLog(value = "作业类型-编辑")
+	@ApiOperation(value="作业类型-编辑", notes="作业类型-编辑")
 	@PutMapping(value = "/edit")
 	public Result<Work> edit(@RequestBody Work work) {
 		Result<Work> result = new Result<Work>();
 		Work workEntity = workService.getById(work.getId());
 		if(workEntity==null) {
-			result.error500("未找到对应实体");
+			result.onnull("未找到对应实体");
 		}else {
 			boolean ok = workService.updateById(work);
-			//TODO 返回false说明什么？
+
 			if(ok) {
 				result.success("修改成功!");
 			}
@@ -121,8 +121,8 @@ public class WorkController {
 	 * @param id
 	 * @return
 	 */
-	@AutoLog(value = "cs_work-通过id删除")
-	@ApiOperation(value="cs_work-通过id删除", notes="cs_work-通过id删除")
+	@AutoLog(value = "作业类型-通过id删除")
+	@ApiOperation(value="作业类型-通过id删除", notes="作业类型-通过id删除")
 	@DeleteMapping(value = "/delete")
 	public Result<?> delete(@RequestParam(name="id",required=true) String id) {
 		try {
@@ -139,8 +139,8 @@ public class WorkController {
 	 * @param ids
 	 * @return
 	 */
-	@AutoLog(value = "cs_work-批量删除")
-	@ApiOperation(value="cs_work-批量删除", notes="cs_work-批量删除")
+	@AutoLog(value = "作业类型-批量删除")
+	@ApiOperation(value="作业类型-批量删除", notes="作业类型-批量删除")
 	@DeleteMapping(value = "/deleteBatch")
 	public Result<Work> deleteBatch(@RequestParam(name="ids",required=true) String ids) {
 		Result<Work> result = new Result<Work>();
@@ -158,14 +158,14 @@ public class WorkController {
 	 * @param id
 	 * @return
 	 */
-	@AutoLog(value = "cs_work-通过id查询")
-	@ApiOperation(value="cs_work-通过id查询", notes="cs_work-通过id查询")
+	@AutoLog(value = "作业类型-通过id查询")
+	@ApiOperation(value="作业类型-通过id查询", notes="作业类型-通过id查询")
 	@GetMapping(value = "/queryById")
 	public Result<Work> queryById(@RequestParam(name="id",required=true) String id) {
 		Result<Work> result = new Result<Work>();
 		Work work = workService.getById(id);
 		if(work==null) {
-			result.error500("未找到对应实体");
+			result.onnull("未找到对应实体");
 		}else {
 			result.setResult(work);
 			result.setSuccess(true);

@@ -3,7 +3,7 @@ package com.aiurt.boot.modules.system.service;
 import java.util.List;
 import java.util.Map;
 
-import com.swsc.copsms.modules.system.entity.SysUserRole;
+import com.aiurt.boot.modules.system.entity.SysUserRole;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 

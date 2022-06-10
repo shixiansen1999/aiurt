@@ -1,5 +1,184 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.swsc.copsms.modules.repairManage.mapper.RepairTaskMapper">
+<mapper namespace="com.aiurt.boot.modules.repairManage.mapper.RepairTaskMapper">
 
+    <select id="getStatistical" resultType="com.aiurt.boot.modules.statistical.vo.UserAndAmountVO">
+        SELECT
+        sumit_user_name as userName,count(*) as amount
+        FROM
+        repair_task
+        WHERE
+        submit_time &gt;= #{startTime}
+        and submit_time &lt;= #{endTime}
+        and del_flag = 0
+        <choose>
+            <when test="userName != null and userName != ''">
+                and sumit_user_name like concat('%',#{userName},'%')
+            </when>
+            <otherwise>
+                <if test='userNameList !=null and userNameList.size > 0'>
+                    and sumit_user_name IN
+                    <foreach collection="userNameList" item="name" index="index" open="(" close=")" separator=",">
+                        #{name}
+                    </foreach>
+                </if >
+            </otherwise>
+        </choose>
+        GROUP BY sumit_user_name
+    </select>
+    <select id="getRepairTaskVos" resultType="com.aiurt.boot.modules.statistical.vo.RepairTaskVo">
+        SELECT
+        s.team_name as departName,
+        t.staff_names AS staffNames,
+        t.submit_time AS submitTime,
+        s.station_name AS stationName,
+        t.end_time as endTime,
+        t.status as status,
+        t.weeks as weeks,
+        t.id as taskId
+        FROM
+        repair_task t
+        INNER JOIN cs_station s ON t.organization_id = s.id
+        inner join cs_line l on s.line_id = l.id
+        where
+        t.del_flag = 0 and s.del_flag = 0 and l.del_flag = 0
+        and t.start_time between #{startTime} and #{endTime}
+        <if test="lineCode != null and lineCode!='' ">
+            and l.line_code = #{lineCode}
+        </if>
+    </select>
+    <select id="getRepairTaskVos2" resultType="com.aiurt.boot.modules.statistical.vo.RepairTaskVo">
+        SELECT
+        s.team_name as departName,
+        t.staff_names AS staffNames,
+        t.submit_time AS submitTime,
+        s.station_name AS stationName,
+        t.end_time as endTime,
+        t.status as status,
+        t.weeks as weeks,
+        t.id as taskId
+        FROM
+        repair_task t
+        INNER JOIN cs_station s ON t.organization_id = s.id
+        inner join cs_line l on s.line_id = l.id
+        where
+        t.del_flag = 0 and s.del_flag = 0 and l.del_flag = 0
+        and t.start_time between #{startTime} and #{endTime}
+        <if test="lineCode != null and lineCode!='' ">
+            and l.line_code = #{lineCode}
+        </if>
+    </select>
+    <select id="getCompleteRepairNum" resultType="int">
+        SELECT
+        count(1)
+        FROM
+        repair_task t
+        INNER JOIN cs_station s ON t.organization_id = s.id
+        inner join cs_line l on s.line_id = l.id
+        where
+        t.del_flag = 0
+        and t.start_time between #{startTime} and #{endTime}
+        and t. STATUS > 0
+        <if test="lineCode != null and lineCode!='' ">
+            and l.line_code = #{lineCode}
+        </if>
+    </select>
+
+    <select id="getRepairCountGroupByOrg" resultType="com.aiurt.boot.modules.statistical.vo.StatisticsRepairVO">
+         SELECT
+            repair_count.depart_name AS orgName,
+            repairCount,
+            notRepairCount
+         FROM
+            (SELECT
+                sys_depart.depart_name,
+                sys_depart.id,COUNT(IF(t.status='1',1,NULL)) AS repairCount ,
+                COUNT(IF(t.status='0',1,NULL)) AS notRepairCount
+             FROM sys_depart
+        LEFT JOIN cs_station s ON s.team_id = sys_depart.id
+        LEFT JOIN repair_task t ON s.id = t.organization_id
+             AND t.start_time BETWEEN #{startTime} AND #{endTime}
+             AND t.del_flag=0
+             where sys_depart.id != 'c3c80ea21059405e8fd70145dede23e6' and sys_depart.id != 'c4bce53ed2bf4fdaa13bf0f47488b7c2'
+             GROUP BY sys_depart.id
+             ORDER BY sys_depart.depart_name) AS repair_count
+         LEFT JOIN cs_station
+         ON cs_station.team_id=repair_count.id
+         LEFT JOIN cs_line ON cs_station.line_id=cs_line.id
+         <where>
+             <if test="lineCode != null and lineCode !=''">
+                 cs_line.line_code=#{lineCode}
+             </if>
+         </where>
+            GROUP BY repair_count.depart_name
+    </select>
+    <select id="getCompletedRepair" resultType="com.aiurt.boot.modules.statistical.vo.RepairTaskVo">
+        SELECT
+        s.team_name as departName,
+        t.staff_names AS staffNames,
+        t.submit_time AS submitTime,
+        s.station_name AS stationName,
+        t.end_time as endTime,
+        t.status as status,
+        t.weeks as weeks,
+        t.id as taskId,
+        1 as repairStatus
+        FROM
+        repair_task t
+        INNER JOIN cs_station s ON t.organization_id = s.id
+        inner join cs_line l on s.line_id = l.id
+        where
+        t.del_flag = 0 and s.del_flag = 0 and l.del_flag = 0
+        and t.start_time between #{startTime} and #{endTime}
+        and t.status > 0
+        <if test="lineCode != null and lineCode!='' ">
+            and l.line_code = #{lineCode}
+        </if>
+    </select>
+
+    <select id="getUncompletedRepair" resultType="com.aiurt.boot.modules.statistical.vo.RepairTaskVo">
+        SELECT
+        s.team_name as departName,
+        t.staff_names AS staffNames,
+        t.submit_time AS submitTime,
+        s.station_name AS stationName,
+        t.end_time as endTime,
+        t.status as status,
+        t.weeks as weeks,
+        1 as repairStatus,
+        t.id as taskId
+        FROM
+        repair_task t
+        INNER JOIN cs_station s ON t.organization_id = s.id
+        inner join cs_line l on s.line_id = l.id
+        where
+        t.del_flag = 0 and s.del_flag = 0 and l.del_flag = 0
+        and t.start_time between #{startTime} and #{endTime}
+        and t. STATUS = 0
+        <if test="lineCode != null and lineCode!='' ">
+            and l.line_code = #{lineCode}
+        </if>
+    </select>
+
+    <select id="getRepairTaskVosByTime" resultType="com.aiurt.boot.modules.statistical.vo.RepairTaskVo">
+        SELECT
+        s.team_name as departName,
+        t.staff_names AS staffNames,
+        t.submit_time AS submitTime,
+        s.station_name AS stationName,
+        t.end_time as endTime,
+        t.status as status,
+        t.weeks as weeks,
+        t.id as taskId
+        FROM
+        repair_task t
+        INNER JOIN cs_station s ON t.organization_id = s.id
+        inner join cs_line l on s.line_id = l.id
+        where
+        t.del_flag = 0 and s.del_flag = 0 and l.del_flag = 0
+        and t.submit_time between #{startTime} and #{endTime}
+        <if test="lineCode != null and lineCode!='' ">
+            and l.line_code = #{lineCode}
+        </if>
+    </select>
 </mapper>

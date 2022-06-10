@@ -3,7 +3,7 @@ package com.aiurt.boot.modules.schedule.mapper;
 import java.util.List;
 
 import org.apache.ibatis.annotations.Param;
-import com.swsc.copsms.modules.schedule.entity.ScheduleHolidays;
+import com.aiurt.boot.modules.schedule.entity.ScheduleHolidays;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
 /**
@@ -14,4 +14,5 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
  */
 public interface ScheduleHolidaysMapper extends BaseMapper<ScheduleHolidays> {
 
+    List<ScheduleHolidays> getListByMonth(@Param("date") String date);
 }

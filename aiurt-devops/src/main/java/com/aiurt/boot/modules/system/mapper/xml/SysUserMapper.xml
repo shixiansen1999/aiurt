@@ -1,19 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.swsc.copsms.modules.system.mapper.SysUserMapper">
+<mapper namespace="com.aiurt.boot.modules.system.mapper.SysUserMapper">
 
 	<!-- 根据用户名查询 -->
-	<select id="getUserByName" resultType="com.swsc.copsms.modules.system.entity.SysUser">
+	<select id="getUserByName" resultType="com.aiurt.boot.modules.system.entity.SysUser">
 		select * from  sys_user  where username = #{username} and del_flag = '0'
 	</select>
 
 
-	<select id="findUserByAccount" resultType="com.swsc.copsms.modules.system.entity.SysUser">
+	<select id="findUserByAccount" resultType="com.aiurt.boot.modules.system.entity.SysUser">
 		select * from  sys_user  where username = #{account} and del_flag = '0'
-	</select>
-
-	<select id="getUserById" resultType="com.swsc.copsms.modules.system.entity.SysUser">
-		select * from  sys_user  where id = #{id} and del_flag = '0'
 	</select>
 
 	<!-- 根据用户名查询角色code -->
@@ -27,7 +23,7 @@
 	</select>
 
 	<!-- 根据部门Id查询 -->
-	<select id="getUserByDepId" resultType="com.swsc.copsms.modules.system.entity.SysUser">
+	<select id="getUserByDepId" resultType="com.aiurt.boot.modules.system.entity.SysUser">
 		select * from sys_user where del_flag = '0' and id in (select user_id from sys_user_depart where dep_id=#{departId})
 		<if test="username!=null and username!=''">
 			and username = #{username}
@@ -35,7 +31,7 @@
 	</select>
 
 	<!-- 根据角色Id查询 -->
-	<select id="getUserByRoleId" resultType="com.swsc.copsms.modules.system.entity.SysUser">
+	<select id="getUserByRoleId" resultType="com.aiurt.boot.modules.system.entity.SysUser">
 		select * from sys_user where del_flag = '0' and id in (select user_id from sys_user_role where role_id=#{roleId})
 		<if test="username!=null and username!=''">
 			and username = #{username}
@@ -48,12 +44,12 @@
 	</update>
 
 	<!-- 根据手机号查询 -->
-	<select id="getUserByPhone"  resultType="com.swsc.copsms.modules.system.entity.SysUser">
+	<select id="getUserByPhone"  resultType="com.aiurt.boot.modules.system.entity.SysUser">
 		select * from  sys_user  where phone = #{phone} and del_flag = '0'
 	</select>
 
 	<!-- 根据邮箱查询用户信息 -->
-	<select id="getUserByEmail" resultType="com.swsc.copsms.modules.system.entity.SysUser">
+	<select id="getUserByEmail" resultType="com.aiurt.boot.modules.system.entity.SysUser">
 	select * from  sys_user  where email = #{email} and del_flag = '0'
 	</select>
 
@@ -79,7 +75,7 @@
 	</sql>
 
 	<!-- 根据 orgCode 查询用户，包括子部门下的用户 -->
-	<select id="getUserByOrgCode" resultType="com.swsc.copsms.modules.system.model.SysUserSysDepartModel">
+	<select id="getUserByOrgCode" resultType="com.aiurt.boot.modules.system.model.SysUserSysDepartModel">
 		SELECT
 			sys_user.id AS "sys_user.id",
 			sys_user.realname AS "sys_user.realname",
@@ -100,8 +96,68 @@
 		SELECT COUNT(1) <include refid="getUserByOrgCodeFromSql"/>
 	</select>
 
-	<select id="findUserListByUserId" resultType="com.swsc.copsms.modules.system.entity.SysUser">
+	<select id="findUserListByUserId" resultType="com.aiurt.boot.modules.system.entity.SysUser">
 	select * from  sys_user  where account in (select account from sys_user where id = #{userId})
 	</select>
+
+	<select id="getTotalNum" parameterType="map" resultType="integer">
+		select COUNT(distinct a.id) from sys_user a
+		LEFT JOIN sys_user_role b on a.id=b.user_id
+		LEFT JOIN sys_role c on b.role_id=c.id
+		where c.role_code!='admin' and a.del_flag=0
+		<if test="orgIds !=null and orgIds !=''">
+			and a.org_id in
+			<foreach collection="orgIds" open="(" close=")"     separator="," item="orgId">
+				#{orgId}
+			</foreach>
+		</if>
+	</select>
+
+	<select id="getStaffData" parameterType="map" resultType="com.aiurt.boot.modules.statistical.vo.StaffDataVo">
+		select DISTINCT(a.id) as staffId,d.depart_name as orgName, a.realname as staffName from sys_user a
+		LEFT JOIN sys_user_role b on a.id=b.user_id
+		LEFT JOIN sys_role c on b.role_id=c.id
+		left join sys_depart d on a.org_id=d.id
+		where c.role_code!='admin' and a.del_flag=0
+		<if test="orgIds !=null and orgIds !=''">
+			and a.org_id in
+			<foreach collection="orgIds" open="(" close=")"     separator="," item="orgId">
+				#{orgId}
+			</foreach>
+		</if>
+		ORDER BY d.org_code
+	</select>
+
+	<select id="selectUserByTimeAndItemAndOrgId" resultType="com.aiurt.boot.modules.system.entity.SysUser">
+		SELECT
+		 s.*
+		FROM
+		 sys_user s
+		INNER JOIN schedule_record r ON s.id = r.user_id
+		AND s.org_id = #{orgId}
+		and s.del_flag = 0
+		and r.item_name = #{itemName}
+		and r.date = #{date}
+		and r.del_flag = 0
+		order by r.date desc
+	</select>
+
+	<select id="getSysUsersByLineCodeAndOrgId" resultType="com.aiurt.boot.modules.system.entity.SysUser">
+		SELECT
+		 distinct s.*
+		FROM
+		 sys_user s
+		INNER JOIN cs_station c ON s.org_id = c.team_id
+		<if test="orgId !=null and orgId !=''">
+			AND s.org_id = #{orgId}
+		</if>
+		and s.del_flag = 0
+		inner join cs_line l on c.line_id = l.id
+		<if test="lineCode != null">
+			and l.line_code = #{lineCode}
+		</if>
+		order by convert(realname using gbk) ASC
+	</select>
+
 
 </mapper>

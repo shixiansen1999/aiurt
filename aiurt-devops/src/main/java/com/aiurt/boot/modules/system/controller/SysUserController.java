@@ -1,67 +1,62 @@
 package com.aiurt.boot.modules.system.controller;
 
 
-import java.io.*;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import com.alibaba.fastjson.JSONArray;
-import com.swsc.copsms.common.aspect.annotation.AutoLog;
-import com.swsc.copsms.modules.shiro.vo.DefContants;
-import com.swsc.copsms.modules.system.entity.*;
-import com.swsc.copsms.modules.system.model.DepartIdModel;
-import com.swsc.copsms.modules.system.model.SysUserSysDepartModel;
-import com.swsc.copsms.modules.system.service.*;
-import com.swsc.copsms.modules.system.util.ImportExcelUtil;
-import com.swsc.copsms.modules.system.vo.SysDepartUsersVO;
-import com.swsc.copsms.modules.system.vo.SysUserRoleVO;
-import com.swsc.copsms.common.constant.CommonConstant;
-import com.swsc.copsms.common.system.api.ISysBaseAPI;
-import com.swsc.copsms.common.system.query.QueryGenerator;
-import com.swsc.copsms.common.system.util.JwtUtil;
-import com.swsc.copsms.common.system.vo.LoginUser;
-import com.swsc.copsms.modules.system.entity.SysUserRole;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import org.apache.shiro.SecurityUtils;
-import com.swsc.copsms.common.api.vo.Result;
-import com.swsc.copsms.common.util.PasswordUtil;
-import com.swsc.copsms.common.util.RedisUtil;
-import com.swsc.copsms.common.util.oConvertUtils;
-import org.jeecgframework.poi.excel.def.NormalExcelConstants;
-import org.jeecgframework.poi.excel.entity.ExportParams;
-import org.jeecgframework.poi.excel.view.JeecgEntityExcelView;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.multipart.MultipartHttpServletRequest;
-import org.springframework.web.servlet.ModelAndView;
-
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-
+import com.aiurt.boot.common.api.vo.Result;
+import com.aiurt.boot.common.aspect.annotation.AutoLog;
+import com.aiurt.boot.common.constant.CommonConstant;
+import com.aiurt.boot.common.system.api.ISysBaseAPI;
+import com.aiurt.boot.common.system.query.QueryGenerator;
+import com.aiurt.boot.common.system.util.JwtUtil;
+import com.aiurt.boot.common.system.vo.LoginUser;
+import com.aiurt.boot.common.util.PasswordUtil;
+import com.aiurt.boot.common.util.RedisUtil;
+import com.aiurt.boot.common.util.oConvertUtils;
+import com.aiurt.boot.modules.manage.entity.Station;
+import com.aiurt.boot.modules.manage.service.IStationService;
+import com.aiurt.boot.modules.manage.service.ISubsystemService;
+import com.aiurt.boot.modules.manage.service.ISubsystemUserService;
+import com.aiurt.boot.modules.shiro.vo.DefContants;
+import com.aiurt.boot.modules.system.entity.SysDepart;
+import com.aiurt.boot.modules.system.entity.SysUser;
+import com.aiurt.boot.modules.system.entity.SysUserDepart;
+import com.aiurt.boot.modules.system.entity.SysUserRole;
+import com.aiurt.boot.modules.system.model.DepartIdModel;
+import com.aiurt.boot.modules.system.model.SysUserSysDepartModel;
+import com.aiurt.boot.modules.system.service.*;
+import com.aiurt.boot.modules.system.util.ImportExcelUtil;
+import com.aiurt.boot.modules.system.vo.*;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.shiro.SecurityUtils;
+import org.jeecgframework.poi.excel.def.NormalExcelConstants;
+import org.jeecgframework.poi.excel.entity.ExportParams;
+import org.jeecgframework.poi.excel.view.JeecgEntityExcelView;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.multipart.MultipartHttpServletRequest;
+import org.springframework.web.servlet.ModelAndView;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
+import java.io.*;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * <p>
@@ -98,6 +93,15 @@ public class SysUserController {
     private ISysPositionService sysPositionService;
 
     @Autowired
+    private IStationService stationService;
+
+    @Autowired
+    private ISubsystemService subsystemService;
+
+    @Autowired
+    private ISubsystemUserService subsystemUserService;
+
+    @Autowired
     private RedisUtil redisUtil;
 
     @Value("${support.downFilePath.userExcelPath}")
@@ -128,6 +132,24 @@ public class SysUserController {
 
         try {
             SysUser user = JSON.parseObject(jsonObject.toJSONString(), SysUser.class);
+            String orgId = user.getOrgId();
+            JSONArray systemCodes = jsonObject.getJSONArray("systemCodes");
+            JSONArray departmentIds = jsonObject.getJSONArray("departmentIds");
+            String systemCode = "";
+            for (Object object : systemCodes) {
+                systemCode += (String) object + ",";
+            }
+            String departmentId = "";
+            List<String> ids = departmentIds.toJavaList(String.class);
+            boolean boo = ids.contains(orgId);
+            for (String id : ids) {
+                departmentId += id + ",";
+            }
+            if (!boo) {
+                departmentId += orgId + ",";
+            }
+            user.setSystemCodes(systemCode.substring(0, systemCode.length() - 1));
+            user.setDepartmentIds(departmentId.substring(0, departmentId.length() - 1));
            /* selectedDeparts = user.getOrgId();
             SysDepart sysDepart = sysDepartService.getById(user.getOrgId());
             user.setAccount(user.getUsername());*/
@@ -153,7 +175,8 @@ public class SysUserController {
             user.setOrgCode(sysDepart.getOrgCode());
             sysUserService.addUserWithRole(user, selectedRoles);
             sysUserService.addUserWithDepart(user, selectedDeparts);
-
+            redisUtil.set(CommonConstant.PREFIX_USER_DEPARTMENT_IDS + user.getId(), user.getDepartmentIds());
+            redisUtil.set(CommonConstant.PREFIX_USER_SYSTEM_CODES + user.getId(), user.getSystemCodes());
             result.success("添加成功！");
         } catch (Exception e) {
             log.error(e.getMessage(), e);
@@ -170,14 +193,31 @@ public class SysUserController {
             SysUser sysUser = sysUserService.getById(jsonObject.getString("id"));
             sysBaseAPI.addLog("编辑用户，id： " + jsonObject.getString("id"), CommonConstant.LOG_TYPE_2, 2);
             if (sysUser == null) {
-                result.error500("未找到对应实体");
+                result.onnull("未找到对应实体");
             } else {
                 SysUser user = JSON.parseObject(jsonObject.toJSONString(), SysUser.class);
+                String orgId = user.getOrgId();
                 user.setUpdateTime(new Date());
-
                 //String passwordEncode = PasswordUtil.encrypt(user.getUsername(), user.getPassword(), sysUser.getSalt());
                 user.setPassword(sysUser.getPassword());
                 String selectedSchoolPeriods = jsonObject.getString("selectedSchoolPeriods");
+                JSONArray systemCodes = jsonObject.getJSONArray("systemCodes");
+                JSONArray departmentIds = jsonObject.getJSONArray("departmentIds");
+                String systemCode = "";
+                for (Object object : systemCodes) {
+                    systemCode += (String) object + ",";
+                }
+                String departmentId = "";
+                List<String> ids = departmentIds.toJavaList(String.class);
+                boolean boo = ids.contains(orgId);
+                for (String id : ids) {
+                    departmentId += id + ",";
+                }
+                if (!boo) {
+                    departmentId += orgId + ",";
+                }
+                user.setSystemCodes(systemCode.substring(0, systemCode.length() - 1));
+                user.setDepartmentIds(departmentId.substring(0, departmentId.length() - 1));
                 String roles = jsonObject.getString("selectedroles");
                 String departs = jsonObject.getString("selecteddeparts");
                 SysDepart sysDepart = sysDepartService.getById(jsonObject.getString("orgId"));
@@ -187,6 +227,8 @@ public class SysUserController {
                 user.setPost(jsonObject.getString("post"));
                 sysUserService.editUserWithRole(user, roles);
                 sysUserService.editUserWithDepart(user, departs);
+                redisUtil.set(CommonConstant.PREFIX_USER_DEPARTMENT_IDS + sysUser.getId(), sysUser.getDepartmentIds());
+                redisUtil.set(CommonConstant.PREFIX_USER_SYSTEM_CODES + sysUser.getId(), sysUser.getSystemCodes());
                 result.success("修改成功!");
             }
         } catch (Exception e) {
@@ -195,6 +237,31 @@ public class SysUserController {
         }
         return result;
     }
+
+    /**
+     * @Description: 批量设置用户权限
+     * @author: niuzeyu
+     * @date: 2021/12/30 11:12
+     * @Return: com.swsc.copsms.common.api.vo.Result<?>
+     */
+    @RequestMapping(value = "/batchEdit", method = RequestMethod.PUT)
+    public Result<SysUser> batchEdit(@RequestBody JSONObject jsonObject) {
+        Result<SysUser> result = new Result<SysUser>();
+        try {
+            List<String> systemCodes = jsonObject.getJSONArray("systemCodes").toJavaList(String.class);
+            List<String> departmentIds = jsonObject.getJSONArray("departmentIds").toJavaList(String.class);
+            String idsString = jsonObject.getString("ids");
+            String[] ids = idsString.substring(0, idsString.length() - 1).split(",");
+            List<String> idsList = Stream.of(ids).collect(Collectors.toList());
+            this.sysUserService.updateBatchUsersPermission(idsList, departmentIds, systemCodes);
+            result.success("权限修改成功");
+        } catch (Exception e) {
+            e.printStackTrace();
+            result.error500("操作失败");
+        }
+        return result;
+    }
+
 
     /**
      * 删除用户
@@ -249,11 +316,12 @@ public class SysUserController {
         Result<SysUser> result = new Result<SysUser>();
         SysUser sysUser = sysUserService.getById(id);
         if (sysUser == null) {
-            result.error500("未找到对应实体");
+            result.onnull("未找到对应实体");
         } else {
             result.setResult(sysUser);
             result.setSuccess(true);
         }
+        log.info(result.toString());
         return result;
     }
 
@@ -274,6 +342,23 @@ public class SysUserController {
         return result;
     }
 
+    //TODO
+    @RequestMapping(value = "/queryUserSystemCodes", method = RequestMethod.GET)
+    public Result<List<String>> queryUserSystemCodes(@RequestParam(name = "userid", required = true) String userid) {
+        Result<List<String>> result = new Result<>();
+        List<String> list = new ArrayList<String>();
+        List<SysUserRole> userRole = sysUserRoleService.list(new QueryWrapper<SysUserRole>().lambda().eq(SysUserRole::getUserId, userid));
+        if (userRole == null || userRole.size() <= 0) {
+            result.error500("未找到用户相关角色信息");
+        } else {
+            for (SysUserRole sysUserRole : userRole) {
+                list.add(sysUserRole.getRoleId());
+            }
+            result.setSuccess(true);
+            result.setResult(list);
+        }
+        return result;
+    }
 
     /**
      * 校验用户账号是否唯一<br>
@@ -1129,8 +1214,8 @@ public class SysUserController {
     @RequestMapping(value = "/downloadExcel", method = RequestMethod.GET)
     public void downloadExcel(HttpServletResponse response, HttpServletRequest request) throws IOException {
         //获取输入流，原始模板位置
-        String filePath = excelPath;
-        InputStream bis = new BufferedInputStream(new FileInputStream(new File(filePath)));
+        ClassPathResource classPathResource = new ClassPathResource("template/userInfo.xlsx");
+        InputStream bis = classPathResource.getInputStream();
         BufferedOutputStream out = new BufferedOutputStream(response.getOutputStream());
         int len = 0;
         while ((len = bis.read()) != -1) {
@@ -1144,12 +1229,14 @@ public class SysUserController {
     @RequestMapping(value = "/queryUserListByOrgId", method = RequestMethod.GET)
     public Result<List<SysUser>> queryUserListByOrgId(@RequestParam(name = "orgId", required = true) String orgId) {
         Result<List<SysUser>> result = new Result<List<SysUser>>();
-        List<SysUser> sysUserList = sysUserService.list(new QueryWrapper<SysUser>().eq("org_id", orgId));
+        List<SysUser> sysUserList = sysUserService.list(new QueryWrapper<SysUser>().eq("org_id", orgId)
+                .eq("status",CommonConstant.STATUS_1));
         if (sysUserList.size() > 0 && sysUserList != null) {
             result.setResult(sysUserList);
             result.setSuccess(true);
         } else {
-            result.error500("未找到对应实体");
+            //result.onnull("未找到对应实体");
+            return Result.ok(new ArrayList<>());
         }
         return result;
     }
@@ -1163,8 +1250,119 @@ public class SysUserController {
             result.setResult(sysUserList);
             result.setSuccess(true);
         } else {
-            result.error500("未找到对应实体");
+            return Result.ok(new ArrayList<>());
         }
         return result;
     }
+
+
+    @ApiOperation(value = "获取所有班组人员树形结构", notes = "获取所有班组人员树形结构")
+    @GetMapping(value = "/queryTreeByTeam")
+    public Result<List<UserTreeVO>> queryTreeByTeam() {
+
+        List<UserTreeVO> voList = new ArrayList<>();
+        List<SysUser> list = this.sysUserService.list(new LambdaQueryWrapper<SysUser>()
+                .eq(SysUser::getDelFlag, CommonConstant.DEL_FLAG_0)
+                .eq(SysUser::getStatus, CommonConstant.STATUS_ENABLE)
+                .select(SysUser::getRealname, SysUser::getId, SysUser::getOrgId, SysUser::getOrgName)
+        );
+        Map<String, List<SysUser>> map = list.stream().collect(Collectors.groupingBy(SysUser::getOrgId));
+
+        for (String orgId : map.keySet()) {
+            List<SysUser> sysUsers = map.get(orgId);
+            if (CollectionUtils.isNotEmpty(sysUsers)) {
+                UserTreeVO userTreeVO = new UserTreeVO();
+                userTreeVO.setUserFlag(0);
+                userTreeVO.setId(sysUsers.get(0).getOrgId());
+                userTreeVO.setName(sysUsers.get(0).getOrgName());
+                List<UserChildrenVO> childrenList = new ArrayList<>();
+                for (SysUser user : sysUsers) {
+                    UserChildrenVO children = new UserChildrenVO();
+                    children.setKey(user.getId()).setTitle(user.getRealname()).setUserFlag(1);
+                    childrenList.add(children);
+                }
+                userTreeVO.setChildren(childrenList);
+                voList.add(userTreeVO);
+            }
+
+        }
+
+        return Result.ok(voList);
+    }
+
+
+    @ApiOperation(value = "根据线路id获取所有人员", notes = "根据线路id获取所有人员")
+    @GetMapping(value = "/queryUserListByLineId")
+    public Result<List<SysUser>> queryUserListByLineId(HttpServletRequest request,
+                                                       @RequestParam("lineId") @NotNull(message = "线路id不能为空") Integer lineId) {
+        List<Station> list = stationService.list(new LambdaQueryWrapper<Station>()
+                .eq(Station::getDelFlag, CommonConstant.DEL_FLAG_0)
+                .eq(Station::getLineId, lineId)
+                .select(Station::getTeamId)
+        );
+        if (CollectionUtils.isNotEmpty(list)) {
+            List<String> collect = list.stream().map(Station::getTeamId).collect(Collectors.toList());
+            List<SysUser> userList = this.sysUserService.list(new LambdaQueryWrapper<SysUser>().eq(SysUser::getDelFlag, CommonConstant.DEL_FLAG_0)
+                    .in(SysUser::getOrgId, collect)
+                    .select(SysUser::getId, SysUser::getRealname, SysUser::getOrgId, SysUser::getOrgName)
+            );
+            if (CollectionUtils.isNotEmpty(userList)) {
+                return Result.ok(userList);
+            }
+        }
+
+        return Result.ok(new ArrayList<>());
+    }
+
+
+    @ApiOperation(value = "根据站点id获取所有人员", notes = "根据站点id获取所有人员")
+    @GetMapping(value = "/queryUserListByStationId")
+    public Result<List<SysUser>> queryUserListByStationId(HttpServletRequest request,
+                                                          @RequestParam("lineId") @NotNull(message = "站点id不能为空") Integer stationId) {
+        List<Station> list = stationService.list(new LambdaQueryWrapper<Station>()
+                .eq(Station::getDelFlag, CommonConstant.DEL_FLAG_0)
+                .eq(Station::getId, stationId)
+                .select(Station::getTeamId)
+        );
+        if (CollectionUtils.isNotEmpty(list)) {
+            List<String> collect = list.stream().map(Station::getTeamId).collect(Collectors.toList());
+            List<SysUser> userList = this.sysUserService.list(new LambdaQueryWrapper<SysUser>().eq(SysUser::getDelFlag, CommonConstant.DEL_FLAG_0)
+                    .in(SysUser::getOrgId, collect)
+                    .select(SysUser::getId, SysUser::getRealname, SysUser::getOrgId, SysUser::getOrgName)
+            );
+            if (CollectionUtils.isNotEmpty(userList)) {
+                return Result.ok(userList);
+            }
+        }
+
+        return Result.ok(new ArrayList<>());
+    }
+
+
+    @ApiOperation(value = "根据班组ids获取所有班组人员(包含子集)", notes = "根据班组ids获取所有班组人员(包含子集)")
+    @PostMapping(value = "/queryTreeByTeamId")
+    public Result<List<SysUser>> queryTreeByTeamId(HttpServletRequest req,
+                                                   @RequestBody @Size(min = 1, message = "id数量不能少于1") List<String> departIds) {
+        Set<String> departSet = new HashSet<>(departIds);
+        while (true) {
+            List<SysDepart> departList = this.sysDepartService.list(new LambdaQueryWrapper<SysDepart>()
+                    .eq(SysDepart::getDelFlag, CommonConstant.DEL_FLAG_0)
+                    .in(SysDepart::getParentId, departIds)
+                    .select(SysDepart::getId)
+            );
+            if (CollectionUtils.isNotEmpty(departList)) {
+                departIds = departList.stream().map(SysDepart::getId).collect(Collectors.toList());
+                departSet.addAll(departIds);
+            } else {
+                break;
+            }
+        }
+        List<SysUser> list = this.sysUserService.list(new LambdaQueryWrapper<SysUser>()
+                .eq(SysUser::getDelFlag, CommonConstant.DEL_FLAG_0)
+                .eq(SysUser::getStatus, CommonConstant.STATUS_ENABLE)
+                .in(SysUser::getOrgId, departSet)
+                .select(SysUser::getId, SysUser::getRealname, SysUser::getOrgId, SysUser::getOrgName));
+        return Result.ok(list);
+    }
+
 }

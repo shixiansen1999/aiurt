@@ -7,7 +7,7 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import com.swsc.copsms.modules.device.entity.DeviceType;
+import com.aiurt.boot.modules.device.entity.DeviceType;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -27,7 +27,7 @@ import org.jeecgframework.poi.excel.annotation.Excel;
 @TableName("cs_subsystem")
 @EqualsAndHashCode(callSuper = false)
 @Accessors(chain = true)
-@ApiModel(value = "cs_subsystem对象", description = "cs_subsystem")
+@ApiModel(value = "子系统信息对象", description = "子系统信息对象")
 public class Subsystem {
 
     /**
@@ -80,6 +80,11 @@ public class Subsystem {
     @TableField(exist = false)
     private List<DeviceType> deviceTypeList;
 
+    /**技术员集合*/
     @TableField(exist = false)
-    private String selectedSubSysUsers;//技术员集合
+    private String selectedSubSysUsers;
+
+    public static final String SYSTEM_NAME = "system_name";
+
+    public static final String SYSTEM_CODE = "system_code";
 }

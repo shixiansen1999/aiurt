@@ -1,16 +1,13 @@
 package com.aiurt.boot.modules.secondLevelWarehouse.service;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.swsc.copsms.common.api.vo.Result;
-import com.swsc.copsms.common.util.PageLimitUtil;
-import com.swsc.copsms.modules.secondLevelWarehouse.entity.StockLevel2Check;
+import com.aiurt.boot.modules.secondLevelWarehouse.entity.StockLevel2Check;
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.swsc.copsms.modules.secondLevelWarehouse.entity.dto.StockLevel2CheckDTO;
-import com.swsc.copsms.modules.secondLevelWarehouse.entity.dto.StockLevel2CheckExcel;
-import com.swsc.copsms.modules.secondLevelWarehouse.entity.vo.Stock2CheckVO;
+import com.aiurt.boot.modules.secondLevelWarehouse.entity.dto.StockLevel2CheckDTO;
+import com.aiurt.boot.modules.secondLevelWarehouse.entity.dto.StockLevel2CheckExcel;
+import com.aiurt.boot.modules.secondLevelWarehouse.entity.vo.Stock2CheckVO;
 
-import java.util.Date;
+import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
 /**
@@ -21,9 +18,26 @@ import java.util.List;
  */
 public interface IStockLevel2CheckService extends IService<StockLevel2Check> {
 
-    void addCheck(StockLevel2Check stockLevel2Check);
+    /**
+     * 二级库盘点列表-添加
+     * @param stockLevel2Check
+     * @param req
+     */
+    void addCheck(StockLevel2Check stockLevel2Check, HttpServletRequest req);
 
-    IPage<Stock2CheckVO> queryPageList(IPage<Stock2CheckVO> page, StockLevel2CheckDTO stockLevel2CheckDTO);
+    /**
+     * 二级库盘点列表-分页列表查询
+     * @param page
+     * @param stockLevel2CheckDTO
+     * @return
+     */
+    IPage<Stock2CheckVO> queryPageList( IPage<Stock2CheckVO> page, StockLevel2CheckDTO stockLevel2CheckDTO);
 
-    List<StockLevel2CheckExcel> exportXls(List<Integer> ids);
+
+    /**
+     * 二级库盘点导出
+     * @param stockLevel2CheckDTO
+     * @return
+     */
+    List<StockLevel2CheckExcel> exportXls(StockLevel2CheckDTO stockLevel2CheckDTO);
 }

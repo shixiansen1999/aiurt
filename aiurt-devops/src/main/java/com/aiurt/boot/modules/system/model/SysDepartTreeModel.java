@@ -1,6 +1,6 @@
 package com.aiurt.boot.modules.system.model;
 
-import com.swsc.copsms.modules.system.entity.SysDepart;
+import com.aiurt.boot.modules.system.entity.SysDepart;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -74,6 +74,8 @@ public class SysDepartTreeModel implements Serializable {
 
     private String type;
 
+    private String phoneNum;
+
     private List<SysDepartTreeModel> children = new ArrayList<>();
 
 
@@ -102,6 +104,7 @@ public class SysDepartTreeModel implements Serializable {
         this.updateTime = sysDepart.getUpdateTime();
         this.fullName = sysDepart.getFullName();
         this.type = sysDepart.getType();
+        this.phoneNum = sysDepart.getPhoneNum();
     }
 
     public boolean getIsLeaf() {
@@ -181,6 +184,9 @@ public class SysDepartTreeModel implements Serializable {
         this.departName = departName;
     }
 
+    public String getPhoneNum(){return this.phoneNum;}
+
+    public void setPhoneNum(String phoneNum){this.phoneNum=phoneNum;}
 
     public String getOrgType() {
         return orgType;
@@ -326,6 +332,7 @@ public class SysDepartTreeModel implements Serializable {
                 Objects.equals(createTime, model.createTime) &&
                 Objects.equals(updateBy, model.updateBy) &&
                 Objects.equals(updateTime, model.updateTime) &&
+                Objects.equals(phoneNum, model.phoneNum) &&
                 Objects.equals(children, model.children);
     }
 
@@ -336,7 +343,7 @@ public class SysDepartTreeModel implements Serializable {
     public int hashCode() {
 
         return Objects.hash(id, parentId, departName, fullName, type,
-                departOrder, description, orgType, orgCode,
+                departOrder, description, orgType, orgCode,phoneNum,
                 memo, status, delFlag, createBy, createTime, updateBy, updateTime,
                 children);
     }

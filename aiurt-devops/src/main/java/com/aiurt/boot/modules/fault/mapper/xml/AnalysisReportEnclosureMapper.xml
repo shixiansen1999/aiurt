@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.swsc.copsms.modules.fault.mapper.AnalysisReportEnclosureMapper">
+<mapper namespace="com.aiurt.boot.modules.fault.mapper.AnalysisReportEnclosureMapper">
     <select id="query" resultType="String">
         select url from analysis_report_enclosure where analysis_report_id = #{analysisReportId}  and del_flag = '0'
     </select>

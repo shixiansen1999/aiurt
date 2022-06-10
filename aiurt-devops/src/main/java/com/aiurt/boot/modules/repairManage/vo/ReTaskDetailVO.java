@@ -1,5 +1,6 @@
 package com.aiurt.boot.modules.repairManage.vo;
 
+import com.aiurt.boot.common.result.SpareResult;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -16,9 +17,10 @@ import java.util.List;
 @ApiModel(value = "ReTaskDetailVO对象", description = "检修单详情")
 public class ReTaskDetailVO {
 
-    @ApiModelProperty(value = "检修任务ID")
-    private Long id;
-
+    @ApiModelProperty(value = "检修任务流水ID")
+    private Long taskId;
+    @ApiModelProperty(value = "工单编号")
+    private String taskCode;
     @ApiModelProperty(value = "周数")
     private Integer weeks;
     @ApiModelProperty(value = "开始时间")
@@ -53,4 +55,31 @@ public class ReTaskDetailVO {
     private String receiptUserName;
     @ApiModelProperty(value = "验收时间")
     private Date receiptTime;
+    @ApiModelProperty(value = "是否验收 0-否 1-是")
+    private Integer isReceipt;
+    @ApiModelProperty(value = "不予确认/验收原因")
+    private String errorContent;
+
+    @ApiModelProperty(value = "作业类型")
+    private String workType;
+    @ApiModelProperty(value = "计划令编码")
+    private String planOrderCode;
+    @ApiModelProperty(value = "计划令图片")
+    private String planOrderCodeUrl;
+
+    @ApiModelProperty(value = "线路")
+    private String lineName;
+    @ApiModelProperty(value = "站点")
+    private String stationName;
+
+    @ApiModelProperty(value = "线路")
+    private String lineCode;
+    @ApiModelProperty(value = "站点")
+    private String stationCode;
+
+    @ApiModelProperty(value = "故障code")
+    private String faultCode;
+
+    @ApiModelProperty(value = "备件信息")
+    private List<SpareResult>  spareResults;
 }

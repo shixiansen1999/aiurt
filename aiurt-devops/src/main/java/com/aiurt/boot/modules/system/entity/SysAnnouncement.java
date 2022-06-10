@@ -5,7 +5,7 @@ import java.io.Serializable;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import com.swsc.copsms.common.aspect.annotation.Dict;
+import com.aiurt.boot.common.aspect.annotation.Dict;
 import lombok.Data;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import org.jeecgframework.poi.excel.annotation.Excel;

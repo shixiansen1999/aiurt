@@ -10,9 +10,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.swing.filechooser.FileSystemView;
 
-import com.swsc.copsms.common.api.vo.Result;
-import com.swsc.copsms.modules.monitor.domain.RedisInfo;
-import com.swsc.copsms.modules.monitor.service.RedisService;
+import com.aiurt.boot.common.api.vo.Result;
+import com.aiurt.boot.modules.monitor.domain.RedisInfo;
+import com.aiurt.boot.modules.monitor.service.RedisService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;

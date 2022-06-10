@@ -1,10 +1,12 @@
 package com.aiurt.boot.modules.patrol.service;
 
-import com.swsc.copsms.common.api.vo.Result;
-import com.swsc.copsms.modules.patrol.entity.PatrolContent;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.aiurt.boot.common.api.vo.Result;
+import com.aiurt.boot.modules.patrol.entity.PatrolContent;
+import com.aiurt.boot.modules.patrol.vo.PatrolContentTreeVO;
+import com.aiurt.boot.modules.patrol.vo.importdir.PatrolContentImportVO;
 
-import javax.servlet.http.HttpServletRequest;
+import java.util.List;
 
 /**
  * @Description: 巡检项内容
@@ -14,27 +16,13 @@ import javax.servlet.http.HttpServletRequest;
  */
 public interface IPatrolContentService extends IService<PatrolContent> {
 
-	Result<?> queryTree(HttpServletRequest req, Long id);
-
-	/**
-	 * 添加巡检项
-	 * @param patrolContent
-	 * @return
-	 */
-	Result<?> add(PatrolContent patrolContent);
-
-	/**
-	 * 编辑巡检项
-	 * @param patrolContent
-	 * @return
-	 */
-	Result<?> edit(PatrolContent patrolContent);
+	Result<List<PatrolContentTreeVO>> queryTree(Long id);
 
 	/**
 	 * 列表项查询
-	 * @param req
-	 * @param id
-	 * @return
 	 */
-	Result<?> queryList(HttpServletRequest req, Long id);
+	Result<?> queryList(Long code);
+
+	List<PatrolContentImportVO> selectExportList(Long id);
+
 }

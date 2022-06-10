@@ -1,9 +1,6 @@
 package com.aiurt.boot.modules.device.mapper;
 
-import java.util.List;
-
-import org.apache.ibatis.annotations.Param;
-import com.swsc.copsms.modules.device.entity.DeviceAssembly;
+import com.aiurt.boot.modules.device.entity.DeviceAssembly;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
 /**

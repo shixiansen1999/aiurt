@@ -1,29 +1,27 @@
 package com.aiurt.boot.modules.fault.service.impl;
 
-import com.baomidou.mybatisplus.core.conditions.Wrapper;
+import cn.hutool.core.collection.CollUtil;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.swsc.copsms.common.exception.SwscException;
-import com.swsc.copsms.common.result.FaultAnalysisReportResult;
-import com.swsc.copsms.common.system.util.JwtUtil;
-import com.swsc.copsms.common.util.TokenUtils;
-import com.swsc.copsms.modules.fault.dto.FaultAnalysisReportDTO;
-import com.swsc.copsms.modules.fault.entity.AnalysisReportEnclosure;
-import com.swsc.copsms.modules.fault.entity.FaultAnalysisReport;
-import com.swsc.copsms.modules.fault.mapper.AnalysisReportEnclosureMapper;
-import com.swsc.copsms.modules.fault.mapper.FaultAnalysisReportMapper;
-import com.swsc.copsms.modules.fault.param.FaultAnalysisReportParam;
-import com.swsc.copsms.modules.fault.service.IFaultAnalysisReportService;
-import com.swsc.copsms.modules.patrol.constant.PatrolConstant;
-import com.swsc.copsms.modules.system.entity.SysUser;
-import com.swsc.copsms.modules.system.mapper.SysUserMapper;
-import org.apache.shiro.authc.AuthenticationException;
+import com.aiurt.boot.common.api.vo.Result;
+import com.aiurt.boot.common.constant.CommonConstant;
+import com.aiurt.boot.common.enums.FaultTypeEnum;
+import com.aiurt.boot.common.result.FaultAnalysisReportResult;
+import com.aiurt.boot.modules.fault.dto.FaultAnalysisReportDTO;
+import com.aiurt.boot.modules.fault.entity.AnalysisReportEnclosure;
+import com.aiurt.boot.modules.fault.entity.FaultAnalysisReport;
+import com.aiurt.boot.modules.fault.mapper.AnalysisReportEnclosureMapper;
+import com.aiurt.boot.modules.fault.mapper.FaultAnalysisReportMapper;
+import com.aiurt.boot.modules.fault.mapper.FaultMapper;
+import com.aiurt.boot.modules.fault.param.FaultAnalysisReportParam;
+import com.aiurt.boot.modules.fault.service.IFaultAnalysisReportService;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.transaction.Transactional;
-import java.util.Date;
 import java.util.List;
 
 /**
@@ -43,29 +41,25 @@ public class FaultAnalysisReportServiceImpl extends ServiceImpl<FaultAnalysisRep
     private AnalysisReportEnclosureMapper analysisReportEnclosureMapper;
 
     @Resource
-    private SysUserMapper userMapper;
+    private FaultMapper faultMapper;
+
 
 
     /**
      * 查询故障分析报告
      * @param page
-     * @param queryWrapper
      * @param param
      * @return
      */
     @Override
-    public IPage<FaultAnalysisReportResult> pageList(IPage<FaultAnalysisReportResult> page, Wrapper<FaultAnalysisReportResult> queryWrapper, FaultAnalysisReportParam param) {
-        IPage<FaultAnalysisReportResult> result = faultAnalysisReportMapper.queryFaultAnalysisReport(page, queryWrapper, param);
+    public IPage<FaultAnalysisReportResult> pageList(IPage<FaultAnalysisReportResult> page, FaultAnalysisReportParam param) {
+        IPage<FaultAnalysisReportResult> result = faultAnalysisReportMapper.queryFaultAnalysisReport(page, param);
+        List<FaultAnalysisReportResult> records = result.getRecords();
+        //故障类型描述
+        for (FaultAnalysisReportResult record : records) {
+            record.setFaultTypeDesc(FaultTypeEnum.findMessage(record.getFaultType()));
+        }
         return result;
-    }
-
-    /**
-     * 根据id假删除
-     * @param id
-     */
-    @Override
-    public void deleteById(Integer id) {
-        faultAnalysisReportMapper.deleteOne(id);
     }
 
     /**
@@ -76,9 +70,14 @@ public class FaultAnalysisReportServiceImpl extends ServiceImpl<FaultAnalysisRep
     @Override
     public FaultAnalysisReportResult getAnalysisReport(String code) {
         FaultAnalysisReportResult result = faultAnalysisReportMapper.selectAnalysisReport(code);
-        //分析报告附件列表
-        List<String> query = analysisReportEnclosureMapper.query(result.getId());
-        result.setUrlList(query);
+        if (result!=null) {
+            result.setFaultTypeDesc(FaultTypeEnum.findMessage(result.getFaultType()));
+            //分析报告附件列表
+            List<String> query = analysisReportEnclosureMapper.query(result.getId());
+            if (CollUtil.isNotEmpty(query)) {
+                result.setUrlList(query);
+            }
+        }
         return result;
     }
 
@@ -88,62 +87,39 @@ public class FaultAnalysisReportServiceImpl extends ServiceImpl<FaultAnalysisRep
      */
     @Override
     @Transactional(rollbackOn = Exception.class)
-    public void add(FaultAnalysisReportDTO dto, HttpServletRequest req) {
+    public Result<?> add(FaultAnalysisReportDTO dto, HttpServletRequest req) {
+
+        FaultAnalysisReport one = faultAnalysisReportMapper.selectOne(new LambdaQueryWrapper<FaultAnalysisReport>().eq(FaultAnalysisReport::getDelFlag, CommonConstant.DEL_FLAG_0)
+                .eq(FaultAnalysisReport::getFaultCode, dto.getFaultCode()).last("limit 1"));
         FaultAnalysisReport report = new FaultAnalysisReport();
-        if (dto.getFaultCode() == null || "".equals(dto.getFaultCode())) {
-            throw new SwscException("故障编号不能为空");
-        }
         report.setFaultCode(dto.getFaultCode());
-
-        if (dto.getFaultAnalysis() == null ||  "".equals(dto.getFaultAnalysis())) {
-            throw new SwscException("故障分析不能为空");
-        }
         report.setFaultAnalysis(dto.getFaultAnalysis());
-
-        if (dto.getSolution() == null || "".equals(dto.getSolution())) {
-            throw new SwscException("解决方案不能为空");
-        }
         report.setSolution(dto.getSolution());
+        report.setDelFlag(CommonConstant.DEL_FLAG_0);
+        if (one!=null) {
+            report.setId(one.getId());
+            faultAnalysisReportMapper.updateById(report);
+        }else{
+            faultAnalysisReportMapper.insert(report);
+        }
 
-        report.setDelFlag(0);
-        // 解密获得username，用于和数据库进行对比
-        String token = TokenUtils.getTokenByRequest(req);
-
-        // 解密获得username，用于和数据库进行对比
-        String username = JwtUtil.getUsername(token);
-        if (username == null) {
-            throw new AuthenticationException("token非法无效!");
+        //修改故障现象
+        if (StringUtils.isNotBlank(dto.getFaultPhenomenon())) {
+            faultMapper.updateByFaultCode(dto.getFaultCode(),dto.getFaultPhenomenon());
         }
-        // 查询用户信息
-        SysUser name = userMapper.getUserByName(username);
-        if (name==null){
-            throw new AuthenticationException("用户不存在!");
-        }
-        String id = name.getId();
-        report.setCreateBy(id);
-        if (dto.getUpdateBy()!= null) {
-            report.setUpdateBy(dto.getUpdateBy());
-        }
-        report.setCreateTime(new Date());
-        report.setUpdateTime(new Date());
-        faultAnalysisReportMapper.insert(report);
 
         //存储故障分析报告附件
-        if (dto.urlList!= null) {
+        if (CollUtil.isNotEmpty(dto.urlList)) {
+            analysisReportEnclosureMapper.delete(new LambdaQueryWrapper<AnalysisReportEnclosure>().eq(AnalysisReportEnclosure::getAnalysisReportId,report.getId()));
             AnalysisReportEnclosure enclosure = new AnalysisReportEnclosure();
             List<String> urlList = dto.urlList;
             for (String s : urlList) {
                 enclosure.setAnalysisReportId(report.getId());
                 enclosure.setUrl(s);
-                enclosure.setDelFlag(0);
-                enclosure.setCreateBy(report.getCreateBy());
-                if (report.getUpdateBy()!= null) {
-                    enclosure.setUpdateBy(report.getUpdateBy());
-                }
-                enclosure.setCreateTime(new Date());
-                enclosure.setUpdateTime(new Date());
+                enclosure.setDelFlag(CommonConstant.DEL_FLAG_0);
                 analysisReportEnclosureMapper.insert(enclosure);
             }
         }
+        return Result.ok();
     }
 }

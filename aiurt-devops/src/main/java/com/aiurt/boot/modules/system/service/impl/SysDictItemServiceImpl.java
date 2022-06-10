@@ -1,8 +1,8 @@
 package com.aiurt.boot.modules.system.service.impl;
 
-import com.swsc.copsms.modules.system.entity.SysDictItem;
-import com.swsc.copsms.modules.system.service.ISysDictItemService;
-import com.swsc.copsms.modules.system.mapper.SysDictItemMapper;
+import com.aiurt.boot.modules.system.entity.SysDictItem;
+import com.aiurt.boot.modules.system.service.ISysDictItemService;
+import com.aiurt.boot.modules.system.mapper.SysDictItemMapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -26,5 +26,10 @@ public class SysDictItemServiceImpl extends ServiceImpl<SysDictItemMapper, SysDi
     @Override
     public List<SysDictItem> selectItemsByMainId(String mainId) {
         return sysDictItemMapper.selectItemsByMainId(mainId);
+    }
+
+    @Override
+    public List<SysDictItem> selectByDictCode(String code) {
+        return sysDictItemMapper.selectByDictCode(code);
     }
 }

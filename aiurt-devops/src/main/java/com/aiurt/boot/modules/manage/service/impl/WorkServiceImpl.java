@@ -1,8 +1,8 @@
 package com.aiurt.boot.modules.manage.service.impl;
 
-import com.swsc.copsms.modules.manage.entity.Work;
-import com.swsc.copsms.modules.manage.mapper.WorkMapper;
-import com.swsc.copsms.modules.manage.service.IWorkService;
+import com.aiurt.boot.modules.manage.entity.Work;
+import com.aiurt.boot.modules.manage.mapper.WorkMapper;
+import com.aiurt.boot.modules.manage.service.IWorkService;
 import org.springframework.stereotype.Service;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;

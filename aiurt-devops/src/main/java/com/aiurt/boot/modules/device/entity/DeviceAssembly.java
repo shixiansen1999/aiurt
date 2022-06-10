@@ -1,11 +1,6 @@
 package com.aiurt.boot.modules.device.entity;
 
-import java.io.Serializable;
-import java.util.Date;
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableName;
-import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.*;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -14,6 +9,8 @@ import lombok.experimental.Accessors;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.jeecgframework.poi.excel.annotation.Excel;
+
+import javax.validation.constraints.NotNull;
 
 /**
  * @Description: 设备组件
@@ -33,20 +30,21 @@ public class DeviceAssembly {
     @ApiModelProperty(value = "主键id")
 	private  Long  id;
 
+	/**组件编号*/
+	@Excel(name = "组件编号", width = 15)
+	@ApiModelProperty(value = "组件编号")
+	private  String  code;
+
 	/**设备编号*/
-	@Excel(name = "设备编号", width = 15)
+	@Excel(name = "所属设备编号", width = 15)
     @ApiModelProperty(value = "设备编号")
 	private  String  deviceCode;
 
 	/**组件名称*/
 	@Excel(name = "组件名称", width = 15)
     @ApiModelProperty(value = "组件名称")
-	private  String  name;
-
-	/**组件编号*/
-	@Excel(name = "组件编号", width = 15)
-    @ApiModelProperty(value = "组件编号")
-	private  String  code;
+	@NotNull(message = "组件名称不能为空")
+	private  String  materialName;
 
 	/**品牌*/
 	@Excel(name = "品牌", width = 15)
@@ -54,7 +52,7 @@ public class DeviceAssembly {
 	private  String  brand;
 
 	/**组件类型*/
-	@Excel(name = "组件类型", width = 15)
+	@Excel(name = "组件类型", width = 15,replace ={"通用类_2","专用类_1"})
     @ApiModelProperty(value = "组件类型")
 	private  Integer  type;
 
@@ -64,45 +62,59 @@ public class DeviceAssembly {
 	private  String  supplier;
 
 	/**规格*/
-	@Excel(name = "规格", width = 15)
-    @ApiModelProperty(value = "规格")
+	@Excel(name = "规格型号", width = 15)
+    @ApiModelProperty(value = "规格型号")
 	private  String  specifications;
 
+	/**端口信息*/
+	@Excel(name = "端口信息", width = 15)
+	@ApiModelProperty(value = "端口信息")
+	private  String  port;
+
+	/**端口信息*/
+	@Excel(name = "数量", width = 15)
+	@ApiModelProperty(value = "数量")
+	private  Integer amount;
+
 	/**删除状态 0-未删除 1-已删除*/
-	@Excel(name = "删除状态 0-未删除 1-已删除", width = 15)
+//	@Excel(name = "删除状态 0-未删除 1-已删除", width = 15)
     @ApiModelProperty(value = "删除状态 0-未删除 1-已删除")
+	@TableLogic
 	private  Integer  delFlag;
 
 	/**创建人*/
-	@Excel(name = "创建人", width = 15)
+//	@Excel(name = "创建人", width = 15)
     @ApiModelProperty(value = "创建人")
 	private  String  createBy;
 
 	/**修改人*/
-	@Excel(name = "修改人", width = 15)
+//	@Excel(name = "修改人", width = 15)
     @ApiModelProperty(value = "修改人")
 	private  String  updateBy;
 
 	/**创建时间*/
-	@Excel(name = "创建时间", width = 20, format = "yyyy-MM-dd HH:mm:ss")
+//	@Excel(name = "创建时间", width = 20, format = "yyyy-MM-dd HH:mm:ss")
 	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
     @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
     @ApiModelProperty(value = "创建时间")
-	private  Date  createTime;
+	private  java.util.Date  createTime;
 
 	/**修改时间*/
-	@Excel(name = "修改时间", width = 20, format = "yyyy-MM-dd HH:mm:ss")
+//	@Excel(name = "修改时间", width = 20, format = "yyyy-MM-dd HH:mm:ss")
 	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
     @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
     @ApiModelProperty(value = "修改时间")
-	private  Date  updateTime;
+	private  java.util.Date  updateTime;
 
-	/**组件类型*/
-	@Excel(name = "组件类型", width = 15)
-	@ApiModelProperty(value = "组件类型")
+	/**组件类型名称*/
+//	@Excel(name = "组件类型名称", width = 15)
+	@ApiModelProperty(value = "组件类型名称")
 	@TableField(exist = false)
 	private String assemblyName;
 
+	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
+	@DateTimeFormat(pattern="yyyy-MM-dd")
+	private java.util.Date startDate;
 
     private static final String ID = "id";
     private static final String DEVICE_CODE = "device_code";

@@ -1,42 +1,26 @@
 package com.aiurt.boot.modules.secondLevelWarehouse.controller;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import com.swsc.copsms.common.api.vo.Result;
-import com.swsc.copsms.common.aspect.annotation.AutoLog;
-import com.swsc.copsms.common.system.query.QueryGenerator;
-import com.swsc.copsms.common.util.oConvertUtils;
-import com.swsc.copsms.modules.secondLevelWarehouse.entity.SparePartStock;
-import com.swsc.copsms.modules.secondLevelWarehouse.entity.SparePartStockInfo;
-import com.swsc.copsms.modules.secondLevelWarehouse.entity.dto.SparePartStockDTO;
-import com.swsc.copsms.modules.secondLevelWarehouse.entity.vo.SpareMaterialVO;
-import com.swsc.copsms.modules.secondLevelWarehouse.service.ISparePartStockService;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import io.swagger.annotations.ApiParam;
-import lombok.extern.slf4j.Slf4j;
-
-import org.jeecgframework.poi.excel.ExcelImportUtil;
-import org.jeecgframework.poi.excel.def.NormalExcelConstants;
-import org.jeecgframework.poi.excel.entity.ExportParams;
-import org.jeecgframework.poi.excel.entity.ImportParams;
-import org.jeecgframework.poi.excel.view.JeecgEntityExcelView;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.multipart.MultipartHttpServletRequest;
-import org.springframework.web.servlet.ModelAndView;
-import com.alibaba.fastjson.JSON;
+import com.aiurt.boot.common.api.vo.Result;
+import com.aiurt.boot.common.aspect.annotation.AutoLog;
+import com.aiurt.boot.common.result.SparePartStockResult;
+import com.aiurt.boot.modules.fault.param.SparePartStockParam;
+import com.aiurt.boot.modules.secondLevelWarehouse.entity.dto.SparePartStockDTO;
+import com.aiurt.boot.modules.secondLevelWarehouse.entity.vo.SpareMaterialVO;
+import com.aiurt.boot.modules.secondLevelWarehouse.service.ISparePartStockService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.validation.Valid;
+import java.util.List;
 
  /**
  * @Description: 备件库存
@@ -51,7 +35,6 @@ import io.swagger.annotations.ApiOperation;
 public class SparePartStockController {
 	@Autowired
 	private ISparePartStockService sparePartStockService;
-
 	/**
 	  * 分页列表查询
 	 * @param pageNo
@@ -72,16 +55,47 @@ public class SparePartStockController {
 		return result;
 	}
 
-	 @AutoLog("某个备件仓库下的物料信息-查询")
-	 @ApiOperation("某个备件仓库下的物料-查询")
+	 @AutoLog("物料信息-查询")
+	 @ApiOperation("物料信息-查询")
 	 @GetMapping("/materialByWarehouse")
-	 public Result<List<SpareMaterialVO>> queryMaterialByWarehouse(
-	 		@ApiParam("备件仓库编号") @RequestParam("warehouseCode") String warehouseCode) {
+	 public Result<List<SpareMaterialVO>> queryMaterialByWarehouse(HttpServletRequest req) {
 		 Result<List<SpareMaterialVO>> result = new Result<List<SpareMaterialVO>>();
-		 List<SpareMaterialVO> sparePartStockInfos = sparePartStockService.queryMaterialByWarehouse(warehouseCode);
+		 List<SpareMaterialVO> sparePartStockInfos = sparePartStockService.queryMaterialByWarehouse(req);
 		 result.setSuccess(true);
 		 result.setResult(sparePartStockInfos);
 		 return result;
 	 }
 
+	 /**
+	  * 查询本班组的备件信息
+	  * @param param
+	  * @return
+	  */
+	 @AutoLog(value = "查询本班组的备件信息")
+	 @ApiOperation(value="查询本班组的备件信息", notes="查询本班组的备件信息")
+	 @GetMapping(value = "/queryStockList")
+	 public Result<IPage<SparePartStockResult>> queryStockList(@Valid SparePartStockParam param,
+															   @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
+															   @RequestParam(name="pageSize", defaultValue="10") Integer pageSize) {
+		 Result<IPage<SparePartStockResult>> result = new Result<>();
+		 IPage<SparePartStockResult> page = new Page<>(pageNo, pageSize);
+		 IPage<SparePartStockResult> sparePartStockResults = sparePartStockService.queryStockList(page,param);
+		 result.setSuccess(true);
+		 result.setResult(sparePartStockResults);
+		 return result;
+	 }
+
+	 /**
+	  * 添加备注
+	  * @param id
+	  * @param remark
+	  * @return
+	  */
+	 @AutoLog(value = "添加备注")
+	 @ApiOperation(value = "添加备注", notes = "添加备注")
+	 @GetMapping("addRemark")
+	 public Result addRemark(@RequestParam(name = "id", required = true) Integer id, @RequestParam(name = "remark", required = true) String remark) {
+		sparePartStockService.addRemark(id,remark);
+		return Result.ok();
+	 }
 }

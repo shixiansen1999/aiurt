@@ -1,8 +1,5 @@
 package com.aiurt.boot.modules.secondLevelWarehouse.entity;
 
-import java.io.Serializable;
-import java.util.Date;
-
 import com.baomidou.mybatisplus.annotation.*;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -32,7 +29,7 @@ public class SparePartApplyMaterial {
 	private  Long  id;
 
 	/**申领编号*/
-	@Excel(name = "申领编号", width = 15)
+	@Excel(name = "申领编号/出库单号", width = 15)
     @ApiModelProperty(value = "申领编号")
 	private  String  applyCode;
 
@@ -50,6 +47,11 @@ public class SparePartApplyMaterial {
 	@Excel(name = "实际出库数量", width = 15)
     @ApiModelProperty(value = "实际出库数量")
 	private  Integer  actualNum;
+
+	/**备注*/
+	@Excel(name = "备注", width = 15)
+	@ApiModelProperty(value = "备注")
+	private  String  remarks;
 
 	/**删除状态(0.未删除 1.已删除)*/
 	@Excel(name = "删除状态(0.未删除 1.已删除)", width = 15)
@@ -72,14 +74,14 @@ public class SparePartApplyMaterial {
 	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
     @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
     @ApiModelProperty(value = "创建时间")
-	private  Date  createTime;
+	private  java.util.Date  createTime;
 
 	/**修改时间*/
 	@Excel(name = "修改时间", width = 20, format = "yyyy-MM-dd HH:mm:ss")
 	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
     @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
     @ApiModelProperty(value = "修改时间")
-	private  Date  updateTime;
+	private  java.util.Date  updateTime;
 
 
     private static final String ID = "id";

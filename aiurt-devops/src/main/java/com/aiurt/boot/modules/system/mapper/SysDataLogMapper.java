@@ -2,7 +2,7 @@ package com.aiurt.boot.modules.system.mapper;
 
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
-import com.swsc.copsms.modules.system.entity.SysDataLog;
+import com.aiurt.boot.modules.system.entity.SysDataLog;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import org.springframework.stereotype.Repository;
@@ -16,6 +16,6 @@ public interface SysDataLogMapper extends BaseMapper<SysDataLog>{
 	 * @param dataId
 	 * @return
 	 */
-	public String queryMaxDataVer(@Param("tableName") String tableName, @Param("dataId") String dataId);
+	public String queryMaxDataVer(@Param("tableName") String tableName,@Param("dataId") String dataId);
 
 }

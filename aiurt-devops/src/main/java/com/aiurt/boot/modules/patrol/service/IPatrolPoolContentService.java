@@ -1,7 +1,12 @@
 package com.aiurt.boot.modules.patrol.service;
 
-import com.swsc.copsms.modules.patrol.entity.PatrolPoolContent;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.aiurt.boot.common.api.vo.Result;
+import com.aiurt.boot.modules.patrol.entity.PatrolContent;
+import com.aiurt.boot.modules.patrol.entity.PatrolPoolContent;
+
+import javax.servlet.http.HttpServletRequest;
+import java.util.List;
 
 /**
  * @Description: 巡检人员任务项
@@ -11,4 +16,14 @@ import com.baomidou.mybatisplus.extension.service.IService;
  */
 public interface IPatrolPoolContentService extends IService<PatrolPoolContent> {
 
+	Result<?> queryList(Long id, HttpServletRequest req);
+
+	/**
+	 * 复制巡逻池内容
+	 *
+	 * @param list 列表
+	 * @param id   id
+	 * @return {@link List}<{@link PatrolPoolContent}>
+	 */
+	boolean copyContent(List<PatrolContent> list, Long id);
 }

@@ -6,14 +6,14 @@ import java.util.List;
 import java.util.Map;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.swsc.copsms.modules.system.entity.SysUserRole;
-import com.swsc.copsms.modules.system.entity.SysRole;
-import com.swsc.copsms.modules.system.mapper.SysRoleMapper;
-import com.swsc.copsms.modules.system.service.ISysRoleService;
-import com.swsc.copsms.modules.system.service.ISysUserRoleService;
-import com.swsc.copsms.modules.system.service.ISysUserService;
-import com.swsc.copsms.modules.system.entity.SysUser;
-import com.swsc.copsms.modules.system.mapper.SysUserRoleMapper;
+import com.aiurt.boot.modules.system.entity.SysUser;
+import com.aiurt.boot.modules.system.entity.SysUserRole;
+import com.aiurt.boot.modules.system.entity.SysRole;
+import com.aiurt.boot.modules.system.mapper.SysRoleMapper;
+import com.aiurt.boot.modules.system.service.ISysRoleService;
+import com.aiurt.boot.modules.system.service.ISysUserRoleService;
+import com.aiurt.boot.modules.system.service.ISysUserService;
+import com.aiurt.boot.modules.system.mapper.SysUserRoleMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

@@ -2,8 +2,8 @@ package com.aiurt.boot.modules.system.service;
 
 import java.util.List;
 
-import com.swsc.copsms.modules.system.model.AnnouncementSendModel;
-import com.swsc.copsms.modules.system.entity.SysAnnouncementSend;
+import com.aiurt.boot.modules.system.model.AnnouncementSendModel;
+import com.aiurt.boot.modules.system.entity.SysAnnouncementSend;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;

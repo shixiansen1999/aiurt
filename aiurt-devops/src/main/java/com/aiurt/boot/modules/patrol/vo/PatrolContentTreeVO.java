@@ -1,6 +1,6 @@
 package com.aiurt.boot.modules.patrol.vo;
 
-import com.swsc.copsms.modules.patrol.entity.PatrolContent;
+import com.aiurt.boot.modules.patrol.entity.PatrolContent;
 import io.swagger.annotations.ApiModel;
 import lombok.Data;
 import lombok.EqualsAndHashCode;

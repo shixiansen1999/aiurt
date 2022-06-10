@@ -1,11 +1,6 @@
 package com.aiurt.boot.modules.secondLevelWarehouse.entity;
 
-import java.io.Serializable;
-import java.util.Date;
-import java.util.List;
-
 import com.baomidou.mybatisplus.annotation.*;
-import com.swsc.copsms.modules.secondLevelWarehouse.entity.vo.MaterialVO;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -64,23 +59,23 @@ public class StockInOrderLevel2 {
 	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
 	@DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
 	@ApiModelProperty(value = "入库时间")
-	private  Date  stockInTime;
+	private  java.util.Date  stockInTime;
 
 	/**创建时间*/
 	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
     @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
     @ApiModelProperty(value = "创建时间")
-	private  Date  createTime;
+	private  java.util.Date  createTime;
 
 	/**修改时间*/
 	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
     @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
     @ApiModelProperty(value = "修改时间")
-	private  Date  updateTime;
+	private  java.util.Date  updateTime;
 
 
     private static final String ID = "id";
-    private static final String ORDER_CODE = "order_code";
+    public static final String ORDER_CODE = "order_code";
     private static final String WAREHOUSE_CODE = "warehouse_code";
     private static final String WAREHOUSE_NAME = "warehouse_name";
     private static final String NUM = "num";

@@ -8,12 +8,12 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import com.swsc.copsms.common.api.vo.Result;
-import com.swsc.copsms.common.aspect.annotation.AutoLog;
-import com.swsc.copsms.common.system.query.QueryGenerator;
-import com.swsc.copsms.common.util.oConvertUtils;
-import com.swsc.copsms.modules.manage.entity.SubsystemUser;
-import com.swsc.copsms.modules.manage.service.ISubsystemUserService;
+import com.aiurt.boot.common.api.vo.Result;
+import com.aiurt.boot.common.aspect.annotation.AutoLog;
+import com.aiurt.boot.common.system.query.QueryGenerator;
+import com.aiurt.boot.common.util.oConvertUtils;
+import com.aiurt.boot.modules.manage.entity.SubsystemUser;
+import com.aiurt.boot.modules.manage.service.ISubsystemUserService;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -35,7 +35,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 
  /**
- * @Description: cs_subsystem_user
+ * @Description: 子系统-技术人员-
  * @Author: swsc
  * @Date:   2021-09-15
  * @Version: V1.0
@@ -56,8 +56,8 @@ public class SubsystemUserController {
 	 * @param req
 	 * @return
 	 */
-	@AutoLog(value = "cs_subsystem_user-分页列表查询")
-	@ApiOperation(value="cs_subsystem_user-分页列表查询", notes="cs_subsystem_user-分页列表查询")
+	@AutoLog(value = "子系统-技术人员--分页列表查询")
+	@ApiOperation(value="子系统-技术人员--分页列表查询", notes="子系统-技术人员--分页列表查询")
 	@GetMapping(value = "/list")
 	public Result<IPage<SubsystemUser>> queryPageList(SubsystemUser subsystemUser,
 									  @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
@@ -77,8 +77,8 @@ public class SubsystemUserController {
 	 * @param subsystemUser
 	 * @return
 	 */
-	@AutoLog(value = "cs_subsystem_user-添加")
-	@ApiOperation(value="cs_subsystem_user-添加", notes="cs_subsystem_user-添加")
+	@AutoLog(value = "子系统-技术人员--添加")
+	@ApiOperation(value="子系统-技术人员--添加", notes="子系统-技术人员--添加")
 	@PostMapping(value = "/add")
 	public Result<SubsystemUser> add(@RequestBody SubsystemUser subsystemUser) {
 		Result<SubsystemUser> result = new Result<SubsystemUser>();
@@ -97,17 +97,17 @@ public class SubsystemUserController {
 	 * @param subsystemUser
 	 * @return
 	 */
-	@AutoLog(value = "cs_subsystem_user-编辑")
-	@ApiOperation(value="cs_subsystem_user-编辑", notes="cs_subsystem_user-编辑")
+	@AutoLog(value = "子系统-技术人员--编辑")
+	@ApiOperation(value="子系统-技术人员--编辑", notes="子系统-技术人员--编辑")
 	@PutMapping(value = "/edit")
 	public Result<SubsystemUser> edit(@RequestBody SubsystemUser subsystemUser) {
 		Result<SubsystemUser> result = new Result<SubsystemUser>();
 		SubsystemUser subsystemUserEntity = subsystemUserService.getById(subsystemUser.getId());
 		if(subsystemUserEntity==null) {
-			result.error500("未找到对应实体");
+			result.onnull("未找到对应实体");
 		}else {
 			boolean ok = subsystemUserService.updateById(subsystemUser);
-			//TODO 返回false说明什么？
+
 			if(ok) {
 				result.success("修改成功!");
 			}
@@ -121,8 +121,8 @@ public class SubsystemUserController {
 	 * @param id
 	 * @return
 	 */
-	@AutoLog(value = "cs_subsystem_user-通过id删除")
-	@ApiOperation(value="cs_subsystem_user-通过id删除", notes="cs_subsystem_user-通过id删除")
+	@AutoLog(value = "子系统-技术人员--通过id删除")
+	@ApiOperation(value="子系统-技术人员--通过id删除", notes="子系统-技术人员--通过id删除")
 	@DeleteMapping(value = "/delete")
 	public Result<?> delete(@RequestParam(name="id",required=true) String id) {
 		try {
@@ -139,8 +139,8 @@ public class SubsystemUserController {
 	 * @param ids
 	 * @return
 	 */
-	@AutoLog(value = "cs_subsystem_user-批量删除")
-	@ApiOperation(value="cs_subsystem_user-批量删除", notes="cs_subsystem_user-批量删除")
+	@AutoLog(value = "子系统-技术人员--批量删除")
+	@ApiOperation(value="子系统-技术人员--批量删除", notes="子系统-技术人员--批量删除")
 	@DeleteMapping(value = "/deleteBatch")
 	public Result<SubsystemUser> deleteBatch(@RequestParam(name="ids",required=true) String ids) {
 		Result<SubsystemUser> result = new Result<SubsystemUser>();
@@ -158,14 +158,14 @@ public class SubsystemUserController {
 	 * @param id
 	 * @return
 	 */
-	@AutoLog(value = "cs_subsystem_user-通过id查询")
-	@ApiOperation(value="cs_subsystem_user-通过id查询", notes="cs_subsystem_user-通过id查询")
+	@AutoLog(value = "子系统-技术人员--通过id查询")
+	@ApiOperation(value="子系统-技术人员--通过id查询", notes="子系统-技术人员--通过id查询")
 	@GetMapping(value = "/queryById")
 	public Result<SubsystemUser> queryById(@RequestParam(name="id",required=true) String id) {
 		Result<SubsystemUser> result = new Result<SubsystemUser>();
 		SubsystemUser subsystemUser = subsystemUserService.getById(id);
 		if(subsystemUser==null) {
-			result.error500("未找到对应实体");
+			result.onnull("未找到对应实体");
 		}else {
 			result.setResult(subsystemUser);
 			result.setSuccess(true);
@@ -198,9 +198,9 @@ public class SubsystemUserController {
       ModelAndView mv = new ModelAndView(new JeecgEntityExcelView());
       List<SubsystemUser> pageList = subsystemUserService.list(queryWrapper);
       //导出文件名称
-      mv.addObject(NormalExcelConstants.FILE_NAME, "cs_subsystem_user列表");
+      mv.addObject(NormalExcelConstants.FILE_NAME, "子系统-技术人员-列表");
       mv.addObject(NormalExcelConstants.CLASS, SubsystemUser.class);
-      mv.addObject(NormalExcelConstants.PARAMS, new ExportParams("cs_subsystem_user列表数据", "导出人:Jeecg", "导出信息"));
+      mv.addObject(NormalExcelConstants.PARAMS, new ExportParams("子系统-技术人员-列表数据", "导出人:Jeecg", "导出信息"));
       mv.addObject(NormalExcelConstants.DATA_LIST, pageList);
       return mv;
   }

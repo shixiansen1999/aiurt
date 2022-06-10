@@ -1,7 +1,7 @@
 package com.aiurt.boot.modules.fault.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.swsc.copsms.modules.fault.entity.RepairRecordEnclosure;
+import com.aiurt.boot.modules.fault.entity.RepairRecordEnclosure;
 
 /**
  * @Description: 维修记录-附件表

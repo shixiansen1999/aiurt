@@ -1,12 +1,15 @@
 package com.aiurt.boot.modules.system.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.swsc.copsms.modules.system.entity.SysDepart;
+import com.aiurt.boot.modules.schedule.entity.ScheduleRecord;
+import com.aiurt.boot.modules.statistical.vo.DepartDataVo;
+import com.aiurt.boot.modules.system.entity.SysDepart;
 import org.apache.ibatis.annotations.Select;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * <p>
@@ -51,4 +54,19 @@ public interface SysDepartMapper extends BaseMapper<SysDepart> {
 	 */
 	@Select("select org_code from sys_depart where del_flag = #{delFlag}")
     List<String> selectDepartsIsUsed(@Param("delFlag") Integer delFlag);
+
+	@Select("select DISTINCT(team_id) from cs_station where line_id=#{lineId} ")
+	List<String> getBanzuListByLine(@org.apache.ibatis.annotations.Param("lineId") Integer lineId);
+	List<DepartDataVo> getDepartData(Map map);
+
+	//大屏统计
+	@Select("select * from schedule_record where user_id=#{userId} and date=#{today} and del_flag=0 limit 0,1")
+	ScheduleRecord getScheduleRecord(@Param("userId") String userId,@Param("today") String today);
+
+	/**
+	 * 根据线路code查询班组
+	 * @param lineCode
+	 * @return
+	 */
+    List<SysDepart> getSysDepartByLineCode(@Param("lineCode")String lineCode);
 }

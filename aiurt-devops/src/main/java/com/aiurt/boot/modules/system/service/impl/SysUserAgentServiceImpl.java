@@ -1,8 +1,8 @@
 package com.aiurt.boot.modules.system.service.impl;
 
-import com.swsc.copsms.modules.system.entity.SysUserAgent;
-import com.swsc.copsms.modules.system.service.ISysUserAgentService;
-import com.swsc.copsms.modules.system.mapper.SysUserAgentMapper;
+import com.aiurt.boot.modules.system.entity.SysUserAgent;
+import com.aiurt.boot.modules.system.service.ISysUserAgentService;
+import com.aiurt.boot.modules.system.mapper.SysUserAgentMapper;
 import org.springframework.stereotype.Service;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;

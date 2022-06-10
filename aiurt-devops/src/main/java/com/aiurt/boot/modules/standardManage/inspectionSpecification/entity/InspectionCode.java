@@ -2,6 +2,7 @@ package com.aiurt.boot.modules.standardManage.inspectionSpecification.entity;
 
 import java.util.Date;
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import io.swagger.annotations.ApiModel;
@@ -12,6 +13,11 @@ import lombok.experimental.Accessors;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.jeecgframework.poi.excel.annotation.Excel;
+
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 
 /**
  * @Description: 检修标准管理
@@ -33,23 +39,36 @@ public class InspectionCode {
 	/**标题*/
 	@Excel(name = "标题", width = 15)
     @ApiModelProperty(value = "标题")
+	@NotNull(message = "标题不能为空")
+	@Size(max = 100, message = "标题长度要求1到100之间")
 	private String title;
 	/**1-控制中心 2-车辆段 3-班组*/
 	@Excel(name = "类型(1-控制中心 2-车辆段 3-班组)", width = 15)
     @ApiModelProperty(value = "类型(1-控制中心 2-车辆段 3-班组)")
+	@NotNull(message = "类型不能为空")
+	@Min(value = 1, message = "最小值为1")
+	@Max(value = 3, message = "最大值为3")
 	private Integer type;
 	/**0-未生效 1-已生效*/
 	@Excel(name = "状态(0-未生效 1-已生效)", width = 15)
     @ApiModelProperty(value = "状态(0-未生效 1-已生效)")
+	@NotNull(message = "状态不能为空")
 	private Integer status;
 	/**年份*/
 	@Excel(name = "年份", width = 15)
     @ApiModelProperty(value = "年份")
+	@NotNull(message = "年份不能为空")
 	private String years;
 	/**适用组织id集合*/
 	@Excel(name = "适用组织id集合", width = 15)
     @ApiModelProperty(value = "适用组织id集合")
+	@NotNull(message = "适用站点不能为空")
 	private String organizationIds;
+
+	@TableField(exist = false)
+	@ApiModelProperty(value = "适用班组")
+	private String teamNames;
+
 	/**生成年检计划状态 0-未生成 1-已生成*/
 	@Excel(name = "生成年检计划状态 0-未生成 1-已生成", width = 15)
     @ApiModelProperty(value = "生成年检计划状态 0-未生成 1-已生成")

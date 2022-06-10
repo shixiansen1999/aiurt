@@ -1,6 +1,6 @@
 package com.aiurt.boot.modules.system.service;
 
-import com.swsc.copsms.modules.system.entity.SysAnnouncement;
+import com.aiurt.boot.modules.system.entity.SysAnnouncement;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
@@ -19,7 +19,7 @@ public interface ISysAnnouncementService extends IService<SysAnnouncement> {
 
 	public void saveSysAnnouncement(String title, String msgContent);
 
-	public Page<SysAnnouncement> querySysCementPageByUserId(Page<SysAnnouncement> page, String userId, String msgCategory);
+	public Page<SysAnnouncement> querySysCementPageByUserId(Page<SysAnnouncement> page,String userId,String msgCategory);
 
 
 }

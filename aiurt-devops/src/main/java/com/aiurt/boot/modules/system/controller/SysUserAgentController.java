@@ -8,12 +8,12 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.swsc.copsms.modules.system.entity.SysUserAgent;
-import com.swsc.copsms.common.system.query.QueryGenerator;
-import com.swsc.copsms.common.system.vo.LoginUser;
-import com.swsc.copsms.modules.system.service.ISysUserAgentService;
+import com.aiurt.boot.modules.system.entity.SysUserAgent;
+import com.aiurt.boot.common.system.query.QueryGenerator;
+import com.aiurt.boot.common.system.vo.LoginUser;
+import com.aiurt.boot.modules.system.service.ISysUserAgentService;
 import org.apache.shiro.SecurityUtils;
-import com.swsc.copsms.common.api.vo.Result;
+import com.aiurt.boot.common.api.vo.Result;
 import org.jeecgframework.poi.excel.ExcelImportUtil;
 import org.jeecgframework.poi.excel.def.NormalExcelConstants;
 import org.jeecgframework.poi.excel.entity.ExportParams;
@@ -104,10 +104,10 @@ public class SysUserAgentController {
 		Result<SysUserAgent> result = new Result<SysUserAgent>();
 		SysUserAgent sysUserAgentEntity = sysUserAgentService.getById(sysUserAgent.getId());
 		if(sysUserAgentEntity==null) {
-			result.error500("未找到对应实体");
+			result.onnull("未找到对应实体");
 		}else {
 			boolean ok = sysUserAgentService.updateById(sysUserAgent);
-			//TODO 返回false说明什么？
+
 			if(ok) {
 				result.success("代理人设置成功!");
 			}
@@ -126,7 +126,7 @@ public class SysUserAgentController {
 		Result<SysUserAgent> result = new Result<SysUserAgent>();
 		SysUserAgent sysUserAgent = sysUserAgentService.getById(id);
 		if(sysUserAgent==null) {
-			result.error500("未找到对应实体");
+			result.onnull("未找到对应实体");
 		}else {
 			boolean ok = sysUserAgentService.removeById(id);
 			if(ok) {
@@ -164,7 +164,7 @@ public class SysUserAgentController {
 		Result<SysUserAgent> result = new Result<SysUserAgent>();
 		SysUserAgent sysUserAgent = sysUserAgentService.getById(id);
 		if(sysUserAgent==null) {
-			result.error500("未找到对应实体");
+			result.onnull("未找到对应实体");
 		}else {
 			result.setResult(sysUserAgent);
 			result.setSuccess(true);
@@ -184,7 +184,7 @@ public class SysUserAgentController {
 		queryWrapper.eq(SysUserAgent::getUserName, userName);
 		SysUserAgent sysUserAgent = sysUserAgentService.getOne(queryWrapper);
 		if(sysUserAgent==null) {
-			result.error500("未找到对应实体");
+			result.onnull("未找到对应实体");
 		}else {
 			result.setResult(sysUserAgent);
 			result.setSuccess(true);
