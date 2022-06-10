@@ -2,7 +2,8 @@ package com.aiurt.boot.modules.system.entity;
 
 import java.util.Date;
 
-import com.aiurt.boot.common.aspect.annotation.Dict;
+
+import com.aiurt.common.aspect.annotation.Dict;
 import org.springframework.format.annotation.DateTimeFormat;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
@@ -30,7 +31,7 @@ public class SysLog implements Serializable {
 	/**
 	 * id
 	 */
-	@TableId(type = IdType.ID_WORKER_STR)
+	@TableId(type = IdType.ASSIGN_UUID)
 	private String id;
 
 	/**

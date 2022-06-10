@@ -1,6 +1,7 @@
 package com.aiurt.boot.common.system.controller;
 
 import lombok.extern.slf4j.Slf4j;
+import org.jeecg.common.api.vo.Result;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.util.AntPathMatcher;
 import org.springframework.util.FileCopyUtils;

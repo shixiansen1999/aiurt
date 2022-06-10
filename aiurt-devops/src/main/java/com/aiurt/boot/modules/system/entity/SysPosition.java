@@ -1,10 +1,11 @@
 package com.aiurt.boot.modules.system.entity;
 
+import com.aiurt.common.aspect.annotation.Dict;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.aiurt.boot.common.aspect.annotation.Dict;
+
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -29,7 +30,7 @@ public class SysPosition {
     /**
      * id
      */
-    @TableId(type = IdType.ID_WORKER_STR)
+    @TableId(type = IdType.ASSIGN_UUID)
     @ApiModelProperty(value = "id")
     private String id;
     /**

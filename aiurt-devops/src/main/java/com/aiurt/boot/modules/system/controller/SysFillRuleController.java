@@ -1,7 +1,7 @@
 package com.aiurt.boot.modules.system.controller;
 
 import com.aiurt.boot.common.system.base.controller.BaseController;
-import com.aiurt.boot.common.system.query.QueryGenerator;
+
 import com.aiurt.boot.common.util.FillRuleUtil;
 import com.aiurt.boot.modules.system.entity.SysFillRule;
 import com.aiurt.boot.modules.system.service.ISysFillRuleService;

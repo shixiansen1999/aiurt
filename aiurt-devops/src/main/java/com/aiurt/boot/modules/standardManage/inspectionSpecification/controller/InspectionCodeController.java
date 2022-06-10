@@ -5,7 +5,7 @@ import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 
 import cn.hutool.core.util.StrUtil;
-import com.aiurt.boot.common.system.query.QueryGenerator;
+
 import com.aiurt.boot.common.system.vo.LoginUser;
 import com.aiurt.boot.modules.standardManage.inspectionSpecification.entity.InspectionCode;
 import com.aiurt.boot.modules.standardManage.inspectionSpecification.service.IInspectionCodeService;

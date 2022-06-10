@@ -1,6 +1,6 @@
 package com.aiurt.boot.modules.oss.controller;
 
-import com.aiurt.boot.common.system.query.QueryGenerator;
+
 import com.aiurt.boot.modules.oss.entity.OSSFile;
 import com.aiurt.boot.modules.oss.service.IOSSFileService;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;

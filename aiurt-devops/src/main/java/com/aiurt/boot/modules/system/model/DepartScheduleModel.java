@@ -18,7 +18,7 @@ public class DepartScheduleModel {
     /**
      * 班组内人员数量
      */
-    private Integer num;
+    private Long num;
     /**
      * 班长
      */

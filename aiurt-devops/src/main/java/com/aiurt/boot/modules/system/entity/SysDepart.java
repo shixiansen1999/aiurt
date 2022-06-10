@@ -1,11 +1,11 @@
 package com.aiurt.boot.modules.system.entity;
 
+import com.aiurt.common.aspect.annotation.Dict;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.aiurt.boot.common.aspect.annotation.Dict;
 import lombok.Data;
 import org.jeecgframework.poi.excel.annotation.Excel;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -31,7 +31,7 @@ public class SysDepart implements Serializable {
     /**
      * ID
      */
-    @TableId(type = IdType.ID_WORKER_STR)
+    @TableId(type = IdType.ASSIGN_UUID)
     private String id;
     /**
      * 父机构ID

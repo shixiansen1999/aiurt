@@ -9,7 +9,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 
 import com.aiurt.boot.common.constant.CommonConstant;
 import com.aiurt.boot.common.exception.SwscException;
-import com.aiurt.boot.common.system.query.QueryGenerator;
+
 import com.aiurt.boot.common.system.vo.LoginUser;
 import com.aiurt.boot.modules.system.entity.SysUser;
 import com.aiurt.boot.modules.system.service.ISysUserService;
@@ -25,6 +25,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.system.query.QueryGenerator;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;

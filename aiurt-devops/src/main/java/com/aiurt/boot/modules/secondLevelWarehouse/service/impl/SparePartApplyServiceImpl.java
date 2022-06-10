@@ -30,6 +30,7 @@ import com.aiurt.boot.modules.secondLevelWarehouse.service.ISparePartApplyServic
 import com.aiurt.boot.modules.secondLevelWarehouse.service.IStockLevel2Service;
 import com.aiurt.boot.modules.system.entity.SysUser;
 import com.aiurt.boot.modules.system.service.ISysUserService;
+import org.jeecg.common.api.vo.Result;
 import org.springframework.beans.BeanUtils;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
@@ -380,7 +381,7 @@ public class SparePartApplyServiceImpl extends ServiceImpl<SparePartApplyMapper,
         if (monthValue < CommonConstant.MONTH_VALUE) {
             month = "0" + monthValue + ".";
         }
-        Integer integer = sparePartApplyMapper.selectCount(null);
+        Long integer = sparePartApplyMapper.selectCount(null);
         return applyCode + year + month + (integer + 1);
     }
 

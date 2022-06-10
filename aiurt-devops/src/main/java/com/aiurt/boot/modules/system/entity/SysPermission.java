@@ -2,10 +2,10 @@ package com.aiurt.boot.modules.system.entity;
 
 import java.io.Serializable;
 import java.util.Date;
+import com.aiurt.common.aspect.annotation.Dict;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
-import com.aiurt.boot.common.aspect.annotation.Dict;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
@@ -28,7 +28,7 @@ public class SysPermission implements Serializable {
 	/**
 	 * id
 	 */
-	@TableId(type = IdType.ID_WORKER_STR)
+	@TableId(type = IdType.ASSIGN_UUID)
 	private String id;
 
 	/**

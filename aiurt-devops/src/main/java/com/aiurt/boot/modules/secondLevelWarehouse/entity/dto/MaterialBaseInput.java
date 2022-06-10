@@ -1,11 +1,11 @@
 package com.aiurt.boot.modules.secondLevelWarehouse.entity.dto;
 
-import com.sun.istack.NotNull;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import org.jeecgframework.poi.excel.annotation.Excel;
 import org.jeecgframework.poi.excel.annotation.ExcelTarget;
 
+import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.math.BigDecimal;
 

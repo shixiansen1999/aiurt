@@ -9,7 +9,7 @@ import java.net.URLDecoder;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.aiurt.boot.common.system.query.QueryGenerator;
+
 import com.aiurt.boot.common.util.oConvertUtils;
 import com.aiurt.boot.modules.system.entity.SysAbout;
 import com.aiurt.boot.modules.system.service.ISysAboutService;

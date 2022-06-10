@@ -1,7 +1,7 @@
 package com.aiurt.boot.modules.message.entity;
 
-import com.aiurt.boot.common.aspect.annotation.Dict;
 import com.aiurt.boot.common.system.base.entity.BaseEntity;
+import com.aiurt.common.aspect.annotation.Dict;
 import org.jeecgframework.poi.excel.annotation.Excel;
 import org.springframework.format.annotation.DateTimeFormat;
 

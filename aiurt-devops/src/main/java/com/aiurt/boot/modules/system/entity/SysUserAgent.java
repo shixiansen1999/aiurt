@@ -22,7 +22,7 @@ public class SysUserAgent implements Serializable {
     private static final long serialVersionUID = 1L;
 
 	/**序号*/
-	@TableId(type = IdType.ID_WORKER_STR)
+	@TableId(type = IdType.ASSIGN_UUID)
 	private String id;
 	/**用户名*/
 	@Excel(name = "用户名", width = 15)

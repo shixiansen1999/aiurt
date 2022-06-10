@@ -2,7 +2,7 @@ package com.aiurt.boot.modules.system.controller;
 
 
 import com.aiurt.boot.common.constant.CacheConstant;
-import com.aiurt.boot.common.system.query.QueryGenerator;
+
 import com.aiurt.boot.modules.system.entity.SysDictItem;
 import com.aiurt.boot.modules.system.service.ISysDictItemService;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;

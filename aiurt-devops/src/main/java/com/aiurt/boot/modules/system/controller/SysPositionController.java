@@ -1,7 +1,7 @@
 package com.aiurt.boot.modules.system.controller;
 
 import com.aiurt.boot.common.constant.CommonConstant;
-import com.aiurt.boot.common.system.query.QueryGenerator;
+
 import com.aiurt.boot.common.util.oConvertUtils;
 import com.aiurt.boot.modules.system.entity.SysPosition;
 import com.aiurt.boot.modules.system.service.ISysPositionService;

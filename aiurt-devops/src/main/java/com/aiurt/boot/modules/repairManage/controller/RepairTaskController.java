@@ -1,7 +1,7 @@
 package com.aiurt.boot.modules.repairManage.controller;
 
 import cn.hutool.core.collection.CollectionUtil;
-import com.aiurt.boot.common.system.query.QueryGenerator;
+
 import com.aiurt.boot.common.system.vo.LoginUser;
 import com.aiurt.boot.common.util.RoleAdditionalUtils;
 import com.aiurt.boot.common.util.oConvertUtils;

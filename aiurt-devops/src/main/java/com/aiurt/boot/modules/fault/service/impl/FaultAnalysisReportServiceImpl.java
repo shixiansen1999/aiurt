@@ -16,11 +16,12 @@ import com.aiurt.boot.modules.fault.mapper.FaultMapper;
 import com.aiurt.boot.modules.fault.param.FaultAnalysisReportParam;
 import com.aiurt.boot.modules.fault.service.IFaultAnalysisReportService;
 import org.apache.commons.lang.StringUtils;
+import org.jeecg.common.api.vo.Result;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
-import javax.transaction.Transactional;
 import java.util.List;
 
 /**
@@ -85,7 +86,7 @@ public class FaultAnalysisReportServiceImpl extends ServiceImpl<FaultAnalysisRep
      * @param dto
      */
     @Override
-    @Transactional(rollbackOn = Exception.class)
+    @Transactional(rollbackFor = Exception.class)
     public Result<?> add(FaultAnalysisReportDTO dto, HttpServletRequest req) {
 
         FaultAnalysisReport one = faultAnalysisReportMapper.selectOne(new LambdaQueryWrapper<FaultAnalysisReport>().eq(FaultAnalysisReport::getDelFlag, CommonConstant.DEL_FLAG_0)

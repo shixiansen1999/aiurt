@@ -2,7 +2,7 @@ package com.aiurt.boot.modules.system.controller;
 
 import com.aiurt.boot.common.constant.CommonConstant;
 import com.aiurt.boot.common.system.api.ISysBaseAPI;
-import com.aiurt.boot.common.system.query.QueryGenerator;
+
 import com.aiurt.boot.common.system.util.JwtUtil;
 import com.aiurt.boot.common.system.vo.LoginUser;
 import com.aiurt.boot.common.util.PasswordUtil;
@@ -20,7 +20,6 @@ import com.aiurt.boot.modules.system.entity.SysUserRole;
 import com.aiurt.boot.modules.system.model.DepartIdModel;
 import com.aiurt.boot.modules.system.model.SysUserSysDepartModel;
 import com.aiurt.boot.modules.system.service.*;
-import com.aiurt.boot.modules.system.util.ImportExcelUtil;
 import com.aiurt.boot.modules.system.vo.SysDepartUsersVO;
 import com.aiurt.boot.modules.system.vo.SysUserRoleVO;
 import com.aiurt.boot.modules.system.vo.UserChildrenVO;

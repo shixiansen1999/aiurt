@@ -1,12 +1,13 @@
 package com.aiurt.boot.modules.training.controller;
 
+import com.aiurt.common.aspect.annotation.AutoLog;
 import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.aiurt.boot.common.aspect.annotation.AutoLog;
 import com.aiurt.boot.modules.training.service.ITrainingPlanFileService;
 import com.aiurt.boot.modules.training.vo.TrainingPlanFileVO;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
+import org.jeecg.common.api.vo.Result;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;

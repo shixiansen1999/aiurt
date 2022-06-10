@@ -19,7 +19,7 @@ import com.aiurt.boot.modules.system.service.ISysAnnouncementService;
 import com.aiurt.boot.modules.system.entity.SysAnnouncementSend;
 import org.apache.shiro.SecurityUtils;
 import com.aiurt.boot.common.constant.CommonSendStatus;
-import com.aiurt.boot.common.system.query.QueryGenerator;
+
 import com.aiurt.boot.common.system.util.JwtUtil;
 import com.aiurt.boot.common.system.vo.LoginUser;
 import com.aiurt.boot.common.util.oConvertUtils;

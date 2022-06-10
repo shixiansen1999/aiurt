@@ -24,7 +24,7 @@ public class SysCategory implements Serializable {
     private static final long serialVersionUID = 1L;
 
 	/**主键*/
-	@TableId(type = IdType.ID_WORKER_STR)
+	@TableId(type = IdType.ASSIGN_UUID)
 	private String id;
 	/**父级节点*/
 	@Excel(name = "父级节点", width = 15)

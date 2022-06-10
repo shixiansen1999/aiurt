@@ -345,7 +345,7 @@ public class FaultRepairRecordServiceImpl extends ServiceImpl<FaultRepairRecordM
      * @return
      */
     @Override
-    @Transactional(rollbackOn = Exception.class)
+    @Transactional(rollbackFor = Exception.class)
     public Result addRecord(FaultRepairRecordDTO dto,HttpServletRequest req) {
         //更改故障维修记录表
         FaultRepairRecord record = new FaultRepairRecord();

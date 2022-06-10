@@ -2,7 +2,7 @@ package com.aiurt.boot.modules.system.controller;
 
 import com.aiurt.boot.common.constant.CacheConstant;
 import com.aiurt.boot.common.constant.CommonConstant;
-import com.aiurt.boot.common.system.query.QueryGenerator;
+
 import com.aiurt.boot.common.system.util.JwtUtil;
 import com.aiurt.boot.common.system.vo.LoginUser;
 import com.aiurt.boot.common.util.RoleAdditionalUtils;

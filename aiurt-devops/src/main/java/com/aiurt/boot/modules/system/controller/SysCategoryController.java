@@ -16,7 +16,7 @@ import com.aiurt.boot.modules.system.model.TreeSelectModel;
 import com.aiurt.boot.modules.system.service.ISysCategoryService;
 import com.aiurt.boot.modules.system.entity.SysCategory;
 import org.apache.shiro.SecurityUtils;
-import com.aiurt.boot.common.system.query.QueryGenerator;
+
 import com.aiurt.boot.common.system.vo.DictModel;
 import com.aiurt.boot.common.system.vo.LoginUser;
 import com.aiurt.boot.common.util.oConvertUtils;

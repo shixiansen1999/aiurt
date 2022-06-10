@@ -2,7 +2,7 @@ package com.aiurt.boot.modules.patrol.controller;
 
 import com.aiurt.boot.common.constant.CommonConstant;
 import com.aiurt.boot.common.exception.SwscException;
-import com.aiurt.boot.common.system.query.QueryGenerator;
+
 import com.aiurt.boot.common.system.vo.LoginUser;
 import com.aiurt.boot.common.util.RoleAdditionalUtils;
 import com.aiurt.boot.common.util.oConvertUtils;

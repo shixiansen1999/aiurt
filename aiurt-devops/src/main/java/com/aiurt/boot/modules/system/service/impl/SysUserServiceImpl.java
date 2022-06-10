@@ -23,11 +23,10 @@ import com.aiurt.boot.common.constant.CacheConstant;
 import com.aiurt.boot.common.system.api.ISysBaseAPI;
 import com.aiurt.boot.common.system.vo.LoginUser;
 import com.aiurt.boot.common.system.vo.SysUserCacheInfo;
-
+import org.jeecg.common.api.vo.Result;
 import com.aiurt.boot.modules.system.model.DepartScheduleModel;
 import com.aiurt.boot.modules.system.service.ISysDictService;
 import com.aiurt.boot.modules.system.service.ISysUserService;
-
 import lombok.extern.slf4j.Slf4j;
 import com.aiurt.boot.common.util.PasswordUtil;
 import com.aiurt.boot.common.util.oConvertUtils;

@@ -6,11 +6,12 @@ import com.aiurt.boot.common.util.TokenUtils;
 import com.aiurt.boot.modules.fault.entity.FaultKnowledgeBaseType;
 import com.aiurt.boot.modules.fault.mapper.FaultKnowledgeBaseTypeMapper;
 import com.aiurt.boot.modules.fault.service.IFaultKnowledgeBaseTypeService;
+import org.jeecg.common.api.vo.Result;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
-import javax.transaction.Transactional;
 
 /**
  * @Description: 故障知识库类型
@@ -35,7 +36,7 @@ public class FaultKnowledgeBaseTypeServiceImpl extends ServiceImpl<FaultKnowledg
      * @return
      */
     @Override
-    @Transactional(rollbackOn = Exception.class)
+    @Transactional(rollbackFor = Exception.class)
     public Result add(FaultKnowledgeBaseType baseType, HttpServletRequest req) {
         FaultKnowledgeBaseType type = new FaultKnowledgeBaseType();
         type.setSystemCode(baseType.getSystemCode());

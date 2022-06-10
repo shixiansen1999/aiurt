@@ -325,7 +325,7 @@ public class WorkLogController {
 	 @AutoLog(value = "根据当前登录人id获取巡检检修故障待办消息")
 	 @ApiOperation(value="根据当前登录人id获取巡检检修故障待办消息", notes="根据当前登录人id获取巡检检修故障待办消息")
 	 @GetMapping(value = "/getWaitMessage")
-	 public Result<LogResult> getWaitMessage(@RequestParam String nowday,HttpServletRequest req) {
+	 public Result<LogResult> getWaitMessage(@RequestParam String nowday, HttpServletRequest req) {
 		 Result<LogResult> waitMessage = workLogDepotService.getWaitMessage(nowday,req);
 		 return waitMessage;
 	 }

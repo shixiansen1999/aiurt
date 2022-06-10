@@ -6,7 +6,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.aiurt.boot.common.system.query.QueryGenerator;
+
 import com.aiurt.boot.common.util.oConvertUtils;
 import com.aiurt.boot.modules.standardManage.safetyPrecautions.constant.Constant;
 import com.aiurt.boot.modules.standardManage.safetyPrecautions.entity.SafetyPrecautions;

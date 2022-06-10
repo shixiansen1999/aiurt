@@ -27,7 +27,7 @@ import org.jeecgframework.poi.excel.annotation.Excel;
 public class SysAbout {
 
 	/**id*/
-	@TableId(type= IdType.UUID)
+	@TableId(type= IdType.ASSIGN_UUID)
     @ApiModelProperty(value = "id")
 	public Integer id;
 	/**内容*/

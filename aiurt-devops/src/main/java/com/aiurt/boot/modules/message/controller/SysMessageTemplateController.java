@@ -1,7 +1,7 @@
 package com.aiurt.boot.modules.message.controller;
 
 import com.aiurt.boot.common.system.base.controller.BaseController;
-import com.aiurt.boot.common.system.query.QueryGenerator;
+
 import com.aiurt.boot.modules.message.entity.MsgParams;
 import com.aiurt.boot.modules.message.entity.SysMessageTemplate;
 import com.aiurt.boot.modules.message.service.ISysMessageTemplateService;

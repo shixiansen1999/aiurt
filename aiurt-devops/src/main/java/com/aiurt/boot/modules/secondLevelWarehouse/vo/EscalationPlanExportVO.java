@@ -1,8 +1,9 @@
 package com.aiurt.boot.modules.secondLevelWarehouse.vo;
 
+import com.aiurt.common.aspect.annotation.Dict;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.aiurt.boot.common.aspect.annotation.Dict;
+
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.EqualsAndHashCode;

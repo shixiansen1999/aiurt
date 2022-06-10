@@ -25,7 +25,7 @@ public class BaseEntity implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	/** ID */
-	@TableId(type = IdType.ID_WORKER_STR)
+	@TableId(type = IdType.ASSIGN_UUID)
 	@ApiModelProperty(value = "ID")
 	private String id;
 	/** 创建人 */

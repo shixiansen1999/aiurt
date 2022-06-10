@@ -1,6 +1,6 @@
 package com.aiurt.boot.modules.secondLevelWarehouse.controller;
 
-import com.aiurt.boot.common.system.query.QueryGenerator;
+
 import com.aiurt.boot.modules.secondLevelWarehouse.entity.SparePartLend;
 import com.aiurt.boot.modules.secondLevelWarehouse.entity.dto.SparePartLendDTO;
 import com.aiurt.boot.modules.secondLevelWarehouse.entity.dto.SparePartLendParam;

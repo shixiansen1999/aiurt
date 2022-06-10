@@ -1,10 +1,9 @@
 package com.aiurt.boot.modules.schedule.controller;
 
 import cn.hutool.core.util.StrUtil;
-import com.aiurt.boot.common.system.query.QueryGenerator;
+
 import com.aiurt.boot.common.system.vo.LoginUser;
 import com.aiurt.boot.common.util.DateUtils;
-import com.aiurt.boot.common.util.excel.ExportUtil;
 import com.aiurt.boot.common.util.oConvertUtils;
 import com.aiurt.boot.modules.schedule.entity.*;
 import com.aiurt.boot.modules.schedule.model.ScheduleUser;
@@ -13,7 +12,6 @@ import com.aiurt.boot.modules.schedule.vo.RecordParam;
 import com.aiurt.boot.modules.schedule.vo.ScheduleRecordVo;
 import com.aiurt.boot.modules.system.entity.SysUser;
 import com.aiurt.boot.modules.system.service.ISysUserService;
-import com.aiurt.boot.modules.system.util.ImportExcelUtil;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -25,6 +23,7 @@ import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.system.query.QueryGenerator;
 import org.jeecgframework.poi.excel.def.NormalExcelConstants;
 import org.jeecgframework.poi.excel.entity.ExportParams;
 import org.jeecgframework.poi.excel.view.JeecgEntityExcelView;
@@ -306,7 +305,7 @@ public class ScheduleController {
             }
             resultList.add(map);
         }
-        ExportUtil.export2(dateList, resultList, request, response, date + "排班表.xlsx");
+       // ExportUtil.export2(dateList, resultList, request, response, date + "排班表.xlsx");
     }
 
 
