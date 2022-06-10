@@ -1,11 +1,8 @@
 package com.aiurt.boot.modules.standardManage.inspectionSpecification.controller;
 
 import cn.hutool.core.util.StrUtil;
-import com.aiurt.boot.common.system.vo.LoginUser;
 import com.aiurt.boot.modules.standardManage.inspectionSpecification.entity.InspectionCode;
 import com.aiurt.boot.modules.standardManage.inspectionSpecification.service.IInspectionCodeService;
-import com.aiurt.boot.modules.system.entity.SysDepart;
-import com.aiurt.boot.modules.system.mapper.SysDepartMapper;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -15,7 +12,9 @@ import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.query.QueryGenerator;
+import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -39,7 +38,7 @@ public class InspectionCodeController {
     private IInspectionCodeService inspectionCodeService;
 
     @Autowired
-    private SysDepartMapper departMapper;
+    private ISysBaseAPI iSysBaseAPI;
 
     /**
      * 分页列表查询

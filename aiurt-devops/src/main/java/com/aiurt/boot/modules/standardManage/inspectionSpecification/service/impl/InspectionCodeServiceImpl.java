@@ -1,7 +1,5 @@
 package com.aiurt.boot.modules.standardManage.inspectionSpecification.service.impl;
 
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.aiurt.boot.common.constant.CommonConstant;
 import com.aiurt.boot.modules.repairManage.service.impl.RepairPoolServiceImpl;
 import com.aiurt.boot.modules.standardManage.inspectionSpecification.entity.InspectionCode;
 import com.aiurt.boot.modules.standardManage.inspectionSpecification.mapper.InspectionCodeMapper;
@@ -9,11 +7,12 @@ import com.aiurt.boot.modules.standardManage.inspectionSpecification.service.IIn
 import com.aiurt.boot.modules.standardManage.inspectionStrategy.entity.InspectionCodeContent;
 import com.aiurt.boot.modules.standardManage.inspectionStrategy.mapper.InspectionCodeContentMapper;
 import com.aiurt.boot.modules.standardManage.safetyPrecautions.mapper.SafetyPrecautionsMapper;
+import com.aiurt.common.constant.CommonConstant;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.jeecg.common.api.vo.Result;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 
 import javax.annotation.Resource;
 import java.util.Date;

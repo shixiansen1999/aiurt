@@ -1,8 +1,5 @@
 package com.aiurt.boot.modules.webHome.controller;
 
-import com.aiurt.common.aspect.annotation.AutoLog;
-import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
-import com.aiurt.boot.common.constant.CommonConstant;
 import com.aiurt.boot.modules.manage.entity.SpecialSituation;
 import com.aiurt.boot.modules.manage.entity.Station;
 import com.aiurt.boot.modules.manage.entity.Subsystem;
@@ -13,11 +10,12 @@ import com.aiurt.boot.modules.patrol.entity.PatrolPool;
 import com.aiurt.boot.modules.patrol.param.StatisticsParam;
 import com.aiurt.boot.modules.patrol.service.PatrolStatisticsService;
 import com.aiurt.boot.modules.repairManage.mapper.RepairTaskMapper;
-import com.aiurt.boot.modules.system.entity.SysDepart;
-import com.aiurt.boot.modules.system.service.ISysDepartService;
 import com.aiurt.boot.modules.webHome.service.WebHomeService;
 import com.aiurt.boot.modules.webHome.utils.UserListenerUtils;
 import com.aiurt.boot.modules.webHome.vo.PatrolHomeVO;
+import com.aiurt.common.aspect.annotation.AutoLog;
+import com.aiurt.common.constant.CommonConstant;
+import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
