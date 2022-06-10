@@ -1,8 +1,6 @@
 package com.aiurt.boot.modules.patrol.controller;
 
 
-import com.aiurt.boot.common.constant.CommonConstant;
-import com.aiurt.boot.common.exception.SwscException;
 import com.aiurt.boot.modules.patrol.constant.PatrolConstant;
 import com.aiurt.boot.modules.patrol.entity.Patrol;
 import com.aiurt.boot.modules.patrol.entity.PatrolContent;
@@ -10,6 +8,8 @@ import com.aiurt.boot.modules.patrol.service.IPatrolContentService;
 import com.aiurt.boot.modules.patrol.service.IPatrolService;
 import com.aiurt.boot.modules.patrol.vo.importdir.PatrolContentImportVO;
 import com.aiurt.common.aspect.annotation.AutoLog;
+import com.aiurt.common.constant.CommonConstant;
+import com.aiurt.common.exception.AiurtBootException;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
@@ -285,7 +285,7 @@ public class PatrolContentController {
 	public ModelAndView exportXls(HttpServletRequest request, HttpServletResponse response, @RequestParam("id") Long id) {
 		Patrol byId = patrolService.getById(id);
 		if (byId == null || StringUtils.isBlank(byId.getTitle())) {
-			throw new SwscException("未查询到此巡检项");
+			throw new AiurtBootException("未查询到此巡检项");
 		}
 		//Step.2 AutoPoi 导出Excel
 		ModelAndView mv = new ModelAndView(new JeecgEntityExcelView());
@@ -351,7 +351,7 @@ public class PatrolContentController {
 				try {
 					listPatrolContents = ExcelImportUtil.importExcel(file.getInputStream(), PatrolContentImportVO.class, params);
 				} catch (Exception e) {
-					throw new SwscException("文档格式错误");
+					throw new AiurtBootException("文档格式错误");
 				}
 				listPatrolContents.forEach(l -> {
 					if (l.getParentName() == null) {
@@ -367,17 +367,17 @@ public class PatrolContentController {
 					Map<Long, List<Integer>> sMap = new HashMap<>();
 					l.forEach(c -> {
 						if (c.getCode() == null) {
-							throw new SwscException("巡检项code不能为空");
+							throw new AiurtBootException("巡检项code不能为空");
 						}
 						if (c.getContent() == null) {
-							throw new SwscException("巡检项内容不能为空");
+							throw new AiurtBootException("巡检项内容不能为空");
 						}
 						if (c.getSequence() == null) {
-							throw new SwscException("巡检项排序不能为空");
+							throw new AiurtBootException("巡检项排序不能为空");
 						}
 
 						if (codeList.contains(c.getCode())) {
-							throw new SwscException("巡检项code不能重复");
+							throw new AiurtBootException("巡检项code不能重复");
 						} else {
 							codeList.add(c.getCode());
 						}
@@ -389,7 +389,7 @@ public class PatrolContentController {
 						}
 
 						if (list.contains(c.getSequence())) {
-							throw new SwscException("同级排序序号不能重复");
+							throw new AiurtBootException("同级排序序号不能重复");
 						} else {
 							list.add(c.getSequence());
 						}
@@ -416,7 +416,7 @@ public class PatrolContentController {
 							return false;
 						}).collect(Collectors.toList());
 						if (CollectionUtils.isNotEmpty(collect)) {
-							throw new SwscException("未找到父级编号为:".concat(StringUtils.join(collect, PatrolConstant.SPL)).concat(" 的值!"));
+							throw new AiurtBootException("未找到父级编号为:".concat(StringUtils.join(collect, PatrolConstant.SPL)).concat(" 的值!"));
 						}
 						//判断同等级序号
 						for (Long code : sMap.keySet()) {
@@ -427,7 +427,7 @@ public class PatrolContentController {
 									List<Integer> list = sMap.get(code);
 									for (Integer sequence : list) {
 										if (sequenceList.contains(sequence)) {
-											throw new SwscException("同级排序序号不能重复");
+											throw new AiurtBootException("同级排序序号不能重复");
 										}
 									}
 								}
@@ -445,13 +445,13 @@ public class PatrolContentController {
 					}
 					boolean flag = this.patrolContentService.saveBatch(list);
 					if (!flag) {
-						throw new SwscException("请稍后重试!");
+						throw new AiurtBootException("请稍后重试!");
 					}
 				});
 				return Result.ok("文件导入成功！数据行数:" + listPatrolContents.size());
 			} catch (Exception e) {
 				log.error(e.getMessage(), e);
-				throw new SwscException("文件导入失败！原因:".concat(e.getMessage()));
+				throw new AiurtBootException("文件导入失败！原因:".concat(e.getMessage()));
 			} finally {
 				try {
 					file.getInputStream().close();

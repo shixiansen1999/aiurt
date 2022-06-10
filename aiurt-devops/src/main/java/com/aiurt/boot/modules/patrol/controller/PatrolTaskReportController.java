@@ -1,13 +1,13 @@
 package com.aiurt.boot.modules.patrol.controller;
 
 
-import com.aiurt.boot.common.exception.SwscException;
 import com.aiurt.boot.modules.patrol.param.ReportAllParam;
 import com.aiurt.boot.modules.patrol.param.ReportOneParam;
 import com.aiurt.boot.modules.patrol.param.ReportSignParam;
 import com.aiurt.boot.modules.patrol.param.UrlParam;
 import com.aiurt.boot.modules.patrol.service.IPatrolTaskReportService;
 import com.aiurt.common.aspect.annotation.AutoLog;
+import com.aiurt.common.exception.AiurtBootException;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
@@ -54,10 +54,10 @@ public class PatrolTaskReportController {
 	@PostMapping(value = "/oneReport")
 	public Result<?> oneReport(HttpServletRequest req, @RequestBody @Validated ReportOneParam param) {
 		if (param.getTaskId() == null) {
-			throw new SwscException("报告表id不能为空");
+			throw new AiurtBootException("报告表id不能为空");
 		}
 		if (param.getSaveStatus() == null) {
-			throw new SwscException("保存状态不能为空");
+			throw new AiurtBootException("保存状态不能为空");
 		}
 		return patrolTaskReportService.oneReport(req, param);
 	}

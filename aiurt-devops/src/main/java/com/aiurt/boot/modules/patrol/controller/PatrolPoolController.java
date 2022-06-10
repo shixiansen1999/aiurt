@@ -1,7 +1,6 @@
 package com.aiurt.boot.modules.patrol.controller;
 
-import com.aiurt.boot.common.constant.CommonConstant;
-import com.aiurt.boot.common.exception.SwscException;
+
 import com.aiurt.boot.modules.manage.entity.Station;
 import com.aiurt.boot.modules.manage.entity.Subsystem;
 import com.aiurt.boot.modules.manage.service.IStationService;
@@ -18,6 +17,8 @@ import com.aiurt.boot.modules.patrol.utils.ExportUtils;
 import com.aiurt.boot.modules.patrol.vo.PatrolTaskVO;
 import com.aiurt.boot.modules.patrol.vo.export.*;
 import com.aiurt.common.aspect.annotation.AutoLog;
+import com.aiurt.common.constant.CommonConstant;
+import com.aiurt.common.exception.AiurtBootException;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -398,7 +399,7 @@ public class PatrolPoolController {
 				try {
 					patrolMap = patrolList.stream().collect(Collectors.toMap(p -> p.getTypes().concat("!-!").concat(p.getTitle()), Patrol::getId));
 				} catch (Exception e) {
-					throw new SwscException("巡检标准内有重复名称数据,请更改或置为无效状态后重新导入");
+					throw new AiurtBootException("巡检标准内有重复名称数据,请更改或置为无效状态后重新导入");
 				}
 				//站点
 				Map<String, Integer> stationMap = stationList.stream().collect(Collectors.toMap(Station::getStationCode, Station::getId));
@@ -410,13 +411,13 @@ public class PatrolPoolController {
 
 					String code = systemCodeMap.get(listPatrol.getSystemName());
 					if (StringUtils.isBlank(code)) {
-						throw new SwscException("未找到系统名称:" + listPatrol.getSystemName());
+						throw new AiurtBootException("未找到系统名称:" + listPatrol.getSystemName());
 					}
 
 					List<Long> ids = new ArrayList<>();
 					Long id = patrolMap.get(code + "!-!" + listPatrol.getPatrolName());
 					if (id == null) {
-						throw new SwscException("未找到巡检表! 系统: " + listPatrol.getSystemName() + " 中名称: " + listPatrol.getPatrolName());
+						throw new AiurtBootException("未找到巡检表! 系统: " + listPatrol.getSystemName() + " 中名称: " + listPatrol.getPatrolName());
 					}
 					ids.add(id);
 
@@ -432,14 +433,14 @@ public class PatrolPoolController {
 						for (String splCode : split) {
 							Integer stationId = stationMap.get(splCode);
 							if (stationId == null) {
-								throw new SwscException("未找到站点,code:" + splCode);
+								throw new AiurtBootException("未找到站点,code:" + splCode);
 							}
 							stationIds.add(stationId.toString());
 						}
 					} else {
 						Integer stationId = stationMap.get(listPatrol.getStationCode());
 						if (stationId == null) {
-							throw new SwscException("未找到站点,code:" + listPatrol.getStationCode());
+							throw new AiurtBootException("未找到站点,code:" + listPatrol.getStationCode());
 						}
 						stationIds.add(stationId.toString());
 					}
@@ -457,7 +458,7 @@ public class PatrolPoolController {
 				return Result.ok("文件导入成功！数据行数:" + taskList.size());
 			} catch (Exception e) {
 				log.error(e.getMessage(), e);
-				throw new SwscException("文件导入失败:" + e.getMessage());
+				throw new AiurtBootException("文件导入失败:" + e.getMessage());
 			} finally {
 				try {
 					file.getInputStream().close();
@@ -498,7 +499,7 @@ public class PatrolPoolController {
 			wb.write(os);
 			os.close();
 		} catch (IOException e) {
-			throw new SwscException("导出错误,请稍后重试");
+			throw new AiurtBootException("导出错误,请稍后重试");
 		}
 	}
 

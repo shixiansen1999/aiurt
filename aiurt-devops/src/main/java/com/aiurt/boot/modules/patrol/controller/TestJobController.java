@@ -1,7 +1,8 @@
 package com.aiurt.boot.modules.patrol.controller;
 
-import com.aiurt.boot.common.util.QuartzUtils;
+
 import com.aiurt.boot.modules.patrol.task.TestJob;
+import com.aiurt.common.util.QuartzUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;

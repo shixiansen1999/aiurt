@@ -1,10 +1,6 @@
 package com.aiurt.boot.modules.patrol.service.impl;
 
-import com.aiurt.boot.common.constant.CommonConstant;
-import com.aiurt.boot.common.exception.SwscException;
-import com.aiurt.boot.common.system.vo.LoginUser;
-import com.aiurt.boot.common.util.RedisUtil;
-import com.aiurt.boot.common.util.RoleAdditionalUtils;
+
 import com.aiurt.boot.modules.appMessage.constant.MessageConstant;
 import com.aiurt.boot.modules.appMessage.entity.Message;
 import com.aiurt.boot.modules.appMessage.param.MessageAddParam;
@@ -29,8 +25,11 @@ import com.aiurt.boot.modules.patrol.service.IPatrolPoolService;
 import com.aiurt.boot.modules.patrol.vo.PatrolPoolDetailVO;
 import com.aiurt.boot.modules.patrol.vo.PatrolPoolVO;
 import com.aiurt.boot.modules.patrol.vo.PoolTreeVO;
-import com.aiurt.boot.modules.system.entity.SysUser;
-import com.aiurt.boot.modules.system.service.ISysUserService;
+
+import com.aiurt.common.constant.CommonConstant;
+import com.aiurt.common.exception.AiurtBootException;
+import com.aiurt.common.util.RedisUtil;
+import com.aiurt.common.util.RoleAdditionalUtils;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -42,6 +41,7 @@ import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -83,7 +83,7 @@ public class PatrolPoolServiceImpl extends ServiceImpl<PatrolPoolMapper, PatrolP
 	@Override
 	public Result<?> selectPage(PoolPageParam param) {
 
-		IPage<PatrolPoolVO> page = new Page<>(param.getPageNo(), param.getPageSize());
+		IPage<PatrolPoolVO> page = new Page<PatrolPoolVO>(param.getPageNo(), param.getPageSize());
 
 		//权限设置
 		LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
@@ -165,9 +165,9 @@ public class PatrolPoolServiceImpl extends ServiceImpl<PatrolPoolMapper, PatrolP
 			PatrolTask task = patrolTaskMapper.selectOne(new LambdaQueryWrapper<PatrolTask>().eq(PatrolTask::getDelFlag, CommonConstant.DEL_FLAG_0)
 					.eq(PatrolTask::getPatrolPoolId, id));
 			if (task.getStatus() == 1) {
-				throw new SwscException("已完成巡检,无法指派");
+				throw new AiurtBootException("已完成巡检,无法指派");
 			} else {
-				throw new SwscException("存在已指派任务,请调用重新指派按钮");
+				throw new AiurtBootException("存在已指派任务,请调用重新指派按钮");
 			}
 		}
 		pool.setStatus(PatrolConstant.ENABLE);
@@ -191,12 +191,12 @@ public class PatrolPoolServiceImpl extends ServiceImpl<PatrolPoolMapper, PatrolP
 				.setIgnoreStatus(0);
 
 		if (!this.updateById(pool)) {
-			throw new SwscException("更新任务池错误");
+			throw new AiurtBootException("更新任务池错误");
 		}
 
 		int insert = patrolTaskMapper.insert(task);
 		if (insert < 1) {
-			throw new SwscException("分配任务失败");
+			throw new AiurtBootException("分配任务失败");
 		}
 
 		String lineStationName = "";
@@ -258,12 +258,12 @@ public class PatrolPoolServiceImpl extends ServiceImpl<PatrolPoolMapper, PatrolP
 				.setIgnoreStatus(PatrolConstant.DISABLE);
 
 		if (!this.updateById(pool)) {
-			throw new SwscException("更新任务池错误");
+			throw new AiurtBootException("更新任务池错误");
 		}
 
 		int insert = patrolTaskMapper.insert(task);
 		if (insert < 1) {
-			throw new SwscException("分配任务失败");
+			throw new AiurtBootException("分配任务失败");
 		}
 		return Result.ok();
 	}
@@ -314,10 +314,10 @@ public class PatrolPoolServiceImpl extends ServiceImpl<PatrolPoolMapper, PatrolP
 				.eq(PatrolTask::getPatrolPoolId, id)
 				.last("limit 1"));
 		if (one == null) {
-			throw new SwscException("未找到已指派数据,重新指派失败");
+			throw new AiurtBootException("未找到已指派数据,重新指派失败");
 		}
 		if (one.getStatus() == 1 || one.getIgnoreStatus() == 1) {
-			throw new SwscException("已完成或已漏检,无法重新指派");
+			throw new AiurtBootException("已完成或已漏检,无法重新指派");
 		}
 
 		List<SysUser> sysUsers = sysUserService.lambdaQuery()
@@ -331,7 +331,7 @@ public class PatrolPoolServiceImpl extends ServiceImpl<PatrolPoolMapper, PatrolP
 
 		int update = patrolTaskMapper.updateById(one);
 		if (update < 1) {
-			throw new SwscException("重新指派失败");
+			throw new AiurtBootException("重新指派失败");
 		}
 
 		PatrolPool pool = this.baseMapper.selectById(one.getPatrolPoolId());

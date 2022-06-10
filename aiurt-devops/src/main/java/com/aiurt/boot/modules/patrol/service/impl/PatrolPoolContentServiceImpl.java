@@ -1,11 +1,11 @@
 package com.aiurt.boot.modules.patrol.service.impl;
 
-import com.aiurt.boot.common.constant.CommonConstant;
 import com.aiurt.boot.modules.patrol.constant.PatrolConstant;
 import com.aiurt.boot.modules.patrol.entity.PatrolContent;
 import com.aiurt.boot.modules.patrol.entity.PatrolPoolContent;
 import com.aiurt.boot.modules.patrol.mapper.PatrolPoolContentMapper;
 import com.aiurt.boot.modules.patrol.service.IPatrolPoolContentService;
+import com.aiurt.common.constant.CommonConstant;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.extern.slf4j.Slf4j;

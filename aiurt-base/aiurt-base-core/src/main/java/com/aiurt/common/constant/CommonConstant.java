@@ -396,4 +396,8 @@ public interface CommonConstant {
     public static final Integer VALUE_2 = 8;
     public static final Integer VALUE_3 = 99;
 
+    /**
+     * 非检查项状态
+     */
+    public static final Integer PATROL_STATUS_DISABLE = -1;
 }

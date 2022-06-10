@@ -1,6 +1,6 @@
 package com.aiurt.boot.modules.patrol.controller;
 
-import com.aiurt.boot.common.constant.CommonConstant;
+
 import com.aiurt.boot.modules.manage.entity.Station;
 import com.aiurt.boot.modules.manage.entity.Subsystem;
 import com.aiurt.boot.modules.manage.service.IStationService;
@@ -11,9 +11,8 @@ import com.aiurt.boot.modules.patrol.vo.statistics.PatrolStatisticsVO;
 import com.aiurt.boot.modules.patrol.vo.statistics.SimpStatisticsVO;
 import com.aiurt.boot.modules.patrol.vo.statistics.StatisticsListVO;
 import com.aiurt.boot.modules.patrol.vo.statistics.StatisticsTitleVO;
-import com.aiurt.boot.modules.system.entity.SysDepart;
-import com.aiurt.boot.modules.system.service.ISysDepartService;
 import com.aiurt.common.aspect.annotation.AutoLog;
+import com.aiurt.common.constant.CommonConstant;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import io.swagger.annotations.Api;
@@ -46,7 +45,7 @@ public class StatisticsController {
 
 	private final PatrolStatisticsService statisticsService;
 
-	private final ISysDepartService sysDepartService;
+//	private final ISysDepartService sysDepartService;
 
 	private final ISubsystemService subsystemService;
 
@@ -69,17 +68,18 @@ public class StatisticsController {
 			list.add(param.getOrganizationId());
 			param.setDepartList(list);
 		}else {
+			// todo 后期修改
 			//若无班组选择,则查询所有存在的班组
-			List<SysDepart> list = sysDepartService.lambdaQuery().eq(SysDepart::getDelFlag, CommonConstant.DEL_FLAG_0)
-					.select(SysDepart::getId).list();
-			if (CollectionUtils.isEmpty(list)) {
-				return Result.ok(vo);
-			}
-			List<SysDepart> departFilter = list.stream().filter(f -> {
-				return !(f.getParentId() == null || StringUtils.isBlank(f.getParentId()));
-			}).collect(Collectors.toList());
-			list.removeAll(departFilter);
-			param.setDepartList( list.stream().map(SysDepart::getId).collect(Collectors.toList()));
+//			List<SysDepart> list = sysDepartService.lambdaQuery().eq(SysDepart::getDelFlag, CommonConstant.DEL_FLAG_0)
+//					.select(SysDepart::getId).list();
+//			if (CollectionUtils.isEmpty(list)) {
+//				return Result.ok(vo);
+//			}
+//			List<SysDepart> departFilter = list.stream().filter(f -> {
+//				return !(f.getParentId() == null || StringUtils.isBlank(f.getParentId()));
+//			}).collect(Collectors.toList());
+//			list.removeAll(departFilter);
+//			param.setDepartList( list.stream().map(SysDepart::getId).collect(Collectors.toList()));
 		}
 
 
@@ -118,14 +118,14 @@ public class StatisticsController {
 
 
 
-		//班组
-		List<SysDepart> departList = sysDepartService.lambdaQuery()
-				.eq(SysDepart::getDelFlag, CommonConstant.DEL_FLAG_0)
-				.eq(SysDepart::getOrgType,2).list();
+		// todo 后期修改 班组
+//		List<SysDepart> departList = sysDepartService.lambdaQuery()
+//				.eq(SysDepart::getDelFlag, CommonConstant.DEL_FLAG_0)
+//				.eq(SysDepart::getOrgType,2).list();
 		Map<String, String> departMap = null;
-		if (CollectionUtils.isNotEmpty(departList)){
-			departMap = departList.stream().collect(Collectors.toMap(SysDepart::getId, SysDepart::getDepartName));
-		}
+//		if (CollectionUtils.isNotEmpty(departList)){
+//			departMap = departList.stream().collect(Collectors.toMap(SysDepart::getId, SysDepart::getDepartName));
+//		}
 		//系统
 		List<Subsystem> systemNameList = subsystemService.list(new LambdaQueryWrapper<Subsystem>()
 				.eq(Subsystem::getDelFlag, CommonConstant.DEL_FLAG_0)

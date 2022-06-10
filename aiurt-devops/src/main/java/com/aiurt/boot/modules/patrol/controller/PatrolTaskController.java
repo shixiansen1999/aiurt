@@ -1,9 +1,6 @@
 package com.aiurt.boot.modules.patrol.controller;
 
 import cn.hutool.core.util.ObjectUtil;
-import com.aiurt.boot.common.constant.RoleConstant;
-import com.aiurt.boot.common.exception.SwscException;
-import com.aiurt.boot.common.system.vo.LoginUser;
 import com.aiurt.boot.modules.manage.service.IStationService;
 import com.aiurt.boot.modules.patrol.constant.PatrolConstant;
 import com.aiurt.boot.modules.patrol.entity.PatrolTask;
@@ -11,14 +8,16 @@ import com.aiurt.boot.modules.patrol.param.*;
 import com.aiurt.boot.modules.patrol.service.IPatrolTaskService;
 import com.aiurt.boot.modules.patrol.vo.PatrolTaskVO;
 import com.aiurt.boot.modules.patrol.vo.statistics.AppStationPatrolStatisticsVO;
-import com.aiurt.boot.modules.system.service.ISysUserService;
 import com.aiurt.common.aspect.annotation.AutoLog;
+import com.aiurt.common.constant.RoleConstant;
+import com.aiurt.common.exception.AiurtBootException;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -26,6 +25,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.constraints.NotNull;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -46,8 +46,8 @@ public class PatrolTaskController {
 	private IPatrolTaskService patrolTaskService;
 	@Autowired
 	private IStationService stationService;
-	@Autowired
-	private ISysUserService sysUserService;
+//	@Autowired
+//	private ISysUserService sysUserService;
 
 	@AutoLog(value = "巡检人员任务-分页列表")
 	@ApiOperation(value = "巡检人员任务-分页列表", notes = "巡检人员任务-分页列表")
@@ -90,13 +90,13 @@ public class PatrolTaskController {
 		List<Long> ids = param.getIds();
 
 		if (ids.size() < 1) {
-			throw new SwscException("处理数据不能为空");
+			throw new AiurtBootException("处理数据不能为空");
 		}
 
 		boolean update = this.patrolTaskService.lambdaUpdate().in(PatrolTask::getId, param.getIds())
 				.update(new PatrolTask().setIgnoreContent(param.getContent()));
 		if (!update) {
-			throw new SwscException("处理失败");
+			throw new AiurtBootException("处理失败");
 		}
 
 
@@ -138,8 +138,9 @@ public class PatrolTaskController {
 		if (Objects.equals(task.getStatus(), PatrolConstant.DISABLE)){
 			return Result.error("未完成不可抽查");
 		}
-		List<String> roleCodeList;
-		roleCodeList = sysUserService.getRoleCodeById(user.getId());
+		List<String> roleCodeList = new ArrayList<>();
+		// TODO 后期修改
+//		roleCodeList = sysUserService.getRoleCodeById(user.getId());
 		if (ObjectUtil.isNotEmpty(roleCodeList)&&roleCodeList.size()>0&&roleCodeList.contains(RoleConstant.TEAM_LEADER)){
 			task.setSpotTest(param.getContent()).setSpotTestUser(user.getId());
 		}else if (ObjectUtil.isNotEmpty(roleCodeList)&&roleCodeList.size()>0&&roleCodeList.contains(RoleConstant.TECHNICIAN)){
