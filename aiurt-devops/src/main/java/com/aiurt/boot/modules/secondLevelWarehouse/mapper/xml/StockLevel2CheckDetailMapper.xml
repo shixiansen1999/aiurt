@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.swsc.copsms.modules.secondLevelWarehouse.mapper.StockLevel2CheckDetailMapper">
+
+    <select id="queryPageList"
+            resultType="com.swsc.copsms.modules.secondLevelWarehouse.entity.vo.StockLevel2CheckDetailVO">
+        select slcd.id,slcd.stock_check_code,slcd.warehouse_code,w.warehouse_name warehouseName,slcd.material_code,
+        mb.name materialName,mb.type,
+        mb.specifications,mb.price,slcd.note,slcd.actual_num,slcd.profit_num,slcd.loss_num
+        from stock_level2_check_detail slcd
+        left join stock_level2_info w on w.warehouse_code=slcd.warehouse_code
+        left join material_base mb on mb.code=slcd.material_code
+        where 1=1 and slcd.del_flag!=1
+        and slcd.stock_check_code=#{stockLevel2CheckDetailDTO.stockCheckCode}
+        <if test="stockLevel2CheckDetailDTO.materialCode!=null and stockLevel2CheckDetailDTO.materialCode!=''">
+            and slcd.material_code = #{stockLevel2CheckDetailDTO.materialCode}
+        </if>
+        <if test="stockLevel2CheckDetailDTO.materialName!=null and stockLevel2CheckDetailDTO.materialName!=''">
+            and mb.name like concat('%', #{stockLevel2CheckDetailDTO.materialName}, '%')
+        </if>
+        order by slcd.create_time desc
+    </select>
+    <select id="queryList"
+            resultType="com.swsc.copsms.modules.secondLevelWarehouse.entity.vo.StockLevel2CheckDetailVO">
+        select slcd.id,slcd.stock_check_code,slcd.warehouse_code,w.warehouse_name warehouseName,slcd.material_code,
+        mb.name materialName,mb.type,
+        mb.specifications,mb.price,slcd.note,slcd.actual_num,slcd.profit_num,slcd.loss_num,slcd.update_time
+        from stock_level2_check_detail slcd
+        left join stock_level2_info w on w.warehouse_code=slcd.warehouse_code
+        left join material_base mb on mb.code=slcd.material_code
+        where 1=1 and slcd.del_flag!=1
+        and slcd.stock_check_code=#{stockLevel2CheckDetailDTO.stockCheckCode}
+        <if test="stockLevel2CheckDetailDTO.materialCode!=null and stockLevel2CheckDetailDTO.materialCode!=''">
+            and slcd.material_code = #{stockLevel2CheckDetailDTO.materialCode}
+        </if>
+        <if test="stockLevel2CheckDetailDTO.materialName!=null and stockLevel2CheckDetailDTO.materialName!=''">
+            and mb.name like concat('%', #{stockLevel2CheckDetailDTO.materialName}, '%')
+        </if>
+        order by slcd.create_time desc
+    </select>
+</mapper>

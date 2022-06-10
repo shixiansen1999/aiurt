@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.swsc.copsms.modules.patrol.mapper.PatrolPoolContentMapper">
+	<select id="selectTreeDetails" resultType="com.swsc.copsms.modules.patrol.vo.PatrolPoolContentTreeVO">
+		select c.*,
+		<if test="taskId != null">
+			r.id     as reportId,
+			r.note,
+			r.save_status,
+			r.status as reportStatus
+		</if>
+		from patrol_pool_content c
+		<if test="taskId != null">
+			left join patrol_task_report r on r.patrol_pool_content_id = c.id
+		</if>
+		where c.patrol_pool_id = #{id}
+		  and c.parent_id = #{parentId}
+		<if test="taskId != null">
+			and (r.patrol_task_id = #{taskId} or r.taskId is null)
+			and (r.del_flag = 0 or r.del_flag is null)
+		</if>
+		and c.del_flag = 0
+
+				order by c.sequence
+	</select>
+</mapper>

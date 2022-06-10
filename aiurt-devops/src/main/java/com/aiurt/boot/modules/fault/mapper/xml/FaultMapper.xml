@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.swsc.copsms.modules.fault.mapper.FaultMapper">
+
+
+    <select id="queryFault" resultType="com.swsc.copsms.common.result.FaultResult">
+        SELECT
+        	id as id,
+        	CODE as code,
+        	line_code as lineCode,
+        	station_code as stationCode,
+        	devices_ids as devicesIds,
+        	fault_phenomenon as faultPhenomenon,
+        	fault_type as faultType,
+        	STATUS as status,
+        	system_code as systemCode,
+			assign_status as assignStatus,
+        	del_flag as delFlag,
+        	create_by as createBy,
+        	update_by as updateBy,
+        	create_time as createTime,
+			repair_way as repairWay,
+        	update_time as updateTime,
+			hang_state as hangState,
+			remark as remark
+        FROM
+        	fault
+		WHERE 1 = 1
+        <if test="param.systemCode!= null and param.systemCode!= ''">
+		 	AND system_code = #{param.systemCode}
+		</if>
+		<if test="param.code!= null and param.code!= ''">
+			AND code = #{param.code}
+		</if>
+		<if test="param.stationCode!= null and param.stationCode!= ''">
+			AND station_code = #{param.stationCode}
+		</if>
+		<if test="param.devicesIds!= null and param.devicesIds!= ''">
+			AND devices_ids = #{param.devicesIds}
+		</if>
+		<if test="param.repairWay!= null and param.repairWay!= ''">
+			AND repair_way = #{param.repairWay}
+		</if>
+		<if test="param.status!= null and param.status!= ''">
+			AND status = #{param.status}
+		</if>
+		<if test="param.dayStart!= null and param.dayStart!= '' and param.dayEnd!= null and param.dayEnd!= ''">
+			AND create_time &gt;= #{param.dayStart} and create_time &lt; #{param.dayEnd}
+		</if>
+			AND del_flag = '0'
+    </select>
+
+	<select id="selectByCode" resultType="com.swsc.copsms.modules.fault.entity.Fault">
+		select * from fault where code = #{code}
+	</select>
+
+	<select id="selectDetailByCode" resultType="com.swsc.copsms.common.result.FaultResult">
+		select * from fault where code = #{code}
+	</select>
+
+	<select id="selectById" resultType="com.swsc.copsms.modules.fault.entity.Fault">
+		select * from fault where id = #{id}
+	</select>
+
+	<select id="selectCodeDetail" resultType="com.swsc.copsms.common.result.FaultCodesResult">
+		select code as code , fault_phenomenon as faultPhenomenon from fault where code = #{code}
+	</select>
+
+	<update id="hang">
+		UPDATE fault SET hang_state = '1', remark = #{remark} WHERE id = #{id}
+	</update>
+
+	<update id="cancel">
+		UPDATE fault SET hang_state = '0' WHERE id = #{id}
+	</update>
+
+	<update id="assign">
+		UPDATE fault SET assign_status = '1' WHERE code = #{code}
+	</update>
+
+	<update id="assignAgain">
+		UPDATE fault SET assign_status = '2' WHERE code = #{code}
+	</update>
+
+</mapper>

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.swsc.copsms.modules.worklog.mapper.WorkLogMapper">
+
+    <select id="queryWorkLog" resultType="com.swsc.copsms.common.result.WorkLogResult">
+        select * from work_log where 1 = 1
+        <if test="param.dayStart != null and param.dayStart != '' and param.dayEnd != null and param.dayEnd != ''">
+            AND log_time &gt;= #{param.dayStart} and log_time &lt; #{param.dayEnd}
+        </if>
+        <if test="param.checkStatus!= null and param.checkStatus!= ''">
+            AND check_status = #{param.checkStatus}
+        </if>
+        AND del_flag = '0'
+    </select>
+
+    <update id="deleteOne" parameterType="java.lang.Integer">
+        UPDATE work_log SET del_flag = '1' WHERE id = #{id}
+    </update>
+
+    <select id="selectById" resultType="com.swsc.copsms.common.result.WorkLogResult">
+        select * from work_log where id = #{id}
+    </select>
+
+    <update id="confirm" parameterType="java.lang.Integer">
+        UPDATE work_log SET confirm_status = '1' WHERE id = #{id}
+    </update>
+
+    <update id="check">
+        UPDATE work_log SET check_status = '1' WHERE id = #{id}
+    </update>
+</mapper>

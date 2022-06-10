@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.swsc.copsms.modules.secondLevelWarehouse.mapper.SparePartApplyMapper">
+
+    <select id="selectExportXls"
+            resultType="com.swsc.copsms.modules.secondLevelWarehouse.entity.dto.StockApplyExcel">
+        select spa.code,w.warehouse_name warehouseName,w.warehouse_department warehouseDepartment,
+                spa.status,spa.create_time applyTime,spa.remarks
+         from spare_part_apply spa
+        left join warehouse w on w.warehouse_code=spa.warehouse_code
+        left join sys_user su on su.id=spa.create_by
+        where spa.id in(
+        <foreach collection="ids" separator="," item="item">
+            #{item}
+        </foreach>
+        )
+    </select>
+</mapper>

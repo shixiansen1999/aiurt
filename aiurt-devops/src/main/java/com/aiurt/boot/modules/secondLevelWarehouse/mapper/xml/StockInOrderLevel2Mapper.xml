@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.swsc.copsms.modules.secondLevelWarehouse.mapper.StockInOrderLevel2Mapper">
+
+    <select id="queryPageList"
+            resultType="com.swsc.copsms.modules.secondLevelWarehouse.entity.vo.StockInOrderLevel2VO">
+        select si.id,si.order_code,w.warehouse_name warehouseName,su.realname operatorName,si.stock_in_time,si.note
+        from stock_in_order_level2 si
+        left join stock_level2_info w on w.warehouse_code=si.warehouse_code
+        left join sys_user su on su.id=si.create_by
+        where 1=1 and si.del_flag!=1
+        <if test="stockInOrderLevel2.orderCode!=null and stockInOrderLevel2.orderCode!=''">
+            and si.order_code = #{stockInOrderLevel2.orderCode}
+        </if>
+        <if test="stockInOrderLevel2.warehouseCode!=null and stockInOrderLevel2.warehouseCode!=''">
+            and si.warehouse_code = #{stockInOrderLevel2.warehouseCode}
+        </if>
+        <if test="startTime!=null and startTime!='' and endTime!=null and endTime!='' ">
+            and si.stock_in_time between #{startTime} and #{endTime}
+        </if>
+        order by  si.create_time desc
+    </select>
+    <select id="selectExcelData"
+            resultType="com.swsc.copsms.modules.secondLevelWarehouse.entity.dto.StockInOrderLevel2Excel">
+        select si.order_code,w.warehouse_name warehouseName,su.realname operatorName,si.stock_in_time,si.note
+        from stock_in_order_level2 si
+        left join stock_level2_info w on w.warehouse_code=si.warehouse_code
+        left join sys_user su on su.id=si.create_by
+        where si.id in (
+        <foreach collection="ids" separator="," item="item">
+            #{item}
+        </foreach>
+        )
+    </select>
+</mapper>

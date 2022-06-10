@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.swsc.copsms.modules.fault.mapper.FaultKnowledgeBaseMapper">
+
+    <select id="selectCodeById" resultType="String">
+        SELECT fault_codes FROM fault_knowledge_base WHERE id = #{id}
+    </select>
+
+    <update id="updateAssociateFault">
+        UPDATE fault_knowledge_base SET fault_codes = #{faultCodes} WHERE id = #{id}
+    </update>
+
+    <update id="deleteOne" parameterType="java.lang.Integer">
+        UPDATE fault_knowledge_base SET del_flag = '1' WHERE id = #{id}
+    </update>
+    <select id="queryFaultKnowledgeBase" resultType="com.swsc.copsms.common.result.FaultKnowledgeBaseResult">
+        select * from fault_knowledge_base
+        where 1= 1
+        <if test="param.faultPhenomenon!= null and param.faultPhenomenon!= ''">
+            AND fault_phenomenon  LIKE '%${param.faultPhenomenon}%'
+        </if>
+        <if test="param.faultReason!= null and param.faultReason!= ''">
+            AND fault_reason LIKE '%${param.faultReason}%'
+        </if>
+        <if test="param.solution!= null and param.solution!= ''">
+            AND solution LIKE '%${param.solution}%'
+        </if>
+        AND del_flag = '0'
+    </select>
+</mapper>

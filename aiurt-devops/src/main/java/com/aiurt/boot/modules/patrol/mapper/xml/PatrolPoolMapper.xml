@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.swsc.copsms.modules.patrol.mapper.PatrolPoolMapper">
+	<select id="selectPageList" resultType="com.swsc.copsms.modules.patrol.vo.PatrolPoolVO">
+		select p.id,
+		       p.patrol_name,
+		       p.system_type,
+		       p.organization_id,
+		       p.status as poolStatus,
+		       p.tactics,
+		       t.staff_ids,
+		       t.status as taskStatus,
+		       t.counts,
+		       p.execution_time,
+		       p.note
+		from patrol_pool p
+				     left join patrol_task t on p.id = t.patrol_pool_id
+
+				where p.del_flag = 0
+				  and (t.del_flag = 0 or t.del_flag is null)
+				  and p.type = 0
+		<if test="param.name != null  and param.name != ''">
+			and p.patrol_name like concat('%', #{param.name}, '%')
+		</if>
+		<if test="param.organizationId != null">
+			and p.organization_id = #{param.organizationId}
+		</if>
+		<if test="param.systemType != null">
+			and system_type like concat('%', #{param.systemType}, '%')
+		</if>
+
+
+		order by p.id
+	</select>
+</mapper>

@@ -1,0 +1,167 @@
+<template>
+  <a-drawer
+      :title="title"
+      :width="800"
+      placement="right"
+      :closable="false"
+      @close="close"
+      :visible="visible"
+  >
+
+    <a-spin :spinning="confirmLoading">
+      <a-form :form="form">
+      
+        <a-form-item
+          :labelCol="labelCol"
+          :wrapperCol="wrapperCol"
+          label="培训计划id">
+          <a-input placeholder="请输入培训计划id" v-decorator="['planId', validatorRules.planId ]" />
+        </a-form-item>
+        <a-form-item
+          :labelCol="labelCol"
+          :wrapperCol="wrapperCol"
+          label="培训对象 UUID">
+          <a-input placeholder="请输入培训对象 UUID" v-decorator="['planObj', validatorRules.planObj ]" />
+        </a-form-item>
+        <a-form-item
+          :labelCol="labelCol"
+          :wrapperCol="wrapperCol"
+          label="签到状态 0-未签到 1-已签到">
+          <a-input-number v-decorator="[ 'signStatus', validatorRules.signStatus ]" />
+        </a-form-item>
+        <a-form-item
+          :labelCol="labelCol"
+          :wrapperCol="wrapperCol"
+          label="签到时间">
+          <a-date-picker showTime format='YYYY-MM-DD HH:mm:ss' v-decorator="[ 'signTime', {}]" />
+        </a-form-item>
+        <a-form-item
+          :labelCol="labelCol"
+          :wrapperCol="wrapperCol"
+          label="证书">
+          <a-input placeholder="请输入证书" v-decorator="['certificateUrl', {}]" />
+        </a-form-item>
+        <a-form-item
+          :labelCol="labelCol"
+          :wrapperCol="wrapperCol"
+          label="删除状态 0-未删除 1-已删除">
+          <a-input-number v-decorator="[ 'delFlag', validatorRules.delFlag ]" />
+        </a-form-item>
+		
+      </a-form>
+    </a-spin>
+    <a-button type="primary" @click="handleOk">确定</a-button>
+    <a-button type="primary" @click="handleCancel">取消</a-button>
+  </a-drawer>
+</template>
+
+<script>
+  import { httpAction } from '@/api/manage'
+  import pick from 'lodash.pick'
+  import moment from "moment"
+
+  export default {
+    name: "TrainingPlanObjModal",
+    data () {
+      return {
+        title:"操作",
+        visible: false,
+        model: {},
+        labelCol: {
+          xs: { span: 24 },
+          sm: { span: 5 },
+        },
+        wrapperCol: {
+          xs: { span: 24 },
+          sm: { span: 16 },
+        },
+
+        confirmLoading: false,
+        form: this.$form.createForm(this),
+        validatorRules:{
+        planId:{rules: [{ required: true, message: '请输入培训计划id!' }]},
+        planObj:{rules: [{ required: true, message: '请输入培训对象 UUID!' }]},
+        signStatus:{rules: [{ required: true, message: '请输入签到状态 0-未签到 1-已签到!' }]},
+        delFlag:{rules: [{ required: true, message: '请输入删除状态 0-未删除 1-已删除!' }]},
+        },
+        url: {
+          add: "/training/trainingPlanObj/add",
+          edit: "/training/trainingPlanObj/edit",
+        },
+      }
+    },
+    created () {
+    },
+    methods: {
+      add () {
+        this.edit({});
+      },
+      edit (record) {
+        this.form.resetFields();
+        this.model = Object.assign({}, record);
+        this.visible = true;
+        this.$nextTick(() => {
+          this.form.setFieldsValue(pick(this.model,'planId','planObj','signStatus','certificateUrl','delFlag'))
+		  //时间格式化
+          this.form.setFieldsValue({signTime:this.model.signTime?moment(this.model.signTime):null})
+        });
+
+      },
+      close () {
+        this.$emit('close');
+        this.visible = false;
+      },
+      handleOk () {
+        const that = this;
+        // 触发表单验证
+        this.form.validateFields((err, values) => {
+          if (!err) {
+            that.confirmLoading = true;
+            let httpurl = '';
+            let method = '';
+            if(!this.model.id){
+              httpurl+=this.url.add;
+              method = 'post';
+            }else{
+              httpurl+=this.url.edit;
+               method = 'put';
+            }
+            let formData = Object.assign(this.model, values);
+            //时间格式化
+            formData.signTime = formData.signTime?formData.signTime.format('YYYY-MM-DD HH:mm:ss'):null;
+            
+            console.log(formData)
+            httpAction(httpurl,formData,method).then((res)=>{
+              if(res.success){
+                that.$message.success(res.message);
+                that.$emit('ok');
+              }else{
+                that.$message.warning(res.message);
+              }
+            }).finally(() => {
+              that.confirmLoading = false;
+              that.close();
+            })
+
+
+
+          }
+        })
+      },
+      handleCancel () {
+        this.close()
+      },
+
+
+    }
+  }
+</script>
+
+<style lang="less" scoped>
+/** Button按钮间距 */
+  .ant-btn {
+    margin-left: 30px;
+    margin-bottom: 30px;
+    float: right;
+  }
+</style>
