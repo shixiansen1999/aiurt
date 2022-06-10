@@ -1,17 +1,16 @@
 package com.aiurt.boot.modules.fault.mapper;
 
 import cn.hutool.core.date.DateTime;
-import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.aiurt.boot.common.result.*;
 import com.aiurt.boot.modules.apphome.vo.FaultHomeVO;
 import com.aiurt.boot.modules.fault.entity.Fault;
-import com.aiurt.boot.modules.statistical.vo.FaultStatisticsModal;
 import com.aiurt.boot.modules.fault.param.FaultCountParam;
 import com.aiurt.boot.modules.fault.param.FaultDeviceParam;
 import com.aiurt.boot.modules.fault.param.FaultParam;
 import com.aiurt.boot.modules.patrol.param.PatrolAppHomeParam;
 import com.aiurt.boot.modules.statistical.vo.*;
+import com.aiurt.common.result.*;
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import org.apache.ibatis.annotations.Param;
 
 import java.time.LocalDate;

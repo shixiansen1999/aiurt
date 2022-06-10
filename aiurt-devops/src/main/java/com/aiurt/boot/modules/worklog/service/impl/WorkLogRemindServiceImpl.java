@@ -1,9 +1,5 @@
 package com.aiurt.boot.modules.worklog.service.impl;
 
-import com.aiurt.boot.common.constant.CommonConstant;
-import com.aiurt.boot.common.constant.QuartConstant;
-import com.aiurt.boot.common.system.vo.LoginUser;
-import com.aiurt.boot.common.util.QuartzUtils;
 import com.aiurt.boot.modules.worklog.dto.WorkLogJobDTO;
 import com.aiurt.boot.modules.worklog.dto.WorkLogRemindDTO;
 import com.aiurt.boot.modules.worklog.entity.WorkLogRemind;
@@ -11,12 +7,16 @@ import com.aiurt.boot.modules.worklog.mapper.WorkLogRemindMapper;
 import com.aiurt.boot.modules.worklog.service.IWorkLogRemindService;
 import com.aiurt.boot.modules.worklog.task.WorkLogJob;
 import com.aiurt.boot.modules.worklog.task.WorkLogJobNight;
+import com.aiurt.common.constant.CommonConstant;
+import com.aiurt.common.constant.QuartConstant;
 import com.aiurt.common.exception.AiurtBootException;
+import com.aiurt.common.util.QuartzUtils;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

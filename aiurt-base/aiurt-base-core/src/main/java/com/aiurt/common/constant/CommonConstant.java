@@ -384,4 +384,16 @@ public interface CommonConstant {
      * 用户数据权限--可管理的txxy
      */
     public static final String PREFIX_USER_SYSTEM_CODES = "prefix_user_system_codes";
+
+    /**
+     * 月份
+     */
+    public static final Integer MONTH_VALUE = 10;
+    /**
+     * 工作日志数量
+     */
+    public static final Integer VALUE_1 = 9;
+    public static final Integer VALUE_2 = 8;
+    public static final Integer VALUE_3 = 99;
+
 }

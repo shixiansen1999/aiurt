@@ -1,6 +1,7 @@
 package com.aiurt.common.util;
 
-import com.aiurt.boot.common.api.vo.PageVO;
+
+import com.aiurt.common.api.vo.PageVO;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 

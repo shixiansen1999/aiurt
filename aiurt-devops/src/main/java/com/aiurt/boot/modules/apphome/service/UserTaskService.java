@@ -68,12 +68,6 @@ public interface UserTaskService extends IService<UserTask> {
 	 */
 	boolean completeWork(String userId,String date);
 
-
-
-
-
-
-
 	/**
 	 * 重新任命
 	 *

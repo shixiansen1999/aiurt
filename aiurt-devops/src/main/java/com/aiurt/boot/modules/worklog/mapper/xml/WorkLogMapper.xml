@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.aiurt.boot.modules.worklog.mapper.WorkLogMapper">
 
-    <select id="queryWorkLog" resultType="com.aiurt.boot.common.result.WorkLogResult">
+    <select id="queryWorkLog" resultType="com.aiurt.common.result.WorkLogResult">
         SELECT
             wl.*,
             su.realname AS succeedName,
@@ -41,7 +41,7 @@
             wl.create_time DESC
     </select>
 
-    <select id="exportXls" resultType="com.aiurt.boot.common.result.WorkLogResult">
+    <select id="exportXls" resultType="com.aiurt.common.result.WorkLogResult">
         SELECT
             wl.*,
             su.realname AS succeedName,

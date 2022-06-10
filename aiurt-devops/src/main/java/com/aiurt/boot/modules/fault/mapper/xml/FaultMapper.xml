@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.aiurt.boot.modules.fault.mapper.FaultMapper">
-	<select id="queryFault" resultType="com.aiurt.boot.common.result.FaultResult">
+	<select id="queryFault" resultType="com.aiurt.common.result.FaultResult">
 		SELECT
 			f.id AS id,
 			f.CODE AS CODE,
@@ -106,7 +106,7 @@
 			f.create_time DESC
 	</select>
 
-	<select id="exportXls" resultType="com.aiurt.boot.common.result.FaultResult">
+	<select id="exportXls" resultType="com.aiurt.common.result.FaultResult">
 		SELECT
 			f.id AS id,
 			f.CODE AS CODE,
@@ -201,7 +201,7 @@
 			f.create_time DESC
 	</select>
 
-	<select id="selectDetailByCode" resultType="com.aiurt.boot.common.result.FaultResult">
+	<select id="selectDetailByCode" resultType="com.aiurt.common.result.FaultResult">
 		SELECT
 			f.*,
 			cst.system_name AS systemName,
@@ -219,7 +219,7 @@
 		where id = #{id}
 	</select>
 
-	<select id="selectCodeDetail" resultType="com.aiurt.boot.common.result.FaultCodesResult">
+	<select id="selectCodeDetail" resultType="com.aiurt.common.result.FaultCodesResult">
 		select code as code, fault_phenomenon as faultPhenomenon
 		from fault
 		where code = #{code}
@@ -365,7 +365,7 @@
 		</if>
 	</select>
 
-	<select id="selectFaultCount" resultType="com.aiurt.boot.common.result.FaultCountResult">
+	<select id="selectFaultCount" resultType="com.aiurt.common.result.FaultCountResult">
 		SELECT
 			COUNT(*) AS sumNum,
 			cs.system_name AS systemName,
@@ -428,7 +428,7 @@
 			</if>
 	</select>
 
-	<select id="selectContrast" resultType="com.aiurt.boot.common.result.FaultCountResult">
+	<select id="selectContrast" resultType="com.aiurt.common.result.FaultCountResult">
 		SELECT
 			COUNT(1) AS sumNum,
 			cs.system_name AS systemName,
@@ -457,7 +457,7 @@
 			f.system_code
 	</select>
 
-	<select id="selectFaultNumByMonth" resultType="com.aiurt.boot.common.result.FaultMonthResult">
+	<select id="selectFaultNumByMonth" resultType="com.aiurt.common.result.FaultMonthResult">
 		SELECT
 			COUNT(*) AS sumNum,
 			MONTH ( create_time ) AS thisMonth
@@ -501,7 +501,7 @@
 			AND (create_time BETWEEN #{dayStart} AND #{dayEnd})
 	</select>
 
-	<select id="selectFaultByMonth" resultType="com.aiurt.boot.common.result.FaultMonthResult">
+	<select id="selectFaultByMonth" resultType="com.aiurt.common.result.FaultMonthResult">
 		SELECT
 			COUNT(*) AS sumNum,
 			MONTH ( create_time ) AS thisMonth
@@ -544,7 +544,7 @@
 			AND (create_time BETWEEN #{dayStart} AND #{dayEnd})
 	</select>
 
-	<select id="selectFirstLevelFault" resultType="com.aiurt.boot.common.result.FaultLevelResult">
+	<select id="selectFirstLevelFault" resultType="com.aiurt.common.result.FaultLevelResult">
 		SELECT
 			`code` AS faultCode,
 			fault_phenomenon AS faultPhenomenon,
@@ -561,7 +561,7 @@
 			</if>
 	</select>
 
-	<select id="selectLevelFault" resultType="com.aiurt.boot.common.result.FaultLevelResult">
+	<select id="selectLevelFault" resultType="com.aiurt.common.result.FaultLevelResult">
 		SELECT
 			`code` AS faultCode,
 			fault_phenomenon AS faultPhenomenon,
@@ -579,7 +579,7 @@
 			</if>
 	</select>
 
-	<select id="selectFaultDeviceDetail" resultType="com.aiurt.boot.common.result.FaultDeviceResult">
+	<select id="selectFaultDeviceDetail" resultType="com.aiurt.common.result.FaultDeviceResult">
 		SELECT
 			f.create_time AS createTime,
 			f.`code` AS `code`,

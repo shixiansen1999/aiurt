@@ -1,16 +1,16 @@
 package com.aiurt.boot.modules.worklog.controller;
 
 
-import com.aiurt.boot.common.result.LogCountResult;
-import com.aiurt.boot.common.result.LogResult;
-import com.aiurt.boot.common.result.LogSubmitCount;
-import com.aiurt.boot.common.result.WorkLogResult;
 import com.aiurt.boot.modules.worklog.dto.WorkLogDTO;
 import com.aiurt.boot.modules.worklog.entity.WorkLog;
 import com.aiurt.boot.modules.worklog.param.LogCountParam;
 import com.aiurt.boot.modules.worklog.param.WorkLogParam;
 import com.aiurt.boot.modules.worklog.service.IWorkLogService;
 import com.aiurt.common.aspect.annotation.AutoLog;
+import com.aiurt.common.result.LogCountResult;
+import com.aiurt.common.result.LogResult;
+import com.aiurt.common.result.LogSubmitCount;
+import com.aiurt.common.result.WorkLogResult;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.annotations.Api;
@@ -39,7 +39,6 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-
  /**
  * @Description: 工作日志
  * @Author: qian

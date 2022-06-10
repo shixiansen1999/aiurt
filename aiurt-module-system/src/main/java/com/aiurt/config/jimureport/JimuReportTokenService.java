@@ -1,12 +1,12 @@
 package com.aiurt.config.jimureport;
 
 import com.aiurt.common.system.util.JwtUtil;
-import org.jeecg.common.system.vo.SysUserCacheInfo;
 import com.aiurt.common.util.RedisUtil;
-import lombok.extern.slf4j.Slf4j;
-
-import org.jeecg.modules.jmreport.api.JmReportTokenServiceI;
+import com.aiurt.common.util.TokenUtils;
 import com.aiurt.modules.system.service.impl.SysBaseApiImpl;
+import lombok.extern.slf4j.Slf4j;
+import org.jeecg.common.system.vo.SysUserCacheInfo;
+import org.jeecg.modules.jmreport.api.JmReportTokenServiceI;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;

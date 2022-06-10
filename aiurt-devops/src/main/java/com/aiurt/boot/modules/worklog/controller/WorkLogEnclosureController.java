@@ -1,6 +1,6 @@
 package com.aiurt.boot.modules.worklog.controller;
 
-import com.aiurt.boot.common.util.oConvertUtils;
+import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.modules.worklog.entity.WorkLogEnclosure;
 import com.aiurt.boot.modules.worklog.service.IWorkLogEnclosureService;
 import com.aiurt.common.aspect.annotation.AutoLog;
@@ -184,7 +184,7 @@ public class WorkLogEnclosureController {
      QueryWrapper<WorkLogEnclosure> queryWrapper = null;
      try {
          String paramsStr = request.getParameter("paramsStr");
-         if (oConvertUtils.isNotEmpty(paramsStr)) {
+         if (StrUtil.isNotEmpty(paramsStr)) {
              String deString = URLDecoder.decode(paramsStr, "UTF-8");
              WorkLogEnclosure workLogEnclosure = JSON.parseObject(deString, WorkLogEnclosure.class);
              queryWrapper = QueryGenerator.initQueryWrapper(workLogEnclosure, request.getParameterMap());

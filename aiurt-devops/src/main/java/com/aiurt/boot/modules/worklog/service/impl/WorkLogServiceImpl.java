@@ -2,20 +2,6 @@ package com.aiurt.boot.modules.worklog.service.impl;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjectUtil;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.aiurt.boot.common.constant.CommonConstant;
-import com.aiurt.boot.common.enums.WorkLogCheckStatusEnum;
-import com.aiurt.boot.common.enums.WorkLogConfirmStatusEnum;
-import com.aiurt.boot.common.enums.WorkLogStatusEnum;
-import com.aiurt.boot.common.exception.SwscException;
-import com.aiurt.boot.common.result.*;
-import com.aiurt.boot.common.system.vo.LoginUser;
-import com.aiurt.boot.common.util.DateUtils;
-import com.aiurt.boot.common.util.LocalDateUtil;
-import com.aiurt.boot.common.util.RoleAdditionalUtils;
 import com.aiurt.boot.modules.appMessage.constant.MessageConstant;
 import com.aiurt.boot.modules.appMessage.entity.Message;
 import com.aiurt.boot.modules.appMessage.param.MessageAddParam;
@@ -42,10 +28,24 @@ import com.aiurt.boot.modules.worklog.mapper.WorkLogMapper;
 import com.aiurt.boot.modules.worklog.param.LogCountParam;
 import com.aiurt.boot.modules.worklog.param.WorkLogParam;
 import com.aiurt.boot.modules.worklog.service.IWorkLogService;
+import com.aiurt.common.constant.CommonConstant;
+import com.aiurt.common.enums.WorkLogCheckStatusEnum;
+import com.aiurt.common.enums.WorkLogConfirmStatusEnum;
+import com.aiurt.common.enums.WorkLogStatusEnum;
+import com.aiurt.common.exception.AiurtBootException;
+import com.aiurt.common.result.*;
+import com.aiurt.common.util.DateUtils;
+import com.aiurt.common.util.LocalDateUtil;
+import com.aiurt.common.util.RoleAdditionalUtils;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -238,7 +238,7 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
             enclosureMapper.insert(enclosure);
         }
         //完成任务
-        userTaskService.completeWork(userId, DateUtils.date2Str(depot.getSubmitTime(),DateUtils.date_sdf));
+        userTaskService.completeWork(userId, DateUtils.date2Str(depot.getSubmitTime(), new SimpleDateFormat("yyyy-MM-dd")));
         //发送待办消息
         if (StringUtils.isNotBlank(dto.getSucceedId())) {
             sendMessage(dto);
@@ -442,7 +442,7 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
     public Result<?> deleteById(Integer id) {
         WorkLog workLog = this.getOne(new QueryWrapper<WorkLog>().eq(WorkLog.ID, id), false);
         if (workLog.getConfirmStatus().equals(WorkLogConfirmStatusEnum.YQR.getCode())) {
-            throw new SwscException("已确认状态不能删除");
+            throw new AiurtBootException("已确认状态不能删除");
         }
         depotMapper.deleteOne(id);
         return Result.ok();
@@ -515,7 +515,7 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
      * @return
      */
     @Override
-    public Result<LogResult>  getWaitMessage(String nowday,HttpServletRequest req) {
+    public Result<LogResult>  getWaitMessage(String nowday, HttpServletRequest req) {
 
         LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         String userId = user.getId();

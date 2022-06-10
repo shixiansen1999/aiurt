@@ -3,11 +3,11 @@
 <mapper namespace="com.aiurt.boot.modules.fault.mapper.FaultRepairRecordMapper">
 
 
-    <select id="queryDetail" resultType="com.aiurt.boot.common.result.FaultRepairRecordResult">
+    <select id="queryDetail" resultType="com.aiurt.common.result.FaultRepairRecordResult">
         select * from fault_repair_record where fault_code = #{code}
     </select>
 
-    <select id="queryLastDetail" resultType="com.aiurt.boot.common.result.FaultRepairRecordResult">
+    <select id="queryLastDetail" resultType="com.aiurt.common.result.FaultRepairRecordResult">
         SELECT
 	        *
         FROM
@@ -20,14 +20,14 @@
 	        LIMIT 1
     </select>
 
-    <select id="getWaitMessage" resultType="com.aiurt.boot.common.result.FaultRepairRecordResult">
+    <select id="getWaitMessage" resultType="com.aiurt.common.result.FaultRepairRecordResult">
         select * from fault_repair_record
         where del_flag = 0
         and participate_ids like concat('%', #{userId}, '%')
         and create_time between #{startTime} and #{endTime}
     </select>
 
-    <select id="selectLastRecord" resultType="com.aiurt.boot.common.result.FaultRepairRecordResult">
+    <select id="selectLastRecord" resultType="com.aiurt.common.result.FaultRepairRecordResult">
         select * from fault_repair_record
         where
         appoint_user_id = #{id}
@@ -66,7 +66,7 @@
         group by fr.create_by
     </select>
 
-    <select id="getFaultDate" resultType="com.aiurt.boot.common.result.FaultPersonResult">
+    <select id="getFaultDate" resultType="com.aiurt.common.result.FaultPersonResult">
         SELECT
             fr.fault_time AS startDate,
             fr.create_time AS endDate

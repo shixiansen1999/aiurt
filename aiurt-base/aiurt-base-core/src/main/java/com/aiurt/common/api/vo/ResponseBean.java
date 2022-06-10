@@ -1,6 +1,6 @@
 package com.aiurt.common.api.vo;
 
-import cn.hutool.json.JSONUtil;
+import com.alibaba.fastjson.JSON;
 
 public class ResponseBean<T> {
 
@@ -47,7 +47,7 @@ public class ResponseBean<T> {
 
     @Override
     public String toString() {
-        return JSONUtil.toJsonStr(this);
+        return JSON.toJSONString(this);
     }
 
     public boolean isSuccess() {

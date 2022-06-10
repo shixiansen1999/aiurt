@@ -1,16 +1,16 @@
 package com.aiurt.boot.modules.worklog.service;
 
-import com.baomidou.mybatisplus.core.metadata.IPage;
 
-import com.aiurt.boot.common.result.LogCountResult;
-import com.aiurt.boot.common.result.LogResult;
-import com.aiurt.boot.common.result.LogSubmitCount;
-import com.aiurt.boot.common.result.WorkLogResult;
 import com.aiurt.boot.modules.worklog.dto.WorkLogDTO;
 import com.aiurt.boot.modules.worklog.entity.WorkLog;
-import com.baomidou.mybatisplus.extension.service.IService;
 import com.aiurt.boot.modules.worklog.param.LogCountParam;
 import com.aiurt.boot.modules.worklog.param.WorkLogParam;
+import com.aiurt.common.result.LogCountResult;
+import com.aiurt.common.result.LogResult;
+import com.aiurt.common.result.LogSubmitCount;
+import com.aiurt.common.result.WorkLogResult;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.service.IService;
 import org.jeecg.common.api.vo.Result;
 
 import javax.servlet.http.HttpServletRequest;
@@ -39,7 +39,7 @@ public interface IWorkLogService extends IService<WorkLog> {
      * @param req
      * @return
      */
-    IPage<WorkLogResult> pageList(IPage<WorkLogResult> page,WorkLogParam param, HttpServletRequest req);
+    IPage<WorkLogResult> pageList(IPage<WorkLogResult> page, WorkLogParam param, HttpServletRequest req);
 
     /**
      * 工作日志导出
@@ -93,7 +93,7 @@ public interface IWorkLogService extends IService<WorkLog> {
      * @param req
      * @return
      */
-    Result<LogResult>  getWaitMessage(String nowday,HttpServletRequest req);
+    Result<LogResult>  getWaitMessage(String nowday, HttpServletRequest req);
 
     /**
      * 编辑工作日志
@@ -115,5 +115,5 @@ public interface IWorkLogService extends IService<WorkLog> {
      * @param endTime
      * @return
      */
-    Result<LogSubmitCount> getLogSubmitNum(String startTime,String endTime);
+    Result<LogSubmitCount> getLogSubmitNum(String startTime, String endTime);
 }

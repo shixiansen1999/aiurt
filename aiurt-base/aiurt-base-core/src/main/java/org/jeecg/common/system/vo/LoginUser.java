@@ -1,14 +1,12 @@
 package org.jeecg.common.system.vo;
 
-import java.util.Date;
-
-import org.springframework.format.annotation.DateTimeFormat;
-
 import com.fasterxml.jackson.annotation.JsonFormat;
-
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
+import org.springframework.format.annotation.DateTimeFormat;
+
+import java.util.Date;
 
 /**
  * <p>
@@ -116,4 +114,12 @@ public class LoginUser {
 	/**设备id uniapp推送用*/
 	private String clientId;
 
+	/**
+	 * 部门ID
+	 */
+	private String orgId;
+	/**
+	 * 当前登录部门名称
+	 */
+	private String orgName;
 }

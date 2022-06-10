@@ -1,10 +1,10 @@
 package com.aiurt.boot.modules.fault.mapper;
 
-import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.aiurt.boot.common.result.FaultPersonResult;
-import com.aiurt.boot.common.result.FaultRepairRecordResult;
 import com.aiurt.boot.modules.fault.entity.FaultRepairRecord;
 import com.aiurt.boot.modules.statistical.vo.UserAndAmountVO;
+import com.aiurt.common.result.FaultPersonResult;
+import com.aiurt.common.result.FaultRepairRecordResult;
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
