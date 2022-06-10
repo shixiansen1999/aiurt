@@ -4,7 +4,6 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.aiurt.boot.common.api.vo.Result;
 import com.aiurt.boot.common.constant.CommonConstant;
 import com.aiurt.boot.common.system.util.JwtUtil;
 import com.aiurt.boot.common.util.MD5Util;

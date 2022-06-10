@@ -5,7 +5,6 @@ import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.aiurt.boot.common.api.vo.Result;
 import com.aiurt.boot.common.enums.FaultTypeEnum;
 import com.aiurt.boot.common.result.FaultCodesResult;
 import com.aiurt.boot.common.result.FaultKnowledgeBaseResult;

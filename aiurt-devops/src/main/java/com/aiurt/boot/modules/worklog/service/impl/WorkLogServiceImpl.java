@@ -6,7 +6,6 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.aiurt.boot.common.api.vo.Result;
 import com.aiurt.boot.common.constant.CommonConstant;
 import com.aiurt.boot.common.enums.WorkLogCheckStatusEnum;
 import com.aiurt.boot.common.enums.WorkLogConfirmStatusEnum;
@@ -46,11 +45,12 @@ import com.aiurt.boot.modules.worklog.service.IWorkLogService;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.shiro.SecurityUtils;
+import org.jeecg.common.api.vo.Result;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
-import javax.transaction.Transactional;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -111,7 +111,7 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
      * @return
      */
     @Override
-    @Transactional(rollbackOn = Exception.class)
+    @Transactional(rollbackFor = Exception.class)
     public Result<?> add(WorkLogDTO dto, HttpServletRequest req) {
         WorkLog depot = new WorkLog();
         LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
@@ -596,7 +596,7 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
      * @return
      */
     @Override
-    @Transactional(rollbackOn = Exception.class)
+    @Transactional(rollbackFor = Exception.class)
     public Result editWorkLog(WorkLogDTO dto) {
         WorkLog workLog = this.getOne(new QueryWrapper<WorkLog>().eq(WorkLog.ID, dto.getId()), false);
         workLog.setLogTime(dto.getLogTime());
@@ -672,7 +672,7 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
     @Override
     public Result<LogSubmitCount> getLogSubmitNum(String startTime, String endTime) {
         LogSubmitCount logSubmitCount = new LogSubmitCount();
-        Integer num = depotMapper.selectCount(new LambdaQueryWrapper<WorkLog>()
+        Long num = depotMapper.selectCount(new LambdaQueryWrapper<WorkLog>()
                 .between(StringUtils.isNotBlank(startTime) && StringUtils.isNotBlank(endTime), WorkLog::getSubmitTime, startTime, endTime));
         logSubmitCount.setSubmitNum(num);
         return Result.ok(logSubmitCount);

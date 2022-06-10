@@ -1,7 +1,6 @@
 package com.aiurt.boot.modules.training.controller;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.aiurt.boot.common.api.vo.Result;
 import com.aiurt.boot.common.aspect.annotation.AutoLog;
 import com.aiurt.boot.modules.training.service.ITrainingPlanFileService;
 import com.aiurt.boot.modules.training.vo.TrainingPlanFileVO;

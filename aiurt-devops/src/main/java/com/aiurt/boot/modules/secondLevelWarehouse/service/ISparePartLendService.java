@@ -4,7 +4,6 @@ import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.aiurt.boot.common.api.vo.Result;
 import com.aiurt.boot.modules.secondLevelWarehouse.entity.SparePartLend;
 import com.aiurt.boot.modules.secondLevelWarehouse.entity.dto.SparePartLendDTO;
 import com.aiurt.boot.modules.secondLevelWarehouse.entity.dto.SparePartLendParam;

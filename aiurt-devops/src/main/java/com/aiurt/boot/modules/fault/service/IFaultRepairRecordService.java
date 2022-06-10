@@ -1,7 +1,6 @@
 package com.aiurt.boot.modules.fault.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.aiurt.boot.common.api.vo.Result;
 import com.aiurt.boot.common.result.FaultRepairRecordResult;
 import com.aiurt.boot.common.result.SpareResult;
 import com.aiurt.boot.modules.fault.dto.FaultRepairDTO;

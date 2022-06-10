@@ -11,7 +11,6 @@ import javax.servlet.http.HttpServletResponse;
 
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.aiurt.boot.common.api.vo.Result;
 import com.aiurt.boot.common.aspect.annotation.AutoLog;
 import com.aiurt.boot.common.constant.RoleConstant;
 import com.aiurt.boot.common.system.query.QueryGenerator;

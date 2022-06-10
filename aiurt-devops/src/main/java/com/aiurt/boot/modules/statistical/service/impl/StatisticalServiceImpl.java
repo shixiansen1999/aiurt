@@ -7,7 +7,6 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.aiurt.boot.common.api.vo.Result;
 import com.aiurt.boot.common.constant.CommonConstant;
 import com.aiurt.boot.common.util.DateUtils;
 import com.aiurt.boot.modules.fault.mapper.FaultMapper;

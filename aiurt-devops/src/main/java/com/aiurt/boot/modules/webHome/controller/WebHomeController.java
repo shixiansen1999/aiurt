@@ -1,7 +1,6 @@
 package com.aiurt.boot.modules.webHome.controller;
 
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
-import com.aiurt.boot.common.api.vo.Result;
 import com.aiurt.boot.common.aspect.annotation.AutoLog;
 import com.aiurt.boot.common.constant.CommonConstant;
 import com.aiurt.boot.modules.manage.entity.SpecialSituation;

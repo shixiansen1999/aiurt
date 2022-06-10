@@ -5,7 +5,6 @@ import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.aiurt.boot.common.api.vo.Result;
 import com.aiurt.boot.common.enums.MaterialTypeEnum;
 import com.aiurt.boot.common.enums.ProductiveTypeEnum;
 import com.aiurt.boot.common.exception.SwscException;

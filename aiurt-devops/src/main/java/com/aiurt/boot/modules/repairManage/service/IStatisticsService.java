@@ -1,6 +1,5 @@
 package com.aiurt.boot.modules.repairManage.service;
 
-import com.aiurt.boot.common.api.vo.Result;
 import com.aiurt.boot.modules.repairManage.vo.StatisticsQueryVO;
 import com.aiurt.boot.modules.repairManage.vo.TimeVO;
 

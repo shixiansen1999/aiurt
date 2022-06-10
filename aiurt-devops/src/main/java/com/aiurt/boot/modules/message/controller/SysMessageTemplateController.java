@@ -7,7 +7,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import com.aiurt.boot.modules.message.service.ISysMessageTemplateService;
-import com.aiurt.boot.common.api.vo.Result;
 import com.aiurt.boot.common.system.base.controller.BaseController;
 import com.aiurt.boot.common.system.query.QueryGenerator;
 import com.aiurt.boot.modules.message.entity.MsgParams;

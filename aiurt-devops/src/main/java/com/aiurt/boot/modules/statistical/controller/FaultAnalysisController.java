@@ -1,6 +1,5 @@
 package com.aiurt.boot.modules.statistical.controller;
 
-import com.aiurt.boot.common.api.vo.Result;
 import com.aiurt.boot.common.result.*;
 import com.aiurt.boot.modules.fault.service.IFaultAnalysisReportService;
 import com.aiurt.boot.modules.fault.service.IFaultRepairRecordService;

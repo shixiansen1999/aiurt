@@ -1,9 +1,10 @@
 package com.aiurt.boot.modules.appMessage.controller;
 
-import com.aiurt.common.aspect.annotation.AutoLog;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.aiurt.boot.common.aspect.annotation.AutoLog;
+import com.aiurt.boot.common.system.vo.LoginUser;
 import com.aiurt.boot.modules.appMessage.entity.Message;
 import com.aiurt.boot.modules.appMessage.entity.MessageRead;
 import com.aiurt.boot.modules.appMessage.mapper.MessageMapper;
@@ -21,8 +22,6 @@ import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.SecurityUtils;
-import org.jeecg.common.api.vo.Result;
-import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;

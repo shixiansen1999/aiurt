@@ -1,7 +1,6 @@
 package com.aiurt.boot.modules.device.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.aiurt.boot.common.api.vo.Result;
 import com.aiurt.boot.modules.device.entity.Device;
 import com.aiurt.boot.modules.statistical.vo.DeviceDataVo;
 

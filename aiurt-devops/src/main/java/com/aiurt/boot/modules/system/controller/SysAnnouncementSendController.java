@@ -10,7 +10,6 @@ import com.aiurt.boot.modules.system.model.AnnouncementSendModel;
 import com.aiurt.boot.modules.system.service.ISysAnnouncementSendService;
 import com.aiurt.boot.modules.system.entity.SysAnnouncementSend;
 import org.apache.shiro.SecurityUtils;
-import com.aiurt.boot.common.api.vo.Result;
 import com.aiurt.boot.common.system.vo.LoginUser;
 import com.aiurt.boot.common.util.oConvertUtils;
 import org.springframework.beans.factory.annotation.Autowired;

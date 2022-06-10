@@ -1,7 +1,7 @@
 package com.aiurt.boot.modules.worklog.service;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.aiurt.boot.common.api.vo.Result;
+
 import com.aiurt.boot.common.result.LogCountResult;
 import com.aiurt.boot.common.result.LogResult;
 import com.aiurt.boot.common.result.LogSubmitCount;
@@ -11,6 +11,7 @@ import com.aiurt.boot.modules.worklog.entity.WorkLog;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.aiurt.boot.modules.worklog.param.LogCountParam;
 import com.aiurt.boot.modules.worklog.param.WorkLogParam;
+import org.jeecg.common.api.vo.Result;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;

@@ -2,7 +2,6 @@ package com.aiurt.boot.modules.statistical.service;
 
 import cn.hutool.core.date.DateTime;
 import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.aiurt.boot.common.api.vo.Result;
 import com.aiurt.boot.modules.patrol.param.PatrolTaskDetailParam;
 import com.aiurt.boot.modules.patrol.vo.PatrolTaskVO;
 import com.aiurt.boot.modules.statistical.vo.StatisticsPatrolVO;

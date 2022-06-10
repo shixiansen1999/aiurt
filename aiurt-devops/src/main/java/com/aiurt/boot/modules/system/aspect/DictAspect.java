@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import com.aiurt.boot.common.api.vo.Result;
 import com.aiurt.boot.common.aspect.annotation.Dict;
 import com.aiurt.boot.common.constant.CommonConstant;
 import com.aiurt.boot.common.util.oConvertUtils;

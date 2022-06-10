@@ -1,6 +1,5 @@
 package com.aiurt.boot.modules.standardManage.inspectionStrategy.service.impl;
 
-import com.aiurt.boot.common.api.vo.Result;
 import com.aiurt.boot.modules.standardManage.inspectionStrategy.entity.InspectionCodeContent;
 import com.aiurt.boot.modules.standardManage.inspectionStrategy.mapper.InspectionCodeContentMapper;
 import com.aiurt.boot.modules.standardManage.inspectionStrategy.service.IinspectionCodeContentService;

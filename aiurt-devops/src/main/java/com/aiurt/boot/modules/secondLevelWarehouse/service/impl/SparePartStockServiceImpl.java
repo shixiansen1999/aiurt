@@ -3,7 +3,6 @@ package com.aiurt.boot.modules.secondLevelWarehouse.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.aiurt.boot.common.api.vo.Result;
 import com.aiurt.boot.common.enums.MaterialTypeEnum;
 import com.aiurt.boot.common.result.SparePartStockResult;
 import com.aiurt.boot.common.system.api.ISysBaseAPI;

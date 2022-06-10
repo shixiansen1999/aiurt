@@ -1,7 +1,6 @@
 package com.aiurt.boot.modules.AppUser.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.aiurt.boot.common.api.vo.Result;
 import com.aiurt.boot.common.enums.StatusEnum;
 import com.aiurt.boot.common.system.vo.LoginUser;
 import com.aiurt.boot.common.util.DateUtils;

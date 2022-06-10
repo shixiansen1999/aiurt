@@ -6,7 +6,6 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.aiurt.boot.common.api.vo.Result;
 import com.aiurt.boot.common.constant.CommonConstant;
 import com.aiurt.boot.common.enums.MaterialApplyCommitEnum;
 import com.aiurt.boot.common.enums.MaterialApplyStatusEnum;

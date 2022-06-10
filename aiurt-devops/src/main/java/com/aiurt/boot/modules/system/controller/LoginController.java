@@ -5,7 +5,6 @@ import cn.hutool.core.util.RandomUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.aliyuncs.exceptions.ClientException;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.aiurt.boot.common.api.vo.Result;
 import com.aiurt.boot.common.constant.CacheConstant;
 import com.aiurt.boot.common.constant.CommonConstant;
 import com.aiurt.boot.common.system.api.ISysBaseAPI;

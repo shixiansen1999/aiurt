@@ -1,9 +1,17 @@
 package com.aiurt.boot.modules.secondLevelWarehouse.service.impl;
 
-import com.aiurt.common.util.DateUtils;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.aiurt.boot.common.enums.MaterialTypeEnum;
+import com.aiurt.boot.common.enums.ScrapStatusEnum;
+import com.aiurt.boot.common.enums.SpareScrapStatusEnums;
+import com.aiurt.boot.common.exception.SwscException;
+import com.aiurt.boot.common.result.ReportRepairResult;
+import com.aiurt.boot.common.result.ReportWasteResult;
+import com.aiurt.boot.common.result.ScrapReportResult;
+import com.aiurt.boot.common.result.SpareConsumeNum;
+import com.aiurt.boot.common.util.DateUtils;
 import com.aiurt.boot.modules.secondLevelWarehouse.entity.SparePartScrap;
 import com.aiurt.boot.modules.secondLevelWarehouse.entity.dto.ReportRepairDTO;
 import com.aiurt.boot.modules.secondLevelWarehouse.entity.dto.ReportWasteDTO;
@@ -12,7 +20,6 @@ import com.aiurt.boot.modules.secondLevelWarehouse.entity.dto.SparePartScrapQuer
 import com.aiurt.boot.modules.secondLevelWarehouse.entity.vo.SparePartScrapVO;
 import com.aiurt.boot.modules.secondLevelWarehouse.mapper.SparePartScrapMapper;
 import com.aiurt.boot.modules.secondLevelWarehouse.service.ISparePartScrapService;
-import org.jeecg.common.api.vo.Result;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 

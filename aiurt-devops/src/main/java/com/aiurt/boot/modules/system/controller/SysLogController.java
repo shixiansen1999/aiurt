@@ -6,7 +6,6 @@ import java.util.Arrays;
 import javax.servlet.http.HttpServletRequest;
 
 import com.aiurt.boot.modules.system.service.ISysLogService;
-import com.aiurt.boot.common.api.vo.Result;
 import com.aiurt.boot.common.system.query.QueryGenerator;
 import com.aiurt.boot.common.util.oConvertUtils;
 import com.aiurt.boot.modules.system.entity.SysLog;

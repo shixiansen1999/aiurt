@@ -1,7 +1,6 @@
 package com.aiurt.boot.modules.secondLevelWarehouse.service;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.aiurt.boot.common.api.vo.Result;
 import com.aiurt.boot.modules.secondLevelWarehouse.entity.MaterialBase;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.aiurt.boot.modules.secondLevelWarehouse.entity.vo.MaterialBaseResult;

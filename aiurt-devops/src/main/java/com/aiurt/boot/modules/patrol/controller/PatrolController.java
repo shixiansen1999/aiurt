@@ -3,7 +3,6 @@ package com.aiurt.boot.modules.patrol.controller;
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
-import com.aiurt.boot.common.api.vo.Result;
 import com.aiurt.boot.common.aspect.annotation.AutoLog;
 import com.aiurt.boot.common.constant.CommonConstant;
 import com.aiurt.boot.common.exception.SwscException;

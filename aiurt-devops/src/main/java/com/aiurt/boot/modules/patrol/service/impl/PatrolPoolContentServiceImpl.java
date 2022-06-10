@@ -2,7 +2,6 @@ package com.aiurt.boot.modules.patrol.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.aiurt.boot.common.api.vo.Result;
 import com.aiurt.boot.common.constant.CommonConstant;
 import com.aiurt.boot.modules.patrol.constant.PatrolConstant;
 import com.aiurt.boot.modules.patrol.entity.PatrolContent;

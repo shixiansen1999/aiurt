@@ -1,6 +1,5 @@
 package com.aiurt.boot.modules.message.websocket;
 
-import com.aiurt.boot.common.api.vo.Result;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;

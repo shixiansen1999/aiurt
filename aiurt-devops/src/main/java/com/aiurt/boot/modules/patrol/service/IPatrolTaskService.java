@@ -3,7 +3,6 @@ package com.aiurt.boot.modules.patrol.service;
 import cn.hutool.core.date.DateTime;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.aiurt.boot.common.api.vo.Result;
 import com.aiurt.boot.modules.patrol.entity.PatrolTask;
 import com.aiurt.boot.modules.patrol.param.OneTreeParam;
 import com.aiurt.boot.modules.patrol.param.PatrolPoolParam;
