@@ -1,8 +1,6 @@
 package com.aiurt.boot.modules.secondLevelWarehouse.controller;
 
 import com.aiurt.boot.common.constant.CommonConstant;
-import com.aiurt.boot.common.exception.SwscException;
-
 import com.aiurt.boot.common.system.vo.LoginUser;
 import com.aiurt.boot.common.util.RoleAdditionalUtils;
 import com.aiurt.boot.common.util.oConvertUtils;
@@ -14,6 +12,7 @@ import com.aiurt.boot.modules.secondLevelWarehouse.vo.EscalationPlanExportVO;
 import com.aiurt.boot.modules.system.entity.SysDictItem;
 import com.aiurt.boot.modules.system.service.ISysDictItemService;
 import com.aiurt.common.aspect.annotation.AutoLog;
+import com.aiurt.common.exception.AiurtBootException;
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -26,6 +25,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.system.query.QueryGenerator;
 import org.jeecgframework.poi.excel.ExcelImportUtil;
 import org.jeecgframework.poi.excel.def.NormalExcelConstants;
 import org.jeecgframework.poi.excel.entity.ExportParams;
@@ -258,13 +258,13 @@ public class EscalationPlanController {
 						.select(Subsystem::getSystemCode, Subsystem::getSystemName)
 				);
 				if (CollectionUtils.isEmpty(funds)) {
-					throw new SwscException("未查询到资金出处,请添加后重新导入!");
+					throw new AiurtBootException("未查询到资金出处,请添加后重新导入!");
 				}
 				if (CollectionUtils.isEmpty(type)) {
-					throw new SwscException("未查询到提报类型,请添加后重新导入!");
+					throw new AiurtBootException("未查询到提报类型,请添加后重新导入!");
 				}
 				if (CollectionUtils.isEmpty(systemList)) {
-					throw new SwscException("未查询到系统名称,请添加后重新导入!");
+					throw new AiurtBootException("未查询到系统名称,请添加后重新导入!");
 				}
 
 
@@ -276,37 +276,37 @@ public class EscalationPlanController {
 
 				for (EscalationPlanExportVO exportVO : listEscalationPlans) {
 					if (StringUtils.isBlank(exportVO.getReportType())) {
-						throw new SwscException("提报类型不能为空");
+						throw new AiurtBootException("提报类型不能为空");
 					}
 					if (!typeMap.containsKey(exportVO.getReportType())) {
-						throw new SwscException("未查询到提报类型,请添加后重新导入!");
+						throw new AiurtBootException("未查询到提报类型,请添加后重新导入!");
 					}
 					if (StringUtils.isNotBlank(exportVO.getSourceFunds()) && !fundMap.containsKey(exportVO.getSourceFunds())) {
-						throw new SwscException("未查询到资金出处,请添加后重新导入!");
+						throw new AiurtBootException("未查询到资金出处,请添加后重新导入!");
 					}
 					if (StringUtils.isBlank(exportVO.getSystemName())) {
-						throw new SwscException("系统名称不能为空");
+						throw new AiurtBootException("系统名称不能为空");
 					}
 					if (!systemMap.containsKey(exportVO.getSystemName())) {
-						throw new SwscException("未查询到系统名称,请添加后重新导入!");
+						throw new AiurtBootException("未查询到系统名称,请添加后重新导入!");
 					}
 					if (StringUtils.isBlank(exportVO.getReportYear())) {
-						throw new SwscException("年份信息不能为空!");
+						throw new AiurtBootException("年份信息不能为空!");
 					}
 					if (exportVO.getReportYear().trim().length() != 4) {
-						throw new SwscException("年份信息需为4位数字,例如:2021");
+						throw new AiurtBootException("年份信息需为4位数字,例如:2021");
 					}
 					if (StringUtils.isBlank(exportVO.getSpecialtyType())) {
-						throw new SwscException("专业类型不能为空!");
+						throw new AiurtBootException("专业类型不能为空!");
 					}
 					if (StringUtils.isBlank(exportVO.getName())) {
-						throw new SwscException("物资名称不能为空!");
+						throw new AiurtBootException("物资名称不能为空!");
 					}
 					if (StringUtils.isBlank(exportVO.getBrand())) {
-						throw new SwscException("品牌不能为空!");
+						throw new AiurtBootException("品牌不能为空!");
 					}
 					if (StringUtils.isBlank(exportVO.getUnit())) {
-						throw new SwscException("单位不能为空!");
+						throw new AiurtBootException("单位不能为空!");
 					}
 
 					EscalationPlan plan = new EscalationPlan();
@@ -315,14 +315,14 @@ public class EscalationPlanController {
 					try {
 						plan.setReportType(Integer.parseInt(typeMap.get(exportVO.getReportType())));
 					} catch (NumberFormatException e) {
-						throw new SwscException("类型错误,请勿设置提报类型的数据值为非数字型");
+						throw new AiurtBootException("类型错误,请勿设置提报类型的数据值为非数字型");
 					}
 					plan.setSystemType(systemMap.get(exportVO.getSystemName()));
 					if (StringUtils.isNotBlank(exportVO.getSourceFunds())) {
 						try {
 							plan.setSourceFunds(Integer.parseInt(fundMap.get(exportVO.getSourceFunds())));
 						} catch (NumberFormatException e) {
-							throw new SwscException("类型错误,请勿设置资金出处的数据值为非数字型");
+							throw new AiurtBootException("类型错误,请勿设置资金出处的数据值为非数字型");
 						}
 					}
 					plan.setDelFlag(CommonConstant.DEL_FLAG_0);
@@ -331,15 +331,15 @@ public class EscalationPlanController {
 				}
 
 				if (!escalationPlanService.saveBatch(list)) {
-					throw new SwscException("保存失败");
+					throw new AiurtBootException("保存失败");
 				}
 				return Result.ok("文件导入成功！数据行数:" + listEscalationPlans.size());
 			} catch (Exception e) {
 				log.error(e.getMessage(), e);
 				if (e.getMessage().contains("Data too long for column")) {
-					throw new SwscException("文件导入失败,原因:".concat("字段过长"));
+					throw new AiurtBootException("文件导入失败,原因:".concat("字段过长"));
 				}
-				throw new SwscException("文件导入失败,原因:" + e.getMessage());
+				throw new AiurtBootException("文件导入失败,原因:" + e.getMessage());
 			} finally {
 				try {
 					file.getInputStream().close();

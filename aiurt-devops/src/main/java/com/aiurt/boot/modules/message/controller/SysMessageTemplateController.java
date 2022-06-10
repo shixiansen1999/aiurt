@@ -1,7 +1,6 @@
 package com.aiurt.boot.modules.message.controller;
 
 import com.aiurt.boot.common.system.base.controller.BaseController;
-
 import com.aiurt.boot.modules.message.entity.MsgParams;
 import com.aiurt.boot.modules.message.entity.SysMessageTemplate;
 import com.aiurt.boot.modules.message.service.ISysMessageTemplateService;
@@ -11,6 +10,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.extern.slf4j.Slf4j;
 import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.system.query.QueryGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
@@ -116,7 +116,7 @@ public class SysMessageTemplateController extends BaseController<SysMessageTempl
 	 * 导出excel
 	 *
 	 * @param request
-	 * @param response
+	 * @param
 	 */
 	@GetMapping(value = "/exportXls")
 	public ModelAndView exportXls(HttpServletRequest request,SysMessageTemplate sysMessageTemplate) {

@@ -1,20 +1,20 @@
 package com.aiurt.boot.modules.standardManage.safetyPrecautions.controller;
 
+import com.aiurt.boot.common.util.oConvertUtils;
+import com.aiurt.boot.modules.standardManage.safetyPrecautions.constant.Constant;
+import com.aiurt.boot.modules.standardManage.safetyPrecautions.entity.SafetyPrecautions;
+import com.aiurt.boot.modules.standardManage.safetyPrecautions.service.IsafetyPrecautionsService;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-
-import com.aiurt.boot.common.util.oConvertUtils;
-import com.aiurt.boot.modules.standardManage.safetyPrecautions.constant.Constant;
-import com.aiurt.boot.modules.standardManage.safetyPrecautions.entity.SafetyPrecautions;
-import com.aiurt.boot.modules.standardManage.safetyPrecautions.service.IsafetyPrecautionsService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.system.query.QueryGenerator;
 import org.jeecgframework.poi.excel.ExcelImportUtil;
 import org.jeecgframework.poi.excel.def.NormalExcelConstants;
 import org.jeecgframework.poi.excel.entity.ExportParams;
