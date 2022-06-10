@@ -1,6 +1,8 @@
 package com.aiurt.common.util;
 
 
+import cn.hutool.core.util.StrUtil;
+
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -72,8 +74,8 @@ public class DataValidateUtils {
      * @param str
      * @return
      */
-//    public static String strToDbin(String str){
-//        return String.format("'%s'", StrUtil.join(str.split(","),"','"));
-//    }
+    public static String strToDbin(String str){
+        return String.format("'%s'", StrUtil.join("','",str.split(",")));
+    }
 
 }

@@ -374,4 +374,14 @@ public interface CommonConstant {
 
     /**前端vue版本*/
     String VERSION_VUE3="vue3";
+
+    /**
+     * 用户数据权限--可管理的班组
+     */
+    public static final String PREFIX_USER_DEPARTMENT_IDS = "prefix_user_department_ids";
+
+    /**
+     * 用户数据权限--可管理的txxy
+     */
+    public static final String PREFIX_USER_SYSTEM_CODES = "prefix_user_system_codes";
 }
