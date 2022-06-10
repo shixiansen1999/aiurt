@@ -1,9 +1,8 @@
 package com.aiurt.boot.modules.AppUser.service;
 
+import com.aiurt.common.enums.StatusEnum;
+import com.aiurt.common.util.DateUtils;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.aiurt.boot.common.enums.StatusEnum;
-import com.aiurt.boot.common.system.vo.LoginUser;
-import com.aiurt.boot.common.util.DateUtils;
 import com.aiurt.boot.modules.AppUser.entity.UserParam;
 import com.aiurt.boot.modules.AppUser.entity.UserStatusVo;
 import com.aiurt.boot.modules.schedule.entity.ScheduleItem;
@@ -19,6 +18,7 @@ import com.aiurt.boot.modules.system.service.ISysUserService;
 import org.apache.commons.lang.StringUtils;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -64,7 +64,7 @@ public class AppUserService {
         try {
             LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
             QueryWrapper wrapper = new QueryWrapper();
-            wrapper.eq("date_format(date,'%Y-%m-%d')", DateUtils.format(new Date(), "yyyy-MM-dd"));
+            wrapper.eq("date_format(date,'%Y-%m-%d')", DateUtils.formatDate(new Date(), "yyyy-MM-dd"));
             wrapper.eq("user_id", loginUser.getId());
             wrapper.eq("del_flag", StatusEnum.ZERO.getCode());
             ScheduleRecord record = recordService.getOne(wrapper);
@@ -72,9 +72,10 @@ public class AppUserService {
             if (record != null && record.getItemId() != null) {
                 ScheduleItem item = itemService.getById(record.getItemId());
                 if (item != null) {
-                    String startTime = DateUtils.format(item.getStartTime(), "HH:mm:ss");
-                    String endTime = DateUtils.format(item.getEndTime(), "HH:mm:ss");
-                    String today = DateUtils.format(new Date(), "yyyy-MM-dd");
+                    // todo 有bug
+                    String startTime = DateUtils.formatDate(item.getStartTime(), "HH:mm:ss");
+                    String endTime = DateUtils.formatDate(item.getEndTime(), "HH:mm:ss");
+                    String today = DateUtils.formatDate(new Date(), "yyyy-MM-dd");
                     Calendar c1 = Calendar.getInstance();
                     Calendar c2 = Calendar.getInstance();
                     c1.setTime(DateUtils.parseDate(today + " " + startTime, "yyyy-MM-dd HH:mm:ss"));

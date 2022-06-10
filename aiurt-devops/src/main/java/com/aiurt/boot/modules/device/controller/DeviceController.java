@@ -3,13 +3,13 @@ package com.aiurt.boot.modules.device.controller;
 import cn.hutool.core.convert.Convert;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.aspect.annotation.AutoLog;
+import com.aiurt.common.constant.CommonConstant;
+import com.aiurt.common.exception.AiurtBootException;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.aiurt.boot.common.constant.CommonConstant;
-import com.aiurt.boot.common.exception.SwscException;
 import com.aiurt.boot.modules.device.entity.Device;
 import com.aiurt.boot.modules.device.entity.DeviceAssembly;
 import com.aiurt.boot.modules.device.entity.DeviceSmallType;
@@ -288,7 +288,7 @@ public class DeviceController {
                     deviceAssemblyService.saveBatch(device.getDeviceAssemblyList());
                 }
             }catch (Exception e){
-                throw new SwscException(e.getMessage());
+                throw new AiurtBootException(e.getMessage());
             }
             if (ok) {
                 result.success("修改成功!");
@@ -633,22 +633,22 @@ public class DeviceController {
                         return;
                     }
 	                if (StringUtils.isBlank(x.getSystemCode())){
-		                throw new SwscException("系统不能为空");
+		                throw new AiurtBootException("系统不能为空");
 	                }
 	                if (StringUtils.isBlank(x.getLineCode())){
-		                throw new SwscException("线路不能为空");
+		                throw new AiurtBootException("线路不能为空");
 	                }
 	                if (StringUtils.isBlank(x.getStationCode())){
-		                throw new SwscException("站点不能为空");
+		                throw new AiurtBootException("站点不能为空");
 	                }
 	                if (StringUtils.isBlank(subMap.get(x.getSystemCode()))){
-		                throw new SwscException(x.getSystemCode()+" 系统未查询到");
+		                throw new AiurtBootException(x.getSystemCode()+" 系统未查询到");
 	                }
 	                if (StringUtils.isBlank(lineMap.get(x.getLineCode()))){
-		                throw new SwscException(x.getLineCode()+" 线路未找到");
+		                throw new AiurtBootException(x.getLineCode()+" 线路未找到");
 	                }
 	                if (StringUtils.isBlank(stationMap.get(x.getStationCode()))){
-		                throw new SwscException(stationMap.get(x.getStationCode())+" 站点未查询到");
+		                throw new AiurtBootException(stationMap.get(x.getStationCode())+" 站点未查询到");
 	                }
 
                     x.setTypeCode(deviceType.getCode());
@@ -665,7 +665,7 @@ public class DeviceController {
                         }
                     }
                     if (x.getSmallTypeCode()==null){
-                        throw new SwscException("未找到 \""+x.getSmallTypeName()+"\" 设备小类");
+                        throw new AiurtBootException("未找到 \""+x.getSmallTypeName()+"\" 设备小类");
                     }
                     final List<DeviceAssembly> deviceAssemblies = map.get(x.getCode());
                     if (deviceAssemblies != null && deviceAssemblies.size() > 0){
@@ -691,13 +691,13 @@ public class DeviceController {
 
                 List<Device> devices = deviceService.lambdaQuery().in(Device::getCode, codes).eq(Device::getDelFlag, CommonConstant.DEL_FLAG_0).list();
                 if (CollectionUtils.isNotEmpty(devices)){
-                    throw new SwscException(StringUtils.join(devices.stream().map(Device::getCode).collect(Collectors.toList()),",")+" 编号已存在,不可重复导入");
+                    throw new AiurtBootException(StringUtils.join(devices.stream().map(Device::getCode).collect(Collectors.toList()),",")+" 编号已存在,不可重复导入");
                 }
 
                 deviceService.saveBatch(collect);
             } catch (Exception e) {
                 log.error(e.getMessage(), e);
-                throw new SwscException("文件导入失败:" + e.getMessage());
+                throw new AiurtBootException("文件导入失败:" + e.getMessage());
             } finally {
                 try {
                     file.getInputStream().close();
