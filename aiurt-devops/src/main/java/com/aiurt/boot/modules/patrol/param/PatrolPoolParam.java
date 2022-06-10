@@ -1,6 +1,7 @@
 package com.aiurt.boot.modules.patrol.param;
 
-import com.aiurt.boot.common.api.vo.PageVO;
+
+import com.aiurt.common.api.vo.PageVO;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.EqualsAndHashCode;

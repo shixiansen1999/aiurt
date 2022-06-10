@@ -66,11 +66,13 @@ public class InspectionCodeController {
             final String[] split = teamIds.split(",");
             String teamNames = "";
             for (String teamId : split) {
-                final SysDepart sysDepart = departMapper.selectById(teamId);
-                if (sysDepart == null){
-                    return;
-                }
-                teamNames = teamNames.concat(sysDepart.getDepartName()).concat(",");
+                // TODO 后期修改
+//                final SysDepart sysDepart = departMapper.selectById(teamId);
+//                final SysDepart sysDepart = departMapper.selectById(teamId);
+//                if (sysDepart == null){
+//                    return;
+//                }
+//                teamNames = teamNames.concat(sysDepart.getDepartName()).concat(",");
             }
             if (StrUtil.isNotBlank(teamNames)) {
                 int indexb = teamNames.lastIndexOf(",");
