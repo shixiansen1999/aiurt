@@ -4,9 +4,9 @@ import javax.servlet.http.HttpServletRequest;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.ObjectUtil;
+import com.aiurt.common.aspect.annotation.AutoLog;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.aiurt.boot.common.aspect.annotation.AutoLog;
 import com.aiurt.boot.modules.fastdfs.entity.FileInfo;
 import com.aiurt.boot.modules.fastdfs.model.FileInfoVo;
 import com.aiurt.boot.modules.fastdfs.model.UploadFile;
@@ -17,6 +17,7 @@ import com.aiurt.boot.modules.system.service.ISysUserCardService;
 import com.aiurt.boot.modules.system.service.ISysUserService;
 import lombok.extern.slf4j.Slf4j;
 
+import org.jeecg.common.api.vo.Result;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.transaction.annotation.Transactional;
