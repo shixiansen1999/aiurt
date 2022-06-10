@@ -7,6 +7,7 @@ import com.aiurt.common.api.CommonAPI;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.exception.JeecgBoot401Exception;
 import com.aiurt.common.system.util.JwtUtil;
+import org.apache.shiro.authc.AuthenticationException;
 import org.jeecg.common.system.vo.LoginUser;
 
 import javax.servlet.http.HttpServletRequest;
