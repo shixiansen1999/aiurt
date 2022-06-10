@@ -1,22 +1,21 @@
 package com.aiurt.boot.common.system.util;
 
+import com.aiurt.boot.common.constant.DataBaseConstant;
+import com.aiurt.boot.common.exception.SwscException;
+import com.aiurt.boot.common.system.vo.LoginUser;
+import com.aiurt.boot.common.system.vo.SysUserCacheInfo;
+import com.aiurt.boot.common.util.SpringContextUtils;
+import com.aiurt.boot.common.util.oConvertUtils;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTDecodeException;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.google.common.base.Joiner;
+import org.apache.shiro.SecurityUtils;
 
-import java.util.Date;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
-
-import com.aiurt.boot.common.exception.SwscException;
-import com.aiurt.boot.common.system.vo.LoginUser;
-import com.aiurt.boot.common.system.vo.SysUserCacheInfo;
-import org.apache.shiro.SecurityUtils;
-import com.aiurt.boot.common.constant.DataBaseConstant;
-import com.aiurt.boot.common.util.SpringContextUtils;
-import com.aiurt.boot.common.util.oConvertUtils;
+import java.util.Date;
 
 /**
  * @Author swsc
@@ -26,7 +25,7 @@ import com.aiurt.boot.common.util.oConvertUtils;
 public class JwtUtil {
 
 	// Token过期时间30分钟（用户登录过期时间是此时间的两倍，以token在reids缓存时间为准）
-	public static final long EXPIRE_TIME = 30 * 60 * 1000;
+	public static final long EXPIRE_TIME = 60 * 60 * 1000;
 
 	/**
 	 * 校验token是否正确

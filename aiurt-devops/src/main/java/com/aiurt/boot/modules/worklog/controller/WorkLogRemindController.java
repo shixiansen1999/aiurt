@@ -1,9 +1,7 @@
 package com.aiurt.boot.modules.worklog.controller;
 
 import cn.hutool.core.util.ObjectUtil;
-import com.aiurt.boot.common.api.vo.Result;
-import com.aiurt.boot.common.aspect.annotation.AutoLog;
-import com.aiurt.boot.common.constant.QuartConstant;
+
 import com.aiurt.boot.common.system.api.ISysBaseAPI;
 import com.aiurt.boot.common.system.vo.LoginUser;
 import com.aiurt.boot.common.util.QuartzUtils;
@@ -13,10 +11,12 @@ import com.aiurt.boot.modules.worklog.entity.WorkLogRemind;
 import com.aiurt.boot.modules.worklog.service.IWorkLogRemindService;
 import com.aiurt.boot.modules.worklog.task.WorkLogJob;
 import com.aiurt.boot.modules.worklog.task.WorkLogJobNight;
+import com.aiurt.common.aspect.annotation.AutoLog;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.SecurityUtils;
+import org.jeecg.common.api.vo.Result;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -100,7 +100,7 @@ public class WorkLogRemindController {
 
         WorkLogRemind workLogRemind = workLogRemindService.getById(remind.getId());
         if (workLogRemind == null) {
-            result.onnull("未找到对应实体");
+            result.error500("未找到对应实体");
         } else {
             //删除调度任务
             quartzUtils.removeJob(QuartConstant.WORK_LOG_JOB +orgId,

@@ -1,13 +1,12 @@
 package com.aiurt.boot.common.util.jsonschema.validate;
 
+import com.aiurt.boot.common.system.vo.DictModel;
+import com.aiurt.boot.common.util.jsonschema.CommonProperty;
+import com.alibaba.fastjson.JSONObject;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import com.aiurt.boot.common.system.vo.DictModel;
-import com.aiurt.boot.common.util.jsonschema.CommonProperty;
-
-import com.alibaba.fastjson.JSONObject;
 
 public class StringProperty extends CommonProperty {
 

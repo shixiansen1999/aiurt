@@ -2,7 +2,6 @@ package com.aiurt.boot.common.system.base.service.impl;
 
 import com.aiurt.boot.common.system.base.entity.BaseEntity;
 import com.aiurt.boot.common.system.base.service.BaseService;
-
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.extern.slf4j.Slf4j;

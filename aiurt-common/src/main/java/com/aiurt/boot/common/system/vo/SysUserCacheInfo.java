@@ -1,8 +1,8 @@
 package com.aiurt.boot.common.system.vo;
 
-import java.util.List;
-
 import com.aiurt.boot.common.util.DateUtils;
+
+import java.util.List;
 
 public class SysUserCacheInfo {
 

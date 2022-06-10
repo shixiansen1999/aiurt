@@ -1,11 +1,10 @@
 package com.aiurt.boot.common.util;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import javax.servlet.http.HttpServletRequest;
 
 /**
  *
@@ -90,7 +89,7 @@ public class BrowserUtils {
 	}
 
 	private static boolean getBrowserType(HttpServletRequest request,
-			String brosertype) {
+                                          String brosertype) {
 		return request.getHeader("USER-AGENT").toLowerCase()
 				.indexOf(brosertype) > 0 ? true : false;
 	}

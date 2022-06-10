@@ -96,8 +96,24 @@ public class TokenUtils {
      *
      * @return {@link String}
      */
-    public static String getUserId(HttpServletRequest req,ISysBaseAPI api){
+    public static String getUserId(HttpServletRequest req, ISysBaseAPI api){
 
+        LoginUser user = getLoginUser(req, api);
+        return user.getId();
+    }
+
+    /**
+     * 获取用户name
+     *
+     * @return {@link String}
+     */
+    public static String getUserName(HttpServletRequest req, ISysBaseAPI api){
+
+        LoginUser user = getLoginUser(req, api);
+        return user.getRealname();
+    }
+
+    private static LoginUser getLoginUser(HttpServletRequest req, ISysBaseAPI api) {
         String token = TokenUtils.getTokenByRequest(req);
 
         // 解密获得username，用于和数据库进行对比
@@ -107,10 +123,12 @@ public class TokenUtils {
         }
         // 查询用户信息
         LoginUser user = api.getUserByName(username);
-        if (user==null){
+        if (user == null) {
             throw new AuthenticationException("用户不存在!");
         }
-        return user.getId();
+        return user;
     }
+
+
 
 }

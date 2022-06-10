@@ -6,9 +6,9 @@ package com.aiurt.boot.common.enums;
  * @Version 1.0
  */
 public enum SpareScrapStatusEnums {
-    UN_DISPOSED(1, "未处理的"),
-    REPAIRS(2, "报修"),
-    SCRAP(3, "报废");
+    UN_DISPOSED(0, "未处理"),
+    REPAIRS(1, "报修"),
+    SCRAP(2, "报废");
 
 
     private int code;

@@ -1,12 +1,12 @@
 package com.aiurt.boot.common.system.api;
 
-import java.sql.SQLException;
-import java.util.List;
-
 import com.aiurt.boot.common.system.vo.ComboModel;
+import com.aiurt.boot.common.system.vo.DictModel;
 import com.aiurt.boot.common.system.vo.LoginUser;
 import com.aiurt.boot.common.system.vo.SysDepartModel;
-import com.aiurt.boot.common.system.vo.DictModel;
+
+import java.sql.SQLException;
+import java.util.List;
 
 /**
  * @Description: 底层共通业务API，提供其他独立模块调用

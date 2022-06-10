@@ -1,11 +1,11 @@
 package com.aiurt.boot.modules.worklog.controller;
 
+import com.aiurt.common.aspect.annotation.AutoLog;
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.aiurt.boot.common.api.vo.Result;
-import com.aiurt.boot.common.aspect.annotation.AutoLog;
+
 import com.aiurt.boot.common.system.query.QueryGenerator;
 import com.aiurt.boot.common.util.oConvertUtils;
 import com.aiurt.boot.modules.worklog.entity.WorkLogEnclosure;
@@ -13,6 +13,7 @@ import com.aiurt.boot.modules.worklog.service.IWorkLogEnclosureService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
+import org.jeecg.common.api.vo.Result;
 import org.jeecgframework.poi.excel.ExcelImportUtil;
 import org.jeecgframework.poi.excel.def.NormalExcelConstants;
 import org.jeecgframework.poi.excel.entity.ExportParams;
@@ -103,7 +104,7 @@ public class WorkLogEnclosureController {
        Result<WorkLogEnclosure> result = new Result<>();
        WorkLogEnclosure workLogEnclosureEntity = workLogEnclosureService.getById(workLogEnclosure.getId());
        if(workLogEnclosureEntity==null) {
-           result.onnull("未找到对应实体");
+           result.error500("未找到对应实体");
        }else {
            boolean ok = workLogEnclosureService.updateById(workLogEnclosure);
 
@@ -164,7 +165,7 @@ public class WorkLogEnclosureController {
        Result<WorkLogEnclosure> result = new Result<WorkLogEnclosure>();
        WorkLogEnclosure workLogEnclosure = workLogEnclosureService.getById(id);
        if(workLogEnclosure==null) {
-           result.onnull("未找到对应实体");
+           result.error500("未找到对应实体");
        }else {
            result.setResult(workLogEnclosure);
            result.setSuccess(true);

@@ -9,6 +9,7 @@ public enum FaultStatusEnum {
 
     XINBAOXIU(0, "新报修"),
     WEIXIUZHONG(1, "维修中"),
+    WUXIAOZHI(3, "无效值"),
     WEIXIUWANCHENG(2, "维修完成");
 
     private int code;

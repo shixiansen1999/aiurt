@@ -18,4 +18,10 @@ public class InspectionContant {
      * 12个月
      */
     public static final Integer MONTHAMOUNT = 12;
+
+    public static final Integer QUARTERAMOUNT = 4;
+
+    public static final Integer SEMIANNUALAMOUNT = 6;
+
+    public static final Integer HALFYEARAMOUNT = 2;
 }

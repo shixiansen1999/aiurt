@@ -7,8 +7,8 @@ package com.aiurt.boot.common.enums;
  */
 public enum MaterialTypeEnum {
 
-    NON_PRODUCTIVE_TYPE(1, "非生产类型"),
-    PRODUCTIVE_TYPE(2, "生产类型"),
+    NON_PRODUCTIVE_TYPE(1, "专用类"),
+    PRODUCTIVE_TYPE(2, "通用类"),
     ;
 
     private int code;
@@ -28,9 +28,21 @@ public enum MaterialTypeEnum {
         this.name = name;
     }
     public static String getNameByCode(Integer code) {
+        if(code==null){
+            return null;
+        }else{
+            for (MaterialTypeEnum c : MaterialTypeEnum.values()) {
+                if (c.getCode()==code) {
+                    return c.name;
+                }
+            }
+        }
+        return null;
+    }
+    public static Integer getCodeByName(String name) {
         for (MaterialTypeEnum c : MaterialTypeEnum.values()) {
-            if (c.getCode()==code) {
-                return c.name;
+            if (c.getName().equals(name)) {
+                return c.code;
             }
         }
         return null;

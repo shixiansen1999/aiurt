@@ -1,8 +1,8 @@
 package com.aiurt.boot.common.util;
 
+import com.aiurt.boot.common.api.vo.PageVO;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.aiurt.boot.common.api.vo.PageVO;
 
 /**
  * 分页获取
@@ -20,7 +20,7 @@ public class PageUtils {
 	 * @param <T>
 	 * @return
 	 */
-	public static <T,V extends PageVO> IPage<T> getPage(Class<T> clazz,V t) {
+	public static <T,V extends PageVO> IPage<T> getPage(Class<T> clazz, V t) {
 		if (t.getPageNo() == null) {
 			t.setPageNo(1);
 		}

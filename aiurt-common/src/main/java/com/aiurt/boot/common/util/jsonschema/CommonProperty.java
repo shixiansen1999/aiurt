@@ -1,12 +1,11 @@
 package com.aiurt.boot.common.util.jsonschema;
 
+import com.aiurt.boot.common.system.vo.DictModel;
+import com.alibaba.fastjson.JSONObject;
+
 import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
-
-import com.aiurt.boot.common.system.vo.DictModel;
-
-import com.alibaba.fastjson.JSONObject;
 
 /**
  * 验证通用属性

@@ -1,5 +1,7 @@
 package com.aiurt.boot.common.util;
 
+import org.apache.commons.lang3.StringUtils;
+
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -64,4 +66,15 @@ public class DataValidateUtils {
         }
         return false;
     }
+
+    /**
+     * 工具-字符串-转换Sql查询IN中使用的格式
+     * 效果：a,b==>'a','b'
+     * @param str
+     * @return
+     */
+    public static String strToDbin(String str){
+        return String.format("'%s'", StringUtils.join(str.split(","),"','"));
+    }
+
 }

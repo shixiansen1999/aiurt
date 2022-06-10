@@ -19,7 +19,7 @@ public class ExcelHeaderUtil {
                 field.setAccessible(true);
                 Annotation[] annotations = field.getAnnotations();
                 for (Annotation annotation : annotations) {
-                    if (annotation.annotationType().getSimpleName().equals("Excel")) {
+                    if ("Excel".equals(annotation.annotationType().getSimpleName())) {
                         ExcelHeaderEntity entity = new ExcelHeaderEntity();
                         entity.setField(field.getName());
                         entity.setAClass(field.getType());

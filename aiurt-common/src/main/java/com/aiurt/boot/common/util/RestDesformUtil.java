@@ -1,5 +1,6 @@
 package com.aiurt.boot.common.util;
 
+import com.aiurt.boot.common.api.vo.Result;
 import com.alibaba.fastjson.JSONObject;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;

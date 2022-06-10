@@ -18,7 +18,7 @@ public class ExcelImportUtil {
             for (Field field : fields) {
                 Annotation[] annotations = field.getAnnotations();
                 for (Annotation annotation : annotations) {
-                    if (annotation.annotationType().getSimpleName().equals("ExcelImport")) {
+                    if ("ExcelImport".equals(annotation.annotationType().getSimpleName())) {
                         ExcelImportEntity entity = new ExcelImportEntity();
                         entity.setFieldName(field.getName());
                         Class<? extends Annotation> aClass = annotation.annotationType();

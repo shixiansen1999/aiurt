@@ -12,6 +12,8 @@ public interface CommonConstant {
 	 */
 	public static final Integer STATUS_DISABLE = -1;
 
+
+
 	/**
 	 * 删除标志
 	 */
@@ -67,6 +69,7 @@ public interface CommonConstant {
     public static final Integer SC_INTERNAL_SERVER_ERROR_500 = 500;
     /** {@code 200 OK} (HTTP/1.0 - RFC 1945) */
     public static final Integer SC_OK_200 = 200;
+    public static final Integer SC_NULL_2005 = 2005;
 
     /**访问权限认证未通过 510*/
     public static final Integer SC_JEECG_NO_AUTHZ=510;
@@ -186,5 +189,70 @@ public interface CommonConstant {
      * 表单设计器URL授权未通过
      */
     public static final String DESIGN_FORM_URL_TYPE_VIEW = "view";
+
+	/**
+	 * 文件进制
+	 */
+	public static final Integer FILE_SIZE = 1024;
+	/**
+	 * 文件最小单位
+	 */
+	public static final Double FILE_SIZE_MIN = 0.01;
+
+    /**
+     * 报修编号长度
+     */
+	public static final Integer REPAIR_CODE_SIZE = 10;
+
+	/**
+	 * 可用状态
+	 */
+	public static final Integer STATUS_ENABLE = 1;
+
+	/**
+	 * 字符串数字0
+	 */
+	public static final String NUM_STR_0  = "0";
+
+	/**
+	 * 长整型数字0
+	 */
+	public static final Long LONG_NUM_STR_0  = 0L;
+
+	/**
+	 * 非检查项状态
+	 */
+	public static final Integer PATROL_STATUS_DISABLE = -1;
+	/**
+	 * 已挂起
+	 */
+	public static final Integer HANG_STATE = 1;
+
+	/**
+	 * 月份
+	 */
+	public static final Integer MONTH_VALUE = 10;
+
+	/**
+	 * 天数
+	 */
+	public static final Integer DAY_VALUE = 100;
+
+	/**
+	 * 工作日志数量
+	 */
+	public static final Integer VALUE_1 = 9;
+	public static final Integer VALUE_2 = 8;
+	public static final Integer VALUE_3 = 99;
+
+	/**
+	 * 用户数据权限--可管理的班组
+	 */
+	public static final String PREFIX_USER_DEPARTMENT_IDS = "prefix_user_department_ids";
+
+	/**
+	 * 用户数据权限--可管理的txxy
+	 */
+	public static final String PREFIX_USER_SYSTEM_CODES = "prefix_user_system_codes";
 
 }

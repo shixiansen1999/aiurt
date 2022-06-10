@@ -1,33 +1,26 @@
 package com.aiurt.boot.common.system.query;
 
+import com.aiurt.boot.common.constant.CommonConstant;
+import com.aiurt.boot.common.system.util.JeecgDataAutorUtils;
+import com.aiurt.boot.common.system.util.JwtUtil;
+import com.aiurt.boot.common.system.vo.SysPermissionDataRuleModel;
+import com.aiurt.boot.common.util.SqlInjectionUtil;
+import com.aiurt.boot.common.util.oConvertUtils;
+import com.alibaba.fastjson.JSON;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.beanutils.PropertyUtils;
+import org.springframework.util.NumberUtils;
+
 import java.beans.PropertyDescriptor;
 import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.net.URLDecoder;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import com.aiurt.boot.common.constant.CommonConstant;
-import com.aiurt.boot.common.system.util.JwtUtil;
-import com.aiurt.boot.common.system.util.JeecgDataAutorUtils;
-import com.aiurt.boot.common.system.vo.SysPermissionDataRuleModel;
-import org.apache.commons.beanutils.PropertyUtils;
-import com.aiurt.boot.common.util.SqlInjectionUtil;
-import com.aiurt.boot.common.util.oConvertUtils;
-import org.springframework.util.NumberUtils;
-
-import com.alibaba.fastjson.JSON;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-
-import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class QueryGenerator {
@@ -67,7 +60,7 @@ public class QueryGenerator {
 	 * @param parameterMap request.getParameterMap()
 	 * @return QueryWrapper实例
 	 */
-	public static <T> QueryWrapper<T> initQueryWrapper(T searchObj,Map<String, String[]> parameterMap){
+	public static <T> QueryWrapper<T> initQueryWrapper(T searchObj, Map<String, String[]> parameterMap){
 		long start = System.currentTimeMillis();
 		QueryWrapper<T> queryWrapper = new QueryWrapper<T>();
 		installMplus(queryWrapper, searchObj, parameterMap);
@@ -84,7 +77,7 @@ public class QueryGenerator {
 	 * <br>正确示例:QueryWrapper<JeecgDemo> queryWrapper = new QueryWrapper<JeecgDemo>();
 	 * <br>3.也可以不使用这个方法直接调用 {@link #initQueryWrapper}直接获取实例
 	 */
-	public static void installMplus(QueryWrapper<?> queryWrapper,Object searchObj,Map<String, String[]> parameterMap) {
+	public static void installMplus(QueryWrapper<?> queryWrapper, Object searchObj, Map<String, String[]> parameterMap) {
 
 		/*
 		 * 注意:权限查询由前端配置数据规则 当一个人有多个所属部门时候 可以在规则配置包含条件 orgCode 包含 #{sys_org_code}
@@ -174,7 +167,7 @@ public class QueryGenerator {
 	}
 
 	//多字段排序 TODO 需要修改前端
-	public static void doMultiFieldsOrder(QueryWrapper<?> queryWrapper,Map<String, String[]> parameterMap) {
+	public static void doMultiFieldsOrder(QueryWrapper<?> queryWrapper, Map<String, String[]> parameterMap) {
 		String column=null,order=null;
 		if(parameterMap!=null&& parameterMap.containsKey(ORDER_COLUMN)) {
 			column = parameterMap.get(ORDER_COLUMN)[0];
@@ -204,7 +197,7 @@ public class QueryGenerator {
 	 * @param queryWrapper
 	 * @param parameterMap
 	 */
-	public static void doSuperQuery(QueryWrapper<?> queryWrapper,Map<String, String[]> parameterMap) {
+	public static void doSuperQuery(QueryWrapper<?> queryWrapper, Map<String, String[]> parameterMap) {
 		if(parameterMap!=null&& parameterMap.containsKey(SUPER_QUERY_PARAMS)){
 			String superQueryParams = parameterMap.get(SUPER_QUERY_PARAMS)[0];
 			// 解码
@@ -314,7 +307,7 @@ public class QueryGenerator {
 		return value;
 	}
 
-	private static void addQueryByRule(QueryWrapper<?> queryWrapper,String name,String type,String value,QueryRuleEnum rule) throws ParseException {
+	private static void addQueryByRule(QueryWrapper<?> queryWrapper, String name, String type, String value, QueryRuleEnum rule) throws ParseException {
 		if(!"".equals(value)) {
 			Object temp;
 			switch (type) {
@@ -636,7 +629,7 @@ public class QueryGenerator {
 	public static String installAuthJdbc(Class<?> clazz) {
 		StringBuffer sb = new StringBuffer();
 		//权限查询
-		Map<String,SysPermissionDataRuleModel> ruleMap = getRuleMap();
+		Map<String, SysPermissionDataRuleModel> ruleMap = getRuleMap();
 		PropertyDescriptor origDescriptors[] = PropertyUtils.getPropertyDescriptors(clazz);
 		String sql_and = " and ";
 		for (String c : ruleMap.keySet()) {
@@ -675,9 +668,9 @@ public class QueryGenerator {
 	 * @param parameterMap
 	 * @return
 	 */
-	public static void installAuthMplus(QueryWrapper<?> queryWrapper,Class<?> clazz) {
+	public static void installAuthMplus(QueryWrapper<?> queryWrapper, Class<?> clazz) {
 		//权限查询
-		Map<String,SysPermissionDataRuleModel> ruleMap = getRuleMap();
+		Map<String, SysPermissionDataRuleModel> ruleMap = getRuleMap();
 		PropertyDescriptor origDescriptors[] = PropertyUtils.getPropertyDescriptors(clazz);
 		for (String c : ruleMap.keySet()) {
 			if(oConvertUtils.isNotEmpty(c) && c.startsWith(SQL_RULES_COLUMN)){

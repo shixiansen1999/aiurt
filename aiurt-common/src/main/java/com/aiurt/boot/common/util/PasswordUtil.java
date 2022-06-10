@@ -1,12 +1,13 @@
 package com.aiurt.boot.common.util;
 
-import java.security.Key;
-import java.security.SecureRandom;
 import javax.crypto.Cipher;
 import javax.crypto.SecretKey;
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.PBEParameterSpec;
+import java.security.Key;
+import java.security.SecureRandom;
+
 public class PasswordUtil {
 
 	/**
@@ -177,6 +178,8 @@ public class PasswordUtil {
 	}
 
 public static void main(String args[]){
-		System.out.println(encrypt("songxiaohong","12345678","UXnSiz5T"));
+		System.out.println(encrypt("admin","12345678","hpnJ6OMD"));
+
+	//System.out.println(decrypt("admin","0c263c2112e1166d","hpnJ6OMD"));
 }
 }

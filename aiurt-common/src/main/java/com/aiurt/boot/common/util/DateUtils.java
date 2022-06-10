@@ -1,17 +1,17 @@
 package com.aiurt.boot.common.util;
 
+import org.springframework.util.StringUtils;
+
 import java.beans.PropertyEditorSupport;
 import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.GregorianCalendar;
-import java.util.List;
-
-import org.springframework.util.StringUtils;
+import java.time.DayOfWeek;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.temporal.TemporalAdjusters;
+import java.util.*;
 
 /**
  * 类描述：时间操作定义类
@@ -140,8 +140,7 @@ public class DateUtils extends PropertyEditorSupport {
     /**
      * 日期转换为字符串
      *
-     * @param date   日期
-     * @param format 日期格式
+     * @param date_sdf 日期自卫队
      * @return 字符串
      */
     public static String date2Str(SimpleDateFormat date_sdf) {
@@ -175,7 +174,7 @@ public class DateUtils extends PropertyEditorSupport {
      * 日期转换为字符串
      *
      * @param date   日期
-     * @param format 日期格式
+     * @param date_sdf 日期格式
      * @return 字符串
      */
     public static String date2Str(Date date, SimpleDateFormat date_sdf) {
@@ -188,7 +187,6 @@ public class DateUtils extends PropertyEditorSupport {
     /**
      * 日期转换为字符串
      *
-     * @param date   日期
      * @param format 日期格式
      * @return 字符串
      */
@@ -507,7 +505,6 @@ public class DateUtils extends PropertyEditorSupport {
      * @param pattern 转换的匹配格式
      * @return 如果转换成功则返回转换后的日期
      * @throws ParseException
-     * @throws AIDateFormatException
      */
     public static Date parseDate(String src, String pattern) {
         try {
@@ -525,7 +522,6 @@ public class DateUtils extends PropertyEditorSupport {
      * @param pattern 转换的匹配格式
      * @return 如果转换成功则返回转换后的日期
      * @throws ParseException
-     * @throws AIDateFormatException
      */
     public static Calendar parseCalendar(String src, String pattern) throws ParseException {
 
@@ -753,8 +749,36 @@ public class DateUtils extends PropertyEditorSupport {
             calendar.add(Calendar.WEEK_OF_YEAR, 1);
         }
         //舍去当前周
-        result.remove(0);
+//        result.remove(0);
+        //如果最后一周的时间 有明年的时间 舍去
+//        Date[] dates = result.get(result.size()-1);
+//        if (!formatDate(dates[1]).startsWith(String.valueOf(getYear()))){
+//            result.remove(result.size()-1);
+//        }
+        //加入本周生成时间
+        //Date weekStartTime = getWeekStartTime(new Date());
+        //Date weekEndTime = getWeekEndTime(new Date());
+        //result.add(new Date[]{weekStartTime,weekEndTime});
+
         return result;
+    }
+
+    public static ArrayList<Object> getWeekAndTime(Date startTime) {
+        final ArrayList<Object> list = new ArrayList<>();
+        Calendar calendar = Calendar.getInstance();
+        Date endtm = getYearEndTime(startTime);
+        calendar.setTime(startTime);
+        calendar.setFirstDayOfWeek(Calendar.MONDAY);
+        while (calendar.getTime().before(endtm)) {
+            Date st = getWeekStartTime(calendar.getTime());
+            Date et = getWeekEndTime(calendar.getTime());
+            HashMap<String, Object> map = new HashMap<>();
+            map.put("time", new Date[]{st, et});
+            map.put("week", getWeekOfYear(et));
+            list.add(map);
+            calendar.add(Calendar.WEEK_OF_YEAR, 1);
+        }
+        return list;
     }
 
     /**
@@ -804,9 +828,9 @@ public class DateUtils extends PropertyEditorSupport {
     public static Date getWeekStartTime(Date date) {
         Calendar c = Calendar.getInstance();
         c.setTime(date);
+        c.setFirstDayOfWeek(Calendar.MONDAY);
         try {
-            int weekday = c.get(Calendar.DAY_OF_WEEK) - 2;
-            c.add(Calendar.DATE, -weekday);
+            c.set(Calendar.DAY_OF_WEEK, Calendar.MONDAY);//周一
             c.setTime(longSdf.parse(shortSdf.format(c.getTime()) + " 00:00:00.000"));
         } catch (Exception e) {
             e.printStackTrace();
@@ -822,9 +846,9 @@ public class DateUtils extends PropertyEditorSupport {
     public static Date getWeekEndTime(Date date) {
         Calendar c = Calendar.getInstance();
         c.setTime(date);
+        c.setFirstDayOfWeek(Calendar.MONDAY);
         try {
-            int weekday = c.get(Calendar.DAY_OF_WEEK);
-            c.add(Calendar.DATE, 8 - weekday);
+            c.set(Calendar.DAY_OF_WEEK, Calendar.SUNDAY);//周日
             c.setTime(longSdf.parse(shortSdf.format(c.getTime()) + " 23:59:59.999"));
             c.set(Calendar.MILLISECOND, 0);
         } catch (Exception e) {
@@ -832,6 +856,7 @@ public class DateUtils extends PropertyEditorSupport {
         }
         return c.getTime();
     }
+
 
     /**
      * 获取明年的第一天
@@ -844,16 +869,28 @@ public class DateUtils extends PropertyEditorSupport {
     }
 
     /**
+     * 获取某年第一天日期
+     *
+     * @return
+     */
+    public static LocalDateTime getYearFirst(int year) {
+        return LocalDateTime.of(year, 1, 4, 0, 0);
+    }
+
+    /**
      * 根据月数和周数获取时间
      *
      * @param month
      * @param week
      * @return
      */
-    public static Date[] getDateByMonthAndWeek(int month, Integer week) {
+    public static Date[] getDateByMonthAndWeek(int year, int month, Integer week) {
         Calendar calendar = Calendar.getInstance();
+        calendar.setFirstDayOfWeek(Calendar.MONDAY);
+        calendar.set(Calendar.YEAR, year);
         calendar.set(Calendar.MONTH, month - 1);
         calendar.set(Calendar.WEEK_OF_MONTH, week);
+        calendar.setMinimalDaysInFirstWeek(7);
         Date time = calendar.getTime();
         Date weekStartTime = getWeekStartTime(time);
         Date weekEndTime = getWeekEndTime(time);
@@ -862,25 +899,12 @@ public class DateUtils extends PropertyEditorSupport {
     }
 
     /**
-     * 测试
-     * @param args
-     * @throws Exception
-     */
-//    public static void main(String[] args) throws Exception {
-//        int week = getWeek();
-//        System.out.println(week);
-//        Date[] a = getDateByMonthAndWeek(9, week);
-//        System.out.println(formatTime(a[0]));
-//        System.out.println(formatTime(a[1]));
-//    }
-
-    /**
      * 获取当前周数
      *
      * @return
      * @throws Exception
      */
-    public static int getWeek() throws Exception {
+    public static int getWeek() {
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(new Date());
         calendar.setFirstDayOfWeek(Calendar.MONDAY);
@@ -916,5 +940,64 @@ public class DateUtils extends PropertyEditorSupport {
         c.setMinimalDaysInFirstWeek(7);
         c.setTime(date);
         return c.get(Calendar.WEEK_OF_YEAR);
+    }
+
+    public static Date getStartDate(String date) {
+        if (org.apache.commons.lang3.StringUtils.isNotEmpty(date)) {
+            return parseDate(date, "yyyy-MM-dd");
+        }
+        Calendar calendar = Calendar.getInstance();
+        calendar.set(Calendar.DAY_OF_MONTH, 1);
+        return calendar.getTime();
+    }
+
+    public static Date getEndDate(String date) {
+        if (org.apache.commons.lang3.StringUtils.isNotEmpty(date)) {
+            return parseDate(date, "yyyy-MM-dd");
+        }
+        Calendar calendar = Calendar.getInstance();
+        calendar.set(Calendar.DAY_OF_MONTH, calendar.getActualMaximum(Calendar.DAY_OF_MONTH));
+        return calendar.getTime();
+    }
+
+    public static List<Date> getDateList(String str) {
+        List<Date> dateList = new ArrayList<>();
+        Date date = parseDate(str, "yyyy-MM");
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(date);
+        Integer maxDay = calendar.getActualMaximum(Calendar.DAY_OF_MONTH);
+        Date maxDate = parseDate(str + "-" + maxDay, "yyyy-MM-dd");
+        while (!calendar.getTime().after(maxDate)) {
+            dateList.add(calendar.getTime());
+            calendar.add(Calendar.DAY_OF_MONTH, 1);
+        }
+        return dateList;
+    }
+
+    /**
+     * 获取当月第一周  以第一个周一为准
+     */
+    public static LocalDateTime getFirstMonday(LocalDateTime sourceTime) {
+        LocalDateTime firstMondayOfMonth = getFirstLocalDayOfMonth(sourceTime);
+        for (int i = 0; i < 6; i++) {
+            DayOfWeek dayOfWeekTemp = firstMondayOfMonth.getDayOfWeek();
+            if (dayOfWeekTemp.equals(DayOfWeek.MONDAY)) {
+                break;
+            }
+            //往后推一天
+            firstMondayOfMonth = firstMondayOfMonth.plusDays(1);
+        }
+        return firstMondayOfMonth;
+    }
+
+    /**
+     * 获取当月第一天
+     */
+    public static LocalDateTime getFirstLocalDayOfMonth(LocalDateTime localDateTime) {
+        return localDateTime.with(TemporalAdjusters.firstDayOfMonth()).with(LocalTime.MIN);
+    }
+    public static String getToday()  {
+        String sToday = format(new Date(), PATTERN_YYYY_MM_DD);
+        return sToday;
     }
 }

@@ -1,15 +1,15 @@
 package com.aiurt.boot.common.util;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.TimeUnit;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
+
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 /**
  * redis 工具类
@@ -93,6 +93,15 @@ public class RedisUtil {
 	 */
 	public Object get(String key) {
 		return key == null ? null : redisTemplate.opsForValue().get(key);
+	}
+	public String getStr(String key) {
+		if(key == null){
+			return null;
+		}else {
+			Object object = redisTemplate.opsForValue().get(key);
+			return object == null ? null : object.toString();
+		}
+
 	}
 
 	/**

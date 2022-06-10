@@ -1,10 +1,10 @@
 package com.aiurt.boot.common.util;
 
+import com.aiurt.boot.common.handler.IFillRuleHandler;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.aiurt.boot.common.handler.IFillRuleHandler;
 import org.apache.commons.lang.StringUtils;
 
 
