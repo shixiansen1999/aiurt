@@ -1,12 +1,13 @@
 package com.aiurt.boot.modules.secondLevelWarehouse.service;
 
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.aiurt.boot.modules.secondLevelWarehouse.entity.SparePartInOrder;
-import com.baomidou.mybatisplus.extension.service.IService;
 import com.aiurt.boot.modules.secondLevelWarehouse.entity.dto.SparePartInExcel;
 import com.aiurt.boot.modules.secondLevelWarehouse.entity.dto.SparePartInQuery;
 import com.aiurt.boot.modules.secondLevelWarehouse.entity.vo.SparePartInVO;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.baomidou.mybatisplus.extension.service.IService;
+import org.jeecg.common.api.vo.Result;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
@@ -41,5 +42,5 @@ public interface ISparePartInOrderService extends IService<SparePartInOrder> {
      * @param req
      * @return
      */
-    Result<?> confirmBatch(String ids,HttpServletRequest req);
+    Result<?> confirmBatch(String ids, HttpServletRequest req);
 }

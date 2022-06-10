@@ -2,9 +2,6 @@ package com.aiurt.boot.modules.schedule.service.impl;
 
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.aiurt.boot.common.system.vo.LoginUser;
 import com.aiurt.boot.common.util.DateUtils;
 import com.aiurt.boot.modules.schedule.entity.Schedule;
@@ -17,16 +14,18 @@ import com.aiurt.boot.modules.schedule.service.IScheduleItemService;
 import com.aiurt.boot.modules.schedule.service.IScheduleRecordService;
 import com.aiurt.boot.modules.schedule.service.IScheduleService;
 import com.aiurt.boot.modules.system.service.ISysUserService;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.apache.shiro.SecurityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.transaction.Transactional;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -111,7 +110,7 @@ public class ScheduleServiceImpl extends ServiceImpl<ScheduleMapper, Schedule> i
 
 
     @Override
-    @Transactional(rollbackOn = Exception.class)
+    @Transactional(rollbackFor = Exception.class)
     public void importScheduleExcel(List<Map<Integer, String>> scheduleDate, HttpServletRequest request) {
         //从表头获取时间
         String date = scheduleDate.get(0).get(0).split("至")[0];

@@ -1,11 +1,6 @@
 package com.aiurt.boot.modules.secondLevelWarehouse.service.impl;
 
 import cn.hutool.core.util.ObjectUtil;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.aiurt.boot.common.system.api.ISysBaseAPI;
 import com.aiurt.boot.common.util.TokenUtils;
 import com.aiurt.boot.modules.patrol.utils.NumberGenerateUtils;
@@ -23,12 +18,17 @@ import com.aiurt.boot.modules.secondLevelWarehouse.service.IMaterialBaseService;
 import com.aiurt.boot.modules.secondLevelWarehouse.service.IStockInOrderLevel2DetailService;
 import com.aiurt.boot.modules.secondLevelWarehouse.service.IStockInOrderLevel2Service;
 import com.aiurt.boot.modules.secondLevelWarehouse.service.IStockLevel2Service;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
-import javax.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -63,7 +63,7 @@ public class StockInOrderLevel2ServiceImpl
      * @return
      */
     @Override
-    @Transactional(rollbackOn = Exception.class)
+    @Transactional(rollbackFor = Exception.class)
     public String addWarehouseIn(StockInOrderLevel2DTO stockInOrderLevel2DTO, HttpServletRequest req) {
         String userId = TokenUtils.getUserId(req, iSysBaseAPI);
         //模拟入库单号

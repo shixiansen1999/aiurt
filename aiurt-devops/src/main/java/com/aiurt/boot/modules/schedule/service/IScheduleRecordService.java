@@ -36,7 +36,11 @@ public interface IScheduleRecordService extends IService<ScheduleRecord> {
 
     List<ScheduleUser> getScheduleUserByDateAndOrgCodeAndOrgId(String date, String username, String orgCode, String orgId);
 
-    //统计分析
+    /**
+     * 统计分析
+     * @param map
+     * @return
+     */
     Integer getZhiBanNum(Map map);
 
 

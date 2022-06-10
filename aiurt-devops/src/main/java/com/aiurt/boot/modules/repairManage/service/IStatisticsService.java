@@ -2,6 +2,7 @@ package com.aiurt.boot.modules.repairManage.service;
 
 import com.aiurt.boot.modules.repairManage.vo.StatisticsQueryVO;
 import com.aiurt.boot.modules.repairManage.vo.TimeVO;
+import org.jeecg.common.api.vo.Result;
 
 /**
  * @author qian

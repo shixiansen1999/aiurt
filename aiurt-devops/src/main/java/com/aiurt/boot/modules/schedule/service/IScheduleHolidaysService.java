@@ -10,10 +10,11 @@ import java.util.Map;
 /**
  * @Description: schedule_holidays
  * @Author: swsc
- * @Date:   2021-09-23
+ * @Date: 2021-09-23
  * @Version: V1.0
  */
 public interface IScheduleHolidaysService extends IService<ScheduleHolidays> {
-   List<ScheduleHolidays> getListByMonth(String date);
-   void importHolidayExcel(List<Map<Integer, String>> data , HttpServletRequest request);
+    List<ScheduleHolidays> getListByMonth(String date);
+
+    void importHolidayExcel(List<Map<Integer, String>> data, HttpServletRequest request);
 }

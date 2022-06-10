@@ -122,7 +122,7 @@ public class StockLevel2CheckServiceImpl extends ServiceImpl<StockLevel2CheckMap
         if(monthValue<10){
             month="0"+ monthValue+".";
         }
-        Integer integer = stockLevel2CheckMapper.selectCount(null);
+        Long integer = stockLevel2CheckMapper.selectCount(null);
         return applyCode+year+month+(integer+1);
     }
 }

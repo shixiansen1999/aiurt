@@ -1,8 +1,6 @@
 package com.aiurt.boot.modules.patrol.service;
 
 import cn.hutool.core.date.DateTime;
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.service.IService;
 import com.aiurt.boot.modules.patrol.entity.PatrolTask;
 import com.aiurt.boot.modules.patrol.param.OneTreeParam;
 import com.aiurt.boot.modules.patrol.param.PatrolPoolParam;
@@ -12,6 +10,9 @@ import com.aiurt.boot.modules.patrol.vo.PatrolTaskVO;
 import com.aiurt.boot.modules.patrol.vo.export.ExportTaskSubmitVO;
 import com.aiurt.boot.modules.patrol.vo.statistics.AppStationPatrolStatisticsVO;
 import com.aiurt.boot.modules.statistical.vo.StatisticsVO;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.service.IService;
+import org.jeecg.common.api.vo.Result;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
@@ -31,7 +32,7 @@ public interface IPatrolTaskService extends IService<PatrolTask> {
 	 * @param param    参数
 	 * @return {@code Result<?>}
 	 */
-	Result<IPage<PatrolTaskVO>> pageList( PatrolPoolParam param);
+	Result<IPage<PatrolTaskVO>> pageList(PatrolPoolParam param);
 
 	/**
 	 * app查询巡检列表

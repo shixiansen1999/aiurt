@@ -1,9 +1,5 @@
 package com.aiurt.boot.modules.patrol.controller;
 
-import com.alibaba.fastjson.JSON;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
-import com.aiurt.boot.common.aspect.annotation.AutoLog;
 import com.aiurt.boot.common.constant.CommonConstant;
 import com.aiurt.boot.common.exception.SwscException;
 import com.aiurt.boot.common.system.query.QueryGenerator;
@@ -18,12 +14,17 @@ import com.aiurt.boot.modules.patrol.entity.PatrolContent;
 import com.aiurt.boot.modules.patrol.param.PatrolPageParam;
 import com.aiurt.boot.modules.patrol.service.IPatrolContentService;
 import com.aiurt.boot.modules.patrol.service.IPatrolService;
+import com.aiurt.common.aspect.annotation.AutoLog;
+import com.alibaba.fastjson.JSON;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.SecurityUtils;
+import org.jeecg.common.api.vo.Result;
 import org.jeecgframework.poi.excel.ExcelImportUtil;
 import org.jeecgframework.poi.excel.def.NormalExcelConstants;
 import org.jeecgframework.poi.excel.entity.ExportParams;

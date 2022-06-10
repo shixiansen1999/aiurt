@@ -1,11 +1,12 @@
 package com.aiurt.boot.modules.secondLevelWarehouse.controller;
 
-import com.aiurt.boot.common.aspect.annotation.AutoLog;
 import com.aiurt.boot.modules.secondLevelWarehouse.entity.SparePartStockVO;
 import com.aiurt.boot.modules.secondLevelWarehouse.service.ISparePartStockInfoService;
+import com.aiurt.common.aspect.annotation.AutoLog;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
+import org.jeecg.common.api.vo.Result;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;

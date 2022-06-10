@@ -1,15 +1,17 @@
 package com.aiurt.boot.modules.patrol.controller;
 
-import com.aiurt.boot.common.aspect.annotation.AutoLog;
+
 import com.aiurt.boot.common.exception.SwscException;
 import com.aiurt.boot.modules.patrol.param.ReportAllParam;
 import com.aiurt.boot.modules.patrol.param.ReportOneParam;
 import com.aiurt.boot.modules.patrol.param.ReportSignParam;
 import com.aiurt.boot.modules.patrol.param.UrlParam;
 import com.aiurt.boot.modules.patrol.service.IPatrolTaskReportService;
+import com.aiurt.common.aspect.annotation.AutoLog;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
+import org.jeecg.common.api.vo.Result;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 

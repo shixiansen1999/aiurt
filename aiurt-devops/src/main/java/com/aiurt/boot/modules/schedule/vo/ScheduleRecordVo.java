@@ -7,6 +7,6 @@ public class ScheduleRecordVo {
     private String userId;
     private String username;
     private String department;
-    private Integer count;
-    private Integer act;
+    private Long count;
+    private Long act;
 }

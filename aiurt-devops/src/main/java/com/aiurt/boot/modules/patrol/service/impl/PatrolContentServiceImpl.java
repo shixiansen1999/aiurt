@@ -1,8 +1,5 @@
 package com.aiurt.boot.modules.patrol.service.impl;
 
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.aiurt.boot.common.constant.CommonConstant;
 import com.aiurt.boot.modules.patrol.constant.PatrolConstant;
 import com.aiurt.boot.modules.patrol.entity.PatrolContent;
@@ -10,8 +7,12 @@ import com.aiurt.boot.modules.patrol.mapper.PatrolContentMapper;
 import com.aiurt.boot.modules.patrol.service.IPatrolContentService;
 import com.aiurt.boot.modules.patrol.vo.PatrolContentTreeVO;
 import com.aiurt.boot.modules.patrol.vo.importdir.PatrolContentImportVO;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.jeecg.common.api.vo.Result;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 

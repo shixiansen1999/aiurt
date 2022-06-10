@@ -1,8 +1,5 @@
 package com.aiurt.boot.modules.patrol.controller;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
-import com.aiurt.boot.common.aspect.annotation.AutoLog;
 import com.aiurt.boot.common.constant.CommonConstant;
 import com.aiurt.boot.modules.manage.entity.Station;
 import com.aiurt.boot.modules.manage.entity.Subsystem;
@@ -16,11 +13,15 @@ import com.aiurt.boot.modules.patrol.vo.statistics.StatisticsListVO;
 import com.aiurt.boot.modules.patrol.vo.statistics.StatisticsTitleVO;
 import com.aiurt.boot.modules.system.entity.SysDepart;
 import com.aiurt.boot.modules.system.service.ISysDepartService;
+import com.aiurt.common.aspect.annotation.AutoLog;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.jeecg.common.api.vo.Result;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
