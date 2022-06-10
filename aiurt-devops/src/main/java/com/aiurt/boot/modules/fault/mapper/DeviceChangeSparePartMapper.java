@@ -1,9 +1,9 @@
 package com.aiurt.boot.modules.fault.mapper;
 
+import com.aiurt.common.result.FaultDeviceChangSpareResult;
+import com.aiurt.common.result.SpareResult;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.aiurt.boot.common.result.FaultDeviceChangSpareResult;
-import com.aiurt.boot.common.result.SpareResult;
 import com.aiurt.boot.modules.fault.entity.DeviceChangeSparePart;
 import com.aiurt.boot.modules.fault.param.FaultDeviceParam;
 import org.apache.ibatis.annotations.Param;

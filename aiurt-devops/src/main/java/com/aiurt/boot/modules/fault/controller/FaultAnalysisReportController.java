@@ -1,21 +1,21 @@
 package com.aiurt.boot.modules.fault.controller;
 
 import com.aiurt.common.aspect.annotation.AutoLog;
+import com.aiurt.common.result.FaultAnalysisReportResult;
+import com.aiurt.common.result.FaultRepairRecordResult;
+import com.aiurt.common.result.FaultResult;
+import com.aiurt.common.result.SpareResult;
+import com.aiurt.common.util.oConvertUtils;
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.aiurt.boot.common.result.FaultAnalysisReportResult;
-import com.aiurt.boot.common.result.FaultRepairRecordResult;
-import com.aiurt.boot.common.result.FaultResult;
-import com.aiurt.boot.common.result.SpareResult;
-import com.aiurt.boot.common.util.oConvertUtils;
 import com.aiurt.boot.modules.fault.dto.FaultAnalysisReportDTO;
 import com.aiurt.boot.modules.fault.entity.FaultAnalysisReport;
 import com.aiurt.boot.modules.fault.param.FaultAnalysisReportParam;
 import com.aiurt.boot.modules.fault.service.IFaultAnalysisReportService;
 import com.aiurt.boot.modules.fault.service.IFaultRepairRecordService;
 import com.aiurt.boot.modules.fault.service.IFaultService;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
@@ -74,8 +74,8 @@ public class FaultAnalysisReportController {
 	@ApiOperation(value = "故障分析报告-分页列表查询", notes = "故障分析报告-分页列表查询")
 	@GetMapping(value = "/list")
 	public Result<IPage<FaultAnalysisReportResult>> queryPageList(@RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
-	                                                              @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize,
-	                                                              @Valid FaultAnalysisReportParam param) {
+																  @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize,
+																  @Valid FaultAnalysisReportParam param) {
 		Result<IPage<FaultAnalysisReportResult>> result = new Result<IPage<FaultAnalysisReportResult>>();
 		Page<FaultAnalysisReportResult> page = new Page<FaultAnalysisReportResult>(pageNo, pageSize);
 		IPage<FaultAnalysisReportResult> pageList = faultAnalysisReportService.pageList(page, param);

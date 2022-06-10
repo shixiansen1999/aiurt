@@ -3,25 +3,25 @@ package com.aiurt.boot.modules.device.controller;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.constant.CommonConstant;
+import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.util.TokenUtils;
 import com.aiurt.common.util.oConvertUtils;
 import com.alibaba.fastjson.JSON;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.aiurt.boot.modules.device.entity.DeviceType;
 import com.aiurt.boot.modules.device.service.IDeviceTypeService;
 import com.aiurt.boot.modules.manage.entity.Subsystem;
 import com.aiurt.boot.modules.manage.service.ISubsystemService;
-import com.aiurt.boot.modules.system.entity.SysUser;
-import com.aiurt.boot.modules.system.mapper.SysUserMapper;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.query.QueryGenerator;
+import org.jeecg.common.system.vo.LoginUser;
 import org.jeecgframework.poi.excel.ExcelImportUtil;
 import org.jeecgframework.poi.excel.def.NormalExcelConstants;
 import org.jeecgframework.poi.excel.entity.ExportParams;
@@ -41,10 +41,7 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -64,8 +61,8 @@ public class DeviceTypeController {
 	@Resource
 	private ISysBaseAPI iSysBaseAPI;
 
-	@Autowired
-	private SysUserMapper userMapper;
+	/*@Autowired
+	private SysUserMapper userMapper;*/
 
 	@Autowired
 	private ISubsystemService subsystemService;
@@ -95,16 +92,16 @@ public class DeviceTypeController {
 					.eq(status != null, DeviceType::getStatus, status)
 					.orderByDesc(DeviceType::getCreateTime)
 					.list();
-
-			List<SysUser> userList = userMapper.selectList(new LambdaQueryWrapper<SysUser>().eq(SysUser::getDelFlag, CommonConstant.DEL_FLAG_0)
+			// todo 后期修改
+			/*List<SysUser> userList = userMapper.selectList(new LambdaQueryWrapper<SysUser>().eq(SysUser::getDelFlag, CommonConstant.DEL_FLAG_0)
 					.eq(SysUser::getStatus, CommonConstant.STATUS_1));
 
 			Map<String, String> userMap = null;
 			if (CollectionUtils.isNotEmpty(userList)) {
 				userMap = userList.stream().collect(Collectors.toMap(SysUser::getId, SysUser::getRealname));
-			}
+			}*/
 
-			Map<String, String> finalUserMap = userMap;
+			Map<String, String> finalUserMap = null;
 			if (finalUserMap != null) {
 				typeList.forEach(type -> {
 					if (type.getCreateBy() != null) {
@@ -172,7 +169,11 @@ public class DeviceTypeController {
 	@ApiOperation(value = "设备分类-添加", notes = "设备分类-添加")
 	@PostMapping(value = "/add")
 	public Result<DeviceType> add(@RequestBody DeviceType deviceType, HttpServletRequest req) {
-		String userId = TokenUtils.getUserId(req, iSysBaseAPI);
+		LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+		if (Objects.isNull(sysUser)) {
+			throw new AiurtBootException("请登录！");
+		}
+		String userId = sysUser.getId();
 		Result<DeviceType> result = new Result<DeviceType>();
 		Integer existFlag = deviceTypeService.existCode(deviceType.getCode());
 		if (existFlag == 1) {
@@ -200,13 +201,16 @@ public class DeviceTypeController {
 	@ApiOperation(value = "设备分类-编辑", notes = "设备分类-编辑")
 	@PutMapping(value = "/edit")
 	public Result<DeviceType> edit(@RequestBody DeviceType deviceType, HttpServletRequest req) {
-		String userId = TokenUtils.getUserId(req, iSysBaseAPI);
+		LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+		if (Objects.isNull(sysUser)) {
+			throw new AiurtBootException("请登录！");
+		}
 		Result<DeviceType> result = new Result<DeviceType>();
 		DeviceType deviceTypeEntity = deviceTypeService.getById(deviceType.getId());
 		if (deviceTypeEntity == null) {
 			result.onnull("未找到对应实体");
 		} else {
-			deviceType.setUpdateBy(userId);
+			deviceType.setUpdateBy(sysUser.getId());
 			boolean ok = deviceTypeService.updateById(deviceType);
 			if (ok) {
 				result.success("修改成功!");
@@ -300,7 +304,8 @@ public class DeviceTypeController {
 		//Step.2 AutoPoi 导出Excel
 		ModelAndView mv = new ModelAndView(new JeecgEntityExcelView());
 		List<DeviceType> pageList = deviceTypeService.list(queryWrapper);
-		pageList.forEach(x -> {
+		// todo 后期修改
+		/*pageList.forEach(x -> {
 			if (StrUtil.isNotEmpty(x.getCreateBy())) {
 				final SysUser sysUser = userMapper.selectById(x.getCreateBy());
 				x.setCreateBy(sysUser.getRealname());
@@ -309,7 +314,7 @@ public class DeviceTypeController {
 				final SysUser sysUser = userMapper.selectById(x.getUpdateBy());
 				x.setUpdateBy(sysUser.getRealname());
 			}
-		});
+		});*/
 		//导出文件名称
 		mv.addObject(NormalExcelConstants.FILE_NAME, "设备分类列表");
 		mv.addObject(NormalExcelConstants.CLASS, DeviceType.class);

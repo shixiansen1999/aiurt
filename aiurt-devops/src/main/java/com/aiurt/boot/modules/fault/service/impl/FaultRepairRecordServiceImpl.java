@@ -2,17 +2,16 @@ package com.aiurt.boot.modules.fault.service.impl;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjectUtil;
+import com.aiurt.common.constant.CommonConstant;
+import com.aiurt.common.enums.FaultLevelEnum;
+import com.aiurt.common.enums.ProcessLinkEnum;
+import com.aiurt.common.enums.RepairWayEnum;
+import com.aiurt.common.enums.SolveStatusEnum;
+import com.aiurt.common.result.FaultRepairRecordResult;
+import com.aiurt.common.result.SpareResult;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.aiurt.boot.common.constant.CommonConstant;
-import com.aiurt.boot.common.enums.FaultLevelEnum;
-import com.aiurt.boot.common.enums.ProcessLinkEnum;
-import com.aiurt.boot.common.enums.RepairWayEnum;
-import com.aiurt.boot.common.enums.SolveStatusEnum;
-import com.aiurt.boot.common.result.FaultRepairRecordResult;
-import com.aiurt.boot.common.result.SpareResult;
-import com.aiurt.boot.common.system.vo.LoginUser;
 import com.aiurt.boot.modules.appMessage.constant.MessageConstant;
 import com.aiurt.boot.modules.appMessage.entity.Message;
 import com.aiurt.boot.modules.appMessage.param.MessageAddParam;
@@ -47,6 +46,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -280,7 +280,8 @@ public class FaultRepairRecordServiceImpl extends ServiceImpl<FaultRepairRecordM
             List<String> query1 = repairRecordEnclosureMapper.queryDetail(result.getId(),0);
             //签名
             List<String> query2 = repairRecordEnclosureMapper.queryDetail(result.getId(),1);
-            SysUser sysUser = sysUserService.getOne(new QueryWrapper<SysUser>().eq(SysUser.ID, result.getAppointUserId()), false);
+            // todo 后期修改
+           /* SysUser sysUser = sysUserService.getOne(new QueryWrapper<SysUser>().eq(SysUser.ID, result.getAppointUserId()), false);
             if (ObjectUtil.isNotEmpty(sysUser)) {
                 result.setAppointUserName(sysUser.getRealname());
             }
@@ -295,7 +296,7 @@ public class FaultRepairRecordServiceImpl extends ServiceImpl<FaultRepairRecordM
                 }
                 String str = StringUtils.join(name, ",");
                 result.setParticipateNames(str);
-            }
+            }*/
 
             if (StringUtils.isNotBlank(result.getOutsourcingIds())) {
                 List<String> ids = Arrays.asList(result.getOutsourcingIds().split(","));

@@ -1,13 +1,13 @@
 package com.aiurt.boot.modules.fault.controller;
 
 import com.aiurt.common.aspect.annotation.AutoLog;
+import com.aiurt.common.exception.AiurtBootException;
+import com.aiurt.common.result.FaultDeviceChangSpareResult;
+import com.aiurt.common.util.oConvertUtils;
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.aiurt.boot.common.exception.SwscException;
-import com.aiurt.boot.common.result.FaultDeviceChangSpareResult;
-import com.aiurt.boot.common.util.oConvertUtils;
 import com.aiurt.boot.modules.fault.entity.DeviceChangeSparePart;
 import com.aiurt.boot.modules.fault.entity.FaultRepairRecord;
 import com.aiurt.boot.modules.fault.param.FaultDeviceParam;
@@ -262,7 +262,7 @@ public class DeviceChangeSparePartController {
 public Result<IPage<FaultDeviceChangSpareResult>> getFaultDeviceChangeSpare(@RequestParam(name = "code", required = true) String code,
                                                                             @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
                                                                             @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize,
-                                                                                                                              FaultDeviceParam param) {
+                                                                            FaultDeviceParam param) {
      Page<FaultDeviceChangSpareResult> page = new Page<>(pageNo, pageSize);
      IPage<FaultDeviceChangSpareResult> faultDeviceChangeSpare = faultChangeSparePartService.getFaultDeviceChangeSpare(page,code,param);
      return Result.ok(faultDeviceChangeSpare);
@@ -280,7 +280,7 @@ public Result<IPage<FaultDeviceChangSpareResult>> getFaultDeviceChangeSpare(@Req
                                              @RequestParam(name = "type", required = false) String type) {
         FaultRepairRecord faultRepairRecord = faultRepairRecordService.getOne(new QueryWrapper<FaultRepairRecord>().eq("id", id), false);
         if (StringUtils.isBlank(faultRepairRecord.getMaintenanceMeasures())) {
-            throw new SwscException("该记录没有详情");
+            throw new AiurtBootException("该记录没有详情");
         } else {
             String faultPhenomenon = faultRepairRecord.getMaintenanceMeasures();
             return Result.ok(faultPhenomenon);

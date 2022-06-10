@@ -1,8 +1,8 @@
 package com.aiurt.boot.modules.fault.service;
 
+import com.aiurt.common.result.FaultDeviceChangSpareResult;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.aiurt.boot.common.result.FaultDeviceChangSpareResult;
 import com.aiurt.boot.modules.fault.entity.DeviceChangeSparePart;
 import com.aiurt.boot.modules.fault.param.FaultDeviceParam;
 
