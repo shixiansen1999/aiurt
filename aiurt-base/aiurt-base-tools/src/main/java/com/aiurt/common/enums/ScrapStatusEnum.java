@@ -1,7 +1,6 @@
 package com.aiurt.common.enums;
 
 import cn.hutool.core.util.StrUtil;
-import io.micrometer.core.instrument.util.StringUtils;
 
 import java.util.Arrays;
 import java.util.Optional;
