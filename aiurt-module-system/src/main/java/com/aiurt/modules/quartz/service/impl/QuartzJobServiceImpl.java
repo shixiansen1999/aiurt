@@ -1,7 +1,7 @@
 package com.aiurt.modules.quartz.service.impl;
 
 import com.aiurt.common.constant.CommonConstant;
-import com.aiurt.common.exception.JeecgBootException;
+import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.util.DateUtils;
 import com.aiurt.modules.quartz.service.IQuartzJobService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -44,7 +44,7 @@ public class QuartzJobServiceImpl extends ServiceImpl<QuartzJobMapper, QuartzJob
 	 * 保存&启动定时任务
 	 */
 	@Override
-	@Transactional(rollbackFor = JeecgBootException.class)
+	@Transactional(rollbackFor = AiurtBootException.class)
 	public boolean saveAndScheduleJob(QuartzJob quartzJob) {
 		// DB设置修改
 		quartzJob.setDelFlag(CommonConstant.DEL_FLAG_0);
@@ -62,7 +62,7 @@ public class QuartzJobServiceImpl extends ServiceImpl<QuartzJobMapper, QuartzJob
 	 * 恢复定时任务
 	 */
 	@Override
-	@Transactional(rollbackFor = JeecgBootException.class)
+	@Transactional(rollbackFor = AiurtBootException.class)
 	public boolean resumeJob(QuartzJob quartzJob) {
 		schedulerDelete(quartzJob.getId());
 		schedulerAdd(quartzJob.getId(), quartzJob.getJobClassName().trim(), quartzJob.getCronExpression().trim(), quartzJob.getParameter());
@@ -75,7 +75,7 @@ public class QuartzJobServiceImpl extends ServiceImpl<QuartzJobMapper, QuartzJob
 	 * @throws SchedulerException
 	 */
 	@Override
-	@Transactional(rollbackFor = JeecgBootException.class)
+	@Transactional(rollbackFor = AiurtBootException.class)
 	public boolean editAndScheduleJob(QuartzJob quartzJob) throws SchedulerException {
 		if (CommonConstant.STATUS_NORMAL.equals(quartzJob.getStatus())) {
 			schedulerDelete(quartzJob.getId());
@@ -90,7 +90,7 @@ public class QuartzJobServiceImpl extends ServiceImpl<QuartzJobMapper, QuartzJob
 	 * 删除&停止删除定时任务
 	 */
 	@Override
-	@Transactional(rollbackFor = JeecgBootException.class)
+	@Transactional(rollbackFor = AiurtBootException.class)
 	public boolean deleteAndStopJob(QuartzJob job) {
 		schedulerDelete(job.getId());
 		boolean ok = this.removeById(job.getId());
@@ -121,7 +121,7 @@ public class QuartzJobServiceImpl extends ServiceImpl<QuartzJobMapper, QuartzJob
 	}
 
 	@Override
-	@Transactional(rollbackFor = JeecgBootException.class)
+	@Transactional(rollbackFor = AiurtBootException.class)
 	public void pause(QuartzJob quartzJob){
 		schedulerDelete(quartzJob.getId());
 		quartzJob.setStatus(CommonConstant.STATUS_DISABLE);
@@ -151,11 +151,11 @@ public class QuartzJobServiceImpl extends ServiceImpl<QuartzJobMapper, QuartzJob
 
 			scheduler.scheduleJob(jobDetail, trigger);
 		} catch (SchedulerException e) {
-			throw new JeecgBootException("创建定时任务失败", e);
+			throw new AiurtBootException("创建定时任务失败", e);
 		} catch (RuntimeException e) {
-			throw new JeecgBootException(e.getMessage(), e);
+			throw new AiurtBootException(e.getMessage(), e);
 		}catch (Exception e) {
-			throw new JeecgBootException("后台找不到该类名：" + jobClassName, e);
+			throw new AiurtBootException("后台找不到该类名：" + jobClassName, e);
 		}
 	}
 
@@ -171,7 +171,7 @@ public class QuartzJobServiceImpl extends ServiceImpl<QuartzJobMapper, QuartzJob
 			scheduler.deleteJob(JobKey.jobKey(id));
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
-			throw new JeecgBootException("删除定时任务失败");
+			throw new AiurtBootException("删除定时任务失败");
 		}
 	}
 

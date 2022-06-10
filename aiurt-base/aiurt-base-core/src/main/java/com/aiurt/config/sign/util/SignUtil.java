@@ -5,7 +5,7 @@ import com.aiurt.common.util.SpringContextUtils;
 import com.aiurt.common.util.oConvertUtils;
 import lombok.extern.slf4j.Slf4j;
 import com.aiurt.common.constant.SymbolConstant;
-import com.aiurt.common.exception.JeecgBootException;
+import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.config.JeeccgBaseConfig;
 import org.springframework.util.DigestUtils;
 import org.springframework.util.StringUtils;
@@ -52,7 +52,7 @@ public class SignUtil {
         String signatureSecret = jeeccgBaseConfig.getSignatureSecret();
         String curlyBracket = SymbolConstant.DOLLAR + SymbolConstant.LEFT_CURLY_BRACKET;
         if(oConvertUtils.isEmpty(signatureSecret) || signatureSecret.contains(curlyBracket)){
-            throw new JeecgBootException("签名密钥 ${jeecg.signatureSecret} 缺少配置 ！！");
+            throw new AiurtBootException("签名密钥 ${jeecg.signatureSecret} 缺少配置 ！！");
         }
         return DigestUtils.md5DigestAsHex((paramsJsonStr + signatureSecret).getBytes()).toUpperCase();
     }

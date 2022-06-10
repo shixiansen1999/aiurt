@@ -1,6 +1,6 @@
 package com.aiurt.modules.system.controller;
 
-import com.aiurt.common.exception.JeecgBootException;
+import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.util.CommonUtils;
 import com.aiurt.common.util.MinioUtil;
 import com.aiurt.common.util.oConvertUtils;
@@ -39,7 +39,7 @@ public class SysUploadController {
 
         //LOWCOD-2580 sys/common/upload接口存在任意文件上传漏洞
         if (oConvertUtils.isNotEmpty(bizPath) && (bizPath.contains("../") || bizPath.contains("..\\"))) {
-            throw new JeecgBootException("上传目录bizPath，格式非法！");
+            throw new AiurtBootException("上传目录bizPath，格式非法！");
         }
 
         if(oConvertUtils.isEmpty(bizPath)){

@@ -20,7 +20,7 @@ import org.jeecg.common.api.vo.Result;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.constant.DataBaseConstant;
 import com.aiurt.common.constant.SymbolConstant;
-import com.aiurt.common.exception.JeecgBootException;
+import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.util.DateUtils;
 import com.aiurt.common.util.SpringContextUtils;
 import com.aiurt.common.util.oConvertUtils;
@@ -117,13 +117,13 @@ public class JwtUtil {
 	 *
 	 * @param request
 	 * @return
-	 * @throws JeecgBootException
+	 * @throws AiurtBootException
 	 */
-	public static String getUserNameByToken(HttpServletRequest request) throws JeecgBootException {
+	public static String getUserNameByToken(HttpServletRequest request) throws AiurtBootException {
 		String accessToken = request.getHeader("X-Access-Token");
 		String username = getUsername(accessToken);
 		if (oConvertUtils.isEmpty(username)) {
-			throw new JeecgBootException("未获取到用户");
+			throw new AiurtBootException("未获取到用户");
 		}
 		return username;
 	}

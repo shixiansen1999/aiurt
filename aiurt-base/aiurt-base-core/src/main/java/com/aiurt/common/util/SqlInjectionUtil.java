@@ -2,7 +2,7 @@ package com.aiurt.common.util;
 
 import cn.hutool.crypto.SecureUtil;
 import lombok.extern.slf4j.Slf4j;
-import com.aiurt.common.exception.JeecgBootException;
+import com.aiurt.common.exception.AiurtBootException;
 import javax.servlet.http.HttpServletRequest;
 import java.util.regex.Pattern;
 
@@ -37,7 +37,7 @@ public class SqlInjectionUtil {
 		String javaSign = SecureUtil.md5(signStr);
 		if (!javaSign.equals(sign)) {
 			log.error("表字典，SQL注入漏洞签名校验失败 ：" + sign + "!=" + javaSign+ ",dictCode=" + dictCode);
-			throw new JeecgBootException("无权限访问！");
+			throw new AiurtBootException("无权限访问！");
 		}
 		log.info(" 表字典，SQL注入漏洞签名校验成功！sign=" + sign + ",dictCode=" + dictCode);
 	}

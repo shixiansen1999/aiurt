@@ -4,19 +4,19 @@ package com.aiurt.common.exception;
  * @Description: jeecg-boot自定义异常
  * @author: jeecg-boot
  */
-public class JeecgBootException extends RuntimeException {
+public class AiurtBootException extends RuntimeException {
 	private static final long serialVersionUID = 1L;
 
-	public JeecgBootException(String message){
+	public AiurtBootException(String message){
 		super(message);
 	}
 
-	public JeecgBootException(Throwable cause)
+	public AiurtBootException(Throwable cause)
 	{
 		super(cause);
 	}
 
-	public JeecgBootException(String message,Throwable cause)
+	public AiurtBootException(String message, Throwable cause)
 	{
 		super(message,cause);
 	}

@@ -5,9 +5,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import com.aiurt.common.api.CommonAPI;
 import com.aiurt.common.constant.CommonConstant;
-import com.aiurt.common.exception.JeecgBoot401Exception;
+import com.aiurt.common.exception.Aiurt401Exception;
 import com.aiurt.common.system.util.JwtUtil;
-import org.apache.shiro.authc.AuthenticationException;
 import org.jeecg.common.system.vo.LoginUser;
 
 import javax.servlet.http.HttpServletRequest;
@@ -48,28 +47,28 @@ public class TokenUtils {
      */
     public static boolean verifyToken(String token, CommonAPI commonApi, RedisUtil redisUtil) {
         if (StringUtils.isBlank(token)) {
-            throw new JeecgBoot401Exception("token不能为空!");
+            throw new Aiurt401Exception("token不能为空!");
         }
 
         // 解密获得username，用于和数据库进行对比
         String username = JwtUtil.getUsername(token);
         if (username == null) {
-            throw new JeecgBoot401Exception("token非法无效!");
+            throw new Aiurt401Exception("token非法无效!");
         }
 
         // 查询用户信息
         LoginUser user = TokenUtils.getLoginUser(username, commonApi, redisUtil);
         //LoginUser user = commonApi.getUserByName(username);
         if (user == null) {
-            throw new JeecgBoot401Exception("用户不存在!");
+            throw new Aiurt401Exception("用户不存在!");
         }
         // 判断用户状态
         if (user.getStatus() != 1) {
-            throw new JeecgBoot401Exception("账号已被锁定,请联系管理员!");
+            throw new Aiurt401Exception("账号已被锁定,请联系管理员!");
         }
         // 校验token是否超时失效 & 或者账号密码是否错误
         if (!jwtTokenRefresh(token, username, user.getPassword(), redisUtil)) {
-            throw new JeecgBoot401Exception(CommonConstant.TOKEN_IS_INVALID_MSG);
+            throw new Aiurt401Exception(CommonConstant.TOKEN_IS_INVALID_MSG);
         }
         return true;
     }

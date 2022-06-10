@@ -2,7 +2,7 @@ package com.aiurt.modules.system.service;
 
 import java.util.List;
 
-import com.aiurt.common.exception.JeecgBootException;
+import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.modules.system.entity.SysPermission;
 import com.aiurt.modules.system.model.TreeModel;
 
@@ -29,29 +29,29 @@ public interface ISysPermissionService extends IService<SysPermission> {
 	/**
      * 真实删除
      * @param id 菜单id
-     * @throws JeecgBootException
+     * @throws AiurtBootException
      */
-	public void deletePermission(String id) throws JeecgBootException;
+	public void deletePermission(String id) throws AiurtBootException;
 	/**
      * 逻辑删除
      * @param id 菜单id
-     * @throws JeecgBootException
+     * @throws AiurtBootException
      */
-	public void deletePermissionLogical(String id) throws JeecgBootException;
+	public void deletePermissionLogical(String id) throws AiurtBootException;
 
     /**
      * 添加菜单
      * @param sysPermission SysPermission对象
-     * @throws JeecgBootException
+     * @throws AiurtBootException
      */
-	public void addPermission(SysPermission sysPermission) throws JeecgBootException;
+	public void addPermission(SysPermission sysPermission) throws AiurtBootException;
 
     /**
      * 编辑菜单
      * @param sysPermission SysPermission对象
-     * @throws JeecgBootException
+     * @throws AiurtBootException
      */
-	public void editPermission(SysPermission sysPermission) throws JeecgBootException;
+	public void editPermission(SysPermission sysPermission) throws AiurtBootException;
 
     /**
      * 获取登录用户拥有的权限

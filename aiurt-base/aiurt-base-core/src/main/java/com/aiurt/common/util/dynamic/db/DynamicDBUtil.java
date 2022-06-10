@@ -3,7 +3,7 @@ package com.aiurt.common.util.dynamic.db;
 import com.alibaba.druid.pool.DruidDataSource;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ArrayUtils;
-import com.aiurt.common.exception.JeecgBootException;
+import com.aiurt.common.exception.AiurtBootException;
 import org.jeecg.common.system.vo.DynamicDataSourceModel;
 import com.aiurt.common.util.ReflectHelper;
 import com.aiurt.common.util.oConvertUtils;
@@ -77,7 +77,7 @@ public class DynamicDBUtil {
             if(dataSource!=null && dataSource.isEnable()){
                 DataSourceCachePool.putCacheBasicDataSource(dbKey, dataSource);
             }else{
-                throw new JeecgBootException("动态数据源连接失败，dbKey："+dbKey);
+                throw new AiurtBootException("动态数据源连接失败，dbKey："+dbKey);
             }
             log.info("--------getDbSourceBydbKey------------------创建DB数据库连接-------------------");
             return dataSource;

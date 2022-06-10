@@ -1,7 +1,7 @@
 package com.aiurt.modules.message.handle.impl;
 
 import com.aiurt.common.api.dto.message.MessageDTO;
-import com.aiurt.common.exception.JeecgBootException;
+import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.util.SpringContextUtils;
 import com.aiurt.common.util.oConvertUtils;
 import org.jeecg.common.system.api.ISysBaseAPI;
@@ -19,7 +19,7 @@ public class SystemSendMsgHandle implements ISendMsgHandle {
     @Override
     public void SendMsg(String es_receiver, String es_title, String es_content) {
         if(oConvertUtils.isEmpty(es_receiver)){
-            throw  new JeecgBootException("被发送人不能为空");
+            throw  new AiurtBootException("被发送人不能为空");
         }
         ISysBaseAPI sysBaseAPI = SpringContextUtils.getBean(ISysBaseAPI.class);
         MessageDTO messageDTO = new MessageDTO(FROM_USER,es_receiver,es_title,es_content);

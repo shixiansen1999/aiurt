@@ -2,7 +2,7 @@ package com.aiurt.modules.system.controller;
 
 import org.jeecg.common.api.vo.Result;
 import com.aiurt.common.constant.CommonConstant;
-import com.aiurt.common.exception.JeecgBootException;
+import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.util.CommonUtils;
 import com.aiurt.common.util.RestUtil;
 import com.aiurt.common.util.TokenUtils;
@@ -73,7 +73,7 @@ public class CommonController {
 
         //LOWCOD-2580 sys/common/upload接口存在任意文件上传漏洞
         if (oConvertUtils.isNotEmpty(bizPath) && (bizPath.contains("../") || bizPath.contains("..\\"))) {
-            throw new JeecgBootException("上传目录bizPath，格式非法！");
+            throw new AiurtBootException("上传目录bizPath，格式非法！");
         }
 
         MultipartHttpServletRequest multipartRequest = (MultipartHttpServletRequest) request;

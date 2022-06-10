@@ -6,7 +6,7 @@ import com.aiurt.common.constant.CacheConstant;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.constant.DataBaseConstant;
 import com.aiurt.common.constant.WebsocketConst;
-import com.aiurt.common.exception.JeecgBootException;
+import com.aiurt.common.exception.AiurtBootException;
 import org.jeecg.common.system.query.QueryGenerator;
 import com.aiurt.common.util.SysAnnmentTypeEnum;
 import com.aiurt.common.util.YouBianCodeUtil;
@@ -346,7 +346,7 @@ public class SysBaseApiImpl implements ISysBaseAPI {
 
 		List<SysMessageTemplate> sysSmsTemplates = sysMessageTemplateService.selectByCode(templateCode);
 		if(sysSmsTemplates==null||sysSmsTemplates.size()==0){
-			throw new JeecgBootException("消息模板不存在，模板编码："+templateCode);
+			throw new AiurtBootException("消息模板不存在，模板编码："+templateCode);
 		}
 		SysMessageTemplate sysSmsTemplate = sysSmsTemplates.get(0);
 		//模板标题
@@ -419,7 +419,7 @@ public class SysBaseApiImpl implements ISysBaseAPI {
 
 		List<SysMessageTemplate> sysSmsTemplates = sysMessageTemplateService.selectByCode(templateCode);
 		if(sysSmsTemplates==null||sysSmsTemplates.size()==0){
-			throw new JeecgBootException("消息模板不存在，模板编码："+templateCode);
+			throw new AiurtBootException("消息模板不存在，模板编码："+templateCode);
 		}
 		SysMessageTemplate sysSmsTemplate = sysSmsTemplates.get(0);
 		//模板标题
@@ -487,7 +487,7 @@ public class SysBaseApiImpl implements ISysBaseAPI {
 		Map<String, String> map = templateDTO.getTemplateParam();
 		List<SysMessageTemplate> sysSmsTemplates = sysMessageTemplateService.selectByCode(templateCode);
 		if(sysSmsTemplates==null||sysSmsTemplates.size()==0){
-			throw new JeecgBootException("消息模板不存在，模板编码："+templateCode);
+			throw new AiurtBootException("消息模板不存在，模板编码："+templateCode);
 		}
 		SysMessageTemplate sysSmsTemplate = sysSmsTemplates.get(0);
 		//模板内容

@@ -1,7 +1,7 @@
 package com.aiurt.modules.system.service.impl;
 
 import com.aiurt.common.constant.CommonConstant;
-import com.aiurt.common.exception.JeecgBootException;
+import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.modules.system.entity.SysTenant;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -52,7 +52,7 @@ public class SysTenantServiceImpl extends ServiceImpl<SysTenantMapper, SysTenant
         // 查找出已被关联的用户数量
         Long userCount = this.countUserLinkTenant(id);
         if (userCount > 0) {
-            throw new JeecgBootException("该租户已被引用，无法删除！");
+            throw new AiurtBootException("该租户已被引用，无法删除！");
         }
         return super.removeById(Integer.parseInt(id));
     }

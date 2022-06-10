@@ -9,7 +9,7 @@ import javax.annotation.Resource;
 
 import com.aiurt.common.constant.CacheConstant;
 import com.aiurt.common.constant.CommonConstant;
-import com.aiurt.common.exception.JeecgBootException;
+import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.util.oConvertUtils;
 import com.aiurt.modules.system.entity.SysPermission;
 import com.aiurt.modules.system.entity.SysPermissionDataRule;
@@ -66,10 +66,10 @@ public class SysPermissionServiceImpl extends ServiceImpl<SysPermissionMapper, S
 	@Override
 	@Transactional(rollbackFor = Exception.class)
 	@CacheEvict(value = CacheConstant.SYS_DATA_PERMISSIONS_CACHE,allEntries=true)
-	public void deletePermission(String id) throws JeecgBootException {
+	public void deletePermission(String id) throws AiurtBootException {
 		SysPermission sysPermission = this.getById(id);
 		if(sysPermission==null) {
-			throw new JeecgBootException("未找到菜单信息");
+			throw new AiurtBootException("未找到菜单信息");
 		}
 		String pid = sysPermission.getParentId();
 		if(oConvertUtils.isNotEmpty(pid)) {
@@ -141,10 +141,10 @@ public class SysPermissionServiceImpl extends ServiceImpl<SysPermissionMapper, S
 	@Override
 	@CacheEvict(value = CacheConstant.SYS_DATA_PERMISSIONS_CACHE,allEntries=true)
 	//@CacheEvict(value = CacheConstant.SYS_DATA_PERMISSIONS_CACHE,allEntries=true,condition="#sysPermission.menuType==2")
-	public void deletePermissionLogical(String id) throws JeecgBootException {
+	public void deletePermissionLogical(String id) throws AiurtBootException {
 		SysPermission sysPermission = this.getById(id);
 		if(sysPermission==null) {
-			throw new JeecgBootException("未找到菜单信息");
+			throw new AiurtBootException("未找到菜单信息");
 		}
 		String pid = sysPermission.getParentId();
 		Long count = this.count(new QueryWrapper<SysPermission>().lambda().eq(SysPermission::getParentId, pid));
@@ -158,7 +158,7 @@ public class SysPermissionServiceImpl extends ServiceImpl<SysPermissionMapper, S
 
 	@Override
 	@CacheEvict(value = CacheConstant.SYS_DATA_PERMISSIONS_CACHE,allEntries=true)
-	public void addPermission(SysPermission sysPermission) throws JeecgBootException {
+	public void addPermission(SysPermission sysPermission) throws AiurtBootException {
 		//----------------------------------------------------------------------
 		//判断是否是一级菜单，是的话清空父菜单
 		if(CommonConstant.MENU_TYPE_0.equals(sysPermission.getMenuType())) {
@@ -178,11 +178,11 @@ public class SysPermissionServiceImpl extends ServiceImpl<SysPermissionMapper, S
 
 	@Override
 	@CacheEvict(value = CacheConstant.SYS_DATA_PERMISSIONS_CACHE,allEntries=true)
-	public void editPermission(SysPermission sysPermission) throws JeecgBootException {
+	public void editPermission(SysPermission sysPermission) throws AiurtBootException {
 		SysPermission p = this.getById(sysPermission.getId());
 		//TODO 该节点判断是否还有子节点
 		if(p==null) {
-			throw new JeecgBootException("未找到菜单信息");
+			throw new AiurtBootException("未找到菜单信息");
 		}else {
 			sysPermission.setUpdateTime(new Date());
 			//----------------------------------------------------------------------

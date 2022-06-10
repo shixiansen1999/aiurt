@@ -1,7 +1,7 @@
 package com.aiurt.modules.system.service.impl;
 
 import com.aiurt.common.constant.FillRuleConstant;
-import com.aiurt.common.exception.JeecgBootException;
+import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.util.FillRuleUtil;
 import com.aiurt.common.util.oConvertUtils;
 import com.aiurt.modules.system.entity.SysCategory;
@@ -75,15 +75,15 @@ public class SysCategoryServiceImpl extends ServiceImpl<SysCategoryMapper, SysCa
 	}
 
 	@Override
-	public List<TreeSelectModel> queryListByCode(String pcode) throws JeecgBootException {
+	public List<TreeSelectModel> queryListByCode(String pcode) throws AiurtBootException {
 		String pid = ROOT_PID_VALUE;
 		if(oConvertUtils.isNotEmpty(pcode)) {
 			List<SysCategory> list = baseMapper.selectList(new LambdaQueryWrapper<SysCategory>().eq(SysCategory::getCode, pcode));
 			if(list==null || list.size() ==0) {
-				throw new JeecgBootException("该编码【"+pcode+"】不存在，请核实!");
+				throw new AiurtBootException("该编码【"+pcode+"】不存在，请核实!");
 			}
 			if(list.size()>1) {
-				throw new JeecgBootException("该编码【"+pcode+"】存在多个，请核实!");
+				throw new AiurtBootException("该编码【"+pcode+"】存在多个，请核实!");
 			}
 			pid = list.get(0).getId();
 		}

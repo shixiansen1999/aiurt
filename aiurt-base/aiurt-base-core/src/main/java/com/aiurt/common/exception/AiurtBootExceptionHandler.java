@@ -26,13 +26,13 @@ import lombok.extern.slf4j.Slf4j;
  */
 @RestControllerAdvice
 @Slf4j
-public class JeecgBootExceptionHandler {
+public class AiurtBootExceptionHandler {
 
 	/**
 	 * 处理自定义异常
 	 */
-	@ExceptionHandler(JeecgBootException.class)
-	public Result<?> handleJeecgBootException(JeecgBootException e){
+	@ExceptionHandler(AiurtBootException.class)
+	public Result<?> handleJeecgBootException(AiurtBootException e){
 		log.error(e.getMessage(), e);
 		return Result.error(e.getMessage());
 	}
@@ -49,9 +49,9 @@ public class JeecgBootExceptionHandler {
 	/**
 	 * 处理自定义异常
 	 */
-	@ExceptionHandler(JeecgBoot401Exception.class)
+	@ExceptionHandler(Aiurt401Exception.class)
 	@ResponseStatus(HttpStatus.UNAUTHORIZED)
-	public Result<?> handleJeecgBoot401Exception(JeecgBoot401Exception e){
+	public Result<?> handleJeecgBoot401Exception(Aiurt401Exception e){
 		log.error(e.getMessage(), e);
 		return new Result(401,e.getMessage());
 	}

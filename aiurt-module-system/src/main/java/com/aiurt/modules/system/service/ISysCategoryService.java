@@ -1,6 +1,6 @@
 package com.aiurt.modules.system.service;
 
-import com.aiurt.common.exception.JeecgBootException;
+import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.modules.system.entity.SysCategory;
 import com.aiurt.modules.system.model.TreeSelectModel;
 import com.baomidou.mybatisplus.extension.service.IService;
@@ -35,9 +35,9 @@ public interface ISysCategoryService extends IService<SysCategory> {
      * 根据父级编码加载分类字典的数据
 	 * @param pcode
 	 * @return
-     * @throws JeecgBootException
+     * @throws AiurtBootException
 	 */
-	public List<TreeSelectModel> queryListByCode(String pcode) throws JeecgBootException;
+	public List<TreeSelectModel> queryListByCode(String pcode) throws AiurtBootException;
 
 	/**
 	  * 根据pid查询子节点集合
