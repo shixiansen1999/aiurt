@@ -1,26 +1,20 @@
 package com.aiurt.boot.modules.system.controller;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import com.alibaba.fastjson.JSON;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.aiurt.boot.modules.system.model.TreeSelectModel;
-import com.aiurt.boot.modules.system.service.ISysCategoryService;
-import com.aiurt.boot.modules.system.entity.SysCategory;
-import org.apache.shiro.SecurityUtils;
-
 import com.aiurt.boot.common.system.vo.DictModel;
 import com.aiurt.boot.common.system.vo.LoginUser;
 import com.aiurt.boot.common.util.oConvertUtils;
+import com.aiurt.boot.modules.system.entity.SysCategory;
+import com.aiurt.boot.modules.system.model.TreeSelectModel;
+import com.aiurt.boot.modules.system.service.ISysCategoryService;
+import com.alibaba.fastjson.JSON;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.system.query.QueryGenerator;
 import org.jeecgframework.poi.excel.ExcelImportUtil;
 import org.jeecgframework.poi.excel.def.NormalExcelConstants;
 import org.jeecgframework.poi.excel.entity.ExportParams;
@@ -32,11 +26,14 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
 import org.springframework.web.servlet.ModelAndView;
 
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-
-import lombok.extern.slf4j.Slf4j;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
  /**
  * @Description: 分类字典
@@ -189,7 +186,7 @@ public class SysCategoryController {
       * 导出excel
    *
    * @param request
-   * @param response
+   * @param
    */
   @RequestMapping(value = "/exportXls")
   public ModelAndView exportXls(HttpServletRequest request, SysCategory sysCategory) {
@@ -400,7 +397,7 @@ public class SysCategoryController {
 
 	 /**
 	  * 分类字典控件数据回显[表单页面]
-	  * @param key
+	  * @param
 	  * @return
 	  */
 	 @RequestMapping(value = "/loadDictItem", method = RequestMethod.GET)

@@ -1,7 +1,7 @@
 package com.aiurt.boot.common.system.util;
 
 import com.aiurt.boot.common.constant.DataBaseConstant;
-import com.aiurt.boot.common.exception.SwscException;
+
 import com.aiurt.boot.common.system.vo.LoginUser;
 import com.aiurt.boot.common.system.vo.SysUserCacheInfo;
 import com.aiurt.boot.common.util.SpringContextUtils;

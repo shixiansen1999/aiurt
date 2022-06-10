@@ -1,13 +1,6 @@
 package com.aiurt.boot.modules.sysFile.controller;
 
-import com.aiurt.common.aspect.annotation.AutoLog;
-import com.alibaba.fastjson.JSON;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.aiurt.boot.common.constant.CommonConstant;
-
 import com.aiurt.boot.common.system.vo.LoginUser;
 import com.aiurt.boot.common.util.oConvertUtils;
 import com.aiurt.boot.modules.patrol.constant.PatrolConstant;
@@ -24,6 +17,12 @@ import com.aiurt.boot.modules.sysFile.vo.SysFileVO;
 import com.aiurt.boot.modules.sysFile.vo.TypeNameVO;
 import com.aiurt.boot.modules.system.entity.SysUser;
 import com.aiurt.boot.modules.system.service.ISysUserService;
+import com.aiurt.common.aspect.annotation.AutoLog;
+import com.alibaba.fastjson.JSON;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
@@ -31,6 +30,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.system.query.QueryGenerator;
 import org.jeecgframework.poi.excel.ExcelImportUtil;
 import org.jeecgframework.poi.excel.def.NormalExcelConstants;
 import org.jeecgframework.poi.excel.entity.ExportParams;

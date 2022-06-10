@@ -1,7 +1,6 @@
 package com.aiurt.boot.modules.sysFile.controller;
 
 
-import com.aiurt.boot.common.exception.SwscException;
 import com.aiurt.boot.common.system.vo.LoginUser;
 import com.aiurt.boot.modules.sysFile.entity.SysFile;
 import com.aiurt.boot.modules.sysFile.entity.SysFileRole;
@@ -13,6 +12,7 @@ import com.aiurt.boot.modules.sysFile.service.ISysFileTypeService;
 import com.aiurt.boot.modules.sysFile.vo.SysFileTypeDetailVO;
 import com.aiurt.boot.modules.sysFile.vo.SysFileTypeTreeVO;
 import com.aiurt.common.aspect.annotation.AutoLog;
+import com.aiurt.common.exception.AiurtBootException;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
@@ -142,7 +142,7 @@ public class SysFileTypeController {
 	public Result<?> detail(HttpServletRequest req, @RequestBody @NotNull(message = "id不能为空") List<Long> ids) {
 		SysFileType one = this.sysFileTypeService.lambdaQuery().in(SysFileType::getParentId, ids).last("limit 1").one();
 		if (one!=null){
-			throw new SwscException("此目录下有文件夹,无法被直接删除");
+			throw new AiurtBootException("此目录下有文件夹,无法被直接删除");
 		}
 
 		if (!this.sysFileTypeService.removeByIds(ids)){

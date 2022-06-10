@@ -1,10 +1,7 @@
 package com.aiurt.boot.modules.worklog.service.impl;
 
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.aiurt.boot.common.constant.CommonConstant;
 import com.aiurt.boot.common.constant.QuartConstant;
-import com.aiurt.boot.common.exception.SwscException;
 import com.aiurt.boot.common.system.vo.LoginUser;
 import com.aiurt.boot.common.util.QuartzUtils;
 import com.aiurt.boot.modules.worklog.dto.WorkLogJobDTO;
@@ -14,6 +11,9 @@ import com.aiurt.boot.modules.worklog.mapper.WorkLogRemindMapper;
 import com.aiurt.boot.modules.worklog.service.IWorkLogRemindService;
 import com.aiurt.boot.modules.worklog.task.WorkLogJob;
 import com.aiurt.boot.modules.worklog.task.WorkLogJobNight;
+import com.aiurt.common.exception.AiurtBootException;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
@@ -88,7 +88,7 @@ public class WorkLogRemindServiceImpl extends ServiceImpl<WorkLogRemindMapper, W
 						QuartConstant.WORK_LOG_TRIGGER + remind.getOrgId(),
 						QuartConstant.WORK_LOG_TRIGGER + remind.getOrgId() + QuartConstant.GROUP, WorkLogJob.class, cron, map);
 			} catch (Exception ex) {
-				throw new SwscException("设置白班提醒时间出现错误,请稍后重试");
+				throw new AiurtBootException("设置白班提醒时间出现错误,请稍后重试");
 			}
 		}
 		//夜班调度任务
@@ -104,7 +104,7 @@ public class WorkLogRemindServiceImpl extends ServiceImpl<WorkLogRemindMapper, W
 						QuartConstant.WORK_LOG_TRIGGER_NIGHT + remind.getOrgId(),
 						QuartConstant.WORK_LOG_TRIGGER_NIGHT + remind.getOrgId() + QuartConstant.GROUP, WorkLogJobNight.class, cronNight, map);
 			} catch (Exception ex) {
-				throw new SwscException("设置夜班提醒时间出现错误,请稍后重试");
+				throw new AiurtBootException("设置夜班提醒时间出现错误,请稍后重试");
 			}
 		}
 		return Result.ok();

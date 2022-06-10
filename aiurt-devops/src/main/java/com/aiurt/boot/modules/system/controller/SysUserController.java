@@ -2,7 +2,6 @@ package com.aiurt.boot.modules.system.controller;
 
 import com.aiurt.boot.common.constant.CommonConstant;
 import com.aiurt.boot.common.system.api.ISysBaseAPI;
-
 import com.aiurt.boot.common.system.util.JwtUtil;
 import com.aiurt.boot.common.system.vo.LoginUser;
 import com.aiurt.boot.common.util.PasswordUtil;
@@ -39,6 +38,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.system.query.QueryGenerator;
 import org.jeecgframework.poi.excel.def.NormalExcelConstants;
 import org.jeecgframework.poi.excel.entity.ExportParams;
 import org.jeecgframework.poi.excel.view.JeecgEntityExcelView;
@@ -582,7 +582,8 @@ public class SysUserController {
             InputStream inputStream = file.getInputStream();//获取后缀名
             String nameAndType[] = file.getOriginalFilename().split("\\.");
             String type = nameAndType[1];
-            List<Map<Integer, String>> userData = ImportExcelUtil.readExcelContentByList(inputStream, type, 0, 0);
+            // todo wgp删除导入
+            List<Map<Integer, String>> userData = new ArrayList<>();
             sysUserService.importUserExcel(userData, request);
             return Result.ok("文件导入成功！");
         } catch (Exception e) {

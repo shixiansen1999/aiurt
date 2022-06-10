@@ -1,15 +1,7 @@
 package com.aiurt.boot.modules.training.controller;
 
 import cn.hutool.core.util.ObjectUtil;
-import com.aiurt.common.aspect.annotation.AutoLog;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-
 import com.aiurt.boot.common.constant.CommonConstant;
-import com.aiurt.boot.common.exception.SwscException;
-
 import com.aiurt.boot.common.system.vo.LoginUser;
 import com.aiurt.boot.modules.system.entity.SysUser;
 import com.aiurt.boot.modules.system.service.ISysUserService;
@@ -19,6 +11,12 @@ import com.aiurt.boot.modules.training.entity.TrainingPlanUser;
 import com.aiurt.boot.modules.training.service.ITrainingPlanFileService;
 import com.aiurt.boot.modules.training.service.ITrainingPlanService;
 import com.aiurt.boot.modules.training.service.ITrainingPlanUserService;
+import com.aiurt.common.aspect.annotation.AutoLog;
+import com.aiurt.common.exception.AiurtBootException;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
@@ -103,7 +101,7 @@ public class TrainingPlanController {
 			//插入主表
 			trainingPlanService.save(trainingPlan);
 			if (trainingPlan.getId() == null) {
-				throw new SwscException("插入培训计划失败");
+				throw new AiurtBootException("插入培训计划失败");
 			}
 			Long planId = trainingPlan.getId();
 
@@ -114,7 +112,7 @@ public class TrainingPlanController {
 			result.success("添加成功！");
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
-			throw new SwscException("操作失败");
+			throw new AiurtBootException("操作失败");
 		}
 		return result;
 	}

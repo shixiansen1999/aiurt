@@ -420,8 +420,8 @@ public class SysPermissionController {
 	/**
 	  *  获取权限JSON数组
 	 * @param jsonArray
-	 * @param metaList
-	 * @param parentJson
+	 * @param
+	 * @param
 	 */
 	private void getAllAuthJsonArray(JSONArray jsonArray,List<SysPermission> allList) {
 		JSONObject json = null;
@@ -439,7 +439,7 @@ public class SysPermissionController {
 	  *  获取权限JSON数组
 	 * @param jsonArray
 	 * @param metaList
-	 * @param parentJson
+	 * @param
 	 */
 	private void getAuthJsonArray(JSONArray jsonArray,List<SysPermission> metaList) {
 		for (SysPermission permission : metaList) {

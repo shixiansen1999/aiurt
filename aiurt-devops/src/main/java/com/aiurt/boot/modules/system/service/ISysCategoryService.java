@@ -1,13 +1,12 @@
 package com.aiurt.boot.modules.system.service;
 
+import com.aiurt.boot.modules.system.entity.SysCategory;
+import com.aiurt.boot.modules.system.model.TreeSelectModel;
+import com.aiurt.common.exception.AiurtBootException;
+import com.baomidou.mybatisplus.extension.service.IService;
+
 import java.util.List;
 import java.util.Map;
-
-import com.aiurt.boot.modules.system.model.TreeSelectModel;
-import com.aiurt.boot.common.exception.SwscException;
-import com.aiurt.boot.modules.system.entity.SysCategory;
-
-import com.baomidou.mybatisplus.extension.service.IService;
 
 /**
  * @Description: 分类字典
@@ -29,7 +28,7 @@ public interface ISysCategoryService extends IService<SysCategory> {
 	 * @param pcode
 	 * @return
 	 */
-	public List<TreeSelectModel> queryListByCode(String pcode) throws SwscException;
+	public List<TreeSelectModel> queryListByCode(String pcode) throws AiurtBootException;
 
 	/**
 	  * 根据pid查询子节点集合

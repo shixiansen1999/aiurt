@@ -2,7 +2,6 @@ package com.aiurt.boot.modules.system.controller;
 
 
 import com.aiurt.boot.common.constant.CacheConstant;
-
 import com.aiurt.boot.modules.system.entity.SysDictItem;
 import com.aiurt.boot.modules.system.service.ISysDictItemService;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -10,6 +9,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.extern.slf4j.Slf4j;
 import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.system.query.QueryGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.web.bind.annotation.*;
