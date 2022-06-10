@@ -3,7 +3,6 @@ package com.aiurt.config.shiro;
 import com.aiurt.common.api.CommonAPI;
 import com.aiurt.common.util.RedisUtil;
 import com.aiurt.common.util.SpringContextUtils;
-import com.aiurt.common.util.TokenUtils;
 import com.aiurt.common.util.oConvertUtils;
 import com.aiurt.config.mybatis.TenantContext;
 import lombok.extern.slf4j.Slf4j;

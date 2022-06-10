@@ -1,7 +1,8 @@
 package com.aiurt.common.util;
 
-import com.aiurt.boot.common.constant.CommonConstant;
-import org.apache.commons.lang3.StringUtils;
+
+import cn.hutool.core.util.StrUtil;
+import com.aiurt.common.constant.CommonConstant;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
@@ -54,7 +55,7 @@ public class RoleAdditionalUtils {
 	 */
 	public List<String> getListDepartIdsByUserId(String userId) {
 		String departmentIds = redisUtil.getStr(CommonConstant.PREFIX_USER_DEPARTMENT_IDS + userId);
-		if (StringUtils.isNotBlank(departmentIds) && !STR_SPACE.equals(departmentIds)) {
+		if (StrUtil.isNotBlank(departmentIds) && !STR_SPACE.equals(departmentIds)) {
 			return Arrays.asList(departmentIds.split(","));
 		}
 		return null;
@@ -68,7 +69,7 @@ public class RoleAdditionalUtils {
 	 */
 	public List<String> getListSystemCodesByUserId(String userId) {
 		String systemDoces = redisUtil.getStr(CommonConstant.PREFIX_USER_SYSTEM_CODES + userId);
-		if (StringUtils.isNotBlank(systemDoces) && !STR_SPACE.equals(systemDoces)) {
+		if (StrUtil.isNotBlank(systemDoces) && !STR_SPACE.equals(systemDoces)) {
 			return Arrays.asList(systemDoces.split(","));
 		}
 		return null;
