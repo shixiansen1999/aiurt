@@ -7,6 +7,7 @@ import com.aiurt.boot.common.result.FaultKnowledgeBaseResult;
 import com.aiurt.boot.modules.fault.dto.FaultKnowledgeBaseDTO;
 import com.aiurt.boot.modules.fault.entity.FaultKnowledgeBase;
 import com.aiurt.boot.modules.fault.param.FaultKnowledgeBaseParam;
+import org.jeecg.common.api.vo.Result;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
@@ -46,7 +47,7 @@ public interface IFaultKnowledgeBaseService extends IService<FaultKnowledgeBase>
      * @param faultCodes
      * @return
      */
-    Result associateFaultEdit(Integer id ,String faultCodes);
+    Result associateFaultEdit(Integer id , String faultCodes);
 
     /**
      * 根据id修改

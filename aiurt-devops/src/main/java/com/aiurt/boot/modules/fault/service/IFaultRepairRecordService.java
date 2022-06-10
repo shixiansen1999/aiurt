@@ -7,6 +7,7 @@ import com.aiurt.boot.modules.fault.dto.FaultRepairDTO;
 import com.aiurt.boot.modules.fault.dto.FaultRepairRecordDTO;
 import com.aiurt.boot.modules.fault.entity.FaultRepairRecord;
 import com.aiurt.boot.modules.fault.param.AssignParam;
+import org.jeecg.common.api.vo.Result;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;

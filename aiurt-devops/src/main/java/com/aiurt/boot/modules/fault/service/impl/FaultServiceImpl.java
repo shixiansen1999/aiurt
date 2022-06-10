@@ -46,12 +46,13 @@ import com.aiurt.boot.modules.worklog.mapper.WorkLogMapper;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.shiro.SecurityUtils;
+import org.jeecg.common.api.vo.Result;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
-import javax.transaction.Transactional;
 import java.text.NumberFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -244,7 +245,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
 	 * @param dto
 	 */
 	@Override
-	@Transactional(rollbackOn = Exception.class)
+	@Transactional(rollbackFor = Exception.class)
 	public Result<?> add(FaultDTO dto, HttpServletRequest req) {
 
 		LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
@@ -373,7 +374,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
 	 * @return
 	 */
 	@Override
-	@Transactional(rollbackOn = Exception.class)
+	@Transactional(rollbackFor = Exception.class)
 	public Result hangById(Integer id, String remark) {
 		LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
 		faultMapper.hangById(id, remark);
@@ -396,7 +397,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
 	 * @return
 	 */
 	@Override
-	@Transactional(rollbackOn = Exception.class)
+	@Transactional(rollbackFor = Exception.class)
 	public Result cancelHang(Integer id) {
 		LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
 		faultMapper.cancelById(id);
@@ -421,20 +422,20 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
 	public Result<FaultNumResult> getFaultNum(String startTime, String endTime) {
 		FaultNumResult result = new FaultNumResult();
 		//故障总量
-		Integer integer = faultMapper.selectCount(new LambdaQueryWrapper<Fault>().eq(Fault::getDelFlag, CommonConstant.DEL_FLAG_0).
-				between(StringUtils.isNotBlank(startTime) && StringUtils.isNotBlank(endTime), Fault::getCreateTime, startTime, endTime));
+		Integer integer = Math.toIntExact(faultMapper.selectCount(new LambdaQueryWrapper<Fault>().eq(Fault::getDelFlag, CommonConstant.DEL_FLAG_0).
+				between(StringUtils.isNotBlank(startTime) && StringUtils.isNotBlank(endTime), Fault::getCreateTime, startTime, endTime)));
 		result.setFaultNum(integer);
 		//挂起数量
-		Integer integer1 = faultMapper.selectCount(new LambdaQueryWrapper<Fault>().eq(Fault::getHangState, CommonConstant.HANG_STATE).eq(Fault::getDelFlag, CommonConstant.DEL_FLAG_0).
-				between(StringUtils.isNotBlank(startTime) && StringUtils.isNotBlank(endTime), Fault::getCreateTime, startTime, endTime));
+		Integer integer1 = Math.toIntExact(faultMapper.selectCount(new LambdaQueryWrapper<Fault>().eq(Fault::getHangState, CommonConstant.HANG_STATE).eq(Fault::getDelFlag, CommonConstant.DEL_FLAG_0).
+				between(StringUtils.isNotBlank(startTime) && StringUtils.isNotBlank(endTime), Fault::getCreateTime, startTime, endTime)));
 		result.setHangNum(integer1);
 		//自检数量
-		Integer integer2 = faultMapper.selectCount(new LambdaQueryWrapper<Fault>().eq(Fault::getDelFlag, CommonConstant.DEL_FLAG_0).eq(Fault::getRepairWay, RepairWayEnum.ZJ.getMessage()).
-				between(StringUtils.isNotBlank(startTime) && StringUtils.isNotBlank(endTime), Fault::getCreateTime, startTime, endTime));
+		Integer integer2 = Math.toIntExact(faultMapper.selectCount(new LambdaQueryWrapper<Fault>().eq(Fault::getDelFlag, CommonConstant.DEL_FLAG_0).eq(Fault::getRepairWay, RepairWayEnum.ZJ.getMessage()).
+				between(StringUtils.isNotBlank(startTime) && StringUtils.isNotBlank(endTime), Fault::getCreateTime, startTime, endTime)));
 		result.setCheckNum(integer2);
 		//报修数量
-		Integer integer3 = faultMapper.selectCount(new LambdaQueryWrapper<Fault>().eq(Fault::getDelFlag, CommonConstant.DEL_FLAG_0).eq(Fault::getRepairWay, RepairWayEnum.BX.getMessage()).
-				between(StringUtils.isNotBlank(startTime) && StringUtils.isNotBlank(endTime), Fault::getCreateTime, startTime, endTime));
+		Integer integer3 = Math.toIntExact(faultMapper.selectCount(new LambdaQueryWrapper<Fault>().eq(Fault::getDelFlag, CommonConstant.DEL_FLAG_0).eq(Fault::getRepairWay, RepairWayEnum.BX.getMessage()).
+				between(StringUtils.isNotBlank(startTime) && StringUtils.isNotBlank(endTime), Fault::getCreateTime, startTime, endTime)));
 		result.setRepairNum(integer3);
 		return Result.ok(result);
 	}
@@ -556,31 +557,31 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
 		FaultCountResult faultCountResult = new FaultCountResult();
 		faultCountResult.setSystemName("总计");
 		//当前月总量
-		Integer count = faultMapper.selectCount(new LambdaQueryWrapper<Fault>()
+		Integer count = Math.toIntExact(faultMapper.selectCount(new LambdaQueryWrapper<Fault>()
 				.eq(Fault::getDelFlag, CommonConstant.DEL_FLAG_0)
 				.between(Fault::getCreateTime, param.getDayStart(), param.getDayEnd())
 
-				.eq(StringUtils.isNotBlank(param.getStationCode()),Fault::getStationCode,param.getStationCode())
-				.eq(StringUtils.isNotBlank(param.getLineCode()),Fault::getLineCode,param.getLineCode())
-				.eq(StringUtils.isNotBlank(param.getSystemCode()),Fault::getSystemCode,param.getSystemCode())
-		);
+				.eq(StringUtils.isNotBlank(param.getStationCode()), Fault::getStationCode, param.getStationCode())
+				.eq(StringUtils.isNotBlank(param.getLineCode()), Fault::getLineCode, param.getLineCode())
+				.eq(StringUtils.isNotBlank(param.getSystemCode()), Fault::getSystemCode, param.getSystemCode())
+		));
 		faultCountResult.setSumNum(count);
 		//当前月自检总量
-		Integer selfCheckNum = faultMapper.selectCount(new LambdaQueryWrapper<Fault>()
+		Integer selfCheckNum = Math.toIntExact(faultMapper.selectCount(new LambdaQueryWrapper<Fault>()
 				.eq(Fault::getDelFlag, CommonConstant.DEL_FLAG_0).between(Fault::getCreateTime, param.getDayStart(), param.getDayEnd()).eq(Fault::getRepairWay, "自检")
-				.eq(StringUtils.isNotBlank(param.getStationCode()),Fault::getStationCode,param.getStationCode())
-				.eq(StringUtils.isNotBlank(param.getLineCode()),Fault::getLineCode,param.getLineCode())
-				.eq(StringUtils.isNotBlank(param.getSystemCode()),Fault::getSystemCode,param.getSystemCode())
-		);
+				.eq(StringUtils.isNotBlank(param.getStationCode()), Fault::getStationCode, param.getStationCode())
+				.eq(StringUtils.isNotBlank(param.getLineCode()), Fault::getLineCode, param.getLineCode())
+				.eq(StringUtils.isNotBlank(param.getSystemCode()), Fault::getSystemCode, param.getSystemCode())
+		));
 		faultCountResult.setSelfCheckNum(selfCheckNum);
 		//当前月报修总量
 		faultCountResult.setRepairNum(count - selfCheckNum);
 		//上月同期总量
-		Integer thanLastMonthNum = faultMapper.selectCount(new LambdaQueryWrapper<Fault>().eq(Fault::getDelFlag, CommonConstant.DEL_FLAG_0).between(Fault::getCreateTime, lastMonthDayStart, lastMonthDayEnd)
-				.eq(StringUtils.isNotBlank(param.getStationCode()),Fault::getStationCode,param.getStationCode())
-				.eq(StringUtils.isNotBlank(param.getLineCode()),Fault::getLineCode,param.getLineCode())
-				.eq(StringUtils.isNotBlank(param.getSystemCode()),Fault::getSystemCode,param.getSystemCode())
-		);
+		Integer thanLastMonthNum = Math.toIntExact(faultMapper.selectCount(new LambdaQueryWrapper<Fault>().eq(Fault::getDelFlag, CommonConstant.DEL_FLAG_0).between(Fault::getCreateTime, lastMonthDayStart, lastMonthDayEnd)
+				.eq(StringUtils.isNotBlank(param.getStationCode()), Fault::getStationCode, param.getStationCode())
+				.eq(StringUtils.isNotBlank(param.getLineCode()), Fault::getLineCode, param.getLineCode())
+				.eq(StringUtils.isNotBlank(param.getSystemCode()), Fault::getSystemCode, param.getSystemCode())
+		));
 		faultCountResult.setThanLastMonthNum(thanLastMonthNum);
 		//上月同期比例
 		NumberFormat numberFormat = NumberFormat.getInstance();
@@ -593,11 +594,11 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
 		}
 
 		//去年同期数量
-		Integer thanLastYearNum = faultMapper.selectCount(new LambdaQueryWrapper<Fault>().eq(Fault::getDelFlag, CommonConstant.DEL_FLAG_0).between(Fault::getCreateTime, lastYearDayStart, lastYearDayEnd)
-				.eq(StringUtils.isNotBlank(param.getStationCode()),Fault::getStationCode,param.getStationCode())
-				.eq(StringUtils.isNotBlank(param.getLineCode()),Fault::getLineCode,param.getLineCode())
-				.eq(StringUtils.isNotBlank(param.getSystemCode()),Fault::getSystemCode,param.getSystemCode())
-		);
+		Integer thanLastYearNum = Math.toIntExact(faultMapper.selectCount(new LambdaQueryWrapper<Fault>().eq(Fault::getDelFlag, CommonConstant.DEL_FLAG_0).between(Fault::getCreateTime, lastYearDayStart, lastYearDayEnd)
+				.eq(StringUtils.isNotBlank(param.getStationCode()), Fault::getStationCode, param.getStationCode())
+				.eq(StringUtils.isNotBlank(param.getLineCode()), Fault::getLineCode, param.getLineCode())
+				.eq(StringUtils.isNotBlank(param.getSystemCode()), Fault::getSystemCode, param.getSystemCode())
+		));
 		faultCountResult.setThanLastYearNum(thanLastYearNum);
 		String format1 = numberFormat.format((float) (count - thanLastYearNum) / (float) thanLastYearNum * 100);
 		if (thanLastYearNum == FaultCommonConstant.DEFAULT_VALUE || "0".equals(format1)) {
@@ -631,7 +632,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
 					.eq(StringUtils.isNotBlank(param.getLineCode()), Fault::getLineCode, param.getLineCode())
 					.eq(StringUtils.isNotBlank(param.getStationCode()),Fault::getStationCode, param.getSystemCode());
 			//自检数量
-			Integer selfCheckNum = faultMapper.selectCount(queryWrapper);
+			Integer selfCheckNum = Math.toIntExact(faultMapper.selectCount(queryWrapper));
 			result.setSelfCheckNum(selfCheckNum);
 			result.setRepairNum(result.getSumNum() - selfCheckNum);
 		}
@@ -653,7 +654,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
 				.eq(StringUtils.isNotBlank(param.getLineCode()), Fault::getLineCode, param.getLineCode())
 				.eq(StringUtils.isNotBlank(param.getStationCode()), Fault::getStationCode, param.getStationCode());
 		//故障总量
-		Integer sumNum = faultMapper.selectCount(queryWrapper);
+		Integer sumNum = Math.toIntExact(faultMapper.selectCount(queryWrapper));
 		List<FaultCountResult> faultCountResults = faultMapper.selectContrast(param);
 		for (FaultCountResult result : faultCountResults) {
 			NumberFormat numberFormat = NumberFormat.getInstance();

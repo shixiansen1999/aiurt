@@ -2,6 +2,7 @@ package com.aiurt.boot.modules.fault.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.aiurt.boot.modules.fault.entity.FaultKnowledgeBaseType;
+import org.jeecg.common.api.vo.Result;
 
 import javax.servlet.http.HttpServletRequest;
 

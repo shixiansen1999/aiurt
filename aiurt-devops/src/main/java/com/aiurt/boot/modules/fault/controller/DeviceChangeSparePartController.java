@@ -1,10 +1,10 @@
 package com.aiurt.boot.modules.fault.controller;
 
+import com.aiurt.common.aspect.annotation.AutoLog;
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.aiurt.boot.common.aspect.annotation.AutoLog;
 import com.aiurt.boot.common.exception.SwscException;
 import com.aiurt.boot.common.result.FaultDeviceChangSpareResult;
 import com.aiurt.boot.common.system.query.QueryGenerator;
@@ -18,6 +18,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
+import org.jeecg.common.api.vo.Result;
 import org.jeecgframework.poi.excel.ExcelImportUtil;
 import org.jeecgframework.poi.excel.def.NormalExcelConstants;
 import org.jeecgframework.poi.excel.entity.ExportParams;

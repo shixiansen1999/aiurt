@@ -18,17 +18,18 @@ import com.aiurt.boot.modules.fault.service.IOutsourcingPersonnelService;
 import com.aiurt.boot.modules.manage.entity.Subsystem;
 import com.aiurt.boot.modules.manage.service.ISubsystemService;
 import org.apache.commons.lang.StringUtils;
+import org.jeecg.common.api.vo.Result;
 import org.jeecgframework.poi.excel.ExcelImportUtil;
 import org.jeecgframework.poi.excel.entity.ImportParams;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.transaction.Transactional;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
@@ -59,7 +60,7 @@ public class OutsourcingPersonnelServiceImpl extends ServiceImpl<OutsourcingPers
      * @return
      */
     @Override
-    @Transactional(rollbackOn = Exception.class)
+    @Transactional(rollbackFor = Exception.class)
     public Result add(OutsourcingPersonnel personnel, HttpServletRequest req) {
         OutsourcingPersonnel outsourcingPersonnel = new OutsourcingPersonnel();
         outsourcingPersonnel.setName(personnel.getName());
@@ -111,7 +112,7 @@ public class OutsourcingPersonnelServiceImpl extends ServiceImpl<OutsourcingPers
      * @return
      */
     @Override
-    @Transactional(rollbackOn = Exception.class)
+    @Transactional(rollbackFor = Exception.class)
     public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) {
         String userId = TokenUtils.getUserId(request, iSysBaseAPI);
         MultipartHttpServletRequest multipartRequest = (MultipartHttpServletRequest) request;

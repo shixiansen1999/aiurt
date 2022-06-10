@@ -6,6 +6,7 @@ import com.aiurt.boot.common.result.FaultAnalysisReportResult;
 import com.aiurt.boot.modules.fault.dto.FaultAnalysisReportDTO;
 import com.aiurt.boot.modules.fault.entity.FaultAnalysisReport;
 import com.aiurt.boot.modules.fault.param.FaultAnalysisReportParam;
+import org.jeecg.common.api.vo.Result;
 
 import javax.servlet.http.HttpServletRequest;
 

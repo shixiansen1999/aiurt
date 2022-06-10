@@ -46,11 +46,12 @@ import com.aiurt.boot.modules.system.service.ISysUserService;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.shiro.SecurityUtils;
+import org.jeecg.common.api.vo.Result;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
-import javax.transaction.Transactional;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -121,7 +122,7 @@ public class FaultRepairRecordServiceImpl extends ServiceImpl<FaultRepairRecordM
      * @param param
      */
     @Override
-    @Transactional(rollbackOn = Exception.class)
+    @Transactional(rollbackFor = Exception.class)
     public Result assign(AssignParam param) {
         LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         //根据code查询故障表数据
@@ -196,7 +197,7 @@ public class FaultRepairRecordServiceImpl extends ServiceImpl<FaultRepairRecordM
      * @return
      */
     @Override
-    @Transactional(rollbackOn = Exception.class)
+    @Transactional(rollbackFor = Exception.class)
     public Result assignAgain(AssignParam param) {
         LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         //根据code查询故障表数据
@@ -271,7 +272,7 @@ public class FaultRepairRecordServiceImpl extends ServiceImpl<FaultRepairRecordM
      * @return
      */
     @Override
-    @Transactional(rollbackOn = Exception.class)
+    @Transactional(rollbackFor = Exception.class)
     public List<FaultRepairRecordResult> getRepairRecord(String code) {
         List<FaultRepairRecordResult> query = faultRepairRecordMapper.queryDetail(code);
         for (FaultRepairRecordResult result : query) {
@@ -564,7 +565,7 @@ public class FaultRepairRecordServiceImpl extends ServiceImpl<FaultRepairRecordM
      * @return
      */
     @Override
-    @Transactional(rollbackOn = Exception.class)
+    @Transactional(rollbackFor = Exception.class)
     public Result editRecord(FaultRepairDTO dto) {
         //查询当前指派人最后一条维修记录
         FaultRepairRecord record = faultRepairRecordMapper.selectDetailById(dto.getId());

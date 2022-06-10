@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.aiurt.boot.common.result.OutsourcingPersonnelResult;
 import com.aiurt.boot.modules.fault.entity.OutsourcingPersonnel;
 import com.aiurt.boot.modules.fault.param.OutsourcingPersonnelParam;
+import org.jeecg.common.api.vo.Result;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;

@@ -21,13 +21,14 @@ import com.aiurt.boot.modules.fault.service.IFaultKnowledgeBaseService;
 import com.aiurt.boot.modules.manage.entity.Subsystem;
 import com.aiurt.boot.modules.manage.service.impl.SubsystemServiceImpl;
 import org.apache.commons.lang.StringUtils;
+import org.jeecg.common.api.vo.Result;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
-import javax.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -80,7 +81,7 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
      * @param dto
      */
     @Override
-    @Transactional(rollbackOn = Exception.class)
+    @Transactional(rollbackFor = Exception.class)
     public Long add(FaultKnowledgeBaseDTO dto, HttpServletRequest req) {
         FaultKnowledgeBase base = new FaultKnowledgeBase();
         if (dto.getTypeId() != null) {
@@ -149,7 +150,7 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
      * @param dto
      */
     @Override
-    @Transactional(rollbackOn = Exception.class)
+    @Transactional(rollbackFor = Exception.class)
     public void updateByKnowledgeId(FaultKnowledgeBaseDTO dto, HttpServletRequest req) {
         String userId = TokenUtils.getUserId(req, iSysBaseAPI);
         FaultKnowledgeBase base = this.baseMapper.selectById(dto.getId());

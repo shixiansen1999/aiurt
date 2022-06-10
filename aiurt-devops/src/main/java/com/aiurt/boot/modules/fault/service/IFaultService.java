@@ -9,6 +9,7 @@ import com.aiurt.boot.modules.fault.param.FaultCountParam;
 import com.aiurt.boot.modules.fault.param.FaultDeviceParam;
 import com.aiurt.boot.modules.fault.param.FaultParam;
 import com.aiurt.boot.modules.statistical.vo.*;
+import org.jeecg.common.api.vo.Result;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Date;

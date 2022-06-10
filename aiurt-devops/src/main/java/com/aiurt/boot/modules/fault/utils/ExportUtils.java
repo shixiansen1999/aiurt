@@ -3,6 +3,7 @@ package com.aiurt.boot.modules.fault.utils;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.aiurt.boot.common.result.FaultResult;
 import org.apache.commons.lang.StringUtils;
+import org.apache.poi.common.usermodel.HyperlinkType;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.usermodel.XSSFCellStyle;
@@ -226,7 +227,7 @@ public class ExportUtils {
                             break;
                         case 17:
                             cell.setCellValue("查看");
-                            Hyperlink link = createHelper.createHyperlink(Hyperlink.LINK_URL);
+                            Hyperlink link = createHelper.createHyperlink(HyperlinkType.URL);
                             link.setAddress(url.concat("?code="+vo.getCode()));
                             cell.setHyperlink(link);
                             break;
