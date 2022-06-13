@@ -15,13 +15,13 @@ import com.aiurt.boot.modules.appMessage.utils.AppMessageUtils;
 import com.aiurt.boot.modules.appMessage.vo.MessageSizeVO;
 import com.aiurt.boot.modules.appMessage.vo.MessageStatusVO;
 import com.aiurt.boot.modules.appMessage.vo.MessageUserVO;
-import com.aiurt.boot.modules.system.service.ISysUserService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,7 +54,7 @@ public class MessageController {
 	@Autowired
 	private IMessageReadService messageReadService;
 	@Autowired
-	private ISysUserService sysUserService;
+	private ISysBaseAPI sysBaseAPI;
 	@Autowired
 	private AppMessageUtils appMessageUtils;
 
@@ -144,7 +144,7 @@ public class MessageController {
 						.setCreateTime(date)
 						.setUpdateTime(date)
 						.setStaffId(userId)
-						.setStaffName(sysUserService.getById(userId).getRealname());
+						.setStaffName(sysBaseAPI.getUserById(userId).getRealname());
 				list.add(read);
 			}
 			messageReadService.saveBatch(list);

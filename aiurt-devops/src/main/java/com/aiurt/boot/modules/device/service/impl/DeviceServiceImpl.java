@@ -1,8 +1,8 @@
 package com.aiurt.boot.modules.device.service.impl;
 
+import com.aiurt.common.constant.CommonConstant;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.aiurt.boot.common.constant.CommonConstant;
 import com.aiurt.boot.modules.device.entity.Device;
 import com.aiurt.boot.modules.device.entity.DeviceAssembly;
 import com.aiurt.boot.modules.device.entity.DeviceSmallType;

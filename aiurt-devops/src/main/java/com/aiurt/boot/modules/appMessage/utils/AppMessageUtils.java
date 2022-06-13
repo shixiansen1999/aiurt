@@ -1,15 +1,15 @@
 package com.aiurt.boot.modules.appMessage.utils;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.aiurt.boot.modules.appMessage.entity.Message;
 import com.aiurt.boot.modules.appMessage.entity.MessageRead;
 import com.aiurt.boot.modules.appMessage.mapper.MessageMapper;
 import com.aiurt.boot.modules.appMessage.service.IMessageReadService;
 import com.aiurt.boot.modules.appMessage.vo.SendMessageVO;
-import com.aiurt.boot.modules.system.entity.SysUser;
-import com.aiurt.boot.modules.system.mapper.SysUserMapper;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang.StringUtils;
+import org.jeecg.common.system.api.ISysBaseAPI;
+import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.interceptor.TransactionAspectSupport;
@@ -35,7 +35,7 @@ public class AppMessageUtils {
 
 	private final IMessageReadService messageReadService;
 
-	private final SysUserMapper sysUserMapper;
+	private final ISysBaseAPI sysBaseAPI;
 
 	/**
 	 * 发送一条消息
@@ -68,14 +68,18 @@ public class AppMessageUtils {
 		}
 		List<MessageRead> readList = new ArrayList<>();
 
-		List<SysUser> userList = this.sysUserMapper.selectList(new LambdaQueryWrapper<SysUser>().in(SysUser::getId, vo.getUserIds()));
+		//public List<LoginUser> queryAllUserByIds(String[] userIds);
+
+		List<LoginUser> userList = sysBaseAPI.queryAllUserByIds(vo.getUserIds().toArray(new String[0]));
+
+		//List<SysUser> userList = this.sysUserMapper.selectList(new LambdaQueryWrapper<SysUser>().in(SysUser::getId, vo.getUserIds()));
 		if (userList==null || userList.size()!=vo.getUserIds().size()){
 			//手动回滚事务
 			TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
 			return false;
 		}
 
-		for (SysUser user : userList) {
+		for (LoginUser user : userList) {
 			if (user==null || user.getId()==null){
 				//手动回滚事务
 				TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
@@ -101,7 +105,7 @@ public class AppMessageUtils {
 	/**
 	 * 批量发送消息
 	 *
-	 * @param vo 签证官
+	 * @param voList 签证官
 	 * @return boolean
 	 */
 	public boolean sendBatchMessage(List<SendMessageVO> voList) {

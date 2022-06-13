@@ -1,12 +1,12 @@
-package com.aiurt.boot.modules.AppUser.controller;
+package com.aiurt.modules.AppUser.controller;
 
-import com.aiurt.boot.modules.AppUser.entity.UserParam;
-import com.aiurt.boot.modules.AppUser.entity.UserStatusVo;
-import com.aiurt.boot.modules.AppUser.service.AppUserService;
-import com.aiurt.boot.modules.system.entity.SysAbout;
-import com.aiurt.boot.modules.system.entity.SysHelp;
-import com.aiurt.boot.modules.system.entity.SysUser;
 import com.aiurt.common.aspect.annotation.AutoLog;
+import com.aiurt.modules.AppUser.entity.UserParam;
+import com.aiurt.modules.AppUser.entity.UserStatusVo;
+import com.aiurt.modules.AppUser.service.AppUserService;
+import com.aiurt.modules.system.entity.SysAbout;
+import com.aiurt.modules.system.entity.SysHelp;
+import com.aiurt.modules.system.entity.SysUser;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;

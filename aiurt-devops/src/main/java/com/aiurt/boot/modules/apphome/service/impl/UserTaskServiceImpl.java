@@ -9,10 +9,10 @@ import com.aiurt.boot.modules.apphome.entity.UserTask;
 import com.aiurt.boot.modules.apphome.mapper.UserTaskMapper;
 import com.aiurt.boot.modules.apphome.param.UserTaskAddParam;
 import com.aiurt.boot.modules.apphome.service.UserTaskService;
-import com.aiurt.boot.modules.system.entity.SysUser;
-import com.aiurt.boot.modules.system.service.ISysUserService;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang.StringUtils;
+import org.jeecg.common.system.api.ISysBaseAPI;
+import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
@@ -33,7 +33,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class UserTaskServiceImpl extends ServiceImpl<UserTaskMapper, UserTask> implements UserTaskService {
 
-	private final ISysUserService sysUserService;
+	private final ISysBaseAPI sysBaseAPI;
 
 	@Override
 	public boolean add(UserTaskAddParam param) {
@@ -46,21 +46,17 @@ public class UserTaskServiceImpl extends ServiceImpl<UserTaskMapper, UserTask> i
 			return false;
 		}
 
-		List<SysUser> userList = sysUserService.list(new LambdaQueryWrapper<SysUser>()
-				.eq(SysUser::getDelFlag, CommonConstant.DEL_FLAG_0)
-				.in(SysUser::getId, param.getUserIds())
-				.select(SysUser::getId, SysUser::getRealname)
-		);
-		Map<String, String> nameMap = userList.stream().collect(Collectors.toMap(SysUser::getId, SysUser::getRealname));
-
 		List<UserTask> taskList = new ArrayList<>();
 		for (String userId : param.getUserIds()) {
+
+			// todo
+			LoginUser userById = sysBaseAPI.getUserById(userId);
 			UserTask userTask = new UserTask();
 			BeanUtils.copyProperties(param, userTask);
 			userTask.setWorkTime(LocalDate.now())
 					.setDelFlag(0)
 					.setStatus(0)
-					.setRealName(nameMap.get(userId))
+					.setRealName(userById.getRealname())
 					.setUserId(userId);
 			taskList.add(userTask);
 		}
@@ -155,8 +151,8 @@ public class UserTaskServiceImpl extends ServiceImpl<UserTaskMapper, UserTask> i
 		if (userTask == null) {
 			return false;
 		}
-		SysUser byId = this.sysUserService.getById(targetUserId);
-		userTask.setUserId(targetUserId).setRealName(byId.getRealname());
+		LoginUser loginUser = sysBaseAPI.getUserById(targetUserId);
+		userTask.setUserId(targetUserId).setRealName(loginUser.getRealname());
 		int update = this.baseMapper.updateById(userTask);
 		if (update > 0) {
 			return true;
@@ -168,7 +164,7 @@ public class UserTaskServiceImpl extends ServiceImpl<UserTaskMapper, UserTask> i
 
 	@Override
 	public boolean reAppoint(String originalUserId, String targetUserId, String code, Integer type) {
-		SysUser byId = this.sysUserService.getById(targetUserId);
+		LoginUser loginUser = sysBaseAPI.getUserById(targetUserId);
 		UserTask userTask = this.baseMapper.selectOne(new LambdaQueryWrapper<UserTask>()
 				.eq(UserTask::getDelFlag, CommonConstant.DEL_FLAG_0)
 				.eq(UserTask::getUserId, originalUserId)
@@ -178,7 +174,7 @@ public class UserTaskServiceImpl extends ServiceImpl<UserTaskMapper, UserTask> i
 		if (userTask == null) {
 			return false;
 		}
-		userTask.setUserId(targetUserId).setRealName(byId.getRealname());
+		userTask.setUserId(targetUserId).setRealName(loginUser.getRealname());
 		int update = this.baseMapper.updateById(userTask);
 		if (update > 0) {
 			return true;

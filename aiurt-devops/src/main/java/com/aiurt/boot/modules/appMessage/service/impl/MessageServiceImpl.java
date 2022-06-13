@@ -4,7 +4,6 @@ import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.aiurt.boot.common.system.vo.LoginUser;
 import com.aiurt.boot.modules.appMessage.entity.Message;
 import com.aiurt.boot.modules.appMessage.entity.MessageRead;
 import com.aiurt.boot.modules.appMessage.mapper.MessageMapper;
@@ -17,6 +16,7 @@ import com.aiurt.boot.modules.appMessage.vo.MessageUserVO;
 import com.aiurt.boot.modules.message.websocket.WebSocket;
 import lombok.RequiredArgsConstructor;
 import org.apache.shiro.SecurityUtils;
+import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 

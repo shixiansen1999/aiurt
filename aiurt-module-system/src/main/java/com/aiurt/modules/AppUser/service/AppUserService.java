@@ -1,20 +1,17 @@
-package com.aiurt.boot.modules.AppUser.service;
+package com.aiurt.modules.AppUser.service;
+
 
 import com.aiurt.common.enums.StatusEnum;
 import com.aiurt.common.util.DateUtils;
+import com.aiurt.modules.AppUser.entity.UserParam;
+import com.aiurt.modules.AppUser.entity.UserStatusVo;
+import com.aiurt.modules.system.entity.SysAbout;
+import com.aiurt.modules.system.entity.SysHelp;
+import com.aiurt.modules.system.entity.SysUser;
+import com.aiurt.modules.system.service.ISysAboutService;
+import com.aiurt.modules.system.service.ISysHelpService;
+import com.aiurt.modules.system.service.ISysUserService;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.aiurt.boot.modules.AppUser.entity.UserParam;
-import com.aiurt.boot.modules.AppUser.entity.UserStatusVo;
-import com.aiurt.boot.modules.schedule.entity.ScheduleItem;
-import com.aiurt.boot.modules.schedule.entity.ScheduleRecord;
-import com.aiurt.boot.modules.schedule.service.IScheduleItemService;
-import com.aiurt.boot.modules.schedule.service.IScheduleRecordService;
-import com.aiurt.boot.modules.system.entity.SysAbout;
-import com.aiurt.boot.modules.system.entity.SysHelp;
-import com.aiurt.boot.modules.system.entity.SysUser;
-import com.aiurt.boot.modules.system.service.ISysAboutService;
-import com.aiurt.boot.modules.system.service.ISysHelpService;
-import com.aiurt.boot.modules.system.service.ISysUserService;
 import org.apache.commons.lang.StringUtils;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
@@ -22,7 +19,6 @@ import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
@@ -30,10 +26,10 @@ import java.util.List;
 public class AppUserService {
     @Autowired
     private ISysUserService userService;
-    @Autowired
+  /*  @Autowired
     private IScheduleRecordService recordService;
     @Autowired
-    private IScheduleItemService itemService;
+    private IScheduleItemService itemService;*/
     @Autowired
     private ISysAboutService aboutService;
     @Autowired
@@ -67,7 +63,7 @@ public class AppUserService {
             wrapper.eq("date_format(date,'%Y-%m-%d')", DateUtils.formatDate(new Date(), "yyyy-MM-dd"));
             wrapper.eq("user_id", loginUser.getId());
             wrapper.eq("del_flag", StatusEnum.ZERO.getCode());
-            ScheduleRecord record = recordService.getOne(wrapper);
+           /* ScheduleRecord record = recordService.getOne(wrapper);
             UserStatusVo vo = new UserStatusVo();
             if (record != null && record.getItemId() != null) {
                 ScheduleItem item = itemService.getById(record.getItemId());
@@ -89,7 +85,7 @@ public class AppUserService {
                         vo.setStatusColor(item.getColor());
                     }
                 }
-            }
+            }*/
             result.setResult(vo);
             result.success("状态获取成功");
         } catch (Exception e) {
