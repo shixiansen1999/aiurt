@@ -1,19 +1,6 @@
 package com.aiurt.boot.modules.repairManage.service.impl;
 
 import cn.hutool.core.util.StrUtil;
-import cn.hutool.json.JSONArray;
-import cn.hutool.json.JSONUtil;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.aiurt.boot.common.constant.CommonConstant;
-import com.aiurt.boot.common.constant.RepairContant;
-import com.aiurt.boot.common.exception.SwscException;
-import com.aiurt.boot.common.result.SpareResult;
-import com.aiurt.boot.common.system.vo.LoginUser;
-import com.aiurt.boot.common.util.MyBeanUtils;
 import com.aiurt.boot.modules.apphome.constant.UserTaskConstant;
 import com.aiurt.boot.modules.apphome.service.UserTaskService;
 import com.aiurt.boot.modules.fault.entity.DeviceChangeSparePart;
@@ -38,12 +25,24 @@ import com.aiurt.boot.modules.secondLevelWarehouse.entity.SparePartStock;
 import com.aiurt.boot.modules.secondLevelWarehouse.service.IMaterialBaseService;
 import com.aiurt.boot.modules.secondLevelWarehouse.service.ISparePartScrapService;
 import com.aiurt.boot.modules.secondLevelWarehouse.service.ISparePartStockService;
-import com.aiurt.boot.modules.system.entity.SysDepart;
-import com.aiurt.boot.modules.system.mapper.SysDepartMapper;
+import com.aiurt.common.constant.CommonConstant;
+import com.aiurt.common.constant.RepairContant;
+import com.aiurt.common.exception.AiurtBootException;
+import com.aiurt.common.result.SpareResult;
+import com.aiurt.common.util.MyBeanUtils;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.system.vo.LoginUser;
+import org.jeecg.common.system.vo.SysDepartModel;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.interceptor.TransactionAspectSupport;
@@ -63,9 +62,9 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
 
     @Resource
     private RepairPoolMapper repairPoolMapper;
-
-    @Resource
-    private SysDepartMapper departMapper;
+//
+//    @Resource
+//    private SysDepartMapper departMapper;
 
     @Resource
     private RepairTaskEnclosureMapper repairTaskEnclosureMapper;
@@ -182,12 +181,12 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
             }
         }
 
-
-
         //查询班组信息
         final Station station = stationService.getById(repairTask.getOrganizationId());
-        SysDepart sysDepart = departMapper.selectById(station.getTeamId());
-        ReTaskDetailVO vo = this.generateReTask(repairPool, repairTask, sysDepart.getDepartName(), list, isReceipt);
+        // todo 后期修改
+        SysDepartModel sysDepartModel = new SysDepartModel();
+//        SysDepartModel sysDepartModel = departMapper.selectById(station.getTeamId());
+        ReTaskDetailVO vo = this.generateReTask(repairPool, repairTask, sysDepartModel.getDepartName(), list, isReceipt);
 
         if (CollectionUtils.isNotEmpty(codeSet)) {
             List<SpareResult> spareList = new ArrayList<>();
@@ -208,10 +207,10 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                 vo.setSpareResults(spareList);
             }
         }
-        if (vo.getSpareResults()==null){
+        if (vo.getSpareResults() == null) {
             vo.setSpareResults(new ArrayList<>());
         }
-        if (station!=null) {
+        if (station != null) {
             vo.setStationCode(station.getStationCode());
             vo.setLineName(station.getLineName());
             vo.setStationName(station.getStationName());
@@ -433,11 +432,11 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
     public Result commit(String id, String position, String content, String urls, String deviceIds, String processContent) {
         JSONArray array = new JSONArray();
         try {
-            if (StrUtil.isNotBlank(deviceIds)){
-                array = JSONUtil.parseArray(deviceIds);
+            if (StrUtil.isNotBlank(deviceIds)) {
+                array = JSONObject.parseArray(deviceIds);
             }
         } catch (Exception e) {
-            throw new SwscException("设备json转换异常");
+            throw new AiurtBootException("设备json转换异常");
         }
 
         LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
@@ -450,7 +449,7 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
         }
 
         //不能执行以后的任务
-        if (repairTask.getStartTime().compareTo(new Date()) > 0){
+        if (repairTask.getStartTime().compareTo(new Date()) > 0) {
             return Result.error("无法执行以后的任务");
         }
 
@@ -463,16 +462,16 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
             //库存
             Map<String, SparePartStock> stockMap = null;
             List<SparePartStock> partStockList = partStockService.lambdaQuery().eq(SparePartStock::getOrgId, user.getOrgId()).eq(SparePartStock::getDelFlag, CommonConstant.DEL_FLAG_0).list();
-            if (partStockList!=null){
+            if (partStockList != null) {
                 stockMap = partStockList.stream().collect(Collectors.toMap(SparePartStock::getMaterialCode, p -> p));
             }
 
             //添加设备信息
-            if(array!=null&&array.size()>0){
+            if (array != null && array.size() > 0) {
                 for (int i = 0; i < array.size(); i++) {
                     final Long deviceId = array.getJSONObject(i).getLong("deviceId");
-                    final String oldSparePartCode = array.getJSONObject(i).getStr("oldSparePartCode");
-                    final Integer oldSparePartNum = array.getJSONObject(i).getInt("oldSparePartNum");
+                    final String oldSparePartCode = array.getJSONObject(i).getString("oldSparePartCode");
+                    final Integer oldSparePartNum = array.getJSONObject(i).getInteger("oldSparePartNum");
                     final DeviceChangeSparePart deviceChangeSparePart = new DeviceChangeSparePart();
                     deviceChangeSparePart.setType(1);
                     deviceChangeSparePart.setCode(repairTask.getId().toString());
@@ -494,7 +493,7 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
 
 
                     //处理班组数量
-                    if (deviceChangeSparePart.getOldSparePartNum()!=null) {
+                    if (deviceChangeSparePart.getOldSparePartNum() != null) {
                         if (stockMap != null && stockMap.get(deviceChangeSparePart.getOldSparePartCode()) != null) {
                             SparePartStock stock = stockMap.get(deviceChangeSparePart.getOldSparePartCode());
                             stock.setNum(stock.getNum() != null ? stock.getNum() - deviceChangeSparePart.getOldSparePartNum() : -deviceChangeSparePart.getOldSparePartNum());
@@ -562,7 +561,7 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
     public Result<RepairRecordVO> getRepairTaskByUserIdAndTime(String userId, String time) {
         Result<RepairRecordVO> result = new Result<>();
         LambdaQueryWrapper<RepairTask> wrapper = new LambdaQueryWrapper<>();
-        wrapper.le(RepairTask::getStartTime, time+" 00:00:00").ge(RepairTask::getEndTime, time+" 23:59:59")
+        wrapper.le(RepairTask::getStartTime, time + " 00:00:00").ge(RepairTask::getEndTime, time + " 23:59:59")
                 //.eq(RepairTask::getStatus, 0)
                 .eq(RepairTask::getDelFlag, CommonConstant.DEL_FLAG_0).like(RepairTask::getStaffIds, userId).last("limit 1");
         RepairTask repairTask = this.baseMapper.selectOne(wrapper);
@@ -615,7 +614,7 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
     @Override
     public boolean callback(Long repairId, String code) {
         RepairTask task = this.getById(repairId);
-        if (task==null){
+        if (task == null) {
             return false;
         }
         task.setFaultCode(code);

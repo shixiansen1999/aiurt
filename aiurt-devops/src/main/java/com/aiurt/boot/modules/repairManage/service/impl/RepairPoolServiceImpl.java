@@ -3,13 +3,6 @@ package com.aiurt.boot.modules.repairManage.service.impl;
 import cn.hutool.core.convert.Convert;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.StrUtil;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.aiurt.boot.common.constant.InspectionContant;
-import com.aiurt.boot.common.exception.SwscException;
-import com.aiurt.boot.common.system.vo.LoginUser;
-import com.aiurt.boot.common.util.DateUtils;
 import com.aiurt.boot.modules.appMessage.constant.MessageConstant;
 import com.aiurt.boot.modules.appMessage.entity.Message;
 import com.aiurt.boot.modules.appMessage.param.MessageAddParam;
@@ -29,12 +22,17 @@ import com.aiurt.boot.modules.repairManage.vo.AssignVO;
 import com.aiurt.boot.modules.standardManage.inspectionSpecification.entity.InspectionCode;
 import com.aiurt.boot.modules.standardManage.inspectionStrategy.entity.InspectionCodeContent;
 import com.aiurt.boot.modules.standardManage.inspectionStrategy.mapper.InspectionCodeContentMapper;
-import com.aiurt.boot.modules.system.entity.SysUser;
-import com.aiurt.boot.modules.system.mapper.SysUserMapper;
+import com.aiurt.common.constant.InspectionContant;
+import com.aiurt.common.exception.AiurtBootException;
+import com.aiurt.common.util.DateUtils;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.SneakyThrows;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -70,8 +68,8 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
     @Autowired
     private IStationService stationService;
 
-    @Resource
-    private SysUserMapper userMapper;
+//    @Resource
+//    private SysUserMapper userMapper;
 
     @Resource
     private UserTaskService userTaskService;
@@ -130,11 +128,11 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
     public Result generateReNewTask(InspectionCode inspectionCode) throws Exception {
         //查询检修策略是否全部设置
         final QueryWrapper<InspectionCodeContent> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("inspection_code_id",inspectionCode.getId())
+        queryWrapper.eq("inspection_code_id", inspectionCode.getId())
                 .isNull("tactics")
-                    .eq("del_flag", 0);
+                .eq("del_flag", 0);
         final Long count = inspectionCodeContentMapper.selectCount(queryWrapper);
-        if (count > 0){
+        if (count > 0) {
             return Result.error("请先完成检修策略的设置");
         }
         QueryWrapper<RepairPool> wrapper = new QueryWrapper<>();
@@ -208,10 +206,11 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
      */
     private Result monthPlan(InspectionCode inspectionCode, InspectionCodeContent inspectionCodeContent) throws Exception {
         boolean thisYear = isThisYear(inspectionCode.getYears());
-        //获取当前月
-        int month = DateUtils.getMonth();
-        //获取当前周数
-        int week = DateUtils.getWeekOfYear(new Date());
+        Date curr_date = new Date();
+        // 获取当前月
+        int month = DateUtil.month(curr_date);
+        // 获取当前周数
+        int week = DateUtil.weekOfYear(curr_date);
         if (!thisYear) {
             month = 1;
         }
@@ -222,7 +221,7 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
                 continue;
             }
             //获取j月第tactics周的时间
-            Date[] date = DateUtils.getDateByMonthAndWeek(Integer.parseInt(inspectionCode.getYears()),j, tactics);
+            Date[] date = DateUtils.getDateByMonthAndWeek(Integer.parseInt(inspectionCode.getYears()), j, tactics);
             if (date == null) {
                 return Result.error("无可生成计划");
             }
@@ -241,10 +240,11 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
      */
     private Result doubleMonthPlan(InspectionCode inspectionCode, InspectionCodeContent inspectionCodeContent) throws Exception {
         boolean thisYear = isThisYear(inspectionCode.getYears());
-        //获取当前月
-        int month = DateUtils.getMonth();
-        //获取当前周数
-        int week = DateUtils.getWeekOfYear(new Date());
+        Date curr_date = new Date();
+        // 获取当前月
+        int month = DateUtil.month(curr_date);
+        // 获取当前周数
+        int week = DateUtil.weekOfYear(curr_date);
         if (!thisYear) {
             month = 1;
         }
@@ -262,7 +262,7 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
             if (thisYear && j + monthnum == month && week > weeknum) {
                 continue;
             }
-            Date[] date = DateUtils.getDateByMonthAndWeek(Integer.parseInt(inspectionCode.getYears()),j + monthnum, weeknum);
+            Date[] date = DateUtils.getDateByMonthAndWeek(Integer.parseInt(inspectionCode.getYears()), j + monthnum, weeknum);
             if (date == null) {
                 return Result.error("无可生成计划");
             }
@@ -280,10 +280,11 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
      */
     private Result quarterPlan(InspectionCode inspectionCode, InspectionCodeContent inspectionCodeContent) throws Exception {
         boolean thisYear = isThisYear(inspectionCode.getYears());
-        //获取当前月
-        int month = DateUtils.getMonth();
-        //获取当前周数
-        int week = DateUtils.getWeekOfYear(new Date());
+        Date curr_date = new Date();
+        // 获取当前月
+        int month = DateUtil.month(curr_date);
+        // 获取当前周数
+        int week = DateUtil.weekOfYear(curr_date);
         if (!thisYear) {
             month = 1;
         }
@@ -292,7 +293,7 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
 //            for (int i = 0; i < list.size(); i++) {
             Integer tactics = inspectionCodeContent.getTactics();
             //计算这个策略是第几月
-            int monthnum = (tactics - 1) / 4 ;
+            int monthnum = (tactics - 1) / 4;
             //计算这个策略是第几周
             int weeknum = tactics % 4 == 0 ? 4 : tactics % 4;
 
@@ -306,7 +307,7 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
                     continue;
                 }
             }
-            Date[] date = DateUtils.getDateByMonthAndWeek(Integer.parseInt(inspectionCode.getYears()),monthStart + monthnum, weeknum);
+            Date[] date = DateUtils.getDateByMonthAndWeek(Integer.parseInt(inspectionCode.getYears()), monthStart + monthnum, weeknum);
             if (date == null) {
                 return Result.error("无可生成计划");
             }
@@ -325,10 +326,11 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
      */
     private Result semiAnnualPlan(InspectionCode inspectionCode, InspectionCodeContent inspectionCodeContent) throws Exception {
         boolean thisYear = isThisYear(inspectionCode.getYears());
-        //获取当前月
-        int month = DateUtils.getMonth();
-        //获取当前周数
-        int week = DateUtils.getWeekOfYear(new Date());
+        Date curr_date = new Date();
+        // 获取当前月
+        int month = DateUtil.month(curr_date);
+        // 获取当前周数
+        int week = DateUtil.weekOfYear(curr_date);
         if (!thisYear) {
             month = 1;
         }
@@ -352,7 +354,7 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
             if (thisYear && monthnum == month && week > weeknum) {
                 continue;
             }
-            Date[] date = DateUtils.getDateByMonthAndWeek(Integer.parseInt(inspectionCode.getYears()),monthnum, weeknum);
+            Date[] date = DateUtils.getDateByMonthAndWeek(Integer.parseInt(inspectionCode.getYears()), monthnum, weeknum);
             if (date == null) {
                 return Result.error("无可生成计划");
             }
@@ -368,12 +370,13 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
      * @param inspectionCodeContent
      * @return
      */
-        private Result annualPlan(InspectionCode inspectionCode, InspectionCodeContent inspectionCodeContent) throws Exception {
+    private Result annualPlan(InspectionCode inspectionCode, InspectionCodeContent inspectionCodeContent) throws Exception {
         boolean thisYear = isThisYear(inspectionCode.getYears());
-        //获取当前月
-        int month = DateUtils.getMonth();
-        //获取当前周数
-        int week = DateUtils.getWeekOfYear(new Date());
+        Date curr_date = new Date();
+        // 获取当前月
+        int month = DateUtil.month(curr_date);
+        // 获取当前周数
+        int week = DateUtil.weekOfYear(curr_date);
         Integer tactics = inspectionCodeContent.getTactics();
         //计算这个策略是第几月
         int monthnum = (tactics - 1) / 4 + 1;
@@ -385,7 +388,7 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
         if (thisYear && monthnum == month && week > weeknum) {
             return Result.error("");
         }
-        Date[] date = DateUtils.getDateByMonthAndWeek(Integer.parseInt(inspectionCode.getYears()),monthnum, weeknum);
+        Date[] date = DateUtils.getDateByMonthAndWeek(Integer.parseInt(inspectionCode.getYears()), monthnum, weeknum);
         if (date == null) {
             return Result.error("无可生成计划");
         }
@@ -404,7 +407,7 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
             RepairPool repairPool = new RepairPool();
             repairPool.setType(type);
             repairPool.setIcType(icType);
-            repairPool.setWeeks(DateUtils.getWeekOfYear(endTime));
+            repairPool.setWeeks(DateUtil.weekOfYear(endTime));
             repairPool.setInspectionCodeId(inspectionCodeContent.getInspectionCodeId());
             repairPool.setRepairPoolContent(inspectionCodeContent.getContent());
             repairPool.setStartTime(startTime);
@@ -421,13 +424,13 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
     public Result updateTime(String ids, String startTime, String endTime) {
         String[] split = ids.split(",");
         for (String id : split) {
-            int week = DateUtils.getWeekOfYear(DateUtil.parse(startTime));
+            int week =  DateUtil.weekOfYear(DateUtil.parse(startTime));
             RepairPool repairPool = this.baseMapper.selectById(id);
 //            if (repairPool.getStatus().equals(RepairContant.ASSIGNEDSTATUS[1])) {
-//                throw new SwscException("已指派无法修改时间");
+//                throw new AiurtBootException("已指派无法修改时间");
 //            }
-            if (repairPool.getType().equals(1)){
-                throw new SwscException("周检无法修改时间");
+            if (repairPool.getType().equals(1)) {
+                throw new AiurtBootException("周检无法修改时间");
             }
             repairPool.setWeeks(week);
             repairPool.setStartTime(DateUtil.parse(startTime.concat(" 00:00:00")));
@@ -446,8 +449,8 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
             Date date = new Date();
             Date st = DateUtils.getWeekStartTime(date);
             Date et = DateUtils.getWeekEndTime(date);
-            startTime = DateUtil.format(st,"yyyy-MM-dd HH:mm:ss");
-            endTime = DateUtil.format(et,"yyyy-MM-dd HH:mm:ss");
+            startTime = DateUtil.format(st, "yyyy-MM-dd HH:mm:ss");
+            endTime = DateUtil.format(et, "yyyy-MM-dd HH:mm:ss");
         }
         //查询检修池任务
         QueryWrapper<RepairPool> wrapper = new QueryWrapper<>();
@@ -469,8 +472,8 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
         Integer isReceipt = 0;
         for (String id : split) {
             RepairPool repairPool = this.baseMapper.selectById(id);
-            if (repairPool.getIsReceipt() == 1){
-                isReceipt=1;
+            if (repairPool.getIsReceipt() == 1) {
+                isReceipt = 1;
                 break;
             }
         }
@@ -478,24 +481,26 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
         //如果这个任务和站点被指派过则无法指派
         QueryWrapper<RepairTask> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("del_flag", 0).eq("repair_pool_ids", ids)
-                .eq("organization_id",assignVO.getStationId()).last("limit 1");
+                .eq("organization_id", assignVO.getStationId()).last("limit 1");
         RepairTask queryTask = repairTaskMapper.selectOne(queryWrapper);
-        if (queryTask != null){
+        if (queryTask != null) {
             return Result.error("当前站点已被指派该任务，请勿重复指派");
         }
 
         //查询站点信息
-        LambdaQueryWrapper<Station> wrapper = new LambdaQueryWrapper<Station>().eq(Station::getId,assignVO.getStationId()).eq(Station::getDelFlag, 0).last("limit 1");
+        LambdaQueryWrapper<Station> wrapper = new LambdaQueryWrapper<Station>().eq(Station::getId, assignVO.getStationId()).eq(Station::getDelFlag, 0).last("limit 1");
         Station station = stationService.getOne(wrapper);
         if (station == null) {
-            throw new SwscException("非法站点信息");
+            throw new AiurtBootException("非法站点信息");
         }
         String codeNo = numberGenerateUtils.getCodeNo("J".concat(station.getLineId().toString().concat(station.getStationCode())));
 
         //查询用户names
         final List<?> userIDs = Convert.toList(userIds);
-        final List<SysUser> sysUsers = userMapper.selectList(new LambdaQueryWrapper<SysUser>().in(SysUser::getId, userIDs));
-        final List<String> userNamesList = sysUsers.stream().map(SysUser::getRealname).collect(Collectors.toList());
+        // todo 后期修改
+        final List<LoginUser> sysUsers = new ArrayList<>();
+//        final List<LoginUser> sysUsers = userMapper.selectList(new LambdaQueryWrapper<SysUser>().in(SysUser::getId, userIDs));
+        final List<String> userNamesList = sysUsers.stream().map(LoginUser::getRealname).collect(Collectors.toList());
         String userNames = Convert.toStr(userNamesList);
         userNames = userNames.substring(1, userNames.length() - 1);
 
@@ -558,10 +563,10 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
 //        for (String id : split) {
 //            RepairPool repairPool = this.baseMapper.selectById(id);
 //            if (repairPool == null) {
-//                throw new SwscException("非法参数");
+//                throw new AiurtBootException("非法参数");
 //            }
 //            if (repairPool.getStatus().equals(RepairContant.ASSIGNEDSTATUS[1])) {
-//                throw new SwscException("请勿重复指派");
+//                throw new AiurtBootException("请勿重复指派");
 //            }
 //            if (repairPool.getIsReceipt() == 1){
 //                isReceipt=1;
@@ -576,12 +581,12 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
 //        String uid = userId[0];
 //        SysUser sysUser = userMapper.selectById(uid);
 //        if (sysUser == null) {
-//            throw new SwscException("非法用户");
+//            throw new AiurtBootException("非法用户");
 //        }
 //        LambdaQueryWrapper<Station> wrapper = new LambdaQueryWrapper<Station>().eq(Station::getTeamId, sysUser.getOrgId()).eq(Station::getDelFlag, 0).last("limit 1");
 //        Station station = stationService.getOne(wrapper);
 //        if (station == null) {
-//            throw new SwscException("非法站点信息");
+//            throw new AiurtBootException("非法站点信息");
 //        }
 //        String codeNo = numberGenerateUtils.getCodeNo("J".concat(station.getLineId().toString().concat(station.getStationCode())));
 //        //添加检修单记录
