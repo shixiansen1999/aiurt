@@ -360,11 +360,13 @@ public class StatisticalController {
         return result;
     }
 
+    // todo
+/*
     @ApiOperation(value = "查询班组接口", notes = "查询班组接口 ")
     @GetMapping("orgSelect")
     public Result<List<SysDepartModel>> queryTreeList() {
         // todo
-        /*Result<List<SysDepartTreeModel>> result = new Result<>();
+        *//*Result<List<SysDepartTreeModel>> result = new Result<>();
         try {
             // todo 后期修改
             List<SysDepartTreeModel> list = new ArrayList<>();
@@ -373,9 +375,9 @@ public class StatisticalController {
             result.setSuccess(true);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
-        }*/
+        }*//*
         return Result.OK();
-    }
+    }*/
 
     @AutoLog("获取站点信息")
     @ApiOperation(value = "获取站点信息", notes = "获取站点信息")
@@ -734,13 +736,13 @@ public class StatisticalController {
     public Result<IPage> getFaultTotalDetail(@RequestParam(value = "lineCode", required = false) String lineCode,
                                              @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
                                              @RequestParam(name = "pageSize", defaultValue = "50") Integer pageSize) {
-        Result result = new Result();
+
         DateTime now = DateTime.now();
         Date startTime = DateUtil.beginOfYear(now);
         Date endTime = DateUtil.endOfYear(now);
         IPage page = statisticalService.getFaultTotalDetail(lineCode, pageNo, pageSize, startTime, endTime);
 
-        return result.ok(page);
+        return Result.ok(page);
     }
 
     /**
@@ -749,12 +751,12 @@ public class StatisticalController {
     @ApiOperation(value = "故障数据统计-未修复故障", notes = "故障数据统计-未修复故障")
     @GetMapping(value = "/getFaultUnCompletedDetail")
     public Result getFaultTotalDetail(@RequestParam(value = "lineCode", required = false) String lineCode) {
-        Result result = new Result();
+
         DateTime now = DateTime.now();
         DateTime startTime = DateUtil.beginOfYear(now);
         DateTime endTime = DateUtil.endOfYear(now);
         List<FaultStatisticsModal> list = statisticalService.getUncompletedFault(lineCode, startTime, endTime);
-        return result.ok(list);
+        return Result.ok(list);
     }
 
     /**
@@ -763,12 +765,12 @@ public class StatisticalController {
     @ApiOperation(value = "故障数据统计-本周修复", notes = "故障数据统计-本周修复")
     @GetMapping(value = "/getFaultCompletedDetail")
     public Result getFaultCompletedDetail(@RequestParam(value = "lineCode", required = false) String lineCode) {
-        Result result = new Result();
+
         DateTime now = DateTime.now();
         DateTime startTime = DateUtil.beginOfWeek(now);
         DateTime endTime = DateUtil.endOfWeek(now);
         List<FaultStatisticsModal> list = statisticalService.getCompletedFault(lineCode, startTime, endTime);
-        return result.ok(list);
+        return Result.ok(list);
     }
 
 }
