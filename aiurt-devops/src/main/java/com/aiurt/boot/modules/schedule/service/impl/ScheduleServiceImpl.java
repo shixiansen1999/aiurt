@@ -2,8 +2,6 @@ package com.aiurt.boot.modules.schedule.service.impl;
 
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
-import com.aiurt.boot.common.system.vo.LoginUser;
-import com.aiurt.boot.common.util.DateUtils;
 import com.aiurt.boot.modules.schedule.entity.Schedule;
 import com.aiurt.boot.modules.schedule.entity.ScheduleItem;
 import com.aiurt.boot.modules.schedule.entity.ScheduleRecord;
@@ -13,7 +11,7 @@ import com.aiurt.boot.modules.schedule.model.ScheduleUser;
 import com.aiurt.boot.modules.schedule.service.IScheduleItemService;
 import com.aiurt.boot.modules.schedule.service.IScheduleRecordService;
 import com.aiurt.boot.modules.schedule.service.IScheduleService;
-import com.aiurt.boot.modules.system.service.ISysUserService;
+import com.aiurt.common.util.DateUtils;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -21,6 +19,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.apache.shiro.SecurityUtils;
+import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -43,8 +42,8 @@ public class ScheduleServiceImpl extends ServiceImpl<ScheduleMapper, Schedule> i
 
     @Autowired
     private IScheduleRecordService recordService;
-    @Autowired
-    private ISysUserService userService;
+//    @Autowired
+//    private ISysUserService userService;
     @Autowired
     private IScheduleItemService scheduleItemService;
 
@@ -61,7 +60,11 @@ public class ScheduleServiceImpl extends ServiceImpl<ScheduleMapper, Schedule> i
          */
         Date date = schedule.getDate();
         if (date == null) {
-            date = DateUtils.parseDate(DateUtils.formatDate(), "yyyy-MM");
+            try {
+                date = DateUtils.parseDate(DateUtils.formatDate(), "yyyy-MM");
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
         }
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(date);
@@ -72,7 +75,7 @@ public class ScheduleServiceImpl extends ServiceImpl<ScheduleMapper, Schedule> i
          */
         //List<ScheduleUser> scheduleUserList = recordService.getScheduleUserByDate(DateUtils.format(date, "yyyy-MM"),schedule.getUserName());
         //List<ScheduleUser> scheduleUserList = recordService.getScheduleUserByDateAndOrgCode(DateUtils.format(date, "yyyy-MM"),schedule.getUserName(),orgCode);
-        List<ScheduleUser> scheduleUserList = recordService.getScheduleUserByDateAndOrgCodeAndOrgId(DateUtils.format(date, "yyyy-MM"), schedule.getUserName(), orgCode, schedule.getOrgId());
+        List<ScheduleUser> scheduleUserList = recordService.getScheduleUserByDateAndOrgCodeAndOrgId(DateUtil.format(date, "yyyy-MM"), schedule.getUserName(), orgCode, schedule.getOrgId());
         /**
          * 3、获取记录数据
          */
@@ -90,7 +93,7 @@ public class ScheduleServiceImpl extends ServiceImpl<ScheduleMapper, Schedule> i
                 /**
                  * a、查询所有记录
                  */
-                List<ScheduleRecordModel> recordModelList = recordService.getRecordListByUserAndDate(scheduleUser.getUserId(), DateUtils.format(date, "yyyy-MM"));
+                List<ScheduleRecordModel> recordModelList = recordService.getRecordListByUserAndDate(scheduleUser.getUserId(), DateUtil.format(date, "yyyy-MM"));
                 if (recordModelList != null && recordModelList.size() > 0) {
                     for (ScheduleRecordModel recordModel : recordModelList) {
                         calendar.setTime(recordModel.getDate());
@@ -122,13 +125,14 @@ public class ScheduleServiceImpl extends ServiceImpl<ScheduleMapper, Schedule> i
            throw new RuntimeException("第1行日期格式不正确，应为yyyy年MM月dd日，请检查。");
         }
         //获得所有已经排班的用户
-        List<ScheduleUser> scheduleUserList = recordService.getScheduleUserByDate(DateUtils.format(startTime,"yyyy-MM"),null);
+        List<ScheduleUser> scheduleUserList = recordService.getScheduleUserByDate(DateUtil.format(startTime,"yyyy-MM"),null);
         List<String> userIds = scheduleUserList.stream().map(ScheduleUser::getUserId).collect(Collectors.toList());
         for (int i = 2; i < scheduleDate.size(); i++) {
             //获取一条排班记录
             Map<Integer, String> scheduleMap = scheduleDate.get(i);
-            //构造ScheduleRecord对象
-            String userId = userService.getUserIdByUsername(scheduleMap.get(2));
+            // todo 后期修改构造ScheduleRecord对象
+            String userId = "";
+//            String userId = userService.getUserIdByUsername(scheduleMap.get(2));
             if (StringUtils.isBlank(userId)){
                 throw new RuntimeException("第" + (i + 1) + "行存在系统中未包含的工作证编号，请检查。");
             }

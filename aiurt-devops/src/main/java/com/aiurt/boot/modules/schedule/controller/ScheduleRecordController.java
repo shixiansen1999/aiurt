@@ -1,11 +1,7 @@
 package com.aiurt.boot.modules.schedule.controller;
 
+import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
-import com.aiurt.boot.common.constant.RoleConstant;
-
-import com.aiurt.boot.common.system.vo.LoginUser;
-import com.aiurt.boot.common.util.DateUtils;
-import com.aiurt.boot.common.util.oConvertUtils;
 import com.aiurt.boot.modules.schedule.entity.ScheduleHolidays;
 import com.aiurt.boot.modules.schedule.entity.ScheduleItem;
 import com.aiurt.boot.modules.schedule.entity.ScheduleLog;
@@ -17,9 +13,10 @@ import com.aiurt.boot.modules.schedule.service.IScheduleItemService;
 import com.aiurt.boot.modules.schedule.service.IScheduleLogService;
 import com.aiurt.boot.modules.schedule.service.IScheduleRecordService;
 import com.aiurt.boot.modules.schedule.vo.ScheduleCalendarVo;
-import com.aiurt.boot.modules.system.entity.SysUser;
-import com.aiurt.boot.modules.system.service.ISysUserService;
 import com.aiurt.common.aspect.annotation.AutoLog;
+import com.aiurt.common.constant.RoleConstant;
+import com.aiurt.common.util.DateUtils;
+import com.aiurt.common.util.oConvertUtils;
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -32,6 +29,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.query.QueryGenerator;
+import org.jeecg.common.system.vo.LoginUser;
 import org.jeecgframework.poi.excel.ExcelImportUtil;
 import org.jeecgframework.poi.excel.def.NormalExcelConstants;
 import org.jeecgframework.poi.excel.entity.ExportParams;
@@ -42,11 +40,13 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
 import org.springframework.web.servlet.ModelAndView;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -68,8 +68,8 @@ public class ScheduleRecordController {
     private IScheduleHolidaysService holidaysService;
     @Autowired
     private IScheduleItemService itemService;
-    @Autowired
-    private ISysUserService userService;
+//    @Autowired
+//    private ISysUserService userService;
     @Autowired
     private IScheduleLogService logService;
 
@@ -301,16 +301,22 @@ public class ScheduleRecordController {
     public Result<List<DayScheduleModel>> getUserSchedule(@RequestParam(name = "date", required = false) String date,
                                                           @RequestParam(name = "orgId", required = false) String orgId) {
         LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        List<String> roleCodeList = userService.getRoleCodeById(loginUser.getId());
+        // todo 后期修改
+        List<String> roleCodeList = new ArrayList<>();
+//        List<String> roleCodeList = userService.getRoleCodeById(loginUser.getId());
         if (StringUtils.isBlank(orgId)&&!roleCodeList.contains(RoleConstant.DIRECTOR)&&!roleCodeList.contains(RoleConstant.ADMIN)){
             orgId = loginUser.getOrgId();
         }
         Result<List<DayScheduleModel>> result = new Result<List<DayScheduleModel>>();
         if (StringUtils.isEmpty(date)) {
-            date = DateUtils.format(new Date(), "yyyy-MM");
+            date = DateUtil.format(new Date(), "yyyy-MM");
         }
         Calendar calendar = Calendar.getInstance();
-        calendar.setTime(DateUtils.parseDate(date, "yyyy-MM"));
+        try {
+            calendar.setTime(DateUtils.parseDate(date, "yyyy-MM"));
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
         int maximum = calendar.getActualMaximum(Calendar.DAY_OF_MONTH);
 
         List<DayScheduleModel> list = new ArrayList<>(maximum);
@@ -355,10 +361,12 @@ public class ScheduleRecordController {
     public Result<List<ScheduleRecordModel>> dayRecordList(@RequestParam(name = "date", required = false) String date) {
         Result<List<ScheduleRecordModel>> result = new Result<List<ScheduleRecordModel>>();
         LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        LambdaQueryWrapper<SysUser> queryWrapper = new LambdaQueryWrapper<>();
-        List<SysUser> userList = userService.list(queryWrapper.like(SysUser::getOrgCode, loginUser.getOrgCode()));
+        LambdaQueryWrapper<LoginUser> queryWrapper = new LambdaQueryWrapper<>();
+        // todo 后期修改
+        List<LoginUser> userList = new ArrayList<>();
+//        List<LoginUser> userList = userService.list(queryWrapper.like(LoginUser::getOrgCode, loginUser.getOrgCode()));
         if (StringUtils.isNotEmpty(date)&& ObjectUtil.isNotEmpty(userList)) {
-            List<String>ids = userList.stream().map(SysUser::getId).collect(Collectors.toList());
+            List<String>ids = userList.stream().map(LoginUser::getId).collect(Collectors.toList());
             List<ScheduleRecordModel> recordModelList = scheduleRecordService.getRecordListByDayAndUserIds(date,ids);
             result.setResult(recordModelList);
         }
@@ -396,7 +404,9 @@ public class ScheduleRecordController {
             log.setTargetItemName(newItem.getName());
             log.setUserId(scheduleRecordEntity.getUserId());
             log.setRemark(scheduleRecord.getRemark());
-            SysUser user = userService.getById(log.getUserId());
+            // todo 后期修改
+            LoginUser user = new LoginUser();
+//            LoginUser user = userService.getById(log.getUserId());
             log.setUserName(user.getRealname());
             logService.save(log);
 

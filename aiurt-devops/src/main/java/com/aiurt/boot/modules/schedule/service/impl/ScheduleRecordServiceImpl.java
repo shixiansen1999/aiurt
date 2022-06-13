@@ -1,8 +1,7 @@
 package com.aiurt.boot.modules.schedule.service.impl;
 
+import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.aiurt.boot.common.util.DateUtils;
 import com.aiurt.boot.modules.manage.entity.Line;
 import com.aiurt.boot.modules.manage.service.ILineService;
 import com.aiurt.boot.modules.schedule.entity.ScheduleRecord;
@@ -10,13 +9,14 @@ import com.aiurt.boot.modules.schedule.mapper.ScheduleRecordMapper;
 import com.aiurt.boot.modules.schedule.model.ScheduleRecordModel;
 import com.aiurt.boot.modules.schedule.model.ScheduleUser;
 import com.aiurt.boot.modules.schedule.service.IScheduleRecordService;
-import com.aiurt.boot.modules.system.entity.SysUser;
-import com.aiurt.boot.modules.system.service.ISysUserService;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -29,8 +29,8 @@ import java.util.Map;
 @Service
 public class ScheduleRecordServiceImpl extends ServiceImpl<ScheduleRecordMapper, ScheduleRecord> implements IScheduleRecordService {
 
-    @Autowired
-    private ISysUserService sysUserService;
+//    @Autowired
+//    private ISysUserService sysUserService;
     @Autowired
     private ILineService lineService;
 
@@ -55,7 +55,7 @@ public class ScheduleRecordServiceImpl extends ServiceImpl<ScheduleRecordMapper,
     }
 
     @Override
-    public List<SysUser> getScheduleUserDataByDay(String day, String orgId) {
+    public List<LoginUser> getScheduleUserDataByDay(String day, String orgId) {
         return this.baseMapper.getScheduleUserDataByDay(day,orgId);
     }
 
@@ -87,7 +87,9 @@ public class ScheduleRecordServiceImpl extends ServiceImpl<ScheduleRecordMapper,
         if (ObjectUtil.isNotEmpty(map.get("lineId"))) {
             String lineCode = map.get("lineId").toString();
             Line line=lineService.getOne(new QueryWrapper<Line>().eq("line_code",lineCode));
-            List<String> banzuList = sysUserService.getBanzuListByLine(line.getId());
+            // todo 后期修改
+            List<String> banzuList = new ArrayList<>();
+//            List<String> banzuList = sysUserService.getBanzuListByLine(line.getId());
             if (banzuList != null && banzuList.size() > 0) {
                 String[] emp=new String[banzuList.size()];
                 int i=0;
@@ -98,7 +100,7 @@ public class ScheduleRecordServiceImpl extends ServiceImpl<ScheduleRecordMapper,
                 map.put("orgIds", emp);
             }
         }
-        String today= DateUtils.getToday();
+        String today= DateUtil.format(new Date(),"yyyy-MM-dd");
         map.put("today",today);
         return this.baseMapper.getZhiBanNum(map);
     }

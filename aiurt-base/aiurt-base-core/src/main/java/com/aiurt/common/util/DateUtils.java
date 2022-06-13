@@ -64,14 +64,14 @@ public class DateUtils extends PropertyEditorSupport {
         }
     };
 
-    private  static ThreadLocal<SimpleDateFormat> longSdf = new ThreadLocal<SimpleDateFormat>() {
+    private static ThreadLocal<SimpleDateFormat> longSdf = new ThreadLocal<SimpleDateFormat>() {
         @Override
         protected SimpleDateFormat initialValue() {
             return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
         }
     };
 
-    private  static ThreadLocal<SimpleDateFormat> shortSdf = new ThreadLocal<SimpleDateFormat>() {
+    private static ThreadLocal<SimpleDateFormat> shortSdf = new ThreadLocal<SimpleDateFormat>() {
         @Override
         protected SimpleDateFormat initialValue() {
             return new SimpleDateFormat("yyyy-MM-dd");
@@ -87,6 +87,7 @@ public class DateUtils extends PropertyEditorSupport {
 
     /**
      * 指定模式的时间格式
+     *
      * @param pattern
      * @return
      */
@@ -224,7 +225,7 @@ public class DateUtils extends PropertyEditorSupport {
     /**
      * 日期转换为字符串
      *
-     * @param date     日期
+     * @param date    日期
      * @param dateSdf 日期格式
      * @return 字符串
      */
@@ -772,6 +773,7 @@ public class DateUtils extends PropertyEditorSupport {
         }
         return dt;
     }
+
     /**
      * 根据月数和周数获取时间
      *
@@ -792,6 +794,7 @@ public class DateUtils extends PropertyEditorSupport {
         Date[] dates = new Date[]{weekStartTime, weekEndTime};
         return dates;
     }
+
     /**
      * 根据月数 获取所在的季度
      *
@@ -813,6 +816,7 @@ public class DateUtils extends PropertyEditorSupport {
         }
         return 1;
     }
+
     public static ArrayList<Object> getWeekAndTime(Date startTime) {
         final ArrayList<Object> list = new ArrayList<>();
         Calendar calendar = Calendar.getInstance();
@@ -840,4 +844,48 @@ public class DateUtils extends PropertyEditorSupport {
         return LocalDateTime.of(year, 1, 4, 0, 0);
     }
 
+    public static Date getStartDate(String date) {
+        if (org.apache.commons.lang3.StringUtils.isNotEmpty(date)) {
+            try {
+                return parseDate(date, "yyyy-MM-dd");
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+        }
+        Calendar calendar = Calendar.getInstance();
+        calendar.set(Calendar.DAY_OF_MONTH, 1);
+        return calendar.getTime();
+    }
+
+    public static Date getEndDate(String date) {
+        if (org.apache.commons.lang3.StringUtils.isNotEmpty(date)) {
+            try {
+                return parseDate(date, "yyyy-MM-dd");
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+        }
+        Calendar calendar = Calendar.getInstance();
+        calendar.set(Calendar.DAY_OF_MONTH, calendar.getActualMaximum(Calendar.DAY_OF_MONTH));
+        return calendar.getTime();
+    }
+
+    public static List<Date> getDateList(String str) {
+        List<Date> dateList = new ArrayList<>();
+        Date date = null;
+        try {
+            date = parseDate(str, "yyyy-MM");
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTime(date);
+            Integer maxDay = calendar.getActualMaximum(Calendar.DAY_OF_MONTH);
+            Date maxDate = parseDate(str + "-" + maxDay, "yyyy-MM-dd");
+            while (!calendar.getTime().after(maxDate)) {
+                dateList.add(calendar.getTime());
+                calendar.add(Calendar.DAY_OF_MONTH, 1);
+            }
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        return dateList;
+    }
 }
