@@ -1,14 +1,16 @@
 package com.aiurt.common.util;
 
+import cn.hutool.core.date.DateUtil;
+import com.aiurt.common.constant.SymbolConstant;
+import org.springframework.util.StringUtils;
+
 import java.beans.PropertyEditorSupport;
 import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
 import java.util.*;
-
-import com.aiurt.common.constant.SymbolConstant;
-import org.springframework.util.StringUtils;
 
 /**
  * 类描述：时间操作定义类
@@ -770,4 +772,72 @@ public class DateUtils extends PropertyEditorSupport {
         }
         return dt;
     }
+    /**
+     * 根据月数和周数获取时间
+     *
+     * @param month
+     * @param week
+     * @return
+     */
+    public static Date[] getDateByMonthAndWeek(int year, int month, Integer week) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setFirstDayOfWeek(Calendar.MONDAY);
+        calendar.set(Calendar.YEAR, year);
+        calendar.set(Calendar.MONTH, month - 1);
+        calendar.set(Calendar.WEEK_OF_MONTH, week);
+        calendar.setMinimalDaysInFirstWeek(7);
+        Date time = calendar.getTime();
+        Date weekStartTime = getWeekStartTime(time);
+        Date weekEndTime = getWeekEndTime(time);
+        Date[] dates = new Date[]{weekStartTime, weekEndTime};
+        return dates;
+    }
+    /**
+     * 根据月数 获取所在的季度
+     *
+     * @param month
+     * @return
+     */
+    public static int getQuarter(int month) {
+        if (month >= 1 && month <= 3) {
+            return 1;
+        }
+        if (month >= 4 && month <= 6) {
+            return 2;
+        }
+        if (month >= 7 && month <= 9) {
+            return 3;
+        }
+        if (month >= 10 && month <= 12) {
+            return 4;
+        }
+        return 1;
+    }
+    public static ArrayList<Object> getWeekAndTime(Date startTime) {
+        final ArrayList<Object> list = new ArrayList<>();
+        Calendar calendar = Calendar.getInstance();
+        Date endtm = getYearEndTime(startTime);
+        calendar.setTime(startTime);
+        calendar.setFirstDayOfWeek(Calendar.MONDAY);
+        while (calendar.getTime().before(endtm)) {
+            Date st = getWeekStartTime(calendar.getTime());
+            Date et = getWeekEndTime(calendar.getTime());
+            HashMap<String, Object> map = new HashMap<>();
+            map.put("time", new Date[]{st, et});
+            map.put("week", DateUtil.weekOfYear(et));
+            list.add(map);
+            calendar.add(Calendar.WEEK_OF_YEAR, 1);
+        }
+        return list;
+    }
+
+    /**
+     * 获取某年第一天日期
+     *
+     * @return
+     */
+    public static LocalDateTime getYearFirst(int year) {
+        return LocalDateTime.of(year, 1, 4, 0, 0);
+    }
+
 }

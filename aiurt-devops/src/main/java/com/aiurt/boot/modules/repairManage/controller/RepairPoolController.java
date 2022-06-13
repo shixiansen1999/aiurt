@@ -1,17 +1,14 @@
 package com.aiurt.boot.modules.repairManage.controller;
 
 import cn.hutool.core.util.StrUtil;
-
-import com.aiurt.boot.common.system.vo.LoginUser;
-import com.aiurt.boot.common.util.DateUtils;
-import com.aiurt.boot.common.util.RoleAdditionalUtils;
 import com.aiurt.boot.modules.manage.service.IStationService;
 import com.aiurt.boot.modules.repairManage.entity.RepairPool;
 import com.aiurt.boot.modules.repairManage.service.IRepairPoolService;
 import com.aiurt.boot.modules.repairManage.vo.AssignVO;
-import com.aiurt.boot.modules.system.entity.SysDepart;
-import com.aiurt.boot.modules.system.service.ISysDepartService;
+
 import com.aiurt.common.aspect.annotation.AutoLog;
+import com.aiurt.common.util.DateUtils;
+import com.aiurt.common.util.RoleAdditionalUtils;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import io.swagger.annotations.Api;
@@ -20,6 +17,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.query.QueryGenerator;
+import org.jeecg.common.system.vo.LoginUser;
 import org.jeecgframework.poi.excel.def.NormalExcelConstants;
 import org.jeecgframework.poi.excel.entity.ExportParams;
 import org.jeecgframework.poi.excel.entity.enmus.ExcelType;
@@ -49,8 +47,8 @@ public class RepairPoolController {
     @Autowired
     private IRepairPoolService repairPoolService;
 
-    @Autowired
-    private ISysDepartService departService;
+//    @Autowired
+//    private ISysDepartService departService;
 
     @Resource
     private RoleAdditionalUtils roleAdditionalUtils;
@@ -155,8 +153,9 @@ public class RepairPoolController {
         String teamName="";
         if (pageList.size() > 0){
             final String organizationId = pageList.get(0).getOrganizationId();
-            final SysDepart depart = departService.getById(organizationId);
-            teamName = depart.getDepartName();
+            // todo 后期修改
+//            final SysDepart depart = departService.getById(organizationId);
+//            teamName = depart.getDepartName();
         }
         //Step.2 AutoPoi 导出Excel
         ModelAndView mv = new ModelAndView(new JeecgEntityExcelView());

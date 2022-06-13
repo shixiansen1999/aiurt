@@ -1,6 +1,7 @@
 package com.aiurt.boot.modules.repairManage.vo;
 
-import com.aiurt.boot.common.result.SpareResult;
+
+import com.aiurt.common.result.SpareResult;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;

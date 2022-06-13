@@ -1,8 +1,6 @@
 package com.aiurt.boot.modules.patrol.service.impl;
 
-import com.aiurt.boot.common.constant.CommonConstant;
-import com.aiurt.boot.common.system.vo.LoginUser;
-import com.aiurt.boot.common.util.RoleAdditionalUtils;
+
 import com.aiurt.boot.modules.manage.entity.Station;
 import com.aiurt.boot.modules.manage.entity.Subsystem;
 import com.aiurt.boot.modules.manage.service.IStationService;
@@ -14,6 +12,8 @@ import com.aiurt.boot.modules.patrol.param.PatrolPageParam;
 import com.aiurt.boot.modules.patrol.service.IPatrolService;
 import com.aiurt.boot.modules.patrol.vo.PatrolDetailStrategy;
 import com.aiurt.boot.modules.patrol.vo.PatrolPageVO;
+import com.aiurt.common.constant.CommonConstant;
+import com.aiurt.common.util.RoleAdditionalUtils;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -24,6 +24,7 @@ import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 

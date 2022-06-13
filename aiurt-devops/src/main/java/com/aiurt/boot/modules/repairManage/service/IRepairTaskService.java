@@ -1,11 +1,11 @@
 package com.aiurt.boot.modules.repairManage.service;
 
-import com.aiurt.boot.common.system.vo.LoginUser;
 import com.aiurt.boot.modules.repairManage.entity.RepairTask;
-import com.baomidou.mybatisplus.extension.service.IService;
 import com.aiurt.boot.modules.repairManage.vo.DeviceQueryVO;
 import com.aiurt.boot.modules.repairManage.vo.ReTaskDetailVO;
+import com.baomidou.mybatisplus.extension.service.IService;
 import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.system.vo.LoginUser;
 
 /**
  * @Description: 检修单列表
