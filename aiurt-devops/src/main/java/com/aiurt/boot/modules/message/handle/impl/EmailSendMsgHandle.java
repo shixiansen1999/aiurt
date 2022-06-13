@@ -1,7 +1,7 @@
 package com.aiurt.boot.modules.message.handle.impl;
 
 import com.aiurt.boot.modules.message.handle.ISendMsgHandle;
-import com.aiurt.boot.common.util.SpringContextUtils;
+import com.aiurt.common.util.SpringContextUtils;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 

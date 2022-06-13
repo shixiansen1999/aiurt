@@ -2,8 +2,8 @@ package com.aiurt.boot.modules.message.service;
 
 import java.util.List;
 
-import com.aiurt.boot.common.system.base.service.BaseService;
 import com.aiurt.boot.modules.message.entity.SysMessageTemplate;
+import com.aiurt.common.system.base.service.JeecgService;
 
 /**
  * @Description: 消息模板
@@ -11,6 +11,6 @@ import com.aiurt.boot.modules.message.entity.SysMessageTemplate;
  * @Date:  2019-04-09
  * @Version: V1.0
  */
-public interface ISysMessageTemplateService extends BaseService<SysMessageTemplate> {
+public interface ISysMessageTemplateService extends JeecgService<SysMessageTemplate> {
     List<SysMessageTemplate> selectByCode(String code);
 }

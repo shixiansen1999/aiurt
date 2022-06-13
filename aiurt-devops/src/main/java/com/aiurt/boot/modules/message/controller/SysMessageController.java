@@ -1,9 +1,9 @@
 package com.aiurt.boot.modules.message.controller;
 
-import com.aiurt.boot.common.system.base.controller.BaseController;
 
 import com.aiurt.boot.modules.message.entity.SysMessage;
 import com.aiurt.boot.modules.message.service.ISysMessageService;
+import com.aiurt.common.system.base.controller.JeecgController;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -27,7 +27,7 @@ import java.util.Arrays;
 @Slf4j
 @RestController
 @RequestMapping("/message/sysMessage")
-public class SysMessageController extends BaseController<SysMessage, ISysMessageService> {
+public class SysMessageController extends JeecgController<SysMessage, ISysMessageService> {
 	@Autowired
 	private ISysMessageService sysMessageService;
 

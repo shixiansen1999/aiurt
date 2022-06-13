@@ -1,6 +1,6 @@
 package com.aiurt.boot.modules.message.entity;
 
-import com.aiurt.boot.common.system.base.entity.BaseEntity;
+import com.aiurt.common.system.base.entity.JeecgEntity;
 import org.jeecgframework.poi.excel.annotation.Excel;
 
 import com.baomidou.mybatisplus.annotation.TableName;
@@ -19,7 +19,7 @@ import lombok.experimental.Accessors;
 @EqualsAndHashCode(callSuper = false)
 @Accessors(chain = true)
 @TableName("sys_sms_template")
-public class SysMessageTemplate extends BaseEntity {
+public class SysMessageTemplate extends JeecgEntity {
 	/**模板CODE*/
 	@Excel(name = "模板CODE", width = 15)
 	private String templateCode;
