@@ -2,8 +2,6 @@ package com.aiurt.boot.modules.secondLevelWarehouse.controller;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
-import com.aiurt.boot.common.system.api.ISysBaseAPI;
-import com.aiurt.boot.common.util.TokenUtils;
 import com.aiurt.boot.modules.secondLevelWarehouse.entity.dto.StockLevel2CheckDetailDTO;
 import com.aiurt.boot.modules.secondLevelWarehouse.entity.dto.StockLevel2CheckDetailEditDTO;
 import com.aiurt.boot.modules.secondLevelWarehouse.entity.dto.StockLevel2CheckDetailExcel;
@@ -16,7 +14,10 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.system.api.ISysBaseAPI;
+import org.jeecg.common.system.vo.LoginUser;
 import org.jeecgframework.poi.excel.def.NormalExcelConstants;
 import org.jeecgframework.poi.excel.entity.ExportParams;
 import org.jeecgframework.poi.excel.view.JeecgEntityExcelView;
@@ -111,7 +112,8 @@ public class StockLevel2CheckDetailController {
     public ModelAndView exportNewestStockXls(
             @ApiParam("仓库编号") @RequestParam("warehouseCode") String warehouseCode,
             HttpServletRequest request, HttpServletResponse response) {
-        String userName = TokenUtils.getUserName(request, iSysBaseAPI);
+        LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        String realname = sysUser.getRealname();
         // 导出Excel
         ModelAndView mv = new ModelAndView(new JeecgEntityExcelView());
         List<StockLevel2CheckDetailExcel> list = stockLevel2CheckDetailService.exportNewestStockXls(warehouseCode);
@@ -121,7 +123,7 @@ public class StockLevel2CheckDetailController {
         //导出文件名称
         mv.addObject(NormalExcelConstants.FILE_NAME, "最新库存数据列表");
         mv.addObject(NormalExcelConstants.CLASS, StockLevel2CheckDetailExcel.class);
-        mv.addObject(NormalExcelConstants.PARAMS, new ExportParams("最新库存数据列表数据", "导出人:"+userName, "导出信息"));
+        mv.addObject(NormalExcelConstants.PARAMS, new ExportParams("最新库存数据列表数据", "导出人:"+realname, "导出信息"));
         mv.addObject(NormalExcelConstants.DATA_LIST, list);
         return mv;
     }

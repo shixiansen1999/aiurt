@@ -1,15 +1,6 @@
 package com.aiurt.boot.modules.secondLevelWarehouse.service.impl;
 
 import cn.hutool.core.util.ObjectUtil;
-import com.aiurt.boot.common.constant.CommonConstant;
-import com.aiurt.boot.common.enums.FaultTypeEnum;
-import com.aiurt.boot.common.enums.MaterialTypeEnum;
-import com.aiurt.boot.common.enums.ProductiveTypeEnum;
-import com.aiurt.boot.common.result.FaultResult;
-import com.aiurt.boot.common.result.FaultSparePartResult;
-import com.aiurt.boot.common.result.SparePartResult;
-import com.aiurt.boot.common.system.api.ISysBaseAPI;
-import com.aiurt.boot.common.util.TokenUtils;
 import com.aiurt.boot.modules.device.entity.Device;
 import com.aiurt.boot.modules.device.mapper.DeviceMapper;
 import com.aiurt.boot.modules.fault.entity.DeviceChangeSparePart;
@@ -27,15 +18,23 @@ import com.aiurt.boot.modules.secondLevelWarehouse.mapper.SparePartOutOrderMappe
 import com.aiurt.boot.modules.secondLevelWarehouse.mapper.SparePartScrapMapper;
 import com.aiurt.boot.modules.secondLevelWarehouse.service.ISparePartOutOrderService;
 import com.aiurt.boot.modules.secondLevelWarehouse.service.ISparePartStockService;
-import com.aiurt.boot.modules.system.entity.SysUser;
-import com.aiurt.boot.modules.system.service.ISysUserService;
+import com.aiurt.common.constant.CommonConstant;
+import com.aiurt.common.enums.FaultTypeEnum;
+import com.aiurt.common.enums.MaterialTypeEnum;
+import com.aiurt.common.enums.ProductiveTypeEnum;
+import com.aiurt.common.result.FaultResult;
+import com.aiurt.common.result.FaultSparePartResult;
+import com.aiurt.common.result.SparePartResult;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.apache.commons.lang.StringUtils;
+import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.system.api.ISysBaseAPI;
+import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -75,8 +74,8 @@ public class SparePartOutOrderServiceImpl extends ServiceImpl<SparePartOutOrderM
     private DeviceMapper deviceMapper;
     @Resource
     private ISparePartStockService sparePartStockService;
-    @Resource
-    private ISysUserService sysUserService;
+//    @Resource
+//    private ISysUserService sysUserService;
 
     @Override
     public IPage<SparePartOutVO> queryPageList(Page<SparePartOutVO> page, SparePartLendQuery sparePartLendQuery) {
@@ -102,8 +101,11 @@ public class SparePartOutOrderServiceImpl extends ServiceImpl<SparePartOutOrderM
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Result<?> addOutOrder(Result<?> result, SparePartOutOrder sparePartOutOrder, HttpServletRequest req) {
-        String userId = TokenUtils.getUserId(req, iSysBaseAPI);
-        String orgId = sysUserService.getOne(new QueryWrapper<SysUser>().eq(SysUser.ID, userId), false).getOrgId();
+        LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        String userId = sysUser.getId();
+        // todo 后期修改
+        String orgId = "";
+//        String orgId = sysUserService.getOne(new QueryWrapper<SysUser>().eq(SysUser.ID, userId), false).getOrgId();
         if (sparePartOutOrder.getNum() == null) {
             return result.error500("出库数量不能为空");
         }

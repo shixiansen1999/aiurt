@@ -1,9 +1,6 @@
 package com.aiurt.boot.modules.secondLevelWarehouse.service.impl;
 
-import com.aiurt.boot.common.enums.MaterialTypeEnum;
-import com.aiurt.boot.common.result.SparePartStockResult;
-import com.aiurt.boot.common.system.api.ISysBaseAPI;
-import com.aiurt.boot.common.util.TokenUtils;
+
 import com.aiurt.boot.modules.fault.param.SparePartStockParam;
 import com.aiurt.boot.modules.manage.entity.Subsystem;
 import com.aiurt.boot.modules.manage.service.ISubsystemService;
@@ -12,13 +9,16 @@ import com.aiurt.boot.modules.secondLevelWarehouse.entity.dto.SparePartStockDTO;
 import com.aiurt.boot.modules.secondLevelWarehouse.entity.vo.SpareMaterialVO;
 import com.aiurt.boot.modules.secondLevelWarehouse.mapper.SparePartStockMapper;
 import com.aiurt.boot.modules.secondLevelWarehouse.service.ISparePartStockService;
-import com.aiurt.boot.modules.system.entity.SysUser;
-import com.aiurt.boot.modules.system.service.ISysUserService;
+import com.aiurt.common.enums.MaterialTypeEnum;
+import com.aiurt.common.result.SparePartStockResult;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.apache.commons.lang.StringUtils;
+import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.system.api.ISysBaseAPI;
+import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -43,8 +43,8 @@ public class SparePartStockServiceImpl extends ServiceImpl<SparePartStockMapper,
     @Resource
     private ISysBaseAPI iSysBaseAPI;
 
-    @Resource
-    private ISysUserService sysUserService;
+//    @Resource
+//    private ISysUserService sysUserService;
 
     /**
      * 分页查询
@@ -73,8 +73,12 @@ public class SparePartStockServiceImpl extends ServiceImpl<SparePartStockMapper,
      */
     @Override
     public List<SpareMaterialVO> queryMaterialByWarehouse(HttpServletRequest req) {
-        String userId = TokenUtils.getUserId(req, iSysBaseAPI);
-        String orgId = sysUserService.getOne(new QueryWrapper<SysUser>().eq(SysUser.ID, userId), false).getOrgId();
+        LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        String userId = sysUser.getId();
+        // todo 后期修改
+        String orgId = "";
+//        String orgId = sysUserService.getOne(new QueryWrapper<SysUser>().eq(SysUser.ID, userId), false).getOrgId();
+
         List<SpareMaterialVO> list = sparePartStockMapper.queryMaterialByWarehouse(orgId);
         list.forEach(e->{
             e.setTypeName(MaterialTypeEnum.getNameByCode(e.getType()));
@@ -88,7 +92,7 @@ public class SparePartStockServiceImpl extends ServiceImpl<SparePartStockMapper,
      * @return
      */
     @Override
-    public IPage<SparePartStockResult> queryStockList(IPage<SparePartStockResult> page,SparePartStockParam param) {
+    public IPage<SparePartStockResult> queryStockList(IPage<SparePartStockResult> page, SparePartStockParam param) {
         IPage<SparePartStockResult> results = sparePartStockMapper.selectStockList(page,param);
         return results;
     }

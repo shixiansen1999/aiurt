@@ -1,18 +1,15 @@
 package com.aiurt.boot.modules.schedule.controller;
 
+import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.StrUtil;
-
-import com.aiurt.boot.common.system.vo.LoginUser;
-import com.aiurt.boot.common.util.DateUtils;
-import com.aiurt.boot.common.util.oConvertUtils;
 import com.aiurt.boot.modules.schedule.entity.*;
 import com.aiurt.boot.modules.schedule.model.ScheduleUser;
 import com.aiurt.boot.modules.schedule.service.*;
 import com.aiurt.boot.modules.schedule.vo.RecordParam;
 import com.aiurt.boot.modules.schedule.vo.ScheduleRecordVo;
-import com.aiurt.boot.modules.system.entity.SysUser;
-import com.aiurt.boot.modules.system.service.ISysUserService;
 import com.aiurt.common.aspect.annotation.AutoLog;
+import com.aiurt.common.util.DateUtils;
+import com.aiurt.common.util.oConvertUtils;
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
@@ -24,6 +21,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.query.QueryGenerator;
+import org.jeecg.common.system.vo.LoginUser;
 import org.jeecgframework.poi.excel.def.NormalExcelConstants;
 import org.jeecgframework.poi.excel.entity.ExportParams;
 import org.jeecgframework.poi.excel.view.JeecgEntityExcelView;
@@ -54,8 +52,8 @@ import java.util.*;
 public class ScheduleController {
     @Autowired
     private IScheduleService scheduleService;
-    @Autowired
-    private ISysUserService userService;
+//    @Autowired
+//    private ISysUserService userService;
     @Autowired
     private IScheduleRecordService recordService;
     @Autowired
@@ -281,7 +279,7 @@ public class ScheduleController {
         String userName = request.getParameter("username");
         String date = request.getParameter("date");
         if (StrUtil.isEmptyOrUndefined(date)) {
-            date = DateUtils.format(new Date(), "yyyy-MM");
+            date=  DateUtil.format(new Date(), "yyyy-MM");
         }else{
             Date date1 = new Date(Long.valueOf(date));
             date = DateUtils.formatDate(date1,"yyyy-MM");
@@ -299,7 +297,7 @@ public class ScheduleController {
         for (ScheduleUser user : scheduleUserList) {
             Map map = new HashMap();
             map.put(0, user.getUserName());
-            List<ScheduleRecord> recordList = recordService.getRecordListInDays(user.getUserId(), DateUtils.format(dateList.get(0), "yyyy-MM-dd"), DateUtils.format(dateList.get(dateList.size() - 1), "yyyy-MM-dd"));
+            List<ScheduleRecord> recordList = recordService.getRecordListInDays(user.getUserId(), DateUtil.format(dateList.get(0), "yyyy-MM-dd"), DateUtil.format(dateList.get(dateList.size() - 1), "yyyy-MM-dd"));
             for (ScheduleRecord record : recordList) {
                 map.put(record.getExcelIndex(), record.getItemName());
             }
@@ -352,7 +350,9 @@ public class ScheduleController {
             InputStream inputStream = file.getInputStream();//获取后缀名
             String nameAndType[] = file.getOriginalFilename().split("\\.");
             String type = nameAndType[1];
-            List<Map<Integer, String>> scheduleDate = ImportExcelUtil.readExcelContentByList(inputStream, type, 0, 0);
+            // todo 后期修改
+            List<Map<Integer, String>> scheduleDate = new ArrayList<>();
+//            List<Map<Integer, String>> scheduleDate = ImportExcelUtil.readExcelContentByList(inputStream, type, 0, 0);
             scheduleService.importScheduleExcel(scheduleDate, request);
             return Result.ok("文件导入成功！");
         } catch (Exception e) {
@@ -362,12 +362,14 @@ public class ScheduleController {
     }
 
     @RequestMapping(value = "selectScheduleUser", method = RequestMethod.GET)
-    public Result<List<SysUser>> selectScheduleUser(@RequestParam(name = "startDate", required = true) String startDate,
+    public Result<List<LoginUser>> selectScheduleUser(@RequestParam(name = "startDate", required = true) String startDate,
                                                     @RequestParam(name = "endDate", required = true) String endDate) {
         LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         String orgCode = loginUser.getOrgCode();
-        Result<List<SysUser>> result = new Result<List<SysUser>>();
-        List<SysUser> userList = userService.getUsersByOrgCode(orgCode);
+        Result<List<LoginUser>> result = new Result<List<LoginUser>>();
+        // todo 后期修改
+        List<LoginUser> userList = new ArrayList<>();
+//        List<LoginUser> userList = userService.getUsersByOrgCode(orgCode);
         userList.forEach(user -> {
             List list = recordService.getRecordListInDays(user.getId(), startDate, endDate);
             if (list != null && list.size() > 0) {
@@ -442,8 +444,10 @@ public class ScheduleController {
             InputStream inputStream = file.getInputStream();//获取后缀名
             String nameAndType[] = file.getOriginalFilename().split("\\.");
             String type = nameAndType[1];
-            List<Map<Integer, String>> data = ImportExcelUtil.readExcelContentByList(inputStream, type, 0, 0);
-            scheduleHolidaysService.importHolidayExcel(data, request);
+            // todo 后期修改
+            List<Map<Integer, String>> scheduleDate = new ArrayList<>();
+//            List<Map<Integer, String>> data = ImportExcelUtil.readExcelContentByList(inputStream, type, 0, 0);
+            scheduleHolidaysService.importHolidayExcel(scheduleDate, request);
             return Result.ok("文件导入成功！");
         } catch (Exception e) {
             log.error(e.getMessage(), e);
@@ -460,7 +464,9 @@ public class ScheduleController {
         Date endDate = DateUtils.getEndDate(param.getEndDate());
         Result<IPage<ScheduleRecordVo>> result = new Result<>();
         IPage<ScheduleRecordVo> page = new Page<ScheduleRecordVo>();
-        List<SysUser> userList = userService.selectUserByRoleAndDepartment("jishuyuan", param.getOrgId(), param.getUserName());
+        // todo 后期修改
+        List<LoginUser> userList = new ArrayList<>();
+//        List<LoginUser> userList = userService.selectUserByRoleAndDepartment("jishuyuan", param.getOrgId(), param.getUserName());
 
         if (userList != null && userList.size() > 0) {
             List<ScheduleRecordVo> list = new ArrayList<>(userList.size());

@@ -1,7 +1,7 @@
 package com.aiurt.boot.modules.secondLevelWarehouse.entity.dto;
 
+import com.aiurt.common.api.vo.PageVO;
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.aiurt.boot.common.api.vo.PageVO;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import org.springframework.format.annotation.DateTimeFormat;

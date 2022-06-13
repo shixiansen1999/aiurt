@@ -78,7 +78,7 @@
         </if>
     </select>
 
-    <select id="selectStockList" resultType="com.aiurt.boot.common.result.SparePartStockResult">
+    <select id="selectStockList" resultType="com.aiurt.common.result.SparePartStockResult">
         SELECT
 	        sps.material_code AS materialCode,
 	        mb.NAME AS materialName,

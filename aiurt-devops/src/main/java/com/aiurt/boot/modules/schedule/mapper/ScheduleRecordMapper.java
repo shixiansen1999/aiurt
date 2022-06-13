@@ -1,16 +1,16 @@
 package com.aiurt.boot.modules.schedule.mapper;
 
-import java.util.List;
-import java.util.Map;
-
+import com.aiurt.boot.modules.schedule.entity.ScheduleRecord;
 import com.aiurt.boot.modules.schedule.model.ScheduleRecordModel;
 import com.aiurt.boot.modules.schedule.model.ScheduleUser;
 import com.aiurt.boot.modules.schedule.model.SysUserScheduleModel;
-import com.aiurt.boot.modules.system.entity.SysUser;
-import org.apache.ibatis.annotations.Param;
-import com.aiurt.boot.modules.schedule.entity.ScheduleRecord;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import org.apache.ibatis.annotations.Param;
+import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.stereotype.Repository;
+
+import java.util.List;
+import java.util.Map;
 
 /**
  * @Description: schedule_record
@@ -29,7 +29,7 @@ public interface ScheduleRecordMapper extends BaseMapper<ScheduleRecord> {
 
     List<ScheduleRecordModel> getAllScheduleRecordsByMonth(@Param("date") String date,@Param("orgId")String orgId);
 
-    List<SysUser> getScheduleUserDataByDay(@Param("day") String day, @Param("orgId")String orgId);
+    List<LoginUser> getScheduleUserDataByDay(@Param("day") String day, @Param("orgId")String orgId);
 
     List<ScheduleRecordModel> getRecordListByDay(String date);
 
@@ -39,7 +39,7 @@ public interface ScheduleRecordMapper extends BaseMapper<ScheduleRecord> {
 
     List<ScheduleUser> getScheduleUserByDateAndOrgCode(@Param("date") String date,@Param("username")String username,@Param("orgCode") String orgCode);
 
-    List<SysUser> getDutyUserListByOrgIdsAndDate(@Param("date") String date, @Param("orgIds") List<String>orgIds);
+    List<LoginUser> getDutyUserListByOrgIdsAndDate(@Param("date") String date, @Param("orgIds") List<String>orgIds);
 
     List<SysUserScheduleModel> getDutyUserByOrgIdAndDate(String orgId, String date);
 

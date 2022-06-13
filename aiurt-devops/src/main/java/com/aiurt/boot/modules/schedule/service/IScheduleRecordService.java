@@ -4,7 +4,8 @@ import com.aiurt.boot.modules.schedule.entity.ScheduleRecord;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.aiurt.boot.modules.schedule.model.ScheduleRecordModel;
 import com.aiurt.boot.modules.schedule.model.ScheduleUser;
-import com.aiurt.boot.modules.system.entity.SysUser;
+import org.jeecg.common.system.vo.LoginUser;
+
 
 import java.util.List;
 import java.util.Map;
@@ -24,7 +25,7 @@ public interface IScheduleRecordService extends IService<ScheduleRecord> {
 
     List<ScheduleRecordModel> getAllScheduleRecordsByMonth(String date,String orgId);
 
-    List<SysUser> getScheduleUserDataByDay(String day, String orgId);
+    List<LoginUser> getScheduleUserDataByDay(String day, String orgId);
 
     List<ScheduleRecordModel> getRecordListByDay(String date);
 

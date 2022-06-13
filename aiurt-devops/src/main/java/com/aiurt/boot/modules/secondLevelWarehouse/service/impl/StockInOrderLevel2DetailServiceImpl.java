@@ -1,7 +1,6 @@
 package com.aiurt.boot.modules.secondLevelWarehouse.service.impl;
 
 import cn.hutool.core.collection.CollectionUtil;
-import com.aiurt.boot.common.enums.ProductiveTypeEnum;
 import com.aiurt.boot.modules.secondLevelWarehouse.entity.StockInOrderLevel2;
 import com.aiurt.boot.modules.secondLevelWarehouse.entity.StockInOrderLevel2Detail;
 import com.aiurt.boot.modules.secondLevelWarehouse.entity.StockLevel2;
@@ -12,6 +11,7 @@ import com.aiurt.boot.modules.secondLevelWarehouse.mapper.StockInOrderLevel2Mapp
 import com.aiurt.boot.modules.secondLevelWarehouse.mapper.StockLevel2Mapper;
 import com.aiurt.boot.modules.secondLevelWarehouse.service.IStockInOrderLevel2DetailService;
 import com.aiurt.boot.modules.secondLevelWarehouse.service.IStockLevel2Service;
+import com.aiurt.common.enums.ProductiveTypeEnum;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;

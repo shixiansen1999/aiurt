@@ -1,8 +1,6 @@
 package com.aiurt.boot.modules.secondLevelWarehouse.service.impl;
 
 import cn.hutool.core.util.ObjectUtil;
-import com.aiurt.boot.common.system.api.ISysBaseAPI;
-import com.aiurt.boot.common.util.TokenUtils;
 import com.aiurt.boot.modules.patrol.utils.NumberGenerateUtils;
 import com.aiurt.boot.modules.secondLevelWarehouse.entity.MaterialBase;
 import com.aiurt.boot.modules.secondLevelWarehouse.entity.StockInOrderLevel2;
@@ -23,6 +21,9 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import org.apache.shiro.SecurityUtils;
+import org.jeecg.common.system.api.ISysBaseAPI;
+import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -65,7 +66,8 @@ public class StockInOrderLevel2ServiceImpl
     @Override
     @Transactional(rollbackFor = Exception.class)
     public String addWarehouseIn(StockInOrderLevel2DTO stockInOrderLevel2DTO, HttpServletRequest req) {
-        String userId = TokenUtils.getUserId(req, iSysBaseAPI);
+        LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        String userId = sysUser.getId();
         //模拟入库单号
         String before = "IS101";
         String codeNo = numberGenerateUtils.getCodeNo(before);

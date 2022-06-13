@@ -1,10 +1,10 @@
 package com.aiurt.boot.modules.secondLevelWarehouse.service;
 
-import com.aiurt.boot.common.result.SparePartStockResult;
 import com.aiurt.boot.modules.fault.param.SparePartStockParam;
 import com.aiurt.boot.modules.secondLevelWarehouse.entity.SparePartStock;
 import com.aiurt.boot.modules.secondLevelWarehouse.entity.dto.SparePartStockDTO;
 import com.aiurt.boot.modules.secondLevelWarehouse.entity.vo.SpareMaterialVO;
+import com.aiurt.common.result.SparePartStockResult;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
 import org.jeecg.common.api.vo.Result;
@@ -42,7 +42,7 @@ public interface ISparePartStockService extends IService<SparePartStock> {
      * @param param
      * @return
      */
-    IPage<SparePartStockResult> queryStockList (IPage<SparePartStockResult> page,SparePartStockParam param);
+    IPage<SparePartStockResult> queryStockList (IPage<SparePartStockResult> page, SparePartStockParam param);
 
     /**
      * 添加备注

@@ -2,17 +2,6 @@ package com.aiurt.boot.modules.secondLevelWarehouse.service.impl;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjectUtil;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.aiurt.boot.common.constant.CommonConstant;
-import com.aiurt.boot.common.enums.MaterialApplyCommitEnum;
-import com.aiurt.boot.common.enums.MaterialApplyStatusEnum;
-import com.aiurt.boot.common.enums.WorkLogCheckStatusEnum;
-import com.aiurt.boot.common.exception.SwscException;
-import com.aiurt.boot.common.system.api.ISysBaseAPI;
-import com.aiurt.boot.common.util.TokenUtils;
 import com.aiurt.boot.modules.patrol.utils.NumberGenerateUtils;
 import com.aiurt.boot.modules.secondLevelWarehouse.entity.SparePartApply;
 import com.aiurt.boot.modules.secondLevelWarehouse.entity.SparePartApplyMaterial;
@@ -28,9 +17,19 @@ import com.aiurt.boot.modules.secondLevelWarehouse.mapper.StockLevel2Mapper;
 import com.aiurt.boot.modules.secondLevelWarehouse.service.ISparePartApplyMaterialService;
 import com.aiurt.boot.modules.secondLevelWarehouse.service.ISparePartApplyService;
 import com.aiurt.boot.modules.secondLevelWarehouse.service.IStockLevel2Service;
-import com.aiurt.boot.modules.system.entity.SysUser;
-import com.aiurt.boot.modules.system.service.ISysUserService;
+import com.aiurt.common.constant.CommonConstant;
+import com.aiurt.common.enums.MaterialApplyCommitEnum;
+import com.aiurt.common.enums.MaterialApplyStatusEnum;
+import com.aiurt.common.enums.WorkLogCheckStatusEnum;
+import com.aiurt.common.exception.AiurtBootException;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.system.api.ISysBaseAPI;
+import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.BeanUtils;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
@@ -72,8 +71,8 @@ public class SparePartApplyServiceImpl extends ServiceImpl<SparePartApplyMapper,
     private ISysBaseAPI iSysBaseAPI;
     @Resource
     private StockLevel2Mapper stockLevel2Mapper;
-    @Resource
-    private ISysUserService sysUserService;
+    //    @Resource
+//    private ISysUserService sysUserService;
     @Resource
     private NumberGenerateUtils numberGenerateUtils;
 
@@ -140,7 +139,8 @@ public class SparePartApplyServiceImpl extends ServiceImpl<SparePartApplyMapper,
     }
 
     /**
-     *  二级库出库列表导出
+     * 二级库出库列表导出
+     *
      * @param selections 选中行的ids
      * @return
      */
@@ -170,13 +170,14 @@ public class SparePartApplyServiceImpl extends ServiceImpl<SparePartApplyMapper,
     @Override
     public void stockOutConfirm(StockOutDTO stockOutDTOList, HttpServletRequest req) {
         if (CollUtil.isEmpty(stockOutDTOList.getMaterialVOList())) {
-            throw new SwscException("出库列表不能为空");
+            throw new AiurtBootException("出库列表不能为空");
         }
-        String userId = TokenUtils.getUserId(req, iSysBaseAPI);
+        LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        String userId = sysUser.getId();
         //改表spare_part_apply,备件申领表的状态改为已审核
         SparePartApply apply = sparePartApplyMapper.selectById(stockOutDTOList.getId());
         if (apply.getStatus().equals(MaterialApplyStatusEnum.CHECKED.getCode())) {
-            throw new SwscException("已经确认出库的单据无法再次出库确认");
+            throw new AiurtBootException("已经确认出库的单据无法再次出库确认");
         }
         apply.setRemarks(stockOutDTOList.getRemarks());
         apply.setId(stockOutDTOList.getId());
@@ -204,7 +205,7 @@ public class SparePartApplyServiceImpl extends ServiceImpl<SparePartApplyMapper,
                                 .eq(StockLevel2.WAREHOUSE_CODE, apply.getOutWarehouseCode()), false);
                 if (ObjectUtil.isNotEmpty(outStock)) {
                     if (outStock.getNum() < applyMaterial.getActualNum()) {
-                        throw new SwscException("仓库编号: " + outStock.getWarehouseCode() + " 库存不足，无法确认出库");
+                        throw new AiurtBootException("仓库编号: " + outStock.getWarehouseCode() + " 库存不足，无法确认出库");
                     }
                     outStock.setNum(outStock.getNum() - applyMaterial.getActualNum());
                     outStock.setUpdateBy(userId);
@@ -247,10 +248,13 @@ public class SparePartApplyServiceImpl extends ServiceImpl<SparePartApplyMapper,
     @Override
     @Transactional(rollbackFor = Exception.class)
     public boolean addApply(AddApplyDTO addApplyDTO, HttpServletRequest req) {
-        String userId = TokenUtils.getUserId(req, iSysBaseAPI);
-        String orgId = sysUserService.getOne(new QueryWrapper<SysUser>().eq(SysUser.ID, userId), false).getOrgId();
+        LoginUser sysUser = (LoginUser)SecurityUtils.getSubject().getPrincipal();
+        String userId = sysUser.getId();
+        // todo 后期修改
+        String orgId = "";
+//      String orgId = sysUserService.getOne(new QueryWrapper<SysUser>().eq(SysUser.ID, userId), false).getOrgId();
 
-        String before = "SL"+addApplyDTO.getOutWarehouseCode();
+        String before = "SL" + addApplyDTO.getOutWarehouseCode();
         //模拟申领单号
         String code = numberGenerateUtils.getCodeNo(before);
 
@@ -268,11 +272,11 @@ public class SparePartApplyServiceImpl extends ServiceImpl<SparePartApplyMapper,
                         .eq(StockLevel2.WAREHOUSE_CODE, sparePartApply.getOutWarehouseCode())
                         .eq(StockLevel2.MATERIAL_CODE, e.getMaterialCode()), false);
                 if (ObjectUtil.isEmpty(one)) {
-                    throw new SwscException("二级库出库仓库：" + sparePartApply.getOutWarehouseCode() + "下不存在物资:" + e.getMaterialCode());
+                    throw new AiurtBootException("二级库出库仓库：" + sparePartApply.getOutWarehouseCode() + "下不存在物资:" + e.getMaterialCode());
                 }
                 //判断申领数量是否大于库存数量
                 if (e.getMaterialNum() > one.getNum()) {
-                    throw new SwscException("申领数量不能大于库存数量!");
+                    throw new AiurtBootException("申领数量不能大于库存数量!");
                 }
                 SparePartApplyMaterial sparePartApplyMaterial = new SparePartApplyMaterial();
                 sparePartApplyMaterial.setApplyCode(sparePartApply.getCode());
@@ -307,13 +311,14 @@ public class SparePartApplyServiceImpl extends ServiceImpl<SparePartApplyMapper,
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Result<?> submitFormByIds(String ids, HttpServletRequest req) {
-        String userId = TokenUtils.getUserId(req, iSysBaseAPI);
+        LoginUser sysUser = (LoginUser)SecurityUtils.getSubject().getPrincipal();
+        String userId =  sysUser.getId();
         String[] split = ids.split(",");
         List<String> strings = Arrays.asList(split);
         for (String string : strings) {
             SparePartApply one = this.getOne(new QueryWrapper<SparePartApply>().eq(SparePartApply.ID, string), false);
             if (one.getCommitStatus() == MaterialApplyCommitEnum.COMMITTED.getCode()) {
-                throw new SwscException("单号为" + one.getCode() + "的申领单已经提交，不能重复提交！");
+                throw new AiurtBootException("单号为" + one.getCode() + "的申领单已经提交，不能重复提交！");
             } else {
                 one.setCommitStatus(MaterialApplyCommitEnum.COMMITTED.getCode());
                 one.setUpdateBy(userId);
@@ -332,7 +337,8 @@ public class SparePartApplyServiceImpl extends ServiceImpl<SparePartApplyMapper,
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void editApply(EditApplyDTO editApplyDTO, HttpServletRequest req) {
-        String userId = TokenUtils.getUserId(req, iSysBaseAPI);
+        LoginUser sysUser = (LoginUser)SecurityUtils.getSubject().getPrincipal();
+        String userId =  sysUser.getId();
 
         List<MaterialApplyVO> materialVOList = editApplyDTO.getMaterialVOList();
         if (CollUtil.isNotEmpty(materialVOList)) {
@@ -370,6 +376,7 @@ public class SparePartApplyServiceImpl extends ServiceImpl<SparePartApplyMapper,
 
     /**
      * 生成申领单号
+     *
      * @return
      */
     private String simulateApplyCode() {

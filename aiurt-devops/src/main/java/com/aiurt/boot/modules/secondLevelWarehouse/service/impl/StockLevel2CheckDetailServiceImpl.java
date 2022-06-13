@@ -2,11 +2,6 @@ package com.aiurt.boot.modules.secondLevelWarehouse.service.impl;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjectUtil;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.aiurt.boot.common.enums.MaterialTypeEnum;
 import com.aiurt.boot.modules.secondLevelWarehouse.entity.StockLevel2;
 import com.aiurt.boot.modules.secondLevelWarehouse.entity.StockLevel2Check;
 import com.aiurt.boot.modules.secondLevelWarehouse.entity.StockLevel2CheckDetail;
@@ -19,6 +14,11 @@ import com.aiurt.boot.modules.secondLevelWarehouse.mapper.StockLevel2CheckMapper
 import com.aiurt.boot.modules.secondLevelWarehouse.service.IStockLevel2CheckDetailService;
 import com.aiurt.boot.modules.secondLevelWarehouse.service.IStockLevel2CheckService;
 import com.aiurt.boot.modules.secondLevelWarehouse.service.IStockLevel2Service;
+import com.aiurt.common.enums.MaterialTypeEnum;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.beans.BeanUtils;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
