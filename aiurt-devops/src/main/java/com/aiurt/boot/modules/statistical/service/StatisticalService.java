@@ -1,20 +1,13 @@
 package com.aiurt.boot.modules.statistical.service;
 
 import cn.hutool.core.date.DateTime;
-import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.aiurt.boot.modules.patrol.param.PatrolTaskDetailParam;
 import com.aiurt.boot.modules.patrol.vo.PatrolTaskVO;
-import com.aiurt.boot.modules.statistical.vo.StatisticsPatrolVO;
-import com.aiurt.boot.modules.statistical.vo.StatisticsRepairVO;
-
-import com.aiurt.boot.modules.statistical.vo.PageVo;
-import com.aiurt.boot.modules.statistical.vo.StatisticsResultVO;
-import com.aiurt.boot.modules.statistical.vo.StatisticsVO;
 import com.aiurt.boot.modules.statistical.vo.*;
-import com.aiurt.boot.modules.system.entity.SysUser;
-import com.aiurt.boot.modules.system.vo.SysDepartScheduleVo;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import org.jeecg.common.api.vo.Result;
-
+import org.jeecg.common.system.vo.LoginUser;
+import org.jeecg.common.system.vo.SysDepartScheduleVo;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Date;
@@ -108,7 +101,7 @@ public interface StatisticalService {
     /**
      *  获取当日当班人员
      */
-    List<SysUser> getDutyUsers(String lineCode, String orgId, DateTime endTime);
+    List<LoginUser> getDutyUsers(String lineCode, String orgId, DateTime endTime);
 
     List<FaultStatisticsModal> getUncompletedFault(String lineCode, DateTime startTime, DateTime endTime);
 

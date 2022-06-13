@@ -1,11 +1,12 @@
 package com.aiurt.boot.modules.statistical.controller;
 
-import com.aiurt.boot.common.result.*;
+
 import com.aiurt.boot.modules.fault.service.IFaultAnalysisReportService;
 import com.aiurt.boot.modules.fault.service.IFaultRepairRecordService;
 import com.aiurt.boot.modules.fault.service.IFaultService;
 import com.aiurt.boot.modules.fault.service.IOperationProcessService;
 import com.aiurt.boot.modules.statistical.vo.FaultDetailVo;
+import com.aiurt.common.result.*;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;

@@ -207,7 +207,7 @@
         </if>
     </select>
 
-    <select id="getDutyUserListByOrgIdsAndDate" resultType="com.aiurt.boot.modules.system.entity.SysUser">
+    <select id="getDutyUserListByOrgIdsAndDate" resultType="org.jeecg.common.system.vo.LoginUser">
         select
             su.avatar as avatar,
             su.username as username,

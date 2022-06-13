@@ -1,8 +1,6 @@
 package com.aiurt.boot.modules.sysFile.controller;
 
-import com.aiurt.boot.common.constant.CommonConstant;
-import com.aiurt.boot.common.system.vo.LoginUser;
-import com.aiurt.boot.common.util.oConvertUtils;
+
 import com.aiurt.boot.modules.patrol.constant.PatrolConstant;
 import com.aiurt.boot.modules.sysFile.entity.SysFile;
 import com.aiurt.boot.modules.sysFile.entity.SysFileType;
@@ -15,9 +13,10 @@ import com.aiurt.boot.modules.sysFile.vo.FIlePlanVO;
 import com.aiurt.boot.modules.sysFile.vo.FileAppVO;
 import com.aiurt.boot.modules.sysFile.vo.SysFileVO;
 import com.aiurt.boot.modules.sysFile.vo.TypeNameVO;
-import com.aiurt.boot.modules.system.entity.SysUser;
-import com.aiurt.boot.modules.system.service.ISysUserService;
+
 import com.aiurt.common.aspect.annotation.AutoLog;
+import com.aiurt.common.constant.CommonConstant;
+import com.aiurt.common.util.oConvertUtils;
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -31,6 +30,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.query.QueryGenerator;
+import org.jeecg.common.system.vo.LoginUser;
 import org.jeecgframework.poi.excel.ExcelImportUtil;
 import org.jeecgframework.poi.excel.def.NormalExcelConstants;
 import org.jeecgframework.poi.excel.entity.ExportParams;

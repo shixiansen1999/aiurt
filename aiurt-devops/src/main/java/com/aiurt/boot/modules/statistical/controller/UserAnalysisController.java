@@ -1,6 +1,7 @@
 package com.aiurt.boot.modules.statistical.controller;
 
-import com.aiurt.boot.common.util.DateUtils;
+
+import cn.hutool.core.date.DateUtil;
 import com.aiurt.boot.modules.device.service.IDeviceService;
 import com.aiurt.boot.modules.schedule.entity.ScheduleHolidays;
 import com.aiurt.boot.modules.schedule.model.DayScheduleModel;
@@ -11,16 +12,19 @@ import com.aiurt.boot.modules.schedule.vo.ScheduleCalendarVo;
 import com.aiurt.boot.modules.statistical.vo.DepartDataVo;
 import com.aiurt.boot.modules.statistical.vo.StaffDataVo;
 import com.aiurt.boot.modules.statistical.vo.UserAnalysisDataVo;
-import com.aiurt.boot.modules.system.entity.SysUser;
-import com.aiurt.boot.modules.system.service.ISysDepartService;
-import com.aiurt.boot.modules.system.service.ISysUserService;
+import com.aiurt.common.util.DateUtils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
+import java.text.ParseException;
 import java.util.*;
 
 
@@ -38,10 +42,10 @@ public class UserAnalysisController {
 
     @Autowired
     private IDeviceService deviceService;
-    @Autowired
-    private ISysUserService userService;
-    @Autowired
-    private ISysDepartService departService;
+//    @Autowired
+//    private ISysUserService userService;
+//    @Autowired
+//    private ISysDepartService departService;
     @Autowired
     private IScheduleRecordService scheduleRecordService;
     @Autowired
@@ -54,9 +58,16 @@ public class UserAnalysisController {
         Result result = new Result();
         Map map = new HashMap();
         map.put("lineId", lineId);
-        Integer totalNum = userService.getTotalNum(map);
+
+        // todo 后期修改
+//        Integer totalNum = userService.getTotalNum(map);
+        Integer totalNum = 0;
         Integer zhiBanNum = scheduleRecordService.getZhiBanNum(map);
-        Integer banZuNum = departService.getBanZuNum(map);
+
+        // todo 后期修改
+//        Integer banZuNum = departService.getBanZuNum(map);
+        Integer banZuNum = 0;
+
         UserAnalysisDataVo userAnalysisDataVo = new UserAnalysisDataVo();
         userAnalysisDataVo.setNum1(totalNum);
         userAnalysisDataVo.setNum2(zhiBanNum);
@@ -71,7 +82,9 @@ public class UserAnalysisController {
         Result result = new Result();
         Map map = new HashMap();
         map.put("lineId", lineId);
-        List<DepartDataVo> list = departService.getDepartData(map);
+        // todo 后期修改
+        List<DepartDataVo> list = new ArrayList<>();
+//                List<DepartDataVo> list = departService.getDepartData(map);
         result.setResult(list);
         return result;
     }
@@ -81,10 +94,14 @@ public class UserAnalysisController {
     public Result<List<DayScheduleModel>> getUserSchedule(@RequestParam(name = "orgId", required = false) String orgId) {
         Result<List<DayScheduleModel>> result = new Result<List<DayScheduleModel>>();
 
-        String date = DateUtils.format(new Date(), "yyyy-MM");
+        String date = DateUtil.format(new Date(), "yyyy-MM");
 
         Calendar calendar = Calendar.getInstance();
-        calendar.setTime(DateUtils.parseDate(date, "yyyy-MM"));
+        try {
+            calendar.setTime(DateUtils.parseDate(date, "yyyy-MM"));
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
         int maximum = calendar.getActualMaximum(Calendar.DAY_OF_MONTH);
 
         List<DayScheduleModel> list = new ArrayList<>(maximum);
@@ -131,7 +148,9 @@ public class UserAnalysisController {
         Result result = new Result();
         Map map = new HashMap();
         map.put("lineId", lineId);
-        List<StaffDataVo> list = userService.getStaffData(map);
+        // todo 后期修改
+        List<StaffDataVo> list = new ArrayList<>();
+//                List<StaffDataVo> list = userService.getStaffData(map);
         result.setResult(list);
         return result;
     }
@@ -140,7 +159,9 @@ public class UserAnalysisController {
     @PostMapping("/getScheduleUserDataByDay")
     public Result<StaffDataVo> getScheduleUserDataByDay(@RequestParam(name = "day") String day, @RequestParam(name = "orgId", required = false) String orgId) {
         Result result = new Result();
-        List<SysUser> userList = scheduleRecordService.getScheduleUserDataByDay(day, orgId);
+        // todo 后期修改
+        List<LoginUser> userList = new ArrayList<>();
+//        List<SysUser> userList = scheduleRecordService.getScheduleUserDataByDay(day, orgId);
         result.setResult(userList);
         return result;
     }

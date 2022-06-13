@@ -1,7 +1,6 @@
 package com.aiurt.boot.modules.statistical.vo;
 
-
-import com.aiurt.boot.common.result.*;
+import com.aiurt.common.result.*;
 import lombok.Data;
 
 import java.util.List;
