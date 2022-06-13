@@ -400,4 +400,8 @@ public interface CommonConstant {
      * 非检查项状态
      */
     public static final Integer PATROL_STATUS_DISABLE = -1;
+    /**
+     * 长整型数字0
+     */
+    public static final Long LONG_NUM_STR_0  = 0L;
 }

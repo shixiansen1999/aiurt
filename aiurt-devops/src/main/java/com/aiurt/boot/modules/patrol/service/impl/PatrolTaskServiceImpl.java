@@ -2,12 +2,6 @@ package com.aiurt.boot.modules.patrol.service.impl;
 
 import cn.hutool.core.date.DateTime;
 import cn.hutool.core.util.StrUtil;
-import com.aiurt.boot.common.constant.CommonConstant;
-import com.aiurt.boot.common.exception.SwscException;
-import com.aiurt.boot.common.system.vo.LoginUser;
-import com.aiurt.boot.common.util.DateUtils;
-import com.aiurt.boot.common.util.PageUtils;
-import com.aiurt.boot.common.util.RoleAdditionalUtils;
 import com.aiurt.boot.modules.manage.entity.Station;
 import com.aiurt.boot.modules.manage.entity.Subsystem;
 import com.aiurt.boot.modules.manage.service.IStationService;
@@ -29,11 +23,12 @@ import com.aiurt.boot.modules.patrol.vo.TaskDetailVO;
 import com.aiurt.boot.modules.patrol.vo.export.ExportTaskSubmitVO;
 import com.aiurt.boot.modules.patrol.vo.statistics.AppStationPatrolStatisticsVO;
 import com.aiurt.boot.modules.statistical.vo.StatisticsVO;
-import com.aiurt.boot.modules.system.entity.SysDepart;
-import com.aiurt.boot.modules.system.entity.SysUser;
-import com.aiurt.boot.modules.system.service.ISysDepartService;
-import com.aiurt.boot.modules.system.service.ISysUserService;
-import com.aiurt.boot.modules.system.util.TimeUtil;
+import com.aiurt.common.constant.CommonConstant;
+import com.aiurt.common.exception.AiurtBootException;
+import com.aiurt.common.util.DateUtils;
+import com.aiurt.common.util.PageUtils;
+import com.aiurt.common.util.RoleAdditionalUtils;
+import com.aiurt.common.util.TimeUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -43,6 +38,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -68,10 +64,10 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
     private final IPatrolPoolService patrolPoolService;
 
     private final IPatrolTaskReportService patrolTaskReportService;
-
-    private final ISysUserService sysUserService;
-
-    private final ISysDepartService sysDepartService;
+//
+//    private final ISysUserService sysUserService;
+//
+//    private final ISysDepartService sysDepartService;
 
     private final NumberGenerateUtils numberGenerateUtils;
 
@@ -170,12 +166,14 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
             //用户名称
             if (StringUtils.isNotBlank(record.getStaffIds())) {
                 String[] userIds = record.getStaffIds().trim().split(PatrolConstant.SPL);
-                List<SysUser> sysUsers = sysUserService.lambdaQuery()
-                        .eq(SysUser::getDelFlag, CommonConstant.DEL_FLAG_0)
-                        .in(SysUser::getId, Arrays.asList(userIds)).list();
+                // todo 后期修改
+                List<LoginUser> sysUsers = new ArrayList<>();
+//                List<SysUser> sysUsers = sysUserService.lambdaQuery()
+//                        .eq(SysUser::getDelFlag, CommonConstant.DEL_FLAG_0)
+//                        .in(SysUser::getId, Arrays.asList(userIds)).list();
                 if (sysUsers != null && sysUsers.size() > 0) {
                     record.setStaffName(org.apache.commons.lang.StringUtils.join(
-                            sysUsers.stream().map(SysUser::getRealname).collect(Collectors.toList()),
+                            sysUsers.stream().map(LoginUser::getRealname).collect(Collectors.toList()),
                             PatrolConstant.SPL));
                 }
             }
@@ -213,7 +211,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         //班组id
         List<String> ids = param.getOrganizationIds();
         if (CollectionUtils.isEmpty(ids)) {
-            throw new SwscException("站点不能为空");
+            throw new AiurtBootException("站点不能为空");
         }
 
         List<Patrol> patrolList = patrolService.lambdaQuery()
@@ -236,10 +234,10 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         for (Long patrolId : param.getPatrolIds()) {
             Patrol patrol = patrolMap.get(patrolId);
             if (patrol == null) {
-                throw new SwscException("未找到巡检标准数据");
+                throw new AiurtBootException("未找到巡检标准数据");
             }
             if (patrol.getStatus() == null || patrol.getStatus() == 0) {
-                throw new SwscException("此条巡检标准状态为未生效状态,无法下发任务.");
+                throw new AiurtBootException("此条巡检标准状态为未生效状态,无法下发任务.");
             }
             //树形结构巡检项
             List<PatrolContent> list = patrolContentService.list(new LambdaQueryWrapper<PatrolContent>()
@@ -247,7 +245,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
                     .eq(PatrolContent::getRecordId, patrol.getId()));
 
             if (list == null || list.size() < 1) {
-                throw new SwscException("巡检项数据为空,不能手动下发任务");
+                throw new AiurtBootException("巡检项数据为空,不能手动下发任务");
             }
             for (String id : ids) {
                 String before = "X";
@@ -256,7 +254,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
 
                 if (station == null || StringUtils.isBlank(station.getTeamId())) {
                     log.error(MessageFormat.format("站点信息错误,站点id:{0},错误对象:{1}", id, station));
-                    throw new SwscException("数据保存失败,站点信息错误或无班组管理此站点.");
+                    throw new AiurtBootException("数据保存失败,站点信息错误或无班组管理此站点.");
                 }
 
                 before = before.concat(station.getStationCode());
@@ -285,12 +283,12 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
                 ;
 
                 if (!patrolPoolService.save(pool)) {
-                    throw new SwscException("巡检数据保存失败");
+                    throw new AiurtBootException("巡检数据保存失败");
                 }
 
                 boolean b = patrolPoolContentService.copyContent(list, pool.getId());
                 if (!b) {
-                    throw new SwscException("巡检项数据保存失败");
+                    throw new AiurtBootException("巡检项数据保存失败");
                 }
 
             }
@@ -370,13 +368,15 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
 
             //巡检人及部门
             if (StringUtils.isNotBlank(patrolTask.getStaffIds())) {
-                List<SysUser> sysUsers = sysUserService.lambdaQuery()
-                        .eq(SysUser::getDelFlag, CommonConstant.DEL_FLAG_0)
-                        .in(SysUser::getId, Arrays.asList(patrolTask.getStaffIds().trim().split(PatrolConstant.SPL)))
-                        .list();
+                // todo 后期修改
+                List<LoginUser> sysUsers = new ArrayList<>();
+//                List<SysUser> sysUsers = sysUserService.lambdaQuery()
+//                        .eq(SysUser::getDelFlag, CommonConstant.DEL_FLAG_0)
+//                        .in(SysUser::getId, Arrays.asList(patrolTask.getStaffIds().trim().split(PatrolConstant.SPL)))
+//                        .list();
                 if (sysUsers != null && sysUsers.size() > 0) {
                     vo.setStaffName(org.apache.commons.lang.StringUtils.join(
-                            sysUsers.stream().map(SysUser::getRealname).collect(Collectors.toList()),
+                            sysUsers.stream().map(LoginUser::getRealname).collect(Collectors.toList()),
                             PatrolConstant.SPL));
                 }
             }
@@ -394,11 +394,11 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
 
         List<PatrolPoolContentTreeVO> list = tree.getResult();
         vo.setList(list);
-
-        SysDepart sysDepart = sysDepartService.getById(pool.getOrganizationId());
-        if (sysDepart != null) {
-            vo.setOrganizationName(sysDepart.getDepartName());
-        }
+        // todo 后期修改
+//        SysDepart sysDepart = sysDepartService.getById(pool.getOrganizationId());
+//        if (sysDepart != null) {
+//            vo.setOrganizationName(sysDepart.getDepartName());
+//        }
 
         return Result.ok(vo);
     }
@@ -483,14 +483,15 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
                 }
             }
         });
+        // todo 后期修改
+        List<LoginUser> list = new ArrayList<>();
+//        List<SysUser> list = sysUserService.lambdaQuery()
+//                .eq(SysUser::getDelFlag, CommonConstant.DEL_FLAG_0)
+//                .eq(StringUtils.isNotBlank(statisticsVO.getTeamId()), SysUser::getOrgId, statisticsVO.getTeamId())
+//                .like(StringUtils.isNotBlank(statisticsVO.getUserName()), SysUser::getRealname, statisticsVO.getUserName())
+//                .list();
 
-        List<SysUser> list = sysUserService.lambdaQuery()
-                .eq(SysUser::getDelFlag, CommonConstant.DEL_FLAG_0)
-                .eq(StringUtils.isNotBlank(statisticsVO.getTeamId()), SysUser::getOrgId, statisticsVO.getTeamId())
-                .like(StringUtils.isNotBlank(statisticsVO.getUserName()), SysUser::getRealname, statisticsVO.getUserName())
-                .list();
-
-        List<String> userNameList = list.stream().map(SysUser::getRealname).collect(Collectors.toList());
+        List<String> userNameList = list.stream().map(LoginUser::getRealname).collect(Collectors.toList());
         for (String userName : userNameList) {
             if (!map.containsKey(userName)) {
                 map.put(userName, 0);
@@ -524,7 +525,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
 
     @Override
     public Result deleteTaskByIds(List<String> poolIdList) {
-        int num = patrolPoolMapper.deleteByIds(poolIdList,DateUtils.getDate());
+        int num = patrolPoolMapper.deleteByIds(poolIdList, DateUtils.getDate());
         if (num < poolIdList.size()){
             return Result.ok("已指派、已完成、漏检的任务无法被删除");
         }
@@ -547,8 +548,10 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
     @Override
     public Result<List<AppStationPatrolStatisticsVO>> appStationPatrolStatistics() {
         LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        Date startTime = TimeUtil.getCurrentWeekDayStartTime();//本周第一天
-        Date endTime = TimeUtil.getCurrentWeekDayEndTime();//本周最后一天
+        //本周第一天
+        Date startTime = TimeUtil.getCurrentWeekDayStartTime();
+        //本周最后一天
+        Date endTime = TimeUtil.getCurrentWeekDayEndTime();
         return Result.ok(this.baseMapper.appStationPatrolStatistics(startTime,endTime,user.getOrgId()));
     }
 }

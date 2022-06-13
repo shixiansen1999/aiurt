@@ -64,7 +64,7 @@ public class PatrolPoolServiceImpl extends ServiceImpl<PatrolPoolMapper, PatrolP
 
 	private final PatrolTaskMapper patrolTaskMapper;
 
-	private final ISysUserService sysUserService;
+//	private final ISysUserService sysUserService;
 
 	private final IStationService stationService;
 
@@ -175,10 +175,12 @@ public class PatrolPoolServiceImpl extends ServiceImpl<PatrolPoolMapper, PatrolP
 		//任务
 		PatrolTask task = new PatrolTask();
 
-		List<SysUser> sysUsers = sysUserService.lambdaQuery()
-				.select(SysUser::getRealname)
-				.in(SysUser::getId, param.getUserIds())
-				.eq(SysUser::getDelFlag, CommonConstant.DEL_FLAG_0).list();
+        // todo 后期修改
+        List<LoginUser> sysUsers = new ArrayList<>();
+//		List<SysUser> sysUsers = sysUserService.lambdaQuery()
+//				.select(SysUser::getRealname)
+//				.in(SysUser::getId, param.getUserIds())
+//				.eq(SysUser::getDelFlag, CommonConstant.DEL_FLAG_0).list();
 
 		task.setPatrolPoolId(id)
 				.setDelFlag(CommonConstant.DEL_FLAG_0)
@@ -187,7 +189,7 @@ public class PatrolPoolServiceImpl extends ServiceImpl<PatrolPoolMapper, PatrolP
 				.setCode(pool.getCode())
 				//.setType(param.getType())
 				.setStaffIds(StringUtils.join(param.getUserIds(), PatrolConstant.SPL))
-				.setStaffName(StringUtils.join(sysUsers.stream().map(SysUser::getRealname).collect(Collectors.toList()), PatrolConstant.SPL))
+				.setStaffName(StringUtils.join(sysUsers.stream().map(LoginUser::getRealname).collect(Collectors.toList()), PatrolConstant.SPL))
 				.setIgnoreStatus(0);
 
 		if (!this.updateById(pool)) {
@@ -237,10 +239,12 @@ public class PatrolPoolServiceImpl extends ServiceImpl<PatrolPoolMapper, PatrolP
 		//任务
 		PatrolTask task = new PatrolTask();
 
-		List<SysUser> sysUsers = sysUserService.lambdaQuery()
-				.select(SysUser::getRealname)
-				.eq(SysUser::getId, userId)
-				.eq(SysUser::getDelFlag, CommonConstant.DEL_FLAG_0).list();
+		// todo 后期修改
+        List<LoginUser> sysUsers = new ArrayList<>();
+//		List<SysUser> sysUsers = sysUserService.lambdaQuery()
+//				.select(SysUser::getRealname)
+//				.eq(SysUser::getId, userId)
+//				.eq(SysUser::getDelFlag, CommonConstant.DEL_FLAG_0).list();
 
 		//任务池
 		PatrolPool pool = this.baseMapper.selectById(id);
@@ -254,7 +258,7 @@ public class PatrolPoolServiceImpl extends ServiceImpl<PatrolPoolMapper, PatrolP
 				.setCode(pool.getCode())
 				//.setType(param.getType())
 				.setStaffIds(userId)
-				.setStaffName(StringUtils.join(sysUsers.stream().map(SysUser::getRealname).collect(Collectors.toList()), PatrolConstant.SPL))
+				.setStaffName(StringUtils.join(sysUsers.stream().map(LoginUser::getRealname).collect(Collectors.toList()), PatrolConstant.SPL))
 				.setIgnoreStatus(PatrolConstant.DISABLE);
 
 		if (!this.updateById(pool)) {
@@ -320,13 +324,15 @@ public class PatrolPoolServiceImpl extends ServiceImpl<PatrolPoolMapper, PatrolP
 			throw new AiurtBootException("已完成或已漏检,无法重新指派");
 		}
 
-		List<SysUser> sysUsers = sysUserService.lambdaQuery()
-				.select(SysUser::getRealname)
-				.in(SysUser::getId, param.getUserIds())
-				.eq(SysUser::getDelFlag, CommonConstant.DEL_FLAG_0).list();
+		// todo 后期修改
+        List<LoginUser> sysUsers = new ArrayList<>();
+//		List<LoginUser> sysUsers = sysUserService.lambdaQuery()
+//				.select(SysUser::getRealname)
+//				.in(SysUser::getId, param.getUserIds())
+//				.eq(SysUser::getDelFlag, CommonConstant.DEL_FLAG_0).list();
 
 		one.setStaffIds(StringUtils.join(param.getUserIds(), PatrolConstant.SPL))
-				.setStaffName(StringUtils.join(sysUsers.stream().map(SysUser::getRealname).collect(Collectors.toList()), PatrolConstant.SPL));
+				.setStaffName(StringUtils.join(sysUsers.stream().map(LoginUser::getRealname).collect(Collectors.toList()), PatrolConstant.SPL));
 
 
 		int update = patrolTaskMapper.updateById(one);

@@ -1,9 +1,6 @@
 package com.aiurt.boot.modules.patrol.service.impl;
 
 import cn.hutool.core.util.ObjectUtil;
-import com.aiurt.boot.common.constant.CommonConstant;
-import com.aiurt.boot.common.exception.SwscException;
-import com.aiurt.boot.common.system.vo.LoginUser;
 import com.aiurt.boot.modules.apphome.constant.UserTaskConstant;
 import com.aiurt.boot.modules.apphome.service.UserTaskService;
 import com.aiurt.boot.modules.patrol.constant.PatrolConstant;
@@ -14,6 +11,8 @@ import com.aiurt.boot.modules.patrol.service.IPatrolTaskEnclosureService;
 import com.aiurt.boot.modules.patrol.service.IPatrolTaskReportService;
 import com.aiurt.boot.modules.patrol.vo.PatrolPoolContentOneTreeVO;
 import com.aiurt.boot.modules.patrol.vo.PatrolPoolContentTreeVO;
+import com.aiurt.common.constant.CommonConstant;
+import com.aiurt.common.exception.AiurtBootException;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -23,6 +22,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.http.util.TextUtils;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -70,7 +70,7 @@ public class PatrolTaskReportServiceImpl extends ServiceImpl<PatrolTaskReportMap
 		PatrolTask task = patrolTaskMapper.selectById(id);
 		if (poolId == null) {
 			if (task == null) {
-				throw new SwscException("未找到此项数据");
+				throw new AiurtBootException("未找到此项数据");
 			}
 			getTreeParam.setPoolId(task.getPatrolPoolId())
 					.setTaskId(task.getId())
@@ -224,7 +224,7 @@ public class PatrolTaskReportServiceImpl extends ServiceImpl<PatrolTaskReportMap
 		Long taskId = param.getTaskId();
 		if (poolId == null) {
 			if (taskId == null) {
-				throw new SwscException("未找到此项数据");
+				throw new AiurtBootException("未找到此项数据");
 			}
 			PatrolTask task = this.patrolTaskMapper.selectById(param.getTaskId());
 			if (task != null) {
@@ -293,7 +293,7 @@ public class PatrolTaskReportServiceImpl extends ServiceImpl<PatrolTaskReportMap
 				.eq(PatrolTaskReport.PATROL_POOL_CONTENT_ID, param.getContentId()));
 
 		if (report != null && Objects.equals(report.getSaveStatus(), PatrolConstant.ENABLE)) {
-			throw new SwscException("巡检项已提交,无法更改");
+			throw new AiurtBootException("巡检项已提交,无法更改");
 		}
 
 		boolean flag = false;
@@ -320,7 +320,7 @@ public class PatrolTaskReportServiceImpl extends ServiceImpl<PatrolTaskReportMap
 			i = this.baseMapper.updateById(report);
 		}
 		if (i < 1) {
-			throw new SwscException("保存/提交失败,请稍后重试");
+			throw new AiurtBootException("保存/提交失败,请稍后重试");
 		}
 
 		setUrlList(param, report);
@@ -334,10 +334,10 @@ public class PatrolTaskReportServiceImpl extends ServiceImpl<PatrolTaskReportMap
 
 		PatrolTask task = patrolTaskMapper.selectById(param.getTaskId());
 		if (task == null) {
-			throw new SwscException("未找到任务");
+			throw new AiurtBootException("未找到任务");
 		}
 		if (task.getStatus() != null && task.getStatus() == 1) {
-			throw new SwscException("已完成,请勿重复提交");
+			throw new AiurtBootException("已完成,请勿重复提交");
 		}
 
 		PatrolPool pool = patrolPoolMapper.selectById(task.getPatrolPoolId());
@@ -360,7 +360,7 @@ public class PatrolTaskReportServiceImpl extends ServiceImpl<PatrolTaskReportMap
 							.setDelFlag(CommonConstant.DEL_FLAG_0)
 							.setParentId(param.getTaskId()));
 					if (insert < 1) {
-						throw new SwscException("保存失败");
+						throw new AiurtBootException("保存失败");
 					}
 				}
 			});
@@ -378,7 +378,7 @@ public class PatrolTaskReportServiceImpl extends ServiceImpl<PatrolTaskReportMap
 
 		if(param.getStatus()==1){
 			if(TextUtils.isEmpty(param.getUrl())){
-				throw new SwscException("请上传签名");
+				throw new AiurtBootException("请上传签名");
 			}
 			//签名保存
 			int patrolTask = patrolTaskEnclosureMapper.insert(new PatrolTaskEnclosure()
@@ -390,7 +390,7 @@ public class PatrolTaskReportServiceImpl extends ServiceImpl<PatrolTaskReportMap
 			if (patrolTask < 1) {
 				this.baseMapper.update(new PatrolTaskReport().setSaveStatus(PatrolConstant.DISABLE), new QueryWrapper<PatrolTaskReport>()
 						.eq(PatrolTaskReport.PATROL_TASK_ID, task.getId()));
-				throw new SwscException("签字失败,请稍后重试");
+				throw new AiurtBootException("签字失败,请稍后重试");
 			}
 
 			this.baseMapper.update(new PatrolTaskReport().setSaveStatus(PatrolConstant.ENABLE), new QueryWrapper<PatrolTaskReport>()
@@ -452,14 +452,14 @@ public class PatrolTaskReportServiceImpl extends ServiceImpl<PatrolTaskReportMap
 				}else{//提交
 					if (PatrolConstant.REPORT_STATUS_0.equals(report.getStatus())){
 						if (StringUtils.isBlank(report.getNote())){
-							throw new SwscException("填写内容不能为空");
+							throw new AiurtBootException("填写内容不能为空");
 						}
 					}
 				}
 
 				int i = this.baseMapper.updateById(report);
 				if (i < 1) {
-					throw new SwscException("保存失败");
+					throw new AiurtBootException("保存失败");
 				}
 				if (Objects.equals(report.getStatus(),PatrolConstant.DISABLE)) {
 					setUrlList(oneParam, report);
@@ -470,7 +470,7 @@ public class PatrolTaskReportServiceImpl extends ServiceImpl<PatrolTaskReportMap
 
 		if (PatrolConstant.REPORT_STATUS_0.equals(oneParam.getReportStatus())){
 			if (StringUtils.isBlank(oneParam.getNote())){
-				throw new SwscException("填写内容不能为空");
+				throw new AiurtBootException("填写内容不能为空");
 			}
 		}
 
@@ -485,7 +485,7 @@ public class PatrolTaskReportServiceImpl extends ServiceImpl<PatrolTaskReportMap
 				.setPatrolPoolContentId(oneParam.getContentId());
 		int insert = this.baseMapper.insert(report);
 		if (insert < 1) {
-			throw new SwscException("保存失败");
+			throw new AiurtBootException("保存失败");
 		}
 		if (Objects.equals(report.getStatus(),PatrolConstant.DISABLE)) {
 			setUrlList(oneParam, report);
@@ -522,7 +522,7 @@ public class PatrolTaskReportServiceImpl extends ServiceImpl<PatrolTaskReportMap
 			if (taskList.size() > 0) {
 				boolean b = patrolTaskEnclosureService.saveBatch(taskList);
 				if (!b) {
-					throw new SwscException("附件保存失败,请稍后重试");
+					throw new AiurtBootException("附件保存失败,请稍后重试");
 				}
 			}
 		}
@@ -541,7 +541,7 @@ public class PatrolTaskReportServiceImpl extends ServiceImpl<PatrolTaskReportMap
 		if (patrolTask < 1) {
 			this.baseMapper.update(new PatrolTaskReport().setSaveStatus(PatrolConstant.DISABLE), new QueryWrapper<PatrolTaskReport>()
 					.eq(PatrolTaskReport.PATROL_TASK_ID, id));
-			throw new SwscException("签字失败,请稍后重试");
+			throw new AiurtBootException("签字失败,请稍后重试");
 		}
 		this.baseMapper.update(new PatrolTaskReport().setSaveStatus(PatrolConstant.ENABLE), new QueryWrapper<PatrolTaskReport>()
 				.eq(PatrolTaskReport.PATROL_TASK_ID, id));
