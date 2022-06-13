@@ -68,8 +68,7 @@ public class SysFileController {
 	private ISysFileRoleService iSysFileRoleService;
 	@Autowired
 	private ISysFileTypeService sysFileTypeService;
-	@Autowired
-	private ISysUserService sysUserService;
+
 
 	/**
 	 * 分页列表查询

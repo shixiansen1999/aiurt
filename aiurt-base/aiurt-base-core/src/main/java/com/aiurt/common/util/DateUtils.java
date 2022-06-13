@@ -901,4 +901,23 @@ public class DateUtils extends PropertyEditorSupport {
         cal1.set(Calendar.MILLISECOND, 0);
         return cal1.getTime();
     }
+
+    /**
+     * 当前年的开始时间
+     *
+     * @return
+     */
+    public static Date getYearStartTime(Date date) {
+        Calendar c = Calendar.getInstance();
+        c.setTime(date);
+        Date dt = null;
+        try {
+            c.set(Calendar.MONTH, 0);
+            c.set(Calendar.DATE, 1);
+            dt = shortSdf.get().parse(shortSdf.get().format(c.getTime()));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return dt;
+    }
 }

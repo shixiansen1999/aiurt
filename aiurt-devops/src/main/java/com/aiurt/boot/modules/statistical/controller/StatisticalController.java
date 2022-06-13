@@ -36,7 +36,6 @@ import org.apache.commons.lang.StringUtils;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.vo.LoginUser;
 import org.jeecg.common.system.vo.SysDepartScheduleVo;
-import org.jeecg.common.system.vo.SysDepartTreeModel;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
@@ -363,7 +362,8 @@ public class StatisticalController {
     @ApiOperation(value = "查询班组接口", notes = "查询班组接口 ")
     @GetMapping("orgSelect")
     public Result<List<SysDepartTreeModel>> queryTreeList() {
-        Result<List<SysDepartTreeModel>> result = new Result<>();
+        // todo
+        /*Result<List<SysDepartTreeModel>> result = new Result<>();
         try {
             // todo 后期修改
             List<SysDepartTreeModel> list = new ArrayList<>();
@@ -372,8 +372,8 @@ public class StatisticalController {
             result.setSuccess(true);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
-        }
-        return result;
+        }*/
+        return Result.OK();
     }
 
     @AutoLog("获取站点信息")

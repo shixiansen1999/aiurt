@@ -1,10 +1,10 @@
 package com.aiurt.boot.modules.patrol.task;
 
+import com.aiurt.common.constant.CommonConstant;
+import com.aiurt.common.util.TaskStatusUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
-import com.aiurt.boot.common.constant.CommonConstant;
-import com.aiurt.boot.common.util.TaskStatusUtil;
 import com.aiurt.boot.modules.apphome.constant.UserTaskConstant;
 import com.aiurt.boot.modules.apphome.service.UserTaskService;
 import com.aiurt.boot.modules.manage.entity.Station;
@@ -24,11 +24,11 @@ import com.aiurt.boot.modules.patrol.service.IPatrolPoolService;
 import com.aiurt.boot.modules.patrol.service.IPatrolService;
 import com.aiurt.boot.modules.patrol.utils.NumberGenerateUtils;
 import com.aiurt.boot.modules.patrol.vo.PatrolTaskIgnoreVO;
-import com.aiurt.boot.modules.system.entity.SysUser;
-import com.aiurt.boot.modules.system.service.ISysUserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections.ArrayStack;
 import org.apache.commons.lang3.StringUtils;
+import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.BeanUtils;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -63,8 +63,6 @@ public class PatrolMission {
 	private final IStationService stationService;
 
 	private final ISubsystemService subsystemService;
-
-	private final ISysUserService sysUserService;
 
 	private final IPatrolPoolContentService patrolPoolContentService;
 
@@ -358,11 +356,13 @@ public class PatrolMission {
 		for (PatrolPool pool : unassignedPoolList) {
 			pool.setHide(PatrolConstant.DISABLE).setStatus(1);
 			//查询用户名称
-			List<SysUser> userList = sysUserService.lambdaQuery()
+			// todo
+			List<LoginUser> userList = new ArrayList<>();
+			/*List<SysUser> userList = sysUserService.lambdaQuery()
 					.eq(SysUser::getDelFlag, CommonConstant.DEL_FLAG_0)
 					.eq(SysUser::getStatus,PatrolConstant.ENABLE)
 					.eq(SysUser::getOrgId, pool.getOrganizationId())
-					.select(SysUser::getRealname, SysUser::getId).list();
+					.select(SysUser::getRealname, SysUser::getId).list();*/
 			PatrolTask task = new PatrolTask();
 			task.setPatrolPoolId(pool.getId())
 					.setIgnoreStatus(1)
@@ -381,8 +381,8 @@ public class PatrolMission {
 				task.setIgnoreTime(sdf.format(pool.getCreateTime()).concat("至").concat(pool.getExecutionTime().toLocalDate().toString()));
 			}
 			Optional.ofNullable(userList).ifPresent(users -> {
-				List<String> ids = users.stream().map(SysUser::getId).collect(Collectors.toList());
-				List<String> realNames = users.stream().map(SysUser::getRealname).collect(Collectors.toList());
+				List<String> ids = users.stream().map(LoginUser::getId).collect(Collectors.toList());
+				List<String> realNames = users.stream().map(LoginUser::getRealname).collect(Collectors.toList());
 				try {
 					task.setStaffIds(StringUtils.join(ids, ",")).setStaffName(StringUtils.join(realNames, ","));
 				} catch (Exception ignored) {

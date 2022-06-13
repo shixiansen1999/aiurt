@@ -1,19 +1,19 @@
 package com.aiurt.boot.modules.sysFile.controller;
 
 
-import com.aiurt.boot.common.constant.CommonConstant;
-import com.aiurt.boot.common.system.vo.LoginUser;
 import com.aiurt.boot.modules.sysFile.entity.DefaultUser;
 import com.aiurt.boot.modules.sysFile.entity.SysFileRole;
 import com.aiurt.boot.modules.sysFile.service.DefaultUserService;
 import com.aiurt.boot.modules.sysFile.service.ISysFileRoleService;
 import com.aiurt.common.aspect.annotation.AutoLog;
+import com.aiurt.common.constant.CommonConstant;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 

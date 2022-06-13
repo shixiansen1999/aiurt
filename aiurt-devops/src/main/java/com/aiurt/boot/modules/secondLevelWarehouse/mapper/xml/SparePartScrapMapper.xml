@@ -108,7 +108,7 @@
         ORDER BY sps.create_time DESC
     </select>
 
-    <select id="selectDetailById" resultType="com.aiurt.boot.common.result.ScrapReportResult">
+    <select id="selectDetailById" resultType="com.aiurt.common.result.ScrapReportResult">
         SELECT
 	        sps.id AS id,
 	        su.realname AS createBy,
@@ -130,7 +130,7 @@
 	        sps.id = #{id}
     </select>
 
-    <select id="selectRepairDetailById" resultType="com.aiurt.boot.common.result.ReportRepairResult">
+    <select id="selectRepairDetailById" resultType="com.aiurt.common.result.ReportRepairResult">
         SELECT
 	        sps.id AS id,
 	        mb.`name` AS materialName,
@@ -149,7 +149,7 @@
 	        sps.id = #{id}
     </select>
 
-    <select id="selectWasteDetailById" resultType="com.aiurt.boot.common.result.ReportWasteResult">
+    <select id="selectWasteDetailById" resultType="com.aiurt.common.result.ReportWasteResult">
         SELECT
 	        sps.id AS id,
 	        mb.`name` AS materialName,
@@ -191,7 +191,7 @@
         </if>
     </select>
 
-    <select id="selectSpareConsumeNumByTime" resultType="com.aiurt.boot.common.result.SpareConsumeNum">
+    <select id="selectSpareConsumeNumByTime" resultType="com.aiurt.common.result.SpareConsumeNum">
         SELECT
         date_format(create_time, '%m') as month , sum(num) as num
         FROM

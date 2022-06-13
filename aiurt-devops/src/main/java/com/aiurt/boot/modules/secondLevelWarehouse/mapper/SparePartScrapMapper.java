@@ -1,12 +1,12 @@
 package com.aiurt.boot.modules.secondLevelWarehouse.mapper;
 
+import com.aiurt.common.result.ReportRepairResult;
+import com.aiurt.common.result.ReportWasteResult;
+import com.aiurt.common.result.ScrapReportResult;
+import com.aiurt.common.result.SpareConsumeNum;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.aiurt.boot.common.result.ReportRepairResult;
-import com.aiurt.boot.common.result.ReportWasteResult;
-import com.aiurt.boot.common.result.ScrapReportResult;
-import com.aiurt.boot.common.result.SpareConsumeNum;
 import com.aiurt.boot.modules.secondLevelWarehouse.entity.SparePartScrap;
 import com.aiurt.boot.modules.secondLevelWarehouse.entity.dto.SparePartScrapExcel;
 import com.aiurt.boot.modules.secondLevelWarehouse.entity.dto.SparePartScrapQuery;
