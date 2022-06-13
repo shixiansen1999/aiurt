@@ -1,10 +1,6 @@
 package com.aiurt.boot.modules.training.controller;
 
 import cn.hutool.core.util.ObjectUtil;
-import com.aiurt.boot.common.constant.CommonConstant;
-import com.aiurt.boot.common.system.vo.LoginUser;
-import com.aiurt.boot.modules.system.entity.SysUser;
-import com.aiurt.boot.modules.system.service.ISysUserService;
 import com.aiurt.boot.modules.training.entity.TrainingPlan;
 import com.aiurt.boot.modules.training.entity.TrainingPlanFile;
 import com.aiurt.boot.modules.training.entity.TrainingPlanUser;
@@ -12,6 +8,7 @@ import com.aiurt.boot.modules.training.service.ITrainingPlanFileService;
 import com.aiurt.boot.modules.training.service.ITrainingPlanService;
 import com.aiurt.boot.modules.training.service.ITrainingPlanUserService;
 import com.aiurt.common.aspect.annotation.AutoLog;
+import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.exception.AiurtBootException;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -24,6 +21,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.query.QueryGenerator;
+import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -53,9 +51,9 @@ public class TrainingPlanController {
 
 	@Resource
 	private ITrainingPlanUserService trainingPlanUserService;
-
-	@Resource
-	private ISysUserService sysUserService;
+//
+//	@Resource
+//	private ISysUserService sysUserService;
 
 	@Resource
 	private ITrainingPlanFileService trainingPlanFileService;
@@ -160,12 +158,14 @@ public class TrainingPlanController {
 	private boolean saveUserAndFile(TrainingPlan trainingPlan, Long planId) {
 		//存人员信息
 		List<String> userIds = trainingPlan.getUserIds();
-		List<SysUser> list = sysUserService.list(new LambdaQueryWrapper<SysUser>()
-				.eq(SysUser::getDelFlag, CommonConstant.DEL_FLAG_0)
-				.in(SysUser::getId, userIds)
-				.select(SysUser::getId, SysUser::getRealname)
-		);
-		Map<String, String> realNameMap = list.stream().collect(Collectors.toMap(SysUser::getId, SysUser::getRealname));
+		// todo
+		List<LoginUser> list = new ArrayList<>();
+//		List<LoginUser> list = sysUserService.list(new LambdaQueryWrapper<SysUser>()
+//				.eq(SysUser::getDelFlag, CommonConstant.DEL_FLAG_0)
+//				.in(SysUser::getId, userIds)
+//				.select(SysUser::getId, SysUser::getRealname)
+//		);
+		Map<String, String> realNameMap = list.stream().collect(Collectors.toMap(LoginUser::getId, LoginUser::getRealname));
 		List<TrainingPlanUser> planUserList = new ArrayList<>();
 		for (String userId : userIds) {
 			TrainingPlanUser planUser = new TrainingPlanUser();

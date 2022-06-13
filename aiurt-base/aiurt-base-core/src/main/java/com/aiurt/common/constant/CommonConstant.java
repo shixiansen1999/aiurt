@@ -414,4 +414,16 @@ public interface CommonConstant {
      * 已挂起
      */
     public static final Integer HANG_STATE = 1;
+    /**
+     * 文件进制
+     */
+    public static final Integer FILE_SIZE = 1024;
+    /**
+     * 文件最小单位
+     */
+    public static final Double FILE_SIZE_MIN = 0.01;
+    /**
+     * 可用状态
+     */
+    public static final Integer STATUS_ENABLE = 1;
 }

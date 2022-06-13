@@ -1,11 +1,5 @@
 package com.aiurt.boot.modules.sysFile.service.impl;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.aiurt.boot.common.constant.CommonConstant;
-import com.aiurt.boot.common.system.vo.LoginUser;
 import com.aiurt.boot.modules.sysFile.entity.SysFile;
 import com.aiurt.boot.modules.sysFile.entity.SysFileRole;
 import com.aiurt.boot.modules.sysFile.entity.SysFileType;
@@ -16,8 +10,14 @@ import com.aiurt.boot.modules.sysFile.service.ISysFileRoleService;
 import com.aiurt.boot.modules.sysFile.service.ISysFileService;
 import com.aiurt.boot.modules.sysFile.vo.FIlePlanVO;
 import com.aiurt.boot.modules.sysFile.vo.FileAppVO;
+import com.aiurt.common.constant.CommonConstant;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.apache.shiro.SecurityUtils;
+import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -140,7 +140,6 @@ public class SysFileServiceImpl extends ServiceImpl<SysFileMapper, SysFile> impl
 				.eq(SysFile::getTypeId, 0)
 				.and(query -> {
 					query.eq(SysFile::getDownStatus, CommonConstant.STATUS_ENABLE).or().eq(SysFile::getCreateBy, userId);
-					return query;
 				}).list();
 		for (SysFile sysFile : sysFiles) {
 			FIlePlanVO vo = new FIlePlanVO();
@@ -193,7 +192,6 @@ public class SysFileServiceImpl extends ServiceImpl<SysFileMapper, SysFile> impl
 					query.eq(SysFile::getDownStatus, CommonConstant.STATUS_ENABLE)
 							.or()
 							.eq(SysFile::getCreateBy, userId);
-					return query;
 				}).list();
 		for (SysFile sysFile : sysFiles) {
 			FIlePlanVO vo = new FIlePlanVO();
