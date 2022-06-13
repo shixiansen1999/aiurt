@@ -33,6 +33,18 @@ public class SysDepartModel {
     private String address;
     /**备注*/
     private String memo;
+    /**
+     * 是否删除
+     */
+    private Integer delFlag;
+
+    public Integer getDelFlag() {
+        return delFlag;
+    }
+
+    public void setDelFlag(Integer delFlag) {
+        this.delFlag = delFlag;
+    }
 
     public String getId() {
         return id;

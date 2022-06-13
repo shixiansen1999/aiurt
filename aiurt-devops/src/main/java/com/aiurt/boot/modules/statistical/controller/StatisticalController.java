@@ -3,14 +3,9 @@ package com.aiurt.boot.modules.statistical.controller;
 import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
-import com.aiurt.common.aspect.annotation.AutoLog;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.aiurt.boot.common.util.oConvertUtils;
-import com.aiurt.boot.modules.manage.entity.Line;
 import com.aiurt.boot.modules.device.entity.Device;
 import com.aiurt.boot.modules.device.service.IDeviceService;
+import com.aiurt.boot.modules.manage.entity.Line;
 import com.aiurt.boot.modules.manage.entity.SpecialSituation;
 import com.aiurt.boot.modules.manage.entity.Station;
 import com.aiurt.boot.modules.manage.entity.Subsystem;
@@ -26,23 +21,22 @@ import com.aiurt.boot.modules.patrol.service.IPatrolTaskService;
 import com.aiurt.boot.modules.patrol.vo.PatrolTaskVO;
 import com.aiurt.boot.modules.repairManage.service.IRepairTaskService;
 import com.aiurt.boot.modules.repairManage.vo.ReTaskDetailVO;
-import com.aiurt.boot.modules.statistical.vo.PageVo;
 import com.aiurt.boot.modules.statistical.service.StatisticalService;
 import com.aiurt.boot.modules.statistical.vo.*;
-import com.aiurt.boot.modules.statistical.vo.StatisticsResultVO;
-import com.aiurt.boot.modules.statistical.vo.StatisticsVO;
-import com.aiurt.boot.modules.system.model.SysDepartTreeModel;
-import com.aiurt.boot.modules.system.service.ISysDepartService;
-import com.aiurt.boot.modules.system.entity.SysDepart;
-import com.aiurt.boot.modules.system.entity.SysUser;
-import com.aiurt.boot.modules.system.service.ISysUserService;
-import com.aiurt.boot.modules.system.vo.SysDepartScheduleVo;
+import com.aiurt.common.aspect.annotation.AutoLog;
+import com.aiurt.common.util.oConvertUtils;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.system.vo.LoginUser;
+import org.jeecg.common.system.vo.SysDepartScheduleVo;
+import org.jeecg.common.system.vo.SysDepartTreeModel;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
@@ -50,7 +44,10 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author qian
@@ -70,10 +67,10 @@ public class StatisticalController {
     private final IStationService stationService;
     @Autowired
     private final ISpecialSituationService specialSituationService;
-    @Autowired
-    private final ISysDepartService sysDepartService;
-    @Autowired
-    private final ISysUserService sysUserService;
+    //    @Autowired
+//    private final ISysDepartService sysDepartService;
+//    @Autowired
+//    private final ISysUserService sysUserService;
     @Autowired
     private final IRepairTaskService repairTaskService;
     @Autowired
@@ -90,90 +87,96 @@ public class StatisticalController {
     public Result<List<StatisticsResultVO>> getCount(@RequestBody @Validated StatisticsVO statisticsVO) {
         return statisticalService.getCount(statisticsVO);
     }
+
     /**
+     * @param lineCode
+     * @return
      * @Description: 各班组巡检数统计
      * @author: renanfeng
      * date: 2022/1/26
-     * @param lineCode
-     * @return
      */
     @ApiOperation(value = "各班组巡检数统计", notes = "各班组巡检数统计")
     @PostMapping("/getPatrolCountGroupByOrg")
-    public Result<List<StatisticsPatrolVO>> getPatrolCountGroupByOrg(String lineCode){
+    public Result<List<StatisticsPatrolVO>> getPatrolCountGroupByOrg(String lineCode) {
         return statisticalService.getPatrolCountGroupByOrg(lineCode);
     }
+
     /**
+     * @param lineCode
+     * @return
      * @Description: 各班组检修数统计
      * @author: renanfeng
      * date: 2022/1/26
-     * @param lineCode
-     * @return
      */
     @ApiOperation(value = "各班组检修数统计", notes = "各班组检修数统计")
     @PostMapping("/getRepairCountGroupByOrg")
-    public Result<List<StatisticsRepairVO>> getRepairCountGroupByOrg(String lineCode){
+    public Result<List<StatisticsRepairVO>> getRepairCountGroupByOrg(String lineCode) {
         return statisticalService.getRepairCountGroupByOrg(lineCode);
     }
+
     /**
+     * @param lineCode
+     * @return
      * @Description: 故障报修方式对比
      * @author: renanfeng
      * date: 2022/1/26
-     * @param lineCode
-     * @return
      */
     @ApiOperation(value = "故障报修方式对比", notes = "故障报修方式对比")
     @PostMapping("/getFaultCountGroupByWay")
-    public Result<List<StatisticsFaultWayVO>> getFaultCountGroupByWay(String lineCode){
+    public Result<List<StatisticsFaultWayVO>> getFaultCountGroupByWay(String lineCode) {
         return statisticalService.getFaultCountGroupByWay(lineCode);
     }
+
     /**
+     * @param lineCode
+     * @return
      * @Description: 故障完成情况对比
      * @author: renanfeng
      * date: 2022/1/26
-     * @param lineCode
-     * @return
      */
     @ApiOperation(value = "故障完成情况对比", notes = "故障完成情况对比")
     @PostMapping("/getFaultCountGroupByStatus")
-    public Result<List<StatisticsFaultStatusVO>> getFaultCountGroupByStatus(String lineCode){
+    public Result<List<StatisticsFaultStatusVO>> getFaultCountGroupByStatus(String lineCode) {
         return statisticalService.getFaultCountGroupByStatus(lineCode);
     }
+
     /**
+     * @param lineCode
+     * @return
      * @Description: 故障一级、二级、三级统计
      * @author: renanfeng
      * date: 2022/1/26
-     * @param lineCode
-     * @return
      */
     @ApiOperation(value = "故障一级、二级、三级统计", notes = "故障一级、二级、三级统计")
     @PostMapping("/getFaultGroupByLevel")
-    public Result<Map<String, List<StatisticsFaultLevelVO>>> getFaultGroupByLevel(String lineCode){
+    public Result<Map<String, List<StatisticsFaultLevelVO>>> getFaultGroupByLevel(String lineCode) {
         return statisticalService.getFaultGroupByLevel(lineCode);
     }
+
     /**
+     * @param lineCode
+     * @return
      * @Description: 年度维修情况统计
      * @author: renanfeng
      * date: 2022/1/26
-     * @param lineCode
-     * @return
      */
     @ApiOperation(value = "年度维修情况统计", notes = "年度维修情况统计 ")
     @PostMapping("/getFaultCountGroupByMonth")
-    public Result<List<StatisticsFaultMonthVO>> getFaultCountGroupByMonth(String lineCode){
+    public Result<List<StatisticsFaultMonthVO>> getFaultCountGroupByMonth(String lineCode) {
         return statisticalService.getFaultCountGroupByMonth(lineCode);
     }
 
     /**
+     * @param lineCode
+     * @return
      * @Description: 各子系统故障数据统计
      * @author: renanfeng
      * date: 2022/1/26
-     * @param lineCode
-     * @return
      */
     @ApiOperation(value = "各子系统故障数据统计", notes = "各子系统故障数据统计 ")
     @PostMapping("/getFaultCountGroupBySystem")
-    public Result<List<StatisticsFaultSystemVO>> getFaultCountGroupBySystem(String lineCode,Integer month){
-        return statisticalService.getFaultCountGroupBySystem(lineCode,month);
+    public Result<List<StatisticsFaultSystemVO>> getFaultCountGroupBySystem(String lineCode, Integer month) {
+        return statisticalService.getFaultCountGroupBySystem(lineCode, month);
     }
 
 
@@ -188,14 +191,14 @@ public class StatisticalController {
     public Result getWeeklyFaultStatistics(@RequestParam(value = "lineCode", required = false) String lineCode,
                                            @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
                                            @RequestParam(name = "pageSize", defaultValue = "5000") Integer pageSize,
-                                           @RequestParam(value = "week", required = false) boolean week){
+                                           @RequestParam(value = "week", required = false) boolean week) {
         DateTime now = DateTime.now();
-        if (week){
+        if (week) {
             now = DateUtil.lastWeek();
         }
         DateTime startTime = DateUtil.beginOfWeek(now);
         DateTime endTime = DateUtil.endOfWeek(now);
-        PageVo page = statisticalService.getWeeklyFaultStatistics(lineCode, pageNo, pageSize,startTime,endTime);
+        PageVo page = statisticalService.getWeeklyFaultStatistics(lineCode, pageNo, pageSize, startTime, endTime);
         return Result.ok(page);
     }
 
@@ -205,9 +208,9 @@ public class StatisticalController {
     public Result<PageVo> getWeeklyRepairStatistic(@RequestParam(value = "lineCode", required = false) String lineCode,
                                                    @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
                                                    @RequestParam(name = "pageSize", defaultValue = "5000") Integer pageSize,
-                                                   @RequestParam(value = "week", required = false) boolean week){
+                                                   @RequestParam(value = "week", required = false) boolean week) {
         DateTime now = DateUtil.date();
-        if (week){
+        if (week) {
             now = DateUtil.lastWeek();
         }
         DateTime startTime = DateUtil.beginOfWeek(now);
@@ -227,12 +230,12 @@ public class StatisticalController {
     public Result<PageVo> getRepairStatistic(@RequestParam(value = "lineCode", required = false) String lineCode,
                                              @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
                                              @RequestParam(name = "pageSize", defaultValue = "5000") Integer pageSize,
-                                             @RequestParam(value = "week", required = false) boolean week){
+                                             @RequestParam(value = "week", required = false) boolean week) {
         DateTime now = DateUtil.date();
-        if (week){
+        if (week) {
             now = DateUtil.lastWeek();
         }
-        PageVo vo = statisticalService.getRepairStatistic(lineCode, pageNo, pageSize,now);
+        PageVo vo = statisticalService.getRepairStatistic(lineCode, pageNo, pageSize, now);
         return Result.ok(vo);
     }
 
@@ -247,12 +250,12 @@ public class StatisticalController {
     public Result<SysDepartScheduleVo> queryDepartScheduleByOrgId(@RequestParam(value = "lineCode", required = false) String lineCode,
                                                                   @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
                                                                   @RequestParam(name = "pageSize", defaultValue = "5000") Integer pageSize,
-                                                                  @RequestParam(value = "week", required = false) boolean week){
+                                                                  @RequestParam(value = "week", required = false) boolean week) {
         DateTime now = DateUtil.date();
-        if (week){
+        if (week) {
             now = DateUtil.lastWeek();
         }
-        SysDepartScheduleVo vo = statisticalService.getSysDepartSchedulePageVo(lineCode, pageNo, pageSize,now);
+        SysDepartScheduleVo vo = statisticalService.getSysDepartSchedulePageVo(lineCode, pageNo, pageSize, now);
         return Result.ok(vo);
     }
 
@@ -268,9 +271,9 @@ public class StatisticalController {
     public Result<PageVo> weeklyPatrolStatistics(@RequestParam(value = "lineCode", required = false) String lineCode,
                                                  @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
                                                  @RequestParam(name = "pageSize", defaultValue = "5000") Integer pageSize,
-                                                 @RequestParam(value = "week", required = false) boolean week){
+                                                 @RequestParam(value = "week", required = false) boolean week) {
         DateTime now = DateUtil.date();
-        if (week){
+        if (week) {
             now = DateUtil.lastWeek();
         }
         PageVo page = new PageVo();
@@ -278,7 +281,7 @@ public class StatisticalController {
         if (ObjectUtil.isEmpty(lineIds)) {
             return Result.ok(page);
         }
-        page = statisticalService.getWeeklyPatrolStatisticPageVo(pageNo, pageSize, lineIds,lineCode,now);
+        page = statisticalService.getWeeklyPatrolStatisticPageVo(pageNo, pageSize, lineIds, lineCode, now);
 
         return Result.ok(page);
     }
@@ -295,27 +298,28 @@ public class StatisticalController {
     public Result<PageVo> patrolStatistics(@RequestParam(value = "lineCode", required = false) String lineCode,
                                            @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
                                            @RequestParam(name = "pageSize", defaultValue = "5000") Integer pageSize,
-                                           @RequestParam(value = "week", required = false) boolean week){
+                                           @RequestParam(value = "week", required = false) boolean week) {
         DateTime now = DateUtil.date();
-        if (week){
+        if (week) {
             now = DateUtil.lastWeek();
         }
         PageVo page = new PageVo();
 
-        page = statisticalService.getPatrolStatisticPageVo(pageNo, pageSize, lineCode,now);
+        page = statisticalService.getPatrolStatisticPageVo(pageNo, pageSize, lineCode, now);
 
         return Result.ok(page);
     }
+
     /**
+     * @param lineCode
+     * @return
      * @Description: 故障数据统计
      * @author: renanfeng
      * date: 2022/1/27
-     * @param lineCode
-     * @return
      */
     @ApiOperation(value = "故障数据统计", notes = "故障数据统计 ")
     @PostMapping("/getFaultCountAndDetails")
-    public Result<StatisticsFaultCountVO> getFaultCount(String lineCode){
+    public Result<StatisticsFaultCountVO> getFaultCount(String lineCode) {
         return statisticalService.getFaultCountAndDetails(lineCode);
     }
 
@@ -355,12 +359,15 @@ public class StatisticalController {
         result.setResult(lineList);
         return result;
     }
+
     @ApiOperation(value = "查询班组接口", notes = "查询班组接口 ")
     @GetMapping("orgSelect")
     public Result<List<SysDepartTreeModel>> queryTreeList() {
         Result<List<SysDepartTreeModel>> result = new Result<>();
         try {
-            List<SysDepartTreeModel> list = sysDepartService.queryTreeList();
+            // todo 后期修改
+            List<SysDepartTreeModel> list = new ArrayList<>();
+//            List<SysDepartTreeModel> list = sysDepartService.queryTreeList();
             result.setResult(list);
             result.setSuccess(true);
         } catch (Exception e) {
@@ -368,6 +375,7 @@ public class StatisticalController {
         }
         return result;
     }
+
     @AutoLog("获取站点信息")
     @ApiOperation(value = "获取站点信息", notes = "获取站点信息")
     @GetMapping(value = "/getStations")
@@ -375,7 +383,7 @@ public class StatisticalController {
         Result<List<Station>> result = new Result<List<Station>>();
         List<Station> stations = stationService.getStationsInOrdered();
         if (ObjectUtil.isNotEmpty(stations)) {
-            Station yongchun= stations.stream().filter(item -> item.getStationCode().equals("01101")).findFirst().get();
+            Station yongchun = stations.stream().filter(item -> item.getStationCode().equals("01101")).findFirst().get();
             Station xihu = stations.stream().filter(item -> item.getStationCode().equals("02100")).findFirst().get();
             stations.add(yongchun);
             stations.add(xihu);
@@ -386,8 +394,10 @@ public class StatisticalController {
         return Result.error("未获取到站点信息");
     }
     //--------------------------公共接口结束-----------------------------
+
     /**
      * 通过stationName查询
+     *
      * @param stationName
      * @return
      */
@@ -401,10 +411,12 @@ public class StatisticalController {
             result.onnull("未找到对应实体");
         } else {
             StationVo stationVo = new StationVo();
-            BeanUtils.copyProperties(station,stationVo);
-            SysDepart depart = sysDepartService.getOne(new LambdaQueryWrapper<SysDepart>().eq(SysDepart::getId, stationVo.getTeamId()));
-            stationVo.setTeamPhone(depart.getPhoneNum());
-            List<SysUser> userList = sysUserService.list(new LambdaQueryWrapper<SysUser>().eq(SysUser::getOrgId, stationVo.getTeamId()));
+            BeanUtils.copyProperties(station, stationVo);
+            // todo 后期修改
+//            SysDepart depart = sysDepartService.getOne(new LambdaQueryWrapper<SysDepart>().eq(SysDepart::getId, stationVo.getTeamId()));
+//            stationVo.setTeamPhone(depart.getPhoneNum());
+//            List<LoginUser> userList = sysUserService.list(new LambdaQueryWrapper<SysUser>().eq(SysUser::getOrgId, stationVo.getTeamId()));
+            List<LoginUser> userList = new ArrayList<>();
             stationVo.setUserList(userList);
 
             result.setResult(stationVo);
@@ -412,6 +424,7 @@ public class StatisticalController {
         }
         return result;
     }
+
     @ApiOperation(value = "根据站点名称修改预警状态和开站状态", notes = "根据站点名称修改预警状态和开站状态")
     @PutMapping(value = "/editWarningStatus")
     public Result<Station> editWarningStatus(@RequestBody StationWarning stationWarning) {
@@ -432,15 +445,16 @@ public class StatisticalController {
 
         return result;
     }
+
     @AutoLog(value = "站点信息-查询设备数据")
     @ApiOperation(value = "站点信息-查询设备数据", notes = "站点信息-查询设备数据")
     @GetMapping(value = "/getDevice")
     public Result<List<Device>> getDevice(@RequestParam(name = "stationName", required = true) String stationName,
-                                                      @RequestParam(name = "systemCode", required = false) String systemCode) {
+                                          @RequestParam(name = "systemCode", required = false) String systemCode) {
         Result<List<Device>> result = new Result<List<Device>>();
         LambdaQueryWrapper<Station> wrapper = new LambdaQueryWrapper<Station>().eq(Station::getStationName, stationName);
         Station station = stationService.getOne(wrapper);
-        List<Device> list = deviceService.queryDeviceByStationCodeAndSystemCode(station.getStationCode(),systemCode);
+        List<Device> list = deviceService.queryDeviceByStationCodeAndSystemCode(station.getStationCode(), systemCode);
         result.setResult(list);
         return result;
     }
@@ -451,10 +465,12 @@ public class StatisticalController {
      */
     @ApiOperation(value = "班组信息展示-总人员", notes = "总人员 ")
     @GetMapping(value = "/getSysUsers")
-    public Result<List<SysUser>>getSysUsers(@RequestParam(value = "lineCode", required = false) String lineCode,
-                                            @RequestParam(value = "orgId", required = false) String orgId){
-        Result<List<SysUser>> result = new Result<>();
-        List<SysUser> userList = sysUserService.getSysUsersByLineCodeAndOrgId(lineCode,orgId);
+    public Result<List<LoginUser>> getSysUsers(@RequestParam(value = "lineCode", required = false) String lineCode,
+                                             @RequestParam(value = "orgId", required = false) String orgId) {
+        Result<List<LoginUser>> result = new Result<>();
+        // todo 后期修改
+//        List<LoginUser> userList = sysUserService.getSysUsersByLineCodeAndOrgId(lineCode, orgId);
+        List<LoginUser> userList = new ArrayList<>();
         result.setResult(userList);
         return result;
     }
@@ -465,18 +481,21 @@ public class StatisticalController {
      */
     @ApiOperation(value = "班组信息展示-今日当班人", notes = "今日当班人 ")
     @GetMapping(value = "/getDutyUsers")
-    public Result<List<SysUser>>getDutyUsers(@RequestParam(value = "lineCode", required = false) String lineCode,
-                                            @RequestParam(value = "orgId", required = false) String orgId,
-                                             @RequestParam(value = "week", required = false) boolean week){
-        Result<List<SysUser>> result = new Result<>();
+    public Result<List<LoginUser>> getDutyUsers(@RequestParam(value = "lineCode", required = false) String lineCode,
+                                              @RequestParam(value = "orgId", required = false) String orgId,
+                                              @RequestParam(value = "week", required = false) boolean week) {
+        Result<List<LoginUser>> result = new Result<>();
         DateTime now = DateTime.now();
-        if (week){
+        if (week) {
             now = DateUtil.lastWeek();
         }
-        List<SysUser> userList = statisticalService.getDutyUsers(lineCode,orgId,now);
+        // todo 后期修改
+//        List<LoginUser> userList = statisticalService.getDutyUsers(lineCode, orgId, now);
+        List<LoginUser> userList = new ArrayList<>();
         result.setResult(userList);
         return result;
     }
+
     /**
      * @Description: 故障信息统计-未解决故障
      * @author: niuzeyu
@@ -484,15 +503,15 @@ public class StatisticalController {
     @ApiOperation(value = "故障信息统计-未解决故障", notes = "未解决故障 ")
     @GetMapping(value = "/getUncompletedFault")
     public Result<FaultStatisticsModal> getUncompletedFault(@RequestParam(value = "lineCode", required = false) String lineCode,
-                                     @RequestParam(value = "week", required = false) boolean week){
+                                                            @RequestParam(value = "week", required = false) boolean week) {
         Result result = new Result();
         DateTime now = DateTime.now();
-        if (week){
+        if (week) {
             now = DateUtil.lastWeek();
         }
         DateTime startTime = DateUtil.beginOfWeek(now);
         DateTime endTime = DateUtil.endOfWeek(now);
-        List<FaultStatisticsModal> list = statisticalService.getUncompletedFault(lineCode,startTime,endTime);
+        List<FaultStatisticsModal> list = statisticalService.getUncompletedFault(lineCode, startTime, endTime);
         result.setResult(list);
         return result;
     }
@@ -503,16 +522,16 @@ public class StatisticalController {
      */
     @ApiOperation(value = "本周检修统计-检修完成", notes = "检修完成 ")
     @GetMapping(value = "/getWeeklyCompletedRepair")
-    public Result<List<RepairTaskVo>>getWeeklyCompletedRepair(@RequestParam(value = "lineCode", required = false) String lineCode,
-                                                              @RequestParam(value = "week", required = false ) boolean week){
+    public Result<List<RepairTaskVo>> getWeeklyCompletedRepair(@RequestParam(value = "lineCode", required = false) String lineCode,
+                                                               @RequestParam(value = "week", required = false) boolean week) {
         Result<List<RepairTaskVo>> result = new Result<>();
         DateTime now = DateTime.now();
-        if (week){
+        if (week) {
             now = DateUtil.lastWeek();
         }
         DateTime startTime = DateUtil.beginOfWeek(now);
         DateTime endTime = DateUtil.endOfWeek(now);
-        List<RepairTaskVo> list = statisticalService.getCompletedRepair(lineCode,startTime,endTime);
+        List<RepairTaskVo> list = statisticalService.getCompletedRepair(lineCode, startTime, endTime);
         result.setResult(list);
         return result;
     }
@@ -523,34 +542,36 @@ public class StatisticalController {
      */
     @ApiOperation(value = "检修数据统计-本周漏检", notes = "本周漏检")
     @GetMapping(value = "/getWeeklyIgnoreRepair")
-    public Result<List<RepairTaskVo>>getWeeklyIgnoreRepair(@RequestParam(value = "lineCode", required = false) String lineCode,
-                                                           @RequestParam(value = "week", required = false) boolean week){
+    public Result<List<RepairTaskVo>> getWeeklyIgnoreRepair(@RequestParam(value = "lineCode", required = false) String lineCode,
+                                                            @RequestParam(value = "week", required = false) boolean week) {
         Result<List<RepairTaskVo>> result = new Result<>();
         DateTime now = DateTime.now();
-        if (week){
+        if (week) {
             now = DateUtil.lastWeek();
         }
-        List<RepairTaskVo> list = statisticalService.getWeeklyIgnoreRepair(lineCode,now);
+        List<RepairTaskVo> list = statisticalService.getWeeklyIgnoreRepair(lineCode, now);
         result.setResult(list);
         return result;
     }
+
     /**
      * @Description: 检修数据统计-检修完成
      * @author niuzeyu
      */
     @ApiOperation(value = "检修数据统计-今日检修", notes = "今日检修数")
     @GetMapping(value = "/getTodayRepair")
-    public Result<List<RepairTaskVo>>getTodayRepair(@RequestParam(value = "lineCode", required = false) String lineCode,
-                                                           @RequestParam(value = "week", required = false) boolean week){
+    public Result<List<RepairTaskVo>> getTodayRepair(@RequestParam(value = "lineCode", required = false) String lineCode,
+                                                     @RequestParam(value = "week", required = false) boolean week) {
         Result<List<RepairTaskVo>> result = new Result<>();
         DateTime now = DateTime.now();
-        if (week){
+        if (week) {
             now = DateUtil.lastWeek();
         }
-        List<RepairTaskVo> list = statisticalService.getTodayRepair(lineCode,now);
+        List<RepairTaskVo> list = statisticalService.getTodayRepair(lineCode, now);
         result.setResult(list);
         return result;
     }
+
     /**
      * 通过id查询
      *
@@ -570,14 +591,15 @@ public class StatisticalController {
     @ApiOperation(value = "本周巡视统计", notes = "本周巡视统计")
     @GetMapping(value = "/getWeeklyPatrolStatistics")
     public Result<PatrolStatisticVo> getWeeklyPatrolStatistics(@RequestParam(value = "lineCode", required = false) String lineCode,
-                                                 @RequestParam(value = "week", required = false) boolean week){
+                                                               @RequestParam(value = "week", required = false) boolean week) {
         DateTime now = DateUtil.date();
-        if (week){
+        if (week) {
             now = DateUtil.lastWeek();
         }
-        PatrolStatisticVo vo = statisticalService.getWeeklyPatrolStatistic(lineCode,now);
+        PatrolStatisticVo vo = statisticalService.getWeeklyPatrolStatistic(lineCode, now);
         return Result.ok(vo);
     }
+
     @AutoLog(value = "本周巡视统计-详情")
     @ApiOperation(value = "本周巡视统计-详情", notes = "本周巡视统计-详情")
     @PostMapping(value = "/detail")
@@ -596,13 +618,13 @@ public class StatisticalController {
     @ApiOperation(value = "本周巡视统计-巡视完成", notes = "本周巡视统计-巡视完成")
     @GetMapping(value = "/getCompletedPatrol")
     public Result<List<PatrolTaskVO>> getCompletedPatrol(@RequestParam(value = "lineCode", required = false) String lineCode,
-                                                            @RequestParam(value = "week", required = false) boolean week,
-                                                            @RequestParam(value = "departId",required = false)String departId) {
+                                                         @RequestParam(value = "week", required = false) boolean week,
+                                                         @RequestParam(value = "departId", required = false) String departId) {
         DateTime now = DateUtil.date();
         if (week) {
             now = DateUtil.lastWeek();
         }
-        List<PatrolTaskVO> vo = statisticalService.getCompletedPatrol(lineCode,departId, now);
+        List<PatrolTaskVO> vo = statisticalService.getCompletedPatrol(lineCode, departId, now);
         return Result.ok(vo);
     }
 
@@ -610,7 +632,7 @@ public class StatisticalController {
     @ApiOperation(value = "本周巡视统计-今日巡视完成", notes = "本周巡视统计-今日巡视完成")
     @GetMapping(value = "/getTodayCompletedPatrol")
     public Result<List<PatrolTaskVO>> getTodayCompletedPatrol(@RequestParam(value = "lineCode", required = false) String lineCode,
-                                                         @RequestParam(value = "week", required = false) boolean week) {
+                                                              @RequestParam(value = "week", required = false) boolean week) {
         DateTime now = DateUtil.date();
         if (week) {
             now = DateUtil.lastWeek();
@@ -623,13 +645,13 @@ public class StatisticalController {
     @ApiOperation(value = "本周巡视统计-本周漏检", notes = "本周巡视统计-本周漏检")
     @GetMapping(value = "/getIgnoredPatrol")
     public Result<List<PatrolTaskVO>> getIgnoredPatrol(@RequestParam(value = "lineCode", required = false) String lineCode,
-                                                         @RequestParam(value = "week", required = false) boolean week,
-                                                       @RequestParam(value = "departId",required = false)String departId) {
+                                                       @RequestParam(value = "week", required = false) boolean week,
+                                                       @RequestParam(value = "departId", required = false) String departId) {
         DateTime now = DateUtil.date();
         if (week) {
             now = DateUtil.lastWeek();
         }
-        List<PatrolTaskVO> vo = statisticalService.getIgnoredPatrol(lineCode,departId, now);
+        List<PatrolTaskVO> vo = statisticalService.getIgnoredPatrol(lineCode, departId, now);
         return Result.ok(vo);
     }
 
@@ -637,7 +659,7 @@ public class StatisticalController {
     @ApiOperation(value = "本周巡视统计-巡视异常", notes = "本周巡视统计-巡视异常")
     @GetMapping(value = "/getExceptionPatrol")
     public Result<List<PatrolTaskVO>> getExceptionPatrol(@RequestParam(value = "lineCode", required = false) String lineCode,
-                                                       @RequestParam(value = "week", required = false) boolean week) {
+                                                         @RequestParam(value = "week", required = false) boolean week) {
         DateTime now = DateUtil.date();
         if (week) {
             now = DateUtil.lastWeek();
@@ -651,7 +673,7 @@ public class StatisticalController {
     @ApiOperation(value = "本周巡视统计-今日巡检", notes = "本周巡视统计-今日巡检")
     @GetMapping(value = "/getTodayPatrol")
     public Result<List<PatrolTaskVO>> getTodayPatrol(@RequestParam(value = "lineCode", required = false) String lineCode,
-                                                         @RequestParam(value = "week", required = false) boolean week) {
+                                                     @RequestParam(value = "week", required = false) boolean week) {
         DateTime now = DateUtil.date();
         if (week) {
             now = DateUtil.lastWeek();
@@ -664,23 +686,23 @@ public class StatisticalController {
     @ApiOperation(value = "本周巡视统计-计划巡视", notes = "本周巡视统计-计划巡视")
     @GetMapping(value = "/getPlanPatrol")
     public Result<List<PatrolTaskVO>> getPlanPatrol(@RequestParam(value = "lineCode", required = false) String lineCode,
-                                                     @RequestParam(value = "week", required = false) boolean week,
-                                                    @RequestParam(value = "departId",required = false)String departId) {
+                                                    @RequestParam(value = "week", required = false) boolean week,
+                                                    @RequestParam(value = "departId", required = false) String departId) {
         DateTime now = DateUtil.date();
         if (week) {
             now = DateUtil.lastWeek();
         }
-        if (StringUtils.isNotBlank(departId)){
+        if (StringUtils.isNotBlank(departId)) {
             System.out.println();
         }
-        List<PatrolTaskVO> vo = statisticalService.getPlanPatrol(lineCode,departId, now);
+        List<PatrolTaskVO> vo = statisticalService.getPlanPatrol(lineCode, departId, now);
         return Result.ok(vo);
     }
 
     @AutoLog(value = "站点信息-系统")
     @ApiOperation(value = "站点信息-系统", notes = "站点信息-系统")
     @GetMapping(value = "/getSubSystem")
-    public Result<List<Subsystem>> getSubSystem(@RequestParam(name = "stationName", required = true) String stationName){
+    public Result<List<Subsystem>> getSubSystem(@RequestParam(name = "stationName", required = true) String stationName) {
         List<Subsystem> list = subsystemMapper.getSubSystemByStationName(stationName);
         return Result.ok(list);
     }
@@ -691,14 +713,14 @@ public class StatisticalController {
      */
     @ApiOperation(value = "检修数据统计-本周计划", notes = "本周计划 ")
     @GetMapping(value = "/getWeeklyPlanRepair")
-    public Result<List<RepairTaskVo>>getWeeklyPlanRepair(@RequestParam(value = "lineCode", required = false) String lineCode,
-                                                         @RequestParam(value = "week", required = false ) boolean week){
+    public Result<List<RepairTaskVo>> getWeeklyPlanRepair(@RequestParam(value = "lineCode", required = false) String lineCode,
+                                                          @RequestParam(value = "week", required = false) boolean week) {
         Result<List<RepairTaskVo>> result = new Result<>();
         DateTime now = DateTime.now();
-        if (week){
+        if (week) {
             now = DateUtil.lastWeek();
         }
-        List<RepairTaskVo> list = statisticalService.getWeeklyPlanRepair(lineCode,now);
+        List<RepairTaskVo> list = statisticalService.getWeeklyPlanRepair(lineCode, now);
         result.setResult(list);
         return result;
     }
@@ -706,16 +728,16 @@ public class StatisticalController {
     /**
      * 故障数据统计-总故障数
      */
-    @ApiOperation(value = "故障数据统计-总故障数",notes = "故障数据统计-总故障数")
+    @ApiOperation(value = "故障数据统计-总故障数", notes = "故障数据统计-总故障数")
     @GetMapping(value = "/getFaultTotalDetail")
     public Result<IPage> getFaultTotalDetail(@RequestParam(value = "lineCode", required = false) String lineCode,
-                                      @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
-                                      @RequestParam(name = "pageSize", defaultValue = "50") Integer pageSize ){
+                                             @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
+                                             @RequestParam(name = "pageSize", defaultValue = "50") Integer pageSize) {
         Result result = new Result();
         DateTime now = DateTime.now();
         Date startTime = DateUtil.beginOfYear(now);
         Date endTime = DateUtil.endOfYear(now);
-        IPage page = statisticalService.getFaultTotalDetail(lineCode,pageNo,pageSize,startTime,endTime);
+        IPage page = statisticalService.getFaultTotalDetail(lineCode, pageNo, pageSize, startTime, endTime);
 
         return result.ok(page);
     }
@@ -723,28 +745,28 @@ public class StatisticalController {
     /**
      * 故障数据统计-未修复故障
      */
-    @ApiOperation(value = "故障数据统计-未修复故障",notes = "故障数据统计-未修复故障")
+    @ApiOperation(value = "故障数据统计-未修复故障", notes = "故障数据统计-未修复故障")
     @GetMapping(value = "/getFaultUnCompletedDetail")
-    public Result getFaultTotalDetail(@RequestParam(value = "lineCode", required = false) String lineCode){
+    public Result getFaultTotalDetail(@RequestParam(value = "lineCode", required = false) String lineCode) {
         Result result = new Result();
         DateTime now = DateTime.now();
         DateTime startTime = DateUtil.beginOfYear(now);
         DateTime endTime = DateUtil.endOfYear(now);
-        List<FaultStatisticsModal> list = statisticalService.getUncompletedFault(lineCode,startTime,endTime);
+        List<FaultStatisticsModal> list = statisticalService.getUncompletedFault(lineCode, startTime, endTime);
         return result.ok(list);
     }
 
     /**
      * 故障数据统计-未修复故障
      */
-    @ApiOperation(value = "故障数据统计-本周修复",notes = "故障数据统计-本周修复")
+    @ApiOperation(value = "故障数据统计-本周修复", notes = "故障数据统计-本周修复")
     @GetMapping(value = "/getFaultCompletedDetail")
-    public Result getFaultCompletedDetail(@RequestParam(value = "lineCode", required = false) String lineCode){
+    public Result getFaultCompletedDetail(@RequestParam(value = "lineCode", required = false) String lineCode) {
         Result result = new Result();
         DateTime now = DateTime.now();
         DateTime startTime = DateUtil.beginOfWeek(now);
         DateTime endTime = DateUtil.endOfWeek(now);
-        List<FaultStatisticsModal> list = statisticalService.getCompletedFault(lineCode,startTime,endTime);
+        List<FaultStatisticsModal> list = statisticalService.getCompletedFault(lineCode, startTime, endTime);
         return result.ok(list);
     }
 

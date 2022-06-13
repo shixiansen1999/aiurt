@@ -3,12 +3,6 @@ package com.aiurt.boot.modules.statistical.service.impl;
 import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.aiurt.boot.common.constant.CommonConstant;
-import com.aiurt.boot.common.util.DateUtils;
 import com.aiurt.boot.modules.fault.mapper.FaultMapper;
 import com.aiurt.boot.modules.fault.service.IFaultService;
 import com.aiurt.boot.modules.manage.entity.Line;
@@ -34,16 +28,19 @@ import com.aiurt.boot.modules.repairManage.mapper.RepairTaskMapper;
 import com.aiurt.boot.modules.schedule.mapper.ScheduleRecordMapper;
 import com.aiurt.boot.modules.statistical.service.StatisticalService;
 import com.aiurt.boot.modules.statistical.vo.*;
-import com.aiurt.boot.modules.system.entity.SysDepart;
-import com.aiurt.boot.modules.system.entity.SysUser;
-import com.aiurt.boot.modules.system.model.DepartScheduleModel;
-import com.aiurt.boot.modules.system.service.ISysDepartService;
-import com.aiurt.boot.modules.system.service.ISysUserService;
-import com.aiurt.boot.modules.system.util.TimeUtil;
-import com.aiurt.boot.modules.system.vo.SysDepartScheduleVo;
+import com.aiurt.common.constant.CommonConstant;
+import com.aiurt.common.util.TimeUtil;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang.StringUtils;
 import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.system.vo.DepartScheduleModel;
+import org.jeecg.common.system.vo.LoginUser;
+import org.jeecg.common.system.vo.SysDepartModel;
+import org.jeecg.common.system.vo.SysDepartScheduleVo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -63,7 +60,7 @@ public class StatisticalServiceImpl extends ServiceImpl<PatrolTaskMapper, Patrol
 
     private final RepairTaskMapper repairTaskMapper;
 
-    private final ISysUserService sysUserService;
+//    private final ISysUserService sysUserService;
 
     private final IFaultService faultService;
 
@@ -83,8 +80,8 @@ public class StatisticalServiceImpl extends ServiceImpl<PatrolTaskMapper, Patrol
     private final FaultMapper faultMapper;
     @Autowired
     private final IStationService stationService;
-    @Autowired
-    private final ISysDepartService sysDepartService;
+//    @Autowired
+//    private final ISysDepartService sysDepartService;
     @Resource
     private final PatrolTaskMapper patrolTaskMapper;
     @Autowired
@@ -205,8 +202,10 @@ public class StatisticalServiceImpl extends ServiceImpl<PatrolTaskMapper, Patrol
                 userIds.addAll(Arrays.stream(model.getParticipateIds().split(",")).collect(Collectors.toList()));
             }
             if (ObjectUtil.isNotEmpty(userIds)) {
-                Collection<SysUser> sysUsers = sysUserService.listByIds(userIds);
-                maintainer = sysUsers.stream().map(SysUser::getRealname).distinct().collect(Collectors.joining(","));
+                // todo 后期修改
+//                Collection<LoginUser> sysUsers = sysUserService.listByIds(userIds);
+                Collection<LoginUser> sysUsers = null;
+                maintainer = sysUsers.stream().map(LoginUser::getRealname).distinct().collect(Collectors.joining(","));
                 model.setMaintainer(maintainer);
             }
         });
@@ -243,15 +242,17 @@ public class StatisticalServiceImpl extends ServiceImpl<PatrolTaskMapper, Patrol
     @Override
     public SysDepartScheduleVo getSysDepartSchedulePageVo(String lineCode, Integer pageNo, Integer pageSize, DateTime now) {
         SysDepartScheduleVo vo = new SysDepartScheduleVo();
-        String date = DateUtils.format(now, "yyyy-MM-dd");
+        String date = DateUtil.format(now, "yyyy-MM-dd");
         int dutyUserNum = 0;
         int userNum = 0;
         List<String> orgIdList = new ArrayList<>();
         if (StringUtils.isBlank(lineCode)) {
-            LambdaQueryWrapper<SysDepart> qw = new LambdaQueryWrapper<SysDepart>().eq(SysDepart::getDelFlag, 0)
-                    .orderByAsc(SysDepart::getDepartName);
-            List<SysDepart> departList = sysDepartService.list(qw);
-            orgIdList = departList.stream().map(SysDepart::getId).collect(Collectors.toList());
+            LambdaQueryWrapper<SysDepartModel> qw = new LambdaQueryWrapper<SysDepartModel>().eq(SysDepartModel::getDelFlag, 0)
+                    .orderByAsc(SysDepartModel::getDepartName);
+            // todo 后期修改
+            List<SysDepartModel> departList = new ArrayList<>();
+//            List<SysDepartModel> departList = sysDepartService.list(qw);
+            orgIdList = departList.stream().map(SysDepartModel::getId).collect(Collectors.toList());
         }
         if (StringUtils.isNotBlank(lineCode)) {
             Integer lineId = lineService.getOne(new LambdaQueryWrapper<Line>().eq(Line::getLineCode, lineCode)).getId();
@@ -261,10 +262,13 @@ public class StatisticalServiceImpl extends ServiceImpl<PatrolTaskMapper, Patrol
 
         }
         vo.setDepartNum(orgIdList.size());
-        List<DepartScheduleModel> list = sysUserService.selectUserScheduleByOrgIdsAndDate(orgIdList, date);
+        // todo 后期修改
+        List<DepartScheduleModel> list = new ArrayList<>();
+//        List<DepartScheduleModel> list = sysUserService.selectUserScheduleByOrgIdsAndDate(orgIdList, date);
         for (DepartScheduleModel model : list) {
             userNum += model.getNum();
-            dutyUserNum += model.getDutyUsers().size();
+            // todo 后期修改
+//            dutyUserNum += model.getDutyUsers().size();
         }
         vo.setDutyUserNum(dutyUserNum);
         vo.setUserNum(userNum);
@@ -305,11 +309,13 @@ public class StatisticalServiceImpl extends ServiceImpl<PatrolTaskMapper, Patrol
                 record.setPatrolFlag(1);//待执行
             }
         }
-        List<SysDepart> sysDepartByLineCode = sysDepartService.getSysDepartByLineCode(lineCode);
+        // todo 后期修改
+        List<SysDepartModel> sysDepartByLineCode = new ArrayList<>();
+//        List<SysDepartModel> sysDepartByLineCode = sysDepartService.getSysDepartByLineCode(lineCode);
         Integer weeklyPatrolNum = 0;
         Integer weeklyCompleteNum = 0;
         Integer weeklyIgnoreNum = 0;
-        for (SysDepart sysDepart : sysDepartByLineCode) {
+        for (SysDepartModel sysDepart : sysDepartByLineCode) {
             //查询每个班组的计划数，完成数，漏检数
             Integer planNum = patrolTaskMapper.countPatrolNumByOrgIdAndTime(sysDepart.getId(), startTime, endTime);
             weeklyPatrolNum += planNum;
@@ -454,17 +460,19 @@ public class StatisticalServiceImpl extends ServiceImpl<PatrolTaskMapper, Patrol
     }
 
     @Override
-    public List<SysUser> getDutyUsers(String lineCode, String orgId, DateTime dateTime) {
-        String date = DateUtils.format(dateTime, "yyyy-MM-dd");
+    public List<LoginUser> getDutyUsers(String lineCode, String orgId, DateTime dateTime) {
+        String date = DateUtil.format(dateTime, "yyyy-MM-dd");
         List<String> orgIds = new ArrayList<>();
         if (StringUtils.isNotBlank(orgId)) {
             orgIds.add(orgId);
-            List<SysUser> dutyUsers = scheduleRecordMapper.getDutyUserListByOrgIdsAndDate(date, orgIds);
+            List<LoginUser> dutyUsers = scheduleRecordMapper.getDutyUserListByOrgIdsAndDate(date, orgIds);
             return dutyUsers;
         }
-        List<SysDepart> departList = sysDepartService.getSysDepartByLineCode(lineCode);
-        orgIds = departList.stream().map(SysDepart::getId).collect(Collectors.toList());
-        List<SysUser> dutyUsers = scheduleRecordMapper.getDutyUserListByOrgIdsAndDate(date, orgIds);
+        // todo 后期修改
+        List<SysDepartModel> departList = new ArrayList<>();
+//        List<SysDepartModel> departList = sysDepartService.getSysDepartByLineCode(lineCode);
+        orgIds = departList.stream().map(SysDepartModel::getId).collect(Collectors.toList());
+        List<LoginUser> dutyUsers = scheduleRecordMapper.getDutyUserListByOrgIdsAndDate(date, orgIds);
         return dutyUsers;
     }
 
@@ -487,8 +495,10 @@ public class StatisticalServiceImpl extends ServiceImpl<PatrolTaskMapper, Patrol
                 userIds.addAll(Arrays.stream(model.getParticipateIds().split(",")).collect(Collectors.toList()));
             }
             if (ObjectUtil.isNotEmpty(userIds)) {
-                Collection<SysUser> sysUsers = sysUserService.listByIds(userIds);
-                maintainer = sysUsers.stream().map(SysUser::getRealname).distinct().collect(Collectors.joining(","));
+                // todo 后期修改
+                Collection<LoginUser> sysUsers = null;
+//                Collection<LoginUser> sysUsers = sysUserService.listByIds(userIds);
+                maintainer = sysUsers.stream().map(LoginUser::getRealname).distinct().collect(Collectors.joining(","));
                 model.setMaintainer(maintainer);
             }
         });
@@ -592,13 +602,15 @@ public class StatisticalServiceImpl extends ServiceImpl<PatrolTaskMapper, Patrol
 
             //巡检人及部门
             if (StringUtils.isNotBlank(patrolTask.getStaffIds())) {
-                List<SysUser> sysUsers = sysUserService.lambdaQuery()
-                        .eq(SysUser::getDelFlag, CommonConstant.DEL_FLAG_0)
-                        .in(SysUser::getId, Arrays.asList(patrolTask.getStaffIds().trim().split(PatrolConstant.SPL)))
-                        .list();
+                // 后期修改
+                List<LoginUser> sysUsers = new ArrayList<>();
+//                List<LoginUser> sysUsers = sysUserService.lambdaQuery()
+//                        .eq(SysUser::getDelFlag, CommonConstant.DEL_FLAG_0)
+//                        .in(SysUser::getId, Arrays.asList(patrolTask.getStaffIds().trim().split(PatrolConstant.SPL)))
+//                        .list();
                 if (sysUsers != null && sysUsers.size() > 0) {
                     vo.setStaffName(StringUtils.join(
-                            sysUsers.stream().map(SysUser::getRealname).collect(Collectors.toList()),
+                            sysUsers.stream().map(LoginUser::getRealname).collect(Collectors.toList()),
                             PatrolConstant.SPL));
                 }
             }
@@ -616,10 +628,11 @@ public class StatisticalServiceImpl extends ServiceImpl<PatrolTaskMapper, Patrol
 
         List<PatrolPoolContentTreeVO> list = tree.getResult();
         vo.setList(list);
-
-        SysDepart sysDepart = sysDepartService.getById(pool.getOrganizationId());
-        if (sysDepart != null) {
-            vo.setOrganizationName(sysDepart.getDepartName());
+        // todo 后期修改
+        SysDepartModel sysDepartModel = new SysDepartModel();
+//        SysDepartModel sysDepart = sysDepartService.getById(pool.getOrganizationId());
+        if (sysDepartModel != null) {
+            vo.setOrganizationName(sysDepartModel.getDepartName());
         }
 
         return Result.ok(vo);
@@ -655,12 +668,14 @@ public class StatisticalServiceImpl extends ServiceImpl<PatrolTaskMapper, Patrol
         DateTime start = DateUtil.date(calendar.getTime());
         DateTime endTime = DateUtil.endOfWeek(now);
         //获取当前线路所包含班组
-        List<SysDepart> sysDepartByLineCode = sysDepartService.getSysDepartByLineCode(lineCode);
+        // todo 后期修改
+        List<SysDepartModel> sysDepartByLineCode = new ArrayList<>();
+//                List<SysDepartModel> sysDepartByLineCode = sysDepartService.getSysDepartByLineCode(lineCode);
         List<PatrolTaskStatisticVo> list = new ArrayList<>();
         Integer weeklyPatrolNum = 0;
         Integer weeklyCompleteNum = 0;
         Integer weeklyIgnoreNum = 0;
-        for (SysDepart sysDepart : sysDepartByLineCode) {
+        for (SysDepartModel sysDepart : sysDepartByLineCode) {
             //查询每个班组的计划数，完成数，漏检数
             PatrolTaskStatisticVo vo = new PatrolTaskStatisticVo();
             vo.setDepartName(sysDepart.getDepartName());
