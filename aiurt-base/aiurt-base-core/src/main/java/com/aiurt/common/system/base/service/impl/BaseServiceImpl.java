@@ -1,7 +1,7 @@
 package com.aiurt.common.system.base.service.impl;
 
-import com.aiurt.common.system.base.entity.JeecgEntity;
-import com.aiurt.common.system.base.service.JeecgService;
+import com.aiurt.common.system.base.entity.BaseEntity;
+import com.aiurt.common.system.base.service.BaseService;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -14,6 +14,6 @@ import lombok.extern.slf4j.Slf4j;
  * @Version: 1.0
  */
 @Slf4j
-public class JeecgServiceImpl<M extends BaseMapper<T>, T extends JeecgEntity> extends ServiceImpl<M, T> implements JeecgService<T> {
+public class BaseServiceImpl<M extends BaseMapper<T>, T extends BaseEntity> extends ServiceImpl<M, T> implements BaseService<T> {
 
 }

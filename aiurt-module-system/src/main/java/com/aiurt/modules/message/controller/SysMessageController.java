@@ -7,7 +7,7 @@ import javax.servlet.http.HttpServletResponse;
 
 
 import org.jeecg.common.api.vo.Result;
-import com.aiurt.common.system.base.controller.JeecgController;
+import com.aiurt.common.system.base.controller.BaseController;
 import org.jeecg.common.system.query.QueryGenerator;
 import com.aiurt.modules.message.entity.SysMessage;
 import com.aiurt.modules.message.service.ISysMessageService;
@@ -37,7 +37,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @RestController
 @RequestMapping("/sys/message/sysMessage")
-public class SysMessageController extends JeecgController<SysMessage, ISysMessageService> {
+public class SysMessageController extends BaseController<SysMessage, ISysMessageService> {
 	@Autowired
 	private ISysMessageService sysMessageService;
 

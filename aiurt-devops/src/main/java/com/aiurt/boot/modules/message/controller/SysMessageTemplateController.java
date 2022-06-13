@@ -3,7 +3,7 @@ package com.aiurt.boot.modules.message.controller;
 import com.aiurt.boot.modules.message.entity.MsgParams;
 import com.aiurt.boot.modules.message.entity.SysMessageTemplate;
 import com.aiurt.boot.modules.message.service.ISysMessageTemplateService;
-import com.aiurt.common.system.base.controller.JeecgController;
+import com.aiurt.common.system.base.controller.BaseController;
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -29,7 +29,7 @@ import java.util.Map;
 @Slf4j
 @RestController
 @RequestMapping("/message/sysMessageTemplate")
-public class SysMessageTemplateController extends JeecgController<SysMessageTemplate, ISysMessageTemplateService> {
+public class SysMessageTemplateController extends BaseController<SysMessageTemplate, ISysMessageTemplateService> {
 	@Autowired
 	private ISysMessageTemplateService sysMessageTemplateService;
 

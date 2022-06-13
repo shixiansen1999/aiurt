@@ -7,7 +7,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.constant.CommonConstant;
-import com.aiurt.common.system.base.controller.JeecgController;
+import com.aiurt.common.system.base.controller.BaseController;
 import org.jeecg.common.system.query.QueryGenerator;
 import org.jeecg.common.system.vo.LoginUser;
 import com.aiurt.common.util.oConvertUtils;
@@ -42,7 +42,7 @@ import io.swagger.annotations.ApiOperation;
 @Api(tags="部门角色")
 @RestController
 @RequestMapping("/sys/sysDepartRole")
-public class SysDepartRoleController extends JeecgController<SysDepartRole, ISysDepartRoleService> {
+public class SysDepartRoleController extends BaseController<SysDepartRole, ISysDepartRoleService> {
 	@Autowired
 	private ISysDepartRoleService sysDepartRoleService;
 

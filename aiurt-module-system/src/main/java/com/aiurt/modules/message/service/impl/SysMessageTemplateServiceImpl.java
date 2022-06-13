@@ -1,6 +1,6 @@
 package com.aiurt.modules.message.service.impl;
 
-import com.aiurt.common.system.base.service.impl.JeecgServiceImpl;
+import com.aiurt.common.system.base.service.impl.BaseServiceImpl;
 import com.aiurt.modules.message.entity.SysMessageTemplate;
 import com.aiurt.modules.message.mapper.SysMessageTemplateMapper;
 import com.aiurt.modules.message.service.ISysMessageTemplateService;
@@ -15,7 +15,7 @@ import java.util.List;
  * @Version: V1.0
  */
 @Service
-public class SysMessageTemplateServiceImpl extends JeecgServiceImpl<SysMessageTemplateMapper, SysMessageTemplate> implements ISysMessageTemplateService {
+public class SysMessageTemplateServiceImpl extends BaseServiceImpl<SysMessageTemplateMapper, SysMessageTemplate> implements ISysMessageTemplateService {
 
     @Autowired
     private SysMessageTemplateMapper sysMessageTemplateMapper;

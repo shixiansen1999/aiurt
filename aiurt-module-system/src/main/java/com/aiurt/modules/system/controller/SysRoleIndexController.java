@@ -5,7 +5,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import com.aiurt.common.aspect.annotation.AutoLog;
-import com.aiurt.common.system.base.controller.JeecgController;
+import com.aiurt.common.system.base.controller.BaseController;
 import org.jeecg.common.system.query.QueryGenerator;
 import com.aiurt.modules.system.entity.SysRoleIndex;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -34,7 +34,7 @@ import io.swagger.annotations.ApiOperation;
 @Api(tags = "角色首页配置")
 @RestController
 @RequestMapping("/sys/sysRoleIndex")
-public class SysRoleIndexController extends JeecgController<SysRoleIndex, ISysRoleIndexService> {
+public class SysRoleIndexController extends BaseController<SysRoleIndex, ISysRoleIndexService> {
     @Autowired
     private ISysRoleIndexService sysRoleIndexService;
 

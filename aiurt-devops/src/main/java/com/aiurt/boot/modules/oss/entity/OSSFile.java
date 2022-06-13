@@ -1,6 +1,6 @@
 package com.aiurt.boot.modules.oss.entity;
 
-import com.aiurt.common.system.base.entity.JeecgEntity;
+import com.aiurt.common.system.base.entity.BaseEntity;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -11,7 +11,7 @@ import org.jeecgframework.poi.excel.annotation.Excel;
 @TableName("oss_file")
 @EqualsAndHashCode(callSuper = false)
 @Accessors(chain = true)
-public class OSSFile extends JeecgEntity {
+public class OSSFile extends BaseEntity {
 
 	private static final long serialVersionUID = 1L;
 

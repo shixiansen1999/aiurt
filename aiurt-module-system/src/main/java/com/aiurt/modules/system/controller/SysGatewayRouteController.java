@@ -1,6 +1,6 @@
 package com.aiurt.modules.system.controller;
 
-import com.aiurt.common.system.base.controller.JeecgController;
+import com.aiurt.common.system.base.controller.BaseController;
 import com.aiurt.common.util.oConvertUtils;
 import com.aiurt.modules.system.entity.SysGatewayRoute;
 import com.alibaba.fastjson.JSONArray;
@@ -25,7 +25,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/sys/gatewayRoute")
 @Slf4j
-public class SysGatewayRouteController extends JeecgController<SysGatewayRoute, ISysGatewayRouteService> {
+public class SysGatewayRouteController extends BaseController<SysGatewayRoute, ISysGatewayRouteService> {
 
 	@Autowired
 	private ISysGatewayRouteService sysGatewayRouteService;

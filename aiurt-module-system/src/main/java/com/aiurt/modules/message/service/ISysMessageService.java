@@ -1,7 +1,7 @@
 package com.aiurt.modules.message.service;
 
 
-import com.aiurt.common.system.base.service.JeecgService;
+import com.aiurt.common.system.base.service.BaseService;
 import com.aiurt.modules.message.entity.SysMessage;
 
 /**
@@ -10,6 +10,6 @@ import com.aiurt.modules.message.entity.SysMessage;
  * @Date:  2019-04-09
  * @Version: V1.0
  */
-public interface ISysMessageService extends JeecgService<SysMessage> {
+public interface ISysMessageService extends BaseService<SysMessage> {
 
 }

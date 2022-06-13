@@ -1,7 +1,7 @@
 package com.aiurt.modules.system.controller;
 
 import com.aiurt.common.aspect.annotation.AutoLog;
-import com.aiurt.common.system.base.controller.JeecgController;
+import com.aiurt.common.system.base.controller.BaseController;
 import org.jeecg.common.system.query.QueryGenerator;
 import com.aiurt.modules.system.entity.SysCheckRule;
 import com.alibaba.fastjson.JSONObject;
@@ -34,7 +34,7 @@ import java.util.Arrays;
 @Api(tags = "编码校验规则")
 @RestController
 @RequestMapping("/sys/checkRule")
-public class SysCheckRuleController extends JeecgController<SysCheckRule, ISysCheckRuleService> {
+public class SysCheckRuleController extends BaseController<SysCheckRule, ISysCheckRuleService> {
 
     @Autowired
     private ISysCheckRuleService sysCheckRuleService;

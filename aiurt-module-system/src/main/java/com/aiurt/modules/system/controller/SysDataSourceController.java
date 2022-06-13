@@ -2,7 +2,7 @@ package com.aiurt.modules.system.controller;
 
 
 import com.aiurt.common.aspect.annotation.AutoLog;
-import com.aiurt.common.system.base.controller.JeecgController;
+import com.aiurt.common.system.base.controller.BaseController;
 import org.jeecg.common.system.query.QueryGenerator;
 import com.aiurt.common.util.dynamic.db.DataSourceCachePool;
 import com.aiurt.modules.system.entity.SysDataSource;
@@ -37,7 +37,7 @@ import java.util.List;
 @Api(tags = "多数据源管理")
 @RestController
 @RequestMapping("/sys/dataSource")
-public class SysDataSourceController extends JeecgController<SysDataSource, ISysDataSourceService> {
+public class SysDataSourceController extends BaseController<SysDataSource, ISysDataSourceService> {
 
     @Autowired
     private ISysDataSourceService sysDataSourceService;

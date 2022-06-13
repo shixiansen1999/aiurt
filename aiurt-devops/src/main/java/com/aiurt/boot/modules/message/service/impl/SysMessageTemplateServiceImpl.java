@@ -3,7 +3,7 @@ package com.aiurt.boot.modules.message.service.impl;
 import com.aiurt.boot.modules.message.service.ISysMessageTemplateService;
 import com.aiurt.boot.modules.message.entity.SysMessageTemplate;
 import com.aiurt.boot.modules.message.mapper.SysMessageTemplateMapper;
-import com.aiurt.common.system.base.service.impl.JeecgServiceImpl;
+import com.aiurt.common.system.base.service.impl.BaseServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.util.List;
@@ -15,7 +15,7 @@ import java.util.List;
  * @Version: V1.0
  */
 @Service
-public class SysMessageTemplateServiceImpl extends JeecgServiceImpl<SysMessageTemplateMapper, SysMessageTemplate> implements ISysMessageTemplateService {
+public class SysMessageTemplateServiceImpl extends BaseServiceImpl<SysMessageTemplateMapper, SysMessageTemplate> implements ISysMessageTemplateService {
 
     @Autowired
     private SysMessageTemplateMapper sysMessageTemplateMapper;
