@@ -1,14 +1,14 @@
 package com.aiurt.boot.modules.fault.service;
 
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.service.IService;
-import com.aiurt.boot.common.result.*;
 import com.aiurt.boot.modules.fault.dto.FaultDTO;
 import com.aiurt.boot.modules.fault.entity.Fault;
 import com.aiurt.boot.modules.fault.param.FaultCountParam;
 import com.aiurt.boot.modules.fault.param.FaultDeviceParam;
 import com.aiurt.boot.modules.fault.param.FaultParam;
 import com.aiurt.boot.modules.statistical.vo.*;
+import com.aiurt.common.result.*;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.service.IService;
 import org.jeecg.common.api.vo.Result;
 
 import javax.servlet.http.HttpServletRequest;
@@ -77,7 +77,7 @@ public interface IFaultService extends IService<Fault> {
      * @param endTime
      * @return
      */
-    Result<FaultNumResult> getFaultNum(String startTime,String endTime);
+    Result<FaultNumResult> getFaultNum(String startTime, String endTime);
 
     /**
      * 报表统计超时故障数量

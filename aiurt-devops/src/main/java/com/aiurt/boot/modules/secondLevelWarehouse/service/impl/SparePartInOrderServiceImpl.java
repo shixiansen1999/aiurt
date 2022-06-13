@@ -1,11 +1,6 @@
 package com.aiurt.boot.modules.secondLevelWarehouse.service.impl;
 
 import cn.hutool.core.util.ObjectUtil;
-import com.aiurt.boot.common.enums.MaterialTypeEnum;
-import com.aiurt.boot.common.enums.WorkLogConfirmStatusEnum;
-import com.aiurt.boot.common.exception.SwscException;
-import com.aiurt.boot.common.system.api.ISysBaseAPI;
-import com.aiurt.boot.common.util.TokenUtils;
 import com.aiurt.boot.modules.manage.entity.Subsystem;
 import com.aiurt.boot.modules.manage.service.ISubsystemService;
 import com.aiurt.boot.modules.secondLevelWarehouse.entity.SparePartInOrder;
@@ -16,13 +11,17 @@ import com.aiurt.boot.modules.secondLevelWarehouse.entity.vo.SparePartInVO;
 import com.aiurt.boot.modules.secondLevelWarehouse.mapper.SparePartInOrderMapper;
 import com.aiurt.boot.modules.secondLevelWarehouse.service.ISparePartInOrderService;
 import com.aiurt.boot.modules.secondLevelWarehouse.service.ISparePartStockService;
-import com.aiurt.boot.modules.system.entity.SysUser;
-import com.aiurt.boot.modules.system.service.ISysUserService;
+import com.aiurt.common.enums.MaterialTypeEnum;
+import com.aiurt.common.enums.WorkLogConfirmStatusEnum;
+import com.aiurt.common.exception.AiurtBootException;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.system.api.ISysBaseAPI;
+import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -33,7 +32,7 @@ import java.util.List;
 /**
  * @Description: 备件入库表
  * @Author: swsc
- * @Date:   2021-09-17
+ * @Date: 2021-09-17
  * @Version: V1.0
  */
 @Service
@@ -47,15 +46,16 @@ public class SparePartInOrderServiceImpl extends ServiceImpl<SparePartInOrderMap
 
     @Resource
     private ISparePartStockService iSparePartStockService;
-
-    @Resource
-    private ISysUserService sysUserService;
+//
+//    @Resource
+//    private ISysUserService sysUserService;
 
     @Resource
     private ISysBaseAPI iSysBaseAPI;
 
     /**
      * 分页查询
+     *
      * @param page
      * @param sparePartInQuery
      * @return
@@ -63,12 +63,12 @@ public class SparePartInOrderServiceImpl extends ServiceImpl<SparePartInOrderMap
     @Override
     public IPage<SparePartInVO> queryPageList(Page<SparePartInVO> page, SparePartInQuery sparePartInQuery) {
         IPage<SparePartInVO> pageList = sparePartInOrderMapper.queryPageList(page, sparePartInQuery);
-        pageList.getRecords().forEach(e->{
-            if(e.getType()!=null){
+        pageList.getRecords().forEach(e -> {
+            if (e.getType() != null) {
                 e.setTypeName(MaterialTypeEnum.getNameByCode(e.getType()));
             }
-            e.setSystemCode(subsystemService.getOne(new QueryWrapper<Subsystem>().eq(Subsystem.SYSTEM_CODE,e.getSystemCode()),false).getSystemName());
-            if (e.getConfirmStatus()!=null) {
+            e.setSystemCode(subsystemService.getOne(new QueryWrapper<Subsystem>().eq(Subsystem.SYSTEM_CODE, e.getSystemCode()), false).getSystemName());
+            if (e.getConfirmStatus() != null) {
                 e.setConfirmStatusDesc(WorkLogConfirmStatusEnum.findMessage(e.getConfirmStatus()));
             }
         });
@@ -77,6 +77,7 @@ public class SparePartInOrderServiceImpl extends ServiceImpl<SparePartInOrderMap
 
     /**
      * excel导出
+     *
      * @param sparePartInQuery
      * @return
      */
@@ -93,42 +94,46 @@ public class SparePartInOrderServiceImpl extends ServiceImpl<SparePartInOrderMap
 
     /**
      * 批量确认
+     *
      * @param ids
      * @param req
      * @return
      */
     @Override
     public Result<?> confirmBatch(String ids, HttpServletRequest req) {
-        String userId = TokenUtils.getUserId(req, iSysBaseAPI);
-        String orgId = sysUserService.getOne(new QueryWrapper<SysUser>().eq(SysUser.ID, userId), false).getOrgId();
+        LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        String userId = sysUser.getId();
+        // todo 后期修改
+        String orgId = "";
+//        String orgId = sysUserService.getOne(new QueryWrapper<SysUser>().eq(SysUser.ID, userId), false).getOrgId();
         String[] split = ids.split(",");
         List<SparePartStock> sparePartStockList = new ArrayList<>();
         for (String s : split) {
             SparePartInOrder sparePartInOrder = this.getOne(new QueryWrapper<SparePartInOrder>().eq(SparePartInOrder.ID, s), false);
-            if (sparePartInOrder.getConfirmStatus()==1) {
-                throw new SwscException("编号为"+sparePartInOrder.getMaterialCode()+"的备件已存在，请重新选择！");
+            if (sparePartInOrder.getConfirmStatus() == 1) {
+                throw new AiurtBootException("编号为" + sparePartInOrder.getMaterialCode() + "的备件已存在，请重新选择！");
             }
             SparePartStock applyStock = iSparePartStockService.getOne(new QueryWrapper<SparePartStock>()
-                        .eq(SparePartStock.ORG_ID, sparePartInOrder.getOrgId())
-                        .eq(SparePartStock.MATERIAL_CODE, sparePartInOrder.getMaterialCode()), false);
+                    .eq(SparePartStock.ORG_ID, sparePartInOrder.getOrgId())
+                    .eq(SparePartStock.MATERIAL_CODE, sparePartInOrder.getMaterialCode()), false);
             //如果备件借入表中已有该备件入库数据则增加数量  如果没有则新增一条该备件的入库记录
-                if(ObjectUtil.isNotEmpty(applyStock)){
-                    applyStock.setMaterialCode(sparePartInOrder.getMaterialCode());
-                    applyStock.setNum(sparePartInOrder.getNum()+applyStock.getNum());
-                    applyStock.setOrgId(orgId);
-                    applyStock.setOrgId(sparePartInOrder.getOrgId());
-                    applyStock.setUpdateBy(userId);
-                    iSparePartStockService.updateById(applyStock);
-                    sparePartStockList.add(applyStock);
-                }else{
-                    SparePartStock sparePartStock = new SparePartStock();
-                    sparePartStock.setMaterialCode(sparePartInOrder.getMaterialCode());
-                    sparePartStock.setNum(sparePartInOrder.getNum());
-                    sparePartStock.setOrgId(orgId);
-                    sparePartStock.setCreateBy(userId);
-                    sparePartStock.setOrgId(sparePartInOrder.getOrgId());
-                    iSparePartStockService.save(sparePartStock);
-                }
+            if (ObjectUtil.isNotEmpty(applyStock)) {
+                applyStock.setMaterialCode(sparePartInOrder.getMaterialCode());
+                applyStock.setNum(sparePartInOrder.getNum() + applyStock.getNum());
+                applyStock.setOrgId(orgId);
+                applyStock.setOrgId(sparePartInOrder.getOrgId());
+                applyStock.setUpdateBy(userId);
+                iSparePartStockService.updateById(applyStock);
+                sparePartStockList.add(applyStock);
+            } else {
+                SparePartStock sparePartStock = new SparePartStock();
+                sparePartStock.setMaterialCode(sparePartInOrder.getMaterialCode());
+                sparePartStock.setNum(sparePartInOrder.getNum());
+                sparePartStock.setOrgId(orgId);
+                sparePartStock.setCreateBy(userId);
+                sparePartStock.setOrgId(sparePartInOrder.getOrgId());
+                iSparePartStockService.save(sparePartStock);
+            }
             sparePartInOrderMapper.confirm(s);
         }
         return Result.ok();

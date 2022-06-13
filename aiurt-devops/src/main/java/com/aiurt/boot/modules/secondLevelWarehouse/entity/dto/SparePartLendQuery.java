@@ -1,6 +1,6 @@
 package com.aiurt.boot.modules.secondLevelWarehouse.entity.dto;
 
-import com.aiurt.boot.common.api.vo.PageVO;
+import com.aiurt.common.api.vo.PageVO;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 

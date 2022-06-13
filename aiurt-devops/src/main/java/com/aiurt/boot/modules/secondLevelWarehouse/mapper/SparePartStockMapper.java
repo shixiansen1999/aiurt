@@ -1,15 +1,15 @@
 package com.aiurt.boot.modules.secondLevelWarehouse.mapper;
 
-import java.util.List;
-
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.aiurt.boot.common.result.SparePartStockResult;
 import com.aiurt.boot.modules.fault.param.SparePartStockParam;
+import com.aiurt.boot.modules.secondLevelWarehouse.entity.SparePartStock;
 import com.aiurt.boot.modules.secondLevelWarehouse.entity.dto.SparePartStockDTO;
 import com.aiurt.boot.modules.secondLevelWarehouse.entity.vo.SpareMaterialVO;
-import org.apache.ibatis.annotations.Param;
-import com.aiurt.boot.modules.secondLevelWarehouse.entity.SparePartStock;
+import com.aiurt.common.result.SparePartStockResult;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import org.apache.ibatis.annotations.Param;
+
+import java.util.List;
 
 /**
  * @Description: 备件库存
@@ -41,7 +41,7 @@ public interface SparePartStockMapper extends BaseMapper<SparePartStock> {
      * @param param
      * @return
      */
-    IPage<SparePartStockResult> selectStockList(IPage<SparePartStockResult> page,@Param("param")SparePartStockParam param);
+    IPage<SparePartStockResult> selectStockList(IPage<SparePartStockResult> page, @Param("param")SparePartStockParam param);
 
     /**
      * 添加备注

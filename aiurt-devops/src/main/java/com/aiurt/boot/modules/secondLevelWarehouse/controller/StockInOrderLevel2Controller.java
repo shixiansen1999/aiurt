@@ -1,7 +1,7 @@
 package com.aiurt.boot.modules.secondLevelWarehouse.controller;
 
 import cn.hutool.core.collection.CollUtil;
-import com.aiurt.boot.common.exception.SwscException;
+
 import com.aiurt.boot.modules.secondLevelWarehouse.entity.StockInOrderLevel2;
 import com.aiurt.boot.modules.secondLevelWarehouse.entity.StockInOrderLevel2Detail;
 import com.aiurt.boot.modules.secondLevelWarehouse.entity.dto.StockInOrderLevel2DTO;
@@ -10,6 +10,7 @@ import com.aiurt.boot.modules.secondLevelWarehouse.entity.vo.StockInOrderLevel2V
 import com.aiurt.boot.modules.secondLevelWarehouse.service.IStockInOrderLevel2DetailService;
 import com.aiurt.boot.modules.secondLevelWarehouse.service.IStockInOrderLevel2Service;
 import com.aiurt.common.aspect.annotation.AutoLog;
+import com.aiurt.common.exception.AiurtBootException;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -135,7 +136,7 @@ public class StockInOrderLevel2Controller {
     public ModelAndView exportXls(
             @ApiParam(value = "行数据ids" ,required = true) @RequestParam("selections") List<Integer> selections) {
         if(CollUtil.isEmpty(selections)){
-            throw new SwscException("行数据ids不能为空");
+            throw new AiurtBootException("行数据ids不能为空");
         }
         // 导出Excel
         ModelAndView mv = new ModelAndView(new JeecgEntityExcelView());

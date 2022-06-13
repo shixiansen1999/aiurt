@@ -1,14 +1,12 @@
 package com.aiurt.boot.modules.secondLevelWarehouse.controller;
 
 import cn.hutool.core.collection.CollUtil;
-import com.aiurt.boot.common.enums.MaterialApplyCommitEnum;
-import com.aiurt.boot.common.system.api.ISysBaseAPI;
-import com.aiurt.boot.common.util.TokenUtils;
 import com.aiurt.boot.modules.secondLevelWarehouse.entity.SparePartApply;
 import com.aiurt.boot.modules.secondLevelWarehouse.entity.dto.*;
 import com.aiurt.boot.modules.secondLevelWarehouse.entity.vo.SparePartApplyVO;
 import com.aiurt.boot.modules.secondLevelWarehouse.service.ISparePartApplyService;
 import com.aiurt.common.aspect.annotation.AutoLog;
+import com.aiurt.common.enums.MaterialApplyCommitEnum;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -16,7 +14,10 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.system.api.ISysBaseAPI;
+import org.jeecg.common.system.vo.LoginUser;
 import org.jeecgframework.poi.excel.def.NormalExcelConstants;
 import org.jeecgframework.poi.excel.entity.ExportParams;
 import org.jeecgframework.poi.excel.entity.enmus.ExcelType;
@@ -130,7 +131,8 @@ public class SparePartApplyController {
     public Result<SparePartApply> edit(@RequestParam("ids") List<Integer> ids,
                                        HttpServletRequest req) {
         Result<SparePartApply> result = new Result<SparePartApply>();
-        String userId = TokenUtils.getUserId(req, iSysBaseAPI);
+        LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        String userId = sysUser.getId();
 
         if (CollUtil.isEmpty(ids)) {
             result.error500("ids不能为空");

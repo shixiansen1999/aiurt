@@ -2,10 +2,6 @@ package com.aiurt.boot.modules.secondLevelWarehouse.service.impl;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjectUtil;
-import com.aiurt.boot.common.enums.MaterialTypeEnum;
-import com.aiurt.boot.common.enums.ProductiveTypeEnum;
-import com.aiurt.boot.common.exception.SwscException;
-import com.aiurt.boot.common.system.vo.LoginUser;
 import com.aiurt.boot.modules.device.entity.DeviceSmallType;
 import com.aiurt.boot.modules.device.entity.DeviceType;
 import com.aiurt.boot.modules.device.service.IDeviceSmallTypeService;
@@ -18,12 +14,16 @@ import com.aiurt.boot.modules.secondLevelWarehouse.entity.vo.MaterialBaseResult;
 import com.aiurt.boot.modules.secondLevelWarehouse.mapper.MaterialBaseMapper;
 import com.aiurt.boot.modules.secondLevelWarehouse.service.IMaterialBaseService;
 import com.aiurt.boot.modules.secondLevelWarehouse.vo.MaterialBaseParam;
+import com.aiurt.common.enums.MaterialTypeEnum;
+import com.aiurt.common.enums.ProductiveTypeEnum;
+import com.aiurt.common.exception.AiurtBootException;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.apache.commons.lang.StringUtils;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.system.vo.LoginUser;
 import org.jeecgframework.poi.excel.ExcelImportUtil;
 import org.jeecgframework.poi.excel.entity.ImportParams;
 import org.springframework.beans.BeanUtils;
@@ -126,7 +126,7 @@ public class MaterialBaseServiceImpl extends ServiceImpl<MaterialBaseMapper, Mat
                         if (ObjectUtil.isNotEmpty(one)) {
                             input.setTypeCode(one.getCode());
                         }else {
-                            throw new SwscException("输入物资大类不规范");
+                            throw new AiurtBootException("输入物资大类不规范");
                         }
 
                         if (StringUtils.isNotBlank(input.getSmallTypeName())) {
@@ -134,13 +134,13 @@ public class MaterialBaseServiceImpl extends ServiceImpl<MaterialBaseMapper, Mat
                             if (ObjectUtil.isNotEmpty(smallType)) {
                                 input.setSmallTypeCode(smallType.getCode());
                             }else {
-                                throw new SwscException("输入物资小类不规范");
+                                throw new AiurtBootException("输入物资小类不规范");
                             }
                         }else {
-                            throw new SwscException("物资小类不能为空");
+                            throw new AiurtBootException("物资小类不能为空");
                         }
                     }else {
-                        throw new SwscException("物资大类不能为空");
+                        throw new AiurtBootException("物资大类不能为空");
                     }
 
 
@@ -149,10 +149,10 @@ public class MaterialBaseServiceImpl extends ServiceImpl<MaterialBaseMapper, Mat
                         if (ObjectUtil.isNotEmpty(one)){
                             input.setSystemCode(one.getSystemCode());
                         }else {
-                            throw new SwscException("输入系统名称不规范");
+                            throw new AiurtBootException("输入系统名称不规范");
                         }
                     }else {
-                        throw new SwscException("系统名称不能为空");
+                        throw new AiurtBootException("系统名称不能为空");
                     }
                     if (StringUtils.isNotBlank(input.getTypeName())) {
                         if (ProductiveTypeEnum.SCLX.getMessage().equals(input.getTypeName())){
@@ -160,20 +160,20 @@ public class MaterialBaseServiceImpl extends ServiceImpl<MaterialBaseMapper, Mat
                         }else if (ProductiveTypeEnum.FSCLX.getMessage().equals(input.getTypeName())) {
                             input.setType(ProductiveTypeEnum.FSCLX.getCode());
                         }else {
-                            throw new SwscException("输入物资类型不规范");
+                            throw new AiurtBootException("输入物资类型不规范");
                         }
                     }else {
-                        throw new SwscException("物资类型不能为空");
+                        throw new AiurtBootException("物资类型不能为空");
                     }
                     if (StringUtils.isBlank(input.getCode())) {
-                        throw new SwscException("物资编号不能为空");
+                        throw new AiurtBootException("物资编号不能为空");
                     }
                     if (StringUtils.isBlank(input.getUnit())) {
-                        throw new SwscException("单位不能为空");
+                        throw new AiurtBootException("单位不能为空");
                     }
                     List<MaterialBase> code = materialBaseMapper.selectList(new QueryWrapper<MaterialBase>().eq(MaterialBase.CODE, input.getCode()));
                     if (CollUtil.isNotEmpty(code)) {
-                        throw new SwscException("操作失败,该物资编号已存在，请重新输入");
+                        throw new AiurtBootException("操作失败,该物资编号已存在，请重新输入");
                     }
                     MaterialBase materialBase = new MaterialBase();
                     materialBase.setCreateBy(user.getId());
@@ -183,7 +183,7 @@ public class MaterialBaseServiceImpl extends ServiceImpl<MaterialBaseMapper, Mat
                 return Result.ok("文件导入成功！数据行数:" + list.size());
             } catch (Exception e) {
                 log.error(e.getMessage(),e);
-                throw new SwscException("文件导入失败:"+e);
+                throw new AiurtBootException("文件导入失败:"+e);
             } finally {
                 try {
                     file.getInputStream().close();

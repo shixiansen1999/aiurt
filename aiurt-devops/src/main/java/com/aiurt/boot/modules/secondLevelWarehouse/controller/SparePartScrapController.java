@@ -1,13 +1,5 @@
 package com.aiurt.boot.modules.secondLevelWarehouse.controller;
 
-import com.aiurt.boot.common.constant.CommonConstant;
-import com.aiurt.boot.common.exception.SwscException;
-import com.aiurt.boot.common.result.ReportRepairResult;
-import com.aiurt.boot.common.result.ReportWasteResult;
-import com.aiurt.boot.common.result.ScrapReportResult;
-import com.aiurt.boot.common.system.api.ISysBaseAPI;
-import com.aiurt.boot.common.system.vo.LoginUser;
-import com.aiurt.boot.common.util.TokenUtils;
 import com.aiurt.boot.modules.secondLevelWarehouse.entity.SparePartScrap;
 import com.aiurt.boot.modules.secondLevelWarehouse.entity.SparePartStock;
 import com.aiurt.boot.modules.secondLevelWarehouse.entity.dto.ReportRepairDTO;
@@ -18,6 +10,11 @@ import com.aiurt.boot.modules.secondLevelWarehouse.entity.vo.SparePartScrapVO;
 import com.aiurt.boot.modules.secondLevelWarehouse.service.ISparePartScrapService;
 import com.aiurt.boot.modules.secondLevelWarehouse.service.ISparePartStockService;
 import com.aiurt.common.aspect.annotation.AutoLog;
+import com.aiurt.common.constant.CommonConstant;
+import com.aiurt.common.exception.AiurtBootException;
+import com.aiurt.common.result.ReportRepairResult;
+import com.aiurt.common.result.ReportWasteResult;
+import com.aiurt.common.result.ScrapReportResult;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.annotations.Api;
@@ -25,6 +22,8 @@ import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.system.api.ISysBaseAPI;
+import org.jeecg.common.system.vo.LoginUser;
 import org.jeecgframework.poi.excel.def.NormalExcelConstants;
 import org.jeecgframework.poi.excel.entity.ExportParams;
 import org.jeecgframework.poi.excel.entity.enmus.ExcelType;
@@ -124,7 +123,8 @@ public class SparePartScrapController {
     @ApiOperation(value = "备件报损-编辑", notes = "备件报损-编辑")
     @PutMapping(value = "/edit")
     public Result<SparePartScrap> edit(@RequestBody SparePartScrap sparePartScrap,HttpServletRequest req) {
-        String userId = TokenUtils.getUserId(req, iSysBaseAPI);
+        LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        String userId = sysUser.getId();
         Result<SparePartScrap> result = new Result<SparePartScrap>();
         SparePartScrap sparePartScrapEntity = sparePartScrapService.getById(sparePartScrap.getId());
         if (sparePartScrapEntity == null) {
@@ -184,7 +184,7 @@ public class SparePartScrapController {
     @PostMapping(value = "/reportRepair")
     public Result reportRepair(@Valid @RequestBody ReportRepairDTO dto){
         if (dto.getId()==null) {
-            throw new SwscException("id不能为空！");
+            throw new AiurtBootException("id不能为空！");
         }
         Result<Object> result = new Result<>();
         try {
@@ -208,7 +208,7 @@ public class SparePartScrapController {
     @Transactional(rollbackFor = Exception.class)
     public Result reportWaste(@Valid @RequestBody ReportWasteDTO dto){
         if (dto.getId()==null) {
-            throw new SwscException("id不能为空！");
+            throw new AiurtBootException("id不能为空！");
         }
         SparePartScrap sparePartScrap = sparePartScrapService.getById(dto.getId());
         SparePartStock stock = sparePartStockService.lambdaQuery().eq(SparePartStock::getDelFlag, CommonConstant.DEL_FLAG_0)
@@ -232,7 +232,7 @@ public class SparePartScrapController {
             }
             return Result.ok("报废成功");
         }else {
-            throw new SwscException("报废失败");
+            throw new AiurtBootException("报废失败");
         }
     }
 

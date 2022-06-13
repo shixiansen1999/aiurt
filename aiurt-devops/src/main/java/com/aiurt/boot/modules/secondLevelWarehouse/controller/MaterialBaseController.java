@@ -1,9 +1,6 @@
 package com.aiurt.boot.modules.secondLevelWarehouse.controller;
 
 import cn.hutool.core.util.ObjectUtil;
-import com.aiurt.boot.common.enums.MaterialTypeEnum;
-import com.aiurt.boot.common.exception.SwscException;
-import com.aiurt.boot.common.system.vo.LoginUser;
 import com.aiurt.boot.modules.secondLevelWarehouse.entity.MaterialBase;
 import com.aiurt.boot.modules.secondLevelWarehouse.entity.vo.EnumTypeVO;
 import com.aiurt.boot.modules.secondLevelWarehouse.entity.vo.MaterialBaseResult;
@@ -11,6 +8,8 @@ import com.aiurt.boot.modules.secondLevelWarehouse.mapper.MaterialBaseMapper;
 import com.aiurt.boot.modules.secondLevelWarehouse.service.IMaterialBaseService;
 import com.aiurt.boot.modules.secondLevelWarehouse.vo.MaterialBaseParam;
 import com.aiurt.common.aspect.annotation.AutoLog;
+import com.aiurt.common.enums.MaterialTypeEnum;
+import com.aiurt.common.exception.AiurtBootException;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -20,6 +19,7 @@ import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.web.bind.annotation.*;
 
@@ -114,7 +114,7 @@ public class MaterialBaseController {
 		Result<MaterialBase> result = new Result<MaterialBase>();
 		List<MaterialBase> code = materialBaseMapper.selectList(new QueryWrapper<MaterialBase>().eq(MaterialBase.CODE, materialBase.getCode()));
 		if (ObjectUtil.isNotEmpty(code)) {
-			throw new SwscException("操作失败,该物资编号已存在，请重新输入！");
+			throw new AiurtBootException("操作失败,该物资编号已存在，请重新输入！");
 		}
 		try {
 			materialBase.setCreateBy(user.getId());

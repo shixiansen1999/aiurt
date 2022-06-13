@@ -1,12 +1,6 @@
 package com.aiurt.boot.modules.secondLevelWarehouse.service.impl;
 
 import cn.hutool.core.util.ObjectUtil;
-import com.aiurt.boot.common.enums.LendStatusEnum;
-import com.aiurt.boot.common.enums.MaterialLendStatus;
-import com.aiurt.boot.common.enums.MaterialTypeEnum;
-import com.aiurt.boot.common.exception.SwscException;
-import com.aiurt.boot.common.system.api.ISysBaseAPI;
-import com.aiurt.boot.common.util.TokenUtils;
 import com.aiurt.boot.modules.secondLevelWarehouse.entity.*;
 import com.aiurt.boot.modules.secondLevelWarehouse.entity.dto.SparePartLendDTO;
 import com.aiurt.boot.modules.secondLevelWarehouse.entity.dto.SparePartLendParam;
@@ -17,14 +11,19 @@ import com.aiurt.boot.modules.secondLevelWarehouse.service.ISparePartInOrderServ
 import com.aiurt.boot.modules.secondLevelWarehouse.service.ISparePartLendService;
 import com.aiurt.boot.modules.secondLevelWarehouse.service.ISparePartOutOrderService;
 import com.aiurt.boot.modules.secondLevelWarehouse.service.ISparePartStockService;
-import com.aiurt.boot.modules.system.entity.SysUser;
-import com.aiurt.boot.modules.system.service.ISysUserService;
+import com.aiurt.common.enums.LendStatusEnum;
+import com.aiurt.common.enums.MaterialLendStatus;
+import com.aiurt.common.enums.MaterialTypeEnum;
+import com.aiurt.common.exception.AiurtBootException;
 import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.system.api.ISysBaseAPI;
+import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -48,8 +47,8 @@ public class SparePartLendServiceImpl extends ServiceImpl<SparePartLendMapper, S
     private ISparePartStockService iSparePartStockService;
     @Resource
     private ISparePartOutOrderService iSparePartOutOrderService;
-    @Resource
-    private ISysUserService sysUserService;
+//    @Resource
+//    private ISysUserService sysUserService;
     @Resource
     private ISparePartInOrderService iSparePartInOrderService;
     @Resource
@@ -84,15 +83,19 @@ public class SparePartLendServiceImpl extends ServiceImpl<SparePartLendMapper, S
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Result<?> addLend(Result<?> result, SparePartLendDTO dto, HttpServletRequest req) {
-        String userId = TokenUtils.getUserId(req, iSysBaseAPI);
-        String orgId = sysUserService.getOne(new QueryWrapper<SysUser>().eq(SysUser.ID, userId), false).getOrgId();
+        LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        String userId = sysUser.getId();
+        // todo 后期修改
+        String orgId = "";
+//        String orgId = sysUserService.getOne(new QueryWrapper<SysUser>().eq(SysUser.ID, userId), false).getOrgId();
+
         //判断库存够不够
         SparePartStock one = iSparePartStockService.getOne(new QueryWrapper<SparePartStock>()
                 .eq(SparePartStock.ORG_ID, orgId)
                 .eq(SparePartStock.MATERIAL_CODE, dto.getMaterialCode()), false);
         if(ObjectUtil.isNotEmpty(one)){
             if(one.getNum()<dto.getLendNum()){
-                throw new SwscException("备件："+dto.getMaterialCode()+" 库存不足");
+                throw new AiurtBootException("备件："+dto.getMaterialCode()+" 库存不足");
             }
         }
         //新增借出记录
@@ -135,7 +138,9 @@ public class SparePartLendServiceImpl extends ServiceImpl<SparePartLendMapper, S
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Result<?> returnMaterial(SparePartLend sparePartLendEntity, Integer returnNum,HttpServletRequest req) {
-        String userId = TokenUtils.getUserId(req, iSysBaseAPI);
+        LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        String userId = sysUser.getId();
+
         //借出信息修改
         sparePartLendEntity.setStatus(MaterialLendStatus.RETURNED.getCode());
         sparePartLendEntity.setBackNum(returnNum);
@@ -152,7 +157,7 @@ public class SparePartLendServiceImpl extends ServiceImpl<SparePartLendMapper, S
         sparePartInOrder.setUpdateBy(userId);
         iSparePartInOrderService.save(sparePartInOrder);
         if (returnNum > sparePartLendEntity.getConfirmNum()) {
-            throw new SwscException("还回数量不能超过确认借出数量");
+            throw new AiurtBootException("还回数量不能超过确认借出数量");
         }
         //库存增加
         SparePartStock one = iSparePartStockService.getOne(new QueryWrapper<SparePartStock>()
@@ -174,7 +179,8 @@ public class SparePartLendServiceImpl extends ServiceImpl<SparePartLendMapper, S
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Result<?> lendConfirm(SparePartLend sparePartLend, Integer confirmNum, HttpServletRequest req) {
-        String userId = TokenUtils.getUserId(req, iSysBaseAPI);
+        LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        String userId = sysUser.getId();
         sparePartLend.setLendConfirm(1);
         sparePartLend.setOutTime(new Date());
         sparePartLend.setConfirmNum(confirmNum);
@@ -192,10 +198,10 @@ public class SparePartLendServiceImpl extends ServiceImpl<SparePartLendMapper, S
                 .eq(SparePartStock.ORG_ID, sparePartLend.getOrgId())
                 .eq(SparePartStock.MATERIAL_CODE, sparePartLend.getMaterialCode()), false);
         if (ObjectUtil.isEmpty(one)) {
-            throw new SwscException("确认失败");
+            throw new AiurtBootException("确认失败");
         }
         if (confirmNum>sparePartLend.getLendNum()) {
-            throw new SwscException("借出数量不能超过申请数量");
+            throw new AiurtBootException("借出数量不能超过申请数量");
         }
         //库存减少
         one.setNum(one.getNum()-sparePartLend.getLendNum());

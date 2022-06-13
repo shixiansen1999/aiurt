@@ -1,13 +1,13 @@
 package com.aiurt.boot.modules.statistical.controller;
 
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.aiurt.boot.common.result.SpareConsumeNum;
 import com.aiurt.boot.modules.device.entity.Device;
 import com.aiurt.boot.modules.device.service.IDeviceService;
 import com.aiurt.boot.modules.manage.entity.Station;
 import com.aiurt.boot.modules.manage.mapper.StationMapper;
 import com.aiurt.boot.modules.secondLevelWarehouse.service.ISparePartScrapService;
 import com.aiurt.boot.modules.statistical.vo.DeviceDataVo;
+import com.aiurt.common.result.SpareConsumeNum;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;

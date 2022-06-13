@@ -1,18 +1,16 @@
 package com.aiurt.boot.modules.secondLevelWarehouse.controller;
 
-import com.aiurt.boot.common.constant.CommonConstant;
-import com.aiurt.boot.common.system.vo.LoginUser;
-import com.aiurt.boot.common.util.RoleAdditionalUtils;
-import com.aiurt.boot.common.util.oConvertUtils;
+
 import com.aiurt.boot.modules.manage.entity.Subsystem;
 import com.aiurt.boot.modules.manage.service.ISubsystemService;
 import com.aiurt.boot.modules.secondLevelWarehouse.entity.EscalationPlan;
 import com.aiurt.boot.modules.secondLevelWarehouse.service.IEscalationPlanService;
 import com.aiurt.boot.modules.secondLevelWarehouse.vo.EscalationPlanExportVO;
-import com.aiurt.boot.modules.system.entity.SysDictItem;
-import com.aiurt.boot.modules.system.service.ISysDictItemService;
 import com.aiurt.common.aspect.annotation.AutoLog;
+import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.exception.AiurtBootException;
+import com.aiurt.common.util.RoleAdditionalUtils;
+import com.aiurt.common.util.oConvertUtils;
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -26,6 +24,8 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.query.QueryGenerator;
+import org.jeecg.common.system.vo.DictModel;
+import org.jeecg.common.system.vo.LoginUser;
 import org.jeecgframework.poi.excel.ExcelImportUtil;
 import org.jeecgframework.poi.excel.def.NormalExcelConstants;
 import org.jeecgframework.poi.excel.entity.ExportParams;
@@ -64,8 +64,8 @@ public class EscalationPlanController {
 
 	@Resource
 	private IEscalationPlanService escalationPlanService;
-	@Resource
-	private ISysDictItemService sysDictItemService;
+//	@Resource
+//	private ISysDictItemService sysDictItemService;
 	@Resource
 	private ISubsystemService subsystemService;
 	@Resource
@@ -251,8 +251,11 @@ public class EscalationPlanController {
 			try {
 				List<EscalationPlanExportVO> listEscalationPlans = ExcelImportUtil.importExcel(file.getInputStream(), EscalationPlanExportVO.class, params);
 
-				List<SysDictItem> type = sysDictItemService.selectByDictCode("escalation_type");
-				List<SysDictItem> funds = sysDictItemService.selectByDictCode("source_funds");
+				// todo 后期修改
+				List<DictModel> type = new ArrayList<>();
+				List<DictModel> funds = new ArrayList<>();
+//				List<DictModel> type = sysDictItemService.selectByDictCode("escalation_type");
+//				List<DictModel> funds = sysDictItemService.selectByDictCode("source_funds");
 				List<Subsystem> systemList = subsystemService.list(new LambdaQueryWrapper<Subsystem>()
 						.eq(Subsystem::getDelFlag, CommonConstant.DEL_FLAG_0)
 						.select(Subsystem::getSystemCode, Subsystem::getSystemName)
@@ -268,8 +271,8 @@ public class EscalationPlanController {
 				}
 
 
-				Map<String, String> fundMap = funds.stream().collect(Collectors.toMap(SysDictItem::getItemText, SysDictItem::getItemValue));
-				Map<String, String> typeMap = type.stream().collect(Collectors.toMap(SysDictItem::getItemText, SysDictItem::getItemValue));
+				Map<String, String> fundMap = funds.stream().collect(Collectors.toMap(DictModel::getText, DictModel::getValue));
+				Map<String, String> typeMap = type.stream().collect(Collectors.toMap(DictModel::getText, DictModel::getValue));
 				Map<String, String> systemMap = systemList.stream().collect(Collectors.toMap(Subsystem::getSystemName, Subsystem::getSystemCode));
 
 				List<EscalationPlan> list = new ArrayList<>();

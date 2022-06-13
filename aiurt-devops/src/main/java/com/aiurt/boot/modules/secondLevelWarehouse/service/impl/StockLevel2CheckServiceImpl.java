@@ -1,9 +1,5 @@
 package com.aiurt.boot.modules.secondLevelWarehouse.service.impl;
 
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.aiurt.boot.common.system.api.ISysBaseAPI;
-import com.aiurt.boot.common.util.TokenUtils;
 import com.aiurt.boot.modules.secondLevelWarehouse.entity.StockLevel2;
 import com.aiurt.boot.modules.secondLevelWarehouse.entity.StockLevel2Check;
 import com.aiurt.boot.modules.secondLevelWarehouse.entity.StockLevel2CheckDetail;
@@ -14,9 +10,13 @@ import com.aiurt.boot.modules.secondLevelWarehouse.mapper.StockLevel2CheckDetail
 import com.aiurt.boot.modules.secondLevelWarehouse.mapper.StockLevel2CheckMapper;
 import com.aiurt.boot.modules.secondLevelWarehouse.mapper.StockLevel2Mapper;
 import com.aiurt.boot.modules.secondLevelWarehouse.service.IStockLevel2CheckService;
-import org.springframework.stereotype.Service;
-
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import org.apache.shiro.SecurityUtils;
+import org.jeecg.common.system.api.ISysBaseAPI;
+import org.jeecg.common.system.vo.LoginUser;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
@@ -44,7 +44,8 @@ public class StockLevel2CheckServiceImpl extends ServiceImpl<StockLevel2CheckMap
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void addCheck(StockLevel2Check check, HttpServletRequest req) {
-        String userId = TokenUtils.getUserId(req, iSysBaseAPI);
+        LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        String userId = sysUser.getId();
 
         //模拟盘点任务单号
         String simulateCheckCode = simulateCheckCode();
