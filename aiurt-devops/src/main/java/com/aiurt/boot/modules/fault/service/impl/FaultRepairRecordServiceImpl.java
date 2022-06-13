@@ -39,9 +39,6 @@ import com.aiurt.boot.modules.secondLevelWarehouse.entity.SparePartStock;
 import com.aiurt.boot.modules.secondLevelWarehouse.service.IMaterialBaseService;
 import com.aiurt.boot.modules.secondLevelWarehouse.service.ISparePartScrapService;
 import com.aiurt.boot.modules.secondLevelWarehouse.service.ISparePartStockService;
-import com.aiurt.boot.modules.system.entity.SysUser;
-import com.aiurt.boot.modules.system.mapper.SysUserMapper;
-import com.aiurt.boot.modules.system.service.ISysUserService;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.shiro.SecurityUtils;
@@ -86,8 +83,7 @@ public class FaultRepairRecordServiceImpl extends ServiceImpl<FaultRepairRecordM
     @Resource
     private IMaterialBaseService iMaterialBaseService;
 
-    @Resource
-    private SysUserMapper userMapper;
+
 
     @Resource
     private OperationProcessMapper processMapper;
@@ -95,8 +91,6 @@ public class FaultRepairRecordServiceImpl extends ServiceImpl<FaultRepairRecordM
     @Resource
     private IDeviceService deviceService;
 
-    @Resource
-    private ISysUserService sysUserService;
 
     @Resource
     private IFaultService faultService;
@@ -533,13 +527,14 @@ public class FaultRepairRecordServiceImpl extends ServiceImpl<FaultRepairRecordM
             //参与人
             if (StringUtils.isNotBlank(record.getParticipateIds())) {
                 List<String> name = new ArrayList<String>();
-                List<String> ids = Arrays.asList(record.getParticipateIds().split(","));
+                // todc
+               /* List<String> ids = Arrays.asList(record.getParticipateIds().split(","));
                 List<SysUser> userList = userMapper.selectList(new LambdaQueryWrapper<SysUser>()
                         .in(SysUser::getId,ids).eq(SysUser::getDelFlag, CommonConstant.DEL_FLAG_0)
                         .select(SysUser::getRealname));
                 for (SysUser user : userList) {
                     name.add(user.getRealname());
-                }
+                }*/
                 String str = StringUtils.join(name, ",");
                 record.setParticipateNames(str);
             }

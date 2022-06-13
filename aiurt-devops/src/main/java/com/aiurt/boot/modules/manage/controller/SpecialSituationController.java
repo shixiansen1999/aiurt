@@ -2,15 +2,14 @@ package com.aiurt.boot.modules.manage.controller;
 
 import cn.hutool.core.util.ObjectUtil;
 import com.aiurt.common.aspect.annotation.AutoLog;
+import com.aiurt.common.util.DateUtils;
+import com.aiurt.common.util.oConvertUtils;
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.aiurt.boot.common.system.vo.LoginUser;
-import com.aiurt.boot.common.util.DateUtils;
-import com.aiurt.boot.common.util.oConvertUtils;
 import com.aiurt.boot.modules.appMessage.entity.Message;
 import com.aiurt.boot.modules.appMessage.param.MessageAddParam;
 import com.aiurt.boot.modules.appMessage.service.IMessageService;
@@ -19,16 +18,15 @@ import com.aiurt.boot.modules.manage.entity.SpecialSituation;
 import com.aiurt.boot.modules.manage.model.SituationUserModel;
 import com.aiurt.boot.modules.manage.service.ISituationUserService;
 import com.aiurt.boot.modules.manage.service.ISpecialSituationService;
-import com.aiurt.boot.modules.system.entity.SysUser;
-import com.aiurt.boot.modules.system.service.ISysUserRoleService;
-import com.aiurt.boot.modules.system.service.ISysUserService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiModelProperty;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.query.QueryGenerator;
+import org.jeecg.common.system.vo.LoginUser;
 import org.jeecgframework.poi.excel.ExcelImportUtil;
 import org.jeecgframework.poi.excel.def.NormalExcelConstants;
 import org.jeecgframework.poi.excel.entity.ExportParams;
@@ -63,12 +61,11 @@ public class SpecialSituationController {
     private ISpecialSituationService specialSituationService;
     @Autowired
     private ISituationUserService situationUserService;
-    @Autowired
-    private ISysUserService sysUserService;
+
     @Autowired
     private IMessageService messageService;
     @Autowired
-    private ISysUserRoleService sysUserRoleService;
+    private ISysBaseAPI sysBaseAPI;
 
     /**
      * 分页列表查询
@@ -96,13 +93,15 @@ public class SpecialSituationController {
             List<String> userids = situationUserList.stream().map(SituationUser::getUserId).collect(Collectors.toList());
             temp.setSelectedSubSysUsers(String.join(",", userids));
             userids.forEach(s -> {
-                SysUser sysUser=sysUserService.getById(s);
-                if (sysUser!=null){
-                    userNames.add(sysUser.getRealname());
+                LoginUser loginUser = sysBaseAPI.getUserById(s);
+
+                if (loginUser!=null){
+                    userNames.add(loginUser.getRealname());
                 }
             });
             temp.setSituationUsers(userNames.stream().map(String::valueOf).collect(Collectors.joining(",")));
-            temp.setCreaterName(sysUserService.getUserByName(temp.getCreaterName()).getRealname());
+           // todo
+            //temp.setCreaterName(sysUserService.getUserByName(temp.getCreaterName()).getRealname());
         });
         result.setSuccess(true);
         result.setResult(pageList);
@@ -138,9 +137,10 @@ public class SpecialSituationController {
             message.setUpdateTime(new Date());
             String selectedSubSysUsers = specialSituation.getSelectedSubSysUsers();
             List<String> userIds = Arrays.stream(selectedSubSysUsers.split(",")).collect(Collectors.toList());
-            List<String> userNames = sysUserService.list(new LambdaQueryWrapper<SysUser>().in(SysUser::getId, userIds).eq(SysUser::getDelFlag, 0))
-                    .stream().map(SysUser::getRealname).collect(Collectors.toList());
-            MessageAddParam param = MessageAddParam.builder().message(message).userIds(userIds).userNames(userNames).build();
+            // todo
+          /*  List<String> userNames = sysUserService.list(new LambdaQueryWrapper<SysUser>().in(SysUser::getId, userIds).eq(SysUser::getDelFlag, 0))
+                    .stream().map(SysUser::getRealname).collect(Collectors.toList());*/
+            MessageAddParam param = MessageAddParam.builder().message(message).userIds(userIds).userNames(new ArrayList<>()).build();
             messageService.addMessage(param);
             result.success("添加成功！");
         } catch (Exception e) {
@@ -284,7 +284,7 @@ public class SpecialSituationController {
             List<String> userids = situationUserList.stream().map(SituationUser::getUserId).collect(Collectors.toList());
             temp.setSelectedSubSysUsers(String.join(",", userids));
             userids.forEach(s -> {
-                SysUser sysUser=sysUserService.getById(s);
+                LoginUser sysUser=sysBaseAPI.getUserById(s);
                 userNames.add(sysUser.getRealname());
             });
             temp.setSituationUsers(userNames.stream().map(String::valueOf).collect(Collectors.joining(",")));
@@ -377,7 +377,7 @@ public class SpecialSituationController {
 
         if (situationUserList != null && situationUserList.size() > 0) {
             situationUserList.forEach(temp -> {
-                SysUser sysUser = sysUserService.getOne(new QueryWrapper<SysUser>().eq("id", temp.getUserId()));
+                LoginUser sysUser=sysBaseAPI.getUserById(temp.getUserId());
                 if (sysUser!=null){
                     temp.setUserName(sysUser.getRealname());
                 }
@@ -414,7 +414,7 @@ public class SpecialSituationController {
         List<SpecialSituation> specialSituations = new ArrayList<>();
         LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         String userId = user.getId();
-        List<String> userRole = sysUserRoleService.getUserRole(userId);
+        List<String> userRole = sysBaseAPI.getRolesByUsername(user.getUsername());
         //管理员可以看到全部班组特情
         if (userRole.contains("admin")){
             if(oConvertUtils.isNotEmpty(startTime)&&oConvertUtils.isNotEmpty(endTime)) {

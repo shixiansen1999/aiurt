@@ -1,31 +1,28 @@
 package com.aiurt.boot.modules.manage.controller;
 
 import com.aiurt.common.aspect.annotation.AutoLog;
+import com.aiurt.common.constant.CommonConstant;
+import com.aiurt.common.util.RoleAdditionalUtils;
+import com.aiurt.common.util.oConvertUtils;
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-
-import com.aiurt.boot.common.constant.CommonConstant;
-
-import com.aiurt.boot.common.util.RoleAdditionalUtils;
-import com.aiurt.boot.common.util.oConvertUtils;
 import com.aiurt.boot.modules.device.entity.DeviceType;
 import com.aiurt.boot.modules.device.service.IDeviceTypeService;
 import com.aiurt.boot.modules.manage.entity.Subsystem;
 import com.aiurt.boot.modules.manage.entity.SubsystemUser;
 import com.aiurt.boot.modules.manage.service.ISubsystemService;
 import com.aiurt.boot.modules.manage.service.ISubsystemUserService;
-import com.aiurt.boot.modules.system.entity.SysUser;
-import com.aiurt.boot.modules.system.mapper.SysUserMapper;
-import com.aiurt.boot.modules.system.service.ISysUserService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.query.QueryGenerator;
+import org.jeecg.common.system.vo.LoginUser;
 import org.jeecgframework.poi.excel.ExcelImportUtil;
 import org.jeecgframework.poi.excel.def.NormalExcelConstants;
 import org.jeecgframework.poi.excel.entity.ExportParams;
@@ -61,16 +58,15 @@ public class SubsystemController {
     private ISubsystemService subsystemService;
     @Autowired
     private ISubsystemUserService subsystemUserService;
-    @Autowired
-    private ISysUserService userService;
 
     @Autowired
     private IDeviceTypeService deviceTypeService;
-    @Autowired
-    private SysUserMapper userMapper;
 
     @Resource
     private RoleAdditionalUtils roleAdditionalUtils;
+
+    @Autowired
+    private ISysBaseAPI sysBaseAPI;
 
     /**
      * 分页列表查询
@@ -332,33 +328,27 @@ public class SubsystemController {
                     .orderByDesc(DeviceType::getCreateTime)
                     .list();
 
-            List<SysUser> userList = userMapper.selectList(new LambdaQueryWrapper<SysUser>().eq(SysUser::getDelFlag, CommonConstant.DEL_FLAG_0)
-                    .eq(SysUser::getStatus, CommonConstant.STATUS_1));
 
-            Map<String, String> userMap = null;
-            if (CollectionUtils.isNotEmpty(userList)) {
-                userMap = userList.stream().collect(Collectors.toMap(SysUser::getId, SysUser::getRealname));
-            }
 
-            Map<String, String> finalUserMap = userMap;
-            if (finalUserMap != null) {
-                typeList.forEach(type -> {
-                    if (type.getCreateBy() != null) {
-                        String s = finalUserMap.get(type.getUpdateBy());
-                        if (s != null) {
-                            type.setCreateBy(s);
-                        }
+            typeList.forEach(type -> {
+                if (type.getCreateBy() != null) {
+
+                    LoginUser loginUser = sysBaseAPI.getUserById(type.getUpdateBy());
+
+                    if (loginUser != null) {
+                        type.setCreateBy(loginUser.getRealname());
                     }
-                    if (type.getUpdateBy() != null) {
+                }
+                if (type.getUpdateBy() != null) {
 
-                        String s = finalUserMap.get(type.getUpdateBy());
-                        if (s != null) {
-                            type.setUpdateBy(s);
-                        }
+                    LoginUser loginUser = sysBaseAPI.getUserById(type.getUpdateBy());
+                    if (loginUser != null) {
+                        type.setUpdateBy(loginUser.getRealname());
                     }
-                    type.setSystemName(map.get(type.getSystemCode()));
-                });
-            }
+                }
+                type.setSystemName(map.get(type.getSystemCode()));
+            });
+
             Map<String, List<DeviceType>> typeMap = null;
             if (CollectionUtils.isNotEmpty(typeList)) {
                 typeMap = typeList.stream().collect(Collectors.groupingBy(DeviceType::getSystemCode));
@@ -380,10 +370,12 @@ public class SubsystemController {
     }
 
     @GetMapping("getUserData")
-    public Result<List<SysUser>> getUserData() {
+    public Result<List<LoginUser>> getUserData() {
         String roleCode = "jishuyuan";
-        Result<List<SysUser>> result = new Result<List<SysUser>>();
-        List<SysUser> userList = userService.selectUsersByRoleCode(roleCode);
+        Result<List<LoginUser>> result = new Result<List<LoginUser>>();
+        // todo
+        List<LoginUser> userList = null;
+        //userService.selectUsersByRoleCode(roleCode);
         result.setResult(userList);
         return result;
     }

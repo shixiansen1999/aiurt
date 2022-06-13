@@ -2,13 +2,12 @@ package com.aiurt.boot.modules.manage.controller;
 
 import cn.hutool.core.util.ObjectUtil;
 import com.aiurt.common.aspect.annotation.AutoLog;
+import com.aiurt.common.util.oConvertUtils;
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-
-import com.aiurt.boot.common.util.oConvertUtils;
 import com.aiurt.boot.modules.manage.entity.Line;
 import com.aiurt.boot.modules.manage.entity.Station;
 import com.aiurt.boot.modules.manage.entity.StationPosition;
@@ -17,15 +16,12 @@ import com.aiurt.boot.modules.manage.model.StationWarning;
 import com.aiurt.boot.modules.manage.service.ILineService;
 import com.aiurt.boot.modules.manage.service.IStationPositionService;
 import com.aiurt.boot.modules.manage.service.IStationService;
-import com.aiurt.boot.modules.system.entity.SysDepart;
-import com.aiurt.boot.modules.system.entity.SysUser;
-import com.aiurt.boot.modules.system.service.ISysDepartService;
-import com.aiurt.boot.modules.system.service.ISysUserService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.query.QueryGenerator;
 import org.jeecgframework.poi.excel.ExcelImportUtil;
 import org.jeecgframework.poi.excel.def.NormalExcelConstants;
@@ -62,14 +58,11 @@ public class StationController {
     @Autowired
     private IStationService stationService;
     @Autowired
-    private ISysDepartService departService;
-    @Autowired
-    private ISysUserService userService;
-    @Autowired
     private IStationPositionService positionService;
     @Autowired
     private ILineService lineService;
-
+    @Autowired
+    ISysBaseAPI sysBaseAPI;
     /**
      * 分页列表查询
      *
@@ -92,10 +85,11 @@ public class StationController {
         queryWrapper.orderByAsc("sort");
         IPage<Station> pageList = stationService.page(page, queryWrapper);
         pageList.getRecords().forEach(temp -> {
-            SysDepart depart = departService.getById(temp.getTeamId());
+          // todo
+           /* SysDepart depart = departService.getById(temp.getTeamId());
             if (depart != null) {
                 temp.setTeamName(depart.getDepartName());
-            }
+            }*/
         });
         result.setSuccess(true);
         result.setResult(pageList);
@@ -375,13 +369,15 @@ public class StationController {
         if (StringUtils.isNotEmpty(tid)) {
             stationList = stationService.list(new QueryWrapper<Station>().eq("team_id", tid).eq("del_flag", 0));
             stationList.forEach(station -> {
-                SysDepart depart = departService.getOne(new QueryWrapper<SysDepart>().eq("id", station.getTeamId()).eq("del_flag", 0));
+                // todo
+                /*SysDepart depart = departService.getOne(new QueryWrapper<SysDepart>().eq("id", station.getTeamId()).eq("del_flag", 0));
                 station.setTeamName(depart != null ? depart.getDepartName() : "");
                 Line line = lineService.getById(station.getLineId());
-                station.setLineCode(line != null ? line.getLineCode() : "");
+                station.setLineCode(line != null ? line.getLineCode() : "");*/
             });
         } else {
-            SysUser user = userService.getById(uid);
+            // todo
+           /* SysUser user = userService.getById(uid);
             if (user != null) {
                 stationList = stationService.list(new QueryWrapper<Station>().eq("team_id", user.getOrgId()).eq("del_flag", 0));
                 stationList.forEach(station -> {
@@ -390,7 +386,7 @@ public class StationController {
                     Line line = lineService.getById(station.getLineId());
                     station.setLineCode(line != null ? line.getLineCode() : "");
                 });
-            }
+            }*/
         }
         if (stationList.size() > 0 && stationList != null) {
             result.setResult(stationList);

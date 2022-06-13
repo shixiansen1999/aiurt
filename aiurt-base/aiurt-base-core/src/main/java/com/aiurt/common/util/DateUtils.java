@@ -888,4 +888,17 @@ public class DateUtils extends PropertyEditorSupport {
         }
         return dateList;
     }
+
+
+    public static Date getNowDate() {
+        Date now = new Date();
+        Calendar cal1 = Calendar.getInstance();
+        cal1.setTime(now);
+        // 将时分秒,毫秒域清零
+        cal1.set(Calendar.HOUR_OF_DAY, 0);
+        cal1.set(Calendar.MINUTE, 0);
+        cal1.set(Calendar.SECOND, 0);
+        cal1.set(Calendar.MILLISECOND, 0);
+        return cal1.getTime();
+    }
 }

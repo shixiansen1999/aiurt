@@ -1,12 +1,14 @@
 package com.aiurt.boot.modules.fault.service.impl;
 
+import com.aiurt.common.util.TokenUtils;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.aiurt.boot.common.system.api.ISysBaseAPI;
-import com.aiurt.boot.common.util.TokenUtils;
 import com.aiurt.boot.modules.fault.entity.FaultKnowledgeBaseType;
 import com.aiurt.boot.modules.fault.mapper.FaultKnowledgeBaseTypeMapper;
 import com.aiurt.boot.modules.fault.service.IFaultKnowledgeBaseTypeService;
+import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.system.api.ISysBaseAPI;
+import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -45,8 +47,8 @@ public class FaultKnowledgeBaseTypeServiceImpl extends ServiceImpl<FaultKnowledg
         }
         type.setName(baseType.getName());
         type.setDelFlag(0);
-        String userId = TokenUtils.getUserId(req, iSysBaseAPI);
-        type.setCreateBy(userId);
+        LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        type.setCreateBy(sysUser.getId());
         baseTypeMapper.insert(type);
         return Result.ok();
     }
