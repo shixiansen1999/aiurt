@@ -1,10 +1,10 @@
 package com.aiurt.boot.modules.oss.service.impl;
 
+import com.aiurt.common.util.oss.OssBootUtil;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.aiurt.boot.modules.oss.entity.OSSFile;
 import com.aiurt.boot.modules.oss.mapper.OSSFileMapper;
 import com.aiurt.boot.modules.oss.service.IOSSFileService;
-import com.aiurt.boot.common.util.oss.OssBootUtil;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
