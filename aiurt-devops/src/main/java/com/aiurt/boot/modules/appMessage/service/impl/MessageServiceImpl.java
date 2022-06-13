@@ -1,5 +1,6 @@
 package com.aiurt.boot.modules.appMessage.service.impl;
 
+import com.aiurt.common.util.SpringContextUtils;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -13,9 +14,10 @@ import com.aiurt.boot.modules.appMessage.service.IMessageReadService;
 import com.aiurt.boot.modules.appMessage.service.IMessageService;
 import com.aiurt.boot.modules.appMessage.vo.MessageStatusVO;
 import com.aiurt.boot.modules.appMessage.vo.MessageUserVO;
-import com.aiurt.boot.modules.message.websocket.WebSocket;
 import lombok.RequiredArgsConstructor;
+import okhttp3.WebSocket;
 import org.apache.shiro.SecurityUtils;
+import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -110,7 +112,8 @@ public class MessageServiceImpl extends ServiceImpl<MessageMapper, Message> impl
 		obj.put("msg", message.getContent());
 
 		for (String userId : param.getUserIds()) {
-			webSocket.sendOneMessage(userId, obj.toJSONString());
+			//todo 发送消息
+			// webSocket.sendOneMessage(userId, obj.toJSONString());
 		}
 		return true;
 	}
