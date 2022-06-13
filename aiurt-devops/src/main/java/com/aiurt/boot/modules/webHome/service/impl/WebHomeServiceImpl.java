@@ -6,7 +6,6 @@ import com.aiurt.boot.modules.patrol.entity.PatrolPool;
 import com.aiurt.boot.modules.patrol.param.StatisticsParam;
 import com.aiurt.boot.modules.patrol.service.IPatrolPoolService;
 import com.aiurt.boot.modules.sysFile.entity.SimpNameVO;
-import com.aiurt.boot.modules.system.service.ISysDepartService;
 import com.aiurt.boot.modules.webHome.service.WebHomeService;
 import com.aiurt.common.constant.CommonConstant;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -31,7 +30,7 @@ public class WebHomeServiceImpl implements WebHomeService {
 
 	private final ISubsystemService subsystemService;
 
-	private final ISysDepartService sysDepartService;
+//	private final ISysDepartService sysDepartService;
 
 	@Override
 	public List<PatrolPool> getSize(StatisticsParam param) {

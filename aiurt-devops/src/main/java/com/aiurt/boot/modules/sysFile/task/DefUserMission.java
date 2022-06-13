@@ -1,10 +1,10 @@
 package com.aiurt.boot.modules.sysFile.task;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
-import com.aiurt.boot.common.util.TaskStatusUtil;
 import com.aiurt.boot.modules.sysFile.entity.DefaultUser;
 import com.aiurt.boot.modules.sysFile.service.DefaultUserService;
+import com.aiurt.common.util.TaskStatusUtil;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;

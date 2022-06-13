@@ -21,6 +21,7 @@ import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.system.vo.SysDepartModel;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -59,8 +60,8 @@ public class WebHomeController {
 	@Resource
 	private UserListenerUtils userListenerUtils;
 
-	@Resource
-	private ISysDepartService sysDepartService;
+//	@Resource
+//	private ISysDepartService sysDepartService;
 
 	@Resource
 	private ISubsystemService subsystemService;
@@ -104,16 +105,18 @@ public class WebHomeController {
 			param.setEndTime(startTime);
 		}
 		List<Subsystem> subsystemList = subsystemService.lambdaQuery().eq(Subsystem::getDelFlag, CommonConstant.DEL_FLAG_0).select(Subsystem::getSystemCode).list();
-		List<SysDepart> departList = sysDepartService.lambdaQuery()
-				.select(SysDepart::getId, SysDepart::getDepartName)
-				.eq(SysDepart::getOrgType,2).list();
+		// todo 后期修改
+		List<SysDepartModel> departList = new ArrayList<>();
+//		List<SysDepartModel> departList = sysDepartService.lambdaQuery()
+//				.select(SysDepart::getId, SysDepart::getDepartName)
+//				.eq(SysDepart::getOrgType,2).list();
 
 		List<Station> stationList = stationService.lambdaQuery().eq(Station::getDelFlag, CommonConstant.DEL_FLAG_0).select(Station::getId).list();
 		if (CollectionUtils.isEmpty(subsystemList)||CollectionUtils.isEmpty(departList) ||CollectionUtils.isEmpty(stationList)){
 			return Result.ok(homeVO);
 		}
 
-		Map<String, String> departMap = departList.stream().collect(Collectors.toMap(SysDepart::getId, SysDepart::getDepartName));
+		Map<String, String> departMap = departList.stream().collect(Collectors.toMap(SysDepartModel::getId, SysDepartModel::getDepartName));
 		List<String> codeList = subsystemList.stream().map(Subsystem::getSystemCode).collect(Collectors.toList());
 		List<Integer> stationIds = stationList.stream().map(Station::getId).collect(Collectors.toList());
 

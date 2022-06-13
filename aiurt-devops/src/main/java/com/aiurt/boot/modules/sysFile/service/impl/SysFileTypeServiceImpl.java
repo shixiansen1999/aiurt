@@ -1,7 +1,5 @@
 package com.aiurt.boot.modules.sysFile.service.impl;
 
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.aiurt.boot.common.exception.SwscException;
 import com.aiurt.boot.modules.sysFile.entity.SysFileRole;
 import com.aiurt.boot.modules.sysFile.entity.SysFileType;
 import com.aiurt.boot.modules.sysFile.mapper.SysFileTypeMapper;
@@ -12,11 +10,13 @@ import com.aiurt.boot.modules.sysFile.service.ISysFileTypeService;
 import com.aiurt.boot.modules.sysFile.vo.SimpUserVO;
 import com.aiurt.boot.modules.sysFile.vo.SysFileTypeDetailVO;
 import com.aiurt.boot.modules.sysFile.vo.SysFileTypeTreeVO;
-import com.aiurt.boot.modules.system.entity.SysUser;
-import com.aiurt.boot.modules.system.service.ISysUserService;
+import com.aiurt.common.exception.AiurtBootException;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
+import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,7 +24,6 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.servlet.http.HttpServletRequest;
 import java.util.*;
 import java.util.stream.Collectors;
-import org.jeecg.common.api.vo.Result;
 /**
  * @Description: 文档类型表
  * @Author: swsc
@@ -38,7 +37,7 @@ public class SysFileTypeServiceImpl extends ServiceImpl<SysFileTypeMapper, SysFi
 
 	private final ISysFileRoleService roleService;
 
-	private final ISysUserService userService;
+//	private final ISysUserService userService;
 
 	@Override
 	public Result<List<SysFileTypeTreeVO>> tree(String userId) {
@@ -59,7 +58,7 @@ public class SysFileTypeServiceImpl extends ServiceImpl<SysFileTypeMapper, SysFi
 
 		type.setGrade(param.getGrade()).setName(param.getName()).setDelFlag(0).setParentId(param.getParentId());
 		if (!this.save(type)) {
-			throw new SwscException("添加分类未成功,请稍后重试");
+			throw new AiurtBootException("添加分类未成功,请稍后重试");
 		}
 
 		List<String> editIds = param.getEditIds();
@@ -130,10 +129,12 @@ public class SysFileTypeServiceImpl extends ServiceImpl<SysFileTypeMapper, SysFi
 					if (CollectionUtils.isNotEmpty(listMap.get(1))) {
 						Optional.ofNullable(listMap.get(1)).ifPresent(roles -> {
 							List<String> ids = roles.stream().map(SysFileRole::getUserId).collect(Collectors.toList());
-							Collection<SysUser> sysUsers = userService.listByIds(ids);
+                            // todo 后期修改
+							Collection<LoginUser> sysUsers = new ArrayList<>();
+//							Collection<LoginUser> sysUsers = userService.listByIds(ids);
 							if (sysUsers != null && sysUsers.size() > 0) {
 								Set<SimpUserVO> userList = new HashSet<>();
-								for (SysUser sysUser : sysUsers) {
+								for (LoginUser sysUser : sysUsers) {
 									userList.add(new SimpUserVO().setUserId(sysUser.getId()).setUserName(sysUser.getRealname()));
 								}
 								vo.setEditUsers(userList);
@@ -143,10 +144,12 @@ public class SysFileTypeServiceImpl extends ServiceImpl<SysFileTypeMapper, SysFi
 					//获取查看列表中数据
 					Optional.ofNullable(listMap.get(0)).ifPresent(roles -> {
 						List<String> ids = roles.stream().map(SysFileRole::getUserId).collect(Collectors.toList());
-						Collection<SysUser> sysUsers = userService.listByIds(ids);
+						// todo 后期修改
+						Collection<LoginUser> sysUsers = new ArrayList<>();
+//						Collection<LoginUser> sysUsers = userService.listByIds(ids);
 						if (sysUsers != null && sysUsers.size() > 0) {
 							Set<SimpUserVO> userList = new HashSet<>();
-							for (SysUser sysUser : sysUsers) {
+							for (LoginUser sysUser : sysUsers) {
 								userList.add(new SimpUserVO().setUserId(sysUser.getId()).setUserName(sysUser.getRealname()));
 							}
 							Optional.ofNullable(vo.getEditUsers()).ifPresent(userList::addAll);

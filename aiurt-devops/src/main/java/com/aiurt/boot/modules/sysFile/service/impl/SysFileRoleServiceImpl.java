@@ -1,14 +1,14 @@
 package com.aiurt.boot.modules.sysFile.service.impl;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.aiurt.boot.common.exception.SwscException;
 import com.aiurt.boot.modules.sysFile.entity.SysFileRole;
 import com.aiurt.boot.modules.sysFile.entity.SysFileType;
 import com.aiurt.boot.modules.sysFile.mapper.SysFileRoleMapper;
 import com.aiurt.boot.modules.sysFile.mapper.SysFileTypeMapper;
 import com.aiurt.boot.modules.sysFile.param.SysFileRoleParam;
 import com.aiurt.boot.modules.sysFile.service.ISysFileRoleService;
+import com.aiurt.common.exception.AiurtBootException;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -48,7 +48,7 @@ public class SysFileRoleServiceImpl extends ServiceImpl<SysFileRoleMapper, SysFi
 		fileRole.setLookStatus(1);
 		fileRole.setEditStatus(Optional.ofNullable(param.getEditStatus()).orElse(0));
 		if (!this.save(fileRole)) {
-			throw new SwscException("权限设置未成功,请稍后重试");
+			throw new AiurtBootException("权限设置未成功,请稍后重试");
 		}
 		//添加权限
 		this.addRole(fileRole.getTypeId(), param.getUserId());
@@ -97,7 +97,7 @@ public class SysFileRoleServiceImpl extends ServiceImpl<SysFileRoleMapper, SysFi
 					for (Long typeId : list) {
 						role.setId(null).setTypeId(typeId);
 						if (!this.save(role)) {
-							throw new SwscException("权限设置未成功,请稍后重试");
+							throw new AiurtBootException("权限设置未成功,请稍后重试");
 						}
 					}
 				}
@@ -107,7 +107,7 @@ public class SysFileRoleServiceImpl extends ServiceImpl<SysFileRoleMapper, SysFi
 				for (Long typeId : list) {
 					role.setId(null).setTypeId(typeId);
 					if (!this.save(role)) {
-						throw new SwscException("权限设置未成功,请稍后重试");
+						throw new AiurtBootException("权限设置未成功,请稍后重试");
 					}
 				}
 			}
@@ -168,7 +168,7 @@ public class SysFileRoleServiceImpl extends ServiceImpl<SysFileRoleMapper, SysFi
 				one = new SysFileRole();
 				one.setUserId(userId).setLookStatus(1).setEditStatus(0).setDelFlag(0).setTypeId(id);
 				if (!this.save(one)) {
-					throw new SwscException("权限设置未成功,请稍后重试");
+					throw new AiurtBootException("权限设置未成功,请稍后重试");
 				}
 				list.add(one.getId());
 			}

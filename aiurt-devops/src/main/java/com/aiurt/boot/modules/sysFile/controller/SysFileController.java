@@ -1,6 +1,4 @@
 package com.aiurt.boot.modules.sysFile.controller;
-
-
 import com.aiurt.boot.modules.patrol.constant.PatrolConstant;
 import com.aiurt.boot.modules.sysFile.entity.SysFile;
 import com.aiurt.boot.modules.sysFile.entity.SysFileType;
@@ -121,12 +119,14 @@ public class SysFileController {
 		}
 
 		if (StringUtils.isNotBlank(sysFile.getCreateByName())) {
-			List<SysUser> list = sysUserService.list(new LambdaQueryWrapper<SysUser>()
-					.like(SysUser::getRealname, sysFile.getCreateByName())
-					.select(SysUser::getId)
-					.eq(SysUser::getDelFlag, CommonConstant.DEL_FLAG_0));
+			// todo 后期修改
+			List<LoginUser> list = new ArrayList<>();
+//			List<LoginUser> list = sysUserService.list(new LambdaQueryWrapper<SysUser>()
+//					.like(SysUser::getRealname, sysFile.getCreateByName())
+//					.select(SysUser::getId)
+//					.eq(SysUser::getDelFlag, CommonConstant.DEL_FLAG_0));
 			if (CollectionUtils.isNotEmpty(list)) {
-				List<String> collect = list.stream().map(SysUser::getId).collect(Collectors.toList());
+				List<String> collect = list.stream().map(LoginUser::getId).collect(Collectors.toList());
 				queryWrapper.in(SysFile::getCreateBy, collect);
 			} else {
 				queryWrapper.eq(SysFile::getId, -1);
@@ -135,7 +135,7 @@ public class SysFileController {
 
 		IPage<SysFile> pageList = sysFileService.page(new Page<>(pageNo, pageSize), queryWrapper);
 		Map<Long, SysFileType> map = null;
-		Map<String, SysUser> userMap = null;
+		Map<String, LoginUser> userMap = null;
 
 		if (CollectionUtils.isNotEmpty(pageList.getRecords())) {
 			//获取类型
@@ -144,8 +144,10 @@ public class SysFileController {
 			map = types.stream().collect(Collectors.toMap(SysFileType::getId, s -> s));
 			//获取用户
 			List<String> userIds = pageList.getRecords().stream().map(SysFile::getCreateBy).collect(Collectors.toList());
-			Collection<SysUser> users = sysUserService.listByIds(userIds);
-			userMap = users.stream().collect(Collectors.toMap(SysUser::getId, s -> s));
+			// todo 后期修改
+			Collection<LoginUser> users = new ArrayList<>();
+//			Collection<LoginUser> users = sysUserService.listByIds(userIds);
+			userMap = users.stream().collect(Collectors.toMap(LoginUser::getId, s -> s));
 		}
 		IPage<SysFileVO> pages = new Page<>();
 
@@ -153,7 +155,7 @@ public class SysFileController {
 		List<SysFileVO> records = new ArrayList<>();
 		//若为此用户文件,给予全部权限
 		final Map<Long, SysFileType> finalMap = map;
-		final Map<String, SysUser> finalUserMap = userMap;
+		final Map<String, LoginUser> finalUserMap = userMap;
 		pageList.getRecords().forEach(e -> {
 			SysFileVO vo = new SysFileVO();
 			BeanUtils.copyProperties(e, vo);
@@ -169,7 +171,7 @@ public class SysFileController {
 				}
 			}
 			if (finalUserMap != null) {
-				SysUser user = finalUserMap.get(vo.getCreateBy());
+				LoginUser user = finalUserMap.get(vo.getCreateBy());
 				if (user != null) {
 					vo.setCreateByName(user.getRealname());
 				}
