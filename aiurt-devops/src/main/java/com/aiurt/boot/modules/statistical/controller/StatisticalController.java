@@ -35,6 +35,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.vo.LoginUser;
+import org.jeecg.common.system.vo.SysDepartModel;
 import org.jeecg.common.system.vo.SysDepartScheduleVo;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -361,7 +362,7 @@ public class StatisticalController {
 
     @ApiOperation(value = "查询班组接口", notes = "查询班组接口 ")
     @GetMapping("orgSelect")
-    public Result<List<SysDepartTreeModel>> queryTreeList() {
+    public Result<List<SysDepartModel>> queryTreeList() {
         // todo
         /*Result<List<SysDepartTreeModel>> result = new Result<>();
         try {
