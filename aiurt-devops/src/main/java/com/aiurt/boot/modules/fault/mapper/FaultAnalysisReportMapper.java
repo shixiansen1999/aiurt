@@ -1,8 +1,8 @@
 package com.aiurt.boot.modules.fault.mapper;
 
+import com.aiurt.common.result.FaultAnalysisReportResult;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.aiurt.boot.common.result.FaultAnalysisReportResult;
 import com.aiurt.boot.modules.fault.entity.FaultAnalysisReport;
 import com.aiurt.boot.modules.fault.param.FaultAnalysisReportParam;
 import org.apache.ibatis.annotations.Param;
@@ -21,7 +21,7 @@ public interface FaultAnalysisReportMapper extends BaseMapper<FaultAnalysisRepor
      * @return
      */
     IPage<FaultAnalysisReportResult> queryFaultAnalysisReport(IPage<FaultAnalysisReportResult> page,
-                                                @Param("param") FaultAnalysisReportParam param);
+                                                              @Param("param") FaultAnalysisReportParam param);
 
     /**
      * 根据code查询故障分析报告

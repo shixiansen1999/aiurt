@@ -404,4 +404,14 @@ public interface CommonConstant {
      * 长整型数字0
      */
     public static final Long LONG_NUM_STR_0  = 0L;
+
+    /**
+     * 报修编号长度
+     */
+    public static final Integer REPAIR_CODE_SIZE = 10;
+
+    /**
+     * 已挂起
+     */
+    public static final Integer HANG_STATE = 1;
 }

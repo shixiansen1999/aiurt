@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.aiurt.boot.modules.fault.mapper.OperationProcessMapper">
 
-    <select id="selectByCode" resultType="com.aiurt.boot.common.result.OperationProcessResult">
+    <select id="selectByCode" resultType="com.aiurt.common.result.OperationProcessResult">
         SELECT
 	        op.*,
 	        su.realname AS processPersonName

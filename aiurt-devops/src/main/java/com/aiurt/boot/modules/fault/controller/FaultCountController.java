@@ -1,11 +1,12 @@
 package com.aiurt.boot.modules.fault.controller;
 
-import com.aiurt.boot.common.result.FaultCountResult;
-import com.aiurt.boot.common.result.FaultLevelResult;
-import com.aiurt.boot.common.result.FaultMonthResult;
+
 import com.aiurt.boot.modules.fault.param.FaultCountParam;
 import com.aiurt.boot.modules.fault.service.IFaultService;
 import com.aiurt.common.aspect.annotation.AutoLog;
+import com.aiurt.common.result.FaultCountResult;
+import com.aiurt.common.result.FaultLevelResult;
+import com.aiurt.common.result.FaultMonthResult;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;

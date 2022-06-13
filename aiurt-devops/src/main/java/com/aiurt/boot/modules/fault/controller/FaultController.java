@@ -1,15 +1,15 @@
 package com.aiurt.boot.modules.fault.controller;
 
 import com.aiurt.common.aspect.annotation.AutoLog;
+import com.aiurt.common.constant.CommonConstant;
+import com.aiurt.common.exception.AiurtBootException;
+import com.aiurt.common.result.FaultDeviceResult;
+import com.aiurt.common.result.FaultNumResult;
+import com.aiurt.common.result.FaultResult;
+import com.aiurt.common.result.TimeOutFaultNum;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.aiurt.boot.common.constant.CommonConstant;
-import com.aiurt.boot.common.exception.SwscException;
-import com.aiurt.boot.common.result.FaultDeviceResult;
-import com.aiurt.boot.common.result.FaultNumResult;
-import com.aiurt.boot.common.result.FaultResult;
-import com.aiurt.boot.common.result.TimeOutFaultNum;
 import com.aiurt.boot.modules.fault.dto.FaultDTO;
 import com.aiurt.boot.modules.fault.entity.Fault;
 import com.aiurt.boot.modules.fault.entity.FaultEnclosure;
@@ -74,8 +74,8 @@ public class FaultController {
 	@ApiOperation(value = "故障表-分页列表查询", notes = "故障表-分页列表查询")
 	@GetMapping(value = "/list")
 	public Result<IPage<FaultResult>> queryPageList(@RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
-	                                                @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize,
-	                                                FaultParam param, HttpServletRequest req) {
+													@RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize,
+													FaultParam param, HttpServletRequest req) {
 		Result<IPage<FaultResult>> result = new Result<IPage<FaultResult>>();
 		Page<FaultResult> page = new Page<>(pageNo, pageSize);
 		IPage<FaultResult> pageList = faultService.pageList(page, param, req);
@@ -217,7 +217,7 @@ public class FaultController {
 			wb.write(os);
 			os.close();
 		} catch (IOException e) {
-			throw new SwscException("导出错误,请稍后重试");
+			throw new AiurtBootException("导出错误,请稍后重试");
 		}
 
 	}
@@ -314,7 +314,7 @@ public class FaultController {
 	@AutoLog(value = "报表统计超时故障数量")
 	@ApiOperation(value = "报表统计超时故障数量", notes = "报表统计超时故障数量")
 	@GetMapping("/getTimeOutFaultNum")
-	public Result<TimeOutFaultNum> getTimeOutFaultNum(@RequestParam(name = "startTime", required = false) String startTime,@RequestParam(name = "endTime", required = false) String endTime) {
+	public Result<TimeOutFaultNum> getTimeOutFaultNum(@RequestParam(name = "startTime", required = false) String startTime, @RequestParam(name = "endTime", required = false) String endTime) {
 		Result<TimeOutFaultNum> faultNum = faultService.getTimeOutFaultNum(startTime,endTime);
 		return faultNum;
 	}
@@ -362,7 +362,7 @@ public class FaultController {
 	public Result<String> getFaultPhenomenonByCode(@RequestParam(name = "code", required = false) String code) {
 		Fault fault = faultService.getOne(new QueryWrapper<Fault>().eq(Fault.CODE, code), false);
 		if (StringUtils.isBlank(fault.getFaultPhenomenon())) {
-			throw new SwscException("该故障没有详情");
+			throw new AiurtBootException("该故障没有详情");
 		} else {
 			String faultPhenomenon = fault.getFaultPhenomenon();
 			return Result.ok(faultPhenomenon);

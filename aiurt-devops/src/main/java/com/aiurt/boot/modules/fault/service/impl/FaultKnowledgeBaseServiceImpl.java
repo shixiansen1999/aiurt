@@ -2,14 +2,13 @@ package com.aiurt.boot.modules.fault.service.impl;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjectUtil;
+import com.aiurt.common.enums.FaultTypeEnum;
+import com.aiurt.common.result.FaultCodesResult;
+import com.aiurt.common.result.FaultKnowledgeBaseResult;
+import com.aiurt.common.util.TokenUtils;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.aiurt.boot.common.enums.FaultTypeEnum;
-import com.aiurt.boot.common.result.FaultCodesResult;
-import com.aiurt.boot.common.result.FaultKnowledgeBaseResult;
-import com.aiurt.boot.common.system.api.ISysBaseAPI;
-import com.aiurt.boot.common.util.TokenUtils;
 import com.aiurt.boot.modules.fault.dto.FaultKnowledgeBaseDTO;
 import com.aiurt.boot.modules.fault.entity.FaultKnowledgeBase;
 import com.aiurt.boot.modules.fault.entity.KnowledgeBaseEnclosure;
@@ -21,7 +20,10 @@ import com.aiurt.boot.modules.fault.service.IFaultKnowledgeBaseService;
 import com.aiurt.boot.modules.manage.entity.Subsystem;
 import com.aiurt.boot.modules.manage.service.impl.SubsystemServiceImpl;
 import org.apache.commons.lang.StringUtils;
+import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.system.api.ISysBaseAPI;
+import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -62,7 +64,7 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
      * @return
      */
     @Override
-    public IPage<FaultKnowledgeBaseResult> pageList(IPage<FaultKnowledgeBaseResult> page,FaultKnowledgeBaseParam param) {
+    public IPage<FaultKnowledgeBaseResult> pageList(IPage<FaultKnowledgeBaseResult> page, FaultKnowledgeBaseParam param) {
         IPage<FaultKnowledgeBaseResult> iPage = baseMapper.queryFaultKnowledgeBase(page, param);
         List<FaultKnowledgeBaseResult> records = iPage.getRecords();
         for (FaultKnowledgeBaseResult record : records) {
@@ -83,6 +85,7 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Long add(FaultKnowledgeBaseDTO dto, HttpServletRequest req) {
+        LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         FaultKnowledgeBase base = new FaultKnowledgeBase();
         if (dto.getTypeId() != null) {
             base.setTypeId(dto.getTypeId());
@@ -97,7 +100,7 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
         base.setFaultCodes(dto.getFaultCodes());
         base.setScanNum(0);
         base.setDelFlag(0);
-        String userId = TokenUtils.getUserId(req, iSysBaseAPI);
+        String userId = sysUser.getId();
         base.setCreateBy(userId);
         baseMapper.insert(base);
         //存储附件
@@ -152,7 +155,7 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void updateByKnowledgeId(FaultKnowledgeBaseDTO dto, HttpServletRequest req) {
-        String userId = TokenUtils.getUserId(req, iSysBaseAPI);
+        LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         FaultKnowledgeBase base = this.baseMapper.selectById(dto.getId());
         if (StringUtils.isNotBlank(dto.getSystemCode())) {
             base.setSystemCode(dto.getSystemCode());
@@ -169,7 +172,7 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
         if (StringUtils.isNotBlank(dto.getFaultCodes())) {
             base.setFaultCodes(dto.getFaultCodes());
         }
-        base.setUpdateBy(userId);
+        base.setUpdateBy(sysUser.getId());
         baseMapper.updateById(base);
         //删除附件列表
         enclosureMapper.deleteByName(dto.getId());

@@ -1,10 +1,10 @@
 package com.aiurt.boot.modules.fault.service.impl;
 
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.aiurt.boot.common.result.OperationProcessResult;
 import com.aiurt.boot.modules.fault.entity.OperationProcess;
 import com.aiurt.boot.modules.fault.mapper.OperationProcessMapper;
 import com.aiurt.boot.modules.fault.service.IOperationProcessService;
+import com.aiurt.common.result.OperationProcessResult;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;

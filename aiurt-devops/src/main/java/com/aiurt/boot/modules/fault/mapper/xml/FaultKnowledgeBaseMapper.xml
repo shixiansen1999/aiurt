@@ -10,7 +10,7 @@
         UPDATE fault_knowledge_base SET fault_codes = #{faultCodes} WHERE id = #{id}
     </update>
 
-    <select id="queryFaultKnowledgeBase" resultType="com.aiurt.boot.common.result.FaultKnowledgeBaseResult">
+    <select id="queryFaultKnowledgeBase" resultType="com.aiurt.common.result.FaultKnowledgeBaseResult">
         select
             b.* ,
         cst.system_name as systemName,
@@ -45,7 +45,7 @@
             b.create_time DESC
     </select>
 
-    <select id="selectByKnowledgeId" resultType="com.aiurt.boot.common.result.FaultKnowledgeBaseResult">
+    <select id="selectByKnowledgeId" resultType="com.aiurt.common.result.FaultKnowledgeBaseResult">
         select * from fault_knowledge_base where id = #{id}
     </select>
 

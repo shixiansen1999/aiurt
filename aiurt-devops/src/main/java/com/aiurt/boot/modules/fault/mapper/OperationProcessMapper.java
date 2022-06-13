@@ -1,7 +1,7 @@
 package com.aiurt.boot.modules.fault.mapper;
 
+import com.aiurt.common.result.OperationProcessResult;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.aiurt.boot.common.result.OperationProcessResult;
 import com.aiurt.boot.modules.fault.entity.OperationProcess;
 
 import java.util.List;

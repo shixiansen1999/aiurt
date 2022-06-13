@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.aiurt.boot.modules.fault.mapper.OutsourcingPersonnelMapper">
-    <select id="queryOutsourcingPersonnel" resultType="com.aiurt.boot.common.result.OutsourcingPersonnelResult">
+    <select id="queryOutsourcingPersonnel" resultType="com.aiurt.common.result.OutsourcingPersonnelResult">
         SELECT op.*,
         cst.system_name AS systemName
         FROM outsourcing_personnel op
@@ -32,7 +32,7 @@
         ORDER BY op.create_time DESC
     </select>
 
-    <select id="exportXls" resultType="com.aiurt.boot.common.result.OutsourcingPersonnelResult">
+    <select id="exportXls" resultType="com.aiurt.common.result.OutsourcingPersonnelResult">
         SELECT op.*,
         cst.system_name AS systemName
         FROM outsourcing_personnel op

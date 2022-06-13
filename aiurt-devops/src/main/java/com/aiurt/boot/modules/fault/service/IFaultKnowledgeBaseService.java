@@ -1,12 +1,12 @@
 package com.aiurt.boot.modules.fault.service;
 
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.service.IService;
-import com.aiurt.boot.common.result.FaultCodesResult;
-import com.aiurt.boot.common.result.FaultKnowledgeBaseResult;
 import com.aiurt.boot.modules.fault.dto.FaultKnowledgeBaseDTO;
 import com.aiurt.boot.modules.fault.entity.FaultKnowledgeBase;
 import com.aiurt.boot.modules.fault.param.FaultKnowledgeBaseParam;
+import com.aiurt.common.result.FaultCodesResult;
+import com.aiurt.common.result.FaultKnowledgeBaseResult;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.service.IService;
 import org.jeecg.common.api.vo.Result;
 
 import javax.servlet.http.HttpServletRequest;
@@ -26,7 +26,7 @@ public interface IFaultKnowledgeBaseService extends IService<FaultKnowledgeBase>
      * @param param
      * @return
      */
-    IPage<FaultKnowledgeBaseResult> pageList(IPage<FaultKnowledgeBaseResult> page,FaultKnowledgeBaseParam param);
+    IPage<FaultKnowledgeBaseResult> pageList(IPage<FaultKnowledgeBaseResult> page, FaultKnowledgeBaseParam param);
 
     /**
      * 添加故障知识库

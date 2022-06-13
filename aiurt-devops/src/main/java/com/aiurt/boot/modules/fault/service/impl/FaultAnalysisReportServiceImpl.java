@@ -1,12 +1,12 @@
 package com.aiurt.boot.modules.fault.service.impl;
 
 import cn.hutool.core.collection.CollUtil;
+import com.aiurt.common.constant.CommonConstant;
+import com.aiurt.common.enums.FaultTypeEnum;
+import com.aiurt.common.result.FaultAnalysisReportResult;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.aiurt.boot.common.constant.CommonConstant;
-import com.aiurt.boot.common.enums.FaultTypeEnum;
-import com.aiurt.boot.common.result.FaultAnalysisReportResult;
 import com.aiurt.boot.modules.fault.dto.FaultAnalysisReportDTO;
 import com.aiurt.boot.modules.fault.entity.AnalysisReportEnclosure;
 import com.aiurt.boot.modules.fault.entity.FaultAnalysisReport;

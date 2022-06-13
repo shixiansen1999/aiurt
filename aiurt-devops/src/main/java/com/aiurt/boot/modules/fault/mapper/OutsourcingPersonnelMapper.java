@@ -1,8 +1,8 @@
 package com.aiurt.boot.modules.fault.mapper;
 
+import com.aiurt.common.result.OutsourcingPersonnelResult;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.aiurt.boot.common.result.OutsourcingPersonnelResult;
 import com.aiurt.boot.modules.fault.entity.OutsourcingPersonnel;
 import com.aiurt.boot.modules.fault.param.OutsourcingPersonnelParam;
 import org.apache.ibatis.annotations.Param;

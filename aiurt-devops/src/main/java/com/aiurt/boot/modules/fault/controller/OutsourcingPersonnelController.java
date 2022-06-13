@@ -1,18 +1,19 @@
 package com.aiurt.boot.modules.fault.controller;
 
 import com.aiurt.common.aspect.annotation.AutoLog;
+import com.aiurt.common.result.BelongUnitResult;
+import com.aiurt.common.result.OutsourcingPersonnelResult;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.aiurt.boot.common.result.BelongUnitResult;
-import com.aiurt.boot.common.result.OutsourcingPersonnelResult;
+
 import com.aiurt.boot.modules.fault.entity.OutsourcingPersonnel;
 import com.aiurt.boot.modules.fault.param.OutsourcingPersonnelParam;
 import com.aiurt.boot.modules.fault.service.IOutsourcingPersonnelService;
-import com.aiurt.boot.modules.system.mapper.SysDictMapper;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecgframework.poi.excel.def.NormalExcelConstants;
 import org.jeecgframework.poi.excel.entity.ExportParams;
 import org.jeecgframework.poi.excel.entity.enmus.ExcelType;
@@ -47,7 +48,7 @@ public class OutsourcingPersonnelController {
    private IOutsourcingPersonnelService outsourcingPersonnelService;
 
    @Resource
-   private SysDictMapper sysDictMapper;
+   private ISysBaseAPI sysBaseAPI;
 
     /**
      * 分页列表查询
@@ -214,8 +215,9 @@ public class OutsourcingPersonnelController {
  @GetMapping(value = "/selectBelongUnit")
  public Result<List<BelongUnitResult>> selectBelongUnit() {
      Result<List<BelongUnitResult>> result = new Result<List<BelongUnitResult>>();
-     List<BelongUnitResult> results = sysDictMapper.selectBelongUnit();
-     result.setResult(results);
+     //  todo
+    // List<BelongUnitResult> results = sysDictMapper.selectBelongUnit();
+     result.setResult(null);
      return result;
  }
 

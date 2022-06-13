@@ -3,15 +3,12 @@ package com.aiurt.boot.modules.fault.controller;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.aiurt.common.aspect.annotation.AutoLog;
+import com.aiurt.common.exception.AiurtBootException;
+import com.aiurt.common.result.FaultKnowledgeBaseResult;
+import com.aiurt.common.util.TokenUtils;
+import com.aiurt.common.util.oConvertUtils;
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.aiurt.boot.common.exception.SwscException;
-import com.aiurt.boot.common.result.FaultKnowledgeBaseResult;
-import com.aiurt.boot.common.system.api.ISysBaseAPI;
-import com.aiurt.boot.common.util.TokenUtils;
-import com.aiurt.boot.common.util.oConvertUtils;
 import com.aiurt.boot.modules.fault.dto.FaultKnowledgeBaseDTO;
 import com.aiurt.boot.modules.fault.dto.FaultKnowledgeBaseInputDTO;
 import com.aiurt.boot.modules.fault.entity.FaultKnowledgeBase;
@@ -23,12 +20,18 @@ import com.aiurt.boot.modules.manage.entity.CommonFault;
 import com.aiurt.boot.modules.manage.entity.Subsystem;
 import com.aiurt.boot.modules.manage.mapper.SubsystemMapper;
 import com.aiurt.boot.modules.manage.service.ICommonFaultService;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
+import org.apache.shiro.SecurityUtils;
+import org.apache.tomcat.websocket.AuthenticationException;
 import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.query.QueryGenerator;
+import org.jeecg.common.system.vo.LoginUser;
 import org.jeecgframework.poi.excel.ExcelImportUtil;
 import org.jeecgframework.poi.excel.def.NormalExcelConstants;
 import org.jeecgframework.poi.excel.entity.ExportParams;
@@ -273,20 +276,21 @@ public class FaultKnowledgeBaseController {
              if(CollUtil.isEmpty(list)){
                  return Result.error("Excel转换异常");
              }
-             String userId = TokenUtils.getUserId(request, iSysBaseAPI);
+             LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+             String userId = sysUser.getId();
              FaultKnowledgeBase base = new FaultKnowledgeBase();
              for (FaultKnowledgeBaseInputDTO dto : list) {
                  if (StringUtils.isBlank(dto.getFaultPhenomenon())) {
-                     throw new SwscException("故障现象不能为空");
+                     throw new AiurtBootException("故障现象不能为空");
                  }
                  if (StringUtils.isBlank(dto.getFaultReason())) {
-                     throw new SwscException("故障原因不能为空");
+                     throw new AiurtBootException("故障原因不能为空");
                  }
                  if (StringUtils.isBlank(dto.getSolution())) {
-                     throw new SwscException("故障措施不能为空");
+                     throw new AiurtBootException("故障措施不能为空");
                  }
                  if (StringUtils.isBlank(dto.getFaultCodes())) {
-                     throw new SwscException("关联故障不能为空");
+                     throw new AiurtBootException("关联故障不能为空");
                  }
                  if (StringUtils.isNotBlank(dto.getSystemName()) && StringUtils.isNotBlank(dto.getFaultKnowledgeType())) {
                      dto.setSystemCode(subsystemMapper.selectByName(dto.getSystemName()).getSystemCode());
@@ -387,6 +391,6 @@ public class FaultKnowledgeBaseController {
             return result.ok(new FaultKnowledgeBaseResult());
         }
         FaultKnowledgeBaseResult knowledgeBaseResult =faultKnowledgeBaseService.getResultById(id);
-        return result.ok(knowledgeBaseResult);
+        return Result.ok(knowledgeBaseResult);
     }
 }

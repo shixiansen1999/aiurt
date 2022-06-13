@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.aiurt.boot.modules.fault.mapper.FaultAnalysisReportMapper">
-    <select id="queryFaultAnalysisReport" resultType="com.aiurt.boot.common.result.FaultAnalysisReportResult">
+    <select id="queryFaultAnalysisReport" resultType="com.aiurt.common.result.FaultAnalysisReportResult">
         SELECT
             aa.id AS id,
         	aa.fault_code AS faultCode,
@@ -31,7 +31,7 @@
         ORDER BY aa.create_time DESC
     </select>
 
-    <select id="selectAnalysisReport" resultType="com.aiurt.boot.common.result.FaultAnalysisReportResult">
+    <select id="selectAnalysisReport" resultType="com.aiurt.common.result.FaultAnalysisReportResult">
         SELECT
 	        aa.* ,
 	        bb.fault_type

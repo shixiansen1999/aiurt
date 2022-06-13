@@ -2,14 +2,6 @@ package com.aiurt.boot.modules.fault.service.impl;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjectUtil;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.aiurt.boot.common.constant.CommonConstant;
-import com.aiurt.boot.common.exception.SwscException;
-import com.aiurt.boot.common.result.OutsourcingPersonnelResult;
-import com.aiurt.boot.common.system.api.ISysBaseAPI;
-import com.aiurt.boot.common.util.TokenUtils;
 import com.aiurt.boot.modules.fault.dto.OutsourcingPersonnelInput;
 import com.aiurt.boot.modules.fault.entity.OutsourcingPersonnel;
 import com.aiurt.boot.modules.fault.mapper.OutsourcingPersonnelMapper;
@@ -17,8 +9,18 @@ import com.aiurt.boot.modules.fault.param.OutsourcingPersonnelParam;
 import com.aiurt.boot.modules.fault.service.IOutsourcingPersonnelService;
 import com.aiurt.boot.modules.manage.entity.Subsystem;
 import com.aiurt.boot.modules.manage.service.ISubsystemService;
+import com.aiurt.common.constant.CommonConstant;
+import com.aiurt.common.exception.AiurtBootException;
+import com.aiurt.common.result.OutsourcingPersonnelResult;
+import com.aiurt.common.util.TokenUtils;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.apache.commons.lang.StringUtils;
+import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.system.api.ISysBaseAPI;
+import org.jeecg.common.system.vo.LoginUser;
 import org.jeecgframework.poi.excel.ExcelImportUtil;
 import org.jeecgframework.poi.excel.entity.ImportParams;
 import org.springframework.beans.BeanUtils;
@@ -62,6 +64,7 @@ public class OutsourcingPersonnelServiceImpl extends ServiceImpl<OutsourcingPers
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Result add(OutsourcingPersonnel personnel, HttpServletRequest req) {
+        LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         OutsourcingPersonnel outsourcingPersonnel = new OutsourcingPersonnel();
         outsourcingPersonnel.setName(personnel.getName());
         outsourcingPersonnel.setCertificateCode(personnel.getCertificateCode());
@@ -70,7 +73,7 @@ public class OutsourcingPersonnelServiceImpl extends ServiceImpl<OutsourcingPers
         outsourcingPersonnel.setSystemCode(personnel.getSystemCode());
         outsourcingPersonnel.setConnectionWay(personnel.getConnectionWay());
         outsourcingPersonnel.setDelFlag(0);
-        String userId = TokenUtils.getUserId(req, iSysBaseAPI);
+        String userId = sysUser.getId();
         outsourcingPersonnel.setCreateBy(userId);
         personnelMapper.insert(outsourcingPersonnel);
         return Result.ok("新增成功");
@@ -114,7 +117,7 @@ public class OutsourcingPersonnelServiceImpl extends ServiceImpl<OutsourcingPers
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) {
-        String userId = TokenUtils.getUserId(request, iSysBaseAPI);
+        LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         MultipartHttpServletRequest multipartRequest = (MultipartHttpServletRequest) request;
         Map<String, MultipartFile> fileMap = multipartRequest.getFileMap();
         for (Map.Entry<String, MultipartFile> entity : fileMap.entrySet()) {
@@ -134,31 +137,31 @@ public class OutsourcingPersonnelServiceImpl extends ServiceImpl<OutsourcingPers
                 //委外人员批量新增
                 for (OutsourcingPersonnelInput input : list) {
                     if (StringUtils.isBlank(input.getName())) {
-                        throw new SwscException("人员名称不能为空");
+                        throw new AiurtBootException("人员名称不能为空");
                     }
                     if (StringUtils.isBlank(input.getCompany())) {
-                        throw new SwscException("所属单位不能为空");
+                        throw new AiurtBootException("所属单位不能为空");
                     }
                     if (StringUtils.isBlank(input.getCompany())) {
-                        throw new SwscException("职位名称不能为空");
+                        throw new AiurtBootException("职位名称不能为空");
                     }
                     if (StringUtils.isNotBlank(input.getSystemName())) {
                         Subsystem one = subsystemService.getOne(new QueryWrapper<Subsystem>().eq(Subsystem.SYSTEM_NAME, input.getSystemName()), false);
                         if (ObjectUtil.isEmpty(one)) {
-                            throw new SwscException("输入所属专业系统不规范");
+                            throw new AiurtBootException("输入所属专业系统不规范");
                         }
                         input.setSystemCode(one.getSystemCode());
                     } else {
-                        throw new SwscException("所属专业系统不能为空");
+                        throw new AiurtBootException("所属专业系统不能为空");
                     }
                     if (StringUtils.isBlank(input.getConnectionWay())) {
-                        throw new SwscException("联系方式不能为空");
+                        throw new AiurtBootException("联系方式不能为空");
                     }
                     if (StringUtils.isBlank(input.getCertificateCode())) {
-                        throw new SwscException("施工证编号不能为空");
+                        throw new AiurtBootException("施工证编号不能为空");
                     }
                     OutsourcingPersonnel outsourcingPersonnel = new OutsourcingPersonnel();
-                    outsourcingPersonnel.setCreateBy(userId);
+                    outsourcingPersonnel.setCreateBy(sysUser.getId());
                     outsourcingPersonnel.setDelFlag(CommonConstant.DEL_FLAG_0);
                     BeanUtils.copyProperties(input, outsourcingPersonnel);
                     this.save(outsourcingPersonnel);

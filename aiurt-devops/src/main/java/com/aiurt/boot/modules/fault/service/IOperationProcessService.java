@@ -1,7 +1,7 @@
 package com.aiurt.boot.modules.fault.service;
 
+import com.aiurt.common.result.OperationProcessResult;
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.aiurt.boot.common.result.OperationProcessResult;
 import com.aiurt.boot.modules.fault.entity.OperationProcess;
 
 import java.util.List;

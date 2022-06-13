@@ -1,8 +1,8 @@
 package com.aiurt.boot.modules.fault.mapper;
 
+import com.aiurt.common.result.FaultKnowledgeBaseResult;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.aiurt.boot.common.result.FaultKnowledgeBaseResult;
 import com.aiurt.boot.modules.fault.entity.FaultKnowledgeBase;
 import com.aiurt.boot.modules.fault.param.FaultKnowledgeBaseParam;
 import org.apache.ibatis.annotations.Param;

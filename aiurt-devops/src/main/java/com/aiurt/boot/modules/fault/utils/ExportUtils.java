@@ -1,7 +1,7 @@
 package com.aiurt.boot.modules.fault.utils;
 
+import com.aiurt.common.result.FaultResult;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
-import com.aiurt.boot.common.result.FaultResult;
 import org.apache.commons.lang.StringUtils;
 import org.apache.poi.common.usermodel.HyperlinkType;
 import org.apache.poi.ss.usermodel.*;

@@ -3,16 +3,15 @@ package com.aiurt.boot.modules.fault.service.impl;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
+import com.aiurt.common.constant.CommonConstant;
+import com.aiurt.common.enums.*;
+import com.aiurt.common.exception.AiurtBootException;
+import com.aiurt.common.result.*;
+import com.aiurt.common.util.RoleAdditionalUtils;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.aiurt.boot.common.constant.CommonConstant;
-import com.aiurt.boot.common.enums.*;
-import com.aiurt.boot.common.exception.SwscException;
-import com.aiurt.boot.common.result.*;
-import com.aiurt.boot.common.system.vo.LoginUser;
-import com.aiurt.boot.common.util.RoleAdditionalUtils;
 import com.aiurt.boot.modules.device.entity.Device;
 import com.aiurt.boot.modules.device.mapper.DeviceMapper;
 import com.aiurt.boot.modules.device.service.IDeviceService;
@@ -39,14 +38,13 @@ import com.aiurt.boot.modules.patrol.utils.NumberGenerateUtils;
 import com.aiurt.boot.modules.repairManage.entity.RepairTask;
 import com.aiurt.boot.modules.repairManage.service.IRepairTaskService;
 import com.aiurt.boot.modules.statistical.vo.*;
-import com.aiurt.boot.modules.system.entity.SysUser;
-import com.aiurt.boot.modules.system.service.ISysUserService;
-import com.aiurt.boot.modules.system.util.TimeUtil;
 import com.aiurt.boot.modules.worklog.mapper.WorkLogMapper;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.system.api.ISysBaseAPI;
+import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -90,8 +88,6 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
 	@Resource
 	private FaultRepairRecordMapper faultRepairRecordMapper;
 
-	@Resource
-	private ISysUserService sysUserService;
 
 	@Resource
 	private ICommonFaultService commonFaultService;
@@ -116,6 +112,9 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
 
 	@Resource
 	private IRepairTaskService repairTaskService;
+
+	@Resource
+	ISysBaseAPI sysBaseAPI;
 
 	private final long nh = 60 * 60 * 1000;
 
@@ -156,11 +155,6 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
 
 		IPage<FaultResult> faultResults = faultMapper.queryFault(page, param);
 
-		List<SysUser> sysUser = sysUserService.lambdaQuery().eq(SysUser::getDelFlag, CommonConstant.DEL_FLAG_0).list();
-		Map<String, String> nameMap = null;
-		if (CollectionUtils.isNotEmpty(sysUser)) {
-			nameMap = sysUser.stream().collect(Collectors.toMap(SysUser::getId, SysUser::getRealname));
-		}
 
 		for (FaultResult record : faultResults.getRecords()) {
 			if (StringUtils.isNotBlank(record.getCode())) {
@@ -168,8 +162,9 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
 				FaultRepairRecordResult repairRecordResult = faultRepairRecordMapper.queryLastDetail(record.getCode());
 				if (ObjectUtil.isNotEmpty(repairRecordResult)) {
 					record.setOverTime(repairRecordResult.getOverTime());
-					if (nameMap != null && StringUtils.isNotBlank(nameMap.get(repairRecordResult.getAppointUserId()))) {
-						record.setRepairUserName(nameMap.get(repairRecordResult.getAppointUserId()));
+					LoginUser loginUser = sysBaseAPI.getUserById(repairRecordResult.getAppointUserId());
+					if (Objects.isNull(loginUser)) {
+						record.setRepairUserName(loginUser.getRealname());
 					}
 					record.setFaultAnalysis(repairRecordResult.getFaultAnalysis());
 					record.setMaintenanceMeasures(repairRecordResult.getMaintenanceMeasures());
@@ -221,7 +216,8 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
 				FaultRepairRecordResult repairRecordResult = faultRepairRecordMapper.queryLastDetail(record.getCode());
 				if (ObjectUtil.isNotEmpty(repairRecordResult)) {
 					record.setOverTime(repairRecordResult.getOverTime());
-					SysUser sysUser = sysUserService.getOne(new LambdaQueryWrapper<SysUser>().eq(SysUser::getId, repairRecordResult.getAppointUserId()).select(SysUser::getRealname), false);
+					LoginUser sysUser = sysBaseAPI.getUserById(repairRecordResult.getAppointUserId());
+				    // SysUser sysUser = sysUserService.getOne(new LambdaQueryWrapper<SysUser>().eq(SysUser::getId, repairRecordResult.getAppointUserId()).select(SysUser::getRealname), false);
 					record.setRepairUserName(sysUser!=null ? sysUser.getRealname(): null);
 					record.setFaultAnalysis(repairRecordResult.getFaultAnalysis());
 					record.setMaintenanceMeasures(repairRecordResult.getMaintenanceMeasures());
@@ -268,11 +264,11 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
 			fault.setDevicesIds(dto.getDevicesIds());
 		}
 		if (RepairWayEnum.BX.getMessage().equals(dto.getRepairWay()) && StringUtils.isBlank(dto.getRepairCode())) {
-			throw new SwscException("请输入报修编号");
+			throw new AiurtBootException("请输入报修编号");
 		} else if (RepairWayEnum.BX.getMessage().equals(dto.getRepairWay()) && StringUtils.isNotBlank(dto.getRepairCode())) {
 			char[] chars = dto.getRepairCode().toCharArray();
 			if (chars.length != CommonConstant.REPAIR_CODE_SIZE) {
-				throw new SwscException("报修编号长度为10");
+				throw new AiurtBootException("报修编号长度为10");
 			}
 		}
 		fault.setRepairWay(dto.getRepairWay());
@@ -298,7 +294,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
 				.eq(StringUtils.isNotBlank(dto.getStationCode()), Station::getId, dto.getStationCode())
 				.select(Station::getTeamId).last("limit 1").one();
 		if (station == null || station.getTeamId() == null){
-			throw new SwscException("未查询到站点所对应的班组数据,请核对后重新提交");
+			throw new AiurtBootException("未查询到站点所对应的班组数据,请核对后重新提交");
 		}
 		//添加机构id
 		fault.setOrgId(station.getTeamId());
@@ -351,8 +347,9 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
 	@Override
 	public FaultResult getFaultDetail(String code) {
 		FaultResult fault = faultMapper.selectDetailByCode(code);
-		SysUser userById = sysUserService.getOne(new QueryWrapper<SysUser>().eq(SysUser.ID, fault.getCreateBy()), false);
-		fault.setCreateByName(userById.getRealname());
+		LoginUser loginUser = sysBaseAPI.getUserById(fault.getCreateBy());
+		//SysUser userById = sysUserService.getOne(new QueryWrapper<SysUser>().eq(SysUser.ID, fault.getCreateBy()), false);
+		fault.setCreateByName(loginUser.getRealname());
 		//设备id转化为设备名
 		if (StringUtils.isNotBlank(fault.getDevicesIds())) {
 			fault.setDevice(getDeviceName(fault.getDevicesIds()));
@@ -780,10 +777,11 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
 	@Override
 	public List<UserAndAmountVO> getFaultPersonDetail(StatisticsVO vo) {
 		final String teamId = vo.getTeamId();
-		List<SysUser> sysUserList = sysUserService.list(new QueryWrapper<SysUser>().eq(SysUser.ORG_ID, teamId));
+		// todo 班组成员
+		/*List<SysUser> sysUserList = sysUserService.list(new QueryWrapper<SysUser>().eq(SysUser.ORG_ID, teamId));
 
-		List<String> userNameList = sysUserList.stream().map(SysUser::getRealname).collect(Collectors.toList());
-		List<UserAndAmountVO> list = repairRecordMapper.selectFaultNum(vo.getStartTime(), vo.getEndTime(), vo.getUserName(), userNameList);
+		List<String> userNameList = sysUserList.stream().map(SysUser::getRealname).collect(Collectors.toList());*/
+		List<UserAndAmountVO> list = repairRecordMapper.selectFaultNum(vo.getStartTime(), vo.getEndTime(), vo.getUserName(), null);
 		return list;
 	}
 
@@ -805,7 +803,8 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
 			FaultRepairRecordResult repairRecordResult = repairRecordMapper.queryLastDetail(result.getCode());
 			if (ObjectUtil.isNotEmpty(repairRecordResult)) {
 				String createBy = repairRecordResult.getCreateBy();
-				String realname = sysUserService.getOne(new QueryWrapper<SysUser>().eq(SysUser.ID, createBy), false).getRealname();
+				LoginUser loginUser = sysBaseAPI.getUserById(createBy);
+				String realname = loginUser.getRealname();
 				if (StringUtils.isNotBlank(realname)) {
 					result.setSolveBy(realname);
 				}
@@ -823,7 +822,9 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
 	@Override
 	public Map<String, Long> getFaultDuration(StatisticsVO vo) {
 		final String teamId = vo.getTeamId();
-		List<SysUser> sysUserList = sysUserService.list(new QueryWrapper<SysUser>().eq(SysUser.ORG_ID, teamId));
+		HashMap<String, Long> map = new HashMap<>();
+		// todo
+		/*List<SysUser> sysUserList = sysUserService.list(new QueryWrapper<SysUser>().eq(SysUser.ORG_ID, teamId));
 		List<String> userIdList = sysUserList.stream().map(SysUser::getId).collect(Collectors.toList());
 		long mh = 24 * 60 * 60 * 1000;
 		Map<String, Long> map = new HashMap<>();
@@ -843,7 +844,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
 				}
 				map.put(user.getRealname(), allTime);
 			}
-		}
+		}*/
 		return map;
 	}
 
@@ -856,9 +857,11 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
 	@Override
 	public Map<String, Integer> getAssortNum(StatisticsVO vo) {
 		final String teamId = vo.getTeamId();
-		List<SysUser> sysUserList = sysUserService.list(new QueryWrapper<SysUser>().eq(SysUser.ORG_ID, teamId));
-		List<String> userIdList = sysUserList.stream().map(SysUser::getId).collect(Collectors.toList());
 		HashMap<String, Integer> map = new HashMap<>();
+		// todo
+		/*List<SysUser> sysUserList = sysUserService.list(new QueryWrapper<SysUser>().eq(SysUser.ORG_ID, teamId));
+		List<String> userIdList = sysUserList.stream().map(SysUser::getId).collect(Collectors.toList());
+
 		Integer allNum = 0;
 		//获取对应配合施工人数集合
 		for (String s : userIdList) {
@@ -875,7 +878,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
 				}
 				map.put(user.getRealname(), allNum);
 			}
-		}
+		}*/
 		return map;
 	}
 

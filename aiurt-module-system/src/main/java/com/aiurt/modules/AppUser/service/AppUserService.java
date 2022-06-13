@@ -86,7 +86,7 @@ public class AppUserService {
                     }
                 }
             }*/
-            result.setResult(vo);
+            result.setResult(null);
             result.success("状态获取成功");
         } catch (Exception e) {
             result.error500("状态获取失败");

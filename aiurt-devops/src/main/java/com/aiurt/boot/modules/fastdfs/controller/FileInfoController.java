@@ -1,34 +1,25 @@
 package com.aiurt.boot.modules.fastdfs.controller;
 
-import javax.servlet.http.HttpServletRequest;
-
 import cn.hutool.core.bean.BeanUtil;
-import cn.hutool.core.util.ObjectUtil;
-import com.aiurt.common.aspect.annotation.AutoLog;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.aiurt.boot.modules.fastdfs.entity.FileInfo;
 import com.aiurt.boot.modules.fastdfs.model.FileInfoVo;
 import com.aiurt.boot.modules.fastdfs.model.UploadFile;
 import com.aiurt.boot.modules.fastdfs.service.IFileInfoService;
-import com.aiurt.boot.modules.system.entity.SysUser;
-import com.aiurt.boot.modules.system.entity.SysUserCard;
-import com.aiurt.boot.modules.system.service.ISysUserCardService;
-import com.aiurt.boot.modules.system.service.ISysUserService;
+import com.aiurt.common.aspect.annotation.AutoLog;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
-
 import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.system.api.ISysBaseAPI;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
 
-import java.io.ByteArrayOutputStream;
+import javax.servlet.http.HttpServletRequest;
 import java.io.File;
-import java.io.FileInputStream;
 
 /**
  * @Description: 附件表
@@ -43,10 +34,9 @@ import java.io.FileInputStream;
 public class FileInfoController {
 	@Autowired
 	private IFileInfoService fileInfoService;
+
 	@Autowired
-	private ISysUserCardService sysUserCardService;
-	@Autowired
-	private ISysUserService sysUserService;
+	private ISysBaseAPI sysBaseAPI;
 	@Value("${support.path.pic}")
 	String path;
 	/**
@@ -145,7 +135,8 @@ public class FileInfoController {
 						String fileName = s[s.length - 2] +"的"+ s[s.length - 1];
 						String realname = s[s.length - 2];
 						System.out.println("文件:" + file2.getAbsolutePath() + "        " + "文件名:" + fileName);
-						LambdaQueryWrapper<SysUser> queryWrapper = new LambdaQueryWrapper<>();
+						// todo
+						/*LambdaQueryWrapper<SysUser> queryWrapper = new LambdaQueryWrapper<>();
 						queryWrapper.eq(SysUser::getRealname,realname).eq(SysUser::getDelFlag,0);
 						SysUser user = sysUserService.getOne(queryWrapper);
 						if (ObjectUtil.isEmpty(user)){
@@ -186,7 +177,7 @@ public class FileInfoController {
 						card.setName(s2);
 						card.setType(s1.split("\\.")[0]);
 						System.out.println(card);
-						sysUserCardService.save(card);
+						sysUserCardService.save(card);*/
 					}
 				}
 			}
