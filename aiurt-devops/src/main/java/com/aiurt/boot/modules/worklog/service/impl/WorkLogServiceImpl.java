@@ -16,10 +16,6 @@ import com.aiurt.boot.modules.patrol.mapper.PatrolPoolMapper;
 import com.aiurt.boot.modules.patrol.mapper.PatrolTaskMapper;
 import com.aiurt.boot.modules.repairManage.service.IRepairTaskService;
 import com.aiurt.boot.modules.repairManage.vo.RepairRecordVO;
-import com.aiurt.boot.modules.system.entity.SysDepart;
-import com.aiurt.boot.modules.system.entity.SysUser;
-import com.aiurt.boot.modules.system.service.ISysDepartService;
-import com.aiurt.boot.modules.system.service.ISysUserService;
 import com.aiurt.boot.modules.worklog.dto.WorkLogDTO;
 import com.aiurt.boot.modules.worklog.entity.WorkLog;
 import com.aiurt.boot.modules.worklog.entity.WorkLogEnclosure;
@@ -46,6 +42,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.vo.LoginUser;
+import org.jeecg.common.system.vo.SysDepartModel;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -88,11 +85,11 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
     @Resource
     private StationMapper stationMapper;
 
-    @Resource
-    private ISysDepartService departService;
-
-    @Resource
-    private ISysUserService sysUserService;
+//    @Resource
+//    private ISysDepartService departService;
+//
+//    @Resource
+//    private ISysUserService sysUserService;
 
     @Resource
     private UserTaskService userTaskService;
@@ -118,7 +115,9 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
         String userId = loginUser.getId();
         String logCode = generateLogCode();
         depot.setCode(logCode);
-        SysUser one = sysUserService.getOne(new QueryWrapper<SysUser>().eq(SysUser.ID, userId), false);
+        // todo 后期修改
+        LoginUser one = new LoginUser();
+//        LoginUser one = sysUserService.getOne(new QueryWrapper<SysUser>().eq(SysUser.ID, userId), false);
         depot.setOrgId(one.getOrgId());
         depot.setSubmitId(userId);
         depot.setCreateBy(userId);
@@ -299,8 +298,10 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
         }
         List<WorkLogResult> workLogResults = depotMapper.exportXls(param);
         for (WorkLogResult record : workLogResults) {
-            SysDepart sysDepart = departService.getOne(new QueryWrapper<SysDepart>().eq(SysDepart.DEPART_NAME, record.getSubmitOrgName()), false);
-            Station station = stationMapper.selectNameById(sysDepart.getId());
+            // todo 后期修改
+            SysDepartModel sysDepartModel = new SysDepartModel();
+//            SysDepart sysDepart = departService.getOne(new QueryWrapper<SysDepart>().eq(SysDepart.DEPART_NAME, record.getSubmitOrgName()), false);
+            Station station = stationMapper.selectNameById(sysDepartModel.getId());
             if (ObjectUtil.isNotEmpty(station)) {
                 String lineName = station.getLineName();
                 record.setLineName(lineName);
@@ -347,7 +348,9 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
 
         List<Station> stationList = stationMapper.selectList(new LambdaQueryWrapper<Station>()
                 .eq(Station::getDelFlag, CommonConstant.DEL_FLAG_0).select(Station::getId,Station::getTeamName,Station::getLineName,Station::getTeamId));
-        List<SysDepart> departList = departService.lambdaQuery().eq(SysDepart::getDelFlag, CommonConstant.DEL_FLAG_0).list();
+//       todo 后期修改
+        List<SysDepartModel> departList = new ArrayList<>();
+//        List<SysDepartModel> departList = departService.lambdaQuery().eq(SysDepart::getDelFlag, CommonConstant.DEL_FLAG_0).list();
 
         Map<Integer, Station> stationIdMap = null;
         Map<String, List<Station>> stationTeamIdMap =null;
@@ -357,7 +360,7 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
             stationTeamIdMap = stationList.stream().filter(f->f.getTeamId()!=null).collect(Collectors.groupingBy(Station::getTeamId));
         }
         if (CollectionUtils.isNotEmpty(departList)){
-            departMap = departList.stream().collect(Collectors.toMap(SysDepart::getDepartName, SysDepart::getId));
+            departMap = departList.stream().collect(Collectors.toMap(SysDepartModel::getDepartName, SysDepartModel::getId));
         }
 
         Map<Long,List<WorkLogEnclosure>> map0 = null;
@@ -471,7 +474,9 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
             String[] split = workLog.getAssortIds().split(",");
             List<String> names = new ArrayList<>();
             for (String string : split) {
-                SysUser user = sysUserService.getById(string);
+                // todo 后期修改
+                LoginUser user = new LoginUser();
+//                LoginUser user = sysUserService.getById(string);
                 if (user!=null) {
                     names.add(user.getRealname());
                 }

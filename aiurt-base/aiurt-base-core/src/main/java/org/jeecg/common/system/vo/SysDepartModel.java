@@ -38,13 +38,7 @@ public class SysDepartModel {
      */
     private Integer delFlag;
 
-    public Integer getDelFlag() {
-        return delFlag;
-    }
 
-    public void setDelFlag(Integer delFlag) {
-        this.delFlag = delFlag;
-    }
 
     public String getId() {
         return id;
@@ -156,5 +150,12 @@ public class SysDepartModel {
 
     public void setMemo(String memo) {
         this.memo = memo;
+    }
+    public Integer getDelFlag() {
+        return delFlag;
+    }
+
+    public void setDelFlag(Integer delFlag) {
+        this.delFlag = delFlag;
     }
 }

@@ -4,13 +4,10 @@ import com.aiurt.boot.modules.apphome.constant.UserTaskConstant;
 import com.aiurt.boot.modules.apphome.entity.UserTask;
 import com.aiurt.boot.modules.apphome.service.UserTaskService;
 import com.aiurt.boot.modules.patrol.constant.PatrolConstant;
-import com.aiurt.boot.modules.system.entity.SysUser;
-import com.aiurt.boot.modules.system.service.ISysUserService;
-import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.util.TaskStatusUtil;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -31,7 +28,7 @@ public class WorkLogTask {
 
 	private static final String WORK_TITLE = "工作日志未填写";
 
-	private final ISysUserService sysUserService;
+//	private final ISysUserService sysUserService;
 
 	private final UserTaskService userTaskService;
 
@@ -49,11 +46,12 @@ public class WorkLogTask {
 		LocalDate now = LocalDate.now();
 
 		userTaskService.lambdaUpdate().eq(UserTask::getType, UserTaskConstant.USER_TASK_TYPE_4).lt(UserTask::getCreateTime,now).remove();
-
-		List<SysUser> userList = sysUserService.list(new LambdaQueryWrapper<SysUser>()
-				.eq(SysUser::getDelFlag, CommonConstant.DEL_FLAG_0)
-				.select(SysUser::getId,SysUser::getRealname)
-		);
+		// todo 后期修改
+		List<LoginUser> userList = new ArrayList<>();
+//		List<SysUser> userList = sysUserService.list(new LambdaQueryWrapper<SysUser>()
+//				.eq(SysUser::getDelFlag, CommonConstant.DEL_FLAG_0)
+//				.select(SysUser::getId,SysUser::getRealname)
+//		);
 		List<UserTask> taskList = new ArrayList<>();
 		userList.forEach(u->{
 					UserTask userTask = new UserTask();

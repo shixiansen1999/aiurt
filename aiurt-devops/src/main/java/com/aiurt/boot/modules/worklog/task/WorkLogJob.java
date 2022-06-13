@@ -5,16 +5,14 @@ import com.aiurt.boot.modules.appMessage.entity.Message;
 import com.aiurt.boot.modules.appMessage.entity.MessageRead;
 import com.aiurt.boot.modules.appMessage.service.IMessageReadService;
 import com.aiurt.boot.modules.appMessage.service.IMessageService;
-import com.aiurt.boot.modules.system.entity.SysUser;
-import com.aiurt.boot.modules.system.mapper.SysUserMapper;
 import com.aiurt.boot.modules.worklog.dto.WorkLogJobDTO;
 import com.aiurt.boot.modules.worklog.entity.WorkLog;
 import com.aiurt.boot.modules.worklog.service.IWorkLogService;
 import com.aiurt.common.constant.CommonConstant;
-import com.aiurt.common.util.DateUtils;
 import com.aiurt.common.util.TaskStatusUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
+import org.jeecg.common.system.vo.LoginUser;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
@@ -37,8 +35,8 @@ import java.util.stream.Collectors;
 public class WorkLogJob implements Job {
 
 
-	@Resource
-	private SysUserMapper userMapper;
+//	@Resource
+//	private SysUserMapper userMapper;
 
 	@Resource
 	private IWorkLogService workLogService;
@@ -63,11 +61,13 @@ public class WorkLogJob implements Job {
 				.eq(SysUser::getDelFlag, CommonConstant.DEL_FLAG_0)
 				.select(SysUser::getId));
 		List<String> userIds = orgList.stream().map(SysUser::getId).collect(Collectors.toList());*/
-		List<SysUser> userList = userMapper.selectUserByTimeAndItemAndOrgId(DateUtils.getDate("yyyy-MM-dd"),"白",dto.getOrgId());
+		// todo 后期修改
+		List<LoginUser> userList = new ArrayList<>();
+//		List<LoginUser> userList = userMapper.selectUserByTimeAndItemAndOrgId(DateUtils.getDate("yyyy-MM-dd"),"白",dto.getOrgId());
 		if (ObjectUtil.isEmpty(userList)){
 			return;
 		}
-		List<String> userIds = userList.stream().map(SysUser::getId).collect(Collectors.toList());
+		List<String> userIds = userList.stream().map(LoginUser::getId).collect(Collectors.toList());
 		List<WorkLog> workLogList = workLogService.list(new LambdaQueryWrapper<WorkLog>()
 				.eq(WorkLog::getDelFlag, CommonConstant.DEL_FLAG_0)
 				.in(WorkLog::getCreateBy, userIds)
