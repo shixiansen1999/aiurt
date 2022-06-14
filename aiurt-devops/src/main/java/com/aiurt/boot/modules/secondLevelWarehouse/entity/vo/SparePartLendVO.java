@@ -2,6 +2,7 @@ package com.aiurt.boot.modules.secondLevelWarehouse.entity.vo;
 
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import org.jeecgframework.poi.excel.annotation.Excel;
@@ -13,6 +14,7 @@ import org.springframework.format.annotation.DateTimeFormat;
  * @Version 1.0
  */
 @Data
+@ApiModel("SparePartLendVO")
 public class SparePartLendVO{
 
     @ApiModelProperty(value = "主键id")
@@ -31,7 +33,7 @@ public class SparePartLendVO{
     private  String  materialCode;
 
     @Excel(name = "备件名称", width = 15)
-    @ApiModelProperty(value = "备件名称")
+    @ApiModelProperty(value = "备件名称1")
     private String materialName;
 
     @ApiModelProperty(value = "备件类型（1：非生产类型 2：生产类型）")

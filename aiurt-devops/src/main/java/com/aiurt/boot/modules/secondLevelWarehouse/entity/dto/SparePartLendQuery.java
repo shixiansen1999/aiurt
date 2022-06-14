@@ -14,7 +14,7 @@ import java.util.List;
 @Data
 public class SparePartLendQuery extends PageVO {
 
-    @ApiModelProperty("所在班组")
+    @ApiModelProperty("所在班组1")
     private String orgId;
 
     @ApiModelProperty("物资类型")

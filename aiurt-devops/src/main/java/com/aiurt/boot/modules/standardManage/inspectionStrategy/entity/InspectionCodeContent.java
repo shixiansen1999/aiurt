@@ -36,13 +36,13 @@ public class InspectionCodeContent {
      */
     @TableId(type = IdType.AUTO)
     @ApiModelProperty(value = "主键id")
-    public Integer id;
+    private Integer id;
     /**
      * 检修规范ID
      */
     @Excel(name = "检修规范ID", width = 15)
     @ApiModelProperty(value = "检修规范ID")
-    public Integer inspectionCodeId;
+    private Integer inspectionCodeId;
     /**
      * 类型 1-周检 2-月检 3-双月检 4-季检 5-半年检 6-年检
      */
@@ -50,14 +50,14 @@ public class InspectionCodeContent {
     @Min(value = 1, message = "最小值为1")
     @Max(value = 6, message = "最大值为6")
     @ApiModelProperty(value = "类型 1-周检 2-月检 3-双月检 4-季检 5-半年检 6-年检")
-    public Integer type;
+    private Integer type;
     /**
      * 检修内容
      */
     @Excel(name = "检修内容", width = 15)
     @Size(min = 1, max = 200, message = "检修内容长度要求1到200之间")
     @ApiModelProperty(value = "检修内容")
-    public String content;
+    private String content;
     /**
      * 策略 （1）周检该字段为1，表示本周
      * （2）月检 示例 3，本月第三周
@@ -68,43 +68,43 @@ public class InspectionCodeContent {
      */
     @Excel(name = "策略")
     @Range(min = 1, max = 48, message = "范围为1至48")
-    public Integer tactics;
+    private Integer tactics;
     @Excel(name = "安全事项ID")
-    public Long spId;
+    private Long spId;
 
     //	@Excel(name = "排序")
     @Min(value = 0, message = "最小值为0")
     @Max(value = 100, message = "最大值为100")
     @ApiModelProperty(value = "排序")
-    public Integer sortNo;
+    private Integer sortNo;
 
     @Excel(name = "是否营收", width = 15)
     @ApiModelProperty(value = "是否营收 0-否 1-是")
-    public Integer isReceipt;
+    private Integer isReceipt;
 
     @Excel(name = "更多说明", width = 100)
     @Size(max = 500, message = "更多说明长度要求1到500之间")
     @ApiModelProperty(value = "更多说明")
-    public String remarks;
+    private String remarks;
 
     /**
      * 删除状态
      */
     @Excel(name = "删除状态", width = 15)
     @ApiModelProperty(value = "删除状态")
-    public Integer delFlag;
+    private Integer delFlag;
     /**
      * 创建人
      */
     @Excel(name = "创建人", width = 15)
     @ApiModelProperty(value = "创建人")
-    public String createBy;
+    private String createBy;
     /**
      * 修改人
      */
     @Excel(name = "修改人", width = 15)
     @ApiModelProperty(value = "修改人")
-    public String updateBy;
+    private String updateBy;
     /**
      * 创建时间
      */
@@ -112,7 +112,7 @@ public class InspectionCodeContent {
     @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd HH:mm:ss")
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @ApiModelProperty(value = "创建时间")
-    public Date createTime;
+    private Date createTime;
     /**
      * 修改时间
      */
@@ -120,5 +120,5 @@ public class InspectionCodeContent {
     @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd HH:mm:ss")
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @ApiModelProperty(value = "修改时间")
-    public Date updateTime;
+    private Date updateTime;
 }

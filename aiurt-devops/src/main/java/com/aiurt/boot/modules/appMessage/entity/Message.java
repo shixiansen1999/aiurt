@@ -32,55 +32,55 @@ public class Message {
 	 */
 	@TableId(type = IdType.AUTO)
 	@ApiModelProperty(value = "id")
-	public Long id;
+	private Long id;
 
 	/**
 	 * 标题
 	 */
 	@Excel(name = "标题", width = 15)
 	@ApiModelProperty(value = "标题")
-	public String title;
+	private String title;
 
 	/**
 	 * 消息内容
 	 */
 	@Excel(name = "消息内容", width = 15)
 	@ApiModelProperty(value = "消息内容")
-	public String content;
+	private String content;
 
 	/**
 	 * 消息内容
 	 */
 	@Excel(name = "消息类型", width = 15,replace = "普通消息_0,特情信息_1,工作日志_2")
 	@ApiModelProperty(value = "消息类型")
-	public Integer type;
+	private Integer type;
 
 	/**
 	 * 保留字段,可存跳转参数
 	 */
 	@ApiModelProperty(value = "保留字段,可存跳转参数")
-	public String code;
+	private String code;
 
 	/**
 	 * 删除状态 0-未删除 1-已删除
 	 */
 	@Excel(name = "删除状态 0-未删除 1-已删除", width = 15)
 	@ApiModelProperty(value = "删除状态 0-未删除 1-已删除")
-	public Integer delFlag;
+	private Integer delFlag;
 
 	/**
 	 * 创建人
 	 */
 	@Excel(name = "创建人", width = 15)
 	@ApiModelProperty(value = "创建人")
-	public String createBy;
+	private String createBy;
 
 	/**
 	 * 修改人
 	 */
 	@Excel(name = "修改人", width = 15)
 	@ApiModelProperty(value = "修改人")
-	public String updateBy;
+	private String updateBy;
 
 	/**
 	 * 创建时间 CURRENT_TIMESTAMP
@@ -89,7 +89,7 @@ public class Message {
 	@JsonFormat(timezone = "GMT+8", pattern = "MM月dd日 HH:mm")
 	@DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
 	@ApiModelProperty(value = "创建时间")
-	public Date createTime;
+	private Date createTime;
 
 	/**
 	 * 修改时间 根据当前时间戳更新
@@ -97,5 +97,5 @@ public class Message {
 	@JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd HH:mm:ss")
 	@DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
 	@ApiModelProperty(value = "修改时间")
-	public Date updateTime;
+	private Date updateTime;
 }
