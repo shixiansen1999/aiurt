@@ -117,7 +117,7 @@
     </select>
 
     <select id="getScheduleUserDataByDay"
-            resultType="com.aiurt.boot.modules.system.entity.SysUser">
+            resultType="org.jeecg.common.system.vo.LoginUser">
         select
         su.avatar as avatar,
         su.username as username,

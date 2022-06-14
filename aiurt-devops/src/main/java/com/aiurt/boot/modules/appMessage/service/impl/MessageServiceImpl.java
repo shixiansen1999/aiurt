@@ -1,6 +1,5 @@
 package com.aiurt.boot.modules.appMessage.service.impl;
 
-import com.aiurt.common.util.SpringContextUtils;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -15,9 +14,7 @@ import com.aiurt.boot.modules.appMessage.service.IMessageService;
 import com.aiurt.boot.modules.appMessage.vo.MessageStatusVO;
 import com.aiurt.boot.modules.appMessage.vo.MessageUserVO;
 import lombok.RequiredArgsConstructor;
-import okhttp3.WebSocket;
 import org.apache.shiro.SecurityUtils;
-import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -38,7 +35,6 @@ public class MessageServiceImpl extends ServiceImpl<MessageMapper, Message> impl
 
 	private final IMessageReadService messageReadService;
 
-	private final WebSocket webSocket;
 
 	@Override
 	public IPage<MessageStatusVO> getMessagePage(MessagePageParam param) {
