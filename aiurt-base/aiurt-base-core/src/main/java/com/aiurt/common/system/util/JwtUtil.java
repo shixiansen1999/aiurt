@@ -1,5 +1,6 @@
 package com.aiurt.common.system.util;
 
+import cn.hutool.core.util.StrUtil;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
@@ -90,6 +91,9 @@ public class JwtUtil {
 	 */
 	public static String getUsername(String token) {
 		try {
+			if (StrUtil.isBlank(token)) {
+				return null;
+			}
 			DecodedJWT jwt = JWT.decode(token);
 			return jwt.getClaim("username").asString();
 		} catch (JWTDecodeException e) {

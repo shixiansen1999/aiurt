@@ -100,7 +100,7 @@ public class SysUserController {
      * @param req
      * @return
      */
-    @PermissionData(pageComponent = "system/UserList")
+  //  @PermissionData(pageComponent = "system/UserList")
 	@RequestMapping(value = "/list", method = RequestMethod.GET)
 	public Result<IPage<SysUser>> queryPageList(SysUser user,@RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
 									  @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,HttpServletRequest req) {

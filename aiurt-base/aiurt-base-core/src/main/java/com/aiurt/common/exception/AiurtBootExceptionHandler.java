@@ -5,6 +5,8 @@ import org.jeecg.common.api.vo.Result;
 import com.aiurt.common.enums.SentinelErrorInfoEnum;
 import org.apache.shiro.authz.AuthorizationException;
 import org.apache.shiro.authz.UnauthorizedException;
+import org.jeecg.common.exception.JeecgBoot401Exception;
+import org.jeecg.common.exception.JeecgBootException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.data.redis.connection.PoolException;
@@ -32,7 +34,26 @@ public class AiurtBootExceptionHandler {
 	 * 处理自定义异常
 	 */
 	@ExceptionHandler(AiurtBootException.class)
-	public Result<?> handleJeecgBootException(AiurtBootException e){
+	public Result<?> handleAiurtBootException(AiurtBootException e){
+		log.error(e.getMessage(), e);
+		return Result.error(e.getMessage());
+	}
+
+	/**
+	 * 处理自定义异常
+	 */
+	@ExceptionHandler(Aiurt401Exception.class)
+	@ResponseStatus(HttpStatus.UNAUTHORIZED)
+	public Result<?> handleAiurt401Exception(Aiurt401Exception e){
+		log.error(e.getMessage(), e);
+		return new Result(401,e.getMessage());
+	}
+
+	/**
+	 * 处理自定义异常
+	 */
+	@ExceptionHandler(JeecgBootException.class)
+	public Result<?> handleJeecgBootException(JeecgBootException e){
 		log.error(e.getMessage(), e);
 		return Result.error(e.getMessage());
 	}
@@ -49,9 +70,9 @@ public class AiurtBootExceptionHandler {
 	/**
 	 * 处理自定义异常
 	 */
-	@ExceptionHandler(Aiurt401Exception.class)
+	@ExceptionHandler(JeecgBoot401Exception.class)
 	@ResponseStatus(HttpStatus.UNAUTHORIZED)
-	public Result<?> handleJeecgBoot401Exception(Aiurt401Exception e){
+	public Result<?> handleJeecgBoot401Exception(JeecgBoot401Exception e){
 		log.error(e.getMessage(), e);
 		return new Result(401,e.getMessage());
 	}

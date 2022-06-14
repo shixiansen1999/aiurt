@@ -95,7 +95,7 @@ public class ShiroRealm extends AuthorizingRealm {
         if (token == null) {
             HttpServletRequest req = SpringContextUtils.getHttpServletRequest();
             log.info("————————身份认证失败——————————IP地址:  "+ oConvertUtils.getIpAddrByRequest(req) +"，URL:"+req.getRequestURI());
-            throw new AuthenticationException("token为空!");
+          //  throw new AuthenticationException("token为空!");
         }
         // 校验token有效性
         LoginUser loginUser = null;
