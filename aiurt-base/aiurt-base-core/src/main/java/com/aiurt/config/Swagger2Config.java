@@ -2,7 +2,6 @@ package com.aiurt.config;
 
 
 import com.github.xiaoymin.knife4j.spring.annotations.EnableKnife4j;
-import com.github.xiaoymin.swaggerbootstrapui.annotations.EnableSwaggerBootstrapUI;
 import io.swagger.annotations.ApiOperation;
 import com.aiurt.common.constant.CommonConstant;
 import org.springframework.beans.BeansException;
