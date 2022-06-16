@@ -123,6 +123,7 @@ public class LoginController {
 	 * 【vue3专用】获取用户信息
 	 */
 	@GetMapping("/user/getUserInfo")
+	@ApiOperation("获取用户信息")
 	public Result<JSONObject> getUserInfo(HttpServletRequest request){
 		Result<JSONObject> result = new Result<JSONObject>();
 		String  username = JwtUtil.getUserNameByToken(request);
@@ -146,6 +147,7 @@ public class LoginController {
 	 * @return
 	 */
 	@RequestMapping(value = "/logout")
+	@ApiOperation("登出")
 	public Result<Object> logout(HttpServletRequest request,HttpServletResponse response) {
 		//用户退出逻辑
 	    String token = request.getHeader(CommonConstant.X_ACCESS_TOKEN);
@@ -178,6 +180,7 @@ public class LoginController {
 	 * @return
 	 */
 	@GetMapping("loginfo")
+	@ApiOperation("获取访问量")
 	public Result<JSONObject> loginfo() {
 		Result<JSONObject> result = new Result<JSONObject>();
 		JSONObject obj = new JSONObject();
@@ -255,6 +258,7 @@ public class LoginController {
 	 * @return
 	 */
 	@PostMapping(value = "/sms")
+	@ApiOperation("短信登录接口")
 	public Result<String> sms(@RequestBody JSONObject jsonObject) {
 		Result<String> result = new Result<String>();
 		String mobile = jsonObject.get("mobile").toString();
@@ -451,14 +455,14 @@ public class LoginController {
 		Result<String> res = new Result<String>();
 		try {
 			//生成验证码
-			final String BASE_CHECK_CODES = "qwertyuiplkjhgfdsazxcvbnmQWERTYUPLKJHGFDSAZXCVBNM1234567890";
+			final String BASE_CHECK_CODES = "1234567890";
 			String code = RandomUtil.randomString(BASE_CHECK_CODES,4);
 
 			//存到redis中
 			String lowerCaseCode = code.toLowerCase();
 			String realKey = Md5Util.md5Encode(lowerCaseCode+key, "utf-8");
             log.info("获取验证码，Redis checkCode = {}，key = {}", code, key);
-			redisUtil.set(realKey, lowerCaseCode, 60);
+			redisUtil.set(realKey, lowerCaseCode, 300);
 
 			//返回前端
 			String base64 = RandImageUtil.generate(code);
@@ -478,6 +482,7 @@ public class LoginController {
 	 * @throws Exception
 	 */
 	@RequestMapping(value = "/mLogin", method = RequestMethod.POST)
+	@ApiOperation("app登录")
 	public Result<JSONObject> mLogin(@RequestBody SysLoginModel sysLoginModel) throws Exception {
 		Result<JSONObject> result = new Result<JSONObject>();
 		String username = sysLoginModel.getUsername();
