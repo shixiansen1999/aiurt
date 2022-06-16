@@ -104,7 +104,7 @@
             spoo.create_time DESC
     </select>
 
-    <select id="selectByFaultChangeSparePartId" resultType="com.aiurt.boot.common.result.SparePartResult">
+    <select id="selectByFaultChangeSparePartId" resultType="com.aiurt.common.result.SparePartResult">
         SELECT
 	        cl.line_name AS lineName,
 	        cs.station_name AS stationName,
@@ -130,7 +130,7 @@
 	        spoo.fault_change_spare_part_id = #{id}
     </select>
 
-    <select id="getFaultDetail" resultType="com.aiurt.boot.common.result.FaultSparePartResult">
+    <select id="getFaultDetail" resultType="com.aiurt.common.result.FaultSparePartResult">
         SELECT
 	        f.occurrence_time AS occurrenceTime,
 	        cl.line_name AS lineName,

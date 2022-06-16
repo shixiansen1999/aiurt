@@ -29,33 +29,33 @@ public class StationPosition {
 	/**id*/
 	@TableId(type= IdType.AUTO)
     @ApiModelProperty(value = "id")
-	public Integer id;
+	private Integer id;
 	/**站点ID*/
 	@Excel(name = "站点ID", width = 15)
     @ApiModelProperty(value = "站点ID")
-	public Integer stationId;
+	private Integer stationId;
 	/**站点位置*/
 	@Excel(name = "站点位置", width = 15)
     @ApiModelProperty(value = "站点位置")
-	public String position;
+	private String position;
 	/**说明*/
 	@Excel(name = "说明", width = 15)
 	@ApiModelProperty(value = "说明")
-	public String remark;
+	private String remark;
 	/**删除标志*/
 	@Excel(name = "删除标志", width = 15)
     @ApiModelProperty(value = "删除标志")
-	public Integer delFlag;
+	private Integer delFlag;
 	/**创建时间*/
 	@Excel(name = "创建时间", width = 20, format = "yyyy-MM-dd HH:mm:ss")
 	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
     @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
     @ApiModelProperty(value = "创建时间")
-	public Date createTime;
+	private Date createTime;
 	/**更新时间*/
 	@Excel(name = "更新时间", width = 20, format = "yyyy-MM-dd HH:mm:ss")
 	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
     @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
     @ApiModelProperty(value = "更新时间")
-	public Date updateTime;
+	private Date updateTime;
 }

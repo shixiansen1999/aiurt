@@ -36,7 +36,7 @@ import java.util.stream.Collectors;
  * @Version: 1.0
  */
 @Slf4j
-public class JeecgController<T, S extends IService<T>> {
+public class BaseController<T, S extends IService<T>> {
     /**issues/2933 JeecgController注入service时改用protected修饰，能避免重复引用service*/
     @Autowired
     protected S service;

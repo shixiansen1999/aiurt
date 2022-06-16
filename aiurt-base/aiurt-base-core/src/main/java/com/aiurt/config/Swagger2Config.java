@@ -19,7 +19,6 @@ import springfox.documentation.builders.ApiInfoBuilder;
 import springfox.documentation.builders.ParameterBuilder;
 import springfox.documentation.builders.PathSelectors;
 import springfox.documentation.builders.RequestHandlerSelectors;
-import springfox.documentation.oas.annotations.EnableOpenApi;
 import springfox.documentation.schema.ModelRef;
 import springfox.documentation.service.*;
 import springfox.documentation.spi.DocumentationType;
@@ -68,7 +67,7 @@ public class Swagger2Config implements WebMvcConfigurer {
                 .apiInfo(apiInfo())
                 .select()
                 //此包路径下的类，才生成接口文档
-                .apis(RequestHandlerSelectors.basePackage("com.aiurt"))
+                //.apis(RequestHandlerSelectors.basePackage("com.aiurt"))
                 //加了ApiOperation注解的类，才生成接口文档
                 .apis(RequestHandlerSelectors.withClassAnnotation(RestController.class))
                 .apis(RequestHandlerSelectors.withMethodAnnotation(ApiOperation.class))
@@ -109,14 +108,14 @@ public class Swagger2Config implements WebMvcConfigurer {
     private ApiInfo apiInfo() {
         return new ApiInfoBuilder()
                 // //大标题
-                .title("Jeecg-Boot 后台服务API接口文档")
+                .title("地铁运维平台-API接口文档")
                 // 版本号
                 .version("1.0")
 //				.termsOfServiceUrl("NO terms of service")
                 // 描述
                 .description("后台API接口")
                 // 作者
-                .contact(new Contact("北京国炬信息技术有限公司","www.jeccg.com","jeecgos@163.com"))
+                .contact(new Contact("广州城轨技术有限公司","http://127.0.0.1:8080","gaoweif@outlook.com"))
                // .contact("JEECG团队")
                 .license("The Apache License, Version 2.0")
                 .licenseUrl("http://www.apache.org/licenses/LICENSE-2.0.html")

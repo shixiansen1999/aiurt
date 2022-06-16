@@ -77,7 +77,7 @@
             wl.create_time DESC
     </select>
 
-    <select id="queryById" resultType="com.aiurt.boot.common.result.WorkLogResult">
+    <select id="queryById" resultType="com.aiurt.common.result.WorkLogResult">
         SELECT
 	        wl.*,
 	        su.realname AS succeedName,
@@ -126,7 +126,7 @@
         UPDATE t_work_log SET del_flag = '1' WHERE id = #{id}
     </update>
 
-    <select id="selectLogCount" resultType="com.aiurt.boot.common.result.LogCountResult">
+    <select id="selectLogCount" resultType="com.aiurt.common.result.LogCountResult">
         SELECT
         COUNT(*) AS submitNum,
         wl.submit_id AS submitId,
@@ -148,7 +148,7 @@
         wl.submit_id
     </select>
 
-    <select id="getAssortNum" resultType="com.aiurt.boot.common.result.AssortNumResult">
+    <select id="getAssortNum" resultType="com.aiurt.common.result.AssortNumResult">
         SELECT
 	        wl.assort_num AS assortNum
         FROM

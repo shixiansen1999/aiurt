@@ -52,7 +52,7 @@ public class RepairPool {
      */
 //    @Excel(name = "检修规范ID", width = 15)
     @ApiModelProperty(value = "检修规范ID")
-    public Integer inspectionCodeId;
+    private Integer inspectionCodeId;
 
     @Excel(name = "周数", width = 20,needMerge = true)
     @ApiModelProperty(value = "周数")

@@ -8,5 +8,5 @@ import com.baomidou.mybatisplus.extension.service.IService;
  * @Date: 2019-4-21 8:13
  * @Version: 1.0
  */
-public interface JeecgService<T> extends IService<T> {
+public interface BaseService<T> extends IService<T> {
 }

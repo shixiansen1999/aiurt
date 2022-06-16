@@ -53,7 +53,7 @@ public class SparePartReturnVO {
     private String unit;
 
     @Excel(name = "所在班组", width = 15)
-    @ApiModelProperty(value = "所在班组")
+    @ApiModelProperty(value = "所在班组1")
     private String orgId;
 
     @Excel(name = "退还数量", width = 15)

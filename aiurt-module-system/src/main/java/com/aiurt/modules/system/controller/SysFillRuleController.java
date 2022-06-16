@@ -1,7 +1,7 @@
 package com.aiurt.modules.system.controller;
 
 import com.aiurt.common.aspect.annotation.AutoLog;
-import com.aiurt.common.system.base.controller.JeecgController;
+import com.aiurt.common.system.base.controller.BaseController;
 import org.jeecg.common.system.query.QueryGenerator;
 import com.aiurt.common.util.FillRuleUtil;
 import com.aiurt.modules.system.entity.SysFillRule;
@@ -33,7 +33,7 @@ import java.util.Arrays;
 @Api(tags = "填值规则")
 @RestController
 @RequestMapping("/sys/fillRule")
-public class SysFillRuleController extends JeecgController<SysFillRule, ISysFillRuleService> {
+public class SysFillRuleController extends BaseController<SysFillRule, ISysFillRuleService> {
     @Autowired
     private ISysFillRuleService sysFillRuleService;
 

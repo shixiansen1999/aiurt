@@ -13,7 +13,6 @@ import com.aiurt.boot.modules.appMessage.service.IMessageReadService;
 import com.aiurt.boot.modules.appMessage.service.IMessageService;
 import com.aiurt.boot.modules.appMessage.vo.MessageStatusVO;
 import com.aiurt.boot.modules.appMessage.vo.MessageUserVO;
-import com.aiurt.boot.modules.message.websocket.WebSocket;
 import lombok.RequiredArgsConstructor;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.system.vo.LoginUser;
@@ -36,7 +35,6 @@ public class MessageServiceImpl extends ServiceImpl<MessageMapper, Message> impl
 
 	private final IMessageReadService messageReadService;
 
-	private final WebSocket webSocket;
 
 	@Override
 	public IPage<MessageStatusVO> getMessagePage(MessagePageParam param) {
@@ -110,7 +108,8 @@ public class MessageServiceImpl extends ServiceImpl<MessageMapper, Message> impl
 		obj.put("msg", message.getContent());
 
 		for (String userId : param.getUserIds()) {
-			webSocket.sendOneMessage(userId, obj.toJSONString());
+			//todo 发送消息
+			// webSocket.sendOneMessage(userId, obj.toJSONString());
 		}
 		return true;
 	}

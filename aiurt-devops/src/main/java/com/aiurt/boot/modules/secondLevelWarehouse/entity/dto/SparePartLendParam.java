@@ -1,5 +1,6 @@
 package com.aiurt.boot.modules.secondLevelWarehouse.entity.dto;
 
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
@@ -10,6 +11,7 @@ import java.util.List;
  * @Date 2021/11/17
  */
 @Data
+@ApiModel("SparePartLendParam")
 public class SparePartLendParam {
 
     @ApiModelProperty("所在班组")

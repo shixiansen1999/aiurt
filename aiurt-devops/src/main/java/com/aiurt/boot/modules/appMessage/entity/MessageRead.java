@@ -32,55 +32,55 @@ public class MessageRead {
 	 */
 	@TableId(type = IdType.AUTO)
 	@ApiModelProperty(value = "id")
-	public Long id;
+	private Long id;
 
 	/**
 	 * 消息id
 	 */
 	@Excel(name = "消息id", width = 15)
 	@ApiModelProperty(value = "消息id")
-	public Long messageId;
+	private Long messageId;
 
 	/**
 	 * 用户id
 	 */
 	@Excel(name = "用户id", width = 15)
 	@ApiModelProperty(value = "用户id")
-	public String staffId;
+	private String staffId;
 
 	/**
 	 * 用户名称
 	 */
 	@Excel(name = "用户名称", width = 15)
 	@ApiModelProperty(value = "用户id")
-	public String staffName;
+	private String staffName;
 
 	/**
 	 * 是否已读：0未读 1已读
 	 */
 	@Excel(name = "是否已读：0未读 1已读", width = 15)
 	@ApiModelProperty(value = "是否已读：0未读 1已读")
-	public Integer readFlag;
+	private Integer readFlag;
 
 	/**
 	 * 删除状态 0-未删除 1-已删除
 	 */
 	@ApiModelProperty(value = "删除状态 0-未删除 1-已删除")
-	public Integer delFlag;
+	private Integer delFlag;
 
 	/**
 	 * 创建人
 	 */
 	@Excel(name = "创建人", width = 15)
 	@ApiModelProperty(value = "创建人")
-	public String createBy;
+	private String createBy;
 
 	/**
 	 * 修改人
 	 */
 	@Excel(name = "修改人", width = 15)
 	@ApiModelProperty(value = "修改人")
-	public String updateBy;
+	private String updateBy;
 
 	/**
 	 * 创建时间 CURRENT_TIMESTAMP
@@ -89,7 +89,7 @@ public class MessageRead {
 	@JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd HH:mm:ss")
 	@DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
 	@ApiModelProperty(value = "创建时间 CURRENT_TIMESTAMP")
-	public Date createTime;
+	private Date createTime;
 
 	/**
 	 * 修改时间 根据当前时间戳更新
@@ -98,6 +98,6 @@ public class MessageRead {
 	@JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd HH:mm:ss")
 	@DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
 	@ApiModelProperty(value = "修改时间 根据当前时间戳更新")
-	public Date updateTime;
+	private Date updateTime;
 
 }

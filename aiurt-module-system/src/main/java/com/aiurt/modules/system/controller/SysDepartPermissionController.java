@@ -6,7 +6,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import com.aiurt.common.constant.CommonConstant;
-import com.aiurt.common.system.base.controller.JeecgController;
+import com.aiurt.common.system.base.controller.BaseController;
 import org.jeecg.common.system.query.QueryGenerator;
 import org.jeecg.common.system.vo.LoginUser;
 import com.aiurt.common.util.oConvertUtils;
@@ -45,7 +45,7 @@ import io.swagger.annotations.ApiOperation;
 @Api(tags="部门权限表")
 @RestController
 @RequestMapping("/sys/sysDepartPermission")
-public class SysDepartPermissionController extends JeecgController<SysDepartPermission, ISysDepartPermissionService> {
+public class SysDepartPermissionController extends BaseController<SysDepartPermission, ISysDepartPermissionService> {
 	@Autowired
 	private ISysDepartPermissionService sysDepartPermissionService;
 

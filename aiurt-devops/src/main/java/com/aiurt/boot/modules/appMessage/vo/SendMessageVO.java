@@ -24,23 +24,23 @@ public class SendMessageVO implements Serializable {
 	 * 标题
 	 */
 	@ApiModelProperty(value = "标题")
-	public String title;
+	private String title;
 
 	/**
 	 * 消息内容
 	 */
 	@ApiModelProperty(value = "消息内容")
-	public String content;
+	private String content;
 
 	/**
 	 * 创建人
 	 */
 	@ApiModelProperty(value = "创建人")
-	public String createBy;
+	private String createBy;
 
 	/**
 	 * 接收消息的用户id集合
 	 */
 	@ApiModelProperty(value = "接收消息的用户id集合")
-	public List<String> userIds;
+	private List<String> userIds;
 }
