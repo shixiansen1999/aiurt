@@ -1,0 +1,59 @@
+<assembly>
+    <id>prod</id> <!--输出文件名-->
+    <formats>
+        <format>tar.gz</format> <!--打包文件结构-->
+    </formats>
+    <includeBaseDirectory>false</includeBaseDirectory>
+    <fileSets>
+        <fileSet>
+            <directory>src/main/bin</directory>  <!-- 项目文件目录-->
+            <outputDirectory>aiurt-module-system/bin</outputDirectory> <!--生成bin目录-->
+            <directoryMode>0755</directoryMode> <!--目录执行权限-->
+            <fileMode>0755</fileMode><!--文件执行权限-->
+            <filtered>true</filtered>
+        </fileSet>
+        <fileSet>
+            <directory>src/main/assembly/prod/config</directory>
+            <outputDirectory>aiurt-module-system/config</outputDirectory>
+            <directoryMode>0744</directoryMode>
+            <fileMode>0644</fileMode>
+            <filtered>true</filtered>
+        </fileSet>
+        <fileSet>
+            <directory>lib</directory>
+            <outputDirectory>aiurt-module-system/lib</outputDirectory>
+            <directoryMode>0744</directoryMode>
+            <fileMode>0644</fileMode>
+            <filtered>true</filtered>
+        </fileSet>
+        <fileSet>
+            <directory>target</directory>
+            <outputDirectory>aiurt-module-system/logs</outputDirectory>
+            <excludes>
+                <exclude>**/*</exclude>
+            </excludes>
+        </fileSet>
+        <fileSet>
+            <directory>target</directory>
+            <outputDirectory>aiurt-module-system</outputDirectory>
+            <includes>
+                <include>/*.jar</include>
+            </includes>
+        </fileSet>
+        <fileSet>
+            <directory>src/main/resources</directory>
+            <includes>
+                <include>readme.txt</include>
+            </includes>
+            <outputDirectory>aiurt-module-system</outputDirectory>
+            <directoryMode>0744</directoryMode>
+            <fileMode>0644</fileMode>
+            <filtered>true</filtered>
+        </fileSet>
+    </fileSets>
+    <dependencySets>
+        <dependencySet>
+            <outputDirectory>aiurt-module-system/lib</outputDirectory><!-- 依赖jar包放置目录-->
+        </dependencySet>
+    </dependencySets>
+</assembly>

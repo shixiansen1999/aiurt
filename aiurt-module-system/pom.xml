@@ -61,16 +61,93 @@
 	</dependencies>
 
 	<build>
+		<resources>
+			<resource>
+				<directory>src/main/java</directory>
+				<includes>
+					<include>**/*.xml</include>
+				</includes>
+			</resource>
+
+			<resource>
+				<directory>src/main/resources</directory>
+				<includes>
+					<include>**/*.*</include>
+				</includes>
+			</resource>
+		</resources>
 		<plugins>
+
+			<!-- maven-jar-plugin -->
 			<plugin>
-				<groupId>org.springframework.boot</groupId>
-				<artifactId>spring-boot-maven-plugin</artifactId>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
 				<configuration>
-					<!--SpringCloud运行环境 ,值改为true跳过SpringBoot启动打包插件 -->
-					<skip>${skip.springboot.maven}</skip>
+					<archive>
+						<!-- 添加index则不从mainfest中读取classpath，而是从Index.list中读取 -->
+						<manifest>
+							<!-- 作为程序入口来执行的class -->
+							<mainClass>com.aiurt.SystemApplication</mainClass>
+							<!-- 是否将依赖的classpath一起打包 -->
+							<addClasspath>true</addClasspath>
+							<classpathPrefix>lib/</classpathPrefix>
+						</manifest>
+					</archive>
+					<!-- 打包排除的文件 -->
+					<excludes>
+						<exclude>config/application.yml</exclude>
+						<exclude>config/application-*.yml</exclude>
+						<!--<exclude>config/ehcache.xml</exclude> -->
+						<exclude>config/logback-spring.xml</exclude>
+					</excludes>
+				</configuration>
+			</plugin>
+
+			<!-- maven-assembly-plugin -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-assembly-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>make-assembly-prod</id>
+						<phase>package</phase>
+						<goals>
+							<goal>single</goal>
+						</goals>
+						<configuration>
+							<skipAssembly>${skipAssemblyProd}</skipAssembly>
+							<descriptors>
+								<descriptor>src/main/assembly/prod/assembly.xml</descriptor>
+							</descriptors>
+						</configuration>
+					</execution>
+					<execution>
+						<id>make-assembly-test</id>
+						<phase>package</phase>
+						<goals>
+							<goal>single</goal>
+						</goals>
+						<configuration>
+							<skipAssembly>${skipAssemblyTest}</skipAssembly>
+							<descriptors>
+								<descriptor>src/main/assembly/test/assembly.xml</descriptor>
+							</descriptors>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<configuration>
+					<source>8</source>
+					<target>8</target>
 				</configuration>
 			</plugin>
 		</plugins>
+
+		<finalName>${project.artifactId}-${project.version}</finalName>
 	</build>
 
 	<profiles>
@@ -99,5 +176,28 @@
 				</resources>
 			</build>
 		</profile>
+		<profile>
+			<id>prod</id>
+			<activation>
+				<activeByDefault>true</activeByDefault>
+			</activation>
+			<properties>
+				<env.devMode>prod</env.devMode>
+				<skipAssemblyProd>false</skipAssemblyProd>
+				<skipAssemblyTest>true</skipAssemblyTest>
+			</properties>
+		</profile>
+		<profile>
+			<id>test</id>
+			<activation>
+				<activeByDefault>false</activeByDefault>
+			</activation>
+			<properties>
+				<env.devMode>test</env.devMode>
+				<skipAssemblyProd>true</skipAssemblyProd>
+				<skipAssemblyTest>false</skipAssemblyTest>
+			</properties>
+		</profile>
 	</profiles>
+
 </project>
