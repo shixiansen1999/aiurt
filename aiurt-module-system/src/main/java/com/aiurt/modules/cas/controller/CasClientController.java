@@ -5,10 +5,10 @@ import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.aiurt.common.util.RedisUtil;
 import org.jeecg.common.api.vo.Result;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.system.util.JwtUtil;
-import com.aiurt.common.util.RedisUtil;
 import com.aiurt.modules.cas.util.CASServiceUtil;
 import com.aiurt.modules.cas.util.XmlUtils;
 import com.aiurt.modules.system.entity.SysDepart;

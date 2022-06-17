@@ -97,6 +97,11 @@ public class SysDepart implements Serializable {
     //update-end---author:wangshuai ---date:20200308  for：[JTC-119]新增字段负责人ids和旧的负责人ids
 
 	/**
+	 * 机构编码层级结构
+	 */
+	private String orgCodeCc;
+
+	/**
 	 * 重写equals方法
 	 */
     @Override

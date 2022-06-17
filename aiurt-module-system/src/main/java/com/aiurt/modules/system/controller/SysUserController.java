@@ -2,14 +2,14 @@ package com.aiurt.modules.system.controller;
 
 
 import cn.hutool.core.util.RandomUtil;
-import com.aiurt.common.aspect.annotation.PermissionData;
 import com.aiurt.common.constant.CommonConstant;
+import com.aiurt.common.util.RedisUtil;
+import io.swagger.annotations.ApiOperation;
 import org.jeecg.common.system.query.QueryGenerator;
 import com.aiurt.common.system.util.JwtUtil;
 import org.jeecg.common.system.vo.LoginUser;
 import com.aiurt.common.util.ImportExcelUtil;
 import com.aiurt.common.util.PasswordUtil;
-import com.aiurt.common.util.RedisUtil;
 import com.aiurt.common.util.oConvertUtils;
 import org.jeecg.modules.base.service.BaseCommonService;
 import com.aiurt.modules.system.entity.*;
@@ -159,8 +159,7 @@ public class SysUserController {
 		return result;
 	}
 
-    //@RequiresRoles({"admin"})
-    //@RequiresPermissions("user:add")
+    @ApiOperation("添加用户")
 	@RequestMapping(value = "/add", method = RequestMethod.POST)
 	public Result<SysUser> add(@RequestBody JSONObject jsonObject) {
 		Result<SysUser> result = new Result<SysUser>();

@@ -610,4 +610,14 @@ public class RedisUtil {
 			e.printStackTrace();
 		}
 	}
+
+	public String getStr(String key) {
+		if(key == null){
+			return null;
+		}else {
+			Object object = redisTemplate.opsForValue().get(key);
+			return object == null ? null : object.toString();
+		}
+
+	}
 }
