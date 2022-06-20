@@ -13,7 +13,7 @@ import javax.annotation.Resource;
 * @date: 2020/01/01 16:01
 */
 @Configuration
-public class JeecgRedisClient {
+public class BaseRedisClient {
 
     @Resource
     private RedisTemplate<String, Object> redisTemplate;

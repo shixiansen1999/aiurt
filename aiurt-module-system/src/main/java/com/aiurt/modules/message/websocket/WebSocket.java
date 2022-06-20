@@ -13,7 +13,7 @@ import javax.websocket.server.ServerEndpoint;
 
 import com.aiurt.common.base.BaseMap;
 import com.aiurt.common.constant.WebsocketConst;
-import com.aiurt.common.modules.redis.client.JeecgRedisClient;
+import com.aiurt.common.modules.redis.client.BaseRedisClient;
 import org.springframework.stereotype.Component;
 
 import com.alibaba.fastjson.JSONObject;
@@ -40,7 +40,7 @@ public class WebSocket {
     private static final String REDIS_TOPIC_NAME = "socketHandler";
 
     @Resource
-    private JeecgRedisClient jeecgRedisClient;
+    private BaseRedisClient baseRedisClient;
 
     /**
      * 缓存 webSocket连接到单机服务class中（整体方案支持集群）
@@ -135,7 +135,7 @@ public class WebSocket {
         BaseMap baseMap = new BaseMap();
         baseMap.put("userId", "");
         baseMap.put("message", message);
-        jeecgRedisClient.sendMessage(REDIS_TOPIC_NAME, baseMap);
+        baseRedisClient.sendMessage(REDIS_TOPIC_NAME, baseMap);
     }
 
     /**
@@ -148,7 +148,7 @@ public class WebSocket {
         BaseMap baseMap = new BaseMap();
         baseMap.put("userId", userId);
         baseMap.put("message", message);
-        jeecgRedisClient.sendMessage(REDIS_TOPIC_NAME, baseMap);
+        baseRedisClient.sendMessage(REDIS_TOPIC_NAME, baseMap);
     }
 
     /**

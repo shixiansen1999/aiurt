@@ -3,7 +3,7 @@ package com.aiurt.modules.message.websocket;
 import cn.hutool.core.util.ObjectUtil;
 import com.aiurt.common.base.BaseMap;
 import com.aiurt.common.constant.CommonSendStatus;
-import com.aiurt.common.modules.redis.listener.JeecgRedisListener;
+import com.aiurt.common.modules.redis.listener.RedisListener;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -14,7 +14,7 @@ import org.springframework.stereotype.Component;
  */
 @Slf4j
 @Component
-public class SocketHandler implements JeecgRedisListener {
+public class SocketHandler implements RedisListener {
 
     @Autowired
     private WebSocket webSocket;

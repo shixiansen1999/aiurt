@@ -7,7 +7,7 @@ import com.aiurt.common.base.BaseMap;
  * @author: scott
  * @date: 2020/01/01 16:02
  */
-public interface JeecgRedisListener {
+public interface RedisListener {
     /**
      * 接受消息
      *
