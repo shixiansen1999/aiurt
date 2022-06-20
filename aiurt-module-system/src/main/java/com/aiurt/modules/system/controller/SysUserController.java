@@ -268,6 +268,7 @@ public class SysUserController {
     }
 
     @RequestMapping(value = "/queryById", method = RequestMethod.GET)
+    @ApiOperation("根据用户id查询用户信息")
     public Result<SysUser> queryById(@RequestParam(name = "id", required = true) String id) {
         Result<SysUser> result = new Result<SysUser>();
         SysUser sysUser = sysUserService.getById(id);
