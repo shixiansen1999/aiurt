@@ -2,10 +2,9 @@ package com.aiurt.handler;
 
 import com.aiurt.common.base.BaseMap;
 import com.aiurt.common.constant.GlobalConstants;
-import com.aiurt.common.modules.redis.listener.JeecgRedisListener;
 import com.aiurt.loader.DynamicRouteLoader;
 import lombok.extern.slf4j.Slf4j;
-
+import com.aiurt.common.modules.redis.listener.RedisListener;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
@@ -17,7 +16,7 @@ import javax.annotation.Resource;
  */
 @Slf4j
 @Component(GlobalConstants.LODER_ROUDER_HANDLER)
-public class LoderRouderHandler implements JeecgRedisListener {
+public class LoderRouderHandler implements RedisListener {
 
     @Resource
     private DynamicRouteLoader dynamicRouteLoader;
