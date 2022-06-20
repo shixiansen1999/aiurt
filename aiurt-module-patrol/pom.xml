@@ -10,6 +10,11 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>aiurt-module-patrol</artifactId>
+    <groupId>com.aiurt.boot</groupId>
+    <version>1.0.0-RELEASE</version>
+    <name>aiurt-module-patrol</name>
+    <packaging>jar</packaging>
+    <description>巡检业务模块</description>
 
     <properties>
         <maven.compiler.source>8</maven.compiler.source>
@@ -35,6 +40,11 @@
             <groupId>com.belerweb</groupId>
             <artifactId>pinyin4j</artifactId>
             <version>2.5.1</version>
+        </dependency>
+        <dependency>
+            <groupId>com.aiurt.boot</groupId>
+            <artifactId>aiurt-module-common</artifactId>
+            <version>1.0.0-RELEASE</version>
         </dependency>
     </dependencies>
 </project>

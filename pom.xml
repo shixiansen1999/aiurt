@@ -67,6 +67,7 @@
 		<module>aiurt-devops</module>
 		<module>aiurt-module-inspection</module>
         <module>aiurt-module-patrol</module>
+        <module>aiurt-module-common</module>
     </modules>
 
 	<distributionManagement>
