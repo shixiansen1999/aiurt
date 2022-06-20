@@ -8,7 +8,7 @@ import org.jeecgframework.codegenerate.window.CodeWindow;
  * @site www.jeecg.com
  * @Version:V1.0.1
  */
-public class JeecgOneGUI {
+public class OneGUI {
 
 	/** 使用手册： http://doc.jeecg.com/2684691 */
     public static void main(String[] args) {

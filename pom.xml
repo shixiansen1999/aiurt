@@ -65,6 +65,7 @@
         <module>aiurt-base</module>
         <module>aiurt-module-system</module>
 		<module>aiurt-devops</module>
+		<module>aiurt-module-inspection</module>
 	</modules>
 
 	<distributionManagement>

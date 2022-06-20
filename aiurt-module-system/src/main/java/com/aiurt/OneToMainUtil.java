@@ -1,11 +1,11 @@
 package com.aiurt;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.jeecgframework.codegenerate.generate.impl.CodeGenerateOneToMany;
 import org.jeecgframework.codegenerate.generate.pojo.onetomany.MainTableVo;
 import org.jeecgframework.codegenerate.generate.pojo.onetomany.SubTableVo;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * 代码生成器入口【一对多】
@@ -13,7 +13,7 @@ import org.jeecgframework.codegenerate.generate.pojo.onetomany.SubTableVo;
  * @site www.jeecg.com
  *
  */
-public class JeecgOneToMainUtil {
+public class OneToMainUtil {
 
 	/**
 	 * 一对多(父子表)数据模型，生成方法
