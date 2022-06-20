@@ -1,5 +1,22 @@
 package org.jeecg.common.system.query;
 
+import com.aiurt.common.constant.CommonConstant;
+import com.aiurt.common.constant.DataBaseConstant;
+import com.aiurt.common.constant.SymbolConstant;
+import com.aiurt.common.system.util.JeecgDataAutorUtils;
+import com.aiurt.common.system.util.JwtUtil;
+import com.aiurt.common.util.CommonUtils;
+import com.aiurt.common.util.DateUtils;
+import com.aiurt.common.util.SqlInjectionUtil;
+import com.aiurt.common.util.oConvertUtils;
+import com.alibaba.fastjson.JSON;
+import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.beanutils.PropertyUtils;
+import org.jeecg.common.system.vo.SysPermissionDataRuleModel;
+import org.springframework.util.NumberUtils;
+
 import java.beans.PropertyDescriptor;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Field;
@@ -11,25 +28,6 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-
-import com.aiurt.common.constant.CommonConstant;
-import com.aiurt.common.constant.DataBaseConstant;
-import com.aiurt.common.constant.SymbolConstant;
-import com.aiurt.common.util.CommonUtils;
-import com.aiurt.common.util.DateUtils;
-import com.aiurt.common.util.SqlInjectionUtil;
-import com.aiurt.common.util.oConvertUtils;
-import org.apache.commons.beanutils.PropertyUtils;
-import com.aiurt.common.system.util.JeecgDataAutorUtils;
-import com.aiurt.common.system.util.JwtUtil;
-import org.jeecg.common.system.vo.SysPermissionDataRuleModel;
-import org.springframework.util.NumberUtils;
-
-import com.alibaba.fastjson.JSON;
-import com.baomidou.mybatisplus.annotation.TableField;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-
-import lombok.extern.slf4j.Slf4j;
 
 /**
  * @Description: 查询生成器
@@ -179,10 +177,10 @@ public class QueryGenerator {
 					QueryRuleEnum rule = convert2Rule(value);
 					value = replaceValue(rule,value);
 					// add -begin 添加判断为字符串时设为全模糊查询
-					//if( (rule==null || QueryRuleEnum.EQ.equals(rule)) && "class java.lang.String".equals(type)) {
+					if( (rule==null || QueryRuleEnum.EQ.equals(rule)) && "class java.lang.String".equals(type)) {
 						// 可以设置左右模糊或全模糊，因人而异
-						//rule = QueryRuleEnum.LIKE;
-					//}
+						rule = QueryRuleEnum.LIKE;
+					}
 					// add -end 添加判断为字符串时设为全模糊查询
 					addEasyQuery(queryWrapper, column, rule, value);
 				}
