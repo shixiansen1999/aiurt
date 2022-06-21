@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
@@ -32,6 +33,7 @@ public class CsMajorServiceImpl extends ServiceImpl<CsMajorMapper, CsMajor> impl
      * @return
      */
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public Result<?> add(CsMajor csMajor) {
         //专业编码不能重复，判断数据库中是否存在，如不存在则可继续添加
         QueryWrapper<CsMajor> queryWrapper = new QueryWrapper<>();
@@ -50,6 +52,7 @@ public class CsMajorServiceImpl extends ServiceImpl<CsMajorMapper, CsMajor> impl
      * @return
      */
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public Result<?> update(CsMajor csMajor) {
         //专业编码不能重复，判断数据库中是否存在，如不存在则可继续添加
         QueryWrapper<CsMajor> queryWrapper = new QueryWrapper<>();
