@@ -134,7 +134,7 @@ spring:
         connectionProperties: druid.stat.mergeSql\=true;druid.stat.slowSqlMillis\=5000
       datasource:
         master:
-          url: jdbc:mysql://192.168.1.22:3306/aiurt-platform?characterEncoding=UTF-8&useUnicode=true&useSSL=false&tinyInt1isBit=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai
+          url: jdbc:mysql://192.168.1.29:3306/aiurt-platform?characterEncoding=UTF-8&useUnicode=true&useSSL=false&tinyInt1isBit=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai
           username: root
           password: 1qaz@2wsx
           driver-class-name: com.mysql.cj.jdbc.Driver
@@ -147,7 +147,7 @@ spring:
   #redis 配置
   redis:
     database: 0
-    host: 192.168.1.22
+    host: 192.168.1.29
     lettuce:
       pool:
         max-active: 8   #最大连接数据库连接数,设 -1 为没有限制
@@ -327,17 +327,7 @@ third-app:
       # appSecret
       client-secret: ??
       agent-id: ??
-fdfs:
-  # 链接超时
-  connect-timeout: 60000
-  # 读取时间
-  so-timeout: 600
-  # 生成缩略图参数
-  thumb-image:
-    width: 150
-    height: 150
-  tracker-list: 192.168.1.22:22122
-  webUrl: http://192.168.1.22
+
 
 #项目专用配置
 support:

@@ -1,5 +1,5 @@
 spring:
   application:
-    name: jeecg-system
+    name: aiurt-system
   profiles:
     active: prod

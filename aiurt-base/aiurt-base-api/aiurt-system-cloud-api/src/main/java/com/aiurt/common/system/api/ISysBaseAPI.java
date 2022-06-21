@@ -27,7 +27,7 @@ import java.util.Set;
  */
 @Component
 @FeignClient(contextId = "sysBaseRemoteApi", value = ServiceNameConstants.SERVICE_SYSTEM, fallbackFactory = SysBaseAPIFallbackFactory.class)
-@ConditionalOnMissingClass("org.jeecg.modules.system.service.impl.SysBaseApiImpl")
+@ConditionalOnMissingClass("com.aiurt.modules.system.service.impl.SysBaseApiImpl")
 public interface ISysBaseAPI extends CommonAPI {
 
     /**
