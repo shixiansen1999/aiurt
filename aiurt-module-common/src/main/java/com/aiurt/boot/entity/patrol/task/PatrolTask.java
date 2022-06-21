@@ -41,9 +41,9 @@ public class PatrolTask implements Serializable {
     @Excel(name = "计划编号", width = 15)
     @ApiModelProperty(value = "计划编号")
     private java.lang.String planCode;
-	/**巡检表名称*/
-	@Excel(name = "巡检表名称", width = 15)
-    @ApiModelProperty(value = "巡检表名称")
+	/**任务名称*/
+	@Excel(name = "任务名称", width = 15)
+    @ApiModelProperty(value = "任务名称")
     private java.lang.String name;
 	/**作业类型：1 A1、2 A2、3 A3、4 B1、5 B2、6 C1、7 C2、8 C3*/
 	@Excel(name = "作业类型：1 A1、2 A2、3 A3、4 B1、5 B2、6 C1、7 C2、8 C3", width = 15)
