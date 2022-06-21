@@ -1,15 +1,16 @@
 package com.aiurt.common.util;
 
+import com.aiurt.common.constant.CommonConstant;
+import com.aiurt.common.constant.DataBaseConstant;
+import com.aiurt.common.constant.SymbolConstant;
+import com.aiurt.common.util.filter.FileTypeFilter;
+import com.aiurt.common.util.oss.OssBootUtil;
 import com.baomidou.dynamic.datasource.spring.boot.autoconfigure.DataSourceProperty;
 import com.baomidou.dynamic.datasource.spring.boot.autoconfigure.DynamicDataSourceProperties;
 import com.baomidou.mybatisplus.annotation.DbType;
 import com.baomidou.mybatisplus.extension.toolkit.JdbcUtils;
-import com.aiurt.common.util.filter.FileTypeFilter;
-import com.aiurt.common.util.oss.OssBootUtil;
 import lombok.extern.slf4j.Slf4j;
-import com.aiurt.common.constant.CommonConstant;
-import com.aiurt.common.constant.DataBaseConstant;
-import com.aiurt.common.constant.SymbolConstant;
+import org.jeecg.common.util.SpringContextUtils;
 import org.jeecgframework.poi.util.PoiPublicUtil;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.util.FileCopyUtils;

@@ -2,10 +2,10 @@ package com.aiurt.modules.message.handle.impl;
 
 import com.aiurt.common.api.dto.message.MessageDTO;
 import com.aiurt.common.exception.AiurtBootException;
-import com.aiurt.common.util.SpringContextUtils;
 import com.aiurt.common.util.oConvertUtils;
-import org.jeecg.common.system.api.ISysBaseAPI;
 import com.aiurt.modules.message.handle.ISendMsgHandle;
+import org.jeecg.common.system.api.ISysBaseAPI;
+import org.jeecg.common.util.SpringContextUtils;
 
 /**
 * @Description: 发送系统消息

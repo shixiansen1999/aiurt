@@ -5,11 +5,12 @@ import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.system.util.JwtUtil;
 import com.aiurt.common.util.PasswordUtil;
 import com.aiurt.common.util.RestUtil;
-import com.aiurt.common.util.SpringContextUtils;
 import com.aiurt.common.util.oConvertUtils;
 import com.aiurt.config.thirdapp.ThirdAppConfig;
 import com.aiurt.config.thirdapp.ThirdAppTypeItemVo;
 import com.aiurt.modules.system.entity.*;
+import com.aiurt.modules.system.mapper.SysAnnouncementSendMapper;
+import com.aiurt.modules.system.mapper.SysUserMapper;
 import com.aiurt.modules.system.model.SysDepartTreeModel;
 import com.aiurt.modules.system.model.ThirdLoginModel;
 import com.aiurt.modules.system.service.*;
@@ -19,7 +20,6 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
-
 import com.jeecg.dingtalk.api.base.JdtBaseAPI;
 import com.jeecg.dingtalk.api.core.response.Response;
 import com.jeecg.dingtalk.api.core.vo.AccessToken;
@@ -37,10 +37,7 @@ import com.jeecg.dingtalk.api.user.body.GetUserListBody;
 import com.jeecg.dingtalk.api.user.vo.User;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
-
-import com.aiurt.modules.system.mapper.SysAnnouncementSendMapper;
-import com.aiurt.modules.system.mapper.SysUserMapper;
-
+import org.jeecg.common.util.SpringContextUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;

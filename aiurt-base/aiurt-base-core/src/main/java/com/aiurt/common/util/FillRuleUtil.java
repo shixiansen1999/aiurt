@@ -1,12 +1,13 @@
 package com.aiurt.common.util;
 
+import com.aiurt.common.handler.IFillRuleHandler;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import com.aiurt.common.handler.IFillRuleHandler;
+import org.jeecg.common.util.SpringContextUtils;
 
 
 /**

@@ -1,12 +1,12 @@
 package com.aiurt.config.sign.util;
 
-import com.alibaba.fastjson.JSONObject;
-import com.aiurt.common.util.SpringContextUtils;
-import com.aiurt.common.util.oConvertUtils;
-import lombok.extern.slf4j.Slf4j;
 import com.aiurt.common.constant.SymbolConstant;
 import com.aiurt.common.exception.AiurtBootException;
+import com.aiurt.common.util.oConvertUtils;
 import com.aiurt.config.JeeccgBaseConfig;
+import com.alibaba.fastjson.JSONObject;
+import lombok.extern.slf4j.Slf4j;
+import org.jeecg.common.util.SpringContextUtils;
 import org.springframework.util.DigestUtils;
 import org.springframework.util.StringUtils;
 

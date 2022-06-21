@@ -1,14 +1,14 @@
 package com.aiurt.modules.system.rule;
 
 import com.aiurt.common.handler.IFillRuleHandler;
-import com.aiurt.common.util.SpringContextUtils;
 import com.aiurt.common.util.YouBianCodeUtil;
 import com.aiurt.common.util.oConvertUtils;
 import com.aiurt.modules.system.entity.SysCategory;
+import com.aiurt.modules.system.mapper.SysCategoryMapper;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.extern.slf4j.Slf4j;
-import com.aiurt.modules.system.mapper.SysCategoryMapper;
+import org.jeecg.common.util.SpringContextUtils;
 
 import java.util.List;
 

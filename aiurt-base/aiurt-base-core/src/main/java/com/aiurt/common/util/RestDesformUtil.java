@@ -2,6 +2,7 @@ package com.aiurt.common.util;
 
 import com.alibaba.fastjson.JSONObject;
 import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.util.SpringContextUtils;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;

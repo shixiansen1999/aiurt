@@ -4,7 +4,6 @@ import com.aiurt.common.api.CommonAPI;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.system.util.JwtUtil;
 import com.aiurt.common.util.RedisUtil;
-import com.aiurt.common.util.SpringContextUtils;
 import com.aiurt.common.util.TokenUtils;
 import com.aiurt.common.util.oConvertUtils;
 import com.aiurt.config.mybatis.TenantContext;
@@ -18,6 +17,7 @@ import org.apache.shiro.authz.SimpleAuthorizationInfo;
 import org.apache.shiro.realm.AuthorizingRealm;
 import org.apache.shiro.subject.PrincipalCollection;
 import org.jeecg.common.system.vo.LoginUser;
+import org.jeecg.common.util.SpringContextUtils;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 

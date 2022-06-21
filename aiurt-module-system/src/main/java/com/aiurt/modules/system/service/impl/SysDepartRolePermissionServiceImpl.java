@@ -1,15 +1,14 @@
 package com.aiurt.modules.system.service.impl;
 
 import com.aiurt.common.util.IpUtils;
-import com.aiurt.common.util.SpringContextUtils;
 import com.aiurt.common.util.oConvertUtils;
 import com.aiurt.modules.system.entity.SysDepartRolePermission;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.aiurt.modules.system.mapper.SysDepartRolePermissionMapper;
 import com.aiurt.modules.system.service.ISysDepartRolePermissionService;
-import org.springframework.stereotype.Service;
-
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import org.jeecg.common.util.SpringContextUtils;
+import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.*;

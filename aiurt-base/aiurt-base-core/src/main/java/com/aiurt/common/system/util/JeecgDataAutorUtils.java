@@ -1,8 +1,8 @@
 package com.aiurt.common.system.util;
 
-import com.aiurt.common.util.SpringContextUtils;
 import org.jeecg.common.system.vo.SysPermissionDataRuleModel;
 import org.jeecg.common.system.vo.SysUserCacheInfo;
+import org.jeecg.common.util.SpringContextUtils;
 import org.springframework.util.StringUtils;
 
 import javax.servlet.http.HttpServletRequest;

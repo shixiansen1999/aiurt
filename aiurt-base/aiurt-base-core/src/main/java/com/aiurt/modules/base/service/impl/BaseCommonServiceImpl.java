@@ -1,20 +1,20 @@
 package com.aiurt.modules.base.service.impl;
 
-import com.baomidou.mybatisplus.core.toolkit.IdWorker;
 import com.aiurt.common.api.dto.LogDTO;
 import com.aiurt.common.util.IpUtils;
-import com.aiurt.common.util.SpringContextUtils;
 import com.aiurt.common.util.oConvertUtils;
+import com.aiurt.modules.base.mapper.BaseCommonMapper;
+import com.baomidou.mybatisplus.core.toolkit.IdWorker;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.SecurityUtils;
-import com.aiurt.modules.base.mapper.BaseCommonMapper;
-import org.jeecg.modules.base.service.BaseCommonService;
 import org.jeecg.common.system.vo.LoginUser;
+import org.jeecg.common.util.SpringContextUtils;
+import org.jeecg.modules.base.service.BaseCommonService;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
-import java.util.*;
+import java.util.Date;
 
 /**
  * @Description: common实现类

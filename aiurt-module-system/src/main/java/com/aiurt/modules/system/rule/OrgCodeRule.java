@@ -1,13 +1,13 @@
 package com.aiurt.modules.system.rule;
 
 import com.aiurt.common.handler.IFillRuleHandler;
-import com.aiurt.common.util.SpringContextUtils;
 import com.aiurt.common.util.YouBianCodeUtil;
 import com.aiurt.modules.system.entity.SysDepart;
+import com.aiurt.modules.system.service.ISysDepartService;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import io.netty.util.internal.StringUtil;
-import com.aiurt.modules.system.service.ISysDepartService;
+import org.jeecg.common.util.SpringContextUtils;
 
 import java.util.ArrayList;
 import java.util.List;

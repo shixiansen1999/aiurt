@@ -1,7 +1,7 @@
-package com.aiurt.common.util.dynamic.db;
+package org.jeecg.common.util.dynamic.db;
 
-import com.baomidou.mybatisplus.annotation.DbType;
 import com.aiurt.common.constant.DataBaseConstant;
+import com.baomidou.mybatisplus.annotation.DbType;
 
 import java.util.HashMap;
 import java.util.Map;

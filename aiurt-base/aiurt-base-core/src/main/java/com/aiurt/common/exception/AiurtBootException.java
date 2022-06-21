@@ -1,8 +1,8 @@
 package com.aiurt.common.exception;
 
 /**
- * @Description: jeecg-boot自定义异常
- * @author: jeecg-boot
+ * @Description: aiurt自定义异常
+ * @author: aiurt
  */
 public class AiurtBootException extends RuntimeException {
 	private static final long serialVersionUID = 1L;

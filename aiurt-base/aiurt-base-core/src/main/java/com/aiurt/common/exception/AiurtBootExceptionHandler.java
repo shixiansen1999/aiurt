@@ -23,8 +23,8 @@ import lombok.extern.slf4j.Slf4j;
 /**
  * 异常处理器
  *
- * @Author scott
- * @Date 2019
+ * @Author aiurt
+ * @Date 2022
  */
 @RestControllerAdvice
 @Slf4j

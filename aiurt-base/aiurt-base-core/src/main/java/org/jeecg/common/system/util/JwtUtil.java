@@ -7,7 +7,6 @@ import com.aiurt.common.constant.SymbolConstant;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.system.util.JeecgDataAutorUtils;
 import com.aiurt.common.util.DateUtils;
-import com.aiurt.common.util.SpringContextUtils;
 import com.aiurt.common.util.oConvertUtils;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.JWTVerifier;
@@ -20,6 +19,7 @@ import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.vo.LoginUser;
 import org.jeecg.common.system.vo.SysUserCacheInfo;
+import org.jeecg.common.util.SpringContextUtils;
 
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;

@@ -1,10 +1,9 @@
 package com.aiurt.modules.message.handle.impl;
 
-import com.aiurt.common.util.SpringContextUtils;
 import com.aiurt.common.util.oConvertUtils;
 import com.aiurt.config.StaticConfig;
 import com.aiurt.modules.message.handle.ISendMsgHandle;
-
+import org.jeecg.common.util.SpringContextUtils;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 

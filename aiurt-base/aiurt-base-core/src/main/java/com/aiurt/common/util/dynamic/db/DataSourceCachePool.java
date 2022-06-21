@@ -1,11 +1,12 @@
 package com.aiurt.common.util.dynamic.db;
 
+import com.aiurt.common.api.CommonAPI;
 import com.aiurt.common.constant.CacheConstant;
 import com.alibaba.druid.pool.DruidDataSource;
-import com.aiurt.common.api.CommonAPI;
 import org.jeecg.common.system.vo.DynamicDataSourceModel;
-import com.aiurt.common.util.SpringContextUtils;
+import org.jeecg.common.util.SpringContextUtils;
 import org.springframework.data.redis.core.RedisTemplate;
+
 import java.util.HashMap;
 import java.util.Map;
 

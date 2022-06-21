@@ -1,6 +1,12 @@
 package com.aiurt.common.system.util;
 
 import cn.hutool.core.util.StrUtil;
+import com.aiurt.common.constant.CommonConstant;
+import com.aiurt.common.constant.DataBaseConstant;
+import com.aiurt.common.constant.SymbolConstant;
+import com.aiurt.common.exception.AiurtBootException;
+import com.aiurt.common.util.DateUtils;
+import com.aiurt.common.util.oConvertUtils;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
@@ -8,26 +14,19 @@ import com.auth0.jwt.exceptions.JWTDecodeException;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Joiner;
+import org.apache.shiro.SecurityUtils;
+import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.system.vo.LoginUser;
+import org.jeecg.common.system.vo.SysUserCacheInfo;
+import org.jeecg.common.util.SpringContextUtils;
 
-import java.io.IOException;
-import java.io.OutputStream;
-import java.util.Date;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
-
-import org.jeecg.common.api.vo.Result;
-import com.aiurt.common.constant.CommonConstant;
-import com.aiurt.common.constant.DataBaseConstant;
-import com.aiurt.common.constant.SymbolConstant;
-import com.aiurt.common.exception.AiurtBootException;
-import com.aiurt.common.util.DateUtils;
-import com.aiurt.common.util.SpringContextUtils;
-import com.aiurt.common.util.oConvertUtils;
-import org.apache.shiro.SecurityUtils;
-import org.jeecg.common.system.vo.LoginUser;
-import org.jeecg.common.system.vo.SysUserCacheInfo;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.util.Date;
 
 /**
  * @Author Scott

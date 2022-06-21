@@ -1,18 +1,14 @@
 package com.aiurt.common.aspect;
 
-import com.alibaba.fastjson.JSONObject;
-import com.alibaba.fastjson.serializer.PropertyFilter;
 import com.aiurt.common.api.dto.LogDTO;
-import org.jeecg.common.api.vo.Result;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.constant.enums.ModuleType;
 import com.aiurt.common.constant.enums.OperateTypeEnum;
-import org.jeecg.common.system.vo.LoginUser;
 import com.aiurt.common.util.IpUtils;
-import com.aiurt.common.util.SpringContextUtils;
 import com.aiurt.common.util.oConvertUtils;
-import org.jeecg.modules.base.service.BaseCommonService;
+import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson.serializer.PropertyFilter;
 import org.apache.shiro.SecurityUtils;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -20,10 +16,15 @@ import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
 import org.aspectj.lang.reflect.MethodSignature;
+import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.system.vo.LoginUser;
+import org.jeecg.common.util.SpringContextUtils;
+import org.jeecg.modules.base.service.BaseCommonService;
 import org.springframework.core.LocalVariableTableParameterNameDiscoverer;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.multipart.MultipartFile;
+
 import javax.annotation.Resource;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;

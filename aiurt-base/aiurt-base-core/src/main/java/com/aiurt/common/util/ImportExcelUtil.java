@@ -1,10 +1,11 @@
 package com.aiurt.common.util;
 
+import com.aiurt.common.constant.CommonConstant;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.extension.service.IService;
 import lombok.extern.slf4j.Slf4j;
 import org.jeecg.common.api.vo.Result;
-import com.aiurt.common.constant.CommonConstant;
+import org.jeecg.common.util.SpringContextUtils;
 
 import java.io.File;
 import java.io.IOException;
