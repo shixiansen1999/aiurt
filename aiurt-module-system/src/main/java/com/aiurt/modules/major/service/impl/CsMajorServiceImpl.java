@@ -1,0 +1,64 @@
+package com.aiurt.modules.major.service.impl;
+
+import com.aiurt.modules.major.entity.CsMajor;
+import com.aiurt.modules.major.mapper.CsMajorMapper;
+import com.aiurt.modules.major.service.ICsMajorService;
+import com.aiurt.modules.system.entity.SysDepartRolePermission;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import org.jeecg.common.api.vo.Result;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+
+import javax.servlet.http.HttpServletRequest;
+import java.util.List;
+
+/**
+ * @Description: cs_major
+ * @Author: jeecg-boot
+ * @Date:   2022-06-21
+ * @Version: V1.0
+ */
+@Service
+public class CsMajorServiceImpl extends ServiceImpl<CsMajorMapper, CsMajor> implements ICsMajorService {
+    @Autowired
+    private CsMajorMapper csMajorMapper;
+    /**
+     * 添加
+     *
+     * @param csMajor
+     * @return
+     */
+    @Override
+    public Result<?> add(CsMajor csMajor) {
+        //专业编码不能重复，判断数据库中是否存在，如不存在则可继续添加
+        QueryWrapper<CsMajor> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("major_code", csMajor.getMajorCode());
+        List<CsMajor> list = csMajorMapper.selectList(queryWrapper);
+        if (!list.isEmpty()) {
+            return Result.error("专业编码重复，请重新填写！");
+        }
+        csMajorMapper.insert(csMajor);
+        return Result.OK("添加成功！");
+    }
+    /**
+     * 修改
+     *
+     * @param csMajor
+     * @return
+     */
+    @Override
+    public Result<?> update(CsMajor csMajor) {
+        //专业编码不能重复，判断数据库中是否存在，如不存在则可继续添加
+        QueryWrapper<CsMajor> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("major_code", csMajor.getMajorCode());
+        List<CsMajor> list = csMajorMapper.selectList(queryWrapper);
+        if (!list.isEmpty() && !list.get(0).getId().equals(csMajor.getId())) {
+            return Result.error("专业编码重复，请重新填写！");
+        }
+        csMajorMapper.updateById(csMajor);
+        return Result.OK("编辑成功！");
+    }
+}
