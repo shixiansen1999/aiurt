@@ -53,12 +53,6 @@ public class PatrolPlan implements Serializable {
 	@Excel(name = "巡检频次：1 一天1次、2 一周1次、3 一周2次", width = 15)
     @ApiModelProperty(value = "巡检频次：1 一天1次、2 一周1次、3 一周2次")
     private java.lang.Integer period;
-	/**计划巡检时间*/
-	@Excel(name = "计划巡检时间", width = 15, format = "yyyy-MM-dd")
-	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
-    @DateTimeFormat(pattern="yyyy-MM-dd")
-    @ApiModelProperty(value = "计划巡检时间")
-    private java.util.Date patrolTime;
 	/**生效状态：0停用、1启用*/
 	@Excel(name = "生效状态：0停用、1启用", width = 15)
     @ApiModelProperty(value = "生效状态：0停用、1启用")

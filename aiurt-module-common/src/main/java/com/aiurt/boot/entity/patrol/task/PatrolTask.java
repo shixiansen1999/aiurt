@@ -33,10 +33,14 @@ public class PatrolTask implements Serializable {
 	@TableId(type = IdType.ASSIGN_ID)
     @ApiModelProperty(value = "主键ID")
     private java.lang.String id;
-	/**任务编号(存储计划编号)*/
-	@Excel(name = "任务编号(存储计划编号)", width = 15)
-    @ApiModelProperty(value = "任务编号(存储计划编号)")
+	/**任务编号*/
+	@Excel(name = "任务编号", width = 15)
+    @ApiModelProperty(value = "任务编号")
     private java.lang.String code;
+    /**计划编号*/
+    @Excel(name = "计划编号", width = 15)
+    @ApiModelProperty(value = "计划编号")
+    private java.lang.String planCode;
 	/**巡检表名称*/
 	@Excel(name = "巡检表名称", width = 15)
     @ApiModelProperty(value = "巡检表名称")
@@ -85,11 +89,11 @@ public class PatrolTask implements Serializable {
 	@Excel(name = "巡检频次：1 一天1次、2 一周1次、3 一周2次", width = 15)
     @ApiModelProperty(value = "巡检频次：1 一天1次、2 一周1次、3 一周2次")
     private java.lang.Integer period;
-	/**计划巡检的日期*/
-	@Excel(name = "计划巡检的日期", width = 15, format = "yyyy-MM-dd")
+	/**巡检的日期*/
+	@Excel(name = "巡检的日期", width = 15, format = "yyyy-MM-dd")
 	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
     @DateTimeFormat(pattern="yyyy-MM-dd")
-    @ApiModelProperty(value = "计划巡检的日期")
+    @ApiModelProperty(value = "巡检的日期")
     private java.util.Date patrolDate;
 	/**任务获取方式：1 常规分发、2常规指派、3 手工下发*/
 	@Excel(name = "任务获取方式：1 常规分发、2常规指派、3 手工下发", width = 15)
