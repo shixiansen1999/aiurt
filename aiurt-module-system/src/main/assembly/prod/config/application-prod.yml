@@ -306,17 +306,17 @@ justauth:
     timeout: 1h
 #第三方APP对接
 third-app:
-  enabled: false
+  enabled: true
   type:
     #企业微信
     WECHAT_ENTERPRISE:
-      enabled: false
+      enabled: true
       #CORP_ID
-      client-id: ??
+      client-id: ww19d88c8272303c7b
       #SECRET
-      client-secret: ??
+      client-secret: dlcGybmI3DaooKDYv7g3cKKBcVmtd5Ljb82TgHBq6Jk
       #自建应用id
-      agent-id: ??
+      agent-id: 1000002
       #自建应用秘钥（新版企微需要配置）
       # agent-app-secret: ??
     #钉钉

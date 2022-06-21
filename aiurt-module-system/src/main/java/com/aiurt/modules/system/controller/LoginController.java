@@ -1,15 +1,18 @@
 package com.aiurt.modules.system.controller;
 
+import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.RandomUtil;
 import com.aiurt.common.constant.CacheConstant;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.system.util.JwtUtil;
+import com.aiurt.modules.system.entity.*;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.LoginUser;
 import com.aiurt.common.util.*;
 import com.aiurt.common.util.encryption.EncryptedString;
+import org.jeecg.common.util.SpringContextUtils;
 import org.jeecg.modules.base.service.BaseCommonService;
-import com.aiurt.modules.system.entity.SysDepart;
-import com.aiurt.modules.system.entity.SysTenant;
 import com.aiurt.modules.system.model.SysLoginModel;
 import com.aiurt.modules.system.service.*;
 import com.aiurt.modules.system.service.impl.SysBaseApiImpl;
@@ -23,7 +26,6 @@ import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
-import com.aiurt.modules.system.entity.SysUser;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -32,6 +34,8 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.*;
+
+import static cn.hutool.crypto.SecureUtil.sha1;
 
 /**
  * @Author scott
@@ -609,6 +613,146 @@ public class LoginController {
 			result.put("token", "-1");
 		}
 		return Result.OK(result);
+	}
+
+
+	/**
+	 *网页授权登录
+	 * @return
+	 */
+	@ApiOperation("企业微信网页授权登录")
+	@RequestMapping(value = "/webAuthorizationLogin", method = RequestMethod.GET)
+	private Result<JSONObject> webAuthorizationLogin(HttpServletRequest req,
+													 @RequestParam(name = "code") String code){
+		Result<JSONObject> result = new Result<JSONObject>();
+		Map response = RestUtil.get( "https://qyapi.weixin.qq.com/cgi-bin/gettoken?corpid=ww19d88c8272303c7b&corpsecret=dlcGybmI3DaooKDYv7g3cKKBcVmtd5Ljb82TgHBq6Jk");
+		String accessToken = (String) response.get("access_token");
+		String url = "https://qyapi.weixin.qq.com/cgi-bin/user/getuserinfo?access_token="+accessToken+"&code="+code;
+		Map response1  =  RestUtil.get(url);
+		String userId = (String)response1.get("UserId");
+		String url1 ="https://qyapi.weixin.qq.com/cgi-bin/user/get?access_token="+accessToken+"&userid="+userId;
+		Map response2 = RestUtil.get(url1);
+		String phone = (String)response2.get("mobile");
+		ISysUserService bean = SpringContextUtils.getBean(ISysUserService.class);
+		SysUser sysUser = bean.getUserByPhone(phone);
+		if (ObjectUtil.isEmpty(sysUser)){
+			return result.error500("请注册好用户信息");
+		}
+		String username = sysUser.getUsername();
+		String password = sysUser.getPassword();
+		System.out.println(username+":"+password);
+		// 生成token
+		String token = org.jeecg.common.system.util.JwtUtil.sign(username, password);
+		// 设置token缓存有效时间
+		putReids(sysUser, token, org.jeecg.common.system.util.JwtUtil.EXPIRE_TIME * 2 / 1000);
+		// 获取用户部门信息
+		JSONObject obj = new JSONObject();
+		List<String> roleList = new ArrayList<String>();
+		ISysUserRoleService sysUserRoleService =SpringContextUtils.getBean(ISysUserRoleService.class);
+		List<SysUserRole> userRole = sysUserRoleService.list(new QueryWrapper<SysUserRole>().lambda().eq(SysUserRole::getUserId, sysUser.getId()));
+		if (userRole == null || userRole.size() <= 0) {
+			result.error500("未找到用户相关角色信息");
+		} else {
+			for (SysUserRole sysUserRole : userRole) {
+				ISysRoleService sysRoleService =SpringContextUtils.getBean(ISysRoleService.class);
+				final SysRole role = sysRoleService.getById(sysUserRole.getRoleId());
+				roleList.add(role.getRoleCode());
+			}
+			obj.put("roleList", roleList);
+		}
+		obj.put("token", token);
+		obj.put("userInfo", sysUser);
+		result.setResult(obj);
+		result.success("登录成功");
+		result.getResult().put("role", "1");
+		ISysBaseAPI sysBaseAPI =SpringContextUtils.getBean(ISysBaseAPI.class);
+		//sysBaseAPI.addLog("用户名: " + username + ",登录成功！", CommonConstant.LOG_TYPE_1, null);
+		req.getSession().setAttribute("username", req.getParameter("username"));
+		return result;
+	}
+	@ApiOperation("生成签名")
+	@GetMapping(value = "/autograph")
+	public Result<JSONObject> autograph(@RequestParam(name = "url") String url) {
+		RedisUtil redisUtil =SpringContextUtils.getBean(RedisUtil.class);
+		Map response = RestUtil.get( "https://qyapi.weixin.qq.com/cgi-bin/gettoken?corpid=ww19d88c8272303c7b&corpsecret=dlcGybmI3DaooKDYv7g3cKKBcVmtd5Ljb82TgHBq6Jk");
+		String accessToken = (String) response.get("access_token");
+		String ticket =(String)redisUtil.get("ticket");
+		if (ObjectUtil.isEmpty(ticket)){
+			Map response1 = RestUtil.get("https://qyapi.weixin.qq.com/cgi-bin/get_jsapi_ticket?access_token="+accessToken);
+			String ticket1 = (String)response1.get("ticket");
+			Integer expiresIn = (Integer) response1.get("expires_in");
+			Long time = (System.currentTimeMillis() / 1000);
+			String noncestr = "akltasdaWWWWW";
+			String string1 ="jsapi_ticket="+ticket1+"&noncestr="+noncestr+"&timestamp="+time+"&url="+url;
+			System.out.println(string1);
+			String signature = sha1(string1);
+			JSONObject obj = new JSONObject();
+			obj.put("appId","wwfc07c9f3a1c075aa");
+			obj.put("timestamp",time);
+			obj.put("nonceStr",noncestr);
+			obj.put("signature",signature);
+			redisUtil.set("ticket",ticket1);
+			redisUtil.expire("ticket",expiresIn);
+			Result<JSONObject> result = new Result<JSONObject>();
+			result.setResult(obj);
+			result.success("操作成功");
+			return result;
+		}else {
+			Long time = (System.currentTimeMillis() / 1000);
+			String noncestr = "akltasdaWWWWW";
+			String string1 ="jsapi_ticket="+ticket+"&noncestr="+noncestr+"&timestamp="+time+"&url="+url;
+			System.out.println(string1);
+			String signature = sha1(string1);
+			JSONObject obj = new JSONObject();
+			obj.put("appId","ww19d88c8272303c7b");
+			obj.put("timestamp",time);
+			obj.put("nonceStr",noncestr);
+			obj.put("signature",signature);
+			Result<JSONObject> result = new Result<JSONObject>();
+			result.setResult(obj);
+			result.success("操作成功");
+			return result;
+		}
+	}
+	/**
+	 *网页授权登录
+	 * @return
+	 */
+	@ApiOperation("根据token查询用户信息")
+	@RequestMapping(value = "/queryAccordingToken", method = RequestMethod.GET)
+	private Result<?> queryAccordingToken(HttpServletRequest req,
+										  @RequestParam(name = "token") String token){
+		String username = org.jeecg.common.system.util.JwtUtil.getUsername(token);
+		ISysUserService sysUserService =SpringContextUtils.getBean(ISysUserService.class);
+		SysUser sysUser = sysUserService.getUserByName(username);
+		if (sysUser != null) {
+			JSONObject obj = new JSONObject();
+			//用户登录信息
+			obj.put("userInfo", sysUser);
+			obj.put("token", token);
+			Result<JSONObject> result =new Result<>();
+			result.setResult(obj);
+			result.setSuccess(true);
+			result.setCode(200);
+			return result;
+		} else {
+			return Result.error("Token无效!");
+		}
+	}
+
+	/**
+	 * put 用户key到reids
+	 * @param sysUser
+	 * @param token
+	 * @param expireTime
+	 */
+	private void putReids(SysUser sysUser, String token, long expireTime){
+		RedisUtil redisUtil = SpringContextUtils.getBean(RedisUtil.class);
+		redisUtil.set(org.jeecg.common.constant.CommonConstant.PREFIX_USER_TOKEN + token, token);
+		redisUtil.expire(org.jeecg.common.constant.CommonConstant.PREFIX_USER_TOKEN + token, expireTime);
+		//redisUtil.set(CommonConstant.PREFIX_USER_DEPARTMENT_IDS + sysUser.getId(), sysUser.getDepartmentIds());
+		//redisUtil.set(CommonConstant.PREFIX_USER_SYSTEM_CODES + sysUser.getId(), sysUser.getSystemCodes());
+
 	}
 
 }

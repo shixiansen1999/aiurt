@@ -137,6 +137,8 @@ public class ShiroConfig {
         filterChainDefinitionMap.put("/websocket/**", "anon");//系统通知和公告
         filterChainDefinitionMap.put("/newsWebsocket/**", "anon");//CMS模块
         filterChainDefinitionMap.put("/vxeSocket/**", "anon");//JVxeTable无痕刷新示例
+        filterChainDefinitionMap.put("/sys/webAuthorizationLogin/**", "anon");//JVxeTable无痕刷新示例
+        filterChainDefinitionMap.put("/sys/autograph/**", "anon");//JVxeTable无痕刷新示例
 
         //wps
         filterChainDefinitionMap.put("/v1/**","anon");
