@@ -91,6 +91,32 @@ public class CommonCtroller {
         return Result.OK(list);
     }
 
+    /**
+     * 查询设备
+     * @return
+     */
+    @GetMapping("/device/queryDevice")
+    @ApiOperation("查询设备")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "majorCode", value = "专业编码", required = false, paramType = "query"),
+    })
+    public Result<List<SelectTable>> queryDevice(@RequestParam(value = "majorCode", required = false) String majorCode) {
+        LambdaQueryWrapper<CsSubsystem> queryWrapper = new LambdaQueryWrapper<>();
 
+        //todo 查询当前人员所管辖的子系统
+        if (StrUtil.isNotBlank(majorCode)) {
+            queryWrapper.eq(CsSubsystem::getMajorCode, majorCode);
+        }
+
+        List<CsSubsystem> csMajorList = csSubsystemService.getBaseMapper().selectList(queryWrapper);
+        List<SelectTable> list = csMajorList.stream().map(subsystem -> {
+            SelectTable table = new SelectTable();
+            table.setLabel(subsystem.getSystemName());
+            table.setValue(subsystem.getSystemCode());
+            return table;
+        }).collect(Collectors.toList());
+
+        return Result.OK(list);
+    }
 
 }
