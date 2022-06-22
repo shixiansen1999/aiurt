@@ -4,7 +4,11 @@ import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.util.Date;
 import java.math.BigDecimal;
+import java.util.List;
+
+import com.aiurt.modules.subsystem.entity.CsSubsystem;
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
@@ -50,13 +54,13 @@ public class CsMajor implements Serializable {
     @ApiModelProperty(value = "创建人")
     private String createBy;
 	/**创建时间*/
-	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
-    @DateTimeFormat(pattern="yyyy-MM-dd")
+	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
+    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
     @ApiModelProperty(value = "创建时间")
     private Date createTime;
 	/**更新日期*/
-	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
-    @DateTimeFormat(pattern="yyyy-MM-dd")
+	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
+    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
     @ApiModelProperty(value = "更新日期")
     private Date updateTime;
 	/**所属部门*/
@@ -69,4 +73,8 @@ public class CsMajor implements Serializable {
 	@Excel(name = "删除标志", width = 15)
     @ApiModelProperty(value = "删除标志")
     private Integer delFlag;
+    /**与专业关联的子系统*/
+    @ApiModelProperty(value = "与专业关联的子系统")
+	@TableField(exist = false)
+    private List<CsSubsystem> children;
 }

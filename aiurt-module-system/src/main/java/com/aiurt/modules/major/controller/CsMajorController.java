@@ -13,6 +13,9 @@ import javax.servlet.http.HttpServletResponse;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.modules.major.entity.CsMajor;
 import com.aiurt.modules.major.service.ICsMajorService;
+import com.aiurt.modules.subsystem.entity.CsSubsystem;
+import com.aiurt.modules.subsystem.service.ICsSubsystemService;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.query.QueryGenerator;
 
@@ -44,7 +47,8 @@ import io.swagger.annotations.ApiOperation;
 public class CsMajorController  {
 	@Autowired
 	private ICsMajorService csMajorService;
-
+	@Autowired
+	private ICsSubsystemService csSubsystemService;
 	/**
 	 * 分页列表查询
 	 *
@@ -104,6 +108,13 @@ public class CsMajorController  {
 	@DeleteMapping(value = "/delete")
 	public Result<?> delete(@RequestParam(name="id",required=true) String id) {
 		CsMajor csMajor = csMajorService.getById(id);
+		//判断是否被使用
+		LambdaQueryWrapper<CsSubsystem> wrapper = new LambdaQueryWrapper<>();
+		wrapper.eq(CsSubsystem::getMajorCode,csMajor.getMajorCode());
+		List<CsSubsystem> list = csSubsystemService.list(wrapper);
+		if(!list.isEmpty()){
+			return Result.error("专业已被使用，不能删除!");
+		}
 		csMajor.setDelFlag(1);
 		csMajorService.updateById(csMajor);
 		return Result.OK("删除成功!");
@@ -115,7 +126,7 @@ public class CsMajorController  {
 	 * @param ids
 	 * @return
 	 */
-	@AutoLog(value = "专业批量删除")
+	/*@AutoLog(value = "专业批量删除")
 	@ApiOperation(value="专业批量删除", notes="专业批量删除")
 	@DeleteMapping(value = "/deleteBatch")
 	public Result<?> deleteBatch(@RequestParam(name="ids",required=true) String ids) {
@@ -123,7 +134,7 @@ public class CsMajorController  {
 			delete(id);
 		});
 		return Result.OK("批量删除成功!");
-	}
+	}*/
 
 	/**
 	 * 通过id查询

@@ -12,10 +12,12 @@ import javax.servlet.http.HttpServletResponse;
 
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.modules.major.entity.CsMajor;
+import com.aiurt.modules.major.service.ICsMajorService;
 import com.aiurt.modules.subsystem.entity.CsSubsystem;
 import com.aiurt.modules.subsystem.entity.CsSubsystemUser;
 import com.aiurt.modules.subsystem.mapper.CsSubsystemUserMapper;
 import com.aiurt.modules.subsystem.service.ICsSubsystemService;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -47,8 +49,28 @@ import io.swagger.annotations.ApiOperation;
 public class CsSubsystemController  {
 	@Autowired
 	private ICsSubsystemService csSubsystemService;
+	@Autowired
+	private CsSubsystemUserMapper csSubsystemUserMapper;
 	 @Autowired
-	 private CsSubsystemUserMapper csSubsystemUserMapper;
+	 private ICsMajorService csMajorService;
+
+	 /**
+	  * 专业子系统树
+	  *
+	  * @return
+	  */
+	 @AutoLog(value = "专业子系统树")
+	 @ApiOperation(value="专业子系统树", notes="专业子系统树")
+	 @GetMapping(value = "/treeList")
+	 public Result<?> queryTreeList() {
+		 List<CsMajor> majorList = csMajorService.list(new LambdaQueryWrapper<CsMajor>().eq(CsMajor::getDelFlag,0));
+		 List<CsSubsystem> systemList = csSubsystemService.list(new LambdaQueryWrapper<CsSubsystem>().eq(CsSubsystem::getDelFlag,0));
+		 majorList.forEach(major -> {
+			 List sysList = systemList.stream().filter(system-> system.getMajorCode().equals(major.getMajorCode())).collect(Collectors.toList());
+			 major.setChildren(sysList);
+		 });
+		 return Result.OK(majorList);
+	 }
 
 	/**
 	 * 分页列表查询
