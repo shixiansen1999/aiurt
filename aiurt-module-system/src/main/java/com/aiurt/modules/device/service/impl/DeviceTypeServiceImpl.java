@@ -1,6 +1,5 @@
 package com.aiurt.modules.device.service.impl;
 
-
 import com.aiurt.modules.device.entity.DeviceType;
 import com.aiurt.modules.device.mapper.DeviceTypeMapper;
 import com.aiurt.modules.device.service.IDeviceTypeService;
