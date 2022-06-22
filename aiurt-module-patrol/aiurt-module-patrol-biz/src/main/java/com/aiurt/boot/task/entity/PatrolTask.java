@@ -211,6 +211,12 @@ public class PatrolTask implements Serializable {
     @ApiModelProperty(value = "漏检说明")
     private java.lang.String omitExplain;
     /**
+     * 退回人用户ID
+     */
+    @Excel(name = "退回人用户ID", width = 15)
+    @ApiModelProperty(value = "退回人用户ID")
+    private java.lang.String backId;
+    /**
      * 备注
      */
     @Excel(name = "备注", width = 15)
