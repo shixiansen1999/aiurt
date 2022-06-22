@@ -85,4 +85,8 @@ public class CsSubsystem implements Serializable {
     @ApiModelProperty(value = "子系统下的物资分类")
     @TableField(exist = false)
     private List<MaterialBaseType> materialBaseTypeList;
+
+    @ApiModelProperty(value = "备用字段")
+    @TableField(exist = false)
+    private String byType = "zxt";
 }

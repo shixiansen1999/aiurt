@@ -36,12 +36,22 @@ public class Device {
 	@ApiModelProperty(value = "所属专业")
 	@Dict(dictTable ="cs_major",dicText = "major_name",dicCode = "major_code")
 	private  String  majorCode;
+	/**所属专业名称*/
+	@Excel(name = "所属专业名称", width = 15)
+	@ApiModelProperty(value = "所属专业名称")
+	@TableField(exist = false)
+	private  String  majorCodeName;
 
 	/**子系统编号*/
 	@Excel(name = "子系统编号", width = 15)
 	@ApiModelProperty(value = "子系统编号")
 	@Dict(dictTable ="cs_subsystem",dicText = "system_name",dicCode = "system_code")
 	private  String  systemCode;
+	/**子系统编号名称*/
+	@Excel(name = "子系统编号名称", width = 15)
+	@ApiModelProperty(value = "子系统编号名称")
+	@TableField(exist = false)
+	private  String  systemCodeName;
 
 	/**设备名称*/
 	@Excel(name = "设备名称", width = 15)
@@ -58,6 +68,22 @@ public class Device {
 	@ApiModelProperty(value = "设备类型编码")
 	@Dict(dictTable ="device_Type",dicText = "name",dicCode = "code")
 	private  String  deviceTypeCode;
+	/**设备类型编码*/
+	@Excel(name = "设备类型编码名称", width = 15)
+	@ApiModelProperty(value = "设备类型编码名称")
+	@TableField(exist = false)
+	private  String  deviceTypeCodeName;
+
+	/**设备类型编码层级*/
+	@Excel(name = "设备类型编码层级", width = 15)
+	@ApiModelProperty(value = "设备类型编码层级")
+	@Dict(dictTable ="device_Type",dicText = "name",dicCode = "code")
+	private  String  deviceTypeCodeCc;
+	/**设备类型编码名称层级*/
+	@Excel(name = "设备类型编码名称层级", width = 15)
+	@ApiModelProperty(value = "设备类型编码名称层级")
+	@TableField(exist = false)
+	private  String  deviceTypeCodeCcName;
 
 	/**设备图纸*/
 	@Excel(name = "设备图纸", width = 15)
@@ -69,18 +95,33 @@ public class Device {
 	@ApiModelProperty(value = "线路编号")
 	@Dict(dictTable ="cs_line",dicText = "line_name",dicCode = "line_code")
 	private  String  lineCode;
+	/**线路名称*/
+	@Excel(name = "线路名称", width = 15)
+	@ApiModelProperty(value = "线路名称")
+	@TableField(exist = false)
+	private  String  lineCodeName;
 
 	/**站点编号*/
 	@Excel(name = "站点", width = 15)
 	@ApiModelProperty(value = "站点编号")
 	@Dict(dictTable ="cs_station",dicText = "station_name",dicCode = "station_code")
 	private  String  stationCode;
+	/**站点名称*/
+	@Excel(name = "站点名称", width = 15)
+	@ApiModelProperty(value = "站点名称")
+	@TableField(exist = false)
+	private  String  stationCodeName;
 
 	/**存放位置*/
 	@Excel(name = "位置", width = 15)
 	@ApiModelProperty(value = "位置")
 	@Dict(dictTable ="cs_station_position",dicText = "position_name",dicCode = "position_code")
 	private  String  positionCode;
+	/**位置名称*/
+	@Excel(name = "位置名称", width = 15)
+	@ApiModelProperty(value = "位置名称")
+	@TableField(exist = false)
+	private  String  positionCodeName;
 
 	/**资产编号*/
 	@Excel(name = "资产编号", width = 15)
@@ -92,19 +133,28 @@ public class Device {
 	@ApiModelProperty(value = "设备管理员")
 	@Dict(dictTable ="sys_user",dicText = "realname",dicCode = "username")
 	private  java.lang.String  manageUserName;
+	/**设备管理员名称*/
+	@Excel(name = "设备管理员名称", width = 15)
+	@ApiModelProperty(value = "设备管理员名称")
+	@TableField(exist = false)
+	private  String  manageUserNameName;
 
 	/**负责班组*/
 	@Excel(name = "负责班组", width = 15)
 	@ApiModelProperty(value = "负责班组")
 	@Dict(dictTable ="sys_depart",dicText = "depart_name",dicCode = "org_code")
 	private  java.lang.String  orgCode;
+	/**负责班组名称*/
+	@Excel(name = "负责班组名称", width = 15)
+	@ApiModelProperty(value = "负责班组名称")
+	@TableField(exist = false)
+	private  String  orgCodeName;
 
 	/**临时设备(是/否（默认否）1是,0:否)*/
 //	@Excel(name = "临时设备(是/否（默认否）1是,0:否)", width = 15)
 	@ApiModelProperty(value = "临时设备(是/否（默认否）1是,0:否)")
 	@Dict(dicCode = "device_temporary")
 	private  java.lang.String  temporary;
-
 	/**临时设备(是/否（默认否）1是,0:否)*/
 	@Excel(name = "是否临时设备", width = 15)
 	@ApiModelProperty(value = "临时设备(是/否（默认否）1是,0:否)")
@@ -115,7 +165,6 @@ public class Device {
 	@ApiModelProperty(value = "设备复用类型(1:多线路复用/0:多站点复用)")
 	@Dict(dicCode = "device_reuse_type")
 	private  java.lang.String  reuseType;
-
 	@Excel(name = "设备复用类型", width = 15)
 	@ApiModelProperty(value = "设备复用类型(1:多线路复用/0:多站点复用)")
 	private  java.lang.String  reuseTypeName;
@@ -131,7 +180,6 @@ public class Device {
 	@ApiModelProperty(value = "设备等级(字典值)")
 	@Dict(dicCode = "device_level")
 	private  java.lang.String  deviceLevel;
-
 	/**设备等级(字典值)*/
 	@Excel(name = "设备等级", width = 15)
 	@ApiModelProperty(value = "设备等级")
@@ -143,10 +191,16 @@ public class Device {
 	@ApiModelProperty(value = "品牌")
 	private  java.lang.String  brand;
 
-	/**供货厂商*/
-	@Excel(name = "厂商", width = 15)
-	@ApiModelProperty(value = "供货厂商")
-	private  String  supplier;
+	/**供应商(厂商信息表_编码)*/
+	@Excel(name = "供应商(厂商信息表_编码)", width = 15)
+	@ApiModelProperty(value = "供应商(厂商信息表_编码)")
+	@Dict(dictTable ="cs_manufactor",dicText = "name",dicCode = "code")
+	private  String  manufactorCode;
+	/**生产厂商手动翻译*/
+	@Excel(name = "生产厂商手动翻译", width = 15)
+	@ApiModelProperty(value = "生产厂商手动翻译")
+	@TableField(exist = false)
+	private  String  manufactorCodeName;
 
 	/**设备sn*/
 	@Excel(name = "设备SN", width = 15)
@@ -211,24 +265,6 @@ public class Device {
 	@TableField(exist = false)
 	private String typeName;
 
-	/**所属系统*/
-//	@Excel(name = "所属系统", width = 15)
-	@ApiModelProperty(value = "所属系统")
-	@TableField(exist = false)
-	private String systemName;
-
-	/**所属线路*/
-//	@Excel(name = "所属线路", width = 15)
-	@ApiModelProperty(value = "所属线路")
-	@TableField(exist = false)
-	private String lineName;
-
-	/**所属站点*/
-//	@Excel(name = "所属站点", width = 15)
-	@ApiModelProperty(value = "所属站点")
-	@TableField(exist = false)
-	private String stationName;
-
 	/**删除状态 0-未删除 1-已删除*/
 //	@Excel(name = "删除状态 0-未删除 1-已删除", width = 15)
     @ApiModelProperty(value = "删除状态 0-未删除 1-已删除")
@@ -282,33 +318,5 @@ public class Device {
 	@Excel(name = "报废状态")
 	@ApiModelProperty(value = "报废状态 0-未报废 1-已报废")
 	private  String  scrapFlagName;
-
-    private static final String ID = "id";
-    private static final String NAME = "name";
-    public static final String CODE = "code";
-    private static final String TYPE_CODE = "type_code";
-    private static final String SYSTEM_CODE = "system_code";
-    private static final String SPECIFICATIONS = "specifications";
-    private static final String LINE_CODE = "line_code";
-    private static final String STATION_CODE = "station_code";
-    private static final String LOCATION = "location";
-    private static final String ASSET_CODE = "asset_code";
-    private static final String BRAND = "brand";
-    private static final String FACTORY_CODE = "factory_code";
-    private static final String MANUFACTURER = "manufacturer";
-    private static final String SUPPLIER = "supplier";
-    private static final String PRODUCTION_DATE = "production_date";
-    private static final String START_DATE = "start_date";
-    private static final String SERVICE_LIFE = "service_life";
-    private static final String TECHNICAL_PARAMETER = "technical_parameter";
-    private static final String STATUS = "status";
-    private static final String DEL_FLAG = "del_flag";
-    private static final String CREATE_BY = "create_by";
-    private static final String UPDATE_BY = "update_by";
-    private static final String CREATE_TIME = "create_time";
-    private static final String UPDATE_TIME = "update_time";
-	private static final String PRICE = "price";
-	private static final String DEVICE_IP = "device_ip";
-
 
 }
