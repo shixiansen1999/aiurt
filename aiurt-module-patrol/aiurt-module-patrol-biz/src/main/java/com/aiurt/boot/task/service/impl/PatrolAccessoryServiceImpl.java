@@ -1,6 +1,6 @@
 package com.aiurt.boot.task.service.impl;
 
-import com.aiurt.boot.entity.patrol.task.PatrolAccessory;
+import com.aiurt.boot.task.entity.PatrolAccessory;
 import com.aiurt.boot.task.mapper.PatrolAccessoryMapper;
 import com.aiurt.boot.task.service.IPatrolAccessoryService;
 import org.springframework.stereotype.Service;

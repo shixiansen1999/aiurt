@@ -2,4 +2,36 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.aiurt.boot.task.mapper.PatrolTaskMapper">
 
+    <select id="getTaskList" resultType="com.aiurt.boot.task.entity.PatrolTask">
+        SELECT
+        CS.station_name,
+        SD.depart_name,
+        CL.line_name,
+        PT.*
+        FROM patrol_task AS PT
+        LEFT JOIN patrol_plan_organization AS PPO ON PT.plan_code = PPO.plan_code
+        LEFT JOIN patrol_plan_station AS PPS ON PT.plan_code = PPS.plan_code
+        LEFT JOIN sys_depart AS SD ON PPO.organization_code = SD.org_code
+        LEFT JOIN cs_station AS CS ON PPS.station_code = CS.station_code
+        LEFT JOIN cs_line AS CL ON CS.line_code = CL.id
+        WHERE PT.del_flag = 0
+        <if test="patrolTask.name != null and patrolTask.name != ''">
+            and PT.name like concat('%',#{patrolTask.name},'%')
+        </if>
+        <if test="patrolTask.code != null and patrolTask.code != ''">
+            and PT.code like concat('%',#{patrolTask.code},'%')
+        </if>
+        <if test="patrolTask.status != null">
+            and PT.status = #{patrolTask.status}
+        </if>
+        <if test="patrolTask.source != null">
+            and PT.source = #{patrolTask.source}
+        </if>
+        <if test="patrolTask.departName != null and patrolTask.departName != ''">
+            and SD.depart_name like concat('%',#{patrolTask.departName},'%')
+        </if>
+        <if test="patrolTask.stationName != null and patrolTask.stationName != ''">
+            and CS.station_name like concat('%',#{patrolTask.stationName},'%')
+        </if>
+    </select>
 </mapper>

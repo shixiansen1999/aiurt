@@ -1,6 +1,6 @@
 package com.aiurt.boot.strategy.controller;
 
-import com.aiurt.boot.entity.inspection.strategy.InspectionStrStaRel;
+import com.aiurt.boot.strategy.entity.InspectionStrStaRel;
 import com.aiurt.boot.strategy.service.IInspectionStrStaRelService;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.system.base.controller.BaseController;

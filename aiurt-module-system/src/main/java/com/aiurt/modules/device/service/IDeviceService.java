@@ -17,10 +17,4 @@ public interface IDeviceService extends IService<Device> {
 
     Result<Device> queryDetailById(String deviceId);
 
-    /**
-     * 大屏接口
-     */
-    Integer getDeviceNum(Map map);
-
-    List<Device> queryDeviceByStationCodeAndSystemCode(String stationCode, String systemCode);
 }

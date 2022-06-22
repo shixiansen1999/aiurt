@@ -1,7 +1,7 @@
 package com.aiurt.boot.standard.service.impl;
 
 
-import com.aiurt.boot.entity.inspection.standard.InspectionCode;
+import com.aiurt.boot.standard.entity.InspectionCode;
 import com.aiurt.boot.standard.mapper.InspectionCodeMapper;
 import com.aiurt.boot.standard.service.IInspectionCodeService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;

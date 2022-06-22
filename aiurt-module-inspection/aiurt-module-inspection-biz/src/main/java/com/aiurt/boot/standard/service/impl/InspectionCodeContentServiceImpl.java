@@ -1,6 +1,6 @@
 package com.aiurt.boot.standard.service.impl;
 
-import com.aiurt.boot.entity.inspection.standard.InspectionCodeContent;
+import com.aiurt.boot.standard.entity.InspectionCodeContent;
 import com.aiurt.boot.standard.mapper.InspectionCodeContentMapper;
 import com.aiurt.boot.standard.service.IInspectionCodeContentService;
 import com.aiurt.common.exception.AiurtBootException;

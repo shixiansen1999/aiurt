@@ -1,6 +1,6 @@
 package com.aiurt.boot.plan.controller;
 
-import com.aiurt.boot.entity.inspection.plan.RepairPool;
+import com.aiurt.boot.plan.entity.RepairPool;
 import com.aiurt.boot.plan.service.IRepairPoolService;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.system.base.controller.BaseController;

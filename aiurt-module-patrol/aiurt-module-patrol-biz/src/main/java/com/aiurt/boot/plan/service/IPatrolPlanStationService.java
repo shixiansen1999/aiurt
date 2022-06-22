@@ -1,6 +1,6 @@
 package com.aiurt.boot.plan.service;
 
-import com.aiurt.boot.entity.patrol.plan.PatrolPlanStation;
+import com.aiurt.boot.plan.entity.PatrolPlanStation;
 import com.baomidou.mybatisplus.extension.service.IService;
 
 /**

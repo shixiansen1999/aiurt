@@ -5,11 +5,9 @@ import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.jeecg.common.api.vo.Result;
-import org.jeecg.common.system.query.QueryGenerator;
-import com.aiurt.boot.entity.patrol.standard.PatrolStandard;
+import com.aiurt.boot.standard.entity.PatrolStandard;
 import com.aiurt.boot.standard.service.IPatrolStandardService;
 
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.extern.slf4j.Slf4j;
@@ -135,11 +133,12 @@ public class PatrolStandardController extends BaseController<PatrolStandard, IPa
 		return Result.OK(patrolStandard);
 	}
 
-	 @ApiOperation(value="patrol_standard-通过id查询", notes="patrol_standard-通过id查询")
-	 @GetMapping(value = "")
-	 public List<String> y(@RequestParam(name="id",required=true) String id) {
-
-		 return null;
+	 @ApiOperation(value="获取适用专业", notes="获取适用专业")
+	 @GetMapping(value = "/obtainApplicableDisciplines")
+	 public List<?> obtainApplicableDisciplines(@RequestParam(name="professionCode",required=false) String professionCode,
+												@RequestParam(name="subsystemCode",required=false) String subsystemCode) {
+		List<?> list = patrolStandardService.lists(professionCode,subsystemCode);
+		 return list;
 	 }
     /**
     * 导出excel

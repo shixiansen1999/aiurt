@@ -1,6 +1,6 @@
 package com.aiurt.boot.task.service;
 
-import com.aiurt.boot.entity.patrol.task.PatrolTaskUser;
+import com.aiurt.boot.task.entity.PatrolTaskUser;
 import com.baomidou.mybatisplus.extension.service.IService;
 
 /**

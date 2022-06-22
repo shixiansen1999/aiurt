@@ -18,12 +18,5 @@
         <module>aiurt-module-inspection-biz</module>
         <module>aiurt-module-inspection-start</module>
     </modules>
-    <dependencies>
-        <dependency>
-            <groupId>com.aiurt.boot</groupId>
-            <artifactId>aiurt-module-common</artifactId>
-            <version>1.0.0-RELEASE</version>
-        </dependency>
-    </dependencies>
 </project>
 

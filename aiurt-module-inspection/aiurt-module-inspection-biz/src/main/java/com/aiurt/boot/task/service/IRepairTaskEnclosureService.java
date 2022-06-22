@@ -1,6 +1,6 @@
 package com.aiurt.boot.task.service;
 
-import com.aiurt.boot.entity.inspection.task.RepairTaskEnclosure;
+import com.aiurt.boot.task.entity.RepairTaskEnclosure;
 import com.baomidou.mybatisplus.extension.service.IService;
 
 /**

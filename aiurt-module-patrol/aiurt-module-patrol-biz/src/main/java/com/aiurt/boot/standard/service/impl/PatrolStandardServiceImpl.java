@@ -1,6 +1,7 @@
 package com.aiurt.boot.standard.service.impl;
 
-import com.aiurt.boot.entity.patrol.standard.PatrolStandard;
+import com.aiurt.boot.standard.dto.InspectionStandardDto;
+import com.aiurt.boot.standard.entity.PatrolStandard;
 import com.aiurt.boot.standard.mapper.PatrolStandardMapper;
 import com.aiurt.boot.standard.service.IPatrolStandardService;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -10,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -22,9 +24,16 @@ import java.util.List;
 public class PatrolStandardServiceImpl extends ServiceImpl<PatrolStandardMapper, PatrolStandard> implements IPatrolStandardService {
     @Autowired
     private PatrolStandardMapper patrolStandardMapper;
+
     @Override
     public IPage<PatrolStandard> pageList(Page page, PatrolStandard patrolStandard) {
         List<PatrolStandard> page1 = patrolStandardMapper.pageList(page,patrolStandard);
         return page.setRecords(page1);
+    }
+
+    @Override
+    public List<InspectionStandardDto> lists(String professionCode, String subsystemCode) {
+        List<InspectionStandardDto> list = patrolStandardMapper.list(professionCode,subsystemCode);
+        return list;
     }
 }

@@ -1,7 +1,7 @@
 package com.aiurt.boot.plan.service.impl;
 
 import com.aiurt.boot.constant.DictConstant;
-import com.aiurt.boot.entity.inspection.plan.RepairPool;
+import com.aiurt.boot.plan.entity.RepairPool;
 import com.aiurt.boot.plan.mapper.RepairPoolMapper;
 import com.aiurt.boot.plan.service.IRepairPoolService;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;

@@ -6,6 +6,7 @@ import java.util.Date;
 import java.math.BigDecimal;
 import java.util.List;
 
+import com.aiurt.modules.material.entity.MaterialBaseType;
 import com.aiurt.modules.subsystem.entity.CsSubsystem;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
@@ -77,4 +78,12 @@ public class CsMajor implements Serializable {
     @ApiModelProperty(value = "与专业关联的子系统")
 	@TableField(exist = false)
     private List<CsSubsystem> children;
+
+    @ApiModelProperty(value = "与专业关联的物资分类")
+    @TableField(exist = false)
+    private List<MaterialBaseType> materialBaseTypeList;
+
+    @ApiModelProperty(value = "备用字段")
+    @TableField(exist = false)
+    private String byType = "zy";
 }

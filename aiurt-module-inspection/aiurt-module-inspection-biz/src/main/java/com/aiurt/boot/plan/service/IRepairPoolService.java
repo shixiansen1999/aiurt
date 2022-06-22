@@ -1,6 +1,6 @@
 package com.aiurt.boot.plan.service;
 
-import com.aiurt.boot.entity.inspection.plan.RepairPool;
+import com.aiurt.boot.plan.entity.RepairPool;
 import com.baomidou.mybatisplus.extension.service.IService;
 
 import java.util.Date;

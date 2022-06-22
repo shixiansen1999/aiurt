@@ -1,6 +1,6 @@
 package com.aiurt.boot.task.mapper;
 
-import com.aiurt.boot.entity.patrol.task.PatrolTaskStandard;
+import com.aiurt.boot.task.entity.PatrolTaskStandard;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
 /**

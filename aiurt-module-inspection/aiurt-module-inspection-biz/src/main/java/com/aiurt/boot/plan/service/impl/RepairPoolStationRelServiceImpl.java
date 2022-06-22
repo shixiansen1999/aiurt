@@ -1,6 +1,6 @@
 package com.aiurt.boot.plan.service.impl;
 
-import com.aiurt.boot.entity.inspection.plan.RepairPoolStationRel;
+import com.aiurt.boot.plan.entity.RepairPoolStationRel;
 import com.aiurt.boot.plan.mapper.RepairPoolStationRelMapper;
 import com.aiurt.boot.plan.service.IRepairPoolStationRelService;
 import org.springframework.stereotype.Service;

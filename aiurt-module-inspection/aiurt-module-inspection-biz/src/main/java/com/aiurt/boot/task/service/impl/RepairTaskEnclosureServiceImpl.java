@@ -1,6 +1,6 @@
 package com.aiurt.boot.task.service.impl;
 
-import com.aiurt.boot.entity.inspection.task.RepairTaskEnclosure;
+import com.aiurt.boot.task.entity.RepairTaskEnclosure;
 import com.aiurt.boot.task.mapper.RepairTaskEnclosureMapper;
 import com.aiurt.boot.task.service.IRepairTaskEnclosureService;
 import org.springframework.stereotype.Service;

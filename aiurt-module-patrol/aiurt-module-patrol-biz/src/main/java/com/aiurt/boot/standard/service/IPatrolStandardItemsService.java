@@ -1,6 +1,6 @@
 package com.aiurt.boot.standard.service;
 
-import com.aiurt.boot.entity.patrol.standard.PatrolStandardItems;
+import com.aiurt.boot.standard.entity.PatrolStandardItems;
 import com.baomidou.mybatisplus.extension.service.IService;
 
 /**

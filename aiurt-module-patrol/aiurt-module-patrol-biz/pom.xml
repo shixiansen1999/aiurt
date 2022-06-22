@@ -18,23 +18,10 @@
     <dependencies>
         <dependency>
             <groupId>com.aiurt.boot</groupId>
-            <artifactId>aiurt-system-local-api</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.aiurt.boot</groupId>
-            <artifactId>aiurt-base-core</artifactId>
+            <artifactId>aiurt-module-patrol-api</artifactId>
+            <version>3.2.0</version>
         </dependency>
 
-        <dependency>
-            <groupId>com.belerweb</groupId>
-            <artifactId>pinyin4j</artifactId>
-            <version>2.5.1</version>
-        </dependency>
-        <dependency>
-            <groupId>com.aiurt.boot</groupId>
-            <artifactId>aiurt-module-common</artifactId>
-            <version>1.0.0-RELEASE</version>
-        </dependency>
     </dependencies>
     <build>
         <!-- 打包名称 -->

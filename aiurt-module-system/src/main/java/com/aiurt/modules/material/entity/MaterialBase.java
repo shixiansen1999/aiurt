@@ -54,12 +54,23 @@ public class MaterialBase {
 	/**分类编码*/
 	@Excel(name = "分类编码", width = 15)
 	@ApiModelProperty(value = "分类编码")
+	@Dict(dictTable ="material_base_type",dicText = "base_type_name",dicCode = "base_type_code")
 	private  String  baseTypeCode;
 	/**分类编码*/
 	@Excel(name = "分类编码名称", width = 15)
 	@ApiModelProperty(value = "分类编码名称")
 	@TableField(exist = false)
 	private  String  baseTypeCodeName;
+
+	/**分类编码层级*/
+	@Excel(name = "分类编码层级", width = 15)
+	@ApiModelProperty(value = "分类编码层级")
+	private  String  baseTypeCodeCc;
+	/**分类编码层级名称*/
+	@Excel(name = "分类编码层级名称", width = 15)
+	@ApiModelProperty(value = "分类编码层级名称")
+	@TableField(exist = false)
+	private  String  baseTypeCodeCcName;
 
 	/**编码*/
 	@Excel(name = "编码", width = 15)
@@ -97,11 +108,16 @@ public class MaterialBase {
 	@ApiModelProperty(value = " 单价")
 	private  String  price;
 
-	/**站点编号*/
+	/**所属部门编码*/
 	@Excel(name = "所属部门编码", width = 15)
 	@ApiModelProperty(value = "所属部门编码")
 	@Dict(dictTable ="sys_depart",dicText = "depart_name",dicCode = "org_code")
 	private  String  sysOrgCode;
+	/**所属部门名称*/
+	@Excel(name = "所属部门名称", width = 15)
+	@ApiModelProperty(value = "所属部门名称")
+	@TableField(exist = false)
+	private  String  sysOrgCodeName;
 
 	/**创建人*/
 //	@Excel(name = "创建人", width = 15)
