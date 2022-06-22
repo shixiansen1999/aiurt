@@ -1,6 +1,6 @@
 package com.aiurt.boot.task.controller;
 
-import com.aiurt.boot.entity.inspection.task.RepairTaskDeviceRel;
+import com.aiurt.boot.task.entity.RepairTaskDeviceRel;
 import com.aiurt.boot.task.service.IRepairTaskDeviceRelService;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.system.base.controller.BaseController;

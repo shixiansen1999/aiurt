@@ -1,6 +1,6 @@
 package com.aiurt.boot.standard.controller;
 
-import com.aiurt.boot.entity.inspection.standard.InspectionCode;
+import com.aiurt.boot.standard.entity.InspectionCode;
 import com.aiurt.boot.standard.service.IInspectionCodeService;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.system.base.controller.BaseController;

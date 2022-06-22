@@ -11,7 +11,7 @@
     <dependencies>
         <dependency>
             <groupId>com.aiurt.boot</groupId>
-            <artifactId>aiurt-base-core</artifactId>
+            <artifactId>aiurt-system-local-api</artifactId>
         </dependency>
 
 <!--        &lt;!&ndash; feign &ndash;&gt;-->

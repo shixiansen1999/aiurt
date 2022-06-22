@@ -1,6 +1,6 @@
 package com.aiurt.boot.strategy.service.impl;
 
-import com.aiurt.boot.entity.inspection.strategy.InspectionStrOrgRel;
+import com.aiurt.boot.strategy.entity.InspectionStrOrgRel;
 import com.aiurt.boot.strategy.mapper.InspectionStrOrgRelMapper;
 import com.aiurt.boot.strategy.service.IInspectionStrOrgRelService;
 import org.springframework.stereotype.Service;

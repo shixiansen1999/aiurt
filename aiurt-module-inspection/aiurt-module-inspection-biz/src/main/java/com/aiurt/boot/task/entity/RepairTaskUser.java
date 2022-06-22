@@ -1,45 +1,49 @@
-package com.aiurt.boot.entity.inspection.strategy;
-
-import java.io.Serializable;
+package com.aiurt.boot.task.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import lombok.Data;
 import com.fasterxml.jackson.annotation.JsonFormat;
-import org.springframework.format.annotation.DateTimeFormat;
-import org.jeecgframework.poi.excel.annotation.Excel;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
+import org.jeecgframework.poi.excel.annotation.Excel;
+import org.springframework.format.annotation.DateTimeFormat;
+
+import java.io.Serializable;
 
 /**
- * @Description: inspection_str_org_rel
+ * @Description: repair_task_user
  * @Author: aiurt
  * @Date:   2022-06-22
  * @Version: V1.0
  */
 @Data
-@TableName("inspection_str_org_rel")
+@TableName("repair_task_user")
 @Accessors(chain = true)
 @EqualsAndHashCode(callSuper = false)
-@ApiModel(value="inspection_str_org_rel对象", description="inspection_str_org_rel")
-public class InspectionStrOrgRel implements Serializable {
+@ApiModel(value="repair_task_user对象", description="repair_task_user")
+public class RepairTaskUser implements Serializable {
     private static final long serialVersionUID = 1L;
 
 	/**主键*/
 	@TableId(type = IdType.ASSIGN_ID)
     @ApiModelProperty(value = "主键")
     private java.lang.String id;
-	/**检修策略编码,关联inspection_strategy表的code*/
-	@Excel(name = "检修策略编码,关联inspection_strategy表的code", width = 15)
-    @ApiModelProperty(value = "检修策略编码,关联inspection_strategy表的code")
-    private java.lang.String inspectionStrCode;
-	/**组织编码，关联sys_depart的org_code*/
-	@Excel(name = "组织编码，关联sys_depart的org_code", width = 15)
-    @ApiModelProperty(value = "组织编码，关联sys_depart的org_code")
-    private java.lang.String orgCode;
+	/**检修任务编码,关联repair_task表的code*/
+	@Excel(name = "检修任务编码,关联repair_task表的code", width = 15)
+    @ApiModelProperty(value = "检修任务编码,关联repair_task表的code")
+    private java.lang.String repairTaskCode;
+	/**检修人id，关联sys_user的id*/
+	@Excel(name = "检修人id，关联sys_user的id", width = 15)
+    @ApiModelProperty(value = "检修人id，关联sys_user的id")
+    private java.lang.String userId;
+	/**检修人名称*/
+	@Excel(name = "检修人名称", width = 15)
+    @ApiModelProperty(value = "检修人名称")
+    private java.lang.String name;
 	/**删除状态： 0未删除 1已删除*/
 	@Excel(name = "删除状态： 0未删除 1已删除", width = 15)
     @ApiModelProperty(value = "删除状态： 0未删除 1已删除")

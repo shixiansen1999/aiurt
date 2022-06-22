@@ -1,6 +1,6 @@
 package com.aiurt.boot.plan.service;
 
-import com.aiurt.boot.entity.inspection.plan.RepairPoolCode;
+import com.aiurt.boot.plan.entity.RepairPoolCode;
 import com.baomidou.mybatisplus.extension.service.IService;
 
 /**

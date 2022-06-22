@@ -1,6 +1,6 @@
 package com.aiurt.boot.plan.service.impl;
 
-import com.aiurt.boot.entity.inspection.plan.RepairPoolCode;
+import com.aiurt.boot.plan.entity.RepairPoolCode;
 import com.aiurt.boot.plan.mapper.RepairPoolCodeMapper;
 import com.aiurt.boot.plan.service.IRepairPoolCodeService;
 import org.springframework.stereotype.Service;

@@ -1,4 +1,4 @@
-package com.aiurt.boot.entity.inspection.task;
+package com.aiurt.boot.strategy.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
@@ -15,35 +15,31 @@ import org.springframework.format.annotation.DateTimeFormat;
 import java.io.Serializable;
 
 /**
- * @Description: repair_task_user
+ * @Description: inspection_str_sta_rel
  * @Author: aiurt
  * @Date:   2022-06-22
  * @Version: V1.0
  */
 @Data
-@TableName("repair_task_user")
+@TableName("inspection_str_sta_rel")
 @Accessors(chain = true)
 @EqualsAndHashCode(callSuper = false)
-@ApiModel(value="repair_task_user对象", description="repair_task_user")
-public class RepairTaskUser implements Serializable {
+@ApiModel(value="inspection_str_sta_rel对象", description="inspection_str_sta_rel")
+public class InspectionStrStaRel implements Serializable {
     private static final long serialVersionUID = 1L;
 
 	/**主键*/
 	@TableId(type = IdType.ASSIGN_ID)
     @ApiModelProperty(value = "主键")
     private java.lang.String id;
-	/**检修任务编码,关联repair_task表的code*/
-	@Excel(name = "检修任务编码,关联repair_task表的code", width = 15)
-    @ApiModelProperty(value = "检修任务编码,关联repair_task表的code")
-    private java.lang.String repairTaskCode;
-	/**检修人id，关联sys_user的id*/
-	@Excel(name = "检修人id，关联sys_user的id", width = 15)
-    @ApiModelProperty(value = "检修人id，关联sys_user的id")
-    private java.lang.String userId;
-	/**检修人名称*/
-	@Excel(name = "检修人名称", width = 15)
-    @ApiModelProperty(value = "检修人名称")
-    private java.lang.String name;
+	/**检修策略编码,关联inspection_strategy表的code*/
+	@Excel(name = "检修策略编码,关联inspection_strategy表的code", width = 15)
+    @ApiModelProperty(value = "检修策略编码,关联inspection_strategy表的code")
+    private java.lang.String inspectionStrCode;
+	/**站所编码，关联cs_station_position的code*/
+	@Excel(name = "站所编码，关联cs_station_position的code", width = 15)
+    @ApiModelProperty(value = "站所编码，关联cs_station_position的code")
+    private java.lang.String stationCode;
 	/**删除状态： 0未删除 1已删除*/
 	@Excel(name = "删除状态： 0未删除 1已删除", width = 15)
     @ApiModelProperty(value = "删除状态： 0未删除 1已删除")

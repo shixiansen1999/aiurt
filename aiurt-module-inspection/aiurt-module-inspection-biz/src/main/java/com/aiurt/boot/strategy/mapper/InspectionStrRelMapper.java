@@ -1,6 +1,6 @@
 package com.aiurt.boot.strategy.mapper;
 
-import com.aiurt.boot.entity.inspection.strategy.InspectionStrRel;
+import com.aiurt.boot.strategy.entity.InspectionStrRel;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
 /**

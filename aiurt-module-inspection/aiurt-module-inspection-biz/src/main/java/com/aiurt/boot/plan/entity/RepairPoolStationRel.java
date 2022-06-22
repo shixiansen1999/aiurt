@@ -1,4 +1,4 @@
-package com.aiurt.boot.entity.inspection.plan;
+package com.aiurt.boot.plan.entity;
 
 import java.io.Serializable;
 
@@ -15,31 +15,31 @@ import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
 
 /**
- * @Description: repair_pool_rel
+ * @Description: repair_pool_station_rel
  * @Author: aiurt
  * @Date:   2022-06-22
  * @Version: V1.0
  */
 @Data
-@TableName("repair_pool_rel")
+@TableName("repair_pool_station_rel")
 @Accessors(chain = true)
 @EqualsAndHashCode(callSuper = false)
-@ApiModel(value="repair_pool_rel对象", description="repair_pool_rel")
-public class RepairPoolRel implements Serializable {
+@ApiModel(value="repair_pool_station_rel对象", description="repair_pool_station_rel")
+public class RepairPoolStationRel implements Serializable {
     private static final long serialVersionUID = 1L;
 
-	/**主键ID*/
+	/**主键*/
 	@TableId(type = IdType.ASSIGN_ID)
-    @ApiModelProperty(value = "主键ID")
+    @ApiModelProperty(value = "主键")
     private java.lang.String id;
-	/**检修计划单号，关联repair_pool表的code*/
-	@Excel(name = "检修计划单号，关联repair_pool表的code", width = 15)
-    @ApiModelProperty(value = "检修计划单号，关联repair_pool表的code")
+	/**检修计划池编码,关联repair_pool表的code*/
+	@Excel(name = "检修计划池编码,关联repair_pool表的code", width = 15)
+    @ApiModelProperty(value = "检修计划池编码,关联repair_pool表的code")
     private java.lang.String repairPoolCode;
-	/**检修标准编码，关联repair_pool_code的code*/
-	@Excel(name = "检修标准编码，关联repair_pool_code的code", width = 15)
-    @ApiModelProperty(value = "检修标准编码，关联repair_pool_code的code")
-    private java.lang.String repairPoolStaCode;
+	/**站所编号*/
+	@Excel(name = "站所编号", width = 15)
+    @ApiModelProperty(value = "站所编号")
+    private java.lang.String stationCode;
 	/**删除状态： 0未删除 1已删除*/
 	@Excel(name = "删除状态： 0未删除 1已删除", width = 15)
     @ApiModelProperty(value = "删除状态： 0未删除 1已删除")

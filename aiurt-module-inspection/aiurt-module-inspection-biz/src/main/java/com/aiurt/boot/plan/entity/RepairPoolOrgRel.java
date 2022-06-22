@@ -1,4 +1,4 @@
-package com.aiurt.boot.entity.inspection.strategy;
+package com.aiurt.boot.plan.entity;
 
 import java.io.Serializable;
 
@@ -15,31 +15,35 @@ import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
 
 /**
- * @Description: inspection_str_device_rel
+ * @Description: repair_pool_org_rel
  * @Author: aiurt
  * @Date:   2022-06-22
  * @Version: V1.0
  */
 @Data
-@TableName("inspection_str_device_rel")
+@TableName("repair_pool_org_rel")
 @Accessors(chain = true)
 @EqualsAndHashCode(callSuper = false)
-@ApiModel(value="inspection_str_device_rel对象", description="inspection_str_device_rel")
-public class InspectionStrDeviceRel implements Serializable {
+@ApiModel(value="repair_pool_org_rel对象", description="repair_pool_org_rel")
+public class RepairPoolOrgRel implements Serializable {
     private static final long serialVersionUID = 1L;
 
-	/**主键ID*/
+	/**主键*/
 	@TableId(type = IdType.ASSIGN_ID)
-    @ApiModelProperty(value = "主键ID")
+    @ApiModelProperty(value = "主键")
     private java.lang.String id;
-	/**检修计划策略标准id，关联inspection_strategy_rel的主键*/
-	@Excel(name = "检修计划策略标准id，关联inspection_strategy_rel的主键", width = 15)
-    @ApiModelProperty(value = "检修计划策略标准id，关联inspection_strategy_rel的主键")
-    private java.lang.String inspectionStrRelId;
-	/**设备code,关联device的code*/
-	@Excel(name = "设备code,关联device的code", width = 15)
-    @ApiModelProperty(value = "设备code,关联device的code")
-    private java.lang.String deviceCode;
+	/**检修计划池编码,关联repair_pool表的code*/
+	@Excel(name = "检修计划池编码,关联repair_pool表的code", width = 15)
+    @ApiModelProperty(value = "检修计划池编码,关联repair_pool表的code")
+    private java.lang.String repairPoolCode;
+	/**组织编码，关联sys_depart的org_code*/
+	@Excel(name = "组织编码，关联sys_depart的org_code", width = 15)
+    @ApiModelProperty(value = "组织编码，关联sys_depart的org_code")
+    private java.lang.String orgCode;
+	/**删除状态： 0未删除 1已删除*/
+	@Excel(name = "删除状态： 0未删除 1已删除", width = 15)
+    @ApiModelProperty(value = "删除状态： 0未删除 1已删除")
+    private java.lang.Integer delFlag;
 	/**创建人*/
     @ApiModelProperty(value = "创建人")
     private java.lang.String createBy;

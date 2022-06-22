@@ -1,31 +1,28 @@
-package com.aiurt.boot.entity.inspection.plan;
+package com.aiurt.boot.standard.entity;
 
-import java.io.Serializable;
-
+import com.aiurt.common.aspect.annotation.Dict;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import lombok.Data;
 import com.fasterxml.jackson.annotation.JsonFormat;
-import org.springframework.format.annotation.DateTimeFormat;
-import org.jeecgframework.poi.excel.annotation.Excel;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import lombok.EqualsAndHashCode;
-import lombok.experimental.Accessors;
+import lombok.Data;
+import org.jeecgframework.poi.excel.annotation.Excel;
+import org.springframework.format.annotation.DateTimeFormat;
+
+import java.io.Serializable;
 
 /**
- * @Description: repair_pool_code_content
+ * @Description: inspection_code_content
  * @Author: aiurt
- * @Date:   2022-06-22
+ * @Date:   2022-06-21
  * @Version: V1.0
  */
 @Data
-@TableName("repair_pool_code_content")
-@Accessors(chain = true)
-@EqualsAndHashCode(callSuper = false)
-@ApiModel(value="repair_pool_code_content对象", description="repair_pool_code_content")
-public class RepairPoolCodeContent implements Serializable {
+@TableName("inspection_code_content")
+@ApiModel(value="inspection_code_content对象", description="inspection_code_content")
+public class InspectionCodeContent implements Serializable {
     private static final long serialVersionUID = 1L;
 
 	/**主键id*/
@@ -40,14 +37,10 @@ public class RepairPoolCodeContent implements Serializable {
 	@Excel(name = "检修项名称", width = 15)
     @ApiModelProperty(value = "检修项名称")
     private java.lang.String name;
-	/**检修标准id，关联repair_pool_code表的id*/
-	@Excel(name = "检修标准id，关联repair_pool_code表的id", width = 15)
-    @ApiModelProperty(value = "检修标准id，关联repair_pool_code表的id")
-    private java.lang.String repairPoolCodeId;
-	/**维修内容*/
-	@Excel(name = "维修内容", width = 15)
-    @ApiModelProperty(value = "维修内容")
-    private java.lang.String maintenanceContent;
+	/**检修标准id，关联inspection_code表的id*/
+	@Excel(name = "检修标准id，关联inspection_code表的id", width = 15)
+    @ApiModelProperty(value = "检修标准id，关联inspection_code表的id")
+    private java.lang.String inspectionCodeId;
 	/**质量标准*/
 	@Excel(name = "质量标准", width = 15)
     @ApiModelProperty(value = "质量标准")
@@ -56,14 +49,6 @@ public class RepairPoolCodeContent implements Serializable {
 	@Excel(name = "排序编号", width = 15)
     @ApiModelProperty(value = "排序编号")
     private java.lang.Integer sortNo;
-	/**父级id，顶级为0*/
-	@Excel(name = "父级id，顶级为0", width = 15)
-    @ApiModelProperty(value = "父级id，顶级为0")
-    private java.lang.String pid;
-	/**是否有孩子节点*/
-	@Excel(name = "是否有孩子节点", width = 15)
-    @ApiModelProperty(value = "是否有孩子节点")
-    private java.lang.String hasChild;
 	/**检查项类型，是否是检查项：0否 1是*/
 	@Excel(name = "检查项类型，是否是检查项：0否 1是", width = 15)
     @ApiModelProperty(value = "检查项类型，是否是检查项：0否 1是")
@@ -100,4 +85,13 @@ public class RepairPoolCodeContent implements Serializable {
     @DateTimeFormat(pattern="yyyy-MM-dd")
     @ApiModelProperty(value = "修改时间")
     private java.util.Date updateTime;
+	/**父级节点，顶级为0*/
+	@Excel(name = "父级节点，顶级为0", width = 15)
+    @ApiModelProperty(value = "父级节点，顶级为0")
+    private java.lang.String pid;
+	/**是否有子节点*/
+	@Excel(name = "是否有子节点", width = 15, dicCode = "yn")
+	@Dict(dicCode = "yn")
+    @ApiModelProperty(value = "是否有子节点")
+    private java.lang.String hasChild;
 }

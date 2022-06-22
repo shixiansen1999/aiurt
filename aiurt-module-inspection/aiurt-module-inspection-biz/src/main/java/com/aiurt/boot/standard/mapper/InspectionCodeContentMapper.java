@@ -1,6 +1,6 @@
 package com.aiurt.boot.standard.mapper;
 
-import com.aiurt.boot.entity.inspection.standard.InspectionCodeContent;
+import com.aiurt.boot.standard.entity.InspectionCodeContent;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import org.apache.ibatis.annotations.Param;
 import org.jeecg.common.system.vo.SelectTreeModel;

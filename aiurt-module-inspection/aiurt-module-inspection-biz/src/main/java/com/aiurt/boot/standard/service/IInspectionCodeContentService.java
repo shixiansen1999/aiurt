@@ -1,6 +1,6 @@
 package com.aiurt.boot.standard.service;
 
-import com.aiurt.boot.entity.inspection.standard.InspectionCodeContent;
+import com.aiurt.boot.standard.entity.InspectionCodeContent;
 import com.aiurt.common.exception.AiurtBootException;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.IService;

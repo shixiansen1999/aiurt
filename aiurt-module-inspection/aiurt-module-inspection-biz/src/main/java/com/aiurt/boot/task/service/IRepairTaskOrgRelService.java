@@ -1,6 +1,6 @@
 package com.aiurt.boot.task.service;
 
-import com.aiurt.boot.entity.inspection.task.RepairTaskOrgRel;
+import com.aiurt.boot.task.entity.RepairTaskOrgRel;
 import com.baomidou.mybatisplus.extension.service.IService;
 
 /**

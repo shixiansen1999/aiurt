@@ -1,4 +1,4 @@
-package com.aiurt.boot.entity.inspection.plan;
+package com.aiurt.boot.plan.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;

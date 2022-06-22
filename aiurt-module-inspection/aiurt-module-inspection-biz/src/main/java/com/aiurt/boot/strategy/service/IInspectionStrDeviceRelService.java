@@ -1,6 +1,6 @@
 package com.aiurt.boot.strategy.service;
 
-import com.aiurt.boot.entity.inspection.strategy.InspectionStrDeviceRel;
+import com.aiurt.boot.strategy.entity.InspectionStrDeviceRel;
 import com.baomidou.mybatisplus.extension.service.IService;
 
 /**

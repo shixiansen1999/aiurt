@@ -1,6 +1,6 @@
 package com.aiurt.boot.plan.mapper;
 
-import com.aiurt.boot.entity.inspection.plan.RepairPoolCode;
+import com.aiurt.boot.plan.entity.RepairPoolCode;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
 /**

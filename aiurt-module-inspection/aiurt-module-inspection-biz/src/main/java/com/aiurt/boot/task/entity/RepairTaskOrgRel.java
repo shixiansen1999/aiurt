@@ -1,7 +1,9 @@
-package com.aiurt.boot.entity.inspection.plan;
+package com.aiurt.boot.task.entity;
 
 import java.io.Serializable;
-
+import java.io.UnsupportedEncodingException;
+import java.util.Date;
+import java.math.BigDecimal;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
@@ -9,33 +11,34 @@ import lombok.Data;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.jeecgframework.poi.excel.annotation.Excel;
+import com.aiurt.common.aspect.annotation.Dict;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
 
 /**
- * @Description: repair_pool_org_rel
+ * @Description: repair_task_org_rel
  * @Author: aiurt
  * @Date:   2022-06-22
  * @Version: V1.0
  */
 @Data
-@TableName("repair_pool_org_rel")
+@TableName("repair_task_org_rel")
 @Accessors(chain = true)
 @EqualsAndHashCode(callSuper = false)
-@ApiModel(value="repair_pool_org_rel对象", description="repair_pool_org_rel")
-public class RepairPoolOrgRel implements Serializable {
+@ApiModel(value="repair_task_org_rel对象", description="repair_task_org_rel")
+public class RepairTaskOrgRel implements Serializable {
     private static final long serialVersionUID = 1L;
 
 	/**主键*/
 	@TableId(type = IdType.ASSIGN_ID)
     @ApiModelProperty(value = "主键")
     private java.lang.String id;
-	/**检修计划池编码,关联repair_pool表的code*/
-	@Excel(name = "检修计划池编码,关联repair_pool表的code", width = 15)
-    @ApiModelProperty(value = "检修计划池编码,关联repair_pool表的code")
-    private java.lang.String repairPoolCode;
+	/**检修任务编码,关联repair_task表的code*/
+	@Excel(name = "检修任务编码,关联repair_task表的code", width = 15)
+    @ApiModelProperty(value = "检修任务编码,关联repair_task表的code")
+    private java.lang.String repairTaskCode;
 	/**组织编码，关联sys_depart的org_code*/
 	@Excel(name = "组织编码，关联sys_depart的org_code", width = 15)
     @ApiModelProperty(value = "组织编码，关联sys_depart的org_code")

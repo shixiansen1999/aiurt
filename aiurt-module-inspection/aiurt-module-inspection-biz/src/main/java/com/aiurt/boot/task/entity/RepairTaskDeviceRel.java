@@ -1,4 +1,4 @@
-package com.aiurt.boot.entity.inspection.task;
+package com.aiurt.boot.task.entity;
 
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;

@@ -1,4 +1,4 @@
-package com.aiurt.boot.entity.inspection.strategy;
+package com.aiurt.boot.strategy.entity;
 
 import java.io.Serializable;
 

@@ -1,6 +1,6 @@
 package com.aiurt.boot.task.mapper;
 
-import com.aiurt.boot.entity.inspection.task.RepairTaskEnclosure;
+import com.aiurt.boot.task.entity.RepairTaskEnclosure;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
 /**
