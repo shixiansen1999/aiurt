@@ -1,5 +1,6 @@
 package com.aiurt.boot.plan.service.impl;
 
+import com.aiurt.boot.constant.DictConstant;
 import com.aiurt.boot.entity.inspection.plan.RepairPool;
 import com.aiurt.boot.plan.mapper.RepairPoolMapper;
 import com.aiurt.boot.plan.service.IRepairPoolService;
@@ -9,6 +10,7 @@ import org.jeecg.common.system.api.ISysBaseAPI;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -23,6 +25,7 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
 
     @Resource
     private ISysBaseAPI sysBaseAPI;
+
     /**
      * 检修计划池列表查询
      *
@@ -33,14 +36,14 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
     @Override
     public List<RepairPool> queryList(Date startTime, Date endTime) {
         QueryWrapper queryWrapper = new QueryWrapper();
-        queryWrapper.ge("start_time",startTime);
-        queryWrapper.le("end_time",endTime);
+        queryWrapper.ge("start_time", startTime);
+        queryWrapper.le("end_time", endTime);
         queryWrapper.orderByAsc("type");
         List<RepairPool> repairPoolList = baseMapper.selectList(queryWrapper);
 
-        repairPoolList.forEach(repair->{
+        repairPoolList.forEach(repair -> {
             // 专业
-
+            List<String> majorStr = new ArrayList<>();
             // 子系统
 
             // 组织机构
@@ -48,8 +51,9 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
             // 站点
 
             // 周期类型
-
+            repair.setTypeName(sysBaseAPI.translateDict(DictConstant.INSPECTION_CYCLE_TYPE, String.valueOf(repair.getType())));
             // 状态
+            repair.setStatusName(sysBaseAPI.translateDict(DictConstant.INSPECTION_TASK_STATE, String.valueOf(repair.getStatus())));
         });
 
         return repairPoolList;
