@@ -4,14 +4,9 @@ import com.aiurt.boot.entity.inspection.plan.RepairPool;
 import com.aiurt.boot.plan.service.IRepairPoolService;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.system.base.controller.BaseController;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.*;
 import lombok.extern.slf4j.Slf4j;
 import org.jeecg.common.api.vo.Result;
-import org.jeecg.common.system.query.QueryGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
@@ -19,14 +14,16 @@ import org.springframework.web.servlet.ModelAndView;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.Arrays;
+import java.util.Date;
+import java.util.List;
 
- /**
+/**
  * @Description: repair_pool
  * @Author: aiurt
  * @Date:   2022-06-22
  * @Version: V1.0
  */
-@Api(tags="repair_pool")
+@Api(tags="检修计划池")
 @RestController
 @RequestMapping("/plan/repairPool")
 @Slf4j
@@ -35,25 +32,20 @@ public class RepairPoolController extends BaseController<RepairPool, IRepairPool
 	private IRepairPoolService repairPoolService;
 
 	/**
-	 * 分页列表查询
+	 * 检修计划池列表查询
 	 *
-	 * @param repairPool
-	 * @param pageNo
-	 * @param pageSize
-	 * @param req
 	 * @return
 	 */
-	//@AutoLog(value = "repair_pool-分页列表查询")
-	@ApiOperation(value="repair_pool-分页列表查询", notes="repair_pool-分页列表查询")
+	@AutoLog(value = "检修计划池列表查询")
+	@ApiOperation(value="检修计划池列表查询", notes="检修计划池列表查询")
+	@ApiResponses({
+			@ApiResponse(code = 200,message = "OK",response = RepairPool.class)
+	})
 	@GetMapping(value = "/list")
-	public Result<IPage<RepairPool>> queryPageList(RepairPool repairPool,
-								   @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
-								   @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
-								   HttpServletRequest req) {
-		QueryWrapper<RepairPool> queryWrapper = QueryGenerator.initQueryWrapper(repairPool, req.getParameterMap());
-		Page<RepairPool> page = new Page<RepairPool>(pageNo, pageSize);
-		IPage<RepairPool> pageList = repairPoolService.page(page, queryWrapper);
-		return Result.OK(pageList);
+	public Result<?> queryList(@RequestParam @ApiParam(required = true, value = "开始时间", name = "startTime") Date startTime,
+							   @RequestParam @ApiParam(required = true, value = "结束时间", name = "endTime") Date endTime) {
+		List<RepairPool> repairPoolList = repairPoolService.queryList(startTime,endTime);
+		return Result.OK(repairPoolList);
 	}
 
 	/**

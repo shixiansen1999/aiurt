@@ -2,4 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.aiurt.boot.plan.mapper.RepairPoolMapper">
 
+    <select id="queryList" resultType="com.aiurt.boot.entity.inspection.plan.RepairPool">
+    
+    </select>
 </mapper>

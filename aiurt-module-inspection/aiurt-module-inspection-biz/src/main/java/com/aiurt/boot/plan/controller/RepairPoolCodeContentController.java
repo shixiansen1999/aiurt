@@ -1,5 +1,6 @@
 package com.aiurt.boot.plan.controller;
 
+
 import com.aiurt.boot.entity.inspection.plan.RepairPoolCodeContent;
 import com.aiurt.boot.plan.service.IRepairPoolCodeContentService;
 import com.aiurt.common.aspect.annotation.AutoLog;
@@ -47,9 +48,9 @@ public class RepairPoolCodeContentController extends BaseController<RepairPoolCo
 	@ApiOperation(value="repair_pool_code_content-分页列表查询", notes="repair_pool_code_content-分页列表查询")
 	@GetMapping(value = "/list")
 	public Result<IPage<RepairPoolCodeContent>> queryPageList(RepairPoolCodeContent repairPoolCodeContent,
-								   @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
-								   @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
-								   HttpServletRequest req) {
+															  @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
+															  @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
+															  HttpServletRequest req) {
 		QueryWrapper<RepairPoolCodeContent> queryWrapper = QueryGenerator.initQueryWrapper(repairPoolCodeContent, req.getParameterMap());
 		Page<RepairPoolCodeContent> page = new Page<RepairPoolCodeContent>(pageNo, pageSize);
 		IPage<RepairPoolCodeContent> pageList = repairPoolCodeContentService.page(page, queryWrapper);

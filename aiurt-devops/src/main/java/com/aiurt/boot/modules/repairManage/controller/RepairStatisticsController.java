@@ -1,11 +1,7 @@
 package com.aiurt.boot.modules.repairManage.controller;
 
 
-import com.aiurt.boot.modules.repairManage.service.IStatisticsService;
-import com.aiurt.boot.modules.repairManage.vo.RepairItemVO;
-import com.aiurt.boot.modules.repairManage.vo.StatisticsQueryVO;
-import com.aiurt.boot.modules.repairManage.vo.TimeVO;
-import com.aiurt.boot.modules.repairManage.vo.WorkLoadVO;
+
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;

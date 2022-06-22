@@ -51,6 +51,7 @@ public interface ISysBaseAPI extends CommonAPI {
      */
     String parseTemplateByCode(TemplateDTO templateDTO);
 
+
     /**
      * 6根据用户id查询用户信息
      * @param id

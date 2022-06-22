@@ -21,7 +21,7 @@ public interface InspectionCodeContentMapper extends BaseMapper<InspectionCodeCo
 	 * @param id
 	 * @param status
 	 */
-	void updateTreeNodeStatus(@Param("id") String id,@Param("status") String status);
+	void updateTreeNodeStatus(@Param("id") String id, @Param("status") String status);
 
 	/**
 	 * 【vue3专用】根据父级ID查询树节点数据

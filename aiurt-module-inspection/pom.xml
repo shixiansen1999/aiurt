@@ -9,23 +9,21 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>aiurt-module-inspection</artifactId>
-    <groupId>com.aiurt.boot</groupId>
-    <version>1.0.0-RELEASE</version>
+    <version>3.2.0</version>
+    <packaging>pom</packaging>
+
+    <!--项目子模块-->
+    <modules>
+        <module>aiurt-module-inspection-api</module>
+        <module>aiurt-module-inspection-biz</module>
+        <module>aiurt-module-inspection-start</module>
+    </modules>
     <dependencies>
-        <dependency>
-            <groupId>com.aiurt.boot</groupId>
-            <artifactId>aiurt-system-local-api</artifactId>
-        </dependency>
         <dependency>
             <groupId>com.aiurt.boot</groupId>
             <artifactId>aiurt-module-common</artifactId>
             <version>1.0.0-RELEASE</version>
         </dependency>
-
-        <dependency>
-            <groupId>com.belerweb</groupId>
-            <artifactId>pinyin4j</artifactId>
-            <version>2.5.1</version>
-        </dependency>
     </dependencies>
 </project>
+

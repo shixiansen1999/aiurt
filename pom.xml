@@ -19,7 +19,7 @@
 		<java.version>1.8</java.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-		<!-- 微服务属性 -->
+		<!-- ????????? -->
 		<skip.springboot.maven>false</skip.springboot.maven>
         <spring-cloud.version>2021.0.3</spring-cloud.version>
         <spring-cloud-alibaba.version>2021.1</spring-cloud-alibaba.version>
@@ -29,7 +29,7 @@
         <fastjson.version>1.2.83</fastjson.version>
 		<knife4j-spring-boot-starter.version>3.0.3</knife4j-spring-boot-starter.version>
 		<knife4j-spring-ui.version>2.0.9</knife4j-spring-ui.version>
-		<!-- 数据库驱动 -->
+		<!-- ????????? -->
 		<postgresql.version>42.2.6</postgresql.version>
 		<ojdbc6.version>11.2.0.3</ojdbc6.version>
 		<sqljdbc4.version>4.0</sqljdbc4.version>
@@ -39,7 +39,7 @@
 		<commons-beanutils.version>1.9.4</commons-beanutils.version>
 		<guava.version>29.0-jre</guava.version>
 
-		<!-- 持久层 -->
+		<!-- ??��? -->
 		<mybatis-plus.version>3.5.1</mybatis-plus.version>
 		<dynamic-datasource-spring-boot-starter.version>3.2.0</dynamic-datasource-spring-boot-starter.version>
 		<minidao.version>1.9.0</minidao.version>
@@ -57,7 +57,7 @@
 		<justauth-spring-boot-starter.version>1.3.4</justauth-spring-boot-starter.version>
 		<dom4j.version>1.6.1</dom4j.version>
 		<qiniu-java-sdk.version>7.4.0</qiniu-java-sdk.version>
-		<!-- Log4j2爆雷漏洞 -->
+		<!-- Log4j2??????? -->
 		<log4j2.version>2.17.0</log4j2.version>
 		<logback.version>1.2.9</logback.version>
 	</properties>
@@ -66,11 +66,11 @@
         <module>aiurt-base</module>
         <module>aiurt-module-system</module>
 		<module>aiurt-devops</module>
-		<module>aiurt-module-inspection</module>
         <module>aiurt-module-patrol</module>
         <module>aiurt-module-common</module>
 		<module>aiurt-module-fault</module>
-    </modules>
+    <module>aiurt-module-inspection</module>
+  </modules>
 
 	<distributionManagement>
 	  	<repository>
@@ -146,7 +146,7 @@
 				<scope>import</scope>
 			</dependency>
 
-			<!-- system ģ��-->
+			<!-- system ???-->
 			<dependency>
 				<groupId>com.aiurt.boot</groupId>
 				<artifactId>aiurt-module-system</artifactId>
@@ -165,44 +165,44 @@
 				<artifactId>aiurt-base-core</artifactId>
 				<version>${aiurt.version}</version>
 			</dependency>
-			<!-- system ���� api -->
+			<!-- system ???? api -->
 			<dependency>
 				<groupId>com.aiurt.boot</groupId>
 				<artifactId>aiurt-system-local-api</artifactId>
 				<version>${aiurt.version}</version>
 			</dependency>
-			<!-- system ΢���� api -->
+			<!-- system ????? api -->
 			<dependency>
 				<groupId>com.aiurt.boot</groupId>
 				<artifactId>aiurt-system-cloud-api</artifactId>
 				<version>${aiurt.version}</version>
 			</dependency>
 
-            <!--΢������������-->
+            <!--?????????????-->
             <dependency>
 				<groupId>com.aiurt.boot</groupId>
                 <artifactId>aiurt-starter-cloud</artifactId>
                 <version>${aiurt.version}</version>
             </dependency>
-			<!--xxl-job��ʱ����-->
+			<!--xxl-job???????-->
 			<dependency>
 				<groupId>com.aiurt.boot</groupId>
 				<artifactId>aiurt-starter-job</artifactId>
 				<version>${aiurt.version}</version>
 			</dependency>
-			<!--redis�ֲ�ʽ��-->
+			<!--redis??????-->
 			<dependency>
 				<groupId>com.aiurt.boot</groupId>
 				<artifactId>aiurt-starter-lock</artifactId>
 				<version>${aiurt.version}</version>
 			</dependency>
-			<!--rabbitmq��Ϣ����-->
+			<!--rabbitmq???????-->
 			<dependency>
 				<groupId>com.aiurt.boot</groupId>
 				<artifactId>aiurt-starter-rabbitmq</artifactId>
 				<version>${aiurt.version}</version>
 			</dependency>
-			<!--�ֿ�ֱ�shardingsphere-->
+			<!--?????shardingsphere-->
 			<dependency>
 				<groupId>com.aiurt.boot</groupId>
 				<artifactId>aiurt-starter-shardingsphere</artifactId>
@@ -238,14 +238,14 @@
 				<version>${redisson.version}</version>
 			</dependency>
 
-			<!-- guava������ -->
+			<!-- guava?????? -->
 			<dependency>
 				<groupId>com.google.guava</groupId>
 				<artifactId>guava</artifactId>
 				<version>${guava.version}</version>
 			</dependency>
 
-			<!-- hutool������-->
+			<!-- hutool??????-->
 			<dependency>
 				<groupId>cn.hutool</groupId>
 				<artifactId>hutool-core</artifactId>
@@ -276,7 +276,7 @@
 				</exclusions>
 			</dependency>
 
-			<!-- justauth��������¼  -->
+			<!-- justauth?????????  -->
 			<dependency>
 				<groupId>com.xkcoding.justauth</groupId>
 				<artifactId>justauth-spring-boot-starter</artifactId>
@@ -313,7 +313,7 @@
 					</exclusion>
 				</exclusions>
 			</dependency>
-			<!-- ��ҵ΢�źͶ��� api -->
+			<!-- ?????????? api -->
 			<dependency>
 				<groupId>org.jeecgframework</groupId>
 				<artifactId>jeewx-api</artifactId>
@@ -329,7 +329,7 @@
 					</exclusion>
 				</exclusions>
 			</dependency>
-			<!-- ��ľ���� -->
+			<!-- ??????? -->
 			<dependency>
 				<groupId>org.jeecgframework.jimureport</groupId>
 				<artifactId>jimureport-spring-boot-starter</artifactId>
@@ -346,7 +346,7 @@
 
 	<build>
 		<plugins>
-			<!-- ָ��JDK����汾 -->
+			<!-- ???JDK?????? -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
@@ -356,7 +356,7 @@
                     <encoding>UTF-8</encoding>
                 </configuration>
             </plugin>
-            <!-- ����������� -->
+            <!-- ??????????? -->
             <plugin>
 		        <groupId>org.apache.maven.plugins</groupId>
 		        <artifactId>maven-surefire-plugin</artifactId>
@@ -364,7 +364,7 @@
 		          <skipTests>true</skipTests>
 		        </configuration>
 	        </plugin>
-	         <!-- ����font�ļ��Ķ������ļ���ʽѹ���ƻ� -->
+	         <!-- ????font?????????????????????? -->
 	         <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-resources-plugin</artifactId>
@@ -395,87 +395,87 @@
 			</resource>
 		</resources>
 	</build>
-    <!-- ���� -->
+    <!-- ???? -->
     <profiles>
-        <!-- ���� -->
+        <!-- ???? -->
         <profile>
             <id>dev</id>
             <activation>
-                <!--Ĭ�ϼ�������-->
+                <!--??????????-->
                 <activeByDefault>true</activeByDefault>
             </activation>
             <properties>
-                <!--��ǰ����-->
+                <!--???????-->
                 <profile.name>dev</profile.name>
-                <!--�����ļ�ǰ׺-->
+                <!--?????????-->
                 <prefix.name>jeecg</prefix.name>
-                <!--Nacos�������ĵ�ַ-->
+                <!--Nacos??????????-->
                 <config.server-addr>jeecg-boot-nacos:8848</config.server-addr>
-                <!--Nacos�������������ռ�,����֧�ֶ໷��.�������ʹ��ID������ʹ������,Ĭ��Ϊ��-->
+                <!--Nacos???????????????,??????????.??????????ID?????????????,??????-->
                 <config.namespace/>
-				<!--Nacos�û���-->
+				<!--Nacos?????-->
 				<config.username>nacos</config.username>
-				<!--Nacos����-->
+				<!--Nacos????-->
 				<config.password>nacos</config.password>
-                <!--Nacos���÷�������-->
+                <!--Nacos????????????-->
                 <config.group>DEFAULT_GROUP</config.group>
-                <!--Nacos�����ֵ�ַ-->
+                <!--Nacos????????-->
                 <discovery.server-addr>jeecg-boot-nacos:8848</discovery.server-addr>
             </properties>
         </profile>
-        <!-- ���� -->
+        <!-- ???? -->
         <profile>
             <id>test</id>
             <properties>
-                <!--��ǰ����-->
+                <!--???????-->
                 <profile.name>test</profile.name>
-                <!--�����ļ�ǰ׺-->
+                <!--?????????-->
                 <prefix.name>jeecg</prefix.name>
-                <!--Nacos�������ĵ�ַ-->
+                <!--Nacos??????????-->
                 <config.server-addr>jeecg-boot-nacos:8848</config.server-addr>
-                <!--Nacos�������������ռ�,����֧�ֶ໷��.�������ʹ��ID������ʹ������,Ĭ��Ϊ��-->
+                <!--Nacos???????????????,??????????.??????????ID?????????????,??????-->
                 <config.namespace/>
-				<!--Nacos�û���-->
+				<!--Nacos?????-->
 				<config.username>nacos</config.username>
-				<!--Nacos����-->
+				<!--Nacos????-->
 				<config.password>nacos</config.password>
-                <!--Nacos���÷�������-->
+                <!--Nacos????????????-->
                 <config.group>DEFAULT_GROUP</config.group>
-                <!--Nacos�����ֵ�ַ-->
+                <!--Nacos????????-->
                 <discovery.server-addr>jeecg-boot-nacos:8848</discovery.server-addr>
             </properties>
         </profile>
-        <!-- ���� -->
+        <!-- ???? -->
         <profile>
             <id>prod</id>
             <properties>
-                <!--��ǰ����,��������Ϊ��-->
+                <!--???????,???????????-->
                 <profile.name>prod</profile.name>
-                <!--�����ļ�ǰ׺-->
+                <!--?????????-->
                 <prefix.name>jeecg</prefix.name>
-                <!--Nacos�������ĵ�ַ-->
+                <!--Nacos??????????-->
                 <config.server-addr>jeecg-boot-nacos:8848</config.server-addr>
-                <!--Nacos�������������ռ�,����֧�ֶ໷��.�������ʹ��ID������ʹ������,Ĭ��Ϊ��-->
+                <!--Nacos???????????????,??????????.??????????ID?????????????,??????-->
                 <config.namespace/>
-				<!--Nacos�û���-->
+				<!--Nacos?????-->
 				<config.username>nacos</config.username>
-				<!--Nacos����-->
+				<!--Nacos????-->
 				<config.password>nacos</config.password>
-                <!--Nacos���÷�������-->
+                <!--Nacos????????????-->
                 <config.group>DEFAULT_GROUP</config.group>
-                <!--Nacos�����ֵ�ַ-->
+                <!--Nacos????????-->
                 <discovery.server-addr>jeecg-boot-nacos:8848</discovery.server-addr>
             </properties>
         </profile>
-		<!-- SpringCloud���л��� -->
+		<!-- SpringCloud???????? -->
 		<profile>
 			<id>SpringCloud</id>
 			<properties>
-				<!--΢����ģʽ���޸�Ϊtrue, systemģ������������������΢�����޷�����-->
+				<!--?????????????true, system???????????????????????????????-->
 				<skip.springboot.maven>true</skip.springboot.maven>
 			</properties>
 			<modules>
-				<!-- ΢����ģ�� -->
+				<!-- ???????? -->
 				<module>aiurt-starter</module>
 				<module>aiurt-cloud-module</module>
 			</modules>

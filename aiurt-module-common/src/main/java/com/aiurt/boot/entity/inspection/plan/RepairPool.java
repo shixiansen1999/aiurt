@@ -1,6 +1,7 @@
 package com.aiurt.boot.entity.inspection.plan;
 
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -104,4 +105,35 @@ public class RepairPool implements Serializable {
 	/**更新人*/
     @ApiModelProperty(value = "更新人")
     private java.lang.String updateBy;
+
+    /** 站点名称*/
+    @TableField(exist = false)
+    @ApiModelProperty(value = "站点名称")
+    private String stationName;
+
+    /** 组织结构名称*/
+    @TableField(exist = false)
+    @ApiModelProperty(value = "组织结构名称")
+    private String orgName;
+
+    /** 检修周期类型名称*/
+    @TableField(exist = false)
+    @ApiModelProperty(value = "检修周期类型名称")
+    private String typeName;
+
+    /** 适用专业名称*/
+    @TableField(exist = false)
+    @ApiModelProperty(value = "适用专业名称")
+    private String majorName;
+
+    /** 适用专业子系统名称*/
+    @TableField(exist = false)
+    @ApiModelProperty(value = "适用专业子系统名称")
+    private String subsystemName;
+
+    /** 状态名称*/
+    @TableField(exist = false)
+    @ApiModelProperty(value = "状态名称")
+    private String statusName;
+
 }
