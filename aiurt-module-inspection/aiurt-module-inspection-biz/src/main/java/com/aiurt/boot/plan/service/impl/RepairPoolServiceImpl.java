@@ -4,10 +4,11 @@ import com.aiurt.boot.entity.inspection.plan.RepairPool;
 import com.aiurt.boot.plan.mapper.RepairPoolMapper;
 import com.aiurt.boot.plan.service.IRepairPoolService;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import org.jeecg.common.system.api.ISysBaseAPI;
 import org.springframework.stereotype.Service;
 
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-
+import javax.annotation.Resource;
 import java.util.Date;
 import java.util.List;
 
@@ -20,6 +21,8 @@ import java.util.List;
 @Service
 public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairPool> implements IRepairPoolService {
 
+    @Resource
+    private ISysBaseAPI sysBaseAPI;
     /**
      * 检修计划池列表查询
      *
@@ -34,13 +37,21 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
         queryWrapper.le("end_time",endTime);
         queryWrapper.orderByAsc("type");
         List<RepairPool> repairPoolList = baseMapper.selectList(queryWrapper);
-        // 专业
 
-        // 子系统
-        // 组织机构
-        // 站点
-        // 周期类型
-        // 状态
+        repairPoolList.forEach(repair->{
+            // 专业
+
+            // 子系统
+
+            // 组织机构
+
+            // 站点
+
+            // 周期类型
+
+            // 状态
+        });
+
         return repairPoolList;
     }
 }

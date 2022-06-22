@@ -14,6 +14,10 @@
             <artifactId>aiurt-module-inspection-api</artifactId>
             <version>3.2.0</version>
         </dependency>
+        <dependency>
+            <groupId>com.aiurt.boot</groupId>
+            <artifactId>aiurt-system-local-api</artifactId>
+        </dependency>
     </dependencies>
     <build>
         <!-- 打包名称 -->

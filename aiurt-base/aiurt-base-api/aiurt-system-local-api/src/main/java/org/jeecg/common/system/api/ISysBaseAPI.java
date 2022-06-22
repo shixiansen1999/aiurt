@@ -341,6 +341,4 @@ public interface ISysBaseAPI extends CommonAPI {
     List<DictModel> loadDictItemByKeyword(String dictCode, String keyword, Integer pageSize);
 
 
-    String selectDictItems(String dictCode,String value);
-
 }

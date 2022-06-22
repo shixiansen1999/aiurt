@@ -1,13 +1,13 @@
 package org.jeecg;
 
+import org.jeecg.common.base.BaseMap;
+import org.jeecg.common.constant.GlobalConstants;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.jeecg.common.constant.GlobalConstants;
-import org.jeecg.common.base.BaseMap;
-import org.springframework.boot.CommandLineRunner;
-import org.springframework.beans.factory.annotation.Autowired;
 
 @SpringBootApplication
 @EnableFeignClients

@@ -1,7 +1,5 @@
 package com.aiurt.modules.system.service.impl;
 
-import cn.hutool.core.collection.CollUtil;
-import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.api.dto.OnlineAuthDTO;
 import com.aiurt.common.api.dto.message.*;
 import com.aiurt.common.aspect.UrlMatchEnum;
@@ -1160,22 +1158,7 @@ public class SysBaseApiImpl implements ISysBaseAPI {
         return sysDictService.loadDict(dictCode, keyword, pageSize);
     }
 
-    /**
-     * 根据字典code和对应value查找对应文本
-     *
-     * @param dictCode
-     * @param value
-     * @return
-     */
-    @Override
-    public String selectDictItems(String dictCode, String value) {
-        List<DictModel> ls = sysDictService.getDictItems(dictCode);
-        if (CollUtil.isNotEmpty(ls) && StrUtil.isNotEmpty(value)) {
-//            ls.stream()
-//					.filter(l -> l.getValue().equals(value)).collect(String::new).var
-        }
-        return "";
-    }
+
 
     @Override
     public Map<String, List<DictModel>> translateManyDict(String dictCodes, String keys) {
