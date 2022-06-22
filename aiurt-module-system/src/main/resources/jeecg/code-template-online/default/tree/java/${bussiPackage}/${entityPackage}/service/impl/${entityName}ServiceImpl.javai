@@ -1,8 +1,8 @@
 package ${bussiPackage}.${entityPackage}.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import org.jeecg.common.exception.JeecgBootException;
-import org.jeecg.common.util.oConvertUtils;
+import com.aiurt.common.exception.AiurtBootException;
+import com.aiurt.common.util.oConvertUtils;
 import org.jeecg.common.system.vo.SelectTreeModel;
 import ${bussiPackage}.${entityPackage}.entity.${entityName};
 import ${bussiPackage}.${entityPackage}.mapper.${entityName}Mapper;
@@ -56,7 +56,7 @@ public class ${entityName}ServiceImpl extends ServiceImpl<${entityName}Mapper, $
 	public void update${entityName}(${entityName} ${entityName?uncap_first}) {
 		${entityName} entity = this.getById(${entityName?uncap_first}.getId());
 		if(entity==null) {
-			throw new JeecgBootException("未找到对应实体");
+			throw new AiurtBootException("未找到对应实体");
 		}
 		String old_pid = entity.get${pidFieldName?cap_first}();
 		String new_pid = ${entityName?uncap_first}.get${pidFieldName?cap_first}();
@@ -74,7 +74,7 @@ public class ${entityName}ServiceImpl extends ServiceImpl<${entityName}Mapper, $
 
 	@Override
 	@Transactional(rollbackFor = Exception.class)
-	public void delete${entityName}(String id) throws JeecgBootException {
+	public void delete${entityName}(String id) throws AiurtBootException {
 		//查询选中节点下所有子节点一并删除
         id = this.queryTreeChildIds(id);
         if(id.indexOf(",")>0) {
@@ -103,7 +103,7 @@ public class ${entityName}ServiceImpl extends ServiceImpl<${entityName}Mapper, $
         }else{
             ${entityName} ${entityName?uncap_first} = this.getById(id);
             if(${entityName?uncap_first}==null) {
-                throw new JeecgBootException("未找到对应实体");
+                throw new AiurtBootException("未找到对应实体");
             }
             updateOldParentNode(${entityName?uncap_first}.get${pidFieldName?cap_first}());
             baseMapper.deleteById(id);
@@ -139,10 +139,10 @@ public class ${entityName}ServiceImpl extends ServiceImpl<${entityName}Mapper, $
             queryWrapper.eq(${entityName}::get${pidFieldName?cap_first}, parentCode);
             List<${entityName}> list = baseMapper.selectList(queryWrapper);
             if (list == null || list.size() == 0) {
-                throw new JeecgBootException("该编码【" + parentCode + "】不存在，请核实!");
+                throw new AiurtBootException("该编码【" + parentCode + "】不存在，请核实!");
             }
             if (list.size() > 1) {
-                throw new JeecgBootException("该编码【" + parentCode + "】存在多个，请核实!");
+                throw new AiurtBootException("该编码【" + parentCode + "】存在多个，请核实!");
             }
             pid = list.get(0).getId();
         }

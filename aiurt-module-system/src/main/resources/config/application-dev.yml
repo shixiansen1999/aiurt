@@ -53,7 +53,7 @@ spring:
             class: org.springframework.scheduling.quartz.LocalDataSourceJobStore
             driverDelegateClass: org.quartz.impl.jdbcjobstore.StdJDBCDelegate
             tablePrefix: QRTZ_
-            isClustered: true
+            isClustered: false
             misfireThreshold: 12000
             clusterCheckinInterval: 15000
           threadPool:

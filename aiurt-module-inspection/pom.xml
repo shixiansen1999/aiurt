@@ -18,7 +18,8 @@
         </dependency>
         <dependency>
             <groupId>com.aiurt.boot</groupId>
-            <artifactId>aiurt-base-core</artifactId>
+            <artifactId>aiurt-module-common</artifactId>
+            <version>1.0.0-RELEASE</version>
         </dependency>
 
         <dependency>
