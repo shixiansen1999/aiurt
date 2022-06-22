@@ -103,7 +103,7 @@ public class CommonCtroller {
     public Result<List<SelectTable>> queryDevice(@RequestParam(value = "majorCode", required = false) String majorCode) {
         LambdaQueryWrapper<CsSubsystem> queryWrapper = new LambdaQueryWrapper<>();
 
-        //todo 查询当前人员所管辖的子系统
+        //todo 查询当前人员所管辖的站所
         if (StrUtil.isNotBlank(majorCode)) {
             queryWrapper.eq(CsSubsystem::getMajorCode, majorCode);
         }
