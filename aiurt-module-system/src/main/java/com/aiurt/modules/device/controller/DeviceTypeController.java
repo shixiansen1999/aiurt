@@ -10,8 +10,8 @@ import java.net.URLDecoder;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.aiurt.boot.modules.device.entity.DeviceType;
-import com.aiurt.boot.modules.device.service.IDeviceTypeService;
+import com.aiurt.modules.device.entity.DeviceType;
+import com.aiurt.modules.device.service.IDeviceTypeService;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.query.QueryGenerator;
 

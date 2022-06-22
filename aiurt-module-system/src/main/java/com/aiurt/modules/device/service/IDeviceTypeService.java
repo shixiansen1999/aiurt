@@ -1,6 +1,6 @@
 package com.aiurt.modules.device.service;
 
-import com.aiurt.boot.modules.device.entity.DeviceType;
+import com.aiurt.modules.device.entity.DeviceType;
 import com.baomidou.mybatisplus.extension.service.IService;
 
 /**

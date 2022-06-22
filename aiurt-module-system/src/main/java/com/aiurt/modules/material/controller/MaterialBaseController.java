@@ -4,6 +4,7 @@ import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.modules.device.entity.Device;
 import com.aiurt.modules.device.entity.DeviceType;
+import com.aiurt.modules.device.service.IDeviceTypeService;
 import com.aiurt.modules.material.entity.MaterialBase;
 import com.aiurt.modules.material.entity.MaterialBaseType;
 import com.aiurt.modules.material.service.IMaterialBaseService;
@@ -41,6 +42,9 @@ public class MaterialBaseController {
 
     @Autowired
     private IMaterialBaseTypeService iMaterialBaseTypeService;
+
+    @Autowired
+    private IDeviceTypeService iDeviceTypeService;
 
     /**
      * 分页列表查询
@@ -143,10 +147,10 @@ public class MaterialBaseController {
     @DeleteMapping(value = "/delete")
     public Result<?> delete(@RequestParam(name = "id", required = true) String id) {
         try {
-//            MaterialBase materialBase = iMaterialBaseService.getById(id);
-//            String code = materialBase.getCode();
-//            //是否有对应的设备类型在使用该物资
-//            List<DeviceType> materialBaseList = iMaterialBaseService.list(new QueryWrapper<MaterialBase>().eq("base_type_code",baseTypeCode).eq("del_flag",0));
+            MaterialBase materialBase = iMaterialBaseService.getById(id);
+            String code = materialBase.getCode();
+            //是否有对应的设备类型在使用该物资
+//            List<DeviceType> deviceTypeList = iDeviceTypeService.list(new QueryWrapper<DeviceType>().eq(""))
 //            if(materialBaseList != null && materialBaseList.size()>0){
 //                return Result.error("该物资分类正在使用中，无法删除");
 //            }
