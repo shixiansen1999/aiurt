@@ -3,6 +3,7 @@ package com.aiurt.boot.entity.patrol.standard;
 import java.io.Serializable;
 
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
@@ -45,11 +46,19 @@ public class PatrolStandard implements Serializable {
 	@Excel(name = "专业code", width = 15)
     @ApiModelProperty(value = "专业code")
     private java.lang.String professionCode;
+    @Excel(name = "专业名称", width = 15)
+    @ApiModelProperty(value = "专业名称")
+    @TableField(exist = false)
+    private java.lang.String professionName;
 	/**适用系统code*/
 	@Excel(name = "适用系统code", width = 15)
     @ApiModelProperty(value = "适用系统code")
     private java.lang.String subsystemCode;
-	/**指定具体设备：0否 1 是*/
+    @Excel(name = "适用系统名称", width = 15)
+    @ApiModelProperty(value = "适用系统名称")
+    @TableField(exist = false)
+    private java.lang.String subsystemName;
+    /**指定具体设备：0否 1 是*/
 	@Excel(name = "指定具体设备：0否 1 是", width = 15)
     @ApiModelProperty(value = "指定具体设备：0否 1 是")
     private java.lang.Integer specifyDevice;
@@ -57,6 +66,10 @@ public class PatrolStandard implements Serializable {
 	@Excel(name = "设备类型code", width = 15)
     @ApiModelProperty(value = "设备类型code")
     private java.lang.String deviceTypeCode;
+    @Excel(name = "设备类型名称", width = 15)
+    @ApiModelProperty(value = "设备类型名称")
+    @TableField(exist = false)
+    private java.lang.String deviceTypeName;
 	/**生效状态：0停用 1启用*/
 	@Excel(name = "生效状态：0停用 1启用", width = 15)
     @ApiModelProperty(value = "生效状态：0停用 1启用")

@@ -1,6 +1,8 @@
 package com.aiurt.boot.standard.service;
 
 import com.aiurt.boot.entity.patrol.standard.PatrolStandard;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 
 /**
@@ -10,5 +12,12 @@ import com.baomidou.mybatisplus.extension.service.IService;
  * @Version: V1.0
  */
 public interface IPatrolStandardService extends IService<PatrolStandard> {
+    /**
+     * 分页查询
+     * @param page
+     * @param patrolStandard
+     * @return
+     */
+    IPage<PatrolStandard> pageList (Page page, PatrolStandard patrolStandard);
 
 }

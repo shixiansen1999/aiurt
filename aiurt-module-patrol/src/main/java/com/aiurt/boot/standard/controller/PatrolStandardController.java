@@ -1,6 +1,7 @@
 package com.aiurt.boot.standard.controller;
 
 import java.util.Arrays;
+import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.jeecg.common.api.vo.Result;
@@ -51,9 +52,8 @@ public class PatrolStandardController extends BaseController<PatrolStandard, IPa
 								   @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
 								   @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
 								   HttpServletRequest req) {
-		QueryWrapper<PatrolStandard> queryWrapper = QueryGenerator.initQueryWrapper(patrolStandard, req.getParameterMap());
 		Page<PatrolStandard> page = new Page<PatrolStandard>(pageNo, pageSize);
-		IPage<PatrolStandard> pageList = patrolStandardService.page(page, queryWrapper);
+		IPage<PatrolStandard> pageList = patrolStandardService.pageList(page, patrolStandard);
 		return Result.OK(pageList);
 	}
 
@@ -95,7 +95,9 @@ public class PatrolStandardController extends BaseController<PatrolStandard, IPa
 	@ApiOperation(value="patrol_standard-通过id删除", notes="patrol_standard-通过id删除")
 	@DeleteMapping(value = "/delete")
 	public Result<String> delete(@RequestParam(name="id",required=true) String id) {
-		patrolStandardService.removeById(id);
+		PatrolStandard patrolStandard = new PatrolStandard();
+		patrolStandard.setId(id); patrolStandard.setDelFlag(1);
+		patrolStandardService.updateById(patrolStandard);
 		return Result.OK("删除成功!");
 	}
 
@@ -109,7 +111,10 @@ public class PatrolStandardController extends BaseController<PatrolStandard, IPa
 	@ApiOperation(value="patrol_standard-批量删除", notes="patrol_standard-批量删除")
 	@DeleteMapping(value = "/deleteBatch")
 	public Result<String> deleteBatch(@RequestParam(name="ids",required=true) String ids) {
-		this.patrolStandardService.removeByIds(Arrays.asList(ids.split(",")));
+		List<String> id = Arrays.asList(ids.split(","));
+		for (String id1 :id){
+			this.delete(id1);
+		}
 		return Result.OK("批量删除成功!");
 	}
 
@@ -130,6 +135,12 @@ public class PatrolStandardController extends BaseController<PatrolStandard, IPa
 		return Result.OK(patrolStandard);
 	}
 
+	 @ApiOperation(value="patrol_standard-通过id查询", notes="patrol_standard-通过id查询")
+	 @GetMapping(value = "")
+	 public List<String> y(@RequestParam(name="id",required=true) String id) {
+
+		 return null;
+	 }
     /**
     * 导出excel
     *

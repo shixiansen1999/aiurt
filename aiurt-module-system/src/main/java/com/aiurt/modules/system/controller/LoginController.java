@@ -687,7 +687,7 @@ public class LoginController {
 			System.out.println(string1);
 			String signature = sha1(string1);
 			JSONObject obj = new JSONObject();
-			obj.put("appId","wwfc07c9f3a1c075aa");
+			obj.put("appId","ww19d88c8272303c7b");
 			obj.put("timestamp",time);
 			obj.put("nonceStr",noncestr);
 			obj.put("signature",signature);
