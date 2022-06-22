@@ -66,5 +66,8 @@ public class PatrolTaskDTO
     @Excel(name = "任务状态：0待指派、1待确认、2待执行、3已退回、4执行中、5待审核、6已完成", width = 15)
     @ApiModelProperty(value = "任务状态：0待指派、1待确认、2待执行、3已退回、4执行中、5待审核、6已完成")
     private java.lang.Integer status;
+    @Excel(name = "备注", width = 15)
+    @ApiModelProperty(value = "备注")
+    private java.lang.String remark;
 }
 

@@ -59,7 +59,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
     @Override
     public void getPatrolTaskReceive(PatrolTaskDTO patrolTaskDTO) {
         LambdaUpdateWrapper <PatrolTask> updateWrapper = new LambdaUpdateWrapper<>();
-        //领取：将待指派改为待执行
+        //领取：将待指派改为待执行（传任务id,状态）
         if(patrolTaskDTO.getStatus()==0)
         {//更新巡检状态
             updateWrapper.set(PatrolTask::getStatus,2).eq(PatrolTask::getId,patrolTaskDTO.getId());
@@ -92,11 +92,12 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
 
     @Override
     public void getPatrolTaskReturn(PatrolTaskDTO patrolTaskDTO) {
-        //更新巡检状态及添加退回人Id
+        //更新巡检状态、退回理由及添加退回人Id（传任务id、退回理由）
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         LambdaUpdateWrapper <PatrolTask> updateWrapper = new LambdaUpdateWrapper<>();
         updateWrapper.set(PatrolTask::getStatus,3)
                      .set(PatrolTask::getBackId,sysUser.getId())
+                     .set(PatrolTask::getRemark,patrolTaskDTO.getRemark())
                      .eq(PatrolTask::getId,patrolTaskDTO.getId());
         update(updateWrapper);
         PatrolTask patrolTask = patrolTaskMapper.selectById(patrolTaskDTO.getId());
