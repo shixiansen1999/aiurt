@@ -66,8 +66,8 @@ public class FaultController extends BaseController<Fault, IFaultService> {
 	@AutoLog(value = "故障上报")
 	@ApiOperation(value="故障上报", notes="故障上报")
 	@PostMapping(value = "/add")
-	public Result<String> add(@Validated @RequestBody Fault fault) {
-		faultService.save(fault);
+	public Result<?> add(@Validated @RequestBody Fault fault) {
+		faultService.add(fault);
 		return Result.OK("添加成功！");
 	}
 
