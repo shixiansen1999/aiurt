@@ -133,11 +133,12 @@ public class PatrolStandardController extends BaseController<PatrolStandard, IPa
 		return Result.OK(patrolStandard);
 	}
 
-	 @ApiOperation(value="patrol_standard-通过id查询", notes="patrol_standard-通过id查询")
-	 @GetMapping(value = "")
-	 public List<String> y(@RequestParam(name="id",required=true) String id) {
-
-		 return null;
+	 @ApiOperation(value="获取适用专业", notes="获取适用专业")
+	 @GetMapping(value = "/obtainApplicableDisciplines")
+	 public List<?> obtainApplicableDisciplines(@RequestParam(name="professionCode",required=false) String professionCode,
+												@RequestParam(name="subsystemCode",required=false) String subsystemCode) {
+		List<?> list = patrolStandardService.lists(professionCode,subsystemCode);
+		 return list;
 	 }
     /**
     * 导出excel
