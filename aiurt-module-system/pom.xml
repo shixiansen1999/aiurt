@@ -49,6 +49,13 @@
             <artifactId>aiurt-module-inspection</artifactId>
             <version>1.0.0-RELEASE</version>
         </dependency>
+
+        <dependency>
+            <groupId>com.aiurt.boot</groupId>
+            <artifactId>aiurt-module-fault-biz</artifactId>
+            <version>3.2.0</version>
+        </dependency>
+
         <dependency>
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate-core</artifactId>
