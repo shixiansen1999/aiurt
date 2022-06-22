@@ -1,6 +1,6 @@
 package com.aiurt.boot.standard.service.impl;
 
-import com.aiurt.boot.entity.patrol.standard.PatrolStandard;
+import com.aiurt.boot.standard.entity.PatrolStandard;
 import com.aiurt.boot.standard.mapper.PatrolStandardMapper;
 import com.aiurt.boot.standard.service.IPatrolStandardService;
 import com.baomidou.mybatisplus.core.metadata.IPage;

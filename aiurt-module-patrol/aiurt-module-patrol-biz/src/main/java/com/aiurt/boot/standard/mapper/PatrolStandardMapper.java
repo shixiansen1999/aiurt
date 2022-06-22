@@ -1,6 +1,6 @@
 package com.aiurt.boot.standard.mapper;
 
-import com.aiurt.boot.entity.patrol.standard.PatrolStandard;
+import com.aiurt.boot.standard.entity.PatrolStandard;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 

@@ -1,4 +1,4 @@
-package com.aiurt.boot.entity.patrol.plan;
+package com.aiurt.boot.plan.entity;
 
 import java.io.Serializable;
 

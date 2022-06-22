@@ -1,4 +1,4 @@
-package com.aiurt.boot.entity.patrol.task;
+package com.aiurt.boot.plan.entity;
 
 import java.io.Serializable;
 
@@ -16,43 +16,35 @@ import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
 
 /**
- * @Description: patrol_task_standard
+ * @Description: patrol_plan_device
  * @Author: aiurt
  * @Date:   2022-06-21
  * @Version: V1.0
  */
 @Data
-@TableName("patrol_task_standard")
+@TableName("patrol_plan_device")
 @Accessors(chain = true)
 @EqualsAndHashCode(callSuper = false)
-@ApiModel(value="patrol_task_standard对象", description="patrol_task_standard")
-public class PatrolTaskStandard implements Serializable {
+@ApiModel(value="patrol_plan_device对象", description="patrol_plan_device")
+public class PatrolPlanDevice implements Serializable {
     private static final long serialVersionUID = 1L;
 
 	/**主键ID*/
 	@TableId(type = IdType.ASSIGN_ID)
     @ApiModelProperty(value = "主键ID")
     private java.lang.String id;
-	/**巡检任务表ID*/
-	@Excel(name = "巡检任务表ID", width = 15)
-    @ApiModelProperty(value = "巡检任务表ID")
-    private java.lang.String taskId;
-	/**标准编号*/
-	@Excel(name = "标准编号", width = 15)
-    @ApiModelProperty(value = "标准编号")
-    private java.lang.String standardCode;
-	/**专业code*/
-	@Excel(name = "专业code", width = 15)
-    @ApiModelProperty(value = "专业code")
-    private java.lang.String professionCode;
-	/**系统code*/
-	@Excel(name = "系统code", width = 15)
-    @ApiModelProperty(value = "系统code")
-    private java.lang.String subsystemCode;
-	/**设备类型code*/
-	@Excel(name = "设备类型code", width = 15)
-    @ApiModelProperty(value = "设备类型code")
-    private java.lang.String deviceTypeCode;
+	/**巡检计划表ID*/
+	@Excel(name = "巡检计划表ID", width = 15)
+    @ApiModelProperty(value = "巡检计划表ID")
+    private java.lang.String planId;
+	/**巡检计划标准关联表ID*/
+	@Excel(name = "巡检计划标准关联表ID", width = 15)
+    @ApiModelProperty(value = "巡检计划标准关联表ID")
+    private java.lang.String planStandardId;
+	/**设备code*/
+	@Excel(name = "设备code", width = 15)
+    @ApiModelProperty(value = "设备code")
+    private java.lang.String deviceCode;
 	/**删除状态： 0未删除 1已删除*/
 	@Excel(name = "删除状态： 0未删除 1已删除", width = 15)
     @ApiModelProperty(value = "删除状态： 0未删除 1已删除")

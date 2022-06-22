@@ -1,9 +1,7 @@
-package com.aiurt.boot.entity.patrol.plan;
+package com.aiurt.boot.plan.entity;
 
 import java.io.Serializable;
-import java.io.UnsupportedEncodingException;
-import java.util.Date;
-import java.math.BigDecimal;
+
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
@@ -18,39 +16,31 @@ import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
 
 /**
- * @Description: patrol_plan_strategy
+ * @Description: patrol_plan_station
  * @Author: aiurt
- * @Date:   2022-06-22
+ * @Date:   2022-06-21
  * @Version: V1.0
  */
 @Data
-@TableName("patrol_plan_strategy")
+@TableName("patrol_plan_station")
 @Accessors(chain = true)
 @EqualsAndHashCode(callSuper = false)
-@ApiModel(value="patrol_plan_strategy对象", description="patrol_plan_strategy")
-public class PatrolPlanStrategy implements Serializable {
+@ApiModel(value="patrol_plan_station对象", description="patrol_plan_station")
+public class PatrolPlanStation implements Serializable {
     private static final long serialVersionUID = 1L;
 
 	/**主键*/
 	@TableId(type = IdType.ASSIGN_ID)
     @ApiModelProperty(value = "主键")
     private java.lang.String id;
-	/**计划编号*/
-	@Excel(name = "计划编号", width = 15)
-    @ApiModelProperty(value = "计划编号")
-    private java.lang.String planId;
-	/**巡检类型：1周巡、2月巡*/
-	@Excel(name = "巡检类型：1周巡、2月巡", width = 15)
-    @ApiModelProperty(value = "巡检类型：1周巡、2月巡")
-    private java.lang.Integer type;
-	/**巡检星期：1星期一、2星期二、3星期三、4星期四、5星期五、6星期六、7星期日*/
-	@Excel(name = "巡检星期：1星期一、2星期二、3星期三、4星期四、5星期五、6星期六、7星期日", width = 15)
-    @ApiModelProperty(value = "巡检星期：1星期一、2星期二、3星期三、4星期四、5星期五、6星期六、7星期日")
-    private java.lang.Integer week;
-	/**巡检周次：1第一周、2第二周、3第三周、4第四周*/
-	@Excel(name = "巡检周次：1第一周、2第二周、3第三周、4第四周", width = 15)
-    @ApiModelProperty(value = "巡检周次：1第一周、2第二周、3第三周、4第四周")
-    private java.lang.Integer time;
+	/**巡检计划编号*/
+	@Excel(name = "巡检计划编号", width = 15)
+    @ApiModelProperty(value = "巡检计划编号")
+    private java.lang.String planCode;
+	/**站所编号*/
+	@Excel(name = "站所编号", width = 15)
+    @ApiModelProperty(value = "站所编号")
+    private java.lang.String stationCode;
 	/**删除状态： 0未删除 1已删除*/
 	@Excel(name = "删除状态： 0未删除 1已删除", width = 15)
     @ApiModelProperty(value = "删除状态： 0未删除 1已删除")

@@ -1,6 +1,8 @@
 package com.aiurt.boot.task.service;
 
-import com.aiurt.boot.entity.patrol.task.PatrolTask;
+import com.aiurt.boot.task.entity.PatrolTask;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 
 /**
@@ -11,4 +13,5 @@ import com.baomidou.mybatisplus.extension.service.IService;
  */
 public interface IPatrolTaskService extends IService<PatrolTask> {
 
+    IPage<PatrolTask> getTaskList(Page<PatrolTask> page, PatrolTask patrolTask);
 }

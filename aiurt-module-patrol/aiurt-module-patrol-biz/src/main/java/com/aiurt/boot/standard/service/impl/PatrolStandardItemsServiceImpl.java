@@ -1,6 +1,6 @@
 package com.aiurt.boot.standard.service.impl;
 
-import com.aiurt.boot.entity.patrol.standard.PatrolStandardItems;
+import com.aiurt.boot.standard.entity.PatrolStandardItems;
 import com.aiurt.boot.standard.mapper.PatrolStandardItemsMapper;
 import com.aiurt.boot.standard.service.IPatrolStandardItemsService;
 import org.springframework.stereotype.Service;

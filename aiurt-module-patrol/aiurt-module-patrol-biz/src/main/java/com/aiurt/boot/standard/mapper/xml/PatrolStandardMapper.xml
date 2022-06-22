@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.aiurt.boot.standard.mapper.PatrolStandardMapper">
 
-    <select id="pageList" resultType="com.aiurt.boot.entity.patrol.standard.PatrolStandard">
+    <select id="pageList" resultType="com.aiurt.boot.standard.entity.PatrolStandard">
         select *,b.major_name as professionName, c.system_name as subsystemName ,d.name as deviceTypeName
                from patrol_standard as a
         left join cs_major b on a.profession_code =b.major_code

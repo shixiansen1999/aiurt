@@ -1,7 +1,9 @@
-package com.aiurt.boot.entity.patrol.plan;
+package com.aiurt.boot.task.entity;
 
 import java.io.Serializable;
-
+import java.io.UnsupportedEncodingException;
+import java.util.Date;
+import java.math.BigDecimal;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
@@ -16,35 +18,39 @@ import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
 
 /**
- * @Description: patrol_plan_device
+ * @Description: patrol_accessory
  * @Author: aiurt
  * @Date:   2022-06-21
  * @Version: V1.0
  */
 @Data
-@TableName("patrol_plan_device")
+@TableName("patrol_accessory")
 @Accessors(chain = true)
 @EqualsAndHashCode(callSuper = false)
-@ApiModel(value="patrol_plan_device对象", description="patrol_plan_device")
-public class PatrolPlanDevice implements Serializable {
+@ApiModel(value="patrol_accessory对象", description="patrol_accessory")
+public class PatrolAccessory implements Serializable {
     private static final long serialVersionUID = 1L;
 
-	/**主键ID*/
+	/**主键*/
 	@TableId(type = IdType.ASSIGN_ID)
-    @ApiModelProperty(value = "主键ID")
+    @ApiModelProperty(value = "主键")
     private java.lang.String id;
-	/**巡检计划表ID*/
-	@Excel(name = "巡检计划表ID", width = 15)
-    @ApiModelProperty(value = "巡检计划表ID")
-    private java.lang.String planId;
-	/**巡检计划标准关联表ID*/
-	@Excel(name = "巡检计划标准关联表ID", width = 15)
-    @ApiModelProperty(value = "巡检计划标准关联表ID")
-    private java.lang.String planStandardId;
-	/**设备code*/
-	@Excel(name = "设备code", width = 15)
-    @ApiModelProperty(value = "设备code")
-    private java.lang.String deviceCode;
+	/**巡检任务设备关联表ID*/
+	@Excel(name = "巡检任务设备关联表ID", width = 15)
+    @ApiModelProperty(value = "巡检任务设备关联表ID")
+    private java.lang.String taskDeviceId;
+	/**附件名称*/
+	@Excel(name = "附件名称", width = 15)
+    @ApiModelProperty(value = "附件名称")
+    private java.lang.String name;
+	/**附件地址*/
+	@Excel(name = "附件地址", width = 15)
+    @ApiModelProperty(value = "附件地址")
+    private java.lang.String address;
+	/**备注*/
+	@Excel(name = "备注", width = 15)
+    @ApiModelProperty(value = "备注")
+    private java.lang.String remark;
 	/**删除状态： 0未删除 1已删除*/
 	@Excel(name = "删除状态： 0未删除 1已删除", width = 15)
     @ApiModelProperty(value = "删除状态： 0未删除 1已删除")

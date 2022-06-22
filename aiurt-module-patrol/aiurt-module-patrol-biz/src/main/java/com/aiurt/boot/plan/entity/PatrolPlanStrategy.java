@@ -1,4 +1,4 @@
-package com.aiurt.boot.entity.patrol.task;
+package com.aiurt.boot.plan.entity;
 
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
@@ -18,39 +18,39 @@ import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
 
 /**
- * @Description: patrol_accessory
+ * @Description: patrol_plan_strategy
  * @Author: aiurt
- * @Date:   2022-06-21
+ * @Date:   2022-06-22
  * @Version: V1.0
  */
 @Data
-@TableName("patrol_accessory")
+@TableName("patrol_plan_strategy")
 @Accessors(chain = true)
 @EqualsAndHashCode(callSuper = false)
-@ApiModel(value="patrol_accessory对象", description="patrol_accessory")
-public class PatrolAccessory implements Serializable {
+@ApiModel(value="patrol_plan_strategy对象", description="patrol_plan_strategy")
+public class PatrolPlanStrategy implements Serializable {
     private static final long serialVersionUID = 1L;
 
 	/**主键*/
 	@TableId(type = IdType.ASSIGN_ID)
     @ApiModelProperty(value = "主键")
     private java.lang.String id;
-	/**巡检任务设备关联表ID*/
-	@Excel(name = "巡检任务设备关联表ID", width = 15)
-    @ApiModelProperty(value = "巡检任务设备关联表ID")
-    private java.lang.String taskDeviceId;
-	/**附件名称*/
-	@Excel(name = "附件名称", width = 15)
-    @ApiModelProperty(value = "附件名称")
-    private java.lang.String name;
-	/**附件地址*/
-	@Excel(name = "附件地址", width = 15)
-    @ApiModelProperty(value = "附件地址")
-    private java.lang.String address;
-	/**备注*/
-	@Excel(name = "备注", width = 15)
-    @ApiModelProperty(value = "备注")
-    private java.lang.String remark;
+	/**计划编号*/
+	@Excel(name = "计划编号", width = 15)
+    @ApiModelProperty(value = "计划编号")
+    private java.lang.String planId;
+	/**巡检类型：1周巡、2月巡*/
+	@Excel(name = "巡检类型：1周巡、2月巡", width = 15)
+    @ApiModelProperty(value = "巡检类型：1周巡、2月巡")
+    private java.lang.Integer type;
+	/**巡检星期：1星期一、2星期二、3星期三、4星期四、5星期五、6星期六、7星期日*/
+	@Excel(name = "巡检星期：1星期一、2星期二、3星期三、4星期四、5星期五、6星期六、7星期日", width = 15)
+    @ApiModelProperty(value = "巡检星期：1星期一、2星期二、3星期三、4星期四、5星期五、6星期六、7星期日")
+    private java.lang.Integer week;
+	/**巡检周次：1第一周、2第二周、3第三周、4第四周*/
+	@Excel(name = "巡检周次：1第一周、2第二周、3第三周、4第四周", width = 15)
+    @ApiModelProperty(value = "巡检周次：1第一周、2第二周、3第三周、4第四周")
+    private java.lang.Integer time;
 	/**删除状态： 0未删除 1已删除*/
 	@Excel(name = "删除状态： 0未删除 1已删除", width = 15)
     @ApiModelProperty(value = "删除状态： 0未删除 1已删除")

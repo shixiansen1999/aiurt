@@ -1,4 +1,4 @@
-package com.aiurt.boot.entity.patrol.task;
+package com.aiurt.boot.plan.entity;
 
 import java.io.Serializable;
 
@@ -16,35 +16,31 @@ import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
 
 /**
- * @Description: patrol_task_user
+ * @Description: patrol_plan_organization
  * @Author: aiurt
  * @Date:   2022-06-21
  * @Version: V1.0
  */
 @Data
-@TableName("patrol_task_user")
+@TableName("patrol_plan_organization")
 @Accessors(chain = true)
 @EqualsAndHashCode(callSuper = false)
-@ApiModel(value="patrol_task_user对象", description="patrol_task_user")
-public class PatrolTaskUser implements Serializable {
+@ApiModel(value="patrol_plan_organization对象", description="patrol_plan_organization")
+public class PatrolPlanOrganization implements Serializable {
     private static final long serialVersionUID = 1L;
 
 	/**主键*/
 	@TableId(type = IdType.ASSIGN_ID)
     @ApiModelProperty(value = "主键")
     private java.lang.String id;
-	/**任务编号*/
-	@Excel(name = "任务编号", width = 15)
-    @ApiModelProperty(value = "任务编号")
-    private java.lang.String taskCode;
-	/**巡检用户ID*/
-	@Excel(name = "巡检用户ID", width = 15)
-    @ApiModelProperty(value = "巡检用户ID")
-    private java.lang.String userId;
-	/**巡检用户名*/
-	@Excel(name = "巡检用户名", width = 15)
-    @ApiModelProperty(value = "巡检用户名")
-    private java.lang.String userName;
+	/**巡检计划编号*/
+	@Excel(name = "巡检计划编号", width = 15)
+    @ApiModelProperty(value = "巡检计划编号")
+    private java.lang.String planCode;
+	/**组织机构编号*/
+	@Excel(name = "组织机构编号", width = 15)
+    @ApiModelProperty(value = "组织机构编号")
+    private java.lang.String organizationCode;
 	/**删除状态： 0未删除 1已删除*/
 	@Excel(name = "删除状态： 0未删除 1已删除", width = 15)
     @ApiModelProperty(value = "删除状态： 0未删除 1已删除")

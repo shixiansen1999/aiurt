@@ -1,4 +1,4 @@
-package com.aiurt.boot.entity.patrol.task;
+package com.aiurt.boot.task.entity;
 
 import java.io.Serializable;
 

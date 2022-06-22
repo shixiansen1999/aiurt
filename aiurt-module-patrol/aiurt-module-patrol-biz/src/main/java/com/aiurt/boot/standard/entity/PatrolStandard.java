@@ -1,8 +1,9 @@
-package com.aiurt.boot.entity.patrol.plan;
+package com.aiurt.boot.standard.entity;
 
 import java.io.Serializable;
 
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
@@ -16,43 +17,71 @@ import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
 
 /**
- * @Description: patrol_plan_standard
+ * @Description: patrol_standard
  * @Author: aiurt
  * @Date:   2022-06-21
  * @Version: V1.0
  */
 @Data
-@TableName("patrol_plan_standard")
+@TableName("patrol_standard")
 @Accessors(chain = true)
 @EqualsAndHashCode(callSuper = false)
-@ApiModel(value="patrol_plan_standard对象", description="patrol_plan_standard")
-public class PatrolPlanStandard implements Serializable {
+@ApiModel(value="patrol_standard对象", description="patrol_standard")
+public class PatrolStandard implements Serializable {
     private static final long serialVersionUID = 1L;
 
-	/**主键*/
+	/**主键id*/
 	@TableId(type = IdType.ASSIGN_ID)
-    @ApiModelProperty(value = "主键")
+    @ApiModelProperty(value = "主键id")
     private java.lang.String id;
-	/**计划表ID*/
-	@Excel(name = "计划表ID", width = 15)
-    @ApiModelProperty(value = "计划表ID")
-    private java.lang.String planId;
 	/**标准编号*/
 	@Excel(name = "标准编号", width = 15)
     @ApiModelProperty(value = "标准编号")
-    private java.lang.String standardCode;
+    private java.lang.String code;
+	/**巡检表名*/
+	@Excel(name = "巡检表名", width = 15)
+    @ApiModelProperty(value = "巡检表名")
+    private java.lang.String name;
 	/**专业code*/
 	@Excel(name = "专业code", width = 15)
     @ApiModelProperty(value = "专业code")
     private java.lang.String professionCode;
-	/**系统code*/
-	@Excel(name = "系统code", width = 15)
-    @ApiModelProperty(value = "系统code")
+    @Excel(name = "专业名称", width = 15)
+    @ApiModelProperty(value = "专业名称")
+    @TableField(exist = false)
+    private java.lang.String professionName;
+	/**适用系统code*/
+	@Excel(name = "适用系统code", width = 15)
+    @ApiModelProperty(value = "适用系统code")
     private java.lang.String subsystemCode;
+    @Excel(name = "适用系统名称", width = 15)
+    @ApiModelProperty(value = "适用系统名称")
+    @TableField(exist = false)
+    private java.lang.String subsystemName;
+    /**指定具体设备：0否 1 是*/
+	@Excel(name = "指定具体设备：0否 1 是", width = 15)
+    @ApiModelProperty(value = "指定具体设备：0否 1 是")
+    private java.lang.Integer specifyDevice;
 	/**设备类型code*/
 	@Excel(name = "设备类型code", width = 15)
     @ApiModelProperty(value = "设备类型code")
     private java.lang.String deviceTypeCode;
+    @Excel(name = "设备类型名称", width = 15)
+    @ApiModelProperty(value = "设备类型名称")
+    @TableField(exist = false)
+    private java.lang.String deviceTypeName;
+	/**生效状态：0停用 1启用*/
+	@Excel(name = "生效状态：0停用 1启用", width = 15)
+    @ApiModelProperty(value = "生效状态：0停用 1启用")
+    private java.lang.Integer status;
+	/**标准表说明*/
+	@Excel(name = "标准表说明", width = 15)
+    @ApiModelProperty(value = "标准表说明")
+    private java.lang.String remark;
+	/**标准制定人ID*/
+	@Excel(name = "标准制定人ID", width = 15)
+    @ApiModelProperty(value = "标准制定人ID")
+    private java.lang.String userId;
 	/**删除状态： 0未删除 1已删除*/
 	@Excel(name = "删除状态： 0未删除 1已删除", width = 15)
     @ApiModelProperty(value = "删除状态： 0未删除 1已删除")

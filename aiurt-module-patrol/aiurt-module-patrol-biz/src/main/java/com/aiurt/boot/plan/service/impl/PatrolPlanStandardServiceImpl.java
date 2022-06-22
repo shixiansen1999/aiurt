@@ -1,6 +1,6 @@
 package com.aiurt.boot.plan.service.impl;
 
-import com.aiurt.boot.entity.patrol.plan.PatrolPlanStandard;
+import com.aiurt.boot.plan.entity.PatrolPlanStandard;
 import com.aiurt.boot.plan.mapper.PatrolPlanStandardMapper;
 import com.aiurt.boot.plan.service.IPatrolPlanStandardService;
 import org.springframework.stereotype.Service;

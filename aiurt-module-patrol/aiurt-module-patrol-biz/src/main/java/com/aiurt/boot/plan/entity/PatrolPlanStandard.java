@@ -1,4 +1,4 @@
-package com.aiurt.boot.entity.patrol.plan;
+package com.aiurt.boot.plan.entity;
 
 import java.io.Serializable;
 
@@ -16,31 +16,43 @@ import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
 
 /**
- * @Description: patrol_plan_organization
+ * @Description: patrol_plan_standard
  * @Author: aiurt
  * @Date:   2022-06-21
  * @Version: V1.0
  */
 @Data
-@TableName("patrol_plan_organization")
+@TableName("patrol_plan_standard")
 @Accessors(chain = true)
 @EqualsAndHashCode(callSuper = false)
-@ApiModel(value="patrol_plan_organization对象", description="patrol_plan_organization")
-public class PatrolPlanOrganization implements Serializable {
+@ApiModel(value="patrol_plan_standard对象", description="patrol_plan_standard")
+public class PatrolPlanStandard implements Serializable {
     private static final long serialVersionUID = 1L;
 
 	/**主键*/
 	@TableId(type = IdType.ASSIGN_ID)
     @ApiModelProperty(value = "主键")
     private java.lang.String id;
-	/**巡检计划编号*/
-	@Excel(name = "巡检计划编号", width = 15)
-    @ApiModelProperty(value = "巡检计划编号")
-    private java.lang.String planCode;
-	/**组织机构编号*/
-	@Excel(name = "组织机构编号", width = 15)
-    @ApiModelProperty(value = "组织机构编号")
-    private java.lang.String organizationCode;
+	/**计划表ID*/
+	@Excel(name = "计划表ID", width = 15)
+    @ApiModelProperty(value = "计划表ID")
+    private java.lang.String planId;
+	/**标准编号*/
+	@Excel(name = "标准编号", width = 15)
+    @ApiModelProperty(value = "标准编号")
+    private java.lang.String standardCode;
+	/**专业code*/
+	@Excel(name = "专业code", width = 15)
+    @ApiModelProperty(value = "专业code")
+    private java.lang.String professionCode;
+	/**系统code*/
+	@Excel(name = "系统code", width = 15)
+    @ApiModelProperty(value = "系统code")
+    private java.lang.String subsystemCode;
+	/**设备类型code*/
+	@Excel(name = "设备类型code", width = 15)
+    @ApiModelProperty(value = "设备类型code")
+    private java.lang.String deviceTypeCode;
 	/**删除状态： 0未删除 1已删除*/
 	@Excel(name = "删除状态： 0未删除 1已删除", width = 15)
     @ApiModelProperty(value = "删除状态： 0未删除 1已删除")

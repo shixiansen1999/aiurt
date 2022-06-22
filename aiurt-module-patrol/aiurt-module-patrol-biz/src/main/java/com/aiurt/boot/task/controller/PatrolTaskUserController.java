@@ -5,7 +5,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.query.QueryGenerator;
-import com.aiurt.boot.entity.patrol.task.PatrolTaskUser;
+import com.aiurt.boot.task.entity.PatrolTaskUser;
 import com.aiurt.boot.task.service.IPatrolTaskUserService;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;

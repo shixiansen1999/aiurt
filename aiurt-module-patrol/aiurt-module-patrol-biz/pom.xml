@@ -18,12 +18,10 @@
     <dependencies>
         <dependency>
             <groupId>com.aiurt.boot</groupId>
-            <artifactId>aiurt-system-local-api</artifactId>
+            <artifactId>aiurt-module-patrol-api</artifactId>
+            <version>3.2.0</version>
         </dependency>
-        <dependency>
-            <groupId>com.aiurt.boot</groupId>
-            <artifactId>aiurt-base-core</artifactId>
-        </dependency>
+
 
         <dependency>
             <groupId>com.belerweb</groupId>

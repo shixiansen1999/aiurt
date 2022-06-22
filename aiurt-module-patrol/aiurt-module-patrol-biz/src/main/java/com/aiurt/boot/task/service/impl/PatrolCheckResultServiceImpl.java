@@ -1,6 +1,6 @@
 package com.aiurt.boot.task.service.impl;
 
-import com.aiurt.boot.entity.patrol.task.PatrolCheckResult;
+import com.aiurt.boot.task.entity.PatrolCheckResult;
 import com.aiurt.boot.task.mapper.PatrolCheckResultMapper;
 import com.aiurt.boot.task.service.IPatrolCheckResultService;
 import org.springframework.stereotype.Service;

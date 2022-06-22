@@ -1,6 +1,6 @@
 package com.aiurt.boot.plan.mapper;
 
-import com.aiurt.boot.entity.patrol.plan.PatrolPlan;
+import com.aiurt.boot.plan.entity.PatrolPlan;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
 /**
