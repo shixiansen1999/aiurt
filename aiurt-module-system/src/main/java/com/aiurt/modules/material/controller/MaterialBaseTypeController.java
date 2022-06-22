@@ -131,12 +131,14 @@ public class MaterialBaseTypeController {
         List<CsSubsystem> systemList = csSubsystemService.list(new LambdaQueryWrapper<CsSubsystem>().eq(CsSubsystem::getDelFlag,0));
         List<MaterialBaseType> materialBaseTypeList = iMaterialBaseTypeService.list(new LambdaQueryWrapper<MaterialBaseType>().eq(MaterialBaseType::getDelFlag,0));
         systemList.forEach(csSubsystem -> {
-            List sysList = materialBaseTypeList.stream().filter(materialBaseType-> materialBaseType.getSystemCode().equals(csSubsystem.getSystemCode())).collect(Collectors.toList());
+            List sysList = materialBaseTypeList.stream().filter(materialBaseType-> csSubsystem.getSystemCode().equals(materialBaseType.getSystemCode())).collect(Collectors.toList());
             csSubsystem.setMaterialBaseTypeList(sysList);
         });
         majorList.forEach(major -> {
             List sysList = systemList.stream().filter(system-> system.getMajorCode().equals(major.getMajorCode())).collect(Collectors.toList());
             major.setChildren(sysList);
+            List sysListType = materialBaseTypeList.stream().filter(materialBaseType-> major.getMajorCode().equals(materialBaseType.getMajorCode())&&(materialBaseType.getSystemCode()==null || "".equals(materialBaseType.getSystemCode()))).collect(Collectors.toList());
+            major.setMaterialBaseTypeList(sysListType);
         });
         return Result.OK(majorList);
     }
@@ -158,7 +160,7 @@ public class MaterialBaseTypeController {
             @RequestParam(name = "id", required = false) String id,
             HttpServletRequest req) {
         Result<List<MaterialBaseType>> result = new Result<List<MaterialBaseType>>();
-        QueryWrapper<MaterialBaseType> queryWrapper = new QueryWrapper<MaterialBaseType>().eq("device_del_flag", 0);
+        QueryWrapper<MaterialBaseType> queryWrapper = new QueryWrapper<MaterialBaseType>().eq("del_flag", 0);
         if(majorCode != null && !"".equals(majorCode)){
             queryWrapper.eq("major_code", majorCode);
         }
@@ -268,6 +270,10 @@ public class MaterialBaseTypeController {
             if(materialBaseList != null && materialBaseList.size()>0){
                 return Result.error("该物资分类正在使用中，无法删除");
             }
+            List<MaterialBaseType> materialBaseTypeList = iMaterialBaseTypeService.list(new QueryWrapper<MaterialBaseType>().eq("pid",id));
+            if(materialBaseTypeList != null && materialBaseTypeList.size()>0){
+                return Result.error("该物资分类正在使用中，无法删除");
+            }
             materialBaseType.setDelFlag(1);
             iMaterialBaseTypeService.updateById(materialBaseType);
         } catch (Exception e) {
@@ -285,8 +291,8 @@ public class MaterialBaseTypeController {
     @AutoLog(value = "物资分类-批量删除")
     @ApiOperation(value = "物资分类-批量删除", notes = "物资分类-批量删除")
     @DeleteMapping(value = "/deleteBatch")
-    public Result<Device> deleteBatch(@RequestParam(name = "ids", required = true) String ids) {
-        Result<Device> result = new Result<Device>();
+    public Result<String> deleteBatch(@RequestParam(name = "ids", required = true) String ids) {
+        Result<String> result = new Result<String>();
         if (ids == null || "".equals(ids.trim())) {
             result.error500("参数不识别！");
         } else {
@@ -296,7 +302,8 @@ public class MaterialBaseTypeController {
                 MaterialBaseType materialBaseType = iMaterialBaseTypeService.getById(id);
                 String baseTypeCode = materialBaseType.getBaseTypeCode();
                 List<MaterialBase> materialBaseList = iMaterialBaseService.list(new QueryWrapper<MaterialBase>().eq("base_type_code",baseTypeCode).eq("del_flag",0));
-                if(materialBaseList != null && materialBaseList.size()>0){
+                List<MaterialBaseType> materialBaseTypeList = iMaterialBaseTypeService.list(new QueryWrapper<MaterialBaseType>().eq("pid",id));
+                if((materialBaseList != null && materialBaseList.size()>0) || (materialBaseTypeList != null && materialBaseTypeList.size()>0)){
                     res += "baseTypeCode,";
                 }else{
                     materialBaseType.setDelFlag(1);

@@ -114,4 +114,8 @@ public class MaterialBaseType {
 	@ApiModelProperty(value = "子集")
 	@TableField(exist = false)
 	private  List<MaterialBaseType>  materialBaseTypeList;
+
+	@ApiModelProperty(value = "备用字段")
+	@TableField(exist = false)
+	private String byType = "wzfl";
 }
