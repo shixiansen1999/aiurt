@@ -1,6 +1,11 @@
 package com.aiurt.boot.manager;
 
+import com.aiurt.boot.manager.mapper.InspectionManagerMapper;
 import org.springframework.stereotype.Service;
+
+import javax.annotation.Resource;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author wgp
@@ -10,6 +15,20 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class InspectionManager {
+
+
+    @Resource
+    private InspectionManagerMapper inspectionManagerMapper;
+    /**
+     * 翻译专业信息
+     *
+     * @param codeList
+     * @return
+     */
+    public String translateMajor(List<String> codeList) {
+        List<String> result = new ArrayList<>();
+        return "";
+    }
 
 
 }

@@ -2,15 +2,11 @@ package com.aiurt.modules.material.controller;
 
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.exception.AiurtBootException;
-import com.aiurt.modules.device.entity.Device;
 import com.aiurt.modules.device.entity.DeviceAssembly;
 import com.aiurt.modules.device.entity.DeviceCompose;
-import com.aiurt.modules.device.entity.DeviceType;
 import com.aiurt.modules.device.service.IDeviceAssemblyService;
 import com.aiurt.modules.device.service.IDeviceComposeService;
-import com.aiurt.modules.device.service.IDeviceTypeService;
 import com.aiurt.modules.material.entity.MaterialBase;
-import com.aiurt.modules.material.entity.MaterialBaseType;
 import com.aiurt.modules.material.service.IMaterialBaseService;
 import com.aiurt.modules.material.service.IMaterialBaseTypeService;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -118,7 +114,7 @@ public class MaterialBaseController {
 
     @AutoLog(value = "物资列表查询-无分页")
     @ApiOperation(value = "物资列表查询-无分页", notes = "物资列表查询-无分页")
-    @GetMapping(value = "/list")
+    @GetMapping(value = "/listnoPage")
     public Result<?> queryPageList(
                                      @RequestParam(name = "majorCode", required = false) String majorCode,
                                      @RequestParam(name = "systemCode", required = false) String systemCode,

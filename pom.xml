@@ -39,7 +39,7 @@
 		<commons-beanutils.version>1.9.4</commons-beanutils.version>
 		<guava.version>29.0-jre</guava.version>
 
-		<!-- ??¨°? -->
+		<!-- ??ï¿½ï¿½? -->
 		<mybatis-plus.version>3.5.1</mybatis-plus.version>
 		<dynamic-datasource-spring-boot-starter.version>3.2.0</dynamic-datasource-spring-boot-starter.version>
 		<minidao.version>1.9.0</minidao.version>
@@ -65,9 +65,8 @@
 	<modules>
         <module>aiurt-base</module>
         <module>aiurt-module-system</module>
-		<module>aiurt-devops</module>
+<!--		<module>aiurt-devops</module>-->
         <module>aiurt-module-patrol</module>
-        <module>aiurt-module-common</module>
 		<module>aiurt-module-fault</module>
     <module>aiurt-module-inspection</module>
   </modules>
