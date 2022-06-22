@@ -26,4 +26,24 @@
         </if>
         order by a.create_time desc
     </select>
+    <select id="list" resultType="com.aiurt.boot.standard.dto.InspectionStandardDto">
+        <if test="professionCode ==null and subsystemCode == null">
+        select b.major_name as professionName,b.major_code as professionCode
+        from cs_major as b
+        where
+        b.del_flag =0
+        </if>
+        <if test="professionCode !=null and subsystemCode == null">
+            SELECT c.system_name as subsystemName, c.system_code as subsystemCode
+            FROM cs_subsystem c
+            WHERE c.del_flag =0 and c.major_code= #{professionCode}
+        </if>
+        <if test="professionCode !=null and subsystemCode != null ">
+            SELECT d.name as deviceTypeName ,d.code as deviceTypeCode
+            FROM device_type d
+            WHERE d.del_flag =0 and d.major_code= #{professionCode}
+            AND d.system_code = #{subsystemCode}
+        </if>
+    </select>
+
 </mapper>
