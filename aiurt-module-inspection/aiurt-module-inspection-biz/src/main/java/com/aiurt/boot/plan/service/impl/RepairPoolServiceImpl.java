@@ -35,6 +35,7 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
         queryWrapper.orderByAsc("type");
         List<RepairPool> repairPoolList = baseMapper.selectList(queryWrapper);
         // 专业
+
         // 子系统
         // 组织机构
         // 站点
