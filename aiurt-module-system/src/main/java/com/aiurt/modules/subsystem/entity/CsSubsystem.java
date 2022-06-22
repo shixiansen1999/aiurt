@@ -6,6 +6,7 @@ import java.util.Date;
 import java.math.BigDecimal;
 import java.util.List;
 
+import com.aiurt.modules.material.entity.MaterialBaseType;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
@@ -80,4 +81,8 @@ public class CsSubsystem implements Serializable {
     @ApiModelProperty(value = "子系统人员")
     @TableField(exist = false)
     private List<CsSubsystemUser> systemUserList;
+    /**子系统人员*/
+    @ApiModelProperty(value = "子系统下的物资分类")
+    @TableField(exist = false)
+    private List<MaterialBaseType> materialBaseTypeList;
 }
