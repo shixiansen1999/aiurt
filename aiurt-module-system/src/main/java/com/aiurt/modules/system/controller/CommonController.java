@@ -1,15 +1,27 @@
 package com.aiurt.modules.system.controller;
+import java.util.Date;
 
+import cn.hutool.core.util.StrUtil;
+import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.util.CommonUtils;
 import com.aiurt.common.util.RestUtil;
 import com.aiurt.common.util.TokenUtils;
 import com.aiurt.common.util.oConvertUtils;
+import com.aiurt.modules.basic.entity.SysAttachment;
+import com.aiurt.modules.basic.service.ISysAttachmentService;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
+import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FilenameUtils;
 import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.exception.JeecgBootException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -27,6 +39,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
 import java.net.URLDecoder;
+import java.util.Objects;
+
 /**
  * <p>
  * 用户表 前端控制器
@@ -38,6 +52,7 @@ import java.net.URLDecoder;
 @Slf4j
 @RestController
 @RequestMapping("/sys/common")
+@Api(tags = "文件上传下载")
 public class CommonController {
 
     @Value(value = "${jeecg.path.upload}")
@@ -48,6 +63,9 @@ public class CommonController {
      */
     @Value(value="${jeecg.uploadType}")
     private String uploadType;
+
+    @Autowired
+    private ISysAttachmentService sysAttachmentService;
 
     /**
      * @Author 政辉
@@ -65,6 +83,12 @@ public class CommonController {
      * @return
      */
     @PostMapping(value = "/upload")
+    @ApiOperation("文件上传")
+    @AutoLog("文件上传")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name="业务路径",value="biz",required=false,paramType="form"),
+            @ApiImplicitParam(name="文件",value="file",required=true,paramType="form")
+    })
     public Result<?> upload(HttpServletRequest request, HttpServletResponse response) {
         Result<?> result = new Result<>();
         String savePath = "";
@@ -93,24 +117,25 @@ public class CommonController {
             //update-begin-author:lvdandan date:20200928 for:修改JEditor编辑器本地上传
             savePath = this.uploadLocal(file,bizPath);
             //update-begin-author:lvdandan date:20200928 for:修改JEditor编辑器本地上传
-            /**  富文本编辑器及markdown本地上传时，采用返回链接方式
-            //针对jeditor编辑器如何使 lcaol模式，采用 base64格式存储
-            String jeditor = request.getParameter("jeditor");
-            if(oConvertUtils.isNotEmpty(jeditor)){
-                result.setMessage(CommonConstant.UPLOAD_TYPE_LOCAL);
-                result.setSuccess(true);
-                return result;
-            }else{
-                savePath = this.uploadLocal(file,bizPath);
-            }
-            */
         }else{
             //update-begin-author:taoyan date:20200814 for:文件上传改造
             savePath = CommonUtils.upload(file, bizPath, uploadType);
             //update-end-author:taoyan date:20200814 for:文件上传改造
         }
         if(oConvertUtils.isNotEmpty(savePath)){
-            result.setMessage(savePath);
+            // 文件名称
+            String originalFilename = file.getOriginalFilename();
+            // 保存到系统文件附件库
+            SysAttachment sysAttachment = new SysAttachment();
+
+            sysAttachment.setFilePath(savePath);
+            sysAttachment.setFileName(originalFilename);
+            sysAttachment.setFileType(FilenameUtils.getExtension(originalFilename));
+            sysAttachment.setType(uploadType);
+            sysAttachment.setDelFlag(0);
+
+            sysAttachmentService.save(sysAttachment);
+            result.setMessage(sysAttachment.getId());
             result.setSuccess(true);
         }else {
             result.setMessage("上传失败！");
@@ -161,42 +186,6 @@ public class CommonController {
         return "";
     }
 
-//	@PostMapping(value = "/upload2")
-//	public Result<?> upload2(HttpServletRequest request, HttpServletResponse response) {
-//		Result<?> result = new Result<>();
-//		try {
-//			String ctxPath = uploadpath;
-//			String fileName = null;
-//			String bizPath = "files";
-//			String tempBizPath = request.getParameter("biz");
-//			if(oConvertUtils.isNotEmpty(tempBizPath)){
-//				bizPath = tempBizPath;
-//			}
-//			String nowday = new SimpleDateFormat("yyyyMMdd").format(new Date());
-//			File file = new File(ctxPath + File.separator + bizPath + File.separator + nowday);
-//			if (!file.exists()) {
-//				file.mkdirs();// 创建文件根目录
-//			}
-//			MultipartHttpServletRequest multipartRequest = (MultipartHttpServletRequest) request;
-//			MultipartFile mf = multipartRequest.getFile("file");// 获取上传文件对象
-//			String orgName = mf.getOriginalFilename();// 获取文件名
-//			fileName = orgName.substring(0, orgName.lastIndexOf(".")) + "_" + System.currentTimeMillis() + orgName.substring(orgName.indexOf("."));
-//			String savePath = file.getPath() + File.separator + fileName;
-//			File savefile = new File(savePath);
-//			FileCopyUtils.copy(mf.getBytes(), savefile);
-//			String dbpath = bizPath + File.separator + nowday + File.separator + fileName;
-//			if (dbpath.contains("\\")) {
-//				dbpath = dbpath.replace("\\", "/");
-//			}
-//			result.setMessage(dbpath);
-//			result.setSuccess(true);
-//		} catch (IOException e) {
-//			result.setSuccess(false);
-//			result.setMessage(e.getMessage());
-//			log.error(e.getMessage(), e);
-//		}
-//		return result;
-//	}
 
     /**
      * 预览图片&下载文件
@@ -220,24 +209,24 @@ public class CommonController {
             if (imgPath.endsWith(",")) {
                 imgPath = imgPath.substring(0, imgPath.length() - 1);
             }
-            String filePath = uploadpath + File.separator + imgPath;
+
+            SysAttachment sysAttachment = sysAttachmentService.getById(imgPath);
+
+            if (Objects.isNull(sysAttachment)) {
+                downloadLocalFile(response, imgPath, "");
+                return;
+            }
+
+            String filePath = uploadpath + File.separator + sysAttachment.getFilePath();
             File file = new File(filePath);
             if(!file.exists()){
                 response.setStatus(404);
                 throw new RuntimeException("文件["+imgPath+"]不存在..");
             }
-            // 设置强制下载不打开
-            response.setContentType("application/force-download");
-            response.addHeader("Content-Disposition", "attachment;fileName=" + new String(file.getName().getBytes("UTF-8"),"iso-8859-1"));
-            inputStream = new BufferedInputStream(new FileInputStream(filePath));
-            outputStream = response.getOutputStream();
-            byte[] buf = new byte[1024];
-            int len;
-            while ((len = inputStream.read(buf)) > 0) {
-                outputStream.write(buf, 0, len);
-            }
-            response.flushBuffer();
-        } catch (IOException e) {
+
+
+            downloadLocalFile(response, sysAttachment.getFilePath(), sysAttachment.getFileName());
+        } catch (Exception e) {
             log.error("预览文件失败" + e.getMessage());
             response.setStatus(404);
             e.printStackTrace();
@@ -257,66 +246,35 @@ public class CommonController {
                 }
             }
         }
-
     }
 
-//	/**
-//	 * 下载文件
-//	 * 请求地址：http://localhost:8080/common/download/{user/20190119/e1fe9925bc315c60addea1b98eb1cb1349547719_1547866868179.jpg}
-//	 *
-//	 * @param request
-//	 * @param response
-//	 * @throws Exception
-//	 */
-//	@GetMapping(value = "/download/**")
-//	public void download(HttpServletRequest request, HttpServletResponse response) throws Exception {
-//		// ISO-8859-1 ==> UTF-8 进行编码转换
-//		String filePath = extractPathFromPattern(request);
-//		// 其余处理略
-//		InputStream inputStream = null;
-//		OutputStream outputStream = null;
-//		try {
-//			filePath = filePath.replace("..", "");
-//			if (filePath.endsWith(",")) {
-//				filePath = filePath.substring(0, filePath.length() - 1);
-//			}
-//			String localPath = uploadpath;
-//			String downloadFilePath = localPath + File.separator + filePath;
-//			File file = new File(downloadFilePath);
-//	         if (file.exists()) {
-//	         	response.setContentType("application/force-download");// 设置强制下载不打开            
-//	 			response.addHeader("Content-Disposition", "attachment;fileName=" + new String(file.getName().getBytes("UTF-8"),"iso-8859-1"));
-//	 			inputStream = new BufferedInputStream(new FileInputStream(file));
-//	 			outputStream = response.getOutputStream();
-//	 			byte[] buf = new byte[1024];
-//	 			int len;
-//	 			while ((len = inputStream.read(buf)) > 0) {
-//	 				outputStream.write(buf, 0, len);
-//	 			}
-//	 			response.flushBuffer();
-//	         }
-//
-//		} catch (Exception e) {
-//			log.info("文件下载失败" + e.getMessage());
-//			// e.printStackTrace();
-//		} finally {
-//			if (inputStream != null) {
-//				try {
-//					inputStream.close();
-//				} catch (IOException e) {
-//					e.printStackTrace();
-//				}
-//			}
-//			if (outputStream != null) {
-//				try {
-//					outputStream.close();
-//				} catch (IOException e) {
-//					e.printStackTrace();
-//				}
-//			}
-//		}
-//
-//	}
+    private void downloadLocalFile(HttpServletResponse response, String imgPath, String fileName) {
+        String filePath = uploadpath + File.separator + imgPath;
+        File file = new File(filePath);
+        if (!file.exists()) {
+            throw new JeecgBootException("文件不存在..");
+        }
+        if (StrUtil.isBlank(fileName)) {
+            fileName = file.getName();
+        }
+        try (
+                OutputStream outputStream = response.getOutputStream();
+                InputStream inputStream = new BufferedInputStream(new FileInputStream(filePath))) {
+            response.setContentType("application/force-download");// 设置强制下载不打开
+            response.addHeader("Content-Disposition", "attachment;fileName=" + new String(fileName.getBytes("UTF-8"), "iso-8859-1"));
+            byte[] buf = new byte[1024];
+            int len;
+            while ((len = inputStream.read(buf)) > 0) {
+                outputStream.write(buf, 0, len);
+            }
+            response.flushBuffer();
+        } catch (IOException e) {
+            log.error("预览文件失败" + e.getMessage());
+            response.setContentType("application/json;charset=UTF-8");
+            throw new JeecgBootException("文件下载失败！文件不存在或已经被删除。");
+        }
+    }
+
 
     /**
      * @功能：pdf预览Iframe
