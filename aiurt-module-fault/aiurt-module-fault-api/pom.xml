@@ -9,10 +9,14 @@
 
     <artifactId>aiurt-module-fault-api</artifactId>
     <dependencies>
+
+        <!--微服务使用-->
         <dependency>
             <groupId>com.aiurt.boot</groupId>
-            <artifactId>aiurt-base-core</artifactId>
+            <artifactId>aiurt-system-local-api</artifactId>
         </dependency>
+
+
 <!--
         &lt;!&ndash; feign &ndash;&gt;
         <dependency>
