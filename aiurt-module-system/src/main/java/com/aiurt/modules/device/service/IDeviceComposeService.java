@@ -1,0 +1,14 @@
+package com.aiurt.modules.device.service;
+
+import com.aiurt.modules.device.entity.DeviceCompose;
+import com.baomidou.mybatisplus.extension.service.IService;
+
+/**
+ * @Description: device_compose
+ * @Author: aiurt
+ * @Date:   2022-06-22
+ * @Version: V1.0
+ */
+public interface IDeviceComposeService extends IService<DeviceCompose> {
+
+}
