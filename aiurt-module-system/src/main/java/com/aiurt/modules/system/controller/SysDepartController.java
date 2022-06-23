@@ -2,6 +2,8 @@ package com.aiurt.modules.system.controller;
 
 import com.aiurt.common.constant.CacheConstant;
 import com.aiurt.common.constant.CommonConstant;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import org.jeecg.common.system.query.QueryGenerator;
 import com.aiurt.common.system.util.JwtUtil;
 import org.jeecg.common.system.vo.LoginUser;
@@ -47,6 +49,7 @@ import java.util.*;
  *
  * @Author: Steve @Since： 2019-01-22
  */
+@Api(tags="部门表")
 @RestController
 @RequestMapping("/sys/sysDepart")
 @Slf4j
@@ -65,6 +68,7 @@ public class SysDepartController {
 	 *
 	 * @return
 	 */
+	@ApiOperation(value="部门管理-查询我的部门", notes="部门管理-查询我的部门")
 	@RequestMapping(value = "/queryMyDeptTreeList", method = RequestMethod.GET)
 	public Result<List<SysDepartTreeModel>> queryMyDeptTreeList() {
 		Result<List<SysDepartTreeModel>> result = new Result<>();
@@ -95,6 +99,7 @@ public class SysDepartController {
 	 *
 	 * @return
 	 */
+	@ApiOperation(value="部门管理-查询所有部门", notes="部门管理-查询所有部门")
 	@RequestMapping(value = "/queryTreeList", method = RequestMethod.GET)
 	public Result<List<SysDepartTreeModel>> queryTreeList(@RequestParam(name = "ids", required = false) String ids) {
 		Result<List<SysDepartTreeModel>> result = new Result<>();
@@ -170,6 +175,7 @@ public class SysDepartController {
 	 * @param sysDepart
 	 * @return
 	 */
+	@ApiOperation(value="部门管理-添加部门", notes="部门管理-添加部门")
 	@RequestMapping(value = "/add", method = RequestMethod.POST)
 	@CacheEvict(value= {CacheConstant.SYS_DEPARTS_CACHE,CacheConstant.SYS_DEPART_IDS_CACHE}, allEntries=true)
 	public Result<SysDepart> add(@RequestBody SysDepart sysDepart, HttpServletRequest request) {
@@ -196,6 +202,7 @@ public class SysDepartController {
 	 * @return
 	 */
 	//@RequiresRoles({"admin"})
+	@ApiOperation(value="部门管理-编辑部门", notes="部门管理-编辑部门")
 	@RequestMapping(value = "/edit", method = {RequestMethod.PUT,RequestMethod.POST})
 	@CacheEvict(value= {CacheConstant.SYS_DEPARTS_CACHE,CacheConstant.SYS_DEPART_IDS_CACHE}, allEntries=true)
 	public Result<SysDepart> edit(@RequestBody SysDepart sysDepart, HttpServletRequest request) {
@@ -224,6 +231,7 @@ public class SysDepartController {
     * @return
     */
 	//@RequiresRoles({"admin"})
+	 @ApiOperation(value="部门管理-通过id删除", notes="部门管理-通过id删除")
     @RequestMapping(value = "/delete", method = RequestMethod.DELETE)
 	@CacheEvict(value= {CacheConstant.SYS_DEPARTS_CACHE,CacheConstant.SYS_DEPART_IDS_CACHE}, allEntries=true)
    public Result<SysDepart> delete(@RequestParam(name="id",required=true) String id) {
@@ -252,6 +260,7 @@ public class SysDepartController {
 	 * @return
 	 */
 	//@RequiresRoles({"admin"})
+	@ApiOperation(value="部门管理-批量删除", notes="部门管理-批量删除")
 	@RequestMapping(value = "/deleteBatch", method = RequestMethod.DELETE)
 	@CacheEvict(value= {CacheConstant.SYS_DEPARTS_CACHE,CacheConstant.SYS_DEPART_IDS_CACHE}, allEntries=true)
 	public Result<SysDepart> deleteBatch(@RequestParam(name = "ids", required = true) String ids) {
@@ -271,6 +280,7 @@ public class SysDepartController {
 	 *
 	 * @return
 	 */
+	@ApiOperation(value="部门管理-以树结构形式加载所有部门", notes="部门管理-以树结构形式加载所有部门")
 	@RequestMapping(value = "/queryIdTree", method = RequestMethod.GET)
 	public Result<List<DepartIdModel>> queryIdTree() {
 		Result<List<DepartIdModel>> result = new Result<>();

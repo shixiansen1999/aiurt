@@ -16,4 +16,15 @@ public class InspectionConstant {
      */
     public static final String SUBSYSTEM = "subsystem";
 
+    /**
+     * 是否手工下发任务：否
+     */
+    public static final String NO_IS_MANUAL = "0";
+
+    /**
+     * 检修周期类型：0周检
+     */
+    public static final String WEEKLY_INSPECTION = "0";
+
+
 }

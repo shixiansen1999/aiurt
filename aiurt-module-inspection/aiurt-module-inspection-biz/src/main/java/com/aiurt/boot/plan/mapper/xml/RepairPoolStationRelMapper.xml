@@ -2,4 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.aiurt.boot.plan.mapper.RepairPoolStationRelMapper">
 
+    <select id="selectStationList" resultType="com.aiurt.boot.plan.dto.StationDTO">
+        select station_code,position_code,line_code from repair_pool_station_rel where repair_pool_code = #{planCode}
+    </select>
 </mapper>

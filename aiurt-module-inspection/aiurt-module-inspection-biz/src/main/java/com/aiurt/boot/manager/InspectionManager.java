@@ -1,8 +1,11 @@
 package com.aiurt.boot.manager;
 
+import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.constant.InspectionConstant;
 import com.aiurt.boot.manager.mapper.InspectionManagerMapper;
+import com.aiurt.boot.plan.dto.StationDTO;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -21,22 +24,72 @@ public class InspectionManager {
 
     @Resource
     private InspectionManagerMapper inspectionManagerMapper;
+
     /**
      * 翻译专业、专业子系统信息
+     *
      * @param codeList code值
-     * @param type 类型：major代表专业、subsystem代表子系统
+     * @param type     类型：major代表专业、subsystem代表子系统
      * @return
      */
-    public String translateMajor(List<String> codeList,String type) {
+    public String translateMajor(List<String> codeList, String type) {
+        if (CollUtil.isEmpty(codeList) || StrUtil.isEmpty(type)) {
+            return "";
+        }
         List<String> nameList = new ArrayList<>();
-        if(InspectionConstant.MAJOR.equals(type)){
+        if (InspectionConstant.MAJOR.equals(type)) {
             nameList = inspectionManagerMapper.translateMajor(codeList);
         }
-        if(InspectionConstant.SUBSYSTEM.equals(type)){
+        if (InspectionConstant.SUBSYSTEM.equals(type)) {
             nameList = inspectionManagerMapper.translateSubsystem(codeList);
         }
         String result = StrUtil.join(",", nameList);
-        return result;
+        return CollUtil.isNotEmpty(nameList) ? StrUtil.join(",", nameList) : "";
+    }
+
+    /**
+     * 翻译组织机构信息
+     *
+     * @param codeList code值
+     * @return
+     */
+    public String translateOrg(List<String> codeList) {
+        if (CollUtil.isEmpty(codeList)) {
+            return "";
+        }
+        List<String> nameList = inspectionManagerMapper.translateOrg(codeList);
+        return CollUtil.isNotEmpty(nameList) ? StrUtil.join(",", nameList) : "";
+    }
+
+    /**
+     * 翻译站点信息
+     *
+     * @param codeList code值
+     * @return
+     */
+    public String translateStation(List<StationDTO> codeList) {
+
+        if (CollUtil.isEmpty(codeList)) {
+            return "";
+        }
+        StringBuilder builder = new StringBuilder();
+        // 处理字符拼接
+        for (StationDTO stationDTO : codeList) {
+            if (StrUtil.isNotEmpty(stationDTO.getLineCode())) {
+                builder.append(inspectionManagerMapper.translateLine(stationDTO.getLineCode()));
+            }
+            if (StrUtil.isNotEmpty(stationDTO.getStationCode())) {
+                builder.append(inspectionManagerMapper.translateStation(stationDTO.getStationCode()));
+            }
+            if (StrUtil.isNotEmpty(stationDTO.getPositionCode())) {
+                builder.append(inspectionManagerMapper.translatePosition(stationDTO.getPositionCode()));
+            }
+            builder.append(",");
+        }
+        if (ObjectUtil.isNotEmpty(builder)) {
+            return builder.substring(0, builder.length() - 1).toString();
+        }
+        return "";
     }
 
 

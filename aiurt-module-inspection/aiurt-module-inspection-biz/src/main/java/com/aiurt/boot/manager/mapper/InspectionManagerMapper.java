@@ -22,4 +22,30 @@ public interface InspectionManagerMapper {
      * @return
      */
     List<String> translateSubsystem(List<String> codeList);
+    /**
+     * 翻译组织机构信息
+     * @param codeList
+     * @return
+     */
+    List<String> translateOrg(List<String> codeList);
+    /**
+     * 翻译站点信息
+     * @param
+     * @return
+     */
+    String translateStation(String code);
+
+    /**
+     * 翻译线路信息
+     * @param lineCode
+     * @return
+     */
+    String translateLine(String lineCode);
+
+    /**
+     * 翻译位置信息
+     * @param positionCode
+     * @return
+     */
+    String translatePosition(String positionCode);
 }

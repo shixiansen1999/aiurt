@@ -45,4 +45,13 @@ public interface IRepairPoolService extends IService<RepairPool> {
      * @return
      */
     RepairPoolDetailsDTO queryById(String id);
+
+    /**
+     * 检修计划池-调整时间
+     * @param ids
+     * @param startTime
+     * @param endTime
+     * @return
+     */
+    Result updateTime(String ids, String startTime, String endTime);
 }
