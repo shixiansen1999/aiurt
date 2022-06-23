@@ -1,6 +1,9 @@
 package com.aiurt.boot.plan.controller;
 
+import com.aiurt.boot.plan.dto.RepairPoolDetailsDTO;
+import com.aiurt.boot.plan.dto.RepairStrategyDTO;
 import com.aiurt.boot.plan.entity.RepairPool;
+import com.aiurt.boot.plan.rep.RepairStrategyReq;
 import com.aiurt.boot.plan.service.IRepairPoolService;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.system.base.controller.BaseController;
@@ -9,10 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.jeecg.common.api.vo.Result;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.ModelAndView;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
@@ -42,7 +42,7 @@ public class RepairPoolController extends BaseController<RepairPool, IRepairPool
 			@ApiResponse(code = 200,message = "OK",response = RepairPool.class)
 	})
 	@GetMapping(value = "/list")
-	public Result<?> queryList(@RequestParam @ApiParam(required = true, value = "开始时间", name = "startTime") Date startTime,
+	public Result<List<RepairPool>> queryList(@RequestParam @ApiParam(required = true, value = "开始时间", name = "startTime") Date startTime,
 							   @RequestParam @ApiParam(required = true, value = "结束时间", name = "endTime") Date endTime) {
 		List<RepairPool> repairPoolList = repairPoolService.queryList(startTime,endTime);
 		return Result.OK(repairPoolList);
@@ -105,43 +105,36 @@ public class RepairPoolController extends BaseController<RepairPool, IRepairPool
 	}
 
 	/**
-	 * 通过id查询
+	 * 通过检修计划id查看检修标准详情
+	 * @param req
+	 * @return
+	 */
+	@AutoLog(value = "通过检修计划id查看检修标准详情")
+	@ApiOperation(value="通过检修计划id查看检修标准详情", notes="通过检修计划id查看检修标准详情")
+	@GetMapping(value = "/queryStandardById")
+	public Result<List<RepairStrategyDTO>> queryStandardById(RepairStrategyReq req) {
+		List<RepairStrategyDTO> repairStrategyDTOList = repairPoolService.queryStandardById(req);
+		return Result.OK(repairStrategyDTOList);
+	}
+
+	/**
+	 * 通过检修计划id查看详情
 	 *
 	 * @param id
 	 * @return
 	 */
-	//@AutoLog(value = "repair_pool-通过id查询")
-	@ApiOperation(value="repair_pool-通过id查询", notes="repair_pool-通过id查询")
+	@AutoLog(value = "通过检修计划id查看详情")
+	@ApiOperation(value="通过检修计划id查看详情", notes="通过检修计划id查看详情")
 	@GetMapping(value = "/queryById")
-	public Result<RepairPool> queryById(@RequestParam(name="id",required=true) String id) {
-		RepairPool repairPool = repairPoolService.getById(id);
-		if(repairPool==null) {
-			return Result.error("未找到对应数据");
-		}
+	public Result<RepairPoolDetailsDTO> queryById(@RequestParam @ApiParam(name="id",required=true,value = "检修计划id") String id) {
+		RepairPoolDetailsDTO repairPool = repairPoolService.queryById(id);
 		return Result.OK(repairPool);
 	}
 
-    /**
-    * 导出excel
-    *
-    * @param request
-    * @param repairPool
-    */
-    @RequestMapping(value = "/exportXls")
-    public ModelAndView exportXls(HttpServletRequest request, RepairPool repairPool) {
-        return super.exportXls(request, repairPool, RepairPool.class, "repair_pool");
-    }
-
-    /**
-      * 通过excel导入数据
-    *
-    * @param request
-    * @param response
-    * @return
-    */
-    @RequestMapping(value = "/importExcel", method = RequestMethod.POST)
-    public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) {
-        return super.importExcel(request, response, RepairPool.class);
-    }
+	@ApiOperation(value = "获取时间范围和周数", notes = "获取时间范围和周数")
+	@GetMapping(value = "/getTimeInfo")
+	public Result getTimeInfo(@RequestParam @ApiParam(name = "year",value = "年份",required = true) Integer year) {
+		return repairPoolService.getTimeInfo(year);
+	}
 
 }

@@ -1,15 +1,26 @@
 package com.aiurt.boot.plan.service.impl;
 
 import com.aiurt.boot.constant.DictConstant;
+import com.aiurt.boot.constant.InspectionConstant;
+import com.aiurt.boot.manager.InspectionManager;
+import com.aiurt.boot.plan.dto.RepairPoolDetailsDTO;
+import com.aiurt.boot.plan.dto.RepairStrategyDTO;
 import com.aiurt.boot.plan.entity.RepairPool;
 import com.aiurt.boot.plan.mapper.RepairPoolMapper;
+import com.aiurt.boot.plan.rep.RepairStrategyReq;
 import com.aiurt.boot.plan.service.IRepairPoolService;
+import com.aiurt.common.util.DateUtils;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import lombok.SneakyThrows;
+import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -25,6 +36,8 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
 
     @Resource
     private ISysBaseAPI sysBaseAPI;
+    @Resource
+    private InspectionManager manager;
 
     /**
      * 检修计划池列表查询
@@ -43,9 +56,9 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
 
         repairPoolList.forEach(repair -> {
             // 专业
-            List<String> majorStr = new ArrayList<>();
+            repair.setMajorName(manager.translateMajor(new ArrayList<>(), InspectionConstant.MAJOR));
             // 子系统
-
+            repair.setSubsystemName(manager.translateMajor(new ArrayList<>(), InspectionConstant.SUBSYSTEM));
             // 组织机构
 
             // 站点
@@ -57,5 +70,46 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
         });
 
         return repairPoolList;
+    }
+
+
+    /**
+     * 获取时间范围和周数
+     *
+     * @param year 年份
+     * @return
+     */
+    @Override
+    @SneakyThrows
+    public Result getTimeInfo(Integer year) {
+        LocalDateTime yearFirst = DateUtils.getYearFirst(year);
+        ZoneId zoneId = ZoneId.systemDefault();
+        ZonedDateTime zonedDateTime = yearFirst.atZone(zoneId);
+        Date date = Date.from(zonedDateTime.toInstant());
+        ArrayList<Object> list = DateUtils.getWeekAndTime(date);
+        return Result.ok(list);
+    }
+
+    /**
+     * 通过检修计划id查看检修标准详情
+     *
+     * @param req
+     * @return
+     */
+    @Override
+    public List<RepairStrategyDTO> queryStandardById(RepairStrategyReq req) {
+
+        return null;
+    }
+
+    /**
+     * 通过检修计划id查看详情
+     *
+     * @param id
+     * @return
+     */
+    @Override
+    public RepairPoolDetailsDTO queryById(String id) {
+        return null;
     }
 }
