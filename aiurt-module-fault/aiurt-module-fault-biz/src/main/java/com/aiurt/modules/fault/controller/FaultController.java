@@ -31,6 +31,8 @@ import javax.servlet.http.HttpServletResponse;
 @RequestMapping("/fault/")
 @Slf4j
 public class FaultController extends BaseController<Fault, IFaultService> {
+
+
 	@Autowired
 	private IFaultService faultService;
 

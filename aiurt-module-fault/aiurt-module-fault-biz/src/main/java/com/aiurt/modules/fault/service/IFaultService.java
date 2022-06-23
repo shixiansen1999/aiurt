@@ -16,5 +16,5 @@ public interface IFaultService extends IService<Fault> {
      * 故障上报
      * @param fault 故障对象
      */
-    void add(Fault fault);
+    String add(Fault fault);
 }

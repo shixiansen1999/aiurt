@@ -1,8 +1,10 @@
 package com.aiurt.modules.common;
 
 import cn.hutool.core.util.StrUtil;
+import com.aiurt.modules.common.dto.DeviceDTO;
 import com.aiurt.modules.common.entity.SelectTable;
 import com.aiurt.modules.device.entity.Device;
+import com.aiurt.modules.device.service.IDeviceService;
 import com.aiurt.modules.major.entity.CsMajor;
 import com.aiurt.modules.major.service.ICsMajorService;
 import com.aiurt.modules.subsystem.entity.CsSubsystem;
@@ -34,6 +36,9 @@ public class CommonCtroller {
 
     @Autowired
     private ICsSubsystemService csSubsystemService;
+
+    @Autowired
+    private IDeviceService deviceService;
 
     public Result<List<Device>> query() {
         return Result.OK();
@@ -97,22 +102,38 @@ public class CommonCtroller {
      */
     @GetMapping("/device/queryDevice")
     @ApiOperation("查询设备")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "majorCode", value = "专业编码", required = false, paramType = "query"),
-    })
-    public Result<List<SelectTable>> queryDevice(@RequestParam(value = "majorCode", required = false) String majorCode) {
-        LambdaQueryWrapper<CsSubsystem> queryWrapper = new LambdaQueryWrapper<>();
-
+    public Result<List<SelectTable>> queryDevice(DeviceDTO deviceDTO) {
+        LambdaQueryWrapper<Device> queryWrapper = new LambdaQueryWrapper<>();
         //todo 查询当前人员所管辖的站所
-        if (StrUtil.isNotBlank(majorCode)) {
-            queryWrapper.eq(CsSubsystem::getMajorCode, majorCode);
+
+        if (StrUtil.isNotBlank(deviceDTO.getLineCode())) {
+            queryWrapper.eq(Device::getLineCode, deviceDTO.getLineCode());
         }
 
-        List<CsSubsystem> csMajorList = csSubsystemService.getBaseMapper().selectList(queryWrapper);
-        List<SelectTable> list = csMajorList.stream().map(subsystem -> {
+        if (StrUtil.isNotBlank(deviceDTO.getMajorCode())) {
+            queryWrapper.eq(Device::getMajorCode, deviceDTO.getMajorCode());
+        }
+
+        if (StrUtil.isNotBlank(deviceDTO.getSystemCode())) {
+            queryWrapper.eq(Device::getSystemCode, deviceDTO.getSystemCode());
+        }
+
+        if (StrUtil.isNotBlank(deviceDTO.getStationCode())) {
+            queryWrapper.eq(Device::getStationCode, deviceDTO.getStationCode());
+        }
+
+        if (StrUtil.isNotBlank(deviceDTO.getPositionCode())) {
+            queryWrapper.eq(Device::getPositionCode, deviceDTO.getPositionCode());
+        }
+
+        //
+
+        List<Device> csMajorList = deviceService.getBaseMapper().selectList(queryWrapper);
+
+        List<SelectTable> list = csMajorList.stream().map(device -> {
             SelectTable table = new SelectTable();
-            table.setLabel(subsystem.getSystemName());
-            table.setValue(subsystem.getSystemCode());
+            table.setLabel(device.getName());
+            table.setValue(device.getCode());
             return table;
         }).collect(Collectors.toList());
 
