@@ -1,20 +1,19 @@
 package com.aiurt.boot.task.entity;
 
-import java.io.Serializable;
-
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import lombok.Data;
 import com.fasterxml.jackson.annotation.JsonFormat;
-import org.springframework.format.annotation.DateTimeFormat;
-import org.jeecgframework.poi.excel.annotation.Excel;
-import com.aiurt.common.aspect.annotation.Dict;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
+import org.jeecgframework.poi.excel.annotation.Excel;
+import org.springframework.format.annotation.DateTimeFormat;
+
+import java.io.Serializable;
 
 /**
  * @Description: patrol_task
@@ -78,48 +77,7 @@ public class PatrolTask implements Serializable {
     @Excel(name = "计划令图片", width = 15)
     @ApiModelProperty(value = "计划令图片")
     private java.lang.String planOrderCodeUrl;
-    /**
-     * 线路名称
-     */
-    @Excel(name = "线路名称", width = 15)
-    @ApiModelProperty(value = "线路名称")
-    @TableField(exist = false)
-    private java.lang.String lineName;
-    /**
-     * 站点名称
-     */
-    @Excel(name = "站点名称", width = 15)
-    @ApiModelProperty(value = "站点名称")
-    @TableField(exist = false)
-    private java.lang.String stationName;
-    /**
-     * 组织机构名称
-     */
-    @Excel(name = "组织机构名称", width = 15)
-    @ApiModelProperty(value = "组织机构名称")
-    @TableField(exist = false)
-    private java.lang.String organizationName;
-    /**
-     * 专业名称
-     */
-    @Excel(name = "专业名称", width = 15)
-    @ApiModelProperty(value = "专业名称")
-    @TableField(exist = false)
-    private java.lang.String professionName;
-    /**
-     * 系统名称
-     */
-    @Excel(name = "系统名称", width = 15)
-    @ApiModelProperty(value = "系统名称")
-    @TableField(exist = false)
-    private java.lang.String subsystemName;
-    /**
-     * 设备类型名称
-     */
-    @Excel(name = "设备类型名称", width = 15)
-    @ApiModelProperty(value = "设备类型名称")
-    @TableField(exist = false)
-    private java.lang.String deviceTypeName;
+
     /**
      * 巡检频次：1 一天1次、2 一周1次、3 一周2次
      */
@@ -134,6 +92,20 @@ public class PatrolTask implements Serializable {
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     @ApiModelProperty(value = "巡检的日期")
     private java.util.Date patrolDate;
+    /**
+     * 巡检开始时间
+     */
+    @JsonFormat(timezone = "GMT+8", pattern = "HH:mm:ss")
+    @DateTimeFormat(pattern = "HH:mm:ss")
+    @ApiModelProperty(value = "巡检开始时间")
+    private java.util.Date startTime;
+    /**
+     * 巡检结束时间
+     */
+    @JsonFormat(timezone = "GMT+8", pattern = "HH:mm:ss")
+    @DateTimeFormat(pattern = "HH:mm:ss")
+    @ApiModelProperty(value = "巡检结束时间")
+    private java.util.Date endTime;
     /**
      * 任务获取方式：1 常规分发、2常规指派、3 手工下发
      */
@@ -189,6 +161,7 @@ public class PatrolTask implements Serializable {
      */
     @Excel(name = "处置状态：0未处置、1已处置", width = 15)
     @ApiModelProperty(value = "处置状态：0未处置、1已处置")
+    @TableField(exist = false)
     private java.lang.Integer disposeStatus;
     /**
      * 处置时间
