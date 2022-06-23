@@ -51,6 +51,16 @@ public class PatrolPlanStrategy implements Serializable {
 	@Excel(name = "巡检周次：1第一周、2第二周、3第三周、4第四周", width = 15)
     @ApiModelProperty(value = "巡检周次：1第一周、2第二周、3第三周、4第四周")
     private java.lang.Integer time;
+    /**巡检周次：开始时间*/
+    @JsonFormat(timezone = "GMT+8",pattern = "HH:mm:ss")
+    @DateTimeFormat(pattern="HH:mm:ss")
+    @ApiModelProperty(value = "开始时间")
+    private java.util.Date startTime;
+    /**巡检周次：结束时间*/
+    @JsonFormat(timezone = "GMT+8",pattern = "HH:mm:ss")
+    @DateTimeFormat(pattern="HH:mm:ss")
+    @ApiModelProperty(value = "结束时间")
+    private java.util.Date endTime;
 	/**删除状态： 0未删除 1已删除*/
 	@Excel(name = "删除状态： 0未删除 1已删除", width = 15)
     @ApiModelProperty(value = "删除状态： 0未删除 1已删除")
