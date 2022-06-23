@@ -60,7 +60,12 @@ public class PatrolTaskParam extends PatrolTask {
     @Excel(name = "处置状态字典名称", width = 15)
     @ApiModelProperty(value = "处置状态字典名称")
     private String disposeName;
-
+    /**
+     * 组织机构编号
+     */
+    @Excel(name = "组织机构编号", width = 15)
+    @ApiModelProperty(value = "组织机构编号")
+    private String departCode;
     /**
      * 组织机构信息
      */

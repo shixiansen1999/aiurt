@@ -36,7 +36,9 @@
         pt.*
         FROM
         patrol_task pt
-        WHERE pt.del_flag = 0
+        WHERE
+        pt.del_flag = 0
+
         <if test="patrolTask.name != null and patrolTask.name != ''">
             and pt.name like concat('%',#{patrolTask.name},'%')
         </if>
@@ -48,6 +50,13 @@
         </if>
         <if test="patrolTask.source != null">
             and pt.source = #{patrolTask.source}
+        </if>
+        <if test="patrolTask.departCode != null and patrolTask.departCode != ''">
+            and pt.plan_code in (
+            SELECT ppo.plan_code
+            FROM patrol_plan_organization ppo
+            WHERE ppo.organization_code = #{patrolTask.departCode}
+            )
         </if>
 
     </select>
