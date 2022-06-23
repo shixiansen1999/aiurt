@@ -60,6 +60,7 @@ public class DeviceServiceImpl extends ServiceImpl<DeviceMapper, Device> impleme
 	 * @param device 未翻译的实体
 	 * @return
 	 */
+	@Override
 	public Device translate(Device device) {
 		//数据字典部分翻译
 		//设备等级

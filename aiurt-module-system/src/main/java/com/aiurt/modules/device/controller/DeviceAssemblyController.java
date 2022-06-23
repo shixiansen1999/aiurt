@@ -6,6 +6,7 @@ import com.aiurt.modules.device.entity.Device;
 import com.aiurt.modules.device.entity.DeviceAssembly;
 import com.aiurt.modules.device.service.IDeviceAssemblyService;
 import com.aiurt.modules.device.service.IDeviceService;
+import com.aiurt.modules.material.entity.MaterialBase;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -72,21 +73,17 @@ public class DeviceAssemblyController {
     /**
      * 添加
      *
-     * @param device
+     * @param materialBaseList
      * @return
      */
     @AutoLog(value = "设备组件-添加")
     @ApiOperation(value = "设备组件-添加", notes = "设备组件-添加")
     @PostMapping(value = "/add")
-    public Result<Device> add(@RequestBody Device device) {
-        Result<Device> result = new Result<Device>();
+    public Result<String> add(@RequestBody List<MaterialBase> materialBaseList) {
+        Result<String> result = new Result<String>();
         try {
-            //code不能重复
-            final int count = (int) deviceService.count(new LambdaQueryWrapper<Device>().eq(Device::getCode, device.getCode()).eq(Device::getDelFlag, 0).last("limit 1"));
-            if (count > 0){
-                return Result.error("设备编号不能重复");
-            }
-            deviceService.save(device);
+            List<DeviceAssembly> assemblyList = iDeviceAssemblyService.fromMaterialToAssembly(materialBaseList);
+            iDeviceAssemblyService.saveBatch(assemblyList);
             result.success("添加成功！");
         } catch (Exception e) {
             log.error(e.getMessage(), e);
@@ -95,27 +92,19 @@ public class DeviceAssemblyController {
         return result;
     }
 
-/*
-    *//**
-     * 通过id删除
-     *
+    /**
+     * s删除
      * @param id
      * @return
-     *//*
-    @AutoLog(value = "设备-通过id删除")
-    @ApiOperation(value = "设备-通过id删除", notes = "设备-通过id删除")
+     */
+    @AutoLog(value = "设备组件-通过id删除")
+    @ApiOperation(value = "设备组件-通过id删除", notes = "设备组件-通过id删除")
     @DeleteMapping(value = "/delete")
     public Result<?> delete(@RequestParam(name = "id", required = true) String id) {
         try {
-            QueryWrapper<Device> deviceQueryWrapper = new QueryWrapper<>();
-            deviceQueryWrapper.eq("id", id);
-            Device device = deviceService.getOne(deviceQueryWrapper);
-
-            QueryWrapper<DeviceAssembly> queryWrapper = new QueryWrapper<>();
-            queryWrapper.eq("device_code", device.getCode());
-
-            deviceService.removeById(id);
-
+            DeviceAssembly deviceAssembly = iDeviceAssemblyService.getById(id);
+            deviceAssembly.setDelFlag(1);
+            iDeviceAssemblyService.updateById(deviceAssembly);
         } catch (Exception e) {
             log.error("删除失败", e.getMessage());
             return Result.error("删除失败!");
@@ -123,71 +112,26 @@ public class DeviceAssemblyController {
         return Result.ok("删除成功!");
     }
 
-    *//**
+
+    /**
      * 批量删除
      *
      * @param ids
      * @return
-     *//*
+     */
     @AutoLog(value = "设备-批量删除")
     @ApiOperation(value = "设备-批量删除", notes = "设备-批量删除")
     @DeleteMapping(value = "/deleteBatch")
-    public Result<Device> deleteBatch(@RequestParam(name = "ids", required = true) String ids) {
-        Result<Device> result = new Result<Device>();
+    public Result<String> deleteBatch(@RequestParam(name = "ids", required = true) String ids) {
+        Result<String> result = new Result<String>();
         if (ids == null || "".equals(ids.trim())) {
             result.error500("参数不识别！");
         } else {
-            List<Device> list = this.deviceService.lambdaQuery().eq(Device::getId, Arrays.asList(ids.split(","))).select(Device::getCode).list();
-            this.deviceService.removeByIds(Arrays.asList(ids.split(",")));
+            List<DeviceAssembly> deviceAssemblyList = iDeviceAssemblyService.list(new QueryWrapper<DeviceAssembly>().in("id",Arrays.asList(ids.split(","))));
+            deviceAssemblyList.stream().forEach( deviceAssembly -> deviceAssembly.setDelFlag(1));
+            iDeviceAssemblyService.updateBatchById(deviceAssemblyList);
             result.success("删除成功!");
         }
         return result;
-    }*//*
-    *//**
-     * 通过id删除
-     *
-     * @param id
-     * @return
-     *//*
-    @AutoLog(value = "设备-通过id删除")
-    @ApiOperation(value = "设备-通过id删除", notes = "设备-通过id删除")
-    @DeleteMapping(value = "/delete")
-    public Result<?> delete(@RequestParam(name = "id", required = true) String id) {
-        try {
-            QueryWrapper<Device> deviceQueryWrapper = new QueryWrapper<>();
-            deviceQueryWrapper.eq("id", id);
-            Device device = deviceService.getOne(deviceQueryWrapper);
-
-            QueryWrapper<DeviceAssembly> queryWrapper = new QueryWrapper<>();
-            queryWrapper.eq("device_code", device.getCode());
-
-            deviceService.removeById(id);
-
-        } catch (Exception e) {
-            log.error("删除失败", e.getMessage());
-            return Result.error("删除失败!");
-        }
-        return Result.ok("删除成功!");
     }
-
-    *//**
-     * 批量删除
-     *
-     * @param ids
-     * @return
-     *//*
-    @AutoLog(value = "设备-批量删除")
-    @ApiOperation(value = "设备-批量删除", notes = "设备-批量删除")
-    @DeleteMapping(value = "/deleteBatch")
-    public Result<Device> deleteBatch(@RequestParam(name = "ids", required = true) String ids) {
-        Result<Device> result = new Result<Device>();
-        if (ids == null || "".equals(ids.trim())) {
-            result.error500("参数不识别！");
-        } else {
-            List<Device> list = this.deviceService.lambdaQuery().eq(Device::getId, Arrays.asList(ids.split(","))).select(Device::getCode).list();
-            this.deviceService.removeByIds(Arrays.asList(ids.split(",")));
-            result.success("删除成功!");
-        }
-        return result;
-    }*/
 }

@@ -3,6 +3,8 @@ package com.aiurt.modules.material.entity;
 import com.aiurt.common.aspect.annotation.Dict;
 import com.baomidou.mybatisplus.annotation.*;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -25,8 +27,9 @@ import org.springframework.format.annotation.DateTimeFormat;
 public class MaterialBase {
 
 	/**主键id*/
-	@TableId(type= IdType.AUTO)
+	@TableId(type= IdType.ASSIGN_ID)
     @ApiModelProperty(value = "主键id")
+	@JsonSerialize(using = ToStringSerializer.class)
 	private  Long  id;
 
 	/**专业编码*/
@@ -147,4 +150,8 @@ public class MaterialBase {
 	@TableLogic
 	@Dict(dicCode = "material_base_type_del_flag")
 	private  Integer  delFlag;
+
+	@ApiModelProperty(value = "删除状态 0-未删除 1-已删除")
+	@TableField(exist = false)
+	private  String  deviceCode;
 }

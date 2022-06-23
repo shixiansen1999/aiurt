@@ -69,17 +69,25 @@ public class MaterialBaseTypeController {
                                                          @RequestParam(name = "majorCode", required = false) String majorCode,
                                                          @RequestParam(name = "systemCode", required = false) String systemCode,
                                                          @RequestParam(name = "id", required = false) String id,
+                                                         @RequestParam(name = "baseTypeName", required = false) String baseTypeName,
+                                                         @RequestParam(name = "status", required = false) String status,
                                                          HttpServletRequest req) {
         Result<IPage<MaterialBaseType>> result = new Result<IPage<MaterialBaseType>>();
         Map<String, String[]> parameterMap = req.getParameterMap();
 
-        QueryWrapper<MaterialBaseType> queryWrapper = QueryGenerator.initQueryWrapper(materialBaseType, parameterMap);
+        QueryWrapper<MaterialBaseType> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("del_flag", 0);
         if(id != null && !"".equals(id)){
             queryWrapper.and(wrapper->{
                 wrapper.eq("id",id);
                 wrapper.or().eq("pid",id);
             });
+        }
+        if(baseTypeName != null && !"".equals(baseTypeName)){
+            queryWrapper.like("base_type_name", baseTypeName);
+        }
+        if(status != null && !"".equals(status)){
+            queryWrapper.eq("status", status);
         }
         if(majorCode != null && !"".equals(majorCode)){
             queryWrapper.eq("major_code", majorCode);
@@ -111,7 +119,7 @@ public class MaterialBaseTypeController {
                                                HttpServletRequest req) {
         Result<List<MaterialBaseType>> result = new Result<List<MaterialBaseType>>();
         List<MaterialBaseType> materialBaseTypeList = iMaterialBaseTypeService.list(new QueryWrapper<MaterialBaseType>().
-                eq("major_code",majorCode).eq("system_code",systemCode).eq("device_del_flag", 0).orderByDesc("create_time"));
+                eq("major_code",majorCode).eq("system_code",systemCode).eq("del_flag", 0).orderByDesc("create_time"));
         result.setSuccess(true);
         result.setResult(materialBaseTypeList);
         return result;
@@ -130,14 +138,15 @@ public class MaterialBaseTypeController {
         List<CsMajor> majorList = csMajorService.list(new LambdaQueryWrapper<CsMajor>().eq(CsMajor::getDelFlag,0));
         List<CsSubsystem> systemList = csSubsystemService.list(new LambdaQueryWrapper<CsSubsystem>().eq(CsSubsystem::getDelFlag,0));
         List<MaterialBaseType> materialBaseTypeList = iMaterialBaseTypeService.list(new LambdaQueryWrapper<MaterialBaseType>().eq(MaterialBaseType::getDelFlag,0));
+        List<MaterialBaseType> materialBaseTypeListres = iMaterialBaseTypeService.treeList(materialBaseTypeList,"0");
         systemList.forEach(csSubsystem -> {
-            List sysList = materialBaseTypeList.stream().filter(materialBaseType-> csSubsystem.getSystemCode().equals(materialBaseType.getSystemCode())).collect(Collectors.toList());
+            List sysList = materialBaseTypeListres.stream().filter(materialBaseType-> csSubsystem.getSystemCode().equals(materialBaseType.getSystemCode())).collect(Collectors.toList());
             csSubsystem.setMaterialBaseTypeList(sysList);
         });
         majorList.forEach(major -> {
             List sysList = systemList.stream().filter(system-> system.getMajorCode().equals(major.getMajorCode())).collect(Collectors.toList());
             major.setChildren(sysList);
-            List sysListType = materialBaseTypeList.stream().filter(materialBaseType-> major.getMajorCode().equals(materialBaseType.getMajorCode())&&(materialBaseType.getSystemCode()==null || "".equals(materialBaseType.getSystemCode()))).collect(Collectors.toList());
+            List sysListType = materialBaseTypeListres.stream().filter(materialBaseType-> major.getMajorCode().equals(materialBaseType.getMajorCode())&&(materialBaseType.getSystemCode()==null || "".equals(materialBaseType.getSystemCode()))).collect(Collectors.toList());
             major.setMaterialBaseTypeList(sysListType);
         });
         return Result.OK(majorList);
@@ -215,7 +224,7 @@ public class MaterialBaseTypeController {
         if("0".equals(pid)){
             materialBaseType.setPidName("");
         }else{
-            MaterialBaseType pm = iMaterialBaseTypeService.getById(id);
+            MaterialBaseType pm = iMaterialBaseTypeService.getById(pid);
             materialBaseType.setPidName(pm.getBaseTypeName());
         }
         return Result.ok(materialBaseType);

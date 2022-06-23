@@ -16,5 +16,6 @@ import java.util.Map;
 public interface IDeviceService extends IService<Device> {
 
     Result<Device> queryDetailById(String deviceId);
+    Device translate(Device device);
 
 }

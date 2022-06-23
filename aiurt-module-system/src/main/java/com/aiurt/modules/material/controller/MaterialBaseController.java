@@ -67,17 +67,23 @@ public class MaterialBaseController {
                                                          @RequestParam(name = "majorCode", required = false) String majorCode,
                                                          @RequestParam(name = "systemCode", required = false) String systemCode,
                                                          @RequestParam(name = "baseTypeCode", required = false) String baseTypeCode,
+                                                         @RequestParam(name = "code", required = false) String code,
+                                                         @RequestParam(name = "name", required = false) String name,
                                                          HttpServletRequest req) {
         Result<IPage<MaterialBase>> result = new Result<IPage<MaterialBase>>();
-        Map<String, String[]> parameterMap = req.getParameterMap();
-
-        QueryWrapper<MaterialBase> queryWrapper = QueryGenerator.initQueryWrapper(materialBase, parameterMap);
+        QueryWrapper<MaterialBase> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("del_flag", 0);
         if(majorCode != null && !"".equals(majorCode)){
             queryWrapper.eq("major_code", majorCode);
         }
         if(systemCode != null && !"".equals(systemCode)){
             queryWrapper.eq("system_code", systemCode);
+        }
+        if(code != null && !"".equals(code)){
+            queryWrapper.eq("code", code);
+        }
+        if(name != null && !"".equals(name)){
+            queryWrapper.like("name", name);
         }
         if(baseTypeCode != null && !"".equals(baseTypeCode)){
             queryWrapper.apply(" FIND_IN_SET ( "+baseTypeCode+" , REPLACE(base_type_code_cc,'/',',') ");

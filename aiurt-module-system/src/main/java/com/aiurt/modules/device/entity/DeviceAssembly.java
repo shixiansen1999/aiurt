@@ -2,6 +2,8 @@ package com.aiurt.modules.device.entity;
 
 import com.aiurt.common.aspect.annotation.Dict;
 import com.baomidou.mybatisplus.annotation.*;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -26,8 +28,9 @@ import org.jeecgframework.poi.excel.annotation.Excel;
 public class DeviceAssembly {
 
 	/**主键id*/
-	@TableId(type= IdType.AUTO)
+	@TableId(type= IdType.ASSIGN_ID)
     @ApiModelProperty(value = "主键id")
+	@JsonSerialize(using = ToStringSerializer.class)
 	private  Long  id;
 
 	/**组件类型/物质类型*/

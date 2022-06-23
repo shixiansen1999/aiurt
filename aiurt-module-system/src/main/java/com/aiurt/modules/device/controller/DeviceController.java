@@ -62,10 +62,12 @@ public class DeviceController {
                                                @RequestParam(name = "majorCode", required = false) String majorCode,
                                                @RequestParam(name = "systemCode", required = false) String systemCode,
                                                @RequestParam(name = "deviceTypeCode", required = false) String deviceTypeCode,
+                                               @RequestParam(name = "code", required = false) String code,
+                                               @RequestParam(name = "name", required = false) String name,
+                                               @RequestParam(name = "status", required = false) String status,
                                                HttpServletRequest req) {
         Result<IPage<Device>> result = new Result<IPage<Device>>();
-        Map<String, String[]> parameterMap = req.getParameterMap();
-        QueryWrapper<Device> queryWrapper = QueryGenerator.initQueryWrapper(device, parameterMap);
+        QueryWrapper<Device> queryWrapper = new QueryWrapper<>();
         if(majorCode != null && !"".equals(majorCode)){
             queryWrapper.eq("major_code", majorCode);
         }
@@ -84,11 +86,83 @@ public class DeviceController {
         if(positionCode != null && !"".equals(positionCode)){
             queryWrapper.eq("position_code", positionCode);
         }
+        if(code != null && !"".equals(code)){
+            queryWrapper.eq("code", code);
+        }
+        if(name != null && !"".equals(name)){
+            queryWrapper.like("name", name);
+        }
+        if(status != null && !"".equals(status)){
+            queryWrapper.eq("status", status);
+        }
         queryWrapper.eq("del_flag", 0);
         Page<Device> page = new Page<Device>(pageNo, pageSize);
         IPage<Device> pageList = deviceService.page(page, queryWrapper);
         result.setSuccess(true);
         result.setResult(pageList);
+        return result;
+    }
+
+    @AutoLog(value = "设备-列表查询")
+    @ApiOperation(value = "设备-列表查询", notes = "设备-列表查询")
+    @GetMapping(value = "/selectList")
+    public Result<List<Device>> selectList(
+                                               @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
+                                               @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize,
+                                               @RequestParam(name = "lineCode", required = false) String lineCode,
+                                               @RequestParam(name = "stationCode", required = false) String stationCode,
+                                               @RequestParam(name = "positionCode", required = false) String positionCode,
+                                               @RequestParam(name = "majorCode", required = false) String majorCode,
+                                               @RequestParam(name = "systemCode", required = false) String systemCode,
+                                               @RequestParam(name = "deviceTypeCode", required = false) String deviceTypeCode,
+                                               @RequestParam(name = "code", required = false) String code,
+                                               @RequestParam(name = "name", required = false) String name,
+                                               @RequestParam(name = "status", required = false) String status,
+                                               @RequestParam(name = "ids", required = false) String ids,
+                                               HttpServletRequest req) {
+        Result<List<Device>> result = new Result<List<Device>>();
+        QueryWrapper<Device> queryWrapper = new QueryWrapper<>();
+        if(majorCode != null && !"".equals(majorCode)){
+            queryWrapper.eq("major_code", majorCode);
+        }
+        if(systemCode != null && !"".equals(systemCode)){
+            queryWrapper.eq("system_code", systemCode);
+        }
+        if(deviceTypeCode != null && !"".equals(deviceTypeCode)){
+            queryWrapper.apply(" FIND_IN_SET ( "+deviceTypeCode+" , REPLACE(device_type_code_cc,'/',',') ");
+        }
+        if(lineCode != null && !"".equals(lineCode)){
+            queryWrapper.eq("line_code", lineCode);
+        }
+        if(stationCode != null && !"".equals(stationCode)){
+            queryWrapper.eq("station_code", stationCode);
+        }
+        if(positionCode != null && !"".equals(positionCode)){
+            queryWrapper.eq("position_code", positionCode);
+        }
+        if(code != null && !"".equals(code)){
+            queryWrapper.eq("code", code);
+        }
+        if(name != null && !"".equals(name)){
+            queryWrapper.like("name", name);
+        }
+        if(status != null && !"".equals(status)){
+            queryWrapper.eq("status", status);
+        }
+        if(ids != null && !"".equals(ids) && ids.length()>0){
+            queryWrapper.in("id", Arrays.asList(ids.split(",")));
+        }
+        queryWrapper.eq("del_flag", 0);
+        List<Device> devices = deviceService.list(queryWrapper);
+        List<Device> deviceList = new ArrayList<>();
+        if(devices != null && devices.size()>0){
+            for(Device device : devices){
+                Device dres = deviceService.translate(device);
+                deviceList.add(dres);
+            }
+        }
+        result.setSuccess(true);
+        result.setResult(devices);
         return result;
     }
 
@@ -237,12 +311,8 @@ public class DeviceController {
             QueryWrapper<Device> deviceQueryWrapper = new QueryWrapper<>();
             deviceQueryWrapper.eq("id", id);
             Device device = deviceService.getOne(deviceQueryWrapper);
-
-            QueryWrapper<DeviceAssembly> queryWrapper = new QueryWrapper<>();
-            queryWrapper.eq("device_code", device.getCode());
-
-            deviceService.removeById(id);
-
+            device.setDelFlag(1);
+            deviceService.updateById(device);
         } catch (Exception e) {
             log.error("删除失败", e.getMessage());
             return Result.error("删除失败!");
@@ -259,13 +329,14 @@ public class DeviceController {
     @AutoLog(value = "设备-批量删除")
     @ApiOperation(value = "设备-批量删除", notes = "设备-批量删除")
     @DeleteMapping(value = "/deleteBatch")
-    public Result<Device> deleteBatch(@RequestParam(name = "ids", required = true) String ids) {
-        Result<Device> result = new Result<Device>();
+    public Result<String> deleteBatch(@RequestParam(name = "ids", required = true) String ids) {
+        Result<String> result = new Result<String>();
         if (ids == null || "".equals(ids.trim())) {
             result.error500("参数不识别！");
         } else {
             List<Device> list = this.deviceService.lambdaQuery().eq(Device::getId, Arrays.asList(ids.split(","))).select(Device::getCode).list();
-            this.deviceService.removeByIds(Arrays.asList(ids.split(",")));
+            list.stream().forEach( deviceAssembly -> deviceAssembly.setDelFlag(1));
+            deviceService.updateBatchById(list);
             result.success("删除成功!");
         }
         return result;
