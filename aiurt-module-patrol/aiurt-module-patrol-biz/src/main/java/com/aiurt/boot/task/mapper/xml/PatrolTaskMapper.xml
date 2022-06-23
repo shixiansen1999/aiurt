@@ -1,69 +1,59 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.aiurt.boot.task.mapper.PatrolTaskMapper">
-<select id="getPatrolTaskList" resultType="com.aiurt.boot.task.dto.PatrolTaskDTO">
-select t1.*
-from patrol_task t1
-<where>
-<if test="patrolTaskDTO.patrolDate !=null">
- DATE_FORMAT(t1.patrol_date, '%Y-%m-%d') = DATE_FORMAT(#{patrolTaskDTO.patrolDate}, '%Y-%m-%d')
-</if>
-<if test="patrolTaskDTO.status!=null">
- and t1.status = #{patrolTaskDTO.status}
-</if>
-</where>
-</select>
-<select id="getOrganizationName" resultType="java.lang.String">
- select t2.depart_name,t2.org_code
-from patrol_plan_organization t1
-left join sys_depart t2 on  t1.organization_code =t2.org_code
-where t1.plan_code =#{planCode}
-</select><select id="getStationName" resultType="java.lang.String">
- select concat(t1.line_name,"-",t1.station_name) as stationName
-from cs_station t1
-left join patrol_plan_station t2 on t1.station_code=t2.station_code
-where t2.plan_code =#{code}
-</select><select id="getPatrolUserName" resultType="java.lang.String">
-select t2.user_name
-from patrol_task t1
-left join patrol_task_user t2 on t1.code =t2.task_code
-where t2.task_code =#{code}
-</select>
-    <select id="getTaskList" resultType="com.aiurt.boot.task.entity.PatrolTask">
+    <select id="getPatrolTaskList" resultType="com.aiurt.boot.task.dto.PatrolTaskDTO">
+        select t1.*
+        from patrol_task t1
+        <where>
+            <if test="patrolTaskDTO.patrolDate !=null">
+                DATE_FORMAT(t1.patrol_date, '%Y-%m-%d') = DATE_FORMAT(#{patrolTaskDTO.patrolDate}, '%Y-%m-%d')
+            </if>
+            <if test="patrolTaskDTO.status!=null">
+                and t1.status = #{patrolTaskDTO.status}
+            </if>
+        </where>
+    </select>
+    <select id="getOrganizationName" resultType="java.lang.String">
+        select t2.depart_name, t2.org_code
+        from patrol_plan_organization t1
+                 left join sys_depart t2 on t1.organization_code = t2.org_code
+        where t1.plan_code = #{planCode}
+    </select>
+    <select id="getStationName" resultType="java.lang.String">
+        select concat(t1.line_name, "-", t1.station_name) as stationName
+        from cs_station t1
+                 left join patrol_plan_station t2 on t1.station_code = t2.station_code
+        where t2.plan_code = #{code}
+    </select>
+    <select id="getPatrolUserName" resultType="java.lang.String">
+        select t2.user_name
+        from patrol_task t1
+                 left join patrol_task_user t2 on t1.code = t2.task_code
+        where t2.task_code = #{code}
+    </select>
+    <select id="getTaskList" resultType="com.aiurt.boot.task.param.PatrolTaskParam">
         SELECT
-        CS.station_name,
-        SD.depart_name,
-        CL.line_name,
-        PT.*
-        FROM patrol_task AS PT
-        LEFT JOIN patrol_plan_organization AS PPO ON PT.plan_code = PPO.plan_code
-        LEFT JOIN patrol_plan_station AS PPS ON PT.plan_code = PPS.plan_code
-        LEFT JOIN sys_depart AS SD ON PPO.organization_code = SD.org_code
-        LEFT JOIN cs_station AS CS ON PPS.station_code = CS.station_code
-        LEFT JOIN cs_line AS CL ON CS.line_code = CL.id
-        WHERE PT.del_flag = 0
+        pt.*
+        FROM
+        patrol_task pt
+        WHERE pt.del_flag = 0
         <if test="patrolTask.name != null and patrolTask.name != ''">
-            and PT.name like concat('%',#{patrolTask.name},'%')
+            and pt.name like concat('%',#{patrolTask.name},'%')
         </if>
         <if test="patrolTask.code != null and patrolTask.code != ''">
-            and PT.code like concat('%',#{patrolTask.code},'%')
+            and pt.code like concat('%',#{patrolTask.code},'%')
         </if>
         <if test="patrolTask.status != null">
-            and PT.status = #{patrolTask.status}
+            and pt.status = #{patrolTask.status}
         </if>
         <if test="patrolTask.source != null">
-            and PT.source = #{patrolTask.source}
+            and pt.source = #{patrolTask.source}
         </if>
-        <if test="patrolTask.departName != null and patrolTask.departName != ''">
-            and SD.depart_name like concat('%',#{patrolTask.departName},'%')
-        </if>
-        <if test="patrolTask.stationName != null and patrolTask.stationName != ''">
-            and CS.station_name like concat('%',#{patrolTask.stationName},'%')
-        </if>
+
     </select>
     <select id="getUserName" resultType="java.lang.String">
-    select realname
-    from sys_user
-    where id = #{patrolReturnUserId}
-</select>
+        select realname
+        from sys_user
+        where id = #{patrolReturnUserId}
+    </select>
 </mapper>

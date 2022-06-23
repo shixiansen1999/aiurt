@@ -2,10 +2,14 @@ package com.aiurt.boot.plan.service.impl;
 
 import com.aiurt.boot.plan.entity.PatrolPlanOrganization;
 import com.aiurt.boot.plan.mapper.PatrolPlanOrganizationMapper;
+import com.aiurt.boot.plan.param.PatrolPlanOrganizationParam;
 import com.aiurt.boot.plan.service.IPatrolPlanOrganizationService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+
+import java.util.List;
 
 /**
  * @Description: patrol_plan_organization
@@ -16,4 +20,13 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 @Service
 public class PatrolPlanOrganizationServiceImpl extends ServiceImpl<PatrolPlanOrganizationMapper, PatrolPlanOrganization> implements IPatrolPlanOrganizationService {
 
+
+    @Autowired
+    private PatrolPlanOrganizationMapper patrolPlanOrganizationMapper;
+
+
+    @Override
+    public List<PatrolPlanOrganizationParam> selectOrgByPlanCode(String planCode) {
+        return patrolPlanOrganizationMapper.selectOrgByPlanCode(planCode);
+    }
 }

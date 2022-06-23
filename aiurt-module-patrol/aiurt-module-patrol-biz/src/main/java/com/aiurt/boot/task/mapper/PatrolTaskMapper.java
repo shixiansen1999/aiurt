@@ -2,6 +2,7 @@ package com.aiurt.boot.task.mapper;
 
 import com.aiurt.boot.task.dto.PatrolTaskDTO;
 import com.aiurt.boot.task.entity.PatrolTask;
+import com.aiurt.boot.task.param.PatrolTaskParam;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -53,10 +54,10 @@ public interface PatrolTaskMapper extends BaseMapper<PatrolTask> {
      * 查询巡检任务列表
      *
      * @param page
-     * @param patrolTask
+     * @param patrolTaskParam
      * @return
      */
-    IPage<PatrolTask> getTaskList(Page<PatrolTask> page, @Param("patrolTask") PatrolTask patrolTask);
+    IPage<PatrolTaskParam> getTaskList(Page<PatrolTaskParam> page, @Param("patrolTask") PatrolTaskParam patrolTaskParam);
 
     /**
      * 获取退回人的名称

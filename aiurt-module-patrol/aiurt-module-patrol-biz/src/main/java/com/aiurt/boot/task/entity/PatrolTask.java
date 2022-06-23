@@ -161,7 +161,6 @@ public class PatrolTask implements Serializable {
      */
     @Excel(name = "处置状态：0未处置、1已处置", width = 15)
     @ApiModelProperty(value = "处置状态：0未处置、1已处置")
-    @TableField(exist = false)
     private java.lang.Integer disposeStatus;
     /**
      * 处置时间

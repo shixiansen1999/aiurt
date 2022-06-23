@@ -2,6 +2,7 @@ package com.aiurt.boot.task.service;
 
 import com.aiurt.boot.task.dto.PatrolTaskDTO;
 import com.aiurt.boot.task.entity.PatrolTask;
+import com.aiurt.boot.task.param.PatrolTaskParam;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
@@ -32,5 +33,11 @@ public interface IPatrolTaskService extends IService<PatrolTask> {
      * @param patrolTaskDTO
      */
     void getPatrolTaskReturn(PatrolTaskDTO patrolTaskDTO);
-    IPage<PatrolTask> getTaskList(Page<PatrolTask> page, PatrolTask patrolTask);
+
+    /**
+     * PC巡检任务池列表
+     * @param page
+     * @return
+     */
+    IPage<PatrolTaskParam> getTaskList(Page<PatrolTaskParam> page, PatrolTaskParam patrolTaskParam);
 }

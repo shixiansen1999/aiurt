@@ -1,7 +1,11 @@
 package com.aiurt.boot.plan.mapper;
 
 import com.aiurt.boot.plan.entity.PatrolPlanOrganization;
+import com.aiurt.boot.plan.param.PatrolPlanOrganizationParam;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import org.apache.ibatis.annotations.Param;
+
+import java.util.List;
 
 /**
  * @Description: patrol_plan_organization
@@ -11,4 +15,5 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
  */
 public interface PatrolPlanOrganizationMapper extends BaseMapper<PatrolPlanOrganization> {
 
+    List<PatrolPlanOrganizationParam> selectOrgByPlanCode(@Param("planCode") String planCode);
 }

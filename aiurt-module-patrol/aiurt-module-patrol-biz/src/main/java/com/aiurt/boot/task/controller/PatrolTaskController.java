@@ -2,6 +2,7 @@ package com.aiurt.boot.task.controller;
 
 import com.aiurt.boot.task.dto.PatrolTaskDTO;
 import com.aiurt.boot.task.entity.PatrolTask;
+import com.aiurt.boot.task.param.PatrolTaskParam;
 import com.aiurt.boot.task.service.IPatrolTaskService;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.system.base.controller.BaseController;
@@ -36,7 +37,7 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
 	/**
 	 * 分页列表查询
 	 *
-	 * @param patrolTask
+	 * @param patrolTaskParam
 	 * @param pageNo
 	 * @param pageSize
 	 * @param req
@@ -45,12 +46,12 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
 	//@AutoLog(value = "patrol_task-分页列表查询")
 	@ApiOperation(value="巡检任务-分页列表查询", notes="巡检任务-分页列表查询")
 	@GetMapping(value = "/list")
-	public Result<IPage<PatrolTask>> queryPageList(PatrolTask patrolTask,
-								   @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
-								   @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
-								   HttpServletRequest req) {
-		Page<PatrolTask> page = new Page<PatrolTask>(pageNo, pageSize);
-		IPage<PatrolTask> pageList = patrolTaskService.getTaskList(page, patrolTask);
+	public Result<IPage<PatrolTaskParam>> queryPageList(PatrolTaskParam patrolTaskParam,
+												   @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
+												   @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
+												   HttpServletRequest req) {
+		Page<PatrolTaskParam> page = new Page<PatrolTaskParam>(pageNo, pageSize);
+		IPage<PatrolTaskParam> pageList = patrolTaskService.getTaskList(page, patrolTaskParam);
 		return Result.OK(pageList);
 	}
 	/**
