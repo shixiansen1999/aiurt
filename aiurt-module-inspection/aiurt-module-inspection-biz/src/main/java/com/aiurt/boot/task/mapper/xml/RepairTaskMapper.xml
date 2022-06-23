@@ -1,5 +1,85 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.aiurt.boot.task.mapper.RepairTaskMapper">
+    <select id="selectables" resultType="com.aiurt.boot.task.entity.RepairTask">
+        SELECT
+        t1.*,
+        ( SELECT group_concat( t2.org_code ) FROM repair_task_org_rel AS t2 WHERE t1.`code` = t2.repair_task_code ) AS orgCode,
+        ( SELECT group_concat( t4.station_code ) FROM repair_task_station_rel AS t4 WHERE t1.`code` = t4.repair_task_code ) AS siteCode,
+        ( SELECT group_concat( t6.major_code ) FROM repair_task_standard_rel AS t6 WHERE t1.id = t6.repair_task_id ) AS majorCode,
+        ( SELECT group_concat( t6.subsystem_code ) FROM repair_task_standard_rel AS t6 WHERE t1.id = t6.repair_task_id ) AS systemCode,
+        t8.start_time as startOverhaulTime,
+        t8.end_time as endOverhaulTime
+        FROM
+        repair_task t1
+        LEFT JOIN repair_task_org_rel t2 ON t1.`code` = t2.repair_task_code
+        LEFT JOIN repair_task_station_rel t4 ON t1.`code` = t4.repair_task_code
+        LEFT JOIN repair_task_standard_rel t6 ON t1.id=t6.repair_task_id
+        LEFT JOIN repair_task_device_rel t8 ON t1.id = t8.repair_task_id
+        <where>
+            t1.del_flag =0
+            <if test="condition.id!=null ">
+                and t1.id = #{condition.id}
+            </if>
+            <if test="condition.code!=null ">
+                and t1.code = #{condition.code}
+            </if>
+            <if test="condition.type!=null ">
+                and t1.type = #{condition.type}
+            </if>
+            <if test="condition.weeks!=null ">
+                and t1.weeks = #{condition.weeks}
+            </if>
+            <if test="condition.status!=null ">
+                and t1.status = #{condition.status}
+            </if>
+            <if test="condition.orgCode!=null ">
+                and t2.org_code = #{condition.orgCode}
+            </if>
+            <if test="condition.siteCode!=null ">
+                and t4.station_code = #{condition.siteCode}
+            </if>
+            <if test="condition.time1!=null and condition.time2!=null ">
+                and DATE_FORMAT(t1.start_time, '%Y-%m-%d') &gt;= DATE_FORMAT(#{condition.time1}, '%Y-%m-%d')
+                and DATE_FORMAT(t1.start_time, '%Y-%m-%d') &lt;= DATE_FORMAT(#{condition.time2}, '%Y-%m-%d')
+            </if>
+        </where>
+        group by t1.id
+        order by t1.start_time desc
+    </select>
 
+    <select id="selectTasklet" resultType="com.aiurt.boot.task.entity.RepairTask">
+           SELECT
+	           *
+           FROM
+	          repair_task t1
+	          LEFT JOIN repair_task_device_rel t2 ON t1.id = t2.repair_task_id
+	          LEFT JOIN repair_task_standard_rel t3 ON t2.task_standard_rel_id = t3.id
+	          LEFT JOIN repair_task_result t4 ON t2.id = t4.task_device_rel_id
+        <where>
+	           t1.del_flag = 0
+               <if test="condition.equipmentCode !=null ">
+                   AND ( SELECT NAME FROM device WHERE CODE = t3.device_type_code ) LIKE CONCAT ('%', #{condition.equipmentName}, '%')
+               </if>
+	           AND t1.id = #{condition.id}
+               <if test="condition.majorCode!=null ">
+                AND t3.major_code  = #{condition.majorCode}
+               </if>
+               <if test="condition.systemCode!=null ">
+                   AND t3.subsystem_code  = #{condition.systemCode}
+              </if>
+               <if test="condition.maintenanceResults!=null ">
+                   AND t4.status  = #{condition.maintenanceResults}
+               </if>
+               <if test="condition.overhaulCode!=null ">
+                   AND t4.status  = #{condition.overhaulCode}
+               </if>
+        </where>
+        order by t1.start_time desc
+    </select>
+
+
+    <select id="selectStationList" resultType="com.aiurt.boot.plan.dto.StationDTO">
+        select station_code,position_code,line_code from repair_task_station_rel where repair_pool_code = #{planCode}
+    </select>
 </mapper>

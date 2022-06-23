@@ -56,6 +56,44 @@ public class RepairTaskController extends BaseController<RepairTask, IRepairTask
 		return Result.OK(pageList);
 	}
 
+
+	 /**
+	  * 检修任务列表查询
+	  * @param pageNo
+	  * @param pageSize
+	  * @return
+	  */
+	 @AutoLog(value = "检修任务-检修任务列表查询")
+	 @ApiOperation(value="检修任务-检修任务列表查询", notes="检修任务-检修任务列表查询")
+	 @GetMapping(value = "/repairTaskPageList")
+	 public Result<?> repairTaskPageList( RepairTask condition,
+											@RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
+											@RequestParam(name="pageSize", defaultValue="10") Integer pageSize
+	 ){
+		 Page<RepairTask> pageList = new Page<>(pageNo, pageSize);
+		 Page<RepairTask> repairTaskPage = repairTaskService.selectables(pageList, condition);
+		 return Result.OK(repairTaskPage);
+	 }
+
+
+	 /**
+	  * 检修任务列表查询
+	  * @param pageNo
+	  * @param pageSize
+	  * @return
+	  */
+	 @AutoLog(value = "检修任务-检修任务清单查询")
+	 @ApiOperation(value="检修任务-检修任务清单查询", notes="检修任务-检修任务清单查询")
+	 @GetMapping(value = "/repairSelectTasklet")
+	 public Result<?> repairSelectTasklet( RepairTask condition,
+											@RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
+											@RequestParam(name="pageSize", defaultValue="10") Integer pageSize
+	 ){
+		 Page<RepairTask> pageList = new Page<>(pageNo, pageSize);
+		 Page<RepairTask> repairTaskPage = repairTaskService.selectTasklet(pageList, condition);
+		 return Result.OK(repairTaskPage);
+	 }
+
 	/**
 	 *   添加
 	 *
