@@ -161,6 +161,7 @@ public class Device {
 	/**临时设备(是/否（默认否）1是,0:否)*/
 	@Excel(name = "是否临时设备", width = 15)
 	@ApiModelProperty(value = "临时设备(是/否（默认否）1是,0:否)")
+	@TableField(exist = false)
 	private  java.lang.String  temporaryName;
 
 	/**设备复用类型(1:多线路复用/0:多站点复用)*/
