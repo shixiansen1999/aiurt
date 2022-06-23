@@ -137,6 +137,11 @@ public class SysPermission implements Serializable {
 	private boolean hideTab;
 
 	/**
+	 * 是否为手机app(1是,0否)
+	 */
+	private boolean isApp;
+
+	/**
 	 * 创建时间
 	 */
 	private Date createTime;

@@ -13,6 +13,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.constant.CommonConstant;
+import io.swagger.annotations.ApiOperation;
 import org.jeecg.common.system.query.QueryGenerator;
 import org.jeecg.common.system.vo.LoginUser;
 import com.aiurt.common.util.oConvertUtils;
@@ -83,6 +84,7 @@ public class SysRoleController {
 	 * @param req
 	 * @return
 	 */
+	@ApiOperation(value="角色表-分页列表查询", notes="角色表-分页列表查询")
 	@RequestMapping(value = "/list", method = RequestMethod.GET)
 	public Result<IPage<SysRole>> queryPageList(SysRole role,
 									  @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
@@ -103,6 +105,7 @@ public class SysRoleController {
 	 * @return
 	 */
 	@AutoLog(value = "角色管理-添加角色")
+	@ApiOperation(value="角色管理-添加角色", notes="角色管理-添加角色")
 	@RequestMapping(value = "/add", method = RequestMethod.POST)
 	//@RequiresRoles({"admin"})
 	public Result<SysRole> add(@RequestBody SysRole role) {
@@ -125,6 +128,7 @@ public class SysRoleController {
 	 */
 	//@RequiresRoles({"admin"})
 	@AutoLog(value = "角色管理-编辑角色")
+	@ApiOperation(value="角色管理-编辑角色", notes="角色管理-编辑角色")
 	@RequestMapping(value = "/edit",method = {RequestMethod.PUT,RequestMethod.POST})
 	public Result<SysRole> edit(@RequestBody SysRole role) {
 		Result<SysRole> result = new Result<SysRole>();
@@ -150,6 +154,7 @@ public class SysRoleController {
 	 */
 	//@RequiresRoles({"admin"})
 	@AutoLog(value = "角色管理-通过id删除")
+	@ApiOperation(value="角色管理-通过id删除", notes="角色管理-通过id删除")
 	@RequestMapping(value = "/delete", method = RequestMethod.DELETE)
 	public Result<?> delete(@RequestParam(name="id",required=true) String id) {
 		sysRoleService.deleteRole(id);
@@ -163,6 +168,7 @@ public class SysRoleController {
 	 */
 	//@RequiresRoles({"admin"})
 	@AutoLog(value = "角色管理-批量删除")
+	@ApiOperation(value="角色管理-批量删除", notes="角色管理-批量删除")
 	@RequestMapping(value = "/deleteBatch", method = RequestMethod.DELETE)
 	public Result<SysRole> deleteBatch(@RequestParam(name="ids",required=true) String ids) {
 		Result<SysRole> result = new Result<SysRole>();
@@ -181,6 +187,7 @@ public class SysRoleController {
 	 * @return
 	 */
 	@RequestMapping(value = "/queryById", method = RequestMethod.GET)
+	@ApiOperation(value="角色管理-通过id查询", notes="角色管理-通过id查询")
 	public Result<SysRole> queryById(@RequestParam(name="id",required=true) String id) {
 		Result<SysRole> result = new Result<SysRole>();
 		SysRole sysrole = sysRoleService.getById(id);
@@ -193,6 +200,7 @@ public class SysRoleController {
 		return result;
 	}
 
+	@ApiOperation(value="角色管理-查询全部", notes="角色管理-查询全部")
 	@RequestMapping(value = "/queryall", method = RequestMethod.GET)
 	public Result<List<SysRole>> queryall() {
 		Result<List<SysRole>> result = new Result<>();

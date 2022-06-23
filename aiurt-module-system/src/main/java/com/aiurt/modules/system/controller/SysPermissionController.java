@@ -3,6 +3,7 @@ package com.aiurt.modules.system.controller;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.constant.enums.RoleIndexConfigEnum;
+import io.swagger.annotations.Api;
 import org.jeecg.common.system.vo.LoginUser;
 import com.aiurt.common.util.Md5Util;
 import com.aiurt.common.util.oConvertUtils;
@@ -39,6 +40,7 @@ import java.util.stream.Collectors;
  * @Author scott
  * @since 2018-12-21
  */
+@Api(tags="菜单表")
 @Slf4j
 @RestController
 @RequestMapping("/sys/permission")
@@ -323,6 +325,7 @@ public class SysPermissionController {
 	 * @return
 	 */
 	//@RequiresRoles({ "admin" })
+	@AutoLog(value = "菜单管理-添加菜单")
 	@RequestMapping(value = "/add", method = RequestMethod.POST)
 	public Result<SysPermission> add(@RequestBody SysPermission permission) {
 		Result<SysPermission> result = new Result<SysPermission>();
@@ -343,7 +346,7 @@ public class SysPermissionController {
 	 * @return
 	 */
 	//@RequiresRoles({ "admin" })
-	@AutoLog("编辑菜单")
+	@AutoLog(value = "菜单管理-编辑菜单")
 	@RequestMapping(value = "/edit", method = { RequestMethod.PUT, RequestMethod.POST })
 	public Result<SysPermission> edit(@RequestBody SysPermission permission) {
 		Result<SysPermission> result = new Result<>();

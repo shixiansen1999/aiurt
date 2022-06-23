@@ -9,6 +9,7 @@ import com.aiurt.modules.major.entity.CsMajor;
 import com.aiurt.modules.major.service.ICsMajorService;
 import com.aiurt.modules.subsystem.entity.CsSubsystem;
 import com.aiurt.modules.subsystem.service.ICsSubsystemService;
+import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.jeecg.common.system.query.QueryGenerator;
 import com.aiurt.common.system.util.JwtUtil;
@@ -62,6 +63,7 @@ import java.util.stream.Collectors;
  * @Author scott
  * @since 2018-12-20
  */
+@Api(tags="用户表")
 @Slf4j
 @RestController
 @RequestMapping("/sys/user")
@@ -196,6 +198,7 @@ public class SysUserController {
     //@RequiresRoles({"admin"})
     //@RequiresPermissions("user:edit")
     @AutoLog(value = "用户管理-编辑用户")
+    @ApiOperation("编辑用户")
 	@RequestMapping(value = "/edit", method = {RequestMethod.PUT,RequestMethod.POST})
 	public Result<SysUser> edit(@RequestBody JSONObject jsonObject) {
 		Result<SysUser> result = new Result<SysUser>();
@@ -225,6 +228,7 @@ public class SysUserController {
 	 */
 	//@RequiresRoles({"admin"})
     @AutoLog(value = "用户管理-通过id删除")
+    @ApiOperation("通过id删除")
 	@RequestMapping(value = "/delete", method = RequestMethod.DELETE)
 	public Result<?> delete(@RequestParam(name="id",required=true) String id) {
 		baseCommonService.addLog("删除用户，id： " +id ,CommonConstant.LOG_TYPE_2, 3);
@@ -237,6 +241,7 @@ public class SysUserController {
 	 */
 	//@RequiresRoles({"admin"})
     @AutoLog(value = "用户管理-批量删除")
+    @ApiOperation("批量删除")
 	@RequestMapping(value = "/deleteBatch", method = RequestMethod.DELETE)
 	public Result<?> deleteBatch(@RequestParam(name="ids",required=true) String ids) {
 		baseCommonService.addLog("批量删除用户， ids： " +ids ,CommonConstant.LOG_TYPE_2, 3);
@@ -341,6 +346,7 @@ public class SysUserController {
      */
     //@RequiresRoles({"admin"})
     @AutoLog(value = "用户管理-修改密码")
+    @ApiOperation("修改密码")
     @RequestMapping(value = "/changePassword", method = RequestMethod.PUT)
     public Result<?> changePassword(@RequestBody SysUser sysUser) {
         SysUser u = this.sysUserService.getOne(new LambdaQueryWrapper<SysUser>().eq(SysUser::getUsername, sysUser.getUsername()));
@@ -1451,7 +1457,6 @@ public class SysUserController {
         return Result.OK(majorList);
     }
 
-
     /**
      * 根据专业查询子系统
      * @param majorId
@@ -1464,7 +1469,4 @@ public class SysUserController {
         List<CsSubsystem> list = csSubsystemService.list(new LambdaQueryWrapper<CsSubsystem>().eq(CsSubsystem::getDelFlag, 0).eq(CsSubsystem::getMajorCode, majorId));
         return Result.OK(list);
     }
-
-
-
 }

@@ -561,6 +561,22 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
 		String[] arr = {};
 		if(oConvertUtils.isNotEmpty(user.getDepartCodes())){
 			arr = user.getDepartCodes().split(",");
+			//查询已关联部门
+			List<SysUserDepart> userDepartList = sysUserDepartMapper.selectList(new QueryWrapper<SysUserDepart>().lambda().eq(SysUserDepart::getUserId, user.getId()));
+			if(userDepartList != null && userDepartList.size()>0){
+				for(SysUserDepart depart : userDepartList ){
+					//修改已关联部门删除部门用户角色关系
+					if(!Arrays.asList(arr).contains(depart.getDepId())){
+						List<SysDepartRole> sysDepartRoleList = sysDepartRoleMapper.selectList(
+								new QueryWrapper<SysDepartRole>().lambda().eq(SysDepartRole::getDepartId,depart.getDepId()));
+						List<String> roleIds = sysDepartRoleList.stream().map(SysDepartRole::getId).collect(Collectors.toList());
+						if(roleIds != null && roleIds.size()>0){
+							departRoleUserMapper.delete(new QueryWrapper<SysDepartRoleUser>().lambda().eq(SysDepartRoleUser::getUserId, user.getId())
+									.in(SysDepartRoleUser::getDroleId,roleIds));
+						}
+					}
+				}
+			}
 			//先删后加
 			csUserDepartMapper.delete(new QueryWrapper<CsUserDepart>().lambda().eq(CsUserDepart::getUserId, user.getId()));
 			for (String departId : arr) {
