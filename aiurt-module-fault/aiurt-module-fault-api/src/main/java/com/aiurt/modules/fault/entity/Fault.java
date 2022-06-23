@@ -100,17 +100,20 @@ public class Fault implements Serializable {
 	/**报修人*/
 	@Excel(name = "报修人", width = 15)
     @ApiModelProperty(value = "报修人")
+    @Dict(dictTable = "sys_user", dicCode = "username", dicText = "realname")
     private String faultApplicant;
 
 
 	/**报修部门*/
 	@Excel(name = "报修部门", width = 15)
     @ApiModelProperty(value = "报修部门")
+    @Dict(dictTable = "sys_depart", dicCode = "org_code", dicText = "depart_name")
     private String faultApplicantDept;
 
 	/**接报人*/
 	@Excel(name = "接报人", width = 15)
     @ApiModelProperty(value = "接报人")
+    @Dict(dictTable = "sys_user", dicCode = "username", dicText = "realname")
     private String receiveUserName;
 
 	/**接报时间*/
@@ -134,6 +137,7 @@ public class Fault implements Serializable {
 	/**状态*/
 	@Excel(name = "状态", width = 15)
     @ApiModelProperty(value = "状态")
+    @Dict(dicCode = "fault_status")
     private Integer status;
 
 
@@ -206,7 +210,12 @@ public class Fault implements Serializable {
 	/**故障级别*/
 	@Excel(name = "故障级别", width = 15)
     @ApiModelProperty(value = "故障级别")
+    @Dict(dictTable = "fault_level", dicCode = "level_code", dicText = "type_name")
     private String faultLevel;
+
+    @ApiModelProperty(value = "故障分类")
+    @Dict(dictTable = "fault_type", dicCode = "type_code", dicText = "level_name")
+	private String faultTypeCode;
 
 	/**审批驳回原因*/
 	@Excel(name = "审批驳回原因", width = 15)

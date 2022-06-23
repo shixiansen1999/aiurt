@@ -2,14 +2,20 @@ package com.aiurt.modules.fault.controller;
 
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.system.base.controller.BaseController;
+import com.aiurt.modules.fault.dto.ApprovalDTO;
+import com.aiurt.modules.fault.dto.AssignDTO;
+import com.aiurt.modules.fault.dto.CancelDTO;
 import com.aiurt.modules.fault.entity.Fault;
 import com.aiurt.modules.fault.service.IFaultService;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.Put;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.query.QueryGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -72,6 +78,21 @@ public class FaultController extends BaseController<Fault, IFaultService> {
 		return Result.OK("添加成功！");
 	}
 
+	 /**
+	  * 审批
+	  * @param approvalDTO
+	  * @return
+	  */
+	@PutMapping("/approval")
+	@ApiOperation(value="故障审批", notes="故障审批")
+	@AutoLog("故障审批")
+	public Result<?> approval(@RequestBody ApprovalDTO approvalDTO) {
+
+		faultService.approval(approvalDTO);
+
+		return Result.OK();
+	}
+
 	/**
 	 *  编辑
 	 *
@@ -79,42 +100,50 @@ public class FaultController extends BaseController<Fault, IFaultService> {
 	 * @return
 	 */
 	@AutoLog(value = "编辑故障单")
-	@ApiOperation(value="fault-编辑", notes="fault-编辑")
+	@ApiOperation(value="故障编辑", notes="故障编辑")
 	@RequestMapping(value = "/edit", method = {RequestMethod.PUT,RequestMethod.POST})
 	public Result<String> edit(@RequestBody Fault fault) {
-		faultService.updateById(fault);
+		faultService.edit(fault);
 		return Result.OK("编辑成功!");
 	}
 
 	/**
-	 *   通过id删除
+	 *   通过code作废
 	 *
-	 * @param id
+	 * @param cancelDTO
 	 * @return
 	 */
-	@AutoLog(value = "fault-通过id删除")
-	@ApiOperation(value="fault-通过id删除", notes="fault-通过id删除")
-	@DeleteMapping(value = "/delete")
-	public Result<String> delete(@RequestParam(name="id",required=true) String id) {
-		faultService.removeById(id);
-		return Result.OK("删除成功!");
+	@AutoLog(value = "故障作废")
+	@ApiOperation(value="故障作废", notes="故障作废")
+	@PutMapping(value = "/cancel")
+	public Result<String> cancel(@RequestBody CancelDTO cancelDTO) {
+		faultService.cancel(cancelDTO);
+		return Result.OK("作废成功!");
 	}
 
 	/**
 	 * 通过id查询
 	 *
-	 * @param id
+	 * @param code
 	 * @return
 	 */
 	@AutoLog(value = "查看故障详情")
 	@ApiOperation(value="fault-通过id查询", notes="fault-通过id查询")
 	@GetMapping(value = "/queryById")
-	public Result<Fault> queryById(@RequestParam(name="id",required=true) String id) {
-		Fault fault = faultService.getById(id);
+	@ApiImplicitParams({
+			@ApiImplicitParam(name = "code", value = "故障编码", required = true, paramType = "query")
+	})
+	public Result<Fault> queryByCode(@RequestParam(name="code",required=true) String code) {
+		Fault fault = faultService.queryByCode(code);
 		if(fault==null) {
 			return Result.error("未找到对应数据");
 		}
 		return Result.OK(fault);
+	}
+
+	@PutMapping("/assign")
+	public Result<?> assign(@RequestBody AssignDTO assignDTO) {
+		return Result.OK();
 	}
 
     /**
