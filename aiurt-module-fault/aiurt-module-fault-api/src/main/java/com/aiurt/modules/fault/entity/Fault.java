@@ -111,7 +111,7 @@ public class Fault implements Serializable {
 	/**接报人*/
 	@Excel(name = "接报人", width = 15)
     @ApiModelProperty(value = "接报人")
-    private String registerUser;
+    private String receiveUserName;
 
 	/**接报时间*/
 	@Excel(name = "接报时间", width = 15, format = "yyyy-MM-dd")
@@ -134,7 +134,7 @@ public class Fault implements Serializable {
 	/**状态*/
 	@Excel(name = "状态", width = 15)
     @ApiModelProperty(value = "状态")
-    private Integer state;
+    private Integer status;
 
 
 	/**紧急程度*/

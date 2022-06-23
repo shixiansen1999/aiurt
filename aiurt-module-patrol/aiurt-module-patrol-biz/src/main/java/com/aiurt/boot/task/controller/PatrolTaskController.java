@@ -1,23 +1,23 @@
 package com.aiurt.boot.task.controller;
 
-import java.util.Arrays;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import org.jeecg.common.api.vo.Result;
+import com.aiurt.boot.task.dto.PatrolTaskDTO;
 import com.aiurt.boot.task.entity.PatrolTask;
 import com.aiurt.boot.task.service.IPatrolTaskService;
-
+import com.aiurt.common.aspect.annotation.AutoLog;
+import com.aiurt.common.system.base.controller.BaseController;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
-
-import com.aiurt.common.system.base.controller.BaseController;
+import org.jeecg.common.api.vo.Result;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import com.aiurt.common.aspect.annotation.AutoLog;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.util.Arrays;
 
  /**
  * @Description: patrol_task
@@ -53,7 +53,6 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
 		IPage<PatrolTask> pageList = patrolTaskService.getTaskList(page, patrolTask);
 		return Result.OK(pageList);
 	}
-
 	/**
 	 *   添加
 	 *
@@ -126,6 +125,54 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
 		}
 		return Result.OK(patrolTask);
 	}
+
+	 /**
+	  * app-巡检任务列表
+	  * @param patrolTaskDTO
+	  * @param pageNo
+	  * @param pageSize
+	  * @param req
+	  * @return
+	  * author hlq
+	  */
+	 @AutoLog(value = "patrol_task-app分页列表查询")
+	 @ApiOperation(value="patrol_task-app分页列表查询", notes="patrol_task-app分页列表查询")
+	 @GetMapping(value = "/patrolTaskList")
+	 public Result<IPage<PatrolTaskDTO>> patrolTaskList(PatrolTaskDTO patrolTaskDTO,
+														@RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
+														@RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
+														HttpServletRequest req) {
+		 Page<PatrolTaskDTO> pageList = new Page<PatrolTaskDTO>(pageNo,pageSize);
+		 pageList = patrolTaskService.getPatrolTaskList(pageList,patrolTaskDTO);
+		 return Result.OK(pageList);
+	 }
+
+	 /**
+	  * app巡检任务领取
+	  * @param patrolTaskDTO
+	  * @param req
+	  * @return
+	  */
+	 @AutoLog(value = "patrol_task-app巡检任务领取")
+	 @ApiOperation(value="patrol_task-app巡检任务领取", notes="patrol_task-app巡检任务领取")
+	 @GetMapping(value = "/patrolTaskReceive")
+	 public Result<IPage<PatrolTaskDTO>> patrolTaskReceive(PatrolTaskDTO patrolTaskDTO, HttpServletRequest req) {
+		   patrolTaskService.getPatrolTaskReceive(patrolTaskDTO);
+		 return Result.OK("领取成功");
+	 }
+	 /**
+	  * app巡检任务领取后-退回
+	  * @param patrolTaskDTO
+	  * @param req
+	  * @return
+	  */
+	 @AutoLog(value = "patrol_task-app巡检任务领取后-退回")
+	 @ApiOperation(value="patrol_task-app巡检任务领取后-退回", notes="patrol_task-app巡检任务领取后-退回")
+	 @GetMapping(value = "/patrolTaskReturn")
+	 public Result<IPage<PatrolTaskDTO>> patrolTaskReturn(PatrolTaskDTO patrolTaskDTO, HttpServletRequest req) {
+		 patrolTaskService.getPatrolTaskReturn(patrolTaskDTO);
+		 return Result.OK("退回成功");
+	 }
 
     /**
     * 导出excel

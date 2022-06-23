@@ -1,5 +1,6 @@
 package com.aiurt.modules.system.controller;
 
+import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.constant.enums.RoleIndexConfigEnum;
 import org.jeecg.common.system.vo.LoginUser;
@@ -342,6 +343,7 @@ public class SysPermissionController {
 	 * @return
 	 */
 	//@RequiresRoles({ "admin" })
+	@AutoLog("编辑菜单")
 	@RequestMapping(value = "/edit", method = { RequestMethod.PUT, RequestMethod.POST })
 	public Result<SysPermission> edit(@RequestBody SysPermission permission) {
 		Result<SysPermission> result = new Result<>();

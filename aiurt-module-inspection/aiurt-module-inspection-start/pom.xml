@@ -8,20 +8,20 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>aiurt-module-inspection-start</artifactId>
-    <dependencies>
-        <!--引入微服务启动依赖 starter-->
-        <dependency>
-            <groupId>org.jeecgframework.boot</groupId>
-            <artifactId>jeecg-boot-starter-cloud</artifactId>
-        </dependency>
-        <!--引入业务模块-->
-        <dependency>
-            <groupId>com.aiurt.boot</groupId>
-            <artifactId>aiurt-module-inspection-biz</artifactId>
-            <version>3.2.0</version>
-        </dependency>
+<!--    <dependencies>-->
+<!--        &lt;!&ndash;引入微服务启动依赖 starter&ndash;&gt;-->
+<!--        <dependency>-->
+<!--            <groupId>org.jeecgframework.boot</groupId>-->
+<!--            <artifactId>jeecg-boot-starter-cloud</artifactId>-->
+<!--        </dependency>-->
+<!--        &lt;!&ndash;引入业务模块&ndash;&gt;-->
+<!--        <dependency>-->
+<!--            <groupId>com.aiurt.boot</groupId>-->
+<!--            <artifactId>aiurt-module-inspection-biz</artifactId>-->
+<!--            <version>3.2.0</version>-->
+<!--        </dependency>-->
 
-    </dependencies>
+<!--    </dependencies>-->
     <build>
         <!-- 打包名称 -->
         <finalName>${project.artifactId}</finalName>

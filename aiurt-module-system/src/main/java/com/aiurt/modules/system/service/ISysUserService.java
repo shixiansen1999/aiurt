@@ -260,18 +260,14 @@ public interface ISysUserService extends IService<SysUser> {
 	/**
 	 * 保存用户
 	 * @param user 用户
-	 * @param selectedRoles 选择的角色id，多个以逗号隔开
-	 * @param selectedDeparts 选择的部门id，多个以逗号隔开
 	 */
-	void saveUser(SysUser user, String selectedRoles, String selectedDeparts);
+	void saveUser(SysUser user);
 
 	/**
 	 * 编辑用户
 	 * @param user 用户
-	 * @param roles 选择的角色id，多个以逗号隔开
-	 * @param departs 选择的部门id，多个以逗号隔开
 	 */
-	void editUser(SysUser user, String roles, String departs);
+	void editUser(SysUser user);
 
 	/**
      * userId转为username

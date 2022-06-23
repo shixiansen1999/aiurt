@@ -2,6 +2,7 @@ package com.aiurt.boot.standard.entity;
 
 import com.aiurt.common.aspect.annotation.Dict;
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -12,6 +13,7 @@ import org.jeecgframework.poi.excel.annotation.Excel;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * @Description: inspection_code_content
@@ -94,4 +96,10 @@ public class InspectionCodeContent implements Serializable {
 	@Dict(dicCode = "yn")
     @ApiModelProperty(value = "是否有子节点")
     private java.lang.String hasChild;
+    /**
+     * 子节点
+     */
+    @TableField(exist = false)
+    @ApiModelProperty(value = "子节点")
+    private List<InspectionCodeContent> children;
 }

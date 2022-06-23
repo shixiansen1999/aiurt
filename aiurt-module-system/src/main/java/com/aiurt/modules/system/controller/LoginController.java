@@ -1,5 +1,6 @@
 package com.aiurt.modules.system.controller;
 
+import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.RandomUtil;
 import com.aiurt.common.constant.CacheConstant;
@@ -62,6 +63,9 @@ public class LoginController {
     private ISysDictService sysDictService;
 	@Resource
 	private BaseCommonService baseCommonService;
+
+	@Autowired
+	private ICsUserMajorService csUserMajorService;
 
 	@ApiOperation("登录接口")
 	@RequestMapping(value = "/login", method = RequestMethod.POST)
@@ -420,6 +424,16 @@ public class LoginController {
 				obj.put("tenantList", tenantList);
 			}
 		}
+
+		// fugaowei 获取用户专业
+		LambdaQueryWrapper<CsUserMajor> wrapper = new LambdaQueryWrapper<>();
+		wrapper.eq(CsUserMajor::getUserId, sysUser.getId());
+		List<CsUserMajor> csUserMajorList = csUserMajorService.getBaseMapper().selectList(wrapper);
+		if (CollectionUtil.isEmpty(csUserMajorList)) {
+			csUserMajorList = Collections.emptyList();
+		}
+		obj.put("majorInfo", csUserMajorList);
+
 		// update-end--Author:sunjianlei Date:20210802 for：获取用户租户信息
 		// 生成token
 		String token = JwtUtil.sign(username, syspassword);

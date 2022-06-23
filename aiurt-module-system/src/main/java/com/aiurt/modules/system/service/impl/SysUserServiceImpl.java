@@ -66,6 +66,16 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
 	@Autowired
 	ThirdAppDingtalkServiceImpl dingtalkService;
 
+	@Autowired
+	private CsUserDepartMapper csUserDepartMapper;
+	@Autowired
+	private CsUserStaionMapper csUserStaionMapper;
+	@Autowired
+	private CsUserMajorMapper csUserMajorMapper;
+	@Autowired
+	private CsUserSubsystemMapper csUserSubsystemMapper;
+
+
     @Override
     @CacheEvict(value = {CacheConstant.SYS_USERS_CACHE}, allEntries = true)
     public Result<?> resetPassword(String username, String oldpassword, String newpassword, String confirmpassword) {
@@ -476,23 +486,56 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
 
 	@Override
 	@Transactional(rollbackFor = Exception.class)
-	public void saveUser(SysUser user, String selectedRoles, String selectedDeparts) {
+	public void saveUser(SysUser user) {
 		//step.1 保存用户
 		this.save(user);
+		String id = user.getId();
 		//step.2 保存角色
-		if(oConvertUtils.isNotEmpty(selectedRoles)) {
-			String[] arr = selectedRoles.split(",");
+		if(oConvertUtils.isNotEmpty(user.getRoleCodes())) {
+			String[] arr = user.getRoleCodes().split(",");
 			for (String roleId : arr) {
-				SysUserRole userRole = new SysUserRole(user.getId(), roleId);
+				SysUserRole userRole = new SysUserRole(id, roleId);
 				sysUserRoleMapper.insert(userRole);
 			}
 		}
-		//step.3 保存所属部门
-		if(oConvertUtils.isNotEmpty(selectedDeparts)) {
-			String[] arr = selectedDeparts.split(",");
-			for (String deaprtId : arr) {
-				SysUserDepart userDeaprt = new SysUserDepart(user.getId(), deaprtId);
-				sysUserDepartMapper.insert(userDeaprt);
+		//step.3 保存部门权限
+		if(oConvertUtils.isNotEmpty(user.getDepartCodes())) {
+			String[] arr = user.getDepartCodes().split(",");
+			for (String departId : arr) {
+				CsUserDepart csUserDepart = new CsUserDepart();
+				csUserDepart.setUserId(id);
+				csUserDepart.setDepartId(departId);
+				csUserDepartMapper.insert(csUserDepart);
+			}
+		}
+		//step.4 保存所属站所
+		if(oConvertUtils.isNotEmpty(user.getStationCodes())) {
+			String[] arr = user.getStationCodes().split(",");
+			for (String stationId : arr) {
+				CsUserStaion csUserStaion = new CsUserStaion();
+				csUserStaion.setUserId(id);
+				csUserStaion.setStationId(stationId);
+				csUserStaionMapper.insert(csUserStaion);
+			}
+		}
+		//step.5 保存专业
+		if(oConvertUtils.isNotEmpty(user.getMajorCodes())) {
+			String[] arr = user.getMajorCodes().split(",");
+			for (String majorId : arr) {
+				CsUserMajor csUserMajor = new CsUserMajor();
+				csUserMajor.setUserId(id);
+				csUserMajor.setMajorId(majorId);
+				csUserMajorMapper.insert(csUserMajor);
+			}
+		}
+		//step.6 保存子系统
+		if(oConvertUtils.isNotEmpty(user.getSystemCodes())) {
+			String[] arr = user.getSystemCodes().split(",");
+			for (String systemId : arr) {
+				CsUserSubsystem csUserSubsystem = new CsUserSubsystem();
+				csUserSubsystem.setUserId(id);
+				csUserSubsystem.setSystemId(systemId);
+				csUserSubsystemMapper.insert(csUserSubsystem);
 			}
 		}
 	}
@@ -500,50 +543,76 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
 	@Override
 	@Transactional(rollbackFor = Exception.class)
 	@CacheEvict(value={CacheConstant.SYS_USERS_CACHE}, allEntries=true)
-	public void editUser(SysUser user, String roles, String departs) {
+	public void editUser(SysUser user) {
 		//step.1 修改用户基础信息
 		this.updateById(user);
+		String id = user.getId();
 		//step.2 修改角色
-		//处理用户角色 先删后加
-		sysUserRoleMapper.delete(new QueryWrapper<SysUserRole>().lambda().eq(SysUserRole::getUserId, user.getId()));
-		if(oConvertUtils.isNotEmpty(roles)) {
-			String[] arr = roles.split(",");
+		if(oConvertUtils.isNotEmpty(user.getRoleCodes())) {
+			//处理用户角色 先删后加
+			sysUserRoleMapper.delete(new QueryWrapper<SysUserRole>().lambda().eq(SysUserRole::getUserId, user.getId()));
+			String[] arr = user.getRoleCodes().split(",");
 			for (String roleId : arr) {
 				SysUserRole userRole = new SysUserRole(user.getId(), roleId);
 				sysUserRoleMapper.insert(userRole);
 			}
 		}
-
-		//step.3 修改部门
+		//step.3 修改部门权限
 		String[] arr = {};
-		if(oConvertUtils.isNotEmpty(departs)){
-			arr = departs.split(",");
-		}
-		//查询已关联部门
-		List<SysUserDepart> userDepartList = sysUserDepartMapper.selectList(new QueryWrapper<SysUserDepart>().lambda().eq(SysUserDepart::getUserId, user.getId()));
-		if(userDepartList != null && userDepartList.size()>0){
-			for(SysUserDepart depart : userDepartList ){
-				//修改已关联部门删除部门用户角色关系
-				if(!Arrays.asList(arr).contains(depart.getDepId())){
-					List<SysDepartRole> sysDepartRoleList = sysDepartRoleMapper.selectList(
-							new QueryWrapper<SysDepartRole>().lambda().eq(SysDepartRole::getDepartId,depart.getDepId()));
-					List<String> roleIds = sysDepartRoleList.stream().map(SysDepartRole::getId).collect(Collectors.toList());
-					if(roleIds != null && roleIds.size()>0){
-						departRoleUserMapper.delete(new QueryWrapper<SysDepartRoleUser>().lambda().eq(SysDepartRoleUser::getUserId, user.getId())
-								.in(SysDepartRoleUser::getDroleId,roleIds));
-					}
-				}
-			}
-		}
-		//先删后加
-		sysUserDepartMapper.delete(new QueryWrapper<SysUserDepart>().lambda().eq(SysUserDepart::getUserId, user.getId()));
-		if(oConvertUtils.isNotEmpty(departs)) {
+		if(oConvertUtils.isNotEmpty(user.getDepartCodes())){
+			arr = user.getDepartCodes().split(",");
+			//先删后加
+			csUserDepartMapper.delete(new QueryWrapper<CsUserDepart>().lambda().eq(CsUserDepart::getUserId, user.getId()));
 			for (String departId : arr) {
-				SysUserDepart userDepart = new SysUserDepart(user.getId(), departId);
-				sysUserDepartMapper.insert(userDepart);
+				CsUserDepart csUserDepart = new CsUserDepart();
+				csUserDepart.setUserId(id);
+				csUserDepart.setDepartId(departId);
+				csUserDepartMapper.insert(csUserDepart);
 			}
 		}
-		//step.4 修改手机号和邮箱
+
+		//step.4 修改所属站所
+		String[] stations = {};
+		if(oConvertUtils.isNotEmpty(user.getStationCodes())){
+			stations = user.getStationCodes().split(",");
+			//先删后加
+			csUserStaionMapper.delete(new QueryWrapper<CsUserStaion>().lambda().eq(CsUserStaion::getUserId, user.getId()));
+			for (String stationId : stations) {
+				CsUserStaion csUserStaion = new CsUserStaion();
+				csUserStaion.setUserId(id);
+				csUserStaion.setStationId(stationId);
+				csUserStaionMapper.insert(csUserStaion);
+			}
+		}
+
+		//step.5 修改专业
+		String[] majors = {};
+		if(oConvertUtils.isNotEmpty(user.getMajorCodes())){
+			majors = user.getMajorCodes().split(",");
+			//先删后加
+			csUserMajorMapper.delete(new QueryWrapper<CsUserMajor>().lambda().eq(CsUserMajor::getUserId, user.getId()));
+			for (String majorId : majors) {
+				CsUserMajor csUserMajor = new CsUserMajor();
+				csUserMajor.setUserId(id);
+				csUserMajor.setMajorId(majorId);
+				csUserMajorMapper.insert(csUserMajor);
+			}
+		}
+
+		//step.6 修改子系统
+		String[] systems = {};
+		if(oConvertUtils.isNotEmpty(user.getSystemCodes())){
+			systems = user.getSystemCodes().split(",");
+			//先删后加
+			csUserSubsystemMapper.delete(new QueryWrapper<CsUserSubsystem>().lambda().eq(CsUserSubsystem::getUserId, user.getId()));
+			for (String systemId : systems) {
+				CsUserSubsystem csUserSubsystem = new CsUserSubsystem();
+				csUserSubsystem.setUserId(id);
+				csUserSubsystem.setSystemId(systemId);
+				csUserSubsystemMapper.insert(csUserSubsystem);
+			}
+		}
+		//step.7 修改手机号和邮箱
 		// 更新手机号、邮箱空字符串为 null
 		userMapper.updateNullByEmptyString("email");
 		userMapper.updateNullByEmptyString("phone");
