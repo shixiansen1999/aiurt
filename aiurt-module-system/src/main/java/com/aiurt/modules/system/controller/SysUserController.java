@@ -2,8 +2,13 @@ package com.aiurt.modules.system.controller;
 
 
 import cn.hutool.core.util.RandomUtil;
+import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.util.RedisUtil;
+import com.aiurt.modules.major.entity.CsMajor;
+import com.aiurt.modules.major.service.ICsMajorService;
+import com.aiurt.modules.subsystem.entity.CsSubsystem;
+import com.aiurt.modules.subsystem.service.ICsSubsystemService;
 import io.swagger.annotations.ApiOperation;
 import org.jeecg.common.system.query.QueryGenerator;
 import com.aiurt.common.system.util.JwtUtil;
@@ -91,7 +96,10 @@ public class SysUserController {
 
     @Autowired
     private BaseCommonService baseCommonService;
-
+    @Autowired
+    private ICsSubsystemService csSubsystemService;
+    @Autowired
+    private ICsMajorService csMajorService;
     /**
      * 获取用户列表数据
      * @param user
@@ -101,6 +109,7 @@ public class SysUserController {
      * @return
      */
   //  @PermissionData(pageComponent = "system/UserList")
+    @ApiOperation(value="用户管理-获取用户列表数据", notes="用户管理-分页列表查询")
 	@RequestMapping(value = "/list", method = RequestMethod.GET)
 	public Result<IPage<SysUser>> queryPageList(SysUser user,@RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
 									  @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,HttpServletRequest req) {
@@ -159,12 +168,11 @@ public class SysUserController {
 		return result;
 	}
 
+    @AutoLog(value = "用户管理-添加用户")
     @ApiOperation("添加用户")
 	@RequestMapping(value = "/add", method = RequestMethod.POST)
 	public Result<SysUser> add(@RequestBody JSONObject jsonObject) {
 		Result<SysUser> result = new Result<SysUser>();
-		String selectedRoles = jsonObject.getString("selectedroles");
-		String selectedDeparts = jsonObject.getString("selecteddeparts");
 		try {
 			SysUser user = JSON.parseObject(jsonObject.toJSONString(), SysUser.class);
 			user.setCreateTime(new Date());//设置创建时间
@@ -175,8 +183,8 @@ public class SysUserController {
 			user.setStatus(1);
 			user.setDelFlag(CommonConstant.DEL_FLAG_0);
 			// 保存用户走一个service 保证事务
-			sysUserService.saveUser(user, selectedRoles, selectedDeparts);
-            baseCommonService.addLog("添加用户，username： " +user.getUsername() ,CommonConstant.LOG_TYPE_2, 2);
+			sysUserService.saveUser(user);
+            //baseCommonService.addLog("添加用户，username： " +user.getUsername() ,CommonConstant.LOG_TYPE_2, 2);
 			result.success("添加成功！");
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
@@ -187,12 +195,13 @@ public class SysUserController {
 
     //@RequiresRoles({"admin"})
     //@RequiresPermissions("user:edit")
+    @AutoLog(value = "用户管理-编辑用户")
 	@RequestMapping(value = "/edit", method = {RequestMethod.PUT,RequestMethod.POST})
 	public Result<SysUser> edit(@RequestBody JSONObject jsonObject) {
 		Result<SysUser> result = new Result<SysUser>();
 		try {
 			SysUser sysUser = sysUserService.getById(jsonObject.getString("id"));
-			baseCommonService.addLog("编辑用户，username： " +sysUser.getUsername() ,CommonConstant.LOG_TYPE_2, 2);
+			//baseCommonService.addLog("编辑用户，username： " +sysUser.getUsername() ,CommonConstant.LOG_TYPE_2, 2);
 			if(sysUser==null) {
 				result.error500("未找到对应实体");
 			}else {
@@ -200,14 +209,8 @@ public class SysUserController {
 				user.setUpdateTime(new Date());
 				//String passwordEncode = PasswordUtil.encrypt(user.getUsername(), user.getPassword(), sysUser.getSalt());
 				user.setPassword(sysUser.getPassword());
-				String roles = jsonObject.getString("selectedroles");
-                String departs = jsonObject.getString("selecteddeparts");
-                if(oConvertUtils.isEmpty(departs)){
-                    //vue3.0前端只传递了departIds
-                    departs=user.getDepartIds();
-                }
                 // 修改用户走一个service 保证事务
-				sysUserService.editUser(user, roles, departs);
+				sysUserService.editUser(user);
 				result.success("修改成功!");
 			}
 		} catch (Exception e) {
@@ -221,6 +224,7 @@ public class SysUserController {
 	 * 删除用户
 	 */
 	//@RequiresRoles({"admin"})
+    @AutoLog(value = "用户管理-通过id删除")
 	@RequestMapping(value = "/delete", method = RequestMethod.DELETE)
 	public Result<?> delete(@RequestParam(name="id",required=true) String id) {
 		baseCommonService.addLog("删除用户，id： " +id ,CommonConstant.LOG_TYPE_2, 3);
@@ -232,6 +236,7 @@ public class SysUserController {
 	 * 批量删除用户
 	 */
 	//@RequiresRoles({"admin"})
+    @AutoLog(value = "用户管理-批量删除")
 	@RequestMapping(value = "/deleteBatch", method = RequestMethod.DELETE)
 	public Result<?> deleteBatch(@RequestParam(name="ids",required=true) String ids) {
 		baseCommonService.addLog("批量删除用户， ids： " +ids ,CommonConstant.LOG_TYPE_2, 3);
@@ -245,6 +250,7 @@ public class SysUserController {
 	 * @return
 	 */
 	//@RequiresRoles({"admin"})
+    @AutoLog(value = "用户管理-冻结&解冻用户")
 	@RequestMapping(value = "/frozenBatch", method = RequestMethod.PUT)
 	public Result<SysUser> frozenBatch(@RequestBody JSONObject jsonObject) {
 		Result<SysUser> result = new Result<SysUser>();
@@ -334,6 +340,7 @@ public class SysUserController {
      * 修改密码
      */
     //@RequiresRoles({"admin"})
+    @AutoLog(value = "用户管理-修改密码")
     @RequestMapping(value = "/changePassword", method = RequestMethod.PUT)
     public Result<?> changePassword(@RequestBody SysUser sysUser) {
         SysUser u = this.sysUserService.getOne(new LambdaQueryWrapper<SysUser>().eq(SysUser::getUsername, sysUser.getUsername()));
@@ -1431,5 +1438,33 @@ public class SysUserController {
         }
         return ls;
     }
+
+    /**
+     * 查询所有专业
+     * @return
+     */
+    @AutoLog(value = "查询所有专业")
+    @ApiOperation(value="查询所有专业", notes="查询所有专业")
+    @GetMapping(value = "/getMajors")
+    public Result<?> getMajors() {
+        List<CsMajor> majorList = csMajorService.list(new LambdaQueryWrapper<CsMajor>().eq(CsMajor::getDelFlag,0));
+        return Result.OK(majorList);
+    }
+
+
+    /**
+     * 根据专业查询子系统
+     * @param majorId
+     * @return
+     */
+    @AutoLog(value = "专业下的子系统")
+    @ApiOperation(value="专业下的子系统", notes="专业下的子系统")
+    @GetMapping(value = "/getSubsystemByMajor")
+    public Result<?> getSubsystemByMajor(@RequestParam(name = "majorId", required = false) String majorId) {
+        List<CsSubsystem> list = csSubsystemService.list(new LambdaQueryWrapper<CsSubsystem>().eq(CsSubsystem::getDelFlag, 0).eq(CsSubsystem::getMajorCode, majorId));
+        return Result.OK(list);
+    }
+
+
 
 }

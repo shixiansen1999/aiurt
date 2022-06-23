@@ -11,6 +11,7 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.constant.CommonConstant;
 import org.jeecg.common.system.query.QueryGenerator;
 import org.jeecg.common.system.vo.LoginUser;
@@ -101,6 +102,7 @@ public class SysRoleController {
 	 * @param role
 	 * @return
 	 */
+	@AutoLog(value = "角色管理-添加角色")
 	@RequestMapping(value = "/add", method = RequestMethod.POST)
 	//@RequiresRoles({"admin"})
 	public Result<SysRole> add(@RequestBody SysRole role) {
@@ -122,6 +124,7 @@ public class SysRoleController {
 	 * @return
 	 */
 	//@RequiresRoles({"admin"})
+	@AutoLog(value = "角色管理-编辑角色")
 	@RequestMapping(value = "/edit",method = {RequestMethod.PUT,RequestMethod.POST})
 	public Result<SysRole> edit(@RequestBody SysRole role) {
 		Result<SysRole> result = new Result<SysRole>();
@@ -146,6 +149,7 @@ public class SysRoleController {
 	 * @return
 	 */
 	//@RequiresRoles({"admin"})
+	@AutoLog(value = "角色管理-通过id删除")
 	@RequestMapping(value = "/delete", method = RequestMethod.DELETE)
 	public Result<?> delete(@RequestParam(name="id",required=true) String id) {
 		sysRoleService.deleteRole(id);
@@ -158,6 +162,7 @@ public class SysRoleController {
 	 * @return
 	 */
 	//@RequiresRoles({"admin"})
+	@AutoLog(value = "角色管理-批量删除")
 	@RequestMapping(value = "/deleteBatch", method = RequestMethod.DELETE)
 	public Result<SysRole> deleteBatch(@RequestParam(name="ids",required=true) String ids) {
 		Result<SysRole> result = new Result<SysRole>();

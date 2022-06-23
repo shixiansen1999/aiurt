@@ -3,6 +3,7 @@ package com.aiurt.modules.system.entity;
 import java.util.Date;
 
 import com.aiurt.common.aspect.annotation.Dict;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableLogic;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -182,4 +183,33 @@ public class SysUser implements Serializable {
 
     /**设备id uniapp推送用*/
     private String clientId;
+
+    /**角色*/
+    @TableField(exist = false)
+    private String roleCodes;
+
+    /**专业*/
+    @TableField(exist = false)
+    private String majorCodes;
+
+    /**子系统*/
+    @TableField(exist = false)
+    private String systemCodes;
+
+    /**线路*/
+    @TableField(exist = false)
+    private String lineCodes;
+
+    /**部门*/
+    @TableField(exist = false)
+    private String departCodes;
+
+    /**站点*/
+    @TableField(exist = false)
+    private String stationCodes;
+
+
+
+
+
 }
