@@ -1,8 +1,11 @@
 package com.aiurt.boot.standard.controller;
 
 import java.util.Arrays;
+import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
+import com.aiurt.boot.standard.entity.PatrolStandard;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.query.QueryGenerator;
 import com.aiurt.boot.standard.entity.PatrolStandardItems;
@@ -57,6 +60,17 @@ public class PatrolStandardItemsController extends BaseController<PatrolStandard
 		return Result.OK(pageList);
 	}
 
+	 /**
+	  * 查询配置巡检项树
+	  *
+	  * @return
+	  */
+	 @AutoLog(value = "查询配置巡检项树")
+	 @ApiOperation(value = "查询配置巡检项树", notes = "查询配置巡检项树")
+	 @GetMapping(value = "/rootList")
+	 public Result<List<PatrolStandardItems>> queryPageList() {
+         return Result.OK( patrolStandardItemsService.queryPageList());
+	 }
 	/**
 	 *   添加
 	 *
@@ -71,6 +85,21 @@ public class PatrolStandardItemsController extends BaseController<PatrolStandard
 		return Result.OK("添加成功！");
 	}
 
+	 /**
+	  * 校验添加内容排序
+	  * @return
+	  */
+	 @AutoLog(value = "校验添加内容排序")
+	 @ApiOperation(value = "校验添加内容排序", notes = "校验添加内容排序")
+	 @GetMapping(value = "/check")
+	 public Result<?> check(@RequestParam(name="order") Integer order,
+							@RequestParam(name="parentId") String parentId) {
+	 	Boolean  b = patrolStandardItemsService.check(order,parentId);
+	 	if (b){
+			return Result.OK("成功");
+		}
+		 return Result.error("重复排序,请重新输入");
+	 }
 	/**
 	 *  编辑
 	 *
@@ -95,7 +124,9 @@ public class PatrolStandardItemsController extends BaseController<PatrolStandard
 	@ApiOperation(value="patrol_standard_items-通过id删除", notes="patrol_standard_items-通过id删除")
 	@DeleteMapping(value = "/delete")
 	public Result<String> delete(@RequestParam(name="id",required=true) String id) {
-		patrolStandardItemsService.removeById(id);
+		PatrolStandardItems patrolStandardItems = new PatrolStandardItems();
+		patrolStandardItems.setId(id); patrolStandardItems.setDelFlag(1);
+		patrolStandardItemsService.updateById(patrolStandardItems);
 		return Result.OK("删除成功!");
 	}
 
@@ -109,7 +140,10 @@ public class PatrolStandardItemsController extends BaseController<PatrolStandard
 	@ApiOperation(value="patrol_standard_items-批量删除", notes="patrol_standard_items-批量删除")
 	@DeleteMapping(value = "/deleteBatch")
 	public Result<String> deleteBatch(@RequestParam(name="ids",required=true) String ids) {
-		this.patrolStandardItemsService.removeByIds(Arrays.asList(ids.split(",")));
+		List<String> id = Arrays.asList(ids.split(","));
+		for (String id1 :id){
+			this.delete(id1);
+		}
 		return Result.OK("批量删除成功!");
 	}
 

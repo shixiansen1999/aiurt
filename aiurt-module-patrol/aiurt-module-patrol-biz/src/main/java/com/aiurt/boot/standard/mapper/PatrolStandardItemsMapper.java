@@ -3,6 +3,8 @@ package com.aiurt.boot.standard.mapper;
 import com.aiurt.boot.standard.entity.PatrolStandardItems;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
+import java.util.List;
+
 /**
  * @Description: patrol_standard_items
  * @Author: aiurt
@@ -11,4 +13,5 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
  */
 public interface PatrolStandardItemsMapper extends BaseMapper<PatrolStandardItems> {
 
+    List<PatrolStandardItems> selectList();
 }

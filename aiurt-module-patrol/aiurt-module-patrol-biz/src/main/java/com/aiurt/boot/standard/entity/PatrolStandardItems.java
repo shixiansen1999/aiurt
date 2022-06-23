@@ -1,8 +1,10 @@
 package com.aiurt.boot.standard.entity;
 
 import java.io.Serializable;
+import java.util.List;
 
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
@@ -97,4 +99,8 @@ public class PatrolStandardItems implements Serializable {
     @DateTimeFormat(pattern="yyyy-MM-dd")
     @ApiModelProperty(value = "更新时间")
     private java.util.Date updateTime;
+	//存放子集
+    @ApiModelProperty(value = "存放子集集合")
+    @TableField(exist = false)
+    private List<PatrolStandardItems> children;
 }

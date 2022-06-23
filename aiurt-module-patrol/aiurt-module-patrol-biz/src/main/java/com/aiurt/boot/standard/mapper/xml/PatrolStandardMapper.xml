@@ -22,7 +22,7 @@
             AND a.code = #{patrolStandard.code}
         </if>
         <if test="patrolStandard.createBy !=null ">
-            AND a.create_by = #{patrolStandard.create_by}
+            AND a.create_by = #{patrolStandard.createBy}
         </if>
         order by a.create_time desc
     </select>
