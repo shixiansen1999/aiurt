@@ -40,6 +40,14 @@ public class InspectionStrStaRel implements Serializable {
 	@Excel(name = "站所编码，关联cs_station_position的code", width = 15)
     @ApiModelProperty(value = "站所编码，关联cs_station_position的code")
     private java.lang.String stationCode;
+    /**线路编号*/
+    @Excel(name = "线路编号", width = 15)
+    @ApiModelProperty(value = "线路编号")
+    private java.lang.String lineCode;
+    /**位置编号*/
+    @Excel(name = "位置编号", width = 15)
+    @ApiModelProperty(value = "位置编号")
+    private java.lang.String positionCode;
 	/**删除状态： 0未删除 1已删除*/
 	@Excel(name = "删除状态： 0未删除 1已删除", width = 15)
     @ApiModelProperty(value = "删除状态： 0未删除 1已删除")

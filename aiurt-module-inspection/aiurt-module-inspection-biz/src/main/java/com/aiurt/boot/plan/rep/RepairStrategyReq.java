@@ -1,6 +1,6 @@
 package com.aiurt.boot.plan.rep;
 
-import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 import javax.validation.constraints.NotBlank;
@@ -13,14 +13,14 @@ import javax.validation.constraints.NotBlank;
  */
 @Data
 public class RepairStrategyReq {
-    @ApiParam(name="id",required=true,value = "检修计划id")
+    @ApiModelProperty(value = "检修计划id")
     @NotBlank(message = "检修计划id不能为空")
     private String id;
-    @ApiParam(name="id",required=false,value = "专业code")
+    @ApiModelProperty(value = "专业code")
     private String majorCode;
-    @ApiParam(name="id",required=false,value = "专业子系统code")
+    @ApiModelProperty(value = "专业子系统code")
     private String subSystemCode;
-    @ApiParam(name="id",required=true,value = "检修标准code")
+    @ApiModelProperty(value = "专业子系统code")
     @NotBlank(message = "检修标准code不能为空")
     private String code;
 }

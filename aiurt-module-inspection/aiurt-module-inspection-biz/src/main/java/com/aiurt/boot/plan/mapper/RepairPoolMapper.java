@@ -23,4 +23,6 @@ public interface RepairPoolMapper extends BaseMapper<RepairPool> {
      * @return
      */
     List<RepairPool> queryList(@Param("startTime") Date startTime, @Param("endTime") Date endTime);
+
+
 }

@@ -26,4 +26,25 @@
             </if>
         </where>
     </select>
+    <select id="translateOrg" resultType="java.lang.String">
+        select depart_name from sys_depart
+        <where>
+            del_flag = 0
+            <if test="codeList.size()>0">
+                and org_code in
+                <foreach item="item" collection="codeList" separator="," open="(" close=")" index="">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+    </select>
+    <select id="translateStation" resultType="java.lang.String">
+        select station_name from cs_station where del_flag = 0 and station_code = #{code}
+    </select>
+    <select id="translateLine" resultType="java.lang.String">
+        select line_name from cs_line where del_flag = 0 and line_code = #{code}
+    </select>
+    <select id="translatePosition" resultType="java.lang.String">
+        select position_name from cs_station_position where del_flag = 0 and position_code = #{code}
+    </select>
 </mapper>

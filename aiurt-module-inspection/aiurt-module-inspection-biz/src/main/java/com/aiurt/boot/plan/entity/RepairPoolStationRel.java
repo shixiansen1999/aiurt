@@ -1,18 +1,18 @@
 package com.aiurt.boot.plan.entity;
 
-import java.io.Serializable;
-
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import lombok.Data;
 import com.fasterxml.jackson.annotation.JsonFormat;
-import org.springframework.format.annotation.DateTimeFormat;
-import org.jeecgframework.poi.excel.annotation.Excel;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
+import org.jeecgframework.poi.excel.annotation.Excel;
+import org.springframework.format.annotation.DateTimeFormat;
+
+import java.io.Serializable;
 
 /**
  * @Description: repair_pool_station_rel
@@ -40,6 +40,14 @@ public class RepairPoolStationRel implements Serializable {
 	@Excel(name = "站所编号", width = 15)
     @ApiModelProperty(value = "站所编号")
     private java.lang.String stationCode;
+	/**线路编号*/
+	@Excel(name = "线路编号", width = 15)
+    @ApiModelProperty(value = "线路编号")
+    private java.lang.String lineCode;
+	/**位置编号*/
+	@Excel(name = "位置编号", width = 15)
+    @ApiModelProperty(value = "位置编号")
+    private java.lang.String positionCode;
 	/**删除状态： 0未删除 1已删除*/
 	@Excel(name = "删除状态： 0未删除 1已删除", width = 15)
     @ApiModelProperty(value = "删除状态： 0未删除 1已删除")

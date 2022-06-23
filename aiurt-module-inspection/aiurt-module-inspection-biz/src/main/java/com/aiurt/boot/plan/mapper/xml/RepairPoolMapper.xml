@@ -5,4 +5,5 @@
     <select id="queryList" resultType="com.aiurt.boot.plan.entity.RepairPool">
 
     </select>
+
 </mapper>

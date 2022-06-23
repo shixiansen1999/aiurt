@@ -131,10 +131,32 @@ public class RepairPoolController extends BaseController<RepairPool, IRepairPool
 		return Result.OK(repairPool);
 	}
 
-	@ApiOperation(value = "获取时间范围和周数", notes = "获取时间范围和周数")
+	/**
+	 * 根据年份获取时间范围和周数
+	 * @param year
+	 * @return
+	 */
+	@AutoLog(value = "根据年份获取时间范围和周数")
+	@ApiOperation(value = "根据年份获取时间范围和周数", notes = "根据年份获取时间范围和周数")
 	@GetMapping(value = "/getTimeInfo")
 	public Result getTimeInfo(@RequestParam @ApiParam(name = "year",value = "年份",required = true) Integer year) {
 		return repairPoolService.getTimeInfo(year);
+	}
+
+
+	/**
+	 * 检修计划池-调整时间
+	 *
+	 * @param
+	 * @return
+	 */
+	@AutoLog(value = "检修计划池-调整时间")
+	@ApiOperation(value = "检修计划池-调整时间", notes = "检修计划池-调整时间")
+	@PostMapping(value = "/updateTime")
+	public Result updateTime(@RequestParam(name = "ids") String ids,
+							 @RequestParam(name = "startTime") String startTime,
+							 @RequestParam(name = "endTime") String endTime) {
+		return repairPoolService.updateTime(ids, startTime, endTime);
 	}
 
 }

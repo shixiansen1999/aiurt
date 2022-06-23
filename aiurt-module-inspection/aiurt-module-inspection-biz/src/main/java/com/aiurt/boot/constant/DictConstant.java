@@ -17,4 +17,16 @@ public class DictConstant {
      * 检修任务状态
      */
     public static final String INSPECTION_TASK_STATE = "inspection_task_state";
+    /**
+     * 作业类型
+     */
+    public static final String WORK_TYPE = "work_type";
+    /**
+     * 是否需要审核、验收
+     */
+    public static final String INSPECTION_IS_CONFIRM = "inspection_is_confirm";
+    /**
+     * 是否需要审核、验收
+     */
+    public static final String 	INSPECTION_IS_MANUAL = "inspection_is_manual";
 }
