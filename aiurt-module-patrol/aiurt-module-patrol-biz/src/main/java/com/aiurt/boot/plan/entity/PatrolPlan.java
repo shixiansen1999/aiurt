@@ -73,6 +73,10 @@ public class PatrolPlan implements Serializable {
 	@Excel(name = "是否需要审核：0否 1是", width = 15)
     @ApiModelProperty(value = "是否需要审核：0否 1是")
     private java.lang.Integer confirm;
+    /**备注*/
+    @Excel(name = "备注", width = 15)
+    @ApiModelProperty(value = "备注")
+    private java.lang.String remark;
 	/**删除状态： 0未删除 1已删除*/
 	@Excel(name = "删除状态： 0未删除 1已删除", width = 15)
     @ApiModelProperty(value = "删除状态： 0未删除 1已删除")
