@@ -8,6 +8,8 @@ import lombok.Data;
 import org.jeecgframework.poi.excel.annotation.Excel;
 import org.springframework.format.annotation.DateTimeFormat;
 
+import java.util.List;
+
 /**
  * @author cgkj0
  * @version 1.0
@@ -39,9 +41,9 @@ public class PatrolTaskDTO
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     @ApiModelProperty(value = "巡检的日期")
     private java.util.Date patrolDate;
-    @Excel(name = "组织机构Id", width = 15)
-    @ApiModelProperty(value = "组织机构Id")
-    private String organizationId;
+    @Excel(name = "组织机构编号", width = 15)
+    @ApiModelProperty(value = "组织机构编号")
+    private List<String> orgCode;
     @Excel(name = "组织机构名称", width = 15)
     @ApiModelProperty(value = "组织机构名称")
     private String organizationName;

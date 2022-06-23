@@ -1,6 +1,7 @@
 package com.aiurt.boot.task.mapper;
 
 import com.aiurt.boot.task.dto.PatrolTaskDTO;
+import com.aiurt.boot.task.dto.PatrolTaskUserContentDTO;
 import com.aiurt.boot.task.entity.PatrolTask;
 import com.aiurt.boot.task.param.PatrolTaskParam;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
@@ -20,21 +21,18 @@ public interface PatrolTaskMapper extends BaseMapper<PatrolTask> {
 
     /**
      * app-列表查询
-     * @param pageList
      * @param patrolTaskDTO
      * @return
      * author hlq
      */
-    List<PatrolTaskDTO>getPatrolTaskList(@Param("pageList") Page<PatrolTaskDTO> pageList, @Param("patrolTaskDTO")PatrolTaskDTO patrolTaskDTO);
-
+    List<PatrolTaskDTO>getPatrolTaskList(Page<PatrolTaskDTO> pageList,@Param("patrolTaskDTO")PatrolTaskDTO patrolTaskDTO);
     /**
      * app-获取组织机构名称
      * @param planCode
-     * @param organizationId
      * @return
      * author hlq
      */
-    List<String> getOrganizationName(@Param("organizationId")String organizationId, @Param("planCode")String planCode);
+    List<String> getOrganizationName(@Param("planCode")String planCode);
     /**
      * app-获取站点名称
      * @param code
@@ -49,7 +47,6 @@ public interface PatrolTaskMapper extends BaseMapper<PatrolTask> {
      * author hlq
      */
     List<String> getPatrolUserName(String code);
-
     /**
      * 查询巡检任务列表
      *
@@ -58,11 +55,30 @@ public interface PatrolTaskMapper extends BaseMapper<PatrolTask> {
      * @return
      */
     IPage<PatrolTaskParam> getTaskList(Page<PatrolTaskParam> page, @Param("patrolTask") PatrolTaskParam patrolTaskParam);
-
     /**
-     * 获取退回人的名称
+     * app-获取退回人的名称
      * @param patrolReturnUserId
      * @return
      */
     String getUserName(String patrolReturnUserId);
+    /**
+     * app-获取部门code
+     * @param planCode
+     * @return
+     */
+    List<String> getOrgCode(String planCode);
+
+    /**
+     * app-获取指派人员信息
+     * @return
+     */
+    List<PatrolTaskUserContentDTO> getUser(@Param("code")String code);
+
+
+    /**
+     * 获取组织机构名成
+     * @param code
+     * @return
+     */
+    String getOrgName(String code);
 }
