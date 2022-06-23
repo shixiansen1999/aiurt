@@ -171,6 +171,7 @@ public class Device {
 	private  java.lang.String  reuseType;
 	@Excel(name = "设备复用类型", width = 15)
 	@ApiModelProperty(value = "设备复用类型(1:多线路复用/0:多站点复用)")
+	@TableField(exist = false)
 	private  java.lang.String  reuseTypeName;
 
 	/**出厂日期*/
@@ -276,6 +277,7 @@ public class Device {
 	private  Integer  delFlag;
 
 	@ApiModelProperty(value = "删除状态 0-未删除 1-已删除")
+	@TableField(exist = false)
 	private  String  delFlagName;
 
 	/**创建人*/
@@ -321,6 +323,7 @@ public class Device {
 
 	@Excel(name = "报废状态")
 	@ApiModelProperty(value = "报废状态 0-未报废 1-已报废")
+	@TableField(exist = false)
 	private  String  scrapFlagName;
 
 }
