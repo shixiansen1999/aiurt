@@ -52,4 +52,9 @@ public class DictConstant {
      * 是否临时设备
      */
     public static final String DEVICE_TEMPORARY = "device_temporary";
+    /**
+     * 检修结果
+     */
+    public static final String OVERHAUL_RESULT = "overhaul_result";
+
 }
