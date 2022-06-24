@@ -31,6 +31,8 @@ import java.util.Arrays;
 @RequestMapping("/modules.basic/sysAttachment")
 @Slf4j
 public class SysAttachmentController extends BaseController<SysAttachment, ISysAttachmentService> {
+
+
 	@Autowired
 	private ISysAttachmentService sysAttachmentService;
 

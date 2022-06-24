@@ -2,6 +2,7 @@ package com.aiurt.modules.fault.service;
 
 
 import com.aiurt.modules.fault.dto.ApprovalDTO;
+import com.aiurt.modules.fault.dto.AssignDTO;
 import com.aiurt.modules.fault.dto.CancelDTO;
 import com.aiurt.modules.fault.entity.Fault;
 import com.baomidou.mybatisplus.extension.service.IService;
@@ -44,4 +45,22 @@ public interface IFaultService extends IService<Fault> {
      * @return
      */
     Fault queryByCode(String code);
+
+    /**
+     * 指派
+     * @param assignDTO
+     */
+    void assign(AssignDTO assignDTO);
+
+    /**
+     * 故障工单领取
+     * @param assignDTO
+     */
+    void receive(AssignDTO assignDTO);
+
+    /**
+     * 领取指派
+     * @param code
+     */
+    void receiveAssignment(String code);
 }

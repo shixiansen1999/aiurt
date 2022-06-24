@@ -14,4 +14,6 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
  */
 public interface FaultMapper extends BaseMapper<Fault> {
 
+     Fault selectByCode(@Param("code") String code);
+
 }
