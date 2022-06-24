@@ -190,6 +190,12 @@ public class PatrolTask implements Serializable {
     @ApiModelProperty(value = "退回人用户ID")
     private java.lang.String backId;
     /**
+     * 退回理由
+     */
+    @Excel(name = "退回理由", width = 15)
+    @ApiModelProperty(value = "退回理由")
+    private java.lang.String backReason;
+    /**
      * 备注
      */
     @Excel(name = "备注", width = 15)
