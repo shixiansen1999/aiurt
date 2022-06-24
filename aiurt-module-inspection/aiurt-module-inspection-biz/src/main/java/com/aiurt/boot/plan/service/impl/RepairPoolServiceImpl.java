@@ -7,6 +7,7 @@ import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.constant.DictConstant;
 import com.aiurt.boot.constant.InspectionConstant;
 import com.aiurt.boot.manager.InspectionManager;
+import com.aiurt.boot.plan.dto.RepairDeviceDTO;
 import com.aiurt.boot.plan.dto.RepairPoolDetailsDTO;
 import com.aiurt.boot.plan.dto.RepairStrategyDTO;
 import com.aiurt.boot.plan.dto.StationDTO;
@@ -14,6 +15,7 @@ import com.aiurt.boot.plan.entity.*;
 import com.aiurt.boot.plan.mapper.*;
 import com.aiurt.boot.plan.rep.RepairStrategyReq;
 import com.aiurt.boot.plan.service.IRepairPoolService;
+import com.aiurt.boot.standard.entity.InspectionCodeContent;
 import com.aiurt.boot.strategy.entity.InspectionStrategy;
 import com.aiurt.boot.strategy.mapper.InspectionStrategyMapper;
 import com.aiurt.common.exception.AiurtBootException;
@@ -31,6 +33,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -58,6 +61,8 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
     private RepairPoolOrgRelMapper orgRelMapper;
     @Resource
     private InspectionStrategyMapper inspectionStrategyMapper;
+    @Resource
+    private RepairPoolDeviceRelMapper repairPoolDeviceRel;
 
     /**
      * 检修计划池列表查询
@@ -140,12 +145,60 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
      * @return
      */
     @Override
-    public List<RepairStrategyDTO> queryStandardById(RepairStrategyReq req) {
-        List<RepairStrategyDTO> result = new ArrayList<>();
-        if (StrUtil.isNotEmpty(req.getId()) && StrUtil.isNotEmpty(req.getCode())) {
+    public RepairStrategyDTO queryStandardById(RepairStrategyReq req) {
+        RepairStrategyDTO result = new RepairStrategyDTO();
+        if (StrUtil.isNotEmpty(req.getStandardId())) {
+
+            LambdaQueryWrapper<RepairPoolCode> poolCodeQueryWrapper = new LambdaQueryWrapper<>();
+            if (StrUtil.isNotEmpty(req.getMajorCode())) {
+                poolCodeQueryWrapper.eq(RepairPoolCode::getMajorCode, req.getMajorCode());
+            }
+            if (StrUtil.isNotEmpty(req.getSubSystemCode())) {
+                poolCodeQueryWrapper.eq(RepairPoolCode::getSubsystemCode, req.getSubSystemCode());
+            }
+            poolCodeQueryWrapper.eq(RepairPoolCode::getId, req.getStandardId());
+
+            RepairPoolCode repairPoolCode = repairPoolCodeMapper.selectOne(poolCodeQueryWrapper);
+            if (ObjectUtil.isNotEmpty(repairPoolCode)) {
+                // 设备清单
+                List<RepairDeviceDTO> repairDeviceDTOList = new ArrayList<>();
+                RepairPoolRel repairPoolRel = relMapper.selectOne(new LambdaQueryWrapper<RepairPoolRel>()
+                        .eq(RepairPoolRel::getRepairPoolCode, req.getCode())
+                        .eq(RepairPoolRel::getRepairPoolStaId, req.getStandardId()));
+                if (ObjectUtil.isNotEmpty(repairPoolRel)) {
+                    List<RepairPoolDeviceRel> repairPoolDeviceRels = repairPoolDeviceRel.selectList(new QueryWrapper<RepairPoolDeviceRel>().eq("id", repairPoolRel.getId()));
+                    if (CollUtil.isNotEmpty(repairPoolDeviceRels)) {
+                        List<String> deviceCodes = repairPoolDeviceRels.stream().map(RepairPoolDeviceRel::getDeviceCode).collect(Collectors.toList());
+                        repairDeviceDTOList = manager.queryDeviceByCodes(deviceCodes);
+                    }
+                }
+                result.setRepairDeviceDTOList(repairDeviceDTOList);
+
+                // 基本信息
+                result.setCode(repairPoolCode.getCode());
+                result.setTitle(repairPoolCode.getTitle());
+                result.setTypeName(sysBaseAPI.translateDict(DictConstant.INSPECTION_CYCLE_TYPE, String.valueOf(repairPoolCode.getType())));
+                result.setMajorName(manager.translateMajor(Arrays.asList(repairPoolCode.getMajorCode()), InspectionConstant.MAJOR));
+                result.setSubsystemName(manager.translateMajor(Arrays.asList(repairPoolCode.getSubsystemCode()), InspectionConstant.SUBSYSTEM));
+                result.setDeviceTypeName(manager.queryNameByCode(repairPoolCode.getCode()));
+                result.setIsAppointDevice(CollUtil.isNotEmpty(repairDeviceDTOList) ? "是" : "否");
+                result.setIsAppointDeviceTyep(sysBaseAPI.translateDict(DictConstant.IS_APPOINT_DEVICE, String.valueOf(repairPoolCode.getIsAppointDevice())));
+
+                // 检修项清单
+                result.setInspectionCodeContentList(selectCodeContentList(repairPoolCode.getId()));
+            }
 
         }
         return result;
+    }
+
+    /**
+     * 检修计划详情查询检修项清单
+     * @param id 检修标准id
+     * @return
+     */
+    private List<InspectionCodeContent> selectCodeContentList(String id) {
+        return null;
     }
 
     /**
@@ -255,10 +308,8 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
         List<RepairPoolCode> repairPoolCodes = new ArrayList<>();
         List<RepairPoolRel> repairPoolRels = relMapper.selectList(new QueryWrapper<RepairPoolRel>().eq("repair_pool_code", planCode));
         if (CollUtil.isNotEmpty(repairPoolRels)) {
-            List<String> standardList = repairPoolRels.stream().map(RepairPoolRel::getRepairPoolStaCode).collect(Collectors.toList());
-            QueryWrapper<RepairPoolCode> poolCodeQueryWrapper = new QueryWrapper<>();
-            poolCodeQueryWrapper.in("code", standardList);
-            repairPoolCodes = repairPoolCodeMapper.selectList(poolCodeQueryWrapper);
+            List<String> standardList = repairPoolRels.stream().map(RepairPoolRel::getRepairPoolStaId).collect(Collectors.toList());
+            repairPoolCodes = repairPoolCodeMapper.selectList(new QueryWrapper<RepairPoolCode>().in("id", standardList));
         }
         return repairPoolCodes;
 

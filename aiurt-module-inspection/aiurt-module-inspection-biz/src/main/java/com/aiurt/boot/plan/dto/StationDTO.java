@@ -21,4 +21,5 @@ public class StationDTO {
     /**位置编号*/
     @ApiModelProperty(value = "位置编号")
     private java.lang.String positionCode;
+
 }

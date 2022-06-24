@@ -1,5 +1,7 @@
 package com.aiurt.boot.manager.mapper;
 
+import com.aiurt.boot.plan.dto.RepairDeviceDTO;
+
 import java.util.List;
 
 /**
@@ -48,4 +50,17 @@ public interface InspectionManagerMapper {
      * @return
      */
     String translatePosition(String positionCode);
+
+    /**
+     * 根据设备编码集合查询设备信息
+     * @param deviceCodes 设备编码集合
+     * @return
+     */
+    List<RepairDeviceDTO> queryDeviceByCodes(List<String> deviceCodes);
+    /**
+     * 根据设备编码集合查询设备信息
+     * @param code 设备类型编码
+     * @return
+     */
+    String queryNameByCode(String code);
 }

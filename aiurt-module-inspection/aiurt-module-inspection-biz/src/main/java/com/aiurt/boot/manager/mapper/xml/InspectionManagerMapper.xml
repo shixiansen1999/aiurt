@@ -47,4 +47,14 @@
     <select id="translatePosition" resultType="java.lang.String">
         select position_name from cs_station_position where del_flag = 0 and position_code = #{code}
     </select>
+    <select id="queryDeviceByCodes" resultType="com.aiurt.boot.plan.dto.RepairDeviceDTO">
+        select cm.major_name,cs.system_name as subsystemName,dt.`name` as deviceTypeName,line_code,station_code,position_code,d.code,d.name,d.status,d.temporary
+        from device d
+        left join cs_major cm on  cm.major_code = d.major_code
+        left join cs_subsystem  cs on cs.system_code = d.system_code
+        left join device_type dt on dt.`code` = d.device_type_code
+    </select>
+    <select id="queryNameByCode" resultType="java.lang.String">
+        select name form device_type where code = #{code}
+    </select>
 </mapper>

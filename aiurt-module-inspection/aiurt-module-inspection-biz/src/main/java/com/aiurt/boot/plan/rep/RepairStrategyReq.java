@@ -13,14 +13,14 @@ import javax.validation.constraints.NotBlank;
  */
 @Data
 public class RepairStrategyReq {
-    @ApiModelProperty(value = "检修计划id")
-    @NotBlank(message = "检修计划id不能为空")
-    private String id;
+    @ApiModelProperty(value = "检修计划单号")
+    @NotBlank(message = "检修计划单号不能为空")
+    private String code;
     @ApiModelProperty(value = "专业code")
     private String majorCode;
     @ApiModelProperty(value = "专业子系统code")
     private String subSystemCode;
-    @ApiModelProperty(value = "专业子系统code")
-    @NotBlank(message = "检修标准code不能为空")
-    private String code;
+    @ApiModelProperty(value = "检修标准id")
+    @NotBlank(message = "检修标准id不能为空")
+    private String standardId;
 }

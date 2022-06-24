@@ -1,21 +1,18 @@
 package com.aiurt.boot.task.entity;
 
-import java.io.Serializable;
-import java.io.UnsupportedEncodingException;
-import java.util.Date;
-import java.math.BigDecimal;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import lombok.Data;
 import com.fasterxml.jackson.annotation.JsonFormat;
-import org.springframework.format.annotation.DateTimeFormat;
-import org.jeecgframework.poi.excel.annotation.Excel;
-import com.aiurt.common.aspect.annotation.Dict;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
+import org.jeecgframework.poi.excel.annotation.Excel;
+import org.springframework.format.annotation.DateTimeFormat;
+
+import java.io.Serializable;
 
 /**
  * @Description: repair_task_enclosure
@@ -34,11 +31,11 @@ public class RepairTaskEnclosure implements Serializable {
 	/**主键id*/
 	@TableId(type = IdType.ASSIGN_ID)
     @ApiModelProperty(value = "主键id")
-    private java.lang.Integer id;
+    private java.lang.String id;
 	/**关联repair_task_device_rel表的id*/
 	@Excel(name = "关联repair_task_device_rel表的id", width = 15)
-    @ApiModelProperty(value = "关联repair_task_device_rel表的id")
-    private java.lang.Integer taskDeviceRelId;
+    @ApiModelProperty(value = "关联repair_task_result表的id")
+    private java.lang.String repairTaskResultId;
 	/**url地址*/
 	@Excel(name = "url地址", width = 15)
     @ApiModelProperty(value = "url地址")

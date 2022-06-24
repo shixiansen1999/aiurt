@@ -40,4 +40,16 @@ public class DictConstant {
      */
     public static final String   INSPECTION_IS_MANUAL = "inspection_is_manual";
 
+    /**
+     * 是否与设备类型相关
+     */
+    public static final String IS_APPOINT_DEVICE = "is_appoint_device";
+    /**
+     * 设备状态
+     */
+    public static final String DEVICE_STATUS = "device_status";
+    /**
+     * 是否临时设备
+     */
+    public static final String DEVICE_TEMPORARY = "device_temporary";
 }

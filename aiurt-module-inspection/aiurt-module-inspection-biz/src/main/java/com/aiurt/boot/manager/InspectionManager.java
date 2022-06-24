@@ -3,13 +3,17 @@ package com.aiurt.boot.manager;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
+import com.aiurt.boot.constant.DictConstant;
 import com.aiurt.boot.constant.InspectionConstant;
 import com.aiurt.boot.manager.mapper.InspectionManagerMapper;
+import com.aiurt.boot.plan.dto.RepairDeviceDTO;
 import com.aiurt.boot.plan.dto.StationDTO;
+import org.jeecg.common.system.api.ISysBaseAPI;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -21,7 +25,8 @@ import java.util.List;
 @Service
 public class InspectionManager {
 
-
+    @Resource
+    private ISysBaseAPI sysBaseAPI;
     @Resource
     private InspectionManagerMapper inspectionManagerMapper;
 
@@ -92,5 +97,42 @@ public class InspectionManager {
         return "";
     }
 
+
+    /**
+     * 根据设备编码集合查询设备信息
+     *
+     * @param deviceCodes 设备编码集合
+     * @return
+     */
+    public List<RepairDeviceDTO> queryDeviceByCodes(List<String> deviceCodes) {
+        List<RepairDeviceDTO> repairDeviceDTOList = new ArrayList<>();
+        if (CollUtil.isNotEmpty(deviceCodes)) {
+            repairDeviceDTOList = inspectionManagerMapper.queryDeviceByCodes(deviceCodes);
+            if(CollUtil.isNotEmpty(repairDeviceDTOList)){
+                for (RepairDeviceDTO repairDeviceDTO : repairDeviceDTOList) {
+                    repairDeviceDTO.setStatusName(sysBaseAPI.translateDict(DictConstant.DEVICE_STATUS,String.valueOf(repairDeviceDTO.getStatus())));
+                    repairDeviceDTO.setTemporaryName(sysBaseAPI.translateDict(DictConstant.DEVICE_TEMPORARY,String.valueOf(repairDeviceDTO.getTemporary())));
+                    StationDTO stationDTO = new StationDTO();
+                    stationDTO.setLineCode(repairDeviceDTO.getLineCode());
+                    stationDTO.setStationCode(repairDeviceDTO.getStationCode());
+                    stationDTO.setPositionCode(repairDeviceDTO.getPositionCode());
+                    String positionCodeName = translateStation(Arrays.asList(stationDTO));
+                    repairDeviceDTO.setPositionCodeName(positionCodeName);
+                }
+            }
+        }
+        return repairDeviceDTOList;
+
+    }
+
+    /**
+     * 查询设备类型信息
+     *
+     * @param code code值
+     * @return
+     */
+    public String queryNameByCode(String code) {
+        return inspectionManagerMapper.queryNameByCode(code);
+    }
 
 }
