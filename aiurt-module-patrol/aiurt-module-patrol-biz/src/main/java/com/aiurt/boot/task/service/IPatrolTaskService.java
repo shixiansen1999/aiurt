@@ -57,6 +57,13 @@ public interface IPatrolTaskService extends IService<PatrolTask> {
     IPage<PatrolTaskParam> getTaskList(Page<PatrolTaskParam> page, PatrolTaskParam patrolTaskParam);
 
     /**
+     * app巡检任务-指派人员
+     * @param patrolTaskUserDTO
+     * @return
+     */
+   void getPatrolTaskAppoint(List<PatrolTaskUserDTO> patrolTaskUserDTO);
+
+    /**
      * PC巡检任务池详情-基本信息
      * @return
      */

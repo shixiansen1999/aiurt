@@ -14,18 +14,13 @@ import java.util.List;
  */
 @Data
 public class PatrolTaskUserDTO {
-    @Excel(name = "组织机构编号", width = 15)
-    @ApiModelProperty(value = "组织机构编号")
-    private String orgCode;
     @Excel(name = "组织机构名称", width = 15)
     @ApiModelProperty(value = "组织机构名称")
     private String organizationName;
+    @Excel(name = "任务编码编号", width = 15)
+    @ApiModelProperty(value = "任务编码编号")
+    private String taskCode;
     @Excel(name = "人员信息", width = 15)
     @ApiModelProperty(value = "人员信息")
     private List<PatrolTaskUserContentDTO> userList;
-    @Excel(name = "人员信息", width = 15)
-    @ApiModelProperty(value = "人员信息")
-    private List<PatrolTaskUserDTO> list;
-
-
 }

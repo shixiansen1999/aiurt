@@ -158,7 +158,6 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
         pageList = patrolTaskService.getPatrolTaskList(pageList, patrolTaskDTO);
         return Result.OK(pageList);
     }
-
     /**
      * app巡检任务领取、确认、执行、退回、执行中任务提交
      *
@@ -188,7 +187,6 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
         patrolTaskService.getPatrolTaskReturn(patrolTaskDTO);
         return Result.OK("退回成功");
     }
-
     /**
      * app巡检任务执行中-检查
      *
@@ -218,7 +216,19 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
         List<PatrolTaskUserDTO> patrolTaskUserDTOS = patrolTaskService.getPatrolTaskAppointSelect(patrolTaskDTO);
         return patrolTaskUserDTOS;
     }
-
+    /**
+     * app巡检任务-指派人员
+     * @param patrolTaskUserDTO
+     * @param req
+     * @return
+     */
+    @AutoLog(value = "patrol_task-指派人员")
+    @ApiOperation(value="patrol_task-指派人员", notes="patrol_task-指派人员")
+    @PostMapping(value = "/patrolTaskAppoint")
+    public Result<?>  patrolTaskAppoint(@RequestBody List<PatrolTaskUserDTO> patrolTaskUserDTO, HttpServletRequest req) {
+        patrolTaskService.getPatrolTaskAppoint(patrolTaskUserDTO);
+        return Result.OK("指派成功");
+    }
     /**
      * 导出excel
      *
