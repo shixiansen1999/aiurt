@@ -40,6 +40,7 @@ public class PatrolTask implements Serializable {
      */
     @Excel(name = "任务编号", width = 15)
     @ApiModelProperty(value = "任务编号")
+    @TableField(value = "`code`")
     private java.lang.String code;
     /**
      * 计划编号
@@ -107,10 +108,10 @@ public class PatrolTask implements Serializable {
     @ApiModelProperty(value = "巡检结束时间")
     private java.util.Date endTime;
     /**
-     * 任务获取方式：1 常规分发、2常规指派、3 手工下发
+     * 任务获取方式：1 个人领取、2常规指派、3 手工下发
      */
-    @Excel(name = "任务获取方式：1 常规分发、2常规指派、3 手工下发", width = 15)
-    @ApiModelProperty(value = "任务获取方式：1 常规分发、2常规指派、3 手工下发")
+    @Excel(name = "任务获取方式：1 个人领取、2常规指派、3 手工下发", width = 15)
+    @ApiModelProperty(value = "任务获取方式：1 个人领取、2常规指派、3 手工下发")
     private java.lang.Integer source;
     /**
      * 巡检结果提交时间

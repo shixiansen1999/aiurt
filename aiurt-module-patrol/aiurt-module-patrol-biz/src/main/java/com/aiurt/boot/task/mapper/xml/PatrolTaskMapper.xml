@@ -66,28 +66,33 @@
         where id = #{patrolReturnUserId}
     </select>
     <select id="getOrgCode" resultType="java.lang.String">
-       select t2.org_code
+        select t2.org_code
         from patrol_plan_organization t1
                  left join sys_depart t2 on t1.organization_code = t2.org_code
         where t1.plan_code = #{planCode}
-</select>
-<select id="getUser" resultType="com.aiurt.boot.task.dto.PatrolTaskUserContentDTO">
-		    select
-        t1.realname as realname,
-        t1.id,
-        t1.org_code
-from sys_user t1
+    </select>
+    <select id="getUser" resultType="com.aiurt.boot.task.dto.PatrolTaskUserContentDTO">
+        select t1.realname as realname,
+               t1.id,
+               t1.org_code
+        from sys_user t1
 
-where  t1.org_code = #{code}
-
+        where t1.org_code = #{code}
 
 
-</select>
-<select id="getOrgName" resultType="java.lang.String">
-   select t2.depart_name
-        from
-             sys_depart t2
+    </select>
+    <select id="getOrgName" resultType="java.lang.String">
+        select t2.depart_name
+        from sys_depart t2
         where t2.org_code = #{code}
-</select>
+    </select>
+    <select id="selectBasicInfo" resultType="com.aiurt.boot.task.param.PatrolTaskParam">
+        SELECT *
+        FROM patrol_task pt
+        WHERE pt.del_flag = 0
+        <if test="patrolTaskParam.id != null and patrolTaskParam.id != ''">
+            and pt.id = #{patrolTaskParam.id}
+        </if>
+    </select>
 
 </mapper>

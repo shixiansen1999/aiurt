@@ -21,32 +21,36 @@ public interface PatrolTaskMapper extends BaseMapper<PatrolTask> {
 
     /**
      * app-列表查询
+     *
      * @param patrolTaskDTO
-     * @return
-     * author hlq
+     * @return author hlq
      */
-    List<PatrolTaskDTO>getPatrolTaskList(Page<PatrolTaskDTO> pageList,@Param("patrolTaskDTO")PatrolTaskDTO patrolTaskDTO);
+    List<PatrolTaskDTO> getPatrolTaskList(Page<PatrolTaskDTO> pageList, @Param("patrolTaskDTO") PatrolTaskDTO patrolTaskDTO);
+
     /**
      * app-获取组织机构名称
+     *
      * @param planCode
-     * @return
-     * author hlq
+     * @return author hlq
      */
-    List<String> getOrganizationName(@Param("planCode")String planCode);
+    List<String> getOrganizationName(@Param("planCode") String planCode);
+
     /**
      * app-获取站点名称
+     *
      * @param code
-     * @return
-     * author hlq
+     * @return author hlq
      */
     List<String> getStationName(String code);
+
     /**
      * app-获取巡检人名称
+     *
      * @param code
-     * @return
-     * author hlq
+     * @return author hlq
      */
     List<String> getPatrolUserName(String code);
+
     /**
      * 查询巡检任务列表
      *
@@ -55,14 +59,18 @@ public interface PatrolTaskMapper extends BaseMapper<PatrolTask> {
      * @return
      */
     IPage<PatrolTaskParam> getTaskList(Page<PatrolTaskParam> page, @Param("patrolTask") PatrolTaskParam patrolTaskParam);
+
     /**
      * app-获取退回人的名称
+     *
      * @param patrolReturnUserId
      * @return
      */
     String getUserName(String patrolReturnUserId);
+
     /**
      * app-获取部门code
+     *
      * @param planCode
      * @return
      */
@@ -70,15 +78,25 @@ public interface PatrolTaskMapper extends BaseMapper<PatrolTask> {
 
     /**
      * app-获取指派人员信息
+     *
      * @return
      */
-    List<PatrolTaskUserContentDTO> getUser(@Param("code")String code);
+    List<PatrolTaskUserContentDTO> getUser(@Param("code") String code);
 
 
     /**
      * 获取组织机构名成
+     *
      * @param code
      * @return
      */
     String getOrgName(String code);
+
+    /**
+     * PC巡检任务池详情-基本信息
+     *
+     * @param patrolTaskParam
+     * @return
+     */
+    PatrolTaskParam selectBasicInfo(@Param("patrolTaskParam") PatrolTaskParam patrolTaskParam);
 }
