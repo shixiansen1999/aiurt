@@ -172,7 +172,7 @@ public class FaultController extends BaseController<Fault, IFaultService> {
 
     @AutoLog(value = "拒收指派")
     @ApiOperation(value = "拒收指派", notes = "拒收指派")
-    @PutMapping("/receiveAssignment")
+    @PutMapping("/refuseAssignment")
     private Result<?> refuseAssignment(@RequestBody RefuseAssignmentDTO refuseAssignmentDTO) {
         return Result.OK();
     }

@@ -83,14 +83,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         }
 
         // 记录日志
-        OperationProcess operationProcess = OperationProcess.builder()
-                .processLink("故障上报")
-                .processTime(new Date())
-                .faultCode(fault.getCode())
-                .processPerson(user.getUsername())
-                .processCode(1)
-                .build();
-        operationProcessService.save(operationProcess);
+        saveLog(user, "故障上报", fault.getCode(), 1);
 
         // todo 消息通知
 
@@ -168,14 +161,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         updateById(fault);
 
         // 记录日志
-        OperationProcess operationProcess = OperationProcess.builder()
-                .processLink("作废")
-                .processTime(new Date())
-                .faultCode(fault.getCode())
-                .processPerson(user.getUsername())
-                .processCode(0)
-                .build();
-        operationProcessService.save(operationProcess);
+        saveLog(user, "作废", fault.getCode(), 0);
     }
 
     /**
@@ -206,8 +192,10 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
     public void assign(AssignDTO assignDTO) {
         LoginUser user = checkLogin();
 
-
+        saveLog(user, "指派", assignDTO.getFaultCode(), 0);
     }
+
+
 
 
     /**
@@ -260,5 +248,23 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         }
 
         return fault;
+    }
+
+    /**
+     * 保存日志
+     * @param user
+     * @param context
+     * @param faultCode
+     * @param status
+     */
+    private void saveLog(LoginUser user, String context, String faultCode, int status) {
+        OperationProcess operationProcess = OperationProcess.builder()
+                .processLink(context)
+                .processTime(new Date())
+                .faultCode(faultCode)
+                .processPerson(user.getUsername())
+                .processCode(status)
+                .build();
+        operationProcessService.save(operationProcess);
     }
 }
