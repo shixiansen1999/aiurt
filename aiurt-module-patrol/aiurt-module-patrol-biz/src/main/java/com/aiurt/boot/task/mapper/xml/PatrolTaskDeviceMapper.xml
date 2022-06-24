@@ -2,4 +2,9 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.aiurt.boot.task.mapper.PatrolTaskDeviceMapper">
 
+    <select id="selectBillInfo" resultType="com.aiurt.boot.task.param.PatrolTaskDeviceParam">
+        SELECT ptd.*
+        FROM patrol_task_device ptd
+        WHERE ptd.del_flag = 0
+    </select>
 </mapper>

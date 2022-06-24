@@ -3,7 +3,9 @@ package com.aiurt.boot.task.controller;
 import com.aiurt.boot.task.dto.PatrolTaskDTO;
 import com.aiurt.boot.task.dto.PatrolTaskUserDTO;
 import com.aiurt.boot.task.entity.PatrolTask;
+import com.aiurt.boot.task.param.PatrolTaskDeviceParam;
 import com.aiurt.boot.task.param.PatrolTaskParam;
+import com.aiurt.boot.task.service.IPatrolTaskDeviceService;
 import com.aiurt.boot.task.service.IPatrolTaskService;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.system.base.controller.BaseController;
@@ -35,6 +37,8 @@ import java.util.List;
 public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTaskService> {
     @Autowired
     private IPatrolTaskService patrolTaskService;
+    @Autowired
+    private IPatrolTaskDeviceService patrolTaskDeviceService;
 
     /**
      * 分页列表查询
@@ -47,7 +51,7 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
      */
     //@AutoLog(value = "patrol_task-分页列表查询")
     @ApiOperation(value = "PC巡检任务池列表-分页列表查询", notes = "PC巡检任务池列表-分页列表查询")
-    @GetMapping(value = "/list")
+    @RequestMapping(value = "/list", method = {RequestMethod.GET, RequestMethod.POST})
     public Result<IPage<PatrolTaskParam>> queryPageList(PatrolTaskParam patrolTaskParam,
                                                         @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
                                                         @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize,
@@ -58,11 +62,18 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
     }
 
     @ApiOperation(value = "PC巡检任务池详情-基本信息", notes = "PC巡检任务池详情-基本信息")
-    @GetMapping(value = "/basicInfo")
+    @RequestMapping(value = "/basicInfo", method = {RequestMethod.GET, RequestMethod.POST})
     public Result<PatrolTaskParam> selectBasicInfo(@RequestBody PatrolTaskParam patrolTaskParam,
                                                    HttpServletRequest req) {
         PatrolTaskParam task = patrolTaskService.selectBasicInfo(patrolTaskParam);
         return Result.OK(task);
+    }
+
+    @ApiOperation(value = "PC巡检任务池详情-巡检工单", notes = "PC巡检任务池详情-巡检工单")
+    @RequestMapping(value = "/billInfo", method = {RequestMethod.GET, RequestMethod.POST})
+    public Result<?> selectBillInfo(PatrolTaskDeviceParam patrolTaskDeviceParam, HttpServletRequest req) {
+        List<PatrolTaskDeviceParam> taskDevice = patrolTaskDeviceService.selectBillInfo(patrolTaskDeviceParam);
+        return Result.OK(taskDevice);
     }
 
     /**
@@ -158,6 +169,7 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
         pageList = patrolTaskService.getPatrolTaskList(pageList, patrolTaskDTO);
         return Result.OK(pageList);
     }
+
     /**
      * app巡检任务领取、确认、执行、退回、执行中任务提交
      *
@@ -187,6 +199,7 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
         patrolTaskService.getPatrolTaskReturn(patrolTaskDTO);
         return Result.OK("退回成功");
     }
+
     /**
      * app巡检任务执行中-检查
      *
@@ -216,19 +229,22 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
         List<PatrolTaskUserDTO> patrolTaskUserDTOS = patrolTaskService.getPatrolTaskAppointSelect(patrolTaskDTO);
         return patrolTaskUserDTOS;
     }
+
     /**
      * app巡检任务-指派人员
+     *
      * @param patrolTaskUserDTO
      * @param req
      * @return
      */
     @AutoLog(value = "patrol_task-指派人员")
-    @ApiOperation(value="patrol_task-指派人员", notes="patrol_task-指派人员")
+    @ApiOperation(value = "patrol_task-指派人员", notes = "patrol_task-指派人员")
     @PostMapping(value = "/patrolTaskAppoint")
-    public Result<?>  patrolTaskAppoint(@RequestBody List<PatrolTaskUserDTO> patrolTaskUserDTO, HttpServletRequest req) {
+    public Result<?> patrolTaskAppoint(@RequestBody List<PatrolTaskUserDTO> patrolTaskUserDTO, HttpServletRequest req) {
         patrolTaskService.getPatrolTaskAppoint(patrolTaskUserDTO);
         return Result.OK("指派成功");
     }
+
     /**
      * 导出excel
      *

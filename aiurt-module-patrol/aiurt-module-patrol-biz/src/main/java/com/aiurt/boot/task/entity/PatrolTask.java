@@ -134,11 +134,18 @@ public class PatrolTask implements Serializable {
     @ApiModelProperty(value = "任务提交的用户签名图片")
     private java.lang.String signUrl;
     /**
-     * 任务状态：0待指派、1待确认、2待执行、3已退回、4执行中、5待审核、6已完成
+     * 任务状态：0待指派、1待确认、2待执行、3已退回、4执行中、5已驳回、6待审核、7已完成
      */
-    @Excel(name = "任务状态：0待指派、1待确认、2待执行、3已退回、4执行中、5待审核、6已完成", width = 15)
-    @ApiModelProperty(value = "任务状态：0待指派、1待确认、2待执行、3已退回、4执行中、5待审核、6已完成")
+    @Excel(name = "任务状态：0待指派、1待确认、2待执行、3已退回、4执行中、5已驳回、6待审核、7已完成", width = 15)
+    @ApiModelProperty(value = "任务状态：0待指派、1待确认、2待执行、3已退回、4执行中、5已驳回、6待审核、7已完成")
     private java.lang.Integer status;
+    /**
+     * 驳回原因
+     */
+    @Excel(name = "驳回原因", width = 15)
+    @ApiModelProperty(value = "驳回原因")
+    private java.lang.String rejectReason;
+
     /**
      * 是否需要审核：0否、1是
      */

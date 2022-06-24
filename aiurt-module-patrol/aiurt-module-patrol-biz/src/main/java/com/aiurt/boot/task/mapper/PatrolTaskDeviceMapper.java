@@ -1,7 +1,10 @@
 package com.aiurt.boot.task.mapper;
 
 import com.aiurt.boot.task.entity.PatrolTaskDevice;
+import com.aiurt.boot.task.param.PatrolTaskDeviceParam;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+
+import java.util.List;
 
 /**
  * @Description: patrol_task_device
@@ -11,4 +14,5 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
  */
 public interface PatrolTaskDeviceMapper extends BaseMapper<PatrolTaskDevice> {
 
+    List<PatrolTaskDeviceParam> selectBillInfo(PatrolTaskDeviceParam patrolTaskDeviceParam);
 }

@@ -37,6 +37,10 @@ public class PatrolTaskStandard implements Serializable {
 	@Excel(name = "巡检任务表ID", width = 15)
     @ApiModelProperty(value = "巡检任务表ID")
     private java.lang.String taskId;
+    /**巡检标准表ID*/
+    @Excel(name = "巡检标准表ID", width = 15)
+    @ApiModelProperty(value = "巡检标准表ID")
+    private java.lang.String standardId;
 	/**标准编号*/
 	@Excel(name = "标准编号", width = 15)
     @ApiModelProperty(value = "标准编号")
