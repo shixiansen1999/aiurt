@@ -5,6 +5,7 @@ import java.io.UnsupportedEncodingException;
 import java.util.Date;
 import java.math.BigDecimal;
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
@@ -43,10 +44,6 @@ public class FaultAnalysisReport implements Serializable {
 	@Excel(name = "故障分析", width = 15)
     @ApiModelProperty(value = "故障分析")
     private String faultAnalysis;
-	/**故障现象*/
-	@Excel(name = "故障现象", width = 15)
-    @ApiModelProperty(value = "故障现象")
-    private String faultPhenomenon;
 	/**解决方案*/
 	@Excel(name = "解决方案", width = 15)
     @ApiModelProperty(value = "解决方案")
@@ -74,4 +71,34 @@ public class FaultAnalysisReport implements Serializable {
 	@Excel(name = "删除标志", width = 15)
     @ApiModelProperty(value = "删除标志")
     private Integer delFlag;
+
+    /**故障现象*/
+    @Excel(name = "故障现象", width = 15)
+    @ApiModelProperty(value = "故障现象")
+    @TableField(exist = false)
+    private String faultPhenomenon;
+
+    /**状态*/
+    @Excel(name = "状态", width = 15)
+    @ApiModelProperty(value = "状态")
+    @TableField(exist = false)
+    private Integer status;
+
+    /**故障分类名称*/
+    @Excel(name = "故障分类名称", width = 15)
+    @ApiModelProperty(value = "故障分类名称")
+    @TableField(exist = false)
+    private String faultTypeName;
+
+    /**开始日期*/
+    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
+    @DateTimeFormat(pattern="yyyy-MM-dd")
+    @ApiModelProperty(value = "创建日期")
+    private Date startTime;
+
+    /**结束日期*/
+    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
+    @DateTimeFormat(pattern="yyyy-MM-dd")
+    @ApiModelProperty(value = "创建日期")
+    private Date endTime;
 }

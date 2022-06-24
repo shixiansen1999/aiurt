@@ -37,7 +37,7 @@ public interface IRepairPoolService extends IService<RepairPool> {
      * @param req
      * @return
      */
-    List<RepairStrategyDTO> queryStandardById(RepairStrategyReq req);
+    RepairStrategyDTO queryStandardById(RepairStrategyReq req);
 
     /**
      * 通过检修计划id查看详情

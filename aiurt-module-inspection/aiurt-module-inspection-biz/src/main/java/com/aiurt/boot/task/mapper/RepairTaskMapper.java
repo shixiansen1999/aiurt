@@ -2,6 +2,7 @@ package com.aiurt.boot.task.mapper;
 
 import com.aiurt.boot.plan.dto.StationDTO;
 import com.aiurt.boot.task.entity.RepairTask;
+import com.aiurt.boot.task.entity.RepairTaskDTO;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.ibatis.annotations.Param;
@@ -31,7 +32,7 @@ public interface RepairTaskMapper extends BaseMapper<RepairTask> {
      * @param condition
      * @return
      */
-    List<RepairTask> selectTasklet(@Param("pageList") Page<RepairTask> pageList, @Param("condition") RepairTask condition);
+    List<RepairTaskDTO> selectTasklet(@Param("pageList") Page<RepairTaskDTO> pageList, @Param("condition") RepairTaskDTO condition);
 
 
     /**
@@ -40,5 +41,12 @@ public interface RepairTaskMapper extends BaseMapper<RepairTask> {
      * @return
      */
     List<StationDTO> selectStationList(String planCode);
+
+    /**
+     * 查询编码信息
+     * @param id
+     * @return
+     */
+    List<RepairTaskDTO> selectCodeList(String id);
 
 }

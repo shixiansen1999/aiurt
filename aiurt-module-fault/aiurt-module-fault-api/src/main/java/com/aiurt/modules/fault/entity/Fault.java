@@ -181,14 +181,14 @@ public class Fault implements Serializable {
     private String createBy;
 
 	/**创建日期*/
-	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
-    @DateTimeFormat(pattern="yyyy-MM-dd")
+	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
+    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
     @ApiModelProperty(value = "创建日期")
     private Date createTime;
 
 	/**更新日期*/
-	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
-    @DateTimeFormat(pattern="yyyy-MM-dd")
+	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
+    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
     @ApiModelProperty(value = "更新日期")
     private Date updateTime;
 
@@ -227,9 +227,19 @@ public class Fault implements Serializable {
 	private List<FaultDevice> faultDeviceList;
 
 	@ApiModelProperty("推荐的故障知识库id, 逗号隔开")
-	private String knowledge_base_id;
+    @TableField(exist = false)
+	private String knowledgeBaseId;
 
 	@ApiModelProperty(value = "yn, 是否委外 1:是,0否", required = true)
     @Dict(dicCode = "yn")
 	private Integer isOutsource;
+
+	@ApiModelProperty(value = "作废用户")
+	private String cancelUserName;
+
+    @ApiModelProperty(value = "作废时间")
+    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
+    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
+    private Date cancelTime;
+
 }

@@ -66,10 +66,9 @@ public class FaultAnalysisReportController extends BaseController<FaultAnalysisR
 								   @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
 								   @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
 								   HttpServletRequest req) {
-		QueryWrapper<FaultAnalysisReport> queryWrapper = QueryGenerator.initQueryWrapper(faultAnalysisReport, req.getParameterMap());
 		Page<FaultAnalysisReport> page = new Page<FaultAnalysisReport>(pageNo, pageSize);
-		IPage<FaultAnalysisReport> pageList = faultAnalysisReportService.page(page, queryWrapper);
-		return Result.OK(pageList);
+		IPage<FaultAnalysisReport> faultAnalysisReports = faultAnalysisReportService.readAll(page, faultAnalysisReport);
+		return Result.OK(faultAnalysisReports);
 	}
 
 	/**
