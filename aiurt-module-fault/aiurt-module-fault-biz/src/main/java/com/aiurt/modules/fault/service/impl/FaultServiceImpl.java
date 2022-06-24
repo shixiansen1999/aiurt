@@ -29,7 +29,7 @@ import java.util.Objects;
 /**
  * @Description: fault
  * @Author: aiurt
- * @Date:   2022-06-22
+ * @Date: 2022-06-22
  * @Version: V1.0
  */
 @Service
@@ -44,6 +44,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
 
     /**
      * 故障上报
+     *
      * @param fault 故障对象
      */
     @Override
@@ -98,6 +99,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
 
     /**
      * 故障审批
+     *
      * @param approvalDTO 审批对象
      */
     @Override
@@ -110,12 +112,12 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         // 通过的状态 = 1
         Integer status = 1;
         Integer approvalStatus = approvalDTO.getApprovalStatus();
-        OperationProcess  operationProcess = OperationProcess.builder()
+        OperationProcess operationProcess = OperationProcess.builder()
                 .processTime(new Date())
                 .faultCode(fault.getCode())
                 .processPerson(user.getUsername())
                 .build();
-        if (Objects.isNull(approvalStatus) || status.equals(approvalStatus)){
+        if (Objects.isNull(approvalStatus) || status.equals(approvalStatus)) {
             // 审批通过
             fault.setStatus(3);
             operationProcess.setProcessLink("审批通过").setProcessCode(3);
@@ -133,6 +135,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
 
     /**
      * 编辑
+     *
      * @param fault 故障对象 @see com.aiurt.modules.fault.entity.Fault
      */
     @Override
@@ -146,6 +149,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
 
     /**
      * 作废
+     *
      * @param cancelDTO
      */
     @Override
@@ -176,6 +180,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
 
     /**
      * 根据编码查询详情
+     *
      * @param code
      * @return
      */
@@ -194,6 +199,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
 
     /**
      * 指派
+     *
      * @param assignDTO
      */
     @Override
@@ -201,13 +207,12 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         LoginUser user = checkLogin();
 
 
-
     }
-
 
 
     /**
      * 领取
+     *
      * @param assignDTO
      */
     @Override
@@ -217,6 +222,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
 
     /**
      * 接收指派
+     *
      * @param code
      */
     @Override
@@ -233,7 +239,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
 
         if (Objects.isNull(user)) {
-            throw  new AiurtBootException("请重新登录");
+            throw new AiurtBootException("请重新登录");
         }
 
         return user;
@@ -241,6 +247,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
 
     /**
      * 根据编码判断故障单是否存在
+     *
      * @param code
      * @return
      */
