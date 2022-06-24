@@ -4,6 +4,7 @@ import com.aiurt.boot.plan.entity.PatrolPlanStation;
 import com.aiurt.boot.plan.param.PatrolPlanOrganizationParam;
 import com.aiurt.boot.plan.param.PatrolPlanStationParam;
 import com.aiurt.boot.task.entity.PatrolTask;
+import com.aiurt.boot.task.entity.PatrolTaskUser;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -78,4 +79,23 @@ public class PatrolTaskParam extends PatrolTask {
     @Excel(name = "站点信息", width = 15)
     @ApiModelProperty(value = "站点信息")
     private List<PatrolPlanStationParam> stationInfo;
+
+    /**
+     * 巡检人员信息
+     */
+    @Excel(name = "巡检人员信息", width = 15)
+    @ApiModelProperty(value = "巡检人员信息")
+    private List<PatrolTaskUser> userInfo;
+    /**
+     * 专业信息
+     */
+    @Excel(name = "专业信息", width = 15)
+    @ApiModelProperty(value = "专业信息")
+    private List<String> majorInfo;
+    /**
+     * 子系统信息
+     */
+    @Excel(name = "子系统信息", width = 15)
+    @ApiModelProperty(value = "子系统信息")
+    private List<String> subsystemInfo;
 }
