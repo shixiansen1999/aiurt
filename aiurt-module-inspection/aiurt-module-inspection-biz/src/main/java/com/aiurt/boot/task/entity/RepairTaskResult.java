@@ -1,21 +1,18 @@
 package com.aiurt.boot.task.entity;
 
-import java.io.Serializable;
-import java.io.UnsupportedEncodingException;
-import java.util.Date;
-import java.math.BigDecimal;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import lombok.Data;
 import com.fasterxml.jackson.annotation.JsonFormat;
-import org.springframework.format.annotation.DateTimeFormat;
-import org.jeecgframework.poi.excel.annotation.Excel;
-import com.aiurt.common.aspect.annotation.Dict;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
+import org.jeecgframework.poi.excel.annotation.Excel;
+import org.springframework.format.annotation.DateTimeFormat;
+
+import java.io.Serializable;
 
 /**
  * @Description: repair_task_result
@@ -83,10 +80,18 @@ public class RepairTaskResult implements Serializable {
 	@Excel(name = "检修结果 1.正常 2.异常", width = 15)
     @ApiModelProperty(value = "检修结果 1.正常 2.异常")
     private java.lang.Integer status;
+	/**检测值*/
+	@Excel(name = "检测值", width = 15)
+    @ApiModelProperty(value = "检测值")
+    private java.lang.Integer inspeciontValue;
 	/**输入项填写内容，status_item为3时此项必填*/
 	@Excel(name = "输入项填写内容，status_item为3时此项必填", width = 15)
     @ApiModelProperty(value = "输入项填写内容，status_item为3时此项必填")
     private java.lang.String note;
+    /**异常描述*/
+    @Excel(name = "异常描述", width = 15)
+    @ApiModelProperty(value = "异常描述")
+    private java.lang.String unNote;
 	/**数据校验字段*/
 	@Excel(name = "数据校验字段", width = 15)
     @ApiModelProperty(value = "数据校验字段")

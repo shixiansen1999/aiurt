@@ -1,6 +1,7 @@
 package com.aiurt.boot.task.controller;
 
 import com.aiurt.boot.task.entity.RepairTask;
+import com.aiurt.boot.task.entity.RepairTaskDTO;
 import com.aiurt.boot.task.service.IRepairTaskService;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.system.base.controller.BaseController;
@@ -85,12 +86,12 @@ public class RepairTaskController extends BaseController<RepairTask, IRepairTask
 	 @AutoLog(value = "检修任务-检修任务清单查询")
 	 @ApiOperation(value="检修任务-检修任务清单查询", notes="检修任务-检修任务清单查询")
 	 @GetMapping(value = "/repairSelectTasklet")
-	 public Result<?> repairSelectTasklet( RepairTask condition,
+	 public Result<?> repairSelectTasklet( RepairTaskDTO condition,
 											@RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
 											@RequestParam(name="pageSize", defaultValue="10") Integer pageSize
 	 ){
-		 Page<RepairTask> pageList = new Page<>(pageNo, pageSize);
-		 Page<RepairTask> repairTaskPage = repairTaskService.selectTasklet(pageList, condition);
+		 Page<RepairTaskDTO> pageList = new Page<>(pageNo, pageSize);
+		 Page<RepairTaskDTO> repairTaskPage = repairTaskService.selectTasklet(pageList, condition);
 		 return Result.OK(repairTaskPage);
 	 }
 

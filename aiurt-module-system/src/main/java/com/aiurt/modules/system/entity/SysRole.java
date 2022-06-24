@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.Date;
 
+import io.swagger.annotations.ApiModelProperty;
 import org.jeecgframework.poi.excel.annotation.Excel;
 import org.springframework.format.annotation.DateTimeFormat;
 
@@ -33,35 +34,41 @@ public class SysRole implements Serializable {
     /**
      * id
      */
+    @ApiModelProperty(value = "id")
     @TableId(type = IdType.ASSIGN_ID)
     private String id;
 
     /**
      * 角色名称
      */
+    @ApiModelProperty(value = "角色名称")
     @Excel(name="角色名",width=15)
     private String roleName;
 
     /**
      * 角色编码
      */
+    @ApiModelProperty(value = "角色编码")
     @Excel(name="角色编码",width=15)
     private String roleCode;
 
     /**
-          * 描述
+     * 描述
      */
+    @ApiModelProperty(value = "描述")
     @Excel(name="描述",width=60)
     private String description;
 
     /**
      * 创建人
      */
+    @ApiModelProperty(value = "创建人")
     private String createBy;
 
     /**
      * 创建时间
      */
+    @ApiModelProperty(value = "创建时间")
     @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
     @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
     private Date createTime;
@@ -69,11 +76,13 @@ public class SysRole implements Serializable {
     /**
      * 更新人
      */
+    @ApiModelProperty(value = "更新人")
     private String updateBy;
 
     /**
      * 更新时间
      */
+    @ApiModelProperty(value = "更新时间")
     @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
     @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
     private Date updateTime;

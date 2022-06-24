@@ -75,10 +75,7 @@ public class RepairTaskDeviceRel implements Serializable {
 	@Excel(name = "检修时长(单位分钟)", width = 15)
     @ApiModelProperty(value = "检修时长(单位分钟)")
     private java.lang.Integer duration;
-	/**异常描述*/
-	@Excel(name = "异常描述", width = 15)
-    @ApiModelProperty(value = "异常描述")
-    private java.lang.String unNote;
+
 	/**是否已提交，0未提交1已提交*/
 	@Excel(name = "是否已提交，0未提交1已提交", width = 15)
     @ApiModelProperty(value = "是否已提交，0未提交1已提交")

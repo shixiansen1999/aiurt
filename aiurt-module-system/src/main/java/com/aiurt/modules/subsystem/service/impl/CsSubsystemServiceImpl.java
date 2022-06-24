@@ -48,12 +48,7 @@ public class CsSubsystemServiceImpl extends ServiceImpl<CsSubsystemMapper, CsSub
         }
         csSubsystemMapper.insert(csSubsystem);
         //插入子系统人员表
-        csSubsystem.getSystemUserList().forEach(systemUser -> {
-            systemUser.setSubsystemId(csSubsystem.getId()+"");
-            systemUser.setUsername(sysBaseAPI.getUserById(systemUser.getUserId()).getUsername());
-            csSubsystemUserMapper.insert(systemUser);
-        });
-
+        insertSystemUser(csSubsystem);
         return Result.OK("添加成功！");
     }
     /**
@@ -78,11 +73,16 @@ public class CsSubsystemServiceImpl extends ServiceImpl<CsSubsystemMapper, CsSub
         }
         csSubsystemMapper.updateById(csSubsystem);
         //插入子系统人员表
-        csSubsystem.getSystemUserList().forEach(systemUser -> {
-            systemUser.setSubsystemId(csSubsystem.getId()+"");
-            systemUser.setUsername(sysBaseAPI.getUserById(systemUser.getUserId()).getUsername());
-            csSubsystemUserMapper.insert(systemUser);
-        });
+        insertSystemUser(csSubsystem);
         return Result.OK("编辑成功！");
+    }
+    public void insertSystemUser(CsSubsystem csSubsystem){
+        if(null!=csSubsystem.getSystemUserList()){
+            csSubsystem.getSystemUserList().forEach(systemUser -> {
+                systemUser.setSubsystemId(csSubsystem.getId()+"");
+                systemUser.setUsername(sysBaseAPI.getUserById(systemUser.getUserId()).getUsername());
+                csSubsystemUserMapper.insert(systemUser);
+            });
+        }
     }
 }

@@ -4,7 +4,9 @@ import com.aiurt.boot.constant.DictConstant;
 import com.aiurt.boot.constant.InspectionConstant;
 import com.aiurt.boot.manager.InspectionManager;
 import com.aiurt.boot.plan.dto.StationDTO;
+import com.aiurt.boot.plan.entity.RepairPoolCode;
 import com.aiurt.boot.task.entity.RepairTask;
+import com.aiurt.boot.task.entity.RepairTaskDTO;
 import com.aiurt.boot.task.mapper.RepairTaskMapper;
 import com.aiurt.boot.task.service.IRepairTaskService;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -18,6 +20,7 @@ import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @Description: repair_task
@@ -54,7 +57,7 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                 List<String> list2 = Arrays.asList(split2);
                 list2.forEach(q->{
                     List<StationDTO> dtoList = repairTaskMapper.selectStationList(q);
-                    e.setOrganizational(manager.translateStation(dtoList));
+                    e.setSiteName(manager.translateStation(dtoList));
                 });
             }
 
@@ -85,7 +88,7 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
             e.setIsReceiptName(sysBaseAPI.translateDict(DictConstant.INSPECTION_IS_CONFIRM, String.valueOf(e.getIsReceipt())));
 
             //任务来源
-            e.setSourceName(sysBaseAPI.translateDict(DictConstant.PATROL_TASK_ACCESS, String.valueOf(e.getSourceName())));
+            e.setSourceName(sysBaseAPI.translateDict(DictConstant.PATROL_TASK_ACCESS, String.valueOf(e.getSource())));
 
             //作业类型
             e.setWorkTypeName(sysBaseAPI.translateDict(DictConstant.WORK_TYPE, String.valueOf(e.getWorkType())));
@@ -95,8 +98,19 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
     }
 
     @Override
-    public Page<RepairTask> selectTasklet(Page<RepairTask> pageList, RepairTask condition) {
-        List<RepairTask> repairTasks = repairTaskMapper.selectTasklet(pageList, condition);
+    public Page<RepairTaskDTO> selectTasklet(Page<RepairTaskDTO> pageList, RepairTaskDTO condition) {
+        List<RepairTaskDTO> repairTasks = repairTaskMapper.selectTasklet(pageList, condition);
+        repairTasks.forEach(e->{
+            //检修结果
+            e.setMaintenanceResultsName(sysBaseAPI.translateDict(DictConstant.OVERHAUL_RESULT, String.valueOf(e.getMaintenanceResults())));
+
+            //专业
+            e.setMajorName(manager.translateMajor(Arrays.asList(e.getMajorCode()),InspectionConstant.MAJOR));
+
+            //子系统
+            e.setSystemName(manager.translateMajor(Arrays.asList(e.getSystemCode()),InspectionConstant.SUBSYSTEM));
+
+        });
         return pageList.setRecords(repairTasks);
     }
 

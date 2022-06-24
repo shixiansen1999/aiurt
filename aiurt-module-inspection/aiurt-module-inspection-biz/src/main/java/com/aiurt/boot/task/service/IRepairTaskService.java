@@ -1,6 +1,7 @@
 package com.aiurt.boot.task.service;
 
 import com.aiurt.boot.task.entity.RepairTask;
+import com.aiurt.boot.task.entity.RepairTaskDTO;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 
@@ -26,5 +27,5 @@ public interface IRepairTaskService extends IService<RepairTask> {
      * @param condition
      * @return
      */
-    Page<RepairTask> selectTasklet(Page<RepairTask> pageList, RepairTask condition);
+    Page<RepairTaskDTO> selectTasklet(Page<RepairTaskDTO> pageList, RepairTaskDTO condition);
 }

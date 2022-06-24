@@ -6,6 +6,7 @@ import java.util.Date;
 import java.math.BigDecimal;
 import java.util.List;
 
+import com.aiurt.common.aspect.annotation.Dict;
 import com.aiurt.modules.material.entity.MaterialBaseType;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
@@ -67,6 +68,7 @@ public class CsSubsystem implements Serializable {
 	/**所属专业-专业表*/
 	@Excel(name = "所属专业-专业表", width = 15)
     @ApiModelProperty(value = "所属专业-专业表")
+    @Dict(dictTable = "cs_major", dicText = "major_name", dicCode = "major_code")
     private String majorCode;
 	/**创建人*/
     @ApiModelProperty(value = "创建人")
@@ -89,4 +91,8 @@ public class CsSubsystem implements Serializable {
     @ApiModelProperty(value = "备用字段")
     @TableField(exist = false)
     private String byType = "zxt";
+    /**与专业关联的子系统*/
+    @ApiModelProperty(value = "与专业关联的子系统")
+    @TableField(exist = false)
+    private List<CsSubsystem> children;
 }

@@ -2,19 +2,27 @@ package com.aiurt.boot.task.service.impl;
 
 
 import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.plan.mapper.PatrolPlanOrganizationMapper;
 import com.aiurt.boot.plan.mapper.PatrolPlanStationMapper;
+import com.aiurt.boot.plan.param.PatrolPlanOrganizationParam;
+import com.aiurt.boot.plan.param.PatrolPlanStationParam;
 import com.aiurt.boot.task.dto.PatrolTaskDTO;
 import com.aiurt.boot.task.dto.PatrolTaskUserContentDTO;
 import com.aiurt.boot.task.dto.PatrolTaskUserDTO;
 import com.aiurt.boot.task.entity.PatrolTask;
 import com.aiurt.boot.task.entity.PatrolTaskDevice;
+import com.aiurt.boot.task.entity.PatrolTaskStandard;
 import com.aiurt.boot.task.entity.PatrolTaskUser;
 import com.aiurt.boot.task.mapper.PatrolTaskDeviceMapper;
 import com.aiurt.boot.task.mapper.PatrolTaskMapper;
+import com.aiurt.boot.task.mapper.PatrolTaskStandardMapper;
 import com.aiurt.boot.task.mapper.PatrolTaskUserMapper;
 import com.aiurt.boot.task.param.PatrolTaskParam;
 import com.aiurt.boot.task.service.IPatrolTaskService;
+import com.aiurt.common.exception.AiurtBootException;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -25,7 +33,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -50,6 +60,8 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
 
     @Autowired
     private PatrolPlanStationMapper patrolPlanStationMapper;
+   @Autowired
+    private PatrolTaskStandardMapper patrolTaskStandardMapper;
 
     @Override
     public IPage<PatrolTaskParam> getTaskList(Page<PatrolTaskParam> page, PatrolTaskParam patrolTaskParam) {
@@ -62,16 +74,39 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         });
         return taskIPage;
     }
+
+    @Override
+    public PatrolTaskParam selectBasicInfo(PatrolTaskParam patrolTaskParam) {
+        if (StrUtil.isEmpty(patrolTaskParam.getId())) {
+            throw new AiurtBootException("记录的ID不能为空！");
+        }
+        QueryWrapper<PatrolTaskParam> wrapper = new QueryWrapper<>();
+        wrapper.lambda().eq(PatrolTaskParam::getId, patrolTaskParam.getId());
+        PatrolTaskParam taskParam = Optional.ofNullable(patrolTaskMapper.selectBasicInfo(patrolTaskParam)).orElseGet(PatrolTaskParam::new);
+        // 组织机构信息
+        List<PatrolPlanOrganizationParam> organizationInfo = Optional.ofNullable(patrolPlanOrganizationMapper.selectOrgByPlanCode(patrolTaskParam.getPlanCode()))
+                .orElseGet(Collections::emptyList)
+                .stream().collect(Collectors.toList());
+        // 站点信息
+        List<PatrolPlanStationParam> stationInfo = Optional.ofNullable(patrolPlanStationMapper.selectStationByPlanCode(patrolTaskParam.getPlanCode()))
+                .orElseGet(Collections::emptyList)
+                .stream().collect(Collectors.toList());
+        taskParam.setDepartInfo(organizationInfo);
+        taskParam.setStationInfo(stationInfo);
+        return taskParam;
+    }
+
     @Override
     public Page<PatrolTaskDTO> getPatrolTaskList(Page<PatrolTaskDTO> pageList, PatrolTaskDTO patrolTaskDTO) {
-        List<PatrolTaskDTO> taskList = patrolTaskMapper.getPatrolTaskList(pageList,patrolTaskDTO);
-        if(ObjectUtil.isNotEmpty(patrolTaskDTO))
-        {
+        List<PatrolTaskDTO> taskList = patrolTaskMapper.getPatrolTaskList(pageList, patrolTaskDTO);
+        if (ObjectUtil.isNotEmpty(patrolTaskDTO)) {
 
         }
         taskList.stream().forEach(e -> {
             String userName = patrolTaskMapper.getUserName(e.getBackId());
             List<String> organizationName = patrolTaskMapper.getOrganizationName(e.getPlanCode());
+            LambdaQueryWrapper<PatrolTaskStandard> queryWrapper = new LambdaQueryWrapper<>();
+            PatrolTaskStandard patrolTaskStandards = patrolTaskStandardMapper.selectOne(queryWrapper.eq(PatrolTaskStandard::getTaskId, e.getId()));
             List<String> orgCodes = patrolTaskMapper.getOrgCode(e.getPlanCode());
             List<String> stationName = patrolTaskMapper.getStationName(e.getPlanCode());
             List<String> patrolUserName = patrolTaskMapper.getPatrolUserName(e.getCode());
@@ -86,14 +121,17 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         });
         return pageList.setRecords(taskList);
     }
+
     @Override
     public void getPatrolTaskReceive(PatrolTaskDTO patrolTaskDTO){
+        LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
             LambdaUpdateWrapper<PatrolTask> updateWrapper = new LambdaUpdateWrapper<>();
-            //领取：将待指派改为待执行（传任务id,状态）
+            //领取：将待指派改为待执行，变为个人领取（传任务id,状态）
             if (patrolTaskDTO.getStatus() == 0) {//更新巡检状态
-                updateWrapper.set(PatrolTask::getStatus, 2).eq(PatrolTask::getId, patrolTaskDTO.getId());
+                updateWrapper.set(PatrolTask::getStatus, 2)
+                             .set(PatrolTask::getSource,1)
+                             .eq(PatrolTask::getId, patrolTaskDTO.getId());
                 update(updateWrapper);
-                LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
                 updateWrapper.set(PatrolTask::getStatus, 2).eq(PatrolTask::getId, patrolTaskDTO.getId());
                 update(updateWrapper);
                 //添加巡检人
@@ -117,14 +155,15 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
                     updateWrapper.set(PatrolTask::getStatus, 4).eq(PatrolTask::getId, patrolTaskDTO.getId());
                     update(updateWrapper);
                 }
-                //提交任务：将执行中，变为待审核
+                //提交任务：将执行中，变为待审核、添加任务结束人id
                 if (patrolTaskDTO.getStatus() == 4) {
-                    updateWrapper.set(PatrolTask::getStatus, 4).eq(PatrolTask::getId, patrolTaskDTO.getId());
+                    updateWrapper.set(PatrolTask::getStatus, 4)
+                                 .set(PatrolTask::getEndUserId,sysUser.getId())
+                                 .eq(PatrolTask::getId, patrolTaskDTO.getId());
                     update(updateWrapper);
                 }
             }
         }
-
     @Override
     public void getPatrolTaskReturn(PatrolTaskDTO patrolTaskDTO) {
         //更新巡检状态及添加退回理由、退回人Id（传任务id、退回理由）
@@ -139,33 +178,48 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
 
     @Override
     public void getPatrolTaskCheck(PatrolTaskDTO patrolTaskDTO) {
-        //更新任务状态、添加检查人id
+        //更新任务状态、添加检查人id，传任务id
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         PatrolTaskDevice patrolPDevice = new PatrolTaskDevice();
-        LambdaUpdateWrapper <PatrolTaskDevice> updateWrapper = new LambdaUpdateWrapper<>();
-        updateWrapper.set(PatrolTaskDevice::getStatus,1)
-                     .set(PatrolTaskDevice::getUserId,sysUser.getId())
-                     .eq(PatrolTaskDevice::getTaskId,patrolTaskDTO.getId());
-        patrolTaskDeviceMapper.update(patrolPDevice,updateWrapper);
+        LambdaUpdateWrapper<PatrolTaskDevice> updateWrapper = new LambdaUpdateWrapper<>();
+        updateWrapper.set(PatrolTaskDevice::getStatus, 1)
+                .set(PatrolTaskDevice::getUserId, sysUser.getId())
+                .eq(PatrolTaskDevice::getTaskId, patrolTaskDTO.getId());
+        patrolTaskDeviceMapper.update(patrolPDevice, updateWrapper);
     }
 
     @Override
-    public  List<PatrolTaskUserDTO> getPatrolTaskAppointSelect(PatrolTaskDTO patrolTaskDTO) {
+    public   List<PatrolTaskUserDTO> getPatrolTaskAppointSelect(PatrolTaskDTO patrolTaskDTO) {
+        //查询这个部门的信息人员,传组织机构ids
         //查询这个部门的信息人员
         List<String> codes = patrolTaskDTO.getOrgCode();
         List<PatrolTaskUserDTO> arrayList= new ArrayList<>();
-        List<String> arrayLists= new ArrayList<>();
-        PatrolTaskUserDTO userDTO =new PatrolTaskUserDTO();
         for (String code :codes)
         {
-             String organizationName = patrolTaskMapper.getOrgName(code);
+            PatrolTaskUserDTO userDTO =new PatrolTaskUserDTO();
+            String organizationName = patrolTaskMapper.getOrgName(code);
              List<PatrolTaskUserContentDTO> user = patrolTaskMapper.getUser(code);
              userDTO.setOrganizationName(organizationName);
              userDTO.setUserList(user);
-            System.out.println(userDTO);
+             arrayList.add(userDTO);
         }
 
-        System.out.println(arrayLists);
        return arrayList;
+    }
+    @Override
+    public void getPatrolTaskAppoint(List<PatrolTaskUserDTO> patrolTaskUserDTO) {
+        //传整个实体
+        for(PatrolTaskUserDTO ptu:patrolTaskUserDTO)
+        {
+            PatrolTaskUser patrolTaskUser = new PatrolTaskUser();
+            List<PatrolTaskUserContentDTO> userList = ptu.getUserList();
+            String userId = userList.stream().map(PatrolTaskUserContentDTO::getId).collect(Collectors.joining());
+            String realName = userList.stream().map(PatrolTaskUserContentDTO::getRealname).collect(Collectors.joining());
+            patrolTaskUser.setUserId(userId);
+            patrolTaskUser.setUserName(realName);
+            patrolTaskUser.setTaskCode(ptu.getTaskCode());
+            patrolTaskUser.setDelFlag(0);
+            patrolTaskUserMapper.insert(patrolTaskUser);
+        }
     }
 }
