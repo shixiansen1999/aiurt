@@ -46,7 +46,7 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
 	 * @return
 	 */
 	//@AutoLog(value = "patrol_task-分页列表查询")
-	@ApiOperation(value="巡检任务-分页列表查询", notes="巡检任务-分页列表查询")
+	@ApiOperation(value="PC巡检任务池列表-分页列表查询", notes="PC巡检任务池列表-分页列表查询")
 	@GetMapping(value = "/list")
 	public Result<IPage<PatrolTaskParam>> queryPageList(PatrolTaskParam patrolTaskParam,
 												   @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,

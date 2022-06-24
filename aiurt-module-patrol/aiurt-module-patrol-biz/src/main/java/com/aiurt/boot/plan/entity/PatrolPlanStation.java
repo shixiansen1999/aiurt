@@ -37,10 +37,18 @@ public class PatrolPlanStation implements Serializable {
 	@Excel(name = "巡检计划编号", width = 15)
     @ApiModelProperty(value = "巡检计划编号")
     private java.lang.String planCode;
-	/**站所编号*/
-	@Excel(name = "站所编号", width = 15)
+    /**站所编号*/
+    @Excel(name = "站所编号", width = 15)
     @ApiModelProperty(value = "站所编号")
     private java.lang.String stationCode;
+	/**线路编号*/
+	@Excel(name = "线路编号", width = 15)
+    @ApiModelProperty(value = "线路编号")
+    private java.lang.String lineCode;
+    /**位置编号*/
+    @Excel(name = "位置编号", width = 15)
+    @ApiModelProperty(value = "位置编号")
+    private java.lang.String positionCode;
 	/**删除状态： 0未删除 1已删除*/
 	@Excel(name = "删除状态： 0未删除 1已删除", width = 15)
     @ApiModelProperty(value = "删除状态： 0未删除 1已删除")

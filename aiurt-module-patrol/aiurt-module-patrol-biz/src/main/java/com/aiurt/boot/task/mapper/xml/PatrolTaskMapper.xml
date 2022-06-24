@@ -51,11 +51,11 @@
         <if test="patrolTask.source != null">
             and pt.source = #{patrolTask.source}
         </if>
-        <if test="patrolTask.departCode != null and patrolTask.departCode != ''">
+        <if test="patrolTask.organizationCode != null and patrolTask.organizationCode != ''">
             and pt.plan_code in (
             SELECT ppo.plan_code
             FROM patrol_plan_organization ppo
-            WHERE ppo.organization_code = #{patrolTask.departCode}
+            WHERE ppo.organization_code = #{patrolTask.organizationCode}
             )
         </if>
 
