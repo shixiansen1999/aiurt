@@ -1,0 +1,31 @@
+package com.aiurt.modules.position.mapper;
+
+import java.util.List;
+
+import com.aiurt.modules.position.entity.CsLine;
+import com.aiurt.modules.position.entity.CsStationPosition;
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
+import org.jeecg.common.api.vo.Result;
+import org.springframework.stereotype.Component;
+
+/**
+ * @Description: cs_station_position
+ * @Author: jeecg-boot
+ * @Date:   2022-06-21
+ * @Version: V1.0
+ */
+@Mapper
+@Component
+public interface CsStationPositionMapper extends BaseMapper<CsStationPosition> {
+    /**
+     * 查询列表
+     * @param page
+     * @param csStationPosition
+     * @return
+     */
+    List<CsStationPosition> queryCsStationPositionAll(@Param("page") Page<CsStationPosition> page,@Param("position") CsStationPosition csStationPosition);
+
+}

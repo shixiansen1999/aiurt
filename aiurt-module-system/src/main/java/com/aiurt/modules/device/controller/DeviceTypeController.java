@@ -42,9 +42,9 @@ import com.aiurt.common.aspect.annotation.AutoLog;
  * @Date:   2022-06-22
  * @Version: V1.0
  */
-@Api(tags="device_type")
+@Api(tags="设备管理-设备类型")
 @RestController
-@RequestMapping("/device/deviceType")
+@RequestMapping("/deviceType")
 @Slf4j
 public class DeviceTypeController extends BaseController<DeviceType, IDeviceTypeService> {
 	@Autowired
@@ -59,8 +59,8 @@ public class DeviceTypeController extends BaseController<DeviceType, IDeviceType
 	 * @param req
 	 * @return
 	 */
-	//@AutoLog(value = "device_type-分页列表查询")
-	@ApiOperation(value="device_type-分页列表查询", notes="device_type-分页列表查询")
+	//@AutoLog(value = "设备类型分页列表查询")
+	@ApiOperation(value="设备类型分页列表查询", notes="设备类型分页列表查询")
 	@GetMapping(value = "/list")
 	public Result<IPage<DeviceType>> queryPageList(DeviceType deviceType,
 								   @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
@@ -78,8 +78,8 @@ public class DeviceTypeController extends BaseController<DeviceType, IDeviceType
 	 * @param deviceType
 	 * @return
 	 */
-	@AutoLog(value = "device_type-添加")
-	@ApiOperation(value="device_type-添加", notes="device_type-添加")
+	@AutoLog(value = "设备类型添加")
+	@ApiOperation(value="设备类型添加", notes="设备类型添加")
 	@PostMapping(value = "/add")
 	public Result<String> add(@RequestBody DeviceType deviceType) {
 		deviceTypeService.save(deviceType);
@@ -92,8 +92,8 @@ public class DeviceTypeController extends BaseController<DeviceType, IDeviceType
 	 * @param deviceType
 	 * @return
 	 */
-	@AutoLog(value = "device_type-编辑")
-	@ApiOperation(value="device_type-编辑", notes="device_type-编辑")
+	@AutoLog(value = "设备类型编辑")
+	@ApiOperation(value="设备类型编辑", notes="设备类型编辑")
 	@RequestMapping(value = "/edit", method = {RequestMethod.PUT,RequestMethod.POST})
 	public Result<String> edit(@RequestBody DeviceType deviceType) {
 		deviceTypeService.updateById(deviceType);
@@ -106,8 +106,8 @@ public class DeviceTypeController extends BaseController<DeviceType, IDeviceType
 	 * @param id
 	 * @return
 	 */
-	@AutoLog(value = "device_type-通过id删除")
-	@ApiOperation(value="device_type-通过id删除", notes="device_type-通过id删除")
+	@AutoLog(value = "设备类型通过id删除")
+	@ApiOperation(value="设备类型通过id删除", notes="设备类型通过id删除")
 	@DeleteMapping(value = "/delete")
 	public Result<String> delete(@RequestParam(name="id",required=true) String id) {
 		deviceTypeService.removeById(id);
@@ -120,13 +120,13 @@ public class DeviceTypeController extends BaseController<DeviceType, IDeviceType
 	 * @param ids
 	 * @return
 	 */
-	@AutoLog(value = "device_type-批量删除")
+/*	@AutoLog(value = "device_type-批量删除")
 	@ApiOperation(value="device_type-批量删除", notes="device_type-批量删除")
 	@DeleteMapping(value = "/deleteBatch")
 	public Result<String> deleteBatch(@RequestParam(name="ids",required=true) String ids) {
 		this.deviceTypeService.removeByIds(Arrays.asList(ids.split(",")));
 		return Result.OK("批量删除成功!");
-	}
+	}*/
 
 	/**
 	 * 通过id查询
@@ -135,7 +135,7 @@ public class DeviceTypeController extends BaseController<DeviceType, IDeviceType
 	 * @return
 	 */
 	//@AutoLog(value = "device_type-通过id查询")
-	@ApiOperation(value="device_type-通过id查询", notes="device_type-通过id查询")
+	@ApiOperation(value="设备类型通过id查询", notes="设备类型通过id查询")
 	@GetMapping(value = "/queryById")
 	public Result<DeviceType> queryById(@RequestParam(name="id",required=true) String id) {
 		DeviceType deviceType = deviceTypeService.getById(id);
@@ -151,10 +151,10 @@ public class DeviceTypeController extends BaseController<DeviceType, IDeviceType
     * @param request
     * @param deviceType
     */
-    @RequestMapping(value = "/exportXls")
+   /* @RequestMapping(value = "/exportXls")
     public ModelAndView exportXls(HttpServletRequest request, DeviceType deviceType) {
         return super.exportXls(request, deviceType, DeviceType.class, "device_type");
-    }
+    }*/
 
     /**
       * 通过excel导入数据
@@ -163,9 +163,9 @@ public class DeviceTypeController extends BaseController<DeviceType, IDeviceType
     * @param response
     * @return
     */
-    @RequestMapping(value = "/importExcel", method = RequestMethod.POST)
+    /*@RequestMapping(value = "/importExcel", method = RequestMethod.POST)
     public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) {
         return super.importExcel(request, response, DeviceType.class);
-    }
+    }*/
 
 }

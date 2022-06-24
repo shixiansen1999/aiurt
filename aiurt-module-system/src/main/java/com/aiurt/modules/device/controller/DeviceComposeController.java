@@ -45,7 +45,7 @@ import com.aiurt.common.aspect.annotation.AutoLog;
  */
 @Api(tags="device_compose")
 @RestController
-@RequestMapping("/device/deviceCompose")
+@RequestMapping("/deviceCompose")
 @Slf4j
 public class DeviceComposeController extends BaseController<DeviceCompose, IDeviceComposeService> {
 	@Autowired

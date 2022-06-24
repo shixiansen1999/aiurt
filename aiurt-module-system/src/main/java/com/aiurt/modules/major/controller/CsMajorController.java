@@ -58,7 +58,7 @@ public class CsMajorController  {
 	 * @param req
 	 * @return
 	 */
-	@AutoLog(value = "专业分页列表查询")
+	//@AutoLog(value = "专业分页列表查询")
 	@ApiOperation(value="专业分页列表查询", notes="专业分页列表查询")
 	@GetMapping(value = "/list")
 	public Result<?> queryPageList(CsMajor csMajor,
@@ -142,7 +142,7 @@ public class CsMajorController  {
 	 * @param id
 	 * @return
 	 */
-	@AutoLog(value = "专业通过id查询")
+	//@AutoLog(value = "专业通过id查询")
 	@ApiOperation(value="专业通过id查询", notes="专业通过id查询")
 	@GetMapping(value = "/queryById")
 	public Result<?> queryById(@RequestParam(name="id",required=true) String id) {

@@ -1,5 +1,6 @@
 package com.aiurt.modules.subsystem.controller;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -71,7 +72,31 @@ public class CsSubsystemController  {
 		 });
 		 return Result.OK(majorList);
 	 }
+	 /**
+	  * 子系统-专业子系统树
+	  *
+	  * @return
+	  */
+	 //@AutoLog(value = "子系统-专业子系统树")
+	 @ApiOperation(value="子系统-专业子系统树", notes="子系统-专业子系统树")
+	 @GetMapping(value = "/systemTreeList")
+	 public Result<?> systemTreeList(String systemName,Integer level) {
+		 List<CsMajor> majorList = csMajorService.list(new LambdaQueryWrapper<CsMajor>().eq(CsMajor::getDelFlag,0).eq(CsMajor::getMajorName,systemName));
+		 List<CsSubsystem> systemList = csSubsystemService.list(new LambdaQueryWrapper<CsSubsystem>().eq(CsSubsystem::getDelFlag,0).eq(CsSubsystem::getSystemName,systemName));
+		 List<CsSubsystem> newList = new ArrayList<>();
+		 majorList.forEach(major -> {
+			 CsSubsystem subSystem = new CsSubsystem();
+			 subSystem.setSystemName(major.getMajorName());
+			 subSystem.setSystemCode(major.getMajorCode());
+			 List sysList = systemList.stream().filter(system-> system.getMajorCode().equals(major.getMajorCode())).collect(Collectors.toList());
+			 subSystem.setChildren(sysList);
+			 if(level>2){
 
+			 }
+			 newList.add(subSystem);
+		 });
+		 return Result.OK(newList);
+	 }
 	/**
 	 * 分页列表查询
 	 *
@@ -81,7 +106,7 @@ public class CsSubsystemController  {
 	 * @param req
 	 * @return
 	 */
-	@AutoLog(value = "子系统分页列表查询")
+	//@AutoLog(value = "子系统分页列表查询")
 	@ApiOperation(value="子系统分页列表查询", notes="子系统分页列表查询")
 	@GetMapping(value = "/list")
 	public Result<?> queryPageList(CsSubsystem csSubsystem,
@@ -146,7 +171,7 @@ public class CsSubsystemController  {
 	 * @param ids
 	 * @return
 	 */
-	@AutoLog(value = "子系统批量删除")
+	/*@AutoLog(value = "子系统批量删除")
 	@ApiOperation(value="子系统批量删除", notes="子系统批量删除")
 	@DeleteMapping(value = "/deleteBatch")
 	public Result<?> deleteBatch(@RequestParam(name="ids",required=true) String ids) {
@@ -154,7 +179,7 @@ public class CsSubsystemController  {
 			delete(id);
 		});
 		return Result.OK("批量删除成功!");
-	}
+	}*/
 
 	/**
 	 * 通过id查询
@@ -162,7 +187,7 @@ public class CsSubsystemController  {
 	 * @param id
 	 * @return
 	 */
-	@AutoLog(value = "子系统通过id查询")
+	//@AutoLog(value = "子系统通过id查询")
 	@ApiOperation(value="子系统通过id查询", notes="子系统通过id查询")
 	@GetMapping(value = "/queryById")
 	public Result<?> queryById(@RequestParam(name="id",required=true) String id) {

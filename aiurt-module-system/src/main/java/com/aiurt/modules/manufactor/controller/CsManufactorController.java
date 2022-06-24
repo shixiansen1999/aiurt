@@ -56,7 +56,7 @@ public class CsManufactorController  {
 	 * @param req
 	 * @return
 	 */
-	@AutoLog(value = "厂商信息分页列表查询")
+	//@AutoLog(value = "厂商信息分页列表查询")
 	@ApiOperation(value="厂商信息分页列表查询", notes="厂商信息分页列表查询")
 	@GetMapping(value = "/list")
 	public Result<?> queryPageList(CsManufactor csManufactor,
@@ -117,7 +117,7 @@ public class CsManufactorController  {
 	 * @param ids
 	 * @return
 	 */
-	@AutoLog(value = "厂商信息批量删除")
+	/*@AutoLog(value = "厂商信息批量删除")
 	@ApiOperation(value="厂商信息批量删除", notes="厂商信息批量删除")
 	@DeleteMapping(value = "/deleteBatch")
 	public Result<?> deleteBatch(@RequestParam(name="ids",required=true) String ids) {
@@ -125,7 +125,7 @@ public class CsManufactorController  {
 			delete(id);
 		});
 		return Result.OK("批量删除成功!");
-	}
+	}*/
 
 	/**
 	 * 通过id查询
@@ -133,7 +133,7 @@ public class CsManufactorController  {
 	 * @param id
 	 * @return
 	 */
-	@AutoLog(value = "厂商信息通过id查询")
+	//@AutoLog(value = "厂商信息通过id查询")
 	@ApiOperation(value="厂商信息通过id查询", notes="厂商信息通过id查询")
 	@GetMapping(value = "/queryById")
 	public Result<?> queryById(@RequestParam(name="id",required=true) String id) {
