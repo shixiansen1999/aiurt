@@ -56,5 +56,13 @@ public class DictConstant {
      * 检修结果
      */
     public static final String OVERHAUL_RESULT = "overhaul_result";
+    /**
+     * 检修标准-检修项-数据填写类型
+     */
+    public static final String 	INSPECTION_STATUS_ITEM = "inspection_status_item";
+    /**
+     * 检修标准-检修项-是否是检查项
+     */
+    public static final String INSPECTION_PROJECT = "inspection_project";
 
 }

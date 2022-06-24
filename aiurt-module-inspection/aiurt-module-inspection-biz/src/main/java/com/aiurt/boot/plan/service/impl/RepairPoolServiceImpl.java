@@ -7,15 +7,11 @@ import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.constant.DictConstant;
 import com.aiurt.boot.constant.InspectionConstant;
 import com.aiurt.boot.manager.InspectionManager;
-import com.aiurt.boot.plan.dto.RepairDeviceDTO;
-import com.aiurt.boot.plan.dto.RepairPoolDetailsDTO;
-import com.aiurt.boot.plan.dto.RepairStrategyDTO;
-import com.aiurt.boot.plan.dto.StationDTO;
+import com.aiurt.boot.plan.dto.*;
 import com.aiurt.boot.plan.entity.*;
 import com.aiurt.boot.plan.mapper.*;
 import com.aiurt.boot.plan.rep.RepairStrategyReq;
 import com.aiurt.boot.plan.service.IRepairPoolService;
-import com.aiurt.boot.standard.entity.InspectionCodeContent;
 import com.aiurt.boot.strategy.entity.InspectionStrategy;
 import com.aiurt.boot.strategy.mapper.InspectionStrategyMapper;
 import com.aiurt.common.exception.AiurtBootException;
@@ -26,16 +22,14 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.SneakyThrows;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
+import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -63,6 +57,8 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
     private InspectionStrategyMapper inspectionStrategyMapper;
     @Resource
     private RepairPoolDeviceRelMapper repairPoolDeviceRel;
+    @Resource
+    private RepairPoolCodeContentMapper repairPoolCodeContentMapper;
 
     /**
      * 检修计划池列表查询
@@ -166,7 +162,7 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
                         .eq(RepairPoolRel::getRepairPoolCode, req.getCode())
                         .eq(RepairPoolRel::getRepairPoolStaId, req.getStandardId()));
                 if (ObjectUtil.isNotEmpty(repairPoolRel)) {
-                    List<RepairPoolDeviceRel> repairPoolDeviceRels = repairPoolDeviceRel.selectList(new QueryWrapper<RepairPoolDeviceRel>().eq("id", repairPoolRel.getId()));
+                    List<RepairPoolDeviceRel> repairPoolDeviceRels = repairPoolDeviceRel.selectList(new LambdaQueryWrapper<RepairPoolDeviceRel>().eq(RepairPoolDeviceRel::getRepairPoolRelId, repairPoolRel.getId()));
                     if (CollUtil.isNotEmpty(repairPoolDeviceRels)) {
                         List<String> deviceCodes = repairPoolDeviceRels.stream().map(RepairPoolDeviceRel::getDeviceCode).collect(Collectors.toList());
                         repairDeviceDTOList = manager.queryDeviceByCodes(deviceCodes);
@@ -180,12 +176,12 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
                 result.setTypeName(sysBaseAPI.translateDict(DictConstant.INSPECTION_CYCLE_TYPE, String.valueOf(repairPoolCode.getType())));
                 result.setMajorName(manager.translateMajor(Arrays.asList(repairPoolCode.getMajorCode()), InspectionConstant.MAJOR));
                 result.setSubsystemName(manager.translateMajor(Arrays.asList(repairPoolCode.getSubsystemCode()), InspectionConstant.SUBSYSTEM));
-                result.setDeviceTypeName(manager.queryNameByCode(repairPoolCode.getCode()));
+                result.setDeviceTypeName(manager.queryNameByCode(repairPoolCode.getDeviceTypeCode()));
                 result.setIsAppointDevice(CollUtil.isNotEmpty(repairDeviceDTOList) ? "是" : "否");
                 result.setIsAppointDeviceTyep(sysBaseAPI.translateDict(DictConstant.IS_APPOINT_DEVICE, String.valueOf(repairPoolCode.getIsAppointDevice())));
 
                 // 检修项清单
-                result.setInspectionCodeContentList(selectCodeContentList(repairPoolCode.getId()));
+                result.setRepairPoolCodeContentList(selectCodeContentList(repairPoolCode.getId()));
             }
 
         }
@@ -194,11 +190,59 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
 
     /**
      * 检修计划详情查询检修项清单
+     *
      * @param id 检修标准id
+     * @return 构造树形
+     */
+    private List<RepairPoolCodeContent> selectCodeContentList(String id) {
+        List<RepairPoolCodeContent> result = repairPoolCodeContentMapper.selectList(
+                new LambdaQueryWrapper<RepairPoolCodeContent>().eq(RepairPoolCodeContent::getRepairPoolCodeId, id).orderByAsc(RepairPoolCodeContent::getSortNo));
+        result.forEach(r->{
+            r.setTypeName(sysBaseAPI.translateDict(DictConstant.INSPECTION_PROJECT, String.valueOf(r.getType())));
+            r.setStatusItemName(sysBaseAPI.translateDict(DictConstant.INSPECTION_STATUS_ITEM, String.valueOf(r.getStatusItem())));
+        });
+
+        return treeFirst(result);
+    }
+
+    /**
+     * 构造树，不固定根节点
+     *
+     * @param list 全部数据
+     * @return 构造好以后的树形
+     */
+    public static List<RepairPoolCodeContent> treeFirst(List<RepairPoolCodeContent> list) {
+        //这里的Menu是我自己的实体类，参数只需要菜单id和父id即可，其他元素可任意增添
+        Map<String, RepairPoolCodeContent> map = new HashMap<>(50);
+        for (RepairPoolCodeContent treeNode : list) {
+            map.put(treeNode.getId(), treeNode);
+        }
+        return addChildren(list, map);
+    }
+
+    /**
+     *
+     * @param list
+     * @param map
      * @return
      */
-    private List<InspectionCodeContent> selectCodeContentList(String id) {
-        return null;
+    private static List<RepairPoolCodeContent> addChildren(List<RepairPoolCodeContent> list, Map<String, RepairPoolCodeContent> map) {
+        List<RepairPoolCodeContent> rootNodes = new ArrayList<>();
+        for (RepairPoolCodeContent treeNode : list) {
+            RepairPoolCodeContent parentHave = map.get(treeNode.getPid());
+            if (ObjectUtil.isEmpty(parentHave)) {
+                rootNodes.add(treeNode);
+            } else {
+                //当前位置显示实体类中的List元素定义的参数为null，出现空指针异常错误
+                if (ObjectUtil.isEmpty(parentHave.getChildren())) {
+                    parentHave.setChildren(new ArrayList<RepairPoolCodeContent>());
+                    parentHave.getChildren().add(treeNode);
+                } else {
+                    parentHave.getChildren().add(treeNode);
+                }
+            }
+        }
+        return rootNodes;
     }
 
     /**
@@ -254,7 +298,7 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
             // 年份
             re.setYear(DateUtil.year(repairPool.getStartTime()));
             // 所属策略
-            InspectionStrategy inspectionStrategy = inspectionStrategyMapper.selectOne(new QueryWrapper<InspectionStrategy>().eq("", repairPool.getInspectionStrCode()));
+            InspectionStrategy inspectionStrategy = inspectionStrategyMapper.selectOne(new QueryWrapper<InspectionStrategy>().eq("code", repairPool.getInspectionStrCode()));
             re.setStrategy(ObjectUtil.isNotEmpty(inspectionStrategy) ? inspectionStrategy.getName() : "");
 
             // 是否审核
@@ -296,6 +340,38 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
             this.baseMapper.updateById(repairPool);
         }
         return Result.ok();
+    }
+
+    /**
+     * 检修详情里的适用专业下拉列表
+     *
+     * @param id
+     * @return
+     */
+    @Override
+    public List<ListDTO> queryMajorList(String id) {
+        return null;
+    }
+
+    /**
+     * 指派检修任务
+     *
+     * @param assignDTO
+     * @return
+     */
+    @Override
+    public Result assigned(AssignDTO assignDTO) {
+        return null;
+    }
+
+    /**
+     * 指派检修任务人员下拉列表
+     *
+     * @return
+     */
+    @Override
+    public List<LoginUser> queryUserList() {
+        return null;
     }
 
     /**

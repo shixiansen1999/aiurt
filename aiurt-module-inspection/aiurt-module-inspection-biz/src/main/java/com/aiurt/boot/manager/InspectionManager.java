@@ -81,15 +81,26 @@ public class InspectionManager {
         // 处理字符拼接
         for (StationDTO stationDTO : codeList) {
             if (StrUtil.isNotEmpty(stationDTO.getLineCode())) {
-                builder.append(inspectionManagerMapper.translateLine(stationDTO.getLineCode()));
+                String lineName = inspectionManagerMapper.translateLine(stationDTO.getLineCode());
+                if (StrUtil.isNotEmpty(lineName)) {
+                    builder.append(lineName);
+                }
             }
             if (StrUtil.isNotEmpty(stationDTO.getStationCode())) {
-                builder.append(inspectionManagerMapper.translateStation(stationDTO.getStationCode()));
+                String stationName = inspectionManagerMapper.translateStation(stationDTO.getStationCode());
+                if (StrUtil.isNotEmpty(stationName)) {
+                    builder.append(stationName);
+                }
             }
             if (StrUtil.isNotEmpty(stationDTO.getPositionCode())) {
-                builder.append(inspectionManagerMapper.translatePosition(stationDTO.getPositionCode()));
+                String positionName = inspectionManagerMapper.translatePosition(stationDTO.getPositionCode());
+                if (StrUtil.isNotEmpty(positionName)) {
+                    builder.append(positionName);
+                }
             }
-            builder.append(",");
+            if (ObjectUtil.isNotEmpty(builder)) {
+                builder.append(",");
+            }
         }
         if (ObjectUtil.isNotEmpty(builder)) {
             return builder.substring(0, builder.length() - 1).toString();
@@ -108,10 +119,10 @@ public class InspectionManager {
         List<RepairDeviceDTO> repairDeviceDTOList = new ArrayList<>();
         if (CollUtil.isNotEmpty(deviceCodes)) {
             repairDeviceDTOList = inspectionManagerMapper.queryDeviceByCodes(deviceCodes);
-            if(CollUtil.isNotEmpty(repairDeviceDTOList)){
+            if (CollUtil.isNotEmpty(repairDeviceDTOList)) {
                 for (RepairDeviceDTO repairDeviceDTO : repairDeviceDTOList) {
-                    repairDeviceDTO.setStatusName(sysBaseAPI.translateDict(DictConstant.DEVICE_STATUS,String.valueOf(repairDeviceDTO.getStatus())));
-                    repairDeviceDTO.setTemporaryName(sysBaseAPI.translateDict(DictConstant.DEVICE_TEMPORARY,String.valueOf(repairDeviceDTO.getTemporary())));
+                    repairDeviceDTO.setStatusName(sysBaseAPI.translateDict(DictConstant.DEVICE_STATUS, String.valueOf(repairDeviceDTO.getStatus())));
+                    repairDeviceDTO.setTemporaryName(sysBaseAPI.translateDict(DictConstant.DEVICE_TEMPORARY, String.valueOf(repairDeviceDTO.getTemporary())));
                     StationDTO stationDTO = new StationDTO();
                     stationDTO.setLineCode(repairDeviceDTO.getLineCode());
                     stationDTO.setStationCode(repairDeviceDTO.getStationCode());

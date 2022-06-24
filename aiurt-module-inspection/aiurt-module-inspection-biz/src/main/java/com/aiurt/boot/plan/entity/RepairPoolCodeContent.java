@@ -1,18 +1,20 @@
 package com.aiurt.boot.plan.entity;
 
-import java.io.Serializable;
-
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import lombok.Data;
 import com.fasterxml.jackson.annotation.JsonFormat;
-import org.springframework.format.annotation.DateTimeFormat;
-import org.jeecgframework.poi.excel.annotation.Excel;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
+import org.jeecgframework.poi.excel.annotation.Excel;
+import org.springframework.format.annotation.DateTimeFormat;
+
+import java.io.Serializable;
+import java.util.List;
 
 /**
  * @Description: repair_pool_code_content
@@ -100,4 +102,18 @@ public class RepairPoolCodeContent implements Serializable {
     @DateTimeFormat(pattern="yyyy-MM-dd")
     @ApiModelProperty(value = "修改时间")
     private java.util.Date updateTime;
+    /**
+     * 子节点
+     */
+    @TableField(exist = false)
+    @ApiModelProperty(value = "子节点")
+    private List<RepairPoolCodeContent> children;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "检查项类型名称")
+    private java.lang.String typeName;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "数据填写类型")
+    private java.lang.String statusItemName;
 }

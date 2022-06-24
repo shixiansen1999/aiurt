@@ -1,6 +1,6 @@
 package com.aiurt.boot.plan.dto;
 
-import com.aiurt.boot.standard.entity.InspectionCodeContent;
+import com.aiurt.boot.plan.entity.RepairPoolCodeContent;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
@@ -39,7 +39,7 @@ public class RepairStrategyDTO {
     private java.lang.String isAppointDevice;
 
     @ApiModelProperty(value = "检修项清单（树形）")
-    List<InspectionCodeContent> inspectionCodeContentList;
+    List<RepairPoolCodeContent> repairPoolCodeContentList;
 
     @ApiModelProperty(value = "设备清单")
     List<RepairDeviceDTO> repairDeviceDTOList;

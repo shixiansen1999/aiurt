@@ -55,6 +55,6 @@
         left join device_type dt on dt.`code` = d.device_type_code
     </select>
     <select id="queryNameByCode" resultType="java.lang.String">
-        select name form device_type where code = #{code}
+        select name from device_type where code = #{code} and del_flag =0
     </select>
 </mapper>

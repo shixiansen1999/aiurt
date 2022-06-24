@@ -1,11 +1,14 @@
 package com.aiurt.boot.plan.service;
 
+import com.aiurt.boot.plan.dto.AssignDTO;
+import com.aiurt.boot.plan.dto.ListDTO;
 import com.aiurt.boot.plan.dto.RepairPoolDetailsDTO;
 import com.aiurt.boot.plan.dto.RepairStrategyDTO;
 import com.aiurt.boot.plan.entity.RepairPool;
 import com.aiurt.boot.plan.rep.RepairStrategyReq;
 import com.baomidou.mybatisplus.extension.service.IService;
 import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.system.vo.LoginUser;
 
 import java.util.Date;
 import java.util.List;
@@ -54,4 +57,26 @@ public interface IRepairPoolService extends IService<RepairPool> {
      * @return
      */
     Result updateTime(String ids, String startTime, String endTime);
+
+    /**
+     * 检修详情里的适用专业下拉列表
+     * @param id
+     * @return
+     */
+    List<ListDTO> queryMajorList(String id);
+
+    /**
+     * 指派检修任务
+     * @param assignDTO
+     * @return
+     */
+    Result assigned(AssignDTO assignDTO);
+    /**
+     * 指派检修任务人员下拉列表
+     *
+     * @param
+     * @return
+     */
+    List<LoginUser> queryUserList();
+
 }

@@ -1,18 +1,18 @@
 package com.aiurt.boot.strategy.entity;
 
-import java.io.Serializable;
-
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import lombok.Data;
 import com.fasterxml.jackson.annotation.JsonFormat;
-import org.springframework.format.annotation.DateTimeFormat;
-import org.jeecgframework.poi.excel.annotation.Excel;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
+import org.jeecgframework.poi.excel.annotation.Excel;
+import org.springframework.format.annotation.DateTimeFormat;
+
+import java.io.Serializable;
 
 /**
  * @Description: inspection_strategy
@@ -30,7 +30,7 @@ public class InspectionStrategy implements Serializable {
 
 	/**生成年检计划状态,*/
 	@TableId(type = IdType.ASSIGN_ID)
-    @ApiModelProperty(value = "生成年检计划状态,")
+    @ApiModelProperty(value = "主键")
     private java.lang.String id;
 	/**策略名称*/
 	@Excel(name = "策略名称", width = 15)
@@ -79,6 +79,9 @@ public class InspectionStrategy implements Serializable {
 	/**创建人*/
     @ApiModelProperty(value = "创建人")
     private java.lang.String createBy;
+    /**策略编码*/
+    @ApiModelProperty(value = "策略编码")
+    private java.lang.String code;
 	/**创建时间*/
 	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
     @DateTimeFormat(pattern="yyyy-MM-dd")

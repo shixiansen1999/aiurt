@@ -1,5 +1,6 @@
 package com.aiurt.boot.plan.controller;
 
+import com.aiurt.boot.plan.dto.AssignDTO;
 import com.aiurt.boot.plan.dto.ListDTO;
 import com.aiurt.boot.plan.dto.RepairPoolDetailsDTO;
 import com.aiurt.boot.plan.dto.RepairStrategyDTO;
@@ -11,7 +12,10 @@ import com.aiurt.common.system.base.controller.BaseController;
 import io.swagger.annotations.*;
 import lombok.extern.slf4j.Slf4j;
 import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Arrays;
@@ -43,8 +47,8 @@ public class RepairPoolController extends BaseController<RepairPool, IRepairPool
             @ApiResponse(code = 200, message = "OK", response = RepairPool.class)
     })
     @GetMapping(value = "/list")
-    public Result<List<RepairPool>> queryList(@RequestParam @ApiParam(required = true, value = "开始时间", name = "startTime") Date startTime,
-                                              @RequestParam @ApiParam(required = true, value = "结束时间", name = "endTime") Date endTime) {
+    public Result<List<RepairPool>> queryList(@RequestParam @ApiParam(required = true, value = "开始时间", name = "startTime") @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") Date startTime,
+                                              @RequestParam @ApiParam(required = true, value = "结束时间", name = "endTime") @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") Date endTime) {
         List<RepairPool> repairPoolList = repairPoolService.queryList(startTime, endTime);
         return Result.OK(repairPoolList);
     }
@@ -114,7 +118,7 @@ public class RepairPoolController extends BaseController<RepairPool, IRepairPool
     @AutoLog(value = "通过检修计划id查看检修标准详情")
     @ApiOperation(value = "通过检修计划id查看检修标准详情", notes = "通过检修计划id查看检修标准详情")
     @GetMapping(value = "/queryStandardById")
-    public Result<RepairStrategyDTO> queryStandardById(RepairStrategyReq req) {
+    public Result<RepairStrategyDTO> queryStandardById(@Validated RepairStrategyReq req) {
         RepairStrategyDTO repairStrategyDTOList = repairPoolService.queryStandardById(req);
         return Result.OK(repairStrategyDTOList);
     }
@@ -172,7 +176,8 @@ public class RepairPoolController extends BaseController<RepairPool, IRepairPool
     @ApiOperation(value = "检修详情里的适用专业下拉列表", notes = "检修详情里的适用专业下拉列表")
     @GetMapping(value = "/queryMajorList")
     public Result<List<ListDTO>> queryMajorList(@RequestParam @ApiParam(name = "id", required = true, value = "检修计划id") String id) {
-        return null;
+        List<ListDTO> listDTOList = repairPoolService.queryMajorList(id);
+        return Result.OK(listDTOList);
     }
 
     /**
@@ -200,6 +205,33 @@ public class RepairPoolController extends BaseController<RepairPool, IRepairPool
     @GetMapping(value = "/queryStandardList")
     public Result<List<ListDTO>> queryStandardList(@RequestParam @ApiParam(name = "id", required = true, value = "检修计划id") String id) {
         return null;
+    }
+
+    /**
+     * 指派检修任务
+     *
+     * @param
+     * @return
+     */
+    @AutoLog(value = "指派检修任务")
+    @ApiOperation(value = "指派检修任务", notes = "指派检修任务")
+    @PostMapping(value = "/assigned")
+    public Result assigned(@RequestBody @Validated AssignDTO assignDTO) {
+        return repairPoolService.assigned(assignDTO);
+    }
+
+    /**
+     * 指派检修任务人员下拉列表
+     *
+     * @param
+     * @return
+     */
+    @AutoLog(value = "指派检修任务")
+    @ApiOperation(value = "指派检修任务", notes = "指派检修任务")
+    @PostMapping(value = "/queryUserList")
+    public Result queryUserList() {
+        List<LoginUser> loginUserList = repairPoolService.queryUserList();
+        return Result.OK(loginUserList);
     }
 
 
