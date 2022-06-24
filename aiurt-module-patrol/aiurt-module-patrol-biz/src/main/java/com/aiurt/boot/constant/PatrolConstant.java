@@ -13,7 +13,19 @@ public interface PatrolConstant {
     Integer PLAN_STATUS_ENABLE = 1;
 
     /**
-     * 巡检任务初始状态
+     * 巡检任务初始状态(待指派）
      */
     Integer TASK_STATUS = 0;
+    /**
+     * 巡检策略日巡
+     */
+    Integer STRATEGY_DAY = 0;
+    /**
+     * 巡检策略周巡
+     */
+    Integer STRATEGY_WEEK = 1;
+    /**
+     * 巡检策略月巡
+     */
+    Integer STRATEGY_MONTH = 2;
 }
