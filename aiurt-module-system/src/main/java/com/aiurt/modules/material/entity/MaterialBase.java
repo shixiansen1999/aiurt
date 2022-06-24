@@ -30,7 +30,7 @@ public class MaterialBase {
 	@TableId(type= IdType.ASSIGN_ID)
     @ApiModelProperty(value = "主键id")
 	@JsonSerialize(using = ToStringSerializer.class)
-	private  Long  id;
+	private  String  id;
 
 	/**专业编码*/
 	@Excel(name = "专业编码", width = 15)

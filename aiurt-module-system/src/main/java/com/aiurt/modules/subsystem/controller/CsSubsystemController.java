@@ -119,6 +119,21 @@ public class CsSubsystemController  {
 		return Result.OK(pageList);
 	}
 
+	 @ApiOperation(value="子系统列表查询", notes="子系统列表查询")
+	 @GetMapping(value = "/selectList")
+	 public Result<?> selectlist(
+									@RequestParam(name="majorCode", required = false) String majorCode,
+									HttpServletRequest req) {
+		 QueryWrapper<CsSubsystem> queryWrapper = new QueryWrapper<>();
+		 if( majorCode != null && !"".equals(majorCode) ){
+			 queryWrapper.eq("major_code",majorCode);
+		 }
+		 queryWrapper.eq("del_flag",0);
+		 queryWrapper.orderByDesc("create_time");
+		 List<CsSubsystem> pageList = csSubsystemService.list(queryWrapper);
+		 return Result.OK(pageList);
+	 }
+
 	/**
 	 *   添加
 	 *

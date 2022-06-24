@@ -311,8 +311,8 @@ public class DeviceController {
             QueryWrapper<Device> deviceQueryWrapper = new QueryWrapper<>();
             deviceQueryWrapper.eq("id", id);
             Device device = deviceService.getOne(deviceQueryWrapper);
-            device.setDelFlag(1);
-            deviceService.updateById(device);
+//            device.setDelFlag(1);
+            deviceService.removeById(device);
         } catch (Exception e) {
             log.error("删除失败", e.getMessage());
             return Result.error("删除失败!");
@@ -336,7 +336,7 @@ public class DeviceController {
         } else {
             List<Device> list = this.deviceService.lambdaQuery().eq(Device::getId, Arrays.asList(ids.split(","))).select(Device::getCode).list();
             list.stream().forEach( deviceAssembly -> deviceAssembly.setDelFlag(1));
-            deviceService.updateBatchById(list);
+            deviceService.removeBatchByIds(list);
             result.success("删除成功!");
         }
         return result;

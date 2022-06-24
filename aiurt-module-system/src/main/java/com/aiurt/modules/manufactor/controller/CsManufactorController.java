@@ -69,6 +69,15 @@ public class CsManufactorController  {
 		return Result.OK(pageList);
 	}
 
+	 @ApiOperation(value="厂商信息列表查询", notes="厂商信息列表查询")
+	 @GetMapping(value = "/selectList")
+	 public Result<?> selectList(CsManufactor csManufactor,
+									HttpServletRequest req) {
+		 QueryWrapper<CsManufactor> queryWrapper = QueryGenerator.initQueryWrapper(csManufactor, req.getParameterMap());
+		 List<CsManufactor> pageList = csManufactorService.list(queryWrapper.eq("del_flag",0));
+		 return Result.OK(pageList);
+	 }
+
 	/**
 	 *   添加
 	 *

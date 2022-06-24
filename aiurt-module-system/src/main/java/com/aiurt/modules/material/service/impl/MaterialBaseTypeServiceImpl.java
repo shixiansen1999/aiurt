@@ -1,5 +1,6 @@
 package com.aiurt.modules.material.service.impl;
 
+import com.aiurt.modules.major.service.ICsMajorService;
 import com.aiurt.modules.material.entity.MaterialBase;
 import com.aiurt.modules.material.entity.MaterialBaseType;
 import com.aiurt.modules.material.mapper.MaterialBaseMapper;
@@ -14,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -26,9 +28,31 @@ import java.util.stream.Collectors;
 @Service
 public class MaterialBaseTypeServiceImpl extends ServiceImpl<MaterialBaseTypeMapper, MaterialBaseType> implements IMaterialBaseTypeService {
 
+    @Autowired
+    private MaterialBaseTypeMapper materialBaseTypeMapper;
+
     @Override
     public List<MaterialBaseType> treeList(List<MaterialBaseType> materialBaseTypeList, String id) {
         return getTreeRes(materialBaseTypeList, id);
+    }
+
+    @Override
+    public String getCcStr(MaterialBaseType materialBaseType) {
+        String res = "";
+        String str = Ccstr(materialBaseType, "");
+        if( !"" .equals(str) ){
+            if(str.contains("/")){
+                List<String> strings = Arrays.asList(str.split("/"));
+                Collections.reverse(strings);
+                for(String s : strings){
+                    res += s + "/";
+                }
+                res = res.substring(0,res.length()-1);
+            }else{
+                res = str;
+            }
+        }
+        return res;
     }
 
     List<MaterialBaseType> getTreeRes(List<MaterialBaseType> materialBaseTypeList,String pid){
@@ -39,5 +63,16 @@ public class MaterialBaseTypeServiceImpl extends ServiceImpl<MaterialBaseTypeMap
             }
         }
         return childList;
+    }
+    String Ccstr(MaterialBaseType materialBaseType, String str){
+        MaterialBaseType materialBaseTyperes = new MaterialBaseType();
+        if("0".equals(materialBaseType.getPid())){
+            str += materialBaseType.getBaseTypeCode();
+        }else{
+            str += materialBaseType.getBaseTypeCode() + "/";
+            materialBaseTyperes = materialBaseTypeMapper.selectById(materialBaseType.getPid());
+            str = Ccstr(materialBaseTyperes, str);
+        }
+        return str;
     }
 }

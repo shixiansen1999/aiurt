@@ -7,6 +7,7 @@ import com.aiurt.modules.device.entity.DeviceCompose;
 import com.aiurt.modules.device.service.IDeviceAssemblyService;
 import com.aiurt.modules.device.service.IDeviceComposeService;
 import com.aiurt.modules.material.entity.MaterialBase;
+import com.aiurt.modules.material.entity.MaterialBaseType;
 import com.aiurt.modules.material.service.IMaterialBaseService;
 import com.aiurt.modules.material.service.IMaterialBaseTypeService;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -109,6 +110,9 @@ public class MaterialBaseController {
             String finalstr = majorCode + systemCode + baseTypeCode;
             String newBaseCode = iMaterialBaseService.getNewBaseCode(finalstr);
             materialBase.setCode(newBaseCode);
+            MaterialBaseType materialBaseType = iMaterialBaseTypeService.getOne(new QueryWrapper<MaterialBaseType>().eq("base_type_code",baseTypeCode));
+            String typeCodeCc = iMaterialBaseTypeService.getCcStr(materialBaseType);
+            materialBase.setBaseTypeCodeCc(typeCodeCc);
             iMaterialBaseService.save(materialBase);
             result.success("添加成功！");
         } catch (Exception e) {

@@ -7,4 +7,5 @@ import java.util.List;
 
 public interface IMaterialBaseTypeService extends IService<MaterialBaseType> {
     List<MaterialBaseType> treeList(List<MaterialBaseType> materialBaseTypeList, String id);
+    String getCcStr(MaterialBaseType materialBaseType);
 }

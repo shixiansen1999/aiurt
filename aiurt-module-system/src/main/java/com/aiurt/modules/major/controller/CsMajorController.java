@@ -71,6 +71,15 @@ public class CsMajorController  {
 		return Result.OK(pageList);
 	}
 
+	 @ApiOperation(value="专业列表查询", notes="专业列表查询")
+	 @GetMapping(value = "/selectList")
+	 public Result<?> selectList(CsMajor csMajor,
+									HttpServletRequest req) {
+		 QueryWrapper<CsMajor> queryWrapper = QueryGenerator.initQueryWrapper(csMajor, req.getParameterMap());
+		 List<CsMajor> pageList = csMajorService.list(queryWrapper.eq("del_flag",0));
+		 return Result.OK(pageList);
+	 }
+
 	/**
 	 *   添加
 	 *

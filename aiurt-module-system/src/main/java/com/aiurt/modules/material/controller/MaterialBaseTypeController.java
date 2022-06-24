@@ -73,8 +73,6 @@ public class MaterialBaseTypeController {
                                                          @RequestParam(name = "status", required = false) String status,
                                                          HttpServletRequest req) {
         Result<IPage<MaterialBaseType>> result = new Result<IPage<MaterialBaseType>>();
-        Map<String, String[]> parameterMap = req.getParameterMap();
-
         QueryWrapper<MaterialBaseType> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("del_flag", 0);
         if(id != null && !"".equals(id)){
@@ -110,16 +108,26 @@ public class MaterialBaseTypeController {
      * @param req
      * @return
      */
-    @AutoLog(value = "物资分类列表结构查询（无分页。用于左侧树）")
-    @ApiOperation(value = "物资分类列表结构查询（无分页。用于左侧树）", notes = "物资分类列表结构查询（无分页。用于左侧树）")
+    @AutoLog(value = "物资分类列表结构查询")
+    @ApiOperation(value = "物资分类列表结构查询", notes = "物资分类列表结构查询")
     @GetMapping(value = "/selectList")
     public Result<List<MaterialBaseType>> selectList(
                                                @RequestParam(name = "majorCode", required = false) String majorCode,
                                                @RequestParam(name = "systemCode", required = false) String systemCode,
                                                HttpServletRequest req) {
         Result<List<MaterialBaseType>> result = new Result<List<MaterialBaseType>>();
-        List<MaterialBaseType> materialBaseTypeList = iMaterialBaseTypeService.list(new QueryWrapper<MaterialBaseType>().
-                eq("major_code",majorCode).eq("system_code",systemCode).eq("del_flag", 0).orderByDesc("create_time"));
+        QueryWrapper<MaterialBaseType> materialBaseTypeQueryWrapper = new QueryWrapper<MaterialBaseType>();
+        materialBaseTypeQueryWrapper.eq("del_flag", 0);
+        if(majorCode != null && !"".equals(majorCode)){
+            materialBaseTypeQueryWrapper.eq("major_code", majorCode);
+        }
+        if(systemCode != null && !"".equals(systemCode)){
+            materialBaseTypeQueryWrapper.eq("system_code", systemCode);
+        }else {
+            materialBaseTypeQueryWrapper.apply(" (system_code = '' or system_code is null) ");
+        }
+        materialBaseTypeQueryWrapper.orderByDesc("create_time");
+        List<MaterialBaseType> materialBaseTypeList = iMaterialBaseTypeService.list(materialBaseTypeQueryWrapper);
         result.setSuccess(true);
         result.setResult(materialBaseTypeList);
         return result;
@@ -202,6 +210,8 @@ public class MaterialBaseTypeController {
             if (count > 0){
                 return Result.error("物资分类编号不能重复");
             }
+            String typeCodeCc = iMaterialBaseTypeService.getCcStr(materialBaseType);
+            materialBaseType.setTypeCodeCc(typeCodeCc);
             iMaterialBaseTypeService.save(materialBaseType);
             result.success("添加成功！");
         } catch (Exception e) {
@@ -279,12 +289,11 @@ public class MaterialBaseTypeController {
             if(materialBaseList != null && materialBaseList.size()>0){
                 return Result.error("该物资分类正在使用中，无法删除");
             }
-            List<MaterialBaseType> materialBaseTypeList = iMaterialBaseTypeService.list(new QueryWrapper<MaterialBaseType>().eq("pid",id));
+            List<MaterialBaseType> materialBaseTypeList = iMaterialBaseTypeService.list(new QueryWrapper<MaterialBaseType>().eq("pid",id).eq("del_flag",0));
             if(materialBaseTypeList != null && materialBaseTypeList.size()>0){
                 return Result.error("该物资分类正在使用中，无法删除");
             }
-            materialBaseType.setDelFlag(1);
-            iMaterialBaseTypeService.updateById(materialBaseType);
+            iMaterialBaseTypeService.removeById(materialBaseType);
         } catch (Exception e) {
             log.error("删除失败", e.getMessage());
             return Result.error("删除失败!");
@@ -315,8 +324,8 @@ public class MaterialBaseTypeController {
                 if((materialBaseList != null && materialBaseList.size()>0) || (materialBaseTypeList != null && materialBaseTypeList.size()>0)){
                     res += "baseTypeCode,";
                 }else{
-                    materialBaseType.setDelFlag(1);
-                    iMaterialBaseTypeService.updateById(materialBaseType);
+//                    materialBaseType.setDelFlag(1);
+                    iMaterialBaseTypeService.removeById(materialBaseType);
                 }
             }
             if(res.contains(",")){
