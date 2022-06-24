@@ -1,7 +1,6 @@
 package com.aiurt.boot.task.service.impl;
 
 
-import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.plan.entity.PatrolPlan;
 import com.aiurt.boot.plan.mapper.PatrolPlanMapper;
@@ -120,20 +119,21 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
     @Override
     public Page<PatrolTaskDTO> getPatrolTaskList(Page<PatrolTaskDTO> pageList, PatrolTaskDTO patrolTaskDTO) {
         List<PatrolTaskDTO> taskList = patrolTaskMapper.getPatrolTaskList(pageList, patrolTaskDTO);
-        if (ObjectUtil.isNotEmpty(patrolTaskDTO)) {
-
-        }
         taskList.stream().forEach(e -> {
             String userName = patrolTaskMapper.getUserName(e.getBackId());
             List<String> organizationName = patrolTaskMapper.getOrganizationName(e.getPlanCode());
             LambdaQueryWrapper<PatrolTaskStandard> queryWrapper = new LambdaQueryWrapper<>();
             PatrolTaskStandard patrolTaskStandards = patrolTaskStandardMapper.selectOne(queryWrapper.eq(PatrolTaskStandard::getTaskId, e.getId()));
+            String majorName=patrolTaskStandardMapper.getMajorName(patrolTaskStandards.getProfessionCode());
+            String sysName=patrolTaskStandardMapper.getSysName(patrolTaskStandards.getProfessionCode());
             List<String> orgCodes = patrolTaskMapper.getOrgCode(e.getPlanCode());
             List<String> stationName = patrolTaskMapper.getStationName(e.getPlanCode());
             List<String> patrolUserName = patrolTaskMapper.getPatrolUserName(e.getCode());
             String orgName = organizationName.stream().collect(Collectors.joining("、"));
             String stName = stationName.stream().collect(Collectors.joining("、"));
             String ptuName = patrolUserName.stream().collect(Collectors.joining("、"));
+            e.setSysName(sysName);
+            e.setMajorName(majorName);
             e.setOrgCode(orgCodes);
             e.setOrganizationName(orgName);
             e.setStationName(stName);
@@ -185,7 +185,6 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
             }
         }
     }
-
     @Override
     public void getPatrolTaskReturn(PatrolTaskDTO patrolTaskDTO) {
         //更新巡检状态及添加退回理由、退回人Id（传任务id、退回理由）
@@ -193,7 +192,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         LambdaUpdateWrapper<PatrolTask> updateWrapper = new LambdaUpdateWrapper<>();
         updateWrapper.set(PatrolTask::getStatus, 3)
                 .set(PatrolTask::getBackId, sysUser.getId())
-                .set(PatrolTask::getRemark, patrolTaskDTO.getRemark())
+                .set(PatrolTask::getBackReason, patrolTaskDTO.getBackReason())
                 .eq(PatrolTask::getId, patrolTaskDTO.getId());
         update(updateWrapper);
     }
@@ -213,7 +212,6 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
     @Override
     public List<PatrolTaskUserDTO> getPatrolTaskAppointSelect(PatrolTaskDTO patrolTaskDTO) {
         //查询这个部门的信息人员,传组织机构ids
-        //查询这个部门的信息人员
         List<String> codes = patrolTaskDTO.getOrgCode();
         List<PatrolTaskUserDTO> arrayList = new ArrayList<>();
         for (String code : codes) {
@@ -224,7 +222,6 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
             userDTO.setUserList(user);
             arrayList.add(userDTO);
         }
-
         return arrayList;
     }
 

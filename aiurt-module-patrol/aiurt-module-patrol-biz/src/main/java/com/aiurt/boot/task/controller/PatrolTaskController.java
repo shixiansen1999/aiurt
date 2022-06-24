@@ -9,6 +9,7 @@ import com.aiurt.boot.task.service.IPatrolTaskDeviceService;
 import com.aiurt.boot.task.service.IPatrolTaskService;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.system.base.controller.BaseController;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.annotations.Api;
@@ -245,6 +246,33 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
         return Result.OK("指派成功");
     }
 
+    /**
+     * app巡检任务-驳回
+     * @return
+     */
+    @AutoLog(value = "patrol_task- app巡检任务-驳回")
+    @ApiOperation(value="patrol_task- app巡检任务-驳回", notes="patrol_task- app巡检任务-驳回")
+    @PostMapping(value = "/patrolTaskReject")
+    public Result<?>  patrolTaskReject(String id,String back_reason) {
+        LambdaUpdateWrapper<PatrolTask> queryWrapper= new LambdaUpdateWrapper<>();
+        queryWrapper.set(PatrolTask::getStatus,5).set(PatrolTask::getRemark,back_reason).eq(PatrolTask::getId,id);
+        patrolTaskService.update(queryWrapper);
+        return Result.OK("驳回成功");
+    }
+
+    /**
+     * app巡检任务-通过
+     * @return
+     */
+    @AutoLog(value = "patrol_task- app巡检任务-通过")
+    @ApiOperation(value="patrol_task- app巡检任务-通过", notes="patrol_task- app巡检任务-通过")
+    @PostMapping(value = "/patrolTaskPass")
+    public Result<?>  patrolTaskPass(String id,String back_reason) {
+        LambdaUpdateWrapper<PatrolTask> queryWrapper= new LambdaUpdateWrapper<>();
+        queryWrapper.set(PatrolTask::getStatus,7).set(PatrolTask::getRemark,back_reason).eq(PatrolTask::getId,id);
+        patrolTaskService.update(queryWrapper);
+        return Result.OK("通过成功");
+    }
     /**
      * 导出excel
      *

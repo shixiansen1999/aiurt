@@ -2,6 +2,7 @@ package com.aiurt.boot.task.mapper;
 
 import com.aiurt.boot.task.entity.PatrolTaskStandard;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import org.apache.ibatis.annotations.Param;
 
 /**
  * @Description: patrol_task_standard
@@ -11,4 +12,17 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
  */
 public interface PatrolTaskStandardMapper extends BaseMapper<PatrolTaskStandard> {
 
+    /**
+     * app-巡检详情-子系统名称
+     * @param majorCode
+     * @return
+     */
+    String getMajorName(@Param("majorCode") String majorCode);
+
+    /**
+     *app-巡检详情-子系统名称
+     * @param subsystemCode
+     * @return
+     */
+    String getSysName(String subsystemCode);
 }

@@ -62,46 +62,41 @@ public class PatrolTaskDTO
     @Excel(name = "退回人名称", width = 15)
     @ApiModelProperty(value = "退回人名称")
     private String patrolReturnUserName;
-    /**
-     * 任务获取方式：1 常规分发、2常规指派、3 手工下发
-     */
+    /*** 任务获取方式：1 常规分发、2常规指派、3 手工下发*/
     @Excel(name = "任务获取方式：1 常规分发、2常规指派、3 手工下发", width = 15)
     @ApiModelProperty(value = "任务获取方式：1 常规分发、2常规指派、3 手工下发")
     private java.lang.Integer source;
-    /**
-     * 是否需要审核：0否、1是
-     */
+    /*** 是否需要审核：0否、1是*/
     @Excel(name = "是否需要审核：0否、1是", width = 15)
     @ApiModelProperty(value = "是否需要审核：0否、1是")
     private java.lang.Integer auditor;
-    /**
-     * 巡检开始时间
-     */
+    /*** 巡检开始时间*/
     @JsonFormat(timezone = "GMT+8", pattern = "HH:mm:ss")
     @DateTimeFormat(pattern = "HH:mm:ss")
     @ApiModelProperty(value = "巡检开始时间")
     private java.util.Date startTime;
-    /**
-     * 巡检结束时间
-     */
+    /*** 巡检结束时间*/
     @JsonFormat(timezone = "GMT+8", pattern = "HH:mm:ss")
     @DateTimeFormat(pattern = "HH:mm:ss")
     @ApiModelProperty(value = "巡检结束时间")
     private java.util.Date endTime;
-    /**
-     * 巡检频次：1 一天1次、2 一周1次、3 一周2次
-     */
+    /*** 巡检频次：1 一天1次、2 一周1次、3 一周2次*/
     @Excel(name = "巡检频次：1 一天1次、2 一周1次、3 一周2次", width = 15)
     @ApiModelProperty(value = "巡检频次：1 一天1次、2 一周1次、3 一周2次")
     private java.lang.Integer period;
-    /**
-     * 任务状态：0待指派、1待确认、2待执行、3已退回、4执行中、5待审核、6已完成
-     */
+    /*** 任务状态：0待指派、1待确认、2待执行、3已退回、4执行中、5待审核、6已完成*/
     @Excel(name = "任务状态：0待指派、1待确认、2待执行、3已退回、4执行中、5待审核、6已完成", width = 15)
     @ApiModelProperty(value = "任务状态：0待指派、1待确认、2待执行、3已退回、4执行中、5待审核、6已完成")
     private java.lang.Integer status;
-    @Excel(name = "备注", width = 15)
-    @ApiModelProperty(value = "备注")
-    private java.lang.String remark;
+    /*** 退回理由*/
+    @Excel(name = "退回理由", width = 15)
+    @ApiModelProperty(value = "退回理由")
+    private java.lang.String backReason;
+    @Excel(name = "专业名称", width = 15)
+    @ApiModelProperty(value = "专业名称")
+    private java.lang.String majorName;
+    @Excel(name = "子系统名称", width = 15)
+    @ApiModelProperty(value = "子系统名称")
+    private java.lang.String sysName;
 }
 

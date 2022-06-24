@@ -2,4 +2,14 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.aiurt.boot.task.mapper.PatrolTaskStandardMapper">
 
+<select id="getMajorName" resultType="java.lang.String">
+select cm.major_name
+from cs_major cm
+where cm.major_code= #{majorCode}
+</select>
+<select id="getSysName" resultType="java.lang.String">
+select cs.system_name
+from cs_subsystem cs
+where cs.system_code =#{subsystemCode}
+</select>
 </mapper>
