@@ -5,6 +5,7 @@ import com.aiurt.common.system.base.controller.BaseController;
 import com.aiurt.modules.fault.dto.ApprovalDTO;
 import com.aiurt.modules.fault.dto.AssignDTO;
 import com.aiurt.modules.fault.dto.CancelDTO;
+import com.aiurt.modules.fault.dto.RefuseAssignmentDTO;
 import com.aiurt.modules.fault.entity.Fault;
 import com.aiurt.modules.fault.service.IFaultService;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -128,10 +129,10 @@ public class FaultController extends BaseController<Fault, IFaultService> {
 	 * @return
 	 */
 	@AutoLog(value = "查看故障详情")
-	@ApiOperation(value="fault-通过id查询", notes="fault-通过id查询")
-	@GetMapping(value = "/queryById")
+	@ApiOperation(value="通过故障编码查询详情", notes="通过故障编码查询详情")
+	@GetMapping(value = "/queryByCode")
 	@ApiImplicitParams({
-			@ApiImplicitParam(name = "code", value = "故障编码", required = true, paramType = "query")
+		@ApiImplicitParam(name = "code", value = "故障编码", required = true, paramType = "query")
 	})
 	public Result<Fault> queryByCode(@RequestParam(name="code",required=true) String code) {
 		Fault fault = faultService.queryByCode(code);
@@ -141,32 +142,37 @@ public class FaultController extends BaseController<Fault, IFaultService> {
 		return Result.OK(fault);
 	}
 
+	@AutoLog(value = "故障指派")
+	@ApiOperation(value="故障指派", notes="故障指派")
 	@PutMapping("/assign")
 	public Result<?> assign(@RequestBody AssignDTO assignDTO) {
-		return Result.OK();
+		faultService.assign(assignDTO);
+		return Result.OK("故障指派成功！");
 	}
 
-    /**
-    * 导出excel
-    *
-    * @param request
-    * @param fault
-    */
-    @RequestMapping(value = "/exportXls")
-    public ModelAndView exportXls(HttpServletRequest request, Fault fault) {
-        return super.exportXls(request, fault, Fault.class, "fault");
-    }
+	@AutoLog(value = "领取故障工单")
+	@ApiOperation(value="领取故障工单", notes="领取故障工单")
+	@PutMapping("/receive")
+	public Result<?> receive(@RequestBody AssignDTO assignDTO) {
+		faultService.receive(assignDTO);
+		return Result.OK("领取故障工单成功");
+	}
 
-    /**
-      * 通过excel导入数据
-    *
-    * @param request
-    * @param response
-    * @return
-    */
-    @RequestMapping(value = "/importExcel", method = RequestMethod.POST)
-    public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) {
-        return super.importExcel(request, response, Fault.class);
-    }
+	 @AutoLog(value = "接收指派")
+	 @ApiOperation(value="领取故障工单", notes="领取故障工单")
+	 @PutMapping("/receiveAssignment")
+	 @ApiImplicitParams({
+			 @ApiImplicitParam(name = "code", value = "故障编码", required = true, paramType = "query")
+	 })
+	private Result<?> receiveAssignment(@RequestParam(name = "code") String code) {
+		 faultService.receiveAssignment(code);
+		return Result.OK("领取故障工单成功。");
+	}
 
+	 @AutoLog(value = "拒收指派")
+	 @ApiOperation(value="拒收指派", notes="拒收指派")
+	 @PutMapping("/receiveAssignment")
+	private Result<?> refuseAssignment(@RequestBody RefuseAssignmentDTO refuseAssignmentDTO){
+		return Result.OK();
+	}
 }

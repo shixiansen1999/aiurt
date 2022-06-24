@@ -5,6 +5,7 @@ import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateUtil;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.modules.fault.dto.ApprovalDTO;
+import com.aiurt.modules.fault.dto.AssignDTO;
 import com.aiurt.modules.fault.dto.CancelDTO;
 import com.aiurt.modules.fault.entity.Fault;
 import com.aiurt.modules.fault.entity.FaultDevice;
@@ -13,6 +14,7 @@ import com.aiurt.modules.fault.mapper.FaultMapper;
 import com.aiurt.modules.fault.service.IFaultDeviceService;
 import com.aiurt.modules.fault.service.IFaultService;
 import com.aiurt.modules.fault.service.IOperationProcessService;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.system.vo.LoginUser;
@@ -47,11 +49,8 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
     @Override
     @Transactional(rollbackFor = Exception.class)
     public String add(Fault fault) {
-        LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
 
-        if (Objects.isNull(user)) {
-            throw  new AiurtBootException("请重新登录");
-        }
+        LoginUser user = checkLogin();
 
         // 故障编号处理
         String majorCode = fault.getMajorCode();
@@ -103,18 +102,33 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
      */
     @Override
     public void approval(ApprovalDTO approvalDTO) {
+
+        LoginUser user = checkLogin();
+
+        Fault fault = isExist(approvalDTO.getFaultCode());
+
         // 通过的状态 = 1
         Integer status = 1;
         Integer approvalStatus = approvalDTO.getApprovalStatus();
-
+        OperationProcess  operationProcess = OperationProcess.builder()
+                .processTime(new Date())
+                .faultCode(fault.getCode())
+                .processPerson(user.getUsername())
+                .build();
         if (Objects.isNull(approvalStatus) || status.equals(approvalStatus)){
             // 审批通过
-
-
+            fault.setStatus(3);
+            operationProcess.setProcessLink("审批通过").setProcessCode(3);
         } else {
             // 驳回
-
+            fault.setStatus(2);
+            fault.setApprovalRejection(approvalDTO.getApprovalRejection());
+            operationProcess.setProcessLink("审批已驳回").setProcessCode(2);
         }
+
+        updateById(fault);
+
+        //todo 消息发送
     }
 
     /**
@@ -131,21 +145,113 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
     }
 
     /**
-     *
+     * 作废
      * @param cancelDTO
      */
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void cancel(CancelDTO cancelDTO) {
+        LoginUser user = checkLogin();
 
+        // 故障单
+        Fault fault = isExist(cancelDTO.getFaultCode());
+
+        // 作废
+        fault.setStatus(0);
+        //
+        fault.setCancelTime(new Date());
+        fault.setCancelUserName(user.getUsername());
+        updateById(fault);
+
+        // 记录日志
+        OperationProcess operationProcess = OperationProcess.builder()
+                .processLink("作废")
+                .processTime(new Date())
+                .faultCode(fault.getCode())
+                .processPerson(user.getUsername())
+                .processCode(0)
+                .build();
+        operationProcessService.save(operationProcess);
     }
 
     /**
-     *
+     * 根据编码查询详情
      * @param code
      * @return
      */
     @Override
     public Fault queryByCode(String code) {
-        return null;
+        Fault fault = isExist(code);
+        // 设备
+        LambdaQueryWrapper<FaultDevice> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(FaultDevice::getFaultCode, code);
+        List<FaultDevice> faultDeviceList = faultDeviceService.getBaseMapper().selectList(wrapper);
+        fault.setFaultDeviceList(faultDeviceList);
+
+        // 按钮权限
+        return fault;
+    }
+
+    /**
+     * 指派
+     * @param assignDTO
+     */
+    @Override
+    public void assign(AssignDTO assignDTO) {
+        LoginUser user = checkLogin();
+
+
+
+    }
+
+
+
+    /**
+     * 领取
+     * @param assignDTO
+     */
+    @Override
+    public void receive(AssignDTO assignDTO) {
+
+    }
+
+    /**
+     * 接收指派
+     * @param code
+     */
+    @Override
+    public void receiveAssignment(String code) {
+
+    }
+
+
+    /**
+     * 获取当前登录用户
+     */
+    private LoginUser checkLogin() {
+
+        LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+
+        if (Objects.isNull(user)) {
+            throw  new AiurtBootException("请重新登录");
+        }
+
+        return user;
+    }
+
+    /**
+     * 根据编码判断故障单是否存在
+     * @param code
+     * @return
+     */
+    private Fault isExist(String code) {
+
+        Fault fault = baseMapper.selectByCode(code);
+
+        if (Objects.isNull(fault)) {
+            throw new AiurtBootException("故障工单不存在");
+        }
+
+        return fault;
     }
 }
