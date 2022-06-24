@@ -1,4 +1,4 @@
-package com.aiurt.modules.faultanalysisreport.controller;
+package com.aiurt.modules.faultenclosure.controller;
 
 import java.util.Arrays;
 import java.util.List;
@@ -12,8 +12,8 @@ import javax.servlet.http.HttpServletResponse;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.query.QueryGenerator;
 import com.aiurt.common.util.oConvertUtils;
-import com.aiurt.modules.faultanalysisreport.entity.FaultAnalysisReport;
-import com.aiurt.modules.faultanalysisreport.service.IFaultAnalysisReportService;
+import com.aiurt.modules.faultenclosure.entity.FaultEnclosure;
+import com.aiurt.modules.faultenclosure.service.IFaultEnclosureService;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -37,65 +37,66 @@ import io.swagger.annotations.ApiOperation;
 import com.aiurt.common.aspect.annotation.AutoLog;
 
  /**
- * @Description: fault_analysis_report
+ * @Description: fault_enclosure
  * @Author: aiurt
- * @Date:   2022-06-23
+ * @Date:   2022-06-24
  * @Version: V1.0
  */
-@Api(tags="fault_analysis_report")
+@Api(tags="fault_enclosure")
 @RestController
-@RequestMapping("/faultanalysisreport/faultAnalysisReport")
+@RequestMapping("/faultenclosure/faultEnclosure")
 @Slf4j
-public class FaultAnalysisReportController extends BaseController<FaultAnalysisReport, IFaultAnalysisReportService> {
+public class FaultEnclosureController extends BaseController<FaultEnclosure, IFaultEnclosureService> {
 	@Autowired
-	private IFaultAnalysisReportService faultAnalysisReportService;
+	private IFaultEnclosureService faultEnclosureService;
 
 	/**
 	 * 分页列表查询
 	 *
-	 * @param faultAnalysisReport
+	 * @param faultEnclosure
 	 * @param pageNo
 	 * @param pageSize
 	 * @param req
 	 * @return
 	 */
-	//@AutoLog(value = "fault_analysis_report-分页列表查询")
-	@ApiOperation(value="fault_analysis_report-分页列表查询", notes="fault_analysis_report-分页列表查询")
+	//@AutoLog(value = "fault_enclosure-分页列表查询")
+	@ApiOperation(value="fault_enclosure-分页列表查询", notes="fault_enclosure-分页列表查询")
 	@GetMapping(value = "/list")
-	public Result<IPage<FaultAnalysisReport>> queryPageList(FaultAnalysisReport faultAnalysisReport,
+	public Result<IPage<FaultEnclosure>> queryPageList(FaultEnclosure faultEnclosure,
 								   @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
 								   @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
 								   HttpServletRequest req) {
-		Page<FaultAnalysisReport> page = new Page<FaultAnalysisReport>(pageNo, pageSize);
-		IPage<FaultAnalysisReport> faultAnalysisReports = faultAnalysisReportService.readAll(page, faultAnalysisReport);
-		return Result.OK(faultAnalysisReports);
+		QueryWrapper<FaultEnclosure> queryWrapper = QueryGenerator.initQueryWrapper(faultEnclosure, req.getParameterMap());
+		Page<FaultEnclosure> page = new Page<FaultEnclosure>(pageNo, pageSize);
+		IPage<FaultEnclosure> pageList = faultEnclosureService.page(page, queryWrapper);
+		return Result.OK(pageList);
 	}
 
 	/**
 	 *   添加
 	 *
-	 * @param faultAnalysisReport
+	 * @param faultEnclosure
 	 * @return
 	 */
-	@AutoLog(value = "fault_analysis_report-添加")
-	@ApiOperation(value="fault_analysis_report-添加", notes="fault_analysis_report-添加")
+	@AutoLog(value = "fault_enclosure-添加")
+	@ApiOperation(value="fault_enclosure-添加", notes="fault_enclosure-添加")
 	@PostMapping(value = "/add")
-	public Result<String> add(@RequestBody FaultAnalysisReport faultAnalysisReport) {
-		faultAnalysisReportService.save(faultAnalysisReport);
+	public Result<String> add(@RequestBody FaultEnclosure faultEnclosure) {
+		faultEnclosureService.save(faultEnclosure);
 		return Result.OK("添加成功！");
 	}
 
 	/**
 	 *  编辑
 	 *
-	 * @param faultAnalysisReport
+	 * @param faultEnclosure
 	 * @return
 	 */
-	@AutoLog(value = "fault_analysis_report-编辑")
-	@ApiOperation(value="fault_analysis_report-编辑", notes="fault_analysis_report-编辑")
+	@AutoLog(value = "fault_enclosure-编辑")
+	@ApiOperation(value="fault_enclosure-编辑", notes="fault_enclosure-编辑")
 	@RequestMapping(value = "/edit", method = {RequestMethod.PUT,RequestMethod.POST})
-	public Result<String> edit(@RequestBody FaultAnalysisReport faultAnalysisReport) {
-		faultAnalysisReportService.updateById(faultAnalysisReport);
+	public Result<String> edit(@RequestBody FaultEnclosure faultEnclosure) {
+		faultEnclosureService.updateById(faultEnclosure);
 		return Result.OK("编辑成功!");
 	}
 
@@ -105,11 +106,11 @@ public class FaultAnalysisReportController extends BaseController<FaultAnalysisR
 	 * @param id
 	 * @return
 	 */
-	@AutoLog(value = "fault_analysis_report-通过id删除")
-	@ApiOperation(value="fault_analysis_report-通过id删除", notes="fault_analysis_report-通过id删除")
+	@AutoLog(value = "fault_enclosure-通过id删除")
+	@ApiOperation(value="fault_enclosure-通过id删除", notes="fault_enclosure-通过id删除")
 	@DeleteMapping(value = "/delete")
 	public Result<String> delete(@RequestParam(name="id",required=true) String id) {
-		faultAnalysisReportService.removeById(id);
+		faultEnclosureService.removeById(id);
 		return Result.OK("删除成功!");
 	}
 
@@ -119,11 +120,11 @@ public class FaultAnalysisReportController extends BaseController<FaultAnalysisR
 	 * @param ids
 	 * @return
 	 */
-	@AutoLog(value = "fault_analysis_report-批量删除")
-	@ApiOperation(value="fault_analysis_report-批量删除", notes="fault_analysis_report-批量删除")
+	@AutoLog(value = "fault_enclosure-批量删除")
+	@ApiOperation(value="fault_enclosure-批量删除", notes="fault_enclosure-批量删除")
 	@DeleteMapping(value = "/deleteBatch")
 	public Result<String> deleteBatch(@RequestParam(name="ids",required=true) String ids) {
-		this.faultAnalysisReportService.removeByIds(Arrays.asList(ids.split(",")));
+		this.faultEnclosureService.removeByIds(Arrays.asList(ids.split(",")));
 		return Result.OK("批量删除成功!");
 	}
 
@@ -133,26 +134,26 @@ public class FaultAnalysisReportController extends BaseController<FaultAnalysisR
 	 * @param id
 	 * @return
 	 */
-	//@AutoLog(value = "fault_analysis_report-通过id查询")
-	@ApiOperation(value="fault_analysis_report-通过id查询", notes="fault_analysis_report-通过id查询")
+	//@AutoLog(value = "fault_enclosure-通过id查询")
+	@ApiOperation(value="fault_enclosure-通过id查询", notes="fault_enclosure-通过id查询")
 	@GetMapping(value = "/queryById")
-	public Result<FaultAnalysisReport> queryById(@RequestParam(name="id",required=true) String id) {
-		FaultAnalysisReport faultAnalysisReport = faultAnalysisReportService.getById(id);
-		if(faultAnalysisReport==null) {
+	public Result<FaultEnclosure> queryById(@RequestParam(name="id",required=true) String id) {
+		FaultEnclosure faultEnclosure = faultEnclosureService.getById(id);
+		if(faultEnclosure==null) {
 			return Result.error("未找到对应数据");
 		}
-		return Result.OK(faultAnalysisReport);
+		return Result.OK(faultEnclosure);
 	}
 
     /**
     * 导出excel
     *
     * @param request
-    * @param faultAnalysisReport
+    * @param faultEnclosure
     */
     @RequestMapping(value = "/exportXls")
-    public ModelAndView exportXls(HttpServletRequest request, FaultAnalysisReport faultAnalysisReport) {
-        return super.exportXls(request, faultAnalysisReport, FaultAnalysisReport.class, "fault_analysis_report");
+    public ModelAndView exportXls(HttpServletRequest request, FaultEnclosure faultEnclosure) {
+        return super.exportXls(request, faultEnclosure, FaultEnclosure.class, "fault_enclosure");
     }
 
     /**
@@ -164,7 +165,7 @@ public class FaultAnalysisReportController extends BaseController<FaultAnalysisR
     */
     @RequestMapping(value = "/importExcel", method = RequestMethod.POST)
     public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) {
-        return super.importExcel(request, response, FaultAnalysisReport.class);
+        return super.importExcel(request, response, FaultEnclosure.class);
     }
 
 }
