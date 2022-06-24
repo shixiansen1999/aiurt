@@ -1,16 +1,19 @@
 package com.aiurt.boot.task.service.impl;
 
+import cn.hutool.core.collection.CollectionUtil;
 import com.aiurt.boot.constant.DictConstant;
 import com.aiurt.boot.constant.InspectionConstant;
 import com.aiurt.boot.manager.InspectionManager;
+import com.aiurt.boot.manager.dto.MajorDTO;
+import com.aiurt.boot.manager.dto.SubsystemDTO;
 import com.aiurt.boot.plan.dto.StationDTO;
-import com.aiurt.boot.plan.entity.RepairPoolCode;
 import com.aiurt.boot.task.entity.RepairTask;
-import com.aiurt.boot.task.entity.RepairTaskDTO;
+import com.aiurt.boot.task.dto.RepairTaskDTO;
 import com.aiurt.boot.task.mapper.RepairTaskMapper;
 import com.aiurt.boot.task.service.IRepairTaskService;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.jeecg.common.system.api.ISysBaseAPI;
+import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -20,7 +23,6 @@ import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * @Description: repair_task
@@ -110,8 +112,34 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
             //子系统
             e.setSystemName(manager.translateMajor(Arrays.asList(e.getSystemCode()),InspectionConstant.SUBSYSTEM));
 
+            //检修人名称
+            if (e.getOverhaulId()!=null){
+                LoginUser userById = sysBaseAPI.getUserById(e.getOverhaulId());
+                e.setOverhaulName(userById.getUsername());
+            }
         });
         return pageList.setRecords(repairTasks);
     }
 
+    @Override
+    public List<MajorDTO> selectMajorCodeList(String id) {
+        //根据检修任务id查询专业
+        List<RepairTaskDTO> repairTaskDTOList = repairTaskMapper.selectCodeList(id);
+        List<String> majorCodes1 = new ArrayList<>();
+        if (CollectionUtil.isNotEmpty(repairTaskDTOList)){
+            repairTaskDTOList.forEach(e->{
+                String majorCode = e.getMajorCode();
+                majorCodes1.add(majorCode);
+            });
+        }
+        //根据专业编码查询对应的专业子系统
+        List<MajorDTO> majorDTOList = repairTaskMapper.translateMajor(majorCodes1);
+        if (CollectionUtil.isNotEmpty(majorDTOList)){
+            majorDTOList.forEach(q -> {
+                List<SubsystemDTO> subsystemDTOList = repairTaskMapper.translateSubsystem(q.getMajorCode());
+                q.setSubsystemDTOList(subsystemDTOList);
+            });
+        }
+        return majorDTOList;
+    }
 }

@@ -1,4 +1,4 @@
-package com.aiurt.boot.task.entity;
+package com.aiurt.boot.task.dto;
 
 
 import com.baomidou.mybatisplus.annotation.TableField;
@@ -43,6 +43,10 @@ public class RepairTaskDTO {
     @ApiModelProperty(value = "检修人id")
     private String overhaulId;
 
+    /**检修人名称*/
+    @TableField(exist = false)
+    @ApiModelProperty(value = "检修人名称")
+    private String overhaulName;
 
     /**设备编码*/
     @TableField(exist = false)
@@ -108,7 +112,7 @@ public class RepairTaskDTO {
     /**检修标准名称*/
     @TableField(exist = false)
     @ApiModelProperty(value = "检修标准名称")
-    private String overhaulName;
+    private String overhaulStandardName;
 
 
     /**提交时间*/

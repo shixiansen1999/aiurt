@@ -48,7 +48,7 @@
         order by t1.start_time desc
     </select>
 
-    <select id="selectTasklet" resultType="com.aiurt.boot.task.entity.RepairTaskDTO">
+    <select id="selectTasklet" resultType="com.aiurt.boot.task.dto.RepairTaskDTO">
            SELECT
 	           t1.id as taskId,
                t2.id as deviceId,
@@ -85,8 +85,8 @@
                <if test="condition.overhaulCode!=null ">
                    AND t2.code  = #{condition.overhaulCode}
                </if>
-               <if test="condition.overhaulName!=null ">
-                   AND t3.title  = #{condition.overhaulName}
+               <if test="condition.overhaulStandardName!=null ">
+                   AND t3.title  = #{condition.overhaulStandardName}
                </if>
         </where>
         order by t1.start_time desc
@@ -97,7 +97,7 @@
         select station_code,position_code,line_code from repair_task_station_rel where repair_task_code = #{planCode}
     </select>
 
-    <select id="selectCodeList" resultType="com.aiurt.boot.task.entity.RepairTaskDTO" parameterType="String">
+    <select id="selectCodeList" resultType="com.aiurt.boot.task.dto.RepairTaskDTO" parameterType="String">
         SELECT
 	      t1.id as taskId,
 	      t2.id as standardId,
@@ -112,5 +112,32 @@
             t1.del_flag = 0
             and  t1.id = #{id}
         </where>
+    </select>
+
+    <select id="translateMajor" resultType="com.aiurt.boot.manager.dto.MajorDTO" parameterType="list">
+        select
+        major_name as majorName,
+        major_code as majorCode
+        from cs_major
+        <where>
+            del_flag = 0
+            <if test="list.size()>0">
+                and major_code in
+                <foreach item="item" collection="list" separator="," open="(" close=")" index="">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+    </select>
+
+
+    <select id="translateSubsystem" resultType="com.aiurt.boot.manager.dto.SubsystemDTO" >
+        select
+        system_name  as systemName,
+        system_code as systemCode
+        from cs_subsystem
+        where
+            del_flag = 0
+            and major_code = #{code}
     </select>
 </mapper>

@@ -1,7 +1,8 @@
 package com.aiurt.boot.task.controller;
 
+import com.aiurt.boot.manager.dto.MajorDTO;
 import com.aiurt.boot.task.entity.RepairTask;
-import com.aiurt.boot.task.entity.RepairTaskDTO;
+import com.aiurt.boot.task.dto.RepairTaskDTO;
 import com.aiurt.boot.task.service.IRepairTaskService;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.system.base.controller.BaseController;
@@ -20,8 +21,9 @@ import org.springframework.web.servlet.ModelAndView;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.Arrays;
+import java.util.List;
 
- /**
+/**
  * @Description: repair_task
  * @Author: aiurt
  * @Date:   2022-06-22
@@ -78,7 +80,7 @@ public class RepairTaskController extends BaseController<RepairTask, IRepairTask
 
 
 	 /**
-	  * 检修任务列表查询
+	  * 检修任务清单查询
 	  * @param pageNo
 	  * @param pageSize
 	  * @return
@@ -93,6 +95,21 @@ public class RepairTaskController extends BaseController<RepairTask, IRepairTask
 		 Page<RepairTaskDTO> pageList = new Page<>(pageNo, pageSize);
 		 Page<RepairTaskDTO> repairTaskPage = repairTaskService.selectTasklet(pageList, condition);
 		 return Result.OK(repairTaskPage);
+	 }
+
+	 /**
+	  * 专业和专业子系统下拉列表
+	  * @param id
+	  * @return
+	  */
+	 @AutoLog(value = "检修任务-专业和专业子系统下拉列表")
+	 @ApiOperation(value="检修任务-专业和专业子系统下拉列表", notes="检修任务-专业和专业子系统下拉列表")
+	 @GetMapping(value = "/selectMajorCodeList")
+	 public Result<?> selectMajorCodeList(@RequestParam(name="id",required=true) String id
+
+	 ){
+		 List<MajorDTO> majorDTOList = repairTaskService.selectMajorCodeList(id);
+		 return Result.OK(majorDTOList);
 	 }
 
 	/**

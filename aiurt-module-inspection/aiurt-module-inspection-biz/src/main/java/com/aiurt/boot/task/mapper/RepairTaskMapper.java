@@ -1,8 +1,10 @@
 package com.aiurt.boot.task.mapper;
 
+import com.aiurt.boot.manager.dto.MajorDTO;
+import com.aiurt.boot.manager.dto.SubsystemDTO;
 import com.aiurt.boot.plan.dto.StationDTO;
 import com.aiurt.boot.task.entity.RepairTask;
-import com.aiurt.boot.task.entity.RepairTaskDTO;
+import com.aiurt.boot.task.dto.RepairTaskDTO;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.ibatis.annotations.Param;
@@ -49,4 +51,17 @@ public interface RepairTaskMapper extends BaseMapper<RepairTask> {
      */
     List<RepairTaskDTO> selectCodeList(String id);
 
+    /**
+     * 翻译专业信息
+     * @param codeList
+     * @return
+     */
+    List<MajorDTO> translateMajor(List<String> codeList);
+
+    /**
+     * 翻译子系统信息
+     * @param code
+     * @return
+     */
+    List<SubsystemDTO> translateSubsystem(String code);
 }

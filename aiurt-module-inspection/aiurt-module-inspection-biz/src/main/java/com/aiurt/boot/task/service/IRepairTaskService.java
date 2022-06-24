@@ -1,9 +1,12 @@
 package com.aiurt.boot.task.service;
 
+import com.aiurt.boot.manager.dto.MajorDTO;
 import com.aiurt.boot.task.entity.RepairTask;
-import com.aiurt.boot.task.entity.RepairTaskDTO;
+import com.aiurt.boot.task.dto.RepairTaskDTO;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
+
+import java.util.List;
 
 /**
  * @Description: repair_task
@@ -28,4 +31,15 @@ public interface IRepairTaskService extends IService<RepairTask> {
      * @return
      */
     Page<RepairTaskDTO> selectTasklet(Page<RepairTaskDTO> pageList, RepairTaskDTO condition);
+
+
+
+    /**
+     * 查询专业，专业子系统的信息
+     * @param id
+     * @return
+     */
+    List<MajorDTO> selectMajorCodeList(String id);
+
+
 }
