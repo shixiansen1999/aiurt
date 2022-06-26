@@ -1,9 +1,11 @@
 package com.aiurt.boot.task.service.impl;
 
+import com.aiurt.boot.task.dto.PatrolTaskDeviceDTO;
 import com.aiurt.boot.task.entity.PatrolTaskDevice;
 import com.aiurt.boot.task.mapper.PatrolTaskDeviceMapper;
 import com.aiurt.boot.task.param.PatrolTaskDeviceParam;
 import com.aiurt.boot.task.service.IPatrolTaskDeviceService;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -26,5 +28,10 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
     @Override
     public List<PatrolTaskDeviceParam> selectBillInfo(PatrolTaskDeviceParam patrolTaskDeviceParam) {
         return patrolTaskDeviceMapper.selectBillInfo(patrolTaskDeviceParam);
+    }
+    @Override
+    public Page<PatrolTaskDeviceDTO> getPatrolTaskDeviceList(Page<PatrolTaskDeviceDTO> pageList, String id) {
+        List<PatrolTaskDeviceDTO> patrolTaskDeviceList =patrolTaskDeviceMapper.getPatrolTaskDeviceList(pageList,id);
+        return pageList.setRecords(patrolTaskDeviceList);
     }
 }

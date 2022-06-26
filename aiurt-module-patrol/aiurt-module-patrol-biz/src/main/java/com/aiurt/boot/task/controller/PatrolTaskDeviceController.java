@@ -1,25 +1,25 @@
 package com.aiurt.boot.task.controller;
 
-import java.util.Arrays;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import org.jeecg.common.api.vo.Result;
-import org.jeecg.common.system.query.QueryGenerator;
+import com.aiurt.boot.task.dto.PatrolTaskDeviceDTO;
 import com.aiurt.boot.task.entity.PatrolTaskDevice;
 import com.aiurt.boot.task.service.IPatrolTaskDeviceService;
-
+import com.aiurt.common.aspect.annotation.AutoLog;
+import com.aiurt.common.system.base.controller.BaseController;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
-
-import com.aiurt.common.system.base.controller.BaseController;
+import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.system.query.QueryGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import com.aiurt.common.aspect.annotation.AutoLog;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.util.Arrays;
 
  /**
  * @Description: patrol_task_device
@@ -56,7 +56,20 @@ public class PatrolTaskDeviceController extends BaseController<PatrolTaskDevice,
 		IPage<PatrolTaskDevice> pageList = patrolTaskDeviceService.page(page, queryWrapper);
 		return Result.OK(pageList);
 	}
-
+	 /**
+	  * app巡检任务-巡检清单列表（巡检工单列表）
+	  * @return
+	  */
+	 @AutoLog(value = "patrol_task- app巡检任务-通过")
+	 @ApiOperation(value="patrol_task- app巡检任务-通过", notes="patrol_task- app巡检任务-通过")
+	 @GetMapping(value = "/patrolTaskDeviceList")
+	 public Result<Page<PatrolTaskDeviceDTO>>  patrolTaskDeviceList(String id,
+																	@RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
+																	@RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize, HttpServletRequest req) {
+		 Page<PatrolTaskDeviceDTO> pageList = new Page<PatrolTaskDeviceDTO>(pageNo, pageSize);
+		 pageList = patrolTaskDeviceService.getPatrolTaskDeviceList(pageList, id);
+		 return Result.OK(pageList);
+	 }
 	/**
 	 *   添加
 	 *

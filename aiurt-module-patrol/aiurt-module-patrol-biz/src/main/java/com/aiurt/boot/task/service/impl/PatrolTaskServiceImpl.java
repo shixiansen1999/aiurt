@@ -115,11 +115,8 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         taskParam.setSubsystemInfo(subsystemInfo);
         return taskParam;
     }
-
     @Override
     public Page<PatrolTaskDTO> getPatrolTaskList(Page<PatrolTaskDTO> pageList, PatrolTaskDTO patrolTaskDTO) {
-        // 根据站点查询巡检单号
-//         List<String> codeList 巡检单号List
         List<PatrolTaskDTO> taskList = patrolTaskMapper.getPatrolTaskList(pageList, patrolTaskDTO);
         taskList.stream().forEach(e -> {
             String userName = patrolTaskMapper.getUserName(e.getBackId());
