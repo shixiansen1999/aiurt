@@ -4,14 +4,13 @@
     <select id="getPatrolTaskList" resultType="com.aiurt.boot.task.dto.PatrolTaskDTO">
         select t1.*
         from patrol_task t1
-        <where>
+        where t1.status in (6,7)
             <if test="patrolTaskDTO.patrolDate !=null">
-                DATE_FORMAT(t1.patrol_date, '%Y-%m-%d') = DATE_FORMAT(#{patrolTaskDTO.patrolDate}, '%Y-%m-%d')
+               and DATE_FORMAT(t1.patrol_date, '%Y-%m-%d') = DATE_FORMAT(#{patrolTaskDTO.patrolDate}, '%Y-%m-%d')
             </if>
             <if test="patrolTaskDTO.status!=null">
                 and t1.status = #{patrolTaskDTO.status}
             </if>
-        </where>
     </select>
     <select id="getOrganizationName" resultType="java.lang.String">
         select t2.depart_name

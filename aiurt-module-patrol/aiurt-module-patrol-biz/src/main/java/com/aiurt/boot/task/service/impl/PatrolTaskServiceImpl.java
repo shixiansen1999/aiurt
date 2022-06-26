@@ -118,6 +118,8 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
 
     @Override
     public Page<PatrolTaskDTO> getPatrolTaskList(Page<PatrolTaskDTO> pageList, PatrolTaskDTO patrolTaskDTO) {
+        // 根据站点查询巡检单号
+//         List<String> codeList 巡检单号List
         List<PatrolTaskDTO> taskList = patrolTaskMapper.getPatrolTaskList(pageList, patrolTaskDTO);
         taskList.stream().forEach(e -> {
             String userName = patrolTaskMapper.getUserName(e.getBackId());
@@ -147,7 +149,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
     public void getPatrolTaskReceive(PatrolTaskDTO patrolTaskDTO) {
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         LambdaUpdateWrapper<PatrolTask> updateWrapper = new LambdaUpdateWrapper<>();
-        //领取：将待指派改为待执行，变为个人领取（传任务id,状态）
+        //领取：将待指派改为待执行，变为个人领取（传任务主键id,状态）
         if (patrolTaskDTO.getStatus() == 0) {//更新巡检状态
             updateWrapper.set(PatrolTask::getStatus, 2)
                     .set(PatrolTask::getSource, 1)
@@ -172,22 +174,22 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         //执行：将待确认改为执行中
         if (patrolTaskDTO.getStatus() == 2) {
             updateWrapper.set(PatrolTask::getStatus, 4).eq(PatrolTask::getId, patrolTaskDTO.getId());
-            if (patrolTaskDTO.getStatus() == 2) {
-                updateWrapper.set(PatrolTask::getStatus, 4).eq(PatrolTask::getId, patrolTaskDTO.getId());
-                update(updateWrapper);
-            }
-            //提交任务：将执行中，变为待审核、添加任务结束人id
-            if (patrolTaskDTO.getStatus() == 4) {
-                updateWrapper.set(PatrolTask::getStatus, 4)
-                        .set(PatrolTask::getEndUserId, sysUser.getId())
-                        .eq(PatrolTask::getId, patrolTaskDTO.getId());
-                update(updateWrapper);
-            }
+        }
+        if (patrolTaskDTO.getStatus() == 2) {
+            updateWrapper.set(PatrolTask::getStatus, 4).eq(PatrolTask::getId, patrolTaskDTO.getId());
+            update(updateWrapper);
+        }
+        //提交任务：将执行中，变为待审核、添加任务结束人id
+        if (patrolTaskDTO.getStatus() == 4) {
+            updateWrapper.set(PatrolTask::getStatus, 4)
+                    .set(PatrolTask::getEndUserId, sysUser.getId())
+                    .eq(PatrolTask::getId, patrolTaskDTO.getId());
+            update(updateWrapper);
         }
     }
     @Override
     public void getPatrolTaskReturn(PatrolTaskDTO patrolTaskDTO) {
-        //更新巡检状态及添加退回理由、退回人Id（传任务id、退回理由）
+        //更新巡检状态及添加退回理由、退回人Id（传任务主键id、退回理由）
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         LambdaUpdateWrapper<PatrolTask> updateWrapper = new LambdaUpdateWrapper<>();
         updateWrapper.set(PatrolTask::getStatus, 3)
@@ -199,7 +201,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
 
     @Override
     public void getPatrolTaskCheck(PatrolTaskDTO patrolTaskDTO) {
-        //更新任务状态、添加检查人id，传任务id
+        //更新任务状态、添加检查人id，传任务主键id
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         PatrolTaskDevice patrolPDevice = new PatrolTaskDevice();
         LambdaUpdateWrapper<PatrolTaskDevice> updateWrapper = new LambdaUpdateWrapper<>();
@@ -227,7 +229,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
 
     @Override
     public void getPatrolTaskAppoint(List<PatrolTaskUserDTO> patrolTaskUserDTO) {
-        //传整个实体
+        //传整个实体。添加指派人员信息
         for (PatrolTaskUserDTO ptu : patrolTaskUserDTO) {
             PatrolTaskUser patrolTaskUser = new PatrolTaskUser();
             List<PatrolTaskUserContentDTO> userList = ptu.getUserList();
@@ -239,5 +241,9 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
             patrolTaskUser.setDelFlag(0);
             patrolTaskUserMapper.insert(patrolTaskUser);
         }
+        //将任务来源改为常规指派
+        LambdaUpdateWrapper<PatrolTask> updateWrapper = new LambdaUpdateWrapper<>();
+            updateWrapper.set(PatrolTask::getSource, 2).eq(PatrolTask::getCode, patrolTaskUserDTO.get(0).getTaskCode());
+            update(updateWrapper);
     }
 }

@@ -13,7 +13,7 @@ import org.apache.ibatis.annotations.Param;
 public interface PatrolTaskStandardMapper extends BaseMapper<PatrolTaskStandard> {
 
     /**
-     * app-巡检详情-子系统名称
+     * app-巡检详情-专业名称
      * @param majorCode
      * @return
      */
