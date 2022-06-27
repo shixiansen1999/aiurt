@@ -53,11 +53,11 @@ public class PatrolTaskDevice implements Serializable {
 	@Excel(name = "设备code", width = 15)
     @ApiModelProperty(value = "设备code")
     private java.lang.String deviceCode;
-	/**检查时间*/
-	@Excel(name = "检查时间", width = 15, format = "yyyy-MM-dd")
+	/**工单提交时间*/
+	@Excel(name = "工单提交时间", width = 15, format = "yyyy-MM-dd")
 	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
     @DateTimeFormat(pattern="yyyy-MM-dd")
-    @ApiModelProperty(value = "检查时间")
+    @ApiModelProperty(value = "工单提交时间")
     private java.util.Date checkTime;
 	/**检查结果：0正常、1异常*/
 	@Excel(name = "检查结果：0正常、1异常", width = 15)

@@ -18,5 +18,5 @@ public class PatrolPlanStationParam extends PatrolPlanStation {
      */
     @Excel(name = "站点名称", width = 15)
     @ApiModelProperty(value = "站点名称")
-    private String StationName;
+    private String stationName;
 }
