@@ -21,6 +21,8 @@ import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.util.DateUtils;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.SneakyThrows;
 import org.apache.shiro.SecurityUtils;
@@ -610,15 +612,15 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
                 repairTaskResult.setCode(repairPoolCodeContent.getCode());
                 repairTaskResult.setPid(repairPoolCodeContent.getPid());
                 repairTaskResultMapper.insert(repairTaskResult);
-                map.put(repairPoolCodeContent.getId(),repairTaskResult.getId());
+                map.put(repairPoolCodeContent.getId(), repairTaskResult.getId());
             }
             // 更新pid
             List<RepairTaskResult> repairTaskResults = repairTaskResultMapper.selectList(
                     new LambdaQueryWrapper<RepairTaskResult>()
                             .eq(RepairTaskResult::getTaskDeviceRelId, id)
-                            .ne(RepairTaskResult::getPid,0)
+                            .ne(RepairTaskResult::getPid, 0)
                             .eq(RepairTaskResult::getDelFlag, 0));
-            if(CollUtil.isNotEmpty(repairTaskResults)){
+            if (CollUtil.isNotEmpty(repairTaskResults)) {
                 for (RepairTaskResult repairTaskResult : repairTaskResults) {
                     repairTaskResult.setPid(map.get(repairTaskResult.getPid()));
                     repairTaskResultMapper.updateById(repairTaskResult);
@@ -698,6 +700,58 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
     }
 
     /**
+     * 分页查询手工下发任务列表
+     *
+     * @param page
+     * @param queryWrapper
+     * @return
+     */
+    @Override
+    public IPage<RepairPool> listPage(Page<RepairPool> page, QueryWrapper<RepairPool> queryWrapper) {
+        // 只查询是手工下发的
+        queryWrapper.eq("is_manual",InspectionConstant.IS_MANUAL);
+        page = baseMapper.selectPage(page, queryWrapper);
+        page.getRecords().forEach(re -> {
+            // 组织机构
+            List<RepairPoolOrgRel> repairPoolOrgRels = orgRelMapper.selectList(
+                    new LambdaQueryWrapper<RepairPoolOrgRel>()
+                            .eq(RepairPoolOrgRel::getRepairPoolCode, re.getCode())
+                            .eq(RepairPoolOrgRel::getDelFlag, 0));
+            List<String> orgList = new ArrayList<>();
+            if (CollUtil.isNotEmpty(repairPoolOrgRels)) {
+                orgList = repairPoolOrgRels.stream().map(r -> r.getOrgCode()).collect(Collectors.toList());
+            }
+            re.setOrgName(manager.translateOrg(orgList));
+
+            // 站点
+            List<StationDTO> repairPoolStationRels = repairPoolStationRelMapper.selectStationList(re.getCode());
+            re.setStationName(manager.translateStation(repairPoolStationRels));
+        });
+        return page;
+    }
+
+    /**
+     * 通过id查询手工下发检修任务信息
+     *
+     * @param id
+     * @return
+     */
+    @Override
+    public RepairPoolDTO queryManualTaskById(String id) {
+        return null;
+    }
+
+    /**
+     * 修改手工下发检修任务信息
+     *
+     * @param repairPoolDTO
+     */
+    @Override
+    public void updateManualTaskById(RepairPoolDTO repairPoolDTO) {
+
+    }
+
+    /**
      * 根据检修计划单号查询对应的检修标准
      *
      * @param planCode code值
@@ -711,6 +765,5 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
             repairPoolCodes = repairPoolCodeMapper.selectList(new QueryWrapper<RepairPoolCode>().in("id", standardList));
         }
         return repairPoolCodes;
-
     }
 }

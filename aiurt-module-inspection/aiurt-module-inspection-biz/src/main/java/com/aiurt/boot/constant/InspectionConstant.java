@@ -19,7 +19,12 @@ public class InspectionConstant {
     /**
      * 是否手工下发任务：否
      */
-    public static final String NO_IS_MANUAL = "0";
+    public static final Integer NO_IS_MANUAL = 0;
+
+    /**
+     * 是否手工下发任务：是
+     */
+    public static final Integer IS_MANUAL = 1;
 
     /**
      * 检修周期类型：0周检

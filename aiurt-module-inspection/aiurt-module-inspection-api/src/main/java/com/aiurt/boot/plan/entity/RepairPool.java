@@ -1,5 +1,6 @@
 package com.aiurt.boot.plan.entity;
 
+import com.aiurt.common.aspect.annotation.Dict;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
@@ -58,6 +59,7 @@ public class RepairPool implements Serializable {
      */
     @Excel(name = "检修周期类型：0周检、1月检、2双月检、3季检、4半年检、5年检", width = 15)
     @ApiModelProperty(value = "检修周期类型：0周检、1月检、2双月检、3季检、4半年检、5年检")
+    @Dict(dicCode = "inspection_cycle_type")
     private java.lang.Integer type;
     /**
      * 检修策略编码，关联inspection_strategy的code
@@ -65,6 +67,11 @@ public class RepairPool implements Serializable {
     @Excel(name = "检修策略编码，关联inspection_strategy的code", width = 15)
     @ApiModelProperty(value = "检修策略编码，关联inspection_strategy的code")
     private java.lang.String inspectionStrCode;
+    /**检修状态：0待指派、1待确认、2待执行、3已退回、4执行中、5已驳回、6待审核、7待验收、8已完成*/
+    @Excel(name = "检修状态：0待指派、1待确认、2待执行、3已退回、4执行中、5已驳回、6待审核、7待验收、8已完成 ", width = 15)
+    @ApiModelProperty(value = "检修状态：0待指派、1待确认、2待执行、3已退回、4执行中、5已驳回、6待审核、7待验收、8已完成 ")
+    @Dict(dicCode ="inspection_task_state")
+    private java.lang.Integer status;
     /**
      * 开始时间
      */
@@ -86,28 +93,27 @@ public class RepairPool implements Serializable {
      */
     @Excel(name = "是否需要审核：0否 1是", width = 15)
     @ApiModelProperty(value = "是否需要审核：0否 1是")
+    @Dict(dicCode = "inspection_is_confirm")
     private java.lang.Integer isConfirm;
     /**
      * 是否需要验收：0否 1是
      */
     @Excel(name = "是否需要验收：0否 1是", width = 15)
     @ApiModelProperty(value = "是否需要验收：0否 1是")
+    @Dict(dicCode = "inspection_is_confirm")
     private java.lang.Integer isReceipt;
     /**是否委外：0否1是*/
     @Excel(name = "是否委外：0否1是", width = 15)
     @ApiModelProperty(value = "是否委外：0否1是")
+    @Dict(dicCode = "inspection_is_manual")
     private java.lang.Integer isOutsource;
-    /**
-     * 状态：0待指派、1待确认、2待执行、3已退回、4执行中、5已驳回、6待审核、7待验收、8已完成
-     */
-    @Excel(name = "状态：0待指派、1待确认、2待执行、3已退回、4执行中、5已驳回、6待审核、7待验收、8已完成", width = 15)
-    @ApiModelProperty(value = "状态：0待指派、1待确认、2待执行、3已退回、4执行中、5已驳回、6待审核、7待验收、8已完成")
-    private java.lang.Integer status;
+
     /**
      * 作业类型（A1不用计划令,A2,A3,B1,B2,B3）
      */
     @Excel(name = "作业类型（A1不用计划令,A2,A3,B1,B2,B3）", width = 15)
     @ApiModelProperty(value = "作业类型（A1不用计划令,A2,A3,B1,B2,B3）")
+    @Dict(dicCode = "work_type")
     private java.lang.Integer workType;
     /**
      * 是否是手工下发任务，0否1是

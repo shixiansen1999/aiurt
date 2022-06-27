@@ -1,12 +1,12 @@
 package com.aiurt.boot.plan.service;
 
 import com.aiurt.boot.manager.dto.MajorDTO;
-import com.aiurt.boot.plan.dto.AssignDTO;
-import com.aiurt.boot.plan.dto.RepairPoolDetailsDTO;
-import com.aiurt.boot.plan.dto.RepairStrategyDTO;
-import com.aiurt.boot.plan.dto.StandardDTO;
+import com.aiurt.boot.plan.dto.*;
 import com.aiurt.boot.plan.entity.RepairPool;
 import com.aiurt.boot.plan.rep.RepairStrategyReq;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.vo.LoginUser;
@@ -86,4 +86,25 @@ public interface IRepairPoolService extends IService<RepairPool> {
      * @return
      */
     List<StandardDTO> queryStandardList(String code);
+
+    /**
+     * 分页查询手工下发任务列表
+     * @param page
+     * @param queryWrapper
+     * @return
+     */
+    IPage<RepairPool> listPage(Page<RepairPool> page, QueryWrapper<RepairPool> queryWrapper);
+
+    /**
+     * 通过id查询手工下发检修任务信息
+     * @param id
+     * @return
+     */
+    RepairPoolDTO queryManualTaskById(String id);
+
+    /**
+     *修改手工下发检修任务信息
+     * @param repairPoolDTO
+     */
+    void updateManualTaskById(RepairPoolDTO repairPoolDTO);
 }

@@ -14,7 +14,7 @@ public class RepairDeviceDTO {
 
     @ApiModelProperty(value = "设备名称")
     private String name;
-    @ApiModelProperty(value = "设备编编码")
+    @ApiModelProperty(value = "设备编码")
     private String code;
     @ApiModelProperty(value = "设备类型名称")
     private String deviceTypeName;
