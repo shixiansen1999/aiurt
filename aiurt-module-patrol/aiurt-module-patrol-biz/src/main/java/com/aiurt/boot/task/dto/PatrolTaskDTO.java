@@ -72,13 +72,13 @@ public class PatrolTaskDTO
     @ApiModelProperty(value = "是否需要审核：0否、1是")
     private java.lang.Integer auditor;
     /*** 巡检开始时间*/
-    @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd HH:mm:ss")
-    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd HH:mm")
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm")
     @ApiModelProperty(value = "巡检开始时间")
     private java.util.Date startTime;
     /*** 巡检结束时间*/
-    @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd HH:mm:ss")
-    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd HH:mm")
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm")
     @ApiModelProperty(value = "巡检结束时间")
     private java.util.Date endTime;
     /*** 巡检频次：1 一天1次、2 一周1次、3 一周2次*/
