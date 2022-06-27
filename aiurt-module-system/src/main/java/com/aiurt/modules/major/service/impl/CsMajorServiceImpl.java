@@ -44,6 +44,14 @@ public class CsMajorServiceImpl extends ServiceImpl<CsMajorMapper, CsMajor> impl
         if (!list.isEmpty()) {
             return Result.error("专业编码重复，请重新填写！");
         }
+        //专业名称不能重复，判断数据库中是否存在，如不存在则可继续添加
+        LambdaQueryWrapper<CsMajor> nameWrapper = new LambdaQueryWrapper<>();
+        nameWrapper.eq(CsMajor::getMajorName, csMajor.getMajorName());
+        nameWrapper.eq(CsMajor::getDelFlag, 0);
+        List<CsMajor> nameList = csMajorMapper.selectList(nameWrapper);
+        if (!nameList.isEmpty()) {
+            return Result.error("专业名称重复，请重新填写！");
+        }
         csMajorMapper.insert(csMajor);
         return Result.OK("添加成功！");
     }
@@ -63,6 +71,14 @@ public class CsMajorServiceImpl extends ServiceImpl<CsMajorMapper, CsMajor> impl
         List<CsMajor> list = csMajorMapper.selectList(queryWrapper);
         if (!list.isEmpty() && !list.get(0).getId().equals(csMajor.getId())) {
             return Result.error("专业编码重复，请重新填写！");
+        }
+        //专业名称不能重复，判断数据库中是否存在，如不存在则可继续添加
+        LambdaQueryWrapper<CsMajor> nameWrapper = new LambdaQueryWrapper<>();
+        nameWrapper.eq(CsMajor::getMajorName, csMajor.getMajorName());
+        nameWrapper.eq(CsMajor::getDelFlag, 0);
+        List<CsMajor> nameList = csMajorMapper.selectList(nameWrapper);
+        if (!nameList.isEmpty()) {
+            return Result.error("专业名称重复，请重新填写！");
         }
         csMajorMapper.updateById(csMajor);
         return Result.OK("编辑成功！");

@@ -39,12 +39,20 @@ public class CsSubsystemServiceImpl extends ServiceImpl<CsSubsystemMapper, CsSub
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Result<?> add(CsSubsystem csSubsystem) {
-        //专业编码不能重复，判断数据库中是否存在，如不存在则可继续添加
+        //子系统编码不能重复，判断数据库中是否存在，如不存在则可继续添加
         QueryWrapper<CsSubsystem> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("system_code", csSubsystem.getSystemCode());
         List<CsSubsystem> list = csSubsystemMapper.selectList(queryWrapper);
         if (!list.isEmpty()) {
             return Result.error("子系统编码重复，请重新填写！");
+        }
+        //子系统名称不能重复，判断数据库中是否存在，如不存在则可继续添加
+        QueryWrapper<CsSubsystem> nameWrapper = new QueryWrapper<>();
+        nameWrapper.eq("major_code", csSubsystem.getMajorCode());
+        nameWrapper.eq("system_name", csSubsystem.getSystemName());
+        List<CsSubsystem> nameList = csSubsystemMapper.selectList(nameWrapper);
+        if (!nameList.isEmpty()) {
+            return Result.error("子系统名称重复，请重新填写！");
         }
         csSubsystemMapper.insert(csSubsystem);
         //插入子系统人员表
@@ -64,12 +72,20 @@ public class CsSubsystemServiceImpl extends ServiceImpl<CsSubsystemMapper, CsSub
         QueryWrapper<CsSubsystemUser> userQueryWrapper = new QueryWrapper<CsSubsystemUser>();
         userQueryWrapper.eq("subsystem_id", csSubsystem.getId());
         csSubsystemUserMapper.delete(userQueryWrapper);
-        //专业编码不能重复，判断数据库中是否存在，如不存在则可继续添加
+        //子系统编码不能重复，判断数据库中是否存在，如不存在则可继续添加
         QueryWrapper<CsSubsystem> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("system_code", csSubsystem.getSystemCode());
         List<CsSubsystem> list = csSubsystemMapper.selectList(queryWrapper);
         if (!list.isEmpty() && !list.get(0).getId().equals(csSubsystem.getId())) {
             return Result.error("子系统编码重复，请重新填写！");
+        }
+        //子系统名称不能重复，判断数据库中是否存在，如不存在则可继续添加
+        QueryWrapper<CsSubsystem> nameWrapper = new QueryWrapper<>();
+        nameWrapper.eq("major_code", csSubsystem.getMajorCode());
+        nameWrapper.eq("system_name", csSubsystem.getSystemName());
+        List<CsSubsystem> nameList = csSubsystemMapper.selectList(nameWrapper);
+        if (!nameList.isEmpty()) {
+            return Result.error("子系统名称重复，请重新填写！");
         }
         csSubsystemMapper.updateById(csSubsystem);
         //插入子系统人员表

@@ -120,6 +120,7 @@ public class CsMajorController  {
 		//判断是否被使用
 		LambdaQueryWrapper<CsSubsystem> wrapper = new LambdaQueryWrapper<>();
 		wrapper.eq(CsSubsystem::getMajorCode,csMajor.getMajorCode());
+		wrapper.eq(CsSubsystem::getDelFlag,0);
 		List<CsSubsystem> list = csSubsystemService.list(wrapper);
 		if(!list.isEmpty()){
 			return Result.error("专业已被使用，不能删除!");

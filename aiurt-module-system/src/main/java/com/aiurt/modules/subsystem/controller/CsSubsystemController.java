@@ -22,6 +22,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import org.apache.commons.lang.StringUtils;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.query.QueryGenerator;
 
@@ -80,9 +81,19 @@ public class CsSubsystemController  {
 	 //@AutoLog(value = "子系统-专业子系统树")
 	 @ApiOperation(value="子系统-专业子系统树", notes="子系统-专业子系统树")
 	 @GetMapping(value = "/systemTreeList")
-	 public Result<?> systemTreeList(String systemName,Integer level) {
-		 List<CsMajor> majorList = csMajorService.list(new LambdaQueryWrapper<CsMajor>().eq(CsMajor::getDelFlag,0).eq(CsMajor::getMajorName,systemName));
-		 List<CsSubsystem> systemList = csSubsystemService.list(new LambdaQueryWrapper<CsSubsystem>().eq(CsSubsystem::getDelFlag,0).eq(CsSubsystem::getSystemName,systemName));
+	 public Result<?> systemTreeList(Integer level) {
+	 	 //查询专业
+		 LambdaQueryWrapper<CsMajor> majorWrapper = new LambdaQueryWrapper<CsMajor>().eq(CsMajor::getDelFlag,0);
+		 /*if(StringUtils.isNotBlank(systemName)){
+			 majorWrapper.eq(CsMajor::getMajorName,systemName);
+		 }*/
+		 List<CsMajor> majorList = csMajorService.list(majorWrapper);
+		 //查询子系统
+		 LambdaQueryWrapper<CsSubsystem> systemWrapper = new LambdaQueryWrapper<CsSubsystem>().eq(CsSubsystem::getDelFlag,0);
+		 /*if(StringUtils.isNotBlank(systemName)){
+			 systemWrapper.eq(CsSubsystem::getSystemName,systemName);
+		 }*/
+		 List<CsSubsystem> systemList = csSubsystemService.list(systemWrapper);
 		 List<CsSubsystem> newList = new ArrayList<>();
 		 majorList.forEach(major -> {
 			 CsSubsystem subSystem = new CsSubsystem();
@@ -170,6 +181,7 @@ public class CsSubsystemController  {
 	@ApiOperation(value="子系统通过id删除", notes="子系统通过id删除")
 	@DeleteMapping(value = "/delete")
 	public Result<?> delete(@RequestParam(name="id",required=true) String id) {
+		//todo 判断其他模块是否使用
 		CsSubsystem csSubsystem = csSubsystemService.getById(id);
 		csSubsystem.setDelFlag(1);
 		csSubsystemService.updateById(csSubsystem);
