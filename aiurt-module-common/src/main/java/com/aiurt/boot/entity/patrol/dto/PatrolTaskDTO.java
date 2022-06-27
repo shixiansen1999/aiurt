@@ -1,4 +1,4 @@
-package com.aiurt.boot.entity.patrol.dto;
+package com.aiurt.boot.plan.entity.patrol.dto;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;

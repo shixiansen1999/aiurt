@@ -1,5 +1,5 @@
-//package com.aiurt.boot.api;
-//import com.aiurt.boot.api.fallback.InspectionHelloFallback;
+//package com.aiurt.boot.plan.api;
+//import com.aiurt.boot.plan.api.fallback.InspectionHelloFallback;
 //import org.springframework.cloud.openfeign.FeignClient;
 //import org.springframework.web.bind.annotation.GetMapping;
 //import org.springframework.web.bind.annotation.RequestParam;
