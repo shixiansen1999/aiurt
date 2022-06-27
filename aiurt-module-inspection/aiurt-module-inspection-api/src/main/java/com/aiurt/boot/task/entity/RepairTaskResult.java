@@ -1,6 +1,8 @@
 package com.aiurt.boot.task.entity;
 
+import com.aiurt.boot.plan.entity.RepairPoolCodeContent;
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -13,6 +15,7 @@ import org.jeecgframework.poi.excel.annotation.Excel;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * @Description: repair_task_result
@@ -116,4 +119,11 @@ public class RepairTaskResult implements Serializable {
     @DateTimeFormat(pattern="yyyy-MM-dd")
     @ApiModelProperty(value = "修改时间")
     private java.util.Date updateTime;
+
+    /**
+     * 子节点
+     */
+    @TableField(exist = false)
+    @ApiModelProperty(value = "子节点")
+    private List<RepairTaskResult> children;
 }

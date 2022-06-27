@@ -1,6 +1,7 @@
 package com.aiurt.boot.task.dto;
 
-
+import com.aiurt.boot.plan.entity.RepairPoolCodeContent;
+import com.aiurt.boot.task.entity.RepairTaskResult;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModelProperty;
@@ -8,35 +9,28 @@ import lombok.Data;
 import org.jeecgframework.poi.excel.annotation.Excel;
 import org.springframework.format.annotation.DateTimeFormat;
 
+import java.util.List;
+
 /**
  * @author zwl
- * @Title:
- * @Description:
- * @date 2022/6/2409:24
  */
 @Data
-public class RepairTaskDTO {
-
-
-    /**检修任务id*/
-    @TableField(exist = false)
-    @ApiModelProperty(value = "检修任务id")
-    private String taskId;
+public class CheckListDTO {
 
     /**检修单id*/
     @TableField(exist = false)
     @ApiModelProperty(value = "检修单id")
     private String deviceId;
 
-    /**检修任务标准id*/
-    @TableField(exist = false)
-    @ApiModelProperty(value = "检修任务标准id")
-    private String standardId;
-
     /**检修结果id*/
     @TableField(exist = false)
     @ApiModelProperty(value = "检修结果id")
     private String resultId;
+
+    /**检修任务标准id*/
+    @TableField(exist = false)
+    @ApiModelProperty(value = "检修任务标准id")
+    private String standardId;
 
     /**检修人id*/
     @TableField(exist = false)
@@ -58,18 +52,15 @@ public class RepairTaskDTO {
     @ApiModelProperty(value = "设备名称")
     private String equipmentName;
 
-
     /**专业编码*/
     @ApiModelProperty(value = "专业编码")
     @TableField(exist = false)
     private String majorCode;
 
-
     /**专业名称*/
     @ApiModelProperty(value = "专业名称")
     @TableField(exist = false)
     private String majorName;
-
 
     /**系统编码*/
     @ApiModelProperty(value = "系统编码")
@@ -81,7 +72,6 @@ public class RepairTaskDTO {
     @TableField(exist = false)
     private String systemName;
 
-
     /**设备类型编码*/
     @ApiModelProperty(value = "设备类型编码")
     @TableField(exist = false)
@@ -92,27 +82,41 @@ public class RepairTaskDTO {
     @TableField(exist = false)
     private String deviceTypeName;
 
-    /**检修结果*/
+    /**结束检修时间*/
+    @Excel(name = "结束检修时间", width = 15, format = "yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
+    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
+    @ApiModelProperty(value = "开始检修时间")
     @TableField(exist = false)
-    @ApiModelProperty(value = "检修结果")
-    private Integer maintenanceResults;
+    private java.util.Date startTime;
 
-
-    /**检修结果名称*/
+    /**结束检修时间*/
+    @Excel(name = "结束检修时间", width = 15, format = "yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
+    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
+    @ApiModelProperty(value = "结束检修时间")
     @TableField(exist = false)
-    @ApiModelProperty(value = "检修结果名称")
-    private String maintenanceResultsName;
+    private java.util.Date endTime;
 
-
-    /**检修单号*/
+    /**同行人*/
+    @ApiModelProperty(value = "同行人")
     @TableField(exist = false)
-    @ApiModelProperty(value = "检修单号")
-    private String overhaulCode;
+    private String peer;
 
-    /**检修标准名称*/
+    /**检修时长*/
+    @ApiModelProperty(value = "检修时长")
     @TableField(exist = false)
-    @ApiModelProperty(value = "检修标准名称")
-    private String overhaulStandardName;
+    private Integer duration;
+
+    /**检修位置*/
+    @ApiModelProperty(value = "检修位置")
+    @TableField(exist = false)
+    private String maintenancePosition;
+
+    /**设备位置*/
+    @ApiModelProperty(value = "设备位置")
+    @TableField(exist = false)
+    private String equipmentLocation;
 
     /**正常项*/
     @ApiModelProperty(value = "正常项")
@@ -124,12 +128,7 @@ public class RepairTaskDTO {
     @TableField(exist = false)
     private Integer abnormal;
 
-
-    /**提交时间*/
-    @Excel(name = "提交时间", width = 15, format = "yyyy-MM-dd HH:mm:ss")
-    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
-    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
-    @ApiModelProperty(value = "提交时间")
+    @ApiModelProperty(value = "检修单（树形）")
     @TableField(exist = false)
-    private java.util.Date submitTime;
+    List<RepairTaskResult> repairTaskResultList;
 }

@@ -1,16 +1,21 @@
 package com.aiurt.boot.task.service.impl;
 
 import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.util.ObjectUtil;
 import com.aiurt.boot.constant.DictConstant;
 import com.aiurt.boot.constant.InspectionConstant;
 import com.aiurt.boot.manager.InspectionManager;
 import com.aiurt.boot.manager.dto.*;
 import com.aiurt.boot.plan.dto.RepairDeviceDTO;
 import com.aiurt.boot.plan.dto.StationDTO;
+import com.aiurt.boot.plan.entity.RepairPoolCodeContent;
+import com.aiurt.boot.task.dto.CheckListDTO;
 import com.aiurt.boot.task.entity.RepairTask;
 import com.aiurt.boot.task.dto.RepairTaskDTO;
+import com.aiurt.boot.task.entity.RepairTaskResult;
 import com.aiurt.boot.task.mapper.RepairTaskMapper;
 import com.aiurt.boot.task.service.IRepairTaskService;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.LoginUser;
@@ -20,9 +25,7 @@ import org.springframework.stereotype.Service;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 /**
  * @Description: repair_task
@@ -125,6 +128,14 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                 LoginUser userById = sysBaseAPI.getUserById(e.getOverhaulId());
                 e.setOverhaulName(userById.getUsername());
             }
+            if (e.getDeviceId()!=null && CollectionUtil.isNotEmpty(repairTasks)){
+                //正常项
+                List<RepairTaskResult> repairTaskResults = repairTaskMapper.selectSingle(e.getDeviceId(), 1);
+                e.setNormal(repairTaskResults.size());
+                //异常项
+                List<RepairTaskResult> repairTaskResults1 = repairTaskMapper.selectSingle(e.getDeviceId(), 2);
+                e.setAbnormal(repairTaskResults1.size());
+            }
         });
         return pageList.setRecords(repairTasks);
     }
@@ -172,4 +183,97 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
         equipmentOverhaulDTO.setOverhaulDTOList(overhaulDTOList);
         return equipmentOverhaulDTO;
     }
+
+    @Override
+    public CheckListDTO selectCheckList(String id,String code) {
+        CheckListDTO checkListDTO = repairTaskMapper.selectCheckList(id);
+        if (checkListDTO.getDeviceId()!=null && ObjectUtil.isNotNull(checkListDTO)){
+            List<RepairTaskResult> repairTaskResults = repairTaskMapper.selectSingle(checkListDTO.getDeviceId(), 1);
+            checkListDTO.setNormal(repairTaskResults.size());
+            List<RepairTaskResult> repairTaskResults1 = repairTaskMapper.selectSingle(checkListDTO.getDeviceId(), 2);
+            checkListDTO.setAbnormal(repairTaskResults1.size());
+        }
+        //专业
+        checkListDTO.setMajorName(manager.translateMajor(Arrays.asList(checkListDTO.getMajorCode()),InspectionConstant.MAJOR));
+
+        //子系统
+        checkListDTO.setSystemName(manager.translateMajor(Arrays.asList(checkListDTO.getSystemCode()),InspectionConstant.SUBSYSTEM));
+
+        //根据设备编码翻译设备名称和设备类型名称
+        List<RepairDeviceDTO> repairDeviceDTOList = manager.queryDeviceByCodes(Arrays.asList(checkListDTO.getEquipmentCode()));
+        repairDeviceDTOList.forEach(q->{
+            //设备名称
+            checkListDTO.setEquipmentName(q.getName());
+            //设备类型名称
+            checkListDTO.setDeviceTypeName(q.getDeviceTypeName());
+        });
+        //检修人名称
+        if (checkListDTO.getOverhaulId()!=null){
+            LoginUser userById = sysBaseAPI.getUserById(checkListDTO.getOverhaulId());
+            checkListDTO.setOverhaulName(userById.getUsername());
+        }
+
+        //设备位置
+        List<StationDTO> stationDTOList = repairTaskMapper.selectStationList(code);
+        checkListDTO.setEquipmentLocation(manager.translateStation(stationDTOList));
+
+        checkListDTO.setRepairTaskResultList(selectCodeContentList(checkListDTO.getDeviceId()));
+        return checkListDTO;
+    }
+
+
+    /**
+     * 检修单详情查询检修结果
+     *
+     * @param id 检修
+     * @return 构造树形
+     */
+    private List<RepairTaskResult> selectCodeContentList(String id) {
+        List<RepairTaskResult> repairTaskResults1 = repairTaskMapper.selectSingle(id,null);
+        repairTaskResults1.forEach(r -> {
+
+        });
+        return treeFirst(repairTaskResults1);
+    }
+
+    /**
+     * 构造树，不固定根节点
+     *
+     * @param list 全部数据
+     * @return 构造好以后的树形
+     */
+    public static List<RepairTaskResult> treeFirst(List<RepairTaskResult> list) {
+        //这里的Menu是我自己的实体类，参数只需要菜单id和父id即可，其他元素可任意增添
+        Map<String, RepairTaskResult> map = new HashMap<>(50);
+        for (RepairTaskResult treeNode : list) {
+            map.put(treeNode.getId(), treeNode);
+        }
+        return addChildren(list, map);
+    }
+
+
+    /**
+     * @param list
+     * @param map
+     * @return
+     */
+    private static List<RepairTaskResult> addChildren(List<RepairTaskResult> list, Map<String, RepairTaskResult> map) {
+        List<RepairTaskResult> rootNodes = new ArrayList<>();
+        for (RepairTaskResult treeNode : list) {
+            RepairTaskResult parentHave = map.get(treeNode.getPid());
+            if (ObjectUtil.isEmpty(parentHave)) {
+                rootNodes.add(treeNode);
+            } else {
+                //当前位置显示实体类中的List元素定义的参数为null，出现空指针异常错误
+                if (ObjectUtil.isEmpty(parentHave.getChildren())) {
+                    parentHave.setChildren(new ArrayList<RepairTaskResult>());
+                    parentHave.getChildren().add(treeNode);
+                } else {
+                    parentHave.getChildren().add(treeNode);
+                }
+            }
+        }
+        return rootNodes;
+    }
+
 }

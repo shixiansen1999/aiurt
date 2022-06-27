@@ -2,6 +2,7 @@ package com.aiurt.boot.task.controller;
 
 import com.aiurt.boot.manager.dto.EquipmentOverhaulDTO;
 import com.aiurt.boot.manager.dto.MajorDTO;
+import com.aiurt.boot.task.dto.CheckListDTO;
 import com.aiurt.boot.task.entity.RepairTask;
 import com.aiurt.boot.task.dto.RepairTaskDTO;
 import com.aiurt.boot.task.service.IRepairTaskService;
@@ -124,6 +125,21 @@ public class RepairTaskController extends BaseController<RepairTask, IRepairTask
 	){
 		EquipmentOverhaulDTO equipmentOverhaulDTO = repairTaskService.selectEquipmentOverhaulList(id);
 		return Result.OK(equipmentOverhaulDTO);
+	}
+
+	/**
+	 * 检修单详情
+	 * @param id
+	 * @return
+	 */
+	@AutoLog(value = "检修任务-检修单详情")
+	@ApiOperation(value="检修任务-检修单详情", notes="检修任务-检修单详情")
+	@GetMapping(value = "/selectCheckList")
+	public Result<?> selectCheckList(@RequestParam(name="id",required=true) String id,
+									 @RequestParam(name="code",required=true) String code
+	){
+		CheckListDTO checkListDTO = repairTaskService.selectCheckList(id,code);
+		return Result.OK(checkListDTO);
 	}
 
 	/**

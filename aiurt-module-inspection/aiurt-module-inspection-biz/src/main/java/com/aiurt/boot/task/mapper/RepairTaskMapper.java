@@ -5,8 +5,10 @@ import com.aiurt.boot.manager.dto.EquipmentOverhaulDTO;
 import com.aiurt.boot.manager.dto.MajorDTO;
 import com.aiurt.boot.manager.dto.SubsystemDTO;
 import com.aiurt.boot.plan.dto.StationDTO;
+import com.aiurt.boot.task.dto.CheckListDTO;
 import com.aiurt.boot.task.entity.RepairTask;
 import com.aiurt.boot.task.dto.RepairTaskDTO;
+import com.aiurt.boot.task.entity.RepairTaskResult;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.ibatis.annotations.Param;
@@ -74,4 +76,20 @@ public interface RepairTaskMapper extends BaseMapper<RepairTask> {
      * @return
      */
     List<EquipmentDTO> queryNameByCode(List<String> codeList);
+
+    /**
+     * 查询检修单信息
+     * @param id
+     * @return
+     */
+    CheckListDTO selectCheckList(String id);
+
+    /**
+     * 查询任务结果
+     * @param id
+     * @param status
+     * @return
+     */
+    List<RepairTaskResult> selectSingle(@Param("id") String id,@Param("status")Integer status);
+
 }

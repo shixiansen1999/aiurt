@@ -2,6 +2,7 @@ package com.aiurt.boot.task.service;
 
 import com.aiurt.boot.manager.dto.EquipmentOverhaulDTO;
 import com.aiurt.boot.manager.dto.MajorDTO;
+import com.aiurt.boot.task.dto.CheckListDTO;
 import com.aiurt.boot.task.entity.RepairTask;
 import com.aiurt.boot.task.dto.RepairTaskDTO;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -49,4 +50,12 @@ public interface IRepairTaskService extends IService<RepairTask> {
      * @return
      */
     EquipmentOverhaulDTO selectEquipmentOverhaulList(String id);
+
+    /**
+     * 查询检修单信息
+     * @param id
+     * @param code
+     * @return
+     */
+    CheckListDTO selectCheckList(String id,String code);
 }
