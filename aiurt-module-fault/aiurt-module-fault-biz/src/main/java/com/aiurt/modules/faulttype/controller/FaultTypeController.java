@@ -12,6 +12,8 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.jeecg.common.api.vo.Result;
@@ -21,8 +23,9 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
+import java.util.stream.Collectors;
 
- /**
+/**
  * @Description: fault_type
  * @Author: aiurt
  * @Date:   2022-06-24
@@ -140,37 +143,28 @@ public class FaultTypeController extends BaseController<FaultType, IFaultTypeSer
 		return Result.OK(faultType);
 	}
 
-    /**
-    * 导出excel
-    *
-    * @param request
-    * @param faultType
-    */
-  /*  @RequestMapping(value = "/exportXls")
-    public ModelAndView exportXls(HttpServletRequest request, FaultType faultType) {
-        return super.exportXls(request, faultType, FaultType.class, "fault_type");
-    }*/
 
-    /**
-      * 通过excel导入数据
-    *
-    * @param request
-    * @param response
-    * @return
-    */
-    /*@RequestMapping(value = "/importExcel", method = RequestMethod.POST)
-    public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) {
-        return super.importExcel(request, response, FaultType.class);
-    }*/
 
 	 /**
-	  * 写列表
+	  * 根据专业编码查询故障类型
 	  * @param majorCode
 	  * @return
 	  */
-	public Result<List<SelectTable>> selectFaultTypeByMajorCode(String majorCode) {
+	 @GetMapping("/queryFaultTypeByMajorCode")
+	 @ApiOperation("根据专业编码查询故障类型")
+	 @ApiImplicitParams({
+			 @ApiImplicitParam(name = "majorCode", value = "专业编码", required = true, paramType = "query"),
+	 })
+	public Result<List<SelectTable>> queryFaultTypeByMajorCode(@RequestParam(value = "majorCode") String majorCode) {
 		LambdaQueryWrapper<FaultType> wrapper = new LambdaQueryWrapper<>();
 		wrapper.eq(FaultType::getMajorCode, majorCode);
-		return null;
+		 List<FaultType> typeList = faultTypeService.getBaseMapper().selectList(wrapper);
+		 List<SelectTable> tableList = typeList.stream().map(faultType -> {
+			 SelectTable table = new SelectTable();
+			 table.setLabel(faultType.getName());
+			 table.setValue(faultType.getCode());
+			 return table;
+		 }).collect(Collectors.toList());
+		 return Result.OK(tableList);
 	}
 }
