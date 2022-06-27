@@ -101,7 +101,7 @@
         SELECT
 	      t1.id as taskId,
 	      t2.id as standardId,
-	      t2.title as overhaulName,
+	      t2.title as overhaulStandardName,
 	      t2.major_code as majorCode,
 	      t2.subsystem_code as systemCode,
 	      t2.device_type_code as deviceTypeCode
@@ -139,5 +139,21 @@
         where
             del_flag = 0
             and major_code = #{code}
+    </select>
+
+    <select id="queryNameByCode" resultType="com.aiurt.boot.manager.dto.EquipmentDTO">
+        select
+        name as deviceTypeName,
+        code as deviceTypeCode
+        from device_type
+        <where>
+            del_flag = 0
+            <if test="list.size()>0">
+                and code in
+                <foreach item="item" collection="list" separator="," open="(" close=")" index="">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
     </select>
 </mapper>
