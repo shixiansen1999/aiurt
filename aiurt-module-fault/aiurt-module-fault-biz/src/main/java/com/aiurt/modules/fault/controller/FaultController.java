@@ -159,7 +159,7 @@ public class FaultController extends BaseController<Fault, IFaultService> {
     @ApiImplicitParams({
             @ApiImplicitParam(name = "code", value = "故障编码", required = true, paramType = "query")
     })
-    private Result<?> receiveAssignment(@RequestParam(name = "code") String code) {
+    public Result<?> receiveAssignment(@RequestParam(name = "code") String code) {
         faultService.receiveAssignment(code);
         return Result.OK("领取故障工单成功。");
     }
@@ -167,7 +167,7 @@ public class FaultController extends BaseController<Fault, IFaultService> {
     @AutoLog(value = "拒收指派")
     @ApiOperation(value = "拒收指派", notes = "拒收指派")
     @PutMapping("/refuseAssignment")
-    private Result<?> refuseAssignment(@RequestBody RefuseAssignmentDTO refuseAssignmentDTO) {
+    public Result<?> refuseAssignment(@RequestBody RefuseAssignmentDTO refuseAssignmentDTO) {
         faultService.refuseAssignment(refuseAssignmentDTO);
         return Result.OK();
     }
@@ -178,7 +178,7 @@ public class FaultController extends BaseController<Fault, IFaultService> {
     @ApiImplicitParams({
             @ApiImplicitParam(name = "faultCode", value = "故障编码", required = true, paramType = "query")
     })
-    private Result<?> startRepair(@RequestParam(name = "faultCode") String faultCode) {
+    public Result<?> startRepair(@RequestParam(name = "faultCode") String faultCode) {
         faultService.startRepair(faultCode);
         return Result.OK();
     }
@@ -187,7 +187,7 @@ public class FaultController extends BaseController<Fault, IFaultService> {
     @AutoLog(value = "挂起")
     @ApiOperation(value = "挂起", notes = "挂起")
     @PutMapping("/hangUp")
-    private Result<?> hangUp(@RequestBody HangUpDTO hangUpDTO) {
+    public Result<?> hangUp(@RequestBody HangUpDTO hangUpDTO) {
         faultService.hangUp(hangUpDTO);
         return Result.OK();
     }
@@ -195,7 +195,7 @@ public class FaultController extends BaseController<Fault, IFaultService> {
     @AutoLog(value = "审批挂起")
     @ApiOperation(value = "审批挂起", notes = "审批挂起")
     @PutMapping("/approvalHangUp")
-    private Result<?> approvalHangUp(@RequestBody ApprovalHangUpDTO approvalHangUpDTO) {
+    public Result<?> approvalHangUp(@RequestBody ApprovalHangUpDTO approvalHangUpDTO) {
         faultService.approvalHangUp(approvalHangUpDTO);
         return Result.OK();
     }
@@ -206,7 +206,7 @@ public class FaultController extends BaseController<Fault, IFaultService> {
     @ApiImplicitParams({
             @ApiImplicitParam(name = "faultCode", value = "故障编码", required = true, paramType = "query")
     })
-    private Result<?> cancelHangup(@RequestParam(name = "faultCode", required = true) String faultCode) {
+    public Result<?> cancelHangup(@RequestParam(name = "faultCode", required = true) String faultCode) {
         faultService.cancelHangup(faultCode);
         return Result.OK();
     }
