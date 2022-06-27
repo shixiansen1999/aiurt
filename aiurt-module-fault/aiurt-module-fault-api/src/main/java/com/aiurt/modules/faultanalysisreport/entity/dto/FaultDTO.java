@@ -36,6 +36,11 @@ public class FaultDTO {
     @ApiModelProperty(value = "专业子系统编码")
     private String subSystemCode;
 
+    /**专业子系统名称*/
+    @Excel(name = "专业子系统名称", width = 15)
+    @ApiModelProperty(value = "专业子系统名称")
+    private String subSystemName;
+
     /**报修人*/
     @Excel(name = "报修人", width = 15)
     @ApiModelProperty(value = "报修人")
@@ -61,6 +66,17 @@ public class FaultDTO {
     @Excel(name = "故障位置-位置编码", width = 15)
     @ApiModelProperty(value = "位置")
     private String stationPositionCode;
+
+    /**站点名称*/
+    @Excel(name = "故障位置-站所名称", width = 15)
+    @ApiModelProperty(value = "站点名称",  required = true)
+    @TableField(exist = false)
+    private String stationName;
+
+    /**位置名称*/
+    @Excel(name = "故障位置-位置名称", width = 15)
+    @ApiModelProperty(value = "位置名称")
+    private String stationPositionName;
 
     /**故障发生时间*/
     @Excel(name = "故障发生时间", width = 15, format = "yyyy-MM-dd HH:mm")

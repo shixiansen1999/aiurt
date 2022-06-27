@@ -66,10 +66,9 @@ public class FaultKnowledgeBaseController extends BaseController<FaultKnowledgeB
 								   @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
 								   @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
 								   HttpServletRequest req) {
-		QueryWrapper<FaultKnowledgeBase> queryWrapper = QueryGenerator.initQueryWrapper(faultKnowledgeBase, req.getParameterMap());
 		Page<FaultKnowledgeBase> page = new Page<FaultKnowledgeBase>(pageNo, pageSize);
-		IPage<FaultKnowledgeBase> pageList = faultKnowledgeBaseService.page(page, queryWrapper);
-		return Result.OK(pageList);
+		IPage<FaultKnowledgeBase> faultKnowledgeBaseIPage = faultKnowledgeBaseService.readAll(page, faultKnowledgeBase);
+		return Result.OK(faultKnowledgeBaseIPage);
 	}
 
 	/**
@@ -167,5 +166,7 @@ public class FaultKnowledgeBaseController extends BaseController<FaultKnowledgeB
     public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) {
         return super.importExcel(request, response, FaultKnowledgeBase.class);
     }
+
+
 
 }

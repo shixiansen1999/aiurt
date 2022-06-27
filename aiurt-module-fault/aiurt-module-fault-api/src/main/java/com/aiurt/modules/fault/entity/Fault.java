@@ -265,4 +265,34 @@ public class Fault implements Serializable {
     @ApiModelProperty("挂起原因")
     private String hangUpReason;
 
+    /**线路名称*/
+    @Excel(name = "故障位置-线路名称", width = 15)
+    @ApiModelProperty(value = "线路名称", required = true)
+    @TableField(exist = false)
+    private String lineName;
+
+    /**站点名称*/
+    @Excel(name = "故障位置-站所名称", width = 15)
+    @ApiModelProperty(value = "站点名称",  required = true)
+    @TableField(exist = false)
+    private String stationName;
+
+    /**位置名称*/
+    @Excel(name = "故障位置-位置名称", width = 15)
+    @TableField(exist = false)
+    @ApiModelProperty(value = "位置名称")
+    private String stationPositionName;
+
+    /**专业名称*/
+    @Excel(name = "专业名称", width = 15)
+    @ApiModelProperty(value = "专业名称", required = true)
+    @TableField(exist = false)
+    private String majorName;
+
+    /**专业子系统名称*/
+    @Excel(name = "专业子系统名称", width = 15)
+    @ApiModelProperty(value = "专业子系统名称")
+    @TableField(exist = false)
+    private String subSystemName;
+
 }

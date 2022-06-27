@@ -2,4 +2,62 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.aiurt.modules.faultknowledgebase.mapper.FaultKnowledgeBaseMapper">
 
+<select id="readAll" resultType="com.aiurt.modules.faultknowledgebase.entity.FaultKnowledgeBase">
+    SELECT
+            fkb.id,
+            fkb.device_type_code,
+            (SELECT name from device_type WHERE `code` = fkb.device_type_code) as deviceTypeName,
+            fkb.knowledge_base_type_code,
+            (SELECT name from fault_knowledge_base_type WHERE `code` = fkb.knowledge_base_type_code) as knowledgeBaseTypeName,
+            fkb.material_code,
+            (SELECT material_name from device_assembly WHERE `code` = fkb.material_code) as materialName,
+            fkb.fault_codes,
+            fkb.fault_phenomenon,
+            fkb.fault_reason,
+            fkb.method,
+            fkb.solution,
+            fkb.create_time
+    FROM
+            fault_knowledge_base fkb WHERE del_flag = 0
+        <if test="condition.approvedResult != null">
+            and fkb.approved_result =#{condition.approvedResult}
+        </if>
+        <if test="condition.deviceTypeCode != null and condition.deviceTypeCode !='' ">
+            and fkb.device_type_code =#{condition.deviceTypeCode}
+        </if>
+        <if test="condition.materialCode != null and condition.materialCode !='' ">
+            and fkb.material_code =#{condition.materialCode}
+        </if>
+        <if test="condition.faultPhenomenon != null and condition.faultPhenomenon != ''">
+            and fkb.fault_phenomenon like concat('%',#{condition.faultPhenomenon},'%')
+        </if>
+        <if test="condition.faultReason != null and condition.faultReason != ''">
+            and fkb.fault_reason like concat('%',#{condition.faultReason},'%')
+        </if>
+        <if test="condition.method != null and condition.method != ''">
+            and fkb.method like concat('%',#{condition.method},'%')
+        </if>
+    </select>
+
+<select id="readOne" resultType="com.aiurt.modules.faultknowledgebase.entity.FaultKnowledgeBase">
+    SELECT
+            fkb.id,
+            fkb.device_type_code,
+            (SELECT name from device_type WHERE `code` = fkb.device_type_code) as deviceTypeName,
+            fkb.knowledge_base_type_code,
+            (SELECT name from fault_knowledge_base_type WHERE `code` = fkb.knowledge_base_type_code) as knowledgeBaseTypeName,
+            fkb.material_code,
+            (SELECT material_name from device_assembly WHERE `code` = fkb.material_code) as materialName,
+            fkb.fault_codes,
+            fkb.fault_phenomenon,
+            fkb.fault_reason,
+            fkb.method,
+            fkb.solution,
+            fkb.create_time
+    FROM
+            fault_knowledge_base fkb WHERE del_flag = 0
+    <if test="id != null and id != ''">
+        and fkb.id = #{id}
+    </if>
+    </select>
 </mapper>

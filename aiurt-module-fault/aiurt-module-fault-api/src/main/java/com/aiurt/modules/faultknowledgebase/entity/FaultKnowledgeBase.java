@@ -120,4 +120,13 @@ public class FaultKnowledgeBase implements Serializable {
 	@Excel(name = "审核说明", width = 15)
     @ApiModelProperty(value = "审核说明")
     private String approvedRemark;
+    /**附件*/
+    @Excel(name = "附件", width = 15)
+    @ApiModelProperty(value = "附件")
+    private java.lang.String filePath;
+
+    /**故障知识分类名称*/
+    @Excel(name = "故障知识分类名称", width = 15)
+    @ApiModelProperty(value = "故障知识分类名称")
+    private String knowledgeBaseTypeName;
 }

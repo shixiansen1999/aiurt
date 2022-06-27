@@ -13,6 +13,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,6 +41,13 @@ public class FaultAnalysisReportServiceImpl extends ServiceImpl<FaultAnalysisRep
     private ISysBaseAPI sysBaseAPI;
     @Override
     public IPage<FaultAnalysisReport> readAll(Page<FaultAnalysisReport> page, FaultAnalysisReport faultAnalysisReport) {
+        LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        List<String> rolesByUsername = sysBaseAPI.getRolesByUsername(sysUser.getUsername());
+        String admin = "admin";
+        if (!rolesByUsername.contains(admin)) {
+            faultAnalysisReport.setApprovedResult(1);
+        }
+        //根据角色决定是否查询未审核通过的故障分析（缺少角色数据，未实现）
         List<FaultAnalysisReport> faultAnalysisReports = faultAnalysisReportMapper.readAll(page, faultAnalysisReport);
         return page.setRecords(faultAnalysisReports);
     }
