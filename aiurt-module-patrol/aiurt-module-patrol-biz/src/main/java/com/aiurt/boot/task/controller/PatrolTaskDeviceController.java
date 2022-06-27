@@ -60,14 +60,14 @@ public class PatrolTaskDeviceController extends BaseController<PatrolTaskDevice,
 	  * app巡检任务-巡检清单列表（巡检工单列表）
 	  * @return
 	  */
-	 @AutoLog(value = "patrol_task- app巡检任务-通过")
-	 @ApiOperation(value="patrol_task- app巡检任务-通过", notes="patrol_task- app巡检任务-通过")
+	 @AutoLog(value = "app巡检任务-巡检清单列表")
+	 @ApiOperation(value="app巡检任务-巡检清单列表", notes="app巡检任务-巡检清单列表")
 	 @GetMapping(value = "/patrolTaskDeviceList")
-	 public Result<Page<PatrolTaskDeviceDTO>>  patrolTaskDeviceList(String id,
+	 public Result<Page<PatrolTaskDeviceDTO>>  patrolTaskDeviceList(PatrolTaskDeviceDTO patrolTaskDeviceDTO,
 																	@RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
 																	@RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize, HttpServletRequest req) {
 		 Page<PatrolTaskDeviceDTO> pageList = new Page<PatrolTaskDeviceDTO>(pageNo, pageSize);
-		 pageList = patrolTaskDeviceService.getPatrolTaskDeviceList(pageList, id);
+		 pageList = patrolTaskDeviceService.getPatrolTaskDeviceList(pageList, patrolTaskDeviceDTO);
 		 return Result.OK(pageList);
 	 }
 	/**

@@ -8,9 +8,21 @@
         WHERE ptd.del_flag = 0
     </select>
     <select id="getPatrolTaskDeviceList" resultType="com.aiurt.boot.task.dto.PatrolTaskDeviceDTO">
-     SELECT ptd.*,ps.name as taskStandardName
-     FROM patrol_task_device ptd left join patrol_standard ps on ps.id =ptd.task_standard_id
-     WHERE ptd.del_flag = 0  AND  ptd.task_id = #{id}
+        SELECT ptd.*,ps.name as taskStandardName,csp.position_name as positionName
+        FROM patrol_task_device ptd
+        left join patrol_standard ps on ps.id =ptd.task_standard_id
+		left join device dv on dv.code = ptd.device_code
+		left join cs_station_position csp on csp.position_code = dv.position_code
+        WHERE ptd.del_flag = 0  AND  ptd.task_id = #{patrolTaskDeviceDTO.taskId}
+        <if test="patrolTaskDeviceDTO.patrolNumber != null and patrolTaskDeviceDTO.patrolNumber != ''">
+        and ptd.patrol_number = #{patrolTaskDeviceDTO.patrolNumber}
+        </if>
+        <if test="patrolTaskDeviceDTO.deviceCode != null and patrolTaskDeviceDTO.deviceCode != ''">
+        and ptd.device_code = #{patrolTaskDeviceDTO.deviceCode}
+        </if>
+        <if test="patrolTaskDeviceDTO.positionName != null and patrolTaskDeviceDTO.positionName != ''">
+        and dv.name  like concat ('%',#{patrolTaskDeviceDTO.positionName},'%')
+        </if>
 
 </select>
 </mapper>
