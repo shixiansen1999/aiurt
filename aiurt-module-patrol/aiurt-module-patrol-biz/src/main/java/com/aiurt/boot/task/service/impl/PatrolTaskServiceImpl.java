@@ -111,20 +111,46 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
     }
 
     @Override
+    public Page<PatrolTaskDTO> getPatrolTaskPoolList(Page<PatrolTaskDTO> pageList, PatrolTaskDTO patrolTaskDTO) {
+        List<PatrolTaskDTO> taskList = patrolTaskMapper.getPatrolTaskPoolList(pageList, patrolTaskDTO);
+        taskList.stream().forEach(e -> {
+            String userName = patrolTaskMapper.getUserName(e.getBackId());
+            List<String> organizationName = patrolTaskMapper.getOrganizationName(e.getPlanCode());
+            List<PatrolTaskStandardDTO> patrolTaskStandard = patrolTaskStandardMapper.getMajorSystemName(e.getId());
+            String majorName =patrolTaskStandard.stream().map(PatrolTaskStandardDTO::getMajorName).collect(Collectors.joining(","));
+            String sysName = patrolTaskStandard.stream().map(PatrolTaskStandardDTO::getSysName).collect(Collectors.joining(","));
+            List<String> orgCodes = patrolTaskMapper.getOrgCode(e.getPlanCode());
+            List<String> stationName = patrolTaskMapper.getStationName(e.getPlanCode());
+            List<String> patrolUserName = patrolTaskMapper.getPatrolUserName(e.getCode());
+            String orgName = organizationName.stream().collect(Collectors.joining(","));
+            String stName = stationName.stream().collect(Collectors.joining(","));
+            String ptuName = patrolUserName.stream().collect(Collectors.joining(","));
+            e.setSysName(sysName);
+            e.setMajorName(majorName);
+            e.setOrgCode(orgCodes);
+            e.setOrganizationName(orgName);
+            e.setStationName(stName);
+            e.setPatrolUserName(ptuName);
+            e.setPatrolReturnUserName(userName);
+        });
+        return pageList.setRecords(taskList);
+    }
+
+    @Override
     public Page<PatrolTaskDTO> getPatrolTaskList(Page<PatrolTaskDTO> pageList, PatrolTaskDTO patrolTaskDTO) {
         List<PatrolTaskDTO> taskList = patrolTaskMapper.getPatrolTaskList(pageList, patrolTaskDTO);
         taskList.stream().forEach(e -> {
             String userName = patrolTaskMapper.getUserName(e.getBackId());
             List<String> organizationName = patrolTaskMapper.getOrganizationName(e.getPlanCode());
             List<PatrolTaskStandardDTO> patrolTaskStandard = patrolTaskStandardMapper.getMajorSystemName(e.getId());
-            String majorName =patrolTaskStandard.stream().map(PatrolTaskStandardDTO::getMajorName).collect(Collectors.joining("、"));
-            String sysName = patrolTaskStandard.stream().map(PatrolTaskStandardDTO::getSysName).collect(Collectors.joining("、"));
+            String majorName =patrolTaskStandard.stream().map(PatrolTaskStandardDTO::getMajorName).collect(Collectors.joining(","));
+            String sysName = patrolTaskStandard.stream().map(PatrolTaskStandardDTO::getSysName).collect(Collectors.joining(","));
             List<String> orgCodes = patrolTaskMapper.getOrgCode(e.getPlanCode());
             List<String> stationName = patrolTaskMapper.getStationName(e.getPlanCode());
             List<String> patrolUserName = patrolTaskMapper.getPatrolUserName(e.getCode());
-            String orgName = organizationName.stream().collect(Collectors.joining("、"));
-            String stName = stationName.stream().collect(Collectors.joining("、"));
-            String ptuName = patrolUserName.stream().collect(Collectors.joining("、"));
+            String orgName = organizationName.stream().collect(Collectors.joining(","));
+            String stName = stationName.stream().collect(Collectors.joining(","));
+            String ptuName = patrolUserName.stream().collect(Collectors.joining(","));
             e.setSysName(sysName);
             e.setMajorName(majorName);
             e.setOrgCode(orgCodes);

@@ -17,8 +17,15 @@ import java.util.List;
  * @Version: V1.0
  */
 public interface IPatrolTaskService extends IService<PatrolTask> {
+
     /**
-     * app-巡检列表
+     * app-巡检任务池
+     * @param pageList
+     * @param patrolTaskDTO
+     * @return
+     */
+    Page<PatrolTaskDTO> getPatrolTaskPoolList(Page<PatrolTaskDTO> pageList, PatrolTaskDTO patrolTaskDTO);/**
+     * app-巡检任务列表
      * @param pageList
      * @param patrolTaskDTO
      * @return

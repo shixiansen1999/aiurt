@@ -155,6 +155,26 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
     }
 
     /**
+     * app-巡检任务池
+     *
+     * @param patrolTaskDTO
+     * @param pageNo
+     * @param pageSize
+     * @param req
+     * @return author hlq
+     */
+    @AutoLog(value = "patrol_task-app巡检任务池")
+    @ApiOperation(value = "patrol_task-app巡检任务池", notes = "patrol_task-app巡检任务池")
+    @GetMapping(value = "/patrolTaskPoolList")
+    public Result<IPage<PatrolTaskDTO>> patrolTaskPoolList(PatrolTaskDTO patrolTaskDTO,
+                                                       @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
+                                                       @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize,
+                                                       HttpServletRequest req) {
+        Page<PatrolTaskDTO> pageList = new Page<PatrolTaskDTO>(pageNo, pageSize);
+        pageList = patrolTaskService.getPatrolTaskPoolList(pageList, patrolTaskDTO);
+        return Result.OK(pageList);
+    }
+    /**
      * app-巡检任务列表
      *
      * @param patrolTaskDTO
@@ -163,8 +183,8 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
      * @param req
      * @return author hlq
      */
-    @AutoLog(value = "patrol_task-app分页列表查询")
-    @ApiOperation(value = "patrol_task-app分页列表查询", notes = "patrol_task-app分页列表查询")
+    @AutoLog(value = "patrol_task-app巡检任务列表")
+    @ApiOperation(value = "patrol_task-app巡检任务列表", notes = "patrol_task-app巡检任务列表")
     @GetMapping(value = "/patrolTaskList")
     public Result<IPage<PatrolTaskDTO>> patrolTaskList(PatrolTaskDTO patrolTaskDTO,
                                                        @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,

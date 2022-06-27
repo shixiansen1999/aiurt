@@ -18,14 +18,20 @@ import java.util.List;
  * @Version: V1.0
  */
 public interface PatrolTaskMapper extends BaseMapper<PatrolTask> {
-
     /**
-     * app-列表查询
+     *app-巡检任务池列表
+     * @param pageList
+     * @param patrolTaskDTO
+     * @return
+     */
+    List<PatrolTaskDTO> getPatrolTaskPoolList(@Param("pageList")Page<PatrolTaskDTO> pageList, @Param("patrolTaskDTO")PatrolTaskDTO patrolTaskDTO);
+    /**
+     * app-巡检任务列表
      *
      * @param patrolTaskDTO
      * @return author hlq
      */
-    List<PatrolTaskDTO> getPatrolTaskList(Page<PatrolTaskDTO> pageList, @Param("patrolTaskDTO") PatrolTaskDTO patrolTaskDTO);
+    List<PatrolTaskDTO> getPatrolTaskList(@Param("pageList")Page<PatrolTaskDTO> pageList, @Param("patrolTaskDTO") PatrolTaskDTO patrolTaskDTO);
 
     /**
      * app-获取组织机构名称
@@ -85,7 +91,7 @@ public interface PatrolTaskMapper extends BaseMapper<PatrolTask> {
 
 
     /**
-     * 获取组织机构名成
+     * app-获取组织机构名称
      *
      * @param code
      * @return
