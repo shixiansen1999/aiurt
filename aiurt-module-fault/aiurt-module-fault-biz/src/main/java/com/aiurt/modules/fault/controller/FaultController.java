@@ -2,10 +2,7 @@ package com.aiurt.modules.fault.controller;
 
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.system.base.controller.BaseController;
-import com.aiurt.modules.fault.dto.ApprovalDTO;
-import com.aiurt.modules.fault.dto.AssignDTO;
-import com.aiurt.modules.fault.dto.CancelDTO;
-import com.aiurt.modules.fault.dto.RefuseAssignmentDTO;
+import com.aiurt.modules.fault.dto.*;
 import com.aiurt.modules.fault.entity.Fault;
 import com.aiurt.modules.fault.service.IFaultService;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -171,6 +168,52 @@ public class FaultController extends BaseController<Fault, IFaultService> {
     @ApiOperation(value = "拒收指派", notes = "拒收指派")
     @PutMapping("/refuseAssignment")
     private Result<?> refuseAssignment(@RequestBody RefuseAssignmentDTO refuseAssignmentDTO) {
+        faultService.refuseAssignment(refuseAssignmentDTO);
         return Result.OK();
     }
+
+    @AutoLog(value = "开始维修")
+    @ApiOperation(value = "开始维修", notes = "开始维修")
+    @PutMapping("/startRepair")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "faultCode", value = "故障编码", required = true, paramType = "query")
+    })
+    private Result<?> startRepair(@RequestParam(name = "faultCode") String faultCode) {
+        faultService.startRepair(faultCode);
+        return Result.OK();
+    }
+
+
+    @AutoLog(value = "挂起")
+    @ApiOperation(value = "挂起", notes = "挂起")
+    @PutMapping("/hangUp")
+    private Result<?> hangUp(@RequestBody HangUpDTO hangUpDTO) {
+        faultService.hangUp(hangUpDTO);
+        return Result.OK();
+    }
+
+    @AutoLog(value = "审批挂起")
+    @ApiOperation(value = "审批挂起", notes = "审批挂起")
+    @PutMapping("/approvalHangUp")
+    private Result<?> approvalHangUp(@RequestBody ApprovalHangUpDTO approvalHangUpDTO) {
+        faultService.approvalHangUp(approvalHangUpDTO);
+        return Result.OK();
+    }
+
+    @AutoLog(value = "取消挂起")
+    @ApiOperation(value = "取消挂起", notes = "取消挂起")
+    @PutMapping("/cancelHangup")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "faultCode", value = "故障编码", required = true, paramType = "query")
+    })
+    private Result<?> cancelHangup(@RequestParam(name = "faultCode", required = true) String faultCode) {
+        faultService.cancelHangup(faultCode);
+        return Result.OK();
+    }
+
+
+
+
+
+
 }

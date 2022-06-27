@@ -253,4 +253,16 @@ public class Fault implements Serializable {
     @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
     private Date cancelTime;
 
+    @ApiModelProperty("指派人")
+    private String assignUserName;
+
+    @ApiModelProperty("指派时间")
+    private Date assignTime;
+
+    @ApiModelProperty("被指派人/领取人")
+    private String appointUserName;
+
+    @ApiModelProperty("挂起原因")
+    private String hangUpReason;
+
 }

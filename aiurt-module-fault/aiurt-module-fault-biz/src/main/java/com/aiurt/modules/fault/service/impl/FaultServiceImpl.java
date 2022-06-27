@@ -4,12 +4,11 @@ package com.aiurt.modules.fault.service.impl;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateUtil;
 import com.aiurt.common.exception.AiurtBootException;
-import com.aiurt.modules.fault.dto.ApprovalDTO;
-import com.aiurt.modules.fault.dto.AssignDTO;
-import com.aiurt.modules.fault.dto.CancelDTO;
+import com.aiurt.modules.fault.dto.*;
 import com.aiurt.modules.fault.entity.Fault;
 import com.aiurt.modules.fault.entity.FaultDevice;
 import com.aiurt.modules.fault.entity.OperationProcess;
+import com.aiurt.modules.fault.enums.FaultStatusEnum;
 import com.aiurt.modules.fault.mapper.FaultMapper;
 import com.aiurt.modules.fault.service.IFaultDeviceService;
 import com.aiurt.modules.fault.service.IFaultService;
@@ -112,13 +111,15 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
                 .build();
         if (Objects.isNull(approvalStatus) || status.equals(approvalStatus)) {
             // 审批通过
-            fault.setStatus(3);
-            operationProcess.setProcessLink("审批通过").setProcessCode(3);
+            fault.setStatus(FaultStatusEnum.APPROVAL_PASS.getStatus());
+            operationProcess.setProcessLink(FaultStatusEnum.APPROVAL_PASS.getMessage())
+                    .setProcessCode(FaultStatusEnum.APPROVAL_PASS.getStatus());
         } else {
             // 驳回
-            fault.setStatus(2);
+            fault.setStatus(FaultStatusEnum.APPROVAL_REJECT.getStatus());
             fault.setApprovalRejection(approvalDTO.getApprovalRejection());
-            operationProcess.setProcessLink("审批已驳回").setProcessCode(2);
+            operationProcess.setProcessLink(FaultStatusEnum.APPROVAL_REJECT.getMessage())
+                    .setProcessCode(FaultStatusEnum.APPROVAL_REJECT.getStatus());
         }
 
         updateById(fault);
@@ -134,10 +135,16 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
     @Override
     public void edit(Fault fault) {
 
-        // 设备处理
+        LoginUser loginUser = checkLogin();
 
-        fault.setStatus(1);
+        //todo 设备处理
+
+        // update status
+        fault.setStatus(FaultStatusEnum.NEW_FAULT.getStatus());
         updateById(fault);
+
+        // 记录日志
+        saveLog(loginUser, "修改故障工单", fault.getCode(), FaultStatusEnum.NEW_FAULT.getStatus());
     }
 
     /**
@@ -154,14 +161,17 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         Fault fault = isExist(cancelDTO.getFaultCode());
 
         // 作废
-        fault.setStatus(0);
-        //
+        fault.setStatus(FaultStatusEnum.CANCEL.getStatus());
+
+        //更新状态
         fault.setCancelTime(new Date());
         fault.setCancelUserName(user.getUsername());
         updateById(fault);
 
         // 记录日志
-        saveLog(user, "作废", fault.getCode(), 0);
+        saveLog(user, FaultStatusEnum.CANCEL.getMessage(), fault.getCode(), FaultStatusEnum.CANCEL.getStatus());
+
+        // todo 发送消息提醒
     }
 
     /**
@@ -192,7 +202,20 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
     public void assign(AssignDTO assignDTO) {
         LoginUser user = checkLogin();
 
-        saveLog(user, "指派", assignDTO.getFaultCode(), 0);
+        Fault fault = isExist(assignDTO.getFaultCode());
+
+        // 更新状态
+        fault.setStatus(FaultStatusEnum.ASSIGN.getStatus());
+        fault.setAssignTime(new Date());
+        fault.setAssignUserName(user.getUsername());
+        fault.setAppointUserName(assignDTO.getOperatorUserName());
+
+        updateById(fault);
+
+        // todo 发送消息
+
+        // 日志记录
+        saveLog(user, FaultStatusEnum.ASSIGN.getMessage(), assignDTO.getFaultCode(), FaultStatusEnum.ASSIGN.getStatus());
     }
 
 
@@ -205,7 +228,19 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
      */
     @Override
     public void receive(AssignDTO assignDTO) {
+        LoginUser user = checkLogin();
 
+        Fault fault = isExist(assignDTO.getFaultCode());
+
+        // 更新状态
+        fault.setStatus(FaultStatusEnum.RECEIVE.getStatus());
+        fault.setAppointUserName(user.getUsername());
+        // 领取时间
+
+        // 日志记录
+        saveLog(user, FaultStatusEnum.RECEIVE.getMessage(), assignDTO.getFaultCode(), FaultStatusEnum.RECEIVE.getStatus());
+
+        // todo 发送消息
     }
 
     /**
@@ -215,9 +250,101 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
      */
     @Override
     public void receiveAssignment(String code) {
+        // 创建维修记录
+    }
+
+
+    @Override
+    public void refuseAssignment(RefuseAssignmentDTO refuseAssignmentDTO) {
 
     }
 
+    @Override
+    public void startRepair(String code) {
+        LoginUser user = checkLogin();
+
+        Fault fault = isExist(code);
+        // 开始维修时间
+        //
+        saveLog(user, "申请挂起", code, FaultStatusEnum.REPAIR.getStatus());
+    }
+
+    /**
+     * 挂起申请
+     * @param hangUpDTO
+     */
+    @Override
+    public void hangUp(HangUpDTO hangUpDTO) {
+
+        LoginUser user = checkLogin();
+
+        Fault fault = isExist(hangUpDTO.getFaultCode());
+
+        fault.setStatus(FaultStatusEnum.HANGUP_REQUEST.getStatus());
+        // 挂起原因
+        fault.setHangUpReason(hangUpDTO.getHangUpReason());
+
+        updateById(fault);
+
+        saveLog(user, "申请挂起", hangUpDTO.getFaultCode(), FaultStatusEnum.HANGUP_REQUEST.getStatus());
+
+        // todo 发送消息提醒
+
+    }
+
+    /**
+     * 审批挂起
+     * @param approvalHangUpDTO
+     */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void approvalHangUp(ApprovalHangUpDTO approvalHangUpDTO) {
+        LoginUser user = checkLogin();
+
+        Fault fault = isExist(approvalHangUpDTO.getFaultCode());
+
+        // 通过的状态 = 1
+        Integer status = 1;
+        Integer approvalStatus = approvalHangUpDTO.getApprovalStatus();
+        if (Objects.isNull(approvalStatus) || status.equals(approvalStatus)) {
+            // 审批通过-挂起
+            fault.setStatus(FaultStatusEnum.HANGUP.getStatus());
+            saveLog(user, "挂起审批通过", approvalHangUpDTO.getFaultCode(), FaultStatusEnum.HANGUP.getStatus());
+        } else {
+            // 驳回-维修中
+            fault.setStatus(FaultStatusEnum.REPAIR.getStatus());
+            //todo
+            fault.setApprovalRejection(approvalHangUpDTO.getApprovalRejection());
+            saveLog(user, "挂起审批驳回", approvalHangUpDTO.getFaultCode(), FaultStatusEnum.REPAIR.getStatus());
+        }
+
+        updateById(fault);
+        // todo 发送消息
+
+
+    }
+
+    /**
+     * 取消挂起
+     * @param code
+     */
+    @Override
+    public void cancelHangup(String code) {
+
+        LoginUser loginUser = checkLogin();
+
+        Fault fault = isExist(code);
+
+        // 更新状态-维修中
+        fault.setStatus(FaultStatusEnum.REPAIR.getStatus());
+        // 挂起时间
+
+        updateById(fault);
+
+        saveLog(loginUser, "取消挂起", code, FaultStatusEnum.REPAIR.getStatus());
+
+        // todo 发送消息
+    }
 
     /**
      * 获取当前登录用户

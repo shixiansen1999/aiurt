@@ -8,8 +8,8 @@ import javax.validation.constraints.NotBlank;
 import java.io.Serializable;
 
 @Data
-@ApiModel("指派")
-public class AssignDTO implements Serializable {
+@ApiModel("挂起审批对象")
+public class ApprovalHangUpDTO implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -17,15 +17,10 @@ public class AssignDTO implements Serializable {
     @NotBlank(message = "请选择故障编号")
     private String faultCode;
 
-    @ApiModelProperty("作业类型")
-    private String caWorkCode;
+    @ApiModelProperty("审核说明")
+    private String approvalRejection;
 
-    @ApiModelProperty("作业人员")
-    private String operatorUserName;
+    @ApiModelProperty("审批状态， 1： 通过， 0：驳回")
+    private Integer approvalStatus;
 
-    @ApiModelProperty("计划令编码")
-    private String planCode;
-
-    @ApiModelProperty("附件")
-    private String filepath;
 }

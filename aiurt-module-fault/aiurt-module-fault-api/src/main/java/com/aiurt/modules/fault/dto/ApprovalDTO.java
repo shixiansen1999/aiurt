@@ -14,6 +14,8 @@ import java.io.Serializable;
 @ApiModel("故障审批对象")
 public class ApprovalDTO implements Serializable {
 
+    private static final long serialVersionUID = 1L;
+
     @ApiModelProperty("故障编号")
     @NotBlank(message = "请选择故障编号")
     private String faultCode;
