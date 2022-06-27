@@ -179,6 +179,11 @@ public class FaultController extends BaseController<Fault, IFaultService> {
         return Result.OK("领取故障工单成功。");
     }
 
+    /**
+     * 拒收指派
+     * @param refuseAssignmentDTO
+     * @return
+     */
     @AutoLog(value = "拒收指派")
     @ApiOperation(value = "拒收指派", notes = "拒收指派")
     @PutMapping("/refuseAssignment")
@@ -187,6 +192,11 @@ public class FaultController extends BaseController<Fault, IFaultService> {
         return Result.OK();
     }
 
+    /**
+     * 开始维修
+     * @param faultCode
+     * @return
+     */
     @AutoLog(value = "开始维修")
     @ApiOperation(value = "开始维修", notes = "开始维修")
     @PutMapping("/startRepair")
@@ -198,7 +208,11 @@ public class FaultController extends BaseController<Fault, IFaultService> {
         return Result.OK();
     }
 
-
+    /**
+     * 挂起
+     * @param hangUpDTO
+     * @return
+     */
     @AutoLog(value = "挂起")
     @ApiOperation(value = "挂起", notes = "挂起")
     @PutMapping("/hangUp")
@@ -207,6 +221,11 @@ public class FaultController extends BaseController<Fault, IFaultService> {
         return Result.OK();
     }
 
+    /**
+     * 审批挂起
+     * @param approvalHangUpDTO
+     * @return
+     */
     @AutoLog(value = "审批挂起")
     @ApiOperation(value = "审批挂起", notes = "审批挂起")
     @PutMapping("/approvalHangUp")
@@ -215,6 +234,11 @@ public class FaultController extends BaseController<Fault, IFaultService> {
         return Result.OK();
     }
 
+    /**
+     * 取消挂起
+     * @param faultCode
+     * @return
+     */
     @AutoLog(value = "取消挂起")
     @ApiOperation(value = "取消挂起", notes = "取消挂起")
     @PutMapping("/cancelHangup")
