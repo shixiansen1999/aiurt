@@ -1,0 +1,121 @@
+package com.aiurt.modules.faultanalysisreport.entity.dto;
+
+import com.aiurt.common.aspect.annotation.Dict;
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
+import lombok.Data;
+import org.hibernate.validator.constraints.Length;
+import org.jeecgframework.poi.excel.annotation.Excel;
+import org.springframework.format.annotation.DateTimeFormat;
+
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+import java.util.Date;
+
+@Data
+@ApiModel("故障分析")
+public class FaultDTO {
+    /**主键*/
+    @TableId(type = IdType.ASSIGN_ID)
+    @ApiModelProperty(value = "主键")
+    private String id;
+
+
+    /**故障报修编码*/
+    @Excel(name = "故障报修编码", width = 15)
+    @ApiModelProperty(value = "故障报修编码")
+    private String code;
+
+    /**专业子系统编码*/
+    @Excel(name = "专业子系统编码", width = 15)
+    @ApiModelProperty(value = "专业子系统编码")
+    private String subSystemCode;
+
+    /**报修人*/
+    @Excel(name = "报修人", width = 15)
+    @ApiModelProperty(value = "报修人")
+    @Dict(dictTable = "sys_user", dicCode = "username", dicText = "realname")
+    private String faultApplicant;
+
+    /**设备编码*/
+    @Excel(name = "设备编码", width = 15)
+    @ApiModelProperty(value = "设备编码", required = true)
+    private String deviceCode;
+
+    /**设备编码*/
+    @Excel(name = "设备名称", width = 15)
+    @ApiModelProperty(value = "设备名称", required = true)
+    private String deviceName;
+
+    /**站点*/
+    @Excel(name = "故障位置-站所编码", width = 15)
+    @ApiModelProperty(value = "站点",  required = true)
+    private String stationCode;
+
+    /**位置*/
+    @Excel(name = "故障位置-位置编码", width = 15)
+    @ApiModelProperty(value = "位置")
+    private String stationPositionCode;
+
+    /**故障发生时间*/
+    @Excel(name = "故障发生时间", width = 15, format = "yyyy-MM-dd HH:mm")
+    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm")
+    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm" )
+    @ApiModelProperty(value = "故障发生时间yyyy-MM-dd HH:mm",  required = true)
+    @NotNull(message = "请填写故障发生时间")
+    private Date happenTime;
+
+    /**故障知识分类编码*/
+    @Excel(name = "故障知识分类编码", width = 15)
+    @ApiModelProperty(value = "故障知识分类编码")
+    private String knowledgeBaseTypeCode;
+
+    /**设备类型*/
+    @Excel(name = "设备类型", width = 15)
+    @ApiModelProperty(value = "设备类型")
+    private String deviceTypeCode;
+
+    /**组件编码*/
+    @Excel(name = "组件编码", width = 15)
+    @ApiModelProperty(value = "组件编码")
+    private String materialCode;
+
+    /**故障现象*/
+    @Excel(name = "故障现象", width = 15)
+    @ApiModelProperty(value = "故障现象",  required = true)
+    @NotBlank(message = "请填写故障现象!")
+    @Length(max = 255, message = "故障现象长度不能超过255")
+    private String faultPhenomenon;
+
+    /**故障分析*/
+    @Excel(name = "故障分析", width = 15)
+    @ApiModelProperty(value = "故障分析")
+    private String faultAnalysis;
+
+    /**解决方案*/
+    @Excel(name = "解决方案", width = 15)
+    @ApiModelProperty(value = "解决方案")
+    private String solution;
+
+    /**排查方法*/
+    @Excel(name = "排查方法", width = 15)
+    @ApiModelProperty(value = "排查方法")
+    private String method;
+
+    /**名称*/
+    @Excel(name = "名称", width = 15)
+    @ApiModelProperty(value = "名称")
+    private String name;
+
+    /**地址*/
+    @Excel(name = "地址", width = 15)
+    @ApiModelProperty(value = "地址")
+    private String url;
+
+
+
+}

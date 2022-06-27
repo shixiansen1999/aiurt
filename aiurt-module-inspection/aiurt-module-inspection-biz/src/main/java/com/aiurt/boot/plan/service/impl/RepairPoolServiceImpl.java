@@ -7,6 +7,7 @@ import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.constant.DictConstant;
 import com.aiurt.boot.constant.InspectionConstant;
 import com.aiurt.boot.manager.InspectionManager;
+import com.aiurt.boot.manager.dto.MajorDTO;
 import com.aiurt.boot.plan.dto.*;
 import com.aiurt.boot.plan.entity.*;
 import com.aiurt.boot.plan.mapper.*;
@@ -197,7 +198,7 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
     private List<RepairPoolCodeContent> selectCodeContentList(String id) {
         List<RepairPoolCodeContent> result = repairPoolCodeContentMapper.selectList(
                 new LambdaQueryWrapper<RepairPoolCodeContent>().eq(RepairPoolCodeContent::getRepairPoolCodeId, id).orderByAsc(RepairPoolCodeContent::getSortNo));
-        result.forEach(r->{
+        result.forEach(r -> {
             r.setTypeName(sysBaseAPI.translateDict(DictConstant.INSPECTION_PROJECT, String.valueOf(r.getType())));
             r.setStatusItemName(sysBaseAPI.translateDict(DictConstant.INSPECTION_STATUS_ITEM, String.valueOf(r.getStatusItem())));
         });
@@ -221,7 +222,6 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
     }
 
     /**
-     *
      * @param list
      * @param map
      * @return
@@ -345,13 +345,26 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
     /**
      * 检修详情里的适用专业下拉列表
      *
-     * @param id
+     * @param code
      * @return
      */
     @Override
-    public List<ListDTO> queryMajorList(String id) {
-        return null;
+    public List<MajorDTO> queryMajorList(String code) {
+        List<MajorDTO> result = new ArrayList<>();
+        //根据检修任务id查询专业
+        List<RepairPoolRel> repairPoolRels = relMapper.selectList(new LambdaQueryWrapper<RepairPoolRel>().eq(RepairPoolRel::getRepairPoolCode, code));
+        if (CollUtil.isNotEmpty(repairPoolRels)) {
+            List<String> rid = repairPoolRels.stream().map(RepairPoolRel::getRepairPoolStaId).collect(Collectors.toList());
+            List<RepairPoolCode> repairPoolCodes = repairPoolCodeMapper.selectList(new LambdaQueryWrapper<RepairPoolCode>().in(RepairPoolCode::getId, rid));
+            if (CollUtil.isNotEmpty(repairPoolCodes)) {
+                List<String> majorCode = repairPoolCodes.stream().map(RepairPoolCode::getMajorCode).collect(Collectors.toList());
+                List<String> subSystemCode = repairPoolCodes.stream().map(RepairPoolCode::getSubsystemCode).collect(Collectors.toList());
+            }
+        }
+
+        return result;
     }
+
 
     /**
      * 指派检修任务

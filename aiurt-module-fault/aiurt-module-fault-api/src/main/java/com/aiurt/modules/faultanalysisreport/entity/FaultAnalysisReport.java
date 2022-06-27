@@ -88,7 +88,7 @@ public class FaultAnalysisReport implements Serializable {
     @Excel(name = "故障分类名称", width = 15)
     @ApiModelProperty(value = "故障分类名称")
     @TableField(exist = false)
-    private String faultTypeName;
+    private String faultTypeCode;
 
     /**开始日期*/
     @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")

@@ -1,5 +1,6 @@
 package com.aiurt.boot.plan.controller;
 
+import com.aiurt.boot.manager.dto.MajorDTO;
 import com.aiurt.boot.plan.dto.AssignDTO;
 import com.aiurt.boot.plan.dto.ListDTO;
 import com.aiurt.boot.plan.dto.RepairPoolDetailsDTO;
@@ -167,7 +168,7 @@ public class RepairPoolController extends BaseController<RepairPool, IRepairPool
     }
 
     /**
-     * 检修详情里的适用专业下拉列表
+     * 检修详情里的适用专业和专业子系统级联下拉列表
      *
      * @param id
      * @return
@@ -175,23 +176,12 @@ public class RepairPoolController extends BaseController<RepairPool, IRepairPool
     @AutoLog(value = "检修详情里的适用专业下拉列表")
     @ApiOperation(value = "检修详情里的适用专业下拉列表", notes = "检修详情里的适用专业下拉列表")
     @GetMapping(value = "/queryMajorList")
-    public Result<List<ListDTO>> queryMajorList(@RequestParam @ApiParam(name = "id", required = true, value = "检修计划id") String id) {
-        List<ListDTO> listDTOList = repairPoolService.queryMajorList(id);
+    public Result<List<MajorDTO>> queryMajorList(@RequestParam @ApiParam(name = "code", required = true, value = "检修计划code") String code) {
+        List<MajorDTO> listDTOList = repairPoolService.queryMajorList(code);
         return Result.OK(listDTOList);
     }
 
-    /**
-     * 检修详情里的适用专业子系统下拉列表
-     *
-     * @param id
-     * @return
-     */
-    @AutoLog(value = "检修详情里的适用专业子系统下拉列表")
-    @ApiOperation(value = "检修详情里的适用专业子系统下拉列表", notes = "检修详情里的适用专业子系统下拉列表")
-    @GetMapping(value = "/querySystemList")
-    public Result<List<ListDTO>> querySystemList(@RequestParam @ApiParam(name = "id", required = true, value = "检修计划id") String id) {
-        return null;
-    }
+
 
 
     /**

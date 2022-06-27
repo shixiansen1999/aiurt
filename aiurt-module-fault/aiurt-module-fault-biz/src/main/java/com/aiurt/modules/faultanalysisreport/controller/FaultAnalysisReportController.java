@@ -9,6 +9,9 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
+import com.aiurt.modules.fault.entity.Fault;
+import com.aiurt.modules.fault.service.IFaultService;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.query.QueryGenerator;
 import com.aiurt.common.util.oConvertUtils;
@@ -49,7 +52,8 @@ import com.aiurt.common.aspect.annotation.AutoLog;
 public class FaultAnalysisReportController extends BaseController<FaultAnalysisReport, IFaultAnalysisReportService> {
 	@Autowired
 	private IFaultAnalysisReportService faultAnalysisReportService;
-
+	 @Autowired
+	 private IFaultService faultService;
 	/**
 	 * 分页列表查询
 	 *
@@ -166,5 +170,49 @@ public class FaultAnalysisReportController extends BaseController<FaultAnalysisR
     public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) {
         return super.importExcel(request, response, FaultAnalysisReport.class);
     }
+
+	 /**
+	  * 新增故障分析的故障分页查询
+	  *
+	  * @param fault
+	  * @param pageNo
+	  * @param pageSize
+	  * @param req
+	  * @return
+	  */
+	 @AutoLog(value = "新增故障分析的故障分页查询")
+	 @ApiOperation(value="新增故障分析的故障分页查询", notes="fault-分页列表查询")
+	 @GetMapping(value = "/getFault")
+	 public Result<IPage<Fault>> getFault(Fault fault,
+											   @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
+											   @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
+											   HttpServletRequest req) {
+		 Page<Fault> page = new Page<>(pageNo, pageSize);
+		 IPage<Fault> pageList = faultAnalysisReportService.getFault(page, fault);
+		 return Result.OK(pageList);
+	 }
+
+	 /**
+	  * 新增故障分析的故障详情
+	  *
+	  * @param id
+	  * @param pageNo
+	  * @param pageSize
+	  * @param req
+	  * @return
+	  */
+	 @AutoLog(value = "新增故障分析的故障详情")
+	 @ApiOperation(value="新增故障分析的故障详情", notes="fault-新增故障分析的故障详情")
+	 @GetMapping(value = "/getDetail")
+	 public Result<IPage<Fault>> getDetail(String id,
+										  @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
+										  @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
+										  HttpServletRequest req) {
+		 Page<Fault> page = new Page<>(pageNo, pageSize);
+
+		 return Result.OK();
+	 }
+
+
 
 }

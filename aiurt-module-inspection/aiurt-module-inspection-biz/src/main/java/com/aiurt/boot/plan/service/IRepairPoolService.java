@@ -1,7 +1,7 @@
 package com.aiurt.boot.plan.service;
 
+import com.aiurt.boot.manager.dto.MajorDTO;
 import com.aiurt.boot.plan.dto.AssignDTO;
-import com.aiurt.boot.plan.dto.ListDTO;
 import com.aiurt.boot.plan.dto.RepairPoolDetailsDTO;
 import com.aiurt.boot.plan.dto.RepairStrategyDTO;
 import com.aiurt.boot.plan.entity.RepairPool;
@@ -60,10 +60,10 @@ public interface IRepairPoolService extends IService<RepairPool> {
 
     /**
      * 检修详情里的适用专业下拉列表
-     * @param id
+     * @param code
      * @return
      */
-    List<ListDTO> queryMajorList(String id);
+    List<MajorDTO> queryMajorList(String code);
 
     /**
      * 指派检修任务

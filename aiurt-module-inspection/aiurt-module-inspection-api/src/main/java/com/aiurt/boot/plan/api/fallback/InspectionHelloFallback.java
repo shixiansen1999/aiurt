@@ -1,7 +1,7 @@
-//package com.aiurt.boot.api.fallback;
+//package com.aiurt.boot.plan.api.fallback;
 //
 //import org.springframework.cloud.openfeign.FallbackFactory;
-//import com.aiurt.boot.api.InspectionHelloApi;
+//import com.aiurt.boot.plan.api.InspectionHelloApi;
 //import lombok.Setter;
 //import org.springframework.stereotype.Component;
 //import lombok.extern.slf4j.Slf4j;
