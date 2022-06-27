@@ -59,7 +59,7 @@ public class FaultTypeController extends BaseController<FaultType, IFaultTypeSer
 												  HttpServletRequest req) {
 		QueryWrapper<FaultType> queryWrapper = QueryGenerator.initQueryWrapper(faultType, req.getParameterMap());
 		Page<FaultType> page = new Page<FaultType>(pageNo, pageSize);
-		IPage<FaultType> pageList = faultTypeService.page(page, queryWrapper);
+		IPage<FaultType> pageList = faultTypeService.page(page, queryWrapper.lambda().eq(FaultType::getDelFlag,0));
 		return Result.OK(pageList);
 	}
 
