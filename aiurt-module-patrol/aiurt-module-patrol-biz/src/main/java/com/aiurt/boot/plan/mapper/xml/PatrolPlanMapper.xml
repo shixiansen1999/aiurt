@@ -1,7 +1,65 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.aiurt.boot.plan.mapper.PatrolPlanMapper">
+    <update id="updates" parameterType="java.lang.String">
+        UPDATE (patrol_plan a
+            LEFT JOIN patrol_plan_standard b on b.plan_id =a.id
+            LEFT JOIN patrol_plan_organization c on c.plan_code=a.`code`
+            LEFT JOIN patrol_plan_device d on d.plan_id =a.id
+            LEFT JOIN patrol_plan_station e on e.plan_code = a.`code`
+            LEFT JOIN patrol_plan_strategy f on f.plan_id = a.id
+            )
+        SET a.del_flag = 1 ,b.del_flag=1,c.del_flag=1,d.del_flag=1,e.del_flag=1,f.del_flag=1
+         where a.id= #{id}
+    </update>
 
+    <select id="list" resultType="com.aiurt.boot.plan.dto.PatrolPlanDto">
+        SELECT * FROM ( SELECT a.*, ( SELECT GROUP_CONCAT(e.depart_name) FROM patrol_plan_organization PPO
+        LEFT JOIN sys_depart e ON PPO.organization_code = e.org_code  WHERE a.`code` = PPO.plan_code
+        AND PPO.del_flag = 0   ) AS mechanismName,
+        ( SELECT GROUP_CONCAT(e.org_code) FROM patrol_plan_organization PPO
+        LEFT JOIN sys_depart e ON PPO.organization_code = e.org_code  WHERE a.`code` = PPO.plan_code
+        AND PPO.del_flag = 0   ) AS mechanismCode,
+        c.profession_code,c.subsystem_code,
+        ( SELECT GROUP_CONCAT(f.station_name) FROM  patrol_plan_station d
+        LEFT JOIN cs_station f ON d.station_code = f.station_code
+        WHERE a.`code` = d.plan_code AND d.del_flag = 0 ) AS siteName,
+        ( SELECT GROUP_CONCAT(f.station_code) FROM  patrol_plan_station d
+        LEFT JOIN cs_station f ON d.station_code = f.station_code
+        WHERE a.`code` = d.plan_code AND d.del_flag = 0 ) AS siteCode,
+        csm.major_name as professionName, css.system_name as subsystemName
+        FROM
+        patrol_plan a
+        LEFT JOIN patrol_plan_standard c ON c.plan_id = a.id AND c.del_flag = 0
+        left join cs_major csm on c.profession_code = csm.major_code
+        left join cs_subsystem  css on c.subsystem_code = css.system_code
+        WHERE
+        a.del_flag = 0
+        ) AS abc
+        WHERE
+        1=1
+        <if test="patrolPlan.name !=null ">
+            AND name LIKE CONCAT ('%', #{patrolPlan.name}, '%')
+        </if>
+        <if test="patrolPlan.professionCode !=null ">
+            AND profession_code = #{patrolPlan.professionCode}
+        </if>
+        <if test="patrolPlan.subsystemCode !=null ">
+            AND subsystem_code = #{patrolPlan.subsystemCode}
+        </if>
+        <if test="patrolPlan.code !=null ">
+            AND code = #{patrolPlan.code}
+        </if>
+        <if test="patrolPlan.status !=null ">
+            AND status = #{patrolPlan.status}
+        </if>
+    <if test="patrolPlan.mechanismCode !=null ">
+        AND mechanismCode LIKE CONCAT ('%', #{patrolPlan.mechanismCode}, '%')
+    </if>
+    <if test="patrolPlan.siteCode!=null ">
+        AND siteCode  LIKE CONCAT ('%', #{patrolPlan.siteCode}, '%')
+    </if>
+    </select>
     <select id="getMajorInfoByPlanId" resultType="java.lang.String">
         SELECT DISTINCT
         cm.major_name
@@ -28,5 +86,28 @@
             and pps.plan_id = #{planId}
         </if>
 
+    </select>
+    <select id="selectId" resultType="com.aiurt.boot.plan.dto.PatrolPlanDto">
+        SELECT a.*,( SELECT GROUP_CONCAT(e.depart_name) FROM patrol_plan_organization PPO
+          LEFT JOIN sys_depart e ON PPO.organization_code = e.org_code  WHERE a.`code` = PPO.plan_code
+                      AND PPO.del_flag = 0   ) AS mechanismName,
+               ( SELECT GROUP_CONCAT(f.station_name) FROM  patrol_plan_station d
+                LEFT JOIN cs_station f ON d.station_code = f.station_code
+                 WHERE a.`code` = d.plan_code AND d.del_flag = 0 ) AS siteName,
+               ( SELECT GROUP_CONCAT(e.org_code) FROM patrol_plan_organization PPO
+             LEFT JOIN sys_depart e ON PPO.organization_code = e.org_code
+               WHERE a.`code` = PPO.plan_code AND PPO.del_flag = 0) AS mechanismCode,
+               ( SELECT GROUP_CONCAT(f.station_code) FROM  patrol_plan_station d
+                     LEFT JOIN cs_station f ON d.station_code = f.station_code
+                 WHERE a.`code` = d.plan_code AND d.del_flag = 0 ) AS siteCode,
+               ( SELECT GROUP_CONCAT(d.id) FROM  patrol_standard d
+                LEFT JOIN patrol_plan_standard c on d.`code` =c.standard_code
+                 WHERE c.plan_id =#{id} AND d.del_flag = 0 ) AS ids,
+               b.type as strategyType,b.`week`,b.time,b.start_time as strategyStartTime,b.end_time as strategyEndTime
+        FROM patrol_plan a
+                 LEFT JOIN patrol_plan_strategy b on a.id= b.plan_id AND b.del_flag=0
+        WHERE
+            a.del_flag=0
+          and a.id = #{id}
     </select>
 </mapper>

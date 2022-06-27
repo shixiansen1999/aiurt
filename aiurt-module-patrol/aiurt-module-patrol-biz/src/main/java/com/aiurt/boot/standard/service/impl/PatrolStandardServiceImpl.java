@@ -1,6 +1,7 @@
 package com.aiurt.boot.standard.service.impl;
 
 import com.aiurt.boot.standard.dto.InspectionStandardDto;
+import com.aiurt.boot.standard.dto.PatrolStandardDto;
 import com.aiurt.boot.standard.entity.PatrolStandard;
 import com.aiurt.boot.standard.mapper.PatrolStandardMapper;
 import com.aiurt.boot.standard.service.IPatrolStandardService;
@@ -26,8 +27,8 @@ public class PatrolStandardServiceImpl extends ServiceImpl<PatrolStandardMapper,
     private PatrolStandardMapper patrolStandardMapper;
 
     @Override
-    public IPage<PatrolStandard> pageList(Page page, PatrolStandard patrolStandard) {
-        List<PatrolStandard> page1 = patrolStandardMapper.pageList(page,patrolStandard);
+    public IPage<PatrolStandardDto> pageList(Page page, PatrolStandard patrolStandard) {
+        List<PatrolStandardDto> page1 = patrolStandardMapper.pageList(page,patrolStandard);
         return page.setRecords(page1);
     }
 

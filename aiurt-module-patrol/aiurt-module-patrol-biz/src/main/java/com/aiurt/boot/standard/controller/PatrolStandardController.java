@@ -4,6 +4,8 @@ import java.util.Arrays;
 import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
+import com.aiurt.boot.standard.dto.PatrolStandardDto;
 import org.jeecg.common.api.vo.Result;
 import com.aiurt.boot.standard.entity.PatrolStandard;
 import com.aiurt.boot.standard.service.IPatrolStandardService;
@@ -46,12 +48,12 @@ public class PatrolStandardController extends BaseController<PatrolStandard, IPa
 	//@AutoLog(value = "patrol_standard-分页列表查询")
 	@ApiOperation(value="patrol_standard-分页列表查询", notes="patrol_standard-分页列表查询")
 	@GetMapping(value = "/list")
-	public Result<IPage<PatrolStandard>> queryPageList(PatrolStandard patrolStandard,
-								   @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
-								   @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
-								   HttpServletRequest req) {
-		Page<PatrolStandard> page = new Page<PatrolStandard>(pageNo, pageSize);
-		IPage<PatrolStandard> pageList = patrolStandardService.pageList(page, patrolStandard);
+	public Result<IPage<PatrolStandardDto>> queryPageList(PatrolStandardDto patrolStandard,
+														  @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
+														  @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
+														  HttpServletRequest req) {
+		Page<PatrolStandardDto> page = new Page<PatrolStandardDto>(pageNo, pageSize);
+		IPage<PatrolStandardDto> pageList = patrolStandardService.pageList(page, patrolStandard);
 		return Result.OK(pageList);
 	}
 

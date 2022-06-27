@@ -1,14 +1,15 @@
 package com.aiurt.boot.plan.controller;
 
 import java.util.Arrays;
+import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
+import com.aiurt.boot.plan.dto.PatrolPlanDto;
 import org.jeecg.common.api.vo.Result;
-import org.jeecg.common.system.query.QueryGenerator;
 import com.aiurt.boot.plan.entity.PatrolPlan;
 import com.aiurt.boot.plan.service.IPatrolPlanService;
 
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.extern.slf4j.Slf4j;
@@ -47,41 +48,54 @@ public class PatrolPlanController extends BaseController<PatrolPlan, IPatrolPlan
 	//@AutoLog(value = "patrol_plan-分页列表查询")
 	@ApiOperation(value="patrol_plan-分页列表查询", notes="patrol_plan-分页列表查询")
 	@GetMapping(value = "/list")
-	public Result<IPage<PatrolPlan>> queryPageList(PatrolPlan patrolPlan,
-								   @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
-								   @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
-								   HttpServletRequest req) {
-		QueryWrapper<PatrolPlan> queryWrapper = QueryGenerator.initQueryWrapper(patrolPlan, req.getParameterMap());
-		Page<PatrolPlan> page = new Page<PatrolPlan>(pageNo, pageSize);
-		IPage<PatrolPlan> pageList = patrolPlanService.page(page, queryWrapper);
+	public Result<IPage<PatrolPlanDto>> queryPageList(PatrolPlanDto patrolPlan,
+													  @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
+													  @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
+													  HttpServletRequest req) {
+		Page<PatrolPlanDto> page = new Page<PatrolPlanDto>(pageNo, pageSize);
+		IPage<PatrolPlanDto> pageList = patrolPlanService.pageList(page, patrolPlan);
 		return Result.OK(pageList);
 	}
 
 	/**
 	 *   添加
 	 *
-	 * @param patrolPlan
+	 * @param patrolPlanDto
 	 * @return
 	 */
 	@AutoLog(value = "patrol_plan-添加")
 	@ApiOperation(value="patrol_plan-添加", notes="patrol_plan-添加")
 	@PostMapping(value = "/add")
-	public Result<String> add(@RequestBody PatrolPlan patrolPlan) {
-		patrolPlanService.save(patrolPlan);
+	public Result<String> add(@RequestBody PatrolPlanDto patrolPlanDto) {
+		patrolPlanService.add(patrolPlanDto);
 		return Result.OK("添加成功！");
 	}
-
+	 /**
+	  * 修改状态
+	  * @param id,status
+	  * @return
+	  */
+	 @AutoLog(value = "修改生效状态")
+	 @ApiOperation(value="修改生效状态", notes="修改生效状态")
+	 @PostMapping(value = "/modify")
+	 public Result<String> modify(@RequestParam(name = "id") String id,
+								  @RequestParam(name = "status") Integer status) {
+	 	PatrolPlan patrolPlan =new PatrolPlan();
+	 	patrolPlan.setId(id); patrolPlan.setStatus(status);
+		 patrolPlanService.updateById(patrolPlan);
+		 return Result.OK("修改成功！");
+	 }
 	/**
 	 *  编辑
 	 *
-	 * @param patrolPlan
+	 * @param patrolPlanDto
 	 * @return
 	 */
 	@AutoLog(value = "patrol_plan-编辑")
 	@ApiOperation(value="patrol_plan-编辑", notes="patrol_plan-编辑")
 	@RequestMapping(value = "/edit", method = {RequestMethod.PUT,RequestMethod.POST})
-	public Result<String> edit(@RequestBody PatrolPlan patrolPlan) {
-		patrolPlanService.updateById(patrolPlan);
+	public Result<String> edit(@RequestBody PatrolPlanDto patrolPlanDto) {
+		patrolPlanService.updateById(patrolPlanDto);
 		return Result.OK("编辑成功!");
 	}
 
@@ -95,7 +109,7 @@ public class PatrolPlanController extends BaseController<PatrolPlan, IPatrolPlan
 	@ApiOperation(value="patrol_plan-通过id删除", notes="patrol_plan-通过id删除")
 	@DeleteMapping(value = "/delete")
 	public Result<String> delete(@RequestParam(name="id",required=true) String id) {
-		patrolPlanService.removeById(id);
+		patrolPlanService.delete(id);
 		return Result.OK("删除成功!");
 	}
 
@@ -109,7 +123,10 @@ public class PatrolPlanController extends BaseController<PatrolPlan, IPatrolPlan
 	@ApiOperation(value="patrol_plan-批量删除", notes="patrol_plan-批量删除")
 	@DeleteMapping(value = "/deleteBatch")
 	public Result<String> deleteBatch(@RequestParam(name="ids",required=true) String ids) {
-		this.patrolPlanService.removeByIds(Arrays.asList(ids.split(",")));
+		List<String> id = Arrays.asList(ids.split(","));
+		for (String id1 :id){
+			this.delete(id1);
+		}
 		return Result.OK("批量删除成功!");
 	}
 
@@ -122,12 +139,12 @@ public class PatrolPlanController extends BaseController<PatrolPlan, IPatrolPlan
 	//@AutoLog(value = "patrol_plan-通过id查询")
 	@ApiOperation(value="patrol_plan-通过id查询", notes="patrol_plan-通过id查询")
 	@GetMapping(value = "/queryById")
-	public Result<PatrolPlan> queryById(@RequestParam(name="id",required=true) String id) {
-		PatrolPlan patrolPlan = patrolPlanService.getById(id);
-		if(patrolPlan==null) {
+	public Result<PatrolPlanDto> queryById(@RequestParam(name="id",required=true) String id) {
+		PatrolPlanDto patrolPlanDto = patrolPlanService.selectById(id);
+		if(patrolPlanDto ==null) {
 			return Result.error("未找到对应数据");
 		}
-		return Result.OK(patrolPlan);
+		return Result.OK(patrolPlanDto);
 	}
 
     /**

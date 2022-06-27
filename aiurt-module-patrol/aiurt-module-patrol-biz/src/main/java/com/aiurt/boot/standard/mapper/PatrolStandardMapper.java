@@ -1,6 +1,7 @@
 package com.aiurt.boot.standard.mapper;
 
 import com.aiurt.boot.standard.dto.InspectionStandardDto;
+import com.aiurt.boot.standard.dto.PatrolStandardDto;
 import com.aiurt.boot.standard.entity.PatrolStandard;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -21,7 +22,7 @@ public interface PatrolStandardMapper extends BaseMapper<PatrolStandard> {
      * @param patrolStandard
      * @return
      */
-    List<PatrolStandard> pageList (@Param("page") Page page,@Param("patrolStandard") PatrolStandard patrolStandard);
+    List<PatrolStandardDto> pageList (@Param("page") Page page, @Param("patrolStandard") PatrolStandard patrolStandard);
 
     /**
      * 获取分页

@@ -6,6 +6,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import com.aiurt.boot.standard.entity.PatrolStandard;
+import com.aiurt.boot.standard.mapper.PatrolStandardItemsMapper;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.query.QueryGenerator;
 import com.aiurt.boot.standard.entity.PatrolStandardItems;
@@ -37,7 +38,8 @@ import com.aiurt.common.aspect.annotation.AutoLog;
 public class PatrolStandardItemsController extends BaseController<PatrolStandardItems, IPatrolStandardItemsService> {
 	@Autowired
 	private IPatrolStandardItemsService patrolStandardItemsService;
-
+	@Autowired
+	private PatrolStandardItemsMapper patrolStandardItemsMapper;
 	/**
 	 * 分页列表查询
 	 *
@@ -81,7 +83,7 @@ public class PatrolStandardItemsController extends BaseController<PatrolStandard
 	@ApiOperation(value="patrol_standard_items-添加", notes="patrol_standard_items-添加")
 	@PostMapping(value = "/add")
 	public Result<String> add(@RequestBody PatrolStandardItems patrolStandardItems) {
-		patrolStandardItemsService.save(patrolStandardItems);
+		patrolStandardItemsMapper.insert(patrolStandardItems);
 		return Result.OK("添加成功！");
 	}
 

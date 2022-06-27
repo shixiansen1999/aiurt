@@ -42,6 +42,7 @@ public class PatrolStandardItems implements Serializable {
 	/**巡检项编号*/
 	@Excel(name = "巡检项编号", width = 15)
     @ApiModelProperty(value = "巡检项编号")
+    @TableField(value = "`code`")
     private java.lang.String code;
 	/**巡检项内容*/
 	@Excel(name = "巡检项内容", width = 15)
@@ -62,10 +63,12 @@ public class PatrolStandardItems implements Serializable {
 	/**内容排序*/
 	@Excel(name = "内容排序", width = 15)
     @ApiModelProperty(value = "内容排序")
+    @TableField(value = "`order`")
     private java.lang.Integer order;
 	/**是否为巡检项目：0否 1是*/
 	@Excel(name = "是否为巡检项目：0否 1是", width = 15)
     @ApiModelProperty(value = "是否为巡检项目：0否 1是")
+    @TableField(value = "`check`")
     private java.lang.Integer check;
 	/**数据填写类型：1开关项(即二选一)、2选择项、3输入项*/
 	@Excel(name = "数据填写类型：1开关项(即二选一)、2选择项、3输入项", width = 15)
