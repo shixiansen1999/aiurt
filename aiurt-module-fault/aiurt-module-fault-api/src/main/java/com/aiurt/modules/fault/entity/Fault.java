@@ -103,7 +103,6 @@ public class Fault implements Serializable {
     @Dict(dictTable = "sys_user", dicCode = "username", dicText = "realname")
     private String faultApplicant;
 
-
 	/**报修部门*/
 	@Excel(name = "报修部门", width = 15)
     @ApiModelProperty(value = "报修部门")
@@ -233,6 +232,18 @@ public class Fault implements Serializable {
 	@ApiModelProperty(value = "yn, 是否委外 1:是,0否", required = true)
     @Dict(dicCode = "yn")
 	private Integer isOutsource;
+
+    /**设备编码*/
+    @Excel(name = "设备编码", width = 15)
+    @ApiModelProperty(value = "设备编码", required = true)
+    @TableField(exist = false)
+    private String deviceCode;
+
+    /**设备编码*/
+    @Excel(name = "设备名称", width = 15)
+    @ApiModelProperty(value = "设备名称", required = true)
+    @TableField(exist = false)
+    private String deviceName;
 
 	@ApiModelProperty(value = "作废用户")
 	private String cancelUserName;

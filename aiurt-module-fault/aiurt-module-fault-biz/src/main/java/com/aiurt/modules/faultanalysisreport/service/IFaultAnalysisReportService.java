@@ -1,5 +1,6 @@
 package com.aiurt.modules.faultanalysisreport.service;
 
+import com.aiurt.modules.fault.entity.Fault;
 import com.aiurt.modules.faultanalysisreport.entity.FaultAnalysisReport;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -18,6 +19,16 @@ public interface IFaultAnalysisReportService extends IService<FaultAnalysisRepor
      * @param faultAnalysisReport
      * @return IPage<FaultAnalysisReport>
      */
-    public IPage<FaultAnalysisReport> readAll(Page<FaultAnalysisReport> page, FaultAnalysisReport faultAnalysisReport);
+     IPage<FaultAnalysisReport> readAll(Page<FaultAnalysisReport> page, FaultAnalysisReport faultAnalysisReport);
+
+    /**
+     * 故障选择查询
+     * @param page
+     * @param fault
+     * @return List<Fault>
+     * */
+     IPage<Fault> getFault(Page<Fault> page, Fault fault);
+
+
 
 }
