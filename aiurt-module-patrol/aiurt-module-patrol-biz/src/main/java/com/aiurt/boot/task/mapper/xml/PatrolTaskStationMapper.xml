@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.aiurt.boot.task.mapper.PatrolTaskStationMapper">
 
-    <select id="selectStationByTaskCode" resultType="com.aiurt.boot.task.param.PatrolTaskStationParam">
+    <select id="selectStationByTaskCode" resultType="com.aiurt.boot.task.dto.PatrolTaskStationDTO">
         SELECT
         cs.station_name,
         pts.*

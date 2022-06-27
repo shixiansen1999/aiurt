@@ -1,5 +1,7 @@
 package com.aiurt.boot.task.param;
 
+import com.aiurt.boot.task.dto.PatrolTaskOrganizationDTO;
+import com.aiurt.boot.task.dto.PatrolTaskStationDTO;
 import com.aiurt.boot.task.entity.PatrolTask;
 import com.aiurt.boot.task.entity.PatrolTaskUser;
 import io.swagger.annotations.ApiModelProperty;
@@ -69,13 +71,13 @@ public class PatrolTaskParam extends PatrolTask {
      */
     @Excel(name = "组织机构信息", width = 15)
     @ApiModelProperty(value = "组织机构信息")
-    private List<PatrolTaskOrganizationParam> departInfo;
+    private List<PatrolTaskOrganizationDTO> departInfo;
     /**
      * 站点信息
      */
     @Excel(name = "站点信息", width = 15)
     @ApiModelProperty(value = "站点信息")
-    private List<PatrolTaskStationParam> stationInfo;
+    private List<PatrolTaskStationDTO> stationInfo;
 
     /**
      * 巡检人员信息

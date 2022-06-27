@@ -2,7 +2,7 @@ package com.aiurt.boot.task.service.impl;
 
 import com.aiurt.boot.task.entity.PatrolTaskStation;
 import com.aiurt.boot.task.mapper.PatrolTaskStationMapper;
-import com.aiurt.boot.task.param.PatrolTaskStationParam;
+import com.aiurt.boot.task.dto.PatrolTaskStationDTO;
 import com.aiurt.boot.task.service.IPatrolTaskStationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -24,7 +24,7 @@ public class PatrolTaskStationServiceImpl extends ServiceImpl<PatrolTaskStationM
     private PatrolTaskStationMapper patrolTaskStationMapper;
 
     @Override
-    public List<PatrolTaskStationParam> selectStationByTaskCode(String taskCode) {
+    public List<PatrolTaskStationDTO> selectStationByTaskCode(String taskCode) {
         return patrolTaskStationMapper.selectStationByTaskCode(taskCode);
     }
 }

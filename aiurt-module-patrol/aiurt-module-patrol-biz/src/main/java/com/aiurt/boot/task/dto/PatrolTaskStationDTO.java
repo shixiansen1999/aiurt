@@ -1,4 +1,4 @@
-package com.aiurt.boot.task.param;
+package com.aiurt.boot.task.dto;
 
 import com.aiurt.boot.task.entity.PatrolTaskStation;
 import io.swagger.annotations.ApiModelProperty;
@@ -14,7 +14,7 @@ import org.jeecgframework.poi.excel.annotation.Excel;
 @EqualsAndHashCode(callSuper = false)
 @NoArgsConstructor
 @AllArgsConstructor
-public class PatrolTaskStationParam extends PatrolTaskStation {
+public class PatrolTaskStationDTO extends PatrolTaskStation {
     /**
      * 站点名称
      */

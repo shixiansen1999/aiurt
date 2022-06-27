@@ -12,9 +12,9 @@ import com.aiurt.boot.task.entity.PatrolTask;
 import com.aiurt.boot.task.entity.PatrolTaskDevice;
 import com.aiurt.boot.task.entity.PatrolTaskUser;
 import com.aiurt.boot.task.mapper.*;
-import com.aiurt.boot.task.param.PatrolTaskOrganizationParam;
+import com.aiurt.boot.task.dto.PatrolTaskOrganizationDTO;
 import com.aiurt.boot.task.param.PatrolTaskParam;
-import com.aiurt.boot.task.param.PatrolTaskStationParam;
+import com.aiurt.boot.task.dto.PatrolTaskStationDTO;
 import com.aiurt.boot.task.service.IPatrolTaskService;
 import com.aiurt.common.exception.AiurtBootException;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -82,11 +82,11 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         wrapper.lambda().eq(PatrolTaskParam::getId, patrolTaskParam.getId());
         PatrolTaskParam taskParam = Optional.ofNullable(patrolTaskMapper.selectBasicInfo(patrolTaskParam)).orElseGet(PatrolTaskParam::new);
         // 组织机构信息
-        List<PatrolTaskOrganizationParam> organizationInfo = Optional.ofNullable(patrolTaskOrganizationMapper.selectOrgByTaskCode(taskParam.getCode()))
+        List<PatrolTaskOrganizationDTO> organizationInfo = Optional.ofNullable(patrolTaskOrganizationMapper.selectOrgByTaskCode(taskParam.getCode()))
                 .orElseGet(Collections::emptyList)
                 .stream().collect(Collectors.toList());
         // 站点信息
-        List<PatrolTaskStationParam> stationInfo = Optional.ofNullable(patrolTaskStationMapper.selectStationByTaskCode(taskParam.getCode()))
+        List<PatrolTaskStationDTO> stationInfo = Optional.ofNullable(patrolTaskStationMapper.selectStationByTaskCode(taskParam.getCode()))
                 .orElseGet(Collections::emptyList)
                 .stream().collect(Collectors.toList());
         // 巡检用户

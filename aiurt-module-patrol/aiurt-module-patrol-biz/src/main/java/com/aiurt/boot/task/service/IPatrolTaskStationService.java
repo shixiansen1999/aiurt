@@ -1,7 +1,7 @@
 package com.aiurt.boot.task.service;
 
 import com.aiurt.boot.task.entity.PatrolTaskStation;
-import com.aiurt.boot.task.param.PatrolTaskStationParam;
+import com.aiurt.boot.task.dto.PatrolTaskStationDTO;
 import com.baomidou.mybatisplus.extension.service.IService;
 
 import java.util.List;
@@ -20,5 +20,5 @@ public interface IPatrolTaskStationService extends IService<PatrolTaskStation> {
      * @param taskCode
      * @return
      */
-    List<PatrolTaskStationParam> selectStationByTaskCode(String taskCode);
+    List<PatrolTaskStationDTO> selectStationByTaskCode(String taskCode);
 }

@@ -1,9 +1,8 @@
 package com.aiurt.boot.task.service;
 
 import com.aiurt.boot.task.entity.PatrolTaskOrganization;
-import com.aiurt.boot.task.param.PatrolTaskOrganizationParam;
+import com.aiurt.boot.task.dto.PatrolTaskOrganizationDTO;
 import com.baomidou.mybatisplus.extension.service.IService;
-import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
@@ -20,5 +19,5 @@ public interface IPatrolTaskOrganizationService extends IService<PatrolTaskOrgan
      * @param taskCode
      * @return
      */
-    List<PatrolTaskOrganizationParam> selectOrgByTaskCode(String taskCode);
+    List<PatrolTaskOrganizationDTO> selectOrgByTaskCode(String taskCode);
 }
