@@ -7,6 +7,12 @@ import com.aiurt.modules.device.entity.Device;
 import com.aiurt.modules.device.service.IDeviceService;
 import com.aiurt.modules.major.entity.CsMajor;
 import com.aiurt.modules.major.service.ICsMajorService;
+import com.aiurt.modules.position.entity.CsLine;
+import com.aiurt.modules.position.entity.CsStation;
+import com.aiurt.modules.position.entity.CsStationPosition;
+import com.aiurt.modules.position.service.ICsLineService;
+import com.aiurt.modules.position.service.ICsStationPositionService;
+import com.aiurt.modules.position.service.ICsStationService;
 import com.aiurt.modules.subsystem.entity.CsSubsystem;
 import com.aiurt.modules.subsystem.service.ICsSubsystemService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -22,7 +28,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -39,6 +48,16 @@ public class CommonCtroller {
 
     @Autowired
     private IDeviceService deviceService;
+
+    @Autowired
+    private ICsLineService  lineService;
+
+    @Autowired
+    private ICsStationService stationService;
+
+    @Autowired
+    private ICsStationPositionService stationPositionService;
+
 
     public Result<List<Device>> query() {
         return Result.OK();
@@ -137,6 +156,65 @@ public class CommonCtroller {
             return table;
         }).collect(Collectors.toList());
 
+        return Result.OK(list);
+    }
+
+
+    /**
+     * 根据个人权限获取位置树
+     * @return
+     */
+    @GetMapping("/position/queryTreeByAuth")
+    @ApiOperation("根据个人权限获取位置树")
+    public Result<List<SelectTable>> queryPositionTree() {
+        List<CsLine> lineList = lineService.getBaseMapper().selectList(null);
+
+        Map<String, String> lineMap = lineList.stream().collect(Collectors.toMap(CsLine::getLineCode, CsLine::getLineName, (t1, t2) -> t2));
+
+        LambdaQueryWrapper<CsStation> stationWrapper = new LambdaQueryWrapper<>();
+
+        List<CsStation> stationList = stationService.getBaseMapper().selectList(stationWrapper);
+
+        Map<String, List<CsStation>> stationMap = stationList.stream().collect(Collectors.groupingBy(CsStation::getLineCode));
+
+        LambdaQueryWrapper<CsStationPosition> positionWrapper = new LambdaQueryWrapper<>();
+
+        List<CsStationPosition> positionList = stationPositionService.getBaseMapper().selectList(positionWrapper);
+
+        Map<String, List<CsStationPosition>> positionMap = positionList.stream().collect(Collectors.groupingBy(CsStationPosition::getStaionCode));
+
+        Map<String, List<SelectTable>> lv3 = new HashMap<>();
+        positionMap.keySet().stream().forEach(stationCode->{
+            List<CsStationPosition> stationPositionList = positionMap.get(stationCode);
+            List<SelectTable> tableList = stationPositionList.stream().map(csStationPosition -> {
+                SelectTable table = new SelectTable();
+                table.setLabel(csStationPosition.getPositionName());
+                table.setValue(csStationPosition.getCode());
+                return table;
+            }).collect(Collectors.toList());
+            lv3.put(stationCode, tableList);
+        });
+
+        List<SelectTable> list = new ArrayList<>();
+        stationMap.keySet().stream().forEach(lineCode->{
+            SelectTable table = new SelectTable();
+            table.setLabel(lineMap.get(lineCode));
+            table.setValue(lineCode);
+
+            //
+            List<CsStation> csStationList = stationMap.get(lineCode);
+
+            List<SelectTable> lv2List = csStationList.stream().map(csStation -> {
+                SelectTable selectTable = new SelectTable();
+                selectTable.setValue(csStation.getStationCode());
+                selectTable.setLabel(csStation.getStationName());
+                selectTable.setChildren(lv3.get(csStation.getStationCode()));
+                return selectTable;
+            }).collect(Collectors.toList());
+
+            table.setChildren(lv2List);
+            list.add(table);
+        });
         return Result.OK(list);
     }
 

@@ -4,9 +4,6 @@ import com.aiurt.modules.device.entity.Device;
 import com.baomidou.mybatisplus.extension.service.IService;
 import org.jeecg.common.api.vo.Result;
 
-import java.util.List;
-import java.util.Map;
-
 /**
  * @Description: 设备
  * @Author: swsc

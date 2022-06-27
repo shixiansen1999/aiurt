@@ -1,13 +1,10 @@
 package com.aiurt.modules.device.controller;
 
 import com.aiurt.common.aspect.annotation.AutoLog;
-import com.aiurt.common.exception.AiurtBootException;
-import com.aiurt.modules.device.entity.Device;
 import com.aiurt.modules.device.entity.DeviceAssembly;
 import com.aiurt.modules.device.service.IDeviceAssemblyService;
 import com.aiurt.modules.device.service.IDeviceService;
 import com.aiurt.modules.material.entity.MaterialBase;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -52,10 +49,10 @@ public class DeviceAssemblyController {
     @ApiOperation(value = "设备组件-分页列表查询", notes = "设备组件-分页列表查询")
     @GetMapping(value = "/list")
     public Result<IPage<DeviceAssembly>> queryPageList(DeviceAssembly deviceAssembly,
-                                               @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
-                                               @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize,
-                                               @RequestParam(name = "deviceCode", required = false) Integer deviceCode,
-                                               HttpServletRequest req) {
+                                                       @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
+                                                       @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize,
+                                                       @RequestParam(name = "deviceCode", required = false) Integer deviceCode,
+                                                       HttpServletRequest req) {
         Result<IPage<DeviceAssembly>> result = new Result<IPage<DeviceAssembly>>();
         Map<String, String[]> parameterMap = req.getParameterMap();
         QueryWrapper<DeviceAssembly> queryWrapper = QueryGenerator.initQueryWrapper(deviceAssembly, parameterMap);

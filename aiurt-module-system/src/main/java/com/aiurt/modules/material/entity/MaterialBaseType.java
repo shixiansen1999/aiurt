@@ -1,7 +1,6 @@
 package com.aiurt.modules.material.entity;
 
 import com.aiurt.common.aspect.annotation.Dict;
-import com.aiurt.modules.device.entity.DeviceAssembly;
 import com.baomidou.mybatisplus.annotation.*;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
