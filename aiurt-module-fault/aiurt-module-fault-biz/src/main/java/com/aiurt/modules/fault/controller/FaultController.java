@@ -137,6 +137,11 @@ public class FaultController extends BaseController<Fault, IFaultService> {
         return Result.OK(fault);
     }
 
+    /**
+     * 故障指派
+     * @param assignDTO
+     * @return
+     */
     @AutoLog(value = "故障指派")
     @ApiOperation(value = "故障指派", notes = "故障指派")
     @PutMapping("/assign")
@@ -145,6 +150,11 @@ public class FaultController extends BaseController<Fault, IFaultService> {
         return Result.OK("故障指派成功！");
     }
 
+    /**
+     * 领取故障工单
+     * @param assignDTO
+     * @return
+     */
     @AutoLog(value = "领取故障工单")
     @ApiOperation(value = "领取故障工单", notes = "领取故障工单")
     @PutMapping("/receive")
@@ -153,8 +163,13 @@ public class FaultController extends BaseController<Fault, IFaultService> {
         return Result.OK("领取故障工单成功");
     }
 
+    /**
+     *
+     * @param code
+     * @return
+     */
     @AutoLog(value = "接收指派")
-    @ApiOperation(value = "领取故障工单", notes = "领取故障工单")
+    @ApiOperation(value = "接收指派", notes = "接收指派")
     @PutMapping("/receiveAssignment")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "code", value = "故障编码", required = true, paramType = "query")
