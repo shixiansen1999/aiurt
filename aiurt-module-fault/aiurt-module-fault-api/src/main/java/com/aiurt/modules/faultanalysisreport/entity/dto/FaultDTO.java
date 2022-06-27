@@ -1,6 +1,8 @@
 package com.aiurt.modules.faultanalysisreport.entity.dto;
 
 import com.aiurt.common.aspect.annotation.Dict;
+import com.aiurt.modules.faultanalysisreport.entity.FaultAnalysisReport;
+import com.aiurt.modules.faultknowledgebase.entity.FaultKnowledgeBase;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
@@ -23,7 +25,6 @@ public class FaultDTO {
     @TableId(type = IdType.ASSIGN_ID)
     @ApiModelProperty(value = "主键")
     private String id;
-
 
     /**故障报修编码*/
     @Excel(name = "故障报修编码", width = 15)
@@ -69,21 +70,6 @@ public class FaultDTO {
     @NotNull(message = "请填写故障发生时间")
     private Date happenTime;
 
-    /**故障知识分类编码*/
-    @Excel(name = "故障知识分类编码", width = 15)
-    @ApiModelProperty(value = "故障知识分类编码")
-    private String knowledgeBaseTypeCode;
-
-    /**设备类型*/
-    @Excel(name = "设备类型", width = 15)
-    @ApiModelProperty(value = "设备类型")
-    private String deviceTypeCode;
-
-    /**组件编码*/
-    @Excel(name = "组件编码", width = 15)
-    @ApiModelProperty(value = "组件编码")
-    private String materialCode;
-
     /**故障现象*/
     @Excel(name = "故障现象", width = 15)
     @ApiModelProperty(value = "故障现象",  required = true)
@@ -91,31 +77,10 @@ public class FaultDTO {
     @Length(max = 255, message = "故障现象长度不能超过255")
     private String faultPhenomenon;
 
-    /**故障分析*/
-    @Excel(name = "故障分析", width = 15)
-    @ApiModelProperty(value = "故障分析")
-    private String faultAnalysis;
+    @ApiModelProperty(value = "故障分析",  required = true)
+    private FaultAnalysisReport faultAnalysisReport;
 
-    /**解决方案*/
-    @Excel(name = "解决方案", width = 15)
-    @ApiModelProperty(value = "解决方案")
-    private String solution;
-
-    /**排查方法*/
-    @Excel(name = "排查方法", width = 15)
-    @ApiModelProperty(value = "排查方法")
-    private String method;
-
-    /**名称*/
-    @Excel(name = "名称", width = 15)
-    @ApiModelProperty(value = "名称")
-    private String name;
-
-    /**地址*/
-    @Excel(name = "地址", width = 15)
-    @ApiModelProperty(value = "地址")
-    private String url;
-
-
+    @ApiModelProperty(value = "故障知识库",  required = true)
+    private FaultKnowledgeBase faultKnowledgeBase;
 
 }

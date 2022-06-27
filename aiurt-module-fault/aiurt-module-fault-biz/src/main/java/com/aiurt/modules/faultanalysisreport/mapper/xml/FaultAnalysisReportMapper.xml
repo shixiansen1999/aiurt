@@ -4,10 +4,9 @@
 
 <select id="readAll" resultType="com.aiurt.modules.faultanalysisreport.entity.FaultAnalysisReport">
     SELECT
-            f.state,
+            far.approved_result,
             f.`code`,
             f.fault_phenomenon,
-            far.fault_analysis,
             far.solution,
             far.create_time
     FROM
@@ -45,8 +44,7 @@
     f.happen_time,
     ( select group_concat(d.name) from
     (select device_code from fault_device where fault_code = f.`code`) a
-    left join device d on d.`code` = a.device_code
-    where a.device_code like concat('%',#{condition.deviceCode},'%')) as deviceName,
+    left join device d on d.`code` = a.device_code ) as deviceName,
     frr.end_time,
     frr.hangup_reason
     FROM
@@ -63,5 +61,28 @@
     <if test="condition.stationCode != null and condition.stationCode != ''">
         and f.station_code = #{condition.stationCode}
     </if>
+    <if test="condition.deviceCode != null and condition.deviceCode != ''">
+        and f.`code` in ((select fault_code from fault_device where device_code like concat('%',#{condition.deviceCode},'%')))
+    </if>
 </select>
+
+<select id="getDetail" resultType="com.aiurt.modules.faultanalysisreport.entity.dto.FaultDTO">
+    SELECT
+    f.id,
+    f.`code`,
+    f.sub_system_code,
+    f.fault_applicant,
+    ( select group_concat(d.name) from
+    (select device_code from fault_device where fault_code = f.`code`) a
+    left join device d on d.`code` = a.device_code) as deviceName,
+    f.station_code,
+    f.station_position_code,
+    f.fault_phenomenon,
+    f.happen_time
+    FROM
+    fault f
+    left join fault_analysis_report far on far.fault_code = f.`code`
+    where
+    f.id = #{id}
+    </select>
 </mapper>

@@ -3,6 +3,7 @@ package com.aiurt.modules.faultanalysisreport.mapper;
 import java.util.List;
 
 import com.aiurt.modules.fault.entity.Fault;
+import com.aiurt.modules.faultanalysisreport.entity.dto.FaultDTO;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.aiurt.modules.faultanalysisreport.entity.FaultAnalysisReport;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
@@ -34,5 +35,11 @@ public interface FaultAnalysisReportMapper extends BaseMapper<FaultAnalysisRepor
      * */
     List<Fault> getFault(@Param("page")Page<Fault> page, @Param("condition")Fault condition);
 
+    /**
+     * 提交中的故障分析的故障详情
+     * @param id
+     * @return FaultDTO
+     */
+    FaultDTO getDetail(@Param("id")String id);
 
 }

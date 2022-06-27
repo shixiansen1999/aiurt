@@ -12,6 +12,9 @@ import javax.servlet.http.HttpServletResponse;
 
 import com.aiurt.modules.fault.entity.Fault;
 import com.aiurt.modules.fault.service.IFaultService;
+import com.aiurt.modules.faultanalysisreport.entity.dto.FaultDTO;
+import com.aiurt.modules.faultknowledgebase.entity.FaultKnowledgeBase;
+import com.aiurt.modules.faultknowledgebase.service.IFaultKnowledgeBaseService;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.query.QueryGenerator;
 import com.aiurt.common.util.oConvertUtils;
@@ -52,6 +55,8 @@ import com.aiurt.common.aspect.annotation.AutoLog;
 public class FaultAnalysisReportController extends BaseController<FaultAnalysisReport, IFaultAnalysisReportService> {
 	@Autowired
 	private IFaultAnalysisReportService faultAnalysisReportService;
+	 @Autowired
+	 private IFaultKnowledgeBaseService faultKnowledgeBaseService;
 	 @Autowired
 	 private IFaultService faultService;
 	/**
@@ -193,26 +198,32 @@ public class FaultAnalysisReportController extends BaseController<FaultAnalysisR
 	 }
 
 	 /**
-	  * 新增故障分析的故障详情
+	  * 提交中的故障分析的故障详情
 	  *
 	  * @param id
-	  * @param pageNo
-	  * @param pageSize
-	  * @param req
 	  * @return
 	  */
-	 @AutoLog(value = "新增故障分析的故障详情")
-	 @ApiOperation(value="新增故障分析的故障详情", notes="fault-新增故障分析的故障详情")
+	 @AutoLog(value = "提交中的故障分析的故障详情")
+	 @ApiOperation(value="提交中的故障分析的故障详情", notes="fault-提交中的故障分析的故障详情")
 	 @GetMapping(value = "/getDetail")
-	 public Result<IPage<Fault>> getDetail(String id,
-										  @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
-										  @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
-										  HttpServletRequest req) {
-		 Page<Fault> page = new Page<>(pageNo, pageSize);
-
-		 return Result.OK();
+	 public Result<FaultDTO> getDetail(String id) {
+		 FaultDTO detail = faultAnalysisReportService.getDetail(id);
+		 return Result.OK(detail);
 	 }
 
-
-
+	/**
+	 * 提交故障分析
+	 * @param faultDTO
+	 * @return
+	 */
+	@AutoLog(value = "提交故障分析")
+	@ApiOperation(value="提交故障分析", notes="fault-提交故障分析")
+	@PostMapping(value = "/addDetail")
+	public Result<String> addDetail(@RequestBody FaultDTO faultDTO) {
+		FaultAnalysisReport faultAnalysisReport = faultDTO.getFaultAnalysisReport();
+		FaultKnowledgeBase faultKnowledgeBase = faultDTO.getFaultKnowledgeBase();
+		faultAnalysisReportService.save(faultAnalysisReport);
+		faultKnowledgeBaseService.save(faultKnowledgeBase);
+		return Result.OK("提交成功");
+	}
 }

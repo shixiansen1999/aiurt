@@ -2,6 +2,7 @@ package com.aiurt.modules.faultanalysisreport.service;
 
 import com.aiurt.modules.fault.entity.Fault;
 import com.aiurt.modules.faultanalysisreport.entity.FaultAnalysisReport;
+import com.aiurt.modules.faultanalysisreport.entity.dto.FaultDTO;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
@@ -28,6 +29,13 @@ public interface IFaultAnalysisReportService extends IService<FaultAnalysisRepor
      * @return List<Fault>
      * */
      IPage<Fault> getFault(Page<Fault> page, Fault fault);
+
+    /**
+     * 提交中的故障分析的故障详情
+     * @param id
+     * @return FaultDTO
+     */
+    FaultDTO getDetail(String id);
 
 
 

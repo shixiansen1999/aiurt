@@ -71,6 +71,35 @@ public class FaultAnalysisReport implements Serializable {
 	@Excel(name = "删除标志", width = 15)
     @ApiModelProperty(value = "删除标志")
     private Integer delFlag;
+    /**附件*/
+    @Excel(name = "附件", width = 15)
+    @ApiModelProperty(value = "附件")
+    private java.lang.String filePath;
+    /**审核人*/
+    @Excel(name = "审核人", width = 15)
+    @ApiModelProperty(value = "审核人")
+    private java.lang.String approvedUserName;
+    /**审核结果*/
+    @Excel(name = "审核结果", width = 15)
+    @ApiModelProperty(value = "审核结果")
+    private java.lang.Integer approvedResult;
+    /**审核时间*/
+    @Excel(name = "审核时间", width = 15, format = "yyyy-MM-dd")
+    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
+    @DateTimeFormat(pattern="yyyy-MM-dd")
+    @ApiModelProperty(value = "审核时间")
+    private java.util.Date approvedTime;
+    /**审核说明*/
+    @Excel(name = "审核说明", width = 15)
+    @ApiModelProperty(value = "审核说明")
+    private java.lang.String approvedRemark;
+    /**浏览次数*/
+    @Excel(name = "浏览次数", width = 15)
+    @ApiModelProperty(value = "浏览次数")
+    private java.lang.Integer scanSum;
+    /**故障知识库id*/
+    @ApiModelProperty(value = "故障知识库id")
+    private String faultKnowledgeBaseId;
 
     /**故障现象*/
     @Excel(name = "故障现象", width = 15)
@@ -101,4 +130,6 @@ public class FaultAnalysisReport implements Serializable {
     @DateTimeFormat(pattern="yyyy-MM-dd")
     @ApiModelProperty(value = "创建日期")
     private Date endTime;
+
+
 }
