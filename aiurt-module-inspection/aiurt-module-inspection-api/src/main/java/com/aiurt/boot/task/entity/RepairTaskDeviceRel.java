@@ -76,6 +76,13 @@ public class RepairTaskDeviceRel implements Serializable {
     @ApiModelProperty(value = "检修时长(单位分钟)")
     private java.lang.Integer duration;
 
+    /**提交时间(yyyy-MM-dd HH:mm:ss)*/
+    @Excel(name = "提交时间(yyyy-MM-dd HH:mm:ss)", width = 15, format = "yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
+    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
+    @ApiModelProperty(value = "提交时间(yyyy-MM-dd HH:mm:ss)")
+    private java.util.Date submitTime;
+
 	/**是否已提交，0未提交1已提交*/
 	@Excel(name = "是否已提交，0未提交1已提交", width = 15)
     @ApiModelProperty(value = "是否已提交，0未提交1已提交")
