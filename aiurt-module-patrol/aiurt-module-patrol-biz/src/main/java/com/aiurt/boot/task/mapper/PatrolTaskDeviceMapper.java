@@ -22,8 +22,8 @@ public interface PatrolTaskDeviceMapper extends BaseMapper<PatrolTaskDevice> {
     /**
      * app-获取巡检清单列表
      * @param pageList
-     * @param id
+     * @param patrolTaskDeviceDTO
      * @return
      */
-    List<PatrolTaskDeviceDTO> getPatrolTaskDeviceList(@Param("pageList") Page<PatrolTaskDeviceDTO> pageList, @Param("id") String id);
+    List<PatrolTaskDeviceDTO> getPatrolTaskDeviceList(@Param("pageList") Page<PatrolTaskDeviceDTO> pageList, @Param("patrolTaskDeviceDTO") PatrolTaskDeviceDTO patrolTaskDeviceDTO);
 }

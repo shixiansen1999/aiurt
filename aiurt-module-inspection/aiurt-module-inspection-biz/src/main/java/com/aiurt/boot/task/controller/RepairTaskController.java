@@ -1,5 +1,6 @@
 package com.aiurt.boot.task.controller;
 
+import com.aiurt.boot.manager.dto.EquipmentOverhaulDTO;
 import com.aiurt.boot.manager.dto.MajorDTO;
 import com.aiurt.boot.task.entity.RepairTask;
 import com.aiurt.boot.task.dto.RepairTaskDTO;
@@ -24,12 +25,12 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * @Description: repair_task
+ * @Description: 检修任务
  * @Author: aiurt
  * @Date:   2022-06-22
  * @Version: V1.0
  */
-@Api(tags="repair_task")
+@Api(tags="检修任务")
 @RestController
 @RequestMapping("/task/repairTask")
 @Slf4j
@@ -106,11 +107,24 @@ public class RepairTaskController extends BaseController<RepairTask, IRepairTask
 	 @ApiOperation(value="检修任务-专业和专业子系统下拉列表", notes="检修任务-专业和专业子系统下拉列表")
 	 @GetMapping(value = "/selectMajorCodeList")
 	 public Result<?> selectMajorCodeList(@RequestParam(name="id",required=true) String id
-
 	 ){
 		 List<MajorDTO> majorDTOList = repairTaskService.selectMajorCodeList(id);
 		 return Result.OK(majorDTOList);
 	 }
+
+	/**
+	 * 专业和专业子系统下拉列表
+	 * @param id
+	 * @return
+	 */
+	@AutoLog(value = "检修任务-设备类型和检修标准下拉列表")
+	@ApiOperation(value="检修任务-设备类型和检修标准下拉列表", notes="检修任务-设备类型和检修标准下拉列表")
+	@GetMapping(value = "/selectEquipmentOverhaulList")
+	public Result<?> selectEquipmentOverhaulList(@RequestParam(name="id",required=true) String id
+	){
+		EquipmentOverhaulDTO equipmentOverhaulDTO = repairTaskService.selectEquipmentOverhaulList(id);
+		return Result.OK(equipmentOverhaulDTO);
+	}
 
 	/**
 	 *   添加

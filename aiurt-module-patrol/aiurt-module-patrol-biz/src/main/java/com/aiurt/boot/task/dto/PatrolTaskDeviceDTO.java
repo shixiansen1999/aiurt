@@ -44,6 +44,10 @@ public class PatrolTaskDeviceDTO {
     @Excel(name = "设备code", width = 15)
     @ApiModelProperty(value = "设备code")
     private java.lang.String deviceCode;
+    /**设备位置*/
+    @Excel(name = "设备位置", width = 15)
+    @ApiModelProperty(value = "设备位置")
+    private java.lang.String positionName;
     /**检查时间*/
     @Excel(name = "检查时间", width = 15, format = "yyyy-MM-dd")
     @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")

@@ -4,8 +4,8 @@ import cn.hutool.core.collection.CollectionUtil;
 import com.aiurt.boot.constant.DictConstant;
 import com.aiurt.boot.constant.InspectionConstant;
 import com.aiurt.boot.manager.InspectionManager;
-import com.aiurt.boot.manager.dto.MajorDTO;
-import com.aiurt.boot.manager.dto.SubsystemDTO;
+import com.aiurt.boot.manager.dto.*;
+import com.aiurt.boot.plan.dto.RepairDeviceDTO;
 import com.aiurt.boot.plan.dto.StationDTO;
 import com.aiurt.boot.task.entity.RepairTask;
 import com.aiurt.boot.task.dto.RepairTaskDTO;
@@ -112,6 +112,14 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
             //子系统
             e.setSystemName(manager.translateMajor(Arrays.asList(e.getSystemCode()),InspectionConstant.SUBSYSTEM));
 
+            //根据设备编码翻译设备名称和设备类型名称
+            List<RepairDeviceDTO> repairDeviceDTOList = manager.queryDeviceByCodes(Arrays.asList(e.getEquipmentCode()));
+            repairDeviceDTOList.forEach(q->{
+                //设备名称
+                e.setEquipmentName(q.getName());
+                //设备类型名称
+                e.setDeviceTypeName(q.getDeviceTypeName());
+            });
             //检修人名称
             if (e.getOverhaulId()!=null){
                 LoginUser userById = sysBaseAPI.getUserById(e.getOverhaulId());
@@ -141,5 +149,27 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
             });
         }
         return majorDTOList;
+    }
+
+    @Override
+    public EquipmentOverhaulDTO selectEquipmentOverhaulList(String id) {
+        //根据检修任务id查询设备
+        List<RepairTaskDTO> repairTaskDTOList = repairTaskMapper.selectCodeList(id);
+        List<String> deviceCodeList = new ArrayList<>();
+        List<OverhaulDTO> overhaulDTOList = new ArrayList<>();
+        repairTaskDTOList.forEach(e->{
+            String deviceTypeCode = e.getDeviceTypeCode();
+            deviceCodeList.add(deviceTypeCode);
+            OverhaulDTO overhaulDTO = new OverhaulDTO();
+            overhaulDTO.setStandardId(e.getStandardId());
+            overhaulDTO.setOverhaulStandardName(e.getOverhaulStandardName());
+            overhaulDTOList.add(overhaulDTO);
+        });
+
+        List<EquipmentDTO> equipmentDTOList = repairTaskMapper.queryNameByCode(deviceCodeList);
+        EquipmentOverhaulDTO equipmentOverhaulDTO = new EquipmentOverhaulDTO();
+        equipmentOverhaulDTO.setEquipmentDTOList(equipmentDTOList);
+        equipmentOverhaulDTO.setOverhaulDTOList(overhaulDTOList);
+        return equipmentOverhaulDTO;
     }
 }

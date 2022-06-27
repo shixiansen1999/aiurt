@@ -1,5 +1,7 @@
 package com.aiurt.boot.task.mapper;
 
+import com.aiurt.boot.manager.dto.EquipmentDTO;
+import com.aiurt.boot.manager.dto.EquipmentOverhaulDTO;
 import com.aiurt.boot.manager.dto.MajorDTO;
 import com.aiurt.boot.manager.dto.SubsystemDTO;
 import com.aiurt.boot.plan.dto.StationDTO;
@@ -64,4 +66,12 @@ public interface RepairTaskMapper extends BaseMapper<RepairTask> {
      * @return
      */
     List<SubsystemDTO> translateSubsystem(String code);
+
+
+    /**
+     * 根据设备类型编码集合查询设备类型信息
+     * @param codeList 设备类型编码
+     * @return
+     */
+    List<EquipmentDTO> queryNameByCode(List<String> codeList);
 }

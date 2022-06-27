@@ -1,5 +1,6 @@
 package com.aiurt.boot.task.service;
 
+import com.aiurt.boot.manager.dto.EquipmentOverhaulDTO;
 import com.aiurt.boot.manager.dto.MajorDTO;
 import com.aiurt.boot.task.entity.RepairTask;
 import com.aiurt.boot.task.dto.RepairTaskDTO;
@@ -42,4 +43,10 @@ public interface IRepairTaskService extends IService<RepairTask> {
     List<MajorDTO> selectMajorCodeList(String id);
 
 
+    /**
+     * 查询专业，专业子系统的信息
+     * @param id
+     * @return
+     */
+    EquipmentOverhaulDTO selectEquipmentOverhaulList(String id);
 }

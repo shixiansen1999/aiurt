@@ -30,8 +30,9 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
         return patrolTaskDeviceMapper.selectBillInfo(patrolTaskDeviceParam);
     }
     @Override
-    public Page<PatrolTaskDeviceDTO> getPatrolTaskDeviceList(Page<PatrolTaskDeviceDTO> pageList, String id) {
-        List<PatrolTaskDeviceDTO> patrolTaskDeviceList =patrolTaskDeviceMapper.getPatrolTaskDeviceList(pageList,id);
+    public Page<PatrolTaskDeviceDTO> getPatrolTaskDeviceList(Page<PatrolTaskDeviceDTO> pageList, PatrolTaskDeviceDTO patrolTaskDeviceDTO) {
+        //传taskId
+        List<PatrolTaskDeviceDTO> patrolTaskDeviceList =patrolTaskDeviceMapper.getPatrolTaskDeviceList(pageList,patrolTaskDeviceDTO);
         return pageList.setRecords(patrolTaskDeviceList);
     }
 }

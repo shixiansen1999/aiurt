@@ -25,8 +25,8 @@ public interface IPatrolTaskDeviceService extends IService<PatrolTaskDevice> {
     /**
      * app-巡检清单列表
      * @param pageList
-     * @param id
+     * @param patrolTaskDeviceDTO
      * @return
      */
-    Page<PatrolTaskDeviceDTO> getPatrolTaskDeviceList(Page<PatrolTaskDeviceDTO> pageList, String id);
+    Page<PatrolTaskDeviceDTO> getPatrolTaskDeviceList(Page<PatrolTaskDeviceDTO> pageList, PatrolTaskDeviceDTO patrolTaskDeviceDTO);
 }
