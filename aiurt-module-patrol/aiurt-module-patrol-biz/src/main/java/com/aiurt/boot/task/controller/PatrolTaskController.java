@@ -72,9 +72,14 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
 
     @ApiOperation(value = "PC巡检任务池详情-巡检工单", notes = "PC巡检任务池详情-巡检工单")
     @RequestMapping(value = "/billInfo", method = {RequestMethod.GET, RequestMethod.POST})
-    public Result<?> selectBillInfo(PatrolTaskDeviceParam patrolTaskDeviceParam, HttpServletRequest req) {
-        List<PatrolTaskDeviceParam> taskDevice = patrolTaskDeviceService.selectBillInfo(patrolTaskDeviceParam);
-        return Result.OK(taskDevice);
+    public Result<?> selectBillInfo(PatrolTaskDeviceParam patrolTaskDeviceParam,
+                                    @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
+                                    @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize,
+                                    HttpServletRequest req) {
+        Page<PatrolTaskDeviceParam> page = new Page<>(pageNo, pageSize);
+        IPage<PatrolTaskDeviceParam> taskDevicePageList = patrolTaskDeviceService.selectBillInfo(page,patrolTaskDeviceParam);
+//        List<PatrolTaskDeviceParam> taskDevice = patrolTaskDeviceService.selectBillInfo(patrolTaskDeviceParam);
+        return Result.OK(taskDevicePageList);
     }
 
     /**
@@ -248,31 +253,34 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
 
     /**
      * app巡检任务-驳回
+     *
      * @return
      */
     @AutoLog(value = "patrol_task- app巡检任务-驳回")
-    @ApiOperation(value="patrol_task- app巡检任务-驳回", notes="patrol_task- app巡检任务-驳回")
+    @ApiOperation(value = "patrol_task- app巡检任务-驳回", notes = "patrol_task- app巡检任务-驳回")
     @PostMapping(value = "/patrolTaskReject")
-    public Result<?>  patrolTaskReject(String id,String back_reason) {
-        LambdaUpdateWrapper<PatrolTask> queryWrapper= new LambdaUpdateWrapper<>();
-        queryWrapper.set(PatrolTask::getStatus,5).set(PatrolTask::getRemark,back_reason).eq(PatrolTask::getId,id);
+    public Result<?> patrolTaskReject(String id, String back_reason) {
+        LambdaUpdateWrapper<PatrolTask> queryWrapper = new LambdaUpdateWrapper<>();
+        queryWrapper.set(PatrolTask::getStatus, 5).set(PatrolTask::getRemark, back_reason).eq(PatrolTask::getId, id);
         patrolTaskService.update(queryWrapper);
         return Result.OK("驳回成功");
     }
 
     /**
      * app巡检任务-通过
+     *
      * @return
      */
     @AutoLog(value = "patrol_task- app巡检任务-通过")
-    @ApiOperation(value="patrol_task- app巡检任务-通过", notes="patrol_task- app巡检任务-通过")
+    @ApiOperation(value = "patrol_task- app巡检任务-通过", notes = "patrol_task- app巡检任务-通过")
     @PostMapping(value = "/patrolTaskPass")
-    public Result<?>  patrolTaskPass(String id,String back_reason) {
-        LambdaUpdateWrapper<PatrolTask> queryWrapper= new LambdaUpdateWrapper<>();
-        queryWrapper.set(PatrolTask::getStatus,7).set(PatrolTask::getRemark,back_reason).eq(PatrolTask::getId,id);
+    public Result<?> patrolTaskPass(String id, String back_reason) {
+        LambdaUpdateWrapper<PatrolTask> queryWrapper = new LambdaUpdateWrapper<>();
+        queryWrapper.set(PatrolTask::getStatus, 7).set(PatrolTask::getRemark, back_reason).eq(PatrolTask::getId, id);
         patrolTaskService.update(queryWrapper);
         return Result.OK("通过成功");
     }
+
     /**
      * 导出excel
      *

@@ -3,6 +3,7 @@ package com.aiurt.boot.task.service;
 import com.aiurt.boot.task.dto.PatrolTaskDeviceDTO;
 import com.aiurt.boot.task.entity.PatrolTaskDevice;
 import com.aiurt.boot.task.param.PatrolTaskDeviceParam;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 
@@ -21,7 +22,8 @@ public interface IPatrolTaskDeviceService extends IService<PatrolTaskDevice> {
      * @param patrolTaskDeviceParam
      * @return
      */
-    List<PatrolTaskDeviceParam> selectBillInfo(PatrolTaskDeviceParam patrolTaskDeviceParam);
+    IPage<PatrolTaskDeviceParam> selectBillInfo(Page<PatrolTaskDeviceParam> page, PatrolTaskDeviceParam patrolTaskDeviceParam);
+
     /**
      * app-巡检清单列表
      * @param pageList
