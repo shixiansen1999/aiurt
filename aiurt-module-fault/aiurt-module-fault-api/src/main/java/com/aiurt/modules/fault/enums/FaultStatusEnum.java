@@ -15,7 +15,7 @@ public enum  FaultStatusEnum {
     APPROVAL_REJECT("2", "审批已驳回", 2),
 
     /**
-     * 审批通过
+     * 审批通过，待指派
      */
     APPROVAL_PASS("3", "审批通过",3),
 
@@ -28,6 +28,7 @@ public enum  FaultStatusEnum {
      * 已领取
      */
     RECEIVE("5","领取",5),
+
     /**
      * 接收指派
      */

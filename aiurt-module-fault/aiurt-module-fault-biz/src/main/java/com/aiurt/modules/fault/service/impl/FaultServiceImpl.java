@@ -3,6 +3,7 @@ package com.aiurt.modules.fault.service.impl;
 
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.modules.fault.dto.*;
 import com.aiurt.modules.fault.entity.Fault;
@@ -58,13 +59,20 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         builder.append(majorCode).append(DateUtil.format(new Date(), "yyyyMMddHHmm"));
         fault.setCode(builder.toString());
 
-
         // 接报人
         fault.setReceiveTime(new Date());
         fault.setReceiveUserName(user.getUsername());
 
         //todo 自检自修
-        fault.setStatus(1);
+        String faultModeCode = fault.getFaultModeCode();
+
+        if (StrUtil.equalsIgnoreCase(faultModeCode, "1")) {
+            fault.setStatus(FaultStatusEnum.REPAIR.getStatus());
+
+            //todo 需要给班组长发送消息
+        }else {
+            fault.setStatus(FaultStatusEnum.NEW_FAULT.getStatus());
+        }
 
         // 保存故障
         save(fault);
@@ -250,23 +258,50 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
      */
     @Override
     public void receiveAssignment(String code) {
-        // 创建维修记录
+        LoginUser loginUser = checkLogin();
+
+        Fault fault = isExist(code);
+
+        fault.setStatus(FaultStatusEnum.RECEIVE_ASSIGN.getStatus());
+
+        updateById(fault);
+
+        saveLog(loginUser, "接收指派", code, FaultStatusEnum.RECEIVE_ASSIGN.getStatus());
+        //todo 创建维修记录
     }
 
 
+    /**
+     * 拒绝接收指派
+     * @param refuseAssignmentDTO
+     */
     @Override
     public void refuseAssignment(RefuseAssignmentDTO refuseAssignmentDTO) {
+        LoginUser loginUser = checkLogin();
 
+        Fault fault = isExist(refuseAssignmentDTO.getFaultCode());
+
+        fault.setStatus(FaultStatusEnum.APPROVAL_PASS.getStatus());
+
+        updateById(fault);
+
+        // 设置状态
+        saveLog(loginUser, "拒绝接收指派", refuseAssignmentDTO.getFaultCode(), FaultStatusEnum.APPROVAL_PASS.getStatus());
     }
 
+    /**
+     * 开始维修
+     * @param code
+     */
     @Override
     public void startRepair(String code) {
         LoginUser user = checkLogin();
 
         Fault fault = isExist(code);
         // 开始维修时间
+        fault.setStatus(FaultStatusEnum.REPAIR.getStatus());
         //
-        saveLog(user, "申请挂起", code, FaultStatusEnum.REPAIR.getStatus());
+        saveLog(user, "开始维修", code, FaultStatusEnum.REPAIR.getStatus());
     }
 
     /**
