@@ -78,7 +78,6 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
                                     HttpServletRequest req) {
         Page<PatrolTaskDeviceParam> page = new Page<>(pageNo, pageSize);
         IPage<PatrolTaskDeviceParam> taskDevicePageList = patrolTaskDeviceService.selectBillInfo(page,patrolTaskDeviceParam);
-//        List<PatrolTaskDeviceParam> taskDevice = patrolTaskDeviceService.selectBillInfo(patrolTaskDeviceParam);
         return Result.OK(taskDevicePageList);
     }
 
