@@ -145,18 +145,23 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
         //根据检修任务id查询专业
         List<RepairTaskDTO> repairTaskDTOList = repairTaskMapper.selectCodeList(id);
         List<String> majorCodes1 = new ArrayList<>();
+        List<String> systemCode = new ArrayList<>();
         if (CollectionUtil.isNotEmpty(repairTaskDTOList)){
             repairTaskDTOList.forEach(e->{
                 String majorCode = e.getMajorCode();
+                String systemCode1 = e.getSystemCode();
                 majorCodes1.add(majorCode);
+                systemCode.add(systemCode1);
             });
         }
         //根据专业编码查询对应的专业子系统
         List<MajorDTO> majorDTOList = repairTaskMapper.translateMajor(majorCodes1);
         if (CollectionUtil.isNotEmpty(majorDTOList)){
             majorDTOList.forEach(q -> {
-                List<SubsystemDTO> subsystemDTOList = repairTaskMapper.translateSubsystem(q.getMajorCode());
-                q.setSubsystemDTOList(subsystemDTOList);
+                systemCode.forEach(o->{
+                    List<SubsystemDTO> subsystemDTOList = repairTaskMapper.translateSubsystem(q.getMajorCode(),o);
+                    q.setSubsystemDTOList(subsystemDTOList);
+                });
             });
         }
         return majorDTOList;
@@ -231,7 +236,22 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
     private List<RepairTaskResult> selectCodeContentList(String id) {
         List<RepairTaskResult> repairTaskResults1 = repairTaskMapper.selectSingle(id,null);
         repairTaskResults1.forEach(r -> {
-
+            //检修结果
+            r.setStatusName(sysBaseAPI.translateDict(DictConstant.OVERHAUL_RESULT, String.valueOf(r.getStatus())));
+            //备注
+            if (r.getUnNote() ==null){
+                r.setUnNote("无");
+            }
+            //检修值
+            if(r.getStatusItem()==1){
+                r.setInspeciontValueName(null);
+            }
+            if(r.getStatusItem()==2){
+                r.setInspeciontValueName(sysBaseAPI.translateDict(r.getDictCode(), String.valueOf(r.getInspeciontValue())));
+            }
+            if(r.getStatusItem()==3){
+                r.setInspeciontValueName(r.getNote());
+            }
         });
         return treeFirst(repairTaskResults1);
     }

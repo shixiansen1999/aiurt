@@ -87,10 +87,20 @@ public class RepairTaskResult implements Serializable {
 	@Excel(name = "检修结果 1.正常 2.异常", width = 15)
     @ApiModelProperty(value = "检修结果 1.正常 2.异常")
     private java.lang.Integer status;
+
+    /**检修结果名称*/
+    @TableField(exist = false)
+    @ApiModelProperty(value = "检修结果名称")
+    private String statusName;
 	/**检测值*/
 	@Excel(name = "检测值", width = 15)
     @ApiModelProperty(value = "检测值")
     private java.lang.Integer inspeciontValue;
+
+    /**检测值名称*/
+    @TableField(exist = false)
+    @ApiModelProperty(value = "检测值名称")
+    private String inspeciontValueName;
 	/**输入项填写内容，status_item为3时此项必填*/
 	@Excel(name = "输入项填写内容，status_item为3时此项必填", width = 15)
     @ApiModelProperty(value = "输入项填写内容，status_item为3时此项必填")

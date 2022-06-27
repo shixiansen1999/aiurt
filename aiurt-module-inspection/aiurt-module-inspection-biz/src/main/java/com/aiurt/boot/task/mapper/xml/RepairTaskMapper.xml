@@ -51,6 +51,7 @@
     <select id="selectTasklet" resultType="com.aiurt.boot.task.dto.RepairTaskDTO">
            SELECT
 	           t1.id as taskId,
+               t1.code as taskCode,
                t2.id as deviceId,
                t3.id as standardId,
                t4.id as resultId,
@@ -141,7 +142,8 @@
         from cs_subsystem
         where
             del_flag = 0
-            and major_code = #{code}
+            and major_code = #{majorCode}
+            and system_code = #{systemCode}
     </select>
 
     <select id="queryNameByCode" resultType="com.aiurt.boot.manager.dto.EquipmentDTO">

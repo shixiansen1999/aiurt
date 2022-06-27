@@ -64,10 +64,11 @@ public interface RepairTaskMapper extends BaseMapper<RepairTask> {
 
     /**
      * 翻译子系统信息
-     * @param code
+     * @param majorCode
+     *  @param systemCode
      * @return
      */
-    List<SubsystemDTO> translateSubsystem(String code);
+    List<SubsystemDTO> translateSubsystem(@Param("majorCode")String majorCode,@Param("systemCode")String systemCode);
 
 
     /**
