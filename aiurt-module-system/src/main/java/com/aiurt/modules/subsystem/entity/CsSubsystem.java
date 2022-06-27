@@ -79,10 +79,14 @@ public class CsSubsystem implements Serializable {
 	/**更新人*/
     @ApiModelProperty(value = "更新人")
     private String updateBy;
-    /**子系统人员*/
-    @ApiModelProperty(value = "子系统人员")
+    /**子系统人员账号id*/
+    @ApiModelProperty(value = "子系统人员账号id")
     @TableField(exist = false)
-    private List<CsSubsystemUser> systemUserList;
+    private String systemUserList;
+    /**子系统人员名称*/
+    @ApiModelProperty(value = "子系统人员名称")
+    @TableField(exist = false)
+    private String systemUserName;
     /**子系统人员*/
     @ApiModelProperty(value = "子系统下的物资分类")
     @TableField(exist = false)

@@ -12,6 +12,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import com.aiurt.common.aspect.annotation.AutoLog;
+import com.aiurt.modules.device.entity.Device;
+import com.aiurt.modules.device.service.IDeviceService;
 import com.aiurt.modules.major.entity.CsMajor;
 import com.aiurt.modules.position.entity.CsLine;
 import com.aiurt.modules.position.entity.CsStation;
@@ -24,6 +26,7 @@ import com.aiurt.modules.position.service.ICsStationService;
 import com.aiurt.modules.subsystem.entity.CsSubsystem;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.query.QueryGenerator;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -62,6 +65,10 @@ public class CsStationPositionController  {
 	private CsLineMapper csLineMapper;
 	@Autowired
 	private CsStationMapper csStationMapper;
+	@Autowired
+	private ISysBaseAPI sysBaseAPI;
+	@Autowired
+	private IDeviceService deviceService;
 	 /**
 	  * 位置管理树
 	  *
@@ -140,6 +147,9 @@ public class CsStationPositionController  {
 								   HttpServletRequest req) {
 		Page<CsStationPosition> page = new Page<CsStationPosition>(pageNo, pageSize);
 		List<CsStationPosition> list = csStationPositionService.readAll(page,csStationPosition);
+		list.forEach(position -> {
+			position.setPositionType_dictText(sysBaseAPI.translateDict("station_level",position.getPositionType()+""));
+		});
 		/*//查询所有一级
 		List<CsLine> lineList = csLineService.list(new LambdaQueryWrapper<CsLine>().eq(CsLine::getDelFlag,0).orderByAsc(CsLine::getSort));
 		//查询所有二级
@@ -224,6 +234,15 @@ public class CsStationPositionController  {
 	@ApiOperation(value="位置管理通过id删除", notes="位置管理通过id删除")
 	@DeleteMapping(value = "/delete")
 	public Result<?> delete(@RequestParam(name="id",required=true) String id) {
+		CsStationPosition csStationPosition = csStationPositionService.getById(id);
+		//判断设备主数据是否使用
+		LambdaQueryWrapper<Device> deviceWrapper =  new LambdaQueryWrapper<Device>();
+		deviceWrapper.eq(Device::getPositionCode,csStationPosition.getPositionCode());
+		deviceWrapper.eq(Device::getDelFlag,0);
+		List<Device> deviceList = deviceService.list(deviceWrapper);
+		if(!deviceList.isEmpty()){
+			return Result.error("该位置信息被设备主数据使用中，无法删除");
+		}
 		csStationPositionService.removeById(id);
 		return Result.OK("删除成功!");
 	}

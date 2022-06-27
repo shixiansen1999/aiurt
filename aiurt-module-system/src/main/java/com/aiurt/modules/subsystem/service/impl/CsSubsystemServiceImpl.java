@@ -6,6 +6,10 @@ import com.aiurt.modules.subsystem.entity.CsSubsystemUser;
 import com.aiurt.modules.subsystem.mapper.CsSubsystemMapper;
 import com.aiurt.modules.subsystem.mapper.CsSubsystemUserMapper;
 import com.aiurt.modules.subsystem.service.ICsSubsystemService;
+import com.aiurt.modules.system.entity.SysUser;
+import com.aiurt.modules.system.service.ISysUserService;
+import com.aiurt.modules.system.service.impl.SysUserServiceImpl;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.jeecg.common.api.vo.Result;
@@ -30,6 +34,8 @@ public class CsSubsystemServiceImpl extends ServiceImpl<CsSubsystemMapper, CsSub
     private CsSubsystemUserMapper csSubsystemUserMapper;
     @Autowired
     private ISysBaseAPI sysBaseAPI;
+    @Autowired
+    private ISysUserService sysUserService;
     /**
      * 添加
      *
@@ -84,7 +90,7 @@ public class CsSubsystemServiceImpl extends ServiceImpl<CsSubsystemMapper, CsSub
         nameWrapper.eq("major_code", csSubsystem.getMajorCode());
         nameWrapper.eq("system_name", csSubsystem.getSystemName());
         List<CsSubsystem> nameList = csSubsystemMapper.selectList(nameWrapper);
-        if (!nameList.isEmpty()) {
+        if (!nameList.isEmpty() && !list.get(0).getId().equals(csSubsystem.getId())) {
             return Result.error("子系统名称重复，请重新填写！");
         }
         csSubsystemMapper.updateById(csSubsystem);
@@ -94,11 +100,19 @@ public class CsSubsystemServiceImpl extends ServiceImpl<CsSubsystemMapper, CsSub
     }
     public void insertSystemUser(CsSubsystem csSubsystem){
         if(null!=csSubsystem.getSystemUserList()){
-            csSubsystem.getSystemUserList().forEach(systemUser -> {
+            String[] arr = csSubsystem.getSystemUserList().split(",");
+            for(String userName :arr){
+                CsSubsystemUser systemUser = new CsSubsystemUser();
                 systemUser.setSubsystemId(csSubsystem.getId()+"");
-                systemUser.setUsername(sysBaseAPI.getUserById(systemUser.getUserId()).getUsername());
+                systemUser.setUsername(userName);
+                LambdaQueryWrapper<SysUser> queryWrapper = new LambdaQueryWrapper<>();
+                queryWrapper.in(SysUser::getUsername, userName);
+                List<SysUser> userList = sysUserService.list(queryWrapper);
+                if(!userList.isEmpty()){
+                    systemUser.setUserId(userList.get(0).getId());
+                }
                 csSubsystemUserMapper.insert(systemUser);
-            });
+            }
         }
     }
 }

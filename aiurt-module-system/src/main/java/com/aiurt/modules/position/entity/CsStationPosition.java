@@ -85,6 +85,11 @@ public class CsStationPosition implements Serializable {
     @ApiModelProperty(value = "位置类型(9:室/10:支柱)")
     @Dict(dicCode = "station_level_three")
     private Integer positionType;
+    /**用于手动翻译*/
+    @Dict(dicCode = "station_level")
+	@TableField(exist = false)
+    private String positionType_dictText;
+
 	/**距离首站/站点位置(单位：m)*/
 	@Excel(name = "距离首站/站点位置(单位：m)", width = 15)
     @ApiModelProperty(value = "距离首站/站点位置(单位：m)")

@@ -10,10 +10,14 @@ import java.net.URLDecoder;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.aiurt.modules.device.entity.Device;
+import com.aiurt.modules.device.service.IDeviceService;
 import com.aiurt.modules.position.entity.CsLine;
 import com.aiurt.modules.position.entity.CsStation;
 import com.aiurt.modules.position.entity.CsStationPosition;
+import com.aiurt.modules.position.service.ICsStationPositionService;
 import com.aiurt.modules.position.service.ICsStationService;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -51,7 +55,10 @@ import com.aiurt.common.aspect.annotation.AutoLog;
 public class CsStationController extends BaseController<CsStation, ICsStationService> {
 	@Autowired
 	private ICsStationService csStationService;
-
+	@Autowired
+	private ICsStationPositionService csStationPositionService;
+	 @Autowired
+	 private IDeviceService deviceService;
 	/**
 	 * 分页列表查询
 	 *
@@ -129,6 +136,23 @@ public class CsStationController extends BaseController<CsStation, ICsStationSer
 	@ApiOperation(value="cs_station-通过id删除", notes="cs_station-通过id删除")
 	@DeleteMapping(value = "/delete")
 	public Result<String> delete(@RequestParam(name="id",required=true) String id) {
+		CsStationPosition csStationPosition = csStationPositionService.getById(id);
+		//判断三级是否使用
+		LambdaQueryWrapper<CsStationPosition> wrapper =  new LambdaQueryWrapper<CsStationPosition>();
+		wrapper.eq(CsStationPosition::getStaionCode,csStationPosition.getStaionCode());
+		wrapper.eq(CsStationPosition::getDelFlag,0);
+		List<CsStationPosition> list = csStationPositionService.list(wrapper);
+		if(!list.isEmpty()){
+			return Result.error("该位置信息正在使用中，无法删除");
+		}
+		//判断设备主数据是否使用
+		LambdaQueryWrapper<Device> deviceWrapper =  new LambdaQueryWrapper<Device>();
+		deviceWrapper.eq(Device::getPositionCode,csStationPosition.getStaionCode());
+		deviceWrapper.eq(Device::getDelFlag,0);
+		List<Device> deviceList = deviceService.list(deviceWrapper);
+		if(!deviceList.isEmpty()){
+			return Result.error("该位置信息被设备主数据使用中，无法删除");
+		}
 		csStationService.removeById(id);
 		return Result.OK("删除成功!");
 	}

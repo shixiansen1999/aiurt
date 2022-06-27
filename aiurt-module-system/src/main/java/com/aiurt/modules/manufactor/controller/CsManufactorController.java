@@ -11,9 +11,14 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import com.aiurt.common.aspect.annotation.AutoLog;
+import com.aiurt.modules.device.entity.Device;
+import com.aiurt.modules.device.service.IDeviceService;
 import com.aiurt.modules.manufactor.entity.CsManufactor;
 import com.aiurt.modules.manufactor.service.ICsManufactorService;
+import com.aiurt.modules.material.entity.MaterialBase;
+import com.aiurt.modules.material.service.IMaterialBaseService;
 import com.aiurt.modules.subsystem.entity.CsSubsystem;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.query.QueryGenerator;
 
@@ -46,7 +51,10 @@ import io.swagger.annotations.ApiOperation;
 public class CsManufactorController  {
 	@Autowired
 	private ICsManufactorService csManufactorService;
-
+	@Autowired
+	private IDeviceService deviceService;
+	@Autowired
+	private IMaterialBaseService materialBaseService;
 	/**
 	 * 分页列表查询
 	 *
@@ -115,6 +123,22 @@ public class CsManufactorController  {
 	@DeleteMapping(value = "/delete")
 	public Result<?> delete(@RequestParam(name="id",required=true) String id) {
 		CsManufactor csManufactor = csManufactorService.getById(id);
+		//判断设备主数据是否使用
+		LambdaQueryWrapper<Device> deviceWrapper =  new LambdaQueryWrapper<Device>();
+		deviceWrapper.eq(Device::getManufactorCode,csManufactor.getCode());
+		deviceWrapper.eq(Device::getDelFlag,0);
+		List<Device> deviceList = deviceService.list(deviceWrapper);
+		if(!deviceList.isEmpty()){
+			return Result.error("该位置信息被设备主数据使用中，无法删除");
+		}
+		//判断物资主数据是否使用
+		LambdaQueryWrapper<MaterialBase> materWrapper =  new LambdaQueryWrapper<MaterialBase>();
+		materWrapper.eq(MaterialBase::getManufactorCode,csManufactor.getCode());
+		materWrapper.eq(MaterialBase::getDelFlag,0);
+		List<MaterialBase> materList = materialBaseService.list(materWrapper);
+		if(!materList.isEmpty()){
+			return Result.error("该位置信息被物资主数据使用中，无法删除");
+		}
 		csManufactor.setDelFlag(1);
 		csManufactorService.updateById(csManufactor);
 		return Result.OK("删除成功!");
@@ -126,7 +150,7 @@ public class CsManufactorController  {
 	 * @param ids
 	 * @return
 	 */
-	/*@AutoLog(value = "厂商信息批量删除")
+	@AutoLog(value = "厂商信息批量删除")
 	@ApiOperation(value="厂商信息批量删除", notes="厂商信息批量删除")
 	@DeleteMapping(value = "/deleteBatch")
 	public Result<?> deleteBatch(@RequestParam(name="ids",required=true) String ids) {
@@ -134,7 +158,7 @@ public class CsManufactorController  {
 			delete(id);
 		});
 		return Result.OK("批量删除成功!");
-	}*/
+	}
 
 	/**
 	 * 通过id查询

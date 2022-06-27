@@ -16,7 +16,7 @@
         <where>
             <if test="position.positionType != null  and position.positionType != ''"> and t.line_type = #{position.positionType}</if>
             <if test="position.positionName != null  and position.positionName != ''"> and t.line_name = #{position.positionName}</if>
-
+            <if test="position.code != null  and position.code != ''"> and t.line_code = #{position.code}</if>
             and t.del_flag = 0
         </where>
         UNION
@@ -52,7 +52,7 @@
         <where>
             <if test="position.positionType != null  and position.positionType != ''"> and t2.position_type = #{position.positionType}</if>
             <if test="position.positionName != null  and position.positionName != ''"> and t2.position_name = #{position.positionName}</if>
-            <if test="position.code != null  and position.code != ''"> and (t2.line_code = #{position.code} or t2.station_code = #{position.code} or t2.position_code = #{position.code})</if>
+            <if test="position.code != null  and position.code != ''"> and (t2.line_code = #{position.code} or  t2.staion_code = #{position.code} or t2.position_code = #{position.code})</if>
             and t2.del_flag = 0
         </where>
     </select>

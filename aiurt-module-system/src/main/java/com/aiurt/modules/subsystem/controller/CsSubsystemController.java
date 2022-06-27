@@ -14,20 +14,27 @@ import javax.servlet.http.HttpServletResponse;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.modules.major.entity.CsMajor;
 import com.aiurt.modules.major.service.ICsMajorService;
+import com.aiurt.modules.material.entity.MaterialBaseType;
+import com.aiurt.modules.material.service.IMaterialBaseTypeService;
 import com.aiurt.modules.subsystem.entity.CsSubsystem;
 import com.aiurt.modules.subsystem.entity.CsSubsystemUser;
 import com.aiurt.modules.subsystem.mapper.CsSubsystemUserMapper;
 import com.aiurt.modules.subsystem.service.ICsSubsystemService;
+import com.aiurt.modules.system.entity.SysUser;
+import com.aiurt.modules.system.service.ISysUserService;
+import com.aiurt.modules.system.service.impl.SysUserServiceImpl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.commons.lang.StringUtils;
 import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.query.QueryGenerator;
 
 import lombok.extern.slf4j.Slf4j;
 
+import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -53,8 +60,14 @@ public class CsSubsystemController  {
 	private ICsSubsystemService csSubsystemService;
 	@Autowired
 	private CsSubsystemUserMapper csSubsystemUserMapper;
-	 @Autowired
-	 private ICsMajorService csMajorService;
+	@Autowired
+	private ICsMajorService csMajorService;
+	@Autowired
+	private ISysUserService sysUserService;
+	@Autowired
+	private ISysBaseAPI sysBaseAPI;
+	@Autowired
+	private IMaterialBaseTypeService materialBaseTypeService;
 
 	 /**
 	  * 专业子系统树
@@ -118,7 +131,7 @@ public class CsSubsystemController  {
 	 * @return
 	 */
 	//@AutoLog(value = "子系统分页列表查询")
-	@ApiOperation(value="子系统分页列表查询", notes="子系统分页列表查询")
+	/*@ApiOperation(value="子系统分页列表查询", notes="子系统分页列表查询")
 	@GetMapping(value = "/list")
 	public Result<?> queryPageList(CsSubsystem csSubsystem,
 								   @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
@@ -127,22 +140,83 @@ public class CsSubsystemController  {
 		QueryWrapper<CsSubsystem> queryWrapper = QueryGenerator.initQueryWrapper(csSubsystem, req.getParameterMap());
 		Page<CsSubsystem> page = new Page<CsSubsystem>(pageNo, pageSize);
 		IPage<CsSubsystem> pageList = csSubsystemService.page(page, queryWrapper.eq("del_flag",0));
+		pageList.getRecords().forEach(system->{
+			LambdaQueryWrapper<CsSubsystemUser> userQueryWrapper = new LambdaQueryWrapper<>();
+			userQueryWrapper.eq(CsSubsystemUser::getSubsystemId,system.getId());
+			List<CsSubsystemUser> userList = csSubsystemUserMapper.selectList(userQueryWrapper);
+			String realNames = "";
+			String userNames = "";
+			if(!userList.isEmpty()){
+				for(CsSubsystemUser systemUser:userList){
+					userNames += systemUser.getUsername() + ",";
+					LoginUser user = sysBaseAPI.getUserById(systemUser.getUserId()+"");
+				 	if(null!=user){
+						realNames += user.getRealname() + ",";
+					}
+				}
+			}
+            if(!realNames.equals("")){
+				system.setSystemUserName(realNames.substring(0,realNames.length()-1));
+			}
+			if(!userNames.equals("")){
+				system.setSystemUserList(userNames.substring(0,userNames.length()-1));
+			}
+		});
 		return Result.OK(pageList);
-	}
+	}*/
 
 	 @ApiOperation(value="子系统列表查询", notes="子系统列表查询")
 	 @GetMapping(value = "/selectList")
 	 public Result<?> selectlist(
 									@RequestParam(name="majorCode", required = false) String majorCode,
-									HttpServletRequest req) {
+									@RequestParam(name="systemName", required = false) String systemName,
+									HttpServletRequest req,
+									@RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
+									@RequestParam(name="pageSize", defaultValue="10") Integer pageSize) {
 		 QueryWrapper<CsSubsystem> queryWrapper = new QueryWrapper<>();
 		 if( majorCode != null && !"".equals(majorCode) ){
 			 queryWrapper.eq("major_code",majorCode);
 		 }
+		 if( systemName != null && !"".equals(systemName) ){
+			 queryWrapper.like("system_name",systemName);
+		 }
 		 queryWrapper.eq("del_flag",0);
 		 queryWrapper.orderByDesc("create_time");
 		 List<CsSubsystem> pageList = csSubsystemService.list(queryWrapper);
-		 return Result.OK(pageList);
+		 Page<CsSubsystem> page = new Page<CsSubsystem>(pageNo, pageSize);
+		 if(pageList.isEmpty()){
+			 QueryWrapper<CsSubsystem> wrapper = new QueryWrapper<>();
+			 if( majorCode != null && !"".equals(majorCode) ){
+				 wrapper.eq("system_code",majorCode);
+			 }
+			 wrapper.eq("del_flag",0);
+			 wrapper.orderByDesc("create_time");
+			 pageList = csSubsystemService.list(wrapper);
+		 }
+		 pageList.forEach(system->{
+			 LambdaQueryWrapper<CsSubsystemUser> userQueryWrapper = new LambdaQueryWrapper<>();
+			 userQueryWrapper.eq(CsSubsystemUser::getSubsystemId,system.getId());
+			 List<CsSubsystemUser> userList = csSubsystemUserMapper.selectList(userQueryWrapper);
+			 String realNames = "";
+			 String userNames = "";
+			 if(!userList.isEmpty()){
+				 for(CsSubsystemUser systemUser:userList){
+					 userNames += systemUser.getUsername() + ",";
+					 LoginUser user = sysBaseAPI.getUserById(systemUser.getUserId()+"");
+					 if(null!=user){
+						 realNames += user.getRealname() + ",";
+					 }
+				 }
+			 }
+			 if(!realNames.equals("")){
+				 system.setSystemUserName(realNames.substring(0,realNames.length()-1));
+			 }
+			 if(!userNames.equals("")){
+				 system.setSystemUserList(userNames.substring(0,userNames.length()-1));
+			 }
+		 });
+		 page.setRecords(pageList);
+		 return Result.OK(page);
 	 }
 
 	/**
@@ -181,8 +255,19 @@ public class CsSubsystemController  {
 	@ApiOperation(value="子系统通过id删除", notes="子系统通过id删除")
 	@DeleteMapping(value = "/delete")
 	public Result<?> delete(@RequestParam(name="id",required=true) String id) {
-		//todo 判断其他模块是否使用
 		CsSubsystem csSubsystem = csSubsystemService.getById(id);
+
+		//判断是否被设备类型使用 todo
+
+		//判断是否被物资分类使用
+		LambdaQueryWrapper<MaterialBaseType> materWrapper = new LambdaQueryWrapper<>();
+		materWrapper.eq(MaterialBaseType::getSystemCode,csSubsystem.getSystemCode());
+		materWrapper.eq(MaterialBaseType::getDelFlag,0);
+		List<MaterialBaseType> materList = materialBaseTypeService.list(materWrapper);
+		if(!materList.isEmpty()){
+			return Result.error("该子系统被物资分类使用中，不能删除!");
+		}
+
 		csSubsystem.setDelFlag(1);
 		csSubsystemService.updateById(csSubsystem);
 		//关联删除

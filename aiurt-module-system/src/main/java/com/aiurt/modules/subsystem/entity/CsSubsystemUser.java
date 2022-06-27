@@ -4,6 +4,8 @@ import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.util.Date;
 import java.math.BigDecimal;
+
+import com.aiurt.common.aspect.annotation.Dict;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
@@ -41,6 +43,7 @@ public class CsSubsystemUser implements Serializable {
 	/**用户账号*/
 	@Excel(name = "用户账号", width = 15)
     @ApiModelProperty(value = "用户账号")
+    @Dict(dictTable = "sys_user", dicCode = "username", dicText = "realname")
     private String username;
 	/**用户id*/
 	@Excel(name = "用户id", width = 15)
