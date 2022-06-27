@@ -1,10 +1,12 @@
 package com.aiurt.boot.plan.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.validation.constraints.NotNull;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -16,21 +18,23 @@ import java.util.List;
 @Data
 public class AssignDTO {
     @NotNull
-    @ApiModelProperty(value = "检修池ids",required = true)
+    @ApiModelProperty(value = "检修池ids", required = true)
     private List<String> ids;
     @NotNull
-    @ApiModelProperty(value = "指派人员ids",required = true)
+    @ApiModelProperty(value = "指派人员ids", required = true)
     private List<String> userIds;
     @NotNull
-    @ApiModelProperty(value = "计划开始检修时间",required = true)
-    private String startTime;
-    @NotNull
-    @ApiModelProperty(value = "计划结束检修时间",required = true)
+    @ApiModelProperty(value = "计划开始检修时间", required = true)
+    @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd HH:mm")
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm")
-    private String endTime;
+    private Date startTime;
     @NotNull
-    @ApiModelProperty(value = "作业类型",required = true)
+    @ApiModelProperty(value = "计划结束检修时间", required = true)
+    @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd HH:mm")
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm")
+    private Date endTime;
+    @NotNull
+    @ApiModelProperty(value = "作业类型", required = true)
     private String workType;
     @ApiModelProperty(value = "计划令编码")
     private String planOrderCode;

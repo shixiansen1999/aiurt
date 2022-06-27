@@ -1,21 +1,18 @@
 package com.aiurt.boot.task.entity;
 
-import java.io.Serializable;
-import java.io.UnsupportedEncodingException;
-import java.util.Date;
-import java.math.BigDecimal;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import lombok.Data;
 import com.fasterxml.jackson.annotation.JsonFormat;
-import org.springframework.format.annotation.DateTimeFormat;
-import org.jeecgframework.poi.excel.annotation.Excel;
-import com.aiurt.common.aspect.annotation.Dict;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
+import org.jeecgframework.poi.excel.annotation.Excel;
+import org.springframework.format.annotation.DateTimeFormat;
+
+import java.io.Serializable;
 
 /**
  * @Description: repair_task_device_rel
@@ -51,9 +48,9 @@ public class RepairTaskDeviceRel implements Serializable {
 	@Excel(name = "设备code，关联device表的code", width = 15)
     @ApiModelProperty(value = "设备code，关联device表的code")
     private java.lang.String deviceCode;
-	/**检修人id*/
-	@Excel(name = "检修人id", width = 15)
-    @ApiModelProperty(value = "检修人id")
+	/**提交人id*/
+	@Excel(name = "提交人id", width = 15)
+    @ApiModelProperty(value = "提交人id")
     private java.lang.String staffId;
 	/**开始时间(yyyy-MM-dd HH:mm)*/
 	@Excel(name = "开始时间(yyyy-MM-dd HH:mm)", width = 15, format = "yyyy-MM-dd")

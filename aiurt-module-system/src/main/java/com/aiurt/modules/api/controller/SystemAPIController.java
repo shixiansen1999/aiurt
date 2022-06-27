@@ -1,6 +1,6 @@
 package com.aiurt.modules.api.controller;
 
-import com.aiurt.common.api.dto.OnlineAuthDTO;
+import org.jeecg.common.api.dto.OnlineAuthDTO;
 import com.aiurt.common.api.dto.message.*;
 import com.alibaba.fastjson.JSONObject;
 import lombok.extern.slf4j.Slf4j;

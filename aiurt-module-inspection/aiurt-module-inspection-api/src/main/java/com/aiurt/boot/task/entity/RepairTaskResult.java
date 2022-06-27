@@ -59,6 +59,10 @@ public class RepairTaskResult implements Serializable {
 	@Excel(name = "排序编号", width = 15)
     @ApiModelProperty(value = "排序编号")
     private java.lang.Integer sortNo;
+    /**检修人id*/
+    @Excel(name = "检修人id", width = 15)
+    @ApiModelProperty(value = "检修人id")
+    private java.lang.String staffId;
 	/**父级id，顶级为0*/
 	@Excel(name = "父级id，顶级为0", width = 15)
     @ApiModelProperty(value = "父级id，顶级为0")

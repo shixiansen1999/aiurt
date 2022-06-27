@@ -1,10 +1,7 @@
 package com.aiurt.boot.plan.controller;
 
 import com.aiurt.boot.manager.dto.MajorDTO;
-import com.aiurt.boot.plan.dto.AssignDTO;
-import com.aiurt.boot.plan.dto.ListDTO;
-import com.aiurt.boot.plan.dto.RepairPoolDetailsDTO;
-import com.aiurt.boot.plan.dto.RepairStrategyDTO;
+import com.aiurt.boot.plan.dto.*;
 import com.aiurt.boot.plan.entity.RepairPool;
 import com.aiurt.boot.plan.rep.RepairStrategyReq;
 import com.aiurt.boot.plan.service.IRepairPoolService;
@@ -170,7 +167,7 @@ public class RepairPoolController extends BaseController<RepairPool, IRepairPool
     /**
      * 检修详情里的适用专业和专业子系统级联下拉列表
      *
-     * @param id
+     * @param code
      * @return
      */
     @AutoLog(value = "检修详情里的适用专业下拉列表")
@@ -181,20 +178,18 @@ public class RepairPoolController extends BaseController<RepairPool, IRepairPool
         return Result.OK(listDTOList);
     }
 
-
-
-
     /**
      * 检修详情里的检修标准下拉列表
      *
-     * @param id
+     * @param code
      * @return
      */
     @AutoLog(value = "检修详情里的检修标准下拉列表")
     @ApiOperation(value = "检修详情里的检修标准下拉列表", notes = "检修详情里的检修标准下拉列表")
     @GetMapping(value = "/queryStandardList")
-    public Result<List<ListDTO>> queryStandardList(@RequestParam @ApiParam(name = "id", required = true, value = "检修计划id") String id) {
-        return null;
+    public Result<List<StandardDTO>> queryStandardList(@RequestParam @ApiParam(name = "code", required = true, value = "检修计划code") String code) {
+        List<StandardDTO> result =  repairPoolService.queryStandardList(code);
+        return Result.OK(result);
     }
 
     /**
@@ -219,10 +214,26 @@ public class RepairPoolController extends BaseController<RepairPool, IRepairPool
     @AutoLog(value = "指派检修任务")
     @ApiOperation(value = "指派检修任务", notes = "指派检修任务")
     @PostMapping(value = "/queryUserList")
-    public Result queryUserList() {
-        List<LoginUser> loginUserList = repairPoolService.queryUserList();
+    public Result queryUserList(@RequestParam @ApiParam(name = "code", required = true, value = "检修计划code") String code){
+        List<LoginUser> loginUserList = repairPoolService.queryUserList(code);
         return Result.OK(loginUserList);
     }
 
+    /**
+     * 查询可用的计划令
+     *
+     * @param
+     * @return
+     */
+    @AutoLog(value = "查询可用的计划令")
+    @ApiOperation(value = "查询可用的计划令", notes = "查询可用的计划令")
+    @PostMapping(value = "/queryPlanCodeList")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "OK", response = PlanCodeDTO.class)
+    })
+    public Result queryPlanCodeList(@RequestParam @ApiParam(name = "id", required = true, value = "检修计划id") String id){
+        List<PlanCodeDTO> planCodeDTOList = null;
+        return Result.OK(planCodeDTOList);
+    }
 
 }

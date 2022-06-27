@@ -4,6 +4,7 @@ import com.aiurt.boot.manager.dto.MajorDTO;
 import com.aiurt.boot.plan.dto.AssignDTO;
 import com.aiurt.boot.plan.dto.RepairPoolDetailsDTO;
 import com.aiurt.boot.plan.dto.RepairStrategyDTO;
+import com.aiurt.boot.plan.dto.StandardDTO;
 import com.aiurt.boot.plan.entity.RepairPool;
 import com.aiurt.boot.plan.rep.RepairStrategyReq;
 import com.baomidou.mybatisplus.extension.service.IService;
@@ -77,6 +78,12 @@ public interface IRepairPoolService extends IService<RepairPool> {
      * @param
      * @return
      */
-    List<LoginUser> queryUserList();
-
+    List<LoginUser> queryUserList(String code);
+    /**
+     * 检修详情里的检修标准下拉列表
+     *
+     * @param code
+     * @return
+     */
+    List<StandardDTO> queryStandardList(String code);
 }

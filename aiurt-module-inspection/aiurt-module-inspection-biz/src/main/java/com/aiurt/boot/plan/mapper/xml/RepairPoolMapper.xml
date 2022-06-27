@@ -1,9 +1,34 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.aiurt.boot.plan.mapper.RepairPoolMapper">
-
+    <resultMap id="query_major_map" type="com.aiurt.boot.manager.dto.MajorDTO">
+        <result column="major_code" property="majorCode"></result>
+        <result column="major_name" property="majorName"></result>
+        <collection property="subsystemDTOList" javaType="list" ofType="com.aiurt.boot.manager.dto.SubsystemDTO">
+            <result column="system_code" property="systemCode"></result>
+            <result column="system_name" property="systemName"></result>
+        </collection>
+    </resultMap>
     <select id="queryList" resultType="com.aiurt.boot.plan.entity.RepairPool">
 
+    </select>
+    <select id="queryMajorList" resultMap="query_major_map">
+    SELECT cm.major_code,cm.major_name,cs.system_code,cs.system_name FROM cs_major cm
+	LEFT JOIN cs_subsystem cs ON cs.major_code = cm.major_code
+	<where>
+	<if test="majorCode.size()>0">
+	    cm.major_code in
+        <foreach collection="majorCode" item="code" separator="," open="(" close=")">
+         #{code}
+        </foreach>
+    </if>
+    <if test="subSystemCode.size()>0">
+        cs.system_code in
+        <foreach collection="subSystemCode" item="code" separator="," open="(" close=")">
+            #{code}
+        </foreach>
+    </if>
+    </where>
     </select>
 
 </mapper>

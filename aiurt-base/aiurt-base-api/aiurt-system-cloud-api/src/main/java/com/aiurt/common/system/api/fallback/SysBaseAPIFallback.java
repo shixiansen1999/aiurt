@@ -1,6 +1,6 @@
 package com.aiurt.common.system.api.fallback;
 
-import com.aiurt.common.api.dto.OnlineAuthDTO;
+import org.jeecg.common.api.dto.OnlineAuthDTO;
 import com.aiurt.common.api.dto.message.*;
 import com.alibaba.fastjson.JSONObject;
 import lombok.Setter;
@@ -275,6 +275,11 @@ public class SysBaseAPIFallback implements ISysBaseAPI {
 
     @Override
     public List<DictModel> translateDictFromTableByKeys(String table, String text, String code, String keys) {
+        return null;
+    }
+
+    @Override
+    public List<LoginUser> getUserByDepIds(List<String> deptCodes) {
         return null;
     }
 

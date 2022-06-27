@@ -1,6 +1,6 @@
 package com.aiurt.modules.system.service.impl;
 
-import com.aiurt.common.api.dto.OnlineAuthDTO;
+import org.jeecg.common.api.dto.OnlineAuthDTO;
 import com.aiurt.common.api.dto.message.*;
 import com.aiurt.common.aspect.UrlMatchEnum;
 import com.aiurt.common.constant.CacheConstant;
@@ -1158,6 +1158,25 @@ public class SysBaseApiImpl implements ISysBaseAPI {
         return sysDictService.loadDict(dictCode, keyword, pageSize);
     }
 
+    /**
+     * 根据部门编号集合查询对应的人员信息
+     *
+     * @param deptCodes 部门编码集合
+     * @return
+     */
+    @Override
+    public List<LoginUser> getUserByDepIds(List<String> deptCodes) {
+        List<SysUser> userList = userMapper.selectList(new QueryWrapper<SysUser>().in("org_code", deptCodes).eq("status", 1).eq("del_flag", 0));
+        List<LoginUser> list = new ArrayList<>();
+        for (SysUser user : userList) {
+            LoginUser loginUser = new LoginUser();
+            loginUser.setId(user.getId());
+            loginUser.setUsername(user.getUsername());
+            loginUser.setRealname(user.getRealname());
+            list.add(loginUser);
+        }
+        return list;
+    }
 
 
     @Override

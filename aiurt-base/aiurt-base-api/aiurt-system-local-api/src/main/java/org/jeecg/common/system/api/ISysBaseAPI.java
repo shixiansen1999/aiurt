@@ -1,7 +1,7 @@
 package org.jeecg.common.system.api;
 
 import com.aiurt.common.api.CommonAPI;
-import com.aiurt.common.api.dto.OnlineAuthDTO;
+import org.jeecg.common.api.dto.OnlineAuthDTO;
 import com.aiurt.common.api.dto.message.*;
 import com.alibaba.fastjson.JSONObject;
 import org.jeecg.common.system.vo.*;
@@ -340,5 +340,11 @@ public interface ISysBaseAPI extends CommonAPI {
      */
     List<DictModel> loadDictItemByKeyword(String dictCode, String keyword, Integer pageSize);
 
+    /**
+     * 根据部门编号集合查询对应的人员信息
+     * @param deptCodes 部门编码集合
+     * @return
+     */
+     List<LoginUser> getUserByDepIds(List<String> deptCodes);
 
 }

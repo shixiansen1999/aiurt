@@ -1,4 +1,4 @@
-package com.aiurt.common.api.dto;
+package org.jeecg.common.api.dto;
 
 import lombok.Data;
 

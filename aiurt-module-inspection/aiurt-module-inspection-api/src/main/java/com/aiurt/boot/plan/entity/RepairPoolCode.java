@@ -52,9 +52,9 @@ public class RepairPoolCode implements Serializable {
 	@Excel(name = "设备类型code，关联device_type的code", width = 15)
     @ApiModelProperty(value = "设备类型code，关联device_type的code")
     private java.lang.String deviceTypeCode;
-	/**是否与设备相关(0否1是)*/
-	@Excel(name = "是否与设备相关(0否1是)", width = 15)
-    @ApiModelProperty(value = "是否与设备相关(0否1是)")
+	/**是否与设备类型相关(0否1是)*/
+	@Excel(name = "是否与设备类型相关(0否1是)", width = 15)
+    @ApiModelProperty(value = "是否与设备类型相关(0否1是)")
     private java.lang.Integer isAppointDevice;
 	/**专业code,关联cs_major的code*/
 	@Excel(name = "专业code,关联cs_major的code", width = 15)

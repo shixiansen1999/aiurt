@@ -1,21 +1,18 @@
 package com.aiurt.boot.task.entity;
 
-import java.io.Serializable;
-import java.io.UnsupportedEncodingException;
-import java.util.Date;
-import java.math.BigDecimal;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import lombok.Data;
 import com.fasterxml.jackson.annotation.JsonFormat;
-import org.springframework.format.annotation.DateTimeFormat;
-import org.jeecgframework.poi.excel.annotation.Excel;
-import com.aiurt.common.aspect.annotation.Dict;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
+import org.jeecgframework.poi.excel.annotation.Excel;
+import org.springframework.format.annotation.DateTimeFormat;
+
+import java.io.Serializable;
 
 /**
  * @Description: repair_task_standard_rel
@@ -47,6 +44,10 @@ public class RepairTaskStandardRel implements Serializable {
 	@Excel(name = "检修标准编码，关联inspection_code的code", width = 15)
     @ApiModelProperty(value = "检修标准编码，关联inspection_code的code")
     private java.lang.String code;
+    /**是否与设备类型相关(0否1是)*/
+    @Excel(name = "是否与设备类型相关(0否1是)", width = 15)
+    @ApiModelProperty(value = "是否与设备类型相关(0否1是)")
+    private java.lang.Integer isAppointDevice;
 	/**专业code,关联cs_major的code*/
 	@Excel(name = "专业code,关联cs_major的code", width = 15)
     @ApiModelProperty(value = "专业code,关联cs_major的code")

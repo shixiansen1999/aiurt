@@ -1,7 +1,7 @@
 package com.aiurt.common.system.api;
 
 import com.aiurt.common.api.CommonAPI;
-import com.aiurt.common.api.dto.OnlineAuthDTO;
+import org.jeecg.common.api.dto.OnlineAuthDTO;
 import com.aiurt.common.api.dto.message.*;
 import com.aiurt.common.constant.ServiceNameConstants;
 import com.aiurt.common.system.api.factory.SysBaseAPIFallbackFactory;
@@ -535,5 +535,13 @@ public interface ISysBaseAPI extends CommonAPI {
     @Override
     @GetMapping("/sys/api/translateDictFromTableByKeys")
     List<DictModel> translateDictFromTableByKeys(@RequestParam("table") String table, @RequestParam("text") String text, @RequestParam("code") String code, @RequestParam("keys") String keys);
+
+    /**
+     * 根据部门编号集合查询对应的人员信息
+     * @param deptCodes 部门编码集合
+     * @return
+     */
+    @GetMapping("/sys/api/getUserByDepIds")
+    List<LoginUser> getUserByDepIds(List<String> deptCodes);
 
 }

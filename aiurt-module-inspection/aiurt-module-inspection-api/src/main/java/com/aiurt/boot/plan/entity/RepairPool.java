@@ -93,6 +93,10 @@ public class RepairPool implements Serializable {
     @Excel(name = "是否需要验收：0否 1是", width = 15)
     @ApiModelProperty(value = "是否需要验收：0否 1是")
     private java.lang.Integer isReceipt;
+    /**是否委外：0否1是*/
+    @Excel(name = "是否委外：0否1是", width = 15)
+    @ApiModelProperty(value = "是否委外：0否1是")
+    private java.lang.Integer isOutsource;
     /**
      * 状态：0待指派、1待确认、2待执行、3已退回、4执行中、5已驳回、6待审核、7待验收、8已完成
      */

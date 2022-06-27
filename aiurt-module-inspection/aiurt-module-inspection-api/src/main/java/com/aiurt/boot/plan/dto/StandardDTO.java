@@ -10,9 +10,7 @@ import lombok.Data;
  * @date 2022/6/2318:50
  */
 @Data
-public class ListDTO {
-    @ApiModelProperty("编码")
-    private String code;
+public class StandardDTO {
     @ApiModelProperty("名称")
     private String name;
     @ApiModelProperty("检修标准")
