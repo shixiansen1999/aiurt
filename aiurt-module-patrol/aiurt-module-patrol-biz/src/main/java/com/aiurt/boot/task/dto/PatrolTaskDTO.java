@@ -1,6 +1,7 @@
 package com.aiurt.boot.task.dto;
 
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModelProperty;
@@ -71,13 +72,13 @@ public class PatrolTaskDTO
     @ApiModelProperty(value = "是否需要审核：0否、1是")
     private java.lang.Integer auditor;
     /*** 巡检开始时间*/
-    @JsonFormat(timezone = "GMT+8", pattern = "HH:mm:ss")
-    @DateTimeFormat(pattern = "HH:mm:ss")
+    @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd HH:mm:ss")
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @ApiModelProperty(value = "巡检开始时间")
     private java.util.Date startTime;
     /*** 巡检结束时间*/
-    @JsonFormat(timezone = "GMT+8", pattern = "HH:mm:ss")
-    @DateTimeFormat(pattern = "HH:mm:ss")
+    @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd HH:mm:ss")
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @ApiModelProperty(value = "巡检结束时间")
     private java.util.Date endTime;
     /*** 巡检频次：1 一天1次、2 一周1次、3 一周2次*/
@@ -94,9 +95,11 @@ public class PatrolTaskDTO
     private java.lang.String backReason;
     @Excel(name = "专业名称", width = 15)
     @ApiModelProperty(value = "专业名称")
+    @TableField(exist = false)
     private java.lang.String majorName;
     @Excel(name = "子系统名称", width = 15)
     @ApiModelProperty(value = "子系统名称")
+    @TableField(exist = false)
     private java.lang.String sysName;
 }
 

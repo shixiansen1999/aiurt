@@ -19,10 +19,11 @@
         where t1.plan_code = #{planCode}
     </select>
     <select id="getStationName" resultType="java.lang.String">
-        select concat(t1.line_name, "-", t1.station_name) as stationName
-        from cs_station t1
-                 left join patrol_plan_station t2 on t1.station_code = t2.station_code
-        where t2.plan_code = #{code}
+    select concat(t2.line_name,"-",t2.station_name,"-",t3.position_name) as stationName
+    from  patrol_plan_station t1
+    left join cs_station t2 on t1.station_code = t2.station_code
+    LEFT JOIN cs_station_position t3 on t2.station_code =t3.staion_code
+    where t1.plan_code = #{code}
     </select>
     <select id="getPatrolUserName" resultType="java.lang.String">
         select t2.user_name
