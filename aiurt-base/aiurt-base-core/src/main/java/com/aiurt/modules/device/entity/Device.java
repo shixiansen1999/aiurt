@@ -135,7 +135,7 @@ public class Device {
 	@Excel(name = "设备管理员", width = 15)
 	@ApiModelProperty(value = "设备管理员")
 	@Dict(dictTable ="sys_user",dicText = "realname",dicCode = "username")
-	private  java.lang.String  manageUserName;
+	private  String  manageUserName;
 	/**设备管理员名称*/
 	@Excel(name = "设备管理员名称", width = 15)
 	@ApiModelProperty(value = "设备管理员名称")
@@ -146,7 +146,7 @@ public class Device {
 	@Excel(name = "负责班组", width = 15)
 	@ApiModelProperty(value = "负责班组")
 	@Dict(dictTable ="sys_depart",dicText = "depart_name",dicCode = "org_code")
-	private  java.lang.String  orgCode;
+	private  String  orgCode;
 	/**负责班组名称*/
 	@Excel(name = "负责班组名称", width = 15)
 	@ApiModelProperty(value = "负责班组名称")
@@ -157,44 +157,44 @@ public class Device {
 //	@Excel(name = "临时设备(是/否（默认否）1是,0:否)", width = 15)
 	@ApiModelProperty(value = "临时设备(是/否（默认否）1是,0:否)")
 	@Dict(dicCode = "device_temporary")
-	private  java.lang.String  temporary;
+	private  String  temporary;
 	/**临时设备(是/否（默认否）1是,0:否)*/
 	@Excel(name = "是否临时设备", width = 15)
 	@ApiModelProperty(value = "临时设备(是/否（默认否）1是,0:否)")
 	@TableField(exist = false)
-	private  java.lang.String  temporaryName;
+	private  String  temporaryName;
 
 	/**设备复用类型(1:多线路复用/0:多站点复用)*/
 //	@Excel(name = "设备复用类型(1:多线路复用/0:多站点复用)", width = 15)
 	@ApiModelProperty(value = "设备复用类型(1:多线路复用/0:多站点复用)")
 	@Dict(dicCode = "device_reuse_type")
-	private  java.lang.String  reuseType;
+	private  String  reuseType;
 	@Excel(name = "设备复用类型", width = 15)
 	@ApiModelProperty(value = "设备复用类型(1:多线路复用/0:多站点复用)")
 	@TableField(exist = false)
-	private  java.lang.String  reuseTypeName;
+	private  String  reuseTypeName;
 
 	/**出厂日期*/
 	@Excel(name = "出厂日期", width = 15)
 	@ApiModelProperty(value = "出厂日期")
 	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
 	@DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
-	private  java.lang.String  factoryDate;
+	private  String  factoryDate;
 
 	/**设备等级(字典值)*/
 	@ApiModelProperty(value = "设备等级(字典值)")
 	@Dict(dicCode = "device_level")
-	private  java.lang.String  deviceLevel;
+	private  String  deviceLevel;
 	/**设备等级(字典值)*/
 	@Excel(name = "设备等级", width = 15)
 	@ApiModelProperty(value = "设备等级")
 	@TableField(exist = false)
-	private  java.lang.String  deviceLevelName;
+	private  String  deviceLevelName;
 
 	/**品牌*/
 	@Excel(name = "品牌", width = 15)
 	@ApiModelProperty(value = "品牌")
-	private  java.lang.String  brand;
+	private  String  brand;
 
 	/**供应商(厂商信息表_编码)*/
 	@Excel(name = "供应商(厂商信息表_编码)", width = 15)

@@ -40,6 +40,9 @@ public class CommonCtroller {
     @Autowired
     private IDeviceService deviceService;
 
+
+
+
     public Result<List<Device>> query() {
         return Result.OK();
     }
@@ -138,6 +141,17 @@ public class CommonCtroller {
         }).collect(Collectors.toList());
 
         return Result.OK(list);
+    }
+
+
+    /**
+     * 查询设备
+     * @return
+     */
+    @GetMapping("/position/queryTree")
+    @ApiOperation("位置下拉数据")
+    public Result<List<SelectTable>> queryPositionTree() {
+        return Result.OK(null);
     }
 
 }
