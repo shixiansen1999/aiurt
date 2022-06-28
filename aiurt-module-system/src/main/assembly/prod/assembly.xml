@@ -45,10 +45,16 @@
             <includes>
                 <include>readme.txt</include>
                 <include>/static/*</include>
-                <include>/jeecg/*</include>
                 <include>/templates/*</include>
             </includes>
             <outputDirectory>aiurt-module-system</outputDirectory>
+            <directoryMode>0744</directoryMode>
+            <fileMode>0644</fileMode>
+            <filtered>true</filtered>
+        </fileSet>
+        <fileSet>
+            <directory>src/main/resources/jeecg</directory>
+            <outputDirectory>aiurt-module-system/config</outputDirectory>
             <directoryMode>0744</directoryMode>
             <fileMode>0644</fileMode>
             <filtered>true</filtered>

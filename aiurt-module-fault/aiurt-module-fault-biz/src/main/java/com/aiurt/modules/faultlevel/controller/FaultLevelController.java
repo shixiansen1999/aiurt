@@ -1,29 +1,28 @@
 package com.aiurt.modules.faultlevel.controller;
 
-import java.util.Arrays;
-import java.util.List;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
+import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.system.base.controller.BaseController;
-import com.aiurt.modules.fault.entity.Fault;
+import com.aiurt.modules.common.entity.SelectTable;
 import com.aiurt.modules.fault.service.IFaultService;
+import com.aiurt.modules.faultlevel.entity.FaultLevel;
 import com.aiurt.modules.faultlevel.service.IFaultLevelService;
-import com.aiurt.modules.faulttype.entity.FaultType;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
+import io.swagger.annotations.ApiOperation;
+import lombok.extern.slf4j.Slf4j;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.query.QueryGenerator;
-import com.aiurt.modules.faultlevel.entity.FaultLevel;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.ModelAndView;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import com.aiurt.common.aspect.annotation.AutoLog;
+
+import javax.servlet.http.HttpServletRequest;
+import java.util.List;
+import java.util.stream.Collectors;
 
  /**
  * @Description: 故障等级
@@ -143,27 +142,28 @@ public class FaultLevelController extends BaseController<FaultLevel, IFaultLevel
 		return Result.OK(faultLevel);
 	}
 
-    /**
-    * 导出excel
-    *
-    * @param request
-    * @param faultLevel
-    */
-    /*@RequestMapping(value = "/exportXls")
-    public ModelAndView exportXls(HttpServletRequest request, FaultLevel faultLevel) {
-        return super.exportXls(request, faultLevel, FaultLevel.class, "故障等级");
-    }*/
 
-    /**
-      * 通过excel导入数据
-    *
-    * @param request
-    * @param response
-    * @return
-    */
-   /* @RequestMapping(value = "/importExcel", method = RequestMethod.POST)
-    public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) {
-        return super.importExcel(request, response, FaultLevel.class);
-    }
-*/
+
+	 /**
+	  * 根据专业编码查询故障等级
+	  * @param majorCode
+	  * @return
+	  */
+	 @GetMapping("/queryFaultLevelByMajorCode")
+	 @ApiOperation("根据专业编码查询故障等级")
+	 @ApiImplicitParams({
+			 @ApiImplicitParam(name = "majorCode", value = "专业编码", required = true, paramType = "query"),
+	 })
+	 public Result<List<SelectTable>> queryFaultLevelByMajorCode(@RequestParam(value = "majorCode") String majorCode) {
+		 LambdaQueryWrapper<FaultLevel> wrapper = new LambdaQueryWrapper<>();
+		 wrapper.eq(FaultLevel::getMajorCode, majorCode);
+		 List<FaultLevel> typeList = faultLevelService.getBaseMapper().selectList(wrapper);
+		 List<SelectTable> tableList = typeList.stream().map(faultLevel -> {
+			 SelectTable table = new SelectTable();
+			 table.setLabel(faultLevel.getName());
+			 table.setValue(faultLevel.getCode());
+			 return table;
+		 }).collect(Collectors.toList());
+		 return Result.OK(tableList);
+	 }
 }
