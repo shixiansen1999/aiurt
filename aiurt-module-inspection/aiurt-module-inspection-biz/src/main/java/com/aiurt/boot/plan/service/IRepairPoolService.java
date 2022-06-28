@@ -107,4 +107,16 @@ public interface IRepairPoolService extends IService<RepairPool> {
      * @param repairPoolDTO
      */
     void updateManualTaskById(RepairPoolDTO repairPoolDTO);
+
+    /**
+     * 根据任务id删除手工下发检修任务
+     * @param id
+     */
+    void deleteManualTaskById(String id);
+
+    /**
+     * 添加手工下发检修任务
+     * @param repairPoolDTO
+     */
+    void addManualTask(RepairPoolDTO repairPoolDTO);
 }

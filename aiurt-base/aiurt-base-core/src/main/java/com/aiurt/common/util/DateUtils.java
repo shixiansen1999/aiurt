@@ -1,6 +1,5 @@
 package com.aiurt.common.util;
 
-import cn.hutool.core.date.DateUtil;
 import com.aiurt.common.constant.SymbolConstant;
 import org.springframework.util.StringUtils;
 
@@ -828,7 +827,7 @@ public class DateUtils extends PropertyEditorSupport {
             Date et = getWeekEndTime(calendar.getTime());
             HashMap<String, Object> map = new HashMap<>();
             map.put("time", new Date[]{st, et});
-            map.put("week", DateUtil.weekOfYear(et));
+            map.put("week", getWeekOfYear(et));
             list.add(map);
             calendar.add(Calendar.WEEK_OF_YEAR, 1);
         }
@@ -919,5 +918,13 @@ public class DateUtils extends PropertyEditorSupport {
             e.printStackTrace();
         }
         return dt;
+    }
+
+    public static int getWeekOfYear(Date date) {
+        Calendar c = new GregorianCalendar();
+        c.setFirstDayOfWeek(Calendar.MONDAY);
+        c.setMinimalDaysInFirstWeek(7);
+        c.setTime(date);
+        return c.get(Calendar.WEEK_OF_YEAR);
     }
 }

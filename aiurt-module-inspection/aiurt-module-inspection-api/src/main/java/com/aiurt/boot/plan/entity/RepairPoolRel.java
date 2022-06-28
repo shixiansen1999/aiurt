@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
@@ -21,6 +22,7 @@ import java.io.Serializable;
  * @Version: V1.0
  */
 @Data
+@Builder
 @TableName("repair_pool_rel")
 @Accessors(chain = true)
 @EqualsAndHashCode(callSuper = false)

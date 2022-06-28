@@ -14,6 +14,7 @@ import lombok.experimental.Accessors;
 import org.jeecgframework.poi.excel.annotation.Excel;
 import org.springframework.format.annotation.DateTimeFormat;
 
+import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 
 /**
@@ -60,6 +61,7 @@ public class RepairPool implements Serializable {
     @Excel(name = "检修周期类型：0周检、1月检、2双月检、3季检、4半年检、5年检", width = 15)
     @ApiModelProperty(value = "检修周期类型：0周检、1月检、2双月检、3季检、4半年检、5年检")
     @Dict(dicCode = "inspection_cycle_type")
+    @NotNull(message = "请选择检修周期类型")
     private java.lang.Integer type;
     /**
      * 检修策略编码，关联inspection_strategy的code
@@ -94,6 +96,7 @@ public class RepairPool implements Serializable {
     @Excel(name = "是否需要审核：0否 1是", width = 15)
     @ApiModelProperty(value = "是否需要审核：0否 1是")
     @Dict(dicCode = "inspection_is_confirm")
+    @NotNull(message = "请选择是否需要审核")
     private java.lang.Integer isConfirm;
     /**
      * 是否需要验收：0否 1是
@@ -101,11 +104,13 @@ public class RepairPool implements Serializable {
     @Excel(name = "是否需要验收：0否 1是", width = 15)
     @ApiModelProperty(value = "是否需要验收：0否 1是")
     @Dict(dicCode = "inspection_is_confirm")
+    @NotNull(message = "请选择是否需要验收")
     private java.lang.Integer isReceipt;
     /**是否委外：0否1是*/
     @Excel(name = "是否委外：0否1是", width = 15)
     @ApiModelProperty(value = "是否委外：0否1是")
     @Dict(dicCode = "inspection_is_manual")
+    @NotNull(message = "请选择是否委外")
     private java.lang.Integer isOutsource;
 
     /**
@@ -114,6 +119,7 @@ public class RepairPool implements Serializable {
     @Excel(name = "作业类型（A1不用计划令,A2,A3,B1,B2,B3）", width = 15)
     @ApiModelProperty(value = "作业类型（A1不用计划令,A2,A3,B1,B2,B3）")
     @Dict(dicCode = "work_type")
+    @NotNull(message = "请选择作业类型")
     private java.lang.Integer workType;
     /**
      * 是否是手工下发任务，0否1是

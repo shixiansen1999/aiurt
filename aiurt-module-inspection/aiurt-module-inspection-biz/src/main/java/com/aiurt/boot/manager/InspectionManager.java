@@ -8,13 +8,17 @@ import com.aiurt.boot.constant.InspectionConstant;
 import com.aiurt.boot.manager.mapper.InspectionManagerMapper;
 import com.aiurt.boot.plan.dto.RepairDeviceDTO;
 import com.aiurt.boot.plan.dto.StationDTO;
+import com.aiurt.common.exception.AiurtBootException;
+import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.system.api.ISysBaseAPI;
+import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * @author wgp
@@ -144,6 +148,18 @@ public class InspectionManager {
      */
     public String queryNameByCode(String code) {
         return inspectionManagerMapper.queryNameByCode(code);
+    }
+
+    /**
+     * 获取当前登录用户
+     */
+    public LoginUser checkLogin() {
+        LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+
+        if (Objects.isNull(user)) {
+            throw new AiurtBootException("请重新登录");
+        }
+        return user;
     }
 
 }

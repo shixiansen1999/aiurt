@@ -1,6 +1,5 @@
 package com.aiurt.boot.plan.controller;
 
-import com.aiurt.boot.constant.InspectionConstant;
 import com.aiurt.boot.manager.dto.MajorDTO;
 import com.aiurt.boot.plan.dto.*;
 import com.aiurt.boot.plan.entity.RepairPool;
@@ -8,20 +7,15 @@ import com.aiurt.boot.plan.rep.RepairStrategyReq;
 import com.aiurt.boot.plan.service.IRepairPoolService;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.system.base.controller.BaseController;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.annotations.*;
 import lombok.extern.slf4j.Slf4j;
 import org.jeecg.common.api.vo.Result;
-import org.jeecg.common.system.query.QueryGenerator;
 import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
@@ -57,19 +51,6 @@ public class RepairPoolController extends BaseController<RepairPool, IRepairPool
         return Result.OK(repairPoolList);
     }
 
-    /**
-     * 添加
-     *
-     * @param repairPool
-     * @return
-     */
-    @AutoLog(value = "repair_pool-添加")
-    @ApiOperation(value = "repair_pool-添加", notes = "repair_pool-添加")
-    @PostMapping(value = "/add")
-    public Result<String> add(@RequestBody RepairPool repairPool) {
-        repairPoolService.save(repairPool);
-        return Result.OK("添加成功！");
-    }
 
     /**
      * 编辑
@@ -85,19 +66,6 @@ public class RepairPoolController extends BaseController<RepairPool, IRepairPool
         return Result.OK("编辑成功!");
     }
 
-    /**
-     * 通过id删除
-     *
-     * @param id
-     * @return
-     */
-    @AutoLog(value = "repair_pool-通过id删除")
-    @ApiOperation(value = "repair_pool-通过id删除", notes = "repair_pool-通过id删除")
-    @DeleteMapping(value = "/delete")
-    public Result<String> delete(@RequestParam(name = "id", required = true) String id) {
-        repairPoolService.removeById(id);
-        return Result.OK("删除成功!");
-    }
 
     /**
      * 批量删除
@@ -217,8 +185,8 @@ public class RepairPoolController extends BaseController<RepairPool, IRepairPool
      * @param
      * @return
      */
-    @AutoLog(value = "指派检修任务")
-    @ApiOperation(value = "指派检修任务", notes = "指派检修任务")
+    @AutoLog(value = "指派检修任务人员下拉列表")
+    @ApiOperation(value = "指派检修任务人员下拉列表", notes = "指派检修任务人员下拉列表")
     @PostMapping(value = "/queryUserList")
     public Result queryUserList(@RequestParam @ApiParam(name = "code", required = true, value = "检修计划code") String code) {
         List<LoginUser> loginUserList = repairPoolService.queryUserList(code);
@@ -233,7 +201,7 @@ public class RepairPoolController extends BaseController<RepairPool, IRepairPool
      */
     @AutoLog(value = "查询可用的计划令")
     @ApiOperation(value = "查询可用的计划令", notes = "查询可用的计划令")
-    @PostMapping(value = "/queryPlanCodeList")
+    @GetMapping(value = "/queryPlanCodeList")
     @ApiResponses({
             @ApiResponse(code = 200, message = "OK", response = PlanCodeDTO.class)
     })
@@ -242,54 +210,5 @@ public class RepairPoolController extends BaseController<RepairPool, IRepairPool
         return Result.OK(planCodeDTOList);
     }
 
-    /**
-     * 分页查询手工下发任务列表
-     *
-     * @param repairPool
-     * @param pageNo
-     * @param pageSize
-     * @param req
-     * @return
-     */
-    @AutoLog(value = "分页查询手工下发任务列表")
-    @ApiOperation(value = "分页查询手工下发任务列表", notes = "分页查询手工下发任务列表")
-    @GetMapping(value = "/listPage")
-    public Result<IPage<RepairPool>> listPage(RepairPool repairPool,
-                                              @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
-                                              @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize,
-                                              HttpServletRequest req) {
-        QueryWrapper<RepairPool> queryWrapper = QueryGenerator.initQueryWrapper(repairPool, req.getParameterMap());
-        queryWrapper.eq("is_manual", InspectionConstant.IS_MANUAL);
-        Page<RepairPool> page = new Page<RepairPool>(pageNo, pageSize);
-        IPage<RepairPool> pageList = repairPoolService.listPage(page, queryWrapper);
-        return Result.OK(pageList);
-    }
 
-    /**
-     * 通过id查询手工下发检修任务信息
-     *
-     * @param id
-     * @return
-     */
-    @AutoLog(value = "通过id查询手工下发检修任务信息")
-    @ApiOperation(value = "通过id查询手工下发检修任务信息", notes = "通过id查询手工下发检修任务信息")
-    @GetMapping(value = "/queryManualTaskById")
-    public Result<RepairPoolDTO> queryManualTaskById(@RequestParam(name = "id", required = true) String id) {
-        RepairPoolDTO repairPool = repairPoolService.queryManualTaskById(id);
-        return Result.OK(repairPool);
-    }
-
-    /**
-     * 修改手工下发检修任务信息
-     *
-     * @param repairPoolDTO
-     * @return
-     */
-    @AutoLog(value = "修改手工下发检修任务信息")
-    @ApiOperation(value = "修改手工下发检修任务信息", notes = "修改手工下发检修任务信息")
-    @GetMapping(value = "/updateManualTaskById")
-    public Result<String> updateManualTaskById(@RequestBody RepairPoolDTO repairPoolDTO) {
-       repairPoolService.updateManualTaskById(repairPoolDTO);
-        return Result.OK("修改成功");
-    }
 }
