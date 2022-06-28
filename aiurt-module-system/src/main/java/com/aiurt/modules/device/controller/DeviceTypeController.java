@@ -1,17 +1,20 @@
 package com.aiurt.modules.device.controller;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
+import javax.servlet.http.HttpServletRequest;
+
+import com.aiurt.modules.device.entity.Device;
 import com.aiurt.modules.device.entity.DeviceType;
+import com.aiurt.modules.device.service.IDeviceService;
 import com.aiurt.modules.device.service.IDeviceTypeService;
+import com.aiurt.modules.major.entity.CsMajor;
+import com.aiurt.modules.major.service.ICsMajorService;
+import com.aiurt.modules.material.entity.MaterialBase;
+import com.aiurt.modules.material.entity.MaterialBaseType;
+import com.aiurt.modules.position.entity.CsStationPosition;
+import com.aiurt.modules.subsystem.entity.CsSubsystem;
+import com.aiurt.modules.subsystem.service.ICsSubsystemService;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.query.QueryGenerator;
 
@@ -20,23 +23,20 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.extern.slf4j.Slf4j;
 
-import org.jeecgframework.poi.excel.ExcelImportUtil;
-import org.jeecgframework.poi.excel.def.NormalExcelConstants;
-import org.jeecgframework.poi.excel.entity.ExportParams;
-import org.jeecgframework.poi.excel.entity.ImportParams;
-import org.jeecgframework.poi.excel.view.JeecgEntityExcelView;
 import com.aiurt.common.system.base.controller.BaseController;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.multipart.MultipartHttpServletRequest;
-import org.springframework.web.servlet.ModelAndView;
-import com.alibaba.fastjson.JSON;
+
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import com.aiurt.common.aspect.annotation.AutoLog;
 
- /**
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
+/**
  * @Description: device_type
  * @Author: aiurt
  * @Date:   2022-06-22
@@ -48,9 +48,96 @@ import com.aiurt.common.aspect.annotation.AutoLog;
 @Slf4j
 public class DeviceTypeController extends BaseController<DeviceType, IDeviceTypeService> {
 	@Autowired
+	@Lazy
 	private IDeviceTypeService deviceTypeService;
+	@Autowired
+	private ICsSubsystemService csSubsystemService;
+	@Autowired
+	private ICsMajorService csMajorService;
+	@Autowired
+	private IDeviceService deviceService;
+
+	 /**
+	  * 设备类型左侧树
+	  * @param
+	  * @return
+	  */
+	 @AutoLog(value = "设备类型左侧树")
+	 @ApiOperation(value = "设备类型左侧树")
+	 @GetMapping(value = "/treeList")
+	 public Result<?> treeList() {
+		 List<CsMajor> majorList = csMajorService.list(new LambdaQueryWrapper<CsMajor>().eq(CsMajor::getDelFlag,0));
+		 List<CsSubsystem> systemList = csSubsystemService.list(new LambdaQueryWrapper<CsSubsystem>().eq(CsSubsystem::getDelFlag,0));
+		 List<DeviceType> deviceTypeList = deviceTypeService.list(new LambdaQueryWrapper<DeviceType>().eq(DeviceType::getDelFlag,0));
+		 List<DeviceType> deviceTypeTree = deviceTypeService.treeList(deviceTypeList,"0");
+		 List<DeviceType> newList = new ArrayList<>();
+		 majorList.forEach(one -> {
+			 DeviceType major = setEntity(one.getId(),"zy",one.getMajorCode(),one.getMajorName(),null,null,null);
+			 List<CsSubsystem> sysList = systemList.stream().filter(system-> system.getMajorCode().equals(one.getMajorCode())).collect(Collectors.toList());
+			 List<DeviceType> majorDeviceType = deviceTypeTree.stream().filter(type-> major.getMajorCode().equals(type.getMajorCode()) && (type.getSystemCode()==null || "".equals(type.getSystemCode()))).collect(Collectors.toList());
+			 List<DeviceType> twoList = new ArrayList<>();
+			 //判断是否有设备类型数据
+			 majorDeviceType.forEach(two ->{
+				 DeviceType system = setEntity(two.getId()+"","sblx",two.getCode(),two.getName(),two.getStatus(),two.getIsSpecialDevice(),two.getIsEnd());
+				 twoList.add(system);
+			 });
+			 //判断是否有子系统数据
+			 sysList.forEach(two ->{
+				 DeviceType system = setEntity(two.getId()+"","zxt",two.getSystemCode(),two.getSystemName(),null,null,null);
+				 twoList.add(system);
+				 List<DeviceType> sysDeviceType = deviceTypeTree.stream().filter(type-> two.getMajorCode().equals(type.getMajorCode()) && two.getSystemCode().equals(type.getSystemCode())).collect(Collectors.toList());
+				 List<DeviceType> threeList = new ArrayList<>();
+				 sysDeviceType.forEach(three ->{
+					 DeviceType type = setEntity(three.getId()+"","sblx",three.getCode(),three.getName(),three.getStatus(),three.getIsSpecialDevice(),three.getIsEnd());
+					 threeList.add(type);
+				 });
+				 system.setChildren(threeList);
+				 twoList.add(system);
+			 });
+
+			 major.setChildren(twoList);
+			 newList.add(major);
+		 });
+
+
+
+		 systemList.forEach(csSubsystem -> {
+			 List sysList = deviceTypeTree.stream().filter(deviceType-> csSubsystem.getSystemCode().equals(deviceType.getSystemCode())).collect(Collectors.toList());
+			 csSubsystem.setDeviceTypeList(sysList);
+		 });
+
+		 majorList.forEach(major -> {
+			 List sysList = systemList.stream().filter(system-> system.getMajorCode().equals(major.getMajorCode())).collect(Collectors.toList());
+			 major.setChildren(sysList);
+			 List sysListType = deviceTypeTree.stream().filter(materialBaseType-> major.getMajorCode().equals(materialBaseType.getMajorCode())&&(materialBaseType.getSystemCode()==null || "".equals(materialBaseType.getSystemCode()))).collect(Collectors.toList());
+			 major.setDeviceTypeList(sysListType);
+		 });
+		 return Result.OK(majorList);
+	 }
 
 	/**
+	 * 设备类型-转换实体
+	 * @param id
+	 * @param treeType
+	 * @param code
+	 * @param name
+	 * @param status
+	 * @param isSpecialDevice
+	 * @param isEnd
+	 * @return
+	 */
+	public DeviceType setEntity(String id,String treeType,String code,String name,Integer status,Integer isSpecialDevice,Integer isEnd){
+		DeviceType type = new DeviceType();
+		type.setId(id);
+		type.setTreeType(treeType);
+		type.setCode(code);
+		type.setName(name);
+		type.setStatus(status);
+		type.setIsSpecialDevice(isSpecialDevice);
+		type.setIsEnd(isEnd);
+		return type;
+	}
+	 /**
 	 * 分页列表查询
 	 *
 	 * @param deviceType
@@ -81,9 +168,8 @@ public class DeviceTypeController extends BaseController<DeviceType, IDeviceType
 	@AutoLog(value = "设备类型添加")
 	@ApiOperation(value="设备类型添加", notes="设备类型添加")
 	@PostMapping(value = "/add")
-	public Result<String> add(@RequestBody DeviceType deviceType) {
-		deviceTypeService.save(deviceType);
-		return Result.OK("添加成功！");
+	public Result<?> add(@RequestBody DeviceType deviceType) {
+		return deviceTypeService.add(deviceType);
 	}
 
 	/**
@@ -95,9 +181,8 @@ public class DeviceTypeController extends BaseController<DeviceType, IDeviceType
 	@AutoLog(value = "设备类型编辑")
 	@ApiOperation(value="设备类型编辑", notes="设备类型编辑")
 	@RequestMapping(value = "/edit", method = {RequestMethod.PUT,RequestMethod.POST})
-	public Result<String> edit(@RequestBody DeviceType deviceType) {
-		deviceTypeService.updateById(deviceType);
-		return Result.OK("编辑成功!");
+	public Result<?> edit(@RequestBody DeviceType deviceType) {
+		return deviceTypeService.update(deviceType);
 	}
 
 	/**
@@ -110,6 +195,23 @@ public class DeviceTypeController extends BaseController<DeviceType, IDeviceType
 	@ApiOperation(value="设备类型通过id删除", notes="设备类型通过id删除")
 	@DeleteMapping(value = "/delete")
 	public Result<String> delete(@RequestParam(name="id",required=true) String id) {
+		//查询设备主数据是否使用
+		DeviceType deviceType = deviceTypeService.getById(id);
+		LambdaQueryWrapper<Device> wrapper = new LambdaQueryWrapper<>();
+		wrapper.eq(Device::getDeviceTypeCode,deviceType.getCode());
+		wrapper.eq(Device::getDelFlag,0);
+		List<Device> deviceList = deviceService.list(wrapper);
+		if(!deviceList.isEmpty()){
+			return Result.error("设备类型被设备主数据使用中，无法删除");
+		}
+		//查询是否存在子节点，如存在，则不能删除
+		LambdaQueryWrapper<DeviceType> queryWrapper = new LambdaQueryWrapper<>();
+		queryWrapper.eq(DeviceType::getPid, id);
+		queryWrapper.eq(DeviceType::getDelFlag, 0);
+		List<DeviceType> list = deviceTypeService.list(queryWrapper);
+		if(!list.isEmpty()){
+			return Result.error("存在子节点，无法删除");
+		}
 		deviceTypeService.removeById(id);
 		return Result.OK("删除成功!");
 	}

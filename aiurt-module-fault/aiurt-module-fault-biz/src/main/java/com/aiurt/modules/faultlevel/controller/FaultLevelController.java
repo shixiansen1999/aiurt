@@ -31,7 +31,7 @@ import com.aiurt.common.aspect.annotation.AutoLog;
  * @Date:   2022-06-24
  * @Version: V1.0
  */
-@Api(tags="故障等级")
+@Api(tags="故障管理-故障基础数据-故障等级")
 @RestController
 @RequestMapping("/faultlevel/faultLevel")
 @Slf4j
@@ -100,13 +100,13 @@ public class FaultLevelController extends BaseController<FaultLevel, IFaultLevel
 	@DeleteMapping(value = "/delete")
 	public Result<?> delete(@RequestParam(name="id",required=true) String id) {
 		FaultLevel faultLevel = faultLevelService.getById(id);
-		//判断故障上报是否使用
-		LambdaQueryWrapper<Fault> queryWrapper = new LambdaQueryWrapper<>();
+		//判断故障上报是否使用 todo
+		/*LambdaQueryWrapper<Fault> queryWrapper = new LambdaQueryWrapper<>();
 		queryWrapper.eq(Fault::getFaultTypeCode, faultLevel.getCode());
 		List<Fault> list = faultService.list(queryWrapper);
 		if (!list.isEmpty()) {
 			return Result.error("故障分类编码已被故障报修单使用，不能删除！");
-		}
+		}*/
 		faultLevel.setDelFlag(1);
 		faultLevelService.updateById(faultLevel);
 		return Result.OK("删除成功!");

@@ -50,7 +50,7 @@ import io.swagger.annotations.ApiOperation;
  * @Date:   2022-06-21
  * @Version: V1.0
  */
-@Api(tags="系统管理-基础数据-位置管理")
+@Api(tags="系统管理-基础数据-位置管理-三级")
 @RestController
 @RequestMapping("/position")
 @Slf4j

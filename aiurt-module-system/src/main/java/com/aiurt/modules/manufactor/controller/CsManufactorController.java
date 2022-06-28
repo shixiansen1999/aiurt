@@ -113,7 +113,7 @@ public class CsManufactorController  {
 	}
 
 	/**
-	 *   通过id删除
+	 *  通过id删除
 	 *
 	 * @param id
 	 * @return

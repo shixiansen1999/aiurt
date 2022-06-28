@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.aiurt.modules.device.entity.DeviceCompose;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import org.springframework.stereotype.Component;
 
 /**
  * @Description: device_compose
@@ -11,6 +12,7 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
  * @Date:   2022-06-22
  * @Version: V1.0
  */
+@Component
 public interface DeviceComposeMapper extends BaseMapper<DeviceCompose> {
 
 }

@@ -100,13 +100,13 @@ public class FaultTypeController extends BaseController<FaultType, IFaultTypeSer
 	@DeleteMapping(value = "/delete")
 	public Result<?> delete(@RequestParam(name="id",required=true) String id) {
 		FaultType faultType = faultTypeService.getById(id);
-		//判断故障上报是否使用
-		LambdaQueryWrapper<Fault> queryWrapper = new LambdaQueryWrapper<>();
+		//判断故障上报是否使用 todo
+		/*LambdaQueryWrapper<Fault> queryWrapper = new LambdaQueryWrapper<>();
 		queryWrapper.eq(Fault::getFaultTypeCode, faultType.getCode());
 		List<Fault> list = faultService.list(queryWrapper);
 		if (!list.isEmpty()) {
 			return Result.error("故障分类编码已被故障报修单使用，不能删除！");
-		}
+		}*/
 		faultType.setDelFlag(1);
 		faultTypeService.updateById(faultType);
 		return Result.OK("删除成功!");

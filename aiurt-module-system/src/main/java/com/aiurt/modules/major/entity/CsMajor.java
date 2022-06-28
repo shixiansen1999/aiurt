@@ -6,6 +6,7 @@ import java.util.Date;
 import java.math.BigDecimal;
 import java.util.List;
 
+import com.aiurt.modules.device.entity.DeviceType;
 import com.aiurt.modules.material.entity.MaterialBaseType;
 import com.aiurt.modules.subsystem.entity.CsSubsystem;
 import com.baomidou.mybatisplus.annotation.IdType;
@@ -86,4 +87,8 @@ public class CsMajor implements Serializable {
     @ApiModelProperty(value = "备用字段")
     @TableField(exist = false)
     private String byType = "zy";
+    /**子系统下的设备类型*/
+    @ApiModelProperty(value = "子系统下的设备类型")
+    @TableField(exist = false)
+    private List<DeviceType> deviceTypeList;
 }

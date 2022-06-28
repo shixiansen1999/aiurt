@@ -7,6 +7,7 @@ import java.math.BigDecimal;
 import java.util.List;
 
 import com.aiurt.common.aspect.annotation.Dict;
+import com.aiurt.modules.device.entity.DeviceType;
 import com.aiurt.modules.material.entity.MaterialBaseType;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
@@ -99,4 +100,8 @@ public class CsSubsystem implements Serializable {
     @ApiModelProperty(value = "与专业关联的子系统")
     @TableField(exist = false)
     private List<CsSubsystem> children;
+    /**子系统下的设备类型*/
+    @ApiModelProperty(value = "子系统下的设备类型")
+    @TableField(exist = false)
+    private List<DeviceType> deviceTypeList;
 }

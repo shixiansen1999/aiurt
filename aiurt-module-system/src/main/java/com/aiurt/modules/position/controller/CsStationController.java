@@ -48,7 +48,7 @@ import com.aiurt.common.aspect.annotation.AutoLog;
  * @Date:   2022-06-22
  * @Version: V1.0
  */
-@Api(tags="cs_station")
+@Api(tags="系统管理-基础数据-位置管理-二级")
 @RestController
 @RequestMapping("/position/csStation")
 @Slf4j

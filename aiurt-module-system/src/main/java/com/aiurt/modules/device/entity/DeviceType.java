@@ -4,7 +4,11 @@ import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.util.Date;
 import java.math.BigDecimal;
+import java.util.List;
+
+import com.aiurt.modules.material.entity.MaterialBaseType;
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
@@ -91,4 +95,19 @@ public class DeviceType implements Serializable {
     @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
     @ApiModelProperty(value = "修改时间")
     private Date updateTime;
+    /**子集*/
+    @Excel(name = "子集", width = 15)
+    @ApiModelProperty(value = "子集")
+    @TableField(exist = false)
+    private List<DeviceType> children;
+    /**设备组成*/
+    @Excel(name = "设备组成", width = 15)
+    @ApiModelProperty(value = "设备组成")
+    @TableField(exist = false)
+    private List<DeviceCompose> deviceComposeList;
+    /**节点类型*/
+    @Excel(name = "节点类型", width = 15)
+    @ApiModelProperty(value = "节点类型")
+    @TableField(exist = false)
+    private String treeType;
 }
