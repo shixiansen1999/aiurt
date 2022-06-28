@@ -48,6 +48,20 @@ public class RepairTaskDeviceRel implements Serializable {
 	@Excel(name = "设备code，关联device表的code", width = 15)
     @ApiModelProperty(value = "设备code，关联device表的code")
     private java.lang.String deviceCode;
+    /**站所编号*/
+    @Excel(name = "站所编号", width = 15)
+    @ApiModelProperty(value = "站所编号")
+    private java.lang.String stationCode;
+    /**线路编号*/
+    @Excel(name = "线路编号", width = 15)
+    @ApiModelProperty(value = "线路编号")
+    private java.lang.String lineCode;
+    /**位置编号*/
+    @Excel(name = "位置编号", width = 15)
+    @ApiModelProperty(value = "位置编号")
+    private java.lang.String positionCode;
+    @ApiModelProperty(value = "具体位置")
+    private java.lang.String specificLocation;
 	/**提交人id*/
 	@Excel(name = "提交人id", width = 15)
     @ApiModelProperty(value = "提交人id")
