@@ -99,7 +99,7 @@ public class Fault implements Serializable {
 
 	/**报修人*/
 	@Excel(name = "报修人", width = 15)
-    @ApiModelProperty(value = "报修人")
+    @ApiModelProperty(value = "报修人账号")
     @Dict(dictTable = "sys_user", dicCode = "username", dicText = "realname")
     private String faultApplicant;
 

@@ -87,8 +87,14 @@ public interface IFaultService extends IService<Fault> {
     void approvalHangUp(ApprovalHangUpDTO approvalHangUpDTO);
 
     /**
-     *
+     * 取消挂起
      * @param code
      */
     void cancelHangup(String code);
+
+    /**
+     * 填写维修信息
+     * @param repairRecordDTO
+     */
+    void fillRepairRecord(RepairRecordDTO repairRecordDTO);
 }

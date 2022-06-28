@@ -71,6 +71,7 @@ public class CommonCtroller {
     @ApiOperation("查询当前人员所管辖的专业")
     public Result<List<SelectTable>> queryMajorByAuth() {
         LambdaQueryWrapper<CsMajor> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(CsMajor::getDelFlag, 0);
 
         //todo 查询当前人员所管辖的专业。
         List<CsMajor> csMajorList = csMajorService.getBaseMapper().selectList(queryWrapper);
@@ -98,6 +99,7 @@ public class CommonCtroller {
     })
     public Result<List<SelectTable>> querySubSystemByAuth(@RequestParam(value = "majorCode", required = false) String majorCode) {
         LambdaQueryWrapper<CsSubsystem> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(CsSubsystem::getDelFlag, 0);
 
         //todo 查询当前人员所管辖的子系统
         if (StrUtil.isNotBlank(majorCode)) {
@@ -146,7 +148,7 @@ public class CommonCtroller {
         }
 
         //
-
+        queryWrapper.eq(Device::getDelFlag, 0);
         List<Device> csMajorList = deviceService.getBaseMapper().selectList(queryWrapper);
 
         List<SelectTable> list = csMajorList.stream().map(device -> {

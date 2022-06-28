@@ -250,6 +250,13 @@ public class FaultController extends BaseController<Fault, IFaultService> {
         return Result.OK();
     }
 
+    @AutoLog(value = "填写维修记录")
+    @ApiOperation(value = "填写维修记录", notes = "填写维修记录")
+    @PutMapping("/fillRepairRecord")
+    public Result<?> fillRepairRecord(@RequestBody RepairRecordDTO repairRecordDTO) {
+        faultService.fillRepairRecord(repairRecordDTO);
+        return Result.OK();
+    }
 
 
 

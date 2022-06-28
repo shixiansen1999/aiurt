@@ -44,6 +44,9 @@
             <directory>src/main/resources</directory>
             <includes>
                 <include>readme.txt</include>
+                <include>/static/*</include>
+                <include>/jeecg/*</include>
+                <include>/templates/*</include>
             </includes>
             <outputDirectory>aiurt-module-system</outputDirectory>
             <directoryMode>0744</directoryMode>
