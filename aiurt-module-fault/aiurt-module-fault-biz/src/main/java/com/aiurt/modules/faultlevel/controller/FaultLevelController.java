@@ -142,8 +142,6 @@ public class FaultLevelController extends BaseController<FaultLevel, IFaultLevel
 		return Result.OK(faultLevel);
 	}
 
-
-
 	 /**
 	  * 根据专业编码查询故障等级
 	  * @param majorCode
