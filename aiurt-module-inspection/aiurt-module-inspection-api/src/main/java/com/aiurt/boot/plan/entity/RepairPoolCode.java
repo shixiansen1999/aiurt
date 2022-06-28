@@ -119,4 +119,44 @@ public class RepairPoolCode implements Serializable {
     @ApiModelProperty(value = "检修标准里对应的设备信息")
     @TableField(exist = false)
     private List<RepairDeviceDTO> repairDeviceDTOList;
+
+    /**
+     * 检修周期类型名称
+     */
+    @TableField(exist = false)
+    @ApiModelProperty(value = "检修周期类型名称")
+    private String typeName;
+
+    /**
+     * 适用专业名称
+     */
+    @TableField(exist = false)
+    @ApiModelProperty(value = "适用专业名称")
+    private String majorName;
+
+    /**
+     * 适用专业子系统名称
+     */
+    @TableField(exist = false)
+    @ApiModelProperty(value = "适用专业子系统名称")
+    private String subsystemName;
+
+    /**
+     * 设备类型名称
+     */
+    @ApiModelProperty(value = "设备类型名称")
+    @TableField(exist = false)
+    private java.lang.String deviceTypeName;
+    /**
+     * 设备类型名称
+     */
+    @ApiModelProperty(value = "是否指定设备")
+    @TableField(exist = false)
+    private java.lang.String specifyDevice;
+    /**
+     * 设备类型名称
+     */
+    @ApiModelProperty(value = "是否跟设备类型相关")
+    @TableField(exist = false)
+    private java.lang.String isAppointDeviceName;
 }
