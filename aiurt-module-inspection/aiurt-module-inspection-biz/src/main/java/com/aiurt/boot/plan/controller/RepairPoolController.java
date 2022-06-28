@@ -90,7 +90,7 @@ public class RepairPoolController extends BaseController<RepairPool, IRepairPool
     @AutoLog(value = "通过检修计划id查看检修标准详情")
     @ApiOperation(value = "通过检修计划id查看检修标准详情", notes = "通过检修计划id查看检修标准详情")
     @GetMapping(value = "/queryStandardById")
-    public Result<RepairStrategyDTO> queryStandardById(@Validated RepairStrategyReq req) {
+    public Result<RepairStrategyDTO> queryStandardById(RepairStrategyReq req) {
         RepairStrategyDTO repairStrategyDTOList = repairPoolService.queryStandardById(req);
         return Result.OK(repairStrategyDTOList);
     }
@@ -187,7 +187,10 @@ public class RepairPoolController extends BaseController<RepairPool, IRepairPool
      */
     @AutoLog(value = "指派检修任务人员下拉列表")
     @ApiOperation(value = "指派检修任务人员下拉列表", notes = "指派检修任务人员下拉列表")
-    @PostMapping(value = "/queryUserList")
+    @GetMapping(value = "/queryUserList")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "OK", response = LoginUser.class)
+    })
     public Result queryUserList(@RequestParam @ApiParam(name = "code", required = true, value = "检修计划code") String code) {
         List<LoginUser> loginUserList = repairPoolService.queryUserList(code);
         return Result.OK(loginUserList);

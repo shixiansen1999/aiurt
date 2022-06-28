@@ -1,6 +1,7 @@
 package org.jeecg.common.system.vo;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
@@ -24,16 +25,19 @@ public class LoginUser {
 	/**
 	 * 登录人id
 	 */
+	@ApiModelProperty("id")
 	private String id;
 
 	/**
 	 * 登录人账号
 	 */
+	@ApiModelProperty("账号")
 	private String username;
 
 	/**
 	 * 登录人名字
 	 */
+	@ApiModelProperty("名字")
 	private String realname;
 
 	/**
