@@ -6,7 +6,6 @@ import cn.hutool.core.util.ObjectUtil;
 import com.aiurt.boot.task.dto.PatrolCheckResultDTO;
 import com.aiurt.boot.task.dto.PatrolTaskDeviceDTO;
 import com.aiurt.boot.task.entity.PatrolAccompany;
-import com.aiurt.boot.task.entity.PatrolCheckResult;
 import com.aiurt.boot.task.entity.PatrolTaskDevice;
 import com.aiurt.boot.task.mapper.PatrolAccompanyMapper;
 import com.aiurt.boot.task.mapper.PatrolCheckResultMapper;
@@ -17,7 +16,6 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -35,10 +33,8 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
 
     @Autowired
     private PatrolTaskDeviceMapper patrolTaskDeviceMapper;
-
     @Autowired
     private PatrolAccompanyMapper patrolAccompanyMapper;
-
     @Autowired
     private PatrolCheckResultMapper patrolCheckResultMapper;
 
@@ -49,7 +45,12 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
 
     @Override
     public Page<PatrolTaskDeviceDTO> getPatrolTaskDeviceList(Page<PatrolTaskDeviceDTO> pageList, String id) {
+
         List<PatrolTaskDeviceDTO> patrolTaskDeviceList = patrolTaskDeviceMapper.getPatrolTaskDeviceList(pageList, id);
+        patrolTaskDeviceList.stream().forEach(e->{
+            String accompanyName = patrolAccompanyMapper.getAccompanyName(e.getPatrolNumber());
+            e.setAccompanyName(accompanyName);
+        });
         return pageList.setRecords(patrolTaskDeviceList);
     }
 

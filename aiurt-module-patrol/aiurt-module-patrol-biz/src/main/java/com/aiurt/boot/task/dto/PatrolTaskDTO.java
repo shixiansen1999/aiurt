@@ -101,5 +101,8 @@ public class PatrolTaskDTO
     @ApiModelProperty(value = "子系统名称")
     @TableField(exist = false)
     private java.lang.String sysName;
+    @Excel(name = "作业类型", width = 15)
+    @ApiModelProperty(value = "作业类型")
+    private java.lang.String type;
 }
 
