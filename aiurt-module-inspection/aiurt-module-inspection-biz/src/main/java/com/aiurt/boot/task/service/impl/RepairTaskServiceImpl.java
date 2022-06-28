@@ -219,8 +219,23 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
         }
 
         //设备位置
-        List<StationDTO> stationDTOList = repairTaskMapper.selectStationList(overhaulCode);
-        checkListDTO.setEquipmentLocation(manager.translateStation(stationDTOList));
+        if(checkListDTO.getEquipmentCode()!=null){
+            List<StationDTO> stationDTOList = repairTaskMapper.selectStationList(overhaulCode);
+            checkListDTO.setEquipmentLocation(manager.translateStation(stationDTOList));
+        }
+        //检修位置
+        if(checkListDTO.getEquipmentCode()==null && checkListDTO.getSpecificLocation()!=null){
+            List<StationDTO> stationDTOList = new ArrayList<>();
+            stationDTOList.forEach(e->{
+                e.setLineCode(checkListDTO.getStationCode());
+                e.setLineCode(checkListDTO.getLineCode());
+                e.setLineCode(checkListDTO.getSpecificLocation());
+            });
+            String station = manager.translateStation(stationDTOList);
+            String string = checkListDTO.getSpecificLocation()+station;
+            checkListDTO.setMaintenancePosition(string);
+        }
+
 
         checkListDTO.setRepairTaskResultList(selectCodeContentList(checkListDTO.getDeviceId()));
         return checkListDTO;

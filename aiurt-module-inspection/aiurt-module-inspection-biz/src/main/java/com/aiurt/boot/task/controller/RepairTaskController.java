@@ -101,7 +101,7 @@ public class RepairTaskController extends BaseController<RepairTask, IRepairTask
 
 	 /**
 	  * 专业和专业子系统下拉列表
-	  * @param id
+	  * @param taskId
 	  * @return
 	  */
 	 @AutoLog(value = "检修任务-专业和专业子系统下拉列表")
@@ -115,7 +115,7 @@ public class RepairTaskController extends BaseController<RepairTask, IRepairTask
 
 	/**
 	 * 专业和专业子系统下拉列表
-	 * @param id
+	 * @param taskId
 	 * @return
 	 */
 	@AutoLog(value = "检修任务-设备类型和检修标准下拉列表")
