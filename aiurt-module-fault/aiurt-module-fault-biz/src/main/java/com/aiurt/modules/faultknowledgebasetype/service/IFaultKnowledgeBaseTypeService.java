@@ -1,7 +1,10 @@
 package com.aiurt.modules.faultknowledgebasetype.service;
 
+import com.aiurt.modules.faultknowledgebasetype.dto.MajorDTO;
 import com.aiurt.modules.faultknowledgebasetype.entity.FaultKnowledgeBaseType;
 import com.baomidou.mybatisplus.extension.service.IService;
+
+import java.util.List;
 
 /**
  * @Description: 故障知识分类
@@ -10,5 +13,7 @@ import com.baomidou.mybatisplus.extension.service.IService;
  * @Version: V1.0
  */
 public interface IFaultKnowledgeBaseTypeService extends IService<FaultKnowledgeBaseType> {
+
+    List<MajorDTO> faultKnowledgeBaseTypeTreeList();
 
 }

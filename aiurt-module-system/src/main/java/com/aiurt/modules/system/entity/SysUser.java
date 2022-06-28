@@ -232,17 +232,28 @@ public class SysUser implements Serializable {
     private String lineCodes;
 
     /**部门*/
-    @ApiModelProperty(value = "部门codes")
+    @ApiModelProperty(value = "部门权限codes")
     @TableField(exist = false)
     private String departCodes;
 
     /**站点*/
-    @ApiModelProperty(value = "站点codes")
+    @ApiModelProperty(value = "站所codes")
     @TableField(exist = false)
     private String stationCodes;
 
+    /**施工证编号*/
+    @ApiModelProperty(value = "施工证编号")
+    @Excel(name = "施工证编号", width = 15)
+    private String permitCode;
 
+    /**工作证图片*/
+    @ApiModelProperty(value = "工作证图片")
+    @Excel(name = "工作证图片", width = 15)
+    private String cardPics;
 
-
+    /**工资编号*/
+    @ApiModelProperty(value = "工资编号")
+    @Excel(name = "工资编号", width = 15)
+    private String salaryCode;
 
 }

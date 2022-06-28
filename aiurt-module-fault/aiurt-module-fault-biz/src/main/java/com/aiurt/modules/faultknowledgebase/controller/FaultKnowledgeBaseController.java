@@ -9,6 +9,12 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
+import com.aiurt.modules.faultknowledgebase.dto.DeviceAssemblyDTO;
+import com.aiurt.modules.faultknowledgebase.dto.DeviceTypeDTO;
+import com.aiurt.modules.faultknowledgebase.mapper.FaultKnowledgeBaseMapper;
+import com.aiurt.modules.faulttype.entity.FaultType;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.query.QueryGenerator;
 import com.aiurt.common.util.oConvertUtils;
@@ -27,6 +33,7 @@ import org.jeecgframework.poi.excel.entity.ImportParams;
 import org.jeecgframework.poi.excel.view.JeecgEntityExcelView;
 import com.aiurt.common.system.base.controller.BaseController;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
@@ -49,7 +56,8 @@ import com.aiurt.common.aspect.annotation.AutoLog;
 public class FaultKnowledgeBaseController extends BaseController<FaultKnowledgeBase, IFaultKnowledgeBaseService> {
 	@Autowired
 	private IFaultKnowledgeBaseService faultKnowledgeBaseService;
-
+	 @Autowired
+	 private FaultKnowledgeBaseMapper faultKnowledgeBaseMapper;
 	/**
 	 * 分页列表查询
 	 *
@@ -137,7 +145,8 @@ public class FaultKnowledgeBaseController extends BaseController<FaultKnowledgeB
 	@ApiOperation(value="故障知识库-通过id查询", notes="故障知识库-通过id查询")
 	@GetMapping(value = "/queryById")
 	public Result<FaultKnowledgeBase> queryById(@RequestParam(name="id",required=true) String id) {
-		FaultKnowledgeBase faultKnowledgeBase = faultKnowledgeBaseService.getById(id);
+		FaultKnowledgeBase faultKnowledgeBase = faultKnowledgeBaseMapper.readOne(id);
+		//FaultKnowledgeBase faultKnowledgeBase = faultKnowledgeBaseService.getById(id);
 		if(faultKnowledgeBase==null) {
 			return Result.error("未找到对应数据");
 		}
@@ -167,6 +176,26 @@ public class FaultKnowledgeBaseController extends BaseController<FaultKnowledgeB
         return super.importExcel(request, response, FaultKnowledgeBase.class);
     }
 
+	 /**
+	  * 设备分类查询
+	  * @return
+	  */
+	 @ApiOperation(value="device_type-设备分类查询", notes="device_type-设备分类查询")
+	 @GetMapping(value = "/getDeviceType")
+	 public Result<List<DeviceTypeDTO>> getDeviceType(@RequestParam(name="majorCode") String majorCode,
+													  @RequestParam(name="systemCode") String systemCode) {
+	 	List<DeviceTypeDTO> deviceTypes = faultKnowledgeBaseMapper.getDeviceType(majorCode,systemCode);
+	 	return Result.OK(deviceTypes);
+	 }
 
-
-}
+	 /**
+	  * 设备组件查询
+	  * @return
+	  */
+	 @ApiOperation(value="device_assembly-设备组件查询", notes="device_assembly-设备组件查询")
+	 @GetMapping(value = "/getDeviceAssembly")
+	 public Result<List<DeviceAssemblyDTO>> getDeviceAssembly(@RequestParam(name="deviceTypeCode") String deviceTypeCode) {
+		 List<DeviceAssemblyDTO> deviceAssembly = faultKnowledgeBaseMapper.getDeviceAssembly(deviceTypeCode);
+		 return Result.OK(deviceAssembly);
+	 }
+ }

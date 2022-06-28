@@ -72,6 +72,12 @@
     <if test="condition.deviceCode != null and condition.deviceCode != ''">
         and f.`code` in ((select fault_code from fault_device where device_code like concat('%',#{condition.deviceCode},'%')))
     </if>
+    <if test="condition.majorCode != null  and condition.majorCode !=''">
+        and f.major_code =#{condition.majorCode}
+    </if>
+    <if test="condition.subSystemCode != null  and condition.subSystemCode !=''">
+        and f.sub_system_code =#{condition.subSystemCode}
+    </if>
 </select>
 
 <select id="getDetail" resultType="com.aiurt.modules.faultanalysisreport.entity.dto.FaultDTO">

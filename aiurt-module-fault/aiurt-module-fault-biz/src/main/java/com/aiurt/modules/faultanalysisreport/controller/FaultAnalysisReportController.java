@@ -13,8 +13,12 @@ import javax.servlet.http.HttpServletResponse;
 import com.aiurt.modules.fault.entity.Fault;
 import com.aiurt.modules.fault.service.IFaultService;
 import com.aiurt.modules.faultanalysisreport.entity.dto.FaultDTO;
+import com.aiurt.modules.faultknowledgebase.dto.DeviceTypeDTO;
 import com.aiurt.modules.faultknowledgebase.entity.FaultKnowledgeBase;
 import com.aiurt.modules.faultknowledgebase.service.IFaultKnowledgeBaseService;
+import com.aiurt.modules.faulttype.entity.FaultType;
+import com.aiurt.modules.faulttype.mapper.FaultTypeMapper;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.query.QueryGenerator;
 import com.aiurt.common.util.oConvertUtils;
@@ -59,6 +63,8 @@ public class FaultAnalysisReportController extends BaseController<FaultAnalysisR
 	 private IFaultKnowledgeBaseService faultKnowledgeBaseService;
 	 @Autowired
 	 private IFaultService faultService;
+	 @Autowired
+	 private FaultTypeMapper faultTypeMapper;
 	/**
 	 * 分页列表查询
 	 *
@@ -226,4 +232,17 @@ public class FaultAnalysisReportController extends BaseController<FaultAnalysisR
 		faultKnowledgeBaseService.save(faultKnowledgeBase);
 		return Result.OK("提交成功");
 	}
+
+
+	 /**
+	  * 故障类别
+	  * @return
+	  */
+	 @ApiOperation(value="fault_type-故障类别", notes="fault_type-故障类别")
+	 @GetMapping(value = "/getFaultType")
+	 public Result<List<FaultType>> getFaultType() {
+		 LambdaQueryWrapper<FaultType> faultTypeLambdaQueryWrapper = new LambdaQueryWrapper<>();
+		 List<FaultType> faultTypes = faultTypeMapper.selectList(faultTypeLambdaQueryWrapper.eq(FaultType::getDelFlag, 0).select(FaultType::getId, FaultType::getCode, FaultType::getName));
+		 return Result.OK(faultTypes);
+	 }
 }

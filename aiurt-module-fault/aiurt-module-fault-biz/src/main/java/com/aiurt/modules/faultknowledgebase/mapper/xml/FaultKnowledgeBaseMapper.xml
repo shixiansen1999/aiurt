@@ -10,7 +10,7 @@
             fkb.knowledge_base_type_code,
             (SELECT name from fault_knowledge_base_type WHERE `code` = fkb.knowledge_base_type_code) as knowledgeBaseTypeName,
             fkb.material_code,
-            (SELECT material_name from device_assembly WHERE `code` = fkb.material_code) as materialName,
+            (SELECT material_name from device_assembly WHERE material_code = fkb.material_code) as materialName,
             fkb.fault_codes,
             fkb.fault_phenomenon,
             fkb.fault_reason,
@@ -59,5 +59,13 @@
     <if test="id != null and id != ''">
         and fkb.id = #{id}
     </if>
+    </select>
+
+<select id="getDeviceType" resultType="com.aiurt.modules.faultknowledgebase.dto.DeviceTypeDTO">
+    select id,major_code,system_code,`code`,name from device_type where del_flag = 0 and major_code=#{majorCode} and system_code=#{systemCode}
+    </select>
+
+<select id="getDeviceAssembly" resultType="com.aiurt.modules.faultknowledgebase.dto.DeviceAssemblyDTO">
+    select id,material_code,material_name,device_type_code from device_assembly where  del_flag = 0 and device_type_code =#{deviceTypeCode}
     </select>
 </mapper>

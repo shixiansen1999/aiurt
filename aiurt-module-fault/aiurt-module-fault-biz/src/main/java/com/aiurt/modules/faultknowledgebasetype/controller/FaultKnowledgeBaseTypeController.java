@@ -9,6 +9,9 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
+import com.aiurt.modules.faultknowledgebasetype.dto.MajorDTO;
+import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.query.QueryGenerator;
 import com.aiurt.common.util.oConvertUtils;
@@ -20,6 +23,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.extern.slf4j.Slf4j;
 
+import org.jeecg.common.system.vo.LoginUser;
 import org.jeecgframework.poi.excel.ExcelImportUtil;
 import org.jeecgframework.poi.excel.def.NormalExcelConstants;
 import org.jeecgframework.poi.excel.entity.ExportParams;
@@ -168,4 +172,27 @@ public class FaultKnowledgeBaseTypeController extends BaseController<FaultKnowle
         return super.importExcel(request, response, FaultKnowledgeBaseType.class);
     }
 
+	 /**
+	  * 知识库类别树
+	  *
+	  * @return
+	  */
+	 @ApiOperation(value = "知识库类别树", notes = "知识库类别树")
+	 @GetMapping(value = "/faultKnowledgeBaseTypeTreeList")
+	 public Result<?> faultKnowledgeBaseTypeTreeList() {
+		 List<MajorDTO> list = faultKnowledgeBaseTypeService.faultKnowledgeBaseTypeTreeList();
+		 return Result.OK(list);
+	 }
+
+	 /**
+	  * app故障知识库用户专业查询
+	  *
+	  * @return
+	  */
+	 @ApiOperation(value = "app故障知识库用户专业查询", notes = "app故障知识库用户专业查询")
+	 @GetMapping(value = "/getUserMajor")
+	 public Result<?> getUserMajor() {
+		 LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+		 return Result.OK();
+	 }
 }

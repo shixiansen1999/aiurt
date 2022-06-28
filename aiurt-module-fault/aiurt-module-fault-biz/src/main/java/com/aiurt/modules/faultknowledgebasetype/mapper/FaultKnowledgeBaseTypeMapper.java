@@ -2,9 +2,11 @@ package com.aiurt.modules.faultknowledgebasetype.mapper;
 
 import java.util.List;
 
-import org.apache.ibatis.annotations.Param;
+import com.aiurt.modules.faultknowledgebasetype.dto.MajorDTO;
+import com.aiurt.modules.faultknowledgebasetype.dto.SubSystemDTO;
 import com.aiurt.modules.faultknowledgebasetype.entity.FaultKnowledgeBaseType;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import org.apache.ibatis.annotations.Param;
 
 /**
  * @Description: 故障知识分类
@@ -14,4 +16,11 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
  */
 public interface FaultKnowledgeBaseTypeMapper extends BaseMapper<FaultKnowledgeBaseType> {
 
+    List<SubSystemDTO> getAllSubSystem(@Param("majorCode") String majorCode);
+
+    List<MajorDTO> getAllMajor(@Param("majorCodes")List<String> majorCodes);
+
+    List<String> getMajorByUser(@Param("userId")String userId);
+
+    List<SubSystemDTO> getSubSystemByUser(@Param("userId")String userId,@Param("majorCode")String majorCode);
 }

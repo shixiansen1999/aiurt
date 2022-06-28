@@ -4,6 +4,8 @@ import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.util.Date;
 import java.math.BigDecimal;
+import java.util.List;
+
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
@@ -79,4 +81,7 @@ public class FaultKnowledgeBaseType implements Serializable {
 	@Excel(name = "故障知识编码层级结构", width = 15)
     @ApiModelProperty(value = "故障知识编码层级结构")
     private String codeCc;
+
+    /**与当前知识库类别关联的子知识库类别*/
+    private List<FaultKnowledgeBaseType> faultKnowledgeBaseTypes;
 }
