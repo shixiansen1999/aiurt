@@ -1,6 +1,7 @@
 package com.aiurt.boot.task.controller;
 
 import com.aiurt.boot.manager.dto.EquipmentOverhaulDTO;
+import com.aiurt.boot.manager.dto.ExamineDTO;
 import com.aiurt.boot.manager.dto.MajorDTO;
 import com.aiurt.boot.task.dto.CheckListDTO;
 import com.aiurt.boot.task.entity.RepairTask;
@@ -140,6 +141,34 @@ public class RepairTaskController extends BaseController<RepairTask, IRepairTask
 	){
 		CheckListDTO checkListDTO = repairTaskService.selectCheckList(deviceId,overhaulCode);
 		return Result.OK(checkListDTO);
+	}
+
+	/**
+	 *   审核
+	 *
+	 * @param examineDTO
+	 * @return
+	 */
+	@AutoLog(value = "检修任务-审核")
+	@ApiOperation(value="检修任务-审核", notes="检修任务-审核")
+	@PostMapping(value = "/toExamine")
+	public Result<String> toExamine(@RequestBody ExamineDTO examineDTO) {
+		repairTaskService.toExamine(examineDTO);
+		return Result.OK("审核成功！");
+	}
+
+	/**
+	 *   验收
+	 *
+	 * @param examineDTO
+	 * @return
+	 */
+	@AutoLog(value = "检修任务-验收")
+	@ApiOperation(value="检修任务-验收", notes="检修任务-验收")
+	@PostMapping(value = "/acceptance")
+	public Result<String> acceptance(@RequestBody ExamineDTO examineDTO) {
+		repairTaskService.acceptance(examineDTO);
+		return Result.OK("验收成功！");
 	}
 
 	/**

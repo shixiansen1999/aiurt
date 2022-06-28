@@ -241,7 +241,6 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
         return checkListDTO;
     }
 
-
     /**
      * 检修单详情查询检修结果
      *
@@ -311,4 +310,42 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
         return rootNodes;
     }
 
+    @Override
+    public void toExamine(ExamineDTO examineDTO) {
+        RepairTask repairTask = repairTaskMapper.selectById(examineDTO.getId());
+        RepairTask repairTask1= new RepairTask();
+        if (examineDTO.getStatus()==0){
+            repairTask1.setId(examineDTO.getId());
+            repairTask1.setErrorContent(examineDTO.getContent());
+            repairTask1.setStatus(5);
+            repairTaskMapper.updateById(repairTask1);
+        }if (examineDTO.getStatus()==1 && repairTask.getIsReceipt()==1){
+            repairTask1.setId(examineDTO.getId());
+            repairTask1.setErrorContent(examineDTO.getContent());
+            repairTask1.setStatus(7);
+            repairTaskMapper.updateById(repairTask1);
+        }if (examineDTO.getStatus()==1 && repairTask.getIsReceipt()==0){
+            repairTask1.setId(examineDTO.getId());
+            repairTask1.setErrorContent(examineDTO.getContent());
+            repairTask1.setStatus(8);
+            repairTaskMapper.updateById(repairTask1);
+        }
+    }
+
+
+    @Override
+    public void acceptance(ExamineDTO examineDTO) {
+        RepairTask repairTask1= new RepairTask();
+        if (examineDTO.getStatus()==0){
+            repairTask1.setId(examineDTO.getId());
+            repairTask1.setErrorContent(examineDTO.getContent());
+            repairTask1.setStatus(5);
+            repairTaskMapper.updateById(repairTask1);
+        }if (examineDTO.getStatus()==1 ){
+            repairTask1.setId(examineDTO.getId());
+            repairTask1.setErrorContent(examineDTO.getContent());
+            repairTask1.setStatus(8);
+            repairTaskMapper.updateById(repairTask1);
+        }
+    }
 }

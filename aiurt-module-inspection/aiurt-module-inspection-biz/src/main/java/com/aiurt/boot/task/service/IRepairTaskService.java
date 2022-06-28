@@ -1,6 +1,7 @@
 package com.aiurt.boot.task.service;
 
 import com.aiurt.boot.manager.dto.EquipmentOverhaulDTO;
+import com.aiurt.boot.manager.dto.ExamineDTO;
 import com.aiurt.boot.manager.dto.MajorDTO;
 import com.aiurt.boot.task.dto.CheckListDTO;
 import com.aiurt.boot.task.entity.RepairTask;
@@ -58,4 +59,16 @@ public interface IRepairTaskService extends IService<RepairTask> {
      * @return
      */
     CheckListDTO selectCheckList(String id,String code);
+
+    /**
+     * 审核
+     * @param examineDTO
+     */
+    void toExamine(ExamineDTO examineDTO);
+
+    /**
+     * 验收
+     * @param examineDTO
+     */
+    void acceptance(ExamineDTO examineDTO);
 }
