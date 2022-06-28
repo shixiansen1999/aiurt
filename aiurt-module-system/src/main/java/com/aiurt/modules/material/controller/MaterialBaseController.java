@@ -10,17 +10,34 @@ import com.aiurt.modules.material.entity.MaterialBase;
 import com.aiurt.modules.material.entity.MaterialBaseType;
 import com.aiurt.modules.material.service.IMaterialBaseService;
 import com.aiurt.modules.material.service.IMaterialBaseTypeService;
+import com.aliyuncs.CommonResponse;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.poi.xssf.usermodel.XSSFCell;
+import org.apache.poi.xssf.usermodel.XSSFRow;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.apache.xmlbeans.impl.validator.ValidatorUtil;
 import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.system.query.QueryGenerator;
+import org.jeecgframework.poi.excel.entity.ImportParams;
+import org.jeecg.common.system.query.QueryGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.multipart.MultipartHttpServletRequest;
+import org.springframework.core.io.ClassPathResource;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.BufferedOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -74,18 +91,20 @@ public class MaterialBaseController {
         queryWrapper.eq("del_flag", 0);
         if(majorCode != null && !"".equals(majorCode)){
             queryWrapper.eq("major_code", majorCode);
-        }
-        if(systemCode != null && !"".equals(systemCode)){
-            queryWrapper.eq("system_code", systemCode);
+            if(systemCode != null && !"".equals(systemCode)){
+                queryWrapper.eq("system_code", systemCode);
+            }else{
+                queryWrapper.apply(" (system_code is null or system_code ='') ");
+            }
         }
         if(code != null && !"".equals(code)){
-            queryWrapper.eq("code", code);
+            queryWrapper.like("code", code);
         }
         if(name != null && !"".equals(name)){
             queryWrapper.like("name", name);
         }
         if(baseTypeCode != null && !"".equals(baseTypeCode)){
-            queryWrapper.apply(" FIND_IN_SET ( "+baseTypeCode+" , REPLACE(base_type_code_cc,'/',',') ");
+            queryWrapper.apply(" FIND_IN_SET ( '"+baseTypeCode+"' , REPLACE(base_type_code_cc,'/',',')) ");
 //            queryWrapper.eq("base_type_code", baseTypeCode);
         }
         queryWrapper.orderByDesc("create_time");
@@ -211,8 +230,8 @@ public class MaterialBaseController {
             if(deviceAssemblyList != null && deviceAssemblyList.size()>0){
                 return Result.error("该物资正在使用中，无法删除");
             }
-            materialBase.setDelFlag(1);
-            iMaterialBaseService.updateById(materialBase);
+//            materialBase.setDelFlag(1);
+            iMaterialBaseService.removeById(materialBase);
         } catch (Exception e) {
             log.error("删除失败", e.getMessage());
             return Result.error("删除失败!");
@@ -240,8 +259,8 @@ public class MaterialBaseController {
                 if((deviceComposeList != null && deviceComposeList.size()>0) || (deviceAssemblyList != null && deviceAssemblyList.size()>0)){
                     res += materialBase.getCode() + ",";
                 }else{
-                    materialBase.setDelFlag(1);
-                    iMaterialBaseService.updateById(materialBase);
+//                    materialBase.setDelFlag(1);
+                    iMaterialBaseService.removeById(materialBase);
                 }
             }
             if(res.contains(",")){
@@ -253,5 +272,53 @@ public class MaterialBaseController {
             result.success(res);
         }
         return result;
+    }
+
+    /**
+     * 通过excel导入数据
+     * @param request
+     * @param response
+     * @return
+     */
+    @RequestMapping(value = "/importExcel", method = RequestMethod.POST)
+    public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) {
+        MultipartHttpServletRequest multipartRequest = (MultipartHttpServletRequest) request;
+        Map<String, MultipartFile> fileMap = multipartRequest.getFileMap();
+        for (Map.Entry<String, MultipartFile> entity : fileMap.entrySet()) {
+            // 获取上传文件对象
+            MultipartFile file = entity.getValue();
+            ImportParams params = new ImportParams();
+            params.setTitleRows(1);
+            params.setHeadRows(1);
+            params.setNeedSave(true);
+            try {
+                return iMaterialBaseService.importExcelCheckRoleCode(file, params);
+            } catch (Exception e) {
+                log.error(e.getMessage(), e);
+                return Result.error("文件导入失败:" + e.getMessage());
+            } finally {
+                try {
+                    file.getInputStream().close();
+                } catch (IOException e) {
+                    log.error(e.getMessage(), e);
+                }
+            }
+        }
+        return Result.error("文件导入失败！");
+    }
+
+    @AutoLog(value = "下载物资导入模板")
+    @ApiOperation(value = "下载物资导入模板", notes = "下载物资导入模板")
+    @RequestMapping(value = "/downloadExcel", method = RequestMethod.GET)
+    public void downloadExcel(HttpServletResponse response, HttpServletRequest request) throws IOException {
+        ClassPathResource classPathResource =  new ClassPathResource("template/materialBase.xlsx");
+        InputStream bis = classPathResource.getInputStream();
+        BufferedOutputStream out = new BufferedOutputStream(response.getOutputStream());
+        int len = 0;
+        while ((len = bis.read()) != -1) {
+            out.write(len);
+            out.flush();
+        }
+        out.close();
     }
 }

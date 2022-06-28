@@ -204,6 +204,23 @@ public class MaterialBaseTypeController {
             if (count > 0){
                 return Result.error("物资分类编号不能重复");
             }
+            String majorCode = materialBaseType.getMajorCode();
+            String systemCode = materialBaseType.getSystemCode();
+//            String pid = materialBaseType.getPid();
+            QueryWrapper<MaterialBaseType> queryWrapper = new QueryWrapper<MaterialBaseType>().eq("major_code", majorCode);
+            queryWrapper.eq("del_flag",0);
+            queryWrapper.ne("id",materialBaseType.getId());
+            queryWrapper.eq("base_type_name",materialBaseType.getBaseTypeName());
+//            queryWrapper.eq("pid",pid);
+            if(systemCode != null && !"".equals(systemCode)){
+                queryWrapper.eq("system_code", systemCode);
+            }else {
+                queryWrapper.apply(" (system_code = '' or system_code is null) ");
+            }
+            List<MaterialBaseType> list = iMaterialBaseTypeService.list(queryWrapper);
+            if(list != null && list.size()>0){
+                return Result.error("物资分类名称不能重复");
+            }
             String typeCodeCc = iMaterialBaseTypeService.getCcStr(materialBaseType);
             materialBaseType.setTypeCodeCc(typeCodeCc);
             iMaterialBaseTypeService.save(materialBaseType);
@@ -252,8 +269,24 @@ public class MaterialBaseTypeController {
             if (count > 0){
                 return Result.error("物资分类编号不能重复");
             }
+            String majorCode = materialBaseType.getMajorCode();
+            String systemCode = materialBaseType.getSystemCode();
+            String pid = materialBaseType.getPid();
+            QueryWrapper<MaterialBaseType> queryWrapper = new QueryWrapper<MaterialBaseType>().eq("major_code", majorCode);
+            queryWrapper.eq("del_flag",0);
+            queryWrapper.ne("id",materialBaseType.getId());
+            queryWrapper.eq("base_type_name",materialBaseType.getBaseTypeName());
+            queryWrapper.eq("pid",pid);
+            if(systemCode != null && !"".equals(systemCode)){
+                queryWrapper.eq("system_code", systemCode);
+            }else {
+                queryWrapper.apply(" (system_code = '' or system_code is null) ");
+            }
+            List<MaterialBaseType> list = iMaterialBaseTypeService.list(queryWrapper);
+            if(list != null && list.size()>0){
+                return Result.error("物资分类名称不能重复");
+            }
             boolean ok = iMaterialBaseTypeService.updateById(materialBaseType);
-
             try{
             }catch (Exception e){
                 throw new AiurtBootException(e.getMessage());

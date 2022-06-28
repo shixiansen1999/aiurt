@@ -32,7 +32,7 @@ public class Device {
 	@TableId(type= IdType.ASSIGN_ID)
     @ApiModelProperty(value = "主键id")
 	@JsonSerialize(using = ToStringSerializer.class)
-	private  Long  id;
+	private  String  id;
 
 	/**所属专业*/
 	@Excel(name = "所属专业", width = 15)
@@ -167,7 +167,7 @@ public class Device {
 	/**设备复用类型(1:多线路复用/0:多站点复用)*/
 //	@Excel(name = "设备复用类型(1:多线路复用/0:多站点复用)", width = 15)
 	@ApiModelProperty(value = "设备复用类型(1:多线路复用/0:多站点复用)")
-	@Dict(dicCode = "device_reuse_type")
+//	@Dict(dicCode = "device_reuse_type")
 	private  String  reuseType;
 	@Excel(name = "设备复用类型", width = 15)
 	@ApiModelProperty(value = "设备复用类型(1:多线路复用/0:多站点复用)")

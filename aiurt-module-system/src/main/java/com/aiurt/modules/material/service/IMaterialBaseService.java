@@ -2,6 +2,9 @@ package com.aiurt.modules.material.service;
 
 import com.aiurt.modules.material.entity.MaterialBase;
 import com.baomidou.mybatisplus.extension.service.IService;
+import org.jeecgframework.poi.excel.entity.ImportParams;
+import org.springframework.web.multipart.MultipartFile;
+import org.jeecg.common.api.vo.Result;
 
 public interface IMaterialBaseService extends IService<MaterialBase> {
     /**
@@ -17,4 +20,5 @@ public interface IMaterialBaseService extends IService<MaterialBase> {
      * @return
      */
     MaterialBase translate(MaterialBase materialBase);
+    Result importExcelCheckRoleCode(MultipartFile file, ImportParams params) throws Exception;
 }

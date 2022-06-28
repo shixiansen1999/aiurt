@@ -251,6 +251,8 @@ public interface CommonConstant {
     public static final String SQL_INDEX_UNIQ_CODE = "uniq_code";
     /** sys_role 表 code 唯一键索引 */
     public static final String SQL_INDEX_UNIQ_SYS_ROLE_CODE = "uniq_sys_role_role_code";
+    /** material_base 表 code 唯一键索引 */
+    public static final String SQL_INDEX_UNIQ_MATERIAL_BASE_CODE = "uniq_material_base_code";
     /** sys_depart 表 code 唯一键索引 */
     public static final String SQL_INDEX_UNIQ_DEPART_ORG_CODE = "uniq_depart_org_code";
     /** sys_category 表 code 唯一键索引 */

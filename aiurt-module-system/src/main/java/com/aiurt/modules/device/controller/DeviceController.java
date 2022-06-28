@@ -5,9 +5,12 @@ import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.modules.device.entity.Device;
 import com.aiurt.modules.device.entity.DeviceAssembly;
 import com.aiurt.modules.device.entity.DeviceCompose;
+import com.aiurt.modules.device.entity.DeviceType;
 import com.aiurt.modules.device.service.IDeviceAssemblyService;
 import com.aiurt.modules.device.service.IDeviceComposeService;
 import com.aiurt.modules.device.service.IDeviceService;
+import com.aiurt.modules.device.service.IDeviceTypeService;
+import com.aiurt.modules.material.entity.MaterialBaseType;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -39,6 +42,8 @@ public class DeviceController {
     private IDeviceComposeService iDeviceCompostService;
     @Autowired
     private IDeviceAssemblyService iDeviceAssemblyService;
+    @Autowired
+    private IDeviceTypeService iDeviceTypeService;
 
     /**
      * 分页列表查询
@@ -57,6 +62,7 @@ public class DeviceController {
                                                @RequestParam(name = "lineCode", required = false) String lineCode,
                                                @RequestParam(name = "stationCode", required = false) String stationCode,
                                                @RequestParam(name = "positionCode", required = false) String positionCode,
+                                               @RequestParam(name = "temporary", required = false) String temporary,
                                                @RequestParam(name = "majorCode", required = false) String majorCode,
                                                @RequestParam(name = "systemCode", required = false) String systemCode,
                                                @RequestParam(name = "deviceTypeCode", required = false) String deviceTypeCode,
@@ -69,11 +75,14 @@ public class DeviceController {
         if(majorCode != null && !"".equals(majorCode)){
             queryWrapper.eq("major_code", majorCode);
         }
+        if(temporary != null && !"".equals(temporary)){
+            queryWrapper.eq("temporary", temporary);
+        }
         if(systemCode != null && !"".equals(systemCode)){
             queryWrapper.eq("system_code", systemCode);
         }
         if(deviceTypeCode != null && !"".equals(deviceTypeCode)){
-            queryWrapper.apply(" FIND_IN_SET ( "+deviceTypeCode+" , REPLACE(device_type_code_cc,'/',',') ");
+            queryWrapper.apply(" FIND_IN_SET ( "+deviceTypeCode+" , REPLACE(device_type_code_cc,'/',',')) ");
         }
         if(lineCode != null && !"".equals(lineCode)){
             queryWrapper.eq("line_code", lineCode);
@@ -99,6 +108,15 @@ public class DeviceController {
         result.setSuccess(true);
         result.setResult(pageList);
         return result;
+    }
+
+    @AutoLog(value = "设备-分页列表查询")
+    @ApiOperation(value = "设备-分页列表查询", notes = "设备-分页列表查询")
+    @GetMapping(value = "/patrolDevicelist")
+    public Result<?> patrolDevicelist(@RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
+                                               HttpServletRequest req) {
+//        return Result.ok(deviceService.patrolDevicelist());
+        return Result.ok(null);
     }
 
     @AutoLog(value = "设备-列表查询")
@@ -127,7 +145,7 @@ public class DeviceController {
             queryWrapper.eq("system_code", systemCode);
         }
         if(deviceTypeCode != null && !"".equals(deviceTypeCode)){
-            queryWrapper.apply(" FIND_IN_SET ( "+deviceTypeCode+" , REPLACE(device_type_code_cc,'/',',') ");
+            queryWrapper.apply(" FIND_IN_SET ( "+deviceTypeCode+" , REPLACE(device_type_code_cc,'/',',')) ");
         }
         if(lineCode != null && !"".equals(lineCode)){
             queryWrapper.eq("line_code", lineCode);
@@ -180,19 +198,23 @@ public class DeviceController {
     public Result<String> getDeviceCode(
             @RequestParam(name = "majorCode", required = false) String majorCode,
             @RequestParam(name = "systemCode", required = false) String systemCode,
-            @RequestParam(name = "deviceTypeCodeCc", required = false) String deviceTypeCodeCc) {
+            @RequestParam(name = "deviceTypeCode", required = false) String deviceTypeCode) {
         Result<String> result = new Result<String>();
         try {
-            String deviceTypeCode = "";
-            if(deviceTypeCodeCc != null && !"".equals(deviceTypeCodeCc)){
-                if(deviceTypeCodeCc.contains("/")){
-                    List<String> strings = Arrays.asList(deviceTypeCodeCc.split("/"));
-                    for(String code : strings){
-                        deviceTypeCode += code;
-                    }
-                }else{
-                    deviceTypeCode = deviceTypeCodeCc;
-                }
+//            DeviceType deviceType = iDeviceTypeService.getOne(new QueryWrapper<DeviceType>().eq("code",deviceTypeCode));
+//            String deviceTypeCodeCc = iDeviceTypeService.getCcStr(deviceType);
+//            if(deviceTypeCodeCc != null && !"".equals(deviceTypeCodeCc)){
+//                if(deviceTypeCodeCc.contains("/")){
+//                    List<String> strings = Arrays.asList(deviceTypeCodeCc.split("/"));
+//                    for(String code : strings){
+//                        deviceTypeCode += code;
+//                    }
+//                }else{
+//                    deviceTypeCode = deviceTypeCodeCc;
+//                }
+//            }
+            if(systemCode == null){
+                systemCode = "";
             }
             String str = majorCode + systemCode + deviceTypeCode;
             Device device = deviceService.getOne(new LambdaQueryWrapper<Device>().likeRight(Device::getCode, str)
@@ -224,8 +246,11 @@ public class DeviceController {
     public Result<Device> add(@RequestBody Device device) {
         Result<Device> result = new Result<Device>();
         try {
-            deviceService.save(device);
             String deviceTypeCode = device.getDeviceTypeCode();
+            DeviceType deviceType = iDeviceTypeService.getOne(new QueryWrapper<DeviceType>().eq("code",deviceTypeCode));
+            String typeCodeCc = iDeviceTypeService.getCcStr(deviceType);
+            device.setDeviceTypeCodeCc(typeCodeCc);
+            deviceService.save(device);
             List<DeviceCompose> deviceComposeList = iDeviceCompostService.list(new QueryWrapper<DeviceCompose>().eq("device_type_code",deviceTypeCode));
             if(deviceComposeList != null && deviceComposeList.size()>0){
                 for(DeviceCompose deviceCompose : deviceComposeList){

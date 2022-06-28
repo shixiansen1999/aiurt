@@ -39,7 +39,7 @@ public class DeviceServiceImpl extends ServiceImpl<DeviceMapper, Device> impleme
 
 	@Override
 	public Result<Device> queryDetailById(String deviceId) {
-    	Device device = deviceMapper.getById(deviceId);
+    	Device device = deviceMapper.selectById(deviceId);
     	Device devicefinal = translate(device);
 		//设备组件
 		List<DeviceAssembly> deviceAssemblyList = deviceAssemblyMapper.selectList(new QueryWrapper<DeviceAssembly>().eq("device_code", device.getCode()));
@@ -73,7 +73,17 @@ public class DeviceServiceImpl extends ServiceImpl<DeviceMapper, Device> impleme
 		String scrapFlag = device.getScrapFlag()==null?"":device.getScrapFlag().toString();
 		device.setDeviceLevelName(sysBaseApi.translateDict("device_level",deviceLevel)==null?"":sysBaseApi.translateDict("device_level",deviceLevel));
 		device.setStatusDesc(sysBaseApi.translateDict("device_status",status)==null?"":sysBaseApi.translateDict("device_status",status));
-		device.setReuseTypeName(sysBaseApi.translateDict("device_reuse_type",reuseType)==null?"":sysBaseApi.translateDict("device_reuse_type",reuseType));
+		String reuseTypeName = "";
+		if(!"".equals(reuseType) && reuseType.contains(",")){
+			String[] split = reuseType.split(",");
+			for(String s : split){
+				reuseTypeName += sysBaseApi.translateDict("device_reuse_type",reuseType)==null?"":sysBaseApi.translateDict("device_reuse_type",s) + ",";
+			}
+			reuseTypeName = reuseTypeName.substring(0,reuseTypeName.length()-1);
+		}else{
+			reuseTypeName = sysBaseApi.translateDict("device_reuse_type",reuseType)==null?"":sysBaseApi.translateDict("device_reuse_type",reuseType);
+		}
+		device.setReuseTypeName(reuseTypeName);
 		device.setTemporaryName(sysBaseApi.translateDict("device_temporary",temporary)==null?"":sysBaseApi.translateDict("device_temporary",temporary));
 		device.setScrapFlagName(sysBaseApi.translateDict("device_scrap_flag",scrapFlag)==null?"":sysBaseApi.translateDict("device_scrap_flag",scrapFlag));
 		//表部分翻译

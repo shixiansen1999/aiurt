@@ -38,19 +38,19 @@ public class MaterialBase {
 	@Dict(dictTable ="cs_major",dicText = "major_name",dicCode = "major_code")
 	private  String  majorCode;
 	/**所属专业手动翻译*/
-	@Excel(name = "所属专业手动翻译", width = 15)
-	@ApiModelProperty(value = "所属专业手动翻译")
+	@Excel(name = "专业名称", width = 15)
+	@ApiModelProperty(value = "专业名称")
 	@TableField(exist = false)
 	private  String  majorCodeName;
 
 	/**子系统编号*/
-	@Excel(name = "子系统编号", width = 15)
+	@Excel(name = "子系统编码", width = 15)
 	@ApiModelProperty(value = "子系统编号")
 	@Dict(dictTable ="cs_subsystem",dicText = "system_name",dicCode = "system_code")
 	private  String  systemCode;
 	/**子系统编号手动翻译*/
-	@Excel(name = "子系统编号手动翻译", width = 15)
-	@ApiModelProperty(value = "子系统编号手动翻译")
+	@Excel(name = "子系统名称", width = 15)
+	@ApiModelProperty(value = "子系统名称")
 	@TableField(exist = false)
 	private  String  systemCodeName;
 
@@ -60,17 +60,17 @@ public class MaterialBase {
 	@Dict(dictTable ="material_base_type",dicText = "base_type_name",dicCode = "base_type_code")
 	private  String  baseTypeCode;
 	/**分类编码*/
-	@Excel(name = "分类编码名称", width = 15)
-	@ApiModelProperty(value = "分类编码名称")
+	@Excel(name = "物资分类名称", width = 15)
+	@ApiModelProperty(value = "物资分类名称")
 	@TableField(exist = false)
 	private  String  baseTypeCodeName;
 
 	/**分类编码层级*/
-	@Excel(name = "分类编码层级", width = 15)
+//	@Excel(name = "分类编码层级", width = 15)
 	@ApiModelProperty(value = "分类编码层级")
 	private  String  baseTypeCodeCc;
 	/**分类编码层级名称*/
-	@Excel(name = "分类编码层级名称", width = 15)
+//	@Excel(name = "分类编码层级名称", width = 15)
 	@ApiModelProperty(value = "分类编码层级名称")
 	@TableField(exist = false)
 	private  String  baseTypeCodeCcName;
@@ -81,8 +81,8 @@ public class MaterialBase {
 	private  String  code;
 
 	/**名称*/
-	@Excel(name = "名称", width = 15)
-	@ApiModelProperty(value = "名称")
+	@Excel(name = "物资名称", width = 15)
+	@ApiModelProperty(value = "物资名称")
 	private  String  name;
 
 	/**规格型号*/
@@ -91,23 +91,28 @@ public class MaterialBase {
 	private  String  specifications;
 
 	/**生产厂商*/
-	@Excel(name = " 生产厂商", width = 15)
-	@ApiModelProperty(value = " 生产厂商")
+	@Excel(name = "生产厂商编码", width = 15)
+	@ApiModelProperty(value = "生产厂商编码")
 	@Dict(dictTable ="cs_manufactor",dicText = "name",dicCode = "code")
 	private  String  manufactorCode;
 	/**生产厂商手动翻译*/
-	@Excel(name = "生产厂商手动翻译", width = 15)
-	@ApiModelProperty(value = "生产厂商手动翻译")
+	@Excel(name = "生产厂商名称", width = 15)
+	@ApiModelProperty(value = "生产厂商名称")
 	@TableField(exist = false)
 	private  String  manufactorCodeName;
 
 	/**单位*/
-	@Excel(name = " 单位", width = 15)
+	@Excel(name = "单位", width = 15)
 	@ApiModelProperty(value = " 单位")
+	@Dict(dicCode = "materian_unit")
 	private  String  unit;
+	@Excel(name = "单位名称", width = 15)
+	@ApiModelProperty(value = "单位名称")
+	@TableField(exist = false)
+	private  String  unitName;
 
 	/**单价*/
-	@Excel(name = " 单价", width = 15)
+	@Excel(name = "单价", width = 15)
 	@ApiModelProperty(value = " 单价")
 	private  String  price;
 
@@ -148,7 +153,6 @@ public class MaterialBase {
 
 	@ApiModelProperty(value = "删除状态 0-未删除 1-已删除")
 	@TableLogic
-	@Dict(dicCode = "material_base_type_del_flag")
 	private  Integer  delFlag;
 
 	@ApiModelProperty(value = "删除状态 0-未删除 1-已删除")

@@ -50,6 +50,7 @@ public class DeviceAssembly {
 	/**组件状态*/
 	@Excel(name = "组件状态", width = 15)
 	@ApiModelProperty(value = "组件状态")
+	@TableField(exist = false)
 	private  String  statusName;
 
 	/**组件编号*/
@@ -119,6 +120,7 @@ public class DeviceAssembly {
 
 	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
 	@DateTimeFormat(pattern="yyyy-MM-dd")
+	@TableField(exist = false)
 	private java.util.Date startDate;
 
 	/**附件*/
