@@ -39,7 +39,7 @@ public class PatrolPlanStrategy implements Serializable {
 	@Excel(name = "计划表主键", width = 15)
     @ApiModelProperty(value = "计划表主键")
     private java.lang.String planId;
-	/**巡检类型：1周巡、2月巡*/
+	/**巡检类型：0天巡、1周巡、2月巡*/
 	@Excel(name = "巡检类型：1周巡、2月巡", width = 15)
     @ApiModelProperty(value = "巡检类型：1周巡、2月巡")
     private java.lang.Integer type;
@@ -47,9 +47,9 @@ public class PatrolPlanStrategy implements Serializable {
 	@Excel(name = "巡检星期：1星期一、2星期二、3星期三、4星期四、5星期五、6星期六、7星期日", width = 15)
     @ApiModelProperty(value = "巡检星期：1星期一、2星期二、3星期三、4星期四、5星期五、6星期六、7星期日")
     private java.lang.Integer week;
-	/**巡检周次：1第一周、2第二周、3第三周、4第四周*/
-	@Excel(name = "巡检周次：1第一周、2第二周、3第三周、4第四周", width = 15)
-    @ApiModelProperty(value = "巡检周次：1第一周、2第二周、3第三周、4第四周")
+	/**巡检周次：1第一周、2第二周、3第三周、4第四周、5第五周*/
+	@Excel(name = "巡检周次：1第一周、2第二周、3第三周、4第四周、5第五周", width = 15)
+    @ApiModelProperty(value = "巡检周次：1第一周、2第二周、3第三周、4第四周、5第五周")
     private java.lang.Integer time;
     /**巡检周次：开始时间*/
     @JsonFormat(timezone = "GMT+8",pattern = "HH:mm:ss")
@@ -69,16 +69,16 @@ public class PatrolPlanStrategy implements Serializable {
     @ApiModelProperty(value = "创建人")
     private java.lang.String createBy;
 	/**创建时间*/
-	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
-    @DateTimeFormat(pattern="yyyy-MM-dd")
+	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
+    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
     @ApiModelProperty(value = "创建时间")
     private java.util.Date createTime;
 	/**更新人*/
     @ApiModelProperty(value = "更新人")
     private java.lang.String updateBy;
 	/**更新时间*/
-	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
-    @DateTimeFormat(pattern="yyyy-MM-dd")
+	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
+    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
     @ApiModelProperty(value = "更新时间")
     private java.util.Date updateTime;
 }

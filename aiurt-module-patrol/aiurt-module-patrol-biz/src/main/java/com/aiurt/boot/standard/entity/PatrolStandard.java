@@ -49,6 +49,10 @@ public class PatrolStandard implements Serializable {
 	@Excel(name = "适用系统code", width = 15)
     @ApiModelProperty(value = "适用系统code")
     private java.lang.String subsystemCode;
+    /**与设备类型相关：0否 1 是*/
+    @Excel(name = "与设备类型相关：0否 1 是", width = 15)
+    @ApiModelProperty(value = "与设备类型相关：0否 1 是")
+    private java.lang.Integer device_type;
     /**指定具体设备：0否 1 是*/
 	@Excel(name = "指定具体设备：0否 1 是", width = 15)
     @ApiModelProperty(value = "指定具体设备：0否 1 是")

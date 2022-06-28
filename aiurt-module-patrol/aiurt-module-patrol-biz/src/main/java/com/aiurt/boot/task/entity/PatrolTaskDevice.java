@@ -53,6 +53,12 @@ public class PatrolTaskDevice implements Serializable {
 	@Excel(name = "设备code", width = 15)
     @ApiModelProperty(value = "设备code")
     private java.lang.String deviceCode;
+    /**开始巡检时间*/
+    @Excel(name = "开始巡检时间", width = 15, format = "yyyy-MM-dd")
+    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
+    @DateTimeFormat(pattern="yyyy-MM-dd")
+    @ApiModelProperty(value = "开始巡检时间")
+    private java.util.Date startTime;
 	/**工单提交时间*/
 	@Excel(name = "工单提交时间", width = 15, format = "yyyy-MM-dd")
 	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
@@ -63,6 +69,22 @@ public class PatrolTaskDevice implements Serializable {
 	@Excel(name = "检查结果：0正常、1异常", width = 15)
     @ApiModelProperty(value = "检查结果：0正常、1异常")
     private java.lang.Integer checkResult;
+    /**线路编号*/
+    @Excel(name = "线路编号", width = 15)
+    @ApiModelProperty(value = "线路编号")
+    private java.lang.String lineCode;
+    /**站点编号*/
+    @Excel(name = "站点编号", width = 15)
+    @ApiModelProperty(value = "站点编号")
+    private java.lang.String stationCode;
+    /**位置编号*/
+    @Excel(name = "位置编号", width = 15)
+    @ApiModelProperty(value = "位置编号")
+    private java.lang.String positionCode;
+    /**巡检自定义位置*/
+    @Excel(name = "巡检自定义位置", width = 15)
+    @ApiModelProperty(value = "巡检自定义位置")
+    private java.lang.String customPosition;
 	/**检查用户ID*/
 	@Excel(name = "检查用户ID", width = 15)
     @ApiModelProperty(value = "检查用户ID")
