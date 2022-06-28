@@ -114,12 +114,12 @@ public class PatrolPlanController extends BaseController<PatrolPlan, IPatrolPlan
 	}
 	 /**
 	  *  查看详情
-	  * @param patrolPlanDto
+	  * @param standardCode
 	  * @return
 	  */
 	 @AutoLog(value = "查看详情")
 	 @ApiOperation(value="查看详情", notes="查看详情")
-	 @RequestMapping(value = "/edit", method = {RequestMethod.POST})
+	 @RequestMapping(value = "/viewDetails", method = {RequestMethod.POST})
 	 public List<Device> viewDetails(@RequestParam(name = "standardCode")String standardCode) {
 		 List<Device> list =patrolPlanService.viewDetails(standardCode);
 		 return list;
