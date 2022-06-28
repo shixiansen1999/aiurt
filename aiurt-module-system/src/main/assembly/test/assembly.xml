@@ -51,7 +51,7 @@
         </fileSet>
         <fileSet>
             <directory>src/main/resources/jeecg</directory>
-            <outputDirectory>aiurt-module-system/config</outputDirectory>
+            <outputDirectory>aiurt-module-system/config/jeecg</outputDirectory>
             <directoryMode>0744</directoryMode>
             <fileMode>0644</fileMode>
             <filtered>true</filtered>
