@@ -1,5 +1,6 @@
 package com.aiurt.boot.standard.service;
 
+import cn.hutool.core.lang.tree.Tree;
 import com.aiurt.boot.standard.entity.PatrolStandardItems;
 import com.baomidou.mybatisplus.extension.service.IService;
 
@@ -26,4 +27,11 @@ public interface IPatrolStandardItemsService extends IService<PatrolStandardItem
      * @return
      */
     Boolean check(Integer order, String parentId);
+
+    /**
+     * app-查询巡检工单检查项
+     * @param id
+     * @return
+     */
+    List<Tree<String>> getTaskPoolList(String id);
 }

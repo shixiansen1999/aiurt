@@ -1,12 +1,18 @@
 package com.aiurt.boot.standard.service.impl;
 
+import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.lang.tree.Tree;
+import cn.hutool.core.lang.tree.TreeNodeConfig;
+import cn.hutool.core.lang.tree.TreeUtil;
+import com.aiurt.boot.standard.dto.PatrolStandardItemsDTO;
 import com.aiurt.boot.standard.entity.PatrolStandardItems;
 import com.aiurt.boot.standard.mapper.PatrolStandardItemsMapper;
 import com.aiurt.boot.standard.service.IPatrolStandardItemsService;
-import com.github.xiaoymin.knife4j.core.util.CollectionUtils;
-import org.springframework.stereotype.Service;
-
+import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.github.xiaoymin.knife4j.core.util.CollectionUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,7 +27,8 @@ import java.util.stream.Collectors;
 @Service
 public class PatrolStandardItemsServiceImpl extends ServiceImpl<PatrolStandardItemsMapper, PatrolStandardItems> implements IPatrolStandardItemsService {
 
-
+@Autowired
+private  PatrolStandardItemsMapper patrolStandardItemsMapper;
     @Override
     public List<PatrolStandardItems> queryPageList() {
         //1.查询表中未删除的所有的数据
@@ -62,4 +69,21 @@ public class PatrolStandardItemsServiceImpl extends ServiceImpl<PatrolStandardIt
         return true;
     }
 
+    @Override
+    public List<Tree<String>> getTaskPoolList(String id) {
+        //查询这个标准表的未删除的检查项,传标准表id
+        List<PatrolStandardItems> patrolStandardItemsList = patrolStandardItemsMapper.getList(id);
+        List<PatrolStandardItemsDTO> list = CollUtil.newArrayList();
+        patrolStandardItemsList.stream().forEach(e->list.add(new PatrolStandardItemsDTO(e.getId(),e.getContent(),e.getParentId())));
+        TreeNodeConfig config = new TreeNodeConfig();
+        config.setIdKey("id");
+        config.setDeep(2);
+        List<Tree<String>> treeList = TreeUtil.build(list,"0",config,(node,tree) ->{
+           tree.setId(node.getId()).toString();
+           tree.setName(node.getName());
+           tree.setParentId(node.getPid()).toString();
+        });
+        System.out.println(JSON.toJSONString(treeList));
+         return treeList;
+    }
 }

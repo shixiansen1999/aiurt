@@ -1,29 +1,27 @@
 package com.aiurt.boot.standard.controller;
 
-import java.util.Arrays;
-import java.util.List;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import com.aiurt.boot.standard.entity.PatrolStandard;
-import com.aiurt.boot.standard.mapper.PatrolStandardItemsMapper;
-import org.jeecg.common.api.vo.Result;
-import org.jeecg.common.system.query.QueryGenerator;
+import cn.hutool.core.lang.tree.Tree;
 import com.aiurt.boot.standard.entity.PatrolStandardItems;
+import com.aiurt.boot.standard.mapper.PatrolStandardItemsMapper;
 import com.aiurt.boot.standard.service.IPatrolStandardItemsService;
-
+import com.aiurt.common.aspect.annotation.AutoLog;
+import com.aiurt.common.system.base.controller.BaseController;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
-
-import com.aiurt.common.system.base.controller.BaseController;
+import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.system.query.QueryGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import com.aiurt.common.aspect.annotation.AutoLog;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.util.Arrays;
+import java.util.List;
 
  /**
  * @Description: patrol_standard_items
@@ -101,6 +99,17 @@ public class PatrolStandardItemsController extends BaseController<PatrolStandard
 			return Result.OK("成功");
 		}
 		 return Result.error("重复排序,请重新输入");
+	 }
+	 /**
+	  * app-查询巡检工单检查项
+	  * @return
+	  */
+	 @AutoLog(value = "app-查询巡检工单检查项")
+	 @ApiOperation(value = "app-查询巡检工单检查项", notes = "app-查询巡检工单检查项")
+	 @GetMapping(value = "/taskPoolList")
+	 public Result<?> taskPoolList(String id) {
+	 	List<Tree<String>> patrolStandardItems = patrolStandardItemsService.getTaskPoolList(id);
+		 return Result.OK(patrolStandardItems);
 	 }
 	/**
 	 *  编辑
