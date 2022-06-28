@@ -70,4 +70,7 @@ public class PatrolTaskDeviceDTO {
     @Excel(name = "删除状态： 0未删除 1已删除", width = 15)
     @ApiModelProperty(value = "删除状态： 0未删除 1已删除")
     private java.lang.Integer delFlag;
+    @Excel(name = "巡检标准表Id", width = 15)
+    @ApiModelProperty(value = "巡检标准表Id")
+    private java.lang.String standardId;
 }

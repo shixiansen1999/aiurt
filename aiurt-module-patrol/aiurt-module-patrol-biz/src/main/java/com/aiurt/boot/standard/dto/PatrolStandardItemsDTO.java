@@ -25,4 +25,13 @@ public class PatrolStandardItemsDTO {
     @Excel(name = "pid", width = 15)
     @ApiModelProperty(value = "pid")
     private String pid;
+    @Excel(name = "检查结果", width = 15)
+    @ApiModelProperty(value = "检查结果")
+    private String checkResult;
+    @Excel(name = "备注", width = 15)
+    @ApiModelProperty(value = "备注")
+    private String remark;
+    @Excel(name = "附件地址", width = 15)
+    @ApiModelProperty(value = "附件地址")
+    private String url;
 }
