@@ -107,9 +107,9 @@ public class RepairTaskController extends BaseController<RepairTask, IRepairTask
 	 @AutoLog(value = "检修任务-专业和专业子系统下拉列表")
 	 @ApiOperation(value="检修任务-专业和专业子系统下拉列表", notes="检修任务-专业和专业子系统下拉列表")
 	 @GetMapping(value = "/selectMajorCodeList")
-	 public Result<?> selectMajorCodeList(@RequestParam(name="id",required=true) String id
+	 public Result<?> selectMajorCodeList(@RequestParam(name="taskId",required=true) String taskId
 	 ){
-		 List<MajorDTO> majorDTOList = repairTaskService.selectMajorCodeList(id);
+		 List<MajorDTO> majorDTOList = repairTaskService.selectMajorCodeList(taskId);
 		 return Result.OK(majorDTOList);
 	 }
 
@@ -121,24 +121,24 @@ public class RepairTaskController extends BaseController<RepairTask, IRepairTask
 	@AutoLog(value = "检修任务-设备类型和检修标准下拉列表")
 	@ApiOperation(value="检修任务-设备类型和检修标准下拉列表", notes="检修任务-设备类型和检修标准下拉列表")
 	@GetMapping(value = "/selectEquipmentOverhaulList")
-	public Result<?> selectEquipmentOverhaulList(@RequestParam(name="id",required=true) String id
+	public Result<?> selectEquipmentOverhaulList(@RequestParam(name="taskId",required=true) String taskId
 	){
-		EquipmentOverhaulDTO equipmentOverhaulDTO = repairTaskService.selectEquipmentOverhaulList(id);
+		EquipmentOverhaulDTO equipmentOverhaulDTO = repairTaskService.selectEquipmentOverhaulList(taskId);
 		return Result.OK(equipmentOverhaulDTO);
 	}
 
 	/**
 	 * 检修单详情
-	 * @param id
+	 * @param deviceId
 	 * @return
 	 */
 	@AutoLog(value = "检修任务-检修单详情")
 	@ApiOperation(value="检修任务-检修单详情", notes="检修任务-检修单详情")
 	@GetMapping(value = "/selectCheckList")
-	public Result<?> selectCheckList(@RequestParam(name="id",required=true) String id,
-									 @RequestParam(name="code",required=true) String code
+	public Result<?> selectCheckList(@RequestParam(name="deviceId",required=true) String deviceId,
+									 @RequestParam(name="overhaulCode",required=true) String overhaulCode
 	){
-		CheckListDTO checkListDTO = repairTaskService.selectCheckList(id,code);
+		CheckListDTO checkListDTO = repairTaskService.selectCheckList(deviceId,overhaulCode);
 		return Result.OK(checkListDTO);
 	}
 

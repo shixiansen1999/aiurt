@@ -141,9 +141,9 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
     }
 
     @Override
-    public List<MajorDTO> selectMajorCodeList(String id) {
+    public List<MajorDTO> selectMajorCodeList(String taskId) {
         //根据检修任务id查询专业
-        List<RepairTaskDTO> repairTaskDTOList = repairTaskMapper.selectCodeList(id);
+        List<RepairTaskDTO> repairTaskDTOList = repairTaskMapper.selectCodeList(taskId);
         List<String> majorCodes1 = new ArrayList<>();
         List<String> systemCode = new ArrayList<>();
         if (CollectionUtil.isNotEmpty(repairTaskDTOList)){
@@ -168,9 +168,9 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
     }
 
     @Override
-    public EquipmentOverhaulDTO selectEquipmentOverhaulList(String id) {
+    public EquipmentOverhaulDTO selectEquipmentOverhaulList(String taskId) {
         //根据检修任务id查询设备
-        List<RepairTaskDTO> repairTaskDTOList = repairTaskMapper.selectCodeList(id);
+        List<RepairTaskDTO> repairTaskDTOList = repairTaskMapper.selectCodeList(taskId);
         List<String> deviceCodeList = new ArrayList<>();
         List<OverhaulDTO> overhaulDTOList = new ArrayList<>();
         repairTaskDTOList.forEach(e->{
@@ -190,8 +190,8 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
     }
 
     @Override
-    public CheckListDTO selectCheckList(String id,String code) {
-        CheckListDTO checkListDTO = repairTaskMapper.selectCheckList(id);
+    public CheckListDTO selectCheckList(String deviceId,String overhaulCode) {
+        CheckListDTO checkListDTO = repairTaskMapper.selectCheckList(deviceId);
         if (checkListDTO.getDeviceId()!=null && ObjectUtil.isNotNull(checkListDTO)){
             List<RepairTaskResult> repairTaskResults = repairTaskMapper.selectSingle(checkListDTO.getDeviceId(), 1);
             checkListDTO.setNormal(repairTaskResults.size());
@@ -219,7 +219,7 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
         }
 
         //设备位置
-        List<StationDTO> stationDTOList = repairTaskMapper.selectStationList(code);
+        List<StationDTO> stationDTOList = repairTaskMapper.selectStationList(overhaulCode);
         checkListDTO.setEquipmentLocation(manager.translateStation(stationDTOList));
 
         checkListDTO.setRepairTaskResultList(selectCodeContentList(checkListDTO.getDeviceId()));
