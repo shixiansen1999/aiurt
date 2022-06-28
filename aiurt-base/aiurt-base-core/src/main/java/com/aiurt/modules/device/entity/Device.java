@@ -325,5 +325,9 @@ public class Device {
 	@ApiModelProperty(value = "报废状态 0-未报废 1-已报废")
 	@TableField(exist = false)
 	private  String  scrapFlagName;
+	@Excel(name = "巡检标准Code")
+	@ApiModelProperty(value = "巡检标准Code")
+	@TableField(exist = false)
+	private  String  planStandardCode;
 
 }

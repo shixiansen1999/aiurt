@@ -3,7 +3,7 @@
 <mapper namespace="com.aiurt.boot.standard.mapper.PatrolStandardItemsMapper">
 
     <select id="selectList" resultType="com.aiurt.boot.standard.entity.PatrolStandardItems">
-        select * from patrol_standard_items a where a.del_flag =0
+        select * from patrol_standard_items a where a.del_flag =0 and a.standard_id=#{id}
         ORDER BY a.order
     </select>
     <select id="getList" resultType="com.aiurt.boot.standard.entity.PatrolStandardItems">

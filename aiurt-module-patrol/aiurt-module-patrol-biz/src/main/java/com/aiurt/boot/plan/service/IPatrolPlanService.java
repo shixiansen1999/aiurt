@@ -1,10 +1,14 @@
 package com.aiurt.boot.plan.service;
 
 import com.aiurt.boot.plan.dto.PatrolPlanDto;
+import com.aiurt.boot.plan.dto.QuerySiteDto;
 import com.aiurt.boot.plan.entity.PatrolPlan;
+import com.aiurt.modules.device.entity.Device;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
+
+import java.util.List;
 
 /**
  * @Description: patrol_plan
@@ -40,4 +44,23 @@ public interface IPatrolPlanService extends IService<PatrolPlan> {
      * @return
      */
     PatrolPlanDto selectById(String id);
+
+    /**
+     * 查询站点
+     * @return
+     */
+    List<QuerySiteDto> querySited();
+
+    /**
+     * 编辑
+     * @param patrolPlanDto
+     */
+    void updateId(PatrolPlanDto patrolPlanDto);
+
+    /**
+     * 查询指定设备
+     * @param standardCode
+     * @return
+     */
+    List<Device> viewDetails(String standardCode);
 }

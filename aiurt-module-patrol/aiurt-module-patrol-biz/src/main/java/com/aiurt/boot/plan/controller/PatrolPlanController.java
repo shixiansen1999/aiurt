@@ -6,6 +6,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import com.aiurt.boot.plan.dto.PatrolPlanDto;
+import com.aiurt.boot.plan.dto.QuerySiteDto;
+import com.aiurt.modules.device.entity.Device;
 import org.jeecg.common.api.vo.Result;
 import com.aiurt.boot.plan.entity.PatrolPlan;
 import com.aiurt.boot.plan.service.IPatrolPlanService;
@@ -71,6 +73,18 @@ public class PatrolPlanController extends BaseController<PatrolPlan, IPatrolPlan
 		return Result.OK("添加成功！");
 	}
 	 /**
+	  *查询站点
+	  * @param
+	  * @return
+	  */
+	 @AutoLog(value = "查询站点")
+	 @ApiOperation(value="查询站点", notes="查询站点")
+	 @PostMapping(value = "/querySite")
+	 public List<QuerySiteDto> querySited() {
+		List<QuerySiteDto> querySiteDtos = patrolPlanService.querySited();
+		 return querySiteDtos;
+	 }
+	 /**
 	  * 修改状态
 	  * @param id,status
 	  * @return
@@ -93,12 +107,23 @@ public class PatrolPlanController extends BaseController<PatrolPlan, IPatrolPlan
 	 */
 	@AutoLog(value = "patrol_plan-编辑")
 	@ApiOperation(value="patrol_plan-编辑", notes="patrol_plan-编辑")
-	@RequestMapping(value = "/edit", method = {RequestMethod.PUT,RequestMethod.POST})
+	@RequestMapping(value = "/edit", method = {RequestMethod.POST})
 	public Result<String> edit(@RequestBody PatrolPlanDto patrolPlanDto) {
-		patrolPlanService.updateById(patrolPlanDto);
+		patrolPlanService.updateId(patrolPlanDto);
 		return Result.OK("编辑成功!");
 	}
-
+	 /**
+	  *  查看详情
+	  * @param patrolPlanDto
+	  * @return
+	  */
+	 @AutoLog(value = "查看详情")
+	 @ApiOperation(value="查看详情", notes="查看详情")
+	 @RequestMapping(value = "/edit", method = {RequestMethod.POST})
+	 public List<Device> viewDetails(@RequestParam(name = "standardCode")String standardCode) {
+		 List<Device> list =patrolPlanService.viewDetails(standardCode);
+		 return list;
+	 }
 	/**
 	 *   通过id删除
 	 *

@@ -13,6 +13,21 @@
          where a.id= #{id}
     </update>
 
+    <delete id="deleteIdorCode">
+        <if test="id !=null and code!=null">
+        DELETE  a.*,b.*,c.*,d.*,e.*,f.*
+        from
+            patrol_plan AS a
+                LEFT JOIN patrol_plan_device b on a.id=b.plan_id
+                LEFT JOIN patrol_plan_organization c on a.`code`=c.plan_code
+                LEFT JOIN patrol_plan_standard d ON a.id=d.plan_id
+                LEFT JOIN patrol_plan_station e ON a.`code`=e.plan_code
+                LEFT JOIN patrol_plan_strategy f on a.id =f.plan_id
+        WHERE
+            a.id=#{id} AND a.`code`=#{code}
+        </if>
+    </delete>
+
     <select id="list" resultType="com.aiurt.boot.plan.dto.PatrolPlanDto">
         SELECT * FROM ( SELECT a.*, ( SELECT GROUP_CONCAT(e.depart_name) FROM patrol_plan_organization PPO
         LEFT JOIN sys_depart e ON PPO.organization_code = e.org_code  WHERE a.`code` = PPO.plan_code
@@ -103,11 +118,32 @@
                ( SELECT GROUP_CONCAT(d.id) FROM  patrol_standard d
                 LEFT JOIN patrol_plan_standard c on d.`code` =c.standard_code
                  WHERE c.plan_id =#{id} AND d.del_flag = 0 ) AS ids,
-               b.type as strategyType,b.`week`,b.time,b.start_time as strategyStartTime,b.end_time as strategyEndTime
+               b.type as strategyType,b.start_time as strategyStartTime,b.end_time as strategyEndTime,
+               ( SELECT GROUP_CONCAT(d.`week`) FROM  patrol_plan_strategy d
+                   where d.plan_id=#{id} and d.del_flag=0)as ws,
+               ( SELECT GROUP_CONCAT(d.time) FROM  patrol_plan_strategy d
+                 where d.plan_id=#{id} and d.del_flag=0)as ts
         FROM patrol_plan a
                  LEFT JOIN patrol_plan_strategy b on a.id= b.plan_id AND b.del_flag=0
         WHERE
             a.del_flag=0
           and a.id = #{id}
+        LIMIT 1
+    </select>
+    <select id="selectByCode" resultType="com.aiurt.boot.plan.entity.PatrolPlan">
+        select * from  patrol_plan where patrol_plan.code =#{code}
+    </select>
+    <select id="querySite" resultType="com.aiurt.boot.plan.dto.QuerySiteDto">
+        select cs_station.station_name as siteName,cs_station.station_code as siteCode from cs_station where 1=1
+    </select>
+    <select id="byCode" resultType="java.lang.String">
+        select patrol_plan_standard.id
+        from patrol_plan_standard
+        where patrol_plan_standard.standard_code=#{planStandardCode}
+       and patrol_plan_standard.del_flag=0
+    </select>
+    <select id="viewDetails" resultType="com.aiurt.modules.device.entity.Device">
+        SELECT a.* FROM device a LEFT JOIN patrol_plan_device b on a.`code`=b.device_code
+        WHERE b.plan_standard_id= #{standardCode}
     </select>
 </mapper>

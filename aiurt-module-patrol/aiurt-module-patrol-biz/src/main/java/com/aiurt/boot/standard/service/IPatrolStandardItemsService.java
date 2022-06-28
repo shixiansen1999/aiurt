@@ -17,16 +17,18 @@ public interface IPatrolStandardItemsService extends IService<PatrolStandardItem
     /**
      * 查询配置巡检项树
      * @return
+     * @param id
      */
-      List<PatrolStandardItems> queryPageList();
+      List<PatrolStandardItems> queryPageList(String id);
 
     /**
      * 校验排序
      * @param order
+     * @param id
      * @param parentId
      * @return
      */
-    Boolean check(Integer order, String parentId);
+    Boolean check(Integer order, String parentId, String id);
 
     /**
      * app-查询巡检工单检查项

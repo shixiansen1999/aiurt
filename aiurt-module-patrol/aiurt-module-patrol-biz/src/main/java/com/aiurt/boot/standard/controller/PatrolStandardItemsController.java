@@ -68,8 +68,8 @@ public class PatrolStandardItemsController extends BaseController<PatrolStandard
 	 @AutoLog(value = "查询配置巡检项树")
 	 @ApiOperation(value = "查询配置巡检项树", notes = "查询配置巡检项树")
 	 @GetMapping(value = "/rootList")
-	 public Result<List<PatrolStandardItems>> queryPageList() {
-         return Result.OK( patrolStandardItemsService.queryPageList());
+	 public Result<List<PatrolStandardItems>> queryPageList( @RequestParam(name="standardId") String id) {
+         return Result.OK( patrolStandardItemsService.queryPageList(id));
 	 }
 	/**
 	 *   添加
@@ -93,8 +93,9 @@ public class PatrolStandardItemsController extends BaseController<PatrolStandard
 	 @ApiOperation(value = "校验添加内容排序", notes = "校验添加内容排序")
 	 @GetMapping(value = "/check")
 	 public Result<?> check(@RequestParam(name="order") Integer order,
-							@RequestParam(name="parentId") String parentId) {
-	 	Boolean  b = patrolStandardItemsService.check(order,parentId);
+							@RequestParam(name="parentId") String parentId,
+							@RequestParam(name = "standardId")String standardId) {
+	 	Boolean  b = patrolStandardItemsService.check(order,parentId,standardId);
 	 	if (b){
 			return Result.OK("成功");
 		}

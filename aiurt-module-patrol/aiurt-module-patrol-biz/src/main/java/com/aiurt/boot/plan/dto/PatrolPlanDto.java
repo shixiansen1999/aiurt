@@ -2,6 +2,7 @@ package com.aiurt.boot.plan.dto;
 
 import com.aiurt.boot.plan.entity.PatrolPlan;
 import com.aiurt.boot.standard.entity.PatrolStandard;
+import com.aiurt.modules.device.entity.Device;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModelProperty;
@@ -26,9 +27,9 @@ public class PatrolPlanDto  extends PatrolPlan {
    @ApiModelProperty(value = "选择的巡检标准集合")
    @TableField(exist = false)
    List<PatrolStandard> patrolStandards;
-//   @ApiModelProperty(value = "选择的设备集合")
-//   @TableField(exist = false)
-//   List<Device> devices;
+   @ApiModelProperty(value = "选择的设备集合")
+   @TableField(exist = false)
+   List<Device> devices;
    /**巡检类型：1周巡、2月巡*/
    @Excel(name = "巡检类型：1周巡、2月巡", width = 15)
    @ApiModelProperty(value = "巡检类型：1周巡、2月巡")
@@ -38,12 +39,12 @@ public class PatrolPlanDto  extends PatrolPlan {
    @Excel(name = "巡检星期：1星期一、2星期二、3星期三、4星期四、5星期五、6星期六、7星期日", width = 15)
    @ApiModelProperty(value = "巡检星期：1星期一、2星期二、3星期三、4星期四、5星期五、6星期六、7星期日")
    @TableField(exist = false)
-   private Integer week;
+   List<String> week;
    /**巡检周次：1第一周、2第二周、3第三周、4第四周*/
    @Excel(name = "巡检周次：1第一周、2第二周、3第三周、4第四周", width = 15)
    @ApiModelProperty(value = "巡检周次：1第一周、2第二周、3第三周、4第四周")
    @TableField(exist = false)
-   private Integer time;
+   List<String> time;
    /**巡检周次：开始时间*/
    @JsonFormat(timezone = "GMT+8",pattern = "HH:mm:ss")
    @DateTimeFormat(pattern="HH:mm:ss")
@@ -99,4 +100,6 @@ public class PatrolPlanDto  extends PatrolPlan {
    @ApiModelProperty(value = "标准表Ids")
    @TableField(exist = false)
    private String ids;
+   private String ws;
+   private String ts;
 }

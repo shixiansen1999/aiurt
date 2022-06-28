@@ -1,14 +1,16 @@
 package com.aiurt.boot.plan.service.impl;
 
 import com.aiurt.boot.plan.dto.PatrolPlanDto;
+import com.aiurt.boot.plan.dto.QuerySiteDto;
 import com.aiurt.boot.plan.entity.*;
 import com.aiurt.boot.plan.mapper.*;
 import com.aiurt.boot.plan.service.IPatrolPlanService;
 import com.aiurt.boot.standard.entity.PatrolStandard;
 import com.aiurt.boot.standard.mapper.PatrolStandardMapper;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.aiurt.modules.device.entity.Device;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.github.xiaoymin.knife4j.core.util.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -36,6 +38,8 @@ public class PatrolPlanServiceImpl extends ServiceImpl<PatrolPlanMapper, PatrolP
     private PatrolPlanStationMapper patrolPlanStationMapper;
     @Autowired
     private PatrolStandardMapper patrolStandardMapper;
+    @Autowired
+    private   PatrolPlanDeviceMapper patrolPlanDeviceMapper;
     @Override
     public IPage<PatrolPlanDto> pageList(Page<PatrolPlanDto> page, PatrolPlanDto patrolPlan) {
         List<PatrolPlanDto> list = baseMapper.list(page,patrolPlan);
@@ -55,37 +59,83 @@ public class PatrolPlanServiceImpl extends ServiceImpl<PatrolPlanMapper, PatrolP
          patrolPlan.setConfirm(patrolPlanDto.getConfirm());
          patrolPlan.setPeriod(patrolPlanDto.getPeriod());
          baseMapper.insert(patrolPlan);
-        PatrolPlan id = baseMapper.selectOne(new QueryWrapper<PatrolPlan>().eq("code",patrolPlan.getCode()));
-        PatrolPlanStrategy patrolPlanStrategy = new PatrolPlanStrategy();
-        patrolPlanStrategy.setPlanId(id.getId());
-        patrolPlanStrategy.setType(patrolPlanDto.getStrategyType());
-        patrolPlanStrategy.setWeek(patrolPlanDto.getWeek());
-        patrolPlanStrategy.setTime(patrolPlanDto.getTime());
-        patrolPlanStrategy.setEndTime(patrolPlanDto.getStrategyEndTime());
-        patrolPlanStrategy.setStartTime(patrolPlanDto.getStrategyStartTime());
-        patrolPlanStrategyMapper.insert(patrolPlanStrategy);
+        PatrolPlan id = baseMapper.selectByCode(patrolPlanDto.getCode());
+        if (patrolPlanDto.getPeriod()==1){
+            PatrolPlanStrategy patrolPlanStrategy = new PatrolPlanStrategy();
+            patrolPlanStrategy.setPlanId(id.getId());
+            patrolPlanStrategy.setType(0);
+            patrolPlanStrategy.setEndTime(patrolPlanDto.getStrategyEndTime());
+            patrolPlanStrategy.setStartTime(patrolPlanDto.getStrategyStartTime());
+            patrolPlanStrategyMapper.insert(patrolPlanStrategy);
+        }else if (patrolPlanDto.getPeriod()==2 || patrolPlanDto.getPeriod()==3){
+            List<String>week = patrolPlanDto.getWeek();
+            for (String w:week) {
+                Integer f = Integer.parseInt(w);
+                PatrolPlanStrategy patrolPlanStrategy = new PatrolPlanStrategy();
+                patrolPlanStrategy.setPlanId(id.getId());
+                patrolPlanStrategy.setType(1);
+                patrolPlanStrategy.setWeek(f);
+                patrolPlanStrategy.setEndTime(patrolPlanDto.getStrategyEndTime());
+                patrolPlanStrategy.setStartTime(patrolPlanDto.getStrategyStartTime());
+                patrolPlanStrategyMapper.insert(patrolPlanStrategy);
+            }
+        }else if (patrolPlanDto.getPeriod()==4||patrolPlanDto.getPeriod()==5){
+            List<String> week = patrolPlanDto.getWeek();
+            List<String>time =patrolPlanDto.getTime();
+            for (String w:week) {
+                Integer f = Integer.parseInt(w);
+                PatrolPlanStrategy patrolPlanStrategy = new PatrolPlanStrategy();
+                patrolPlanStrategy.setPlanId(id.getId());
+                patrolPlanStrategy.setType(2);
+                patrolPlanStrategy.setWeek(f);
+                patrolPlanStrategy.setEndTime(patrolPlanDto.getStrategyEndTime());
+                patrolPlanStrategy.setStartTime(patrolPlanDto.getStrategyStartTime());
+                for (String t:time){
+                    Integer i=Integer.parseInt(t);
+                    patrolPlanStrategy.setTime(i);
+                }
+                patrolPlanStrategyMapper.insert(patrolPlanStrategy);
+            }
+        }
         List<PatrolStandard> list = patrolPlanDto.getPatrolStandards();
+        if(CollectionUtils.isNotEmpty(list)){
         PatrolPlanStandard patrolPlanStandard =new PatrolPlanStandard();
         patrolPlanStandard.setPlanId(id.getId());
         for (PatrolStandard r:list) {
+             patrolPlanStandard.setPlanId(id.getId());
              patrolPlanStandard.setStandardCode(r.getCode());
              patrolPlanStandard.setProfessionCode(r.getProfessionCode());
              patrolPlanStandard.setSubsystemCode(r.getSubsystemCode());
              patrolPlanStandardMapper.insert(patrolPlanStandard);
+           }
         }
         List<String> mechanismCodes = patrolPlanDto.getMechanismCodes();
-        PatrolPlanOrganization patrolPlanOrganization =new PatrolPlanOrganization();
-        patrolPlanOrganization.setPlanCode(patrolPlanDto.getCode());
+        if (CollectionUtils.isNotEmpty(mechanismCodes)){
         for (String m:mechanismCodes){
+            PatrolPlanOrganization patrolPlanOrganization =new PatrolPlanOrganization();
+            patrolPlanOrganization.setPlanCode(patrolPlanDto.getCode());
             patrolPlanOrganization.setOrganizationCode(m);
             patrolPlanOrganizationMapper.insert(patrolPlanOrganization);
         }
+        }
         List<String> siteCodes = patrolPlanDto.getSiteCodes();
-        PatrolPlanStation patrolPlanStation =new PatrolPlanStation();
-        patrolPlanStation.setPlanCode(patrolPlanDto.getCode());
+        if (CollectionUtils.isNotEmpty(siteCodes)){
         for (String s:siteCodes){
-         patrolPlanStation.setStationCode(s);
-         patrolPlanStationMapper.insert(patrolPlanStation);
+            PatrolPlanStation patrolPlanStation =new PatrolPlanStation();
+            patrolPlanStation.setPlanCode(patrolPlanDto.getCode());
+            patrolPlanStation.setStationCode(s);
+            patrolPlanStationMapper.insert(patrolPlanStation);}
+        }
+        List<Device> devices=patrolPlanDto.getDevices();
+        if (CollectionUtils.isNotEmpty(devices)){
+            for (Device p:devices){
+                PatrolPlanDevice patrolPlanDevice= new PatrolPlanDevice();
+                patrolPlanDevice.setPlanId(id.getId());
+                String standardId= baseMapper.byCode(p.getPlanStandardCode());
+                patrolPlanDevice.setPlanStandardId(standardId);
+                patrolPlanDevice.setDeviceCode(p.getCode());
+                patrolPlanDeviceMapper.insert(patrolPlanDevice);
+            }
         }
     }
 
@@ -101,6 +151,26 @@ public class PatrolPlanServiceImpl extends ServiceImpl<PatrolPlanMapper, PatrolP
         patrolPlanDto.setMechanismCodes(Arrays.asList(patrolPlanDto.getMechanismCode().split(",")));
         List<String> ids = Arrays.asList(patrolPlanDto.getIds().split(","));
         patrolPlanDto.setPatrolStandards(patrolStandardMapper.selectBatchIds(ids));
+        patrolPlanDto.setWeek(Arrays.asList(patrolPlanDto.getWs().split(",")));
+        patrolPlanDto.setTime(Arrays.asList(patrolPlanDto.getTs().split(",")));
         return patrolPlanDto;
+    }
+
+    @Override
+    public List<QuerySiteDto> querySited() {
+        List<QuerySiteDto> list = baseMapper.querySite();
+        return list;
+    }
+
+    @Override
+    public void updateId(PatrolPlanDto patrolPlanDto) {
+        baseMapper.deleteIdorCode(patrolPlanDto.getId(),patrolPlanDto.getCode());
+        this.add(patrolPlanDto);
+    }
+
+    @Override
+    public List<Device> viewDetails(String standardCode) {
+        List<Device> list = baseMapper.viewDetails(standardCode);
+        return list;
     }
 }

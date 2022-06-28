@@ -13,7 +13,7 @@ import java.util.List;
  */
 public interface PatrolStandardItemsMapper extends BaseMapper<PatrolStandardItems> {
 
-    List<PatrolStandardItems> selectList();
+    List<PatrolStandardItems> selectList(String id);
 
     /**
      * app-获取巡检项目信息
