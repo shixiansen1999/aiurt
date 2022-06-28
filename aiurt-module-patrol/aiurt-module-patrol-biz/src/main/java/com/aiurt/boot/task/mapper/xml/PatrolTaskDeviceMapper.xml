@@ -38,11 +38,37 @@
             and su.realname like concat('%',#{taskDevice.username},'%')
         </if>
     </select>
+    <select id="selectBillInfoByNumber" resultType="com.aiurt.boot.task.param.PatrolTaskDeviceParam">
+        SELECT
+        pts.device_type_code,
+        dt.`name` deviceTypeName,
+        d.`name` deviceName,
+        su.realname username,
+        cl.line_name,
+        cs.station_name,
+        csp.position_name,
+        ptd.*
+        FROM
+        patrol_task_device ptd
+        JOIN patrol_task_standard pts ON ptd.task_standard_id = pts.id
+        LEFT JOIN cs_line cl ON ptd.line_code = cl.line_code
+        LEFT JOIN cs_station cs ON ptd.station_code = cs.station_code
+        LEFT JOIN cs_station_position csp ON ptd.position_code = csp.position_code
+        LEFT JOIN device_type dt ON pts.device_type_code = dt.`code`
+        LEFT JOIN sys_user su ON ptd.user_id = su.id
+        LEFT JOIN device d ON ptd.device_code = d.`code`
+        WHERE
+        ptd.del_flag = 0
+        <if test="patrolNumber != null and patrolNumber !=''">
+            and ptd.patrol_number = #{patrolNumber}
+        </if>
+    </select>
     <select id="getPatrolTaskDeviceList" resultType="com.aiurt.boot.task.dto.PatrolTaskDeviceDTO">
-        SELECT ptd.*,ps.name as taskStandardName,ps.id as standardId
+        SELECT ptd.*, ps.name as taskStandardName, ps.id as standardId
         FROM patrol_task_device ptd
-        left join patrol_task_standard pts on pts.id = ptd.task_standard_id
-        left join patrol_standard ps on ps.id = pts.standard_id
-        WHERE ptd.del_flag = 0 AND ptd.task_id = #{id}
+                 left join patrol_task_standard pts on pts.id = ptd.task_standard_id
+                 left join patrol_standard ps on ps.id = pts.standard_id
+        WHERE ptd.del_flag = 0
+          AND ptd.task_id = #{id}
     </select>
 </mapper>

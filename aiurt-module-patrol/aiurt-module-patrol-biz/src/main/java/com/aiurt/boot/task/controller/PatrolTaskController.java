@@ -2,9 +2,12 @@ package com.aiurt.boot.task.controller;
 
 import com.aiurt.boot.task.dto.PatrolTaskDTO;
 import com.aiurt.boot.task.dto.PatrolTaskUserDTO;
+import com.aiurt.boot.task.entity.PatrolAccompany;
 import com.aiurt.boot.task.entity.PatrolTask;
+import com.aiurt.boot.task.mapper.PatrolAccompanyMapper;
 import com.aiurt.boot.task.param.PatrolTaskDeviceParam;
 import com.aiurt.boot.task.param.PatrolTaskParam;
+import com.aiurt.boot.task.service.IPatrolAccompanyService;
 import com.aiurt.boot.task.service.IPatrolTaskDeviceService;
 import com.aiurt.boot.task.service.IPatrolTaskService;
 import com.aiurt.common.aspect.annotation.AutoLog;
@@ -23,7 +26,9 @@ import org.springframework.web.servlet.ModelAndView;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @Description: patrol_task
@@ -41,6 +46,9 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
     @Autowired
     private IPatrolTaskDeviceService patrolTaskDeviceService;
 
+    @Autowired
+    private IPatrolAccompanyService patrolAccompanyService;
+
     /**
      * 分页列表查询
      *
@@ -50,7 +58,7 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
      * @param req
      * @return
      */
-    //@AutoLog(value = "patrol_task-分页列表查询")
+    @AutoLog(value = "PC巡检任务池列表-分页列表查询")
     @ApiOperation(value = "PC巡检任务池列表-分页列表查询", notes = "PC巡检任务池列表-分页列表查询")
     @RequestMapping(value = "/list", method = {RequestMethod.GET, RequestMethod.POST})
     public Result<IPage<PatrolTaskParam>> queryPageList(PatrolTaskParam patrolTaskParam,
@@ -62,6 +70,7 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
         return Result.OK(pageList);
     }
 
+    @AutoLog(value = "PC巡检任务池详情-基本信息")
     @ApiOperation(value = "PC巡检任务池详情-基本信息", notes = "PC巡检任务池详情-基本信息")
     @RequestMapping(value = "/basicInfo", method = {RequestMethod.GET, RequestMethod.POST})
     public Result<PatrolTaskParam> selectBasicInfo(@RequestBody PatrolTaskParam patrolTaskParam,
@@ -70,6 +79,7 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
         return Result.OK(task);
     }
 
+    @AutoLog(value = "PC巡检任务池详情-巡检工单")
     @ApiOperation(value = "PC巡检任务池详情-巡检工单", notes = "PC巡检任务池详情-巡检工单")
     @RequestMapping(value = "/billInfo", method = {RequestMethod.GET, RequestMethod.POST})
     public Result<?> selectBillInfo(PatrolTaskDeviceParam patrolTaskDeviceParam,
@@ -77,8 +87,16 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
                                     @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize,
                                     HttpServletRequest req) {
         Page<PatrolTaskDeviceParam> page = new Page<>(pageNo, pageSize);
-        IPage<PatrolTaskDeviceParam> taskDevicePageList = patrolTaskDeviceService.selectBillInfo(page,patrolTaskDeviceParam);
+        IPage<PatrolTaskDeviceParam> taskDevicePageList = patrolTaskDeviceService.selectBillInfo(page, patrolTaskDeviceParam);
         return Result.OK(taskDevicePageList);
+    }
+
+    @AutoLog(value = "PC巡检任务池详情-巡检工单详情")
+    @ApiOperation(value = "PC巡检任务池详情-巡检工单详情", notes = "PC巡检任务池详情-巡检工单详情")
+    @RequestMapping(value = "/billInfoByNumber", method = {RequestMethod.GET, RequestMethod.POST})
+    public Result<?> selectBillInfoByNumber(@RequestParam("patrolNumber") String patrolNumber, HttpServletRequest req) {
+        Map<String, Object> map = patrolTaskDeviceService.selectBillInfoByNumber(patrolNumber);
+        return Result.OK(map);
     }
 
     /**
@@ -167,13 +185,14 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
     @ApiOperation(value = "patrol_task-app巡检任务池", notes = "patrol_task-app巡检任务池")
     @GetMapping(value = "/patrolTaskPoolList")
     public Result<IPage<PatrolTaskDTO>> patrolTaskPoolList(PatrolTaskDTO patrolTaskDTO,
-                                                       @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
-                                                       @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize,
-                                                       HttpServletRequest req) {
+                                                           @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
+                                                           @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize,
+                                                           HttpServletRequest req) {
         Page<PatrolTaskDTO> pageList = new Page<PatrolTaskDTO>(pageNo, pageSize);
         pageList = patrolTaskService.getPatrolTaskPoolList(pageList, patrolTaskDTO);
         return Result.OK(pageList);
     }
+
     /**
      * app-巡检任务列表
      *

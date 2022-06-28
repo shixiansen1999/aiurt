@@ -8,6 +8,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * @Description: patrol_task_device
@@ -19,6 +20,7 @@ public interface IPatrolTaskDeviceService extends IService<PatrolTaskDevice> {
 
     /**
      * PC巡检任务池详情-巡检工单
+     *
      * @param patrolTaskDeviceParam
      * @return
      */
@@ -26,9 +28,18 @@ public interface IPatrolTaskDeviceService extends IService<PatrolTaskDevice> {
 
     /**
      * app-巡检清单列表
+     *
      * @param pageList
      * @param id
      * @return
      */
     Page<PatrolTaskDeviceDTO> getPatrolTaskDeviceList(Page<PatrolTaskDeviceDTO> pageList, String id);
+
+    /**
+     * PC巡检任务池详情-巡检工单详情
+     *
+     * @param patrolNumber
+     * @return
+     */
+    Map<String, Object> selectBillInfoByNumber(String patrolNumber);
 }

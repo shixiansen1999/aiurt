@@ -3,6 +3,7 @@ package com.aiurt.boot.task.entity;
 import java.io.Serializable;
 
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
@@ -60,6 +61,7 @@ public class PatrolCheckResult implements Serializable {
 	/**内容排序*/
 	@Excel(name = "内容排序", width = 15)
     @ApiModelProperty(value = "内容排序")
+    @TableField(value = "`order`")
     private java.lang.Integer order;
 	/**数据填写类型：1 开关项、2 选择项、3 输入项*/
 	@Excel(name = "数据填写类型：1 开关项、2 选择项、3 输入项", width = 15)
