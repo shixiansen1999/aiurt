@@ -10,6 +10,7 @@ import com.aiurt.boot.standard.mapper.PatrolStandardItemsMapper;
 import com.aiurt.boot.standard.service.IPatrolStandardItemsService;
 import com.aiurt.boot.task.entity.PatrolTaskDevice;
 import com.aiurt.boot.task.mapper.PatrolTaskDeviceMapper;
+import com.aiurt.boot.task.mapper.PatrolTaskStandardMapper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.github.xiaoymin.knife4j.core.util.CollectionUtils;
@@ -33,6 +34,8 @@ public class PatrolStandardItemsServiceImpl extends ServiceImpl<PatrolStandardIt
 private  PatrolStandardItemsMapper patrolStandardItemsMapper;
 @Autowired
 private  PatrolTaskDeviceMapper patrolTaskDeviceMapper;
+@Autowired
+private PatrolTaskStandardMapper patrolTaskStandardMapper;
     @Override
     public List<PatrolStandardItems> queryPageList() {
         //1.查询表中未删除的所有的数据
@@ -77,14 +80,14 @@ private  PatrolTaskDeviceMapper patrolTaskDeviceMapper;
     public List<Tree<String>> getTaskPoolList(String id) {
         //查询这个标准表的未删除的检查项,传巡检任务标准关联表id
         LambdaQueryWrapper<PatrolTaskDevice> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(PatrolTaskDevice::getTaskStandardId,id);
+        queryWrapper.eq(PatrolTaskDevice::getTaskId,id);
         //查询标准表id
         PatrolTaskDevice patrolTaskDevice = patrolTaskDeviceMapper.selectOne(queryWrapper);
         //获取标准表的检查项
         List<PatrolStandardItems> patrolStandardItemsList = patrolStandardItemsMapper.getList(patrolTaskDevice.getTaskStandardId());
         List<PatrolStandardItemsDTO> list = CollUtil.newArrayList();
         //形成树形结构
-        patrolStandardItemsList.stream().forEach(e->list.add(new PatrolStandardItemsDTO(e.getId(),e.getContent(),e.getParentId(),null,null,null)));
+        patrolStandardItemsList.stream().forEach(e->list.add(new PatrolStandardItemsDTO(e.getId(),e.getContent(),e.getParentId())));
         TreeNodeConfig config = new TreeNodeConfig();
         config.setIdKey("id");
         config.setDeep(2);

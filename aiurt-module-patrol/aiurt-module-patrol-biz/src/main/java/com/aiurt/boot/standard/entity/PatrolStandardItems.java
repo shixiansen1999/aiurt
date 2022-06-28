@@ -1,21 +1,20 @@
 package com.aiurt.boot.standard.entity;
 
-import java.io.Serializable;
-import java.util.List;
-
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import lombok.Data;
 import com.fasterxml.jackson.annotation.JsonFormat;
-import org.springframework.format.annotation.DateTimeFormat;
-import org.jeecgframework.poi.excel.annotation.Excel;
-import com.aiurt.common.aspect.annotation.Dict;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
+import org.jeecgframework.poi.excel.annotation.Excel;
+import org.springframework.format.annotation.DateTimeFormat;
+
+import java.io.Serializable;
+import java.util.List;
 
 /**
  * @Description: patrol_standard_items
@@ -69,7 +68,7 @@ public class PatrolStandardItems implements Serializable {
 	@Excel(name = "是否为巡检项目：0否 1是", width = 15)
     @ApiModelProperty(value = "是否为巡检项目：0否 1是")
     @TableField(value = "`check`")
-    private java.lang.Integer check;
+    private java.lang.String check;
 	/**数据填写类型：1开关项(即二选一)、2选择项、3输入项*/
 	@Excel(name = "数据填写类型：1开关项(即二选一)、2选择项、3输入项", width = 15)
     @ApiModelProperty(value = "数据填写类型：1开关项(即二选一)、2选择项、3输入项")

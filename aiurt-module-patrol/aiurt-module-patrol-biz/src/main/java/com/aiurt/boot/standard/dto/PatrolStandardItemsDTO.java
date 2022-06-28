@@ -19,19 +19,10 @@ public class PatrolStandardItemsDTO {
     @Excel(name = "标准ID", width = 15)
     @ApiModelProperty(value = "标准ID")
     private String id;
-    @Excel(name = "检查项", width = 15)
+    @Excel(name = "name", width = 15)
     @ApiModelProperty(value = "name")
     private  String name;
     @Excel(name = "pid", width = 15)
     @ApiModelProperty(value = "pid")
     private String pid;
-    @Excel(name = "检查结果", width = 15)
-    @ApiModelProperty(value = "检查结果")
-    private String checkResult;
-    @Excel(name = "备注", width = 15)
-    @ApiModelProperty(value = "备注")
-    private String remark;
-    @Excel(name = "附件地址", width = 15)
-    @ApiModelProperty(value = "附件地址")
-    private String url;
 }
