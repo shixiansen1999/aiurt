@@ -41,7 +41,7 @@ public interface PatrolPlanMapper extends BaseMapper<PatrolPlan> {
      * @param id
      * @return
      */
-    PatrolPlanDto selectId(@Param("id")String id);
+    PatrolPlanDto selectId(@Param("id")String id,@Param("code") String code);
 
     /**
      *

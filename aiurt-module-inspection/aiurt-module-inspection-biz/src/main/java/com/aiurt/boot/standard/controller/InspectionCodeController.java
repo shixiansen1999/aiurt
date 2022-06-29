@@ -1,6 +1,8 @@
 package com.aiurt.boot.standard.controller;
 
+import com.aiurt.boot.manager.dto.InspectionCodeDTO;
 import com.aiurt.boot.standard.entity.InspectionCode;
+import com.aiurt.boot.standard.mapper.InspectionCodeMapper;
 import com.aiurt.boot.standard.service.IInspectionCodeService;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.system.base.controller.BaseController;
@@ -33,11 +35,12 @@ import java.util.Arrays;
 public class InspectionCodeController extends BaseController<InspectionCode, IInspectionCodeService> {
 	@Autowired
 	private IInspectionCodeService inspectionCodeService;
-
+	 @Autowired
+	 private InspectionCodeMapper inspectionCodeMapper;
 	/**
 	 * 分页列表查询
 	 *
-	 * @param inspectionCode
+	 * @param inspectionCodeDTO
 	 * @param pageNo
 	 * @param pageSize
 	 * @param req
@@ -46,13 +49,12 @@ public class InspectionCodeController extends BaseController<InspectionCode, IIn
 	@AutoLog(value = "inspection_code-分页列表查询")
 	@ApiOperation(value="inspection_code-分页列表查询", notes="inspection_code-分页列表查询")
 	@GetMapping(value = "/list")
-	public Result<IPage<InspectionCode>> queryPageList(InspectionCode inspectionCode,
-								   @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
-								   @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
-								   HttpServletRequest req) {
-		QueryWrapper<InspectionCode> queryWrapper = QueryGenerator.initQueryWrapper(inspectionCode, req.getParameterMap());
-		Page<InspectionCode> page = new Page<InspectionCode>(pageNo, pageSize);
-		IPage<InspectionCode> pageList = inspectionCodeService.page(page, queryWrapper);
+	public Result<IPage<InspectionCodeDTO>> queryPageList(InspectionCodeDTO inspectionCodeDTO,
+														  @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
+														  @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
+														  HttpServletRequest req) {
+		Page<InspectionCodeDTO> page = new Page<InspectionCodeDTO>(pageNo, pageSize);
+		IPage<InspectionCodeDTO> pageList = inspectionCodeService.pageList(page, inspectionCodeDTO);
 		return Result.OK(pageList);
 	}
 
@@ -94,7 +96,7 @@ public class InspectionCodeController extends BaseController<InspectionCode, IIn
 	@ApiOperation(value="inspection_code-通过id删除", notes="inspection_code-通过id删除")
 	@DeleteMapping(value = "/delete")
 	public Result<String> delete(@RequestParam(name="id",required=true) String id) {
-		inspectionCodeService.removeById(id);
+		inspectionCodeService.updateDelFlag(id);
 		return Result.OK("删除成功!");
 	}
 

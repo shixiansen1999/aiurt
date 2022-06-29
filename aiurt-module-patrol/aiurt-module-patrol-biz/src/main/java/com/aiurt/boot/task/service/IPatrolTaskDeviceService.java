@@ -7,7 +7,6 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -30,10 +29,10 @@ public interface IPatrolTaskDeviceService extends IService<PatrolTaskDevice> {
      * app-巡检清单列表
      *
      * @param pageList
-     * @param id
+     * @param code
      * @return
      */
-    Page<PatrolTaskDeviceDTO> getPatrolTaskDeviceList(Page<PatrolTaskDeviceDTO> pageList, String id);
+    Page<PatrolTaskDeviceDTO> getPatrolTaskDeviceList(Page<PatrolTaskDeviceDTO> pageList, String code);
 
     /**
      * PC巡检任务池详情-巡检工单详情
@@ -42,4 +41,10 @@ public interface IPatrolTaskDeviceService extends IService<PatrolTaskDevice> {
      * @return
      */
     Map<String, Object> selectBillInfoByNumber(String patrolNumber);
+
+    /**
+     * app巡检任务执行中-检查
+     * @param patrolTaskDeviceDTO
+     */
+    void getPatrolTaskCheck(PatrolTaskDeviceDTO patrolTaskDeviceDTO);
 }

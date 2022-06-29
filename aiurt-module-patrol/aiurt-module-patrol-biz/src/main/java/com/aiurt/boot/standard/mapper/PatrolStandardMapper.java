@@ -30,4 +30,11 @@ public interface PatrolStandardMapper extends BaseMapper<PatrolStandard> {
      * @return
      */
     List<InspectionStandardDto> list(@Param("professionCode")String professionCode, @Param("subsystemCode") String subsystemCode);
+
+    /**
+     * 根据多个id查询
+     * @param ids
+     * @return
+     */
+    List<PatrolStandardDto> selectbyIds(@Param("ids") String ids);
 }
