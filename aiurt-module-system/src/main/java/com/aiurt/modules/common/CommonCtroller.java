@@ -28,10 +28,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -193,7 +190,7 @@ public class CommonCtroller {
             table.setLevel(1);
             table.setLineCode(lineCode);
             //
-            List<CsStation> csStationList = stationMap.get(lineCode);
+            List<CsStation> csStationList = stationMap.getOrDefault(lineCode, Collections.emptyList());
 
             List<SelectTable> lv2List = csStationList.stream().map(csStation -> {
                 SelectTable selectTable = new SelectTable();
@@ -203,7 +200,8 @@ public class CommonCtroller {
                 selectTable.setLineCode(lineCode);
                 selectTable.setStationCode(csStation.getStationCode());
 
-                List<CsStationPosition> stationPositionList = positionMap.get(csStation.getStationCode());
+                List<CsStationPosition> stationPositionList = positionMap.getOrDefault(csStation.getStationCode(), Collections.emptyList());
+
                 List<SelectTable> tableList = stationPositionList.stream().map(csStationPosition -> {
                     SelectTable tableV = new SelectTable();
                     tableV.setLabel(csStationPosition.getPositionName());
