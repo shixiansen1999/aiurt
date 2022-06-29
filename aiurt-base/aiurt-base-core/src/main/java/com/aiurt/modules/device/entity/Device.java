@@ -126,6 +126,11 @@ public class Device {
 	@TableField(exist = false)
 	private  String  positionCodeName;
 
+	@Excel(name = "位置层级名称", width = 15)
+	@ApiModelProperty(value = "位置层级名称")
+	@TableField(exist = false)
+	private  String  positionCodeCcName;
+
 	/**资产编号*/
 	@Excel(name = "资产编号", width = 15)
 	@ApiModelProperty(value = "资产编号")
