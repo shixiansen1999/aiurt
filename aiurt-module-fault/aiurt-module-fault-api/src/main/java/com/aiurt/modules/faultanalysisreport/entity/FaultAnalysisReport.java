@@ -82,9 +82,9 @@ public class FaultAnalysisReport implements Serializable {
     @Excel(name = "审核人", width = 15)
     @ApiModelProperty(value = "审核人")
     private java.lang.String approvedUserName;
-    /**审核结果*/
-    @Excel(name = "审核结果", width = 15)
-    @ApiModelProperty(value = "审核结果")
+    /**审核结果(1:通过,0不通过)*/
+    @Excel(name = "审核结果(1:通过,0不通过)", width = 15)
+    @ApiModelProperty(value = "审核结果(1:通过,0不通过)")
     private java.lang.Integer approvedResult;
     /**审核时间*/
     @Excel(name = "审核时间", width = 15, format = "yyyy-MM-dd")
@@ -103,18 +103,16 @@ public class FaultAnalysisReport implements Serializable {
     /**故障知识库id*/
     @ApiModelProperty(value = "故障知识库id")
     private String faultKnowledgeBaseId;
+    /**状态*/
+    @Excel(name = "状态(0:待审批,1:已审批,2:已驳回)", width = 15)
+    @ApiModelProperty(value = "状态(0:待审批,1:已审批,2:已驳回)")
+    private Integer status;
 
     /**故障现象*/
     @Excel(name = "故障现象", width = 15)
     @ApiModelProperty(value = "故障现象")
     @TableField(exist = false)
     private String faultPhenomenon;
-
-    /**状态*/
-    @Excel(name = "状态", width = 15)
-    @ApiModelProperty(value = "状态")
-    @TableField(exist = false)
-    private Integer status;
 
     /**故障分类名称*/
     @Excel(name = "故障分类名称", width = 15)

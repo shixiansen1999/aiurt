@@ -7,6 +7,7 @@ import java.math.BigDecimal;
 import java.util.List;
 
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
@@ -83,5 +84,6 @@ public class FaultKnowledgeBaseType implements Serializable {
     private String codeCc;
 
     /**与当前知识库类别关联的子知识库类别*/
+    @TableField(exist = false)
     private List<FaultKnowledgeBaseType> faultKnowledgeBaseTypes;
 }

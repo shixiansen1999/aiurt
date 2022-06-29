@@ -13,6 +13,7 @@ import javax.servlet.http.HttpServletResponse;
 import cn.hutool.core.util.ObjectUtil;
 import com.aiurt.modules.fault.entity.Fault;
 import com.aiurt.modules.fault.service.IFaultService;
+import com.aiurt.modules.faultanalysisreport.constant.FaultConstant;
 import com.aiurt.modules.faultanalysisreport.entity.dto.FaultDTO;
 import com.aiurt.modules.faultknowledgebase.dto.DeviceTypeDTO;
 import com.aiurt.modules.faultknowledgebase.entity.FaultKnowledgeBase;
@@ -102,9 +103,32 @@ public class FaultAnalysisReportController extends BaseController<FaultAnalysisR
 	@ApiOperation(value="fault_analysis_report-添加", notes="fault_analysis_report-添加")
 	@PostMapping(value = "/add")
 	public Result<String> add(@RequestBody FaultAnalysisReport faultAnalysisReport) {
+		faultAnalysisReport.setStatus(FaultConstant.PENDING);
+		faultAnalysisReport.setApprovedResult(FaultConstant.NO_PASS);
 		faultAnalysisReportService.save(faultAnalysisReport);
 		return Result.OK("添加成功！");
 	}
+
+	 /**
+	  *  审批
+	  *
+	  * @param approvedRemark
+	  * @param approvedResult
+	  * @return
+	  */
+	 @AutoLog(value = "故障分析-审批")
+	 @ApiOperation(value="故障分析-审批", notes="故障分析-审批")
+	 @RequestMapping(value = "/approval", method = {RequestMethod.PUT,RequestMethod.POST})
+	 public Result<String> approval(@RequestParam(name = "approvedRemark") String approvedRemark,
+									@RequestParam(name = "approvedResult") Integer approvedResult,
+									@RequestParam(name = "id") String id) {
+		 FaultAnalysisReport faultAnalysisReport = new FaultAnalysisReport();
+		 faultAnalysisReport.setId(id);
+		 faultAnalysisReport.setApprovedRemark(approvedRemark);
+		 faultAnalysisReport.setApprovedResult(approvedResult);
+		 faultAnalysisReportService.updateById(faultAnalysisReport);
+		 return Result.OK("审批成功!");
+	 }
 
 	/**
 	 *  编辑

@@ -10,6 +10,8 @@ import java.net.URLDecoder;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.aiurt.modules.faultanalysisreport.constant.FaultConstant;
+import com.aiurt.modules.faultanalysisreport.entity.FaultAnalysisReport;
 import com.aiurt.modules.faultknowledgebase.dto.DeviceAssemblyDTO;
 import com.aiurt.modules.faultknowledgebase.dto.DeviceTypeDTO;
 import com.aiurt.modules.faultknowledgebase.mapper.FaultKnowledgeBaseMapper;
@@ -89,10 +91,32 @@ public class FaultKnowledgeBaseController extends BaseController<FaultKnowledgeB
 	@ApiOperation(value="故障知识库-添加", notes="故障知识库-添加")
 	@PostMapping(value = "/add")
 	public Result<String> add(@RequestBody FaultKnowledgeBase faultKnowledgeBase) {
+		faultKnowledgeBase.setStatus(FaultConstant.PENDING);
+		faultKnowledgeBase.setApprovedResult(FaultConstant.NO_PASS);
 		faultKnowledgeBaseService.save(faultKnowledgeBase);
 		return Result.OK("添加成功！");
 	}
 
+	 /**
+	  *  审批
+	  *
+	  * @param approvedRemark
+	  * @param approvedResult
+	  * @return
+	  */
+	 @AutoLog(value = "故障知识库-审批")
+	 @ApiOperation(value="故障知识库-审批", notes="故障知识库-审批")
+	 @RequestMapping(value = "/approval", method = {RequestMethod.PUT,RequestMethod.POST})
+	 public Result<String> approval(@RequestParam(name = "approvedRemark") String approvedRemark,
+									@RequestParam(name = "approvedResult") Integer approvedResult,
+									@RequestParam(name = "id") String id) {
+		 FaultKnowledgeBase faultKnowledgeBase = new FaultKnowledgeBase();
+		 faultKnowledgeBase.setId(id);
+		 faultKnowledgeBase.setApprovedRemark(approvedRemark);
+		 faultKnowledgeBase.setApprovedResult(approvedResult);
+		 faultKnowledgeBaseService.updateById(faultKnowledgeBase);
+		 return Result.OK("审批成功!");
+	 }
 	/**
 	 *  编辑
 	 *

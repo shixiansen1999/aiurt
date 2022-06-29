@@ -18,7 +18,8 @@
         fkb.fault_reason,
         fkb.method,
         fkb.solution,
-        fkb.create_time
+        fkb.create_time,
+        fkb.status
         FROM
         fault_knowledge_base fkb WHERE del_flag = 0
         <if test="condition.approvedResult != null">
@@ -69,7 +70,8 @@
             fkb.fault_reason,
             fkb.method,
             fkb.solution,
-            fkb.create_time
+            fkb.create_time,
+            fkb.status
     FROM
             fault_knowledge_base fkb WHERE del_flag = 0 and fkb.id = #{id}
 
