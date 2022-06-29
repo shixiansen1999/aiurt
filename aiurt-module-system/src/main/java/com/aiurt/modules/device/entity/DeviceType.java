@@ -58,14 +58,17 @@ public class DeviceType implements Serializable {
 	/**状态 0-停用 1-正常*/
 	@Excel(name = "状态 0-停用 1-正常", width = 15)
     @ApiModelProperty(value = "状态 0-停用 1-正常")
+    @Dict(dicCode = "device_type_status")
     private Integer status;
 	/**是否为特种设备(1:是,0:否)*/
 	@Excel(name = "是否为特种设备(1:是,0:否)", width = 15)
     @ApiModelProperty(value = "是否为特种设备(1:是,0:否)")
+    @Dict(dicCode = "is_special_device")
     private Integer isSpecialDevice;
 	/**是否尾节点(1:是,0：否)*/
 	@Excel(name = "是否尾节点(1:是,0：否)", width = 15)
     @ApiModelProperty(value = "是否尾节点(1:是,0：否)")
+    @Dict(dicCode = "is_end")
     private Integer isEnd;
 	/**层级结构*/
 	@Excel(name = "层级结构", width = 15)
