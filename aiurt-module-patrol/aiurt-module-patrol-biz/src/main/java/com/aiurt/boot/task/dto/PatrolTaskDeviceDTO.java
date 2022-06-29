@@ -84,13 +84,4 @@ public class PatrolTaskDeviceDTO {
     @Excel(name = "同行人", width = 15)
     @ApiModelProperty(value = "同行人")
     private java.lang.String accompanyName;
-    @Excel(name = "工单总数", width = 15)
-    @ApiModelProperty(value = "工单总数")
-    private java.lang.String totalNumber;
-    @Excel(name = "已巡检数", width = 15)
-    @ApiModelProperty(value = "已巡检数")
-    private java.lang.String inspectedNumber;
-    @Excel(name = "未巡检数", width = 15)
-    @ApiModelProperty(value = "未巡检数")
-    private java.lang.String notInspectedNumber;
 }

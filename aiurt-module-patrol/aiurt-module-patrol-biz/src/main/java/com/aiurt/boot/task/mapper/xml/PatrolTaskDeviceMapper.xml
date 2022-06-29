@@ -65,9 +65,6 @@
     </select>
     <select id="getPatrolTaskDeviceList" resultType="com.aiurt.boot.task.dto.PatrolTaskDeviceDTO">
         SELECT
-        count( ptd.id ) AS totalNumber,
-	    count( ptd.status = 0 OR NULL ) AS notInspectedNumber,
-	    count( ptd.status = 1 OR NULL ) AS inspectedNumber,
 	    concat((select line_name from cs_line as csl where csl.line_code = ptd.line_code),"-",
 	           (select station_name from cs_station  as css where css.station_code = ptd.station_code),
 	    IFNULL((select CONCAT("-",position_name) from cs_station_position  as cssp where cssp.position_code = ptd.position_code),''))as devicePosition,

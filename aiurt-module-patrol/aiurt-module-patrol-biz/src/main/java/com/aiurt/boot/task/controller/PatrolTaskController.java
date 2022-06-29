@@ -1,9 +1,6 @@
 package com.aiurt.boot.task.controller;
 
-import com.aiurt.boot.task.dto.PatrolAppointUserDTO;
-import com.aiurt.boot.task.dto.PatrolTaskDTO;
-import com.aiurt.boot.task.dto.PatrolTaskUserDTO;
-import com.aiurt.boot.task.dto.PatrolUserInfoDTO;
+import com.aiurt.boot.task.dto.*;
 import com.aiurt.boot.task.entity.PatrolTask;
 import com.aiurt.boot.task.param.PatrolTaskDeviceParam;
 import com.aiurt.boot.task.param.PatrolTaskParam;
@@ -307,6 +304,19 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
         return Result.OK("领取成功");
     }
 
+    /**
+     * app巡检任务提交-统计工单数量
+     * @param patrolTaskSubmitDTO
+     * @param req
+     * @return
+     */
+    @AutoLog(value = "patrol_task-app巡检任务提交-统计工单数量")
+    @ApiOperation(value = "patrol_task-app巡检任务提交-统计工单数量", notes = "patrol_task-app巡检任务提交-统计工单数量")
+    @PostMapping(value = "/submitTaskCount")
+    public Result<?> submitTaskCount(PatrolTaskSubmitDTO patrolTaskSubmitDTO, HttpServletRequest req) {
+        PatrolTaskSubmitDTO submitTaskCount = patrolTaskService.getSubmitTaskCount(patrolTaskSubmitDTO);
+        return Result.OK("领取成功");
+    }
     /**
      * app巡检任务领取后-退回
      *
