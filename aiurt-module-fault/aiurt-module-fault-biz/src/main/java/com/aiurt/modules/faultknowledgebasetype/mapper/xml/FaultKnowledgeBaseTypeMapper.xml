@@ -5,7 +5,7 @@
 <select id="getAllSubSystem" resultType="java.lang.String">
     select
     cs.system_code
-    from cs_user_subsystem cus left join cs_subsystem cs on cs.system_code = cus.system_code
+    from cs_user_subsystem cus left join cs_subsystem cs on cs.system_code = cus.system_id
     where cus.user_id =#{userId}
     </select>
 
@@ -32,7 +32,7 @@
     cs.system_name,
     cs.system_code,
     cs.major_code
-    from cs_user_subsystem cus left join cs_subsystem cs on cs.system_id = cus.system_code
+    from cs_user_subsystem cus left join cs_subsystem cs on cs.system_code = cus.system_id
     where cus.user_id =#{userId}
     <if test="majorCode != null and majorCode != ''">
         and cs.major_code =#{majorCode}
