@@ -29,10 +29,10 @@ public interface IPatrolTaskDeviceService extends IService<PatrolTaskDevice> {
      * app-巡检清单列表
      *
      * @param pageList
-     * @param id
+     * @param code
      * @return
      */
-    Page<PatrolTaskDeviceDTO> getPatrolTaskDeviceList(Page<PatrolTaskDeviceDTO> pageList, String id);
+    Page<PatrolTaskDeviceDTO> getPatrolTaskDeviceList(Page<PatrolTaskDeviceDTO> pageList, String code);
 
     /**
      * PC巡检任务池详情-巡检工单详情
