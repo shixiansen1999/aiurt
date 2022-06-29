@@ -64,7 +64,11 @@
         </if>
     </select>
     <select id="getPatrolTaskDeviceList" resultType="com.aiurt.boot.task.dto.PatrolTaskDeviceDTO">
-        SELECT ptd.*, ps.name as taskStandardName, ps.id as standardId
+        SELECT
+        count( ptd.id ) AS totalNumber,
+	    count( ptd.status = 0 OR NULL ) AS notInspectedNumber,
+	    count( ptd.status = 1 OR NULL ) AS inspectedNumber,
+        ptd.*, ps.name as taskStandardName, ps.id as standardId
         FROM patrol_task_device ptd
                  left join patrol_task_standard pts on pts.id = ptd.task_standard_id
                  left join patrol_standard ps on ps.id = pts.standard_id

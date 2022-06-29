@@ -2,18 +2,18 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.aiurt.boot.task.mapper.PatrolTaskMapper">
      <select id="getPatrolTaskPoolList" resultType="com.aiurt.boot.task.dto.PatrolTaskDTO">
-         select t1.*
+         select t1.*,(select realname from   sys_user where id= t1.end_user_id) as endUserName,concat(DATE_FORMAT(t1.start_time,'%H:%i'),"-",DATE_FORMAT(t1.end_time,'%H:%i'))as startEndTime
         from patrol_task t1
         where t1.status not in (6,7)
             <if test="patrolTaskDTO.patrolDate !=null">
-               and DATE_FORMAT(t1.patrol_date, '%Y-%m-%d') = DATE_FORMAT(#{patrolTaskDTO.patrolDate}, '%Y-%m-%d')
+               and DATE_FORMAT(t1.patrol_date, '%Y-%m-%d') = DATE_FORMAT(#{patrolTaskDTO.patrolDate}, '%Y-%m-%d'),concat(DATE_FORMAT(t1.start_time,'%H:%i'),"-",DATE_FORMAT(t1.end_time,'%H:%i'))as startEndTime
             </if>
             <if test="patrolTaskDTO.status!=null">
                 and t1.status = #{patrolTaskDTO.status}
             </if>
     </select>
     <select id="getPatrolTaskList" resultType="com.aiurt.boot.task.dto.PatrolTaskDTO">
-        select t1.*
+        select t1.*,(select realname from   sys_user where id= t1.end_user_id) as endUserName
         from patrol_task t1
         where t1.status in (6,7)
             <if test="patrolTaskDTO.patrolDate !=null">
