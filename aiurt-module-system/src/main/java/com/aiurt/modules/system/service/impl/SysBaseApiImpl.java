@@ -1,5 +1,6 @@
 package com.aiurt.modules.system.service.impl;
 
+import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.modules.basic.entity.SysAttachment;
 import com.aiurt.modules.basic.service.ISysAttachmentService;
@@ -50,6 +51,7 @@ import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @Description: 底层共通业务API，提供其他独立模块调用
@@ -1206,6 +1208,7 @@ public class SysBaseApiImpl implements ISysBaseAPI {
     @Override
     public void updateSysAttachmentBiz(String id, String businessId, String businessTableName) {
         LambdaUpdateWrapper<SysAttachment> queryWrapper = new LambdaUpdateWrapper<>();
+        id = StrUtil.contains(id, '?')? id.substring(0, id.indexOf('?')) : id;
         queryWrapper.eq(SysAttachment::getId, id).set(StrUtil.isNotBlank(businessId), SysAttachment::getBusinessId, businessId)
                 .set(StrUtil.isNotBlank(businessTableName), SysAttachment::getBusinessTableName,businessTableName);
         sysAttachmentService.update(queryWrapper);
@@ -1220,7 +1223,14 @@ public class SysBaseApiImpl implements ISysBaseAPI {
     @Override
     public void updateSysAttachmentBiz(List<String> idList, String businessId, String businessTableName) {
         LambdaUpdateWrapper<SysAttachment> queryWrapper = new LambdaUpdateWrapper<>();
-        queryWrapper.in(SysAttachment::getId, idList).set(StrUtil.isNotBlank(businessId), SysAttachment::getBusinessId, businessId)
+        if (CollectionUtil.isEmpty(idList)) {
+            return;
+        }
+        List<String> list = idList.stream().map(id -> {
+            id = StrUtil.contains(id, '?') ? id.substring(0, id.indexOf('?')) : id;
+            return id;
+        }).collect(Collectors.toList());
+        queryWrapper.in(SysAttachment::getId, list).set(StrUtil.isNotBlank(businessId), SysAttachment::getBusinessId, businessId)
                 .set(StrUtil.isNotBlank(businessTableName), SysAttachment::getBusinessTableName,businessTableName);
         sysAttachmentService.update(queryWrapper);
     }
@@ -1236,8 +1246,15 @@ public class SysBaseApiImpl implements ISysBaseAPI {
 
     @Override
     public List<SysAttachment> querySysAttachmentByIdList(List<String> idList) {
+        if (CollectionUtil.isEmpty(idList)) {
+            return Collections.emptyList();
+        }
+        List<String> list = idList.stream().map(id -> {
+            id = StrUtil.contains(id, '?') ? id.substring(0, id.indexOf('?')) : id;
+            return id;
+        }).collect(Collectors.toList());
         LambdaQueryWrapper<SysAttachment> wrapper = new LambdaQueryWrapper<>();
-        wrapper.in(SysAttachment::getId, idList);
+        wrapper.in(SysAttachment::getId, list);
         List<SysAttachment> attachmentList = sysAttachmentService.getBaseMapper().selectList(wrapper);
         return attachmentList;
     }
