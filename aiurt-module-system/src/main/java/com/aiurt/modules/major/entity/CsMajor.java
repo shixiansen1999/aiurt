@@ -87,8 +87,9 @@ public class CsMajor implements Serializable {
     @ApiModelProperty(value = "备用字段")
     @TableField(exist = false)
     private String byType = "zy";
-    /**子系统下的设备类型*/
-    @ApiModelProperty(value = "子系统下的设备类型")
+    /**设备类型子集*/
+    @Excel(name = "设备类型子集", width = 15)
+    @ApiModelProperty(value = "设备类型子集")
     @TableField(exist = false)
-    private List<DeviceType> deviceTypeList;
+    private List<DeviceType> deviceTypeChildren;
 }

@@ -95,11 +95,11 @@ public class DeviceType implements Serializable {
     @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
     @ApiModelProperty(value = "修改时间")
     private Date updateTime;
-    /**子集*/
-    @Excel(name = "子集", width = 15)
-    @ApiModelProperty(value = "子集")
+    /**设备类型子集*/
+    @Excel(name = "设备类型子集", width = 15)
+    @ApiModelProperty(value = "设备类型子集")
     @TableField(exist = false)
-    private List<DeviceType> children;
+    private List<DeviceType> deviceTypeChildren;
     /**设备组成*/
     @Excel(name = "设备组成", width = 15)
     @ApiModelProperty(value = "设备组成")

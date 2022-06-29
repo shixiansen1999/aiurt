@@ -100,8 +100,9 @@ public class CsSubsystem implements Serializable {
     @ApiModelProperty(value = "与专业关联的子系统")
     @TableField(exist = false)
     private List<CsSubsystem> children;
-    /**子系统下的设备类型*/
-    @ApiModelProperty(value = "子系统下的设备类型")
+    /**设备类型子集*/
+    @Excel(name = "设备类型子集", width = 15)
+    @ApiModelProperty(value = "设备类型子集")
     @TableField(exist = false)
-    private List<DeviceType> deviceTypeList;
+    private List<DeviceType> deviceTypeChildren;
 }
