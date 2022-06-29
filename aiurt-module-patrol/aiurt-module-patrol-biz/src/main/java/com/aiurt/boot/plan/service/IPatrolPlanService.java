@@ -40,10 +40,12 @@ public interface IPatrolPlanService extends IService<PatrolPlan> {
 
     /**
      * 查询详情
+     *
+     * @param code
      * @param id
      * @return
      */
-    PatrolPlanDto selectById(String id);
+    PatrolPlanDto selectId( String id,String code);
 
     /**
      * 查询站点
