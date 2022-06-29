@@ -11,6 +11,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import com.aiurt.common.aspect.annotation.AutoLog;
+import com.aiurt.modules.device.entity.DeviceType;
+import com.aiurt.modules.device.service.IDeviceTypeService;
 import com.aiurt.modules.major.entity.CsMajor;
 import com.aiurt.modules.major.service.ICsMajorService;
 import com.aiurt.modules.material.entity.MaterialBaseType;
@@ -53,6 +55,8 @@ public class CsMajorController  {
 	private ICsSubsystemService csSubsystemService;
 	@Autowired
 	private IMaterialBaseTypeService materialBaseTypeService;
+	@Autowired
+	private IDeviceTypeService deviceTypeService;
 	/**
 	 * 分页列表查询
 	 *
@@ -129,8 +133,14 @@ public class CsMajorController  {
 		if(!list.isEmpty()){
 			return Result.error("该专业被子系统使用中，不能删除!");
 		}
-		//判断是否被设备类型使用 todo
-
+		//判断是否被设备类型使用
+		LambdaQueryWrapper<DeviceType> deviceWrapper = new LambdaQueryWrapper<>();
+		deviceWrapper.eq(DeviceType::getMajorCode,csMajor.getMajorCode());
+		deviceWrapper.eq(DeviceType::getDelFlag,0);
+		List<DeviceType> deviceList = deviceTypeService.list(deviceWrapper);
+		if(!deviceList.isEmpty()){
+			return Result.error("该专业被设备类型使用中，不能删除!");
+		}
 		//判断是否被物资分类使用
 		LambdaQueryWrapper<MaterialBaseType> materWrapper = new LambdaQueryWrapper<>();
 		materWrapper.eq(MaterialBaseType::getMajorCode,csMajor.getMajorCode());

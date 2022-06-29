@@ -117,6 +117,7 @@ public class CsLineController extends BaseController<CsLine, ICsLineService> {
 	  */
     public CsLine entityChange(CsStationPosition position){
 		CsLine csLine = new CsLine();
+		csLine.setId(position.getId());
 		csLine.setLineType(position.getPositionType());
 		csLine.setLineCode(position.getPositionCode());
 		csLine.setLineName(position.getPositionName());
@@ -151,7 +152,8 @@ public class CsLineController extends BaseController<CsLine, ICsLineService> {
 		if(!deviceList.isEmpty()){
 			return Result.error("该位置信息被设备主数据使用中，无法删除");
 		}
-		csLineService.removeById(id);
+		csLine.setDelFlag(1);
+		csLineService.updateById(csLine);
 		return Result.OK("删除成功!");
 	}
 
@@ -161,13 +163,13 @@ public class CsLineController extends BaseController<CsLine, ICsLineService> {
 	 * @param ids
 	 * @return
 	 */
-	@AutoLog(value = "cs_line-批量删除")
+	/*@AutoLog(value = "cs_line-批量删除")
 	@ApiOperation(value="cs_line-批量删除", notes="cs_line-批量删除")
 	@DeleteMapping(value = "/deleteBatch")
 	public Result<String> deleteBatch(@RequestParam(name="ids",required=true) String ids) {
 		this.csLineService.removeByIds(Arrays.asList(ids.split(",")));
 		return Result.OK("批量删除成功!");
-	}
+	}*/
 
 	/**
 	 * 通过id查询
@@ -192,10 +194,10 @@ public class CsLineController extends BaseController<CsLine, ICsLineService> {
     * @param request
     * @param csLine
     */
-    @RequestMapping(value = "/exportXls")
+   /* @RequestMapping(value = "/exportXls")
     public ModelAndView exportXls(HttpServletRequest request, CsLine csLine) {
         return super.exportXls(request, csLine, CsLine.class, "cs_line");
-    }
+    }*/
 
     /**
       * 通过excel导入数据
@@ -204,9 +206,9 @@ public class CsLineController extends BaseController<CsLine, ICsLineService> {
     * @param response
     * @return
     */
-    @RequestMapping(value = "/importExcel", method = RequestMethod.POST)
+    /*@RequestMapping(value = "/importExcel", method = RequestMethod.POST)
     public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) {
         return super.importExcel(request, response, CsLine.class);
-    }
+    }*/
 
 }

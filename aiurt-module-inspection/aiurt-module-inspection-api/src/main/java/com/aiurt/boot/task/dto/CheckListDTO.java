@@ -32,14 +32,14 @@ public class CheckListDTO {
     @ApiModelProperty(value = "检修任务标准id")
     private String standardId;
 
-    /**检修人id*/
+    /**提交人id*/
     @TableField(exist = false)
-    @ApiModelProperty(value = "检修人id")
+    @ApiModelProperty(value = "提交人id")
     private String overhaulId;
 
-    /**检修人名称*/
+    /**提交人名称*/
     @TableField(exist = false)
-    @ApiModelProperty(value = "检修人名称")
+    @ApiModelProperty(value = "提交人名称")
     private String overhaulName;
 
     /**设备编码*/

@@ -209,7 +209,7 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
             //设备类型名称
             checkListDTO.setDeviceTypeName(q.getDeviceTypeName());
         });
-        //检修人名称
+        //提交人名称
         if (checkListDTO.getOverhaulId()!=null){
             LoginUser userById = sysBaseAPI.getUserById(checkListDTO.getOverhaulId());
             checkListDTO.setOverhaulName(userById.getUsername());
@@ -310,40 +310,55 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
     @Override
     public void toExamine(ExamineDTO examineDTO) {
         RepairTask repairTask = repairTaskMapper.selectById(examineDTO.getId());
+        LoginUser loginUser = manager.checkLogin();
+        LoginUser userById = sysBaseAPI.getUserById(loginUser.getId());
         RepairTask repairTask1= new RepairTask();
-        if (examineDTO.getStatus()==0){
+        status(examineDTO, loginUser, userById, repairTask1);
+        if (examineDTO.getStatus()==1 && repairTask.getIsReceipt()==1){
             repairTask1.setId(examineDTO.getId());
             repairTask1.setErrorContent(examineDTO.getContent());
-            repairTask1.setStatus(5);
-            repairTaskMapper.updateById(repairTask1);
-        }if (examineDTO.getStatus()==1 && repairTask.getIsReceipt()==1){
-            repairTask1.setId(examineDTO.getId());
-            repairTask1.setErrorContent(examineDTO.getContent());
+            repairTask1.setConfirmTime(new Date());
+            repairTask1.setConfirmUserId(loginUser.getId());
+            repairTask1.setConfirmUserName(userById.getRealname());
             repairTask1.setStatus(7);
             repairTaskMapper.updateById(repairTask1);
         }if (examineDTO.getStatus()==1 && repairTask.getIsReceipt()==0){
+            setId(examineDTO, repairTask1, loginUser, userById);
+        }
+    }
+
+    @Override
+    public void acceptance(ExamineDTO examineDTO) {
+        RepairTask repairTask1= new RepairTask();
+        LoginUser loginUser = manager.checkLogin();
+        LoginUser userById = sysBaseAPI.getUserById(loginUser.getId());
+        status(examineDTO, loginUser, userById, repairTask1);
+        if (examineDTO.getStatus()==1 ){
+            setId(examineDTO, repairTask1, loginUser, userById);
+        }
+    }
+
+    private void status(ExamineDTO examineDTO, LoginUser loginUser, LoginUser userById, RepairTask repairTask1) {
+        if (examineDTO.getStatus()==0){
             repairTask1.setId(examineDTO.getId());
             repairTask1.setErrorContent(examineDTO.getContent());
-            repairTask1.setStatus(8);
+            repairTask1.setConfirmTime(new Date());
+            repairTask1.setConfirmUserId(loginUser.getId());
+            repairTask1.setConfirmUserName(userById.getRealname());
+            repairTask1.setStatus(5);
             repairTaskMapper.updateById(repairTask1);
         }
     }
 
 
-    @Override
-    public void acceptance(ExamineDTO examineDTO) {
-        RepairTask repairTask1= new RepairTask();
-        if (examineDTO.getStatus()==0){
-            repairTask1.setId(examineDTO.getId());
-            repairTask1.setErrorContent(examineDTO.getContent());
-            repairTask1.setStatus(5);
-            repairTaskMapper.updateById(repairTask1);
-        }if (examineDTO.getStatus()==1 ){
-            repairTask1.setId(examineDTO.getId());
-            repairTask1.setErrorContent(examineDTO.getContent());
-            repairTask1.setStatus(8);
-            repairTaskMapper.updateById(repairTask1);
-        }
+    private void setId(ExamineDTO examineDTO, RepairTask repairTask1, LoginUser loginUser, LoginUser userById) {
+        repairTask1.setId(examineDTO.getId());
+        repairTask1.setErrorContent(examineDTO.getContent());
+        repairTask1.setConfirmTime(new Date());
+        repairTask1.setConfirmUserId(loginUser.getId());
+        repairTask1.setConfirmUserName(userById.getRealname());
+        repairTask1.setStatus(8);
+        repairTaskMapper.updateById(repairTask1);
     }
 
     @Override

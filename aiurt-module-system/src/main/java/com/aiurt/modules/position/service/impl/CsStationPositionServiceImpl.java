@@ -1,7 +1,10 @@
 package com.aiurt.modules.position.service.impl;
 
+import com.aiurt.modules.device.entity.DeviceType;
+import com.aiurt.modules.position.entity.CsLine;
 import com.aiurt.modules.position.entity.CsStation;
 import com.aiurt.modules.position.entity.CsStationPosition;
+import com.aiurt.modules.position.mapper.CsLineMapper;
 import com.aiurt.modules.position.mapper.CsStationMapper;
 import com.aiurt.modules.position.mapper.CsStationPositionMapper;
 import com.aiurt.modules.position.service.ICsStationPositionService;
@@ -14,6 +17,8 @@ import org.springframework.stereotype.Service;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -28,6 +33,8 @@ public class CsStationPositionServiceImpl extends ServiceImpl<CsStationPositionM
     private CsStationPositionMapper csStationPositionMapper;
     @Autowired
     private CsStationMapper csStationMapper;
+    @Autowired
+    private CsLineMapper csLineMapper;
 
     /**
      * 查询列表
@@ -48,21 +55,26 @@ public class CsStationPositionServiceImpl extends ServiceImpl<CsStationPositionM
     @Transactional(rollbackFor = Exception.class)
     public Result<?> add(CsStationPosition csStationPosition) {
         //编码不能重复，判断数据库中是否存在，如不存在则可继续添加
-        LambdaQueryWrapper<CsStationPosition> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(CsStationPosition::getPositionCode, csStationPosition.getPositionCode());
-        queryWrapper.eq(CsStationPosition::getDelFlag, 0);
-        List<CsStationPosition> list = csStationPositionMapper.selectList(queryWrapper);
+        List<CsLine> list = csLineMapper.selectCode(csStationPosition.getPositionCode());
         if (!list.isEmpty()) {
-            return Result.error("三级编码重复，请重新填写！");
+            return Result.error("编码重复，请重新填写！");
         }
         //排序不能重复，判断数据库中是否存在，如不存在则可继续添加
         LambdaQueryWrapper<CsStationPosition> staWrapper = new LambdaQueryWrapper<>();
         staWrapper.eq(CsStationPosition::getPositionCodeCc, csStationPosition.getPositionCodeCc());
         staWrapper.eq(CsStationPosition::getSort, csStationPosition.getSort());
         staWrapper.eq(CsStationPosition::getDelFlag, 0);
-        list = csStationPositionMapper.selectList(staWrapper);
-        if (!list.isEmpty()) {
+        List<CsStationPosition> positionList = csStationPositionMapper.selectList(staWrapper);
+        if (!positionList.isEmpty()) {
             return Result.error("三级的排序重复，请重新填写！");
+        }
+        //名称不能重复，判断数据库中是否存在，如不存在则可继续添加
+        LambdaQueryWrapper<CsStationPosition> nameWrapper = new LambdaQueryWrapper<>();
+        nameWrapper.eq(CsStationPosition::getPositionName, csStationPosition.getPositionName());
+        nameWrapper.eq(CsStationPosition::getDelFlag, 0);
+        positionList = csStationPositionMapper.selectList(nameWrapper);
+        if (!positionList.isEmpty()) {
+            return Result.error("三级名称重复，请重新填写！");
         }
         //根据Station_code查询所属线路code
         LambdaQueryWrapper<CsStation> stationWrapper = new LambdaQueryWrapper<>();
@@ -71,7 +83,7 @@ public class CsStationPositionServiceImpl extends ServiceImpl<CsStationPositionM
         CsStation sta = csStationMapper.selectOne(stationWrapper);
         csStationPosition.setLineCode(sta.getLineCode());
         //拼接position_code_cc
-        csStationPosition.setPositionCodeCc("/"+sta.getLineCode()+csStationPosition.getPositionCodeCc());
+        csStationPosition.setPositionCodeCc("/"+sta.getLineCode()+"/"+csStationPosition.getStaionCode()+"/"+csStationPosition.getPositionCode());
         csStationPositionMapper.insert(csStationPosition);
         return Result.OK("添加成功！");
     }
@@ -85,21 +97,26 @@ public class CsStationPositionServiceImpl extends ServiceImpl<CsStationPositionM
     @Transactional(rollbackFor = Exception.class)
     public Result<?> update(CsStationPosition csStationPosition) {
         //编码不能重复，判断数据库中是否存在，如不存在则可继续添加
-        LambdaQueryWrapper<CsStationPosition> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(CsStationPosition::getPositionCode, csStationPosition.getPositionCode());
-        queryWrapper.eq(CsStationPosition::getDelFlag, 0);
-        List<CsStationPosition> list = csStationPositionMapper.selectList(queryWrapper);
+        List<CsLine> list = csLineMapper.selectCode(csStationPosition.getPositionCode());
         if (!list.isEmpty() && !list.get(0).getId().equals(csStationPosition.getId())) {
-            return Result.error("三级编码重复，请重新填写！");
+            return Result.error("编码重复，请重新填写！");
         }
         //排序不能重复，判断数据库中是否存在，如不存在则可继续添加
         LambdaQueryWrapper<CsStationPosition> staWrapper = new LambdaQueryWrapper<>();
         staWrapper.eq(CsStationPosition::getPositionCodeCc, csStationPosition.getPositionCodeCc());
         staWrapper.eq(CsStationPosition::getSort, csStationPosition.getSort());
         staWrapper.eq(CsStationPosition::getDelFlag, 0);
-        list = csStationPositionMapper.selectList(staWrapper);
-        if (!list.isEmpty() && !list.get(0).getId().equals(csStationPosition.getId())) {
+        List<CsStationPosition> positionList = csStationPositionMapper.selectList(staWrapper);
+        if (!positionList.isEmpty() && !positionList.get(0).getId().equals(csStationPosition.getId())) {
             return Result.error("三级的排序重复，请重新填写！");
+        }
+        //名称不能重复，判断数据库中是否存在，如不存在则可继续添加
+        LambdaQueryWrapper<CsStationPosition> nameWrapper = new LambdaQueryWrapper<>();
+        nameWrapper.eq(CsStationPosition::getPositionName, csStationPosition.getPositionName());
+        nameWrapper.eq(CsStationPosition::getDelFlag, 0);
+        positionList = csStationPositionMapper.selectList(nameWrapper);
+        if (!positionList.isEmpty() && !positionList.get(0).getId().equals(csStationPosition.getId())) {
+            return Result.error("三级名称重复，请重新填写！");
         }
         //根据Station_code查询所属线路code
         LambdaQueryWrapper<CsStation> stationWrapper = new LambdaQueryWrapper<>();
@@ -108,8 +125,9 @@ public class CsStationPositionServiceImpl extends ServiceImpl<CsStationPositionM
         CsStation sta = csStationMapper.selectOne(stationWrapper);
         csStationPosition.setLineCode(sta.getLineCode());
         //拼接position_code_cc
-        csStationPosition.setPositionCodeCc("/"+sta.getLineCode()+csStationPosition.getPositionCodeCc());
+        csStationPosition.setPositionCodeCc("/"+sta.getLineCode()+"/"+csStationPosition.getStaionCode()+"/"+csStationPosition.getPositionCode());
         csStationPositionMapper.updateById(csStationPosition);
         return Result.OK("编辑成功！");
     }
+
 }

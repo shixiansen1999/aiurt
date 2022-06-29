@@ -243,7 +243,8 @@ public class CsStationPositionController  {
 		if(!deviceList.isEmpty()){
 			return Result.error("该位置信息被设备主数据使用中，无法删除");
 		}
-		csStationPositionService.removeById(id);
+		csStationPosition.setDelFlag(1);
+		csStationPositionService.updateById(csStationPosition);
 		return Result.OK("删除成功!");
 	}
 

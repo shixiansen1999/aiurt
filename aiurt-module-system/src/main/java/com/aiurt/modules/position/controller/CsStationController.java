@@ -116,6 +116,7 @@ public class CsStationController extends BaseController<CsStation, ICsStationSer
       */
      public CsStation entityChange(CsStationPosition position){
          CsStation csStation = new CsStation();
+		 csStation.setId(position.getId());
          csStation.setStationType(position.getPositionType());
          csStation.setStationCode(position.getPositionCode());
          csStation.setStationName(position.getPositionName());
@@ -136,10 +137,10 @@ public class CsStationController extends BaseController<CsStation, ICsStationSer
 	@ApiOperation(value="cs_station-通过id删除", notes="cs_station-通过id删除")
 	@DeleteMapping(value = "/delete")
 	public Result<String> delete(@RequestParam(name="id",required=true) String id) {
-		CsStationPosition csStationPosition = csStationPositionService.getById(id);
+		CsStation csStation = csStationService.getById(id);
 		//判断三级是否使用
 		LambdaQueryWrapper<CsStationPosition> wrapper =  new LambdaQueryWrapper<CsStationPosition>();
-		wrapper.eq(CsStationPosition::getStaionCode,csStationPosition.getStaionCode());
+		wrapper.eq(CsStationPosition::getStaionCode,csStation.getStationCode());
 		wrapper.eq(CsStationPosition::getDelFlag,0);
 		List<CsStationPosition> list = csStationPositionService.list(wrapper);
 		if(!list.isEmpty()){
@@ -147,13 +148,14 @@ public class CsStationController extends BaseController<CsStation, ICsStationSer
 		}
 		//判断设备主数据是否使用
 		LambdaQueryWrapper<Device> deviceWrapper =  new LambdaQueryWrapper<Device>();
-		deviceWrapper.eq(Device::getPositionCode,csStationPosition.getStaionCode());
+		deviceWrapper.eq(Device::getPositionCode,csStation.getStationCode());
 		deviceWrapper.eq(Device::getDelFlag,0);
 		List<Device> deviceList = deviceService.list(deviceWrapper);
 		if(!deviceList.isEmpty()){
 			return Result.error("该位置信息被设备主数据使用中，无法删除");
 		}
-		csStationService.removeById(id);
+		csStation.setDelFlag(1);
+		csStationService.updateById(csStation);
 		return Result.OK("删除成功!");
 	}
 
@@ -163,13 +165,13 @@ public class CsStationController extends BaseController<CsStation, ICsStationSer
 	 * @param ids
 	 * @return
 	 */
-	@AutoLog(value = "cs_station-批量删除")
+	/*@AutoLog(value = "cs_station-批量删除")
 	@ApiOperation(value="cs_station-批量删除", notes="cs_station-批量删除")
 	@DeleteMapping(value = "/deleteBatch")
 	public Result<String> deleteBatch(@RequestParam(name="ids",required=true) String ids) {
 		this.csStationService.removeByIds(Arrays.asList(ids.split(",")));
 		return Result.OK("批量删除成功!");
-	}
+	}*/
 
 	/**
 	 * 通过id查询
@@ -194,10 +196,10 @@ public class CsStationController extends BaseController<CsStation, ICsStationSer
     * @param request
     * @param csStation
     */
-    @RequestMapping(value = "/exportXls")
+   /* @RequestMapping(value = "/exportXls")
     public ModelAndView exportXls(HttpServletRequest request, CsStation csStation) {
         return super.exportXls(request, csStation, CsStation.class, "cs_station");
-    }
+    }*/
 
     /**
       * 通过excel导入数据
@@ -206,9 +208,9 @@ public class CsStationController extends BaseController<CsStation, ICsStationSer
     * @param response
     * @return
     */
-    @RequestMapping(value = "/importExcel", method = RequestMethod.POST)
+    /*@RequestMapping(value = "/importExcel", method = RequestMethod.POST)
     public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) {
         return super.importExcel(request, response, CsStation.class);
-    }
+    }*/
 
 }

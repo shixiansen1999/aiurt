@@ -27,7 +27,7 @@ public interface IFaultAnalysisReportService extends IService<FaultAnalysisRepor
      * @param id
      * @return IPage<FaultAnalysisReport>
      */
-    FaultDTO readOne(String id);
+    FaultAnalysisReport readOne(String id);
 
     /**
      * 故障选择查询

@@ -268,11 +268,11 @@ public class FaultAnalysisReportController extends BaseController<FaultAnalysisR
 	  */
 	 @ApiOperation(value="故障分析-通过id查询详情", notes="故障分析-通过id查询详情")
 	 @GetMapping(value = "/readone")
-	 public Result<FaultDTO> readone(@RequestParam(name="id",required=true) String id) {
-		 FaultDTO faultDTO = faultAnalysisReportService.readOne(id);
-		 if(faultDTO==null) {
+	 public Result<FaultAnalysisReport> readone(@RequestParam(name="id",required=true) String id) {
+		 FaultAnalysisReport faultAnalysisReport = faultAnalysisReportService.readOne(id);
+		 if(faultAnalysisReport==null) {
 			 return Result.error("未找到对应数据");
 		 }
-		 return Result.OK(faultDTO);
+		 return Result.OK(faultAnalysisReport);
 	 }
 }

@@ -4,6 +4,8 @@ import java.util.List;
 
 import com.aiurt.modules.position.entity.CsLine;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import io.lettuce.core.dynamic.annotation.Param;
+import org.apache.ibatis.annotations.Select;
 import org.springframework.stereotype.Component;
 
 /**
@@ -14,5 +16,10 @@ import org.springframework.stereotype.Component;
  */
 @Component
 public interface CsLineMapper extends BaseMapper<CsLine> {
-
+    @Select("SELECT id,line_code FROM cs_line where line_code =#{lineCode} " +
+            " UNION " +
+            "SELECT id,station_code FROM  cs_station where station_code =#{lineCode} " +
+            " UNION " +
+            "SELECT id,position_code FROM cs_station_position where position_code =#{lineCode}")
+    List<CsLine> selectCode(@Param("lineCode") String lineCode);
 }
