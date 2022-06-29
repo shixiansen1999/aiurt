@@ -61,15 +61,9 @@ public class FaultAnalysisReportServiceImpl extends ServiceImpl<FaultAnalysisRep
     }
 
     @Override
-    public FaultDTO readOne(String id) {
+    public FaultAnalysisReport readOne(String id) {
         FaultAnalysisReport faultAnalysisReport = faultAnalysisReportMapper.readOne(id);
-        FaultDTO faultDTO = new FaultDTO();
-        faultDTO.setFaultAnalysisReport(faultAnalysisReport);
-        if (StringUtils.isNotEmpty(faultAnalysisReport.getFaultKnowledgeBaseId())) {
-            FaultKnowledgeBase faultKnowledgeBase = faultKnowledgeBaseMapper.selectById(faultAnalysisReport.getFaultKnowledgeBaseId());
-            faultDTO.setFaultKnowledgeBase(faultKnowledgeBase);
-        }
-        return faultDTO;
+        return faultAnalysisReport;
     }
 
     @Override

@@ -71,10 +71,8 @@
             fkb.solution,
             fkb.create_time
     FROM
-            fault_knowledge_base fkb WHERE del_flag = 0
-    <if test="id != null and id != ''">
-        and fkb.id = #{id}
-    </if>
+            fault_knowledge_base fkb WHERE del_flag = 0 and fkb.id = #{id}
+
     </select>
 
 <select id="getDeviceType" resultType="com.aiurt.modules.faultknowledgebase.dto.DeviceTypeDTO">
