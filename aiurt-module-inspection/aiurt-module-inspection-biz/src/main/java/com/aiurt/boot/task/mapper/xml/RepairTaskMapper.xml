@@ -198,4 +198,13 @@
             </if>
         </where>
     </select>
+
+    <select id="selectEnclosure" resultType="com.aiurt.boot.task.entity.RepairTaskEnclosure">
+      SELECT
+	     *
+       FROM
+	   repair_task_enclosure
+       WHERE
+	   repair_task_result_id =#{resultId}
+    </select>
 </mapper>

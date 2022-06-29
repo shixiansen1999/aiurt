@@ -8,6 +8,7 @@ import com.aiurt.boot.plan.dto.StationDTO;
 import com.aiurt.boot.task.dto.CheckListDTO;
 import com.aiurt.boot.task.entity.RepairTask;
 import com.aiurt.boot.task.dto.RepairTaskDTO;
+import com.aiurt.boot.task.entity.RepairTaskEnclosure;
 import com.aiurt.boot.task.entity.RepairTaskResult;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -92,5 +93,13 @@ public interface RepairTaskMapper extends BaseMapper<RepairTask> {
      * @return
      */
     List<RepairTaskResult> selectSingle(@Param("id") String id,@Param("status")Integer status);
+
+
+    /**
+     * 查询编码信息
+     * @param resultId
+     * @return
+     */
+    List<RepairTaskEnclosure> selectEnclosure(String resultId);
 
 }
