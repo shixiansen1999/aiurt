@@ -23,7 +23,7 @@ public interface FaultKnowledgeBaseMapper extends BaseMapper<FaultKnowledgeBase>
      * @param condition
      * @return List<FaultAnalysisReport>
      * */
-    List<FaultKnowledgeBase> readAll(@Param("page")Page<FaultKnowledgeBase> page, @Param("condition")FaultKnowledgeBase condition);
+    List<FaultKnowledgeBase> readAll(@Param("page")Page<FaultKnowledgeBase> page, @Param("condition")FaultKnowledgeBase condition,@Param("allSubSystem") List<String> allSubSystem);
 
     /**
      * 分页查询故障知识库

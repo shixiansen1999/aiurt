@@ -86,7 +86,7 @@ public class FaultKnowledgeBaseTypeController extends BaseController<FaultKnowle
 	@ApiOperation(value="故障知识分类-添加", notes="故障知识分类-添加")
 	@PostMapping(value = "/add")
 	public Result<String> add(@RequestBody FaultKnowledgeBaseType faultKnowledgeBaseType) {
-		faultKnowledgeBaseTypeService.save(faultKnowledgeBaseType);
+		faultKnowledgeBaseTypeService.add(faultKnowledgeBaseType);
 		return Result.OK("添加成功！");
 	}
 
@@ -177,22 +177,10 @@ public class FaultKnowledgeBaseTypeController extends BaseController<FaultKnowle
 	  *
 	  * @return
 	  */
-	 @ApiOperation(value = "知识库类别树", notes = "知识库类别树")
+	 @ApiOperation(value = "故障知识分类-知识库类别树", notes = "知识库类别树")
 	 @GetMapping(value = "/faultKnowledgeBaseTypeTreeList")
 	 public Result<?> faultKnowledgeBaseTypeTreeList() {
 		 List<MajorDTO> list = faultKnowledgeBaseTypeService.faultKnowledgeBaseTypeTreeList();
 		 return Result.OK(list);
-	 }
-
-	 /**
-	  * app故障知识库用户专业查询
-	  *
-	  * @return
-	  */
-	 @ApiOperation(value = "app故障知识库用户专业查询", notes = "app故障知识库用户专业查询")
-	 @GetMapping(value = "/getUserMajor")
-	 public Result<?> getUserMajor() {
-		 LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-		 return Result.OK();
 	 }
 }

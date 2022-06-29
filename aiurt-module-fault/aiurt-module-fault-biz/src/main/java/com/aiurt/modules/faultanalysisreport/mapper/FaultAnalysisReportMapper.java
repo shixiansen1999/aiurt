@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.aiurt.modules.fault.entity.Fault;
 import com.aiurt.modules.faultanalysisreport.entity.dto.FaultDTO;
+import com.aiurt.modules.faultknowledgebasetype.dto.SubSystemDTO;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.aiurt.modules.faultanalysisreport.entity.FaultAnalysisReport;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
@@ -25,7 +26,7 @@ public interface FaultAnalysisReportMapper extends BaseMapper<FaultAnalysisRepor
      * @param condition
      * @return List<FaultAnalysisReport>
      * */
-    List<FaultAnalysisReport> readAll(@Param("page")Page<FaultAnalysisReport> page, @Param("condition")FaultAnalysisReport condition);
+    List<FaultAnalysisReport> readAll(@Param("page")Page<FaultAnalysisReport> page, @Param("condition")FaultAnalysisReport condition,@Param("allSubSystem")List<String> allSubSystem);
 
     /**
      * 故障选择查询
@@ -33,7 +34,7 @@ public interface FaultAnalysisReportMapper extends BaseMapper<FaultAnalysisRepor
      * @param condition
      * @return List<Fault>
      * */
-    List<Fault> getFault(@Param("page")Page<Fault> page, @Param("condition")Fault condition);
+    List<Fault> getFault(@Param("page")Page<Fault> page, @Param("condition")Fault condition,@Param("allSubSystem")List<String> allSubSystem);
 
     /**
      * 提交中的故障分析的故障详情
@@ -41,5 +42,12 @@ public interface FaultAnalysisReportMapper extends BaseMapper<FaultAnalysisRepor
      * @return FaultDTO
      */
     FaultDTO getDetail(@Param("id")String id);
+
+    /**
+     * 故障分析通过id查询详情
+     * @param id
+     * @return IPage<FaultAnalysisReport>
+     */
+    FaultAnalysisReport readOne(String id);
 
 }

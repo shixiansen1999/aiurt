@@ -16,7 +16,7 @@ import org.apache.ibatis.annotations.Param;
  */
 public interface FaultKnowledgeBaseTypeMapper extends BaseMapper<FaultKnowledgeBaseType> {
 
-    List<SubSystemDTO> getAllSubSystem(@Param("majorCode") String majorCode);
+    List<String> getAllSubSystem(@Param("userId")String userId);
 
     List<MajorDTO> getAllMajor(@Param("majorCodes")List<String> majorCodes);
 
