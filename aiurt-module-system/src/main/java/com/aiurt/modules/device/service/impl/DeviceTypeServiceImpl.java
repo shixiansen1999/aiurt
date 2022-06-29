@@ -131,6 +131,7 @@ public class DeviceTypeServiceImpl extends ServiceImpl<DeviceTypeMapper, DeviceT
         List<DeviceType> childList = typeList.stream().filter(deviceType -> pid.equals(deviceType.getPid())).collect(Collectors.toList());
         if(childList != null && childList.size()>0){
             for (DeviceType deviceType : childList) {
+                deviceType.setTreeType("sblx");
                 deviceType.setDeviceTypeChildren(treeList(typeList,deviceType.getId().toString()));
             }
         }

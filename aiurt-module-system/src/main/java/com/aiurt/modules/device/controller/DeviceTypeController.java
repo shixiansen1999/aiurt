@@ -72,46 +72,25 @@ public class DeviceTypeController extends BaseController<DeviceType, IDeviceType
 		 List<DeviceType> deviceTypeTree = deviceTypeService.treeList(deviceTypeList,"0");
 		 List<DeviceType> newList = new ArrayList<>();
 		 majorList.forEach(one -> {
-			 DeviceType major = setEntity(one.getId(),"zy",one.getMajorCode(),one.getMajorName(),null,null,null);
+			 DeviceType major = setEntity(one.getId(),"zy",one.getMajorCode(),one.getMajorName(),null,null,null,one.getMajorCode(),null);
 			 List<CsSubsystem> sysList = systemList.stream().filter(system-> system.getMajorCode().equals(one.getMajorCode())).collect(Collectors.toList());
 			 List<DeviceType> majorDeviceType = deviceTypeTree.stream().filter(type-> one.getMajorCode().equals(type.getMajorCode()) && (null==type.getSystemCode() || "".equals(type.getSystemCode())) && type.getPid().equals("0")).collect(Collectors.toList());
 			 List<DeviceType> twoList = new ArrayList<>();
 			 //判断是否有设备类型数据
-			 majorDeviceType.forEach(two ->{
-				 DeviceType system = setEntity(two.getId()+"","sblx",two.getCode(),two.getName(),two.getStatus(),two.getIsSpecialDevice(),two.getIsEnd());
-				 twoList.add(system);
-			 });
+			 twoList.addAll(majorDeviceType);
 			 //判断是否有子系统数据
 			 sysList.forEach(two ->{
-				 DeviceType system = setEntity(two.getId()+"","zxt",two.getSystemCode(),two.getSystemName(),null,null,null);
-				 twoList.add(system);
-				 List<DeviceType> sysDeviceType = deviceTypeTree.stream().filter(type-> two.getMajorCode().equals(type.getMajorCode()) && two.getSystemCode().equals(type.getSystemCode())).collect(Collectors.toList());
-				 List<DeviceType> threeList = new ArrayList<>();
-				 sysDeviceType.forEach(three ->{
-					 DeviceType type = setEntity(three.getId()+"","sblx",three.getCode(),three.getName(),three.getStatus(),three.getIsSpecialDevice(),three.getIsEnd());
-					 threeList.add(type);
-				 });
-				 system.setDeviceTypeChildren(threeList);
+				 DeviceType system = setEntity(two.getId()+"","zxt",two.getSystemCode(),two.getSystemName(),null,null,null,two.getMajorCode(),two.getSystemCode());
+
+				 List<DeviceType> sysDeviceType = deviceTypeTree.stream().filter(type-> system.getMajorCode().equals(type.getMajorCode()) && (null!=type.getSystemCode() && !"".equals(type.getSystemCode()) && system.getSystemCode().equals(type.getSystemCode()))  ).collect(Collectors.toList());
+
+				 system.setDeviceTypeChildren(sysDeviceType);
 				 twoList.add(system);
 			 });
 
 			 major.setDeviceTypeChildren(twoList);
 			 newList.add(major);
 		 });
-
-/*
-
-		 systemList.forEach(csSubsystem -> {
-			 List sysList = deviceTypeTree.stream().filter(deviceType-> csSubsystem.getSystemCode().equals(deviceType.getSystemCode())).collect(Collectors.toList());
-			 csSubsystem.setDeviceTypeChildren(sysList);
-		 });
-
-		 majorList.forEach(major -> {
-			 List sysList = systemList.stream().filter(system-> system.getMajorCode().equals(major.getMajorCode())).collect(Collectors.toList());
-			 major.setChildren(sysList);
-			 List sysListType = deviceTypeTree.stream().filter(materialBaseType-> major.getMajorCode().equals(materialBaseType.getMajorCode())&&(materialBaseType.getSystemCode()==null || "".equals(materialBaseType.getSystemCode()))).collect(Collectors.toList());
-			 major.setDeviceTypeList(sysListType);
-		 });*/
 		 return Result.OK(newList);
 	 }
 
@@ -126,7 +105,7 @@ public class DeviceTypeController extends BaseController<DeviceType, IDeviceType
 	 * @param isEnd
 	 * @return
 	 */
-	public DeviceType setEntity(String id,String treeType,String code,String name,Integer status,Integer isSpecialDevice,Integer isEnd){
+	public DeviceType setEntity(String id,String treeType,String code,String name,Integer status,Integer isSpecialDevice,Integer isEnd,String majorCode,String systemCode){
 		DeviceType type = new DeviceType();
 		type.setId(id);
 		type.setTreeType(treeType);
@@ -135,6 +114,8 @@ public class DeviceTypeController extends BaseController<DeviceType, IDeviceType
 		type.setStatus(status);
 		type.setIsSpecialDevice(isSpecialDevice);
 		type.setIsEnd(isEnd);
+		type.setMajorCode(majorCode);
+		type.setSystemCode(systemCode);
 		return type;
 	}
 	 /**
