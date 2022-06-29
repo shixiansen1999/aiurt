@@ -110,8 +110,8 @@ public class Fault implements Serializable {
     private String faultApplicantDept;
 
 	/**接报人*/
-	@Excel(name = "接报人", width = 15)
-    @ApiModelProperty(value = "接报人")
+	@Excel(name = "接报人/填报人", width = 15)
+    @ApiModelProperty(value = "填报人")
     @Dict(dictTable = "sys_user", dicCode = "username", dicText = "realname")
     private String receiveUserName;
 
