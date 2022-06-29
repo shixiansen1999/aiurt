@@ -110,9 +110,9 @@ public class RepairTask implements Serializable {
     @ApiModelProperty(value = "检修人点击开始执行任务的时间")
     private java.util.Date beginTime;
     /**提交时间，精确到秒*/
-    @Excel(name = "提交时间，精确到秒", width = 15, format = "yyyy-MM-dd")
-    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
-    @DateTimeFormat(pattern="yyyy-MM-dd")
+    @Excel(name = "提交时间，精确到秒", width = 15, format = "yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
+    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
     @ApiModelProperty(value = "提交时间，精确到秒")
     private java.util.Date submitTime;
     /**确认人id，关联sys_user的id*/
@@ -124,9 +124,9 @@ public class RepairTask implements Serializable {
     @ApiModelProperty(value = "确认人")
     private java.lang.String confirmUserName;
     /**确认时间，精确到秒*/
-    @Excel(name = "确认时间，精确到秒", width = 15, format = "yyyy-MM-dd")
-    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
-    @DateTimeFormat(pattern="yyyy-MM-dd")
+    @Excel(name = "确认时间，精确到秒", width = 15, format = "yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
+    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
     @ApiModelProperty(value = "确认时间，精确到秒")
     private java.util.Date confirmTime;
     /**确认签名url*/
@@ -142,9 +142,9 @@ public class RepairTask implements Serializable {
 
     /**验收人*/
     /**验收时间，精确到秒*/
-    @Excel(name = "验收时间，精确到秒", width = 15, format = "yyyy-MM-dd")
-    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
-    @DateTimeFormat(pattern="yyyy-MM-dd")
+    @Excel(name = "验收时间，精确到秒", width = 15, format = "yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
+    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
     @ApiModelProperty(value = "验收时间，精确到秒")
     private java.util.Date receiptTime;
     /**验收签名url*/
