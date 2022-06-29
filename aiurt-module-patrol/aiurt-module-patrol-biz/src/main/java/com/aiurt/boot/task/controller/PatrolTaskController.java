@@ -74,6 +74,13 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
         return Result.OK(pageList);
     }
 
+    /**
+     * PC巡检任务池详情-基本信息
+     *
+     * @param patrolTaskParam
+     * @param req
+     * @return
+     */
     @AutoLog(value = "PC巡检任务池详情-基本信息")
     @ApiOperation(value = "PC巡检任务池详情-基本信息", notes = "PC巡检任务池详情-基本信息")
     @RequestMapping(value = "/basicInfo", method = {RequestMethod.GET, RequestMethod.POST})
@@ -83,6 +90,15 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
         return Result.OK(task);
     }
 
+    /**
+     * PC巡检任务池详情-巡检工单
+     *
+     * @param patrolTaskDeviceParam
+     * @param pageNo
+     * @param pageSize
+     * @param req
+     * @return
+     */
     @AutoLog(value = "PC巡检任务池详情-巡检工单")
     @ApiOperation(value = "PC巡检任务池详情-巡检工单", notes = "PC巡检任务池详情-巡检工单")
     @RequestMapping(value = "/billInfo", method = {RequestMethod.GET, RequestMethod.POST})
@@ -95,6 +111,13 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
         return Result.OK(taskDevicePageList);
     }
 
+    /**
+     * PC巡检任务池详情-巡检工单详情
+     *
+     * @param patrolNumber
+     * @param req
+     * @return
+     */
     @AutoLog(value = "PC巡检任务池详情-巡检工单详情")
     @ApiOperation(value = "PC巡检任务池详情-巡检工单详情", notes = "PC巡检任务池详情-巡检工单详情")
     @RequestMapping(value = "/billInfoByNumber", method = {RequestMethod.GET, RequestMethod.POST})
@@ -103,6 +126,12 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
         return Result.OK(map);
     }
 
+    /**
+     * PC巡检任务池-获取指派人员
+     *
+     * @param code
+     * @return
+     */
     @AutoLog(value = "PC巡检任务池-获取指派人员")
     @ApiOperation(value = "PC巡检任务池-获取指派人员", notes = "PC巡检任务池-获取指派人员")
     @RequestMapping(value = "/getAssignee", method = {RequestMethod.GET, RequestMethod.POST})
@@ -111,12 +140,32 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
         return Result.OK(userInfo);
     }
 
+    /**
+     * PC巡检任务池-任务指派
+     *
+     * @param map
+     * @return
+     */
     @AutoLog(value = "PC巡检任务池-任务指派")
     @ApiOperation(value = "PC巡检任务池-任务指派", notes = "PC巡检任务池-任务指派")
     @PostMapping(value = "/taskAppoint")
     public Result<?> taskAppoint(@RequestBody Map<String, List<PatrolAppointUserDTO>> map) {
         int reslut = patrolTaskService.taskAppoint(map);
         return Result.OK("成功对" + reslut + "条任务进行指派！", null);
+    }
+
+    /**
+     * PC巡检任务池-任务作废
+     *
+     * @param list
+     * @return
+     */
+    @AutoLog(value = "PC巡检任务池-任务作废")
+    @ApiOperation(value = "PC巡检任务池-任务作废", notes = "PC巡检任务池-任务作废")
+    @PostMapping(value = "/taskDiscard")
+    public Result<?> taskDiscard(@RequestBody List<PatrolTask> list) {
+        int reslut = patrolTaskService.taskDiscard(list);
+        return Result.OK("成功对" + reslut + "条任务进行作废操作！", null);
     }
 
     /**
@@ -246,16 +295,13 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
     @PostMapping(value = "/patrolTaskReceive")
     public Result<IPage<PatrolTaskDTO>> patrolTaskReceive(PatrolTaskDTO patrolTaskDTO, HttpServletRequest req) {
         patrolTaskService.getPatrolTaskReceive(patrolTaskDTO);
-        if(patrolTaskDTO.getStatus()==1)
-        {
+        if (patrolTaskDTO.getStatus() == 1) {
             return Result.OK("确认成功");
         }
-        if(patrolTaskDTO.getStatus()==2)
-        {
+        if (patrolTaskDTO.getStatus() == 2) {
             return Result.OK("执行成功");
         }
-        if(patrolTaskDTO.getStatus()==4)
-        {
+        if (patrolTaskDTO.getStatus() == 4) {
             return Result.OK("提交任务成功");
         }
         return Result.OK("领取成功");
