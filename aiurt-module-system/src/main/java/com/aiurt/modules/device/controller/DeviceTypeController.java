@@ -131,6 +131,7 @@ public class DeviceTypeController extends BaseController<DeviceType, IDeviceType
 								   @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
 								   @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
 								   HttpServletRequest req) {
+		//QueryWrapper<DeviceType> queryWrapper = QueryGenerator.initQueryWrapper(deviceType, req.getParameterMap());
 		QueryWrapper<DeviceType> queryWrapper = QueryGenerator.initQueryWrapper(deviceType, req.getParameterMap());
 		Page<DeviceType> page = new Page<DeviceType>(pageNo, pageSize);
 		IPage<DeviceType> pageList = deviceTypeService.page(page, queryWrapper);
