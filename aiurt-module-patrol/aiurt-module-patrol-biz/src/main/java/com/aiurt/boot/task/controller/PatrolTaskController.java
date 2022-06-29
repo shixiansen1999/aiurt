@@ -2,9 +2,7 @@ package com.aiurt.boot.task.controller;
 
 import com.aiurt.boot.task.dto.PatrolTaskDTO;
 import com.aiurt.boot.task.dto.PatrolTaskUserDTO;
-import com.aiurt.boot.task.entity.PatrolAccompany;
 import com.aiurt.boot.task.entity.PatrolTask;
-import com.aiurt.boot.task.mapper.PatrolAccompanyMapper;
 import com.aiurt.boot.task.param.PatrolTaskDeviceParam;
 import com.aiurt.boot.task.param.PatrolTaskParam;
 import com.aiurt.boot.task.service.IPatrolAccompanyService;
@@ -26,7 +24,6 @@ import org.springframework.web.servlet.ModelAndView;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -226,6 +223,18 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
     @PostMapping(value = "/patrolTaskReceive")
     public Result<IPage<PatrolTaskDTO>> patrolTaskReceive(PatrolTaskDTO patrolTaskDTO, HttpServletRequest req) {
         patrolTaskService.getPatrolTaskReceive(patrolTaskDTO);
+        if(patrolTaskDTO.getStatus()==1)
+        {
+            return Result.OK("确认成功");
+        }
+        if(patrolTaskDTO.getStatus()==2)
+        {
+            return Result.OK("执行成功");
+        }
+        if(patrolTaskDTO.getStatus()==4)
+        {
+            return Result.OK("提交任务成功");
+        }
         return Result.OK("领取成功");
     }
 
