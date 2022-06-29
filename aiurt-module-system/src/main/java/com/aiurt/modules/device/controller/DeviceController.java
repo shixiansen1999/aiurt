@@ -123,8 +123,6 @@ public class DeviceController {
     @ApiOperation(value = "设备-列表查询", notes = "设备-列表查询")
     @GetMapping(value = "/selectList")
     public Result<List<Device>> selectList(
-                                               @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
-                                               @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize,
                                                @RequestParam(name = "lineCode", required = false) String lineCode,
                                                @RequestParam(name = "stationCode", required = false) String stationCode,
                                                @RequestParam(name = "positionCode", required = false) String positionCode,
@@ -183,7 +181,7 @@ public class DeviceController {
     }
 
     @ApiOperation(value = "设备详情查询", notes = "设备详情查询")
-    @PostMapping(value = "/queryById")
+    @GetMapping(value = "/queryById")
     public Result<Device> queryById(@RequestParam(name = "id", required = true) String deviceId) {
         return deviceService.queryDetailById(deviceId);
     }
@@ -201,18 +199,6 @@ public class DeviceController {
             @RequestParam(name = "deviceTypeCode", required = false) String deviceTypeCode) {
         Result<String> result = new Result<String>();
         try {
-//            DeviceType deviceType = iDeviceTypeService.getOne(new QueryWrapper<DeviceType>().eq("code",deviceTypeCode));
-//            String deviceTypeCodeCc = iDeviceTypeService.getCcStr(deviceType);
-//            if(deviceTypeCodeCc != null && !"".equals(deviceTypeCodeCc)){
-//                if(deviceTypeCodeCc.contains("/")){
-//                    List<String> strings = Arrays.asList(deviceTypeCodeCc.split("/"));
-//                    for(String code : strings){
-//                        deviceTypeCode += code;
-//                    }
-//                }else{
-//                    deviceTypeCode = deviceTypeCodeCc;
-//                }
-//            }
             if(systemCode == null){
                 systemCode = "";
             }

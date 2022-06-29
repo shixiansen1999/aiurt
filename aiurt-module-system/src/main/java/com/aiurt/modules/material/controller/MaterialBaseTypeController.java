@@ -238,7 +238,7 @@ public class MaterialBaseTypeController {
      * @return
      */
     @ApiOperation(value = "物资分类详情查询", notes = "物资分类详情查询")
-    @PostMapping(value = "/queryById")
+    @GetMapping(value = "/queryById")
     public Result<MaterialBaseType> queryById(@RequestParam(name = "id", required = true) String id) {
         MaterialBaseType materialBaseType = iMaterialBaseTypeService.getById(id);
         String pid = materialBaseType.getPid();

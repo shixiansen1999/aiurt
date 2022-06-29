@@ -184,7 +184,7 @@ public class MaterialBaseController {
      * @return
      */
     @ApiOperation(value = "物资详情查询", notes = "物资详情查询")
-    @PostMapping(value = "/queryById")
+    @GetMapping(value = "/queryById")
     public Result<MaterialBase> queryById(@RequestParam(name = "id", required = true) String id) {
         MaterialBase materialBase = iMaterialBaseService.getById(id);
         MaterialBase materialBasefinal = iMaterialBaseService.translate(materialBase);
