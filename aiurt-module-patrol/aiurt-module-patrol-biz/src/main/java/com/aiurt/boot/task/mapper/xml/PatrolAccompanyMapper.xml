@@ -2,4 +2,9 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.aiurt.boot.task.mapper.PatrolAccompanyMapper">
 
+<select id="getAccompanyName" resultType="java.lang.String">
+SELECT GROUP_CONCAT(username)
+from patrol_accompany
+where task_device_code = #{id}
+</select>
 </mapper>

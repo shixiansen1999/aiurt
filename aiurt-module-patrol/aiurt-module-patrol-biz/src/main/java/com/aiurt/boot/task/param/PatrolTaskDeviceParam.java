@@ -1,5 +1,6 @@
 package com.aiurt.boot.task.param;
 
+import com.aiurt.boot.task.entity.PatrolAccompany;
 import com.aiurt.boot.task.entity.PatrolTaskDevice;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
@@ -7,6 +8,8 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import org.jeecgframework.poi.excel.annotation.Excel;
+
+import java.util.List;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
@@ -69,5 +72,34 @@ public class PatrolTaskDeviceParam extends PatrolTaskDevice {
     @Excel(name = "巡检人名称", width = 15)
     @ApiModelProperty(value = "巡检人名称")
     private String username;
-
+    /**
+     * 线路名称
+     */
+    @Excel(name = "线路名称", width = 15)
+    @ApiModelProperty(value = "线路名称")
+    private String lineName;
+    /**
+     * 站点名称
+     */
+    @Excel(name = "站点名称", width = 15)
+    @ApiModelProperty(value = "站点名称")
+    private String stationName;
+    /**
+     * 位置名称
+     */
+    @Excel(name = "位置名称", width = 15)
+    @ApiModelProperty(value = "位置名称")
+    private String positionName;
+    /**
+     * 巡检时长，单位分钟
+     */
+    @Excel(name = "巡检时长，单位分钟", width = 15)
+    @ApiModelProperty(value = "巡检时长，单位分钟")
+    private Long duration;
+    /**
+     * 同行人信息
+     */
+    @Excel(name = "巡检时长", width = 15)
+    @ApiModelProperty(value = "巡检时长")
+    private List<PatrolAccompany> accompanyInfo;
 }

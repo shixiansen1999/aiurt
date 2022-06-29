@@ -1,8 +1,5 @@
 package com.aiurt.boot.task.mapper;
 
-import java.util.List;
-
-import org.apache.ibatis.annotations.Param;
 import com.aiurt.boot.task.entity.PatrolAccompany;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
@@ -14,4 +11,10 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
  */
 public interface PatrolAccompanyMapper extends BaseMapper<PatrolAccompany> {
 
+    /**
+     * app-获取同行人名称
+     * @param patrolNumber
+     * @return
+     */
+    String getAccompanyName(String patrolNumber);
 }
