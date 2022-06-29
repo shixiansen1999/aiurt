@@ -205,7 +205,7 @@ public class CommonCtroller {
                 List<SelectTable> tableList = stationPositionList.stream().map(csStationPosition -> {
                     SelectTable tableV = new SelectTable();
                     tableV.setLabel(csStationPosition.getPositionName());
-                    tableV.setValue(csStationPosition.getCode());
+                    tableV.setValue(csStationPosition.getPositionCode());
                     tableV.setLevel(3);
                     tableV.setLineCode(lineCode);
                     tableV.setStationCode(csStation.getStationCode());
