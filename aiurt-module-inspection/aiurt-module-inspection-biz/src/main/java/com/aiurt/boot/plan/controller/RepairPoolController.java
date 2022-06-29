@@ -12,10 +12,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
@@ -175,7 +175,7 @@ public class RepairPoolController extends BaseController<RepairPool, IRepairPool
     @AutoLog(value = "指派检修任务")
     @ApiOperation(value = "指派检修任务", notes = "指派检修任务")
     @PostMapping(value = "/assigned")
-    public Result assigned(@RequestBody @Validated AssignDTO assignDTO) {
+    public Result assigned(@RequestBody AssignDTO assignDTO) {
         return repairPoolService.assigned(assignDTO);
     }
 
@@ -209,7 +209,7 @@ public class RepairPoolController extends BaseController<RepairPool, IRepairPool
             @ApiResponse(code = 200, message = "OK", response = PlanCodeDTO.class)
     })
     public Result queryPlanCodeList(@RequestParam @ApiParam(name = "id", required = true, value = "检修计划id") String id) {
-        List<PlanCodeDTO> planCodeDTOList = null;
+        List<PlanCodeDTO> planCodeDTOList = new ArrayList<>();
         return Result.OK(planCodeDTOList);
     }
 

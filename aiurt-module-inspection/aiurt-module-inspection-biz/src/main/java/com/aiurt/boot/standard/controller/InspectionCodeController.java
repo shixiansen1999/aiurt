@@ -38,7 +38,7 @@ public class InspectionCodeController extends BaseController<InspectionCode, IIn
 	 @Autowired
 	 private InspectionCodeMapper inspectionCodeMapper;
 	/**
-	 * 分页列表查询
+	 * 分页列表查询检修标准
 	 *
 	 * @param inspectionCodeDTO
 	 * @param pageNo
@@ -46,8 +46,8 @@ public class InspectionCodeController extends BaseController<InspectionCode, IIn
 	 * @param req
 	 * @return
 	 */
-	@AutoLog(value = "inspection_code-分页列表查询")
-	@ApiOperation(value="inspection_code-分页列表查询", notes="inspection_code-分页列表查询")
+	@AutoLog(value = "分页列表查询检修标准")
+	@ApiOperation(value="分页列表查询检修标准", notes="分页列表查询检修标准")
 	@GetMapping(value = "/list")
 	public Result<IPage<InspectionCodeDTO>> queryPageList(InspectionCodeDTO inspectionCodeDTO,
 														  @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,

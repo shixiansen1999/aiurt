@@ -9,6 +9,7 @@ import com.aiurt.boot.manager.mapper.InspectionManagerMapper;
 import com.aiurt.boot.plan.dto.RepairDeviceDTO;
 import com.aiurt.boot.plan.dto.StationDTO;
 import com.aiurt.common.exception.AiurtBootException;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.LoginUser;
@@ -52,7 +53,6 @@ public class InspectionManager {
         if (InspectionConstant.SUBSYSTEM.equals(type)) {
             nameList = inspectionManagerMapper.translateSubsystem(codeList);
         }
-        String result = StrUtil.join(",", nameList);
         return CollUtil.isNotEmpty(nameList) ? StrUtil.join(",", nameList) : "";
     }
 
@@ -114,7 +114,7 @@ public class InspectionManager {
 
 
     /**
-     * 根据设备编码集合查询设备信息
+     * 根据设备编码集合查询设备信息（无分页）
      *
      * @param deviceCodes 设备编码集合
      * @return
@@ -160,6 +160,33 @@ public class InspectionManager {
             throw new AiurtBootException("请重新登录");
         }
         return user;
+    }
+
+    /**
+     * 根据设备编码集合查询设备信息(带分页)
+     *
+     * @param deviceCodes 设备编码集合
+     * @return
+     */
+    public List<RepairDeviceDTO> queryDeviceByCodesPage(List<String> deviceCodes, Page<?> page) {
+        List<RepairDeviceDTO> repairDeviceDTOList = new ArrayList<>();
+        if (CollUtil.isNotEmpty(deviceCodes)) {
+            repairDeviceDTOList = inspectionManagerMapper.queryDeviceByCodesPage(deviceCodes,page);
+            if (CollUtil.isNotEmpty(repairDeviceDTOList)) {
+                for (RepairDeviceDTO repairDeviceDTO : repairDeviceDTOList) {
+                    repairDeviceDTO.setStatusName(sysBaseAPI.translateDict(DictConstant.DEVICE_STATUS, String.valueOf(repairDeviceDTO.getStatus())));
+                    repairDeviceDTO.setTemporaryName(sysBaseAPI.translateDict(DictConstant.DEVICE_TEMPORARY, String.valueOf(repairDeviceDTO.getTemporary())));
+                    StationDTO stationDTO = new StationDTO();
+                    stationDTO.setLineCode(repairDeviceDTO.getLineCode());
+                    stationDTO.setStationCode(repairDeviceDTO.getStationCode());
+                    stationDTO.setPositionCode(repairDeviceDTO.getPositionCode());
+                    String positionCodeName = translateStation(Arrays.asList(stationDTO));
+                    repairDeviceDTO.setPositionCodeName(positionCodeName);
+                }
+            }
+        }
+        return repairDeviceDTOList;
+
     }
 
 }

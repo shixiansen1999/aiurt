@@ -85,9 +85,12 @@ public class InspectionConstant {
     public static final Integer NO_ISAPPOINT_DEVICE = 0;
     /**
      * 是否与设备类型相关：1是
-     * */
+     */
     public static final Integer IS_APPOINT_DEVICE = 1;
 
-
+    /**
+     * 检修管理-手工下发任务状态 1已指派
+     */
+    public static final Integer ASSIGNED = 1;
 
 }

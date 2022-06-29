@@ -28,7 +28,7 @@ public class RepairDeviceDTO {
     private String majorName;
     @ApiModelProperty(value = "适用专业子系统名称")
     private String subsystemName;
-    @ApiModelProperty(value = "站点编码")
+    @ApiModelProperty(value = "位置编码")
     private String positionCode;
     @ApiModelProperty(value = "站点编码")
     private String stationCode;
