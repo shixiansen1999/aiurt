@@ -90,7 +90,7 @@ public class CsSubsystemServiceImpl extends ServiceImpl<CsSubsystemMapper, CsSub
         nameWrapper.eq("major_code", csSubsystem.getMajorCode());
         nameWrapper.eq("system_name", csSubsystem.getSystemName());
         List<CsSubsystem> nameList = csSubsystemMapper.selectList(nameWrapper);
-        if (!nameList.isEmpty() && !list.get(0).getId().equals(csSubsystem.getId())) {
+        if (!nameList.isEmpty() && !nameList.get(0).getId().equals(csSubsystem.getId())) {
             return Result.error("子系统名称重复，请重新填写！");
         }
         csSubsystemMapper.updateById(csSubsystem);
