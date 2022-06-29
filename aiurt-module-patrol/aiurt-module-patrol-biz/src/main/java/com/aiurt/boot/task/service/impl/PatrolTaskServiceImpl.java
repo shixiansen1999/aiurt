@@ -8,7 +8,6 @@ import com.aiurt.boot.plan.entity.PatrolPlan;
 import com.aiurt.boot.plan.mapper.PatrolPlanMapper;
 import com.aiurt.boot.task.dto.*;
 import com.aiurt.boot.task.entity.PatrolTask;
-import com.aiurt.boot.task.entity.PatrolTaskDevice;
 import com.aiurt.boot.task.entity.PatrolTaskUser;
 import com.aiurt.boot.task.mapper.*;
 import com.aiurt.boot.task.param.PatrolTaskParam;
@@ -268,19 +267,6 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
                 .eq(PatrolTask::getId, patrolTaskDTO.getId());
         update(updateWrapper);
     }
-
-    @Override
-    public void getPatrolTaskCheck(PatrolTaskDTO patrolTaskDTO) {
-        //更新任务状态（将未开始改为执行中）、添加检查人id，传任务主键id
-        LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        PatrolTaskDevice patrolPDevice = new PatrolTaskDevice();
-        LambdaUpdateWrapper<PatrolTaskDevice> updateWrapper = new LambdaUpdateWrapper<>();
-        updateWrapper.set(PatrolTaskDevice::getStatus, 1)
-                .set(PatrolTaskDevice::getUserId, sysUser.getId())
-                .eq(PatrolTaskDevice::getTaskId, patrolTaskDTO.getId());
-        patrolTaskDeviceMapper.update(patrolPDevice, updateWrapper);
-    }
-
     @Override
     public List<PatrolTaskUserDTO> getPatrolTaskAppointSelect(PatrolTaskDTO patrolTaskDTO) {
         //查询这个部门的信息人员,传组织机构ids

@@ -4,13 +4,13 @@ import com.aiurt.boot.task.dto.PatrolAppointUserDTO;
 import com.aiurt.boot.task.dto.PatrolTaskDTO;
 import com.aiurt.boot.task.dto.PatrolTaskUserDTO;
 import com.aiurt.boot.task.dto.PatrolUserInfoDTO;
-import com.aiurt.boot.task.entity.PatrolAccompany;
 import com.aiurt.boot.task.entity.PatrolTask;
-import com.aiurt.boot.task.entity.PatrolTaskUser;
-import com.aiurt.boot.task.mapper.PatrolAccompanyMapper;
 import com.aiurt.boot.task.param.PatrolTaskDeviceParam;
 import com.aiurt.boot.task.param.PatrolTaskParam;
-import com.aiurt.boot.task.service.*;
+import com.aiurt.boot.task.service.IPatrolAccompanyService;
+import com.aiurt.boot.task.service.IPatrolTaskDeviceService;
+import com.aiurt.boot.task.service.IPatrolTaskOrganizationService;
+import com.aiurt.boot.task.service.IPatrolTaskService;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.system.base.controller.BaseController;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
@@ -293,7 +293,7 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
     @AutoLog(value = "patrol_task-app巡检任务领取")
     @ApiOperation(value = "patrol_task-app巡检任务领取", notes = "patrol_task-app巡检任务领取")
     @PostMapping(value = "/patrolTaskReceive")
-    public Result<IPage<PatrolTaskDTO>> patrolTaskReceive(PatrolTaskDTO patrolTaskDTO, HttpServletRequest req) {
+    public Result<?> patrolTaskReceive(PatrolTaskDTO patrolTaskDTO, HttpServletRequest req) {
         patrolTaskService.getPatrolTaskReceive(patrolTaskDTO);
         if (patrolTaskDTO.getStatus() == 1) {
             return Result.OK("确认成功");
@@ -317,26 +317,10 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
     @AutoLog(value = "patrol_task-app巡检任务领取后-退回")
     @ApiOperation(value = "patrol_task-app巡检任务领取后-退回", notes = "patrol_task-app巡检任务领取后-退回")
     @PostMapping(value = "/patrolTaskReturn")
-    public Result<IPage<PatrolTaskDTO>> patrolTaskReturn(PatrolTaskDTO patrolTaskDTO, HttpServletRequest req) {
+    public Result<?> patrolTaskReturn(PatrolTaskDTO patrolTaskDTO, HttpServletRequest req) {
         patrolTaskService.getPatrolTaskReturn(patrolTaskDTO);
         return Result.OK("退回成功");
     }
-
-    /**
-     * app巡检任务执行中-检查
-     *
-     * @param patrolTaskDTO
-     * @param req
-     * @return
-     */
-    @AutoLog(value = "patrol_task-app巡检任务执行中-检查")
-    @ApiOperation(value = "patrol_task-app巡检任务执行中-检查", notes = "patrol_task-app巡检任务执行中-检查")
-    @PostMapping(value = "/patrolTaskCheck")
-    public Result<IPage<PatrolTaskDTO>> patrolTaskCheck(PatrolTaskDTO patrolTaskDTO, HttpServletRequest req) {
-        patrolTaskService.getPatrolTaskCheck(patrolTaskDTO);
-        return Result.OK("检查成功");
-    }
-
     /**
      * app巡检任务-指派人员查询
      *

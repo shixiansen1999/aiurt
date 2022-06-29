@@ -70,6 +70,19 @@ public class PatrolTaskDeviceController extends BaseController<PatrolTaskDevice,
 		 pageList = patrolTaskDeviceService.getPatrolTaskDeviceList(pageList, id);
 		 return Result.OK(pageList);
 	 }
+	 /**
+	  * app巡检任务执行中-检查
+	  * @param patrolTaskDeviceDTO
+	  * @param req
+	  * @return
+	  */
+	 @AutoLog(value = "patrol_task-app巡检任务执行中-检查")
+	 @ApiOperation(value = "patrol_task-app巡检任务执行中-检查", notes = "patrol_task-app巡检任务执行中-检查")
+	 @PostMapping(value = "/patrolTaskCheck")
+	 public Result<?> patrolTaskCheck(PatrolTaskDeviceDTO patrolTaskDeviceDTO, HttpServletRequest req) {
+		 patrolTaskDeviceService.getPatrolTaskCheck(patrolTaskDeviceDTO);
+		 return Result.OK("检查成功");
+	 }
 	/**
 	 *   添加
 	 *

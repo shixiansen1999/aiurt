@@ -52,14 +52,6 @@ public interface IPatrolTaskService extends IService<PatrolTask> {
      * @param patrolTaskDTO
      */
     void getPatrolTaskReturn(PatrolTaskDTO patrolTaskDTO);
-
-    /**
-     * app巡检任务执行中-检查
-     *
-     * @param patrolTaskDTO
-     */
-    void getPatrolTaskCheck(PatrolTaskDTO patrolTaskDTO);
-
     /**
      * app巡检任务-指派人员查询
      *
