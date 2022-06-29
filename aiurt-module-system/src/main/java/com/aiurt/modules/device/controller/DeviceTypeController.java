@@ -190,7 +190,8 @@ public class DeviceTypeController extends BaseController<DeviceType, IDeviceType
 		if(!list.isEmpty()){
 			return Result.error("存在子节点，无法删除");
 		}
-		deviceTypeService.removeById(id);
+		deviceType.setDelFlag(1);
+		deviceTypeService.updateById(deviceType);
 		return Result.OK("删除成功!");
 	}
 

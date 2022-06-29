@@ -51,8 +51,8 @@ public class CsStationPosition implements Serializable {
     @ApiModelProperty(value = "删除标志")
     private Integer delFlag;
 	/**创建时间*/
-	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
-    @DateTimeFormat(pattern="yyyy-MM-dd")
+	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
+    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
     @ApiModelProperty(value = "创建时间")
     private Date createTime;
 	/**更新时间*/

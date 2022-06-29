@@ -53,8 +53,8 @@ public class CsLine implements Serializable {
     @ApiModelProperty(value = "删除标志")
     private Integer delFlag;
 	/**createTime*/
-	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
-    @DateTimeFormat(pattern="yyyy-MM-dd")
+	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
+    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
     @ApiModelProperty(value = "createTime")
     private Date createTime;
 	/**updateTime*/
