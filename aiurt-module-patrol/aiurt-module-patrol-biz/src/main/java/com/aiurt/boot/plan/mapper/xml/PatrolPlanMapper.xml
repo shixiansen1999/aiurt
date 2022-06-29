@@ -104,17 +104,17 @@
     </select>
     <select id="selectId" resultType="com.aiurt.boot.plan.dto.PatrolPlanDto">
         SELECT a.*,( SELECT GROUP_CONCAT(e.depart_name) FROM patrol_plan_organization PPO
-          LEFT JOIN sys_depart e ON PPO.organization_code = e.org_code  WHERE a.`code` = PPO.plan_code
-                      AND PPO.del_flag = 0   ) AS mechanismName,
+          LEFT JOIN sys_depart e ON PPO.organization_code = e.org_code  WHERE  PPO.plan_code =#{code}
+                    AND PPO.del_flag = 0   ) AS mechanismName,
                ( SELECT GROUP_CONCAT(f.station_name) FROM  patrol_plan_station d
                 LEFT JOIN cs_station f ON d.station_code = f.station_code
-                 WHERE a.`code` = d.plan_code AND d.del_flag = 0 ) AS siteName,
+                 WHERE  d.plan_code =#{code} AND d.del_flag = 0 ) AS siteName,
                ( SELECT GROUP_CONCAT(e.org_code) FROM patrol_plan_organization PPO
              LEFT JOIN sys_depart e ON PPO.organization_code = e.org_code
-               WHERE a.`code` = PPO.plan_code AND PPO.del_flag = 0) AS mechanismCode,
+               WHERE PPO.plan_code=#{code} AND PPO.del_flag = 0) AS mechanismCode,
                ( SELECT GROUP_CONCAT(f.station_code) FROM  patrol_plan_station d
                      LEFT JOIN cs_station f ON d.station_code = f.station_code
-                 WHERE a.`code` = d.plan_code AND d.del_flag = 0 ) AS siteCode,
+                 WHERE d.plan_code =#{code} AND d.del_flag = 0 ) AS siteCode,
                ( SELECT GROUP_CONCAT(d.id) FROM  patrol_standard d
                 LEFT JOIN patrol_plan_standard c on d.`code` =c.standard_code
                  WHERE c.plan_id =#{id} AND d.del_flag = 0 ) AS ids,

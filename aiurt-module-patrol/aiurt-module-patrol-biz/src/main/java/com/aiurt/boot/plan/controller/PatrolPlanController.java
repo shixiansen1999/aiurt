@@ -164,8 +164,9 @@ public class PatrolPlanController extends BaseController<PatrolPlan, IPatrolPlan
 	//@AutoLog(value = "patrol_plan-通过id查询")
 	@ApiOperation(value="patrol_plan-通过id查询", notes="patrol_plan-通过id查询")
 	@GetMapping(value = "/queryById")
-	public Result<PatrolPlanDto> queryById(@RequestParam(name="id",required=true) String id) {
-		PatrolPlanDto patrolPlanDto = patrolPlanService.selectById(id);
+	public Result<PatrolPlanDto> queryById(@RequestParam(name="id",required=true) String id,
+										   @RequestParam(name="code",required=true) String code) {
+		PatrolPlanDto patrolPlanDto = patrolPlanService.selectId(id,code);
 		if(patrolPlanDto ==null) {
 			return Result.error("未找到对应数据");
 		}

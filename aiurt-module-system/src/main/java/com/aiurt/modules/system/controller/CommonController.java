@@ -122,6 +122,7 @@ public class CommonController {
             //update-end-author:taoyan date:20200814 for:文件上传改造
         }
         if(oConvertUtils.isNotEmpty(savePath)){
+
             // 文件名称
             String originalFilename = file.getOriginalFilename();
             // 保存到系统文件附件库
@@ -134,7 +135,8 @@ public class CommonController {
             sysAttachment.setDelFlag(0);
 
             sysAttachmentService.save(sysAttachment);
-            result.setMessage(sysAttachment.getId());
+            String filePathId = String.format("%s?fileName=%s", sysAttachment.getId(), originalFilename);
+            result.setMessage(filePathId);
             result.setSuccess(true);
             result.setResult(sysAttachment);
         }else {
@@ -198,6 +200,7 @@ public class CommonController {
     public void view(HttpServletRequest request, HttpServletResponse response) {
         // ISO-8859-1 ==> UTF-8 进行编码转换
         String imgPath = extractPathFromPattern(request);
+        String fileName = request.getParameter("fileName");
         if(oConvertUtils.isEmpty(imgPath) || imgPath=="null"){
             return;
         }
@@ -217,6 +220,10 @@ public class CommonController {
                 return;
             }
 
+            if (StrUtil.isBlank(fileName)) {
+                fileName = sysAttachment.getFileName();
+            }
+
             String filePath = uploadpath + File.separator + sysAttachment.getFilePath();
             File file = new File(filePath);
             if(!file.exists()){
@@ -225,7 +232,7 @@ public class CommonController {
             }
 
 
-            downloadLocalFile(response, sysAttachment.getFilePath(), sysAttachment.getFileName());
+            downloadLocalFile(response, sysAttachment.getFilePath(), fileName);
         } catch (Exception e) {
             log.error("预览文件失败" + e.getMessage());
             response.setStatus(404);

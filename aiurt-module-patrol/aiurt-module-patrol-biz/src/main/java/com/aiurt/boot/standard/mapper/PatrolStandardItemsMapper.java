@@ -2,6 +2,7 @@ package com.aiurt.boot.standard.mapper;
 
 import com.aiurt.boot.standard.entity.PatrolStandardItems;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
@@ -21,4 +22,10 @@ public interface PatrolStandardItemsMapper extends BaseMapper<PatrolStandardItem
      * @return
      */
     List<PatrolStandardItems> getList(String id);
+
+    /**
+     * 逻辑删除父级下面所有子集
+     * @param id
+     */
+    void updatPId(@Param("id") String id);
 }
