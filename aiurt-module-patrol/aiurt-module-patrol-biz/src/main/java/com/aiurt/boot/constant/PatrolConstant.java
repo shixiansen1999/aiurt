@@ -15,7 +15,11 @@ public interface PatrolConstant {
     /**
      * 巡检任务初始状态(待指派）
      */
-    Integer TASK_STATUS = 0;
+    Integer TASK_INIT = 0;
+    /**
+     * 巡检任务初始状态(已指派）
+     */
+    Integer TASK_APPOINT = 1;
     /**
      * 巡检策略日巡
      */

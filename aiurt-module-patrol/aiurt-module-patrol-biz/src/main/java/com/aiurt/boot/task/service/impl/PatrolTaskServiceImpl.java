@@ -1,20 +1,17 @@
 package com.aiurt.boot.task.service.impl;
 
 
+import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
+import com.aiurt.boot.constant.PatrolConstant;
 import com.aiurt.boot.plan.entity.PatrolPlan;
 import com.aiurt.boot.plan.mapper.PatrolPlanMapper;
-import com.aiurt.boot.task.dto.PatrolTaskDTO;
-import com.aiurt.boot.task.dto.PatrolTaskStandardDTO;
-import com.aiurt.boot.task.dto.PatrolTaskUserContentDTO;
-import com.aiurt.boot.task.dto.PatrolTaskUserDTO;
+import com.aiurt.boot.task.dto.*;
 import com.aiurt.boot.task.entity.PatrolTask;
 import com.aiurt.boot.task.entity.PatrolTaskDevice;
 import com.aiurt.boot.task.entity.PatrolTaskUser;
 import com.aiurt.boot.task.mapper.*;
-import com.aiurt.boot.task.dto.PatrolTaskOrganizationDTO;
 import com.aiurt.boot.task.param.PatrolTaskParam;
-import com.aiurt.boot.task.dto.PatrolTaskStationDTO;
 import com.aiurt.boot.task.service.IPatrolTaskService;
 import com.aiurt.common.exception.AiurtBootException;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -27,10 +24,8 @@ import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 /**
@@ -111,13 +106,59 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
     }
 
     @Override
+    public int taskAppoint(Map<String, List<PatrolAppointUserDTO>> map) {
+        AtomicInteger count = new AtomicInteger();
+        for (Map.Entry<String, List<PatrolAppointUserDTO>> listEntry : map.entrySet()) {
+            List<PatrolAppointUserDTO> list = listEntry.getValue();
+
+            // 根据任务code查找未指派的任务
+            QueryWrapper<PatrolTask> taskWrapper = new QueryWrapper<>();
+            taskWrapper.lambda()
+                    .eq(PatrolTask::getCode, listEntry.getKey())
+                    .eq(PatrolTask::getStatus, PatrolConstant.TASK_INIT);
+            PatrolTask patrolTask = patrolTaskMapper.selectOne(taskWrapper);
+
+            if (ObjectUtil.isNotEmpty(patrolTask)) {
+                // 标记是否插入指派的用户信息
+                AtomicInteger insert = new AtomicInteger();
+                Optional.ofNullable(list).orElseGet(Collections::emptyList).stream().forEach(l -> {
+                    if (ObjectUtil.isEmpty(l) || ObjectUtil.isEmpty(l.getUserId())) {
+                        return;
+                    }
+                    if (ObjectUtil.isEmpty(l.getUserName())) {
+                        l.setUserName(patrolTaskUserMapper.getUsername(l.getUserId()));
+                    }
+                    // 指派用户信息
+                    PatrolTaskUser taskUser = new PatrolTaskUser();
+                    taskUser.setTaskCode(listEntry.getKey());
+                    taskUser.setUserId(l.getUserId());
+                    taskUser.setUserName(l.getUserName());
+
+                    // 添加指派用户
+                    insert.addAndGet(patrolTaskUserMapper.insert(taskUser));
+                });
+                // 若插入指派的人员后则更新任务状态
+                if (insert.get() > 0) {
+                    // 任务状态
+                    PatrolTask task = new PatrolTask();
+                    task.setStatus(PatrolConstant.TASK_APPOINT);
+                    // 更改任务状态为已指派
+                    patrolTaskMapper.update(task, taskWrapper);
+                    count.getAndIncrement();
+                }
+            }
+        }
+        return count.get();
+    }
+
+    @Override
     public Page<PatrolTaskDTO> getPatrolTaskPoolList(Page<PatrolTaskDTO> pageList, PatrolTaskDTO patrolTaskDTO) {
         List<PatrolTaskDTO> taskList = patrolTaskMapper.getPatrolTaskPoolList(pageList, patrolTaskDTO);
         taskList.stream().forEach(e -> {
             String userName = patrolTaskMapper.getUserName(e.getBackId());
             List<String> organizationName = patrolTaskMapper.getOrganizationName(e.getPlanCode());
             List<PatrolTaskStandardDTO> patrolTaskStandard = patrolTaskStandardMapper.getMajorSystemName(e.getId());
-            String majorName =patrolTaskStandard.stream().map(PatrolTaskStandardDTO::getMajorName).collect(Collectors.joining(","));
+            String majorName = patrolTaskStandard.stream().map(PatrolTaskStandardDTO::getMajorName).collect(Collectors.joining(","));
             String sysName = patrolTaskStandard.stream().map(PatrolTaskStandardDTO::getSysName).collect(Collectors.joining(","));
             List<String> orgCodes = patrolTaskMapper.getOrgCode(e.getPlanCode());
             List<String> stationName = patrolTaskMapper.getStationName(e.getPlanCode());
@@ -143,7 +184,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
             String userName = patrolTaskMapper.getUserName(e.getBackId());
             List<String> organizationName = patrolTaskMapper.getOrganizationName(e.getPlanCode());
             List<PatrolTaskStandardDTO> patrolTaskStandard = patrolTaskStandardMapper.getMajorSystemName(e.getId());
-            String majorName =patrolTaskStandard.stream().map(PatrolTaskStandardDTO::getMajorName).collect(Collectors.joining(","));
+            String majorName = patrolTaskStandard.stream().map(PatrolTaskStandardDTO::getMajorName).collect(Collectors.joining(","));
             String sysName = patrolTaskStandard.stream().map(PatrolTaskStandardDTO::getSysName).collect(Collectors.joining(","));
             List<String> orgCodes = patrolTaskMapper.getOrgCode(e.getPlanCode());
             List<String> stationName = patrolTaskMapper.getStationName(e.getPlanCode());

@@ -15,4 +15,22 @@
             AND pto.task_code =#{taskCode}
         </if>
     </select>
+    <select id="getUserListByTaskCode" resultType="com.aiurt.boot.task.dto.PatrolUserInfoDTO">
+        SELECT
+        GROUP_CONCAT( su.id ) userId,
+        GROUP_CONCAT( su.realname ) userName,
+        sd.depart_name orgName,
+        pto.*
+        FROM
+        patrol_task_organization pto
+        LEFT JOIN sys_user su ON pto.org_code = su.org_code
+        LEFT JOIN sys_depart sd ON pto.org_code = sd.org_code
+        WHERE
+        pto.del_flag = 0
+        <if test="code != null and code != ''">
+            AND pto.task_code = #{code}
+        </if>
+        GROUP BY
+        org_code
+    </select>
 </mapper>

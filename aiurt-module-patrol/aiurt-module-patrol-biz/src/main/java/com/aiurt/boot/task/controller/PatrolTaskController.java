@@ -1,15 +1,16 @@
 package com.aiurt.boot.task.controller;
 
+import com.aiurt.boot.task.dto.PatrolAppointUserDTO;
 import com.aiurt.boot.task.dto.PatrolTaskDTO;
 import com.aiurt.boot.task.dto.PatrolTaskUserDTO;
+import com.aiurt.boot.task.dto.PatrolUserInfoDTO;
 import com.aiurt.boot.task.entity.PatrolAccompany;
 import com.aiurt.boot.task.entity.PatrolTask;
+import com.aiurt.boot.task.entity.PatrolTaskUser;
 import com.aiurt.boot.task.mapper.PatrolAccompanyMapper;
 import com.aiurt.boot.task.param.PatrolTaskDeviceParam;
 import com.aiurt.boot.task.param.PatrolTaskParam;
-import com.aiurt.boot.task.service.IPatrolAccompanyService;
-import com.aiurt.boot.task.service.IPatrolTaskDeviceService;
-import com.aiurt.boot.task.service.IPatrolTaskService;
+import com.aiurt.boot.task.service.*;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.system.base.controller.BaseController;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
@@ -48,6 +49,10 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
 
     @Autowired
     private IPatrolAccompanyService patrolAccompanyService;
+
+    @Autowired
+    private IPatrolTaskOrganizationService patrolTaskOrganizationService;
+
 
     /**
      * 分页列表查询
@@ -97,6 +102,22 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
     public Result<?> selectBillInfoByNumber(@RequestParam("patrolNumber") String patrolNumber, HttpServletRequest req) {
         Map<String, Object> map = patrolTaskDeviceService.selectBillInfoByNumber(patrolNumber);
         return Result.OK(map);
+    }
+
+    @AutoLog(value = "PC巡检任务池-获取指派人员")
+    @ApiOperation(value = "PC巡检任务池-获取指派人员", notes = "PC巡检任务池-获取指派人员")
+    @RequestMapping(value = "/getAssignee", method = {RequestMethod.GET, RequestMethod.POST})
+    public Result<?> getAssignee(@RequestParam("code") String code) {
+        List<PatrolUserInfoDTO> userInfo = patrolTaskOrganizationService.getUserListByTaskCode(code);
+        return Result.OK(userInfo);
+    }
+
+    @AutoLog(value = "PC巡检任务池-任务指派")
+    @ApiOperation(value = "PC巡检任务池-任务指派", notes = "PC巡检任务池-任务指派")
+    @PostMapping(value = "/taskAppoint")
+    public Result<?> taskAppoint(@RequestBody Map<String, List<PatrolAppointUserDTO>> map) {
+        int reslut = patrolTaskService.taskAppoint(map);
+        return Result.OK("成功对" + reslut + "条任务进行指派！", null);
     }
 
     /**

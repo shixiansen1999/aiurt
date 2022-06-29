@@ -1,5 +1,6 @@
 package com.aiurt.boot.task.service.impl;
 
+import com.aiurt.boot.task.dto.PatrolUserInfoDTO;
 import com.aiurt.boot.task.entity.PatrolTaskOrganization;
 import com.aiurt.boot.task.mapper.PatrolTaskOrganizationMapper;
 import com.aiurt.boot.task.dto.PatrolTaskOrganizationDTO;
@@ -25,5 +26,10 @@ public class PatrolTaskOrganizationServiceImpl extends ServiceImpl<PatrolTaskOrg
     @Override
     public List<PatrolTaskOrganizationDTO> selectOrgByTaskCode(String taskCode) {
         return patrolTaskOrganizationMapper.selectOrgByTaskCode(taskCode);
+    }
+
+    @Override
+    public List<PatrolUserInfoDTO> getUserListByTaskCode(String code) {
+        return patrolTaskOrganizationMapper.getUserListByTaskCode(code);
     }
 }
