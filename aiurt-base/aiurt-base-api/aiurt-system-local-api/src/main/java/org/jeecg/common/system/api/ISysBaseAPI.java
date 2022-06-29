@@ -1,6 +1,7 @@
 package org.jeecg.common.system.api;
 
 import com.aiurt.common.api.CommonAPI;
+import com.aiurt.modules.basic.entity.SysAttachment;
 import org.jeecg.common.api.dto.OnlineAuthDTO;
 import com.aiurt.common.api.dto.message.*;
 import com.alibaba.fastjson.JSONObject;
@@ -346,5 +347,38 @@ public interface ISysBaseAPI extends CommonAPI {
      * @return
      */
      List<LoginUser> getUserByDepIds(List<String> deptCodes);
+
+
+    /**
+     * 更新文件业务数据
+     * @param id 文件主键即文件路径
+     * @param businessId 业务数据
+     * @param businessTableName 业务模块
+     */
+    void updateSysAttachmentBiz(String id, String businessId, String businessTableName);
+
+
+    /**
+     * 批量更新文件业务数据
+     * @param idList 文件主键即文件路径
+     * @param businessId 业务数据
+     * @param businessTableName 业务模块
+     */
+    void updateSysAttachmentBiz(List<String> idList, String businessId, String businessTableName);
+
+    /**
+     * 根据业务id查询附件信息
+     * @param businessIdList
+     * @return
+     */
+    List<SysAttachment> querySysAttachmentByBizIdList(List<String> businessIdList);
+
+
+    /**
+     * 根据id查询附件信
+     * @param idList
+     * @return
+     */
+    List<SysAttachment> querySysAttachmentByIdList(List<String> idList);
 
 }

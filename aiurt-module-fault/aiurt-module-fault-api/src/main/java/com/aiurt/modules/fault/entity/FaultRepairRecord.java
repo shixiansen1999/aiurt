@@ -47,9 +47,10 @@ public class FaultRepairRecord implements Serializable {
     @ApiModelProperty(value = "故障级别")
     private String faultLevelCode;
 	/**指派人*/
-	@Excel(name = "指派人", width = 15)
-    @ApiModelProperty(value = "指派人")
+	@Excel(name = "指派人/故障负责人", width = 15)
+    @ApiModelProperty(value = "指派人/故障负责人")
     private String appointUserName;
+
 	/**作业类型*/
 	@Excel(name = "作业类型", width = 15)
     @ApiModelProperty(value = "作业类型")
@@ -85,23 +86,23 @@ public class FaultRepairRecord implements Serializable {
 
 
 	/**接收任务时间*/
-	@Excel(name = "接收任务时间", width = 15, format = "yyyy-MM-dd")
-	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
-    @DateTimeFormat(pattern="yyyy-MM-dd")
+	@Excel(name = "接收任务时间", width = 15, format = "yyyy-MM-dd HH:mm:ss")
+	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
+    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
     @ApiModelProperty(value = "接收任务时间")
     private Date receviceTime;
 
 	/**开始维修时间*/
-	@Excel(name = "开始维修时间", width = 15, format = "yyyy-MM-dd")
-	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
-    @DateTimeFormat(pattern="yyyy-MM-dd")
+	@Excel(name = "开始维修时间", width = 15, format = "yyyy-MM-dd HH:mm:ss")
+	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
+    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
     @ApiModelProperty(value = "开始维修时间")
     private Date startTime;
 
 	/**维修完成时间*/
-	@Excel(name = "维修完成时间", width = 15, format = "yyyy-MM-dd")
-	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
-    @DateTimeFormat(pattern="yyyy-MM-dd")
+	@Excel(name = "维修完成时间", width = 15, format = "yyyy-MM-dd HH:mm:ss")
+	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
+    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
     @ApiModelProperty(value = "维修完成时间")
     private Date endTime;
 
@@ -139,9 +140,9 @@ public class FaultRepairRecord implements Serializable {
     private String workTicketCode;
 
 	/**审核时间*/
-	@Excel(name = "审核时间", width = 15, format = "yyyy-MM-dd")
-	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
-    @DateTimeFormat(pattern="yyyy-MM-dd")
+	@Excel(name = "审核时间", width = 15, format = "yyyy-MM-dd HH:mm:ss")
+	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
+    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
     @ApiModelProperty(value = "审核时间")
     private Date approvedTime;
 
@@ -155,9 +156,6 @@ public class FaultRepairRecord implements Serializable {
     @ApiModelProperty(value = "故障编号")
     private String faultCode;
 
-
-
-
     /**更新人*/
     @ApiModelProperty(value = "更新人")
     private String updateBy;
@@ -165,13 +163,13 @@ public class FaultRepairRecord implements Serializable {
     @ApiModelProperty(value = "创建人")
     private String createBy;
     /**创建日期*/
-    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
-    @DateTimeFormat(pattern="yyyy-MM-dd")
+    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
+    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
     @ApiModelProperty(value = "创建日期")
     private Date createTime;
     /**更新日期*/
-    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
-    @DateTimeFormat(pattern="yyyy-MM-dd")
+    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
+    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
     @ApiModelProperty(value = "更新日期")
     private Date updateTime;
     /**所属部门*/

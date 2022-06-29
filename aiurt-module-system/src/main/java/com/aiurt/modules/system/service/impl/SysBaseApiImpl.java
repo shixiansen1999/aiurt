@@ -1,5 +1,8 @@
 package com.aiurt.modules.system.service.impl;
 
+import cn.hutool.core.util.StrUtil;
+import com.aiurt.modules.basic.entity.SysAttachment;
+import com.aiurt.modules.basic.service.ISysAttachmentService;
 import org.jeecg.common.api.dto.OnlineAuthDTO;
 import com.aiurt.common.api.dto.message.*;
 import com.aiurt.common.aspect.UrlMatchEnum;
@@ -102,6 +105,9 @@ public class SysBaseApiImpl implements ISysBaseAPI {
 
     @Autowired
     ISysCategoryService sysCategoryService;
+
+    @Autowired
+    private ISysAttachmentService sysAttachmentService;
 
     @Override
     @Cacheable(cacheNames = CacheConstant.SYS_USERS_CACHE, key = "#username")
@@ -1191,4 +1197,48 @@ public class SysBaseApiImpl implements ISysBaseAPI {
         return sysDictService.queryTableDictTextByKeys(table, text, code, Arrays.asList(keys.split(",")));
     }
 
+    /**
+     * 更新文件业务id
+     * @param id 文件主键即文件路径
+     * @param businessId 业务数据
+     * @param businessTableName 业务模块
+     */
+    @Override
+    public void updateSysAttachmentBiz(String id, String businessId, String businessTableName) {
+        LambdaUpdateWrapper<SysAttachment> queryWrapper = new LambdaUpdateWrapper<>();
+        queryWrapper.eq(SysAttachment::getId, id).set(StrUtil.isNotBlank(businessId), SysAttachment::getBusinessId, businessId)
+                .set(StrUtil.isNotBlank(businessTableName), SysAttachment::getBusinessTableName,businessTableName);
+        sysAttachmentService.update(queryWrapper);
+    }
+
+    /**
+     * 批量更新文件业务id
+     * @param idList 文件主键即文件路径
+     * @param businessId 业务数据
+     * @param businessTableName 业务模块
+     */
+    @Override
+    public void updateSysAttachmentBiz(List<String> idList, String businessId, String businessTableName) {
+        LambdaUpdateWrapper<SysAttachment> queryWrapper = new LambdaUpdateWrapper<>();
+        queryWrapper.in(SysAttachment::getId, idList).set(StrUtil.isNotBlank(businessId), SysAttachment::getBusinessId, businessId)
+                .set(StrUtil.isNotBlank(businessTableName), SysAttachment::getBusinessTableName,businessTableName);
+        sysAttachmentService.update(queryWrapper);
+    }
+
+
+    @Override
+    public List<SysAttachment> querySysAttachmentByBizIdList(List<String> businessIdList) {
+        LambdaQueryWrapper<SysAttachment> wrapper = new LambdaQueryWrapper<>();
+        wrapper.in(SysAttachment::getBusinessId, businessIdList);
+        List<SysAttachment> attachmentList = sysAttachmentService.getBaseMapper().selectList(wrapper);
+        return attachmentList;
+    }
+
+    @Override
+    public List<SysAttachment> querySysAttachmentByIdList(List<String> idList) {
+        LambdaQueryWrapper<SysAttachment> wrapper = new LambdaQueryWrapper<>();
+        wrapper.in(SysAttachment::getId, idList);
+        List<SysAttachment> attachmentList = sysAttachmentService.getBaseMapper().selectList(wrapper);
+        return attachmentList;
+    }
 }

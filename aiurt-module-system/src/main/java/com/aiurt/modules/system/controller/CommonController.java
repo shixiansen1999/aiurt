@@ -1,5 +1,4 @@
 package com.aiurt.modules.system.controller;
-import java.util.Date;
 
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.aspect.annotation.AutoLog;
@@ -86,8 +85,8 @@ public class CommonController {
     @ApiOperation("文件上传")
     @AutoLog("文件上传")
     @ApiImplicitParams({
-            @ApiImplicitParam(name="业务路径",value="biz",required=false,paramType="form"),
-            @ApiImplicitParam(name="文件",value="file",required=true,paramType="form")
+            @ApiImplicitParam(name="biz",value="业务路径",required=false,paramType="query"),
+            @ApiImplicitParam(name="file",value="文件",required=true,paramType="form")
     })
     public Result<?> upload(HttpServletRequest request, HttpServletResponse response) {
         Result<SysAttachment> result = new Result<>();

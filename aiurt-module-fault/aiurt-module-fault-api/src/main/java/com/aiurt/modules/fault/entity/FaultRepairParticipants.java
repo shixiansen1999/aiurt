@@ -35,37 +35,47 @@ public class FaultRepairParticipants implements Serializable {
 	@TableId(type = IdType.ASSIGN_ID)
     @ApiModelProperty(value = "主键id")
     private String id;
+
 	/**故障报修编码*/
-	@Excel(name = "故障报修编码", width = 15)
     @ApiModelProperty(value = "故障报修编码")
     private String faultCode;
+
 	/**用户账号*/
-	@Excel(name = "用户账号", width = 15)
     @ApiModelProperty(value = "用户账号")
     private String userName;
+
+	@ApiModelProperty(value = "用户名称")
+	private String realName;
+
 	/**创建人*/
     @ApiModelProperty(value = "创建人")
     private String createBy;
+
 	/**创建日期*/
-	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
-    @DateTimeFormat(pattern="yyyy-MM-dd")
+	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss HH:mm:ss")
+    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
     @ApiModelProperty(value = "创建日期")
     private Date createTime;
+
 	/**更新日期*/
-	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
-    @DateTimeFormat(pattern="yyyy-MM-dd")
+	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
+    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
     @ApiModelProperty(value = "更新日期")
     private Date updateTime;
+
 	/**所属部门*/
     @ApiModelProperty(value = "所属部门")
     private String sysOrgCode;
+
 	/**更新人*/
     @ApiModelProperty(value = "更新人")
     private String updateBy;
+
 	/**人员类型*/
 	@Excel(name = "人员类型", width = 15)
     @ApiModelProperty(value = "人员类型")
     private Integer userType;
+
 	/**维修记录id*/
 	@Excel(name = "维修记录id", width = 15)
     @ApiModelProperty(value = "维修记录id")

@@ -3,6 +3,8 @@ package com.aiurt.modules.fault.service;
 import com.aiurt.modules.fault.entity.FaultDevice;
 import com.baomidou.mybatisplus.extension.service.IService;
 
+import java.util.List;
+
 /**
  * @Description: fault_device
  * @Author: aiurt
@@ -11,4 +13,5 @@ import com.baomidou.mybatisplus.extension.service.IService;
  */
 public interface IFaultDeviceService extends IService<FaultDevice> {
 
+    public List<FaultDevice> queryByFaultCode(String faultCode);
 }

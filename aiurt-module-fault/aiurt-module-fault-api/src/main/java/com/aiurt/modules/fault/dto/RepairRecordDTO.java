@@ -1,10 +1,11 @@
 package com.aiurt.modules.fault.dto;
 
+import com.aiurt.modules.basic.entity.SysAttachment;
+import com.aiurt.modules.fault.entity.FaultDevice;
 import com.aiurt.modules.fault.entity.FaultRepairParticipants;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
-import org.jeecgframework.poi.excel.annotation.Excel;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.io.Serializable;
@@ -15,6 +16,12 @@ import java.util.List;
 public class RepairRecordDTO implements Serializable {
 
     private static final long serialVersionUID = 1L;
+
+    @ApiModelProperty(value = "故障维修编码")
+    private String faultCode;
+
+    @ApiModelProperty("维修记录id")
+    private String id;
 
     @ApiModelProperty("参与人")
     private List<FaultRepairParticipants> participantsList;
@@ -64,10 +71,21 @@ public class RepairRecordDTO implements Serializable {
     private String filePath;
 
     /**
+     * 附件详细信息
+     */
+    @ApiModelProperty(value = "附件详细信息")
+    private List<SysAttachment> sysAttachmentList;
+
+    /**
      * 组件更换
      */
     @ApiModelProperty(value = "组件更换")
     private List<DeviceChangeDTO>  deviceChangeList;
+
+
+
+    @ApiModelProperty(value = "设备信息")
+    private List<FaultDevice> deviceList;
 
 
 }

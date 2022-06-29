@@ -93,8 +93,17 @@ public interface IFaultService extends IService<Fault> {
     void cancelHangup(String code);
 
     /**
+     * 查询故障维修记录详情
+     * @param faultCode
+     * @return
+     */
+    RepairRecordDTO queryRepairRecord(String faultCode);
+
+    /**
      * 填写维修信息
      * @param repairRecordDTO
      */
     void fillRepairRecord(RepairRecordDTO repairRecordDTO);
+
+
 }

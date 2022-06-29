@@ -250,16 +250,21 @@ public class FaultController extends BaseController<Fault, IFaultService> {
         return Result.OK();
     }
 
-    @AutoLog(value = "填写维修记录")
-    @ApiOperation(value = "填写维修记录", notes = "填写维修记录")
-    @PutMapping("/fillRepairRecord")
-    public Result<?> fillRepairRecord(@RequestBody RepairRecordDTO repairRecordDTO) {
-        faultService.fillRepairRecord(repairRecordDTO);
-        return Result.OK();
+    @AutoLog(value = "查询填写维修记录详情")
+    @ApiOperation(value = "查询填写维修记录详情", notes = "查询填写维修记录详情")
+    @PutMapping("/queryRepairRecord")
+    public Result<RepairRecordDTO> queryRepairRecord(String faultCode) {
+        RepairRecordDTO repairRecordDTO =  faultService.queryRepairRecord(faultCode);
+        return Result.OK(repairRecordDTO);
     }
 
 
-
-
+    @AutoLog(value = "填写维修记录")
+    @ApiOperation(value = "填写维修记录", notes = "填写维修记录")
+    @PutMapping("/updateRepairRecord")
+    public Result<?> updateRepairRecord(@RequestBody RepairRecordDTO repairRecordDTO) {
+        faultService.fillRepairRecord(repairRecordDTO);
+        return Result.OK();
+    }
 
 }

@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.aiurt.modules.fault.mapper.FaultDeviceMapper">
-
+    <select id="queryByFaultCode" resultType="com.aiurt.modules.fault.entity.FaultDevice" parameterType="java.lang.String">
+        select * from fault_device where fault_code = #{faultCode}
+    </select>
 </mapper>

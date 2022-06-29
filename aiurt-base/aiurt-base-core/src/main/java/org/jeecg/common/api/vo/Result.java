@@ -39,6 +39,10 @@ public class Result<T> implements Serializable {
 	@ApiModelProperty(value = "返回代码")
 	private Integer code = 0;
 
+
+	@ApiModelProperty(value = "错误代码")
+	private Integer bizCode;
+
 	/**
 	 * 返回数据对象 data
 	 */
@@ -152,7 +156,8 @@ public class Result<T> implements Serializable {
 
 	public static<T> Result<T> error(int code, String msg) {
 		Result<T> r = new Result<T>();
-		r.setCode(code);
+		r.setCode(CommonConstant.SC_INTERNAL_SERVER_ERROR_500);
+		r.setBizCode(code);
 		r.setMessage(msg);
 		r.setSuccess(false);
 		return r;

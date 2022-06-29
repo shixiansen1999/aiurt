@@ -6,6 +6,7 @@ import com.alibaba.fastjson.JSONObject;
 import lombok.extern.slf4j.Slf4j;
 import com.aiurt.modules.system.service.ISysUserService;
 import com.aiurt.modules.system.service.impl.SysBaseApiImpl;
+import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.vo.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -639,6 +640,30 @@ public class SystemAPIController {
     @GetMapping("/translateDictFromTableByKeys")
     public List<DictModel> translateDictFromTableByKeys(@RequestParam("table") String table, @RequestParam("text") String text, @RequestParam("code") String code, @RequestParam("keys") String keys) {
         return this.sysBaseApi.translateDictFromTableByKeys(table, text, code, keys);
+    }
+
+    /**
+     * 50 更新文件业务数据
+     * @param id 文件主键即文件路径
+     * @param businessId 业务数据
+     * @param businessTableName 业务模块
+     */
+    @GetMapping("/updateSysAttachmentBiz")
+    public Result<?> updateSysAttachmentBiz(String id, String businessId, String businessTableName){
+        this.sysBaseApi.updateSysAttachmentBiz(id, businessId, businessTableName);
+        return Result.OK();
+    }
+
+    /**
+     * 51 批量更新文件业务数据
+     * @param id 文件主键即文件路径
+     * @param businessId 业务数据
+     * @param businessTableName 业务模块
+     */
+    @GetMapping("/updateSysAttachmentBizList")
+    public Result<?> updateSysAttachmentBizList(List<String> id, String businessId, String businessTableName){
+        this.sysBaseApi.updateSysAttachmentBiz(id, businessId, businessTableName);
+        return Result.OK();
     }
 
 }

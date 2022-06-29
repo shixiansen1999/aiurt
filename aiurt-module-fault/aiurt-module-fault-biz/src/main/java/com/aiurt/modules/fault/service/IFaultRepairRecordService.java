@@ -1,5 +1,6 @@
 package com.aiurt.modules.fault.service;
 
+import com.aiurt.modules.fault.dto.RecordDetailDTO;
 import com.aiurt.modules.fault.entity.FaultRepairRecord;
 import com.baomidou.mybatisplus.extension.service.IService;
 
@@ -11,4 +12,5 @@ import com.baomidou.mybatisplus.extension.service.IService;
  */
 public interface IFaultRepairRecordService extends IService<FaultRepairRecord> {
 
+    RecordDetailDTO queryDetailByFaultCode(String faultCode);
 }

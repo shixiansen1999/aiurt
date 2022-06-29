@@ -6,21 +6,17 @@ import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.exception.AiurtBootException;
+import com.aiurt.modules.basic.entity.SysAttachment;
 import com.aiurt.modules.fault.dto.*;
-import com.aiurt.modules.fault.entity.Fault;
-import com.aiurt.modules.fault.entity.FaultDevice;
-import com.aiurt.modules.fault.entity.FaultRepairRecord;
-import com.aiurt.modules.fault.entity.OperationProcess;
+import com.aiurt.modules.fault.entity.*;
 import com.aiurt.modules.fault.enums.FaultStatusEnum;
 import com.aiurt.modules.fault.mapper.FaultMapper;
-import com.aiurt.modules.fault.service.IFaultDeviceService;
-import com.aiurt.modules.fault.service.IFaultRepairRecordService;
-import com.aiurt.modules.fault.service.IFaultService;
-import com.aiurt.modules.fault.service.IOperationProcessService;
+import com.aiurt.modules.fault.service.*;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.apache.shiro.SecurityUtils;
+import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -50,6 +46,12 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
     @Autowired
     private IFaultRepairRecordService repairRecordService;
 
+    @Autowired
+    private IFaultRepairParticipantsService repairParticipantsService;
+
+    @Autowired
+    private ISysBaseAPI sysBaseAPI;
+
     /**
      * 故障上报
      *
@@ -72,7 +74,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         fault.setReceiveUserName(user.getUsername());
 
         String faultModeCode = fault.getFaultModeCode();
-        // todo 自检自修
+
         if (StrUtil.equalsIgnoreCase(faultModeCode, "0")) {
             fault.setAppointUserName(user.getUsername());
             fault.setStatus(FaultStatusEnum.REPAIR.getStatus());
@@ -152,6 +154,8 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
 
         updateById(fault);
 
+        operationProcessService.save(operationProcess);
+
         //todo 消息发送
     }
 
@@ -212,11 +216,8 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
     public Fault queryByCode(String code) {
         Fault fault = isExist(code);
         // 设备
-        LambdaQueryWrapper<FaultDevice> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(FaultDevice::getFaultCode, code);
-        List<FaultDevice> faultDeviceList = faultDeviceService.getBaseMapper().selectList(wrapper);
+        List<FaultDevice> faultDeviceList = faultDeviceService.queryByFaultCode(code);
         fault.setFaultDeviceList(faultDeviceList);
-
         // 按钮权限
         return fault;
     }
@@ -485,11 +486,57 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
     }
 
     /**
+     *
+     * @param faultCode
+     * @return
+     */
+    @Override
+    public RepairRecordDTO queryRepairRecord(String faultCode) {
+        LoginUser loginUser = checkLogin();
+
+       // Fault fault = isExist(faultCode);
+
+
+        LambdaQueryWrapper<FaultRepairRecord> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(FaultRepairRecord::getFaultCode, faultCode).eq(FaultRepairRecord::getAppointUserName, loginUser.getUsername())
+                .eq(FaultRepairRecord::getDelFlag, CommonConstant.DEL_FLAG_0)
+                .orderByDesc(FaultRepairRecord::getCreateTime).last("limit 1");
+        FaultRepairRecord repairRecord = repairRecordService.getBaseMapper().selectOne(wrapper);
+
+        RepairRecordDTO repairRecordDTO = new RepairRecordDTO();
+        // 查询参与人
+        LambdaQueryWrapper<FaultRepairParticipants> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(FaultRepairParticipants::getFaultRepairRecordId, repairRecord.getId())
+                .eq(FaultRepairParticipants::getFaultCode, faultCode);
+
+        List<FaultRepairParticipants> participantsList = repairParticipantsService.getBaseMapper().selectList(queryWrapper);
+
+        // 用户名处理
+        repairRecordDTO.setParticipantsList(participantsList);
+
+        // todo 备件信息
+
+        // 维修设备
+        List<FaultDevice> faultDeviceList = faultDeviceService.queryByFaultCode(faultCode);
+        repairRecordDTO.setDeviceList(faultDeviceList);
+
+        // 附件信息处理
+        String filePath = repairRecord.getFilePath();
+        List<String> filePathList = StrUtil.split(filePath, ',');
+        List<SysAttachment> attachmentList = sysBaseAPI.querySysAttachmentByIdList(filePathList);
+        repairRecordDTO.setSysAttachmentList(attachmentList);
+
+        return repairRecordDTO;
+    }
+
+    /**
      * 填写维修记录
      * @param repairRecordDTO
      */
     @Override
     public void fillRepairRecord(RepairRecordDTO repairRecordDTO) {
+
+        LoginUser loginUser = checkLogin();
 
     }
 

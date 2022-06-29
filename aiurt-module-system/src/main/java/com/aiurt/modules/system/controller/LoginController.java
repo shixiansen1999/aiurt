@@ -12,6 +12,7 @@ import com.aiurt.modules.system.entity.*;
 import com.aiurt.modules.system.model.SysLoginModel;
 import com.aiurt.modules.system.service.*;
 import com.aiurt.modules.system.service.impl.SysBaseApiImpl;
+import com.aiurt.modules.system.service.impl.ThirdAppWechatEnterpriseServiceImpl;
 import com.aiurt.modules.system.util.RandImageUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.aliyuncs.exceptions.ClientException;
@@ -66,6 +67,9 @@ public class LoginController {
 
 	@Autowired
 	private ICsUserMajorService csUserMajorService;
+
+	@Autowired
+	private ThirdAppWechatEnterpriseServiceImpl wechatEnterpriseService;
 
 	@ApiOperation("登录接口")
 	@RequestMapping(value = "/login", method = RequestMethod.POST)
@@ -639,8 +643,7 @@ public class LoginController {
 	private Result<JSONObject> webAuthorizationLogin(HttpServletRequest req,
 													 @RequestParam(name = "code") String code){
 		Result<JSONObject> result = new Result<JSONObject>();
-		Map response = RestUtil.get( "https://qyapi.weixin.qq.com/cgi-bin/gettoken?corpid=ww19d88c8272303c7b&corpsecret=dlcGybmI3DaooKDYv7g3cKKBcVmtd5Ljb82TgHBq6Jk");
-		String accessToken = (String) response.get("access_token");
+		String accessToken = wechatEnterpriseService.getAccessToken();
 		String url = "https://qyapi.weixin.qq.com/cgi-bin/user/getuserinfo?access_token="+accessToken+"&code="+code;
 		Map response1  =  RestUtil.get(url);
 		String userId = (String)response1.get("UserId");
@@ -688,8 +691,7 @@ public class LoginController {
 	@GetMapping(value = "/autograph")
 	public Result<JSONObject> autograph(@RequestParam(name = "url") String url) {
 		RedisUtil redisUtil =SpringContextUtils.getBean(RedisUtil.class);
-		Map response = RestUtil.get( "https://qyapi.weixin.qq.com/cgi-bin/gettoken?corpid=ww19d88c8272303c7b&corpsecret=dlcGybmI3DaooKDYv7g3cKKBcVmtd5Ljb82TgHBq6Jk");
-		String accessToken = (String) response.get("access_token");
+		String accessToken = wechatEnterpriseService.getAccessToken();
 		String ticket =(String)redisUtil.get("ticket");
 		if (ObjectUtil.isEmpty(ticket)){
 			Map response1 = RestUtil.get("https://qyapi.weixin.qq.com/cgi-bin/get_jsapi_ticket?access_token="+accessToken);

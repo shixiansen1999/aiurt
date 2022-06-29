@@ -5,6 +5,7 @@ import java.io.UnsupportedEncodingException;
 import java.util.Date;
 import java.math.BigDecimal;
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
@@ -78,4 +79,37 @@ public class FaultDevice implements Serializable {
 	@Excel(name = "设备编码", width = 15)
     @ApiModelProperty(value = "设备编码")
     private String deviceCode;
+
+
+	@ApiModelProperty("设备类型名称")
+    @TableField(exist = false)
+	private String deviceTypeName;
+
+	@ApiModelProperty("设备类编码")
+    @TableField(exist = false)
+	private String deviceTypeCode;
+
+	@ApiModelProperty("线路编码")
+    @TableField(exist = false)
+	private String lineCode;
+
+    @ApiModelProperty("线路编码")
+    @TableField(exist = false)
+	private String lineName;
+
+    @ApiModelProperty("线路编码")
+    @TableField(exist = false)
+	private String stationName;
+
+    @ApiModelProperty("线路编码")
+    @TableField(exist = false)
+	private String stationCode;
+
+    @ApiModelProperty("线路编码")
+    @TableField(exist = false)
+	private String positionCode;
+
+    @ApiModelProperty("线路编码")
+    @TableField(exist = false)
+	private String positionName;
 }
