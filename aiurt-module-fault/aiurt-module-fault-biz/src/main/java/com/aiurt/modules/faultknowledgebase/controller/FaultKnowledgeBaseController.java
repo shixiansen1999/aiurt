@@ -75,8 +75,8 @@ public class FaultKnowledgeBaseController extends BaseController<FaultKnowledgeB
 								   @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
 								   HttpServletRequest req) {
 		Page<FaultKnowledgeBase> page = new Page<FaultKnowledgeBase>(pageNo, pageSize);
-		IPage<FaultKnowledgeBase> faultKnowledgeBaseIPage = faultKnowledgeBaseService.readAll(page, faultKnowledgeBase);
-		return Result.OK(faultKnowledgeBaseIPage);
+		IPage<FaultKnowledgeBase> faultKnowledgeBasePage = faultKnowledgeBaseService.readAll(page, faultKnowledgeBase);
+		return Result.OK(faultKnowledgeBasePage);
 	}
 
 	/**
@@ -180,7 +180,7 @@ public class FaultKnowledgeBaseController extends BaseController<FaultKnowledgeB
 	  * 设备分类查询
 	  * @return
 	  */
-	 @ApiOperation(value="device_type-设备分类查询", notes="device_type-设备分类查询")
+	 @ApiOperation(value="故障知识库-设备分类查询", notes="device_type-设备分类查询")
 	 @GetMapping(value = "/getDeviceType")
 	 public Result<List<DeviceTypeDTO>> getDeviceType(@RequestParam(name="majorCode") String majorCode,
 													  @RequestParam(name="systemCode") String systemCode) {
@@ -192,7 +192,7 @@ public class FaultKnowledgeBaseController extends BaseController<FaultKnowledgeB
 	  * 设备组件查询
 	  * @return
 	  */
-	 @ApiOperation(value="device_assembly-设备组件查询", notes="device_assembly-设备组件查询")
+	 @ApiOperation(value="故障知识库-设备组件查询", notes="device_assembly-设备组件查询")
 	 @GetMapping(value = "/getDeviceAssembly")
 	 public Result<List<DeviceAssemblyDTO>> getDeviceAssembly(@RequestParam(name="deviceTypeCode") String deviceTypeCode) {
 		 List<DeviceAssemblyDTO> deviceAssembly = faultKnowledgeBaseMapper.getDeviceAssembly(deviceTypeCode);

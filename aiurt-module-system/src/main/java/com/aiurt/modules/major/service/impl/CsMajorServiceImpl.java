@@ -77,7 +77,7 @@ public class CsMajorServiceImpl extends ServiceImpl<CsMajorMapper, CsMajor> impl
         nameWrapper.eq(CsMajor::getMajorName, csMajor.getMajorName());
         nameWrapper.eq(CsMajor::getDelFlag, 0);
         List<CsMajor> nameList = csMajorMapper.selectList(nameWrapper);
-        if (!nameList.isEmpty() && !list.get(0).getId().equals(csMajor.getId())) {
+        if (!nameList.isEmpty() && !nameList.get(0).getId().equals(csMajor.getId())) {
             return Result.error("专业名称重复，请重新填写！");
         }
         csMajorMapper.updateById(csMajor);

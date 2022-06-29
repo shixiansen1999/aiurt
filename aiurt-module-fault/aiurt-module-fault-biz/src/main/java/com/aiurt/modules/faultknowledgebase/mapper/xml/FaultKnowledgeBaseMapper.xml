@@ -3,22 +3,24 @@
 <mapper namespace="com.aiurt.modules.faultknowledgebase.mapper.FaultKnowledgeBaseMapper">
 
 <select id="readAll" resultType="com.aiurt.modules.faultknowledgebase.entity.FaultKnowledgeBase">
-    SELECT
-            fkb.id,
-            fkb.device_type_code,
-            (SELECT name from device_type WHERE `code` = fkb.device_type_code) as deviceTypeName,
-            fkb.knowledge_base_type_code,
-            (SELECT name from fault_knowledge_base_type WHERE `code` = fkb.knowledge_base_type_code) as knowledgeBaseTypeName,
-            fkb.material_code,
-            (SELECT material_name from device_assembly WHERE material_code = fkb.material_code) as materialName,
-            fkb.fault_codes,
-            fkb.fault_phenomenon,
-            fkb.fault_reason,
-            fkb.method,
-            fkb.solution,
-            fkb.create_time
-    FROM
-            fault_knowledge_base fkb WHERE del_flag = 0
+    select a.* from
+        (SELECT
+        fkb.id,
+        fkb.device_type_code,
+        (SELECT name from device_type WHERE `code` = fkb.device_type_code) as deviceTypeName,
+        fkb.knowledge_base_type_code,
+        (SELECT name from fault_knowledge_base_type WHERE `code` = fkb.knowledge_base_type_code) as
+        knowledgeBaseTypeName,
+        fkb.material_code,
+        (SELECT material_name from device_assembly WHERE material_code = fkb.material_code) as materialName,
+        fkb.fault_codes,
+        fkb.fault_phenomenon,
+        fkb.fault_reason,
+        fkb.method,
+        fkb.solution,
+        fkb.create_time
+        FROM
+        fault_knowledge_base fkb WHERE del_flag = 0
         <if test="condition.approvedResult != null">
             and fkb.approved_result =#{condition.approvedResult}
         </if>
@@ -37,6 +39,20 @@
         <if test="condition.method != null and condition.method != ''">
             and fkb.method like concat('%',#{condition.method},'%')
         </if>
+        <if test="allSubSystem != null and allSubSystem.size() != 0">
+            and fkb.system_code in
+            <foreach collection="allSubSystem" index="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>  ) a
+        where 1=1
+        <if test="condition.deviceTypeName != null and condition.deviceTypeName != '' ">
+           and a.deviceTypeName =#{condition.deviceTypeName}
+        </if>
+        <if test="condition.materialName != null and condition.materialName != '' ">
+            and a.materialName =#{condition.materialName}
+        </if>
+
     </select>
 
 <select id="readOne" resultType="com.aiurt.modules.faultknowledgebase.entity.FaultKnowledgeBase">

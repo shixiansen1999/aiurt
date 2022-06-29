@@ -1,8 +1,11 @@
 package com.aiurt.modules.faultknowledgebase.service.impl;
 
+import com.aiurt.modules.faultanalysisreport.constant.FaultConstant;
 import com.aiurt.modules.faultknowledgebase.entity.FaultKnowledgeBase;
 import com.aiurt.modules.faultknowledgebase.mapper.FaultKnowledgeBaseMapper;
 import com.aiurt.modules.faultknowledgebase.service.IFaultKnowledgeBaseService;
+import com.aiurt.modules.faultknowledgebasetype.dto.SubSystemDTO;
+import com.aiurt.modules.faultknowledgebasetype.mapper.FaultKnowledgeBaseTypeMapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.shiro.SecurityUtils;
@@ -29,15 +32,19 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
     private FaultKnowledgeBaseMapper faultKnowledgeBaseMapper;
     @Resource
     private ISysBaseAPI sysBaseAPI;
+    @Autowired
+    private FaultKnowledgeBaseTypeMapper faultKnowledgeBaseTypeMapper;
+
     @Override
     public IPage<FaultKnowledgeBase> readAll(Page<FaultKnowledgeBase> page, FaultKnowledgeBase faultKnowledgeBase) {
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        //当前用户拥有的子系统
+        List<String> allSubSystem = faultKnowledgeBaseTypeMapper.getAllSubSystem(sysUser.getId());
         List<String> rolesByUsername = sysBaseAPI.getRolesByUsername(sysUser.getUsername());
-        String admin = "admin";
-        if (!rolesByUsername.contains(admin)) {
+        if (!rolesByUsername.contains(FaultConstant.ADMIN)) {
             faultKnowledgeBase.setApprovedResult(1);
         }
-        List<FaultKnowledgeBase> faultKnowledgeBases = faultKnowledgeBaseMapper.readAll(page, faultKnowledgeBase);
+        List<FaultKnowledgeBase> faultKnowledgeBases = faultKnowledgeBaseMapper.readAll(page, faultKnowledgeBase,allSubSystem);
         return page.setRecords(faultKnowledgeBases);
     }
 }

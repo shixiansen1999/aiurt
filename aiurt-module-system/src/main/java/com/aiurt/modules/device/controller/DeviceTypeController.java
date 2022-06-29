@@ -74,7 +74,7 @@ public class DeviceTypeController extends BaseController<DeviceType, IDeviceType
 		 majorList.forEach(one -> {
 			 DeviceType major = setEntity(one.getId(),"zy",one.getMajorCode(),one.getMajorName(),null,null,null);
 			 List<CsSubsystem> sysList = systemList.stream().filter(system-> system.getMajorCode().equals(one.getMajorCode())).collect(Collectors.toList());
-			 List<DeviceType> majorDeviceType = deviceTypeTree.stream().filter(type-> major.getMajorCode().equals(type.getMajorCode()) && (type.getSystemCode()==null || "".equals(type.getSystemCode()))).collect(Collectors.toList());
+			 List<DeviceType> majorDeviceType = deviceTypeTree.stream().filter(type-> one.getMajorCode().equals(type.getMajorCode()) && (null==type.getSystemCode() || "".equals(type.getSystemCode())) && type.getPid().equals("0")).collect(Collectors.toList());
 			 List<DeviceType> twoList = new ArrayList<>();
 			 //判断是否有设备类型数据
 			 majorDeviceType.forEach(two ->{
@@ -91,19 +91,19 @@ public class DeviceTypeController extends BaseController<DeviceType, IDeviceType
 					 DeviceType type = setEntity(three.getId()+"","sblx",three.getCode(),three.getName(),three.getStatus(),three.getIsSpecialDevice(),three.getIsEnd());
 					 threeList.add(type);
 				 });
-				 system.setChildren(threeList);
+				 system.setDeviceTypeChildren(threeList);
 				 twoList.add(system);
 			 });
 
-			 major.setChildren(twoList);
+			 major.setDeviceTypeChildren(twoList);
 			 newList.add(major);
 		 });
 
-
+/*
 
 		 systemList.forEach(csSubsystem -> {
 			 List sysList = deviceTypeTree.stream().filter(deviceType-> csSubsystem.getSystemCode().equals(deviceType.getSystemCode())).collect(Collectors.toList());
-			 csSubsystem.setDeviceTypeList(sysList);
+			 csSubsystem.setDeviceTypeChildren(sysList);
 		 });
 
 		 majorList.forEach(major -> {
@@ -111,8 +111,8 @@ public class DeviceTypeController extends BaseController<DeviceType, IDeviceType
 			 major.setChildren(sysList);
 			 List sysListType = deviceTypeTree.stream().filter(materialBaseType-> major.getMajorCode().equals(materialBaseType.getMajorCode())&&(materialBaseType.getSystemCode()==null || "".equals(materialBaseType.getSystemCode()))).collect(Collectors.toList());
 			 major.setDeviceTypeList(sysListType);
-		 });
-		 return Result.OK(majorList);
+		 });*/
+		 return Result.OK(newList);
 	 }
 
 	/**

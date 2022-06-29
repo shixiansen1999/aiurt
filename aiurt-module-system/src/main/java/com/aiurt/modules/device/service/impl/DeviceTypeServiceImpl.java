@@ -105,7 +105,7 @@ public class DeviceTypeServiceImpl extends ServiceImpl<DeviceTypeMapper, DeviceT
         nameWrapper.eq(DeviceType::getPid, deviceType.getPid());
         nameWrapper.eq(DeviceType::getDelFlag, 0);
         List<DeviceType> nameList = deviceTypeMapper.selectList(nameWrapper);
-        if (!nameList.isEmpty() && !list.get(0).getId().equals(deviceType.getId())) {
+        if (!nameList.isEmpty() && !nameList.get(0).getId().equals(deviceType.getId())) {
             return Result.error("分类名称重复，请重新填写！");
         }
         String typeCodeCc = getCcStr(deviceType);
@@ -131,7 +131,7 @@ public class DeviceTypeServiceImpl extends ServiceImpl<DeviceTypeMapper, DeviceT
         List<DeviceType> childList = typeList.stream().filter(deviceType -> pid.equals(deviceType.getPid())).collect(Collectors.toList());
         if(childList != null && childList.size()>0){
             for (DeviceType deviceType : childList) {
-                deviceType.setChildren(treeList(typeList,deviceType.getId().toString()));
+                deviceType.setDeviceTypeChildren(treeList(typeList,deviceType.getId().toString()));
             }
         }
         return childList;

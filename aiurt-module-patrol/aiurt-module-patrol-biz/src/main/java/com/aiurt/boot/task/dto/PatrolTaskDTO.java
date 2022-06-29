@@ -20,7 +20,6 @@ import java.util.List;
 @Data
 public class PatrolTaskDTO
 {
-
     /**主键ID*/
     @TableId(type = IdType.ASSIGN_ID)
     @ApiModelProperty(value = "主键ID")
@@ -71,16 +70,23 @@ public class PatrolTaskDTO
     @Excel(name = "是否需要审核：0否、1是", width = 15)
     @ApiModelProperty(value = "是否需要审核：0否、1是")
     private java.lang.Integer auditor;
-    /*** 巡检开始时间*/
-    @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd HH:mm")
-    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm")
-    @ApiModelProperty(value = "巡检开始时间")
-    private java.util.Date startTime;
-    /*** 巡检结束时间*/
-    @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd HH:mm")
-    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm")
-    @ApiModelProperty(value = "巡检结束时间")
-    private java.util.Date endTime;
+    /*** 开始和结束时间*/
+    @ApiModelProperty(value = "开始和结束时间")
+    @TableField(exist = false)
+    private String startEndTime;
+    @Excel(name = "巡检结果提交时间", width = 15, format = "yyyy-MM-dd")
+    @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd")
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
+    @ApiModelProperty(value = "巡检结果提交时间")
+    private java.util.Date submitTime;
+    /*** 任务结束用户ID*/
+    @Excel(name = "任务结束用户人", width = 15)
+    @ApiModelProperty(value = "任务结束用户人")
+    private java.lang.String endUserName;
+    /*** 任务提交的用户签名图片*/
+    @Excel(name = "任务提交的用户签名图片", width = 15)
+    @ApiModelProperty(value = "任务提交的用户签名图片")
+    private java.lang.String signUrl;
     /*** 巡检频次：1 一天1次、2 一周1次、3 一周2次*/
     @Excel(name = "巡检频次：1 一天1次、2 一周1次、3 一周2次", width = 15)
     @ApiModelProperty(value = "巡检频次：1 一天1次、2 一周1次、3 一周2次")
@@ -101,5 +107,8 @@ public class PatrolTaskDTO
     @ApiModelProperty(value = "子系统名称")
     @TableField(exist = false)
     private java.lang.String sysName;
+    @Excel(name = "作业类型", width = 15)
+    @ApiModelProperty(value = "作业类型")
+    private java.lang.String type;
 }
 

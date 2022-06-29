@@ -23,6 +23,13 @@ public interface IFaultAnalysisReportService extends IService<FaultAnalysisRepor
      IPage<FaultAnalysisReport> readAll(Page<FaultAnalysisReport> page, FaultAnalysisReport faultAnalysisReport);
 
     /**
+     * 故障分析通过id查询详情
+     * @param id
+     * @return IPage<FaultAnalysisReport>
+     */
+    FaultDTO readOne(String id);
+
+    /**
      * 故障选择查询
      * @param page
      * @param fault

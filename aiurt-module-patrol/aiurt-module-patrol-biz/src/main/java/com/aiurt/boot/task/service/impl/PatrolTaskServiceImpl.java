@@ -207,8 +207,8 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
     public void getPatrolTaskReceive(PatrolTaskDTO patrolTaskDTO) {
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         LambdaUpdateWrapper<PatrolTask> updateWrapper = new LambdaUpdateWrapper<>();
-        //领取：将待指派改为待执行，变为个人领取（传任务主键id,状态）
-        if (patrolTaskDTO.getStatus() == 0) {//更新巡检状态
+        //个人领取：将待指派或退回之后重新领取改为待执行，变为个人领取（传任务主键id,状态）
+        if (patrolTaskDTO.getStatus() == 0 ||patrolTaskDTO.getStatus() == 3) {
             updateWrapper.set(PatrolTask::getStatus, 2)
                     .set(PatrolTask::getSource, 1)
                     .eq(PatrolTask::getId, patrolTaskDTO.getId());
@@ -233,13 +233,9 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         if (patrolTaskDTO.getStatus() == 2) {
             updateWrapper.set(PatrolTask::getStatus, 4).eq(PatrolTask::getId, patrolTaskDTO.getId());
         }
-        if (patrolTaskDTO.getStatus() == 2) {
-            updateWrapper.set(PatrolTask::getStatus, 4).eq(PatrolTask::getId, patrolTaskDTO.getId());
-            update(updateWrapper);
-        }
         //提交任务：将执行中，变为待审核、添加任务结束人id
         if (patrolTaskDTO.getStatus() == 4) {
-            updateWrapper.set(PatrolTask::getStatus, 4)
+            updateWrapper.set(PatrolTask::getStatus, 6)
                     .set(PatrolTask::getEndUserId, sysUser.getId())
                     .eq(PatrolTask::getId, patrolTaskDTO.getId());
             update(updateWrapper);
@@ -260,7 +256,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
 
     @Override
     public void getPatrolTaskCheck(PatrolTaskDTO patrolTaskDTO) {
-        //更新任务状态、添加检查人id，传任务主键id
+        //更新任务状态（将未开始改为执行中）、添加检查人id，传任务主键id
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         PatrolTaskDevice patrolPDevice = new PatrolTaskDevice();
         LambdaUpdateWrapper<PatrolTaskDevice> updateWrapper = new LambdaUpdateWrapper<>();
@@ -300,9 +296,9 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
             patrolTaskUser.setDelFlag(0);
             patrolTaskUserMapper.insert(patrolTaskUser);
         }
-        //将任务来源改为常规指派
+        //将任务来源改为常规指派,将任务状态改为待确认
         LambdaUpdateWrapper<PatrolTask> updateWrapper = new LambdaUpdateWrapper<>();
-        updateWrapper.set(PatrolTask::getSource, 2).eq(PatrolTask::getCode, patrolTaskUserDTO.get(0).getTaskCode());
+        updateWrapper.set(PatrolTask::getSource, 2).set(PatrolTask::getStatus,1).eq(PatrolTask::getCode, patrolTaskUserDTO.get(0).getTaskCode());
         update(updateWrapper);
     }
 }

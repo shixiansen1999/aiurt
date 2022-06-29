@@ -10,15 +10,18 @@ import java.net.URLDecoder;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import cn.hutool.core.util.ObjectUtil;
 import com.aiurt.modules.fault.entity.Fault;
 import com.aiurt.modules.fault.service.IFaultService;
 import com.aiurt.modules.faultanalysisreport.entity.dto.FaultDTO;
 import com.aiurt.modules.faultknowledgebase.dto.DeviceTypeDTO;
 import com.aiurt.modules.faultknowledgebase.entity.FaultKnowledgeBase;
 import com.aiurt.modules.faultknowledgebase.service.IFaultKnowledgeBaseService;
+import com.aiurt.modules.faultknowledgebasetype.mapper.FaultKnowledgeBaseTypeMapper;
 import com.aiurt.modules.faulttype.entity.FaultType;
 import com.aiurt.modules.faulttype.mapper.FaultTypeMapper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.query.QueryGenerator;
 import com.aiurt.common.util.oConvertUtils;
@@ -30,6 +33,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.extern.slf4j.Slf4j;
 
+import org.jeecg.common.system.vo.LoginUser;
 import org.jeecgframework.poi.excel.ExcelImportUtil;
 import org.jeecgframework.poi.excel.def.NormalExcelConstants;
 import org.jeecgframework.poi.excel.entity.ExportParams;
@@ -52,7 +56,7 @@ import com.aiurt.common.aspect.annotation.AutoLog;
  * @Date:   2022-06-23
  * @Version: V1.0
  */
-@Api(tags="fault_analysis_report")
+@Api(tags="故障分析")
 @RestController
 @RequestMapping("/faultanalysisreport/faultAnalysisReport")
 @Slf4j
@@ -65,6 +69,8 @@ public class FaultAnalysisReportController extends BaseController<FaultAnalysisR
 	 private IFaultService faultService;
 	 @Autowired
 	 private FaultTypeMapper faultTypeMapper;
+	 @Autowired
+	 private FaultKnowledgeBaseTypeMapper faultKnowledgeBaseTypeMapper;
 	/**
 	 * 分页列表查询
 	 *
@@ -75,7 +81,7 @@ public class FaultAnalysisReportController extends BaseController<FaultAnalysisR
 	 * @return
 	 */
 	//@AutoLog(value = "fault_analysis_report-分页列表查询")
-	@ApiOperation(value="fault_analysis_report-分页列表查询", notes="fault_analysis_report-分页列表查询")
+	@ApiOperation(value="故障分析-分页列表查询", notes="故障分析-分页列表查询")
 	@GetMapping(value = "/list")
 	public Result<IPage<FaultAnalysisReport>> queryPageList(FaultAnalysisReport faultAnalysisReport,
 								   @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
@@ -92,7 +98,7 @@ public class FaultAnalysisReportController extends BaseController<FaultAnalysisR
 	 * @param faultAnalysisReport
 	 * @return
 	 */
-	@AutoLog(value = "fault_analysis_report-添加")
+	@AutoLog(value = "故障分析-添加")
 	@ApiOperation(value="fault_analysis_report-添加", notes="fault_analysis_report-添加")
 	@PostMapping(value = "/add")
 	public Result<String> add(@RequestBody FaultAnalysisReport faultAnalysisReport) {
@@ -106,7 +112,7 @@ public class FaultAnalysisReportController extends BaseController<FaultAnalysisR
 	 * @param faultAnalysisReport
 	 * @return
 	 */
-	@AutoLog(value = "fault_analysis_report-编辑")
+	@AutoLog(value = "故障分析-编辑")
 	@ApiOperation(value="fault_analysis_report-编辑", notes="fault_analysis_report-编辑")
 	@RequestMapping(value = "/edit", method = {RequestMethod.PUT,RequestMethod.POST})
 	public Result<String> edit(@RequestBody FaultAnalysisReport faultAnalysisReport) {
@@ -120,8 +126,8 @@ public class FaultAnalysisReportController extends BaseController<FaultAnalysisR
 	 * @param id
 	 * @return
 	 */
-	@AutoLog(value = "fault_analysis_report-通过id删除")
-	@ApiOperation(value="fault_analysis_report-通过id删除", notes="fault_analysis_report-通过id删除")
+	@AutoLog(value = "故障分析-通过id删除")
+	@ApiOperation(value="故障分析-通过id删除", notes="故障分析-通过id删除")
 	@DeleteMapping(value = "/delete")
 	public Result<String> delete(@RequestParam(name="id",required=true) String id) {
 		faultAnalysisReportService.removeById(id);
@@ -134,8 +140,8 @@ public class FaultAnalysisReportController extends BaseController<FaultAnalysisR
 	 * @param ids
 	 * @return
 	 */
-	@AutoLog(value = "fault_analysis_report-批量删除")
-	@ApiOperation(value="fault_analysis_report-批量删除", notes="fault_analysis_report-批量删除")
+	@AutoLog(value = "故障分析-批量删除")
+	@ApiOperation(value="故障分析-批量删除", notes="故障分析-批量删除")
 	@DeleteMapping(value = "/deleteBatch")
 	public Result<String> deleteBatch(@RequestParam(name="ids",required=true) String ids) {
 		this.faultAnalysisReportService.removeByIds(Arrays.asList(ids.split(",")));
@@ -149,9 +155,10 @@ public class FaultAnalysisReportController extends BaseController<FaultAnalysisR
 	 * @return
 	 */
 	//@AutoLog(value = "fault_analysis_report-通过id查询")
-	@ApiOperation(value="fault_analysis_report-通过id查询", notes="fault_analysis_report-通过id查询")
+	@ApiOperation(value="故障分析-通过id查询", notes="故障分析-通过id查询")
 	@GetMapping(value = "/queryById")
 	public Result<FaultAnalysisReport> queryById(@RequestParam(name="id",required=true) String id) {
+
 		FaultAnalysisReport faultAnalysisReport = faultAnalysisReportService.getById(id);
 		if(faultAnalysisReport==null) {
 			return Result.error("未找到对应数据");
@@ -229,7 +236,9 @@ public class FaultAnalysisReportController extends BaseController<FaultAnalysisR
 		FaultAnalysisReport faultAnalysisReport = faultDTO.getFaultAnalysisReport();
 		FaultKnowledgeBase faultKnowledgeBase = faultDTO.getFaultKnowledgeBase();
 		faultAnalysisReportService.save(faultAnalysisReport);
-		faultKnowledgeBaseService.save(faultKnowledgeBase);
+		if (ObjectUtil.isNotNull(faultKnowledgeBase)) {
+			faultKnowledgeBaseService.save(faultKnowledgeBase);
+		}
 		return Result.OK("提交成功");
 	}
 
@@ -238,11 +247,32 @@ public class FaultAnalysisReportController extends BaseController<FaultAnalysisR
 	  * 故障类别
 	  * @return
 	  */
-	 @ApiOperation(value="fault_type-故障类别", notes="fault_type-故障类别")
+	 @ApiOperation(value="故障分析-故障类别", notes="故障分析-故障类别")
 	 @GetMapping(value = "/getFaultType")
 	 public Result<List<FaultType>> getFaultType() {
+		 LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+		 //用户拥有的专业
+		 List<String> majorByUser = faultKnowledgeBaseTypeMapper.getMajorByUser(sysUser.getId());
 		 LambdaQueryWrapper<FaultType> faultTypeLambdaQueryWrapper = new LambdaQueryWrapper<>();
-		 List<FaultType> faultTypes = faultTypeMapper.selectList(faultTypeLambdaQueryWrapper.eq(FaultType::getDelFlag, 0).select(FaultType::getId, FaultType::getCode, FaultType::getName));
+		 List<FaultType> faultTypes = faultTypeMapper.selectList(faultTypeLambdaQueryWrapper
+				 .eq(FaultType::getDelFlag, 0)
+				 .in(FaultType::getMajorCode,majorByUser)
+				 .select(FaultType::getId, FaultType::getCode, FaultType::getName));
 		 return Result.OK(faultTypes);
+	 }
+
+	 /**
+	  * 通过id查询详情
+	  * @param id
+	  * @return
+	  */
+	 @ApiOperation(value="故障分析-通过id查询详情", notes="故障分析-通过id查询详情")
+	 @GetMapping(value = "/readone")
+	 public Result<FaultDTO> readone(@RequestParam(name="id",required=true) String id) {
+		 FaultDTO faultDTO = faultAnalysisReportService.readOne(id);
+		 if(faultDTO==null) {
+			 return Result.error("未找到对应数据");
+		 }
+		 return Result.OK(faultDTO);
 	 }
 }

@@ -13,7 +13,16 @@ import java.util.List;
  * @Version: V1.0
  */
 public interface IFaultKnowledgeBaseTypeService extends IService<FaultKnowledgeBaseType> {
-
+    /**
+     * 知识库类别树
+     * @return
+     */
     List<MajorDTO> faultKnowledgeBaseTypeTreeList();
+    /**
+     *   添加
+     * @param faultKnowledgeBaseType
+     * @return
+     */
+    void add(FaultKnowledgeBaseType faultKnowledgeBaseType);
 
 }

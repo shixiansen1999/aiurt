@@ -90,7 +90,7 @@ public class CommonController {
             @ApiImplicitParam(name="文件",value="file",required=true,paramType="form")
     })
     public Result<?> upload(HttpServletRequest request, HttpServletResponse response) {
-        Result<?> result = new Result<>();
+        Result<SysAttachment> result = new Result<>();
         String savePath = "";
         String bizPath = request.getParameter("biz");
 
@@ -137,6 +137,7 @@ public class CommonController {
             sysAttachmentService.save(sysAttachment);
             result.setMessage(sysAttachment.getId());
             result.setSuccess(true);
+            result.setResult(sysAttachment);
         }else {
             result.setMessage("上传失败！");
             result.setSuccess(false);

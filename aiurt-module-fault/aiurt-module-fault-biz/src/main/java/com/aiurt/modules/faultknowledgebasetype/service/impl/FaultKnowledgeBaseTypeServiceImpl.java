@@ -75,4 +75,15 @@ public class FaultKnowledgeBaseTypeServiceImpl extends ServiceImpl<FaultKnowledg
         }
         return childList;
     }
+
+    @Override
+    public void add(FaultKnowledgeBaseType faultKnowledgeBaseType) {
+        if (faultKnowledgeBaseType.getPid() == 0) {
+            faultKnowledgeBaseType.setCodeCc("/" + faultKnowledgeBaseType.getCode() + "/");
+        } else {
+            FaultKnowledgeBaseType f = faultKnowledgeBaseTypeMapper.selectById(faultKnowledgeBaseType.getPid());
+            faultKnowledgeBaseType.setCodeCc(f.getCodeCc() + faultKnowledgeBaseType.getCode() + "/");
+        }
+        this.save(faultKnowledgeBaseType);
+    }
 }

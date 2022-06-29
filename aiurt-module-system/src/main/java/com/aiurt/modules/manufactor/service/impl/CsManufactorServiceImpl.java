@@ -73,7 +73,7 @@ public class CsManufactorServiceImpl extends ServiceImpl<CsManufactorMapper, CsM
         LambdaQueryWrapper<CsManufactor> nameWrapper = new LambdaQueryWrapper<>();
         nameWrapper.eq(CsManufactor::getName, csManufactor.getName());
         List<CsManufactor> nameList = csManufactorMapper.selectList(nameWrapper);
-        if (!nameList.isEmpty() && list.get(0).equals(csManufactor.getId())) {
+        if (!nameList.isEmpty() && nameList.get(0).equals(csManufactor.getId())) {
             return Result.error("厂商名称重复，请重新填写！");
         }
         csManufactorMapper.updateById(csManufactor);

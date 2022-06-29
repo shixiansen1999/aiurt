@@ -6,6 +6,7 @@ import com.aiurt.boot.manager.dto.MajorDTO;
 import com.aiurt.boot.task.dto.CheckListDTO;
 import com.aiurt.boot.task.entity.RepairTask;
 import com.aiurt.boot.task.dto.RepairTaskDTO;
+import com.aiurt.boot.task.entity.RepairTaskEnclosure;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 
@@ -71,4 +72,11 @@ public interface IRepairTaskService extends IService<RepairTask> {
      * @param examineDTO
      */
     void acceptance(ExamineDTO examineDTO);
+
+    /**
+     * 查询编码信息
+     * @param resultId
+     * @return
+     */
+    List<RepairTaskEnclosure> selectEnclosure(String resultId);
 }

@@ -6,6 +6,7 @@ import com.aiurt.boot.manager.dto.MajorDTO;
 import com.aiurt.boot.task.dto.CheckListDTO;
 import com.aiurt.boot.task.entity.RepairTask;
 import com.aiurt.boot.task.dto.RepairTaskDTO;
+import com.aiurt.boot.task.entity.RepairTaskEnclosure;
 import com.aiurt.boot.task.service.IRepairTaskService;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.system.base.controller.BaseController;
@@ -99,6 +100,20 @@ public class RepairTaskController extends BaseController<RepairTask, IRepairTask
 		 Page<RepairTaskDTO> repairTaskPage = repairTaskService.selectTasklet(pageList, condition);
 		 return Result.OK(repairTaskPage);
 	 }
+
+	/**
+	 * 查看检修单附件
+	 * @param resultId
+	 * @return
+	 */
+	@AutoLog(value = "检修任务-检修结果附件查询")
+	@ApiOperation(value="检修任务-检修结果附件查询", notes="检修任务-检修结果附件查询")
+	@GetMapping(value = "/selectEnclosure")
+	public Result<?> selectEnclosure(@RequestParam(name="resultId",required=true) String resultId
+	){
+		List<RepairTaskEnclosure> repairTaskEnclosures = repairTaskService.selectEnclosure(resultId);
+		return Result.OK(repairTaskEnclosures);
+	}
 
 	 /**
 	  * 专业和专业子系统下拉列表

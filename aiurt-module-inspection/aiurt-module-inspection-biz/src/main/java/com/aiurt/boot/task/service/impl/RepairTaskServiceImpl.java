@@ -8,22 +8,19 @@ import com.aiurt.boot.manager.InspectionManager;
 import com.aiurt.boot.manager.dto.*;
 import com.aiurt.boot.plan.dto.RepairDeviceDTO;
 import com.aiurt.boot.plan.dto.StationDTO;
-import com.aiurt.boot.plan.entity.RepairPoolCodeContent;
 import com.aiurt.boot.task.dto.CheckListDTO;
 import com.aiurt.boot.task.entity.RepairTask;
 import com.aiurt.boot.task.dto.RepairTaskDTO;
+import com.aiurt.boot.task.entity.RepairTaskEnclosure;
 import com.aiurt.boot.task.entity.RepairTaskResult;
 import com.aiurt.boot.task.mapper.RepairTaskMapper;
 import com.aiurt.boot.task.service.IRepairTaskService;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-
 import javax.annotation.Resource;
 import java.util.*;
 
@@ -347,5 +344,10 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
             repairTask1.setStatus(8);
             repairTaskMapper.updateById(repairTask1);
         }
+    }
+
+    @Override
+    public List<RepairTaskEnclosure> selectEnclosure(String resultId) {
+        return repairTaskMapper.selectEnclosure(resultId);
     }
 }

@@ -31,6 +31,12 @@ public class FaultDTO {
     @ApiModelProperty(value = "故障报修编码")
     private String code;
 
+    /**专业编码*/
+    @Excel(name = "专业编码", width = 15)
+    @ApiModelProperty(value = "专业编码", required = true)
+    @NotBlank(message = "所属专业不能为空")
+    private String majorCode;
+
     /**专业子系统编码*/
     @Excel(name = "专业子系统编码", width = 15)
     @ApiModelProperty(value = "专业子系统编码")
