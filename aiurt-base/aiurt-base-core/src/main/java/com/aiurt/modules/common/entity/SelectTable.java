@@ -14,4 +14,21 @@ public class SelectTable {
     private String label;
 
     private List<SelectTable> children;
+
+    private Integer level;
+
+    /**
+     * 针对位置管理: 线路
+     */
+    private String lineCode;
+
+    /**
+     * 针对位置管理: 站所
+     */
+    private String stationCode;
+
+    /**
+     * 位置
+     */
+    private String positionCode;
 }

@@ -185,24 +185,13 @@ public class CommonCtroller {
 
         Map<String, List<CsStationPosition>> positionMap = positionList.stream().collect(Collectors.groupingBy(CsStationPosition::getStaionCode));
 
-        Map<String, List<SelectTable>> lv3 = new HashMap<>();
-        positionMap.keySet().stream().forEach(stationCode->{
-            List<CsStationPosition> stationPositionList = positionMap.get(stationCode);
-            List<SelectTable> tableList = stationPositionList.stream().map(csStationPosition -> {
-                SelectTable table = new SelectTable();
-                table.setLabel(csStationPosition.getPositionName());
-                table.setValue(csStationPosition.getCode());
-                return table;
-            }).collect(Collectors.toList());
-            lv3.put(stationCode, tableList);
-        });
-
         List<SelectTable> list = new ArrayList<>();
         stationMap.keySet().stream().forEach(lineCode->{
             SelectTable table = new SelectTable();
             table.setLabel(lineMap.get(lineCode));
             table.setValue(lineCode);
-
+            table.setLevel(1);
+            table.setLineCode(lineCode);
             //
             List<CsStation> csStationList = stationMap.get(lineCode);
 
@@ -210,7 +199,22 @@ public class CommonCtroller {
                 SelectTable selectTable = new SelectTable();
                 selectTable.setValue(csStation.getStationCode());
                 selectTable.setLabel(csStation.getStationName());
-                selectTable.setChildren(lv3.get(csStation.getStationCode()));
+                selectTable.setLevel(2);
+                selectTable.setLineCode(lineCode);
+                selectTable.setStationCode(csStation.getStationCode());
+
+                List<CsStationPosition> stationPositionList = positionMap.get(csStation.getStationCode());
+                List<SelectTable> tableList = stationPositionList.stream().map(csStationPosition -> {
+                    SelectTable tableV = new SelectTable();
+                    tableV.setLabel(csStationPosition.getPositionName());
+                    tableV.setValue(csStationPosition.getCode());
+                    tableV.setLevel(3);
+                    tableV.setLineCode(lineCode);
+                    tableV.setStationCode(csStation.getStationCode());
+                    tableV.setPositionCode(csStationPosition.getPositionCode());
+                    return tableV;
+                }).collect(Collectors.toList());
+                selectTable.setChildren(tableList);
                 return selectTable;
             }).collect(Collectors.toList());
 
