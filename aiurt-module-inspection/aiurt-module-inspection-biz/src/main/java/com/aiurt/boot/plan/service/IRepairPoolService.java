@@ -119,4 +119,12 @@ public interface IRepairPoolService extends IService<RepairPool> {
      * @param repairPoolDTO
      */
     void addManualTask(RepairPoolDTO repairPoolDTO);
+    /**
+     * 根据检修任务code和检修标准id查询检修标准对应的设备
+     *
+     * @param code 检修任务code
+     * @param id   检修标准id
+     * @return
+     */
+    IPage<RepairDeviceDTO> queryDeviceByCodeAndId(Page<RepairDeviceDTO> page, String code, String id);
 }

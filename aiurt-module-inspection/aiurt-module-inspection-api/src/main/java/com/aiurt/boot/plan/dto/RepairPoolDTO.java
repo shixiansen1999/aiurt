@@ -30,5 +30,5 @@ public class RepairPoolDTO extends RepairPool {
     private List<String> orgCodes;
     @ApiModelProperty("检修标准信息")
     @TableField(exist = false)
-    private List<RepairPoolCode> repairPoolCodes;
+    private List<RepairPoolCode> repairPoolCodes ;
 }

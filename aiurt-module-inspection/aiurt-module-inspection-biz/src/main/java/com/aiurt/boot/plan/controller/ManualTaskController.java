@@ -1,5 +1,6 @@
 package com.aiurt.boot.plan.controller;
 
+import com.aiurt.boot.plan.dto.RepairDeviceDTO;
 import com.aiurt.boot.plan.dto.RepairPoolDTO;
 import com.aiurt.boot.plan.entity.RepairPool;
 import com.aiurt.boot.plan.service.IRepairPoolService;
@@ -31,6 +32,7 @@ import javax.servlet.http.HttpServletRequest;
 public class ManualTaskController {
     @Resource
     private IRepairPoolService repairPoolService;
+
     /**
      * 分页查询手工下发任务列表
      *
@@ -104,8 +106,27 @@ public class ManualTaskController {
     @AutoLog(value = "通过id删除手工下发检修任务")
     @ApiOperation(value = "通过id删除手工下发检修任务", notes = "通过id删除手工下发检修任务")
     @DeleteMapping(value = "/deleteManualTaskById")
-    public Result<String> deleteManualTaskById(@RequestParam @ApiParam(name = "id", required = true,value = "任务id") String id) {
+    public Result<String> deleteManualTaskById(@RequestParam @ApiParam(name = "id", required = true, value = "任务id") String id) {
         repairPoolService.deleteManualTaskById(id);
         return Result.OK("删除成功!");
+    }
+
+    /**
+     * 根据检修任务code和检修标准id查询检修标准对应的设备
+     *
+     * @param code 检修任务code
+     * @param id   检修标准id
+     * @return
+     */
+    @AutoLog(value = "根据检修任务code和检修标准id查询检修标准对应的设备")
+    @ApiOperation(value = "根据检修任务code和检修标准id查询检修标准对应的设备", notes = "根据检修任务code和检修标准id查询检修标准对应的设备")
+    @GetMapping(value = "/queryDeviceByCodeAndId")
+    public Result<IPage<RepairDeviceDTO>> queryDeviceByCodeAndId(@RequestParam @ApiParam(name = "code", required = true, value = "检修任务code") String code,
+                                                                     @RequestParam @ApiParam(name = "id", required = true, value = "检修标准id") String id,
+                                                                     @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
+                                                                     @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize) {
+        Page<RepairDeviceDTO> page = new Page<>(pageNo, pageSize);
+        IPage<RepairDeviceDTO> pageList = repairPoolService.queryDeviceByCodeAndId(page, code, id);
+        return Result.OK(pageList);
     }
 }

@@ -1,5 +1,6 @@
 package com.aiurt.boot.standard.entity;
 
+import com.aiurt.common.aspect.annotation.Dict;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
@@ -43,6 +44,7 @@ public class InspectionCode implements Serializable {
 	/**检修周期类型(0周检、1月检、2双月检、3季检、4半年检、5年检)*/
 	@Excel(name = "检修周期类型(0周检、1月检、2双月检、3季检、4半年检、5年检)", width = 15)
     @ApiModelProperty(value = "检修周期类型(0周检、1月检、2双月检、3季检、4半年检、5年检)")
+    @Dict(dicCode = "inspection_cycle_type")
     private java.lang.Integer type;
 	/**状态 0-未生效 1-已生效*/
 	@Excel(name = "状态 0-未生效 1-已生效", width = 15)
@@ -51,18 +53,22 @@ public class InspectionCode implements Serializable {
 	/**设备类型code，关联device_type的code*/
 	@Excel(name = "设备类型code，关联device_type的code", width = 15)
     @ApiModelProperty(value = "设备类型code，关联device_type的code")
+    @Dict(dictTable = "device_type", dicText = "name", dicCode = "code")
     private java.lang.String deviceTypeCode;
 	/**是否与设备相关(0否1是)*/
 	@Excel(name = "是否与设备相关(0否1是)", width = 15)
     @ApiModelProperty(value = "是否与设备相关(0否1是)")
+    @Dict(dicCode = "is_appoint_device")
     private java.lang.Integer isAppointDevice;
 	/**专业code,关联cs_major的code*/
 	@Excel(name = "专业code,关联cs_major的code", width = 15)
     @ApiModelProperty(value = "专业code,关联cs_major的code")
+    @Dict(dictTable = "cs_major", dicText = "major_name", dicCode = "major_code")
     private java.lang.String majorCode;
 	/**专业子系统code,关联cs_subsystem_user的code*/
 	@Excel(name = "专业子系统code,关联cs_subsystem_user的code", width = 15)
     @ApiModelProperty(value = "专业子系统code,关联cs_subsystem_user的code")
+    @Dict(dictTable = "cs_subsystem", dicText = "system_name", dicCode = "system_code")
     private java.lang.String subsystemCode;
 	/**删除状态 0.未删除 1已删除*/
 	@Excel(name = "删除状态 0.未删除 1已删除", width = 15)
