@@ -81,13 +81,10 @@ public class DeviceTypeController extends BaseController<DeviceType, IDeviceType
 			 //判断是否有子系统数据
 			 sysList.forEach(two ->{
 				 DeviceType system = setEntity(two.getId()+"","zxt",two.getSystemCode(),two.getSystemName(),null,null,null,two.getMajorCode(),two.getSystemCode());
-
 				 List<DeviceType> sysDeviceType = deviceTypeTree.stream().filter(type-> system.getMajorCode().equals(type.getMajorCode()) && (null!=type.getSystemCode() && !"".equals(type.getSystemCode()) && system.getSystemCode().equals(type.getSystemCode()))  ).collect(Collectors.toList());
-
 				 system.setDeviceTypeChildren(sysDeviceType);
 				 twoList.add(system);
 			 });
-
 			 major.setDeviceTypeChildren(twoList);
 			 newList.add(major);
 		 });
