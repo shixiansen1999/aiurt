@@ -2,13 +2,47 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.aiurt.boot.task.mapper.PatrolCheckResultMapper">
 
+    <insert id="addResultList" parameterType="java.util.List">
+
+        INSERT INTO patrol_check_result
+        ( id, task_standard_id, task_device_id, code, content, quality_standard, hierarchy_type,
+        parent_id, `order`, `check`, input_type, dict_code, option_value, write_value, regular,
+        del_flag, create_by, create_time, update_by, update_time )
+        VALUES
+        <foreach collection="list" item="item" separator=",">
+            (
+            #{item.id,jdbcType=VARCHAR},
+            #{item.taskStandardId,jdbcType=VARCHAR},
+            #{item.taskDeviceId,jdbcType=VARCHAR},
+            #{item.code,jdbcType=VARCHAR},
+            #{item.content,jdbcType=VARCHAR},
+            #{item.qualityStandard,jdbcType=VARCHAR},
+            #{item.hierarchyType,jdbcType=TINYINT},
+            #{item.parentId,jdbcType=VARCHAR},
+            #{item.order,jdbcType=INTEGER},
+            #{item.check,jdbcType=TINYINT},
+            #{item.inputType,jdbcType=TINYINT},
+            #{item.dictCode,jdbcType=VARCHAR},
+            #{item.optionValue,jdbcType=TINYINT},
+            #{item.writeValue,jdbcType=VARCHAR},
+            #{item.regular,jdbcType=VARCHAR},
+            #{item.delFlag,jdbcType=TINYINT},
+            #{item.createBy,jdbcType=VARCHAR},
+            #{item.createTime,jdbcType=TIMESTAMP},
+            #{item.updateBy,jdbcType=VARCHAR},
+            #{item.updateTime,jdbcType=TIMESTAMP}
+            )
+        </foreach>
+    </insert>
+
+
     <select id="getListByTaskDeviceId" resultType="com.aiurt.boot.task.dto.PatrolCheckResultDTO">
         SELECT
-            pcr.*
+        pcr.*
         FROM
-            patrol_check_result pcr
+        patrol_check_result pcr
         WHERE
-            pcr.del_flag =0
+        pcr.del_flag =0
         <if test="taskDeviceId != null and taskDeviceId !=''">
             and task_device_id = #{taskDeviceId}
         </if>

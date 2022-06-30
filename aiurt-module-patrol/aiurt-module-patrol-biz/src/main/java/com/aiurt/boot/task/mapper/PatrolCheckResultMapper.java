@@ -16,4 +16,6 @@ import java.util.List;
 public interface PatrolCheckResultMapper extends BaseMapper<PatrolCheckResult> {
 
     List<PatrolCheckResultDTO> getListByTaskDeviceId(@Param("taskDeviceId") String taskDeviceId);
+
+    int addResultList(@Param("list") List<PatrolCheckResult> resultList);
 }

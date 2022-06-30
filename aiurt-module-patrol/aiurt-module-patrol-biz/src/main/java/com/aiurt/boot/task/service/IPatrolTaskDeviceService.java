@@ -42,4 +42,6 @@ public interface IPatrolTaskDeviceService extends IService<PatrolTaskDevice> {
      * @return
      */
     Map<String, Object> selectBillInfoByNumber(String patrolNumber);
+
+    void startCheck(PatrolTaskDevice patrolTaskDevice);
 }

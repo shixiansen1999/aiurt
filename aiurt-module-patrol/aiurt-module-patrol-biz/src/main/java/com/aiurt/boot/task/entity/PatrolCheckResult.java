@@ -50,6 +50,10 @@ public class PatrolCheckResult implements Serializable {
 	@Excel(name = "检查项内容", width = 15)
     @ApiModelProperty(value = "检查项内容")
     private java.lang.String content;
+    /**质量标准*/
+    @Excel(name = "质量标准", width = 15)
+    @ApiModelProperty(value = "质量标准")
+    private java.lang.String qualityStandard;
 	/**层级类型：0一级、1子级*/
 	@Excel(name = "层级类型：0一级、1子级", width = 15)
     @ApiModelProperty(value = "层级类型：0一级、1子级")
@@ -63,9 +67,17 @@ public class PatrolCheckResult implements Serializable {
     @ApiModelProperty(value = "内容排序")
     @TableField(value = "`order`")
     private java.lang.Integer order;
-	/**数据填写类型：1 开关项、2 选择项、3 输入项*/
-	@Excel(name = "数据填写类型：1 开关项、2 选择项、3 输入项", width = 15)
-    @ApiModelProperty(value = "数据填写类型：1 开关项、2 选择项、3 输入项")
+    /**是否为巡检项目：0否、1是*/
+    @Excel(name = "是否为巡检项目：0否、1是", width = 15)
+    @ApiModelProperty(value = "是否为巡检项目：0否、1是")
+    private java.lang.Integer check;
+    /**检查结果：0异常、1正常*/
+    @Excel(name = "检查结果：0异常、1正常", width = 15)
+    @ApiModelProperty(value = "检查结果：0异常、1正常")
+    private java.lang.Integer checkReslut;
+	/**数据填写类型：1 无、2 选择项、3 输入项*/
+	@Excel(name = "数据填写类型：1 无、2 选择项、3 输入项", width = 15)
+    @ApiModelProperty(value = "数据填写类型：1 无、2 选择项、3 输入项")
     private java.lang.Integer inputType;
 	/**关联的数据字典编码*/
 	@Excel(name = "关联的数据字典编码", width = 15)
@@ -82,7 +94,7 @@ public class PatrolCheckResult implements Serializable {
 	/**数据校验表达式*/
 	@Excel(name = "数据校验表达式", width = 15)
     @ApiModelProperty(value = "数据校验表达式")
-    private java.lang.String regular;
+    private java.lang.Integer regular;
 	/**删除状态： 0未删除 1已删除*/
 	@Excel(name = "删除状态： 0未删除 1已删除", width = 15)
     @ApiModelProperty(value = "删除状态： 0未删除 1已删除")

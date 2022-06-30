@@ -68,7 +68,7 @@ public class PatrolStandardItems implements Serializable {
 	@Excel(name = "是否为巡检项目：0否 1是", width = 15)
     @ApiModelProperty(value = "是否为巡检项目：0否 1是")
     @TableField(value = "`check`")
-    private java.lang.String check;
+    private java.lang.Integer check;
 	/**数据填写类型：1开关项(即二选一)、2选择项、3输入项*/
 	@Excel(name = "数据填写类型：1开关项(即二选一)、2选择项、3输入项", width = 15)
     @ApiModelProperty(value = "数据填写类型：1开关项(即二选一)、2选择项、3输入项")
