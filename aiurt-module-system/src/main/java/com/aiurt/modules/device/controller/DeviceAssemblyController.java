@@ -100,8 +100,8 @@ public class DeviceAssemblyController {
     public Result<?> delete(@RequestParam(name = "id", required = true) String id) {
         try {
             DeviceAssembly deviceAssembly = iDeviceAssemblyService.getById(id);
-            deviceAssembly.setDelFlag(1);
-            iDeviceAssemblyService.updateById(deviceAssembly);
+//            deviceAssembly.setDelFlag(1);
+            iDeviceAssemblyService.removeById(deviceAssembly);
         } catch (Exception e) {
             log.error("删除失败", e.getMessage());
             return Result.error("删除失败!");
@@ -125,8 +125,8 @@ public class DeviceAssemblyController {
             result.error500("参数不识别！");
         } else {
             List<DeviceAssembly> deviceAssemblyList = iDeviceAssemblyService.list(new QueryWrapper<DeviceAssembly>().in("id",Arrays.asList(ids.split(","))));
-            deviceAssemblyList.stream().forEach( deviceAssembly -> deviceAssembly.setDelFlag(1));
-            iDeviceAssemblyService.updateBatchById(deviceAssemblyList);
+//            deviceAssemblyList.stream().forEach( deviceAssembly -> deviceAssembly.setDelFlag(1));
+            iDeviceAssemblyService.removeBatchByIds(deviceAssemblyList);
             result.success("删除成功!");
         }
         return result;

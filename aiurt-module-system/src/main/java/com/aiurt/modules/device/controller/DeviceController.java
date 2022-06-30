@@ -82,7 +82,7 @@ public class DeviceController {
             queryWrapper.eq("system_code", systemCode);
         }
         if(deviceTypeCode != null && !"".equals(deviceTypeCode)){
-            queryWrapper.apply(" FIND_IN_SET ( "+deviceTypeCode+" , REPLACE(device_type_code_cc,'/',',')) ");
+            queryWrapper.apply(" FIND_IN_SET ( '"+deviceTypeCode+"' , REPLACE(device_type_code_cc,'/',',')) ");
         }
         if(lineCode != null && !"".equals(lineCode)){
             queryWrapper.eq("line_code", lineCode);
@@ -110,15 +110,6 @@ public class DeviceController {
         return result;
     }
 
-    @AutoLog(value = "设备-分页列表查询")
-    @ApiOperation(value = "设备-分页列表查询", notes = "设备-分页列表查询")
-    @GetMapping(value = "/patrolDevicelist")
-    public Result<?> patrolDevicelist(@RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
-                                               HttpServletRequest req) {
-//        return Result.ok(deviceService.patrolDevicelist());
-        return Result.ok(null);
-    }
-
     @AutoLog(value = "设备-列表查询")
     @ApiOperation(value = "设备-列表查询", notes = "设备-列表查询")
     @GetMapping(value = "/selectList")
@@ -143,7 +134,7 @@ public class DeviceController {
             queryWrapper.eq("system_code", systemCode);
         }
         if(deviceTypeCode != null && !"".equals(deviceTypeCode)){
-            queryWrapper.apply(" FIND_IN_SET ( "+deviceTypeCode+" , REPLACE(device_type_code_cc,'/',',')) ");
+            queryWrapper.apply(" FIND_IN_SET ( '"+deviceTypeCode+"' , REPLACE(device_type_code_cc,'/',',')) ");
         }
         if(lineCode != null && !"".equals(lineCode)){
             queryWrapper.eq("line_code", lineCode);
