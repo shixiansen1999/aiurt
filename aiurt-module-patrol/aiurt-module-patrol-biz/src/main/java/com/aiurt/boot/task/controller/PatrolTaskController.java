@@ -247,8 +247,8 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
      * @param req
      * @return author hlq
      */
-    @AutoLog(value = "patrol_task-app巡检任务池")
-    @ApiOperation(value = "patrol_task-app巡检任务池", notes = "patrol_task-app巡检任务池")
+    @AutoLog(value = "巡检任务表-app巡检任务池")
+    @ApiOperation(value = "巡检任务表-app巡检任务池", notes = "巡检任务表-app巡检任务池")
     @GetMapping(value = "/patrolTaskPoolList")
     public Result<IPage<PatrolTaskDTO>> patrolTaskPoolList(PatrolTaskDTO patrolTaskDTO,
                                                            @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
@@ -268,8 +268,8 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
      * @param req
      * @return author hlq
      */
-    @AutoLog(value = "patrol_task-app巡检任务列表")
-    @ApiOperation(value = "patrol_task-app巡检任务列表", notes = "patrol_task-app巡检任务列表")
+    @AutoLog(value = "巡检任务表-app巡检任务列表")
+    @ApiOperation(value = "巡检任务表-app巡检任务列表", notes = "巡检任务表-app巡检任务列表")
     @GetMapping(value = "/patrolTaskList")
     public Result<IPage<PatrolTaskDTO>> patrolTaskList(PatrolTaskDTO patrolTaskDTO,
                                                        @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
@@ -287,8 +287,8 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
      * @param req
      * @return
      */
-    @AutoLog(value = "patrol_task-app巡检任务领取")
-    @ApiOperation(value = "patrol_task-app巡检任务领取", notes = "patrol_task-app巡检任务领取")
+    @AutoLog(value = "巡检任务表-app巡检任务领取")
+    @ApiOperation(value = "巡检任务表-app巡检任务领取", notes = "巡检任务表-app巡检任务领取")
     @PostMapping(value = "/patrolTaskReceive")
     public Result<?> patrolTaskReceive(PatrolTaskDTO patrolTaskDTO, HttpServletRequest req) {
         patrolTaskService.getPatrolTaskReceive(patrolTaskDTO);
@@ -310,8 +310,8 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
      * @param req
      * @return
      */
-    @AutoLog(value = "patrol_task-app巡检任务提交-统计工单数量")
-    @ApiOperation(value = "patrol_task-app巡检任务提交-统计工单数量", notes = "patrol_task-app巡检任务提交-统计工单数量")
+    @AutoLog(value = "巡检任务表-app巡检任务提交-统计工单数量")
+    @ApiOperation(value = "巡检任务表-app巡检任务提交-统计工单数量", notes = "巡检任务表-app巡检任务提交-统计工单数量")
     @PostMapping(value = "/submitTaskCount")
     public Result<?> submitTaskCount(PatrolTaskSubmitDTO patrolTaskSubmitDTO, HttpServletRequest req) {
         PatrolTaskSubmitDTO submitTaskCount = patrolTaskService.getSubmitTaskCount(patrolTaskSubmitDTO);
@@ -324,8 +324,8 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
      * @param req
      * @return
      */
-    @AutoLog(value = "patrol_task-app巡检任务领取后-退回")
-    @ApiOperation(value = "patrol_task-app巡检任务领取后-退回", notes = "patrol_task-app巡检任务领取后-退回")
+    @AutoLog(value = "巡检任务表-app巡检任务领取后-退回")
+    @ApiOperation(value = "巡检任务表-app巡检任务领取后-退回", notes = "巡检任务表-app巡检任务领取后-退回")
     @PostMapping(value = "/patrolTaskReturn")
     public Result<?> patrolTaskReturn(PatrolTaskDTO patrolTaskDTO, HttpServletRequest req) {
         patrolTaskService.getPatrolTaskReturn(patrolTaskDTO);
@@ -338,8 +338,8 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
      * @param req
      * @return
      */
-    @AutoLog(value = "patrol_task-指派人员查询")
-    @ApiOperation(value = "patrol_task-指派人员查询", notes = "patrol_task-指派人员查询")
+    @AutoLog(value = "巡检任务表-指派人员查询")
+    @ApiOperation(value = "巡检任务表-指派人员查询", notes = "巡检任务表-指派人员查询")
     @PostMapping(value = "/patrolTaskAppointSelect")
     public List<PatrolTaskUserDTO> patrolTaskAppointSelect(PatrolTaskDTO patrolTaskDTO, HttpServletRequest req) {
         List<PatrolTaskUserDTO> patrolTaskUserDTOS = patrolTaskService.getPatrolTaskAppointSelect(patrolTaskDTO);
@@ -353,8 +353,8 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
      * @param req
      * @return
      */
-    @AutoLog(value = "patrol_task-指派人员")
-    @ApiOperation(value = "patrol_task-指派人员", notes = "patrol_task-指派人员")
+    @AutoLog(value = "巡检任务表-指派人员")
+    @ApiOperation(value = "巡检任务表-指派人员", notes = "巡检任务表-指派人员")
     @PostMapping(value = "/patrolTaskAppoint")
     public Result<?> patrolTaskAppoint(@RequestBody List<PatrolTaskUserDTO> patrolTaskUserDTO, HttpServletRequest req) {
         patrolTaskService.getPatrolTaskAppoint(patrolTaskUserDTO);
@@ -366,8 +366,8 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
      *
      * @return
      */
-    @AutoLog(value = "patrol_task- app巡检任务-驳回")
-    @ApiOperation(value = "patrol_task- app巡检任务-驳回", notes = "patrol_task- app巡检任务-驳回")
+    @AutoLog(value = "巡检任务表- app巡检任务-驳回")
+    @ApiOperation(value = "巡检任务表- app巡检任务-驳回", notes = "巡检任务表- app巡检任务-驳回")
     @PostMapping(value = "/patrolTaskReject")
     public Result<?> patrolTaskReject(String id, String back_reason) {
         LambdaUpdateWrapper<PatrolTask> queryWrapper = new LambdaUpdateWrapper<>();
@@ -381,8 +381,8 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
      *
      * @return
      */
-    @AutoLog(value = "patrol_task- app巡检任务-通过")
-    @ApiOperation(value = "patrol_task- app巡检任务-通过", notes = "patrol_task- app巡检任务-通过")
+    @AutoLog(value = "巡检任务表- app巡检任务-通过")
+    @ApiOperation(value = "巡检任务表- app巡检任务-通过", notes = "巡检任务表- app巡检任务-通过")
     @PostMapping(value = "/patrolTaskPass")
     public Result<?> patrolTaskPass(String id, String back_reason) {
         LambdaUpdateWrapper<PatrolTask> queryWrapper = new LambdaUpdateWrapper<>();
@@ -390,7 +390,21 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
         patrolTaskService.update(queryWrapper);
         return Result.OK("通过成功");
     }
-
+    /**
+     * pc手工下放任务列表
+     *
+     * @return
+     */
+    @AutoLog(value = "巡检任务表- pc手工下放任务列表")
+    @ApiOperation(value = "巡检任务表- pc手工下放任务列表", notes = "巡检任务表- pc手工下放任务列表")
+    @PostMapping(value = "/patrolTaskManual")
+    public Result<?> patrolTaskManual(PatrolTaskDTO patrolTaskDTO,
+                                      @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
+                                      @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize,HttpServletRequest req) {
+        Page<PatrolTaskDTO> pageList = new Page<PatrolTaskDTO>(pageNo, pageSize);
+        pageList = patrolTaskService.getPatrolTaskManualList(pageList, patrolTaskDTO);
+        return Result.OK(pageList);
+    }
     /**
      * 导出excel
      *

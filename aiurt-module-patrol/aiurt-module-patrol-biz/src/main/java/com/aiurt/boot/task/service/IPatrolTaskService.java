@@ -104,4 +104,12 @@ public interface IPatrolTaskService extends IService<PatrolTask> {
      * @return
      */
     PatrolTaskSubmitDTO getSubmitTaskCount(PatrolTaskSubmitDTO patrolTaskSubmitDTO);
+
+    /**
+     * pc手工下放任务列表
+     * @param pageList
+     * @param patrolTaskDTO
+     * @return
+     */
+    Page<PatrolTaskDTO> getPatrolTaskManualList(Page<PatrolTaskDTO> pageList, PatrolTaskDTO patrolTaskDTO);
 }

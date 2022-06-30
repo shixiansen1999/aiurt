@@ -2,11 +2,7 @@ package com.aiurt.boot.task.controller;
 
 import com.aiurt.boot.task.dto.PatrolTaskDeviceDTO;
 import com.aiurt.boot.task.entity.PatrolTaskDevice;
-import com.aiurt.boot.task.entity.PatrolTaskStandard;
-import com.aiurt.boot.task.entity.PatrolTaskStation;
 import com.aiurt.boot.task.service.IPatrolTaskDeviceService;
-import com.aiurt.boot.task.service.IPatrolTaskStandardService;
-import com.aiurt.boot.task.service.IPatrolTaskStationService;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.system.base.controller.BaseController;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -66,8 +62,8 @@ public class PatrolTaskDeviceController extends BaseController<PatrolTaskDevice,
      *
      * @return
      */
-    @AutoLog(value = "patrol_task- app巡检任务-巡检清单列表")
-    @ApiOperation(value = "patrol_task- app巡检任务-巡检清单列表", notes = "patrol_task- app巡检任务-巡检清单列表")
+    @AutoLog(value = "巡检任务表- app巡检任务-巡检清单列表")
+    @ApiOperation(value = "巡检任务表- app巡检任务-巡检清单列表", notes = "巡检任务表- app巡检任务-巡检清单列表")
     @GetMapping(value = "/patrolTaskDeviceList")
     public Result<Page<PatrolTaskDeviceDTO>> patrolTaskDeviceList(String id,
                                                                   @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
@@ -90,8 +86,8 @@ public class PatrolTaskDeviceController extends BaseController<PatrolTaskDevice,
 	  * @param req
 	  * @return
 	  */
-	 @AutoLog(value = "patrol_task-app巡检任务执行中-检查")
-	 @ApiOperation(value = "patrol_task-app巡检任务执行中-检查", notes = "patrol_task-app巡检任务执行中-检查")
+	 @AutoLog(value = "巡检任务表-app巡检任务执行中-检查")
+	 @ApiOperation(value = "巡检任务表-app巡检任务执行中-检查", notes = "巡检任务表-app巡检任务执行中-检查")
 	 @PostMapping(value = "/patrolTaskCheck")
 	 public Result<?> patrolTaskCheck(PatrolTaskDeviceDTO patrolTaskDeviceDTO, HttpServletRequest req) {
 		 patrolTaskDeviceService.getPatrolTaskCheck(patrolTaskDeviceDTO);

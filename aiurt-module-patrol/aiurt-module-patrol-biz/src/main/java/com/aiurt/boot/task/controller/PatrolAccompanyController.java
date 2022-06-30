@@ -60,12 +60,12 @@ public class PatrolAccompanyController extends BaseController<PatrolAccompany, I
 	}
 
 	 /**
-	  *app-添加同行人
+	  *巡检同行人表-app-添加同行人
 	  * @param patrolAccompanyList
 	  * @return
 	  */
-	 @AutoLog(value = "app-添加同行人")
-	 @ApiOperation(value="app-添加同行人", notes="app-添加同行人")
+	 @AutoLog(value = "巡检同行人表-app-添加同行人")
+	 @ApiOperation(value="巡检同行人表-app-添加同行人", notes="巡检同行人表-app-添加同行人")
 	 @PostMapping(value = "/addPatrolAccompany")
 	 public Result<String> addPatrolAccompany(@RequestBody List<PatrolAccompanyDTO> patrolAccompanyList) {
 	 	for(PatrolAccompanyDTO accompany:patrolAccompanyList)

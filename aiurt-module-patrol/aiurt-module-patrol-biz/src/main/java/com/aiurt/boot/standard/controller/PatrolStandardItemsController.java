@@ -102,11 +102,11 @@ public class PatrolStandardItemsController extends BaseController<PatrolStandard
 		 return Result.error("重复排序,请重新输入");
 	 }
 	 /**
-	  * app-查询巡检工单检查项
+	  * 巡检标准项目表-app查询巡检工单检查项
 	  * @return
 	  */
-	 @AutoLog(value = "app-查询巡检工单检查项")
-	 @ApiOperation(value = "app-查询巡检工单检查项", notes = "app-查询巡检工单检查项")
+	 @AutoLog(value = "巡检标准项目表-app查询巡检工单检查项")
+	 @ApiOperation(value = "巡检标准项目表-app查询巡检工单检查项", notes = "巡检标准项目表-app查询巡检工单检查项")
 	 @GetMapping(value = "/taskPoolList")
 	 public Result<?> taskPoolList(String id) {
 	 	List<Tree<String>> patrolStandardItems = patrolStandardItemsService.getTaskPoolList(id);
