@@ -130,6 +130,15 @@ public class RepairTaskDTO {
     @TableField(exist = false)
     private Integer abnormal;
 
+    /**同行人名称*/
+    @ApiModelProperty(value = "同行人名称")
+    @TableField(exist = false)
+    private String peerName;
+
+    /**同行人Id*/
+    @ApiModelProperty(value = "同行人Id")
+    @TableField(exist = false)
+    private String peerId;
 
     /**提交时间*/
     @Excel(name = "提交时间", width = 15, format = "yyyy-MM-dd HH:mm:ss")
