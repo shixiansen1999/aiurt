@@ -108,12 +108,20 @@ public class CsStationPosition implements Serializable {
     @ApiModelProperty(value = "子节点")
     @TableField(exist = false)
     private List<CsStationPosition> children;
-    /**上级位置*/
-    @ApiModelProperty(value = "上级位置")
+    /**父级位置编码*/
+    @ApiModelProperty(value = "父级位置编码")
+    @TableField(exist = false)
+    private String pCode;
+    /**上（父）级位置*/
+    @ApiModelProperty(value = "上（父）级位置")
     @TableField(exist = false)
     private String pUrl;
     /**用于过滤查询*/
     @ApiModelProperty(value = "用于过滤查询")
     @TableField(exist = false)
     private String code;
+    /**所有位置*/
+    @ApiModelProperty(value = "所有位置")
+    @TableField(exist = false)
+    private String codeCc;
 }

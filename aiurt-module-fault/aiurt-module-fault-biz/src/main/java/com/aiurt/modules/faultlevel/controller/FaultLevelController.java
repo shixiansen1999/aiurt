@@ -45,7 +45,7 @@ public class FaultLevelController extends BaseController<FaultLevel, IFaultLevel
 	 * @param faultLevel
 	 * @param pageNo
 	 * @param pageSize
-	 * @param req
+	 * @param
 	 * @return
 	 */
 	@ApiOperation(value="故障等级-分页列表查询", notes="故障等级-分页列表查询")
@@ -64,7 +64,7 @@ public class FaultLevelController extends BaseController<FaultLevel, IFaultLevel
 			queryWrapper.eq(FaultLevel::getMajorCode, faultLevel.getMajorCode());
 		}
 		Page<FaultLevel> page = new Page<FaultLevel>(pageNo, pageSize);
-		IPage<FaultLevel> pageList = faultLevelService.page(page, queryWrapper.eq(FaultLevel::getDelFlag,0));
+		IPage<FaultLevel> pageList = faultLevelService.page(page, queryWrapper.eq(FaultLevel::getDelFlag,0).orderByDesc(FaultLevel::getCreateTime));
 		return Result.OK(pageList);
 	}
 

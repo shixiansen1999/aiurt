@@ -66,7 +66,7 @@ public class FaultTypeController extends BaseController<FaultType, IFaultTypeSer
 			queryWrapper.eq(FaultType::getMajorCode, faultType.getMajorCode());
 		}
 		Page<FaultType> page = new Page<FaultType>(pageNo, pageSize);
-		IPage<FaultType> pageList = faultTypeService.page(page, queryWrapper.eq(FaultType::getDelFlag,0));
+		IPage<FaultType> pageList = faultTypeService.page(page, queryWrapper.eq(FaultType::getDelFlag,0).orderByDesc(FaultType::getCreateTime));
 		return Result.OK(pageList);
 	}
 

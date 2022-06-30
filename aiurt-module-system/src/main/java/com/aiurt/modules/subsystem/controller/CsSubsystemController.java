@@ -91,7 +91,7 @@ public class CsSubsystemController  {
 		 /*if(StringUtils.isNotBlank(systemName)){
 			 systemWrapper.eq(CsSubsystem::getSystemName,systemName);
 		 }*/
-		 List<CsSubsystem> systemList = csSubsystemService.list(systemWrapper);
+		 List<CsSubsystem> systemList = csSubsystemService.list(systemWrapper.orderByDesc(CsSubsystem::getCreateTime));
 		 List<CsSubsystem> newList = new ArrayList<>();
 		 majorList.forEach(major -> {
 			 CsSubsystem subSystem = new CsSubsystem();

@@ -65,17 +65,20 @@ public class CsStationPositionController  {
 		 List<CsStationPosition> newList = new ArrayList<>();
 		 //循环一级
 		 lineList.forEach(line -> {
-			 CsStationPosition onePosition = setEntity(line.getId(),1,line.getSort(),line.getLineCode(),line.getLineName());
+		 	String codeCc1 = line.getLineCode();
+			 CsStationPosition onePosition = setEntity(line.getId(),1,line.getSort(),line.getLineCode(),line.getLineName(),null,null,codeCc1);
 			 List<CsStation> twoStationList = stationList.stream().filter(station-> station.getLineCode().equals(line.getLineCode())).collect(Collectors.toList());
 			 List<CsStationPosition> twoList = new ArrayList<>();
 			 //循环二级
 			 twoStationList.forEach(two->{
-				 CsStationPosition twoPosition = setEntity(two.getId(),2,two.getSort(),two.getStationCode(),two.getStationName());
+				 String codeCc2 = line.getLineCode()+"/"+two.getStationCode();
+				 CsStationPosition twoPosition = setEntity(two.getId(),2,two.getSort(),two.getStationCode(),two.getStationName(),line.getLineCode(),line.getLineName(),codeCc2);
 				 List<CsStationPosition> threeStationList = positionList.stream().filter(position-> position.getStaionCode().equals(two.getStationCode())).collect(Collectors.toList());
 				 List<CsStationPosition> threeList = new ArrayList<>();
 				 //循环三级
 				 threeStationList.forEach(three->{
-					 CsStationPosition threePosition = setEntity(three.getId(),3,three.getSort(),three.getPositionCode(),three.getPositionName());
+					 String codeCc3 = line.getLineCode()+"/"+two.getStationCode()+"/"+three.getPositionCode();
+					 CsStationPosition threePosition = setEntity(three.getId(),3,three.getSort(),three.getPositionCode(),three.getPositionName(),two.getStationCode(),two.getStationName(),codeCc3);
 					 threeList.add(threePosition);
 				 });
 				 twoPosition.setChildren(threeList);
@@ -97,13 +100,16 @@ public class CsStationPositionController  {
 	  * @param positionName
 	  * @return
 	  */
-	 public CsStationPosition setEntity(String id,Integer level,Integer sort,String positionCode,String positionName){
+	 public CsStationPosition setEntity(String id,Integer level,Integer sort,String positionCode,String positionName,String pCode,String pName,String codeCc){
 		 CsStationPosition position = new CsStationPosition();
 		 position.setId(id);
 		 position.setLevel(level);
 		 position.setSort(sort);
 		 position.setPositionCode(positionCode);
 		 position.setPositionName(positionName);
+		 position.setPCode(pCode);
+		 position.setPUrl(pName);
+		 position.setCodeCc(codeCc);
          return position;
 	 }
 	/**
