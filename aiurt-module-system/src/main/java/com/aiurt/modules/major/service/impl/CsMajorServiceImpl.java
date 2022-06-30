@@ -3,10 +3,7 @@ package com.aiurt.modules.major.service.impl;
 import com.aiurt.modules.major.entity.CsMajor;
 import com.aiurt.modules.major.mapper.CsMajorMapper;
 import com.aiurt.modules.major.service.ICsMajorService;
-import com.aiurt.modules.subsystem.entity.CsSubsystem;
-import com.aiurt.modules.system.entity.SysDepartRolePermission;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import org.jeecg.common.api.vo.Result;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -14,7 +11,6 @@ import org.springframework.stereotype.Service;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
 /**

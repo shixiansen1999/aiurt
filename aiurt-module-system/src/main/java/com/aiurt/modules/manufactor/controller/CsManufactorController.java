@@ -1,14 +1,7 @@
 package com.aiurt.modules.manufactor.controller;
 
-import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.modules.device.entity.Device;
@@ -17,7 +10,6 @@ import com.aiurt.modules.manufactor.entity.CsManufactor;
 import com.aiurt.modules.manufactor.service.ICsManufactorService;
 import com.aiurt.modules.material.entity.MaterialBase;
 import com.aiurt.modules.material.service.IMaterialBaseService;
-import com.aiurt.modules.subsystem.entity.CsSubsystem;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.query.QueryGenerator;
@@ -30,10 +22,6 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.multipart.MultipartHttpServletRequest;
-import org.springframework.web.servlet.ModelAndView;
-import com.alibaba.fastjson.JSON;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 
@@ -64,7 +52,6 @@ public class CsManufactorController  {
 	 * @param req
 	 * @return
 	 */
-	//@AutoLog(value = "厂商信息分页列表查询")
 	@ApiOperation(value="厂商信息分页列表查询", notes="厂商信息分页列表查询")
 	@GetMapping(value = "/list")
 	public Result<?> queryPageList(CsManufactor csManufactor,
@@ -73,7 +60,7 @@ public class CsManufactorController  {
 								   HttpServletRequest req) {
 		QueryWrapper<CsManufactor> queryWrapper = QueryGenerator.initQueryWrapper(csManufactor, req.getParameterMap());
 		Page<CsManufactor> page = new Page<CsManufactor>(pageNo, pageSize);
-		IPage<CsManufactor> pageList = csManufactorService.page(page, queryWrapper.eq("del_flag",0));
+		IPage<CsManufactor> pageList = csManufactorService.page(page, queryWrapper.lambda().eq(CsManufactor::getDelFlag,0));
 		return Result.OK(pageList);
 	}
 
@@ -82,7 +69,7 @@ public class CsManufactorController  {
 	 public Result<?> selectList(CsManufactor csManufactor,
 									HttpServletRequest req) {
 		 QueryWrapper<CsManufactor> queryWrapper = QueryGenerator.initQueryWrapper(csManufactor, req.getParameterMap());
-		 List<CsManufactor> pageList = csManufactorService.list(queryWrapper.eq("del_flag",0));
+		 List<CsManufactor> pageList = csManufactorService.list(queryWrapper.lambda().eq(CsManufactor::getDelFlag,0));
 		 return Result.OK(pageList);
 	 }
 
@@ -144,21 +131,6 @@ public class CsManufactorController  {
 		return Result.OK("删除成功!");
 	}
 
-	/**
-	 *  批量删除
-	 *
-	 * @param ids
-	 * @return
-	 */
-	/*@AutoLog(value = "厂商信息批量删除")
-	@ApiOperation(value="厂商信息批量删除", notes="厂商信息批量删除")
-	@DeleteMapping(value = "/deleteBatch")
-	public Result<?> deleteBatch(@RequestParam(name="ids",required=true) String ids) {
-		Arrays.asList(ids.split(",")).stream().forEach(id -> {
-			delete(id);
-		});
-		return Result.OK("批量删除成功!");
-	}*/
 
 	/**
 	 * 通过id查询
@@ -166,7 +138,6 @@ public class CsManufactorController  {
 	 * @param id
 	 * @return
 	 */
-	//@AutoLog(value = "厂商信息通过id查询")
 	@ApiOperation(value="厂商信息通过id查询", notes="厂商信息通过id查询")
 	@GetMapping(value = "/queryById")
 	public Result<?> queryById(@RequestParam(name="id",required=true) String id) {

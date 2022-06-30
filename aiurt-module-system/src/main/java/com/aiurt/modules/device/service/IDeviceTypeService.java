@@ -1,8 +1,6 @@
 package com.aiurt.modules.device.service;
 
 import com.aiurt.modules.device.entity.DeviceType;
-import com.aiurt.modules.material.entity.MaterialBaseType;
-import com.aiurt.modules.position.entity.CsStation;
 import com.baomidou.mybatisplus.extension.service.IService;
 import org.jeecg.common.api.vo.Result;
 
@@ -39,5 +37,10 @@ public interface IDeviceTypeService extends IService<DeviceType> {
      */
     Result<?> update(DeviceType deviceType);
 
+    /**
+     * 拼接cc字段
+     * @param deviceType
+     * @return
+     */
     String getCcStr(DeviceType deviceType);
 }

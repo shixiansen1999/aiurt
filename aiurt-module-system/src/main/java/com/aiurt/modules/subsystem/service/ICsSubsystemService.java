@@ -1,6 +1,5 @@
 package com.aiurt.modules.subsystem.service;
 
-import com.aiurt.modules.major.entity.CsMajor;
 import com.aiurt.modules.subsystem.entity.CsSubsystem;
 import com.baomidou.mybatisplus.extension.service.IService;
 import org.jeecg.common.api.vo.Result;

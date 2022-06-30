@@ -2,24 +2,16 @@ package com.aiurt.modules.device.controller;
 
 
 import javax.servlet.http.HttpServletRequest;
-
 import com.aiurt.modules.device.entity.Device;
 import com.aiurt.modules.device.entity.DeviceType;
 import com.aiurt.modules.device.service.IDeviceService;
 import com.aiurt.modules.device.service.IDeviceTypeService;
-import com.aiurt.modules.faultlevel.entity.FaultLevel;
 import com.aiurt.modules.major.entity.CsMajor;
 import com.aiurt.modules.major.service.ICsMajorService;
-import com.aiurt.modules.material.entity.MaterialBase;
-import com.aiurt.modules.material.entity.MaterialBaseType;
-import com.aiurt.modules.position.entity.CsStationPosition;
 import com.aiurt.modules.subsystem.entity.CsSubsystem;
 import com.aiurt.modules.subsystem.service.ICsSubsystemService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import org.jeecg.common.api.vo.Result;
-import org.jeecg.common.system.query.QueryGenerator;
-
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.extern.slf4j.Slf4j;
@@ -77,7 +69,7 @@ public class DeviceTypeController extends BaseController<DeviceType, IDeviceType
 			 List<CsSubsystem> sysList = systemList.stream().filter(system-> system.getMajorCode().equals(one.getMajorCode())).collect(Collectors.toList());
 			 List<DeviceType> majorDeviceType = deviceTypeTree.stream().filter(type-> one.getMajorCode().equals(type.getMajorCode()) && (null==type.getSystemCode() || "".equals(type.getSystemCode())) && type.getPid().equals("0")).collect(Collectors.toList());
 			 List<DeviceType> twoList = new ArrayList<>();
-			 //判断是否有设备类型数据
+			 //添加设备类型数据
 			 twoList.addAll(majorDeviceType);
 			 //判断是否有子系统数据
 			 sysList.forEach(two ->{
@@ -125,14 +117,12 @@ public class DeviceTypeController extends BaseController<DeviceType, IDeviceType
 	 * @param req
 	 * @return
 	 */
-	//@AutoLog(value = "设备类型分页列表查询")
 	@ApiOperation(value="设备类型分页列表查询", notes="设备类型分页列表查询")
 	@GetMapping(value = "/list")
 	public Result<IPage<DeviceType>> queryPageList(DeviceType deviceType,
 								   @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
-								   @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
-								   HttpServletRequest req) {
-		//QueryWrapper<DeviceType> queryWrapper = QueryGenerator.initQueryWrapper(deviceType, req.getParameterMap());
+								   @RequestParam(name="pageSize", defaultValue="10") Integer pageSize) {
+		//查询条件
 		LambdaQueryWrapper<DeviceType> queryWrapper = new LambdaQueryWrapper<>();
 		if(null != deviceType.getName() && !"".equals(deviceType.getName())){
 			queryWrapper.like(DeviceType::getName, deviceType.getName());
@@ -143,6 +133,7 @@ public class DeviceTypeController extends BaseController<DeviceType, IDeviceType
 		if(null != deviceType.getIsSpecialDevice() && !"".equals(deviceType.getIsSpecialDevice())){
 			queryWrapper.eq(DeviceType::getIsSpecialDevice, deviceType.getIsSpecialDevice());
 		}
+		//左侧树点击，拼接条件
 		if(null != deviceType.getMajorCode() && !"".equals(deviceType.getMajorCode())){
 			queryWrapper.eq(DeviceType::getMajorCode, deviceType.getMajorCode());
 		}
@@ -151,7 +142,7 @@ public class DeviceTypeController extends BaseController<DeviceType, IDeviceType
 			if(null != deviceType.getSystemCode() && !"".equals(deviceType.getSystemCode())){
 				queryWrapper.eq(DeviceType::getSystemCode, deviceType.getSystemCode());
 			}else{
-				queryWrapper.eq(DeviceType::getSystemCode, null);
+				queryWrapper.isNull(DeviceType::getSystemCode);
 			}
 		}
 		Page<DeviceType> page = new Page<DeviceType>(pageNo, pageSize);
@@ -217,19 +208,6 @@ public class DeviceTypeController extends BaseController<DeviceType, IDeviceType
 		return Result.OK("删除成功!");
 	}
 
-	/**
-	 *  批量删除
-	 *
-	 * @param ids
-	 * @return
-	 */
-/*	@AutoLog(value = "device_type-批量删除")
-	@ApiOperation(value="device_type-批量删除", notes="device_type-批量删除")
-	@DeleteMapping(value = "/deleteBatch")
-	public Result<String> deleteBatch(@RequestParam(name="ids",required=true) String ids) {
-		this.deviceTypeService.removeByIds(Arrays.asList(ids.split(",")));
-		return Result.OK("批量删除成功!");
-	}*/
 
 	/**
 	 * 通过id查询
@@ -237,7 +215,6 @@ public class DeviceTypeController extends BaseController<DeviceType, IDeviceType
 	 * @param id
 	 * @return
 	 */
-	//@AutoLog(value = "device_type-通过id查询")
 	@ApiOperation(value="设备类型通过id查询", notes="设备类型通过id查询")
 	@GetMapping(value = "/queryById")
 	public Result<DeviceType> queryById(@RequestParam(name="id",required=true) String id) {
@@ -247,28 +224,5 @@ public class DeviceTypeController extends BaseController<DeviceType, IDeviceType
 		}
 		return Result.OK(deviceType);
 	}
-
-    /**
-    * 导出excel
-    *
-    * @param request
-    * @param deviceType
-    */
-   /* @RequestMapping(value = "/exportXls")
-    public ModelAndView exportXls(HttpServletRequest request, DeviceType deviceType) {
-        return super.exportXls(request, deviceType, DeviceType.class, "device_type");
-    }*/
-
-    /**
-      * 通过excel导入数据
-    *
-    * @param request
-    * @param response
-    * @return
-    */
-    /*@RequestMapping(value = "/importExcel", method = RequestMethod.POST)
-    public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) {
-        return super.importExcel(request, response, DeviceType.class);
-    }*/
 
 }

@@ -1,9 +1,7 @@
 package com.aiurt.modules.major.entity;
 
 import java.io.Serializable;
-import java.io.UnsupportedEncodingException;
 import java.util.Date;
-import java.math.BigDecimal;
 import java.util.List;
 
 import com.aiurt.modules.device.entity.DeviceType;

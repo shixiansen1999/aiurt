@@ -1,12 +1,9 @@
 package com.aiurt.modules.device.entity;
 
 import java.io.Serializable;
-import java.io.UnsupportedEncodingException;
 import java.util.Date;
-import java.math.BigDecimal;
 import java.util.List;
 
-import com.aiurt.modules.material.entity.MaterialBaseType;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;

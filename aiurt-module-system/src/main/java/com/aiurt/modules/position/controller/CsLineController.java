@@ -1,18 +1,11 @@
 package com.aiurt.modules.position.controller;
 
-import java.util.Arrays;
+
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 import com.aiurt.modules.device.entity.Device;
 import com.aiurt.modules.device.service.IDeviceService;
-import com.aiurt.modules.material.entity.MaterialBaseType;
 import com.aiurt.modules.position.entity.CsLine;
 import com.aiurt.modules.position.entity.CsStation;
 import com.aiurt.modules.position.entity.CsStationPosition;
@@ -27,18 +20,9 @@ import org.jeecg.common.system.query.QueryGenerator;
 
 import lombok.extern.slf4j.Slf4j;
 
-import org.jeecgframework.poi.excel.ExcelImportUtil;
-import org.jeecgframework.poi.excel.def.NormalExcelConstants;
-import org.jeecgframework.poi.excel.entity.ExportParams;
-import org.jeecgframework.poi.excel.entity.ImportParams;
-import org.jeecgframework.poi.excel.view.JeecgEntityExcelView;
 import com.aiurt.common.system.base.controller.BaseController;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.multipart.MultipartHttpServletRequest;
-import org.springframework.web.servlet.ModelAndView;
-import com.alibaba.fastjson.JSON;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import com.aiurt.common.aspect.annotation.AutoLog;
@@ -69,7 +53,6 @@ public class CsLineController extends BaseController<CsLine, ICsLineService> {
 	 * @param req
 	 * @return
 	 */
-	//@AutoLog(value = "cs_line-分页列表查询")
 	@ApiOperation(value="cs_line-分页列表查询", notes="cs_line-分页列表查询")
 	@GetMapping(value = "/list")
 	public Result<IPage<CsLine>> queryPageList(CsLine csLine,
@@ -158,26 +141,11 @@ public class CsLineController extends BaseController<CsLine, ICsLineService> {
 	}
 
 	/**
-	 *  批量删除
-	 *
-	 * @param ids
-	 * @return
-	 */
-	/*@AutoLog(value = "cs_line-批量删除")
-	@ApiOperation(value="cs_line-批量删除", notes="cs_line-批量删除")
-	@DeleteMapping(value = "/deleteBatch")
-	public Result<String> deleteBatch(@RequestParam(name="ids",required=true) String ids) {
-		this.csLineService.removeByIds(Arrays.asList(ids.split(",")));
-		return Result.OK("批量删除成功!");
-	}*/
-
-	/**
 	 * 通过id查询
 	 *
 	 * @param id
 	 * @return
 	 */
-	//@AutoLog(value = "cs_line-通过id查询")
 	@ApiOperation(value="cs_line-通过id查询", notes="cs_line-通过id查询")
 	@GetMapping(value = "/queryById")
 	public Result<CsLine> queryById(@RequestParam(name="id",required=true) String id) {
@@ -187,28 +155,5 @@ public class CsLineController extends BaseController<CsLine, ICsLineService> {
 		}
 		return Result.OK(csLine);
 	}
-
-    /**
-    * 导出excel
-    *
-    * @param request
-    * @param csLine
-    */
-   /* @RequestMapping(value = "/exportXls")
-    public ModelAndView exportXls(HttpServletRequest request, CsLine csLine) {
-        return super.exportXls(request, csLine, CsLine.class, "cs_line");
-    }*/
-
-    /**
-      * 通过excel导入数据
-    *
-    * @param request
-    * @param response
-    * @return
-    */
-    /*@RequestMapping(value = "/importExcel", method = RequestMethod.POST)
-    public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) {
-        return super.importExcel(request, response, CsLine.class);
-    }*/
 
 }

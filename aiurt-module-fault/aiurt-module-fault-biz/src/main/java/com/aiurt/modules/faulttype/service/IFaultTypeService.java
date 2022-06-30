@@ -1,6 +1,5 @@
 package com.aiurt.modules.faulttype.service;
 
-
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.aiurt.modules.faulttype.entity.FaultType;
 import org.jeecg.common.api.vo.Result;

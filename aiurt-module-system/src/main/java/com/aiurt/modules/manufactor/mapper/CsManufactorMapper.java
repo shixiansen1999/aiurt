@@ -1,7 +1,5 @@
 package com.aiurt.modules.manufactor.mapper;
 
-import java.util.List;
-
 import com.aiurt.modules.manufactor.entity.CsManufactor;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import org.springframework.stereotype.Component;

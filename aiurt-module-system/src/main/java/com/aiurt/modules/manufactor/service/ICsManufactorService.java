@@ -1,7 +1,6 @@
 package com.aiurt.modules.manufactor.service;
 
 import com.aiurt.modules.manufactor.entity.CsManufactor;
-import com.aiurt.modules.subsystem.entity.CsSubsystem;
 import com.baomidou.mybatisplus.extension.service.IService;
 import org.jeecg.common.api.vo.Result;
 

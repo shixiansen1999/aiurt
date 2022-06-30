@@ -1,7 +1,5 @@
 package com.aiurt.modules.device.mapper;
 
-import java.util.List;
-
 import com.aiurt.modules.device.entity.DeviceType;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import org.springframework.stereotype.Component;

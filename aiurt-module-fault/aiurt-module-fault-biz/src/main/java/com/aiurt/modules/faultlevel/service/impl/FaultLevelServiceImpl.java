@@ -3,12 +3,10 @@ package com.aiurt.modules.faultlevel.service.impl;
 import com.aiurt.modules.faultlevel.entity.FaultLevel;
 import com.aiurt.modules.faultlevel.mapper.FaultLevelMapper;
 import com.aiurt.modules.faultlevel.service.IFaultLevelService;
-import com.aiurt.modules.faulttype.mapper.FaultTypeMapper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import org.jeecg.common.api.vo.Result;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.transaction.annotation.Transactional;
 

@@ -4,7 +4,6 @@ import com.aiurt.modules.major.entity.CsMajor;
 import com.baomidou.mybatisplus.extension.service.IService;
 import org.jeecg.common.api.vo.Result;
 
-import javax.servlet.http.HttpServletRequest;
 
 /**
  * @Description: cs_major

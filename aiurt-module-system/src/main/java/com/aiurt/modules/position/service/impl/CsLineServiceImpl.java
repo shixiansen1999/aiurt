@@ -2,14 +2,9 @@ package com.aiurt.modules.position.service.impl;
 
 
 import com.aiurt.modules.position.entity.CsLine;
-import com.aiurt.modules.position.entity.CsStationPosition;
 import com.aiurt.modules.position.mapper.CsLineMapper;
 import com.aiurt.modules.position.service.ICsLineService;
-import com.aiurt.modules.subsystem.entity.CsSubsystem;
-import com.aiurt.modules.subsystem.entity.CsSubsystemUser;
-import com.aiurt.modules.subsystem.mapper.CsSubsystemMapper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import org.jeecg.common.api.vo.Result;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -40,10 +35,6 @@ public class CsLineServiceImpl extends ServiceImpl<CsLineMapper, CsLine> impleme
     public Result<?> add(CsLine csLine) {
         //编码不能重复，判断数据库中是否存在，如不存在则可继续添加
         List<CsLine> list = csLineMapper.selectCode(csLine.getLineCode());
-       /* LambdaQueryWrapper<CsLine> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(CsLine::getLineCode, csLine.getLineCode());
-        queryWrapper.eq(CsLine::getDelFlag, 0);
-        List<CsLine> list = csLineMapper.selectList(queryWrapper);*/
         if (!list.isEmpty()) {
             return Result.error("编码重复，请重新填写！");
         }

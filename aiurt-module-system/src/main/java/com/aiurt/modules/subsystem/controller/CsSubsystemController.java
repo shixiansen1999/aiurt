@@ -1,15 +1,8 @@
 package com.aiurt.modules.subsystem.controller;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.modules.device.entity.DeviceType;
@@ -23,27 +16,18 @@ import com.aiurt.modules.subsystem.entity.CsSubsystem;
 import com.aiurt.modules.subsystem.entity.CsSubsystemUser;
 import com.aiurt.modules.subsystem.mapper.CsSubsystemUserMapper;
 import com.aiurt.modules.subsystem.service.ICsSubsystemService;
-import com.aiurt.modules.system.entity.SysUser;
 import com.aiurt.modules.system.service.ISysUserService;
-import com.aiurt.modules.system.service.impl.SysUserServiceImpl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import org.apache.commons.lang.StringUtils;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
-import org.jeecg.common.system.query.QueryGenerator;
 
 import lombok.extern.slf4j.Slf4j;
 
 import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.multipart.MultipartHttpServletRequest;
-import org.springframework.web.servlet.ModelAndView;
-import com.alibaba.fastjson.JSON;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 
@@ -65,8 +49,6 @@ public class CsSubsystemController  {
 	private CsSubsystemUserMapper csSubsystemUserMapper;
 	@Autowired
 	private ICsMajorService csMajorService;
-	@Autowired
-	private ISysUserService sysUserService;
 	@Autowired
 	private ISysBaseAPI sysBaseAPI;
 	@Autowired
@@ -215,7 +197,6 @@ public class CsSubsystemController  {
 	@DeleteMapping(value = "/delete")
 	public Result<?> delete(@RequestParam(name="id",required=true) String id) {
 		CsSubsystem csSubsystem = csSubsystemService.getById(id);
-
 		//判断是否被设备类型使用
 		LambdaQueryWrapper<DeviceType> deviceWrapper = new LambdaQueryWrapper<>();
 		deviceWrapper.eq(DeviceType::getSystemCode,csSubsystem.getSystemCode());
@@ -232,7 +213,6 @@ public class CsSubsystemController  {
 		if(!materList.isEmpty()){
 			return Result.error("该子系统被物资分类使用中，不能删除!");
 		}
-
 		csSubsystem.setDelFlag(1);
 		csSubsystemService.updateById(csSubsystem);
 		//关联删除
@@ -243,28 +223,11 @@ public class CsSubsystemController  {
 	}
 
 	/**
-	 *  批量删除
-	 *
-	 * @param ids
-	 * @return
-	 */
-	/*@AutoLog(value = "子系统批量删除")
-	@ApiOperation(value="子系统批量删除", notes="子系统批量删除")
-	@DeleteMapping(value = "/deleteBatch")
-	public Result<?> deleteBatch(@RequestParam(name="ids",required=true) String ids) {
-		Arrays.asList(ids.split(",")).stream().forEach(id -> {
-			delete(id);
-		});
-		return Result.OK("批量删除成功!");
-	}*/
-
-	/**
 	 * 通过id查询
 	 *
 	 * @param id
 	 * @return
 	 */
-	//@AutoLog(value = "子系统通过id查询")
 	@ApiOperation(value="子系统通过id查询", notes="子系统通过id查询")
 	@GetMapping(value = "/queryById")
 	public Result<?> queryById(@RequestParam(name="id",required=true) String id) {

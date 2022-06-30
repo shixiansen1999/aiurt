@@ -1,9 +1,8 @@
 package com.aiurt.modules.subsystem.mapper;
 
-import java.util.List;
-
 import com.aiurt.modules.subsystem.entity.CsSubsystem;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import org.springframework.stereotype.Component;
 
 /**
  * @Description: cs_subsystem
@@ -11,6 +10,7 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
  * @Date:   2022-06-21
  * @Version: V1.0
  */
+@Component
 public interface CsSubsystemMapper extends BaseMapper<CsSubsystem> {
 
 }

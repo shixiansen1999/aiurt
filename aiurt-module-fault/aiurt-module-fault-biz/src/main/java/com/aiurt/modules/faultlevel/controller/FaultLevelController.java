@@ -7,9 +7,7 @@ import com.aiurt.modules.fault.entity.Fault;
 import com.aiurt.modules.fault.service.IFaultService;
 import com.aiurt.modules.faultlevel.entity.FaultLevel;
 import com.aiurt.modules.faultlevel.service.IFaultLevelService;
-import com.aiurt.modules.faulttype.entity.FaultType;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.annotations.Api;
@@ -18,7 +16,6 @@ import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.jeecg.common.api.vo.Result;
-import org.jeecg.common.system.query.QueryGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -51,21 +48,19 @@ public class FaultLevelController extends BaseController<FaultLevel, IFaultLevel
 	 * @param req
 	 * @return
 	 */
-	//@AutoLog(value = "故障等级-分页列表查询")
 	@ApiOperation(value="故障等级-分页列表查询", notes="故障等级-分页列表查询")
 	@GetMapping(value = "/list")
 	public Result<IPage<FaultLevel>> queryPageList(FaultLevel faultLevel,
 												   @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
-												   @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
-												   HttpServletRequest req) {
+												   @RequestParam(name="pageSize", defaultValue="10") Integer pageSize) {
 		LambdaQueryWrapper<FaultLevel> queryWrapper = new LambdaQueryWrapper<>();
-		if(null != faultLevel.getName()   && !"".equals(faultLevel.getName())){
+		if(null != faultLevel.getName() && !"".equals(faultLevel.getName())){
 			queryWrapper.like(FaultLevel::getName, faultLevel.getName());
 		}
-		if(null != faultLevel.getCode()   && !"".equals(faultLevel.getCode())){
+		if(null != faultLevel.getCode() && !"".equals(faultLevel.getCode())){
 			queryWrapper.like(FaultLevel::getCode, faultLevel.getCode());
 		}
-		if(null != faultLevel.getMajorCode()   && !"".equals(faultLevel.getMajorCode())){
+		if(null != faultLevel.getMajorCode() && !"".equals(faultLevel.getMajorCode())){
 			queryWrapper.eq(FaultLevel::getMajorCode, faultLevel.getMajorCode());
 		}
 		Page<FaultLevel> page = new Page<FaultLevel>(pageNo, pageSize);
@@ -110,7 +105,7 @@ public class FaultLevelController extends BaseController<FaultLevel, IFaultLevel
 	@DeleteMapping(value = "/delete")
 	public Result<?> delete(@RequestParam(name="id",required=true) String id) {
 		FaultLevel faultLevel = faultLevelService.getById(id);
-		//判断故障上报是否使用
+		//判断故障上报是否使用,fault表没有del_flag
 		LambdaQueryWrapper<Fault> queryWrapper = new LambdaQueryWrapper<>();
 		queryWrapper.eq(Fault::getFaultTypeCode, faultLevel.getCode());
 		List<Fault> list = faultService.list(queryWrapper);
@@ -123,26 +118,11 @@ public class FaultLevelController extends BaseController<FaultLevel, IFaultLevel
 	}
 
 	/**
-	 *  批量删除
-	 *
-	 * @param ids
-	 * @return
-	 */
-	/*@AutoLog(value = "故障等级-批量删除")
-	@ApiOperation(value="故障等级-批量删除", notes="故障等级-批量删除")
-	@DeleteMapping(value = "/deleteBatch")
-	public Result<String> deleteBatch(@RequestParam(name="ids",required=true) String ids) {
-		this.faultLevelService.removeByIds(Arrays.asList(ids.split(",")));
-		return Result.OK("批量删除成功!");
-	}*/
-
-	/**
 	 * 通过id查询
 	 *
 	 * @param id
 	 * @return
 	 */
-	//@AutoLog(value = "故障等级-通过id查询")
 	@ApiOperation(value="故障等级-通过id查询", notes="故障等级-通过id查询")
 	@GetMapping(value = "/queryById")
 	public Result<FaultLevel> queryById(@RequestParam(name="id",required=true) String id) {
@@ -166,6 +146,7 @@ public class FaultLevelController extends BaseController<FaultLevel, IFaultLevel
 	 public Result<List<SelectTable>> queryFaultLevelByMajorCode(@RequestParam(value = "majorCode") String majorCode) {
 		 LambdaQueryWrapper<FaultLevel> wrapper = new LambdaQueryWrapper<>();
 		 wrapper.eq(FaultLevel::getMajorCode, majorCode);
+		 wrapper.eq(FaultLevel::getDelFlag, 0);
 		 List<FaultLevel> typeList = faultLevelService.getBaseMapper().selectList(wrapper);
 		 List<SelectTable> tableList = typeList.stream().map(faultLevel -> {
 			 SelectTable table = new SelectTable();

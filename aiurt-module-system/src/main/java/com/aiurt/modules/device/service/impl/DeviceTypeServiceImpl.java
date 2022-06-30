@@ -5,9 +5,6 @@ import com.aiurt.modules.device.entity.DeviceType;
 import com.aiurt.modules.device.mapper.DeviceComposeMapper;
 import com.aiurt.modules.device.mapper.DeviceTypeMapper;
 import com.aiurt.modules.device.service.IDeviceTypeService;
-import com.aiurt.modules.material.entity.MaterialBaseType;
-import com.aiurt.modules.position.entity.CsStation;
-import com.aiurt.modules.subsystem.entity.CsSubsystemUser;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import org.jeecg.common.api.vo.Result;
@@ -137,7 +134,11 @@ public class DeviceTypeServiceImpl extends ServiceImpl<DeviceTypeMapper, DeviceT
         }
         return childList;
     }
-
+    /**
+     * 拼接cc字段
+     * @param deviceType
+     * @return
+     */
     @Override
     public String getCcStr(DeviceType deviceType) {
         String res = "";

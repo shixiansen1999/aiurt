@@ -1,9 +1,7 @@
 package com.aiurt.modules.position.entity;
 
 import java.io.Serializable;
-import java.io.UnsupportedEncodingException;
 import java.util.Date;
-import java.math.BigDecimal;
 import java.util.List;
 
 import com.aiurt.common.aspect.annotation.Dict;

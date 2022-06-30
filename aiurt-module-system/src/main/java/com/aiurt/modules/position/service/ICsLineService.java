@@ -1,8 +1,6 @@
 package com.aiurt.modules.position.service;
 
 import com.aiurt.modules.position.entity.CsLine;
-import com.aiurt.modules.position.entity.CsStationPosition;
-import com.aiurt.modules.subsystem.entity.CsSubsystem;
 import com.baomidou.mybatisplus.extension.service.IService;
 import org.jeecg.common.api.vo.Result;
 

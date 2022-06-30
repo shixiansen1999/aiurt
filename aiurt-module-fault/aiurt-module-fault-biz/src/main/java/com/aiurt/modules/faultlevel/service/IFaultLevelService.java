@@ -1,8 +1,6 @@
 package com.aiurt.modules.faultlevel.service;
 
-
 import com.aiurt.modules.faultlevel.entity.FaultLevel;
-import com.aiurt.modules.faulttype.entity.FaultType;
 import com.baomidou.mybatisplus.extension.service.IService;
 import org.jeecg.common.api.vo.Result;
 

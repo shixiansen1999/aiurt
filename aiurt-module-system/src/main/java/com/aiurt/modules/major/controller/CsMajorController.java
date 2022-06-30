@@ -1,14 +1,8 @@
 package com.aiurt.modules.major.controller;
 
-import java.util.Arrays;
+
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.modules.device.entity.DeviceType;
@@ -32,8 +26,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import org.springframework.web.servlet.ModelAndView;
-import com.alibaba.fastjson.JSON;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 
@@ -66,7 +58,6 @@ public class CsMajorController  {
 	 * @param req
 	 * @return
 	 */
-	//@AutoLog(value = "专业分页列表查询")
 	@ApiOperation(value="专业分页列表查询", notes="专业分页列表查询")
 	@GetMapping(value = "/list")
 	public Result<?> queryPageList(CsMajor csMajor,
@@ -75,7 +66,7 @@ public class CsMajorController  {
 								   HttpServletRequest req) {
 		QueryWrapper<CsMajor> queryWrapper = QueryGenerator.initQueryWrapper(csMajor, req.getParameterMap());
 		Page<CsMajor> page = new Page<CsMajor>(pageNo, pageSize);
-		IPage<CsMajor> pageList = csMajorService.page(page, queryWrapper.eq("del_flag",0));
+		IPage<CsMajor> pageList = csMajorService.page(page, queryWrapper.lambda().eq(CsMajor::getDelFlag,0));
 		return Result.OK(pageList);
 	}
 
@@ -84,7 +75,7 @@ public class CsMajorController  {
 	 public Result<?> selectList(CsMajor csMajor,
 									HttpServletRequest req) {
 		 QueryWrapper<CsMajor> queryWrapper = QueryGenerator.initQueryWrapper(csMajor, req.getParameterMap());
-		 List<CsMajor> pageList = csMajorService.list(queryWrapper.eq("del_flag",0));
+		 List<CsMajor> pageList = csMajorService.list(queryWrapper.lambda().eq(CsMajor::getDelFlag,0));
 		 return Result.OK(pageList);
 	 }
 
@@ -155,28 +146,11 @@ public class CsMajorController  {
 	}
 
 	/**
-	 *  批量删除
-	 *
-	 * @param ids
-	 * @return
-	 */
-	/*@AutoLog(value = "专业批量删除")
-	@ApiOperation(value="专业批量删除", notes="专业批量删除")
-	@DeleteMapping(value = "/deleteBatch")
-	public Result<?> deleteBatch(@RequestParam(name="ids",required=true) String ids) {
-		Arrays.asList(ids.split(",")).stream().forEach(id -> {
-			delete(id);
-		});
-		return Result.OK("批量删除成功!");
-	}*/
-
-	/**
 	 * 通过id查询
 	 *
 	 * @param id
 	 * @return
 	 */
-	//@AutoLog(value = "专业通过id查询")
 	@ApiOperation(value="专业通过id查询", notes="专业通过id查询")
 	@GetMapping(value = "/queryById")
 	public Result<?> queryById(@RequestParam(name="id",required=true) String id) {
