@@ -1,6 +1,8 @@
 package com.aiurt.boot.task.entity;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
@@ -45,6 +47,7 @@ public class PatrolCheckResult implements Serializable {
 	/**检查项编号*/
 	@Excel(name = "检查项编号", width = 15)
     @ApiModelProperty(value = "检查项编号")
+    @TableField(value = "`code`")
     private java.lang.String code;
 	/**检查项内容*/
 	@Excel(name = "检查项内容", width = 15)
@@ -58,6 +61,10 @@ public class PatrolCheckResult implements Serializable {
 	@Excel(name = "层级类型：0一级、1子级", width = 15)
     @ApiModelProperty(value = "层级类型：0一级、1子级")
     private java.lang.Integer hierarchyType;
+    /**原标准项目表ID*/
+    @Excel(name = "原标准项目表ID", width = 15)
+    @ApiModelProperty(value = "原标准项目表ID")
+    private java.lang.String oldId;
 	/**父级ID,顶级默认为0*/
 	@Excel(name = "父级ID,顶级默认为0", width = 15)
     @ApiModelProperty(value = "父级ID,顶级默认为0")
@@ -70,11 +77,12 @@ public class PatrolCheckResult implements Serializable {
     /**是否为巡检项目：0否、1是*/
     @Excel(name = "是否为巡检项目：0否、1是", width = 15)
     @ApiModelProperty(value = "是否为巡检项目：0否、1是")
+    @TableField(value = "`check`")
     private java.lang.Integer check;
     /**检查结果：0异常、1正常*/
     @Excel(name = "检查结果：0异常、1正常", width = 15)
     @ApiModelProperty(value = "检查结果：0异常、1正常")
-    private java.lang.Integer checkReslut;
+    private java.lang.Integer checkResult;
 	/**数据填写类型：1 无、2 选择项、3 输入项*/
 	@Excel(name = "数据填写类型：1 无、2 选择项、3 输入项", width = 15)
     @ApiModelProperty(value = "数据填写类型：1 无、2 选择项、3 输入项")
@@ -119,4 +127,8 @@ public class PatrolCheckResult implements Serializable {
     @DateTimeFormat(pattern="yyyy-MM-dd")
     @ApiModelProperty(value = "更新时间")
     private java.util.Date updateTime;
+    /**子节点*/
+    @ApiModelProperty(value = "子节点")
+    @TableField(exist = false)
+    private List<PatrolCheckResult> child = new ArrayList<>();
 }

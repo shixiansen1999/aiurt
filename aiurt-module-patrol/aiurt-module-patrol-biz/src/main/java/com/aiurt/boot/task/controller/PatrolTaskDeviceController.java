@@ -1,25 +1,21 @@
 package com.aiurt.boot.task.controller;
 
 import com.aiurt.boot.task.dto.PatrolTaskDeviceDTO;
+import com.aiurt.boot.task.entity.PatrolCheckResult;
 import com.aiurt.boot.task.entity.PatrolTaskDevice;
 import com.aiurt.boot.task.service.IPatrolTaskDeviceService;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.system.base.controller.BaseController;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.jeecg.common.api.vo.Result;
-import org.jeecg.common.system.query.QueryGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.util.Arrays;
+import java.util.List;
 
 /**
  * @Description: patrol_task_device
@@ -73,11 +69,11 @@ public class PatrolTaskDeviceController extends BaseController<PatrolTaskDevice,
         return Result.OK(pageList);
     }
 
-    @PostMapping(value = "/startCheck")
+/*    @PostMapping(value = "/startCheck")
     public Result<?> startCheck(@RequestBody PatrolTaskDevice patrolTaskDevice) {
-        patrolTaskDeviceService.startCheck(patrolTaskDevice);
-        return Result.OK();
-    }
+		List<PatrolCheckResult> resultList = patrolTaskDeviceService.copyItems(patrolTaskDevice);
+		return Result.OK(resultList);
+    }*/
 
 
 	 /**

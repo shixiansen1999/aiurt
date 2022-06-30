@@ -5,9 +5,9 @@
     <insert id="addResultList" parameterType="java.util.List">
 
         INSERT INTO patrol_check_result
-        ( id, task_standard_id, task_device_id, code, content, quality_standard, hierarchy_type,
-        parent_id, `order`, `check`, input_type, dict_code, option_value, write_value, regular,
-        del_flag, create_by, create_time, update_by, update_time )
+        ( id, task_standard_id, task_device_id, `code`, content, quality_standard, hierarchy_type,
+        old_id, parent_id, `order`, `check`, check_result, input_type, dict_code, option_value, write_value,
+        regular, del_flag, create_by, create_time, update_by, update_time )
         VALUES
         <foreach collection="list" item="item" separator=",">
             (
@@ -18,9 +18,11 @@
             #{item.content,jdbcType=VARCHAR},
             #{item.qualityStandard,jdbcType=VARCHAR},
             #{item.hierarchyType,jdbcType=TINYINT},
+            #{item.oldId,jdbcType=VARCHAR},
             #{item.parentId,jdbcType=VARCHAR},
             #{item.order,jdbcType=INTEGER},
             #{item.check,jdbcType=TINYINT},
+            #{item.checkResult,jdbcType=TINYINT},
             #{item.inputType,jdbcType=TINYINT},
             #{item.dictCode,jdbcType=VARCHAR},
             #{item.optionValue,jdbcType=TINYINT},

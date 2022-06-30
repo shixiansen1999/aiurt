@@ -6,8 +6,6 @@ import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.standard.entity.PatrolStandardItems;
 import com.aiurt.boot.standard.mapper.PatrolStandardItemsMapper;
-import com.aiurt.boot.standard.entity.PatrolStandardItems;
-import com.aiurt.boot.standard.mapper.PatrolStandardItemsMapper;
 import com.aiurt.boot.task.dto.PatrolCheckResultDTO;
 import com.aiurt.boot.task.dto.PatrolTaskDeviceDTO;
 import com.aiurt.boot.task.entity.PatrolAccompany;
@@ -65,7 +63,7 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
     public Page<PatrolTaskDeviceDTO> getPatrolTaskDeviceList(Page<PatrolTaskDeviceDTO> pageList, String code) {
 
         List<PatrolTaskDeviceDTO> patrolTaskDeviceList = patrolTaskDeviceMapper.getPatrolTaskDeviceList(pageList, code);
-        patrolTaskDeviceList.stream().forEach(e->{
+        patrolTaskDeviceList.stream().forEach(e -> {
             String accompanyName = patrolAccompanyMapper.getAccompanyName(e.getPatrolNumber());
             e.setAccompanyName(accompanyName);
         });
@@ -98,38 +96,13 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
         return map;
     }
 
-    @Override
-    public void startCheck(PatrolTaskDevice patrolTaskDevice) {
-        String taskStandardId = patrolTaskDevice.getTaskStandardId();
-        if (StrUtil.isEmpty(taskStandardId)) {
-            throw new AiurtBootException("任务标准关联表ID为空！");
-        }
-        //根据任务设备的任务ID获取任务标准表主键和巡检标准表ID
-        PatrolTaskStandard taskStandard = patrolTaskStandardMapper.selectById(taskStandardId);
-        String standardId = taskStandard.getStandardId();
-        //根据巡检标准表ID获取巡检标准项目列表并添加到结果表中
-//        QueryWrapper<PatrolStandardItems> itemsWrapper = new QueryWrapper<>();
-//        itemsWrapper.lambda().eq(PatrolStandardItems::getStandardId, standardId);
-        List<PatrolStandardItems> patrolStandardItems = patrolStandardItemsMapper.selectList(standardId);
-        List<PatrolCheckResult> resultList = new ArrayList<>();
-        Optional.ofNullable(patrolStandardItems).orElseGet(Collections::emptyList).stream().forEach(l -> {
-            PatrolCheckResult result = new PatrolCheckResult();
-            result.setCode(l.getCode());    // 巡检项编号
-            result.setContent(l.getContent());  // 巡检项内容
-            result.setQualityStandard(l.getQualityStandard());  // 质量标准
-            result.setHierarchyType(l.getHierarchyType());  // 层级类型
-            result.setParentId(l.getParentId()); //父级ID
-            result.setOrder(l.getOrder());  // 内容排序
-            result.setCheck(l.getCheck());  // 是否为巡检项目
-            result.setInputType(l.getInputType());  // 填写数据类型
-            result.setDictCode(l.getDictCode());    // 关联的数据字典
-            result.setRegular(l.getRegular());  // 树校验表达式
-            resultList.add(result);
-        });
-        patrolCheckResultMapper.addResultList(resultList);
-    }
-
-    // 构建顶级节点
+    /**
+     * 构建巡检项目树
+     *
+     * @param list
+     * @param parentId
+     * @return
+     */
     public List<PatrolCheckResultDTO> getTree(List<PatrolCheckResultDTO> list, String parentId) {
         // 树的根节点
         List<PatrolCheckResultDTO> tree = Optional.ofNullable(list).orElseGet(Collections::emptyList)
@@ -161,6 +134,84 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
         }
         return tree;
     }
+
+    @Override
+    public  List<PatrolCheckResult> copyItems(PatrolTaskDevice patrolTaskDevice) {
+        String taskStandardId = patrolTaskDevice.getTaskStandardId();
+        String taskDeviceId = patrolTaskDevice.getTaskStandardId();
+        if (StrUtil.isEmpty(taskStandardId)) {
+            throw new AiurtBootException("任务标准关联表ID为空！");
+        }
+        if (StrUtil.isEmpty(taskDeviceId)) {
+            throw new AiurtBootException("记录主键ID为空！");
+        }
+        //根据任务设备的任务ID获取任务标准表主键和巡检标准表ID
+        PatrolTaskStandard taskStandard = patrolTaskStandardMapper.selectById(taskStandardId);
+        String standardId = taskStandard.getStandardId();
+        //根据巡检标准表ID获取巡检标准项目列表并添加到结果表中
+        List<PatrolStandardItems> patrolStandardItems = patrolStandardItemsMapper.selectList(standardId);
+        List<PatrolCheckResult> addResultList = new ArrayList<>();
+        Optional.ofNullable(patrolStandardItems).orElseGet(Collections::emptyList).stream().forEach(l -> {
+            PatrolCheckResult result = new PatrolCheckResult();
+            result.setTaskStandardId(taskStandard.getId());   // 任务标准关联表ID
+            result.setTaskDeviceId(taskDeviceId); // 任务设备关联表ID
+            result.setCode(l.getCode());    // 巡检项编号
+            result.setContent(l.getContent());  // 巡检项内容
+            result.setQualityStandard(l.getQualityStandard());  // 质量标准
+            result.setHierarchyType(l.getHierarchyType());  // 层级类型
+            result.setOldId(l.getId()); // 原标准项目表ID
+            result.setParentId(l.getParentId()); //父级ID
+            result.setOrder(l.getOrder());  // 内容排序
+            result.setCheck(l.getCheck());  // 是否为巡检项目
+            result.setInputType(l.getInputType());  // 填写数据类型
+            result.setDictCode(l.getDictCode());    // 关联的数据字典
+            result.setRegular(l.getRegular());  // 数据校验表达式
+            addResultList.add(result);
+        });
+        // 批量添加巡检项目
+        patrolCheckResultMapper.addResultList(addResultList);
+
+        QueryWrapper<PatrolCheckResult> resultWrapper = new QueryWrapper<>();
+        resultWrapper.lambda().eq(PatrolCheckResult::getTaskDeviceId, taskDeviceId)
+                .eq(PatrolCheckResult::getTaskStandardId, taskStandard.getId());
+
+        List<PatrolCheckResult> resultList = buildResultTree(Optional.ofNullable(patrolCheckResultMapper.selectList(resultWrapper))
+                .orElseGet(Collections::emptyList));
+        return resultList;
+    }
+
+    /**
+     * 构建检查结果项目树
+     *
+     * @param trees
+     * @return
+     */
+    public static List<PatrolCheckResult> buildResultTree(List<PatrolCheckResult> trees) {
+        //获取parentId = 0的根节点
+        List<PatrolCheckResult> list = trees.stream().filter(item -> "0" .equals(item.getParentId()) ).collect(Collectors.toList());
+        //根据parentId进行分组
+        Map<String, List<PatrolCheckResult>> map = trees.stream().collect(Collectors.groupingBy(PatrolCheckResult::getParentId));
+        recursionTree(list, map);
+        return list;
+    }
+
+    /**
+     * 递归遍历节点
+     *
+     * @param list
+     * @param map
+     */
+    public static void recursionTree(List<PatrolCheckResult> list, Map<String, List<PatrolCheckResult>> map) {
+        for (PatrolCheckResult treeSelect : list) {
+            List<PatrolCheckResult> childList = map.get(treeSelect.getOldId());
+            treeSelect.setChild(childList);
+            if (null != childList && 0 < childList.size()) {
+                recursionTree(childList, map);
+            }
+        }
+    }
+
+
     @Override
     public void getPatrolTaskCheck(PatrolTaskDeviceDTO patrolTaskDeviceDTO) {
         //更新任务状态（将未开始改为执行中）、添加检查人id，传任务主键id,巡检工单主键，
@@ -169,26 +220,26 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
         LambdaUpdateWrapper<PatrolTaskDevice> updateWrapper = new LambdaUpdateWrapper<>();
         updateWrapper.set(PatrolTaskDevice::getStatus, 1)
                 .set(PatrolTaskDevice::getUserId, sysUser.getId())
-                .eq(PatrolTaskDevice::getTaskId, patrolTaskDeviceDTO.getTaskId()).eq(PatrolTaskDevice::getId,patrolPDevice.getId());
+                .eq(PatrolTaskDevice::getTaskId, patrolTaskDeviceDTO.getTaskId()).eq(PatrolTaskDevice::getId, patrolPDevice.getId());
         patrolTaskDeviceMapper.update(patrolPDevice, updateWrapper);
         //1.提前写入检查结果,插入巡检任务检查结果表
         //1.1查询这个任务中，这个单号，获取巡检任务标准关联表Id
         LambdaQueryWrapper<PatrolTaskDevice> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(PatrolTaskDevice::getTaskId,patrolTaskDeviceDTO.getTaskId()).eq(PatrolTaskDevice::getId,patrolTaskDeviceDTO.getId());
+        queryWrapper.eq(PatrolTaskDevice::getTaskId, patrolTaskDeviceDTO.getTaskId()).eq(PatrolTaskDevice::getId, patrolTaskDeviceDTO.getId());
         PatrolTaskDevice patrolTaskDevice = patrolTaskDeviceMapper.selectOne(queryWrapper);
         //1.2根据巡检任务标准关联表ID，获取巡检标准表Id
         LambdaQueryWrapper<PatrolTaskStandard> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(PatrolTaskStandard::getId,patrolTaskDevice.getTaskStandardId());
+        wrapper.eq(PatrolTaskStandard::getId, patrolTaskDevice.getTaskStandardId());
         PatrolTaskStandard patrolTaskStandard = patrolTaskStandardMapper.selectOne(wrapper);
         //1.3根据标准表Id,获取这边标准表的所以的检查项
         LambdaQueryWrapper<PatrolStandardItems> itemsLambdaQueryWrapper = new LambdaQueryWrapper<>();
-        itemsLambdaQueryWrapper.eq(PatrolStandardItems::getStandardId,patrolTaskStandard.getStandardId());
+        itemsLambdaQueryWrapper.eq(PatrolStandardItems::getStandardId, patrolTaskStandard.getStandardId());
         List<PatrolStandardItems> standardItemsList = patrolStandardItemsMapper.selectList(itemsLambdaQueryWrapper);
-        standardItemsList.stream().forEach(e->{
+        standardItemsList.stream().forEach(e -> {
             PatrolCheckResult patrolCheckResult = new PatrolCheckResult();
             patrolCheckResult.setTaskDeviceId(patrolTaskDevice.getId());
             patrolCheckResult.setTaskStandardId(patrolTaskDevice.getTaskStandardId());
-           // patrolCheckResult.setId()
+            // patrolCheckResult.setId()
         });
 
     }

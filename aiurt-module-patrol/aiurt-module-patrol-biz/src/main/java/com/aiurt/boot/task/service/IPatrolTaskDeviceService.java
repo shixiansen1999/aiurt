@@ -1,12 +1,14 @@
 package com.aiurt.boot.task.service;
 
 import com.aiurt.boot.task.dto.PatrolTaskDeviceDTO;
+import com.aiurt.boot.task.entity.PatrolCheckResult;
 import com.aiurt.boot.task.entity.PatrolTaskDevice;
 import com.aiurt.boot.task.param.PatrolTaskDeviceParam;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -42,10 +44,17 @@ public interface IPatrolTaskDeviceService extends IService<PatrolTaskDevice> {
      */
     Map<String, Object> selectBillInfoByNumber(String patrolNumber);
 
-    void startCheck(PatrolTaskDevice patrolTaskDevice);
+    /**
+     * 开始巡检时复制巡检标准项目到检查结果表中
+     *
+     * @param patrolTaskDevice
+     * @return
+     */
+    List<PatrolCheckResult> copyItems(PatrolTaskDevice patrolTaskDevice);
 
     /**
      * app巡检任务执行中-检查
+     *
      * @param patrolTaskDeviceDTO
      */
     void getPatrolTaskCheck(PatrolTaskDeviceDTO patrolTaskDeviceDTO);
