@@ -184,7 +184,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
             String ptuName = patrolUserName.stream().collect(Collectors.joining(","));
             e.setSysName(sysName);
             e.setMajorName(majorName);
-            e.setOrgCode(orgCodes);
+            e.setOrgCodeList(orgCodes);
             e.setOrganizationName(orgName);
             e.setStationName(stName);
             e.setPatrolUserName(ptuName);
@@ -210,7 +210,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
             String ptuName = patrolUserName.stream().collect(Collectors.joining(","));
             e.setSysName(sysName);
             e.setMajorName(majorName);
-            e.setOrgCode(orgCodes);
+            e.setOrgCodeList(orgCodes);
             e.setOrganizationName(orgName);
             e.setStationName(stName);
             e.setPatrolUserName(ptuName);
@@ -281,7 +281,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
     @Override
     public List<PatrolTaskUserDTO> getPatrolTaskAppointSelect(PatrolTaskDTO patrolTaskDTO) {
         //查询这个部门的信息人员,传组织机构ids
-        List<String> codes = patrolTaskDTO.getOrgCode();
+        List<String> codes = patrolTaskDTO.getOrgCodeList();
         List<PatrolTaskUserDTO> arrayList = new ArrayList<>();
         for (String code : codes) {
             PatrolTaskUserDTO userDTO = new PatrolTaskUserDTO();
@@ -351,7 +351,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
 
     @Override
     public Page<PatrolTaskDTO> getPatrolTaskManualList(Page<PatrolTaskDTO> pageList, PatrolTaskDTO patrolTaskDTO) {
-
-        return null;
+        List<PatrolTaskDTO> taskDTOList = patrolTaskMapper.getPatrolTaskManualList(pageList,patrolTaskDTO);
+        return pageList.setRecords(taskDTOList);
     }
 }

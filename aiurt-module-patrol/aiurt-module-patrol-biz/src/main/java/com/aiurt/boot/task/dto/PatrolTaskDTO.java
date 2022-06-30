@@ -41,15 +41,18 @@ public class PatrolTaskDTO
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     @ApiModelProperty(value = "巡检的日期")
     private java.util.Date patrolDate;
-    @Excel(name = "组织机构编号", width = 15)
-    @ApiModelProperty(value = "组织机构编号")
-    private List<String> orgCode;
+    @Excel(name = "组织机构编码", width = 15)
+    @ApiModelProperty(value = "组织机构编码")
+    private String orgCode;
+    @Excel(name = "组织机构code", width = 15)
+    @ApiModelProperty(value = "组织机构code")
+    private List<String> orgCodeList;
     @Excel(name = "组织机构名称", width = 15)
     @ApiModelProperty(value = "组织机构名称")
     private String organizationName;
-    @Excel(name = "站点id", width = 15)
-    @ApiModelProperty(value = "站点id")
-    private String stationId;
+    @Excel(name = "站点code", width = 15)
+    @ApiModelProperty(value = "站点code")
+    private String stationCode;
     @Excel(name = "站点名称", width = 15)
     @ApiModelProperty(value = "站点名称")
     private String stationName;

@@ -105,4 +105,19 @@
             and pt.id = #{patrolTaskParam.id}
         </if>
     </select>
+    <select id="getPatrolTaskManualList" resultType="com.aiurt.boot.task.dto.PatrolTaskDTO">
+    	SELECT
+		t1.*
+	    FROM
+		patrol_task t1
+		where t1.source = 3
+		<if test="patrolTaskDTO.stationCode!=null and patrolTaskDTO.stationCode!=''">
+		 and t1.code in(select t3.task_code from patrol_task_station t3 where t3.station_code = #{patrolTaskDTO.stationCode})
+        </if>
+        <if test="patrolTaskDTO.orgCode != null and patrolTaskDTO.orgCode!=''">
+        and t1.code in (SELECT  t2.task_code  FROM patrol_task_organization t2 where  t2.org_code = #{patrolTaskDTO.orgCode})
+        </if>
+
+
+    </select>
 </mapper>

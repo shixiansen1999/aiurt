@@ -105,4 +105,13 @@ public interface PatrolTaskMapper extends BaseMapper<PatrolTask> {
      * @return
      */
     PatrolTaskParam selectBasicInfo(@Param("patrolTaskParam") PatrolTaskParam patrolTaskParam);
+
+    /**
+     *  PC-手工下方列表
+     * @param pageList
+     * @param patrolTaskDTO
+     * @return
+     */
+    List<PatrolTaskDTO> getPatrolTaskManualList(@Param("pageList")Page<PatrolTaskDTO> pageList,@Param("patrolTaskDTO") PatrolTaskDTO patrolTaskDTO);
+
 }
