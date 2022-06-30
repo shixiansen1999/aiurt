@@ -8,14 +8,8 @@ import com.aiurt.boot.standard.entity.PatrolStandardItems;
 import com.aiurt.boot.standard.mapper.PatrolStandardItemsMapper;
 import com.aiurt.boot.task.dto.PatrolCheckResultDTO;
 import com.aiurt.boot.task.dto.PatrolTaskDeviceDTO;
-import com.aiurt.boot.task.entity.PatrolAccompany;
-import com.aiurt.boot.task.entity.PatrolCheckResult;
-import com.aiurt.boot.task.entity.PatrolTaskDevice;
-import com.aiurt.boot.task.entity.PatrolTaskStandard;
-import com.aiurt.boot.task.mapper.PatrolAccompanyMapper;
-import com.aiurt.boot.task.mapper.PatrolCheckResultMapper;
-import com.aiurt.boot.task.mapper.PatrolTaskDeviceMapper;
-import com.aiurt.boot.task.mapper.PatrolTaskStandardMapper;
+import com.aiurt.boot.task.entity.*;
+import com.aiurt.boot.task.mapper.*;
 import com.aiurt.boot.task.param.PatrolTaskDeviceParam;
 import com.aiurt.boot.task.service.IPatrolTaskDeviceService;
 import com.aiurt.common.exception.AiurtBootException;
@@ -52,6 +46,8 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
     private PatrolTaskStandardMapper patrolTaskStandardMapper;
     @Autowired
     private PatrolStandardItemsMapper patrolStandardItemsMapper;
+    @Autowired
+    private PatrolAccessoryMapper patrolAccessoryMapper;
 
 
     @Override
@@ -89,6 +85,13 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
 
         // 构建巡检项目树
         List<PatrolCheckResultDTO> checkResultList = patrolCheckResultMapper.getListByTaskDeviceId(taskDeviceParam.getId());
+        // 放入项目的附件信息
+        Optional.ofNullable(checkResultList).orElseGet(Collections::emptyList).stream().forEach(l -> {
+            QueryWrapper<PatrolAccessory> wrapper = new QueryWrapper<>();
+            wrapper.lambda().eq(PatrolAccessory::getCheckResultId, l.getId());
+            PatrolAccessory accessory = patrolAccessoryMapper.selectOne(wrapper);
+            l.setAccessoryInfo(accessory);
+        });
         List<PatrolCheckResultDTO> tree = getTree(checkResultList, "0");
         Map<String, Object> map = new HashMap<>();
         map.put("taskDeviceParam", taskDeviceParam);
@@ -136,9 +139,9 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
     }
 
     @Override
-    public  List<PatrolCheckResult> copyItems(PatrolTaskDevice patrolTaskDevice) {
+    public List<PatrolCheckResult> copyItems(PatrolTaskDevice patrolTaskDevice) {
         String taskStandardId = patrolTaskDevice.getTaskStandardId();
-        String taskDeviceId = patrolTaskDevice.getTaskStandardId();
+        String taskDeviceId = patrolTaskDevice.getId();
         if (StrUtil.isEmpty(taskStandardId)) {
             throw new AiurtBootException("任务标准关联表ID为空！");
         }
@@ -188,7 +191,7 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
      */
     public static List<PatrolCheckResult> buildResultTree(List<PatrolCheckResult> trees) {
         //获取parentId = 0的根节点
-        List<PatrolCheckResult> list = trees.stream().filter(item -> "0" .equals(item.getParentId()) ).collect(Collectors.toList());
+        List<PatrolCheckResult> list = trees.stream().filter(item -> "0".equals(item.getParentId())).collect(Collectors.toList());
         //根据parentId进行分组
         Map<String, List<PatrolCheckResult>> map = trees.stream().collect(Collectors.groupingBy(PatrolCheckResult::getParentId));
         recursionTree(list, map);
