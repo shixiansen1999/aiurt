@@ -3,6 +3,7 @@ package com.aiurt.boot.task.controller;
 import com.aiurt.boot.manager.dto.EquipmentOverhaulDTO;
 import com.aiurt.boot.manager.dto.ExamineDTO;
 import com.aiurt.boot.manager.dto.MajorDTO;
+import com.aiurt.boot.plan.entity.RepairPool;
 import com.aiurt.boot.task.dto.CheckListDTO;
 import com.aiurt.boot.task.entity.RepairTask;
 import com.aiurt.boot.task.dto.RepairTaskDTO;
@@ -15,6 +16,8 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 import lombok.extern.slf4j.Slf4j;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.query.QueryGenerator;
@@ -73,7 +76,10 @@ public class RepairTaskController extends BaseController<RepairTask, IRepairTask
 	 @AutoLog(value = "检修任务-检修任务列表查询")
 	 @ApiOperation(value="检修任务-检修任务列表查询", notes="检修任务-检修任务列表查询")
 	 @GetMapping(value = "/repairTaskPageList")
-	 public Result<?> repairTaskPageList( RepairTask condition,
+	 @ApiResponses({
+			 @ApiResponse(code = 200, message = "OK", response = RepairTask.class)
+	 })
+	 public Result<Page<RepairTask>> repairTaskPageList( RepairTask condition,
 											@RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
 											@RequestParam(name="pageSize", defaultValue="10") Integer pageSize
 	 ){
@@ -92,7 +98,10 @@ public class RepairTaskController extends BaseController<RepairTask, IRepairTask
 	 @AutoLog(value = "检修任务-检修任务清单查询")
 	 @ApiOperation(value="检修任务-检修任务清单查询", notes="检修任务-检修任务清单查询")
 	 @GetMapping(value = "/repairSelectTasklet")
-	 public Result<?> repairSelectTasklet( RepairTaskDTO condition,
+	 @ApiResponses({
+			 @ApiResponse(code = 200, message = "OK", response = RepairTaskDTO.class)
+	 })
+	 public Result<Page<RepairTaskDTO>> repairSelectTasklet( RepairTaskDTO condition,
 											@RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
 											@RequestParam(name="pageSize", defaultValue="10") Integer pageSize
 	 ){
@@ -109,7 +118,10 @@ public class RepairTaskController extends BaseController<RepairTask, IRepairTask
 	@AutoLog(value = "检修任务-检修结果附件查询")
 	@ApiOperation(value="检修任务-检修结果附件查询", notes="检修任务-检修结果附件查询")
 	@GetMapping(value = "/selectEnclosure")
-	public Result<?> selectEnclosure(@RequestParam(name="resultId",required=true) String resultId
+	@ApiResponses({
+			@ApiResponse(code = 200, message = "OK", response = RepairTaskEnclosure.class)
+	})
+	public Result<List<RepairTaskEnclosure>> selectEnclosure(@RequestParam(name="resultId",required=true) String resultId
 	){
 		List<RepairTaskEnclosure> repairTaskEnclosures = repairTaskService.selectEnclosure(resultId);
 		return Result.OK(repairTaskEnclosures);
@@ -123,7 +135,10 @@ public class RepairTaskController extends BaseController<RepairTask, IRepairTask
 	 @AutoLog(value = "检修任务-专业和专业子系统下拉列表")
 	 @ApiOperation(value="检修任务-专业和专业子系统下拉列表", notes="检修任务-专业和专业子系统下拉列表")
 	 @GetMapping(value = "/selectMajorCodeList")
-	 public Result<?> selectMajorCodeList(@RequestParam(name="taskId",required=true) String taskId
+	 @ApiResponses({
+			 @ApiResponse(code = 200, message = "OK", response = MajorDTO.class)
+	 })
+	 public Result<List<MajorDTO>> selectMajorCodeList(@RequestParam(name="taskId",required=true) String taskId
 	 ){
 		 List<MajorDTO> majorDTOList = repairTaskService.selectMajorCodeList(taskId);
 		 return Result.OK(majorDTOList);
@@ -137,7 +152,10 @@ public class RepairTaskController extends BaseController<RepairTask, IRepairTask
 	@AutoLog(value = "检修任务-设备类型和检修标准下拉列表")
 	@ApiOperation(value="检修任务-设备类型和检修标准下拉列表", notes="检修任务-设备类型和检修标准下拉列表")
 	@GetMapping(value = "/selectEquipmentOverhaulList")
-	public Result<?> selectEquipmentOverhaulList(@RequestParam(name="taskId",required=true) String taskId
+	@ApiResponses({
+			@ApiResponse(code = 200, message = "OK", response = EquipmentOverhaulDTO.class)
+	})
+	public Result<EquipmentOverhaulDTO> selectEquipmentOverhaulList(@RequestParam(name="taskId",required=true) String taskId
 	){
 		EquipmentOverhaulDTO equipmentOverhaulDTO = repairTaskService.selectEquipmentOverhaulList(taskId);
 		return Result.OK(equipmentOverhaulDTO);
@@ -151,7 +169,10 @@ public class RepairTaskController extends BaseController<RepairTask, IRepairTask
 	@AutoLog(value = "检修任务-检修单详情")
 	@ApiOperation(value="检修任务-检修单详情", notes="检修任务-检修单详情")
 	@GetMapping(value = "/selectCheckList")
-	public Result<?> selectCheckList(@RequestParam(name="deviceId",required=true) String deviceId,
+	@ApiResponses({
+			@ApiResponse(code = 200, message = "OK", response = CheckListDTO.class)
+	})
+	public Result<CheckListDTO> selectCheckList(@RequestParam(name="deviceId",required=true) String deviceId,
 									 @RequestParam(name="overhaulCode",required=true) String overhaulCode
 	){
 		CheckListDTO checkListDTO = repairTaskService.selectCheckList(deviceId,overhaulCode);

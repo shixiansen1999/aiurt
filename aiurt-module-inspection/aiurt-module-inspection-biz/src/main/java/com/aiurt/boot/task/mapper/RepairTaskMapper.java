@@ -96,7 +96,7 @@ public interface RepairTaskMapper extends BaseMapper<RepairTask> {
 
 
     /**
-     * 查询编码信息
+     * 查询附件信息
      * @param resultId
      * @return
      */

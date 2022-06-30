@@ -191,7 +191,7 @@ public class RepairPoolController extends BaseController<RepairPool, IRepairPool
     @ApiResponses({
             @ApiResponse(code = 200, message = "OK", response = LoginUser.class)
     })
-    public Result queryUserList(@RequestParam @ApiParam(name = "code", required = true, value = "检修计划code") String code) {
+    public Result<List<LoginUser>> queryUserList(@RequestParam @ApiParam(name = "code", required = true, value = "检修计划code") String code) {
         List<LoginUser> loginUserList = repairPoolService.queryUserList(code);
         return Result.OK(loginUserList);
     }
@@ -208,7 +208,7 @@ public class RepairPoolController extends BaseController<RepairPool, IRepairPool
     @ApiResponses({
             @ApiResponse(code = 200, message = "OK", response = PlanCodeDTO.class)
     })
-    public Result queryPlanCodeList(@RequestParam @ApiParam(name = "id", required = true, value = "检修计划id") String id) {
+    public Result<List<PlanCodeDTO>> queryPlanCodeList(@RequestParam @ApiParam(name = "id", required = true, value = "检修计划id") String id) {
         List<PlanCodeDTO> planCodeDTOList = new ArrayList<>();
         return Result.OK(planCodeDTOList);
     }

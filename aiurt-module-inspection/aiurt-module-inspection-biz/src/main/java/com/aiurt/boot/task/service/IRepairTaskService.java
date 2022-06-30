@@ -74,7 +74,7 @@ public interface IRepairTaskService extends IService<RepairTask> {
     void acceptance(ExamineDTO examineDTO);
 
     /**
-     * 查询编码信息
+     * 查询附件息
      * @param resultId
      * @return
      */

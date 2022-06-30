@@ -397,44 +397,50 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
         LambdaQueryWrapper<RepairTaskDeviceRel> objectLambdaQueryWrapper = new LambdaQueryWrapper<>();
         List<RepairTaskDeviceRel> repairTaskDevice = repairTaskDeviceRelMapper.selectList(objectLambdaQueryWrapper.eq(RepairTaskDeviceRel::getRepairTaskId,examineDTO.getId()));
         //任务清单主键id集合
-        List<String> collect1 = repairTaskDevice.stream().map(RepairTaskDeviceRel::getId).collect(Collectors.toList());
+        if (CollectionUtil.isNotEmpty(repairTaskDevice)){
+            List<String> collect1 = repairTaskDevice.stream().map(RepairTaskDeviceRel::getId).collect(Collectors.toList());
+            //根据设备清单查询结果
+            LambdaQueryWrapper<RepairTaskResult> resultLambdaQueryWrapper = new LambdaQueryWrapper<>();
+            List<RepairTaskResult> repairTaskResults = repairTaskResultMapper.selectList(resultLambdaQueryWrapper.in(RepairTaskResult::getTaskDeviceRelId, collect1));
+            //任务结果主键id集合
+            List<String> collect2 = repairTaskResults.stream().map(RepairTaskResult::getId).collect(Collectors.toList());
 
-        //根据设备清单查询结果
-        LambdaQueryWrapper<RepairTaskResult> resultLambdaQueryWrapper = new LambdaQueryWrapper<>();
-        List<RepairTaskResult> repairTaskResults = repairTaskResultMapper.selectList(resultLambdaQueryWrapper.in(RepairTaskResult::getTaskDeviceRelId, collect1));
-        //任务结果主键id集合
-        List<String> collect2 = repairTaskResults.stream().map(RepairTaskResult::getId).collect(Collectors.toList());
-
-        //根据设备编号查询人员
-        LambdaQueryWrapper<RepairTaskUser> repairTaskUserLambdaQueryWrapper = new LambdaQueryWrapper<>();
-        List<RepairTaskUser>  repairTaskUsers = repairTaskUserMapper.selectList(repairTaskUserLambdaQueryWrapper.eq(RepairTaskUser::getRepairTaskCode,repairTask.getCode()));
-        //人员主键id集合
-        List<String> collect3 = repairTaskUsers.stream().map(RepairTaskUser::getId).collect(Collectors.toList());
-
+            repairTaskDeviceRelMapper.deleteBatchIds(collect1);
+            repairTaskResultMapper.deleteBatchIds(collect2);
+        }
         //根据任务id查询标准
         LambdaQueryWrapper<RepairTaskStandardRel> repairTaskStandardRelLambdaQueryWrapper = new LambdaQueryWrapper<>();
         List<RepairTaskStandardRel> repairTaskStandard = repairTaskStandardRelMapper.selectList(repairTaskStandardRelLambdaQueryWrapper.eq(RepairTaskStandardRel::getRepairTaskId, examineDTO.getId()));
-        //标准主键id集合
-        List<String> collect4 = repairTaskStandard.stream().map(RepairTaskStandardRel::getId).collect(Collectors.toList());
+        if (CollectionUtil.isNotEmpty(repairTaskStandard)){
+            //标准主键id集合
+            List<String> collect4 = repairTaskStandard.stream().map(RepairTaskStandardRel::getId).collect(Collectors.toList());
+            repairTaskStandardRelMapper.deleteBatchIds(collect4);
+        }
 
-        //根据设备编号查询站所
-        LambdaQueryWrapper<RepairTaskStationRel> repairTaskStationRelLambdaQueryWrapper = new LambdaQueryWrapper<>();
-        List<RepairTaskStationRel> repairTaskStation = repairTaskStationRelMapper.selectList(repairTaskStationRelLambdaQueryWrapper.eq(RepairTaskStationRel::getRepairTaskCode, repairTask.getCode()));
-        //站所主键id集合
-        List<String> collect5 = repairTaskStation.stream().map(RepairTaskStationRel::getId).collect(Collectors.toList());
+        if (ObjectUtil.isNotNull(repairTask)){
+            //根据设备编号查询人员
+            LambdaQueryWrapper<RepairTaskUser> repairTaskUserLambdaQueryWrapper = new LambdaQueryWrapper<>();
+            List<RepairTaskUser>  repairTaskUsers = repairTaskUserMapper.selectList(repairTaskUserLambdaQueryWrapper.eq(RepairTaskUser::getRepairTaskCode,repairTask.getCode()));
+            //人员主键id集合
+            List<String> collect3 = repairTaskUsers.stream().map(RepairTaskUser::getId).collect(Collectors.toList());
 
-        //根据设备编号查询组织机构
-        LambdaQueryWrapper<RepairTaskOrgRel> repairTaskOrgRelLambdaQueryWrapper = new LambdaQueryWrapper<>();
-        List<RepairTaskOrgRel> repairTaskOrg = repairTaskOrgRelMapper.selectList(repairTaskOrgRelLambdaQueryWrapper.eq(RepairTaskOrgRel::getRepairTaskCode, repairTask.getCode()));
-        //组织机构主键id集合
-        List<String> collect6 = repairTaskOrg.stream().map(RepairTaskOrgRel::getId).collect(Collectors.toList());
+            //根据设备编号查询站所
+            LambdaQueryWrapper<RepairTaskStationRel> repairTaskStationRelLambdaQueryWrapper = new LambdaQueryWrapper<>();
+            List<RepairTaskStationRel> repairTaskStation = repairTaskStationRelMapper.selectList(repairTaskStationRelLambdaQueryWrapper.eq(RepairTaskStationRel::getRepairTaskCode, repairTask.getCode()));
+            //站所主键id集合
+            List<String> collect5 = repairTaskStation.stream().map(RepairTaskStationRel::getId).collect(Collectors.toList());
 
-        repairTaskDeviceRelMapper.deleteBatchIds(collect1);
-        repairTaskResultMapper.deleteBatchIds(collect2);
-        repairTaskUserMapper.deleteBatchIds(collect3);
-        repairTaskStandardRelMapper.deleteBatchIds(collect4);
-        repairTaskStationRelMapper.deleteBatchIds(collect5);
-        repairTaskOrgRelMapper.deleteBatchIds(collect6);
+            //根据设备编号查询组织机构
+            LambdaQueryWrapper<RepairTaskOrgRel> repairTaskOrgRelLambdaQueryWrapper = new LambdaQueryWrapper<>();
+            List<RepairTaskOrgRel> repairTaskOrg = repairTaskOrgRelMapper.selectList(repairTaskOrgRelLambdaQueryWrapper.eq(RepairTaskOrgRel::getRepairTaskCode, repairTask.getCode()));
+            //组织机构主键id集合
+            List<String> collect6 = repairTaskOrg.stream().map(RepairTaskOrgRel::getId).collect(Collectors.toList());
+
+            repairTaskUserMapper.deleteBatchIds(collect3);
+            repairTaskStationRelMapper.deleteBatchIds(collect5);
+            repairTaskOrgRelMapper.deleteBatchIds(collect6);
+        }
+
         repairTaskMapper.deleteById(examineDTO.getId());
 
         RepairPool repairPool = new RepairPool();
