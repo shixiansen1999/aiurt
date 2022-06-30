@@ -139,7 +139,7 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
     }
 
     @Override
-    public List<PatrolCheckResult> copyItems(PatrolTaskDevice patrolTaskDevice) {
+    public int copyItems(PatrolTaskDevice patrolTaskDevice) {
         String taskStandardId = patrolTaskDevice.getTaskStandardId();
         String taskDeviceId = patrolTaskDevice.getId();
         if (StrUtil.isEmpty(taskStandardId)) {
@@ -172,14 +172,14 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
             addResultList.add(result);
         });
         // 批量添加巡检项目
-        patrolCheckResultMapper.addResultList(addResultList);
+        int resultList = patrolCheckResultMapper.addResultList(addResultList);
 
-        QueryWrapper<PatrolCheckResult> resultWrapper = new QueryWrapper<>();
-        resultWrapper.lambda().eq(PatrolCheckResult::getTaskDeviceId, taskDeviceId)
-                .eq(PatrolCheckResult::getTaskStandardId, taskStandard.getId());
-
-        List<PatrolCheckResult> resultList = buildResultTree(Optional.ofNullable(patrolCheckResultMapper.selectList(resultWrapper))
-                .orElseGet(Collections::emptyList));
+//        QueryWrapper<PatrolCheckResultDTO> resultWrapper = new QueryWrapper<>();
+//        resultWrapper.lambda().eq(PatrolCheckResult::getTaskDeviceId, taskDeviceId)
+//                .eq(PatrolCheckResult::getTaskStandardId, taskStandard.getId());
+//
+//        List<PatrolCheckResult> resultList = buildResultTree(Optional.ofNullable(patrolCheckResultMapper.selectList(resultWrapper))
+//                .orElseGet(Collections::emptyList));
         return resultList;
     }
 
@@ -189,11 +189,11 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
      * @param trees
      * @return
      */
-    public static List<PatrolCheckResult> buildResultTree(List<PatrolCheckResult> trees) {
+    public static List<PatrolCheckResultDTO> buildResultTree(List<PatrolCheckResultDTO> trees) {
         //获取parentId = 0的根节点
-        List<PatrolCheckResult> list = trees.stream().filter(item -> "0".equals(item.getParentId())).collect(Collectors.toList());
+        List<PatrolCheckResultDTO> list = trees.stream().filter(item -> "0".equals(item.getParentId())).collect(Collectors.toList());
         //根据parentId进行分组
-        Map<String, List<PatrolCheckResult>> map = trees.stream().collect(Collectors.groupingBy(PatrolCheckResult::getParentId));
+        Map<String, List<PatrolCheckResultDTO>> map = trees.stream().collect(Collectors.groupingBy(PatrolCheckResultDTO::getParentId));
         recursionTree(list, map);
         return list;
     }
@@ -204,10 +204,10 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
      * @param list
      * @param map
      */
-    public static void recursionTree(List<PatrolCheckResult> list, Map<String, List<PatrolCheckResult>> map) {
-        for (PatrolCheckResult treeSelect : list) {
-            List<PatrolCheckResult> childList = map.get(treeSelect.getOldId());
-            treeSelect.setChild(childList);
+    public static void recursionTree(List<PatrolCheckResultDTO> list, Map<String, List<PatrolCheckResultDTO>> map) {
+        for (PatrolCheckResultDTO treeSelect : list) {
+            List<PatrolCheckResultDTO> childList = map.get(treeSelect.getOldId());
+            treeSelect.setChildren(childList);
             if (null != childList && 0 < childList.size()) {
                 recursionTree(childList, map);
             }

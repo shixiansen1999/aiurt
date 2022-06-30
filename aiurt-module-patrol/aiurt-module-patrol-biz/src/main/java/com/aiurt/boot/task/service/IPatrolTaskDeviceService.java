@@ -50,7 +50,7 @@ public interface IPatrolTaskDeviceService extends IService<PatrolTaskDevice> {
      * @param patrolTaskDevice
      * @return
      */
-    List<PatrolCheckResult> copyItems(PatrolTaskDevice patrolTaskDevice);
+    int copyItems(PatrolTaskDevice patrolTaskDevice);
 
     /**
      * app巡检任务执行中-检查
