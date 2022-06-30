@@ -5,6 +5,7 @@ import java.io.UnsupportedEncodingException;
 import java.util.Date;
 import java.math.BigDecimal;
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
@@ -49,22 +50,34 @@ public class DeviceChangeSparePart implements Serializable {
     private Integer repairRecordId;
 
 	/**设备id*/
-    @ApiModelProperty(value = "设备编码")
-    private Integer deviceCode;
+    @ApiModelProperty(value = "设备编码", required = true)
+    private String deviceCode;
+
+    @ApiModelProperty(value = "设备名称")
+    @TableField(exist = false)
+    private String deviceName;
 
 	/**原备件编号*/
-    @ApiModelProperty(value = "原备件编号")
+    @ApiModelProperty(value = "原组件编号")
     private String oldSparePartCode;
 
+    @ApiModelProperty(value = "原组件名称")
+    @TableField(exist = false)
+    private String oldSparePartName;
+
 	/**原备件数量*/
-    @ApiModelProperty(value = "原备件数量")
+    @ApiModelProperty(value = "原组件数量")
     private Integer oldSparePartNum;
 
 	/**原备件所在班组*/
+    @ApiModelProperty(value = "原备件所在班组编码")
     private String oldOrgCode;
 
+    @ApiModelProperty()
+    private String oldOrgName;
+
 	/**新备件编号*/
-    @ApiModelProperty(value = "新备件编号")
+    @ApiModelProperty(value = "新备件编号", required = true)
     private String newSparePartCode;
 
 	/**新备件数量*/

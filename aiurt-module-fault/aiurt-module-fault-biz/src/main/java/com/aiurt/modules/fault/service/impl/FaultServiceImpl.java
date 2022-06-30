@@ -18,6 +18,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.LoginUser;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -51,6 +52,9 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
 
     @Autowired
     private ISysBaseAPI sysBaseAPI;
+
+    @Autowired
+    private IDeviceChangeSparePartService sparePartService;
 
     /**
      * 故障上报
@@ -170,9 +174,17 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         LoginUser loginUser = checkLogin();
 
         //todo 设备处理
+        List<FaultDevice> faultDeviceList = fault.getFaultDeviceList();
+        if (CollectionUtil.isNotEmpty(faultDeviceList)) {
+            // 删除旧设备
+            LambdaQueryWrapper<FaultDevice>  wrapper = new LambdaQueryWrapper<>();
+            wrapper.eq(FaultDevice::getFaultCode, fault.getCode());
+            faultDeviceService.remove(wrapper);
+        }
 
         // update status
         fault.setStatus(FaultStatusEnum.NEW_FAULT.getStatus());
+
         updateById(fault);
 
         // 记录日志
@@ -465,7 +477,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
 
     /**
      * 取消挂起
-     * @param code
+     * @param code 故障编码
      */
     @Override
     public void cancelHangup(String code) {
@@ -486,8 +498,8 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
     }
 
     /**
-     *
-     * @param faultCode
+     * 查询故障记录详情
+     * @param faultCode 故障编码
      * @return
      */
     @Override
@@ -504,6 +516,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         FaultRepairRecord repairRecord = repairRecordService.getBaseMapper().selectOne(wrapper);
 
         RepairRecordDTO repairRecordDTO = new RepairRecordDTO();
+        BeanUtils.copyProperties(repairRecord, repairRecordDTO);
         // 查询参与人
         LambdaQueryWrapper<FaultRepairParticipants> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(FaultRepairParticipants::getFaultRepairRecordId, repairRecord.getId())
@@ -514,24 +527,21 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         // 用户名处理
         repairRecordDTO.setParticipantsList(participantsList);
 
-        // todo 备件信息
+        List<DeviceChangeSparePart> deviceChangeSparePartList = sparePartService.queryDeviceChangeByFaultCode(faultCode, repairRecord.getId());
+        // 易耗品
+       // deviceChangeSparePartList.stream().filter()
 
         // 维修设备
         List<FaultDevice> faultDeviceList = faultDeviceService.queryByFaultCode(faultCode);
         repairRecordDTO.setDeviceList(faultDeviceList);
 
-        // 附件信息处理
-        String filePath = repairRecord.getFilePath();
-        List<String> filePathList = StrUtil.split(filePath, ',');
-        List<SysAttachment> attachmentList = sysBaseAPI.querySysAttachmentByIdList(filePathList);
-        repairRecordDTO.setSysAttachmentList(attachmentList);
 
         return repairRecordDTO;
     }
 
     /**
      * 填写维修记录
-     * @param repairRecordDTO
+     * @param repairRecordDTO 填写维修记录
      */
     @Override
     public void fillRepairRecord(RepairRecordDTO repairRecordDTO) {
@@ -557,7 +567,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
     /**
      * 根据编码判断故障单是否存在
      *
-     * @param code
+     * @param code 故障编码
      * @return
      */
     private Fault isExist(String code) {
@@ -573,10 +583,10 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
 
     /**
      * 保存日志
-     * @param user
-     * @param context
-     * @param faultCode
-     * @param status
+     * @param user 用户
+     * @param context 日志内容
+     * @param faultCode 故障编码
+     * @param status 状态
      */
     private void saveLog(LoginUser user, String context, String faultCode, int status) {
         OperationProcess operationProcess = OperationProcess.builder()

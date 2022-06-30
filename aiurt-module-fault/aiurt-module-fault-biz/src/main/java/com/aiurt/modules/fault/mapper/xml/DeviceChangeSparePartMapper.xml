@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.aiurt.modules.fault.mapper.DeviceChangeSparePartMapper">
+
+    <select id="queryDeviceChangeByFaultCode" parameterType="string" resultType="com.aiurt.modules.fault.entity.DeviceChangeSparePart">
+        select a.* from device_change_spare_part a where a.repair_record_id = #{param1}
+    </select>
+</mapper>

@@ -4,6 +4,7 @@ import com.aiurt.modules.basic.entity.SysAttachment;
 import com.aiurt.modules.fault.entity.FaultDevice;
 import com.aiurt.modules.fault.entity.FaultRepairParticipants;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -12,7 +13,11 @@ import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
 
+/**
+ * @author fgw
+ */
 @Data
+@ApiModel("维修记录")
 public class RepairRecordDTO implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -71,16 +76,13 @@ public class RepairRecordDTO implements Serializable {
     private String filePath;
 
     /**
-     * 附件详细信息
-     */
-    @ApiModelProperty(value = "附件详细信息")
-    private List<SysAttachment> sysAttachmentList;
-
-    /**
      * 组件更换
      */
     @ApiModelProperty(value = "组件更换")
     private List<DeviceChangeDTO>  deviceChangeList;
+
+    @ApiModelProperty(value = "易耗品")
+    private List<DeviceChangeDTO> consumableList;
 
 
 

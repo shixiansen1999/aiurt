@@ -80,6 +80,10 @@ public class FaultDevice implements Serializable {
     @ApiModelProperty(value = "设备编码")
     private String deviceCode;
 
+	@ApiModelProperty(value = "设备名称")
+    @TableField(exist = false)
+	private String deviceName;
+
 
 	@ApiModelProperty("设备类型名称")
     @TableField(exist = false)
