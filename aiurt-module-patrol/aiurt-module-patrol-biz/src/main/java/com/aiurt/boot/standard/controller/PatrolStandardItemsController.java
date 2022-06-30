@@ -65,8 +65,8 @@ public class PatrolStandardItemsController extends BaseController<PatrolStandard
 	  *
 	  * @return
 	  */
-	 @AutoLog(value = "查询配置巡检项树")
-	 @ApiOperation(value = "查询配置巡检项树", notes = "查询配置巡检项树")
+	 @AutoLog(value = "巡检标准项目表-查询配置巡检项树")
+	 @ApiOperation(value = "巡检标准项目表-查询配置巡检项树", notes = "巡检标准项目表-查询配置巡检项树")
 	 @GetMapping(value = "/rootList")
 	 public Result<List<PatrolStandardItems>> queryPageList( @RequestParam(name="standardId") String id) {
          return Result.OK( patrolStandardItemsService.queryPageList(id));
@@ -77,8 +77,8 @@ public class PatrolStandardItemsController extends BaseController<PatrolStandard
 	 * @param patrolStandardItems
 	 * @return
 	 */
-	@AutoLog(value = "patrol_standard_items-添加")
-	@ApiOperation(value="patrol_standard_items-添加", notes="patrol_standard_items-添加")
+	@AutoLog(value = "巡检标准项目表-添加")
+	@ApiOperation(value="巡检标准项目表-添加", notes="巡检标准项目表-添加")
 	@PostMapping(value = "/add")
 	public Result<String> add(@RequestBody PatrolStandardItems patrolStandardItems) {
 		patrolStandardItemsMapper.insert(patrolStandardItems);
@@ -118,8 +118,8 @@ public class PatrolStandardItemsController extends BaseController<PatrolStandard
 	 * @param patrolStandardItems
 	 * @return
 	 */
-	@AutoLog(value = "patrol_standard_items-编辑")
-	@ApiOperation(value="patrol_standard_items-编辑", notes="patrol_standard_items-编辑")
+	@AutoLog(value = "巡检标准项目表-编辑")
+	@ApiOperation(value="巡检标准项目表-编辑", notes="巡检标准项目表-编辑")
 	@RequestMapping(value = "/edit", method = {RequestMethod.PUT,RequestMethod.POST})
 	public Result<String> edit(@RequestBody PatrolStandardItems patrolStandardItems) {
 		patrolStandardItemsService.updateById(patrolStandardItems);
@@ -132,8 +132,8 @@ public class PatrolStandardItemsController extends BaseController<PatrolStandard
 	 * @param id
 	 * @return
 	 */
-	@AutoLog(value = "patrol_standard_items-通过id删除")
-	@ApiOperation(value="patrol_standard_items-通过id删除", notes="patrol_standard_items-通过id删除")
+	@AutoLog(value = "巡检标准项目表-通过id删除")
+	@ApiOperation(value="巡检标准项目表-通过id删除", notes="巡检标准项目表-通过id删除")
 	@DeleteMapping(value = "/delete")
 	public Result<String> delete(@RequestParam(name="id",required=true) String id) {
 		PatrolStandardItems patrolStandardItems = new PatrolStandardItems();
@@ -152,8 +152,8 @@ public class PatrolStandardItemsController extends BaseController<PatrolStandard
 	 * @param ids
 	 * @return
 	 */
-	@AutoLog(value = "patrol_standard_items-批量删除")
-	@ApiOperation(value="patrol_standard_items-批量删除", notes="patrol_standard_items-批量删除")
+	@AutoLog(value = "巡检标准项目表-批量删除")
+	@ApiOperation(value="巡检标准项目表-批量删除", notes="巡检标准项目表-批量删除")
 	@DeleteMapping(value = "/deleteBatch")
 	public Result<String> deleteBatch(@RequestParam(name="ids",required=true) String ids) {
 		List<String> id = Arrays.asList(ids.split(","));
@@ -169,8 +169,8 @@ public class PatrolStandardItemsController extends BaseController<PatrolStandard
 	 * @param id
 	 * @return
 	 */
-	//@AutoLog(value = "patrol_standard_items-通过id查询")
-	@ApiOperation(value="patrol_standard_items-通过id查询", notes="patrol_standard_items-通过id查询")
+	@AutoLog(value = "巡检标准项目表-通过id查询")
+	@ApiOperation(value="巡检标准项目表-通过id查询", notes="巡检标准项目表-通过id查询")
 	@GetMapping(value = "/queryById")
 	public Result<PatrolStandardItems> queryById(@RequestParam(name="id",required=true) String id) {
 		PatrolStandardItems patrolStandardItems = patrolStandardItemsService.getById(id);

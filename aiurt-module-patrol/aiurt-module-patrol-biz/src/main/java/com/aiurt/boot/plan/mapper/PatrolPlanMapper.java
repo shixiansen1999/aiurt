@@ -6,6 +6,7 @@ import com.aiurt.boot.plan.entity.PatrolPlan;
 import com.aiurt.modules.device.entity.Device;
 import com.baomidou.mybatisplus.core.injector.methods.Update;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.ibatis.annotations.Param;
 
@@ -25,7 +26,7 @@ public interface PatrolPlanMapper extends BaseMapper<PatrolPlan> {
      * @param patrolPlan
      * @return
      */
-    List<PatrolPlanDto> list(@Param("page") Page<PatrolPlanDto> page,@Param("patrolPlan") PatrolPlanDto patrolPlan);
+  IPage<PatrolPlanDto> list(@Param("page") Page<PatrolPlanDto> page, @Param("patrolPlan") PatrolPlanDto patrolPlan);
 
     /**
      * 逻辑删除

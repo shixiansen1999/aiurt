@@ -45,8 +45,8 @@ public class PatrolPlanServiceImpl extends ServiceImpl<PatrolPlanMapper, PatrolP
     private   PatrolPlanDeviceMapper patrolPlanDeviceMapper;
     @Override
     public IPage<PatrolPlanDto> pageList(Page<PatrolPlanDto> page, PatrolPlanDto patrolPlan) {
-        List<PatrolPlanDto> list = baseMapper.list(page,patrolPlan);
-        return page.setRecords(list);
+      IPage<PatrolPlanDto> list = baseMapper.list(page,patrolPlan);
+        return list;
     }
 
     @Override
@@ -57,7 +57,7 @@ public class PatrolPlanServiceImpl extends ServiceImpl<PatrolPlanMapper, PatrolP
          patrolPlan.setStartDate(patrolPlanDto.getStartDate());patrolPlan.setRemark(patrolPlanDto.getRemark());
          patrolPlan.setType(patrolPlanDto.getType());patrolPlan.setOutsource(patrolPlanDto.getOutsource());
          patrolPlan.setConfirm(patrolPlanDto.getConfirm());patrolPlan.setPeriod(patrolPlanDto.getPeriod());
-         baseMapper.insert(patrolPlan);
+         patrolPlan.setStatus(0);baseMapper.insert(patrolPlan);
         PatrolPlan id = baseMapper.selectByCode(patrolPlanDto.getCode());
         if (patrolPlanDto.getPeriod()==1){
             PatrolPlanStrategy patrolPlanStrategy = new PatrolPlanStrategy();
@@ -141,7 +141,9 @@ public class PatrolPlanServiceImpl extends ServiceImpl<PatrolPlanMapper, PatrolP
         PatrolPlanDto patrolPlanDto = baseMapper.selectId(id,code);
         if(ObjectUtil.isNotEmpty(patrolPlanDto.getSiteCode())){
         patrolPlanDto.setSiteCodes(Arrays.asList(patrolPlanDto.getSiteCode().split(",")));}
+        if (ObjectUtil.isNotEmpty(patrolPlanDto.getMechanismCode())){
         patrolPlanDto.setMechanismCodes(Arrays.asList(patrolPlanDto.getMechanismCode().split(",")));
+        }
         patrolPlanDto.setPatrolStandards(patrolStandardMapper.selectbyIds(patrolPlanDto.getIds()));
         if(ObjectUtil.isNotEmpty(patrolPlanDto.getWs())){
         patrolPlanDto.setWeek(Arrays.asList(patrolPlanDto.getWs().split(",")));}

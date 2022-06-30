@@ -29,6 +29,8 @@ public class InspectionCodeServiceImpl extends ServiceImpl<InspectionCodeMapper,
 
     @Override
     public void updateDelFlag(String id) {
-
+       InspectionCode inspectionCode =baseMapper.selectById(id);
+       inspectionCode.setDelFlag(1);
+       baseMapper.updateById(inspectionCode);
     }
 }

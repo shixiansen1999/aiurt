@@ -29,38 +29,80 @@
     </delete>
 
     <select id="list" resultType="com.aiurt.boot.plan.dto.PatrolPlanDto">
-        SELECT * FROM ( SELECT a.*, ( SELECT GROUP_CONCAT(e.depart_name) FROM patrol_plan_organization PPO
-        LEFT JOIN sys_depart e ON PPO.organization_code = e.org_code  WHERE a.`code` = PPO.plan_code
-        AND PPO.del_flag = 0   ) AS mechanismName,
-        ( SELECT GROUP_CONCAT(e.org_code) FROM patrol_plan_organization PPO
-        LEFT JOIN sys_depart e ON PPO.organization_code = e.org_code  WHERE a.`code` = PPO.plan_code
-        AND PPO.del_flag = 0   ) AS mechanismCode,
-        c.profession_code,c.subsystem_code,
-        ( SELECT GROUP_CONCAT(f.station_name) FROM  patrol_plan_station d
-        LEFT JOIN cs_station f ON d.station_code = f.station_code
-        WHERE a.`code` = d.plan_code AND d.del_flag = 0 ) AS siteName,
-        ( SELECT GROUP_CONCAT(f.station_code) FROM  patrol_plan_station d
-        LEFT JOIN cs_station f ON d.station_code = f.station_code
-        WHERE a.`code` = d.plan_code AND d.del_flag = 0 ) AS siteCode,
-        csm.major_name as professionName, css.system_name as subsystemName
+        SELECT * FROM
+        ( SELECT pp.*,
+                 ( SELECT
+        GROUP_CONCAT(e.depart_name)
+        FROM patrol_plan_organization PPO
+        LEFT JOIN sys_depart e ON PPO.organization_code = e.org_code
+        WHERE
+        pp.`code` = PPO.plan_code
+        AND PPO.del_flag = 0) AS mechanismName,
+        (SELECT
+        GROUP_CONCAT(e.org_code)
         FROM
-        patrol_plan a
-        LEFT JOIN patrol_plan_standard c ON c.plan_id = a.id AND c.del_flag = 0
-        left join cs_major csm on c.profession_code = csm.major_code
-        left join cs_subsystem  css on c.subsystem_code = css.system_code
+        patrol_plan_organization PPO
+        LEFT JOIN sys_depart e ON PPO.organization_code = e.org_code
         WHERE
-        a.del_flag = 0
-        ) AS abc
+        pp.`code` = PPO.plan_code
+        AND PPO.del_flag = 0 ) AS mechanismCode,
+        (SELECT
+        GROUP_CONCAT(f.station_name)
+        FROM
+        patrol_plan_station d
+        LEFT JOIN cs_station f ON d.station_code = f.station_code
         WHERE
-        1=1
+        pp.`code` = d.plan_code
+        AND d.del_flag = 0) AS siteName,
+        (SELECT
+        GROUP_CONCAT(f.station_code)
+        FROM
+        patrol_plan_station d
+        LEFT JOIN cs_station f ON d.station_code = f.station_code
+        WHERE
+        pp.`code` = d.plan_code
+        AND d.del_flag = 0) AS siteCode,
+        (SELECT
+        GROUP_CONCAT(DISTINCT c.profession_code)
+        FROM
+        patrol_plan_standard c
+        LEFT JOIN cs_major csm ON c.profession_code = csm.major_code
+        WHERE
+        c.plan_id = pp.id) AS professionCode,
+        ( SELECT
+        GROUP_CONCAT(DISTINCT csm.major_name)
+        FROM
+        patrol_plan_standard c
+        LEFT JOIN cs_major csm ON c.profession_code = csm.major_code
+        WHERE
+        c.plan_id = pp.id ) AS professionName,
+        ( SELECT
+        GROUP_CONCAT(DISTINCT c.subsystem_code)
+        FROM
+        patrol_plan_standard c
+        LEFT JOIN cs_subsystem css ON c.subsystem_code = css.system_code
+        WHERE
+        c.plan_id = pp.id) AS subsystemCode,
+        ( SELECT
+        GROUP_CONCAT(DISTINCT css.system_name)
+        FROM
+        patrol_plan_standard c
+        LEFT JOIN cs_subsystem css ON c.subsystem_code = css.system_code
+        WHERE
+        c.plan_id = pp.id ) AS subsystemName
+        FROM patrol_plan pp
+        WHERE pp.del_flag = 0
+            ) AS abc
+        WHERE
+        1 = 1
         <if test="patrolPlan.name !=null ">
             AND name LIKE CONCAT ('%', #{patrolPlan.name}, '%')
         </if>
         <if test="patrolPlan.professionCode !=null ">
-            AND profession_code = #{patrolPlan.professionCode}
+            AND profession_code  LIKE CONCAT ('%', #{patrolPlan.professionCode}, '%')
         </if>
         <if test="patrolPlan.subsystemCode !=null ">
-            AND subsystem_code = #{patrolPlan.subsystemCode}
+            AND subsystem_code  LIKE CONCAT ('%', #{patrolPlan.subsystemCode}, '%')
         </if>
         <if test="patrolPlan.code !=null ">
             AND code = #{patrolPlan.code}
@@ -68,12 +110,12 @@
         <if test="patrolPlan.status !=null ">
             AND status = #{patrolPlan.status}
         </if>
-    <if test="patrolPlan.mechanismCode !=null ">
-        AND mechanismCode LIKE CONCAT ('%', #{patrolPlan.mechanismCode}, '%')
-    </if>
-    <if test="patrolPlan.siteCode!=null ">
-        AND siteCode  LIKE CONCAT ('%', #{patrolPlan.siteCode}, '%')
-    </if>
+        <if test="patrolPlan.mechanismCode !=null ">
+            AND mechanismCode LIKE CONCAT ('%', #{patrolPlan.mechanismCode}, '%')
+        </if>
+        <if test="patrolPlan.siteCode!=null ">
+            AND siteCode  LIKE CONCAT ('%', #{patrolPlan.siteCode}, '%')
+        </if>
     </select>
     <select id="getMajorInfoByPlanId" resultType="java.lang.String">
         SELECT DISTINCT

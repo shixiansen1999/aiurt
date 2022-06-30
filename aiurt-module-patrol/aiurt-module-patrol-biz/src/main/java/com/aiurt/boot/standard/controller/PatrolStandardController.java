@@ -45,8 +45,8 @@ public class PatrolStandardController extends BaseController<PatrolStandard, IPa
 	 * @param req
 	 * @return
 	 */
-	//@AutoLog(value = "patrol_standard-分页列表查询")
-	@ApiOperation(value="patrol_standard-分页列表查询", notes="patrol_standard-分页列表查询")
+	@AutoLog(value = "巡检标准表-分页列表查询")
+	@ApiOperation(value="巡检标准表-分页列表查询", notes="巡检标准表-分页列表查询")
 	@GetMapping(value = "/list")
 	public Result<IPage<PatrolStandardDto>> queryPageList(PatrolStandardDto patrolStandard,
 														  @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
@@ -63,8 +63,8 @@ public class PatrolStandardController extends BaseController<PatrolStandard, IPa
 	 * @param patrolStandard
 	 * @return
 	 */
-	@AutoLog(value = "patrol_standard-添加")
-	@ApiOperation(value="patrol_standard-添加", notes="patrol_standard-添加")
+	@AutoLog(value = "巡检标准表-添加")
+	@ApiOperation(value="巡检标准表-添加", notes="巡检标准表-添加")
 	@PostMapping(value = "/add")
 	public Result<String> add(@RequestBody PatrolStandard patrolStandard) {
 		patrolStandardService.save(patrolStandard);
@@ -77,8 +77,8 @@ public class PatrolStandardController extends BaseController<PatrolStandard, IPa
 	 * @param patrolStandard
 	 * @return
 	 */
-	@AutoLog(value = "patrol_standard-编辑")
-	@ApiOperation(value="patrol_standard-编辑", notes="patrol_standard-编辑")
+	@AutoLog(value = "巡检标准表-编辑")
+	@ApiOperation(value="巡检标准表-编辑", notes="巡检标准表-编辑")
 	@RequestMapping(value = "/edit", method = {RequestMethod.PUT,RequestMethod.POST})
 	public Result<String> edit(@RequestBody PatrolStandard patrolStandard) {
 		patrolStandardService.updateById(patrolStandard);
@@ -91,8 +91,8 @@ public class PatrolStandardController extends BaseController<PatrolStandard, IPa
 	 * @param id
 	 * @return
 	 */
-	@AutoLog(value = "patrol_standard-通过id删除")
-	@ApiOperation(value="patrol_standard-通过id删除", notes="patrol_standard-通过id删除")
+	@AutoLog(value = "巡检标准表-通过id删除")
+	@ApiOperation(value="巡检标准表-通过id删除", notes="巡检标准表-通过id删除")
 	@DeleteMapping(value = "/delete")
 	public Result<String> delete(@RequestParam(name="id",required=true) String id) {
 		PatrolStandard patrolStandard = new PatrolStandard();
@@ -107,8 +107,8 @@ public class PatrolStandardController extends BaseController<PatrolStandard, IPa
 	 * @param ids
 	 * @return
 	 */
-	@AutoLog(value = "patrol_standard-批量删除")
-	@ApiOperation(value="patrol_standard-批量删除", notes="patrol_standard-批量删除")
+	@AutoLog(value = "巡检标准表-批量删除")
+	@ApiOperation(value="巡检标准表-批量删除", notes="巡检标准表-批量删除")
 	@DeleteMapping(value = "/deleteBatch")
 	public Result<String> deleteBatch(@RequestParam(name="ids",required=true) String ids) {
 		List<String> id = Arrays.asList(ids.split(","));
@@ -124,8 +124,8 @@ public class PatrolStandardController extends BaseController<PatrolStandard, IPa
 	 * @param id
 	 * @return
 	 */
-	//@AutoLog(value = "patrol_standard-通过id查询")
-	@ApiOperation(value="patrol_standard-通过id查询", notes="patrol_standard-通过id查询")
+	@AutoLog(value = "巡检标准表-通过id查询")
+	@ApiOperation(value="巡检标准表-通过id查询", notes="巡检标准表-通过id查询")
 	@GetMapping(value = "/queryById")
 	public Result<PatrolStandard> queryById(@RequestParam(name="id",required=true) String id) {
 		PatrolStandard patrolStandard = patrolStandardService.getById(id);
@@ -134,7 +134,7 @@ public class PatrolStandardController extends BaseController<PatrolStandard, IPa
 		}
 		return Result.OK(patrolStandard);
 	}
-
+	 @AutoLog(value = "巡检标准表-获取适用专业")
 	 @ApiOperation(value="获取适用专业", notes="获取适用专业")
 	 @GetMapping(value = "/obtainApplicableDisciplines")
 	 public List<?> obtainApplicableDisciplines(@RequestParam(name="professionCode",required=false) String professionCode,

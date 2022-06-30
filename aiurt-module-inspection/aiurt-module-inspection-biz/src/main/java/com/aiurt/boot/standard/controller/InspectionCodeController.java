@@ -21,8 +21,9 @@ import org.springframework.web.servlet.ModelAndView;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.Arrays;
+import java.util.List;
 
- /**
+/**
  * @Description: inspection_code
  * @Author: aiurt
  * @Date:   2022-06-21
@@ -46,8 +47,8 @@ public class InspectionCodeController extends BaseController<InspectionCode, IIn
 	 * @param req
 	 * @return
 	 */
-	@AutoLog(value = "分页列表查询检修标准")
-	@ApiOperation(value="分页列表查询检修标准", notes="分页列表查询检修标准")
+	@AutoLog(value = "检修标准表-分页列表查询")
+	@ApiOperation(value="检修标准表-分页列表查询", notes="检修标准表-分页列表查询")
 	@GetMapping(value = "/list")
 	public Result<IPage<InspectionCodeDTO>> queryPageList(InspectionCodeDTO inspectionCodeDTO,
 														  @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
@@ -64,8 +65,8 @@ public class InspectionCodeController extends BaseController<InspectionCode, IIn
 	 * @param inspectionCode
 	 * @return
 	 */
-	@AutoLog(value = "inspection_code-添加")
-	@ApiOperation(value="inspection_code-添加", notes="inspection_code-添加")
+	@AutoLog(value = "检修标准表-添加")
+	@ApiOperation(value="检修标准表-添加", notes="检修标准表-添加")
 	@PostMapping(value = "/add")
 	public Result<String> add(@RequestBody InspectionCode inspectionCode) {
 		inspectionCodeService.save(inspectionCode);
@@ -78,8 +79,8 @@ public class InspectionCodeController extends BaseController<InspectionCode, IIn
 	 * @param inspectionCode
 	 * @return
 	 */
-	@AutoLog(value = "inspection_code-编辑")
-	@ApiOperation(value="inspection_code-编辑", notes="inspection_code-编辑")
+	@AutoLog(value = "检修标准表-编辑")
+	@ApiOperation(value="检修标准表-编辑", notes="检修标准表-编辑")
 	@RequestMapping(value = "/edit", method = {RequestMethod.PUT,RequestMethod.POST})
 	public Result<String> edit(@RequestBody InspectionCode inspectionCode) {
 		inspectionCodeService.updateById(inspectionCode);
@@ -88,12 +89,11 @@ public class InspectionCodeController extends BaseController<InspectionCode, IIn
 
 	/**
 	 *   通过id删除
-	 *
 	 * @param id
 	 * @return
 	 */
-	@AutoLog(value = "inspection_code-通过id删除")
-	@ApiOperation(value="inspection_code-通过id删除", notes="inspection_code-通过id删除")
+	@AutoLog(value = "检修标准表-通过id删除")
+	@ApiOperation(value="检修标准表-通过id删除", notes="检修标准表-通过id删除")
 	@DeleteMapping(value = "/delete")
 	public Result<String> delete(@RequestParam(name="id",required=true) String id) {
 		inspectionCodeService.updateDelFlag(id);
@@ -106,11 +106,14 @@ public class InspectionCodeController extends BaseController<InspectionCode, IIn
 	 * @param ids
 	 * @return
 	 */
-	@AutoLog(value = "inspection_code-批量删除")
-	@ApiOperation(value="inspection_code-批量删除", notes="inspection_code-批量删除")
+	@AutoLog(value = "检修标准表-批量删除")
+	@ApiOperation(value="检修标准表-批量删除", notes="检修标准表-批量删除")
 	@DeleteMapping(value = "/deleteBatch")
 	public Result<String> deleteBatch(@RequestParam(name="ids",required=true) String ids) {
-		this.inspectionCodeService.removeByIds(Arrays.asList(ids.split(",")));
+		List<String> id = Arrays.asList(ids.split(","));
+		for (String id1 :id){
+			this.delete(id1);
+		}
 		return Result.OK("批量删除成功!");
 	}
 
@@ -120,8 +123,8 @@ public class InspectionCodeController extends BaseController<InspectionCode, IIn
 	 * @param id
 	 * @return
 	 */
-	@AutoLog(value = "inspection_code-通过id查询")
-	@ApiOperation(value="inspection_code-通过id查询", notes="inspection_code-通过id查询")
+	@AutoLog(value = "检修标准表-通过id查询")
+	@ApiOperation(value="检修标准表-通过id查询", notes="检修标准表-通过id查询")
 	@GetMapping(value = "/queryById")
 	public Result<InspectionCode> queryById(@RequestParam(name="id",required=true) String id) {
 		InspectionCode inspectionCode = inspectionCodeService.getById(id);
