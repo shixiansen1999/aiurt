@@ -187,6 +187,20 @@ public class RepairTaskController extends BaseController<RepairTask, IRepairTask
 	}
 
 	/**
+	 *   退回
+	 *
+	 * @param examineDTO
+	 * @return
+	 */
+	@AutoLog(value = "检修任务-退回")
+	@ApiOperation(value="检修任务-退回", notes="检修任务-退回")
+	@PostMapping(value = "/confirmedDelete")
+	public Result<String> confirmedDelete(@RequestBody ExamineDTO examineDTO) {
+		repairTaskService.confirmedDelete(examineDTO);
+		return Result.OK("退回成功！");
+	}
+
+	/**
 	 *   添加
 	 *
 	 * @param repairTask

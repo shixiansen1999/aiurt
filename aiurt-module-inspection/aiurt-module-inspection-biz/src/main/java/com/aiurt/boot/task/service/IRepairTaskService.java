@@ -79,4 +79,10 @@ public interface IRepairTaskService extends IService<RepairTask> {
      * @return
      */
     List<RepairTaskEnclosure> selectEnclosure(String resultId);
+
+    /**
+     * 待确认退回任务
+     * @param examineDTO
+     */
+    void confirmedDelete(ExamineDTO examineDTO);
 }

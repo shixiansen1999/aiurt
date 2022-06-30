@@ -8,13 +8,14 @@ import com.aiurt.boot.manager.InspectionManager;
 import com.aiurt.boot.manager.dto.*;
 import com.aiurt.boot.plan.dto.RepairDeviceDTO;
 import com.aiurt.boot.plan.dto.StationDTO;
+import com.aiurt.boot.plan.entity.RepairPool;
+import com.aiurt.boot.plan.mapper.RepairPoolMapper;
 import com.aiurt.boot.task.dto.CheckListDTO;
-import com.aiurt.boot.task.entity.RepairTask;
+import com.aiurt.boot.task.entity.*;
 import com.aiurt.boot.task.dto.RepairTaskDTO;
-import com.aiurt.boot.task.entity.RepairTaskEnclosure;
-import com.aiurt.boot.task.entity.RepairTaskResult;
-import com.aiurt.boot.task.mapper.RepairTaskMapper;
+import com.aiurt.boot.task.mapper.*;
 import com.aiurt.boot.task.service.IRepairTaskService;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.LoginUser;
@@ -23,6 +24,7 @@ import org.springframework.stereotype.Service;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import javax.annotation.Resource;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @Description: repair_task
@@ -35,6 +37,27 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
 
     @Autowired
     private  RepairTaskMapper repairTaskMapper;
+
+    @Autowired
+    private RepairTaskDeviceRelMapper repairTaskDeviceRelMapper;
+
+    @Autowired
+    private RepairTaskResultMapper repairTaskResultMapper;
+
+    @Autowired
+    private RepairTaskStandardRelMapper repairTaskStandardRelMapper;
+
+    @Autowired
+    private RepairTaskStationRelMapper repairTaskStationRelMapper;
+
+    @Autowired
+    private RepairTaskUserMapper repairTaskUserMapper;
+
+    @Autowired
+    private RepairTaskOrgRelMapper repairTaskOrgRelMapper;
+
+    @Autowired
+    private RepairPoolMapper  repairPoolMapper;
 
     @Resource
     private ISysBaseAPI sysBaseAPI;
@@ -364,5 +387,60 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
     @Override
     public List<RepairTaskEnclosure> selectEnclosure(String resultId) {
         return repairTaskMapper.selectEnclosure(resultId);
+    }
+
+    @Override
+    public void confirmedDelete(ExamineDTO examineDTO) {
+        RepairTask repairTask = repairTaskMapper.selectById(examineDTO.getId());
+
+        //根据任务id查询设备清单
+        LambdaQueryWrapper<RepairTaskDeviceRel> objectLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        List<RepairTaskDeviceRel> repairTaskDevice = repairTaskDeviceRelMapper.selectList(objectLambdaQueryWrapper.eq(RepairTaskDeviceRel::getRepairTaskId,examineDTO.getId()));
+        //任务清单主键id集合
+        List<String> collect1 = repairTaskDevice.stream().map(RepairTaskDeviceRel::getId).collect(Collectors.toList());
+
+        //根据设备清单查询结果
+        LambdaQueryWrapper<RepairTaskResult> resultLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        List<RepairTaskResult> repairTaskResults = repairTaskResultMapper.selectList(resultLambdaQueryWrapper.in(RepairTaskResult::getTaskDeviceRelId, collect1));
+        //任务结果主键id集合
+        List<String> collect2 = repairTaskResults.stream().map(RepairTaskResult::getId).collect(Collectors.toList());
+
+        //根据设备编号查询人员
+        LambdaQueryWrapper<RepairTaskUser> repairTaskUserLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        List<RepairTaskUser>  repairTaskUsers = repairTaskUserMapper.selectList(repairTaskUserLambdaQueryWrapper.eq(RepairTaskUser::getRepairTaskCode,repairTask.getCode()));
+        //人员主键id集合
+        List<String> collect3 = repairTaskUsers.stream().map(RepairTaskUser::getId).collect(Collectors.toList());
+
+        //根据任务id查询标准
+        LambdaQueryWrapper<RepairTaskStandardRel> repairTaskStandardRelLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        List<RepairTaskStandardRel> repairTaskStandard = repairTaskStandardRelMapper.selectList(repairTaskStandardRelLambdaQueryWrapper.eq(RepairTaskStandardRel::getRepairTaskId, examineDTO.getId()));
+        //标准主键id集合
+        List<String> collect4 = repairTaskStandard.stream().map(RepairTaskStandardRel::getId).collect(Collectors.toList());
+
+        //根据设备编号查询站所
+        LambdaQueryWrapper<RepairTaskStationRel> repairTaskStationRelLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        List<RepairTaskStationRel> repairTaskStation = repairTaskStationRelMapper.selectList(repairTaskStationRelLambdaQueryWrapper.eq(RepairTaskStationRel::getRepairTaskCode, repairTask.getCode()));
+        //站所主键id集合
+        List<String> collect5 = repairTaskStation.stream().map(RepairTaskStationRel::getId).collect(Collectors.toList());
+
+        //根据设备编号查询组织机构
+        LambdaQueryWrapper<RepairTaskOrgRel> repairTaskOrgRelLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        List<RepairTaskOrgRel> repairTaskOrg = repairTaskOrgRelMapper.selectList(repairTaskOrgRelLambdaQueryWrapper.eq(RepairTaskOrgRel::getRepairTaskCode, repairTask.getCode()));
+        //组织机构主键id集合
+        List<String> collect6 = repairTaskOrg.stream().map(RepairTaskOrgRel::getId).collect(Collectors.toList());
+
+        repairTaskDeviceRelMapper.deleteBatchIds(collect1);
+        repairTaskResultMapper.deleteBatchIds(collect2);
+        repairTaskUserMapper.deleteBatchIds(collect3);
+        repairTaskStandardRelMapper.deleteBatchIds(collect4);
+        repairTaskStationRelMapper.deleteBatchIds(collect5);
+        repairTaskOrgRelMapper.deleteBatchIds(collect6);
+        repairTaskMapper.deleteById(examineDTO.getId());
+
+        RepairPool repairPool = new RepairPool();
+        repairPool.setStatus(3);
+        repairPool.setRemark(examineDTO.getContent());
+        repairPoolMapper.updateById(repairPool);
+
     }
 }
