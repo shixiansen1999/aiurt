@@ -5,6 +5,7 @@ import java.io.UnsupportedEncodingException;
 import java.util.Date;
 import java.math.BigDecimal;
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
@@ -45,6 +46,7 @@ public class FaultRepairParticipants implements Serializable {
     private String userName;
 
 	@ApiModelProperty(value = "用户名称")
+    @TableField(exist = false)
 	private String realName;
 
 	/**创建人*/

@@ -507,8 +507,6 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         LoginUser loginUser = checkLogin();
 
        // Fault fault = isExist(faultCode);
-
-
         LambdaQueryWrapper<FaultRepairRecord> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(FaultRepairRecord::getFaultCode, faultCode).eq(FaultRepairRecord::getAppointUserName, loginUser.getUsername())
                 .eq(FaultRepairRecord::getDelFlag, CommonConstant.DEL_FLAG_0)
@@ -517,14 +515,9 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
 
         RepairRecordDTO repairRecordDTO = new RepairRecordDTO();
         BeanUtils.copyProperties(repairRecord, repairRecordDTO);
+
         // 查询参与人
-        LambdaQueryWrapper<FaultRepairParticipants> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(FaultRepairParticipants::getFaultRepairRecordId, repairRecord.getId())
-                .eq(FaultRepairParticipants::getFaultCode, faultCode);
-
-        List<FaultRepairParticipants> participantsList = repairParticipantsService.getBaseMapper().selectList(queryWrapper);
-
-        // 用户名处理
+        List<FaultRepairParticipants> participantsList = repairParticipantsService.queryParticipantsByRecordId(repairRecord.getId());
         repairRecordDTO.setParticipantsList(participantsList);
 
         List<DeviceChangeSparePart> deviceChangeSparePartList = sparePartService.queryDeviceChangeByFaultCode(faultCode, repairRecord.getId());
@@ -547,6 +540,15 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
     public void fillRepairRecord(RepairRecordDTO repairRecordDTO) {
 
         LoginUser loginUser = checkLogin();
+
+    }
+
+    /**
+     * 审核结果
+     * @param resultDTO 审核结果对象
+     */
+    @Override
+    public void approvalResult(ApprovalResultDTO resultDTO) {
 
     }
 

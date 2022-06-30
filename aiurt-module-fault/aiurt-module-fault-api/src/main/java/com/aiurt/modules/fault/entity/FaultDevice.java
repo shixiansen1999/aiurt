@@ -101,19 +101,19 @@ public class FaultDevice implements Serializable {
     @TableField(exist = false)
 	private String lineName;
 
-    @ApiModelProperty("线路编码")
+    @ApiModelProperty("站点名称")
     @TableField(exist = false)
 	private String stationName;
 
-    @ApiModelProperty("线路编码")
+    @ApiModelProperty("站点编码")
     @TableField(exist = false)
 	private String stationCode;
 
-    @ApiModelProperty("线路编码")
+    @ApiModelProperty("位置编码")
     @TableField(exist = false)
 	private String positionCode;
 
-    @ApiModelProperty("线路编码")
+    @ApiModelProperty("位置名称")
     @TableField(exist = false)
 	private String positionName;
 }

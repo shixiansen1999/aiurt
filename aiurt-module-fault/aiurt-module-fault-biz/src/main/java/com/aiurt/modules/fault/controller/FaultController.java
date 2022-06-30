@@ -250,6 +250,11 @@ public class FaultController extends BaseController<Fault, IFaultService> {
         return Result.OK();
     }
 
+    /**
+     * 查询填写维修记录详情
+     * @param faultCode 故障指派
+     * @return
+     */
     @AutoLog(value = "查询填写维修记录详情")
     @ApiOperation(value = "查询填写维修记录详情", notes = "查询填写维修记录详情")
     @PutMapping("/queryRepairRecord")
@@ -258,12 +263,29 @@ public class FaultController extends BaseController<Fault, IFaultService> {
         return Result.OK(repairRecordDTO);
     }
 
-
+    /**
+     * 填写维修记录
+     * @param repairRecordDTO
+     * @return
+     */
     @AutoLog(value = "填写维修记录")
     @ApiOperation(value = "填写维修记录", notes = "填写维修记录")
     @PutMapping("/updateRepairRecord")
     public Result<?> updateRepairRecord(@RequestBody RepairRecordDTO repairRecordDTO) {
         faultService.fillRepairRecord(repairRecordDTO);
+        return Result.OK();
+    }
+
+    /**
+     *  维修结果审核
+     * @param resultDTO
+     * @return
+     */
+    @AutoLog(value = "维修结果审核")
+    @ApiOperation(value = "维修结果审核", notes = "维修结果审核")
+    @PutMapping("/approvalResult")
+    public Result<?> approvalResult(@RequestBody ApprovalResultDTO resultDTO) {
+        faultService.approvalResult(resultDTO);
         return Result.OK();
     }
 

@@ -105,5 +105,9 @@ public interface IFaultService extends IService<Fault> {
      */
     void fillRepairRecord(RepairRecordDTO repairRecordDTO);
 
-
+    /**
+     * 审核结果
+     * @param resultDTO 审核结果对象
+     */
+    void approvalResult(ApprovalResultDTO resultDTO);
 }
