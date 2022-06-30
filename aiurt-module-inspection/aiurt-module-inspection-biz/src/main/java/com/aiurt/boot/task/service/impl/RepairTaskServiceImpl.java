@@ -51,6 +51,9 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
     private RepairTaskStationRelMapper repairTaskStationRelMapper;
 
     @Autowired
+    private RepairTaskPeerRelMapper repairTaskPeerRelMapper;
+
+    @Autowired
     private RepairTaskUserMapper repairTaskUserMapper;
 
     @Autowired
@@ -129,6 +132,22 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
             //检修结果
             e.setMaintenanceResultsName(sysBaseAPI.translateDict(DictConstant.OVERHAUL_RESULT, String.valueOf(e.getMaintenanceResults())));
 
+            //查询同行人
+            LambdaQueryWrapper<RepairTaskPeerRel> repairTaskPeerRelLambdaQueryWrapper = new LambdaQueryWrapper<>();
+            List<RepairTaskPeerRel> repairTaskPeer = repairTaskPeerRelMapper.selectList(repairTaskPeerRelLambdaQueryWrapper.eq(RepairTaskPeerRel::getRepairTaskDeviceCode, e.getOverhaulCode()));
+            //名称集合
+            List<String> collect3 = repairTaskPeer.stream().map(RepairTaskPeerRel::getRealName).collect(Collectors.toList());
+            if (CollectionUtil.isNotEmpty(collect3)){
+                StringBuffer stringBuffer = new StringBuffer();
+                for (String t : collect3) {
+                    stringBuffer.append(t);
+                    stringBuffer.append(",");
+                }
+                if (stringBuffer.length() > 0) {
+                    stringBuffer = stringBuffer.deleteCharAt(stringBuffer.length() - 1);
+                }
+                e.setPeerName(stringBuffer.toString());
+            }
             //专业
             e.setMajorName(manager.translateMajor(Arrays.asList(e.getMajorCode()),InspectionConstant.MAJOR));
 

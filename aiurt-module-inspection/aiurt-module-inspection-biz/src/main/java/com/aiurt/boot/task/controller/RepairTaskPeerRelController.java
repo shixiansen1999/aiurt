@@ -1,10 +1,17 @@
 package com.aiurt.boot.task.controller;
 
 import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.query.QueryGenerator;
+import com.aiurt.common.util.oConvertUtils;
 import com.aiurt.boot.task.entity.RepairTaskPeerRel;
 import com.aiurt.boot.task.service.IRepairTaskPeerRelService;
 
@@ -13,10 +20,18 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.extern.slf4j.Slf4j;
 
+import org.jeecgframework.poi.excel.ExcelImportUtil;
+import org.jeecgframework.poi.excel.def.NormalExcelConstants;
+import org.jeecgframework.poi.excel.entity.ExportParams;
+import org.jeecgframework.poi.excel.entity.ImportParams;
+import org.jeecgframework.poi.excel.view.JeecgEntityExcelView;
 import com.aiurt.common.system.base.controller.BaseController;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.multipart.MultipartHttpServletRequest;
 import org.springframework.web.servlet.ModelAndView;
+import com.alibaba.fastjson.JSON;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import com.aiurt.common.aspect.annotation.AutoLog;
@@ -24,12 +39,12 @@ import com.aiurt.common.aspect.annotation.AutoLog;
  /**
  * @Description: repair_task_peer_rel
  * @Author: aiurt
- * @Date:   2022-06-22
+ * @Date:   2022-06-30
  * @Version: V1.0
  */
 @Api(tags="repair_task_peer_rel")
 @RestController
-@RequestMapping("/task/repairTaskPeerRel")
+@RequestMapping("/repairtaskpeerrel/repairTaskPeerRel")
 @Slf4j
 public class RepairTaskPeerRelController extends BaseController<RepairTaskPeerRel, IRepairTaskPeerRelService> {
 	@Autowired
