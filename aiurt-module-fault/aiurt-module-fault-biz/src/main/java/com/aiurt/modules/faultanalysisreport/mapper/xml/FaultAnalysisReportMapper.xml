@@ -40,15 +40,13 @@
         </if>
 </select>
 
-<select id="getFault" resultType="com.aiurt.modules.fault.entity.Fault">
+<select id="getFault" resultType="com.aiurt.modules.faultanalysisreport.entity.dto.FaultDTO">
    SELECT
     f.id,
     f.`code`,
     f.major_code,
-    (select major_name from cs_major where del_flag = 0 and major_code = f.major_code ) as majorName,
     f.fault_mode_code,
     f.sub_system_code,
-    (select system_name from cs_subsystem where del_flag = 0 and system_code = f.sub_system_code ) as subSystemName,
     f.line_code,
     f.station_code,
     f.fault_phenomenon,
@@ -59,15 +57,13 @@
     (select device_code from fault_device where fault_code = f.`code`) a
     left join device d on d.`code` = a.device_code ) as deviceName,
     (select line_name from cs_line where del_flag = 0 and line_code = f.line_code ) as lineName,
-    (select station_name from cs_station where del_flag = 0 and station_code = f.station_code) as stationName,
-    (select position_name from cs_station_position where del_flag = 0 and position_code = f.station_position_code) as stationPositionName,
     frr.end_time,
     frr.hangup_reason
     FROM
     fault f
     left join fault_repair_record frr on frr.fault_code = f.`code`
     where
-    f.state = 12
+    f.status = 12
     <if test="condition.code != null and condition.code != ''">
         and f.`code` like concat('%',#{condition.code},'%')
     </if>
@@ -100,14 +96,11 @@
     f.`code`,
     f.major_code,
     f.sub_system_code,
-    (select system_name from cs_subsystem where del_flag = 0 and system_code = f.sub_system_code ) as subSystemName,
     f.fault_applicant,
     f.device_code,
     ( select group_concat(d.name) from
     (select device_code from fault_device where fault_code = f.`code`) a
     left join device d on d.`code` = a.device_code) as deviceName,
-    (select station_name from cs_station where del_flag = 0 and station_code = f.station_code) as stationName,
-    (select position_name from cs_station_position where del_flag = 0 and position_code = f.station_position_code) as stationPositionName,
     f.station_code,
     f.station_position_code,
     f.fault_phenomenon,

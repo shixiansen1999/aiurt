@@ -34,7 +34,7 @@ public interface FaultAnalysisReportMapper extends BaseMapper<FaultAnalysisRepor
      * @param condition
      * @return List<Fault>
      * */
-    List<Fault> getFault(@Param("page")Page<Fault> page, @Param("condition")Fault condition,@Param("allSubSystem")List<String> allSubSystem);
+    List<FaultDTO> getFault(@Param("page")Page<FaultDTO> page, @Param("condition")FaultDTO condition,@Param("allSubSystem")List<String> allSubSystem);
 
     /**
      * 提交中的故障分析的故障详情

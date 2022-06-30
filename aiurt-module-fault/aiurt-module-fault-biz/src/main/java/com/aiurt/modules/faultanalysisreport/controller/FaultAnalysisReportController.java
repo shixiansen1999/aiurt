@@ -22,6 +22,8 @@ import com.aiurt.modules.faultknowledgebasetype.mapper.FaultKnowledgeBaseTypeMap
 import com.aiurt.modules.faulttype.entity.FaultType;
 import com.aiurt.modules.faulttype.mapper.FaultTypeMapper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.query.QueryGenerator;
@@ -100,7 +102,7 @@ public class FaultAnalysisReportController extends BaseController<FaultAnalysisR
 	 * @return
 	 */
 	@AutoLog(value = "故障分析-添加")
-	@ApiOperation(value="fault_analysis_report-添加", notes="fault_analysis_report-添加")
+	@ApiOperation(value="故障分析-添加", notes="故障分析-添加")
 	@PostMapping(value = "/add")
 	public Result<String> add(@RequestBody FaultAnalysisReport faultAnalysisReport) {
 		faultAnalysisReport.setStatus(FaultConstant.PENDING);
@@ -127,6 +129,18 @@ public class FaultAnalysisReportController extends BaseController<FaultAnalysisR
 		 faultAnalysisReport.setApprovedRemark(approvedRemark);
 		 faultAnalysisReport.setApprovedResult(approvedResult);
 		 faultAnalysisReportService.updateById(faultAnalysisReport);
+		 //修改知识库状态
+		 String faultKnowledgeBaseId = faultAnalysisReportService.getById(id).getFaultKnowledgeBaseId();
+		 FaultKnowledgeBase faultKnowledgeBase = faultKnowledgeBaseService.getById(faultKnowledgeBaseId);
+		 if (approvedResult.equals(FaultConstant.PASSED)) {
+			 faultKnowledgeBase.setStatus(FaultConstant.APPROVED);
+			 faultKnowledgeBase.setApprovedResult(FaultConstant.PASSED);
+			 faultAnalysisReport.setDelFlag(0);
+		 } else {
+			 faultKnowledgeBase.setStatus(FaultConstant.REJECTED);
+			 faultKnowledgeBase.setApprovedResult(FaultConstant.NO_PASS);
+		 }
+		 faultKnowledgeBaseService.updateById(faultKnowledgeBase);
 		 return Result.OK("审批成功!");
 	 }
 
@@ -216,7 +230,7 @@ public class FaultAnalysisReportController extends BaseController<FaultAnalysisR
 	 /**
 	  * 新增故障分析的故障分页查询
 	  *
-	  * @param fault
+	  * @param faultDTO
 	  * @param pageNo
 	  * @param pageSize
 	  * @param req
@@ -225,12 +239,15 @@ public class FaultAnalysisReportController extends BaseController<FaultAnalysisR
 	 @AutoLog(value = "新增故障分析的故障分页查询")
 	 @ApiOperation(value="新增故障分析的故障分页查询", notes="fault-分页列表查询")
 	 @GetMapping(value = "/getFault")
-	 public Result<IPage<Fault>> getFault(Fault fault,
+	 @ApiResponses({
+			 @ApiResponse(code = 200, message = "OK", response = Fault.class)
+	 })
+	 public Result<IPage<FaultDTO>> getFault(FaultDTO faultDTO,
 											   @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
 											   @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
 											   HttpServletRequest req) {
-		 Page<Fault> page = new Page<>(pageNo, pageSize);
-		 IPage<Fault> pageList = faultAnalysisReportService.getFault(page, fault);
+		 Page<FaultDTO> page = new Page<>(pageNo, pageSize);
+		 IPage<FaultDTO> pageList = faultAnalysisReportService.getFault(page, faultDTO);
 		 return Result.OK(pageList);
 	 }
 
@@ -243,6 +260,9 @@ public class FaultAnalysisReportController extends BaseController<FaultAnalysisR
 	 @AutoLog(value = "提交中的故障分析的故障详情")
 	 @ApiOperation(value="提交中的故障分析的故障详情", notes="fault-提交中的故障分析的故障详情")
 	 @GetMapping(value = "/getDetail")
+	 @ApiResponses({
+			 @ApiResponse(code = 200, message = "OK", response = FaultDTO.class)
+	 })
 	 public Result<FaultDTO> getDetail(String id) {
 		 FaultDTO detail = faultAnalysisReportService.getDetail(id);
 		 return Result.OK(detail);
@@ -256,11 +276,21 @@ public class FaultAnalysisReportController extends BaseController<FaultAnalysisR
 	@AutoLog(value = "提交故障分析")
 	@ApiOperation(value="提交故障分析", notes="fault-提交故障分析")
 	@PostMapping(value = "/addDetail")
+	@ApiResponses({
+			@ApiResponse(code = 200, message = "OK", response = FaultDTO.class)
+	})
 	public Result<String> addDetail(@RequestBody FaultDTO faultDTO) {
 		FaultAnalysisReport faultAnalysisReport = faultDTO.getFaultAnalysisReport();
-		FaultKnowledgeBase faultKnowledgeBase = faultDTO.getFaultKnowledgeBase();
+		faultAnalysisReport.setStatus(FaultConstant.PENDING);
+		faultAnalysisReport.setApprovedResult(FaultConstant.NO_PASS);
 		faultAnalysisReportService.save(faultAnalysisReport);
+
+		FaultKnowledgeBase faultKnowledgeBase = faultDTO.getFaultKnowledgeBase();
 		if (ObjectUtil.isNotNull(faultKnowledgeBase)) {
+			faultKnowledgeBase.setStatus(FaultConstant.PENDING);
+			faultKnowledgeBase.setApprovedResult(FaultConstant.NO_PASS);
+			//先隐藏，审批通过后再展示
+			faultKnowledgeBase.setDelFlag(1);
 			faultKnowledgeBaseService.save(faultKnowledgeBase);
 		}
 		return Result.OK("提交成功");
@@ -273,6 +303,9 @@ public class FaultAnalysisReportController extends BaseController<FaultAnalysisR
 	  */
 	 @ApiOperation(value="故障分析-故障类别", notes="故障分析-故障类别")
 	 @GetMapping(value = "/getFaultType")
+	 @ApiResponses({
+			 @ApiResponse(code = 200, message = "OK", response = FaultType.class)
+	 })
 	 public Result<List<FaultType>> getFaultType() {
 		 LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
 		 //用户拥有的专业
@@ -292,6 +325,9 @@ public class FaultAnalysisReportController extends BaseController<FaultAnalysisR
 	  */
 	 @ApiOperation(value="故障分析-通过id查询详情", notes="故障分析-通过id查询详情")
 	 @GetMapping(value = "/readone")
+	 @ApiResponses({
+			 @ApiResponse(code = 200, message = "OK", response = FaultAnalysisReport.class)
+	 })
 	 public Result<FaultAnalysisReport> readone(@RequestParam(name="id",required=true) String id) {
 		 FaultAnalysisReport faultAnalysisReport = faultAnalysisReportService.readOne(id);
 		 if(faultAnalysisReport==null) {

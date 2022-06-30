@@ -11,6 +11,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import com.aiurt.modules.faultknowledgebasetype.dto.MajorDTO;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.query.QueryGenerator;
@@ -179,7 +181,10 @@ public class FaultKnowledgeBaseTypeController extends BaseController<FaultKnowle
 	  */
 	 @ApiOperation(value = "故障知识分类-知识库类别树", notes = "知识库类别树")
 	 @GetMapping(value = "/faultKnowledgeBaseTypeTreeList")
-	 public Result<?> faultKnowledgeBaseTypeTreeList() {
+	 @ApiResponses({
+			 @ApiResponse(code = 200, message = "OK", response = MajorDTO.class)
+	 })
+	 public Result<List<MajorDTO>> faultKnowledgeBaseTypeTreeList() {
 		 List<MajorDTO> list = faultKnowledgeBaseTypeService.faultKnowledgeBaseTypeTreeList();
 		 return Result.OK(list);
 	 }

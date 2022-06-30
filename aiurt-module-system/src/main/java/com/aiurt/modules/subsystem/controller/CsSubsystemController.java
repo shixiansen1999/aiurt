@@ -1,6 +1,7 @@
 package com.aiurt.modules.subsystem.controller;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -240,15 +241,25 @@ public class CsSubsystemController  {
 
 	 /**
 	  * 根据专业查子系统
-	  * @param majorCode
+	  * @param majorIds
 	  * @return
 	  */
 	 @ApiOperation(value="根据专业查子系统", notes="根据专业查子系统")
 	 @GetMapping(value = "/getList")
-	 public Result<?> getList(@RequestParam(name="majorCode",required=true) String majorCode) {
-		 LambdaQueryWrapper<CsSubsystem> queryWrapper = new LambdaQueryWrapper<>();
-		 List<CsSubsystem> list = csSubsystemService.list(queryWrapper.eq(CsSubsystem::getDelFlag,0).eq(CsSubsystem::getMajorCode,majorCode));
-		 return Result.OK(list);
+	 public Result<?> getList(@RequestParam(name="majorIds",required=true) String majorIds) {
+		 List<String> majors = Arrays.asList(majorIds.split(","));
+		 List<CsMajor> majorList = csMajorService.list(new LambdaQueryWrapper<CsMajor>()
+				 .eq(CsMajor::getDelFlag,0)
+				 .in(CsMajor::getMajorCode,majors)
+				 .select(CsMajor::getId,CsMajor::getMajorName));
+		 majorList.forEach(major -> {
+			 List<CsSubsystem> systemList = csSubsystemService.list(new LambdaQueryWrapper<CsSubsystem>()
+					 .eq(CsSubsystem::getDelFlag,0)
+					 .eq(CsSubsystem::getMajorCode,major.getMajorCode())
+					 .select(CsSubsystem::getId,CsSubsystem::getSystemName));
+			 major.setChildren(systemList);
+		 });
+		 return Result.OK(majorList);
 	 }
 
 
