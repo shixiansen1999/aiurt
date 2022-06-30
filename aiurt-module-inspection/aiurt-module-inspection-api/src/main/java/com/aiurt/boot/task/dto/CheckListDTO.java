@@ -128,6 +128,16 @@ public class CheckListDTO {
     @TableField(exist = false)
     private Integer abnormal;
 
+    /**检修单名称*/
+    @ApiModelProperty(value = "检修单名称")
+    @TableField(exist = false)
+    private String resultName;
+
+    /**检修单号*/
+    @ApiModelProperty(value = "检修单号")
+    @TableField(exist = false)
+    private String resultCode;
+
     @ApiModelProperty(value = "检修单（树形）")
     @TableField(exist = false)
     List<RepairTaskResult> repairTaskResultList;

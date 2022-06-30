@@ -176,7 +176,8 @@
          t1.line_code as lineCode,
          t1.position_code as positionCode,
          t1.specific_location as specificLocation,
-         t1.staff_id as overhaulId
+         t1.staff_id as overhaulId,
+         t1.code as resultCode
        FROM
 	    	repair_task_device_rel t1
 	        LEFT JOIN repair_task_standard_rel t4  ON t4.id = t1.task_standard_rel_id

@@ -237,6 +237,11 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
             List<RepairTaskResult> repairTaskResults1 = repairTaskMapper.selectSingle(checkListDTO.getDeviceId(), 2);
             checkListDTO.setAbnormal(repairTaskResults1.size());
         }
+        //检修单名称
+        if (checkListDTO.getResultCode()!=null){
+            checkListDTO.setResultName("检修单"+checkListDTO.getResultCode());
+        }
+
         //专业
         checkListDTO.setMajorName(manager.translateMajor(Arrays.asList(checkListDTO.getMajorCode()),InspectionConstant.MAJOR));
 
