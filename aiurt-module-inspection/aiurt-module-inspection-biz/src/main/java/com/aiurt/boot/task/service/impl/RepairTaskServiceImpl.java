@@ -295,15 +295,17 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
             if (r.getUnNote() ==null){
                 r.setUnNote("无");
             }
-            //检修值
-            if(r.getStatusItem()==1){
-                r.setInspeciontValueName(null);
-            }
-            if(r.getStatusItem()==2){
-                r.setInspeciontValueName(sysBaseAPI.translateDict(r.getDictCode(), String.valueOf(r.getInspeciontValue())));
-            }
-            if(r.getStatusItem()==3){
-                r.setInspeciontValueName(r.getNote());
+            if (r.getStatusItem()!=null){
+                //检修值
+                if(r.getStatusItem()==1){
+                    r.setInspeciontValueName(null);
+                }
+                if(r.getStatusItem()==2){
+                    r.setInspeciontValueName(sysBaseAPI.translateDict(r.getDictCode(), String.valueOf(r.getInspeciontValue())));
+                }
+                if(r.getStatusItem()==3){
+                    r.setInspeciontValueName(r.getNote());
+                }
             }
         });
         return treeFirst(repairTaskResults1);
