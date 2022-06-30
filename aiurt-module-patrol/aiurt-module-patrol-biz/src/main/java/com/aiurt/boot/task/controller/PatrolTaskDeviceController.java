@@ -83,54 +83,7 @@ public class PatrolTaskDeviceController extends BaseController<PatrolTaskDevice,
         return Result.OK();
     }
 
-    /**
-     * 添加
-     *
-     * @param patrolTaskDevice
-     * @return
-     */
-    @AutoLog(value = "patrol_task_device-添加")
-    @ApiOperation(value = "patrol_task_device-添加", notes = "patrol_task_device-添加")
-    @PostMapping(value = "/add")
-    public Result<String> add(@RequestBody PatrolTaskDevice patrolTaskDevice) {
-        patrolTaskDeviceService.save(patrolTaskDevice);
-        return Result.OK("添加成功！");
-    }
-	/**
-	 * 分页列表查询
-	 *
-	 * @param patrolTaskDevice
-	 * @param pageNo
-	 * @param pageSize
-	 * @param req
-	 * @return
-	 */
-	//@AutoLog(value = "patrol_task_device-分页列表查询")
-	@ApiOperation(value="patrol_task_device-分页列表查询", notes="patrol_task_device-分页列表查询")
-	@GetMapping(value = "/list")
-	public Result<IPage<PatrolTaskDevice>> queryPageList(PatrolTaskDevice patrolTaskDevice,
-								   @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
-								   @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
-								   HttpServletRequest req) {
-		QueryWrapper<PatrolTaskDevice> queryWrapper = QueryGenerator.initQueryWrapper(patrolTaskDevice, req.getParameterMap());
-		Page<PatrolTaskDevice> page = new Page<PatrolTaskDevice>(pageNo, pageSize);
-		IPage<PatrolTaskDevice> pageList = patrolTaskDeviceService.page(page, queryWrapper);
-		return Result.OK(pageList);
-	}
-	 /**
-	  * app巡检任务-巡检清单列表（巡检工单列表）
-	  * @return
-	  */
-	 @AutoLog(value = "patrol_task- app巡检任务-巡检清单列表")
-	 @ApiOperation(value="patrol_task- app巡检任务-巡检清单列表", notes="patrol_task- app巡检任务-巡检清单列表")
-	 @GetMapping(value = "/patrolTaskDeviceList")
-	 public Result<Page<PatrolTaskDeviceDTO>>  patrolTaskDeviceList(String id,
-																	@RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
-																	@RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize, HttpServletRequest req) {
-		 Page<PatrolTaskDeviceDTO> pageList = new Page<PatrolTaskDeviceDTO>(pageNo, pageSize);
-		 pageList = patrolTaskDeviceService.getPatrolTaskDeviceList(pageList, id);
-		 return Result.OK(pageList);
-	 }
+
 	 /**
 	  * app巡检任务执行中-检查
 	  * @param patrolTaskDeviceDTO

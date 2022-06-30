@@ -55,12 +55,6 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
     @Autowired
     private PatrolStandardItemsMapper patrolStandardItemsMapper;
 
-    @Autowired
-    private PatrolTaskStandardMapper patrolTaskStandardMapper;
-
-    @Autowired
-    private PatrolStandardItemsMapper patrolStandardItemsMapper;
-
 
     @Override
     public IPage<PatrolTaskDeviceParam> selectBillInfo(Page<PatrolTaskDeviceParam> page, PatrolTaskDeviceParam patrolTaskDeviceParam) {
@@ -70,8 +64,6 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
     @Override
     public Page<PatrolTaskDeviceDTO> getPatrolTaskDeviceList(Page<PatrolTaskDeviceDTO> pageList, String code) {
 
-        List<PatrolTaskDeviceDTO> patrolTaskDeviceList = patrolTaskDeviceMapper.getPatrolTaskDeviceList(pageList, id);
-        patrolTaskDeviceList.stream().forEach(e -> {
         List<PatrolTaskDeviceDTO> patrolTaskDeviceList = patrolTaskDeviceMapper.getPatrolTaskDeviceList(pageList, code);
         patrolTaskDeviceList.stream().forEach(e->{
             String accompanyName = patrolAccompanyMapper.getAccompanyName(e.getPatrolNumber());
