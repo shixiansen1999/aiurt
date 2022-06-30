@@ -18,6 +18,7 @@ import com.aiurt.modules.major.entity.CsMajor;
 import com.aiurt.modules.major.service.ICsMajorService;
 import com.aiurt.modules.material.entity.MaterialBaseType;
 import com.aiurt.modules.material.service.IMaterialBaseTypeService;
+import com.aiurt.modules.position.entity.CsStation;
 import com.aiurt.modules.subsystem.entity.CsSubsystem;
 import com.aiurt.modules.subsystem.entity.CsSubsystemUser;
 import com.aiurt.modules.subsystem.mapper.CsSubsystemUserMapper;
@@ -273,6 +274,19 @@ public class CsSubsystemController  {
 		}
 		return Result.OK(csSubsystem);
 	}
+
+	 /**
+	  * 根据专业查子系统
+	  * @param majorCode
+	  * @return
+	  */
+	 @ApiOperation(value="根据专业查子系统", notes="根据专业查子系统")
+	 @GetMapping(value = "/getList")
+	 public Result<?> getList(@RequestParam(name="majorCode",required=true) String majorCode) {
+		 LambdaQueryWrapper<CsSubsystem> queryWrapper = new LambdaQueryWrapper<>();
+		 List<CsSubsystem> list = csSubsystemService.list(queryWrapper.eq(CsSubsystem::getDelFlag,0).eq(CsSubsystem::getMajorCode,majorCode));
+		 return Result.OK(list);
+	 }
 
 
 }
