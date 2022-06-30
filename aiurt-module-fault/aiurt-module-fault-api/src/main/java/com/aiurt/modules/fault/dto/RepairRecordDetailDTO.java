@@ -1,6 +1,7 @@
 package com.aiurt.modules.fault.dto;
 
 import com.aiurt.modules.basic.entity.SysAttachment;
+import com.aiurt.modules.fault.entity.FaultRepairParticipants;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -78,5 +79,18 @@ public class RepairRecordDetailDTO implements Serializable {
 
     @ApiModelProperty(value = "处理情况/维修措施")
     private String maintenanceMeasures;
+
+
+    @ApiModelProperty(value = "参与人")
+    private List<FaultRepairParticipants> participantsList;
+
+
+    /**故障维修时长*/
+    @ApiModelProperty(value = "故障维修时长")
+    private Integer repairDuration;
+
+    /**维修响应时长*/
+    @ApiModelProperty(value = "维修响应时长")
+    private Integer responseDuration;
 
 }
