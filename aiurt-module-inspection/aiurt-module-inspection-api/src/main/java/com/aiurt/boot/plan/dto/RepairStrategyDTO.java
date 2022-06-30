@@ -33,7 +33,7 @@ public class RepairStrategyDTO {
     private java.lang.String deviceTypeName;
 
     @ApiModelProperty(value = "是否与设备类型相关")
-    private java.lang.String isAppointDeviceTyep;
+    private java.lang.String isAppointDeviceType;
 
     @ApiModelProperty(value = "是否指定设备")
     private java.lang.String isAppointDevice;

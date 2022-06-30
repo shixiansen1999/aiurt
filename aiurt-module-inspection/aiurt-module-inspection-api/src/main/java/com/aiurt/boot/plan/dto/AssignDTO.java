@@ -41,6 +41,6 @@ public class AssignDTO {
     private String planOrderCode;
     @ApiModelProperty(value = "计划令图片")
     private String planOrderCodeUrl;
-    @ApiModelProperty(value = "是否是手工下发任务，0否1是")
+    @ApiModelProperty(value = "是否是手工下发任务，0否1是", required = true)
     private java.lang.Integer isManual;
 }

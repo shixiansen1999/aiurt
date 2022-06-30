@@ -1,6 +1,7 @@
 package com.aiurt.boot.task.service.impl;
 
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.constant.PatrolConstant;
@@ -14,6 +15,7 @@ import com.aiurt.boot.task.mapper.*;
 import com.aiurt.boot.task.param.PatrolTaskParam;
 import com.aiurt.boot.task.service.IPatrolTaskService;
 import com.aiurt.common.exception.AiurtBootException;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -165,7 +167,6 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         });
         return count.get();
     }
-
     @Override
     public Page<PatrolTaskDTO> getPatrolTaskPoolList(Page<PatrolTaskDTO> pageList, PatrolTaskDTO patrolTaskDTO) {
         List<PatrolTaskDTO> taskList = patrolTaskMapper.getPatrolTaskPoolList(pageList, patrolTaskDTO);
@@ -248,10 +249,11 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         if (patrolTaskDTO.getStatus() == 2) {
             updateWrapper.set(PatrolTask::getStatus, 4).eq(PatrolTask::getId, patrolTaskDTO.getId());
         }
-        //提交任务：将执行中，变为待审核、添加任务结束人id
+        //提交任务：将执行中，变为待审核、添加任务结束人id,传签名地址
         if (patrolTaskDTO.getStatus() == 4) {
             updateWrapper.set(PatrolTask::getStatus, 6)
                     .set(PatrolTask::getEndUserId, sysUser.getId())
+                    .set(PatrolTask::getSignUrl,patrolTaskDTO.getSignUrl())
                     .eq(PatrolTask::getId, patrolTaskDTO.getId());
             update(updateWrapper);
         }
@@ -267,20 +269,15 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
                 .set(PatrolTask::getBackReason, patrolTaskDTO.getBackReason())
                 .eq(PatrolTask::getId, patrolTaskDTO.getId());
         update(updateWrapper);
+        //删除这个任务的巡检人
+        LambdaQueryWrapper<PatrolTask> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(PatrolTask::getId,patrolTaskDTO.getId());
+        PatrolTask patrolTask = patrolTaskMapper.selectOne(queryWrapper);
+        LambdaQueryWrapper<PatrolTaskUser> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(PatrolTaskUser::getTaskCode,patrolTask.getCode());
+        List<PatrolTaskUser> patrolTaskUsers = patrolTaskUserMapper.selectList(wrapper);
+        patrolTaskUserMapper.deleteBatchIds(patrolTaskUsers);
     }
-
-    @Override
-    public void getPatrolTaskCheck(PatrolTaskDTO patrolTaskDTO) {
-        //更新任务状态（将未开始改为执行中）、添加检查人id，传任务主键id
-        LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        PatrolTaskDevice patrolPDevice = new PatrolTaskDevice();
-        LambdaUpdateWrapper<PatrolTaskDevice> updateWrapper = new LambdaUpdateWrapper<>();
-        updateWrapper.set(PatrolTaskDevice::getStatus, 1)
-                .set(PatrolTaskDevice::getUserId, sysUser.getId())
-                .eq(PatrolTaskDevice::getTaskId, patrolTaskDTO.getId());
-        patrolTaskDeviceMapper.update(patrolPDevice, updateWrapper);
-    }
-
     @Override
     public List<PatrolTaskUserDTO> getPatrolTaskAppointSelect(PatrolTaskDTO patrolTaskDTO) {
         //查询这个部门的信息人员,传组织机构ids
@@ -315,5 +312,40 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         LambdaUpdateWrapper<PatrolTask> updateWrapper = new LambdaUpdateWrapper<>();
         updateWrapper.set(PatrolTask::getSource, 2).set(PatrolTask::getStatus, 1).eq(PatrolTask::getCode, patrolTaskUserDTO.get(0).getTaskCode());
         update(updateWrapper);
+    }
+    @Override
+    public PatrolTaskSubmitDTO getSubmitTaskCount(PatrolTaskSubmitDTO patrolTaskSubmitDTO) {
+        LambdaQueryWrapper<PatrolTaskDevice> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(PatrolTaskDevice::getTaskId,patrolTaskSubmitDTO.getTaskId());
+        List<PatrolTaskDevice> patrolTaskDevices = patrolTaskDeviceMapper.selectList(queryWrapper);
+        List<PatrolTaskDevice> collect = patrolTaskDevices.stream().filter(e -> e.getStatus() == 0).collect(Collectors.toList());
+        List<PatrolTaskDevice> list = patrolTaskDevices.stream().filter(e -> e.getStatus() == 1).collect(Collectors.toList());
+        List<PatrolTaskDevice> patrolTaskDeviceList = patrolTaskDevices.stream().filter(e -> e.getStatus() == 2).collect(Collectors.toList());
+        PatrolTaskSubmitDTO submitDTO = new PatrolTaskSubmitDTO();
+        if(CollUtil.isNotEmpty(collect))
+        {
+            submitDTO.setNotInspectedNumber(collect.size());
+        }
+        if(CollUtil.isEmpty(collect))
+        {
+            submitDTO.setNotInspectedNumber(0);
+        }
+        if(CollUtil.isNotEmpty(list))
+        {
+            submitDTO.setInspectedNumber(list.size());
+        }
+        if(CollUtil.isEmpty(list))
+        {
+            submitDTO.setInspectedNumber(0);
+        }
+        if(CollUtil.isNotEmpty(patrolTaskDeviceList))
+        {
+            submitDTO.setTotalNumber(patrolTaskDeviceList.size());
+        }
+        if(CollUtil.isEmpty(patrolTaskDeviceList))
+        {
+            submitDTO.setTotalNumber(0);
+        }
+        return submitDTO;
     }
 }

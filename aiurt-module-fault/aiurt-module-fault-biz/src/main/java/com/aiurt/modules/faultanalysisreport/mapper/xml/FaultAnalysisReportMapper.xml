@@ -5,6 +5,7 @@
 <select id="readAll" resultType="com.aiurt.modules.faultanalysisreport.entity.FaultAnalysisReport">
     SELECT
             far.id,
+            far.status,
             f.`code` as faultCode ,
             f.fault_phenomenon,
             far.solution,
@@ -121,6 +122,7 @@
 <select id="readOne" resultType="com.aiurt.modules.faultanalysisreport.entity.FaultAnalysisReport">
     SELECT
             far.id,
+            far.status,
             far.fault_analysis,
             far.solution,
             far.file_path,

@@ -3,9 +3,11 @@ package com.aiurt.modules.faultlevel.controller;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.system.base.controller.BaseController;
 import com.aiurt.modules.common.entity.SelectTable;
+import com.aiurt.modules.fault.entity.Fault;
 import com.aiurt.modules.fault.service.IFaultService;
 import com.aiurt.modules.faultlevel.entity.FaultLevel;
 import com.aiurt.modules.faultlevel.service.IFaultLevelService;
+import com.aiurt.modules.faulttype.entity.FaultType;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -56,9 +58,18 @@ public class FaultLevelController extends BaseController<FaultLevel, IFaultLevel
 												   @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
 												   @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
 												   HttpServletRequest req) {
-		QueryWrapper<FaultLevel> queryWrapper = QueryGenerator.initQueryWrapper(faultLevel, req.getParameterMap());
+		LambdaQueryWrapper<FaultLevel> queryWrapper = new LambdaQueryWrapper<>();
+		if(null != faultLevel.getName()   && !"".equals(faultLevel.getName())){
+			queryWrapper.like(FaultLevel::getName, faultLevel.getName());
+		}
+		if(null != faultLevel.getCode()   && !"".equals(faultLevel.getCode())){
+			queryWrapper.like(FaultLevel::getCode, faultLevel.getCode());
+		}
+		if(null != faultLevel.getMajorCode()   && !"".equals(faultLevel.getMajorCode())){
+			queryWrapper.eq(FaultLevel::getMajorCode, faultLevel.getMajorCode());
+		}
 		Page<FaultLevel> page = new Page<FaultLevel>(pageNo, pageSize);
-		IPage<FaultLevel> pageList = faultLevelService.page(page, queryWrapper.lambda().eq(FaultLevel::getDelFlag,0));
+		IPage<FaultLevel> pageList = faultLevelService.page(page, queryWrapper.eq(FaultLevel::getDelFlag,0));
 		return Result.OK(pageList);
 	}
 
@@ -99,13 +110,13 @@ public class FaultLevelController extends BaseController<FaultLevel, IFaultLevel
 	@DeleteMapping(value = "/delete")
 	public Result<?> delete(@RequestParam(name="id",required=true) String id) {
 		FaultLevel faultLevel = faultLevelService.getById(id);
-		//判断故障上报是否使用 todo
-		/*LambdaQueryWrapper<Fault> queryWrapper = new LambdaQueryWrapper<>();
+		//判断故障上报是否使用
+		LambdaQueryWrapper<Fault> queryWrapper = new LambdaQueryWrapper<>();
 		queryWrapper.eq(Fault::getFaultTypeCode, faultLevel.getCode());
 		List<Fault> list = faultService.list(queryWrapper);
 		if (!list.isEmpty()) {
 			return Result.error("故障分类编码已被故障报修单使用，不能删除！");
-		}*/
+		}
 		faultLevel.setDelFlag(1);
 		faultLevelService.updateById(faultLevel);
 		return Result.OK("删除成功!");

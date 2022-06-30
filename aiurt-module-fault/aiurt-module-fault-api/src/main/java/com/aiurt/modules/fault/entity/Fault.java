@@ -52,12 +52,14 @@ public class Fault implements Serializable {
 	@Excel(name = "专业编码", width = 15)
     @ApiModelProperty(value = "专业编码", required = true)
     @NotBlank(message = "所属专业不能为空")
+    @Dict(dictTable = "cs_major", dicText = "major_name", dicCode = "major_code")
     private String majorCode;
 
 
 	/**专业子系统编码*/
 	@Excel(name = "专业子系统编码", width = 15)
     @ApiModelProperty(value = "专业子系统编码")
+    @Dict(dictTable = "cs_subsystem", dicText = "system_name", dicCode = "system_code")
     private String subSystemCode;
 
 
@@ -70,16 +72,19 @@ public class Fault implements Serializable {
 	/**线路编码*/
 	@Excel(name = "故障位置-线路编码", width = 15)
     @ApiModelProperty(value = "线路编码", required = true)
+    @Dict(dictTable = "cs_line", dicText = "line_name", dicCode = "line_code")
     private String lineCode;
 
 	/**站点*/
 	@Excel(name = "故障位置-站所编码", width = 15)
     @ApiModelProperty(value = "站点",  required = true)
+    @Dict(dictTable = "cs_station", dicText = "station_name", dicCode = "station_code")
     private String stationCode;
 
 	/**位置*/
 	@Excel(name = "故障位置-位置编码", width = 15)
     @ApiModelProperty(value = "位置")
+    @Dict(dictTable = "cs_station_position", dicText = "position_name", dicCode = "position_code")
     private String stationPositionCode;
 
 	/**故障发生时间*/
@@ -110,8 +115,8 @@ public class Fault implements Serializable {
     private String faultApplicantDept;
 
 	/**接报人*/
-	@Excel(name = "接报人", width = 15)
-    @ApiModelProperty(value = "接报人")
+	@Excel(name = "接报人/填报人", width = 15)
+    @ApiModelProperty(value = "填报人")
     @Dict(dictTable = "sys_user", dicCode = "username", dicText = "realname")
     private String receiveUserName;
 
@@ -209,11 +214,11 @@ public class Fault implements Serializable {
 	/**故障级别*/
 	@Excel(name = "故障级别", width = 15)
     @ApiModelProperty(value = "故障级别")
-    @Dict(dictTable = "fault_level", dicCode = "level_code", dicText = "type_name")
+    @Dict(dictTable = "fault_level", dicCode = "code", dicText = "name")
     private String faultLevel;
 
     @ApiModelProperty(value = "故障分类")
-    @Dict(dictTable = "fault_type", dicCode = "type_code", dicText = "level_name")
+    @Dict(dictTable = "fault_type", dicCode = "code", dicText = "name")
 	private String faultTypeCode;
 
 	/**审批驳回原因*/

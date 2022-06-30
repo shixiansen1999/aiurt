@@ -1,10 +1,12 @@
 package com.aiurt.boot.plan.service.impl;
 
+import cn.hutool.core.util.ObjectUtil;
 import com.aiurt.boot.plan.dto.PatrolPlanDto;
 import com.aiurt.boot.plan.dto.QuerySiteDto;
 import com.aiurt.boot.plan.entity.*;
 import com.aiurt.boot.plan.mapper.*;
 import com.aiurt.boot.plan.service.IPatrolPlanService;
+import com.aiurt.boot.standard.dto.PatrolStandardDto;
 import com.aiurt.boot.standard.entity.PatrolStandard;
 import com.aiurt.boot.standard.mapper.PatrolStandardMapper;
 import com.aiurt.modules.device.entity.Device;
@@ -15,6 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Arrays;
 import java.util.List;
@@ -47,23 +50,18 @@ public class PatrolPlanServiceImpl extends ServiceImpl<PatrolPlanMapper, PatrolP
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void add(PatrolPlanDto patrolPlanDto) {
-         PatrolPlan patrolPlan =new PatrolPlan();
-         patrolPlan.setCode(patrolPlanDto.getCode());
-         patrolPlan.setName(patrolPlanDto.getName());
-         patrolPlan.setEndDate(patrolPlanDto.getEndDate());
-         patrolPlan.setStartDate(patrolPlanDto.getStartDate());
-         patrolPlan.setRemark(patrolPlanDto.getRemark());
-         patrolPlan.setType(patrolPlanDto.getType());
-         patrolPlan.setOutsource(patrolPlanDto.getOutsource());
-         patrolPlan.setConfirm(patrolPlanDto.getConfirm());
-         patrolPlan.setPeriod(patrolPlanDto.getPeriod());
+         PatrolPlan patrolPlan =new PatrolPlan();patrolPlan.setCode(patrolPlanDto.getCode());
+         patrolPlan.setName(patrolPlanDto.getName());patrolPlan.setEndDate(patrolPlanDto.getEndDate());
+         patrolPlan.setStartDate(patrolPlanDto.getStartDate());patrolPlan.setRemark(patrolPlanDto.getRemark());
+         patrolPlan.setType(patrolPlanDto.getType());patrolPlan.setOutsource(patrolPlanDto.getOutsource());
+         patrolPlan.setConfirm(patrolPlanDto.getConfirm());patrolPlan.setPeriod(patrolPlanDto.getPeriod());
          baseMapper.insert(patrolPlan);
         PatrolPlan id = baseMapper.selectByCode(patrolPlanDto.getCode());
         if (patrolPlanDto.getPeriod()==1){
             PatrolPlanStrategy patrolPlanStrategy = new PatrolPlanStrategy();
-            patrolPlanStrategy.setPlanId(id.getId());
-            patrolPlanStrategy.setType(0);
+            patrolPlanStrategy.setPlanId(id.getId());patrolPlanStrategy.setType(0);
             patrolPlanStrategy.setEndTime(patrolPlanDto.getStrategyEndTime());
             patrolPlanStrategy.setStartTime(patrolPlanDto.getStrategyStartTime());
             patrolPlanStrategyMapper.insert(patrolPlanStrategy);
@@ -73,8 +71,7 @@ public class PatrolPlanServiceImpl extends ServiceImpl<PatrolPlanMapper, PatrolP
                 Integer f = Integer.parseInt(w);
                 PatrolPlanStrategy patrolPlanStrategy = new PatrolPlanStrategy();
                 patrolPlanStrategy.setPlanId(id.getId());
-                patrolPlanStrategy.setType(1);
-                patrolPlanStrategy.setWeek(f);
+                patrolPlanStrategy.setType(1);patrolPlanStrategy.setWeek(f);
                 patrolPlanStrategy.setEndTime(patrolPlanDto.getStrategyEndTime());
                 patrolPlanStrategy.setStartTime(patrolPlanDto.getStrategyStartTime());
                 patrolPlanStrategyMapper.insert(patrolPlanStrategy);
@@ -86,24 +83,20 @@ public class PatrolPlanServiceImpl extends ServiceImpl<PatrolPlanMapper, PatrolP
                 Integer f = Integer.parseInt(w);
                 PatrolPlanStrategy patrolPlanStrategy = new PatrolPlanStrategy();
                 patrolPlanStrategy.setPlanId(id.getId());
-                patrolPlanStrategy.setType(2);
-                patrolPlanStrategy.setWeek(f);
+                patrolPlanStrategy.setType(2);patrolPlanStrategy.setWeek(f);
                 patrolPlanStrategy.setEndTime(patrolPlanDto.getStrategyEndTime());
                 patrolPlanStrategy.setStartTime(patrolPlanDto.getStrategyStartTime());
                 for (String t:time){
-                    Integer i=Integer.parseInt(t);
-                    patrolPlanStrategy.setTime(i);
+                    Integer i=Integer.parseInt(t);patrolPlanStrategy.setTime(i);
                 }
                 patrolPlanStrategyMapper.insert(patrolPlanStrategy);
             }
         }
-        List<PatrolStandard> list = patrolPlanDto.getPatrolStandards();
+        List<PatrolStandardDto> list = patrolPlanDto.getPatrolStandards();
         if(CollectionUtils.isNotEmpty(list)){
-        PatrolPlanStandard patrolPlanStandard =new PatrolPlanStandard();
-        patrolPlanStandard.setPlanId(id.getId());
         for (PatrolStandard r:list) {
-             patrolPlanStandard.setPlanId(id.getId());
-             patrolPlanStandard.setStandardCode(r.getCode());
+            PatrolPlanStandard patrolPlanStandard =new PatrolPlanStandard();patrolPlanStandard.setPlanId(id.getId());
+             patrolPlanStandard.setPlanId(id.getId());patrolPlanStandard.setStandardCode(r.getCode());
              patrolPlanStandard.setProfessionCode(r.getProfessionCode());
              patrolPlanStandard.setSubsystemCode(r.getSubsystemCode());
              patrolPlanStandardMapper.insert(patrolPlanStandard);
@@ -132,8 +125,7 @@ public class PatrolPlanServiceImpl extends ServiceImpl<PatrolPlanMapper, PatrolP
                 PatrolPlanDevice patrolPlanDevice= new PatrolPlanDevice();
                 patrolPlanDevice.setPlanId(id.getId());
                 String standardId= baseMapper.byCode(p.getPlanStandardCode());
-                patrolPlanDevice.setPlanStandardId(standardId);
-                patrolPlanDevice.setDeviceCode(p.getCode());
+                patrolPlanDevice.setPlanStandardId(standardId);patrolPlanDevice.setDeviceCode(p.getCode());
                 patrolPlanDeviceMapper.insert(patrolPlanDevice);
             }
         }
@@ -145,14 +137,16 @@ public class PatrolPlanServiceImpl extends ServiceImpl<PatrolPlanMapper, PatrolP
     }
 
     @Override
-    public PatrolPlanDto selectById(String id) {
-        PatrolPlanDto patrolPlanDto = baseMapper.selectId(id);
-        patrolPlanDto.setSiteCodes(Arrays.asList(patrolPlanDto.getSiteCode().split(",")));
+    public PatrolPlanDto selectId(String id,String code) {
+        PatrolPlanDto patrolPlanDto = baseMapper.selectId(id,code);
+        if(ObjectUtil.isNotEmpty(patrolPlanDto.getSiteCode())){
+        patrolPlanDto.setSiteCodes(Arrays.asList(patrolPlanDto.getSiteCode().split(",")));}
         patrolPlanDto.setMechanismCodes(Arrays.asList(patrolPlanDto.getMechanismCode().split(",")));
-        List<String> ids = Arrays.asList(patrolPlanDto.getIds().split(","));
-        patrolPlanDto.setPatrolStandards(patrolStandardMapper.selectBatchIds(ids));
-        patrolPlanDto.setWeek(Arrays.asList(patrolPlanDto.getWs().split(",")));
-        patrolPlanDto.setTime(Arrays.asList(patrolPlanDto.getTs().split(",")));
+        patrolPlanDto.setPatrolStandards(patrolStandardMapper.selectbyIds(patrolPlanDto.getIds()));
+        if(ObjectUtil.isNotEmpty(patrolPlanDto.getWs())){
+        patrolPlanDto.setWeek(Arrays.asList(patrolPlanDto.getWs().split(",")));}
+        if(ObjectUtil.isNotEmpty(patrolPlanDto.getTs())){
+        patrolPlanDto.setTime(Arrays.asList(patrolPlanDto.getTs().split(",")));}
         return patrolPlanDto;
     }
 

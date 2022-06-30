@@ -84,6 +84,6 @@ public class FaultKnowledgeBaseTypeServiceImpl extends ServiceImpl<FaultKnowledg
             FaultKnowledgeBaseType f = faultKnowledgeBaseTypeMapper.selectById(faultKnowledgeBaseType.getPid());
             faultKnowledgeBaseType.setCodeCc(f.getCodeCc() + faultKnowledgeBaseType.getCode() + "/");
         }
-        this.save(faultKnowledgeBaseType);
+        faultKnowledgeBaseTypeMapper.insert(faultKnowledgeBaseType);
     }
 }

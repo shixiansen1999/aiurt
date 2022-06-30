@@ -6,6 +6,8 @@ import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.standard.entity.PatrolStandardItems;
 import com.aiurt.boot.standard.mapper.PatrolStandardItemsMapper;
+import com.aiurt.boot.standard.entity.PatrolStandardItems;
+import com.aiurt.boot.standard.mapper.PatrolStandardItemsMapper;
 import com.aiurt.boot.task.dto.PatrolCheckResultDTO;
 import com.aiurt.boot.task.dto.PatrolTaskDeviceDTO;
 import com.aiurt.boot.task.entity.PatrolAccompany;
@@ -19,10 +21,14 @@ import com.aiurt.boot.task.mapper.PatrolTaskStandardMapper;
 import com.aiurt.boot.task.param.PatrolTaskDeviceParam;
 import com.aiurt.boot.task.service.IPatrolTaskDeviceService;
 import com.aiurt.common.exception.AiurtBootException;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import org.apache.shiro.SecurityUtils;
+import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -44,6 +50,10 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
     private PatrolAccompanyMapper patrolAccompanyMapper;
     @Autowired
     private PatrolCheckResultMapper patrolCheckResultMapper;
+    @Autowired
+    private PatrolTaskStandardMapper patrolTaskStandardMapper;
+    @Autowired
+    private PatrolStandardItemsMapper patrolStandardItemsMapper;
 
     @Autowired
     private PatrolTaskStandardMapper patrolTaskStandardMapper;
@@ -58,10 +68,12 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
     }
 
     @Override
-    public Page<PatrolTaskDeviceDTO> getPatrolTaskDeviceList(Page<PatrolTaskDeviceDTO> pageList, String id) {
+    public Page<PatrolTaskDeviceDTO> getPatrolTaskDeviceList(Page<PatrolTaskDeviceDTO> pageList, String code) {
 
         List<PatrolTaskDeviceDTO> patrolTaskDeviceList = patrolTaskDeviceMapper.getPatrolTaskDeviceList(pageList, id);
         patrolTaskDeviceList.stream().forEach(e -> {
+        List<PatrolTaskDeviceDTO> patrolTaskDeviceList = patrolTaskDeviceMapper.getPatrolTaskDeviceList(pageList, code);
+        patrolTaskDeviceList.stream().forEach(e->{
             String accompanyName = patrolAccompanyMapper.getAccompanyName(e.getPatrolNumber());
             e.setAccompanyName(accompanyName);
         });
@@ -156,5 +168,36 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
             }
         }
         return tree;
+    }
+    @Override
+    public void getPatrolTaskCheck(PatrolTaskDeviceDTO patrolTaskDeviceDTO) {
+        //更新任务状态（将未开始改为执行中）、添加检查人id，传任务主键id,巡检工单主键，
+        LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        PatrolTaskDevice patrolPDevice = new PatrolTaskDevice();
+        LambdaUpdateWrapper<PatrolTaskDevice> updateWrapper = new LambdaUpdateWrapper<>();
+        updateWrapper.set(PatrolTaskDevice::getStatus, 1)
+                .set(PatrolTaskDevice::getUserId, sysUser.getId())
+                .eq(PatrolTaskDevice::getTaskId, patrolTaskDeviceDTO.getTaskId()).eq(PatrolTaskDevice::getId,patrolPDevice.getId());
+        patrolTaskDeviceMapper.update(patrolPDevice, updateWrapper);
+        //1.提前写入检查结果,插入巡检任务检查结果表
+        //1.1查询这个任务中，这个单号，获取巡检任务标准关联表Id
+        LambdaQueryWrapper<PatrolTaskDevice> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(PatrolTaskDevice::getTaskId,patrolTaskDeviceDTO.getTaskId()).eq(PatrolTaskDevice::getId,patrolTaskDeviceDTO.getId());
+        PatrolTaskDevice patrolTaskDevice = patrolTaskDeviceMapper.selectOne(queryWrapper);
+        //1.2根据巡检任务标准关联表ID，获取巡检标准表Id
+        LambdaQueryWrapper<PatrolTaskStandard> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(PatrolTaskStandard::getId,patrolTaskDevice.getTaskStandardId());
+        PatrolTaskStandard patrolTaskStandard = patrolTaskStandardMapper.selectOne(wrapper);
+        //1.3根据标准表Id,获取这边标准表的所以的检查项
+        LambdaQueryWrapper<PatrolStandardItems> itemsLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        itemsLambdaQueryWrapper.eq(PatrolStandardItems::getStandardId,patrolTaskStandard.getStandardId());
+        List<PatrolStandardItems> standardItemsList = patrolStandardItemsMapper.selectList(itemsLambdaQueryWrapper);
+        standardItemsList.stream().forEach(e->{
+            PatrolCheckResult patrolCheckResult = new PatrolCheckResult();
+            patrolCheckResult.setTaskDeviceId(patrolTaskDevice.getId());
+            patrolCheckResult.setTaskStandardId(patrolTaskDevice.getTaskStandardId());
+           // patrolCheckResult.setId()
+        });
+
     }
 }

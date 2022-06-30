@@ -2,9 +2,9 @@ package com.aiurt.boot.task.service;
 
 import com.aiurt.boot.task.dto.PatrolAppointUserDTO;
 import com.aiurt.boot.task.dto.PatrolTaskDTO;
+import com.aiurt.boot.task.dto.PatrolTaskSubmitDTO;
 import com.aiurt.boot.task.dto.PatrolTaskUserDTO;
 import com.aiurt.boot.task.entity.PatrolTask;
-import com.aiurt.boot.task.entity.PatrolTaskUser;
 import com.aiurt.boot.task.param.PatrolTaskParam;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -52,14 +52,6 @@ public interface IPatrolTaskService extends IService<PatrolTask> {
      * @param patrolTaskDTO
      */
     void getPatrolTaskReturn(PatrolTaskDTO patrolTaskDTO);
-
-    /**
-     * app巡检任务执行中-检查
-     *
-     * @param patrolTaskDTO
-     */
-    void getPatrolTaskCheck(PatrolTaskDTO patrolTaskDTO);
-
     /**
      * app巡检任务-指派人员查询
      *
@@ -105,4 +97,11 @@ public interface IPatrolTaskService extends IService<PatrolTask> {
      * @return
      */
     int taskDiscard(List<PatrolTask> list);
+
+    /**
+     * app巡检任务提交-统计工单数量
+     * @param patrolTaskSubmitDTO
+     * @return
+     */
+    PatrolTaskSubmitDTO getSubmitTaskCount(PatrolTaskSubmitDTO patrolTaskSubmitDTO);
 }

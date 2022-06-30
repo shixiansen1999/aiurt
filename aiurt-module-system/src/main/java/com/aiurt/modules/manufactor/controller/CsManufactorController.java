@@ -150,7 +150,7 @@ public class CsManufactorController  {
 	 * @param ids
 	 * @return
 	 */
-	@AutoLog(value = "厂商信息批量删除")
+	/*@AutoLog(value = "厂商信息批量删除")
 	@ApiOperation(value="厂商信息批量删除", notes="厂商信息批量删除")
 	@DeleteMapping(value = "/deleteBatch")
 	public Result<?> deleteBatch(@RequestParam(name="ids",required=true) String ids) {
@@ -158,7 +158,7 @@ public class CsManufactorController  {
 			delete(id);
 		});
 		return Result.OK("批量删除成功!");
-	}
+	}*/
 
 	/**
 	 * 通过id查询

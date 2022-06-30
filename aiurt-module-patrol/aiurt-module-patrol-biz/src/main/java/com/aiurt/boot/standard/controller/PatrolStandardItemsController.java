@@ -138,6 +138,10 @@ public class PatrolStandardItemsController extends BaseController<PatrolStandard
 	public Result<String> delete(@RequestParam(name="id",required=true) String id) {
 		PatrolStandardItems patrolStandardItems = new PatrolStandardItems();
 		patrolStandardItems.setId(id); patrolStandardItems.setDelFlag(1);
+		PatrolStandardItems patrolStandardItem = patrolStandardItemsService.getById(id);
+		if ("0".equals(patrolStandardItem.getParentId())){
+			patrolStandardItemsMapper.updatPId(id);
+		}
 		patrolStandardItemsService.updateById(patrolStandardItems);
 		return Result.OK("删除成功!");
 	}

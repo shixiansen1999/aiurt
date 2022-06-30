@@ -12,10 +12,13 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import com.aiurt.common.aspect.annotation.AutoLog;
+import com.aiurt.modules.device.entity.DeviceType;
+import com.aiurt.modules.device.service.IDeviceTypeService;
 import com.aiurt.modules.major.entity.CsMajor;
 import com.aiurt.modules.major.service.ICsMajorService;
 import com.aiurt.modules.material.entity.MaterialBaseType;
 import com.aiurt.modules.material.service.IMaterialBaseTypeService;
+import com.aiurt.modules.position.entity.CsStation;
 import com.aiurt.modules.subsystem.entity.CsSubsystem;
 import com.aiurt.modules.subsystem.entity.CsSubsystemUser;
 import com.aiurt.modules.subsystem.mapper.CsSubsystemUserMapper;
@@ -68,7 +71,8 @@ public class CsSubsystemController  {
 	private ISysBaseAPI sysBaseAPI;
 	@Autowired
 	private IMaterialBaseTypeService materialBaseTypeService;
-
+	 @Autowired
+	 private IDeviceTypeService deviceTypeService;
 	 /**
 	  * 专业子系统树
 	  *
@@ -91,7 +95,6 @@ public class CsSubsystemController  {
 	  *
 	  * @return
 	  */
-	 //@AutoLog(value = "子系统-专业子系统树")
 	 @ApiOperation(value="子系统-专业子系统树", notes="子系统-专业子系统树")
 	 @GetMapping(value = "/systemTreeList")
 	 public Result<?> systemTreeList(Integer level) {
@@ -121,56 +124,12 @@ public class CsSubsystemController  {
 		 });
 		 return Result.OK(newList);
 	 }
-	/**
-	 * 分页列表查询
-	 *
-	 * @param csSubsystem
-	 * @param pageNo
-	 * @param pageSize
-	 * @param req
-	 * @return
-	 */
-	//@AutoLog(value = "子系统分页列表查询")
-	/*@ApiOperation(value="子系统分页列表查询", notes="子系统分页列表查询")
-	@GetMapping(value = "/list")
-	public Result<?> queryPageList(CsSubsystem csSubsystem,
-								   @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
-								   @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
-								   HttpServletRequest req) {
-		QueryWrapper<CsSubsystem> queryWrapper = QueryGenerator.initQueryWrapper(csSubsystem, req.getParameterMap());
-		Page<CsSubsystem> page = new Page<CsSubsystem>(pageNo, pageSize);
-		IPage<CsSubsystem> pageList = csSubsystemService.page(page, queryWrapper.eq("del_flag",0));
-		pageList.getRecords().forEach(system->{
-			LambdaQueryWrapper<CsSubsystemUser> userQueryWrapper = new LambdaQueryWrapper<>();
-			userQueryWrapper.eq(CsSubsystemUser::getSubsystemId,system.getId());
-			List<CsSubsystemUser> userList = csSubsystemUserMapper.selectList(userQueryWrapper);
-			String realNames = "";
-			String userNames = "";
-			if(!userList.isEmpty()){
-				for(CsSubsystemUser systemUser:userList){
-					userNames += systemUser.getUsername() + ",";
-					LoginUser user = sysBaseAPI.getUserById(systemUser.getUserId()+"");
-				 	if(null!=user){
-						realNames += user.getRealname() + ",";
-					}
-				}
-			}
-            if(!realNames.equals("")){
-				system.setSystemUserName(realNames.substring(0,realNames.length()-1));
-			}
-			if(!userNames.equals("")){
-				system.setSystemUserList(userNames.substring(0,userNames.length()-1));
-			}
-		});
-		return Result.OK(pageList);
-	}*/
 
 	 @ApiOperation(value="子系统列表查询", notes="子系统列表查询")
 	 @GetMapping(value = "/selectList")
 	 public Result<?> selectlist(
 									@RequestParam(name="majorCode", required = false) String majorCode,
 									@RequestParam(name="systemName", required = false) String systemName,
-									HttpServletRequest req,
 									@RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
 									@RequestParam(name="pageSize", defaultValue="10") Integer pageSize) {
 		 QueryWrapper<CsSubsystem> queryWrapper = new QueryWrapper<>();
@@ -257,8 +216,14 @@ public class CsSubsystemController  {
 	public Result<?> delete(@RequestParam(name="id",required=true) String id) {
 		CsSubsystem csSubsystem = csSubsystemService.getById(id);
 
-		//判断是否被设备类型使用 todo
-
+		//判断是否被设备类型使用
+		LambdaQueryWrapper<DeviceType> deviceWrapper = new LambdaQueryWrapper<>();
+		deviceWrapper.eq(DeviceType::getSystemCode,csSubsystem.getSystemCode());
+		deviceWrapper.eq(DeviceType::getDelFlag,0);
+		List<DeviceType> deviceList = deviceTypeService.list(deviceWrapper);
+		if(!deviceList.isEmpty()){
+			return Result.error("该子系统被设备类型使用中，不能删除!");
+		}
 		//判断是否被物资分类使用
 		LambdaQueryWrapper<MaterialBaseType> materWrapper = new LambdaQueryWrapper<>();
 		materWrapper.eq(MaterialBaseType::getSystemCode,csSubsystem.getSystemCode());
@@ -309,6 +274,19 @@ public class CsSubsystemController  {
 		}
 		return Result.OK(csSubsystem);
 	}
+
+	 /**
+	  * 根据专业查子系统
+	  * @param majorCode
+	  * @return
+	  */
+	 @ApiOperation(value="根据专业查子系统", notes="根据专业查子系统")
+	 @GetMapping(value = "/getList")
+	 public Result<?> getList(@RequestParam(name="majorCode",required=true) String majorCode) {
+		 LambdaQueryWrapper<CsSubsystem> queryWrapper = new LambdaQueryWrapper<>();
+		 List<CsSubsystem> list = csSubsystemService.list(queryWrapper.eq(CsSubsystem::getDelFlag,0).eq(CsSubsystem::getMajorCode,majorCode));
+		 return Result.OK(list);
+	 }
 
 
 }

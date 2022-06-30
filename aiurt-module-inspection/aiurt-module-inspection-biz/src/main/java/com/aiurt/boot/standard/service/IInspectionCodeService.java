@@ -1,7 +1,10 @@
 package com.aiurt.boot.standard.service;
 
 
+import com.aiurt.boot.manager.dto.InspectionCodeDTO;
 import com.aiurt.boot.standard.entity.InspectionCode;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 
 /**
@@ -11,5 +14,17 @@ import com.baomidou.mybatisplus.extension.service.IService;
  * @Version: V1.0
  */
 public interface IInspectionCodeService extends IService<InspectionCode> {
+    /**
+     * 分页查询
+     * @param page
+     * @param inspectionCodeDTO
+     * @return
+     */
+    IPage<InspectionCodeDTO> pageList(Page<InspectionCodeDTO> page, InspectionCodeDTO inspectionCodeDTO);
 
+    /**
+     * 逻辑删除
+     * @param id
+     */
+    void updateDelFlag(String id);
 }

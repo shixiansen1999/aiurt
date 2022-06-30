@@ -7,6 +7,7 @@ import com.aiurt.modules.device.entity.Device;
 import com.aiurt.modules.device.entity.DeviceType;
 import com.aiurt.modules.device.service.IDeviceService;
 import com.aiurt.modules.device.service.IDeviceTypeService;
+import com.aiurt.modules.faultlevel.entity.FaultLevel;
 import com.aiurt.modules.major.entity.CsMajor;
 import com.aiurt.modules.major.service.ICsMajorService;
 import com.aiurt.modules.material.entity.MaterialBase;
@@ -131,9 +132,30 @@ public class DeviceTypeController extends BaseController<DeviceType, IDeviceType
 								   @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
 								   @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
 								   HttpServletRequest req) {
-		QueryWrapper<DeviceType> queryWrapper = QueryGenerator.initQueryWrapper(deviceType, req.getParameterMap());
+		//QueryWrapper<DeviceType> queryWrapper = QueryGenerator.initQueryWrapper(deviceType, req.getParameterMap());
+		LambdaQueryWrapper<DeviceType> queryWrapper = new LambdaQueryWrapper<>();
+		if(null != deviceType.getName() && !"".equals(deviceType.getName())){
+			queryWrapper.like(DeviceType::getName, deviceType.getName());
+		}
+		if(null != deviceType.getStatus() && !"".equals(deviceType.getStatus())){
+			queryWrapper.eq(DeviceType::getStatus, deviceType.getStatus());
+		}
+		if(null != deviceType.getIsSpecialDevice() && !"".equals(deviceType.getIsSpecialDevice())){
+			queryWrapper.eq(DeviceType::getIsSpecialDevice, deviceType.getIsSpecialDevice());
+		}
+		if(null != deviceType.getMajorCode() && !"".equals(deviceType.getMajorCode())){
+			queryWrapper.eq(DeviceType::getMajorCode, deviceType.getMajorCode());
+		}
+		if(null != deviceType.getPid() && !"".equals(deviceType.getPid())){
+			queryWrapper.eq(DeviceType::getPid, deviceType.getPid());
+			if(null != deviceType.getSystemCode() && !"".equals(deviceType.getSystemCode())){
+				queryWrapper.eq(DeviceType::getSystemCode, deviceType.getSystemCode());
+			}else{
+				queryWrapper.eq(DeviceType::getSystemCode, null);
+			}
+		}
 		Page<DeviceType> page = new Page<DeviceType>(pageNo, pageSize);
-		IPage<DeviceType> pageList = deviceTypeService.page(page, queryWrapper);
+		IPage<DeviceType> pageList = deviceTypeService.page(page, queryWrapper.eq(DeviceType::getDelFlag,0));
 		return Result.OK(pageList);
 	}
 
@@ -190,7 +212,8 @@ public class DeviceTypeController extends BaseController<DeviceType, IDeviceType
 		if(!list.isEmpty()){
 			return Result.error("存在子节点，无法删除");
 		}
-		deviceTypeService.removeById(id);
+		deviceType.setDelFlag(1);
+		deviceTypeService.updateById(deviceType);
 		return Result.OK("删除成功!");
 	}
 

@@ -57,9 +57,18 @@ public class FaultTypeController extends BaseController<FaultType, IFaultTypeSer
 												  @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
 												  @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
 												  HttpServletRequest req) {
-		QueryWrapper<FaultType> queryWrapper = QueryGenerator.initQueryWrapper(faultType, req.getParameterMap());
+		LambdaQueryWrapper<FaultType> queryWrapper = new LambdaQueryWrapper<>();
+		if(null != faultType.getName()   && !"".equals(faultType.getName())){
+			queryWrapper.like(FaultType::getName, faultType.getName());
+		}
+		if(null != faultType.getCode()   && !"".equals(faultType.getCode())){
+			queryWrapper.like(FaultType::getCode, faultType.getCode());
+		}
+		if(null != faultType.getMajorCode()   && !"".equals(faultType.getMajorCode())){
+			queryWrapper.eq(FaultType::getMajorCode, faultType.getMajorCode());
+		}
 		Page<FaultType> page = new Page<FaultType>(pageNo, pageSize);
-		IPage<FaultType> pageList = faultTypeService.page(page, queryWrapper.lambda().eq(FaultType::getDelFlag,0));
+		IPage<FaultType> pageList = faultTypeService.page(page, queryWrapper.eq(FaultType::getDelFlag,0));
 		return Result.OK(pageList);
 	}
 
@@ -100,13 +109,13 @@ public class FaultTypeController extends BaseController<FaultType, IFaultTypeSer
 	@DeleteMapping(value = "/delete")
 	public Result<?> delete(@RequestParam(name="id",required=true) String id) {
 		FaultType faultType = faultTypeService.getById(id);
-		//判断故障上报是否使用 todo
-		/*LambdaQueryWrapper<Fault> queryWrapper = new LambdaQueryWrapper<>();
+		//判断故障上报是否使用
+		LambdaQueryWrapper<Fault> queryWrapper = new LambdaQueryWrapper<>();
 		queryWrapper.eq(Fault::getFaultTypeCode, faultType.getCode());
 		List<Fault> list = faultService.list(queryWrapper);
 		if (!list.isEmpty()) {
 			return Result.error("故障分类编码已被故障报修单使用，不能删除！");
-		}*/
+		}
 		faultType.setDelFlag(1);
 		faultTypeService.updateById(faultType);
 		return Result.OK("删除成功!");

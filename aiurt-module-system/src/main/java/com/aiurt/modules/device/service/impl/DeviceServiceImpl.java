@@ -7,6 +7,8 @@ import com.aiurt.modules.device.mapper.DeviceAssemblyMapper;
 import com.aiurt.modules.device.mapper.DeviceMapper;
 import com.aiurt.modules.device.mapper.DeviceTypeMapper;
 import com.aiurt.modules.device.service.IDeviceService;
+import com.aiurt.modules.position.entity.CsStationPosition;
+import com.aiurt.modules.position.mapper.CsStationPositionMapper;
 import com.aiurt.modules.system.service.impl.SysBaseApiImpl;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -36,6 +38,9 @@ public class DeviceServiceImpl extends ServiceImpl<DeviceMapper, Device> impleme
 
 	@Autowired
 	private DeviceTypeMapper deviceTypeMapper;
+
+	@Autowired
+	private CsStationPositionMapper stationPositionMapper;
 
 	@Override
 	public Result<Device> queryDetailById(String deviceId) {
@@ -113,6 +118,7 @@ public class DeviceServiceImpl extends ServiceImpl<DeviceMapper, Device> impleme
 		String lineCodeName = sysBaseApi.translateDictFromTable("cs_line", "line_name", "line_code", lineCode);
 		String stationCodeName = sysBaseApi.translateDictFromTable("cs_station", "station_name", "station_code", stationCode);
 		String positionCodeName = sysBaseApi.translateDictFromTable("cs_station_position", "position_name", "position_code", positionCode);
+		String positionCodeCcName = lineCodeName + "/" + stationCodeName + "/" + positionCodeName;
 		String manageUserNameName = sysBaseApi.translateDictFromTable("sys_user", "realname", "username", manageUserName);
 		String orgCodeName = sysBaseApi.translateDictFromTable("sys_depart", "depart_name", "org_code", orgCode);
 		String manufactorCodeName = sysBaseApi.translateDictFromTable("cs_manufactor", "name", "code", manufactorCode);
@@ -140,6 +146,7 @@ public class DeviceServiceImpl extends ServiceImpl<DeviceMapper, Device> impleme
 		device.setManageUserNameName(manageUserNameName);
 		device.setOrgCodeName(orgCodeName);
 		device.setManufactorCodeName(manufactorCodeName);
+		device.setPositionCodeCcName(positionCodeCcName);
 		return device;
 	}
 

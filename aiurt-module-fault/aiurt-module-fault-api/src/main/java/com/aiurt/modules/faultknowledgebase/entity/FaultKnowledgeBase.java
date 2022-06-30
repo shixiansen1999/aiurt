@@ -5,6 +5,7 @@ import java.io.UnsupportedEncodingException;
 import java.util.Date;
 import java.math.BigDecimal;
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
@@ -124,18 +125,25 @@ public class FaultKnowledgeBase implements Serializable {
     @Excel(name = "附件", width = 15)
     @ApiModelProperty(value = "附件")
     private java.lang.String filePath;
+    /**状态*/
+    @Excel(name = "状态(0:待审批,1:已审批,2:已驳回)", width = 15)
+    @ApiModelProperty(value = "状态(0:待审批,1:已审批,2:已驳回)")
+    private Integer status;
 
     /**故障知识分类名称*/
     @Excel(name = "故障知识分类名称", width = 15)
     @ApiModelProperty(value = "故障知识分类名称")
+    @TableField(exist = false)
     private String knowledgeBaseTypeName;
 
     /**设备名称*/
     @Excel(name = "设备名称", width = 15)
     @ApiModelProperty(value = "设备名称")
+    @TableField(exist = false)
     private String deviceTypeName;
     /**组件名称*/
     @Excel(name = "组件名称", width = 15)
     @ApiModelProperty(value = "组件名称")
+    @TableField(exist = false)
     private String materialName;
 }

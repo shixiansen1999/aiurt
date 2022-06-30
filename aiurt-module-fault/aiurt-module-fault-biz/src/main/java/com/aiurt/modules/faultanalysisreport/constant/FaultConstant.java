@@ -6,4 +6,19 @@ package com.aiurt.modules.faultanalysisreport.constant;
 public class FaultConstant {
     /**管理员角色*/
     public final static String ADMIN = "admin";
+
+    /**待审批*/
+    public final static Integer PENDING = 0;
+
+    /**已审批*/
+    public final static Integer APPROVED = 1;
+
+    /**已驳回*/
+    public final static Integer REJECTED = 2;
+
+    /**已通过*/
+    public final static Integer PASSED = 1;
+
+    /**未通过*/
+    public final static Integer NO_PASS = 0;
 }

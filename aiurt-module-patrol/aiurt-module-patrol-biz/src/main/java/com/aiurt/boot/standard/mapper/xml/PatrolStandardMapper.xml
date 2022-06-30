@@ -45,5 +45,13 @@
             AND d.system_code = #{subsystemCode}
         </if>
     </select>
+    <select id="selectbyIds" resultType="com.aiurt.boot.standard.dto.PatrolStandardDto">
+        select *,b.major_name as professionName, c.system_name as subsystemName ,d.name as deviceTypeName
+        from patrol_standard as a
+                 left join cs_major b on a.profession_code =b.major_code
+                 left join cs_subsystem c on a.subsystem_code =c.system_code
+                 left join device_type d on a.device_type_code =d.code
+        where a.del_flag =0 and a.id in (#{ids})
+    </select>
 
 </mapper>
