@@ -39,9 +39,6 @@ public class DeviceServiceImpl extends ServiceImpl<DeviceMapper, Device> impleme
 	@Autowired
 	private DeviceTypeMapper deviceTypeMapper;
 
-	@Autowired
-	private CsStationPositionMapper stationPositionMapper;
-
 	@Override
 	public Result<Device> queryDetailById(String deviceId) {
     	Device device = deviceMapper.selectById(deviceId);
@@ -118,7 +115,14 @@ public class DeviceServiceImpl extends ServiceImpl<DeviceMapper, Device> impleme
 		String lineCodeName = sysBaseApi.translateDictFromTable("cs_line", "line_name", "line_code", lineCode);
 		String stationCodeName = sysBaseApi.translateDictFromTable("cs_station", "station_name", "station_code", stationCode);
 		String positionCodeName = sysBaseApi.translateDictFromTable("cs_station_position", "position_name", "position_code", positionCode);
-		String positionCodeCcName = lineCodeName + "/" + stationCodeName + "/" + positionCodeName;
+		String positionCodeCc = lineCode + "/" + stationCode ;
+		if (!"".equals(positionCode) && positionCode != null) {
+			positionCodeCc += "/" + positionCode;
+		}
+		String positionCodeCcName = lineCodeName + "/" + stationCodeName  ;
+		if(!"".equals(positionCodeName) && positionCodeName != null){
+			positionCodeCcName += "/" + positionCodeName;
+		}
 		String manageUserNameName = sysBaseApi.translateDictFromTable("sys_user", "realname", "username", manageUserName);
 		String orgCodeName = sysBaseApi.translateDictFromTable("sys_depart", "depart_name", "org_code", orgCode);
 		String manufactorCodeName = sysBaseApi.translateDictFromTable("cs_manufactor", "name", "code", manufactorCode);
@@ -146,6 +150,7 @@ public class DeviceServiceImpl extends ServiceImpl<DeviceMapper, Device> impleme
 		device.setManageUserNameName(manageUserNameName);
 		device.setOrgCodeName(orgCodeName);
 		device.setManufactorCodeName(manufactorCodeName);
+		device.setPositionCodeCc(positionCodeCc);
 		device.setPositionCodeCcName(positionCodeCcName);
 		return device;
 	}
