@@ -171,27 +171,27 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
      * @param patrolTask
      * @return
      */
-    @AutoLog(value = "patrol_task-添加")
+   /* @AutoLog(value = "patrol_task-添加")
     @ApiOperation(value = "patrol_task-添加", notes = "patrol_task-添加")
     @PostMapping(value = "/add")
     public Result<String> add(@RequestBody PatrolTask patrolTask) {
         patrolTaskService.save(patrolTask);
         return Result.OK("添加成功！");
     }
-
+*/
     /**
      * 编辑
      *
      * @param patrolTask
      * @return
      */
-    @AutoLog(value = "patrol_task-编辑")
+   /* @AutoLog(value = "patrol_task-编辑")
     @ApiOperation(value = "patrol_task-编辑", notes = "patrol_task-编辑")
     @RequestMapping(value = "/edit", method = {RequestMethod.PUT, RequestMethod.POST})
     public Result<String> edit(@RequestBody PatrolTask patrolTask) {
         patrolTaskService.updateById(patrolTask);
         return Result.OK("编辑成功!");
-    }
+    }*/
 
     /**
      * 通过id删除
@@ -199,27 +199,27 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
      * @param id
      * @return
      */
-    @AutoLog(value = "patrol_task-通过id删除")
+    /*@AutoLog(value = "patrol_task-通过id删除")
     @ApiOperation(value = "patrol_task-通过id删除", notes = "patrol_task-通过id删除")
     @DeleteMapping(value = "/delete")
     public Result<String> delete(@RequestParam(name = "id", required = true) String id) {
         patrolTaskService.removeById(id);
         return Result.OK("删除成功!");
     }
-
+*/
     /**
      * 批量删除
      *
      * @param ids
      * @return
      */
-    @AutoLog(value = "patrol_task-批量删除")
+    /*@AutoLog(value = "patrol_task-批量删除")
     @ApiOperation(value = "patrol_task-批量删除", notes = "patrol_task-批量删除")
     @DeleteMapping(value = "/deleteBatch")
     public Result<String> deleteBatch(@RequestParam(name = "ids", required = true) String ids) {
         this.patrolTaskService.removeByIds(Arrays.asList(ids.split(",")));
         return Result.OK("批量删除成功!");
-    }
+    }*/
 
     /**
      * 通过id查询
@@ -227,7 +227,7 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
      * @param id
      * @return
      */
-    //@AutoLog(value = "patrol_task-通过id查询")
+    /*//@AutoLog(value = "patrol_task-通过id查询")
     @ApiOperation(value = "patrol_task-通过id查询", notes = "patrol_task-通过id查询")
     @GetMapping(value = "/queryById")
     public Result<PatrolTask> queryById(@RequestParam(name = "id", required = true) String id) {
@@ -236,7 +236,7 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
             return Result.error("未找到对应数据");
         }
         return Result.OK(patrolTask);
-    }
+    }*/
 
     /**
      * app-巡检任务池
@@ -411,11 +411,11 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
      * @param request
      * @param patrolTask
      */
-    @RequestMapping(value = "/exportXls")
+   /* @RequestMapping(value = "/exportXls")
     public ModelAndView exportXls(HttpServletRequest request, PatrolTask patrolTask) {
         return super.exportXls(request, patrolTask, PatrolTask.class, "patrol_task");
     }
-
+*/
     /**
      * 通过excel导入数据
      *
@@ -423,9 +423,9 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
      * @param response
      * @return
      */
-    @RequestMapping(value = "/importExcel", method = RequestMethod.POST)
+    /*@RequestMapping(value = "/importExcel", method = RequestMethod.POST)
     public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) {
         return super.importExcel(request, response, PatrolTask.class);
-    }
+    }*/
 
 }

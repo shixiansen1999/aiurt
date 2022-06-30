@@ -59,7 +59,7 @@ public class PatrolTaskStationController extends BaseController<PatrolTaskStatio
 	 * @param req
 	 * @return
 	 */
-	//@AutoLog(value = "patrol_task_station-分页列表查询")
+	/*//@AutoLog(value = "patrol_task_station-分页列表查询")
 	@ApiOperation(value="patrol_task_station-分页列表查询", notes="patrol_task_station-分页列表查询")
 	@GetMapping(value = "/list")
 	public Result<IPage<PatrolTaskStation>> queryPageList(PatrolTaskStation patrolTaskStation,
@@ -70,7 +70,7 @@ public class PatrolTaskStationController extends BaseController<PatrolTaskStatio
 		Page<PatrolTaskStation> page = new Page<PatrolTaskStation>(pageNo, pageSize);
 		IPage<PatrolTaskStation> pageList = patrolTaskStationService.page(page, queryWrapper);
 		return Result.OK(pageList);
-	}
+	}*/
 
 	/**
 	 *   添加
@@ -78,13 +78,13 @@ public class PatrolTaskStationController extends BaseController<PatrolTaskStatio
 	 * @param patrolTaskStation
 	 * @return
 	 */
-	@AutoLog(value = "patrol_task_station-添加")
+	/*@AutoLog(value = "patrol_task_station-添加")
 	@ApiOperation(value="patrol_task_station-添加", notes="patrol_task_station-添加")
 	@PostMapping(value = "/add")
 	public Result<String> add(@RequestBody PatrolTaskStation patrolTaskStation) {
 		patrolTaskStationService.save(patrolTaskStation);
 		return Result.OK("添加成功！");
-	}
+	}*/
 
 	/**
 	 *  编辑
@@ -92,13 +92,13 @@ public class PatrolTaskStationController extends BaseController<PatrolTaskStatio
 	 * @param patrolTaskStation
 	 * @return
 	 */
-	@AutoLog(value = "patrol_task_station-编辑")
+	/*@AutoLog(value = "patrol_task_station-编辑")
 	@ApiOperation(value="patrol_task_station-编辑", notes="patrol_task_station-编辑")
 	@RequestMapping(value = "/edit", method = {RequestMethod.PUT,RequestMethod.POST})
 	public Result<String> edit(@RequestBody PatrolTaskStation patrolTaskStation) {
 		patrolTaskStationService.updateById(patrolTaskStation);
 		return Result.OK("编辑成功!");
-	}
+	}*/
 
 	/**
 	 *   通过id删除
@@ -106,13 +106,13 @@ public class PatrolTaskStationController extends BaseController<PatrolTaskStatio
 	 * @param id
 	 * @return
 	 */
-	@AutoLog(value = "patrol_task_station-通过id删除")
+	/*@AutoLog(value = "patrol_task_station-通过id删除")
 	@ApiOperation(value="patrol_task_station-通过id删除", notes="patrol_task_station-通过id删除")
 	@DeleteMapping(value = "/delete")
 	public Result<String> delete(@RequestParam(name="id",required=true) String id) {
 		patrolTaskStationService.removeById(id);
 		return Result.OK("删除成功!");
-	}
+	}*/
 
 	/**
 	 *  批量删除
@@ -120,13 +120,13 @@ public class PatrolTaskStationController extends BaseController<PatrolTaskStatio
 	 * @param ids
 	 * @return
 	 */
-	@AutoLog(value = "patrol_task_station-批量删除")
+	/*@AutoLog(value = "patrol_task_station-批量删除")
 	@ApiOperation(value="patrol_task_station-批量删除", notes="patrol_task_station-批量删除")
 	@DeleteMapping(value = "/deleteBatch")
 	public Result<String> deleteBatch(@RequestParam(name="ids",required=true) String ids) {
 		this.patrolTaskStationService.removeByIds(Arrays.asList(ids.split(",")));
 		return Result.OK("批量删除成功!");
-	}
+	}*/
 
 	/**
 	 * 通过id查询
@@ -134,7 +134,7 @@ public class PatrolTaskStationController extends BaseController<PatrolTaskStatio
 	 * @param id
 	 * @return
 	 */
-	//@AutoLog(value = "patrol_task_station-通过id查询")
+	/*//@AutoLog(value = "patrol_task_station-通过id查询")
 	@ApiOperation(value="patrol_task_station-通过id查询", notes="patrol_task_station-通过id查询")
 	@GetMapping(value = "/queryById")
 	public Result<PatrolTaskStation> queryById(@RequestParam(name="id",required=true) String id) {
@@ -143,7 +143,7 @@ public class PatrolTaskStationController extends BaseController<PatrolTaskStatio
 			return Result.error("未找到对应数据");
 		}
 		return Result.OK(patrolTaskStation);
-	}
+	}*/
 
     /**
     * 导出excel
@@ -151,10 +151,10 @@ public class PatrolTaskStationController extends BaseController<PatrolTaskStatio
     * @param request
     * @param patrolTaskStation
     */
-    @RequestMapping(value = "/exportXls")
+   /* @RequestMapping(value = "/exportXls")
     public ModelAndView exportXls(HttpServletRequest request, PatrolTaskStation patrolTaskStation) {
         return super.exportXls(request, patrolTaskStation, PatrolTaskStation.class, "patrol_task_station");
-    }
+    }*/
 
     /**
       * 通过excel导入数据
@@ -163,9 +163,9 @@ public class PatrolTaskStationController extends BaseController<PatrolTaskStatio
     * @param response
     * @return
     */
-    @RequestMapping(value = "/importExcel", method = RequestMethod.POST)
+    /*@RequestMapping(value = "/importExcel", method = RequestMethod.POST)
     public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) {
         return super.importExcel(request, response, PatrolTaskStation.class);
-    }
+    }*/
 
 }

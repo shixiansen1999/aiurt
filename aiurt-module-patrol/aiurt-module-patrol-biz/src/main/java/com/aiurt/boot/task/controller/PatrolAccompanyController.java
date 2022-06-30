@@ -47,7 +47,7 @@ public class PatrolAccompanyController extends BaseController<PatrolAccompany, I
 	 * @return
 	 */
 	//@AutoLog(value = "patrol_accompany-分页列表查询")
-	@ApiOperation(value="patrol_accompany-分页列表查询", notes="patrol_accompany-分页列表查询")
+	/*@ApiOperation(value="patrol_accompany-分页列表查询", notes="patrol_accompany-分页列表查询")
 	@GetMapping(value = "/list")
 	public Result<IPage<PatrolAccompany>> queryPageList(PatrolAccompany patrolAccompany,
 								   @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
@@ -57,7 +57,7 @@ public class PatrolAccompanyController extends BaseController<PatrolAccompany, I
 		Page<PatrolAccompany> page = new Page<PatrolAccompany>(pageNo, pageSize);
 		IPage<PatrolAccompany> pageList = patrolAccompanyService.page(page, queryWrapper);
 		return Result.OK(pageList);
-	}
+	}*/
 
 	 /**
 	  *巡检同行人表-app-添加同行人
@@ -84,13 +84,13 @@ public class PatrolAccompanyController extends BaseController<PatrolAccompany, I
 	 * @param patrolAccompany
 	 * @return
 	 */
-	@AutoLog(value = "patrol_accompany-添加")
+	/*@AutoLog(value = "patrol_accompany-添加")
 	@ApiOperation(value="patrol_accompany-添加", notes="patrol_accompany-添加")
 	@PostMapping(value = "/add")
 	public Result<String> add(@RequestBody PatrolAccompany patrolAccompany) {
 		patrolAccompanyService.save(patrolAccompany);
 		return Result.OK("添加成功！");
-	}
+	}*/
 
 	/**
 	 *  编辑
@@ -98,13 +98,13 @@ public class PatrolAccompanyController extends BaseController<PatrolAccompany, I
 	 * @param patrolAccompany
 	 * @return
 	 */
-	@AutoLog(value = "patrol_accompany-编辑")
+	/*@AutoLog(value = "patrol_accompany-编辑")
 	@ApiOperation(value="patrol_accompany-编辑", notes="patrol_accompany-编辑")
 	@RequestMapping(value = "/edit", method = {RequestMethod.PUT,RequestMethod.POST})
 	public Result<String> edit(@RequestBody PatrolAccompany patrolAccompany) {
 		patrolAccompanyService.updateById(patrolAccompany);
 		return Result.OK("编辑成功!");
-	}
+	}*/
 
 	/**
 	 *   通过id删除
@@ -112,13 +112,13 @@ public class PatrolAccompanyController extends BaseController<PatrolAccompany, I
 	 * @param id
 	 * @return
 	 */
-	@AutoLog(value = "patrol_accompany-通过id删除")
+	/*@AutoLog(value = "patrol_accompany-通过id删除")
 	@ApiOperation(value="patrol_accompany-通过id删除", notes="patrol_accompany-通过id删除")
 	@DeleteMapping(value = "/delete")
 	public Result<String> delete(@RequestParam(name="id",required=true) String id) {
 		patrolAccompanyService.removeById(id);
 		return Result.OK("删除成功!");
-	}
+	}*/
 
 	/**
 	 *  批量删除
@@ -126,13 +126,13 @@ public class PatrolAccompanyController extends BaseController<PatrolAccompany, I
 	 * @param ids
 	 * @return
 	 */
-	@AutoLog(value = "patrol_accompany-批量删除")
+	/*@AutoLog(value = "patrol_accompany-批量删除")
 	@ApiOperation(value="patrol_accompany-批量删除", notes="patrol_accompany-批量删除")
 	@DeleteMapping(value = "/deleteBatch")
 	public Result<String> deleteBatch(@RequestParam(name="ids",required=true) String ids) {
 		this.patrolAccompanyService.removeByIds(Arrays.asList(ids.split(",")));
 		return Result.OK("批量删除成功!");
-	}
+	}*/
 
 	/**
 	 * 通过id查询
@@ -140,7 +140,7 @@ public class PatrolAccompanyController extends BaseController<PatrolAccompany, I
 	 * @param id
 	 * @return
 	 */
-	//@AutoLog(value = "patrol_accompany-通过id查询")
+	/*//@AutoLog(value = "patrol_accompany-通过id查询")
 	@ApiOperation(value="patrol_accompany-通过id查询", notes="patrol_accompany-通过id查询")
 	@GetMapping(value = "/queryById")
 	public Result<PatrolAccompany> queryById(@RequestParam(name="id",required=true) String id) {
@@ -149,7 +149,7 @@ public class PatrolAccompanyController extends BaseController<PatrolAccompany, I
 			return Result.error("未找到对应数据");
 		}
 		return Result.OK(patrolAccompany);
-	}
+	}*/
 
     /**
     * 导出excel
@@ -157,10 +157,10 @@ public class PatrolAccompanyController extends BaseController<PatrolAccompany, I
     * @param request
     * @param patrolAccompany
     */
-    @RequestMapping(value = "/exportXls")
+   /* @RequestMapping(value = "/exportXls")
     public ModelAndView exportXls(HttpServletRequest request, PatrolAccompany patrolAccompany) {
         return super.exportXls(request, patrolAccompany, PatrolAccompany.class, "patrol_accompany");
-    }
+    }*/
 
     /**
       * 通过excel导入数据
@@ -169,9 +169,9 @@ public class PatrolAccompanyController extends BaseController<PatrolAccompany, I
     * @param response
     * @return
     */
-    @RequestMapping(value = "/importExcel", method = RequestMethod.POST)
+    /*@RequestMapping(value = "/importExcel", method = RequestMethod.POST)
     public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) {
         return super.importExcel(request, response, PatrolAccompany.class);
     }
-
+*/
 }

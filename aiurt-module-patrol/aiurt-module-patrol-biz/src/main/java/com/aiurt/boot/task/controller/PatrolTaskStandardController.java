@@ -44,7 +44,7 @@ public class PatrolTaskStandardController extends BaseController<PatrolTaskStand
 	 * @param req
 	 * @return
 	 */
-	//@AutoLog(value = "patrol_task_standard-分页列表查询")
+	/*//@AutoLog(value = "patrol_task_standard-分页列表查询")
 	@ApiOperation(value="patrol_task_standard-分页列表查询", notes="patrol_task_standard-分页列表查询")
 	@GetMapping(value = "/list")
 	public Result<IPage<PatrolTaskStandard>> queryPageList(PatrolTaskStandard patrolTaskStandard,
@@ -55,7 +55,7 @@ public class PatrolTaskStandardController extends BaseController<PatrolTaskStand
 		Page<PatrolTaskStandard> page = new Page<PatrolTaskStandard>(pageNo, pageSize);
 		IPage<PatrolTaskStandard> pageList = patrolTaskStandardService.page(page, queryWrapper);
 		return Result.OK(pageList);
-	}
+	}*/
 
 	/**
 	 *   添加
@@ -63,13 +63,13 @@ public class PatrolTaskStandardController extends BaseController<PatrolTaskStand
 	 * @param patrolTaskStandard
 	 * @return
 	 */
-	@AutoLog(value = "patrol_task_standard-添加")
+	/*@AutoLog(value = "patrol_task_standard-添加")
 	@ApiOperation(value="patrol_task_standard-添加", notes="patrol_task_standard-添加")
 	@PostMapping(value = "/add")
 	public Result<String> add(@RequestBody PatrolTaskStandard patrolTaskStandard) {
 		patrolTaskStandardService.save(patrolTaskStandard);
 		return Result.OK("添加成功！");
-	}
+	}*/
 
 	/**
 	 *  编辑
@@ -77,13 +77,13 @@ public class PatrolTaskStandardController extends BaseController<PatrolTaskStand
 	 * @param patrolTaskStandard
 	 * @return
 	 */
-	@AutoLog(value = "patrol_task_standard-编辑")
+	/*@AutoLog(value = "patrol_task_standard-编辑")
 	@ApiOperation(value="patrol_task_standard-编辑", notes="patrol_task_standard-编辑")
 	@RequestMapping(value = "/edit", method = {RequestMethod.PUT,RequestMethod.POST})
 	public Result<String> edit(@RequestBody PatrolTaskStandard patrolTaskStandard) {
 		patrolTaskStandardService.updateById(patrolTaskStandard);
 		return Result.OK("编辑成功!");
-	}
+	}*/
 
 	/**
 	 *   通过id删除
@@ -91,13 +91,13 @@ public class PatrolTaskStandardController extends BaseController<PatrolTaskStand
 	 * @param id
 	 * @return
 	 */
-	@AutoLog(value = "patrol_task_standard-通过id删除")
+	/*@AutoLog(value = "patrol_task_standard-通过id删除")
 	@ApiOperation(value="patrol_task_standard-通过id删除", notes="patrol_task_standard-通过id删除")
 	@DeleteMapping(value = "/delete")
 	public Result<String> delete(@RequestParam(name="id",required=true) String id) {
 		patrolTaskStandardService.removeById(id);
 		return Result.OK("删除成功!");
-	}
+	}*/
 
 	/**
 	 *  批量删除
@@ -105,13 +105,13 @@ public class PatrolTaskStandardController extends BaseController<PatrolTaskStand
 	 * @param ids
 	 * @return
 	 */
-	@AutoLog(value = "patrol_task_standard-批量删除")
+	/*@AutoLog(value = "patrol_task_standard-批量删除")
 	@ApiOperation(value="patrol_task_standard-批量删除", notes="patrol_task_standard-批量删除")
 	@DeleteMapping(value = "/deleteBatch")
 	public Result<String> deleteBatch(@RequestParam(name="ids",required=true) String ids) {
 		this.patrolTaskStandardService.removeByIds(Arrays.asList(ids.split(",")));
 		return Result.OK("批量删除成功!");
-	}
+	}*/
 
 	/**
 	 * 通过id查询
@@ -119,7 +119,7 @@ public class PatrolTaskStandardController extends BaseController<PatrolTaskStand
 	 * @param id
 	 * @return
 	 */
-	//@AutoLog(value = "patrol_task_standard-通过id查询")
+	/*//@AutoLog(value = "patrol_task_standard-通过id查询")
 	@ApiOperation(value="patrol_task_standard-通过id查询", notes="patrol_task_standard-通过id查询")
 	@GetMapping(value = "/queryById")
 	public Result<PatrolTaskStandard> queryById(@RequestParam(name="id",required=true) String id) {
@@ -128,7 +128,7 @@ public class PatrolTaskStandardController extends BaseController<PatrolTaskStand
 			return Result.error("未找到对应数据");
 		}
 		return Result.OK(patrolTaskStandard);
-	}
+	}*/
 
     /**
     * 导出excel
@@ -136,10 +136,10 @@ public class PatrolTaskStandardController extends BaseController<PatrolTaskStand
     * @param request
     * @param patrolTaskStandard
     */
-    @RequestMapping(value = "/exportXls")
+   /* @RequestMapping(value = "/exportXls")
     public ModelAndView exportXls(HttpServletRequest request, PatrolTaskStandard patrolTaskStandard) {
         return super.exportXls(request, patrolTaskStandard, PatrolTaskStandard.class, "patrol_task_standard");
-    }
+    }*/
 
     /**
       * 通过excel导入数据
@@ -148,9 +148,9 @@ public class PatrolTaskStandardController extends BaseController<PatrolTaskStand
     * @param response
     * @return
     */
-    @RequestMapping(value = "/importExcel", method = RequestMethod.POST)
+    /*@RequestMapping(value = "/importExcel", method = RequestMethod.POST)
     public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) {
         return super.importExcel(request, response, PatrolTaskStandard.class);
-    }
+    }*/
 
 }

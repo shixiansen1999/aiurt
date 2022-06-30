@@ -85,9 +85,9 @@ public class PatrolTaskDevice implements Serializable {
     @Excel(name = "巡检自定义位置", width = 15)
     @ApiModelProperty(value = "巡检自定义位置")
     private java.lang.String customPosition;
-	/**检查用户ID*/
-	@Excel(name = "检查用户ID", width = 15)
-    @ApiModelProperty(value = "检查用户ID")
+	/**工单提交用户ID*/
+	@Excel(name = "工单提交用户ID", width = 15)
+    @ApiModelProperty(value = "工单提交用户ID")
     private java.lang.String userId;
 	/**备注说明*/
 	@Excel(name = "备注说明", width = 15)

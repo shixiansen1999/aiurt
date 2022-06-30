@@ -39,6 +39,10 @@ public class PatrolAccessory implements Serializable {
 	@Excel(name = "巡检任务设备关联表ID", width = 15)
     @ApiModelProperty(value = "巡检任务设备关联表ID")
     private java.lang.String taskDeviceId;
+    /**巡检检查结果表ID*/
+    @Excel(name = "巡检检查结果表ID", width = 15)
+    @ApiModelProperty(value = "巡检检查结果表ID")
+    private java.lang.String checkResultId;
 	/**附件名称*/
 	@Excel(name = "附件名称", width = 15)
     @ApiModelProperty(value = "附件名称")

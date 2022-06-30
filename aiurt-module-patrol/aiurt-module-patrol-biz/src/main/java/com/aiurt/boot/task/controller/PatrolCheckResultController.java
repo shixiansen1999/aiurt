@@ -44,7 +44,7 @@ public class PatrolCheckResultController extends BaseController<PatrolCheckResul
 	 * @param req
 	 * @return
 	 */
-	//@AutoLog(value = "patrol_check_result-分页列表查询")
+	/*//@AutoLog(value = "patrol_check_result-分页列表查询")
 	@ApiOperation(value="patrol_check_result-分页列表查询", notes="patrol_check_result-分页列表查询")
 	@GetMapping(value = "/list")
 	public Result<IPage<PatrolCheckResult>> queryPageList(PatrolCheckResult patrolCheckResult,
@@ -55,7 +55,7 @@ public class PatrolCheckResultController extends BaseController<PatrolCheckResul
 		Page<PatrolCheckResult> page = new Page<PatrolCheckResult>(pageNo, pageSize);
 		IPage<PatrolCheckResult> pageList = patrolCheckResultService.page(page, queryWrapper);
 		return Result.OK(pageList);
-	}
+	}*/
 
 	/**
 	 *   添加
@@ -63,13 +63,13 @@ public class PatrolCheckResultController extends BaseController<PatrolCheckResul
 	 * @param patrolCheckResult
 	 * @return
 	 */
-	@AutoLog(value = "patrol_check_result-添加")
+	/*@AutoLog(value = "patrol_check_result-添加")
 	@ApiOperation(value="patrol_check_result-添加", notes="patrol_check_result-添加")
 	@PostMapping(value = "/add")
 	public Result<String> add(@RequestBody PatrolCheckResult patrolCheckResult) {
 		patrolCheckResultService.save(patrolCheckResult);
 		return Result.OK("添加成功！");
-	}
+	}*/
 
 	/**
 	 *  编辑
@@ -77,41 +77,41 @@ public class PatrolCheckResultController extends BaseController<PatrolCheckResul
 	 * @param patrolCheckResult
 	 * @return
 	 */
-	@AutoLog(value = "patrol_check_result-编辑")
+	/*@AutoLog(value = "patrol_check_result-编辑")
 	@ApiOperation(value="patrol_check_result-编辑", notes="patrol_check_result-编辑")
 	@RequestMapping(value = "/edit", method = {RequestMethod.PUT,RequestMethod.POST})
 	public Result<String> edit(@RequestBody PatrolCheckResult patrolCheckResult) {
 		patrolCheckResultService.updateById(patrolCheckResult);
 		return Result.OK("编辑成功!");
 	}
-
+*/
 	/**
 	 *   通过id删除
 	 *
 	 * @param id
 	 * @return
 	 */
-	@AutoLog(value = "patrol_check_result-通过id删除")
+	/*@AutoLog(value = "patrol_check_result-通过id删除")
 	@ApiOperation(value="patrol_check_result-通过id删除", notes="patrol_check_result-通过id删除")
 	@DeleteMapping(value = "/delete")
 	public Result<String> delete(@RequestParam(name="id",required=true) String id) {
 		patrolCheckResultService.removeById(id);
 		return Result.OK("删除成功!");
 	}
-
+*/
 	/**
 	 *  批量删除
 	 *
 	 * @param ids
 	 * @return
 	 */
-	@AutoLog(value = "patrol_check_result-批量删除")
+	/*@AutoLog(value = "patrol_check_result-批量删除")
 	@ApiOperation(value="patrol_check_result-批量删除", notes="patrol_check_result-批量删除")
 	@DeleteMapping(value = "/deleteBatch")
 	public Result<String> deleteBatch(@RequestParam(name="ids",required=true) String ids) {
 		this.patrolCheckResultService.removeByIds(Arrays.asList(ids.split(",")));
 		return Result.OK("批量删除成功!");
-	}
+	}*/
 
 	/**
 	 * 通过id查询
@@ -119,7 +119,7 @@ public class PatrolCheckResultController extends BaseController<PatrolCheckResul
 	 * @param id
 	 * @return
 	 */
-	//@AutoLog(value = "patrol_check_result-通过id查询")
+	/*//@AutoLog(value = "patrol_check_result-通过id查询")
 	@ApiOperation(value="patrol_check_result-通过id查询", notes="patrol_check_result-通过id查询")
 	@GetMapping(value = "/queryById")
 	public Result<PatrolCheckResult> queryById(@RequestParam(name="id",required=true) String id) {
@@ -128,7 +128,7 @@ public class PatrolCheckResultController extends BaseController<PatrolCheckResul
 			return Result.error("未找到对应数据");
 		}
 		return Result.OK(patrolCheckResult);
-	}
+	}*/
 
     /**
     * 导出excel
@@ -136,10 +136,10 @@ public class PatrolCheckResultController extends BaseController<PatrolCheckResul
     * @param request
     * @param patrolCheckResult
     */
-    @RequestMapping(value = "/exportXls")
+  /*  @RequestMapping(value = "/exportXls")
     public ModelAndView exportXls(HttpServletRequest request, PatrolCheckResult patrolCheckResult) {
         return super.exportXls(request, patrolCheckResult, PatrolCheckResult.class, "patrol_check_result");
-    }
+    }*/
 
     /**
       * 通过excel导入数据
@@ -148,9 +148,9 @@ public class PatrolCheckResultController extends BaseController<PatrolCheckResul
     * @param response
     * @return
     */
-    @RequestMapping(value = "/importExcel", method = RequestMethod.POST)
+   /* @RequestMapping(value = "/importExcel", method = RequestMethod.POST)
     public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) {
         return super.importExcel(request, response, PatrolCheckResult.class);
-    }
+    }*/
 
 }
