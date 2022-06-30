@@ -19,11 +19,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.jeecg.common.api.vo.Result;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -51,7 +48,7 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
 
 
     /**
-     * 分页列表查询
+     * PC巡检任务列表-分页列表查询
      *
      * @param patrolTaskParam
      * @param pageNo
@@ -59,8 +56,8 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
      * @param req
      * @return
      */
-    @AutoLog(value = "PC巡检任务池列表-分页列表查询")
-    @ApiOperation(value = "PC巡检任务池列表-分页列表查询", notes = "PC巡检任务池列表-分页列表查询")
+    @AutoLog(value = "PC巡检任务列表-分页列表查询")
+    @ApiOperation(value = "PC巡检任务列表-分页列表查询", notes = "PC巡检任务列表-分页列表查询")
     @RequestMapping(value = "/list", method = {RequestMethod.GET, RequestMethod.POST})
     public Result<IPage<PatrolTaskParam>> queryPageList(PatrolTaskParam patrolTaskParam,
                                                         @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
@@ -395,8 +392,8 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
      *
      * @return
      */
-    @AutoLog(value = "巡检任务表- pc手工下放任务列表")
-    @ApiOperation(value = "巡检任务表- pc手工下放任务列表", notes = "巡检任务表- pc手工下放任务列表")
+    @AutoLog(value = "PC手工下放任务列表")
+    @ApiOperation(value = "PC手工下放任务列表", notes = "PC手工下放任务列表")
     @PostMapping(value = "/patrolTaskManual")
     public Result<?> patrolTaskManual(PatrolTaskDTO patrolTaskDTO,
                                       @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,

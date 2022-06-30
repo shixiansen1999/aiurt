@@ -11,6 +11,7 @@ import com.aiurt.modules.device.service.IDeviceComposeService;
 import com.aiurt.modules.device.service.IDeviceService;
 import com.aiurt.modules.device.service.IDeviceTypeService;
 import com.aiurt.modules.material.entity.MaterialBaseType;
+import com.aiurt.modules.system.service.impl.SysBaseApiImpl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -44,6 +45,8 @@ public class DeviceController {
     private IDeviceAssemblyService iDeviceAssemblyService;
     @Autowired
     private IDeviceTypeService iDeviceTypeService;
+    @Autowired
+    private SysBaseApiImpl sysBaseApi;
 
     /**
      * 分页列表查询
@@ -59,9 +62,7 @@ public class DeviceController {
     public Result<IPage<Device>> queryPageList(Device device,
                                                @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
                                                @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize,
-                                               @RequestParam(name = "lineCode", required = false) String lineCode,
-                                               @RequestParam(name = "stationCode", required = false) String stationCode,
-                                               @RequestParam(name = "positionCode", required = false) String positionCode,
+                                               @RequestParam(name = "codeCc", required = false) String positionCodeCc,
                                                @RequestParam(name = "temporary", required = false) String temporary,
                                                @RequestParam(name = "majorCode", required = false) String majorCode,
                                                @RequestParam(name = "systemCode", required = false) String systemCode,
@@ -84,14 +85,26 @@ public class DeviceController {
         if(deviceTypeCode != null && !"".equals(deviceTypeCode)){
             queryWrapper.apply(" FIND_IN_SET ( '"+deviceTypeCode+"' , REPLACE(device_type_code_cc,'/',',')) ");
         }
-        if(lineCode != null && !"".equals(lineCode)){
-            queryWrapper.eq("line_code", lineCode);
-        }
-        if(stationCode != null && !"".equals(stationCode)){
-            queryWrapper.eq("station_code", stationCode);
-        }
-        if(positionCode != null && !"".equals(positionCode)){
-            queryWrapper.eq("position_code", positionCode);
+        if(positionCodeCc != null && !"".equals(positionCodeCc)){
+            if(positionCodeCc.contains("/")){
+                String[] split = positionCodeCc.split("/");
+                int length = split.length;
+                switch (length){
+                    case 2:
+                        queryWrapper.eq("line_code", split[0]);
+                        queryWrapper.eq("station_code", split[1]);
+                        break;
+                    case 3:
+                        queryWrapper.eq("line_code", split[0]);
+                        queryWrapper.eq("station_code", split[1]);
+                        queryWrapper.eq("position_code", split[2]);
+                        break;
+                    default:
+                        queryWrapper.eq("line_code", split[0]);
+                }
+            }else{
+                queryWrapper.eq("line_code", positionCodeCc);
+            }
         }
         if(code != null && !"".equals(code)){
             queryWrapper.eq("code", code);
@@ -105,6 +118,25 @@ public class DeviceController {
         queryWrapper.eq("del_flag", 0);
         Page<Device> page = new Page<Device>(pageNo, pageSize);
         IPage<Device> pageList = deviceService.page(page, queryWrapper);
+        List<Device> records = pageList.getRecords();
+        if(records != null && records.size()>0){
+            for(Device d : records){
+                //线路
+                String lineCode = d.getLineCode()==null?"":d.getLineCode();
+                //站点
+                String stationCode = d.getStationCode()==null?"":d.getStationCode();
+                //位置
+                String positionCode = d.getPositionCode()==null?"":d.getPositionCode();
+                String lineCodeName = sysBaseApi.translateDictFromTable("cs_line", "line_name", "line_code", lineCode);
+                String stationCodeName = sysBaseApi.translateDictFromTable("cs_station", "station_name", "station_code", stationCode);
+                String positionCodeName = sysBaseApi.translateDictFromTable("cs_station_position", "position_name", "position_code", positionCode);
+                String positionCodeCcName = lineCodeName + "/" + stationCodeName  ;
+                if(!"".equals(positionCodeName) && positionCodeName != null){
+                    positionCodeCcName += "/" + positionCodeName;
+                }
+                d.setPositionCodeCcName(positionCodeCcName);
+            }
+        }
         result.setSuccess(true);
         result.setResult(pageList);
         return result;
@@ -227,6 +259,30 @@ public class DeviceController {
             DeviceType deviceType = iDeviceTypeService.getOne(new QueryWrapper<DeviceType>().eq("code",deviceTypeCode));
             String typeCodeCc = iDeviceTypeService.getCcStr(deviceType);
             device.setDeviceTypeCodeCc(typeCodeCc);
+            String positionCodeCc = device.getPositionCodeCc()==null?"":device.getPositionCodeCc();
+            if(!"".equals(positionCodeCc)){
+                if(positionCodeCc.contains("/")){
+                    String[] split = positionCodeCc.split("/");
+                    int length = split.length;
+                    switch (length){
+                        case 2:
+                            device.setLineCode(split[0]);
+                            device.setStationCode(split[1]);
+                            break;
+                        case 3:
+                            device.setLineCode(split[0]);
+                            device.setStationCode(split[1]);
+                            device.setPositionCode(split[2]);
+                            break;
+                        default:
+                            device.setLineCode(positionCodeCc);
+                            device.setStationCode("");
+                            device.setPositionCode("");
+                    }
+                }else{
+                    return Result.error("设备位置必须选择线路和站点！");
+                }
+            }
             deviceService.save(device);
             List<DeviceCompose> deviceComposeList = iDeviceCompostService.list(new QueryWrapper<DeviceCompose>().eq("device_type_code",deviceTypeCode));
             if(deviceComposeList != null && deviceComposeList.size()>0){
@@ -282,6 +338,30 @@ public class DeviceController {
             final int count = (int) deviceService.count(new LambdaQueryWrapper<Device>().ne(Device::getId,device.getId()).eq(Device::getCode, device.getCode()).eq(Device::getDelFlag, 0).last("limit 1"));
             if (count > 0){
                 return Result.error("设备编号不能重复");
+            }
+            String positionCodeCc = device.getPositionCodeCc()==null?"":device.getPositionCodeCc();
+            if(!"".equals(positionCodeCc)){
+                if(positionCodeCc.contains("/")){
+                    String[] split = positionCodeCc.split("/");
+                    int length = split.length;
+                    switch (length){
+                        case 2:
+                            device.setLineCode(split[0]);
+                            device.setStationCode(split[1]);
+                            break;
+                        case 3:
+                            device.setLineCode(split[0]);
+                            device.setStationCode(split[1]);
+                            device.setPositionCode(split[2]);
+                            break;
+                        default:
+                            device.setLineCode(positionCodeCc);
+                            device.setStationCode("");
+                            device.setPositionCode("");
+                    }
+                }else{
+                    return Result.error("设备位置必须选择线路和站点！");
+                }
             }
             boolean ok = deviceService.updateById(device);
 

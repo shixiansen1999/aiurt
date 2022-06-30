@@ -49,6 +49,12 @@ public class PatrolTaskParam extends PatrolTask {
     @ApiModelProperty(value = "任务状态字典名称")
     private String statusName;
     /**
+     * 任务状态数组
+     */
+    @Excel(name = "任务状态数组", width = 15)
+    @ApiModelProperty(value = "任务状态数组")
+    private Integer[] statusArray;
+    /**
      * 异常状态字典名称
      */
     @Excel(name = "异常状态字典名称", width = 15)
