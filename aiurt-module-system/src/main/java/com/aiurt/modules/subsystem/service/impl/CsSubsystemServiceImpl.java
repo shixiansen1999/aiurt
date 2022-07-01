@@ -53,7 +53,7 @@ public class CsSubsystemServiceImpl extends ServiceImpl<CsSubsystemMapper, CsSub
         //子系统名称不能重复，判断数据库中是否存在，如不存在则可继续添加
         LambdaQueryWrapper<CsSubsystem> nameWrapper = new LambdaQueryWrapper<>();
         nameWrapper.eq(CsSubsystem::getMajorCode, csSubsystem.getMajorCode());
-        nameWrapper.eq(CsSubsystem::getSystemCode, csSubsystem.getSystemName());
+        nameWrapper.eq(CsSubsystem::getSystemName, csSubsystem.getSystemName());
         nameWrapper.eq(CsSubsystem::getDelFlag, 0);
         List<CsSubsystem> nameList = csSubsystemMapper.selectList(nameWrapper);
         if (!nameList.isEmpty()) {
@@ -88,7 +88,7 @@ public class CsSubsystemServiceImpl extends ServiceImpl<CsSubsystemMapper, CsSub
         //子系统名称不能重复，判断数据库中是否存在，如不存在则可继续添加
         LambdaQueryWrapper<CsSubsystem> nameWrapper = new LambdaQueryWrapper<>();
         nameWrapper.eq(CsSubsystem::getMajorCode, csSubsystem.getMajorCode());
-        nameWrapper.eq(CsSubsystem::getSystemCode, csSubsystem.getSystemName());
+        nameWrapper.eq(CsSubsystem::getSystemName, csSubsystem.getSystemName());
         nameWrapper.eq(CsSubsystem::getDelFlag, 0);
         List<CsSubsystem> nameList = csSubsystemMapper.selectList(nameWrapper);
         if (!nameList.isEmpty() && !nameList.get(0).getId().equals(csSubsystem.getId())) {

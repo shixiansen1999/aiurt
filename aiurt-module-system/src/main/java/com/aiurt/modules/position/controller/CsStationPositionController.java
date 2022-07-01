@@ -133,7 +133,7 @@ public class CsStationPositionController  {
 
 		List<CsStationPosition> list = csStationPositionService.readAll(page,csStationPosition);
 		list.forEach(position -> {
-			position.setPositionType_dictText(sysBaseAPI.translateDict("station_level",position.getPositionType()+""));
+			position.setPositionTypes(position.getPositionType()+"");
 		});
 		page.setRecords(list);
 		return Result.OK(page);

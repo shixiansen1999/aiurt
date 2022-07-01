@@ -86,7 +86,7 @@ public class CsStationPosition implements Serializable {
     /**用于手动翻译*/
     @Dict(dicCode = "station_level")
 	@TableField(exist = false)
-    private String positionType_dictText;
+    private String positionTypes;
 
 	/**距离首站/站点位置(单位：m)*/
 	@Excel(name = "距离首站/站点位置(单位：m)", width = 15)

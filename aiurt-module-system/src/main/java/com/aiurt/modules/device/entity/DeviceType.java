@@ -75,6 +75,11 @@ public class DeviceType implements Serializable {
 	@Excel(name = "上级节点", width = 15)
     @ApiModelProperty(value = "上级节点")
     private String pid;
+    /**上级节点-名称*/
+    @Excel(name = "上级节点-名称", width = 15)
+    @ApiModelProperty(value = "上级节点-名称")
+    @TableField(exist = false)
+    private String pUrl;
 	/**删除状态 0-未删除 1-已删除*/
 	@Excel(name = "删除状态 0-未删除 1-已删除", width = 15)
     @ApiModelProperty(value = "删除状态 0-未删除 1-已删除")
