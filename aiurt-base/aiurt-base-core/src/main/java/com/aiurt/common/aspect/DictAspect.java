@@ -1,5 +1,6 @@
 package com.aiurt.common.aspect;
 
+import com.aiurt.modules.basic.entity.DictEntity;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.parser.Feature;
@@ -183,6 +184,82 @@ public class DictAspect {
                 }
 
                 ((IPage) ((Result) result).getResult()).setRecords(items);
+
+            } else if (((Result) result).getResult() instanceof DictEntity) {
+
+                //step.1 筛选出加了 Dict 注解的字段列表
+                List<Field> dictFieldList = new ArrayList<>();
+                // 字典数据列表， key = 字典code，value=数据列表
+                Map<String, List<String>> dataListMap = new HashMap<>(5);
+
+                Object res = (DictEntity)((Result<?>) result).getResult();
+
+                ObjectMapper mapper = new ObjectMapper();
+                String json="{}";
+                try {
+                    //解决@JsonFormat注解解析不了的问题详见SysAnnouncement类的@JsonFormat
+                    json = mapper.writeValueAsString(res);
+                } catch (JsonProcessingException e) {
+                    log.error("json解析失败"+e.getMessage(),e);
+                }
+
+                JSONObject item = JSONObject.parseObject(json, Feature.OrderedField);
+                for (Field field : oConvertUtils.getAllFields(res)) {
+                    String value = item.getString(field.getName());
+                    if (oConvertUtils.isEmpty(value)) {
+                        continue;
+                    }
+                    //update-end--Author:scott  -- Date:20190603 ----for：解决继承实体字段无法翻译问题------
+                    if (field.getAnnotation(Dict.class) != null) {
+                        if (!dictFieldList.contains(field)) {
+                            dictFieldList.add(field);
+                        }
+                        String code = field.getAnnotation(Dict.class).dicCode();
+                        String text = field.getAnnotation(Dict.class).dicText();
+                        String table = field.getAnnotation(Dict.class).dictTable();
+
+                        List<String> dataList;
+                        String dictCode = code;
+                        if (!StringUtils.isEmpty(table)) {
+                            dictCode = String.format("%s,%s,%s", table, text, code);
+                        }
+                        dataList = dataListMap.computeIfAbsent(dictCode, k -> new ArrayList<>());
+                        this.listAddAllDeduplicate(dataList, Arrays.asList(value.split(",")));
+                    }
+                    //date类型默认转换string格式化日期
+                    if (CommonConstant.JAVA_UTIL_DATE.equals(field.getType().getName())&&field.getAnnotation(JsonFormat.class)==null&&item.get(field.getName())!=null){
+                        SimpleDateFormat aDate=new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                        item.put(field.getName(), aDate.format(new Date((Long) item.get(field.getName()))));
+                    }
+                }
+
+
+                //step.2 调用翻译方法，一次性翻译
+                Map<String, List<DictModel>> translText = this.translateAllDict(dataListMap);
+                for (Field field : dictFieldList) {
+                    String code = field.getAnnotation(Dict.class).dicCode();
+                    String text = field.getAnnotation(Dict.class).dicText();
+                    String table = field.getAnnotation(Dict.class).dictTable();
+
+                    String fieldDictCode = code;
+                    if (!StringUtils.isEmpty(table)) {
+                        fieldDictCode = String.format("%s,%s,%s", table, text, code);
+                    }
+
+                    String value = item.getString(field.getName());
+                    if (oConvertUtils.isNotEmpty(value)) {
+                        List<DictModel> dictModels = translText.get(fieldDictCode);
+                        if(dictModels==null || dictModels.size()==0){
+                            continue;
+                        }
+
+                        String textValue = this.translDictText(dictModels, value);
+
+                        item.put(field.getName() + CommonConstant.DICT_TEXT_SUFFIX, textValue);
+                    }
+                }
+
+                ((Result) result).setResult(item);
             }
 
         }

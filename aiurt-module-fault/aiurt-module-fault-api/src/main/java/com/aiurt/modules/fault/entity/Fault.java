@@ -1,6 +1,7 @@
 package com.aiurt.modules.fault.entity;
 
 import com.aiurt.common.aspect.annotation.Dict;
+import com.aiurt.modules.basic.entity.DictEntity;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
@@ -33,7 +34,7 @@ import java.util.List;
 @Accessors(chain = true)
 @EqualsAndHashCode(callSuper = false)
 @ApiModel(value="fault对象", description="fault")
-public class Fault implements Serializable {
+public class Fault extends DictEntity implements Serializable {
     private static final long serialVersionUID = 1L;
 
 	/**主键*/
@@ -144,10 +145,6 @@ public class Fault implements Serializable {
     @Dict(dicCode = "fault_status")
     private Integer status;
 
-	@ApiModelProperty("状态名称")
-    @TableField(exist = false)
-	private String statusName;
-
 
 	/**紧急程度*/
 	@Excel(name = "紧急程度", width = 15)
@@ -155,19 +152,11 @@ public class Fault implements Serializable {
     @Dict(dicCode = "fault_urgency")
     private Integer urgency;
 
-    @ApiModelProperty(value = "紧急程度名称")
-	@TableField(exist = false)
-	private String urgencyName;
-
 	/**是否影响行车*/
 	@Excel(name = "是否影响行车", width = 15)
     @ApiModelProperty(value = "fault_yn,是否影响行车,1:是,0否,2未知",  required = true)
     @Dict(dicCode = "fault_yn")
     private Integer affectDrive;
-
-	@ApiModelProperty(value = "是否影响行车名称")
-    @TableField(exist = false)
-	private String affectDriveName;
 
 	/**是否影响客运服务*/
 	@Excel(name = "是否影响客运服务", width = 15)
@@ -175,19 +164,12 @@ public class Fault implements Serializable {
     @Dict(dicCode = "fault_yn")
     private Integer affectPassengerService;
 
-	@ApiModelProperty(value = "是否影响客运服务名称")
-    @TableField(exist = false)
-    private String affectPassengerServiceName;
 
 	/**是否停止服务*/
 	@Excel(name = "是否停止服务", width = 15)
     @Dict(dicCode = "fault_yn")
     @ApiModelProperty(value = "fault_yn,是否停止服务,1:是,0否,2未知",  required = true)
     private Integer isStopService;
-
-	@TableField(exist = false)
-	@ApiModelProperty(value = "是否停止服务text")
-	private String isStopServiceName;
 
 	/**通知人员*/
 	@Excel(name = "通知人员", width = 15)
@@ -231,10 +213,6 @@ public class Fault implements Serializable {
     @Dict(dicCode = "fault_mode_code")
     private String faultModeCode;
 
-    @ApiModelProperty(value = "报修方式")
-    @TableField(exist = false)
-	private String faultModeText;
-
 	/**故障级别*/
 	@Excel(name = "故障级别", width = 15)
     @ApiModelProperty(value = "故障级别")
@@ -261,10 +239,6 @@ public class Fault implements Serializable {
 	@ApiModelProperty(value = "yn, 是否委外 1:是,0否", required = true)
     @Dict(dicCode = "yn")
 	private Integer isOutsource;
-
-    @ApiModelProperty(value = "是否委外name")
-    @TableField(exist = false)
-	private String isOutsourceName;
 
     /**设备编码*/
     @Excel(name = "设备编码", width = 15)
@@ -303,6 +277,7 @@ public class Fault implements Serializable {
     @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
     @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
     @ApiModelProperty(value = "维修完成时间")
+    @TableField(exist = false)
     private Date endTime;
 
 }

@@ -242,19 +242,10 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         Map<String, Map<String,String>> map = new HashMap<>();
         dictItemMap.keySet().stream().forEach(key->{
             List<DictModel> dictModels = dictItemMap.get(key);
-
             Map<String, String> codeMp = dictModels.stream().collect(Collectors.toMap(DictModel::getValue, DictModel::getText, (t1, t2) -> t1));
             map.put(key, codeMp);
         });
 
-        fault.setStatusName(map.getOrDefault(FaultDictCodeConstant.FAULT_STATUS, new HashMap<>(16)).get(String.valueOf(fault.getStatus())));
-        fault.setUrgencyName(map.getOrDefault(FaultDictCodeConstant.FAULT_URGENCY, new HashMap<>(16)).get(String.valueOf(fault.getUrgency())));
-        fault.setAffectDriveName(map.getOrDefault(FaultDictCodeConstant.FAULT_YN, new HashMap<>(16)).get(String.valueOf(fault.getAffectDrive())));
-        fault.setAffectPassengerServiceName(map.getOrDefault(FaultDictCodeConstant.FAULT_YN, new HashMap<>(16)).get(String.valueOf(fault.getAffectPassengerService())));
-
-        fault.setIsStopServiceName(map.getOrDefault(FaultDictCodeConstant.FAULT_YN, new HashMap<>(16)).get(String.valueOf(fault.getIsStopService())));
-        fault.setFaultModeText(map.getOrDefault(FaultDictCodeConstant.FAULT_MODE_CODE, new HashMap<>(16)).get(fault.getFaultModeCode()));
-        fault.setIsOutsourceName(map.getOrDefault(FaultDictCodeConstant.YN, new HashMap<>(16)).get(String.valueOf(fault.getIsOutsource())));
         // 按钮权限
         return fault;
     }
