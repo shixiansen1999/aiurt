@@ -104,7 +104,7 @@ public class DeviceType implements Serializable {
     @Excel(name = "设备类型子集", width = 15)
     @ApiModelProperty(value = "设备类型子集")
     @TableField(exist = false)
-    private List<DeviceType> deviceTypeChildren;
+    private List<DeviceType> children;
     /**设备组成*/
     @Excel(name = "设备组成", width = 15)
     @ApiModelProperty(value = "设备组成")

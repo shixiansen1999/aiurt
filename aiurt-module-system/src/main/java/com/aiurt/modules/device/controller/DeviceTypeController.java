@@ -84,11 +84,11 @@ public class DeviceTypeController extends BaseController<DeviceType, IDeviceType
 				 DeviceType system = setEntity(two.getId()+"","zxt",two.getSystemCode(),two.getSystemName(),null,null,null,two.getMajorCode(),two.getSystemCode());
 				 if(level>2) {
 					 List<DeviceType> sysDeviceType = deviceTypeTree.stream().filter(type -> system.getMajorCode().equals(type.getMajorCode()) && (null != type.getSystemCode() && !"".equals(type.getSystemCode()) && system.getSystemCode().equals(type.getSystemCode()))).collect(Collectors.toList());
-					 system.setDeviceTypeChildren(sysDeviceType);
+					 system.setChildren(sysDeviceType);
 				 }
 				 twoList.add(system);
 			 });
-			 major.setDeviceTypeChildren(twoList);
+			 major.setChildren(twoList);
 			 newList.add(major);
 		 });
 		 return Result.OK(newList);
