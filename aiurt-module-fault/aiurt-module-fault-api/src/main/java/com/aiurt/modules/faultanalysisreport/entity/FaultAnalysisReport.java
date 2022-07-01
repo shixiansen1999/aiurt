@@ -129,6 +129,12 @@ public class FaultAnalysisReport implements Serializable {
     /**结束日期*/
     @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
     @DateTimeFormat(pattern="yyyy-MM-dd")
-    @ApiModelProperty(value = "创建日期")
+    @ApiModelProperty(value = "结束日期")
     private Date endTime;
+
+    /**故障分类名称*/
+    @Excel(name = "故障分类名称", width = 15)
+    @ApiModelProperty(value = "故障分类名称")
+    @TableField(exist = false)
+    private String name;
 }

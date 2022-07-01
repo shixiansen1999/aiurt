@@ -24,6 +24,7 @@ import com.aiurt.modules.faulttype.mapper.FaultTypeMapper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.query.QueryGenerator;
@@ -193,7 +194,7 @@ public class FaultAnalysisReportController extends BaseController<FaultAnalysisR
 	 * @return
 	 */
 	//@AutoLog(value = "fault_analysis_report-通过id查询")
-	@ApiOperation(value="故障分析-通过id查询", notes="故障分析-通过id查询")
+	@ApiOperation(value="故障分析-通过id查询(停用)", notes="故障分析-通过id查询")
 	@GetMapping(value = "/queryById")
 	public Result<FaultAnalysisReport> queryById(@RequestParam(name="id",required=true) String id) {
 
@@ -321,6 +322,7 @@ public class FaultAnalysisReportController extends BaseController<FaultAnalysisR
 	 /**
 	  * 通过id查询详情
 	  * @param id
+	  * @param faultCode
 	  * @return
 	  */
 	 @ApiOperation(value="故障分析-通过id查询详情", notes="故障分析-通过id查询详情")
@@ -328,11 +330,16 @@ public class FaultAnalysisReportController extends BaseController<FaultAnalysisR
 	 @ApiResponses({
 			 @ApiResponse(code = 200, message = "OK", response = FaultAnalysisReport.class)
 	 })
-	 public Result<FaultAnalysisReport> readone(@RequestParam(name="id",required=true) String id) {
-		 FaultAnalysisReport faultAnalysisReport = faultAnalysisReportService.readOne(id);
-		 if(faultAnalysisReport==null) {
-			 return Result.error("未找到对应数据");
+	 public Result<FaultAnalysisReport> readone(@RequestParam(name="id",required=false) String id,
+												@RequestParam(name="faultCode",required=false) String faultCode) {
+		 if (StringUtils.isNotEmpty(id) || StringUtils.isNotEmpty(faultCode)) {
+			 FaultAnalysisReport faultAnalysisReport = faultAnalysisReportService.readOne(id, faultCode);
+			 if (faultAnalysisReport == null) {
+				 return Result.error("未找到对应数据");
+			 }
+			 return Result.OK(faultAnalysisReport);
+		 } else {
+			 return Result.error("请选择一个故障分析或者故障");
 		 }
-		 return Result.OK(faultAnalysisReport);
 	 }
 }

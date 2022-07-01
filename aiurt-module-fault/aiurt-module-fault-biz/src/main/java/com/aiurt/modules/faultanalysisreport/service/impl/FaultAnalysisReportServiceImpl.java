@@ -61,8 +61,8 @@ public class FaultAnalysisReportServiceImpl extends ServiceImpl<FaultAnalysisRep
     }
 
     @Override
-    public FaultAnalysisReport readOne(String id) {
-        return faultAnalysisReportMapper.readOne(id);
+    public FaultAnalysisReport readOne(String id,String faultCode) {
+        return faultAnalysisReportMapper.readOne(id,faultCode);
     }
 
     @Override

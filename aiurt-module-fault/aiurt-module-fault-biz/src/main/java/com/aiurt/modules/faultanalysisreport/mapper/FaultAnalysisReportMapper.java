@@ -48,6 +48,6 @@ public interface FaultAnalysisReportMapper extends BaseMapper<FaultAnalysisRepor
      * @param id
      * @return IPage<FaultAnalysisReport>
      */
-    FaultAnalysisReport readOne(String id);
+    FaultAnalysisReport readOne(@Param("id")String id,@Param("faultCode")String faultCode);
 
 }

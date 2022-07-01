@@ -9,7 +9,9 @@
             f.`code` as faultCode ,
             f.fault_phenomenon,
             far.solution,
+            ft.name,
             far.create_time
+
     FROM
             fault_analysis_report far
                     LEFT JOIN fault f ON f.CODE = far.fault_code
@@ -126,6 +128,12 @@
                     LEFT JOIN fault f ON f.CODE = far.fault_code
                     LEFT JOIN fault_type ft on ft.`code` = f.fault_type_code
     WHERE
-            far.id = #{id}
+    1=1
+    <if test="id != null and id != ''">
+        and  far.id = #{id}
+    </if>
+    <if test="faultCode != null and faultCode != ''">
+        and  far.fault_code = #{faultCode}
+    </if>
     </select>
 </mapper>
