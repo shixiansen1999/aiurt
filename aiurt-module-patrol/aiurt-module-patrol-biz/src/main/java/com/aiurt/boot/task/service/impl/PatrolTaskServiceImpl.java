@@ -2,6 +2,7 @@ package com.aiurt.boot.task.service.impl;
 
 
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.constant.PatrolConstant;
@@ -10,6 +11,7 @@ import com.aiurt.boot.plan.mapper.PatrolPlanMapper;
 import com.aiurt.boot.task.dto.*;
 import com.aiurt.boot.task.entity.PatrolTask;
 import com.aiurt.boot.task.entity.PatrolTaskDevice;
+import com.aiurt.boot.task.entity.PatrolTaskStandard;
 import com.aiurt.boot.task.entity.PatrolTaskUser;
 import com.aiurt.boot.task.mapper.*;
 import com.aiurt.boot.task.param.PatrolTaskParam;
@@ -359,5 +361,40 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
     public Page<PatrolTaskDTO> getPatrolTaskManualList(Page<PatrolTaskDTO> pageList, PatrolTaskDTO patrolTaskDTO) {
         List<PatrolTaskDTO> taskDTOList = patrolTaskMapper.getPatrolTaskManualList(pageList, patrolTaskDTO);
         return pageList.setRecords(taskDTOList);
+    }
+
+    @Override
+    public Map<String, Object> getMajorSubsystemGanged(String id) {
+        QueryWrapper<PatrolTaskStandard> wrapper = new QueryWrapper<>();
+        wrapper.lambda().eq(PatrolTaskStandard::getTaskId, id);
+        List<PatrolTaskStandard> list = Optional.ofNullable(patrolTaskStandardMapper.selectList(wrapper)).orElseGet(Collections::emptyList);
+        // 专业编码
+        List<String> majorInfo = list.stream().map(PatrolTaskStandard::getProfessionCode).distinct().collect(Collectors.toList());
+        // 子系统编码
+        List<String> subSystemInfo = list.stream().map(PatrolTaskStandard::getSubsystemCode).distinct().collect(Collectors.toList());
+
+        List<MajorDTO> major = new ArrayList<>();
+        List<SubsystemDTO> subsystem = new ArrayList<>();
+
+        Optional.ofNullable(majorInfo).orElseGet(Collections::emptyList).stream().forEach(l -> {
+            MajorDTO majorDTO = new MajorDTO();
+            majorDTO.setMajorCode(l);
+            // 专业名称
+            String majorName = patrolTaskMapper.getMajorNameByMajorCode(l);
+            majorDTO.setMajorName(majorName);
+            major.add(majorDTO);
+        });
+        Optional.ofNullable(subSystemInfo).orElseGet(Collections::emptyList).stream().forEach(l -> {
+            SubsystemDTO subsystemDTO = new SubsystemDTO();
+            subsystemDTO.setSubsystemCode(l);
+            // 子系统名称
+            String majorName = patrolTaskMapper.getSubsystemNameBySystemCode(l);
+            subsystemDTO.setSubsystemName(majorName);
+            subsystem.add(subsystemDTO);
+        });
+        Map<String, Object> map = new HashMap<>();
+        map.put("major", major);
+        map.put("subsystem", subsystem);
+        return map;
     }
 }

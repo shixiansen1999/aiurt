@@ -1,5 +1,6 @@
 package com.aiurt.boot.task.controller;
 
+import cn.hutool.core.collection.CollectionUtil;
 import com.aiurt.boot.task.dto.*;
 import com.aiurt.boot.task.entity.PatrolTask;
 import com.aiurt.boot.task.param.PatrolTaskDeviceParam;
@@ -15,12 +16,15 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import jdk.nashorn.internal.runtime.regexp.joni.constants.internal.OPCode;
 import lombok.extern.slf4j.Slf4j;
 import org.jeecg.common.api.vo.Result;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -105,6 +109,14 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
         return Result.OK(taskDevicePageList);
     }
 
+    @AutoLog(value = "PC巡检任务池详情-根据任务id获得专业和子系统信息")
+    @ApiOperation(value = "PC巡检任务池详情-根据任务id获得专业和子系统信息", notes = "PC巡检任务池详情-根据任务id获得专业和子系统信息")
+    @RequestMapping(value = "/getMajorSystemInfo", method = {RequestMethod.GET, RequestMethod.POST})
+    public Result<?> getMajorSubsystemGanged(@RequestParam("id") String id) {
+        Map<String, Object> map = patrolTaskService.getMajorSubsystemGanged(id);
+        return Result.OK(map);
+    }
+
     /**
      * PC巡检任务池详情-巡检工单详情
      *
@@ -123,14 +135,22 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
     /**
      * PC巡检任务池-获取指派人员
      *
-     * @param code
+     * @param list
      * @return
      */
     @AutoLog(value = "PC巡检任务池-获取指派人员")
     @ApiOperation(value = "PC巡检任务池-获取指派人员", notes = "PC巡检任务池-获取指派人员")
     @RequestMapping(value = "/getAssignee", method = {RequestMethod.GET, RequestMethod.POST})
-    public Result<?> getAssignee(@RequestParam("code") String code) {
-        List<PatrolUserInfoDTO> userInfo = patrolTaskOrganizationService.getUserListByTaskCode(code);
+    public Result<?> getAssignee(@RequestParam("code") List<String> list) {
+        List<PatrolUserInfoDTO> userInfo = new ArrayList<>();
+        // 如果是单个code，则返回该任务下对应站点和组织机构用户
+        if (CollectionUtil.isNotEmpty(list) && 1 == list.size()) {
+            userInfo = patrolTaskOrganizationService.getUserListByTaskCode(list.get(0));
+        } else {
+            //todo 批量指派 需要相同的组织机构
+
+
+        }
         return Result.OK(userInfo);
     }
 
@@ -303,6 +323,7 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
 
     /**
      * app巡检任务提交-统计工单数量
+     *
      * @param patrolTaskSubmitDTO
      * @param req
      * @return
@@ -314,6 +335,7 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
         PatrolTaskSubmitDTO submitTaskCount = patrolTaskService.getSubmitTaskCount(patrolTaskSubmitDTO);
         return Result.OK("领取成功");
     }
+
     /**
      * app巡检任务领取后-退回
      *
@@ -328,6 +350,7 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
         patrolTaskService.getPatrolTaskReturn(patrolTaskDTO);
         return Result.OK("退回成功");
     }
+
     /**
      * app巡检任务-指派人员查询
      *
@@ -387,6 +410,7 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
         patrolTaskService.update(queryWrapper);
         return Result.OK("通过成功");
     }
+
     /**
      * pc手工下放任务列表
      *
@@ -397,7 +421,7 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
     @PostMapping(value = "/patrolTaskManual")
     public Result<?> patrolTaskManual(PatrolTaskDTO patrolTaskDTO,
                                       @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
-                                      @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize,HttpServletRequest req) {
+                                      @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize, HttpServletRequest req) {
         Page<PatrolTaskDTO> pageList = new Page<PatrolTaskDTO>(pageNo, pageSize);
         pageList = patrolTaskService.getPatrolTaskManualList(pageList, patrolTaskDTO);
         return Result.OK(pageList);

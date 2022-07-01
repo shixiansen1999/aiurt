@@ -52,6 +52,7 @@ public interface IPatrolTaskService extends IService<PatrolTask> {
      * @param patrolTaskDTO
      */
     void getPatrolTaskReturn(PatrolTaskDTO patrolTaskDTO);
+
     /**
      * app巡检任务-指派人员查询
      *
@@ -100,6 +101,7 @@ public interface IPatrolTaskService extends IService<PatrolTask> {
 
     /**
      * app巡检任务提交-统计工单数量
+     *
      * @param patrolTaskSubmitDTO
      * @return
      */
@@ -107,9 +109,17 @@ public interface IPatrolTaskService extends IService<PatrolTask> {
 
     /**
      * pc手工下放任务列表
+     *
      * @param pageList
      * @param patrolTaskDTO
      * @return
      */
     Page<PatrolTaskDTO> getPatrolTaskManualList(Page<PatrolTaskDTO> pageList, PatrolTaskDTO patrolTaskDTO);
+
+    /**
+     * 根据任务记录ID获取专业子系统的联动信息
+     *
+     * @param id
+     */
+    Map<String, Object> getMajorSubsystemGanged(String id);
 }

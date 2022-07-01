@@ -130,4 +130,26 @@
 
 
     </select>
+    <select id="getMajorNameByMajorCode" resultType="java.lang.String">
+        SELECT
+        cm.major_name
+        FROM
+        cs_major cm
+        WHERE
+        cm.del_flag = 0
+        <if test="code !=null and code !=''">
+            AND cm.major_code = #{code}
+        </if>
+    </select>
+    <select id="getSubsystemNameBySystemCode" resultType="java.lang.String">
+        SELECT
+        cs.system_name
+        FROM
+        cs_subsystem cs
+        WHERE
+        cs.del_flag = 0
+        <if test="code !=null and code !=''">
+            AND cs.system_code = #{code}
+        </if>
+    </select>
 </mapper>

@@ -19,19 +19,21 @@ import java.util.List;
  */
 public interface PatrolTaskMapper extends BaseMapper<PatrolTask> {
     /**
-     *app-巡检任务池列表
+     * app-巡检任务池列表
+     *
      * @param pageList
      * @param patrolTaskDTO
      * @return
      */
-    List<PatrolTaskDTO> getPatrolTaskPoolList(@Param("pageList")Page<PatrolTaskDTO> pageList, @Param("patrolTaskDTO")PatrolTaskDTO patrolTaskDTO);
+    List<PatrolTaskDTO> getPatrolTaskPoolList(@Param("pageList") Page<PatrolTaskDTO> pageList, @Param("patrolTaskDTO") PatrolTaskDTO patrolTaskDTO);
+
     /**
      * app-巡检任务列表
      *
      * @param patrolTaskDTO
      * @return author hlq
      */
-    List<PatrolTaskDTO> getPatrolTaskList(@Param("pageList")Page<PatrolTaskDTO> pageList, @Param("patrolTaskDTO") PatrolTaskDTO patrolTaskDTO);
+    List<PatrolTaskDTO> getPatrolTaskList(@Param("pageList") Page<PatrolTaskDTO> pageList, @Param("patrolTaskDTO") PatrolTaskDTO patrolTaskDTO);
 
     /**
      * app-获取组织机构名称
@@ -107,11 +109,27 @@ public interface PatrolTaskMapper extends BaseMapper<PatrolTask> {
     PatrolTaskParam selectBasicInfo(@Param("patrolTaskParam") PatrolTaskParam patrolTaskParam);
 
     /**
-     *  PC-手工下方列表
+     * PC-手工下方列表
+     *
      * @param pageList
      * @param patrolTaskDTO
      * @return
      */
-    List<PatrolTaskDTO> getPatrolTaskManualList(@Param("pageList")Page<PatrolTaskDTO> pageList,@Param("patrolTaskDTO") PatrolTaskDTO patrolTaskDTO);
+    List<PatrolTaskDTO> getPatrolTaskManualList(@Param("pageList") Page<PatrolTaskDTO> pageList, @Param("patrolTaskDTO") PatrolTaskDTO patrolTaskDTO);
 
+    /**
+     * 根据专业编码获取专业名称
+     *
+     * @param code
+     * @return
+     */
+    String getMajorNameByMajorCode(String code);
+
+    /**
+     * 根据子系统编码获取子系统名称
+     *
+     * @param code
+     * @return
+     */
+    String getSubsystemNameBySystemCode(String code);
 }
