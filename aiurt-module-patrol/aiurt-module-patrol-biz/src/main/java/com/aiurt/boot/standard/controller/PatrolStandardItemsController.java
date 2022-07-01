@@ -29,7 +29,7 @@ import java.util.List;
  * @Date:   2022-06-21
  * @Version: V1.0
  */
-@Api(tags="patrol_standard_items")
+@Api(tags="巡检标准项目")
 @RestController
 @RequestMapping("/patrolStandardItems")
 @Slf4j

@@ -28,7 +28,7 @@ import com.aiurt.common.aspect.annotation.AutoLog;
  * @Date:   2022-06-21
  * @Version: V1.0
  */
-@Api(tags="patrol_standard")
+@Api(tags="巡检标准")
 @RestController
 @RequestMapping("/patrolStandard")
 @Slf4j
@@ -148,10 +148,10 @@ public class PatrolStandardController extends BaseController<PatrolStandard, IPa
     * @param request
     * @param patrolStandard
     */
-    @RequestMapping(value = "/exportXls")
-    public ModelAndView exportXls(HttpServletRequest request, PatrolStandard patrolStandard) {
-        return super.exportXls(request, patrolStandard, PatrolStandard.class, "patrol_standard");
-    }
+//    @RequestMapping(value = "/exportXls")
+//    public ModelAndView exportXls(HttpServletRequest request, PatrolStandard patrolStandard) {
+//        return super.exportXls(request, patrolStandard, PatrolStandard.class, "patrol_standard");
+//    }
 
     /**
       * 通过excel导入数据
@@ -160,9 +160,9 @@ public class PatrolStandardController extends BaseController<PatrolStandard, IPa
     * @param response
     * @return
     */
-    @RequestMapping(value = "/importExcel", method = RequestMethod.POST)
-    public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) {
-        return super.importExcel(request, response, PatrolStandard.class);
-    }
+//    @RequestMapping(value = "/importExcel", method = RequestMethod.POST)
+//    public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) {
+//        return super.importExcel(request, response, PatrolStandard.class);
+//    }
 
 }

@@ -30,7 +30,7 @@ import com.aiurt.common.aspect.annotation.AutoLog;
  * @Date:   2022-06-21
  * @Version: V1.0
  */
-@Api(tags="patrol_plan")
+@Api(tags="巡检计划")
 @RestController
 @RequestMapping("/patrolPlan")
 @Slf4j
@@ -179,10 +179,10 @@ public class PatrolPlanController extends BaseController<PatrolPlan, IPatrolPlan
     * @param request
     * @param patrolPlan
     */
-    @RequestMapping(value = "/exportXls")
-    public ModelAndView exportXls(HttpServletRequest request, PatrolPlan patrolPlan) {
-        return super.exportXls(request, patrolPlan, PatrolPlan.class, "patrol_plan");
-    }
+//    @RequestMapping(value = "/exportXls")
+//    public ModelAndView exportXls(HttpServletRequest request, PatrolPlan patrolPlan) {
+//        return super.exportXls(request, patrolPlan, PatrolPlan.class, "patrol_plan");
+//    }
 
     /**
       * 通过excel导入数据
@@ -191,9 +191,9 @@ public class PatrolPlanController extends BaseController<PatrolPlan, IPatrolPlan
     * @param response
     * @return
     */
-    @RequestMapping(value = "/importExcel", method = RequestMethod.POST)
-    public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) {
-        return super.importExcel(request, response, PatrolPlan.class);
-    }
+//    @RequestMapping(value = "/importExcel", method = RequestMethod.POST)
+//    public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) {
+//        return super.importExcel(request, response, PatrolPlan.class);
+//    }
 
 }

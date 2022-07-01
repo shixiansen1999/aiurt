@@ -27,7 +27,7 @@ import com.aiurt.common.aspect.annotation.AutoLog;
  * @Date:   2022-06-21
  * @Version: V1.0
  */
-@Api(tags="patrol_plan_organization")
+@Api(tags="巡检计划关联组织机构")
 @RestController
 @RequestMapping("/patrolPlanOrganization")
 @Slf4j
@@ -44,18 +44,18 @@ public class PatrolPlanOrganizationController extends BaseController<PatrolPlanO
 	 * @param req
 	 * @return
 	 */
-	//@AutoLog(value = "patrol_plan_organization-分页列表查询")
-	@ApiOperation(value="patrol_plan_organization-分页列表查询", notes="patrol_plan_organization-分页列表查询")
-	@GetMapping(value = "/list")
-	public Result<IPage<PatrolPlanOrganization>> queryPageList(PatrolPlanOrganization patrolPlanOrganization,
-								   @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
-								   @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
-								   HttpServletRequest req) {
-		QueryWrapper<PatrolPlanOrganization> queryWrapper = QueryGenerator.initQueryWrapper(patrolPlanOrganization, req.getParameterMap());
-		Page<PatrolPlanOrganization> page = new Page<PatrolPlanOrganization>(pageNo, pageSize);
-		IPage<PatrolPlanOrganization> pageList = patrolPlanOrganizationService.page(page, queryWrapper);
-		return Result.OK(pageList);
-	}
+//	//@AutoLog(value = "patrol_plan_organization-分页列表查询")
+//	@ApiOperation(value="patrol_plan_organization-分页列表查询", notes="patrol_plan_organization-分页列表查询")
+//	@GetMapping(value = "/list")
+//	public Result<IPage<PatrolPlanOrganization>> queryPageList(PatrolPlanOrganization patrolPlanOrganization,
+//								   @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
+//								   @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
+//								   HttpServletRequest req) {
+//		QueryWrapper<PatrolPlanOrganization> queryWrapper = QueryGenerator.initQueryWrapper(patrolPlanOrganization, req.getParameterMap());
+//		Page<PatrolPlanOrganization> page = new Page<PatrolPlanOrganization>(pageNo, pageSize);
+//		IPage<PatrolPlanOrganization> pageList = patrolPlanOrganizationService.page(page, queryWrapper);
+//		return Result.OK(pageList);
+//	}
 
 	/**
 	 *   添加
@@ -63,13 +63,13 @@ public class PatrolPlanOrganizationController extends BaseController<PatrolPlanO
 	 * @param patrolPlanOrganization
 	 * @return
 	 */
-	@AutoLog(value = "patrol_plan_organization-添加")
-	@ApiOperation(value="patrol_plan_organization-添加", notes="patrol_plan_organization-添加")
-	@PostMapping(value = "/add")
-	public Result<String> add(@RequestBody PatrolPlanOrganization patrolPlanOrganization) {
-		patrolPlanOrganizationService.save(patrolPlanOrganization);
-		return Result.OK("添加成功！");
-	}
+//	@AutoLog(value = "patrol_plan_organization-添加")
+//	@ApiOperation(value="patrol_plan_organization-添加", notes="patrol_plan_organization-添加")
+//	@PostMapping(value = "/add")
+//	public Result<String> add(@RequestBody PatrolPlanOrganization patrolPlanOrganization) {
+//		patrolPlanOrganizationService.save(patrolPlanOrganization);
+//		return Result.OK("添加成功！");
+//	}
 
 	/**
 	 *  编辑
@@ -77,13 +77,13 @@ public class PatrolPlanOrganizationController extends BaseController<PatrolPlanO
 	 * @param patrolPlanOrganization
 	 * @return
 	 */
-	@AutoLog(value = "patrol_plan_organization-编辑")
-	@ApiOperation(value="patrol_plan_organization-编辑", notes="patrol_plan_organization-编辑")
-	@RequestMapping(value = "/edit", method = {RequestMethod.PUT,RequestMethod.POST})
-	public Result<String> edit(@RequestBody PatrolPlanOrganization patrolPlanOrganization) {
-		patrolPlanOrganizationService.updateById(patrolPlanOrganization);
-		return Result.OK("编辑成功!");
-	}
+//	@AutoLog(value = "patrol_plan_organization-编辑")
+//	@ApiOperation(value="patrol_plan_organization-编辑", notes="patrol_plan_organization-编辑")
+//	@RequestMapping(value = "/edit", method = {RequestMethod.PUT,RequestMethod.POST})
+//	public Result<String> edit(@RequestBody PatrolPlanOrganization patrolPlanOrganization) {
+//		patrolPlanOrganizationService.updateById(patrolPlanOrganization);
+//		return Result.OK("编辑成功!");
+//	}
 
 	/**
 	 *   通过id删除
@@ -91,13 +91,13 @@ public class PatrolPlanOrganizationController extends BaseController<PatrolPlanO
 	 * @param id
 	 * @return
 	 */
-	@AutoLog(value = "patrol_plan_organization-通过id删除")
-	@ApiOperation(value="patrol_plan_organization-通过id删除", notes="patrol_plan_organization-通过id删除")
-	@DeleteMapping(value = "/delete")
-	public Result<String> delete(@RequestParam(name="id",required=true) String id) {
-		patrolPlanOrganizationService.removeById(id);
-		return Result.OK("删除成功!");
-	}
+//	@AutoLog(value = "patrol_plan_organization-通过id删除")
+//	@ApiOperation(value="patrol_plan_organization-通过id删除", notes="patrol_plan_organization-通过id删除")
+//	@DeleteMapping(value = "/delete")
+//	public Result<String> delete(@RequestParam(name="id",required=true) String id) {
+//		patrolPlanOrganizationService.removeById(id);
+//		return Result.OK("删除成功!");
+//	}
 
 	/**
 	 *  批量删除
@@ -105,13 +105,13 @@ public class PatrolPlanOrganizationController extends BaseController<PatrolPlanO
 	 * @param ids
 	 * @return
 	 */
-	@AutoLog(value = "patrol_plan_organization-批量删除")
-	@ApiOperation(value="patrol_plan_organization-批量删除", notes="patrol_plan_organization-批量删除")
-	@DeleteMapping(value = "/deleteBatch")
-	public Result<String> deleteBatch(@RequestParam(name="ids",required=true) String ids) {
-		this.patrolPlanOrganizationService.removeByIds(Arrays.asList(ids.split(",")));
-		return Result.OK("批量删除成功!");
-	}
+//	@AutoLog(value = "patrol_plan_organization-批量删除")
+//	@ApiOperation(value="patrol_plan_organization-批量删除", notes="patrol_plan_organization-批量删除")
+//	@DeleteMapping(value = "/deleteBatch")
+//	public Result<String> deleteBatch(@RequestParam(name="ids",required=true) String ids) {
+//		this.patrolPlanOrganizationService.removeByIds(Arrays.asList(ids.split(",")));
+//		return Result.OK("批量删除成功!");
+//	}
 
 	/**
 	 * 通过id查询
@@ -119,16 +119,16 @@ public class PatrolPlanOrganizationController extends BaseController<PatrolPlanO
 	 * @param id
 	 * @return
 	 */
-	//@AutoLog(value = "patrol_plan_organization-通过id查询")
-	@ApiOperation(value="patrol_plan_organization-通过id查询", notes="patrol_plan_organization-通过id查询")
-	@GetMapping(value = "/queryById")
-	public Result<PatrolPlanOrganization> queryById(@RequestParam(name="id",required=true) String id) {
-		PatrolPlanOrganization patrolPlanOrganization = patrolPlanOrganizationService.getById(id);
-		if(patrolPlanOrganization==null) {
-			return Result.error("未找到对应数据");
-		}
-		return Result.OK(patrolPlanOrganization);
-	}
+//	//@AutoLog(value = "patrol_plan_organization-通过id查询")
+//	@ApiOperation(value="patrol_plan_organization-通过id查询", notes="patrol_plan_organization-通过id查询")
+//	@GetMapping(value = "/queryById")
+//	public Result<PatrolPlanOrganization> queryById(@RequestParam(name="id",required=true) String id) {
+//		PatrolPlanOrganization patrolPlanOrganization = patrolPlanOrganizationService.getById(id);
+//		if(patrolPlanOrganization==null) {
+//			return Result.error("未找到对应数据");
+//		}
+//		return Result.OK(patrolPlanOrganization);
+//	}
 
     /**
     * 导出excel
@@ -136,10 +136,10 @@ public class PatrolPlanOrganizationController extends BaseController<PatrolPlanO
     * @param request
     * @param patrolPlanOrganization
     */
-    @RequestMapping(value = "/exportXls")
-    public ModelAndView exportXls(HttpServletRequest request, PatrolPlanOrganization patrolPlanOrganization) {
-        return super.exportXls(request, patrolPlanOrganization, PatrolPlanOrganization.class, "patrol_plan_organization");
-    }
+//    @RequestMapping(value = "/exportXls")
+//    public ModelAndView exportXls(HttpServletRequest request, PatrolPlanOrganization patrolPlanOrganization) {
+//        return super.exportXls(request, patrolPlanOrganization, PatrolPlanOrganization.class, "patrol_plan_organization");
+//    }
 
     /**
       * 通过excel导入数据
@@ -148,9 +148,9 @@ public class PatrolPlanOrganizationController extends BaseController<PatrolPlanO
     * @param response
     * @return
     */
-    @RequestMapping(value = "/importExcel", method = RequestMethod.POST)
-    public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) {
-        return super.importExcel(request, response, PatrolPlanOrganization.class);
-    }
+//    @RequestMapping(value = "/importExcel", method = RequestMethod.POST)
+//    public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) {
+//        return super.importExcel(request, response, PatrolPlanOrganization.class);
+//    }
 
 }
