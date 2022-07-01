@@ -4,6 +4,7 @@ import cn.hutool.core.date.DateUnit;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
+import com.aiurt.boot.constant.PatrolConstant;
 import com.aiurt.boot.standard.entity.PatrolStandardItems;
 import com.aiurt.boot.standard.mapper.PatrolStandardItemsMapper;
 import com.aiurt.boot.task.dto.PatrolCheckResultDTO;
@@ -70,6 +71,7 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
     public Map<String, Object> selectBillInfoByNumber(String patrolNumber) {
         PatrolTaskDeviceParam taskDeviceParam = Optional.ofNullable(patrolTaskDeviceMapper.selectBillInfoByNumber(patrolNumber))
                 .orElseGet(PatrolTaskDeviceParam::new);
+
         // 计算巡检时长
         Date startTime = taskDeviceParam.getStartTime();
         Date checkTime = taskDeviceParam.getCheckTime();
@@ -78,13 +80,23 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
             taskDeviceParam.setDuration(duration);
         }
 
+        // 查询同行人信息
         QueryWrapper<PatrolAccompany> accompanyWrapper = new QueryWrapper<>();
         accompanyWrapper.lambda().eq(PatrolAccompany::getTaskDeviceCode, patrolNumber);
         List<PatrolAccompany> accompanyList = patrolAccompanyMapper.selectList(accompanyWrapper);
         taskDeviceParam.setAccompanyInfo(accompanyList);
 
-        // 构建巡检项目树
         List<PatrolCheckResultDTO> checkResultList = patrolCheckResultMapper.getListByTaskDeviceId(taskDeviceParam.getId());
+
+        // 统计检查项中正常项的数据
+        long normalItem = Optional.ofNullable(checkResultList).orElseGet(Collections::emptyList)
+                .stream().filter(l -> PatrolConstant.RESULT_NORMAL.equals(l.getCheckResult())).count();
+        // 统计检查项中异常项的数据
+        long exceptionItem = Optional.ofNullable(checkResultList).orElseGet(Collections::emptyList)
+                .stream().filter(l -> PatrolConstant.RESULT_EXCEPTION.equals(l.getCheckResult())).count();
+        taskDeviceParam.setNormalItem(normalItem);
+        taskDeviceParam.setExceptionItem(exceptionItem);
+
         // 放入项目的附件信息
         Optional.ofNullable(checkResultList).orElseGet(Collections::emptyList).stream().forEach(l -> {
             QueryWrapper<PatrolAccessory> wrapper = new QueryWrapper<>();
@@ -92,6 +104,8 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
             PatrolAccessory accessory = patrolAccessoryMapper.selectOne(wrapper);
             l.setAccessoryInfo(accessory);
         });
+
+        // 构建巡检项目树
         List<PatrolCheckResultDTO> tree = getTree(checkResultList, "0");
         Map<String, Object> map = new HashMap<>();
         map.put("taskDeviceParam", taskDeviceParam);
