@@ -651,6 +651,13 @@ public class DateUtils extends PropertyEditorSupport {
         return Long.valueOf(DateUtils.yyyymmddhhmmss.get().format(new Date()));
     }
 
+    public static int getMonth() {
+        Calendar cal = Calendar.getInstance();
+        //int day = cal.get(Calendar.DATE);
+        int month = cal.get(Calendar.MONTH) + 1;
+        return month;
+    }
+
     /**
      * String类型 转换为Date, 如果参数长度为10 转换格式”yyyy-MM-dd“ 如果参数长度为19 转换格式”yyyy-MM-dd
      * HH:mm:ss“ * @param text String类型的时间值

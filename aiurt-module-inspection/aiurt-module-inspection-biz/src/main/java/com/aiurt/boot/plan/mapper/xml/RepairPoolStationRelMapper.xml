@@ -1,6 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.aiurt.boot.plan.mapper.RepairPoolStationRelMapper">
+    <insert id="insertBatch">
+        INSERT INTO `repair_pool_station_rel` ( `id`, `repair_pool_code`, `station_code`, `line_code`, `position_code` )
+        VALUES
+        <foreach collection ="repairPoolStationRel" item="stationrel" separator =",">
+            (  #{stationrel.id},  #{stationrel.repairPoolCode}, #{stationrel.stationCode},
+            #{stationrel.lineCode},  #{stationrel.positionCode}  )
+        </foreach >
+    </insert>
 
     <select id="selectStationList" resultType="com.aiurt.boot.plan.dto.StationDTO">
         select station_code,position_code,line_code from repair_pool_station_rel where repair_pool_code = #{planCode}

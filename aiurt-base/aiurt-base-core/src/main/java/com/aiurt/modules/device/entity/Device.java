@@ -339,5 +339,9 @@ public class Device extends DictEntity {
 	@ApiModelProperty(value = "巡检标准Code")
 	@TableField(exist = false)
 	private  String  planStandardCode;
+	@Excel(name = "巡检标准Code")
+	@ApiModelProperty(value = "检修标准Code")
+	@TableField(exist = false)
+	private  String  inspectionCode;
 
 }

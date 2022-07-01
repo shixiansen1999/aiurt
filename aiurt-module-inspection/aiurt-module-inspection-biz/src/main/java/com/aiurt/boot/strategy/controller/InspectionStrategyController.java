@@ -1,10 +1,10 @@
 package com.aiurt.boot.strategy.controller;
 
+import com.aiurt.boot.strategy.dto.InspectionStrategyDTO;
 import com.aiurt.boot.strategy.entity.InspectionStrategy;
 import com.aiurt.boot.strategy.service.IInspectionStrategyService;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.system.base.controller.BaseController;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.annotations.Api;
@@ -12,7 +12,6 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import lombok.extern.slf4j.Slf4j;
 import org.jeecg.common.api.vo.Result;
-import org.jeecg.common.system.query.QueryGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
@@ -20,6 +19,7 @@ import org.springframework.web.servlet.ModelAndView;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * @Description: inspection_strategy
@@ -35,100 +35,138 @@ public class InspectionStrategyController extends BaseController<InspectionStrat
     @Autowired
     private IInspectionStrategyService inspectionStrategyService;
 
-    /**
-     * 分页列表查询
-     *
-     * @param inspectionStrategy
-     * @param pageNo
-     * @param pageSize
-     * @param req
-     * @return
-     */
-    //@AutoLog(value = "inspection_strategy-分页列表查询")
-    @ApiOperation(value = "inspection_strategy-分页列表查询", notes = "inspection_strategy-分页列表查询")
-    @GetMapping(value = "/list")
-    public Result<IPage<InspectionStrategy>> queryPageList(InspectionStrategy inspectionStrategy,
-                                                           @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
-                                                           @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize,
-                                                           HttpServletRequest req) {
-        QueryWrapper<InspectionStrategy> queryWrapper = QueryGenerator.initQueryWrapper(inspectionStrategy, req.getParameterMap());
-        Page<InspectionStrategy> page = new Page<InspectionStrategy>(pageNo, pageSize);
-        IPage<InspectionStrategy> pageList = inspectionStrategyService.page(page, queryWrapper);
-        return Result.OK(pageList);
-    }
+	/**
+	 * 分页列表查询
+	 *
+	 * @param inspectionStrategyDTO
+	 * @param pageNo
+	 * @param pageSize
+	 * @param req
+	 * @return
+	 */
+	//@AutoLog(value = "inspection_strategy-分页列表查询")
+	@ApiOperation(value="检修策略表-分页列表查询", notes="检修策略表-分页列表查询")
+	@GetMapping(value = "/list")
+	public Result<IPage<InspectionStrategyDTO>> queryPageList(InspectionStrategyDTO inspectionStrategyDTO,
+								   @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
+								   @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
+								   HttpServletRequest req) {
+		//QueryWrapper<InspectionStrategy> queryWrapper = QueryGenerator.initQueryWrapper(inspectionStrategy, req.getParameterMap());
+		Page<InspectionStrategyDTO> page = new Page<InspectionStrategyDTO>(pageNo, pageSize);
+		IPage<InspectionStrategyDTO> pageList = inspectionStrategyService.pageList(page, inspectionStrategyDTO);
+		return Result.OK(pageList);
+	}
 
-    /**
-     * 添加
-     *
-     * @param inspectionStrategy
-     * @return
-     */
-    @AutoLog(value = "inspection_strategy-添加")
-    @ApiOperation(value = "inspection_strategy-添加", notes = "inspection_strategy-添加")
-    @PostMapping(value = "/add")
-    public Result<String> add(@RequestBody InspectionStrategy inspectionStrategy) {
-        inspectionStrategyService.save(inspectionStrategy);
-        return Result.OK("添加成功！");
-    }
+	/**
+	 *   添加
+	 *
+	 * @param inspectionStrategyDTO
+	 * @return
+	 */
+	@AutoLog(value = "检修策略表-添加")
+	@ApiOperation(value="检修策略表-添加", notes="检修策略表-添加")
+	@PostMapping(value = "/add")
+	public Result<String> add(@RequestBody InspectionStrategyDTO inspectionStrategyDTO) {
+		inspectionStrategyService.add(inspectionStrategyDTO);
+		return Result.OK("添加成功！");
+	}
 
-    /**
-     * 编辑
-     *
-     * @param inspectionStrategy
-     * @return
-     */
-    @AutoLog(value = "inspection_strategy-编辑")
-    @ApiOperation(value = "inspection_strategy-编辑", notes = "inspection_strategy-编辑")
-    @RequestMapping(value = "/edit", method = {RequestMethod.PUT, RequestMethod.POST})
-    public Result<String> edit(@RequestBody InspectionStrategy inspectionStrategy) {
-        inspectionStrategyService.updateById(inspectionStrategy);
-        return Result.OK("编辑成功!");
-    }
 
-    /**
-     * 通过id删除
-     *
-     * @param id
-     * @return
-     */
-    @AutoLog(value = "inspection_strategy-通过id删除")
-    @ApiOperation(value = "inspection_strategy-通过id删除", notes = "inspection_strategy-通过id删除")
-    @DeleteMapping(value = "/delete")
-    public Result<String> delete(@RequestParam(name = "id", required = true) String id) {
-        inspectionStrategyService.removeById(id);
-        return Result.OK("删除成功!");
-    }
+	/**
+	 *  编辑
+	 *
+	 * @param inspectionStrategyDTO
+	 * @return
+	 */
+	@AutoLog(value = "检修策略表-编辑")
+	@ApiOperation(value="检修策略表-编辑", notes="检修策略表-编辑")
+	@RequestMapping(value = "/edit", method = {RequestMethod.PUT,RequestMethod.POST})
+	public Result<String> edit(@RequestBody InspectionStrategyDTO inspectionStrategyDTO) {
+		inspectionStrategyService.updateId(inspectionStrategyDTO);
+		return Result.OK("编辑成功!");
+	}
+//    /**
+//     * 编辑
+//     *
+//     * @param inspectionStrategy
+//     * @return
+//     */
+//    @AutoLog(value = "inspection_strategy-编辑")
+//    @ApiOperation(value = "inspection_strategy-编辑", notes = "inspection_strategy-编辑")
+//    @RequestMapping(value = "/edit", method = {RequestMethod.PUT, RequestMethod.POST})
+//    public Result<String> edit(@RequestBody InspectionStrategy inspectionStrategy) {
+//        inspectionStrategyService.updateById(inspectionStrategy);
+//        return Result.OK("编辑成功!");
+//    }
 
-    /**
-     * 批量删除
-     *
-     * @param ids
-     * @return
-     */
-    @AutoLog(value = "inspection_strategy-批量删除")
-    @ApiOperation(value = "inspection_strategy-批量删除", notes = "inspection_strategy-批量删除")
-    @DeleteMapping(value = "/deleteBatch")
-    public Result<String> deleteBatch(@RequestParam(name = "ids", required = true) String ids) {
-        this.inspectionStrategyService.removeByIds(Arrays.asList(ids.split(",")));
-        return Result.OK("批量删除成功!");
-    }
+	/**
+	 *   通过id删除
+	 *
+	 * @param id
+	 * @return
+	 */
+	@AutoLog(value = "检修策略表-通过id删除")
+	@ApiOperation(value="检修策略表-通过id删除", notes="检修策略表-通过id删除")
+	@DeleteMapping(value = "/delete")
+	public Result<String> delete(@RequestParam(name="id",required=true) String id) {
+		inspectionStrategyService.removeId(id);
+		return Result.OK("删除成功!");
+	}
 
-    /**
-     * 通过id查询
-     *
-     * @param id
-     * @return
-     */
-    //@AutoLog(value = "inspection_strategy-通过id查询")
-    @ApiOperation(value = "inspection_strategy-通过id查询", notes = "inspection_strategy-通过id查询")
-    @GetMapping(value = "/queryById")
-    public Result<InspectionStrategy> queryById(@RequestParam(name = "id", required = true) String id) {
-        InspectionStrategy inspectionStrategy = inspectionStrategyService.getById(id);
-        if (inspectionStrategy == null) {
-            return Result.error("未找到对应数据");
-        }
-        return Result.OK(inspectionStrategy);
-    }
+	/**
+	 *  批量删除
+	 *
+	 * @param ids
+	 * @return
+	 */
+	@AutoLog(value = "检修策略表-批量删除")
+	@ApiOperation(value="检修策略表-批量删除", notes="检修策略表-批量删除")
+	@DeleteMapping(value = "/deleteBatch")
+	public Result<String> deleteBatch(@RequestParam(name="ids",required=true) String ids) {
+		List<String> id = Arrays.asList(ids.split(","));
+		for (String id1 :id){
+			this.delete(id1);
+		}
+		return Result.OK("批量删除成功!");
+	}
+
+	/**
+	 * 修改状态
+	 * @param id,status
+	 * @return
+	 */
+	@AutoLog(value = "检修策略表-修改生效状态")
+	@ApiOperation(value="检修策略表-修改生效状态", notes="检修策略表-修改生效状态")
+	@RequestMapping(value = "/modify", method = {RequestMethod.POST})
+	public Result<String> modify(@RequestParam(name = "id") String id,
+								 @RequestParam(name = "status") Integer status) {
+		InspectionStrategy inspectionStrategy =new InspectionStrategy();
+		inspectionStrategy.setId(id);
+		if(status==0){
+			inspectionStrategy.setStatus(1);
+		}
+		inspectionStrategy.setId(id);if(status==1){
+			inspectionStrategy.setStatus(0);
+		}
+		inspectionStrategyService.updateById(inspectionStrategy);
+		return Result.OK("修改成功！");
+	}
+	/**
+	 * 通过id查询
+	 *
+	 * @param id
+	 * @return
+	 */
+	//@AutoLog(value = "inspection_strategy-通过id查询")
+	@ApiOperation(value="inspection_strategy-通过id查询", notes="inspection_strategy-通过id查询")
+	@GetMapping(value = "/queryById")
+	public Result<InspectionStrategyDTO> queryById(@RequestParam(name="id",required=true) String id) {
+		InspectionStrategyDTO inspectionStrategyDTO = inspectionStrategyService.getId(id);
+		if(inspectionStrategyDTO==null) {
+			return Result.error("未找到对应数据");
+		}
+		return Result.OK(inspectionStrategyDTO);
+	}
 
     /**
      * 导出excel

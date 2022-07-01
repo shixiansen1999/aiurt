@@ -47,8 +47,8 @@ public class PatrolPlanController extends BaseController<PatrolPlan, IPatrolPlan
 	 * @param req
 	 * @return
 	 */
-	@AutoLog(value = "巡检标准项目表-分页列表查询")
-	@ApiOperation(value="巡检标准项目表-分页列表查询", notes="巡检标准项目表-分页列表查询")
+	@AutoLog(value = "巡检计划表-分页列表查询")
+	@ApiOperation(value="巡检计划表-分页列表查询", notes="巡检计划表-分页列表查询")
 	@GetMapping(value = "/list")
 	public Result<IPage<PatrolPlanDto>> queryPageList(PatrolPlanDto patrolPlan,
 													  @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
@@ -65,8 +65,8 @@ public class PatrolPlanController extends BaseController<PatrolPlan, IPatrolPlan
 	 * @param patrolPlanDto
 	 * @return
 	 */
-	@AutoLog(value = "巡检标准项目表-添加")
-	@ApiOperation(value="巡检标准项目表-添加", notes="巡检标准项目表-添加")
+	@AutoLog(value = "巡检计划表-添加")
+	@ApiOperation(value="巡检计划表-添加", notes="巡检计划表-添加")
 	@PostMapping(value = "/add")
 	public Result<String> add(@RequestBody PatrolPlanDto patrolPlanDto) {
 		patrolPlanService.add(patrolPlanDto);
@@ -77,8 +77,8 @@ public class PatrolPlanController extends BaseController<PatrolPlan, IPatrolPlan
 	  * @param
 	  * @return
 	  */
-	 @AutoLog(value = "巡检标准项目表-查询站点")
-	 @ApiOperation(value="巡检标准项目表-查询站点", notes="巡检标准项目表-查询站点")
+	 @AutoLog(value = "巡检计划表-查询站点")
+	 @ApiOperation(value="巡检计划表-查询站点", notes="巡检计划表-查询站点")
 	 @PostMapping(value = "/querySite")
 	 public List<QuerySiteDto> querySited() {
 		List<QuerySiteDto> querySiteDtos = patrolPlanService.querySited();
@@ -89,13 +89,18 @@ public class PatrolPlanController extends BaseController<PatrolPlan, IPatrolPlan
 	  * @param id,status
 	  * @return
 	  */
-	 @AutoLog(value = "巡检标准项目表-修改生效状态")
-	 @ApiOperation(value="巡检标准项目表-修改生效状态", notes="巡检标准项目表-修改生效状态")
-	 @PostMapping(value = "/modify")
+	 @AutoLog(value = "巡检计划表-修改生效状态")
+	 @ApiOperation(value="巡检计划表-修改生效状态", notes="巡检计划表-修改生效状态")
+	 @RequestMapping(value = "/modify", method = {RequestMethod.POST})
 	 public Result<String> modify(@RequestParam(name = "id") String id,
 								  @RequestParam(name = "status") Integer status) {
 	 	PatrolPlan patrolPlan =new PatrolPlan();
-	 	patrolPlan.setId(id); patrolPlan.setStatus(status);
+	 	patrolPlan.setId(id);if(status==0){
+			 patrolPlan.setStatus(1);
+		 }
+		 patrolPlan.setId(id);if(status==1){
+			 patrolPlan.setStatus(0);
+		 }
 		 patrolPlanService.updateById(patrolPlan);
 		 return Result.OK("修改成功！");
 	 }
@@ -105,8 +110,8 @@ public class PatrolPlanController extends BaseController<PatrolPlan, IPatrolPlan
 	 * @param patrolPlanDto
 	 * @return
 	 */
-	@AutoLog(value = "巡检标准项目表-编辑")
-	@ApiOperation(value="巡检标准项目表-编辑", notes="巡检标准项目表-编辑")
+	@AutoLog(value = "巡检计划表-编辑")
+	@ApiOperation(value="巡检计划表-编辑", notes="巡检计划表-编辑")
 	@RequestMapping(value = "/edit", method = {RequestMethod.POST})
 	public Result<String> edit(@RequestBody PatrolPlanDto patrolPlanDto) {
 		patrolPlanService.updateId(patrolPlanDto);
@@ -117,8 +122,8 @@ public class PatrolPlanController extends BaseController<PatrolPlan, IPatrolPlan
 	  * @param standardCode
 	  * @return
 	  */
-	 @AutoLog(value = "巡检标准项目表-查看设备详情")
-	 @ApiOperation(value="巡检标准项目表-查看设备详情", notes="巡检标准项目表-查看设备详情")
+	 @AutoLog(value = "巡检计划表-查看设备详情")
+	 @ApiOperation(value="巡检计划表-查看设备详情", notes="巡检计划表-查看设备详情")
 	 @RequestMapping(value = "/viewDetails", method = {RequestMethod.POST})
 	 public List<Device> viewDetails(@RequestParam(name = "standardCode")String standardCode) {
 		 List<Device> list =patrolPlanService.viewDetails(standardCode);
@@ -130,8 +135,8 @@ public class PatrolPlanController extends BaseController<PatrolPlan, IPatrolPlan
 	 * @param id
 	 * @return
 	 */
-	@AutoLog(value = "巡检标准项目表-通过id删除")
-	@ApiOperation(value="巡检标准项目表-通过id删除", notes="巡检标准项目表-通过id删除")
+	@AutoLog(value = "巡检计划表-通过id删除")
+	@ApiOperation(value="巡检计划表-通过id删除", notes="巡检计划表-通过id删除")
 	@DeleteMapping(value = "/delete")
 	public Result<String> delete(@RequestParam(name="id",required=true) String id) {
 		patrolPlanService.delete(id);
@@ -144,8 +149,8 @@ public class PatrolPlanController extends BaseController<PatrolPlan, IPatrolPlan
 	 * @param ids
 	 * @return
 	 */
-	@AutoLog(value = "巡检标准项目表-批量删除")
-	@ApiOperation(value="巡检标准项目表-批量删除", notes="巡检标准项目表-批量删除")
+	@AutoLog(value = "巡检计划表-批量删除")
+	@ApiOperation(value="巡检计划表-批量删除", notes="巡检计划表-批量删除")
 	@DeleteMapping(value = "/deleteBatch")
 	public Result<String> deleteBatch(@RequestParam(name="ids",required=true) String ids) {
 		List<String> id = Arrays.asList(ids.split(","));
@@ -161,8 +166,8 @@ public class PatrolPlanController extends BaseController<PatrolPlan, IPatrolPlan
 	 * @param id
 	 * @return
 	 */
-	@AutoLog(value = "巡检标准项目表-通过id查询")
-	@ApiOperation(value="巡检标准项目表-通过id查询", notes="巡检标准项目表-通过id查询")
+	@AutoLog(value = "巡检计划表-通过id查询")
+	@ApiOperation(value="巡检计划表-通过id查询", notes="巡检计划表-通过id查询")
 	@GetMapping(value = "/queryById")
 	public Result<PatrolPlanDto> queryById(@RequestParam(name="id",required=true) String id,
 										   @RequestParam(name="code",required=true) String code) {

@@ -1,7 +1,7 @@
 package com.aiurt.boot.task.service;
 
+import com.aiurt.boot.task.dto.PatrolCheckResultDTO;
 import com.aiurt.boot.task.dto.PatrolTaskDeviceDTO;
-import com.aiurt.boot.task.entity.PatrolCheckResult;
 import com.aiurt.boot.task.entity.PatrolTaskDevice;
 import com.aiurt.boot.task.param.PatrolTaskDeviceParam;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -54,8 +54,15 @@ public interface IPatrolTaskDeviceService extends IService<PatrolTaskDevice> {
 
     /**
      * app巡检任务执行中-检查
-     *
-     * @param patrolTaskDeviceDTO
+     * @param patrolTaskDevice
+     * @return
      */
-    void getPatrolTaskCheck(PatrolTaskDeviceDTO patrolTaskDeviceDTO);
+    List<PatrolCheckResultDTO> getPatrolTaskCheck(PatrolTaskDevice patrolTaskDevice);
+
+    /**
+     * app巡检-检查项添加
+     * @param patrolCheckResultDTO
+     * @return
+     */
+    List<PatrolCheckResultDTO> getPatrolTaskCheckItems(PatrolCheckResultDTO patrolCheckResultDTO);
 }

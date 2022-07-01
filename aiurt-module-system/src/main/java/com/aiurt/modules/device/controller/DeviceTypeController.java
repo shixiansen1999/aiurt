@@ -84,11 +84,11 @@ public class DeviceTypeController extends BaseController<DeviceType, IDeviceType
 				 DeviceType system = setEntity(two.getId()+"","zxt",two.getSystemCode(),two.getSystemName(),null,null,null,two.getMajorCode(),two.getSystemCode());
 				 if(level>2) {
 					 List<DeviceType> sysDeviceType = deviceTypeTree.stream().filter(type -> system.getMajorCode().equals(type.getMajorCode()) && (null != type.getSystemCode() && !"".equals(type.getSystemCode()) && system.getSystemCode().equals(type.getSystemCode()))).collect(Collectors.toList());
-					 system.setDeviceTypeChildren(sysDeviceType);
+					 system.setChildren(sysDeviceType);
 				 }
 				 twoList.add(system);
 			 });
-			 major.setDeviceTypeChildren(twoList);
+			 major.setChildren(twoList);
 			 newList.add(major);
 		 });
 		 return Result.OK(newList);
@@ -192,13 +192,35 @@ public class DeviceTypeController extends BaseController<DeviceType, IDeviceType
 		Page<DeviceType> page = new Page<DeviceType>(pageNo, pageSize);
 		IPage<DeviceType> pageList = deviceTypeService.page(page, queryWrapper.eq(DeviceType::getDelFlag,0));
 		pageList.getRecords().forEach(type->{
+			//查询设备组成
 			List<DeviceCompose> composeList = deviceComposeList.stream().filter(compose -> compose.getDeviceTypeCode().equals(type.getCode()) ).collect(Collectors.toList());
+			type.setDeviceComposeList(composeList);
+			//是否有设备组成
 			if(!composeList.isEmpty()){
 				type.setIsHaveDevice(1);
 			}else{
 				type.setIsHaveDevice(0);
 			}
-			type.setDeviceComposeList(composeList);
+			//查询上级节点
+			if(!type.getPid().equals("0")){
+				type.setPUrl(deviceTypeService.getById(type.getPid()).getCode());
+			}else if(null!=type.getMajorCode() && null!= type.getSystemCode() && type.getPid().equals("0")){
+				LambdaQueryWrapper<CsSubsystem> wrapper = new LambdaQueryWrapper();
+				wrapper.eq(CsSubsystem::getSystemCode,type.getSystemCode());
+				wrapper.eq(CsSubsystem::getDelFlag,0);
+				List<CsSubsystem> subList = csSubsystemService.list(wrapper);
+				if(!subList.isEmpty()){
+					type.setPUrl(subList.get(0).getSystemName());
+				}
+			}else{
+				LambdaQueryWrapper<CsMajor> wrapper = new LambdaQueryWrapper();
+				wrapper.eq(CsMajor::getMajorCode,type.getMajorCode());
+				wrapper.eq(CsMajor::getDelFlag,0);
+				List<CsMajor> majorList = csMajorService.list(wrapper);
+				if(!majorList.isEmpty()){
+					type.setPUrl(majorList.get(0).getMajorName());
+				}
+			}
 		});
 		return Result.OK(pageList);
 	}

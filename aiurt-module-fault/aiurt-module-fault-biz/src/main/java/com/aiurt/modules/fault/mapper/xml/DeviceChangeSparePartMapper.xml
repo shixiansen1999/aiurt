@@ -3,6 +3,6 @@
 <mapper namespace="com.aiurt.modules.fault.mapper.DeviceChangeSparePartMapper">
 
     <select id="queryDeviceChangeByFaultCode" parameterType="string" resultType="com.aiurt.modules.fault.entity.DeviceChangeSparePart">
-        select a.* from device_change_spare_part a where a.repair_record_id = #{param1}
+        select a.* from device_change_spare_part a where a.code = #{faultCode}
     </select>
 </mapper>

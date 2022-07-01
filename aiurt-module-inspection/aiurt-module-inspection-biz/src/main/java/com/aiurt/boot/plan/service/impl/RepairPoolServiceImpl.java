@@ -736,6 +736,7 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
 
         if (CollUtil.isNotEmpty(repairPoolOrgRels)) {
             List<String> orgCodes = repairPoolOrgRels.stream().map(RepairPoolOrgRel::getOrgCode).collect(Collectors.toList());
+            // todo 需要查找当前登录管理的组织机构比较后再查询
             resutlt = sysBaseAPI.getUserByDepIds(orgCodes);
         }
         return resutlt;
@@ -867,20 +868,19 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
      * @param jx              计划单号
      * @param repairPoolCodes 检修标准
      */
-    private void handle(String jx, List<RepairPoolCodeReq> repairPoolCodes) {
+    @Override
+    public void handle(String jx, List<RepairPoolCodeReq> repairPoolCodes) {
         if (CollUtil.isNotEmpty(repairPoolCodes)) {
             // <K,V> K是旧的id,V新生成的id，用来维护复制检修项目时的pid更新
             HashMap<String, String> map = new HashMap<>(50);
 
             repairPoolCodes.forEach(re -> {
-
                 InspectionCode inspectionCode = inspectionCodeMapper.selectOne(
                         new LambdaQueryWrapper<InspectionCode>()
                                 .eq(InspectionCode::getCode, re.getCode())
                                 .eq(InspectionCode::getDelFlag, 0));
 
                 if (ObjectUtil.isNotEmpty(inspectionCode)) {
-
                     // 保存检修标准
                     RepairPoolCode repairPoolCode = new RepairPoolCode();
                     UpdateHelperUtils.copyNullProperties(inspectionCode, repairPoolCode);

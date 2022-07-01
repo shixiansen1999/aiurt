@@ -19,7 +19,7 @@ import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
 
 /**
- * @Description: 备件更换记录
+ * @Description: 组件更换记录
  * @Author: aiurt
  * @Date:   2022-06-28
  * @Version: V1.0
@@ -28,14 +28,14 @@ import lombok.experimental.Accessors;
 @TableName("device_change_spare_part")
 @Accessors(chain = true)
 @EqualsAndHashCode(callSuper = false)
-@ApiModel(value="device_change_spare_part对象", description="备件更换记录")
+@ApiModel(value="device_change_spare_part对象", description="组件更换记录")
 public class DeviceChangeSparePart implements Serializable {
     private static final long serialVersionUID = 1L;
 
 	/**主键id，自动递增*/
 	@TableId(type = IdType.ASSIGN_ID)
     @ApiModelProperty(value = "主键id，自动递增")
-    private Integer id;
+    private String id;
 
 	/**类型:1-检修 2-故障*/
     private Integer type;
@@ -47,17 +47,17 @@ public class DeviceChangeSparePart implements Serializable {
 
 	/**维修记录id*/
     @ApiModelProperty(value = "维修记录id")
-    private Integer repairRecordId;
+    private String repairRecordId;
 
-	/**设备id*/
-    @ApiModelProperty(value = "设备编码", required = true)
+	/**设组id*/
+    @ApiModelProperty(value = "设组编码", required = true)
     private String deviceCode;
 
-    @ApiModelProperty(value = "设备名称")
+    @ApiModelProperty(value = "设组名称")
     @TableField(exist = false)
     private String deviceName;
 
-	/**原备件编号*/
+	/**原组件编号*/
     @ApiModelProperty(value = "原组件编号")
     private String oldSparePartCode;
 
@@ -65,26 +65,29 @@ public class DeviceChangeSparePart implements Serializable {
     @TableField(exist = false)
     private String oldSparePartName;
 
-	/**原备件数量*/
+	/**原组件数量*/
     @ApiModelProperty(value = "原组件数量")
     private Integer oldSparePartNum;
 
-	/**原备件所在班组*/
-    @ApiModelProperty(value = "原备件所在班组编码")
+	/**原组件所在班组*/
+    @ApiModelProperty(value = "原组件所在班组编码")
     private String oldOrgCode;
 
-    @ApiModelProperty()
+    @ApiModelProperty("机构名称")
     private String oldOrgName;
 
-	/**新备件编号*/
-    @ApiModelProperty(value = "新备件编号", required = true)
+	/**新组件编号*/
+    @ApiModelProperty(value = "新组件编号", required = true)
     private String newSparePartCode;
 
-	/**新备件数量*/
-    @ApiModelProperty(value = "新备件数量")
+    @ApiModelProperty(value = "新组件名称", required = true)
+    private String newSparePartName;
+
+	/**新组件数量*/
+    @ApiModelProperty(value = "新组件数量")
     private Integer newSparePartNum;
 
-	/**新备件所在班组*/
+	/**新组件所在班组*/
     private String newOrgCode;
 
 	/**删除状态：0.未删除 1已删除*/
@@ -111,5 +114,6 @@ public class DeviceChangeSparePart implements Serializable {
     private Date updateTime;
 
 	/**是否易耗品(1是,0否)*/
+	@ApiModelProperty(value = "是否易耗品(1是,0否)")
     private String consumables;
 }

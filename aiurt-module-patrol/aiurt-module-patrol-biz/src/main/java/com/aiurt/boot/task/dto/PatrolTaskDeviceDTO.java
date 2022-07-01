@@ -8,6 +8,8 @@ import lombok.Data;
 import org.jeecgframework.poi.excel.annotation.Excel;
 import org.springframework.format.annotation.DateTimeFormat;
 
+import java.util.List;
+
 /**
  * @author cgkj0
  * @version 1.0
@@ -52,20 +54,33 @@ public class PatrolTaskDeviceDTO {
     @Excel(name = "设备位置", width = 15)
     @ApiModelProperty(value = "设备位置")
     private java.lang.String devicePosition;
-    /**检查时间*/
-    @Excel(name = "检查时间", width = 15, format = "yyyy-MM-dd")
-    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
-    @DateTimeFormat(pattern="yyyy-MM-dd")
-    @ApiModelProperty(value = "检查时间")
+    /**开始巡检时间*/
+    @Excel(name = "开始巡检时间", width = 15, format = "yyyy-MM-dd HH:mm")
+    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm")
+    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm")
+    @ApiModelProperty(value = "开始巡检时间")
+    private java.util.Date startTime;
+    /**工单提交时间*/
+    @Excel(name = "工单提交时间", width = 15, format = "yyyy-MM-dd HH:mm")
+    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm")
+    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm")
+    @ApiModelProperty(value = "工单提交时间")
     private java.util.Date checkTime;
+    @Excel(name = "巡检时长", width = 15)
+    @ApiModelProperty(value = "巡检时长")
+    private Long inspectionTime;
     /**检查结果：0正常、1异常*/
     @Excel(name = "检查结果：0正常、1异常", width = 15)
     @ApiModelProperty(value = "检查结果：0正常、1异常")
     private java.lang.Integer checkResult;
-    /**检查用户ID*/
-    @Excel(name = "检查用户ID", width = 15)
-    @ApiModelProperty(value = "检查用户ID")
+    /**工单提交用户ID*/
+    @Excel(name = "工单提交用户ID", width = 15)
+    @ApiModelProperty(value = "工单提交用户ID")
     private java.lang.String userId;
+    /**工单提交用户名称*/
+    @Excel(name = "工单提交用户名称", width = 15)
+    @ApiModelProperty(value = "工单提交用户名称")
+    private java.lang.String submitName;
     /**备注说明*/
     @Excel(name = "备注说明", width = 15)
     @ApiModelProperty(value = "备注说明")
@@ -84,4 +99,23 @@ public class PatrolTaskDeviceDTO {
     @Excel(name = "同行人", width = 15)
     @ApiModelProperty(value = "同行人")
     private java.lang.String accompanyName;
+    /**巡检位置*/
+    @Excel(name = "巡检位置", width = 15)
+    @ApiModelProperty(value = "巡位置")
+    private java.lang.String  position;
+    /**巡检自定义位置*/
+    @Excel(name = "巡检自定义位置", width = 15)
+    @ApiModelProperty(value = "巡检自定义位置")
+    private java.lang.String customPosition;
+    /**正常数量*/
+    @Excel(name = "正常数量", width = 15)
+    @ApiModelProperty(value = "正常数量")
+    private java.lang.Integer rightCheckNumber;
+    /**异常数量*/
+    @Excel(name = "异常数量", width = 15)
+    @ApiModelProperty(value = "异常数量")
+    private java.lang.Integer aberrantNumber;
+    /*** 附件信息*/
+    @ApiModelProperty(value = "附件信息")
+    private List<PatrolAccessoryDTO> accessoryDTOList;
 }

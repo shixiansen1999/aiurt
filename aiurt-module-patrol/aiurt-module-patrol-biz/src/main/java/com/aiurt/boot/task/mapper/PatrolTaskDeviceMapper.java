@@ -43,4 +43,17 @@ public interface PatrolTaskDeviceMapper extends BaseMapper<PatrolTaskDevice> {
      */
     List<PatrolTaskDeviceDTO> getPatrolTaskDeviceList(@Param("pageList") Page<PatrolTaskDeviceDTO> pageList, @Param("id") String id);
 
+    /**
+     * app-获取提交人名称
+     * @param userId
+     * @return
+     */
+    String getSubmitName(String userId);
+
+    /**
+     * 获取线路
+     * @param code
+     * @return
+     */
+    List<String> getPosition(String code);
 }

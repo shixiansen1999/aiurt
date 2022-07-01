@@ -32,4 +32,16 @@ public interface InspectionCodeContentMapper extends BaseMapper<InspectionCodeCo
 	 */
 	List<SelectTreeModel> queryListByPid(@Param("pid") String pid, @Param("query") Map<String, String> query);
 
+	/**
+	 * 树型分页查询
+	 * @param inspectionCodeContent
+	 * @return
+	 */
+    List<InspectionCodeContent> selectLists(@Param("inspectionCodeContent") InspectionCodeContent inspectionCodeContent);
+
+	/**
+	 * 逻辑删除父节点下面的子节点
+	 * @param id
+	 */
+    void updatPId(String id);
 }

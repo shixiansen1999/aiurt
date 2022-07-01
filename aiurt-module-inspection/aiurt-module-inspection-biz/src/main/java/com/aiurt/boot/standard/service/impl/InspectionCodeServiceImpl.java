@@ -23,7 +23,9 @@ public class InspectionCodeServiceImpl extends ServiceImpl<InspectionCodeMapper,
 
     @Override
     public IPage<InspectionCodeDTO> pageList(Page<InspectionCodeDTO> page, InspectionCodeDTO inspectionCodeDTO) {
-        List<InspectionCodeDTO> inspectionCodeDTOS = baseMapper.pageList(inspectionCodeDTO);
+
+        // todo 数据权限过滤
+        List<InspectionCodeDTO> inspectionCodeDTOS = baseMapper.pageList(page,inspectionCodeDTO);
         return page.setRecords(inspectionCodeDTOS);
     }
 

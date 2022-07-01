@@ -47,7 +47,7 @@ public class CommonCtroller {
     private IDeviceService deviceService;
 
     @Autowired
-    private ICsLineService  lineService;
+    private ICsLineService lineService;
 
     @Autowired
     private ICsStationService stationService;
@@ -62,6 +62,7 @@ public class CommonCtroller {
 
     /**
      * 查询当前人员所管辖的专业
+     *
      * @return
      */
     @GetMapping("/major/queryMajorByAuth")
@@ -84,9 +85,9 @@ public class CommonCtroller {
     }
 
 
-
     /**
      * 查询当前人员所管理的专业子系统
+     *
      * @return
      */
     @GetMapping("/subsystem/querySubSystemByAuth")
@@ -116,6 +117,7 @@ public class CommonCtroller {
 
     /**
      * 查询设备
+     *
      * @return
      */
     @GetMapping("/device/queryDevice")
@@ -126,6 +128,10 @@ public class CommonCtroller {
 
         if (StrUtil.isNotBlank(deviceDTO.getLineCode())) {
             queryWrapper.eq(Device::getLineCode, deviceDTO.getLineCode());
+        }
+
+        if (StrUtil.isNotBlank(deviceDTO.getDeviceTypeCode())) {
+            queryWrapper.eq(Device::getDeviceTypeCode, deviceDTO.getDeviceTypeCode());
         }
 
         if (StrUtil.isNotBlank(deviceDTO.getMajorCode())) {
@@ -144,7 +150,10 @@ public class CommonCtroller {
             queryWrapper.eq(Device::getPositionCode, deviceDTO.getPositionCode());
         }
 
-        //
+        if (StrUtil.isNotBlank(deviceDTO.getName())) {
+            queryWrapper.like(Device::getName, deviceDTO.getName());
+        }
+
         queryWrapper.eq(Device::getDelFlag, 0);
         List<Device> csMajorList = deviceService.getBaseMapper().selectList(queryWrapper);
 
@@ -161,6 +170,7 @@ public class CommonCtroller {
 
     /**
      * 根据个人权限获取位置树
+     *
      * @return
      */
     @GetMapping("/position/queryTreeByAuth")
@@ -183,7 +193,7 @@ public class CommonCtroller {
         Map<String, List<CsStationPosition>> positionMap = positionList.stream().collect(Collectors.groupingBy(CsStationPosition::getStaionCode));
 
         List<SelectTable> list = new ArrayList<>();
-        stationMap.keySet().stream().forEach(lineCode->{
+        stationMap.keySet().stream().forEach(lineCode -> {
             SelectTable table = new SelectTable();
             table.setLabel(lineMap.get(lineCode));
             table.setValue(lineCode);

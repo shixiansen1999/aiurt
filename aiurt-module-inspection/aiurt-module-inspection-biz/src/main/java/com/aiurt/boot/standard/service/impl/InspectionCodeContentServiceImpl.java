@@ -7,7 +7,10 @@ import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.util.oConvertUtils;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.github.xiaoymin.knife4j.core.util.CollectionUtils;
 import org.jeecg.common.system.vo.SelectTreeModel;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @Description: inspection_code_content
@@ -147,7 +151,38 @@ public class InspectionCodeContentServiceImpl extends ServiceImpl<InspectionCode
         return baseMapper.queryListByPid(pid, null);
     }
 
-	/**
+    @Override
+    public IPage<InspectionCodeContent> pageList(Page<InspectionCodeContent> page, InspectionCodeContent inspectionCodeContent) {
+        //1.查询表中未删除的所有的数据
+        List<InspectionCodeContent> allList = baseMapper.selectLists(inspectionCodeContent);
+        //2.找到所有根节点 ParentId=0
+        List<InspectionCodeContent> rooList = allList.stream().filter(r -> r.getPid().equals("0")).collect(Collectors.toList());
+        //3.找到所有非根节点
+        List<InspectionCodeContent> subLists = allList.stream().filter(r -> !r.getPid().equals("0")).collect(Collectors.toList());
+        if (rooList.size()<1){
+            return page.setRecords(subLists);
+        }
+        List<InspectionCodeContent> subList = allList.stream().filter(r -> !r.getPid().equals("0")).collect(Collectors.toList());
+        //4.循环阶段去subList找对应的字节点
+        rooList = rooList.stream().map(root -> {
+            //通过根节点的id和子节点的pid判断是否相等，如果相等的话，代表是根节点的子集
+            List<InspectionCodeContent> list = subLists.stream().filter(r -> r.getPid().equals(root.getId())).collect(Collectors.toList());
+            //如果当前没一个子级，初始化一个数组
+            if (CollectionUtils.isEmpty(list)){
+                list =new ArrayList<>();
+            }
+            root.setChildren(list);
+            return root;
+        }).collect(Collectors.toList());
+        subList =subList.stream().map(s->{
+            List<InspectionCodeContent> list = subLists.stream().filter(l-> l.getPid().equals(s.getId())).collect(Collectors.toList());
+            s.setChildren(list);
+            return s;
+        }).collect(Collectors.toList());
+        return page.setRecords(rooList);
+    }
+
+    /**
 	 * 根据所传pid查询旧的父级节点的子节点并修改相应状态值
 	 * @param pid
 	 */

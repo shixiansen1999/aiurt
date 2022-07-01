@@ -1,5 +1,120 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.aiurt.boot.strategy.mapper.InspectionStrategyMapper">
+    <update id="removeId">
+        UPDATE ( inspection_strategy  a
+            LEFT JOIN inspection_str_sta_rel b on a.`code`=b.inspection_str_code
+            LEFT JOIN inspection_str_rel c on a.`code`=c.inspection_str_code
+            LEFT JOIN inspection_str_org_rel d ON a.id=d.inspection_str_code
+            LEFT JOIN inspection_str_device_rel e ON a.id =e.inspection_str_rel_id
+            )
+        SET a.del_flag = 1 ,b.del_flag=1,c.del_flag=1,d.del_flag=1,e.del_flag=1
+        where a.id= #{id}
+    </update>
+    <delete id="deleteIDorCode">
+        DELETE  a.*,b.*,c.*,d.*,e.*
+        from
+            inspection_strategy AS a
+                LEFT JOIN inspection_str_sta_rel b on a.`code`=b.inspection_str_code
+                LEFT JOIN inspection_str_rel c on a.`code`=c.inspection_str_code
+                LEFT JOIN inspection_str_org_rel d ON a.id=d.inspection_str_code
+                LEFT JOIN inspection_str_device_rel e ON a.id =e.inspection_str_rel_id
+        WHERE
+            a.id=#{id} AND a.`code`=#{code}
+    </delete>
 
+
+    <select id="selectPageList" resultType="com.aiurt.boot.strategy.dto.InspectionStrategyDTO">
+        SELECT * FROM
+            ( SELECT isy.*,
+                     ( SELECT
+                           GROUP_CONCAT(e.depart_name)
+                       FROM inspection_str_org_rel inor
+                                LEFT JOIN sys_depart e ON inor.org_code = e.org_code
+                       WHERE
+                           isy.`code` = inor.inspection_str_code
+                         AND inor.del_flag = 0) AS mechanismName,
+                     (SELECT
+                          GROUP_CONCAT(e.org_code)
+                      FROM inspection_str_org_rel inor
+                               LEFT JOIN sys_depart e ON inor.org_code = e.org_code
+                      WHERE
+                          isy.`code` = inor.inspection_str_code
+                        AND inor.del_flag = 0) AS mechanismCode,
+                     (SELECT
+                          GROUP_CONCAT(f.station_name)
+                      FROM
+                          inspection_str_sta_rel inssr
+                              LEFT JOIN cs_station f ON inssr.station_code = f.station_code
+                      WHERE
+                          isy.`code` = inssr.inspection_str_code
+                        AND inssr.del_flag = 0) AS siteName,
+                     (SELECT
+                          GROUP_CONCAT(f.station_code)
+                      FROM
+                          inspection_str_sta_rel inssr
+                              LEFT JOIN cs_station f ON inssr.station_code = f.station_code
+                      WHERE
+                          isy.`code` = inssr.inspection_str_code
+                        AND inssr.del_flag = 0) AS siteCode,
+                     (SELECT
+                          GROUP_CONCAT(DISTINCT ic.major_code)
+                      FROM
+                          inspection_str_rel insr
+                              LEFT JOIN inspection_code ic on ic.`code`= insr.inspection_sta_code
+                              LEFT JOIN cs_major csm ON ic.major_code = csm.major_code
+                      WHERE
+                          insr.inspection_str_code = isy.`code`) AS professionCode,
+                     ( SELECT
+                           GROUP_CONCAT(DISTINCT csm.major_name)
+                       FROM
+                           inspection_str_rel insr
+                               LEFT JOIN inspection_code ic on ic.`code`= insr.inspection_sta_code
+                               LEFT JOIN cs_major csm ON ic.major_code = csm.major_code
+                       WHERE
+                           insr.inspection_str_code = isy.`code` ) AS professionName,
+                     ( SELECT
+                           GROUP_CONCAT(DISTINCT ic.subsystem_code)
+                       FROM
+                           inspection_str_rel insr
+                               LEFT JOIN inspection_code ic on ic.`code`= insr.inspection_sta_code
+                               LEFT JOIN cs_subsystem css ON ic.subsystem_code = css.system_code
+                       WHERE
+                           insr.inspection_str_code = isy.`code`) AS subsystemCode,
+                     ( SELECT
+                           GROUP_CONCAT(DISTINCT css.system_name)
+                       FROM
+                           inspection_str_rel insr
+                               LEFT JOIN inspection_code ic on ic.`code`= insr.inspection_sta_code
+                               LEFT JOIN cs_subsystem css ON ic.subsystem_code = css.system_code
+                       WHERE
+                           insr.inspection_str_code = isy.`code` ) AS subsystemName
+              FROM inspection_strategy isy
+              WHERE isy.del_flag = 0
+            ) AS abc
+        WHERE
+            1 = 1
+    </select>
+    <select id="getId" resultType="com.aiurt.boot.strategy.dto.InspectionStrategyDTO">
+        SELECT insy.*,( SELECT GROUP_CONCAT(e.depart_name) FROM inspection_str_org_rel isor
+                                                                    LEFT JOIN sys_depart e ON isor.org_code = e.org_code  WHERE  isor.inspection_str_code= insy.`code`
+                                                                                                                            AND isor.del_flag = 0   ) AS mechanismName,
+               ( SELECT GROUP_CONCAT(f.station_name) FROM  inspection_str_sta_rel issr
+                                                               LEFT JOIN cs_station f ON issr.station_code = f.station_code
+                 WHERE issr.inspection_str_code=insy.`code` AND issr.del_flag = 0 ) AS siteName,
+               ( SELECT GROUP_CONCAT(e.org_code) FROM inspection_str_org_rel isor
+                                                          LEFT JOIN sys_depart e ON isor.org_code = e.org_code  WHERE  isor.inspection_str_code= insy.`code`
+                                                                                                                  AND isor.del_flag = 0) AS mechanismCode,
+               ( SELECT GROUP_CONCAT(f.station_code) FROM  inspection_str_sta_rel issr
+                                                               LEFT JOIN cs_station f ON issr.station_code = f.station_code
+                 WHERE issr.inspection_str_code=insy.`code` AND issr.del_flag = 0 ) AS siteCode,
+               ( SELECT GROUP_CONCAT(d.id) FROM  inspection_code ic
+                                                     LEFT JOIN inspection_str_rel isr on ic.`code` =isr.inspection_sta_code
+                 WHERE isr.inspection_str_code = insy.`code`  AND isr.del_flag = 0 ) AS ids
+        FROM inspection_strategy insy
+
+        WHERE
+            insy.del_flag=0
+          and insy.id = #{id}
+    </select>
 </mapper>

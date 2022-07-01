@@ -2,4 +2,11 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.aiurt.boot.strategy.mapper.InspectionStrOrgRelMapper">
 
+    <insert id="insertBatch">
+        INSERT INTO `repair_pool_station_rel` ( `id`, `repair_pool_code`, `org_code`)
+        VALUES
+        <foreach collection ="repairPoolOrgRels" item="org" separator =",">
+            (  #{org.id},  #{org.repairPoolCode}, #{org.orgCode})
+        </foreach >
+    </insert>
 </mapper>

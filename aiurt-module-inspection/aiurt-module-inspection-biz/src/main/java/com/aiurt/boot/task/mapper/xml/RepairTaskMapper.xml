@@ -9,7 +9,8 @@
         ( SELECT group_concat( t6.major_code ) FROM repair_task_standard_rel AS t6 WHERE t1.id = t6.repair_task_id ) AS majorCode,
         ( SELECT group_concat( t6.subsystem_code ) FROM repair_task_standard_rel AS t6 WHERE t1.id = t6.repair_task_id ) AS systemCode,
         t8.start_time as startOverhaulTime,
-        t8.end_time as endOverhaulTime
+        t8.end_time as endOverhaulTime,
+        t8.id as overhaulId
         FROM
         repair_task t1
         LEFT JOIN repair_task_org_rel t2 ON t1.`code` = t2.repair_task_code
@@ -38,6 +39,9 @@
             </if>
             <if test="condition.siteCode!=null ">
                 and t4.station_code = #{condition.siteCode}
+            </if>
+            <if test="condition.workType!=null ">
+                and t1.work_type = #{condition.workType}
             </if>
             <if test="condition.time1!=null and condition.time2!=null ">
                 and DATE_FORMAT(t1.start_time, '%Y-%m-%d') &gt;= DATE_FORMAT(#{condition.time1}, '%Y-%m-%d')

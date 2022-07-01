@@ -139,17 +139,7 @@ public class FaultRepairRecord implements Serializable {
     @ApiModelProperty(value = "工作票编号")
     private String workTicketCode;
 
-	/**审核时间*/
-	@Excel(name = "审核时间", width = 15, format = "yyyy-MM-dd HH:mm:ss")
-	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
-    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
-    @ApiModelProperty(value = "审核时间")
-    private Date approvedTime;
 
-	/**审核说明*/
-	@Excel(name = "审核说明", width = 15)
-    @ApiModelProperty(value = "审核说明")
-    private String approvedRemark;
 
 	/**故障编号*/
 	@Excel(name = "故障编号", width = 15)

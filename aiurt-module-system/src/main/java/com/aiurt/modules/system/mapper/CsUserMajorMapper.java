@@ -13,5 +13,5 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
  * @Version: V1.0
  */
 public interface CsUserMajorMapper extends BaseMapper<CsUserMajor> {
-
+    List<String> getMajorIds(@Param("userId") String userId);
 }
