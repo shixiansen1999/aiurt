@@ -129,6 +129,8 @@ public class FaultKnowledgeBaseController extends BaseController<FaultKnowledgeB
 	@ApiOperation(value="故障知识库-编辑", notes="故障知识库-编辑")
 	@RequestMapping(value = "/edit", method = {RequestMethod.PUT,RequestMethod.POST})
 	public Result<String> edit(@RequestBody FaultKnowledgeBase faultKnowledgeBase) {
+		faultKnowledgeBase.setStatus(FaultConstant.PENDING);
+		faultKnowledgeBase.setApprovedResult(FaultConstant.NO_PASS);
 		faultKnowledgeBaseService.updateById(faultKnowledgeBase);
 		return Result.OK("编辑成功!");
 	}

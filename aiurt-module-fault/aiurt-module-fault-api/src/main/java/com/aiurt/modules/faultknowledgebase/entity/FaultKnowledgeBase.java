@@ -39,6 +39,7 @@ public class FaultKnowledgeBase implements Serializable {
 	/**故障知识分类编码*/
 	@Excel(name = "故障知识分类编码", width = 15)
     @ApiModelProperty(value = "故障知识分类编码")
+    @Dict(dictTable = "fault_knowledge_base_type", dicText = "name", dicCode = "code")
     private String knowledgeBaseTypeCode;
 	/**故障现象*/
 	@Excel(name = "故障现象", width = 15)
@@ -90,18 +91,22 @@ public class FaultKnowledgeBase implements Serializable {
 	/**专业编码*/
 	@Excel(name = "专业编码", width = 15)
     @ApiModelProperty(value = "专业编码")
+    @Dict(dictTable = "cs_major", dicText = "major_name", dicCode = "major_code")
     private String majorCode;
 	/**专业子系统*/
 	@Excel(name = "专业子系统", width = 15)
     @ApiModelProperty(value = "专业子系统")
+    @Dict(dictTable = "cs_subsystem", dicText = "system_name", dicCode = "system_code")
     private String systemCode;
 	/**设备类型*/
 	@Excel(name = "设备类型", width = 15)
     @ApiModelProperty(value = "设备类型")
+    @Dict(dictTable ="device_Type",dicText = "name",dicCode = "code")
     private String deviceTypeCode;
 	/**组件编码*/
 	@Excel(name = "组件编码", width = 15)
     @ApiModelProperty(value = "组件编码")
+    @Dict(dictTable ="device_assembly",dicText = "material_name",dicCode = "device_code")
     private String materialCode;
 	/**审核人*/
 	@Excel(name = "审核人", width = 15)
@@ -130,15 +135,9 @@ public class FaultKnowledgeBase implements Serializable {
     @ApiModelProperty(value = "状态(0:待审批,1:已审批,2:已驳回)")
     private Integer status;
 
-    /**故障知识分类名称*/
-    @Excel(name = "故障知识分类名称", width = 15)
-    @ApiModelProperty(value = "故障知识分类名称")
-    @TableField(exist = false)
-    private String knowledgeBaseTypeName;
-
-    /**设备名称*/
-    @Excel(name = "设备名称", width = 15)
-    @ApiModelProperty(value = "设备名称")
+    /**设备类型名称*/
+    @Excel(name = "设备类型名称", width = 15)
+    @ApiModelProperty(value = "设备类型名称")
     @TableField(exist = false)
     private String deviceTypeName;
     /**组件名称*/

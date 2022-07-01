@@ -55,10 +55,10 @@
     f.fault_applicant,
     f.happen_time,
     f.station_position_code,
+    (select group_concat(device_code) from fault_device where fault_code = f.`code`) as deviceCode,
     ( select group_concat(d.name) from
     (select device_code from fault_device where fault_code = f.`code`) a
     left join device d on d.`code` = a.device_code ) as deviceName,
-    (select line_name from cs_line where del_flag = 0 and line_code = f.line_code ) as lineName,
     frr.end_time,
     frr.hangup_reason
     FROM
@@ -66,6 +66,8 @@
     left join fault_repair_record frr on frr.fault_code = f.`code`
     where
     f.status = 12
+    and  f.`code` not in
+    (select fault_code from fault_analysis_report where del_flag = 0)
     <if test="condition.code != null and condition.code != ''">
         and f.`code` like concat('%',#{condition.code},'%')
     </if>
@@ -99,7 +101,7 @@
     f.major_code,
     f.sub_system_code,
     f.fault_applicant,
-    f.device_code,
+    (select group_concat(device_code) from fault_device where fault_code = f.`code`) as deviceCode,
     ( select group_concat(d.name) from
     (select device_code from fault_device where fault_code = f.`code`) a
     left join device d on d.`code` = a.device_code) as deviceName,

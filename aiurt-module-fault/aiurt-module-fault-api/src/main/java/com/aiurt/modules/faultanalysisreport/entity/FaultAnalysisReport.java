@@ -58,12 +58,12 @@ public class FaultAnalysisReport implements Serializable {
     @ApiModelProperty(value = "创建人")
     private String createBy;
 	/**创建日期*/
-	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
-    @DateTimeFormat(pattern="yyyy-MM-dd")
+	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
+    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
     @ApiModelProperty(value = "创建日期")
     private Date createTime;
 	/**更新日期*/
-	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
+	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
     @DateTimeFormat(pattern="yyyy-MM-dd")
     @ApiModelProperty(value = "更新日期")
     private Date updateTime;
@@ -114,27 +114,31 @@ public class FaultAnalysisReport implements Serializable {
     @TableField(exist = false)
     private String faultPhenomenon;
 
-    /**故障分类名称*/
-    @Excel(name = "故障分类名称", width = 15)
-    @ApiModelProperty(value = "故障分类名称")
+    /**故障分类*/
+    @Excel(name = "故障分类", width = 15)
+    @ApiModelProperty(value = "故障分类")
     @TableField(exist = false)
     private String faultTypeCode;
-
-    /**开始日期*/
-    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
-    @DateTimeFormat(pattern="yyyy-MM-dd")
-    @ApiModelProperty(value = "创建日期")
-    private Date startTime;
-
-    /**结束日期*/
-    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
-    @DateTimeFormat(pattern="yyyy-MM-dd")
-    @ApiModelProperty(value = "结束日期")
-    private Date endTime;
 
     /**故障分类名称*/
     @Excel(name = "故障分类名称", width = 15)
     @ApiModelProperty(value = "故障分类名称")
     @TableField(exist = false)
     private String name;
+
+    /**开始日期*/
+    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
+    @DateTimeFormat(pattern="yyyy-MM-dd")
+    @ApiModelProperty(value = "开始日期")
+    @TableField(exist = false)
+    private Date startTime;
+
+    /**结束日期*/
+    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
+    @DateTimeFormat(pattern="yyyy-MM-dd")
+    @ApiModelProperty(value = "结束日期")
+    @TableField(exist = false)
+    private Date endTime;
+
+
 }

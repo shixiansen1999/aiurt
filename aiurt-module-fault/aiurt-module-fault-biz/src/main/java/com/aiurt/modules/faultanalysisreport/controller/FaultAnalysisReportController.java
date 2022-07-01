@@ -132,29 +132,50 @@ public class FaultAnalysisReportController extends BaseController<FaultAnalysisR
 		 faultAnalysisReportService.updateById(faultAnalysisReport);
 		 //修改知识库状态
 		 String faultKnowledgeBaseId = faultAnalysisReportService.getById(id).getFaultKnowledgeBaseId();
-		 FaultKnowledgeBase faultKnowledgeBase = faultKnowledgeBaseService.getById(faultKnowledgeBaseId);
-		 if (approvedResult.equals(FaultConstant.PASSED)) {
-			 faultKnowledgeBase.setStatus(FaultConstant.APPROVED);
-			 faultKnowledgeBase.setApprovedResult(FaultConstant.PASSED);
-			 faultAnalysisReport.setDelFlag(0);
-		 } else {
-			 faultKnowledgeBase.setStatus(FaultConstant.REJECTED);
-			 faultKnowledgeBase.setApprovedResult(FaultConstant.NO_PASS);
+		 if (StringUtils.isNotEmpty(faultKnowledgeBaseId)) {
+			 FaultKnowledgeBase faultKnowledgeBase = faultKnowledgeBaseService.getById(faultKnowledgeBaseId);
+			 if (approvedResult.equals(FaultConstant.PASSED)) {
+				 faultKnowledgeBase.setStatus(FaultConstant.APPROVED);
+				 faultKnowledgeBase.setApprovedResult(FaultConstant.PASSED);
+				 faultAnalysisReport.setDelFlag(0);
+			 } else {
+				 faultKnowledgeBase.setStatus(FaultConstant.REJECTED);
+				 faultKnowledgeBase.setApprovedResult(FaultConstant.NO_PASS);
+			 }
+			 faultKnowledgeBaseService.updateById(faultKnowledgeBase);
 		 }
-		 faultKnowledgeBaseService.updateById(faultKnowledgeBase);
 		 return Result.OK("审批成功!");
 	 }
 
 	/**
-	 *  编辑
+	 *  编辑提交
 	 *
-	 * @param faultAnalysisReport
+	 * @param faultDTO
 	 * @return
 	 */
-	@AutoLog(value = "故障分析-编辑")
-	@ApiOperation(value="fault_analysis_report-编辑", notes="fault_analysis_report-编辑")
+	@AutoLog(value = "故障分析-编辑提交")
+	@ApiOperation(value="故障分析-编辑提交", notes="故障分析-编辑提交")
+	@ApiResponses({
+			@ApiResponse(code = 200, message = "OK", response = FaultDTO.class)
+	})
 	@RequestMapping(value = "/edit", method = {RequestMethod.PUT,RequestMethod.POST})
-	public Result<String> edit(@RequestBody FaultAnalysisReport faultAnalysisReport) {
+	public Result<String> edit(@RequestBody FaultDTO faultDTO) {
+		FaultAnalysisReport faultAnalysisReport = faultDTO.getFaultAnalysisReport();
+		faultAnalysisReport.setStatus(FaultConstant.PENDING);
+		faultAnalysisReport.setApprovedResult(FaultConstant.NO_PASS);
+
+		FaultKnowledgeBase faultKnowledgeBase = faultDTO.getFaultKnowledgeBase();
+		//判断是否同步到知识库
+		if (ObjectUtil.isNotNull(faultKnowledgeBase)) {
+			faultKnowledgeBase.setStatus(FaultConstant.PENDING);
+			faultKnowledgeBase.setApprovedResult(FaultConstant.NO_PASS);
+			//先隐藏，审批通过后再展示
+			faultKnowledgeBase.setDelFlag(1);
+			faultKnowledgeBaseService.updateById(faultKnowledgeBase);
+			faultAnalysisReport.setFaultKnowledgeBaseId(faultKnowledgeBase.getId());
+		} else {
+			faultAnalysisReport.setFaultKnowledgeBaseId(null);
+		}
 		faultAnalysisReportService.updateById(faultAnalysisReport);
 		return Result.OK("编辑成功!");
 	}
@@ -284,7 +305,6 @@ public class FaultAnalysisReportController extends BaseController<FaultAnalysisR
 		FaultAnalysisReport faultAnalysisReport = faultDTO.getFaultAnalysisReport();
 		faultAnalysisReport.setStatus(FaultConstant.PENDING);
 		faultAnalysisReport.setApprovedResult(FaultConstant.NO_PASS);
-		faultAnalysisReportService.save(faultAnalysisReport);
 
 		FaultKnowledgeBase faultKnowledgeBase = faultDTO.getFaultKnowledgeBase();
 		if (ObjectUtil.isNotNull(faultKnowledgeBase)) {
@@ -293,7 +313,9 @@ public class FaultAnalysisReportController extends BaseController<FaultAnalysisR
 			//先隐藏，审批通过后再展示
 			faultKnowledgeBase.setDelFlag(1);
 			faultKnowledgeBaseService.save(faultKnowledgeBase);
+			faultAnalysisReport.setFaultKnowledgeBaseId(faultKnowledgeBase.getId());
 		}
+		faultAnalysisReportService.save(faultAnalysisReport);
 		return Result.OK("提交成功");
 	}
 
@@ -332,14 +354,10 @@ public class FaultAnalysisReportController extends BaseController<FaultAnalysisR
 	 })
 	 public Result<FaultAnalysisReport> readone(@RequestParam(name="id",required=false) String id,
 												@RequestParam(name="faultCode",required=false) String faultCode) {
-		 if (StringUtils.isNotEmpty(id) || StringUtils.isNotEmpty(faultCode)) {
-			 FaultAnalysisReport faultAnalysisReport = faultAnalysisReportService.readOne(id, faultCode);
-			 if (faultAnalysisReport == null) {
-				 return Result.error("未找到对应数据");
-			 }
-			 return Result.OK(faultAnalysisReport);
-		 } else {
-			 return Result.error("请选择一个故障分析或者故障");
+		 FaultAnalysisReport faultAnalysisReport = faultAnalysisReportService.readOne(id, faultCode);
+		 if (faultAnalysisReport == null) {
+			 return Result.error("未找到对应数据");
 		 }
+		 return Result.OK(faultAnalysisReport);
 	 }
 }

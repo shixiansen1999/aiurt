@@ -16,11 +16,15 @@ import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+import java.io.Serializable;
 import java.util.Date;
 
 @Data
 @ApiModel("故障分析")
-public class FaultDTO {
+public class FaultDTO implements Serializable {
+
+    private static final long serialVersionUID = 1L;
+
     /**主键*/
     @TableId(type = IdType.ASSIGN_ID)
     @ApiModelProperty(value = "主键")
@@ -108,11 +112,9 @@ public class FaultDTO {
     private String hangUpReason;
 
     @ApiModelProperty(value = "故障分析",  required = true)
-    @TableField(exist = false)
     private FaultAnalysisReport faultAnalysisReport;
 
     @ApiModelProperty(value = "故障知识库",  required = true)
-    @TableField(exist = false)
     private FaultKnowledgeBase faultKnowledgeBase;
 
 }
