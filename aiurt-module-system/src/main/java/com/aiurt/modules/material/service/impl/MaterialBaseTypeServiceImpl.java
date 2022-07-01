@@ -33,6 +33,9 @@ public class MaterialBaseTypeServiceImpl extends ServiceImpl<MaterialBaseTypeMap
 
     @Override
     public List<MaterialBaseType> treeList(List<MaterialBaseType> materialBaseTypeList, String id) {
+        if (id == null || "".equals(id)) {
+            id = "0";
+        }
         return getTreeRes(materialBaseTypeList, id);
     }
 

@@ -225,7 +225,8 @@ public class DeviceController {
             if(systemCode == null){
                 systemCode = "";
             }
-            String str = majorCode + systemCode + deviceTypeCode;
+            String codeCc = deviceService.getCodeByCc(deviceTypeCode);
+            String str = majorCode + systemCode + codeCc;
             Device device = deviceService.getOne(new LambdaQueryWrapper<Device>().likeRight(Device::getCode, str)
                     .eq(Device::getDelFlag, 0).orderByDesc(Device::getCreateTime).last("limit 1"));
             String format = "";
@@ -255,10 +256,11 @@ public class DeviceController {
     public Result<Device> add(@RequestBody Device device) {
         Result<Device> result = new Result<Device>();
         try {
-            String deviceTypeCode = device.getDeviceTypeCode();
-            DeviceType deviceType = iDeviceTypeService.getOne(new QueryWrapper<DeviceType>().eq("code",deviceTypeCode));
-            String typeCodeCc = iDeviceTypeService.getCcStr(deviceType);
-            device.setDeviceTypeCodeCc(typeCodeCc);
+            String deviceTypeCodeCc = device.getDeviceTypeCodeCc()==null?"":device.getDeviceTypeCodeCc();
+//            DeviceType deviceType = iDeviceTypeService.getOne(new QueryWrapper<DeviceType>().eq("code",deviceTypeCode));
+//            String typeCodeCc = iDeviceTypeService.getCcStr(deviceType);
+            String deviceTypeCode = deviceService.getCodeByCc(deviceTypeCodeCc);
+            device.setDeviceTypeCode(deviceTypeCode);
             String positionCodeCc = device.getPositionCodeCc()==null?"":device.getPositionCodeCc();
             if(!"".equals(positionCodeCc)){
                 if(positionCodeCc.contains("/")){

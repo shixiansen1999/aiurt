@@ -123,13 +123,15 @@ public class MaterialBaseController {
         try {
             String majorCode = materialBase.getMajorCode();
             String systemCode = materialBase.getSystemCode()==null?"":materialBase.getSystemCode();
-            String baseTypeCode = materialBase.getBaseTypeCode();
+            String baseTypeCodeCc = materialBase.getBaseTypeCodeCc()==null?"":materialBase.getBaseTypeCodeCc();
+            String baseTypeCode = iMaterialBaseService.getCodeByCc(baseTypeCodeCc);
             String finalstr = majorCode + systemCode + baseTypeCode;
             String newBaseCode = iMaterialBaseService.getNewBaseCode(finalstr);
+            materialBase.setBaseTypeCode(baseTypeCode);
             materialBase.setCode(newBaseCode);
-            MaterialBaseType materialBaseType = iMaterialBaseTypeService.getOne(new QueryWrapper<MaterialBaseType>().eq("base_type_code",baseTypeCode));
-            String typeCodeCc = iMaterialBaseTypeService.getCcStr(materialBaseType);
-            materialBase.setBaseTypeCodeCc(typeCodeCc);
+//            MaterialBaseType materialBaseType = iMaterialBaseTypeService.getOne(new QueryWrapper<MaterialBaseType>().eq("base_type_code",baseTypeCode));
+//            String typeCodeCc = iMaterialBaseTypeService.getCcStr(materialBaseType);
+            materialBase.setBaseTypeCode(baseTypeCode);
             iMaterialBaseService.save(materialBase);
             result.success("添加成功！");
         } catch (Exception e) {

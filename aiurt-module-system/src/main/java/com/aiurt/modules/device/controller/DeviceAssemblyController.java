@@ -51,7 +51,7 @@ public class DeviceAssemblyController {
     public Result<IPage<DeviceAssembly>> queryPageList(DeviceAssembly deviceAssembly,
                                                        @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
                                                        @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize,
-                                                       @RequestParam(name = "deviceCode", required = false) Integer deviceCode,
+                                                       @RequestParam(name = "deviceCode", required = false) String deviceCode,
                                                        HttpServletRequest req) {
         Result<IPage<DeviceAssembly>> result = new Result<IPage<DeviceAssembly>>();
         Map<String, String[]> parameterMap = req.getParameterMap();

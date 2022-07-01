@@ -1,6 +1,7 @@
 package com.aiurt.modules.device.entity;
 
 import com.aiurt.common.aspect.annotation.Dict;
+import com.aiurt.modules.basic.entity.DictEntity;
 import com.baomidou.mybatisplus.annotation.*;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
@@ -26,7 +27,7 @@ import java.util.List;
 @EqualsAndHashCode(callSuper = false)
 @Accessors(chain = true)
 @ApiModel(value="device对象", description="设备(system)")
-public class Device {
+public class Device extends DictEntity {
 
 	/**主键id*/
 	@TableId(type= IdType.ASSIGN_ID)
@@ -143,7 +144,7 @@ public class Device {
 	/**设备管理员*/
 	@Excel(name = "设备管理员", width = 15)
 	@ApiModelProperty(value = "设备管理员")
-	@Dict(dictTable ="sys_user",dicText = "realname",dicCode = "username")
+	@Dict(dictTable ="sys_user",dicText = "realname",dicCode = "id")
 	private  String  manageUserName;
 	/**设备管理员名称*/
 	@Excel(name = "设备管理员名称", width = 15)

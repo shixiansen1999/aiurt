@@ -14,5 +14,6 @@ public interface IDeviceService extends IService<Device> {
 
     Result<Device> queryDetailById(String deviceId);
     Device translate(Device device);
+    String getCodeByCc(String deviceTypeCodeCc);
 
 }

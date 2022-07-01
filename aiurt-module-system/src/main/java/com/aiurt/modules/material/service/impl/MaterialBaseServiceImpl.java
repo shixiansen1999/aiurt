@@ -104,24 +104,24 @@ public class MaterialBaseServiceImpl extends ServiceImpl<MaterialBaseMapper, Mat
 		}
 		materialBase.setBaseTypeCodeCcName(baseTypeCodeCcName);
 		//专业
-		String majorCode = materialBase.getMajorCode()==null?"":materialBase.getMajorCode();
+//		String majorCode = materialBase.getMajorCode()==null?"":materialBase.getMajorCode();
 		//子系统
-		String systemCode = materialBase.getSystemCode()==null?"":materialBase.getSystemCode();
+//		String systemCode = materialBase.getSystemCode()==null?"":materialBase.getSystemCode();
 		//厂商
-		String manufactorCode = materialBase.getManufactorCode()==null?"":materialBase.getManufactorCode();
+//		String manufactorCode = materialBase.getManufactorCode()==null?"":materialBase.getManufactorCode();
 		//所属部门
 		String sysOrgCode = materialBase.getSysOrgCode()==null?"":materialBase.getSysOrgCode();
-		String baseTypeCodeName = sysBaseApi.translateDictFromTable("material_base_type", "base_type_name", "base_type_code", baseTypeCode);
-		String majorCodeName = sysBaseApi.translateDictFromTable("cs_major", "major_name", "major_code", majorCode);
-		String systemCodeName = sysBaseApi.translateDictFromTable("cs_subsystem", "system_name", "system_code", systemCode);
-		String manufactorCodeName = sysBaseApi.translateDictFromTable("cs_manufactor", "name", "code", manufactorCode);
-		String sysOrgCodeName = sysBaseApi.translateDictFromTable("sys_depart", "depart_name", "org_code", sysOrgCode);
-		materialBase.setBaseTypeCodeName(baseTypeCodeName);
-		materialBase.setMajorCodeName(majorCodeName);
-		materialBase.setSystemCodeName(systemCodeName);
-		materialBase.setManufactorCodeName(manufactorCodeName);
-		materialBase.setSysOrgCodeName(sysOrgCodeName);
-		materialBase.setUnitName(sysBaseApi.translateDict("materian_unit",materialBase.getUnit())==null?"":sysBaseApi.translateDict("materian_unit",materialBase.getUnit()));
+//		String baseTypeCodeName = sysBaseApi.translateDictFromTable("material_base_type", "base_type_name", "base_type_code", baseTypeCode);
+//		String majorCodeName = sysBaseApi.translateDictFromTable("cs_major", "major_name", "major_code", majorCode);
+//		String systemCodeName = sysBaseApi.translateDictFromTable("cs_subsystem", "system_name", "system_code", systemCode);
+//		String manufactorCodeName = sysBaseApi.translateDictFromTable("cs_manufactor", "name", "code", manufactorCode);
+//		String sysOrgCodeName = sysBaseApi.translateDictFromTable("sys_depart", "depart_name", "org_code", sysOrgCode);
+//		materialBase.setBaseTypeCodeName(baseTypeCodeName);
+//		materialBase.setMajorCodeName(majorCodeName);
+//		materialBase.setSystemCodeName(systemCodeName);
+//		materialBase.setManufactorCodeName(manufactorCodeName);
+//		materialBase.setSysOrgCodeName(sysOrgCodeName);
+//		materialBase.setUnitName(sysBaseApi.translateDict("materian_unit",materialBase.getUnit())==null?"":sysBaseApi.translateDict("materian_unit",materialBase.getUnit()));
 		return materialBase;
 	}
 
@@ -226,6 +226,20 @@ public class MaterialBaseServiceImpl extends ServiceImpl<MaterialBaseMapper, Mat
 		errorLines+=errorStrs.size();
 		successLines+=(listMaterial.size()-errorLines);
 		return ImportExcelUtil.imporReturnRes(errorLines,successLines,errorStrs);
+	}
+
+	@Override
+	public String getCodeByCc(String baseTypeCodeCc) {
+		String baseTypeCode = "";
+		if(!"".equals(baseTypeCodeCc)){
+			if(baseTypeCodeCc.contains("/")){
+				String[] split = baseTypeCodeCc.split("/");
+				baseTypeCode = split[split.length-1];
+			}else{
+				baseTypeCode = baseTypeCodeCc;
+			}
+		}
+		return baseTypeCode;
 	}
 
 }

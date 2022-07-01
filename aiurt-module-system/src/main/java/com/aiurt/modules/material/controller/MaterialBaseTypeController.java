@@ -188,6 +188,23 @@ public class MaterialBaseTypeController {
         return result;
     }
 
+    @AutoLog(value = "用于下拉的物资分类")
+    @ApiOperation(value = "用于下拉的物资分类")
+    @GetMapping(value = "/listNoPage")
+    public Result<List<MaterialBaseType>> listNoPage(
+            @RequestParam(name = "id", required = false) String id,
+            HttpServletRequest req) {
+        Result<List<MaterialBaseType>> result = new Result<List<MaterialBaseType>>();
+        QueryWrapper<MaterialBaseType> queryWrapper = new QueryWrapper<MaterialBaseType>().eq("del_flag", 0);
+        if(id != null && !"".equals(id)){
+            queryWrapper.eq("pid", id);
+        }
+        List<MaterialBaseType> materialBaseTypeList = iMaterialBaseTypeService.list(queryWrapper.orderByDesc("create_time"));
+        result.setSuccess(true);
+        result.setResult(materialBaseTypeList);
+        return result;
+    }
+
     /**
      * 物资分类-添加
      * @param materialBaseType

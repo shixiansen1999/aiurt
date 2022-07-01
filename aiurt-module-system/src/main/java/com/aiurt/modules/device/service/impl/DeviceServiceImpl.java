@@ -7,8 +7,6 @@ import com.aiurt.modules.device.mapper.DeviceAssemblyMapper;
 import com.aiurt.modules.device.mapper.DeviceMapper;
 import com.aiurt.modules.device.mapper.DeviceTypeMapper;
 import com.aiurt.modules.device.service.IDeviceService;
-import com.aiurt.modules.position.entity.CsStationPosition;
-import com.aiurt.modules.position.mapper.CsStationPositionMapper;
 import com.aiurt.modules.system.service.impl.SysBaseApiImpl;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -64,35 +62,35 @@ public class DeviceServiceImpl extends ServiceImpl<DeviceMapper, Device> impleme
 	public Device translate(Device device) {
 		//数据字典部分翻译
 		//设备等级
-		String deviceLevel = device.getDeviceLevel()==null?"":device.getDeviceLevel();
+//		String deviceLevel = device.getDeviceLevel()==null?"":device.getDeviceLevel();
 		//设备状态
-		String status = device.getStatus()==null?"":device.getStatus().toString();
+//		String status = device.getStatus()==null?"":device.getStatus().toString();
 		//设备复用类型
 		String reuseType = device.getReuseType()==null?"":device.getReuseType();
 		//是否临时设备
-		String temporary = device.getTemporary()==null?"":device.getTemporary();
+//		String temporary = device.getTemporary()==null?"":device.getTemporary();
 		//设备报废状态
-		String scrapFlag = device.getScrapFlag()==null?"":device.getScrapFlag().toString();
-		device.setDeviceLevelName(sysBaseApi.translateDict("device_level",deviceLevel)==null?"":sysBaseApi.translateDict("device_level",deviceLevel));
-		device.setStatusDesc(sysBaseApi.translateDict("device_status",status)==null?"":sysBaseApi.translateDict("device_status",status));
+//		String scrapFlag = device.getScrapFlag()==null?"":device.getScrapFlag().toString();
+//		device.setDeviceLevelName(sysBaseApi.translateDict("device_level",deviceLevel)==null?"":sysBaseApi.translateDict("device_level",deviceLevel));
+//		device.setStatusDesc(sysBaseApi.translateDict("device_status",status)==null?"":sysBaseApi.translateDict("device_status",status));
 		String reuseTypeName = "";
 		if(!"".equals(reuseType) && reuseType.contains(",")){
 			String[] split = reuseType.split(",");
 			for(String s : split){
-				reuseTypeName += sysBaseApi.translateDict("device_reuse_type",reuseType)==null?"":sysBaseApi.translateDict("device_reuse_type",s) + ",";
+				reuseTypeName += sysBaseApi.translateDict("device_reuse_type",s)==null?"":sysBaseApi.translateDict("device_reuse_type",s) + ",";
 			}
 			reuseTypeName = reuseTypeName.substring(0,reuseTypeName.length()-1);
 		}else{
 			reuseTypeName = sysBaseApi.translateDict("device_reuse_type",reuseType)==null?"":sysBaseApi.translateDict("device_reuse_type",reuseType);
 		}
 		device.setReuseTypeName(reuseTypeName);
-		device.setTemporaryName(sysBaseApi.translateDict("device_temporary",temporary)==null?"":sysBaseApi.translateDict("device_temporary",temporary));
-		device.setScrapFlagName(sysBaseApi.translateDict("device_scrap_flag",scrapFlag)==null?"":sysBaseApi.translateDict("device_scrap_flag",scrapFlag));
+//		device.setTemporaryName(sysBaseApi.translateDict("device_temporary",temporary)==null?"":sysBaseApi.translateDict("device_temporary",temporary));
+//		device.setScrapFlagName(sysBaseApi.translateDict("device_scrap_flag",scrapFlag)==null?"":sysBaseApi.translateDict("device_scrap_flag",scrapFlag));
 		//表部分翻译
 		//所属专业
-		String majorCode = device.getMajorCode()==null?"":device.getMajorCode();
+//		String majorCode = device.getMajorCode()==null?"":device.getMajorCode();
 		//子系统
-		String systemCode = device.getSystemCode()==null?"":device.getSystemCode();
+//		String systemCode = device.getSystemCode()==null?"":device.getSystemCode();
 		//设备类型
 		String deviceTypeCode = device.getDeviceTypeCode()==null?"":device.getDeviceTypeCode();
 		//设备类型层级
@@ -104,13 +102,13 @@ public class DeviceServiceImpl extends ServiceImpl<DeviceMapper, Device> impleme
 		//位置
 		String positionCode = device.getPositionCode()==null?"":device.getPositionCode();
 		//管理员
-		String manageUserName = device.getManageUserName()==null?"":device.getManageUserName();
+//		String manageUserName = device.getManageUserName()==null?"":device.getManageUserName();
 		//班组
-		String orgCode = device.getOrgCode()==null?"":device.getOrgCode();
+//		String orgCode = device.getOrgCode()==null?"":device.getOrgCode();
 		//厂商
-		String manufactorCode = device.getManufactorCode()==null?"":device.getManufactorCode();
-		String majorCodeName = sysBaseApi.translateDictFromTable("cs_major", "major_name", "major_code", majorCode);
-		String systemCodeName = sysBaseApi.translateDictFromTable("cs_subsystem", "system_name", "system_code", systemCode);
+//		String manufactorCode = device.getManufactorCode()==null?"":device.getManufactorCode();
+//		String majorCodeName = sysBaseApi.translateDictFromTable("cs_major", "major_name", "major_code", majorCode);
+//		String systemCodeName = sysBaseApi.translateDictFromTable("cs_subsystem", "system_name", "system_code", systemCode);
 		String deviceTypeCodeName = sysBaseApi.translateDictFromTable("device_type", "name", "code", deviceTypeCode);
 		String lineCodeName = sysBaseApi.translateDictFromTable("cs_line", "line_name", "line_code", lineCode);
 		String stationCodeName = sysBaseApi.translateDictFromTable("cs_station", "station_name", "station_code", stationCode);
@@ -123,9 +121,9 @@ public class DeviceServiceImpl extends ServiceImpl<DeviceMapper, Device> impleme
 		if(!"".equals(positionCodeName) && positionCodeName != null){
 			positionCodeCcName += "/" + positionCodeName;
 		}
-		String manageUserNameName = sysBaseApi.translateDictFromTable("sys_user", "realname", "username", manageUserName);
-		String orgCodeName = sysBaseApi.translateDictFromTable("sys_depart", "depart_name", "org_code", orgCode);
-		String manufactorCodeName = sysBaseApi.translateDictFromTable("cs_manufactor", "name", "code", manufactorCode);
+//		String manageUserNameName = sysBaseApi.translateDictFromTable("sys_user", "realname", "username", manageUserName);
+//		String orgCodeName = sysBaseApi.translateDictFromTable("sys_depart", "depart_name", "org_code", orgCode);
+//		String manufactorCodeName = sysBaseApi.translateDictFromTable("cs_manufactor", "name", "code", manufactorCode);
 		String deviceTypeCodeCcName = "";
 		if(deviceTypeCodeCc.contains("/")){
 			List<String> strings = Arrays.asList(deviceTypeCodeCc.split("/"));
@@ -140,19 +138,33 @@ public class DeviceServiceImpl extends ServiceImpl<DeviceMapper, Device> impleme
 		if(deviceTypeCodeCcName.contains("/")){
 			deviceTypeCodeCcName = deviceTypeCodeCcName.substring(0,deviceTypeCodeCcName.length()-1);
 		}
-		device.setMajorCodeName(majorCodeName);
-		device.setSystemCodeName(systemCodeName);
-		device.setDeviceTypeCodeName(deviceTypeCodeName);
+//		device.setMajorCodeName(majorCodeName);
+//		device.setSystemCodeName(systemCodeName);
+//		device.setDeviceTypeCodeName(deviceTypeCodeName);
 		device.setDeviceTypeCodeCcName(deviceTypeCodeCcName);
-		device.setLineCodeName(lineCodeName);
-		device.setStationCodeName(stationCodeName);
-		device.setPositionCodeName(positionCodeName);
-		device.setManageUserNameName(manageUserNameName);
-		device.setOrgCodeName(orgCodeName);
-		device.setManufactorCodeName(manufactorCodeName);
+//		device.setLineCodeName(lineCodeName);
+//		device.setStationCodeName(stationCodeName);
+//		device.setPositionCodeName(positionCodeName);
+//		device.setManageUserNameName(manageUserNameName);
+//		device.setOrgCodeName(orgCodeName);
+//		device.setManufactorCodeName(manufactorCodeName);
 		device.setPositionCodeCc(positionCodeCc);
 		device.setPositionCodeCcName(positionCodeCcName);
 		return device;
+	}
+
+	@Override
+	public String getCodeByCc(String deviceTypeCodeCc) {
+		String deviceTypeCode = "";
+		if(!"".equals(deviceTypeCodeCc) && deviceTypeCodeCc != null){
+			if(deviceTypeCodeCc.contains("/")){
+				String[] split = deviceTypeCodeCc.split("/");
+				deviceTypeCode = split[split.length-1];
+			}else{
+				deviceTypeCode = deviceTypeCodeCc;
+			}
+		}
+		return deviceTypeCode;
 	}
 
 }

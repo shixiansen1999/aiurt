@@ -10,9 +10,11 @@ import com.aiurt.modules.device.service.IDeviceService;
 import com.aiurt.modules.device.service.IDeviceTypeService;
 import com.aiurt.modules.major.entity.CsMajor;
 import com.aiurt.modules.major.service.ICsMajorService;
+import com.aiurt.modules.material.entity.MaterialBaseType;
 import com.aiurt.modules.subsystem.entity.CsSubsystem;
 import com.aiurt.modules.subsystem.service.ICsSubsystemService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import org.jeecg.common.api.vo.Result;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -92,6 +94,38 @@ public class DeviceTypeController extends BaseController<DeviceType, IDeviceType
 		 return Result.OK(newList);
 	 }
 
+	/**
+	 * 物资分类列表结构查询（无分页。用于左侧树）
+	 * @param majorCode
+	 * @param systemCode
+	 * @param req
+	 * @return
+	 */
+	@AutoLog(value = "设备分类列表结构查询")
+	@ApiOperation(value = "设备分类列表结构查询", notes = "设备分类列表结构查询")
+	@GetMapping(value = "/selectList")
+	public Result<List<DeviceType>> selectList(
+			@RequestParam(name = "majorCode", required = false) String majorCode,
+			@RequestParam(name = "systemCode", required = false) String systemCode,
+			HttpServletRequest req) {
+		Result<List<DeviceType>> result = new Result<List<DeviceType>>();
+		QueryWrapper<DeviceType> deviceTypeQueryWrapper = new QueryWrapper<DeviceType>();
+		deviceTypeQueryWrapper.eq("del_flag", 0);
+		if(majorCode != null && !"".equals(majorCode)){
+			deviceTypeQueryWrapper.eq("major_code", majorCode);
+		}
+		if(systemCode != null && !"".equals(systemCode)){
+			deviceTypeQueryWrapper.eq("system_code", systemCode);
+		}else {
+			deviceTypeQueryWrapper.apply(" (system_code = '' or system_code is null) ");
+		}
+		deviceTypeQueryWrapper.orderByDesc("create_time");
+		List<DeviceType> deviceTypeList = deviceTypeService.list(deviceTypeQueryWrapper);
+		List<DeviceType> deviceTypes = deviceTypeService.treeList(deviceTypeList,"0");
+		result.setSuccess(true);
+		result.setResult(deviceTypes);
+		return result;
+	}
 	/**
 	 * 设备类型-转换实体
 	 * @param id

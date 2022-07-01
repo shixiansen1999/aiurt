@@ -21,4 +21,5 @@ public interface IMaterialBaseService extends IService<MaterialBase> {
      */
     MaterialBase translate(MaterialBase materialBase);
     Result importExcelCheckRoleCode(MultipartFile file, ImportParams params) throws Exception;
+    String getCodeByCc(String baseTypeCodeCc);
 }
