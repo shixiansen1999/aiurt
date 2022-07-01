@@ -74,7 +74,7 @@ public class CsSubsystemController  {
 		 return Result.OK(majorList);
 	 }
 	 /**
-	  * 子系统-专业子系统树
+	  * 子系统-专业子系统树--废弃
 	  *
 	  * @return
 	  */
@@ -83,15 +83,9 @@ public class CsSubsystemController  {
 	 public Result<?> systemTreeList(Integer level) {
 	 	 //查询专业
 		 LambdaQueryWrapper<CsMajor> majorWrapper = new LambdaQueryWrapper<CsMajor>().eq(CsMajor::getDelFlag,0);
-		 /*if(StringUtils.isNotBlank(systemName)){
-			 majorWrapper.eq(CsMajor::getMajorName,systemName);
-		 }*/
 		 List<CsMajor> majorList = csMajorService.list(majorWrapper);
 		 //查询子系统
 		 LambdaQueryWrapper<CsSubsystem> systemWrapper = new LambdaQueryWrapper<CsSubsystem>().eq(CsSubsystem::getDelFlag,0);
-		 /*if(StringUtils.isNotBlank(systemName)){
-			 systemWrapper.eq(CsSubsystem::getSystemName,systemName);
-		 }*/
 		 List<CsSubsystem> systemList = csSubsystemService.list(systemWrapper.orderByDesc(CsSubsystem::getCreateTime));
 		 List<CsSubsystem> newList = new ArrayList<>();
 		 majorList.forEach(major -> {

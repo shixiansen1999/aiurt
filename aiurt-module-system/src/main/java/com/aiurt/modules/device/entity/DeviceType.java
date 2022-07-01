@@ -110,4 +110,10 @@ public class DeviceType implements Serializable {
     @ApiModelProperty(value = "节点类型")
     @TableField(exist = false)
     private String treeType;
+    /**是否有设备组成*/
+    @Excel(name = "是否有设备组成", width = 15)
+    @ApiModelProperty(value = "是否有设备组成")
+    @TableField(exist = false)
+    @Dict(dicCode = "is_have_device")
+    private Integer isHaveDevice;
 }

@@ -3,7 +3,9 @@ package com.aiurt.modules.device.controller;
 
 import javax.servlet.http.HttpServletRequest;
 import com.aiurt.modules.device.entity.Device;
+import com.aiurt.modules.device.entity.DeviceCompose;
 import com.aiurt.modules.device.entity.DeviceType;
+import com.aiurt.modules.device.service.IDeviceComposeService;
 import com.aiurt.modules.device.service.IDeviceService;
 import com.aiurt.modules.device.service.IDeviceTypeService;
 import com.aiurt.modules.major.entity.CsMajor;
@@ -49,16 +51,18 @@ public class DeviceTypeController extends BaseController<DeviceType, IDeviceType
 	private ICsMajorService csMajorService;
 	@Autowired
 	private IDeviceService deviceService;
+	@Autowired
+	private IDeviceComposeService deviceComposeService;
 
 	 /**
-	  * 设备类型左侧树
+	  * 设备类型左侧树、子系统树
 	  * @param
 	  * @return
 	  */
 	 @AutoLog(value = "设备类型左侧树")
 	 @ApiOperation(value = "设备类型左侧树")
 	 @GetMapping(value = "/treeList")
-	 public Result<?> treeList() {
+	 public Result<?> treeList(Integer level) {
 		 List<CsMajor> majorList = csMajorService.list(new LambdaQueryWrapper<CsMajor>().eq(CsMajor::getDelFlag,0));
 		 List<CsSubsystem> systemList = csSubsystemService.list(new LambdaQueryWrapper<CsSubsystem>().eq(CsSubsystem::getDelFlag,0));
 		 List<DeviceType> deviceTypeList = deviceTypeService.list(new LambdaQueryWrapper<DeviceType>().eq(DeviceType::getDelFlag,0));
@@ -69,13 +73,17 @@ public class DeviceTypeController extends BaseController<DeviceType, IDeviceType
 			 List<CsSubsystem> sysList = systemList.stream().filter(system-> system.getMajorCode().equals(one.getMajorCode())).collect(Collectors.toList());
 			 List<DeviceType> majorDeviceType = deviceTypeTree.stream().filter(type-> one.getMajorCode().equals(type.getMajorCode()) && (null==type.getSystemCode() || "".equals(type.getSystemCode())) && type.getPid().equals("0")).collect(Collectors.toList());
 			 List<DeviceType> twoList = new ArrayList<>();
-			 //添加设备类型数据
-			 twoList.addAll(majorDeviceType);
+			 if(level>2) {
+				//添加设备类型数据
+				twoList.addAll(majorDeviceType);
+			 }
 			 //判断是否有子系统数据
 			 sysList.forEach(two ->{
 				 DeviceType system = setEntity(two.getId()+"","zxt",two.getSystemCode(),two.getSystemName(),null,null,null,two.getMajorCode(),two.getSystemCode());
-				 List<DeviceType> sysDeviceType = deviceTypeTree.stream().filter(type-> system.getMajorCode().equals(type.getMajorCode()) && (null!=type.getSystemCode() && !"".equals(type.getSystemCode()) && system.getSystemCode().equals(type.getSystemCode()))  ).collect(Collectors.toList());
-				 system.setDeviceTypeChildren(sysDeviceType);
+				 if(level>2) {
+					 List<DeviceType> sysDeviceType = deviceTypeTree.stream().filter(type -> system.getMajorCode().equals(type.getMajorCode()) && (null != type.getSystemCode() && !"".equals(type.getSystemCode()) && system.getSystemCode().equals(type.getSystemCode()))).collect(Collectors.toList());
+					 system.setDeviceTypeChildren(sysDeviceType);
+				 }
 				 twoList.add(system);
 			 });
 			 major.setDeviceTypeChildren(twoList);
@@ -114,7 +122,7 @@ public class DeviceTypeController extends BaseController<DeviceType, IDeviceType
 	 * @param deviceType
 	 * @param pageNo
 	 * @param pageSize
-	 * @param req
+	 * @param
 	 * @return
 	 */
 	@ApiOperation(value="设备类型分页列表查询", notes="设备类型分页列表查询")
@@ -122,6 +130,8 @@ public class DeviceTypeController extends BaseController<DeviceType, IDeviceType
 	public Result<IPage<DeviceType>> queryPageList(DeviceType deviceType,
 								   @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
 								   @RequestParam(name="pageSize", defaultValue="10") Integer pageSize) {
+		LambdaQueryWrapper<DeviceCompose> composeWrapper = new LambdaQueryWrapper<>();
+		List<DeviceCompose> deviceComposeList = deviceComposeService.list(composeWrapper.eq(DeviceCompose::getDelFlag,0));
 		//查询条件
 		LambdaQueryWrapper<DeviceType> queryWrapper = new LambdaQueryWrapper<>();
 		if(null != deviceType.getName() && !"".equals(deviceType.getName())){
@@ -147,6 +157,15 @@ public class DeviceTypeController extends BaseController<DeviceType, IDeviceType
 		}
 		Page<DeviceType> page = new Page<DeviceType>(pageNo, pageSize);
 		IPage<DeviceType> pageList = deviceTypeService.page(page, queryWrapper.eq(DeviceType::getDelFlag,0));
+		pageList.getRecords().forEach(type->{
+			List<DeviceCompose> composeList = deviceComposeList.stream().filter(compose -> compose.getDeviceTypeCode().equals(type.getCode()) ).collect(Collectors.toList());
+			if(!composeList.isEmpty()){
+				type.setIsHaveDevice(1);
+			}else{
+				type.setIsHaveDevice(0);
+			}
+			type.setDeviceComposeList(composeList);
+		});
 		return Result.OK(pageList);
 	}
 

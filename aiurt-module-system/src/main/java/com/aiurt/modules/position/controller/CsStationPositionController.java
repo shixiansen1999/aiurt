@@ -15,6 +15,7 @@ import com.aiurt.modules.position.service.ICsLineService;
 import com.aiurt.modules.position.service.ICsStationPositionService;
 import com.aiurt.modules.position.service.ICsStationService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -66,19 +67,19 @@ public class CsStationPositionController  {
 		 //循环一级
 		 lineList.forEach(line -> {
 		 	String codeCc1 = line.getLineCode();
-			 CsStationPosition onePosition = setEntity(line.getId(),1,line.getSort(),line.getLineCode(),line.getLineName(),null,null,codeCc1);
+			 CsStationPosition onePosition = setEntity(line.getId(),1,line.getSort(),line.getLineCode(),line.getLineName(),null,null,codeCc1,line.getLineType());
 			 List<CsStation> twoStationList = stationList.stream().filter(station-> station.getLineCode().equals(line.getLineCode())).collect(Collectors.toList());
 			 List<CsStationPosition> twoList = new ArrayList<>();
 			 //循环二级
 			 twoStationList.forEach(two->{
 				 String codeCc2 = line.getLineCode()+"/"+two.getStationCode();
-				 CsStationPosition twoPosition = setEntity(two.getId(),2,two.getSort(),two.getStationCode(),two.getStationName(),line.getLineCode(),line.getLineName(),codeCc2);
+				 CsStationPosition twoPosition = setEntity(two.getId(),2,two.getSort(),two.getStationCode(),two.getStationName(),line.getLineCode(),line.getLineName(),codeCc2,two.getStationType());
 				 List<CsStationPosition> threeStationList = positionList.stream().filter(position-> position.getStaionCode().equals(two.getStationCode())).collect(Collectors.toList());
 				 List<CsStationPosition> threeList = new ArrayList<>();
 				 //循环三级
 				 threeStationList.forEach(three->{
 					 String codeCc3 = line.getLineCode()+"/"+two.getStationCode()+"/"+three.getPositionCode();
-					 CsStationPosition threePosition = setEntity(three.getId(),3,three.getSort(),three.getPositionCode(),three.getPositionName(),two.getStationCode(),two.getStationName(),codeCc3);
+					 CsStationPosition threePosition = setEntity(three.getId(),3,three.getSort(),three.getPositionCode(),three.getPositionName(),two.getStationCode(),two.getStationName(),codeCc3,three.getPositionType());
 					 threeList.add(threePosition);
 				 });
 				 twoPosition.setChildren(threeList);
@@ -100,7 +101,7 @@ public class CsStationPositionController  {
 	  * @param positionName
 	  * @return
 	  */
-	 public CsStationPosition setEntity(String id,Integer level,Integer sort,String positionCode,String positionName,String pCode,String pName,String codeCc){
+	 public CsStationPosition setEntity(String id,Integer level,Integer sort,String positionCode,String positionName,String pCode,String pName,String codeCc,Integer positionType){
 		 CsStationPosition position = new CsStationPosition();
 		 position.setId(id);
 		 position.setLevel(level);
@@ -110,6 +111,7 @@ public class CsStationPositionController  {
 		 position.setPCode(pCode);
 		 position.setPUrl(pName);
 		 position.setCodeCc(codeCc);
+		 position.setPositionType(positionType);
          return position;
 	 }
 	/**
@@ -128,11 +130,13 @@ public class CsStationPositionController  {
 								   @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
 								   HttpServletRequest req) {
 		Page<CsStationPosition> page = new Page<CsStationPosition>(pageNo, pageSize);
+
 		List<CsStationPosition> list = csStationPositionService.readAll(page,csStationPosition);
 		list.forEach(position -> {
 			position.setPositionType_dictText(sysBaseAPI.translateDict("station_level",position.getPositionType()+""));
 		});
-		return Result.OK(list);
+		page.setRecords(list);
+		return Result.OK(page);
 	}
 	/**
 	 * 添加
@@ -199,6 +203,39 @@ public class CsStationPositionController  {
 		}
 		return Result.OK(csStationPosition);
 	}
-
+	 /**
+	  * 查询最大排序数
+	  *
+	  * @return
+	  */
+	 @AutoLog(value = "查询最大排序数")
+	 @ApiOperation(value="查询最大排序数", notes="查询最大排序数")
+	 @GetMapping(value = "/getSort")
+	 public Result<?> getSort(String level) {
+	 	Integer sort = 1;
+	 	 if(null!=level && level.equals("1")){
+			 LambdaQueryWrapper<CsLine> wrapper = new LambdaQueryWrapper<>();
+			 wrapper.orderByDesc(CsLine::getSort);
+			 List<CsLine> list = csLineService.list(wrapper.eq(CsLine::getDelFlag,0));
+			 if(!list.isEmpty()){
+				 sort = list.get(0).getSort()+1;
+			 }
+		 }else if(null!=level && level.equals("2")){
+			 LambdaQueryWrapper<CsStation> wrapper = new LambdaQueryWrapper<>();
+			 wrapper.orderByDesc(CsStation::getSort);
+			 List<CsStation> list = csStationService.list(wrapper.eq(CsStation::getDelFlag,0));
+			 if(!list.isEmpty()){
+				 sort = list.get(0).getSort()+1;
+			 }
+		 }else if(null!=level && level.equals("3")){
+			 LambdaQueryWrapper<CsStationPosition> wrapper = new LambdaQueryWrapper<>();
+			 wrapper.orderByDesc(CsStationPosition::getSort);
+			 List<CsStationPosition> list = csStationPositionService.list(wrapper.eq(CsStationPosition::getDelFlag,0));
+			 if(!list.isEmpty()){
+				 sort = list.get(0).getSort()+1;
+			 }
+		 }
+		 return Result.OK(sort);
+	 }
 
 }
