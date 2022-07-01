@@ -10,7 +10,8 @@
             f.fault_phenomenon,
             far.solution,
             ft.name,
-            far.create_time
+            far.create_time,
+            f.id as faultId
 
     FROM
             fault_analysis_report far

@@ -16,6 +16,7 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import com.fasterxml.jackson.annotation.JsonFormat;
 
 import java.io.Serializable;
+import java.util.List;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -108,12 +109,21 @@ public class SysUser implements Serializable {
     @ApiModelProperty(value = "电话")
     @Excel(name = "电话", width = 15)
     private String phone;
-
+    /**
+     * 部门id(当前选择登录部门)
+     */
+    @ApiModelProperty(value = " 部门id(当前选择登录部门)")
+    private String orgId;
     /**
      * 部门code(当前选择登录部门)
      */
     @ApiModelProperty(value = " 部门code(当前选择登录部门)")
     private String orgCode;
+    /**
+     * 部门name(当前选择登录部门)
+     */
+    @ApiModelProperty(value = " 部门name(当前选择登录部门)")
+    private String orgName;
 
     /**部门名称*/
     @ApiModelProperty(value = " 部门名称")
@@ -213,32 +223,27 @@ public class SysUser implements Serializable {
 
     /**系统权限*/
     @ApiModelProperty(value = "系统权限codes")
-    private String systemCodes;
+    private List<String> systemCodes;
 
     /**角色*/
     @ApiModelProperty(value = "角色Ids")
     @TableField(exist = false)
-    private String roleIds;
+    private List<String> roleIds;
 
     /**专业*/
     @ApiModelProperty(value = "专业Ids")
     @TableField(exist = false)
-    private String majorIds;
-
-    /**线路*/
-    @ApiModelProperty(value = "线路Ids")
-    @TableField(exist = false)
-    private String lineIds;
+    private List<String> majorIds;
 
     /**部门*/
     @ApiModelProperty(value = "部门权限Codes")
     @TableField(exist = false)
-    private String departCodes;
+    private List<String> departCodes;
 
     /**站点*/
     @ApiModelProperty(value = "站所Ids")
     @TableField(exist = false)
-    private String stationIds;
+    private List<String> stationIds;
 
     /**施工证编号*/
     @ApiModelProperty(value = "施工证编号")

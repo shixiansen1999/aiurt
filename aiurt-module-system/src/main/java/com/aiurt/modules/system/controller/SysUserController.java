@@ -9,6 +9,11 @@ import com.aiurt.modules.major.entity.CsMajor;
 import com.aiurt.modules.major.service.ICsMajorService;
 import com.aiurt.modules.subsystem.entity.CsSubsystem;
 import com.aiurt.modules.subsystem.service.ICsSubsystemService;
+import com.aiurt.modules.system.mapper.*;
+import com.aiurt.modules.system.service.impl.CsUserDepartServiceImpl;
+import com.aiurt.modules.system.service.impl.CsUserMajorServiceImpl;
+import com.aiurt.modules.system.service.impl.CsUserStaionServiceImpl;
+import com.aiurt.modules.system.service.impl.CsUserSubsystemServiceImpl;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.jeecg.common.system.query.QueryGenerator;
@@ -102,6 +107,19 @@ public class SysUserController {
     private ICsSubsystemService csSubsystemService;
     @Autowired
     private ICsMajorService csMajorService;
+
+    @Autowired
+    private SysUserRoleMapper sysUserRoleMapper;
+    @Autowired
+    private CsUserDepartMapper csUserDepartMapper;
+    @Autowired
+    private CsUserStaionMapper csUserStaionMapper;
+    @Autowired
+    private CsUserMajorMapper csUserMajorMapper;
+    @Autowired
+    private CsUserSubsystemMapper csUserSubsystemMapper;
+
+
     /**
      * 获取用户列表数据
      * @param user
@@ -283,9 +301,20 @@ public class SysUserController {
     public Result<SysUser> queryById(@RequestParam(name = "id", required = true) String id) {
         Result<SysUser> result = new Result<SysUser>();
         SysUser sysUser = sysUserService.getById(id);
+
         if (sysUser == null) {
             result.error500("未找到对应实体");
         } else {
+            List<String> roleIds = sysUserRoleMapper.getRoleIds(sysUser.getId());
+            List<String> departIds = csUserDepartMapper.getDepartIds(sysUser.getId());
+            List<String> stationIds = csUserStaionMapper.getStaionIds(sysUser.getId());
+            List<String> majorIds = csUserMajorMapper.getMajorIds(sysUser.getId());
+            List<String> subsystemIds = csUserSubsystemMapper.getSubsystemIds(sysUser.getId());
+            sysUser.setRoleIds(roleIds);
+            sysUser.setDepartCodes(departIds);
+            sysUser.setStationIds(stationIds);
+            sysUser.setMajorIds(majorIds);
+            sysUser.setSystemCodes(subsystemIds);
             result.setResult(sysUser);
             result.setSuccess(true);
         }

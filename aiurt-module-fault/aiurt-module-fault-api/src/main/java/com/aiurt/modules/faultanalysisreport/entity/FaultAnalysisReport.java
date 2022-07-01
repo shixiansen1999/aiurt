@@ -140,5 +140,11 @@ public class FaultAnalysisReport implements Serializable {
     @TableField(exist = false)
     private Date endTime;
 
+    /**故障主键id*/
+    @Excel(name = "故障主键id", width = 15)
+    @ApiModelProperty(value = "故障主键id")
+    @TableField(exist = false)
+    private String faultId;
+
 
 }

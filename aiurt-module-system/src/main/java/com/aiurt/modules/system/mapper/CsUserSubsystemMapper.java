@@ -13,5 +13,5 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
  * @Version: V1.0
  */
 public interface CsUserSubsystemMapper extends BaseMapper<CsUserSubsystem> {
-
+    List<String> getSubsystemIds(@Param("userId") String userId);
 }
