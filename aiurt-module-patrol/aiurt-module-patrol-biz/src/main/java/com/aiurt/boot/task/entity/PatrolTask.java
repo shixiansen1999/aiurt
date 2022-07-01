@@ -209,6 +209,12 @@ public class PatrolTask implements Serializable {
     @ApiModelProperty(value = "作废状态：0未作废、1已作废")
     private java.lang.Integer discardStatus;
     /**
+     * 作废理由
+     */
+    @Excel(name = "作废理由", width = 15)
+    @ApiModelProperty(value = "作废理由")
+    private java.lang.String discardReason;
+    /**
      * 备注
      */
     @Excel(name = "备注", width = 15)

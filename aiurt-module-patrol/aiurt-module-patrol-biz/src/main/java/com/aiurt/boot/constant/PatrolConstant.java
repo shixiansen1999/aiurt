@@ -55,4 +55,12 @@ public interface PatrolConstant {
      * 巡检任务已处置状态
      */
     Integer TASK_DISPOSE = 0;
+    /**
+     * 巡检检查结果正常状态
+     */
+    Integer RESULT_NORMAL = 1;
+    /**
+     * 巡检检查结果异常状态
+     */
+    Integer RESULT_EXCEPTION = 0;
 }

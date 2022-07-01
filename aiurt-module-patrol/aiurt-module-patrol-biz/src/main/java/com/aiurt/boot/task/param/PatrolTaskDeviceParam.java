@@ -102,4 +102,16 @@ public class PatrolTaskDeviceParam extends PatrolTaskDevice {
     @Excel(name = "巡检时长", width = 15)
     @ApiModelProperty(value = "巡检时长")
     private List<PatrolAccompany> accompanyInfo;
+    /**
+     * 正常项
+     */
+    @Excel(name = "正常项", width = 15)
+    @ApiModelProperty(value = "正常项")
+    private Long normalItem;
+    /**
+     * 异常项
+     */
+    @Excel(name = "异常项", width = 15)
+    @ApiModelProperty(value = "异常项")
+    private Long exceptionItem;
 }
