@@ -17,6 +17,8 @@ import com.aiurt.modules.faultknowledgebase.dto.DeviceTypeDTO;
 import com.aiurt.modules.faultknowledgebase.mapper.FaultKnowledgeBaseMapper;
 import com.aiurt.modules.faulttype.entity.FaultType;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.query.QueryGenerator;
 import com.aiurt.common.util.oConvertUtils;
@@ -206,6 +208,9 @@ public class FaultKnowledgeBaseController extends BaseController<FaultKnowledgeB
 	  */
 	 @ApiOperation(value="故障知识库-设备分类查询", notes="device_type-设备分类查询")
 	 @GetMapping(value = "/getDeviceType")
+	 @ApiResponses({
+			 @ApiResponse(code = 200, message = "OK", response = DeviceTypeDTO.class)
+	 })
 	 public Result<List<DeviceTypeDTO>> getDeviceType(@RequestParam(name="majorCode") String majorCode,
 													  @RequestParam(name="systemCode") String systemCode) {
 	 	List<DeviceTypeDTO> deviceTypes = faultKnowledgeBaseMapper.getDeviceType(majorCode,systemCode);
@@ -218,6 +223,9 @@ public class FaultKnowledgeBaseController extends BaseController<FaultKnowledgeB
 	  */
 	 @ApiOperation(value="故障知识库-设备组件查询", notes="device_assembly-设备组件查询")
 	 @GetMapping(value = "/getDeviceAssembly")
+	 @ApiResponses({
+			 @ApiResponse(code = 200, message = "OK", response = DeviceAssemblyDTO.class)
+	 })
 	 public Result<List<DeviceAssemblyDTO>> getDeviceAssembly(@RequestParam(name="deviceTypeCode") String deviceTypeCode) {
 		 List<DeviceAssemblyDTO> deviceAssembly = faultKnowledgeBaseMapper.getDeviceAssembly(deviceTypeCode);
 		 return Result.OK(deviceAssembly);

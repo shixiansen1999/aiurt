@@ -5,7 +5,7 @@
 <select id="getAllSubSystem" resultType="java.lang.String">
     select
     cs.system_code
-    from cs_user_subsystem cus left join cs_subsystem cs on cs.system_code = cus.system_id
+    from cs_user_subsystem cus left join cs_subsystem cs on cs.id = cus.system_id
     where cus.user_id =#{userId}
     </select>
 
@@ -21,8 +21,8 @@
     </select>
 
 <select id="getMajorByUser" resultType="java.lang.String">
-    select major_id
-    from cs_user_major cum left join cs_major cm on cm.major_code = cum.major_id
+    select cm.major_code
+    from cs_user_major cum left join cs_major cm on cm.id = cum.major_id
     where cum.user_id =#{userId}
     </select>
 

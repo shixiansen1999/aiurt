@@ -158,4 +158,9 @@ public class CheckListDTO {
     @TableField(exist = false)
     @ApiModelProperty(value = "具体位置")
     private java.lang.String specificLocation;
+
+    /**故障编号*/
+    @TableField(exist = false)
+    @ApiModelProperty(value = "故障编号")
+    private java.lang.String faultCode;
 }

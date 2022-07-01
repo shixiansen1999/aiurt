@@ -53,7 +53,7 @@ public class FaultAnalysisReportServiceImpl extends ServiceImpl<FaultAnalysisRep
         List<String> allSubSystem = faultKnowledgeBaseTypeMapper.getAllSubSystem(sysUser.getId());
         List<String> rolesByUsername = sysBaseAPI.getRolesByUsername(sysUser.getUsername());
         if (!rolesByUsername.contains(FaultConstant.ADMIN)) {
-            faultAnalysisReport.setApprovedResult(1);
+            faultAnalysisReport.setApprovedResult(FaultConstant.PASSED);
         }
         //根据角色决定是否查询未审核通过的故障分析
         List<FaultAnalysisReport> faultAnalysisReports = faultAnalysisReportMapper.readAll(page, faultAnalysisReport,allSubSystem);
@@ -61,27 +61,29 @@ public class FaultAnalysisReportServiceImpl extends ServiceImpl<FaultAnalysisRep
     }
 
     @Override
-    public FaultAnalysisReport readOne(String id) {
-        FaultAnalysisReport faultAnalysisReport = faultAnalysisReportMapper.readOne(id);
-        return faultAnalysisReport;
+    public FaultAnalysisReport readOne(String id,String faultCode) {
+        return faultAnalysisReportMapper.readOne(id,faultCode);
     }
 
     @Override
-    public IPage<Fault> getFault(Page<Fault> page, Fault fault) {
+    public IPage<FaultDTO> getFault(Page<FaultDTO> page, FaultDTO faultDTO) {
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         //当前用户拥有的子系统
         List<String> allSubSystem = faultKnowledgeBaseTypeMapper.getAllSubSystem(sysUser.getId());
-        List<Fault> faults = faultAnalysisReportMapper.getFault(page, fault,allSubSystem);
+        List<FaultDTO> faults = faultAnalysisReportMapper.getFault(page, faultDTO,allSubSystem);
         return page.setRecords(faults);
     }
 
     @Override
     public FaultDTO getDetail(String id) {
+        //获取故障详情
         FaultDTO faultDTO = faultAnalysisReportMapper.getDetail(id);
+        //获取故障分析详情
         LambdaQueryWrapper<FaultAnalysisReport> reportLambdaQueryWrapper = new LambdaQueryWrapper<>();
         reportLambdaQueryWrapper.eq(FaultAnalysisReport::getFaultCode, faultDTO.getCode());
         FaultAnalysisReport faultAnalysisReport = faultAnalysisReportMapper.selectOne(reportLambdaQueryWrapper);
         faultDTO.setFaultAnalysisReport(faultAnalysisReport);
+        //获取故障知识详情
         if (StringUtils.isNotEmpty(faultAnalysisReport.getFaultKnowledgeBaseId())) {
             FaultKnowledgeBase faultKnowledgeBase = faultKnowledgeBaseMapper.selectById(faultAnalysisReport.getFaultKnowledgeBaseId());
             faultDTO.setFaultKnowledgeBase(faultKnowledgeBase);

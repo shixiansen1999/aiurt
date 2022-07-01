@@ -27,15 +27,15 @@ public interface IFaultAnalysisReportService extends IService<FaultAnalysisRepor
      * @param id
      * @return IPage<FaultAnalysisReport>
      */
-    FaultAnalysisReport readOne(String id);
+    FaultAnalysisReport readOne(String id,String faultCode);
 
     /**
      * 故障选择查询
      * @param page
-     * @param fault
+     * @param faultDTO
      * @return List<Fault>
      * */
-     IPage<Fault> getFault(Page<Fault> page, Fault fault);
+     IPage<FaultDTO> getFault(Page<FaultDTO> page, FaultDTO faultDTO);
 
     /**
      * 提交中的故障分析的故障详情

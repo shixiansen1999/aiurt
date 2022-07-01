@@ -35,25 +35,25 @@ public class RepairPool implements Serializable {
      * 主键id
      */
     @TableId(type = IdType.ASSIGN_ID)
-    @ApiModelProperty(value = "主键id")
+    @ApiModelProperty(value = "主键id",required = false)
     private java.lang.String id;
     /**
      * 检修计划名称
      */
     @Excel(name = "检修计划名称", width = 15)
-    @ApiModelProperty(value = "检修计划名称")
+    @ApiModelProperty(value = "检修计划名称",required = false)
     private java.lang.String name;
     /**
      * 检修计划单号
      */
     @Excel(name = "检修计划单号", width = 15)
-    @ApiModelProperty(value = "检修计划单号")
+    @ApiModelProperty(value = "检修计划单号",required = false)
     private java.lang.String code;
     /**
      * 周数，对于年来计算的周数
      */
     @Excel(name = "周数，对于年来计算的周数", width = 15)
-    @ApiModelProperty(value = "周数，对于年来计算的周数")
+    @ApiModelProperty(value = "周数，对于年来计算的周数",required = false)
     private java.lang.Integer weeks;
     /**
      * 检修周期类型：0周检、1月检、2双月检、3季检、4半年检、5年检
@@ -67,11 +67,11 @@ public class RepairPool implements Serializable {
      * 检修策略编码，关联inspection_strategy的code
      */
     @Excel(name = "检修策略编码，关联inspection_strategy的code", width = 15)
-    @ApiModelProperty(value = "检修策略编码，关联inspection_strategy的code")
+    @ApiModelProperty(value = "检修策略编码，关联inspection_strategy的code",required = false)
     private java.lang.String inspectionStrCode;
     /**检修状态：0待指派、1待确认、2待执行、3已退回、4执行中、5已驳回、6待审核、7待验收、8已完成*/
     @Excel(name = "检修状态：0待指派、1待确认、2待执行、3已退回、4执行中、5已驳回、6待审核、7待验收、8已完成 ", width = 15)
-    @ApiModelProperty(value = "检修状态：0待指派、1待确认、2待执行、3已退回、4执行中、5已驳回、6待审核、7待验收、8已完成 ")
+    @ApiModelProperty(value = "检修状态：0待指派、1待确认、2待执行、3已退回、4执行中、5已驳回、6待审核、7待验收、8已完成 ",required = false)
     @Dict(dicCode ="inspection_task_state")
     private java.lang.Integer status;
     /**
@@ -80,7 +80,7 @@ public class RepairPool implements Serializable {
     @Excel(name = "开始时间", width = 15, format = "yyyy-MM-dd HH:mm:ss")
     @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd HH:mm:ss")
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    @ApiModelProperty(value = "开始时间")
+    @ApiModelProperty(value = "开始时间",required = false)
     private java.util.Date startTime;
     /**
      * 结束时间
@@ -88,7 +88,7 @@ public class RepairPool implements Serializable {
     @Excel(name = "结束时间", width = 15, format = "yyyy-MM-dd HH:mm:ss")
     @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd HH:mm:ss")
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    @ApiModelProperty(value = "结束时间")
+    @ApiModelProperty(value = "结束时间",required = false)
     private java.util.Date endTime;
     /**
      * 是否需要审核：0否 1是
@@ -125,84 +125,84 @@ public class RepairPool implements Serializable {
      * 是否是手工下发任务，0否1是
      */
     @Excel(name = "是否是手工下发任务，0否1是", width = 15)
-    @ApiModelProperty(value = "是否是手工下发任务，0否1是")
+    @ApiModelProperty(value = "是否是手工下发任务，0否1是",required = true)
     private java.lang.Integer isManual;
     /**
      * 退回理由，任务被退回时必须填写
      */
     @Excel(name = "退回理由，任务被退回时必须填写", width = 15)
-    @ApiModelProperty(value = "退回理由，任务被退回时必须填写")
+    @ApiModelProperty(value = "退回理由，任务被退回时必须填写",required = false)
     private java.lang.String remark;
     /**
      * 删除状态，0.未删除 1.已删除
      */
     @Excel(name = "删除状态，0.未删除 1.已删除", width = 15)
-    @ApiModelProperty(value = "删除状态，0.未删除 1.已删除")
+    @ApiModelProperty(value = "删除状态，0.未删除 1.已删除",required = false)
     private java.lang.Integer delFlag;
     /**
      * 创建时间
      */
     @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd")
     @DateTimeFormat(pattern = "yyyy-MM-dd")
-    @ApiModelProperty(value = "创建时间")
+    @ApiModelProperty(value = "创建时间",required = false)
     private java.util.Date createTime;
     /**
      * 修改时间
      */
     @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd")
     @DateTimeFormat(pattern = "yyyy-MM-dd")
-    @ApiModelProperty(value = "修改时间")
+    @ApiModelProperty(value = "修改时间",required = false)
     private java.util.Date updateTime;
     /**
      * 创建人
      */
-    @ApiModelProperty(value = "创建人")
+    @ApiModelProperty(value = "创建人",required = false)
     private java.lang.String createBy;
     /**
      * 更新人
      */
-    @ApiModelProperty(value = "更新人")
+    @ApiModelProperty(value = "更新人",required = false)
     private java.lang.String updateBy;
 
     /**
      * 站点名称
      */
     @TableField(exist = false)
-    @ApiModelProperty(value = "站点名称")
+    @ApiModelProperty(value = "站点名称",required = false)
     private String stationName;
 
     /**
      * 组织结构名称
      */
     @TableField(exist = false)
-    @ApiModelProperty(value = "组织结构名称")
+    @ApiModelProperty(value = "组织结构名称",required = false)
     private String orgName;
 
     /**
      * 检修周期类型名称
      */
     @TableField(exist = false)
-    @ApiModelProperty(value = "检修周期类型名称")
+    @ApiModelProperty(value = "检修周期类型名称",required = false)
     private String typeName;
 
     /**
      * 适用专业名称
      */
     @TableField(exist = false)
-    @ApiModelProperty(value = "适用专业名称")
+    @ApiModelProperty(value = "适用专业名称",required = false)
     private String majorName;
 
     /**
      * 适用专业子系统名称
      */
     @TableField(exist = false)
-    @ApiModelProperty(value = "适用专业子系统名称")
+    @ApiModelProperty(value = "适用专业子系统名称",required = false)
     private String subsystemName;
 
     /**
      * 状态名称
      */
     @TableField(exist = false)
-    @ApiModelProperty(value = "状态名称")
+    @ApiModelProperty(value = "状态名称",required = false)
     private String statusName;
 }

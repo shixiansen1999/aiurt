@@ -27,7 +27,7 @@ import com.aiurt.common.aspect.annotation.AutoLog;
  * @Date:   2022-06-21
  * @Version: V1.0
  */
-@Api(tags="patrol_plan_device")
+@Api(tags="巡检计划关联的设备")
 @RestController
 @RequestMapping("/patrolPlanDevice")
 @Slf4j
@@ -44,18 +44,18 @@ public class PatrolPlanDeviceController extends BaseController<PatrolPlanDevice,
 	 * @param req
 	 * @return
 	 */
-	//@AutoLog(value = "patrol_plan_device-分页列表查询")
-	@ApiOperation(value="patrol_plan_device-分页列表查询", notes="patrol_plan_device-分页列表查询")
-	@GetMapping(value = "/list")
-	public Result<IPage<PatrolPlanDevice>> queryPageList(PatrolPlanDevice patrolPlanDevice,
-								   @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
-								   @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
-								   HttpServletRequest req) {
-		QueryWrapper<PatrolPlanDevice> queryWrapper = QueryGenerator.initQueryWrapper(patrolPlanDevice, req.getParameterMap());
-		Page<PatrolPlanDevice> page = new Page<PatrolPlanDevice>(pageNo, pageSize);
-		IPage<PatrolPlanDevice> pageList = patrolPlanDeviceService.page(page, queryWrapper);
-		return Result.OK(pageList);
-	}
+//	//@AutoLog(value = "patrol_plan_device-分页列表查询")
+//	@ApiOperation(value="patrol_plan_device-分页列表查询", notes="patrol_plan_device-分页列表查询")
+//	@GetMapping(value = "/list")
+//	public Result<IPage<PatrolPlanDevice>> queryPageList(PatrolPlanDevice patrolPlanDevice,
+//								   @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
+//								   @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
+//								   HttpServletRequest req) {
+//		QueryWrapper<PatrolPlanDevice> queryWrapper = QueryGenerator.initQueryWrapper(patrolPlanDevice, req.getParameterMap());
+//		Page<PatrolPlanDevice> page = new Page<PatrolPlanDevice>(pageNo, pageSize);
+//		IPage<PatrolPlanDevice> pageList = patrolPlanDeviceService.page(page, queryWrapper);
+//		return Result.OK(pageList);
+//	}
 
 	/**
 	 *   添加
@@ -63,13 +63,13 @@ public class PatrolPlanDeviceController extends BaseController<PatrolPlanDevice,
 	 * @param patrolPlanDevice
 	 * @return
 	 */
-	@AutoLog(value = "patrol_plan_device-添加")
-	@ApiOperation(value="patrol_plan_device-添加", notes="patrol_plan_device-添加")
-	@PostMapping(value = "/add")
-	public Result<String> add(@RequestBody PatrolPlanDevice patrolPlanDevice) {
-		patrolPlanDeviceService.save(patrolPlanDevice);
-		return Result.OK("添加成功！");
-	}
+//	@AutoLog(value = "patrol_plan_device-添加")
+//	@ApiOperation(value="patrol_plan_device-添加", notes="patrol_plan_device-添加")
+//	@PostMapping(value = "/add")
+//	public Result<String> add(@RequestBody PatrolPlanDevice patrolPlanDevice) {
+//		patrolPlanDeviceService.save(patrolPlanDevice);
+//		return Result.OK("添加成功！");
+//	}
 
 	/**
 	 *  编辑
@@ -77,13 +77,13 @@ public class PatrolPlanDeviceController extends BaseController<PatrolPlanDevice,
 	 * @param patrolPlanDevice
 	 * @return
 	 */
-	@AutoLog(value = "patrol_plan_device-编辑")
-	@ApiOperation(value="patrol_plan_device-编辑", notes="patrol_plan_device-编辑")
-	@RequestMapping(value = "/edit", method = {RequestMethod.PUT,RequestMethod.POST})
-	public Result<String> edit(@RequestBody PatrolPlanDevice patrolPlanDevice) {
-		patrolPlanDeviceService.updateById(patrolPlanDevice);
-		return Result.OK("编辑成功!");
-	}
+//	@AutoLog(value = "patrol_plan_device-编辑")
+//	@ApiOperation(value="patrol_plan_device-编辑", notes="patrol_plan_device-编辑")
+//	@RequestMapping(value = "/edit", method = {RequestMethod.PUT,RequestMethod.POST})
+//	public Result<String> edit(@RequestBody PatrolPlanDevice patrolPlanDevice) {
+//		patrolPlanDeviceService.updateById(patrolPlanDevice);
+//		return Result.OK("编辑成功!");
+//	}
 
 	/**
 	 *   通过id删除
@@ -91,13 +91,13 @@ public class PatrolPlanDeviceController extends BaseController<PatrolPlanDevice,
 	 * @param id
 	 * @return
 	 */
-	@AutoLog(value = "patrol_plan_device-通过id删除")
-	@ApiOperation(value="patrol_plan_device-通过id删除", notes="patrol_plan_device-通过id删除")
-	@DeleteMapping(value = "/delete")
-	public Result<String> delete(@RequestParam(name="id",required=true) String id) {
-		patrolPlanDeviceService.removeById(id);
-		return Result.OK("删除成功!");
-	}
+//	@AutoLog(value = "patrol_plan_device-通过id删除")
+//	@ApiOperation(value="patrol_plan_device-通过id删除", notes="patrol_plan_device-通过id删除")
+//	@DeleteMapping(value = "/delete")
+//	public Result<String> delete(@RequestParam(name="id",required=true) String id) {
+//		patrolPlanDeviceService.removeById(id);
+//		return Result.OK("删除成功!");
+//	}
 
 	/**
 	 *  批量删除
@@ -105,13 +105,13 @@ public class PatrolPlanDeviceController extends BaseController<PatrolPlanDevice,
 	 * @param ids
 	 * @return
 	 */
-	@AutoLog(value = "patrol_plan_device-批量删除")
-	@ApiOperation(value="patrol_plan_device-批量删除", notes="patrol_plan_device-批量删除")
-	@DeleteMapping(value = "/deleteBatch")
-	public Result<String> deleteBatch(@RequestParam(name="ids",required=true) String ids) {
-		this.patrolPlanDeviceService.removeByIds(Arrays.asList(ids.split(",")));
-		return Result.OK("批量删除成功!");
-	}
+//	@AutoLog(value = "patrol_plan_device-批量删除")
+//	@ApiOperation(value="patrol_plan_device-批量删除", notes="patrol_plan_device-批量删除")
+//	@DeleteMapping(value = "/deleteBatch")
+//	public Result<String> deleteBatch(@RequestParam(name="ids",required=true) String ids) {
+//		this.patrolPlanDeviceService.removeByIds(Arrays.asList(ids.split(",")));
+//		return Result.OK("批量删除成功!");
+//	}
 
 	/**
 	 * 通过id查询
@@ -119,16 +119,16 @@ public class PatrolPlanDeviceController extends BaseController<PatrolPlanDevice,
 	 * @param id
 	 * @return
 	 */
-	//@AutoLog(value = "patrol_plan_device-通过id查询")
-	@ApiOperation(value="patrol_plan_device-通过id查询", notes="patrol_plan_device-通过id查询")
-	@GetMapping(value = "/queryById")
-	public Result<PatrolPlanDevice> queryById(@RequestParam(name="id",required=true) String id) {
-		PatrolPlanDevice patrolPlanDevice = patrolPlanDeviceService.getById(id);
-		if(patrolPlanDevice==null) {
-			return Result.error("未找到对应数据");
-		}
-		return Result.OK(patrolPlanDevice);
-	}
+//	//@AutoLog(value = "patrol_plan_device-通过id查询")
+//	@ApiOperation(value="patrol_plan_device-通过id查询", notes="patrol_plan_device-通过id查询")
+//	@GetMapping(value = "/queryById")
+//	public Result<PatrolPlanDevice> queryById(@RequestParam(name="id",required=true) String id) {
+//		PatrolPlanDevice patrolPlanDevice = patrolPlanDeviceService.getById(id);
+//		if(patrolPlanDevice==null) {
+//			return Result.error("未找到对应数据");
+//		}
+//		return Result.OK(patrolPlanDevice);
+//	}
 
     /**
     * 导出excel
@@ -136,10 +136,10 @@ public class PatrolPlanDeviceController extends BaseController<PatrolPlanDevice,
     * @param request
     * @param patrolPlanDevice
     */
-    @RequestMapping(value = "/exportXls")
-    public ModelAndView exportXls(HttpServletRequest request, PatrolPlanDevice patrolPlanDevice) {
-        return super.exportXls(request, patrolPlanDevice, PatrolPlanDevice.class, "patrol_plan_device");
-    }
+//    @RequestMapping(value = "/exportXls")
+//    public ModelAndView exportXls(HttpServletRequest request, PatrolPlanDevice patrolPlanDevice) {
+//        return super.exportXls(request, patrolPlanDevice, PatrolPlanDevice.class, "patrol_plan_device");
+//    }
 
     /**
       * 通过excel导入数据
@@ -148,9 +148,9 @@ public class PatrolPlanDeviceController extends BaseController<PatrolPlanDevice,
     * @param response
     * @return
     */
-    @RequestMapping(value = "/importExcel", method = RequestMethod.POST)
-    public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) {
-        return super.importExcel(request, response, PatrolPlanDevice.class);
-    }
+//    @RequestMapping(value = "/importExcel", method = RequestMethod.POST)
+//    public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) {
+//        return super.importExcel(request, response, PatrolPlanDevice.class);
+//    }
 
 }

@@ -23,7 +23,7 @@ import java.util.List;
  * @Date: 2022-06-21
  * @Version: V1.0
  */
-@Api(tags = "patrol_task_device")
+@Api(tags = "巡检设备清单")
 @RestController
 @RequestMapping("/patrolTaskDevice")
 @Slf4j

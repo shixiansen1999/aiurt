@@ -29,7 +29,7 @@ import java.util.List;
  * @Date:   2022-06-28
  * @Version: V1.0
  */
-@Api(tags="patrol_accompany")
+@Api(tags="巡检同行人")
 @RestController
 @RequestMapping("/patrolAccompany")
 @Slf4j

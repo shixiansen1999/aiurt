@@ -3,6 +3,7 @@ package com.aiurt.boot.plan.controller;
 import com.aiurt.boot.plan.dto.RepairDeviceDTO;
 import com.aiurt.boot.plan.dto.RepairPoolDTO;
 import com.aiurt.boot.plan.entity.RepairPool;
+import com.aiurt.boot.plan.req.RepairPoolReq;
 import com.aiurt.boot.plan.service.IRepairPoolService;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -58,14 +59,14 @@ public class ManualTaskController {
     /**
      * 添加手工下发检修任务
      *
-     * @param repairPoolDTO
+     * @param repairPoolReq
      * @return
      */
     @AutoLog(value = "添加手工下发检修任务")
     @ApiOperation(value = "添加手工下发检修任务", notes = "添加手工下发检修任务")
     @PostMapping(value = "/addManualTask")
-    public Result<String> addManualTask(@RequestBody RepairPoolDTO repairPoolDTO) {
-        repairPoolService.addManualTask(repairPoolDTO);
+    public Result<String> addManualTask(@RequestBody RepairPoolReq repairPoolReq) {
+        repairPoolService.addManualTask(repairPoolReq);
         return Result.OK("添加成功！");
     }
 
@@ -86,14 +87,14 @@ public class ManualTaskController {
     /**
      * 修改手工下发检修任务信息
      *
-     * @param repairPoolDTO
+     * @param repairPoolReq
      * @return
      */
     @AutoLog(value = "修改手工下发检修任务信息")
     @ApiOperation(value = "修改手工下发检修任务信息", notes = "修改手工下发检修任务信息")
     @GetMapping(value = "/updateManualTaskById")
-    public Result<String> updateManualTaskById(@RequestBody RepairPoolDTO repairPoolDTO) {
-        repairPoolService.updateManualTaskById(repairPoolDTO);
+    public Result<String> updateManualTaskById(@RequestBody RepairPoolReq repairPoolReq) {
+        repairPoolService.updateManualTaskById(repairPoolReq);
         return Result.OK("修改成功!");
     }
 

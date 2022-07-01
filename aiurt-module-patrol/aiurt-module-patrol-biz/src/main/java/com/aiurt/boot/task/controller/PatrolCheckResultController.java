@@ -27,7 +27,7 @@ import com.aiurt.common.aspect.annotation.AutoLog;
  * @Date:   2022-06-21
  * @Version: V1.0
  */
-@Api(tags="patrol_check_result")
+@Api(tags="巡检检查项(检查结果)")
 @RestController
 @RequestMapping("/patrolCheckResult")
 @Slf4j

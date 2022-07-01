@@ -158,4 +158,16 @@ public class CsStationController extends BaseController<CsStation, ICsStationSer
 		return Result.OK(csStation);
 	}
 
+	 /**
+	  * 站所列表查询
+	  * @param
+	  * @return
+	  */
+	 @ApiOperation(value="站所列表查询", notes="站所列表查询")
+	 @GetMapping(value = "/selectList")
+	 public Result<?> selectList() {
+		 LambdaQueryWrapper<CsStation> queryWrapper = new LambdaQueryWrapper<>();
+		 List<CsStation> list = csStationService.list(queryWrapper.eq(CsStation::getDelFlag,0));
+		 return Result.OK(list);
+	 }
 }

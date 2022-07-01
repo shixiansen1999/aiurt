@@ -491,8 +491,8 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
 		this.save(user);
 		String id = user.getId();
 		//step.2 保存角色
-		if(oConvertUtils.isNotEmpty(user.getRoleCodes())) {
-			String[] arr = user.getRoleCodes().split(",");
+		if(oConvertUtils.isNotEmpty(user.getRoleIds())) {
+			String[] arr = user.getRoleIds().split(",");
 			for (String roleId : arr) {
 				SysUserRole userRole = new SysUserRole(id, roleId);
 				sysUserRoleMapper.insert(userRole);
@@ -509,8 +509,8 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
 			}
 		}
 		//step.4 保存所属站所
-		if(oConvertUtils.isNotEmpty(user.getStationCodes())) {
-			String[] arr = user.getStationCodes().split(",");
+		if(oConvertUtils.isNotEmpty(user.getStationIds())) {
+			String[] arr = user.getStationIds().split(",");
 			for (String stationId : arr) {
 				CsUserStaion csUserStaion = new CsUserStaion();
 				csUserStaion.setUserId(id);
@@ -519,8 +519,8 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
 			}
 		}
 		//step.5 保存专业
-		if(oConvertUtils.isNotEmpty(user.getMajorCodes())) {
-			String[] arr = user.getMajorCodes().split(",");
+		if(oConvertUtils.isNotEmpty(user.getMajorIds())) {
+			String[] arr = user.getMajorIds().split(",");
 			for (String majorId : arr) {
 				CsUserMajor csUserMajor = new CsUserMajor();
 				csUserMajor.setUserId(id);
@@ -548,10 +548,10 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
 		this.updateById(user);
 		String id = user.getId();
 		//step.2 修改角色
-		if(oConvertUtils.isNotEmpty(user.getRoleCodes())) {
+		if(oConvertUtils.isNotEmpty(user.getRoleIds())) {
 			//处理用户角色 先删后加
 			sysUserRoleMapper.delete(new QueryWrapper<SysUserRole>().lambda().eq(SysUserRole::getUserId, user.getId()));
-			String[] arr = user.getRoleCodes().split(",");
+			String[] arr = user.getRoleIds().split(",");
 			for (String roleId : arr) {
 				SysUserRole userRole = new SysUserRole(user.getId(), roleId);
 				sysUserRoleMapper.insert(userRole);
@@ -589,8 +589,8 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
 
 		//step.4 修改所属站所
 		String[] stations = {};
-		if(oConvertUtils.isNotEmpty(user.getStationCodes())){
-			stations = user.getStationCodes().split(",");
+		if(oConvertUtils.isNotEmpty(user.getStationIds())){
+			stations = user.getStationIds().split(",");
 			//先删后加
 			csUserStaionMapper.delete(new QueryWrapper<CsUserStaion>().lambda().eq(CsUserStaion::getUserId, user.getId()));
 			for (String stationId : stations) {
@@ -603,8 +603,8 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
 
 		//step.5 修改专业
 		String[] majors = {};
-		if(oConvertUtils.isNotEmpty(user.getMajorCodes())){
-			majors = user.getMajorCodes().split(",");
+		if(oConvertUtils.isNotEmpty(user.getMajorIds())){
+			majors = user.getMajorIds().split(",");
 			//先删后加
 			csUserMajorMapper.delete(new QueryWrapper<CsUserMajor>().lambda().eq(CsUserMajor::getUserId, user.getId()));
 			for (String majorId : majors) {

@@ -71,7 +71,8 @@
             fkb.method,
             fkb.solution,
             fkb.create_time,
-            fkb.status
+            fkb.status,
+            fkb.file_path
     FROM
             fault_knowledge_base fkb WHERE del_flag = 0 and fkb.id = #{id}
 

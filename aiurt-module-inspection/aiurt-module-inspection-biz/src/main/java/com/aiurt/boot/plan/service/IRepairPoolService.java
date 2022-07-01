@@ -4,6 +4,7 @@ import com.aiurt.boot.manager.dto.MajorDTO;
 import com.aiurt.boot.plan.dto.*;
 import com.aiurt.boot.plan.entity.RepairPool;
 import com.aiurt.boot.plan.rep.RepairStrategyReq;
+import com.aiurt.boot.plan.req.RepairPoolReq;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -104,9 +105,9 @@ public interface IRepairPoolService extends IService<RepairPool> {
 
     /**
      *修改手工下发检修任务信息
-     * @param repairPoolDTO
+     * @param repairPoolReq
      */
-    void updateManualTaskById(RepairPoolDTO repairPoolDTO);
+    void updateManualTaskById(RepairPoolReq repairPoolReq);
 
     /**
      * 根据任务id删除手工下发检修任务
@@ -116,9 +117,9 @@ public interface IRepairPoolService extends IService<RepairPool> {
 
     /**
      * 添加手工下发检修任务
-     * @param repairPoolDTO
+     * @param repairPoolReq
      */
-    void addManualTask(RepairPoolDTO repairPoolDTO);
+    void addManualTask(RepairPoolReq repairPoolReq);
     /**
      * 根据检修任务code和检修标准id查询检修标准对应的设备
      *

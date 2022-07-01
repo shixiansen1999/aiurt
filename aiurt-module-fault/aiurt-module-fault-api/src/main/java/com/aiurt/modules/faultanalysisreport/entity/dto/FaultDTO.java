@@ -34,24 +34,33 @@ public class FaultDTO {
     /**专业编码*/
     @Excel(name = "专业编码", width = 15)
     @ApiModelProperty(value = "专业编码", required = true)
-    @NotBlank(message = "所属专业不能为空")
+    @Dict(dictTable = "cs_major", dicText = "major_name", dicCode = "major_code")
     private String majorCode;
+
 
     /**专业子系统编码*/
     @Excel(name = "专业子系统编码", width = 15)
     @ApiModelProperty(value = "专业子系统编码")
+    @Dict(dictTable = "cs_subsystem", dicText = "system_name", dicCode = "system_code")
     private String subSystemCode;
 
-    /**专业子系统名称*/
-    @Excel(name = "专业子系统名称", width = 15)
-    @ApiModelProperty(value = "专业子系统名称")
-    private String subSystemName;
+    /**报修方式*/
+    @Excel(name = "报修方式", width = 15)
+    @ApiModelProperty(value = "报修方式",example = "")
+    @Dict(dicCode = "fault_mode_code")
+    private String faultModeCode;
 
     /**报修人*/
     @Excel(name = "报修人", width = 15)
     @ApiModelProperty(value = "报修人")
     @Dict(dictTable = "sys_user", dicCode = "username", dicText = "realname")
     private String faultApplicant;
+
+    /**线路编码*/
+    @Excel(name = "故障位置-线路编码", width = 15)
+    @ApiModelProperty(value = "线路编码", required = true)
+    @Dict(dictTable = "cs_line", dicText = "line_name", dicCode = "line_code")
+    private String lineCode;
 
     /**设备编码*/
     @Excel(name = "设备编码", width = 15)
@@ -66,43 +75,44 @@ public class FaultDTO {
     /**站点*/
     @Excel(name = "故障位置-站所编码", width = 15)
     @ApiModelProperty(value = "站点",  required = true)
+    @Dict(dictTable = "cs_station", dicText = "station_name", dicCode = "station_code")
     private String stationCode;
 
     /**位置*/
     @Excel(name = "故障位置-位置编码", width = 15)
     @ApiModelProperty(value = "位置")
+    @Dict(dictTable = "cs_station_position", dicText = "position_name", dicCode = "position_code")
     private String stationPositionCode;
-
-    /**站点名称*/
-    @Excel(name = "故障位置-站所名称", width = 15)
-    @ApiModelProperty(value = "站点名称",  required = true)
-    @TableField(exist = false)
-    private String stationName;
-
-    /**位置名称*/
-    @Excel(name = "故障位置-位置名称", width = 15)
-    @ApiModelProperty(value = "位置名称")
-    private String stationPositionName;
 
     /**故障发生时间*/
     @Excel(name = "故障发生时间", width = 15, format = "yyyy-MM-dd HH:mm")
     @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm")
     @DateTimeFormat(pattern="yyyy-MM-dd HH:mm" )
     @ApiModelProperty(value = "故障发生时间yyyy-MM-dd HH:mm",  required = true)
-    @NotNull(message = "请填写故障发生时间")
     private Date happenTime;
 
     /**故障现象*/
     @Excel(name = "故障现象", width = 15)
     @ApiModelProperty(value = "故障现象",  required = true)
-    @NotBlank(message = "请填写故障现象!")
     @Length(max = 255, message = "故障现象长度不能超过255")
     private String faultPhenomenon;
 
+    /**维修完成时间*/
+    @Excel(name = "维修完成时间", width = 15, format = "yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
+    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
+    @ApiModelProperty(value = "维修完成时间")
+    private Date endTime;
+
+    @ApiModelProperty("挂起原因")
+    private String hangUpReason;
+
     @ApiModelProperty(value = "故障分析",  required = true)
+    @TableField(exist = false)
     private FaultAnalysisReport faultAnalysisReport;
 
     @ApiModelProperty(value = "故障知识库",  required = true)
+    @TableField(exist = false)
     private FaultKnowledgeBase faultKnowledgeBase;
 
 }

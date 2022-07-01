@@ -42,7 +42,7 @@ import com.aiurt.common.aspect.annotation.AutoLog;
  * @Date:   2022-06-27
  * @Version: V1.0
  */
-@Api(tags="patrol_task_station")
+@Api(tags="巡检任务站点")
 @RestController
 @RequestMapping("/patrolTaskStation")
 @Slf4j

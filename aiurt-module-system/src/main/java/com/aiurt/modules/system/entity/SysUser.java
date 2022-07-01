@@ -211,35 +211,34 @@ public class SysUser implements Serializable {
     @ApiModelProperty(value = "设备id")
     private String clientId;
 
-    /**角色*/
-    @ApiModelProperty(value = "角色codes")
-    @TableField(exist = false)
-    private String roleCodes;
-
-    /**专业*/
-    @ApiModelProperty(value = "专业codes")
-    @TableField(exist = false)
-    private String majorCodes;
-
-    /**子系统*/
-    @ApiModelProperty(value = "子系统codes")
-    @TableField(exist = false)
+    /**系统权限*/
+    @ApiModelProperty(value = "系统权限codes")
     private String systemCodes;
 
-    /**线路*/
-    @ApiModelProperty(value = "线路codes")
+    /**角色*/
+    @ApiModelProperty(value = "角色Ids")
     @TableField(exist = false)
-    private String lineCodes;
+    private String roleIds;
+
+    /**专业*/
+    @ApiModelProperty(value = "专业Ids")
+    @TableField(exist = false)
+    private String majorIds;
+
+    /**线路*/
+    @ApiModelProperty(value = "线路Ids")
+    @TableField(exist = false)
+    private String lineIds;
 
     /**部门*/
-    @ApiModelProperty(value = "部门权限codes")
+    @ApiModelProperty(value = "部门权限Codes")
     @TableField(exist = false)
     private String departCodes;
 
     /**站点*/
-    @ApiModelProperty(value = "站所codes")
+    @ApiModelProperty(value = "站所Ids")
     @TableField(exist = false)
-    private String stationCodes;
+    private String stationIds;
 
     /**施工证编号*/
     @ApiModelProperty(value = "施工证编号")
