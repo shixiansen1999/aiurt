@@ -36,5 +36,5 @@ public interface PatrolStandardMapper extends BaseMapper<PatrolStandard> {
      * @param ids
      * @return
      */
-    List<PatrolStandardDto> selectbyIds(@Param("ids") String ids);
+    List<PatrolStandardDto> selectbyIds(@Param("ids")List <String> ids);
 }

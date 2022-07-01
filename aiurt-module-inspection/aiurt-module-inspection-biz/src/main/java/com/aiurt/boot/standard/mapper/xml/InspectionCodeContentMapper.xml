@@ -5,8 +5,13 @@
 	<update id="updateTreeNodeStatus" parameterType="java.lang.String">
 		update inspection_code_content set has_child = #{status} where id = #{id}
 	</update>
+	<update id="updatPId">
+		update  inspection_code_content a
+		set a.del_flag =1
+		where a.pid=#{id}
+	</update>
 
-  	<!-- 【vue3专用】 -->
+	<!-- 【vue3专用】 -->
 	<select id="queryListByPid" parameterType="java.lang.Object" resultType="org.jeecg.common.system.vo.SelectTreeModel">
 		select
 		  id as "key",
@@ -20,6 +25,22 @@
 				and ${key} = #{value}
 			</foreach>
 		</if>
+	</select>
+    <select id="selectLists" resultType="com.aiurt.boot.standard.entity.InspectionCodeContent">
+		select * from inspection_code_content a where a.del_flag =0
+		 <if test="inspectionCodeContent.inspectionCodeId !=null">
+		and a.inspection_code_id=#{inspectionCodeContent.inspectionCodeId}
+		</if>
+		<if test="inspectionCodeContent.code != null">
+			and  a.`code`=#{inspectionCodeContent.code}
+		</if>
+		<if test="inspectionCodeContent.name != null">
+			and	a.`name` LIKE CONCAT ('%', #{inspectionCodeContent.name}, '%')
+		</if>
+		<if test="inspectionCodeContent.statusItem != null">
+			and	a.status_item=#{inspectionCodeContent.statusItem}
+		</if>
+		ORDER BY a.sort_no ,a.create_time desc
 	</select>
 
 </mapper>

@@ -3,6 +3,8 @@ package com.aiurt.boot.standard.service;
 import com.aiurt.boot.standard.entity.InspectionCodeContent;
 import com.aiurt.common.exception.AiurtBootException;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 import org.jeecg.common.system.vo.SelectTreeModel;
 
@@ -72,4 +74,11 @@ public interface IInspectionCodeContentService extends IService<InspectionCodeCo
 	 */
 	List<SelectTreeModel> queryListByPid(String pid);
 
+	/**
+	 * 检修检查项表-树型分页列表查询
+	 * @param page
+	 * @param inspectionCodeContent
+	 * @return
+	 */
+	IPage<InspectionCodeContent> pageList(Page<InspectionCodeContent> page, InspectionCodeContent inspectionCodeContent);
 }
