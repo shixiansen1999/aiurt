@@ -1,6 +1,5 @@
 package com.aiurt.modules.fault.dto;
 
-import com.aiurt.modules.basic.entity.SysAttachment;
 import com.aiurt.modules.fault.entity.FaultDevice;
 import com.aiurt.modules.fault.entity.FaultRepairParticipants;
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -17,7 +16,7 @@ import java.util.List;
  * @author fgw
  */
 @Data
-@ApiModel("维修记录")
+@ApiModel("维修记录1")
 public class RepairRecordDTO implements Serializable {
 
     private static final long serialVersionUID = 1L;

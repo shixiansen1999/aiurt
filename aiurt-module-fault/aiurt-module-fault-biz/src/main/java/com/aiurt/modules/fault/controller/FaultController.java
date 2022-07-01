@@ -8,10 +8,7 @@ import com.aiurt.modules.fault.service.IFaultService;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiImplicitParam;
-import io.swagger.annotations.ApiImplicitParams;
-import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.*;
 import lombok.extern.slf4j.Slf4j;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.query.QueryGenerator;
@@ -258,6 +255,9 @@ public class FaultController extends BaseController<Fault, IFaultService> {
     @AutoLog(value = "查询填写维修记录详情")
     @ApiOperation(value = "查询填写维修记录详情", notes = "查询填写维修记录详情")
     @PutMapping("/queryRepairRecord")
+    @ApiResponses({
+            @ApiResponse(code = 200, response = RepairRecordDTO.class, message = "成功")
+    })
     public Result<RepairRecordDTO> queryRepairRecord(String faultCode) {
         RepairRecordDTO repairRecordDTO =  faultService.queryRepairRecord(faultCode);
         return Result.OK(repairRecordDTO);

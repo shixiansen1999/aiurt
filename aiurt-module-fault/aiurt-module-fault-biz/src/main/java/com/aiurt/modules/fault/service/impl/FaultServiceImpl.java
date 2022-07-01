@@ -7,6 +7,7 @@ import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.modules.basic.entity.SysAttachment;
+import com.aiurt.modules.fault.constants.FaultDictCodeConstant;
 import com.aiurt.modules.fault.dto.*;
 import com.aiurt.modules.fault.entity.*;
 import com.aiurt.modules.fault.enums.FaultStatusEnum;
@@ -25,10 +26,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Timestamp;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @Description: fault
@@ -235,9 +234,27 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         fault.setFaultDeviceList(faultDeviceList);
 
         // 字典值转换
-        Map<String, List<DictModel>> manyDictItems = sysBaseAPI.getManyDictItems(null);
+        List<String> dictCodeList = CollectionUtil.newArrayList(FaultDictCodeConstant.YN, FaultDictCodeConstant.FAULT_MODE_CODE,
+                FaultDictCodeConstant.FAULT_YN, FaultDictCodeConstant.FAULT_STATUS,FaultDictCodeConstant.FAULT_URGENCY);
 
+        Map<String, List<DictModel>> dictItemMap = sysBaseAPI.getManyDictItems(dictCodeList);
 
+        Map<String, Map<String,String>> map = new HashMap<>();
+        dictItemMap.keySet().stream().forEach(key->{
+            List<DictModel> dictModels = dictItemMap.get(key);
+
+            Map<String, String> codeMp = dictModels.stream().collect(Collectors.toMap(DictModel::getValue, DictModel::getText, (t1, t2) -> t1));
+            map.put(key, codeMp);
+        });
+
+        fault.setStatusName(map.getOrDefault(FaultDictCodeConstant.FAULT_STATUS, new HashMap<>(16)).get(String.valueOf(fault.getStatus())));
+        fault.setUrgencyName(map.getOrDefault(FaultDictCodeConstant.FAULT_URGENCY, new HashMap<>(16)).get(String.valueOf(fault.getUrgency())));
+        fault.setAffectDriveName(map.getOrDefault(FaultDictCodeConstant.FAULT_YN, new HashMap<>(16)).get(String.valueOf(fault.getAffectDrive())));
+        fault.setAffectPassengerServiceName(map.getOrDefault(FaultDictCodeConstant.FAULT_YN, new HashMap<>(16)).get(String.valueOf(fault.getAffectPassengerService())));
+
+        fault.setIsStopServiceName(map.getOrDefault(FaultDictCodeConstant.FAULT_YN, new HashMap<>(16)).get(String.valueOf(fault.getIsStopService())));
+        fault.setFaultModeText(map.getOrDefault(FaultDictCodeConstant.FAULT_MODE_CODE, new HashMap<>(16)).get(fault.getFaultModeCode()));
+        fault.setIsOutsourceName(map.getOrDefault(FaultDictCodeConstant.YN, new HashMap<>(16)).get(String.valueOf(fault.getIsOutsource())));
         // 按钮权限
         return fault;
     }
