@@ -27,6 +27,12 @@ public class DeviceDTO implements Serializable {
     @ApiModelProperty(value = "线路")
     private String lineCode;
 
+    @ApiModelProperty(value = "设备类型编码")
+    private String deviceTypeCode;
+
     @ApiModelProperty(value = "位置")
     private String positionCode;
+
+    @ApiModelProperty(value = "设备名称")
+    private String name;
 }

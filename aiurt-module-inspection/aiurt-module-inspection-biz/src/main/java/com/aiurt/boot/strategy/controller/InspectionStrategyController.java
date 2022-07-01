@@ -5,7 +5,6 @@ import com.aiurt.boot.strategy.entity.InspectionStrategy;
 import com.aiurt.boot.strategy.service.IInspectionStrategyService;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.system.base.controller.BaseController;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.annotations.Api;
@@ -13,7 +12,6 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import lombok.extern.slf4j.Slf4j;
 import org.jeecg.common.api.vo.Result;
-import org.jeecg.common.system.query.QueryGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
@@ -72,19 +70,7 @@ public class InspectionStrategyController extends BaseController<InspectionStrat
 		inspectionStrategyService.add(inspectionStrategyDTO);
 		return Result.OK("添加成功！");
 	}
-    /**
-     * 添加
-     *
-     * @param inspectionStrategy
-     * @return
-     */
-    @AutoLog(value = "inspection_strategy-添加")
-    @ApiOperation(value = "inspection_strategy-添加", notes = "inspection_strategy-添加")
-    @PostMapping(value = "/add")
-    public Result<String> add(@RequestBody InspectionStrategy inspectionStrategy) {
-        inspectionStrategyService.save(inspectionStrategy);
-        return Result.OK("添加成功！");
-    }
+
 
 	/**
 	 *  编辑
@@ -99,19 +85,19 @@ public class InspectionStrategyController extends BaseController<InspectionStrat
 		inspectionStrategyService.updateId(inspectionStrategyDTO);
 		return Result.OK("编辑成功!");
 	}
-    /**
-     * 编辑
-     *
-     * @param inspectionStrategy
-     * @return
-     */
-    @AutoLog(value = "inspection_strategy-编辑")
-    @ApiOperation(value = "inspection_strategy-编辑", notes = "inspection_strategy-编辑")
-    @RequestMapping(value = "/edit", method = {RequestMethod.PUT, RequestMethod.POST})
-    public Result<String> edit(@RequestBody InspectionStrategy inspectionStrategy) {
-        inspectionStrategyService.updateById(inspectionStrategy);
-        return Result.OK("编辑成功!");
-    }
+//    /**
+//     * 编辑
+//     *
+//     * @param inspectionStrategy
+//     * @return
+//     */
+//    @AutoLog(value = "inspection_strategy-编辑")
+//    @ApiOperation(value = "inspection_strategy-编辑", notes = "inspection_strategy-编辑")
+//    @RequestMapping(value = "/edit", method = {RequestMethod.PUT, RequestMethod.POST})
+//    public Result<String> edit(@RequestBody InspectionStrategy inspectionStrategy) {
+//        inspectionStrategyService.updateById(inspectionStrategy);
+//        return Result.OK("编辑成功!");
+//    }
 
 	/**
 	 *   通过id删除

@@ -4,6 +4,7 @@ package com.aiurt.boot.standard.mapper;
 import com.aiurt.boot.manager.dto.InspectionCodeDTO;
 import com.aiurt.boot.standard.entity.InspectionCode;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
@@ -20,7 +21,7 @@ public interface InspectionCodeMapper extends BaseMapper<InspectionCode> {
      * @param inspectionCodeDTO
      * @return
      */
-    List<InspectionCodeDTO> pageList(@Param("inspectionCodeDTO") InspectionCodeDTO inspectionCodeDTO);
+    List<InspectionCodeDTO> pageList(@Param("page")Page<InspectionCodeDTO> page,@Param("inspectionCodeDTO") InspectionCodeDTO inspectionCodeDTO);
 
     /**
      * 查询是否可以删除

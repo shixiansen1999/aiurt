@@ -4,6 +4,7 @@ import com.aiurt.boot.manager.dto.MajorDTO;
 import com.aiurt.boot.plan.dto.*;
 import com.aiurt.boot.plan.entity.RepairPool;
 import com.aiurt.boot.plan.rep.RepairStrategyReq;
+import com.aiurt.boot.plan.req.RepairPoolCodeReq;
 import com.aiurt.boot.plan.req.RepairPoolReq;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -128,4 +129,11 @@ public interface IRepairPoolService extends IService<RepairPool> {
      * @return
      */
     IPage<RepairDeviceDTO> queryDeviceByCodeAndId(Page<RepairDeviceDTO> page, String code, String id);
+
+    /**
+     * 处理检修标准、检修项目、检修设备、检修计划与检修标准的关联关系
+     * @param jx
+     * @param repairPoolCodes
+     */
+     void handle(String jx, List<RepairPoolCodeReq> repairPoolCodes);
 }

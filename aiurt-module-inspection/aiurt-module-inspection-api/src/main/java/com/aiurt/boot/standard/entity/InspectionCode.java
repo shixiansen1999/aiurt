@@ -26,7 +26,7 @@ import java.io.Serializable;
 @Accessors(chain = true)
 @EqualsAndHashCode(callSuper = false)
 @ApiModel(value="inspection_code对象", description="inspection_code")
-public class InspectionCode implements Serializable {
+public class InspectionCode  implements Serializable {
     private static final long serialVersionUID = 1L;
 
 	/**主键ID*/

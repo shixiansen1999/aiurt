@@ -1,31 +1,25 @@
 package com.aiurt.boot.strategy.service.impl;
 
+import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.util.ObjectUtil;
+import com.aiurt.boot.constant.InspectionConstant;
+import com.aiurt.boot.standard.entity.InspectionCode;
 import com.aiurt.boot.strategy.dto.InspectionStrategyDTO;
 import com.aiurt.boot.strategy.entity.*;
 import com.aiurt.boot.strategy.mapper.*;
-import cn.hutool.core.date.DateUtil;
-import cn.hutool.core.util.ObjectUtil;
-import com.aiurt.boot.standard.entity.InspectionCode;
-import com.aiurt.boot.strategy.entity.InspectionStrategy;
-import com.aiurt.boot.strategy.mapper.InspectionStrategyMapper;
 import com.aiurt.boot.strategy.service.IInspectionStrategyService;
 import com.aiurt.modules.device.entity.Device;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
-import com.aiurt.common.constant.InspectionContant;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.jeecg.common.api.vo.Result;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
-
 import java.util.List;
 
 /**
@@ -134,38 +128,38 @@ public class InspectionStrategyServiceImpl extends ServiceImpl<InspectionStrateg
         }
 
         List<InspectionCode> arr = new ArrayList<>();
-        String code = ins.getCode();
 
         // 根据检修类型查询调用不同的方法
         Integer type = ins.getType();
         arr.forEach(inspectionCode -> {
+
             //周检
-            if (type.equals(InspectionContant.WEEK)) {
+            if (type.equals(InspectionConstant.WEEK)) {
                 strategyService.weekPlan(ins, inspectionCode);
             }
 
             //月检
-            if (type.equals(InspectionContant.MONTH)) {
+            if (type.equals(InspectionConstant.MONTH)) {
                 strategyService.monthPlan(ins, inspectionCode);
             }
 
             //双月检
-            if (type.equals(InspectionContant.DOUBLEMONTH)) {
+            if (type.equals(InspectionConstant.DOUBLEMONTH)) {
                 strategyService.doubleMonthPlan(ins, inspectionCode);
             }
 
             //季检
-            if (type.equals(InspectionContant.QUARTER)) {
+            if (type.equals(InspectionConstant.QUARTER)) {
                 strategyService.quarterPlan(ins, inspectionCode);
             }
 
             //半年检
-            if (type.equals(InspectionContant.SEMIANNUAL)) {
+            if (type.equals(InspectionConstant.SEMIANNUAL)) {
                 strategyService.semiAnnualPlan(ins, inspectionCode);
             }
 
             //年检
-            if (type.equals(InspectionContant.ANNUAL)) {
+            if (type.equals(InspectionConstant.ANNUAL)) {
                 strategyService.annualPlan(ins, inspectionCode);
             }
         });

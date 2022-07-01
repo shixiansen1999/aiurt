@@ -15,4 +15,10 @@ import java.util.List;
 public interface RepairPoolStationRelMapper extends BaseMapper<RepairPoolStationRel> {
 
     List<StationDTO> selectStationList(String planCode);
+
+    /**
+     * 批量插入
+     * @param repairPoolStationRel
+     */
+    void insertBatch(List<RepairPoolStationRel> repairPoolStationRel);
 }
