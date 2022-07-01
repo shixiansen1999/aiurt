@@ -1,7 +1,7 @@
 package com.aiurt.boot.task.controller;
 
+import com.aiurt.boot.task.dto.PatrolCheckResultDTO;
 import com.aiurt.boot.task.dto.PatrolTaskDeviceDTO;
-import com.aiurt.boot.task.entity.PatrolCheckResult;
 import com.aiurt.boot.task.entity.PatrolTaskDevice;
 import com.aiurt.boot.task.service.IPatrolTaskDeviceService;
 import com.aiurt.common.aspect.annotation.AutoLog;
@@ -78,16 +78,29 @@ public class PatrolTaskDeviceController extends BaseController<PatrolTaskDevice,
 
 	 /**
 	  * app巡检任务执行中-检查
-	  * @param patrolTaskDeviceDTO
+	  * @param patrolTaskDevice
 	  * @param req
 	  * @return
 	  */
 	 @AutoLog(value = "巡检任务表-app巡检任务执行中-检查")
 	 @ApiOperation(value = "巡检任务表-app巡检任务执行中-检查", notes = "巡检任务表-app巡检任务执行中-检查")
 	 @PostMapping(value = "/patrolTaskCheck")
-	 public Result<?> patrolTaskCheck(PatrolTaskDeviceDTO patrolTaskDeviceDTO, HttpServletRequest req) {
-		 patrolTaskDeviceService.getPatrolTaskCheck(patrolTaskDeviceDTO);
-		 return Result.OK("检查成功");
+	 public Result<?> patrolTaskCheck(@RequestBody PatrolTaskDevice patrolTaskDevice, HttpServletRequest req) {
+	 	List<PatrolCheckResultDTO> patrolTaskCheck = patrolTaskDeviceService.getPatrolTaskCheck(patrolTaskDevice);
+		 return Result.OK(patrolTaskCheck);
+	 }
+	 /**
+	  * app巡检-检查项-添加
+	  * @param id
+	  * @param req
+	  * @return
+	  */
+	 @AutoLog(value = "app巡检-检查项-添加")
+	 @ApiOperation(value = "app巡检-检查项-添加", notes = "app巡检-检查项-添加")
+	 @PostMapping(value = "/patrolTaskCheckItems")
+	 public Result<?> patrolTaskCheckItems(@RequestBody  PatrolCheckResultDTO patrolCheckResultDTO, HttpServletRequest req) {
+	 	List<PatrolCheckResultDTO> patrolTaskCheck = patrolTaskDeviceService.getPatrolTaskCheckItems(patrolCheckResultDTO);
+		 return Result.OK(patrolTaskCheck);
 	 }
 	/**
 	 *   添加

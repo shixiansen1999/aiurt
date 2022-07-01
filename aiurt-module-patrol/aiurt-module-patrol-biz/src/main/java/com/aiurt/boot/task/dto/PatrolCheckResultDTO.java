@@ -7,7 +7,6 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
-import org.jeecgframework.poi.excel.annotation.Excel;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,4 +26,9 @@ public class PatrolCheckResultDTO extends PatrolCheckResult {
      */
     @ApiModelProperty(value = "附件信息")
     private List<PatrolAccessory> accessoryInfo;
+    /**
+     * 附件内容
+     */
+    @ApiModelProperty(value = "附件内容")
+    private List<PatrolAccessoryDTO> accessoryList;
 }

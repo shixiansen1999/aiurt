@@ -49,4 +49,9 @@
             and task_device_id = #{taskDeviceId}
         </if>
     </select>
+    <select id="getCheckResult" resultType="com.aiurt.boot.task.dto.PatrolCheckResultDTO">
+    select t1.*
+    from patrol_check_result t1
+    where t1.task_device_id = #{taskDeviceId}
+    </select>
 </mapper>
