@@ -121,6 +121,17 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
             //作业类型
             e.setWorkTypeName(sysBaseAPI.translateDict(DictConstant.WORK_TYPE, String.valueOf(e.getWorkType())));
 
+//            if (e.getOverhaulId()!=null){
+//                //根据检修单id查询结果
+//                LambdaQueryWrapper<RepairTaskResult> resultLambdaQueryWrapper = new LambdaQueryWrapper<>();
+//                List<RepairTaskResult> repairTaskResults = repairTaskResultMapper.selectList(resultLambdaQueryWrapper.eq(RepairTaskResult::getTaskDeviceRelId, e.getOverhaulId()));
+//                //检修结果主键id集合
+//                List<String> collect4 = repairTaskResults.stream().map(RepairTaskResult::getStaffId).collect(Collectors.toList());
+//                collect4.forEach(o->{
+//                    LoginUser userById = sysBaseAPI.getUserById(o);
+//                    e.setOverhaulName(userById.getUsername());
+//                });
+//            }
         });
         return pageList.setRecords(lists);
     }

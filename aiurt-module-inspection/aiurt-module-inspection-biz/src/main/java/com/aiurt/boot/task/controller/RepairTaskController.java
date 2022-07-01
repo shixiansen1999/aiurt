@@ -3,7 +3,6 @@ package com.aiurt.boot.task.controller;
 import com.aiurt.boot.manager.dto.EquipmentOverhaulDTO;
 import com.aiurt.boot.manager.dto.ExamineDTO;
 import com.aiurt.boot.manager.dto.MajorDTO;
-import com.aiurt.boot.plan.entity.RepairPool;
 import com.aiurt.boot.task.dto.CheckListDTO;
 import com.aiurt.boot.task.entity.RepairTask;
 import com.aiurt.boot.task.dto.RepairTaskDTO;
