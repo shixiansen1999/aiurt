@@ -54,9 +54,11 @@ public class FaultRepairParticipantsServiceImpl extends ServiceImpl<FaultRepairP
         }
 
         Map<String, String> userNameMap = loginUserList.stream().collect(Collectors.toMap(LoginUser::getUsername, LoginUser::getRealname, (t1, t2) -> t2));
+        Map<String, String> userIdMap = loginUserList.stream().collect(Collectors.toMap(LoginUser::getUsername, LoginUser::getId, (t1, t2) -> t2));
 
         participantsList.stream().forEach(par->{
             par.setRealName(userNameMap.getOrDefault(par.getUserName(), par.getUserName()));
+            par.setUserId(userIdMap.get(par.getUserName()));
         });
         return participantsList;
     }

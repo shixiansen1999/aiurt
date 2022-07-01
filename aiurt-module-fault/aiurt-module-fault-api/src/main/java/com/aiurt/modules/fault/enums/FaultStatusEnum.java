@@ -5,7 +5,7 @@ import cn.hutool.core.util.StrUtil;
 public enum  FaultStatusEnum {
 
     /**
-     * 故障上报
+     * 故障上报,待审批
      */
     NEW_FAULT("1", "故障上报", 1),
 

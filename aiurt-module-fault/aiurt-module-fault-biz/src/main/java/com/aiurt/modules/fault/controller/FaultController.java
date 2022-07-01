@@ -254,11 +254,14 @@ public class FaultController extends BaseController<Fault, IFaultService> {
      */
     @AutoLog(value = "查询填写维修记录详情")
     @ApiOperation(value = "查询填写维修记录详情", notes = "查询填写维修记录详情")
-    @PutMapping("/queryRepairRecord")
+    @GetMapping("/queryRepairRecord")
     @ApiResponses({
             @ApiResponse(code = 200, response = RepairRecordDTO.class, message = "成功")
     })
-    public Result<RepairRecordDTO> queryRepairRecord(String faultCode) {
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "faultCode", value = "故障编码", required = true, paramType = "query")
+    })
+    public Result<RepairRecordDTO> queryRepairRecord(@RequestParam(value = "faultCode") String faultCode) {
         RepairRecordDTO repairRecordDTO =  faultService.queryRepairRecord(faultCode);
         return Result.OK(repairRecordDTO);
     }

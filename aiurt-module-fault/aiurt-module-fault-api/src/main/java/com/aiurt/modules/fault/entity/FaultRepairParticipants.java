@@ -82,4 +82,8 @@ public class FaultRepairParticipants implements Serializable {
 	@Excel(name = "维修记录id", width = 15)
     @ApiModelProperty(value = "维修记录id")
     private String faultRepairRecordId;
+
+	@ApiModelProperty(value = "用户id")
+    @TableField(exist = false)
+	private String userId;
 }

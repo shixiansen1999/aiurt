@@ -229,22 +229,10 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
     public Fault queryByCode(String code) {
 
         Fault fault = isExist(code);
+
         // 设备
         List<FaultDevice> faultDeviceList = faultDeviceService.queryByFaultCode(code);
         fault.setFaultDeviceList(faultDeviceList);
-
-        // 字典值转换
-        List<String> dictCodeList = CollectionUtil.newArrayList(FaultDictCodeConstant.YN, FaultDictCodeConstant.FAULT_MODE_CODE,
-                FaultDictCodeConstant.FAULT_YN, FaultDictCodeConstant.FAULT_STATUS,FaultDictCodeConstant.FAULT_URGENCY);
-
-        Map<String, List<DictModel>> dictItemMap = sysBaseAPI.getManyDictItems(dictCodeList);
-
-        Map<String, Map<String,String>> map = new HashMap<>();
-        dictItemMap.keySet().stream().forEach(key->{
-            List<DictModel> dictModels = dictItemMap.get(key);
-            Map<String, String> codeMp = dictModels.stream().collect(Collectors.toMap(DictModel::getValue, DictModel::getText, (t1, t2) -> t1));
-            map.put(key, codeMp);
-        });
 
         // 按钮权限
         return fault;
@@ -522,12 +510,16 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
     public RepairRecordDTO queryRepairRecord(String faultCode) {
         LoginUser loginUser = checkLogin();
 
-       // Fault fault = isExist(faultCode);
+
         LambdaQueryWrapper<FaultRepairRecord> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(FaultRepairRecord::getFaultCode, faultCode).eq(FaultRepairRecord::getAppointUserName, loginUser.getUsername())
+        wrapper.eq(FaultRepairRecord::getFaultCode, faultCode) //.eq(FaultRepairRecord::getAppointUserName, loginUser.getUsername())
                 .eq(FaultRepairRecord::getDelFlag, CommonConstant.DEL_FLAG_0)
                 .orderByDesc(FaultRepairRecord::getCreateTime).last("limit 1");
         FaultRepairRecord repairRecord = repairRecordService.getBaseMapper().selectOne(wrapper);
+
+        if (Objects.isNull(repairRecord)) {
+            throw  new AiurtBootException(20001, "没有该维修记录");
+        }
 
         RepairRecordDTO repairRecordDTO = new RepairRecordDTO();
         BeanUtils.copyProperties(repairRecord, repairRecordDTO);
@@ -535,11 +527,40 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         // 查询参与人
         List<FaultRepairParticipants> participantsList = repairParticipantsService.queryParticipantsByRecordId(repairRecord.getId());
         repairRecordDTO.setParticipantsList(participantsList);
+        List<String> list = participantsList.stream().map(FaultRepairParticipants::getUserId).collect(Collectors.toList());
+        repairRecordDTO.setUserIds(StrUtil.join(",", list));
 
         List<DeviceChangeSparePart> deviceChangeSparePartList = sparePartService.queryDeviceChangeByFaultCode(faultCode, repairRecord.getId());
-        // 易耗品
-       // deviceChangeSparePartList.stream().filter()
+        // 易耗品 1是易耗
+        List<DeviceChangeDTO> consumableList = deviceChangeSparePartList.stream().filter(sparepart -> StrUtil.equalsIgnoreCase("1", sparepart.getConsumables()))
+                .map(sparepart -> {
+                    DeviceChangeDTO build = DeviceChangeDTO.builder()
+                            .deviceCode(sparepart.getDeviceCode())
+                            .newSparePartCode(sparepart.getNewSparePartCode())
+                            .newSparePartName(sparepart.getNewSparePartName())
+                            .id(sparepart.getId())
+                            .repairRecordId(sparepart.getRepairRecordId())
+                            .build();
+                    return build;
+                }).collect(Collectors.toList());
 
+        repairRecordDTO.setConsumableList(consumableList);
+
+        List<DeviceChangeDTO> deviceChangeList = deviceChangeSparePartList.stream().filter(sparepart -> StrUtil.equalsIgnoreCase("0", sparepart.getConsumables()))
+                .map(sparepart -> {
+                    DeviceChangeDTO build = DeviceChangeDTO.builder()
+                            .deviceCode(sparepart.getDeviceCode())
+                            .newSparePartCode(sparepart.getNewSparePartCode())
+                            .newSparePartName(sparepart.getNewSparePartName())
+                            .oldSparePartCode(sparepart.getOldSparePartCode())
+                            .oldSparePartName(sparepart.getOldSparePartName())
+                            .id(sparepart.getId())
+                            .repairRecordId(sparepart.getRepairRecordId())
+                            .build();
+                    return build;
+                }).collect(Collectors.toList());
+
+        repairRecordDTO.setDeviceChangeList(deviceChangeList);
         // 维修设备
         List<FaultDevice> faultDeviceList = faultDeviceService.queryByFaultCode(faultCode);
         repairRecordDTO.setDeviceList(faultDeviceList);
@@ -553,9 +574,29 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
      * @param repairRecordDTO 填写维修记录
      */
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void fillRepairRecord(RepairRecordDTO repairRecordDTO) {
 
         LoginUser loginUser = checkLogin();
+
+        FaultRepairRecord one = repairRecordService.getById(repairRecordDTO.getId());
+
+        List<DeviceChangeDTO> consumableList = repairRecordDTO.getConsumableList();
+
+
+        List<DeviceChangeDTO> deviceChangeList = repairRecordDTO.getDeviceChangeList();
+
+        // todo
+
+        repairRecordService.updateById(one);
+
+        // 删除原始换件记录
+
+        // 如果是提交未解决
+
+        saveLog(loginUser, repairRecordDTO.getFaultCode(), "填写维修记录", FaultStatusEnum.REPAIR.getStatus());
+
+
 
     }
 

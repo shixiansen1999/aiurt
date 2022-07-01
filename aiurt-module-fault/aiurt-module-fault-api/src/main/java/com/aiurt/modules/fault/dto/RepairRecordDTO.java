@@ -1,5 +1,6 @@
 package com.aiurt.modules.fault.dto;
 
+import com.aiurt.common.aspect.annotation.Dict;
 import com.aiurt.modules.fault.entity.FaultDevice;
 import com.aiurt.modules.fault.entity.FaultRepairParticipants;
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -29,6 +30,9 @@ public class RepairRecordDTO implements Serializable {
 
     @ApiModelProperty("参与人")
     private List<FaultRepairParticipants> participantsList;
+
+    @ApiModelProperty(value = "参与人用户id")
+    private String userIds;
 
     /**到达现场时间*/
     @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm")
@@ -60,6 +64,7 @@ public class RepairRecordDTO implements Serializable {
      * 处理结果
      */
     @ApiModelProperty(value = "处理结果")
+    @Dict(dicCode = "fault_result_code")
     private Integer solveStatus;
 
     /**
@@ -80,6 +85,8 @@ public class RepairRecordDTO implements Serializable {
     @ApiModelProperty(value = "组件更换")
     private List<DeviceChangeDTO>  deviceChangeList;
 
+
+
     @ApiModelProperty(value = "易耗品")
     private List<DeviceChangeDTO> consumableList;
 
@@ -87,6 +94,9 @@ public class RepairRecordDTO implements Serializable {
 
     @ApiModelProperty(value = "设备信息")
     private List<FaultDevice> deviceList;
+
+    @ApiModelProperty(value = "是否需要指派,1是,0否")
+    private Integer assignFlag;
 
 
 }
