@@ -26,5 +26,5 @@ public class PatrolCheckResultDTO extends PatrolCheckResult {
      * 附件信息
      */
     @ApiModelProperty(value = "附件信息")
-    private PatrolAccessory accessoryInfo;
+    private List<PatrolAccessory> accessoryInfo;
 }

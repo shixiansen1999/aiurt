@@ -101,8 +101,8 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
         Optional.ofNullable(checkResultList).orElseGet(Collections::emptyList).stream().forEach(l -> {
             QueryWrapper<PatrolAccessory> wrapper = new QueryWrapper<>();
             wrapper.lambda().eq(PatrolAccessory::getCheckResultId, l.getId());
-            PatrolAccessory accessory = patrolAccessoryMapper.selectOne(wrapper);
-            l.setAccessoryInfo(accessory);
+            List<PatrolAccessory> accessoryList = patrolAccessoryMapper.selectList(wrapper);
+            l.setAccessoryInfo(accessoryList);
         });
 
         // 构建巡检项目树

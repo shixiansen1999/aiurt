@@ -67,6 +67,9 @@
         <if test="patrolTask.source != null">
             and pt.source = #{patrolTask.source}
         </if>
+        <if test="patrolTask.discardStatus != null">
+            and pt.discard_status = #{patrolTask.discardStatus}
+        </if>
         <if test="patrolTask.organizationCode != null and patrolTask.organizationCode != ''">
             and pt.plan_code in (
             SELECT ppo.plan_code
