@@ -1,9 +1,13 @@
 package com.aiurt.modules.fault.service;
 
 
+import com.aiurt.modules.basic.entity.CsWork;
 import com.aiurt.modules.fault.dto.*;
 import com.aiurt.modules.fault.entity.Fault;
 import com.baomidou.mybatisplus.extension.service.IService;
+import org.jeecg.common.system.vo.LoginUser;
+
+import java.util.List;
 
 /**
  * @Description: fault
@@ -110,4 +114,18 @@ public interface IFaultService extends IService<Fault> {
      * @param resultDTO 审核结果对象
      */
     void approvalResult(ApprovalResultDTO resultDTO);
+
+    /**
+     * 查询工作类型
+     * @param faultCode
+     * @return
+     */
+    List<CsWork> queryCsWork(String faultCode);
+
+    /**
+     * 查询指派的人员
+     * @param faultCode
+     * @return
+     */
+    List<LoginUser> queryUser(String faultCode);
 }

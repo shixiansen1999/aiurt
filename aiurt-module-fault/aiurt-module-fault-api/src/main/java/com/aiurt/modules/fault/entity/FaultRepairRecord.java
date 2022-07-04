@@ -169,4 +169,7 @@ public class FaultRepairRecord implements Serializable {
     @Excel(name = "删除标志", width = 15)
     @ApiModelProperty(value = "删除标志")
     private Integer delFlag;
+
+    @ApiModelProperty(value = "指派时间")
+    private Date assignTime;
 }

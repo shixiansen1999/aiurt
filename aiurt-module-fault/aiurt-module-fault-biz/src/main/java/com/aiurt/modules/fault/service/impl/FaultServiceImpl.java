@@ -6,8 +6,7 @@ import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.exception.AiurtBootException;
-import com.aiurt.modules.basic.entity.SysAttachment;
-import com.aiurt.modules.fault.constants.FaultDictCodeConstant;
+import com.aiurt.modules.basic.entity.CsWork;
 import com.aiurt.modules.fault.dto.*;
 import com.aiurt.modules.fault.entity.*;
 import com.aiurt.modules.fault.enums.FaultStatusEnum;
@@ -17,15 +16,15 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.apache.shiro.SecurityUtils;
+import org.checkerframework.checker.units.qual.C;
 import org.jeecg.common.system.api.ISysBaseAPI;
-import org.jeecg.common.system.vo.DictModel;
 import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.sql.Timestamp;
+import java.security.cert.X509Certificate;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -268,6 +267,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
                 .planOrderCode(assignDTO.getPlanCode())
                 .faultCode(fault.getCode())
                 .planOrderImg(assignDTO.getFilepath())
+                .assignTime(new Date())
                 // 故障想象
                 .faultPhenomenon(fault.getFaultPhenomenon())
                 // 负责人
@@ -443,7 +443,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
 
         saveLog(user, "申请挂起", hangUpDTO.getFaultCode(), FaultStatusEnum.HANGUP_REQUEST.getStatus());
 
-        // todo 发送消息提醒
+        // todo 发送消息提醒, 维修记录
 
     }
 
@@ -474,7 +474,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         }
 
         updateById(fault);
-        // todo 发送消息
+        // todo 发送消息, 维修记录
 
 
     }
@@ -528,7 +528,9 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         List<FaultRepairParticipants> participantsList = repairParticipantsService.queryParticipantsByRecordId(repairRecord.getId());
         repairRecordDTO.setParticipantsList(participantsList);
         List<String> list = participantsList.stream().map(FaultRepairParticipants::getUserId).collect(Collectors.toList());
+        List<String> userNameList = participantsList.stream().map(FaultRepairParticipants::getRealName).collect(Collectors.toList());
         repairRecordDTO.setUserIds(StrUtil.join(",", list));
+        repairRecordDTO.setUserNames(StrUtil.join(",", userNameList));
 
         List<DeviceChangeSparePart> deviceChangeSparePartList = sparePartService.queryDeviceChangeByFaultCode(faultCode, repairRecord.getId());
         // 易耗品 1是易耗
@@ -565,6 +567,10 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         List<FaultDevice> faultDeviceList = faultDeviceService.queryByFaultCode(faultCode);
         repairRecordDTO.setDeviceList(faultDeviceList);
 
+        // 指派时间
+        if (Objects.isNull(repairRecordDTO.getAssignTime())) {
+            repairRecordDTO.setAssignTime(repairRecord.getReceviceTime());
+        }
 
         return repairRecordDTO;
     }
@@ -579,12 +585,53 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
 
         LoginUser loginUser = checkLogin();
 
+        String faultCode = repairRecordDTO.getFaultCode();
+
+        Fault fault = isExist(faultCode);
+
         FaultRepairRecord one = repairRecordService.getById(repairRecordDTO.getId());
 
+        String userIds = repairRecordDTO.getUserIds();
+
+        // todo 删除备件更换信息
+
+
+        if (StrUtil.isNotBlank(userIds)) {
+            List<LoginUser> userList = sysBaseAPI.queryAllUserByIds(StrUtil.split(userIds, ","));
+
+            List<FaultRepairParticipants> participantsList = userList.stream().map(user -> {
+                FaultRepairParticipants participants = new FaultRepairParticipants();
+                participants.setFaultRepairRecordId(one.getId());
+                participants.setUserName(user.getUsername());
+                participants.setFaultCode(faultCode);
+                return participants;
+            }).collect(Collectors.toList());
+            repairParticipantsService.saveBatch(participantsList);
+        }
+
         List<DeviceChangeDTO> consumableList = repairRecordDTO.getConsumableList();
+        if (CollectionUtil.isNotEmpty(consumableList)) {
+            List<DeviceChangeSparePart> sparePartList = consumableList.stream().map(deviceChangeDTO -> {
+                DeviceChangeSparePart build = DeviceChangeSparePart.builder()
+                        .code(faultCode)
+                        .consumables("1")
+                        .build();
+                return build;
+            }).collect(Collectors.toList());
+        }
 
 
         List<DeviceChangeDTO> deviceChangeList = repairRecordDTO.getDeviceChangeList();
+
+        if (CollectionUtil.isNotEmpty(deviceChangeList)) {
+            List<DeviceChangeSparePart> sparePartList = deviceChangeList.stream().map(deviceChangeDTO -> {
+                DeviceChangeSparePart build = DeviceChangeSparePart.builder()
+                        .code(faultCode)
+                        .consumables("0")
+                        .build();
+                return build;
+            }).collect(Collectors.toList());
+        }
 
         // todo
 
@@ -594,7 +641,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
 
         // 如果是提交未解决
 
-        saveLog(loginUser, repairRecordDTO.getFaultCode(), "填写维修记录", FaultStatusEnum.REPAIR.getStatus());
+        saveLog(loginUser, faultCode, "填写维修记录", FaultStatusEnum.REPAIR.getStatus());
 
 
 
@@ -607,6 +654,38 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
     @Override
     public void approvalResult(ApprovalResultDTO resultDTO) {
 
+    }
+
+    /**
+     * 查询工作类型
+     * @param faultCode
+     * @return
+     */
+    @Override
+    public List<CsWork> queryCsWork(String faultCode) {
+        Fault fault = isExist(faultCode);
+        String majorCode = fault.getMajorCode();
+
+        return null;
+    }
+
+    /**
+     * 查询人员
+     * @param faultCode
+     * @return
+     */
+    @Override
+    public List<LoginUser> queryUser(String faultCode) {
+        LoginUser loginUser = checkLogin();
+
+        String orgCode = loginUser.getOrgCode();
+
+        if (StrUtil.isBlank(orgCode)) {
+           return Collections.emptyList();
+        }
+
+        List<LoginUser> loginUserList = sysBaseAPI.getUserByDepIds(StrUtil.split(orgCode, ','));
+        return loginUserList;
     }
 
     /**

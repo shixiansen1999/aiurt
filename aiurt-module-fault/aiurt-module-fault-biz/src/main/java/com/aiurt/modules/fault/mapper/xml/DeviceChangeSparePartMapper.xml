@@ -4,5 +4,6 @@
 
     <select id="queryDeviceChangeByFaultCode" parameterType="string" resultType="com.aiurt.modules.fault.entity.DeviceChangeSparePart">
         select a.* from device_change_spare_part a where a.code = #{faultCode}
+        and a.del_flag = 0
     </select>
 </mapper>

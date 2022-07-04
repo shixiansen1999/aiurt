@@ -1,22 +1,30 @@
 package com.aiurt.modules.fault.controller;
 
 import com.aiurt.common.aspect.annotation.AutoLog;
+import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.system.base.controller.BaseController;
+import com.aiurt.modules.basic.entity.CsWork;
 import com.aiurt.modules.fault.dto.*;
 import com.aiurt.modules.fault.entity.Fault;
 import com.aiurt.modules.fault.service.IFaultService;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.annotations.*;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.ibatis.annotations.Param;
+import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.query.QueryGenerator;
+import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.List;
+import java.util.Objects;
 
 /**
  * @Description: fault
@@ -162,17 +170,14 @@ public class FaultController extends BaseController<Fault, IFaultService> {
 
     /**
      *
-     * @param code
+     * @param assignDTO
      * @return
      */
     @AutoLog(value = "接收指派")
     @ApiOperation(value = "接收指派", notes = "接收指派")
     @PutMapping("/receiveAssignment")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "code", value = "故障编码", required = true, paramType = "query")
-    })
-    public Result<?> receiveAssignment(@RequestParam(name = "code") String code) {
-        faultService.receiveAssignment(code);
+    public Result<?> receiveAssignment(@RequestBody AssignDTO assignDTO) {
+        faultService.receiveAssignment(assignDTO.getFaultCode());
         return Result.OK("领取故障工单成功。");
     }
 
@@ -290,6 +295,44 @@ public class FaultController extends BaseController<Fault, IFaultService> {
     public Result<?> approvalResult(@RequestBody ApprovalResultDTO resultDTO) {
         faultService.approvalResult(resultDTO);
         return Result.OK();
+    }
+
+    /**
+     * 解决方案， 推荐
+     * @param
+     * @return
+     */
+    @AutoLog(value = "解决方案推荐查询")
+    @ApiOperation(value = "维修结果审核", notes = "维修结果审核")
+    @PutMapping("/query")
+    public Result<?> query() {
+        return Result.OK();
+    }
+
+
+    @AutoLog(value = "查询工作类型")
+    @ApiOperation(value = "查询工作类型", notes = "查询工作类型")
+    @GetMapping("/queryCsWork")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "faultCode", value = "故障编码", required = true, paramType = "query")
+    })
+    public Result<List<CsWork>> queryCsWork(@Param(value = "faultCode") String faultCode) {
+        List<CsWork> list = faultService.queryCsWork(faultCode);
+
+        return Result.OK(list);
+    }
+
+
+    @GetMapping("/sysUser/queryUser")
+    @ApiOperation("查询当前班组成员")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "faultCode", value = "故障编码", required = true, paramType = "query")
+    })
+    public Result<List<LoginUser>> queryUser(@Param(value = "faultCode") String faultCode) {
+
+        List<LoginUser> list = faultService.queryUser(faultCode);
+
+        return Result.OK(list);
     }
 
 }

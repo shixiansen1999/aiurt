@@ -8,4 +8,8 @@
 
         where code = #{code}
     </select>
+
+    <select id="queryCsWorkByMajorCode" parameterType="java.lang.String" resultType="com.aiurt.modules.basic.entity.CsWork">
+        select * from cs_work where major_code = #{majorCode}
+    </select>
 </mapper>

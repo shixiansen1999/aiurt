@@ -34,6 +34,9 @@ public class RepairRecordDTO implements Serializable {
     @ApiModelProperty(value = "参与人用户id")
     private String userIds;
 
+    @ApiModelProperty(value = "参与人员名称")
+    private String userNames;
+
     /**到达现场时间*/
     @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm")
     @DateTimeFormat(pattern="yyyy-MM-dd HH:mm")
@@ -98,5 +101,15 @@ public class RepairRecordDTO implements Serializable {
     @ApiModelProperty(value = "是否需要指派,1是,0否")
     private Integer assignFlag;
 
+    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
+    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
+    @ApiModelProperty(value = "指派时间")
+    private Date assignTime;
+
+
+    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
+    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
+    @ApiModelProperty(value = "开始维修时间")
+    private Date startTime;
 
 }
