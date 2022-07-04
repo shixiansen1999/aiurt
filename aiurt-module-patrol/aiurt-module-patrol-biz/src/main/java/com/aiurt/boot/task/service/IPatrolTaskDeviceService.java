@@ -4,6 +4,7 @@ import com.aiurt.boot.task.dto.PatrolCheckResultDTO;
 import com.aiurt.boot.task.dto.PatrolTaskDeviceDTO;
 import com.aiurt.boot.task.entity.PatrolTaskDevice;
 import com.aiurt.boot.task.param.PatrolTaskDeviceParam;
+import com.aiurt.modules.device.entity.Device;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
@@ -29,6 +30,7 @@ public interface IPatrolTaskDeviceService extends IService<PatrolTaskDevice> {
 
     /**
      * 设备台账-巡视履历列表
+     *
      * @param page
      * @param patrolTaskDeviceParam
      * @return
@@ -62,8 +64,17 @@ public interface IPatrolTaskDeviceService extends IService<PatrolTaskDevice> {
 
     /**
      * app巡检任务执行中-检查
+     *
      * @param patrolTaskDevice
      * @return
      */
     List<PatrolCheckResultDTO> getPatrolTaskCheck(PatrolTaskDevice patrolTaskDevice);
+
+    /**
+     * 根据设备编号获取设备信息
+     *
+     * @param deviceCode
+     * @return
+     */
+    Device getDeviceInfoByCode(String deviceCode);
 }

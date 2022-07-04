@@ -3,6 +3,7 @@ package com.aiurt.boot.task.mapper;
 import com.aiurt.boot.task.dto.PatrolTaskDeviceDTO;
 import com.aiurt.boot.task.entity.PatrolTaskDevice;
 import com.aiurt.boot.task.param.PatrolTaskDeviceParam;
+import com.aiurt.modules.device.entity.Device;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -28,6 +29,7 @@ public interface PatrolTaskDeviceMapper extends BaseMapper<PatrolTaskDevice> {
 
     /**
      * 设备台账-巡视履历
+     *
      * @param page
      * @param patrolTaskDeviceParam
      * @return
@@ -53,6 +55,7 @@ public interface PatrolTaskDeviceMapper extends BaseMapper<PatrolTaskDevice> {
 
     /**
      * app-获取提交人名称
+     *
      * @param userId
      * @return
      */
@@ -60,6 +63,7 @@ public interface PatrolTaskDeviceMapper extends BaseMapper<PatrolTaskDevice> {
 
     /**
      * 获取线路
+     *
      * @param code
      * @return
      */
@@ -67,8 +71,17 @@ public interface PatrolTaskDeviceMapper extends BaseMapper<PatrolTaskDevice> {
 
     /**
      * app-获取巡检表名称
+     *
      * @param deviceId
      * @return
      */
     String getStandardName(String deviceId);
+
+    /**
+     * 根据设备编号查询设备信息
+     *
+     * @param deviceCode
+     * @return
+     */
+    Device getDeviceInfoByCode(String deviceCode);
 }

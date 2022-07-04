@@ -16,6 +16,7 @@ import com.aiurt.boot.task.mapper.*;
 import com.aiurt.boot.task.param.PatrolTaskDeviceParam;
 import com.aiurt.boot.task.service.IPatrolTaskDeviceService;
 import com.aiurt.common.exception.AiurtBootException;
+import com.aiurt.modules.device.entity.Device;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
@@ -63,8 +64,8 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
     public IPage<PatrolTaskDeviceParam> selectBillInfoForDevice(Page<PatrolTaskDeviceParam> page, PatrolTaskDeviceParam patrolTaskDeviceParam) {
         IPage<PatrolTaskDeviceParam> patrolTaskDeviceForDeviceParamIPage = patrolTaskDeviceMapper.selectBillInfoForDevice(page, patrolTaskDeviceParam);
         List<PatrolTaskDeviceParam> records = patrolTaskDeviceForDeviceParamIPage.getRecords();
-        if(records != null && records.size()>0){
-            for(PatrolTaskDeviceParam patrolTaskDeviceForDeviceParam : records){
+        if (records != null && records.size() > 0) {
+            for (PatrolTaskDeviceParam patrolTaskDeviceForDeviceParam : records) {
                 // 计算巡检时长
                 Date startTime = patrolTaskDeviceForDeviceParam.getStartTime();
                 Date checkTime = patrolTaskDeviceForDeviceParam.getCheckTime();
@@ -77,11 +78,11 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
                 accompanyWrapper.lambda().eq(PatrolAccompany::getTaskDeviceCode, patrolTaskDeviceForDeviceParam.getPatrolNumber());
                 List<PatrolAccompany> accompanyList = patrolAccompanyMapper.selectList(accompanyWrapper);
                 String res = "";
-                if(accompanyList != null && accompanyList.size()>0){
-                    for(PatrolAccompany patrolAccompany : accompanyList){
+                if (accompanyList != null && accompanyList.size() > 0) {
+                    for (PatrolAccompany patrolAccompany : accompanyList) {
                         res += patrolAccompany.getUsername() + ",";
                     }
-                    res = res.substring(0,res.length()-1);
+                    res = res.substring(0, res.length() - 1);
                 }
                 patrolTaskDeviceForDeviceParam.setAccompanyInfoStr(res);
                 patrolTaskDeviceForDeviceParam.setAccompanyInfo(accompanyList);
@@ -105,11 +106,10 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
             e.setTaskStandardName(taskStandardName);
             LambdaQueryWrapper<PatrolCheckResult> lambdaQueryWrapper = new LambdaQueryWrapper<>();
             List<PatrolAccessoryDTO> patrolAccessoryDTOList = new ArrayList<>();
-            lambdaQueryWrapper.eq(PatrolCheckResult::getTaskDeviceId,e.getId());
-            List<PatrolCheckResult>  patrolCheckResult = patrolCheckResultMapper.selectList(lambdaQueryWrapper);
-            if(CollUtil.isNotEmpty(patrolCheckResult))
-            {
-                patrolCheckResult.stream().forEach(c->{
+            lambdaQueryWrapper.eq(PatrolCheckResult::getTaskDeviceId, e.getId());
+            List<PatrolCheckResult> patrolCheckResult = patrolCheckResultMapper.selectList(lambdaQueryWrapper);
+            if (CollUtil.isNotEmpty(patrolCheckResult)) {
+                patrolCheckResult.stream().forEach(c -> {
                     patrolAccessoryDTOList.addAll(patrolAccessoryMapper.getCheckAllAccessory(c.getId()));
                 });
                 e.setAccessoryDTOList(patrolAccessoryDTOList);
@@ -121,18 +121,16 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
             String stationName = position.stream().collect(Collectors.joining(","));
             e.setStationName(stationName);
             StringBuffer stringBuffer = new StringBuffer();
-            Integer length =position.size();
+            Integer length = position.size();
             AtomicReference<Integer> size = new AtomicReference<>(length);
-            position.stream().forEach(s ->{
+            position.stream().forEach(s -> {
                 size.set(size.get() - 1);
                 stringBuffer.append(s);
-                if(ObjectUtil.isNotEmpty(e.getCustomPosition()))
-                {
+                if (ObjectUtil.isNotEmpty(e.getCustomPosition())) {
                     stringBuffer.append("-");
                     stringBuffer.append(e.getCustomPosition());
                 }
-                if(size.get() !=0)
-                {
+                if (size.get() != 0) {
                     stringBuffer.append(",");
                 }
             });
@@ -140,22 +138,18 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
             String accompanyName = patrolAccompanyMapper.getAccompanyName(e.getPatrolNumber());
             e.setAccompanyName(accompanyName);
             LambdaQueryWrapper<PatrolCheckResult> queryWrapper = new LambdaQueryWrapper<>();
-            queryWrapper.eq(PatrolCheckResult::getTaskDeviceId,e.getId());
+            queryWrapper.eq(PatrolCheckResult::getTaskDeviceId, e.getId());
             List<PatrolCheckResult> list = patrolCheckResultMapper.selectList(queryWrapper);
-            List<PatrolCheckResult> rightCheck = list.stream().filter(s ->s.getCheckResult()!=null && s.getCheckResult() == 0).collect(Collectors.toList());
-            List<PatrolCheckResult> aberrant = list.stream().filter(s->s.getCheckResult()!=null && s.getCheckResult() == 1).collect(Collectors.toList());
-            if(CollUtil.isNotEmpty(rightCheck))
-            {
+            List<PatrolCheckResult> rightCheck = list.stream().filter(s -> s.getCheckResult() != null && s.getCheckResult() == 0).collect(Collectors.toList());
+            List<PatrolCheckResult> aberrant = list.stream().filter(s -> s.getCheckResult() != null && s.getCheckResult() == 1).collect(Collectors.toList());
+            if (CollUtil.isNotEmpty(rightCheck)) {
                 e.setRightCheckNumber(rightCheck.size());
-            }
-            else {
+            } else {
                 e.setRightCheckNumber(0);
             }
-            if(CollUtil.isNotEmpty(aberrant))
-            {
+            if (CollUtil.isNotEmpty(aberrant)) {
                 e.setAberrantNumber(aberrant.size());
-            }
-            else {
+            } else {
                 e.setAberrantNumber(0);
             }
         });
@@ -325,10 +319,9 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
 
 
     @Override
-    public  List<PatrolCheckResultDTO> getPatrolTaskCheck(PatrolTaskDevice patrolTaskDevice) {
+    public List<PatrolCheckResultDTO> getPatrolTaskCheck(PatrolTaskDevice patrolTaskDevice) {
         //更新任务状态（将未开始改为执行中）、添加开始检查时间，传任务主键id,巡检工单主键、传开始检查时间
-        if(patrolTaskDevice.getStatus()==0)
-        {
+        if (patrolTaskDevice.getStatus() == 0) {
             LambdaUpdateWrapper<PatrolTaskDevice> updateWrapper = new LambdaUpdateWrapper<>();
             updateWrapper.set(PatrolTaskDevice::getStatus, 1)
                     .set(PatrolTaskDevice::getStartTime, patrolTaskDevice.getStartTime())
@@ -339,14 +332,19 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
         }
         String taskDeviceId = patrolTaskDevice.getId();
         List<PatrolCheckResultDTO> patrolCheckResultDTOList = patrolCheckResultMapper.getCheckResult(taskDeviceId);
-        patrolCheckResultDTOList.stream().forEach(e->
-            {
-                //获取这个单号下一个巡检项的所有附件
-                List<PatrolAccessory> patrolAccessoryDTOS =patrolAccessoryMapper.getAllAccessory(patrolTaskDevice.getId(),e.getId());
-                e.setAccessoryInfo(patrolAccessoryDTOS);
-            });
+        patrolCheckResultDTOList.stream().forEach(e ->
+        {
+            //获取这个单号下一个巡检项的所有附件
+            List<PatrolAccessory> patrolAccessoryDTOS = patrolAccessoryMapper.getAllAccessory(patrolTaskDevice.getId(), e.getId());
+            e.setAccessoryInfo(patrolAccessoryDTOS);
+        });
         List<PatrolCheckResultDTO> resultList = buildResultTree(Optional.ofNullable(patrolCheckResultDTOList)
                 .orElseGet(Collections::emptyList));
         return resultList;
+    }
+
+    @Override
+    public Device getDeviceInfoByCode(String deviceCode) {
+        return patrolTaskDeviceMapper.getDeviceInfoByCode(deviceCode);
     }
 }
