@@ -121,17 +121,20 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
             //作业类型
             e.setWorkTypeName(sysBaseAPI.translateDict(DictConstant.WORK_TYPE, String.valueOf(e.getWorkType())));
 
-//            if (e.getOverhaulId()!=null){
-//                //根据检修单id查询结果
-//                LambdaQueryWrapper<RepairTaskResult> resultLambdaQueryWrapper = new LambdaQueryWrapper<>();
-//                List<RepairTaskResult> repairTaskResults = repairTaskResultMapper.selectList(resultLambdaQueryWrapper.eq(RepairTaskResult::getTaskDeviceRelId, e.getOverhaulId()));
-//                //检修结果主键id集合
-//                List<String> collect4 = repairTaskResults.stream().map(RepairTaskResult::getStaffId).collect(Collectors.toList());
-//                collect4.forEach(o->{
-//                    LoginUser userById = sysBaseAPI.getUserById(o);
-//                    e.setOverhaulName(userById.getUsername());
-//                });
-//            }
+            if (e.getCode()!=null){
+                //根据检修任务code查询
+                LambdaQueryWrapper<RepairTaskUser> repairTaskUserLambdaQueryWrapper = new LambdaQueryWrapper<>();
+                List<RepairTaskUser> repairTaskUsers = repairTaskUserMapper.selectList(repairTaskUserLambdaQueryWrapper.eq(RepairTaskUser::getRepairTaskCode, e.getCode()));
+                //检修人id集合
+                List<String> collect = repairTaskUsers.stream().map(RepairTaskUser::getUserId).collect(Collectors.toList());
+                e.setOverhaulId(collect);
+                ArrayList<String> userList = new ArrayList<>();
+                collect.forEach(o->{
+                    LoginUser userById = sysBaseAPI.getUserById(o);
+                    userList.add(userById.getUsername());
+                });
+                e.setOverhaulName(userList);
+            }
         });
         return pageList.setRecords(lists);
     }
@@ -173,6 +176,15 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                 //设备类型名称
                 e.setDeviceTypeName(q.getDeviceTypeName());
             });
+            //设备位置
+            if(e.getTaskCode()!=null){
+                List<StationDTO> stationDTOList = repairTaskMapper.selectStationList(e.getTaskCode());
+                e.setEquipmentLocation(manager.translateStation(stationDTOList));
+            }
+            if (e.getTaskStatus()!=null){
+                //检修任务状态
+                e.setTaskStatusName(sysBaseAPI.translateDict(DictConstant.INSPECTION_TASK_STATE, String.valueOf(e.getTaskStatus())));
+            }
             //检修人名称
             if (e.getOverhaulId()!=null){
                 LoginUser userById = sysBaseAPI.getUserById(e.getOverhaulId());
@@ -274,7 +286,7 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
         }
 
         //设备位置
-        if(checkListDTO.getEquipmentCode()!=null){
+        if(overhaulCode!=null){
             List<StationDTO> stationDTOList = repairTaskMapper.selectStationList(overhaulCode);
             checkListDTO.setEquipmentLocation(manager.translateStation(stationDTOList));
         }
@@ -385,6 +397,31 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
         }if (examineDTO.getStatus()==1 && repairTask.getIsReceipt()==0){
             setId(examineDTO, repairTask1, loginUser, userById);
         }
+    }
+
+    @Override
+    public void toBeImplement(ExamineDTO examineDTO) {
+        RepairTask repairTask1= new RepairTask();
+        repairTask1.setId(examineDTO.getId());
+        repairTask1.setBeginTime(new Date());
+        repairTask1.setStatus(4);
+        repairTaskMapper.updateById(repairTask1);
+    }
+
+    @Override
+    public void inExecution(ExamineDTO examineDTO) {
+        RepairTask repairTask = repairTaskMapper.selectById(examineDTO.getId());
+        RepairTask repairTask1= new RepairTask();
+        if (repairTask.getIsConfirm()==1){
+            repairTask1.setId(examineDTO.getId());
+            repairTask1.setStatus(6);
+        }else {
+            repairTask1.setId(examineDTO.getId());
+            repairTask1.setStatus(8);
+        }
+
+        repairTaskMapper.updateById(repairTask1);
+
     }
 
     @Override

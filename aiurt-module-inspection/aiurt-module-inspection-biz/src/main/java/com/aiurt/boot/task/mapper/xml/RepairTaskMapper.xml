@@ -9,8 +9,7 @@
         ( SELECT group_concat( t6.major_code ) FROM repair_task_standard_rel AS t6 WHERE t1.id = t6.repair_task_id ) AS majorCode,
         ( SELECT group_concat( t6.subsystem_code ) FROM repair_task_standard_rel AS t6 WHERE t1.id = t6.repair_task_id ) AS systemCode,
         t8.start_time as startOverhaulTime,
-        t8.end_time as endOverhaulTime,
-        t8.id as overhaulId
+        t8.end_time as endOverhaulTime
         FROM
         repair_task t1
         LEFT JOIN repair_task_org_rel t2 ON t1.`code` = t2.repair_task_code
@@ -56,6 +55,7 @@
            SELECT
 	           t1.id as taskId,
                t1.code as taskCode,
+               t1.status as taskStatus,
                t2.id as deviceId,
                t3.id as standardId,
                t4.id as resultId,

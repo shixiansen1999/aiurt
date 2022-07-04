@@ -29,6 +29,16 @@ public class RepairTaskDTO {
     @ApiModelProperty(value = "检修任务编号")
     private String taskCode;
 
+    /**检修任务状态*/
+    @TableField(exist = false)
+    @ApiModelProperty(value = "检修任务状态")
+    private String taskStatus;
+
+    /** 检修任务状态名称*/
+    @TableField(exist = false)
+    @ApiModelProperty(value = "检修任务状态名称")
+    private String taskStatusName;
+
     /**检修单id*/
     @TableField(exist = false)
     @ApiModelProperty(value = "检修单id")
@@ -147,4 +157,9 @@ public class RepairTaskDTO {
     @ApiModelProperty(value = "提交时间")
     @TableField(exist = false)
     private java.util.Date submitTime;
+
+    /**设备位置*/
+    @ApiModelProperty(value = "设备位置")
+    @TableField(exist = false)
+    private String equipmentLocation;
 }

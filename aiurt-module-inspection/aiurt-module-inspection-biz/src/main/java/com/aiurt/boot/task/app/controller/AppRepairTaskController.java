@@ -1,6 +1,7 @@
 package com.aiurt.boot.task.app.controller;
 
 
+import com.aiurt.boot.manager.dto.ExamineDTO;
 import com.aiurt.boot.task.dto.RepairTaskDTO;
 import com.aiurt.boot.task.entity.RepairTask;
 import com.aiurt.boot.task.service.IRepairTaskService;
@@ -14,10 +15,7 @@ import io.swagger.annotations.ApiResponses;
 import lombok.extern.slf4j.Slf4j;
 import org.jeecg.common.api.vo.Result;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 /**
  * @Description: app检修任务
@@ -76,6 +74,37 @@ public class AppRepairTaskController extends BaseController<RepairTask, IRepairT
         Page<RepairTaskDTO> pageList = new Page<>(pageNo, pageSize);
         Page<RepairTaskDTO> repairTaskPage = repairTaskService.selectTasklet(pageList, condition);
         return Result.OK(repairTaskPage);
+    }
+
+
+    /**
+      *   待执行-执行
+     *
+     * @param examineDTO
+     * @return
+     */
+    @AutoLog(value = "检修任务-待执行-执行")
+    @ApiOperation(value="检修任务-待执行-执行", notes="检修任务-待执行-执行")
+    @PostMapping(value = "/toBeImplement")
+    public Result<String> toBeImplement(@RequestBody ExamineDTO examineDTO) {
+        repairTaskService.toBeImplement(examineDTO);
+        return Result.OK("执行成功！");
+    }
+
+
+
+    /**
+     *   执行中-执行
+     *
+     * @param examineDTO
+     * @return
+     */
+    @AutoLog(value = "检修任务-执行中-执行")
+    @ApiOperation(value="检修任务-执行中-执行", notes="检修任务-执行中-执行")
+    @PostMapping(value = "/inExecution")
+    public Result<String> inExecution(@RequestBody ExamineDTO examineDTO) {
+        repairTaskService.inExecution(examineDTO);
+        return Result.OK("执行成功！");
     }
 
 
