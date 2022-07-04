@@ -206,13 +206,6 @@ public class RepairTaskDTO {
     @ApiModelProperty(value = "是否已提交，0未提交1已提交")
     private Integer isSubmit;
 
-    /**开始时间(yyyy-MM-dd HH:mm)*/
-    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
-    @DateTimeFormat(pattern="yyyy-MM-dd")
-    @ApiModelProperty(value = "开始时间(yyyy-MM-dd HH:mm)")
-    @TableField(exist = false)
-    private java.util.Date startTime;
-
     /**未开始*/
     @TableField(exist = false)
     @ApiModelProperty(value = "未开始")
