@@ -5,6 +5,11 @@ import com.aiurt.modules.device.entity.DeviceType;
 import com.aiurt.modules.device.mapper.DeviceComposeMapper;
 import com.aiurt.modules.device.mapper.DeviceTypeMapper;
 import com.aiurt.modules.device.service.IDeviceTypeService;
+import com.aiurt.modules.major.entity.CsMajor;
+import com.aiurt.modules.major.mapper.CsMajorMapper;
+import com.aiurt.modules.subsystem.entity.CsSubsystem;
+import com.aiurt.modules.subsystem.mapper.CsSubsystemMapper;
+import com.aiurt.modules.subsystem.mapper.CsSubsystemUserMapper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import org.jeecg.common.api.vo.Result;
@@ -35,6 +40,10 @@ public class DeviceTypeServiceImpl extends ServiceImpl<DeviceTypeMapper, DeviceT
     private DeviceTypeMapper deviceTypeMapper;
     @Autowired
     private DeviceComposeMapper deviceComposeMapper;
+    @Autowired
+    private CsSubsystemMapper subsystemMapper;
+    @Autowired
+    private CsMajorMapper majorMapper;
     /**
      * 添加
      *
@@ -44,6 +53,9 @@ public class DeviceTypeServiceImpl extends ServiceImpl<DeviceTypeMapper, DeviceT
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Result<?> add(DeviceType deviceType) {
+        if(null == deviceType.getPid()){
+            deviceType.setPid("0");
+        }
         //分类编号不能重复
         LambdaQueryWrapper<DeviceType> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(DeviceType::getCode, deviceType.getCode());
@@ -56,6 +68,7 @@ public class DeviceTypeServiceImpl extends ServiceImpl<DeviceTypeMapper, DeviceT
         LambdaQueryWrapper<DeviceType> nameWrapper = new LambdaQueryWrapper<>();
         nameWrapper.eq(DeviceType::getMajorCode, deviceType.getMajorCode());
         nameWrapper.eq(DeviceType::getSystemCode, deviceType.getSystemCode());
+        nameWrapper.eq(DeviceType::getName, deviceType.getName());
         nameWrapper.eq(DeviceType::getPid, deviceType.getPid());
         nameWrapper.eq(DeviceType::getDelFlag, 0);
         List<DeviceType> nameList = deviceTypeMapper.selectList(nameWrapper);
@@ -83,6 +96,9 @@ public class DeviceTypeServiceImpl extends ServiceImpl<DeviceTypeMapper, DeviceT
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Result<?> update(DeviceType deviceType) {
+        if(null == deviceType.getPid()){
+            deviceType.setPid("0");
+        }
         //删除设备组成
         QueryWrapper<DeviceCompose> composeWrapper = new QueryWrapper<DeviceCompose>();
         composeWrapper.eq("device_type_code", deviceType.getCode());
@@ -99,6 +115,7 @@ public class DeviceTypeServiceImpl extends ServiceImpl<DeviceTypeMapper, DeviceT
         LambdaQueryWrapper<DeviceType> nameWrapper = new LambdaQueryWrapper<>();
         nameWrapper.eq(DeviceType::getMajorCode, deviceType.getMajorCode());
         nameWrapper.eq(DeviceType::getSystemCode, deviceType.getSystemCode());
+        nameWrapper.eq(DeviceType::getName, deviceType.getName());
         nameWrapper.eq(DeviceType::getPid, deviceType.getPid());
         nameWrapper.eq(DeviceType::getDelFlag, 0);
         List<DeviceType> nameList = deviceTypeMapper.selectList(nameWrapper);
@@ -125,10 +142,35 @@ public class DeviceTypeServiceImpl extends ServiceImpl<DeviceTypeMapper, DeviceT
      */
     @Override
     public List<DeviceType> treeList(List<DeviceType> typeList, String pid){
+
         List<DeviceType> childList = typeList.stream().filter(deviceType -> pid.equals(deviceType.getPid())).collect(Collectors.toList());
         if(childList != null && childList.size()>0){
             for (DeviceType deviceType : childList) {
                 deviceType.setTreeType("sblx");
+                String pUrl = "";
+                Integer pIsSpecialDevice = null;
+                if(pid.equals("0")){
+                    //如果systemCode不是null，查询systemCode的名称
+                    if(null!=deviceType.getSystemCode()){
+                        LambdaQueryWrapper<CsSubsystem> wrapper = new LambdaQueryWrapper<>();
+                        CsSubsystem system = subsystemMapper.selectOne(wrapper.eq(CsSubsystem::getSystemCode,deviceType.getSystemCode()));
+                        pUrl = system.getSystemName();
+                    }
+                    //如果systemCode是null，查询majorCode的名称
+                    if(null==deviceType.getSystemCode() && null!= deviceType.getMajorCode()){
+                        LambdaQueryWrapper<CsMajor> wrapper = new LambdaQueryWrapper<>();
+                        CsMajor major = majorMapper.selectOne(wrapper.eq(CsMajor::getMajorCode,deviceType.getMajorCode()));
+                        pUrl = major.getMajorName();
+                    }
+                }else{
+                    //如果pid不是0，查询设备类型名称
+                    LambdaQueryWrapper<DeviceType> wrapper = new LambdaQueryWrapper<>();
+                    DeviceType type = deviceTypeMapper.selectOne(wrapper.eq(DeviceType::getId,pid));
+                    pUrl = type.getName();
+                    pIsSpecialDevice = type.getIsSpecialDevice();
+                }
+                deviceType.setPUrl(pUrl);
+                deviceType.setPIsSpecialDevice(pIsSpecialDevice);
                 deviceType.setChildren(treeList(typeList,deviceType.getId().toString()));
             }
         }

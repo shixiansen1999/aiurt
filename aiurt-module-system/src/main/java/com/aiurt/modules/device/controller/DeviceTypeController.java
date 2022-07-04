@@ -71,7 +71,7 @@ public class DeviceTypeController extends BaseController<DeviceType, IDeviceType
 		 List<DeviceType> deviceTypeTree = deviceTypeService.treeList(deviceTypeList,"0");
 		 List<DeviceType> newList = new ArrayList<>();
 		 majorList.forEach(one -> {
-			 DeviceType major = setEntity(one.getId(),"zy",one.getMajorCode(),one.getMajorName(),null,null,null,one.getMajorCode(),null);
+			 DeviceType major = setEntity(one.getId(),"zy",one.getMajorCode(),one.getMajorName(),null,null,null,one.getMajorCode(),null,"-",null);
 			 List<CsSubsystem> sysList = systemList.stream().filter(system-> system.getMajorCode().equals(one.getMajorCode())).collect(Collectors.toList());
 			 List<DeviceType> majorDeviceType = deviceTypeTree.stream().filter(type-> one.getMajorCode().equals(type.getMajorCode()) && (null==type.getSystemCode() || "".equals(type.getSystemCode())) && type.getPid().equals("0")).collect(Collectors.toList());
 			 List<DeviceType> twoList = new ArrayList<>();
@@ -81,7 +81,7 @@ public class DeviceTypeController extends BaseController<DeviceType, IDeviceType
 			 }
 			 //判断是否有子系统数据
 			 sysList.forEach(two ->{
-				 DeviceType system = setEntity(two.getId()+"","zxt",two.getSystemCode(),two.getSystemName(),null,null,null,two.getMajorCode(),two.getSystemCode());
+				 DeviceType system = setEntity(two.getId()+"","zxt",two.getSystemCode(),two.getSystemName(),null,null,null,two.getMajorCode(),two.getSystemCode(),one.getMajorName(),null);
 				 if(level>2) {
 					 List<DeviceType> sysDeviceType = deviceTypeTree.stream().filter(type -> system.getMajorCode().equals(type.getMajorCode()) && (null != type.getSystemCode() && !"".equals(type.getSystemCode()) && system.getSystemCode().equals(type.getSystemCode()))).collect(Collectors.toList());
 					 system.setChildren(sysDeviceType);
@@ -137,7 +137,7 @@ public class DeviceTypeController extends BaseController<DeviceType, IDeviceType
 	 * @param isEnd
 	 * @return
 	 */
-	public DeviceType setEntity(String id,String treeType,String code,String name,Integer status,Integer isSpecialDevice,Integer isEnd,String majorCode,String systemCode){
+	public DeviceType setEntity(String id,String treeType,String code,String name,Integer status,Integer isSpecialDevice,Integer isEnd,String majorCode,String systemCode,String pUrl,Integer pIsSpecialDevice){
 		DeviceType type = new DeviceType();
 		type.setId(id);
 		type.setTreeType(treeType);
@@ -148,6 +148,8 @@ public class DeviceTypeController extends BaseController<DeviceType, IDeviceType
 		type.setIsEnd(isEnd);
 		type.setMajorCode(majorCode);
 		type.setSystemCode(systemCode);
+		type.setPUrl(pUrl);
+		type.setPIsSpecialDevice(pIsSpecialDevice);
 		return type;
 	}
 	 /**
@@ -293,10 +295,16 @@ public class DeviceTypeController extends BaseController<DeviceType, IDeviceType
 	@ApiOperation(value="设备类型通过id查询", notes="设备类型通过id查询")
 	@GetMapping(value = "/queryById")
 	public Result<DeviceType> queryById(@RequestParam(name="id",required=true) String id) {
+		LambdaQueryWrapper<DeviceCompose> composeWrapper = new LambdaQueryWrapper<>();
+		List<DeviceCompose> deviceComposeList = deviceComposeService.list(composeWrapper.eq(DeviceCompose::getDelFlag,0));
+
 		DeviceType deviceType = deviceTypeService.getById(id);
 		if(deviceType==null) {
 			return Result.error("未找到对应数据");
 		}
+		//查询设备组成
+		List<DeviceCompose> composeList = deviceComposeList.stream().filter(compose -> compose.getDeviceTypeCode().equals(deviceType.getCode()) ).collect(Collectors.toList());
+		deviceType.setDeviceComposeList(composeList);
 		return Result.OK(deviceType);
 	}
 

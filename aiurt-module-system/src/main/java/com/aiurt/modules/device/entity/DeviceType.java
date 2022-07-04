@@ -121,4 +121,9 @@ public class DeviceType implements Serializable {
     @TableField(exist = false)
     @Dict(dicCode = "is_have_device")
     private Integer isHaveDevice;
+    /**父节点是否是特种设备*/
+    @Excel(name = "父节点是否是特种设备", width = 15)
+    @ApiModelProperty(value = "父节点是否是特种设备")
+    @TableField(exist = false)
+    private Integer pIsSpecialDevice;
 }
