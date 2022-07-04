@@ -1,27 +1,26 @@
 package com.aiurt.boot.task.controller;
 
-import java.util.Arrays;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import org.jeecg.common.api.vo.Result;
-import org.jeecg.common.system.query.QueryGenerator;
 import com.aiurt.boot.task.entity.PatrolAccessory;
+import com.aiurt.boot.task.entity.PatrolCheckResult;
 import com.aiurt.boot.task.service.IPatrolAccessoryService;
-
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import lombok.extern.slf4j.Slf4j;
-
+import com.aiurt.boot.task.service.IPatrolCheckResultService;
+import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.system.base.controller.BaseController;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.ModelAndView;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import com.aiurt.common.aspect.annotation.AutoLog;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.shiro.SecurityUtils;
+import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.system.vo.LoginUser;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
 
- /**
+import javax.servlet.http.HttpServletRequest;
+import java.util.List;
+
+/**
  * @Description: patrol_accessory
  * @Author: aiurt
  * @Date:   2022-06-21
@@ -34,7 +33,8 @@ import com.aiurt.common.aspect.annotation.AutoLog;
 public class PatrolAccessoryController extends BaseController<PatrolAccessory, IPatrolAccessoryService> {
 	@Autowired
 	private IPatrolAccessoryService patrolAccessoryService;
-
+	 @Autowired
+	 private IPatrolCheckResultService patrolCheckResultService;
 	/**
 	 * 分页列表查询
 	 *
@@ -56,6 +56,47 @@ public class PatrolAccessoryController extends BaseController<PatrolAccessory, I
 		IPage<PatrolAccessory> pageList = patrolAccessoryService.page(page, queryWrapper);
 		return Result.OK(pageList);
 	}*/
+	 /**
+	  * app巡检-检查项-附件-保存
+	  * @param patrolAccessory
+	  * @param req
+	  * @return
+	  */
+	 @AutoLog(value = "app巡检-检查项-附件-保存")
+	 @ApiOperation(value = "app巡检-检查项-附件-保存", notes = "app巡检-检查项-附件-保存")
+	 @PostMapping(value = "/patrolTaskAccessorySave")
+	 public Result<?> patrolTaskAccessorySave(@RequestBody PatrolAccessory patrolAccessory,
+										  HttpServletRequest req) {
+		 LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+		 LambdaUpdateWrapper<PatrolCheckResult> updateWrapper= new LambdaUpdateWrapper<>();
+		 updateWrapper.set(PatrolCheckResult::getUserId,sysUser.getId()).set(PatrolCheckResult::getDelFlag,0).eq(PatrolCheckResult::getId,patrolAccessory.getCheckResultId());
+		 patrolCheckResultService.update(updateWrapper);
+		 patrolAccessoryService.save(patrolAccessory);
+		 return Result.OK("附件保存成功");
+	 }
+	 /**
+	  * app巡检-检查项-附件-删除
+	  * @param checkResultId
+	  * @param taskDeviceId
+	  * @param req
+	  * @return
+	  */
+	 @AutoLog(value = "app巡检-检查项-附件-删除")
+	 @ApiOperation(value = "app巡检-检查项-附件-删除", notes = "app巡检-检查项-附件-删除")
+	 @PostMapping(value = "/patrolTaskAccessoryDelete")
+	 public Result<?> patrolTaskAccessoryDelete(@RequestParam(name = "checkResultId", required = true) String checkResultId,
+												@RequestParam(name = "taskDeviceId",  required = true) String taskDeviceId,
+										  HttpServletRequest req) {
+		 LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+		 LambdaUpdateWrapper<PatrolCheckResult> updateWrapper= new LambdaUpdateWrapper<>();
+		 updateWrapper.set(PatrolCheckResult::getUserId,sysUser.getId()).eq(PatrolCheckResult::getId,checkResultId);
+		 patrolCheckResultService.update(updateWrapper);
+		 LambdaQueryWrapper<PatrolAccessory> queryWrapper = new LambdaQueryWrapper<>();
+		 queryWrapper.eq(PatrolAccessory::getCheckResultId,checkResultId).eq(PatrolAccessory::getTaskDeviceId,taskDeviceId);
+		  List<PatrolAccessory> list = patrolAccessoryService.list(queryWrapper);
+		 patrolAccessoryService.removeBatchByIds(list);
+		 return Result.OK("附件删除成功");
+	 }
 
 	/**
 	 *   添加

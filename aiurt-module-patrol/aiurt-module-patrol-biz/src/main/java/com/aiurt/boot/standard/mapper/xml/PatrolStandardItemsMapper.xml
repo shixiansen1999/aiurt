@@ -15,4 +15,15 @@
     select * from patrol_standard_items a where a.del_flag =0 and a.standard_id = #{id}
     ORDER BY a.order
 </select>
+    <select id="querySysDict" resultType="com.aiurt.boot.standard.dto.SysDictDTO">
+        SELECT sd.dict_name,sd.dict_code, sd.description
+        FROM sys_dict sd
+        WHERE sd.del_flag=0
+        <if test="statusItem !=null and statusItem==2">
+            and  sd.type =0
+        </if>
+        <if test="statusItem !=null and statusItem==3">
+            and  sd.type =1
+        </if>
+    </select>
 </mapper>

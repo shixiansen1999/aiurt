@@ -82,9 +82,9 @@ public class PatrolTaskDTO
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     @ApiModelProperty(value = "巡检结果提交时间")
     private java.util.Date submitTime;
-    /*** 任务结束用户ID*/
-    @Excel(name = "任务结束用户人", width = 15)
-    @ApiModelProperty(value = "任务结束用户人")
+    /*** 任务提交人 */
+    @Excel(name = "任务提交人 ", width = 15)
+    @ApiModelProperty(value = "任务提交人 ")
     private java.lang.String endUserName;
     /*** 任务提交的用户签名图片*/
     @Excel(name = "任务提交的用户签名图片", width = 15)
@@ -94,9 +94,9 @@ public class PatrolTaskDTO
     @Excel(name = "巡检频次：1 一天1次、2 一周1次、3 一周2次", width = 15)
     @ApiModelProperty(value = "巡检频次：1 一天1次、2 一周1次、3 一周2次")
     private java.lang.Integer period;
-    /*** 任务状态：0待指派、1待确认、2待执行、3已退回、4执行中、5待审核、6已完成*/
-    @Excel(name = "任务状态：0待指派、1待确认、2待执行、3已退回、4执行中、5待审核、6已完成", width = 15)
-    @ApiModelProperty(value = "任务状态：0待指派、1待确认、2待执行、3已退回、4执行中、5待审核、6已完成")
+    /*** 任务状态：0待指派、1待确认、2待执行、3已退回、4执行中、5已驳回、6待审核、7已完成*/
+    @Excel(name = "任务状态：0待指派、1待确认、2待执行、3已退回、4执行中、5已驳回、6待审核、7已完成", width = 15)
+    @ApiModelProperty(value = "任务状态：0待指派、1待确认、2待执行、3已退回、4执行中、5已驳回、6待审核、7已完成")
     private java.lang.Integer status;
     /*** 退回理由*/
     @Excel(name = "退回理由", width = 15)

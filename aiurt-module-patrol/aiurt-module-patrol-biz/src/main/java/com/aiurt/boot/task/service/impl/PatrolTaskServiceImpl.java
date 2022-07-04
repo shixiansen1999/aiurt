@@ -277,21 +277,6 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         if (patrolTaskDTO.getStatus() == 2) {
             updateWrapper.set(PatrolTask::getStatus, 4).eq(PatrolTask::getId, patrolTaskDTO.getId());
         }
-        //提交任务：将执行中，变为待审核、添加任务结束人id,传签名地址
-        if (patrolTaskDTO.getStatus() == 4) {
-            if (patrolTaskDTO.getAuditor() == 1) {
-                updateWrapper.set(PatrolTask::getStatus, 6)
-                        .set(PatrolTask::getEndUserId, sysUser.getId())
-                        .set(PatrolTask::getSignUrl, patrolTaskDTO.getSignUrl())
-                        .eq(PatrolTask::getId, patrolTaskDTO.getId());
-            } else {
-                updateWrapper.set(PatrolTask::getStatus, 7)
-                        .set(PatrolTask::getEndUserId, sysUser.getId())
-                        .set(PatrolTask::getSignUrl, patrolTaskDTO.getSignUrl())
-                        .eq(PatrolTask::getId, patrolTaskDTO.getId());
-            }
-            update(updateWrapper);
-        }
     }
 
     @Override

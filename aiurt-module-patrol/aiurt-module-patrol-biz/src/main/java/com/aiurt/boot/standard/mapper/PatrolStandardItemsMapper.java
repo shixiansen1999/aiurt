@@ -1,5 +1,6 @@
 package com.aiurt.boot.standard.mapper;
 
+import com.aiurt.boot.standard.dto.SysDictDTO;
 import com.aiurt.boot.standard.entity.PatrolStandardItems;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import org.apache.ibatis.annotations.Param;
@@ -28,4 +29,11 @@ public interface PatrolStandardItemsMapper extends BaseMapper<PatrolStandardItem
      * @param id
      */
     void updatPId(@Param("id") String id);
+
+    /**
+     * 查询数据字典
+     * @param statusItem
+     * @return
+     */
+    List<SysDictDTO> querySysDict(@Param("statusItem") Integer statusItem);
 }

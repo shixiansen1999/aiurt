@@ -6,11 +6,14 @@ import com.aiurt.boot.task.entity.PatrolTaskDevice;
 import com.aiurt.boot.task.service.IPatrolTaskDeviceService;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.system.base.controller.BaseController;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -77,6 +80,23 @@ public class PatrolTaskDeviceController extends BaseController<PatrolTaskDevice,
 
 
 	 /**
+	  * app巡检-检查项-巡检位置-保存
+	  * @param id
+	  * @param customPosition
+	  * @param req
+	  * @return
+	  */
+	 @AutoLog(value = "app巡检-检查项-巡检位置-保存")
+	 @ApiOperation(value = "app巡检-检查项-巡检位置-保存", notes = "app巡检-检查项-巡检位置-保存")
+	 @PostMapping(value = "/patrolTaskCustomPosition")
+	 public Result<?> patrolTaskCustomPosition(@RequestParam(name ="id")String id,
+									  @RequestParam(name="remark") String customPosition, HttpServletRequest req) {
+		 LambdaUpdateWrapper<PatrolTaskDevice> updateWrapper= new LambdaUpdateWrapper<>();
+		 updateWrapper.set(PatrolTaskDevice::getCustomPosition,customPosition).eq(PatrolTaskDevice::getId,id);
+		 patrolTaskDeviceService.update(updateWrapper);
+		 return Result.OK("巡检位置保存成功");
+	 }
+	 /**
 	  * app巡检任务执行中-检查
 	  * @param patrolTaskDevice
 	  * @param req
@@ -89,31 +109,20 @@ public class PatrolTaskDeviceController extends BaseController<PatrolTaskDevice,
 	 	List<PatrolCheckResultDTO> patrolTaskCheck = patrolTaskDeviceService.getPatrolTaskCheck(patrolTaskDevice);
 		 return Result.OK(patrolTaskCheck);
 	 }
-	 /**
-	  * app巡检-检查项-保存
-	  * @param patrolCheckResultDTO
-	  * @param req
-	  * @return
-	  */
-	 @AutoLog(value = "app巡检-检查项-保存")
-	 @ApiOperation(value = "app巡检-检查项-保存", notes = "app巡检-检查项-保存")
-	 @PostMapping(value = "/patrolTaskCheckItems")
-	 public Result<?> patrolTaskCheckItems(@RequestBody  PatrolCheckResultDTO patrolCheckResultDTO, HttpServletRequest req) {
-	 	patrolTaskDeviceService.getPatrolTaskCheckItems(patrolCheckResultDTO);
-		 return Result.OK("添加成功");
-	 }
 	/**
-	 * app巡检-检查项-提交
-	 * @param patrolCheckResultDTO
+	 * app巡检-巡检清单-填写检查项-提交工单
+	 * @param id
 	 * @param req
 	 * @return
 	 */
-	@AutoLog(value = "app巡检-检查项-提交")
-	@ApiOperation(value = "app巡检-检查项-提交", notes = "app巡检-检查项-提交")
+	@AutoLog(value = " app巡检-巡检清单-填写检查项-提交工单")
+	@ApiOperation(value = " app巡检-巡检清单-填写检查项-提交工单", notes = " app巡检-巡检清单-填写检查项-提交工单")
 	@PostMapping(value = "/patrolTaskCheckItemsSubmit")
-	public Result<?> patrolTaskCheckItemsSubmit(@RequestBody  PatrolCheckResultDTO patrolCheckResultDTO, HttpServletRequest req) {
-		patrolTaskDeviceService.getPatrolTaskCheckItems(patrolCheckResultDTO);
-		return Result.OK("提交成功");
+	public Result<?> patrolTaskCheckItemsSubmit(String id, HttpServletRequest req) {
+		LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+		LambdaUpdateWrapper<PatrolTaskDevice> updateWrapper= new LambdaUpdateWrapper<>();
+		updateWrapper.set(PatrolTaskDevice::getUserId,sysUser.getId()).set(PatrolTaskDevice::getStatus,2).eq(PatrolTaskDevice::getId,id);
+		return Result.OK("提交工单成功");
 	}
 	/**
 	 *   添加

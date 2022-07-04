@@ -1,6 +1,7 @@
 package com.aiurt.boot.standard.controller;
 
 import cn.hutool.core.lang.tree.Tree;
+import com.aiurt.boot.standard.dto.SysDictDTO;
 import com.aiurt.boot.standard.entity.PatrolStandardItems;
 import com.aiurt.boot.standard.mapper.PatrolStandardItemsMapper;
 import com.aiurt.boot.standard.service.IPatrolStandardItemsService;
@@ -84,7 +85,17 @@ public class PatrolStandardItemsController extends BaseController<PatrolStandard
 		patrolStandardItemsMapper.insert(patrolStandardItems);
 		return Result.OK("添加成功！");
 	}
-
+	 /**
+	  * 查询数据字典
+	  * @return
+	  */
+	 @AutoLog(value = "查询数据字典")
+	 @ApiOperation(value = "查询数据字典", notes = "查询数据字典")
+	 @GetMapping(value = "/querySysDict")
+	 public List<SysDictDTO> querySysDict(@RequestParam(name="statusItem") Integer statusItem) {
+		List<SysDictDTO>  sysDictDTOS= patrolStandardItemsService.querySysDict(statusItem);
+		 return sysDictDTOS;
+	 }
 	 /**
 	  * 校验添加内容排序
 	  * @return

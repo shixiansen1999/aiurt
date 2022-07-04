@@ -5,6 +5,7 @@ import com.aiurt.boot.strategy.entity.InspectionStrategy;
 import com.aiurt.boot.strategy.service.IInspectionStrategyService;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.system.base.controller.BaseController;
+import com.aiurt.modules.device.entity.Device;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.annotations.Api;
@@ -44,7 +45,7 @@ public class InspectionStrategyController extends BaseController<InspectionStrat
 	 * @param req
 	 * @return
 	 */
-	//@AutoLog(value = "inspection_strategy-分页列表查询")
+	@AutoLog(value = "检修策略表-分页列表查询")
 	@ApiOperation(value="检修策略表-分页列表查询", notes="检修策略表-分页列表查询")
 	@GetMapping(value = "/list")
 	public Result<IPage<InspectionStrategyDTO>> queryPageList(InspectionStrategyDTO inspectionStrategyDTO,
@@ -167,7 +168,18 @@ public class InspectionStrategyController extends BaseController<InspectionStrat
 		}
 		return Result.OK(inspectionStrategyDTO);
 	}
-
+	/**
+	 *  查看设备详情
+	 * @param code
+	 * @return
+	 */
+	@AutoLog(value = "检修策略表-查看设备详情")
+	@ApiOperation(value="检修策略表-查看设备详情", notes="检修策略表-查看设备详情")
+	@RequestMapping(value = "/viewDetails", method = {RequestMethod.POST})
+	public List<Device> viewDetails(@RequestParam(name = "standardCode")String code) {
+		List<Device> list =inspectionStrategyService.viewDetails(code);
+		return list;
+	}
     /**
      * 导出excel
      *

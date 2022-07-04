@@ -329,7 +329,7 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
     }
 
     /**
-     * app巡检任务领取、确认、执行、退回、执行中任务提交
+     * app巡检任务领取、确认、执行
      *
      * @param patrolTaskDTO
      * @param req
@@ -345,9 +345,6 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
         }
         if (patrolTaskDTO.getStatus() == 2) {
             return Result.OK("执行成功");
-        }
-        if (patrolTaskDTO.getStatus() == 4) {
-            return Result.OK("提交任务成功");
         }
         return Result.OK("领取成功");
     }
@@ -383,14 +380,14 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
     }
 
     /**
-     * app巡检任务领取后-退回
+     * app巡检任务-退回
      *
      * @param patrolTaskDTO
      * @param req
      * @return
      */
-    @AutoLog(value = "巡检任务表-app巡检任务领取后-退回")
-    @ApiOperation(value = "巡检任务表-app巡检任务领取后-退回", notes = "巡检任务表-app巡检任务领取后-退回")
+    @AutoLog(value = "巡检任务表-app巡检任务-退回")
+    @ApiOperation(value = "巡检任务表-app巡检任务-退回", notes = "巡检任务表-app巡检任务-退回")
     @PostMapping(value = "/patrolTaskReturn")
     public Result<?> patrolTaskReturn(PatrolTaskDTO patrolTaskDTO, HttpServletRequest req) {
         patrolTaskService.getPatrolTaskReturn(patrolTaskDTO);
@@ -435,9 +432,9 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
     @AutoLog(value = "巡检任务表- app巡检任务-驳回")
     @ApiOperation(value = "巡检任务表- app巡检任务-驳回", notes = "巡检任务表- app巡检任务-驳回")
     @PostMapping(value = "/patrolTaskReject")
-    public Result<?> patrolTaskReject(String id, String back_reason) {
+    public Result<?> patrolTaskReject(String id, String backReason) {
         LambdaUpdateWrapper<PatrolTask> queryWrapper = new LambdaUpdateWrapper<>();
-        queryWrapper.set(PatrolTask::getStatus, 5).set(PatrolTask::getRemark, back_reason).eq(PatrolTask::getId, id);
+        queryWrapper.set(PatrolTask::getStatus, 5).set(PatrolTask::getRemark, backReason).eq(PatrolTask::getId, id);
         patrolTaskService.update(queryWrapper);
         return Result.OK("驳回成功");
     }
@@ -450,9 +447,9 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
     @AutoLog(value = "巡检任务表- app巡检任务-通过")
     @ApiOperation(value = "巡检任务表- app巡检任务-通过", notes = "巡检任务表- app巡检任务-通过")
     @PostMapping(value = "/patrolTaskPass")
-    public Result<?> patrolTaskPass(String id, String back_reason) {
+    public Result<?> patrolTaskPass(String id, String backReason) {
         LambdaUpdateWrapper<PatrolTask> queryWrapper = new LambdaUpdateWrapper<>();
-        queryWrapper.set(PatrolTask::getStatus, 7).set(PatrolTask::getRemark, back_reason).eq(PatrolTask::getId, id);
+        queryWrapper.set(PatrolTask::getStatus, 7).set(PatrolTask::getRemark, backReason).eq(PatrolTask::getId, id);
         patrolTaskService.update(queryWrapper);
         return Result.OK("通过成功");
     }

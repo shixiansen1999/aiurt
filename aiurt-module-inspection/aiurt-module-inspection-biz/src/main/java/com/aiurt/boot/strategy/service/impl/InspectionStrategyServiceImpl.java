@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
@@ -103,6 +104,13 @@ public class InspectionStrategyServiceImpl extends ServiceImpl<InspectionStrateg
     @Override
     public InspectionStrategyDTO getId(String id) {
         InspectionStrategyDTO inspectionStrategyDTO=baseMapper.getId(id);
+        if(ObjectUtil.isNotEmpty(inspectionStrategyDTO.getSiteCode())){
+            inspectionStrategyDTO.setSiteCodes(Arrays.asList(inspectionStrategyDTO.getSiteCode().split(",")));}
+        if (ObjectUtil.isNotEmpty(inspectionStrategyDTO.getMechanismCode())){
+            inspectionStrategyDTO.setMechanismCodes(Arrays.asList(inspectionStrategyDTO.getMechanismCode().split(",")));
+        }
+        List<String>codes= Arrays.asList(inspectionStrategyDTO.getCodes().split(","));
+        inspectionStrategyDTO.setInspectionCodeDTOS(baseMapper.selectbyCodes(codes));
         return inspectionStrategyDTO;
     }
 
@@ -177,6 +185,13 @@ public class InspectionStrategyServiceImpl extends ServiceImpl<InspectionStrateg
     @Override
     public Result addAnnualNewPlan(String id) {
         InspectionStrategy inspectionStrategy = new InspectionStrategy();
+        return null;
+    }
+
+    @Override
+    public List<Device> viewDetails(String code) {
+        InspectionStrRel inspectionstrRel= inspectionStrRelMapper.selectOne(Wrappers.<InspectionStrRel>lambdaQuery().eq(InspectionStrRel::getInspectionStaCode, code));
+        List<Device> list= baseMapper.viewDetails(inspectionstrRel.getId());
         return null;
     }
 }

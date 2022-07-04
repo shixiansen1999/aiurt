@@ -118,7 +118,7 @@ public class PatrolPlanController extends BaseController<PatrolPlan, IPatrolPlan
 		return Result.OK("编辑成功!");
 	}
 	 /**
-	  *  查看详情
+	  *  查看设备详情
 	  * @param standardCode
 	  * @return
 	  */

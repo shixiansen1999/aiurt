@@ -155,6 +155,9 @@ public class InspectionCodeContentServiceImpl extends ServiceImpl<InspectionCode
     public IPage<InspectionCodeContent> pageList(Page<InspectionCodeContent> page, InspectionCodeContent inspectionCodeContent) {
         //1.查询表中未删除的所有的数据
         List<InspectionCodeContent> allList = baseMapper.selectLists(inspectionCodeContent);
+        if(inspectionCodeContent.getCode()!=null ||inspectionCodeContent.getName()!=null ||inspectionCodeContent.getStatusItem()!=null){
+            return page.setRecords(allList);
+        }
         //2.找到所有根节点 ParentId=0
         List<InspectionCodeContent> rooList = allList.stream().filter(r -> r.getPid().equals("0")).collect(Collectors.toList());
         //3.找到所有非根节点

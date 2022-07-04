@@ -37,14 +37,14 @@ public interface IPatrolTaskService extends IService<PatrolTask> {
     Page<PatrolTaskDTO> getPatrolTaskList(Page<PatrolTaskDTO> pageList, PatrolTaskDTO patrolTaskDTO);
 
     /**
-     * app-巡检任务领取
+     * app巡检任务领取、确认、执行
      *
      * @param patrolTaskDTO
      */
     void getPatrolTaskReceive(PatrolTaskDTO patrolTaskDTO);
 
     /**
-     * app-巡检任务领取后-退回
+     * app-app巡检任务-退回
      *
      * @param patrolTaskDTO
      */

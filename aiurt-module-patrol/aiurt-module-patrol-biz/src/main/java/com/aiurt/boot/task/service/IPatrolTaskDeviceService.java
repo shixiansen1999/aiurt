@@ -58,11 +58,4 @@ public interface IPatrolTaskDeviceService extends IService<PatrolTaskDevice> {
      * @return
      */
     List<PatrolCheckResultDTO> getPatrolTaskCheck(PatrolTaskDevice patrolTaskDevice);
-
-    /**
-     * app巡检-检查项添加
-     * @param patrolCheckResultDTO
-     * @return
-     */
-    void getPatrolTaskCheckItems(PatrolCheckResultDTO patrolCheckResultDTO);
 }

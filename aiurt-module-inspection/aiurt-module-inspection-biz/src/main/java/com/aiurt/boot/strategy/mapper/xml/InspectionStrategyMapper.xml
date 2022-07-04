@@ -97,24 +97,39 @@
     </select>
     <select id="getId" resultType="com.aiurt.boot.strategy.dto.InspectionStrategyDTO">
         SELECT insy.*,( SELECT GROUP_CONCAT(e.depart_name) FROM inspection_str_org_rel isor
-                                                                    LEFT JOIN sys_depart e ON isor.org_code = e.org_code  WHERE  isor.inspection_str_code= insy.`code`
-                                                                                                                            AND isor.del_flag = 0   ) AS mechanismName,
+        LEFT JOIN sys_depart e ON isor.org_code = e.org_code  WHERE  isor.inspection_str_code= insy.`code`
+        AND isor.del_flag = 0   ) AS mechanismName,
                ( SELECT GROUP_CONCAT(f.station_name) FROM  inspection_str_sta_rel issr
-                                                               LEFT JOIN cs_station f ON issr.station_code = f.station_code
+                 LEFT JOIN cs_station f ON issr.station_code = f.station_code
                  WHERE issr.inspection_str_code=insy.`code` AND issr.del_flag = 0 ) AS siteName,
                ( SELECT GROUP_CONCAT(e.org_code) FROM inspection_str_org_rel isor
-                                                          LEFT JOIN sys_depart e ON isor.org_code = e.org_code  WHERE  isor.inspection_str_code= insy.`code`
-                                                                                                                  AND isor.del_flag = 0) AS mechanismCode,
+                 LEFT JOIN sys_depart e ON isor.org_code = e.org_code  WHERE  isor.inspection_str_code= insy.`code`
+                AND isor.del_flag = 0) AS mechanismCode,
                ( SELECT GROUP_CONCAT(f.station_code) FROM  inspection_str_sta_rel issr
-                                                               LEFT JOIN cs_station f ON issr.station_code = f.station_code
+                 LEFT JOIN cs_station f ON issr.station_code = f.station_code
                  WHERE issr.inspection_str_code=insy.`code` AND issr.del_flag = 0 ) AS siteCode,
-               ( SELECT GROUP_CONCAT(d.id) FROM  inspection_code ic
-                                                     LEFT JOIN inspection_str_rel isr on ic.`code` =isr.inspection_sta_code
-                 WHERE isr.inspection_str_code = insy.`code`  AND isr.del_flag = 0 ) AS ids
+               ( SELECT GROUP_CONCAT(isr.inspection_sta_code) FROM  inspection_code ic
+                 LEFT JOIN inspection_str_rel isr on ic.`code` =isr.inspection_sta_code
+                 WHERE isr.inspection_str_code = insy.`code`  AND isr.del_flag = 0 ) AS codes
         FROM inspection_strategy insy
-
         WHERE
             insy.del_flag=0
           and insy.id = #{id}
+    </select>
+    <select id="selectbyCodes" resultType="com.aiurt.boot.manager.dto.InspectionCodeDTO">
+        select a.*,b.major_name as professionName, c.system_name as subsystemName ,d.name as deviceTypeName
+        from inspection_code  a
+        left join cs_major b on a.major_code =b.major_code
+        left join cs_subsystem c on a.subsystem_code =c.system_code
+        left join device_type d on a.device_type_code =d.code
+        where a.del_flag =0 and a.`code` in
+        <foreach collection="codes" open="(" close=")"  index="index"   separator="," item="codes">
+            #{codes}
+        </foreach>
+    </select>
+    <select id="viewDetails" resultType="com.aiurt.modules.device.entity.Device">
+        SELECT a.* FROM device a
+         LEFT JOIN inspection_str_device_rel b on a.`code`=b.device_code
+         WHERE b.inspection_str_rel_id= #{id}
     </select>
 </mapper>
