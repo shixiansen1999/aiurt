@@ -22,7 +22,7 @@ public interface PatrolAccessoryMapper extends BaseMapper<PatrolAccessory> {
      * @param checkResultId
      * @return
      */
-    List<PatrolAccessoryDTO> getAllAccessory(@Param("taskDeviceId") String taskDeviceId, @Param("checkResultId")String checkResultId);
+    List<PatrolAccessory> getAllAccessory(@Param("taskDeviceId") String taskDeviceId, @Param("checkResultId")String checkResultId);
 
     /**
      * app-获取这个单号的所有巡检项 的附件

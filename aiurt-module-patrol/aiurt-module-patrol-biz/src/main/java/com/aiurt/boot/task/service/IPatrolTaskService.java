@@ -122,4 +122,10 @@ public interface IPatrolTaskService extends IService<PatrolTask> {
      * @param id
      */
     Map<String, Object> getMajorSubsystemGanged(String id);
+
+    /**
+     * app-提交任务
+     * @param patrolTaskDTO
+     */
+    void getPatrolTaskSubmit(PatrolTaskDTO patrolTaskDTO);
 }

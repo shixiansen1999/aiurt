@@ -38,10 +38,10 @@ public interface PatrolTaskMapper extends BaseMapper<PatrolTask> {
     /**
      * app-获取组织机构名称
      *
-     * @param planCode
+     * @param taskCode
      * @return author hlq
      */
-    List<String> getOrganizationName(@Param("planCode") String planCode);
+    List<String> getOrganizationName(@Param("taskCode") String taskCode);
 
     /**
      * app-获取站点名称
@@ -79,10 +79,10 @@ public interface PatrolTaskMapper extends BaseMapper<PatrolTask> {
     /**
      * app-获取部门code
      *
-     * @param planCode
+     * @param taskCode
      * @return
      */
-    List<String> getOrgCode(String planCode);
+    List<String> getOrgCode(String taskCode);
 
     /**
      * app-获取指派人员信息

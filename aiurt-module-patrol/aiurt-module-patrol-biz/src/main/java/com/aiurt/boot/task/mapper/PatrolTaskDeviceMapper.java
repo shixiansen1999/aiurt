@@ -56,4 +56,11 @@ public interface PatrolTaskDeviceMapper extends BaseMapper<PatrolTaskDevice> {
      * @return
      */
     List<String> getPosition(String code);
+
+    /**
+     * app-获取巡检表名称
+     * @param deviceId
+     * @return
+     */
+    String getStandardName(String deviceId);
 }
