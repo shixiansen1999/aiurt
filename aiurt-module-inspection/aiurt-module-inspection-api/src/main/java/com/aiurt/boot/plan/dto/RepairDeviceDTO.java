@@ -1,5 +1,6 @@
 package com.aiurt.boot.plan.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
@@ -17,16 +18,21 @@ public class RepairDeviceDTO {
     @ApiModelProperty(value = "设备编码")
     private String code;
     @ApiModelProperty(value = "设备类型名称")
+    @JsonProperty(value = "deviceTypeCode_dictText")
     private String deviceTypeName;
     @ApiModelProperty(value = "位置名称")
     private String positionCodeName;
     @ApiModelProperty(value = "临时设备名称")
+    @JsonProperty(value = "temporary_dictText")
     private String temporaryName;
     @ApiModelProperty(value = "设备状态名称")
+    @JsonProperty(value = "status_dictText")
     private String statusName;
     @ApiModelProperty(value = "适用专业名称")
+    @JsonProperty(value = "majorCode_dictText")
     private String majorName;
     @ApiModelProperty(value = "适用专业子系统名称")
+    @JsonProperty(value = "systemCode_dictText")
     private String subsystemName;
     @ApiModelProperty(value = "位置编码")
     private String positionCode;

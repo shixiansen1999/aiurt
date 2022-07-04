@@ -1,11 +1,13 @@
 package com.aiurt.boot.plan.entity;
 
 import com.aiurt.boot.plan.dto.RepairDeviceDTO;
+import com.aiurt.common.aspect.annotation.Dict;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -54,6 +56,7 @@ public class RepairPoolCode implements Serializable {
      */
     @Excel(name = "检修周期类型(0周检、1月检、2双月检、3季检、4半年检、5年检)", width = 15)
     @ApiModelProperty(value = "检修周期类型(0周检、1月检、2双月检、3季检、4半年检、5年检)")
+    @Dict(dicCode = "inspection_cycle_type")
     private java.lang.Integer type;
     /**
      * 状态 0-未生效 1-已生效
@@ -66,18 +69,21 @@ public class RepairPoolCode implements Serializable {
      */
     @Excel(name = "设备类型code，关联device_type的code", width = 15)
     @ApiModelProperty(value = "设备类型code，关联device_type的code")
+    @Dict(dictTable = "device_type", dicText = "name", dicCode = "code")
     private java.lang.String deviceTypeCode;
     /**
      * 是否与设备类型相关(0否1是)
      */
     @Excel(name = "是否与设备类型相关(0否1是)", width = 15)
     @ApiModelProperty(value = "是否与设备类型相关(0否1是)")
+    @Dict(dicCode = "is_appoint_device")
     private java.lang.Integer isAppointDevice;
     /**
      * 专业code,关联cs_major的code
      */
     @Excel(name = "专业code,关联cs_major的code", width = 15)
     @ApiModelProperty(value = "专业code,关联cs_major的code")
+    @Dict(dictTable = "cs_major", dicText = "major_name", dicCode = "major_code")
     private java.lang.String majorCode;
     /**
      * 专业子系统code,关联cs_subsystem_user的code
@@ -125,6 +131,7 @@ public class RepairPoolCode implements Serializable {
      */
     @TableField(exist = false)
     @ApiModelProperty(value = "检修周期类型名称")
+    @JsonProperty(value = "type_dictText")
     private String typeName;
 
     /**
@@ -139,6 +146,7 @@ public class RepairPoolCode implements Serializable {
      */
     @TableField(exist = false)
     @ApiModelProperty(value = "适用专业子系统名称")
+    @JsonProperty(value = "subsystemCode_dictText")
     private String subsystemName;
 
     /**
@@ -146,9 +154,10 @@ public class RepairPoolCode implements Serializable {
      */
     @ApiModelProperty(value = "设备类型名称")
     @TableField(exist = false)
+    @JsonProperty(value = "deviceTypeCode_dictText")
     private java.lang.String deviceTypeName;
     /**
-     * 设备类型名称
+     * 是否指定设备
      */
     @ApiModelProperty(value = "是否指定设备")
     @TableField(exist = false)
@@ -158,5 +167,6 @@ public class RepairPoolCode implements Serializable {
      */
     @ApiModelProperty(value = "是否跟设备类型相关")
     @TableField(exist = false)
+    @JsonProperty(value = "isAppointDevice_dictText")
     private java.lang.String isAppointDeviceName;
 }

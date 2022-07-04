@@ -92,7 +92,7 @@ public class ManualTaskController {
      */
     @AutoLog(value = "修改手工下发检修任务信息")
     @ApiOperation(value = "修改手工下发检修任务信息", notes = "修改手工下发检修任务信息")
-    @GetMapping(value = "/updateManualTaskById")
+    @PostMapping(value = "/updateManualTaskById")
     public Result<String> updateManualTaskById(@RequestBody RepairPoolReq repairPoolReq) {
         repairPoolService.updateManualTaskById(repairPoolReq);
         return Result.OK("修改成功!");

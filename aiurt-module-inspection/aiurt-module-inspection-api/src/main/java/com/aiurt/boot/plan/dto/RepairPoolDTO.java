@@ -2,6 +2,7 @@ package com.aiurt.boot.plan.dto;
 
 import com.aiurt.boot.plan.entity.RepairPoolCode;
 import com.aiurt.common.aspect.annotation.Dict;
+import com.aiurt.modules.basic.entity.DictEntity;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
@@ -23,7 +24,7 @@ import java.util.List;
 
 @Data
 @ApiModel(value = "手工下发检修任务", description = "repair_manual_task")
-public class RepairPoolDTO {
+public class RepairPoolDTO extends DictEntity {
 
     @TableId(type = IdType.ASSIGN_ID)
     @ApiModelProperty(value = "主键id", required = false)
@@ -31,6 +32,7 @@ public class RepairPoolDTO {
 
     @ApiModelProperty(value = "检修周期类型：0周检、1月检、2双月检、3季检、4半年检、5年检", required = true)
     @NotNull(message = "请选择检修周期类型")
+    @Dict(dicCode = "inspection_cycle_type")
     private java.lang.Integer type;
 
     @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd HH:mm:ss")

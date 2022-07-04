@@ -204,7 +204,9 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
                         .eq(RepairPoolRel::getRepairPoolStaId, req.getStandardId())
                         .eq(RepairPoolRel::getDelFlag, 0));
                 if (ObjectUtil.isNotEmpty(repairPoolRel)) {
-                    List<RepairPoolDeviceRel> repairPoolDeviceRels = repairPoolDeviceRel.selectList(new LambdaQueryWrapper<RepairPoolDeviceRel>().eq(RepairPoolDeviceRel::getRepairPoolRelId, repairPoolRel.getId()));
+                    List<RepairPoolDeviceRel> repairPoolDeviceRels = repairPoolDeviceRel.selectList(
+                            new LambdaQueryWrapper<RepairPoolDeviceRel>()
+                                    .eq(RepairPoolDeviceRel::getRepairPoolRelId, repairPoolRel.getId()));
                     if (CollUtil.isNotEmpty(repairPoolDeviceRels)) {
                         List<String> deviceCodes = repairPoolDeviceRels.stream().map(RepairPoolDeviceRel::getDeviceCode).collect(Collectors.toList());
                         repairDeviceDTOList = manager.queryDeviceByCodes(deviceCodes);
@@ -602,6 +604,7 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
                     repairTaskDeviceRel.setStationCode(re.getStationCode());
                     repairTaskDeviceRel.setPositionCode(re.getPositionCode());
                     repairTaskDeviceRelMapper.insert(repairTaskDeviceRel);
+
                     // 生成检修结果表
                     this.generateItemResult(oldStaId, repairTaskDeviceRel.getId());
                 });
@@ -838,7 +841,7 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
         if (CollUtil.isNotEmpty(addStationCode)) {
             addStationCode.forEach(re -> {
                 RepairPoolStationRel repairPoolStationRel = new RepairPoolStationRel();
-                repairPoolStationRel.setRepairPoolCode(repairPoolDTO.getCode());
+                repairPoolStationRel.setRepairPoolCode(repairPool.getCode());
                 UpdateHelperUtils.copyNullProperties(re, repairPoolStationRel);
                 repairPoolStationRelMapper.insert(repairPoolStationRel);
             });
@@ -850,7 +853,7 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
             orgCodes.forEach(org -> {
                 RepairPoolOrgRel repairPoolOrgRel = RepairPoolOrgRel.builder()
                         .orgCode(org)
-                        .repairPoolCode(repairPoolDTO.getCode())
+                        .repairPoolCode(repairPool.getCode())
                         .build();
                 orgRelMapper.insert(repairPoolOrgRel);
             });
@@ -884,20 +887,21 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
                     // 保存检修标准
                     RepairPoolCode repairPoolCode = new RepairPoolCode();
                     UpdateHelperUtils.copyNullProperties(inspectionCode, repairPoolCode);
+                    repairPoolCode.setId(null);
                     repairPoolCodeMapper.insert(repairPoolCode);
                     String staId = repairPoolCode.getId();
-                    String code = repairPoolCode.getCode();
 
-                    // 查询检修标准对应的检修项目
+                    // 查询旧的检修标准对应的检修项目
                     List<InspectionCodeContent> inspectionCodeContentList = inspectionCodeContentMapper.selectList(
                             new LambdaQueryWrapper<InspectionCodeContent>()
-                                    .eq(InspectionCodeContent::getCode, code)
+                                    .eq(InspectionCodeContent::getInspectionCodeId, inspectionCode.getId())
                                     .eq(InspectionCodeContent::getDelFlag, 0));
 
                     if (CollUtil.isNotEmpty(inspectionCodeContentList)) {
                         inspectionCodeContentList.forEach(ins -> {
                             RepairPoolCodeContent repairPoolCodeContent = new RepairPoolCodeContent();
                             UpdateHelperUtils.copyNullProperties(ins, repairPoolCodeContent);
+                            repairPoolCodeContent.setRepairPoolCodeId(staId);
                             repairPoolCodeContent.setId(null);
 
                             // 保存检修检查项

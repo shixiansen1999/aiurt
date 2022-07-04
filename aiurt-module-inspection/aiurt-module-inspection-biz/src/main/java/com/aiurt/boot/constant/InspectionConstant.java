@@ -96,27 +96,27 @@ public class InspectionConstant {
     /**
      * 检修周期类型：1周检
      */
-    public static final Integer WEEK = 1;
+    public static final Integer WEEK = 0;
     /**
      * 检修周期类型：2月检
      */
-    public static final Integer MONTH = 2;
+    public static final Integer MONTH = 1;
     /**
      * 检修周期类型：3双月检
      */
-    public static final Integer DOUBLEMONTH = 3;
+    public static final Integer DOUBLEMONTH = 2;
     /**
      * 检修周期类型：4季检
      */
-    public static final Integer QUARTER = 4;
+    public static final Integer QUARTER = 3;
     /**
      * 检修周期类型：5半年检
      */
-    public static final Integer SEMIANNUAL = 5;
+    public static final Integer SEMIANNUAL = 4;
     /**
      * 检修周期类型：6年检
      */
-    public static final Integer ANNUAL = 6;
+    public static final Integer ANNUAL = 5;
 
 
     /**

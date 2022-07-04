@@ -24,7 +24,6 @@ public class InspectionCodeDTO extends InspectionCode {
     @Excel(name = "专业名称", width = 15)
     @ApiModelProperty(value = "专业名称")
     private java.lang.String majorName;
-    /**检修周期类型(0周检、1月检、2双月检、3季检、4半年检、5年检)*/
     @Excel(name = "专业子系统名称", width = 15)
     @ApiModelProperty(value = "专业子系统名称")
     private java.lang.String subsystemName;

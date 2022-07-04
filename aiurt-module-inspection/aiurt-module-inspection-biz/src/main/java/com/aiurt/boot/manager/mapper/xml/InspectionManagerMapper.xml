@@ -53,6 +53,14 @@
         left join cs_major cm on  cm.major_code = d.major_code
         left join cs_subsystem  cs on cs.system_code = d.system_code
         left join device_type dt on dt.`code` = d.device_type_code
+        <where>
+            <if test="deviceCodes.size()>0">
+                d.code in
+                <foreach collection="deviceCodes" item="deviceCode" open="(" close=")" separator=",">
+                #{deviceCode}
+                </foreach>
+            </if>
+        </where>
     </select>
     <select id="queryNameByCode" resultType="java.lang.String">
         select name from device_type where code = #{code} and del_flag =0

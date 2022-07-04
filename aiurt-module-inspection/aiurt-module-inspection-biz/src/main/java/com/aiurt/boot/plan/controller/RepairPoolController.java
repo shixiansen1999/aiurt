@@ -51,35 +51,6 @@ public class RepairPoolController extends BaseController<RepairPool, IRepairPool
     }
 
 
-//    /**
-//     * 编辑
-//     *
-//     * @param repairPool
-//     * @return
-//     */
-//    @AutoLog(value = "repair_pool-编辑")
-//    @ApiOperation(value = "repair_pool-编辑", notes = "repair_pool-编辑")
-//    @RequestMapping(value = "/edit", method = {RequestMethod.PUT, RequestMethod.POST})
-//    public Result<String> edit(@RequestBody RepairPool repairPool) {
-//        repairPoolService.updateById(repairPool);
-//        return Result.OK("编辑成功!");
-//    }
-//
-//
-//    /**
-//     * 批量删除
-//     *
-//     * @param ids
-//     * @return
-//     */
-//    @AutoLog(value = "repair_pool-批量删除")
-//    @ApiOperation(value = "repair_pool-批量删除", notes = "repair_pool-批量删除")
-//    @DeleteMapping(value = "/deleteBatch")
-//    public Result<String> deleteBatch(@RequestParam(name = "ids", required = true) String ids) {
-//        this.repairPoolService.removeByIds(Arrays.asList(ids.split(",")));
-//        return Result.OK("批量删除成功!");
-//    }
-
     /**
      * 通过检修计划id查看检修标准详情
      *

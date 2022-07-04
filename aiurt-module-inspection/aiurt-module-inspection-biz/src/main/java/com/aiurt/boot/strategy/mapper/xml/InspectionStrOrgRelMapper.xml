@@ -3,7 +3,7 @@
 <mapper namespace="com.aiurt.boot.strategy.mapper.InspectionStrOrgRelMapper">
 
     <insert id="insertBatch">
-        INSERT INTO `repair_pool_station_rel` ( `id`, `repair_pool_code`, `org_code`)
+        INSERT INTO `repair_pool_org_rel` ( `id`, `repair_pool_code`, `org_code`)
         VALUES
         <foreach collection ="repairPoolOrgRels" item="org" separator =",">
             (  #{org.id},  #{org.repairPoolCode}, #{org.orgCode})
