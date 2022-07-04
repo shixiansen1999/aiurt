@@ -32,4 +32,9 @@ public class PatrolTaskOrganizationServiceImpl extends ServiceImpl<PatrolTaskOrg
     public List<PatrolUserInfoDTO> getUserListByTaskCode(String code) {
         return patrolTaskOrganizationMapper.getUserListByTaskCode(code);
     }
+
+    @Override
+    public List<String> getOrgCode(String taskCode) {
+        return patrolTaskOrganizationMapper.getOrgCode(taskCode);
+    }
 }

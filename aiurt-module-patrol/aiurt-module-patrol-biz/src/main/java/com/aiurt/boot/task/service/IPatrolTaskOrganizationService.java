@@ -29,4 +29,12 @@ public interface IPatrolTaskOrganizationService extends IService<PatrolTaskOrgan
      * @return
      */
     List<PatrolUserInfoDTO> getUserListByTaskCode(String code);
+
+    /**
+     * 根据任务编号获取组织机构编号
+     *
+     * @param taskCode
+     * @return
+     */
+    List<String> getOrgCode(String taskCode);
 }

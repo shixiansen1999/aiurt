@@ -11,6 +11,7 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import org.jeecgframework.poi.excel.annotation.Excel;
 
+import java.util.Date;
 import java.util.List;
 
 @Data
@@ -91,6 +92,24 @@ public class PatrolTaskParam extends PatrolTask {
     @Excel(name = "巡检人员信息", width = 15)
     @ApiModelProperty(value = "巡检人员信息")
     private List<PatrolTaskUser> userInfo;
+    /**
+     * 任务计划执行日期范围
+     */
+    @Excel(name = "任务计划执行日期范围", width = 15)
+    @ApiModelProperty(value = "任务计划执行日期范围")
+    private String dateScope;
+    /**
+     * 任务计划执行日期范围开始日期
+     */
+    @Excel(name = "任务计划执行日期范围开始日期", width = 15)
+    @ApiModelProperty(value = "任务计划执行日期范围开始日期")
+    private Date dateHead;
+    /**
+     * 任务计划执行日期范围结束日期
+     */
+    @Excel(name = "任务计划执行日期范围结束日期", width = 15)
+    @ApiModelProperty(value = "任务计划执行日期范围结束日期")
+    private Date dateEnd;
     /**
      * 专业信息
      */

@@ -10,23 +10,23 @@ import com.aiurt.boot.task.service.IPatrolTaskDeviceService;
 import com.aiurt.boot.task.service.IPatrolTaskOrganizationService;
 import com.aiurt.boot.task.service.IPatrolTaskService;
 import com.aiurt.common.aspect.annotation.AutoLog;
+import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.system.base.controller.BaseController;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import jdk.nashorn.internal.runtime.regexp.joni.constants.internal.OPCode;
 import lombok.extern.slf4j.Slf4j;
 import org.jeecg.common.api.vo.Result;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * @Description: patrol_task
@@ -142,13 +142,27 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
     @ApiOperation(value = "PC巡检任务池-获取指派人员", notes = "PC巡检任务池-获取指派人员")
     @RequestMapping(value = "/getAssignee", method = {RequestMethod.GET, RequestMethod.POST})
     public Result<?> getAssignee(@RequestParam("code") List<String> list) {
-        List<PatrolUserInfoDTO> userInfo = new ArrayList<>();
-        // 如果是单个code，则返回该任务下对应站点和组织机构用户
-        if (CollectionUtil.isNotEmpty(list) && 1 == list.size()) {
-            userInfo = patrolTaskOrganizationService.getUserListByTaskCode(list.get(0));
-        } else {
-            //todo 批量指派 需要相同的组织机构
 
+        if (CollectionUtil.isEmpty(list)) {
+            throw new AiurtBootException("任务编号的集合对象为空！");
+        }
+
+        int size = list.size();
+        List<PatrolUserInfoDTO> userInfo = Optional.ofNullable(patrolTaskOrganizationService.getUserListByTaskCode(list.get(0))).orElseGet(Collections::emptyList);
+
+        // 获取批量指派时的用户 需要相同的组织机构
+        if (size > 1) {
+            List<String> orgCode = Optional.ofNullable(patrolTaskOrganizationService.getOrgCode(list.get(0))).orElseGet(Collections::emptyList);
+            for (int i = 1; i < size; i++) {
+                List<String> code = Optional.ofNullable(patrolTaskOrganizationService.getOrgCode(list.get(i))).orElseGet(Collections::emptyList);
+                boolean contains1 = orgCode.containsAll(code);
+                boolean contains2 = code.containsAll(orgCode);
+                if (contains1 && contains2) {
+                    continue;
+                } else {
+                    throw new AiurtBootException("请选择组织机构一致的任务进行批量指派！");
+                }
+            }
 
         }
         return Result.OK(userInfo);
@@ -163,8 +177,8 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
     @AutoLog(value = "PC巡检任务池-任务指派")
     @ApiOperation(value = "PC巡检任务池-任务指派", notes = "PC巡检任务池-任务指派")
     @PostMapping(value = "/taskAppoint")
-    public Result<?> taskAppoint(@RequestBody Map<String, List<PatrolAppointUserDTO>> map) {
-        int reslut = patrolTaskService.taskAppoint(map);
+    public Result<?> taskAppoint(@RequestBody Map<String, List<PatrolAppointUserDTO>> map, @RequestBody PatrolAppointInfoDTO patrolAppointInfoDTO) {
+        int reslut = patrolTaskService.taskAppoint(map, patrolAppointInfoDTO);
         return Result.OK("成功对" + reslut + "条任务进行指派！", null);
     }
 
@@ -180,6 +194,23 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
     public Result<?> taskDiscard(@RequestBody List<PatrolTask> list) {
         int reslut = patrolTaskService.taskDiscard(list);
         return Result.OK("成功对" + reslut + "条任务进行作废操作！", null);
+    }
+
+    /**
+     * PC巡检任务列表-任务审核
+     * @param code
+     * @param auditStatus 审核状态，通过/不通过
+     * @param auditReason
+     * @param remark
+     * @return
+     */
+    @AutoLog(value = "PC巡检任务列表-任务审核")
+    @ApiOperation(value = "PC巡检任务列表-任务审核", notes = "PC巡检任务列表-任务审核")
+    @PostMapping(value = "/taskAudit")
+    public Result<?> taskAudit(@RequestParam("taskCode") String code, @RequestParam("auditStatus") Integer auditStatus,
+                               String auditReason, String remark) {
+        patrolTaskService.taskAudit(code,auditStatus, auditReason, remark);
+        return Result.OK();
     }
 
     /**

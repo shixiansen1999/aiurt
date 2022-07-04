@@ -40,6 +40,14 @@ public interface PatrolConstant {
      */
     Integer TASK_UNABNORMAL = 1;
     /**
+     * 巡检任务已驳回状态
+     */
+    Integer TASK_BACK = 5;
+    /**
+     * 巡检任务已完成状态
+     */
+    Integer TASK_COMPLETE = 5;
+    /**
      * 巡检任务未作废状态
      */
     Integer TASK_UNDISCARD = 0;
@@ -63,4 +71,12 @@ public interface PatrolConstant {
      * 巡检检查结果异常状态
      */
     Integer RESULT_EXCEPTION = 0;
+    /**
+     * 巡检审核通过状态
+     */
+    Integer AUDIT_PASS = 1;
+    /**
+     * 巡检审核不通过状态
+     */
+    Integer AUDIT_NOPASS = 0;
 }

@@ -19,4 +19,6 @@ public interface PatrolTaskOrganizationMapper extends BaseMapper<PatrolTaskOrgan
     List<PatrolTaskOrganizationDTO> selectOrgByTaskCode(@Param("taskCode") String taskCode);
 
     List<PatrolUserInfoDTO> getUserListByTaskCode(@Param("code") String code);
+
+    List<String> getOrgCode(@Param("taskCode") String taskCode);
 }

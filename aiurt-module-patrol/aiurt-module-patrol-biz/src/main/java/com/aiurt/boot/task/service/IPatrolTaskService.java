@@ -1,9 +1,6 @@
 package com.aiurt.boot.task.service;
 
-import com.aiurt.boot.task.dto.PatrolAppointUserDTO;
-import com.aiurt.boot.task.dto.PatrolTaskDTO;
-import com.aiurt.boot.task.dto.PatrolTaskSubmitDTO;
-import com.aiurt.boot.task.dto.PatrolTaskUserDTO;
+import com.aiurt.boot.task.dto.*;
 import com.aiurt.boot.task.entity.PatrolTask;
 import com.aiurt.boot.task.param.PatrolTaskParam;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -89,7 +86,7 @@ public interface IPatrolTaskService extends IService<PatrolTask> {
      * @param map
      * @return
      */
-    int taskAppoint(Map<String, List<PatrolAppointUserDTO>> map);
+    int taskAppoint(Map<String, List<PatrolAppointUserDTO>> map, PatrolAppointInfoDTO ppatrolAppointInfoDTO);
 
     /**
      * PC巡检任务池-任务作废
@@ -122,4 +119,11 @@ public interface IPatrolTaskService extends IService<PatrolTask> {
      * @param id
      */
     Map<String, Object> getMajorSubsystemGanged(String id);
+
+    /**
+     * PC巡检任务列表-任务审核
+     *
+     * @param code
+     */
+    int taskAudit(String code, Integer auditStatus, String auditReason, String remark);
 }

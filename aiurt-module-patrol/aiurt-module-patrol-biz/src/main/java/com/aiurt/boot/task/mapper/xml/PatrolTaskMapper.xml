@@ -77,6 +77,11 @@
             WHERE ppo.organization_code = #{patrolTask.organizationCode}
             )
         </if>
+        <if test="patrolTask.dateHead != null and patrolTask.dateEnd != null">
+            AND DATE_FORMAT( pt.patrol_date, '%Y-%m-%d' )
+            BETWEEN DATE_FORMAT( #{patrolTask.dateHead}, '%Y-%m-%d' )
+            AND DATE_FORMAT( #{patrolTask.dateEnd}, '%Y-%m-%d')
+        </if>
 
     </select>
     <select id="getUserName" resultType="java.lang.String">

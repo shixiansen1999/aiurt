@@ -2,7 +2,7 @@ package com.aiurt.boot.task.service.impl;
 
 
 import cn.hutool.core.collection.CollUtil;
-import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.constant.PatrolConstant;
@@ -63,6 +63,13 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
 
     @Override
     public IPage<PatrolTaskParam> getTaskList(Page<PatrolTaskParam> page, PatrolTaskParam patrolTaskParam) {
+        if (ObjectUtil.isNotEmpty(patrolTaskParam) && ObjectUtil.isNotEmpty(patrolTaskParam.getDateScope())) {
+            String[] split = patrolTaskParam.getDateScope().split(",");
+            Date dateHead = DateUtil.parse(split[0], "yyyy-MM-dd");
+            Date dateEnd = DateUtil.parse(split[1], "yyyy-MM-dd");
+            patrolTaskParam.setDateHead(dateHead);
+            patrolTaskParam.setDateEnd(dateEnd);
+        }
         IPage<PatrolTaskParam> taskIPage = patrolTaskMapper.getTaskList(page, patrolTaskParam);
         taskIPage.getRecords().stream().forEach(l -> {
             // 组织机构信息
@@ -111,7 +118,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
     }
 
     @Override
-    public int taskAppoint(Map<String, List<PatrolAppointUserDTO>> map) {
+    public int taskAppoint(Map<String, List<PatrolAppointUserDTO>> map, PatrolAppointInfoDTO patrolAppointInfoDTO) {
         AtomicInteger count = new AtomicInteger();
         for (Map.Entry<String, List<PatrolAppointUserDTO>> listEntry : map.entrySet()) {
             List<PatrolAppointUserDTO> list = listEntry.getValue();
@@ -145,8 +152,14 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
                 });
                 // 若插入指派的人员后则更新任务状态
                 if (insert.get() > 0) {
-                    // 任务状态
                     PatrolTask task = new PatrolTask();
+                    // TODO 计划令编号和图片地址待扩展
+//                    task.setPlanOrderCode(patrolAppointInfoDTO.getPlanOrderCode());
+//                    task.setPlanOrderCodeUrl(patrolAppointInfoDTO.getPlanOrderCodeUrl());
+                    // 更新检查开始结束时间
+                    task.setStartTime(patrolAppointInfoDTO.getStartTime());
+                    task.setEndTime(patrolAppointInfoDTO.getEndTime());
+                    // 任务状态
                     task.setStatus(PatrolConstant.TASK_APPOINT);
                     // 更改任务状态为已指派
                     patrolTaskMapper.update(task, taskWrapper);
@@ -263,15 +276,12 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         }
         //提交任务：将执行中，变为待审核、添加任务结束人id,传签名地址
         if (patrolTaskDTO.getStatus() == 4) {
-            if(patrolTaskDTO.getAuditor()==1)
-            {
+            if (patrolTaskDTO.getAuditor() == 1) {
                 updateWrapper.set(PatrolTask::getStatus, 6)
                         .set(PatrolTask::getEndUserId, sysUser.getId())
                         .set(PatrolTask::getSignUrl, patrolTaskDTO.getSignUrl())
                         .eq(PatrolTask::getId, patrolTaskDTO.getId());
-            }
-            else
-            {
+            } else {
                 updateWrapper.set(PatrolTask::getStatus, 7)
                         .set(PatrolTask::getEndUserId, sysUser.getId())
                         .set(PatrolTask::getSignUrl, patrolTaskDTO.getSignUrl())
@@ -406,5 +416,29 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         map.put("major", major);
         map.put("subsystem", subsystem);
         return map;
+    }
+
+    @Override
+    public int taskAudit(String code, Integer auditStatus, String auditReason, String remark) {
+        QueryWrapper<PatrolTask> wrapper = new QueryWrapper<>();
+        wrapper.lambda().eq(PatrolTask::getCode, code);
+        PatrolTask patrolTask = patrolTaskMapper.selectOne(wrapper);
+        // 获取当前登录用户
+        LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        patrolTask.setAuditorId(loginUser.getId());
+        // todo 审核备注
+        if (ObjectUtil.isEmpty(loginUser)) {
+            throw new AiurtBootException("未发现登录用户，请登录系统后操作！");
+        }
+        if (PatrolConstant.AUDIT_NOPASS.equals(auditStatus)) {
+            if (StrUtil.isEmpty(auditReason)) {
+                throw new AiurtBootException("审核不通过原因不能为空！");
+            }
+            patrolTask.setRejectReason(auditReason);
+            patrolTask.setStatus(PatrolConstant.TASK_BACK);
+        } else {
+            patrolTask.setStatus(PatrolConstant.TASK_COMPLETE);
+        }
+        return 0;
     }
 }

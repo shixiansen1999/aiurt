@@ -33,4 +33,15 @@
         GROUP BY
         org_code
     </select>
+    <select id="getOrgCode" resultType="java.lang.String">
+        SELECT
+        GROUP_CONCAT( DISTINCT pto.org_code )
+        FROM
+        patrol_task_organization pto
+        WHERE
+        pto.del_flag = 0
+        <if test="taskCode != null and taskCode != ''">
+            AND pto.task_code = #{taskCode}
+        </if>
+    </select>
 </mapper>
