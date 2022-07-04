@@ -49,10 +49,6 @@ public class PatrolPlan implements Serializable {
 	@Excel(name = "是否委外：0否、1是", width = 15)
     @ApiModelProperty(value = "是否委外：0否、1是")
     private java.lang.Integer outsource;
-    /**组织机构是否协作：0否、1是*/
-    @Excel(name = "组织机构是否协作：0否、1是", width = 15)
-    @ApiModelProperty(value = "组织机构是否协作：0否、1是")
-    private java.lang.Integer cooperation;
 	/**巡检频次：1 一天1次、2 一周1次、3 一周2次*/
 	@Excel(name = "巡检频次：1 一天1次、2 一周1次、3 一周2次", width = 15)
     @ApiModelProperty(value = "1 一天1次、2 一周1次、3 一周2次、 4 一月1次、 5一月2次")
