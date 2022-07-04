@@ -74,6 +74,12 @@ public class PatrolTaskParam extends PatrolTask {
     @ApiModelProperty(value = "组织机构编号")
     private String organizationCode;
     /**
+     * 站点编号
+     */
+    @Excel(name = "站点编号", width = 15)
+    @ApiModelProperty(value = "站点编号")
+    private String stationCode;
+    /**
      * 组织机构信息
      */
     @Excel(name = "组织机构信息", width = 15)
