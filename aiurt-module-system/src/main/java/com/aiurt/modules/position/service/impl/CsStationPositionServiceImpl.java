@@ -99,13 +99,13 @@ public class CsStationPositionServiceImpl extends ServiceImpl<CsStationPositionM
         }
 
         //根据Station_code查询所属线路code
-        LambdaQueryWrapper<CsStation> stationWrapper = new LambdaQueryWrapper<>();
+/*        LambdaQueryWrapper<CsStation> stationWrapper = new LambdaQueryWrapper<>();
         stationWrapper.eq(CsStation::getStationCode,csStationPosition.getStaionCode());
         stationWrapper.eq(CsStation::getDelFlag, 0);
         CsStation sta = csStationMapper.selectOne(stationWrapper);
-        csStationPosition.setLineCode(sta.getLineCode());
+        csStationPosition.setLineCode(sta.getLineCode());*/
         //拼接position_code_cc
-        csStationPosition.setPositionCodeCc("/"+sta.getLineCode()+"/"+csStationPosition.getStaionCode()+"/"+csStationPosition.getPositionCode());
+/*        csStationPosition.setPositionCodeCc("/"+sta.getLineCode()+"/"+csStationPosition.getStaionCode()+"/"+csStationPosition.getPositionCode());*/
         csStationPositionMapper.updateById(csStationPosition);
         return Result.OK("编辑成功！");
     }
