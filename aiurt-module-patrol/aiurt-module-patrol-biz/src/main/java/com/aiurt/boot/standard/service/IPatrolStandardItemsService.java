@@ -1,6 +1,7 @@
 package com.aiurt.boot.standard.service;
 
 import cn.hutool.core.lang.tree.Tree;
+import com.aiurt.boot.standard.dto.SysDictDTO;
 import com.aiurt.boot.standard.entity.PatrolStandardItems;
 import com.baomidou.mybatisplus.extension.service.IService;
 
@@ -36,4 +37,11 @@ public interface IPatrolStandardItemsService extends IService<PatrolStandardItem
      * @return
      */
     List<Tree<String>> getTaskPoolList(String id);
+
+    /**
+     * 查询数据字典
+     * @param statusItem
+     * @return
+     */
+    List<SysDictDTO> querySysDict(Integer statusItem);
 }

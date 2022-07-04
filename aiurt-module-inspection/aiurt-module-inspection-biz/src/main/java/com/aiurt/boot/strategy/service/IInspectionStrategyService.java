@@ -2,10 +2,13 @@ package com.aiurt.boot.strategy.service;
 
 import com.aiurt.boot.strategy.dto.InspectionStrategyDTO;
 import com.aiurt.boot.strategy.entity.InspectionStrategy;
+import com.aiurt.modules.device.entity.Device;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 import org.jeecg.common.api.vo.Result;
+
+import java.util.List;
 
 /**
  * @Description: inspection_strategy
@@ -60,4 +63,11 @@ public interface IInspectionStrategyService extends IService<InspectionStrategy>
      * @return
      */
     Result addAnnualNewPlan(String id);
+
+    /**
+     * 查询所选择的设备
+     * @param code
+     * @return
+     */
+    List<Device> viewDetails(String code);
 }

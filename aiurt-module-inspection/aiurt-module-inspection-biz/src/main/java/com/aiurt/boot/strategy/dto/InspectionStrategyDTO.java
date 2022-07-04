@@ -28,7 +28,7 @@ public class InspectionStrategyDTO extends InspectionStrategy {
     @ApiModelProperty(value = "选择的标准表codes")
     @TableField(exist = false)
     List<String> inspectionCodes;
-    @ApiModelProperty(value = "选择的设备集合")
+    @ApiModelProperty(value = "选择的标准集合")
     @TableField(exist = false)
     List<InspectionCodeDTO> inspectionCodeDTOS;
     /**专业code*/
@@ -71,9 +71,7 @@ public class InspectionStrategyDTO extends InspectionStrategy {
     @TableField(exist = false)
     List<String> mechanismCodes;
     @Excel(name = "标准表Ids", width = 15)
-    @ApiModelProperty(value = "标准表Ids")
+    @ApiModelProperty(value = "标准表Codes")
     @TableField(exist = false)
-    private String ids;
-    private String ws;
-    private String ts;
+    private String codes;
 }

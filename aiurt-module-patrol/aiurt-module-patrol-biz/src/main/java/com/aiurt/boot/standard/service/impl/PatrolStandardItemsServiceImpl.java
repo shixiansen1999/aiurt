@@ -5,6 +5,7 @@ import cn.hutool.core.lang.tree.Tree;
 import cn.hutool.core.lang.tree.TreeNodeConfig;
 import cn.hutool.core.lang.tree.TreeUtil;
 import com.aiurt.boot.standard.dto.PatrolStandardItemsDTO;
+import com.aiurt.boot.standard.dto.SysDictDTO;
 import com.aiurt.boot.standard.entity.PatrolStandardItems;
 import com.aiurt.boot.standard.mapper.PatrolStandardItemsMapper;
 import com.aiurt.boot.standard.service.IPatrolStandardItemsService;
@@ -97,5 +98,11 @@ private PatrolTaskStandardMapper patrolTaskStandardMapper;
            tree.setParentId(node.getPid()).toString();
         });
          return treeList;
+    }
+
+    @Override
+    public List<SysDictDTO> querySysDict(Integer statusItem) {
+        List<SysDictDTO> list =baseMapper.querySysDict(statusItem);
+        return list;
     }
 }

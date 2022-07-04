@@ -24,6 +24,9 @@
         <if test="patrolStandard.createBy !=null ">
             AND a.create_by = #{patrolStandard.createBy}
         </if>
+        <if test="patrolStandard.status !=null ">
+            AND a.status = #{patrolStandard.status}
+        </if>
         order by a.create_time desc
     </select>
     <select id="list" resultType="com.aiurt.boot.standard.dto.InspectionStandardDto">

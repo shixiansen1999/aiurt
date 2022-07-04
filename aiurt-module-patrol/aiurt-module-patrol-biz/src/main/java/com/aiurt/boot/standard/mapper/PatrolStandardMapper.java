@@ -25,7 +25,7 @@ public interface PatrolStandardMapper extends BaseMapper<PatrolStandard> {
     List<PatrolStandardDto> pageList (@Param("page") Page page, @Param("patrolStandard") PatrolStandard patrolStandard);
 
     /**
-     * 获取分页
+     * 获取分类
      * @param professionCode
      * @return
      */
