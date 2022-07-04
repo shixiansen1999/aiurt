@@ -159,6 +159,12 @@ public class PatrolTask implements Serializable {
     @ApiModelProperty(value = "审核用户ID")
     private java.lang.String auditorId;
     /**
+     * 审核备注信息
+     */
+    @Excel(name = "审核备注信息", width = 15)
+    @ApiModelProperty(value = "审核备注信息")
+    private java.lang.String auditorRemark;
+    /**
      * 异常状态：0异常、1正常
      */
     @Excel(name = "异常状态：0异常、1正常", width = 15)

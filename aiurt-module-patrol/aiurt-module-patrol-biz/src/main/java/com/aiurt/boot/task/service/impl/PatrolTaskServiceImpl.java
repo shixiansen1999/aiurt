@@ -427,7 +427,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         // 获取当前登录用户
         LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         patrolTask.setAuditorId(loginUser.getId());
-        // todo 审核备注
+
         if (ObjectUtil.isEmpty(loginUser)) {
             throw new AiurtBootException("未发现登录用户，请登录系统后操作！");
         }
@@ -439,8 +439,10 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
             patrolTask.setStatus(PatrolConstant.TASK_BACK);
         } else {
             patrolTask.setStatus(PatrolConstant.TASK_COMPLETE);
+            patrolTask.setAuditorRemark(remark);
         }
-        return 0;
+        int insertTask = patrolTaskMapper.insert(patrolTask);
+        return insertTask;
     }
 
     @Override
@@ -448,23 +450,20 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         //提交任务：将待执行、执行中，变为待审核、添加任务结束人id,传签名地址、任务主键id、状态
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         LambdaUpdateWrapper<PatrolTask> updateWrapper = new LambdaUpdateWrapper<>();
-            if(patrolTaskDTO.getAuditor()==1)
-            {
-                updateWrapper.set(PatrolTask::getStatus, 6)
-                        .set(PatrolTask::getEndUserId, sysUser.getId())
-                        .set(PatrolTask::getSignUrl, patrolTaskDTO.getSignUrl())
-                        .set(PatrolTask::getEndTime, LocalDateTime.now())
-                        .eq(PatrolTask::getId, patrolTaskDTO.getId());
-            }
-            else
-            {
-                updateWrapper.set(PatrolTask::getStatus, 7)
-                        .set(PatrolTask::getEndUserId, sysUser.getId())
-                        .set(PatrolTask::getSignUrl, patrolTaskDTO.getSignUrl())
-                        .set(PatrolTask::getEndTime, LocalDateTime.now())
-                        .eq(PatrolTask::getId, patrolTaskDTO.getId());
-            }
-            update(updateWrapper);
+        if (patrolTaskDTO.getAuditor() == 1) {
+            updateWrapper.set(PatrolTask::getStatus, 6)
+                    .set(PatrolTask::getEndUserId, sysUser.getId())
+                    .set(PatrolTask::getSignUrl, patrolTaskDTO.getSignUrl())
+                    .set(PatrolTask::getEndTime, LocalDateTime.now())
+                    .eq(PatrolTask::getId, patrolTaskDTO.getId());
+        } else {
+            updateWrapper.set(PatrolTask::getStatus, 7)
+                    .set(PatrolTask::getEndUserId, sysUser.getId())
+                    .set(PatrolTask::getSignUrl, patrolTaskDTO.getSignUrl())
+                    .set(PatrolTask::getEndTime, LocalDateTime.now())
+                    .eq(PatrolTask::getId, patrolTaskDTO.getId());
+        }
+        update(updateWrapper);
 
     }
 }

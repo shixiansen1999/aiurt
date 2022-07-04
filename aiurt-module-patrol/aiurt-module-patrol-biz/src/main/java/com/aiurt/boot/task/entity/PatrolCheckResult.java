@@ -107,6 +107,10 @@ public class PatrolCheckResult implements Serializable {
     @Excel(name = "检查用户ID", width = 15)
     @ApiModelProperty(value = "检查用户ID")
     private java.lang.String userId;
+    /**备注*/
+    @Excel(name = "备注", width = 15)
+    @ApiModelProperty(value = "备注")
+    private java.lang.String remark;
 	/**删除状态： 0未删除 1已删除*/
 	@Excel(name = "删除状态： 0未删除 1已删除", width = 15)
     @ApiModelProperty(value = "删除状态： 0未删除 1已删除")
