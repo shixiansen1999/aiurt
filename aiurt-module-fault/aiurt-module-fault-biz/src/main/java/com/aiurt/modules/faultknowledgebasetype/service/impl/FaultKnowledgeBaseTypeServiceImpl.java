@@ -54,8 +54,8 @@ public class FaultKnowledgeBaseTypeServiceImpl extends ServiceImpl<FaultKnowledg
                 } else {
                     LambdaQueryWrapper<FaultKnowledgeBaseType> queryWrapper = new LambdaQueryWrapper<>();
                     List<FaultKnowledgeBaseType> faultKnowledgeBaseTypes = faultKnowledgeBaseTypeMapper.selectList(
-                            queryWrapper.eq(FaultKnowledgeBaseType::getDelFlag, 0).
-                                    eq(FaultKnowledgeBaseType::getMajorCode, majorDTO));
+                            queryWrapper.eq(FaultKnowledgeBaseType::getDelFlag, 0)
+                                    .eq(FaultKnowledgeBaseType::getMajorCode, majorDTO.getMajorCode()));
                     //获取子节点
                     List<FaultKnowledgeBaseType> treeRes = getTreeRes(faultKnowledgeBaseTypes, 0);
                     majorDTO.setFaultKnowledgeBaseTypes(treeRes);

@@ -240,12 +240,11 @@ public class CsSubsystemController  {
 	  */
 	 @ApiOperation(value="根据专业查子系统", notes="根据专业查子系统")
 	 @GetMapping(value = "/getList")
-	 public Result<?> getList(@RequestParam(name="majorIds",required=true) String majorIds) {
-		 List<String> majors = Arrays.asList(majorIds.split(","));
+	 public Result<?> getList(@RequestParam(name="majorIds",required=true) List<String> majorIds) {
 		 List<CsMajor> majorList = csMajorService.list(new LambdaQueryWrapper<CsMajor>()
 				 .eq(CsMajor::getDelFlag,0)
-				 .in(CsMajor::getMajorCode,majors)
-				 .select(CsMajor::getId,CsMajor::getMajorName));
+				 .in(CsMajor::getMajorCode,majorIds)
+				 .select(CsMajor::getMajorCode,CsMajor::getMajorName));
 		 majorList.forEach(major -> {
 			 List<CsSubsystem> systemList = csSubsystemService.list(new LambdaQueryWrapper<CsSubsystem>()
 					 .eq(CsSubsystem::getDelFlag,0)

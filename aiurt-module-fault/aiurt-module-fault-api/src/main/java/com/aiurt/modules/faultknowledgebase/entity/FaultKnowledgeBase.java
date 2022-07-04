@@ -50,7 +50,7 @@ public class FaultKnowledgeBase implements Serializable {
     @ApiModelProperty(value = "故障原因")
     private String faultReason;
 	/**故障措施/解决方案*/
-	@Excel(name = "故障措施/解决方案", width = 15)
+	@Excel(name = "解决方案", width = 15)
     @ApiModelProperty(value = "故障措施/解决方案")
     private String solution;
 	/**浏览次数*/
@@ -103,9 +103,9 @@ public class FaultKnowledgeBase implements Serializable {
     @ApiModelProperty(value = "设备类型")
     @Dict(dictTable ="device_Type",dicText = "name",dicCode = "code")
     private String deviceTypeCode;
-	/**组件编码*/
-	@Excel(name = "组件编码", width = 15)
-    @ApiModelProperty(value = "组件编码")
+	/**设备组件*/
+	@Excel(name = "设备组件", width = 15)
+    @ApiModelProperty(value = "设备组件")
     @Dict(dictTable ="device_assembly",dicText = "material_name",dicCode = "device_code")
     private String materialCode;
 	/**审核人*/
@@ -145,4 +145,10 @@ public class FaultKnowledgeBase implements Serializable {
     @ApiModelProperty(value = "组件名称")
     @TableField(exist = false)
     private String materialName;
+
+    /**图片*/
+    @Excel(name = "图片", width = 15,type = 2)
+    @ApiModelProperty(value = "图片")
+    @TableField(exist = false)
+    private byte[] picture;
 }

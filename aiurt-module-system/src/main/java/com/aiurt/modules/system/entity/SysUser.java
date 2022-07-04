@@ -223,6 +223,7 @@ public class SysUser implements Serializable {
 
     /**系统权限*/
     @ApiModelProperty(value = "系统权限codes")
+    @TableField(exist = false)
     private List<String> systemCodes;
 
     /**角色*/
