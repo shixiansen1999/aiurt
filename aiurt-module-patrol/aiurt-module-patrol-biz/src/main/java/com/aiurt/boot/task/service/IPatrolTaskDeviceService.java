@@ -28,6 +28,14 @@ public interface IPatrolTaskDeviceService extends IService<PatrolTaskDevice> {
     IPage<PatrolTaskDeviceParam> selectBillInfo(Page<PatrolTaskDeviceParam> page, PatrolTaskDeviceParam patrolTaskDeviceParam);
 
     /**
+     * 设备台账-巡视履历列表
+     * @param page
+     * @param patrolTaskDeviceParam
+     * @return
+     */
+    IPage<PatrolTaskDeviceParam> selectBillInfoForDevice(Page<PatrolTaskDeviceParam> page, PatrolTaskDeviceParam patrolTaskDeviceParam);
+
+    /**
      * app-巡检清单列表
      *
      * @param pageList

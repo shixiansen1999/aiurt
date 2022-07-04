@@ -2,13 +2,16 @@ package com.aiurt.boot.task.param;
 
 import com.aiurt.boot.task.entity.PatrolAccompany;
 import com.aiurt.boot.task.entity.PatrolTaskDevice;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import org.jeecgframework.poi.excel.annotation.Excel;
+import org.springframework.format.annotation.DateTimeFormat;
 
+import java.util.Date;
 import java.util.List;
 
 @Data
@@ -54,6 +57,24 @@ public class PatrolTaskDeviceParam extends PatrolTaskDevice {
     @Excel(name = "设备类型名称", width = 15)
     @ApiModelProperty(value = "设备类型名称")
     private String deviceTypeName;
+
+    /**
+     * 开始巡检时间起始
+     */
+    @ApiModelProperty(value = "开始巡检时间起始")
+    @Excel(name = "开始巡检时间起始", width = 15, format = "yyyy-MM-dd")
+    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
+    @DateTimeFormat(pattern="yyyy-MM-dd")
+    private Date startTimeBegin;
+
+    /**
+     * 开始巡检时间结束
+     */
+    @ApiModelProperty(value = "开始巡检时间结束")
+    @Excel(name = "开始巡检时间结束", width = 15, format = "yyyy-MM-dd")
+    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
+    @DateTimeFormat(pattern="yyyy-MM-dd")
+    private Date startTimeEnd;
     /**
      * 标准名称
      */
@@ -99,9 +120,16 @@ public class PatrolTaskDeviceParam extends PatrolTaskDevice {
     /**
      * 同行人信息
      */
-    @Excel(name = "巡检时长", width = 15)
-    @ApiModelProperty(value = "巡检时长")
+    @Excel(name = "同行人信息", width = 15)
+    @ApiModelProperty(value = "同行人信息")
     private List<PatrolAccompany> accompanyInfo;
+
+    /**
+     * 同行人信息字符串
+     */
+    @Excel(name = "同行人信息字符串", width = 15)
+    @ApiModelProperty(value = "同行人信息字符串")
+    private String accompanyInfoStr;
     /**
      * 正常项
      */

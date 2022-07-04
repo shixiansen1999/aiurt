@@ -155,7 +155,7 @@ public class Device extends DictEntity {
 	/**负责班组*/
 	@Excel(name = "负责班组", width = 15)
 	@ApiModelProperty(value = "负责班组")
-	@Dict(dictTable ="sys_depart",dicText = "depart_name",dicCode = "org_code")
+	@Dict(dictTable ="sys_depart",dicText = "depart_name",dicCode = "id")
 	private  String  orgCode;
 	/**负责班组名称*/
 	@Excel(name = "负责班组名称", width = 15)

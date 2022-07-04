@@ -38,6 +38,52 @@
             and su.realname like concat('%',#{taskDevice.username},'%')
         </if>
     </select>
+    <select id="selectBillInfoForDevice" resultType="com.aiurt.boot.task.param.PatrolTaskDeviceParam">
+        SELECT pts.profession_code majorCode,
+        cm.major_name majorName,
+        pts.subsystem_code,
+        cs.system_name subsystemName,
+        pts.device_type_code,
+        dt.`name` deviceTypeName,
+        ps.`name` standardName,
+        device.`name` deviceName,
+        su.realname username,
+        ptd.*
+        FROM patrol_task_device ptd
+        JOIN patrol_task_standard pts ON ptd.task_standard_id = pts.id
+        LEFT JOIN patrol_standard ps ON pts.standard_id = ps.id
+        LEFT JOIN device ON ptd.device_code = device.`code`
+        LEFT JOIN cs_major cm ON pts.profession_code = cm.major_code
+        LEFT JOIN cs_subsystem cs ON pts.subsystem_code = cs.system_code
+        LEFT JOIN device_type dt ON pts.device_type_code = dt.`code`
+        LEFT JOIN sys_user su ON ptd.user_id = su.id
+        WHERE ptd.del_flag = 0 and ptd.status = 2
+        <if test="taskDevice.taskId != null and taskDevice.taskId !=''">
+            and ptd.task_id = #{taskDevice.taskId}
+        </if>
+        <if test="taskDevice.deviceCode != null and taskDevice.deviceCode !=''">
+            and ptd.device_code = #{taskDevice.deviceCode}
+        </if>
+        <if test="taskDevice.deviceName != null and taskDevice.deviceName !=''">
+            and device.`name` like concat('%',#{taskDevice.deviceName},'%')
+        </if>
+        <if test="taskDevice.checkResult != null and taskDevice.checkResult !=''">
+            and ptd.check_result = #{taskDevice.checkResult}
+        </if>
+        <if test="taskDevice.patrolNumber != null and taskDevice.patrolNumber !=''">
+            and ptd.patrol_number like concat('%',#{taskDevice.patrolNumber},'%')
+        </if>
+        <if test="taskDevice.username != null and taskDevice.username !=''">
+            and su.realname like concat('%',#{taskDevice.username},'%')
+        </if>
+        <if test="taskDevice.standardName != null and taskDevice.standardName !=''">
+            and ps.`name` like concat('%',#{taskDevice.standardName},'%')
+        </if>
+        <if test="taskDevice.startTimeBegin!=null and taskDevice.startTimeEnd!=null ">
+            and DATE_FORMAT(ptd.start_time, '%Y-%m-%d') &gt;= DATE_FORMAT(#{taskDevice.startTimeBegin}, '%Y-%m-%d')
+            and DATE_FORMAT(ptd.start_time, '%Y-%m-%d') &lt;= DATE_FORMAT(#{taskDevice.startTimeEnd}, '%Y-%m-%d')
+        </if>
+    </select>
     <select id="selectBillInfoByNumber" resultType="com.aiurt.boot.task.param.PatrolTaskDeviceParam">
         SELECT
         pts.device_type_code,

@@ -23,6 +23,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -106,6 +107,18 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
                                     HttpServletRequest req) {
         Page<PatrolTaskDeviceParam> page = new Page<>(pageNo, pageSize);
         IPage<PatrolTaskDeviceParam> taskDevicePageList = patrolTaskDeviceService.selectBillInfo(page, patrolTaskDeviceParam);
+        return Result.OK(taskDevicePageList);
+    }
+
+    @AutoLog(value = "PC设备台账-巡视履历")
+    @ApiOperation(value = "PC设备台账-巡视履历", notes = "PC设备台账-巡视履历")
+    @RequestMapping(value = "/billInfoForDevice", method = {RequestMethod.GET, RequestMethod.POST})
+    public Result<?> selectBillInfoForDevice(PatrolTaskDeviceParam patrolTaskDeviceForDeviceParam,
+                                             @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
+                                             @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize,
+                                             HttpServletRequest req) {
+        Page<PatrolTaskDeviceParam> page = new Page<>(pageNo, pageSize);
+        IPage<PatrolTaskDeviceParam> taskDevicePageList = patrolTaskDeviceService.selectBillInfoForDevice(page, patrolTaskDeviceForDeviceParam);
         return Result.OK(taskDevicePageList);
     }
 

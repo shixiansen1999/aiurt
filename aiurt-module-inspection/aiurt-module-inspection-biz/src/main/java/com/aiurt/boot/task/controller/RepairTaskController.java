@@ -110,6 +110,27 @@ public class RepairTaskController extends BaseController<RepairTask, IRepairTask
 	 }
 
 	/**
+	 * 检修任务清单查询
+	 * @param pageNo
+	 * @param pageSize
+	 * @return
+	 */
+	@AutoLog(value = "设备台账-检修履历")
+	@ApiOperation(value="设备台账-检修履历", notes="设备台账-检修履历")
+	@GetMapping(value = "/repairSelectTaskletForDevice")
+	@ApiResponses({
+			@ApiResponse(code = 200, message = "OK", response = RepairTaskDTO.class)
+	})
+	public Result<Page<RepairTaskDTO>> repairSelectTaskletForDevice( RepairTaskDTO condition,
+															@RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
+															@RequestParam(name="pageSize", defaultValue="10") Integer pageSize
+	){
+		Page<RepairTaskDTO> pageList = new Page<>(pageNo, pageSize);
+		Page<RepairTaskDTO> repairTaskPage = repairTaskService.repairSelectTaskletForDevice(pageList, condition);
+		return Result.OK(repairTaskPage);
+	}
+
+	/**
 	 * 查看检修单附件
 	 * @param resultId
 	 * @return

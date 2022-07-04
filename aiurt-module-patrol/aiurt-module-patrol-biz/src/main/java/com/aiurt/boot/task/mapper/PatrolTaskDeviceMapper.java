@@ -27,6 +27,14 @@ public interface PatrolTaskDeviceMapper extends BaseMapper<PatrolTaskDevice> {
     IPage<PatrolTaskDeviceParam> selectBillInfo(@Param("page") Page<PatrolTaskDeviceParam> page, @Param("taskDevice") PatrolTaskDeviceParam patrolTaskDeviceParam);
 
     /**
+     * 设备台账-巡视履历
+     * @param page
+     * @param patrolTaskDeviceParam
+     * @return
+     */
+    IPage<PatrolTaskDeviceParam> selectBillInfoForDevice(@Param("page") Page<PatrolTaskDeviceParam> page, @Param("taskDevice") PatrolTaskDeviceParam patrolTaskDeviceParam);
+
+    /**
      * PC巡检任务池详情-巡检工单详情
      *
      * @param patrolNumber

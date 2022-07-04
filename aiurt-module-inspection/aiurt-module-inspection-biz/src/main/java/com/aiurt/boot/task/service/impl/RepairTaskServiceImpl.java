@@ -203,6 +203,60 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
     }
 
     @Override
+    public Page<RepairTaskDTO> repairSelectTaskletForDevice(Page<RepairTaskDTO> pageList, RepairTaskDTO condition) {
+        List<RepairTaskDTO> repairTasks = repairTaskMapper.selectTaskletForDevice(pageList, condition);
+        repairTasks.forEach(e->{
+            //检修结果
+            e.setMaintenanceResultsName(sysBaseAPI.translateDict(DictConstant.OVERHAUL_RESULT, String.valueOf(e.getMaintenanceResults())));
+
+            //查询同行人
+            LambdaQueryWrapper<RepairTaskPeerRel> repairTaskPeerRelLambdaQueryWrapper = new LambdaQueryWrapper<>();
+            List<RepairTaskPeerRel> repairTaskPeer = repairTaskPeerRelMapper.selectList(repairTaskPeerRelLambdaQueryWrapper.eq(RepairTaskPeerRel::getRepairTaskDeviceCode, e.getOverhaulCode()));
+            //名称集合
+            List<String> collect3 = repairTaskPeer.stream().map(RepairTaskPeerRel::getRealName).collect(Collectors.toList());
+            if (CollectionUtil.isNotEmpty(collect3)){
+                StringBuffer stringBuffer = new StringBuffer();
+                for (String t : collect3) {
+                    stringBuffer.append(t);
+                    stringBuffer.append(",");
+                }
+                if (stringBuffer.length() > 0) {
+                    stringBuffer = stringBuffer.deleteCharAt(stringBuffer.length() - 1);
+                }
+                e.setPeerName(stringBuffer.toString());
+            }
+            //专业
+            e.setMajorName(manager.translateMajor(Arrays.asList(e.getMajorCode()),InspectionConstant.MAJOR));
+
+            //子系统
+            e.setSystemName(manager.translateMajor(Arrays.asList(e.getSystemCode()),InspectionConstant.SUBSYSTEM));
+
+            //根据设备编码翻译设备名称和设备类型名称
+            List<RepairDeviceDTO> repairDeviceDTOList = manager.queryDeviceByCodes(Arrays.asList(e.getEquipmentCode()));
+            repairDeviceDTOList.forEach(q->{
+                //设备名称
+                e.setEquipmentName(q.getName());
+                //设备类型名称
+                e.setDeviceTypeName(q.getDeviceTypeName());
+            });
+            //检修人名称
+            if (e.getOverhaulId()!=null){
+                LoginUser userById = sysBaseAPI.getUserById(e.getOverhaulId());
+                e.setOverhaulName(userById.getUsername());
+            }
+            if (e.getDeviceId()!=null && CollectionUtil.isNotEmpty(repairTasks)){
+                //正常项
+                List<RepairTaskResult> repairTaskResults = repairTaskMapper.selectSingle(e.getDeviceId(), 1);
+                e.setNormal(repairTaskResults.size());
+                //异常项
+                List<RepairTaskResult> repairTaskResults1 = repairTaskMapper.selectSingle(e.getDeviceId(), 2);
+                e.setAbnormal(repairTaskResults1.size());
+            }
+        });
+        return pageList.setRecords(repairTasks);
+    }
+
+    @Override
     public List<MajorDTO> selectMajorCodeList(String taskId) {
         //根据检修任务id查询专业
         List<RepairTaskDTO> repairTaskDTOList = repairTaskMapper.selectCodeList(taskId);

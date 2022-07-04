@@ -8,6 +8,8 @@ import lombok.Data;
 import org.jeecgframework.poi.excel.annotation.Excel;
 import org.springframework.format.annotation.DateTimeFormat;
 
+import java.util.Date;
+
 /**
  * @author zwl
  * @Title:
@@ -23,6 +25,32 @@ public class RepairTaskDTO {
     @ApiModelProperty(value = "检修任务id")
     private String taskId;
 
+    /**
+     * 开始检修时间起始
+     */
+    @ApiModelProperty(value = "开始检修时间起始")
+    @Excel(name = "开始检修时间起始", width = 15, format = "yyyy-MM-dd")
+    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
+    @DateTimeFormat(pattern="yyyy-MM-dd")
+    private Date startTimeBegin;
+
+    /**
+     * 开始检修时间
+     */
+    @ApiModelProperty(value = "开始检修时间")
+    @Excel(name = "开始检修时间", width = 15, format = "yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
+    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
+    private Date startTime;
+
+    /**
+     * 开始检修时间结束
+     */
+    @ApiModelProperty(value = "开始检修时间结束")
+    @Excel(name = "开始检修时间结束", width = 15, format = "yyyy-MM-dd")
+    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
+    @DateTimeFormat(pattern="yyyy-MM-dd")
+    private Date startTimeEnd;
 
     /**检修任务编号*/
     @TableField(exist = false)
@@ -39,10 +67,21 @@ public class RepairTaskDTO {
     @ApiModelProperty(value = "检修任务状态名称")
     private String taskStatusName;
 
+    /**
+     * 检修时长
+     */
+    @Excel(name = "检修时长", width = 15)
+    @ApiModelProperty(value = "检修时长")
+    private Long duration;
+
     /**检修单id*/
     @TableField(exist = false)
     @ApiModelProperty(value = "检修单id")
     private String deviceId;
+    /**设备code*/
+    @Excel(name = "设备code", width = 15)
+    @ApiModelProperty(value = "设备code")
+    private java.lang.String deviceCode;
 
     /**检修任务标准id*/
     @TableField(exist = false)

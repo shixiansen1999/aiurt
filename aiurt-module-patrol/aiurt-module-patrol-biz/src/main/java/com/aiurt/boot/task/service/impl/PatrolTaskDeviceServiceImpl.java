@@ -60,6 +60,38 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
     }
 
     @Override
+    public IPage<PatrolTaskDeviceParam> selectBillInfoForDevice(Page<PatrolTaskDeviceParam> page, PatrolTaskDeviceParam patrolTaskDeviceParam) {
+        IPage<PatrolTaskDeviceParam> patrolTaskDeviceForDeviceParamIPage = patrolTaskDeviceMapper.selectBillInfoForDevice(page, patrolTaskDeviceParam);
+        List<PatrolTaskDeviceParam> records = patrolTaskDeviceForDeviceParamIPage.getRecords();
+        if(records != null && records.size()>0){
+            for(PatrolTaskDeviceParam patrolTaskDeviceForDeviceParam : records){
+                // 计算巡检时长
+                Date startTime = patrolTaskDeviceForDeviceParam.getStartTime();
+                Date checkTime = patrolTaskDeviceForDeviceParam.getCheckTime();
+                if (ObjectUtil.isNotEmpty(startTime) && ObjectUtil.isNotEmpty(checkTime)) {
+                    long duration = DateUtil.between(startTime, checkTime, DateUnit.MINUTE);
+                    patrolTaskDeviceForDeviceParam.setDuration(duration);
+                }
+                // 查询同行人信息
+                QueryWrapper<PatrolAccompany> accompanyWrapper = new QueryWrapper<>();
+                accompanyWrapper.lambda().eq(PatrolAccompany::getTaskDeviceCode, patrolTaskDeviceForDeviceParam.getPatrolNumber());
+                List<PatrolAccompany> accompanyList = patrolAccompanyMapper.selectList(accompanyWrapper);
+                String res = "";
+                if(accompanyList != null && accompanyList.size()>0){
+                    for(PatrolAccompany patrolAccompany : accompanyList){
+                        res += patrolAccompany.getUsername() + ",";
+                    }
+                    res = res.substring(0,res.length()-1);
+                }
+                patrolTaskDeviceForDeviceParam.setAccompanyInfoStr(res);
+                patrolTaskDeviceForDeviceParam.setAccompanyInfo(accompanyList);
+            }
+        }
+
+        return patrolTaskDeviceForDeviceParamIPage;
+    }
+
+    @Override
     public Page<PatrolTaskDeviceDTO> getPatrolTaskDeviceList(Page<PatrolTaskDeviceDTO> pageList, String taskId) {
         List<PatrolTaskDeviceDTO> patrolTaskDeviceList = patrolTaskDeviceMapper.getPatrolTaskDeviceList(pageList, taskId);
         patrolTaskDeviceList.stream().forEach(e -> {

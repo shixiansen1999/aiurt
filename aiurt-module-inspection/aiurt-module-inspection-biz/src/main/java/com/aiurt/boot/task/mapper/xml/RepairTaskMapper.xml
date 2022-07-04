@@ -98,6 +98,63 @@
         order by t1.start_time desc
     </select>
 
+    <select id="selectTaskletForDevice" resultType="com.aiurt.boot.task.dto.RepairTaskDTO">
+        SELECT
+        t1.id as taskId,
+        t1.code as taskCode,
+        t2.id as deviceId,
+        t3.id as standardId,
+        t4.id as resultId,
+        t4.status as maintenanceResults,
+        t2.code as overhaulCode,
+        t3.major_code as majorCode,
+        t3.subsystem_code as systemCode,
+        t3.device_type_code as deviceTypeCode,
+        t2.device_code as equipmentCode,
+        t2.submit_time as submitTime,
+        t4.staff_id as overhaulId,
+        t3.title as overhaulStandardName,
+        t2.start_time,
+        t2.duration,
+        su.realname as overhaulName
+        FROM
+        repair_task t1
+        LEFT JOIN repair_task_device_rel t2 ON t1.id = t2.repair_task_id
+        LEFT JOIN repair_task_standard_rel t3 ON t2.task_standard_rel_id = t3.id
+        LEFT JOIN repair_task_result t4 ON t2.id = t4.task_device_rel_id
+        left join sys_user su on t4.staff_id = su.id
+        <where>
+            t1.del_flag = 0 and t2.device_code = #{condition.deviceCode} and t1.status = 8
+            <if test="condition.equipmentCode !=null ">
+                AND ( SELECT NAME FROM device WHERE CODE = t3.device_type_code ) LIKE CONCAT ('%', #{condition.equipmentName}, '%')
+            </if>
+            AND t1.id = #{condition.taskId}
+            <if test="condition.majorCode!=null ">
+                AND t3.major_code  = #{condition.majorCode}
+            </if>
+            <if test="condition.systemCode!=null ">
+                AND t3.subsystem_code  = #{condition.systemCode}
+            </if>
+            <if test="condition.maintenanceResults!=null ">
+                AND t4.status  = #{condition.maintenanceResults}
+            </if>
+            <if test="condition.overhaulCode!=null ">
+                AND t2.code  = #{condition.overhaulCode}
+            </if>
+            <if test="condition.overhaulStandardName!=null ">
+                AND t3.title  like concat('%',#{condition.overhaulStandardName},'%')
+            </if>
+            <if test="condition.overhaulName!=null ">
+                AND su.realname  like concat('%',#{condition.overhaulName},'%')
+            </if>
+            <if test="condition.startTimeBegin!=null and condition.startTimeEnd!=null ">
+                and DATE_FORMAT(t2.start_time, '%Y-%m-%d') &gt;= DATE_FORMAT(#{condition.startTimeBegin}, '%Y-%m-%d')
+                and DATE_FORMAT(t2.start_time, '%Y-%m-%d') &lt;= DATE_FORMAT(#{condition.startTimeEnd}, '%Y-%m-%d')
+            </if>
+        </where>
+        order by t1.start_time desc
+    </select>
+
 
     <select id="selectStationList" resultType="com.aiurt.boot.plan.dto.StationDTO">
         select station_code,position_code,line_code from repair_task_station_rel where repair_task_code = #{planCode}
