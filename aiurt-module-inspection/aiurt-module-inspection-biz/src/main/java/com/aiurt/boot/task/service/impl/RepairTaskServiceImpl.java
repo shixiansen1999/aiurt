@@ -17,12 +17,15 @@ import com.aiurt.boot.task.mapper.*;
 import com.aiurt.boot.task.service.IRepairTaskService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import org.apache.commons.collections.Bag;
+import org.apache.commons.collections.bag.HashBag;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import javax.annotation.Resource;
+import java.lang.reflect.Constructor;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -181,9 +184,13 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                 List<StationDTO> stationDTOList = repairTaskMapper.selectStationList(e.getTaskCode());
                 e.setEquipmentLocation(manager.translateStation(stationDTOList));
             }
-            if (e.getTaskStatus()!=null){
-                //检修任务状态
-                e.setTaskStatusName(sysBaseAPI.translateDict(DictConstant.INSPECTION_TASK_STATE, String.valueOf(e.getTaskStatus())));
+            //检修任务状态
+            if (e.getStartTime()==null){
+                e.setTaskStatusName("未开始");
+            }if (e.getStartTime()!=null){
+                e.setTaskStatusName("进行中");
+            }if (e.getIsSubmit()!=null && e.getIsSubmit()==1){
+                e.setTaskStatusName("已提交");
             }
             //检修人名称
             if (e.getOverhaulId()!=null){
@@ -198,6 +205,15 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                 List<RepairTaskResult> repairTaskResults1 = repairTaskMapper.selectSingle(e.getDeviceId(), 2);
                 e.setAbnormal(repairTaskResults1.size());
             }
+            //未开始的数量
+            long count1 = repairTasks.stream().filter(repairTaskDTO -> repairTaskDTO.getStartTime() == null).count();
+            e.setNotStarted((int) count1);
+            //进行中的数量
+            long count2 = repairTasks.stream().filter(repairTaskDTO -> repairTaskDTO.getStartTime()!=null).count();
+            e.setHaveInHand((int) count2);
+            //已提交的数量
+            long count3 = repairTasks.stream().filter(repairTaskDTO -> repairTaskDTO.getIsSubmit()!=null && repairTaskDTO.getIsSubmit()==1).count();
+            e.setSubmitted((int) count3);
         });
         return pageList.setRecords(repairTasks);
     }
@@ -466,6 +482,23 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
     public void inExecution(ExamineDTO examineDTO) {
         RepairTask repairTask = repairTaskMapper.selectById(examineDTO.getId());
         RepairTask repairTask1= new RepairTask();
+        RepairTaskDeviceRel repairTaskDeviceRel = new RepairTaskDeviceRel();
+
+        //查询检修单的主键id集合
+        LambdaQueryWrapper<RepairTaskDeviceRel> objectLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        List<RepairTaskDeviceRel> repairTaskDevice = repairTaskDeviceRelMapper.selectList(objectLambdaQueryWrapper.eq(RepairTaskDeviceRel::getRepairTaskId,examineDTO.getId()));
+        List<String> collect1 = repairTaskDevice.stream().map(RepairTaskDeviceRel::getId).collect(Collectors.toList());
+
+
+        if (CollectionUtil.isNotEmpty(collect1)){
+            collect1.forEach(e->{
+                repairTaskDeviceRel.setId(e);
+                repairTaskDeviceRel.setSubmitTime(new Date());
+                repairTaskDeviceRel.setIsSubmit(1);
+                repairTaskDeviceRel.setEndTime(new Date());
+                repairTaskDeviceRelMapper.updateById(repairTaskDeviceRel);
+            });
+        }
         if (repairTask.getIsConfirm()==1){
             repairTask1.setId(examineDTO.getId());
             repairTask1.setStatus(6);

@@ -94,13 +94,13 @@ public class AppRepairTaskController extends BaseController<RepairTask, IRepairT
 
 
     /**
-     *   执行中-执行
+     *   执行中-执行-提交
      *
      * @param examineDTO
      * @return
      */
-    @AutoLog(value = "检修任务-执行中-执行")
-    @ApiOperation(value="检修任务-执行中-执行", notes="检修任务-执行中-执行")
+    @AutoLog(value = "检修任务-执行中-执行-提交")
+    @ApiOperation(value="检修任务-执行中-执行-提交", notes="检修任务-执行中-执行-提交")
     @PostMapping(value = "/inExecution")
     public Result<String> inExecution(@RequestBody ExamineDTO examineDTO) {
         repairTaskService.inExecution(examineDTO);

@@ -190,7 +190,6 @@ public class RepairTaskDTO {
     private String peerId;
 
     /**提交时间*/
-    @Excel(name = "提交时间", width = 15, format = "yyyy-MM-dd HH:mm:ss")
     @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
     @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
     @ApiModelProperty(value = "提交时间")
@@ -201,4 +200,32 @@ public class RepairTaskDTO {
     @ApiModelProperty(value = "设备位置")
     @TableField(exist = false)
     private String equipmentLocation;
+
+    /**是否已提交，0未提交1已提交*/
+    @TableField(exist = false)
+    @ApiModelProperty(value = "是否已提交，0未提交1已提交")
+    private Integer isSubmit;
+
+    /**开始时间(yyyy-MM-dd HH:mm)*/
+    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
+    @DateTimeFormat(pattern="yyyy-MM-dd")
+    @ApiModelProperty(value = "开始时间(yyyy-MM-dd HH:mm)")
+    @TableField(exist = false)
+    private java.util.Date startTime;
+
+    /**未开始*/
+    @TableField(exist = false)
+    @ApiModelProperty(value = "未开始")
+    private Integer notStarted;
+
+    /**进行中*/
+    @TableField(exist = false)
+    @ApiModelProperty(value = "进行中")
+    private Integer haveInHand;
+
+    /**已提交*/
+    @TableField(exist = false)
+    @ApiModelProperty(value = "已提交")
+    private Integer submitted;
+
 }

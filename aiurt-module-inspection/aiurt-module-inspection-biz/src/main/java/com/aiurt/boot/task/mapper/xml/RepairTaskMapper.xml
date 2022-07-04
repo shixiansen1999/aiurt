@@ -66,6 +66,8 @@
                t3.device_type_code as deviceTypeCode,
                t2.device_code as equipmentCode,
                t2.submit_time as submitTime,
+               t2.start_time as startTime,
+               t2.is_submit as isSubmit,
                t4.staff_id as overhaulId,
                t3.title as overhaulStandardName
            FROM
