@@ -89,7 +89,6 @@ public class StrategyService {
         List<InspectionCodeContent> inspectionCodeContentList = getInspectionCodeContentList(inspectionCode.getCode());
 
         // 判断是协作还是独立模式
-        Integer isCooperation = ins.getIsCooperation();
         for (int i = 0; i < list.size(); i++) {
             addEveryWeekTask(InspectionConstant.WEEK, ins, inspectionCode, inspectionCodeContentList,
                     list.get(i)[0], list.get(i)[1], inspectionStrOrgRels, stationRels);
@@ -354,10 +353,10 @@ public class StrategyService {
         int weeknum = tactics % 4 == 0 ? 4 : tactics % 4;
 
         if (thisYear && monthnum < month) {
-            throw new AiurtBootException("");
+            throw new AiurtBootException("无可生成计划");
         }
         if (thisYear && monthnum == month && week > weeknum) {
-            throw new AiurtBootException("");
+            throw new AiurtBootException("无可生成计划");
         }
 
         // 某年某月某周的开始时间和结束时间

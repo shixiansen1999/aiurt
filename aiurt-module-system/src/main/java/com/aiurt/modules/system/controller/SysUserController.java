@@ -182,11 +182,28 @@ public class SysUserController {
                 item.setOrgCodeTxt(useDepNames.get(item.getId()));
             });
         }
-		result.setSuccess(true);
+        List<SysUser> sysUsers = pageList.getRecords();
+        sysUsers.forEach(sysUser -> {
+            getUserDetail(sysUser);
+        });
+        result.setSuccess(true);
 		result.setResult(pageList);
 		log.info(pageList.toString());
 		return result;
 	}
+
+    private void getUserDetail(SysUser sysUser) {
+        List<String> roleIds = sysUserRoleMapper.getRoleIds(sysUser.getId());
+        List<String> departIds = csUserDepartMapper.getDepartIds(sysUser.getId());
+        List<String> stationIds = csUserStaionMapper.getStaionIds(sysUser.getId());
+        List<String> majorIds = csUserMajorMapper.getMajorIds(sysUser.getId());
+        List<String> subsystemIds = csUserSubsystemMapper.getSubsystemIds(sysUser.getId());
+        sysUser.setRoleIds(roleIds);
+        sysUser.setDepartCodes(departIds);
+        sysUser.setStationIds(stationIds);
+        sysUser.setMajorIds(majorIds);
+        sysUser.setSystemCodes(subsystemIds);
+    }
 
     @AutoLog(value = "用户管理-添加用户")
     @ApiOperation("添加用户")
@@ -305,16 +322,7 @@ public class SysUserController {
         if (sysUser == null) {
             result.error500("未找到对应实体");
         } else {
-            List<String> roleIds = sysUserRoleMapper.getRoleIds(sysUser.getId());
-            List<String> departIds = csUserDepartMapper.getDepartIds(sysUser.getId());
-            List<String> stationIds = csUserStaionMapper.getStaionIds(sysUser.getId());
-            List<String> majorIds = csUserMajorMapper.getMajorIds(sysUser.getId());
-            List<String> subsystemIds = csUserSubsystemMapper.getSubsystemIds(sysUser.getId());
-            sysUser.setRoleIds(roleIds);
-            sysUser.setDepartCodes(departIds);
-            sysUser.setStationIds(stationIds);
-            sysUser.setMajorIds(majorIds);
-            sysUser.setSystemCodes(subsystemIds);
+            getUserDetail(sysUser);
             result.setResult(sysUser);
             result.setSuccess(true);
         }

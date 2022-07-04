@@ -26,6 +26,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 /**
@@ -59,8 +60,8 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
     }
 
     @Override
-    public Page<PatrolTaskDeviceDTO> getPatrolTaskDeviceList(Page<PatrolTaskDeviceDTO> pageList, String code) {
-        List<PatrolTaskDeviceDTO> patrolTaskDeviceList = patrolTaskDeviceMapper.getPatrolTaskDeviceList(pageList, code);
+    public Page<PatrolTaskDeviceDTO> getPatrolTaskDeviceList(Page<PatrolTaskDeviceDTO> pageList, String taskId) {
+        List<PatrolTaskDeviceDTO> patrolTaskDeviceList = patrolTaskDeviceMapper.getPatrolTaskDeviceList(pageList, taskId);
         patrolTaskDeviceList.stream().forEach(e -> {
             Date startTime = e.getStartTime();
             Date checkTime = e.getCheckTime();
@@ -68,6 +69,8 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
                 long duration = DateUtil.between(startTime, checkTime, DateUnit.MINUTE);
                 e.setInspectionTime(duration);
             }
+            String taskStandardName = patrolTaskDeviceMapper.getStandardName(e.getId());
+            e.setTaskStandardName(taskStandardName);
             LambdaQueryWrapper<PatrolCheckResult> lambdaQueryWrapper = new LambdaQueryWrapper<>();
             List<PatrolAccessoryDTO> patrolAccessoryDTOList = new ArrayList<>();
             lambdaQueryWrapper.eq(PatrolCheckResult::getTaskDeviceId,e.getId());
@@ -85,15 +88,16 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
             List<String> position = patrolTaskDeviceMapper.getPosition(patrolTask.getCode());
             StringBuffer stringBuffer = new StringBuffer();
             Integer length =position.size();
+            AtomicReference<Integer> size = new AtomicReference<>(length);
             position.stream().forEach(s ->{
-                Integer size = length-1;
+                size.set(size.get() - 1);
                 stringBuffer.append(s);
                 if(ObjectUtil.isNotEmpty(e.getCustomPosition()))
                 {
                     stringBuffer.append("-");
                     stringBuffer.append(e.getCustomPosition());
                 }
-                if(size!=0)
+                if(size.get() !=0)
                 {
                     stringBuffer.append(",");
                 }
@@ -303,9 +307,9 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
         List<PatrolCheckResultDTO> patrolCheckResultDTOList = patrolCheckResultMapper.getCheckResult(taskDeviceId);
         patrolCheckResultDTOList.stream().forEach(e->
             {
-                //获取这个单号下一个巡检项的所以附件
-                List<PatrolAccessoryDTO> patrolAccessoryDTOS =patrolAccessoryMapper.getAllAccessory(patrolTaskDevice.getId(),e.getId());
-                e.setAccessoryList(patrolAccessoryDTOS);
+                //获取这个单号下一个巡检项的所有附件
+                List<PatrolAccessory> patrolAccessoryDTOS =patrolAccessoryMapper.getAllAccessory(patrolTaskDevice.getId(),e.getId());
+                e.setAccessoryInfo(patrolAccessoryDTOS);
             });
         List<PatrolCheckResultDTO> resultList = buildResultTree(Optional.ofNullable(patrolCheckResultDTOList)
                 .orElseGet(Collections::emptyList));
@@ -313,7 +317,7 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
     }
 
     @Override
-    public List<PatrolCheckResultDTO> getPatrolTaskCheckItems(PatrolCheckResultDTO patrolCheckResultDTO) {
+    public void getPatrolTaskCheckItems(PatrolCheckResultDTO patrolCheckResultDTO) {
         //保存基本信息
         PatrolCheckResult patrolCheckResult = new PatrolCheckResult();
         patrolCheckResult.setId(patrolCheckResult.getId());
@@ -326,19 +330,30 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
         {
             patrolCheckResult.setWriteValue(patrolCheckResultDTO.getWriteValue());
         }
-        List<PatrolAccessoryDTO> accessoryList = patrolCheckResultDTO.getAccessoryList();
+        //保存附件
+        List<PatrolAccessory> accessoryList = patrolCheckResultDTO.getAccessoryInfo();
         accessoryList.stream().forEach(e->{
-            PatrolAccessory patrolAccessory =  new PatrolAccessory();
-            patrolAccessory.setCheckResultId(patrolCheckResultDTO.getId());
-            patrolAccessory.setTaskDeviceId(patrolCheckResult.getTaskDeviceId());
-            patrolAccessory.setAddress(e.getAddress());
-            patrolAccessory.setDelFlag(0);
-            patrolAccessory.setName(e.getName());
-            patrolAccessoryMapper.updateById(patrolAccessory);
-
+          if(ObjectUtil.isNotEmpty(e.getId()))
+          {
+              PatrolAccessory patrolAccessory =  new PatrolAccessory();
+              patrolAccessory.setId(e.getId());
+              patrolAccessory.setCheckResultId(patrolCheckResultDTO.getId());
+              patrolAccessory.setTaskDeviceId(patrolCheckResult.getTaskDeviceId());
+              patrolAccessory.setAddress(e.getAddress());
+              patrolAccessory.setDelFlag(0);
+              patrolAccessory.setName(e.getName());
+              patrolAccessoryMapper.updateById(patrolAccessory);
+          }
+           else {
+              PatrolAccessory patrolAccessory =  new PatrolAccessory();
+              patrolAccessory.setCheckResultId(patrolCheckResultDTO.getId());
+              patrolAccessory.setTaskDeviceId(patrolCheckResult.getTaskDeviceId());
+              patrolAccessory.setAddress(e.getAddress());
+              patrolAccessory.setDelFlag(0);
+              patrolAccessory.setName(e.getName());
+              patrolAccessoryMapper.insert(patrolAccessory);
+          }
         });
         patrolCheckResultMapper.updateById(patrolCheckResult);
-
-        return null;
     }
 }

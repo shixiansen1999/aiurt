@@ -61,7 +61,7 @@ public class PatrolTaskDeviceController extends BaseController<PatrolTaskDevice,
     @AutoLog(value = "巡检任务表- app巡检任务-巡检清单列表")
     @ApiOperation(value = "巡检任务表- app巡检任务-巡检清单列表", notes = "巡检任务表- app巡检任务-巡检清单列表")
     @GetMapping(value = "/patrolTaskDeviceList")
-    public Result<Page<PatrolTaskDeviceDTO>> patrolTaskDeviceList(String id,
+    public Result<Page<PatrolTaskDeviceDTO>> patrolTaskDeviceList(@RequestParam(name="id",required=true)String id,
                                                                   @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
                                                                   @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize, HttpServletRequest req) {
         Page<PatrolTaskDeviceDTO> pageList = new Page<PatrolTaskDeviceDTO>(pageNo, pageSize);
@@ -90,18 +90,31 @@ public class PatrolTaskDeviceController extends BaseController<PatrolTaskDevice,
 		 return Result.OK(patrolTaskCheck);
 	 }
 	 /**
-	  * app巡检-检查项-添加
-	  * @param id
+	  * app巡检-检查项-保存
+	  * @param patrolCheckResultDTO
 	  * @param req
 	  * @return
 	  */
-	 @AutoLog(value = "app巡检-检查项-添加")
-	 @ApiOperation(value = "app巡检-检查项-添加", notes = "app巡检-检查项-添加")
+	 @AutoLog(value = "app巡检-检查项-保存")
+	 @ApiOperation(value = "app巡检-检查项-保存", notes = "app巡检-检查项-保存")
 	 @PostMapping(value = "/patrolTaskCheckItems")
 	 public Result<?> patrolTaskCheckItems(@RequestBody  PatrolCheckResultDTO patrolCheckResultDTO, HttpServletRequest req) {
-	 	List<PatrolCheckResultDTO> patrolTaskCheck = patrolTaskDeviceService.getPatrolTaskCheckItems(patrolCheckResultDTO);
-		 return Result.OK(patrolTaskCheck);
+	 	patrolTaskDeviceService.getPatrolTaskCheckItems(patrolCheckResultDTO);
+		 return Result.OK("添加成功");
 	 }
+	/**
+	 * app巡检-检查项-提交
+	 * @param patrolCheckResultDTO
+	 * @param req
+	 * @return
+	 */
+	@AutoLog(value = "app巡检-检查项-提交")
+	@ApiOperation(value = "app巡检-检查项-提交", notes = "app巡检-检查项-提交")
+	@PostMapping(value = "/patrolTaskCheckItemsSubmit")
+	public Result<?> patrolTaskCheckItemsSubmit(@RequestBody  PatrolCheckResultDTO patrolCheckResultDTO, HttpServletRequest req) {
+		patrolTaskDeviceService.getPatrolTaskCheckItems(patrolCheckResultDTO);
+		return Result.OK("提交成功");
+	}
 	/**
 	 *   添加
 	 *

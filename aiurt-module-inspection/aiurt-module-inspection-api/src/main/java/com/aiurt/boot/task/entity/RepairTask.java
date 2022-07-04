@@ -14,6 +14,7 @@ import org.jeecgframework.poi.excel.annotation.Excel;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * @Description: repair_task
@@ -314,10 +315,11 @@ public class RepairTask implements Serializable {
     /**检修单id*/
     @TableField(exist = false)
     @ApiModelProperty(value = "检修单id")
-    private String overhaulId;
+    private List<String> overhaulId;
 
     /**检修人名称*/
     @TableField(exist = false)
     @ApiModelProperty(value = "检修人名称")
-    private String overhaulName;
+    private List<String>overhaulName;
+
 }

@@ -68,6 +68,18 @@ public interface IRepairTaskService extends IService<RepairTask> {
     void toExamine(ExamineDTO examineDTO);
 
     /**
+     * 待执行-执行
+     * @param examineDTO
+     */
+    void toBeImplement(ExamineDTO examineDTO);
+
+    /**
+     * 执行中-执行
+     * @param examineDTO
+     */
+    void inExecution(ExamineDTO examineDTO);
+
+    /**
      * 验收
      * @param examineDTO
      */

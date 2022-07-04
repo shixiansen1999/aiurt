@@ -64,5 +64,5 @@ public interface IPatrolTaskDeviceService extends IService<PatrolTaskDevice> {
      * @param patrolCheckResultDTO
      * @return
      */
-    List<PatrolCheckResultDTO> getPatrolTaskCheckItems(PatrolCheckResultDTO patrolCheckResultDTO);
+    void getPatrolTaskCheckItems(PatrolCheckResultDTO patrolCheckResultDTO);
 }

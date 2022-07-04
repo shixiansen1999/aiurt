@@ -29,6 +29,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
@@ -197,12 +198,12 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         List<PatrolTaskDTO> taskList = patrolTaskMapper.getPatrolTaskPoolList(pageList, patrolTaskDTO);
         taskList.stream().forEach(e -> {
             String userName = patrolTaskMapper.getUserName(e.getBackId());
-            List<String> organizationName = patrolTaskMapper.getOrganizationName(e.getPlanCode());
             List<PatrolTaskStandardDTO> patrolTaskStandard = patrolTaskStandardMapper.getMajorSystemName(e.getId());
             String majorName = patrolTaskStandard.stream().map(PatrolTaskStandardDTO::getMajorName).collect(Collectors.joining(","));
             String sysName = patrolTaskStandard.stream().map(PatrolTaskStandardDTO::getSysName).collect(Collectors.joining(","));
-            List<String> orgCodes = patrolTaskMapper.getOrgCode(e.getPlanCode());
-            List<String> stationName = patrolTaskMapper.getStationName(e.getPlanCode());
+            List<String> orgCodes = patrolTaskMapper.getOrgCode(e.getCode());
+            List<String> organizationName = patrolTaskMapper.getOrganizationName(e.getCode());
+            List<String> stationName = patrolTaskMapper.getStationName(e.getCode());
             List<String> patrolUserName = patrolTaskMapper.getPatrolUserName(e.getCode());
             String orgName = organizationName.stream().collect(Collectors.joining(","));
             String stName = stationName.stream().collect(Collectors.joining(","));
@@ -223,12 +224,12 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         List<PatrolTaskDTO> taskList = patrolTaskMapper.getPatrolTaskList(pageList, patrolTaskDTO);
         taskList.stream().forEach(e -> {
             String userName = patrolTaskMapper.getUserName(e.getBackId());
-            List<String> organizationName = patrolTaskMapper.getOrganizationName(e.getPlanCode());
             List<PatrolTaskStandardDTO> patrolTaskStandard = patrolTaskStandardMapper.getMajorSystemName(e.getId());
             String majorName = patrolTaskStandard.stream().map(PatrolTaskStandardDTO::getMajorName).collect(Collectors.joining(","));
             String sysName = patrolTaskStandard.stream().map(PatrolTaskStandardDTO::getSysName).collect(Collectors.joining(","));
-            List<String> orgCodes = patrolTaskMapper.getOrgCode(e.getPlanCode());
-            List<String> stationName = patrolTaskMapper.getStationName(e.getPlanCode());
+            List<String> orgCodes = patrolTaskMapper.getOrgCode(e.getCode());
+            List<String> organizationName = patrolTaskMapper.getOrganizationName(e.getCode());
+            List<String> stationName = patrolTaskMapper.getStationName(e.getCode());
             List<String> patrolUserName = patrolTaskMapper.getPatrolUserName(e.getCode());
             String orgName = organizationName.stream().collect(Collectors.joining(","));
             String stName = stationName.stream().collect(Collectors.joining(","));
@@ -270,7 +271,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
             updateWrapper.set(PatrolTask::getStatus, 2).eq(PatrolTask::getId, patrolTaskDTO.getId());
             update(updateWrapper);
         }
-        //执行：将待确认改为执行中
+        //执行：将待执行改为执行中
         if (patrolTaskDTO.getStatus() == 2) {
             updateWrapper.set(PatrolTask::getStatus, 4).eq(PatrolTask::getId, patrolTaskDTO.getId());
         }
@@ -440,5 +441,30 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
             patrolTask.setStatus(PatrolConstant.TASK_COMPLETE);
         }
         return 0;
+    }
+
+    @Override
+    public void getPatrolTaskSubmit(PatrolTaskDTO patrolTaskDTO) {
+        //提交任务：将待执行、执行中，变为待审核、添加任务结束人id,传签名地址、任务主键id、状态
+        LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        LambdaUpdateWrapper<PatrolTask> updateWrapper = new LambdaUpdateWrapper<>();
+            if(patrolTaskDTO.getAuditor()==1)
+            {
+                updateWrapper.set(PatrolTask::getStatus, 6)
+                        .set(PatrolTask::getEndUserId, sysUser.getId())
+                        .set(PatrolTask::getSignUrl, patrolTaskDTO.getSignUrl())
+                        .set(PatrolTask::getEndTime, LocalDateTime.now())
+                        .eq(PatrolTask::getId, patrolTaskDTO.getId());
+            }
+            else
+            {
+                updateWrapper.set(PatrolTask::getStatus, 7)
+                        .set(PatrolTask::getEndUserId, sysUser.getId())
+                        .set(PatrolTask::getSignUrl, patrolTaskDTO.getSignUrl())
+                        .set(PatrolTask::getEndTime, LocalDateTime.now())
+                        .eq(PatrolTask::getId, patrolTaskDTO.getId());
+            }
+            update(updateWrapper);
+
     }
 }

@@ -13,6 +13,12 @@
         <if test="patrolTaskDTO.status!=null">
             and t1.status = #{patrolTaskDTO.status}
         </if>
+        <if test="patrolTaskDTO.orgCode!=null and patrolTaskDTO.orgCode!=''">
+        	AND t1.CODE IN ( SELECT t2.task_code FROM patrol_task_organization t2 WHERE t2.task_code = t1.CODE AND t2.org_code = #{patrolTaskDTO.orgCode})
+        </if>
+        <if test="patrolTaskDTO.stationCode!=null and patrolTaskDTO.stationCode!=''">
+        	AND t1.CODE IN (SELECT t3.task_code FROM patrol_task_station t3 WHERE t3.task_code = t1.CODE AND t3.station_code =#{patrolTaskDTO.stationCode})
+        </if>
     </select>
     <select id="getPatrolTaskList" resultType="com.aiurt.boot.task.dto.PatrolTaskDTO">
         select t1.*,(select realname from sys_user where id= t1.end_user_id) as endUserName
@@ -26,17 +32,18 @@
         </if>
     </select>
     <select id="getOrganizationName" resultType="java.lang.String">
-        select t2.depart_name
-        from patrol_plan_organization t1
-                 left join sys_depart t2 on t1.organization_code = t2.org_code
-        where t1.plan_code = #{planCode}
+        SELECT
+        t2.depart_name
+        FROM
+        patrol_task_organization t1
+        LEFT JOIN sys_depart t2 ON t1.org_code = t2.org_code
+        where t1.task_code = #{taskCode}
     </select>
     <select id="getStationName" resultType="java.lang.String">
-        select concat(t2.line_name, "-", t2.station_name, "-", t3.position_name) as stationName
-        from patrol_plan_station t1
-                 left join cs_station t2 on t1.station_code = t2.station_code
-                 LEFT JOIN cs_station_position t3 on t2.station_code = t3.staion_code
-        where t1.plan_code = #{code}
+        SELECT concat( t2.line_name, "-", t2.station_name) AS stationName
+        FROM patrol_task_station t1
+        LEFT JOIN cs_station t2 ON t1.station_code = t2.station_code
+        WHERE t1.task_code = #{code}
     </select>
     <select id="getPatrolUserName" resultType="java.lang.String">
         select t2.user_name
@@ -90,10 +97,11 @@
         where id = #{patrolReturnUserId}
     </select>
     <select id="getOrgCode" resultType="java.lang.String">
-        select t2.org_code
-        from patrol_plan_organization t1
-                 left join sys_depart t2 on t1.organization_code = t2.org_code
-        where t1.plan_code = #{planCode}
+        SELECT
+        t1.org_code
+        FROM
+        patrol_task_organization t1
+        WHERE t1.task_code = #{taskCode}
     </select>
     <select id="getUser" resultType="com.aiurt.boot.task.dto.PatrolTaskUserContentDTO">
         select t1.realname as realname,

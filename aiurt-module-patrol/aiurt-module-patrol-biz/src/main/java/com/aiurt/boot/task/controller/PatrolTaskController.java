@@ -350,6 +350,19 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
             return Result.OK("提交任务成功");
         }
         return Result.OK("领取成功");
+    }    /**
+     * app巡检任务提交
+     *
+     * @param patrolTaskDTO
+     * @param req
+     * @return
+     */
+    @AutoLog(value = "巡检任务表-app巡检任务提交")
+    @ApiOperation(value = "巡检任务表-app巡检任务提交", notes = "巡检任务表-app巡检任务提交")
+    @PostMapping(value = "/patrolTaskSubmit")
+    public Result<?> patrolTaskSubmit(PatrolTaskDTO patrolTaskDTO, HttpServletRequest req) {
+        patrolTaskService.getPatrolTaskSubmit(patrolTaskDTO);
+            return Result.OK("提交任务成功");
     }
 
     /**

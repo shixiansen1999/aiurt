@@ -56,10 +56,6 @@ public class InspectionStrategy implements Serializable {
 	@Excel(name = "是否需要确认：0否 1是", width = 15)
     @ApiModelProperty(value = "是否需要确认：0否 1是")
     private java.lang.Integer isConfirm;
-	/**是否协作：0否 1是*/
-	@Excel(name = "是否协作：0否 1是", width = 15)
-    @ApiModelProperty(value = "是否协作：0否 1是")
-    private java.lang.Integer isCooperation;
 	/**作业类型（A1不用计划令,A2,A3,B1,B2,B3）*/
 	@Excel(name = "作业类型（A1不用计划令,A2,A3,B1,B2,B3）", width = 15)
     @ApiModelProperty(value = "作业类型（A1不用计划令,A2,A3,B1,B2,B3）")

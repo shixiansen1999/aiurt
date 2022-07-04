@@ -2,11 +2,11 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.aiurt.boot.task.mapper.PatrolTaskStandardMapper">
     <select id="getMajorSystemName" resultType="com.aiurt.boot.task.dto.PatrolTaskStandardDTO">
-        select
-        cm.major_name as majorName ,cs.system_name as sysName
-        from patrol_task_standard pst
-        left join cs_major cm on pst.profession_code = cm.major_code
-        left join cs_subsystem cs on pst.subsystem_code = cs.system_code
-        where pst.task_id= #{id}
+        SELECT t2.major_name as majorName,t3.system_name sysName
+        FROM patrol_task_standard t1
+        LEFT JOIN cs_major t2 ON t1.profession_code = t2.major_code
+        LEFT JOIN cs_subsystem t3 ON t1.subsystem_code = t3.system_code
+        AND t2.major_code = t3.major_code
+        where t1.task_id= #{id}
     </select>
 </mapper>

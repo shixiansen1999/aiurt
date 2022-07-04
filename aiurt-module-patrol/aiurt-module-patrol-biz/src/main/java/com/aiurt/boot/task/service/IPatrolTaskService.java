@@ -126,4 +126,10 @@ public interface IPatrolTaskService extends IService<PatrolTask> {
      * @param code
      */
     int taskAudit(String code, Integer auditStatus, String auditReason, String remark);
+
+    /**
+     * app-提交任务
+     * @param patrolTaskDTO
+     */
+    void getPatrolTaskSubmit(PatrolTaskDTO patrolTaskDTO);
 }
