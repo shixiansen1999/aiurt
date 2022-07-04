@@ -266,7 +266,8 @@ public class Fault extends DictEntity implements Serializable {
     @ApiModelProperty("指派时间")
     private Date assignTime;
 
-    @ApiModelProperty("被指派人/领取人")
+    @ApiModelProperty("被指派人/领取人/责任人")
+    @Dict(dicCode = "username", dicText = "realname", dictTable = "sys_user")
     private String appointUserName;
 
     @ApiModelProperty("挂起原因")

@@ -510,7 +510,6 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
     public RepairRecordDTO queryRepairRecord(String faultCode) {
         LoginUser loginUser = checkLogin();
 
-
         LambdaQueryWrapper<FaultRepairRecord> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(FaultRepairRecord::getFaultCode, faultCode) //.eq(FaultRepairRecord::getAppointUserName, loginUser.getUsername())
                 .eq(FaultRepairRecord::getDelFlag, CommonConstant.DEL_FLAG_0)
