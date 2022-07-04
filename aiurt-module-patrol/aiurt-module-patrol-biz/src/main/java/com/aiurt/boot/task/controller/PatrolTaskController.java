@@ -171,14 +171,13 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
     /**
      * PC巡检任务池-任务指派
      *
-     * @param map
      * @return
      */
     @AutoLog(value = "PC巡检任务池-任务指派")
     @ApiOperation(value = "PC巡检任务池-任务指派", notes = "PC巡检任务池-任务指派")
     @PostMapping(value = "/taskAppoint")
-    public Result<?> taskAppoint(@RequestBody Map<String, List<PatrolAppointUserDTO>> map, @RequestBody PatrolAppointInfoDTO patrolAppointInfoDTO) {
-        int reslut = patrolTaskService.taskAppoint(map, patrolAppointInfoDTO);
+    public Result<?> taskAppoint(@RequestBody PatrolAppointInfoDTO patrolAppointInfoDTO) {
+        int reslut = patrolTaskService.taskAppoint(patrolAppointInfoDTO);
         return Result.OK("成功对" + reslut + "条任务进行指派！", null);
     }
 
@@ -198,6 +197,7 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
 
     /**
      * PC巡检任务列表-任务审核
+     *
      * @param code
      * @param auditStatus 审核状态，通过/不通过
      * @param auditReason
@@ -209,7 +209,7 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
     @PostMapping(value = "/taskAudit")
     public Result<?> taskAudit(@RequestParam("taskCode") String code, @RequestParam("auditStatus") Integer auditStatus,
                                String auditReason, String remark) {
-        patrolTaskService.taskAudit(code,auditStatus, auditReason, remark);
+        patrolTaskService.taskAudit(code, auditStatus, auditReason, remark);
         return Result.OK();
     }
 
@@ -350,7 +350,9 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
             return Result.OK("提交任务成功");
         }
         return Result.OK("领取成功");
-    }    /**
+    }
+
+    /**
      * app巡检任务提交
      *
      * @param patrolTaskDTO
@@ -362,7 +364,7 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
     @PostMapping(value = "/patrolTaskSubmit")
     public Result<?> patrolTaskSubmit(PatrolTaskDTO patrolTaskDTO, HttpServletRequest req) {
         patrolTaskService.getPatrolTaskSubmit(patrolTaskDTO);
-            return Result.OK("提交任务成功");
+        return Result.OK("提交任务成功");
     }
 
     /**

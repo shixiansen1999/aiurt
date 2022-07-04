@@ -31,6 +31,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
@@ -119,11 +120,12 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
     }
 
     @Override
-    public int taskAppoint(Map<String, List<PatrolAppointUserDTO>> map, PatrolAppointInfoDTO patrolAppointInfoDTO) {
+    public int taskAppoint(PatrolAppointInfoDTO patrolAppointInfoDTO) {
+        // 用户信息数据
+        Map<String, List<PatrolAppointUserDTO>> map = Optional.ofNullable(patrolAppointInfoDTO.getMap()).orElseGet(ConcurrentHashMap::new);
         AtomicInteger count = new AtomicInteger();
         for (Map.Entry<String, List<PatrolAppointUserDTO>> listEntry : map.entrySet()) {
             List<PatrolAppointUserDTO> list = listEntry.getValue();
-
             // 根据任务code查找未指派的任务
             QueryWrapper<PatrolTask> taskWrapper = new QueryWrapper<>();
             taskWrapper.lambda()

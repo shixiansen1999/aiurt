@@ -86,7 +86,7 @@ public interface IPatrolTaskService extends IService<PatrolTask> {
      * @param map
      * @return
      */
-    int taskAppoint(Map<String, List<PatrolAppointUserDTO>> map, PatrolAppointInfoDTO ppatrolAppointInfoDTO);
+    int taskAppoint(PatrolAppointInfoDTO ppatrolAppointInfoDTO);
 
     /**
      * PC巡检任务池-任务作废

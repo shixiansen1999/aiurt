@@ -11,13 +11,20 @@ import lombok.experimental.Accessors;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.util.Date;
+import java.util.List;
+import java.util.Map;
 
 @Data
 @Accessors(chain = true)
-@ApiModel(value = "巡检指派计划令等信息对象", description = "巡检指派计划令等信息对象")
+@ApiModel(value = "巡检指派信息", description = "巡检指派信息")
 @NoArgsConstructor
 @AllArgsConstructor
 public class PatrolAppointInfoDTO {
+    /**
+     * 任务指派信息K-V
+     */
+    @ApiModelProperty(value = "任务指派信息K-V,key表示任务编号，value表示用户信息列表", required = true)
+    private Map<String, List<PatrolAppointUserDTO>> map;
     /**
      * 计划令编码
      */
@@ -31,14 +38,14 @@ public class PatrolAppointInfoDTO {
     /**
      * 开始时间
      */
-    @ApiModelProperty(value = "开始时间")
+    @ApiModelProperty(value = "开始时间,格式HH:mm")
     @JsonFormat(timezone = "GMT+8", pattern = "HH:mm")
     @DateTimeFormat(pattern = "HH:mm")
     private Date startTime;
     /**
      * 结束时间
      */
-    @ApiModelProperty(value = "结束时间")
+    @ApiModelProperty(value = "结束时间,格式HH:mm")
     @JsonFormat(timezone = "GMT+8", pattern = "HH:mm")
     @DateTimeFormat(pattern = "HH:mm")
     private Date endTime;
