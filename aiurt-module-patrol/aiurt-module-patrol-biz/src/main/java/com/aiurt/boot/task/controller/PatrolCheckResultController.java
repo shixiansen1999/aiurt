@@ -1,25 +1,22 @@
 package com.aiurt.boot.task.controller;
 
-import java.util.Arrays;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import org.jeecg.common.api.vo.Result;
-import org.jeecg.common.system.query.QueryGenerator;
+import cn.hutool.core.util.ObjectUtil;
+import com.aiurt.boot.task.dto.PatrolCheckDTO;
 import com.aiurt.boot.task.entity.PatrolCheckResult;
 import com.aiurt.boot.task.service.IPatrolCheckResultService;
-
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import lombok.extern.slf4j.Slf4j;
-
+import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.system.base.controller.BaseController;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.ModelAndView;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import com.aiurt.common.aspect.annotation.AutoLog;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.shiro.SecurityUtils;
+import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.system.vo.LoginUser;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
+
+import javax.servlet.http.HttpServletRequest;
 
  /**
  * @Description: patrol_check_result
@@ -56,6 +53,73 @@ public class PatrolCheckResultController extends BaseController<PatrolCheckResul
 		IPage<PatrolCheckResult> pageList = patrolCheckResultService.page(page, queryWrapper);
 		return Result.OK(pageList);
 	}*/
+
+	 /**
+	  * app巡检-检查项-检查结果-保存
+	  * @param checkResult
+	  * @param id
+	  * @param req
+	  * @return
+	  */
+	 @AutoLog(value = "app巡检-检查项-检查结果-保存")
+	 @ApiOperation(value = "app巡检-检查项-检查结果-保存", notes = "app巡检-检查项-检查结果-保存")
+	 @PostMapping(value = "/patrolTaskCheckResult")
+	 public Result<?> patrolTaskCheckResult(@RequestParam(name ="id")String id,
+											@RequestParam(name="checkResult") String checkResult,
+											HttpServletRequest req) {
+		 LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+		 LambdaUpdateWrapper<PatrolCheckResult> updateWrapper= new LambdaUpdateWrapper<>();
+		 updateWrapper.set(PatrolCheckResult::getCheckResult,checkResult).set(PatrolCheckResult::getUserId,sysUser.getId()).eq(PatrolCheckResult::getId,id);
+		 patrolCheckResultService.update(updateWrapper);
+		 return Result.OK("检查结果保存成功");
+	 }
+	 /**
+	  * app巡检-检查项-备注-保存
+	  * @param remark
+	  * @param id
+	  * @param req
+	  * @return
+	  */
+	 @AutoLog(value = "app巡检-检查项-备注-保存")
+	 @ApiOperation(value = "app巡检-检查项-备注-保存", notes = "app巡检-检查项-备注-保存")
+	 @PostMapping(value = "/patrolTaskRemark")
+	 public Result<?> patrolTaskRemark(@RequestParam(name ="id")String id,
+									   @RequestParam(name="remark") String remark,
+									   HttpServletRequest req) {
+		 LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+		 LambdaUpdateWrapper<PatrolCheckResult> updateWrapper= new LambdaUpdateWrapper<>();
+		 updateWrapper.set(PatrolCheckResult::getRemark,remark).set(PatrolCheckResult::getUserId,sysUser.getId()).eq(PatrolCheckResult::getId,id);
+		 patrolCheckResultService.update(updateWrapper);
+		 return Result.OK("备注保存成功");
+	 }
+	 /**
+	  * app巡检-检查项-检查值-保存
+	  * @param patrolCheckDTO
+	  * @param req
+	  * @return
+	  */
+	 @AutoLog(value = "app巡检-检查项-检查值-保存")
+	 @ApiOperation(value = "app巡检-检查项-检查值-保存", notes = "app巡检-检查项-检查值-保存")
+	 @PostMapping(value = "/patrolTaskAccessory")
+	 public Result<?> patrolTaskAccessory(@RequestBody PatrolCheckDTO patrolCheckDTO,
+	 									  HttpServletRequest req) {
+		 PatrolCheckResult patrolCheckResult = new PatrolCheckResult();
+		 LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+		 if(ObjectUtil.isNotEmpty(patrolCheckDTO.getInputType()))
+		 {
+			 {
+				 patrolCheckResult.setDictCode(patrolCheckDTO.getDictCode());
+				 patrolCheckResult.setOptionValue(patrolCheckDTO.getOptionValue());
+			 }
+			 if(patrolCheckDTO.getInputType()==2)
+			 {
+				 patrolCheckResult.setWriteValue(patrolCheckDTO.getWriteValue());
+			 }
+		 }
+		 patrolCheckResult.setUserId(sysUser.getId());
+		 patrolCheckResultService.updateById(patrolCheckResult);
+		 return Result.OK("检查值保存成功");
+	 }
 
 	/**
 	 *   添加

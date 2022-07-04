@@ -50,6 +50,10 @@ public class PatrolTaskDeviceDTO {
     @Excel(name = "设备名称", width = 15)
     @ApiModelProperty(value = "设备名称")
     private java.lang.String deviceName;
+    /**站点*/
+    @Excel(name = "站点", width = 15)
+    @ApiModelProperty(value = "站点")
+    private java.lang.String stationName;
     /**设备位置*/
     @Excel(name = "设备位置", width = 15)
     @ApiModelProperty(value = "设备位置")
@@ -61,33 +65,33 @@ public class PatrolTaskDeviceDTO {
     @ApiModelProperty(value = "开始巡检时间")
     private java.util.Date startTime;
     /**工单提交时间*/
-    @Excel(name = "工单提交时间", width = 15, format = "yyyy-MM-dd HH:mm")
+    @Excel(name = "结束巡检时间", width = 15, format = "yyyy-MM-dd HH:mm")
     @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm")
     @DateTimeFormat(pattern="yyyy-MM-dd HH:mm")
-    @ApiModelProperty(value = "工单提交时间")
+    @ApiModelProperty(value = "结束巡检时间")
     private java.util.Date checkTime;
     @Excel(name = "巡检时长", width = 15)
     @ApiModelProperty(value = "巡检时长")
     private Long inspectionTime;
-    /**检查结果：0正常、1异常*/
-    @Excel(name = "检查结果：0正常、1异常", width = 15)
-    @ApiModelProperty(value = "检查结果：0正常、1异常")
+    /**备注说明*/
+    @Excel(name = "备注说明", width = 15)
+    @ApiModelProperty(value = "备注说明")
+    private java.lang.String remark;
+    /**巡检结果：0正常、1异常*/
+    @Excel(name = "巡检结果：0正常、1异常", width = 15)
+    @ApiModelProperty(value = "巡检结果：0正常、1异常")
     private java.lang.Integer checkResult;
     /**工单提交用户ID*/
     @Excel(name = "工单提交用户ID", width = 15)
     @ApiModelProperty(value = "工单提交用户ID")
     private java.lang.String userId;
     /**工单提交用户名称*/
-    @Excel(name = "工单提交用户名称", width = 15)
-    @ApiModelProperty(value = "工单提交用户名称")
+    @Excel(name = "提交人", width = 15)
+    @ApiModelProperty(value = "提交人")
     private java.lang.String submitName;
-    /**备注说明*/
-    @Excel(name = "备注说明", width = 15)
-    @ApiModelProperty(value = "备注说明")
-    private java.lang.String remark;
-    /**检查状态：0未开始、1巡检中、2已完成*/
-    @Excel(name = "检查状态：0未开始、1巡检中、2已完成", width = 15)
-    @ApiModelProperty(value = "检查状态：0未开始、1巡检中、2已完成")
+    /**巡检结果：0未开始、1巡检中、2已完成*/
+    @Excel(name = "巡检结果：0未开始、1进行中、2已提交", width = 15)
+    @ApiModelProperty(value = "巡检结果：0未开始、1进行中、2已提交")
     private java.lang.Integer status;
     /**删除状态： 0未删除 1已删除*/
     @Excel(name = "删除状态： 0未删除 1已删除", width = 15)
@@ -101,21 +105,21 @@ public class PatrolTaskDeviceDTO {
     private java.lang.String accompanyName;
     /**巡检位置*/
     @Excel(name = "巡检位置", width = 15)
-    @ApiModelProperty(value = "巡位置")
+    @ApiModelProperty(value = "巡检位置")
     private java.lang.String  position;
     /**巡检自定义位置*/
     @Excel(name = "巡检自定义位置", width = 15)
     @ApiModelProperty(value = "巡检自定义位置")
     private java.lang.String customPosition;
-    /**正常数量*/
-    @Excel(name = "正常数量", width = 15)
-    @ApiModelProperty(value = "正常数量")
+    /**正常项*/
+    @Excel(name = "正常项", width = 15)
+    @ApiModelProperty(value = "正常项")
     private java.lang.Integer rightCheckNumber;
-    /**异常数量*/
-    @Excel(name = "异常数量", width = 15)
-    @ApiModelProperty(value = "异常数量")
+    /**异常项*/
+    @Excel(name = "异常项", width = 15)
+    @ApiModelProperty(value = "异常项")
     private java.lang.Integer aberrantNumber;
-    /*** 附件信息*/
-    @ApiModelProperty(value = "附件信息")
+    /***附件*/
+    @ApiModelProperty(value = "附件")
     private List<PatrolAccessoryDTO> accessoryDTOList;
 }

@@ -86,6 +86,8 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
             e.setSubmitName(submitName);
             PatrolTask patrolTask = patrolTaskMapper.selectById(e.getTaskId());
             List<String> position = patrolTaskDeviceMapper.getPosition(patrolTask.getCode());
+            String stationName = position.stream().collect(Collectors.joining(","));
+            e.setStationName(stationName);
             StringBuffer stringBuffer = new StringBuffer();
             Integer length =position.size();
             AtomicReference<Integer> size = new AtomicReference<>(length);
@@ -314,46 +316,5 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
         List<PatrolCheckResultDTO> resultList = buildResultTree(Optional.ofNullable(patrolCheckResultDTOList)
                 .orElseGet(Collections::emptyList));
         return resultList;
-    }
-
-    @Override
-    public void getPatrolTaskCheckItems(PatrolCheckResultDTO patrolCheckResultDTO) {
-        //保存基本信息
-        PatrolCheckResult patrolCheckResult = new PatrolCheckResult();
-        patrolCheckResult.setId(patrolCheckResult.getId());
-        if(patrolCheckResultDTO.getInputType()==1)
-        {
-            patrolCheckResult.setDictCode(patrolCheckResultDTO.getDictCode());
-            patrolCheckResult.setOptionValue(patrolCheckResultDTO.getOptionValue());
-        }
-        if(patrolCheckResultDTO.getInputType()==2)
-        {
-            patrolCheckResult.setWriteValue(patrolCheckResultDTO.getWriteValue());
-        }
-        //保存附件
-        List<PatrolAccessory> accessoryList = patrolCheckResultDTO.getAccessoryInfo();
-        accessoryList.stream().forEach(e->{
-          if(ObjectUtil.isNotEmpty(e.getId()))
-          {
-              PatrolAccessory patrolAccessory =  new PatrolAccessory();
-              patrolAccessory.setId(e.getId());
-              patrolAccessory.setCheckResultId(patrolCheckResultDTO.getId());
-              patrolAccessory.setTaskDeviceId(patrolCheckResult.getTaskDeviceId());
-              patrolAccessory.setAddress(e.getAddress());
-              patrolAccessory.setDelFlag(0);
-              patrolAccessory.setName(e.getName());
-              patrolAccessoryMapper.updateById(patrolAccessory);
-          }
-           else {
-              PatrolAccessory patrolAccessory =  new PatrolAccessory();
-              patrolAccessory.setCheckResultId(patrolCheckResultDTO.getId());
-              patrolAccessory.setTaskDeviceId(patrolCheckResult.getTaskDeviceId());
-              patrolAccessory.setAddress(e.getAddress());
-              patrolAccessory.setDelFlag(0);
-              patrolAccessory.setName(e.getName());
-              patrolAccessoryMapper.insert(patrolAccessory);
-          }
-        });
-        patrolCheckResultMapper.updateById(patrolCheckResult);
     }
 }
