@@ -1,5 +1,6 @@
 package com.aiurt.modules.position.service.impl;
 
+import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.modules.position.entity.CsLine;
 import com.aiurt.modules.position.entity.CsStation;
 import com.aiurt.modules.position.entity.CsStationPosition;
@@ -54,7 +55,7 @@ public class CsStationPositionServiceImpl extends ServiceImpl<CsStationPositionM
         //名称不能重复，判断数据库中是否存在，如不存在则可继续添加
         LambdaQueryWrapper<CsStationPosition> nameWrapper = new LambdaQueryWrapper<>();
         nameWrapper.eq(CsStationPosition::getPositionName, csStationPosition.getPositionName());
-        nameWrapper.eq(CsStationPosition::getDelFlag, 0);
+        nameWrapper.eq(CsStationPosition::getDelFlag, CommonConstant.DEL_FLAG_0);
         List<CsStationPosition> positionList = csStationPositionMapper.selectList(nameWrapper);
         if (!positionList.isEmpty()) {
             return Result.error("三级名称重复，请重新填写！");
@@ -67,7 +68,7 @@ public class CsStationPositionServiceImpl extends ServiceImpl<CsStationPositionM
         //根据Station_code查询所属线路code
         LambdaQueryWrapper<CsStation> stationWrapper = new LambdaQueryWrapper<>();
         stationWrapper.eq(CsStation::getStationCode,csStationPosition.getStaionCode());
-        stationWrapper.eq(CsStation::getDelFlag, 0);
+        stationWrapper.eq(CsStation::getDelFlag, CommonConstant.DEL_FLAG_0);
         CsStation sta = csStationMapper.selectOne(stationWrapper);
         csStationPosition.setLineCode(sta.getLineCode());
         //拼接position_code_cc
@@ -87,7 +88,7 @@ public class CsStationPositionServiceImpl extends ServiceImpl<CsStationPositionM
         //名称不能重复，判断数据库中是否存在，如不存在则可继续添加
         LambdaQueryWrapper<CsStationPosition> nameWrapper = new LambdaQueryWrapper<>();
         nameWrapper.eq(CsStationPosition::getPositionName, csStationPosition.getPositionName());
-        nameWrapper.eq(CsStationPosition::getDelFlag, 0);
+        nameWrapper.eq(CsStationPosition::getDelFlag, CommonConstant.DEL_FLAG_0);
         List<CsStationPosition> positionList = csStationPositionMapper.selectList(nameWrapper);
         if (!positionList.isEmpty() && !positionList.get(0).getId().equals(csStationPosition.getId())) {
             return Result.error("三级名称重复，请重新填写！");

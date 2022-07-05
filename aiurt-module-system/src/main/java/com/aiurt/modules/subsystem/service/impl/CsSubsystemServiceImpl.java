@@ -1,5 +1,6 @@
 package com.aiurt.modules.subsystem.service.impl;
 
+import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.modules.position.entity.CsLine;
 import com.aiurt.modules.subsystem.entity.CsSubsystem;
 import com.aiurt.modules.subsystem.entity.CsSubsystemUser;
@@ -45,7 +46,7 @@ public class CsSubsystemServiceImpl extends ServiceImpl<CsSubsystemMapper, CsSub
         //子系统编码不能重复，判断数据库中是否存在，如不存在则可继续添加
         LambdaQueryWrapper<CsSubsystem> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(CsSubsystem::getSystemCode, csSubsystem.getSystemCode());
-        queryWrapper.eq(CsSubsystem::getDelFlag, 0);
+        queryWrapper.eq(CsSubsystem::getDelFlag, CommonConstant.DEL_FLAG_0);
         List<CsSubsystem> list = csSubsystemMapper.selectList(queryWrapper);
         if (!list.isEmpty()) {
             return Result.error("子系统编码重复，请重新填写！");
@@ -54,7 +55,7 @@ public class CsSubsystemServiceImpl extends ServiceImpl<CsSubsystemMapper, CsSub
         LambdaQueryWrapper<CsSubsystem> nameWrapper = new LambdaQueryWrapper<>();
         nameWrapper.eq(CsSubsystem::getMajorCode, csSubsystem.getMajorCode());
         nameWrapper.eq(CsSubsystem::getSystemName, csSubsystem.getSystemName());
-        nameWrapper.eq(CsSubsystem::getDelFlag, 0);
+        nameWrapper.eq(CsSubsystem::getDelFlag, CommonConstant.DEL_FLAG_0);
         List<CsSubsystem> nameList = csSubsystemMapper.selectList(nameWrapper);
         if (!nameList.isEmpty()) {
             return Result.error("子系统名称重复，请重新填写！");
@@ -80,7 +81,7 @@ public class CsSubsystemServiceImpl extends ServiceImpl<CsSubsystemMapper, CsSub
         //子系统编码不能重复，判断数据库中是否存在，如不存在则可继续添加
         LambdaQueryWrapper<CsSubsystem> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(CsSubsystem::getSystemCode, csSubsystem.getSystemCode());
-        queryWrapper.eq(CsSubsystem::getDelFlag, 0);
+        queryWrapper.eq(CsSubsystem::getDelFlag, CommonConstant.DEL_FLAG_0);
         List<CsSubsystem> list = csSubsystemMapper.selectList(queryWrapper);
         if (!list.isEmpty() && !list.get(0).getId().equals(csSubsystem.getId())) {
             return Result.error("子系统编码重复，请重新填写！");
@@ -89,7 +90,7 @@ public class CsSubsystemServiceImpl extends ServiceImpl<CsSubsystemMapper, CsSub
         LambdaQueryWrapper<CsSubsystem> nameWrapper = new LambdaQueryWrapper<>();
         nameWrapper.eq(CsSubsystem::getMajorCode, csSubsystem.getMajorCode());
         nameWrapper.eq(CsSubsystem::getSystemName, csSubsystem.getSystemName());
-        nameWrapper.eq(CsSubsystem::getDelFlag, 0);
+        nameWrapper.eq(CsSubsystem::getDelFlag, CommonConstant.DEL_FLAG_0);
         List<CsSubsystem> nameList = csSubsystemMapper.selectList(nameWrapper);
         if (!nameList.isEmpty() && !nameList.get(0).getId().equals(csSubsystem.getId())) {
             return Result.error("子系统名称重复，请重新填写！");

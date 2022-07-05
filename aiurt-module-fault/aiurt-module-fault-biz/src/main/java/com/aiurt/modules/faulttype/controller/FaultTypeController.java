@@ -1,6 +1,7 @@
 package com.aiurt.modules.faulttype.controller;
 
 import com.aiurt.common.aspect.annotation.AutoLog;
+import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.system.base.controller.BaseController;
 import com.aiurt.modules.common.entity.SelectTable;
 import com.aiurt.modules.fault.entity.Fault;
@@ -66,7 +67,7 @@ public class FaultTypeController extends BaseController<FaultType, IFaultTypeSer
 			queryWrapper.eq(FaultType::getMajorCode, faultType.getMajorCode());
 		}
 		Page<FaultType> page = new Page<FaultType>(pageNo, pageSize);
-		IPage<FaultType> pageList = faultTypeService.page(page, queryWrapper.eq(FaultType::getDelFlag,0).orderByDesc(FaultType::getCreateTime));
+		IPage<FaultType> pageList = faultTypeService.page(page, queryWrapper.eq(FaultType::getDelFlag, CommonConstant.DEL_FLAG_0).orderByDesc(FaultType::getCreateTime));
 		return Result.OK(pageList);
 	}
 
@@ -114,7 +115,7 @@ public class FaultTypeController extends BaseController<FaultType, IFaultTypeSer
 		if (!list.isEmpty()) {
 			return Result.error("故障分类编码已被故障报修单使用，不能删除！");
 		}
-		faultType.setDelFlag(1);
+		faultType.setDelFlag(CommonConstant.DEL_FLAG_1);
 		faultTypeService.updateById(faultType);
 		return Result.OK("删除成功!");
 	}
@@ -148,7 +149,7 @@ public class FaultTypeController extends BaseController<FaultType, IFaultTypeSer
 	public Result<List<SelectTable>> queryFaultTypeByMajorCode(@RequestParam(value = "majorCode") String majorCode) {
 		LambdaQueryWrapper<FaultType> wrapper = new LambdaQueryWrapper<>();
 		wrapper.eq(FaultType::getMajorCode, majorCode);
-		wrapper.eq(FaultType::getDelFlag, 0);
+		wrapper.eq(FaultType::getDelFlag, CommonConstant.DEL_FLAG_0);
 		 List<FaultType> typeList = faultTypeService.getBaseMapper().selectList(wrapper);
 		 List<SelectTable> tableList = typeList.stream().map(faultType -> {
 			 SelectTable table = new SelectTable();

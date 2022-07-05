@@ -1,5 +1,6 @@
 package com.aiurt.modules.faultlevel.service.impl;
 
+import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.modules.faultlevel.entity.FaultLevel;
 import com.aiurt.modules.faultlevel.mapper.FaultLevelMapper;
 import com.aiurt.modules.faultlevel.service.IFaultLevelService;
@@ -34,7 +35,7 @@ public class FaultLevelServiceImpl extends ServiceImpl<FaultLevelMapper, FaultLe
         //编码不能重复，判断数据库中是否存在，如不存在则可继续添加
         LambdaQueryWrapper<FaultLevel> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(FaultLevel::getCode, faultLevel.getCode());
-        queryWrapper.eq(FaultLevel::getDelFlag, 0);
+        queryWrapper.eq(FaultLevel::getDelFlag,CommonConstant.DEL_FLAG_0);
         List<FaultLevel> list = faultLevelMapper.selectList(queryWrapper);
         if (!list.isEmpty()) {
             return Result.error("故障分级编码重复，请重新填写！");
@@ -43,7 +44,7 @@ public class FaultLevelServiceImpl extends ServiceImpl<FaultLevelMapper, FaultLe
         LambdaQueryWrapper<FaultLevel> lineWrapper = new LambdaQueryWrapper<>();
         lineWrapper.eq(FaultLevel::getName, faultLevel.getName());
         lineWrapper.eq(FaultLevel::getMajorCode, faultLevel.getMajorCode());
-        lineWrapper.eq(FaultLevel::getDelFlag, 0);
+        lineWrapper.eq(FaultLevel::getDelFlag, CommonConstant.DEL_FLAG_0);
         list = faultLevelMapper.selectList(lineWrapper);
         if (!list.isEmpty()) {
             return Result.error("相同专业下，故障分级名称重复，请重新填写！");
@@ -63,7 +64,7 @@ public class FaultLevelServiceImpl extends ServiceImpl<FaultLevelMapper, FaultLe
         //编码不能重复，判断数据库中是否存在，如不存在则可继续添加
         LambdaQueryWrapper<FaultLevel> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(FaultLevel::getCode, faultLevel.getCode());
-        queryWrapper.eq(FaultLevel::getDelFlag, 0);
+        queryWrapper.eq(FaultLevel::getDelFlag, CommonConstant.DEL_FLAG_0);
         List<FaultLevel> list = faultLevelMapper.selectList(queryWrapper);
         if (!list.isEmpty() && !list.get(0).getId().equals(faultLevel.getId())) {
             return Result.error("故障分级编码重复，请重新填写！");
@@ -72,7 +73,7 @@ public class FaultLevelServiceImpl extends ServiceImpl<FaultLevelMapper, FaultLe
         LambdaQueryWrapper<FaultLevel> lineWrapper = new LambdaQueryWrapper<>();
         lineWrapper.eq(FaultLevel::getName, faultLevel.getName());
         lineWrapper.eq(FaultLevel::getMajorCode, faultLevel.getMajorCode());
-        lineWrapper.eq(FaultLevel::getDelFlag, 0);
+        lineWrapper.eq(FaultLevel::getDelFlag, CommonConstant.DEL_FLAG_0);
         list = faultLevelMapper.selectList(lineWrapper);
         if (!list.isEmpty() && !list.get(0).getId().equals(faultLevel.getId())) {
             return Result.error("相同专业下，故障分级名称重复，请重新填写！");

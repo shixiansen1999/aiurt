@@ -4,6 +4,7 @@ import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 
 import com.aiurt.common.aspect.annotation.AutoLog;
+import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.modules.device.entity.Device;
 import com.aiurt.modules.device.service.IDeviceService;
 import com.aiurt.modules.manufactor.entity.CsManufactor;
@@ -60,7 +61,7 @@ public class CsManufactorController  {
 								   HttpServletRequest req) {
 		QueryWrapper<CsManufactor> queryWrapper = QueryGenerator.initQueryWrapper(csManufactor, req.getParameterMap());
 		Page<CsManufactor> page = new Page<CsManufactor>(pageNo, pageSize);
-		IPage<CsManufactor> pageList = csManufactorService.page(page, queryWrapper.lambda().eq(CsManufactor::getDelFlag,0));
+		IPage<CsManufactor> pageList = csManufactorService.page(page, queryWrapper.lambda().eq(CsManufactor::getDelFlag, CommonConstant.DEL_FLAG_0));
 		return Result.OK(pageList);
 	}
 
@@ -69,7 +70,7 @@ public class CsManufactorController  {
 	 public Result<?> selectList(CsManufactor csManufactor,
 									HttpServletRequest req) {
 		 QueryWrapper<CsManufactor> queryWrapper = QueryGenerator.initQueryWrapper(csManufactor, req.getParameterMap());
-		 List<CsManufactor> pageList = csManufactorService.list(queryWrapper.lambda().eq(CsManufactor::getDelFlag,0));
+		 List<CsManufactor> pageList = csManufactorService.list(queryWrapper.lambda().eq(CsManufactor::getDelFlag, CommonConstant.DEL_FLAG_0));
 		 return Result.OK(pageList);
 	 }
 
@@ -113,7 +114,7 @@ public class CsManufactorController  {
 		//判断设备主数据是否使用
 		LambdaQueryWrapper<Device> deviceWrapper =  new LambdaQueryWrapper<Device>();
 		deviceWrapper.eq(Device::getManufactorCode,csManufactor.getCode());
-		deviceWrapper.eq(Device::getDelFlag,0);
+		deviceWrapper.eq(Device::getDelFlag, CommonConstant.DEL_FLAG_0);
 		List<Device> deviceList = deviceService.list(deviceWrapper);
 		if(!deviceList.isEmpty()){
 			return Result.error("该位置信息被设备主数据使用中，无法删除");
@@ -121,12 +122,12 @@ public class CsManufactorController  {
 		//判断物资主数据是否使用
 		LambdaQueryWrapper<MaterialBase> materWrapper =  new LambdaQueryWrapper<MaterialBase>();
 		materWrapper.eq(MaterialBase::getManufactorCode,csManufactor.getCode());
-		materWrapper.eq(MaterialBase::getDelFlag,0);
+		materWrapper.eq(MaterialBase::getDelFlag, CommonConstant.DEL_FLAG_0);
 		List<MaterialBase> materList = materialBaseService.list(materWrapper);
 		if(!materList.isEmpty()){
 			return Result.error("该位置信息被物资主数据使用中，无法删除");
 		}
-		csManufactor.setDelFlag(1);
+		csManufactor.setDelFlag(CommonConstant.DEL_FLAG_1);
 		csManufactorService.updateById(csManufactor);
 		return Result.OK("删除成功!");
 	}

@@ -1,5 +1,6 @@
 package com.aiurt.modules.position.service.impl;
 
+import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.modules.position.entity.CsLine;
 import com.aiurt.modules.position.entity.CsStation;
 import com.aiurt.modules.position.mapper.CsLineMapper;
@@ -38,7 +39,7 @@ public class CsStationServiceImpl extends ServiceImpl<CsStationMapper, CsStation
         //名称不能重复，判断数据库中是否存在，如不存在则可继续添加
         LambdaQueryWrapper<CsStation> nameWrapper = new LambdaQueryWrapper<>();
         nameWrapper.eq(CsStation::getStationName, csStation.getStationName());
-        nameWrapper.eq(CsStation::getDelFlag, 0);
+        nameWrapper.eq(CsStation::getDelFlag, CommonConstant.DEL_FLAG_0);
         List<CsStation> stationList = csStationMapper.selectList(nameWrapper);
         if (!stationList.isEmpty()) {
             return Result.error("二级名称重复，请重新填写！");
@@ -64,7 +65,7 @@ public class CsStationServiceImpl extends ServiceImpl<CsStationMapper, CsStation
         //名称不能重复，判断数据库中是否存在，如不存在则可继续添加
         LambdaQueryWrapper<CsStation> nameWrapper = new LambdaQueryWrapper<>();
         nameWrapper.eq(CsStation::getStationName, csStation.getStationName());
-        nameWrapper.eq(CsStation::getDelFlag, 0);
+        nameWrapper.eq(CsStation::getDelFlag, CommonConstant.DEL_FLAG_0);
         List<CsStation> stationList = csStationMapper.selectList(nameWrapper);
         if (!stationList.isEmpty() && !stationList.get(0).getId().equals(csStation.getId())) {
             return Result.error("二级名称重复，请重新填写！");

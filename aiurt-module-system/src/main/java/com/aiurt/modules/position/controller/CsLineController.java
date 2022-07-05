@@ -4,6 +4,7 @@ package com.aiurt.modules.position.controller;
 import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 
+import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.modules.device.entity.Device;
 import com.aiurt.modules.device.service.IDeviceService;
 import com.aiurt.modules.position.entity.CsLine;
@@ -61,7 +62,7 @@ public class CsLineController extends BaseController<CsLine, ICsLineService> {
 											   HttpServletRequest req) {
 		QueryWrapper<CsLine> queryWrapper = QueryGenerator.initQueryWrapper(csLine, req.getParameterMap());
 		Page<CsLine> page = new Page<CsLine>(pageNo, pageSize);
-		IPage<CsLine> pageList = csLineService.page(page, queryWrapper.lambda().eq(CsLine::getDelFlag,0));
+		IPage<CsLine> pageList = csLineService.page(page, queryWrapper.lambda().eq(CsLine::getDelFlag, CommonConstant.DEL_FLAG_0));
 		return Result.OK(pageList);
 	}
 
@@ -122,7 +123,7 @@ public class CsLineController extends BaseController<CsLine, ICsLineService> {
 		//判断二级是否使用
 		LambdaQueryWrapper<CsStation> wrapper =  new LambdaQueryWrapper<CsStation>();
 		wrapper.eq(CsStation::getLineCode,csLine.getLineCode());
-		wrapper.eq(CsStation::getDelFlag,0);
+		wrapper.eq(CsStation::getDelFlag, CommonConstant.DEL_FLAG_0);
 		List<CsStation> list = csStationService.list(wrapper);
 		if(!list.isEmpty()){
 			return Result.error("该位置信息正在使用中，无法删除");
@@ -130,12 +131,12 @@ public class CsLineController extends BaseController<CsLine, ICsLineService> {
 		//判断设备主数据是否使用
 		LambdaQueryWrapper<Device> deviceWrapper =  new LambdaQueryWrapper<Device>();
 		deviceWrapper.eq(Device::getPositionCode,csLine.getLineCode());
-		deviceWrapper.eq(Device::getDelFlag,0);
+		deviceWrapper.eq(Device::getDelFlag, CommonConstant.DEL_FLAG_0);
 		List<Device> deviceList = deviceService.list(deviceWrapper);
 		if(!deviceList.isEmpty()){
 			return Result.error("该位置信息被设备主数据使用中，无法删除");
 		}
-		csLine.setDelFlag(1);
+		csLine.setDelFlag(CommonConstant.DEL_FLAG_1);
 		csLineService.updateById(csLine);
 		return Result.OK("删除成功!");
 	}

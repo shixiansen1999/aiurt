@@ -6,6 +6,7 @@ import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletRequest;
 
 import com.aiurt.common.aspect.annotation.AutoLog;
+import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.modules.device.entity.Device;
 import com.aiurt.modules.device.service.IDeviceService;
 import com.aiurt.modules.position.entity.CsLine;
@@ -58,11 +59,11 @@ public class CsStationPositionController  {
 	 @GetMapping(value = "/treeList")
 	 public Result<?> queryTreeList() {
 	 	 //查询所有一级
-		 List<CsLine> lineList = csLineService.list(new LambdaQueryWrapper<CsLine>().eq(CsLine::getDelFlag,0).orderByAsc(CsLine::getSort));
+		 List<CsLine> lineList = csLineService.list(new LambdaQueryWrapper<CsLine>().eq(CsLine::getDelFlag, CommonConstant.DEL_FLAG_0).orderByAsc(CsLine::getSort));
 		 //查询所有二级
-		 List<CsStation> stationList = csStationService.list(new LambdaQueryWrapper<CsStation>().eq(CsStation::getDelFlag,0).orderByAsc(CsStation::getSort));
+		 List<CsStation> stationList = csStationService.list(new LambdaQueryWrapper<CsStation>().eq(CsStation::getDelFlag, CommonConstant.DEL_FLAG_0).orderByAsc(CsStation::getSort));
 		 //查询所有三级
-		 List<CsStationPosition> positionList = csStationPositionService.list(new LambdaQueryWrapper<CsStationPosition>().eq(CsStationPosition::getDelFlag,0).orderByAsc(CsStationPosition::getSort));
+		 List<CsStationPosition> positionList = csStationPositionService.list(new LambdaQueryWrapper<CsStationPosition>().eq(CsStationPosition::getDelFlag, CommonConstant.DEL_FLAG_0).orderByAsc(CsStationPosition::getSort));
 		 List<CsStationPosition> newList = new ArrayList<>();
 		 //循环一级
 		 lineList.forEach(line -> {
@@ -178,12 +179,12 @@ public class CsStationPositionController  {
 		//判断设备主数据是否使用
 		LambdaQueryWrapper<Device> deviceWrapper =  new LambdaQueryWrapper<Device>();
 		deviceWrapper.eq(Device::getPositionCode,csStationPosition.getPositionCode());
-		deviceWrapper.eq(Device::getDelFlag,0);
+		deviceWrapper.eq(Device::getDelFlag, CommonConstant.DEL_FLAG_0);
 		List<Device> deviceList = deviceService.list(deviceWrapper);
 		if(!deviceList.isEmpty()){
 			return Result.error("该位置信息被设备主数据使用中，无法删除");
 		}
-		csStationPosition.setDelFlag(1);
+		csStationPosition.setDelFlag(CommonConstant.DEL_FLAG_1);
 		csStationPositionService.updateById(csStationPosition);
 		return Result.OK("删除成功!");
 	}
@@ -216,21 +217,21 @@ public class CsStationPositionController  {
 	 	 if(null!=level && level.equals("1")){
 			 LambdaQueryWrapper<CsLine> wrapper = new LambdaQueryWrapper<>();
 			 wrapper.orderByDesc(CsLine::getSort);
-			 List<CsLine> list = csLineService.list(wrapper.eq(CsLine::getDelFlag,0));
+			 List<CsLine> list = csLineService.list(wrapper.eq(CsLine::getDelFlag, CommonConstant.DEL_FLAG_0));
 			 if(!list.isEmpty()){
 				 sort = list.get(0).getSort()+1;
 			 }
 		 }else if(null!=level && level.equals("2")){
 			 LambdaQueryWrapper<CsStation> wrapper = new LambdaQueryWrapper<>();
 			 wrapper.orderByDesc(CsStation::getSort);
-			 List<CsStation> list = csStationService.list(wrapper.eq(CsStation::getDelFlag,0));
+			 List<CsStation> list = csStationService.list(wrapper.eq(CsStation::getDelFlag, CommonConstant.DEL_FLAG_0));
 			 if(!list.isEmpty()){
 				 sort = list.get(0).getSort()+1;
 			 }
 		 }else if(null!=level && level.equals("3")){
 			 LambdaQueryWrapper<CsStationPosition> wrapper = new LambdaQueryWrapper<>();
 			 wrapper.orderByDesc(CsStationPosition::getSort);
-			 List<CsStationPosition> list = csStationPositionService.list(wrapper.eq(CsStationPosition::getDelFlag,0));
+			 List<CsStationPosition> list = csStationPositionService.list(wrapper.eq(CsStationPosition::getDelFlag, CommonConstant.DEL_FLAG_0));
 			 if(!list.isEmpty()){
 				 sort = list.get(0).getSort()+1;
 			 }

@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import com.aiurt.common.aspect.annotation.AutoLog;
+import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.modules.device.entity.DeviceType;
 import com.aiurt.modules.device.service.IDeviceTypeService;
 import com.aiurt.modules.major.entity.CsMajor;
@@ -82,10 +83,10 @@ public class CsSubsystemController  {
 	 @GetMapping(value = "/systemTreeList")
 	 public Result<?> systemTreeList(Integer level) {
 	 	 //查询专业
-		 LambdaQueryWrapper<CsMajor> majorWrapper = new LambdaQueryWrapper<CsMajor>().eq(CsMajor::getDelFlag,0);
+		 LambdaQueryWrapper<CsMajor> majorWrapper = new LambdaQueryWrapper<CsMajor>().eq(CsMajor::getDelFlag, CommonConstant.DEL_FLAG_0);
 		 List<CsMajor> majorList = csMajorService.list(majorWrapper);
 		 //查询子系统
-		 LambdaQueryWrapper<CsSubsystem> systemWrapper = new LambdaQueryWrapper<CsSubsystem>().eq(CsSubsystem::getDelFlag,0);
+		 LambdaQueryWrapper<CsSubsystem> systemWrapper = new LambdaQueryWrapper<CsSubsystem>().eq(CsSubsystem::getDelFlag, CommonConstant.DEL_FLAG_0);
 		 List<CsSubsystem> systemList = csSubsystemService.list(systemWrapper.orderByDesc(CsSubsystem::getCreateTime));
 		 List<CsSubsystem> newList = new ArrayList<>();
 		 majorList.forEach(major -> {
@@ -109,24 +110,25 @@ public class CsSubsystemController  {
 									@RequestParam(name="systemName", required = false) String systemName,
 									@RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
 									@RequestParam(name="pageSize", defaultValue="10") Integer pageSize) {
-		 QueryWrapper<CsSubsystem> queryWrapper = new QueryWrapper<>();
+	 	 LambdaQueryWrapper<CsSubsystem> queryWrapper = new LambdaQueryWrapper<>();
 		 if( majorCode != null && !"".equals(majorCode) ){
-			 queryWrapper.eq("major_code",majorCode);
+			 queryWrapper.eq(CsSubsystem::getMajorCode,majorCode);
 		 }
 		 if( systemName != null && !"".equals(systemName) ){
-			 queryWrapper.like("system_name",systemName);
+			 queryWrapper.like(CsSubsystem::getSystemName,systemName);
 		 }
-		 queryWrapper.eq("del_flag",0);
-		 queryWrapper.orderByDesc("create_time");
+		 queryWrapper.eq(CsSubsystem::getDelFlag, CommonConstant.DEL_FLAG_0);
+
+		 queryWrapper.orderByDesc(CsSubsystem::getCreateTime);
 		 List<CsSubsystem> pageList = csSubsystemService.list(queryWrapper);
 		 Page<CsSubsystem> page = new Page<CsSubsystem>(pageNo, pageSize);
 		 if(pageList.isEmpty()){
-			 QueryWrapper<CsSubsystem> wrapper = new QueryWrapper<>();
+			 LambdaQueryWrapper<CsSubsystem> wrapper = new LambdaQueryWrapper<>();
 			 if( majorCode != null && !"".equals(majorCode) ){
-				 wrapper.eq("system_code",majorCode);
+				 wrapper.eq(CsSubsystem::getSystemCode,majorCode);
 			 }
-			 wrapper.eq("del_flag",0);
-			 wrapper.orderByDesc("create_time");
+			 wrapper.eq(CsSubsystem::getDelFlag, CommonConstant.DEL_FLAG_0);
+			 wrapper.orderByDesc(CsSubsystem::getCreateTime);
 			 pageList = csSubsystemService.list(wrapper);
 		 }
 		 pageList.forEach(system->{
@@ -195,7 +197,7 @@ public class CsSubsystemController  {
 		//判断是否被设备类型使用
 		LambdaQueryWrapper<DeviceType> deviceWrapper = new LambdaQueryWrapper<>();
 		deviceWrapper.eq(DeviceType::getSystemCode,csSubsystem.getSystemCode());
-		deviceWrapper.eq(DeviceType::getDelFlag,0);
+		deviceWrapper.eq(DeviceType::getDelFlag, CommonConstant.DEL_FLAG_0);
 		List<DeviceType> deviceList = deviceTypeService.list(deviceWrapper);
 		if(!deviceList.isEmpty()){
 			return Result.error("该子系统被设备类型使用中，不能删除!");
@@ -203,12 +205,12 @@ public class CsSubsystemController  {
 		//判断是否被物资分类使用
 		LambdaQueryWrapper<MaterialBaseType> materWrapper = new LambdaQueryWrapper<>();
 		materWrapper.eq(MaterialBaseType::getSystemCode,csSubsystem.getSystemCode());
-		materWrapper.eq(MaterialBaseType::getDelFlag,0);
+		materWrapper.eq(MaterialBaseType::getDelFlag, CommonConstant.DEL_FLAG_0);
 		List<MaterialBaseType> materList = materialBaseTypeService.list(materWrapper);
 		if(!materList.isEmpty()){
 			return Result.error("该子系统被物资分类使用中，不能删除!");
 		}
-		csSubsystem.setDelFlag(1);
+		csSubsystem.setDelFlag(CommonConstant.DEL_FLAG_1);
 		csSubsystemService.updateById(csSubsystem);
 		//关联删除
 		QueryWrapper<CsSubsystemUser> userQueryWrapper = new QueryWrapper<CsSubsystemUser>();
@@ -242,12 +244,12 @@ public class CsSubsystemController  {
 	 @GetMapping(value = "/getList")
 	 public Result<?> getList(@RequestParam(name="majorIds",required=true) List<String> majorIds) {
 		 List<CsMajor> majorList = csMajorService.list(new LambdaQueryWrapper<CsMajor>()
-				 .eq(CsMajor::getDelFlag,0)
+				 .eq(CsMajor::getDelFlag, CommonConstant.DEL_FLAG_0)
 				 .in(CsMajor::getMajorCode,majorIds)
 				 .select(CsMajor::getMajorCode,CsMajor::getMajorName));
 		 majorList.forEach(major -> {
 			 List<CsSubsystem> systemList = csSubsystemService.list(new LambdaQueryWrapper<CsSubsystem>()
-					 .eq(CsSubsystem::getDelFlag,0)
+					 .eq(CsSubsystem::getDelFlag, CommonConstant.DEL_FLAG_0)
 					 .eq(CsSubsystem::getMajorCode,major.getMajorCode())
 					 .select(CsSubsystem::getId,CsSubsystem::getSystemName));
 			 major.setChildren(systemList);

@@ -1,6 +1,7 @@
 package com.aiurt.modules.position.service.impl;
 
 
+import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.modules.position.entity.CsLine;
 import com.aiurt.modules.position.mapper.CsLineMapper;
 import com.aiurt.modules.position.service.ICsLineService;
@@ -36,7 +37,7 @@ public class CsLineServiceImpl extends ServiceImpl<CsLineMapper, CsLine> impleme
         //名称不能重复，判断数据库中是否存在，如不存在则可继续添加
         LambdaQueryWrapper<CsLine> nameWrapper = new LambdaQueryWrapper<>();
         nameWrapper.eq(CsLine::getLineName, csLine.getLineName());
-        nameWrapper.eq(CsLine::getDelFlag, 0);
+        nameWrapper.eq(CsLine::getDelFlag, CommonConstant.DEL_FLAG_0);
         List<CsLine> list = csLineMapper.selectList(nameWrapper);
         if (!list.isEmpty()) {
             return Result.error("一级名称重复，请重新填写！");
@@ -62,7 +63,7 @@ public class CsLineServiceImpl extends ServiceImpl<CsLineMapper, CsLine> impleme
         //名称不能重复，判断数据库中是否存在，如不存在则可继续添加
         LambdaQueryWrapper<CsLine> nameWrapper = new LambdaQueryWrapper<>();
         nameWrapper.eq(CsLine::getLineName, csLine.getLineName());
-        nameWrapper.eq(CsLine::getDelFlag, 0);
+        nameWrapper.eq(CsLine::getDelFlag, CommonConstant.DEL_FLAG_0);
         List<CsLine> list = csLineMapper.selectList(nameWrapper);
         if (!list.isEmpty() && !list.get(0).getId().equals(csLine.getId())) {
             return Result.error("一级名称重复，请重新填写！");

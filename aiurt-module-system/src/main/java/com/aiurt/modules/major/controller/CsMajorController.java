@@ -5,6 +5,7 @@ import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 
 import com.aiurt.common.aspect.annotation.AutoLog;
+import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.modules.device.entity.DeviceType;
 import com.aiurt.modules.device.service.IDeviceTypeService;
 import com.aiurt.modules.major.entity.CsMajor;
@@ -66,7 +67,7 @@ public class CsMajorController  {
 								   HttpServletRequest req) {
 		QueryWrapper<CsMajor> queryWrapper = QueryGenerator.initQueryWrapper(csMajor, req.getParameterMap());
 		Page<CsMajor> page = new Page<CsMajor>(pageNo, pageSize);
-		IPage<CsMajor> pageList = csMajorService.page(page, queryWrapper.lambda().eq(CsMajor::getDelFlag,0));
+		IPage<CsMajor> pageList = csMajorService.page(page, queryWrapper.lambda().eq(CsMajor::getDelFlag, CommonConstant.DEL_FLAG_0));
 		return Result.OK(pageList);
 	}
 
@@ -75,7 +76,7 @@ public class CsMajorController  {
 	 public Result<?> selectList(CsMajor csMajor,
 									HttpServletRequest req) {
 		 QueryWrapper<CsMajor> queryWrapper = QueryGenerator.initQueryWrapper(csMajor, req.getParameterMap());
-		 List<CsMajor> pageList = csMajorService.list(queryWrapper.lambda().eq(CsMajor::getDelFlag,0));
+		 List<CsMajor> pageList = csMajorService.list(queryWrapper.lambda().eq(CsMajor::getDelFlag, CommonConstant.DEL_FLAG_0));
 		 return Result.OK(pageList);
 	 }
 
@@ -119,7 +120,7 @@ public class CsMajorController  {
 		//判断是否被子系统使用
 		LambdaQueryWrapper<CsSubsystem> wrapper = new LambdaQueryWrapper<>();
 		wrapper.eq(CsSubsystem::getMajorCode,csMajor.getMajorCode());
-		wrapper.eq(CsSubsystem::getDelFlag,0);
+		wrapper.eq(CsSubsystem::getDelFlag, CommonConstant.DEL_FLAG_0);
 		List<CsSubsystem> list = csSubsystemService.list(wrapper);
 		if(!list.isEmpty()){
 			return Result.error("该专业被子系统使用中，不能删除!");
@@ -127,7 +128,7 @@ public class CsMajorController  {
 		//判断是否被设备类型使用
 		LambdaQueryWrapper<DeviceType> deviceWrapper = new LambdaQueryWrapper<>();
 		deviceWrapper.eq(DeviceType::getMajorCode,csMajor.getMajorCode());
-		deviceWrapper.eq(DeviceType::getDelFlag,0);
+		deviceWrapper.eq(DeviceType::getDelFlag, CommonConstant.DEL_FLAG_0);
 		List<DeviceType> deviceList = deviceTypeService.list(deviceWrapper);
 		if(!deviceList.isEmpty()){
 			return Result.error("该专业被设备类型使用中，不能删除!");
@@ -135,12 +136,12 @@ public class CsMajorController  {
 		//判断是否被物资分类使用
 		LambdaQueryWrapper<MaterialBaseType> materWrapper = new LambdaQueryWrapper<>();
 		materWrapper.eq(MaterialBaseType::getMajorCode,csMajor.getMajorCode());
-		materWrapper.eq(MaterialBaseType::getDelFlag,0);
+		materWrapper.eq(MaterialBaseType::getDelFlag, CommonConstant.DEL_FLAG_0);
 		List<MaterialBaseType> materList = materialBaseTypeService.list(materWrapper);
 		if(!materList.isEmpty()){
 			return Result.error("该专业被物资分类使用中，不能删除!");
 		}
-		csMajor.setDelFlag(1);
+		csMajor.setDelFlag(CommonConstant.DEL_FLAG_1);
 		csMajorService.updateById(csMajor);
 		return Result.OK("删除成功!");
 	}

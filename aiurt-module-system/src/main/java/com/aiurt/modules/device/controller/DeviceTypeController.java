@@ -2,6 +2,8 @@ package com.aiurt.modules.device.controller;
 
 
 import javax.servlet.http.HttpServletRequest;
+
+import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.modules.device.entity.Device;
 import com.aiurt.modules.device.entity.DeviceCompose;
 import com.aiurt.modules.device.entity.DeviceType;
@@ -65,9 +67,9 @@ public class DeviceTypeController extends BaseController<DeviceType, IDeviceType
 	 @ApiOperation(value = "设备类型左侧树")
 	 @GetMapping(value = "/treeList")
 	 public Result<?> treeList(Integer level) {
-		 List<CsMajor> majorList = csMajorService.list(new LambdaQueryWrapper<CsMajor>().eq(CsMajor::getDelFlag,0));
-		 List<CsSubsystem> systemList = csSubsystemService.list(new LambdaQueryWrapper<CsSubsystem>().eq(CsSubsystem::getDelFlag,0));
-		 List<DeviceType> deviceTypeList = deviceTypeService.list(new LambdaQueryWrapper<DeviceType>().eq(DeviceType::getDelFlag,0));
+		 List<CsMajor> majorList = csMajorService.list(new LambdaQueryWrapper<CsMajor>().eq(CsMajor::getDelFlag, CommonConstant.DEL_FLAG_0));
+		 List<CsSubsystem> systemList = csSubsystemService.list(new LambdaQueryWrapper<CsSubsystem>().eq(CsSubsystem::getDelFlag, CommonConstant.DEL_FLAG_0));
+		 List<DeviceType> deviceTypeList = deviceTypeService.list(new LambdaQueryWrapper<DeviceType>().eq(DeviceType::getDelFlag, CommonConstant.DEL_FLAG_0));
 		 List<DeviceType> deviceTypeTree = deviceTypeService.treeList(deviceTypeList,"0");
 		 List<DeviceType> newList = new ArrayList<>();
 		 majorList.forEach(one -> {
@@ -110,7 +112,7 @@ public class DeviceTypeController extends BaseController<DeviceType, IDeviceType
 			HttpServletRequest req) {
 		Result<List<DeviceType>> result = new Result<List<DeviceType>>();
 		QueryWrapper<DeviceType> deviceTypeQueryWrapper = new QueryWrapper<DeviceType>();
-		deviceTypeQueryWrapper.eq("del_flag", 0);
+		deviceTypeQueryWrapper.eq("del_flag", CommonConstant.DEL_FLAG_0);
 		if(majorCode != null && !"".equals(majorCode)){
 			deviceTypeQueryWrapper.eq("major_code", majorCode);
 		}
@@ -167,7 +169,7 @@ public class DeviceTypeController extends BaseController<DeviceType, IDeviceType
 								   @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
 								   @RequestParam(name="pageSize", defaultValue="10") Integer pageSize) {
 		LambdaQueryWrapper<DeviceCompose> composeWrapper = new LambdaQueryWrapper<>();
-		List<DeviceCompose> deviceComposeList = deviceComposeService.list(composeWrapper.eq(DeviceCompose::getDelFlag,0));
+		List<DeviceCompose> deviceComposeList = deviceComposeService.list(composeWrapper.eq(DeviceCompose::getDelFlag, CommonConstant.DEL_FLAG_0));
 		//查询条件
 		LambdaQueryWrapper<DeviceType> queryWrapper = new LambdaQueryWrapper<>();
 		if(null != deviceType.getName() && !"".equals(deviceType.getName())){
@@ -192,7 +194,7 @@ public class DeviceTypeController extends BaseController<DeviceType, IDeviceType
 			}
 		}
 		Page<DeviceType> page = new Page<DeviceType>(pageNo, pageSize);
-		IPage<DeviceType> pageList = deviceTypeService.page(page, queryWrapper.eq(DeviceType::getDelFlag,0));
+		IPage<DeviceType> pageList = deviceTypeService.page(page, queryWrapper.eq(DeviceType::getDelFlag, CommonConstant.DEL_FLAG_0));
 		pageList.getRecords().forEach(type->{
 			//查询设备组成
 			List<DeviceCompose> composeList = deviceComposeList.stream().filter(compose -> compose.getDeviceTypeCode().equals(type.getCode()) ).collect(Collectors.toList());
@@ -209,7 +211,7 @@ public class DeviceTypeController extends BaseController<DeviceType, IDeviceType
 			}else if(null!=type.getMajorCode() && null!= type.getSystemCode() && type.getPid().equals("0")){
 				LambdaQueryWrapper<CsSubsystem> wrapper = new LambdaQueryWrapper();
 				wrapper.eq(CsSubsystem::getSystemCode,type.getSystemCode());
-				wrapper.eq(CsSubsystem::getDelFlag,0);
+				wrapper.eq(CsSubsystem::getDelFlag, CommonConstant.DEL_FLAG_0);
 				List<CsSubsystem> subList = csSubsystemService.list(wrapper);
 				if(!subList.isEmpty()){
 					type.setPUrl(subList.get(0).getSystemName());
@@ -217,7 +219,7 @@ public class DeviceTypeController extends BaseController<DeviceType, IDeviceType
 			}else{
 				LambdaQueryWrapper<CsMajor> wrapper = new LambdaQueryWrapper();
 				wrapper.eq(CsMajor::getMajorCode,type.getMajorCode());
-				wrapper.eq(CsMajor::getDelFlag,0);
+				wrapper.eq(CsMajor::getDelFlag, CommonConstant.DEL_FLAG_0);
 				List<CsMajor> majorList = csMajorService.list(wrapper);
 				if(!majorList.isEmpty()){
 					type.setPUrl(majorList.get(0).getMajorName());
@@ -267,7 +269,7 @@ public class DeviceTypeController extends BaseController<DeviceType, IDeviceType
 		DeviceType deviceType = deviceTypeService.getById(id);
 		LambdaQueryWrapper<Device> wrapper = new LambdaQueryWrapper<>();
 		wrapper.eq(Device::getDeviceTypeCode,deviceType.getCode());
-		wrapper.eq(Device::getDelFlag,0);
+		wrapper.eq(Device::getDelFlag, CommonConstant.DEL_FLAG_0);
 		List<Device> deviceList = deviceService.list(wrapper);
 		if(!deviceList.isEmpty()){
 			return Result.error("设备类型被设备主数据使用中，无法删除");
@@ -275,12 +277,12 @@ public class DeviceTypeController extends BaseController<DeviceType, IDeviceType
 		//查询是否存在子节点，如存在，则不能删除
 		LambdaQueryWrapper<DeviceType> queryWrapper = new LambdaQueryWrapper<>();
 		queryWrapper.eq(DeviceType::getPid, id);
-		queryWrapper.eq(DeviceType::getDelFlag, 0);
+		queryWrapper.eq(DeviceType::getDelFlag, CommonConstant.DEL_FLAG_0);
 		List<DeviceType> list = deviceTypeService.list(queryWrapper);
 		if(!list.isEmpty()){
 			return Result.error("存在子节点，无法删除");
 		}
-		deviceType.setDelFlag(1);
+		deviceType.setDelFlag(CommonConstant.DEL_FLAG_1);
 		deviceTypeService.updateById(deviceType);
 		return Result.OK("删除成功!");
 	}
@@ -296,7 +298,7 @@ public class DeviceTypeController extends BaseController<DeviceType, IDeviceType
 	@GetMapping(value = "/queryById")
 	public Result<DeviceType> queryById(@RequestParam(name="id",required=true) String id) {
 		LambdaQueryWrapper<DeviceCompose> composeWrapper = new LambdaQueryWrapper<>();
-		List<DeviceCompose> deviceComposeList = deviceComposeService.list(composeWrapper.eq(DeviceCompose::getDelFlag,0));
+		List<DeviceCompose> deviceComposeList = deviceComposeService.list(composeWrapper.eq(DeviceCompose::getDelFlag, CommonConstant.DEL_FLAG_0));
 
 		DeviceType deviceType = deviceTypeService.getById(id);
 		if(deviceType==null) {

@@ -4,6 +4,7 @@ package com.aiurt.modules.position.controller;
 import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 
+import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.modules.device.entity.Device;
 import com.aiurt.modules.device.service.IDeviceService;
 import com.aiurt.modules.position.entity.CsStation;
@@ -60,7 +61,7 @@ public class CsStationController extends BaseController<CsStation, ICsStationSer
                                                   HttpServletRequest req) {
 		QueryWrapper<CsStation> queryWrapper = QueryGenerator.initQueryWrapper(csStation, req.getParameterMap());
 		Page<CsStation> page = new Page<CsStation>(pageNo, pageSize);
-		IPage<CsStation> pageList = csStationService.page(page, queryWrapper.lambda().eq(CsStation::getDelFlag,0));
+		IPage<CsStation> pageList = csStationService.page(page, queryWrapper.lambda().eq(CsStation::getDelFlag, CommonConstant.DEL_FLAG_0));
 		return Result.OK(pageList);
 	}
 
@@ -124,7 +125,7 @@ public class CsStationController extends BaseController<CsStation, ICsStationSer
 		//判断三级是否使用
 		LambdaQueryWrapper<CsStationPosition> wrapper =  new LambdaQueryWrapper<CsStationPosition>();
 		wrapper.eq(CsStationPosition::getStaionCode,csStation.getStationCode());
-		wrapper.eq(CsStationPosition::getDelFlag,0);
+		wrapper.eq(CsStationPosition::getDelFlag, CommonConstant.DEL_FLAG_0);
 		List<CsStationPosition> list = csStationPositionService.list(wrapper);
 		if(!list.isEmpty()){
 			return Result.error("该位置信息正在使用中，无法删除");
@@ -132,12 +133,12 @@ public class CsStationController extends BaseController<CsStation, ICsStationSer
 		//判断设备主数据是否使用
 		LambdaQueryWrapper<Device> deviceWrapper =  new LambdaQueryWrapper<Device>();
 		deviceWrapper.eq(Device::getPositionCode,csStation.getStationCode());
-		deviceWrapper.eq(Device::getDelFlag,0);
+		deviceWrapper.eq(Device::getDelFlag, CommonConstant.DEL_FLAG_0);
 		List<Device> deviceList = deviceService.list(deviceWrapper);
 		if(!deviceList.isEmpty()){
 			return Result.error("该位置信息被设备主数据使用中，无法删除");
 		}
-		csStation.setDelFlag(1);
+		csStation.setDelFlag(CommonConstant.DEL_FLAG_1);
 		csStationService.updateById(csStation);
 		return Result.OK("删除成功!");
 	}
@@ -167,7 +168,7 @@ public class CsStationController extends BaseController<CsStation, ICsStationSer
 	 @GetMapping(value = "/selectList")
 	 public Result<?> selectList() {
 		 LambdaQueryWrapper<CsStation> queryWrapper = new LambdaQueryWrapper<>();
-		 List<CsStation> list = csStationService.list(queryWrapper.eq(CsStation::getDelFlag,0));
+		 List<CsStation> list = csStationService.list(queryWrapper.eq(CsStation::getDelFlag, CommonConstant.DEL_FLAG_0));
 		 return Result.OK(list);
 	 }
 }

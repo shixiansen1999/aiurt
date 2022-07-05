@@ -1,5 +1,6 @@
 package com.aiurt.modules.device.service.impl;
 
+import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.modules.device.entity.DeviceCompose;
 import com.aiurt.modules.device.entity.DeviceType;
 import com.aiurt.modules.device.mapper.DeviceComposeMapper;
@@ -9,7 +10,6 @@ import com.aiurt.modules.major.entity.CsMajor;
 import com.aiurt.modules.major.mapper.CsMajorMapper;
 import com.aiurt.modules.subsystem.entity.CsSubsystem;
 import com.aiurt.modules.subsystem.mapper.CsSubsystemMapper;
-import com.aiurt.modules.subsystem.mapper.CsSubsystemUserMapper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import org.jeecg.common.api.vo.Result;
@@ -59,7 +59,7 @@ public class DeviceTypeServiceImpl extends ServiceImpl<DeviceTypeMapper, DeviceT
         //分类编号不能重复
         LambdaQueryWrapper<DeviceType> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(DeviceType::getCode, deviceType.getCode());
-        queryWrapper.eq(DeviceType::getDelFlag, 0);
+        queryWrapper.eq(DeviceType::getDelFlag, CommonConstant.DEL_FLAG_0);
         List<DeviceType> list = deviceTypeMapper.selectList(queryWrapper);
         if (!list.isEmpty()) {
             return Result.error("分类编码重复，请重新填写！");
@@ -70,7 +70,7 @@ public class DeviceTypeServiceImpl extends ServiceImpl<DeviceTypeMapper, DeviceT
         nameWrapper.eq(DeviceType::getSystemCode, deviceType.getSystemCode());
         nameWrapper.eq(DeviceType::getName, deviceType.getName());
         nameWrapper.eq(DeviceType::getPid, deviceType.getPid());
-        nameWrapper.eq(DeviceType::getDelFlag, 0);
+        nameWrapper.eq(DeviceType::getDelFlag, CommonConstant.DEL_FLAG_0);
         List<DeviceType> nameList = deviceTypeMapper.selectList(nameWrapper);
         if (!nameList.isEmpty()) {
             return Result.error("分类名称重复，请重新填写！");
@@ -106,7 +106,7 @@ public class DeviceTypeServiceImpl extends ServiceImpl<DeviceTypeMapper, DeviceT
         //分类编号不能重复
         LambdaQueryWrapper<DeviceType> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(DeviceType::getCode, deviceType.getCode());
-        queryWrapper.eq(DeviceType::getDelFlag, 0);
+        queryWrapper.eq(DeviceType::getDelFlag, CommonConstant.DEL_FLAG_0);
         List<DeviceType> list = deviceTypeMapper.selectList(queryWrapper);
         if (!list.isEmpty() && !list.get(0).getId().equals(deviceType.getId())) {
             return Result.error("分类编码重复，请重新填写！");
@@ -117,7 +117,7 @@ public class DeviceTypeServiceImpl extends ServiceImpl<DeviceTypeMapper, DeviceT
         nameWrapper.eq(DeviceType::getSystemCode, deviceType.getSystemCode());
         nameWrapper.eq(DeviceType::getName, deviceType.getName());
         nameWrapper.eq(DeviceType::getPid, deviceType.getPid());
-        nameWrapper.eq(DeviceType::getDelFlag, 0);
+        nameWrapper.eq(DeviceType::getDelFlag, CommonConstant.DEL_FLAG_0);
         List<DeviceType> nameList = deviceTypeMapper.selectList(nameWrapper);
         if (!nameList.isEmpty() && !nameList.get(0).getId().equals(deviceType.getId())) {
             return Result.error("分类名称重复，请重新填写！");

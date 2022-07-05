@@ -1,5 +1,6 @@
 package com.aiurt.modules.manufactor.service.impl;
 
+import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.modules.manufactor.entity.CsManufactor;
 import com.aiurt.modules.manufactor.mapper.CsManufactorMapper;
 import com.aiurt.modules.manufactor.service.ICsManufactorService;
@@ -35,7 +36,7 @@ public class CsManufactorServiceImpl extends ServiceImpl<CsManufactorMapper, CsM
         //判断厂商编码是否重复
 		LambdaQueryWrapper<CsManufactor> queryWrapper = new LambdaQueryWrapper<>();
 		queryWrapper.eq(CsManufactor::getCode, csManufactor.getCode());
-        queryWrapper.eq(CsManufactor::getDelFlag, 0);
+        queryWrapper.eq(CsManufactor::getDelFlag, CommonConstant.DEL_FLAG_0);
 		List<CsManufactor> list = csManufactorMapper.selectList(queryWrapper);
 		if (!list.isEmpty()) {
 			return Result.error("厂商编码重复，请重新填写！");
@@ -43,7 +44,7 @@ public class CsManufactorServiceImpl extends ServiceImpl<CsManufactorMapper, CsM
         //判断厂商名称是否重复
         LambdaQueryWrapper<CsManufactor> nameWrapper = new LambdaQueryWrapper<>();
         nameWrapper.eq(CsManufactor::getName, csManufactor.getName());
-        queryWrapper.eq(CsManufactor::getDelFlag, 0);
+        queryWrapper.eq(CsManufactor::getDelFlag, CommonConstant.DEL_FLAG_0);
         List<CsManufactor> nameList = csManufactorMapper.selectList(nameWrapper);
         if (!nameList.isEmpty()) {
             return Result.error("厂商名称重复，请重新填写！");
@@ -68,7 +69,7 @@ public class CsManufactorServiceImpl extends ServiceImpl<CsManufactorMapper, CsM
         //判断厂商编码是否重复
         LambdaQueryWrapper<CsManufactor> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(CsManufactor::getCode, csManufactor.getCode());
-        queryWrapper.eq(CsManufactor::getDelFlag, 0);
+        queryWrapper.eq(CsManufactor::getDelFlag, CommonConstant.DEL_FLAG_0);
         List<CsManufactor> list = csManufactorMapper.selectList(queryWrapper);
         if (!list.isEmpty() && list.get(0).equals(csManufactor.getId())) {
             return Result.error("厂商编码重复，请重新填写！");
@@ -76,7 +77,7 @@ public class CsManufactorServiceImpl extends ServiceImpl<CsManufactorMapper, CsM
         //判断厂商名称是否重复
         LambdaQueryWrapper<CsManufactor> nameWrapper = new LambdaQueryWrapper<>();
         nameWrapper.eq(CsManufactor::getName, csManufactor.getName());
-        queryWrapper.eq(CsManufactor::getDelFlag, 0);
+        queryWrapper.eq(CsManufactor::getDelFlag, CommonConstant.DEL_FLAG_0);
         List<CsManufactor> nameList = csManufactorMapper.selectList(nameWrapper);
         if (!nameList.isEmpty() && nameList.get(0).equals(csManufactor.getId())) {
             return Result.error("厂商名称重复，请重新填写！");

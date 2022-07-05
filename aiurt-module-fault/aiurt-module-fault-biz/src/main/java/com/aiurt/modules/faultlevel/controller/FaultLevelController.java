@@ -1,6 +1,7 @@
 package com.aiurt.modules.faultlevel.controller;
 
 import com.aiurt.common.aspect.annotation.AutoLog;
+import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.system.base.controller.BaseController;
 import com.aiurt.modules.common.entity.SelectTable;
 import com.aiurt.modules.fault.entity.Fault;
@@ -64,7 +65,7 @@ public class FaultLevelController extends BaseController<FaultLevel, IFaultLevel
 			queryWrapper.eq(FaultLevel::getMajorCode, faultLevel.getMajorCode());
 		}
 		Page<FaultLevel> page = new Page<FaultLevel>(pageNo, pageSize);
-		IPage<FaultLevel> pageList = faultLevelService.page(page, queryWrapper.eq(FaultLevel::getDelFlag,0).orderByDesc(FaultLevel::getCreateTime));
+		IPage<FaultLevel> pageList = faultLevelService.page(page, queryWrapper.eq(FaultLevel::getDelFlag, CommonConstant.DEL_FLAG_0).orderByDesc(FaultLevel::getCreateTime));
 		return Result.OK(pageList);
 	}
 
@@ -112,7 +113,7 @@ public class FaultLevelController extends BaseController<FaultLevel, IFaultLevel
 		if (!list.isEmpty()) {
 			return Result.error("故障分类编码已被故障报修单使用，不能删除！");
 		}
-		faultLevel.setDelFlag(1);
+		faultLevel.setDelFlag(CommonConstant.DEL_FLAG_1);
 		faultLevelService.updateById(faultLevel);
 		return Result.OK("删除成功!");
 	}
@@ -146,7 +147,7 @@ public class FaultLevelController extends BaseController<FaultLevel, IFaultLevel
 	 public Result<List<SelectTable>> queryFaultLevelByMajorCode(@RequestParam(value = "majorCode") String majorCode) {
 		 LambdaQueryWrapper<FaultLevel> wrapper = new LambdaQueryWrapper<>();
 		 wrapper.eq(FaultLevel::getMajorCode, majorCode);
-		 wrapper.eq(FaultLevel::getDelFlag, 0);
+		 wrapper.eq(FaultLevel::getDelFlag, CommonConstant.DEL_FLAG_0);
 		 List<FaultLevel> typeList = faultLevelService.getBaseMapper().selectList(wrapper);
 		 List<SelectTable> tableList = typeList.stream().map(faultLevel -> {
 			 SelectTable table = new SelectTable();
