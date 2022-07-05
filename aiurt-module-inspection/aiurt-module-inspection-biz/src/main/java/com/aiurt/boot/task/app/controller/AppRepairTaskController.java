@@ -2,6 +2,7 @@ package com.aiurt.boot.task.app.controller;
 
 
 import com.aiurt.boot.manager.dto.ExamineDTO;
+import com.aiurt.boot.task.dto.CheckListDTO;
 import com.aiurt.boot.task.dto.RepairTaskDTO;
 import com.aiurt.boot.task.entity.RepairTask;
 import com.aiurt.boot.task.service.IRepairTaskService;
@@ -56,13 +57,13 @@ public class AppRepairTaskController extends BaseController<RepairTask, IRepairT
 
 
     /**
-     * app检修任务清单查询
+     * app检修工单详情
      * @param pageNo
      * @param pageSize
      * @return
      */
-    @AutoLog(value = "app检修任务-检修任务清单查询")
-    @ApiOperation(value="app检修任务-检修任务清单查询", notes="app检修任务-检修任务清单查询")
+    @AutoLog(value = "app检修任务-检修工单列表")
+    @ApiOperation(value="app检修任务-检修工单列表", notes="app检修任务-检修工单列表")
     @GetMapping(value = "/appRepairSelectTasklet")
     @ApiResponses({
             @ApiResponse(code = 200, message = "OK", response = RepairTaskDTO.class)
@@ -76,6 +77,23 @@ public class AppRepairTaskController extends BaseController<RepairTask, IRepairT
         return Result.OK(repairTaskPage);
     }
 
+    /**
+     * app检修工单详情
+     * @param deviceId
+     * @return
+     */
+    @AutoLog(value = "app检修任务-检修工单详情")
+    @ApiOperation(value="app检修任务-检修工单详情", notes="app检修任务-检修工单详情")
+    @GetMapping(value = "/appRepairSelectCheckList")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "OK", response = CheckListDTO.class)
+    })
+    public Result<CheckListDTO> appRepairSelectCheckList(@RequestParam(name="deviceId",required=true) String deviceId,
+                                                @RequestParam(name="overhaulCode",required=true) String overhaulCode
+    ){
+        CheckListDTO checkListDTO = repairTaskService.selectCheckList(deviceId,overhaulCode);
+        return Result.OK(checkListDTO);
+    }
 
     /**
       *   待执行-执行

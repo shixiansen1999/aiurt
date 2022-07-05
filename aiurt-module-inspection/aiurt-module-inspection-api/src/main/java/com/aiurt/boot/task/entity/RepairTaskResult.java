@@ -63,6 +63,11 @@ public class RepairTaskResult implements Serializable {
     @Excel(name = "检修人id", width = 15)
     @ApiModelProperty(value = "检修人id")
     private java.lang.String staffId;
+
+    /**检修人名称*/
+    @TableField(exist = false)
+    @ApiModelProperty(value = "检修人名称")
+    private String staffName;
 	/**父级id，顶级为0*/
 	@Excel(name = "父级id，顶级为0", width = 15)
     @ApiModelProperty(value = "父级id，顶级为0")
@@ -75,6 +80,12 @@ public class RepairTaskResult implements Serializable {
 	@Excel(name = "检查项类型，是否是检查项：0否 1是", width = 15)
     @ApiModelProperty(value = "检查项类型，是否是检查项：0否 1是")
     private java.lang.Integer type;
+
+    /**检查项类型名称*/
+    @TableField(exist = false)
+    @ApiModelProperty(value = "检查项类型名称")
+    private String typeName;
+
 	/**数据字典：1 开关项、2 选择项、3 输入项*/
 	@Excel(name = "数据字典：1 开关项、2 选择项、3 输入项", width = 15)
     @ApiModelProperty(value = "数据字典：1 开关项、2 选择项、3 输入项")

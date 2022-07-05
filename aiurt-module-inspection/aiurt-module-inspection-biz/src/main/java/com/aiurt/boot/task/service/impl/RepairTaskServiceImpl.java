@@ -373,8 +373,22 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
             checkListDTO.setMaintenancePosition(string);
         }
 
-
+        //构造树形
         checkListDTO.setRepairTaskResultList(selectCodeContentList(checkListDTO.getDeviceId()));
+        List<RepairTaskResult> repairTaskResultList = checkListDTO.getRepairTaskResultList();
+
+        //检查项的数量
+        long count1 = repairTaskResultList.stream().filter(repairTaskResult -> repairTaskResult.getType()==1).count();
+        checkListDTO.setMaintenanceItemsQuantity((int) count1);
+
+        //已检修的数量
+        long count2 = repairTaskResultList.stream().filter(repairTaskResult -> repairTaskResult.getStatus()!=null).count();
+        checkListDTO.setMaintenanceItemsQuantity((int) count2);
+
+        //待检修的数量
+        long count3 = repairTaskResultList.stream().filter(repairTaskResult -> repairTaskResult.getStatus()==null).count();
+        checkListDTO.setMaintenanceItemsQuantity((int) count3);
+
         return checkListDTO;
     }
 
@@ -389,6 +403,15 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
         repairTaskResults1.forEach(r -> {
             //检修结果
             r.setStatusName(sysBaseAPI.translateDict(DictConstant.OVERHAUL_RESULT, String.valueOf(r.getStatus())));
+
+            //检查项类型
+            r.setTypeName(sysBaseAPI.translateDict(DictConstant.INSPECTION_PROJECT, String.valueOf(r.getType())));
+
+            //检修人名称
+            if (r.getStaffId()!=null){
+                LoginUser userById = sysBaseAPI.getUserById(r.getStaffId());
+                r.setStaffName(userById.getUsername());
+            }
             //备注
             if (r.getUnNote() ==null){
                 r.setUnNote("无");

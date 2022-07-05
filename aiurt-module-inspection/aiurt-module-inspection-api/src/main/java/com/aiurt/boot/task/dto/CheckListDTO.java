@@ -163,4 +163,21 @@ public class CheckListDTO {
     @TableField(exist = false)
     @ApiModelProperty(value = "故障编号")
     private java.lang.String faultCode;
+
+    /**检修项数量*/
+    @TableField(exist = false)
+    @ApiModelProperty(value = "检修项数量")
+    private Integer maintenanceItemsQuantity;
+
+    /**已检修数量*/
+    @TableField(exist = false)
+    @ApiModelProperty(value = "已检修数量")
+    private Integer overhauledQuantity;
+
+    /**待检修数量*/
+    @TableField(exist = false)
+    @ApiModelProperty(value = "待检修数量")
+    private Integer toBeOverhauledQuantity;
+
+
 }
