@@ -12,4 +12,17 @@
     <select id="queryCsWorkByMajorCode" parameterType="java.lang.String" resultType="com.aiurt.modules.basic.entity.CsWork">
         select * from cs_work where major_code = #{majorCode}
     </select>
+
+    <select id="queryKnowledge" parameterType="com.aiurt.modules.faultknowledgebase.entity.FaultKnowledgeBase" resultType="java.lang.String">
+        SELECT
+            id
+        FROM
+            fault_knowledge_base
+        WHERE
+            MATCH (
+            `fault_phenomenon`,
+            `fault_reason`,
+            `solution`
+            ) AGAINST (#{matchName} IN BOOLEAN MODE)
+    </select>
 </mapper>

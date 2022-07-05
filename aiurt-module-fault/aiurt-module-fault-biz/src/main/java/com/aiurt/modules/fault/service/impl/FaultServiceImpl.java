@@ -16,8 +16,12 @@ import com.aiurt.modules.faultknowledgebase.entity.FaultKnowledgeBase;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import lombok.extern.slf4j.Slf4j;
+import org.ansj.domain.Result;
+import org.ansj.domain.Term;
+import org.ansj.splitWord.analysis.ToAnalysis;
 import org.apache.shiro.SecurityUtils;
-import org.checkerframework.checker.units.qual.C;
+import org.checkerframework.checker.units.qual.K;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.BeanUtils;
@@ -25,7 +29,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.security.cert.X509Certificate;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -35,6 +38,7 @@ import java.util.stream.Collectors;
  * @Date: 2022-06-22
  * @Version: V1.0
  */
+@Slf4j
 @Service
 public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements IFaultService {
 
@@ -762,7 +766,23 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
     @Override
     public KnowledgeDTO queryKnowledge(FaultKnowledgeBase faultKnowledgeBase) {
         String faultPhenomenon = faultKnowledgeBase.getFaultPhenomenon();
-        return null;
+        log.info("分词解析前数据：{}",faultPhenomenon);
+        // 分词
+        Result parse = ToAnalysis.parse(faultPhenomenon);
+        List<Term> termList = parse.getTerms();
+        Set<String> set = termList.stream().map(Term::getName).filter(name -> name.length() > 1).collect(Collectors.toSet());
+
+        String matchName = StrUtil.join(" ", set);
+        log.info("分词解析后的数据：{}", matchName);
+
+        faultKnowledgeBase.setMatchName(matchName);
+        List<String> list = baseMapper.queryKnowledge(faultKnowledgeBase);
+
+        KnowledgeDTO knowledgeDTO = new KnowledgeDTO();
+        knowledgeDTO.setKnowledgeIds(StrUtil.join(",", list));
+        knowledgeDTO.setTotal((long) list.size());
+
+        return knowledgeDTO;
     }
 
     /**

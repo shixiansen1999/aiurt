@@ -151,4 +151,11 @@ public class FaultKnowledgeBase implements Serializable {
     @ApiModelProperty(value = "图片")
     @TableField(exist = false)
     private byte[] picture;
+
+    /**
+     *分词，故障推荐解决方案使用
+     */
+    @ApiModelProperty(value = "分词值")
+    @TableField(exist = false)
+    private String matchName;
 }
