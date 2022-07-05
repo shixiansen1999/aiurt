@@ -186,6 +186,6 @@
     </select>
     <select id="viewDetails" resultType="com.aiurt.modules.device.entity.Device">
         SELECT a.* FROM device a LEFT JOIN patrol_plan_device b on a.`code`=b.device_code
-        WHERE b.standard_code= #{standardCode}
+        WHERE b.plan_standard_id= #{standardCode}
     </select>
 </mapper>

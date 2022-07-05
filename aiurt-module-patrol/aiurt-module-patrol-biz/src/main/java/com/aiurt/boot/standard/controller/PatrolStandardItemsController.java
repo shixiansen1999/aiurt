@@ -82,6 +82,7 @@ public class PatrolStandardItemsController extends BaseController<PatrolStandard
 	@ApiOperation(value="巡检标准项目表-添加", notes="巡检标准项目表-添加")
 	@PostMapping(value = "/add")
 	public Result<String> add(@RequestBody PatrolStandardItems patrolStandardItems) {
+		patrolStandardItems.setCode("XB"+System.currentTimeMillis());
 		patrolStandardItemsMapper.insert(patrolStandardItems);
 		return Result.OK("添加成功！");
 	}

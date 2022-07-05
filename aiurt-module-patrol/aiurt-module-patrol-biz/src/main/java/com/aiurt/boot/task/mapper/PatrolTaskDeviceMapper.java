@@ -78,6 +78,13 @@ public interface PatrolTaskDeviceMapper extends BaseMapper<PatrolTaskDevice> {
     String getStandardName(String deviceId);
 
     /**
+     * pc -获取设备的位置
+     * @param code
+     * @return
+     */
+    Device getDevice(String code);
+
+    /**
      * 根据设备编号查询设备信息
      *
      * @param deviceCode

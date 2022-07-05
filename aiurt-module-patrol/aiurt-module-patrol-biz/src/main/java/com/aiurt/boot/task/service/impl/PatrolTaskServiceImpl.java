@@ -8,15 +8,15 @@ import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.constant.PatrolConstant;
 import com.aiurt.boot.plan.entity.PatrolPlan;
 import com.aiurt.boot.plan.mapper.PatrolPlanMapper;
+import com.aiurt.boot.standard.entity.PatrolStandard;
+import com.aiurt.boot.standard.mapper.PatrolStandardMapper;
 import com.aiurt.boot.task.dto.*;
-import com.aiurt.boot.task.entity.PatrolTask;
-import com.aiurt.boot.task.entity.PatrolTaskDevice;
-import com.aiurt.boot.task.entity.PatrolTaskStandard;
-import com.aiurt.boot.task.entity.PatrolTaskUser;
+import com.aiurt.boot.task.entity.*;
 import com.aiurt.boot.task.mapper.*;
 import com.aiurt.boot.task.param.PatrolTaskParam;
 import com.aiurt.boot.task.service.IPatrolTaskService;
 import com.aiurt.common.exception.AiurtBootException;
+import com.aiurt.modules.device.entity.Device;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
@@ -62,6 +62,8 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
 
     @Autowired
     private PatrolPlanMapper patrolPlanMapper;
+    @Autowired
+    private PatrolStandardMapper patrolStandardMapper;
 
     @Override
     public IPage<PatrolTaskParam> getTaskList(Page<PatrolTaskParam> page, PatrolTaskParam patrolTaskParam) {
@@ -452,5 +454,91 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         }
         update(updateWrapper);
 
+    }
+
+    @Override
+    public void getPatrolTaskManualListAdd(PatrolTaskManualDTO patrolTaskManualDTO) {
+        //保存任务信息
+          PatrolTask patrolTask = new PatrolTask();
+          patrolTask.setName(patrolTaskManualDTO.getName());
+          String xjCode = "XR"+System.currentTimeMillis();
+          patrolTask.setCode(xjCode);
+          patrolTask.setStatus(0);
+          patrolTask.setSource(3);
+          patrolTask.setRemark(patrolTaskManualDTO.getRemark());
+          patrolTask.setStartTime(patrolTaskManualDTO.getStartTime());
+          patrolTask.setEndTime(patrolTaskManualDTO.getEndTime());
+          patrolTask.setAuditor(patrolTaskManualDTO.getAuditor());
+          patrolTaskMapper.insert(patrolTask);
+          //保存组织信息
+          String taskCode = patrolTask.getCode();
+          List<String> orgCodeList = patrolTaskManualDTO.getOrgCodeList();
+          orgCodeList.stream().forEach(o->{
+              PatrolTaskOrganization organization = new PatrolTaskOrganization();
+              organization.setTaskCode(taskCode);
+              organization.setDelFlag(0);
+              organization.setOrgCode(o);
+              patrolTaskOrganizationMapper.insert(organization);
+          });
+      //保存站点信息
+          List<String> stationCodeList = patrolTaskManualDTO.getStationCodeList();
+          stationCodeList.stream().forEach(s->{
+              PatrolTaskStation station = new PatrolTaskStation();
+              station.setDelFlag(0);
+              station.setStationCode(s);
+              station.setTaskCode(taskCode);
+              patrolTaskStationMapper.insert(station);
+          });
+          //保存巡检任务标准表的信息
+        String taskId = patrolTask.getId();
+        List<PatrolTaskStandardDTO> patrolStandardList = patrolTaskManualDTO.getPatrolStandardList();//起名不规范
+        patrolStandardList.stream().forEach(ns->{
+            PatrolTaskStandard patrolTaskStandard = new PatrolTaskStandard();
+            patrolTaskStandard.setTaskId(taskId);
+            patrolTaskStandard.setStandardId(ns.getId());//继承了标准表，id即为标准表id
+            patrolTaskStandard.setDelFlag(0);
+            patrolTaskStandard.setDeviceTypeCode(ns.getDeviceTypeCode());
+            patrolTaskStandard.setSubsystemCode(ns.getSubsystemCode());
+            patrolTaskStandard.setProfessionCode(ns.getProfessionCode());
+            patrolTaskStandard.setStandardCode(ns.getCode());
+            patrolTaskStandardMapper.insert(patrolTaskStandard);
+             //生成单号
+            //判断是否与设备相关
+            PatrolStandard patrolStandard = patrolStandardMapper.selectById(ns.getId());
+            if(ObjectUtil.isNotNull(patrolStandard)&&patrolStandard.getDeviceType()==1)
+            {
+                List<Device>deviceList =ns.getDeviceList();
+                //遍历设备单号
+                deviceList.stream().forEach(dv->{
+                    PatrolTaskDevice patrolTaskDevice = new PatrolTaskDevice();
+                    patrolTaskDevice.setTaskId(taskId);//巡检任务id
+                    patrolTaskDevice.setDelFlag(0);
+                    patrolTaskDevice.setStatus(0);//单号状态
+                    String xdCode = "XD"+System.currentTimeMillis();
+                    patrolTaskDevice.setPatrolNumber(xdCode);//巡检单号
+                    patrolTaskDevice.setTaskStandardId(ns.getId());//巡检任务标准关联表ID
+                    patrolTaskDevice.setDeviceCode(dv.getCode());//设备code
+                    Device device = patrolTaskDeviceMapper.getDevice(dv.getCode());
+                    patrolTaskDevice.setLineCode(device.getLineCode());//线路code
+                    patrolTaskDevice.setStationCode(device.getStationCode());//站点code
+                    patrolTaskDevice.setPositionCode(device.getPositionCode());//位置code
+                    patrolTaskDeviceMapper.insert(patrolTaskDevice);
+                });
+            }
+            else
+            {
+                List<String> stationCodeList1 = patrolTaskManualDTO.getStationCodeList();
+                stationCodeList1.stream().forEach(sc->{
+                    PatrolTaskDevice patrolTaskDevice = new PatrolTaskDevice();
+                    patrolTaskDevice.setTaskId(taskId);
+                    patrolTaskDevice.setDelFlag(0);
+                    patrolTaskDevice.setStatus(0);//单号状态
+                    String xdCode = "XD"+System.currentTimeMillis();
+                    patrolTaskDevice.setPatrolNumber(xdCode);//巡检单号
+                    patrolTaskDevice.setTaskStandardId(ns.getId());//巡检任务标准关联表ID
+                    patrolTaskDeviceMapper.insert(patrolTaskDevice);
+                });
+            }
+        });
     }
 }

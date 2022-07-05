@@ -19,4 +19,11 @@ public interface PatrolTaskStandardMapper extends BaseMapper<PatrolTaskStandard>
      * @return
      */
     List<PatrolTaskStandardDTO> getMajorSystemName(String id);
+
+    /**
+     *
+     * @param taskId
+     * @return
+     */
+    List<PatrolTaskStandardDTO> getStandard(String taskId);
 }

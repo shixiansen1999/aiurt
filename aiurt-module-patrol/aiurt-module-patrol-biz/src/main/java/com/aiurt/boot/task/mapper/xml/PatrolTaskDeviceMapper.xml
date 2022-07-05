@@ -152,5 +152,11 @@
         FROM device
         WHERE device.del_flag = 0
           AND device.`code` = #{deviceCode}
-    </select>
+        where t1.task_code =#{code}
+	</select>
+<select id="getDevice" resultType="com.aiurt.modules.device.entity.Device">
+select  t1.*
+from device t1
+where t1.code = #{code}
+</select>
 </mapper>
