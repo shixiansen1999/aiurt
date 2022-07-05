@@ -5,7 +5,7 @@
         select t1.*,(select realname from sys_user where id= t1.end_user_id) as
         endUserName,concat(DATE_FORMAT(t1.start_time,'%H:%i'),"-",DATE_FORMAT(t1.end_time,'%H:%i'))as startEndTime
         from patrol_task t1
-        where t1.status not in (6,7)
+        where t1.status not in (6,7) and t1.discard_status = 0
         <if test="patrolTaskDTO.patrolDate !=null">
             and DATE_FORMAT(t1.patrol_date, '%Y-%m-%d') = DATE_FORMAT(#{patrolTaskDTO.patrolDate},
             '%Y-%m-%d'),concat(DATE_FORMAT(t1.start_time,'%H:%i'),"-",DATE_FORMAT(t1.end_time,'%H:%i'))as startEndTime
@@ -25,7 +25,7 @@
     <select id="getPatrolTaskList" resultType="com.aiurt.boot.task.dto.PatrolTaskDTO">
         select t1.*,(select realname from sys_user where id= t1.end_user_id) as endUserName
         from patrol_task t1
-        where t1.status in (6,7)
+        where t1.status in (6,7) and t1.discard_status = 0
         <if test="patrolTaskDTO.patrolDate !=null">
             and DATE_FORMAT(t1.patrol_date, '%Y-%m-%d') = DATE_FORMAT(#{patrolTaskDTO.patrolDate}, '%Y-%m-%d')
         </if>
@@ -116,10 +116,7 @@
                t1.id,
                t1.org_code
         from sys_user t1
-
         where t1.org_code = #{code}
-
-
     </select>
     <select id="getOrgName" resultType="java.lang.String">
         select t2.depart_name
@@ -139,7 +136,7 @@
         t1.*
         FROM
         patrol_task t1
-        where t1.source = 3
+        where t1.source = 3 and t1.status in (0,3)
         <if test="patrolTaskDTO.stationCode!=null and patrolTaskDTO.stationCode!=''">
             and t1.code in(select t3.task_code from patrol_task_station t3 where t3.station_code =
             #{patrolTaskDTO.stationCode})
@@ -148,8 +145,18 @@
             and t1.code in (SELECT t2.task_code FROM patrol_task_organization t2 where t2.org_code =
             #{patrolTaskDTO.orgCode})
         </if>
-
-
+        <if test="patrolTaskDTO.name!=null and patrolTaskDTO.name!=''">
+        and t1.name like concat('%',#{patrolTaskDTO.name},'%')
+        </if>
+        <if test="patrolTaskDTO.code!=null and patrolTaskDTO.code!=''">
+         and t1.code = #{patrolTaskDTO.code}
+        </if>
+        <if test="patrolTaskDTO.status !=null">
+        and t1.status = #{patrolTaskDTO.status}
+        </if>
+        <if test="patrolTaskDTO.patrolDate!=null ">
+         and DATE_FORMAT(t1.patrol_date, '%Y-%m-%d') = DATE_FORMAT(#{patrolTaskDTO.patrolDate}, '%Y-%m-%d')
+        </if>
     </select>
     <select id="getMajorNameByMajorCode" resultType="java.lang.String">
         SELECT

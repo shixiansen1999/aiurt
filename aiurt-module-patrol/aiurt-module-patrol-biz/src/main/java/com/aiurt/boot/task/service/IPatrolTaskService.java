@@ -132,4 +132,10 @@ public interface IPatrolTaskService extends IService<PatrolTask> {
      * @param patrolTaskDTO
      */
     void getPatrolTaskSubmit(PatrolTaskDTO patrolTaskDTO);
+
+    /**
+     * pc手工下放任务-新增
+     * @param patrolTaskManualDTO
+     */
+    void getPatrolTaskManualListAdd(PatrolTaskManualDTO patrolTaskManualDTO);
 }

@@ -483,6 +483,19 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
         return Result.OK(pageList);
     }
     /**
+     * pc手工下放任务-新增
+     *
+     * @return
+     */
+    @AutoLog(value = "pc手工下放任务-新增")
+    @ApiOperation(value = "PC手工下放任务列表-新增", notes = "PC手工下放任务列表-新增-新增")
+    @PostMapping(value = "/patrolTaskManualAdd")
+    public Result<?> patrolTaskManualAdd(@RequestBody PatrolTaskManualDTO patrolTaskManualDTO,
+                                    HttpServletRequest req) {
+        patrolTaskService.getPatrolTaskManualListAdd(patrolTaskManualDTO);
+        return Result.OK("新增成功");
+    }
+    /**
      * 导出excel
      *
      * @param request
