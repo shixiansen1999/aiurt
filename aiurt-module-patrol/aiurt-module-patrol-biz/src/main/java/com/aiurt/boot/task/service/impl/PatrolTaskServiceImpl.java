@@ -459,40 +459,40 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
     @Override
     public void getPatrolTaskManualListAdd(PatrolTaskManualDTO patrolTaskManualDTO) {
         //保存任务信息
-          PatrolTask patrolTask = new PatrolTask();
-          patrolTask.setName(patrolTaskManualDTO.getName());
-          String xjCode = "XR"+System.currentTimeMillis();
-          patrolTask.setCode(xjCode);
-          patrolTask.setStatus(0);
-          patrolTask.setSource(3);
-          patrolTask.setRemark(patrolTaskManualDTO.getRemark());
-          patrolTask.setStartTime(patrolTaskManualDTO.getStartTime());
-          patrolTask.setEndTime(patrolTaskManualDTO.getEndTime());
-          patrolTask.setAuditor(patrolTaskManualDTO.getAuditor());
-          patrolTaskMapper.insert(patrolTask);
-          //保存组织信息
-          String taskCode = patrolTask.getCode();
-          List<String> orgCodeList = patrolTaskManualDTO.getOrgCodeList();
-          orgCodeList.stream().forEach(o->{
-              PatrolTaskOrganization organization = new PatrolTaskOrganization();
-              organization.setTaskCode(taskCode);
-              organization.setDelFlag(0);
-              organization.setOrgCode(o);
-              patrolTaskOrganizationMapper.insert(organization);
-          });
-      //保存站点信息
-          List<String> stationCodeList = patrolTaskManualDTO.getStationCodeList();
-          stationCodeList.stream().forEach(s->{
-              PatrolTaskStation station = new PatrolTaskStation();
-              station.setDelFlag(0);
-              station.setStationCode(s);
-              station.setTaskCode(taskCode);
-              patrolTaskStationMapper.insert(station);
-          });
-          //保存巡检任务标准表的信息
+        PatrolTask patrolTask = new PatrolTask();
+        patrolTask.setName(patrolTaskManualDTO.getName());
+        String xjCode = "XR" + System.currentTimeMillis();
+        patrolTask.setCode(xjCode);
+        patrolTask.setStatus(0);
+        patrolTask.setSource(3);
+        patrolTask.setRemark(patrolTaskManualDTO.getRemark());
+        patrolTask.setStartTime(patrolTaskManualDTO.getStartTime());
+        patrolTask.setEndTime(patrolTaskManualDTO.getEndTime());
+        patrolTask.setAuditor(patrolTaskManualDTO.getAuditor());
+        patrolTaskMapper.insert(patrolTask);
+        //保存组织信息
+        String taskCode = patrolTask.getCode();
+        List<String> orgCodeList = patrolTaskManualDTO.getOrgCodeList();
+        orgCodeList.stream().forEach(o -> {
+            PatrolTaskOrganization organization = new PatrolTaskOrganization();
+            organization.setTaskCode(taskCode);
+            organization.setDelFlag(0);
+            organization.setOrgCode(o);
+            patrolTaskOrganizationMapper.insert(organization);
+        });
+        //保存站点信息
+        List<String> stationCodeList = patrolTaskManualDTO.getStationCodeList();
+        stationCodeList.stream().forEach(s -> {
+            PatrolTaskStation station = new PatrolTaskStation();
+            station.setDelFlag(0);
+            station.setStationCode(s);
+            station.setTaskCode(taskCode);
+            patrolTaskStationMapper.insert(station);
+        });
+        //保存巡检任务标准表的信息
         String taskId = patrolTask.getId();
         List<PatrolTaskStandardDTO> patrolStandardList = patrolTaskManualDTO.getPatrolStandardList();//起名不规范
-        patrolStandardList.stream().forEach(ns->{
+        patrolStandardList.stream().forEach(ns -> {
             PatrolTaskStandard patrolTaskStandard = new PatrolTaskStandard();
             patrolTaskStandard.setTaskId(taskId);
             patrolTaskStandard.setStandardId(ns.getId());//继承了标准表，id即为标准表id
@@ -502,19 +502,18 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
             patrolTaskStandard.setProfessionCode(ns.getProfessionCode());
             patrolTaskStandard.setStandardCode(ns.getCode());
             patrolTaskStandardMapper.insert(patrolTaskStandard);
-             //生成单号
+            //生成单号
             //判断是否与设备相关
             PatrolStandard patrolStandard = patrolStandardMapper.selectById(ns.getId());
-            if(ObjectUtil.isNotNull(patrolStandard)&&patrolStandard.getDeviceType()==1)
-            {
-                List<Device>deviceList =ns.getDeviceList();
+            if (ObjectUtil.isNotNull(patrolStandard) && patrolStandard.getDeviceType() == 1) {
+                List<Device> deviceList = ns.getDeviceList();
                 //遍历设备单号
-                deviceList.stream().forEach(dv->{
+                deviceList.stream().forEach(dv -> {
                     PatrolTaskDevice patrolTaskDevice = new PatrolTaskDevice();
                     patrolTaskDevice.setTaskId(taskId);//巡检任务id
                     patrolTaskDevice.setDelFlag(0);
                     patrolTaskDevice.setStatus(0);//单号状态
-                    String xdCode = "XD"+System.currentTimeMillis();
+                    String xdCode = "XD" + System.currentTimeMillis();
                     patrolTaskDevice.setPatrolNumber(xdCode);//巡检单号
                     patrolTaskDevice.setTaskStandardId(ns.getId());//巡检任务标准关联表ID
                     patrolTaskDevice.setDeviceCode(dv.getCode());//设备code
@@ -524,21 +523,35 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
                     patrolTaskDevice.setPositionCode(device.getPositionCode());//位置code
                     patrolTaskDeviceMapper.insert(patrolTaskDevice);
                 });
-            }
-            else
-            {
+            } else {
                 List<String> stationCodeList1 = patrolTaskManualDTO.getStationCodeList();
-                stationCodeList1.stream().forEach(sc->{
+                stationCodeList1.stream().forEach(sc -> {
                     PatrolTaskDevice patrolTaskDevice = new PatrolTaskDevice();
                     patrolTaskDevice.setTaskId(taskId);
                     patrolTaskDevice.setDelFlag(0);
                     patrolTaskDevice.setStatus(0);//单号状态
-                    String xdCode = "XD"+System.currentTimeMillis();
+                    String xdCode = "XD" + System.currentTimeMillis();
                     patrolTaskDevice.setPatrolNumber(xdCode);//巡检单号
                     patrolTaskDevice.setTaskStandardId(ns.getId());//巡检任务标准关联表ID
                     patrolTaskDeviceMapper.insert(patrolTaskDevice);
                 });
             }
         });
+    }
+
+    @Override
+    public int taskDispose(PatrolTask task, String omitExplain) {
+        // 获取当前登录用户
+        LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        if (ObjectUtil.isEmpty(loginUser)) {
+            throw new AiurtBootException("检测为未登录状态，请登录系统后操作！");
+        }
+        task.setDisposeId(loginUser.getId());
+        // 漏检说明
+        task.setOmitExplain(omitExplain);
+        task.setDisposeTime(new Date());
+        // 更新为已处置状态
+        task.setDisposeStatus(PatrolConstant.TASK_DISPOSE);
+        return patrolTaskMapper.updateById(task);
     }
 }

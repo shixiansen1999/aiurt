@@ -1,6 +1,7 @@
 package com.aiurt.boot.task.controller;
 
 import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.util.ObjectUtil;
 import com.aiurt.boot.task.dto.*;
 import com.aiurt.boot.task.entity.PatrolTask;
 import com.aiurt.boot.task.param.PatrolTaskDeviceParam;
@@ -17,6 +18,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import lombok.extern.slf4j.Slf4j;
 import org.jeecg.common.api.vo.Result;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -226,6 +228,42 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
         return Result.OK();
     }
 
+    /**
+     * 巡检漏检任务处理-处置返显信息
+     *
+     * @param id
+     * @return
+     */
+    @AutoLog(value = "巡检漏检任务处理-处置返显信息")
+    @ApiOperation(value = "巡检漏检任务处理-处置返显信息", notes = "巡检漏检任务处理-处置返显信息")
+    @RequestMapping(value = "/getDisposeInfo", method = {RequestMethod.POST, RequestMethod.GET})
+    public Result<?> taskDisposeInfo(@ApiParam(name = "id", value = "任务记录ID") @RequestParam("id") String id) {
+        PatrolTask task = patrolTaskService.getById(id);
+        PatrolDisposeDTO dispose = new PatrolDisposeDTO();
+        dispose.setTaskCode(task.getCode());
+        dispose.setTaskName(task.getName());
+        dispose.setOmitDate(task.getPatrolDate());
+        return Result.OK(dispose);
+    }
+
+    /**
+     * 巡检漏检任务处理-处置
+     *
+     * @param id
+     * @return
+     */
+    @AutoLog(value = "巡检漏检任务处理-处置")
+    @ApiOperation(value = "巡检漏检任务处理-处置", notes = "巡检漏检任务处理-处置")
+    @PostMapping(value = "/dispose")
+    public Result<?> taskDispose(@ApiParam(name = "id", value = "任务记录ID") @RequestParam("id") String id,
+                                 @ApiParam(name = "omitExplain", value = "漏检说明") @RequestParam("omitExplain") String omitExplain) {
+        PatrolTask task = patrolTaskService.getById(id);
+        if (ObjectUtil.isEmpty(task)) {
+            return Result.error("记录不存在！");
+        }
+        int record = patrolTaskService.taskDispose(task, omitExplain);
+        return Result.OK("成功处置" + record + "条漏检任务记录！", null);
+    }
     /**
      * 添加
      *
@@ -482,6 +520,7 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
         pageList = patrolTaskService.getPatrolTaskManualList(pageList, patrolTaskDTO);
         return Result.OK(pageList);
     }
+
     /**
      * pc手工下放任务-新增
      *
@@ -491,7 +530,7 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
     @ApiOperation(value = "PC手工下放任务列表-新增", notes = "PC手工下放任务列表-新增-新增")
     @PostMapping(value = "/patrolTaskManualAdd")
     public Result<?> patrolTaskManualAdd(@RequestBody PatrolTaskManualDTO patrolTaskManualDTO,
-                                    HttpServletRequest req) {
+                                         HttpServletRequest req) {
         patrolTaskService.getPatrolTaskManualListAdd(patrolTaskManualDTO);
         return Result.OK("新增成功");
     }

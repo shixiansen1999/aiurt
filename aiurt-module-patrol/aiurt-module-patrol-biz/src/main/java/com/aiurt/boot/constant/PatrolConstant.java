@@ -70,7 +70,7 @@ public interface PatrolConstant {
     /**
      * 巡检任务已处置状态
      */
-    Integer TASK_DISPOSE = 0;
+    Integer TASK_DISPOSE = 1;
     /**
      * 巡检审核通过状态
      */

@@ -1,6 +1,5 @@
 package com.aiurt.boot.pool;
 
-import cn.hutool.core.date.DateUtil;
 import com.aiurt.boot.constant.PatrolConstant;
 import com.aiurt.boot.task.entity.PatrolTask;
 import com.aiurt.boot.task.service.IPatrolTaskService;

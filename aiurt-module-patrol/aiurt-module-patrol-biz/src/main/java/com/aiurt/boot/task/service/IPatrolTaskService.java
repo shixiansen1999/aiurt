@@ -83,7 +83,7 @@ public interface IPatrolTaskService extends IService<PatrolTask> {
     /**
      * PC巡检任务池-任务指派
      *
-     * @param map
+     * @param ppatrolAppointInfoDTO
      * @return
      */
     int taskAppoint(PatrolAppointInfoDTO ppatrolAppointInfoDTO);
@@ -129,13 +129,24 @@ public interface IPatrolTaskService extends IService<PatrolTask> {
 
     /**
      * app-提交任务
+     *
      * @param patrolTaskDTO
      */
     void getPatrolTaskSubmit(PatrolTaskDTO patrolTaskDTO);
 
     /**
      * pc手工下放任务-新增
+     *
      * @param patrolTaskManualDTO
      */
     void getPatrolTaskManualListAdd(PatrolTaskManualDTO patrolTaskManualDTO);
+
+    /**
+     * 漏检任务处置
+     *
+     * @param task
+     * @param omitExplain
+     * @return
+     */
+    int taskDispose(PatrolTask task, String omitExplain);
 }
