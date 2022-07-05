@@ -68,7 +68,7 @@ public class DeviceTypeController extends BaseController<DeviceType, IDeviceType
 	 @GetMapping(value = "/treeList")
 	 public Result<?> treeList(Integer level) {
 		 List<CsMajor> majorList = csMajorService.list(new LambdaQueryWrapper<CsMajor>().eq(CsMajor::getDelFlag, CommonConstant.DEL_FLAG_0));
-		 List<CsSubsystem> systemList = csSubsystemService.list(new LambdaQueryWrapper<CsSubsystem>().eq(CsSubsystem::getDelFlag, CommonConstant.DEL_FLAG_0));
+		 List<CsSubsystem> systemList = csSubsystemService.list(new LambdaQueryWrapper<CsSubsystem>().eq(CsSubsystem::getDelFlag, CommonConstant.DEL_FLAG_0).orderByDesc(CsSubsystem::getCreateTime));
 		 List<DeviceType> deviceTypeList = deviceTypeService.list(new LambdaQueryWrapper<DeviceType>().eq(DeviceType::getDelFlag, CommonConstant.DEL_FLAG_0));
 		 List<DeviceType> deviceTypeTree = deviceTypeService.treeList(deviceTypeList,"0");
 		 List<DeviceType> newList = new ArrayList<>();
