@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -60,19 +61,39 @@ public class OperationProcessController extends BaseController<OperationProcess,
 		for (int i = 0; i < list.size(); i++) {
 			OperationProcess process = list.get(i);
 			LoginUser loginUser = sysBaseAPI.getUserByName(process.getProcessPerson());
-			process.setRoleName(loginUser.getRealname());
-			process.setProcessPersonName(loginUser.getRealname());
+			if (Objects.isNull(loginUser)) {
+				loginUser = sysBaseAPI.getUserById(process.getProcessPerson());
+			}
+			if (Objects.nonNull(loginUser)) {
+				process.setProcessPersonName(loginUser.getRealname());
+			}
+			//process.setRoleName(loginUser.get());
+
 			if (i+1< list.size()) {
 				OperationProcess process2 = list.get(i + 1);
 				long between = DateUtil.between(process2.getProcessTime(), process.getProcessTime(), DateUnit.MINUTE);
-				process.setProcessingTime(between + "分");
+				long day = between / (24 * 60);
+				long hours = between % (24 * 60) / 60;
+				long min = between % (24 * 60) % 60;
+				process.setProcessingTime(day+"天"+hours+"小时"+min + "分");
 			}else {
 				long between = DateUtil.between(new Date(), process.getProcessTime(), DateUnit.MINUTE);
-				process.setProcessingTime(between + "分");
+				long day = between / (24 * 60);
+				long hours = between % (24 * 60) / 60;
+				long min = between % (24 * 60) % 60;
+				process.setProcessingTime(day+"天"+hours+"小时"+min + "分");
 			}
 
 		}
 		return Result.OK(list);
+	}
+
+	public static void main(String[] args) {
+		long between = 1926;
+		long day = between / (24 * 60);
+		long hours = between % (24 * 60) / 60;
+		long min = between % (24 * 60) %60;
+		System.out.println(day);
 	}
 
 }
