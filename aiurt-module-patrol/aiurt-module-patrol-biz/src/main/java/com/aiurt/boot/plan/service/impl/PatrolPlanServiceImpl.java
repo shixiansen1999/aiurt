@@ -144,8 +144,9 @@ public class PatrolPlanServiceImpl extends ServiceImpl<PatrolPlanMapper, PatrolP
         if (ObjectUtil.isNotEmpty(patrolPlanDto.getMechanismCode())){
         patrolPlanDto.setMechanismCodes(Arrays.asList(patrolPlanDto.getMechanismCode().split(",")));
         }
+        if (ObjectUtil.isNotEmpty(patrolPlanDto.getIds())){
         List<String>ids= Arrays.asList(patrolPlanDto.getIds().split(","));
-        patrolPlanDto.setPatrolStandards(patrolStandardMapper.selectbyIds(ids));
+        patrolPlanDto.setPatrolStandards(patrolStandardMapper.selectbyIds(ids));}
         if(ObjectUtil.isNotEmpty(patrolPlanDto.getWs())){
         patrolPlanDto.setWeek(Arrays.asList(patrolPlanDto.getWs().split(",")));}
         if(ObjectUtil.isNotEmpty(patrolPlanDto.getTs())){

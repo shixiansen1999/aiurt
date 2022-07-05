@@ -69,6 +69,7 @@ public class PatrolPlanController extends BaseController<PatrolPlan, IPatrolPlan
 	@ApiOperation(value="巡检计划表-添加", notes="巡检计划表-添加")
 	@PostMapping(value = "/add")
 	public Result<String> add(@RequestBody PatrolPlanDto patrolPlanDto) {
+		patrolPlanDto.setCode("XJ"+System.currentTimeMillis());
 		patrolPlanService.add(patrolPlanDto);
 		return Result.OK("添加成功！");
 	}
