@@ -89,11 +89,11 @@ public class PatrolPlanDto  extends PatrolPlan {
    @ApiModelProperty(value = "组织code")
    @TableField(exist = false)
    private String mechanismCode;
-   @Excel(name = "站点名称", width = 15)
+   @Excel(name = "多选站点集合", width = 15)
    @ApiModelProperty(value = "多选站点集合")
    @TableField(exist = false)
    List<String> siteCodes;
-   @Excel(name = "组织名称", width = 15)
+   @Excel(name = "多选组织集合", width = 15)
    @ApiModelProperty(value = "多选组织集合")
    @TableField(exist = false)
    List<String> mechanismCodes;

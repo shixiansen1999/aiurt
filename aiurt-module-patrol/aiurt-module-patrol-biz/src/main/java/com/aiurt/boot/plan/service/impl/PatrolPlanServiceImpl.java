@@ -59,6 +59,7 @@ public class PatrolPlanServiceImpl extends ServiceImpl<PatrolPlanMapper, PatrolP
          patrolPlan.setConfirm(patrolPlanDto.getConfirm());patrolPlan.setPeriod(patrolPlanDto.getPeriod());
          patrolPlan.setStatus(0);baseMapper.insert(patrolPlan);
         PatrolPlan id = baseMapper.selectByCode(patrolPlanDto.getCode());
+        if (patrolPlanDto.getPeriod()!=null){
         if (patrolPlanDto.getPeriod()==1){
             PatrolPlanStrategy patrolPlanStrategy = new PatrolPlanStrategy();
             patrolPlanStrategy.setPlanId(id.getId());patrolPlanStrategy.setType(0);
@@ -91,6 +92,7 @@ public class PatrolPlanServiceImpl extends ServiceImpl<PatrolPlanMapper, PatrolP
                 }
                 patrolPlanStrategyMapper.insert(patrolPlanStrategy);
             }
+          }
         }
         List<PatrolStandardDto> list = patrolPlanDto.getPatrolStandards();
         if(CollectionUtils.isNotEmpty(list)){

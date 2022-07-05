@@ -105,7 +105,7 @@
             AND subsystem_code  LIKE CONCAT ('%', #{patrolPlan.subsystemCode}, '%')
         </if>
         <if test="patrolPlan.code !=null ">
-            AND code = #{patrolPlan.code}
+            AND code LIKE CONCAT ('%', #{patrolPlan.code}, '%')
         </if>
         <if test="patrolPlan.status !=null ">
             AND status = #{patrolPlan.status}
