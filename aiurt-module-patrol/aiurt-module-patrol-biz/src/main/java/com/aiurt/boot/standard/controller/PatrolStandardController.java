@@ -71,7 +71,18 @@ public class PatrolStandardController extends BaseController<PatrolStandard, IPa
 		patrolStandardService.save(patrolStandard);
 		return Result.OK("添加成功！");
 	}
-
+	 /**
+	  *  生成巡检Code
+	  * @param
+	  * @return
+	  */
+	 @AutoLog(value = "生成巡检Code")
+	 @ApiOperation(value="生成巡检Code", notes="生成巡检Code")
+	 @GetMapping(value = "/generateCode")
+	 public Result<String> generateCode() {
+		String code="XB"+System.currentTimeMillis();
+		 return Result.OK(code);
+	 }
 	/**
 	 *  编辑
 	 *

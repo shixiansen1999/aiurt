@@ -69,7 +69,7 @@ public class PatrolPlanController extends BaseController<PatrolPlan, IPatrolPlan
 	@ApiOperation(value="巡检计划表-添加", notes="巡检计划表-添加")
 	@PostMapping(value = "/add")
 	public Result<String> add(@RequestBody PatrolPlanDto patrolPlanDto) {
-		patrolPlanDto.setCode("XJ"+System.currentTimeMillis());
+
 		patrolPlanService.add(patrolPlanDto);
 		return Result.OK("添加成功！");
 	}
@@ -118,6 +118,18 @@ public class PatrolPlanController extends BaseController<PatrolPlan, IPatrolPlan
 		patrolPlanService.updateId(patrolPlanDto);
 		return Result.OK("编辑成功!");
 	}
+	 /**
+	  *  生成巡检计划Code
+	  * @param
+	  * @return
+	  */
+	 @AutoLog(value = "生成巡检计划Code")
+	 @ApiOperation(value="生成巡检计划Code", notes="生成巡检计划Code")
+	 @GetMapping(value = "/generatePlanCode")
+	 public Result<String> generatePlanCode() {
+		 String code="XJ"+System.currentTimeMillis();
+		 return Result.OK(code);
+	 }
 	 /**
 	  *  查看设备详情
 	  * @param standardCode
