@@ -65,13 +65,16 @@ public class PatrolAccessoryController extends BaseController<PatrolAccessory, I
 	 @AutoLog(value = "app巡检-检查项-附件-保存")
 	 @ApiOperation(value = "app巡检-检查项-附件-保存", notes = "app巡检-检查项-附件-保存")
 	 @PostMapping(value = "/patrolTaskAccessorySave")
-	 public Result<?> patrolTaskAccessorySave(@RequestBody PatrolAccessory patrolAccessory,
+	 public Result<?> patrolTaskAccessorySave(@RequestBody List <PatrolAccessory> patrolAccessory,
 										  HttpServletRequest req) {
 		 LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-		 LambdaUpdateWrapper<PatrolCheckResult> updateWrapper= new LambdaUpdateWrapper<>();
-		 updateWrapper.set(PatrolCheckResult::getUserId,sysUser.getId()).set(PatrolCheckResult::getDelFlag,0).eq(PatrolCheckResult::getId,patrolAccessory.getCheckResultId());
-		 patrolCheckResultService.update(updateWrapper);
-		 patrolAccessoryService.save(patrolAccessory);
+		 patrolCheckResultService.removeBatchByIds(patrolAccessory);
+		 patrolAccessory.stream().forEach(e->{
+			 LambdaUpdateWrapper<PatrolCheckResult> updateWrapper= new LambdaUpdateWrapper<>();
+			 updateWrapper.set(PatrolCheckResult::getUserId,sysUser.getId()).set(PatrolCheckResult::getDelFlag,0).eq(PatrolCheckResult::getId,e.getCheckResultId());
+			 patrolCheckResultService.update(updateWrapper);
+			 patrolAccessoryService.save(e);
+		 });
 		 return Result.OK("附件保存成功");
 	 }
 	 /**

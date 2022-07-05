@@ -10,6 +10,7 @@ import com.aiurt.boot.plan.entity.PatrolPlan;
 import com.aiurt.boot.plan.mapper.PatrolPlanMapper;
 import com.aiurt.boot.standard.entity.PatrolStandard;
 import com.aiurt.boot.standard.mapper.PatrolStandardMapper;
+import com.aiurt.boot.task.controller.DeviceDTO;
 import com.aiurt.boot.task.dto.*;
 import com.aiurt.boot.task.entity.*;
 import com.aiurt.boot.task.mapper.*;
@@ -436,7 +437,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
 
     @Override
     public void getPatrolTaskSubmit(PatrolTaskDTO patrolTaskDTO) {
-        //提交任务：将待执行、执行中，变为待审核、添加任务结束人id,传签名地址、任务主键id、状态
+        //提交任务：将待执行、执行中，变为待审核、添加任务结束人id,传签名地址、任务主键id、审核状态
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         LambdaUpdateWrapper<PatrolTask> updateWrapper = new LambdaUpdateWrapper<>();
         if (patrolTaskDTO.getAuditor() == 1) {
@@ -502,11 +503,12 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
             patrolTaskStandard.setProfessionCode(ns.getProfessionCode());
             patrolTaskStandard.setStandardCode(ns.getCode());
             patrolTaskStandardMapper.insert(patrolTaskStandard);
-            //生成单号
+            String taskStandardId = patrolTaskStandard.getId();
+             //生成单号
             //判断是否与设备相关
             PatrolStandard patrolStandard = patrolStandardMapper.selectById(ns.getId());
             if (ObjectUtil.isNotNull(patrolStandard) && patrolStandard.getDeviceType() == 1) {
-                List<Device> deviceList = ns.getDeviceList();
+                List<DeviceDTO>deviceList =ns.getDeviceList();
                 //遍历设备单号
                 deviceList.stream().forEach(dv -> {
                     PatrolTaskDevice patrolTaskDevice = new PatrolTaskDevice();
@@ -515,7 +517,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
                     patrolTaskDevice.setStatus(0);//单号状态
                     String xdCode = "XD" + System.currentTimeMillis();
                     patrolTaskDevice.setPatrolNumber(xdCode);//巡检单号
-                    patrolTaskDevice.setTaskStandardId(ns.getId());//巡检任务标准关联表ID
+                    patrolTaskDevice.setTaskStandardId(taskStandardId);//巡检任务标准关联表ID
                     patrolTaskDevice.setDeviceCode(dv.getCode());//设备code
                     Device device = patrolTaskDeviceMapper.getDevice(dv.getCode());
                     patrolTaskDevice.setLineCode(device.getLineCode());//线路code
@@ -532,7 +534,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
                     patrolTaskDevice.setStatus(0);//单号状态
                     String xdCode = "XD" + System.currentTimeMillis();
                     patrolTaskDevice.setPatrolNumber(xdCode);//巡检单号
-                    patrolTaskDevice.setTaskStandardId(ns.getId());//巡检任务标准关联表ID
+                    patrolTaskDevice.setTaskStandardId(taskStandardId);//巡检任务标准关联表ID
                     patrolTaskDeviceMapper.insert(patrolTaskDevice);
                 });
             }
@@ -553,5 +555,37 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         // 更新为已处置状态
         task.setDisposeStatus(PatrolConstant.TASK_DISPOSE);
         return patrolTaskMapper.updateById(task);
+    }
+
+    @Override
+    public Page<PatrolTaskStandardDTO> getPatrolTaskManualDetail(Page<PatrolTaskStandardDTO> pageList, String id) {
+        List<PatrolTaskStandardDTO> standardList = patrolTaskStandardMapper.getStandard(id);
+        standardList.stream().forEach(e->{
+            LambdaQueryWrapper<PatrolTaskDevice> queryWrapper = new LambdaQueryWrapper<>();
+            queryWrapper.eq(PatrolTaskDevice::getTaskId,e.getTaskId()).eq(PatrolTaskDevice::getTaskStandardId,e.getTaskStandardId());
+            List<PatrolTaskDevice> taskDeviceList = patrolTaskDeviceMapper.selectList(queryWrapper);
+
+            List<DeviceDTO> deviceDTOList = new ArrayList<>();
+            List<DeviceDTO> dtoList = new ArrayList<>();
+            taskDeviceList.stream().forEach(td->{
+                if(ObjectUtil.isNotNull(td.getDeviceCode()))
+                {
+                    DeviceDTO deviceDTO = patrolTaskDeviceMapper.getTaskStandardDevice(td.getDeviceCode());
+                    if(ObjectUtil.isNotNull(deviceDTO.getPositionCode()))
+                    {
+                        String positionDevice = patrolTaskDeviceMapper.getDevicePosition(deviceDTO.getPositionCode());
+                        String position =deviceDTO.getPositionCodeName()+ "/" +positionDevice;
+                        deviceDTO.setPositionCodeName(position);
+                    }
+                    dtoList.add(deviceDTO);
+                    deviceDTOList.addAll(dtoList);
+                }
+                else {
+                    e.setDeviceList(new ArrayList<>());
+                }
+            });
+            e.setDeviceList(deviceDTOList);
+        });
+        return pageList.setRecords(standardList);
     }
 }
