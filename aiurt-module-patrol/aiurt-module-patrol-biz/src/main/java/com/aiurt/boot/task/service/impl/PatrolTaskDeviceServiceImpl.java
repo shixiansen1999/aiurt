@@ -26,6 +26,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
@@ -320,11 +321,11 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
 
     @Override
     public List<PatrolCheckResultDTO> getPatrolTaskCheck(PatrolTaskDevice patrolTaskDevice) {
-        //更新任务状态（将未开始改为执行中）、添加开始检查时间，传任务主键id,巡检工单主键、传开始检查时间
+        //更新任务状态（将未开始改为执行中）、添加开始检查时间，传任务主键id,巡检工单主键
         if (patrolTaskDevice.getStatus() == 0) {
             LambdaUpdateWrapper<PatrolTaskDevice> updateWrapper = new LambdaUpdateWrapper<>();
             updateWrapper.set(PatrolTaskDevice::getStatus, 1)
-                    .set(PatrolTaskDevice::getStartTime, patrolTaskDevice.getStartTime())
+                    .set(PatrolTaskDevice::getStartTime, LocalDateTime.now())
                     .eq(PatrolTaskDevice::getTaskId, patrolTaskDevice.getTaskId())
                     .eq(PatrolTaskDevice::getId, patrolTaskDevice.getId());
             patrolTaskDeviceMapper.update(patrolTaskDevice, updateWrapper);

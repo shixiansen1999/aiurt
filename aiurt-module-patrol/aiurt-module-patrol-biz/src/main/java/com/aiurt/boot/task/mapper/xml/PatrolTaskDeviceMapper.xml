@@ -159,4 +159,17 @@ select  t1.*
 from device t1
 where t1.code = #{code}
 </select>
+<select id="getTaskStandardDevice" resultType="com.aiurt.boot.task.controller.DeviceDTO">
+    SELECT
+	concat( t2.line_name, "/", t2.station_name ) AS positionCodeName,t3.name as deviceType,t1.*
+    FROM device t1
+	LEFT JOIN cs_station t2 ON t1.station_code = t2.station_code
+	LEFT JOIN device_type t3 on t1.device_type_code = t3.code
+    where t1.code = #{code}
+</select>
+<select id="getDevicePosition" resultType="java.lang.String">
+select t1.position_name
+from cs_station_position t1
+where t1.position_code = #{positionCode}
+</select>
 </mapper>

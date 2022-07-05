@@ -1,5 +1,6 @@
 package com.aiurt.boot.task.mapper;
 
+import com.aiurt.boot.task.controller.DeviceDTO;
 import com.aiurt.boot.task.dto.PatrolTaskDeviceDTO;
 import com.aiurt.boot.task.entity.PatrolTaskDevice;
 import com.aiurt.boot.task.param.PatrolTaskDeviceParam;
@@ -91,4 +92,17 @@ public interface PatrolTaskDeviceMapper extends BaseMapper<PatrolTaskDevice> {
      * @return
      */
     Device getDeviceInfoByCode(String deviceCode);
+    /**
+     * 根据设备编号获取这个设备的信息
+     * @param deviceCode
+     * @return
+     */
+    DeviceDTO getTaskStandardDevice(String deviceCode);
+
+    /**
+     * 根据位置code,获取设备位置
+     * @param positionCode
+     * @return
+     */
+    String getDevicePosition(String positionCode);
 }

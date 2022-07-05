@@ -64,7 +64,7 @@ public class FaultAnalysisReport implements Serializable {
     private Date createTime;
 	/**更新日期*/
 	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
-    @DateTimeFormat(pattern="yyyy-MM-dd")
+    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
     @ApiModelProperty(value = "更新日期")
     private Date updateTime;
 	/**所属部门*/

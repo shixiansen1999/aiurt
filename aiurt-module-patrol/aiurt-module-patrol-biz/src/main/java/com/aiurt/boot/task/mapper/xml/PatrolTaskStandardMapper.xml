@@ -10,8 +10,15 @@
         where t1.task_id= #{id}
     </select>
     <select id="getStandard" resultType="com.aiurt.boot.task.dto.PatrolTaskStandardDTO">
-select t1.*,t1.id as taskStandardId
-from patrol_task_standard t1
-where t1.task_id = #{taskId}
+        SELECT
+            t1.id AS taskStandardId,
+            t1.task_id as taskId,
+            t2.id as standardId,
+            t2.*
+        FROM
+            patrol_task_standard t1
+            LEFT JOIN patrol_standard t2 ON t1.standard_id = t2.id
+        WHERE
+            t1.task_id = #{taskId}
 </select>
 </mapper>

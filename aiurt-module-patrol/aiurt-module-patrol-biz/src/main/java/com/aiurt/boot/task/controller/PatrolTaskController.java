@@ -410,7 +410,7 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
     @AutoLog(value = "巡检任务表-app巡检任务提交")
     @ApiOperation(value = "巡检任务表-app巡检任务提交", notes = "巡检任务表-app巡检任务提交")
     @PostMapping(value = "/patrolTaskSubmit")
-    public Result<?> patrolTaskSubmit(PatrolTaskDTO patrolTaskDTO, HttpServletRequest req) {
+    public Result<?> patrolTaskSubmit(@RequestBody PatrolTaskDTO patrolTaskDTO, HttpServletRequest req) {
         patrolTaskService.getPatrolTaskSubmit(patrolTaskDTO);
         return Result.OK("提交任务成功");
     }
@@ -533,6 +533,21 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
                                          HttpServletRequest req) {
         patrolTaskService.getPatrolTaskManualListAdd(patrolTaskManualDTO);
         return Result.OK("新增成功");
+    }
+    /**
+     * pc手工下放任务-编辑-详情
+     *
+     * @return
+     */
+    @AutoLog(value = "pc手工下放任务-编辑-详情")
+    @ApiOperation(value = "pc手工下放任务-编辑-详情", notes = "pc手工下放任务-编辑-详情")
+    @PostMapping(value = "/patrolTaskManualDetail")
+    public Result<?> patrolTaskManualDetail(String id,
+                                            @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
+                                            @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize, HttpServletRequest req) {
+        Page<PatrolTaskStandardDTO> pageList = new Page<PatrolTaskStandardDTO>(pageNo, pageSize);
+        pageList = patrolTaskService.getPatrolTaskManualDetail(pageList, id);
+        return Result.OK(pageList);
     }
     /**
      * 导出excel

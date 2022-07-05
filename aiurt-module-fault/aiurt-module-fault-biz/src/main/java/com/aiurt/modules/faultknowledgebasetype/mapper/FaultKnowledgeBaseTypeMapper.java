@@ -22,5 +22,5 @@ public interface FaultKnowledgeBaseTypeMapper extends BaseMapper<FaultKnowledgeB
 
     List<String> getMajorByUser(@Param("userId")String userId);
 
-    List<SubSystemDTO> getSubSystemByUser(@Param("userId")String userId,@Param("majorCode")String majorId);
+    List<SubSystemDTO> getSubSystemByUser(@Param("userId")String userId,@Param("majorCode")String majorCode);
 }

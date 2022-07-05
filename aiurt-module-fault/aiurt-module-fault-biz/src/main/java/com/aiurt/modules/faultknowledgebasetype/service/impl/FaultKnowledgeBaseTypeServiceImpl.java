@@ -38,7 +38,7 @@ public class FaultKnowledgeBaseTypeServiceImpl extends ServiceImpl<FaultKnowledg
             List<MajorDTO> allMajor = faultKnowledgeBaseTypeMapper.getAllMajor(majorByUser);
             for (MajorDTO majorDTO:allMajor) {
                 //用户拥有的专业的子系统
-                List<SubSystemDTO> subSystemByUser = faultKnowledgeBaseTypeMapper.getSubSystemByUser(sysUser.getId(), majorDTO.getId());
+                List<SubSystemDTO> subSystemByUser = faultKnowledgeBaseTypeMapper.getSubSystemByUser(sysUser.getId(), majorDTO.getMajorCode());
                 if (CollectionUtil.isNotEmpty(subSystemByUser)) {
                     for (SubSystemDTO subSystemDTO : subSystemByUser) {
                         //该子系统的全部知识库类型
@@ -50,6 +50,7 @@ public class FaultKnowledgeBaseTypeServiceImpl extends ServiceImpl<FaultKnowledg
                         //获取子节点
                         List<FaultKnowledgeBaseType> treeRes = getTreeRes(faultKnowledgeBaseTypes, 0);
                         subSystemDTO.setFaultKnowledgeBaseTypes(treeRes);
+                        majorDTO.setSubSystemDTOS(subSystemByUser);
                     }
                 } else {
                     LambdaQueryWrapper<FaultKnowledgeBaseType> queryWrapper = new LambdaQueryWrapper<>();

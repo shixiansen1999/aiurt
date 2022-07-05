@@ -1,7 +1,7 @@
 package com.aiurt.boot.task.dto;
 
 import com.aiurt.boot.standard.entity.PatrolStandard;
-import com.aiurt.modules.device.entity.Device;
+import com.aiurt.boot.task.controller.DeviceDTO;
 import com.baomidou.mybatisplus.annotation.TableField;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -29,8 +29,14 @@ public class PatrolTaskStandardDTO extends PatrolStandard {
     @Excel(name = "子系统名称", width = 15)
     @ApiModelProperty(value = "子系统名称")
     private java.lang.String sysName;
+    @Excel(name = "设备类型", width = 15)
+    @ApiModelProperty(value = "设备类型")
+    private java.lang.String deviceTypeName;
+    @Excel(name = "巡检任务ID", width = 15)
+    @ApiModelProperty(value = "巡检任务ID")
+    private java.lang.String taskId;
     @ApiModelProperty(value = "设备的集合")
     @TableField(exist = false)
-    List<Device> deviceList;
+    List<DeviceDTO> deviceList;
 }
 
