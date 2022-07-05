@@ -2,6 +2,7 @@ package com.aiurt.boot.manager.mapper;
 
 import com.aiurt.boot.plan.dto.RepairDeviceDTO;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
@@ -68,7 +69,8 @@ public interface InspectionManagerMapper {
      * 根据设备编码集合查询设备信息(带分页)
      *
      * @param deviceCodes 设备编码集合
+     * @param page 分页信息
      * @return
      */
-    List<RepairDeviceDTO> queryDeviceByCodesPage(List<String> deviceCodes, Page<?> page);
+    List<RepairDeviceDTO> queryDeviceByCodesPage(@Param("deviceCodes")List<String> deviceCodes, @Param("page")Page<?> page);
 }

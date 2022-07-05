@@ -1,5 +1,9 @@
 package com.aiurt.boot.standard.service.impl;
 
+import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.core.util.StrUtil;
+import com.aiurt.boot.constant.DictConstant;
 import com.aiurt.boot.standard.entity.InspectionCodeContent;
 import com.aiurt.boot.standard.mapper.InspectionCodeContentMapper;
 import com.aiurt.boot.standard.service.IInspectionCodeContentService;
@@ -11,13 +15,13 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.github.xiaoymin.knife4j.core.util.CollectionUtils;
+import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.SelectTreeModel;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import javax.annotation.Resource;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -28,7 +32,8 @@ import java.util.stream.Collectors;
  */
 @Service
 public class InspectionCodeContentServiceImpl extends ServiceImpl<InspectionCodeContentMapper, InspectionCodeContent> implements IInspectionCodeContentService {
-
+    @Resource
+    private ISysBaseAPI sysBaseAPI;
 	@Override
 	public void addInspectionCodeContent(InspectionCodeContent inspectionCodeContent) {
 	   //新增时设置hasChild为0
@@ -252,6 +257,72 @@ public class InspectionCodeContentServiceImpl extends ServiceImpl<InspectionCode
             }
         }
         return sb;
+    }
+
+
+    /**
+     * 通过检修标准id查看检修项
+     *
+     * @param id  检修标准id
+     * @return
+     */
+    @Override
+    public List<InspectionCodeContent> selectCodeContentList(String id) {
+        if (StrUtil.isEmpty(id)) {
+            return new ArrayList<>();
+        }
+        List<InspectionCodeContent> result = baseMapper.selectList(
+                new LambdaQueryWrapper<InspectionCodeContent>()
+                        .eq(InspectionCodeContent::getInspectionCodeId, id)
+                        .orderByAsc(InspectionCodeContent::getSortNo));
+
+        if (CollUtil.isNotEmpty(result)) {
+            result.forEach(r -> {
+                r.setTypeName(sysBaseAPI.translateDict(DictConstant.INSPECTION_PROJECT, String.valueOf(r.getType())));
+                r.setStatusItemName(sysBaseAPI.translateDict(DictConstant.INSPECTION_STATUS_ITEM, String.valueOf(r.getStatusItem())));
+            });
+        }
+
+        // 构造树形结构
+        return treeFirst(result);
+    }
+
+    /**
+     * 构造树，不固定根节点
+     *
+     * @param list 全部数据
+     * @return 构造好以后的树形
+     */
+    public static List<InspectionCodeContent> treeFirst(List<InspectionCodeContent> list) {
+        Map<String, InspectionCodeContent> map = new HashMap<>(50);
+        for (InspectionCodeContent treeNode : list) {
+            map.put(treeNode.getId(), treeNode);
+        }
+        return addChildren(list, map);
+    }
+
+    /**
+     * @param list
+     * @param map
+     * @return
+     */
+    private static List<InspectionCodeContent> addChildren(List<InspectionCodeContent> list, Map<String, InspectionCodeContent> map) {
+        List<InspectionCodeContent> rootNodes = new ArrayList<>();
+        for (InspectionCodeContent treeNode : list) {
+            InspectionCodeContent parentHave = map.get(treeNode.getPid());
+            if (ObjectUtil.isEmpty(parentHave)) {
+                rootNodes.add(treeNode);
+            } else {
+                //当前位置显示实体类中的List元素定义的参数为null，出现空指针异常错误
+                if (ObjectUtil.isEmpty(parentHave.getChildren())) {
+                    parentHave.setChildren(new ArrayList<InspectionCodeContent>());
+                    parentHave.getChildren().add(treeNode);
+                } else {
+                    parentHave.getChildren().add(treeNode);
+                }
+            }
+        }
+        return rootNodes;
     }
 
 }

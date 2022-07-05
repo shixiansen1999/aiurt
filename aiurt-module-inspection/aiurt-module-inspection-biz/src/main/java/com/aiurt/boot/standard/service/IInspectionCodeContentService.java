@@ -81,4 +81,11 @@ public interface IInspectionCodeContentService extends IService<InspectionCodeCo
 	 * @return
 	 */
 	IPage<InspectionCodeContent> pageList(Page<InspectionCodeContent> page, InspectionCodeContent inspectionCodeContent);
+	/**
+	 * 通过检修标准id查看检修项
+	 *
+	 * @param id  检修标准id
+	 * @return
+	 */
+    List<InspectionCodeContent> selectCodeContentList(String id);
 }

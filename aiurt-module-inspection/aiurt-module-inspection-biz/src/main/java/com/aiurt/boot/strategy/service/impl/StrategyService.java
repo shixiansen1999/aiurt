@@ -1,6 +1,7 @@
 package com.aiurt.boot.strategy.service.impl;
 
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.lang.Snowflake;
 import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.StrUtil;
@@ -116,13 +117,15 @@ public class StrategyService {
         //获取当前月
         int month = DateUtils.getMonth();
 
-        //获取当前周数
-        int week = DateUtils.getWeekOfYear(new Date());
+        // 保证最多有4周，获取当前周数
+        int week = DateUtil.weekOfMonth(new Date()) == 1 ? 1 : DateUtil.weekOfMonth(new Date()) - 1;
+
         if (!thisYear) {
             month = 1;
         }
 
         for (int j = month; j <= InspectionConstant.MONTHAMOUNT; j++) {
+            // 最多是4周
             Integer tactics = ins.getTactics();
 
             //如果是今年,这个月的周数 大于 策略的周数 跳出当前循环
@@ -158,11 +161,11 @@ public class StrategyService {
                                 List<String> deviceList) {
         boolean thisYear = isThisYear(ins.getYear());
 
-        //获取当前月
+        // 获取当前月
         int month = DateUtils.getMonth();
 
-        //获取当前周数
-        int week = DateUtils.getWeekOfYear(new Date());
+        // 获取当前周数
+        int week = DateUtil.weekOfMonth(new Date()) == 1 ? 1 : DateUtil.weekOfMonth(new Date()) - 1;
         if (!thisYear) {
             month = 1;
         }
@@ -217,7 +220,7 @@ public class StrategyService {
         int month = DateUtils.getMonth();
 
         //获取当前周数
-        int week = DateUtils.getWeekOfYear(new Date());
+        int week = DateUtil.weekOfMonth(new Date()) == 1 ? 1 : DateUtil.weekOfMonth(new Date()) - 1;
         if (!thisYear) {
             month = 1;
         }
@@ -228,10 +231,10 @@ public class StrategyService {
         for (int y = quarter; y <= InspectionConstant.QUARTERAMOUNT; y++) {
             Integer tactics = ins.getTactics();
 
-            // 计算这个策略是 第几月，最多有3个月，12周
+            // 计算这个策略是 第几月，最多有3个月(0、1、2)，12周
             int monthnum = (tactics - 1) / 4;
 
-            // 计算这个策略是第几周
+            // 计算这个策略相对月来说是第几周
             int weeknum = tactics % 4 == 0 ? 4 : tactics % 4;
 
             // 获取季度的开始月份
@@ -270,11 +273,11 @@ public class StrategyService {
                                List<String> deviceList) {
         boolean thisYear = isThisYear(ins.getYear());
 
-        //获取当前月
+        // 获取当前月
         int month = DateUtils.getMonth();
 
-        //获取当前周数
-        int week = DateUtils.getWeekOfYear(new Date());
+        // 获取当前周数
+        int week = DateUtil.weekOfMonth(new Date()) == 1 ? 1 : DateUtil.weekOfMonth(new Date()) - 1;
         if (!thisYear) {
             month = 1;
         }
@@ -289,7 +292,7 @@ public class StrategyService {
         for (int y = isFirstHalfYear; y < InspectionConstant.HALFYEARAMOUNT; y++) {
             Integer tactics = ins.getTactics();
 
-            // 计算这个策略是 第几月，最多6个月，24周
+            // 计算这个策略是 第几月，1开始，最多6个月，24周
             int monthnum = (tactics - 1) / 4 + 1;
 
             //计算这个策略是第几周
@@ -337,7 +340,7 @@ public class StrategyService {
         int month = DateUtils.getMonth();
 
         //获取当前周数
-        int week = DateUtils.getWeekOfYear(new Date());
+        int week = DateUtil.weekOfMonth(new Date()) == 1 ? 1 : DateUtil.weekOfMonth(new Date()) - 1;
         Integer tactics = ins.getTactics();
 
         //计算这个策略是第几月

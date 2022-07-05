@@ -77,6 +77,9 @@ public class RepairPoolDTO extends DictEntity {
     @ApiModelProperty("使用站点code（回显使用）")
     @TableField(exist = false)
     private List<String> stationCodes;
+    @ApiModelProperty("使用站点code（回显使用）")
+    @TableField(exist = false)
+    private List<StationDTO> addStationCode;
     @ApiModelProperty("组织机构code")
     @TableField(exist = false)
     private List<String> orgCodes;

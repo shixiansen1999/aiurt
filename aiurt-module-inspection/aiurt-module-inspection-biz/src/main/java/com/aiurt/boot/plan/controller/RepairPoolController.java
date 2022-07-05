@@ -3,6 +3,7 @@ package com.aiurt.boot.plan.controller;
 import com.aiurt.boot.manager.dto.MajorDTO;
 import com.aiurt.boot.plan.dto.*;
 import com.aiurt.boot.plan.entity.RepairPool;
+import com.aiurt.boot.plan.entity.RepairPoolCodeContent;
 import com.aiurt.boot.plan.rep.RepairStrategyReq;
 import com.aiurt.boot.plan.service.IRepairPoolService;
 import com.aiurt.common.aspect.annotation.AutoLog;
@@ -183,5 +184,18 @@ public class RepairPoolController extends BaseController<RepairPool, IRepairPool
         return Result.OK(planCodeDTOList);
     }
 
+    /**
+     * 通过检修标准id查看检修项
+     *
+     * @param id  检修标准id
+     * @return
+     */
+    @AutoLog(value = "通过检修标准id查看检修项")
+    @ApiOperation(value = "通过检修标准id查看检修项", notes = "通过检修标准id查看检修项")
+    @GetMapping(value = "/selectCodeContentList")
+    public Result<List<RepairPoolCodeContent>> selectCodeContentList(@RequestParam @ApiParam(name = "id", required = true, value = "检修标准id") String id) {
+        List<RepairPoolCodeContent> selectCodeContentList = repairPoolService.selectCodeContentList(id);
+        return Result.OK(selectCodeContentList);
+    }
 
 }

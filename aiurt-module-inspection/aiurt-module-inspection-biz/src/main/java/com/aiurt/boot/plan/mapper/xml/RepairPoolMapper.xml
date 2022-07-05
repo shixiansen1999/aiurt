@@ -23,7 +23,7 @@
         </foreach>
     </if>
     <if test="subSystemCode.size()>0">
-        cs.system_code in
+        and cs.system_code in
         <foreach collection="subSystemCode" item="code" separator="," open="(" close=")">
             #{code}
         </foreach>

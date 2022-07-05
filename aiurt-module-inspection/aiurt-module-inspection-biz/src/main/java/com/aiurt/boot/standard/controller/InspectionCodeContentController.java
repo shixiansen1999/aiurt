@@ -6,16 +6,13 @@ import com.aiurt.boot.standard.mapper.InspectionCodeContentMapper;
 import com.aiurt.boot.standard.service.IInspectionCodeContentService;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.system.base.controller.BaseController;
-import com.aiurt.common.util.oConvertUtils;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import lombok.extern.slf4j.Slf4j;
 import org.jeecg.common.api.vo.Result;
-import org.jeecg.common.system.query.QueryGenerator;
-import org.jeecg.common.system.vo.SelectTreeModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
@@ -31,7 +28,7 @@ import java.util.List;
  * @Date:   2022-06-21
  * @Version: V1.0
  */
-@Api(tags="inspection_code_content")
+@Api(tags="检修项")
 @RestController
 @RequestMapping("/standard/inspectionCodeContent")
 @Slf4j
@@ -98,109 +95,6 @@ public class InspectionCodeContentController extends BaseController<InspectionCo
 		 IPage<InspectionCodeContent> pageList = inspectionCodeContentService.pageList(page, inspectionCodeContent);
 		 return Result.OK(pageList);
 	 }
-//	 /**
-//	  * 【vue3专用】加载节点的子数据
-//	  *
-//	  * @param pid
-//	  * @return
-//	  */
-//	 @RequestMapping(value = "/loadTreeChildren", method = RequestMethod.GET)
-//	 public Result<List<SelectTreeModel>> loadTreeChildren(@RequestParam(name = "pid") String pid) {
-//		 Result<List<SelectTreeModel>> result = new Result<>();
-//		 try {
-//			 List<SelectTreeModel> ls = inspectionCodeContentService.queryListByPid(pid);
-//			 result.setResult(ls);
-//			 result.setSuccess(true);
-//		 } catch (Exception e) {
-//			 e.printStackTrace();
-//			 result.setMessage(e.getMessage());
-//			 result.setSuccess(false);
-//		 }
-//		 return result;
-//	 }
-//
-//	 /**
-//	  * 【vue3专用】加载一级节点/如果是同步 则所有数据
-//	  *
-//	  * @param async
-//	  * @param pcode
-//	  * @return
-//	  */
-//	 @RequestMapping(value = "/loadTreeRoot", method = RequestMethod.GET)
-//	 public Result<List<SelectTreeModel>> loadTreeRoot(@RequestParam(name = "async") Boolean async, @RequestParam(name = "pcode") String pcode) {
-//		 Result<List<SelectTreeModel>> result = new Result<>();
-//		 try {
-//			 List<SelectTreeModel> ls = inspectionCodeContentService.queryListByCode(pcode);
-//			 if (!async) {
-//				 loadAllChildren(ls);
-//			 }
-//			 result.setResult(ls);
-//			 result.setSuccess(true);
-//		 } catch (Exception e) {
-//			 e.printStackTrace();
-//			 result.setMessage(e.getMessage());
-//			 result.setSuccess(false);
-//		 }
-//		 return result;
-//	 }
-//
-//	 /**
-//	  * 【vue3专用】递归求子节点 同步加载用到
-//	  *
-//	  * @param ls
-//	  */
-//	 private void loadAllChildren(List<SelectTreeModel> ls) {
-//		 for (SelectTreeModel tsm : ls) {
-//			 List<SelectTreeModel> temp = inspectionCodeContentService.queryListByPid(tsm.getKey());
-//			 if (temp != null && temp.size() > 0) {
-//				 tsm.setChildren(temp);
-//				 loadAllChildren(temp);
-//			 }
-//		 }
-//	 }
-//
-//	 /**
-//      * 获取子数据
-//      * @param inspectionCodeContent
-//      * @param req
-//      * @return
-//      */
-//	@AutoLog(value = "inspection_code_content-获取子数据")
-//	@ApiOperation(value="inspection_code_content-获取子数据", notes="inspection_code_content-获取子数据")
-//	@GetMapping(value = "/childList")
-//	public Result<IPage<InspectionCodeContent>> queryPageList(InspectionCodeContent inspectionCodeContent,HttpServletRequest req) {
-//		QueryWrapper<InspectionCodeContent> queryWrapper = QueryGenerator.initQueryWrapper(inspectionCodeContent, req.getParameterMap());
-//		List<InspectionCodeContent> list = inspectionCodeContentService.list(queryWrapper);
-//		IPage<InspectionCodeContent> pageList = new Page<>(1, 10, list.size());
-//        pageList.setRecords(list);
-//		return Result.OK(pageList);
-//	}
-//
-//    /**
-//      * 批量查询子节点
-//      * @param parentIds 父ID（多个采用半角逗号分割）
-//      * @return 返回 IPage
-//      * @param parentIds
-//      * @return
-//      */
-//	@AutoLog(value = "inspection_code_content-批量获取子数据")
-//    @ApiOperation(value="inspection_code_content-批量获取子数据", notes="inspection_code_content-批量获取子数据")
-//    @GetMapping("/getChildListBatch")
-//    public Result getChildListBatch(@RequestParam("parentIds") String parentIds) {
-//        try {
-//            QueryWrapper<InspectionCodeContent> queryWrapper = new QueryWrapper<>();
-//            List<String> parentIdList = Arrays.asList(parentIds.split(","));
-//            queryWrapper.in("pid", parentIdList);
-//            List<InspectionCodeContent> list = inspectionCodeContentService.list(queryWrapper);
-//            IPage<InspectionCodeContent> pageList = new Page<>(1, 10, list.size());
-//            pageList.setRecords(list);
-//            return Result.OK(pageList);
-//        } catch (Exception e) {
-//            log.error(e.getMessage(), e);
-//            return Result.error("批量查询子节点失败：" + e.getMessage());
-//        }
-//    }
-
 	/**
 	 *   添加
 	 *
@@ -306,5 +200,18 @@ public class InspectionCodeContentController extends BaseController<InspectionCo
     public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) {
 		return super.importExcel(request, response, InspectionCodeContent.class);
     }
+	 /**
+	  * 通过检修标准id查看检修项
+	  *
+	  * @param id  检修标准id
+	  * @return
+	  */
+	 @AutoLog(value = "通过检修标准id查看检修项")
+	 @ApiOperation(value = "通过检修标准id查看检修项", notes = "通过检修标准id查看检修项")
+	 @GetMapping(value = "/selectCodeContentList")
+	 public Result<List<InspectionCodeContent>> selectCodeContentList(@RequestParam @ApiParam(name = "id", required = true, value = "检修标准id") String id) {
+		 List<InspectionCodeContent> selectCodeContentList = inspectionCodeContentService.selectCodeContentList(id);
+		 return Result.OK(selectCodeContentList);
+	 }
 
 }

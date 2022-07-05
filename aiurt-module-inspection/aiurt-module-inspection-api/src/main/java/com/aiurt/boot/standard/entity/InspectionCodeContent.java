@@ -102,4 +102,12 @@ public class InspectionCodeContent implements Serializable {
     @TableField(exist = false)
     @ApiModelProperty(value = "子节点")
     private List<InspectionCodeContent> children;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "检查项类型名称")
+    private java.lang.String typeName;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "数据填写类型")
+    private java.lang.String statusItemName;
 }
