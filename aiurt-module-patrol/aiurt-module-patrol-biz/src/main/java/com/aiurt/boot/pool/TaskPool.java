@@ -67,10 +67,14 @@ public class TaskPool implements Job {
                 .filter(l -> PatrolConstant.PLAN_STATUS_ENABLE.equals(l.getStatus()))
                 // 在有效范围内的计划
                 .filter(l -> {
-                    Date nowDate = DateUtil.parse(DateUtil.format(new Date(), "yyyy-MM-dd"));
-                    Date startDate = DateUtil.parse(DateUtil.format(l.getStartDate(), "yyyy-MM-dd"));
-                    Date endDate = DateUtil.parse(DateUtil.format(l.getEndDate(), "yyyy-MM-dd"));
+                    if (ObjectUtil.isEmpty(l.getStartDate()) || ObjectUtil.isEmpty(l.getEndDate())) {
+                        return false;
+                    }
+                    Date nowDate = DateUtil.parse(DateUtil.format(new Date(), "yyyy-MM-dd HH:mm:ss"));
+                    Date startDate = DateUtil.parse(DateUtil.format(l.getStartDate(), "yyyy-MM-dd 00:00:00"));
+                    Date endDate = DateUtil.parse(DateUtil.format(l.getEndDate(), "yyyy-MM-dd 23:59:59"));
                     return DateUtil.isIn(nowDate, startDate, endDate);
+
                 })
                 .collect(Collectors.toList());
 
@@ -177,7 +181,7 @@ public class TaskPool implements Job {
             PatrolStandard standard = patrolStandardService.getOne(standardWrapper);
 
             Integer deviceType = standard.getDeviceType();
-            if (Integer.valueOf(1).equals(deviceType)) {
+            if (PatrolConstant.DEVICE_INDEPENDENCE.equals(deviceType)) {
                 // 与设备无关
                 // 根据计划ID获取计划
                 PatrolPlan patrolPlan = patrolPlanService.getById(l.getPlanId());
