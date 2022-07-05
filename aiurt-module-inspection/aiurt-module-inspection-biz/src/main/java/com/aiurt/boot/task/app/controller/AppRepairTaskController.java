@@ -96,15 +96,15 @@ public class AppRepairTaskController extends BaseController<RepairTask, IRepairT
     }
 
     /**
-      *   待执行-执行
+      *   app检修任务-待执行-执行
      *
      * @param examineDTO
      * @return
      */
-    @AutoLog(value = "检修任务-待执行-执行")
-    @ApiOperation(value="检修任务-待执行-执行", notes="检修任务-待执行-执行")
-    @PostMapping(value = "/toBeImplement")
-    public Result<String> toBeImplement(@RequestBody ExamineDTO examineDTO) {
+    @AutoLog(value = "app检修任务-待执行-执行")
+    @ApiOperation(value="app检修任务-待执行-执行", notes="app检修任务-待执行-执行")
+    @PostMapping(value = "/appRepairToBeImplement")
+    public Result<String> appRepairToBeImplement(@RequestBody ExamineDTO examineDTO) {
         repairTaskService.toBeImplement(examineDTO);
         return Result.OK("执行成功！");
     }
@@ -112,17 +112,45 @@ public class AppRepairTaskController extends BaseController<RepairTask, IRepairT
 
 
     /**
-     *   执行中-执行-提交
+     *   app检修任务-执行中-执行-提交
      *
      * @param examineDTO
      * @return
      */
-    @AutoLog(value = "检修任务-执行中-执行-提交")
-    @ApiOperation(value="检修任务-执行中-执行-提交", notes="检修任务-执行中-执行-提交")
-    @PostMapping(value = "/inExecution")
-    public Result<String> inExecution(@RequestBody ExamineDTO examineDTO) {
+    @AutoLog(value = "app检修任务-执行中-执行-提交")
+    @ApiOperation(value="app检修任务-执行中-执行-提交", notes="app检修任务-执行中-执行-提交")
+    @PostMapping(value = "/appRepairInExecution")
+    public Result<String> appRepairInExecution(@RequestBody ExamineDTO examineDTO) {
         repairTaskService.inExecution(examineDTO);
         return Result.OK("执行成功！");
+    }
+
+    /**
+     *   app检修任务-审核
+     *
+     * @param examineDTO
+     * @return
+     */
+    @AutoLog(value = "app检修任务-审核")
+    @ApiOperation(value="app检修任务-审核", notes="app检修任务-审核")
+    @PostMapping(value = "/appRepairToExamine")
+    public Result<String> appRepairToExamine(@RequestBody ExamineDTO examineDTO) {
+        repairTaskService.toExamine(examineDTO);
+        return Result.OK("审核成功！");
+    }
+
+    /**
+     *   app检修任务-验收
+     *
+     * @param examineDTO
+     * @return
+     */
+    @AutoLog(value = "app检修任务-验收")
+    @ApiOperation(value="app检修任务-验收", notes="app检修任务-验收")
+    @PostMapping(value = "/appRepairAcceptance")
+    public Result<String> appRepairAcceptance(@RequestBody ExamineDTO examineDTO) {
+        repairTaskService.acceptance(examineDTO);
+        return Result.OK("验收成功！");
     }
 
 

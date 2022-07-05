@@ -507,13 +507,19 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
         RepairTask repairTask1= new RepairTask();
         RepairTaskDeviceRel repairTaskDeviceRel = new RepairTaskDeviceRel();
 
-        //查询检修单的主键id集合
+
         LambdaQueryWrapper<RepairTaskDeviceRel> objectLambdaQueryWrapper = new LambdaQueryWrapper<>();
-        List<RepairTaskDeviceRel> repairTaskDevice = repairTaskDeviceRelMapper.selectList(objectLambdaQueryWrapper.eq(RepairTaskDeviceRel::getRepairTaskId,examineDTO.getId()));
-        List<String> collect1 = repairTaskDevice.stream().map(RepairTaskDeviceRel::getId).collect(Collectors.toList());
+        List<RepairTaskDeviceRel> repairTaskDevice1 = repairTaskDeviceRelMapper.selectList(objectLambdaQueryWrapper.eq(RepairTaskDeviceRel::getRepairTaskId,examineDTO.getId()));
 
+        //查询检修单的主键id集合
+        List<String> collect1 = repairTaskDevice1.stream().map(RepairTaskDeviceRel::getId).collect(Collectors.toList());
 
-        if (CollectionUtil.isNotEmpty(collect1)){
+        //查询未提交的检修单
+        List<RepairTaskDeviceRel> repairTaskDevice = repairTaskDeviceRelMapper.selectList(objectLambdaQueryWrapper
+                .eq(RepairTaskDeviceRel::getRepairTaskId,examineDTO.getId())
+                .eq(RepairTaskDeviceRel::getIsSubmit,0));
+
+        if (CollectionUtil.isNotEmpty(collect1) && CollectionUtil.isEmpty(repairTaskDevice)){
             collect1.forEach(e->{
                 repairTaskDeviceRel.setId(e);
                 repairTaskDeviceRel.setSubmitTime(new Date());
@@ -521,16 +527,15 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                 repairTaskDeviceRel.setEndTime(new Date());
                 repairTaskDeviceRelMapper.updateById(repairTaskDeviceRel);
             });
+            if (repairTask.getIsConfirm()==1){
+                repairTask1.setId(examineDTO.getId());
+                repairTask1.setStatus(6);
+            }else {
+                repairTask1.setId(examineDTO.getId());
+                repairTask1.setStatus(8);
+            }
+            repairTaskMapper.updateById(repairTask1);
         }
-        if (repairTask.getIsConfirm()==1){
-            repairTask1.setId(examineDTO.getId());
-            repairTask1.setStatus(6);
-        }else {
-            repairTask1.setId(examineDTO.getId());
-            repairTask1.setStatus(8);
-        }
-
-        repairTaskMapper.updateById(repairTask1);
 
     }
 
