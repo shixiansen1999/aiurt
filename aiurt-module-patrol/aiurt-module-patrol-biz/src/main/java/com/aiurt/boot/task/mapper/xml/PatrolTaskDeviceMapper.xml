@@ -37,6 +37,12 @@
         <if test="taskDevice.username != null and taskDevice.username !=''">
             and su.realname like concat('%',#{taskDevice.username},'%')
         </if>
+        <if test="taskDevice.majorCode != null and taskDevice.majorCode !=''">
+            and pts.profession_code = #{taskDevice.majorCode}
+        </if>
+        <if test="taskDevice.subsystemCode != null and taskDevice.subsystemCode !=''">
+            and pts.subsystem_code = #{taskDevice.subsystemCode}
+        </if>
     </select>
     <select id="selectBillInfoForDevice" resultType="com.aiurt.boot.task.param.PatrolTaskDeviceParam">
         SELECT pts.profession_code majorCode,

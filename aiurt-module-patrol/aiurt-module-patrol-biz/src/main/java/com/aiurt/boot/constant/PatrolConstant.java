@@ -79,4 +79,8 @@ public interface PatrolConstant {
      * 巡检审核不通过状态
      */
     Integer AUDIT_NOPASS = 0;
+    /**
+     * 与设备类型无关
+     */
+    Integer DEVICE_INDEPENDENCE = 0;
 }
