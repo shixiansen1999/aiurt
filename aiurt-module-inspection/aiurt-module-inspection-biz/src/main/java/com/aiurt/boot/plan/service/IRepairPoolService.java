@@ -3,6 +3,7 @@ package com.aiurt.boot.plan.service;
 import com.aiurt.boot.manager.dto.MajorDTO;
 import com.aiurt.boot.plan.dto.*;
 import com.aiurt.boot.plan.entity.RepairPool;
+import com.aiurt.boot.plan.entity.RepairPoolCodeContent;
 import com.aiurt.boot.plan.rep.RepairStrategyReq;
 import com.aiurt.boot.plan.req.RepairPoolCodeReq;
 import com.aiurt.boot.plan.req.RepairPoolReq;
@@ -19,20 +20,22 @@ import java.util.List;
 /**
  * @Description: repair_pool
  * @Author: aiurt
- * @Date:   2022-06-22
+ * @Date: 2022-06-22
  * @Version: V1.0
  */
 public interface IRepairPoolService extends IService<RepairPool> {
     /**
      * 检修计划池列表查询
+     *
      * @param startTime 开始时间
-     * @param endTime 结束时间
+     * @param endTime   结束时间
      * @return
      */
     List<RepairPool> queryList(Date startTime, Date endTime);
 
     /**
      * 获取时间范围和周数
+     *
      * @param year 年份
      * @return
      */
@@ -40,6 +43,7 @@ public interface IRepairPoolService extends IService<RepairPool> {
 
     /**
      * 通过检修计划id查看检修标准详情
+     *
      * @param req
      * @return
      */
@@ -47,6 +51,7 @@ public interface IRepairPoolService extends IService<RepairPool> {
 
     /**
      * 通过检修计划id查看详情
+     *
      * @param id
      * @return
      */
@@ -54,6 +59,7 @@ public interface IRepairPoolService extends IService<RepairPool> {
 
     /**
      * 检修计划池-调整时间
+     *
      * @param ids
      * @param startTime
      * @param endTime
@@ -63,6 +69,7 @@ public interface IRepairPoolService extends IService<RepairPool> {
 
     /**
      * 检修详情里的适用专业下拉列表
+     *
      * @param code
      * @return
      */
@@ -70,10 +77,12 @@ public interface IRepairPoolService extends IService<RepairPool> {
 
     /**
      * 指派检修任务
+     *
      * @param assignDTO
      * @return
      */
     Result assigned(AssignDTO assignDTO);
+
     /**
      * 指派检修任务人员下拉列表
      *
@@ -81,6 +90,7 @@ public interface IRepairPoolService extends IService<RepairPool> {
      * @return
      */
     List<LoginUser> queryUserList(String code);
+
     /**
      * 检修详情里的检修标准下拉列表
      *
@@ -91,6 +101,7 @@ public interface IRepairPoolService extends IService<RepairPool> {
 
     /**
      * 分页查询手工下发任务列表
+     *
      * @param page
      * @param queryWrapper
      * @return
@@ -99,28 +110,33 @@ public interface IRepairPoolService extends IService<RepairPool> {
 
     /**
      * 通过id查询手工下发检修任务信息
+     *
      * @param id
      * @return
      */
     RepairPoolDTO queryManualTaskById(String id);
 
     /**
-     *修改手工下发检修任务信息
+     * 修改手工下发检修任务信息
+     *
      * @param repairPoolReq
      */
     void updateManualTaskById(RepairPoolReq repairPoolReq);
 
     /**
      * 根据任务id删除手工下发检修任务
+     *
      * @param id
      */
     void deleteManualTaskById(String id);
 
     /**
      * 添加手工下发检修任务
+     *
      * @param repairPoolReq
      */
     void addManualTask(RepairPoolReq repairPoolReq);
+
     /**
      * 根据检修任务code和检修标准id查询检修标准对应的设备
      *
@@ -132,8 +148,17 @@ public interface IRepairPoolService extends IService<RepairPool> {
 
     /**
      * 处理检修标准、检修项目、检修设备、检修计划与检修标准的关联关系
+     *
      * @param jx
      * @param repairPoolCodes
      */
-     void handle(String jx, List<RepairPoolCodeReq> repairPoolCodes);
+    void handle(String jx, List<RepairPoolCodeReq> repairPoolCodes);
+
+    /**
+     * 通过检修标准id查看检修项
+     *
+     * @param id 检修标准id
+     * @return
+     */
+    List<RepairPoolCodeContent> selectCodeContentList(String id);
 }

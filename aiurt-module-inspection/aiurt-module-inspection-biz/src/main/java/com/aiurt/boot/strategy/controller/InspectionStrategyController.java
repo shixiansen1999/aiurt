@@ -28,7 +28,7 @@ import java.util.List;
  * @Date: 2022-06-22
  * @Version: V1.0
  */
-@Api(tags = "inspection_strategy")
+@Api(tags = "检修策略")
 @RestController
 @RequestMapping("/strategy/inspectionStrategy")
 @Slf4j

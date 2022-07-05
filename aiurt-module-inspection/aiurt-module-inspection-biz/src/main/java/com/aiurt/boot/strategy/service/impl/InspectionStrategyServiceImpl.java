@@ -5,12 +5,14 @@ import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.aiurt.boot.constant.InspectionConstant;
 import com.aiurt.boot.plan.entity.RepairPool;
+import com.aiurt.boot.plan.mapper.RepairPoolMapper;
 import com.aiurt.boot.standard.entity.InspectionCode;
 import com.aiurt.boot.standard.mapper.InspectionCodeMapper;
 import com.aiurt.boot.strategy.dto.InspectionStrategyDTO;
 import com.aiurt.boot.strategy.entity.*;
 import com.aiurt.boot.strategy.mapper.*;
 import com.aiurt.boot.strategy.service.IInspectionStrategyService;
+import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.modules.device.entity.Device;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -19,6 +21,7 @@ import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.jeecg.common.api.vo.Result;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -46,6 +49,8 @@ public class InspectionStrategyServiceImpl extends ServiceImpl<InspectionStrateg
     private InspectionStrOrgRelMapper inspectionStrOrgRelMapper;
     @Resource
     private InspectionCodeMapper inspectionCodeMapper;
+    @Resource
+    private RepairPoolMapper repairPoolMapper;
 
     @Override
     public IPage<InspectionStrategyDTO> pageList(Page<InspectionStrategyDTO> page, InspectionStrategyDTO inspectionStrategyDTO) {
@@ -111,13 +116,14 @@ public class InspectionStrategyServiceImpl extends ServiceImpl<InspectionStrateg
 
     @Override
     public InspectionStrategyDTO getId(String id) {
-        InspectionStrategyDTO inspectionStrategyDTO=baseMapper.getId(id);
-        if(ObjectUtil.isNotEmpty(inspectionStrategyDTO.getSiteCode())){
-            inspectionStrategyDTO.setSiteCodes(Arrays.asList(inspectionStrategyDTO.getSiteCode().split(",")));}
-        if (ObjectUtil.isNotEmpty(inspectionStrategyDTO.getMechanismCode())){
+        InspectionStrategyDTO inspectionStrategyDTO = baseMapper.getId(id);
+        if (ObjectUtil.isNotEmpty(inspectionStrategyDTO.getSiteCode())) {
+            inspectionStrategyDTO.setSiteCodes(Arrays.asList(inspectionStrategyDTO.getSiteCode().split(",")));
+        }
+        if (ObjectUtil.isNotEmpty(inspectionStrategyDTO.getMechanismCode())) {
             inspectionStrategyDTO.setMechanismCodes(Arrays.asList(inspectionStrategyDTO.getMechanismCode().split(",")));
         }
-        List<String>codes= Arrays.asList(inspectionStrategyDTO.getCodes().split(","));
+        List<String> codes = Arrays.asList(inspectionStrategyDTO.getCodes().split(","));
         inspectionStrategyDTO.setInspectionCodeDTOS(baseMapper.selectbyCodes(codes));
         return inspectionStrategyDTO;
     }
@@ -135,13 +141,7 @@ public class InspectionStrategyServiceImpl extends ServiceImpl<InspectionStrateg
     @Override
     public Result addAnnualPlan(String id) {
         // 校验
-        InspectionStrategy ins = baseMapper.selectById(id);
-        if (ObjectUtil.isEmpty(ins)) {
-            return Result.error("非法操作");
-        }
-        if (ins.getYear() < DateUtil.year(new Date())) {
-            return Result.error("只能生成当前往后年份的计划");
-        }
+        InspectionStrategy ins = checkInspectionStrategy(id);
 
         // 检修标准
         List<InspectionCode> inspectionCodes = new ArrayList<>();
@@ -156,7 +156,6 @@ public class InspectionStrategyServiceImpl extends ServiceImpl<InspectionStrateg
                             .in(InspectionCode::getCode, collect)
                             .eq(InspectionCode::getDelFlag, 0));
         }
-
 
         // 组织结构
         List<InspectionStrOrgRel> orgList = strategyService.getInspectionStrOrgRels(ins.getCode());
@@ -176,37 +175,61 @@ public class InspectionStrategyServiceImpl extends ServiceImpl<InspectionStrateg
 
             //周检
             if (type.equals(InspectionConstant.WEEK)) {
-                strategyService.weekPlan(ins,newStaId,orgList,stationList,deviceList);
+                strategyService.weekPlan(ins, newStaId, orgList, stationList, deviceList);
             }
 
             //月检
             if (type.equals(InspectionConstant.MONTH)) {
-                strategyService.monthPlan(ins,newStaId,orgList,stationList,deviceList);
+                strategyService.monthPlan(ins, newStaId, orgList, stationList, deviceList);
             }
 
             //双月检
             if (type.equals(InspectionConstant.DOUBLEMONTH)) {
-                strategyService.doubleMonthPlan(ins,newStaId,orgList,stationList,deviceList);
+                strategyService.doubleMonthPlan(ins, newStaId, orgList, stationList, deviceList);
             }
 
             //季检
             if (type.equals(InspectionConstant.QUARTER)) {
-                strategyService.quarterPlan(ins,newStaId,orgList,stationList,deviceList);
+                strategyService.quarterPlan(ins, newStaId, orgList, stationList, deviceList);
             }
 
             //半年检
             if (type.equals(InspectionConstant.SEMIANNUAL)) {
-                strategyService.semiAnnualPlan(ins,newStaId,orgList,stationList,deviceList);
+                strategyService.semiAnnualPlan(ins, newStaId, orgList, stationList, deviceList);
             }
 
             //年检
             if (type.equals(InspectionConstant.ANNUAL)) {
-                strategyService.annualPlan(ins,newStaId,orgList,stationList,deviceList);
+                strategyService.annualPlan(ins, newStaId, orgList, stationList, deviceList);
             }
         });
 
         // 更新是否生成年计划状态
+        ins.setGenerateStatus(1);
+        this.baseMapper.updateById(ins);
+
         return Result.OK("年计划生成成功");
+    }
+
+    /**
+     * 校验检修策略数据合法性
+     * @param id
+     * @return
+     */
+    @NotNull
+    public InspectionStrategy checkInspectionStrategy(String id) {
+        InspectionStrategy ins = baseMapper.selectById(id);
+        if (ObjectUtil.isEmpty(ins)) {
+            throw new AiurtBootException("非法操作");
+        }
+        if (ins.getYear() < DateUtil.year(new Date())) {
+            throw new AiurtBootException("只能生成当前往后年份的计划");
+        }
+        // 生效了才能生成
+        if (InspectionConstant.NO_IS_EFFECT.equals(ins.getStatus())) {
+            throw new AiurtBootException("当前策略未生效");
+        }
+        return ins;
     }
 
     /**
@@ -217,20 +240,26 @@ public class InspectionStrategyServiceImpl extends ServiceImpl<InspectionStrateg
      */
     @Override
     public Result addAnnualNewPlan(String id) {
-        InspectionStrategy inspectionStrategy = new InspectionStrategy();
+        InspectionStrategy ins = checkInspectionStrategy(id);
         QueryWrapper<RepairPool> wrapper = new QueryWrapper<>();
-        // 当前策略生成的计划、当前结束时间往后的，并且没有被执行的的检修计划将会删除
-//        wrapper.eq("inspection_code_id", inspectionCode.getId()).eq("del_flag", 0).ge("end_time", DateUtil.now());
-//        List<RepairPool> list = this.baseMapper.selectList(wrapper);
-        return null;
+        // 当前策略生成的计划、当前结束时间往后的，并且待指派的的检修计划将会删除
+        wrapper.eq("inspection_str_code", ins.getCode())
+                .eq("del_flag", 0)
+                .eq("status",InspectionConstant.TO_BE_ASSIGNED)
+                .ge("end_time", DateUtil.now());
+        List<RepairPool> list = repairPoolMapper.selectList(wrapper);
+        if(CollUtil.isNotEmpty(list)){
+            repairPoolMapper.deleteBatchIds(list.stream().map(RepairPool::getId).collect(Collectors.toList()));
+        }
+        this.addAnnualPlan(id);
+        return Result.OK("重新生成年计划成功");
     }
-
 
 
     @Override
     public List<Device> viewDetails(String code) {
-        InspectionStrRel inspectionstrRel= inspectionStrRelMapper.selectOne(Wrappers.<InspectionStrRel>lambdaQuery().eq(InspectionStrRel::getInspectionStaCode, code));
-        List<Device> list= baseMapper.viewDetails(inspectionstrRel.getId());
+        InspectionStrRel inspectionstrRel = inspectionStrRelMapper.selectOne(Wrappers.<InspectionStrRel>lambdaQuery().eq(InspectionStrRel::getInspectionStaCode, code));
+        List<Device> list = baseMapper.viewDetails(inspectionstrRel.getId());
         return null;
     }
 }

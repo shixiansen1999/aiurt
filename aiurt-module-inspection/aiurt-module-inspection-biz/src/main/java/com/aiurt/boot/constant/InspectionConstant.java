@@ -125,12 +125,26 @@ public class InspectionConstant {
     public static final Integer MONTHAMOUNT = 12;
 
     /**
-     *
+     * 一年4个季度
      */
     public static final Integer QUARTERAMOUNT = 4;
-
+    /**
+     * 半年6个月
+     */
     public static final Integer SEMIANNUALAMOUNT = 6;
 
+    /**
+     * 上半年和下半年
+     */
     public static final Integer HALFYEARAMOUNT = 2;
 
+    /**
+     * 是否生效：0否
+     */
+    public static final Integer NO_IS_EFFECT = 0;
+
+    /**
+     * 是否生效：1是
+     */
+    public static final Integer IS_EFFECT = 1;
 }

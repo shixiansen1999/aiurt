@@ -2,14 +2,13 @@ package com.aiurt.boot.plan.service.impl;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.DateUtil;
-import cn.hutool.core.lang.Snowflake;
-import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.constant.DictConstant;
 import com.aiurt.boot.constant.InspectionConstant;
 import com.aiurt.boot.manager.InspectionManager;
 import com.aiurt.boot.manager.dto.MajorDTO;
+import com.aiurt.boot.manager.utils.CodeGenerateUtils;
 import com.aiurt.boot.plan.dto.*;
 import com.aiurt.boot.plan.entity.*;
 import com.aiurt.boot.plan.mapper.*;
@@ -238,7 +237,11 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
      * @param id 检修标准id
      * @return 构造树形
      */
-    private List<RepairPoolCodeContent> selectCodeContentList(String id) {
+    @Override
+    public List<RepairPoolCodeContent> selectCodeContentList(String id) {
+        if (StrUtil.isEmpty(id)) {
+            return new ArrayList<>();
+        }
         List<RepairPoolCodeContent> result = repairPoolCodeContentMapper.selectList(
                 new LambdaQueryWrapper<RepairPoolCodeContent>()
                         .eq(RepairPoolCodeContent::getRepairPoolCodeId, id)
@@ -344,7 +347,7 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
             }
 
             // 年份
-            re.setYear(DateUtil.year(repairPool.getStartTime()));
+            re.setYear(ObjectUtil.isNotEmpty(repairPool.getStartTime()) ? DateUtil.year(repairPool.getStartTime()) : null);
             // 所属策略
             InspectionStrategy inspectionStrategy = inspectionStrategyMapper.selectOne(new QueryWrapper<InspectionStrategy>().eq("code", repairPool.getInspectionStrCode()));
             re.setStrategy(ObjectUtil.isNotEmpty(inspectionStrategy) ? inspectionStrategy.getName() : "");
@@ -592,10 +595,7 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
             // 每个站点都生成一个清单
             if (CollUtil.isNotEmpty(repairTaskStationRels)) {
                 repairTaskStationRels.forEach(re -> {
-                    // TODO 单号生成规则
-                    Snowflake snowflake = IdUtil.getSnowflake(1, 1);
-                    String jxdCode = String.format("%s%s", "JXD", snowflake.nextIdStr());
-
+                    String jxdCode = CodeGenerateUtils.generateCode("JXD");
                     RepairTaskDeviceRel repairTaskDeviceRel = new RepairTaskDeviceRel();
                     repairTaskDeviceRel.setCode(jxdCode);
                     repairTaskDeviceRel.setRepairTaskId(taskId);
@@ -631,12 +631,8 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
 
                 for (String deviceCode : deviceCodeList) {
                     RepairTaskDeviceRel repairTaskDeviceRel = new RepairTaskDeviceRel();
-
-                    // TODO 单号生成规则
-                    Snowflake snowflake = IdUtil.getSnowflake(1, 1);
-                    String jxdCode = String.format("%s%s", "JXD", snowflake.nextIdStr());
+                    String jxdCode = CodeGenerateUtils.generateCode("JXD");
                     repairTaskDeviceRel.setCode(jxdCode);
-
                     repairTaskDeviceRel.setDeviceCode(deviceCode);
                     repairTaskDeviceRel.setRepairTaskId(taskId);
                     repairTaskDeviceRel.setTaskStandardRelId(newStaId);
@@ -717,8 +713,8 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
                 throw new AiurtBootException(String.format("检修计划名称为%s已被指派任务，请勿重复指派", repairPool.getName()));
             }
         });
+        // 多条同时指派需要保证计划关联的组织机构都是一样的
         // todo 校验计划令编码必填
-
     }
 
     /**
@@ -828,8 +824,7 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
         chekcRepairPoolDTO(repairPoolDTO);
 
         RepairPool repairPool = new RepairPool();
-        Snowflake snowflake = IdUtil.getSnowflake(1, 1);
-        String jxCode = String.format("%s%s", "JX", snowflake.nextIdStr());
+        String jxCode = CodeGenerateUtils.generateCode("JX");
         repairPool.setCode(jxCode);
         UpdateHelperUtils.copyNullProperties(repairPoolDTO, repairPool);
 
@@ -1011,6 +1006,15 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
                         .eq(RepairPoolStationRel::getRepairPoolCode, code)
                         .eq(RepairPoolStationRel::getDelFlag, 0));
         if (CollUtil.isNotEmpty(repairPoolStationRels)) {
+            List<StationDTO> arr = new ArrayList<>();
+            repairPoolStationRels.forEach(re->{
+                StationDTO st = new StationDTO();
+                st.setStationCode(re.getStationCode());
+                st.setPositionCode(re.getPositionCode());
+                st.setLineCode(re.getLineCode());
+                arr.add(st);
+            });
+            repairPoolDTO.setAddStationCode(arr);
             repairPoolDTO.setStationCodes(repairPoolStationRels.stream().map(RepairPoolStationRel::getStationCode).collect(Collectors.toList()));
         }
 
@@ -1085,6 +1089,7 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
         if (CollUtil.isNotEmpty(addStationCode)) {
             addStationCode.forEach(station -> {
                 RepairPoolStationRel repairPoolStationRel = new RepairPoolStationRel();
+                repairPoolStationRel.setRepairPoolCode(repairPool.getCode());
                 UpdateHelperUtils.copyNullProperties(station, repairPoolStationRel);
                 repairPoolStationRelMapper.insert(repairPoolStationRel);
             });
