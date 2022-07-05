@@ -2,6 +2,7 @@ package com.aiurt.modules.fault.mapper;
 
 import java.util.List;
 
+import com.aiurt.modules.fault.dto.RepairRecordDetailDTO;
 import com.aiurt.modules.fault.entity.FaultRepairRecord;
 import org.apache.ibatis.annotations.Param;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
@@ -14,4 +15,5 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
  */
 public interface FaultRepairRecordMapper extends BaseMapper<FaultRepairRecord> {
 
+    List<RepairRecordDetailDTO> queryRecordByFaultCode(@Param("faultCode") String faultCode);
 }

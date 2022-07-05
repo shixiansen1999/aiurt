@@ -50,6 +50,17 @@ public enum  FaultStatusEnum {
     HANGUP("10","挂起",10),
 
     /**
+     * 维修确认
+     */
+    RESULT_CONFIRM("11","维修确认",11),
+
+    /**
+     * 维修完成
+     */
+    Close("12", "维修完成", 12),
+
+
+    /**
      * 作废
      */
     CANCEL("0","作废",0);

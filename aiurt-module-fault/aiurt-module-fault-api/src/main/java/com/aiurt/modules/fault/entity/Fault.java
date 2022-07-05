@@ -278,7 +278,6 @@ public class Fault extends DictEntity implements Serializable {
     @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
     @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
     @ApiModelProperty(value = "维修完成时间")
-    @TableField(exist = false)
     private Date endTime;
 
 }

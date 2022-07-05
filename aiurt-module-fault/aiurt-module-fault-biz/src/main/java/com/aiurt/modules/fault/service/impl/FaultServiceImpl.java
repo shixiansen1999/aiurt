@@ -116,7 +116,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         }
 
         // 记录日志
-        saveLog(user, "故障上报", fault.getCode(), 1);
+        saveLog(user, "故障上报", fault.getCode(), 1, null);
 
         // todo 消息通知
 
@@ -147,13 +147,13 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
             // 审批通过
             fault.setStatus(FaultStatusEnum.APPROVAL_PASS.getStatus());
             operationProcess.setProcessLink(FaultStatusEnum.APPROVAL_PASS.getMessage())
-                    .setProcessCode(FaultStatusEnum.APPROVAL_PASS.getStatus());
+                    .setProcessCode(FaultStatusEnum.APPROVAL_PASS.getStatus()).setRemark(approvalDTO.getApprovalRejection());
         } else {
             // 驳回
             fault.setStatus(FaultStatusEnum.APPROVAL_REJECT.getStatus());
             fault.setApprovalRejection(approvalDTO.getApprovalRejection());
             operationProcess.setProcessLink(FaultStatusEnum.APPROVAL_REJECT.getMessage())
-                    .setProcessCode(FaultStatusEnum.APPROVAL_REJECT.getStatus());
+                    .setProcessCode(FaultStatusEnum.APPROVAL_REJECT.getStatus()).setRemark(approvalDTO.getApprovalRejection());
         }
 
         updateById(fault);
@@ -188,7 +188,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         updateById(fault);
 
         // 记录日志
-        saveLog(loginUser, "修改故障工单", fault.getCode(), FaultStatusEnum.NEW_FAULT.getStatus());
+        saveLog(loginUser, "修改故障工单", fault.getCode(), FaultStatusEnum.NEW_FAULT.getStatus(), null);
     }
 
     /**
@@ -213,7 +213,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         updateById(fault);
 
         // 记录日志
-        saveLog(user, FaultStatusEnum.CANCEL.getMessage(), fault.getCode(), FaultStatusEnum.CANCEL.getStatus());
+        saveLog(user, FaultStatusEnum.CANCEL.getMessage(), fault.getCode(), FaultStatusEnum.CANCEL.getStatus(),cancelDTO.getCancelRemark());
 
         // todo 发送消息提醒
     }
@@ -282,7 +282,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
 
         // todo 发送消息
         // 日志记录
-        saveLog(user, FaultStatusEnum.ASSIGN.getMessage(), assignDTO.getFaultCode(), FaultStatusEnum.ASSIGN.getStatus());
+        saveLog(user, FaultStatusEnum.ASSIGN.getMessage(), assignDTO.getFaultCode(), FaultStatusEnum.ASSIGN.getStatus(), null);
     }
 
 
@@ -328,7 +328,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         repairRecordService.save(record);
 
         // 日志记录
-        saveLog(user, FaultStatusEnum.RECEIVE.getMessage(), assignDTO.getFaultCode(), FaultStatusEnum.RECEIVE.getStatus());
+        saveLog(user, FaultStatusEnum.RECEIVE.getMessage(), assignDTO.getFaultCode(), FaultStatusEnum.RECEIVE.getStatus(), null);
 
         // todo 发送消息
     }
@@ -365,7 +365,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
 
         repairRecordService.updateById(repairRecord);
 
-        saveLog(loginUser, "接收指派", code, FaultStatusEnum.RECEIVE_ASSIGN.getStatus());
+        saveLog(loginUser, "接收指派", code, FaultStatusEnum.RECEIVE_ASSIGN.getStatus(), null);
         //todo 创建维修记录
     }
 
@@ -387,7 +387,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         updateById(fault);
 
         // 设置状态
-        saveLog(loginUser, "拒绝接收指派", refuseAssignmentDTO.getFaultCode(), FaultStatusEnum.APPROVAL_PASS.getStatus());
+        saveLog(loginUser, "拒绝接收指派", refuseAssignmentDTO.getFaultCode(), FaultStatusEnum.APPROVAL_PASS.getStatus(), refuseAssignmentDTO.getRefuseRemark());
 
         //todo 日志
     }
@@ -420,7 +420,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         repairRecordService.updateById(repairRecord);
 
         // 记录日志
-        saveLog(user, "开始维修", code, FaultStatusEnum.REPAIR.getStatus());
+        saveLog(user, "开始维修", code, FaultStatusEnum.REPAIR.getStatus(), null);
 
     }
 
@@ -441,7 +441,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
 
         updateById(fault);
 
-        saveLog(user, "申请挂起", hangUpDTO.getFaultCode(), FaultStatusEnum.HANGUP_REQUEST.getStatus());
+        saveLog(user, "申请挂起", hangUpDTO.getFaultCode(), FaultStatusEnum.HANGUP_REQUEST.getStatus(), hangUpDTO.getHangUpReason());
 
         // todo 发送消息提醒, 维修记录
 
@@ -464,13 +464,13 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         if (Objects.isNull(approvalStatus) || status.equals(approvalStatus)) {
             // 审批通过-挂起
             fault.setStatus(FaultStatusEnum.HANGUP.getStatus());
-            saveLog(user, "挂起审批通过", approvalHangUpDTO.getFaultCode(), FaultStatusEnum.HANGUP.getStatus());
+            saveLog(user, "挂起审批通过", approvalHangUpDTO.getFaultCode(), FaultStatusEnum.HANGUP.getStatus(), null);
         } else {
             // 驳回-维修中
             fault.setStatus(FaultStatusEnum.REPAIR.getStatus());
             //todo
             fault.setApprovalRejection(approvalHangUpDTO.getApprovalRejection());
-            saveLog(user, "挂起审批驳回", approvalHangUpDTO.getFaultCode(), FaultStatusEnum.REPAIR.getStatus());
+            saveLog(user, "挂起审批驳回", approvalHangUpDTO.getFaultCode(), FaultStatusEnum.REPAIR.getStatus(),approvalHangUpDTO.getApprovalRejection());
         }
 
         updateById(fault);
@@ -496,7 +496,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
 
         updateById(fault);
 
-        saveLog(loginUser, "取消挂起", code, FaultStatusEnum.REPAIR.getStatus());
+        saveLog(loginUser, "取消挂起", code, FaultStatusEnum.REPAIR.getStatus(), null);
 
         // todo 发送消息
     }
@@ -592,12 +592,11 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
 
         String userIds = repairRecordDTO.getUserIds();
 
-        // todo 删除备件更换信息
+        // todo 删除本次的备件更换信息
 
 
         if (StrUtil.isNotBlank(userIds)) {
             List<LoginUser> userList = sysBaseAPI.queryAllUserByIds(StrUtil.split(userIds, ","));
-
             List<FaultRepairParticipants> participantsList = userList.stream().map(user -> {
                 FaultRepairParticipants participants = new FaultRepairParticipants();
                 participants.setFaultRepairRecordId(one.getId());
@@ -614,9 +613,16 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
                 DeviceChangeSparePart build = DeviceChangeSparePart.builder()
                         .code(faultCode)
                         .consumables("1")
+                        .deviceCode(deviceChangeDTO.getDeviceCode())
+                        .newSparePartCode(deviceChangeDTO.getNewSparePartCode())
+                        .newSparePartNum(deviceChangeDTO.getNewSparePartNum())
+                        .repairRecordId(deviceChangeDTO.getId())
+                        .id(deviceChangeDTO.getId())
+                        .delFlag(CommonConstant.DEL_FLAG_0)
                         .build();
                 return build;
             }).collect(Collectors.toList());
+            sparePartService.saveOrUpdateBatch(sparePartList);
         }
 
 
@@ -627,21 +633,56 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
                 DeviceChangeSparePart build = DeviceChangeSparePart.builder()
                         .code(faultCode)
                         .consumables("0")
+                        .deviceCode(deviceChangeDTO.getDeviceCode())
+                        .newSparePartCode(deviceChangeDTO.getNewSparePartCode())
+                        .newSparePartNum(deviceChangeDTO.getNewSparePartNum())
+                        .repairRecordId(deviceChangeDTO.getId())
+                        .id(deviceChangeDTO.getId())
+                        .oldSparePartNum(deviceChangeDTO.getOldSparePartNum())
+                        .oldSparePartCode(deviceChangeDTO.getOldSparePartCode())
+                        .delFlag(CommonConstant.DEL_FLAG_0)
                         .build();
                 return build;
             }).collect(Collectors.toList());
+
+            sparePartService.saveOrUpdateBatch(sparePartList);
         }
 
-        // todo
+        one.setArriveTime(repairRecordDTO.getArriveTime());
+        one.setWorkTicketCode(repairRecordDTO.getWorkTickCode());
+        // 工作票图片
+        one.setSolveStatus(repairRecordDTO.getSolveStatus());
+        one.setUnSloveRemark(repairRecordDTO.getUnSloveRemark());
+        one.setFilePath(repairRecordDTO.getFilePath());
+
+
+
+
+        // 如果是提交未解决, 0
+        Integer assignFlag = repairRecordDTO.getAssignFlag();
+        // 解决状态，1已解决， 0为解决
+        Integer solveStatus = repairRecordDTO.getSolveStatus();
+        Integer flag = 1;
+        // 未解决，需要重新指派
+        if (!flag.equals(solveStatus) && flag.equals(assignFlag)) {
+            // 重新指派
+            fault.setStatus(FaultStatusEnum.ASSIGN.getStatus());
+        }
+        // 已解决
+        if (flag.equals(solveStatus)) {
+            fault.setStatus(FaultStatusEnum.RESULT_CONFIRM.getStatus());
+            fault.setEndTime(new Date());
+            one.setEndTime(new Date());
+        }
+
 
         repairRecordService.updateById(one);
 
-        // 删除原始换件记录
+        updateById(fault);
 
-        // 如果是提交未解决
+        saveLog(loginUser, faultCode, "填写维修记录", FaultStatusEnum.REPAIR.getStatus(), null);
 
-        saveLog(loginUser, faultCode, "填写维修记录", FaultStatusEnum.REPAIR.getStatus());
-
+        // todo 发送消息
 
 
     }
@@ -653,6 +694,27 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
     @Override
     public void approvalResult(ApprovalResultDTO resultDTO) {
 
+        LoginUser loginUser = checkLogin();
+
+        String faultCode = resultDTO.getFaultCode();
+
+        Fault fault = isExist(faultCode);
+
+        Integer approvalStatus = resultDTO.getApprovalStatus();
+
+        Integer flag = 1;
+
+        if (flag.equals(approvalStatus)) {
+            fault.setStatus(FaultStatusEnum.Close.getStatus());
+            saveLog(loginUser,"维修结果审核通过", faultCode, FaultStatusEnum.Close.getStatus(), null);
+        }else {
+            fault.setStatus(FaultStatusEnum.REPAIR.getStatus());
+            saveLog(loginUser,"维修结果驳回", faultCode, FaultStatusEnum.REPAIR.getStatus(), resultDTO.getApprovalRejection());
+        }
+
+        updateById(fault);
+
+        //todo 发送
     }
 
     /**
@@ -728,13 +790,14 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
      * @param faultCode 故障编码
      * @param status 状态
      */
-    private void saveLog(LoginUser user, String context, String faultCode, int status) {
+    private void saveLog(LoginUser user, String context, String faultCode, int status, String remark) {
         OperationProcess operationProcess = OperationProcess.builder()
                 .processLink(context)
                 .processTime(new Date())
                 .faultCode(faultCode)
                 .processPerson(user.getUsername())
                 .processCode(status)
+                .remark(remark)
                 .build();
         operationProcessService.save(operationProcess);
     }

@@ -5,6 +5,7 @@ import java.io.UnsupportedEncodingException;
 import java.util.Date;
 import java.math.BigDecimal;
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.*;
@@ -37,6 +38,7 @@ public class OperationProcess implements Serializable {
 	@TableId(type = IdType.ASSIGN_ID)
     @ApiModelProperty(value = "主键id")
     private String id;
+
 	/**故障编号*/
 	@Excel(name = "故障编号", width = 15)
     @ApiModelProperty(value = "故障编号", required = true)
@@ -57,12 +59,24 @@ public class OperationProcess implements Serializable {
     @ApiModelProperty(value = "处理人")
     private String processPerson;
 
+	@ApiModelProperty(value = "处理人名称")
+    @TableField(exist = false)
+	private String processPersonName;
+
+	@ApiModelProperty(value = "角色名称")
+    @TableField(exist = false)
+	private String roleName;
+
 	/**处理时间*/
 	@Excel(name = "处理时间", width = 15, format = "yyyy-MM-dd HH:mm:ss")
 	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
     @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
     @ApiModelProperty(value = "处理时间")
     private Date processTime;
+
+	@ApiModelProperty("处理时长")
+    @TableField(exist = false)
+	private String processingTime;
 
 	/**创建时间*/
 	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
@@ -87,4 +101,7 @@ public class OperationProcess implements Serializable {
 	/**创建人*/
     @ApiModelProperty(value = "创建人")
     private String createBy;
+
+    @ApiModelProperty(value = "说明")
+    private String remark;
 }

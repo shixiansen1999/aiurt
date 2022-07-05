@@ -2,6 +2,7 @@ package com.aiurt.modules.fault.controller;
 
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.system.base.controller.BaseController;
+import com.aiurt.modules.fault.dto.DeviceChangeRecordDTO;
 import com.aiurt.modules.fault.dto.RecordDetailDTO;
 import com.aiurt.modules.fault.entity.FaultRepairRecord;
 import com.aiurt.modules.fault.service.IFaultRepairRecordService;
@@ -68,6 +69,22 @@ public class FaultRepairRecordController extends BaseController<FaultRepairRecor
 	public Result<RecordDetailDTO> queryDetailByFaultCode(@RequestParam(value = "faultCode") String faultCode) {
 		 RecordDetailDTO recordDetailDTO = faultRepairRecordService.queryDetailByFaultCode(faultCode);
 		return Result.OK(recordDetailDTO);
+	}
+
+
+	 /**
+	  * 查看维修记录详情
+	  * @return
+	  */
+	 @AutoLog(value = "查看维修换件记录详情")
+	 @ApiOperation(value="查看维修换件记录详情", notes="查看维修换件记录详情")
+	 @GetMapping(value = "/queryDeviceChangeRecord")
+	 @ApiImplicitParams({
+			 @ApiImplicitParam(name = "faultCode", value = "故障编码", required = true, paramType = "query")
+	 })
+	public Result<DeviceChangeRecordDTO> queryDeviceChangeRecord(@RequestParam(value = "faultCode") String faultCode) {
+		 DeviceChangeRecordDTO deviceChangeRecordDTO = faultRepairRecordService.queryDeviceChangeRecord(faultCode);
+	 	return Result.OK(deviceChangeRecordDTO);
 	}
 
 
