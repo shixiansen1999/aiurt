@@ -80,6 +80,10 @@ public interface PatrolConstant {
      */
     Integer AUDIT_NOPASS = 0;
     /**
+     * 巡检任务-未重新生成任务状态
+     */
+    Integer TASK_UNREBUILD = 0;
+    /**
      * 巡检策略日巡
      */
     Integer STRATEGY_DAY = 0;

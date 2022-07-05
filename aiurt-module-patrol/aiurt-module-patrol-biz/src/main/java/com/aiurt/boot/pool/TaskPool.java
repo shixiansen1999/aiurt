@@ -93,6 +93,7 @@ public class TaskPool implements Job {
             task.setAbnormalState(PatrolConstant.TASK_UNABNORMAL);  // 任务异常状态
             task.setDiscardStatus(PatrolConstant.TASK_UNDISCARD);   // 任务作废状态
             task.setDisposeStatus(PatrolConstant.TASK_UNDISPOSE);   // 任务处置状态
+            task.setRebuild(PatrolConstant.TASK_UNREBUILD);   // 任务重新生成状态
 
             // 获取计划的巡检策略
             List<PatrolPlanStrategy> strategyList = patrolPlanStrategyService.lambdaQuery()
