@@ -309,7 +309,7 @@ public class FaultController extends BaseController<Fault, IFaultService> {
     @GetMapping("/queryKnowledge")
     public Result<KnowledgeDTO> queryKnowledge(FaultKnowledgeBase faultKnowledgeBase) {
         KnowledgeDTO knowledgeDTO = faultService.queryKnowledge(faultKnowledgeBase);
-        return Result.OK();
+        return Result.OK(knowledgeDTO);
     }
 
 
