@@ -58,7 +58,7 @@ public class FaultRepairRecordServiceImpl extends ServiceImpl<FaultRepairRecordM
 
         Date receiveTime = fault.getReceiveTime();
         Date endTime = fault.getEndTime();
-        if (Objects.nonNull(endTime)) {
+        if (Objects.nonNull(endTime) && Objects.nonNull(receiveTime)) {
             recordDetailDTO.setEndTime(endTime);
             long between = DateUtil.between(receiveTime, endTime, DateUnit.MINUTE);
             between = between == 0? 1: between;

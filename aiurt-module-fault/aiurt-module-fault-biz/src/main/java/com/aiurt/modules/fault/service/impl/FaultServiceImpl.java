@@ -12,6 +12,7 @@ import com.aiurt.modules.fault.entity.*;
 import com.aiurt.modules.fault.enums.FaultStatusEnum;
 import com.aiurt.modules.fault.mapper.FaultMapper;
 import com.aiurt.modules.fault.service.*;
+import com.aiurt.modules.faultknowledgebase.entity.FaultKnowledgeBase;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -89,6 +90,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
                     // 故障想象
                     .faultPhenomenon(fault.getFaultPhenomenon())
                     .startTime(new Date())
+                    .delFlag(CommonConstant.DEL_FLAG_0)
                     // 负责人
                     .appointUserName(user.getUsername())
                     .build();
@@ -268,6 +270,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
                 .faultCode(fault.getCode())
                 .planOrderImg(assignDTO.getFilepath())
                 .assignTime(new Date())
+                .delFlag(CommonConstant.DEL_FLAG_0)
                 // 故障想象
                 .faultPhenomenon(fault.getFaultPhenomenon())
                 // 负责人
@@ -319,6 +322,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
                 .appointUserName(assignDTO.getOperatorUserName())
                 // 故障想象
                 .faultPhenomenon(fault.getFaultPhenomenon())
+                .delFlag(CommonConstant.DEL_FLAG_0)
                 // 领取时间
                 .receviceTime(new Date())
                 .build();
@@ -655,9 +659,6 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         one.setUnSloveRemark(repairRecordDTO.getUnSloveRemark());
         one.setFilePath(repairRecordDTO.getFilePath());
 
-
-
-
         // 如果是提交未解决, 0
         Integer assignFlag = repairRecordDTO.getAssignFlag();
         // 解决状态，1已解决， 0为解决
@@ -751,6 +752,17 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
 
         List<LoginUser> loginUserList = sysBaseAPI.getUserByDepIds(StrUtil.split(orgCode, ','));
         return loginUserList;
+    }
+
+    /**
+     *
+     * @param faultKnowledgeBase
+     * @return
+     */
+    @Override
+    public KnowledgeDTO queryKnowledge(FaultKnowledgeBase faultKnowledgeBase) {
+        String faultPhenomenon = faultKnowledgeBase.getFaultPhenomenon();
+        return null;
     }
 
     /**

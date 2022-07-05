@@ -7,12 +7,17 @@ import com.aiurt.modules.basic.entity.CsWork;
 import com.aiurt.modules.fault.dto.*;
 import com.aiurt.modules.fault.entity.Fault;
 import com.aiurt.modules.fault.service.IFaultService;
+import com.aiurt.modules.faultknowledgebase.entity.FaultKnowledgeBase;
+import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.annotations.*;
 import lombok.extern.slf4j.Slf4j;
+import org.ansj.splitWord.analysis.BaseAnalysis;
+import org.ansj.splitWord.analysis.NlpAnalysis;
+import org.ansj.splitWord.analysis.ToAnalysis;
 import org.apache.ibatis.annotations.Param;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
@@ -196,17 +201,14 @@ public class FaultController extends BaseController<Fault, IFaultService> {
 
     /**
      * 开始维修
-     * @param faultCode
+     * @param refuseAssignmentDTO
      * @return
      */
     @AutoLog(value = "开始维修")
     @ApiOperation(value = "开始维修", notes = "开始维修")
     @PutMapping("/startRepair")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "faultCode", value = "故障编码", required = true, paramType = "query")
-    })
-    public Result<?> startRepair(@RequestParam(name = "faultCode") String faultCode) {
-        faultService.startRepair(faultCode);
+    public Result<?> startRepair(@RequestBody RefuseAssignmentDTO refuseAssignmentDTO) {
+        faultService.startRepair(refuseAssignmentDTO.getFaultCode());
         return Result.OK();
     }
 
@@ -303,9 +305,10 @@ public class FaultController extends BaseController<Fault, IFaultService> {
      * @return
      */
     @AutoLog(value = "解决方案推荐查询")
-    @ApiOperation(value = "维修结果审核", notes = "维修结果审核")
-    @PutMapping("/query")
-    public Result<?> query() {
+    @ApiOperation(value = "解决方案推荐查询", notes = "解决方案推荐查询")
+    @GetMapping("/queryKnowledge")
+    public Result<KnowledgeDTO> queryKnowledge(FaultKnowledgeBase faultKnowledgeBase) {
+        KnowledgeDTO knowledgeDTO = faultService.queryKnowledge(faultKnowledgeBase);
         return Result.OK();
     }
 

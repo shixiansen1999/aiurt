@@ -4,6 +4,7 @@ package com.aiurt.modules.fault.service;
 import com.aiurt.modules.basic.entity.CsWork;
 import com.aiurt.modules.fault.dto.*;
 import com.aiurt.modules.fault.entity.Fault;
+import com.aiurt.modules.faultknowledgebase.entity.FaultKnowledgeBase;
 import com.baomidou.mybatisplus.extension.service.IService;
 import org.jeecg.common.system.vo.LoginUser;
 
@@ -128,4 +129,11 @@ public interface IFaultService extends IService<Fault> {
      * @return
      */
     List<LoginUser> queryUser(String faultCode);
+
+    /**
+     * 查询故障解决方案
+     * @param faultKnowledgeBase
+     * @return
+     */
+    KnowledgeDTO queryKnowledge(FaultKnowledgeBase faultKnowledgeBase);
 }
