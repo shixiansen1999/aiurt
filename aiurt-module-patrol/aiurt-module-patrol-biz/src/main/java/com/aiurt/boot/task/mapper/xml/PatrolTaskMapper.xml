@@ -71,6 +71,9 @@
                 #{item}
             </foreach>
         </if>
+        <if test="patrolTask.status != null">
+            and pt.status = #{patrolTask.status}
+        </if>
         <if test="patrolTask.source != null">
             and pt.source = #{patrolTask.source}
         </if>
