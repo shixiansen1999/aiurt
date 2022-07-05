@@ -156,15 +156,15 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
                 // 若插入指派的人员后则更新任务状态
                 if (insert.get() > 0) {
                     PatrolTask task = new PatrolTask();
-                    // TODO 计划令编号和图片地址待扩展
-//                    task.setPlanOrderCode(patrolAppointInfoDTO.getPlanOrderCode());
-//                    task.setPlanOrderCodeUrl(patrolAppointInfoDTO.getPlanOrderCodeUrl());
+                    // 计划令编号和图片地址
+                    task.setPlanOrderCode(patrolAppointInfoDTO.getPlanOrderCode());
+                    task.setPlanOrderCodeUrl(patrolAppointInfoDTO.getPlanOrderCodeUrl());
                     // 更新检查开始结束时间
                     task.setStartTime(patrolAppointInfoDTO.getStartTime());
                     task.setEndTime(patrolAppointInfoDTO.getEndTime());
                     // 任务状态
-                    task.setStatus(PatrolConstant.TASK_APPOINT);
-                    // 更改任务状态为已指派
+                    task.setStatus(PatrolConstant.TASK_CONFIRM);
+                    // 更改任务状态为待确认
                     patrolTaskMapper.update(task, taskWrapper);
                     count.getAndIncrement();
                 }
