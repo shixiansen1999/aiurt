@@ -19,6 +19,9 @@ public class RepairRecordDetailDTO implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
+    @ApiModelProperty("维修记录id")
+    private String id;
+
     @ApiModelProperty(value = "维修负责人")
     private String appointUserName;
 
@@ -89,10 +92,10 @@ public class RepairRecordDetailDTO implements Serializable {
 
     /**故障维修时长*/
     @ApiModelProperty(value = "故障维修时长")
-    private Integer repairDuration;
+    private String repairDuration;
 
     /**维修响应时长*/
     @ApiModelProperty(value = "维修响应时长")
-    private Integer responseDuration;
+    private String responseDuration;
 
 }

@@ -2,6 +2,25 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.aiurt.modules.fault.mapper.FaultRepairRecordMapper">
     <select id="queryRecordByFaultCode" resultType="com.aiurt.modules.fault.dto.RepairRecordDetailDTO" parameterType="java.lang.String">
-        select * from  fault_repair_record a where a.fault_code = #{faultCode}
+        select
+            a.id,
+            a.appoint_user_name,
+            su.realname as appoint_real_name,
+            a.work_type,
+            a.plan_order_code,
+            a.solve_status,
+            if(a.solve_status =1,'已解决','未解决') as solve_status_name,
+            if(a.recevice_time is null, a.assign_time, a.recevice_time) as recevice_time,
+            a.start_time,
+            a.end_time,
+            a.arrive_time,
+            a.file_path,
+            a.fault_analysis,
+            a.fault_phenomenon,
+            a.maintenance_measures
+        from
+        fault_repair_record a
+        LEFT JOIN sys_user su on a.appoint_user_name = su.username
+        where a.fault_code = #{faultCode}
     </select>
 </mapper>

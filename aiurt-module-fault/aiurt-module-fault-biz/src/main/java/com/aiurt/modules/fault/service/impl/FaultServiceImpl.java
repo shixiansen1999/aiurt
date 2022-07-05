@@ -70,7 +70,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         // 故障编号处理
         String majorCode = fault.getMajorCode();
         StringBuilder builder = new StringBuilder("WX");
-        builder.append(majorCode).append(DateUtil.format(new Date(), "yyyyMMddHHmm"));
+        builder.append(majorCode).append(DateUtil.format(new Date(), "yyyyMMddHHmmss"));
         fault.setCode(builder.toString());
 
         // 接报人
@@ -667,6 +667,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         if (!flag.equals(solveStatus) && flag.equals(assignFlag)) {
             // 重新指派
             fault.setStatus(FaultStatusEnum.ASSIGN.getStatus());
+            one.setEndTime(new Date());
         }
         // 已解决
         if (flag.equals(solveStatus)) {

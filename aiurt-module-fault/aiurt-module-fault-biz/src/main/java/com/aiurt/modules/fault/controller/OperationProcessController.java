@@ -53,7 +53,7 @@ public class OperationProcessController extends BaseController<OperationProcess,
 	public Result<List<OperationProcess>> queryPageList(OperationProcess operationProcess) {
 		LambdaQueryWrapper<OperationProcess> queryWrapper = new LambdaQueryWrapper<>();
 
-		queryWrapper.eq(OperationProcess::getProcessCode, operationProcess.getFaultCode());
+		queryWrapper.eq(OperationProcess::getFaultCode, operationProcess.getFaultCode());
 		List<OperationProcess> operationProcessList = operationProcessService.getBaseMapper().selectList(queryWrapper);
 		List<OperationProcess> list = operationProcessList.stream().
 				sorted(Comparator.comparing(OperationProcess::getProcessTime)).collect(Collectors.toList());
@@ -86,14 +86,6 @@ public class OperationProcessController extends BaseController<OperationProcess,
 
 		}
 		return Result.OK(list);
-	}
-
-	public static void main(String[] args) {
-		long between = 1926;
-		long day = between / (24 * 60);
-		long hours = between % (24 * 60) / 60;
-		long min = between % (24 * 60) %60;
-		System.out.println(day);
 	}
 
 }

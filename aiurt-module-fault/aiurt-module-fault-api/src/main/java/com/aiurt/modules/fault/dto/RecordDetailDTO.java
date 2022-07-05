@@ -1,5 +1,6 @@
 package com.aiurt.modules.fault.dto;
 
+import com.aiurt.common.aspect.annotation.Dict;
 import com.aiurt.modules.faultknowledgebase.entity.FaultKnowledgeBase;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModel;
@@ -18,10 +19,9 @@ public class RecordDetailDTO implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @ApiModelProperty("状态")
+    @Dict(dicCode = "fault_status")
     private Integer status;
 
-    @ApiModelProperty("状态名称")
-    private String statusName;
 
     @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
     @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")

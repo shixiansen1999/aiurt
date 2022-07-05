@@ -329,6 +329,24 @@ public class SysUserController {
         return result;
     }
 
+    @RequestMapping(value = "/queryByUserName", method = RequestMethod.GET)
+    @ApiOperation("根据用户名（账号）查询用户信息")
+    public Result<SysUser> queryByUserName(@RequestParam(name = "userName", required = true) String userName) {
+        Result<SysUser> result = new Result<SysUser>();
+        LambdaQueryWrapper<SysUser> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        lambdaQueryWrapper.eq(SysUser::getUsername, userName).last("limit 1");
+        SysUser sysUser = sysUserService.getBaseMapper().selectOne(lambdaQueryWrapper);
+
+        if (sysUser == null) {
+            result.error500("未找到对应实体");
+        } else {
+            getUserDetail(sysUser);
+            result.setResult(sysUser);
+            result.setSuccess(true);
+        }
+        return result;
+    }
+
     @RequestMapping(value = "/queryUserRole", method = RequestMethod.GET)
     public Result<List<String>> queryUserRole(@RequestParam(name = "userid", required = true) String userid) {
         Result<List<String>> result = new Result<>();
