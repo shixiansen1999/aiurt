@@ -2,6 +2,7 @@ package com.aiurt.modules.material.controller;
 
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.exception.AiurtBootException;
+import com.aiurt.modules.device.entity.Device;
 import com.aiurt.modules.device.entity.DeviceAssembly;
 import com.aiurt.modules.device.entity.DeviceCompose;
 import com.aiurt.modules.device.service.IDeviceAssemblyService;
@@ -11,6 +12,7 @@ import com.aiurt.modules.material.entity.MaterialBaseType;
 import com.aiurt.modules.material.service.IMaterialBaseService;
 import com.aiurt.modules.material.service.IMaterialBaseTypeService;
 import com.aliyuncs.CommonResponse;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -121,17 +123,20 @@ public class MaterialBaseController {
     public Result<MaterialBase> add(@RequestBody MaterialBase materialBase) {
         Result<MaterialBase> result = new Result<MaterialBase>();
         try {
-            String majorCode = materialBase.getMajorCode();
-            String systemCode = materialBase.getSystemCode()==null?"":materialBase.getSystemCode();
+            final int count = (int) iMaterialBaseService.count(new LambdaQueryWrapper<MaterialBase>().eq(MaterialBase::getCode, materialBase.getCode()).eq(MaterialBase::getDelFlag, 0).last("limit 1"));
+            if (count > 0){
+                return Result.error("物资编号不能重复");
+            }
+//            String majorCode = materialBase.getMajorCode();
+//            String systemCode = materialBase.getSystemCode()==null?"":materialBase.getSystemCode();
             String baseTypeCodeCc = materialBase.getBaseTypeCodeCc()==null?"":materialBase.getBaseTypeCodeCc();
             String baseTypeCode = iMaterialBaseService.getCodeByCc(baseTypeCodeCc);
-            String finalstr = majorCode + systemCode + baseTypeCode;
-            String newBaseCode = iMaterialBaseService.getNewBaseCode(finalstr);
+//            String finalstr = majorCode + systemCode + baseTypeCode;
+//            String newBaseCode = iMaterialBaseService.getNewBaseCode(finalstr);
             materialBase.setBaseTypeCode(baseTypeCode);
-            materialBase.setCode(newBaseCode);
+//            materialBase.setCode(newBaseCode);
 //            MaterialBaseType materialBaseType = iMaterialBaseTypeService.getOne(new QueryWrapper<MaterialBaseType>().eq("base_type_code",baseTypeCode));
 //            String typeCodeCc = iMaterialBaseTypeService.getCcStr(materialBaseType);
-            materialBase.setBaseTypeCode(baseTypeCode);
             iMaterialBaseService.save(materialBase);
             result.success("添加成功！");
         } catch (Exception e) {
