@@ -240,17 +240,14 @@ public class FaultController extends BaseController<Fault, IFaultService> {
 
     /**
      * 取消挂起
-     * @param faultCode
+     * @param hangUpDTO
      * @return
      */
     @AutoLog(value = "取消挂起")
     @ApiOperation(value = "取消挂起", notes = "取消挂起")
     @PutMapping("/cancelHangup")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "faultCode", value = "故障编码", required = true, paramType = "query")
-    })
-    public Result<?> cancelHangup(@RequestParam(name = "faultCode", required = true) String faultCode) {
-        faultService.cancelHangup(faultCode);
+    public Result<?> cancelHangup(@RequestBody HangUpDTO hangUpDTO) {
+        faultService.cancelHangup(hangUpDTO.getFaultCode());
         return Result.OK();
     }
 
