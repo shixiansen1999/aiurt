@@ -305,7 +305,8 @@ public class FaultAnalysisReportController extends BaseController<FaultAnalysisR
 		FaultAnalysisReport faultAnalysisReport = faultDTO.getFaultAnalysisReport();
 		faultAnalysisReport.setStatus(FaultConstant.PENDING);
 		faultAnalysisReport.setApprovedResult(FaultConstant.NO_PASS);
-
+		faultAnalysisReport.setDelFlag(0);
+		faultAnalysisReport.setScanSum(0);
 		FaultKnowledgeBase faultKnowledgeBase = faultDTO.getFaultKnowledgeBase();
 		if (ObjectUtil.isNotNull(faultKnowledgeBase)) {
 			faultKnowledgeBase.setStatus(FaultConstant.PENDING);
