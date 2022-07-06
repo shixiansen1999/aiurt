@@ -3,6 +3,7 @@ package com.aiurt.boot.task.service;
 import com.aiurt.boot.manager.dto.EquipmentOverhaulDTO;
 import com.aiurt.boot.manager.dto.ExamineDTO;
 import com.aiurt.boot.manager.dto.MajorDTO;
+import com.aiurt.boot.task.dto.WriteMonadDTO;
 import com.aiurt.boot.task.dto.CheckListDTO;
 import com.aiurt.boot.task.entity.RepairTask;
 import com.aiurt.boot.task.dto.RepairTaskDTO;
@@ -114,4 +115,9 @@ public interface IRepairTaskService extends IService<RepairTask> {
      * @return
      */
     void receiveTask(String id);
+    /**
+     * 填写检修工单
+     * @param monadDTO
+     */
+    void writeMonad(WriteMonadDTO monadDTO);
 }

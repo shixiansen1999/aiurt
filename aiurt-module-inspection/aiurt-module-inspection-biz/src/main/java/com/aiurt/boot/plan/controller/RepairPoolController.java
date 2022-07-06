@@ -36,7 +36,10 @@ public class RepairPoolController extends BaseController<RepairPool, IRepairPool
 
     /**
      * 检修计划池列表查询
-     *
+     * @param startTime 开始时间
+     * @param endTime 结束时间
+     * @param status 状态
+     * @param workType 作业类型
      * @return
      */
     @AutoLog(value = "检修计划池列表查询")
@@ -46,8 +49,10 @@ public class RepairPoolController extends BaseController<RepairPool, IRepairPool
     })
     @GetMapping(value = "/list")
     public Result<List<RepairPool>> queryList(@RequestParam @ApiParam(required = true, value = "开始时间", name = "startTime") @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") Date startTime,
-                                              @RequestParam @ApiParam(required = true, value = "结束时间", name = "endTime") @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") Date endTime) {
-        List<RepairPool> repairPoolList = repairPoolService.queryList(startTime, endTime);
+                                              @RequestParam @ApiParam(required = true, value = "结束时间", name = "endTime") @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") Date endTime,
+                                              @RequestParam(required = false) @ApiParam(value = "状态", name = "status") Integer status,
+                                              @RequestParam(required = false) @ApiParam(value = "作业类型", name = "workType") Integer workType) {
+        List<RepairPool> repairPoolList = repairPoolService.queryList(startTime, endTime,status,workType);
         return Result.OK(repairPoolList);
     }
 
@@ -135,7 +140,7 @@ public class RepairPoolController extends BaseController<RepairPool, IRepairPool
     public Result<List<StandardDTO>> queryStandardList(@RequestParam @ApiParam(name = "code", required = true, value = "检修计划code") String code,
                                                        @RequestParam(required = false) @ApiParam(name = "majorCode", value = "专业编码") String majorCode,
                                                        @RequestParam(required = false) @ApiParam(name = "systemCode", value = "子系统编码") String systemCode) {
-        List<StandardDTO> result = repairPoolService.queryStandardList(code,majorCode,systemCode);
+        List<StandardDTO> result = repairPoolService.queryStandardList(code, majorCode, systemCode);
         return Result.OK(result);
     }
 
@@ -189,7 +194,7 @@ public class RepairPoolController extends BaseController<RepairPool, IRepairPool
     /**
      * 通过检修标准id查看检修项
      *
-     * @param id  检修标准id
+     * @param id 检修标准id
      * @return
      */
     @AutoLog(value = "通过检修标准id查看检修项")

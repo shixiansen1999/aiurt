@@ -3,6 +3,7 @@ package com.aiurt.boot.plan.controller;
 import com.aiurt.boot.plan.dto.RepairDeviceDTO;
 import com.aiurt.boot.plan.dto.RepairPoolDTO;
 import com.aiurt.boot.plan.entity.RepairPool;
+import com.aiurt.boot.plan.req.ManualTaskReq;
 import com.aiurt.boot.plan.req.RepairPoolReq;
 import com.aiurt.boot.plan.service.IRepairPoolService;
 import com.aiurt.common.aspect.annotation.AutoLog;
@@ -16,7 +17,6 @@ import org.jeecg.common.api.vo.Result;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
 
 /**
  * @author wgp
@@ -35,21 +35,19 @@ public class ManualTaskController {
     /**
      * 分页查询手工下发任务列表
      *
-     * @param repairPool
+     * @param manualTaskReq
      * @param pageNo
      * @param pageSize
-     * @param req
      * @return
      */
     @AutoLog(value = "分页查询手工下发任务列表")
     @ApiOperation(value = "分页查询手工下发任务列表", notes = "分页查询手工下发任务列表")
     @GetMapping(value = "/listPage")
-    public Result<IPage<RepairPool>> listPage(RepairPool repairPool,
+    public Result<IPage<RepairPool>> listPage(ManualTaskReq manualTaskReq,
                                               @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
-                                              @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize,
-                                              HttpServletRequest req) {
+                                              @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize) {
         Page<RepairPool> page = new Page<RepairPool>(pageNo, pageSize);
-        IPage<RepairPool> pageList = repairPoolService.listPage(page, repairPool);
+        IPage<RepairPool> pageList = repairPoolService.listPage(page, manualTaskReq);
         return Result.OK(pageList);
     }
 

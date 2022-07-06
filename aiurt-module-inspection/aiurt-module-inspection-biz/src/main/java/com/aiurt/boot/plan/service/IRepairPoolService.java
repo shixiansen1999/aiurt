@@ -5,6 +5,7 @@ import com.aiurt.boot.plan.dto.*;
 import com.aiurt.boot.plan.entity.RepairPool;
 import com.aiurt.boot.plan.entity.RepairPoolCodeContent;
 import com.aiurt.boot.plan.rep.RepairStrategyReq;
+import com.aiurt.boot.plan.req.ManualTaskReq;
 import com.aiurt.boot.plan.req.RepairPoolCodeReq;
 import com.aiurt.boot.plan.req.RepairPoolReq;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -28,9 +29,11 @@ public interface IRepairPoolService extends IService<RepairPool> {
      *
      * @param startTime 开始时间
      * @param endTime   结束时间
+     * @param status    状态
+     * @param workType  作业类型
      * @return
      */
-    List<RepairPool> queryList(Date startTime, Date endTime);
+    List<RepairPool> queryList(Date startTime, Date endTime, Integer status, Integer workType);
 
     /**
      * 获取时间范围和周数
@@ -96,16 +99,16 @@ public interface IRepairPoolService extends IService<RepairPool> {
      * @param code
      * @return
      */
-    List<StandardDTO> queryStandardList(String code,String majorCode,String systemCode);
+    List<StandardDTO> queryStandardList(String code, String majorCode, String systemCode);
 
     /**
      * 分页查询手工下发任务列表
      *
      * @param page
-     * @param repairPool
+     * @param manualTaskReq
      * @return
      */
-    IPage<RepairPool> listPage(Page<RepairPool> page, RepairPool repairPool);
+    IPage<RepairPool> listPage(Page<RepairPool> page, ManualTaskReq manualTaskReq);
 
     /**
      * 通过id查询手工下发检修任务信息
@@ -163,9 +166,10 @@ public interface IRepairPoolService extends IService<RepairPool> {
 
     /**
      * 生成检修标准关联、检修设备清单、检修结果信息
+     *
      * @param repairPool
      * @param taskId
      * @param taskCode
      */
-     void generate(RepairPool repairPool, String taskId, String taskCode);
+    void generate(RepairPool repairPool, String taskId, String taskCode);
 }

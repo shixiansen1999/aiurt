@@ -16,6 +16,7 @@ import com.aiurt.boot.plan.entity.RepairPoolStationRel;
 import com.aiurt.boot.plan.mapper.RepairPoolMapper;
 import com.aiurt.boot.plan.mapper.RepairPoolOrgRelMapper;
 import com.aiurt.boot.plan.mapper.RepairPoolStationRelMapper;
+import com.aiurt.boot.task.dto.WriteMonadDTO;
 import com.aiurt.boot.plan.service.IRepairPoolService;
 import com.aiurt.boot.task.dto.CheckListDTO;
 import com.aiurt.boot.task.dto.RepairTaskDTO;
@@ -745,4 +746,16 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
         repairPoolService.generate(repairPool, repairTask.getId(), repairPool.getCode());
 
     }
+
+    /**
+     * 填写检修工单
+     *
+     * @param monadDTO
+     */
+    @Override
+    public void writeMonad(WriteMonadDTO monadDTO) {
+
+    }
+
+
 }
