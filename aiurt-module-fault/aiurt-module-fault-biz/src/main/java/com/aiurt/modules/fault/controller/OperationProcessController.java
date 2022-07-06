@@ -66,8 +66,8 @@ public class OperationProcessController extends BaseController<OperationProcess,
 			}
 			if (Objects.nonNull(loginUser)) {
 				process.setProcessPersonName(loginUser.getRealname());
+				process.setRoleName(loginUser.getRoleNames());
 			}
-			//process.setRoleName(loginUser.get());
 
 			if (i+1< list.size()) {
 				OperationProcess process2 = list.get(i + 1);
@@ -85,7 +85,6 @@ public class OperationProcessController extends BaseController<OperationProcess,
 				long min = between % (24 * 60) % 60;
 				process.setProcessingTime(day+"天"+hours+"小时"+min + "分");
 			}
-
 		}
 		return Result.OK(list);
 	}

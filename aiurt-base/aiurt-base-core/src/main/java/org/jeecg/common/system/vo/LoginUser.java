@@ -126,4 +126,14 @@ public class LoginUser {
 	 * 当前登录部门名称
 	 */
 	private String orgName;
+
+	/**
+	 * 角色名称
+	 */
+	private String roleNames;
+
+	/**
+	 * 角色编号
+	 */
+	private String roleCodes;
 }

@@ -13,7 +13,17 @@ import com.baomidou.mybatisplus.extension.service.IService;
  */
 public interface IFaultRepairRecordService extends IService<FaultRepairRecord> {
 
+    /**
+     * 查看维修记录详情
+     * @param faultCode
+     * @return
+     */
     RecordDetailDTO queryDetailByFaultCode(String faultCode);
 
+    /**
+     * 查看维修记录详情
+     * @param faultCode
+     * @return
+     */
     DeviceChangeRecordDTO queryDeviceChangeRecord(String faultCode);
 }

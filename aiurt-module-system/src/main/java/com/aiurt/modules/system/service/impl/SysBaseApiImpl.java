@@ -122,7 +122,13 @@ public class SysBaseApiImpl implements ISysBaseAPI {
         if (sysUser == null) {
             return null;
         }
+
+        List<String> roleNameList = sysUserRoleMapper.getRoleName(sysUser.getId());
+        List<String> roleCodeList = sysUserRoleMapper.getRoleByUserName(sysUser.getUsername());
+        // 用户角色
         BeanUtils.copyProperties(sysUser, loginUser);
+        loginUser.setRoleCodes(StrUtil.join(",", roleCodeList));
+        loginUser.setRoleNames(StrUtil.join(",", roleNameList));
         return loginUser;
     }
 

@@ -2,6 +2,7 @@ package com.aiurt.modules.fault.service.impl;
 
 import cn.hutool.core.date.DateUnit;
 import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.util.StrUtil;
 import com.aiurt.modules.fault.dto.DeviceChangeRecordDTO;
 import com.aiurt.modules.fault.dto.RecordDetailDTO;
 import com.aiurt.modules.fault.dto.RepairRecordDetailDTO;
@@ -13,6 +14,7 @@ import com.aiurt.modules.fault.service.IFaultRepairParticipantsService;
 import com.aiurt.modules.fault.service.IFaultRepairRecordService;
 import com.aiurt.modules.fault.service.IFaultService;
 import com.aiurt.modules.faultknowledgebase.entity.FaultKnowledgeBase;
+import com.aiurt.modules.faultknowledgebase.service.IFaultKnowledgeBaseService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,6 +50,9 @@ public class FaultRepairRecordServiceImpl extends ServiceImpl<FaultRepairRecordM
     @Autowired
     private IFaultRepairParticipantsService participantsService;
 
+    @Autowired
+    private IFaultKnowledgeBaseService knowledgeBaseService;
+
     @Override
     public RecordDetailDTO queryDetailByFaultCode(String faultCode) {
 
@@ -80,7 +85,7 @@ public class FaultRepairRecordServiceImpl extends ServiceImpl<FaultRepairRecordM
             Date receviceTime = repairRecordDetailDTO.getReceviceTime();
             Date startTime = repairRecordDetailDTO.getStartTime();
             Date time = repairRecordDetailDTO.getEndTime();
-            if (Objects.nonNull(startTime)) {
+            if (Objects.nonNull(startTime) && Objects.nonNull(receviceTime)) {
                 long between = DateUtil.between(receviceTime, startTime, DateUnit.MINUTE);
                 between = between == 0? 1: between;
                 repairRecordDetailDTO.setResponseDuration(between+"分钟");
@@ -92,8 +97,12 @@ public class FaultRepairRecordServiceImpl extends ServiceImpl<FaultRepairRecordM
             }
         });
         recordDetailDTO.setDetailList(detailDTOList);
-        //todo 解决方案
+
         String knowledgeId = fault.getKnowledgeId();
+        if (StrUtil.isNotBlank(knowledgeId)) {
+            FaultKnowledgeBase knowledgeBase = knowledgeBaseService.getById(knowledgeId);
+            recordDetailDTO.setFaultKnowledgeBase(knowledgeBase);
+        }
 
         recordDetailDTO.setFaultKnowledgeBase(new FaultKnowledgeBase());
         return recordDetailDTO;
