@@ -107,4 +107,11 @@ public interface IRepairTaskService extends IService<RepairTask> {
      * @param examineDTO
      */
     void confirmedDelete(ExamineDTO examineDTO);
+    /**
+     *  领取检修任务
+     *
+     * @param id
+     * @return
+     */
+    void receiveTask(String id);
 }

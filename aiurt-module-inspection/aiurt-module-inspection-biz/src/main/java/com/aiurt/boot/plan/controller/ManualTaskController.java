@@ -48,7 +48,6 @@ public class ManualTaskController {
                                               @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
                                               @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize,
                                               HttpServletRequest req) {
-//        QueryWrapper<RepairPool> queryWrapper = QueryGenerator.initQueryWrapper(repairPool, req.getParameterMap());
         Page<RepairPool> page = new Page<RepairPool>(pageNo, pageSize);
         IPage<RepairPool> pageList = repairPoolService.listPage(page, repairPool);
         return Result.OK(pageList);

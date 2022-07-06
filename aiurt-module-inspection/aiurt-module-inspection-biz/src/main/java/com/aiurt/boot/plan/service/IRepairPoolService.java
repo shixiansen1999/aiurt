@@ -96,7 +96,7 @@ public interface IRepairPoolService extends IService<RepairPool> {
      * @param code
      * @return
      */
-    List<StandardDTO> queryStandardList(String code);
+    List<StandardDTO> queryStandardList(String code,String majorCode,String systemCode);
 
     /**
      * 分页查询手工下发任务列表
@@ -160,4 +160,12 @@ public interface IRepairPoolService extends IService<RepairPool> {
      * @return
      */
     List<RepairPoolCodeContent> selectCodeContentList(String id);
+
+    /**
+     * 生成检修标准关联、检修设备清单、检修结果信息
+     * @param repairPool
+     * @param taskId
+     * @param taskCode
+     */
+     void generate(RepairPool repairPool, String taskId, String taskCode);
 }

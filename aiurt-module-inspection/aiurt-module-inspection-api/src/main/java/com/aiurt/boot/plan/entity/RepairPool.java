@@ -218,4 +218,5 @@ public class RepairPool implements Serializable {
     @TableField(exist = false)
     @ApiModelProperty(value = "站点code集合",required = false)
     private List<String> stationList;
+
 }

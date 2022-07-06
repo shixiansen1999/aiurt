@@ -340,4 +340,17 @@ public class RepairTaskController extends BaseController<RepairTask, IRepairTask
         return super.importExcel(request, response, RepairTask.class);
     }
 
+	/**
+	 *  领取检修任务
+	 *
+	 * @param id
+	 * @return
+	 */
+	@AutoLog(value = "检修任务-领取检修任务")
+	@ApiOperation(value="领取检修任务", notes="领取检修任务")
+	@PostMapping(value = "/receiveTask")
+	public Result<?> receiveTask(@RequestParam(name = "id", required = true) String id) {
+		repairTaskService.receiveTask(id);
+		return Result.OK("领取检修任务成功！");
+	}
 }
