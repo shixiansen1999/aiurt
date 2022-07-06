@@ -57,9 +57,11 @@ public interface IRepairTaskService extends IService<RepairTask> {
     /**
      * 查询专业，专业子系统的信息
      * @param id
+     * @param majorCode
+     * @param subsystemCode
      * @return
      */
-    EquipmentOverhaulDTO selectEquipmentOverhaulList(String id);
+    EquipmentOverhaulDTO selectEquipmentOverhaulList(String id,String majorCode,String subsystemCode);
 
     /**
      * 查询检修单信息

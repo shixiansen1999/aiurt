@@ -147,4 +147,14 @@ public class InspectionConstant {
      * 是否生效：1是
      */
     public static final Integer IS_EFFECT = 1;
+
+    /**
+     * 检修结果：1正常
+     */
+    public static final Integer RESULT_STATUS = 1;
+
+    /**
+     * 检修结果：2不正常
+     */
+    public static final Integer NO_RESULT_STATUS = 2;
 }

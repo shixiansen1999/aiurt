@@ -179,5 +179,8 @@ public class CheckListDTO {
     @ApiModelProperty(value = "待检修数量")
     private Integer toBeOverhauledQuantity;
 
-
+    /**检修单附件*/
+    @TableField(exist = false)
+    @ApiModelProperty(value = "检修单附件")
+    private List<String> enclosureUrl;
 }

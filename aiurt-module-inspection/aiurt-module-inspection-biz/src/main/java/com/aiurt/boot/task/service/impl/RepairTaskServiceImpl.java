@@ -17,15 +17,12 @@ import com.aiurt.boot.task.mapper.*;
 import com.aiurt.boot.task.service.IRepairTaskService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import org.apache.commons.collections.Bag;
-import org.apache.commons.collections.bag.HashBag;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import javax.annotation.Resource;
-import java.lang.reflect.Constructor;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -64,6 +61,9 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
 
     @Autowired
     private RepairPoolMapper  repairPoolMapper;
+
+    @Autowired
+    private RepairTaskEnclosureMapper  repairTaskEnclosureMapper;
 
     @Resource
     private ISysBaseAPI sysBaseAPI;
@@ -196,10 +196,10 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
             }
             if (e.getDeviceId()!=null && CollectionUtil.isNotEmpty(repairTasks)){
                 //正常项
-                List<RepairTaskResult> repairTaskResults = repairTaskMapper.selectSingle(e.getDeviceId(), 1);
+                List<RepairTaskResult> repairTaskResults = repairTaskMapper.selectSingle(e.getDeviceId(), InspectionConstant.RESULT_STATUS);
                 e.setNormal(repairTaskResults.size());
                 //异常项
-                List<RepairTaskResult> repairTaskResults1 = repairTaskMapper.selectSingle(e.getDeviceId(), 2);
+                List<RepairTaskResult> repairTaskResults1 = repairTaskMapper.selectSingle(e.getDeviceId(), InspectionConstant.NO_RESULT_STATUS);
                 e.setAbnormal(repairTaskResults1.size());
             }
             //未开始的数量
@@ -209,7 +209,7 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
             long count2 = repairTasks.stream().filter(repairTaskDTO -> repairTaskDTO.getStartTime()!=null).count();
             e.setHaveInHand((int) count2);
             //已提交的数量
-            long count3 = repairTasks.stream().filter(repairTaskDTO -> repairTaskDTO.getIsSubmit()!=null && repairTaskDTO.getIsSubmit()==1).count();
+            long count3 = repairTasks.stream().filter(repairTaskDTO -> repairTaskDTO.getIsSubmit()!=null && repairTaskDTO.getIsSubmit().equals(InspectionConstant.IS_EFFECT)).count();
             e.setSubmitted((int) count3);
         });
         return pageList.setRecords(repairTasks);
@@ -299,7 +299,7 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
     @Override
     public List<MajorDTO> selectMajorCodeList(String taskId) {
         //根据检修任务id查询专业
-        List<RepairTaskDTO> repairTaskDTOList = repairTaskMapper.selectCodeList(taskId);
+        List<RepairTaskDTO> repairTaskDTOList = repairTaskMapper.selectCodeList(taskId,null,null);
         List<String> majorCodes1 = new ArrayList<>();
         List<String> systemCode = new ArrayList<>();
         if (CollectionUtil.isNotEmpty(repairTaskDTOList)){
@@ -324,9 +324,9 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
     }
 
     @Override
-    public EquipmentOverhaulDTO selectEquipmentOverhaulList(String taskId) {
-        //根据检修任务id查询设备
-        List<RepairTaskDTO> repairTaskDTOList = repairTaskMapper.selectCodeList(taskId);
+    public EquipmentOverhaulDTO selectEquipmentOverhaulList(String taskId,String majorCode,String subsystemCode ) {
+        //根据检修任务id查询设备和
+        List<RepairTaskDTO> repairTaskDTOList = repairTaskMapper.selectCodeList(taskId,majorCode,subsystemCode);
         List<String> deviceCodeList = new ArrayList<>();
         List<OverhaulDTO> overhaulDTOList = new ArrayList<>();
         repairTaskDTOList.forEach(e->{
@@ -400,6 +400,15 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
         //构造树形
         checkListDTO.setRepairTaskResultList(selectCodeContentList(checkListDTO.getDeviceId()));
         List<RepairTaskResult> repairTaskResultList = checkListDTO.getRepairTaskResultList();
+
+        //获取检修单的检修结果
+        List<String> collect1 = repairTaskResultList.stream().map(RepairTaskResult::getId).collect(Collectors.toList());
+
+        LambdaQueryWrapper<RepairTaskEnclosure> objectLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        List<RepairTaskEnclosure> repairTaskDevice = repairTaskEnclosureMapper.selectList(objectLambdaQueryWrapper.in(RepairTaskEnclosure::getRepairTaskResultId,collect1));
+
+        //获取检修单的检修结果的附件
+        checkListDTO.setEnclosureUrl(repairTaskDevice.stream().map(RepairTaskEnclosure::getUrl).collect(Collectors.toList()));
 
         //检查项的数量
         long count1 = repairTaskResultList.stream().filter(repairTaskResult -> repairTaskResult.getType()==1).count();
@@ -503,15 +512,15 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
         LoginUser userById = sysBaseAPI.getUserById(loginUser.getId());
         RepairTask repairTask1= new RepairTask();
         status(examineDTO, loginUser, userById, repairTask1);
-        if (examineDTO.getStatus()==1 && repairTask.getIsReceipt()==1){
+        if (examineDTO.getStatus().equals(InspectionConstant.IS_EFFECT) && repairTask.getIsReceipt().equals(InspectionConstant.IS_EFFECT)){
             repairTask1.setId(examineDTO.getId());
             repairTask1.setErrorContent(examineDTO.getContent());
             repairTask1.setConfirmTime(new Date());
             repairTask1.setConfirmUserId(loginUser.getId());
             repairTask1.setConfirmUserName(userById.getRealname());
-            repairTask1.setStatus(7);
+            repairTask1.setStatus(InspectionConstant.PENDING_RECEIPT);
             repairTaskMapper.updateById(repairTask1);
-        }if (examineDTO.getStatus()==1 && repairTask.getIsReceipt()==0){
+        }if (examineDTO.getStatus().equals(InspectionConstant.IS_EFFECT) && repairTask.getIsReceipt().equals(InspectionConstant.NO_IS_EFFECT)){
             setId(examineDTO, repairTask1, loginUser, userById);
         }
     }
@@ -521,7 +530,7 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
         RepairTask repairTask1= new RepairTask();
         repairTask1.setId(examineDTO.getId());
         repairTask1.setBeginTime(new Date());
-        repairTask1.setStatus(4);
+        repairTask1.setStatus(InspectionConstant.IN_EXECUTION);
         repairTaskMapper.updateById(repairTask1);
     }
 
@@ -541,22 +550,22 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
         //查询未提交的检修单
         List<RepairTaskDeviceRel> repairTaskDevice = repairTaskDeviceRelMapper.selectList(objectLambdaQueryWrapper
                 .eq(RepairTaskDeviceRel::getRepairTaskId,examineDTO.getId())
-                .eq(RepairTaskDeviceRel::getIsSubmit,0));
+                .eq(RepairTaskDeviceRel::getIsSubmit,InspectionConstant.NO_IS_EFFECT));
 
         if (CollectionUtil.isNotEmpty(collect1) && CollectionUtil.isEmpty(repairTaskDevice)){
             collect1.forEach(e->{
                 repairTaskDeviceRel.setId(e);
                 repairTaskDeviceRel.setSubmitTime(new Date());
-                repairTaskDeviceRel.setIsSubmit(1);
+                repairTaskDeviceRel.setIsSubmit(InspectionConstant.IS_EFFECT);
                 repairTaskDeviceRel.setEndTime(new Date());
                 repairTaskDeviceRelMapper.updateById(repairTaskDeviceRel);
             });
             if (repairTask.getIsConfirm()==1){
                 repairTask1.setId(examineDTO.getId());
-                repairTask1.setStatus(6);
+                repairTask1.setStatus(InspectionConstant.PENDING_REVIEW);
             }else {
                 repairTask1.setId(examineDTO.getId());
-                repairTask1.setStatus(8);
+                repairTask1.setStatus(InspectionConstant.COMPLETED);
             }
             repairTaskMapper.updateById(repairTask1);
         }
@@ -569,19 +578,19 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
         LoginUser loginUser = manager.checkLogin();
         LoginUser userById = sysBaseAPI.getUserById(loginUser.getId());
         status(examineDTO, loginUser, userById, repairTask1);
-        if (examineDTO.getStatus()==1 ){
+        if (examineDTO.getStatus().equals(InspectionConstant.IS_EFFECT) ){
             setId(examineDTO, repairTask1, loginUser, userById);
         }
     }
 
     private void status(ExamineDTO examineDTO, LoginUser loginUser, LoginUser userById, RepairTask repairTask1) {
-        if (examineDTO.getStatus()==0){
+        if (examineDTO.getStatus().equals(InspectionConstant.NO_IS_EFFECT)){
             repairTask1.setId(examineDTO.getId());
             repairTask1.setErrorContent(examineDTO.getContent());
             repairTask1.setConfirmTime(new Date());
             repairTask1.setConfirmUserId(loginUser.getId());
             repairTask1.setConfirmUserName(userById.getRealname());
-            repairTask1.setStatus(5);
+            repairTask1.setStatus(InspectionConstant.REJECTED);
             repairTaskMapper.updateById(repairTask1);
         }
     }
@@ -593,7 +602,7 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
         repairTask1.setConfirmTime(new Date());
         repairTask1.setConfirmUserId(loginUser.getId());
         repairTask1.setConfirmUserName(userById.getRealname());
-        repairTask1.setStatus(8);
+        repairTask1.setStatus(InspectionConstant.COMPLETED);
         repairTaskMapper.updateById(repairTask1);
     }
 
@@ -657,7 +666,7 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
         repairTaskMapper.deleteById(examineDTO.getId());
 
         RepairPool repairPool = new RepairPool();
-        repairPool.setStatus(3);
+        repairPool.setStatus(InspectionConstant.GIVE_BACK);
         repairPool.setRemark(examineDTO.getContent());
         repairPoolMapper.updateById(repairPool);
 

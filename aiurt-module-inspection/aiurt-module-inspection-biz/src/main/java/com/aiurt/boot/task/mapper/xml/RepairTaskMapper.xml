@@ -168,6 +168,12 @@
         <where>
             t1.del_flag = 0
             and  t1.id = #{id}
+            <if test="majorCode!=null">
+                and  t1.major_code = #{majorCode}
+            </if>
+            <if test="subsystemCode!=null ">
+                and  t1.subsystem_code = #{subsystemCode}
+            </if>
         </where>
     </select>
 

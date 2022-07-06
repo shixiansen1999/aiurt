@@ -60,9 +60,11 @@ public interface RepairTaskMapper extends BaseMapper<RepairTask> {
     /**
      * 查询编码信息
      * @param id
+     * @param majorCode
+     * @param subsystemCode
      * @return
      */
-    List<RepairTaskDTO> selectCodeList(String id);
+    List<RepairTaskDTO> selectCodeList(@Param("id")String id,@Param("majorCode")String majorCode,@Param("subsystemCode")String subsystemCode);
 
     /**
      * 翻译专业信息

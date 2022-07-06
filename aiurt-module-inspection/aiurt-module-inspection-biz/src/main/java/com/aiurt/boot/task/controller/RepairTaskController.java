@@ -175,9 +175,12 @@ public class RepairTaskController extends BaseController<RepairTask, IRepairTask
 	@ApiResponses({
 			@ApiResponse(code = 200, message = "OK", response = EquipmentOverhaulDTO.class)
 	})
-	public Result<EquipmentOverhaulDTO> selectEquipmentOverhaulList(@RequestParam(name="taskId",required=true) String taskId
+	public Result<EquipmentOverhaulDTO> selectEquipmentOverhaulList(
+			 @RequestParam(name="taskId",required=true) String taskId,
+			 @RequestParam(name="majorCode",required=true) String majorCode,
+			 @RequestParam(name="subsystemCode",required=true) String subsystemCode
 	){
-		EquipmentOverhaulDTO equipmentOverhaulDTO = repairTaskService.selectEquipmentOverhaulList(taskId);
+		EquipmentOverhaulDTO equipmentOverhaulDTO = repairTaskService.selectEquipmentOverhaulList(taskId,majorCode,subsystemCode);
 		return Result.OK(equipmentOverhaulDTO);
 	}
 
