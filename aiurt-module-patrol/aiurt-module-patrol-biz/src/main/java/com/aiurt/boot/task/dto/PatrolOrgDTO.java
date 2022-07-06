@@ -1,4 +1,4 @@
-package com.aiurt.boot.task.controller;
+package com.aiurt.boot.task.dto;
 
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
