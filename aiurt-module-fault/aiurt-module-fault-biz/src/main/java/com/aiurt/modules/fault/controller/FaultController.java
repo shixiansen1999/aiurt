@@ -1,25 +1,21 @@
 package com.aiurt.modules.fault.controller;
 
+import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.aspect.annotation.AutoLog;
-import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.system.base.controller.BaseController;
 import com.aiurt.modules.basic.entity.CsWork;
 import com.aiurt.modules.fault.dto.*;
 import com.aiurt.modules.fault.entity.Fault;
+import com.aiurt.modules.fault.entity.FaultDevice;
+import com.aiurt.modules.fault.service.IFaultDeviceService;
 import com.aiurt.modules.fault.service.IFaultService;
 import com.aiurt.modules.faultknowledgebase.entity.FaultKnowledgeBase;
-import com.alibaba.fastjson.JSON;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.annotations.*;
 import lombok.extern.slf4j.Slf4j;
-import org.ansj.splitWord.analysis.BaseAnalysis;
-import org.ansj.splitWord.analysis.NlpAnalysis;
-import org.ansj.splitWord.analysis.ToAnalysis;
 import org.apache.ibatis.annotations.Param;
-import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.query.QueryGenerator;
 import org.jeecg.common.system.vo.LoginUser;
@@ -29,7 +25,6 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
-import java.util.Objects;
 
 /**
  * @Description: fault
@@ -47,6 +42,9 @@ public class FaultController extends BaseController<Fault, IFaultService> {
     @Autowired
     private IFaultService faultService;
 
+    @Autowired
+    private IFaultDeviceService faultDeviceService;
+
     /**
      * 分页列表查询
      *
@@ -63,11 +61,25 @@ public class FaultController extends BaseController<Fault, IFaultService> {
                                               @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
                                               @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize,
                                               HttpServletRequest req) {
-        //if (fault.getLineCode())
+        String stationCode = fault.getStationCode();
+        if (StrUtil.isNotBlank(stationCode)) {
+            fault.setStationCode(null);
+        }
         QueryWrapper<Fault> queryWrapper = QueryGenerator.initQueryWrapper(fault, req.getParameterMap());
         Page<Fault> page = new Page<>(pageNo, pageSize);
         queryWrapper.orderByDesc("create_time");
+        queryWrapper.apply(StrUtil.isNotBlank(stationCode), "(line_code = {0} or station_code = {0} or station_position_code = {0})", stationCode);
+        queryWrapper.apply(StrUtil.isNotBlank(fault.getDevicesIds()), "(code in (select fault_code from fault_device where device_code like  concat('%', {0}, '%')))", fault.getDevicesIds());
+        // 修改查询条件
         IPage<Fault> pageList = faultService.page(page, queryWrapper);
+
+        List<Fault> records = pageList.getRecords();
+        records.stream().forEach(fault1 -> {
+            List<FaultDevice> faultDeviceList = faultDeviceService.queryByFaultCode(fault1.getCode());
+            fault1.setFaultDeviceList(faultDeviceList);
+        });
+
+
         return Result.OK(pageList);
     }
 

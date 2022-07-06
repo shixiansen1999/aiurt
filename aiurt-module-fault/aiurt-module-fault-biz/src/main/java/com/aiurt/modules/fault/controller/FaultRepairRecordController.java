@@ -32,6 +32,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/fault/faultRepairRecord")
 @Slf4j
 public class FaultRepairRecordController extends BaseController<FaultRepairRecord, IFaultRepairRecordService> {
+
 	@Autowired
 	private IFaultRepairRecordService faultRepairRecordService;
 

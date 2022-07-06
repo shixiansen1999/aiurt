@@ -282,4 +282,8 @@ public class Fault extends DictEntity implements Serializable {
     @ApiModelProperty(value = "维修完成时间")
     private Date endTime;
 
+    @ApiModelProperty("设备查询条件")
+    @TableField(exist = false)
+    private String devicesIds;
+
 }
