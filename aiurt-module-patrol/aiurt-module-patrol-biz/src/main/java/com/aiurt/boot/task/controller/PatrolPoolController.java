@@ -1,6 +1,8 @@
 package com.aiurt.boot.task.controller;
 
+import com.aiurt.boot.pool.PatrolTaskMissingDetection;
 import com.aiurt.boot.pool.TaskPool;
+import org.jeecg.common.api.vo.Result;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -13,9 +15,18 @@ import org.springframework.web.bind.annotation.RestController;
 public class PatrolPoolController {
     @Autowired
     private TaskPool pool;
+    @Autowired
+    private PatrolTaskMissingDetection taskMissingDetection;
 
     @RequestMapping(value = "/taskpool", method = RequestMethod.POST)
-    public void taskPool() {
+    public Result<?> taskPool() {
         pool.execute();
+        return Result.ok();
+    }
+
+    @RequestMapping(value = "/taskmiss", method = RequestMethod.POST)
+    public Result<?> taskMissDetection() {
+        taskMissingDetection.execute();
+        return Result.ok();
     }
 }
