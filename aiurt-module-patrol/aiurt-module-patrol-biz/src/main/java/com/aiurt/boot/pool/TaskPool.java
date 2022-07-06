@@ -12,16 +12,21 @@ import com.aiurt.boot.task.entity.*;
 import com.aiurt.boot.task.service.*;
 import com.aiurt.modules.device.entity.Device;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import lombok.extern.slf4j.Slf4j;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Component;
+import org.springframework.web.bind.annotation.RequestMapping;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
+@Component
 public class TaskPool implements Job {
 
     @Autowired
@@ -54,6 +59,11 @@ public class TaskPool implements Job {
     public void execute(JobExecutionContext context) throws JobExecutionException {
         generateTaskData();
     }
+
+    public void execute() {
+        generateTaskData();
+    }
+
 
     /**
      * 每天生成巡检任务池数据
