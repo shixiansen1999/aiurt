@@ -29,27 +29,27 @@ public class RepairTaskDTO {
      * 开始检修时间起始
      */
     @ApiModelProperty(value = "开始检修时间起始")
-    @Excel(name = "开始检修时间起始", width = 15, format = "yyyy-MM-dd")
     @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
     @DateTimeFormat(pattern="yyyy-MM-dd")
+    @TableField(exist = false)
     private Date startTimeBegin;
 
     /**
      * 开始检修时间
      */
     @ApiModelProperty(value = "开始检修时间")
-    @Excel(name = "开始检修时间", width = 15, format = "yyyy-MM-dd HH:mm:ss")
     @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
     @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
+    @TableField(exist = false)
     private Date startTime;
 
     /**
      * 开始检修时间结束
      */
     @ApiModelProperty(value = "开始检修时间结束")
-    @Excel(name = "开始检修时间结束", width = 15, format = "yyyy-MM-dd")
     @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
     @DateTimeFormat(pattern="yyyy-MM-dd")
+    @TableField(exist = false)
     private Date startTimeEnd;
 
     /**检修任务编号*/
@@ -70,7 +70,7 @@ public class RepairTaskDTO {
     /**
      * 检修时长
      */
-    @Excel(name = "检修时长", width = 15)
+    @TableField(exist = false)
     @ApiModelProperty(value = "检修时长")
     private Long duration;
 
@@ -78,8 +78,9 @@ public class RepairTaskDTO {
     @TableField(exist = false)
     @ApiModelProperty(value = "检修单id")
     private String deviceId;
+
     /**设备code*/
-    @Excel(name = "设备code", width = 15)
+    @TableField(exist = false)
     @ApiModelProperty(value = "设备code")
     private java.lang.String deviceCode;
 
