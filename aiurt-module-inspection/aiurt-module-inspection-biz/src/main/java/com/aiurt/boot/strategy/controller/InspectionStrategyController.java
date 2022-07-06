@@ -101,6 +101,18 @@ public class InspectionStrategyController extends BaseController<InspectionStrat
 //    }
 
 	/**
+	 *  生成检修计划Code
+	 * @param
+	 * @return
+	 */
+	@AutoLog(value = "生成检修策略Code")
+	@ApiOperation(value="生成检修策略Code", notes="生成检修策略Code")
+	@GetMapping(value = "/generateStrategyCode")
+	public Result<String> generateStrategyCode() {
+		String code="JX"+System.currentTimeMillis();
+		return Result.OK(code);
+	}
+	/**
 	 *   通过id删除
 	 *
 	 * @param id

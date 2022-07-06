@@ -14,7 +14,7 @@
     </update>
 
     <delete id="deleteIdorCode">
-        <if test="id !=null and code!=null">
+
         DELETE  a.*,b.*,c.*,d.*,e.*,f.*
         from
             patrol_plan AS a
@@ -24,8 +24,10 @@
                 LEFT JOIN patrol_plan_station e ON a.`code`=e.plan_code
                 LEFT JOIN patrol_plan_strategy f on a.id =f.plan_id
         WHERE
-            a.id=#{id} AND a.`code`=#{code}
-        </if>
+
+            a.id=#{id}
+
+
     </delete>
 
     <select id="list" resultType="com.aiurt.boot.plan.dto.PatrolPlanDto">

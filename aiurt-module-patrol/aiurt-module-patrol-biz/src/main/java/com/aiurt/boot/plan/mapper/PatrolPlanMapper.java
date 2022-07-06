@@ -4,6 +4,7 @@ import com.aiurt.boot.plan.dto.PatrolPlanDto;
 import com.aiurt.boot.plan.dto.QuerySiteDto;
 import com.aiurt.boot.plan.entity.PatrolPlan;
 import com.aiurt.modules.device.entity.Device;
+import com.baomidou.mybatisplus.annotation.InterceptorIgnore;
 import com.baomidou.mybatisplus.core.injector.methods.Update;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -19,6 +20,7 @@ import java.util.List;
  * @Date:   2022-06-21
  * @Version: V1.0
  */
+@InterceptorIgnore(tenantLine = "1")
 public interface PatrolPlanMapper extends BaseMapper<PatrolPlan> {
     /**
      * 分页
@@ -60,9 +62,9 @@ public interface PatrolPlanMapper extends BaseMapper<PatrolPlan> {
     /**
      * 删除主表和所有关联表
      * @param id
-     * @param code
+     * @param
      */
-    void deleteIdorCode(@Param("id")String id,@Param("code") String code);
+    void deleteIdorCode(@Param("id")String id);
 
     /**
      *
