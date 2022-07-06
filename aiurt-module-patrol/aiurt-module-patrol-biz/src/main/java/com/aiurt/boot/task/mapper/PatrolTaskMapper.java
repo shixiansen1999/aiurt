@@ -132,4 +132,12 @@ public interface PatrolTaskMapper extends BaseMapper<PatrolTask> {
      * @return
      */
     String getSubsystemNameBySystemCode(String code);
+
+    /**
+     * 根据用户ID获取用户名
+     *
+     * @param userId
+     * @return
+     */
+    String getUsername(String userId);
 }

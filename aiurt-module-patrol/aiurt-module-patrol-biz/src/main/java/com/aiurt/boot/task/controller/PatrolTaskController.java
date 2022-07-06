@@ -154,29 +154,7 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
     @ApiOperation(value = "PC巡检任务池-获取指派人员", notes = "PC巡检任务池-获取指派人员")
     @RequestMapping(value = "/getAssignee", method = {RequestMethod.GET, RequestMethod.POST})
     public Result<?> getAssignee(@RequestParam("code") List<String> list) {
-
-        if (CollectionUtil.isEmpty(list)) {
-            throw new AiurtBootException("任务编号的集合对象为空！");
-        }
-
-        int size = list.size();
-        List<PatrolUserInfoDTO> userInfo = Optional.ofNullable(patrolTaskOrganizationService.getUserListByTaskCode(list.get(0))).orElseGet(Collections::emptyList);
-
-        // 获取批量指派时的用户 需要相同的组织机构
-        if (size > 1) {
-            List<String> orgCode = Optional.ofNullable(patrolTaskOrganizationService.getOrgCode(list.get(0))).orElseGet(Collections::emptyList);
-            for (int i = 1; i < size; i++) {
-                List<String> code = Optional.ofNullable(patrolTaskOrganizationService.getOrgCode(list.get(i))).orElseGet(Collections::emptyList);
-                boolean contains1 = orgCode.containsAll(code);
-                boolean contains2 = code.containsAll(orgCode);
-                if (contains1 && contains2) {
-                    continue;
-                } else {
-                    throw new AiurtBootException("请选择组织机构一致的任务进行批量指派！");
-                }
-            }
-
-        }
+        List<PatrolUserInfoDTO> userInfo = patrolTaskService.getAssignee(list);
         return Result.OK(userInfo);
     }
 
@@ -452,7 +430,7 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
     @AutoLog(value = "同行人-同行人查询")
     @ApiOperation(value = "巡检任务表-指派人员查询", notes = "巡检任务表-指派人员查询")
     @PostMapping(value = "/patrolTaskAppointSelect")
-    public  Result<?> patrolTaskAppointSelect(@RequestBody PatrolOrgDTO orgCoed, HttpServletRequest req) {
+    public Result<?> patrolTaskAppointSelect(@RequestBody PatrolOrgDTO orgCoed, HttpServletRequest req) {
         List<PatrolTaskUserDTO> patrolTaskUserDTOS = patrolTaskService.getPatrolTaskAppointSelect(orgCoed);
         return Result.OK(patrolTaskUserDTOS);
     }
@@ -531,6 +509,7 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
         patrolTaskService.getPatrolTaskManualListAdd(patrolTaskManualDTO);
         return Result.OK("新增成功");
     }
+
     /**
      * pc手工下放任务-编辑-详情
      *

@@ -151,10 +151,19 @@ public interface IPatrolTaskService extends IService<PatrolTask> {
     int taskDispose(PatrolTask task, String omitExplain);
 
     /**
-     *  pc手工下放任务-编辑-详情
+     * pc手工下放任务-编辑-详情
+     *
      * @param pageList
      * @param id
      * @return
      */
     Page<PatrolTaskStandardDTO> getPatrolTaskManualDetail(Page<PatrolTaskStandardDTO> pageList, String id);
+
+    /**
+     * 根据任务编号列表获取组织机构下的用户信息
+     *
+     * @param list
+     * @return
+     */
+    List<PatrolUserInfoDTO> getAssignee(List<String> list);
 }

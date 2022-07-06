@@ -63,8 +63,8 @@ public class PatrolTaskDeviceParam extends PatrolTaskDevice {
      */
     @ApiModelProperty(value = "开始巡检时间起始")
     @Excel(name = "开始巡检时间起始", width = 15, format = "yyyy-MM-dd")
-    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
-    @DateTimeFormat(pattern="yyyy-MM-dd")
+    @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd")
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
     private Date startTimeBegin;
 
     /**
@@ -72,8 +72,8 @@ public class PatrolTaskDeviceParam extends PatrolTaskDevice {
      */
     @ApiModelProperty(value = "开始巡检时间结束")
     @Excel(name = "开始巡检时间结束", width = 15, format = "yyyy-MM-dd")
-    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
-    @DateTimeFormat(pattern="yyyy-MM-dd")
+    @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd")
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
     private Date startTimeEnd;
     /**
      * 标准名称
@@ -88,10 +88,10 @@ public class PatrolTaskDeviceParam extends PatrolTaskDevice {
     @ApiModelProperty(value = "设备名称")
     private String deviceName;
     /**
-     * 巡检人名称
+     * 提交人名称
      */
-    @Excel(name = "巡检人名称", width = 15)
-    @ApiModelProperty(value = "巡检人名称")
+    @Excel(name = "提交人名称", width = 15)
+    @ApiModelProperty(value = "提交人名称")
     private String username;
     /**
      * 线路名称

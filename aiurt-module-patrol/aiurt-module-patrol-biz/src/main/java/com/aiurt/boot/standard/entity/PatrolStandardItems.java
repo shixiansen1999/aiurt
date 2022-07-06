@@ -80,7 +80,7 @@ public class PatrolStandardItems implements Serializable {
 	/**数据校验表达式*/
 	@Excel(name = "数据校验表达式", width = 15)
     @ApiModelProperty(value = "数据校验表达式")
-    private java.lang.Integer regular;
+    private java.lang.String regular;
 	/**删除状态： 0未删除 1已删除*/
 	@Excel(name = "删除状态： 0未删除 1已删除", width = 15)
     @ApiModelProperty(value = "删除状态： 0未删除 1已删除")

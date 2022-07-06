@@ -2,6 +2,7 @@ package com.aiurt.boot.task.service.impl;
 
 
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
@@ -80,6 +81,22 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
             l.setDepartInfo(patrolTaskOrganizationMapper.selectOrgByTaskCode(l.getCode()));
             // 站点信息
             l.setStationInfo(patrolTaskStationMapper.selectStationByTaskCode(l.getCode()));
+            if (ObjectUtil.isNotEmpty(l.getEndUserId())) {
+                // 任务结束用户名称
+                l.setEndUsername(patrolTaskMapper.getUsername(l.getEndUserId()));
+            }
+            if (ObjectUtil.isNotEmpty(l.getAuditorId())) {
+                // 审核用户名称
+                l.setAuditUsername(patrolTaskMapper.getUsername(l.getAuditorId()));
+            }
+            if (ObjectUtil.isNotEmpty(l.getBackId())) {
+                // 退回用户名称
+                l.setBackUsername(patrolTaskMapper.getUsername(l.getBackId()));
+            }
+            if (ObjectUtil.isNotEmpty(l.getDisposeId())) {
+                // 处置用户名称
+                l.setDisposeUserName(patrolTaskMapper.getUsername(l.getDisposeId()));
+            }
         });
         return taskIPage;
     }
@@ -369,7 +386,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
     @Override
     public Page<PatrolTaskDTO> getPatrolTaskManualList(Page<PatrolTaskDTO> pageList, PatrolTaskDTO patrolTaskDTO) {
         List<PatrolTaskDTO> taskDTOList = patrolTaskMapper.getPatrolTaskManualList(pageList, patrolTaskDTO);
-        taskDTOList.stream().forEach(e->{
+        taskDTOList.stream().forEach(e -> {
             List<PatrolTaskStandardDTO> patrolTaskStandard = patrolTaskStandardMapper.getMajorSystemName(e.getId());
             String majorName = patrolTaskStandard.stream().map(PatrolTaskStandardDTO::getMajorName).collect(Collectors.joining(","));
             String sysName = patrolTaskStandard.stream().map(PatrolTaskStandardDTO::getSysName).collect(Collectors.joining(","));
@@ -517,11 +534,11 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
             patrolTaskStandard.setStandardCode(ns.getCode());
             patrolTaskStandardMapper.insert(patrolTaskStandard);
             String taskStandardId = patrolTaskStandard.getId();
-             //生成单号
+            //生成单号
             //判断是否与设备相关
             PatrolStandard patrolStandard = patrolStandardMapper.selectById(ns.getId());
             if (ObjectUtil.isNotNull(patrolStandard) && patrolStandard.getDeviceType() == 1) {
-                List<DeviceDTO>deviceList =ns.getDeviceList();
+                List<DeviceDTO> deviceList = ns.getDeviceList();
                 //遍历设备单号
                 deviceList.stream().forEach(dv -> {
                     PatrolTaskDevice patrolTaskDevice = new PatrolTaskDevice();
@@ -573,31 +590,54 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
     @Override
     public Page<PatrolTaskStandardDTO> getPatrolTaskManualDetail(Page<PatrolTaskStandardDTO> pageList, String id) {
         List<PatrolTaskStandardDTO> standardList = patrolTaskStandardMapper.getStandard(id);
-        standardList.stream().forEach(e->{
+        standardList.stream().forEach(e -> {
             LambdaQueryWrapper<PatrolTaskDevice> queryWrapper = new LambdaQueryWrapper<>();
-            queryWrapper.eq(PatrolTaskDevice::getTaskId,e.getTaskId()).eq(PatrolTaskDevice::getTaskStandardId,e.getTaskStandardId());
+            queryWrapper.eq(PatrolTaskDevice::getTaskId, e.getTaskId()).eq(PatrolTaskDevice::getTaskStandardId, e.getTaskStandardId());
             List<PatrolTaskDevice> taskDeviceList = patrolTaskDeviceMapper.selectList(queryWrapper);
             List<DeviceDTO> deviceDTOList = new ArrayList<>();
             List<DeviceDTO> dtoList = new ArrayList<>();
-            taskDeviceList.stream().forEach(td->{
-                if(ObjectUtil.isNotNull(td.getDeviceCode()))
-                {
+            taskDeviceList.stream().forEach(td -> {
+                if (ObjectUtil.isNotNull(td.getDeviceCode())) {
                     DeviceDTO deviceDTO = patrolTaskDeviceMapper.getTaskStandardDevice(td.getDeviceCode());
-                    if(ObjectUtil.isNotNull(deviceDTO.getPositionCode()))
-                    {
+                    if (ObjectUtil.isNotNull(deviceDTO.getPositionCode())) {
                         String positionDevice = patrolTaskDeviceMapper.getDevicePosition(deviceDTO.getPositionCode());
-                        String position =deviceDTO.getPositionCodeName()+ "/" +positionDevice;
+                        String position = deviceDTO.getPositionCodeName() + "/" + positionDevice;
                         deviceDTO.setPositionCodeName(position);
                     }
                     dtoList.add(deviceDTO);
                     deviceDTOList.addAll(dtoList);
-                }
-                else {
+                } else {
                     e.setDeviceList(new ArrayList<>());
                 }
             });
             e.setDeviceList(deviceDTOList);
         });
         return pageList.setRecords(standardList);
+    }
+
+    @Override
+    public List<PatrolUserInfoDTO> getAssignee(List<String> list) {
+        if (CollectionUtil.isEmpty(list)) {
+            throw new AiurtBootException("任务编号的集合对象为空！");
+        }
+        int size = list.size();
+        List<PatrolUserInfoDTO> userInfo = Optional.ofNullable(patrolTaskOrganizationMapper.getUserListByTaskCode(list.get(0))).orElseGet(Collections::emptyList);
+
+        // 获取批量指派时的用户 需要相同的组织机构
+        if (size > 1) {
+            List<String> orgCode = Optional.ofNullable(patrolTaskOrganizationMapper.getOrgCode(list.get(0))).orElseGet(Collections::emptyList);
+            for (int i = 1; i < size; i++) {
+                List<String> code = Optional.ofNullable(patrolTaskOrganizationMapper.getOrgCode(list.get(i))).orElseGet(Collections::emptyList);
+                boolean contains1 = orgCode.containsAll(code);
+                boolean contains2 = code.containsAll(orgCode);
+                if (contains1 && contains2) {
+                    continue;
+                } else {
+                    throw new AiurtBootException("请选择组织机构一致的任务进行批量指派！");
+                }
+            }
+
+        }
+        return userInfo;
     }
 }

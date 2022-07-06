@@ -20,53 +20,35 @@ import java.util.List;
 @AllArgsConstructor
 public class PatrolTaskParam extends PatrolTask {
     /**
-     * 作业类型字典名称
-     */
-    @Excel(name = "作业类型字典名称", width = 15)
-    @ApiModelProperty(value = "作业类型字典名称")
-    private String typeName;
-    /**
-     * 是否委外字典名称
-     */
-    @Excel(name = "是否委外", width = 15)
-    @ApiModelProperty(value = "是否委外")
-    private String outsourceName;
-    /**
-     * 巡检频次字典名称
-     */
-    @Excel(name = "巡检频次字典名称", width = 15)
-    @ApiModelProperty(value = "巡检频次字典名称")
-    private String periodName;
-    /**
-     * 任务获取方式字典名称
-     */
-    @Excel(name = "任务获取方式字典名称", width = 15)
-    @ApiModelProperty(value = "任务获取方式字典名称")
-    private String sourceName;
-    /**
-     * 任务状态字典名称
-     */
-    @Excel(name = "任务状态字典名称", width = 15)
-    @ApiModelProperty(value = "任务状态字典名称")
-    private String statusName;
-    /**
      * 任务状态数组
      */
     @Excel(name = "任务状态数组", width = 15)
     @ApiModelProperty(value = "任务状态数组")
     private Integer[] statusArray;
     /**
-     * 异常状态字典名称
+     * 处置用户名称
      */
-    @Excel(name = "异常状态字典名称", width = 15)
-    @ApiModelProperty(value = "异常状态字典名称")
-    private String abnormalName;
+    @Excel(name = "处置用户名称", width = 15)
+    @ApiModelProperty(value = "处置用户名称")
+    private String disposeUserName;
     /**
-     * 处置状态字典名称
+     * 任务结束用户名称
      */
-    @Excel(name = "处置状态字典名称", width = 15)
-    @ApiModelProperty(value = "处置状态字典名称")
-    private String disposeName;
+    @Excel(name = "任务结束用户名称", width = 15)
+    @ApiModelProperty(value = "任务结束用户名称")
+    private String endUsername;
+    /**
+     * 审核用户名称
+     */
+    @Excel(name = "审核用户名称", width = 15)
+    @ApiModelProperty(value = "审核用户名称")
+    private String auditUsername;
+    /**
+     * 退回用户名称
+     */
+    @Excel(name = "退回用户名称", width = 15)
+    @ApiModelProperty(value = "退回用户名称")
+    private String backUsername;
     /**
      * 组织机构编号
      */

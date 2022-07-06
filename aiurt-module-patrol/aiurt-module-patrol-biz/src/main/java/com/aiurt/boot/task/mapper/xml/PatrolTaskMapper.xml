@@ -146,16 +146,16 @@
             #{patrolTaskDTO.orgCode})
         </if>
         <if test="patrolTaskDTO.name!=null and patrolTaskDTO.name!=''">
-        and t1.name like concat('%',#{patrolTaskDTO.name},'%')
+            and t1.name like concat('%',#{patrolTaskDTO.name},'%')
         </if>
         <if test="patrolTaskDTO.code!=null and patrolTaskDTO.code!=''">
-         and t1.code = #{patrolTaskDTO.code}
+            and t1.code = #{patrolTaskDTO.code}
         </if>
         <if test="patrolTaskDTO.status !=null">
-        and t1.status = #{patrolTaskDTO.status}
+            and t1.status = #{patrolTaskDTO.status}
         </if>
         <if test="patrolTaskDTO.patrolDate!=null ">
-         and DATE_FORMAT(t1.patrol_date, '%Y-%m-%d') = DATE_FORMAT(#{patrolTaskDTO.patrolDate}, '%Y-%m-%d')
+            and DATE_FORMAT(t1.patrol_date, '%Y-%m-%d') = DATE_FORMAT(#{patrolTaskDTO.patrolDate}, '%Y-%m-%d')
         </if>
     </select>
     <select id="getMajorNameByMajorCode" resultType="java.lang.String">
@@ -179,5 +179,11 @@
         <if test="code !=null and code !=''">
             AND cs.system_code = #{code}
         </if>
+    </select>
+    <select id="getUsername" resultType="java.lang.String">
+        SELECT su.realname
+        FROM sys_user su
+        WHERE su.del_flag = 0
+          AND su.id = = #{userId}
     </select>
 </mapper>
