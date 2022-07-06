@@ -4,6 +4,7 @@ import com.aiurt.boot.task.dto.PatrolCheckResultDTO;
 import com.aiurt.boot.task.dto.PatrolTaskDeviceDTO;
 import com.aiurt.boot.task.entity.PatrolTaskDevice;
 import com.aiurt.boot.task.service.IPatrolTaskDeviceService;
+import com.aiurt.boot.task.service.IPatrolTaskService;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.system.base.controller.BaseController;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
@@ -33,6 +34,8 @@ import java.util.List;
 public class PatrolTaskDeviceController extends BaseController<PatrolTaskDevice, IPatrolTaskDeviceService> {
     @Autowired
     private IPatrolTaskDeviceService patrolTaskDeviceService;
+	@Autowired
+	private IPatrolTaskService patrolTaskService;
 
     /**
      * 分页列表查询

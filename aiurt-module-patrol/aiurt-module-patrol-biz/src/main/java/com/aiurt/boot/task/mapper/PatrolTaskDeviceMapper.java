@@ -1,6 +1,7 @@
 package com.aiurt.boot.task.mapper;
 
-import com.aiurt.boot.task.controller.DeviceDTO;
+
+import com.aiurt.boot.task.dto.DeviceDTO;
 import com.aiurt.boot.task.dto.PatrolTaskDeviceDTO;
 import com.aiurt.boot.task.entity.PatrolTaskDevice;
 import com.aiurt.boot.task.param.PatrolTaskDeviceParam;

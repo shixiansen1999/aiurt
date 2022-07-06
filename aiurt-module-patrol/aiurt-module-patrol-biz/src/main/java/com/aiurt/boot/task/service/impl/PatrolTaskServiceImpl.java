@@ -10,7 +10,6 @@ import com.aiurt.boot.plan.entity.PatrolPlan;
 import com.aiurt.boot.plan.mapper.PatrolPlanMapper;
 import com.aiurt.boot.standard.entity.PatrolStandard;
 import com.aiurt.boot.standard.mapper.PatrolStandardMapper;
-import com.aiurt.boot.task.controller.DeviceDTO;
 import com.aiurt.boot.task.dto.*;
 import com.aiurt.boot.task.entity.*;
 import com.aiurt.boot.task.mapper.*;
@@ -303,11 +302,10 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
     }
 
     @Override
-    public List<PatrolTaskUserDTO> getPatrolTaskAppointSelect(PatrolTaskDTO patrolTaskDTO) {
+    public List<PatrolTaskUserDTO> getPatrolTaskAppointSelect(List<String> orgCoed) {
         //查询这个部门的信息人员,传组织机构ids
-        List<String> codes = patrolTaskDTO.getOrgCodeList();
         List<PatrolTaskUserDTO> arrayList = new ArrayList<>();
-        for (String code : codes) {
+        for (String code : orgCoed) {
             PatrolTaskUserDTO userDTO = new PatrolTaskUserDTO();
             String organizationName = patrolTaskMapper.getOrgName(code);
             List<PatrolTaskUserContentDTO> user = patrolTaskMapper.getUser(code);

@@ -1,5 +1,6 @@
 package com.aiurt.boot.task.service;
 
+import com.aiurt.boot.task.dto.PatrolAccessorySaveDTO;
 import com.aiurt.boot.task.entity.PatrolAccessory;
 import com.baomidou.mybatisplus.extension.service.IService;
 
@@ -11,4 +12,9 @@ import com.baomidou.mybatisplus.extension.service.IService;
  */
 public interface IPatrolAccessoryService extends IService<PatrolAccessory> {
 
+    /**
+     * app-保存附件
+     * @param patrolAccessory
+     */
+    void savePatrolTaskAccessory(PatrolAccessorySaveDTO patrolAccessory);
 }

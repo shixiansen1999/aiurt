@@ -1,5 +1,6 @@
 package com.aiurt.boot.task.controller;
 
+import com.aiurt.boot.task.dto.PatrolAccessorySaveDTO;
 import com.aiurt.boot.task.entity.PatrolAccessory;
 import com.aiurt.boot.task.entity.PatrolCheckResult;
 import com.aiurt.boot.task.service.IPatrolAccessoryService;
@@ -65,16 +66,9 @@ public class PatrolAccessoryController extends BaseController<PatrolAccessory, I
 	 @AutoLog(value = "app巡检-检查项-附件-保存")
 	 @ApiOperation(value = "app巡检-检查项-附件-保存", notes = "app巡检-检查项-附件-保存")
 	 @PostMapping(value = "/patrolTaskAccessorySave")
-	 public Result<?> patrolTaskAccessorySave(@RequestBody List <PatrolAccessory> patrolAccessory,
+	 public Result<?> patrolTaskAccessorySave(@RequestBody PatrolAccessorySaveDTO patrolAccessory,
 										  HttpServletRequest req) {
-		 LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-		 patrolCheckResultService.removeBatchByIds(patrolAccessory);
-		 patrolAccessory.stream().forEach(e->{
-			 LambdaUpdateWrapper<PatrolCheckResult> updateWrapper= new LambdaUpdateWrapper<>();
-			 updateWrapper.set(PatrolCheckResult::getUserId,sysUser.getId()).set(PatrolCheckResult::getDelFlag,0).eq(PatrolCheckResult::getId,e.getCheckResultId());
-			 patrolCheckResultService.update(updateWrapper);
-			 patrolAccessoryService.save(e);
-		 });
+		 patrolAccessoryService.savePatrolTaskAccessory(patrolAccessory);
 		 return Result.OK("附件保存成功");
 	 }
 	 /**

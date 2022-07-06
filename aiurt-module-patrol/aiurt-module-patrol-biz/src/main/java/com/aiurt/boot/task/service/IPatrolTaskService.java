@@ -53,9 +53,9 @@ public interface IPatrolTaskService extends IService<PatrolTask> {
     /**
      * app巡检任务-指派人员查询
      *
-     * @param patrolTaskDTO
+     * @param orgCoed
      */
-    List<PatrolTaskUserDTO> getPatrolTaskAppointSelect(PatrolTaskDTO patrolTaskDTO);
+    List<PatrolTaskUserDTO> getPatrolTaskAppointSelect(List<String> orgCoed);
 
     /**
      * PC巡检任务池列表

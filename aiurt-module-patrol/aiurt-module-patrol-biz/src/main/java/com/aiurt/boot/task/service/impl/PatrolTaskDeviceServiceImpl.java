@@ -336,8 +336,8 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
         patrolCheckResultDTOList.stream().forEach(e ->
         {
             //获取这个单号下一个巡检项的所有附件
-            List<PatrolAccessory> patrolAccessoryDTOS = patrolAccessoryMapper.getAllAccessory(patrolTaskDevice.getId(), e.getId());
-            e.setAccessoryInfo(patrolAccessoryDTOS);
+            List<PatrolAccessoryDTO> patrolAccessoryDTOS = patrolAccessoryMapper.getAllAccessory(patrolTaskDevice.getId(), e.getId());
+            e.setAccessoryDTOList(patrolAccessoryDTOS);
         });
         List<PatrolCheckResultDTO> resultList = buildResultTree(Optional.ofNullable(patrolCheckResultDTOList)
                 .orElseGet(Collections::emptyList));

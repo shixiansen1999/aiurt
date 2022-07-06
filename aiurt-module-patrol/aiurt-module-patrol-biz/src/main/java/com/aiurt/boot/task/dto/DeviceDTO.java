@@ -1,4 +1,4 @@
-package com.aiurt.boot.task.controller;
+package com.aiurt.boot.task.dto;
 
 import com.aiurt.common.aspect.annotation.Dict;
 import com.aiurt.modules.basic.entity.DictEntity;

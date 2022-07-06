@@ -12,12 +12,18 @@
     <select id="getStandard" resultType="com.aiurt.boot.task.dto.PatrolTaskStandardDTO">
         SELECT
             t1.id AS taskStandardId,
-            t1.task_id as taskId,
-            t2.id as standardId,
+            t1.task_id AS taskId,
+            t2.id AS standardId,
+            t3.name AS deviceTypeName,
+            t4.major_name as majorName,
+            t5.system_name as sysName,
             t2.*
         FROM
             patrol_task_standard t1
             LEFT JOIN patrol_standard t2 ON t1.standard_id = t2.id
+            LEFT JOIN device_type t3 on t2.device_type_code = t3.code
+            left join cs_major t4 on t1.profession_code = t4.major_code
+            LEFT JOIN cs_subsystem t5 on t1.subsystem_code = t5.system_code
         WHERE
             t1.task_id = #{taskId}
 </select>

@@ -159,7 +159,7 @@ select  t1.*
 from device t1
 where t1.code = #{code}
 </select>
-<select id="getTaskStandardDevice" resultType="com.aiurt.boot.task.controller.DeviceDTO">
+<select id="getTaskStandardDevice" resultType="com.aiurt.boot.task.dto.DeviceDTO">
     SELECT
 	concat( t2.line_name, "/", t2.station_name ) AS positionCodeName,t3.name as deviceType,t1.*
     FROM device t1

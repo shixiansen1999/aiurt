@@ -1,6 +1,7 @@
 package com.aiurt.boot.task.controller;
 
 import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.aiurt.boot.task.dto.*;
 import com.aiurt.boot.task.entity.PatrolTask;
@@ -25,11 +26,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 /**
  * @Description: patrol_task
@@ -455,8 +452,8 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
     @AutoLog(value = "巡检任务表-指派人员查询")
     @ApiOperation(value = "巡检任务表-指派人员查询", notes = "巡检任务表-指派人员查询")
     @PostMapping(value = "/patrolTaskAppointSelect")
-    public List<PatrolTaskUserDTO> patrolTaskAppointSelect(PatrolTaskDTO patrolTaskDTO, HttpServletRequest req) {
-        List<PatrolTaskUserDTO> patrolTaskUserDTOS = patrolTaskService.getPatrolTaskAppointSelect(patrolTaskDTO);
+    public List<PatrolTaskUserDTO> patrolTaskAppointSelect(@RequestBody List<String> orgCoed, HttpServletRequest req) {
+        List<PatrolTaskUserDTO> patrolTaskUserDTOS = patrolTaskService.getPatrolTaskAppointSelect(orgCoed);
         return patrolTaskUserDTOS;
     }
 
@@ -527,7 +524,7 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
      * @return
      */
     @AutoLog(value = "pc手工下放任务-新增")
-    @ApiOperation(value = "PC手工下放任务列表-新增", notes = "PC手工下放任务列表-新增-新增")
+    @ApiOperation(value = "PC手工下放任务列表-新增", notes = "PC手工下放任务列表-新增")
     @PostMapping(value = "/patrolTaskManualAdd")
     public Result<?> patrolTaskManualAdd(@RequestBody PatrolTaskManualDTO patrolTaskManualDTO,
                                          HttpServletRequest req) {

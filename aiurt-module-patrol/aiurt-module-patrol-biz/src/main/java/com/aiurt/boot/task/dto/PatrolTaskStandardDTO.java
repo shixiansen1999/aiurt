@@ -1,7 +1,6 @@
 package com.aiurt.boot.task.dto;
 
 import com.aiurt.boot.standard.entity.PatrolStandard;
-import com.aiurt.boot.task.controller.DeviceDTO;
 import com.baomidou.mybatisplus.annotation.TableField;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
