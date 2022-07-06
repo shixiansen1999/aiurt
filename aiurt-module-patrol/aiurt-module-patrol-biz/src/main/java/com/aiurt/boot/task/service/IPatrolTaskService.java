@@ -166,4 +166,11 @@ public interface IPatrolTaskService extends IService<PatrolTask> {
      * @return
      */
     List<PatrolUserInfoDTO> getAssignee(List<String> list);
+
+    /**
+     * 巡检漏检任务处理-重新生成任务
+     *
+     * @param patrolRebuildDTO
+     */
+    void rebuildTask(PatrolRebuildDTO patrolRebuildDTO);
 }

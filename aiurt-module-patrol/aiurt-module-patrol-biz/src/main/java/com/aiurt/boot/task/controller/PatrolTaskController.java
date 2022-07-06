@@ -1,7 +1,5 @@
 package com.aiurt.boot.task.controller;
 
-import cn.hutool.core.collection.CollectionUtil;
-import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.aiurt.boot.task.dto.*;
 import com.aiurt.boot.task.entity.PatrolTask;
@@ -12,7 +10,6 @@ import com.aiurt.boot.task.service.IPatrolTaskDeviceService;
 import com.aiurt.boot.task.service.IPatrolTaskOrganizationService;
 import com.aiurt.boot.task.service.IPatrolTaskService;
 import com.aiurt.common.aspect.annotation.AutoLog;
-import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.system.base.controller.BaseController;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -26,7 +23,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.*;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @Description: patrol_task
@@ -238,6 +236,14 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
         }
         int record = patrolTaskService.taskDispose(task, omitExplain);
         return Result.OK("成功处置" + record + "条漏检任务记录！", null);
+    }
+
+    @AutoLog(value = "巡检漏检任务处理-重新生成任务")
+    @ApiOperation(value = "巡检漏检任务处理-重新生成任务", notes = "巡检漏检任务处理-重新生成任务")
+    @PostMapping(value = "/rebuildTask")
+    public Result<?> rebuildTask(@RequestBody PatrolRebuildDTO patrolRebuildDTO) {
+        patrolTaskService.rebuildTask(patrolRebuildDTO);
+        return Result.ok();
     }
     /**
      * 添加

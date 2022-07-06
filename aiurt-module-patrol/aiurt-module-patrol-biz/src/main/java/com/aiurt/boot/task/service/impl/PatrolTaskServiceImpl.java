@@ -640,4 +640,123 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         }
         return userInfo;
     }
+
+    @Override
+    public void rebuildTask(PatrolRebuildDTO patrolRebuildDTO) {
+        String taskId = patrolRebuildDTO.getTaskId();
+        QueryWrapper<PatrolTask> wrapper = new QueryWrapper<>();
+        // 获取未作废、未处置、已漏检、未重新生成的任务
+        wrapper.lambda().eq(PatrolTask::getId, taskId)
+                .eq(PatrolTask::getStatus, PatrolConstant.TASK_MISSED)
+                .eq(PatrolTask::getDiscardStatus, PatrolConstant.TASK_UNDISPOSE)
+                .eq(PatrolTask::getDiscardStatus, PatrolConstant.TASK_UNDISCARD)
+                .eq(PatrolTask::getRebuild, PatrolConstant.TASK_UNREBUILD);
+        PatrolTask patrolTask = patrolTaskMapper.selectOne(wrapper);
+
+        PatrolTask task = new PatrolTask();
+        // 任务编号
+        String taskCode = "XR" + System.currentTimeMillis();
+        task.setCode(taskCode);
+        // 任务名称
+        task.setName(patrolTask.getName());
+        // 计划编号
+        task.setPlanCode(patrolTask.getPlanCode());
+        // 作业类型
+        task.setType(patrolTask.getType());
+        // 是否委外
+        task.setOutsource(patrolTask.getOutsource());
+        // 巡检周期
+        task.setPeriod(patrolTask.getPeriod());
+        // 任务方式-手工下发
+        task.setSource(PatrolConstant.TASK_MANUAL);
+        // 任务状态-待指派
+        task.setStatus(PatrolConstant.TASK_INIT);
+        // 任务是否需要审核
+        task.setAuditor(patrolTask.getAuditor());
+        // 处置状态-未处置
+        task.setDisposeStatus(PatrolConstant.TASK_UNDISPOSE);
+        // 作废状态-未作废
+        task.setDiscardStatus(PatrolConstant.TASK_UNDISCARD);
+        // 重新生成状态-未重新生成状态
+        task.setRebuild(PatrolConstant.TASK_UNREBUILD);
+        patrolTaskMapper.insert(task);
+        String newTaskId = task.getId();
+
+        // 将原漏检任务更新为已重新生成状态
+        patrolTask.setRebuild(PatrolConstant.TASK_REBUILD);
+        patrolTaskMapper.updateById(patrolTask);
+
+        // 组织机构信息
+        if (ObjectUtil.isEmpty(patrolRebuildDTO.getDeptCode())) {
+            List<PatrolTaskOrganizationDTO> patrolTaskOrgList = Optional.ofNullable(patrolTaskOrganizationMapper.selectOrgByTaskCode(patrolTask.getCode()))
+                    .orElseGet(Collections::emptyList);
+            patrolTaskOrgList.stream().forEach(l -> {
+                PatrolTaskOrganization organization = new PatrolTaskOrganization();
+                organization.setTaskCode(taskCode);
+                organization.setOrgCode(l.getOrgCode());
+                patrolTaskOrganizationMapper.insert(organization);
+            });
+        }
+        // 站所信息
+        if (ObjectUtil.isEmpty(patrolRebuildDTO.getStationCode())) {
+            List<PatrolTaskStationDTO> taskStationList = Optional.ofNullable(patrolTaskStationMapper.selectStationByTaskCode(patrolTask.getCode()))
+                    .orElseGet(Collections::emptyList);
+            taskStationList.stream().forEach(l -> {
+                PatrolTaskStation station = new PatrolTaskStation();
+                station.setTaskCode(taskCode);
+                station.setStationCode(l.getStationCode());
+                patrolTaskStationMapper.insert(station);
+            });
+        }
+
+        // 根据原任务ID获取巡检任务标准关联表信息
+        QueryWrapper<PatrolTaskStandard> taskStandardWrapper = new QueryWrapper<>();
+        taskStandardWrapper.lambda().eq(PatrolTaskStandard::getTaskId, taskId);
+        List<PatrolTaskStandard> taskStandardList = Optional.ofNullable(patrolTaskStandardMapper.selectList(taskStandardWrapper))
+                .orElseGet(Collections::emptyList).stream().collect(Collectors.toList());
+        taskStandardList.stream().forEach(l -> {
+            PatrolTaskStandard taskStandard = new PatrolTaskStandard();
+            taskStandard.setTaskId(newTaskId);
+            taskStandard.setStandardId(l.getStandardId());
+            taskStandard.setStandardCode(l.getStandardCode());
+            taskStandard.setProfessionCode(l.getProfessionCode());
+            taskStandard.setSubsystemCode(l.getSubsystemCode());
+            taskStandard.setDeviceTypeCode(l.getDeviceTypeCode());
+            patrolTaskStandardMapper.insert(taskStandard);
+
+            // 根据原任务ID和原任务标准关联表ID 获取原巡检任务设备关联表信息
+            QueryWrapper<PatrolTaskDevice> taskDeviceWrapper = new QueryWrapper<>();
+            taskDeviceWrapper.lambda().eq(PatrolTaskDevice::getTaskId, taskId)
+                    .eq(PatrolTaskDevice::getTaskStandardId, l.getStandardId());
+            List<PatrolTaskDevice> taskDeviceList = Optional.ofNullable(patrolTaskDeviceMapper.selectList(taskDeviceWrapper))
+                    .orElseGet(Collections::emptyList).stream().collect(Collectors.toList());
+
+            // 新增对应的设备工单信息
+            taskDeviceList.stream().forEach(
+                    // d:PatrolTaskDevice对象
+                    d -> {
+                        PatrolTaskDevice taskDevice = new PatrolTaskDevice();
+                        // 新任务表ID
+                        taskDevice.setTaskId(newTaskId);
+                        // 新任务标准ID
+                        taskDevice.setTaskStandardId(taskStandard.getId());
+                        // 巡检单号
+                        String billCode = "XD" + System.currentTimeMillis();
+                        taskDevice.setDeviceCode(billCode);
+                        // 设备编号
+                        taskDevice.setDeviceCode(d.getDeviceCode());
+                        // 线路编号
+                        taskDevice.setLineCode(d.getLineCode());
+                        // 站所编号
+                        taskDevice.setStationCode(d.getStationCode());
+                        // 位置编号
+                        taskDevice.setPositionCode(d.getPositionCode());
+                        // 检查状态-初始为未开始
+                        taskDevice.setStatus(PatrolConstant.BILL_INIT);
+                        patrolTaskDeviceMapper.insert(taskDevice);
+                    }
+            );
+        });
+
+    }
 }

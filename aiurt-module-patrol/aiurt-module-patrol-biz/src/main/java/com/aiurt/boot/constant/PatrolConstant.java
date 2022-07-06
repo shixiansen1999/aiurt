@@ -84,6 +84,14 @@ public interface PatrolConstant {
      */
     Integer TASK_UNREBUILD = 0;
     /**
+     * 巡检任务-已重新生成任务状态
+     */
+    Integer TASK_REBUILD = 1;
+    /**
+     * 巡检任务来源-手工下发
+     */
+    Integer TASK_MANUAL = 3;
+    /**
      * 巡检策略日巡
      */
     Integer STRATEGY_DAY = 0;
@@ -107,4 +115,8 @@ public interface PatrolConstant {
      * 与设备类型无关
      */
     Integer DEVICE_INDEPENDENCE = 0;
+    /**
+     * 巡检工单初始状态-未开始
+     */
+    Integer BILL_INIT = 0;
 }
