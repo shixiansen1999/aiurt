@@ -169,8 +169,8 @@ public class PatrolPlanServiceImpl extends ServiceImpl<PatrolPlanMapper, PatrolP
     }
 
     @Override
-    public List<Device> viewDetails(String standardCode) {
-        List<Device> list = baseMapper.viewDetails(standardCode);
+    public List<Device> viewDetails(String standardId) {
+        List<Device> list = baseMapper.viewDetails(standardId);
         return list;
     }
 }

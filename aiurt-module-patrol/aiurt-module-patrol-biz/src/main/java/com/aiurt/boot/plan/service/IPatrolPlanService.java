@@ -61,8 +61,8 @@ public interface IPatrolPlanService extends IService<PatrolPlan> {
 
     /**
      * 查询指定设备
-     * @param standardCode
+     * @param standardId
      * @return
      */
-    List<Device> viewDetails(String standardCode);
+    List<Device> viewDetails(String standardId);
 }

@@ -132,14 +132,14 @@ public class PatrolPlanController extends BaseController<PatrolPlan, IPatrolPlan
 	 }
 	 /**
 	  *  查看设备详情
-	  * @param standardCode
+	  * @param standardId
 	  * @return
 	  */
 	 @AutoLog(value = "巡检计划表-查看设备详情")
 	 @ApiOperation(value="巡检计划表-查看设备详情", notes="巡检计划表-查看设备详情")
 	 @RequestMapping(value = "/viewDetails", method = {RequestMethod.POST})
-	 public List<Device> viewDetails(@RequestParam(name = "standardCode")String standardCode) {
-		 List<Device> list =patrolPlanService.viewDetails(standardCode);
+	 public List<Device> viewDetails(@RequestParam(name = "standardId")String standardId) {
+		 List<Device> list =patrolPlanService.viewDetails(standardId);
 		 return list;
 	 }
 	/**

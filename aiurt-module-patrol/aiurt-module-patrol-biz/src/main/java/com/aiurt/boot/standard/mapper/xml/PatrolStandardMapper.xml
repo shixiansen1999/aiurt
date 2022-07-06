@@ -22,7 +22,7 @@
             AND a.code LIKE CONCAT ('%', #{patrolStandard.code}, '%')
         </if>
         <if test="patrolStandard.createBy !=null ">
-            AND a.create_by = #{patrolStandard.createBy}
+            AND a.create_by LIKE CONCAT ('%', #{patrolStandard.createBy}, '%')
         </if>
         <if test="patrolStandard.status !=null ">
             AND a.status = #{patrolStandard.status}
