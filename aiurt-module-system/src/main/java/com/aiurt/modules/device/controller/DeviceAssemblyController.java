@@ -1,6 +1,7 @@
 package com.aiurt.modules.device.controller;
 
 import com.aiurt.common.aspect.annotation.AutoLog;
+import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.modules.device.entity.DeviceAssembly;
 import com.aiurt.modules.device.service.IDeviceAssemblyService;
 import com.aiurt.modules.device.service.IDeviceService;
@@ -59,7 +60,7 @@ public class DeviceAssemblyController {
         if (deviceCode != null && !"".equals(deviceCode)) {
             queryWrapper.eq("device_code",deviceCode);
         }
-        queryWrapper.eq("del_flag", 0);
+        queryWrapper.eq("del_flag", CommonConstant.DEL_FLAG_0);
         Page<DeviceAssembly> page = new Page<DeviceAssembly>(pageNo, pageSize);
         IPage<DeviceAssembly> pageList = iDeviceAssemblyService.page(page, queryWrapper);
         result.setSuccess(true);
@@ -100,7 +101,6 @@ public class DeviceAssemblyController {
     public Result<?> delete(@RequestParam(name = "id", required = true) String id) {
         try {
             DeviceAssembly deviceAssembly = iDeviceAssemblyService.getById(id);
-//            deviceAssembly.setDelFlag(1);
             iDeviceAssemblyService.removeById(deviceAssembly);
         } catch (Exception e) {
             log.error("删除失败", e.getMessage());
@@ -125,7 +125,6 @@ public class DeviceAssemblyController {
             result.error500("参数不识别！");
         } else {
             List<DeviceAssembly> deviceAssemblyList = iDeviceAssemblyService.list(new QueryWrapper<DeviceAssembly>().in("id",Arrays.asList(ids.split(","))));
-//            deviceAssemblyList.stream().forEach( deviceAssembly -> deviceAssembly.setDelFlag(1));
             iDeviceAssemblyService.removeBatchByIds(deviceAssemblyList);
             result.success("删除成功!");
         }

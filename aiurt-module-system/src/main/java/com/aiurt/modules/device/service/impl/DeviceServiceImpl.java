@@ -1,5 +1,6 @@
 package com.aiurt.modules.device.service.impl;
 
+import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.modules.device.entity.Device;
 import com.aiurt.modules.device.entity.DeviceAssembly;
 import com.aiurt.modules.device.entity.DeviceType;
@@ -60,19 +61,8 @@ public class DeviceServiceImpl extends ServiceImpl<DeviceMapper, Device> impleme
 	 */
 	@Override
 	public Device translate(Device device) {
-		//数据字典部分翻译
-		//设备等级
-//		String deviceLevel = device.getDeviceLevel()==null?"":device.getDeviceLevel();
-		//设备状态
-//		String status = device.getStatus()==null?"":device.getStatus().toString();
 		//设备复用类型
 		String reuseType = device.getReuseType()==null?"":device.getReuseType();
-		//是否临时设备
-//		String temporary = device.getTemporary()==null?"":device.getTemporary();
-		//设备报废状态
-//		String scrapFlag = device.getScrapFlag()==null?"":device.getScrapFlag().toString();
-//		device.setDeviceLevelName(sysBaseApi.translateDict("device_level",deviceLevel)==null?"":sysBaseApi.translateDict("device_level",deviceLevel));
-//		device.setStatusDesc(sysBaseApi.translateDict("device_status",status)==null?"":sysBaseApi.translateDict("device_status",status));
 		String reuseTypeName = "";
 		if(!"".equals(reuseType) && reuseType.contains(",")){
 			String[] split = reuseType.split(",");
@@ -84,13 +74,6 @@ public class DeviceServiceImpl extends ServiceImpl<DeviceMapper, Device> impleme
 			reuseTypeName = sysBaseApi.translateDict("device_reuse_type",reuseType)==null?"":sysBaseApi.translateDict("device_reuse_type",reuseType);
 		}
 		device.setReuseTypeName(reuseTypeName);
-//		device.setTemporaryName(sysBaseApi.translateDict("device_temporary",temporary)==null?"":sysBaseApi.translateDict("device_temporary",temporary));
-//		device.setScrapFlagName(sysBaseApi.translateDict("device_scrap_flag",scrapFlag)==null?"":sysBaseApi.translateDict("device_scrap_flag",scrapFlag));
-		//表部分翻译
-		//所属专业
-//		String majorCode = device.getMajorCode()==null?"":device.getMajorCode();
-		//子系统
-//		String systemCode = device.getSystemCode()==null?"":device.getSystemCode();
 		//设备类型
 		String deviceTypeCode = device.getDeviceTypeCode()==null?"":device.getDeviceTypeCode();
 		//设备类型层级
@@ -101,15 +84,6 @@ public class DeviceServiceImpl extends ServiceImpl<DeviceMapper, Device> impleme
 		String stationCode = device.getStationCode()==null?"":device.getStationCode();
 		//位置
 		String positionCode = device.getPositionCode()==null?"":device.getPositionCode();
-		//管理员
-//		String manageUserName = device.getManageUserName()==null?"":device.getManageUserName();
-		//班组
-//		String orgCode = device.getOrgCode()==null?"":device.getOrgCode();
-		//厂商
-//		String manufactorCode = device.getManufactorCode()==null?"":device.getManufactorCode();
-//		String majorCodeName = sysBaseApi.translateDictFromTable("cs_major", "major_name", "major_code", majorCode);
-//		String systemCodeName = sysBaseApi.translateDictFromTable("cs_subsystem", "system_name", "system_code", systemCode);
-		String deviceTypeCodeName = sysBaseApi.translateDictFromTable("device_type", "name", "code", deviceTypeCode);
 		String lineCodeName = sysBaseApi.translateDictFromTable("cs_line", "line_name", "line_code", lineCode);
 		String stationCodeName = sysBaseApi.translateDictFromTable("cs_station", "station_name", "station_code", stationCode);
 		String positionCodeName = sysBaseApi.translateDictFromTable("cs_station_position", "position_name", "position_code", positionCode);
@@ -121,33 +95,21 @@ public class DeviceServiceImpl extends ServiceImpl<DeviceMapper, Device> impleme
 		if(!"".equals(positionCodeName) && positionCodeName != null){
 			positionCodeCcName += "/" + positionCodeName;
 		}
-//		String manageUserNameName = sysBaseApi.translateDictFromTable("sys_user", "realname", "username", manageUserName);
-//		String orgCodeName = sysBaseApi.translateDictFromTable("sys_depart", "depart_name", "org_code", orgCode);
-//		String manufactorCodeName = sysBaseApi.translateDictFromTable("cs_manufactor", "name", "code", manufactorCode);
 		String deviceTypeCodeCcName = "";
-		if(deviceTypeCodeCc.contains("/")){
-			List<String> strings = Arrays.asList(deviceTypeCodeCc.split("/"));
+		if(deviceTypeCodeCc.contains(CommonConstant.SYSTEM_SPLIT_STR)){
+			List<String> strings = Arrays.asList(deviceTypeCodeCc.split(CommonConstant.SYSTEM_SPLIT_STR));
 			for(String typecode : strings){
 				DeviceType deviceType = deviceTypeMapper.selectOne(new QueryWrapper<DeviceType>().eq("code",typecode));
-				deviceTypeCodeCcName += deviceType==null?"":deviceType.getName()+"/";
+				deviceTypeCodeCcName += deviceType==null?"":deviceType.getName()+CommonConstant.SYSTEM_SPLIT_STR;
 			}
 		}else{
 			DeviceType deviceType = deviceTypeMapper.selectOne(new QueryWrapper<DeviceType>().eq("code",deviceTypeCodeCc));
-			deviceTypeCodeCcName += deviceType==null?"":deviceType.getName()+"/";
+			deviceTypeCodeCcName += deviceType==null?"":deviceType.getName()+CommonConstant.SYSTEM_SPLIT_STR;
 		}
-		if(deviceTypeCodeCcName.contains("/")){
+		if(deviceTypeCodeCcName.contains(CommonConstant.SYSTEM_SPLIT_STR)){
 			deviceTypeCodeCcName = deviceTypeCodeCcName.substring(0,deviceTypeCodeCcName.length()-1);
 		}
-//		device.setMajorCodeName(majorCodeName);
-//		device.setSystemCodeName(systemCodeName);
-//		device.setDeviceTypeCodeName(deviceTypeCodeName);
 		device.setDeviceTypeCodeCcName(deviceTypeCodeCcName);
-//		device.setLineCodeName(lineCodeName);
-//		device.setStationCodeName(stationCodeName);
-//		device.setPositionCodeName(positionCodeName);
-//		device.setManageUserNameName(manageUserNameName);
-//		device.setOrgCodeName(orgCodeName);
-//		device.setManufactorCodeName(manufactorCodeName);
 		device.setPositionCodeCc(positionCodeCc);
 		device.setPositionCodeCcName(positionCodeCcName);
 		return device;
@@ -157,8 +119,8 @@ public class DeviceServiceImpl extends ServiceImpl<DeviceMapper, Device> impleme
 	public String getCodeByCc(String deviceTypeCodeCc) {
 		String deviceTypeCode = "";
 		if(!"".equals(deviceTypeCodeCc) && deviceTypeCodeCc != null){
-			if(deviceTypeCodeCc.contains("/")){
-				String[] split = deviceTypeCodeCc.split("/");
+			if(deviceTypeCodeCc.contains(CommonConstant.SYSTEM_SPLIT_STR)){
+				String[] split = deviceTypeCodeCc.split(CommonConstant.SYSTEM_SPLIT_STR);
 				deviceTypeCode = split[split.length-1];
 			}else{
 				deviceTypeCode = deviceTypeCodeCc;

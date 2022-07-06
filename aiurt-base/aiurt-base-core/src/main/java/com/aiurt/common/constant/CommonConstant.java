@@ -428,4 +428,13 @@ public interface CommonConstant {
      * 可用状态
      */
     public static final Integer STATUS_ENABLE = 1;
+
+    /**
+     * 分隔符  /
+     */
+    public static final String SYSTEM_SPLIT_STR = "/";
+    /**
+     * 物资分类及设备分类pid  ,
+     */
+    public static final String SYSTEM_SPLIT_PID = "0";
 }

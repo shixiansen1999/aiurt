@@ -1,6 +1,7 @@
 package com.aiurt.modules.material.controller;
 
 import com.aiurt.common.aspect.annotation.AutoLog;
+import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.modules.device.entity.Device;
 import com.aiurt.modules.device.entity.DeviceAssembly;
@@ -90,7 +91,7 @@ public class MaterialBaseController {
                                                          HttpServletRequest req) {
         Result<IPage<MaterialBase>> result = new Result<IPage<MaterialBase>>();
         QueryWrapper<MaterialBase> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("del_flag", 0);
+        queryWrapper.eq("del_flag", CommonConstant.DEL_FLAG_0);
         if(majorCode != null && !"".equals(majorCode)){
             queryWrapper.eq("major_code", majorCode);
             if(systemCode != null && !"".equals(systemCode)){
@@ -107,7 +108,6 @@ public class MaterialBaseController {
         }
         if(baseTypeCode != null && !"".equals(baseTypeCode)){
             queryWrapper.apply(" FIND_IN_SET ( '"+baseTypeCode+"' , REPLACE(base_type_code_cc,'/',',')) ");
-//            queryWrapper.eq("base_type_code", baseTypeCode);
         }
         queryWrapper.orderByDesc("create_time");
         Page<MaterialBase> page = new Page<MaterialBase>(pageNo, pageSize);
@@ -127,16 +127,9 @@ public class MaterialBaseController {
             if (count > 0){
                 return Result.error("物资编号不能重复");
             }
-//            String majorCode = materialBase.getMajorCode();
-//            String systemCode = materialBase.getSystemCode()==null?"":materialBase.getSystemCode();
             String baseTypeCodeCc = materialBase.getBaseTypeCodeCc()==null?"":materialBase.getBaseTypeCodeCc();
             String baseTypeCode = iMaterialBaseService.getCodeByCc(baseTypeCodeCc);
-//            String finalstr = majorCode + systemCode + baseTypeCode;
-//            String newBaseCode = iMaterialBaseService.getNewBaseCode(finalstr);
             materialBase.setBaseTypeCode(baseTypeCode);
-//            materialBase.setCode(newBaseCode);
-//            MaterialBaseType materialBaseType = iMaterialBaseTypeService.getOne(new QueryWrapper<MaterialBaseType>().eq("base_type_code",baseTypeCode));
-//            String typeCodeCc = iMaterialBaseTypeService.getCcStr(materialBaseType);
             iMaterialBaseService.save(materialBase);
             result.success("添加成功！");
         } catch (Exception e) {
@@ -157,7 +150,7 @@ public class MaterialBaseController {
                                      @RequestParam(name = "name", required = false) String name,
                                      HttpServletRequest req) {
         QueryWrapper<MaterialBase> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("del_flag", 0);
+        queryWrapper.eq("del_flag", CommonConstant.DEL_FLAG_0);
         if(majorCode != null && !"".equals(majorCode)){
             queryWrapper.eq("major_code", majorCode);
         }
@@ -203,8 +196,8 @@ public class MaterialBaseController {
     @PutMapping(value = "/edit")
     public Result<MaterialBase> edit(@RequestBody MaterialBase materialBase) {
         Result<MaterialBase> result = new Result<MaterialBase>();
-        MaterialBase MaterialBaseEntity = iMaterialBaseService.getById(materialBase.getId());
-        if (MaterialBaseEntity == null) {
+        MaterialBase materialBaseEntity = iMaterialBaseService.getById(materialBase.getId());
+        if (materialBaseEntity == null) {
             result.onnull("未找到对应实体");
         } else {
             boolean ok = iMaterialBaseService.updateById(materialBase);
@@ -237,7 +230,6 @@ public class MaterialBaseController {
             if(deviceAssemblyList != null && deviceAssemblyList.size()>0){
                 return Result.error("该物资正在使用中，无法删除");
             }
-//            materialBase.setDelFlag(1);
             iMaterialBaseService.removeById(materialBase);
         } catch (Exception e) {
             log.error("删除失败", e.getMessage());
@@ -266,7 +258,6 @@ public class MaterialBaseController {
                 if((deviceComposeList != null && deviceComposeList.size()>0) || (deviceAssemblyList != null && deviceAssemblyList.size()>0)){
                     res += materialBase.getCode() + ",";
                 }else{
-//                    materialBase.setDelFlag(1);
                     iMaterialBaseService.removeById(materialBase);
                 }
             }
@@ -299,7 +290,7 @@ public class MaterialBaseController {
             params.setHeadRows(1);
             params.setNeedSave(true);
             try {
-                return iMaterialBaseService.importExcelCheckRoleCode(file, params);
+                return iMaterialBaseService.importExcelMaterial(file, params);
             } catch (Exception e) {
                 log.error(e.getMessage(), e);
                 return Result.error("文件导入失败:" + e.getMessage());

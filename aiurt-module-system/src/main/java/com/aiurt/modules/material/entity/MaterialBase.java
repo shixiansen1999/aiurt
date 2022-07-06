@@ -67,11 +67,9 @@ public class MaterialBase extends DictEntity {
 	private  String  baseTypeCodeName;
 
 	/**分类编码层级*/
-//	@Excel(name = "分类编码层级", width = 15)
 	@ApiModelProperty(value = "分类编码层级")
 	private  String  baseTypeCodeCc;
 	/**分类编码层级名称*/
-//	@Excel(name = "分类编码层级名称", width = 15)
 	@ApiModelProperty(value = "分类编码层级名称")
 	@TableField(exist = false)
 	private  String  baseTypeCodeCcName;
@@ -94,7 +92,7 @@ public class MaterialBase extends DictEntity {
 	/**生产厂商*/
 	@Excel(name = "生产厂商编码", width = 15)
 	@ApiModelProperty(value = "生产厂商编码")
-	@Dict(dictTable ="cs_manufactor",dicText = "name",dicCode = "code")
+	@Dict(dictTable ="cs_manufactor",dicText = "name",dicCode = "id")
 	private  String  manufactorCode;
 	/**生产厂商手动翻译*/
 	@Excel(name = "生产厂商名称", width = 15)
@@ -129,24 +127,20 @@ public class MaterialBase extends DictEntity {
 	private  String  sysOrgCodeName;
 
 	/**创建人*/
-//	@Excel(name = "创建人", width = 15)
     @ApiModelProperty(value = "创建人")
 	private  String  createBy;
 
 	/**修改人*/
-//	@Excel(name = "修改人", width = 15)
     @ApiModelProperty(value = "修改人")
 	private  String  updateBy;
 
 	/**创建时间 CURRENT_TIMESTAMP*/
-//	@Excel(name = "创建时间 CURRENT_TIMESTAMP", width = 20, format = "yyyy-MM-dd HH:mm:ss")
 	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
     @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
     @ApiModelProperty(value = "创建时间 CURRENT_TIMESTAMP")
 	private  java.util.Date  createTime;
 
 	/**修改时间 根据当前时间戳更新*/
-//	@Excel(name = "修改时间 根据当前时间戳更新", width = 20, format = "yyyy-MM-dd HH:mm:ss")
 	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
     @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
     @ApiModelProperty(value = "修改时间 根据当前时间戳更新")
