@@ -36,6 +36,7 @@ import lombok.SneakyThrows;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.LoginUser;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -783,13 +784,15 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
      * 分页查询手工下发任务列表
      *
      * @param page
-     * @param queryWrapper
+     * @param repairPool
      * @return
      */
     @Override
-    public IPage<RepairPool> listPage(Page<RepairPool> page, QueryWrapper<RepairPool> queryWrapper) {
-        // 只查询是手工下发的检修任务
-        queryWrapper.eq("is_manual", InspectionConstant.IS_MANUAL);
+    public IPage<RepairPool> listPage(Page<RepairPool> page, RepairPool repairPool) {
+        // 处理查询参数
+        QueryWrapper<RepairPool> queryWrapper = doQuery(repairPool);
+
+        // 组织机构、站点查询添加构造
         page = baseMapper.selectPage(page, queryWrapper);
 
         page.getRecords().forEach(re -> {
@@ -810,6 +813,49 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
             re.setStationName(manager.translateStation(repairPoolStationRels));
         });
         return page;
+    }
+
+    @NotNull
+    public QueryWrapper<RepairPool> doQuery(RepairPool repairPool) {
+        QueryWrapper<RepairPool> queryWrapper = new QueryWrapper<>();
+        // 只查询是手工下发的检修任务
+        queryWrapper.eq("is_manual", InspectionConstant.IS_MANUAL);
+        if (ObjectUtil.isNotEmpty(repairPool.getStartTime())) {
+            queryWrapper.ge("start_time", repairPool.getStartTime());
+            queryWrapper.le("end_time", repairPool.getStartTime());
+        }
+        // 检修任务单号
+        if (StrUtil.isNotEmpty(repairPool.getCode())) {
+            queryWrapper.like("code", repairPool.getCode());
+        }
+        // 检修类型
+        if (repairPool.getType() != null) {
+            queryWrapper.eq("type", repairPool.getType());
+        }
+        // 状态
+        if (repairPool.getStatus() != null) {
+            queryWrapper.eq("status", repairPool.getStatus());
+        }
+        // 检修计划codes
+        Set<String> codes = new HashSet<>();
+        if (CollUtil.isNotEmpty(repairPool.getOrgList())) {
+            List<RepairPoolOrgRel> repairPoolOrgRels = orgRelMapper.selectList(new LambdaQueryWrapper<RepairPoolOrgRel>().in(RepairPoolOrgRel::getOrgCode, repairPool.getOrgList()));
+            if (CollUtil.isNotEmpty(repairPoolOrgRels)) {
+                codes.addAll(repairPoolOrgRels.stream().map(RepairPoolOrgRel::getRepairPoolCode).collect(Collectors.toList()));
+            }
+        }
+        // 组织机构和站点
+        if (CollUtil.isNotEmpty(repairPool.getStationList())) {
+            List<RepairPoolStationRel> repairPoolStationRels = repairPoolStationRelMapper.selectList(new LambdaQueryWrapper<RepairPoolStationRel>().in(RepairPoolStationRel::getStationCode));
+            if (CollUtil.isNotEmpty(repairPoolStationRels)) {
+                codes.addAll(repairPoolStationRels.stream().map(RepairPoolStationRel::getRepairPoolCode).collect(Collectors.toList()));
+            }
+        }
+        if (CollUtil.isNotEmpty(codes)) {
+            queryWrapper.in("code", codes);
+        }
+
+        return queryWrapper;
     }
 
     /**
@@ -1007,7 +1053,7 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
                         .eq(RepairPoolStationRel::getDelFlag, 0));
         if (CollUtil.isNotEmpty(repairPoolStationRels)) {
             List<StationDTO> arr = new ArrayList<>();
-            repairPoolStationRels.forEach(re->{
+            repairPoolStationRels.forEach(re -> {
                 StationDTO st = new StationDTO();
                 st.setStationCode(re.getStationCode());
                 st.setPositionCode(re.getPositionCode());

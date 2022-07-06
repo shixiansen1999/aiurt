@@ -7,7 +7,6 @@ import com.aiurt.boot.plan.entity.RepairPoolCodeContent;
 import com.aiurt.boot.plan.rep.RepairStrategyReq;
 import com.aiurt.boot.plan.req.RepairPoolCodeReq;
 import com.aiurt.boot.plan.req.RepairPoolReq;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
@@ -103,10 +102,10 @@ public interface IRepairPoolService extends IService<RepairPool> {
      * 分页查询手工下发任务列表
      *
      * @param page
-     * @param queryWrapper
+     * @param repairPool
      * @return
      */
-    IPage<RepairPool> listPage(Page<RepairPool> page, QueryWrapper<RepairPool> queryWrapper);
+    IPage<RepairPool> listPage(Page<RepairPool> page, RepairPool repairPool);
 
     /**
      * 通过id查询手工下发检修任务信息

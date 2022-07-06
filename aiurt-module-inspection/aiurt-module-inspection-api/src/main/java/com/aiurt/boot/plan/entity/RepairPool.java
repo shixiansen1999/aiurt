@@ -16,6 +16,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * @Description: repair_pool
@@ -205,4 +206,16 @@ public class RepairPool implements Serializable {
     @TableField(exist = false)
     @ApiModelProperty(value = "状态名称",required = false)
     private String statusName;
+    /**
+     * 查询使用：组织机构
+     */
+    @TableField(exist = false)
+    @ApiModelProperty(value = "组织机构code集合",required = false)
+    private List<String> orgList;
+    /**
+     * 查询使用：站点信息
+     */
+    @TableField(exist = false)
+    @ApiModelProperty(value = "站点code集合",required = false)
+    private List<String> stationList;
 }

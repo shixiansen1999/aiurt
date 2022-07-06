@@ -6,7 +6,6 @@ import com.aiurt.boot.plan.entity.RepairPool;
 import com.aiurt.boot.plan.req.RepairPoolReq;
 import com.aiurt.boot.plan.service.IRepairPoolService;
 import com.aiurt.common.aspect.annotation.AutoLog;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.annotations.Api;
@@ -14,7 +13,6 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import lombok.extern.slf4j.Slf4j;
 import org.jeecg.common.api.vo.Result;
-import org.jeecg.common.system.query.QueryGenerator;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
@@ -50,9 +48,9 @@ public class ManualTaskController {
                                               @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
                                               @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize,
                                               HttpServletRequest req) {
-        QueryWrapper<RepairPool> queryWrapper = QueryGenerator.initQueryWrapper(repairPool, req.getParameterMap());
+//        QueryWrapper<RepairPool> queryWrapper = QueryGenerator.initQueryWrapper(repairPool, req.getParameterMap());
         Page<RepairPool> page = new Page<RepairPool>(pageNo, pageSize);
-        IPage<RepairPool> pageList = repairPoolService.listPage(page, queryWrapper);
+        IPage<RepairPool> pageList = repairPoolService.listPage(page, repairPool);
         return Result.OK(pageList);
     }
 
