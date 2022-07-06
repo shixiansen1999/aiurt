@@ -13,6 +13,7 @@ import com.aiurt.modules.fault.enums.FaultStatusEnum;
 import com.aiurt.modules.fault.mapper.FaultMapper;
 import com.aiurt.modules.fault.service.*;
 import com.aiurt.modules.faultknowledgebase.entity.FaultKnowledgeBase;
+import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -73,7 +74,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
     public String add(Fault fault) {
 
         LoginUser user = checkLogin();
-
+        log.info("故障上报：操作人员：[{}], 请求参数：{}",user.getRealname(), JSON.toJSONString(fault));
         // 故障编号处理
         String majorCode = fault.getMajorCode();
         StringBuilder builder = new StringBuilder("WX");
@@ -177,17 +178,23 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
      * @param fault 故障对象 @see com.aiurt.modules.fault.entity.Fault
      */
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void edit(Fault fault) {
+        log.info("修改故障工单：[{}]", JSON.toJSONString(fault));
+
+        isExist(fault.getCode());
 
         LoginUser loginUser = checkLogin();
 
-        //todo 设备处理
         List<FaultDevice> faultDeviceList = fault.getFaultDeviceList();
         if (CollectionUtil.isNotEmpty(faultDeviceList)) {
             // 删除旧设备
             LambdaQueryWrapper<FaultDevice>  wrapper = new LambdaQueryWrapper<>();
             wrapper.eq(FaultDevice::getFaultCode, fault.getCode());
             faultDeviceService.remove(wrapper);
+
+            // 保存设备信息
+            faultDeviceService.saveBatch(faultDeviceList);
         }
 
         // update status
@@ -207,6 +214,8 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void cancel(CancelDTO cancelDTO) {
+        log.info("故障工单作废,请求参数：[{}]",JSON.toJSONString(cancelDTO));
+
         LoginUser user = checkLogin();
 
         // 故障单
@@ -218,6 +227,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         //更新状态
         fault.setCancelTime(new Date());
         fault.setCancelUserName(user.getUsername());
+        fault.setCancelRemark(cancelDTO.getCancelRemark());
         updateById(fault);
 
         // 记录日志
@@ -236,7 +246,6 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
     public Fault queryByCode(String code) {
 
         Fault fault = isExist(code);
-
         // 设备
         List<FaultDevice> faultDeviceList = faultDeviceService.queryByFaultCode(code);
         fault.setFaultDeviceList(faultDeviceList);

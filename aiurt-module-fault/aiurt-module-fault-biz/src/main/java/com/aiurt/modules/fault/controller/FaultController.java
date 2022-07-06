@@ -24,6 +24,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.validation.Valid;
 import java.util.List;
 
 /**
@@ -67,10 +68,10 @@ public class FaultController extends BaseController<Fault, IFaultService> {
         }
         QueryWrapper<Fault> queryWrapper = QueryGenerator.initQueryWrapper(fault, req.getParameterMap());
         Page<Fault> page = new Page<>(pageNo, pageSize);
-        queryWrapper.orderByDesc("create_time");
+        //修改查询条件
         queryWrapper.apply(StrUtil.isNotBlank(stationCode), "(line_code = {0} or station_code = {0} or station_position_code = {0})", stationCode);
         queryWrapper.apply(StrUtil.isNotBlank(fault.getDevicesIds()), "(code in (select fault_code from fault_device where device_code like  concat('%', {0}, '%')))", fault.getDevicesIds());
-        // 修改查询条件
+
         IPage<Fault> pageList = faultService.page(page, queryWrapper);
 
         List<Fault> records = pageList.getRecords();
@@ -79,7 +80,7 @@ public class FaultController extends BaseController<Fault, IFaultService> {
             fault1.setFaultDeviceList(faultDeviceList);
         });
 
-
+        // todo 优化排序
         return Result.OK(pageList);
     }
 
@@ -93,8 +94,8 @@ public class FaultController extends BaseController<Fault, IFaultService> {
     @ApiOperation(value = "故障上报", notes = "故障上报")
     @PostMapping(value = "/add")
     public Result<?> add(@Validated @RequestBody Fault fault) {
-        faultService.add(fault);
-        return Result.OK("添加成功！");
+        String faultCode = faultService.add(fault);
+        return Result.OK(faultCode);
     }
 
     /**
@@ -136,7 +137,7 @@ public class FaultController extends BaseController<Fault, IFaultService> {
     @AutoLog(value = "故障作废")
     @ApiOperation(value = "故障作废", notes = "故障作废")
     @PutMapping(value = "/cancel")
-    public Result<String> cancel(@RequestBody CancelDTO cancelDTO) {
+    public Result<String> cancel(@Valid @RequestBody CancelDTO cancelDTO) {
         faultService.cancel(cancelDTO);
         return Result.OK("作废成功!");
     }
@@ -368,5 +369,7 @@ public class FaultController extends BaseController<Fault, IFaultService> {
 
         return Result.OK(list);
     }
+
+
 
 }

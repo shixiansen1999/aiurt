@@ -9,6 +9,12 @@ public enum SysAnnmentTypeEnum {
      * 邮件跳转组件
      */
     EMAIL("email", "component", "modules/eoa/email/modals/EoaEmailInForm"),
+
+    /**
+     * 故障
+     */
+    FAULT("fault", "component",""),
+
     /**
      * 工作流跳转链接我的办公
      */

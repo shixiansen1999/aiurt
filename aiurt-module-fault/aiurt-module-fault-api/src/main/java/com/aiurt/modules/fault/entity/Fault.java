@@ -52,7 +52,7 @@ public class Fault extends DictEntity implements Serializable {
 	/**专业编码*/
 	@Excel(name = "专业编码", width = 15)
     @ApiModelProperty(value = "专业编码", required = true)
-    @NotBlank(message = "所属专业不能为空")
+    @NotBlank(message = "请选择所属专业")
     @Dict(dictTable = "cs_major", dicText = "major_name", dicCode = "major_code")
     private String majorCode;
 
@@ -80,6 +80,7 @@ public class Fault extends DictEntity implements Serializable {
 	@Excel(name = "故障位置-站所编码", width = 15)
     @ApiModelProperty(value = "站点",  required = true)
     @Dict(dictTable = "cs_station", dicText = "station_name", dicCode = "station_code")
+    @NotBlank(message = "请选择位置")
     private String stationCode;
 
 	/**位置*/
@@ -285,5 +286,8 @@ public class Fault extends DictEntity implements Serializable {
     @ApiModelProperty("设备查询条件")
     @TableField(exist = false)
     private String devicesIds;
+
+    @ApiModelProperty(value = "作废说明")
+    private String cancelRemark;
 
 }

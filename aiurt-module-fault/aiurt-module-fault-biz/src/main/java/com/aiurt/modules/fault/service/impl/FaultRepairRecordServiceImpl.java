@@ -87,12 +87,12 @@ public class FaultRepairRecordServiceImpl extends ServiceImpl<FaultRepairRecordM
             Date time = repairRecordDetailDTO.getEndTime();
             if (Objects.nonNull(startTime) && Objects.nonNull(receviceTime)) {
                 long between = DateUtil.between(receviceTime, startTime, DateUnit.MINUTE);
-                between = between == 0? 1: between;
+                between = between == 0 ? 1: between;
                 repairRecordDetailDTO.setResponseDuration(between+"分钟");
             }
             if (Objects.nonNull(startTime) && Objects.nonNull(time)) {
                 long between = DateUtil.between(time, startTime, DateUnit.MINUTE);
-                between = between == 0? 1: between;
+                between = between == 0 ? 1: between;
                 repairRecordDetailDTO.setRepairDuration(between+"分钟");
             }
         });
