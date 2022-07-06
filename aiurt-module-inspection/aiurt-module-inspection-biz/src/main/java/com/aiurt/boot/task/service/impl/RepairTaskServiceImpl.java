@@ -270,25 +270,12 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
             if (e.getIsSubmit() != null && e.getIsSubmit() == 1) {
                 e.setTaskStatusName("已提交");
             }
-            //提交人名称
-//            if (e.getOverhaulId()!=null){
-////                LoginUser userById = sysBaseAPI.getUserById(e.getOverhaulId());
-////                e.setOverhaulName(userById.getUsername());
-////            }
             if (e.getDeviceId() != null && CollectionUtil.isNotEmpty(repairTasks)) {
                 //正常项
-                List<RepairTaskResult> repairTaskResults = repairTaskMapper.selectSingle(e.getDeviceId(), 1);
+                List<RepairTaskResult> repairTaskResults = repairTaskMapper.selectSingle(e.getDeviceId(), InspectionConstant.RESULT_STATUS);
                 e.setNormal(repairTaskResults.size());
                 //异常项
-                List<RepairTaskResult> repairTaskResults1 = repairTaskMapper.selectSingle(e.getDeviceId(), 2);
-                e.setAbnormal(repairTaskResults1.size());
-            }
-            if (e.getDeviceId() != null && CollectionUtil.isNotEmpty(repairTasks)) {
-                //正常项
-                List<RepairTaskResult> repairTaskResults = repairTaskMapper.selectSingle(e.getDeviceId(), 1);
-                e.setNormal(repairTaskResults.size());
-                //异常项
-                List<RepairTaskResult> repairTaskResults1 = repairTaskMapper.selectSingle(e.getDeviceId(), 2);
+                List<RepairTaskResult> repairTaskResults1 = repairTaskMapper.selectSingle(e.getDeviceId(), InspectionConstant.NO_RESULT_STATUS);
                 e.setAbnormal(repairTaskResults1.size());
             }
             //未开始的数量
@@ -298,7 +285,7 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
             long count2 = repairTasks.stream().filter(repairTaskDTO -> repairTaskDTO.getStartTime() != null).count();
             e.setHaveInHand((int) count2);
             //已提交的数量
-            long count3 = repairTasks.stream().filter(repairTaskDTO -> repairTaskDTO.getIsSubmit() != null && repairTaskDTO.getIsSubmit() == 1).count();
+            long count3 = repairTasks.stream().filter(repairTaskDTO -> repairTaskDTO.getIsSubmit()!=null && repairTaskDTO.getIsSubmit().equals(InspectionConstant.IS_EFFECT)).count();
             e.setSubmitted((int) count3);
         });
         return pageList.setRecords(repairTasks);
