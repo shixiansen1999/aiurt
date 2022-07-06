@@ -281,8 +281,6 @@ public class DeviceController {
                             device.setStationCode("");
                             device.setPositionCode("");
                     }
-                }else{
-                    return Result.error("设备位置必须选择线路和站点！");
                 }
             }
             deviceService.save(device);

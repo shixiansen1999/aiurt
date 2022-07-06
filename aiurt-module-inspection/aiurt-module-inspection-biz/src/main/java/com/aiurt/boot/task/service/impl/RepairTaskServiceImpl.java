@@ -219,9 +219,6 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
     public Page<RepairTaskDTO> repairSelectTaskletForDevice(Page<RepairTaskDTO> pageList, RepairTaskDTO condition) {
         List<RepairTaskDTO> repairTasks = repairTaskMapper.selectTaskletForDevice(pageList, condition);
         repairTasks.forEach(e->{
-            //检修结果
-            e.setMaintenanceResultsName(sysBaseAPI.translateDict(DictConstant.OVERHAUL_RESULT, String.valueOf(e.getMaintenanceResults())));
-
             //查询同行人
             LambdaQueryWrapper<RepairTaskPeerRel> repairTaskPeerRelLambdaQueryWrapper = new LambdaQueryWrapper<>();
             List<RepairTaskPeerRel> repairTaskPeer = repairTaskPeerRelMapper.selectList(repairTaskPeerRelLambdaQueryWrapper.eq(RepairTaskPeerRel::getRepairTaskDeviceCode, e.getOverhaulCode()));
@@ -252,10 +249,31 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                 //设备类型名称
                 e.setDeviceTypeName(q.getDeviceTypeName());
             });
-            //检修人名称
-            if (e.getOverhaulId()!=null){
-                LoginUser userById = sysBaseAPI.getUserById(e.getOverhaulId());
-                e.setOverhaulName(userById.getUsername());
+            //设备位置
+            if(e.getTaskCode()!=null){
+                List<StationDTO> stationDTOList = repairTaskMapper.selectStationList(e.getTaskCode());
+                e.setEquipmentLocation(manager.translateStation(stationDTOList));
+            }
+            //检修任务状态
+            if (e.getStartTime()==null){
+                e.setTaskStatusName("未开始");
+            }if (e.getStartTime()!=null){
+                e.setTaskStatusName("进行中");
+            }if (e.getIsSubmit()!=null && e.getIsSubmit()==1){
+                e.setTaskStatusName("已提交");
+            }
+            //提交人名称
+//            if (e.getOverhaulId()!=null){
+////                LoginUser userById = sysBaseAPI.getUserById(e.getOverhaulId());
+////                e.setOverhaulName(userById.getUsername());
+////            }
+            if (e.getDeviceId()!=null && CollectionUtil.isNotEmpty(repairTasks)){
+                //正常项
+                List<RepairTaskResult> repairTaskResults = repairTaskMapper.selectSingle(e.getDeviceId(), 1);
+                e.setNormal(repairTaskResults.size());
+                //异常项
+                List<RepairTaskResult> repairTaskResults1 = repairTaskMapper.selectSingle(e.getDeviceId(), 2);
+                e.setAbnormal(repairTaskResults1.size());
             }
             if (e.getDeviceId()!=null && CollectionUtil.isNotEmpty(repairTasks)){
                 //正常项
@@ -265,6 +283,15 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                 List<RepairTaskResult> repairTaskResults1 = repairTaskMapper.selectSingle(e.getDeviceId(), 2);
                 e.setAbnormal(repairTaskResults1.size());
             }
+            //未开始的数量
+            long count1 = repairTasks.stream().filter(repairTaskDTO -> repairTaskDTO.getStartTime() == null).count();
+            e.setNotStarted((int) count1);
+            //进行中的数量
+            long count2 = repairTasks.stream().filter(repairTaskDTO -> repairTaskDTO.getStartTime()!=null).count();
+            e.setHaveInHand((int) count2);
+            //已提交的数量
+            long count3 = repairTasks.stream().filter(repairTaskDTO -> repairTaskDTO.getIsSubmit()!=null && repairTaskDTO.getIsSubmit()==1).count();
+            e.setSubmitted((int) count3);
         });
         return pageList.setRecords(repairTasks);
     }

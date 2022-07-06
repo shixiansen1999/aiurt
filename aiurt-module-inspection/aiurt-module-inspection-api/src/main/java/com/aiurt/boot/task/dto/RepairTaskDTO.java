@@ -79,11 +79,6 @@ public class RepairTaskDTO {
     @ApiModelProperty(value = "检修单id")
     private String deviceId;
 
-    /**设备code*/
-    @TableField(exist = false)
-    @ApiModelProperty(value = "设备code")
-    private java.lang.String deviceCode;
-
     /**检修任务标准id*/
     @TableField(exist = false)
     @ApiModelProperty(value = "检修任务标准id")
