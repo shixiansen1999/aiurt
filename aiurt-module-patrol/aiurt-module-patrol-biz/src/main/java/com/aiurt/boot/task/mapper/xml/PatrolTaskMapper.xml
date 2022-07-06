@@ -184,6 +184,6 @@
         SELECT su.realname
         FROM sys_user su
         WHERE su.del_flag = 0
-          AND su.id = = #{userId}
+          AND su.id = #{userId}
     </select>
 </mapper>
