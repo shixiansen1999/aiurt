@@ -12,10 +12,6 @@ import org.jeecgframework.poi.excel.annotation.Excel;
  */
 @Data
 public class PatrolAccompanyDTO {
-    /**巡检单号*/
-    @Excel(name = "巡检单号", width = 15)
-    @ApiModelProperty(value = "巡检单号")
-    private java.lang.String taskDeviceCode;
     /**同行人ID*/
     @Excel(name = "同行人ID", width = 15)
     @ApiModelProperty(value = "同行人ID")

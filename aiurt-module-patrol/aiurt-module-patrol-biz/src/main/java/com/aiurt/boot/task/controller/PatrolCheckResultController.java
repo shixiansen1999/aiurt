@@ -108,8 +108,8 @@ public class PatrolCheckResultController extends BaseController<PatrolCheckResul
 		 LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
 		 if(ObjectUtil.isNotEmpty(patrolCheckDTO.getInputType()))
 		 {
-			 {
-				 patrolCheckResult.setDictCode(patrolCheckDTO.getDictCode());
+			 if(patrolCheckDTO.getInputType()==1)
+		 	{
 				 patrolCheckResult.setOptionValue(patrolCheckDTO.getOptionValue());
 			 }
 			 if(patrolCheckDTO.getInputType()==2)

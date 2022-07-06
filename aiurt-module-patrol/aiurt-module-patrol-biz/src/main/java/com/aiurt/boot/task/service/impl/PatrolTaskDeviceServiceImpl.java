@@ -10,6 +10,7 @@ import com.aiurt.boot.standard.entity.PatrolStandard;
 import com.aiurt.boot.standard.entity.PatrolStandardItems;
 import com.aiurt.boot.standard.mapper.PatrolStandardItemsMapper;
 import com.aiurt.boot.task.dto.PatrolAccessoryDTO;
+import com.aiurt.boot.task.dto.PatrolAccompanyDTO;
 import com.aiurt.boot.task.dto.PatrolCheckResultDTO;
 import com.aiurt.boot.task.dto.PatrolTaskDeviceDTO;
 import com.aiurt.boot.task.entity.*;
@@ -135,13 +136,15 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
                 }
             });
             e.setInspectionPosition(stringBuffer.toString());
-            String accompanyName = patrolAccompanyMapper.getAccompanyName(e.getPatrolNumber());
-            e.setAccompanyName(accompanyName);
+            List<PatrolAccompanyDTO> accompanyDTOList = patrolAccompanyMapper.getAccompanyName(e.getPatrolNumber());
+            String userName = accompanyDTOList.stream().map(PatrolAccompanyDTO::getUsername).collect(Collectors.joining(","));
+            e.setUserName(userName);
+            e.setAccompanyName(accompanyDTOList);
             LambdaQueryWrapper<PatrolCheckResult> queryWrapper = new LambdaQueryWrapper<>();
-            queryWrapper.eq(PatrolCheckResult::getTaskDeviceId, e.getId());
+            queryWrapper.eq(PatrolCheckResult::getTaskDeviceId, e.getId()).eq(PatrolCheckResult::getHierarchyType,1);
             List<PatrolCheckResult> list = patrolCheckResultMapper.selectList(queryWrapper);
-            List<PatrolCheckResult> rightCheck = list.stream().filter(s -> s.getCheckResult() != null && s.getCheckResult() == 0).collect(Collectors.toList());
-            List<PatrolCheckResult> aberrant = list.stream().filter(s -> s.getCheckResult() != null && s.getCheckResult() == 1).collect(Collectors.toList());
+            List<PatrolCheckResult> rightCheck = list.stream().filter(s -> s.getCheckResult() != null && s.getCheckResult() == 1).collect(Collectors.toList());
+            List<PatrolCheckResult> aberrant = list.stream().filter(s -> s.getCheckResult() != null && s.getCheckResult() == 0).collect(Collectors.toList());
             if (CollUtil.isNotEmpty(rightCheck)) {
                 e.setRightCheckNumber(rightCheck.size());
             } else {

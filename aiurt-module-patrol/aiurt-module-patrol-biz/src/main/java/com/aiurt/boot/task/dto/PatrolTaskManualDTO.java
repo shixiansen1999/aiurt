@@ -1,6 +1,8 @@
 package com.aiurt.boot.task.dto;
 
+import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableId;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -19,6 +21,10 @@ import java.util.List;
 @Data
 public class PatrolTaskManualDTO {
 
+    /**主键ID*/
+    @TableId(type = IdType.ASSIGN_ID)
+    @ApiModelProperty(value = "主键ID")
+    private java.lang.String id;
     @Excel(name = "任务编号", width = 15)
     @ApiModelProperty(value = "任务编号")
     @TableField(value = "`code`")

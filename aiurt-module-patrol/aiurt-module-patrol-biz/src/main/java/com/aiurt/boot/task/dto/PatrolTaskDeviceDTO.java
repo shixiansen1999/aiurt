@@ -114,7 +114,11 @@ public class PatrolTaskDeviceDTO {
     private java.lang.Integer deviceType;
     @Excel(name = "同行人", width = 15)
     @ApiModelProperty(value = "同行人")
-    private java.lang.String accompanyName;
+    @TableField(exist = false)
+    private String userName;
+    @Excel(name = "同行人的信息", width = 15)
+    @ApiModelProperty(value = "同行人的信息")
+    private List <PatrolAccompanyDTO> accompanyName;
     /**巡检位置*/
     @Excel(name = "巡检位置", width = 15)
     @ApiModelProperty(value = "巡检位置")
