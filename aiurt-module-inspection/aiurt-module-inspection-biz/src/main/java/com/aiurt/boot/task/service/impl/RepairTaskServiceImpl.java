@@ -146,9 +146,6 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
     public Page<RepairTaskDTO> selectTasklet(Page<RepairTaskDTO> pageList, RepairTaskDTO condition) {
         List<RepairTaskDTO> repairTasks = repairTaskMapper.selectTasklet(pageList, condition);
         repairTasks.forEach(e->{
-            //检修结果
-            e.setMaintenanceResultsName(sysBaseAPI.translateDict(DictConstant.OVERHAUL_RESULT, String.valueOf(e.getMaintenanceResults())));
-
             //查询同行人
             LambdaQueryWrapper<RepairTaskPeerRel> repairTaskPeerRelLambdaQueryWrapper = new LambdaQueryWrapper<>();
             List<RepairTaskPeerRel> repairTaskPeer = repairTaskPeerRelMapper.selectList(repairTaskPeerRelLambdaQueryWrapper.eq(RepairTaskPeerRel::getRepairTaskDeviceCode, e.getOverhaulCode()));
@@ -192,7 +189,7 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
             }if (e.getIsSubmit()!=null && e.getIsSubmit()==1){
                 e.setTaskStatusName("已提交");
             }
-            //检修人名称
+            //提交人名称
             if (e.getOverhaulId()!=null){
                 LoginUser userById = sysBaseAPI.getUserById(e.getOverhaulId());
                 e.setOverhaulName(userById.getUsername());
