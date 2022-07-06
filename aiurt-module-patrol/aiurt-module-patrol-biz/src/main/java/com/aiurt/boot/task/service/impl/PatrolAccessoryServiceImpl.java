@@ -1,5 +1,6 @@
 package com.aiurt.boot.task.service.impl;
 
+import cn.hutool.core.collection.CollUtil;
 import com.aiurt.boot.task.dto.PatrolAccessoryDTO;
 import com.aiurt.boot.task.dto.PatrolAccessorySaveDTO;
 import com.aiurt.boot.task.entity.PatrolAccessory;
@@ -32,24 +33,29 @@ private PatrolCheckResultMapper patrolCheckResultMapper;
     @Override
     public void savePatrolTaskAccessory(PatrolAccessorySaveDTO patrolAccessory) {
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        LambdaQueryWrapper<PatrolAccessory> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(PatrolAccessory::getCheckResultId,patrolAccessory.getId()).eq(PatrolAccessory::getTaskDeviceId,patrolAccessory.getTaskDeviceId());
-        List<PatrolAccessory> list = patrolAccessoryMapper.selectList(queryWrapper);
-        patrolAccessoryMapper.deleteBatchIds(list);
         LambdaUpdateWrapper<PatrolCheckResult> updateWrapper= new LambdaUpdateWrapper<>();
         updateWrapper.set(PatrolCheckResult::getUserId,sysUser.getId()).set(PatrolCheckResult::getDelFlag,0).eq(PatrolCheckResult::getId,patrolAccessory.getId());
         PatrolCheckResult result = new PatrolCheckResult();
         patrolCheckResultMapper.update(result,updateWrapper);
-        List<PatrolAccessoryDTO> patrolAccessoryDTOList = patrolAccessory.getPatrolAccessoryDTOList();
-        patrolAccessoryDTOList.stream().forEach(e->{
-            PatrolAccessory accessory = new PatrolAccessory();
-            accessory.setDelFlag(0);
-            accessory.setName(e.getName());
-            accessory.setAddress(e.getAddress());
-            accessory.setTaskDeviceId(patrolAccessory.getTaskDeviceId());
-            accessory.setCheckResultId(patrolAccessory.getId());
-            patrolAccessoryMapper.insert(accessory);
-        });
-
+        LambdaQueryWrapper<PatrolAccessory> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(PatrolAccessory::getCheckResultId,patrolAccessory.getId()).eq(PatrolAccessory::getTaskDeviceId,patrolAccessory.getTaskDeviceId());
+        List<PatrolAccessory> list = patrolAccessoryMapper.selectList(queryWrapper);
+        if(CollUtil.isNotEmpty(list))
+        {
+            patrolAccessoryMapper.deleteBatchIds(list);
+        }
+            List<PatrolAccessoryDTO> patrolAccessoryDTOList = patrolAccessory.getPatrolAccessoryDTOList();
+            if(CollUtil.isNotEmpty(patrolAccessoryDTOList))
+            {
+                patrolAccessoryDTOList.stream().forEach(e->{
+                    PatrolAccessory accessory = new PatrolAccessory();
+                    accessory.setDelFlag(0);
+                    accessory.setName(e.getName());
+                    accessory.setAddress(e.getAddress());
+                    accessory.setTaskDeviceId(patrolAccessory.getTaskDeviceId());
+                    accessory.setCheckResultId(patrolAccessory.getId());
+                    patrolAccessoryMapper.insert(accessory);
+                });
+            }
     }
 }

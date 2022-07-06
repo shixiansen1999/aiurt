@@ -134,18 +134,11 @@
         where id = #{userId}
     </select>
     <select id="getPosition" resultType="java.lang.String">
-        select (select CONCAT(t2.line_name, "-", t2.station_name)
+        select (select CONCAT(t2.line_name, "/", t2.station_name)
                 from cs_station t2
                 where t1.station_code = t2.station_code) as station
         from patrol_task_station t1
         where t1.task_code = #{code}
-    </select>
-    <select id="getStandardName" resultType="java.lang.String">
-        SELECT t3.name
-        FROM patrol_task_standard t1
-                 LEFT JOIN patrol_task_device t2 on t1.id = t2.task_standard_id and t1.task_id = t2.task_id
-                 LEFT JOIN patrol_standard t3 on t3.code = t1.standard_code
-        WHERE t2.id = #{deviceId}
     </select>
     <select id="getDeviceInfoByCode" resultType="com.aiurt.modules.device.entity.Device">
         SELECT *
@@ -172,4 +165,11 @@ select t1.position_name
 from cs_station_position t1
 where t1.position_code = #{positionCode}
 </select>
+<select id="getStandardName" resultType="com.aiurt.boot.standard.entity.PatrolStandard">
+   SELECT t3.name,t3.device_type
+        FROM patrol_task_standard t1
+                 LEFT JOIN patrol_task_device t2 on t1.id = t2.task_standard_id and t1.task_id = t2.task_id
+                 LEFT JOIN patrol_standard t3 on t3.code = t1.standard_code
+        WHERE t2.id = #{deviceId}
+ </select>
 </mapper>

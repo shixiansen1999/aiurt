@@ -10,6 +10,7 @@ import com.aiurt.boot.plan.entity.PatrolPlan;
 import com.aiurt.boot.plan.mapper.PatrolPlanMapper;
 import com.aiurt.boot.standard.entity.PatrolStandard;
 import com.aiurt.boot.standard.mapper.PatrolStandardMapper;
+import com.aiurt.boot.task.controller.PatrolOrgDTO;
 import com.aiurt.boot.task.dto.*;
 import com.aiurt.boot.task.entity.*;
 import com.aiurt.boot.task.mapper.*;
@@ -302,10 +303,10 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
     }
 
     @Override
-    public List<PatrolTaskUserDTO> getPatrolTaskAppointSelect(List<String> orgCoed) {
+    public List<PatrolTaskUserDTO> getPatrolTaskAppointSelect(PatrolOrgDTO orgCoed) {
         //查询这个部门的信息人员,传组织机构ids
         List<PatrolTaskUserDTO> arrayList = new ArrayList<>();
-        for (String code : orgCoed) {
+        for (String code : orgCoed.getOrg()) {
             PatrolTaskUserDTO userDTO = new PatrolTaskUserDTO();
             String organizationName = patrolTaskMapper.getOrgName(code);
             List<PatrolTaskUserContentDTO> user = patrolTaskMapper.getUser(code);
@@ -369,6 +370,21 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
     @Override
     public Page<PatrolTaskDTO> getPatrolTaskManualList(Page<PatrolTaskDTO> pageList, PatrolTaskDTO patrolTaskDTO) {
         List<PatrolTaskDTO> taskDTOList = patrolTaskMapper.getPatrolTaskManualList(pageList, patrolTaskDTO);
+        taskDTOList.stream().forEach(e->{
+            List<PatrolTaskStandardDTO> patrolTaskStandard = patrolTaskStandardMapper.getMajorSystemName(e.getId());
+            String majorName = patrolTaskStandard.stream().map(PatrolTaskStandardDTO::getMajorName).collect(Collectors.joining(","));
+            String sysName = patrolTaskStandard.stream().map(PatrolTaskStandardDTO::getSysName).collect(Collectors.joining(","));
+            List<String> orgCodes = patrolTaskMapper.getOrgCode(e.getCode());
+            List<String> organizationName = patrolTaskMapper.getOrganizationName(e.getCode());
+            List<String> stationName = patrolTaskMapper.getStationName(e.getCode());
+            String orgName = organizationName.stream().collect(Collectors.joining(","));
+            String stName = stationName.stream().collect(Collectors.joining(","));
+            e.setSysName(sysName);
+            e.setMajorName(majorName);
+            e.setOrgCodeList(orgCodes);
+            e.setOrganizationName(orgName);
+            e.setStationName(stName);
+        });
         return pageList.setRecords(taskDTOList);
     }
 
@@ -562,7 +578,6 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
             LambdaQueryWrapper<PatrolTaskDevice> queryWrapper = new LambdaQueryWrapper<>();
             queryWrapper.eq(PatrolTaskDevice::getTaskId,e.getTaskId()).eq(PatrolTaskDevice::getTaskStandardId,e.getTaskStandardId());
             List<PatrolTaskDevice> taskDeviceList = patrolTaskDeviceMapper.selectList(queryWrapper);
-
             List<DeviceDTO> deviceDTOList = new ArrayList<>();
             List<DeviceDTO> dtoList = new ArrayList<>();
             taskDeviceList.stream().forEach(td->{

@@ -10,6 +10,6 @@ where t1.task_device_id = #{taskDeviceId} and t1.check_result_id = #{checkResult
 <select id="getCheckAllAccessory" resultType="com.aiurt.boot.task.dto.PatrolAccessoryDTO">
 select t1.*
 from patrol_accessory t1
-where t1.task_device_id = #{taskDeviceId}
+where t1.task_device_id = #{id}
 </select>
 </mapper>

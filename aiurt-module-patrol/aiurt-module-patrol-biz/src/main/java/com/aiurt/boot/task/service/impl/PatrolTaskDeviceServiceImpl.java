@@ -6,6 +6,7 @@ import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.constant.PatrolConstant;
+import com.aiurt.boot.standard.entity.PatrolStandard;
 import com.aiurt.boot.standard.entity.PatrolStandardItems;
 import com.aiurt.boot.standard.mapper.PatrolStandardItemsMapper;
 import com.aiurt.boot.task.dto.PatrolAccessoryDTO;
@@ -103,21 +104,19 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
                 long duration = DateUtil.between(startTime, checkTime, DateUnit.MINUTE);
                 e.setInspectionTime(duration);
             }
-            String taskStandardName = patrolTaskDeviceMapper.getStandardName(e.getId());
-            e.setTaskStandardName(taskStandardName);
+            PatrolStandard taskStandardName = patrolTaskDeviceMapper.getStandardName(e.getId());
+            e.setTaskStandardName(taskStandardName.getName());
+            e.setDeviceType(taskStandardName.getDeviceType());
             LambdaQueryWrapper<PatrolCheckResult> lambdaQueryWrapper = new LambdaQueryWrapper<>();
             List<PatrolAccessoryDTO> patrolAccessoryDTOList = new ArrayList<>();
             lambdaQueryWrapper.eq(PatrolCheckResult::getTaskDeviceId, e.getId());
-            List<PatrolCheckResult> patrolCheckResult = patrolCheckResultMapper.selectList(lambdaQueryWrapper);
-            if (CollUtil.isNotEmpty(patrolCheckResult)) {
-                patrolCheckResult.stream().forEach(c -> {
-                    patrolAccessoryDTOList.addAll(patrolAccessoryMapper.getCheckAllAccessory(c.getId()));
-                });
-                e.setAccessoryDTOList(patrolAccessoryDTOList);
-            }
+            patrolAccessoryDTOList.addAll(patrolAccessoryMapper.getCheckAllAccessory(e.getId()));
+            e.setAccessoryDTOList(patrolAccessoryDTOList);
             String submitName = patrolTaskDeviceMapper.getSubmitName(e.getUserId());
             e.setSubmitName(submitName);
             PatrolTask patrolTask = patrolTaskMapper.selectById(e.getTaskId());
+            List<String> orgCodes = patrolTaskMapper.getOrgCode(patrolTask.getCode());
+            e.setOrgList(orgCodes);
             List<String> position = patrolTaskDeviceMapper.getPosition(patrolTask.getCode());
             String stationName = position.stream().collect(Collectors.joining(","));
             e.setStationName(stationName);
@@ -128,14 +127,14 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
                 size.set(size.get() - 1);
                 stringBuffer.append(s);
                 if (ObjectUtil.isNotEmpty(e.getCustomPosition())) {
-                    stringBuffer.append("-");
+                    stringBuffer.append("/");
                     stringBuffer.append(e.getCustomPosition());
                 }
                 if (size.get() != 0) {
                     stringBuffer.append(",");
                 }
             });
-            e.setPosition(stringBuffer.toString());
+            e.setInspectionPosition(stringBuffer.toString());
             String accompanyName = patrolAccompanyMapper.getAccompanyName(e.getPatrolNumber());
             e.setAccompanyName(accompanyName);
             LambdaQueryWrapper<PatrolCheckResult> queryWrapper = new LambdaQueryWrapper<>();

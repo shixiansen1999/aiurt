@@ -1,5 +1,6 @@
 package com.aiurt.boot.task.service;
 
+import com.aiurt.boot.task.controller.PatrolOrgDTO;
 import com.aiurt.boot.task.dto.*;
 import com.aiurt.boot.task.entity.PatrolTask;
 import com.aiurt.boot.task.param.PatrolTaskParam;
@@ -55,7 +56,7 @@ public interface IPatrolTaskService extends IService<PatrolTask> {
      *
      * @param orgCoed
      */
-    List<PatrolTaskUserDTO> getPatrolTaskAppointSelect(List<String> orgCoed);
+    List<PatrolTaskUserDTO> getPatrolTaskAppointSelect(PatrolOrgDTO orgCoed);
 
     /**
      * PC巡检任务池列表

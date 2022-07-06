@@ -61,17 +61,18 @@ public class PatrolCheckResultController extends BaseController<PatrolCheckResul
 	  * @param req
 	  * @return
 	  */
-	 @AutoLog(value = "app巡检-检查项-检查结果-保存")
-	 @ApiOperation(value = "app巡检-检查项-检查结果-保存", notes = "app巡检-检查项-检查结果-保存")
+	 @AutoLog(value = "app巡检-检查项-检查结果备注-保存")
+	 @ApiOperation(value = "app巡检-检查项-检查结果备注-保存", notes = "app巡检-检查项-检查结果备注-保存")
 	 @PostMapping(value = "/patrolTaskCheckResult")
 	 public Result<?> patrolTaskCheckResult(@RequestParam(name ="id")String id,
 											@RequestParam(name="checkResult") String checkResult,
+											@RequestParam(name="remark") String remark,
 											HttpServletRequest req) {
 		 LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
 		 LambdaUpdateWrapper<PatrolCheckResult> updateWrapper= new LambdaUpdateWrapper<>();
-		 updateWrapper.set(PatrolCheckResult::getCheckResult,checkResult).set(PatrolCheckResult::getUserId,sysUser.getId()).eq(PatrolCheckResult::getId,id);
+		 updateWrapper.set(PatrolCheckResult::getCheckResult,checkResult).set(PatrolCheckResult::getRemark,remark).set(PatrolCheckResult::getUserId,sysUser.getId()).eq(PatrolCheckResult::getId,id);
 		 patrolCheckResultService.update(updateWrapper);
-		 return Result.OK("检查结果保存成功");
+		 return Result.OK("保存成功");
 	 }
 	 /**
 	  * app巡检-检查项-备注-保存

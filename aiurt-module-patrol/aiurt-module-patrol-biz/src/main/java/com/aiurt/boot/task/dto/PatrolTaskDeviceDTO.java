@@ -1,6 +1,7 @@
 package com.aiurt.boot.task.dto;
 
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModelProperty;
@@ -53,7 +54,13 @@ public class PatrolTaskDeviceDTO {
     /**站点*/
     @Excel(name = "站点", width = 15)
     @ApiModelProperty(value = "站点")
+    @TableField(exist = false)
     private java.lang.String stationName;
+    /**组织code*/
+    @Excel(name = "组织code", width = 15)
+    @ApiModelProperty(value = "组织code")
+    @TableField(exist = false)
+    private List <String> orgList;
     /**设备位置*/
     @Excel(name = "设备位置", width = 15)
     @ApiModelProperty(value = "设备位置")
@@ -89,9 +96,9 @@ public class PatrolTaskDeviceDTO {
     @Excel(name = "提交人", width = 15)
     @ApiModelProperty(value = "提交人")
     private java.lang.String submitName;
-    /**巡检结果：0未开始、1巡检中、2已完成*/
-    @Excel(name = "巡检结果：0未开始、1进行中、2已提交", width = 15)
-    @ApiModelProperty(value = "巡检结果：0未开始、1进行中、2已提交")
+    /**巡检状态：0未开始、1巡检中、2已完成*/
+    @Excel(name = "巡检状态：0未开始、1进行中、2已提交", width = 15)
+    @ApiModelProperty(value = "巡检状态：0未开始、1进行中、2已提交")
     private java.lang.Integer status;
     /**删除状态： 0未删除 1已删除*/
     @Excel(name = "删除状态： 0未删除 1已删除", width = 15)
@@ -100,13 +107,19 @@ public class PatrolTaskDeviceDTO {
     @Excel(name = "巡检标准表Id", width = 15)
     @ApiModelProperty(value = "巡检标准表Id")
     private java.lang.String standardId;
+    /**与设备类型相关：0否 1 是*/
+    @Excel(name = "与设备类型相关：0否 1 是", width = 15)
+    @ApiModelProperty(value = "与设备类型相关：0否 1 是")
+    @TableField(exist = false)
+    private java.lang.Integer deviceType;
     @Excel(name = "同行人", width = 15)
     @ApiModelProperty(value = "同行人")
     private java.lang.String accompanyName;
     /**巡检位置*/
     @Excel(name = "巡检位置", width = 15)
     @ApiModelProperty(value = "巡检位置")
-    private java.lang.String  position;
+    @TableField(exist = false)
+    private java.lang.String  inspectionPosition;
     /**巡检自定义位置*/
     @Excel(name = "巡检自定义位置", width = 15)
     @ApiModelProperty(value = "巡检自定义位置")
