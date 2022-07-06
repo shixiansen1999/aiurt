@@ -209,7 +209,7 @@ public class Device extends DictEntity {
 	/**供应商(厂商信息表_编码)*/
 	@Excel(name = "供应商(厂商信息表_编码)", width = 15)
 	@ApiModelProperty(value = "供应商(厂商信息表_编码)")
-	@Dict(dictTable ="cs_manufactor",dicText = "name",dicCode = "code")
+	@Dict(dictTable ="cs_manufactor",dicText = "name",dicCode = "id")
 	private  String  manufactorCode;
 	/**生产厂商手动翻译*/
 	@Excel(name = "生产厂商手动翻译", width = 15)
