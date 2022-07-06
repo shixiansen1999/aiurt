@@ -20,4 +20,9 @@ public interface IFaultRepairParticipantsService extends IService<FaultRepairPar
      */
     List<FaultRepairParticipants> queryParticipantsByRecordId(String recordId);
 
+    /**
+     * 根据维修记录删除参与人
+     * @param id
+     */
+    void removeByRecordId(String id);
 }

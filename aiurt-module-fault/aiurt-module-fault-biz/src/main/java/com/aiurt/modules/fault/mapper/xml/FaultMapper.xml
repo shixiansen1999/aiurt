@@ -24,5 +24,36 @@
             `fault_reason`,
             `solution`
             ) AGAINST (#{matchName} IN BOOLEAN MODE)
+        <if test="majorCode != null and majorCode != ''">
+            and major_code = #{majorCode}
+        </if>
+        <if test="systemCode != null and systemCode != ''">
+            and system_code = #{sysOrgCode}
+        </if>
+    </select>
+
+    <select id="pageList" resultType="com.aiurt.modules.faultknowledgebase.entity.FaultKnowledgeBase">
+        select
+             *,
+        MATCH (
+        `fault_phenomenon`,
+        `fault_reason`,
+        `solution`
+        ) AGAINST (#{condition.matchName} IN BOOLEAN MODE) as scode
+        from
+            fault_knowledge_base
+        WHERE
+            MATCH (
+            `fault_phenomenon`,
+            `fault_reason`,
+            `solution`
+            ) AGAINST (#{condition.matchName} IN BOOLEAN MODE)
+        <if test="condition.majorCode != null and condition.majorCode != ''">
+            and major_code = #{condition.majorCode}
+        </if>
+        <if test="condition.systemCode != null and condition.systemCode != ''">
+            and system_code = #{condition.sysOrgCode}
+        </if>
+        order by scode desc
     </select>
 </mapper>

@@ -172,4 +172,7 @@ public class FaultRepairRecord implements Serializable {
 
     @ApiModelProperty(value = "指派时间")
     private Date assignTime;
+
+    @ApiModelProperty("使用的解决方案ID")
+    private String knowledgeId;
 }

@@ -232,9 +232,11 @@ public class Fault extends DictEntity implements Serializable {
     @ApiModelProperty("故障设备类表")
 	private List<FaultDevice> faultDeviceList;
 
-	@ApiModelProperty("推荐的故障知识库id, 逗号隔开")
-    @TableField(exist = false)
-	private String knowledgeBaseId;
+	@ApiModelProperty("推荐使用的故障知识库id, 逗号隔开")
+	private String knowledgeBaseIds;
+
+	@ApiModelProperty("使用的解决方案ID")
+	private String knowledgeId;
 
 	@ApiModelProperty(value = "yn, 是否委外 1:是,0否", required = true)
     @Dict(dicCode = "yn")

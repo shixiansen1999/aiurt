@@ -5,12 +5,12 @@ import com.aiurt.modules.fault.entity.FaultRepairParticipants;
 import com.aiurt.modules.fault.mapper.FaultRepairParticipantsMapper;
 import com.aiurt.modules.fault.service.IFaultRepairParticipantsService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import lombok.extern.slf4j.Slf4j;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 
 import java.util.Collections;
 import java.util.List;
@@ -23,6 +23,7 @@ import java.util.stream.Collectors;
  * @Date:   2022-06-28
  * @Version: V1.0
  */
+@Slf4j
 @Service
 public class FaultRepairParticipantsServiceImpl extends ServiceImpl<FaultRepairParticipantsMapper, FaultRepairParticipants> implements IFaultRepairParticipantsService {
 
@@ -61,5 +62,18 @@ public class FaultRepairParticipantsServiceImpl extends ServiceImpl<FaultRepairP
             par.setUserId(userIdMap.get(par.getUserName()));
         });
         return participantsList;
+    }
+
+    /**
+     *根据维修记录删除参与人
+     * @param id
+     */
+    @Override
+    public void removeByRecordId(String id) {
+        log.info("删除参与人:{}",id);
+        LambdaQueryWrapper<FaultRepairParticipants> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(FaultRepairParticipants::getFaultRepairRecordId, id);
+        remove(wrapper);
+        log.info("删除参与人成功:{}",id);
     }
 }

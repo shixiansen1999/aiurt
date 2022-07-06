@@ -63,8 +63,10 @@ public class FaultController extends BaseController<Fault, IFaultService> {
                                               @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
                                               @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize,
                                               HttpServletRequest req) {
+        //if (fault.getLineCode())
         QueryWrapper<Fault> queryWrapper = QueryGenerator.initQueryWrapper(fault, req.getParameterMap());
         Page<Fault> page = new Page<>(pageNo, pageSize);
+        queryWrapper.orderByDesc("create_time");
         IPage<Fault> pageList = faultService.page(page, queryWrapper);
         return Result.OK(pageList);
     }
@@ -196,7 +198,7 @@ public class FaultController extends BaseController<Fault, IFaultService> {
     @PutMapping("/refuseAssignment")
     public Result<?> refuseAssignment(@RequestBody RefuseAssignmentDTO refuseAssignmentDTO) {
         faultService.refuseAssignment(refuseAssignmentDTO);
-        return Result.OK();
+        return Result.OK("拒收指派成功");
     }
 
     /**
@@ -209,7 +211,7 @@ public class FaultController extends BaseController<Fault, IFaultService> {
     @PutMapping("/startRepair")
     public Result<?> startRepair(@RequestBody RefuseAssignmentDTO refuseAssignmentDTO) {
         faultService.startRepair(refuseAssignmentDTO.getFaultCode());
-        return Result.OK();
+        return Result.OK("操作成功");
     }
 
     /**
@@ -222,7 +224,7 @@ public class FaultController extends BaseController<Fault, IFaultService> {
     @PutMapping("/hangUp")
     public Result<?> hangUp(@RequestBody HangUpDTO hangUpDTO) {
         faultService.hangUp(hangUpDTO);
-        return Result.OK();
+        return Result.OK("操作成功");
     }
 
     /**
@@ -235,7 +237,7 @@ public class FaultController extends BaseController<Fault, IFaultService> {
     @PutMapping("/approvalHangUp")
     public Result<?> approvalHangUp(@RequestBody ApprovalHangUpDTO approvalHangUpDTO) {
         faultService.approvalHangUp(approvalHangUpDTO);
-        return Result.OK();
+        return Result.OK("操作成功");
     }
 
     /**
@@ -248,7 +250,7 @@ public class FaultController extends BaseController<Fault, IFaultService> {
     @PutMapping("/cancelHangup")
     public Result<?> cancelHangup(@RequestBody HangUpDTO hangUpDTO) {
         faultService.cancelHangup(hangUpDTO.getFaultCode());
-        return Result.OK();
+        return Result.OK("操作成功");
     }
 
     /**
@@ -280,7 +282,7 @@ public class FaultController extends BaseController<Fault, IFaultService> {
     @PutMapping("/updateRepairRecord")
     public Result<?> updateRepairRecord(@RequestBody RepairRecordDTO repairRecordDTO) {
         faultService.fillRepairRecord(repairRecordDTO);
-        return Result.OK();
+        return Result.OK("操作成功");
     }
 
     /**
@@ -293,7 +295,7 @@ public class FaultController extends BaseController<Fault, IFaultService> {
     @PutMapping("/approvalResult")
     public Result<?> approvalResult(@RequestBody ApprovalResultDTO resultDTO) {
         faultService.approvalResult(resultDTO);
-        return Result.OK();
+        return Result.OK("操作成功");
     }
 
     /**
@@ -308,6 +310,26 @@ public class FaultController extends BaseController<Fault, IFaultService> {
         KnowledgeDTO knowledgeDTO = faultService.queryKnowledge(faultKnowledgeBase);
         return Result.OK(knowledgeDTO);
     }
+
+    /**
+     * 故障解决方案分页列表查询
+     *
+     * @param pageNo
+     * @param pageSize
+     * @return
+     */
+    @AutoLog(value = "故障解决方案分页列表查询")
+    @ApiOperation(value = "故障解决方案分页列表查询", notes = "故障解决方案分页列表查询")
+    @GetMapping(value = "/KnowledgeList")
+    public Result<IPage<FaultKnowledgeBase>> queryKnowledgePageList(FaultKnowledgeBase knowledgeBase,
+                                              @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
+                                              @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize) {
+
+        Page<FaultKnowledgeBase> page = new Page<>(pageNo, pageSize);
+        IPage<FaultKnowledgeBase> pageList = faultService.pageList(page,knowledgeBase);
+        return Result.OK(pageList);
+    }
+
 
 
     @AutoLog(value = "查询工作类型")

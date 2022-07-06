@@ -112,4 +112,10 @@ public class RepairRecordDTO implements Serializable {
     @ApiModelProperty(value = "开始维修时间")
     private Date startTime;
 
+    @ApiModelProperty(value = "解决方案id")
+    private String knowledgeId;
+
+    @ApiModelProperty(value = "总解决方案记录数")
+    private Long total;
+
 }

@@ -5,6 +5,7 @@ import java.util.List;
 import com.aiurt.modules.basic.entity.CsWork;
 import com.aiurt.modules.fault.entity.Fault;
 import com.aiurt.modules.faultknowledgebase.entity.FaultKnowledgeBase;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.ibatis.annotations.Param;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
@@ -37,4 +38,12 @@ public interface FaultMapper extends BaseMapper<Fault> {
       * @return
       */
      List<String> queryKnowledge(FaultKnowledgeBase faultKnowledgeBase);
+
+     /**
+      *
+      * @param page
+      * @param knowledgeBase
+      * @return
+      */
+     List<FaultKnowledgeBase> pageList(Page<FaultKnowledgeBase> page, @Param("condition") FaultKnowledgeBase knowledgeBase);
 }

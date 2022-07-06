@@ -15,6 +15,8 @@ import com.aiurt.modules.fault.service.*;
 import com.aiurt.modules.faultknowledgebase.entity.FaultKnowledgeBase;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.ansj.domain.Result;
@@ -518,8 +520,10 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
     public RepairRecordDTO queryRepairRecord(String faultCode) {
         LoginUser loginUser = checkLogin();
 
+        Fault fault = isExist(faultCode);
+
         LambdaQueryWrapper<FaultRepairRecord> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(FaultRepairRecord::getFaultCode, faultCode) //.eq(FaultRepairRecord::getAppointUserName, loginUser.getUsername())
+        wrapper.eq(FaultRepairRecord::getFaultCode, faultCode)//.eq(FaultRepairRecord::getAppointUserName, loginUser.getUsername())
                 .eq(FaultRepairRecord::getDelFlag, CommonConstant.DEL_FLAG_0)
                 .orderByDesc(FaultRepairRecord::getCreateTime).last("limit 1");
         FaultRepairRecord repairRecord = repairRecordService.getBaseMapper().selectOne(wrapper);
@@ -579,6 +583,15 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
             repairRecordDTO.setAssignTime(repairRecord.getReceviceTime());
         }
 
+        // 解决方案
+        repairRecordDTO.setKnowledgeId(fault.getKnowledgeId());
+        String knowledgeBaseIds = fault.getKnowledgeBaseIds();
+        List<String> split = StrUtil.split(knowledgeBaseIds, ',');
+        if(CollectionUtil.isEmpty(split)) {
+            repairRecordDTO.setTotal(0L);
+        }else {
+            repairRecordDTO.setTotal((long) split.size());
+        }
         return repairRecordDTO;
     }
 
@@ -602,6 +615,8 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
 
         // todo 删除本次的备件更换信息
 
+        // 删除参与人员
+        repairParticipantsService.removeByRecordId(one.getId());
 
         if (StrUtil.isNotBlank(userIds)) {
             List<LoginUser> userList = sysBaseAPI.queryAllUserByIds(StrUtil.split(userIds, ","));
@@ -662,6 +677,8 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         one.setSolveStatus(repairRecordDTO.getSolveStatus());
         one.setUnSloveRemark(repairRecordDTO.getUnSloveRemark());
         one.setFilePath(repairRecordDTO.getFilePath());
+        one.setFaultAnalysis(repairRecordDTO.getFaultAnalysis());
+        one.setMaintenanceMeasures(repairRecordDTO.getMaintenanceMeasures());
 
         // 如果是提交未解决, 0
         Integer assignFlag = repairRecordDTO.getAssignFlag();
@@ -681,12 +698,16 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
             one.setEndTime(new Date());
         }
 
+        // 使用的解决方案
+        fault.setKnowledgeId(repairRecordDTO.getKnowledgeId());
+
+        one.setKnowledgeId(repairRecordDTO.getKnowledgeId());
 
         repairRecordService.updateById(one);
 
         updateById(fault);
 
-        saveLog(loginUser, faultCode, "填写维修记录", FaultStatusEnum.REPAIR.getStatus(), null);
+        saveLog(loginUser, "填写维修记录", faultCode, FaultStatusEnum.REPAIR.getStatus(), null);
 
         // todo 发送消息
 
@@ -713,6 +734,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         if (flag.equals(approvalStatus)) {
             fault.setStatus(FaultStatusEnum.Close.getStatus());
             saveLog(loginUser,"维修结果审核通过", faultCode, FaultStatusEnum.Close.getStatus(), null);
+            // todo 库存计算
         }else {
             fault.setStatus(FaultStatusEnum.REPAIR.getStatus());
             saveLog(loginUser,"维修结果驳回", faultCode, FaultStatusEnum.REPAIR.getStatus(), resultDTO.getApprovalRejection());
@@ -767,6 +789,10 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
     public KnowledgeDTO queryKnowledge(FaultKnowledgeBase faultKnowledgeBase) {
         String faultPhenomenon = faultKnowledgeBase.getFaultPhenomenon();
         log.info("分词解析前数据：{}",faultPhenomenon);
+
+        if (StrUtil.isBlank(faultPhenomenon)) {
+            return new KnowledgeDTO();
+        }
         // 分词
         Result parse = ToAnalysis.parse(faultPhenomenon);
         List<Term> termList = parse.getTerms();
@@ -783,6 +809,30 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         knowledgeDTO.setTotal((long) list.size());
 
         return knowledgeDTO;
+    }
+
+
+    @Override
+    public IPage<FaultKnowledgeBase> pageList(Page<FaultKnowledgeBase> page,FaultKnowledgeBase knowledgeBase) {
+        String faultPhenomenon = knowledgeBase.getFaultPhenomenon();
+        log.info("分词解析前数据：{}",faultPhenomenon);
+
+        if (StrUtil.isBlank(faultPhenomenon)) {
+            return page;
+        }
+        // 分词
+        Result parse = ToAnalysis.parse(faultPhenomenon);
+        List<Term> termList = parse.getTerms();
+        Set<String> set = termList.stream().map(Term::getName).filter(name -> name.length() > 1).collect(Collectors.toSet());
+
+        String matchName = StrUtil.join(" ", set);
+        log.info("分词解析后的数据：{}", matchName);
+
+        knowledgeBase.setMatchName(matchName);
+
+        List<FaultKnowledgeBase> baseList = baseMapper.pageList(page, knowledgeBase);
+        page.setRecords(baseList);
+        return page;
     }
 
     /**

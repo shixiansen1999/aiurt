@@ -5,6 +5,8 @@ import com.aiurt.modules.basic.entity.CsWork;
 import com.aiurt.modules.fault.dto.*;
 import com.aiurt.modules.fault.entity.Fault;
 import com.aiurt.modules.faultknowledgebase.entity.FaultKnowledgeBase;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 import org.jeecg.common.system.vo.LoginUser;
 
@@ -136,4 +138,11 @@ public interface IFaultService extends IService<Fault> {
      * @return
      */
     KnowledgeDTO queryKnowledge(FaultKnowledgeBase faultKnowledgeBase);
+
+    /**
+     * 分页查询
+     * @param page
+     * @return
+     */
+    IPage<FaultKnowledgeBase> pageList(Page<FaultKnowledgeBase> page, FaultKnowledgeBase knowledgeBase);
 }

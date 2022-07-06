@@ -14,7 +14,7 @@ import java.io.Serializable;
 public class KnowledgeDTO implements Serializable {
 
     @ApiModelProperty(value = "总条数")
-    private Long total;
+    private Long total = 0L;
 
     @ApiModelProperty(value = "故障方案ids")
     private String knowledgeIds;

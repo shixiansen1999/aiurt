@@ -92,8 +92,9 @@ public class FaultRepairRecordServiceImpl extends ServiceImpl<FaultRepairRecordM
             }
         });
         recordDetailDTO.setDetailList(detailDTOList);
+        //todo 解决方案
+        String knowledgeId = fault.getKnowledgeId();
 
-        // todo 解决方案
         recordDetailDTO.setFaultKnowledgeBase(new FaultKnowledgeBase());
         return recordDetailDTO;
     }
