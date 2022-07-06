@@ -371,5 +371,12 @@ public class FaultController extends BaseController<Fault, IFaultService> {
     }
 
 
+    @PutMapping("/confirmDevice")
+    @ApiOperation("修改设备/确认设备")
+    public Result<?> confirmDevice(@RequestBody ConfirmDeviceDTO confirmDeviceDTO) {
+
+        return Result.OK();
+    }
+
 
 }
