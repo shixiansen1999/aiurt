@@ -192,7 +192,7 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
             if (e.getStartTime() != null) {
                 e.setTaskStatusName("进行中");
             }
-            if (e.getIsSubmit() != null && e.getIsSubmit() == 1) {
+            if (e.getIsSubmit() != null && e.getIsSubmit().equals(InspectionConstant.IS_EFFECT)) {
                 e.setTaskStatusName("已提交");
             }
             //提交人名称
@@ -446,13 +446,13 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
             }
             if (r.getStatusItem() != null) {
                 //检修值
-                if (r.getStatusItem() == 1) {
+                if (r.getStatusItem().equals(InspectionConstant.NO_STATUS_ITEM)) {
                     r.setInspeciontValueName(null);
                 }
-                if (r.getStatusItem() == 2) {
+                if (r.getStatusItem().equals(InspectionConstant.STATUS_ITEM_CHOICE)) {
                     r.setInspeciontValueName(sysBaseAPI.translateDict(r.getDictCode(), String.valueOf(r.getInspeciontValue())));
                 }
-                if (r.getStatusItem() == 3) {
+                if (r.getStatusItem().equals(InspectionConstant.STATUS_ITEM_INPUT)) {
                     r.setInspeciontValueName(r.getNote());
                 }
             }
