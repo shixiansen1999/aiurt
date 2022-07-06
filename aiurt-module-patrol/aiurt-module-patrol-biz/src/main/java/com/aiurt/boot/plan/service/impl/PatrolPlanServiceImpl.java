@@ -164,7 +164,7 @@ public class PatrolPlanServiceImpl extends ServiceImpl<PatrolPlanMapper, PatrolP
 
     @Override
     public void updateId(PatrolPlanDto patrolPlanDto) {
-        baseMapper.deleteIdorCode(patrolPlanDto.getId(),patrolPlanDto.getCode());
+        baseMapper.deleteIdorCode(patrolPlanDto.getId());
         this.add(patrolPlanDto);
     }
 

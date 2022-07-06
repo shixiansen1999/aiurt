@@ -1,6 +1,7 @@
 package com.aiurt.modules.device.controller;
 
 import com.aiurt.common.aspect.annotation.AutoLog;
+import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.modules.device.entity.Device;
 import com.aiurt.modules.device.entity.DeviceAssembly;
@@ -59,7 +60,7 @@ public class DeviceController {
     @AutoLog(value = "设备-分页列表查询")
     @ApiOperation(value = "设备-分页列表查询", notes = "设备-分页列表查询")
     @GetMapping(value = "/list")
-    public Result<IPage<Device>> queryPageList(Device device,
+    public Result<IPage<Device>> queryPageList(
                                                @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
                                                @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize,
                                                @RequestParam(name = "codeCc", required = false) String positionCodeCc,
@@ -86,8 +87,8 @@ public class DeviceController {
             queryWrapper.apply(" FIND_IN_SET ( '"+deviceTypeCode+"' , REPLACE(device_type_code_cc,'/',',')) ");
         }
         if(positionCodeCc != null && !"".equals(positionCodeCc)){
-            if(positionCodeCc.contains("/")){
-                String[] split = positionCodeCc.split("/");
+            if(positionCodeCc.contains(CommonConstant.SYSTEM_SPLIT_STR)){
+                String[] split = positionCodeCc.split(CommonConstant.SYSTEM_SPLIT_STR);
                 int length = split.length;
                 switch (length){
                     case 2:
@@ -115,7 +116,7 @@ public class DeviceController {
         if(status != null && !"".equals(status)){
             queryWrapper.eq("status", status);
         }
-        queryWrapper.eq("del_flag", 0);
+        queryWrapper.eq("del_flag", CommonConstant.DEL_FLAG_0);
         Page<Device> page = new Page<Device>(pageNo, pageSize);
         IPage<Device> pageList = deviceService.page(page, queryWrapper);
         List<Device> records = pageList.getRecords();
@@ -130,9 +131,9 @@ public class DeviceController {
                 String lineCodeName = sysBaseApi.translateDictFromTable("cs_line", "line_name", "line_code", lineCode);
                 String stationCodeName = sysBaseApi.translateDictFromTable("cs_station", "station_name", "station_code", stationCode);
                 String positionCodeName = sysBaseApi.translateDictFromTable("cs_station_position", "position_name", "position_code", positionCode);
-                String positionCodeCcName = lineCodeName + "/" + stationCodeName  ;
+                String positionCodeCcName = lineCodeName + CommonConstant.SYSTEM_SPLIT_STR + stationCodeName  ;
                 if(!"".equals(positionCodeName) && positionCodeName != null){
-                    positionCodeCcName += "/" + positionCodeName;
+                    positionCodeCcName += CommonConstant.SYSTEM_SPLIT_STR + positionCodeName;
                 }
                 d.setPositionCodeCcName(positionCodeCcName);
             }
@@ -189,7 +190,7 @@ public class DeviceController {
         if(ids != null && !"".equals(ids) && ids.length()>0){
             queryWrapper.in("id", Arrays.asList(ids.split(",")));
         }
-        queryWrapper.eq("del_flag", 0);
+        queryWrapper.eq("del_flag", CommonConstant.DEL_FLAG_0);
         List<Device> devices = deviceService.list(queryWrapper);
         List<Device> deviceList = new ArrayList<>();
         if(devices != null && devices.size()>0){
@@ -257,14 +258,12 @@ public class DeviceController {
         Result<Device> result = new Result<Device>();
         try {
             String deviceTypeCodeCc = device.getDeviceTypeCodeCc()==null?"":device.getDeviceTypeCodeCc();
-//            DeviceType deviceType = iDeviceTypeService.getOne(new QueryWrapper<DeviceType>().eq("code",deviceTypeCode));
-//            String typeCodeCc = iDeviceTypeService.getCcStr(deviceType);
             String deviceTypeCode = deviceService.getCodeByCc(deviceTypeCodeCc);
             device.setDeviceTypeCode(deviceTypeCode);
             String positionCodeCc = device.getPositionCodeCc()==null?"":device.getPositionCodeCc();
             if(!"".equals(positionCodeCc)){
-                if(positionCodeCc.contains("/")){
-                    String[] split = positionCodeCc.split("/");
+                if(positionCodeCc.contains(CommonConstant.SYSTEM_SPLIT_STR)){
+                    String[] split = positionCodeCc.split(CommonConstant.SYSTEM_SPLIT_STR);
                     int length = split.length;
                     switch (length){
                         case 2:
@@ -341,8 +340,8 @@ public class DeviceController {
             }
             String positionCodeCc = device.getPositionCodeCc()==null?"":device.getPositionCodeCc();
             if(!"".equals(positionCodeCc)){
-                if(positionCodeCc.contains("/")){
-                    String[] split = positionCodeCc.split("/");
+                if(positionCodeCc.contains(CommonConstant.SYSTEM_SPLIT_STR)){
+                    String[] split = positionCodeCc.split(CommonConstant.SYSTEM_SPLIT_STR);
                     int length = split.length;
                     switch (length){
                         case 2:
@@ -391,7 +390,6 @@ public class DeviceController {
             QueryWrapper<Device> deviceQueryWrapper = new QueryWrapper<>();
             deviceQueryWrapper.eq("id", id);
             Device device = deviceService.getOne(deviceQueryWrapper);
-//            device.setDelFlag(1);
             deviceService.removeById(device);
         } catch (Exception e) {
             log.error("删除失败", e.getMessage());

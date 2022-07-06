@@ -157,4 +157,19 @@ public class InspectionConstant {
      * 检修结果：2不正常
      */
     public static final Integer NO_RESULT_STATUS = 2;
+
+    /**
+     * 检修值：1无
+     */
+    public static final Integer NO_STATUS_ITEM = 1;
+
+    /**
+     * 检修值：2选择项
+     */
+    public static final Integer STATUS_ITEM_CHOICE = 2;
+
+    /**
+     * 检修值：3输入项
+     */
+    public static final Integer STATUS_ITEM_INPUT = 3;
 }

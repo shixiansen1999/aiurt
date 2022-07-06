@@ -85,24 +85,20 @@ public class MaterialBaseType {
 	private  String  sysOrgCode;
 
 	/**创建人*/
-//	@Excel(name = "创建人", width = 15)
     @ApiModelProperty(value = "创建人")
 	private  String  createBy;
 
 	/**修改人*/
-//	@Excel(name = "修改人", width = 15)
     @ApiModelProperty(value = "修改人")
 	private  String  updateBy;
 
 	/**创建时间 CURRENT_TIMESTAMP*/
-//	@Excel(name = "创建时间 CURRENT_TIMESTAMP", width = 20, format = "yyyy-MM-dd HH:mm:ss")
 	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
     @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
     @ApiModelProperty(value = "创建时间 CURRENT_TIMESTAMP")
 	private  java.util.Date  createTime;
 
 	/**修改时间 根据当前时间戳更新*/
-//	@Excel(name = "修改时间 根据当前时间戳更新", width = 20, format = "yyyy-MM-dd HH:mm:ss")
 	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
     @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
     @ApiModelProperty(value = "修改时间 根据当前时间戳更新")

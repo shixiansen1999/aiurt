@@ -186,11 +186,11 @@ public class DeviceTypeServiceImpl extends ServiceImpl<DeviceTypeMapper, DeviceT
         String res = "";
         String str = Ccstr(deviceType, "");
         if( !"" .equals(str) ){
-            if(str.contains("/")){
-                List<String> strings = Arrays.asList(str.split("/"));
+            if(str.contains(CommonConstant.SYSTEM_SPLIT_STR)){
+                List<String> strings = Arrays.asList(str.split(CommonConstant.SYSTEM_SPLIT_STR));
                 Collections.reverse(strings);
                 for(String s : strings){
-                    res += s + "/";
+                    res += s + CommonConstant.SYSTEM_SPLIT_STR;
                 }
                 res = res.substring(0,res.length()-1);
             }else{

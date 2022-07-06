@@ -5,7 +5,12 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import org.jeecgframework.poi.excel.entity.ImportParams;
 import org.springframework.web.multipart.MultipartFile;
 import org.jeecg.common.api.vo.Result;
-
+/**
+ * @Description: 设备
+ * @Author: swsc
+ * @Date: 2021-09-15
+ * @Version: V1.0
+ */
 public interface IMaterialBaseService extends IService<MaterialBase> {
     /**
      * 物资新增--获取一个物资编码
@@ -20,6 +25,20 @@ public interface IMaterialBaseService extends IService<MaterialBase> {
      * @return
      */
     MaterialBase translate(MaterialBase materialBase);
-    Result importExcelCheckRoleCode(MultipartFile file, ImportParams params) throws Exception;
+
+    /**
+     * 导入
+     * @param file
+     * @param params
+     * @return
+     * @throws Exception
+     */
+    Result importExcelMaterial(MultipartFile file, ImportParams params) throws Exception;
+
+    /**
+     * 编码分级处理
+     * @param baseTypeCodeCc
+     * @return
+     */
     String getCodeByCc(String baseTypeCodeCc);
 }

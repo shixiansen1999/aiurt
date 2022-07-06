@@ -1,5 +1,6 @@
 package com.aiurt.modules.material.service.impl;
 
+import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.modules.major.service.ICsMajorService;
 import com.aiurt.modules.material.entity.MaterialBase;
 import com.aiurt.modules.material.entity.MaterialBaseType;
@@ -42,13 +43,13 @@ public class MaterialBaseTypeServiceImpl extends ServiceImpl<MaterialBaseTypeMap
     @Override
     public String getCcStr(MaterialBaseType materialBaseType) {
         String res = "";
-        String str = Ccstr(materialBaseType, "");
+        String str = cCstr(materialBaseType, "");
         if( !"" .equals(str) ){
-            if(str.contains("/")){
-                List<String> strings = Arrays.asList(str.split("/"));
+            if(str.contains(CommonConstant.SYSTEM_SPLIT_STR)){
+                List<String> strings = Arrays.asList(str.split(CommonConstant.SYSTEM_SPLIT_STR));
                 Collections.reverse(strings);
                 for(String s : strings){
-                    res += s + "/";
+                    res += s + CommonConstant.SYSTEM_SPLIT_STR;
                 }
                 res = res.substring(0,res.length()-1);
             }else{
@@ -67,14 +68,14 @@ public class MaterialBaseTypeServiceImpl extends ServiceImpl<MaterialBaseTypeMap
         }
         return childList;
     }
-    String Ccstr(MaterialBaseType materialBaseType, String str){
+    String cCstr(MaterialBaseType materialBaseType, String str){
         MaterialBaseType materialBaseTyperes = new MaterialBaseType();
-        if("0".equals(materialBaseType.getPid())){
+        if(CommonConstant.SYSTEM_SPLIT_PID.equals(materialBaseType.getPid())){
             str += materialBaseType.getBaseTypeCode();
         }else{
             str += materialBaseType.getBaseTypeCode() + "/";
             materialBaseTyperes = materialBaseTypeMapper.selectById(materialBaseType.getPid());
-            str = Ccstr(materialBaseTyperes, str);
+            str = cCstr(materialBaseTyperes, str);
         }
         return str;
     }

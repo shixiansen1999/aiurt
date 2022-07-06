@@ -13,5 +13,10 @@ import java.util.List;
  * @Version: V1.0
  */
 public interface IDeviceAssemblyService extends IService<DeviceAssembly> {
+    /**
+     *  格式化（物资-设备组件）
+     * @param materialBaseList
+     * @return 设备组件
+     */
     List<DeviceAssembly> fromMaterialToAssembly(List<MaterialBase> materialBaseList);
 }

@@ -1,6 +1,7 @@
 package com.aiurt.modules.material.controller;
 
 import com.aiurt.common.aspect.annotation.AutoLog;
+import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.modules.major.entity.CsMajor;
 import com.aiurt.modules.major.service.ICsMajorService;
@@ -68,7 +69,7 @@ public class MaterialBaseTypeController {
                                                          HttpServletRequest req) {
         Result<IPage<MaterialBaseType>> result = new Result<IPage<MaterialBaseType>>();
         QueryWrapper<MaterialBaseType> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("del_flag", 0);
+        queryWrapper.eq("del_flag", CommonConstant.DEL_FLAG_0);
         if(id != null && !"".equals(id)){
             queryWrapper.and(wrapper->{
                 wrapper.eq("id",id);
@@ -111,7 +112,7 @@ public class MaterialBaseTypeController {
                                                HttpServletRequest req) {
         Result<List<MaterialBaseType>> result = new Result<List<MaterialBaseType>>();
         QueryWrapper<MaterialBaseType> materialBaseTypeQueryWrapper = new QueryWrapper<MaterialBaseType>();
-        materialBaseTypeQueryWrapper.eq("del_flag", 0);
+        materialBaseTypeQueryWrapper.eq("del_flag", CommonConstant.DEL_FLAG_0);
         if(majorCode != null && !"".equals(majorCode)){
             materialBaseTypeQueryWrapper.eq("major_code", majorCode);
         }
@@ -171,7 +172,7 @@ public class MaterialBaseTypeController {
             @RequestParam(name = "id", required = false) String id,
             HttpServletRequest req) {
         Result<List<MaterialBaseType>> result = new Result<List<MaterialBaseType>>();
-        QueryWrapper<MaterialBaseType> queryWrapper = new QueryWrapper<MaterialBaseType>().eq("del_flag", 0);
+        QueryWrapper<MaterialBaseType> queryWrapper = new QueryWrapper<MaterialBaseType>().eq("del_flag", CommonConstant.DEL_FLAG_0);
         if(majorCode != null && !"".equals(majorCode)){
             queryWrapper.eq("major_code", majorCode);
         }
@@ -195,7 +196,7 @@ public class MaterialBaseTypeController {
             @RequestParam(name = "id", required = false) String id,
             HttpServletRequest req) {
         Result<List<MaterialBaseType>> result = new Result<List<MaterialBaseType>>();
-        QueryWrapper<MaterialBaseType> queryWrapper = new QueryWrapper<MaterialBaseType>().eq("del_flag", 0);
+        QueryWrapper<MaterialBaseType> queryWrapper = new QueryWrapper<MaterialBaseType>().eq("del_flag", CommonConstant.DEL_FLAG_0);
         if(id != null && !"".equals(id)){
             queryWrapper.eq("pid", id);
         }
@@ -223,12 +224,10 @@ public class MaterialBaseTypeController {
             }
             String majorCode = materialBaseType.getMajorCode();
             String systemCode = materialBaseType.getSystemCode();
-//            String pid = materialBaseType.getPid();
             QueryWrapper<MaterialBaseType> queryWrapper = new QueryWrapper<MaterialBaseType>().eq("major_code", majorCode);
             queryWrapper.eq("del_flag",0);
             queryWrapper.ne("id",materialBaseType.getId());
             queryWrapper.eq("base_type_name",materialBaseType.getBaseTypeName());
-//            queryWrapper.eq("pid",pid);
             if(systemCode != null && !"".equals(systemCode)){
                 queryWrapper.eq("system_code", systemCode);
             }else {
@@ -259,7 +258,7 @@ public class MaterialBaseTypeController {
     public Result<MaterialBaseType> queryById(@RequestParam(name = "id", required = true) String id) {
         MaterialBaseType materialBaseType = iMaterialBaseTypeService.getById(id);
         String pid = materialBaseType.getPid();
-        if("0".equals(pid)){
+        if(CommonConstant.SYSTEM_SPLIT_PID.equals(pid)){
             materialBaseType.setPidName("");
         }else{
             MaterialBaseType pm = iMaterialBaseTypeService.getById(pid);
@@ -368,7 +367,6 @@ public class MaterialBaseTypeController {
                 if((materialBaseList != null && materialBaseList.size()>0) || (materialBaseTypeList != null && materialBaseTypeList.size()>0)){
                     res += "baseTypeCode,";
                 }else{
-//                    materialBaseType.setDelFlag(1);
                     iMaterialBaseTypeService.removeById(materialBaseType);
                 }
             }
