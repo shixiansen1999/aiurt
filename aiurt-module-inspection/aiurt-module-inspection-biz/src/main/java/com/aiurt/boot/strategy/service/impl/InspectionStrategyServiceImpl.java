@@ -79,12 +79,14 @@ public class InspectionStrategyServiceImpl extends ServiceImpl<InspectionStrateg
             inspectionStrStaRel.setInspectionStrCode(inspectionStrategyDTO.getCode());
             inspectionStrStaRelMapper.insert(inspectionStrStaRel);
         }
-        for (String w : inspectionStrategyDTO.getMechanismCodes()) {
+        List<String>mechanismCodes =inspectionStrategyDTO.getMechanismCodes();
+        for (String w :mechanismCodes) {
             InspectionStrOrgRel inspectionStrOrgRel = new InspectionStrOrgRel();
             inspectionStrOrgRel.setOrgCode(w);
             inspectionStrOrgRel.setInspectionStrCode(inspectionStrategyDTO.getCode());
             inspectionStrOrgRelMapper.insert(inspectionStrOrgRel);
         }
+        if (ObjectUtil.isNotNull(inspectionStrategyDTO.getInspectionCodes())){
         for (String f : inspectionStrategyDTO.getInspectionCodes()) {
             InspectionStrRel inspectionStrRel = new InspectionStrRel();
             inspectionStrRel.setInspectionStaCode(f);
@@ -99,8 +101,9 @@ public class InspectionStrategyServiceImpl extends ServiceImpl<InspectionStrateg
                 inspectionStrDeviceRel.setDeviceCode(device.getCode());
                 inspectionStrDeviceRel.setInspectionStrRelId(i.getId());
                 inspectionStrDeviceRelMapper.insert(inspectionStrDeviceRel);
-            }
-        }
+             }
+          }
+       }
     }
 
     @Override
@@ -123,8 +126,9 @@ public class InspectionStrategyServiceImpl extends ServiceImpl<InspectionStrateg
         if (ObjectUtil.isNotEmpty(inspectionStrategyDTO.getMechanismCode())) {
             inspectionStrategyDTO.setMechanismCodes(Arrays.asList(inspectionStrategyDTO.getMechanismCode().split(",")));
         }
+        if (ObjectUtil.isNotNull(inspectionStrategyDTO.getCodes())){
         List<String> codes = Arrays.asList(inspectionStrategyDTO.getCodes().split(","));
-        inspectionStrategyDTO.setInspectionCodeDTOS(baseMapper.selectbyCodes(codes));
+        inspectionStrategyDTO.setInspectionCodeDTOS(baseMapper.selectbyCodes(codes));}
         return inspectionStrategyDTO;
     }
 

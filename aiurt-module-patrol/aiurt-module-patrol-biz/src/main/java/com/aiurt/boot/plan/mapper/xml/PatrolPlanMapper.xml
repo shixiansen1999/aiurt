@@ -182,11 +182,13 @@
     <select id="byCode" resultType="java.lang.String">
         select patrol_plan_standard.id
         from patrol_plan_standard
-        where patrol_plan_standard.standard_code=#{planStandardCode}
+        where patrol_plan_standard.standard_code=#{planStandardCode} and patrol_plan_standard.plan_id=#{planId}
        and patrol_plan_standard.del_flag=0
     </select>
     <select id="viewDetails" resultType="com.aiurt.modules.device.entity.Device">
-        SELECT a.* FROM device a LEFT JOIN patrol_plan_device b on a.`code`=b.device_code
-        WHERE b.plan_standard_id= #{standardId}
+        SELECT a.* FROM device a
+                            LEFT JOIN patrol_plan_device b on a.`code`=b.device_code
+                            LEFT JOIN patrol_plan_standard c ON b.plan_standard_id =c.id
+        WHERE c.standard_code= #{standardCode} and   b.plan_id =#{planId}
     </select>
 </mapper>

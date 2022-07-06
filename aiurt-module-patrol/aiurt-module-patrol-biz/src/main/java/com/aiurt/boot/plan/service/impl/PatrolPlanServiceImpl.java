@@ -126,7 +126,7 @@ public class PatrolPlanServiceImpl extends ServiceImpl<PatrolPlanMapper, PatrolP
             for (Device p:devices){
                 PatrolPlanDevice patrolPlanDevice= new PatrolPlanDevice();
                 patrolPlanDevice.setPlanId(id.getId());
-                String standardId= baseMapper.byCode(p.getPlanStandardCode());
+                String standardId= baseMapper.byCode(p.getPlanStandardCode(),id.getId());
                 patrolPlanDevice.setPlanStandardId(standardId);patrolPlanDevice.setDeviceCode(p.getCode());
                 patrolPlanDeviceMapper.insert(patrolPlanDevice);
             }
@@ -169,8 +169,8 @@ public class PatrolPlanServiceImpl extends ServiceImpl<PatrolPlanMapper, PatrolP
     }
 
     @Override
-    public List<Device> viewDetails(String standardId) {
-        List<Device> list = baseMapper.viewDetails(standardId);
+    public List<Device> viewDetails(String standardCode,String planId) {
+        List<Device> list = baseMapper.viewDetails(standardCode,planId);
         return list;
     }
 }

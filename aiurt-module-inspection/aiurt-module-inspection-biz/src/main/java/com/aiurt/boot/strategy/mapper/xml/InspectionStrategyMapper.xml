@@ -8,7 +8,7 @@
             LEFT JOIN inspection_str_org_rel d ON a.id=d.inspection_str_code
             LEFT JOIN inspection_str_device_rel e ON a.id =e.inspection_str_rel_id
             )
-        SET a.del_flag = 1 ,b.del_flag=1,c.del_flag=1,d.del_flag=1,e.del_flag=1
+        SET a.del_flag = 1 ,b.del_flag=1,c.del_flag=1,d.del_flag=1
         where a.id= #{id}
     </update>
     <delete id="deleteIDorCode">
