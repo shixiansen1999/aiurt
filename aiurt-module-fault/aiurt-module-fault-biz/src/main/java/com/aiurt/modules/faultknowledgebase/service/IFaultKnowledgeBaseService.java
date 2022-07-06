@@ -1,5 +1,6 @@
 package com.aiurt.modules.faultknowledgebase.service;
 
+import com.aiurt.modules.faultanalysisreport.entity.dto.FaultDTO;
 import com.aiurt.modules.faultknowledgebase.entity.FaultKnowledgeBase;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -21,4 +22,12 @@ public interface IFaultKnowledgeBaseService extends IService<FaultKnowledgeBase>
      * @return IPage<faultKnowledgeBase>
      */
     IPage<FaultKnowledgeBase> readAll(Page<FaultKnowledgeBase> page, FaultKnowledgeBase faultKnowledgeBase);
+
+    /**
+     * 故障选择查询
+     * @param page
+     * @param faultDTO
+     * @return List<Fault>
+     * */
+    IPage<FaultDTO> getFault(Page<FaultDTO> page, FaultDTO faultDTO);
 }

@@ -67,8 +67,6 @@
     left join fault_repair_record frr on frr.fault_code = f.`code`
     where
     f.status = 12
-    and  f.`code` not in
-    (select fault_code from fault_analysis_report where del_flag = 0)
     <if test="condition.code != null and condition.code != ''">
         and f.`code` like concat('%',#{condition.code},'%')
     </if>
@@ -90,6 +88,12 @@
     <if test="allSubSystem != null and allSubSystem.size != 0">
         and f.sub_system_code in
         <foreach collection="allSubSystem" index="item" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </if>
+    <if test="faultCodes != null and faultCodes.size() != 0">
+        and  f.`code` not in
+        <foreach collection="faultCodes" item="item" open="(" separator="," close=")">
             #{item}
         </foreach>
     </if>
@@ -138,5 +142,9 @@
     <if test="faultCode != null and faultCode != ''">
         and  far.fault_code = #{faultCode}
     </if>
+    </select>
+
+<select id="getFaultCode" resultType="java.lang.String">
+    select fault_code from fault_analysis_report where del_flag = 0
     </select>
 </mapper>

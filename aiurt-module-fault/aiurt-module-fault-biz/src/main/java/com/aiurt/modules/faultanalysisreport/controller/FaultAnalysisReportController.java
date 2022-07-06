@@ -269,6 +269,7 @@ public class FaultAnalysisReportController extends BaseController<FaultAnalysisR
 											   @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
 											   HttpServletRequest req) {
 		 Page<FaultDTO> page = new Page<>(pageNo, pageSize);
+
 		 IPage<FaultDTO> pageList = faultAnalysisReportService.getFault(page, faultDTO);
 		 return Result.OK(pageList);
 	 }

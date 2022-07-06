@@ -1,6 +1,8 @@
 package com.aiurt.modules.faultknowledgebase.service.impl;
 
 import com.aiurt.modules.faultanalysisreport.constant.FaultConstant;
+import com.aiurt.modules.faultanalysisreport.entity.dto.FaultDTO;
+import com.aiurt.modules.faultanalysisreport.mapper.FaultAnalysisReportMapper;
 import com.aiurt.modules.faultknowledgebase.entity.FaultKnowledgeBase;
 import com.aiurt.modules.faultknowledgebase.mapper.FaultKnowledgeBaseMapper;
 import com.aiurt.modules.faultknowledgebase.service.IFaultKnowledgeBaseService;
@@ -34,6 +36,8 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
     private ISysBaseAPI sysBaseAPI;
     @Autowired
     private FaultKnowledgeBaseTypeMapper faultKnowledgeBaseTypeMapper;
+    @Autowired
+    private FaultAnalysisReportMapper faultAnalysisReportMapper;
 
     @Override
     public IPage<FaultKnowledgeBase> readAll(Page<FaultKnowledgeBase> page, FaultKnowledgeBase faultKnowledgeBase) {
@@ -46,5 +50,14 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
         }
         List<FaultKnowledgeBase> faultKnowledgeBases = faultKnowledgeBaseMapper.readAll(page, faultKnowledgeBase,allSubSystem);
         return page.setRecords(faultKnowledgeBases);
+    }
+
+    @Override
+    public IPage<FaultDTO> getFault(Page<FaultDTO> page, FaultDTO faultDTO) {
+        LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        //当前用户拥有的子系统
+        List<String> allSubSystem = faultKnowledgeBaseTypeMapper.getAllSubSystem(sysUser.getId());
+        List<FaultDTO> faults = faultAnalysisReportMapper.getFault(page, faultDTO,allSubSystem,null);
+        return page.setRecords(faults);
     }
 }

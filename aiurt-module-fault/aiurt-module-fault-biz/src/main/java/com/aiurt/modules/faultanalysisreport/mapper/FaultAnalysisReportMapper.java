@@ -24,6 +24,7 @@ public interface FaultAnalysisReportMapper extends BaseMapper<FaultAnalysisRepor
      * 查询全部故障分析
      * @param page
      * @param condition
+     * @param allSubSystem
      * @return List<FaultAnalysisReport>
      * */
     List<FaultAnalysisReport> readAll(@Param("page")Page<FaultAnalysisReport> page, @Param("condition")FaultAnalysisReport condition,@Param("allSubSystem")List<String> allSubSystem);
@@ -32,9 +33,18 @@ public interface FaultAnalysisReportMapper extends BaseMapper<FaultAnalysisRepor
      * 故障选择查询
      * @param page
      * @param condition
+     * @param allSubSystem
+     * @param faultCodes
      * @return List<Fault>
      * */
-    List<FaultDTO> getFault(@Param("page")Page<FaultDTO> page, @Param("condition")FaultDTO condition,@Param("allSubSystem")List<String> allSubSystem);
+    List<FaultDTO> getFault(@Param("page")Page<FaultDTO> page, @Param("condition")FaultDTO condition,
+                            @Param("allSubSystem")List<String> allSubSystem,@Param("faultCodes")List<String> faultCodes);
+
+    /**
+     * 查询已经被引用的故障
+     * @return List<String>
+     * */
+    List<String> getFaultCode();
 
     /**
      * 提交中的故障分析的故障详情
@@ -46,6 +56,7 @@ public interface FaultAnalysisReportMapper extends BaseMapper<FaultAnalysisRepor
     /**
      * 故障分析通过id查询详情
      * @param id
+     * @param faultCode
      * @return IPage<FaultAnalysisReport>
      */
     FaultAnalysisReport readOne(@Param("id")String id,@Param("faultCode")String faultCode);

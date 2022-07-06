@@ -1,18 +1,24 @@
 package com.aiurt.modules.faultknowledgebase.controller;
 
 import java.io.*;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
+import com.aiurt.modules.fault.entity.Fault;
 import com.aiurt.modules.faultanalysisreport.constant.FaultConstant;
+import com.aiurt.modules.faultanalysisreport.entity.dto.FaultDTO;
+import com.aiurt.modules.faultanalysisreport.service.IFaultAnalysisReportService;
 import com.aiurt.modules.faultknowledgebase.dto.DeviceAssemblyDTO;
 import com.aiurt.modules.faultknowledgebase.dto.DeviceTypeDTO;
 import com.aiurt.modules.faultknowledgebase.mapper.FaultKnowledgeBaseMapper;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.poi.hssf.usermodel.*;
+import org.apache.poi.poifs.filesystem.POIFSFileSystem;
+import org.apache.poi.ss.formula.functions.T;
 import org.jeecg.common.api.vo.Result;
 import com.aiurt.modules.faultknowledgebase.entity.FaultKnowledgeBase;
 import com.aiurt.modules.faultknowledgebase.service.IFaultKnowledgeBaseService;
@@ -47,6 +53,8 @@ public class FaultKnowledgeBaseController extends BaseController<FaultKnowledgeB
 	private IFaultKnowledgeBaseService faultKnowledgeBaseService;
 	 @Autowired
 	 private FaultKnowledgeBaseMapper faultKnowledgeBaseMapper;
+	 @Autowired
+	 private IFaultAnalysisReportService faultAnalysisReportService;
 	/**
 	 * 分页列表查询
 	 *
@@ -78,8 +86,8 @@ public class FaultKnowledgeBaseController extends BaseController<FaultKnowledgeB
 	@ApiOperation(value="故障知识库-添加", notes="故障知识库-添加")
 	@PostMapping(value = "/add")
 	public Result<String> add(@RequestBody FaultKnowledgeBase faultKnowledgeBase) {
-		faultKnowledgeBase.setStatus(FaultConstant.PENDING);
-		faultKnowledgeBase.setApprovedResult(FaultConstant.NO_PASS);
+		//list转string
+		getFaultCodeList(faultKnowledgeBase);
 		faultKnowledgeBaseService.save(faultKnowledgeBase);
 		return Result.OK("添加成功！");
 	}
@@ -114,13 +122,32 @@ public class FaultKnowledgeBaseController extends BaseController<FaultKnowledgeB
 	@ApiOperation(value="故障知识库-编辑", notes="故障知识库-编辑")
 	@RequestMapping(value = "/edit", method = {RequestMethod.PUT,RequestMethod.POST})
 	public Result<String> edit(@RequestBody FaultKnowledgeBase faultKnowledgeBase) {
-		faultKnowledgeBase.setStatus(FaultConstant.PENDING);
-		faultKnowledgeBase.setApprovedResult(FaultConstant.NO_PASS);
+		getFaultCodeList(faultKnowledgeBase);
 		faultKnowledgeBaseService.updateById(faultKnowledgeBase);
 		return Result.OK("编辑成功!");
 	}
 
-	/**
+	 private void getFaultCodeList(FaultKnowledgeBase faultKnowledgeBase) {
+		 List<String> faultCodeList = faultKnowledgeBase.getFaultCodeList();
+		 if (CollectionUtils.isNotEmpty(faultCodeList)) {
+			 StringBuilder stringBuffer = new StringBuilder();
+			 for (String faultCode : faultCodeList) {
+				 stringBuffer.append(faultCode);
+				 stringBuffer.append(",");
+			 }
+			 // 判断字符串长度是否有效
+			 if (stringBuffer.length() > 0)
+			 {
+				 // 截取字符
+				 stringBuffer.deleteCharAt(stringBuffer.length() - 1);
+			 }
+			 faultKnowledgeBase.setFaultCodes(stringBuffer.toString());
+		 }
+		 faultKnowledgeBase.setStatus(FaultConstant.PENDING);
+		 faultKnowledgeBase.setApprovedResult(FaultConstant.NO_PASS);
+	 }
+
+	 /**
 	 *   通过id删除
 	 *
 	 * @param id
@@ -159,7 +186,10 @@ public class FaultKnowledgeBaseController extends BaseController<FaultKnowledgeB
 	@GetMapping(value = "/queryById")
 	public Result<FaultKnowledgeBase> queryById(@RequestParam(name="id",required=true) String id) {
 		FaultKnowledgeBase faultKnowledgeBase = faultKnowledgeBaseMapper.readOne(id);
-		//FaultKnowledgeBase faultKnowledgeBase = faultKnowledgeBaseService.getById(id);
+		String faultCodes = faultKnowledgeBase.getFaultCodes();
+		String[] split = faultCodes.split(",");
+		List<String> list = Arrays.asList(split);
+		faultKnowledgeBase.setFaultCodeList(list);
 		if(faultKnowledgeBase==null) {
 			return Result.error("未找到对应数据");
 		}
@@ -188,9 +218,78 @@ public class FaultKnowledgeBaseController extends BaseController<FaultKnowledgeB
 	@ApiOperation(value="故障知识库-通过excel导入数据", notes="故障知识库-通过excel导入数据")
     @RequestMapping(value = "/importExcel", method = RequestMethod.POST)
     public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) {
-        return super.importExcel(request, response, FaultKnowledgeBase.class);
+       // return super.importExcel(request, response, FaultKnowledgeBase.class);
+		MultipartHttpServletRequest multipartRequest = (MultipartHttpServletRequest) request;
+		Map<String, MultipartFile> fileMap = multipartRequest.getFileMap();
+		for (Map.Entry<String, MultipartFile> entity : fileMap.entrySet()) {
+			// 获取上传文件对象
+			MultipartFile file = entity.getValue();
+			ImportParams params = new ImportParams();
+			params.setTitleRows(1);
+			params.setHeadRows(1);
+			params.setNeedSave(true);
+			try {
+				List<FaultKnowledgeBase> list = ExcelImportUtil.importExcel(file.getInputStream(), FaultKnowledgeBase.class, params);
+				/*for (FaultKnowledgeBase faultKnowledgeBase : list) {
+					String picture = faultKnowledgeBase.getPicture();
+					log.info("图片1："+picture);
+					if (StringUtils.isNotEmpty(picture)) {
+						File file1 = new File(picture);
+						FileInputStream inputStream = new FileInputStream(file1);
+						byte[] buffer = new byte[inputStream.available()];
+						if (inputStream.read(buffer) == -1) {
+							inputStream.close();
+						}
+						StringBuilder imageBase64 = new StringBuilder(Base64.getEncoder().encodeToString(buffer));
+						faultKnowledgeBase.setPicture(new String(imageBase64));
+						log.info("图片2："+faultKnowledgeBase.getPicture());
+					}
+				}*/
+				long start = System.currentTimeMillis();
+				log.info("消耗时间" + (System.currentTimeMillis() - start) + "毫秒");
+				return Result.ok("文件导入成功！数据行数：" + list);
+			} catch (Exception e) {
+				String msg = e.getMessage();
+				log.error(msg, e);
+				if(msg!=null && msg.indexOf("Duplicate entry")>=0){
+					return Result.error("文件导入失败:有重复数据！");
+				}else{
+					return Result.error("文件导入失败:" + e.getMessage());
+				}
+			} finally {
+				try {
+					file.getInputStream().close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+		return Result.error("文件导入失败！");
 	}
 
+	 /**
+	  * 知识库的故障分页查询
+	  *
+	  * @param faultDTO
+	  * @param pageNo
+	  * @param pageSize
+	  * @param req
+	  * @return
+	  */
+	 @AutoLog(value = "知识库的故障分页查询")
+	 @ApiOperation(value="知识库的故障分页查询", notes="fault-分页列表查询")
+	 @GetMapping(value = "/getFault")
+	 @ApiResponses({
+			 @ApiResponse(code = 200, message = "OK", response = Fault.class)
+	 })
+	 public Result<IPage<FaultDTO>> getFault(FaultDTO faultDTO,
+											 @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
+											 @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
+											 HttpServletRequest req) {
+		 Page<FaultDTO> page = new Page<>(pageNo, pageSize);
+		 IPage<FaultDTO> pageList =faultKnowledgeBaseService.getFault(page, faultDTO);
+		 return Result.OK(pageList);
+	 }
 
 	 /**
 	  * 设备分类查询
