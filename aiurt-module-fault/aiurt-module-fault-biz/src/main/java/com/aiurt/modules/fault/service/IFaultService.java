@@ -145,4 +145,10 @@ public interface IFaultService extends IService<Fault> {
      * @return
      */
     IPage<FaultKnowledgeBase> pageList(Page<FaultKnowledgeBase> page, FaultKnowledgeBase knowledgeBase);
+
+    /**
+     * 修改设备
+     * @param confirmDeviceDTO
+     */
+    void confirmDevice(ConfirmDeviceDTO confirmDeviceDTO);
 }

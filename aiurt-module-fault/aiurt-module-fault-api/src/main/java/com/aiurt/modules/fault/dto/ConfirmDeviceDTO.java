@@ -9,9 +9,14 @@ import javax.validation.constraints.NotBlank;
 import java.io.Serializable;
 import java.util.List;
 
+/**
+ * @author fgw
+ */
 @Data
-@ApiModel(value= "设备")
+@ApiModel(value= "设备确认信息")
 public class ConfirmDeviceDTO implements Serializable {
+
+    private static final long serialVersionUID = 1L;
 
     @ApiModelProperty(value = "故障编号", required = true)
     @NotBlank(message = "请选择故障编号")

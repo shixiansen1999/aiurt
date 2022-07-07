@@ -77,6 +77,7 @@ public class CommonCtroller {
         List<SelectTable> list = csMajorList.stream().map(csMajor -> {
             SelectTable table = new SelectTable();
             table.setLabel(csMajor.getMajorName());
+            table.setKey(csMajor.getId());
             table.setValue(csMajor.getMajorCode());
             return table;
         }).collect(Collectors.toList());
@@ -230,6 +231,38 @@ public class CommonCtroller {
             list.add(table);
         });
         return Result.OK(list);
+    }
+
+    @GetMapping("/system/queryMajorAndSystemTree")
+    @ApiOperation("查询专业系统树")
+    public Result<List<SelectTable>> queryMajorAndSystemTree() {
+        LambdaQueryWrapper<CsMajor> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(CsMajor::getDelFlag, 0);
+
+        //todo 查询当前人员所管辖的专业。
+        List<CsMajor> csMajorList = csMajorService.getBaseMapper().selectList(queryWrapper);
+
+        List<CsSubsystem> csSubsystemList = csSubsystemService.getBaseMapper().selectList(null);
+        Map<String, List<CsSubsystem>> map = csSubsystemList.stream().collect(Collectors.groupingBy(CsSubsystem::getMajorCode));
+
+        List<SelectTable> tableList = csMajorList.stream().map(csMajor -> {
+            SelectTable table = new SelectTable();
+            table.setLabel(csMajor.getMajorName());
+            table.setValue(csMajor.getMajorCode());
+            table.setKey(csMajor.getId());
+
+            List<CsSubsystem> csList = map.getOrDefault(csMajor.getMajorCode(), Collections.emptyList());
+            List<SelectTable> list = csList.stream().map(subsystem -> {
+                SelectTable selectTable = new SelectTable();
+                selectTable.setLabel(subsystem.getSystemName());
+                selectTable.setKey(subsystem.getId());
+                selectTable.setValue(subsystem.getSystemCode());
+                return selectTable;
+            }).collect(Collectors.toList());
+            table.setChildren(list);
+            return table;
+        }).collect(Collectors.toList());
+        return Result.OK(tableList);
     }
 
 }

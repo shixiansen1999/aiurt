@@ -111,7 +111,7 @@ public class FaultController extends BaseController<Fault, IFaultService> {
 
         faultService.approval(approvalDTO);
 
-        return Result.OK();
+        return Result.OK("操作成功");
     }
 
     /**
@@ -374,8 +374,8 @@ public class FaultController extends BaseController<Fault, IFaultService> {
     @PutMapping("/confirmDevice")
     @ApiOperation("修改设备/确认设备")
     public Result<?> confirmDevice(@RequestBody ConfirmDeviceDTO confirmDeviceDTO) {
-
-        return Result.OK();
+        faultService.confirmDevice(confirmDeviceDTO);
+        return Result.OK("操作成功");
     }
 
 

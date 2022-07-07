@@ -37,7 +37,7 @@ public class CsSubsystem implements Serializable {
 	/**id*/
 	@TableId(type = IdType.ASSIGN_ID)
     @ApiModelProperty(value = "id")
-    private Integer id;
+    private String id;
 	/**名称*/
 	@Excel(name = "名称", width = 15)
     @ApiModelProperty(value = "名称")
