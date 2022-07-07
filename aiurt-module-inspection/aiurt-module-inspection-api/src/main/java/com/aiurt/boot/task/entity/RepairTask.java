@@ -327,4 +327,7 @@ public class RepairTask implements Serializable {
     @ApiModelProperty(value = "检修人名称")
     private List<String>overhaulName;
 
+    @ApiModelProperty(value = "所属周（相对年）")
+    private java.lang.String weekName;
+
 }

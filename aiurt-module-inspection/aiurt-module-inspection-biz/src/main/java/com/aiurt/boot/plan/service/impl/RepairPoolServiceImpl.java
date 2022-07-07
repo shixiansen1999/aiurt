@@ -139,6 +139,8 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
                 repair.setTypeName(sysBaseAPI.translateDict(DictConstant.INSPECTION_CYCLE_TYPE, String.valueOf(repair.getType())));
                 // 状态
                 repair.setStatusName(sysBaseAPI.translateDict(DictConstant.INSPECTION_TASK_STATE, String.valueOf(repair.getStatus())));
+                // 作业类型
+                repair.setWorkTypeName(sysBaseAPI.translateDict(DictConstant.WORK_TYPE, String.valueOf(repair.getWorkType())));
 
             });
 
@@ -683,7 +685,7 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
                 repairTaskResult.setDictCode(repairPoolCodeContent.getDictCode());
                 repairTaskResult.setQualityStandard(repairPoolCodeContent.getQualityStandard());
                 repairTaskResult.setName(repairPoolCodeContent.getName());
-                repairTaskResult.setStatus(repairPoolCodeContent.getStatusItem());
+                repairTaskResult.setStatusItem(repairPoolCodeContent.getStatusItem());
                 repairTaskResult.setSortNo(repairPoolCodeContent.getSortNo());
                 repairTaskResult.setType(repairPoolCodeContent.getType());
                 repairTaskResult.setCode(repairPoolCodeContent.getCode());

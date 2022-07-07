@@ -2,6 +2,7 @@ package com.aiurt.boot.task.service.impl;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.date.DateUnit;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
@@ -30,7 +31,6 @@ import com.aiurt.common.util.UpdateHelperUtils;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,10 +38,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import java.lang.reflect.Field;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -169,6 +165,17 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                 });
                 e.setOverhaulName(userList);
             }
+
+            // 所属周（相对年）
+            if (e.getYear() != null && e.getWeeks() != null) {
+                Date[] dateByWeek = DateUtils.getDateByWeek(e.getYear(), e.getWeeks());
+                if (dateByWeek.length != 0) {
+                    String weekName = String.format("第%d周(%s~%s)", e.getWeeks(), DateUtil.format(dateByWeek[0], "yyyy/MM/dd"), DateUtil.format(dateByWeek[1], "yyyy/MM/dd"));
+                    e.setWeekName(weekName);
+                }
+            }
+
+
         });
         return pageList.setRecords(lists);
     }
@@ -923,12 +930,18 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
             }
         });
 
-        // 修改检修单的状态，已提交
+        // 检修结束时间为空则修改
         Date submitTime = new Date();
-        if (ObjectUtil.isEmpty(repairTaskDeviceRel.getSubmitTime()) || ObjectUtil.isEmpty(repairTaskDeviceRel.getEndTime())) {
-            repairTaskDeviceRel.setSubmitTime(submitTime);
+        if (ObjectUtil.isEmpty(repairTaskDeviceRel.getEndTime())) {
             repairTaskDeviceRel.setEndTime(submitTime);
+            // 检修时长
+            if (ObjectUtil.isNotEmpty(repairTaskDeviceRel.getStartTime()) && ObjectUtil.isNotEmpty(repairTaskDeviceRel.getEndTime())) {
+                repairTaskDeviceRel.setDuration(DateUtil.between(repairTaskDeviceRel.getStartTime(), repairTaskDeviceRel.getEndTime(), DateUnit.MINUTE));
+            }
         }
+
+        // 修改检修单的状态，已提交
+        repairTaskDeviceRel.setSubmitTime(submitTime);
         repairTaskDeviceRel.setStaffId(manager.checkLogin().getId());
         repairTaskDeviceRel.setIsSubmit(InspectionConstant.SUBMITTED);
         repairTaskDeviceRelMapper.updateById(repairTaskDeviceRel);

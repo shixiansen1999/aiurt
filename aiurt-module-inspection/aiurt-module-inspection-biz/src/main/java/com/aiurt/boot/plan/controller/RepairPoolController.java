@@ -52,6 +52,7 @@ public class RepairPoolController extends BaseController<RepairPool, IRepairPool
                                               @RequestParam @ApiParam(required = true, value = "结束时间", name = "endTime") @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") Date endTime,
                                               @RequestParam(required = false) @ApiParam(value = "状态", name = "status") Integer status,
                                               @RequestParam(required = false) @ApiParam(value = "作业类型", name = "workType") Integer workType) {
+        // todo 数据权限过滤
         List<RepairPool> repairPoolList = repairPoolService.queryList(startTime, endTime,status,workType);
         return Result.OK(repairPoolList);
     }

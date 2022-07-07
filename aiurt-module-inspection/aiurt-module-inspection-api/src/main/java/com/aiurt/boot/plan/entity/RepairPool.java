@@ -219,4 +219,8 @@ public class RepairPool implements Serializable {
     @ApiModelProperty(value = "站点code集合",required = false)
     private List<String> stationList;
 
+    @TableField(exist = false)
+    @ApiModelProperty(value = "作业类型名称")
+    private java.lang.String workTypeName;
+
 }

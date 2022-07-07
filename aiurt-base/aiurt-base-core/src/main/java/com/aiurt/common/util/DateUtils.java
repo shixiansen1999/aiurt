@@ -934,4 +934,23 @@ public class DateUtils extends PropertyEditorSupport {
         c.setTime(date);
         return c.get(Calendar.WEEK_OF_YEAR);
     }
+
+    /**
+     * 根据年月周数计算开始时间和结束时间
+     * @param year
+     * @param week
+     * @return
+     */
+    public static Date[] getDateByWeek(int year, Integer week) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setFirstDayOfWeek(Calendar.MONDAY);
+        calendar.set(Calendar.YEAR, year);
+        calendar.set(Calendar.WEEK_OF_YEAR, week);
+        calendar.setMinimalDaysInFirstWeek(7);
+        Date time = calendar.getTime();
+        Date weekStartTime = DateUtils.getWeekStartTime(time);
+        Date weekEndTime = DateUtils.getWeekEndTime(time);
+        Date[] dates = new Date[]{weekStartTime, weekEndTime};
+        return dates;
+    }
 }

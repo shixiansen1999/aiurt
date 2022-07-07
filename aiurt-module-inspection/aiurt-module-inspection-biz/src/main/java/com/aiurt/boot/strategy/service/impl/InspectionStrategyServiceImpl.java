@@ -51,6 +51,9 @@ public class InspectionStrategyServiceImpl extends ServiceImpl<InspectionStrateg
     private InspectionCodeMapper inspectionCodeMapper;
     @Resource
     private RepairPoolMapper repairPoolMapper;
+    @Resource
+    private StrategyService strategyService;
+
 
     @Override
     public IPage<InspectionStrategyDTO> pageList(Page<InspectionStrategyDTO> page, InspectionStrategyDTO inspectionStrategyDTO) {
@@ -132,9 +135,6 @@ public class InspectionStrategyServiceImpl extends ServiceImpl<InspectionStrateg
         return inspectionStrategyDTO;
     }
 
-
-    @Resource
-    private StrategyService strategyService;
 
     /**
      * 生成年检计划
