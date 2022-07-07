@@ -130,18 +130,18 @@ public class FaultKnowledgeBaseController extends BaseController<FaultKnowledgeB
 	 private void getFaultCodeList(FaultKnowledgeBase faultKnowledgeBase) {
 		 List<String> faultCodeList = faultKnowledgeBase.getFaultCodeList();
 		 if (CollectionUtils.isNotEmpty(faultCodeList)) {
-			 StringBuilder stringBuffer = new StringBuilder();
+			 StringBuilder stringBuilder = new StringBuilder();
 			 for (String faultCode : faultCodeList) {
-				 stringBuffer.append(faultCode);
-				 stringBuffer.append(",");
+				 stringBuilder.append(faultCode);
+				 stringBuilder.append(",");
 			 }
 			 // 判断字符串长度是否有效
-			 if (stringBuffer.length() > 0)
+			 if (stringBuilder.length() > 0)
 			 {
 				 // 截取字符
-				 stringBuffer.deleteCharAt(stringBuffer.length() - 1);
+				 stringBuilder.deleteCharAt(stringBuilder.length() - 1);
 			 }
-			 faultKnowledgeBase.setFaultCodes(stringBuffer.toString());
+			 faultKnowledgeBase.setFaultCodes(stringBuilder.toString());
 		 }
 		 faultKnowledgeBase.setStatus(FaultConstant.PENDING);
 		 faultKnowledgeBase.setApprovedResult(FaultConstant.NO_PASS);
