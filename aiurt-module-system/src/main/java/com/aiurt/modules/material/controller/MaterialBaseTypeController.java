@@ -63,18 +63,15 @@ public class MaterialBaseTypeController {
                                                          @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize,
                                                          @RequestParam(name = "majorCode", required = false) String majorCode,
                                                          @RequestParam(name = "systemCode", required = false) String systemCode,
-                                                         @RequestParam(name = "id", required = false) String id,
+                                                         @RequestParam(name = "baseTypeCode", required = false) String baseTypeCode,
                                                          @RequestParam(name = "baseTypeName", required = false) String baseTypeName,
                                                          @RequestParam(name = "status", required = false) String status,
                                                          HttpServletRequest req) {
         Result<IPage<MaterialBaseType>> result = new Result<IPage<MaterialBaseType>>();
         QueryWrapper<MaterialBaseType> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("del_flag", CommonConstant.DEL_FLAG_0);
-        if(id != null && !"".equals(id)){
-            queryWrapper.and(wrapper->{
-                wrapper.eq("id",id);
-                wrapper.or().eq("pid",id);
-            });
+        if(baseTypeCode != null && !"".equals(baseTypeCode)){
+            queryWrapper.apply(" FIND_IN_SET ( '"+baseTypeCode+"' , REPLACE(type_code_cc,'/',',')) ");
         }
         if(baseTypeName != null && !"".equals(baseTypeName)){
             queryWrapper.like("base_type_name", baseTypeName);

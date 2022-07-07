@@ -130,7 +130,10 @@ public class DeviceController {
                 String lineCodeName = sysBaseApi.translateDictFromTable("cs_line", "line_name", "line_code", lineCode);
                 String stationCodeName = sysBaseApi.translateDictFromTable("cs_station", "station_name", "station_code", stationCode);
                 String positionCodeName = sysBaseApi.translateDictFromTable("cs_station_position", "position_name", "position_code", positionCode);
-                String positionCodeCcName = lineCodeName + CommonConstant.SYSTEM_SPLIT_STR + stationCodeName  ;
+                String positionCodeCcName = lineCodeName ;
+                if(stationCodeName != null && !"".equals(stationCodeName)){
+                    positionCodeCcName +=  CommonConstant.SYSTEM_SPLIT_STR + stationCodeName  ;
+                }
                 if(!"".equals(positionCodeName) && positionCodeName != null){
                     positionCodeCcName += CommonConstant.SYSTEM_SPLIT_STR + positionCodeName;
                 }

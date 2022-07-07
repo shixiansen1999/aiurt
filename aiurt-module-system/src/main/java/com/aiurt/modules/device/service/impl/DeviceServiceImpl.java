@@ -74,8 +74,6 @@ public class DeviceServiceImpl extends ServiceImpl<DeviceMapper, Device> impleme
 			reuseTypeName = sysBaseApi.translateDict("device_reuse_type",reuseType)==null?"":sysBaseApi.translateDict("device_reuse_type",reuseType);
 		}
 		device.setReuseTypeName(reuseTypeName);
-		//设备类型
-		String deviceTypeCode = device.getDeviceTypeCode()==null?"":device.getDeviceTypeCode();
 		//设备类型层级
 		String deviceTypeCodeCc = device.getDeviceTypeCodeCc()==null?"":device.getDeviceTypeCodeCc();
 		//线路
@@ -87,13 +85,20 @@ public class DeviceServiceImpl extends ServiceImpl<DeviceMapper, Device> impleme
 		String lineCodeName = sysBaseApi.translateDictFromTable("cs_line", "line_name", "line_code", lineCode);
 		String stationCodeName = sysBaseApi.translateDictFromTable("cs_station", "station_name", "station_code", stationCode);
 		String positionCodeName = sysBaseApi.translateDictFromTable("cs_station_position", "position_name", "position_code", positionCode);
-		String positionCodeCc = lineCode + "/" + stationCode ;
-		if (!"".equals(positionCode) && positionCode != null) {
-			positionCodeCc += "/" + positionCode;
+		String positionCodeCc = lineCode ;
+		if(stationCode!= null && !"".equals(stationCode)){
+			positionCodeCc += CommonConstant.SYSTEM_SPLIT_STR + stationCode;
 		}
-		String positionCodeCcName = lineCodeName + "/" + stationCodeName  ;
+
+		if (!"".equals(positionCode) && positionCode != null) {
+			positionCodeCc += CommonConstant.SYSTEM_SPLIT_STR + positionCode;
+		}
+		String positionCodeCcName = lineCodeName ;
+		if(stationCodeName != null && !"".equals(stationCodeName)){
+			positionCodeCcName +=  CommonConstant.SYSTEM_SPLIT_STR + stationCodeName  ;
+		}
 		if(!"".equals(positionCodeName) && positionCodeName != null){
-			positionCodeCcName += "/" + positionCodeName;
+			positionCodeCcName += CommonConstant.SYSTEM_SPLIT_STR + positionCodeName;
 		}
 		String deviceTypeCodeCcName = "";
 		if(deviceTypeCodeCc.contains(CommonConstant.SYSTEM_SPLIT_STR)){
