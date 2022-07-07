@@ -642,7 +642,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
     }
 
     @Override
-    public void rebuildTask(PatrolRebuildDTO patrolRebuildDTO) {
+    public String rebuildTask(PatrolRebuildDTO patrolRebuildDTO) {
         String taskId = patrolRebuildDTO.getTaskId();
         QueryWrapper<PatrolTask> wrapper = new QueryWrapper<>();
         // 获取未作废、未处置、已漏检、未重新生成的任务
@@ -652,7 +652,9 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
                 .eq(PatrolTask::getDiscardStatus, PatrolConstant.TASK_UNDISCARD)
                 .eq(PatrolTask::getRebuild, PatrolConstant.TASK_UNREBUILD);
         PatrolTask patrolTask = patrolTaskMapper.selectOne(wrapper);
-
+        if (ObjectUtil.isEmpty(patrolTask)) {
+            throw new AiurtBootException("未找到满足重新生成条件的任务！");
+        }
         PatrolTask task = new PatrolTask();
         // 任务编号
         String taskCode = "XR" + System.currentTimeMillis();
@@ -757,6 +759,6 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
                     }
             );
         });
-
+        return taskCode;
     }
 }

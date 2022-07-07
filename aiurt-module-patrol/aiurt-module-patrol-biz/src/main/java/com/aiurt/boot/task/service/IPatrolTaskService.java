@@ -172,5 +172,5 @@ public interface IPatrolTaskService extends IService<PatrolTask> {
      *
      * @param patrolRebuildDTO
      */
-    void rebuildTask(PatrolRebuildDTO patrolRebuildDTO);
+    String rebuildTask(PatrolRebuildDTO patrolRebuildDTO);
 }
