@@ -16,7 +16,7 @@
             AND a.title LIKE CONCAT ('%', #{inspectionCodeDTO.title}, '%')
         </if>
         <if test="inspectionCodeDTO.code !=null ">
-            AND a.`code` = #{inspectionCodeDTO.code}
+            AND a.`code` LIKE CONCAT ('%', #{inspectionCodeDTO.code}, '%')
         </if>
         <if test="inspectionCodeDTO.status !=null ">
             AND a.status = #{inspectionCodeDTO.status}
