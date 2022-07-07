@@ -49,12 +49,14 @@ public interface PatrolTaskDeviceMapper extends BaseMapper<PatrolTaskDevice> {
 
     /**
      * app-获取巡检清单列表
-     *
      * @param pageList
      * @param id
+     * @param patrolNumber
+     * @param deviceCode
+     * @param deviceName
      * @return
      */
-    List<PatrolTaskDeviceDTO> getPatrolTaskDeviceList(@Param("pageList") Page<PatrolTaskDeviceDTO> pageList, @Param("id") String id);
+    List<PatrolTaskDeviceDTO> getPatrolTaskDeviceList(@Param("pageList") Page<PatrolTaskDeviceDTO> pageList, @Param("id") String id,@Param("patrolNumber")String patrolNumber, @Param("deviceCode")String deviceCode,@Param("deviceName") String deviceName);
 
     /**
      * app-获取提交人名称
@@ -107,4 +109,5 @@ public interface PatrolTaskDeviceMapper extends BaseMapper<PatrolTaskDevice> {
      * @return
      */
     String getDevicePosition(String positionCode);
+
 }

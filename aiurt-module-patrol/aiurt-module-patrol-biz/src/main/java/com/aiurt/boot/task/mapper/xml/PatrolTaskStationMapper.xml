@@ -15,4 +15,21 @@
             AND pts.task_code = #{taskCode}
         </if>
     </select>
+    <select id="getLineList" resultType="com.aiurt.boot.standard.dto.LineDTO">
+select *
+from cs_line
+    </select>
+    <select id="getStationList" resultType="com.aiurt.boot.standard.dto.StationDTO">
+select *
+from cs_station
+    </select>
+    <select id="getStationPositionList" resultType="com.aiurt.boot.standard.dto.StationPositionDTO">
+    select *
+    from cs_station_position
+    </select>
+    <select id="getLineStaionCode" resultType="java.lang.String">
+ select t1.line_code
+from cs_station t1
+where t1.station_code = #{sc}
+    </select>
 </mapper>

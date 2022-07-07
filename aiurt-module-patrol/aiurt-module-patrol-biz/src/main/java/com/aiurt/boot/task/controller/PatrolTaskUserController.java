@@ -1,27 +1,27 @@
 package com.aiurt.boot.task.controller;
 
-import java.util.Arrays;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import org.jeecg.common.api.vo.Result;
-import org.jeecg.common.system.query.QueryGenerator;
+import com.aiurt.boot.task.dto.PatrolAccompanyDTO;
+import com.aiurt.boot.task.dto.PatrolTaskAppointSaveDTO;
+import com.aiurt.boot.task.entity.PatrolTask;
 import com.aiurt.boot.task.entity.PatrolTaskUser;
+import com.aiurt.boot.task.service.IPatrolTaskService;
 import com.aiurt.boot.task.service.IPatrolTaskUserService;
-
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import lombok.extern.slf4j.Slf4j;
-
+import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.system.base.controller.BaseController;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.ModelAndView;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import com.aiurt.common.aspect.annotation.AutoLog;
+import lombok.extern.slf4j.Slf4j;
+import org.jeecg.common.api.vo.Result;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
- /**
+import java.util.List;
+
+/**
  * @Description: patrol_task_user
  * @Author: aiurt
  * @Date:   2022-06-21
@@ -34,6 +34,8 @@ import com.aiurt.common.aspect.annotation.AutoLog;
 public class PatrolTaskUserController extends BaseController<PatrolTaskUser, IPatrolTaskUserService> {
 	@Autowired
 	private IPatrolTaskUserService patrolTaskUserService;
+	@Autowired
+	private IPatrolTaskService patrolTaskService;
 
 	/**
 	 * 分页列表查询
@@ -70,7 +72,30 @@ public class PatrolTaskUserController extends BaseController<PatrolTaskUser, IPa
 		patrolTaskUserService.save(patrolTaskUser);
 		return Result.OK("添加成功！");
 	}*/
-
+	 /**
+	  *app巡检任务列表-指派
+	  * @param patrolAccompanyList
+	  * @return
+	  */
+	 @AutoLog(value = "app巡检任务列表-指派")
+	 @ApiOperation(value="app巡检任务列表-指派", notes="app巡检任务列表-指派")
+	 @PostMapping(value = "/patrolTaskAppointed")
+	 public Result<String> patrolTaskAppointed(@RequestBody PatrolTaskAppointSaveDTO patrolAccompanyList) {
+		 LambdaUpdateWrapper<PatrolTask> updateWrapper= new LambdaUpdateWrapper<>();
+		 updateWrapper.set(PatrolTask::getStartTime,patrolAccompanyList.getStartTime()).set(PatrolTask::getEndTime,patrolAccompanyList.getEndTime()).set(PatrolTask::getStatus,1)
+				 .eq(PatrolTask::getId,patrolAccompanyList.getId());
+		 patrolTaskService.update(updateWrapper);
+		 List<PatrolAccompanyDTO> list = patrolAccompanyList.getAccompanyDTOList();
+		 list.stream().forEach(e->{
+			 PatrolTaskUser patrolTaskUser = new PatrolTaskUser();
+			 patrolTaskUser.setTaskCode(patrolAccompanyList.getCode());
+			 patrolTaskUser.setUserId(e.getUserId());
+			 patrolTaskUser.setUserName(e.getUsername());
+			 patrolTaskUser.setDelFlag(0);
+			 patrolTaskUserService.save(patrolTaskUser);
+		 });
+		 return Result.OK("指派成功！");
+	 }
 	/**
 	 *  编辑
 	 *

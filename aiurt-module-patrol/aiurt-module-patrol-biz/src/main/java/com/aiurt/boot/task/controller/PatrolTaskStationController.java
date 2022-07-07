@@ -1,40 +1,20 @@
 package com.aiurt.boot.task.controller;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import org.jeecg.common.api.vo.Result;
-import org.jeecg.common.system.query.QueryGenerator;
-import com.aiurt.common.util.oConvertUtils;
+import com.aiurt.boot.standard.dto.SelectTableDTO;
 import com.aiurt.boot.task.entity.PatrolTaskStation;
 import com.aiurt.boot.task.service.IPatrolTaskStationService;
-
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import lombok.extern.slf4j.Slf4j;
-
-import org.jeecgframework.poi.excel.ExcelImportUtil;
-import org.jeecgframework.poi.excel.def.NormalExcelConstants;
-import org.jeecgframework.poi.excel.entity.ExportParams;
-import org.jeecgframework.poi.excel.entity.ImportParams;
-import org.jeecgframework.poi.excel.view.JeecgEntityExcelView;
+import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.system.base.controller.BaseController;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.multipart.MultipartHttpServletRequest;
-import org.springframework.web.servlet.ModelAndView;
-import com.alibaba.fastjson.JSON;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import com.aiurt.common.aspect.annotation.AutoLog;
+import lombok.extern.slf4j.Slf4j;
+import org.jeecg.common.api.vo.Result;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
 
  /**
  * @Description: patrol_task_station
@@ -49,6 +29,7 @@ import com.aiurt.common.aspect.annotation.AutoLog;
 public class PatrolTaskStationController extends BaseController<PatrolTaskStation, IPatrolTaskStationService> {
 	@Autowired
 	private IPatrolTaskStationService patrolTaskStationService;
+
 
 	/**
 	 * 分页列表查询
@@ -72,6 +53,17 @@ public class PatrolTaskStationController extends BaseController<PatrolTaskStatio
 		return Result.OK(pageList);
 	}*/
 
+	 /**
+	  * app巡检-站点树形成
+	  * @return
+	  */
+	 @AutoLog(value = "app巡检-站点树形成")
+	 @ApiOperation(value = "app巡检-站点树形成", notes = "app巡检-站点树形成")
+	 @GetMapping(value = "/stationTree")
+	 public Result<?> stationTree() {
+		 List<SelectTableDTO> patrolTaskStations = patrolTaskStationService.getStationTree();
+		 return Result.OK(patrolTaskStations);
+	 }
 	/**
 	 *   添加
 	 *

@@ -544,6 +544,12 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
             PatrolStandard patrolStandard = patrolStandardMapper.selectById(ns.getId());
             if (ObjectUtil.isNotNull(patrolStandard) && patrolStandard.getDeviceType() == 1) {
                 List<DeviceDTO> deviceList = ns.getDeviceList();
+                if(CollUtil.isNotEmpty(deviceList))
+                {
+                    LambdaUpdateWrapper<PatrolStandard> updateWrapper = new LambdaUpdateWrapper<>();
+                    updateWrapper.set(PatrolStandard::getSpecifyDevice,1).eq(PatrolStandard::getId,ns.getId());
+                    patrolStandardMapper.update(new PatrolStandard(),updateWrapper);
+                }
                 //遍历设备单号
                 deviceList.stream().forEach(dv -> {
                     PatrolTaskDevice patrolTaskDevice = new PatrolTaskDevice();
@@ -570,6 +576,9 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
                     String xdCode = "XD" + System.currentTimeMillis();
                     patrolTaskDevice.setPatrolNumber(xdCode);//巡检单号
                     patrolTaskDevice.setTaskStandardId(taskStandardId);//巡检任务标准关联表ID
+                    String lineCode =patrolTaskStationMapper.getLineStaionCode(sc);
+                    patrolTaskDevice.setLineCode(lineCode);//线路code
+                    patrolTaskDevice.setStationCode(sc);//站点code
                     patrolTaskDeviceMapper.insert(patrolTaskDevice);
                 });
             }
@@ -783,7 +792,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         List<PatrolTaskOrganization> list = patrolTaskOrganizationMapper.selectList(queryWrapper);
         patrolTaskOrganizationMapper.deleteBatchIds(list);
         //后保存组织信息
-        String taskCode = patrolTask.getCode();
+        String taskCode = patrolTaskManualDTO.getCode();
         List<String> orgCodeList = patrolTaskManualDTO.getOrgCodeList();
         orgCodeList.stream().forEach(o -> {
             PatrolTaskOrganization organization = new PatrolTaskOrganization();
@@ -806,6 +815,86 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
             station.setTaskCode(taskCode);
             patrolTaskStationMapper.insert(station);
         });
-        //删除单号、巡检任务标准表的信息
+        //删除巡检任务标准表的信息
+        LambdaQueryWrapper<PatrolTaskStandard> standardLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        standardLambdaQueryWrapper.eq(PatrolTaskStandard::getTaskId,patrolTaskManualDTO.getId());
+        List<PatrolTaskStandard> taskStandardList = patrolTaskStandardMapper.selectList(standardLambdaQueryWrapper);
+        //将之前的标准表的指定设备的重新改状态
+        taskStandardList.stream().forEach(tsd->{
+          PatrolStandard  patrolStandard = new PatrolStandard();
+          patrolStandard.setId(tsd.getId());
+          patrolStandard.setSpecifyDevice(null);
+          patrolStandardMapper.updateById(patrolStandard);
+        });
+        patrolTaskStandardMapper.deleteBatchIds(taskStandardList);
+        //删除单号
+        LambdaQueryWrapper<PatrolTaskDevice> deviceLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        deviceLambdaQueryWrapper.eq(PatrolTaskDevice::getTaskId,patrolTaskManualDTO.getId());
+        List<PatrolTaskDevice> devices = patrolTaskDeviceMapper.selectList(deviceLambdaQueryWrapper);
+        patrolTaskDeviceMapper.deleteBatchIds(devices);
+
+        //保存巡检任务标准表的信息
+        String taskId = patrolTask.getId();
+        List<PatrolTaskStandardDTO> patrolStandardList = patrolTaskManualDTO.getPatrolStandardList();//起名不规范
+        patrolStandardList.stream().forEach(ns -> {
+            PatrolTaskStandard patrolTaskStandard = new PatrolTaskStandard();
+            patrolTaskStandard.setTaskId(taskId);
+            patrolTaskStandard.setStandardId(ns.getId());//继承了标准表，id即为标准表id
+            patrolTaskStandard.setDelFlag(0);
+            patrolTaskStandard.setDeviceTypeCode(ns.getDeviceTypeCode());
+            patrolTaskStandard.setSubsystemCode(ns.getSubsystemCode());
+            patrolTaskStandard.setProfessionCode(ns.getProfessionCode());
+            patrolTaskStandard.setStandardCode(ns.getCode());
+            patrolTaskStandardMapper.insert(patrolTaskStandard);
+            String taskStandardId = patrolTaskStandard.getId();
+            //生成单号
+            //判断是否与设备相关
+            PatrolStandard patrolStandard = patrolStandardMapper.selectById(ns.getId());
+            if (ObjectUtil.isNotNull(patrolStandard) && patrolStandard.getDeviceType() == 1) {
+                List<DeviceDTO> deviceList = ns.getDeviceList();
+                if(CollUtil.isNotEmpty(deviceList))
+                {
+                    LambdaUpdateWrapper<PatrolStandard> updateWrapper1 = new LambdaUpdateWrapper<>();
+                    updateWrapper1.set(PatrolStandard::getSpecifyDevice,1).eq(PatrolStandard::getId,ns.getId());
+                    patrolStandardMapper.update(new PatrolStandard(),updateWrapper1);
+                }
+                //遍历设备单号
+                deviceList.stream().forEach(dv -> {
+                    PatrolTaskDevice patrolTaskDevice = new PatrolTaskDevice();
+                    patrolTaskDevice.setTaskId(taskId);//巡检任务id
+                    patrolTaskDevice.setDelFlag(0);
+                    patrolTaskDevice.setStatus(0);//单号状态
+                    String xdCode = "XD" + System.currentTimeMillis();
+                    patrolTaskDevice.setPatrolNumber(xdCode);//巡检单号
+                    patrolTaskDevice.setTaskStandardId(taskStandardId);//巡检任务标准关联表ID
+                    patrolTaskDevice.setDeviceCode(dv.getCode());//设备code
+                    Device device = patrolTaskDeviceMapper.getDevice(dv.getCode());
+                    patrolTaskDevice.setLineCode(device.getLineCode());//线路code
+                    patrolTaskDevice.setStationCode(device.getStationCode());//站点code
+                    patrolTaskDevice.setPositionCode(device.getPositionCode());//位置code
+                    patrolTaskDeviceMapper.insert(patrolTaskDevice);
+                });
+            } else {
+                List<String> stationCodeList1 = patrolTaskManualDTO.getStationCodeList();
+                stationCodeList1.stream().forEach(sc -> {
+                    PatrolTaskDevice patrolTaskDevice = new PatrolTaskDevice();
+                    patrolTaskDevice.setTaskId(taskId);
+                    patrolTaskDevice.setDelFlag(0);
+                    patrolTaskDevice.setStatus(0);//单号状态
+                    String xdCode = "XD" + System.currentTimeMillis();
+                    patrolTaskDevice.setPatrolNumber(xdCode);//巡检单号
+                    patrolTaskDevice.setTaskStandardId(taskStandardId);//巡检任务标准关联表ID
+                    String lineCode =patrolTaskStationMapper.getLineStaionCode(sc);
+                    patrolTaskDevice.setLineCode(lineCode);//线路code
+                    patrolTaskDevice.setStationCode(sc);//站点code
+                    patrolTaskDeviceMapper.insert(patrolTaskDevice);
+                });
+            }
+        });
+    }
+    public void PatrolTaskManualEdit(PatrolTaskManualDTO patrolTaskManualDTO) {
+        //1.修改站点
+        //1.1增加站点
+        //1.1.1
     }
 }

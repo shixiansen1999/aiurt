@@ -1,7 +1,8 @@
 package com.aiurt.boot.task.service;
 
-import com.aiurt.boot.task.entity.PatrolTaskStation;
+import com.aiurt.boot.standard.dto.SelectTableDTO;
 import com.aiurt.boot.task.dto.PatrolTaskStationDTO;
+import com.aiurt.boot.task.entity.PatrolTaskStation;
 import com.baomidou.mybatisplus.extension.service.IService;
 
 import java.util.List;
@@ -21,4 +22,10 @@ public interface IPatrolTaskStationService extends IService<PatrolTaskStation> {
      * @return
      */
     List<PatrolTaskStationDTO> selectStationByTaskCode(String taskCode);
+
+    /**
+     * app巡检-站点树形成
+     * @return
+     */
+    List<SelectTableDTO> getStationTree();
 }

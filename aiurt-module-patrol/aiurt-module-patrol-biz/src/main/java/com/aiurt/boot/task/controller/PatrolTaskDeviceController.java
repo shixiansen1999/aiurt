@@ -72,10 +72,13 @@ public class PatrolTaskDeviceController extends BaseController<PatrolTaskDevice,
     @ApiOperation(value = "巡检任务表- app巡检任务-巡检清单列表", notes = "巡检任务表- app巡检任务-巡检清单列表")
     @GetMapping(value = "/patrolTaskDeviceList")
     public Result<Page<PatrolTaskDeviceDTO>> patrolTaskDeviceList(@RequestParam(name="id",required=true)String id,
+																  @RequestParam(name="patrolNumber",required=false)String patrolNumber,
+																  @RequestParam(name="deviceName",required=false)String deviceName,
+																  @RequestParam(name="deviceCode",required=false)String deviceCode,
                                                                   @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
                                                                   @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize, HttpServletRequest req) {
         Page<PatrolTaskDeviceDTO> pageList = new Page<PatrolTaskDeviceDTO>(pageNo, pageSize);
-        pageList = patrolTaskDeviceService.getPatrolTaskDeviceList(pageList, id);
+        pageList = patrolTaskDeviceService.getPatrolTaskDeviceList(pageList, id,patrolNumber,deviceCode,deviceName);
         return Result.OK(pageList);
     }
 
@@ -87,19 +90,19 @@ public class PatrolTaskDeviceController extends BaseController<PatrolTaskDevice,
 
 
 	 /**
-	  * app巡检-检查项-巡检位置-保存
+	  * app巡检-检查项-故障单号-保存
 	  * @param id
-	  * @param customPosition
+	  * @param faultCode
 	  * @param req
 	  * @return
 	  */
-	 @AutoLog(value = "app巡检-检查项-巡检位置-保存")
-	 @ApiOperation(value = "app巡检-检查项-巡检位置-保存", notes = "app巡检-检查项-巡检位置-保存")
+	 @AutoLog(value = "app巡检-检查项-故障单号-保存")
+	 @ApiOperation(value = "app巡检-检查项-故障单号-保存", notes = "app巡检-检查项-故障单号-保存")
 	 @PostMapping(value = "/patrolTaskCustomPosition")
 	 public Result<?> patrolTaskCustomPosition(@RequestParam(name ="id")String id,
-									  @RequestParam(name="remark") String customPosition, HttpServletRequest req) {
+									  @RequestParam(name="faultCode") String faultCode, HttpServletRequest req) {
 		 LambdaUpdateWrapper<PatrolTaskDevice> updateWrapper= new LambdaUpdateWrapper<>();
-		 updateWrapper.set(PatrolTaskDevice::getCustomPosition,customPosition).eq(PatrolTaskDevice::getId,id);
+		 updateWrapper.set(PatrolTaskDevice::getFaultCode,faultCode).eq(PatrolTaskDevice::getId,id);
 		 patrolTaskDeviceService.update(updateWrapper);
 		 return Result.OK("巡检位置保存成功");
 	 }

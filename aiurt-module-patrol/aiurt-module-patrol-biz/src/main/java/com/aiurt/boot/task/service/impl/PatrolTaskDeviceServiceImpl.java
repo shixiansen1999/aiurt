@@ -96,8 +96,8 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
     }
 
     @Override
-    public Page<PatrolTaskDeviceDTO> getPatrolTaskDeviceList(Page<PatrolTaskDeviceDTO> pageList, String taskId) {
-        List<PatrolTaskDeviceDTO> patrolTaskDeviceList = patrolTaskDeviceMapper.getPatrolTaskDeviceList(pageList, taskId);
+    public Page<PatrolTaskDeviceDTO> getPatrolTaskDeviceList(Page<PatrolTaskDeviceDTO> pageList, String taskId, String patrolNumber, String deviceCode, String deviceName) {
+        List<PatrolTaskDeviceDTO> patrolTaskDeviceList = patrolTaskDeviceMapper.getPatrolTaskDeviceList(pageList, taskId,patrolNumber,deviceCode,deviceName);
         patrolTaskDeviceList.stream().forEach(e -> {
             Date startTime = e.getStartTime();
             Date checkTime = e.getCheckTime();

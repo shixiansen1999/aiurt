@@ -127,6 +127,15 @@
                  LEFT JOIN device dv on ptd.device_code = dv.code
         WHERE ptd.del_flag = 0
           AND ptd.task_id = #{id}
+          <if test="patrolNumber != null and patrolNumber != ''">
+          and ptd.patrol_number = #{patrolNumber}
+          </if>
+              <if test="deviceName != null and deviceName != ''">
+          and dv.name = #{patrolNumber}
+          </if>
+              <if test="deviceCode != null and deviceCode != ''">
+          and ptd.device_code = #{deviceCode}
+          </if>
     </select>
     <select id="getSubmitName" resultType="java.lang.String">
         select realname

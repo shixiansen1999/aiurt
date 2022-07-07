@@ -7,6 +7,7 @@ import com.aiurt.boot.task.entity.PatrolAccompany;
 import com.aiurt.boot.task.entity.PatrolTaskDevice;
 import com.aiurt.boot.task.service.IPatrolAccompanyService;
 import com.aiurt.boot.task.service.IPatrolTaskDeviceService;
+import com.aiurt.boot.task.service.IPatrolTaskService;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.system.base.controller.BaseController;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -39,6 +40,8 @@ public class PatrolAccompanyController extends BaseController<PatrolAccompany, I
 	private IPatrolAccompanyService patrolAccompanyService;
 	@Autowired
 	private IPatrolTaskDeviceService patrolTaskDeviceService;
+	@Autowired
+	private IPatrolTaskService patrolTaskService;
 
 	/**
 	 * 分页列表查询
@@ -92,6 +95,7 @@ public class PatrolAccompanyController extends BaseController<PatrolAccompany, I
 
 		 return Result.OK("添加成功！");
 	 }
+
 	/**
 	 *   添加
 	 *

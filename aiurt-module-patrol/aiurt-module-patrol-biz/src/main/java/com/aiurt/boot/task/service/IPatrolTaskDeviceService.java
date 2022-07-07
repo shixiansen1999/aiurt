@@ -37,14 +37,8 @@ public interface IPatrolTaskDeviceService extends IService<PatrolTaskDevice> {
      */
     IPage<PatrolTaskDeviceParam> selectBillInfoForDevice(Page<PatrolTaskDeviceParam> page, PatrolTaskDeviceParam patrolTaskDeviceParam);
 
-    /**
-     * app-巡检清单列表
-     *
-     * @param pageList
-     * @param code
-     * @return
-     */
-    Page<PatrolTaskDeviceDTO> getPatrolTaskDeviceList(Page<PatrolTaskDeviceDTO> pageList, String code);
+
+
 
     /**
      * PC巡检任务池详情-巡检工单详情
@@ -77,4 +71,15 @@ public interface IPatrolTaskDeviceService extends IService<PatrolTaskDevice> {
      * @return
      */
     Device getDeviceInfoByCode(String deviceCode);
+
+    /**
+     * app-巡检清单列表
+     * @param pageList
+     * @param id
+     * @param patrolNumber
+     * @param deviceCode
+     * @param deviceName
+     * @return
+     */
+    Page<PatrolTaskDeviceDTO> getPatrolTaskDeviceList(Page<PatrolTaskDeviceDTO> pageList, String id, String patrolNumber, String deviceCode, String deviceName);
 }
