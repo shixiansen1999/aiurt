@@ -96,8 +96,8 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
     }
 
     @Override
-    public Page<PatrolTaskDeviceDTO> getPatrolTaskDeviceList(Page<PatrolTaskDeviceDTO> pageList, String taskId, String patrolNumber, String deviceCode, String deviceName) {
-        List<PatrolTaskDeviceDTO> patrolTaskDeviceList = patrolTaskDeviceMapper.getPatrolTaskDeviceList(pageList, taskId,patrolNumber,deviceCode,deviceName);
+    public Page<PatrolTaskDeviceDTO> getPatrolTaskDeviceList(Page<PatrolTaskDeviceDTO> pageList, String taskId, String search) {
+        List<PatrolTaskDeviceDTO> patrolTaskDeviceList = patrolTaskDeviceMapper.getPatrolTaskDeviceList(pageList, taskId,search);
         patrolTaskDeviceList.stream().forEach(e -> {
             Date startTime = e.getStartTime();
             Date checkTime = e.getCheckTime();
@@ -116,8 +116,11 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
             String submitName = patrolTaskDeviceMapper.getSubmitName(e.getUserId());
             e.setSubmitName(submitName);
             PatrolTask patrolTask = patrolTaskMapper.selectById(e.getTaskId());
-            List<String> orgCodes = patrolTaskMapper.getOrgCode(patrolTask.getCode());
-            e.setOrgList(orgCodes);
+            if(ObjectUtil.isNotNull(pageList))
+            {
+                List<String> orgCodes = patrolTaskMapper.getOrgCode(patrolTask.getCode());
+                e.setOrgList(orgCodes);
+            }
             List<String> position = patrolTaskDeviceMapper.getPosition(patrolTask.getCode());
             String stationName = position.stream().collect(Collectors.joining(","));
             e.setStationName(stationName);

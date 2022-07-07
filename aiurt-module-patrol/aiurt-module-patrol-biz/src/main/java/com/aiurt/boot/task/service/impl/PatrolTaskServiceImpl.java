@@ -543,12 +543,6 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
             PatrolStandard patrolStandard = patrolStandardMapper.selectById(ns.getId());
             if (ObjectUtil.isNotNull(patrolStandard) && patrolStandard.getDeviceType() == 1) {
                 List<DeviceDTO> deviceList = ns.getDeviceList();
-                if(CollUtil.isNotEmpty(deviceList))
-                {
-                    LambdaUpdateWrapper<PatrolStandard> updateWrapper = new LambdaUpdateWrapper<>();
-                    updateWrapper.set(PatrolStandard::getSpecifyDevice,1).eq(PatrolStandard::getId,ns.getId());
-                    patrolStandardMapper.update(new PatrolStandard(),updateWrapper);
-                }
                 //遍历设备单号
                 deviceList.stream().forEach(dv -> {
                     PatrolTaskDevice patrolTaskDevice = new PatrolTaskDevice();
@@ -604,6 +598,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
     public Page<PatrolTaskStandardDTO> getPatrolTaskManualDetail(Page<PatrolTaskStandardDTO> pageList, String id) {
         List<PatrolTaskStandardDTO> standardList = patrolTaskStandardMapper.getStandard(id);
         standardList.stream().forEach(e -> {
+
             LambdaQueryWrapper<PatrolTaskDevice> queryWrapper = new LambdaQueryWrapper<>();
             queryWrapper.eq(PatrolTaskDevice::getTaskId, e.getTaskId()).eq(PatrolTaskDevice::getTaskStandardId, e.getTaskStandardId());
             List<PatrolTaskDevice> taskDeviceList = patrolTaskDeviceMapper.selectList(queryWrapper);
@@ -818,20 +813,12 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         LambdaQueryWrapper<PatrolTaskStandard> standardLambdaQueryWrapper = new LambdaQueryWrapper<>();
         standardLambdaQueryWrapper.eq(PatrolTaskStandard::getTaskId,patrolTaskManualDTO.getId());
         List<PatrolTaskStandard> taskStandardList = patrolTaskStandardMapper.selectList(standardLambdaQueryWrapper);
-        //将之前的标准表的指定设备的重新改状态
-        taskStandardList.stream().forEach(tsd->{
-          PatrolStandard  patrolStandard = new PatrolStandard();
-          patrolStandard.setId(tsd.getId());
-          patrolStandard.setSpecifyDevice(null);
-          patrolStandardMapper.updateById(patrolStandard);
-        });
         patrolTaskStandardMapper.deleteBatchIds(taskStandardList);
         //删除单号
         LambdaQueryWrapper<PatrolTaskDevice> deviceLambdaQueryWrapper = new LambdaQueryWrapper<>();
         deviceLambdaQueryWrapper.eq(PatrolTaskDevice::getTaskId,patrolTaskManualDTO.getId());
         List<PatrolTaskDevice> devices = patrolTaskDeviceMapper.selectList(deviceLambdaQueryWrapper);
         patrolTaskDeviceMapper.deleteBatchIds(devices);
-
         //保存巡检任务标准表的信息
         String taskId = patrolTask.getId();
         List<PatrolTaskStandardDTO> patrolStandardList = patrolTaskManualDTO.getPatrolStandardList();//起名不规范
@@ -851,12 +838,6 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
             PatrolStandard patrolStandard = patrolStandardMapper.selectById(ns.getId());
             if (ObjectUtil.isNotNull(patrolStandard) && patrolStandard.getDeviceType() == 1) {
                 List<DeviceDTO> deviceList = ns.getDeviceList();
-                if(CollUtil.isNotEmpty(deviceList))
-                {
-                    LambdaUpdateWrapper<PatrolStandard> updateWrapper1 = new LambdaUpdateWrapper<>();
-                    updateWrapper1.set(PatrolStandard::getSpecifyDevice,1).eq(PatrolStandard::getId,ns.getId());
-                    patrolStandardMapper.update(new PatrolStandard(),updateWrapper1);
-                }
                 //遍历设备单号
                 deviceList.stream().forEach(dv -> {
                     PatrolTaskDevice patrolTaskDevice = new PatrolTaskDevice();
