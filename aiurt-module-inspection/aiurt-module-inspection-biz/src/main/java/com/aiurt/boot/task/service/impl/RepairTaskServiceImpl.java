@@ -17,10 +17,10 @@ import com.aiurt.boot.plan.entity.RepairPoolStationRel;
 import com.aiurt.boot.plan.mapper.RepairPoolMapper;
 import com.aiurt.boot.plan.mapper.RepairPoolOrgRelMapper;
 import com.aiurt.boot.plan.mapper.RepairPoolStationRelMapper;
-import com.aiurt.boot.task.dto.WriteMonadDTO;
 import com.aiurt.boot.plan.service.IRepairPoolService;
 import com.aiurt.boot.task.dto.CheckListDTO;
 import com.aiurt.boot.task.dto.RepairTaskDTO;
+import com.aiurt.boot.task.dto.WriteMonadDTO;
 import com.aiurt.boot.task.entity.*;
 import com.aiurt.boot.task.mapper.*;
 import com.aiurt.boot.task.service.IRepairTaskService;
@@ -33,6 +33,7 @@ import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.*;
@@ -781,6 +782,7 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
         // 只有当检修结果或者检修值发生改变后者检修人是空时才改变检修人
         if (!result.getStatus().equals(monadDTO.getStatus())
                 || !result.getInspeciontValue().equals(monadDTO.getInspeciontValue())
+                || !result.getNote().equals(monadDTO.getNote())
                 || StrUtil.isEmpty(result.getStaffId())) {
             result.setStaffId(manager.checkLogin().getId());
         }
@@ -805,5 +807,107 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                 repairTaskEnclosureMapper.insert(repairTaskEnclosure);
             });
         }
+    }
+
+    /**
+     * 填写检修单上的同行人
+     *
+     * @param code   检修单code
+     * @param peerId 同行人ids
+     */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void writePeerPeople(String code, String peerId) {
+        RepairTaskDeviceRel repairTaskDeviceRel = repairTaskDeviceRelMapper.selectOne(
+                new LambdaQueryWrapper<RepairTaskDeviceRel>()
+                        .eq(RepairTaskDeviceRel::getCode, code)
+                        .eq(RepairTaskDeviceRel::getDelFlag, InspectionConstant.NO_DEL));
+
+        if (ObjectUtil.isEmpty(repairTaskDeviceRel)) {
+            throw new AiurtBootException(InspectionConstant.ILLEGAL_OPERATION);
+        }
+
+        repairTaskPeerRelMapper.delete(
+                new LambdaQueryWrapper<RepairTaskPeerRel>()
+                        .eq(RepairTaskPeerRel::getRepairTaskDeviceCode, repairTaskDeviceRel.getId()));
+
+        // 更新同行人
+        if (StrUtil.isNotEmpty(peerId)) {
+            List<String> userIdS = StrUtil.split(peerId, ',');
+            userIdS.forEach(userId -> {
+                RepairTaskPeerRel rel = new RepairTaskPeerRel();
+                rel.setUserId(userId);
+                rel.setRealName(ObjectUtil.isNotEmpty(sysBaseAPI.getUserById(userId)) ? sysBaseAPI.getUserById(userId).getRealname() : "");
+                rel.setRepairTaskDeviceCode(repairTaskDeviceRel.getCode());
+                repairTaskPeerRelMapper.insert(rel);
+            });
+        }
+    }
+
+    /**
+     * 填写检修单上的检修位置
+     *
+     * @param id               检修单id
+     * @param specificLocation 检修位置
+     * @return
+     */
+    @Override
+    public void writeLocation(String id, String specificLocation) {
+        RepairTaskDeviceRel repairTaskDeviceRel = repairTaskDeviceRelMapper.selectById(id);
+        if (ObjectUtil.isEmpty(repairTaskDeviceRel)) {
+            throw new AiurtBootException(InspectionConstant.ILLEGAL_OPERATION);
+        }
+        repairTaskDeviceRel.setSpecificLocation(specificLocation);
+        repairTaskDeviceRelMapper.updateById(repairTaskDeviceRel);
+    }
+
+    /**
+     * 提交检修工单
+     *
+     * @param id 检修单id
+     * @return
+     */
+    @Override
+    public void submitMonad(String id) {
+        // 查询检修工单
+        RepairTaskDeviceRel repairTaskDeviceRel = repairTaskDeviceRelMapper.selectById(id);
+        if (ObjectUtil.isEmpty(repairTaskDeviceRel)) {
+            throw new AiurtBootException(InspectionConstant.ILLEGAL_OPERATION);
+        }
+
+        // 检修工单对应的检修项
+        List<RepairTaskResult> repairTaskResults = repairTaskResultMapper.selectList(
+                new LambdaQueryWrapper<RepairTaskResult>()
+                        .eq(RepairTaskResult::getTaskDeviceRelId, repairTaskDeviceRel.getId())
+                        .eq(RepairTaskResult::getDelFlag, InspectionConstant.NO_DEL));
+        if (CollUtil.isEmpty(repairTaskResults)) {
+            throw new AiurtBootException(InspectionConstant.ILLEGAL_OPERATION);
+        }
+
+        // 校验检修项是否存在未填写的检修结果和检修值
+        repairTaskResults.forEach(repair -> {
+            // 检修结果和检修值存在空值的就不能进行提交
+            if (repair.getStatus() == null) {
+                throw new AiurtBootException("有检修结果未填写");
+            }
+            // 选择项
+            if (InspectionConstant.STATUS_ITEM_CHOICE.equals(repair.getStatusItem()) && repair.getInspeciontValue() == null) {
+                throw new AiurtBootException("有检修值未填写");
+            }
+            // 输入项
+            if (InspectionConstant.STATUS_ITEM_INPUT.equals(repair.getStatusItem()) && StrUtil.isEmpty(repair.getNote())) {
+                throw new AiurtBootException("有检修值未填写");
+            }
+        });
+
+        // 修改检修单的状态，已提交
+        Date submitTime = new Date();
+        if (ObjectUtil.isEmpty(repairTaskDeviceRel.getSubmitTime()) || ObjectUtil.isEmpty(repairTaskDeviceRel.getEndTime())) {
+            repairTaskDeviceRel.setSubmitTime(submitTime);
+            repairTaskDeviceRel.setEndTime(submitTime);
+        }
+        repairTaskDeviceRel.setStaffId(manager.checkLogin().getId());
+        repairTaskDeviceRel.setIsSubmit(InspectionConstant.SUBMITTED);
+        repairTaskDeviceRelMapper.updateById(repairTaskDeviceRel);
     }
 }

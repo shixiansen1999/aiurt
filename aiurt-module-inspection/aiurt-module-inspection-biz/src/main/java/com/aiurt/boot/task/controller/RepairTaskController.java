@@ -372,4 +372,46 @@ public class RepairTaskController extends BaseController<RepairTask, IRepairTask
         return Result.OK("填写成功");
     }
 
+    /**
+     * 填写检修单上的同行人
+     *
+     * @param code   检修单code
+     * @param peerId 同行人ids
+     */
+    @AutoLog(value = "填写检修单上的同行人")
+    @ApiOperation(value = "填写检修单上的同行人", notes = "填写检修单上的同行人")
+    @PostMapping(value = "/writePeerPeople")
+    public Result<?> writePeerPeople(@RequestParam @ApiParam(value = "检修单code", name = "code", required = true) String code,
+                                     @RequestParam @ApiParam(value = "同行人，多个用英文逗号隔开", name = "peerId", required = true) String peerId) {
+        repairTaskService.writePeerPeople(code, peerId);
+        return Result.OK("填写成功");
+    }
+
+    /**
+     * 填写检修单上的检修位置
+     *
+     * @param id               检修单id
+     * @param specificLocation 检修位置
+     * @return
+     */
+    @AutoLog(value = "填写检修单上的检修位置")
+    @ApiOperation(value = "填写检修单上的检修位置", notes = "填写检修单上的检修位置")
+    @PostMapping(value = "/writeLocation")
+    public Result<?> writeLocation(@RequestParam @ApiParam(value = "检修单id", name = "id", required = true) String id,
+                                   @RequestParam @ApiParam(value = "检修位置", name = "id", required = true) String specificLocation) {
+        repairTaskService.writeLocation(id, specificLocation);
+        return Result.OK("填写成功");
+    }
+    /**
+     *  提交检修工单
+     * @param id
+     * @return
+     */
+    @AutoLog(value = "提交检修工单")
+    @ApiOperation(value = "提交检修工单", notes = "提交检修工单")
+    @PostMapping(value = "/submitMonad")
+    public Result<?> submitMonad(@RequestParam @ApiParam(value = "检修单id", name = "id", required = true) String id) {
+        repairTaskService.submitMonad(id);
+        return Result.OK("提交成功");
+    }
 }

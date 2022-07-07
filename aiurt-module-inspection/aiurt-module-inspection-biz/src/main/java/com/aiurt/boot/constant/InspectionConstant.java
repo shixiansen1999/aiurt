@@ -182,4 +182,9 @@ public class InspectionConstant {
      * 未删除
      */
     public static final Integer NO_DEL = 0;
+
+    /**
+     * 检修单状态 1 已提交
+     */
+    public static final Integer SUBMITTED = 1;
 }
