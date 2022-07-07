@@ -13,6 +13,7 @@ import com.aiurt.modules.device.entity.Device;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.github.xiaoymin.knife4j.core.util.CollectionUtils;
+import org.jeecg.common.api.vo.Result;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -169,8 +170,8 @@ public class PatrolPlanServiceImpl extends ServiceImpl<PatrolPlanMapper, PatrolP
     }
 
     @Override
-    public List<Device> viewDetails(String standardCode,String planId) {
-        List<Device> list = baseMapper.viewDetails(standardCode,planId);
-        return list;
+    public IPage<Device> viewDetails(Page<Device> page,String standardCode, String planId) {
+        IPage<Device> deviceIPage = baseMapper.viewDetails(page, standardCode, planId);
+        return deviceIPage;
     }
 }

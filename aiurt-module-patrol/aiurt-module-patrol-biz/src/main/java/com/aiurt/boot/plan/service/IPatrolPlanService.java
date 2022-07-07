@@ -7,6 +7,7 @@ import com.aiurt.modules.device.entity.Device;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
+import org.jeecg.common.api.vo.Result;
 
 import java.util.List;
 
@@ -64,5 +65,5 @@ public interface IPatrolPlanService extends IService<PatrolPlan> {
      * @param standardCode
      * @return
      */
-    List<Device> viewDetails(String standardCode,String planId);
+    IPage<Device> viewDetails(Page<Device> page,String standardCode, String planId);
 }

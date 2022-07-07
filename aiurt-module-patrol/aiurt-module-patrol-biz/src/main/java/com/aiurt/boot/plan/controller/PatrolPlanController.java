@@ -138,10 +138,13 @@ public class PatrolPlanController extends BaseController<PatrolPlan, IPatrolPlan
 	 @AutoLog(value = "巡检计划表-查看设备详情")
 	 @ApiOperation(value="巡检计划表-查看设备详情", notes="巡检计划表-查看设备详情")
 	 @RequestMapping(value = "/viewDetails", method = {RequestMethod.POST})
-	 public List<Device> viewDetails(@RequestParam(name = "standardCode")String standardCode,
-									 @RequestParam(name = "planId")String planId) {
-		 List<Device> list =patrolPlanService.viewDetails(standardCode,planId);
-		 return list;
+	 public  Result<IPage<Device>> viewDetails(@RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
+									   @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
+									   @RequestParam(name = "standardCode")String standardCode,
+									   @RequestParam(name = "planId")String planId) {
+		 Page<Device> page = new Page<Device>(pageNo, pageSize);
+		 IPage<Device> deviceIPage = patrolPlanService.viewDetails(page, standardCode, planId);
+		 return Result.OK(deviceIPage);
 	 }
 	/**
 	 *   通过id删除

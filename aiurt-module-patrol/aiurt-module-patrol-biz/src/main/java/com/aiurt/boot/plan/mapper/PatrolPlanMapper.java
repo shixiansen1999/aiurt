@@ -78,5 +78,5 @@ public interface PatrolPlanMapper extends BaseMapper<PatrolPlan> {
      * @param standardCode
      * @return
      */
-    List<Device> viewDetails(@Param("standardCode")String standardCode,@Param("planId")String planId);
+    IPage<Device> viewDetails(@Param("page")Page<Device> page,@Param("standardCode")String standardCode,@Param("planId")String planId);
 }
