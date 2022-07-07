@@ -172,8 +172,7 @@ public interface IPatrolTaskService extends IService<PatrolTask> {
      *
      * @param patrolRebuildDTO
      */
-    void rebuildTask(PatrolRebuildDTO patrolRebuildDTO);
-
+    String rebuildTask(PatrolRebuildDTO patrolRebuildDTO);
     /**
      *  pc手工下放任务-编辑
      * @param patrolTaskManualDTO

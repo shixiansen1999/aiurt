@@ -5,9 +5,7 @@ import com.aiurt.boot.task.dto.*;
 import com.aiurt.boot.task.entity.PatrolTask;
 import com.aiurt.boot.task.param.PatrolTaskDeviceParam;
 import com.aiurt.boot.task.param.PatrolTaskParam;
-import com.aiurt.boot.task.service.IPatrolAccompanyService;
 import com.aiurt.boot.task.service.IPatrolTaskDeviceService;
-import com.aiurt.boot.task.service.IPatrolTaskOrganizationService;
 import com.aiurt.boot.task.service.IPatrolTaskService;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.system.base.controller.BaseController;
@@ -41,12 +39,6 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
     private IPatrolTaskService patrolTaskService;
     @Autowired
     private IPatrolTaskDeviceService patrolTaskDeviceService;
-
-    @Autowired
-    private IPatrolAccompanyService patrolAccompanyService;
-
-    @Autowired
-    private IPatrolTaskOrganizationService patrolTaskOrganizationService;
 
 
     /**
@@ -228,8 +220,8 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
     @AutoLog(value = "巡检漏检任务处理-处置")
     @ApiOperation(value = "巡检漏检任务处理-处置", notes = "巡检漏检任务处理-处置")
     @PostMapping(value = "/dispose")
-    public Result<?> taskDispose(@ApiParam(name = "id", value = "任务记录ID") @RequestParam("id") String id,
-                                 @ApiParam(name = "omitExplain", value = "漏检说明") @RequestParam("omitExplain") String omitExplain) {
+    public Result<String> taskDispose(@ApiParam(name = "id", value = "任务记录ID") @RequestParam("id") String id,
+                                      @ApiParam(name = "omitExplain", value = "漏检说明") @RequestParam("omitExplain") String omitExplain) {
         PatrolTask task = patrolTaskService.getById(id);
         if (ObjectUtil.isEmpty(task)) {
             return Result.error("记录不存在！");
@@ -241,9 +233,9 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
     @AutoLog(value = "巡检漏检任务处理-重新生成任务")
     @ApiOperation(value = "巡检漏检任务处理-重新生成任务", notes = "巡检漏检任务处理-重新生成任务")
     @PostMapping(value = "/rebuildTask")
-    public Result<?> rebuildTask(@RequestBody PatrolRebuildDTO patrolRebuildDTO) {
-        patrolTaskService.rebuildTask(patrolRebuildDTO);
-        return Result.ok();
+    public Result<String> rebuildTask(@RequestBody PatrolRebuildDTO patrolRebuildDTO) {
+        String taskCode = patrolTaskService.rebuildTask(patrolRebuildDTO);
+        return Result.OK("任务已重新生成，生成的任务编号为[" + taskCode + "]", null);
     }
     /**
      * 添加
