@@ -215,4 +215,7 @@ public class FaultRepairRecord implements Serializable {
 
     @ApiModelProperty(value = "挂起审批结果")
     private Integer approvalHangUpResult;
+
+    @ApiModelProperty(value = "工作票路径")
+    private String workTickPath;
 }

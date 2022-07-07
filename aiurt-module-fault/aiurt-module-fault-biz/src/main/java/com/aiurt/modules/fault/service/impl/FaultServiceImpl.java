@@ -700,6 +700,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
 
         one.setArriveTime(repairRecordDTO.getArriveTime());
         one.setWorkTicketCode(repairRecordDTO.getWorkTickCode());
+        one.setWorkTickPath(repairRecordDTO.getWorkTickPath());
         // 工作票图片
         one.setSolveStatus(repairRecordDTO.getSolveStatus());
         one.setUnSloveRemark(repairRecordDTO.getUnSloveRemark());
@@ -958,7 +959,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
      */
     private FaultRepairRecord getFaultRepairRecord(String code, LoginUser user) {
         LambdaQueryWrapper<FaultRepairRecord> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(FaultRepairRecord::getFaultCode, code).eq(FaultRepairRecord::getAppointUserName, user.getUsername())
+        wrapper.eq(FaultRepairRecord::getFaultCode, code)//.eq(FaultRepairRecord::getAppointUserName, user.getUsername())
                 .eq(FaultRepairRecord::getDelFlag, CommonConstant.DEL_FLAG_0)
                 .orderByDesc(FaultRepairRecord::getCreateTime).last("limit 1");
         return repairRecordService.getBaseMapper().selectOne(wrapper);
