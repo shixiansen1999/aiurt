@@ -88,6 +88,7 @@ public class FaultKnowledgeBaseController extends BaseController<FaultKnowledgeB
 	public Result<String> add(@RequestBody FaultKnowledgeBase faultKnowledgeBase) {
 		//list转string
 		getFaultCodeList(faultKnowledgeBase);
+		faultKnowledgeBase.setDelFlag(0);
 		faultKnowledgeBaseService.save(faultKnowledgeBase);
 		return Result.OK("添加成功！");
 	}
