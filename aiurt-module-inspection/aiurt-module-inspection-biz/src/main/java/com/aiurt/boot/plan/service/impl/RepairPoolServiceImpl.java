@@ -12,7 +12,7 @@ import com.aiurt.boot.manager.utils.CodeGenerateUtils;
 import com.aiurt.boot.plan.dto.*;
 import com.aiurt.boot.plan.entity.*;
 import com.aiurt.boot.plan.mapper.*;
-import com.aiurt.boot.plan.rep.RepairStrategyReq;
+import com.aiurt.boot.plan.req.RepairStrategyReq;
 import com.aiurt.boot.plan.req.ManualTaskReq;
 import com.aiurt.boot.plan.req.RepairPoolCodeReq;
 import com.aiurt.boot.plan.req.RepairPoolReq;
