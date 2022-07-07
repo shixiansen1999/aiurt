@@ -598,7 +598,11 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
     public Page<PatrolTaskStandardDTO> getPatrolTaskManualDetail(Page<PatrolTaskStandardDTO> pageList, String id) {
         List<PatrolTaskStandardDTO> standardList = patrolTaskStandardMapper.getStandard(id);
         standardList.stream().forEach(e -> {
-
+            PatrolStandard patrolStandard = patrolStandardMapper.selectById(e.getStandardId());
+            if(patrolStandard.getDeviceType()==1)
+            {
+                e.setSpecifyDevice(1);
+            }
             LambdaQueryWrapper<PatrolTaskDevice> queryWrapper = new LambdaQueryWrapper<>();
             queryWrapper.eq(PatrolTaskDevice::getTaskId, e.getTaskId()).eq(PatrolTaskDevice::getTaskStandardId, e.getTaskStandardId());
             List<PatrolTaskDevice> taskDeviceList = patrolTaskDeviceMapper.selectList(queryWrapper);
