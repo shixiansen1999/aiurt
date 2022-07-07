@@ -1,13 +1,11 @@
 package com.aiurt.modules.system.controller;
 
+import cn.hutool.core.io.IoUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.exception.AiurtBootException;
-import com.aiurt.common.util.CommonUtils;
-import com.aiurt.common.util.RestUtil;
-import com.aiurt.common.util.TokenUtils;
-import com.aiurt.common.util.oConvertUtils;
+import com.aiurt.common.util.*;
 import com.aiurt.modules.basic.entity.SysAttachment;
 import com.aiurt.modules.basic.service.ISysAttachmentService;
 import com.alibaba.fastjson.JSON;
@@ -93,6 +91,8 @@ public class CommonController {
         String savePath = "";
         String bizPath = request.getParameter("biz");
 
+        String type = uploadType;
+
         //LOWCOD-2580 sys/common/upload接口存在任意文件上传漏洞
         if (oConvertUtils.isNotEmpty(bizPath) && (bizPath.contains("../") || bizPath.contains("..\\"))) {
             throw new AiurtBootException("上传目录bizPath，格式非法！");
@@ -105,9 +105,6 @@ public class CommonController {
             if(CommonConstant.UPLOAD_TYPE_OSS.equals(uploadType)){
                 //未指定目录，则用阿里云默认目录 upload
                 bizPath = "upload";
-                //result.setMessage("使用阿里云文件上传时，必须添加目录！");
-                //result.setSuccess(false);
-                //return result;
             }else{
                 bizPath = "";
             }
@@ -120,6 +117,11 @@ public class CommonController {
             //update-begin-author:taoyan date:20200814 for:文件上传改造
             savePath = CommonUtils.upload(file, bizPath, uploadType);
             //update-end-author:taoyan date:20200814 for:文件上传改造
+            if (StrUtil.isBlank(savePath)) {
+                // 上传失败后
+                type = CommonConstant.UPLOAD_TYPE_LOCAL;
+                savePath = this.uploadLocal(file,bizPath);
+            }
         }
         if(oConvertUtils.isNotEmpty(savePath)){
 
@@ -127,13 +129,11 @@ public class CommonController {
             String originalFilename = file.getOriginalFilename();
             // 保存到系统文件附件库
             SysAttachment sysAttachment = new SysAttachment();
-
             sysAttachment.setFilePath(savePath);
             sysAttachment.setFileName(originalFilename);
             sysAttachment.setFileType(FilenameUtils.getExtension(originalFilename));
-            sysAttachment.setType(uploadType);
+            sysAttachment.setType(type);
             sysAttachment.setDelFlag(0);
-
             sysAttachmentService.save(sysAttachment);
             String filePathId = String.format("%s?fileName=%s", sysAttachment.getId(), originalFilename);
             result.setMessage(filePathId);
@@ -207,52 +207,70 @@ public class CommonController {
         // 其余处理略
         InputStream inputStream = null;
         OutputStream outputStream = null;
-        try {
-            imgPath = imgPath.replace("..", "").replace("../","");
-            if (imgPath.endsWith(",")) {
-                imgPath = imgPath.substring(0, imgPath.length() - 1);
+
+        imgPath = imgPath.replace("..", "").replace("../","");
+        if (imgPath.endsWith(",")) {
+            imgPath = imgPath.substring(0, imgPath.length() - 1);
+        }
+
+        SysAttachment sysAttachment = sysAttachmentService.getById(imgPath);
+
+        if (Objects.isNull(sysAttachment)) {
+            downloadLocalFile(response, imgPath, "");
+            return;
+        }
+
+        if (StrUtil.isBlank(fileName)) {
+            fileName = sysAttachment.getFileName();
+        }
+
+        if (StrUtil.equalsIgnoreCase("minio",sysAttachment.getType())) {
+            try (
+                    InputStream inputStream1 = MinioUtil.getMinioFile("platform",sysAttachment.getFilePath());
+                    OutputStream outputStream1 = response.getOutputStream()) {
+
+                response.setContentType("application/force-download");
+                response.addHeader("Content-Disposition", "attachment;fileName=" + new String(fileName.getBytes("UTF-8"), "iso-8859-1"));
+                IoUtil.copy(inputStream1, outputStream1, IoUtil.DEFAULT_BUFFER_SIZE);
+            } catch (IOException e) {
+                log.error("预览文件失败" + e.getMessage());
+                response.setContentType("application/json;charset=UTF-8");
+                throw new AiurtBootException("文件下载失败！文件不存在或已经被删除。");
             }
+        }else{
+            try {
 
-            SysAttachment sysAttachment = sysAttachmentService.getById(imgPath);
-
-            if (Objects.isNull(sysAttachment)) {
-                downloadLocalFile(response, imgPath, "");
-                return;
-            }
-
-            if (StrUtil.isBlank(fileName)) {
-                fileName = sysAttachment.getFileName();
-            }
-
-            String filePath = uploadpath + File.separator + sysAttachment.getFilePath();
-            File file = new File(filePath);
-            if(!file.exists()){
-                response.setStatus(404);
-                throw new RuntimeException("文件["+imgPath+"]不存在..");
-            }
-
-
-            downloadLocalFile(response, sysAttachment.getFilePath(), fileName);
-        } catch (Exception e) {
-            log.error("预览文件失败" + e.getMessage());
-            response.setStatus(404);
-            e.printStackTrace();
-        } finally {
-            if (inputStream != null) {
-                try {
-                    inputStream.close();
-                } catch (IOException e) {
-                    log.error(e.getMessage(), e);
+                String filePath = uploadpath + File.separator + sysAttachment.getFilePath();
+                File file = new File(filePath);
+                if(!file.exists()){
+                    response.setStatus(404);
+                    throw new RuntimeException("文件["+imgPath+"]不存在..");
                 }
-            }
-            if (outputStream != null) {
-                try {
-                    outputStream.close();
-                } catch (IOException e) {
-                    log.error(e.getMessage(), e);
+
+
+                downloadLocalFile(response, sysAttachment.getFilePath(), fileName);
+            } catch (Exception e) {
+                log.error("预览文件失败" + e.getMessage());
+                response.setStatus(404);
+                e.printStackTrace();
+            } finally {
+                if (inputStream != null) {
+                    try {
+                        inputStream.close();
+                    } catch (IOException e) {
+                        log.error(e.getMessage(), e);
+                    }
+                }
+                if (outputStream != null) {
+                    try {
+                        outputStream.close();
+                    } catch (IOException e) {
+                        log.error(e.getMessage(), e);
+                    }
                 }
             }
         }
+
     }
 
     private void downloadLocalFile(HttpServletResponse response, String imgPath, String fileName) {

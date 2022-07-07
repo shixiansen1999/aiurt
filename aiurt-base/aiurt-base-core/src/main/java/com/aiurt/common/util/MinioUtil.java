@@ -98,7 +98,7 @@ public class MinioUtil {
                     .stream(stream,stream.available(),-1).build();
             minioClient.putObject(objectArgs);
             stream.close();
-            fileUrl = minioUrl+newBucket+"/"+objectName;
+            fileUrl = objectName;
         }catch (Exception e){
             log.error(e.getMessage(), e);
         }

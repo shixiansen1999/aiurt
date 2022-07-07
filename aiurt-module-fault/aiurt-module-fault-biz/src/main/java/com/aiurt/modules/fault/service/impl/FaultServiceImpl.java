@@ -87,6 +87,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
 
         String faultModeCode = fault.getFaultModeCode();
 
+        // 自报自修跳过
         if (StrUtil.equalsIgnoreCase(faultModeCode, "0")) {
             fault.setAppointUserName(user.getUsername());
             fault.setStatus(FaultStatusEnum.REPAIR.getStatus());
@@ -186,21 +187,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
 
         LoginUser loginUser = checkLogin();
 
-        List<FaultDevice> faultDeviceList = fault.getFaultDeviceList();
-        if (CollectionUtil.isNotEmpty(faultDeviceList)) {
-            // 删除旧设备
-            LambdaQueryWrapper<FaultDevice>  wrapper = new LambdaQueryWrapper<>();
-            wrapper.eq(FaultDevice::getFaultCode, fault.getCode());
-            faultDeviceService.remove(wrapper);
-
-            faultDeviceList.stream().forEach(faultDevice -> {
-                faultDevice.setDelFlag(0);
-                faultDevice.setFaultCode(fault.getCode());
-            });
-
-            // 保存设备信息
-            faultDeviceService.saveBatch(faultDeviceList);
-        }
+        dealDevice(fault, fault.getFaultDeviceList());
 
         // update status
         fault.setStatus(FaultStatusEnum.NEW_FAULT.getStatus());
@@ -210,6 +197,8 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         // 记录日志
         saveLog(loginUser, "修改故障工单", fault.getCode(), FaultStatusEnum.NEW_FAULT.getStatus(), null);
     }
+
+
 
     /**
      * 作废
@@ -852,21 +841,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
     @Override
     public void confirmDevice(ConfirmDeviceDTO confirmDeviceDTO) {
         Fault fault = isExist(confirmDeviceDTO.getFaultCode());
-        List<FaultDevice> faultDeviceList = confirmDeviceDTO.getFaultDeviceList();
-        if (CollectionUtil.isNotEmpty(faultDeviceList)) {
-            // 删除旧设备
-            LambdaQueryWrapper<FaultDevice>  wrapper = new LambdaQueryWrapper<>();
-            wrapper.eq(FaultDevice::getFaultCode, fault.getCode());
-            faultDeviceService.remove(wrapper);
-
-            faultDeviceList.stream().forEach(faultDevice -> {
-                faultDevice.setDelFlag(0);
-                faultDevice.setFaultCode(fault.getCode());
-            });
-
-            // 保存设备信息
-            faultDeviceService.saveBatch(faultDeviceList);
-        }
+        dealDevice(fault, confirmDeviceDTO.getFaultDeviceList());
     }
 
     /**
@@ -917,5 +892,28 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
                 .remark(remark)
                 .build();
         operationProcessService.save(operationProcess);
+    }
+
+    /**
+     * 设备处理
+     * @param fault
+     * @param faultDeviceList 故障设备列表
+     */
+    private void dealDevice(Fault fault, List<FaultDevice> faultDeviceList) {
+
+        if (CollectionUtil.isNotEmpty(faultDeviceList)) {
+            // 删除旧设备
+            LambdaQueryWrapper<FaultDevice> wrapper = new LambdaQueryWrapper<>();
+            wrapper.eq(FaultDevice::getFaultCode, fault.getCode());
+            faultDeviceService.remove(wrapper);
+
+            faultDeviceList.stream().forEach(faultDevice -> {
+                faultDevice.setDelFlag(0);
+                faultDevice.setFaultCode(fault.getCode());
+            });
+
+            // 保存设备信息
+            faultDeviceService.saveBatch(faultDeviceList);
+        }
     }
 }

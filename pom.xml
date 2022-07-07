@@ -68,7 +68,8 @@
 <!--		<module>aiurt-devops</module>-->
         <module>aiurt-module-patrol</module>
 		<module>aiurt-module-fault</module>
-    <module>aiurt-module-inspection</module>
+        <module>aiurt-module-inspection</module>
+		<module>aiurt-module-flowable</module>
   </modules>
 
 	<distributionManagement>

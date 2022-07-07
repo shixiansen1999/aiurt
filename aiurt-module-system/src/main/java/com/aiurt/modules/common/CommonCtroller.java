@@ -310,4 +310,37 @@ public class CommonCtroller {
         return Result.OK(tableList);
     }
 
+    @GetMapping("/line/queryLines")
+    @ApiOperation("查询线路数据")
+    public Result<List<CsLine>> queryLines() {
+        LambdaQueryWrapper<CsLine> wrapper = new LambdaQueryWrapper<>();
+        List<CsLine> csLines = lineService.getBaseMapper().selectList(null);
+        return Result.OK(csLines);
+    }
+
+    @GetMapping("/station/queryStationByLineCode")
+    @ApiOperation("根据线路编码查询站所数据")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "lineCode", value = "线路编码", required = true, paramType = "query")
+    })
+    public Result<List<CsStation>> queryStationByLineCode(@RequestParam(value = "lineCode") String lineCode) {
+        LambdaQueryWrapper<CsStation> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(CsStation::getLineCode, lineCode);
+        List<CsStation> stationList = stationService.getBaseMapper().selectList(wrapper);
+        return Result.OK(stationList);
+    }
+
+
+
+    @GetMapping("/position/queryPositionByStationCode")
+    @ApiOperation("根据站所编码查询站所数据")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "stationCode", value = "站所编码", required = true, paramType = "query")
+    })
+    public Result<List<CsStationPosition>> queryPositionByStationCode(@RequestParam(value = "stationCode") String stationCode) {
+        LambdaQueryWrapper<CsStationPosition> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(CsStationPosition::getStaionCode, stationCode);
+        List<CsStationPosition> stationList = stationPositionService.getBaseMapper().selectList(wrapper);
+        return Result.OK(stationList);
+    }
 }
