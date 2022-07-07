@@ -290,4 +290,11 @@ public class Fault extends DictEntity implements Serializable {
     @ApiModelProperty(value = "作废说明")
     private String cancelRemark;
 
+    @ApiModelProperty(value = "故障报修时长 min")
+    private Long duration;
+
+    @ApiModelProperty(value = "app, 故障上报设备编码，逗号隔开")
+    @TableField(exist = false)
+    private String deviceCodes;
+
 }

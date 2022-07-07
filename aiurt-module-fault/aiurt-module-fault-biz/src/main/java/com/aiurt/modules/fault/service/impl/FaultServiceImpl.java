@@ -2,6 +2,7 @@ package com.aiurt.modules.fault.service.impl;
 
 
 import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.date.DateUnit;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.constant.CommonConstant;
@@ -24,13 +25,13 @@ import org.ansj.domain.Result;
 import org.ansj.domain.Term;
 import org.ansj.splitWord.analysis.ToAnalysis;
 import org.apache.shiro.SecurityUtils;
-import org.checkerframework.checker.units.qual.K;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.unit.DataUnit;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -113,17 +114,11 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         // 保存故障
         save(fault);
 
-        // 设置故障编码
-        List<FaultDevice> faultDeviceList = fault.getFaultDeviceList();
-        faultDeviceList.stream().forEach(faultDevice -> {
-            faultDevice.setDelFlag(0);
-            faultDevice.setFaultCode(fault.getCode());
-        });
 
-        // 保存故障设备
-        if (CollectionUtil.isNotEmpty(faultDeviceList)) {
-            faultDeviceService.saveBatch(faultDeviceList);
-        }
+
+        // 设置故障设备
+        dealDevice(fault, fault.getFaultDeviceList());
+
 
         // 记录日志
         saveLog(user, "故障上报", fault.getCode(), 1, null);
@@ -284,6 +279,8 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
                 .faultPhenomenon(fault.getFaultPhenomenon())
                 // 负责人
                 .appointUserName(assignDTO.getOperatorUserName())
+                // 附件
+                .assignFilePath(assignDTO.getFilepath())
                 .build();
 
         // 修改状态
@@ -334,6 +331,8 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
                 .delFlag(CommonConstant.DEL_FLAG_0)
                 // 领取时间
                 .receviceTime(new Date())
+                // 附件
+                .assignFilePath(assignDTO.getFilepath())
                 .build();
 
         updateById(fault);
@@ -362,14 +361,10 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         fault.setStatus(FaultStatusEnum.RECEIVE_ASSIGN.getStatus());
 
         // 修改维修记录的领取时间
-        LambdaQueryWrapper<FaultRepairRecord> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(FaultRepairRecord::getFaultCode, code).eq(FaultRepairRecord::getAppointUserName,loginUser.getUsername())
-                .eq(FaultRepairRecord::getDelFlag, CommonConstant.DEL_FLAG_0)
-            .orderByDesc(FaultRepairRecord::getCreateTime).last("limit 1");
-        FaultRepairRecord repairRecord = repairRecordService.getBaseMapper().selectOne(wrapper);
+        FaultRepairRecord repairRecord = getFaultRepairRecord(code, loginUser);
 
         if (Objects.isNull(repairRecord)) {
-            throw new AiurtBootException("系统错误，维修记录不存在。");
+            throw new AiurtBootException("您没有权限接收改工单！");
         }
 
         repairRecord.setReceviceTime(new Date());
@@ -394,10 +389,21 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
 
         Fault fault = isExist(refuseAssignmentDTO.getFaultCode());
 
+        FaultRepairRecord repairRecord = getFaultRepairRecord(refuseAssignmentDTO.getFaultCode(), loginUser);
+
+        if (Objects.isNull(repairRecord)) {
+            throw new AiurtBootException("该工单您的，您没有权限拒绝接收指派工单！");
+        }
+
+        repairRecord.setRefuseAssignTime(new Date());
+        repairRecord.setRefuseAssignRemark(refuseAssignmentDTO.getRefuseRemark());
+
         // 状态-已审批待指派
         fault.setStatus(FaultStatusEnum.APPROVAL_PASS.getStatus());
 
         updateById(fault);
+
+        repairRecordService.updateById(repairRecord);
 
         // 设置状态
         saveLog(loginUser, "拒绝接收指派", refuseAssignmentDTO.getFaultCode(), FaultStatusEnum.APPROVAL_PASS.getStatus(), refuseAssignmentDTO.getRefuseRemark());
@@ -417,11 +423,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         // 开始维修时间
         fault.setStatus(FaultStatusEnum.REPAIR.getStatus());
 
-        LambdaQueryWrapper<FaultRepairRecord> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(FaultRepairRecord::getFaultCode, code).eq(FaultRepairRecord::getAppointUserName, user.getUsername())
-                .eq(FaultRepairRecord::getDelFlag, CommonConstant.DEL_FLAG_0)
-                .orderByDesc(FaultRepairRecord::getCreateTime).last("limit 1");
-        FaultRepairRecord repairRecord = repairRecordService.getBaseMapper().selectOne(wrapper);
+        FaultRepairRecord repairRecord = getFaultRepairRecord(code, user);
 
         // 维修记录
         repairRecord.setStartTime(new Date());
@@ -437,6 +439,8 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
 
     }
 
+
+
     /**
      * 挂起申请
      * @param hangUpDTO
@@ -450,9 +454,17 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
 
         fault.setStatus(FaultStatusEnum.HANGUP_REQUEST.getStatus());
         // 挂起原因
+
         fault.setHangUpReason(hangUpDTO.getHangUpReason());
 
+        FaultRepairRecord repairRecord = getFaultRepairRecord(hangUpDTO.getFaultCode(), user);
+
+        repairRecord.setHangupReason(hangUpDTO.getHangUpReason());
+        repairRecord.setReqHangupTime(new Date());
+
         updateById(fault);
+
+        repairRecordService.updateById(repairRecord);
 
         saveLog(user, "申请挂起", hangUpDTO.getFaultCode(), FaultStatusEnum.HANGUP_REQUEST.getStatus(), hangUpDTO.getHangUpReason());
 
@@ -471,6 +483,8 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
 
         Fault fault = isExist(approvalHangUpDTO.getFaultCode());
 
+        FaultRepairRecord faultRepairRecord = getFaultRepairRecord(approvalHangUpDTO.getFaultCode(), user);
+
         // 通过的状态 = 1
         Integer status = 1;
         Integer approvalStatus = approvalHangUpDTO.getApprovalStatus();
@@ -486,7 +500,16 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
             saveLog(user, "挂起审批驳回", approvalHangUpDTO.getFaultCode(), FaultStatusEnum.REPAIR.getStatus(),approvalHangUpDTO.getApprovalRejection());
         }
 
+        faultRepairRecord.setApprovalHangUpRemark(approvalHangUpDTO.getApprovalRejection());
+        faultRepairRecord.setApprovalHangUpResult(approvalHangUpDTO.getApprovalStatus());
+        faultRepairRecord.setApprovalHangUpTime(new Date());
+        faultRepairRecord.setApprovalHangUpUser(user.getUsername());
+
+        // 更新
+
         updateById(fault);
+
+        repairRecordService.updateById(faultRepairRecord);
         // todo 发送消息, 维修记录
 
 
@@ -633,6 +656,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
             repairParticipantsService.saveBatch(participantsList);
         }
 
+        // todo 计算库存
         List<DeviceChangeDTO> consumableList = repairRecordDTO.getConsumableList();
         if (CollectionUtil.isNotEmpty(consumableList)) {
             List<DeviceChangeSparePart> sparePartList = consumableList.stream().map(deviceChangeDTO -> {
@@ -698,6 +722,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         if (flag.equals(solveStatus)) {
             fault.setStatus(FaultStatusEnum.RESULT_CONFIRM.getStatus());
             fault.setEndTime(new Date());
+            fault.setDuration(DateUtil.between(fault.getReceiveTime(), fault.getEndTime(), DateUnit.MINUTE));
             one.setEndTime(new Date());
         }
 
@@ -900,6 +925,14 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
      * @param faultDeviceList 故障设备列表
      */
     private void dealDevice(Fault fault, List<FaultDevice> faultDeviceList) {
+        if (StrUtil.isNotBlank(fault.getDeviceCodes())) {
+            List<FaultDevice> deviceList = StrUtil.split(fault.getDeviceCode(), ',').stream().map(deviceCode -> {
+                FaultDevice faultDevice = new FaultDevice();
+                faultDevice.setDeviceCode(deviceCode);
+                return faultDevice;
+            }).collect(Collectors.toList());
+            faultDeviceList = deviceList;
+        }
 
         if (CollectionUtil.isNotEmpty(faultDeviceList)) {
             // 删除旧设备
@@ -915,5 +948,19 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
             // 保存设备信息
             faultDeviceService.saveBatch(faultDeviceList);
         }
+    }
+
+    /**
+     * 查询当前人员的维修记录
+     * @param code
+     * @param user
+     * @return
+     */
+    private FaultRepairRecord getFaultRepairRecord(String code, LoginUser user) {
+        LambdaQueryWrapper<FaultRepairRecord> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(FaultRepairRecord::getFaultCode, code).eq(FaultRepairRecord::getAppointUserName, user.getUsername())
+                .eq(FaultRepairRecord::getDelFlag, CommonConstant.DEL_FLAG_0)
+                .orderByDesc(FaultRepairRecord::getCreateTime).last("limit 1");
+        return repairRecordService.getBaseMapper().selectOne(wrapper);
     }
 }

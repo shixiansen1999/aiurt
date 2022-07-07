@@ -130,6 +130,13 @@ public class FaultRepairRecord implements Serializable {
 	@Excel(name = "挂起原因", width = 15)
     @ApiModelProperty(value = "挂起原因")
     private String hangupReason;
+
+    /**
+     * 申请挂起时间
+     */
+    @ApiModelProperty(value = "申请挂起时间")
+	private Date reqHangupTime;
+
 	/**附件*/
 	@Excel(name = "附件", width = 15)
     @ApiModelProperty(value = "附件")
@@ -175,4 +182,37 @@ public class FaultRepairRecord implements Serializable {
 
     @ApiModelProperty("使用的解决方案ID")
     private String knowledgeId;
+
+    @ApiModelProperty(value = "指派附件或者领取附件")
+    private String assignFilePath;
+
+    /**
+     * 拒绝指派时间
+     */
+    @ApiModelProperty(value = "拒绝指派时间")
+    private Date refuseAssignTime;
+
+    /**
+     * 拒收指派说明
+     */
+    @ApiModelProperty(value = "拒收指派说明")
+    private String refuseAssignRemark;
+
+    /**
+     * 挂起审批说明
+     */
+    @ApiModelProperty(value = "挂起审批说明")
+    private String approvalHangUpRemark;
+
+    /**
+     * 挂起审批时间
+     */
+    @ApiModelProperty(value = "挂起审批时间")
+    private Date approvalHangUpTime;
+
+    @ApiModelProperty(value = "挂起审批人")
+    private String approvalHangUpUser;
+
+    @ApiModelProperty(value = "挂起审批结果")
+    private Integer approvalHangUpResult;
 }
