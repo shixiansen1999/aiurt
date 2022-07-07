@@ -1,6 +1,7 @@
 package com.aiurt.modules.faultanalysisreport.service.impl;
 
 import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.util.ObjectUtil;
 import com.aiurt.modules.fault.entity.Fault;
 import com.aiurt.modules.faultanalysisreport.constant.FaultConstant;
 import com.aiurt.modules.faultanalysisreport.entity.FaultAnalysisReport;
@@ -9,6 +10,7 @@ import com.aiurt.modules.faultanalysisreport.mapper.FaultAnalysisReportMapper;
 import com.aiurt.modules.faultanalysisreport.service.IFaultAnalysisReportService;
 import com.aiurt.modules.faultknowledgebase.entity.FaultKnowledgeBase;
 import com.aiurt.modules.faultknowledgebase.mapper.FaultKnowledgeBaseMapper;
+import com.aiurt.modules.faultknowledgebase.service.IFaultKnowledgeBaseService;
 import com.aiurt.modules.faultknowledgebasetype.dto.SubSystemDTO;
 import com.aiurt.modules.faultknowledgebasetype.mapper.FaultKnowledgeBaseTypeMapper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -18,6 +20,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.SecurityUtils;
+import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +30,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -46,17 +50,16 @@ public class FaultAnalysisReportServiceImpl extends ServiceImpl<FaultAnalysisRep
     private ISysBaseAPI sysBaseAPI;
     @Autowired
     private FaultKnowledgeBaseTypeMapper faultKnowledgeBaseTypeMapper;
+    @Autowired
+    private IFaultKnowledgeBaseService faultKnowledgeBaseService;
 
     @Override
     public IPage<FaultAnalysisReport> readAll(Page<FaultAnalysisReport> page, FaultAnalysisReport faultAnalysisReport) {
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         //当前用户拥有的子系统
         List<String> allSubSystem = faultKnowledgeBaseTypeMapper.getAllSubSystem(sysUser.getId());
-        List<String> rolesByUsername = sysBaseAPI.getRolesByUsername(sysUser.getUsername());
-        if (!rolesByUsername.contains(FaultConstant.ADMIN)) {
-            faultAnalysisReport.setApprovedResult(FaultConstant.PASSED);
-        }
         //根据角色决定是否查询未审核通过的故障分析
+        if ( getRole()) {faultAnalysisReport.setApprovedResult(FaultConstant.PASSED);}
         List<FaultAnalysisReport> faultAnalysisReports = faultAnalysisReportMapper.readAll(page, faultAnalysisReport,allSubSystem);
         return page.setRecords(faultAnalysisReports);
     }
@@ -94,5 +97,121 @@ public class FaultAnalysisReportServiceImpl extends ServiceImpl<FaultAnalysisRep
         return faultDTO;
     }
 
+    @Override
+    public Result<String> approval(String approvedRemark, Integer approvedResult, String id) {
+        if ( getRole()) {return Result.OK("没有权限");}
+        FaultAnalysisReport faultAnalysisReport = new FaultAnalysisReport();
+        faultAnalysisReport.setId(id);
+        faultAnalysisReport.setApprovedRemark(approvedRemark);
+        faultAnalysisReport.setApprovedResult(approvedResult);
+        this.updateById(faultAnalysisReport);
+        //修改知识库状态
+        String faultKnowledgeBaseId = this.getById(id).getFaultKnowledgeBaseId();
+        if (StringUtils.isNotEmpty(faultKnowledgeBaseId)) {
+            FaultKnowledgeBase faultKnowledgeBase = faultKnowledgeBaseService.getById(faultKnowledgeBaseId);
+            if (approvedResult.equals(FaultConstant.PASSED)) {
+                faultKnowledgeBase.setStatus(FaultConstant.APPROVED);
+                faultKnowledgeBase.setApprovedResult(FaultConstant.PASSED);
+                faultAnalysisReport.setDelFlag(0);
+            } else {
+                faultKnowledgeBase.setStatus(FaultConstant.REJECTED);
+                faultKnowledgeBase.setApprovedResult(FaultConstant.NO_PASS);
+            }
+            faultKnowledgeBaseService.updateById(faultKnowledgeBase);
+        }
+        return Result.OK("审批成功!");
+    }
+
+    @Override
+    public Result<String> edit(FaultDTO faultDTO) {
+        FaultAnalysisReport faultAnalysisReport = faultDTO.getFaultAnalysisReport();
+        faultAnalysisReport.setStatus(FaultConstant.PENDING);
+        faultAnalysisReport.setApprovedResult(FaultConstant.NO_PASS);
+
+        FaultKnowledgeBase faultKnowledgeBase = faultDTO.getFaultKnowledgeBase();
+        //判断是否同步到知识库
+        if (ObjectUtil.isNotNull(faultKnowledgeBase)) {
+            faultKnowledgeBase.setStatus(FaultConstant.PENDING);
+            faultKnowledgeBase.setApprovedResult(FaultConstant.NO_PASS);
+            //先隐藏，审批通过后再展示
+            faultKnowledgeBase.setDelFlag(1);
+            faultKnowledgeBaseService.updateById(faultKnowledgeBase);
+            faultAnalysisReport.setFaultKnowledgeBaseId(faultKnowledgeBase.getId());
+        } else {
+            faultAnalysisReport.setFaultKnowledgeBaseId(null);
+        }
+        this.updateById(faultAnalysisReport);
+        return Result.OK("编辑成功!");
+    }
+
+    @Override
+    public Result<String> addDetail(FaultDTO faultDTO) {
+        FaultAnalysisReport faultAnalysisReport = faultDTO.getFaultAnalysisReport();
+        faultAnalysisReport.setStatus(FaultConstant.PENDING);
+        faultAnalysisReport.setApprovedResult(FaultConstant.NO_PASS);
+        faultAnalysisReport.setDelFlag(0);
+        faultAnalysisReport.setScanSum(0);
+        FaultKnowledgeBase faultKnowledgeBase = faultDTO.getFaultKnowledgeBase();
+        if (ObjectUtil.isNotNull(faultKnowledgeBase)) {
+            faultKnowledgeBase.setStatus(FaultConstant.PENDING);
+            faultKnowledgeBase.setApprovedResult(FaultConstant.NO_PASS);
+            //先隐藏，审批通过后再展示
+            faultKnowledgeBase.setDelFlag(1);
+            faultKnowledgeBaseService.save(faultKnowledgeBase);
+            faultAnalysisReport.setFaultKnowledgeBaseId(faultKnowledgeBase.getId());
+        }
+        this.save(faultAnalysisReport);
+        return Result.OK("提交成功");
+    }
+
+    @Override
+    public Result<String> delete(String id) {
+        FaultAnalysisReport analysisReport = this.getById(id);
+        LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        List<String> rolesByUsername = sysBaseAPI.getRolesByUsername(sysUser.getUsername());
+        if (analysisReport.getStatus().equals(FaultConstant.REJECTED)) {
+            if (!rolesByUsername.contains(FaultConstant.ADMIN) &&! rolesByUsername.contains(FaultConstant.Professional_Technical_Director) &&!analysisReport.getCreateBy().equals(sysUser.getId())) {
+                return Result.OK("没有权限");
+            }
+        } else {
+            if (!rolesByUsername.contains(FaultConstant.ADMIN) && !rolesByUsername.contains(FaultConstant.Professional_Technical_Director)) {
+                return Result.OK("没有权限");
+            }
+        }
+        this.removeById(id);
+        return Result.OK("删除成功!");
+
+    }
+
+    @Override
+    public Result<String> deleteBatch(String ids) {
+        List<String> list = Arrays.asList(ids.split(","));
+        LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        List<String> rolesByUsername = sysBaseAPI.getRolesByUsername(sysUser.getUsername());
+        for (String s : list) {
+            FaultAnalysisReport analysisReport = this.getById(s);
+            if (analysisReport.getStatus().equals(FaultConstant.REJECTED)) {
+                if (!rolesByUsername.contains(FaultConstant.ADMIN) &&! rolesByUsername.contains(FaultConstant.Professional_Technical_Director) &&!analysisReport.getCreateBy().equals(sysUser.getId())) {
+                    return Result.OK("没有权限");
+                }
+            } else {
+                if (!rolesByUsername.contains(FaultConstant.ADMIN) && !rolesByUsername.contains(FaultConstant.Professional_Technical_Director)) {
+                    return Result.OK("没有权限删除故障编号为："+analysisReport.getFaultCode()+"的故障分析");
+                }
+            }
+        }
+        this.removeByIds(Arrays.asList(ids.split(",")));
+        return Result.OK("批量删除成功!");
+    }
+
+    @Override
+    public boolean getRole() {
+        LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        List<String> rolesByUsername = sysBaseAPI.getRolesByUsername(sysUser.getUsername());
+        if (!rolesByUsername.contains(FaultConstant.ADMIN)&&!rolesByUsername.contains(FaultConstant.Maintenance_Worker)&&!rolesByUsername.contains(FaultConstant.Professional_Technical_Director)) {
+            return true;
+        }
+        return false;
+    }
 
 }

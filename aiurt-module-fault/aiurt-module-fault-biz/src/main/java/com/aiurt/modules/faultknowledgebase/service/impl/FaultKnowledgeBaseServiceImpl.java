@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 
 import javax.annotation.Resource;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -45,10 +46,17 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
         //当前用户拥有的子系统
         List<String> allSubSystem = faultKnowledgeBaseTypeMapper.getAllSubSystem(sysUser.getId());
         List<String> rolesByUsername = sysBaseAPI.getRolesByUsername(sysUser.getUsername());
-        if (!rolesByUsername.contains(FaultConstant.ADMIN)) {
-            faultKnowledgeBase.setApprovedResult(1);
+        //根据用户角色是否显示未通过的知识库
+        if (!rolesByUsername.contains(FaultConstant.ADMIN)&&!rolesByUsername.contains(FaultConstant.Maintenance_Worker)&&!rolesByUsername.contains(FaultConstant.Professional_Technical_Director)) {
+            faultKnowledgeBase.setApprovedResult(FaultConstant.PASSED);
         }
         List<FaultKnowledgeBase> faultKnowledgeBases = faultKnowledgeBaseMapper.readAll(page, faultKnowledgeBase,allSubSystem);
+        faultKnowledgeBases.forEach(f->{
+            String faultCodes = f.getFaultCodes();
+            String[] split = faultCodes.split(",");
+            List<String> list = Arrays.asList(split);
+            f.setFaultCodeList(list);
+        });
         return page.setRecords(faultKnowledgeBases);
     }
 

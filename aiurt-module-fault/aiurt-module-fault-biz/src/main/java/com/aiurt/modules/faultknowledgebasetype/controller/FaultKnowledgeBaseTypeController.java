@@ -10,9 +10,15 @@ import java.net.URLDecoder;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.aiurt.modules.faultknowledgebase.entity.FaultKnowledgeBase;
+import com.aiurt.modules.faultknowledgebase.mapper.FaultKnowledgeBaseMapper;
+import com.aiurt.modules.faultknowledgebase.service.IFaultKnowledgeBaseService;
 import com.aiurt.modules.faultknowledgebasetype.dto.MajorDTO;
+import com.aiurt.modules.faulttype.entity.FaultType;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.query.QueryGenerator;
@@ -55,6 +61,8 @@ import com.aiurt.common.aspect.annotation.AutoLog;
 public class FaultKnowledgeBaseTypeController extends BaseController<FaultKnowledgeBaseType, IFaultKnowledgeBaseTypeService> {
 	@Autowired
 	private IFaultKnowledgeBaseTypeService faultKnowledgeBaseTypeService;
+	 @Autowired
+	 private FaultKnowledgeBaseMapper faultKnowledgeBaseMapper;
 
 	/**
 	 * 分页列表查询
@@ -106,6 +114,26 @@ public class FaultKnowledgeBaseTypeController extends BaseController<FaultKnowle
 		return Result.OK("编辑成功!");
 	}
 
+	 /**
+	  *  查询是否被使用
+	  *
+	  * @param id
+	  * @return
+	  */
+	 @AutoLog(value = "故障知识分类-查询是否被使用")
+	 @ApiOperation(value="故障知识分类-查询是否被使用", notes="故障知识分类-查询是否被使用")
+	 @RequestMapping(value = "/used", method = {RequestMethod.PUT,RequestMethod.POST})
+	 public Boolean used(@RequestParam(name="id",required=true) String id) {
+		 FaultKnowledgeBaseType byId = faultKnowledgeBaseTypeService.getById(id);
+		 LambdaQueryWrapper<FaultKnowledgeBase> queryWrapper = new LambdaQueryWrapper<>();
+		 List<FaultKnowledgeBase> faultKnowledgeBases = faultKnowledgeBaseMapper.selectList(queryWrapper
+				 .eq(FaultKnowledgeBase::getKnowledgeBaseTypeCode, byId.getCode()).eq(FaultKnowledgeBase::getDelFlag,0));
+		 if (CollectionUtils.isEmpty(faultKnowledgeBases)) {
+			 return true;
+		 }
+		 return false;
+	 }
+
 	/**
 	 *   通过id删除
 	 *
@@ -116,6 +144,12 @@ public class FaultKnowledgeBaseTypeController extends BaseController<FaultKnowle
 	@ApiOperation(value="故障知识分类-通过id删除", notes="故障知识分类-通过id删除")
 	@DeleteMapping(value = "/delete")
 	public Result<String> delete(@RequestParam(name="id",required=true) String id) {
+		LambdaQueryWrapper<FaultKnowledgeBase> queryWrapper = new LambdaQueryWrapper<>();
+		List<FaultKnowledgeBase> faultKnowledgeBases = faultKnowledgeBaseMapper.selectList(queryWrapper
+				.eq(FaultKnowledgeBase::getKnowledgeBaseTypeCode, id).eq(FaultKnowledgeBase::getDelFlag,0));
+		if (CollectionUtils.isEmpty(faultKnowledgeBases)) {
+			return Result.OK("该分类已经被使用，不可删除!");
+		}
 		faultKnowledgeBaseTypeService.removeById(id);
 		return Result.OK("删除成功!");
 	}

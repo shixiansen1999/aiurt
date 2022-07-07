@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -27,6 +28,7 @@ import io.swagger.annotations.ApiResponses;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.query.QueryGenerator;
 import com.aiurt.common.util.oConvertUtils;
 import com.aiurt.modules.faultanalysisreport.entity.FaultAnalysisReport;
@@ -75,6 +77,8 @@ public class FaultAnalysisReportController extends BaseController<FaultAnalysisR
 	 private FaultTypeMapper faultTypeMapper;
 	 @Autowired
 	 private FaultKnowledgeBaseTypeMapper faultKnowledgeBaseTypeMapper;
+	 @Resource
+	 private ISysBaseAPI sysBaseAPI;
 	/**
 	 * 分页列表查询
 	 *
@@ -117,6 +121,7 @@ public class FaultAnalysisReportController extends BaseController<FaultAnalysisR
 	  *
 	  * @param approvedRemark
 	  * @param approvedResult
+	  * @param id
 	  * @return
 	  */
 	 @AutoLog(value = "故障分析-审批")
@@ -125,29 +130,10 @@ public class FaultAnalysisReportController extends BaseController<FaultAnalysisR
 	 public Result<String> approval(@RequestParam(name = "approvedRemark") String approvedRemark,
 									@RequestParam(name = "approvedResult") Integer approvedResult,
 									@RequestParam(name = "id") String id) {
-		 FaultAnalysisReport faultAnalysisReport = new FaultAnalysisReport();
-		 faultAnalysisReport.setId(id);
-		 faultAnalysisReport.setApprovedRemark(approvedRemark);
-		 faultAnalysisReport.setApprovedResult(approvedResult);
-		 faultAnalysisReportService.updateById(faultAnalysisReport);
-		 //修改知识库状态
-		 String faultKnowledgeBaseId = faultAnalysisReportService.getById(id).getFaultKnowledgeBaseId();
-		 if (StringUtils.isNotEmpty(faultKnowledgeBaseId)) {
-			 FaultKnowledgeBase faultKnowledgeBase = faultKnowledgeBaseService.getById(faultKnowledgeBaseId);
-			 if (approvedResult.equals(FaultConstant.PASSED)) {
-				 faultKnowledgeBase.setStatus(FaultConstant.APPROVED);
-				 faultKnowledgeBase.setApprovedResult(FaultConstant.PASSED);
-				 faultAnalysisReport.setDelFlag(0);
-			 } else {
-				 faultKnowledgeBase.setStatus(FaultConstant.REJECTED);
-				 faultKnowledgeBase.setApprovedResult(FaultConstant.NO_PASS);
-			 }
-			 faultKnowledgeBaseService.updateById(faultKnowledgeBase);
-		 }
-		 return Result.OK("审批成功!");
+		 return faultAnalysisReportService.approval(approvedRemark, approvedResult, id);
 	 }
 
-	/**
+	 /**
 	 *  编辑提交
 	 *
 	 * @param faultDTO
@@ -160,24 +146,7 @@ public class FaultAnalysisReportController extends BaseController<FaultAnalysisR
 	})
 	@RequestMapping(value = "/edit", method = {RequestMethod.PUT,RequestMethod.POST})
 	public Result<String> edit(@RequestBody FaultDTO faultDTO) {
-		FaultAnalysisReport faultAnalysisReport = faultDTO.getFaultAnalysisReport();
-		faultAnalysisReport.setStatus(FaultConstant.PENDING);
-		faultAnalysisReport.setApprovedResult(FaultConstant.NO_PASS);
-
-		FaultKnowledgeBase faultKnowledgeBase = faultDTO.getFaultKnowledgeBase();
-		//判断是否同步到知识库
-		if (ObjectUtil.isNotNull(faultKnowledgeBase)) {
-			faultKnowledgeBase.setStatus(FaultConstant.PENDING);
-			faultKnowledgeBase.setApprovedResult(FaultConstant.NO_PASS);
-			//先隐藏，审批通过后再展示
-			faultKnowledgeBase.setDelFlag(1);
-			faultKnowledgeBaseService.updateById(faultKnowledgeBase);
-			faultAnalysisReport.setFaultKnowledgeBaseId(faultKnowledgeBase.getId());
-		} else {
-			faultAnalysisReport.setFaultKnowledgeBaseId(null);
-		}
-		faultAnalysisReportService.updateById(faultAnalysisReport);
-		return Result.OK("编辑成功!");
+		return faultAnalysisReportService.edit(faultDTO);
 	}
 
 	/**
@@ -190,8 +159,7 @@ public class FaultAnalysisReportController extends BaseController<FaultAnalysisR
 	@ApiOperation(value="故障分析-通过id删除", notes="故障分析-通过id删除")
 	@DeleteMapping(value = "/delete")
 	public Result<String> delete(@RequestParam(name="id",required=true) String id) {
-		faultAnalysisReportService.removeById(id);
-		return Result.OK("删除成功!");
+		return faultAnalysisReportService.delete(id);
 	}
 
 	/**
@@ -204,8 +172,7 @@ public class FaultAnalysisReportController extends BaseController<FaultAnalysisR
 	@ApiOperation(value="故障分析-批量删除", notes="故障分析-批量删除")
 	@DeleteMapping(value = "/deleteBatch")
 	public Result<String> deleteBatch(@RequestParam(name="ids",required=true) String ids) {
-		this.faultAnalysisReportService.removeByIds(Arrays.asList(ids.split(",")));
-		return Result.OK("批量删除成功!");
+		return faultAnalysisReportService.deleteBatch(ids);
 	}
 
 	/**
@@ -218,7 +185,6 @@ public class FaultAnalysisReportController extends BaseController<FaultAnalysisR
 	@ApiOperation(value="故障分析-通过id查询(停用)", notes="故障分析-通过id查询")
 	@GetMapping(value = "/queryById")
 	public Result<FaultAnalysisReport> queryById(@RequestParam(name="id",required=true) String id) {
-
 		FaultAnalysisReport faultAnalysisReport = faultAnalysisReportService.getById(id);
 		if(faultAnalysisReport==null) {
 			return Result.error("未找到对应数据");
@@ -269,7 +235,6 @@ public class FaultAnalysisReportController extends BaseController<FaultAnalysisR
 											   @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
 											   HttpServletRequest req) {
 		 Page<FaultDTO> page = new Page<>(pageNo, pageSize);
-
 		 IPage<FaultDTO> pageList = faultAnalysisReportService.getFault(page, faultDTO);
 		 return Result.OK(pageList);
 	 }
@@ -303,22 +268,7 @@ public class FaultAnalysisReportController extends BaseController<FaultAnalysisR
 			@ApiResponse(code = 200, message = "OK", response = FaultDTO.class)
 	})
 	public Result<String> addDetail(@RequestBody FaultDTO faultDTO) {
-		FaultAnalysisReport faultAnalysisReport = faultDTO.getFaultAnalysisReport();
-		faultAnalysisReport.setStatus(FaultConstant.PENDING);
-		faultAnalysisReport.setApprovedResult(FaultConstant.NO_PASS);
-		faultAnalysisReport.setDelFlag(0);
-		faultAnalysisReport.setScanSum(0);
-		FaultKnowledgeBase faultKnowledgeBase = faultDTO.getFaultKnowledgeBase();
-		if (ObjectUtil.isNotNull(faultKnowledgeBase)) {
-			faultKnowledgeBase.setStatus(FaultConstant.PENDING);
-			faultKnowledgeBase.setApprovedResult(FaultConstant.NO_PASS);
-			//先隐藏，审批通过后再展示
-			faultKnowledgeBase.setDelFlag(1);
-			faultKnowledgeBaseService.save(faultKnowledgeBase);
-			faultAnalysisReport.setFaultKnowledgeBaseId(faultKnowledgeBase.getId());
-		}
-		faultAnalysisReportService.save(faultAnalysisReport);
-		return Result.OK("提交成功");
+		return faultAnalysisReportService.addDetail(faultDTO);
 	}
 
 

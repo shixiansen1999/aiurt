@@ -6,6 +6,7 @@ import com.aiurt.modules.faultanalysisreport.entity.dto.FaultDTO;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
+import org.jeecg.common.api.vo.Result;
 
 /**
  * @Description: fault_analysis_report
@@ -44,6 +45,47 @@ public interface IFaultAnalysisReportService extends IService<FaultAnalysisRepor
      */
     FaultDTO getDetail(String id);
 
+    /**
+     *  审批
+     *
+     * @param approvedRemark
+     * @param approvedResult
+     * @param id
+     * @return
+     */
+    Result<String> approval(String approvedRemark, Integer approvedResult, String id);
+
+    /**
+     *  编辑提交
+     *
+     * @param faultDTO
+     * @return
+     */
+    Result<String> edit(FaultDTO faultDTO);
+
+    /**
+     * 提交故障分析
+     * @param faultDTO
+     * @return
+     */
+    Result<String> addDetail(FaultDTO faultDTO);
+
+    /**
+     *   通过id删除
+     *
+     * @param id
+     * @return
+     */
+    Result<String> delete(String id);
+
+    /**
+     *  批量删除
+     *
+     * @param ids
+     * @return
+     */
+    Result<String> deleteBatch(String ids);
 
 
+    boolean getRole();
 }

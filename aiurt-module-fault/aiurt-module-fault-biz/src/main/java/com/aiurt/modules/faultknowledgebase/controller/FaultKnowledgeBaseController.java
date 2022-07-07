@@ -105,6 +105,7 @@ public class FaultKnowledgeBaseController extends BaseController<FaultKnowledgeB
 	 public Result<String> approval(@RequestParam(name = "approvedRemark") String approvedRemark,
 									@RequestParam(name = "approvedResult") Integer approvedResult,
 									@RequestParam(name = "id") String id) {
+		 if (faultAnalysisReportService.getRole()) {return Result.OK("没有权限");}
 		 FaultKnowledgeBase faultKnowledgeBase = new FaultKnowledgeBase();
 		 faultKnowledgeBase.setId(id);
 		 faultKnowledgeBase.setApprovedRemark(approvedRemark);
@@ -127,6 +128,7 @@ public class FaultKnowledgeBaseController extends BaseController<FaultKnowledgeB
 		return Result.OK("编辑成功!");
 	}
 
+	 //list转string
 	 private void getFaultCodeList(FaultKnowledgeBase faultKnowledgeBase) {
 		 List<String> faultCodeList = faultKnowledgeBase.getFaultCodeList();
 		 if (CollectionUtils.isNotEmpty(faultCodeList)) {
@@ -157,6 +159,10 @@ public class FaultKnowledgeBaseController extends BaseController<FaultKnowledgeB
 	@ApiOperation(value="故障知识库-通过id删除", notes="故障知识库-通过id删除")
 	@DeleteMapping(value = "/delete")
 	public Result<String> delete(@RequestParam(name="id",required=true) String id) {
+		FaultKnowledgeBase byId = faultKnowledgeBaseService.getById(id);
+		if (!byId.getStatus().equals(FaultConstant.APPROVED)) {
+			return Result.OK("删除失败!");
+		}
 		faultKnowledgeBaseService.removeById(id);
 		return Result.OK("删除成功!");
 	}
@@ -171,6 +177,13 @@ public class FaultKnowledgeBaseController extends BaseController<FaultKnowledgeB
 	@ApiOperation(value="故障知识库-批量删除", notes="故障知识库-批量删除")
 	@DeleteMapping(value = "/deleteBatch")
 	public Result<String> deleteBatch(@RequestParam(name="ids",required=true) String ids) {
+		List<String> list = Arrays.asList(ids.split(","));
+		for (String id : list) {
+			FaultKnowledgeBase byId = faultKnowledgeBaseService.getById(id);
+			if (byId.getStatus().equals(FaultConstant.PENDING)) {
+				return Result.OK("待审批的知识库不能删除");
+			}
+		}
 		this.faultKnowledgeBaseService.removeByIds(Arrays.asList(ids.split(",")));
 		return Result.OK("批量删除成功!");
 	}
@@ -186,13 +199,13 @@ public class FaultKnowledgeBaseController extends BaseController<FaultKnowledgeB
 	@GetMapping(value = "/queryById")
 	public Result<FaultKnowledgeBase> queryById(@RequestParam(name="id",required=true) String id) {
 		FaultKnowledgeBase faultKnowledgeBase = faultKnowledgeBaseMapper.readOne(id);
+		if(faultKnowledgeBase==null) {
+			return Result.error("未找到对应数据");
+		}
 		String faultCodes = faultKnowledgeBase.getFaultCodes();
 		String[] split = faultCodes.split(",");
 		List<String> list = Arrays.asList(split);
 		faultKnowledgeBase.setFaultCodeList(list);
-		if(faultKnowledgeBase==null) {
-			return Result.error("未找到对应数据");
-		}
 		return Result.OK(faultKnowledgeBase);
 	}
 
