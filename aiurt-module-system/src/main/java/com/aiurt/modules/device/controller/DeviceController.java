@@ -413,8 +413,7 @@ public class DeviceController {
             result.error500("参数不识别！");
         } else {
             List<Device> list = this.deviceService.lambdaQuery().eq(Device::getId, Arrays.asList(ids.split(","))).select(Device::getCode).list();
-            list.stream().forEach( deviceAssembly -> deviceAssembly.setDelFlag(1));
-            deviceService.removeBatchByIds(list);
+            deviceService.removeByIds(Arrays.asList(ids.split(",")));
             result.success("删除成功!");
         }
         return result;
