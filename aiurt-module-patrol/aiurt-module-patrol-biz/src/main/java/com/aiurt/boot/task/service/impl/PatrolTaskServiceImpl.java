@@ -276,8 +276,6 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
                     .set(PatrolTask::getSource, 1)
                     .eq(PatrolTask::getId, patrolTaskDTO.getId());
             update(updateWrapper);
-            updateWrapper.set(PatrolTask::getStatus, 2).eq(PatrolTask::getId, patrolTaskDTO.getId());
-            update(updateWrapper);
             //添加巡检人
             PatrolTask patrolTask = patrolTaskMapper.selectById(patrolTaskDTO.getId());
             PatrolTaskUser patrolTaskUser = new PatrolTaskUser();
@@ -295,6 +293,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         //执行：将待执行改为执行中
         if (patrolTaskDTO.getStatus() == 2) {
             updateWrapper.set(PatrolTask::getStatus, 4).eq(PatrolTask::getId, patrolTaskDTO.getId());
+            update(updateWrapper);
         }
     }
 
