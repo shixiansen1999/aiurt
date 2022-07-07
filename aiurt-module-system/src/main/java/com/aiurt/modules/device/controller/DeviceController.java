@@ -280,6 +280,8 @@ public class DeviceController {
                             device.setStationCode("");
                             device.setPositionCode("");
                     }
+                }else{
+                    device.setLineCode(positionCodeCc);
                 }
             }
             deviceService.save(device);
