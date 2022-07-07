@@ -39,10 +39,14 @@ public class DeviceCompose implements Serializable {
 	@Excel(name = "设备类型编码", width = 15)
     @ApiModelProperty(value = "设备类型编码")
     private String deviceTypeCode;
-	/**物资编码(物资主数据)*/
-	@Excel(name = "物资编码(物资主数据)", width = 15)
+    /**物资编码(物资主数据)*/
+    @Excel(name = "物资编码(物资主数据)", width = 15)
     @ApiModelProperty(value = "物资编码(物资主数据)")
     private String materialCode;
+	/**物资id物资主数据)*/
+	@Excel(name = "物资id物资主数据)", width = 15)
+    @ApiModelProperty(value = "物资id物资主数据)")
+    private String materialId;
 	/**物资名称*/
 	@Excel(name = "物资名称", width = 15)
     @ApiModelProperty(value = "物资名称")
