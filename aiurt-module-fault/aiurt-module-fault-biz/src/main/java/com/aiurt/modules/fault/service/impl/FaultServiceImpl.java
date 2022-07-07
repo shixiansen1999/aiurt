@@ -505,8 +505,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         faultRepairRecord.setApprovalHangUpTime(new Date());
         faultRepairRecord.setApprovalHangUpUser(user.getUsername());
 
-        // 更新
-
+        // 更新数据库
         updateById(fault);
 
         repairRecordService.updateById(faultRepairRecord);
