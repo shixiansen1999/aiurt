@@ -4,10 +4,16 @@ package com.aiurt.modules.major.controller;
 import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 
+import com.aiurt.boot.standard.entity.InspectionCode;
+import com.aiurt.boot.standard.entity.PatrolStandard;
+import com.aiurt.boot.standard.service.IInspectionCodeService;
+import com.aiurt.boot.standard.service.IPatrolStandardService;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.modules.device.entity.DeviceType;
 import com.aiurt.modules.device.service.IDeviceTypeService;
+import com.aiurt.modules.fault.entity.Fault;
+import com.aiurt.modules.fault.service.IFaultService;
 import com.aiurt.modules.major.entity.CsMajor;
 import com.aiurt.modules.major.service.ICsMajorService;
 import com.aiurt.modules.material.entity.MaterialBaseType;
@@ -50,6 +56,12 @@ public class CsMajorController  {
 	private IMaterialBaseTypeService materialBaseTypeService;
 	@Autowired
 	private IDeviceTypeService deviceTypeService;
+     @Autowired
+     private IPatrolStandardService patrolStandardService;
+     @Autowired
+     private IInspectionCodeService inspectionCodeService;
+     @Autowired
+     private IFaultService faultService;
 	/**
 	 * 分页列表查询
 	 *
@@ -141,6 +153,29 @@ public class CsMajorController  {
 		if(!materList.isEmpty()){
 			return Result.error("该专业被物资分类使用中，不能删除!");
 		}
+        // 判断是否被巡检标准使用
+        LambdaQueryWrapper<PatrolStandard> standardWrapper = new LambdaQueryWrapper<>();
+        standardWrapper.eq(PatrolStandard::getProfessionCode,csMajor.getMajorCode());
+        standardWrapper.eq(PatrolStandard::getDelFlag, CommonConstant.DEL_FLAG_0);
+        List<PatrolStandard> standardList = patrolStandardService.list(standardWrapper);
+        if(!standardList.isEmpty()){
+            return Result.error("该专业被巡检标准使用中，不能删除!");
+        }
+        // 判断是否被检修标准使用
+        LambdaQueryWrapper<InspectionCode> insWrapper = new LambdaQueryWrapper<>();
+        insWrapper.eq(InspectionCode::getMajorCode,csMajor.getMajorCode());
+        insWrapper.eq(InspectionCode::getDelFlag, CommonConstant.DEL_FLAG_0);
+        List<InspectionCode> insList = inspectionCodeService.list(insWrapper);
+        if(!insList.isEmpty()){
+            return Result.error("该专业被检修标准使用中，不能删除!");
+        }
+        // 判断是否被故障上报使用
+        LambdaQueryWrapper<Fault> faultWrapper = new LambdaQueryWrapper<>();
+        faultWrapper.eq(Fault::getMajorCode,csMajor.getMajorCode());
+        List<Fault> faultList = faultService.list(faultWrapper);
+        if(!faultList.isEmpty()){
+            return Result.error("该专业被故障上报使用中，不能删除!");
+        }
 		csMajor.setDelFlag(CommonConstant.DEL_FLAG_1);
 		csMajorService.updateById(csMajor);
 		return Result.OK("删除成功!");

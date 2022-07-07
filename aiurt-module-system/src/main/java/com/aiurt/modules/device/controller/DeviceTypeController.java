@@ -220,7 +220,7 @@ public class DeviceTypeController extends BaseController<DeviceType, IDeviceType
 			}
 			//查询上级节点
 			if(!type.getPid().equals("0")){
-				type.setPUrl(deviceTypeService.getById(type.getPid()).getCode());
+				type.setPUrl(deviceTypeService.getById(type.getPid()).getName());
 			}else if(null!=type.getMajorCode() && null!= type.getSystemCode() && type.getPid().equals("0")){
 				LambdaQueryWrapper<CsSubsystem> wrapper = new LambdaQueryWrapper();
 				wrapper.eq(CsSubsystem::getSystemCode,type.getSystemCode());
