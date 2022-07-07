@@ -172,4 +172,14 @@ public class InspectionConstant {
      * 检修值：3输入项
      */
     public static final Integer STATUS_ITEM_INPUT = 3;
+
+    /**
+     * 非法操作
+     */
+    public static final String ILLEGAL_OPERATION = "非法操作";
+
+    /**
+     * 未删除
+     */
+    public static final Integer NO_DEL = 0;
 }
