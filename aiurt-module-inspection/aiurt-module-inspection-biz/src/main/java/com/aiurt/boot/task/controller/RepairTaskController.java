@@ -201,7 +201,7 @@ public class RepairTaskController extends BaseController<RepairTask, IRepairTask
             @ApiResponse(code = 200, message = "OK", response = CheckListDTO.class)
     })
     public Result<CheckListDTO> selectCheckList(@RequestParam(name = "deviceId", required = true) String deviceId,
-                                                @RequestParam(name = "overhaulCode", required = true) String overhaulCode
+                                                @RequestParam(name = "overhaulCode", required = false) String overhaulCode
     ) {
         CheckListDTO checkListDTO = repairTaskService.selectCheckList(deviceId, overhaulCode);
         return Result.OK(checkListDTO);

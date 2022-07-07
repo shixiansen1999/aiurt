@@ -154,6 +154,10 @@
         select station_code,position_code,line_code from repair_task_station_rel where repair_task_code = #{planCode}
     </select>
 
+    <select id="selectStationLists" resultType="com.aiurt.boot.plan.dto.StationDTO">
+        select station_code,position_code,line_code from device where code = #{code}
+    </select>
+
     <select id="selectCodeList" resultType="com.aiurt.boot.task.dto.RepairTaskDTO" parameterType="String">
         SELECT
 	      t1.id as taskId,
