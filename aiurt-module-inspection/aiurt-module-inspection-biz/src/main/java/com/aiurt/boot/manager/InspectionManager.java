@@ -5,10 +5,12 @@ import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.constant.DictConstant;
 import com.aiurt.boot.constant.InspectionConstant;
+import com.aiurt.boot.manager.dto.OrgDTO;
 import com.aiurt.boot.manager.mapper.InspectionManagerMapper;
 import com.aiurt.boot.plan.dto.RepairDeviceDTO;
 import com.aiurt.boot.plan.dto.StationDTO;
 import com.aiurt.common.exception.AiurtBootException;
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.system.api.ISysBaseAPI;
@@ -171,7 +173,7 @@ public class InspectionManager {
     public List<RepairDeviceDTO> queryDeviceByCodesPage(List<String> deviceCodes, Page<?> page) {
         List<RepairDeviceDTO> repairDeviceDTOList = new ArrayList<>();
         if (CollUtil.isNotEmpty(deviceCodes)) {
-            repairDeviceDTOList = inspectionManagerMapper.queryDeviceByCodesPage(deviceCodes,page);
+            repairDeviceDTOList = inspectionManagerMapper.queryDeviceByCodesPage(deviceCodes, page);
             if (CollUtil.isNotEmpty(repairDeviceDTOList)) {
                 for (RepairDeviceDTO repairDeviceDTO : repairDeviceDTOList) {
                     repairDeviceDTO.setStatusName(sysBaseAPI.translateDict(DictConstant.DEVICE_STATUS, String.valueOf(repairDeviceDTO.getStatus())));
@@ -187,6 +189,30 @@ public class InspectionManager {
         }
         return repairDeviceDTOList;
 
+    }
+
+    /**
+     * 根据部门编号返回部门信息以及部门下的人员
+     */
+    public List<OrgDTO> queryUserByOrdCode(String orgStrs) {
+        List<OrgDTO> result = new ArrayList<>();
+        if(StrUtil.isEmpty(orgStrs)){
+            return result;
+        }
+        List<JSONObject> jsonObjects = sysBaseAPI.queryDepartsByOrgcodes(orgStrs);
+        if (CollUtil.isNotEmpty(jsonObjects)) {
+            for (JSONObject jsonObject : jsonObjects) {
+                if (ObjectUtil.isNotEmpty(jsonObject)) {
+                    OrgDTO orgDTO = new OrgDTO();
+                    orgDTO.setOrgCode(jsonObject.getString("orgCode"));
+                    orgDTO.setDepartName(jsonObject.getString("departName"));
+                    orgDTO.setUsers(sysBaseAPI.getUserByDepIds(Arrays.asList(orgDTO.getOrgCode())));
+                    result.add(orgDTO);
+                }
+            }
+        }
+
+        return result;
     }
 
 }

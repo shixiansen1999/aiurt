@@ -5,7 +5,6 @@ import com.aiurt.boot.manager.dto.ExamineDTO;
 import com.aiurt.boot.manager.dto.MajorDTO;
 import com.aiurt.boot.task.dto.CheckListDTO;
 import com.aiurt.boot.task.dto.RepairTaskDTO;
-import com.aiurt.boot.task.dto.WriteMonadDTO;
 import com.aiurt.boot.task.entity.RepairTask;
 import com.aiurt.boot.task.entity.RepairTaskEnclosure;
 import com.aiurt.boot.task.service.IRepairTaskService;
@@ -14,7 +13,10 @@ import com.aiurt.common.system.base.controller.BaseController;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import io.swagger.annotations.*;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 import lombok.extern.slf4j.Slf4j;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.query.QueryGenerator;
@@ -345,73 +347,5 @@ public class RepairTaskController extends BaseController<RepairTask, IRepairTask
         return super.importExcel(request, response, RepairTask.class);
     }
 
-    /**
-     * 领取检修任务
-     *
-     * @param id
-     * @return
-     */
-    @AutoLog(value = "检修任务-领取检修任务")
-    @ApiOperation(value = "领取检修任务", notes = "领取检修任务")
-    @PostMapping(value = "/receiveTask")
-    public Result<?> receiveTask(@RequestParam(name = "id", required = true) String id) {
-        repairTaskService.receiveTask(id);
-        return Result.OK("领取检修任务成功！");
-    }
 
-    /**
-     * 填写检修工单
-     *
-     * @return
-     */
-    @AutoLog(value = "填写检修工单")
-    @ApiOperation(value = "填写检修工单", notes = "填写检修工单")
-    @PostMapping(value = "/writeMonad")
-    public Result<?> writeMonad(WriteMonadDTO monadDTO) {
-        repairTaskService.writeMonad(monadDTO);
-        return Result.OK("填写成功");
-    }
-
-    /**
-     * 填写检修单上的同行人
-     *
-     * @param code   检修单code
-     * @param peerId 同行人ids
-     */
-    @AutoLog(value = "填写检修单上的同行人")
-    @ApiOperation(value = "填写检修单上的同行人", notes = "填写检修单上的同行人")
-    @PostMapping(value = "/writePeerPeople")
-    public Result<?> writePeerPeople(@RequestParam @ApiParam(value = "检修单code", name = "code", required = true) String code,
-                                     @RequestParam @ApiParam(value = "同行人，多个用英文逗号隔开", name = "peerId", required = true) String peerId) {
-        repairTaskService.writePeerPeople(code, peerId);
-        return Result.OK("填写成功");
-    }
-
-    /**
-     * 填写检修单上的检修位置
-     *
-     * @param id               检修单id
-     * @param specificLocation 检修位置
-     * @return
-     */
-    @AutoLog(value = "填写检修单上的检修位置")
-    @ApiOperation(value = "填写检修单上的检修位置", notes = "填写检修单上的检修位置")
-    @PostMapping(value = "/writeLocation")
-    public Result<?> writeLocation(@RequestParam @ApiParam(value = "检修单id", name = "id", required = true) String id,
-                                   @RequestParam @ApiParam(value = "检修位置", name = "id", required = true) String specificLocation) {
-        repairTaskService.writeLocation(id, specificLocation);
-        return Result.OK("填写成功");
-    }
-    /**
-     *  提交检修工单
-     * @param id
-     * @return
-     */
-    @AutoLog(value = "提交检修工单")
-    @ApiOperation(value = "提交检修工单", notes = "提交检修工单")
-    @PostMapping(value = "/submitMonad")
-    public Result<?> submitMonad(@RequestParam @ApiParam(value = "检修单id", name = "id", required = true) String id) {
-        repairTaskService.submitMonad(id);
-        return Result.OK("提交成功");
-    }
 }

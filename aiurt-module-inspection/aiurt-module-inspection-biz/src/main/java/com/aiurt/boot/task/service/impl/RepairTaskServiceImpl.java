@@ -910,4 +910,36 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
         repairTaskDeviceRel.setIsSubmit(InspectionConstant.SUBMITTED);
         repairTaskDeviceRelMapper.updateById(repairTaskDeviceRel);
     }
+
+    /**
+     * 检修单同行人下拉
+     *
+     * @param id
+     */
+    @Override
+    public List<OrgDTO> queryPeerList(String id) {
+        List<OrgDTO> orgDTOS = new ArrayList<>();
+        // 检修单
+        RepairTaskDeviceRel repairTaskDeviceRel = repairTaskDeviceRelMapper.selectById(id);
+        if (ObjectUtil.isEmpty(repairTaskDeviceRel)) {
+            throw new AiurtBootException(InspectionConstant.ILLEGAL_OPERATION);
+        }
+
+        // 检修任务
+        RepairTask repairTask = baseMapper.selectById(repairTaskDeviceRel.getRepairTaskId());
+        if (ObjectUtil.isEmpty(repairTask)) {
+            throw new AiurtBootException(InspectionConstant.ILLEGAL_OPERATION);
+        }
+
+        List<RepairTaskOrgRel> repairTaskOrgRels = repairTaskOrgRelMapper.selectList(
+                new LambdaQueryWrapper<RepairTaskOrgRel>()
+                        .eq(RepairTaskOrgRel::getRepairTaskCode, repairTask.getCode())
+                        .eq(RepairTaskOrgRel::getDelFlag, InspectionConstant.NO_DEL));
+        if (CollUtil.isNotEmpty(repairTaskOrgRels)) {
+            String orgStrs = StrUtil.join(",", repairTaskOrgRels.stream().map(RepairTaskOrgRel::getOrgCode).collect(Collectors.toList()));
+            orgDTOS = manager.queryUserByOrdCode(orgStrs);
+        }
+
+        return orgDTOS;
+    }
 }
