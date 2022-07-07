@@ -108,6 +108,11 @@ public class CheckListDTO {
     @TableField(exist = false)
     private Integer duration;
 
+    /**站点位置*/
+    @ApiModelProperty(value = "站点位置")
+    @TableField(exist = false)
+    private String sitePosition;
+
     /**检修位置*/
     @ApiModelProperty(value = "检修位置")
     @TableField(exist = false)

@@ -1,6 +1,5 @@
 package com.aiurt.boot.task.entity;
 
-import com.aiurt.boot.plan.entity.RepairPoolCodeContent;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
@@ -86,9 +85,9 @@ public class RepairTaskResult implements Serializable {
     @ApiModelProperty(value = "检查项类型名称")
     private String typeName;
 
-	/**数据字典：1 开关项、2 选择项、3 输入项*/
-	@Excel(name = "数据字典：1 开关项、2 选择项、3 输入项", width = 15)
-    @ApiModelProperty(value = "数据字典：1 开关项、2 选择项、3 输入项")
+	/**数据字典：1 无、2 选择项、3 输入项*/
+	@Excel(name = "数据字典：1无、2 选择项、3 输入项", width = 15)
+    @ApiModelProperty(value = "数据字典：1 无、2 选择项、3 输入项")
     private java.lang.Integer statusItem;
 	/**选择项关联的数据字典*/
 	@Excel(name = "选择项关联的数据字典", width = 15)

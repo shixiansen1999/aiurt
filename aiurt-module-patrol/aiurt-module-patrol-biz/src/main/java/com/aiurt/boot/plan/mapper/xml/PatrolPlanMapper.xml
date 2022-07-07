@@ -101,10 +101,10 @@
             AND name LIKE CONCAT ('%', #{patrolPlan.name}, '%')
         </if>
         <if test="patrolPlan.professionCode !=null ">
-            AND profession_code  LIKE CONCAT ('%', #{patrolPlan.professionCode}, '%')
+            AND professionCode  LIKE CONCAT ('%', #{patrolPlan.professionCode}, '%')
         </if>
         <if test="patrolPlan.subsystemCode !=null ">
-            AND subsystem_code  LIKE CONCAT ('%', #{patrolPlan.subsystemCode}, '%')
+            AND subsystemCode  LIKE CONCAT ('%', #{patrolPlan.subsystemCode}, '%')
         </if>
         <if test="patrolPlan.code !=null ">
             AND code LIKE CONCAT ('%', #{patrolPlan.code}, '%')

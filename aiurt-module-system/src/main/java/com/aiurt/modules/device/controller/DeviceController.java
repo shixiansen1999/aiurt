@@ -52,7 +52,6 @@ public class DeviceController {
     /**
      * 分页列表查询
      *
-     * @param device
      * @param pageNo
      * @param pageSize
      * @return
@@ -306,9 +305,9 @@ public class DeviceController {
                     deviceAssembly.setMaterialName(deviceCompose.getMaterialName());
                     deviceAssembly.setBaseTypeCode(deviceCompose.getBaseTypeCode());
                     deviceAssembly.setSpecifications(deviceCompose.getSpecifications());
-                    deviceAssembly.setUnit(deviceCompose.getUnit());
-                    deviceAssembly.setManufactorCode(deviceCompose.getManufacturer());
-                    deviceAssembly.setPrice(deviceCompose.getPrice().toString());
+                    deviceAssembly.setUnit(deviceCompose.getUnit()==null?"":deviceCompose.getUnit());
+                    deviceAssembly.setManufactorCode(deviceCompose.getManufacturer()==null?"":deviceCompose.getManufacturer());
+                    deviceAssembly.setPrice(deviceCompose.getPrice()==null?null:deviceCompose.getPrice().toString());
                     deviceAssembly.setDeviceTypeCode(deviceCompose.getDeviceTypeCode());
                     iDeviceAssemblyService.save(deviceAssembly);
                 }

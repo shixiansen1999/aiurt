@@ -1,7 +1,7 @@
 package com.aiurt.boot.strategy.dto;
 
+
 import com.aiurt.boot.manager.dto.InspectionCodeDTO;
-import com.aiurt.boot.standard.entity.InspectionCode;
 import com.aiurt.boot.strategy.entity.InspectionStrategy;
 import com.aiurt.modules.device.entity.Device;
 import com.baomidou.mybatisplus.annotation.TableField;

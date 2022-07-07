@@ -3,7 +3,6 @@ package com.aiurt.boot.task.controller;
 import com.aiurt.boot.manager.dto.EquipmentOverhaulDTO;
 import com.aiurt.boot.manager.dto.ExamineDTO;
 import com.aiurt.boot.manager.dto.MajorDTO;
-import com.aiurt.boot.task.dto.WriteMonadDTO;
 import com.aiurt.boot.task.dto.CheckListDTO;
 import com.aiurt.boot.task.dto.RepairTaskDTO;
 import com.aiurt.boot.task.entity.RepairTask;
@@ -204,7 +203,7 @@ public class RepairTaskController extends BaseController<RepairTask, IRepairTask
             @ApiResponse(code = 200, message = "OK", response = CheckListDTO.class)
     })
     public Result<CheckListDTO> selectCheckList(@RequestParam(name = "deviceId", required = true) String deviceId,
-                                                @RequestParam(name = "overhaulCode", required = true) String overhaulCode
+                                                @RequestParam(name = "overhaulCode", required = false) String overhaulCode
     ) {
         CheckListDTO checkListDTO = repairTaskService.selectCheckList(deviceId, overhaulCode);
         return Result.OK(checkListDTO);
@@ -348,30 +347,5 @@ public class RepairTaskController extends BaseController<RepairTask, IRepairTask
         return super.importExcel(request, response, RepairTask.class);
     }
 
-    /**
-     * 领取检修任务
-     *
-     * @param id
-     * @return
-     */
-    @AutoLog(value = "检修任务-领取检修任务")
-    @ApiOperation(value = "领取检修任务", notes = "领取检修任务")
-    @PostMapping(value = "/receiveTask")
-    public Result<?> receiveTask(@RequestParam(name = "id", required = true) String id) {
-        repairTaskService.receiveTask(id);
-        return Result.OK("领取检修任务成功！");
-    }
 
-    /**
-     * 填写检修工单
-     *
-     * @return
-     */
-    @AutoLog(value = "填写检修工单")
-    @ApiOperation(value = "填写检修工单", notes = "填写检修工单")
-    @PostMapping(value = "/writeMonad")
-    public Result<?> writeMonad(WriteMonadDTO monadDTO) {
-        repairTaskService.writeMonad(monadDTO);
-        return Result.OK("填写成功");
-    }
 }

@@ -1,4 +1,4 @@
-package com.aiurt.boot.plan.rep;
+package com.aiurt.boot.plan.req;
 
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;

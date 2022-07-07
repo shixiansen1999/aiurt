@@ -58,6 +58,13 @@ public interface RepairTaskMapper extends BaseMapper<RepairTask> {
     List<StationDTO> selectStationList(String planCode);
 
     /**
+     * 查询设备信息
+     * @param code
+     * @return
+     */
+    List<StationDTO> selectStationLists(String code);
+
+    /**
      * 查询编码信息
      * @param id
      * @param majorCode

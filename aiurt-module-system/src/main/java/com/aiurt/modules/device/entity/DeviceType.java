@@ -126,4 +126,9 @@ public class DeviceType implements Serializable {
     @ApiModelProperty(value = "父节点是否是特种设备")
     @TableField(exist = false)
     private Integer pIsSpecialDevice;
+    /**专业下是否有子系统标识*/
+    @Excel(name = "专业下是否有子系统标识", width = 15)
+    @ApiModelProperty(value = "专业下是否有子系统标识")
+    @TableField(exist = false)
+    private Integer pIsHaveSystem;
 }
