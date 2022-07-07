@@ -2,6 +2,7 @@ package com.aiurt.boot.task.mapper;
 
 import com.aiurt.boot.task.dto.PatrolTaskDTO;
 import com.aiurt.boot.task.dto.PatrolTaskUserContentDTO;
+import com.aiurt.boot.task.dto.SubsystemDTO;
 import com.aiurt.boot.task.entity.PatrolTask;
 import com.aiurt.boot.task.param.PatrolTaskParam;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
@@ -140,4 +141,13 @@ public interface PatrolTaskMapper extends BaseMapper<PatrolTask> {
      * @return
      */
     String getUsername(String userId);
+
+    /**
+     * 获取专业下的子系统信息
+     *
+     * @param majorCode
+     * @param subsystem
+     * @return
+     */
+    List<SubsystemDTO> getMajorSubsystemGanged(@Param("majorCode") String majorCode, @Param("subsystemList") List<SubsystemDTO> subsystem);
 }

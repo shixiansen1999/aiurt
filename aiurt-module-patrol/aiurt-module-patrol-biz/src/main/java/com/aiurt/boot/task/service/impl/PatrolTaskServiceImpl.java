@@ -405,7 +405,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
     }
 
     @Override
-    public Map<String, Object> getMajorSubsystemGanged(String id) {
+    public List<MajorDTO> getMajorSubsystemGanged(String id) {
         QueryWrapper<PatrolTaskStandard> wrapper = new QueryWrapper<>();
         wrapper.lambda().eq(PatrolTaskStandard::getTaskId, id);
         List<PatrolTaskStandard> list = Optional.ofNullable(patrolTaskStandardMapper.selectList(wrapper)).orElseGet(Collections::emptyList);
@@ -433,10 +433,15 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
             subsystemDTO.setSubsystemName(majorName);
             subsystem.add(subsystemDTO);
         });
-        Map<String, Object> map = new HashMap<>();
-        map.put("major", major);
-        map.put("subsystem", subsystem);
-        return map;
+        // 获取专业下的子系统信息
+        Optional.ofNullable(major).orElseGet(Collections::emptyList).stream().forEach(l -> {
+            if (ObjectUtil.isNotEmpty(l.getMajorCode()) && CollectionUtil.isNotEmpty(subsystem)) {
+                List<SubsystemDTO> subsystemInfo = Optional.ofNullable(patrolTaskMapper.getMajorSubsystemGanged(l.getMajorCode(), subsystem))
+                        .orElseGet(Collections::emptyList).stream().collect(Collectors.toList());
+                l.setSubsystemInfo(subsystemInfo);
+            }
+        });
+        return major;
     }
 
     @Override
@@ -766,15 +771,15 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
     public void getPatrolTaskManualEdit(PatrolTaskManualDTO patrolTaskManualDTO) {
         //更新任务信息
         LambdaUpdateWrapper<PatrolTask> updateWrapper = new LambdaUpdateWrapper<>();
-        updateWrapper.set(PatrolTask::getRemark,patrolTaskManualDTO.getRemark()).set(PatrolTask::getAuditor,patrolTaskManualDTO.getAuditor())
-                     .set(PatrolTask::getStartTime,patrolTaskManualDTO.getStartTime()).set(PatrolTask::getEndTime,patrolTaskManualDTO.getEndTime())
-                     .set(PatrolTask::getName,patrolTaskManualDTO.getName()).set(PatrolTask::getPatrolDate,patrolTaskManualDTO.getPatrolDate())
-                     .eq(PatrolTask::getId,patrolTaskManualDTO.getId());
+        updateWrapper.set(PatrolTask::getRemark, patrolTaskManualDTO.getRemark()).set(PatrolTask::getAuditor, patrolTaskManualDTO.getAuditor())
+                .set(PatrolTask::getStartTime, patrolTaskManualDTO.getStartTime()).set(PatrolTask::getEndTime, patrolTaskManualDTO.getEndTime())
+                .set(PatrolTask::getName, patrolTaskManualDTO.getName()).set(PatrolTask::getPatrolDate, patrolTaskManualDTO.getPatrolDate())
+                .eq(PatrolTask::getId, patrolTaskManualDTO.getId());
         PatrolTask patrolTask = new PatrolTask();
-        patrolTaskMapper.update(patrolTask,updateWrapper);
+        patrolTaskMapper.update(patrolTask, updateWrapper);
         //先删除
         LambdaQueryWrapper<PatrolTaskOrganization> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(PatrolTaskOrganization::getTaskCode,patrolTaskManualDTO.getCode());
+        queryWrapper.eq(PatrolTaskOrganization::getTaskCode, patrolTaskManualDTO.getCode());
         List<PatrolTaskOrganization> list = patrolTaskOrganizationMapper.selectList(queryWrapper);
         patrolTaskOrganizationMapper.deleteBatchIds(list);
         //后保存组织信息
@@ -789,7 +794,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         });
         //先删除
         LambdaQueryWrapper<PatrolTaskStation> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(PatrolTaskStation::getTaskCode,patrolTaskManualDTO.getCode());
+        wrapper.eq(PatrolTaskStation::getTaskCode, patrolTaskManualDTO.getCode());
         List<PatrolTaskStation> stationList = patrolTaskStationMapper.selectList(wrapper);
         patrolTaskStationMapper.deleteBatchIds(stationList);
         //后保存站点信息

@@ -17,8 +17,8 @@ public class SubsystemDTO {
     @ApiModelProperty(value = "子系统编码")
     private java.lang.String subsystemCode;
     /**
-     * 专业编码
+     * 子系统名称
      */
-    @ApiModelProperty(value = "子系统编码")
+    @ApiModelProperty(value = "子系统名称")
     private java.lang.String subsystemName;
 }

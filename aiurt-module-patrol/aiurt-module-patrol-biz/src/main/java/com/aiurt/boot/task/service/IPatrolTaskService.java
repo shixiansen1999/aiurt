@@ -118,7 +118,7 @@ public interface IPatrolTaskService extends IService<PatrolTask> {
      *
      * @param id
      */
-    Map<String, Object> getMajorSubsystemGanged(String id);
+    List<MajorDTO> getMajorSubsystemGanged(String id);
 
     /**
      * PC巡检任务列表-任务审核
@@ -173,8 +173,10 @@ public interface IPatrolTaskService extends IService<PatrolTask> {
      * @param patrolRebuildDTO
      */
     String rebuildTask(PatrolRebuildDTO patrolRebuildDTO);
+
     /**
-     *  pc手工下放任务-编辑
+     * pc手工下放任务-编辑
+     *
      * @param patrolTaskManualDTO
      */
     void getPatrolTaskManualEdit(PatrolTaskManualDTO patrolTaskManualDTO);

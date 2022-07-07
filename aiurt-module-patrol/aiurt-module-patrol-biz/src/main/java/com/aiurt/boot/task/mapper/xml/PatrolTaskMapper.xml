@@ -186,4 +186,20 @@
         WHERE su.del_flag = 0
           AND su.id = #{userId}
     </select>
+    <select id="getMajorSubsystemGanged" resultType="com.aiurt.boot.task.dto.SubsystemDTO">
+        SELECT
+        cs.system_code subsystemCode,
+        cs.system_name subsystemName
+        FROM cs_subsystem cs
+        WHERE
+        <if test="majorCode !=null and majorCode !=''">
+            cs.major_code = #{majorCode}
+        </if>
+        <if test="subsystemList !=null and subsystemList.size()>0">
+            AND cs.system_code IN
+            <foreach collection="subsystemList" item="item" open="(" separator="," close=")">
+                #{item.subsystemCode}
+            </foreach>
+        </if>
+    </select>
 </mapper>

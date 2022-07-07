@@ -114,9 +114,9 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
     @AutoLog(value = "PC巡检任务池详情-根据任务id获得专业和子系统信息")
     @ApiOperation(value = "PC巡检任务池详情-根据任务id获得专业和子系统信息", notes = "PC巡检任务池详情-根据任务id获得专业和子系统信息")
     @RequestMapping(value = "/getMajorSystemInfo", method = {RequestMethod.GET, RequestMethod.POST})
-    public Result<?> getMajorSubsystemGanged(@RequestParam("id") String id) {
-        Map<String, Object> map = patrolTaskService.getMajorSubsystemGanged(id);
-        return Result.OK(map);
+    public Result<?> getMajorSubsystemGanged(@ApiParam(name = "id", value = "任务记录ID") @RequestParam("id") String id) {
+        List<MajorDTO> list = patrolTaskService.getMajorSubsystemGanged(id);
+        return Result.OK(list);
     }
 
     /**
@@ -456,17 +456,14 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
     @AutoLog(value = "巡检任务表- app巡检任务-审核")
     @ApiOperation(value = "巡检任务表- app巡检任务-审核", notes = "巡检任务表- app巡检任务-审核")
     @PostMapping(value = "/patrolTaskAudit")
-    public Result<?> patrolTaskAudit(String id, String status, String remark,String backReason) {
+    public Result<?> patrolTaskAudit(String id, String status, String remark, String backReason) {
         LambdaUpdateWrapper<PatrolTask> queryWrapper = new LambdaUpdateWrapper<>();
         //不通过传0
-        if(status.equals("0"))
-        {
+        if (status.equals("0")) {
             queryWrapper.set(PatrolTask::getStatus, 5).set(PatrolTask::getRemark, backReason).eq(PatrolTask::getId, id);
             patrolTaskService.update(queryWrapper);
             return Result.OK("不通过");
-        }
-        else
-        {
+        } else {
             queryWrapper.set(PatrolTask::getStatus, 7).set(PatrolTask::getAuditorRemark, remark).eq(PatrolTask::getId, id);
             patrolTaskService.update(queryWrapper);
             return Result.OK("通过成功");
