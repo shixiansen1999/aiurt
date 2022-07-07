@@ -3,6 +3,7 @@ package com.aiurt.modules.device.controller;
 
 import javax.servlet.http.HttpServletRequest;
 
+import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.modules.device.entity.Device;
 import com.aiurt.modules.device.entity.DeviceCompose;
@@ -90,6 +91,11 @@ public class DeviceTypeController extends BaseController<DeviceType, IDeviceType
 				 }
 				 twoList.add(system);
 			 });
+             if(!sysList.isEmpty()){
+                 major.setPIsHaveSystem(1);
+             }else{
+                 major.setPIsHaveSystem(0);
+             }
 			 major.setChildren(twoList);
 			 newList.add(major);
 		 });
@@ -185,16 +191,23 @@ public class DeviceTypeController extends BaseController<DeviceType, IDeviceType
 		if(null != deviceType.getMajorCode() && !"".equals(deviceType.getMajorCode())){
 			queryWrapper.eq(DeviceType::getMajorCode, deviceType.getMajorCode());
 		}
-		if(null != deviceType.getPid() && !"".equals(deviceType.getPid())){
-			queryWrapper.eq(DeviceType::getPid, deviceType.getPid());
+		/*if(null != deviceType.getPid() && !"".equals(deviceType.getPid())){
+            queryWrapper.apply("find_in_set(pid,"+deviceType.getPid()+")");
+            //queryWrapper.eq(DeviceType::getPid, deviceType.getPid());
 			if(null != deviceType.getSystemCode() && !"".equals(deviceType.getSystemCode())){
 				queryWrapper.eq(DeviceType::getSystemCode, deviceType.getSystemCode());
 			}else{
 				queryWrapper.isNull(DeviceType::getSystemCode);
 			}
+		}*/
+		if(null != deviceType.getSystemCode() && !"".equals(deviceType.getSystemCode())){
+			queryWrapper.eq(DeviceType::getSystemCode, deviceType.getSystemCode());
+		}
+		if(null != deviceType.getCodeCc() && !"".equals(deviceType.getCodeCc())){
+			queryWrapper.like(DeviceType::getCodeCc, deviceType.getCodeCc());
 		}
 		Page<DeviceType> page = new Page<DeviceType>(pageNo, pageSize);
-		IPage<DeviceType> pageList = deviceTypeService.page(page, queryWrapper.eq(DeviceType::getDelFlag, CommonConstant.DEL_FLAG_0));
+		IPage<DeviceType> pageList = deviceTypeService.page(page, queryWrapper.eq(DeviceType::getDelFlag, CommonConstant.DEL_FLAG_0).orderByAsc(DeviceType::getCreateTime));
 		pageList.getRecords().forEach(type->{
 			//查询设备组成
 			List<DeviceCompose> composeList = deviceComposeList.stream().filter(compose -> compose.getDeviceTypeCode().equals(type.getCode()) ).collect(Collectors.toList());
@@ -284,6 +297,17 @@ public class DeviceTypeController extends BaseController<DeviceType, IDeviceType
 		}
 		deviceType.setDelFlag(CommonConstant.DEL_FLAG_1);
 		deviceTypeService.updateById(deviceType);
+		//删除设备组成
+		LambdaQueryWrapper<DeviceCompose> comWrapper = new LambdaQueryWrapper<>();
+		comWrapper.eq(DeviceCompose::getDeviceTypeCode,deviceType.getCode());
+		comWrapper.eq(DeviceCompose::getDelFlag, CommonConstant.DEL_FLAG_0);
+		List<DeviceCompose> comList = deviceComposeService.list(comWrapper);
+		if(!comList.isEmpty()){
+			comList.forEach(com->{
+				com.setDelFlag(CommonConstant.DEL_FLAG_1);
+				deviceComposeService.updateById(com);
+			});
+		}
 		return Result.OK("删除成功!");
 	}
 
