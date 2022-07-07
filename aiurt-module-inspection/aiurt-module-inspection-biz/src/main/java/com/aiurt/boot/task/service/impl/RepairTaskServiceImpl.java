@@ -25,10 +25,12 @@ import com.aiurt.boot.task.entity.*;
 import com.aiurt.boot.task.mapper.*;
 import com.aiurt.boot.task.service.IRepairTaskService;
 import com.aiurt.common.exception.AiurtBootException;
+import com.aiurt.common.util.DateUtils;
 import com.aiurt.common.util.UpdateHelperUtils;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,6 +38,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.lang.reflect.Field;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -79,11 +85,22 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
     @Resource
     private RepairPoolOrgRelMapper orgRelMapper;
 
+
     @Override
     public Page<RepairTask> selectables(Page<RepairTask> pageList, RepairTask condition) {
         List<RepairTask> lists = repairTaskMapper.selectables(pageList, condition);
-        lists.forEach(e -> {
+//        List<Integer> collect1 = lists.stream().map(RepairTask::getYear).distinct().collect(Collectors.toList());
+//        HashMap<Integer,ArrayList<Object>> integerArrayListHashMap = new HashMap<>();
+//        collect1.forEach(o->{
+//            LocalDateTime yearFirst = DateUtils.getYearFirst(o);
+//            ZoneId zoneId = ZoneId.systemDefault();
+//            ZonedDateTime zonedDateTime = yearFirst.atZone(zoneId);
+//            Date date = Date.from(zonedDateTime.toInstant());
+//            ArrayList<Object> list = DateUtils.getWeekAndTime(date);
+//            integerArrayListHashMap.put(o,list);
+//        });
 
+        lists.forEach(e -> {
             //组织机构
             if (e.getOrgCode() != null) {
                 String[] split1 = e.getOrgCode().split(",");
@@ -99,7 +116,13 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                     e.setSiteName(manager.translateStation(dtoList));
                 });
             }
-
+//            //年的周数和时间
+//            ArrayList<Object> objects = integerArrayListHashMap.get(e.getYear());
+//
+//            //时间
+//            Object time = objects.get(e.getWeeks()-1);
+//
+//            e.setWeekName("第"+e.getWeeks()+"周"+"("+time+")");
             //专业
             if (e.getMajorCode() != null) {
                 String[] split3 = e.getMajorCode().split(",");

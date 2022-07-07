@@ -5,7 +5,7 @@
         SELECT
         t1.*,
         ( SELECT group_concat( t2.org_code ) FROM repair_task_org_rel AS t2 WHERE t1.`code` = t2.repair_task_code ) AS orgCode,
-        ( SELECT group_concat( t4.station_code ) FROM repair_task_station_rel AS t4 WHERE t1.`code` = t4.repair_task_code ) AS siteCode,
+        ( SELECT group_concat( t4.repair_task_code ) FROM repair_task_station_rel AS t4 WHERE t1.`code` = t4.repair_task_code ) AS siteCode,
         ( SELECT group_concat( t6.major_code ) FROM repair_task_standard_rel AS t6 WHERE t1.id = t6.repair_task_id ) AS majorCode,
         ( SELECT group_concat( t6.subsystem_code ) FROM repair_task_standard_rel AS t6 WHERE t1.id = t6.repair_task_id ) AS systemCode,
         t8.start_time as startOverhaulTime,
@@ -74,8 +74,10 @@
 	          LEFT JOIN repair_task_standard_rel t3 ON t2.task_standard_rel_id = t3.id
         <where>
 	           t1.del_flag = 0
+               <if test="condition.equipmentName !=null ">
+                   AND ( SELECT NAME FROM device WHERE CODE = t2.device_code ) LIKE CONCAT ('%', #{condition.equipmentName}, '%')
+               </if>
                <if test="condition.equipmentCode !=null ">
-                   AND ( SELECT NAME FROM device WHERE CODE = t3.device_type_code ) LIKE CONCAT ('%', #{condition.equipmentName}, '%')
                    AND t2.device_code = #{condition.equipmentCode}
                </if>
 	               AND t1.id = #{condition.taskId}
