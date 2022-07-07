@@ -1,12 +1,15 @@
 package com.aiurt.boot.task.controller;
 
+import cn.hutool.core.collection.CollUtil;
 import com.aiurt.boot.task.dto.PatrolCheckResultDTO;
 import com.aiurt.boot.task.dto.PatrolTaskDeviceDTO;
+import com.aiurt.boot.task.entity.PatrolCheckResult;
 import com.aiurt.boot.task.entity.PatrolTaskDevice;
+import com.aiurt.boot.task.service.IPatrolCheckResultService;
 import com.aiurt.boot.task.service.IPatrolTaskDeviceService;
-import com.aiurt.boot.task.service.IPatrolTaskService;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.system.base.controller.BaseController;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.annotations.Api;
@@ -20,6 +23,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @Description: patrol_task_device
@@ -35,7 +39,7 @@ public class PatrolTaskDeviceController extends BaseController<PatrolTaskDevice,
     @Autowired
     private IPatrolTaskDeviceService patrolTaskDeviceService;
 	@Autowired
-	private IPatrolTaskService patrolTaskService;
+	private IPatrolCheckResultService patrolCheckResultService;
 
     /**
      * 分页列表查询
@@ -123,8 +127,20 @@ public class PatrolTaskDeviceController extends BaseController<PatrolTaskDevice,
 	@PostMapping(value = "/patrolTaskCheckItemsSubmit")
 	public Result<?> patrolTaskCheckItemsSubmit(String id, HttpServletRequest req) {
 		LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+		LambdaQueryWrapper<PatrolCheckResult> queryWrapper = new LambdaQueryWrapper();
+		queryWrapper.eq(PatrolCheckResult::getTaskDeviceId,id);
+		List<PatrolCheckResult> list = patrolCheckResultService.list(queryWrapper);
+		List<PatrolCheckResult> collect = list.stream().filter(e -> e.getCheckResult() != null && e.getCheckResult() == 0).collect(Collectors.toList());
 		LambdaUpdateWrapper<PatrolTaskDevice> updateWrapper= new LambdaUpdateWrapper<>();
-		updateWrapper.set(PatrolTaskDevice::getUserId,sysUser.getId()).set(PatrolTaskDevice::getStatus,2).eq(PatrolTaskDevice::getId,id);
+		if(CollUtil.isNotEmpty(collect))
+		{
+			updateWrapper.set(PatrolTaskDevice::getUserId,sysUser.getId()).set(PatrolTaskDevice::getCheckResult,1).set(PatrolTaskDevice::getStatus,2).eq(PatrolTaskDevice::getId,id);
+		}
+		else
+		{
+			updateWrapper.set(PatrolTaskDevice::getUserId,sysUser.getId()).set(PatrolTaskDevice::getCheckResult,0).set(PatrolTaskDevice::getStatus,2).eq(PatrolTaskDevice::getId,id);
+		}
+		patrolTaskDeviceService.update(updateWrapper);
 		return Result.OK("提交工单成功");
 	}
 	/**

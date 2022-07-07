@@ -1,26 +1,27 @@
 package com.aiurt.boot.task.controller;
 
+import cn.hutool.core.collection.CollUtil;
 import com.aiurt.boot.task.dto.PatrolAccompanyDTO;
+import com.aiurt.boot.task.dto.PatrolAccompanySaveDTO;
 import com.aiurt.boot.task.entity.PatrolAccompany;
+import com.aiurt.boot.task.entity.PatrolTaskDevice;
 import com.aiurt.boot.task.service.IPatrolAccompanyService;
+import com.aiurt.boot.task.service.IPatrolTaskDeviceService;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.system.base.controller.BaseController;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.jeecg.common.api.vo.Result;
-import org.jeecg.common.system.query.QueryGenerator;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -36,6 +37,8 @@ import java.util.List;
 public class PatrolAccompanyController extends BaseController<PatrolAccompany, IPatrolAccompanyService> {
 	@Autowired
 	private IPatrolAccompanyService patrolAccompanyService;
+	@Autowired
+	private IPatrolTaskDeviceService patrolTaskDeviceService;
 
 	/**
 	 * 分页列表查询
@@ -67,12 +70,23 @@ public class PatrolAccompanyController extends BaseController<PatrolAccompany, I
 	 @AutoLog(value = "巡检同行人表-app-添加同行人")
 	 @ApiOperation(value="巡检同行人表-app-添加同行人", notes="巡检同行人表-app-添加同行人")
 	 @PostMapping(value = "/addPatrolAccompany")
-	 public Result<String> addPatrolAccompany(@RequestBody List<PatrolAccompanyDTO> patrolAccompanyList) {
-	 	for(PatrolAccompanyDTO accompany:patrolAccompanyList)
+	 public Result<String> addPatrolAccompany(@RequestBody PatrolAccompanySaveDTO patrolAccompanyList) {
+		 LambdaUpdateWrapper<PatrolTaskDevice> updateWrapper= new LambdaUpdateWrapper<>();
+		 updateWrapper.set(PatrolTaskDevice::getCustomPosition,patrolAccompanyList.getPosition()).eq(PatrolTaskDevice::getPatrolNumber,patrolAccompanyList.getPatrolNumber());
+		 patrolTaskDeviceService.update(updateWrapper);
+		 LambdaQueryWrapper<PatrolAccompany> queryWrapper = new LambdaQueryWrapper<>();
+		 queryWrapper.eq(PatrolAccompany::getTaskDeviceCode,patrolAccompanyList.getPatrolNumber());
+		 List<PatrolAccompany> list = patrolAccompanyService.list(queryWrapper);
+		 if(CollUtil.isNotEmpty(list))
+		 {
+			 patrolAccompanyService.removeBatchByIds(list);
+		 }
+		 for(PatrolAccompanyDTO accompany:patrolAccompanyList.getAccompanyDTOList())
 		{
 			PatrolAccompany patrolAccompany = new PatrolAccompany();
 			BeanUtils.copyProperties(accompany,patrolAccompany);
 			patrolAccompany.setDelFlag(0);
+			patrolAccompany.setTaskDeviceCode(patrolAccompanyList.getPatrolNumber());
 			patrolAccompanyService.save(patrolAccompany);
 		}
 

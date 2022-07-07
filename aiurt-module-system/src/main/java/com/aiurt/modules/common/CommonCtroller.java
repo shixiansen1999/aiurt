@@ -232,4 +232,49 @@ public class CommonCtroller {
         return Result.OK(list);
     }
 
+
+    /**
+     * 根据个人权限获取位置树
+     *
+     * @return
+     */
+    @GetMapping("/position/queryStationTree")
+    @ApiOperation("根据个人权限获取站点树")
+    public Result<List<SelectTable>> queryStationTree() {
+        List<CsLine> lineList = lineService.getBaseMapper().selectList(null);
+
+        Map<String, String> lineMap = lineList.stream().collect(Collectors.toMap(CsLine::getLineCode, CsLine::getLineName, (t1, t2) -> t2));
+
+        LambdaQueryWrapper<CsStation> stationWrapper = new LambdaQueryWrapper<>();
+
+        List<CsStation> stationList = stationService.getBaseMapper().selectList(stationWrapper);
+
+        Map<String, List<CsStation>> stationMap = stationList.stream().collect(Collectors.groupingBy(CsStation::getLineCode));
+
+        List<SelectTable> list = new ArrayList<>();
+        stationMap.keySet().stream().forEach(lineCode -> {
+            SelectTable table = new SelectTable();
+            table.setLabel(lineMap.get(lineCode));
+            table.setValue(lineCode);
+            table.setLevel(1);
+            table.setLineCode(lineCode);
+            //
+            List<CsStation> csStationList = stationMap.getOrDefault(lineCode, Collections.emptyList());
+
+            List<SelectTable> lv2List = csStationList.stream().map(csStation -> {
+                SelectTable selectTable = new SelectTable();
+                selectTable.setValue(csStation.getStationCode());
+                selectTable.setLabel(csStation.getStationName());
+                selectTable.setLevel(2);
+                selectTable.setLineCode(lineCode);
+                selectTable.setStationCode(csStation.getStationCode());
+                return selectTable;
+            }).collect(Collectors.toList());
+
+            table.setChildren(lv2List);
+            list.add(table);
+        });
+        return Result.OK(list);
+    }
+
 }

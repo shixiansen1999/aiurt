@@ -425,8 +425,8 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
      * @param req
      * @return
      */
-    @AutoLog(value = "同行人-同行人查询")
-    @ApiOperation(value = "巡检任务表-指派人员查询", notes = "巡检任务表-指派人员查询")
+    @AutoLog(value = "添加同行人-同行人查询")
+    @ApiOperation(value = "添加同行人-同行人查询", notes = "添加同行人-同行人查询")
     @PostMapping(value = "/patrolTaskAppointSelect")
     public Result<?> patrolTaskAppointSelect(@RequestBody PatrolOrgDTO orgCoed, HttpServletRequest req) {
         List<PatrolTaskUserDTO> patrolTaskUserDTOS = patrolTaskService.getPatrolTaskAppointSelect(orgCoed);
@@ -453,14 +453,24 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
      *
      * @return
      */
-    @AutoLog(value = "巡检任务表- app巡检任务-驳回")
-    @ApiOperation(value = "巡检任务表- app巡检任务-驳回", notes = "巡检任务表- app巡检任务-驳回")
-    @PostMapping(value = "/patrolTaskReject")
-    public Result<?> patrolTaskReject(String id, String backReason) {
+    @AutoLog(value = "巡检任务表- app巡检任务-审核")
+    @ApiOperation(value = "巡检任务表- app巡检任务-审核", notes = "巡检任务表- app巡检任务-审核")
+    @PostMapping(value = "/patrolTaskAudit")
+    public Result<?> patrolTaskAudit(String id, String status, String remark,String backReason) {
         LambdaUpdateWrapper<PatrolTask> queryWrapper = new LambdaUpdateWrapper<>();
-        queryWrapper.set(PatrolTask::getStatus, 5).set(PatrolTask::getRemark, backReason).eq(PatrolTask::getId, id);
-        patrolTaskService.update(queryWrapper);
-        return Result.OK("驳回成功");
+        //不通过传0
+        if(status.equals("0"))
+        {
+            queryWrapper.set(PatrolTask::getStatus, 5).set(PatrolTask::getRemark, backReason).eq(PatrolTask::getId, id);
+            patrolTaskService.update(queryWrapper);
+            return Result.OK("不通过");
+        }
+        else
+        {
+            queryWrapper.set(PatrolTask::getStatus, 7).set(PatrolTask::getAuditorRemark, remark).eq(PatrolTask::getId, id);
+            patrolTaskService.update(queryWrapper);
+            return Result.OK("通过成功");
+        }
     }
 
     /**
@@ -522,6 +532,20 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
         Page<PatrolTaskStandardDTO> pageList = new Page<PatrolTaskStandardDTO>(pageNo, pageSize);
         pageList = patrolTaskService.getPatrolTaskManualDetail(pageList, id);
         return Result.OK(pageList);
+    }
+
+    /**
+     * pc手工下放任务-编辑
+     *
+     * @return
+     */
+    @AutoLog(value = "pc手工下放任务-编辑")
+    @ApiOperation(value = "pc手工下放任务-编辑", notes = "pc手工下放任务-编辑")
+    @PostMapping(value = "/patrolTaskManualEdit")
+    public Result<?> patrolTaskManualEdit(@RequestBody PatrolTaskManualDTO patrolTaskManualDTO,
+                                          HttpServletRequest req) {
+        patrolTaskService.getPatrolTaskManualEdit(patrolTaskManualDTO);
+        return Result.OK("编辑成功");
     }
     /**
      * 导出excel

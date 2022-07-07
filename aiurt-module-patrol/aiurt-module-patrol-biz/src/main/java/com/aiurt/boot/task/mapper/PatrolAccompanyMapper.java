@@ -1,7 +1,10 @@
 package com.aiurt.boot.task.mapper;
 
+import com.aiurt.boot.task.dto.PatrolAccompanyDTO;
 import com.aiurt.boot.task.entity.PatrolAccompany;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+
+import java.util.List;
 
 /**
  * @Description: patrol_accompany
@@ -16,5 +19,5 @@ public interface PatrolAccompanyMapper extends BaseMapper<PatrolAccompany> {
      * @param patrolNumber
      * @return
      */
-    String getAccompanyName(String patrolNumber);
+    List<PatrolAccompanyDTO> getAccompanyName(String patrolNumber);
 }

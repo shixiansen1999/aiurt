@@ -761,4 +761,46 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         });
         return taskCode;
     }
+
+    @Override
+    public void getPatrolTaskManualEdit(PatrolTaskManualDTO patrolTaskManualDTO) {
+        //更新任务信息
+        LambdaUpdateWrapper<PatrolTask> updateWrapper = new LambdaUpdateWrapper<>();
+        updateWrapper.set(PatrolTask::getRemark,patrolTaskManualDTO.getRemark()).set(PatrolTask::getAuditor,patrolTaskManualDTO.getAuditor())
+                     .set(PatrolTask::getStartTime,patrolTaskManualDTO.getStartTime()).set(PatrolTask::getEndTime,patrolTaskManualDTO.getEndTime())
+                     .set(PatrolTask::getName,patrolTaskManualDTO.getName()).set(PatrolTask::getPatrolDate,patrolTaskManualDTO.getPatrolDate())
+                     .eq(PatrolTask::getId,patrolTaskManualDTO.getId());
+        PatrolTask patrolTask = new PatrolTask();
+        patrolTaskMapper.update(patrolTask,updateWrapper);
+        //先删除
+        LambdaQueryWrapper<PatrolTaskOrganization> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(PatrolTaskOrganization::getTaskCode,patrolTaskManualDTO.getCode());
+        List<PatrolTaskOrganization> list = patrolTaskOrganizationMapper.selectList(queryWrapper);
+        patrolTaskOrganizationMapper.deleteBatchIds(list);
+        //后保存组织信息
+        String taskCode = patrolTask.getCode();
+        List<String> orgCodeList = patrolTaskManualDTO.getOrgCodeList();
+        orgCodeList.stream().forEach(o -> {
+            PatrolTaskOrganization organization = new PatrolTaskOrganization();
+            organization.setTaskCode(taskCode);
+            organization.setDelFlag(0);
+            organization.setOrgCode(o);
+            patrolTaskOrganizationMapper.insert(organization);
+        });
+        //先删除
+        LambdaQueryWrapper<PatrolTaskStation> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(PatrolTaskStation::getTaskCode,patrolTaskManualDTO.getCode());
+        List<PatrolTaskStation> stationList = patrolTaskStationMapper.selectList(wrapper);
+        patrolTaskStationMapper.deleteBatchIds(stationList);
+        //后保存站点信息
+        List<String> stationCodeList = patrolTaskManualDTO.getStationCodeList();
+        stationCodeList.stream().forEach(s -> {
+            PatrolTaskStation station = new PatrolTaskStation();
+            station.setDelFlag(0);
+            station.setStationCode(s);
+            station.setTaskCode(taskCode);
+            patrolTaskStationMapper.insert(station);
+        });
+        //删除单号、巡检任务标准表的信息
+    }
 }
