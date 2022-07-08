@@ -116,7 +116,7 @@ public class PatrolCheckResultController extends BaseController<PatrolCheckResul
 			 }
 			 if(patrolCheckDTO.getInputType()==3)
 			 {
-				  boolean matches = Pattern.matches(patrolCheckDTO.getRegular(), patrolCheckDTO.getWriteValue());
+				  boolean matches = Pattern.	matches(patrolCheckDTO.getRegular(), patrolCheckDTO.getWriteValue());
 
 				 if(matches)
 				 {
