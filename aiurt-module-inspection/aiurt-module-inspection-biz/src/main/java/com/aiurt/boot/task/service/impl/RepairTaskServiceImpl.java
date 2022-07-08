@@ -690,6 +690,7 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
         repairTaskMapper.deleteById(examineDTO.getId());
 
         RepairPool repairPool = new RepairPool();
+        repairPool.setId(repairTask.getRepairPoolId());
         repairPool.setStatus(InspectionConstant.GIVE_BACK);
         repairPool.setRemark(examineDTO.getContent());
         repairPoolMapper.updateById(repairPool);
