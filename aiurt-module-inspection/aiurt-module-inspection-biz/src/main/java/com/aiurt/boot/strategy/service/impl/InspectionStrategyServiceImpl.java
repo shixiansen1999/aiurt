@@ -5,6 +5,7 @@ import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.aiurt.boot.constant.InspectionConstant;
 import com.aiurt.boot.plan.entity.RepairPool;
+import com.aiurt.boot.plan.entity.RepairPoolOrgRel;
 import com.aiurt.boot.plan.mapper.RepairPoolMapper;
 import com.aiurt.boot.standard.entity.InspectionCode;
 import com.aiurt.boot.standard.mapper.InspectionCodeMapper;
@@ -111,8 +112,57 @@ public class InspectionStrategyServiceImpl extends ServiceImpl<InspectionStrateg
 
     @Override
     public void updateId(InspectionStrategyDTO inspectionStrategyDTO) {
-        baseMapper.deleteIDorCode(inspectionStrategyDTO.getId(), inspectionStrategyDTO.getCode());
-        this.add(inspectionStrategyDTO);
+//        baseMapper.deleteIDorCode(inspectionStrategyDTO.getId(), inspectionStrategyDTO.getCode());
+//        this.add(inspectionStrategyDTO);
+        // 策略id
+        String strategyId = inspectionStrategyDTO.getId();
+        // 策略编号
+        String strategyCode = inspectionStrategyDTO.getCode();
+        // 已删除状态
+        final Integer isDelFlag = 1;
+
+        if (ObjectUtil.isEmpty(strategyId)) {
+            throw new AiurtBootException("检修策略的ID为空!");
+        }
+        if (ObjectUtil.isEmpty(strategyCode)) {
+            throw new AiurtBootException("检修策略编号为空！");
+        }
+        // 更新检修策略基本信息
+        InspectionStrategy strategy = inspectionStrategyMapper.selectById(strategyId);
+        strategy.setYear(inspectionStrategyDTO.getYear());
+        strategy.setName(inspectionStrategyDTO.getName());
+        strategy.setIsOutsource(inspectionStrategyDTO.getIsOutsource());
+        strategy.setType(inspectionStrategyDTO.getType());
+        strategy.setTactics(inspectionStrategyDTO.getTactics());
+        strategy.setIsConfirm(inspectionStrategyDTO.getIsConfirm());
+        inspectionStrategyMapper.updateById(strategy);
+
+        // 更新检修策略的组织机构信息
+        // 把原来的组织机构信息删除，改为已删除状态
+        new UpdateWrapper<InspectionStrOrgRel>().lambda()
+                .eq(InspectionStrOrgRel::getInspectionStrCode, strategyCode)
+                .set(InspectionStrOrgRel::getDelFlag, isDelFlag);
+        List<String> mechanismCodes = inspectionStrategyDTO.getMechanismCodes();
+        Optional.ofNullable(mechanismCodes).orElseGet(Collections::emptyList).stream().forEach(l -> {
+            InspectionStrOrgRel strOrgRel = new InspectionStrOrgRel();
+            strOrgRel.setInspectionStrCode(strategyCode);
+            strOrgRel.setOrgCode(l);
+            inspectionStrOrgRelMapper.insert(strOrgRel);
+        });
+
+        // 更新检修策略站所关联表信息
+        // 把原来的站所信息删除，改为已删除状态
+        new UpdateWrapper<InspectionStrStaRel>().lambda()
+                .eq(InspectionStrStaRel::getInspectionStrCode, strategyCode)
+                .set(InspectionStrStaRel::getDelFlag, isDelFlag);
+        List<String> siteCodes = inspectionStrategyDTO.getSiteCodes();
+        Optional.ofNullable(siteCodes).orElseGet(Collections::emptyList).stream().forEach(l -> {
+            InspectionStrStaRel strStaRelRel = new InspectionStrStaRel();
+            strStaRelRel.setInspectionStrCode(strategyCode);
+            strStaRelRel.setStationCode(l);
+            inspectionStrStaRelMapper.insert(strStaRelRel);
+        });
+
     }
 
     @Override

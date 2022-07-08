@@ -31,6 +31,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -100,11 +101,13 @@ public class FaultAnalysisReportServiceImpl extends ServiceImpl<FaultAnalysisRep
     @Override
     public Result<String> approval(String approvedRemark, Integer approvedResult, String id) {
         if ( getRole()) {return Result.OK("没有权限");}
+        LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         FaultAnalysisReport faultAnalysisReport = new FaultAnalysisReport();
         faultAnalysisReport.setId(id);
         faultAnalysisReport.setApprovedRemark(approvedRemark);
         faultAnalysisReport.setApprovedResult(approvedResult);
-        this.updateById(faultAnalysisReport);
+        faultAnalysisReport.setApprovedTime(new Date());
+        faultAnalysisReport.setApprovedUserName(sysUser.getUsername());
         //修改知识库状态
         String faultKnowledgeBaseId = this.getById(id).getFaultKnowledgeBaseId();
         if (StringUtils.isNotEmpty(faultKnowledgeBaseId)) {
@@ -113,12 +116,15 @@ public class FaultAnalysisReportServiceImpl extends ServiceImpl<FaultAnalysisRep
                 faultKnowledgeBase.setStatus(FaultConstant.APPROVED);
                 faultKnowledgeBase.setApprovedResult(FaultConstant.PASSED);
                 faultAnalysisReport.setDelFlag(0);
+                faultAnalysisReport.setStatus(FaultConstant.APPROVED);
             } else {
                 faultKnowledgeBase.setStatus(FaultConstant.REJECTED);
                 faultKnowledgeBase.setApprovedResult(FaultConstant.NO_PASS);
+                faultAnalysisReport.setStatus(FaultConstant.REJECTED);
             }
             faultKnowledgeBaseService.updateById(faultKnowledgeBase);
         }
+        this.updateById(faultAnalysisReport);
         return Result.OK("审批成功!");
     }
 

@@ -20,6 +20,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 
 import javax.annotation.Resource;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -72,10 +73,13 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
     @Override
     public Result<String> approval(String approvedRemark, Integer approvedResult, String id) {
         if ( getRole()) {return Result.OK("没有权限");}
+        LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         FaultKnowledgeBase faultKnowledgeBase = new FaultKnowledgeBase();
         faultKnowledgeBase.setId(id);
         faultKnowledgeBase.setApprovedRemark(approvedRemark);
         faultKnowledgeBase.setApprovedResult(approvedResult);
+        faultKnowledgeBase.setApprovedTime(new Date());
+        faultKnowledgeBase.setApprovedUserName(sysUser.getUsername());
         if (approvedResult.equals(FaultConstant.NO_PASS)) {
             faultKnowledgeBase.setStatus(FaultConstant.REJECTED);
         } else {

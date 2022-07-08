@@ -154,4 +154,17 @@ public class InspectionCodeController extends BaseController<InspectionCode, IIn
         return super.importExcel(request, response, InspectionCode.class);
     }
 
+    /**
+     *  生成检修标准表编号
+     * @param
+     * @return
+     */
+    @AutoLog(value = "生成检修标准表编号")
+    @ApiOperation(value="生成检修标准表编号", notes="生成检修标准表编号")
+    @GetMapping(value = "/generatePlanCode")
+    public Result<String> generatePlanCode() {
+        String code="BZ"+System.currentTimeMillis();
+        return Result.OK(code);
+    }
+
 }
