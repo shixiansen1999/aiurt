@@ -217,4 +217,8 @@ public class RepairTaskDTO {
     @ApiModelProperty(value = "已提交")
     private Integer submitted;
 
+    /**是否与设备相关，0否1是*/
+    @TableField(exist = false)
+    @ApiModelProperty(value = "是否与设备相关，0否1是")
+    private Integer isAppointDevice;
 }

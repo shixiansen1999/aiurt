@@ -183,8 +183,8 @@ public class RepairTaskController extends BaseController<RepairTask, IRepairTask
     })
     public Result<EquipmentOverhaulDTO> selectEquipmentOverhaulList(
             @RequestParam(name = "taskId", required = true) String taskId,
-            @RequestParam(name = "majorCode", required = true) String majorCode,
-            @RequestParam(name = "subsystemCode", required = true) String subsystemCode
+            @RequestParam(name = "majorCode", required = false) String majorCode,
+            @RequestParam(name = "subsystemCode", required = false) String subsystemCode
     ) {
         EquipmentOverhaulDTO equipmentOverhaulDTO = repairTaskService.selectEquipmentOverhaulList(taskId, majorCode, subsystemCode);
         return Result.OK(equipmentOverhaulDTO);
