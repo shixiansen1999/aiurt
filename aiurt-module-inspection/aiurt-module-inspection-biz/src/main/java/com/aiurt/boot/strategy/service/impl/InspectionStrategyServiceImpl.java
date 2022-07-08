@@ -4,6 +4,7 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.aiurt.boot.constant.InspectionConstant;
+import com.aiurt.boot.manager.dto.InspectionCodeDTO;
 import com.aiurt.boot.plan.entity.RepairPool;
 import com.aiurt.boot.plan.entity.RepairPoolOrgRel;
 import com.aiurt.boot.plan.mapper.RepairPoolMapper;
@@ -17,6 +18,7 @@ import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.modules.device.entity.Device;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
@@ -135,13 +137,16 @@ public class InspectionStrategyServiceImpl extends ServiceImpl<InspectionStrateg
         strategy.setType(inspectionStrategyDTO.getType());
         strategy.setTactics(inspectionStrategyDTO.getTactics());
         strategy.setIsConfirm(inspectionStrategyDTO.getIsConfirm());
+        strategy.setIsReceipt(inspectionStrategyDTO.getIsReceipt());
         inspectionStrategyMapper.updateById(strategy);
 
         // 更新检修策略的组织机构信息
         // 把原来的组织机构信息删除，改为已删除状态
-        new UpdateWrapper<InspectionStrOrgRel>().lambda()
+        LambdaUpdateWrapper<InspectionStrOrgRel> strOrgRelWrapper = new UpdateWrapper<InspectionStrOrgRel>().lambda()
                 .eq(InspectionStrOrgRel::getInspectionStrCode, strategyCode)
                 .set(InspectionStrOrgRel::getDelFlag, isDelFlag);
+        inspectionStrOrgRelMapper.update(new InspectionStrOrgRel(), strOrgRelWrapper);
+
         List<String> mechanismCodes = inspectionStrategyDTO.getMechanismCodes();
         Optional.ofNullable(mechanismCodes).orElseGet(Collections::emptyList).stream().forEach(l -> {
             InspectionStrOrgRel strOrgRel = new InspectionStrOrgRel();
@@ -152,15 +157,32 @@ public class InspectionStrategyServiceImpl extends ServiceImpl<InspectionStrateg
 
         // 更新检修策略站所关联表信息
         // 把原来的站所信息删除，改为已删除状态
-        new UpdateWrapper<InspectionStrStaRel>().lambda()
+        LambdaUpdateWrapper<InspectionStrStaRel> strStaRelWrapper = new UpdateWrapper<InspectionStrStaRel>().lambda()
                 .eq(InspectionStrStaRel::getInspectionStrCode, strategyCode)
                 .set(InspectionStrStaRel::getDelFlag, isDelFlag);
+        inspectionStrStaRelMapper.update(new InspectionStrStaRel(), strStaRelWrapper);
+
         List<String> siteCodes = inspectionStrategyDTO.getSiteCodes();
         Optional.ofNullable(siteCodes).orElseGet(Collections::emptyList).stream().forEach(l -> {
             InspectionStrStaRel strStaRelRel = new InspectionStrStaRel();
             strStaRelRel.setInspectionStrCode(strategyCode);
             strStaRelRel.setStationCode(l);
             inspectionStrStaRelMapper.insert(strStaRelRel);
+        });
+
+        // 更新检修计划策略标准关联表信息
+        // 把原来的检修计划策略标准关联表信息删除，改为已删除状态
+        LambdaUpdateWrapper<InspectionStrRel> strRelwrapper = new UpdateWrapper<InspectionStrRel>().lambda()
+                .eq(InspectionStrRel::getInspectionStrCode, strategyCode)
+                .set(InspectionStrRel::getDelFlag, isDelFlag);
+        inspectionStrRelMapper.update(new InspectionStrRel(), strRelwrapper);
+
+        List<InspectionCodeDTO> inspectionCode = inspectionStrategyDTO.getInspectionCodeDTOS();
+        Optional.ofNullable(inspectionCode).orElseGet(Collections::emptyList).stream().forEach(l -> {
+            InspectionStrRel strRel = new InspectionStrRel();
+            strRel.setInspectionStrCode(strategyCode);
+            strRel.setInspectionStaCode(l.getCode());
+            inspectionStrRelMapper.insert(strRel);
         });
 
     }
