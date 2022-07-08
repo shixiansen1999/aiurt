@@ -7,6 +7,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import org.jeecg.common.system.vo.DictModel;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,4 +32,9 @@ public class PatrolCheckResultDTO extends PatrolCheckResult {
      */
     @ApiModelProperty(value = "附件信息")
     private List<PatrolAccessoryDTO> accessoryDTOList;
+    /**
+     * 字典下拉列表
+     */
+    @ApiModelProperty(value = "字典下拉列表")
+    private  List<DictModel> list;
 }

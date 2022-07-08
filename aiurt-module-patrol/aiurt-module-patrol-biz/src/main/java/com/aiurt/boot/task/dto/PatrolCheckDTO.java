@@ -36,5 +36,5 @@ public class PatrolCheckDTO {
     /**数据校验表达式*/
     @Excel(name = "数据校验表达式", width = 15)
     @ApiModelProperty(value = "数据校验表达式")
-    private java.lang.Integer regular;
+    private java.lang.String regular;
 }
