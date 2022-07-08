@@ -73,6 +73,11 @@ spring:
     async-executor-activate: false
     #启用异步执行器
     job-executor-activate: false
+  flowable:
+    #关闭定时任务JOB
+    async-executor-activate: false
+    #将databaseSchemaUpdate设置为true。当flowable发现库与数据库表结构不一致时，会自动将数据库表结构升级至新版本。
+    database-schema-update: true
   aop:
     proxy-target-class: true
   #配置freemarker
@@ -214,10 +219,10 @@ jeecg:
   file-view-domain: 127.0.0.1:8012
   # minio文件上传
   minio:
-    minio_url: http://minio.jeecg.com
-    minio_name: ??
-    minio_pass: ??
-    bucketName: otatest
+    minio_url: http://192.168.1.27:9000
+    minio_name: admin
+    minio_pass: gz*&1949
+    bucketName: platform
   #大屏报表参数设置
   jmreport:
     mode: dev

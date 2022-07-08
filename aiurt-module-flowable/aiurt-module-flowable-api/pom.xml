@@ -14,12 +14,34 @@
     <properties>
         <maven.compiler.source>8</maven.compiler.source>
         <maven.compiler.target>8</maven.compiler.target>
+        <flowable.version>6.7.2</flowable.version>
     </properties>
     <dependencies>
         <!--微服务使用-->
         <dependency>
             <groupId>com.aiurt.boot</groupId>
             <artifactId>aiurt-system-local-api</artifactId>
+        </dependency>
+
+        <!--flowable-->
+        <dependency>
+            <groupId>org.flowable</groupId>
+            <artifactId>flowable-spring-boot-starter</artifactId>
+            <version>${flowable.version}</version>
+        </dependency>
+
+
+        <dependency>
+            <groupId>org.flowable</groupId>
+            <artifactId>flowable-json-converter</artifactId>
+            <version>${flowable.version}</version>
+        </dependency>
+
+        <!--Flowable-BPMN-Converter is a JSON to BPMN converter for flowable.-->
+        <dependency>
+            <groupId>org.flowable</groupId>
+            <artifactId>flowable-bpmn-converter</artifactId>
+            <version>${flowable.version}</version>
         </dependency>
     </dependencies>
     <build>
