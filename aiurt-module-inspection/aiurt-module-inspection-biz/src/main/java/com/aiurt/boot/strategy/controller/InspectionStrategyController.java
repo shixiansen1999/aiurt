@@ -151,17 +151,8 @@ public class InspectionStrategyController extends BaseController<InspectionStrat
 	@AutoLog(value = "检修策略表-修改生效状态")
 	@ApiOperation(value="检修策略表-修改生效状态", notes="检修策略表-修改生效状态")
 	@RequestMapping(value = "/modify", method = {RequestMethod.POST})
-	public Result<String> modify(@RequestParam(name = "id") String id,
-								 @RequestParam(name = "status") Integer status) {
-		InspectionStrategy inspectionStrategy =new InspectionStrategy();
-		inspectionStrategy.setId(id);
-		if(status==0){
-			inspectionStrategy.setStatus(1);
-		}
-		inspectionStrategy.setId(id);if(status==1){
-			inspectionStrategy.setStatus(0);
-		}
-		inspectionStrategyService.updateById(inspectionStrategy);
+	public Result<String> modify(@RequestParam(name = "id") String id) {
+		inspectionStrategyService.modify(id);
 		return Result.OK("修改成功！");
 	}
 	/**
@@ -170,7 +161,7 @@ public class InspectionStrategyController extends BaseController<InspectionStrat
 	 * @param id
 	 * @return
 	 */
-	//@AutoLog(value = "inspection_strategy-通过id查询")
+	@AutoLog(value = "inspection_strategy-通过id查询")
 	@ApiOperation(value="inspection_strategy-通过id查询", notes="inspection_strategy-通过id查询")
 	@GetMapping(value = "/queryById")
 	public Result<InspectionStrategyDTO> queryById(@RequestParam(name="id",required=true) String id) {
@@ -241,5 +232,7 @@ public class InspectionStrategyController extends BaseController<InspectionStrat
     public Result addAnnualNewPlan(@RequestParam @ApiParam(name = "id", required = true, value = "检修策略id") String id) {
         return inspectionStrategyService.addAnnualNewPlan(id);
     }
+
+
 
 }

@@ -70,7 +70,6 @@ public class InspectionStrategyServiceImpl extends ServiceImpl<InspectionStrateg
         inspectionStrategy.setCode(inspectionStrategyDTO.getCode());
         inspectionStrategy.setName(inspectionStrategyDTO.getName());
         inspectionStrategy.setYear(inspectionStrategyDTO.getYear());
-        inspectionStrategy.setDelFlag(0);
         inspectionStrategy.setType(inspectionStrategyDTO.getType());
         inspectionStrategy.setIsReceipt(inspectionStrategyDTO.getIsReceipt());
         inspectionStrategy.setIsConfirm(inspectionStrategyDTO.getIsConfirm());
@@ -78,6 +77,7 @@ public class InspectionStrategyServiceImpl extends ServiceImpl<InspectionStrateg
         inspectionStrategy.setStatus(inspectionStrategyDTO.getStatus());
         inspectionStrategy.setGenerateStatus(0);
         baseMapper.insert(inspectionStrategy);
+
         List<String> codes = inspectionStrategyDTO.getSiteCodes();
         for (String code : codes) {
             InspectionStrStaRel inspectionStrStaRel = new InspectionStrStaRel();
@@ -382,5 +382,20 @@ public class InspectionStrategyServiceImpl extends ServiceImpl<InspectionStrateg
         InspectionStrRel inspectionstrRel = inspectionStrRelMapper.selectOne(Wrappers.<InspectionStrRel>lambdaQuery().eq(InspectionStrRel::getInspectionStaCode, code));
         List<Device> list = baseMapper.viewDetails(inspectionstrRel.getId());
         return null;
+    }
+
+    /**
+     * 修改生效状态
+     *
+     * @param id@return
+     */
+    @Override
+    public void modify(String id) {
+        InspectionStrategy ins = baseMapper.selectById(id);
+        if (ObjectUtil.isEmpty(ins)) {
+            throw new AiurtBootException(InspectionConstant.ILLEGAL_OPERATION);
+        }
+        ins.setStatus(ins.getStatus() ^ 1);
+        baseMapper.updateById(ins);
     }
 }

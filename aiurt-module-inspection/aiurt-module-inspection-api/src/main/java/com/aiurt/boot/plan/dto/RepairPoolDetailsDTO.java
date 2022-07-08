@@ -36,6 +36,9 @@ public class RepairPoolDetailsDTO {
     @ApiModelProperty(value = "适用专业子系统名称")
     private String subsystemName;
 
+    @ApiModelProperty(value = "状态")
+    private Integer status;
+
     @ApiModelProperty(value = "状态名称")
     private String statusName;
 
@@ -54,8 +57,11 @@ public class RepairPoolDetailsDTO {
     @ApiModelProperty(value = "是否验收")
     private String isReceipt;
 
-    @ApiModelProperty(value = "作业类型（A1不用计划令,A2,A3,B1,B2,B3）")
-    private String workType;
+    @ApiModelProperty(value = "作业类型")
+    private Integer workType;
+
+    @ApiModelProperty(value = "作业类型名称")
+    private String workTypeName;
 
     @ApiModelProperty(value = "退回理由")
     private String remark;

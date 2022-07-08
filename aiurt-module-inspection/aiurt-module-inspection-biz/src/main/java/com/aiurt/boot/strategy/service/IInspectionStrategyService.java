@@ -70,4 +70,10 @@ public interface IInspectionStrategyService extends IService<InspectionStrategy>
      * @return
      */
     List<Device> viewDetails(String code);
+    /**
+     * 修改生效状态
+     * @param id,status
+     * @return
+     */
+    void modify(String id);
 }
