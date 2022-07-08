@@ -241,4 +241,18 @@ public class AppRepairTaskController extends BaseController<RepairTask, IRepairT
         List<OrgDTO> orgDTOList = repairTaskService.queryPeerList(id);
         return Result.OK(orgDTOList);
     }
+
+    /**
+     * 确认检修任务
+     *
+     * @param examineDTO
+     * @return
+     */
+    @AutoLog(value = "确认检修任务")
+    @ApiOperation(value = "确认检修任务", notes = "确认检修任务")
+    @PostMapping(value = "/confirmTask")
+    public Result<String> confirmTask(@RequestBody ExamineDTO examineDTO) {
+        repairTaskService.confirmTask(examineDTO);
+        return Result.OK("已确认");
+    }
 }

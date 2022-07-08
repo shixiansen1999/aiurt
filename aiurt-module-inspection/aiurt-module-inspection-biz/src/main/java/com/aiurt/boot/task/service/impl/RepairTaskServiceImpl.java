@@ -635,6 +635,7 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void confirmedDelete(ExamineDTO examineDTO) {
         RepairTask repairTask = repairTaskMapper.selectById(examineDTO.getId());
 
@@ -959,5 +960,29 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
         }
 
         return orgDTOS;
+    }
+
+    /**
+     * 确认检修任务
+     *
+     * @param examineDTO
+     */
+    @Override
+    public void confirmTask(ExamineDTO examineDTO) {
+        RepairTask repairTask = repairTaskMapper.selectById(examineDTO.getId());
+        if (ObjectUtil.isEmpty(repairTask)) {
+            throw new AiurtBootException(InspectionConstant.ILLEGAL_OPERATION);
+        }
+
+        // 待确认状态才可以确认
+        if (InspectionConstant.TO_BE_CONFIRMED.equals(repairTask.getStatus())) {
+            repairTask.setConfirmTime(new Date());
+            LoginUser loginUser = manager.checkLogin();
+            repairTask.setConfirmUserId(loginUser.getId());
+            repairTask.setConfirmUserName(loginUser.getRealname());
+            repairTaskMapper.updateById(repairTask);
+        } else {
+            throw new AiurtBootException(InspectionConstant.ILLEGAL_OPERATION);
+        }
     }
 }

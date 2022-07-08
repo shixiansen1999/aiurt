@@ -177,32 +177,32 @@ public class InspectionStrategyServiceImpl extends ServiceImpl<InspectionStrateg
             // 查询检修策略对应的检修标准绑定的设备
             List<String> deviceList = strategyService.getDeviceList(ins.getCode(), inspectionCode.getCode());
 
-            //周检
+            // 周检
             if (type.equals(InspectionConstant.WEEK)) {
                 strategyService.weekPlan(ins, newStaId, orgList, stationList, deviceList);
             }
 
-            //月检
+            // 月检
             if (type.equals(InspectionConstant.MONTH)) {
                 strategyService.monthPlan(ins, newStaId, orgList, stationList, deviceList);
             }
 
-            //双月检
+            // 双月检
             if (type.equals(InspectionConstant.DOUBLEMONTH)) {
                 strategyService.doubleMonthPlan(ins, newStaId, orgList, stationList, deviceList);
             }
 
-            //季检
+            // 季检
             if (type.equals(InspectionConstant.QUARTER)) {
                 strategyService.quarterPlan(ins, newStaId, orgList, stationList, deviceList);
             }
 
-            //半年检
+            // 半年检
             if (type.equals(InspectionConstant.SEMIANNUAL)) {
                 strategyService.semiAnnualPlan(ins, newStaId, orgList, stationList, deviceList);
             }
 
-            //年检
+            // 年检
             if (type.equals(InspectionConstant.ANNUAL)) {
                 strategyService.annualPlan(ins, newStaId, orgList, stationList, deviceList);
             }
