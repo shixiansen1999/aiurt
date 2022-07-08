@@ -44,9 +44,6 @@ public class RepairPoolController extends BaseController<RepairPool, IRepairPool
      */
     @AutoLog(value = "检修计划池列表查询")
     @ApiOperation(value = "检修计划池列表查询", notes = "检修计划池列表查询")
-    @ApiResponses({
-            @ApiResponse(code = 200, message = "OK", response = RepairPool.class)
-    })
     @GetMapping(value = "/list")
     public Result<List<RepairPool>> queryList(@RequestParam @ApiParam(required = true, value = "开始时间", name = "startTime") @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") Date startTime,
                                               @RequestParam @ApiParam(required = true, value = "结束时间", name = "endTime") @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") Date endTime,
@@ -167,9 +164,6 @@ public class RepairPoolController extends BaseController<RepairPool, IRepairPool
     @AutoLog(value = "指派检修任务人员下拉列表")
     @ApiOperation(value = "指派检修任务人员下拉列表", notes = "指派检修任务人员下拉列表")
     @GetMapping(value = "/queryUserList")
-    @ApiResponses({
-            @ApiResponse(code = 200, message = "OK", response = LoginUser.class)
-    })
     public Result<List<LoginUser>> queryUserList(@RequestParam @ApiParam(name = "code", required = true, value = "检修计划code") String code) {
         List<LoginUser> loginUserList = repairPoolService.queryUserList(code);
         return Result.OK(loginUserList);

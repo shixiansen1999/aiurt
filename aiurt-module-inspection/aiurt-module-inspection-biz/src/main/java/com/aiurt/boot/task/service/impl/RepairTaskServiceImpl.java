@@ -759,7 +759,7 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
         List<RepairPoolOrgRel> repairPoolOrgRels = orgRelMapper.selectList(
                 new LambdaQueryWrapper<RepairPoolOrgRel>()
                         .eq(RepairPoolOrgRel::getRepairPoolCode, repairPool.getCode())
-                        .eq(RepairPoolOrgRel::getDelFlag, 0));
+                        .eq(RepairPoolOrgRel::getDelFlag, InspectionConstant.NO_DEL));
         if (CollUtil.isNotEmpty(repairPoolOrgRels)) {
             for (RepairPoolOrgRel repairPoolOrgRel : repairPoolOrgRels) {
                 RepairTaskOrgRel repairTaskOrgRel = new RepairTaskOrgRel();
