@@ -55,14 +55,14 @@ public class PatrolTaskManualDTO {
     @TableField(exist = false)
     List<PatrolTaskStandardDTO> patrolStandardList;
     /**开始时间*/
-    @JsonFormat(timezone = "GMT+8",pattern = "HH:mm")
-    @DateTimeFormat(pattern="HH:mm")
+    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
+    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
     @ApiModelProperty(value = "开始时间")
     @TableField(exist = false)
     private Date startTime;
     /**结束时间*/
-    @JsonFormat(timezone = "GMT+8",pattern = "HH:mm")
-    @DateTimeFormat(pattern="HH:mm")
+    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
+    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
     @ApiModelProperty(value = "结束时间")
     @TableField(exist = false)
     private Date endTime;
