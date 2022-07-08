@@ -153,8 +153,10 @@
         <if test="patrolTaskDTO.status !=null">
             and t1.status = #{patrolTaskDTO.status}
         </if>
-        <if test="patrolTaskDTO.patrolDate!=null ">
-            and DATE_FORMAT(t1.patrol_date, '%Y-%m-%d') = DATE_FORMAT(#{patrolTaskDTO.patrolDate}, '%Y-%m-%d')
+        <if test="patrolTaskDTO.startTime!=null and patrolTaskDTO.startEndTime!=null ">
+            and DATE_FORMAT(pt.patrol_date, '%Y-%m-%d' )
+            between DATE_FORMAT(#{patrolTaskDTO.startTime}, '%Y-%m-%d')
+            and DATE_FORMAT(#{patrolTaskDTO.startEndTime}, '%Y-%m-%d')
         </if>
     </select>
     <select id="getMajorNameByMajorCode" resultType="java.lang.String">
