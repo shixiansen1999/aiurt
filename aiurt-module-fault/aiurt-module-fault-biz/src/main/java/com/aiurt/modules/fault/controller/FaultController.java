@@ -22,7 +22,6 @@ import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import java.util.List;
@@ -95,7 +94,7 @@ public class FaultController extends BaseController<Fault, IFaultService> {
     @PostMapping(value = "/add")
     public Result<?> add(@Validated @RequestBody Fault fault) {
         String faultCode = faultService.add(fault);
-        return Result.OK(faultCode);
+        return Result.OK("故障上报成功", faultCode);
     }
 
     /**

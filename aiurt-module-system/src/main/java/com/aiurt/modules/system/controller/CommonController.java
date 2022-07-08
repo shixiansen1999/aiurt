@@ -223,7 +223,7 @@ public class CommonController {
         if (StrUtil.isBlank(fileName)) {
             fileName = sysAttachment.getFileName();
         }
-
+        // minio存储
         if (StrUtil.equalsIgnoreCase("minio",sysAttachment.getType())) {
             try (
                     InputStream inputStream1 = MinioUtil.getMinioFile("platform",sysAttachment.getFilePath());
