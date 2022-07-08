@@ -32,7 +32,6 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 /**
@@ -109,6 +108,14 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
                 long duration = DateUtil.between(startTime, checkTime, DateUnit.MINUTE);
                 e.setInspectionTime(duration);
             }
+            if(ObjectUtil.isNotEmpty(e.getDeviceCode()))
+            {
+                e.setDevicePosition(e.getDevicePosition());
+            }
+            else {
+                e.setInspectionPosition(e.getDevicePosition()+"/"+e.getCustomPosition());
+                e.setDevicePosition(null);
+            }
             PatrolStandard taskStandardName = patrolTaskDeviceMapper.getStandardName(e.getId());
             e.setTaskStandardName(taskStandardName.getName());
             e.setDeviceType(taskStandardName.getDeviceType());
@@ -120,29 +127,26 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
             String submitName = patrolTaskDeviceMapper.getSubmitName(e.getUserId());
             e.setSubmitName(submitName);
             PatrolTask patrolTask = patrolTaskMapper.selectById(e.getTaskId());
-            if(ObjectUtil.isNotNull(pageList))
-            {
-                List<String> orgCodes = patrolTaskMapper.getOrgCode(patrolTask.getCode());
-                e.setOrgList(orgCodes);
-            }
+            List<String> orgCodes = patrolTaskMapper.getOrgCode(patrolTask.getCode());
+            e.setOrgList(orgCodes);
             List<String> position = patrolTaskDeviceMapper.getPosition(patrolTask.getCode());
             String stationName = position.stream().collect(Collectors.joining(","));
             e.setStationName(stationName);
-            StringBuffer stringBuffer = new StringBuffer();
-            Integer length = position.size();
-            AtomicReference<Integer> size = new AtomicReference<>(length);
-            position.stream().forEach(s -> {
-                size.set(size.get() - 1);
-                stringBuffer.append(s);
-                if (ObjectUtil.isNotEmpty(e.getCustomPosition())) {
-                    stringBuffer.append("/");
-                    stringBuffer.append(e.getCustomPosition());
-                }
-                if (size.get() != 0) {
-                    stringBuffer.append(",");
-                }
-            });
-            e.setInspectionPosition(stringBuffer.toString());
+//            StringBuffer stringBuffer = new StringBuffer();
+//            Integer length = position.size();
+//            AtomicReference<Integer> size = new AtomicReference<>(length);
+//            position.stream().forEach(s -> {
+//                size.set(size.get() - 1);
+//                stringBuffer.append(s);
+//                if (ObjectUtil.isNotEmpty(e.getCustomPosition())) {
+//                    stringBuffer.append("/");
+//                    stringBuffer.append(e.getCustomPosition());
+//                }
+//                if (size.get() != 0) {
+//                    stringBuffer.append(",");
+//                }
+//            });
+//            e.setInspectionPosition(stringBuffer.toString());
             List<PatrolAccompanyDTO> accompanyDTOList = patrolAccompanyMapper.getAccompanyName(e.getPatrolNumber());
             String userName = accompanyDTOList.stream().map(PatrolAccompanyDTO::getUsername).collect(Collectors.joining(","));
             e.setUserName(userName);
@@ -342,18 +346,21 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
         }
         String taskDeviceId = patrolTaskDevice.getId();
         List<PatrolCheckResultDTO> patrolCheckResultDTOList = patrolCheckResultMapper.getCheckResult(taskDeviceId);
-        patrolCheckResultDTOList.stream().forEach(e ->
+        if(CollUtil.isNotEmpty(patrolCheckResultDTOList))
         {
-            if(ObjectUtil.isNotNull(e.getDictCode()))
+            patrolCheckResultDTOList.stream().forEach(e ->
             {
+                if(ObjectUtil.isNotNull(e.getDictCode()))
+                {
 
-                List<DictModel> list = sysBaseAPI.getDictItems(e.getDictCode());
-                e.setList(list);
-            }
-            //获取这个单号下一个巡检项的所有附件
-            List<PatrolAccessoryDTO> patrolAccessoryDto = patrolAccessoryMapper.getAllAccessory(patrolTaskDevice.getId(), e.getId());
-            e.setAccessoryDTOList(patrolAccessoryDto);
-        });
+                    List<DictModel> list = sysBaseAPI.getDictItems(e.getDictCode());
+                    e.setList(list);
+                }
+                //获取这个单号下一个巡检项的所有附件
+                List<PatrolAccessoryDTO> patrolAccessoryDto = patrolAccessoryMapper.getAllAccessory(patrolTaskDevice.getId(), e.getId());
+                e.setAccessoryDTOList(patrolAccessoryDto);
+            });
+        }
         List<PatrolCheckResultDTO> resultList = buildResultTree(Optional.ofNullable(patrolCheckResultDTOList)
                 .orElseGet(Collections::emptyList));
         return resultList;

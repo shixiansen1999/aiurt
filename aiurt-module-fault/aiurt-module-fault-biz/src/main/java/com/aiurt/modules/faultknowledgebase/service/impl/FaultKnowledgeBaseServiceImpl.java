@@ -6,11 +6,11 @@ import com.aiurt.modules.faultanalysisreport.mapper.FaultAnalysisReportMapper;
 import com.aiurt.modules.faultknowledgebase.entity.FaultKnowledgeBase;
 import com.aiurt.modules.faultknowledgebase.mapper.FaultKnowledgeBaseMapper;
 import com.aiurt.modules.faultknowledgebase.service.IFaultKnowledgeBaseService;
-import com.aiurt.modules.faultknowledgebasetype.dto.SubSystemDTO;
 import com.aiurt.modules.faultknowledgebasetype.mapper.FaultKnowledgeBaseTypeMapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.shiro.SecurityUtils;
+import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -67,5 +67,31 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
         List<String> allSubSystem = faultKnowledgeBaseTypeMapper.getAllSubSystem(sysUser.getId());
         List<FaultDTO> faults = faultAnalysisReportMapper.getFault(page, faultDTO,allSubSystem,null);
         return page.setRecords(faults);
+    }
+
+    @Override
+    public Result<String> approval(String approvedRemark, Integer approvedResult, String id) {
+        if ( getRole()) {return Result.OK("没有权限");}
+        FaultKnowledgeBase faultKnowledgeBase = new FaultKnowledgeBase();
+        faultKnowledgeBase.setId(id);
+        faultKnowledgeBase.setApprovedRemark(approvedRemark);
+        faultKnowledgeBase.setApprovedResult(approvedResult);
+        if (approvedResult.equals(FaultConstant.NO_PASS)) {
+            faultKnowledgeBase.setStatus(FaultConstant.REJECTED);
+        } else {
+            faultKnowledgeBase.setStatus(FaultConstant.APPROVED);
+        }
+        this.updateById(faultKnowledgeBase);
+        return Result.OK("审批成功!");
+
+    }
+
+    public boolean getRole() {
+        LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        List<String> rolesByUsername = sysBaseAPI.getRolesByUsername(sysUser.getUsername());
+        if (!rolesByUsername.contains(FaultConstant.ADMIN)&&!rolesByUsername.contains(FaultConstant.Maintenance_Worker)&&!rolesByUsername.contains(FaultConstant.Professional_Technical_Director)) {
+            return true;
+        }
+        return false;
     }
 }

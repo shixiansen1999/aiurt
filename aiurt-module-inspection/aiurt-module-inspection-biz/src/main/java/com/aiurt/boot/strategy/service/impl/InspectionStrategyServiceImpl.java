@@ -16,6 +16,7 @@ import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.modules.device.entity.Device;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -25,10 +26,7 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -53,6 +51,8 @@ public class InspectionStrategyServiceImpl extends ServiceImpl<InspectionStrateg
     private RepairPoolMapper repairPoolMapper;
     @Resource
     private StrategyService strategyService;
+    @Resource
+    private InspectionStrategyMapper inspectionStrategyMapper;
 
 
     @Override
@@ -82,31 +82,31 @@ public class InspectionStrategyServiceImpl extends ServiceImpl<InspectionStrateg
             inspectionStrStaRel.setInspectionStrCode(inspectionStrategyDTO.getCode());
             inspectionStrStaRelMapper.insert(inspectionStrStaRel);
         }
-        List<String>mechanismCodes =inspectionStrategyDTO.getMechanismCodes();
-        for (String w :mechanismCodes) {
+        List<String> mechanismCodes = inspectionStrategyDTO.getMechanismCodes();
+        for (String w : mechanismCodes) {
             InspectionStrOrgRel inspectionStrOrgRel = new InspectionStrOrgRel();
             inspectionStrOrgRel.setOrgCode(w);
             inspectionStrOrgRel.setInspectionStrCode(inspectionStrategyDTO.getCode());
             inspectionStrOrgRelMapper.insert(inspectionStrOrgRel);
         }
-        if (ObjectUtil.isNotNull(inspectionStrategyDTO.getInspectionCodes())){
-        for (String f : inspectionStrategyDTO.getInspectionCodes()) {
-            InspectionStrRel inspectionStrRel = new InspectionStrRel();
-            inspectionStrRel.setInspectionStaCode(f);
-            inspectionStrRel.setInspectionStrCode(inspectionStrategyDTO.getCode());
-            inspectionStrRelMapper.insert(inspectionStrRel);
+        if (ObjectUtil.isNotNull(inspectionStrategyDTO.getInspectionCodes())) {
+            for (String f : inspectionStrategyDTO.getInspectionCodes()) {
+                InspectionStrRel inspectionStrRel = new InspectionStrRel();
+                inspectionStrRel.setInspectionStaCode(f);
+                inspectionStrRel.setInspectionStrCode(inspectionStrategyDTO.getCode());
+                inspectionStrRelMapper.insert(inspectionStrRel);
+            }
+            if (inspectionStrategyDTO.getDevices().size() > 0) {
+                List<Device> devices = inspectionStrategyDTO.getDevices();
+                for (Device device : devices) {
+                    InspectionStrRel i = inspectionStrRelMapper.selectOne(Wrappers.<InspectionStrRel>lambdaQuery().eq(InspectionStrRel::getInspectionStaCode, device.getInspectionCode()));
+                    InspectionStrDeviceRel inspectionStrDeviceRel = new InspectionStrDeviceRel();
+                    inspectionStrDeviceRel.setDeviceCode(device.getCode());
+                    inspectionStrDeviceRel.setInspectionStrRelId(i.getId());
+                    inspectionStrDeviceRelMapper.insert(inspectionStrDeviceRel);
+                }
+            }
         }
-        if (inspectionStrategyDTO.getDevices().size() > 0) {
-            List<Device> devices = inspectionStrategyDTO.getDevices();
-            for (Device device : devices) {
-                InspectionStrRel i = inspectionStrRelMapper.selectOne(Wrappers.<InspectionStrRel>lambdaQuery().eq(InspectionStrRel::getInspectionStaCode, device.getInspectionCode()));
-                InspectionStrDeviceRel inspectionStrDeviceRel = new InspectionStrDeviceRel();
-                inspectionStrDeviceRel.setDeviceCode(device.getCode());
-                inspectionStrDeviceRel.setInspectionStrRelId(i.getId());
-                inspectionStrDeviceRelMapper.insert(inspectionStrDeviceRel);
-             }
-          }
-       }
     }
 
     @Override
@@ -117,7 +117,45 @@ public class InspectionStrategyServiceImpl extends ServiceImpl<InspectionStrateg
 
     @Override
     public void removeId(String id) {
-        baseMapper.removeId(id);
+//        baseMapper.removeId(id);
+        InspectionStrategy strategy = inspectionStrategyMapper.selectById(id);
+        if (ObjectUtil.isNotEmpty(strategy)) {
+            inspectionStrategyMapper.deleteById(strategy);
+            // 删除状态
+            Integer delFlag = 1;
+
+            if (ObjectUtil.isNotEmpty(strategy.getCode())) {
+                // 策略编号
+                String strategyCode = strategy.getCode();
+
+                // 删除策略站所关联表数据
+                new UpdateWrapper<InspectionStrStaRel>().lambda()
+                        .eq(InspectionStrStaRel::getInspectionStrCode, strategyCode)
+                        .set(InspectionStrStaRel::getDelFlag, delFlag);
+
+                // 删除策略组织机构关联表数据
+                new UpdateWrapper<InspectionStrOrgRel>().lambda()
+                        .eq(InspectionStrOrgRel::getInspectionStrCode, strategyCode)
+                        .set(InspectionStrOrgRel::getDelFlag, delFlag);
+
+                // 查询检修计划策略标准关联表数据
+                QueryWrapper<InspectionStrRel> strRelWrapper = new QueryWrapper<>();
+                strRelWrapper.lambda().eq(InspectionStrRel::getInspectionStrCode, strategyCode);
+                List<InspectionStrRel> strRelList = Optional.ofNullable(inspectionStrRelMapper.selectList(strRelWrapper)).orElseGet(Collections::emptyList);
+                String[] strRelId = strRelList.stream().map(InspectionStrRel::getId).toArray(String[]::new);
+                if (ObjectUtil.isNotEmpty(strRelId) && strRelId.length > 0) {
+                    // 删除检修策略-关联设备表数据
+                    QueryWrapper<InspectionStrDeviceRel> strDeviceRelQueryWrapper = new QueryWrapper<>();
+                    strDeviceRelQueryWrapper.lambda().in(InspectionStrDeviceRel::getInspectionStrRelId, strRelId);
+                    inspectionStrDeviceRelMapper.delete(strDeviceRelQueryWrapper);
+
+                    // 删除检修计划策略标准关联表数据
+                    inspectionStrRelMapper.deleteBatchIds(Arrays.asList(strRelId));
+                }
+
+            }
+        }
+
     }
 
     @Override
@@ -129,9 +167,10 @@ public class InspectionStrategyServiceImpl extends ServiceImpl<InspectionStrateg
         if (ObjectUtil.isNotEmpty(inspectionStrategyDTO.getMechanismCode())) {
             inspectionStrategyDTO.setMechanismCodes(Arrays.asList(inspectionStrategyDTO.getMechanismCode().split(",")));
         }
-        if (ObjectUtil.isNotNull(inspectionStrategyDTO.getCodes())){
-        List<String> codes = Arrays.asList(inspectionStrategyDTO.getCodes().split(","));
-        inspectionStrategyDTO.setInspectionCodeDTOS(baseMapper.selectbyCodes(codes));}
+        if (ObjectUtil.isNotNull(inspectionStrategyDTO.getCodes())) {
+            List<String> codes = Arrays.asList(inspectionStrategyDTO.getCodes().split(","));
+            inspectionStrategyDTO.setInspectionCodeDTOS(baseMapper.selectbyCodes(codes));
+        }
         return inspectionStrategyDTO;
     }
 
@@ -217,6 +256,7 @@ public class InspectionStrategyServiceImpl extends ServiceImpl<InspectionStrateg
 
     /**
      * 校验检修策略数据合法性
+     *
      * @param id
      * @return
      */
@@ -227,7 +267,7 @@ public class InspectionStrategyServiceImpl extends ServiceImpl<InspectionStrateg
             throw new AiurtBootException("非法操作");
         }
 
-        if (ins.getYear()==null) {
+        if (ins.getYear() == null) {
             throw new AiurtBootException("检修策略年份为空无法生成计划");
         }
         if (ins.getYear() < DateUtil.year(new Date())) {
@@ -254,10 +294,10 @@ public class InspectionStrategyServiceImpl extends ServiceImpl<InspectionStrateg
         // 当前策略生成的计划、当前结束时间往后的，并且待指派的的检修计划将会删除
         wrapper.eq("inspection_str_code", ins.getCode())
                 .eq("del_flag", 0)
-                .eq("status",InspectionConstant.TO_BE_ASSIGNED)
+                .eq("status", InspectionConstant.TO_BE_ASSIGNED)
                 .ge("end_time", DateUtil.now());
         List<RepairPool> list = repairPoolMapper.selectList(wrapper);
-        if(CollUtil.isNotEmpty(list)){
+        if (CollUtil.isNotEmpty(list)) {
             repairPoolMapper.deleteBatchIds(list.stream().map(RepairPool::getId).collect(Collectors.toList()));
         }
         this.addAnnualPlan(id);

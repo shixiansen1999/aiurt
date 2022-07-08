@@ -106,13 +106,7 @@ public class FaultKnowledgeBaseController extends BaseController<FaultKnowledgeB
 	 public Result<String> approval(@RequestParam(name = "approvedRemark") String approvedRemark,
 									@RequestParam(name = "approvedResult") Integer approvedResult,
 									@RequestParam(name = "id") String id) {
-		 if (faultAnalysisReportService.getRole()) {return Result.OK("没有权限");}
-		 FaultKnowledgeBase faultKnowledgeBase = new FaultKnowledgeBase();
-		 faultKnowledgeBase.setId(id);
-		 faultKnowledgeBase.setApprovedRemark(approvedRemark);
-		 faultKnowledgeBase.setApprovedResult(approvedResult);
-		 faultKnowledgeBaseService.updateById(faultKnowledgeBase);
-		 return Result.OK("审批成功!");
+		 return faultKnowledgeBaseService.approval(approvedRemark, approvedResult, id);
 	 }
 	/**
 	 *  编辑
@@ -162,7 +156,7 @@ public class FaultKnowledgeBaseController extends BaseController<FaultKnowledgeB
 	public Result<String> delete(@RequestParam(name="id",required=true) String id) {
 		FaultKnowledgeBase byId = faultKnowledgeBaseService.getById(id);
 		if (!byId.getStatus().equals(FaultConstant.APPROVED)) {
-			return Result.OK("删除失败!");
+			return Result.OK("未审批通过,删除失败!");
 		}
 		faultKnowledgeBaseService.removeById(id);
 		return Result.OK("删除成功!");

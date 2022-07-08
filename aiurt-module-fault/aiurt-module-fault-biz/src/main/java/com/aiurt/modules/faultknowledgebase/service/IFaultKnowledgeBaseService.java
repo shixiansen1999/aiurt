@@ -5,6 +5,7 @@ import com.aiurt.modules.faultknowledgebase.entity.FaultKnowledgeBase;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
+import org.jeecg.common.api.vo.Result;
 
 import java.util.List;
 
@@ -30,4 +31,14 @@ public interface IFaultKnowledgeBaseService extends IService<FaultKnowledgeBase>
      * @return List<Fault>
      * */
     IPage<FaultDTO> getFault(Page<FaultDTO> page, FaultDTO faultDTO);
+
+    /**
+     *  审批
+     *
+     * @param approvedRemark
+     * @param approvedResult
+     * @param id
+     * @return
+     */
+    Result<String> approval(String approvedRemark, Integer approvedResult, String id);
 }

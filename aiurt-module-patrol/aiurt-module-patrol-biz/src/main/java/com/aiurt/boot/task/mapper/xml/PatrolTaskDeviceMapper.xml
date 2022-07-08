@@ -116,9 +116,9 @@
         </if>
     </select>
     <select id="getPatrolTaskDeviceList" resultType="com.aiurt.boot.task.dto.PatrolTaskDeviceDTO">
-        SELECT concat((SELECT line_name FROM cs_line AS csl WHERE csl.line_code = ptd.line_code), "-",
+        SELECT concat((SELECT line_name FROM cs_line AS csl WHERE csl.line_code = ptd.line_code), "/",
                       (SELECT station_name FROM cs_station AS css WHERE css.station_code = ptd.station_code),
-                      IFNULL((SELECT CONCAT("-", position_name)
+                      IFNULL((SELECT CONCAT("/", position_name)
                               FROM cs_station_position AS cssp
                               WHERE cssp.position_code = ptd.position_code), '')) AS devicePosition,
                dv.name                                                            as deviceName,
