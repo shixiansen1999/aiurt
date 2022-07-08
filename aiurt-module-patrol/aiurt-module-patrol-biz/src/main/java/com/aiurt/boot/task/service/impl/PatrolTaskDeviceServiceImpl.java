@@ -352,7 +352,6 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
             {
                 if(ObjectUtil.isNotNull(e.getDictCode()))
                 {
-
                     List<DictModel> list = sysBaseAPI.getDictItems(e.getDictCode());
                     e.setList(list);
                 }
