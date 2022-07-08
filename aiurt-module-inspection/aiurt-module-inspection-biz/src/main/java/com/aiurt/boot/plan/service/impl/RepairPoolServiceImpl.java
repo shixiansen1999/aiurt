@@ -457,6 +457,13 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
             if (ObjectUtil.isEmpty(repairPool)) {
                 throw new AiurtBootException(InspectionConstant.ILLEGAL_OPERATION);
             }
+
+            // 是手动任务需要更新开始时间和结束时间
+            if (assignDTO.getIsManual().equals(InspectionConstant.IS_MANUAL)) {
+                repairPool.setStartTime(assignDTO.getStartTime());
+                repairPool.setStartTime(assignDTO.getEndTime());
+            }
+
             repairPool.setStatus(InspectionConstant.TO_BE_CONFIRMED);
             baseMapper.updateById(repairPool);
 
@@ -891,7 +898,7 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
         // 组织机构和站点
         if (StrUtil.isNotEmpty(manualTaskReq.getStationList())) {
             List<String> stationList = StrUtil.split(manualTaskReq.getStationList(), ',');
-            List<RepairPoolStationRel> repairPoolStationRels = repairPoolStationRelMapper.selectList(new LambdaQueryWrapper<RepairPoolStationRel>().in(RepairPoolStationRel::getStationCode,stationList));
+            List<RepairPoolStationRel> repairPoolStationRels = repairPoolStationRelMapper.selectList(new LambdaQueryWrapper<RepairPoolStationRel>().in(RepairPoolStationRel::getStationCode, stationList));
             if (CollUtil.isNotEmpty(repairPoolStationRels)) {
                 codes.addAll(repairPoolStationRels.stream().map(RepairPoolStationRel::getRepairPoolCode).collect(Collectors.toList()));
             }

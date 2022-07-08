@@ -226,9 +226,14 @@ public class InspectionStrategyServiceImpl extends ServiceImpl<InspectionStrateg
         if (ObjectUtil.isEmpty(ins)) {
             throw new AiurtBootException("非法操作");
         }
+
+        if (ins.getYear()==null) {
+            throw new AiurtBootException("检修策略年份为空无法生成计划");
+        }
         if (ins.getYear() < DateUtil.year(new Date())) {
             throw new AiurtBootException("只能生成当前往后年份的计划");
         }
+
         // 生效了才能生成
         if (InspectionConstant.NO_IS_EFFECT.equals(ins.getStatus())) {
             throw new AiurtBootException("当前策略未生效");
