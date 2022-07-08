@@ -101,7 +101,7 @@ public class PatrolTaskDeviceController extends BaseController<PatrolTaskDevice,
 		 LambdaUpdateWrapper<PatrolTaskDevice> updateWrapper= new LambdaUpdateWrapper<>();
 		 updateWrapper.set(PatrolTaskDevice::getFaultCode,faultCode).eq(PatrolTaskDevice::getId,id);
 		 patrolTaskDeviceService.update(updateWrapper);
-		 return Result.OK("巡检位置保存成功");
+		 return Result.OK("故障单号保存成功");
 	 }
 	 /**
 	  * app巡检任务执行中-检查
