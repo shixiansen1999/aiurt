@@ -38,7 +38,7 @@ public interface FaultKnowledgeBaseMapper extends BaseMapper<FaultKnowledgeBase>
      * @param systemCode
      * @return List<DeviceTypeDTO>
      * */
-    List<DeviceTypeDTO> getDeviceType(@Param("majorCode") String majorCode, @Param("systemCode") String systemCode);
+    List<DeviceTypeDTO> getDeviceType(@Param("majorCode") String majorCode, @Param("systemCode") String systemCode,@Param("name")String name);
 
     /**
      * 设备分类查询
@@ -46,4 +46,6 @@ public interface FaultKnowledgeBaseMapper extends BaseMapper<FaultKnowledgeBase>
      * @return List<DeviceAssemblyDTO>
      * */
     List<DeviceAssemblyDTO> getDeviceAssembly(@Param("deviceTypeCode")String deviceTypeCode);
+
+
 }

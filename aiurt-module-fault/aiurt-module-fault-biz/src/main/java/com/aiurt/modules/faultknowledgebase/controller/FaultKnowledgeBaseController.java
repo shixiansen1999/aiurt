@@ -315,8 +315,9 @@ public class FaultKnowledgeBaseController extends BaseController<FaultKnowledgeB
 			 @ApiResponse(code = 200, message = "OK", response = DeviceTypeDTO.class)
 	 })
 	 public Result<List<DeviceTypeDTO>> getDeviceType(@RequestParam(name="majorCode") String majorCode,
-													  @RequestParam(name="systemCode") String systemCode) {
-	 	List<DeviceTypeDTO> deviceTypes = faultKnowledgeBaseMapper.getDeviceType(majorCode,systemCode);
+													  @RequestParam(name="systemCode") String systemCode,
+													  @RequestParam(name="name",required = false) String name) {
+	 	List<DeviceTypeDTO> deviceTypes = faultKnowledgeBaseMapper.getDeviceType(majorCode,systemCode,name);
 	 	return Result.OK(deviceTypes);
 	 }
 

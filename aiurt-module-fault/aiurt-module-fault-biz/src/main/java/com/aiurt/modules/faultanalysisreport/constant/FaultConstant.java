@@ -5,11 +5,11 @@ package com.aiurt.modules.faultanalysisreport.constant;
  */
 public class FaultConstant {
     /**管理员角色*/
-    public final static String ADMIN = "管理员";
+    public final static String ADMIN = "admin";
     /**维修工班长角色*/
-    public final static String Maintenance_Worker = "维修工班长";
+    public final static String Maintenance_Worker = "maintenanceWorker";
     /**专业技术负责人角色*/
-    public final static String Professional_Technical_Director = "专业技术负责人";
+    public final static String Professional_Technical_Director = "ProfessionalTechnicalDirector";
 
     /**待审批*/
     public final static Integer PENDING = 0;

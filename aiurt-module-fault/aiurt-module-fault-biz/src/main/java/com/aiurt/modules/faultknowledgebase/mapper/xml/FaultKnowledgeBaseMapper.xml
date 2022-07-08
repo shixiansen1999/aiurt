@@ -44,13 +44,11 @@
                 #{item}
             </foreach>
         </if>  ) a
-        where 1=1
-        <if test="condition.deviceTypeName != null and condition.deviceTypeName != '' ">
-           and a.deviceTypeName =#{condition.deviceTypeName}
-        </if>
-        <if test="condition.materialName != null and condition.materialName != '' ">
-            and a.materialName =#{condition.materialName}
-        </if>
+        where
+            1=1
+            <if test="condition.matchName != null and  condition.matchName != ''">
+                and CONCAT(a.fault_phenomenon, a.deviceTypeName, a.materialName) LIKE CONCAT('%',#{condition.matchName},'%')
+            </if>
 
     </select>
 
@@ -75,6 +73,9 @@
 
 <select id="getDeviceType" resultType="com.aiurt.modules.faultknowledgebase.dto.DeviceTypeDTO">
     select id,major_code,system_code,`code`,name from device_type where del_flag = 0 and major_code=#{majorCode} and system_code=#{systemCode}
+    <if test="name != null and name != ''">
+      and  name like concat('%',#{name},'%')
+    </if>
     </select>
 
 <select id="getDeviceAssembly" resultType="com.aiurt.modules.faultknowledgebase.dto.DeviceAssemblyDTO">
