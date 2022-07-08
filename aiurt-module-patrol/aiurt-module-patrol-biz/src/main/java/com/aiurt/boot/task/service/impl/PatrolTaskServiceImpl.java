@@ -782,8 +782,8 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
                 .set(PatrolTask::getStartTime, patrolTaskManualDTO.getStartTime()).set(PatrolTask::getEndTime, patrolTaskManualDTO.getEndTime())
                 .set(PatrolTask::getName, patrolTaskManualDTO.getName()).set(PatrolTask::getPatrolDate, patrolTaskManualDTO.getPatrolDate())
                 .eq(PatrolTask::getId, patrolTaskManualDTO.getId());
-        PatrolTask patrolTask = new PatrolTask();
-        patrolTaskMapper.update(patrolTask, updateWrapper);
+
+        patrolTaskMapper.update(new PatrolTask(), updateWrapper);
         //先删除
         LambdaQueryWrapper<PatrolTaskOrganization> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(PatrolTaskOrganization::getTaskCode, patrolTaskManualDTO.getCode());
@@ -824,7 +824,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         List<PatrolTaskDevice> devices = patrolTaskDeviceMapper.selectList(deviceLambdaQueryWrapper);
         patrolTaskDeviceMapper.deleteBatchIds(devices);
         //保存巡检任务标准表的信息
-        String taskId = patrolTask.getId();
+        String taskId = patrolTaskManualDTO.getId();
         List<PatrolTaskStandardDTO> patrolStandardList = patrolTaskManualDTO.getPatrolStandardList();//起名不规范
         patrolStandardList.stream().forEach(ns -> {
             PatrolTaskStandard patrolTaskStandard = new PatrolTaskStandard();
