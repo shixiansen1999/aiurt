@@ -327,4 +327,5 @@ public class RepairTask implements Serializable {
     @ApiModelProperty(value = "检修人名称")
     private List<String>overhaulName;
 
+
 }

@@ -128,13 +128,7 @@
         WHERE ptd.del_flag = 0
           AND ptd.task_id = #{id}
           <if test="search != null and search != ''">
-          or ptd.patrol_number = #{search}
-          </if>
-              <if test="search != null and search != ''">
-          or dv.name = #{search}
-          </if>
-              <if test="search != null and search != ''">
-          or ptd.device_code = #{search}
+        and CONCAT_WS(',',ptd.patrol_number,ptd.device_code,dv.name) like concat('%',#{search},'%')
           </if>
     </select>
     <select id="getSubmitName" resultType="java.lang.String">

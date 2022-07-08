@@ -25,6 +25,8 @@ import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import org.jeecg.common.system.api.ISysBaseAPI;
+import org.jeecg.common.system.vo.DictModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -56,6 +58,8 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
     private PatrolStandardItemsMapper patrolStandardItemsMapper;
     @Autowired
     private PatrolAccessoryMapper patrolAccessoryMapper;
+    @Autowired
+    private ISysBaseAPI sysBaseAPI;
 
 
     @Override
@@ -65,8 +69,8 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
 
     @Override
     public IPage<PatrolTaskDeviceParam> selectBillInfoForDevice(Page<PatrolTaskDeviceParam> page, PatrolTaskDeviceParam patrolTaskDeviceParam) {
-        IPage<PatrolTaskDeviceParam> patrolTaskDeviceForDeviceParamIPage = patrolTaskDeviceMapper.selectBillInfoForDevice(page, patrolTaskDeviceParam);
-        List<PatrolTaskDeviceParam> records = patrolTaskDeviceForDeviceParamIPage.getRecords();
+        IPage<PatrolTaskDeviceParam> patrolTaskDeviceForDeviceParamPage = patrolTaskDeviceMapper.selectBillInfoForDevice(page, patrolTaskDeviceParam);
+        List<PatrolTaskDeviceParam> records = patrolTaskDeviceForDeviceParamPage.getRecords();
         if (records != null && records.size() > 0) {
             for (PatrolTaskDeviceParam patrolTaskDeviceForDeviceParam : records) {
                 // 计算巡检时长
@@ -92,7 +96,7 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
             }
         }
 
-        return patrolTaskDeviceForDeviceParamIPage;
+        return patrolTaskDeviceForDeviceParamPage;
     }
 
     @Override
@@ -340,9 +344,15 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
         List<PatrolCheckResultDTO> patrolCheckResultDTOList = patrolCheckResultMapper.getCheckResult(taskDeviceId);
         patrolCheckResultDTOList.stream().forEach(e ->
         {
+            if(ObjectUtil.isNotNull(e.getDictCode()))
+            {
+
+                List<DictModel> list = sysBaseAPI.getDictItems(e.getDictCode());
+                e.setList(list);
+            }
             //获取这个单号下一个巡检项的所有附件
-            List<PatrolAccessoryDTO> patrolAccessoryDTOS = patrolAccessoryMapper.getAllAccessory(patrolTaskDevice.getId(), e.getId());
-            e.setAccessoryDTOList(patrolAccessoryDTOS);
+            List<PatrolAccessoryDTO> patrolAccessoryDto = patrolAccessoryMapper.getAllAccessory(patrolTaskDevice.getId(), e.getId());
+            e.setAccessoryDTOList(patrolAccessoryDto);
         });
         List<PatrolCheckResultDTO> resultList = buildResultTree(Optional.ofNullable(patrolCheckResultDTOList)
                 .orElseGet(Collections::emptyList));

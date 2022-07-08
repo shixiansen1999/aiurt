@@ -60,11 +60,10 @@
     ( select group_concat(d.name) from
     (select device_code from fault_device where fault_code = f.`code`) a
     left join device d on d.`code` = a.device_code ) as deviceName,
-    frr.end_time,
-    frr.hangup_reason
+    f.end_time,
+    f.hang_up_reason
     FROM
     fault f
-    left join fault_repair_record frr on frr.fault_code = f.`code`
     where
     f.status = 12
     <if test="condition.code != null and condition.code != ''">

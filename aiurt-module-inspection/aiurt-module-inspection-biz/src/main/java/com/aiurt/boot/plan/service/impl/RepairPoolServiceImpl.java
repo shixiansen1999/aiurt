@@ -139,6 +139,8 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
                 repair.setTypeName(sysBaseAPI.translateDict(DictConstant.INSPECTION_CYCLE_TYPE, String.valueOf(repair.getType())));
                 // 状态
                 repair.setStatusName(sysBaseAPI.translateDict(DictConstant.INSPECTION_TASK_STATE, String.valueOf(repair.getStatus())));
+                // 作业类型
+                repair.setWorkTypeName(sysBaseAPI.translateDict(DictConstant.WORK_TYPE, String.valueOf(repair.getWorkType())));
 
             });
 
@@ -455,6 +457,13 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
             if (ObjectUtil.isEmpty(repairPool)) {
                 throw new AiurtBootException(InspectionConstant.ILLEGAL_OPERATION);
             }
+
+            // 是手动任务需要更新开始时间和结束时间
+            if (assignDTO.getIsManual().equals(InspectionConstant.IS_MANUAL)) {
+                repairPool.setStartTime(assignDTO.getStartTime());
+                repairPool.setStartTime(assignDTO.getEndTime());
+            }
+
             repairPool.setStatus(InspectionConstant.TO_BE_CONFIRMED);
             baseMapper.updateById(repairPool);
 
@@ -683,7 +692,7 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
                 repairTaskResult.setDictCode(repairPoolCodeContent.getDictCode());
                 repairTaskResult.setQualityStandard(repairPoolCodeContent.getQualityStandard());
                 repairTaskResult.setName(repairPoolCodeContent.getName());
-                repairTaskResult.setStatus(repairPoolCodeContent.getStatusItem());
+                repairTaskResult.setStatusItem(repairPoolCodeContent.getStatusItem());
                 repairTaskResult.setSortNo(repairPoolCodeContent.getSortNo());
                 repairTaskResult.setType(repairPoolCodeContent.getType());
                 repairTaskResult.setCode(repairPoolCodeContent.getCode());
@@ -889,7 +898,7 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
         // 组织机构和站点
         if (StrUtil.isNotEmpty(manualTaskReq.getStationList())) {
             List<String> stationList = StrUtil.split(manualTaskReq.getStationList(), ',');
-            List<RepairPoolStationRel> repairPoolStationRels = repairPoolStationRelMapper.selectList(new LambdaQueryWrapper<RepairPoolStationRel>().in(RepairPoolStationRel::getStationCode,stationList));
+            List<RepairPoolStationRel> repairPoolStationRels = repairPoolStationRelMapper.selectList(new LambdaQueryWrapper<RepairPoolStationRel>().in(RepairPoolStationRel::getStationCode, stationList));
             if (CollUtil.isNotEmpty(repairPoolStationRels)) {
                 codes.addAll(repairPoolStationRels.stream().map(RepairPoolStationRel::getRepairPoolCode).collect(Collectors.toList()));
             }

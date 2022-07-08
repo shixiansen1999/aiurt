@@ -36,13 +36,13 @@ public class PatrolTaskMissingDetection implements Job {
     }
 
     public void execute() {
-        TaskDetection(null);
+        taskDetection(null);
     }
 
     /**
      * 每天固定时间检测漏检的任务
      */
-    private void TaskDetection(JobExecutionContext context) {
+    private void taskDetection(JobExecutionContext context) {
 
         // 获取以下状态为0待指派、1待确认、2待执行、3已退回、4执行中的任务
         List<Integer> status = Arrays.asList(PatrolConstant.TASK_INIT, PatrolConstant.TASK_CONFIRM,

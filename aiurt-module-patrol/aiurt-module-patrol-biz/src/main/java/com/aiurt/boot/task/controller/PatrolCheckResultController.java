@@ -17,8 +17,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.regex.Pattern;
 
- /**
+/**
  * @Description: patrol_check_result
  * @Author: aiurt
  * @Date:   2022-06-21
@@ -104,21 +105,31 @@ public class PatrolCheckResultController extends BaseController<PatrolCheckResul
 	 @PostMapping(value = "/patrolTaskAccessory")
 	 public Result<?> patrolTaskAccessory(@RequestBody PatrolCheckDTO patrolCheckDTO,
 	 									  HttpServletRequest req) {
-		 PatrolCheckResult patrolCheckResult = new PatrolCheckResult();
+		 LambdaUpdateWrapper<PatrolCheckResult> updateWrapper = new LambdaUpdateWrapper<>();
 		 LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
 		 if(ObjectUtil.isNotEmpty(patrolCheckDTO.getInputType()))
 		 {
-			 if(patrolCheckDTO.getInputType()==1)
-		 	{
-				 patrolCheckResult.setOptionValue(patrolCheckDTO.getOptionValue());
-			 }
 			 if(patrolCheckDTO.getInputType()==2)
+		 	{
+				updateWrapper.set(PatrolCheckResult::getOptionValue,patrolCheckDTO.getOptionValue()).set(PatrolCheckResult::getUserId,sysUser.getId()).eq(PatrolCheckResult::getId,patrolCheckDTO.getId());
+
+			 }
+			 if(patrolCheckDTO.getInputType()==3)
 			 {
-				 patrolCheckResult.setWriteValue(patrolCheckDTO.getWriteValue());
+				  boolean matches = Pattern.	matches(patrolCheckDTO.getRegular(), patrolCheckDTO.getWriteValue());
+
+				 if(matches)
+				 {
+					 updateWrapper.set(PatrolCheckResult::getWriteValue,patrolCheckDTO.getWriteValue()).set(PatrolCheckResult::getUserId,sysUser.getId()).eq(PatrolCheckResult::getId,patrolCheckDTO.getId());
+				 }
+				 else
+				 {
+				 	return Result.error("应该在："+patrolCheckDTO.getRegular()+"的范围内");
+				 }
+
 			 }
 		 }
-		 patrolCheckResult.setUserId(sysUser.getId());
-		 patrolCheckResultService.updateById(patrolCheckResult);
+		 patrolCheckResultService.update(updateWrapper);
 		 return Result.OK("检查值保存成功");
 	 }
 

@@ -1,5 +1,6 @@
 package com.aiurt.boot.task.entity;
 
+import com.aiurt.common.aspect.annotation.Dict;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
@@ -83,6 +84,7 @@ public class PatrolCheckResult implements Serializable {
 	/**数据填写类型：1 无、2 选择项、3 输入项*/
 	@Excel(name = "数据填写类型：1 无、2 选择项、3 输入项", width = 15)
     @ApiModelProperty(value = "数据填写类型：1 无、2 选择项、3 输入项")
+    @Dict(dicCode = "patrol_input_type")
     private java.lang.Integer inputType;
 	/**关联的数据字典编码*/
 	@Excel(name = "关联的数据字典编码", width = 15)

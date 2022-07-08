@@ -166,4 +166,10 @@ public interface IRepairTaskService extends IService<RepairTask> {
      * @param id
      */
     List<OrgDTO> queryPeerList(String id);
+
+    /**
+     * 确认检修任务
+     * @param examineDTO
+     */
+    void confirmTask(ExamineDTO examineDTO);
 }

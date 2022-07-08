@@ -142,6 +142,21 @@ public class AppRepairTaskController extends BaseController<RepairTask, IRepairT
         return Result.OK("审核成功！");
     }
 
+
+    /**
+     * app检修任务_退回
+     *
+     * @param examineDTO
+     * @return
+     */
+    @AutoLog(value = "app检修任务-退回")
+    @ApiOperation(value = "app检修任务-退回", notes = "app检修任务-退回")
+    @PostMapping(value = "/appConfirmedDelete")
+    public Result<String> appConfirmedDelete(@RequestBody ExamineDTO examineDTO) {
+        repairTaskService.confirmedDelete(examineDTO);
+        return Result.OK("退回成功！");
+    }
+
     /**
      * app检修任务-验收
      *
@@ -240,5 +255,19 @@ public class AppRepairTaskController extends BaseController<RepairTask, IRepairT
     public Result<List<OrgDTO>> queryPeerList(@RequestParam @ApiParam(value = "检修单id", name = "id", required = true) String id) {
         List<OrgDTO> orgDTOList = repairTaskService.queryPeerList(id);
         return Result.OK(orgDTOList);
+    }
+
+    /**
+     * 确认检修任务
+     *
+     * @param examineDTO
+     * @return
+     */
+    @AutoLog(value = "确认检修任务")
+    @ApiOperation(value = "确认检修任务", notes = "确认检修任务")
+    @PostMapping(value = "/confirmTask")
+    public Result<String> confirmTask(@RequestBody ExamineDTO examineDTO) {
+        repairTaskService.confirmTask(examineDTO);
+        return Result.OK("已确认");
     }
 }

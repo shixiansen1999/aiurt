@@ -85,7 +85,7 @@ public class RepairTaskDeviceRel implements Serializable {
 	/**检修时长(单位分钟)*/
 	@Excel(name = "检修时长(单位分钟)", width = 15)
     @ApiModelProperty(value = "检修时长(单位分钟)")
-    private java.lang.Integer duration;
+    private java.lang.Long duration;
 
     /**提交时间(yyyy-MM-dd HH:mm:ss)*/
     @Excel(name = "提交时间(yyyy-MM-dd HH:mm:ss)", width = 15, format = "yyyy-MM-dd HH:mm:ss")

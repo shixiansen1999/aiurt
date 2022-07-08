@@ -2,6 +2,7 @@ package com.aiurt.boot.task.service.impl;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.date.DateUnit;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
@@ -30,7 +31,6 @@ import com.aiurt.common.util.UpdateHelperUtils;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,10 +38,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import java.lang.reflect.Field;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -89,17 +85,6 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
     @Override
     public Page<RepairTask> selectables(Page<RepairTask> pageList, RepairTask condition) {
         List<RepairTask> lists = repairTaskMapper.selectables(pageList, condition);
-//        List<Integer> collect1 = lists.stream().map(RepairTask::getYear).distinct().collect(Collectors.toList());
-//        HashMap<Integer,ArrayList<Object>> integerArrayListHashMap = new HashMap<>();
-//        collect1.forEach(o->{
-//            LocalDateTime yearFirst = DateUtils.getYearFirst(o);
-//            ZoneId zoneId = ZoneId.systemDefault();
-//            ZonedDateTime zonedDateTime = yearFirst.atZone(zoneId);
-//            Date date = Date.from(zonedDateTime.toInstant());
-//            ArrayList<Object> list = DateUtils.getWeekAndTime(date);
-//            integerArrayListHashMap.put(o,list);
-//        });
-
         lists.forEach(e -> {
             //组织机构
             if (e.getOrgCode() != null) {
@@ -116,13 +101,6 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                     e.setSiteName(manager.translateStation(dtoList));
                 });
             }
-//            //年的周数和时间
-//            ArrayList<Object> objects = integerArrayListHashMap.get(e.getYear());
-//
-//            //时间
-//            Object time = objects.get(e.getWeeks()-1);
-//
-//            e.setWeekName("第"+e.getWeeks()+"周"+"("+time+")");
             //专业
             if (e.getMajorCode() != null) {
                 String[] split3 = e.getMajorCode().split(",");
@@ -169,6 +147,17 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                 });
                 e.setOverhaulName(userList);
             }
+
+            // 所属周（相对年）
+            if (e.getYear() != null && e.getWeeks() != null) {
+                Date[] dateByWeek = DateUtils.getDateByWeek(e.getYear(), e.getWeeks());
+                if (dateByWeek.length != 0) {
+                    String weekName = String.format("第%d周(%s~%s)", e.getWeeks(), DateUtil.format(dateByWeek[0], "yyyy/MM/dd"), DateUtil.format(dateByWeek[1], "yyyy/MM/dd"));
+                    e.setWeekName(weekName);
+                }
+            }
+
+
         });
         return pageList.setRecords(lists);
     }
@@ -646,6 +635,7 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void confirmedDelete(ExamineDTO examineDTO) {
         RepairTask repairTask = repairTaskMapper.selectById(examineDTO.getId());
 
@@ -770,7 +760,7 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
         List<RepairPoolOrgRel> repairPoolOrgRels = orgRelMapper.selectList(
                 new LambdaQueryWrapper<RepairPoolOrgRel>()
                         .eq(RepairPoolOrgRel::getRepairPoolCode, repairPool.getCode())
-                        .eq(RepairPoolOrgRel::getDelFlag, 0));
+                        .eq(RepairPoolOrgRel::getDelFlag, InspectionConstant.NO_DEL));
         if (CollUtil.isNotEmpty(repairPoolOrgRels)) {
             for (RepairPoolOrgRel repairPoolOrgRel : repairPoolOrgRels) {
                 RepairTaskOrgRel repairTaskOrgRel = new RepairTaskOrgRel();
@@ -923,12 +913,18 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
             }
         });
 
-        // 修改检修单的状态，已提交
+        // 检修结束时间为空则修改
         Date submitTime = new Date();
-        if (ObjectUtil.isEmpty(repairTaskDeviceRel.getSubmitTime()) || ObjectUtil.isEmpty(repairTaskDeviceRel.getEndTime())) {
-            repairTaskDeviceRel.setSubmitTime(submitTime);
+        if (ObjectUtil.isEmpty(repairTaskDeviceRel.getEndTime())) {
             repairTaskDeviceRel.setEndTime(submitTime);
+            // 检修时长
+            if (ObjectUtil.isNotEmpty(repairTaskDeviceRel.getStartTime()) && ObjectUtil.isNotEmpty(repairTaskDeviceRel.getEndTime())) {
+                repairTaskDeviceRel.setDuration(DateUtil.between(repairTaskDeviceRel.getStartTime(), repairTaskDeviceRel.getEndTime(), DateUnit.MINUTE));
+            }
         }
+
+        // 修改检修单的状态，已提交
+        repairTaskDeviceRel.setSubmitTime(submitTime);
         repairTaskDeviceRel.setStaffId(manager.checkLogin().getId());
         repairTaskDeviceRel.setIsSubmit(InspectionConstant.SUBMITTED);
         repairTaskDeviceRelMapper.updateById(repairTaskDeviceRel);
@@ -964,5 +960,29 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
         }
 
         return orgDTOS;
+    }
+
+    /**
+     * 确认检修任务
+     *
+     * @param examineDTO
+     */
+    @Override
+    public void confirmTask(ExamineDTO examineDTO) {
+        RepairTask repairTask = repairTaskMapper.selectById(examineDTO.getId());
+        if (ObjectUtil.isEmpty(repairTask)) {
+            throw new AiurtBootException(InspectionConstant.ILLEGAL_OPERATION);
+        }
+
+        // 待确认状态才可以确认
+        if (InspectionConstant.TO_BE_CONFIRMED.equals(repairTask.getStatus())) {
+            repairTask.setConfirmTime(new Date());
+            LoginUser loginUser = manager.checkLogin();
+            repairTask.setConfirmUserId(loginUser.getId());
+            repairTask.setConfirmUserName(loginUser.getRealname());
+            repairTaskMapper.updateById(repairTask);
+        } else {
+            throw new AiurtBootException(InspectionConstant.ILLEGAL_OPERATION);
+        }
     }
 }

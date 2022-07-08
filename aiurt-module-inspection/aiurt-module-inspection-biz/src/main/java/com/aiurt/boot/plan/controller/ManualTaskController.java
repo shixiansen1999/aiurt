@@ -46,6 +46,7 @@ public class ManualTaskController {
     public Result<IPage<RepairPool>> listPage(ManualTaskReq manualTaskReq,
                                               @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
                                               @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize) {
+        // todo 数据权限过滤
         Page<RepairPool> page = new Page<RepairPool>(pageNo, pageSize);
         IPage<RepairPool> pageList = repairPoolService.listPage(page, manualTaskReq);
         return Result.OK(pageList);
