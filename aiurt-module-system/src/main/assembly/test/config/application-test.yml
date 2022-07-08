@@ -73,6 +73,11 @@ spring:
     async-executor-activate: false
     #启用异步执行器
     job-executor-activate: false
+  flowable:
+    #关闭定时任务JOB
+    async-executor-activate: false
+    #将databaseSchemaUpdate设置为true。当flowable发现库与数据库表结构不一致时，会自动将数据库表结构升级至新版本。
+    database-schema-update: true
   aop:
     proxy-target-class: true
   #配置freemarker
