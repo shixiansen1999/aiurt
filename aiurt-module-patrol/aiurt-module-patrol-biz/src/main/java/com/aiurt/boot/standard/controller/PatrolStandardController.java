@@ -146,6 +146,7 @@ public class PatrolStandardController extends BaseController<PatrolStandard, IPa
 		}
 		return Result.OK(patrolStandard);
 	}
+
 	 @AutoLog(value = "巡检标准表-获取适用专业")
 	 @ApiOperation(value="获取适用专业", notes="获取适用专业")
 	 @GetMapping(value = "/obtainApplicableDisciplines")
