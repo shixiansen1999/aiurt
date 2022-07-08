@@ -41,6 +41,7 @@
                 #{item}
             </foreach>
         </if>
+        ORDER BY far.update_time DESC,far.create_time DESC
 </select>
 
 <select id="getFault" resultType="com.aiurt.modules.faultanalysisreport.entity.dto.FaultDTO">
