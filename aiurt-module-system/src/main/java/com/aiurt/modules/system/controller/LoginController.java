@@ -643,7 +643,8 @@ public class LoginController {
 	private Result<JSONObject> webAuthorizationLogin(HttpServletRequest req,
 													 @RequestParam(name = "code") String code){
 		Result<JSONObject> result = new Result<JSONObject>();
-		String accessToken = wechatEnterpriseService.getAccessToken();
+		ThirdAppWechatEnterpriseServiceImpl enterpriseService = SpringContextUtils.getBean(ThirdAppWechatEnterpriseServiceImpl.class);
+		String accessToken = enterpriseService.getAccessToken();
 		String url = "https://qyapi.weixin.qq.com/cgi-bin/user/getuserinfo?access_token="+accessToken+"&code="+code;
 		Map response1  =  RestUtil.get(url);
 		String userId = (String)response1.get("UserId");
@@ -691,7 +692,8 @@ public class LoginController {
 	@GetMapping(value = "/autograph")
 	public Result<JSONObject> autograph(@RequestParam(name = "url") String url) {
 		RedisUtil redisUtil =SpringContextUtils.getBean(RedisUtil.class);
-		String accessToken = wechatEnterpriseService.getAccessToken();
+		ThirdAppWechatEnterpriseServiceImpl enterpriseService = SpringContextUtils.getBean(ThirdAppWechatEnterpriseServiceImpl.class);
+		String accessToken = enterpriseService.getAccessToken();
 		String ticket =(String)redisUtil.get("ticket");
 		if (ObjectUtil.isEmpty(ticket)){
 			Map response1 = RestUtil.get("https://qyapi.weixin.qq.com/cgi-bin/get_jsapi_ticket?access_token="+accessToken);
