@@ -17,6 +17,8 @@
         fkb.method,
         fkb.solution,
         fkb.create_time,
+        fkb.major_code,
+        fkb.system_code,
         fkb.status
         FROM
         fault_knowledge_base fkb WHERE del_flag = 0
@@ -35,8 +37,8 @@
         <if test="condition.faultReason != null and condition.faultReason != ''">
             and fkb.fault_reason like concat('%',#{condition.faultReason},'%')
         </if>
-        <if test="condition.method != null and condition.method != ''">
-            and fkb.method like concat('%',#{condition.method},'%')
+        <if test="condition.solution != null and condition.solution != ''">
+            and fkb.solution like concat('%',#{condition.solution},'%')
         </if>
         <if test="allSubSystem != null and allSubSystem.size() != 0">
             and fkb.system_code in
@@ -49,7 +51,15 @@
             <if test="condition.matchName != null and  condition.matchName != ''">
                 and CONCAT(a.fault_phenomenon, a.deviceTypeName, a.materialName) LIKE CONCAT('%',#{condition.matchName},'%')
             </if>
-
+            <if test="condition.majorCode != null and  condition.majorCode != ''">
+                and a.major_code= #{condition.majorCode}
+            </if>
+            <if test="condition.systemCode != null and  condition.systemCode != ''">
+                and a.system_code= #{condition.systemCode}
+            </if>
+            <if test="condition.knowledgeBaseTypeCode != null and  condition.knowledgeBaseTypeCode != ''">
+                and a.fault_phenomenon = #{condition.knowledgeBaseTypeCode}
+            </if>
     </select>
 
 <select id="readOne" resultType="com.aiurt.modules.faultknowledgebase.entity.FaultKnowledgeBase">

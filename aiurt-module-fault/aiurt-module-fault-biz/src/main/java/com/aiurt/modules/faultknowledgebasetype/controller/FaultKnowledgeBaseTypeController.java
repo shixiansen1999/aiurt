@@ -110,12 +110,19 @@ public class FaultKnowledgeBaseTypeController extends BaseController<FaultKnowle
 	@ApiOperation(value="故障知识分类-编辑", notes="故障知识分类-编辑")
 	@RequestMapping(value = "/edit", method = {RequestMethod.PUT,RequestMethod.POST})
 	public Result<String> edit(@RequestBody FaultKnowledgeBaseType faultKnowledgeBaseType) {
+		FaultKnowledgeBaseType byId = faultKnowledgeBaseTypeService.getById(faultKnowledgeBaseType.getId());
+		LambdaQueryWrapper<FaultKnowledgeBase> queryWrapper = new LambdaQueryWrapper<>();
+		List<FaultKnowledgeBase> faultKnowledgeBases = faultKnowledgeBaseMapper.selectList(queryWrapper
+				.eq(FaultKnowledgeBase::getKnowledgeBaseTypeCode, byId.getCode()).eq(FaultKnowledgeBase::getDelFlag,0));
+		if (CollectionUtils.isEmpty(faultKnowledgeBases)) {
+			return Result.OK("该分类已经被使用，不可编辑!");
+		}
 		faultKnowledgeBaseTypeService.updateById(faultKnowledgeBaseType);
 		return Result.OK("编辑成功!");
 	}
 
 	 /**
-	  *  查询是否被使用
+	  *  查询是否被使用（未使用）
 	  *
 	  * @param id
 	  * @return
@@ -144,9 +151,10 @@ public class FaultKnowledgeBaseTypeController extends BaseController<FaultKnowle
 	@ApiOperation(value="故障知识分类-通过id删除", notes="故障知识分类-通过id删除")
 	@DeleteMapping(value = "/delete")
 	public Result<String> delete(@RequestParam(name="id",required=true) String id) {
+		FaultKnowledgeBaseType byId = faultKnowledgeBaseTypeService.getById(id);
 		LambdaQueryWrapper<FaultKnowledgeBase> queryWrapper = new LambdaQueryWrapper<>();
 		List<FaultKnowledgeBase> faultKnowledgeBases = faultKnowledgeBaseMapper.selectList(queryWrapper
-				.eq(FaultKnowledgeBase::getKnowledgeBaseTypeCode, id).eq(FaultKnowledgeBase::getDelFlag,0));
+				.eq(FaultKnowledgeBase::getKnowledgeBaseTypeCode,  byId.getCode()).eq(FaultKnowledgeBase::getDelFlag,0));
 		if (CollectionUtils.isEmpty(faultKnowledgeBases)) {
 			return Result.OK("该分类已经被使用，不可删除!");
 		}

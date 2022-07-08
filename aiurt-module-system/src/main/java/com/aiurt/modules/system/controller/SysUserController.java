@@ -422,6 +422,7 @@ public class SysUserController {
      * @param userId
      * @return
      */
+    @ApiOperation(value="查询指定用户和部门关联的数据", notes="查询指定用户和部门关联的数据")
     @RequestMapping(value = "/userDepartList", method = RequestMethod.GET)
     public Result<List<DepartIdModel>> getUserDepartsList(@RequestParam(name = "userId", required = true) String userId) {
         Result<List<DepartIdModel>> result = new Result<>();
