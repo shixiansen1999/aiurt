@@ -96,7 +96,7 @@
                    AND t3.title  = #{condition.overhaulStandardName}
                </if>
         </where>
-        order by t1.start_time desc
+        order by t2.update_time desc,t2.create_time desc
     </select>
 
     <select id="selectTaskletForDevice" resultType="com.aiurt.boot.task.dto.RepairTaskDTO">
@@ -267,6 +267,7 @@
                 and status = #{status}
             </if>
         </where>
+        order by update_time desc,create_time desc
     </select>
 
     <select id="selectEnclosure" resultType="com.aiurt.boot.task.entity.RepairTaskEnclosure">
