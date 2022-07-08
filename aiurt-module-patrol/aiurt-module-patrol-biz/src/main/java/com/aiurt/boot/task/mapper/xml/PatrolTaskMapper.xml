@@ -203,4 +203,9 @@
             </foreach>
         </if>
     </select>
+    <select id="getStationCode" resultType="java.lang.String">
+    select station_code
+    from patrol_task_station
+    where task_code =#{code}
+</select>
 </mapper>

@@ -150,4 +150,11 @@ public interface PatrolTaskMapper extends BaseMapper<PatrolTask> {
      * @return
      */
     List<SubsystemDTO> getMajorSubsystemGanged(@Param("majorCode") String majorCode, @Param("subsystemList") List<SubsystemDTO> subsystem);
+
+    /**
+     * 获取stationCodeList
+     * @param code
+     * @return
+     */
+    List<String> getStationCode(String code);
 }
