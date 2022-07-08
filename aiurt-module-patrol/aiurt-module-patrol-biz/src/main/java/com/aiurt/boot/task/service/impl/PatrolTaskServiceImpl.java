@@ -75,8 +75,8 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
             patrolTaskParam.setDateHead(dateHead);
             patrolTaskParam.setDateEnd(dateEnd);
         }
-        IPage<PatrolTaskParam> taskIPage = patrolTaskMapper.getTaskList(page, patrolTaskParam);
-        taskIPage.getRecords().stream().forEach(l -> {
+        IPage<PatrolTaskParam> taskPage = patrolTaskMapper.getTaskList(page, patrolTaskParam);
+        taskPage.getRecords().stream().forEach(l -> {
             // 组织机构信息
             l.setDepartInfo(patrolTaskOrganizationMapper.selectOrgByTaskCode(l.getCode()));
             // 站点信息
@@ -98,7 +98,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
                 l.setDisposeUserName(patrolTaskMapper.getUsername(l.getDisposeId()));
             }
         });
-        return taskIPage;
+        return taskPage;
     }
 
     @Override
@@ -876,7 +876,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
             }
         });
     }
-    public void PatrolTaskManualEdit(PatrolTaskManualDTO patrolTaskManualDTO) {
+    public void patrolTaskManualEdit(PatrolTaskManualDTO patrolTaskManualDTO) {
         //1.修改站点
         //1.1增加站点
         //1.1.1

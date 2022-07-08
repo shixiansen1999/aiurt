@@ -429,8 +429,8 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
     @ApiOperation(value = "添加同行人-同行人查询", notes = "添加同行人-同行人查询")
     @PostMapping(value = "/patrolTaskAppointSelect")
     public Result<?> patrolTaskAppointSelect(@RequestBody PatrolOrgDTO orgCoed, HttpServletRequest req) {
-        List<PatrolTaskUserDTO> patrolTaskUserDTOS = patrolTaskService.getPatrolTaskAppointSelect(orgCoed);
-        return Result.OK(patrolTaskUserDTOS);
+        List<PatrolTaskUserDTO> patrolTaskUserDto = patrolTaskService.getPatrolTaskAppointSelect(orgCoed);
+        return Result.OK(patrolTaskUserDto);
     }
 
     /**
@@ -459,7 +459,7 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
     public Result<?> patrolTaskAudit(String id, String status, String remark, String backReason) {
         LambdaUpdateWrapper<PatrolTask> queryWrapper = new LambdaUpdateWrapper<>();
         //不通过传0
-        if (status.equals("0")) {
+        if ("0".equals(status)) {
             queryWrapper.set(PatrolTask::getStatus, 5).set(PatrolTask::getRemark, backReason).eq(PatrolTask::getId, id);
             patrolTaskService.update(queryWrapper);
             return Result.OK("不通过");

@@ -143,8 +143,8 @@ public class PatrolPlanController extends BaseController<PatrolPlan, IPatrolPlan
 									   @RequestParam(name = "standardCode")String standardCode,
 									   @RequestParam(name = "planId")String planId) {
 		 Page<Device> page = new Page<Device>(pageNo, pageSize);
-		 IPage<Device> deviceIPage = patrolPlanService.viewDetails(page, standardCode, planId);
-		 return Result.OK(deviceIPage);
+		 IPage<Device> devicePage = patrolPlanService.viewDetails(page, standardCode, planId);
+		 return Result.OK(devicePage);
 	 }
 	/**
 	 *   通过id删除

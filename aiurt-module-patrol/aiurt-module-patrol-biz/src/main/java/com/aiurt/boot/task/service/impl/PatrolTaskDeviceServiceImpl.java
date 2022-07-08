@@ -65,8 +65,8 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
 
     @Override
     public IPage<PatrolTaskDeviceParam> selectBillInfoForDevice(Page<PatrolTaskDeviceParam> page, PatrolTaskDeviceParam patrolTaskDeviceParam) {
-        IPage<PatrolTaskDeviceParam> patrolTaskDeviceForDeviceParamIPage = patrolTaskDeviceMapper.selectBillInfoForDevice(page, patrolTaskDeviceParam);
-        List<PatrolTaskDeviceParam> records = patrolTaskDeviceForDeviceParamIPage.getRecords();
+        IPage<PatrolTaskDeviceParam> patrolTaskDeviceForDeviceParamPage = patrolTaskDeviceMapper.selectBillInfoForDevice(page, patrolTaskDeviceParam);
+        List<PatrolTaskDeviceParam> records = patrolTaskDeviceForDeviceParamPage.getRecords();
         if (records != null && records.size() > 0) {
             for (PatrolTaskDeviceParam patrolTaskDeviceForDeviceParam : records) {
                 // 计算巡检时长
@@ -92,7 +92,7 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
             }
         }
 
-        return patrolTaskDeviceForDeviceParamIPage;
+        return patrolTaskDeviceForDeviceParamPage;
     }
 
     @Override
@@ -341,8 +341,8 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
         patrolCheckResultDTOList.stream().forEach(e ->
         {
             //获取这个单号下一个巡检项的所有附件
-            List<PatrolAccessoryDTO> patrolAccessoryDTOS = patrolAccessoryMapper.getAllAccessory(patrolTaskDevice.getId(), e.getId());
-            e.setAccessoryDTOList(patrolAccessoryDTOS);
+            List<PatrolAccessoryDTO> patrolAccessoryDto = patrolAccessoryMapper.getAllAccessory(patrolTaskDevice.getId(), e.getId());
+            e.setAccessoryDTOList(patrolAccessoryDto);
         });
         List<PatrolCheckResultDTO> resultList = buildResultTree(Optional.ofNullable(patrolCheckResultDTOList)
                 .orElseGet(Collections::emptyList));

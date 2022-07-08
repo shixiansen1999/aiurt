@@ -42,10 +42,10 @@ private PatrolTaskStandardMapper patrolTaskStandardMapper;
         //1.查询表中未删除的所有的数据
         List<PatrolStandardItems> allList = baseMapper.selectList(id);
         //2.找到所有根节点 ParentId=0
-        List<PatrolStandardItems> rooList = allList.stream().filter(r -> r.getParentId().equals("0")).collect(Collectors.toList());
+        List<PatrolStandardItems> rooList = allList.stream().filter(r -> "0".equals(r.getParentId())).collect(Collectors.toList());
         //3.找到所有非根节点
-        List<PatrolStandardItems> subLists = allList.stream().filter(r -> !r.getParentId().equals("0")).collect(Collectors.toList());
-        List<PatrolStandardItems> subList = allList.stream().filter(r -> !r.getParentId().equals("0")).collect(Collectors.toList());
+        List<PatrolStandardItems> subLists = allList.stream().filter(r -> !"0".equals(r.getParentId())).collect(Collectors.toList());
+        List<PatrolStandardItems> subList = allList.stream().filter(r -> !"0".equals(r.getParentId())).collect(Collectors.toList());
         //4.循环阶段去subList找对应的字节点
         rooList = rooList.stream().map(root -> {
             //通过根节点的id和子节点的pid判断是否相等，如果相等的话，代表是根节点的子集
