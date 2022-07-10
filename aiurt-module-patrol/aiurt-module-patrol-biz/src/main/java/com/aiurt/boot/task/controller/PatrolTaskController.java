@@ -1,6 +1,7 @@
 package com.aiurt.boot.task.controller;
 
 import cn.hutool.core.util.ObjectUtil;
+import com.aiurt.boot.constant.PatrolConstant;
 import com.aiurt.boot.task.dto.*;
 import com.aiurt.boot.task.entity.PatrolTask;
 import com.aiurt.boot.task.param.PatrolTaskDeviceParam;
@@ -364,10 +365,10 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
     @PostMapping(value = "/patrolTaskReceive")
     public Result<?> patrolTaskReceive(PatrolTaskDTO patrolTaskDTO, HttpServletRequest req) {
         patrolTaskService.getPatrolTaskReceive(patrolTaskDTO);
-        if (patrolTaskDTO.getStatus() == 1) {
+        if (PatrolConstant.TASK_CONFIRM==patrolTaskDTO.getStatus()) {
             return Result.OK("确认成功");
         }
-        if (patrolTaskDTO.getStatus() == 2) {
+        if (PatrolConstant.TASK_EXECUTE==patrolTaskDTO.getStatus()) {
             return Result.OK("执行成功");
         }
         return Result.OK("领取成功");
@@ -459,7 +460,7 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
     public Result<?> patrolTaskAudit(String id, String status, String remark, String backReason) {
         LambdaUpdateWrapper<PatrolTask> queryWrapper = new LambdaUpdateWrapper<>();
         //不通过传0
-        if ("0".equals(status)) {
+        if (PatrolConstant.AUDIT_NOPASS.equals(status)) {
             queryWrapper.set(PatrolTask::getStatus, 5).set(PatrolTask::getRemark, backReason).eq(PatrolTask::getId, id);
             patrolTaskService.update(queryWrapper);
             return Result.OK("不通过");

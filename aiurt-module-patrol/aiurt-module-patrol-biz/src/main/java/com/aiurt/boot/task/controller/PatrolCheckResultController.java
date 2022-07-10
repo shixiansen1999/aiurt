@@ -76,25 +76,6 @@ public class PatrolCheckResultController extends BaseController<PatrolCheckResul
 		 return Result.OK("保存成功");
 	 }
 	 /**
-	  * app巡检-检查项-备注-保存
-	  * @param remark
-	  * @param id
-	  * @param req
-	  * @return
-	  */
-	 @AutoLog(value = "app巡检-检查项-备注-保存")
-	 @ApiOperation(value = "app巡检-检查项-备注-保存", notes = "app巡检-检查项-备注-保存")
-	 @PostMapping(value = "/patrolTaskRemark")
-	 public Result<?> patrolTaskRemark(@RequestParam(name ="id")String id,
-									   @RequestParam(name="remark") String remark,
-									   HttpServletRequest req) {
-		 LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-		 LambdaUpdateWrapper<PatrolCheckResult> updateWrapper= new LambdaUpdateWrapper<>();
-		 updateWrapper.set(PatrolCheckResult::getRemark,remark).set(PatrolCheckResult::getUserId,sysUser.getId()).eq(PatrolCheckResult::getId,id);
-		 patrolCheckResultService.update(updateWrapper);
-		 return Result.OK("备注保存成功");
-	 }
-	 /**
 	  * app巡检-检查项-检查值-保存
 	  * @param patrolCheckDTO
 	  * @param req
@@ -109,12 +90,12 @@ public class PatrolCheckResultController extends BaseController<PatrolCheckResul
 		 LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
 		 if(ObjectUtil.isNotEmpty(patrolCheckDTO.getInputType()))
 		 {
-			 if(patrolCheckDTO.getInputType()==2)
+			 if(2==patrolCheckDTO.getInputType())
 		 	{
 				updateWrapper.set(PatrolCheckResult::getOptionValue,patrolCheckDTO.getOptionValue()).set(PatrolCheckResult::getUserId,sysUser.getId()).eq(PatrolCheckResult::getId,patrolCheckDTO.getId());
 
 			 }
-			 if(patrolCheckDTO.getInputType()==3)
+			 if(3==patrolCheckDTO.getInputType())
 			 {
 				  boolean matches = Pattern.	matches(patrolCheckDTO.getRegular(), patrolCheckDTO.getWriteValue());
 
