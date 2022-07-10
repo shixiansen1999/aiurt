@@ -261,4 +261,12 @@ public class SysUser implements Serializable {
     @Excel(name = "工资编号", width = 15)
     private String salaryCode;
 
+    @ApiModelProperty(value = "角色名")
+    @TableField(exist = false)
+    private String roleNames;
+
+    @ApiModelProperty(value = "角色编码")
+    @TableField(exist = false)
+    private String roleCodes;
+
 }

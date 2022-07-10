@@ -16,12 +16,14 @@ import com.aiurt.modules.system.service.impl.CsUserStaionServiceImpl;
 import com.aiurt.modules.system.service.impl.CsUserSubsystemServiceImpl;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.query.QueryGenerator;
 import com.aiurt.common.system.util.JwtUtil;
 import org.jeecg.common.system.vo.LoginUser;
 import com.aiurt.common.util.ImportExcelUtil;
 import com.aiurt.common.util.PasswordUtil;
 import com.aiurt.common.util.oConvertUtils;
+import org.jeecg.common.util.SpringContextUtils;
 import org.jeecg.modules.base.service.BaseCommonService;
 import com.aiurt.modules.system.entity.*;
 import com.aiurt.modules.system.model.DepartIdModel;
@@ -332,14 +334,19 @@ public class SysUserController {
     @RequestMapping(value = "/queryByUserName", method = RequestMethod.GET)
     @ApiOperation("根据用户名（账号）查询用户信息")
     public Result<SysUser> queryByUserName(@RequestParam(name = "userName", required = true) String userName) {
-        Result<SysUser> result = new Result<SysUser>();
+        Result<SysUser> result = new Result<>();
         LambdaQueryWrapper<SysUser> lambdaQueryWrapper = new LambdaQueryWrapper<>();
         lambdaQueryWrapper.eq(SysUser::getUsername, userName).last("limit 1");
         SysUser sysUser = sysUserService.getBaseMapper().selectOne(lambdaQueryWrapper);
-
+        ISysBaseAPI sysBaseAPI = SpringContextUtils.getBean(ISysBaseAPI.class);
+        LoginUser loginUser = sysBaseAPI.getUserByName(userName);
         if (sysUser == null) {
             result.error500("未找到对应实体");
         } else {
+            if (Objects.nonNull(loginUser)) {
+                sysUser.setRoleCodes(loginUser.getRoleCodes());
+                sysUser.setRoleNames(loginUser.getRoleNames());
+            }
             getUserDetail(sysUser);
             result.setResult(sysUser);
             result.setSuccess(true);
