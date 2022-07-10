@@ -132,4 +132,26 @@
          LEFT JOIN inspection_str_device_rel b on a.`code`=b.device_code
          WHERE b.inspection_str_rel_id= #{id}
     </select>
+
+    <select id="selectCodeList" resultType="com.aiurt.boot.strategy.dto.InspectionStrategyDTO">
+         SELECT
+	       t3.major_code as professionCode,
+	       t3.subsystem_code as subsystemCode,
+           t3.id as standardId,
+           t3.title as standardName
+         FROM
+	       inspection_strategy t1
+	     LEFT JOIN inspection_str_rel t2 ON t1.`code` = t2.inspection_str_code
+	     LEFT JOIN inspection_code t3 ON t2.inspection_sta_code = t3.`code`
+        <where>
+                t1.id = #{strategyId}
+            <if test="majorCode!=null">
+                and t3.major_code= #{majorCode}
+            </if>
+            <if test="subsystemCode!=null">
+                and t3.subsystem_code = #{subsystemCode}
+            </if>
+        </where>
+    GROUP BY t2.inspection_sta_code
+    </select>
 </mapper>

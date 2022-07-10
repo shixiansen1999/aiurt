@@ -1,5 +1,7 @@
 package com.aiurt.boot.strategy.service;
 
+import com.aiurt.boot.manager.dto.EquipmentOverhaulDTO;
+import com.aiurt.boot.manager.dto.MajorDTO;
 import com.aiurt.boot.strategy.dto.InspectionStrategyDTO;
 import com.aiurt.boot.strategy.entity.InspectionStrategy;
 import com.aiurt.modules.device.entity.Device;
@@ -76,4 +78,23 @@ public interface IInspectionStrategyService extends IService<InspectionStrategy>
      * @return
      */
     void modify(String id);
+
+    /**
+     * 查询专业，专业子系统的信息
+     *
+     * @param id
+     * @return
+     */
+    List<MajorDTO> selectMajorCodeList(String id);
+
+
+    /**
+     * 查询专业，专业子系统的信息
+     *
+     * @param strategyId
+     * @param majorCode
+     * @param subsystemCode
+     * @return
+     */
+    EquipmentOverhaulDTO selectEquipmentOverhaulList(String strategyId, String majorCode, String subsystemCode);
 }

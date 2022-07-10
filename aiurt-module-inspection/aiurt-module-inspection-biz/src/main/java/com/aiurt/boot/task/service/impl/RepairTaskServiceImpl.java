@@ -84,6 +84,10 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
 
     @Override
     public Page<RepairTask> selectables(Page<RepairTask> pageList, RepairTask condition) {
+        //去掉查询参数的所有空格
+        if (condition.getCode()!=null){
+            condition.setCode(condition.getCode().replaceAll(" ", ""));
+        }
         List<RepairTask> lists = repairTaskMapper.selectables(pageList, condition);
         lists.forEach(e -> {
             //组织机构

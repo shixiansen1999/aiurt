@@ -1,5 +1,7 @@
 package com.aiurt.boot.strategy.controller;
 
+import com.aiurt.boot.manager.dto.EquipmentOverhaulDTO;
+import com.aiurt.boot.manager.dto.MajorDTO;
 import com.aiurt.boot.strategy.dto.InspectionStrategyDTO;
 import com.aiurt.boot.strategy.entity.InspectionStrategy;
 import com.aiurt.boot.strategy.service.IInspectionStrategyService;
@@ -8,9 +10,7 @@ import com.aiurt.common.system.base.controller.BaseController;
 import com.aiurt.modules.device.entity.Device;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.*;
 import lombok.extern.slf4j.Slf4j;
 import org.jeecg.common.api.vo.Result;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -154,6 +154,48 @@ public class InspectionStrategyController extends BaseController<InspectionStrat
 	public Result<String> modify(@RequestParam(name = "id") String id) {
 		inspectionStrategyService.modify(id);
 		return Result.OK("修改成功！");
+	}
+
+	/**
+	 * 专业和专业子系统下拉列表
+	 *
+	 * @param strategyId
+	 * @return
+	 */
+	@AutoLog(value = "检修策略表-专业和专业子系统下拉列表")
+	@ApiOperation(value = "检修策略表-专业和专业子系统下拉列表", notes = "检修策略表-专业和专业子系统下拉列表")
+	@GetMapping(value = "/selectMajorCodeList")
+	@ApiResponses({
+			@ApiResponse(code = 200, message = "OK", response = MajorDTO.class)
+	})
+	public Result<List<MajorDTO>> selectMajorCodeList(@RequestParam(name = "strategyId", required = true) String strategyId
+	) {
+		List<MajorDTO> majorDTOList = inspectionStrategyService.selectMajorCodeList(strategyId);
+		return Result.OK(majorDTOList);
+	}
+
+
+	/**
+	 * 检修标准名称下拉列表
+	 *
+	 * @param strategyId
+	 * @param majorCode
+	 * @param subsystemCode
+	 * @return
+	 */
+	@AutoLog(value = "检修策略表-检修标准名称下拉列表")
+	@ApiOperation(value = "检修策略表-检修标准名称下拉列表", notes = "检修策略表-检修标准名称下拉列表")
+	@GetMapping(value = "/selectEquipmentOverhaulList")
+	@ApiResponses({
+			@ApiResponse(code = 200, message = "OK", response = EquipmentOverhaulDTO.class)
+	})
+	public Result<EquipmentOverhaulDTO> selectEquipmentOverhaulList(
+			@RequestParam(name = "strategyId", required = true) String strategyId,
+			@RequestParam(name = "majorCode", required = false) String majorCode,
+			@RequestParam(name = "subsystemCode", required = false) String subsystemCode
+	) {
+		EquipmentOverhaulDTO equipmentOverhaulDTO = inspectionStrategyService.selectEquipmentOverhaulList(strategyId, majorCode, subsystemCode);
+		return Result.OK(equipmentOverhaulDTO);
 	}
 	/**
 	 * 通过id查询

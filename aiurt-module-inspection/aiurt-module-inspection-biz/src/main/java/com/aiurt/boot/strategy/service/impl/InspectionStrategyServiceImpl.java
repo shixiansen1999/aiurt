@@ -1,10 +1,11 @@
 package com.aiurt.boot.strategy.service.impl;
 
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.aiurt.boot.constant.InspectionConstant;
-import com.aiurt.boot.manager.dto.InspectionCodeDTO;
+import com.aiurt.boot.manager.dto.*;
 import com.aiurt.boot.plan.entity.RepairPool;
 import com.aiurt.boot.plan.entity.RepairPoolOrgRel;
 import com.aiurt.boot.plan.mapper.RepairPoolMapper;
@@ -14,6 +15,8 @@ import com.aiurt.boot.strategy.dto.InspectionStrategyDTO;
 import com.aiurt.boot.strategy.entity.*;
 import com.aiurt.boot.strategy.mapper.*;
 import com.aiurt.boot.strategy.service.IInspectionStrategyService;
+import com.aiurt.boot.task.dto.RepairTaskDTO;
+import com.aiurt.boot.task.mapper.RepairTaskMapper;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.modules.device.entity.Device;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -26,6 +29,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.jeecg.common.api.vo.Result;
 import org.jetbrains.annotations.NotNull;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -56,6 +60,8 @@ public class InspectionStrategyServiceImpl extends ServiceImpl<InspectionStrateg
     private StrategyService strategyService;
     @Resource
     private InspectionStrategyMapper inspectionStrategyMapper;
+    @Autowired
+    private RepairTaskMapper repairTaskMapper;
 
 
     @Override
@@ -397,5 +403,49 @@ public class InspectionStrategyServiceImpl extends ServiceImpl<InspectionStrateg
         }
         ins.setStatus(ins.getStatus() ^ 1);
         baseMapper.updateById(ins);
+    }
+
+    @Override
+    public List<MajorDTO> selectMajorCodeList(String id) {
+        List<InspectionStrategyDTO> inspectionStrategyDTOList = inspectionStrategyMapper.selectCodeList(id, null, null);
+        List<InspectionStrategyDTO> collect = inspectionStrategyDTOList.stream().distinct().collect(Collectors.toList());
+        List<String> majorCodes1 = new ArrayList<>();
+        List<String> systemCode = new ArrayList<>();
+        if (CollectionUtil.isNotEmpty(collect)) {
+            collect.forEach(e -> {
+                String majorCode = e.getProfessionCode();
+                String systemCode1 = e.getSubsystemCode();
+                majorCodes1.add(majorCode);
+                systemCode.add(systemCode1);
+            });
+        }
+        //根据专业编码查询对应的专业子系统
+        List<MajorDTO> majorDTOList = repairTaskMapper.translateMajor(majorCodes1);
+        if (CollectionUtil.isNotEmpty(majorDTOList)) {
+            majorDTOList.forEach(q -> {
+                systemCode.forEach(o -> {
+                    List<SubsystemDTO> subsystemDTOList = repairTaskMapper.translateSubsystem(q.getMajorCode(), o);
+                    q.setSubsystemDTOList(subsystemDTOList);
+                });
+            });
+        }
+        return majorDTOList;
+    }
+
+    @Override
+    public EquipmentOverhaulDTO selectEquipmentOverhaulList(String strategyId, String majorCode, String subsystemCode) {
+        //根据检修策略id查询检修标准名称
+        List<InspectionStrategyDTO> inspectionStrategyDTOList = inspectionStrategyMapper.selectCodeList(strategyId, majorCode, subsystemCode);
+        List<InspectionStrategyDTO> collect = inspectionStrategyDTOList.stream().distinct().collect(Collectors.toList());
+        List<OverhaulDTO> overhaulDTOList = new ArrayList<>();
+        collect.forEach(e -> {
+            OverhaulDTO overhaulDTO = new OverhaulDTO();
+            overhaulDTO.setStandardId(e.getStandardId());
+            overhaulDTO.setOverhaulStandardName(e.getStandardName());
+            overhaulDTOList.add(overhaulDTO);
+        });
+        EquipmentOverhaulDTO equipmentOverhaulDTO = new EquipmentOverhaulDTO();
+        equipmentOverhaulDTO.setOverhaulDTOList(overhaulDTOList);
+        return equipmentOverhaulDTO;
     }
 }

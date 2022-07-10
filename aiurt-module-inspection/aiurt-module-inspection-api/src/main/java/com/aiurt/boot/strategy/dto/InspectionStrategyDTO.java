@@ -74,4 +74,14 @@ public class InspectionStrategyDTO extends InspectionStrategy {
     @ApiModelProperty(value = "标准表Codes")
     @TableField(exist = false)
     private String codes;
+
+    /**检修标准id*/
+    @ApiModelProperty(value = "检修标准id")
+    @TableField(exist = false)
+    private String standardId;
+
+    /**检修标准名称*/
+    @ApiModelProperty(value = "检修标准名称")
+    @TableField(exist = false)
+    private String standardName;
 }

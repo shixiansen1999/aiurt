@@ -4,6 +4,7 @@ package com.aiurt.boot.strategy.mapper;
 import com.aiurt.boot.manager.dto.InspectionCodeDTO;
 import com.aiurt.boot.strategy.dto.InspectionStrategyDTO;
 import com.aiurt.boot.strategy.entity.InspectionStrategy;
+import com.aiurt.boot.task.dto.RepairTaskDTO;
 import com.aiurt.modules.device.entity.Device;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -60,4 +61,13 @@ public interface InspectionStrategyMapper extends BaseMapper<InspectionStrategy>
      * @return
      */
     List<Device> viewDetails(@Param("id") String id);
+
+    /**
+     * 查询编码信息
+     * @param strategyId
+     * @param majorCode
+     * @param subsystemCode
+     * @return
+     */
+    List<InspectionStrategyDTO> selectCodeList(@Param("strategyId")String strategyId, @Param("majorCode")String majorCode, @Param("subsystemCode")String subsystemCode);
 }
