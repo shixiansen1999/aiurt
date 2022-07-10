@@ -29,10 +29,8 @@ import org.springframework.stereotype.Service;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @Description: fault_analysis_report
@@ -62,6 +60,11 @@ public class FaultAnalysisReportServiceImpl extends ServiceImpl<FaultAnalysisRep
         //根据角色决定是否查询未审核通过的故障分析
         if ( getRole()) {faultAnalysisReport.setApprovedResult(FaultConstant.PASSED);}
         List<FaultAnalysisReport> faultAnalysisReports = faultAnalysisReportMapper.readAll(page, faultAnalysisReport,allSubSystem);
+        String asc = "asc";
+        if (asc.equals(faultAnalysisReport.getOrder())) {
+            List<FaultAnalysisReport> reportList = faultAnalysisReports.stream().sorted(Comparator.comparing(FaultAnalysisReport::getCreateTime)).collect(Collectors.toList());
+            return page.setRecords(reportList);
+        }
         return page.setRecords(faultAnalysisReports);
     }
 

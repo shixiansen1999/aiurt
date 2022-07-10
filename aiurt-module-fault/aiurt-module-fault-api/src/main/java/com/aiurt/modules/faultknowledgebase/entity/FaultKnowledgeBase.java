@@ -149,16 +149,14 @@ public class FaultKnowledgeBase implements Serializable {
     @TableField(exist = false)
     private String materialName;
     /**关联故障list*/
-    @Excel(name = "关联故障list", width = 15)
     @ApiModelProperty(value = "关联故障list")
     @TableField(exist = false)
     private List<String> faultCodeList;
 
-    /**图片*/
-    @Excel(name = "图片", width = 15,type = 2,savePath = "D:\\workplace\\testPictureAndText\\img")
-    @ApiModelProperty(value = "图片")
+    /**排序方式*/
+    @ApiModelProperty(value = "排序方式")
     @TableField(exist = false)
-    private String picture;
+    private String order;
 
     /**
      *分词，故障推荐解决方案使用
@@ -166,4 +164,10 @@ public class FaultKnowledgeBase implements Serializable {
     @ApiModelProperty(value = "分词值")
     @TableField(exist = false)
     private String matchName;
+
+    /**图片*/
+    @Excel(name = "图片", width = 15,type = 2,savePath = "D:\\workplace\\testPictureAndText\\img")
+    @ApiModelProperty(value = "图片")
+    @TableField(exist = false)
+    private String picture;
 }

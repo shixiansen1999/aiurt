@@ -1,6 +1,7 @@
 package com.aiurt.modules.faultknowledgebase.service.impl;
 
 import com.aiurt.modules.faultanalysisreport.constant.FaultConstant;
+import com.aiurt.modules.faultanalysisreport.entity.FaultAnalysisReport;
 import com.aiurt.modules.faultanalysisreport.entity.dto.FaultDTO;
 import com.aiurt.modules.faultanalysisreport.mapper.FaultAnalysisReportMapper;
 import com.aiurt.modules.faultknowledgebase.entity.FaultKnowledgeBase;
@@ -20,8 +21,10 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 
 import javax.annotation.Resource;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @Description: 故障知识库
@@ -58,6 +61,13 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
             List<String> list = Arrays.asList(split);
             f.setFaultCodeList(list);
         });
+        //正序
+        String asc = "asc";
+        if (asc.equals(faultKnowledgeBase.getOrder())) {
+            List<FaultKnowledgeBase> reportList = faultKnowledgeBases.stream().sorted(Comparator.comparing(FaultKnowledgeBase::getCreateTime)).collect(Collectors.toList());
+            return page.setRecords(reportList);
+        }
+
         return page.setRecords(faultKnowledgeBases);
     }
 

@@ -196,6 +196,8 @@ public class CommonController {
      * @param request
      * @param response
      */
+    @ApiOperation("文件下载")
+    @AutoLog("文件下载")
     @GetMapping(value = "/static/**")
     public void view(HttpServletRequest request, HttpServletResponse response) {
         // ISO-8859-1 ==> UTF-8 进行编码转换

@@ -17,7 +17,6 @@
         fkb.method,
         fkb.solution,
         fkb.create_time,
-        fkb.update_time,
         fkb.major_code,
         fkb.system_code,
         fkb.status
@@ -61,7 +60,7 @@
             <if test="condition.knowledgeBaseTypeCode != null and  condition.knowledgeBaseTypeCode != ''">
                 and a.fault_phenomenon = #{condition.knowledgeBaseTypeCode}
             </if>
-    ORDER BY a.update_time DESC,a.create_time DESC
+    ORDER BY a.create_time DESC
     </select>
 
 <select id="readOne" resultType="com.aiurt.modules.faultknowledgebase.entity.FaultKnowledgeBase">
