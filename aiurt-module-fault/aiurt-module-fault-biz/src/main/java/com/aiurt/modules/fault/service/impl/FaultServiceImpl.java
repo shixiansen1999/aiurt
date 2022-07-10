@@ -934,11 +934,13 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
             faultDeviceList = deviceList;
         }
 
+        // 删除旧设备
+        LambdaQueryWrapper<FaultDevice> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(FaultDevice::getFaultCode, fault.getCode());
+        faultDeviceService.remove(wrapper);
+
+
         if (CollectionUtil.isNotEmpty(faultDeviceList)) {
-            // 删除旧设备
-            LambdaQueryWrapper<FaultDevice> wrapper = new LambdaQueryWrapper<>();
-            wrapper.eq(FaultDevice::getFaultCode, fault.getCode());
-            faultDeviceService.remove(wrapper);
 
             faultDeviceList.stream().forEach(faultDevice -> {
                 faultDevice.setDelFlag(0);

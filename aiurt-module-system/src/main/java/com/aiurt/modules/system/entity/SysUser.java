@@ -113,6 +113,7 @@ public class SysUser implements Serializable {
      * 部门id(当前选择登录部门)
      */
     @ApiModelProperty(value = " 部门id(当前选择登录部门)")
+    @Dict(dictTable ="sys_depart",dicText = "depart_name",dicCode = "id")
     private String orgId;
     /**
      * 部门code(当前选择登录部门)
@@ -208,7 +209,6 @@ public class SysUser implements Serializable {
      */
     @ApiModelProperty(value = "负责部门")
     @Excel(name="负责部门",width = 15,dictTable ="sys_depart",dicText = "depart_name",dicCode = "id")
-    @Dict(dictTable ="sys_depart",dicText = "depart_name",dicCode = "id")
     private String departIds;
 
     /**

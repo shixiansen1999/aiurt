@@ -12,7 +12,8 @@
             b.line_code,
             cl.line_name,
             cs.station_code,
-            cs.station_name
+            cs.station_name,
+            a.fault_code
         from
             fault_device a
         LEFT JOIN device b ON  a.device_code = b.code
