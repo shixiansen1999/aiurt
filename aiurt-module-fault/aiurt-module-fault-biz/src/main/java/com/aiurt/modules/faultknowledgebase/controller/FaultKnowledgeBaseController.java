@@ -154,10 +154,6 @@ public class FaultKnowledgeBaseController extends BaseController<FaultKnowledgeB
 	@ApiOperation(value="故障知识库-通过id删除", notes="故障知识库-通过id删除")
 	@DeleteMapping(value = "/delete")
 	public Result<String> delete(@RequestParam(name="id",required=true) String id) {
-		FaultKnowledgeBase byId = faultKnowledgeBaseService.getById(id);
-		if (!byId.getStatus().equals(FaultConstant.APPROVED)) {
-			return Result.OK("未审批通过,删除失败!");
-		}
 		faultKnowledgeBaseService.removeById(id);
 		return Result.OK("删除成功!");
 	}
@@ -172,13 +168,6 @@ public class FaultKnowledgeBaseController extends BaseController<FaultKnowledgeB
 	@ApiOperation(value="故障知识库-批量删除", notes="故障知识库-批量删除")
 	@DeleteMapping(value = "/deleteBatch")
 	public Result<String> deleteBatch(@RequestParam(name="ids",required=true) String ids) {
-		List<String> list = Arrays.asList(ids.split(","));
-		for (String id : list) {
-			FaultKnowledgeBase byId = faultKnowledgeBaseService.getById(id);
-			if (byId.getStatus().equals(FaultConstant.PENDING)) {
-				return Result.OK("待审批的知识库不能删除");
-			}
-		}
 		this.faultKnowledgeBaseService.removeByIds(Arrays.asList(ids.split(",")));
 		return Result.OK("批量删除成功!");
 	}

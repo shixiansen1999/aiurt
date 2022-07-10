@@ -59,6 +59,10 @@ public class FaultAnalysisReportServiceImpl extends ServiceImpl<FaultAnalysisRep
         List<String> allSubSystem = faultKnowledgeBaseTypeMapper.getAllSubSystem(sysUser.getId());
         //根据角色决定是否查询未审核通过的故障分析
         if ( getRole()) {faultAnalysisReport.setApprovedResult(FaultConstant.PASSED);}
+        //工班长只能看到审核通过的和自己创建的未审核通过的
+        if (allSubSystem.size()==1 && allSubSystem.contains(FaultConstant.Maintenance_Worker)) {
+            faultAnalysisReport.setCreateBy(sysUser.getUsername());
+        }
         List<FaultAnalysisReport> faultAnalysisReports = faultAnalysisReportMapper.readAll(page, faultAnalysisReport,allSubSystem);
         String asc = "asc";
         if (asc.equals(faultAnalysisReport.getOrder())) {
@@ -178,11 +182,7 @@ public class FaultAnalysisReportServiceImpl extends ServiceImpl<FaultAnalysisRep
         FaultAnalysisReport analysisReport = this.getById(id);
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         List<String> rolesByUsername = sysBaseAPI.getRolesByUsername(sysUser.getUsername());
-        if (analysisReport.getStatus().equals(FaultConstant.REJECTED)) {
-            if (!rolesByUsername.contains(FaultConstant.ADMIN) &&! rolesByUsername.contains(FaultConstant.Professional_Technical_Director) &&!analysisReport.getCreateBy().equals(sysUser.getId())) {
-                return Result.OK("没有权限");
-            }
-        } else {
+        if (analysisReport.getStatus().equals(FaultConstant.APPROVED)) {
             if (!rolesByUsername.contains(FaultConstant.ADMIN) && !rolesByUsername.contains(FaultConstant.Professional_Technical_Director)) {
                 return Result.OK("没有权限");
             }
@@ -199,13 +199,9 @@ public class FaultAnalysisReportServiceImpl extends ServiceImpl<FaultAnalysisRep
         List<String> rolesByUsername = sysBaseAPI.getRolesByUsername(sysUser.getUsername());
         for (String s : list) {
             FaultAnalysisReport analysisReport = this.getById(s);
-            if (analysisReport.getStatus().equals(FaultConstant.REJECTED)) {
-                if (!rolesByUsername.contains(FaultConstant.ADMIN) &&! rolesByUsername.contains(FaultConstant.Professional_Technical_Director) &&!analysisReport.getCreateBy().equals(sysUser.getId())) {
-                    return Result.OK("没有权限");
-                }
-            } else {
+            if (analysisReport.getStatus().equals(FaultConstant.APPROVED)) {
                 if (!rolesByUsername.contains(FaultConstant.ADMIN) && !rolesByUsername.contains(FaultConstant.Professional_Technical_Director)) {
-                    return Result.OK("没有权限删除故障编号为："+analysisReport.getFaultCode()+"的故障分析");
+                    return Result.OK("没有权限");
                 }
             }
         }
