@@ -54,6 +54,10 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
         if (!rolesByUsername.contains(FaultConstant.ADMIN)&&!rolesByUsername.contains(FaultConstant.Maintenance_Worker)&&!rolesByUsername.contains(FaultConstant.Professional_Technical_Director)) {
             faultKnowledgeBase.setApprovedResult(FaultConstant.PASSED);
         }
+        //工班长只能看到审核通过的和自己创建的未审核通过的
+        if (allSubSystem.size()==1 && allSubSystem.contains(FaultConstant.Maintenance_Worker)) {
+            faultKnowledgeBase.setCreateBy(sysUser.getUsername());
+        }
         List<FaultKnowledgeBase> faultKnowledgeBases = faultKnowledgeBaseMapper.readAll(page, faultKnowledgeBase,allSubSystem);
         faultKnowledgeBases.forEach(f->{
             String faultCodes = f.getFaultCodes();

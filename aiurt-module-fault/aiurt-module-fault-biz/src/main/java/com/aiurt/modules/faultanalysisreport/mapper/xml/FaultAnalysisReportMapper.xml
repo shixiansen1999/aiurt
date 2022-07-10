@@ -41,6 +41,9 @@
                 #{item}
             </foreach>
         </if>
+        <if test="condition.createBy != null and condition.createBy != ''">
+            and far.create_by = #{condition.createBy}
+        </if>
         ORDER BY far.create_time DESC
 </select>
 

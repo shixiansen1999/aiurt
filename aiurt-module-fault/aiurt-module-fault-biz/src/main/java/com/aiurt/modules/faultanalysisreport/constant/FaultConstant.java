@@ -7,9 +7,9 @@ public class FaultConstant {
     /**管理员角色*/
     public final static String ADMIN = "admin";
     /**维修工班长角色*/
-    public final static String Maintenance_Worker = "maintenanceWorker";
+    public final static String Maintenance_Worker = "002";
     /**专业技术负责人角色*/
-    public final static String Professional_Technical_Director = "ProfessionalTechnicalDirector";
+    public final static String Professional_Technical_Director = "003";
 
     /**待审批*/
     public final static Integer PENDING = 0;

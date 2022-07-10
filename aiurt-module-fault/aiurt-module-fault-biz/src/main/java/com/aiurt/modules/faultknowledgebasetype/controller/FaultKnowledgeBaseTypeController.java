@@ -122,7 +122,7 @@ public class FaultKnowledgeBaseTypeController extends BaseController<FaultKnowle
 	}
 
 	 /**
-	  *  查询是否被使用（未使用）
+	  *  查询是否被使用（未启用该接口）
 	  *
 	  * @param id
 	  * @return
