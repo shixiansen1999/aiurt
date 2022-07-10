@@ -20,6 +20,7 @@
         fkb.major_code,
         fkb.system_code,
         fkb.file_path,
+        fkb.approved_remark,
         fkb.status
         FROM
         fault_knowledge_base fkb WHERE del_flag = 0
