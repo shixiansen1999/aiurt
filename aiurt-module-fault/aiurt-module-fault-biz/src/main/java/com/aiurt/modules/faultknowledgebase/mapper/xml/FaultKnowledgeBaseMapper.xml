@@ -10,7 +10,7 @@
         (SELECT name from device_type WHERE `code` = fkb.device_type_code) as deviceTypeName,
         fkb.knowledge_base_type_code,
         fkb.material_code,
-        (SELECT material_name from device_assembly WHERE material_code = fkb.material_code) as materialName,
+        (SELECT material_name from device_assembly WHERE material_code = fkb.material_code group by material_code) as materialName,
         fkb.fault_codes,
         fkb.fault_phenomenon,
         fkb.fault_reason,
