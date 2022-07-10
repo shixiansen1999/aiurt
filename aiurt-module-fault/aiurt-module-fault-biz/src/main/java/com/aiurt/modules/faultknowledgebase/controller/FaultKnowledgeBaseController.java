@@ -238,7 +238,7 @@ public class FaultKnowledgeBaseController extends BaseController<FaultKnowledgeB
 			params.setNeedSave(true);
 			try {
 				List<FaultKnowledgeBase> list = ExcelImportUtil.importExcel(file.getInputStream(), FaultKnowledgeBase.class, params);
-				/*for (FaultKnowledgeBase faultKnowledgeBase : list) {
+				for (FaultKnowledgeBase faultKnowledgeBase : list) {
 					String picture = faultKnowledgeBase.getPicture();
 					log.info("图片1："+picture);
 					if (StringUtils.isNotEmpty(picture)) {
@@ -252,14 +252,14 @@ public class FaultKnowledgeBaseController extends BaseController<FaultKnowledgeB
 						faultKnowledgeBase.setPicture(new String(imageBase64));
 						log.info("图片2："+faultKnowledgeBase.getPicture());
 					}
-				}*/
+				}
 				long start = System.currentTimeMillis();
 				log.info("消耗时间" + (System.currentTimeMillis() - start) + "毫秒");
-				return Result.ok("文件导入成功！数据行数：" + list);
+				return Result.ok("文件导入成功！数据" + list);
 			} catch (Exception e) {
 				String msg = e.getMessage();
 				log.error(msg, e);
-				if(msg!=null && msg.indexOf("Duplicate entry")>=0){
+				if(msg!=null && msg.contains("Duplicate entry")){
 					return Result.error("文件导入失败:有重复数据！");
 				}else{
 					return Result.error("文件导入失败:" + e.getMessage());

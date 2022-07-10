@@ -12,6 +12,7 @@ import lombok.experimental.Accessors;
 import org.jeecgframework.poi.excel.annotation.Excel;
 import org.springframework.format.annotation.DateTimeFormat;
 
+import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 
 /**
@@ -39,6 +40,7 @@ public class InspectionStrategy implements Serializable {
 	/**年份*/
 	@Excel(name = "年份", width = 15)
     @ApiModelProperty(value = "年份")
+    @NotNull(message = "年份不能为空")
     private java.lang.Integer year;
 	/**周期策略*/
 	@Excel(name = "周期策略", width = 15)

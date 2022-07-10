@@ -20,6 +20,7 @@
             AND t1.CODE IN (SELECT t3.task_code FROM patrol_task_station t3 WHERE t3.task_code = t1.CODE AND
             t3.station_code =#{patrolTaskDTO.stationCode})
         </if>
+         order by t1.create_time desc
     </select>
     <select id="getPatrolTaskList" resultType="com.aiurt.boot.task.dto.PatrolTaskDTO">
         select t1.*,(select realname from sys_user where id= t1.end_user_id) as endUserName
@@ -31,6 +32,7 @@
         <if test="patrolTaskDTO.status!=null">
             and t1.status = #{patrolTaskDTO.status}
         </if>
+         order by t1.create_time desc
     </select>
     <select id="getOrganizationName" resultType="java.lang.String">
         SELECT t2.depart_name
@@ -158,6 +160,7 @@
             between DATE_FORMAT(#{patrolTaskDTO.startTime}, '%Y-%m-%d')
             and DATE_FORMAT(#{patrolTaskDTO.startEndTime}, '%Y-%m-%d')
         </if>
+        order by t1.create_time desc
     </select>
     <select id="getMajorNameByMajorCode" resultType="java.lang.String">
         SELECT
@@ -203,4 +206,9 @@
             </foreach>
         </if>
     </select>
+    <select id="getStationCode" resultType="java.lang.String">
+    select station_code
+    from patrol_task_station
+    where task_code =#{code}
+</select>
 </mapper>

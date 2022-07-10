@@ -342,6 +342,10 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
             re.setWeeks(repairPool.getWeeks());
             // 退回理由
             re.setRemark(repairPool.getRemark());
+            // 状态
+            re.setStatus(repairPool.getStatus());
+            // 作业类型
+            re.setWorkType(repairPool.getWorkType());
             // 站点
             List<StationDTO> repairPoolStationRels = repairPoolStationRelMapper.selectStationList(code);
             re.setStationName(manager.translateStation(repairPoolStationRels));
@@ -371,7 +375,7 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
             re.setIsReceipt(sysBaseAPI.translateDict(DictConstant.INSPECTION_IS_CONFIRM, String.valueOf(repairPool.getIsReceipt())));
 
             // 作业类型
-            re.setWorkType(sysBaseAPI.translateDict(DictConstant.WORK_TYPE, String.valueOf(repairPool.getWorkType())));
+            re.setWorkTypeName(sysBaseAPI.translateDict(DictConstant.WORK_TYPE, String.valueOf(repairPool.getWorkType())));
 
             // 是否委外
             re.setIsManual(sysBaseAPI.translateDict(DictConstant.INSPECTION_IS_MANUAL, String.valueOf(repairPool.getIsManual())));

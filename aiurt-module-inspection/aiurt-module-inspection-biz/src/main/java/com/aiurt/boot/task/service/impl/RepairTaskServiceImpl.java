@@ -690,6 +690,7 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
         repairTaskMapper.deleteById(examineDTO.getId());
 
         RepairPool repairPool = new RepairPool();
+        repairPool.setId(repairTask.getRepairPoolId());
         repairPool.setStatus(InspectionConstant.GIVE_BACK);
         repairPool.setRemark(examineDTO.getContent());
         repairPoolMapper.updateById(repairPool);
@@ -705,8 +706,13 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
     @Override
     public void receiveTask(String id) {
         RepairPool repairPool = repairPoolMapper.selectById(id);
-        if (ObjectUtil.isNotEmpty(repairPool)) {
+        if (ObjectUtil.isEmpty(repairPool)) {
             throw new AiurtBootException(InspectionConstant.ILLEGAL_OPERATION);
+        }
+        // 计划状态是待指派和已退回才能领取
+        if (!InspectionConstant.TO_BE_ASSIGNED.equals(repairPool.getStatus())
+                && !InspectionConstant.GIVE_BACK.equals(repairPool.getStatus())) {
+            throw new AiurtBootException("该任务已被指派或领取过");
         }
 
         // 更新检修计划状态，待执行

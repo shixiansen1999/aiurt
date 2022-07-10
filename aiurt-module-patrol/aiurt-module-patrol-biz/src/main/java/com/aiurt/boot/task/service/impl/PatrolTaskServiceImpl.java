@@ -271,7 +271,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         LambdaUpdateWrapper<PatrolTask> updateWrapper = new LambdaUpdateWrapper<>();
         //个人领取：将待指派或退回之后重新领取改为待执行，变为个人领取（传任务主键id,状态）
-        if (patrolTaskDTO.getStatus() == 0 || patrolTaskDTO.getStatus() == 3) {
+        if (PatrolConstant.TASK_INIT.equals(patrolTaskDTO.getStatus())  || PatrolConstant.TASK_RETURNED.equals(patrolTaskDTO.getStatus())) {
             updateWrapper.set(PatrolTask::getStatus, 2)
                     .set(PatrolTask::getSource, 1)
                     .eq(PatrolTask::getId, patrolTaskDTO.getId());
@@ -286,12 +286,12 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
             patrolTaskUserMapper.insert(patrolTaskUser);
         }
         //确认：将待确认改为待执行
-        if (patrolTaskDTO.getStatus() == 1) {
+        if (PatrolConstant.TASK_CONFIRM.equals(patrolTaskDTO.getStatus())) {
             updateWrapper.set(PatrolTask::getStatus, 2).eq(PatrolTask::getId, patrolTaskDTO.getId());
             update(updateWrapper);
         }
         //执行：将待执行改为执行中
-        if (patrolTaskDTO.getStatus() == 2) {
+        if (PatrolConstant.TASK_EXECUTE.equals(patrolTaskDTO.getStatus())) {
             updateWrapper.set(PatrolTask::getStatus, 4).eq(PatrolTask::getId, patrolTaskDTO.getId());
             update(updateWrapper);
         }
@@ -390,10 +390,12 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
             String majorName = patrolTaskStandard.stream().map(PatrolTaskStandardDTO::getMajorName).collect(Collectors.joining(","));
             String sysName = patrolTaskStandard.stream().map(PatrolTaskStandardDTO::getSysName).collect(Collectors.joining(","));
             List<String> orgCodes = patrolTaskMapper.getOrgCode(e.getCode());
+            List<String>stationList=patrolTaskMapper.getStationCode(e.getCode());
             List<String> organizationName = patrolTaskMapper.getOrganizationName(e.getCode());
             List<String> stationName = patrolTaskMapper.getStationName(e.getCode());
             String orgName = organizationName.stream().collect(Collectors.joining(","));
             String stName = stationName.stream().collect(Collectors.joining(","));
+            e.setStationCodeList(stationList);
             e.setSysName(sysName);
             e.setMajorName(majorName);
             e.setOrgCodeList(orgCodes);
@@ -527,7 +529,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         });
         //保存巡检任务标准表的信息
         String taskId = patrolTask.getId();
-        List<PatrolTaskStandardDTO> patrolStandardList = patrolTaskManualDTO.getPatrolStandardList();//起名不规范
+        List<PatrolTaskStandardDTO> patrolStandardList = patrolTaskManualDTO.getPatrolStandardList();
         patrolStandardList.stream().forEach(ns -> {
             PatrolTaskStandard patrolTaskStandard = new PatrolTaskStandard();
             patrolTaskStandard.setTaskId(taskId);
@@ -542,7 +544,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
             //生成单号
             //判断是否与设备相关
             PatrolStandard patrolStandard = patrolStandardMapper.selectById(ns.getId());
-            if (ObjectUtil.isNotNull(patrolStandard) && patrolStandard.getDeviceType() == 1) {
+            if (ObjectUtil.isNotNull(patrolStandard) && 1==patrolStandard.getDeviceType()) {
                 List<DeviceDTO> deviceList = ns.getDeviceList();
                 //遍历设备单号
                 deviceList.stream().forEach(dv -> {
@@ -601,9 +603,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         standardList.stream().forEach(e -> {
             PatrolStandard patrolStandard = patrolStandardMapper.selectById(e.getStandardId());
             if(patrolStandard.getDeviceType()==1)
-            {
-                e.setSpecifyDevice(1);
-            }
+            { e.setSpecifyDevice(1); }
             LambdaQueryWrapper<PatrolTaskDevice> queryWrapper = new LambdaQueryWrapper<>();
             queryWrapper.eq(PatrolTaskDevice::getTaskId, e.getTaskId()).eq(PatrolTaskDevice::getTaskStandardId, e.getTaskStandardId());
             List<PatrolTaskDevice> taskDeviceList = patrolTaskDeviceMapper.selectList(queryWrapper);
@@ -619,9 +619,8 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
                     }
                     dtoList.add(deviceDTO);
                     deviceDTOList.addAll(dtoList);
-                } else {
-                    e.setDeviceList(new ArrayList<>());
                 }
+                else { e.setDeviceList(new ArrayList<>()); }
             });
             e.setDeviceList(deviceDTOList);
         });
@@ -779,17 +778,14 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
     public void getPatrolTaskManualEdit(PatrolTaskManualDTO patrolTaskManualDTO) {
         //更新任务信息
         LambdaUpdateWrapper<PatrolTask> updateWrapper = new LambdaUpdateWrapper<>();
-        updateWrapper.set(PatrolTask::getRemark, patrolTaskManualDTO.getRemark()).set(PatrolTask::getAuditor, patrolTaskManualDTO.getAuditor())
-                .set(PatrolTask::getStartTime, patrolTaskManualDTO.getStartTime()).set(PatrolTask::getEndTime, patrolTaskManualDTO.getEndTime())
-                .set(PatrolTask::getName, patrolTaskManualDTO.getName()).set(PatrolTask::getPatrolDate, patrolTaskManualDTO.getPatrolDate())
-                .eq(PatrolTask::getId, patrolTaskManualDTO.getId());
-
+        updateWrapper.set(PatrolTask::getRemark, patrolTaskManualDTO.getRemark()).set(PatrolTask::getAuditor, patrolTaskManualDTO.getAuditor()).
+                set(PatrolTask::getStartTime, patrolTaskManualDTO.getStartTime()).set(PatrolTask::getEndTime, patrolTaskManualDTO.getEndTime())
+                .set(PatrolTask::getName, patrolTaskManualDTO.getName()).set(PatrolTask::getPatrolDate, patrolTaskManualDTO.getPatrolDate()).eq(PatrolTask::getId, patrolTaskManualDTO.getId());
         patrolTaskMapper.update(new PatrolTask(), updateWrapper);
         //先删除
-        LambdaQueryWrapper<PatrolTaskOrganization> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(PatrolTaskOrganization::getTaskCode, patrolTaskManualDTO.getCode());
-        List<PatrolTaskOrganization> list = patrolTaskOrganizationMapper.selectList(queryWrapper);
-        patrolTaskOrganizationMapper.deleteBatchIds(list);
+        List<PatrolTaskOrganization> list = patrolTaskOrganizationMapper.selectList(new LambdaQueryWrapper<PatrolTaskOrganization>().eq(PatrolTaskOrganization::getTaskCode, patrolTaskManualDTO.getCode()));
+        if(CollUtil.isNotEmpty(list))
+        {patrolTaskOrganizationMapper.deleteBatchIds(list); }
         //后保存组织信息
         String taskCode = patrolTaskManualDTO.getCode();
         List<String> orgCodeList = patrolTaskManualDTO.getOrgCodeList();
@@ -801,10 +797,9 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
             patrolTaskOrganizationMapper.insert(organization);
         });
         //先删除
-        LambdaQueryWrapper<PatrolTaskStation> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(PatrolTaskStation::getTaskCode, patrolTaskManualDTO.getCode());
-        List<PatrolTaskStation> stationList = patrolTaskStationMapper.selectList(wrapper);
-        patrolTaskStationMapper.deleteBatchIds(stationList);
+        List<PatrolTaskStation> stationList = patrolTaskStationMapper.selectList( new LambdaQueryWrapper<PatrolTaskStation>().eq(PatrolTaskStation::getTaskCode, patrolTaskManualDTO.getCode()));
+        if(CollUtil.isNotEmpty(stationList))
+        { patrolTaskStationMapper.deleteBatchIds(stationList);}
         //后保存站点信息
         List<String> stationCodeList = patrolTaskManualDTO.getStationCodeList();
         stationCodeList.stream().forEach(s -> {
@@ -815,18 +810,16 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
             patrolTaskStationMapper.insert(station);
         });
         //删除巡检任务标准表的信息
-        LambdaQueryWrapper<PatrolTaskStandard> standardLambdaQueryWrapper = new LambdaQueryWrapper<>();
-        standardLambdaQueryWrapper.eq(PatrolTaskStandard::getTaskId,patrolTaskManualDTO.getId());
-        List<PatrolTaskStandard> taskStandardList = patrolTaskStandardMapper.selectList(standardLambdaQueryWrapper);
-        patrolTaskStandardMapper.deleteBatchIds(taskStandardList);
+        List<PatrolTaskStandard> taskStandardList = patrolTaskStandardMapper.selectList(new LambdaQueryWrapper<PatrolTaskStandard>().eq(PatrolTaskStandard::getTaskId,patrolTaskManualDTO.getId()));
+        if(CollUtil.isNotEmpty(taskStandardList))
+        {patrolTaskStandardMapper.deleteBatchIds(taskStandardList);}
         //删除单号
-        LambdaQueryWrapper<PatrolTaskDevice> deviceLambdaQueryWrapper = new LambdaQueryWrapper<>();
-        deviceLambdaQueryWrapper.eq(PatrolTaskDevice::getTaskId,patrolTaskManualDTO.getId());
-        List<PatrolTaskDevice> devices = patrolTaskDeviceMapper.selectList(deviceLambdaQueryWrapper);
-        patrolTaskDeviceMapper.deleteBatchIds(devices);
+        List<PatrolTaskDevice> devices = patrolTaskDeviceMapper.selectList(new  LambdaQueryWrapper<PatrolTaskDevice>().eq(PatrolTaskDevice::getTaskId,patrolTaskManualDTO.getId()));
+        if(CollUtil.isNotEmpty(devices))
+        { patrolTaskDeviceMapper.deleteBatchIds(devices); }
         //保存巡检任务标准表的信息
         String taskId = patrolTaskManualDTO.getId();
-        List<PatrolTaskStandardDTO> patrolStandardList = patrolTaskManualDTO.getPatrolStandardList();//起名不规范
+        List<PatrolTaskStandardDTO> patrolStandardList = patrolTaskManualDTO.getPatrolStandardList();
         patrolStandardList.stream().forEach(ns -> {
             PatrolTaskStandard patrolTaskStandard = new PatrolTaskStandard();
             patrolTaskStandard.setTaskId(taskId);
@@ -841,7 +834,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
             //生成单号
             //判断是否与设备相关
             PatrolStandard patrolStandard = patrolStandardMapper.selectById(ns.getId());
-            if (ObjectUtil.isNotNull(patrolStandard) && patrolStandard.getDeviceType() == 1) {
+            if (ObjectUtil.isNotNull(patrolStandard) && 1==patrolStandard.getDeviceType()) {
                 List<DeviceDTO> deviceList = ns.getDeviceList();
                 //遍历设备单号
                 deviceList.stream().forEach(dv -> {
@@ -876,10 +869,5 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
                 });
             }
         });
-    }
-    public void patrolTaskManualEdit(PatrolTaskManualDTO patrolTaskManualDTO) {
-        //1.修改站点
-        //1.1增加站点
-        //1.1.1
     }
 }

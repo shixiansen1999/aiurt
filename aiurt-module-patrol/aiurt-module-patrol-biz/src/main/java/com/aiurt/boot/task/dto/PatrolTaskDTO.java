@@ -65,6 +65,9 @@ public class PatrolTaskDTO
     private String stationCode;
     @Excel(name = "站点名称", width = 15)
     @ApiModelProperty(value = "站点名称")
+    private List<String> stationCodeList;
+    @Excel(name = "站点名称", width = 15)
+    @ApiModelProperty(value = "站点名称")
     private String stationName;
     @Excel(name = "巡检人名称", width = 15)
     @ApiModelProperty(value = "巡检人名称")

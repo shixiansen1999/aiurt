@@ -132,30 +132,15 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
             List<String> position = patrolTaskDeviceMapper.getPosition(patrolTask.getCode());
             String stationName = position.stream().collect(Collectors.joining(","));
             e.setStationName(stationName);
-//            StringBuffer stringBuffer = new StringBuffer();
-//            Integer length = position.size();
-//            AtomicReference<Integer> size = new AtomicReference<>(length);
-//            position.stream().forEach(s -> {
-//                size.set(size.get() - 1);
-//                stringBuffer.append(s);
-//                if (ObjectUtil.isNotEmpty(e.getCustomPosition())) {
-//                    stringBuffer.append("/");
-//                    stringBuffer.append(e.getCustomPosition());
-//                }
-//                if (size.get() != 0) {
-//                    stringBuffer.append(",");
-//                }
-//            });
-//            e.setInspectionPosition(stringBuffer.toString());
             List<PatrolAccompanyDTO> accompanyDTOList = patrolAccompanyMapper.getAccompanyName(e.getPatrolNumber());
             String userName = accompanyDTOList.stream().map(PatrolAccompanyDTO::getUsername).collect(Collectors.joining(","));
             e.setUserName(userName);
             e.setAccompanyName(accompanyDTOList);
             LambdaQueryWrapper<PatrolCheckResult> queryWrapper = new LambdaQueryWrapper<>();
-            queryWrapper.eq(PatrolCheckResult::getTaskDeviceId, e.getId()).eq(PatrolCheckResult::getHierarchyType,1);
+            queryWrapper.eq(PatrolCheckResult::getTaskDeviceId, e.getId());
             List<PatrolCheckResult> list = patrolCheckResultMapper.selectList(queryWrapper);
-            List<PatrolCheckResult> rightCheck = list.stream().filter(s -> s.getCheckResult() != null && s.getCheckResult() == 1).collect(Collectors.toList());
-            List<PatrolCheckResult> aberrant = list.stream().filter(s -> s.getCheckResult() != null && s.getCheckResult() == 0).collect(Collectors.toList());
+            List<PatrolCheckResult> rightCheck = list.stream().filter(s -> s.getCheckResult() != null && 1==s.getCheckResult()).collect(Collectors.toList());
+            List<PatrolCheckResult> aberrant = list.stream().filter(s -> s.getCheckResult() != null && 0==s.getCheckResult()).collect(Collectors.toList());
             if (CollUtil.isNotEmpty(rightCheck)) {
                 e.setRightCheckNumber(rightCheck.size());
             } else {

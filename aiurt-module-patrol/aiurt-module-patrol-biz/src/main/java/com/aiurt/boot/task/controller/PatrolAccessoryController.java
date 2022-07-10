@@ -2,21 +2,20 @@ package com.aiurt.boot.task.controller;
 
 import com.aiurt.boot.task.dto.PatrolAccessorySaveDTO;
 import com.aiurt.boot.task.entity.PatrolAccessory;
-import com.aiurt.boot.task.entity.PatrolCheckResult;
 import com.aiurt.boot.task.service.IPatrolAccessoryService;
 import com.aiurt.boot.task.service.IPatrolCheckResultService;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.system.base.controller.BaseController;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
-import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
@@ -72,29 +71,20 @@ public class PatrolAccessoryController extends BaseController<PatrolAccessory, I
 		 return Result.OK("附件保存成功");
 	 }
 	 /**
-	  * app巡检-检查项-附件-删除
-	  * @param checkResultId
-	  * @param taskDeviceId
+	  * app巡检-检查项-附件-查询
+	  * @param id
 	  * @param req
 	  * @return
 	  */
-	 @AutoLog(value = "app巡检-检查项-附件-删除")
-	 @ApiOperation(value = "app巡检-检查项-附件-删除", notes = "app巡检-检查项-附件-删除")
-	 @PostMapping(value = "/patrolTaskAccessoryDelete")
-	 public Result<?> patrolTaskAccessoryDelete(@RequestParam(name = "checkResultId", required = true) String checkResultId,
-												@RequestParam(name = "taskDeviceId",  required = true) String taskDeviceId,
+	 @AutoLog(value = "app巡检-检查项-附件-查询")
+	 @ApiOperation(value = "app巡检-检查项-附件-查询", notes = "app巡检-检查项-附件-查询")
+	 @PostMapping(value = "/selectA")
+	 public Result<?> selectA(String id,
 										  HttpServletRequest req) {
-		 LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-		 LambdaUpdateWrapper<PatrolCheckResult> updateWrapper= new LambdaUpdateWrapper<>();
-		 updateWrapper.set(PatrolCheckResult::getUserId,sysUser.getId()).eq(PatrolCheckResult::getId,checkResultId);
-		 patrolCheckResultService.update(updateWrapper);
-		 LambdaQueryWrapper<PatrolAccessory> queryWrapper = new LambdaQueryWrapper<>();
-		 queryWrapper.eq(PatrolAccessory::getCheckResultId,checkResultId).eq(PatrolAccessory::getTaskDeviceId,taskDeviceId);
-		  List<PatrolAccessory> list = patrolAccessoryService.list(queryWrapper);
-		 patrolAccessoryService.removeBatchByIds(list);
-		 return Result.OK("附件删除成功");
+	 	List<PatrolAccessory> list = patrolAccessoryService.list(new LambdaUpdateWrapper<PatrolAccessory>().eq(PatrolAccessory::getTaskDeviceId, id));
+	 	//
+		 return Result.OK(list);
 	 }
-
 	/**
 	 *   添加
 	 *

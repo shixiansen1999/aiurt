@@ -146,5 +146,10 @@ public class FaultAnalysisReport implements Serializable {
     @TableField(exist = false)
     private String faultId;
 
+    /**排序方式*/
+    @ApiModelProperty(value = "排序方式")
+    @TableField(exist = false)
+    private String order;
+
 
 }
