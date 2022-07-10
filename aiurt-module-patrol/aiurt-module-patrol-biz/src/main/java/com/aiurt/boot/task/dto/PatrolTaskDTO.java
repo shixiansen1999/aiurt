@@ -99,6 +99,10 @@ public class PatrolTaskDTO
     @Excel(name = "任务提交人 ", width = 15)
     @ApiModelProperty(value = "任务提交人 ")
     private java.lang.String endUserName;
+    /*** 备注*/
+    @Excel(name = "备注", width = 15)
+    @ApiModelProperty(value = "备注")
+    private java.lang.String remark;
     /*** 任务提交的用户签名图片*/
     @Excel(name = "任务提交的用户签名图片", width = 15)
     @ApiModelProperty(value = "任务提交的用户签名图片")

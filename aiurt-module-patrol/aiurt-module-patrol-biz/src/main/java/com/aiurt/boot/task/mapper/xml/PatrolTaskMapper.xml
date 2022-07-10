@@ -137,7 +137,7 @@
         t1.*
         FROM
         patrol_task t1
-        where t1.source = 3 and t1.status in (0,3)
+        where t1.source = 3 and t1.status in (0,3) and t1.discard_status = 0
         <if test="patrolTaskDTO.stationCode!=null and patrolTaskDTO.stationCode!=''">
             and t1.code in(select t3.task_code from patrol_task_station t3 where t3.station_code =
             #{patrolTaskDTO.stationCode})

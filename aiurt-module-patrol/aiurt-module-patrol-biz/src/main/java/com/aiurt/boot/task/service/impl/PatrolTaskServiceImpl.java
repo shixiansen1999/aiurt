@@ -493,6 +493,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
 
     }
 
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public void getPatrolTaskManualListAdd(PatrolTaskManualDTO patrolTaskManualDTO) {
         //保存任务信息
@@ -500,9 +501,11 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         patrolTask.setName(patrolTaskManualDTO.getName());
         String xjCode = "XR" + System.currentTimeMillis();
         patrolTask.setCode(xjCode);
+        patrolTask.setPatrolDate(patrolTaskManualDTO.getPatrolDate());
         patrolTask.setStatus(0);
         patrolTask.setSource(3);
         patrolTask.setDelFlag(0);
+        patrolTask.setDiscardStatus(0);
         patrolTask.setRemark(patrolTaskManualDTO.getRemark());
         patrolTask.setStartTime(patrolTaskManualDTO.getStartTime());
         patrolTask.setEndTime(patrolTaskManualDTO.getEndTime());
@@ -607,7 +610,6 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
             LambdaQueryWrapper<PatrolTaskDevice> queryWrapper = new LambdaQueryWrapper<>();
             queryWrapper.eq(PatrolTaskDevice::getTaskId, e.getTaskId()).eq(PatrolTaskDevice::getTaskStandardId, e.getTaskStandardId());
             List<PatrolTaskDevice> taskDeviceList = patrolTaskDeviceMapper.selectList(queryWrapper);
-            List<DeviceDTO> deviceDTOList = new ArrayList<>();
             List<DeviceDTO> dtoList = new ArrayList<>();
             taskDeviceList.stream().forEach(td -> {
                 if (ObjectUtil.isNotNull(td.getDeviceCode())) {
@@ -618,11 +620,10 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
                         deviceDTO.setPositionCodeName(position);
                     }
                     dtoList.add(deviceDTO);
-                    deviceDTOList.addAll(dtoList);
                 }
                 else { e.setDeviceList(new ArrayList<>()); }
             });
-            e.setDeviceList(deviceDTOList);
+            e.setDeviceList(dtoList);
         });
         return pageList.setRecords(standardList);
     }
