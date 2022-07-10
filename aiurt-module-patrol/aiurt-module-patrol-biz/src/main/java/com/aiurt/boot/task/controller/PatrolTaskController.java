@@ -493,7 +493,7 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
      */
     @AutoLog(value = "PC手工下放任务列表")
     @ApiOperation(value = "PC手工下放任务列表", notes = "PC手工下放任务列表")
-    @PostMapping(value = "/patrolTaskManual")
+    @GetMapping(value = "/patrolTaskManual")
     public Result<?> patrolTaskManual(PatrolTaskDTO patrolTaskDTO,
                                       @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
                                       @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize, HttpServletRequest req) {
