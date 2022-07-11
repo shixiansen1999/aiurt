@@ -465,8 +465,8 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
             patrolTask.setStatus(PatrolConstant.TASK_COMPLETE);
             patrolTask.setAuditorRemark(remark);
         }
-        int insertTask = patrolTaskMapper.insert(patrolTask);
-        return insertTask;
+        int updateById = patrolTaskMapper.updateById(patrolTask);
+        return updateById;
     }
 
     @Override
