@@ -100,7 +100,7 @@
             BETWEEN DATE_FORMAT( #{patrolTask.dateHead}, '%Y-%m-%d' )
             AND DATE_FORMAT( #{patrolTask.dateEnd}, '%Y-%m-%d')
         </if>
-
+        order by pt.create_time desc
     </select>
     <select id="getUserName" resultType="java.lang.String">
         select realname
