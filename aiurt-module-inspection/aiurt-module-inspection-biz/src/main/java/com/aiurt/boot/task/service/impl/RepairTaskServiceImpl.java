@@ -653,9 +653,12 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
             List<RepairTaskResult> repairTaskResults = repairTaskResultMapper.selectList(resultLambdaQueryWrapper.in(RepairTaskResult::getTaskDeviceRelId, collect1));
             //任务结果主键id集合
             List<String> collect2 = repairTaskResults.stream().map(RepairTaskResult::getId).collect(Collectors.toList());
-
-            repairTaskDeviceRelMapper.deleteBatchIds(collect1);
-            repairTaskResultMapper.deleteBatchIds(collect2);
+            if (CollectionUtil.isNotEmpty(collect1)){
+                repairTaskDeviceRelMapper.deleteBatchIds(collect1);
+            }
+            if (CollectionUtil.isNotEmpty(collect2)){
+                repairTaskResultMapper.deleteBatchIds(collect2);
+            }
         }
         //根据任务id查询标准
         LambdaQueryWrapper<RepairTaskStandardRel> repairTaskStandardRelLambdaQueryWrapper = new LambdaQueryWrapper<>();
@@ -663,7 +666,10 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
         if (CollectionUtil.isNotEmpty(repairTaskStandard)) {
             //标准主键id集合
             List<String> collect4 = repairTaskStandard.stream().map(RepairTaskStandardRel::getId).collect(Collectors.toList());
-            repairTaskStandardRelMapper.deleteBatchIds(collect4);
+            if (CollectionUtil.isNotEmpty(collect4))
+              {
+                repairTaskStandardRelMapper.deleteBatchIds(collect4);
+            }
         }
 
         if (ObjectUtil.isNotNull(repairTask)) {
@@ -685,9 +691,13 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
             //组织机构主键id集合
             List<String> collect6 = repairTaskOrg.stream().map(RepairTaskOrgRel::getId).collect(Collectors.toList());
 
-            repairTaskUserMapper.deleteBatchIds(collect3);
-            repairTaskStationRelMapper.deleteBatchIds(collect5);
-            repairTaskOrgRelMapper.deleteBatchIds(collect6);
+            if (ObjectUtil.isNotNull(collect3)){
+                repairTaskUserMapper.deleteBatchIds(collect3);
+            }if (ObjectUtil.isNotNull(collect5)){
+                repairTaskStationRelMapper.deleteBatchIds(collect5);
+            }if (ObjectUtil.isNotNull(collect6)){
+                repairTaskOrgRelMapper.deleteBatchIds(collect6);
+            }
         }
 
         repairTaskMapper.deleteById(examineDTO.getId());
