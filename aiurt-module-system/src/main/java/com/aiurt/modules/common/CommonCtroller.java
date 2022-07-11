@@ -1,5 +1,7 @@
 package com.aiurt.modules.common;
 
+import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.util.ServiceLoaderUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.modules.common.dto.DeviceDTO;
 import com.aiurt.modules.common.entity.SelectTable;
@@ -15,6 +17,10 @@ import com.aiurt.modules.position.service.ICsStationPositionService;
 import com.aiurt.modules.position.service.ICsStationService;
 import com.aiurt.modules.subsystem.entity.CsSubsystem;
 import com.aiurt.modules.subsystem.service.ICsSubsystemService;
+import com.aiurt.modules.system.entity.SysDepart;
+import com.aiurt.modules.system.entity.SysUser;
+import com.aiurt.modules.system.service.ISysDepartService;
+import com.aiurt.modules.system.service.ISysUserService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
@@ -54,6 +60,12 @@ public class CommonCtroller {
 
     @Autowired
     private ICsStationPositionService stationPositionService;
+
+    @Autowired
+    private ISysUserService sysUserService;
+
+    @Autowired
+    private ISysDepartService sysDepartService;
 
 
     public Result<List<Device>> query() {
@@ -342,5 +354,72 @@ public class CommonCtroller {
         wrapper.eq(CsStationPosition::getStaionCode, stationCode);
         List<CsStationPosition> stationList = stationPositionService.getBaseMapper().selectList(wrapper);
         return Result.OK(stationList);
+    }
+
+    @GetMapping("/sysuser/queryDepartUserTree")
+    @ApiOperation("根据机构人员树")
+    public Result<List<SelectTable>> queryDepartUserTree() {
+        List<SysDepart> departList = sysDepartService.getBaseMapper().selectList(null);
+        List<SelectTable> treeList = departList.stream().map(entity -> {
+            SelectTable table = new SelectTable();
+            table.setValue(entity.getId());
+            table.setLabel(entity.getDepartName());
+            table.setIsOrg(true);
+            table.setKey(entity.getOrgCode());
+            table.setParentValue(StrUtil.isBlank(entity.getParentId())?"-9999":entity.getParentId());
+            return table;
+        }).collect(Collectors.toList());
+
+        Map<String, SelectTable> root = new LinkedHashMap<>();
+        for (SelectTable item : treeList) {
+            SelectTable parent = root.get(item.getParentValue());
+            if (Objects.isNull(parent)) {
+                parent = new SelectTable();
+                root.put(item.getParentValue(), parent);
+            }
+            SelectTable table = root.get(item.getValue());
+            if (Objects.nonNull(table)) {
+                item.setChildren(table.getChildren());
+            }
+            root.put(item.getValue(), item);
+            parent.addChildren(item);
+        }
+        List<SelectTable> resultList = new ArrayList<>();
+        List<SelectTable> collect = root.values().stream().filter(entity -> StrUtil.isBlank(entity.getParentValue())).collect(Collectors.toList());
+        for (SelectTable entity : collect) {
+            resultList.addAll(CollectionUtil.isEmpty(entity.getChildren()) ? Collections.emptyList() : entity.getChildren());
+        }
+        dealUser(resultList);
+        return Result.OK(resultList);
+    }
+
+    private void dealUser(List<SelectTable> children) {
+        if (CollectionUtil.isEmpty(children)) {
+            return;
+        }
+        for (SelectTable child : children) {
+            List<SelectTable> list = child.getChildren();
+            dealUser(list);
+            if (CollectionUtil.isEmpty(list)) {
+                list = new ArrayList<>();
+            }
+            // 部门id
+            String orgId = child.getValue();
+            LambdaQueryWrapper<SysUser> wrapper = new LambdaQueryWrapper<>();
+            wrapper.eq(SysUser::getOrgId, orgId);
+            List<SysUser> sysUserList = sysUserService.getBaseMapper().selectList(wrapper);
+            List<SelectTable> tableList = sysUserList.stream().map(sysUser -> {
+                SelectTable table = new SelectTable();
+                table.setKey(sysUser.getId());
+                table.setValue(sysUser.getUsername());
+                table.setLabel(sysUser.getRealname());
+                table.setOrgCode(child.getKey());
+                table.setOrgName(child.getLabel());
+                return table;
+            }).collect(Collectors.toList());
+            child.setUserNum((long) tableList.size());
+            list.addAll(list.size(), tableList);
+            child.setChildren(list);
+        }
     }
 }

@@ -3,6 +3,7 @@ package com.aiurt.modules.system.controller;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.RandomUtil;
+import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.constant.CacheConstant;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.system.util.JwtUtil;
@@ -395,9 +396,10 @@ public class LoginController {
 		String username = sysUser.getUsername();
 		// 获取用户部门信息
 		JSONObject obj = new JSONObject();
-		List<SysDepart> departs = sysDepartService.queryUserDeparts(sysUser.getId());
-		obj.put("departs", departs);
-		if (departs == null || departs.size() == 0) {
+		// List<SysDepart> departs = sysDepartService.queryUserDeparts(sysUser.getId());
+		obj.put("departs", sysUser.getOrgId());
+		obj.put("multi_depart", 0);
+		/*if (departs == null || departs.size() == 0) {
 			obj.put("multi_depart", 0);
 		} else if (departs.size() == 1) {
 			sysUserService.updateUserDepart(username, departs.get(0).getOrgCode());
@@ -411,7 +413,7 @@ public class LoginController {
 			}
 			// update-end--Author:wangshuai Date:20200805 for：如果用戶为选择部门，数据库为存在上一次登录部门，则取一条存进去
 			obj.put("multi_depart", 2);
-		}
+		}*/
 		// update-begin--Author:sunjianlei Date:20210802 for：获取用户租户信息
 		String tenantIds = sysUser.getRelTenantIds();
 		if (oConvertUtils.isNotEmpty(tenantIds)) {
@@ -525,21 +527,28 @@ public class LoginController {
 			return result;
 		}
 
-		String orgCode = sysUser.getOrgCode();
-		if(oConvertUtils.isEmpty(orgCode)) {
-			//如果当前用户无选择部门 查看部门关联信息
-			List<SysDepart> departs = sysDepartService.queryUserDeparts(sysUser.getId());
-			//update-begin-author:taoyan date:20220117 for: JTC-1068【app】新建用户，没有设置部门及角色，点击登录提示暂未归属部，一直在登录页面 使用手机号登录 可正常
-			if (departs == null || departs.size() == 0) {
-				/*result.error500("用户暂未归属部门,不可登录!");
-				return result;*/
-			}else{
-				orgCode = departs.get(0).getOrgCode();
-				sysUser.setOrgCode(orgCode);
-				this.sysUserService.updateUserDepart(username, orgCode);
+		String orgId = sysUser.getOrgId();
+		if (StrUtil.isNotBlank(orgId)) {
+			SysDepart sysDepart = sysDepartService.getById(orgId);
+			if (Objects.nonNull(sysDepart)) {
+				sysUser.setOrgName(sysDepart.getDepartName());
 			}
-			//update-end-author:taoyan date:20220117 for: JTC-1068【app】新建用户，没有设置部门及角色，点击登录提示暂未归属部，一直在登录页面 使用手机号登录 可正常
 		}
+//		String orgCode = sysUser.getOrgCode();
+//		if(oConvertUtils.isEmpty(orgCode)) {
+//			//如果当前用户无选择部门 查看部门关联信息
+//			List<SysDepart> departs = sysDepartService.queryUserDeparts(sysUser.getId());
+//			//update-begin-author:taoyan date:20220117 for: JTC-1068【app】新建用户，没有设置部门及角色，点击登录提示暂未归属部，一直在登录页面 使用手机号登录 可正常
+//			if (departs == null || departs.size() == 0) {
+//				/*result.error500("用户暂未归属部门,不可登录!");
+//				return result;*/
+//			}else{
+//				orgCode = departs.get(0).getOrgCode();
+//				sysUser.setOrgCode(orgCode);
+//				this.sysUserService.updateUserDepart(username, orgCode);
+//			}
+//			//update-end-author:taoyan date:20220117 for: JTC-1068【app】新建用户，没有设置部门及角色，点击登录提示暂未归属部，一直在登录页面 使用手机号登录 可正常
+//		}
 		JSONObject obj = new JSONObject();
 		//用户登录信息
 		obj.put("userInfo", sysUser);
