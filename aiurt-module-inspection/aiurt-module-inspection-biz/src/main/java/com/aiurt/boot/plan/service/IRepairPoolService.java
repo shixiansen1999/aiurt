@@ -33,7 +33,7 @@ public interface IRepairPoolService extends IService<RepairPool> {
      * @param workType  作业类型
      * @return
      */
-    List<RepairPool> queryList(Date startTime, Date endTime, Integer status, Integer workType);
+    List<RepairPool> queryList(Date startTime, Date endTime, Integer status, Integer workType,String stationCode);
 
     /**
      * 获取时间范围和周数

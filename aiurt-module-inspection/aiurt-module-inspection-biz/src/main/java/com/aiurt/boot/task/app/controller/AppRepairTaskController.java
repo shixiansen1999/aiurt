@@ -7,6 +7,7 @@ import com.aiurt.boot.task.dto.CheckListDTO;
 import com.aiurt.boot.task.dto.RepairTaskDTO;
 import com.aiurt.boot.task.dto.WriteMonadDTO;
 import com.aiurt.boot.task.entity.RepairTask;
+import com.aiurt.boot.task.entity.RepairTaskDeviceRel;
 import com.aiurt.boot.task.service.IRepairTaskService;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.system.base.controller.BaseController;
@@ -269,5 +270,24 @@ public class AppRepairTaskController extends BaseController<RepairTask, IRepairT
     public Result<String> confirmTask(@RequestBody ExamineDTO examineDTO) {
         repairTaskService.confirmTask(examineDTO);
         return Result.OK("已确认");
+    }
+
+    /**
+     * 扫码设备查询检修单
+     *
+     * @param taskId     检修任务id
+     * @param deviceCode 设备编码
+     * @return
+     */
+    @AutoLog(value = "扫码设备查询检修单")
+    @ApiOperation(value = "扫码设备查询检修单", notes = "扫码设备查询检修单")
+    @GetMapping(value = "/scanCodeDevice")
+    public Result<List<RepairTaskDeviceRel>> scanCodeDevice(@RequestParam @ApiParam(name = "taskId", required = true, value = "检修任务id") String taskId,
+                                                            @RequestParam @ApiParam(name = "deviceCode", required = true, value = "设备编码") String deviceCode) {
+        List<RepairTaskDeviceRel> repairTaskDeviceRels = repairTaskService.scanCodeDevice(taskId, deviceCode);
+        if (repairTaskDeviceRels == null) {
+            return Result.error("小主，未匹配到检修单");
+        }
+        return Result.OK(repairTaskDeviceRels);
     }
 }

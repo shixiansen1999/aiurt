@@ -25,6 +25,7 @@ import com.aiurt.boot.task.dto.WriteMonadDTO;
 import com.aiurt.boot.task.entity.*;
 import com.aiurt.boot.task.mapper.*;
 import com.aiurt.boot.task.service.IRepairTaskService;
+import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.util.DateUtils;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -653,10 +654,10 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
             List<RepairTaskResult> repairTaskResults = repairTaskResultMapper.selectList(resultLambdaQueryWrapper.in(RepairTaskResult::getTaskDeviceRelId, collect1));
             //任务结果主键id集合
             List<String> collect2 = repairTaskResults.stream().map(RepairTaskResult::getId).collect(Collectors.toList());
-            if (CollectionUtil.isNotEmpty(collect1)){
+            if (CollectionUtil.isNotEmpty(collect1)) {
                 repairTaskDeviceRelMapper.deleteBatchIds(collect1);
             }
-            if (CollectionUtil.isNotEmpty(collect2)){
+            if (CollectionUtil.isNotEmpty(collect2)) {
                 repairTaskResultMapper.deleteBatchIds(collect2);
             }
         }
@@ -666,8 +667,7 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
         if (CollectionUtil.isNotEmpty(repairTaskStandard)) {
             //标准主键id集合
             List<String> collect4 = repairTaskStandard.stream().map(RepairTaskStandardRel::getId).collect(Collectors.toList());
-            if (CollectionUtil.isNotEmpty(collect4))
-              {
+            if (CollectionUtil.isNotEmpty(collect4)) {
                 repairTaskStandardRelMapper.deleteBatchIds(collect4);
             }
         }
@@ -691,11 +691,13 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
             //组织机构主键id集合
             List<String> collect6 = repairTaskOrg.stream().map(RepairTaskOrgRel::getId).collect(Collectors.toList());
 
-            if (ObjectUtil.isNotNull(collect3)){
+            if (ObjectUtil.isNotNull(collect3)) {
                 repairTaskUserMapper.deleteBatchIds(collect3);
-            }if (ObjectUtil.isNotNull(collect5)){
+            }
+            if (ObjectUtil.isNotNull(collect5)) {
                 repairTaskStationRelMapper.deleteBatchIds(collect5);
-            }if (ObjectUtil.isNotNull(collect6)){
+            }
+            if (ObjectUtil.isNotNull(collect6)) {
                 repairTaskOrgRelMapper.deleteBatchIds(collect6);
             }
         }
@@ -779,7 +781,7 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
         List<RepairPoolOrgRel> repairPoolOrgRels = orgRelMapper.selectList(
                 new LambdaQueryWrapper<RepairPoolOrgRel>()
                         .eq(RepairPoolOrgRel::getRepairPoolCode, repairPool.getCode())
-                        .eq(RepairPoolOrgRel::getDelFlag, InspectionConstant.NO_DEL));
+                        .eq(RepairPoolOrgRel::getDelFlag, CommonConstant.DEL_FLAG_0));
         if (CollUtil.isNotEmpty(repairPoolOrgRels)) {
             for (RepairPoolOrgRel repairPoolOrgRel : repairPoolOrgRels) {
                 RepairTaskOrgRel repairTaskOrgRel = new RepairTaskOrgRel();
@@ -805,7 +807,7 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                 new LambdaQueryWrapper<RepairTaskResult>()
                         .eq(RepairTaskResult::getId, monadDTO.getItemId())
                         .eq(RepairTaskResult::getTaskDeviceRelId, monadDTO.getOrdId())
-                        .eq(RepairTaskResult::getDelFlag, InspectionConstant.NO_DEL));
+                        .eq(RepairTaskResult::getDelFlag, CommonConstant.DEL_FLAG_0));
 
         if (ObjectUtil.isEmpty(result)) {
             throw new AiurtBootException(InspectionConstant.ILLEGAL_OPERATION);
@@ -831,7 +833,7 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
             repairTaskEnclosureMapper.delete(
                     new LambdaQueryWrapper<RepairTaskEnclosure>()
                             .eq(RepairTaskEnclosure::getRepairTaskResultId, result.getId())
-                            .eq(RepairTaskEnclosure::getDelFlag, InspectionConstant.NO_DEL));
+                            .eq(RepairTaskEnclosure::getDelFlag, CommonConstant.DEL_FLAG_0));
 
             List<String> appendixList = StrUtil.split(monadDTO.getAppendix(), ',');
             appendixList.forEach(ap -> {
@@ -900,7 +902,7 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
         RepairTaskDeviceRel repairTaskDeviceRel = repairTaskDeviceRelMapper.selectOne(
                 new LambdaQueryWrapper<RepairTaskDeviceRel>()
                         .eq(RepairTaskDeviceRel::getCode, code)
-                        .eq(RepairTaskDeviceRel::getDelFlag, InspectionConstant.NO_DEL));
+                        .eq(RepairTaskDeviceRel::getDelFlag, CommonConstant.DEL_FLAG_0));
 
         if (ObjectUtil.isEmpty(repairTaskDeviceRel)) {
             throw new AiurtBootException(InspectionConstant.ILLEGAL_OPERATION);
@@ -964,7 +966,7 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
         List<RepairTaskResult> repairTaskResults = repairTaskResultMapper.selectList(
                 new LambdaQueryWrapper<RepairTaskResult>()
                         .eq(RepairTaskResult::getTaskDeviceRelId, repairTaskDeviceRel.getId())
-                        .eq(RepairTaskResult::getDelFlag, InspectionConstant.NO_DEL));
+                        .eq(RepairTaskResult::getDelFlag, CommonConstant.DEL_FLAG_0));
         if (CollUtil.isEmpty(repairTaskResults)) {
             throw new AiurtBootException(InspectionConstant.ILLEGAL_OPERATION);
         }
@@ -1025,7 +1027,7 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
         List<RepairTaskOrgRel> repairTaskOrgRels = repairTaskOrgRelMapper.selectList(
                 new LambdaQueryWrapper<RepairTaskOrgRel>()
                         .eq(RepairTaskOrgRel::getRepairTaskCode, repairTask.getCode())
-                        .eq(RepairTaskOrgRel::getDelFlag, InspectionConstant.NO_DEL));
+                        .eq(RepairTaskOrgRel::getDelFlag, CommonConstant.DEL_FLAG_0));
         if (CollUtil.isNotEmpty(repairTaskOrgRels)) {
             String orgStrs = StrUtil.join(",", repairTaskOrgRels.stream().map(RepairTaskOrgRel::getOrgCode).collect(Collectors.toList()));
             orgDTOS = manager.queryUserByOrdCode(orgStrs);
@@ -1065,5 +1067,25 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
         } else {
             throw new AiurtBootException(InspectionConstant.ILLEGAL_OPERATION);
         }
+    }
+
+    /**
+     * 扫码设备查询检修单
+     *
+     * @param taskId     检修任务id
+     * @param deviceCode 设备编码
+     * @return
+     */
+    @Override
+    public List<RepairTaskDeviceRel> scanCodeDevice(String taskId, String deviceCode) {
+        if (StrUtil.isEmpty(taskId) || StrUtil.isEmpty(deviceCode)) {
+            throw new AiurtBootException(InspectionConstant.ILLEGAL_OPERATION);
+        }
+        List<RepairTaskDeviceRel> repairTaskDeviceRels = repairTaskDeviceRelMapper.selectList(
+                new LambdaQueryWrapper<RepairTaskDeviceRel>()
+                        .eq(RepairTaskDeviceRel::getRepairTaskId, taskId)
+                        .eq(RepairTaskDeviceRel::getDeviceCode, deviceCode)
+                        .eq(RepairTaskDeviceRel::getDelFlag, CommonConstant.DEL_FLAG_0));
+        return repairTaskDeviceRels;
     }
 }
