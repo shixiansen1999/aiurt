@@ -625,9 +625,9 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
     private void setId(ExamineDTO examineDTO, RepairTask repairTask1, LoginUser loginUser, LoginUser userById) {
         repairTask1.setId(examineDTO.getId());
         repairTask1.setErrorContent(examineDTO.getContent());
-        repairTask1.setConfirmTime(new Date());
-        repairTask1.setConfirmUserId(loginUser.getId());
-        repairTask1.setConfirmUserName(userById.getRealname());
+        repairTask1.setReceiptTime(new Date());
+        repairTask1.setReceiptUserId(loginUser.getId());
+        repairTask1.setReceiptUserName(userById.getRealname());
         repairTask1.setStatus(InspectionConstant.COMPLETED);
         repairTaskMapper.updateById(repairTask1);
     }
