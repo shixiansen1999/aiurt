@@ -810,6 +810,8 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
         if (ObjectUtil.isEmpty(result)) {
             throw new AiurtBootException(InspectionConstant.ILLEGAL_OPERATION);
         }
+        // 什么情况才能填写检修单
+        this.check(result.getTaskDeviceRelId());
 
         // 什么情况下需要更新该项检修人
         if (isNeedUpdateStaffId(monadDTO, result)) {
@@ -838,6 +840,34 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                 repairTaskEnclosure.setRepairTaskResultId(result.getId());
                 repairTaskEnclosureMapper.insert(repairTaskEnclosure);
             });
+        }
+    }
+
+    /**
+     * 什么情况下才可以填写检修单
+     *
+     * @param taskDeviceRelId
+     */
+    private void check(String taskDeviceRelId) {
+        if (StrUtil.isNotEmpty(taskDeviceRelId)) {
+
+            RepairTaskDeviceRel repairTaskDeviceRel = repairTaskDeviceRelMapper.selectById(taskDeviceRelId);
+            if (ObjectUtil.isNotEmpty(repairTaskDeviceRel)) {
+                RepairTask repairTask = repairTaskMapper.selectById(repairTaskDeviceRel.getRepairTaskId());
+                if (ObjectUtil.isNotEmpty(repairTask)) {
+
+                    // 现在的时间大于任务的开始时间才可以进行填单
+                    if (DateUtil.compare(new Date(), repairTask.getStartTime()) < 0) {
+                        throw new AiurtBootException("小主莫急，未到检修任务开始时间");
+                    }
+
+                    // 只有任务状态是执行中或已驳回才可以改
+                    if (!InspectionConstant.IN_EXECUTION.equals(repairTask.getStatus())
+                            && !InspectionConstant.REJECTED.equals(repairTask.getStatus())) {
+                        throw new AiurtBootException("小主，只有任务被驳回或者执行中才可以填写工单哦");
+                    }
+                }
+            }
         }
     }
 
@@ -876,6 +906,9 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
             throw new AiurtBootException(InspectionConstant.ILLEGAL_OPERATION);
         }
 
+        // 校验什么情况下可以填写同行人
+        check(repairTaskDeviceRel.getId());
+
         repairTaskPeerRelMapper.delete(
                 new LambdaQueryWrapper<RepairTaskPeerRel>()
                         .eq(RepairTaskPeerRel::getRepairTaskDeviceCode, repairTaskDeviceRel.getId()));
@@ -906,6 +939,9 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
         if (ObjectUtil.isEmpty(repairTaskDeviceRel)) {
             throw new AiurtBootException(InspectionConstant.ILLEGAL_OPERATION);
         }
+        // 校验什么情况下可以上传检修位置
+        check(id);
+
         repairTaskDeviceRel.setSpecificLocation(specificLocation);
         repairTaskDeviceRelMapper.updateById(repairTaskDeviceRel);
     }

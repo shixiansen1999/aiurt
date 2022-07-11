@@ -166,7 +166,7 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
         queryWrapper.ge("start_time", startTime);
         queryWrapper.le("start_time", endTime);
         queryWrapper.eq("is_manual", InspectionConstant.NO_IS_MANUAL);
-        queryWrapper.eq("del_flag", 0);
+        queryWrapper.eq("del_flag", CommonConstant.DEL_FLAG_0);
         queryWrapper.orderByAsc("type");
         if (status != null) {
             queryWrapper.eq("status", status);
