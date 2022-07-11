@@ -94,6 +94,34 @@
             ) AS abc
         WHERE
             1 = 1
+        <if test="inspectionStrategyDTO.name !=null ">
+            AND name LIKE CONCAT ('%', #{inspectionStrategyDTO.name}, '%')
+        </if>
+        <if test="inspectionStrategyDTO.professionCode !=null ">
+            AND professionCode  LIKE CONCAT ('%', #{inspectionStrategyDTO.professionCode}, '%')
+        </if>
+        <if test="inspectionStrategyDTO.subsystemCode !=null ">
+            AND subsystemCode  LIKE CONCAT ('%', #{inspectionStrategyDTO.subsystemCode}, '%')
+        </if>
+        <if test="inspectionStrategyDTO.code !=null ">
+            AND code LIKE CONCAT ('%', #{inspectionStrategyDTO.code}, '%')
+        </if>
+        <if test="inspectionStrategyDTO.status !=null ">
+            AND status = #{inspectionStrategyDTO.status}
+        </if>
+        <if test="inspectionStrategyDTO.year !=null ">
+            AND year = #{inspectionStrategyDTO.year}
+        </if>
+        <if test="inspectionStrategyDTO.tactics !=null ">
+            AND tactics = #{inspectionStrategyDTO.tactics}
+        </if>
+        <if test="inspectionStrategyDTO.mechanismCode !=null ">
+            AND mechanismCode LIKE CONCAT ('%', #{inspectionStrategyDTO.mechanismCode}, '%')
+        </if>
+        <if test="inspectionStrategyDTO.siteCode!=null ">
+            AND siteCode  LIKE CONCAT ('%', #{inspectionStrategyDTO.siteCode}, '%')
+        </if>
+        ORDER BY create_time DESC
     </select>
     <select id="getId" resultType="com.aiurt.boot.strategy.dto.InspectionStrategyDTO">
         SELECT insy.*,( SELECT GROUP_CONCAT(e.depart_name) FROM inspection_str_org_rel isor

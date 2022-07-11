@@ -72,6 +72,21 @@ public class PatrolStandardController extends BaseController<PatrolStandard, IPa
 		return Result.OK("添加成功！");
 	}
 	 /**
+	  *   修改关联设备字段
+	  * @param id
+	  * @return
+	  */
+	 @AutoLog(value = "巡检标准表-修改关联设备字段")
+	 @ApiOperation(value="巡检标准表-修改关联设备字段", notes="巡检标准表-修改关联设备字段")
+	 @PostMapping(value = "/deviceAssociation")
+	 public Result<String> deviceAssociation( @RequestParam(name="id") String id) {
+	 	PatrolStandard patrolStandard =new PatrolStandard();
+		 patrolStandard.setId(id);
+		 patrolStandard.setSpecifyDevice(1);
+		 patrolStandardService.updateById(patrolStandard);
+		 return Result.OK("修改成功！");
+	 }
+	 /**
 	  *  生成巡检Code
 	  * @param
 	  * @return

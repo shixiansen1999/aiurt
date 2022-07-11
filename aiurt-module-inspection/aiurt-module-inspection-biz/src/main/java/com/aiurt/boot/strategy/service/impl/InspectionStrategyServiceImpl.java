@@ -585,7 +585,7 @@ public class InspectionStrategyServiceImpl extends ServiceImpl<InspectionStrateg
         InspectionStrRel inspectionstrRel = inspectionStrRelMapper.selectOne(Wrappers.<InspectionStrRel>lambdaQuery()
                 .eq(InspectionStrRel::getInspectionStaCode, code));
         List<Device> list = baseMapper.viewDetails(inspectionstrRel.getId());
-        return null;
+        return list;
     }
 
     /**
