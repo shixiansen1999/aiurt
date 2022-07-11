@@ -1,5 +1,6 @@
 package com.aiurt.boot.task.mapper;
 
+import com.aiurt.boot.standard.dto.StationDTO;
 import com.aiurt.boot.task.dto.PatrolTaskDTO;
 import com.aiurt.boot.task.dto.PatrolTaskUserContentDTO;
 import com.aiurt.boot.task.dto.SubsystemDTO;
@@ -50,7 +51,7 @@ public interface PatrolTaskMapper extends BaseMapper<PatrolTask> {
      * @param code
      * @return author hlq
      */
-    List<String> getStationName(String code);
+    List<StationDTO> getStationName(String code);
 
     /**
      * app-获取巡检人名称
