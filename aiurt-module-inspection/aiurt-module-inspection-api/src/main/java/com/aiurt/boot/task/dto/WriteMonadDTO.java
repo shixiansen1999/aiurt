@@ -5,6 +5,7 @@ import lombok.Data;
 
 import javax.validation.constraints.Max;
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 
 /**
  * @author wgp
@@ -23,6 +24,7 @@ public class WriteMonadDTO {
     private String itemId;
 
     @ApiModelProperty(value = "检修结果 1.正常 2.异常")
+    @NotNull(message = "检修结果不能为空")
     private java.lang.Integer status;
 
     @ApiModelProperty(value = "检测值")

@@ -2,6 +2,7 @@ package com.aiurt.boot.strategy.service;
 
 import com.aiurt.boot.manager.dto.EquipmentOverhaulDTO;
 import com.aiurt.boot.manager.dto.MajorDTO;
+import com.aiurt.boot.plan.dto.RepairDeviceDTO;
 import com.aiurt.boot.strategy.dto.InspectionStrategyDTO;
 import com.aiurt.boot.strategy.entity.InspectionStrategy;
 import com.aiurt.modules.device.entity.Device;
@@ -78,6 +79,15 @@ public interface IInspectionStrategyService extends IService<InspectionStrategy>
      * @return
      */
     void modify(String id);
+
+    /**
+     * 根据检修策略code和检修标准id查询检修标准对应的设备
+     * @param page
+     * @param inspectionStrCode
+     * @param inspectionStaCode
+     * @return
+     */
+    IPage<RepairDeviceDTO> queryDeviceByCodeAndId(Page<RepairDeviceDTO> page, String inspectionStrCode, String inspectionStaCode);
 
     /**
      * 查询专业，专业子系统的信息

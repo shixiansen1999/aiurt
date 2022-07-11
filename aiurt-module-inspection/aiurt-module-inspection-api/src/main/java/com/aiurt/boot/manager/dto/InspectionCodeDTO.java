@@ -1,9 +1,13 @@
 package com.aiurt.boot.manager.dto;
 
 import com.aiurt.boot.standard.entity.InspectionCode;
+import com.aiurt.modules.device.entity.Device;
+import com.baomidou.mybatisplus.annotation.TableField;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import org.jeecgframework.poi.excel.annotation.Excel;
+
+import java.util.List;
 
 /**
  * @projectName: aiurt-platform
@@ -30,4 +34,8 @@ public class InspectionCodeDTO extends InspectionCode {
     @Excel(name = "判断是否可以删除0为可删,其他都为不可删",width = 15)
     @ApiModelProperty(value = "判断是否可以删除0为可删,其他都为不可删")
     private Integer number;
+
+    @ApiModelProperty(value = "选择的设备集合")
+    @TableField(exist = false)
+    List<Device> devices;
 }

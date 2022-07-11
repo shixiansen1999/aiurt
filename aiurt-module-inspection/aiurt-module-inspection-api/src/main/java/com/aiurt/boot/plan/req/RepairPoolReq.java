@@ -41,12 +41,10 @@ public class RepairPoolReq {
     @NotNull(message = "请选择是否需要验收")
     private Integer isReceipt;
 
-
     @ApiModelProperty(value = "是否委外：0否1是", required = true)
     @Dict(dicCode = "inspection_is_manual")
     @NotNull(message = "请选择是否委外")
     private Integer isOutsource;
-
 
     @ApiModelProperty(value = "作业类型", required = true)
     @Dict(dicCode = "work_type")

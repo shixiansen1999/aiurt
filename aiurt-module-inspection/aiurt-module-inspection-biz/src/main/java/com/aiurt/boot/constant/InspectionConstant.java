@@ -187,4 +187,14 @@ public class InspectionConstant {
      * 检修单状态 1 已提交
      */
     public static final Integer SUBMITTED = 1;
+
+    /**
+     * 是否生成年计划 0 未生成
+     */
+    public static final Integer NO_GENERATE = 0;
+
+    /**
+     * 是否生成年计划 1 已生成
+     */
+    public static final Integer GENERATED = 1;
 }

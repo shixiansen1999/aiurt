@@ -2,8 +2,8 @@ package com.aiurt.boot.strategy.dto;
 
 
 import com.aiurt.boot.manager.dto.InspectionCodeDTO;
+import com.aiurt.boot.plan.dto.StationDTO;
 import com.aiurt.boot.strategy.entity.InspectionStrategy;
-import com.aiurt.modules.device.entity.Device;
 import com.baomidou.mybatisplus.annotation.TableField;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -22,9 +22,7 @@ import java.util.List;
  */
 @Data
 public class InspectionStrategyDTO extends InspectionStrategy {
-    @ApiModelProperty(value = "选择的设备集合")
-    @TableField(exist = false)
-    List<Device> devices;
+
     @ApiModelProperty(value = "选择的标准表codes")
     @TableField(exist = false)
     List<String> inspectionCodes;
@@ -65,7 +63,7 @@ public class InspectionStrategyDTO extends InspectionStrategy {
     @Excel(name = "站点名称", width = 15)
     @ApiModelProperty(value = "多选站点集合")
     @TableField(exist = false)
-    List<String> siteCodes;
+    private List<StationDTO> siteCodes;
     @Excel(name = "组织名称", width = 15)
     @ApiModelProperty(value = "多选组织集合")
     @TableField(exist = false)
@@ -84,4 +82,9 @@ public class InspectionStrategyDTO extends InspectionStrategy {
     @ApiModelProperty(value = "检修标准名称")
     @TableField(exist = false)
     private String standardName;
+
+    /**周期策略*/
+    @Excel(name = "周期策略", width = 15)
+    @ApiModelProperty(value = "周期策略")
+    private java.lang.String tacticsName;
 }

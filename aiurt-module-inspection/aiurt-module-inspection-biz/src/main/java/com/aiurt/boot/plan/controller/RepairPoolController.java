@@ -50,7 +50,10 @@ public class RepairPoolController extends BaseController<RepairPool, IRepairPool
                                               @RequestParam(required = false) @ApiParam(value = "状态", name = "status") Integer status,
                                               @RequestParam(required = false) @ApiParam(value = "作业类型", name = "workType") Integer workType) {
         // todo 数据权限过滤
+        long start = System.currentTimeMillis();
         List<RepairPool> repairPoolList = repairPoolService.queryList(startTime, endTime,status,workType);
+        long end = System.currentTimeMillis();
+        log.info("耗时{}" ,end - start);
         return Result.OK(repairPoolList);
     }
 

@@ -25,6 +25,8 @@ import com.aiurt.boot.strategy.entity.InspectionStrategy;
 import com.aiurt.boot.strategy.mapper.InspectionStrategyMapper;
 import com.aiurt.boot.task.entity.*;
 import com.aiurt.boot.task.mapper.*;
+import com.aiurt.common.api.dto.message.MessageDTO;
+import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.util.DateUtils;
 import com.aiurt.common.util.UpdateHelperUtils;
@@ -448,7 +450,7 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
      * @param assignDTO
      * @return
      */
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public Result assigned(AssignDTO assignDTO) {
         // 校验
@@ -545,18 +547,22 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
             // 生成检修标准关联、检修设备清单、检修结果信息
             this.generate(repairPool, repairTask.getId(), repairPool.getCode());
 
-            // TODO 发送消息给对用的维修人
-            this.sendMessage();
+            // 发送消息给对用的检修人
+            this.sendMessage(userIds);
         }
         return Result.ok();
     }
 
     /**
-     * 消息发送
+     * 检修消息发送
+     *
+     * @param userIds
      */
-    private void sendMessage() {
-
-
+    private void sendMessage(List<String> userIds) {
+        if (CollUtil.isNotEmpty(userIds)) {
+            String toUser = StrUtil.join(",", userIds);
+            sysBaseAPI.sendSysAnnouncement(new MessageDTO(manager.checkLogin().getId(), toUser, "消息通知", "您有一条新的检修任务!", CommonConstant.MSG_CATEGORY_1));
+        }
     }
 
     /**

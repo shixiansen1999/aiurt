@@ -27,7 +27,6 @@ import com.aiurt.boot.task.mapper.*;
 import com.aiurt.boot.task.service.IRepairTaskService;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.util.DateUtils;
-import com.aiurt.common.util.UpdateHelperUtils;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -85,7 +84,7 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
     @Override
     public Page<RepairTask> selectables(Page<RepairTask> pageList, RepairTask condition) {
         //去掉查询参数的所有空格
-        if (condition.getCode()!=null){
+        if (condition.getCode() != null) {
             condition.setCode(condition.getCode().replaceAll(" ", ""));
         }
         List<RepairTask> lists = repairTaskMapper.selectables(pageList, condition);
@@ -802,15 +801,15 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
             throw new AiurtBootException(InspectionConstant.ILLEGAL_OPERATION);
         }
 
-        // 只有当检修结果或者检修值发生改变后者检修人是空时才改变检修人
-        if (!result.getStatus().equals(monadDTO.getStatus())
-                || !result.getInspeciontValue().equals(monadDTO.getInspeciontValue())
-                || !result.getNote().equals(monadDTO.getNote())
-                || StrUtil.isEmpty(result.getStaffId())) {
+        // 什么情况下需要更新该项检修人
+        if (isNeedUpdateStaffId(monadDTO, result)) {
             result.setStaffId(manager.checkLogin().getId());
         }
 
-        UpdateHelperUtils.copyNullProperties(monadDTO, result);
+        result.setStatus(monadDTO.getStatus());
+        result.setNote(monadDTO.getNote());
+        result.setInspeciontValue(monadDTO.getInspeciontValue());
+        result.setUnNote(monadDTO.getUnNote());
 
         // 更新检修结果
         repairTaskResultMapper.updateById(result);
@@ -830,6 +829,23 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                 repairTaskEnclosureMapper.insert(repairTaskEnclosure);
             });
         }
+    }
+
+    /**
+     * 什么情况下需要更新该项检修人
+     * 1、该项检修人为空
+     * 2、检修结果发生改变
+     * 3、检修值发生变化
+     *
+     * @param monadDTO
+     * @param result
+     * @return
+     */
+    public boolean isNeedUpdateStaffId(WriteMonadDTO monadDTO, RepairTaskResult result) {
+        return StrUtil.isEmpty(result.getStaffId())
+                || !monadDTO.getStatus().equals(result.getStatus())
+                || (monadDTO.getInspeciontValue() != null && !result.getInspeciontValue().equals(monadDTO.getInspeciontValue()))
+                || (StrUtil.isNotEmpty(result.getNote()) && !result.getNote().equals(monadDTO.getNote()));
     }
 
     /**
@@ -990,7 +1006,16 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
             LoginUser loginUser = manager.checkLogin();
             repairTask.setConfirmUserId(loginUser.getId());
             repairTask.setConfirmUserName(loginUser.getRealname());
+            repairTask.setStatus(InspectionConstant.PENDING);
             repairTaskMapper.updateById(repairTask);
+
+            // 修改对应检修计划状态
+            RepairPool repairPool = repairPoolMapper.selectById(repairTask.getRepairPoolId());
+            if (ObjectUtil.isNotEmpty(repairPool)) {
+                repairPool.setStatus(InspectionConstant.PENDING);
+                repairPoolMapper.updateById(repairPool);
+            }
+
         } else {
             throw new AiurtBootException(InspectionConstant.ILLEGAL_OPERATION);
         }

@@ -2,4 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.aiurt.boot.strategy.mapper.InspectionStrStaRelMapper">
 
+    <select id="selectStationList" resultType="com.aiurt.boot.plan.dto.StationDTO">
+          select station_code,position_code,line_code from inspection_str_sta_rel where inspection_str_code = #{planCode}
+    </select>
 </mapper>

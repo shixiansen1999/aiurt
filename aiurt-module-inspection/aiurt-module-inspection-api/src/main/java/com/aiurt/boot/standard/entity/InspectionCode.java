@@ -1,7 +1,9 @@
 package com.aiurt.boot.standard.entity;
 
 import com.aiurt.common.aspect.annotation.Dict;
+import com.aiurt.modules.basic.entity.DictEntity;
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -26,7 +28,7 @@ import java.io.Serializable;
 @Accessors(chain = true)
 @EqualsAndHashCode(callSuper = false)
 @ApiModel(value="inspection_code对象", description="inspection_code")
-public class InspectionCode  implements Serializable {
+public class InspectionCode extends DictEntity implements Serializable {
     private static final long serialVersionUID = 1L;
 
 	/**主键ID*/
@@ -90,4 +92,13 @@ public class InspectionCode  implements Serializable {
     @DateTimeFormat(pattern="yyyy-MM-dd")
     @ApiModelProperty(value = "修改时间")
     private java.util.Date updateTime;
+
+    /**
+     * 是否指定设备
+     */
+    @ApiModelProperty(value = "是否指定设备")
+    @TableField(exist = false)
+    private java.lang.String specifyDevice;
+
+
 }

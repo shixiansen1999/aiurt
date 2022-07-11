@@ -3,14 +3,11 @@
 <mapper namespace="com.aiurt.boot.standard.mapper.InspectionCodeMapper">
 
     <select id="pageList" resultType="com.aiurt.boot.manager.dto.InspectionCodeDTO">
-        SELECT a.* ,b.`name` as deviceTypeName,c.major_name as majorName,d.system_name as subsystemName,
-        (SELECT COUNT(e.inspection_sta_code)
-        from inspection_str_rel  e WHERE  e.inspection_sta_code = a.`code`  )as number
+        SELECT a.* ,b.`name` as deviceTypeName,c.major_name as majorName,d.system_name as subsystemName
         FROM inspection_code a
-                 LEFT JOIN device_type b on a.device_type_code =b.`code` and b.del_flag =0
-                 LEFT JOIN cs_major c on a.major_code =c.major_code and c.del_flag =0
-                 LEFT JOIN cs_subsystem d on a.subsystem_code = d.system_code and d.del_flag =0
-                 left join  inspection_str_rel e on e.inspection_sta_code = a.`code` and e.del_flag =0
+        LEFT JOIN device_type b on a.device_type_code =b.`code` and b.del_flag =0
+        LEFT JOIN cs_major c on a.major_code =c.major_code and c.del_flag =0
+        LEFT JOIN cs_subsystem d on a.subsystem_code = d.system_code and d.del_flag =0
         WHERE a.del_flag =0
         <if test="inspectionCodeDTO.title !=null ">
             AND a.title LIKE CONCAT ('%', #{inspectionCodeDTO.title}, '%')
@@ -33,7 +30,6 @@
         <if test="inspectionCodeDTO.deviceTypeCode !=null ">
             AND a.device_type_code = #{inspectionCodeDTO.deviceTypeCode}
         </if>
-
     </select>
     <select id="number" resultType="java.lang.Integer">
         SELECT COUNT(inspection_str_rel.inspection_sta_code)as number

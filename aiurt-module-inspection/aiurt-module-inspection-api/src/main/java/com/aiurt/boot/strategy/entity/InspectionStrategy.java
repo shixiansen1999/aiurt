@@ -1,5 +1,6 @@
 package com.aiurt.boot.strategy.entity;
 
+import com.aiurt.modules.basic.entity.DictEntity;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
@@ -26,7 +27,7 @@ import java.io.Serializable;
 @Accessors(chain = true)
 @EqualsAndHashCode(callSuper = false)
 @ApiModel(value="inspection_strategy对象", description="inspection_strategy")
-public class InspectionStrategy implements Serializable {
+public class InspectionStrategy extends DictEntity implements Serializable {
     private static final long serialVersionUID = 1L;
 
 	/**生成年检计划状态,*/
@@ -97,4 +98,5 @@ public class InspectionStrategy implements Serializable {
     @DateTimeFormat(pattern="yyyy-MM-dd")
     @ApiModelProperty(value = "更新时间")
     private java.util.Date updateTime;
+
 }

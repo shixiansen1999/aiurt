@@ -224,7 +224,7 @@ public class AppRepairTaskController extends BaseController<RepairTask, IRepairT
     @ApiOperation(value = "填写检修单上的检修位置", notes = "填写检修单上的检修位置")
     @PostMapping(value = "/writeLocation")
     public Result<?> writeLocation(@RequestParam @ApiParam(value = "检修单id", name = "id", required = true) String id,
-                                   @RequestParam @ApiParam(value = "检修位置", name = "id", required = true) String specificLocation) {
+                                   @RequestParam @ApiParam(value = "检修位置", name = "specificLocation", required = true) String specificLocation) {
         repairTaskService.writeLocation(id, specificLocation);
         return Result.OK("填写成功");
     }
