@@ -724,11 +724,9 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
         if (ObjectUtil.isEmpty(repairPool)) {
             throw new AiurtBootException(InspectionConstant.ILLEGAL_OPERATION);
         }
-        // 计划状态是待指派和已退回才能领取
-        if (!InspectionConstant.TO_BE_ASSIGNED.equals(repairPool.getStatus())
-                && !InspectionConstant.GIVE_BACK.equals(repairPool.getStatus())) {
-            throw new AiurtBootException("该任务已被指派或领取过");
-        }
+
+        // 校验领取资格
+        checkReceiveTask(repairPool);
 
         // 更新检修计划状态，待执行
         repairPool.setStatus(InspectionConstant.PENDING);
@@ -794,6 +792,35 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
         // 生成检修标准关联、检修设备清单、检修结果信息
         repairPoolService.generate(repairPool, repairTask.getId(), repairPool.getCode());
 
+    }
+
+    /**
+     * 校验领取资格
+     * @param repairPool
+     */
+    private void checkReceiveTask(RepairPool repairPool) {
+        // 计划状态是待指派和已退回才能领取
+        if (!InspectionConstant.TO_BE_ASSIGNED.equals(repairPool.getStatus())
+                && !InspectionConstant.GIVE_BACK.equals(repairPool.getStatus())) {
+            throw new AiurtBootException("小主，该检修任务已被指派或已被领取");
+        }
+
+        // 当前登录人所属部门是在检修任务的指派部门范围内才可以领取
+        List<RepairPoolOrgRel> repairPoolOrgRels = orgRelMapper.selectList(
+                new LambdaQueryWrapper<RepairPoolOrgRel>()
+                        .eq(RepairPoolOrgRel::getRepairPoolCode, repairPool.getCode())
+                        .eq(RepairPoolOrgRel::getDelFlag, CommonConstant.DEL_FLAG_0));
+        if(CollUtil.isNotEmpty(repairPoolOrgRels)){
+            List<String> orgList = repairPoolOrgRels.stream().map(RepairPoolOrgRel::getOrgCode).collect(Collectors.toList());
+            if(!orgList.contains(manager.checkLogin().getOrgCode())){
+                throw new AiurtBootException("小主，该检修任务不在您的领取范围之内哦");
+            }
+        }
+
+        // 现在的时间大于任务的开始时间才可以进行领取
+        if (repairPool.getStartTime() != null && DateUtil.compare(new Date(), repairPool.getStartTime()) < 0) {
+            throw new AiurtBootException("小主莫急，未到检修任务开始时间，暂时无法领取");
+        }
     }
 
     /**

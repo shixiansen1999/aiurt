@@ -52,7 +52,7 @@ public class RepairTaskController extends BaseController<RepairTask, IRepairTask
      * @param req
      * @return
      */
-    //@AutoLog(value = "repair_task-分页列表查询")
+    @AutoLog(value = "repair_task-分页列表查询")
     @ApiOperation(value = "repair_task-分页列表查询", notes = "repair_task-分页列表查询")
     @GetMapping(value = "/list")
     public Result<IPage<RepairTask>> queryPageList(RepairTask repairTask,

@@ -896,7 +896,7 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
 
         // 检修任务单号
         if (StrUtil.isNotEmpty(manualTaskReq.getCode())) {
-            queryWrapper.like("code", manualTaskReq.getCode());
+            queryWrapper.like("code",StrUtil.cleanBlank(manualTaskReq.getCode()));
         }
 
         // 检修类型
