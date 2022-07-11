@@ -396,8 +396,8 @@ public class LoginController {
 		String username = sysUser.getUsername();
 		// 获取用户部门信息
 		JSONObject obj = new JSONObject();
-		// List<SysDepart> departs = sysDepartService.queryUserDeparts(sysUser.getId());
-		obj.put("departs", sysUser.getOrgId());
+		List<SysDepart> departs = sysDepartService.queryUserDeparts(sysUser.getId());
+		obj.put("departs", departs);
 		obj.put("multi_depart", 0);
 		/*if (departs == null || departs.size() == 0) {
 			obj.put("multi_depart", 0);
