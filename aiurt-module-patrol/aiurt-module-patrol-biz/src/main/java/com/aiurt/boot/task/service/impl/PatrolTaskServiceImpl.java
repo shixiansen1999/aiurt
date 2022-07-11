@@ -660,7 +660,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         // 获取未作废、未处置、已漏检、未重新生成的任务
         wrapper.lambda().eq(PatrolTask::getId, taskId)
                 .eq(PatrolTask::getStatus, PatrolConstant.TASK_MISSED)
-                .eq(PatrolTask::getDiscardStatus, PatrolConstant.TASK_UNDISPOSE)
+                .eq(PatrolTask::getDisposeStatus, PatrolConstant.TASK_UNDISPOSE)
                 .eq(PatrolTask::getDiscardStatus, PatrolConstant.TASK_UNDISCARD)
                 .eq(PatrolTask::getRebuild, PatrolConstant.TASK_UNREBUILD);
         PatrolTask patrolTask = patrolTaskMapper.selectOne(wrapper);
