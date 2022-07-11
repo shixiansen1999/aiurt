@@ -222,7 +222,7 @@ public class FaultKnowledgeBaseController extends BaseController<FaultKnowledgeB
 			// 获取上传文件对象
 			MultipartFile file = entity.getValue();
 			ImportParams params = new ImportParams();
-			params.setTitleRows(1);
+			params.setTitleRows(2);
 			params.setHeadRows(1);
 			params.setNeedSave(true);
 			try {
@@ -297,11 +297,14 @@ public class FaultKnowledgeBaseController extends BaseController<FaultKnowledgeB
 	 @ApiResponses({
 			 @ApiResponse(code = 200, message = "OK", response = DeviceTypeDTO.class)
 	 })
-	 public Result<List<DeviceTypeDTO>> getDeviceType(@RequestParam(name="majorCode") String majorCode,
-													  @RequestParam(name="systemCode") String systemCode,
+	 public Result<List<DeviceTypeDTO>> getDeviceType(@RequestParam(name="majorCode",required = false) String majorCode,
+													  @RequestParam(name="systemCode",required = false) String systemCode,
 													  @RequestParam(name="name",required = false) String name) {
-	 	List<DeviceTypeDTO> deviceTypes = faultKnowledgeBaseMapper.getDeviceType(majorCode,systemCode,name);
-	 	return Result.OK(deviceTypes);
+		 if (StringUtils.isNotEmpty(majorCode) && StringUtils.isNotEmpty(systemCode)) {
+			 List<DeviceTypeDTO> deviceTypes = faultKnowledgeBaseMapper.getDeviceType(majorCode,systemCode,name);
+			 return Result.OK(deviceTypes);
+		 }
+		 return Result.OK("请选择专业和系统");
 	 }
 
 	 /**

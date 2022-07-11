@@ -16,7 +16,7 @@ import java.util.List;
 public class SubSystemDTO {
     /**id*/
     @ApiModelProperty(value = "id")
-    private Integer id;
+    private String id;
     /**名称*/
     @Excel(name = "名称", width = 15)
     @ApiModelProperty(value = "名称")

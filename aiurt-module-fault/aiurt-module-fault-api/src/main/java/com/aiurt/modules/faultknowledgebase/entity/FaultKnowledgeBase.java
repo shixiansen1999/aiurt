@@ -148,6 +148,13 @@ public class FaultKnowledgeBase implements Serializable {
     @ApiModelProperty(value = "组件名称")
     @TableField(exist = false)
     private String materialName;
+
+    /**图片*/
+    @Excel(name = "图片", width = 15,type = 2,savePath = "upload/FaultKnowledgeBase/")
+    @ApiModelProperty(value = "图片")
+    @TableField(exist = false)
+    private String picture;
+
     /**关联故障list*/
     @ApiModelProperty(value = "关联故障list")
     @TableField(exist = false)
@@ -165,9 +172,4 @@ public class FaultKnowledgeBase implements Serializable {
     @TableField(exist = false)
     private String matchName;
 
-    /**图片*/
-    @Excel(name = "图片", width = 15,type = 2,savePath = "D:\\workplace\\testPictureAndText\\img")
-    @ApiModelProperty(value = "图片")
-    @TableField(exist = false)
-    private String picture;
 }
