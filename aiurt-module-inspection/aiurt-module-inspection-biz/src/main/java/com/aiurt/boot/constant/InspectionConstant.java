@@ -176,12 +176,7 @@ public class InspectionConstant {
     /**
      * 非法操作
      */
-    public static final String ILLEGAL_OPERATION = "非法操作";
-
-    /**
-     * 未删除
-     */
-    public static final Integer NO_DEL = 0;
+    public static final String ILLEGAL_OPERATION = "告诉你个秘密，您在非法操作";
 
     /**
      * 检修单状态 1 已提交
