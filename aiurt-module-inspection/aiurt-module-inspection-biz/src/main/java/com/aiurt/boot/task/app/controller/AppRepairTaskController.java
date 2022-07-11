@@ -8,6 +8,8 @@ import com.aiurt.boot.task.dto.RepairTaskDTO;
 import com.aiurt.boot.task.dto.WriteMonadDTO;
 import com.aiurt.boot.task.entity.RepairTask;
 import com.aiurt.boot.task.entity.RepairTaskDeviceRel;
+import com.aiurt.boot.task.service.IRepairTaskDeviceRelService;
+import com.aiurt.boot.task.entity.RepairTaskDeviceRel;
 import com.aiurt.boot.task.service.IRepairTaskService;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.system.base.controller.BaseController;
@@ -18,6 +20,7 @@ import org.jeecg.common.api.vo.Result;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -34,6 +37,9 @@ public class AppRepairTaskController extends BaseController<RepairTask, IRepairT
 
     @Autowired
     private IRepairTaskService repairTaskService;
+
+    @Autowired
+	private IRepairTaskDeviceRelService repairTaskDeviceRelService;
 
 
     /**
@@ -290,4 +296,27 @@ public class AppRepairTaskController extends BaseController<RepairTask, IRepairT
         }
         return Result.OK(repairTaskDeviceRels);
     }
+
+
+
+
+    /**
+     * 检修
+     *
+     * @param repairTaskDeviceRel
+     * @return
+     */
+    @AutoLog(value = "app检修任务-检修")
+    @ApiOperation(value = "app检修任务-检修", notes = "app检修任务-检修")
+	@PostMapping(value = "/overhaul")
+	public Result<String> edit(@RequestBody RepairTaskDeviceRel repairTaskDeviceRel) {
+        RepairTaskDeviceRel repairTaskDeviceRel1 = repairTaskDeviceRelService.getById(repairTaskDeviceRel.getId());
+        if (repairTaskDeviceRel1.getStartTime()!=null){
+            return Result.OK("检修已开始!");
+        }else {
+            repairTaskDeviceRel.setStartTime(new Date());
+            repairTaskDeviceRelService.updateById(repairTaskDeviceRel);
+            return Result.OK("成功!");
+        }
+	}
 }
