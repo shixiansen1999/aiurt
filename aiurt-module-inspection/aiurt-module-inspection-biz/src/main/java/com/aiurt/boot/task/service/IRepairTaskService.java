@@ -8,6 +8,7 @@ import com.aiurt.boot.task.dto.CheckListDTO;
 import com.aiurt.boot.task.dto.RepairTaskDTO;
 import com.aiurt.boot.task.dto.WriteMonadDTO;
 import com.aiurt.boot.task.entity.RepairTask;
+import com.aiurt.boot.task.entity.RepairTaskDeviceRel;
 import com.aiurt.boot.task.entity.RepairTaskEnclosure;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
@@ -172,4 +173,12 @@ public interface IRepairTaskService extends IService<RepairTask> {
      * @param examineDTO
      */
     void confirmTask(ExamineDTO examineDTO);
+
+    /**
+     * 扫码设备查询检修单
+     * @param taskId 检修任务id
+     * @param deviceCode 设备编码
+     * @return
+     */
+    List<RepairTaskDeviceRel> scanCodeDevice(String taskId, String deviceCode);
 }

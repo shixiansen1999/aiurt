@@ -191,6 +191,12 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
     public Result<?> taskAudit(@RequestParam("taskCode") String code, @RequestParam("auditStatus") Integer auditStatus,
                                String auditReason, String remark) {
         patrolTaskService.taskAudit(code, auditStatus, auditReason, remark);
+        if (PatrolConstant.AUDIT_NOPASS.equals(auditStatus)) {
+            return Result.OK("不通过");
+        }
+        if (PatrolConstant.AUDIT_PASS.equals(auditStatus)) {
+            return Result.OK("通过");
+        }
         return Result.OK();
     }
 

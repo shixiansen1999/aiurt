@@ -7,6 +7,9 @@ import com.aiurt.boot.task.dto.CheckListDTO;
 import com.aiurt.boot.task.dto.RepairTaskDTO;
 import com.aiurt.boot.task.dto.WriteMonadDTO;
 import com.aiurt.boot.task.entity.RepairTask;
+import com.aiurt.boot.task.entity.RepairTaskDeviceRel;
+import com.aiurt.boot.task.service.IRepairTaskDeviceRelService;
+import com.aiurt.boot.task.entity.RepairTaskDeviceRel;
 import com.aiurt.boot.task.service.IRepairTaskService;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.system.base.controller.BaseController;
@@ -17,6 +20,7 @@ import org.jeecg.common.api.vo.Result;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -33,6 +37,9 @@ public class AppRepairTaskController extends BaseController<RepairTask, IRepairT
 
     @Autowired
     private IRepairTaskService repairTaskService;
+
+    @Autowired
+	private IRepairTaskDeviceRelService repairTaskDeviceRelService;
 
 
     /**
@@ -270,4 +277,46 @@ public class AppRepairTaskController extends BaseController<RepairTask, IRepairT
         repairTaskService.confirmTask(examineDTO);
         return Result.OK("已确认");
     }
+
+    /**
+     * 扫码设备查询检修单
+     *
+     * @param taskId     检修任务id
+     * @param deviceCode 设备编码
+     * @return
+     */
+    @AutoLog(value = "扫码设备查询检修单")
+    @ApiOperation(value = "扫码设备查询检修单", notes = "扫码设备查询检修单")
+    @GetMapping(value = "/scanCodeDevice")
+    public Result<List<RepairTaskDeviceRel>> scanCodeDevice(@RequestParam @ApiParam(name = "taskId", required = true, value = "检修任务id") String taskId,
+                                                            @RequestParam @ApiParam(name = "deviceCode", required = true, value = "设备编码") String deviceCode) {
+        List<RepairTaskDeviceRel> repairTaskDeviceRels = repairTaskService.scanCodeDevice(taskId, deviceCode);
+        if (repairTaskDeviceRels == null) {
+            return Result.error("小主，未匹配到检修单");
+        }
+        return Result.OK(repairTaskDeviceRels);
+    }
+
+
+
+
+    /**
+     * 检修
+     *
+     * @param repairTaskDeviceRel
+     * @return
+     */
+    @AutoLog(value = "app检修任务-检修")
+    @ApiOperation(value = "app检修任务-检修", notes = "app检修任务-检修")
+	@PostMapping(value = "/overhaul")
+	public Result<String> edit(@RequestBody RepairTaskDeviceRel repairTaskDeviceRel) {
+        RepairTaskDeviceRel repairTaskDeviceRel1 = repairTaskDeviceRelService.getById(repairTaskDeviceRel.getId());
+        if (repairTaskDeviceRel1.getStartTime()!=null){
+            return Result.OK("检修已开始!");
+        }else {
+            repairTaskDeviceRel.setStartTime(new Date());
+            repairTaskDeviceRelService.updateById(repairTaskDeviceRel);
+            return Result.OK("成功!");
+        }
+	}
 }

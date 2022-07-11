@@ -29,10 +29,6 @@ public class StationDTO {
     @Excel(name = "站点", width = 15)
     @ApiModelProperty(value = "站点")
     private String stationName;
-    /**站点编号*/
-    @Excel(name = "站点编号", width = 15)
-    @ApiModelProperty(value = "站点编号")
-    private String stationCode;
     /**序号*/
     @Excel(name = "序号", width = 15)
     @ApiModelProperty(value = "序号")
@@ -41,6 +37,14 @@ public class StationDTO {
     @Excel(name = "线路编码（线路表内）", width = 15)
     @ApiModelProperty(value = "线路编码（线路表内）")
     private String lineCode;
+    /**站点编号*/
+    @Excel(name = "站点编号", width = 15)
+    @ApiModelProperty(value = "站点编号")
+    private String stationCode;
+    /**位置编号*/
+    @Excel(name = "位置编号", width = 15)
+    @ApiModelProperty(value = "位置编号")
+    private String positionCode;
     /**线路名称*/
     @Excel(name = "线路名称", width = 15)
     @ApiModelProperty(value = "线路名称")

@@ -17,6 +17,7 @@ import com.aiurt.boot.strategy.mapper.InspectionStrDeviceRelMapper;
 import com.aiurt.boot.strategy.mapper.InspectionStrOrgRelMapper;
 import com.aiurt.boot.strategy.mapper.InspectionStrRelMapper;
 import com.aiurt.boot.strategy.mapper.InspectionStrStaRelMapper;
+import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.util.DateUtils;
 import com.aiurt.common.util.UpdateHelperUtils;
@@ -430,7 +431,7 @@ public class StrategyService {
         List<InspectionStrRel> inspectionStrRels = inspectionStrRelMapper.selectList(
                 new LambdaQueryWrapper<InspectionStrRel>()
                         .eq(InspectionStrRel::getInspectionStaCode, staCode)
-                        .eq(InspectionStrRel::getInspectionStrCode, insCode).eq(InspectionStrRel::getDelFlag, 0));
+                        .eq(InspectionStrRel::getInspectionStrCode, insCode).eq(InspectionStrRel::getDelFlag, CommonConstant.DEL_FLAG_0));
 
         if (CollUtil.isNotEmpty(inspectionStrRels)) {
             List<InspectionStrDeviceRel> inspectionStrDeviceRels = inspectionStrDeviceRelMapper.selectList(
@@ -536,7 +537,7 @@ public class StrategyService {
         List<InspectionStrStaRel> stationRels = inspectionStrStaRelMapper.selectList(
                 new LambdaQueryWrapper<InspectionStrStaRel>()
                         .eq(InspectionStrStaRel::getInspectionStrCode, code)
-                        .eq(InspectionStrStaRel::getDelFlag, 0));
+                        .eq(InspectionStrStaRel::getDelFlag, CommonConstant.DEL_FLAG_0));
         if (CollUtil.isEmpty(stationRels)) {
             throw new AiurtBootException("请选择组织结构");
         }
@@ -554,7 +555,7 @@ public class StrategyService {
         List<InspectionStrOrgRel> inspectionStrOrgRels = inspectionStrOrgRelMapper.selectList(
                 new LambdaQueryWrapper<InspectionStrOrgRel>()
                         .eq(InspectionStrOrgRel::getInspectionStrCode, code)
-                        .eq(InspectionStrOrgRel::getDelFlag, 0));
+                        .eq(InspectionStrOrgRel::getDelFlag, CommonConstant.DEL_FLAG_0));
         if (CollUtil.isEmpty(inspectionStrOrgRels)) {
             throw new AiurtBootException("请选择组织结构");
         }
@@ -599,7 +600,7 @@ public class StrategyService {
                     new LambdaQueryWrapper<RepairPoolCodeContent>()
                             .eq(RepairPoolCodeContent::getRepairPoolCodeId, staId)
                             .ne(RepairPoolCodeContent::getPid, 0)
-                            .eq(RepairPoolCodeContent::getDelFlag, 0));
+                            .eq(RepairPoolCodeContent::getDelFlag, CommonConstant.DEL_FLAG_0));
             if (CollUtil.isNotEmpty(repairPoolCodeContents)) {
                 for (RepairPoolCodeContent repairPoolCodeContent : repairPoolCodeContents) {
                     repairPoolCodeContent.setPid(map.get(repairPoolCodeContent.getPid()));
@@ -620,7 +621,7 @@ public class StrategyService {
         List<InspectionCodeContent> inspectionCodeContentList = inspectionCodeContentMapper.selectList(
                 new LambdaQueryWrapper<InspectionCodeContent>()
                         .eq(InspectionCodeContent::getInspectionCodeId, id)
-                        .eq(InspectionCodeContent::getDelFlag, 0));
+                        .eq(InspectionCodeContent::getDelFlag, CommonConstant.DEL_FLAG_0));
         if (CollUtil.isEmpty(inspectionCodeContentList)) {
             throw new AiurtBootException("检修标准项目为空");
         }

@@ -48,10 +48,11 @@ public class RepairPoolController extends BaseController<RepairPool, IRepairPool
     public Result<List<RepairPool>> queryList(@RequestParam @ApiParam(required = true, value = "开始时间", name = "startTime") @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") Date startTime,
                                               @RequestParam @ApiParam(required = true, value = "结束时间", name = "endTime") @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") Date endTime,
                                               @RequestParam(required = false) @ApiParam(value = "状态", name = "status") Integer status,
-                                              @RequestParam(required = false) @ApiParam(value = "作业类型", name = "workType") Integer workType) {
+                                              @RequestParam(required = false) @ApiParam(value = "作业类型", name = "workType") Integer workType,
+                                              @RequestParam(required = false) @ApiParam(value = "站点编码", name = "stationCode") String stationCode) {
         // todo 数据权限过滤
         long start = System.currentTimeMillis();
-        List<RepairPool> repairPoolList = repairPoolService.queryList(startTime, endTime,status,workType);
+        List<RepairPool> repairPoolList = repairPoolService.queryList(startTime, endTime,status,workType,stationCode);
         long end = System.currentTimeMillis();
         log.info("耗时{}" ,end - start);
         return Result.OK(repairPoolList);

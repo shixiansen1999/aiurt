@@ -195,7 +195,7 @@ public class InspectionStrategyServiceImpl extends ServiceImpl<InspectionStrateg
             InspectionCode inspectionCode = inspectionCodeMapper.selectOne(
                     new LambdaQueryWrapper<InspectionCode>()
                             .eq(InspectionCode::getCode, re.getCode())
-                            .eq(InspectionCode::getDelFlag, InspectionConstant.NO_DEL));
+                            .eq(InspectionCode::getDelFlag, CommonConstant.DEL_FLAG_0));
             if (ObjectUtil.isEmpty(inspectionCode)) {
                 throw new AiurtBootException(InspectionConstant.ILLEGAL_OPERATION);
             }
@@ -353,7 +353,7 @@ public class InspectionStrategyServiceImpl extends ServiceImpl<InspectionStrateg
         List<InspectionStrStaRel> repairPoolStationRels = inspectionStrStaRelMapper.selectList(
                 new LambdaQueryWrapper<InspectionStrStaRel>()
                         .eq(InspectionStrStaRel::getInspectionStrCode, ins.getCode())
-                        .eq(InspectionStrStaRel::getDelFlag, InspectionConstant.NO_DEL));
+                        .eq(InspectionStrStaRel::getDelFlag, CommonConstant.DEL_FLAG_0));
         if (CollUtil.isNotEmpty(repairPoolStationRels)) {
             List<StationDTO> arr = new ArrayList<>();
             repairPoolStationRels.forEach(re -> {
@@ -381,7 +381,7 @@ public class InspectionStrategyServiceImpl extends ServiceImpl<InspectionStrateg
         List<InspectionStrRel> inspectionStrRels = inspectionStrRelMapper.selectList(
                 new LambdaQueryWrapper<InspectionStrRel>()
                         .eq(InspectionStrRel::getInspectionStrCode, ins.getCode())
-                        .eq(InspectionStrRel::getDelFlag, InspectionConstant.NO_DEL));
+                        .eq(InspectionStrRel::getDelFlag, CommonConstant.DEL_FLAG_0));
 
         // 检修标准信息
         if (CollUtil.isNotEmpty(inspectionStrRels)) {
@@ -390,7 +390,7 @@ public class InspectionStrategyServiceImpl extends ServiceImpl<InspectionStrateg
                 InspectionCode inspectionCode = inspectionCodeMapper.selectOne(
                         new LambdaQueryWrapper<InspectionCode>()
                                 .eq(InspectionCode::getCode, sl.getInspectionStaCode())
-                                .eq(InspectionCode::getDelFlag, InspectionConstant.NO_DEL));
+                                .eq(InspectionCode::getDelFlag, CommonConstant.DEL_FLAG_0));
 
                 if (ObjectUtil.isNotEmpty(inspectionCode)) {
                     // 判断是否指定了设备
@@ -435,13 +435,13 @@ public class InspectionStrategyServiceImpl extends ServiceImpl<InspectionStrateg
         List<InspectionStrRel> inspectionStrRels = inspectionStrRelMapper.selectList(
                 new LambdaQueryWrapper<InspectionStrRel>()
                         .eq(InspectionStrRel::getInspectionStrCode, ins.getCode())
-                        .eq(InspectionStrRel::getDelFlag, 0));
+                        .eq(InspectionStrRel::getDelFlag, CommonConstant.DEL_FLAG_0));
         if (CollUtil.isNotEmpty(inspectionStrRels)) {
             List<String> collect = inspectionStrRels.stream().map(InspectionStrRel::getInspectionStaCode).collect(Collectors.toList());
             inspectionCodes = inspectionCodeMapper.selectList(
                     new LambdaQueryWrapper<InspectionCode>()
                             .in(InspectionCode::getCode, collect)
-                            .eq(InspectionCode::getDelFlag, 0));
+                            .eq(InspectionCode::getDelFlag, CommonConstant.DEL_FLAG_0));
         }
 
         // 组织结构
@@ -540,7 +540,7 @@ public class InspectionStrategyServiceImpl extends ServiceImpl<InspectionStrateg
             InspectionCode inspectionCode = inspectionCodeMapper.selectOne(
                     new LambdaQueryWrapper<InspectionCode>()
                             .eq(InspectionCode::getCode, re.getInspectionStaCode())
-                            .eq(InspectionCode::getDelFlag, InspectionConstant.NO_DEL));
+                            .eq(InspectionCode::getDelFlag, CommonConstant.DEL_FLAG_0));
             if (ObjectUtil.isEmpty(inspectionCode)) {
                 throw new AiurtBootException(InspectionConstant.ILLEGAL_OPERATION);
             }
@@ -568,7 +568,7 @@ public class InspectionStrategyServiceImpl extends ServiceImpl<InspectionStrateg
         QueryWrapper<RepairPool> wrapper = new QueryWrapper<>();
         // 当前策略生成的计划、当前结束时间往后的，并且待指派的的检修计划将会删除
         wrapper.eq("inspection_str_code", ins.getCode())
-                .eq("del_flag", 0)
+                .eq("del_flag", CommonConstant.DEL_FLAG_0)
                 .eq("status", InspectionConstant.TO_BE_ASSIGNED)
                 .ge("end_time", DateUtil.now());
         List<RepairPool> list = repairPoolMapper.selectList(wrapper);

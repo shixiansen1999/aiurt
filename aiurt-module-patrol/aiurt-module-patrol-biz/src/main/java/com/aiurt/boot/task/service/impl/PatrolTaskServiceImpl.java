@@ -7,8 +7,10 @@ import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.constant.PatrolConstant;
+import com.aiurt.boot.manager.PatrolManager;
 import com.aiurt.boot.plan.entity.PatrolPlan;
 import com.aiurt.boot.plan.mapper.PatrolPlanMapper;
+import com.aiurt.boot.standard.dto.StationDTO;
 import com.aiurt.boot.standard.entity.PatrolStandard;
 import com.aiurt.boot.standard.mapper.PatrolStandardMapper;
 import com.aiurt.boot.task.dto.*;
@@ -65,6 +67,8 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
     private PatrolPlanMapper patrolPlanMapper;
     @Autowired
     private PatrolStandardMapper patrolStandardMapper;
+    @Autowired
+    private PatrolManager manager;
 
     @Override
     public IPage<PatrolTaskParam> getTaskList(Page<PatrolTaskParam> page, PatrolTaskParam patrolTaskParam) {
@@ -149,7 +153,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
             QueryWrapper<PatrolTask> taskWrapper = new QueryWrapper<>();
             taskWrapper.lambda()
                     .eq(PatrolTask::getCode, listEntry.getKey())
-                    .eq(PatrolTask::getStatus, PatrolConstant.TASK_INIT)
+                    .eq(PatrolTask::getStatus, PatrolConstant.TASK_INIT).or().eq(PatrolTask::getStatus, PatrolConstant.TASK_RETURNED)
                     .eq(PatrolTask::getDiscardStatus, PatrolConstant.TASK_UNDISCARD);
             PatrolTask patrolTask = patrolTaskMapper.selectOne(taskWrapper);
 
@@ -223,17 +227,14 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
             String majorName = patrolTaskStandard.stream().map(PatrolTaskStandardDTO::getMajorName).collect(Collectors.joining(","));
             String sysName = patrolTaskStandard.stream().map(PatrolTaskStandardDTO::getSysName).collect(Collectors.joining(","));
             List<String> orgCodes = patrolTaskMapper.getOrgCode(e.getCode());
-            List<String> organizationName = patrolTaskMapper.getOrganizationName(e.getCode());
-            List<String> stationName = patrolTaskMapper.getStationName(e.getCode());
+            e.setOrganizationName(manager.translateOrg(orgCodes));
+            List<StationDTO> stationName = patrolTaskMapper.getStationName(e.getCode());
+            e.setStationName( manager.translateStation(stationName));
             List<String> patrolUserName = patrolTaskMapper.getPatrolUserName(e.getCode());
-            String orgName = organizationName.stream().collect(Collectors.joining(","));
-            String stName = stationName.stream().collect(Collectors.joining(","));
             String ptuName = patrolUserName.stream().collect(Collectors.joining(","));
             e.setSysName(sysName);
             e.setMajorName(majorName);
             e.setOrgCodeList(orgCodes);
-            e.setOrganizationName(orgName);
-            e.setStationName(stName);
             e.setPatrolUserName(ptuName);
             e.setPatrolReturnUserName(userName);
         });
@@ -249,17 +250,14 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
             String majorName = patrolTaskStandard.stream().map(PatrolTaskStandardDTO::getMajorName).collect(Collectors.joining(","));
             String sysName = patrolTaskStandard.stream().map(PatrolTaskStandardDTO::getSysName).collect(Collectors.joining(","));
             List<String> orgCodes = patrolTaskMapper.getOrgCode(e.getCode());
-            List<String> organizationName = patrolTaskMapper.getOrganizationName(e.getCode());
-            List<String> stationName = patrolTaskMapper.getStationName(e.getCode());
+            e.setOrganizationName(manager.translateOrg(orgCodes));
+            List<StationDTO> stationName = patrolTaskMapper.getStationName(e.getCode());
+            e.setStationName( manager.translateStation(stationName));
             List<String> patrolUserName = patrolTaskMapper.getPatrolUserName(e.getCode());
-            String orgName = organizationName.stream().collect(Collectors.joining(","));
-            String stName = stationName.stream().collect(Collectors.joining(","));
             String ptuName = patrolUserName.stream().collect(Collectors.joining(","));
             e.setSysName(sysName);
             e.setMajorName(majorName);
             e.setOrgCodeList(orgCodes);
-            e.setOrganizationName(orgName);
-            e.setStationName(stName);
             e.setPatrolUserName(ptuName);
             e.setPatrolReturnUserName(userName);
         });
@@ -386,21 +384,21 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
     public Page<PatrolTaskDTO> getPatrolTaskManualList(Page<PatrolTaskDTO> pageList, PatrolTaskDTO patrolTaskDTO) {
         List<PatrolTaskDTO> taskDTOList = patrolTaskMapper.getPatrolTaskManualList(pageList, patrolTaskDTO);
         taskDTOList.stream().forEach(e -> {
+            String userName = patrolTaskMapper.getUserName(e.getBackId());
             List<PatrolTaskStandardDTO> patrolTaskStandard = patrolTaskStandardMapper.getMajorSystemName(e.getId());
             String majorName = patrolTaskStandard.stream().map(PatrolTaskStandardDTO::getMajorName).collect(Collectors.joining(","));
             String sysName = patrolTaskStandard.stream().map(PatrolTaskStandardDTO::getSysName).collect(Collectors.joining(","));
             List<String> orgCodes = patrolTaskMapper.getOrgCode(e.getCode());
-            List<String>stationList=patrolTaskMapper.getStationCode(e.getCode());
-            List<String> organizationName = patrolTaskMapper.getOrganizationName(e.getCode());
-            List<String> stationName = patrolTaskMapper.getStationName(e.getCode());
-            String orgName = organizationName.stream().collect(Collectors.joining(","));
-            String stName = stationName.stream().collect(Collectors.joining(","));
-            e.setStationCodeList(stationList);
+            e.setOrganizationName(manager.translateOrg(orgCodes));
+            List<StationDTO> stationName = patrolTaskMapper.getStationName(e.getCode());
+            e.setStationName( manager.translateStation(stationName));
+            List<String> patrolUserName = patrolTaskMapper.getPatrolUserName(e.getCode());
+            String ptuName = patrolUserName.stream().collect(Collectors.joining(","));
             e.setSysName(sysName);
             e.setMajorName(majorName);
             e.setOrgCodeList(orgCodes);
-            e.setOrganizationName(orgName);
-            e.setStationName(stName);
+            e.setPatrolUserName(ptuName);
+            e.setPatrolReturnUserName(userName);
         });
         return pageList.setRecords(taskDTOList);
     }
