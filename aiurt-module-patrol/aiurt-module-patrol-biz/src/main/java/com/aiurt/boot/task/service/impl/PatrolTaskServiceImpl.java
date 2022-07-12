@@ -390,11 +390,13 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
             String sysName = patrolTaskStandard.stream().map(PatrolTaskStandardDTO::getSysName).collect(Collectors.joining(","));
             List<String> orgCodes = patrolTaskMapper.getOrgCode(e.getCode());
             e.setOrganizationName(manager.translateOrg(orgCodes));
+            List<String> stationCodeList = patrolTaskMapper.getStationCode(e.getCode());
             List<StationDTO> stationName = patrolTaskMapper.getStationName(e.getCode());
             e.setStationName( manager.translateStation(stationName));
             List<String> patrolUserName = patrolTaskMapper.getPatrolUserName(e.getCode());
             String ptuName = patrolUserName.stream().collect(Collectors.joining(","));
             e.setSysName(sysName);
+            e.setStationCodeList(stationCodeList);
             e.setMajorName(majorName);
             e.setOrgCodeList(orgCodes);
             e.setPatrolUserName(ptuName);
@@ -504,6 +506,8 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         patrolTask.setSource(3);
         patrolTask.setDelFlag(0);
         patrolTask.setDiscardStatus(0);
+        patrolTask.setRebuild(0);
+        patrolTask.setType(patrolTaskManualDTO.getType());
         patrolTask.setRemark(patrolTaskManualDTO.getRemark());
         patrolTask.setStartTime(patrolTaskManualDTO.getStartTime());
         patrolTask.setEndTime(patrolTaskManualDTO.getEndTime());
@@ -659,7 +663,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         // 获取未作废、未处置、已漏检、未重新生成的任务
         wrapper.lambda().eq(PatrolTask::getId, taskId)
                 .eq(PatrolTask::getStatus, PatrolConstant.TASK_MISSED)
-                .eq(PatrolTask::getDiscardStatus, PatrolConstant.TASK_UNDISPOSE)
+                .eq(PatrolTask::getDisposeStatus, PatrolConstant.TASK_UNDISPOSE)
                 .eq(PatrolTask::getDiscardStatus, PatrolConstant.TASK_UNDISCARD)
                 .eq(PatrolTask::getRebuild, PatrolConstant.TASK_UNREBUILD);
         PatrolTask patrolTask = patrolTaskMapper.selectOne(wrapper);

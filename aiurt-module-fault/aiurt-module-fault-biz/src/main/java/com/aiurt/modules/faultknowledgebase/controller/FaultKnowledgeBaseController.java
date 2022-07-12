@@ -300,11 +300,8 @@ public class FaultKnowledgeBaseController extends BaseController<FaultKnowledgeB
 	 public Result<List<DeviceTypeDTO>> getDeviceType(@RequestParam(name="majorCode",required = false) String majorCode,
 													  @RequestParam(name="systemCode",required = false) String systemCode,
 													  @RequestParam(name="name",required = false) String name) {
-		 if (StringUtils.isNotEmpty(majorCode) && StringUtils.isNotEmpty(systemCode)) {
-			 List<DeviceTypeDTO> deviceTypes = faultKnowledgeBaseMapper.getDeviceType(majorCode,systemCode,name);
-			 return Result.OK(deviceTypes);
-		 }
-		 return Result.OK("请选择专业和系统");
+		 List<DeviceTypeDTO> deviceTypes = faultKnowledgeBaseMapper.getDeviceType(majorCode,systemCode,name);
+		 return Result.OK(deviceTypes);
 	 }
 
 	 /**
@@ -316,7 +313,7 @@ public class FaultKnowledgeBaseController extends BaseController<FaultKnowledgeB
 	 @ApiResponses({
 			 @ApiResponse(code = 200, message = "OK", response = DeviceAssemblyDTO.class)
 	 })
-	 public Result<List<DeviceAssemblyDTO>> getDeviceAssembly(@RequestParam(name="deviceTypeCode") String deviceTypeCode) {
+	 public Result<List<DeviceAssemblyDTO>> getDeviceAssembly(@RequestParam(name="deviceTypeCode",required = false) String deviceTypeCode) {
 		 List<DeviceAssemblyDTO> deviceAssembly = faultKnowledgeBaseMapper.getDeviceAssembly(deviceTypeCode);
 		 return Result.OK(deviceAssembly);
 	 }

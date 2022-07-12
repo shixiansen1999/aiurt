@@ -88,13 +88,22 @@
     </select>
 
 <select id="getDeviceType" resultType="com.aiurt.modules.faultknowledgebase.dto.DeviceTypeDTO">
-    select id,major_code,system_code,`code`,name from device_type where del_flag = 0 and major_code=#{majorCode} and system_code=#{systemCode}
+    select id,major_code,system_code,`code`,name from device_type where del_flag = 0
+    <if test="majorCode != null and majorCode != ''">
+        and major_code=#{majorCode}
+    </if>
+    <if test="systemCode != null and systemCode != ''">
+        and system_code=#{systemCode}
+    </if>
     <if test="name != null and name != ''">
       and  name like concat('%',#{name},'%')
     </if>
     </select>
 
 <select id="getDeviceAssembly" resultType="com.aiurt.modules.faultknowledgebase.dto.DeviceAssemblyDTO">
-    select id,material_code,material_name,device_type_code from device_assembly where  del_flag = 0 and device_type_code =#{deviceTypeCode}
+    select id,material_code,material_name,device_type_code from device_assembly where  del_flag = 0
+    <if test="deviceTypeCode != null and deviceTypeCode != ''">
+        and device_type_code =#{deviceTypeCode}
+    </if>
     </select>
 </mapper>
