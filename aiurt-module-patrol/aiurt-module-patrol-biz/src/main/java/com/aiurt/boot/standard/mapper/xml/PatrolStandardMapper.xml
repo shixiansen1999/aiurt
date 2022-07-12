@@ -12,7 +12,7 @@
         <if test="patrolStandard.name !=null ">
             AND a.name LIKE CONCAT ('%', #{patrolStandard.name}, '%')
         </if>
-        <if test="patrolStandard.device_type_code !=null ">
+        <if test="patrolStandard.deviceTypeCode !=null ">
             AND a.device_type_code = #{patrolStandard.deviceTypeCode}
         </if>
         <if test="patrolStandard.professionCode !=null ">
