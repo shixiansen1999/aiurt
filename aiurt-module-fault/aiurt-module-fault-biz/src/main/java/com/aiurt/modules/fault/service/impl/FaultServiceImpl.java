@@ -15,6 +15,7 @@ import com.aiurt.modules.fault.mapper.FaultMapper;
 import com.aiurt.modules.fault.service.*;
 import com.aiurt.modules.faultknowledgebase.entity.FaultKnowledgeBase;
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -25,6 +26,7 @@ import org.ansj.domain.Result;
 import org.ansj.domain.Term;
 import org.ansj.splitWord.analysis.ToAnalysis;
 import org.apache.shiro.SecurityUtils;
+import org.checkerframework.checker.units.qual.C;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.BeanUtils;
@@ -798,13 +800,21 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
     public List<LoginUser> queryUser(String faultCode) {
         LoginUser loginUser = checkLogin();
 
-        String orgCode = loginUser.getOrgCode();
+        String orgId = loginUser.getOrgId();
 
-        if (StrUtil.isBlank(orgCode)) {
+        if (StrUtil.isBlank(orgId)) {
            return Collections.emptyList();
         }
+        List<JSONObject> jsonObjects = sysBaseAPI.queryDepartsByIds(orgId);
+        if (CollectionUtil.isEmpty(jsonObjects)) {
+            return Collections.emptyList();
+        }
 
-        List<LoginUser> loginUserList = sysBaseAPI.getUserByDepIds(StrUtil.split(orgCode, ','));
+        List<String> orgCodeList = jsonObjects.stream().map(jsonObject -> jsonObject.getString("orgCode")).collect(Collectors.toList());
+        if (CollectionUtil.isEmpty(orgCodeList)) {
+            return Collections.emptyList();
+        }
+        List<LoginUser> loginUserList = sysBaseAPI.getUserByDepIds(orgCodeList);
         return loginUserList;
     }
 
