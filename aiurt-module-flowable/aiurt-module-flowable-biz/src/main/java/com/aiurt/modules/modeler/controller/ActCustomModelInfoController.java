@@ -4,6 +4,7 @@ import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.system.base.controller.BaseController;
 import com.aiurt.modules.modeler.entity.ActCustomModelInfo;
 import com.aiurt.modules.modeler.service.IActCustomModelInfoService;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -14,13 +15,13 @@ import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.query.QueryGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
- /**
+/**
  * @Description: flowable流程模板定义信息
  * @Author: aiurt
  * @Date:   2022-07-08
@@ -51,7 +52,7 @@ public class ActCustomModelInfoController extends BaseController<ActCustomModelI
 								   @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
 								   HttpServletRequest req) {
 		QueryWrapper<ActCustomModelInfo> queryWrapper = QueryGenerator.initQueryWrapper(actCustomModelInfo, req.getParameterMap());
-		Page<ActCustomModelInfo> page = new Page<ActCustomModelInfo>(pageNo, pageSize);
+		Page<ActCustomModelInfo> page = new Page<>(pageNo, pageSize);
 		IPage<ActCustomModelInfo> pageList = actCustomModelInfoService.page(page, queryWrapper);
 		return Result.OK(pageList);
 	}
@@ -94,7 +95,9 @@ public class ActCustomModelInfoController extends BaseController<ActCustomModelI
 	@ApiOperation(value="flowable流程模板定义信息-通过id删除", notes="flowable流程模板定义信息-通过id删除")
 	@DeleteMapping(value = "/delete")
 	public Result<String> delete(@RequestParam(name="id",required=true) String id) {
-		actCustomModelInfoService.removeById(id);
+		List<String> list = new ArrayList<>();
+		list.add(id);
+		actCustomModelInfoService.deleteById(list);
 		return Result.OK("删除成功!");
 	}
 
@@ -108,7 +111,7 @@ public class ActCustomModelInfoController extends BaseController<ActCustomModelI
 	@ApiOperation(value="flowable流程模板定义信息-批量删除", notes="flowable流程模板定义信息-批量删除")
 	@DeleteMapping(value = "/deleteBatch")
 	public Result<String> deleteBatch(@RequestParam(name="ids",required=true) String ids) {
-		this.actCustomModelInfoService.removeByIds(Arrays.asList(ids.split(",")));
+		this.actCustomModelInfoService.deleteById(Arrays.asList(ids.split(",")));
 		return Result.OK("批量删除成功!");
 	}
 
@@ -123,33 +126,26 @@ public class ActCustomModelInfoController extends BaseController<ActCustomModelI
 	@GetMapping(value = "/queryById")
 	public Result<ActCustomModelInfo> queryById(@RequestParam(name="id",required=true) String id) {
 		ActCustomModelInfo actCustomModelInfo = actCustomModelInfoService.getById(id);
-		if(actCustomModelInfo==null) {
-			return Result.error("未找到对应数据");
-		}
 		return Result.OK(actCustomModelInfo);
 	}
 
-    /**
-    * 导出excel
-    *
-    * @param request
-    * @param actCustomModelInfo
-    */
-    @RequestMapping(value = "/exportXls")
-    public ModelAndView exportXls(HttpServletRequest request, ActCustomModelInfo actCustomModelInfo) {
-        return super.exportXls(request, actCustomModelInfo, ActCustomModelInfo.class, "flowable流程模板定义信息");
-    }
 
-    /**
-      * 通过excel导入数据
-    *
-    * @param request
-    * @param response
-    * @return
-    */
-    @RequestMapping(value = "/importExcel", method = RequestMethod.POST)
-    public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) {
-        return super.importExcel(request, response, ActCustomModelInfo.class);
-    }
+	/**
+	 * 查询单个 - 通过modelId
+	 *
+	 * @param modelId
+	 * @return
+	 */
+	//@AutoLog(value = "flowable流程模板定义信息-通过id查询")
+	@ApiOperation(value="flowable流程模板定义信息-通过id查询", notes="flowable流程模板定义信息-通过id查询")
+	@GetMapping(value = "/queryById")
+	public Result<ActCustomModelInfo> queryByModelId(@RequestParam(name="modelId",required=true) String modelId) {
+		LambdaQueryWrapper<ActCustomModelInfo> wrapper = new LambdaQueryWrapper<>();
+		wrapper.eq(ActCustomModelInfo::getModelId, modelId).last("limit 1");
+
+		ActCustomModelInfo actCustomModelInfo = actCustomModelInfoService.getOne(wrapper);
+
+		return Result.OK(actCustomModelInfo);
+	}
 
 }

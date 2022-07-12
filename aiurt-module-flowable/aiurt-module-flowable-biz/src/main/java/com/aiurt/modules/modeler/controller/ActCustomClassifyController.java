@@ -129,27 +129,4 @@ public class ActCustomClassifyController extends BaseController<ActCustomClassif
 		return Result.OK(actCustomClassify);
 	}
 
-    /**
-    * 导出excel
-    *
-    * @param request
-    * @param actCustomClassify
-    */
-    @RequestMapping(value = "/exportXls")
-    public ModelAndView exportXls(HttpServletRequest request, ActCustomClassify actCustomClassify) {
-        return super.exportXls(request, actCustomClassify, ActCustomClassify.class, "流程分类");
-    }
-
-    /**
-      * 通过excel导入数据
-    *
-    * @param request
-    * @param response
-    * @return
-    */
-    @RequestMapping(value = "/importExcel", method = RequestMethod.POST)
-    public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) {
-        return super.importExcel(request, response, ActCustomClassify.class);
-    }
-
 }

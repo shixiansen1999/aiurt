@@ -36,7 +36,7 @@ public class ActCustomModelInfo implements Serializable {
     @ApiModelProperty(value = "主键")
     private String id;
 	/**模型id(act_act_re_model的id)*/
-	@Excel(name = "模型id(act_act_re_model的id)", width = 15)
+	@Excel(name = "模型id(act_re_model的id)", width = 15)
     @ApiModelProperty(value = "模型id(act_act_re_model的id)")
     private String modelId;
 	/**name*/

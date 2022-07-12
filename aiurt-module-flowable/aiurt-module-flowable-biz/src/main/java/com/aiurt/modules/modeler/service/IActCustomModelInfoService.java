@@ -3,6 +3,8 @@ package com.aiurt.modules.modeler.service;
 import com.aiurt.modules.modeler.entity.ActCustomModelInfo;
 import com.baomidou.mybatisplus.extension.service.IService;
 
+import java.util.List;
+
 /**
  * @Description: flowable流程模板定义信息
  * @Author: aiurt
@@ -17,4 +19,10 @@ public interface IActCustomModelInfoService extends IService<ActCustomModelInfo>
      * @return
      */
     ActCustomModelInfo add(ActCustomModelInfo actCustomModelInfo);
+
+    /**
+     * 删除模型
+     * @param idList
+     */
+    void deleteById(List<String> idList);
 }

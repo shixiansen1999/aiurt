@@ -1,9 +1,8 @@
 package com.aiurt.modules.modeler.service.impl;
 
 import com.aiurt.common.exception.AiurtBootException;
-import com.aiurt.modules.modeler.entity.ActCustomModelInfo;
-import com.aiurt.modules.modeler.service.IFlowableBpmnModelService;
-import org.flowable.ui.modeler.domain.AbstractModel;
+import com.aiurt.modules.modeler.service.IFlowableModelService;
+import lombok.extern.slf4j.Slf4j;
 import org.flowable.ui.modeler.domain.Model;
 import org.flowable.ui.modeler.model.ModelKeyRepresentation;
 import org.flowable.ui.modeler.model.ModelRepresentation;
@@ -12,28 +11,18 @@ import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import javax.xml.bind.JAXBException;
-import java.util.Date;
-
+/**
+ * @program: flow
+ * @description: 模型实现
+ * @author fgw
+ * @create 2022-07-12
+ */
+@Slf4j
 @Service
-public class IFlowableBpmnModelServiceImpl implements IFlowableBpmnModelService {
+public class FlowableModelServiceImpl implements IFlowableModelService {
 
     @Autowired
     private ModelService modelService;
-
-    @Override
-    public ActCustomModelInfo createInitBpmn(ActCustomModelInfo modelInfo, LoginUser user) {
-        ModelRepresentation modelRepresentation = new ModelRepresentation();
-        modelRepresentation.setModelType(AbstractModel.MODEL_TYPE_BPMN);
-        modelRepresentation.setKey(modelInfo.getModelKey());
-        modelRepresentation.setName(modelInfo.getName());
-        // modelRepresentation.setTenantId(modelInfo.getAppSn());
-        modelRepresentation.setLastUpdated(new Date());
-        Model model = creatModel(modelRepresentation, user);
-
-        return null;
-    }
-
     @Override
     public Model creatModel(ModelRepresentation modelRepresentation, LoginUser user) {
         // 替换空格
