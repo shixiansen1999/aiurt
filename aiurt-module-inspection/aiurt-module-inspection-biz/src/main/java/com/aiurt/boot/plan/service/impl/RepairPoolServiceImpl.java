@@ -474,7 +474,7 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
             // 是手动任务需要更新开始时间和结束时间
             if (assignDTO.getIsManual().equals(InspectionConstant.IS_MANUAL)) {
                 repairPool.setStartTime(assignDTO.getStartTime());
-                repairPool.setStartTime(assignDTO.getEndTime());
+                repairPool.setEndTime(assignDTO.getEndTime());
             }
 
             repairPool.setStatus(InspectionConstant.TO_BE_CONFIRMED);
