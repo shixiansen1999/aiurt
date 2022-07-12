@@ -240,7 +240,6 @@
 	     t1.device_code as equipmentCode,
 	     t1.start_time as startTime,
 	     t1.end_time as endTime,
-	     t3.real_name as peer,
          t1.station_code as stationCode,
          t1.line_code as lineCode,
          t1.position_code as positionCode,
@@ -251,7 +250,6 @@
        FROM
 	    	repair_task_device_rel t1
 	        LEFT JOIN repair_task_standard_rel t4  ON t4.id = t1.task_standard_rel_id
-	        LEFT JOIN repair_task_peer_rel t3 ON t1.`code` = t3.repair_task_device_code
     WHERE
 	      t1.id = #{id}
     </select>

@@ -372,6 +372,23 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
         //检修单名称
         if (checkListDTO.getResultCode() != null) {
             checkListDTO.setResultName("检修单" + checkListDTO.getResultCode());
+
+            //查询同行人
+            LambdaQueryWrapper<RepairTaskPeerRel> repairTaskPeerRelLambdaQueryWrapper = new LambdaQueryWrapper<>();
+            List<RepairTaskPeerRel> repairTaskPeer = repairTaskPeerRelMapper.selectList(repairTaskPeerRelLambdaQueryWrapper.eq(RepairTaskPeerRel::getRepairTaskDeviceCode, checkListDTO.getResultCode()));
+            //名称集合
+            List<String> collect3 = repairTaskPeer.stream().map(RepairTaskPeerRel::getRealName).collect(Collectors.toList());
+            if (CollectionUtil.isNotEmpty(collect3)) {
+                StringBuffer stringBuffer = new StringBuffer();
+                for (String t : collect3) {
+                    stringBuffer.append(t);
+                    stringBuffer.append(",");
+                }
+                if (stringBuffer.length() > 0) {
+                    stringBuffer = stringBuffer.deleteCharAt(stringBuffer.length() - 1);
+                }
+                checkListDTO.setPeer(stringBuffer.toString());
+            }
         }
 
         //专业
@@ -426,28 +443,33 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
         //构造树形
         checkListDTO.setRepairTaskResultList(selectCodeContentList(checkListDTO.getDeviceId()));
         List<RepairTaskResult> repairTaskResultList = checkListDTO.getRepairTaskResultList();
+        ArrayList<String> list = new ArrayList<>();
+        if(CollectionUtil.isNotEmpty(repairTaskResultList)) {
+            repairTaskResultList.forEach(r->{
+                List<RepairTaskResult> children = r.getChildren();
+                //获取检修单的检修结果子
+                List<String> collect = children.stream().map(RepairTaskResult::getId).collect(Collectors.toList());
+                list.add(r.getId());
+                list.addAll(collect);
+            });
+            LambdaQueryWrapper<RepairTaskEnclosure> objectLambdaQueryWrapper = new LambdaQueryWrapper<>();
+            List<RepairTaskEnclosure> repairTaskDevice = repairTaskEnclosureMapper.selectList(objectLambdaQueryWrapper.in(RepairTaskEnclosure::getRepairTaskResultId, list));
 
-        //获取检修单的检修结果
-        List<String> collect1 = repairTaskResultList.stream().map(RepairTaskResult::getId).collect(Collectors.toList());
+            //获取检修单的检修结果的附件
+            checkListDTO.setEnclosureUrl(repairTaskDevice.stream().map(RepairTaskEnclosure::getUrl).collect(Collectors.toList()));
 
-        LambdaQueryWrapper<RepairTaskEnclosure> objectLambdaQueryWrapper = new LambdaQueryWrapper<>();
-        List<RepairTaskEnclosure> repairTaskDevice = repairTaskEnclosureMapper.selectList(objectLambdaQueryWrapper.in(RepairTaskEnclosure::getRepairTaskResultId, collect1));
+            //检查项的数量
+            long count1 = repairTaskResultList.stream().filter(repairTaskResult -> repairTaskResult.getType() == 1).count();
+            checkListDTO.setMaintenanceItemsQuantity((int) count1);
 
-        //获取检修单的检修结果的附件
-        checkListDTO.setEnclosureUrl(repairTaskDevice.stream().map(RepairTaskEnclosure::getUrl).collect(Collectors.toList()));
+            //已检修的数量
+            long count2 = repairTaskResultList.stream().filter(repairTaskResult -> repairTaskResult.getStatus() != null).count();
+            checkListDTO.setMaintenanceItemsQuantity((int) count2);
 
-        //检查项的数量
-        long count1 = repairTaskResultList.stream().filter(repairTaskResult -> repairTaskResult.getType() == 1).count();
-        checkListDTO.setMaintenanceItemsQuantity((int) count1);
-
-        //已检修的数量
-        long count2 = repairTaskResultList.stream().filter(repairTaskResult -> repairTaskResult.getStatus() != null).count();
-        checkListDTO.setMaintenanceItemsQuantity((int) count2);
-
-        //待检修的数量
-        long count3 = repairTaskResultList.stream().filter(repairTaskResult -> repairTaskResult.getStatus() == null).count();
-        checkListDTO.setMaintenanceItemsQuantity((int) count3);
-
+            //待检修的数量
+            long count3 = repairTaskResultList.stream().filter(repairTaskResult -> repairTaskResult.getStatus() == null).count();
+            checkListDTO.setMaintenanceItemsQuantity((int) count3);
+        }
         return checkListDTO;
     }
 
