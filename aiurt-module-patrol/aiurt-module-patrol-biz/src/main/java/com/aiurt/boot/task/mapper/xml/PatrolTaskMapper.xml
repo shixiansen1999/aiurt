@@ -85,17 +85,17 @@ FROM
             and pt.discard_status = #{patrolTask.discardStatus}
         </if>
         <if test="patrolTask.organizationCode != null and patrolTask.organizationCode != ''">
-            and pt.plan_code in (
-            SELECT ppo.plan_code
-            FROM patrol_plan_organization ppo
+            and pt.code in (
+            SELECT ppo.task_code
+            FROM patrol_task_organization ppo
             WHERE ppo.del_flag = 0 and ppo.organization_code = #{patrolTask.organizationCode}
             )
         </if>
         <if test="patrolTask.stationCode != null and patrolTask.stationCode != ''">
-            and pt.plan_code in (
-            SELECT pps.plan_code
-            FROM patrol_plan_station pps
-            WHERE pps.del_flag = 0 and pps.station_code = #{patrolTask.stationCode}
+          and pt.code in (
+          SELECT pps.task_code
+          FROM patrol_task_station pps
+          WHERE pps.del_flag = 0 and pps.station_code = #{patrolTask.stationCode}
             )
         </if>
         <if test="patrolTask.dateHead != null and patrolTask.dateEnd != null">
@@ -153,15 +153,15 @@ FROM
             and t1.name like concat('%',#{patrolTaskDTO.name},'%')
         </if>
         <if test="patrolTaskDTO.code!=null and patrolTaskDTO.code!=''">
-            and t1.code = #{patrolTaskDTO.code}
+            and t1.code like concat('%',#{patrolTaskDTO.code},'%')
         </if>
         <if test="patrolTaskDTO.status !=null">
             and t1.status = #{patrolTaskDTO.status}
         </if>
-        <if test="patrolTaskDTO.startTime!=null and patrolTaskDTO.startEndTime!=null ">
-            and DATE_FORMAT(pt.patrol_date, '%Y-%m-%d' )
-            between DATE_FORMAT(#{patrolTaskDTO.startTime}, '%Y-%m-%d')
-            and DATE_FORMAT(#{patrolTaskDTO.startEndTime}, '%Y-%m-%d')
+        <if test="patrolTaskDTO.dateScope!=null and patrolTaskDTO.dateScope!=null ">
+            and DATE_FORMAT(t1.patrol_date, '%Y-%m-%d' )
+            between DATE_FORMAT(#{patrolTaskDTO.dateScope}, '%Y-%m-%d')
+            and DATE_FORMAT(#{patrolTaskDTO.dateScope}, '%Y-%m-%d')
         </if>
         order by t1.create_time desc
     </select>
