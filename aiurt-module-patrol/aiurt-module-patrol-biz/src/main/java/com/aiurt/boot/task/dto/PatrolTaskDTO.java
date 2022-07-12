@@ -42,13 +42,13 @@ public class PatrolTaskDTO
     @ApiModelProperty(value = "巡检的日期")
     private java.util.Date patrolDate;
     /*** 巡检开始时间*/
-    @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd HH:mm:ss")
-    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(timezone = "GMT+8", pattern = "HH:mm")
+    @DateTimeFormat(pattern = "HH:mm")
     @ApiModelProperty(value = "巡检开始时间")
     private java.util.Date startTime;
     /*** 巡检结束时间*/
-    @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd HH:mm:ss")
-    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(timezone = "GMT+8", pattern = "HH:mm")
+    @DateTimeFormat(pattern = "HH:mm")
     @ApiModelProperty(value = "巡检结束时间")
     private java.util.Date endTime;
     @Excel(name = "组织机构编码", width = 15)
