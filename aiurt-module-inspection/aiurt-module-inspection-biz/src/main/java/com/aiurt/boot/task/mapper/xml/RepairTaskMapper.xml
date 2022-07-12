@@ -56,7 +56,6 @@
            SELECT
 	           t1.id as taskId,
                t1.code as taskCode,
-               t1.status as taskStatus,
                t2.id as deviceId,
                t3.id as standardId,
                t2.code as overhaulCode,
