@@ -123,9 +123,9 @@ public class Fault extends DictEntity implements Serializable {
     private String receiveUserName;
 
 	/**接报时间*/
-	@Excel(name = "接报时间", width = 15, format = "yyyy-MM-dd")
-	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
-    @DateTimeFormat(pattern="yyyy-MM-dd")
+	@Excel(name = "接报时间", width = 15, format = "yyyy-MM-dd HH:mm:ss")
+	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
+    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
     @ApiModelProperty(value = "接报时间")
     private Date receiveTime;
 
