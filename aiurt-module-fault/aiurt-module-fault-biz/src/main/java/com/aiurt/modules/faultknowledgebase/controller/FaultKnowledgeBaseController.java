@@ -313,7 +313,7 @@ public class FaultKnowledgeBaseController extends BaseController<FaultKnowledgeB
 	 @ApiResponses({
 			 @ApiResponse(code = 200, message = "OK", response = DeviceAssemblyDTO.class)
 	 })
-	 public Result<List<DeviceAssemblyDTO>> getDeviceAssembly(@RequestParam(name="deviceTypeCode") String deviceTypeCode) {
+	 public Result<List<DeviceAssemblyDTO>> getDeviceAssembly(@RequestParam(name="deviceTypeCode",required = false) String deviceTypeCode) {
 		 List<DeviceAssemblyDTO> deviceAssembly = faultKnowledgeBaseMapper.getDeviceAssembly(deviceTypeCode);
 		 return Result.OK(deviceAssembly);
 	 }

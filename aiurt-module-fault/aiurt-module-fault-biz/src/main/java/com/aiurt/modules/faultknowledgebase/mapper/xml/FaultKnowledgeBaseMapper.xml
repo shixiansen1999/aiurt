@@ -101,6 +101,9 @@
     </select>
 
 <select id="getDeviceAssembly" resultType="com.aiurt.modules.faultknowledgebase.dto.DeviceAssemblyDTO">
-    select id,material_code,material_name,device_type_code from device_assembly where  del_flag = 0 and device_type_code =#{deviceTypeCode}
+    select id,material_code,material_name,device_type_code from device_assembly where  del_flag = 0
+    <if test="deviceTypeCode != null and deviceTypeCode != ''">
+        and device_type_code =#{deviceTypeCode}
+    </if>
     </select>
 </mapper>
