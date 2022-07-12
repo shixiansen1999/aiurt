@@ -943,6 +943,8 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         if (CollectionUtil.isNotEmpty(faultDeviceList)) {
 
             faultDeviceList.stream().forEach(faultDevice -> {
+                faultDevice.setDeviceId(faultDevice.getDeviceId());
+                faultDevice.setId(null);
                 faultDevice.setDelFlag(0);
                 faultDevice.setFaultCode(fault.getCode());
             });
