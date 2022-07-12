@@ -112,6 +112,9 @@
         <if test="inspectionStrategyDTO.year !=null ">
             AND year = #{inspectionStrategyDTO.year}
         </if>
+        <if test="inspectionStrategyDTO.type !=null ">
+            AND type = #{inspectionStrategyDTO.type}
+        </if>
         <if test="inspectionStrategyDTO.tactics !=null ">
             AND tactics = #{inspectionStrategyDTO.tactics}
         </if>

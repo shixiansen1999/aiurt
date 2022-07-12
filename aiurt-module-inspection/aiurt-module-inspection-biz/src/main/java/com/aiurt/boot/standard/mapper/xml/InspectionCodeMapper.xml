@@ -30,6 +30,7 @@
         <if test="inspectionCodeDTO.deviceTypeCode !=null ">
             AND a.device_type_code = #{inspectionCodeDTO.deviceTypeCode}
         </if>
+        ORDER BY  a.create_time DESC
     </select>
     <select id="number" resultType="java.lang.Integer">
         SELECT COUNT(inspection_str_rel.inspection_sta_code)as number

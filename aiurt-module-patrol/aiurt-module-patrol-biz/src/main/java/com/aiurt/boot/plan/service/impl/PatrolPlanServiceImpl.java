@@ -100,7 +100,7 @@ public class PatrolPlanServiceImpl extends ServiceImpl<PatrolPlanMapper, PatrolP
         for (PatrolStandard r:list) {
             PatrolPlanStandard patrolPlanStandard =new PatrolPlanStandard();patrolPlanStandard.setPlanId(id.getId());
              patrolPlanStandard.setPlanId(id.getId());patrolPlanStandard.setStandardCode(r.getCode());
-             patrolPlanStandard.setProfessionCode(r.getProfessionCode());
+             patrolPlanStandard.setProfessionCode(r.getProfessionCode()); patrolPlanStandard.setDeviceTypeCode(r.getDeviceTypeCode());
              patrolPlanStandard.setSubsystemCode(r.getSubsystemCode());
              patrolPlanStandardMapper.insert(patrolPlanStandard);
            }
@@ -149,11 +149,16 @@ public class PatrolPlanServiceImpl extends ServiceImpl<PatrolPlanMapper, PatrolP
         }
         if (ObjectUtil.isNotEmpty(patrolPlanDto.getIds())){
         List<String>ids= Arrays.asList(patrolPlanDto.getIds().split(","));
-        patrolPlanDto.setPatrolStandards(patrolStandardMapper.selectbyIds(ids));}
-        if(ObjectUtil.isNotEmpty(patrolPlanDto.getWs())){
-        patrolPlanDto.setWeek(Arrays.asList(patrolPlanDto.getWs().split(",")));}
-        if(ObjectUtil.isNotEmpty(patrolPlanDto.getTs())){
-        patrolPlanDto.setTime(Arrays.asList(patrolPlanDto.getTs().split(",")));}
+        patrolPlanDto.setPatrolStandards(patrolStandardMapper.selectbyIds(ids));
+        }
+        List<String> week =baseMapper.selectWeek(id,code);
+        if (ObjectUtil.isNotEmpty(week)){
+            patrolPlanDto.setWeek(week);
+        }
+        List<String> time = baseMapper.selectTime(id,code);
+        if(ObjectUtil.isNotEmpty(time)){
+        patrolPlanDto.setTime(time);
+        }
         return patrolPlanDto;
     }
 

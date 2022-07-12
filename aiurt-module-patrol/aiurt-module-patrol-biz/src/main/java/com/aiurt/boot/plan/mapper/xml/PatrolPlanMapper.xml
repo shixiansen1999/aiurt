@@ -163,11 +163,7 @@
                ( SELECT GROUP_CONCAT(d.id) FROM  patrol_standard d
                 LEFT JOIN patrol_plan_standard c on d.`code` =c.standard_code
                  WHERE c.plan_id =#{id} AND d.del_flag = 0 ) AS ids,
-               b.type as strategyType,b.start_time as strategyStartTime,b.end_time as strategyEndTime,
-               ( SELECT GROUP_CONCAT(d.`week`) FROM  patrol_plan_strategy d
-                   where d.plan_id=#{id} and d.del_flag=0)as ws,
-               ( SELECT GROUP_CONCAT(d.time) FROM  patrol_plan_strategy d
-                 where d.plan_id=#{id} and d.del_flag=0)as ts
+               b.type as strategyType,b.start_time as strategyStartTime,b.end_time as strategyEndTime
         FROM patrol_plan a
                  LEFT JOIN patrol_plan_strategy b on a.id= b.plan_id AND b.del_flag=0
         WHERE
@@ -192,5 +188,13 @@
                             LEFT JOIN patrol_plan_device b on a.`code`=b.device_code
                             LEFT JOIN patrol_plan_standard c ON b.plan_standard_id =c.id
         WHERE c.standard_code= #{standardCode} and   b.plan_id =#{planId}
+    </select>
+    <select id="selectWeek" resultType="java.lang.String">
+     SELECT d.`week` FROM  patrol_plan_strategy d
+          where d.plan_id=#{id} and d.del_flag=0
+    </select>
+    <select id="selectTime" resultType="java.lang.String">
+         SELECT d.time FROM  patrol_plan_strategy d
+          where d.plan_id=#{id} and d.del_flag=0
     </select>
 </mapper>
