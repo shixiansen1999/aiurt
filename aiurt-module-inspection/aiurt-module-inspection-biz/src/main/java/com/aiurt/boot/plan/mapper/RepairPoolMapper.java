@@ -2,6 +2,7 @@ package com.aiurt.boot.plan.mapper;
 
 import com.aiurt.boot.manager.dto.MajorDTO;
 import com.aiurt.boot.plan.entity.RepairPool;
+import com.aiurt.boot.plan.entity.RepairPoolCode;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -32,4 +33,18 @@ public interface RepairPoolMapper extends BaseMapper<RepairPool> {
      * @return
      */
     List<MajorDTO> queryMajorList(@Param("majorCode") List<String> majorCode, @Param("subSystemCode") List<String> subSystemCode);
+
+    /**
+     * 根据检修计划code查询检修标准
+     * @param planCode
+     * @return
+     */
+    List<RepairPoolCode> queryStandardByCode(String planCode);
+
+    /**
+     * 根据检修计划code关联的组织机构
+     * @param planCode
+     * @return
+     */
+    List<String> selectOrgByCode(String planCode);
 }

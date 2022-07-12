@@ -10,6 +10,7 @@ import com.aiurt.boot.manager.mapper.InspectionManagerMapper;
 import com.aiurt.boot.plan.dto.RepairDeviceDTO;
 import com.aiurt.boot.plan.dto.StationDTO;
 import com.aiurt.common.exception.AiurtBootException;
+import com.aiurt.common.util.RedisUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.shiro.SecurityUtils;
@@ -36,6 +37,9 @@ public class InspectionManager {
     private ISysBaseAPI sysBaseAPI;
     @Resource
     private InspectionManagerMapper inspectionManagerMapper;
+    @Resource
+    private RedisUtil redisUtil;
+
 
     /**
      * 翻译专业、专业子系统信息
@@ -73,45 +77,88 @@ public class InspectionManager {
     }
 
     /**
-     * 翻译站点信息
+     * 翻译站点信息，先在redis里面找，没有再去数据库里面找
      *
      * @param codeList code值
      * @return
      */
     public String translateStation(List<StationDTO> codeList) {
-
         if (CollUtil.isEmpty(codeList)) {
             return "";
         }
+
         StringBuilder builder = new StringBuilder();
         // 处理字符拼接
         for (StationDTO stationDTO : codeList) {
             if (StrUtil.isNotEmpty(stationDTO.getLineCode())) {
-                String lineName = inspectionManagerMapper.translateLine(stationDTO.getLineCode());
-                if (StrUtil.isNotEmpty(lineName)) {
-                    builder.append(lineName);
-                }
+                String key = "line_code_" + stationDTO.getLineCode();
+                builder.append(ObjectUtil.isNotEmpty(redisUtil.get(key)) ? (String) redisUtil.get(key) : translateLine(stationDTO.getLineCode()));
             }
+
             if (StrUtil.isNotEmpty(stationDTO.getStationCode())) {
-                String stationName = inspectionManagerMapper.translateStation(stationDTO.getStationCode());
-                if (StrUtil.isNotEmpty(stationName)) {
-                    builder.append(stationName);
-                }
+                String key = "station_code_" + stationDTO.getStationCode();
+                builder.append(ObjectUtil.isNotEmpty(redisUtil.get(key)) ? (String) redisUtil.get(key) : translateStation(stationDTO.getStationCode()));
             }
+
+
             if (StrUtil.isNotEmpty(stationDTO.getPositionCode())) {
-                String positionName = inspectionManagerMapper.translatePosition(stationDTO.getPositionCode());
-                if (StrUtil.isNotEmpty(positionName)) {
-                    builder.append(positionName);
-                }
+                String key = "position_code_" + stationDTO.getPositionCode();
+                builder.append(ObjectUtil.isNotEmpty(redisUtil.get(key)) ? (String) redisUtil.get(key) : translatePosition(stationDTO.getPositionCode()));
             }
+
             if (ObjectUtil.isNotEmpty(builder)) {
                 builder.append(",");
             }
         }
         if (ObjectUtil.isNotEmpty(builder)) {
-            return builder.substring(0, builder.length() - 1).toString();
+            return builder.substring(0, builder.length() - 1);
         }
         return "";
+    }
+
+    /**
+     * 从数据库里面查询位置名称
+     *
+     * @param positionCode
+     * @return
+     */
+    public String translatePosition(String positionCode) {
+        if (StrUtil.isEmpty(positionCode)) {
+            return "";
+        }
+        String positionName = StrUtil.isNotEmpty(inspectionManagerMapper.translatePosition(positionCode)) ? inspectionManagerMapper.translatePosition(positionCode) : "";
+        redisUtil.set("position_code_" + positionCode, positionName);
+        return positionName;
+    }
+
+    /**
+     * 从数据库里面查询站点名称
+     *
+     * @param stationCode
+     * @return
+     */
+    public String translateStation(String stationCode) {
+        if (StrUtil.isEmpty(stationCode)) {
+            return "";
+        }
+        String stationName = StrUtil.isNotEmpty(inspectionManagerMapper.translateStation(stationCode)) ? inspectionManagerMapper.translateStation(stationCode) : "";
+        redisUtil.set("station_code_" + stationCode, stationName);
+        return stationName;
+    }
+
+    /**
+     * 从数据库里面查询线路名称
+     *
+     * @param lineCode 线路编码
+     * @return
+     */
+    public String translateLine(String lineCode) {
+        if (StrUtil.isEmpty(lineCode)) {
+            return "";
+        }
+        String lineName = StrUtil.isNotEmpty(inspectionManagerMapper.translateLine(lineCode)) ? inspectionManagerMapper.translateLine(lineCode) : "";
+        redisUtil.set("line_code_" + lineCode, lineName);
+        return lineName;
     }
 
 
@@ -196,7 +243,7 @@ public class InspectionManager {
      */
     public List<OrgDTO> queryUserByOrdCode(String orgStrs) {
         List<OrgDTO> result = new ArrayList<>();
-        if(StrUtil.isEmpty(orgStrs)){
+        if (StrUtil.isEmpty(orgStrs)) {
             return result;
         }
         List<JSONObject> jsonObjects = sysBaseAPI.queryDepartsByOrgcodes(orgStrs);

@@ -481,13 +481,13 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
             updateWrapper.set(PatrolTask::getStatus, 6)
                     .set(PatrolTask::getEndUserId, sysUser.getId())
                     .set(PatrolTask::getSignUrl, patrolTaskDTO.getSignUrl())
-                    .set(PatrolTask::getEndTime, LocalDateTime.now())
+                    .set(PatrolTask::getSubmitTime, LocalDateTime.now())
                     .eq(PatrolTask::getId, patrolTaskDTO.getId());
         } else {
             updateWrapper.set(PatrolTask::getStatus, 7)
                     .set(PatrolTask::getEndUserId, sysUser.getId())
                     .set(PatrolTask::getSignUrl, patrolTaskDTO.getSignUrl())
-                    .set(PatrolTask::getEndTime, LocalDateTime.now())
+                    .set(PatrolTask::getSubmitTime, LocalDateTime.now())
                     .eq(PatrolTask::getId, patrolTaskDTO.getId());
         }
         update(updateWrapper);

@@ -45,6 +45,12 @@ public interface PatrolPlanMapper extends BaseMapper<PatrolPlan> {
      * @return
      */
     PatrolPlanDto selectId(@Param("id")String id,@Param("code") String code);
+  /**
+   * 查询周期
+   * @param id
+   * @return
+   */
+  List<String> selectWeek(@Param("id")String id,@Param("code") String code);
 
     /**
      *
@@ -79,4 +85,10 @@ public interface PatrolPlanMapper extends BaseMapper<PatrolPlan> {
      * @return
      */
     IPage<Device> viewDetails(@Param("page")Page<Device> page,@Param("standardCode")String standardCode,@Param("planId")String planId);
+  /**
+   * 查询哪个星期
+   * @param id
+   * @return
+   */
+  List<String> selectTime(String id, String code);
 }

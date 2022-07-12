@@ -76,6 +76,7 @@
         <where>
 	           t1.del_flag = 0
                    AND t1.id = #{condition.taskId}
+                   AND t2.del_flag = 0
                <if test="condition.equipmentName !=null ">
                    AND ( SELECT NAME FROM device WHERE CODE = t2.device_code ) LIKE CONCAT ('%', #{condition.equipmentName}, '%')
                </if>
