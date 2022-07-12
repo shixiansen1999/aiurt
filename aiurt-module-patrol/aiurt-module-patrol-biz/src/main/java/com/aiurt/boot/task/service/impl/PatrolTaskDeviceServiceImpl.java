@@ -271,6 +271,7 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
             result.setInputType(l.getInputType());  // 填写数据类型
             result.setDictCode(l.getDictCode());    // 关联的数据字典
             result.setRegular(l.getRegular());  // 数据校验表达式
+            result.setDelFlag(0);  // 数据校验表达式
             addResultList.add(result);
         });
         // 批量添加巡检项目

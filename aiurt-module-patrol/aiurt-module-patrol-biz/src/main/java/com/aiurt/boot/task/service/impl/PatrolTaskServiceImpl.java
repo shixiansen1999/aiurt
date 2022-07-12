@@ -54,6 +54,8 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
     private PatrolTaskUserMapper patrolTaskUserMapper;
     @Autowired
     private PatrolTaskDeviceMapper patrolTaskDeviceMapper;
+    @Autowired
+    private PatrolCheckResultMapper patrolCheckResultMapper;
 
     @Autowired
     private PatrolTaskOrganizationMapper patrolTaskOrganizationMapper;
@@ -491,7 +493,20 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
                     .eq(PatrolTask::getId, patrolTaskDTO.getId());
         }
         update(updateWrapper);
-
+         List<PatrolTaskDevice> patrolTaskDevice = patrolTaskDeviceMapper.selectList(new LambdaQueryWrapper<PatrolTaskDevice>().eq(PatrolTaskDevice::getTaskId,patrolTaskDTO.getId()));
+         patrolTaskDevice.stream().forEach(e->{
+             List<PatrolCheckResult> patrolCheckResultList = patrolCheckResultMapper.selectList(new LambdaQueryWrapper<PatrolCheckResult>().eq(PatrolCheckResult::getTaskDeviceId,e.getId()));
+             List<PatrolCheckResult> collect = patrolCheckResultList.stream().filter(s -> s.getCheckResult() != null &&1== s.getCheckResult()).collect(Collectors.toList());
+             if(CollUtil.isNotEmpty(collect))
+             {
+                 e.setCheckResult(1);
+             }
+             else
+             {
+                 e.setCheckResult(0);
+             }
+             patrolTaskDeviceMapper.updateById(e);
+         });
     }
 
     @Transactional(rollbackFor = Exception.class)
