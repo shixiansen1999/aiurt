@@ -12,15 +12,12 @@ import com.aiurt.boot.task.entity.*;
 import com.aiurt.boot.task.service.*;
 import com.aiurt.modules.device.entity.Device;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import lombok.extern.slf4j.Slf4j;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
-import org.springframework.web.bind.annotation.RequestMapping;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -209,6 +206,8 @@ public class TaskPool implements Job {
                     PatrolTaskDevice patrolTaskDevice = new PatrolTaskDevice();
                     // 任务表ID
                     patrolTaskDevice.setTaskId(task.getId());
+                    //检查状态
+                    patrolTaskDevice.setStatus(0);
                     // 任务标准表ID
                     patrolTaskDevice.setTaskStandardId(taskStandardId);
                     // 巡检单号生成
@@ -243,6 +242,8 @@ public class TaskPool implements Job {
                                     patrolTaskDevice.setTaskId(task.getId());
                                     // 任务标准表ID
                                     patrolTaskDevice.setTaskStandardId(taskStandardId);
+                                    //检查状态
+                                    patrolTaskDevice.setStatus(0);
                                     // 巡检单号生成
                                     String patrolNumber = "XD" + System.currentTimeMillis();
                                     patrolTaskDevice.setPatrolNumber(patrolNumber);
