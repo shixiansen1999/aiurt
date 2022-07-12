@@ -22,6 +22,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -134,11 +135,11 @@ public class PatrolTaskDeviceController extends BaseController<PatrolTaskDevice,
 		LambdaUpdateWrapper<PatrolTaskDevice> updateWrapper= new LambdaUpdateWrapper<>();
 		if(CollUtil.isNotEmpty(collect))
 		{
-			updateWrapper.set(PatrolTaskDevice::getUserId,sysUser.getId()).set(PatrolTaskDevice::getCheckResult,1).set(PatrolTaskDevice::getStatus,2).eq(PatrolTaskDevice::getId,id);
+			updateWrapper.set(PatrolTaskDevice::getUserId,sysUser.getId()).set(PatrolTaskDevice::getCheckResult,1).set(PatrolTaskDevice::getCheckTime, LocalDateTime.now()).set(PatrolTaskDevice::getStatus,2).eq(PatrolTaskDevice::getId,id);
 		}
 		else
 		{
-			updateWrapper.set(PatrolTaskDevice::getUserId,sysUser.getId()).set(PatrolTaskDevice::getCheckResult,0).set(PatrolTaskDevice::getStatus,2).eq(PatrolTaskDevice::getId,id);
+			updateWrapper.set(PatrolTaskDevice::getUserId,sysUser.getId()).set(PatrolTaskDevice::getCheckResult,0).set(PatrolTaskDevice::getCheckTime, LocalDateTime.now()).set(PatrolTaskDevice::getStatus,2).eq(PatrolTaskDevice::getId,id);
 		}
 		patrolTaskDeviceService.update(updateWrapper);
 		return Result.OK("提交工单成功");
