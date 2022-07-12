@@ -524,7 +524,7 @@ public class InspectionStrategyServiceImpl extends ServiceImpl<InspectionStrateg
 
         // 设置周期策略
         if (!InspectionConstant.WEEK.equals(ins.getType()) && ins.getTactics() == null) {
-            throw new AiurtBootException("请先设置检修策略");
+            throw new AiurtBootException("请先设置周期策略");
         }
 
         // 检修标准

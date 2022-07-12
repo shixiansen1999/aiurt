@@ -4,17 +4,13 @@ import com.aiurt.boot.manager.dto.MajorDTO;
 import com.aiurt.boot.plan.dto.*;
 import com.aiurt.boot.plan.entity.RepairPool;
 import com.aiurt.boot.plan.entity.RepairPoolCodeContent;
-import com.aiurt.boot.plan.req.RepairStrategyReq;
-import com.aiurt.boot.plan.req.ManualTaskReq;
-import com.aiurt.boot.plan.req.RepairPoolCodeReq;
-import com.aiurt.boot.plan.req.RepairPoolReq;
+import com.aiurt.boot.plan.req.*;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.vo.LoginUser;
 
-import java.util.Date;
 import java.util.List;
 
 /**
@@ -26,14 +22,9 @@ import java.util.List;
 public interface IRepairPoolService extends IService<RepairPool> {
     /**
      * 检修计划池列表查询
-     *
-     * @param startTime 开始时间
-     * @param endTime   结束时间
-     * @param status    状态
-     * @param workType  作业类型
      * @return
      */
-    List<RepairPool> queryList(Date startTime, Date endTime, Integer status, Integer workType,String stationCode);
+    IPage<RepairPool> queryList(SelectPlanReq selectPlanReq);
 
     /**
      * 获取时间范围和周数

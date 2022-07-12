@@ -12,10 +12,7 @@ import com.aiurt.boot.manager.utils.CodeGenerateUtils;
 import com.aiurt.boot.plan.dto.*;
 import com.aiurt.boot.plan.entity.*;
 import com.aiurt.boot.plan.mapper.*;
-import com.aiurt.boot.plan.req.RepairStrategyReq;
-import com.aiurt.boot.plan.req.ManualTaskReq;
-import com.aiurt.boot.plan.req.RepairPoolCodeReq;
-import com.aiurt.boot.plan.req.RepairPoolReq;
+import com.aiurt.boot.plan.req.*;
 import com.aiurt.boot.plan.service.IRepairPoolService;
 import com.aiurt.boot.standard.entity.InspectionCode;
 import com.aiurt.boot.standard.entity.InspectionCodeContent;
@@ -35,6 +32,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import lombok.SneakyThrows;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
@@ -48,6 +46,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.*;
+import java.util.concurrent.*;
 import java.util.stream.Collectors;
 
 /**
@@ -99,89 +98,83 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
     /**
      * 检修计划池列表查询
      *
-     * @param startTime   开始时间
-     * @param endTime     结束时间
-     * @param status      状态
-     * @param workType    作业类型
-     * @param stationCode 站点编码
      * @return
      */
     @Override
-    public List<RepairPool> queryList(Date startTime, Date endTime, Integer status, Integer workType, String stationCode) {
+    public IPage<RepairPool> queryList(SelectPlanReq selectPlanReq) {
         // 构造查询条件
-        QueryWrapper<RepairPool> queryWrapper = doQuery(startTime, endTime, status, workType, stationCode);
-        List<RepairPool> repairPoolList = baseMapper.selectList(queryWrapper);
+        QueryWrapper<RepairPool> queryWrapper = doQuery(selectPlanReq);
+        Page<RepairPool> page = new Page<RepairPool>(selectPlanReq.getPageNo(), selectPlanReq.getPageSize());
+        page = baseMapper.selectPage(page, queryWrapper);
 
-        if (CollUtil.isNotEmpty(repairPoolList)) {
-            repairPoolList.forEach(repair -> {
-                // 查询检修计划对应的专业和专业子系统
-                String planCode = repair.getCode();
-
-                // 修计划单号查询对应的检修标准
-                List<RepairPoolCode> repairPoolCodes = queryStandardByCode(planCode);
-
-                if (CollUtil.isNotEmpty(repairPoolCodes)) {
-                    // 专业
-                    repair.setMajorName(manager.translateMajor(repairPoolCodes.stream().map(RepairPoolCode::getMajorCode).collect(Collectors.toList()), InspectionConstant.MAJOR));
-                    // 子系统
-                    repair.setSubsystemName(manager.translateMajor(repairPoolCodes.stream().map(RepairPoolCode::getSubsystemCode).collect(Collectors.toList()), InspectionConstant.SUBSYSTEM));
-                }
-
-                // 组织机构
-                List<RepairPoolOrgRel> repairPoolOrgRels = orgRelMapper.selectList(
-                        new LambdaQueryWrapper<RepairPoolOrgRel>()
-                                .eq(RepairPoolOrgRel::getRepairPoolCode, planCode)
-                                .eq(RepairPoolOrgRel::getDelFlag, CommonConstant.DEL_FLAG_0));
-                if (CollUtil.isNotEmpty(repairPoolOrgRels)) {
-                    repair.setOrgName(manager.translateOrg(repairPoolOrgRels.stream().map(r -> r.getOrgCode()).collect(Collectors.toList())));
-                }
-
-                // 站点
-                repair.setStationName(manager.translateStation(repairPoolStationRelMapper.selectStationList(planCode)));
-                // 周期类型
-                repair.setTypeName(sysBaseAPI.translateDict(DictConstant.INSPECTION_CYCLE_TYPE, String.valueOf(repair.getType())));
-                // 状态
-                repair.setStatusName(sysBaseAPI.translateDict(DictConstant.INSPECTION_TASK_STATE, String.valueOf(repair.getStatus())));
-                // 作业类型
-                repair.setWorkTypeName(sysBaseAPI.translateDict(DictConstant.WORK_TYPE, String.valueOf(repair.getWorkType())));
-
+        // 开启线程处理
+        ThreadFactory namedThreadFactory = new ThreadFactoryBuilder()
+                .setNameFormat("repair-pool-%d").build();
+        ExecutorService repairPool = new ThreadPoolExecutor(Runtime.getRuntime().availableProcessors(), Runtime.getRuntime().availableProcessors(),
+                0L, TimeUnit.MILLISECONDS,
+                new LinkedBlockingQueue<Runnable>(), namedThreadFactory);
+        List<Future<RepairPool>> futureList = new ArrayList<>();
+        if (CollUtil.isNotEmpty(page.getRecords())) {
+            page.getRecords().forEach(repair -> {
+                Future<RepairPool> submit = repairPool.submit(new PoolThreadService(repair, sysBaseAPI, manager, repairPoolStationRelMapper, baseMapper));
+                futureList.add(submit);
             });
 
+            // 确认每个线程都执行完成
+            for (Future<RepairPool> fut : futureList) {
+                try {
+                    fut.get();
+                } catch (InterruptedException | ExecutionException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            try {
+                repairPool.shutdown();
+                // (所有的任务都结束的时候，返回TRUE)
+                if (!repairPool.awaitTermination(5 * 1000, TimeUnit.MILLISECONDS)) {
+                    // 5s超时的时候向线程池中所有的线程发出中断(interrupted)。
+                    repairPool.shutdownNow();
+                }
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+                // awaitTermination方法被中断的时候也中止线程池中全部的线程的执行。
+                log.error("awaitTermination interrupted:{}", e);
+                repairPool.shutdownNow();
+            }
         }
 
-        return repairPoolList;
+        return page;
     }
 
     /**
      * 构造查询条件
      *
-     * @param startTime   开始时间
-     * @param endTime     结束时间
-     * @param status      状态
-     * @param workType    作业类型
-     * @param stationCode 站点编码
      * @return
      */
     @NotNull
-    public QueryWrapper<RepairPool> doQuery(Date startTime, Date endTime, Integer status, Integer workType, String stationCode) {
+    public QueryWrapper<RepairPool> doQuery(SelectPlanReq selectPlanReq) {
         QueryWrapper<RepairPool> queryWrapper = new QueryWrapper();
-        queryWrapper.ge("start_time", startTime);
-        queryWrapper.le("start_time", endTime);
+        if (ObjectUtil.isEmpty(selectPlanReq)) {
+            return queryWrapper;
+        }
+        queryWrapper.ge("start_time", selectPlanReq.getStartTime());
+        queryWrapper.le("start_time", selectPlanReq.getEndTime());
         queryWrapper.eq("is_manual", InspectionConstant.NO_IS_MANUAL);
         queryWrapper.eq("del_flag", CommonConstant.DEL_FLAG_0);
-        queryWrapper.orderByAsc("type");
-        if (status != null) {
-            queryWrapper.eq("status", status);
+        queryWrapper.orderByAsc("start_time");
+        if (selectPlanReq.getStatus() != null) {
+            queryWrapper.eq("status", selectPlanReq.getStatus());
         }
-        if (workType != null) {
-            queryWrapper.eq("work_type", workType);
+        if (selectPlanReq.getWorkType() != null) {
+            queryWrapper.eq("work_type", selectPlanReq.getWorkType());
         }
 
         // 根据站所查询
-        if (StrUtil.isNotEmpty(stationCode)) {
+        if (StrUtil.isNotEmpty(selectPlanReq.getStationCode())) {
             List<RepairPoolStationRel> repairPoolStationRels = repairPoolStationRelMapper.selectList(
                     new LambdaQueryWrapper<RepairPoolStationRel>()
-                            .eq(RepairPoolStationRel::getStationCode, stationCode)
+                            .eq(RepairPoolStationRel::getStationCode, selectPlanReq.getStationCode())
                             .eq(RepairPoolStationRel::getDelFlag, CommonConstant.DEL_FLAG_0));
             if (CollUtil.isNotEmpty(repairPoolStationRels)) {
                 queryWrapper.in("code", repairPoolStationRels.stream().map(RepairPoolStationRel::getRepairPoolCode).collect(Collectors.toList()));
@@ -896,7 +889,7 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
 
         // 检修任务单号
         if (StrUtil.isNotEmpty(manualTaskReq.getCode())) {
-            queryWrapper.like("code",StrUtil.cleanBlank(manualTaskReq.getCode()));
+            queryWrapper.like("code", StrUtil.cleanBlank(manualTaskReq.getCode()));
         }
 
         // 检修类型

@@ -5,19 +5,19 @@ import com.aiurt.boot.plan.dto.*;
 import com.aiurt.boot.plan.entity.RepairPool;
 import com.aiurt.boot.plan.entity.RepairPoolCodeContent;
 import com.aiurt.boot.plan.req.RepairStrategyReq;
+import com.aiurt.boot.plan.req.SelectPlanReq;
 import com.aiurt.boot.plan.service.IRepairPoolService;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.system.base.controller.BaseController;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import io.swagger.annotations.*;
 import lombok.extern.slf4j.Slf4j;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.vo.LoginUser;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 /**
@@ -36,26 +36,16 @@ public class RepairPoolController extends BaseController<RepairPool, IRepairPool
 
     /**
      * 检修计划池列表查询
-     * @param startTime 开始时间
-     * @param endTime 结束时间
-     * @param status 状态
-     * @param workType 作业类型
+     *
      * @return
      */
     @AutoLog(value = "检修计划池列表查询")
     @ApiOperation(value = "检修计划池列表查询", notes = "检修计划池列表查询")
     @GetMapping(value = "/list")
-    public Result<List<RepairPool>> queryList(@RequestParam @ApiParam(required = true, value = "开始时间", name = "startTime") @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") Date startTime,
-                                              @RequestParam @ApiParam(required = true, value = "结束时间", name = "endTime") @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") Date endTime,
-                                              @RequestParam(required = false) @ApiParam(value = "状态", name = "status") Integer status,
-                                              @RequestParam(required = false) @ApiParam(value = "作业类型", name = "workType") Integer workType,
-                                              @RequestParam(required = false) @ApiParam(value = "站点编码", name = "stationCode") String stationCode) {
+    public Result<IPage<RepairPool>> queryList(SelectPlanReq selectPlanReq) {
         // todo 数据权限过滤
-        long start = System.currentTimeMillis();
-        List<RepairPool> repairPoolList = repairPoolService.queryList(startTime, endTime,status,workType,stationCode);
-        long end = System.currentTimeMillis();
-        log.info("耗时{}" ,end - start);
-        return Result.OK(repairPoolList);
+        IPage<RepairPool> pageList = repairPoolService.queryList(selectPlanReq);
+        return Result.OK(pageList);
     }
 
 

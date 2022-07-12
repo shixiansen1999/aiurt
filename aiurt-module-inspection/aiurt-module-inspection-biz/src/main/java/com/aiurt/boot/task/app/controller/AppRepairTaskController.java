@@ -9,7 +9,6 @@ import com.aiurt.boot.task.dto.WriteMonadDTO;
 import com.aiurt.boot.task.entity.RepairTask;
 import com.aiurt.boot.task.entity.RepairTaskDeviceRel;
 import com.aiurt.boot.task.service.IRepairTaskDeviceRelService;
-import com.aiurt.boot.task.entity.RepairTaskDeviceRel;
 import com.aiurt.boot.task.service.IRepairTaskService;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.system.base.controller.BaseController;
@@ -39,7 +38,7 @@ public class AppRepairTaskController extends BaseController<RepairTask, IRepairT
     private IRepairTaskService repairTaskService;
 
     @Autowired
-	private IRepairTaskDeviceRelService repairTaskDeviceRelService;
+    private IRepairTaskDeviceRelService repairTaskDeviceRelService;
 
 
     /**
@@ -83,8 +82,8 @@ public class AppRepairTaskController extends BaseController<RepairTask, IRepairT
                                                               @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize
     ) {
         Page<RepairTaskDTO> pageList = new Page<>(pageNo, pageSize);
-        Page<RepairTaskDTO> repairTaskPage = repairTaskService.selectTasklet(pageList, condition);
-        return Result.OK(repairTaskPage);
+        pageList = repairTaskService.selectTasklet(pageList, condition);
+        return Result.OK(pageList);
     }
 
     /**
@@ -298,8 +297,6 @@ public class AppRepairTaskController extends BaseController<RepairTask, IRepairT
     }
 
 
-
-
     /**
      * 检修
      *
@@ -308,15 +305,15 @@ public class AppRepairTaskController extends BaseController<RepairTask, IRepairT
      */
     @AutoLog(value = "app检修任务-检修")
     @ApiOperation(value = "app检修任务-检修", notes = "app检修任务-检修")
-	@PostMapping(value = "/overhaul")
-	public Result<String> edit(@RequestBody RepairTaskDeviceRel repairTaskDeviceRel) {
+    @PostMapping(value = "/overhaul")
+    public Result<String> edit(@RequestBody RepairTaskDeviceRel repairTaskDeviceRel) {
         RepairTaskDeviceRel repairTaskDeviceRel1 = repairTaskDeviceRelService.getById(repairTaskDeviceRel.getId());
-        if (repairTaskDeviceRel1.getStartTime()!=null){
+        if (repairTaskDeviceRel1.getStartTime() != null) {
             return Result.OK("检修已开始!");
-        }else {
+        } else {
             repairTaskDeviceRel.setStartTime(new Date());
             repairTaskDeviceRelService.updateById(repairTaskDeviceRel);
             return Result.OK("成功!");
         }
-	}
+    }
 }
