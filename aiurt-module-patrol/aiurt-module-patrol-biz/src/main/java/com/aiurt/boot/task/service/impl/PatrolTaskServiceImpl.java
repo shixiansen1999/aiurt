@@ -182,6 +182,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
                     // 计划令编号和图片地址
                     task.setPlanOrderCode(patrolAppointInfoDTO.getPlanOrderCode());
                     task.setPlanOrderCodeUrl(patrolAppointInfoDTO.getPlanOrderCodeUrl());
+                    task.setSource(2);
                     // 更新检查开始结束时间
                     task.setStartTime(patrolAppointInfoDTO.getStartTime());
                     task.setEndTime(patrolAppointInfoDTO.getEndTime());
@@ -609,6 +610,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
             PatrolStandard patrolStandard = patrolStandardMapper.selectById(e.getStandardId());
             if(patrolStandard.getDeviceType()==1)
             { e.setSpecifyDevice(1); }
+            else{ e.setSpecifyDevice(0); }
             LambdaQueryWrapper<PatrolTaskDevice> queryWrapper = new LambdaQueryWrapper<>();
             queryWrapper.eq(PatrolTaskDevice::getTaskId, e.getTaskId()).eq(PatrolTaskDevice::getTaskStandardId, e.getTaskStandardId());
             List<PatrolTaskDevice> taskDeviceList = patrolTaskDeviceMapper.selectList(queryWrapper);

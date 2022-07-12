@@ -208,12 +208,15 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
             //检修任务状态
             if (e.getStartTime() == null) {
                 e.setTaskStatusName("未开始");
+                e.setTaskStatus("0");
             }
             if (e.getStartTime() != null) {
                 e.setTaskStatusName("进行中");
+                e.setTaskStatus("1");
             }
             if (e.getIsSubmit() != null && e.getIsSubmit().equals(InspectionConstant.IS_EFFECT)) {
                 e.setTaskStatusName("已提交");
+                e.setTaskStatus("2");
             }
             //提交人名称
             if (e.getOverhaulId() != null) {
