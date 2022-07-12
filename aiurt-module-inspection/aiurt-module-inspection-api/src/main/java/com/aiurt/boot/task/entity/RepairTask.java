@@ -317,9 +317,9 @@ public class RepairTask implements Serializable {
     @ApiModelProperty(value = "检修单号")
     private String overhaulCode;
 
-    /**检修单id*/
+    /**检修人id*/
     @TableField(exist = false)
-    @ApiModelProperty(value = "检修单id")
+    @ApiModelProperty(value = "检修人id")
     private List<String> overhaulId;
 
     /**检修人名称*/
