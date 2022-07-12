@@ -9,7 +9,6 @@ import lombok.Data;
 import org.jeecgframework.poi.excel.annotation.Excel;
 import org.springframework.format.annotation.DateTimeFormat;
 
-import java.util.Date;
 import java.util.List;
 
 /**
@@ -37,6 +36,12 @@ public class PatrolTaskManualDTO {
     @Excel(name = "任务状态：0待指派、1待确认、2待执行、3已退回、4执行中、5已驳回、6待审核、7已完成", width = 15)
     @ApiModelProperty(value = "任务状态：0待指派、1待确认、2待执行、3已退回、4执行中、5已驳回、6待审核、7已完成")
     private java.lang.Integer status;
+    /**
+     * 作业类型：1 A1、2 A2、3 A3、4 B1、5 B2、6 C1、7 C2、8 C3
+     */
+    @Excel(name = "作业类型：1 A1、2 A2、3 A3、4 B1、5 B2、6 C1、7 C2、8 C3", width = 15)
+    @ApiModelProperty(value = "作业类型：1 A1、2 A2、3 A3、4 B1、5 B2、6 C1、7 C2、8 C3")
+    private java.lang.Integer type;
     /*** 任务计划执行日期*/
     @Excel(name = "任务计划执行日期", width = 15, format = "yyyy-MM-dd")
     @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd")
@@ -54,18 +59,16 @@ public class PatrolTaskManualDTO {
     @ApiModelProperty(value = "巡检标准集合")
     @TableField(exist = false)
     List<PatrolTaskStandardDTO> patrolStandardList;
-    /**开始时间*/
-    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
-    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
-    @ApiModelProperty(value = "开始时间")
-    @TableField(exist = false)
-    private Date startTime;
-    /**结束时间*/
-    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
-    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
-    @ApiModelProperty(value = "结束时间")
-    @TableField(exist = false)
-    private Date endTime;
+    /*** 巡检开始时间*/
+    @JsonFormat(timezone = "GMT+8", pattern = "HH:mm")
+    @DateTimeFormat(pattern = "HH:mm")
+    @ApiModelProperty(value = "巡检开始时间")
+    private java.util.Date startTime;
+    /*** 巡检结束时间*/
+    @JsonFormat(timezone = "GMT+8", pattern = "HH:mm")
+    @DateTimeFormat(pattern = "HH:mm")
+    @ApiModelProperty(value = "巡检结束时间")
+    private java.util.Date endTime;
     @Excel(name = "站点名称", width = 15)
     @ApiModelProperty(value = "多选站点集合")
     @TableField(exist = false)
