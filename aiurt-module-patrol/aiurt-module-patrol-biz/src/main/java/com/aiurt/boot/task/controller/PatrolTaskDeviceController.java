@@ -120,12 +120,12 @@ public class PatrolTaskDeviceController extends BaseController<PatrolTaskDevice,
 	 * @return
 	 */
 	@AutoLog(value = " app巡检-巡检清单-填写检查项-提交工单")
-	@ApiOperation(value = " app巡检-巡检清单-填写检查项-提交工单", notes = " app巡检-巡检清单-填写检查项-提交工单")
+	@ApiOperation(value = " app巡检-巡检清单-填写检查项-提交工单", notes = " app巡检-巡检清单-填写检查项-提交	工单")
 	@PostMapping(value = "/patrolTaskCheckItemsSubmit")
-	public Result<?> patrolTaskCheckItemsSubmit(String id, HttpServletRequest req) {
+	public Result<?> patrolTaskCheckItemsSubmit(@RequestBody PatrolTaskDevice patrolTaskDevice, HttpServletRequest req) {
 		LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
 		LambdaUpdateWrapper<PatrolTaskDevice> updateWrapper= new LambdaUpdateWrapper<>();
-		updateWrapper.set(PatrolTaskDevice::getUserId,sysUser.getId()).set(PatrolTaskDevice::getCheckTime, LocalDateTime.now()).set(PatrolTaskDevice::getStatus,2).eq(PatrolTaskDevice::getId,id);
+		updateWrapper.set(PatrolTaskDevice::getUserId,sysUser.getId()).set(PatrolTaskDevice::getCheckTime, LocalDateTime.now()).set(PatrolTaskDevice::getStatus,2).eq(PatrolTaskDevice::getId,patrolTaskDevice.getId());
 		patrolTaskDeviceService.update(updateWrapper);
 		return Result.OK("提交工单成功");
 	}
