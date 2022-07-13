@@ -68,7 +68,6 @@ public class InspectionCodeController extends BaseController<InspectionCode, IIn
         inspectionCodeService.save(inspectionCode);
         return Result.OK("添加成功！");
     }
-
     /**
      * 编辑
      *
