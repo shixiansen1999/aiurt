@@ -72,10 +72,10 @@ public class MaterialBaseTypeServiceImpl extends ServiceImpl<MaterialBaseTypeMap
                         status = CommonConstant.MATERIAL_BASE_TYPE_STATUS_1.toString();
                     }
                 }else{
-                    status = materialBaseType.getStatus();
+                    status = CommonConstant.MATERIAL_BASE_TYPE_STATUS_1.toString();
                 }
                 materialBaseType.setPStatus(status);
-                materialBaseType.setMaterialBaseTypeList(getTreeRes(materialBaseTypeList,materialBaseType.getId().toString()));
+                materialBaseType.setMaterialBaseTypeList(getTreeRes(materialBaseTypeList,materialBaseType.getId()));
             }
         }
         return childList;
