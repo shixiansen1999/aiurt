@@ -41,6 +41,25 @@ public class DeviceDTO extends DictEntity {
     @ApiModelProperty(value = "位置")
     private  String  positionCode;
     /**设备位置*/
+    @Excel(name = "所属专业名称", width = 15)
+    @ApiModelProperty(value = "所属专业名称")
+    @TableField(exist = false)
+    private  String  majorCodeName;
+    /**子系统编号名称*/
+    @Excel(name = "子系统编号名称", width = 15)
+    @ApiModelProperty(value = "子系统编号名称")
+    @TableField(exist = false)
+    private  String  systemCodeName;
+    /**所属专业*/
+    @Excel(name = "所属专业", width = 15)
+    @ApiModelProperty(value = "所属专业")
+    @Dict(dictTable ="cs_major",dicText = "major_name",dicCode = "major_code")
+    private  String  majorCode;
+    /**子系统编号*/
+    @Excel(name = "子系统编号", width = 15)
+    @ApiModelProperty(value = "子系统编号")
+    @Dict(dictTable ="cs_subsystem",dicText = "system_name",dicCode = "system_code")
+    private  String  systemCode;
     @Excel(name = "设备位置", width = 15)
     @ApiModelProperty(value = "设备位置")
     @TableField(exist = false)

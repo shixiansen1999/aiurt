@@ -642,11 +642,15 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
             taskDeviceList.stream().forEach(td -> {
                 if (ObjectUtil.isNotNull(td.getDeviceCode())) {
                     DeviceDTO deviceDTO = patrolTaskDeviceMapper.getTaskStandardDevice(td.getDeviceCode());
-                    if (ObjectUtil.isNotNull(deviceDTO.getPositionCode())) {
+                    if (ObjectUtil.isNotEmpty(deviceDTO.getPositionCode())) {
                         String positionDevice = patrolTaskDeviceMapper.getDevicePosition(deviceDTO.getPositionCode());
                         String position = deviceDTO.getPositionCodeName() + "/" + positionDevice;
                         deviceDTO.setPositionCodeName(position);
                     }
+                    String majorName = patrolTaskDeviceMapper.getMajorName(deviceDTO.getMajorCode());
+                    String sysName = patrolTaskDeviceMapper.getSysName(deviceDTO.getSystemCode());
+                    deviceDTO.setMajorCodeName(majorName);
+                    deviceDTO.setSystemCodeName(sysName);
                     dtoList.add(deviceDTO);
                 }
                 else { e.setDeviceList(new ArrayList<>()); }

@@ -108,4 +108,17 @@ public interface PatrolTaskDeviceMapper extends BaseMapper<PatrolTaskDevice> {
      */
     String getDevicePosition(String positionCode);
 
+    /**
+     * 获取设备的专业
+     * @param majorCode
+     * @return
+     */
+    String getMajorName(String majorCode);
+
+    /**
+     * 获取设备的子系统
+     * @param systemCode
+     * @return
+     */
+    String getSysName(String systemCode);
 }
