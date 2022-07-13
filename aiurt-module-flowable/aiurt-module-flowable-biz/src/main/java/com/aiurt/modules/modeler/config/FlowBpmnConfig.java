@@ -31,6 +31,11 @@ public class FlowBpmnConfig implements EngineConfigurationConfigurer<SpringProce
     public void configure(SpringProcessEngineConfiguration configuration) {
         //设置自定义的uuid生成策略
         configuration.setIdGenerator(uuidGenerator());
+
+        // 字体
+        configuration.setActivityFontName("宋体");
+        configuration.setLabelFontName("宋体");
+        configuration.setAnnotationFontName("宋体");
     }
 
     /**

@@ -17,6 +17,8 @@ import org.flowable.bpmn.model.BpmnModel;
 import org.flowable.editor.language.json.converter.BaseBpmnJsonConverter;
 import org.flowable.editor.language.json.converter.BpmnJsonConverter;
 import org.flowable.editor.language.json.converter.util.CollectionUtils;
+import org.flowable.engine.RepositoryService;
+import org.flowable.engine.repository.Deployment;
 import org.flowable.ui.common.util.XmlUtil;
 import org.flowable.ui.modeler.domain.AbstractModel;
 import org.flowable.ui.modeler.domain.Model;
@@ -36,6 +38,7 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * @program: flow
@@ -68,6 +71,9 @@ public class FlowableBpmnServiceImpl implements IFlowableBpmnService {
 
     @Autowired
     private ObjectMapper objectMapper;
+
+    @Autowired
+    private RepositoryService repositoryService;
 
     @Override
     public Model createInitBpmn(ActCustomModelInfo modelInfo, LoginUser user) {
@@ -165,6 +171,26 @@ public class FlowableBpmnServiceImpl implements IFlowableBpmnService {
      */
     @Override
     public void publishBpmn(String modelId) {
+        Model model = modelService.getModel(modelId);
+        BpmnModel bpmnModel = modelService.getBpmnModel(model);
+
+        // todo校验
+
+        LambdaQueryWrapper<ActCustomModelInfo> modelInfoLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        modelInfoLambdaQueryWrapper.eq(ActCustomModelInfo::getModelId, modelId);
+        ActCustomModelInfo modelInfo = modelInfoService.getOne(modelInfoLambdaQueryWrapper);
+
+        if (Objects.isNull(modelInfo)) {
+            return;
+        }
+
+        Deployment deploy = repositoryService.createDeployment()
+                .name(model.getName())
+                .key(model.getKey())
+                .category(modelInfo.getClassifyCode())
+                .tenantId(model.getTenantId())
+                .addBpmnModel(model.getKey() + BPMN_EXTENSION, bpmnModel)
+                .deploy();
 
     }
 }
