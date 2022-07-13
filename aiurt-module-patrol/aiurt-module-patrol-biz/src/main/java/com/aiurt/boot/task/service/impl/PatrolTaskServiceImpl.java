@@ -74,13 +74,22 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
 
     @Override
     public IPage<PatrolTaskParam> getTaskList(Page<PatrolTaskParam> page, PatrolTaskParam patrolTaskParam) {
-        if (ObjectUtil.isNotEmpty(patrolTaskParam) && ObjectUtil.isNotEmpty(patrolTaskParam.getDateScope())) {
+        if (ObjectUtil.isNotEmpty(patrolTaskParam) && ObjectUtil.isNotEmpty(patrolTaskParam.getDateScope())){
             String[] split = patrolTaskParam.getDateScope().split(",");
             Date dateHead = DateUtil.parse(split[0], "yyyy-MM-dd");
             Date dateEnd = DateUtil.parse(split[1], "yyyy-MM-dd");
             patrolTaskParam.setDateHead(dateHead);
             patrolTaskParam.setDateEnd(dateEnd);
+
         }
+        if (ObjectUtil.isNotEmpty(patrolTaskParam) && ObjectUtil.isNotEmpty(patrolTaskParam.getSubmitDateScope())) {
+            String[] splits = patrolTaskParam.getSubmitDateScope().split(",");
+            Date submitDateHead = DateUtil.parse(splits[0], "yyyy-MM-dd");
+            Date submitDateEnd = DateUtil.parse(splits[1], "yyyy-MM-dd");
+            patrolTaskParam.setSubmitDateHead(submitDateHead);
+            patrolTaskParam.setSubmitDateEnd(submitDateEnd);
+        }
+
         IPage<PatrolTaskParam> taskPage = patrolTaskMapper.getTaskList(page, patrolTaskParam);
         taskPage.getRecords().stream().forEach(l -> {
             // 组织机构信息
@@ -633,11 +642,15 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
             taskDeviceList.stream().forEach(td -> {
                 if (ObjectUtil.isNotNull(td.getDeviceCode())) {
                     DeviceDTO deviceDTO = patrolTaskDeviceMapper.getTaskStandardDevice(td.getDeviceCode());
-                    if (ObjectUtil.isNotNull(deviceDTO.getPositionCode())) {
+                    if (ObjectUtil.isNotEmpty(deviceDTO.getPositionCode())) {
                         String positionDevice = patrolTaskDeviceMapper.getDevicePosition(deviceDTO.getPositionCode());
                         String position = deviceDTO.getPositionCodeName() + "/" + positionDevice;
                         deviceDTO.setPositionCodeName(position);
                     }
+                    String majorName = patrolTaskDeviceMapper.getMajorName(deviceDTO.getMajorCode());
+                    String sysName = patrolTaskDeviceMapper.getSysName(deviceDTO.getSystemCode());
+                    deviceDTO.setMajorCodeName(majorName);
+                    deviceDTO.setSystemCodeName(sysName);
                     dtoList.add(deviceDTO);
                 }
                 else { e.setDeviceList(new ArrayList<>()); }

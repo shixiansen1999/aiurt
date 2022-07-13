@@ -174,4 +174,14 @@ where t1.position_code = #{positionCode}
                  LEFT JOIN patrol_standard t3 on t3.code = t1.standard_code
         WHERE t2.id = #{deviceId}
  </select>
+ <select id="getMajorName" resultType="java.lang.String">
+ select major_name
+ from cs_major
+ where major_code =#{majorCode}
+ </select>
+ <select id="getSysName" resultType="java.lang.String">
+select system_name
+from cs_subsystem
+where system_code = #{systemCode}
+ </select>
 </mapper>
