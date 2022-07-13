@@ -126,7 +126,6 @@ public class PatrolTaskDeviceController extends BaseController<PatrolTaskDevice,
 		LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
 		LambdaUpdateWrapper<PatrolTaskDevice> updateWrapper= new LambdaUpdateWrapper<>();
 		updateWrapper.set(PatrolTaskDevice::getUserId,sysUser.getId()).set(PatrolTaskDevice::getCheckTime, LocalDateTime.now()).set(PatrolTaskDevice::getStatus,2).eq(PatrolTaskDevice::getId,id);
-		updateWrapper.set(PatrolTaskDevice::getUserId,sysUser.getId()).set(PatrolTaskDevice::getCheckTime, LocalDateTime.now()).set(PatrolTaskDevice::getStatus,2).eq(PatrolTaskDevice::getId,id);
 		patrolTaskDeviceService.update(updateWrapper);
 		return Result.OK("提交工单成功");
 	}
