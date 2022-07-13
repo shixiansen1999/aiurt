@@ -496,6 +496,14 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
             //检查项类型
             r.setTypeName(sysBaseAPI.translateDict(DictConstant.INSPECTION_PROJECT, String.valueOf(r.getType())));
 
+            //父级名称
+            if (r.getPid()!=null){
+                RepairTaskResult repairTaskResult = repairTaskResultMapper.selectById(r.getPid());
+                if (ObjectUtil.isNotNull(repairTaskResult)){
+                    r.setParentName(repairTaskResult.getName());
+                }
+            }
+
             //检修人名称
             if (r.getStaffId() != null) {
                 LoginUser userById = sysBaseAPI.getUserById(r.getStaffId());
