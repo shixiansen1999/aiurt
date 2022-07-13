@@ -66,7 +66,11 @@ public class MaterialBaseTypeServiceImpl extends ServiceImpl<MaterialBaseTypeMap
             for (MaterialBaseType materialBaseType : childList) {
                 if(!CommonConstant.SYSTEM_SPLIT_PID.equals(pid)){
                     MaterialBaseType materialBaseTypeFather = materialBaseTypeList.stream().filter(m -> pid.equals(m.getId())).collect(Collectors.toList())==null?new MaterialBaseType():materialBaseTypeList.stream().filter(m -> pid.equals(m.getId())).collect(Collectors.toList()).get(0);
-                    status = materialBaseTypeFather.getPStatus();
+                    if(CommonConstant.MATERIAL_BASE_TYPE_STATUS_0.toString().equals(materialBaseTypeFather.getPStatus()) || CommonConstant.MATERIAL_BASE_TYPE_STATUS_0.toString().equals(materialBaseTypeFather.getStatus())){
+                        status = CommonConstant.MATERIAL_BASE_TYPE_STATUS_0.toString();
+                    }else{
+                        status = CommonConstant.MATERIAL_BASE_TYPE_STATUS_1.toString();
+                    }
                 }else{
                     status = materialBaseType.getStatus();
                 }

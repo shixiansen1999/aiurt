@@ -441,4 +441,5 @@ public interface CommonConstant {
     * 物资分类状态
     */
    public static final Integer MATERIAL_BASE_TYPE_STATUS_1 = 1;
+   public static final Integer MATERIAL_BASE_TYPE_STATUS_0 = 0;
 }
