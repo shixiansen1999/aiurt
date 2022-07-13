@@ -98,7 +98,7 @@ public class InspectionStrategyServiceImpl extends ServiceImpl<InspectionStrateg
         inspectionStrategy.setName(inspectionStrategyDTO.getName());
         inspectionStrategy.setYear(inspectionStrategyDTO.getYear());
         inspectionStrategy.setType(inspectionStrategyDTO.getType());
-        inspectionStrategy.setTactics(inspectionStrategy.getTactics());
+        inspectionStrategy.setTactics(inspectionStrategyDTO.getTactics());
         inspectionStrategy.setIsReceipt(inspectionStrategyDTO.getIsReceipt());
         inspectionStrategy.setIsConfirm(inspectionStrategyDTO.getIsConfirm());
         inspectionStrategy.setWorkType(inspectionStrategyDTO.getWorkType());
