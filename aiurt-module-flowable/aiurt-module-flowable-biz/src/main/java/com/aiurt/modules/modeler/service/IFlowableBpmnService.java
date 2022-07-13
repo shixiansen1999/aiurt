@@ -44,4 +44,10 @@ public interface IFlowableBpmnService {
      * @return
      */
     String importBpmnModel(String modelId, String fileName, ByteArrayInputStream modelStream, LoginUser user);
+
+    /**
+     * 部署流程
+     * @param modelId
+     */
+    void publishBpmn(String modelId);
 }

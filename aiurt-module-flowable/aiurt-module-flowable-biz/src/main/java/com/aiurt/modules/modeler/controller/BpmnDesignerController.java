@@ -6,6 +6,7 @@ import com.aiurt.modules.modeler.service.IFlowableBpmnService;
 import io.swagger.annotations.Api;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.SecurityUtils;
+import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,16 +29,20 @@ public class BpmnDesignerController {
     @Autowired
     private IFlowableBpmnService flowableBpmnService;
 
+    /**
+     * 根据modelid 查询bpmn xml
+     * @param modelId
+     * @return
+     */
     @GetMapping(value = "/getBpmnByModelId/{modelId}")
     public Result<ModelInfoVo> getBpmnByModelId(@PathVariable String modelId) {
-
         ModelInfoVo modelInfoVo = flowableBpmnService.loadBpmnXmlByModelId(modelId);
         return Result.ok(modelInfoVo);
     }
 
 
     /**
-     *
+     * 保存bpmn模型
      * @param modelInfoVo
      * @return
      */
@@ -48,6 +53,19 @@ public class BpmnDesignerController {
         String data = flowableBpmnService.importBpmnModel(modelInfoVo.getModelId(),
                 modelInfoVo.getFileName(), byteArrayInputStream, user);
         return Result.OK(data);
+    }
+
+
+    /**
+     * 发布Bpmn
+     *
+     * @param modelId 模型id
+     * @return
+     */
+    @PostMapping(value = "/publishBpmn/{modelId}", produces = "application/json")
+    public Result<?> publishBpmn(@PathVariable String modelId) {
+        flowableBpmnService.publishBpmn(modelId);
+        return Result.OK("部署成功");
     }
 
 }

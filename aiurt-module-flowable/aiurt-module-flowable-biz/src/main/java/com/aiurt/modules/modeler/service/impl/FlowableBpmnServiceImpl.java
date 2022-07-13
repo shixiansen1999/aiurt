@@ -4,9 +4,11 @@ import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.modules.modeler.dto.ModelInfoVo;
 import com.aiurt.modules.modeler.entity.ActCustomModelInfo;
 import com.aiurt.modules.modeler.enums.ModelFormStatusEnum;
+import com.aiurt.modules.modeler.service.IActCustomModelInfoService;
 import com.aiurt.modules.modeler.service.IFlowableBpmnService;
 import com.aiurt.modules.modeler.service.IFlowableModelService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
@@ -18,12 +20,12 @@ import org.flowable.editor.language.json.converter.util.CollectionUtils;
 import org.flowable.ui.common.util.XmlUtil;
 import org.flowable.ui.modeler.domain.AbstractModel;
 import org.flowable.ui.modeler.domain.Model;
-import org.flowable.ui.modeler.model.ModelKeyRepresentation;
 import org.flowable.ui.modeler.model.ModelRepresentation;
 import org.flowable.ui.modeler.service.ConverterContext;
 import org.flowable.ui.modeler.serviceapi.ModelService;
 import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import javax.xml.stream.XMLInputFactory;
@@ -59,6 +61,13 @@ public class FlowableBpmnServiceImpl implements IFlowableBpmnService {
 
     @Autowired
     protected BpmnJsonConverter bpmnJsonConverter;
+
+    @Autowired
+    @Lazy
+    private IActCustomModelInfoService modelInfoService;
+
+    @Autowired
+    private ObjectMapper objectMapper;
 
     @Override
     public Model createInitBpmn(ActCustomModelInfo modelInfo, LoginUser user) {
@@ -129,23 +138,33 @@ public class FlowableBpmnServiceImpl implements IFlowableBpmnService {
         if (bpmnModel.getLocationMap().size() == 0) {
             throw new AiurtBootException( "No required BPMN DI information found in definition " + fileName);
         }
-/*
         ConverterContext converterContext = new ConverterContext(modelService, objectMapper);
+
         List<AbstractModel> decisionTables = modelService.getModelsByModelType(AbstractModel.MODEL_TYPE_DECISION_TABLE);
         decisionTables.forEach(abstractModel -> {
             Model model = (Model) abstractModel;
             converterContext.addDecisionTableModel(model);
         });
+
         ObjectNode modelNode = bpmnJsonConverter.convertToJson(bpmnModel, converterContext);
-       // this.setProcessPropertiesToKey(modelNode, processModel.getKey());
         AbstractModel savedModel = modelService.saveModel(modelId, processModel.getName(), processModel.getKey(),
                 processModel.getDescription(), modelNode.toString(), false,
-                null, user.getUserNo());
+                null, user.getUsername());
         LambdaQueryWrapper<ActCustomModelInfo> modelInfoLambdaQueryWrapper = new LambdaQueryWrapper<>();
-        modelInfoLambdaQueryWrapper.eq(ModelInfo::getModelId, savedModel.getId());
-        ModelInfo modelInfo = modelInfoService.getOne(modelInfoLambdaQueryWrapper);
+        modelInfoLambdaQueryWrapper.eq(ActCustomModelInfo::getModelId, savedModel.getId());
+        ActCustomModelInfo modelInfo = modelInfoService.getOne(modelInfoLambdaQueryWrapper);
         modelInfo.setStatus(ModelFormStatusEnum.DFB.getStatus());
-        modelInfo.setExtendStatus(ModelFormStatusEnum.DFB.getStatus());*/
-        return null;
+        modelInfo.setExtendStatus(ModelFormStatusEnum.DFB.getStatus());
+        modelInfoService.updateById(modelInfo);
+        return "保存成功";
+    }
+
+    /**
+     * 部署流程
+     * @param modelId
+     */
+    @Override
+    public void publishBpmn(String modelId) {
+
     }
 }

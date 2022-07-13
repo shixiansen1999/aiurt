@@ -32,6 +32,7 @@ import java.util.List;
 @RequestMapping("/modeler/actCustomModelInfo")
 @Slf4j
 public class ActCustomModelInfoController extends BaseController<ActCustomModelInfo, IActCustomModelInfoService> {
+
 	@Autowired
 	private IActCustomModelInfoService actCustomModelInfoService;
 
@@ -136,9 +137,9 @@ public class ActCustomModelInfoController extends BaseController<ActCustomModelI
 	 * @param modelId
 	 * @return
 	 */
-	//@AutoLog(value = "flowable流程模板定义信息-通过id查询")
+	@AutoLog(value = "flowable流程模板定义信息-通过id查询")
 	@ApiOperation(value="flowable流程模板定义信息-通过id查询", notes="flowable流程模板定义信息-通过id查询")
-	@GetMapping(value = "/queryById")
+	@GetMapping(value = "/queryByModelId")
 	public Result<ActCustomModelInfo> queryByModelId(@RequestParam(name="modelId",required=true) String modelId) {
 		LambdaQueryWrapper<ActCustomModelInfo> wrapper = new LambdaQueryWrapper<>();
 		wrapper.eq(ActCustomModelInfo::getModelId, modelId).last("limit 1");
