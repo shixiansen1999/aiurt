@@ -60,9 +60,17 @@ public class MaterialBaseTypeServiceImpl extends ServiceImpl<MaterialBaseTypeMap
     }
 
     List<MaterialBaseType> getTreeRes(List<MaterialBaseType> materialBaseTypeList,String pid){
+        String status = "";
         List<MaterialBaseType> childList = materialBaseTypeList.stream().filter(materialBaseType -> pid.equals(materialBaseType.getPid())).collect(Collectors.toList());
         if(childList != null && childList.size()>0){
             for (MaterialBaseType materialBaseType : childList) {
+                if(!CommonConstant.SYSTEM_SPLIT_PID.equals(pid)){
+                    MaterialBaseType materialBaseTypeFather = materialBaseTypeList.stream().filter(m -> pid.equals(m.getId())).collect(Collectors.toList())==null?new MaterialBaseType():materialBaseTypeList.stream().filter(m -> pid.equals(m.getId())).collect(Collectors.toList()).get(0);
+                    status = materialBaseTypeFather.getPStatus();
+                }else{
+                    status = materialBaseType.getStatus();
+                }
+                materialBaseType.setPStatus(status);
                 materialBaseType.setMaterialBaseTypeList(getTreeRes(materialBaseTypeList,materialBaseType.getId().toString()));
             }
         }

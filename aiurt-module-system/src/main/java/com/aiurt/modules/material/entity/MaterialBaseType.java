@@ -117,4 +117,8 @@ public class MaterialBaseType {
 	@ApiModelProperty(value = "备用字段")
 	@TableField(exist = false)
 	private String byType = "wzfl";
+
+	@ApiModelProperty(value = "父级状态")
+	@TableField(exist = false)
+	private String pStatus ;
 }

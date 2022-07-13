@@ -179,6 +179,7 @@ public class MaterialBaseTypeController {
         if(id != null && !"".equals(id)){
             queryWrapper.eq("pid", id);
         }
+        queryWrapper.eq("status",CommonConstant.MATERIAL_BASE_TYPE_STATUS_1);
         List<MaterialBaseType> materialBaseTypeList = iMaterialBaseTypeService.list(queryWrapper.orderByDesc("create_time"));
         List<MaterialBaseType> materialBaseTypeListres = iMaterialBaseTypeService.treeList(materialBaseTypeList,id);
         result.setSuccess(true);
