@@ -99,6 +99,24 @@ public class PatrolTaskParam extends PatrolTask {
     @ApiModelProperty(value = "任务计划执行日期范围结束日期")
     private Date dateEnd;
     /**
+     * 任务提交日期范围
+     */
+    @Excel(name = "任务提交日期范围", width = 15)
+    @ApiModelProperty(value = "任务提交日期范围")
+    private String submitDateScope;
+    /**
+     * 任务提交日期范围开始日期
+     */
+    @Excel(name = "任务提交日期范围开始日期", width = 15)
+    @ApiModelProperty(value = "任务提交日期范围开始日期")
+    private Date submitDateHead;
+    /**
+     * 任务提交日期范围结束日期
+     */
+    @Excel(name = "任务提交日期范围结束日期", width = 15)
+    @ApiModelProperty(value = "任务提交日期范围结束日期")
+    private Date submitDateEnd;
+    /**
      * 专业信息
      */
     @Excel(name = "专业信息", width = 15)

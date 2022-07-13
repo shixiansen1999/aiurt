@@ -62,7 +62,7 @@ FROM
         patrol_task pt
         WHERE
         pt.del_flag = 0
-
+        and pt.rebuild = 0
         <if test="patrolTask.name != null and patrolTask.name != ''">
             and pt.name like concat('%',#{patrolTask.name},'%')
         </if>
@@ -102,6 +102,11 @@ FROM
             AND DATE_FORMAT( pt.patrol_date, '%Y-%m-%d' )
             BETWEEN DATE_FORMAT( #{patrolTask.dateHead}, '%Y-%m-%d' )
             AND DATE_FORMAT( #{patrolTask.dateEnd}, '%Y-%m-%d')
+        </if>
+        <if test="patrolTask.submitDateHead != null and patrolTask.submitDateEnd != null">
+            AND DATE_FORMAT( pt.submit_time, '%Y-%m-%d' )
+            BETWEEN DATE_FORMAT( #{patrolTask.submitDateHead}, '%Y-%m-%d' )
+            AND DATE_FORMAT( #{patrolTask.submitDateEnd}, '%Y-%m-%d')
         </if>
         <if test="patrolTask.patrolDate != null and patrolTask.patrolDate != null">
             AND DATE_FORMAT( pt.patrol_date, '%Y-%m-%d' ) = DATE_FORMAT(#{patrolTask.patrolDate}, '%Y-%m-%d' )
