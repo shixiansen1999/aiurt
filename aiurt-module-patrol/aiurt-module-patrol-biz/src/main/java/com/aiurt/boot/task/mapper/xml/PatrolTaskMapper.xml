@@ -103,6 +103,9 @@ FROM
             BETWEEN DATE_FORMAT( #{patrolTask.dateHead}, '%Y-%m-%d' )
             AND DATE_FORMAT( #{patrolTask.dateEnd}, '%Y-%m-%d')
         </if>
+        <if test="patrolTask.patrolDate != null and patrolTask.patrolDate != null">
+            AND DATE_FORMAT( pt.patrol_date, '%Y-%m-%d' ) = DATE_FORMAT(#{patrolTask.patrolDate}, '%Y-%m-%d' )
+        </if>
         order by pt.create_time desc
     </select>
     <select id="getUserName" resultType="java.lang.String">
