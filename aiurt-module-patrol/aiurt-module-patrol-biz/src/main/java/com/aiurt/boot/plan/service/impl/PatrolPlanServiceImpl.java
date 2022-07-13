@@ -1,5 +1,6 @@
 package com.aiurt.boot.plan.service.impl;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.aiurt.boot.plan.dto.PatrolPlanDto;
 import com.aiurt.boot.plan.dto.QuerySiteDto;
@@ -7,6 +8,7 @@ import com.aiurt.boot.plan.entity.*;
 import com.aiurt.boot.plan.mapper.*;
 import com.aiurt.boot.plan.service.IPatrolPlanService;
 import com.aiurt.boot.standard.dto.PatrolStandardDto;
+import com.aiurt.boot.standard.dto.StationDTO;
 import com.aiurt.boot.standard.entity.PatrolStandard;
 import com.aiurt.boot.standard.mapper.PatrolStandardMapper;
 import com.aiurt.modules.device.entity.Device;
@@ -143,7 +145,8 @@ public class PatrolPlanServiceImpl extends ServiceImpl<PatrolPlanMapper, PatrolP
     public PatrolPlanDto selectId(String id,String code) {
         PatrolPlanDto patrolPlanDto = baseMapper.selectId(id,code);
         if(ObjectUtil.isNotEmpty(patrolPlanDto.getSiteCode())){
-        patrolPlanDto.setSiteCodes(Arrays.asList(patrolPlanDto.getSiteCode().split(",")));}
+        patrolPlanDto.setSiteCodes(Arrays.asList(patrolPlanDto.getSiteCode().split(",")));
+        }
         if (ObjectUtil.isNotEmpty(patrolPlanDto.getMechanismCode())){
         patrolPlanDto.setMechanismCodes(Arrays.asList(patrolPlanDto.getMechanismCode().split(",")));
         }

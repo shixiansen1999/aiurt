@@ -34,7 +34,9 @@ public class InspectionCodeDTO extends InspectionCode {
     @Excel(name = "判断是否可以删除0为可删,其他都为不可删",width = 15)
     @ApiModelProperty(value = "判断是否可以删除0为可删,其他都为不可删")
     private Integer number;
-
+    @Excel(name = "巡检策略Code")
+    @ApiModelProperty(value = "巡检策略Code")
+    private String inspectionStrCode;
     @ApiModelProperty(value = "选择的设备集合")
     @TableField(exist = false)
     List<Device> devices;
