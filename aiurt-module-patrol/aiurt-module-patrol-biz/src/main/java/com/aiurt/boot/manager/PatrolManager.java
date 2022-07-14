@@ -99,4 +99,21 @@ public class PatrolManager
         }
         return user;
     }
+
+    /**
+     * 判断是否是当前任务人(领取||指派)
+     * @return
+     */
+    public boolean checkTaskUser(String taskId) {
+        LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        List<String> userList = patrolManagerMapper.getUser(taskId);
+        for (String s:userList)
+        {
+            if(s.equals(user.getId()))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
 }

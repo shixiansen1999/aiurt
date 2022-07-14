@@ -9,6 +9,7 @@ import lombok.Data;
 import org.jeecgframework.poi.excel.annotation.Excel;
 import org.springframework.format.annotation.DateTimeFormat;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -132,5 +133,17 @@ public class PatrolTaskDTO
     @Excel(name = "任务计划执行日期范围", width = 15)
     @ApiModelProperty(value = "任务计划执行日期范围")
     private String dateScope;
+    /**
+     * 任务计划执行日期范围开始日期
+     */
+    @Excel(name = "任务计划执行日期范围开始日期", width = 15)
+    @ApiModelProperty(value = "任务计划执行日期范围开始日期")
+    private Date dateHead;
+    /**
+     * 任务计划执行日期范围结束日期
+     */
+    @Excel(name = "任务计划执行日期范围结束日期", width = 15)
+    @ApiModelProperty(value = "任务计划执行日期范围结束日期")
+    private Date dateEnd;
 }
 

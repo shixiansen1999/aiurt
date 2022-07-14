@@ -130,7 +130,8 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
     @AutoLog(value = "PC巡检任务池详情-巡检工单详情")
     @ApiOperation(value = "PC巡检任务池详情-巡检工单详情", notes = "PC巡检任务池详情-巡检工单详情")
     @RequestMapping(value = "/billInfoByNumber", method = {RequestMethod.GET, RequestMethod.POST})
-    public Result<?> selectBillInfoByNumber(@RequestParam("patrolNumber") String patrolNumber, HttpServletRequest req) {
+    public Result<?> selectBillInfoByNumber(@ApiParam(name = "patrolNumber", value = "巡检单号") @RequestParam("patrolNumber") String patrolNumber,
+                                            HttpServletRequest req) {
         Map<String, Object> map = patrolTaskDeviceService.selectBillInfoByNumber(patrolNumber);
         return Result.OK(map);
     }
@@ -144,7 +145,7 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
     @AutoLog(value = "PC巡检任务池-获取指派人员")
     @ApiOperation(value = "PC巡检任务池-获取指派人员", notes = "PC巡检任务池-获取指派人员")
     @RequestMapping(value = "/getAssignee", method = {RequestMethod.GET, RequestMethod.POST})
-    public Result<?> getAssignee(@RequestParam("code") List<String> list) {
+    public Result<?> getAssignee(@ApiParam(name = "code", value = "任务编号集合") @RequestParam("code") List<String> list) {
         List<PatrolUserInfoDTO> userInfo = patrolTaskService.getAssignee(list);
         return Result.OK(userInfo);
     }
@@ -188,8 +189,10 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
     @AutoLog(value = "PC巡检任务列表-任务审核")
     @ApiOperation(value = "PC巡检任务列表-任务审核", notes = "PC巡检任务列表-任务审核")
     @PostMapping(value = "/taskAudit")
-    public Result<?> taskAudit(@RequestParam("taskCode") String code, @RequestParam("auditStatus") Integer auditStatus,
-                               String auditReason, String remark) {
+    public Result<?> taskAudit(@ApiParam(name = "taskCode", value = "任务编号") @RequestParam("taskCode") String code,
+                               @ApiParam(name = "auditStatus", value = "审核状态:0不通过，1通过") @RequestParam("auditStatus") Integer auditStatus,
+                               @ApiParam(name = "auditReason", value = "审核不通过理由") String auditReason,
+                               @ApiParam(name = "remark", value = "审核备注") String remark) {
         patrolTaskService.taskAudit(code, auditStatus, auditReason, remark);
         if (PatrolConstant.AUDIT_NOPASS.equals(auditStatus)) {
             return Result.OK("不通过");
@@ -371,10 +374,10 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
     @PostMapping(value = "/patrolTaskReceive")
     public Result<?> patrolTaskReceive(PatrolTaskDTO patrolTaskDTO, HttpServletRequest req) {
         patrolTaskService.getPatrolTaskReceive(patrolTaskDTO);
-        if (PatrolConstant.TASK_CONFIRM==patrolTaskDTO.getStatus()) {
+        if (PatrolConstant.TASK_CONFIRM == patrolTaskDTO.getStatus()) {
             return Result.OK("确认成功");
         }
-        if (PatrolConstant.TASK_EXECUTE==patrolTaskDTO.getStatus()) {
+        if (PatrolConstant.TASK_EXECUTE == patrolTaskDTO.getStatus()) {
             return Result.OK("执行成功");
         }
         return Result.OK("领取成功");

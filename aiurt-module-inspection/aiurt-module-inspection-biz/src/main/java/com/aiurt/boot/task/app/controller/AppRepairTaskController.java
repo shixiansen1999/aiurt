@@ -257,7 +257,7 @@ public class AppRepairTaskController extends BaseController<RepairTask, IRepairT
      */
     @AutoLog(value = "检修单同行人下拉")
     @ApiOperation(value = "检修单同行人下拉", notes = "检修单同行人下拉")
-    @GetMapping(value = "/检修单同行人下拉")
+    @GetMapping(value = "/peerDropDown")
     public Result<List<OrgDTO>> queryPeerList(@RequestParam @ApiParam(value = "检修单id", name = "id", required = true) String id) {
         List<OrgDTO> orgDTOList = repairTaskService.queryPeerList(id);
         return Result.OK(orgDTOList);
