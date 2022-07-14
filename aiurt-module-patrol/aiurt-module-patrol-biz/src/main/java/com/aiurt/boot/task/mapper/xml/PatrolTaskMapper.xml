@@ -8,8 +8,10 @@
         where t1.status not in (6,7,8) and t1.del_flag = 0
         and t1.discard_status = 0
         and t1.id not in(select id from patrol_task where source=3 and (`status` =0 or `status`=3))
-        <if test="patrolTaskDTO.patrolDate !=null">
-            and DATE_FORMAT(t1.patrol_date, '%Y-%m-%d') = DATE_FORMAT(#{patrolTaskDTO.patrolDate},'%Y-%m-%d')
+        <if test="patrolTaskDTO.dateScope !=null">
+            and DATE_FORMAT(t1.patrol_date, '%Y-%m-%d' )
+            between DATE_FORMAT(#{patrolTaskDTO.dateHead}, '%Y-%m-%d')
+            and DATE_FORMAT(#{patrolTaskDTO.dateEnd}, '%Y-%m-%d')
         </if>
         <if test="patrolTaskDTO.status!=null">
             and t1.status = #{patrolTaskDTO.status}
@@ -29,8 +31,10 @@
         from patrol_task t1
         where t1.status in (6,7) and t1.del_flag = 0
         and pt.discard_status = 0
-        <if test="patrolTaskDTO.patrolDate !=null">
-            and DATE_FORMAT(t1.patrol_date, '%Y-%m-%d') = DATE_FORMAT(#{patrolTaskDTO.patrolDate}, '%Y-%m-%d')
+           <if test="patrolTaskDTO.dateScope !=null">
+            and DATE_FORMAT(t1.patrol_date, '%Y-%m-%d' )
+            between DATE_FORMAT(#{patrolTaskDTO.dateHead}, '%Y-%m-%d')
+            and DATE_FORMAT(#{patrolTaskDTO.dateEnd}, '%Y-%m-%d')
         </if>
         <if test="patrolTaskDTO.status!=null">
             and t1.status = #{patrolTaskDTO.status}
@@ -162,10 +166,10 @@
         <if test="patrolTaskDTO.status !=null">
             and t1.status = #{patrolTaskDTO.status}
         </if>
-        <if test="patrolTaskDTO.dateScope!=null and patrolTaskDTO.dateScope!=null ">
+         <if test="patrolTaskDTO.dateScope !=null">
             and DATE_FORMAT(t1.patrol_date, '%Y-%m-%d' )
-            between DATE_FORMAT(#{patrolTaskDTO.dateScope}, '%Y-%m-%d')
-            and DATE_FORMAT(#{patrolTaskDTO.dateScope}, '%Y-%m-%d')
+            between DATE_FORMAT(#{patrolTaskDTO.dateHead}, '%Y-%m-%d')
+            and DATE_FORMAT(#{patrolTaskDTO.dateEnd}, '%Y-%m-%d')
         </if>
         order by t1.create_time desc
     </select>

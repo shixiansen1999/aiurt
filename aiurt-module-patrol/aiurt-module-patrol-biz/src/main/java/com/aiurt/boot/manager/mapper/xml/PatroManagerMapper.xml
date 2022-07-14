@@ -28,6 +28,11 @@ select line_name from cs_line where del_flag = 0 and line_code = #{code}
     left join patrol_task_user t2 on t1.code = t2.task_code
     where t2.task_code = #{code}
 </select>
+<select id="getUser" resultType="java.lang.String">
+select user_id
+from patrol_task_user
+where task_code = #{taskCode}
+</select>
 
 
 </mapper>

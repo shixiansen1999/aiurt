@@ -1,12 +1,12 @@
 package com.aiurt.modules.modeler.controller;
 
 
+import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.modules.modeler.dto.ModelInfoVo;
 import com.aiurt.modules.modeler.service.IFlowableBpmnService;
 import io.swagger.annotations.Api;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.SecurityUtils;
-import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -62,7 +62,8 @@ public class BpmnDesignerController {
      * @param modelId 模型id
      * @return
      */
-    @PostMapping(value = "/publishBpmn/{modelId}", produces = "application/json")
+    @PutMapping(value = "/publishBpmn/{modelId}", produces = "application/json")
+    @AutoLog(value = "部署流程")
     public Result<?> publishBpmn(@PathVariable String modelId) {
         flowableBpmnService.publishBpmn(modelId);
         return Result.OK("部署成功");

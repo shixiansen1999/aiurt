@@ -936,7 +936,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
      */
     private void dealDevice(Fault fault, List<FaultDevice> faultDeviceList) {
         if (StrUtil.isNotBlank(fault.getDeviceCodes())) {
-            List<FaultDevice> deviceList = StrUtil.split(fault.getDeviceCode(), ',').stream().map(deviceCode -> {
+            List<FaultDevice> deviceList = StrUtil.split(fault.getDeviceCodes(), ',').stream().map(deviceCode -> {
                 FaultDevice faultDevice = new FaultDevice();
                 faultDevice.setDeviceCode(deviceCode);
                 return faultDevice;
@@ -953,7 +953,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         if (CollectionUtil.isNotEmpty(faultDeviceList)) {
 
             faultDeviceList.stream().forEach(faultDevice -> {
-                faultDevice.setDeviceId(faultDevice.getDeviceId());
+                faultDevice.setDeviceId(faultDevice.getId());
                 faultDevice.setId(null);
                 faultDevice.setDelFlag(0);
                 faultDevice.setFaultCode(fault.getCode());

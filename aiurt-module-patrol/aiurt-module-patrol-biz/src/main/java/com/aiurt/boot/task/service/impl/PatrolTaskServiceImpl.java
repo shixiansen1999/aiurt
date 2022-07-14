@@ -236,6 +236,14 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
 
     @Override
     public Page<PatrolTaskDTO> getPatrolTaskPoolList(Page<PatrolTaskDTO> pageList, PatrolTaskDTO patrolTaskDTO) {
+        if (ObjectUtil.isNotEmpty(patrolTaskDTO.getDateScope())) {
+            String[] split = patrolTaskDTO.getDateScope().split(",");
+            Date dateHead = DateUtil.parse(split[0], "yyyy-MM-dd");
+            Date dateEnd = DateUtil.parse(split[1], "yyyy-MM-dd");
+            patrolTaskDTO.setDateHead(dateHead);
+            patrolTaskDTO.setDateEnd(dateEnd);
+
+        }
         List<PatrolTaskDTO> taskList = patrolTaskMapper.getPatrolTaskPoolList(pageList, patrolTaskDTO);
         taskList.stream().forEach(e -> {
             String userName = patrolTaskMapper.getUserName(e.getBackId());
@@ -283,10 +291,10 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
     public void getPatrolTaskReceive(PatrolTaskDTO patrolTaskDTO) {
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         LambdaUpdateWrapper<PatrolTask> updateWrapper = new LambdaUpdateWrapper<>();
+        PatrolTask patrolTask = patrolTaskMapper.selectById(patrolTaskDTO.getId());
         //个人领取：将待指派或退回之后重新领取改为待执行，变为个人领取（传任务主键id,状态）
         if (PatrolConstant.TASK_INIT.equals(patrolTaskDTO.getStatus()) || PatrolConstant.TASK_RETURNED.equals(patrolTaskDTO.getStatus())) {
             // 当前登录人所属部门是在检修任务的指派部门范围内才可以领取
-            PatrolTask patrolTask = patrolTaskMapper.selectById(patrolTaskDTO.getId());
             List<PatrolTaskOrganization> patrolTaskOrganizations = patrolTaskOrganizationMapper.selectList(
                     new LambdaQueryWrapper<PatrolTaskOrganization>()
                             .eq(PatrolTaskOrganization::getTaskCode, patrolTask.getCode())
@@ -302,7 +310,6 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
                     .eq(PatrolTask::getId, patrolTaskDTO.getId());
             update(updateWrapper);
             //添加巡检人
-
             PatrolTaskUser patrolTaskUser = new PatrolTaskUser();
             patrolTaskUser.setTaskCode(patrolTask.getCode());
             patrolTaskUser.setUserId(sysUser.getId());
@@ -310,36 +317,49 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
             patrolTaskUser.setDelFlag(0);
             patrolTaskUserMapper.insert(patrolTaskUser);
         }
-        //确认：将待确认改为待执行
-        if (PatrolConstant.TASK_CONFIRM.equals(patrolTaskDTO.getStatus())) {
-            updateWrapper.set(PatrolTask::getStatus, 2).eq(PatrolTask::getId, patrolTaskDTO.getId());
-            update(updateWrapper);
+        if(manager.checkTaskUser(patrolTask.getCode())==false)
+        {
+            throw new AiurtBootException("小主，该巡检任务不在您的范围之内哦");
         }
-        //执行：将待执行改为执行中
-        if (PatrolConstant.TASK_EXECUTE.equals(patrolTaskDTO.getStatus())) {
-            updateWrapper.set(PatrolTask::getStatus, 4).eq(PatrolTask::getId, patrolTaskDTO.getId());
-            update(updateWrapper);
+        else {
+            //确认：将待确认改为待执行
+            if (PatrolConstant.TASK_CONFIRM.equals(patrolTaskDTO.getStatus())) {
+                updateWrapper.set(PatrolTask::getStatus, 2).eq(PatrolTask::getId, patrolTaskDTO.getId());
+                update(updateWrapper);
+            }
+            //执行：将待执行改为执行中
+            if (PatrolConstant.TASK_EXECUTE.equals(patrolTaskDTO.getStatus())) {
+                updateWrapper.set(PatrolTask::getStatus, 4).eq(PatrolTask::getId, patrolTaskDTO.getId());
+                update(updateWrapper);
+            }
         }
     }
 
     @Override
     public void getPatrolTaskReturn(PatrolTaskDTO patrolTaskDTO) {
-        //更新巡检状态及添加退回理由、退回人Id（传任务主键id、退回理由）
-        LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        LambdaUpdateWrapper<PatrolTask> updateWrapper = new LambdaUpdateWrapper<>();
-        updateWrapper.set(PatrolTask::getStatus, 3)
-                .set(PatrolTask::getBackId, sysUser.getId())
-                .set(PatrolTask::getBackReason, patrolTaskDTO.getBackReason())
-                .eq(PatrolTask::getId, patrolTaskDTO.getId());
-        update(updateWrapper);
-        //删除这个任务的巡检人
         LambdaQueryWrapper<PatrolTask> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(PatrolTask::getId, patrolTaskDTO.getId());
         PatrolTask patrolTask = patrolTaskMapper.selectOne(queryWrapper);
-        LambdaQueryWrapper<PatrolTaskUser> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(PatrolTaskUser::getTaskCode, patrolTask.getCode());
-        List<PatrolTaskUser> patrolTaskUsers = patrolTaskUserMapper.selectList(wrapper);
-        patrolTaskUserMapper.deleteBatchIds(patrolTaskUsers);
+        if(manager.checkTaskUser(patrolTask.getCode())==false)
+        {
+            throw new AiurtBootException("小主，该巡检任务不在您的退回范围之内哦");
+        }
+        else
+        {
+            //更新巡检状态及添加退回理由、退回人Id（传任务主键id、退回理由）
+            LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+            LambdaUpdateWrapper<PatrolTask> updateWrapper = new LambdaUpdateWrapper<>();
+            updateWrapper.set(PatrolTask::getStatus, 3)
+                    .set(PatrolTask::getBackId, sysUser.getId())
+                    .set(PatrolTask::getBackReason, patrolTaskDTO.getBackReason())
+                    .eq(PatrolTask::getId, patrolTaskDTO.getId());
+            update(updateWrapper);
+            //删除这个任务的巡检人
+            LambdaQueryWrapper<PatrolTaskUser> wrapper = new LambdaQueryWrapper<>();
+            wrapper.eq(PatrolTaskUser::getTaskCode, patrolTask.getCode());
+            List<PatrolTaskUser> patrolTaskUsers = patrolTaskUserMapper.selectList(wrapper);
+            patrolTaskUserMapper.deleteBatchIds(patrolTaskUsers);
+        }
     }
 
     @Override
@@ -409,6 +429,14 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
 
     @Override
     public Page<PatrolTaskDTO> getPatrolTaskManualList(Page<PatrolTaskDTO> pageList, PatrolTaskDTO patrolTaskDTO) {
+        if (ObjectUtil.isNotEmpty(patrolTaskDTO.getDateScope())) {
+            String[] split = patrolTaskDTO.getDateScope().split(",");
+            Date dateHead = DateUtil.parse(split[0], "yyyy-MM-dd");
+            Date dateEnd = DateUtil.parse(split[1], "yyyy-MM-dd");
+            patrolTaskDTO.setDateHead(dateHead);
+            patrolTaskDTO.setDateEnd(dateEnd);
+
+        }
         List<PatrolTaskDTO> taskDTOList = patrolTaskMapper.getPatrolTaskManualList(pageList, patrolTaskDTO);
         taskDTOList.stream().forEach(e -> {
             String userName = patrolTaskMapper.getUserName(e.getBackId());

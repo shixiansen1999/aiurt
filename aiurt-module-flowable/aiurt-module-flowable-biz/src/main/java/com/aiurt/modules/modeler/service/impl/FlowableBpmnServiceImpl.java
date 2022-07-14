@@ -1,6 +1,7 @@
 package com.aiurt.modules.modeler.service.impl;
 
 import com.aiurt.common.exception.AiurtBootException;
+import com.aiurt.common.exception.AiurtErrorEnum;
 import com.aiurt.modules.modeler.dto.ModelInfoVo;
 import com.aiurt.modules.modeler.entity.ActCustomModelInfo;
 import com.aiurt.modules.modeler.enums.ModelFormStatusEnum;
@@ -59,11 +60,18 @@ public class FlowableBpmnServiceImpl implements IFlowableBpmnService {
     @Autowired
     private IFlowableModelService flowableModelService;
 
+    /**
+     * bpmn xml和BpmnModel 转换器
+     */
     @Autowired
     protected BpmnXMLConverter bpmnXMLConverter;
 
+    /**
+     * bpmn json和BpmnModel 转换器
+     */
     @Autowired
     protected BpmnJsonConverter bpmnJsonConverter;
+
 
     @Autowired
     @Lazy
@@ -117,6 +125,7 @@ public class FlowableBpmnServiceImpl implements IFlowableBpmnService {
     @Override
     public String importBpmnModel(String modelId, String fileName, ByteArrayInputStream modelStream, LoginUser user) {
 
+        // 获取model
         Model processModel = modelService.getModel(modelId);
         if (StringUtils.isBlank(fileName)) {
             fileName = processModel.getKey() + BPMN_EXTENSION;
@@ -131,31 +140,37 @@ public class FlowableBpmnServiceImpl implements IFlowableBpmnService {
         } catch (XMLStreamException e) {
           throw new AiurtBootException("");
         }
+        // 实现将bpmn xml转换成BpmnModel内存模型对象
         BpmnModel bpmnModel = bpmnXMLConverter.convertToBpmnModel(xtr);
-        // 设置xml的processId
+        // 设置xml的processId 也就是modelkey
         bpmnModel.getMainProcess().setId(processModel.getKey());
         // 默认值
         bpmnModel.setTargetNamespace(BaseBpmnJsonConverter.NAMESPACE);
 
         if (CollectionUtils.isEmpty(bpmnModel.getProcesses())) {
-            throw new AiurtBootException("No process found in definition " + fileName);
+            throw new AiurtBootException("BPMN模型没有配置流程:" + fileName);
         }
 
         if (bpmnModel.getLocationMap().size() == 0) {
             throw new AiurtBootException( "No required BPMN DI information found in definition " + fileName);
         }
-        ConverterContext converterContext = new ConverterContext(modelService, objectMapper);
 
+        ConverterContext converterContext = new ConverterContext(modelService, objectMapper);
+        //
         List<AbstractModel> decisionTables = modelService.getModelsByModelType(AbstractModel.MODEL_TYPE_DECISION_TABLE);
         decisionTables.forEach(abstractModel -> {
             Model model = (Model) abstractModel;
             converterContext.addDecisionTableModel(model);
         });
 
+        // 设置模板json格式
         ObjectNode modelNode = bpmnJsonConverter.convertToJson(bpmnModel, converterContext);
+
         AbstractModel savedModel = modelService.saveModel(modelId, processModel.getName(), processModel.getKey(),
                 processModel.getDescription(), modelNode.toString(), false,
                 null, user.getUsername());
+
+        // 更新act_customl_info
         LambdaQueryWrapper<ActCustomModelInfo> modelInfoLambdaQueryWrapper = new LambdaQueryWrapper<>();
         modelInfoLambdaQueryWrapper.eq(ActCustomModelInfo::getModelId, savedModel.getId());
         ActCustomModelInfo modelInfo = modelInfoService.getOne(modelInfoLambdaQueryWrapper);
@@ -171,26 +186,30 @@ public class FlowableBpmnServiceImpl implements IFlowableBpmnService {
      */
     @Override
     public void publishBpmn(String modelId) {
-        Model model = modelService.getModel(modelId);
-        BpmnModel bpmnModel = modelService.getBpmnModel(model);
 
-        // todo校验
+        Model model = modelService.getModel(modelId);
+        if (Objects.isNull(model)) {
+            throw new AiurtBootException(AiurtErrorEnum.FLOW_MODEL_NOT_FOUND.getCode(), AiurtErrorEnum.FLOW_MODEL_NOT_FOUND.getMessage());
+        }
+        // 转为bpmnModel 内存模型
+        BpmnModel bpmnModel = modelService.getBpmnModel(model);
+        // todo 校验
 
         LambdaQueryWrapper<ActCustomModelInfo> modelInfoLambdaQueryWrapper = new LambdaQueryWrapper<>();
         modelInfoLambdaQueryWrapper.eq(ActCustomModelInfo::getModelId, modelId);
         ActCustomModelInfo modelInfo = modelInfoService.getOne(modelInfoLambdaQueryWrapper);
 
         if (Objects.isNull(modelInfo)) {
-            return;
+            throw new AiurtBootException(AiurtErrorEnum.FLOW_MODEL_NOT_FOUND.getCode(), AiurtErrorEnum.FLOW_MODEL_NOT_FOUND.getMessage());
         }
 
-        Deployment deploy = repositoryService.createDeployment()
+        // 部署流程
+        repositoryService.createDeployment()
                 .name(model.getName())
                 .key(model.getKey())
                 .category(modelInfo.getClassifyCode())
                 .tenantId(model.getTenantId())
                 .addBpmnModel(model.getKey() + BPMN_EXTENSION, bpmnModel)
                 .deploy();
-
     }
 }
