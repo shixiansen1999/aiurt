@@ -149,6 +149,11 @@ public class RepairTaskResult implements Serializable {
     @ApiModelProperty(value = "父级名称")
     private java.lang.String parentName;
 
+    /**附件url*/
+    @TableField(exist = false)
+    @ApiModelProperty(value = "附件url")
+    private List<String> url;
+
     /**
      * 子节点
      */

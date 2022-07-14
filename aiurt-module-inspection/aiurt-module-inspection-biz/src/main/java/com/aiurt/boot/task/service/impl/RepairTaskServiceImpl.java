@@ -31,6 +31,7 @@ import com.aiurt.common.util.DateUtils;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.github.xiaoymin.knife4j.core.util.CollectionUtils;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -503,7 +504,17 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                     r.setParentName(repairTaskResult.getName());
                 }
             }
-
+            //附件url
+            if (r.getId()!=null){
+                LambdaQueryWrapper<RepairTaskEnclosure> objectLambdaQueryWrapper = new LambdaQueryWrapper<>();
+                List<RepairTaskEnclosure> repairTaskDevice = repairTaskEnclosureMapper.selectList(objectLambdaQueryWrapper.eq(RepairTaskEnclosure::getRepairTaskResultId,r.getId()));
+                if (CollectionUtils.isNotEmpty(repairTaskDevice)){
+                    List<String> stringList = repairTaskDevice.stream().map(RepairTaskEnclosure::getUrl).collect(Collectors.toList());
+                    if (CollectionUtils.isNotEmpty(stringList)){
+                        r.setUrl(stringList);
+                    }
+                }
+            }
             //检修人名称
             if (r.getStaffId() != null) {
                 LoginUser userById = sysBaseAPI.getUserById(r.getStaffId());
