@@ -25,15 +25,27 @@ public class PatrolTaskAppointSaveDTO  {
     @ApiModelProperty(value = "任务编号")
     @TableField(value = "`code`")
     private java.lang.String code;
-    /***开始时间*/
-    @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd HH:mm:ss")
-    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    @ApiModelProperty(value = "开始时间")
+    /*** 作业类型：1 A1、2 A2、3 A3、4 B1、5 B2、6 C1、7 C2、8 C3*/
+    @Excel(name = "作业类型：1 A1、2 A2、3 A3、4 B1、5 B2、6 C1、7 C2、8 C3", width = 15)
+    @ApiModelProperty(value = "作业类型：1 A1、2 A2、3 A3、4 B1、5 B2、6 C1、7 C2、8 C3")
+    private java.lang.Integer type;
+    /*** 计划编号*/
+    @Excel(name = "计划编号", width = 15)
+    @ApiModelProperty(value = "计划编号")
+    private java.lang.String planCode;
+    /*** 计划令图片*/
+    @Excel(name = "计划令图片", width = 15)
+    @ApiModelProperty(value = "计划令图片")
+    private java.lang.String planOrderCodeUrl;
+    /*** 巡检开始时间*/
+    @JsonFormat(timezone = "GMT+8", pattern = "HH:mm")
+    @DateTimeFormat(pattern = "HH:mm")
+    @ApiModelProperty(value = "巡检开始时间")
     private java.util.Date startTime;
-    /*** 结束时间*/
-    @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd HH:mm:ss")
-    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    @ApiModelProperty(value = "结束时间")
+    /*** 巡检结束时间*/
+    @JsonFormat(timezone = "GMT+8", pattern = "HH:mm")
+    @DateTimeFormat(pattern = "HH:mm")
+    @ApiModelProperty(value = "巡检结束时间")
     private java.util.Date endTime;
     @ApiModelProperty(value = "指派人的信息")
     private List<PatrolAccompanyDTO> accompanyDTOList;

@@ -378,22 +378,22 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
     }
 
     @Override
-    public void getPatrolTaskAppoint(List<PatrolTaskUserDTO> patrolTaskUserDTO) {
+    public void getPatrolTaskAppoint(PatrolTaskAppointSaveDTO patrolTaskUserDTO) {
         //传整个实体。添加指派人员信息
-        for (PatrolTaskUserDTO ptu : patrolTaskUserDTO) {
+        List<PatrolAccompanyDTO> list = patrolTaskUserDTO.getAccompanyDTOList();
+        for (PatrolAccompanyDTO ptu : list) {
             PatrolTaskUser patrolTaskUser = new PatrolTaskUser();
-            List<PatrolTaskUserContentDTO> userList = ptu.getUserList();
-            String userId = userList.stream().map(PatrolTaskUserContentDTO::getId).collect(Collectors.joining());
-            String realName = userList.stream().map(PatrolTaskUserContentDTO::getRealname).collect(Collectors.joining());
-            patrolTaskUser.setUserId(userId);
-            patrolTaskUser.setUserName(realName);
-            patrolTaskUser.setTaskCode(ptu.getTaskCode());
+            patrolTaskUser.setUserId(ptu.getUserId());
+            patrolTaskUser.setUserName(ptu.getUsername());
+            patrolTaskUser.setTaskCode(patrolTaskUserDTO.getCode());
             patrolTaskUser.setDelFlag(0);
             patrolTaskUserMapper.insert(patrolTaskUser);
         }
         //将任务来源改为常规指派,将任务状态改为待确认
         LambdaUpdateWrapper<PatrolTask> updateWrapper = new LambdaUpdateWrapper<>();
-        updateWrapper.set(PatrolTask::getSource, 2).set(PatrolTask::getStatus, 1).eq(PatrolTask::getCode, patrolTaskUserDTO.get(0).getTaskCode());
+        updateWrapper.set(PatrolTask::getSource, 2).set(PatrolTask::getStatus, 1).set(PatrolTask::getStartTime,patrolTaskUserDTO.getStartTime())
+         .set(PatrolTask::getEndTime, patrolTaskUserDTO.getEndTime()).set(PatrolTask::getPlanCode,patrolTaskUserDTO.getPlanCode()).set(PatrolTask::getType,patrolTaskUserDTO.getType())
+         .set(PatrolTask::getPlanOrderCodeUrl, patrolTaskUserDTO.getPlanOrderCodeUrl()).eq(PatrolTask::getCode, patrolTaskUserDTO.getCode());
         update(updateWrapper);
     }
 
