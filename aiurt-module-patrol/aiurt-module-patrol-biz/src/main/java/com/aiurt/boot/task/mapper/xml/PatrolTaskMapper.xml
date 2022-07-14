@@ -6,8 +6,8 @@
         endUserName,concat(DATE_FORMAT(t1.start_time,'%H:%i'),"-",DATE_FORMAT(t1.end_time,'%H:%i'))as startEndTime
         from patrol_task t1
         where t1.status not in (6,7,8) and t1.del_flag = 0
-        and pt.discard_status = 0
-        and pt.id not in(select id from patrol_task where source=3 and (`status` =0 or `status`=3))
+        and t1.discard_status = 0
+        and t1.id not in(select id from patrol_task where source=3 and (`status` =0 or `status`=3))
         <if test="patrolTaskDTO.patrolDate !=null">
             and DATE_FORMAT(t1.patrol_date, '%Y-%m-%d') = DATE_FORMAT(#{patrolTaskDTO.patrolDate},'%Y-%m-%d')
         </if>
