@@ -10,6 +10,7 @@ import com.aiurt.boot.standard.entity.PatrolStandard;
 import com.aiurt.boot.standard.service.IPatrolStandardService;
 import com.aiurt.boot.task.entity.*;
 import com.aiurt.boot.task.service.*;
+import com.aiurt.boot.utils.PatrolCodeUtil;
 import com.aiurt.modules.device.entity.Device;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import lombok.extern.slf4j.Slf4j;
@@ -88,7 +89,7 @@ public class TaskPool implements Job {
         // 根据计划列表生成任务
         planList.parallelStream().forEach(l -> {
             PatrolTask task = new PatrolTask();
-            String taskCode = "XR" + System.currentTimeMillis();    // 任务编号
+            String taskCode = PatrolCodeUtil.getTaskCode();    // 任务编号
             task.setCode(taskCode);
             task.setPlanCode(l.getCode());  // 计划编号
             task.setName(l.getName() + "任务");   // 任务名称
@@ -213,7 +214,7 @@ public class TaskPool implements Job {
                     // 任务标准表ID
                     patrolTaskDevice.setTaskStandardId(taskStandardId);
                     // 巡检单号生成
-                    String patrolNumber = "XD" + System.currentTimeMillis();
+                    String patrolNumber = PatrolCodeUtil.getBillCode();
                     patrolTaskDevice.setPatrolNumber(patrolNumber);
                     // 线路编号
                     patrolTaskDevice.setLineCode(station.getLineCode());
@@ -245,7 +246,7 @@ public class TaskPool implements Job {
                                     //检查状态
                                     patrolTaskDevice.setStatus(0);
                                     // 巡检单号生成
-                                    String patrolNumber = "XD" + System.currentTimeMillis();
+                                    String patrolNumber = PatrolCodeUtil.getBillCode();
                                     patrolTaskDevice.setPatrolNumber(patrolNumber);
                                     // 设备编号
                                     patrolTaskDevice.setDeviceCode(ps.getDeviceCode());

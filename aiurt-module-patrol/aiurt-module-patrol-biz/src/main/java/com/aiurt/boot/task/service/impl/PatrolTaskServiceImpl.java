@@ -18,6 +18,7 @@ import com.aiurt.boot.task.entity.*;
 import com.aiurt.boot.task.mapper.*;
 import com.aiurt.boot.task.param.PatrolTaskParam;
 import com.aiurt.boot.task.service.IPatrolTaskService;
+import com.aiurt.boot.utils.PatrolCodeUtil;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.modules.device.entity.Device;
@@ -534,7 +535,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         //保存任务信息
         PatrolTask patrolTask = new PatrolTask();
         patrolTask.setName(patrolTaskManualDTO.getName());
-        String xjCode = "XR" + System.currentTimeMillis();
+        String xjCode = PatrolCodeUtil.getTaskCode();
         patrolTask.setCode(xjCode);
         patrolTask.setPatrolDate(patrolTaskManualDTO.getPatrolDate());
         patrolTask.setStatus(0);
@@ -592,7 +593,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
                     patrolTaskDevice.setTaskId(taskId);//巡检任务id
                     patrolTaskDevice.setDelFlag(0);
                     patrolTaskDevice.setStatus(0);//单号状态
-                    String xdCode = "XD" + System.currentTimeMillis();
+                    String xdCode = PatrolCodeUtil.getBillCode();
                     patrolTaskDevice.setPatrolNumber(xdCode);//巡检单号
                     patrolTaskDevice.setTaskStandardId(taskStandardId);//巡检任务标准关联表ID
                     patrolTaskDevice.setDeviceCode(dv.getCode());//设备code
@@ -609,7 +610,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
                     patrolTaskDevice.setTaskId(taskId);
                     patrolTaskDevice.setDelFlag(0);
                     patrolTaskDevice.setStatus(0);//单号状态
-                    String xdCode = "XD" + System.currentTimeMillis();
+                    String xdCode = PatrolCodeUtil.getBillCode();
                     patrolTaskDevice.setPatrolNumber(xdCode);//巡检单号
                     patrolTaskDevice.setTaskStandardId(taskStandardId);//巡检任务标准关联表ID
                     String lineCode = patrolTaskStationMapper.getLineStaionCode(sc);
@@ -715,7 +716,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         }
         PatrolTask task = new PatrolTask();
         // 任务编号
-        String taskCode = "XR" + System.currentTimeMillis();
+        String taskCode = PatrolCodeUtil.getTaskCode();
         task.setCode(taskCode);
         // 任务名称
         task.setName(patrolTask.getName());
@@ -815,7 +816,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
                         // 新任务标准ID
                         taskDevice.setTaskStandardId(taskStandard.getId());
                         // 巡检单号
-                        String billCode = "XD" + System.currentTimeMillis();
+                        String billCode = PatrolCodeUtil.getBillCode();
                         taskDevice.setDeviceCode(billCode);
                         // 设备编号
                         taskDevice.setDeviceCode(d.getDeviceCode());
@@ -906,7 +907,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
                     patrolTaskDevice.setTaskId(taskId);//巡检任务id
                     patrolTaskDevice.setDelFlag(0);
                     patrolTaskDevice.setStatus(0);//单号状态
-                    String xdCode = "XD" + System.currentTimeMillis();
+                    String xdCode = PatrolCodeUtil.getBillCode();
                     patrolTaskDevice.setPatrolNumber(xdCode);//巡检单号
                     patrolTaskDevice.setTaskStandardId(taskStandardId);//巡检任务标准关联表ID
                     patrolTaskDevice.setDeviceCode(dv.getCode());//设备code
@@ -923,7 +924,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
                     patrolTaskDevice.setTaskId(taskId);
                     patrolTaskDevice.setDelFlag(0);
                     patrolTaskDevice.setStatus(0);//单号状态
-                    String xdCode = "XD" + System.currentTimeMillis();
+                    String xdCode = PatrolCodeUtil.getBillCode();
                     patrolTaskDevice.setPatrolNumber(xdCode);//巡检单号
                     patrolTaskDevice.setTaskStandardId(taskStandardId);//巡检任务标准关联表ID
                     String lineCode = patrolTaskStationMapper.getLineStaionCode(sc);
