@@ -41,4 +41,11 @@ public interface PatrolManagerMapper {
      * @return
      */
     List<String> spliceUsername(String code);
+
+    /**
+     * 获取巡检人
+     * @param taskCode
+     * @return
+     */
+    List<String> getUser(String taskCode);
 }
