@@ -13,13 +13,16 @@
             cl.line_name,
             cs.station_code,
             cs.station_name,
-            a.fault_code
+            a.fault_code,
+            csp.position_code,
+            csp.position_name
         from
             fault_device a
         LEFT JOIN device b ON  a.device_code = b.code
         LEFT JOIN device_type dt on b.device_type_code = dt.code
         LEFT JOIN cs_line cl on b.line_code = cl.line_code
         LEFT JOIN cs_station cs on b.station_code = cs.station_code
+        LEFT JOIN cs_station_position csp on csp.position_code = b.position_code
         where a.fault_code = #{faultCode}
     </select>
 </mapper>
