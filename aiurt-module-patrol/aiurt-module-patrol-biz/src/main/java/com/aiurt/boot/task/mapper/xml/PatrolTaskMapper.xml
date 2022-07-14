@@ -22,7 +22,7 @@
             AND t1.CODE IN (SELECT t3.task_code FROM patrol_task_station t3 WHERE t3.task_code = t1.CODE AND
             t3.station_code =#{patrolTaskDTO.stationCode})
         </if>
-         order by t1.create_time desc
+        order by t1.create_time desc
     </select>
     <select id="getPatrolTaskList" resultType="com.aiurt.boot.task.dto.PatrolTaskDTO">
         select t1.*,(select realname from sys_user where id= t1.end_user_id) as endUserName
@@ -35,7 +35,7 @@
         <if test="patrolTaskDTO.status!=null">
             and t1.status = #{patrolTaskDTO.status}
         </if>
-         order by t1.create_time desc
+        order by t1.create_time desc
     </select>
     <select id="getOrganizationName" resultType="java.lang.String">
         SELECT t2.depart_name
@@ -44,12 +44,10 @@
         where t1.task_code = #{taskCode}
     </select>
     <select id="getStationName" resultType="com.aiurt.boot.standard.dto.StationDTO">
-SELECT
-	t2.line_code,
-	t1.station_code
-FROM
-	patrol_task_station t1
-	LEFT JOIN cs_station t2 ON t1.station_code = t2.station_code
+        SELECT t2.line_code,
+               t1.station_code
+        FROM patrol_task_station t1
+                 LEFT JOIN cs_station t2 ON t1.station_code = t2.station_code
         WHERE t1.task_code = #{code}
     </select>
     <select id="getPatrolUserName" resultType="java.lang.String">
@@ -65,7 +63,9 @@ FROM
         patrol_task pt
         WHERE
         pt.del_flag = 0
-        and pt.id not in(select id from patrol_task where source=3 and (`status` =0 or `status`=3))
+        <if test='patrolTask.identify != null and patrolTask.identify == "1" '>
+            and pt.id not in(select id from patrol_task where source=3 and (`status` =0 or `status`=3))
+        </if>
         <if test="patrolTask.name != null and patrolTask.name != ''">
             and pt.name like concat('%',#{patrolTask.name},'%')
         </if>
@@ -95,10 +95,10 @@ FROM
             )
         </if>
         <if test="patrolTask.stationCode != null and patrolTask.stationCode != ''">
-          and pt.code in (
-          SELECT pps.task_code
-          FROM patrol_task_station pps
-          WHERE pps.del_flag = 0 and pps.station_code = #{patrolTask.stationCode}
+            and pt.code in (
+            SELECT pps.task_code
+            FROM patrol_task_station pps
+            WHERE pps.del_flag = 0 and pps.station_code = #{patrolTask.stationCode}
             )
         </if>
         <if test="patrolTask.dateHead != null and patrolTask.dateEnd != null">
@@ -221,8 +221,8 @@ FROM
         </if>
     </select>
     <select id="getStationCode" resultType="java.lang.String">
-    select station_code
-    from patrol_task_station
-    where task_code =#{code}
-</select>
+        select station_code
+        from patrol_task_station
+        where task_code = #{code}
+    </select>
 </mapper>
