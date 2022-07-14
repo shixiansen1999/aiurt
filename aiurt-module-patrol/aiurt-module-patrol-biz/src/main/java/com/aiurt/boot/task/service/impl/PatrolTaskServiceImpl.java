@@ -192,6 +192,8 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
                 // 若插入指派的人员后则更新任务状态
                 if (insert.get() > 0) {
                     PatrolTask task = new PatrolTask();
+                    // 作业类型
+                    task.setType(patrolAppointInfoDTO.getType());
                     // 计划令编号和图片地址
                     task.setPlanOrderCode(patrolAppointInfoDTO.getPlanOrderCode());
                     task.setPlanOrderCodeUrl(patrolAppointInfoDTO.getPlanOrderCodeUrl());
@@ -244,14 +246,14 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
             e.setOrganizationName(manager.translateOrg(orgCodes));
             List<StationDTO> stationName = patrolTaskMapper.getStationName(e.getCode());
             e.setStationName(manager.translateStation(stationName));
-            e.setEndUserName(e.getEndUserName()==null?"-":e.getEndUserName());
-            e.setSubmitTime(e.getSubmitTime()==null?"-":e.getSubmitTime());
-            e.setPeriod(e.getPeriod()==null?"-":e.getPeriod());
+            e.setEndUserName(e.getEndUserName() == null ? "-" : e.getEndUserName());
+            e.setSubmitTime(e.getSubmitTime() == null ? "-" : e.getSubmitTime());
+            e.setPeriod(e.getPeriod() == null ? "-" : e.getPeriod());
             e.setSysName(sysName);
             e.setMajorName(majorName);
             e.setOrgCodeList(orgCodes);
-            e.setPatrolUserName(  manager.spliceUsername(e.getCode()));
-            e.setPatrolReturnUserName(userName==null?"-":userName);
+            e.setPatrolUserName(manager.spliceUsername(e.getCode()));
+            e.setPatrolReturnUserName(userName == null ? "-" : userName);
         });
         return pageList.setRecords(taskList);
     }
@@ -271,8 +273,8 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
             e.setSysName(sysName);
             e.setMajorName(majorName);
             e.setOrgCodeList(orgCodes);
-            e.setPatrolUserName(  manager.spliceUsername(e.getCode()));
-            e.setPatrolReturnUserName(userName==null?"-":userName);
+            e.setPatrolUserName(manager.spliceUsername(e.getCode()));
+            e.setPatrolReturnUserName(userName == null ? "-" : userName);
         });
         return pageList.setRecords(taskList);
     }
