@@ -944,7 +944,21 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                     // 只有任务状态是执行中或已驳回才可以改
                     if (!InspectionConstant.IN_EXECUTION.equals(repairTask.getStatus())
                             && !InspectionConstant.REJECTED.equals(repairTask.getStatus())) {
-                        throw new AiurtBootException("小主，只有任务被驳回或者执行中才可以填写工单哦");
+                        throw new AiurtBootException("小主，只有任务被驳回或者执行中才可以操作");
+                    }
+
+                    // 是任务的检修人才可以填写
+                    List<RepairTaskUser> repairTaskUsers = repairTaskUserMapper.selectList(
+                            new LambdaQueryWrapper<RepairTaskUser>()
+                                    .eq(RepairTaskUser::getRepairTaskCode, repairTask.getCode())
+                                    .eq(RepairTaskUser::getDelFlag, CommonConstant.DEL_FLAG_0));
+                    if(CollUtil.isEmpty(repairTaskUsers)){
+                        throw new AiurtBootException("小主，该任务没有对应的检修人");
+                    }else{
+                        List<String> userList = repairTaskUsers.stream().map(RepairTaskUser::getUserId).collect(Collectors.toList());
+                        if(!userList.contains(manager.checkLogin().getId())){
+                            throw new AiurtBootException("小主，您不是该检修任务的检修人");
+                        }
                     }
                 }
             }
@@ -1040,6 +1054,9 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
             throw new AiurtBootException(InspectionConstant.ILLEGAL_OPERATION);
         }
 
+        // 校验什么时候才可以提交检修单
+        this.check(id);
+
         // 检修工单对应的检修项
         List<RepairTaskResult> repairTaskResults = repairTaskResultMapper.selectList(
                 new LambdaQueryWrapper<RepairTaskResult>()
@@ -1124,6 +1141,20 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
         RepairTask repairTask = repairTaskMapper.selectById(examineDTO.getId());
         if (ObjectUtil.isEmpty(repairTask)) {
             throw new AiurtBootException(InspectionConstant.ILLEGAL_OPERATION);
+        }
+
+        // 是任务的检修人才可以确认
+        List<RepairTaskUser> repairTaskUsers = repairTaskUserMapper.selectList(
+                new LambdaQueryWrapper<RepairTaskUser>()
+                        .eq(RepairTaskUser::getRepairTaskCode, repairTask.getCode())
+                        .eq(RepairTaskUser::getDelFlag, CommonConstant.DEL_FLAG_0));
+        if(CollUtil.isEmpty(repairTaskUsers)){
+            throw new AiurtBootException("小主，该任务没有对应的检修人");
+        }else{
+            List<String> userList = repairTaskUsers.stream().map(RepairTaskUser::getUserId).collect(Collectors.toList());
+            if(!userList.contains(manager.checkLogin().getId())){
+                throw new AiurtBootException("小主，只有该任务的检修人才能确认");
+            }
         }
 
         // 待确认状态才可以确认

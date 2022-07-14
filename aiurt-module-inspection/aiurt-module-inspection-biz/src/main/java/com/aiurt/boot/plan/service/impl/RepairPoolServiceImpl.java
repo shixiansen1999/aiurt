@@ -846,7 +846,6 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
     public IPage<RepairPool> listPage(Page<RepairPool> page, ManualTaskReq manualTaskReq) {
         // 处理查询参数
         QueryWrapper<RepairPool> queryWrapper = doQuery(manualTaskReq);
-
         page = baseMapper.selectPage(page, queryWrapper);
 
         page.getRecords().forEach(re -> {
