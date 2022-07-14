@@ -1,5 +1,7 @@
 package com.aiurt.common.exception;
 
+import org.intellij.lang.annotations.Flow;
+
 /**
  *
  */
@@ -8,15 +10,16 @@ public enum AiurtErrorEnum {
     /**
      * 故障上报
      */
-    NEW_FAULT(1, "故障上报");
+    NEW_FAULT(1, "故障上报"),
 
     /***
      * 基础模块 code 1开头 五位数
      */
 
     /**
-     * 2
+     * 6 开头
      */
+    FLOW_MODEL_NOT_FOUND(61001,"流程模板信息不存在");
 
     private Integer code;
     private String message;
