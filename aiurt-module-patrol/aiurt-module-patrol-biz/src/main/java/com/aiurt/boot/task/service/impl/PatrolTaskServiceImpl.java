@@ -719,8 +719,6 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         task.setCode(taskCode);
         // 任务名称
         task.setName(patrolTask.getName());
-        // 计划编号
-        task.setPlanCode(patrolTask.getPlanCode());
         // 作业类型
         task.setType(patrolTask.getType());
         // 是否委外
@@ -747,7 +745,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         patrolTaskMapper.updateById(patrolTask);
 
         // 组织机构信息
-        if (ObjectUtil.isEmpty(patrolRebuildDTO.getDeptCode())) {
+        if (ObjectUtil.isNotEmpty(patrolRebuildDTO.getDeptCode())) {
             List<PatrolTaskOrganizationDTO> patrolTaskOrgList = Optional.ofNullable(patrolTaskOrganizationMapper.selectOrgByTaskCode(patrolTask.getCode()))
                     .orElseGet(Collections::emptyList);
             patrolTaskOrgList.stream().forEach(l -> {
@@ -758,7 +756,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
             });
         }
         // 站所信息
-        if (ObjectUtil.isEmpty(patrolRebuildDTO.getStationCode())) {
+        if (ObjectUtil.isNotEmpty(patrolRebuildDTO.getStationCode())) {
             List<PatrolTaskStationDTO> taskStationList = Optional.ofNullable(patrolTaskStationMapper.selectStationByTaskCode(patrolTask.getCode()))
                     .orElseGet(Collections::emptyList);
             taskStationList.stream().forEach(l -> {
@@ -783,11 +781,10 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
             taskStandard.setSubsystemCode(l.getSubsystemCode());
             taskStandard.setDeviceTypeCode(l.getDeviceTypeCode());
             patrolTaskStandardMapper.insert(taskStandard);
-
             // 根据原任务ID和原任务标准关联表ID 获取原巡检任务设备关联表信息
             QueryWrapper<PatrolTaskDevice> taskDeviceWrapper = new QueryWrapper<>();
             taskDeviceWrapper.lambda().eq(PatrolTaskDevice::getTaskId, taskId)
-                    .eq(PatrolTaskDevice::getTaskStandardId, l.getStandardId());
+                    .eq(PatrolTaskDevice::getTaskStandardId, l.getId());
             List<PatrolTaskDevice> taskDeviceList = Optional.ofNullable(patrolTaskDeviceMapper.selectList(taskDeviceWrapper))
                     .orElseGet(Collections::emptyList).stream().collect(Collectors.toList());
 
