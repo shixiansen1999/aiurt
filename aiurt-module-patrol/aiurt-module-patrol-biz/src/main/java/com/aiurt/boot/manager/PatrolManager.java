@@ -5,10 +5,14 @@ import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.manager.mapper.PatrolManagerMapper;
 import com.aiurt.boot.standard.dto.StationDTO;
+import com.aiurt.common.exception.AiurtBootException;
+import org.apache.shiro.SecurityUtils;
+import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * @author cgkj0
@@ -75,5 +79,13 @@ public class PatrolManager
             return builder.substring(0, builder.length() - 1).toString();
         }
         return "";
+    }
+    public LoginUser checkLogin() {
+        LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+
+        if (Objects.isNull(user)) {
+            throw new AiurtBootException("请重新登录");
+        }
+        return user;
     }
 }

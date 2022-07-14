@@ -18,6 +18,7 @@ import com.aiurt.boot.task.entity.*;
 import com.aiurt.boot.task.mapper.*;
 import com.aiurt.boot.task.param.PatrolTaskParam;
 import com.aiurt.boot.task.service.IPatrolTaskService;
+import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.modules.device.entity.Device;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -282,12 +283,24 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         LambdaUpdateWrapper<PatrolTask> updateWrapper = new LambdaUpdateWrapper<>();
         //个人领取：将待指派或退回之后重新领取改为待执行，变为个人领取（传任务主键id,状态）
         if (PatrolConstant.TASK_INIT.equals(patrolTaskDTO.getStatus())  || PatrolConstant.TASK_RETURNED.equals(patrolTaskDTO.getStatus())) {
+            // 当前登录人所属部门是在检修任务的指派部门范围内才可以领取
+            PatrolTask patrolTask = patrolTaskMapper.selectById(patrolTaskDTO.getId());
+            List<PatrolTaskOrganization> patrolTaskOrganizations = patrolTaskOrganizationMapper.selectList(
+                    new LambdaQueryWrapper<PatrolTaskOrganization>()
+                            .eq(PatrolTaskOrganization::getTaskCode, patrolTask.getCode())
+                            .eq(PatrolTaskOrganization::getDelFlag, CommonConstant.DEL_FLAG_0));
+            if(CollUtil.isNotEmpty(patrolTaskOrganizations)){
+                List<String> orgList = patrolTaskOrganizations.stream().map(PatrolTaskOrganization::getOrgCode).collect(Collectors.toList());
+                if(!orgList.contains(manager.checkLogin().getOrgCode())){
+                    throw new AiurtBootException("小主，该巡检任务不在您的领取范围之内哦");
+                }
+            }
             updateWrapper.set(PatrolTask::getStatus, 2)
                     .set(PatrolTask::getSource, 1)
                     .eq(PatrolTask::getId, patrolTaskDTO.getId());
             update(updateWrapper);
             //添加巡检人
-            PatrolTask patrolTask = patrolTaskMapper.selectById(patrolTaskDTO.getId());
+
             PatrolTaskUser patrolTaskUser = new PatrolTaskUser();
             patrolTaskUser.setTaskCode(patrolTask.getCode());
             patrolTaskUser.setUserId(sysUser.getId());
