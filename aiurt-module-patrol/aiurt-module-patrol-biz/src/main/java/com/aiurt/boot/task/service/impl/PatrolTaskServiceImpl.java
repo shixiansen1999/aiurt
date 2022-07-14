@@ -244,13 +244,14 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
             e.setOrganizationName(manager.translateOrg(orgCodes));
             List<StationDTO> stationName = patrolTaskMapper.getStationName(e.getCode());
             e.setStationName(manager.translateStation(stationName));
-            List<String> patrolUserName = patrolTaskMapper.getPatrolUserName(e.getCode());
-            String ptuName = patrolUserName.stream().collect(Collectors.joining(","));
+            e.setEndUserName(e.getEndUserName()==null?"-":e.getEndUserName());
+            e.setSubmitTime(e.getSubmitTime()==null?"-":e.getSubmitTime());
+            e.setPeriod(e.getPeriod()==null?"-":e.getPeriod());
             e.setSysName(sysName);
             e.setMajorName(majorName);
             e.setOrgCodeList(orgCodes);
-            e.setPatrolUserName(ptuName);
-            e.setPatrolReturnUserName(userName);
+            e.setPatrolUserName(  manager.spliceUsername(e.getCode()));
+            e.setPatrolReturnUserName(userName==null?"-":userName);
         });
         return pageList.setRecords(taskList);
     }
@@ -267,13 +268,11 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
             e.setOrganizationName(manager.translateOrg(orgCodes));
             List<StationDTO> stationName = patrolTaskMapper.getStationName(e.getCode());
             e.setStationName(manager.translateStation(stationName));
-            List<String> patrolUserName = patrolTaskMapper.getPatrolUserName(e.getCode());
-            String ptuName = patrolUserName.stream().collect(Collectors.joining(","));
             e.setSysName(sysName);
             e.setMajorName(majorName);
             e.setOrgCodeList(orgCodes);
-            e.setPatrolUserName(ptuName);
-            e.setPatrolReturnUserName(userName);
+            e.setPatrolUserName(  manager.spliceUsername(e.getCode()));
+            e.setPatrolReturnUserName(userName==null?"-":userName);
         });
         return pageList.setRecords(taskList);
     }
@@ -419,13 +418,11 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
             List<String> stationCodeList = patrolTaskMapper.getStationCode(e.getCode());
             List<StationDTO> stationName = patrolTaskMapper.getStationName(e.getCode());
             e.setStationName(manager.translateStation(stationName));
-            List<String> patrolUserName = patrolTaskMapper.getPatrolUserName(e.getCode());
-            String ptuName = patrolUserName.stream().collect(Collectors.joining(","));
             e.setSysName(sysName);
             e.setStationCodeList(stationCodeList);
             e.setMajorName(majorName);
             e.setOrgCodeList(orgCodes);
-            e.setPatrolUserName(ptuName);
+            e.setPatrolUserName(manager.spliceUsername(e.getCode()));
             e.setPatrolReturnUserName(userName);
         });
         return pageList.setRecords(taskDTOList);
@@ -722,16 +719,16 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         task.setName(patrolTask.getName());
         // 作业类型
         task.setType(patrolTask.getType());
-        // 是否委外
-        task.setOutsource(patrolTask.getOutsource());
-        // 巡检周期
-        task.setPeriod(patrolTask.getPeriod());
         // 任务方式-手工下发
         task.setSource(PatrolConstant.TASK_MANUAL);
         // 任务状态-待指派
         task.setStatus(PatrolConstant.TASK_INIT);
         // 任务是否需要审核
         task.setAuditor(patrolTask.getAuditor());
+        //计划令编码
+        task.setPlanOrderCode(patrolTask.getPlanOrderCode());
+        //计划令图片
+        task.setPlanOrderCodeUrl(patrolTask.getPlanOrderCodeUrl());
         // 处置状态-未处置
         task.setDisposeStatus(PatrolConstant.TASK_UNDISPOSE);
         // 作废状态-未作废

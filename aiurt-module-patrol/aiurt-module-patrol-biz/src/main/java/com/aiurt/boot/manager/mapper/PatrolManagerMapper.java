@@ -34,4 +34,11 @@ public interface PatrolManagerMapper {
      * @return
      */
     String translatePosition(String positionCode);
+
+    /**
+     *翻译巡检人名称
+     * @param code
+     * @return
+     */
+    List<String> spliceUsername(String code);
 }

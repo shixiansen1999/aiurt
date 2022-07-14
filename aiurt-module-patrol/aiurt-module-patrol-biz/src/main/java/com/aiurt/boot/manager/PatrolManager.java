@@ -22,15 +22,26 @@ import java.util.Objects;
  */
 @Service
 public class PatrolManager
+
 {
+    /**
+     * 拼接巡检人
+     *
+     * @param code code值
+     * @return
+     */
+    @Resource
+    private PatrolManagerMapper patrolManagerMapper;
+    public String spliceUsername(String code) {
+        List<String> nameList = patrolManagerMapper.spliceUsername(code);
+        return CollUtil.isNotEmpty(nameList) ? StrUtil.join(",", nameList) : "-";
+    }
     /**
      * 翻译组织机构信息
      *
      * @param codeList code值
      * @return
      */
-    @Resource
-    private PatrolManagerMapper patrolManagerMapper;
     public String translateOrg(List<String> codeList) {
         if (CollUtil.isEmpty(codeList)) {
             return "";
