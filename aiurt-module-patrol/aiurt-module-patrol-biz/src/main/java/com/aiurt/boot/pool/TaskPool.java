@@ -10,6 +10,7 @@ import com.aiurt.boot.standard.entity.PatrolStandard;
 import com.aiurt.boot.standard.service.IPatrolStandardService;
 import com.aiurt.boot.task.entity.*;
 import com.aiurt.boot.task.service.*;
+import com.aiurt.boot.utils.PatrolCodeUtil;
 import com.aiurt.modules.device.entity.Device;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import lombok.extern.slf4j.Slf4j;
@@ -88,7 +89,7 @@ public class TaskPool implements Job {
         // 根据计划列表生成任务
         planList.parallelStream().forEach(l -> {
             PatrolTask task = new PatrolTask();
-            String taskCode = "XR" + System.currentTimeMillis();    // 任务编号
+            String taskCode = PatrolCodeUtil.getTaskCode();    // 任务编号
             task.setCode(taskCode);
             task.setPlanCode(l.getCode());  // 计划编号
             task.setName(l.getName() + "任务");   // 任务名称
@@ -105,7 +106,7 @@ public class TaskPool implements Job {
             // 获取计划的巡检策略
             List<PatrolPlanStrategy> strategyList = patrolPlanStrategyService.lambdaQuery()
                     .eq(PatrolPlanStrategy::getPlanId, l.getId()).list();
-            Optional.ofNullable(strategyList).orElseGet(Collections::emptyList).parallelStream()
+            Optional.ofNullable(strategyList).orElseGet(Collections::emptyList).stream()
                     .forEach(strategy -> {
 
                         DateTime date = DateUtil.date();
@@ -156,15 +157,15 @@ public class TaskPool implements Job {
         copyOrgAndStationInfo(task, plan);
         log.info("组织机构、站所任务的关联信息复制完毕！");
 
-        // 添加任务与标准和设备关联表信息
-        log.info("添加任务与标准和设备关联表信息...");
-        saveRelationData(task, plan);
-        log.info("任务与标准和设备关联表信息添加完毕！");
+//        // 添加任务与标准关联表信息
+//        log.info("添加任务与标准关联表信息...");
+//        saveRelationData(task, plan);
+//        log.info("任务与标准关联表信息添加完毕！");
 
-        // 生成巡检单，即巡检任务设备关联表数据
-        log.info("添加任务与设备关联表信息...");
+        // 生成巡检单，即巡检任务与标准以及设备关联表数据
+        log.info("添加任务与标准以及设备的关联表信息...");
         copyPatrolBill(task, plan);
-        log.info("添加任务与设备关联表信息添加完毕！...");
+        log.info("任务与标准以及设备的关联表信息添加完毕！...");
     }
 
     /**
@@ -181,12 +182,16 @@ public class TaskPool implements Job {
         List<PatrolPlanStandard> planStandardList = Optional.ofNullable(patrolPlanStandardService.list(wrapper))
                 .orElseGet(Collections::emptyList).stream().collect(Collectors.toList());
 
+
         // 遍历计划中的每一个标准生成工单数据
         planStandardList.stream().forEach(l -> {
             // 根据巡检编号获取巡检记录
             QueryWrapper<PatrolStandard> standardWrapper = new QueryWrapper<>();
             standardWrapper.lambda().eq(PatrolStandard::getCode, l.getStandardCode());
             PatrolStandard standard = patrolStandardService.getOne(standardWrapper);
+
+            // 保存巡检任务标准关联数据，并获取对应的任务标准关联表ID
+            String taskStandardId = saveTaskStandardData(task, l, standard);
 
             Integer deviceType = standard.getDeviceType();
             if (PatrolConstant.DEVICE_INDEPENDENCE.equals(deviceType)) {
@@ -199,8 +204,6 @@ public class TaskPool implements Job {
 
                 // 根据选择的站点和标准生成巡检单数据
                 list.stream().forEach(station -> {
-                    // 保存巡检任务标准关联数据
-                    String taskStandardId = saveTaskStandardData(task, l, standard);
 
                     // 生成巡检单数据
                     PatrolTaskDevice patrolTaskDevice = new PatrolTaskDevice();
@@ -211,7 +214,7 @@ public class TaskPool implements Job {
                     // 任务标准表ID
                     patrolTaskDevice.setTaskStandardId(taskStandardId);
                     // 巡检单号生成
-                    String patrolNumber = "XD" + System.currentTimeMillis();
+                    String patrolNumber = PatrolCodeUtil.getBillCode();
                     patrolTaskDevice.setPatrolNumber(patrolNumber);
                     // 线路编号
                     patrolTaskDevice.setLineCode(station.getLineCode());
@@ -233,8 +236,6 @@ public class TaskPool implements Job {
                         .stream().forEach(
                                 // ps 表示巡检计划标准对象
                                 ps -> {
-                                    // 保存巡检任务标准关联数据
-                                    String taskStandardId = saveTaskStandardData(task, l, standard);
 
                                     // 生成巡检单数据
                                     PatrolTaskDevice patrolTaskDevice = new PatrolTaskDevice();
@@ -245,7 +246,7 @@ public class TaskPool implements Job {
                                     //检查状态
                                     patrolTaskDevice.setStatus(0);
                                     // 巡检单号生成
-                                    String patrolNumber = "XD" + System.currentTimeMillis();
+                                    String patrolNumber = PatrolCodeUtil.getBillCode();
                                     patrolTaskDevice.setPatrolNumber(patrolNumber);
                                     // 设备编号
                                     patrolTaskDevice.setDeviceCode(ps.getDeviceCode());
@@ -332,7 +333,7 @@ public class TaskPool implements Job {
     }
 
     /**
-     * 保存与任务相关联的标准和巡检项目或巡检设备信息
+     * 保存与任务相关联的标准和巡检设备信息
      */
     private void saveRelationData(PatrolTask task, PatrolPlan plan) {
         // 将巡检计划标准关联表数据获取一份到巡检任务标准关联表中

@@ -90,11 +90,9 @@ public class PatrolTaskDTO
     @ApiModelProperty(value = "开始和结束时间")
     @TableField(exist = false)
     private String startEndTime;
-    @Excel(name = "巡检结果提交时间", width = 15, format = "yyyy-MM-dd")
-    @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd")
-    @DateTimeFormat(pattern = "yyyy-MM-dd")
+    @Excel(name = "巡检结果提交时间", width = 15)
     @ApiModelProperty(value = "巡检结果提交时间")
-    private java.util.Date submitTime;
+    private String submitTime;
     /*** 任务提交人 */
     @Excel(name = "任务提交人 ", width = 15)
     @ApiModelProperty(value = "任务提交人 ")
@@ -110,7 +108,7 @@ public class PatrolTaskDTO
     /*** 巡检频次：1 一天1次、2 一周1次、3 一周2次*/
     @Excel(name = "巡检频次：1 一天1次、2 一周1次、3 一周2次", width = 15)
     @ApiModelProperty(value = "巡检频次：1 一天1次、2 一周1次、3 一周2次")
-    private java.lang.Integer period;
+    private String period;
     /*** 任务状态：0待指派、1待确认、2待执行、3已退回、4执行中、5已驳回、6待审核、7已完成*/
     @Excel(name = "任务状态：0待指派、1待确认、2待执行、3已退回、4执行中、5已驳回、6待审核、7已完成", width = 15)
     @ApiModelProperty(value = "任务状态：0待指派、1待确认、2待执行、3已退回、4执行中、5已驳回、6待审核、7已完成")

@@ -21,7 +21,7 @@ public interface PatrolTaskStandardMapper extends BaseMapper<PatrolTaskStandard>
     List<PatrolTaskStandardDTO> getMajorSystemName(String id);
 
     /**
-     *
+     *pc-根据任务id,获取所有的任务标准关联信息
      * @param taskId
      * @return
      */

@@ -75,8 +75,10 @@
 	          LEFT JOIN repair_task_standard_rel t3 ON t2.task_standard_rel_id = t3.id
         <where>
 	           t1.del_flag = 0
+               AND t2.del_flag = 0
+               <if test="condition.taskId !=null ">
                    AND t1.id = #{condition.taskId}
-                   AND t2.del_flag = 0
+               </if>
                <if test="condition.equipmentName !=null ">
                    AND ( SELECT NAME FROM device WHERE CODE = t2.device_code ) LIKE CONCAT ('%', #{condition.equipmentName}, '%')
                </if>

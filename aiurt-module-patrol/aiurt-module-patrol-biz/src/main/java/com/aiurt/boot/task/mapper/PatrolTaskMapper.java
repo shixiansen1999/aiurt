@@ -52,15 +52,6 @@ public interface PatrolTaskMapper extends BaseMapper<PatrolTask> {
      * @return author hlq
      */
     List<StationDTO> getStationName(String code);
-
-    /**
-     * app-获取巡检人名称
-     *
-     * @param code
-     * @return author hlq
-     */
-    List<String> getPatrolUserName(String code);
-
     /**
      * 查询巡检任务列表
      *
@@ -85,15 +76,12 @@ public interface PatrolTaskMapper extends BaseMapper<PatrolTask> {
      * @return
      */
     List<String> getOrgCode(String taskCode);
-
     /**
      * app-获取指派人员信息
      *
      * @return
      */
     List<PatrolTaskUserContentDTO> getUser(@Param("code") String code);
-
-
     /**
      * app-获取组织机构名称
      *

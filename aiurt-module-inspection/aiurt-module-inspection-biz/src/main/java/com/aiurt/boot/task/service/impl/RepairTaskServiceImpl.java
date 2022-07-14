@@ -31,6 +31,7 @@ import com.aiurt.common.util.DateUtils;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.github.xiaoymin.knife4j.core.util.CollectionUtils;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -460,12 +461,14 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                     }
                 }
             });
-            LambdaQueryWrapper<RepairTaskEnclosure> objectLambdaQueryWrapper = new LambdaQueryWrapper<>();
-            List<RepairTaskEnclosure> repairTaskDevice = repairTaskEnclosureMapper.selectList(objectLambdaQueryWrapper.in(RepairTaskEnclosure::getRepairTaskResultId, list));
-
-            //获取检修单的检修结果的附件
-            checkListDTO.setEnclosureUrl(repairTaskDevice.stream().map(RepairTaskEnclosure::getUrl).collect(Collectors.toList()));
-
+            if (CollectionUtils.isNotEmpty(list)){
+                LambdaQueryWrapper<RepairTaskEnclosure> objectLambdaQueryWrapper = new LambdaQueryWrapper<>();
+                List<RepairTaskEnclosure> repairTaskDevice = repairTaskEnclosureMapper.selectList(objectLambdaQueryWrapper.in(RepairTaskEnclosure::getRepairTaskResultId, list));
+                   if (CollectionUtils.isNotEmpty(repairTaskDevice)){
+                       //获取检修单的检修结果的附件
+                       checkListDTO.setEnclosureUrl(repairTaskDevice.stream().map(RepairTaskEnclosure::getUrl).collect(Collectors.toList()));
+                   }
+            }
             //检查项的数量
             long count1 = repairTaskResultList.stream().filter(repairTaskResult -> repairTaskResult.getType() == 1).count();
             checkListDTO.setMaintenanceItemsQuantity((int) count1);
@@ -496,6 +499,24 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
             //检查项类型
             r.setTypeName(sysBaseAPI.translateDict(DictConstant.INSPECTION_PROJECT, String.valueOf(r.getType())));
 
+            //父级名称
+            if (r.getPid()!=null){
+                RepairTaskResult repairTaskResult = repairTaskResultMapper.selectById(r.getPid());
+                if (ObjectUtil.isNotNull(repairTaskResult)){
+                    r.setParentName(repairTaskResult.getName());
+                }
+            }
+            //附件url
+            if (r.getId()!=null){
+                LambdaQueryWrapper<RepairTaskEnclosure> objectLambdaQueryWrapper = new LambdaQueryWrapper<>();
+                List<RepairTaskEnclosure> repairTaskDevice = repairTaskEnclosureMapper.selectList(objectLambdaQueryWrapper.eq(RepairTaskEnclosure::getRepairTaskResultId,r.getId()));
+                if (CollectionUtils.isNotEmpty(repairTaskDevice)){
+                    List<String> stringList = repairTaskDevice.stream().map(RepairTaskEnclosure::getUrl).collect(Collectors.toList());
+                    if (CollectionUtils.isNotEmpty(stringList)){
+                        r.setUrl(stringList);
+                    }
+                }
+            }
             //检修人名称
             if (r.getStaffId() != null) {
                 LoginUser userById = sysBaseAPI.getUserById(r.getStaffId());

@@ -144,6 +144,16 @@ public class RepairTaskResult implements Serializable {
     @ApiModelProperty(value = "修改时间")
     private java.util.Date updateTime;
 
+    /**父级名称*/
+    @TableField(exist = false)
+    @ApiModelProperty(value = "父级名称")
+    private java.lang.String parentName;
+
+    /**附件url*/
+    @TableField(exist = false)
+    @ApiModelProperty(value = "附件url")
+    private List<String> url;
+
     /**
      * 子节点
      */
