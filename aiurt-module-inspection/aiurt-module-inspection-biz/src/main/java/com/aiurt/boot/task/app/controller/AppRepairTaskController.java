@@ -199,7 +199,7 @@ public class AppRepairTaskController extends BaseController<RepairTask, IRepairT
     @AutoLog(value = "填写检修工单")
     @ApiOperation(value = "填写检修工单", notes = "填写检修工单")
     @PostMapping(value = "/writeMonad")
-    public Result<?> writeMonad(WriteMonadDTO monadDTO) {
+    public Result<?> writeMonad(@RequestBody WriteMonadDTO monadDTO) {
         repairTaskService.writeMonad(monadDTO);
         return Result.OK("填写成功");
     }
