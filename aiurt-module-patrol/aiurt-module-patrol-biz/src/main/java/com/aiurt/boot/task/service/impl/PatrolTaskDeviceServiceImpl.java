@@ -95,6 +95,17 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
                 }
                 patrolTaskDeviceForDeviceParam.setAccompanyInfoStr(res);
                 patrolTaskDeviceForDeviceParam.setAccompanyInfo(accompanyList);
+                PatrolTaskDeviceParam taskDeviceParam = Optional.ofNullable(patrolTaskDeviceMapper.selectBillInfoByNumber(patrolTaskDeviceForDeviceParam.getPatrolNumber()))
+                        .orElseGet(PatrolTaskDeviceParam::new);
+                List<PatrolCheckResultDTO> checkResultList = patrolCheckResultMapper.getListByTaskDeviceId(taskDeviceParam.getId());
+                // 统计检查项中正常项的数据
+                long normalItem = Optional.ofNullable(checkResultList).orElseGet(Collections::emptyList)
+                        .stream().filter(l -> PatrolConstant.RESULT_NORMAL.equals(l.getCheckResult())).count();
+                // 统计检查项中异常项的数据
+                long exceptionItem = Optional.ofNullable(checkResultList).orElseGet(Collections::emptyList)
+                        .stream().filter(l -> PatrolConstant.RESULT_EXCEPTION.equals(l.getCheckResult())).count();
+                patrolTaskDeviceForDeviceParam.setNormalItem(normalItem);
+                patrolTaskDeviceForDeviceParam.setExceptionItem(exceptionItem);
             }
         }
 
