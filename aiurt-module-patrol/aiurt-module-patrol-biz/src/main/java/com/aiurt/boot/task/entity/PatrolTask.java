@@ -114,10 +114,10 @@ public class PatrolTask implements Serializable {
     /**
      * 巡检结果提交时间
      */
-    @Excel(name = "巡检结果提交时间", width = 15, format = "yyyy-MM-dd")
-    @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd")
-    @DateTimeFormat(pattern = "yyyy-MM-dd")
-    @ApiModelProperty(value = "巡检结果提交时间")
+    @Excel(name = "巡检结果提交时间", width = 15, format = "yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd HH:mm:ss")
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @ApiModelProperty(value = "巡检结果提交时间,格式yyyy-MM-dd HH:mm:ss")
     private java.util.Date submitTime;
     /**
      * 任务结束用户ID

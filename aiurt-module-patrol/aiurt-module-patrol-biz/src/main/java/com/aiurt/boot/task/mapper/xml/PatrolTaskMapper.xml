@@ -104,9 +104,9 @@
             AND DATE_FORMAT( #{patrolTask.dateEnd}, '%Y-%m-%d')
         </if>
         <if test="patrolTask.submitDateHead != null and patrolTask.submitDateEnd != null">
-            AND DATE_FORMAT( pt.submit_time, '%Y-%m-%d' )
-            BETWEEN DATE_FORMAT( #{patrolTask.submitDateHead}, '%Y-%m-%d' )
-            AND DATE_FORMAT( #{patrolTask.submitDateEnd}, '%Y-%m-%d')
+            AND DATE_FORMAT( pt.submit_time, '%Y-%m-%d %H:%i:%s' )
+            BETWEEN DATE_FORMAT( #{patrolTask.submitDateHead}, '%Y-%m-%d %H:%i:%s' )
+            AND DATE_FORMAT( #{patrolTask.submitDateEnd}, '%Y-%m-%d %H:%i:%s')
         </if>
         <if test="patrolTask.patrolDate != null and patrolTask.patrolDate != null">
             AND DATE_FORMAT( pt.patrol_date, '%Y-%m-%d' ) = DATE_FORMAT(#{patrolTask.patrolDate}, '%Y-%m-%d' )

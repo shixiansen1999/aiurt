@@ -76,22 +76,6 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
 
     @Override
     public IPage<PatrolTaskParam> getTaskList(Page<PatrolTaskParam> page, PatrolTaskParam patrolTaskParam) {
-        if (ObjectUtil.isNotEmpty(patrolTaskParam) && ObjectUtil.isNotEmpty(patrolTaskParam.getDateScope())) {
-            String[] split = patrolTaskParam.getDateScope().split(",");
-            Date dateHead = DateUtil.parse(split[0], "yyyy-MM-dd");
-            Date dateEnd = DateUtil.parse(split[1], "yyyy-MM-dd");
-            patrolTaskParam.setDateHead(dateHead);
-            patrolTaskParam.setDateEnd(dateEnd);
-
-        }
-        if (ObjectUtil.isNotEmpty(patrolTaskParam) && ObjectUtil.isNotEmpty(patrolTaskParam.getSubmitDateScope())) {
-            String[] splits = patrolTaskParam.getSubmitDateScope().split(",");
-            Date submitDateHead = DateUtil.parse(splits[0], "yyyy-MM-dd");
-            Date submitDateEnd = DateUtil.parse(splits[1], "yyyy-MM-dd");
-            patrolTaskParam.setSubmitDateHead(submitDateHead);
-            patrolTaskParam.setSubmitDateEnd(submitDateEnd);
-        }
-
         IPage<PatrolTaskParam> taskPage = patrolTaskMapper.getTaskList(page, patrolTaskParam);
         taskPage.getRecords().stream().forEach(l -> {
             // 组织机构信息
@@ -317,11 +301,9 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
             patrolTaskUser.setDelFlag(0);
             patrolTaskUserMapper.insert(patrolTaskUser);
         }
-        if(manager.checkTaskUser(patrolTask.getCode())==false)
-        {
+        if (manager.checkTaskUser(patrolTask.getCode()) == false) {
             throw new AiurtBootException("小主，该巡检任务不在您的范围之内哦");
-        }
-        else {
+        } else {
             //确认：将待确认改为待执行
             if (PatrolConstant.TASK_CONFIRM.equals(patrolTaskDTO.getStatus())) {
                 updateWrapper.set(PatrolTask::getStatus, 2).eq(PatrolTask::getId, patrolTaskDTO.getId());
@@ -340,12 +322,9 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         LambdaQueryWrapper<PatrolTask> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(PatrolTask::getId, patrolTaskDTO.getId());
         PatrolTask patrolTask = patrolTaskMapper.selectOne(queryWrapper);
-        if(manager.checkTaskUser(patrolTask.getCode())==false)
-        {
+        if (manager.checkTaskUser(patrolTask.getCode()) == false) {
             throw new AiurtBootException("小主，该巡检任务不在您的退回范围之内哦");
-        }
-        else
-        {
+        } else {
             //更新巡检状态及添加退回理由、退回人Id（传任务主键id、退回理由）
             LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
             LambdaUpdateWrapper<PatrolTask> updateWrapper = new LambdaUpdateWrapper<>();
