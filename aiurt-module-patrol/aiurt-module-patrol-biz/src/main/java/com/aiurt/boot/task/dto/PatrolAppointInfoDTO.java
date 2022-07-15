@@ -26,6 +26,11 @@ public class PatrolAppointInfoDTO {
     @ApiModelProperty(value = "任务指派信息K-V,key表示任务编号，value表示用户信息列表", required = true)
     private Map<String, List<PatrolAppointUserDTO>> map;
     /**
+     * 作业类型：1 A1、2 A2、3 A3、4 B1、5 B2、6 C1、7 C2、8 C3
+     */
+    @ApiModelProperty(value = "作业类型：1 A1、2 A2、3 A3、4 B1、5 B2、6 C1、7 C2、8 C3")
+    private Integer type;
+    /**
      * 计划令编码
      */
     @ApiModelProperty(value = "计划令编码")

@@ -1,5 +1,6 @@
 package com.aiurt.boot.task.dto;
 
+import com.aiurt.common.aspect.annotation.Dict;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
@@ -113,6 +114,7 @@ public class PatrolTaskDTO
     /*** 任务状态：0待指派、1待确认、2待执行、3已退回、4执行中、5已驳回、6待审核、7已完成*/
     @Excel(name = "任务状态：0待指派、1待确认、2待执行、3已退回、4执行中、5已驳回、6待审核、7已完成", width = 15)
     @ApiModelProperty(value = "任务状态：0待指派、1待确认、2待执行、3已退回、4执行中、5已驳回、6待审核、7已完成")
+    @Dict(dicCode = "patrol_task_status")
     private java.lang.Integer status;
     /*** 退回理由*/
     @Excel(name = "退回理由", width = 15)

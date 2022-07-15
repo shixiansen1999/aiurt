@@ -76,22 +76,6 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
 
     @Override
     public IPage<PatrolTaskParam> getTaskList(Page<PatrolTaskParam> page, PatrolTaskParam patrolTaskParam) {
-        if (ObjectUtil.isNotEmpty(patrolTaskParam) && ObjectUtil.isNotEmpty(patrolTaskParam.getDateScope())) {
-            String[] split = patrolTaskParam.getDateScope().split(",");
-            Date dateHead = DateUtil.parse(split[0], "yyyy-MM-dd");
-            Date dateEnd = DateUtil.parse(split[1], "yyyy-MM-dd");
-            patrolTaskParam.setDateHead(dateHead);
-            patrolTaskParam.setDateEnd(dateEnd);
-
-        }
-        if (ObjectUtil.isNotEmpty(patrolTaskParam) && ObjectUtil.isNotEmpty(patrolTaskParam.getSubmitDateScope())) {
-            String[] splits = patrolTaskParam.getSubmitDateScope().split(",");
-            Date submitDateHead = DateUtil.parse(splits[0], "yyyy-MM-dd");
-            Date submitDateEnd = DateUtil.parse(splits[1], "yyyy-MM-dd");
-            patrolTaskParam.setSubmitDateHead(submitDateHead);
-            patrolTaskParam.setSubmitDateEnd(submitDateEnd);
-        }
-
         IPage<PatrolTaskParam> taskPage = patrolTaskMapper.getTaskList(page, patrolTaskParam);
         taskPage.getRecords().stream().forEach(l -> {
             // 组织机构信息
@@ -192,6 +176,8 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
                 // 若插入指派的人员后则更新任务状态
                 if (insert.get() > 0) {
                     PatrolTask task = new PatrolTask();
+                    // 作业类型
+                    task.setType(patrolAppointInfoDTO.getType());
                     // 计划令编号和图片地址
                     task.setPlanOrderCode(patrolAppointInfoDTO.getPlanOrderCode());
                     task.setPlanOrderCodeUrl(patrolAppointInfoDTO.getPlanOrderCodeUrl());
@@ -252,14 +238,14 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
             e.setOrganizationName(manager.translateOrg(orgCodes));
             List<StationDTO> stationName = patrolTaskMapper.getStationName(e.getCode());
             e.setStationName(manager.translateStation(stationName));
-            e.setEndUserName(e.getEndUserName()==null?"-":e.getEndUserName());
-            e.setSubmitTime(e.getSubmitTime()==null?"-":e.getSubmitTime());
-            e.setPeriod(e.getPeriod()==null?"-":e.getPeriod());
+            e.setEndUserName(e.getEndUserName() == null ? "-" : e.getEndUserName());
+            e.setSubmitTime(e.getSubmitTime() == null ? "-" : e.getSubmitTime());
+            e.setPeriod(e.getPeriod() == null ? "-" : e.getPeriod());
             e.setSysName(sysName);
             e.setMajorName(majorName);
             e.setOrgCodeList(orgCodes);
-            e.setPatrolUserName(  manager.spliceUsername(e.getCode()));
-            e.setPatrolReturnUserName(userName==null?"-":userName);
+            e.setPatrolUserName(manager.spliceUsername(e.getCode()));
+            e.setPatrolReturnUserName(userName == null ? "-" : userName);
         });
         return pageList.setRecords(taskList);
     }
@@ -279,8 +265,8 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
             e.setSysName(sysName);
             e.setMajorName(majorName);
             e.setOrgCodeList(orgCodes);
-            e.setPatrolUserName(  manager.spliceUsername(e.getCode()));
-            e.setPatrolReturnUserName(userName==null?"-":userName);
+            e.setPatrolUserName(manager.spliceUsername(e.getCode()));
+            e.setPatrolReturnUserName(userName == null ? "-" : userName);
         });
         return pageList.setRecords(taskList);
     }
@@ -303,23 +289,24 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
                     throw new AiurtBootException("小主，该巡检任务不在您的领取范围之内哦");
                 }
             }
-            updateWrapper.set(PatrolTask::getStatus, 2)
-                    .set(PatrolTask::getSource, 1)
-                    .eq(PatrolTask::getId, patrolTaskDTO.getId());
-            update(updateWrapper);
-            //添加巡检人
-            PatrolTaskUser patrolTaskUser = new PatrolTaskUser();
-            patrolTaskUser.setTaskCode(patrolTask.getCode());
-            patrolTaskUser.setUserId(sysUser.getId());
-            patrolTaskUser.setUserName(sysUser.getRealname());
-            patrolTaskUser.setDelFlag(0);
-            patrolTaskUserMapper.insert(patrolTaskUser);
+            else
+            {
+                updateWrapper.set(PatrolTask::getStatus, 2)
+                        .set(PatrolTask::getSource, 1)
+                        .eq(PatrolTask::getId, patrolTaskDTO.getId());
+                update(updateWrapper);
+                //添加巡检人
+                PatrolTaskUser patrolTaskUser = new PatrolTaskUser();
+                patrolTaskUser.setTaskCode(patrolTask.getCode());
+                patrolTaskUser.setUserId(sysUser.getId());
+                patrolTaskUser.setUserName(sysUser.getRealname());
+                patrolTaskUser.setDelFlag(0);
+                patrolTaskUserMapper.insert(patrolTaskUser);
+            }
         }
-        if(manager.checkTaskUser(patrolTask.getCode())==false)
-        {
+        if (manager.checkTaskUser(patrolTask.getCode()) == false) {
             throw new AiurtBootException("小主，该巡检任务不在您的范围之内哦");
-        }
-        else {
+        } else {
             //确认：将待确认改为待执行
             if (PatrolConstant.TASK_CONFIRM.equals(patrolTaskDTO.getStatus())) {
                 updateWrapper.set(PatrolTask::getStatus, 2).eq(PatrolTask::getId, patrolTaskDTO.getId());
@@ -338,12 +325,9 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         LambdaQueryWrapper<PatrolTask> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(PatrolTask::getId, patrolTaskDTO.getId());
         PatrolTask patrolTask = patrolTaskMapper.selectOne(queryWrapper);
-        if(manager.checkTaskUser(patrolTask.getCode())==false)
-        {
+        if (manager.checkTaskUser(patrolTask.getCode()) == false) {
             throw new AiurtBootException("小主，该巡检任务不在您的退回范围之内哦");
-        }
-        else
-        {
+        } else {
             //更新巡检状态及添加退回理由、退回人Id（传任务主键id、退回理由）
             LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
             LambdaUpdateWrapper<PatrolTask> updateWrapper = new LambdaUpdateWrapper<>();
@@ -376,22 +360,22 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
     }
 
     @Override
-    public void getPatrolTaskAppoint(List<PatrolTaskUserDTO> patrolTaskUserDTO) {
+    public void getPatrolTaskAppoint(PatrolTaskAppointSaveDTO patrolTaskUserDTO) {
         //传整个实体。添加指派人员信息
-        for (PatrolTaskUserDTO ptu : patrolTaskUserDTO) {
+        List<PatrolAccompanyDTO> list = patrolTaskUserDTO.getAccompanyDTOList();
+        for (PatrolAccompanyDTO ptu : list) {
             PatrolTaskUser patrolTaskUser = new PatrolTaskUser();
-            List<PatrolTaskUserContentDTO> userList = ptu.getUserList();
-            String userId = userList.stream().map(PatrolTaskUserContentDTO::getId).collect(Collectors.joining());
-            String realName = userList.stream().map(PatrolTaskUserContentDTO::getRealname).collect(Collectors.joining());
-            patrolTaskUser.setUserId(userId);
-            patrolTaskUser.setUserName(realName);
-            patrolTaskUser.setTaskCode(ptu.getTaskCode());
+            patrolTaskUser.setUserId(ptu.getUserId());
+            patrolTaskUser.setUserName(ptu.getUsername());
+            patrolTaskUser.setTaskCode(patrolTaskUserDTO.getCode());
             patrolTaskUser.setDelFlag(0);
             patrolTaskUserMapper.insert(patrolTaskUser);
         }
         //将任务来源改为常规指派,将任务状态改为待确认
         LambdaUpdateWrapper<PatrolTask> updateWrapper = new LambdaUpdateWrapper<>();
-        updateWrapper.set(PatrolTask::getSource, 2).set(PatrolTask::getStatus, 1).eq(PatrolTask::getCode, patrolTaskUserDTO.get(0).getTaskCode());
+        updateWrapper.set(PatrolTask::getSource, 2).set(PatrolTask::getStatus, 1).set(PatrolTask::getStartTime,patrolTaskUserDTO.getStartTime())
+         .set(PatrolTask::getEndTime, patrolTaskUserDTO.getEndTime()).set(PatrolTask::getPlanCode,patrolTaskUserDTO.getPlanCode()).set(PatrolTask::getType,patrolTaskUserDTO.getType())
+         .set(PatrolTask::getPlanOrderCodeUrl, patrolTaskUserDTO.getPlanOrderCodeUrl()).eq(PatrolTask::getCode, patrolTaskUserDTO.getCode());
         update(updateWrapper);
     }
 
@@ -525,33 +509,42 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
     @Override
     public void getPatrolTaskSubmit(PatrolTaskDTO patrolTaskDTO) {
         //提交任务：将待执行、执行中，变为待审核、添加任务结束人id,传签名地址、任务主键id、审核状态
-        LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        LambdaUpdateWrapper<PatrolTask> updateWrapper = new LambdaUpdateWrapper<>();
-        if (patrolTaskDTO.getAuditor() == 1) {
-            updateWrapper.set(PatrolTask::getStatus, 6)
-                    .set(PatrolTask::getEndUserId, sysUser.getId())
-                    .set(PatrolTask::getSignUrl, patrolTaskDTO.getSignUrl())
-                    .set(PatrolTask::getSubmitTime, LocalDateTime.now())
-                    .eq(PatrolTask::getId, patrolTaskDTO.getId());
-        } else {
-            updateWrapper.set(PatrolTask::getStatus, 7)
-                    .set(PatrolTask::getEndUserId, sysUser.getId())
-                    .set(PatrolTask::getSignUrl, patrolTaskDTO.getSignUrl())
-                    .set(PatrolTask::getSubmitTime, LocalDateTime.now())
-                    .eq(PatrolTask::getId, patrolTaskDTO.getId());
+        PatrolTask patrolTask = patrolTaskMapper.selectById(patrolTaskDTO.getId());
+        if(manager.checkTaskUser(patrolTask.getCode())==false)
+        {
+            throw new AiurtBootException("小主，该巡检任务不在您的提交范围之内哦");
         }
-        update(updateWrapper);
-        List<PatrolTaskDevice> patrolTaskDevice = patrolTaskDeviceMapper.selectList(new LambdaQueryWrapper<PatrolTaskDevice>().eq(PatrolTaskDevice::getTaskId, patrolTaskDTO.getId()));
-        patrolTaskDevice.stream().forEach(e -> {
-            List<PatrolCheckResult> patrolCheckResultList = patrolCheckResultMapper.selectList(new LambdaQueryWrapper<PatrolCheckResult>().eq(PatrolCheckResult::getTaskDeviceId, e.getId()));
-            List<PatrolCheckResult> collect = patrolCheckResultList.stream().filter(s -> s.getCheckResult() != null && 1 == s.getCheckResult()).collect(Collectors.toList());
-            if (CollUtil.isNotEmpty(collect)) {
-                e.setCheckResult(1);
+        else
+        {
+            LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+            LambdaUpdateWrapper<PatrolTask> updateWrapper = new LambdaUpdateWrapper<>();
+            if (patrolTaskDTO.getAuditor() == 1) {
+                updateWrapper.set(PatrolTask::getStatus, 6)
+                        .set(PatrolTask::getEndUserId, sysUser.getId())
+                        .set(PatrolTask::getSignUrl, patrolTaskDTO.getSignUrl())
+                        .set(PatrolTask::getSubmitTime, LocalDateTime.now())
+                        .eq(PatrolTask::getId, patrolTaskDTO.getId());
             } else {
-                e.setCheckResult(0);
+                updateWrapper.set(PatrolTask::getStatus, 7)
+                        .set(PatrolTask::getEndUserId, sysUser.getId())
+                        .set(PatrolTask::getSignUrl, patrolTaskDTO.getSignUrl())
+                        .set(PatrolTask::getSubmitTime, LocalDateTime.now())
+                        .eq(PatrolTask::getId, patrolTaskDTO.getId());
             }
-            patrolTaskDeviceMapper.updateById(e);
-        });
+            update(updateWrapper);
+            List<PatrolTaskDevice> patrolTaskDevice = patrolTaskDeviceMapper.selectList(new LambdaQueryWrapper<PatrolTaskDevice>().eq(PatrolTaskDevice::getTaskId, patrolTaskDTO.getId()));
+            patrolTaskDevice.stream().forEach(e -> {
+                List<PatrolCheckResult> patrolCheckResultList = patrolCheckResultMapper.selectList(new LambdaQueryWrapper<PatrolCheckResult>().eq(PatrolCheckResult::getTaskDeviceId, e.getId()));
+                List<PatrolCheckResult> collect = patrolCheckResultList.stream().filter(s -> s.getCheckResult() != null && 1 == s.getCheckResult()).collect(Collectors.toList());
+                if (CollUtil.isNotEmpty(collect)) {
+                    e.setCheckResult(1);
+                } else {
+                    e.setCheckResult(0);
+                }
+                patrolTaskDeviceMapper.updateById(e);
+            });
+        }
+
     }
 
     @Transactional(rollbackFor = Exception.class)

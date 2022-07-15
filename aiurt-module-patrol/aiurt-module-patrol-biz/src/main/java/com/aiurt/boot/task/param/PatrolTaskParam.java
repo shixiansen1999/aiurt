@@ -4,12 +4,14 @@ import com.aiurt.boot.task.dto.PatrolTaskOrganizationDTO;
 import com.aiurt.boot.task.dto.PatrolTaskStationDTO;
 import com.aiurt.boot.task.entity.PatrolTask;
 import com.aiurt.boot.task.entity.PatrolTaskUser;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import org.jeecgframework.poi.excel.annotation.Excel;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import java.util.Date;
 import java.util.List;
@@ -87,40 +89,36 @@ public class PatrolTaskParam extends PatrolTask {
     @ApiModelProperty(value = "巡检人员信息")
     private List<PatrolTaskUser> userInfo;
     /**
-     * 任务计划执行日期范围
-     */
-    @Excel(name = "任务计划执行日期范围", width = 15)
-    @ApiModelProperty(value = "任务计划执行日期范围")
-    private String dateScope;
-    /**
      * 任务计划执行日期范围开始日期
      */
-    @Excel(name = "任务计划执行日期范围开始日期", width = 15)
-    @ApiModelProperty(value = "任务计划执行日期范围开始日期")
+    @Excel(name = "任务计划执行日期范围开始日期", width = 15, format = "yyyy-MM-dd")
+    @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd")
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
+    @ApiModelProperty(value = "任务计划执行日期范围开始日期,格式yyyy-MM-dd")
     private Date dateHead;
     /**
      * 任务计划执行日期范围结束日期
      */
-    @Excel(name = "任务计划执行日期范围结束日期", width = 15)
-    @ApiModelProperty(value = "任务计划执行日期范围结束日期")
+    @Excel(name = "任务计划执行日期范围结束日期", width = 15, format = "yyyy-MM-dd")
+    @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd")
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
+    @ApiModelProperty(value = "任务计划执行日期范围结束日期,格式yyyy-MM-dd")
     private Date dateEnd;
-    /**
-     * 任务提交日期范围
-     */
-    @Excel(name = "任务提交日期范围", width = 15)
-    @ApiModelProperty(value = "任务提交日期范围")
-    private String submitDateScope;
     /**
      * 任务提交日期范围开始日期
      */
-    @Excel(name = "任务提交日期范围开始日期", width = 15)
-    @ApiModelProperty(value = "任务提交日期范围开始日期")
+    @Excel(name = "任务提交日期范围开始日期", width = 15, format = "yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd HH:mm:ss")
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @ApiModelProperty(value = "任务提交日期范围开始日期,格式yyyy-MM-dd HH:mm:ss")
     private Date submitDateHead;
     /**
      * 任务提交日期范围结束日期
      */
-    @Excel(name = "任务提交日期范围结束日期", width = 15)
-    @ApiModelProperty(value = "任务提交日期范围结束日期")
+    @Excel(name = "任务提交日期范围结束日期", width = 15, format = "yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd HH:mm:ss")
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @ApiModelProperty(value = "任务提交日期范围结束日期,格式yyyy-MM-dd HH:mm:ss")
     private Date submitDateEnd;
     /**
      * 专业信息
