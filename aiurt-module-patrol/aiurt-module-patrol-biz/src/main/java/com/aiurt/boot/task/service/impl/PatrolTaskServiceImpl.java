@@ -136,6 +136,8 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         taskParam.setUserInfo(userList);
         taskParam.setMajorInfo(majorInfo);
         taskParam.setSubsystemInfo(subsystemInfo);
+        taskParam.setDisposeUserName(patrolTaskMapper.getUsername(taskParam.getDisposeId()));
+
         return taskParam;
     }
 
@@ -296,7 +298,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
                 if (!orgList.contains(manager.checkLogin().getOrgCode())) {
                     throw new AiurtBootException("小主，该巡检任务不在您的领取范围之内哦");
                 }
-            } else {
+            }
                 updateWrapper.set(PatrolTask::getStatus, 2)
                         .set(PatrolTask::getSource, 1)
                         .eq(PatrolTask::getId, patrolTaskDTO.getId());
@@ -308,22 +310,24 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
                 patrolTaskUser.setUserName(sysUser.getRealname());
                 patrolTaskUser.setDelFlag(0);
                 patrolTaskUserMapper.insert(patrolTaskUser);
-            }
         }
-        if (manager.checkTaskUser(patrolTask.getCode()) == false) {
-            throw new AiurtBootException("小主，该巡检任务不在您的范围之内哦");
-        } else {
             //确认：将待确认改为待执行
             if (PatrolConstant.TASK_CONFIRM.equals(patrolTaskDTO.getStatus())) {
+                if (manager.checkTaskUser(patrolTask.getCode()) == false) {
+                    throw new AiurtBootException("小主，该巡检任务不在您的范围之内哦");
+                }
                 updateWrapper.set(PatrolTask::getStatus, 2).eq(PatrolTask::getId, patrolTaskDTO.getId());
                 update(updateWrapper);
             }
             //执行：将待执行改为执行中
             if (PatrolConstant.TASK_EXECUTE.equals(patrolTaskDTO.getStatus())) {
+                if (manager.checkTaskUser(patrolTask.getCode()) == false) {
+                    throw new AiurtBootException("小主，该巡检任务不在您的范围之内哦");
+                }
                 updateWrapper.set(PatrolTask::getStatus, 4).eq(PatrolTask::getId, patrolTaskDTO.getId());
                 update(updateWrapper);
             }
-        }
+
     }
 
     @Override
@@ -556,8 +560,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         //保存任务信息
         PatrolTask patrolTask = new PatrolTask();
         patrolTask.setName(patrolTaskManualDTO.getName());
-        String xjCode = PatrolCodeUtil.getTaskCode();
-        patrolTask.setCode(xjCode);
+        patrolTask.setCode(PatrolCodeUtil.getTaskCode());
         patrolTask.setPatrolDate(patrolTaskManualDTO.getPatrolDate());
         patrolTask.setStatus(0);
         patrolTask.setSource(3);
@@ -619,8 +622,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
                         patrolTaskDevice.setTaskId(taskId);//巡检任务id
                         patrolTaskDevice.setDelFlag(0);
                         patrolTaskDevice.setStatus(0);//单号状态
-                        String xdCode = PatrolCodeUtil.getBillCode();
-                        patrolTaskDevice.setPatrolNumber(xdCode);//巡检单号
+                        patrolTaskDevice.setPatrolNumber(PatrolCodeUtil.getBillCode());//巡检单号
                         patrolTaskDevice.setTaskStandardId(taskStandardId);//巡检任务标准关联表ID
                         patrolTaskDevice.setDeviceCode(dv.getCode());//设备code
                         Device device = patrolTaskDeviceMapper.getDevice(dv.getCode());
@@ -637,8 +639,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
                     patrolTaskDevice.setTaskId(taskId);
                     patrolTaskDevice.setDelFlag(0);
                     patrolTaskDevice.setStatus(0);//单号状态
-                    String xdCode = PatrolCodeUtil.getBillCode();
-                    patrolTaskDevice.setPatrolNumber(xdCode);//巡检单号
+                    patrolTaskDevice.setPatrolNumber(PatrolCodeUtil.getBillCode());
                     patrolTaskDevice.setTaskStandardId(taskStandardId);//巡检任务标准关联表ID
                     String lineCode = patrolTaskStationMapper.getLineStaionCode(sc);
                     patrolTaskDevice.setLineCode(lineCode);//线路code
@@ -934,8 +935,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
                     patrolTaskDevice.setTaskId(taskId);//巡检任务id
                     patrolTaskDevice.setDelFlag(0);
                     patrolTaskDevice.setStatus(0);//单号状态
-                    String xdCode = PatrolCodeUtil.getBillCode();
-                    patrolTaskDevice.setPatrolNumber(xdCode);//巡检单号
+                    patrolTaskDevice.setPatrolNumber(PatrolCodeUtil.getBillCode());
                     patrolTaskDevice.setTaskStandardId(taskStandardId);//巡检任务标准关联表ID
                     patrolTaskDevice.setDeviceCode(dv.getCode());//设备code
                     Device device = patrolTaskDeviceMapper.getDevice(dv.getCode());
@@ -951,8 +951,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
                     patrolTaskDevice.setTaskId(taskId);
                     patrolTaskDevice.setDelFlag(0);
                     patrolTaskDevice.setStatus(0);//单号状态
-                    String xdCode = PatrolCodeUtil.getBillCode();
-                    patrolTaskDevice.setPatrolNumber(xdCode);//巡检单号
+                    patrolTaskDevice.setPatrolNumber(PatrolCodeUtil.getBillCode());
                     patrolTaskDevice.setTaskStandardId(taskStandardId);//巡检任务标准关联表ID
                     String lineCode = patrolTaskStationMapper.getLineStaionCode(sc);
                     patrolTaskDevice.setLineCode(lineCode);//线路code

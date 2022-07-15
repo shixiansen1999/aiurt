@@ -1,8 +1,12 @@
 package com.aiurt.boot.plan.mapper;
 
+
 import com.aiurt.boot.plan.dto.PatrolPlanDto;
 import com.aiurt.boot.plan.dto.QuerySiteDto;
+import com.aiurt.boot.plan.dto.StandardDTO;
 import com.aiurt.boot.plan.entity.PatrolPlan;
+import com.aiurt.boot.task.dto.MajorDTO;
+import com.aiurt.boot.task.dto.SubsystemDTO;
 import com.aiurt.modules.device.entity.Device;
 import com.baomidou.mybatisplus.annotation.InterceptorIgnore;
 import com.baomidou.mybatisplus.core.injector.methods.Update;
@@ -50,7 +54,7 @@ public interface PatrolPlanMapper extends BaseMapper<PatrolPlan> {
    * @param id
    * @return
    */
-  List<String> selectWeek(@Param("id")String id,@Param("code") String code);
+  List<Integer> selectWeek(@Param("id")String id,@Param("code") String code);
 
     /**
      *
@@ -90,5 +94,36 @@ public interface PatrolPlanMapper extends BaseMapper<PatrolPlan> {
    * @param id
    * @return
    */
-  List<String> selectTime(String id, String code);
+  List<Integer> selectTime(String id, String code);
+  /**
+   * 查询编码信息
+   * @param planId
+   * @param majorCode
+   * @param subsystemCode
+   * @return
+   */
+  List<PatrolPlanDto> selectCodeList(@Param("planId")String planId, @Param("majorCode")String majorCode, @Param("subsystemCode")String subsystemCode);
+  /**
+   * 翻译专业信息
+   * @param codeList
+   * @return
+   */
+  List<MajorDTO> translateMajor(List<String> codeList);
+
+  /**
+   * 翻译子系统信息
+   * @param majorCode
+   *  @param systemCode
+   * @return
+   */
+  List<SubsystemDTO> translateSubsystem(@Param("majorCode")String majorCode, @Param("systemCode")String systemCode);
+
+  /**
+   * 查询标准表下拉框
+   * @param planId
+   * @param majorCode
+   * @param subsystemCode
+   * @return
+   */
+    List<StandardDTO> selectStandardList(@Param("planId")String planId, @Param("majorCode")String majorCode, @Param("subsystemCode")String subsystemCode);
 }

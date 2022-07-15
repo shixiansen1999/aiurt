@@ -107,18 +107,18 @@ public class PatrolTaskParam extends PatrolTask {
     /**
      * 任务提交日期范围开始日期
      */
-    @Excel(name = "任务提交日期范围开始日期", width = 15, format = "yyyy-MM-dd HH:mm:ss")
-    @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd HH:mm:ss")
-    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    @ApiModelProperty(value = "任务提交日期范围开始日期,格式yyyy-MM-dd HH:mm:ss")
+    @Excel(name = "任务提交日期范围开始日期", width = 15, format = "yyyy-MM-dd")
+    @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd")
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
+    @ApiModelProperty(value = "任务提交日期范围开始日期,格式yyyy-MM-dd")
     private Date submitDateHead;
     /**
      * 任务提交日期范围结束日期
      */
-    @Excel(name = "任务提交日期范围结束日期", width = 15, format = "yyyy-MM-dd HH:mm:ss")
-    @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd HH:mm:ss")
-    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    @ApiModelProperty(value = "任务提交日期范围结束日期,格式yyyy-MM-dd HH:mm:ss")
+    @Excel(name = "任务提交日期范围结束日期", width = 15, format = "yyyy-MM-dd")
+    @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd")
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
+    @ApiModelProperty(value = "任务提交日期范围结束日期,格式yyyy-MM-dd")
     private Date submitDateEnd;
     /**
      * 专业信息

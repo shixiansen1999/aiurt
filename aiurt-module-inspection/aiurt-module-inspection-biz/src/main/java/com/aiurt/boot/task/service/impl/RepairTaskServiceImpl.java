@@ -377,10 +377,21 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
         if (checkListDTO.getResultCode() != null) {
             checkListDTO.setResultName("检修单" + checkListDTO.getResultCode());
 
-            //查询同行人
+            //同行人列表
             LambdaQueryWrapper<RepairTaskPeerRel> repairTaskPeerRelLambdaQueryWrapper = new LambdaQueryWrapper<>();
             List<RepairTaskPeerRel> repairTaskPeer = repairTaskPeerRelMapper.selectList(repairTaskPeerRelLambdaQueryWrapper.eq(RepairTaskPeerRel::getRepairTaskDeviceCode, checkListDTO.getResultCode()));
-            //名称集合
+            if (CollectionUtil.isNotEmpty(repairTaskPeer)){
+                List<ColleaguesDTO> realList = new ArrayList<>();
+                repairTaskPeer.forEach(p->{
+                    ColleaguesDTO colleaguesDTO = new ColleaguesDTO();
+                    colleaguesDTO.setRealId(p.getUserId());
+                    colleaguesDTO.setRealName(p.getRealName());
+                    realList.add(colleaguesDTO);
+                });
+                checkListDTO.setRealList(realList);
+            }
+
+            //同行人名称
             List<String> collect3 = repairTaskPeer.stream().map(RepairTaskPeerRel::getRealName).collect(Collectors.toList());
             if (CollectionUtil.isNotEmpty(collect3)) {
                 StringBuffer stringBuffer = new StringBuffer();

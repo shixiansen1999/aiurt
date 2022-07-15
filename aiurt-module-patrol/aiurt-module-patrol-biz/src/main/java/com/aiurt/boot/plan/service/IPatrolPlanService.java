@@ -2,12 +2,13 @@ package com.aiurt.boot.plan.service;
 
 import com.aiurt.boot.plan.dto.PatrolPlanDto;
 import com.aiurt.boot.plan.dto.QuerySiteDto;
+import com.aiurt.boot.plan.dto.StandardDTO;
 import com.aiurt.boot.plan.entity.PatrolPlan;
+import com.aiurt.boot.task.dto.MajorDTO;
 import com.aiurt.modules.device.entity.Device;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
-import org.jeecg.common.api.vo.Result;
 
 import java.util.List;
 
@@ -66,4 +67,21 @@ public interface IPatrolPlanService extends IService<PatrolPlan> {
      * @return
      */
     IPage<Device> viewDetails(Page<Device> page,String standardCode, String planId);
+
+    /**
+     * 查询专业，专业子系统的信息
+     *
+     * @param id
+     * @return
+     */
+    List<MajorDTO> selectMajorCodeList(String id);
+    /**
+     * 查询对应标准表下拉框
+     * @param PlanId
+     * @param majorCode
+     * @param subsystemCode
+     * @return
+     */
+    List<StandardDTO> selectPlanStandard(String PlanId, String majorCode, String subsystemCode);
+
 }

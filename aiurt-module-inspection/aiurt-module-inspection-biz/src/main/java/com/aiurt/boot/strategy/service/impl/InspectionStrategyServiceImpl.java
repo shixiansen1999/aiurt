@@ -301,7 +301,7 @@ public class InspectionStrategyServiceImpl extends ServiceImpl<InspectionStrateg
     @Override
     public void removeId(String id) {
         InspectionStrategy strategy = inspectionStrategyMapper.selectById(id);
-        if (ObjectUtil.isNotEmpty(strategy)) {
+        if (ObjectUtil.isEmpty(strategy)) {
             throw new AiurtBootException(InspectionConstant.ILLEGAL_OPERATION);
         }
 
@@ -400,6 +400,12 @@ public class InspectionStrategyServiceImpl extends ServiceImpl<InspectionStrateg
                     inspectionCode.setSpecifyDevice(CollUtil.isNotEmpty(inspectionStrDeviceRels) ? "是" : "否");
 
                     InspectionCodeDTO inspectionCodeDTO = new InspectionCodeDTO();
+                    List<Device> devices= new ArrayList<>();
+                    //查询对应设备
+                    inspectionStrDeviceRels.stream().forEach(f->{
+                        devices.add(baseMapper.viewDetail(f.getId()));
+                    });
+                    inspectionCodeDTO.setDevices(devices);
                     UpdateHelperUtils.copyNullProperties(inspectionCode, inspectionCodeDTO);
 
                     // 专业
@@ -585,7 +591,7 @@ public class InspectionStrategyServiceImpl extends ServiceImpl<InspectionStrateg
         InspectionStrRel inspectionstrRel = inspectionStrRelMapper.selectOne(Wrappers.<InspectionStrRel>lambdaQuery()
                 .eq(InspectionStrRel::getInspectionStaCode, code));
         List<Device> list = baseMapper.viewDetails(inspectionstrRel.getId());
-        return list;
+        return null;
     }
 
     /**

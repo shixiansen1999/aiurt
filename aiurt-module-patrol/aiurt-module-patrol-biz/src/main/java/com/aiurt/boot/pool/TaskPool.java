@@ -59,7 +59,9 @@ public class TaskPool implements Job {
     }
 
     public void execute() {
+        log.info("******正在生成巡检任务记录...******");
         generateTaskData();
+        log.info("******巡检任务记录生成完成！*******");
     }
 
 

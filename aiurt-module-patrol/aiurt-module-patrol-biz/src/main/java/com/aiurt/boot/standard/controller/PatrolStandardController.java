@@ -6,6 +6,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import com.aiurt.boot.standard.dto.PatrolStandardDto;
+import com.aiurt.boot.utils.PatrolCodeUtil;
 import org.jeecg.common.api.vo.Result;
 import com.aiurt.boot.standard.entity.PatrolStandard;
 import com.aiurt.boot.standard.service.IPatrolStandardService;
@@ -95,8 +96,7 @@ public class PatrolStandardController extends BaseController<PatrolStandard, IPa
 	 @ApiOperation(value="生成巡检Code", notes="生成巡检Code")
 	 @GetMapping(value = "/generateCode")
 	 public Result<String> generateCode() {
-		String code="XB"+System.currentTimeMillis();
-		 return Result.OK(code);
+		 return Result.OK(PatrolCodeUtil.getStandardCode());
 	 }
 	/**
 	 *  编辑

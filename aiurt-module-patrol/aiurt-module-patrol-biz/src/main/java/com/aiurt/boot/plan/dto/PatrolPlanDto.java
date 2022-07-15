@@ -42,12 +42,12 @@ public class PatrolPlanDto  extends PatrolPlan {
    @Excel(name = "巡检星期：1星期一、2星期二、3星期三、4星期四、5星期五、6星期六、7星期日", width = 15)
    @ApiModelProperty(value = "巡检星期：1星期一、2星期二、3星期三、4星期四、5星期五、6星期六、7星期日")
    @TableField(exist = false)
-   List<String> week;
+   List<Integer> week;
    /**巡检周次：1第一周、2第二周、3第三周、4第四周*/
    @Excel(name = "巡检周次：1第一周、2第二周、3第三周、4第四周", width = 15)
    @ApiModelProperty(value = "巡检周次：1第一周、2第二周、3第三周、4第四周")
    @TableField(exist = false)
-   List<String> time;
+   List<Integer> time;
    /**巡检周次：开始时间*/
    @JsonFormat(timezone = "GMT+8",pattern = "HH:mm")
    @DateTimeFormat(pattern="HH:mm")
@@ -105,4 +105,9 @@ public class PatrolPlanDto  extends PatrolPlan {
    private String ids;
    private String ws;
    private String ts;
+   private String standardId;
+   private String standardName;
+   @Excel(name = "月检选择的哪天集合", width = 15)
+   @ApiModelProperty(value = "月检选择的哪天集合")
+   List<Integer> number;
 }

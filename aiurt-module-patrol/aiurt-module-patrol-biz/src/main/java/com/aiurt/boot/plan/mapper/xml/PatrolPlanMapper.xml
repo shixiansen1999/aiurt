@@ -124,7 +124,7 @@
         SELECT DISTINCT
         cm.major_name
         FROM
-        patrol_plan_standard pps
+        patrol__standard pps
         JOIN cs_major cm ON pps.profession_code = cm.major_code
         WHERE
         pps.del_flag=0
@@ -189,12 +189,77 @@
                             LEFT JOIN patrol_plan_standard c ON b.plan_standard_id =c.id
         WHERE c.standard_code= #{standardCode} and   b.plan_id =#{planId}
     </select>
-    <select id="selectWeek" resultType="java.lang.String">
+    <select id="selectWeek" resultType="java.lang.Integer">
      SELECT d.`week` FROM  patrol_plan_strategy d
-          where d.plan_id=#{id} and d.del_flag=0
+          where d.plan_id=#{id} and d.del_flag=0 and d.`week` is not null
     </select>
-    <select id="selectTime" resultType="java.lang.String">
+    <select id="selectTime" resultType="java.lang.Integer">
          SELECT d.time FROM  patrol_plan_strategy d
           where d.plan_id=#{id} and d.del_flag=0
     </select>
+    <select id="selectCodeList" resultType="com.aiurt.boot.plan.dto.PatrolPlanDto">
+        SELECT
+        t3.profession_code as professionCode,
+        t3.subsystem_code as subsystemCode,
+        t2.id as standardId,
+        t2.`name` as standardName
+        FROM
+        patrol_plan t1
+        LEFT JOIN patrol_plan_standard t3 ON t1.id=t3.plan_id
+        LEFT JOIN patrol_standard t2 ON t2.`code`=t3.standard_code
+        <where>
+            t1.id = #{planId}
+            <if test="majorCode!=null">
+                and t3.profession_code= #{majorCode}
+            </if>
+            <if test="subsystemCode!=null">
+                and t3.subsystem_code = #{subsystemCode}
+            </if>
+        </where>
+
+    </select>
+    <select id="translateSubsystem" resultType="com.aiurt.boot.task.dto.SubsystemDTO">
+        select
+            system_name  as systemName,
+            system_code as systemCode
+        from cs_subsystem
+        where
+            del_flag = 0
+          and major_code = #{majorCode}
+          and system_code = #{systemCode}
+    </select>
+    <select id="translateMajor" resultType="com.aiurt.boot.task.dto.MajorDTO">
+        select
+        major_name as majorName,
+        major_code as majorCode
+        from cs_major
+        <where>
+            del_flag = 0
+            <if test="list.size()>0">
+                and major_code in
+                <foreach item="item" collection="list" separator="," open="(" close=")" index="">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+    </select>
+    <select id="selectStandardList" resultType="com.aiurt.boot.plan.dto.StandardDTO">
+        SELECT
+        t2.id as standardId,
+        t2.`name` as standardName
+        FROM
+        patrol_plan t1
+        LEFT JOIN patrol_plan_standard t3 ON t1.id=t3.plan_id
+        LEFT JOIN patrol_standard t2 ON t2.`code`=t3.standard_code
+        <where>
+            t1.id = #{planId}
+            <if test="majorCode!=null">
+                and t3.profession_code= #{majorCode}
+            </if>
+            <if test="subsystemCode!=null">
+                and t3.subsystem_code = #{subsystemCode}
+            </if>
+        </where>
+    </select>
+
 </mapper>

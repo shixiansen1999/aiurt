@@ -158,6 +158,11 @@
             #{codes}
         </foreach>
     </select>
+    <select id="viewDetail" resultType="com.aiurt.modules.device.entity.Device">
+        SELECT a.* FROM device a
+             LEFT JOIN inspection_str_device_rel b on a.`code`=b.device_code
+         WHERE b.id= #{id}
+    </select>
     <select id="viewDetails" resultType="com.aiurt.modules.device.entity.Device">
         SELECT a.* FROM device a
          LEFT JOIN inspection_str_device_rel b on a.`code`=b.device_code
