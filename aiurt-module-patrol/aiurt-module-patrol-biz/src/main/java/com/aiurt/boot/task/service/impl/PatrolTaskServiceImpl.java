@@ -150,8 +150,10 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
             QueryWrapper<PatrolTask> taskWrapper = new QueryWrapper<>();
             taskWrapper.lambda()
                     .eq(PatrolTask::getCode, listEntry.getKey())
-                    .eq(PatrolTask::getStatus, PatrolConstant.TASK_INIT).or().eq(PatrolTask::getStatus, PatrolConstant.TASK_RETURNED)
-                    .eq(PatrolTask::getDiscardStatus, PatrolConstant.TASK_UNDISCARD);
+                    .eq(PatrolTask::getDiscardStatus, PatrolConstant.TASK_UNDISCARD)
+                    .and(status -> status.eq(PatrolTask::getStatus, PatrolConstant.TASK_INIT)
+                            .or()
+                            .eq(PatrolTask::getStatus, PatrolConstant.TASK_RETURNED));
             PatrolTask patrolTask = patrolTaskMapper.selectOne(taskWrapper);
 
             if (ObjectUtil.isNotEmpty(patrolTask)) {
@@ -288,9 +290,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
                 if (!orgList.contains(manager.checkLogin().getOrgCode())) {
                     throw new AiurtBootException("小主，该巡检任务不在您的领取范围之内哦");
                 }
-            }
-            else
-            {
+            } else {
                 updateWrapper.set(PatrolTask::getStatus, 2)
                         .set(PatrolTask::getSource, 1)
                         .eq(PatrolTask::getId, patrolTaskDTO.getId());
@@ -373,9 +373,9 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         }
         //将任务来源改为常规指派,将任务状态改为待确认
         LambdaUpdateWrapper<PatrolTask> updateWrapper = new LambdaUpdateWrapper<>();
-        updateWrapper.set(PatrolTask::getSource, 2).set(PatrolTask::getStatus, 1).set(PatrolTask::getStartTime,patrolTaskUserDTO.getStartTime())
-         .set(PatrolTask::getEndTime, patrolTaskUserDTO.getEndTime()).set(PatrolTask::getPlanCode,patrolTaskUserDTO.getPlanCode()).set(PatrolTask::getType,patrolTaskUserDTO.getType())
-         .set(PatrolTask::getPlanOrderCodeUrl, patrolTaskUserDTO.getPlanOrderCodeUrl()).eq(PatrolTask::getCode, patrolTaskUserDTO.getCode());
+        updateWrapper.set(PatrolTask::getSource, 2).set(PatrolTask::getStatus, 1).set(PatrolTask::getStartTime, patrolTaskUserDTO.getStartTime())
+                .set(PatrolTask::getEndTime, patrolTaskUserDTO.getEndTime()).set(PatrolTask::getPlanCode, patrolTaskUserDTO.getPlanCode()).set(PatrolTask::getType, patrolTaskUserDTO.getType())
+                .set(PatrolTask::getPlanOrderCodeUrl, patrolTaskUserDTO.getPlanOrderCodeUrl()).eq(PatrolTask::getCode, patrolTaskUserDTO.getCode());
         update(updateWrapper);
     }
 
@@ -510,12 +510,9 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
     public void getPatrolTaskSubmit(PatrolTaskDTO patrolTaskDTO) {
         //提交任务：将待执行、执行中，变为待审核、添加任务结束人id,传签名地址、任务主键id、审核状态
         PatrolTask patrolTask = patrolTaskMapper.selectById(patrolTaskDTO.getId());
-        if(manager.checkTaskUser(patrolTask.getCode())==false)
-        {
+        if (manager.checkTaskUser(patrolTask.getCode()) == false) {
             throw new AiurtBootException("小主，该巡检任务不在您的提交范围之内哦");
-        }
-        else
-        {
+        } else {
             LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
             LambdaUpdateWrapper<PatrolTask> updateWrapper = new LambdaUpdateWrapper<>();
             if (patrolTaskDTO.getAuditor() == 1) {
