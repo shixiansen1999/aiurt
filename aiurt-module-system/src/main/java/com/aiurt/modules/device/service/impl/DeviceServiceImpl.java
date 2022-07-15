@@ -134,4 +134,53 @@ public class DeviceServiceImpl extends ServiceImpl<DeviceMapper, Device> impleme
 		return deviceTypeCode;
 	}
 
+	@Override
+	public QueryWrapper<Device> getQueryWrapper(String positionCodeCc, String temporary, String majorCode, String systemCode, String deviceTypeCode, String code, String name, String status) {
+		QueryWrapper<Device> queryWrapper = new QueryWrapper<>();
+		if(majorCode != null && !"".equals(majorCode)){
+			queryWrapper.eq("major_code", majorCode);
+		}
+		if(temporary != null && !"".equals(temporary)){
+			queryWrapper.eq("temporary", temporary);
+		}
+		if(systemCode != null && !"".equals(systemCode)){
+			queryWrapper.eq("system_code", systemCode);
+		}
+		if(deviceTypeCode != null && !"".equals(deviceTypeCode)){
+			queryWrapper.apply(" FIND_IN_SET ( '"+deviceTypeCode+"' , REPLACE(device_type_code_cc,'/',',')) ");
+		}
+		if(positionCodeCc != null && !"".equals(positionCodeCc)){
+			if(positionCodeCc.contains(CommonConstant.SYSTEM_SPLIT_STR)){
+				String[] split = positionCodeCc.split(CommonConstant.SYSTEM_SPLIT_STR);
+				int length = split.length;
+				switch (length){
+					case 2:
+						queryWrapper.eq("line_code", split[0]);
+						queryWrapper.eq("station_code", split[1]);
+						break;
+					case 3:
+						queryWrapper.eq("line_code", split[0]);
+						queryWrapper.eq("station_code", split[1]);
+						queryWrapper.eq("position_code", split[2]);
+						break;
+					default:
+						queryWrapper.eq("line_code", split[0]);
+				}
+			}else{
+				queryWrapper.eq("line_code", positionCodeCc);
+			}
+		}
+		if(code != null && !"".equals(code)){
+			queryWrapper.eq("code", code);
+		}
+		if(name != null && !"".equals(name)){
+			queryWrapper.like("name", name);
+		}
+		if(status != null && !"".equals(status)){
+			queryWrapper.eq("status", status);
+		}
+		queryWrapper.eq("del_flag", CommonConstant.DEL_FLAG_0);
+		return queryWrapper;
+	}
+
 }

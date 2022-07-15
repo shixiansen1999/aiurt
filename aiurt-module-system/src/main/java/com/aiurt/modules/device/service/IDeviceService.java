@@ -1,6 +1,7 @@
 package com.aiurt.modules.device.service;
 
 import com.aiurt.modules.device.entity.Device;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.IService;
 import org.jeecg.common.api.vo.Result;
 
@@ -32,5 +33,7 @@ public interface IDeviceService extends IService<Device> {
      * @return
      */
     String getCodeByCc(String deviceTypeCodeCc);
+
+    QueryWrapper<Device> getQueryWrapper(String positionCodeCc, String temporary, String majorCode, String systemCode, String deviceTypeCode, String code, String name, String status);
 
 }

@@ -72,51 +72,8 @@ public class DeviceController {
                                                @RequestParam(name = "status", required = false) String status,
                                                HttpServletRequest req) {
         Result<IPage<Device>> result = new Result<IPage<Device>>();
-        QueryWrapper<Device> queryWrapper = new QueryWrapper<>();
-        if(majorCode != null && !"".equals(majorCode)){
-            queryWrapper.eq("major_code", majorCode);
-        }
-        if(temporary != null && !"".equals(temporary)){
-            queryWrapper.eq("temporary", temporary);
-        }
-        if(systemCode != null && !"".equals(systemCode)){
-            queryWrapper.eq("system_code", systemCode);
-        }
-        if(deviceTypeCode != null && !"".equals(deviceTypeCode)){
-            queryWrapper.apply(" FIND_IN_SET ( '"+deviceTypeCode+"' , REPLACE(device_type_code_cc,'/',',')) ");
-        }
-        if(positionCodeCc != null && !"".equals(positionCodeCc)){
-            if(positionCodeCc.contains(CommonConstant.SYSTEM_SPLIT_STR)){
-                String[] split = positionCodeCc.split(CommonConstant.SYSTEM_SPLIT_STR);
-                int length = split.length;
-                switch (length){
-                    case 2:
-                        queryWrapper.eq("line_code", split[0]);
-                        queryWrapper.eq("station_code", split[1]);
-                        break;
-                    case 3:
-                        queryWrapper.eq("line_code", split[0]);
-                        queryWrapper.eq("station_code", split[1]);
-                        queryWrapper.eq("position_code", split[2]);
-                        break;
-                    default:
-                        queryWrapper.eq("line_code", split[0]);
-                }
-            }else{
-                queryWrapper.eq("line_code", positionCodeCc);
-            }
-        }
-        if(code != null && !"".equals(code)){
-            queryWrapper.eq("code", code);
-        }
-        if(name != null && !"".equals(name)){
-            queryWrapper.like("name", name);
-        }
-        if(status != null && !"".equals(status)){
-            queryWrapper.eq("status", status);
-        }
-        queryWrapper.eq("del_flag", CommonConstant.DEL_FLAG_0);
         Page<Device> page = new Page<Device>(pageNo, pageSize);
+        QueryWrapper<Device> queryWrapper = deviceService.getQueryWrapper(positionCodeCc, temporary, majorCode, systemCode, deviceTypeCode, code, name, status);
         IPage<Device> pageList = deviceService.page(page, queryWrapper);
         List<Device> records = pageList.getRecords();
         if(records != null && records.size()>0){
@@ -149,50 +106,16 @@ public class DeviceController {
     @ApiOperation(value = "设备-列表查询", notes = "设备-列表查询")
     @GetMapping(value = "/selectList")
     public Result<List<Device>> selectList(
-                                               @RequestParam(name = "lineCode", required = false) String lineCode,
-                                               @RequestParam(name = "stationCode", required = false) String stationCode,
-                                               @RequestParam(name = "positionCode", required = false) String positionCode,
-                                               @RequestParam(name = "majorCode", required = false) String majorCode,
-                                               @RequestParam(name = "systemCode", required = false) String systemCode,
-                                               @RequestParam(name = "deviceTypeCode", required = false) String deviceTypeCode,
-                                               @RequestParam(name = "code", required = false) String code,
-                                               @RequestParam(name = "name", required = false) String name,
-                                               @RequestParam(name = "status", required = false) String status,
-                                               @RequestParam(name = "ids", required = false) String ids,
+            @RequestParam(name = "codeCc", required = false) String positionCodeCc,
+            @RequestParam(name = "temporary", required = false) String temporary,
+            @RequestParam(name = "majorCode", required = false) String majorCode,
+            @RequestParam(name = "systemCode", required = false) String systemCode,
+            @RequestParam(name = "deviceTypeCode", required = false) String deviceTypeCode,
+            @RequestParam(name = "code", required = false) String code,
+            @RequestParam(name = "name", required = false) String name,
+            @RequestParam(name = "status", required = false) String status,
                                                HttpServletRequest req) {
-        Result<List<Device>> result = new Result<List<Device>>();
-        QueryWrapper<Device> queryWrapper = new QueryWrapper<>();
-        if(majorCode != null && !"".equals(majorCode)){
-            queryWrapper.eq("major_code", majorCode);
-        }
-        if(systemCode != null && !"".equals(systemCode)){
-            queryWrapper.eq("system_code", systemCode);
-        }
-        if(deviceTypeCode != null && !"".equals(deviceTypeCode)){
-            queryWrapper.apply(" FIND_IN_SET ( '"+deviceTypeCode+"' , REPLACE(device_type_code_cc,'/',',')) ");
-        }
-        if(lineCode != null && !"".equals(lineCode)){
-            queryWrapper.eq("line_code", lineCode);
-        }
-        if(stationCode != null && !"".equals(stationCode)){
-            queryWrapper.eq("station_code", stationCode);
-        }
-        if(positionCode != null && !"".equals(positionCode)){
-            queryWrapper.eq("position_code", positionCode);
-        }
-        if(code != null && !"".equals(code)){
-            queryWrapper.eq("code", code);
-        }
-        if(name != null && !"".equals(name)){
-            queryWrapper.like("name", name);
-        }
-        if(status != null && !"".equals(status)){
-            queryWrapper.eq("status", status);
-        }
-        if(ids != null && !"".equals(ids) && ids.length()>0){
-            queryWrapper.in("id", Arrays.asList(ids.split(",")));
-        }
-        queryWrapper.eq("del_flag", CommonConstant.DEL_FLAG_0);
+        QueryWrapper<Device> queryWrapper = deviceService.getQueryWrapper(positionCodeCc, temporary, majorCode, systemCode, deviceTypeCode, code, name, status);
         List<Device> devices = deviceService.list(queryWrapper);
         List<Device> deviceList = new ArrayList<>();
         if(devices != null && devices.size()>0){
@@ -201,9 +124,7 @@ public class DeviceController {
                 deviceList.add(dres);
             }
         }
-        result.setSuccess(true);
-        result.setResult(devices);
-        return result;
+        return Result.OK(deviceList);
     }
 
     @ApiOperation(value = "设备详情查询", notes = "设备详情查询")
