@@ -298,7 +298,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
                 if (!orgList.contains(manager.checkLogin().getOrgCode())) {
                     throw new AiurtBootException("小主，该巡检任务不在您的领取范围之内哦");
                 }
-            } else {
+            }
                 updateWrapper.set(PatrolTask::getStatus, 2)
                         .set(PatrolTask::getSource, 1)
                         .eq(PatrolTask::getId, patrolTaskDTO.getId());
@@ -310,7 +310,6 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
                 patrolTaskUser.setUserName(sysUser.getRealname());
                 patrolTaskUser.setDelFlag(0);
                 patrolTaskUserMapper.insert(patrolTaskUser);
-            }
         }
             //确认：将待确认改为待执行
             if (PatrolConstant.TASK_CONFIRM.equals(patrolTaskDTO.getStatus())) {
