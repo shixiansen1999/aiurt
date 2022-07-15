@@ -146,11 +146,10 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         AtomicInteger count = new AtomicInteger();
         for (Map.Entry<String, List<PatrolAppointUserDTO>> listEntry : map.entrySet()) {
             List<PatrolAppointUserDTO> list = listEntry.getValue();
-            // 根据任务code查找未指派的任务
+            // 根据任务code查找要指派的任务
             QueryWrapper<PatrolTask> taskWrapper = new QueryWrapper<>();
             taskWrapper.lambda()
                     .eq(PatrolTask::getCode, listEntry.getKey())
-                    .eq(PatrolTask::getStatus, PatrolConstant.TASK_INIT)
                     .eq(PatrolTask::getDiscardStatus, PatrolConstant.TASK_UNDISCARD);
             PatrolTask patrolTask = patrolTaskMapper.selectOne(taskWrapper);
 
@@ -181,7 +180,10 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
                     // 计划令编号和图片地址
                     task.setPlanOrderCode(patrolAppointInfoDTO.getPlanOrderCode());
                     task.setPlanOrderCodeUrl(patrolAppointInfoDTO.getPlanOrderCodeUrl());
-                    task.setSource(2);
+                    if(ObjectUtil.isEmpty(task.getSource()))
+                    {
+                        task.setSource(PatrolConstant.TASK_COMMON);
+                    }
                     // 更新检查开始结束时间
                     task.setStartTime(patrolAppointInfoDTO.getStartTime());
                     task.setEndTime(patrolAppointInfoDTO.getEndTime());
