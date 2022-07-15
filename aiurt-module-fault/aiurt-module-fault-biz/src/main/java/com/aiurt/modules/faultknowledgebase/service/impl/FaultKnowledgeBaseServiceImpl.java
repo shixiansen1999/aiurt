@@ -51,11 +51,11 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
         List<String> allSubSystem = faultKnowledgeBaseTypeMapper.getAllSubSystem(sysUser.getId());
         List<String> rolesByUsername = sysBaseAPI.getRolesByUsername(sysUser.getUsername());
         //根据用户角色是否显示未通过的知识库
-        if (!rolesByUsername.contains(FaultConstant.ADMIN)&&!rolesByUsername.contains(FaultConstant.Maintenance_Worker)&&!rolesByUsername.contains(FaultConstant.Professional_Technical_Director)) {
+        if (!rolesByUsername.contains(FaultConstant.ADMIN)&&!rolesByUsername.contains(FaultConstant.MAINTENANCE_WORKER)&&!rolesByUsername.contains(FaultConstant.PROFESSIONAL_TECHNICAL_DIRECTOR)) {
             faultKnowledgeBase.setApprovedResult(FaultConstant.PASSED);
         }
         //工班长只能看到审核通过的和自己创建的未审核通过的
-        if (allSubSystem.size()==1 && allSubSystem.contains(FaultConstant.Maintenance_Worker)) {
+        if (allSubSystem.size()==1 && allSubSystem.contains(FaultConstant.MAINTENANCE_WORKER)) {
             faultKnowledgeBase.setCreateBy(sysUser.getUsername());
         }
         List<FaultKnowledgeBase> faultKnowledgeBases = faultKnowledgeBaseMapper.readAll(page, faultKnowledgeBase,allSubSystem);
@@ -107,7 +107,7 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
     public boolean getRole() {
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         List<String> rolesByUsername = sysBaseAPI.getRolesByUsername(sysUser.getUsername());
-        if (!rolesByUsername.contains(FaultConstant.ADMIN)&&!rolesByUsername.contains(FaultConstant.Maintenance_Worker)&&!rolesByUsername.contains(FaultConstant.Professional_Technical_Director)) {
+        if (!rolesByUsername.contains(FaultConstant.ADMIN)&&!rolesByUsername.contains(FaultConstant.MAINTENANCE_WORKER)&&!rolesByUsername.contains(FaultConstant.PROFESSIONAL_TECHNICAL_DIRECTOR)) {
             return true;
         }
         return false;

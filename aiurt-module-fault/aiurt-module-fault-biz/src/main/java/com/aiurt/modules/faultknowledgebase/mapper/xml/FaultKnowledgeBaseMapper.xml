@@ -4,6 +4,35 @@
 
 <select id="readAll" resultType="com.aiurt.modules.faultknowledgebase.entity.FaultKnowledgeBase">
     select a.* from
+        ((SELECT
+        fkb.id,
+        fkb.device_type_code,
+        (SELECT name from device_type WHERE `code` = fkb.device_type_code) as deviceTypeName,
+        fkb.knowledge_base_type_code,
+        fkb.material_code,
+        (SELECT material_name from device_assembly WHERE material_code = fkb.material_code group by material_code) as materialName,
+        fkb.fault_codes,
+        fkb.fault_phenomenon,
+        fkb.fault_reason,
+        fkb.method,
+        fkb.solution,
+        fkb.create_time,
+        fkb.major_code,
+        fkb.system_code,
+        fkb.file_path,
+        fkb.approved_remark,
+        fkb.status
+        FROM
+        fault_knowledge_base fkb WHERE del_flag = 0 and fkb.approved_result = 0
+        <if test="condition.approvedResult != null">
+            and fkb.approved_result =#{condition.approvedResult}
+        </if>
+        <if test="condition.createBy != null and condition.createBy != ''">
+            and fkb.create_by = #{condition.createBy}
+        </if>)
+
+        union all
+
         (SELECT
         fkb.id,
         fkb.device_type_code,
@@ -23,36 +52,35 @@
         fkb.approved_remark,
         fkb.status
         FROM
-        fault_knowledge_base fkb WHERE del_flag = 0
+        fault_knowledge_base fkb WHERE del_flag = 0 and fkb.approved_result = 1
         <if test="condition.approvedResult != null">
             and fkb.approved_result =#{condition.approvedResult}
-        </if>
-        <if test="condition.createBy != null and condition.createBy != ''">
-            and fkb.create_by = #{condition.createBy}
-        </if>
-        <if test="condition.deviceTypeCode != null and condition.deviceTypeCode !='' ">
-            and fkb.device_type_code =#{condition.deviceTypeCode}
-        </if>
-        <if test="condition.materialCode != null and condition.materialCode !='' ">
-            and fkb.material_code =#{condition.materialCode}
-        </if>
-        <if test="condition.faultPhenomenon != null and condition.faultPhenomenon != ''">
-            and fkb.fault_phenomenon like concat('%',#{condition.faultPhenomenon},'%')
-        </if>
-        <if test="condition.faultReason != null and condition.faultReason != ''">
-            and fkb.fault_reason like concat('%',#{condition.faultReason},'%')
-        </if>
-        <if test="condition.solution != null and condition.solution != ''">
-            and fkb.solution like concat('%',#{condition.solution},'%')
-        </if>
-        <if test="allSubSystem != null and allSubSystem.size() != 0">
-            and fkb.system_code in
-            <foreach collection="allSubSystem" index="item" open="(" separator="," close=")">
-                #{item}
-            </foreach>
-        </if>  ) a
+        </if>)
+        ) a
         where
             1=1
+            <if test="condition.deviceTypeCode != null and condition.deviceTypeCode !='' ">
+                and a.device_type_code =#{condition.deviceTypeCode}
+            </if>
+            <if test="condition.materialCode != null and condition.materialCode !='' ">
+                and a.material_code =#{condition.materialCode}
+            </if>
+            <if test="condition.faultPhenomenon != null and condition.faultPhenomenon != ''">
+                and a.fault_phenomenon like concat('%',#{condition.faultPhenomenon},'%')
+            </if>
+            <if test="condition.faultReason != null and condition.faultReason != ''">
+                and a.fault_reason like concat('%',#{condition.faultReason},'%')
+            </if>
+            <if test="condition.solution != null and condition.solution != ''">
+                and a.solution like concat('%',#{condition.solution},'%')
+            </if>
+            <if test="allSubSystem != null and allSubSystem.size() != 0">
+                and a.system_code in
+                <foreach collection="allSubSystem" index="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+
             <if test="condition.matchName != null and  condition.matchName != ''">
                 and CONCAT(a.fault_phenomenon, a.deviceTypeName, a.materialName) LIKE CONCAT('%',#{condition.matchName},'%')
             </if>
