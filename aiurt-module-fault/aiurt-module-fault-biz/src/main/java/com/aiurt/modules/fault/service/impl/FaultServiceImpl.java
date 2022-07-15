@@ -630,6 +630,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
     @Transactional(rollbackFor = Exception.class)
     public void fillRepairRecord(RepairRecordDTO repairRecordDTO) {
 
+
         LoginUser loginUser = checkLogin();
 
         String faultCode = repairRecordDTO.getFaultCode();
@@ -656,6 +657,9 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
             }).collect(Collectors.toList());
             repairParticipantsService.saveBatch(participantsList);
         }
+
+        // 设备
+        dealDevice(fault, repairRecordDTO.getDeviceList());
 
         // todo 计算库存
         List<DeviceChangeDTO> consumableList = repairRecordDTO.getConsumableList();

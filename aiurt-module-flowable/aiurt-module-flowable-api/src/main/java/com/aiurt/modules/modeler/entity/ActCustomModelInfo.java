@@ -172,4 +172,7 @@ public class ActCustomModelInfo implements Serializable {
 	@Excel(name = "删除标识", width = 15)
     @ApiModelProperty(value = "删除标识")
     private Integer delFlag;
+
+	@ApiModelProperty(value = "")
+	private String bpmnXML;
 }

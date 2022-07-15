@@ -30,7 +30,7 @@ public class BpmnDesignerController {
     private IFlowableBpmnService flowableBpmnService;
 
     /**
-     * 根据modelid 查询bpmn xml
+     * 根据modelid 查询bpmn xml, 可以预览图片 (修改或者编辑中使用)
      * @param modelId
      * @return
      */

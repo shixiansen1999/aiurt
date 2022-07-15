@@ -141,12 +141,15 @@ public class ActCustomModelInfoController extends BaseController<ActCustomModelI
 	@ApiOperation(value="flowable流程模板定义信息-通过id查询", notes="flowable流程模板定义信息-通过id查询")
 	@GetMapping(value = "/queryByModelId")
 	public Result<ActCustomModelInfo> queryByModelId(@RequestParam(name="modelId",required=true) String modelId) {
-		LambdaQueryWrapper<ActCustomModelInfo> wrapper = new LambdaQueryWrapper<>();
-		wrapper.eq(ActCustomModelInfo::getModelId, modelId).last("limit 1");
-
-		ActCustomModelInfo actCustomModelInfo = actCustomModelInfoService.getOne(wrapper);
-
+		ActCustomModelInfo actCustomModelInfo = actCustomModelInfoService.queryByModelId(modelId);
 		return Result.OK(actCustomModelInfo);
+	}
+
+	@AutoLog(value = "禁用流程")
+	@ApiOperation(value="禁用流程", notes="禁用流程")
+	@PutMapping(value = "/forbiddenModel")
+	public Result<?> forbiddenModel(@RequestParam(value = "modelId") String modelId) {
+		return Result.OK();
 	}
 
 }

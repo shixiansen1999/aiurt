@@ -93,6 +93,8 @@ public class RepairRecordDTO implements Serializable {
     @ApiModelProperty(value = "易耗品")
     private List<DeviceChangeDTO> consumableList;
 
+    @ApiModelProperty(value = "app: 设备面好")
+    private String deviceCodes;
 
 
     @ApiModelProperty(value = "设备信息")
@@ -117,5 +119,8 @@ public class RepairRecordDTO implements Serializable {
 
     @ApiModelProperty(value = "总解决方案记录数")
     private Long total;
+
+    @ApiModelProperty(value = "签名路径")
+    private String signPath;
 
 }

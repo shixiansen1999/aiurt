@@ -3,6 +3,7 @@ package com.aiurt.modules.modeler.service;
 import com.aiurt.modules.modeler.dto.ModelInfoVo;
 import com.aiurt.modules.modeler.entity.ActCustomModelInfo;
 import com.sun.org.apache.xpath.internal.operations.Mod;
+import org.flowable.bpmn.model.BpmnModel;
 import org.flowable.ui.modeler.domain.Model;
 import org.flowable.ui.modeler.model.ModelRepresentation;
 import org.jeecg.common.system.vo.LoginUser;
@@ -50,4 +51,11 @@ public interface IFlowableBpmnService {
      * @param modelId
      */
     void publishBpmn(String modelId);
+
+    /**
+     * 根据流程定义id读取
+     * @param processDefinitionId
+     * @return
+     */
+    BpmnModel getBpmnModelByDefinitionId(String processDefinitionId);
 }

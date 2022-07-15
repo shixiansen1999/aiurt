@@ -3,6 +3,7 @@ package com.aiurt.modules.modeler.service.impl;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.exception.AiurtErrorEnum;
 import com.aiurt.modules.manage.entity.ActCustomVersion;
+import com.aiurt.modules.manage.service.IActCustomVersionService;
 import com.aiurt.modules.modeler.dto.ModelInfoVo;
 import com.aiurt.modules.modeler.entity.ActCustomModelInfo;
 import com.aiurt.modules.modeler.enums.ModelFormStatusEnum;
@@ -82,6 +83,9 @@ public class FlowableBpmnServiceImpl implements IFlowableBpmnService {
 
     @Autowired
     private RepositoryService repositoryService;
+
+    @Autowired
+    private IActCustomVersionService versionService;
 
     @Override
     public Model createInitBpmn(ActCustomModelInfo modelInfo, LoginUser user) {
@@ -191,7 +195,7 @@ public class FlowableBpmnServiceImpl implements IFlowableBpmnService {
         if (Objects.isNull(model)) {
             throw new AiurtBootException(AiurtErrorEnum.FLOW_MODEL_NOT_FOUND.getCode(), AiurtErrorEnum.FLOW_MODEL_NOT_FOUND.getMessage());
         }
-        // 转为bpmnModel 内存模型
+        // 转为bpmnModel 内存模型; 通过model中的editjson转为bpmnl
         BpmnModel bpmnModel = modelService.getBpmnModel(model);
         // todo 校验
 
@@ -227,6 +231,12 @@ public class FlowableBpmnServiceImpl implements IFlowableBpmnService {
                     .processDefinitionId(processDefinition.getId())
                     .deployTime(new Date())
                     .build();
+            versionService.save(actCustomVersion);
         }
+    }
+
+    @Override
+    public BpmnModel getBpmnModelByDefinitionId(String processDefinitionId) {
+        return repositoryService.getBpmnModel(processDefinitionId);
     }
 }
