@@ -115,7 +115,7 @@ public class PatrolTaskDeviceController extends BaseController<PatrolTaskDevice,
 	 }
 	/**
 	 * app巡检-巡检清单-填写检查项-提交工单
-	 * @param id
+	 * @param patrolTaskDevice
 	 * @param req
 	 * @return
 	 */

@@ -6,6 +6,7 @@ import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.constant.PatrolConstant;
+import com.aiurt.boot.manager.PatrolManager;
 import com.aiurt.boot.standard.entity.PatrolStandard;
 import com.aiurt.boot.standard.entity.PatrolStandardItems;
 import com.aiurt.boot.standard.mapper.PatrolStandardItemsMapper;
@@ -59,6 +60,8 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
     private PatrolAccessoryMapper patrolAccessoryMapper;
     @Autowired
     private ISysBaseAPI sysBaseAPI;
+    @Autowired
+    private PatrolManager manager;
 
 
     @Override
@@ -320,35 +323,40 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
 
     @Override
     public List<PatrolCheckResultDTO> getPatrolTaskCheck(PatrolTaskDevice patrolTaskDevice) {
-        //更新任务状态（将未开始改为执行中）、添加开始检查时间，传任务主键id,巡检工单主键
-        if (patrolTaskDevice.getStatus() == 0) {
-            LambdaUpdateWrapper<PatrolTaskDevice> updateWrapper = new LambdaUpdateWrapper<>();
-            updateWrapper.set(PatrolTaskDevice::getStatus, 1)
-                    .set(PatrolTaskDevice::getStartTime, LocalDateTime.now())
-                    .eq(PatrolTaskDevice::getTaskId, patrolTaskDevice.getTaskId())
-                    .eq(PatrolTaskDevice::getId, patrolTaskDevice.getId());
-            patrolTaskDeviceMapper.update(patrolTaskDevice, updateWrapper);
-            copyItems(patrolTaskDevice);
-        }
-        String taskDeviceId = patrolTaskDevice.getId();
-        List<PatrolCheckResultDTO> patrolCheckResultDTOList = patrolCheckResultMapper.getCheckResult(taskDeviceId);
-        if(CollUtil.isNotEmpty(patrolCheckResultDTOList))
+        PatrolTask patrolTask = patrolTaskMapper.selectById(patrolTaskDevice.getTaskId());
+        if(manager.checkTaskUser(patrolTask.getCode())==false)
         {
-            patrolCheckResultDTOList.stream().forEach(e ->
-            {
-                if(ObjectUtil.isNotNull(e.getDictCode()))
-                {
-                    List<DictModel> list = sysBaseAPI.getDictItems(e.getDictCode());
-                    e.setList(list);
-                }
-                //获取这个单号下一个巡检项的所有附件
-                List<PatrolAccessoryDTO> patrolAccessoryDto = patrolAccessoryMapper.getAllAccessory(patrolTaskDevice.getId(), e.getId());
-                e.setAccessoryDTOList(patrolAccessoryDto);
-            });
+            throw new AiurtBootException("小主，该巡检任务不在您的检查范围之内哦");
         }
-        List<PatrolCheckResultDTO> resultList = buildResultTree(Optional.ofNullable(patrolCheckResultDTOList)
-                .orElseGet(Collections::emptyList));
-        return resultList;
+        else {
+            //更新任务状态（将未开始改为执行中）、添加开始检查时间，传任务主键id,巡检工单主键
+            String taskDeviceId = patrolTaskDevice.getId();
+            List<PatrolCheckResultDTO> patrolCheckResultDTOList = patrolCheckResultMapper.getCheckResult(taskDeviceId);
+            if(CollUtil.isEmpty(patrolCheckResultDTOList)) {
+                LambdaUpdateWrapper<PatrolTaskDevice> updateWrapper = new LambdaUpdateWrapper<>();
+                updateWrapper.set(PatrolTaskDevice::getStatus, 1)
+                        .set(PatrolTaskDevice::getStartTime, LocalDateTime.now())
+                        .eq(PatrolTaskDevice::getTaskId, patrolTaskDevice.getTaskId())
+                        .eq(PatrolTaskDevice::getId, patrolTaskDevice.getId());
+                patrolTaskDeviceMapper.update(patrolTaskDevice, updateWrapper);
+                copyItems(patrolTaskDevice);
+            }
+           List<PatrolCheckResultDTO> patrolCheckResultDTOS = patrolCheckResultMapper.getCheckResult(taskDeviceId);
+                patrolCheckResultDTOS.stream().forEach(e ->
+                {
+                    if(ObjectUtil.isNotNull(e.getDictCode()))
+                    {
+                        List<DictModel> list = sysBaseAPI.getDictItems(e.getDictCode());
+                        e.setList(list);
+                    }
+                    //获取这个单号下一个巡检项的所有附件
+                    List<PatrolAccessoryDTO> patrolAccessoryDto = patrolAccessoryMapper.getAllAccessory(patrolTaskDevice.getId(), e.getId());
+                    e.setAccessoryDTOList(patrolAccessoryDto);
+                });
+            List<PatrolCheckResultDTO> resultList = buildResultTree(Optional.ofNullable(patrolCheckResultDTOS)
+                    .orElseGet(Collections::emptyList));
+            return resultList;
+        }
     }
 
     @Override
