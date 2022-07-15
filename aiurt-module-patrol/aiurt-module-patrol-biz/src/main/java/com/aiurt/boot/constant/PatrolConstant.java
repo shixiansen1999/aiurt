@@ -88,6 +88,10 @@ public interface PatrolConstant {
      */
     Integer TASK_REBUILD = 1;
     /**
+     * 巡检任务来源-常规指派
+     */
+    Integer TASK_COMMON = 2;
+    /**
      * 巡检任务来源-手工下发
      */
     Integer TASK_MANUAL = 3;

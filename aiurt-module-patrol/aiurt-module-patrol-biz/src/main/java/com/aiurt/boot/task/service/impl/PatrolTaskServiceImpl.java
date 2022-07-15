@@ -183,7 +183,10 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
                     // 计划令编号和图片地址
                     task.setPlanOrderCode(patrolAppointInfoDTO.getPlanOrderCode());
                     task.setPlanOrderCodeUrl(patrolAppointInfoDTO.getPlanOrderCodeUrl());
-                    task.setSource(2);
+                    if(ObjectUtil.isEmpty(task.getSource()))
+                    {
+                        task.setSource(PatrolConstant.TASK_COMMON);
+                    }
                     // 更新检查开始结束时间
                     task.setStartTime(patrolAppointInfoDTO.getStartTime());
                     task.setEndTime(patrolAppointInfoDTO.getEndTime());

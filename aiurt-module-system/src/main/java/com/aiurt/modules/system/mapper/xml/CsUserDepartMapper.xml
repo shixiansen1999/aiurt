@@ -5,4 +5,8 @@
 <select id="getDepartIds" resultType="java.lang.String">
     select depart_id from cs_user_depart where user_id = #{userId}
     </select>
+
+<select id="getDepartByUserId" resultType="org.jeecg.common.system.vo.CsUserDepartModel">
+    select cud.id ,cud.user_id,cud.depart_id,sd.org_code ,sd.depart_name from cs_user_depart cud left join sys_depart sd on sd.id = cud.depart_id where cud.user_id = #{id}
+    </select>
 </mapper>

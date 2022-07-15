@@ -111,6 +111,18 @@ public class SysBaseApiImpl implements ISysBaseAPI {
     @Autowired
     private ISysAttachmentService sysAttachmentService;
 
+    @Autowired
+    private ICsUserDepartService iCsUserDepartService;
+
+    @Autowired
+    private ICsUserMajorService iCsUserMajorService;
+
+    @Autowired
+    private CsUserStaionMapper csUserStaionMapper;
+
+    @Autowired
+    private CsUserSubsystemMapper csUserSubsystemMapper;
+
     @Override
     @Cacheable(cacheNames = CacheConstant.SYS_USERS_CACHE, key = "#username")
     public LoginUser getUserByName(String username) {
@@ -1263,5 +1275,25 @@ public class SysBaseApiImpl implements ISysBaseAPI {
         wrapper.in(SysAttachment::getId, list);
         List<SysAttachment> attachmentList = sysAttachmentService.getBaseMapper().selectList(wrapper);
         return attachmentList;
+    }
+
+    @Override
+    public List<CsUserDepartModel> getDepartByUserId(String id) {
+        return iCsUserDepartService.getDepartByUserId(id);
+    }
+
+    @Override
+    public List<CsUserMajorModel> getMajorByUserId(String id) {
+        return iCsUserMajorService.getMajorByUserId(id);
+    }
+
+    @Override
+    public List<CsUserStationModel> getStationByUserId(String id) {
+        return csUserStaionMapper.getStationByUserId(id);
+    }
+
+    @Override
+    public List<CsUserSubsystemModel> getSubsystemByUserId(String id) {
+        return csUserSubsystemMapper.getSubsystemByUserId(id);
     }
 }
