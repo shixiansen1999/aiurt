@@ -271,7 +271,8 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
         List<PatrolStandardItems> patrolStandardItems = patrolStandardItemsMapper.selectList(standardId);
         if(CollUtil.isEmpty(patrolStandardItems))
         {
-            throw new AiurtBootException("小主！巡检标准的配置项，未配置哦！");
+            Integer a=1 ;
+            return a ;
         }
         List<PatrolCheckResult> addResultList = new ArrayList<>();
         Optional.ofNullable(patrolStandardItems).orElseGet(Collections::emptyList).stream().forEach(l -> {
@@ -354,7 +355,11 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
                         .eq(PatrolTaskDevice::getTaskId, patrolTaskDevice.getTaskId())
                         .eq(PatrolTaskDevice::getId, patrolTaskDevice.getId());
                 patrolTaskDeviceMapper.update(patrolTaskDevice, updateWrapper);
-                copyItems(patrolTaskDevice);
+                 int i = copyItems(patrolTaskDevice);
+                 if(1==i)
+                 {
+                     throw new AiurtBootException("小主！巡检标准的配置项，未配置哦！");
+                 }
             }
            List<PatrolCheckResultDTO> patrolCheckResultDTOS = patrolCheckResultMapper.getCheckResult(taskDeviceId);
                 patrolCheckResultDTOS.stream().forEach(e ->

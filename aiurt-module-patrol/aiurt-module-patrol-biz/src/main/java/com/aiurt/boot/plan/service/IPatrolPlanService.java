@@ -1,6 +1,5 @@
 package com.aiurt.boot.plan.service;
 
-import com.aiurt.boot.manager.dto.EquipmentOverhaulDTO;
 import com.aiurt.boot.plan.dto.PatrolPlanDto;
 import com.aiurt.boot.plan.dto.QuerySiteDto;
 import com.aiurt.boot.plan.entity.PatrolPlan;
@@ -9,7 +8,6 @@ import com.aiurt.modules.device.entity.Device;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
-import org.jeecg.common.api.vo.Result;
 
 import java.util.List;
 
