@@ -8,7 +8,6 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 
 import java.util.List;
-import java.util.Map;
 
 /**
  * @Description: patrol_task
@@ -71,7 +70,7 @@ public interface IPatrolTaskService extends IService<PatrolTask> {
      * @param patrolTaskUserDTO
      * @return
      */
-    void getPatrolTaskAppoint(List<PatrolTaskUserDTO> patrolTaskUserDTO);
+    void getPatrolTaskAppoint(PatrolTaskAppointSaveDTO patrolTaskUserDTO);
 
     /**
      * PC巡检任务池详情-基本信息
