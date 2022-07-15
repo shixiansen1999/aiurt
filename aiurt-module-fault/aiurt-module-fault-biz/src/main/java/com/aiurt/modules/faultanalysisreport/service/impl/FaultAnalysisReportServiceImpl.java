@@ -60,7 +60,7 @@ public class FaultAnalysisReportServiceImpl extends ServiceImpl<FaultAnalysisRep
         //根据角色决定是否查询未审核通过的故障分析
         if ( getRole()) {faultAnalysisReport.setApprovedResult(FaultConstant.PASSED);}
         //工班长只能看到审核通过的和自己创建的未审核通过的
-        if (allSubSystem.size()==1 && allSubSystem.contains(FaultConstant.Maintenance_Worker)) {
+        if (allSubSystem.size()==1 && allSubSystem.contains(FaultConstant.MAINTENANCE_WORKER)) {
             faultAnalysisReport.setCreateBy(sysUser.getUsername());
         }
         List<FaultAnalysisReport> faultAnalysisReports = faultAnalysisReportMapper.readAll(page, faultAnalysisReport,allSubSystem);
@@ -183,7 +183,7 @@ public class FaultAnalysisReportServiceImpl extends ServiceImpl<FaultAnalysisRep
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         List<String> rolesByUsername = sysBaseAPI.getRolesByUsername(sysUser.getUsername());
         if (analysisReport.getStatus().equals(FaultConstant.APPROVED)) {
-            if (!rolesByUsername.contains(FaultConstant.ADMIN) && !rolesByUsername.contains(FaultConstant.Professional_Technical_Director)) {
+            if (!rolesByUsername.contains(FaultConstant.ADMIN) && !rolesByUsername.contains(FaultConstant.PROFESSIONAL_TECHNICAL_DIRECTOR)) {
                 return Result.OK("没有权限");
             }
         }
@@ -200,7 +200,7 @@ public class FaultAnalysisReportServiceImpl extends ServiceImpl<FaultAnalysisRep
         for (String s : list) {
             FaultAnalysisReport analysisReport = this.getById(s);
             if (analysisReport.getStatus().equals(FaultConstant.APPROVED)) {
-                if (!rolesByUsername.contains(FaultConstant.ADMIN) && !rolesByUsername.contains(FaultConstant.Professional_Technical_Director)) {
+                if (!rolesByUsername.contains(FaultConstant.ADMIN) && !rolesByUsername.contains(FaultConstant.PROFESSIONAL_TECHNICAL_DIRECTOR)) {
                     return Result.OK("没有权限");
                 }
             }
@@ -213,7 +213,7 @@ public class FaultAnalysisReportServiceImpl extends ServiceImpl<FaultAnalysisRep
     public boolean getRole() {
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         List<String> rolesByUsername = sysBaseAPI.getRolesByUsername(sysUser.getUsername());
-        if (!rolesByUsername.contains(FaultConstant.ADMIN)&&!rolesByUsername.contains(FaultConstant.Maintenance_Worker)&&!rolesByUsername.contains(FaultConstant.Professional_Technical_Director)) {
+        if (!rolesByUsername.contains(FaultConstant.ADMIN)&&!rolesByUsername.contains(FaultConstant.MAINTENANCE_WORKER)&&!rolesByUsername.contains(FaultConstant.PROFESSIONAL_TECHNICAL_DIRECTOR)) {
             return true;
         }
         return false;

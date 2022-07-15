@@ -3,7 +3,10 @@
 <mapper namespace="com.aiurt.modules.faultanalysisreport.mapper.FaultAnalysisReportMapper">
 
 <select id="readAll" resultType="com.aiurt.modules.faultanalysisreport.entity.FaultAnalysisReport">
-    SELECT
+    select
+    a.id,a.status,a.faultCode ,a.fault_phenomenon,a.solution,a.name,a.createTime,a.faultId
+    from
+    (( SELECT
             far.id,
             far.status,
             f.`code` as faultCode ,
@@ -11,40 +14,70 @@
             far.solution,
             ft.name,
             far.create_time,
-            f.id as faultId
-
+            f.id as faultId,
+            ft.`code` as faultTypeCode,
+            far.create_time as createTime,
+            f.sub_system_code
     FROM
             fault_analysis_report far
                     LEFT JOIN fault f ON f.CODE = far.fault_code
                     LEFT JOIN fault_type ft on ft.`code` = f.fault_type_code
     WHERE
             far.del_flag = 0
+            and far.approved_result = 0
+            <if test="condition.approvedResult != null and condition.approvedResult != ''">
+                and far.approved_result = #{condition.approvedResult}
+            </if>
+            <if test="condition.createBy != null and condition.createBy != ''">
+                and far.create_by = #{condition.createBy}
+            </if>
+    )
+    union all
+    ( SELECT
+            far.id,
+            far.STATUS,
+            f.`code` AS faultCode,
+            f.fault_phenomenon,
+            far.solution,
+            ft.NAME,
+            far.create_time,
+            f.id AS faultId,
+            ft.`code` as faultTypeCode,
+            far.create_time as createTime,
+            f.sub_system_code
+    FROM
+            fault_analysis_report far
+            LEFT JOIN fault f ON f.CODE = far.fault_code
+            LEFT JOIN fault_type ft ON ft.`code` = f.fault_type_code
+    WHERE
+            far.del_flag = 0
+            and far.approved_result = 1
+            <if test="condition.approvedResult != null and condition.approvedResult != ''">
+                and far.approved_result = #{condition.approvedResult}
+            </if>
+    ))a
+    where 1=1
         <if test="condition.faultCode != null and condition.faultCode != ''">
-            and f.`code` LIKE concat('%',#{condition.faultCode},'%')
+            and a.faultCode LIKE concat('%',#{condition.faultCode},'%')
         </if>
         <if test="condition.faultPhenomenon != null and condition.faultPhenomenon != ''">
-            and f.fault_phenomenon LIKE concat('%',#{condition.faultPhenomenon}',%')
+            and a.fault_phenomenon LIKE concat('%',#{condition.faultPhenomenon}',%')
         </if>
         <if test="condition.faultTypeCode != null and condition.faultTypeCode != ''">
-            and ft.`code` like concat('%',#{condition.faultTypeCode},'%')
+            and a.faultTypeCode like concat('%',#{condition.faultTypeCode},'%')
         </if>
         <if test="condition.startTime != null and condition.endTime != null ">
-            and DATE_FORMAT(far.create_time ,'%Y-%m-%d') &gt;= DATE_FORMAT(#{condition.startTime},'%Y-%m-%d')
-            and DATE_FORMAT(far.create_time ,'%Y-%m-%d') &lt;= DATE_FORMAT(#{condition.endTime},'%Y-%m-%d')
+            and DATE_FORMAT(a.createTime ,'%Y-%m-%d') &gt;= DATE_FORMAT(#{condition.startTime},'%Y-%m-%d')
+            and DATE_FORMAT(a.createTime ,'%Y-%m-%d') &lt;= DATE_FORMAT(#{condition.endTime},'%Y-%m-%d')
         </if>
-        <if test="condition.approvedResult != null and condition.approvedResult != ''">
-            and far.approved_result = #{condition.approvedResult}
-        </if>
+
         <if test="allSubSystem != null and allSubSystem.size() != 0">
-            and f.sub_system_code in
+            and a.sub_system_code in
             <foreach collection="allSubSystem" index="item" open="(" separator="," close=")">
                 #{item}
             </foreach>
         </if>
-        <if test="condition.createBy != null and condition.createBy != ''">
-            and far.create_by = #{condition.createBy}
-        </if>
-        ORDER BY far.create_time DESC
+        ORDER BY a.create_time DESC
 </select>
 
 <select id="getFault" resultType="com.aiurt.modules.faultanalysisreport.entity.dto.FaultDTO">
