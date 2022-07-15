@@ -60,6 +60,12 @@ public interface InspectionStrategyMapper extends BaseMapper<InspectionStrategy>
      * @param id
      * @return
      */
+    Device viewDetail(@Param("id") String id);
+    /**
+     * 查询标准表选择的设备
+     * @param id
+     * @return
+     */
     List<Device> viewDetails(@Param("id") String id);
 
     /**

@@ -1,7 +1,10 @@
 package com.aiurt.boot.plan.service.impl;
 
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.ObjectUtil;
+import com.aiurt.boot.manager.dto.EquipmentOverhaulDTO;
+import com.aiurt.boot.manager.dto.OverhaulDTO;
 import com.aiurt.boot.plan.dto.PatrolPlanDto;
 import com.aiurt.boot.plan.dto.QuerySiteDto;
 import com.aiurt.boot.plan.entity.*;
@@ -11,6 +14,8 @@ import com.aiurt.boot.standard.dto.PatrolStandardDto;
 import com.aiurt.boot.standard.dto.StationDTO;
 import com.aiurt.boot.standard.entity.PatrolStandard;
 import com.aiurt.boot.standard.mapper.PatrolStandardMapper;
+import com.aiurt.boot.task.dto.MajorDTO;
+import com.aiurt.boot.task.dto.SubsystemDTO;
 import com.aiurt.modules.device.entity.Device;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -22,8 +27,10 @@ import org.springframework.stereotype.Service;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @Description: patrol_plan
@@ -70,9 +77,8 @@ public class PatrolPlanServiceImpl extends ServiceImpl<PatrolPlanMapper, PatrolP
             patrolPlanStrategy.setStartTime(patrolPlanDto.getStrategyStartTime());
             patrolPlanStrategyMapper.insert(patrolPlanStrategy);
         }else if (patrolPlanDto.getPeriod()==2 || patrolPlanDto.getPeriod()==3){
-            List<String>week = patrolPlanDto.getWeek();
-            for (String w:week) {
-                Integer f = Integer.parseInt(w);
+            List<Integer>week = patrolPlanDto.getWeek();
+            for (Integer f:week) {
                 PatrolPlanStrategy patrolPlanStrategy = new PatrolPlanStrategy();
                 patrolPlanStrategy.setPlanId(id.getId());
                 patrolPlanStrategy.setType(1);patrolPlanStrategy.setWeek(f);
@@ -81,18 +87,17 @@ public class PatrolPlanServiceImpl extends ServiceImpl<PatrolPlanMapper, PatrolP
                 patrolPlanStrategyMapper.insert(patrolPlanStrategy);
             }
         }else if (patrolPlanDto.getPeriod()==4||patrolPlanDto.getPeriod()==5){
-            List<String> week = patrolPlanDto.getWeek();
-            List<String>time =patrolPlanDto.getTime();
-            for (String w:week) {
-                Integer f = Integer.parseInt(w);
+            List<Integer> week = patrolPlanDto.getWeek();
+            for (Integer f:week) {
                 PatrolPlanStrategy patrolPlanStrategy = new PatrolPlanStrategy();
                 patrolPlanStrategy.setPlanId(id.getId());
-                patrolPlanStrategy.setType(2);patrolPlanStrategy.setWeek(f);
+                patrolPlanStrategy.setType(2);patrolPlanStrategy.setTime((int)Math.ceil(1.0 *f)/7);
+                int s= f % 7;
+                if (s==0){
+                    s=7;
+                }patrolPlanStrategy.setWeek(s);
                 patrolPlanStrategy.setEndTime(patrolPlanDto.getStrategyEndTime());
                 patrolPlanStrategy.setStartTime(patrolPlanDto.getStrategyStartTime());
-                for (String t:time){
-                    Integer i=Integer.parseInt(t);patrolPlanStrategy.setTime(i);
-                }
                 patrolPlanStrategyMapper.insert(patrolPlanStrategy);
             }
           }
@@ -144,23 +149,30 @@ public class PatrolPlanServiceImpl extends ServiceImpl<PatrolPlanMapper, PatrolP
     @Override
     public PatrolPlanDto selectId(String id,String code) {
         PatrolPlanDto patrolPlanDto = baseMapper.selectId(id,code);
-        if(ObjectUtil.isNotEmpty(patrolPlanDto.getSiteCode())){
+        if(ObjectUtil.isNotNull(patrolPlanDto.getSiteCode())){
         patrolPlanDto.setSiteCodes(Arrays.asList(patrolPlanDto.getSiteCode().split(",")));
         }
-        if (ObjectUtil.isNotEmpty(patrolPlanDto.getMechanismCode())){
+        if (ObjectUtil.isNotNull(patrolPlanDto.getMechanismCode())){
         patrolPlanDto.setMechanismCodes(Arrays.asList(patrolPlanDto.getMechanismCode().split(",")));
         }
-        if (ObjectUtil.isNotEmpty(patrolPlanDto.getIds())){
+        if (ObjectUtil.isNotNull(patrolPlanDto.getIds())){
         List<String>ids= Arrays.asList(patrolPlanDto.getIds().split(","));
         patrolPlanDto.setPatrolStandards(patrolStandardMapper.selectbyIds(ids));
         }
-        List<String> week =baseMapper.selectWeek(id,code);
-        if (ObjectUtil.isNotEmpty(week)){
+        List<Integer> week =baseMapper.selectWeek(id,code);
+        if (CollUtil.isNotEmpty(week)){
             patrolPlanDto.setWeek(week);
-        }
-        List<String> time = baseMapper.selectTime(id,code);
-        if(ObjectUtil.isNotEmpty(time)){
-        patrolPlanDto.setTime(time);
+        List<Integer> time = baseMapper.selectTime(id,code);
+        if(ObjectUtil.isNotNull(time.get(0))){
+            patrolPlanDto.setTime(time);
+            List<Integer> number = new ArrayList<>();
+            for (int i = 0; i < week.size(); i++) {
+                Integer w= week.get(i);
+                Integer t=time.get(i);
+               number.add(7*(t-1)+w);
+             }
+            patrolPlanDto.setNumber(number);
+            }
         }
         return patrolPlanDto;
     }
@@ -182,4 +194,31 @@ public class PatrolPlanServiceImpl extends ServiceImpl<PatrolPlanMapper, PatrolP
         IPage<Device> deviceIPage = baseMapper.viewDetails(page, standardCode, planId);
         return deviceIPage;
     }
+    @Override
+    public List<MajorDTO> selectMajorCodeList(String id) {
+        List<PatrolPlanDto> patrolPlanDTOs = baseMapper.selectCodeList(id, null, null);
+        List<PatrolPlanDto> collect = patrolPlanDTOs.stream().distinct().collect(Collectors.toList());
+        List<String> majorCodes1 = new ArrayList<>();
+        List<String> systemCode = new ArrayList<>();
+        if (CollectionUtil.isNotEmpty(collect)) {
+            collect.forEach(e -> {
+                String majorCode = e.getProfessionCode();
+                String systemCode1 = e.getSubsystemCode();
+                majorCodes1.add(majorCode);
+                systemCode.add(systemCode1);
+            });
+        }
+        //根据专业编码查询对应的专业子系统
+        List<MajorDTO> majorDTOList = baseMapper.translateMajor(majorCodes1);
+        if (CollectionUtil.isNotEmpty(majorDTOList)) {
+            majorDTOList.forEach(q -> {
+                systemCode.forEach(o -> {
+                    List<SubsystemDTO> subsystemDTOList = baseMapper.translateSubsystem(q.getMajorCode(), o);
+                    q.setSubsystemInfo(subsystemDTOList);
+                });
+            });
+        }
+        return majorDTOList;
+    }
+
 }

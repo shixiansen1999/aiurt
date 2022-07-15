@@ -7,6 +7,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import com.aiurt.boot.plan.dto.PatrolPlanDto;
 import com.aiurt.boot.plan.dto.QuerySiteDto;
+import com.aiurt.boot.utils.PatrolCodeUtil;
 import com.aiurt.modules.device.entity.Device;
 import org.jeecg.common.api.vo.Result;
 import com.aiurt.boot.plan.entity.PatrolPlan;
@@ -127,8 +128,7 @@ public class PatrolPlanController extends BaseController<PatrolPlan, IPatrolPlan
 	 @ApiOperation(value="生成巡检计划Code", notes="生成巡检计划Code")
 	 @GetMapping(value = "/generatePlanCode")
 	 public Result<String> generatePlanCode() {
-		 String code="XJ"+System.currentTimeMillis();
-		 return Result.OK(code);
+		 return Result.OK(PatrolCodeUtil.getPlanCode());
 	 }
 	 /**
 	  *  查看设备详情
