@@ -10,6 +10,7 @@ import java.net.URLDecoder;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.modules.device.entity.DeviceCompose;
 import com.aiurt.modules.device.service.IDeviceComposeService;
 import org.jeecg.common.api.vo.Result;
@@ -111,7 +112,9 @@ public class DeviceComposeController extends BaseController<DeviceCompose, IDevi
 	@ApiOperation(value="device_compose-通过id删除", notes="device_compose-通过id删除")
 	@DeleteMapping(value = "/delete")
 	public Result<String> delete(@RequestParam(name="id",required=true) String id) {
-		deviceComposeService.removeById(id);
+		DeviceCompose compose = deviceComposeService.getById(id);
+		compose.setDelFlag(CommonConstant.DEL_FLAG_1);
+		deviceComposeService.updateById(compose);
 		return Result.OK("删除成功!");
 	}
 
@@ -125,7 +128,7 @@ public class DeviceComposeController extends BaseController<DeviceCompose, IDevi
 	@ApiOperation(value="device_compose-批量删除", notes="device_compose-批量删除")
 	@DeleteMapping(value = "/deleteBatch")
 	public Result<String> deleteBatch(@RequestParam(name="ids",required=true) String ids) {
-		this.deviceComposeService.removeByIds(Arrays.asList(ids.split(",")));
+		Arrays.asList(ids.split(",")).stream().forEach(id -> delete(id));
 		return Result.OK("批量删除成功!");
 	}
 
