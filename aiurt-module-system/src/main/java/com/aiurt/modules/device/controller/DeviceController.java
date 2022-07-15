@@ -114,8 +114,12 @@ public class DeviceController {
             @RequestParam(name = "code", required = false) String code,
             @RequestParam(name = "name", required = false) String name,
             @RequestParam(name = "status", required = false) String status,
+            @RequestParam(name = "ids", required = false) String ids,
                                                HttpServletRequest req) {
         QueryWrapper<Device> queryWrapper = deviceService.getQueryWrapper(positionCodeCc, temporary, majorCode, systemCode, deviceTypeCode, code, name, status);
+        if(ids != null && !"".equals(ids)){
+            queryWrapper.in("id",Arrays.asList(ids.split(",")));
+        }
         List<Device> devices = deviceService.list(queryWrapper);
         List<Device> deviceList = new ArrayList<>();
         if(devices != null && devices.size()>0){
