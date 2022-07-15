@@ -10,7 +10,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.aiurt.modules.modeler.config;
+package com.aiurt.modules.config;
 
 import liquibase.Liquibase;
 import liquibase.database.Database;
@@ -22,7 +22,6 @@ import liquibase.resource.ClassLoaderResourceAccessor;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.flowable.ui.common.service.exception.InternalServerErrorException;
 import org.flowable.ui.common.service.idm.RemoteIdmService;
-import org.flowable.ui.modeler.properties.FlowableModelerAppProperties;
 import org.mybatis.spring.SqlSessionTemplate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

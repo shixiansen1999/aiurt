@@ -5,6 +5,7 @@ import java.io.UnsupportedEncodingException;
 import java.util.Date;
 import java.math.BigDecimal;
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.*;
@@ -218,4 +219,8 @@ public class FaultRepairRecord implements Serializable {
 
     @ApiModelProperty(value = "工作票路径")
     private String workTickPath;
+
+    @ApiModelProperty(value = "提交时间")
+    @TableField(exist = false)
+    private Date commitTime;
 }

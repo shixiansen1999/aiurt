@@ -1,4 +1,4 @@
-package com.aiurt.modules.modeler.config;
+package com.aiurt.modules.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.flowable.bpmn.converter.BpmnXMLConverter;

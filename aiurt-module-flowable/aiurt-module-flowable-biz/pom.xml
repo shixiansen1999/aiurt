@@ -26,6 +26,10 @@
                     <artifactId>xercesImpl</artifactId>
                     <groupId>xerces</groupId>
                 </exclusion>
+                <exclusion>
+                    <artifactId>joda-time</artifactId>
+                    <groupId>joda-time</groupId>
+                </exclusion>
             </exclusions>
         </dependency>
         <dependency>

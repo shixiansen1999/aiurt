@@ -1,4 +1,4 @@
-package com.aiurt.modules.modeler.config;
+package com.aiurt.modules.config;
 
 import org.flowable.ui.common.security.SecurityConstants;
 import org.springframework.context.annotation.Configuration;
