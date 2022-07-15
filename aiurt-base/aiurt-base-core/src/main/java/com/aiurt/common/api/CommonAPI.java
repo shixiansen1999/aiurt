@@ -150,7 +150,7 @@ public interface CommonAPI {
     List<CsUserStationModel> getStationByUserId(String id);
 
     /**
-     * 19 根据用户id获取站点
+     * 19 根据用户id获取子系统
      * @param id
      * @return
      */
