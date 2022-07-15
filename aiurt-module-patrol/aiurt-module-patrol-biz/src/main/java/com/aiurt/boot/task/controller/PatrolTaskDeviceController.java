@@ -1,12 +1,17 @@
 package com.aiurt.boot.task.controller;
 
+import com.aiurt.boot.manager.PatrolManager;
 import com.aiurt.boot.task.dto.PatrolCheckResultDTO;
 import com.aiurt.boot.task.dto.PatrolTaskDeviceDTO;
+import com.aiurt.boot.task.entity.PatrolTask;
 import com.aiurt.boot.task.entity.PatrolTaskDevice;
 import com.aiurt.boot.task.service.IPatrolCheckResultService;
 import com.aiurt.boot.task.service.IPatrolTaskDeviceService;
+import com.aiurt.boot.task.service.IPatrolTaskService;
 import com.aiurt.common.aspect.annotation.AutoLog;
+import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.system.base.controller.BaseController;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.annotations.Api;
@@ -37,6 +42,10 @@ public class PatrolTaskDeviceController extends BaseController<PatrolTaskDevice,
     private IPatrolTaskDeviceService patrolTaskDeviceService;
 	@Autowired
 	private IPatrolCheckResultService patrolCheckResultService;
+	@Autowired
+	private IPatrolTaskService patrolTaskService;
+	@Autowired
+	private  PatrolManager manager;
 
     /**
      * 分页列表查询
@@ -123,11 +132,21 @@ public class PatrolTaskDeviceController extends BaseController<PatrolTaskDevice,
 	@ApiOperation(value = " app巡检-巡检清单-填写检查项-提交工单", notes = " app巡检-巡检清单-填写检查项-提交	工单")
 	@PostMapping(value = "/patrolTaskCheckItemsSubmit")
 	public Result<?> patrolTaskCheckItemsSubmit(@RequestBody PatrolTaskDevice patrolTaskDevice, HttpServletRequest req) {
-		LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-		LambdaUpdateWrapper<PatrolTaskDevice> updateWrapper= new LambdaUpdateWrapper<>();
-		updateWrapper.set(PatrolTaskDevice::getUserId,sysUser.getId()).set(PatrolTaskDevice::getCheckTime, LocalDateTime.now()).set(PatrolTaskDevice::getStatus,2).eq(PatrolTaskDevice::getId,patrolTaskDevice.getId());
-		patrolTaskDeviceService.update(updateWrapper);
-		return Result.OK("提交工单成功");
+		LambdaQueryWrapper<PatrolTaskDevice> queryWrapper= new LambdaQueryWrapper<>();
+		PatrolTaskDevice taskDevice = patrolTaskDeviceService.getOne(new LambdaQueryWrapper<PatrolTaskDevice>().eq(PatrolTaskDevice::getId, patrolTaskDevice.getId()));
+		PatrolTask patrolTask = patrolTaskService.getOne(new LambdaQueryWrapper<PatrolTask>().eq(PatrolTask::getId, taskDevice.getTaskId()));
+		if(manager.checkTaskUser(patrolTask.getCode())==false)
+		{
+			throw new AiurtBootException("小主，该巡检任务不在您的检查范围之内哦");
+		}
+		else
+		{
+			LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+			LambdaUpdateWrapper<PatrolTaskDevice> updateWrapper= new LambdaUpdateWrapper<>();
+			updateWrapper.set(PatrolTaskDevice::getUserId,sysUser.getId()).set(PatrolTaskDevice::getCheckTime, LocalDateTime.now()).set(PatrolTaskDevice::getStatus,2).eq(PatrolTaskDevice::getId,patrolTaskDevice.getId());
+			patrolTaskDeviceService.update(updateWrapper);
+			return Result.OK("提交工单成功");
+		}
 	}
 	/**
 	 *   添加
