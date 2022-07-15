@@ -1,5 +1,6 @@
 package com.aiurt.boot.task.dto;
 
+import com.aiurt.boot.manager.dto.ColleaguesDTO;
 import com.aiurt.boot.plan.entity.RepairPoolCodeContent;
 import com.aiurt.boot.task.entity.RepairTaskResult;
 import com.baomidou.mybatisplus.annotation.TableField;
@@ -188,4 +189,9 @@ public class CheckListDTO {
     @TableField(exist = false)
     @ApiModelProperty(value = "检修单附件")
     private List<String> enclosureUrl;
+
+    /**同行人列表*/
+    @TableField(exist = false)
+    @ApiModelProperty(value = "同行人列表")
+    private List<ColleaguesDTO> realList;
 }
