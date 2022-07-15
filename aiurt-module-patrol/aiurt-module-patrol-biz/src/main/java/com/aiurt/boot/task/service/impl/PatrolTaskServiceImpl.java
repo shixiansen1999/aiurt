@@ -146,6 +146,9 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         AtomicInteger count = new AtomicInteger();
         for (Map.Entry<String, List<PatrolAppointUserDTO>> listEntry : map.entrySet()) {
             List<PatrolAppointUserDTO> list = listEntry.getValue();
+            if (CollUtil.isEmpty(list)) {
+                throw new AiurtBootException("未指定用户，请指定用户！");
+            }
             // 根据任务code查找未指派的任务
             QueryWrapper<PatrolTask> taskWrapper = new QueryWrapper<>();
             taskWrapper.lambda()
