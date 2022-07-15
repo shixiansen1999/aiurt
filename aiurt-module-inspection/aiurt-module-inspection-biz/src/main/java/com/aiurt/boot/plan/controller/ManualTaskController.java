@@ -7,6 +7,7 @@ import com.aiurt.boot.plan.req.ManualTaskReq;
 import com.aiurt.boot.plan.req.RepairPoolReq;
 import com.aiurt.boot.plan.service.IRepairPoolService;
 import com.aiurt.common.aspect.annotation.AutoLog;
+import com.aiurt.common.aspect.annotation.PermissionData;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.annotations.Api;
@@ -42,6 +43,7 @@ public class ManualTaskController {
      */
     @AutoLog(value = "分页查询手工下发任务列表")
     @ApiOperation(value = "分页查询手工下发任务列表", notes = "分页查询手工下发任务列表")
+    @PermissionData(pageComponent = "overhaul/RepairManualPoolList")
     @GetMapping(value = "/listPage")
     public Result<IPage<RepairPool>> listPage(ManualTaskReq manualTaskReq,
                                               @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,

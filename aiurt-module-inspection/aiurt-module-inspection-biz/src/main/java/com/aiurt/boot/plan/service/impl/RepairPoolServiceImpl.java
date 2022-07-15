@@ -23,6 +23,7 @@ import com.aiurt.boot.strategy.mapper.InspectionStrategyMapper;
 import com.aiurt.boot.task.entity.*;
 import com.aiurt.boot.task.mapper.*;
 import com.aiurt.common.api.dto.message.MessageDTO;
+import com.aiurt.common.aspect.annotation.DataScope;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.util.DateUtils;
@@ -404,7 +405,7 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
     public Result updateTime(String ids, String startTime, String endTime) {
         String[] split = ids.split(",");
         for (String id : split) {
-            int week = DateUtil.weekOfYear(DateUtil.parse(startTime));
+            int week = DateUtils.getWeekOfYear(DateUtil.parse(startTime));
             RepairPool repairPool = this.baseMapper.selectById(id);
 
             if (InspectionConstant.WEEKLY_INSPECTION.equals(repairPool.getType())) {
@@ -843,6 +844,7 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
      * @return
      */
     @Override
+    @DataScope(userAlias = "repair_pool")
     public IPage<RepairPool> listPage(Page<RepairPool> page, ManualTaskReq manualTaskReq) {
         // 处理查询参数
         QueryWrapper<RepairPool> queryWrapper = doQuery(manualTaskReq);
