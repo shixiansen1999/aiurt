@@ -5,4 +5,8 @@
 <select id="getSubsystemIds" resultType="java.lang.String">
     select system_id from cs_user_subsystem where user_id = #{userId}
     </select>
+
+<select id="getSubsystemByUserId" resultType="org.jeecg.common.system.vo.CsUserSubsystemModel">
+    select cus.id ,cus.user_id,cus.system_id,cs.system_code ,cs.system_name from cs_user_subsystem cus left join cs_subsystem cs on cs.id = cus.system_id where cus.user_id = #{id}
+</select>
 </mapper>

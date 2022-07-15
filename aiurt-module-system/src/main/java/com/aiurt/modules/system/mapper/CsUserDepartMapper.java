@@ -4,6 +4,7 @@ import com.aiurt.modules.system.entity.CsUserDepart;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import org.apache.ibatis.annotations.Param;
+import org.jeecg.common.system.vo.CsUserDepartModel;
 
 import java.util.List;
 
@@ -16,4 +17,11 @@ import java.util.List;
 public interface CsUserDepartMapper extends BaseMapper<CsUserDepart> {
 
     List<String> getDepartIds(@Param("userId") String userId);
+
+    /**
+     * 根据用户id获取部门权限
+     * @param id
+     * @return
+     */
+    List<CsUserDepartModel> getDepartByUserId(String id);
 }

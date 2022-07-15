@@ -5,4 +5,8 @@
 <select id="getStaionIds" resultType="java.lang.String">
     select station_id from cs_user_staion where user_id = #{userId}
     </select>
+
+<select id="getStationByUserId" resultType="org.jeecg.common.system.vo.CsUserStationModel">
+    select cus.id ,cus.user_id,cus.station_id,cs.station_code ,cs.station_name from cs_user_staion cus left join cs_station cs on cs.id = cus.station_id where cus.user_id = #{id}
+    </select>
 </mapper>

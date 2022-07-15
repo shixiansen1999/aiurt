@@ -5,4 +5,8 @@
 <select id="getMajorIds" resultType="java.lang.String">
     select major_id from cs_user_major where user_id = #{userId}
     </select>
+
+<select id="getMajorByUserId" resultType="org.jeecg.common.system.vo.CsUserMajorModel">
+    select cum.id ,cum.user_id,cum.major_id,cm.major_code ,cm.major_name from cs_user_major cum left join cs_major cm on cm.id = cum.major_id where cum.user_id = #{id}
+</select>
 </mapper>

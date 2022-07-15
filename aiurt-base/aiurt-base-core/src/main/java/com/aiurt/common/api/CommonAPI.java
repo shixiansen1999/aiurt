@@ -128,4 +128,31 @@ public interface CommonAPI {
      */
     List<DictModel> translateDictFromTableByKeys(String table, String text, String code, String keys);
 
+    /**
+     * 16 根据用户id获取部门权限
+     * @param id
+     * @return
+     */
+    List<CsUserDepartModel> getDepartByUserId(String id);
+
+    /**
+     * 17 根据用户id获取专业权限
+     * @param id
+     * @return
+     */
+    List<CsUserMajorModel> getMajorByUserId(String id);
+
+    /**
+     * 18 根据用户id获取站点
+     * @param id
+     * @return
+     */
+    List<CsUserStationModel> getStationByUserId(String id);
+
+    /**
+     * 19 根据用户id获取站点
+     * @param id
+     * @return
+     */
+    List<CsUserSubsystemModel> getSubsystemByUserId(String id);
 }
