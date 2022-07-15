@@ -31,8 +31,11 @@ import org.springframework.context.annotation.*;
 import javax.sql.DataSource;
 
 
+/**
+ * @author fgw
+ * @desc flowable6.7.2 model数据配置，flowable6.7.2 不再使用act_re_model 而是使用act_de_model
+ */
 @Configuration
-
 @ComponentScan(value = {
         "org.flowable.ui.modeler.repository",
         "org.flowable.ui.modeler.service",

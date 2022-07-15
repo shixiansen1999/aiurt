@@ -7,15 +7,17 @@ import java.math.BigDecimal;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import lombok.Data;
+import liquibase.pro.packaged.B;
+import lombok.*;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.jeecgframework.poi.excel.annotation.Excel;
 import com.aiurt.common.aspect.annotation.Dict;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
+
+import javax.validation.constraints.NotBlank;
 
 /**
  * @Description: 版本管理
@@ -28,6 +30,9 @@ import lombok.experimental.Accessors;
 @Accessors(chain = true)
 @EqualsAndHashCode(callSuper = false)
 @ApiModel(value="act_custom_version对象", description="流程版本管理")
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class ActCustomVersion implements Serializable {
     private static final long serialVersionUID = 1L;
 
@@ -82,4 +87,6 @@ public class ActCustomVersion implements Serializable {
     @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
     @ApiModelProperty(value = "发布时间")
     private Date deployTime;
+
+	private String bpmxml;
 }

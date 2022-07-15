@@ -43,6 +43,7 @@ public class ActCustomModelInfo implements Serializable {
 	@Excel(name = "name", width = 15)
     @ApiModelProperty(value = "name")
     private String name;
+
 	/**模型key*/
 	@Excel(name = "模型key", width = 15)
     @ApiModelProperty(value = "模型key")

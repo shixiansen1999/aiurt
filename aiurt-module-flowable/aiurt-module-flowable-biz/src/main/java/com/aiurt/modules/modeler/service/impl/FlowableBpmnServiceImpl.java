@@ -2,6 +2,7 @@ package com.aiurt.modules.modeler.service.impl;
 
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.exception.AiurtErrorEnum;
+import com.aiurt.modules.manage.entity.ActCustomVersion;
 import com.aiurt.modules.modeler.dto.ModelInfoVo;
 import com.aiurt.modules.modeler.entity.ActCustomModelInfo;
 import com.aiurt.modules.modeler.enums.ModelFormStatusEnum;
@@ -20,6 +21,7 @@ import org.flowable.editor.language.json.converter.BpmnJsonConverter;
 import org.flowable.editor.language.json.converter.util.CollectionUtils;
 import org.flowable.engine.RepositoryService;
 import org.flowable.engine.repository.Deployment;
+import org.flowable.engine.repository.ProcessDefinition;
 import org.flowable.ui.common.util.XmlUtil;
 import org.flowable.ui.modeler.domain.AbstractModel;
 import org.flowable.ui.modeler.domain.Model;
@@ -204,12 +206,29 @@ public class FlowableBpmnServiceImpl implements IFlowableBpmnService {
         }
 
         // 部署流程
-        repositoryService.createDeployment()
+        Deployment deploy = repositoryService.createDeployment()
                 .name(model.getName())
                 .key(model.getKey())
                 .category(modelInfo.getClassifyCode())
                 .tenantId(model.getTenantId())
                 .addBpmnModel(model.getKey() + BPMN_EXTENSION, bpmnModel)
                 .deploy();
+
+        // 已发布
+        modelInfo.setStatus(ModelFormStatusEnum.YFB.getStatus());
+        modelInfoService.updateById(modelInfo);
+
+        // 增加一个版本, 流程定义
+        List<ProcessDefinition> definitionList = repositoryService.createProcessDefinitionQuery().processDefinitionKey(model.getKey())
+                .orderByProcessDefinitionVersion().desc().list();
+
+        if (CollectionUtils.isNotEmpty(definitionList)) {
+            ProcessDefinition processDefinition = definitionList.get(0);
+            ActCustomVersion actCustomVersion = ActCustomVersion.builder()
+                    .deployId(processDefinition.getDeploymentId())
+                    .processDefinitionId(processDefinition.getId())
+                    .deployTime(new Date())
+                    .build();
+        }
     }
 }

@@ -100,21 +100,6 @@ public class WebMvcConfiguration implements WebMvcConfigurer {
         converters.add(jackson2HttpMessageConverter);
     }
 
-    @Bean
-    public MappingJackson2HttpMessageConverter mappingJackson2HttpMessageConverter(){
-
-        MappingJackson2HttpMessageConverter converter = new MappingJackson2HttpMessageConverter();
-        ObjectMapper objectMapper = new ObjectMapper();
-        SimpleModule simpleModule = new SimpleModule();
-        simpleModule.addSerializer(Long.class, ToStringSerializer.instance);
-        simpleModule.addSerializer(Long.TYPE, ToStringSerializer.instance);
-        objectMapper.registerModule(simpleModule);
-        //添加此配置，解决多传参数导致 JSON parse error: Unrecognized filed ...异常
-        objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-        converter.setObjectMapper(objectMapper);
-        return converter;
-    }
-
     /**
      * 解决springboot2.6
      * 日期时间格式化
