@@ -5,6 +5,7 @@ import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.aiurt.boot.plan.dto.PatrolPlanDto;
 import com.aiurt.boot.plan.dto.QuerySiteDto;
+import com.aiurt.boot.plan.dto.StandardDTO;
 import com.aiurt.boot.plan.entity.*;
 import com.aiurt.boot.plan.mapper.*;
 import com.aiurt.boot.plan.service.IPatrolPlanService;
@@ -155,18 +156,20 @@ public class PatrolPlanServiceImpl extends ServiceImpl<PatrolPlanMapper, PatrolP
         patrolPlanDto.setPatrolStandards(patrolStandardMapper.selectbyIds(ids));
         }
         List<Integer> week =baseMapper.selectWeek(id,code);
-        if (CollUtil.isNotEmpty(week)){
-            patrolPlanDto.setWeek(week);
-        List<Integer> time = baseMapper.selectTime(id,code);
-        if(ObjectUtil.isNotNull(time.get(0))){
-            patrolPlanDto.setTime(time);
-            List<Integer> number = new ArrayList<>();
-            for (int i = 0; i < week.size(); i++) {
-                Integer w= week.get(i);
-                Integer t=time.get(i);
-               number.add(7*(t-1)+w);
-             }
-            patrolPlanDto.setNumber(number);
+        if (ObjectUtil.isNotNull(week.get(0))) {
+            if (CollUtil.isNotEmpty(week)) {
+                patrolPlanDto.setWeek(week);
+                List<Integer> time = baseMapper.selectTime(id, code);
+                if (ObjectUtil.isNotNull(time.get(0))) {
+                    patrolPlanDto.setTime(time);
+                    List<Integer> number = new ArrayList<>();
+                    for (int i = 0; i < week.size(); i++) {
+                        Integer w = week.get(i);
+                        Integer t = time.get(i);
+                        number.add(7 * (t - 1) + w);
+                    }
+                    patrolPlanDto.setNumber(number);
+                }
             }
         }
         return patrolPlanDto;
@@ -214,6 +217,12 @@ public class PatrolPlanServiceImpl extends ServiceImpl<PatrolPlanMapper, PatrolP
             });
         }
         return majorDTOList;
+    }
+
+    @Override
+    public List<StandardDTO> selectPlanStandard(String PlanId, String majorCode, String subsystemCode) {
+        List<StandardDTO> standardDTOS = baseMapper.selectStandardList(PlanId, majorCode, subsystemCode);
+        return standardDTOS;
     }
 
 }

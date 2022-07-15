@@ -243,5 +243,23 @@
             </if>
         </where>
     </select>
+    <select id="selectStandardList" resultType="com.aiurt.boot.plan.dto.StandardDTO">
+        SELECT
+        t2.id as standardId,
+        t2.`name` as standardName
+        FROM
+        patrol_plan t1
+        LEFT JOIN patrol_plan_standard t3 ON t1.id=t3.plan_id
+        LEFT JOIN patrol_standard t2 ON t2.`code`=t3.standard_code
+        <where>
+            t1.id = #{planId}
+            <if test="majorCode!=null">
+                and t3.profession_code= #{majorCode}
+            </if>
+            <if test="subsystemCode!=null">
+                and t3.subsystem_code = #{subsystemCode}
+            </if>
+        </where>
+    </select>
 
 </mapper>

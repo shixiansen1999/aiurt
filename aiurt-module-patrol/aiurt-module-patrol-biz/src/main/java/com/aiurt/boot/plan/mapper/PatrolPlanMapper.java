@@ -3,6 +3,7 @@ package com.aiurt.boot.plan.mapper;
 
 import com.aiurt.boot.plan.dto.PatrolPlanDto;
 import com.aiurt.boot.plan.dto.QuerySiteDto;
+import com.aiurt.boot.plan.dto.StandardDTO;
 import com.aiurt.boot.plan.entity.PatrolPlan;
 import com.aiurt.boot.task.dto.MajorDTO;
 import com.aiurt.boot.task.dto.SubsystemDTO;
@@ -116,4 +117,13 @@ public interface PatrolPlanMapper extends BaseMapper<PatrolPlan> {
    * @return
    */
   List<SubsystemDTO> translateSubsystem(@Param("majorCode")String majorCode, @Param("systemCode")String systemCode);
+
+  /**
+   * 查询标准表下拉框
+   * @param planId
+   * @param majorCode
+   * @param subsystemCode
+   * @return
+   */
+    List<StandardDTO> selectStandardList(@Param("planId")String planId, @Param("majorCode")String majorCode, @Param("subsystemCode")String subsystemCode);
 }
