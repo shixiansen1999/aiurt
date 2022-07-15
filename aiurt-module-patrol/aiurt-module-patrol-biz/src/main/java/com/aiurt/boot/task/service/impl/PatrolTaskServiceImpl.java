@@ -150,7 +150,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
             QueryWrapper<PatrolTask> taskWrapper = new QueryWrapper<>();
             taskWrapper.lambda()
                     .eq(PatrolTask::getCode, listEntry.getKey())
-                    .eq(PatrolTask::getStatus, PatrolConstant.TASK_INIT).or().eq(PatrolTask::getStatus, PatrolConstant.TASK_RETURNED)
+                    .eq(PatrolTask::getStatus, PatrolConstant.TASK_INIT)
                     .eq(PatrolTask::getDiscardStatus, PatrolConstant.TASK_UNDISCARD);
             PatrolTask patrolTask = patrolTaskMapper.selectOne(taskWrapper);
 
