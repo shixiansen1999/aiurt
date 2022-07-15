@@ -23,6 +23,7 @@ public class FlowableModelServiceImpl implements IFlowableModelService {
 
     @Autowired
     private ModelService modelService;
+
     @Override
     public Model creatModel(ModelRepresentation modelRepresentation, LoginUser user) {
         // 替换空格

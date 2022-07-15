@@ -79,8 +79,6 @@ public class FlowableBpmnServiceImpl implements IFlowableBpmnService {
     @Lazy
     private IActCustomModelInfoService modelInfoService;
 
-    @Autowired
-    private ObjectMapper objectMapper;
 
     @Autowired
     private RepositoryService repositoryService;
@@ -156,7 +154,7 @@ public class FlowableBpmnServiceImpl implements IFlowableBpmnService {
         if (bpmnModel.getLocationMap().size() == 0) {
             throw new AiurtBootException( "No required BPMN DI information found in definition " + fileName);
         }
-
+        ObjectMapper objectMapper = new ObjectMapper();
         ConverterContext converterContext = new ConverterContext(modelService, objectMapper);
         //
         List<AbstractModel> decisionTables = modelService.getModelsByModelType(AbstractModel.MODEL_TYPE_DECISION_TABLE);

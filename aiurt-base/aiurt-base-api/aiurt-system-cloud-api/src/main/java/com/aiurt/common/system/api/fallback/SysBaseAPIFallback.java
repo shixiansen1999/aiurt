@@ -279,6 +279,26 @@ public class SysBaseAPIFallback implements ISysBaseAPI {
     }
 
     @Override
+    public List<CsUserDepartModel> getDepartByUserId(String id) {
+        return null;
+    }
+
+    @Override
+    public List<CsUserMajorModel> getMajorByUserId(String id) {
+        return null;
+    }
+
+    @Override
+    public List<CsUserStationModel> getStationByUserId(String id) {
+        return null;
+    }
+
+    @Override
+    public List<CsUserSubsystemModel> getSubsystemByUserId(String id) {
+        return null;
+    }
+
+    @Override
     public List<LoginUser> getUserByDepIds(List<String> deptCodes) {
         return null;
     }
