@@ -124,7 +124,7 @@
         SELECT DISTINCT
         cm.major_name
         FROM
-        patrol_plan_standard pps
+        patrol__standard pps
         JOIN cs_major cm ON pps.profession_code = cm.major_code
         WHERE
         pps.del_flag=0
