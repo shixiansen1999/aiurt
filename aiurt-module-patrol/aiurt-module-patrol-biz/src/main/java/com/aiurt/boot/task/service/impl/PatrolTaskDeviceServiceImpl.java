@@ -27,8 +27,10 @@ import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.DictModel;
+import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -168,6 +170,34 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
             }
         });
         return pageList.setRecords(patrolTaskDeviceList);
+    }
+
+    @Override
+    public void getPatrolSubmit(PatrolTaskDevice patrolTaskDevice) {
+        PatrolTaskDevice taskDevice = patrolTaskDeviceMapper.selectOne(new LambdaQueryWrapper<PatrolTaskDevice>().eq(PatrolTaskDevice::getId, patrolTaskDevice.getId()));
+        PatrolTask patrolTask = patrolTaskMapper.selectOne(new LambdaQueryWrapper<PatrolTask>().eq(PatrolTask::getId, taskDevice.getTaskId()));
+        if(manager.checkTaskUser(patrolTask.getCode())==false)
+        {
+            throw new AiurtBootException("小主，该巡检任务不在您的检查范围之内哦");
+        }
+        else
+        {
+            List<PatrolTaskDevice> patrolTaskDevices = patrolTaskDeviceMapper.selectList(new LambdaQueryWrapper<PatrolTaskDevice>().eq(PatrolTaskDevice::getTaskId, patrolTask.getId()));
+            patrolTaskDevices.stream().forEach(e -> {
+                List<PatrolCheckResult> patrolCheckResultList = patrolCheckResultMapper.selectList(new LambdaQueryWrapper<PatrolCheckResult>().eq(PatrolCheckResult::getTaskDeviceId, e.getId()));
+                List<PatrolCheckResult> collect = patrolCheckResultList.stream().filter(s -> s.getCheckResult() != null && PatrolConstant.RESULT_EXCEPTION.equals(s.getCheckResult())).collect(Collectors.toList());
+                if (CollUtil.isNotEmpty(collect)) {
+                    e.setCheckResult(PatrolConstant.RESULT_EXCEPTION);
+                } else {
+                    e.setCheckResult(PatrolConstant.RESULT_NORMAL);
+                }
+                patrolTaskDeviceMapper.updateById(e);
+            });
+            LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+            LambdaUpdateWrapper<PatrolTaskDevice> updateWrapper= new LambdaUpdateWrapper<>();
+            updateWrapper.set(PatrolTaskDevice::getUserId,sysUser.getId()).set(PatrolTaskDevice::getCheckTime, LocalDateTime.now()).set(PatrolTaskDevice::getStatus,PatrolConstant.BILL_COMPLETE).eq(PatrolTaskDevice::getId,patrolTaskDevice.getId());
+            patrolTaskDeviceMapper.update(patrolTaskDevice,updateWrapper);
+        }
     }
 
     @Override
