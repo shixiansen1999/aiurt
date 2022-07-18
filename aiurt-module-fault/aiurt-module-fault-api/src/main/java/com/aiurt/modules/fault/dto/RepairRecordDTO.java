@@ -31,8 +31,8 @@ public class RepairRecordDTO implements Serializable {
     @ApiModelProperty("参与人")
     private List<FaultRepairParticipants> participantsList;
 
-    @ApiModelProperty(value = "参与人用户id")
-    private String userIds;
+    @ApiModelProperty(value = "账号")
+    private String users;
 
     @ApiModelProperty(value = "参与人员名称")
     private String userNames;

@@ -565,9 +565,9 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         // 查询参与人
         List<FaultRepairParticipants> participantsList = repairParticipantsService.queryParticipantsByRecordId(repairRecord.getId());
         repairRecordDTO.setParticipantsList(participantsList);
-        List<String> list = participantsList.stream().map(FaultRepairParticipants::getUserId).collect(Collectors.toList());
+        List<String> list = participantsList.stream().map(FaultRepairParticipants::getUserName).collect(Collectors.toList());
         List<String> userNameList = participantsList.stream().map(FaultRepairParticipants::getRealName).collect(Collectors.toList());
-        repairRecordDTO.setUserIds(StrUtil.join(",", list));
+        repairRecordDTO.setUsers(StrUtil.join(",", list));
         repairRecordDTO.setUserNames(StrUtil.join(",", userNameList));
 
         List<DeviceChangeSparePart> deviceChangeSparePartList = sparePartService.queryDeviceChangeByFaultCode(faultCode, repairRecord.getId());
@@ -639,7 +639,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
 
         FaultRepairRecord one = repairRecordService.getById(repairRecordDTO.getId());
 
-        String userIds = repairRecordDTO.getUserIds();
+        String userIds = repairRecordDTO.getUsers();
 
         // todo 删除本次的备件更换信息
 
@@ -647,7 +647,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         repairParticipantsService.removeByRecordId(one.getId());
 
         if (StrUtil.isNotBlank(userIds)) {
-            List<LoginUser> userList = sysBaseAPI.queryAllUserByIds(StrUtil.split(userIds, ","));
+            List<LoginUser> userList = sysBaseAPI.queryUserByNames(StrUtil.split(userIds, ","));
             List<FaultRepairParticipants> participantsList = userList.stream().map(user -> {
                 FaultRepairParticipants participants = new FaultRepairParticipants();
                 participants.setFaultRepairRecordId(one.getId());
