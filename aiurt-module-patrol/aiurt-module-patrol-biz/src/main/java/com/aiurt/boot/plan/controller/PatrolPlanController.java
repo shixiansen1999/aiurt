@@ -96,8 +96,8 @@ public class PatrolPlanController extends BaseController<PatrolPlan, IPatrolPlan
 	 @AutoLog(value = "巡检计划表-查询专业子系统下拉框")
 	 @ApiOperation(value="巡检计划表-查询专业子系统下拉框", notes="巡检计划表-查询专业子系统下拉框")
 	 @PostMapping(value = "/queryMajorAndSubsystem")
-	 public List<MajorDTO> queryMajorAndSubsystem(@RequestParam(value = "id",required = true) String id) {
-		 List<MajorDTO> queryMajorAndSubsystem = patrolPlanService.selectMajorCodeList(id);
+	 public List<MajorDTO> queryMajorAndSubsystem(@RequestParam(value = "id",required = true) String planId) {
+		 List<MajorDTO> queryMajorAndSubsystem = patrolPlanService.selectMajorCodeList(planId);
 		 return queryMajorAndSubsystem;
 	 }
 	 /**

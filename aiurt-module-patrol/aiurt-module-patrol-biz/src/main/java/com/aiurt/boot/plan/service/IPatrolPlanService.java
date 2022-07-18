@@ -71,17 +71,17 @@ public interface IPatrolPlanService extends IService<PatrolPlan> {
     /**
      * 查询专业，专业子系统的信息
      *
-     * @param id
+     * @param planId
      * @return
      */
-    List<MajorDTO> selectMajorCodeList(String id);
+    List<MajorDTO> selectMajorCodeList(String planId);
     /**
      * 查询对应标准表下拉框
-     * @param PlanId
+     * @param planId
      * @param majorCode
      * @param subsystemCode
      * @return
      */
-    List<StandardDTO> selectPlanStandard(String PlanId, String majorCode, String subsystemCode);
+    List<StandardDTO> selectPlanStandard(String planId, String majorCode, String subsystemCode);
 
 }
