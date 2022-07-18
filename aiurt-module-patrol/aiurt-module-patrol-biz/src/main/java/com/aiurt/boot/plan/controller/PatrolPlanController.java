@@ -96,9 +96,9 @@ public class PatrolPlanController extends BaseController<PatrolPlan, IPatrolPlan
 	 @AutoLog(value = "巡检计划表-查询专业子系统下拉框")
 	 @ApiOperation(value="巡检计划表-查询专业子系统下拉框", notes="巡检计划表-查询专业子系统下拉框")
 	 @PostMapping(value = "/queryMajorAndSubsystem")
-	 public List<MajorDTO> queryMajorAndSubsystem(@RequestParam(value = "id",required = true) String planId) {
+	 public  Result<List<MajorDTO>> queryMajorAndSubsystem(@RequestParam(value = "planId",required = true) String planId) {
 		 List<MajorDTO> queryMajorAndSubsystem = patrolPlanService.selectMajorCodeList(planId);
-		 return queryMajorAndSubsystem;
+		 return Result.OK(queryMajorAndSubsystem);
 	 }
 	 /**
 	  *查询对应巡检表下拉框
@@ -108,11 +108,11 @@ public class PatrolPlanController extends BaseController<PatrolPlan, IPatrolPlan
 	 @AutoLog(value = "巡检计划表-查询对应巡检表下拉框")
 	 @ApiOperation(value="巡检计划表-查询对应巡检表下拉框", notes="巡检计划表-查询对应巡检表下拉框")
 	 @PostMapping(value = "/queryStandard")
-	 public List<StandardDTO> queryStandard(@RequestParam(value ="PlanId",required = true) String PlanId,
+	 public  Result<List<StandardDTO>> queryStandard(@RequestParam(value ="planId",required = true) String planId,
 													 @RequestParam(value ="majorCode",required = true) String majorCode,
 													 @RequestParam(value ="subsystemCode",required = true) String subsystemCode) {
-		 List<StandardDTO> queryStandard = patrolPlanService.selectPlanStandard(PlanId,majorCode,subsystemCode);
-		 return queryStandard;
+		 List<StandardDTO> queryStandard = patrolPlanService.selectPlanStandard(planId,majorCode,subsystemCode);
+		 return Result.OK(queryStandard);
 	 }
 	 /**
 	  * 修改状态
