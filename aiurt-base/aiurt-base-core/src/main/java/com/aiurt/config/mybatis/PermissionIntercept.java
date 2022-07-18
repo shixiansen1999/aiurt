@@ -1,6 +1,7 @@
 package com.aiurt.config.mybatis;
 
 import cn.hutool.core.util.StrUtil;
+import com.aiurt.config.mybatis.filter.PermissionFilter;
 import lombok.extern.slf4j.Slf4j;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.Expression;
