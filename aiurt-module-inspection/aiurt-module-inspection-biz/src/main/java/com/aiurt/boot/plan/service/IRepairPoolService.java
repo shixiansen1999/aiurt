@@ -167,7 +167,7 @@ public interface IRepairPoolService extends IService<RepairPool> {
 
     /**
      * app指派任务下拉接口
-     * @param code
+     * @param id 检修计划id
      */
-    List<OrgDTO> queryUserDownList(String code);
+    List<OrgDTO> queryUserDownList(String id);
 }

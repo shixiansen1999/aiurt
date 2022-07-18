@@ -38,8 +38,8 @@ public class AppRepairPoolController {
     @AutoLog(value = "指派时的下拉人员")
     @ApiOperation(value = "指派时的下拉人员", notes = "指派时的下拉人员")
     @GetMapping(value = "/queryUserDownList")
-    public Result<List<OrgDTO>> queryUserDownList(@RequestParam @ApiParam(value = "检修计划code", name = "code", required = true) String code) {
-        List<OrgDTO> result = repairPoolService.queryUserDownList(code);
+    public Result<List<OrgDTO>> queryUserDownList(@RequestParam @ApiParam(value = "检修计划id", name = "id", required = true) String id) {
+        List<OrgDTO> result = repairPoolService.queryUserDownList(id);
         return Result.OK(result);
     }
 

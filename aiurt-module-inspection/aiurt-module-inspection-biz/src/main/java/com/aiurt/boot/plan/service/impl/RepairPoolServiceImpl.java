@@ -619,19 +619,24 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
     /**
      * app指派任务下拉接口
      *
-     * @param code 检修计划code
+     * @param id 检修计划id
      */
     @Override
-    public List<OrgDTO> queryUserDownList(String code) {
+    public List<OrgDTO> queryUserDownList(String id) {
         List<OrgDTO> result = new ArrayList<>();
 
-        if (StrUtil.isEmpty(code)) {
+        if (StrUtil.isEmpty(id)) {
             return result;
+        }
+
+        RepairPool repairPool = baseMapper.selectById(id);
+        if (ObjectUtil.isEmpty(repairPool)) {
+            throw new AiurtBootException(InspectionConstant.ILLEGAL_OPERATION);
         }
 
         List<RepairPoolOrgRel> repairPoolOrgRels = orgRelMapper.selectList(
                 new LambdaQueryWrapper<RepairPoolOrgRel>()
-                        .eq(RepairPoolOrgRel::getRepairPoolCode, code)
+                        .eq(RepairPoolOrgRel::getRepairPoolCode, repairPool.getCode())
                         .eq(RepairPoolOrgRel::getDelFlag, CommonConstant.DEL_FLAG_0));
         if (CollUtil.isNotEmpty(repairPoolOrgRels)) {
             String orgStrs = StrUtil.join(",", repairPoolOrgRels.stream().map(RepairPoolOrgRel::getOrgCode).collect(Collectors.toList()));
