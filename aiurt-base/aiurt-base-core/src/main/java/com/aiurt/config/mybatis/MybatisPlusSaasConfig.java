@@ -3,7 +3,6 @@ package com.aiurt.config.mybatis;
 import com.aiurt.common.util.oConvertUtils;
 import com.baomidou.mybatisplus.extension.plugins.MybatisPlusInterceptor;
 import com.baomidou.mybatisplus.extension.plugins.handler.TenantLineHandler;
-import com.baomidou.mybatisplus.extension.plugins.inner.DataPermissionInterceptor;
 import com.baomidou.mybatisplus.extension.plugins.inner.PaginationInnerInterceptor;
 import com.baomidou.mybatisplus.extension.plugins.inner.TenantLineInnerInterceptor;
 import net.sf.jsqlparser.expression.Expression;
@@ -70,7 +69,7 @@ public class MybatisPlusSaasConfig {
             }
         }));
         // 添加权限过滤插件，权限过滤插件需要在分页插件之前执行
-        interceptor.addInnerInterceptor(new DataPermissionInterceptor( new CustomizeDataPermissionHandler()));
+//        interceptor.addInnerInterceptor(new DataPermissionInterceptor( new CustomizeDataPermissionHandler()));
         interceptor.addInnerInterceptor(new PaginationInnerInterceptor());
         return interceptor;
     }
