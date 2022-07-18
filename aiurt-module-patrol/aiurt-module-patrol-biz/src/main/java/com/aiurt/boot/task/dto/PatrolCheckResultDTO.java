@@ -18,6 +18,11 @@ import java.util.List;
 @EqualsAndHashCode(callSuper = true)
 public class PatrolCheckResultDTO extends PatrolCheckResult {
     /**
+     * 巡检人
+     */
+    @ApiModelProperty(value = "巡检人")
+     private  String checkUserName;
+    /**
      * 翻译的检修值
      */
     @ApiModelProperty(value = "检查值名称")

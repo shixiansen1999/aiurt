@@ -217,6 +217,8 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
                         }
                     });
             }
+            String userName = patrolTaskMapper.getUserName(c.getUserId());
+            c.setCheckUserName(userName);
         });
         // 统计检查项中正常项的数据
         long normalItem = Optional.ofNullable(checkResultList).orElseGet(Collections::emptyList)
@@ -390,6 +392,8 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
                             }
                         });
                     }
+                     String userName = patrolTaskMapper.getUserName(e.getUserId());
+                    e.setCheckUserName(userName);
                     //获取这个单号下一个巡检项的所有附件
                     List<PatrolAccessoryDTO> patrolAccessoryDto = patrolAccessoryMapper.getAllAccessory(patrolTaskDevice.getId(), e.getId());
                     e.setAccessoryDTOList(patrolAccessoryDto);
