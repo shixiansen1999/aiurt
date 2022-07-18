@@ -742,7 +742,7 @@ public class LoginController {
 		}
 	}
 	/**
-	 *网页授权登录
+	 *根据token查询用户信息
 	 * @return
 	 */
 	@ApiOperation("根据token查询用户信息")

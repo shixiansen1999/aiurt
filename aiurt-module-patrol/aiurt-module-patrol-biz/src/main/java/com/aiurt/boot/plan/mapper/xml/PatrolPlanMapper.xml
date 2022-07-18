@@ -249,7 +249,8 @@
     <select id="selectStandardList" resultType="com.aiurt.boot.plan.dto.StandardDTO">
         SELECT
         t2.id as standardId,
-        t2.`name` as standardName
+        t2.`name` as standardName,
+        t2.`code` as standardCode
         FROM
         patrol_plan t1
         LEFT JOIN patrol_plan_standard t3 ON t1.id=t3.plan_id
