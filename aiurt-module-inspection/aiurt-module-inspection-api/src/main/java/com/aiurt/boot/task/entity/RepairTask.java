@@ -110,9 +110,9 @@ public class RepairTask implements Serializable {
     @ApiModelProperty(value = "提交人")
     private java.lang.String sumitUserName;
     /**检修人点击开始执行任务的时间*/
-    @Excel(name = "检修人点击开始执行任务的时间", width = 15, format = "yyyy-MM-dd")
-    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
-    @DateTimeFormat(pattern="yyyy-MM-dd")
+    @Excel(name = "检修人点击开始执行任务的时间", width = 15, format = "yyyy-MM-dd HH:mm")
+    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm")
+    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm")
     @ApiModelProperty(value = "检修人点击开始执行任务的时间")
     private java.util.Date beginTime;
     /**提交时间，精确到秒*/
