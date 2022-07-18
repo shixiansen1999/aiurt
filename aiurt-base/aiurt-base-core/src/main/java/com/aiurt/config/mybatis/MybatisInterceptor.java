@@ -26,6 +26,7 @@ import java.util.Properties;
 @Intercepts({ @Signature(type = Executor.class, method = "update", args = { MappedStatement.class, Object.class }) })
 public class MybatisInterceptor implements Interceptor {
 
+
 	@Override
 	public Object intercept(Invocation invocation) throws Throwable {
 		MappedStatement mappedStatement = (MappedStatement) invocation.getArgs()[0];

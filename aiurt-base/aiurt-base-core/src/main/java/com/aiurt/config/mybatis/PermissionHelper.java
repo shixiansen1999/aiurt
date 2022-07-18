@@ -1,7 +1,13 @@
 package com.aiurt.config.mybatis;
 
+import com.aiurt.config.mybatis.filter.PermissionFilter;
+import org.jeecg.common.system.vo.SysPermissionDataRuleModel;
+import org.jeecg.common.util.SpringContextUtils;
+
 import java.util.ArrayList;
 import java.util.List;
+
+import static com.aiurt.common.system.util.JeecgDataAutorUtils.MENU_DATA_AUTHOR_RULES;
 
 /**
  * @author wgp
@@ -44,6 +50,17 @@ public class PermissionHelper {
      */
     public static void clear() {
         LOCAL_PERMISSION.remove();
+    }
+
+    /**
+     * 获取请求对应的数据权限规则
+     *
+     * @return
+     */
+    @SuppressWarnings("unchecked")
+    public static synchronized List<SysPermissionDataRuleModel> loadDataSearchConditon() {
+        return (List<SysPermissionDataRuleModel>) SpringContextUtils.getHttpServletRequest().getAttribute(MENU_DATA_AUTHOR_RULES);
+
     }
 
 }
