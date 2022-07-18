@@ -7,6 +7,7 @@ import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.constant.PatrolConstant;
 import com.aiurt.boot.manager.PatrolManager;
+import com.aiurt.boot.standard.dto.StationDTO;
 import com.aiurt.boot.standard.entity.PatrolStandard;
 import com.aiurt.boot.standard.entity.PatrolStandardItems;
 import com.aiurt.boot.standard.mapper.PatrolStandardItemsMapper;
@@ -173,7 +174,6 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
     public Map<String, Object> selectBillInfoByNumber(String patrolNumber) {
         PatrolTaskDeviceParam taskDeviceParam = Optional.ofNullable(patrolTaskDeviceMapper.selectBillInfoByNumber(patrolNumber))
                 .orElseGet(PatrolTaskDeviceParam::new);
-
         // 计算巡检时长
         Date startTime = taskDeviceParam.getStartTime();
         Date checkTime = taskDeviceParam.getCheckTime();
@@ -181,15 +181,43 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
             long duration = DateUtil.between(startTime, checkTime, DateUnit.MINUTE);
             taskDeviceParam.setDuration(duration);
         }
-
+        StationDTO stationDTO = new StationDTO();
+        stationDTO.setLineCode(taskDeviceParam.getLineCode());
+        stationDTO.setStationCode(taskDeviceParam.getStationCode());
+        stationDTO.setPositionCode(taskDeviceParam.getPositionCode());
+        List<StationDTO> stationDTOS = new ArrayList<>();
+        stationDTOS.add(stationDTO);
+        String s = manager.translateStation(stationDTOS);
+        //设备的位置
+        if(ObjectUtil.isNotEmpty(taskDeviceParam.getDeviceCode()))
+        {
+            taskDeviceParam.setDevicePositionName(s);
+        }
+        else {
+            taskDeviceParam.setInspectionPositionName(s);
+            taskDeviceParam.setDevicePositionName(null);
+        }
         // 查询同行人信息
         QueryWrapper<PatrolAccompany> accompanyWrapper = new QueryWrapper<>();
         accompanyWrapper.lambda().eq(PatrolAccompany::getTaskDeviceCode, patrolNumber);
         List<PatrolAccompany> accompanyList = patrolAccompanyMapper.selectList(accompanyWrapper);
         taskDeviceParam.setAccompanyInfo(accompanyList);
-
         List<PatrolCheckResultDTO> checkResultList = patrolCheckResultMapper.getListByTaskDeviceId(taskDeviceParam.getId());
-
+        checkResultList.stream().forEach(c->{
+            if(ObjectUtil.isNotNull(c.getDictCode()))
+            {
+                    List<DictModel> list = sysBaseAPI.getDictItems(c.getDictCode());
+                    list.stream().forEach(l->{
+                        if(2==c.getInputType())
+                        {
+                            if(l.getValue().equals(c.getOptionValue()))
+                            {
+                                c.setCheckDictName(l.getTitle());
+                            }
+                        }
+                    });
+            }
+        });
         // 统计检查项中正常项的数据
         long normalItem = Optional.ofNullable(checkResultList).orElseGet(Collections::emptyList)
                 .stream().filter(l -> PatrolConstant.RESULT_NORMAL.equals(l.getCheckResult())).count();
@@ -198,7 +226,6 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
                 .stream().filter(l -> PatrolConstant.RESULT_EXCEPTION.equals(l.getCheckResult())).count();
         taskDeviceParam.setNormalItem(normalItem);
         taskDeviceParam.setExceptionItem(exceptionItem);
-
         // 放入项目的附件信息
         Optional.ofNullable(checkResultList).orElseGet(Collections::emptyList).stream().forEach(l -> {
             QueryWrapper<PatrolAccessory> wrapper = new QueryWrapper<>();
@@ -206,7 +233,6 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
             List<PatrolAccessory> accessoryList = patrolAccessoryMapper.selectList(wrapper);
             l.setAccessoryInfo(accessoryList);
         });
-
         // 构建巡检项目树
         List<PatrolCheckResultDTO> tree = getTree(checkResultList, "0");
         Map<String, Object> map = new HashMap<>();
@@ -233,7 +259,7 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
                 .collect(Collectors.toList());
         // 构建根节点下的子树
         tree.stream().forEach(l -> {
-            List<PatrolCheckResultDTO> subTree = buildTree(subList, l.getId());
+            List<PatrolCheckResultDTO> subTree = buildTree(subList, l.getOldId());
             l.setChildren(subTree);
         });
         return tree;
@@ -292,13 +318,6 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
         });
         // 批量添加巡检项目
         int resultList = patrolCheckResultMapper.addResultList(addResultList);
-
-//        QueryWrapper<PatrolCheckResultDTO> resultWrapper = new QueryWrapper<>();
-//        resultWrapper.lambda().eq(PatrolCheckResult::getTaskDeviceId, taskDeviceId)
-//                .eq(PatrolCheckResult::getTaskStandardId, taskStandard.getId());
-//
-//        List<PatrolCheckResult> resultList = buildResultTree(Optional.ofNullable(patrolCheckResultMapper.selectList(resultWrapper))
-//                .orElseGet(Collections::emptyList));
         return resultList;
     }
 
@@ -353,7 +372,6 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
                         .eq(PatrolTaskDevice::getId, patrolTaskDevice.getId());
                 patrolTaskDeviceMapper.update(patrolTaskDevice, updateWrapper);
                  copyItems(patrolTaskDevice);
-
             }
            List<PatrolCheckResultDTO> patrolCheckResultDTOS = patrolCheckResultMapper.getCheckResult(taskDeviceId);
                 patrolCheckResultDTOS.stream().forEach(e ->
@@ -362,6 +380,15 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
                     {
                         List<DictModel> list = sysBaseAPI.getDictItems(e.getDictCode());
                         e.setList(list);
+                        list.stream().forEach(l->{
+                            if(2==e.getInputType())
+                            {
+                                if(l.getValue().equals(e.getOptionValue()))
+                                {
+                                    e.setCheckDictName(l.getTitle());
+                                }
+                            }
+                        });
                     }
                     //获取这个单号下一个巡检项的所有附件
                     List<PatrolAccessoryDTO> patrolAccessoryDto = patrolAccessoryMapper.getAllAccessory(patrolTaskDevice.getId(), e.getId());

@@ -188,7 +188,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
                     // 计划令编号和图片地址
                     task.setPlanOrderCode(patrolAppointInfoDTO.getPlanOrderCode());
                     task.setPlanOrderCodeUrl(patrolAppointInfoDTO.getPlanOrderCodeUrl());
-                    if(ObjectUtil.isEmpty(task.getSource()))
+                    if(ObjectUtil.isEmpty(patrolTask.getSource()))
                     {
                         task.setSource(PatrolConstant.TASK_COMMON);
                     }

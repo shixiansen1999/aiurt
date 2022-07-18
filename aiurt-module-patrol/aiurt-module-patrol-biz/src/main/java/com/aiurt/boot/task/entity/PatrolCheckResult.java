@@ -93,7 +93,7 @@ public class PatrolCheckResult implements Serializable {
 	/**关联的数据字典项或开关项结果值*/
 	@Excel(name = "关联的数据字典项或开关项结果值", width = 15)
     @ApiModelProperty(value = "关联的数据字典项或开关项结果值")
-    private java.lang.Integer optionValue;
+    private String optionValue;
 	/**手动输入结果*/
 	@Excel(name = "手动输入结果", width = 15)
     @ApiModelProperty(value = "手动输入结果")

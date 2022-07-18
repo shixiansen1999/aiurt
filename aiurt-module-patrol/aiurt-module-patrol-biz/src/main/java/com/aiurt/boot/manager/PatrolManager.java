@@ -79,6 +79,7 @@ public class PatrolManager
             if (StrUtil.isNotEmpty(stationDTO.getPositionCode())) {
                 String positionName = patrolManagerMapper.translatePosition(stationDTO.getPositionCode());
                 if (StrUtil.isNotEmpty(positionName)) {
+                    builder.append("/");
                     builder.append(positionName);
                 }
             }
