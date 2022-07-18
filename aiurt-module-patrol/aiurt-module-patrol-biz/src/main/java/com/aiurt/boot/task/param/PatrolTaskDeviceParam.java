@@ -2,6 +2,7 @@ package com.aiurt.boot.task.param;
 
 import com.aiurt.boot.task.entity.PatrolAccompany;
 import com.aiurt.boot.task.entity.PatrolTaskDevice;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
@@ -106,11 +107,18 @@ public class PatrolTaskDeviceParam extends PatrolTaskDevice {
     @ApiModelProperty(value = "站点名称")
     private String stationName;
     /**
-     * 位置名称
+     * 设备位置
      */
-    @Excel(name = "位置名称", width = 15)
-    @ApiModelProperty(value = "位置名称")
-    private String positionName;
+    @Excel(name = "设备位置", width = 15)
+    @ApiModelProperty(value = "设备位置")
+    private String devicePositionName;
+    /**
+     * 巡检位置
+     */
+    @Excel(name = "巡检位置", width = 15)
+    @ApiModelProperty(value = "巡检位置")
+    @TableField(exist = false)
+    private String inspectionPositionName;
     /**
      * 巡检时长，单位分钟
      */

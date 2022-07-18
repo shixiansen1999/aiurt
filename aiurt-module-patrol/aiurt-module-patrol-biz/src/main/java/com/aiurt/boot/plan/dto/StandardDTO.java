@@ -20,9 +20,13 @@ public class StandardDTO {
     /**主键id*/
     @TableId(type = IdType.ASSIGN_ID)
     @ApiModelProperty(value = "主键id")
-    private java.lang.String id;
+    private java.lang.String standardId;
     /**巡检表名*/
     @Excel(name = "巡检表名", width = 15)
     @ApiModelProperty(value = "巡检表名")
-    private java.lang.String name;
+    private java.lang.String standardName;
+    /**巡检表名*/
+    @Excel(name = "巡检表Code", width = 15)
+    @ApiModelProperty(value = "巡检表code")
+    private java.lang.String standardCode;
 }

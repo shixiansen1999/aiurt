@@ -98,14 +98,12 @@
         su.realname username,
         cl.line_name,
         cs.station_name,
-        csp.position_name,
         ptd.*
         FROM
         patrol_task_device ptd
         JOIN patrol_task_standard pts ON ptd.task_standard_id = pts.id
         LEFT JOIN cs_line cl ON ptd.line_code = cl.line_code
         LEFT JOIN cs_station cs ON ptd.station_code = cs.station_code
-        LEFT JOIN cs_station_position csp ON ptd.position_code = csp.position_code
         LEFT JOIN device_type dt ON pts.device_type_code = dt.`code`
         LEFT JOIN sys_user su ON ptd.user_id = su.id
         LEFT JOIN device d ON ptd.device_code = d.`code`
