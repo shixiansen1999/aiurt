@@ -8,6 +8,7 @@ import com.aiurt.boot.constant.DictConstant;
 import com.aiurt.boot.constant.InspectionConstant;
 import com.aiurt.boot.manager.InspectionManager;
 import com.aiurt.boot.manager.dto.MajorDTO;
+import com.aiurt.boot.manager.dto.OrgDTO;
 import com.aiurt.boot.manager.utils.CodeGenerateUtils;
 import com.aiurt.boot.plan.dto.*;
 import com.aiurt.boot.plan.entity.*;
@@ -616,6 +617,31 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
     }
 
     /**
+     * app指派任务下拉接口
+     *
+     * @param code 检修计划code
+     */
+    @Override
+    public List<OrgDTO> queryUserDownList(String code) {
+        List<OrgDTO> result = new ArrayList<>();
+
+        if (StrUtil.isEmpty(code)) {
+            return result;
+        }
+
+        List<RepairPoolOrgRel> repairPoolOrgRels = orgRelMapper.selectList(
+                new LambdaQueryWrapper<RepairPoolOrgRel>()
+                        .eq(RepairPoolOrgRel::getRepairPoolCode, code)
+                        .eq(RepairPoolOrgRel::getDelFlag, CommonConstant.DEL_FLAG_0));
+        if (CollUtil.isNotEmpty(repairPoolOrgRels)) {
+            String orgStrs = StrUtil.join(",", repairPoolOrgRels.stream().map(RepairPoolOrgRel::getOrgCode).collect(Collectors.toList()));
+            result = manager.queryUserByOrdCode(orgStrs);
+        }
+
+        return result;
+    }
+
+    /**
      * 生成检修设备清单
      *
      * @param oldStaId        计划中的关联的检修标准id
@@ -848,6 +874,7 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
     public IPage<RepairPool> listPage(Page<RepairPool> page, ManualTaskReq manualTaskReq) {
         // 处理查询参数
         QueryWrapper<RepairPool> queryWrapper = doQuery(manualTaskReq);
+//        PermissionHelper.addFilterList();
         page = baseMapper.selectPage(page, queryWrapper);
 
         page.getRecords().forEach(re -> {

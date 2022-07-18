@@ -1,6 +1,7 @@
 package com.aiurt.boot.plan.service;
 
 import com.aiurt.boot.manager.dto.MajorDTO;
+import com.aiurt.boot.manager.dto.OrgDTO;
 import com.aiurt.boot.plan.dto.*;
 import com.aiurt.boot.plan.entity.RepairPool;
 import com.aiurt.boot.plan.entity.RepairPoolCodeContent;
@@ -163,4 +164,10 @@ public interface IRepairPoolService extends IService<RepairPool> {
      * @param taskCode
      */
     void generate(RepairPool repairPool, String taskId, String taskCode);
+
+    /**
+     * app指派任务下拉接口
+     * @param code
+     */
+    List<OrgDTO> queryUserDownList(String code);
 }

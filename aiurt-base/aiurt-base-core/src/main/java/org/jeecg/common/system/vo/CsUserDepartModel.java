@@ -2,16 +2,14 @@ package org.jeecg.common.system.vo;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
-import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModelProperty;
+import lombok.Data;
 import org.jeecgframework.poi.excel.annotation.Excel;
-import org.springframework.format.annotation.DateTimeFormat;
-
-import java.util.Date;
 /**
  * 用户组织机构model
  * @author: lkj
  */
+@Data
 public class CsUserDepartModel {
 
     /**主键*/
