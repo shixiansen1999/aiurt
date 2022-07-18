@@ -1,7 +1,6 @@
 package com.aiurt.common.system.util;
 
 import cn.hutool.core.util.ObjectUtil;
-import com.aiurt.config.mybatis.constant.DataPermRuleType;
 import org.jeecg.common.system.vo.SysPermissionDataRuleModel;
 import org.jeecg.common.system.vo.SysUserCacheInfo;
 import org.jeecg.common.util.SpringContextUtils;
@@ -38,33 +37,22 @@ public class JeecgDataAutorUtils {
     public static synchronized void installDataSearchConditon(HttpServletRequest request, List<SysPermissionDataRuleModel> dataRules) {
         @SuppressWarnings("unchecked")
         // 1.先从request获取MENU_DATA_AUTHOR_RULES，如果存则获取到LIST
-                List<SysPermissionDataRuleModel> list = (List<SysPermissionDataRuleModel>) loadDataSearchConditon();
+        List<SysPermissionDataRuleModel> list = (List<SysPermissionDataRuleModel>) loadDataSearchConditon();
 
-        List<SysPermissionDataRuleModel> filterRules = (List<SysPermissionDataRuleModel>) loadDataSearchConditon(FILTER_DATA_AUTHOR_RULES);
+        // 2.如果不存在，则new一个list
         if (list == null) {
-            // 2.如果不存在，则new一个list
             list = new ArrayList<SysPermissionDataRuleModel>();
         }
-        if (filterRules == null) {
-            // 3.如果不存在，则一样new一个list
-            filterRules = new ArrayList<SysPermissionDataRuleModel>();
-        }
 
-        // 4. 添加过滤器
+        // 3. 添加过滤器
         for (SysPermissionDataRuleModel tsDataRule : dataRules) {
             if (ObjectUtil.isNotEmpty(tsDataRule)) {
-                if (DataPermRuleType.isValid(tsDataRule.getRuleConditions())) {
-                    filterRules.add(tsDataRule);
-                } else {
-                    list.add(tsDataRule);
-                }
+                list.add(tsDataRule);
             }
         }
 
-        // 5.往list里面增量存指
+        // 4.往list里面增量存指
         request.setAttribute(MENU_DATA_AUTHOR_RULES, list);
-        // 6.拦截器过滤的数据权限
-        request.setAttribute(FILTER_DATA_AUTHOR_RULES, filterRules);
     }
 
     /**
@@ -78,15 +66,6 @@ public class JeecgDataAutorUtils {
 
     }
 
-    /**
-     * 获取请求对应的数据权限规则
-     *
-     * @return
-     */
-    @SuppressWarnings("unchecked")
-    public static synchronized List<SysPermissionDataRuleModel> loadDataSearchConditon(String requestName) {
-        return (List<SysPermissionDataRuleModel>) SpringContextUtils.getHttpServletRequest().getAttribute(requestName);
-    }
 
     /**
      * 获取请求对应的数据权限SQL

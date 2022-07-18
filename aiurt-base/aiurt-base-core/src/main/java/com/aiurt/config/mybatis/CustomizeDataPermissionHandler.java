@@ -6,7 +6,6 @@ import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.api.CommonAPI;
 import com.aiurt.common.aspect.annotation.DataScope;
 import com.aiurt.common.exception.AiurtBootException;
-import com.aiurt.common.system.util.JeecgDataAutorUtils;
 import com.aiurt.config.mybatis.constant.DataPermRuleType;
 import com.aiurt.config.mybatis.filter.DataScopeParam;
 import com.aiurt.config.mybatis.filter.PermissionFilter;
@@ -31,8 +30,6 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
-
-import static com.aiurt.common.system.util.JeecgDataAutorUtils.FILTER_DATA_AUTHOR_RULES;
 
 /**
  * @author wgp
@@ -175,7 +172,7 @@ public class CustomizeDataPermissionHandler implements DataPermissionHandler {
         List<CsUserSubsystemModel> subsystemByUserId = commonAPI.getSubsystemByUserId(id);
 
         // 从request域里面获取过滤规则
-        List<SysPermissionDataRuleModel> list = JeecgDataAutorUtils.loadDataSearchConditon(FILTER_DATA_AUTHOR_RULES);
+        List<SysPermissionDataRuleModel> list = null;
 
         // 遍历，如果是DataPermRuleType里面的类型就需要拼接
         if (CollUtil.isNotEmpty(list)) {
