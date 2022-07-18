@@ -128,9 +128,9 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         PatrolPlan patrolPlan = Optional.ofNullable(patrolPlanMapper.selectOne(new QueryWrapper<PatrolPlan>().lambda().eq(PatrolPlan::getCode, taskParam.getPlanCode())))
                 .orElseGet(PatrolPlan::new);
         // 获取任务的专业信息
-        List<String> majorInfo = patrolPlanMapper.getMajorInfoByPlanId(patrolPlan.getId());
+        List<String> majorInfo = patrolPlanMapper.getMajorInfoByPlanId(taskParam.getId());
         // 获取任务的子系统信息
-        List<String> subsystemInfo = patrolPlanMapper.getSubsystemInfoByPlanId(patrolPlan.getId());
+        List<String> subsystemInfo = patrolPlanMapper.getSubsystemInfoByPlanId(taskParam.getId());
         taskParam.setDepartInfo(organizationInfo);
         taskParam.setStationInfo(stationInfo);
         taskParam.setUserInfo(userList);

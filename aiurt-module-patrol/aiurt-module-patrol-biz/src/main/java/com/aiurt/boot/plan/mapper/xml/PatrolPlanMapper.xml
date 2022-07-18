@@ -121,15 +121,18 @@
         ORDER BY create_time DESC
     </select>
     <select id="getMajorInfoByPlanId" resultType="java.lang.String">
-        SELECT DISTINCT
+      SELECT
+        DISTINCT
         cm.major_name
         FROM
-        patrol__standard pps
-        JOIN cs_major cm ON pps.profession_code = cm.major_code
+        patrol_task_standard pps
+    JOIN
+        cs_major cm
+            ON pps.profession_code = cm.major_code
         WHERE
         pps.del_flag=0
         <if test="planId != null and planId != ''">
-            and pps.plan_id = #{planId}
+            and pps.task_id  = #{planId}
         </if>
 
     </select>
@@ -138,12 +141,12 @@
         SELECT DISTINCT
         cs.system_name
         FROM
-        patrol_plan_standard pps
+        patrol_task_standard pps
         JOIN cs_subsystem cs ON pps.subsystem_code = cs.system_code
         WHERE
         pps.del_flag = 0
         <if test="planId != null and planId != ''">
-            and pps.plan_id = #{planId}
+            and pps.task_id = #{planId}
         </if>
 
     </select>
