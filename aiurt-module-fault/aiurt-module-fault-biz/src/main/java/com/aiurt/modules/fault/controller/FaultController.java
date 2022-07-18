@@ -65,12 +65,17 @@ public class FaultController extends BaseController<Fault, IFaultService> {
         if (StrUtil.isNotBlank(stationCode)) {
             fault.setStationCode(null);
         }
+        String faultPhenomenon = fault.getFaultPhenomenon();
+        if (StrUtil.isNotBlank(faultPhenomenon)) {
+            fault.setFaultPhenomenon(null);
+        }
         QueryWrapper<Fault> queryWrapper = QueryGenerator.initQueryWrapper(fault, req.getParameterMap());
         Page<Fault> page = new Page<>(pageNo, pageSize);
         //修改查询条件
         queryWrapper.apply(StrUtil.isNotBlank(stationCode), "(line_code = {0} or station_code = {0} or station_position_code = {0})", stationCode);
         queryWrapper.apply(StrUtil.isNotBlank(fault.getDevicesIds()), "(code in (select fault_code from fault_device where device_code like  concat('%', {0}, '%')))", fault.getDevicesIds());
-
+        queryWrapper.apply(StrUtil.isNotBlank(faultPhenomenon), "(fault_phenomenon like concat('%', {0}, '%') or code like  concat('%', {0}, '%'))", faultPhenomenon);
+        queryWrapper.orderByDesc("create_time");
         IPage<Fault> pageList = faultService.page(page, queryWrapper);
 
         List<Fault> records = pageList.getRecords();
