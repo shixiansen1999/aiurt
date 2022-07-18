@@ -659,6 +659,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         }
 
         // 设备
+        fault.setDeviceCodes(repairRecordDTO.getDeviceCodes());
         dealDevice(fault, repairRecordDTO.getDeviceList());
 
         // todo 计算库存
