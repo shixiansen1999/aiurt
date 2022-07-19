@@ -538,7 +538,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         } else {
             LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
             LambdaUpdateWrapper<PatrolTask> updateWrapper = new LambdaUpdateWrapper<>();
-            if (patrolTaskDTO.getAuditor() == 1) {
+            if (PatrolConstant.TASK_CHECK.equals(patrolTask.getAuditor())) {
                 updateWrapper.set(PatrolTask::getStatus, 6)
                         .set(PatrolTask::getEndUserId, sysUser.getId())
                         .set(PatrolTask::getSignUrl, patrolTaskDTO.getSignUrl())
@@ -551,18 +551,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
                         .set(PatrolTask::getSubmitTime, LocalDateTime.now())
                         .eq(PatrolTask::getId, patrolTaskDTO.getId());
             }
-            update(updateWrapper);
-            List<PatrolTaskDevice> patrolTaskDevice = patrolTaskDeviceMapper.selectList(new LambdaQueryWrapper<PatrolTaskDevice>().eq(PatrolTaskDevice::getTaskId, patrolTaskDTO.getId()));
-            patrolTaskDevice.stream().forEach(e -> {
-                List<PatrolCheckResult> patrolCheckResultList = patrolCheckResultMapper.selectList(new LambdaQueryWrapper<PatrolCheckResult>().eq(PatrolCheckResult::getTaskDeviceId, e.getId()));
-                List<PatrolCheckResult> collect = patrolCheckResultList.stream().filter(s -> s.getCheckResult() != null && PatrolConstant.RESULT_EXCEPTION .equals(s.getCheckResult())).collect(Collectors.toList());
-                if (CollUtil.isNotEmpty(collect)) {
-                    e.setCheckResult(PatrolConstant.RESULT_EXCEPTION);
-                } else {
-                    e.setCheckResult(PatrolConstant.RESULT_NORMAL);
-                }
-                patrolTaskDeviceMapper.updateById(e);
-            });
+            patrolTaskMapper.update(new PatrolTask(),updateWrapper);
         }
 
     }

@@ -87,7 +87,7 @@ public class PatrolTaskDeviceDTO {
     /**巡检结果：0正常、1异常*/
     @Excel(name = "巡检结果：0正常、1异常", width = 15)
     @ApiModelProperty(value = "巡检结果：0正常、1异常")
-    private java.lang.Integer checkResult;
+    private String checkResult;
     /**工单提交用户ID*/
     @Excel(name = "工单提交用户ID", width = 15)
     @ApiModelProperty(value = "工单提交用户ID")
