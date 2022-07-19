@@ -63,6 +63,11 @@ public class CheckListDTO {
     @TableField(exist = false)
     private String majorName;
 
+    /**设备专业名称*/
+    @ApiModelProperty(value = "设备专业名称")
+    @TableField(exist = false)
+    private String deviceMajorName;
+
     /**系统编码*/
     @ApiModelProperty(value = "系统编码")
     @TableField(exist = false)
@@ -72,6 +77,11 @@ public class CheckListDTO {
     @ApiModelProperty(value = "系统名称")
     @TableField(exist = false)
     private String systemName;
+
+    /**设备系统名称*/
+    @ApiModelProperty(value = "设备系统名称")
+    @TableField(exist = false)
+    private String deviceSystemName;
 
     /**设备类型编码*/
     @ApiModelProperty(value = "设备类型编码")
@@ -113,6 +123,16 @@ public class CheckListDTO {
     @ApiModelProperty(value = "站点位置")
     @TableField(exist = false)
     private String sitePosition;
+
+    /**站点名称*/
+    @ApiModelProperty(value = "站点名称")
+    @TableField(exist = false)
+    private String stationsName;
+
+    /**组织机构*/
+    @ApiModelProperty(value = "组织机构")
+    @TableField(exist = false)
+    private String organization;
 
     /**检修位置*/
     @ApiModelProperty(value = "检修位置")
