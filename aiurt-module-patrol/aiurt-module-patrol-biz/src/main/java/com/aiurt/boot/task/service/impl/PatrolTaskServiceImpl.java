@@ -367,15 +367,15 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
             arrayList.add(userDTO);
         }
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-       if(orgCoed.getIdentity().equals(PatrolConstant.TASK_INIT))
-       {
-          arrayList.stream().forEach(e->{
-               List<PatrolTaskUserContentDTO> userList = e.getUserList();
-               List<PatrolTaskUserContentDTO> collect = userList.stream().filter(u -> !u.getId().equals(sysUser.getId())).collect(Collectors.toList());
-               e.setUserList(collect);
-          });
-          return arrayList;
-       }
+        if(ObjectUtil.isNotNull(orgCoed.getIdentity()))
+        {
+            arrayList.stream().forEach(e->{
+                List<PatrolTaskUserContentDTO> userList = e.getUserList();
+                List<PatrolTaskUserContentDTO> collect = userList.stream().filter(u -> !u.getId().equals(sysUser.getId())).collect(Collectors.toList());
+                e.setUserList(collect);
+            });
+            return arrayList;
+        }
         else
         {
             return arrayList;
