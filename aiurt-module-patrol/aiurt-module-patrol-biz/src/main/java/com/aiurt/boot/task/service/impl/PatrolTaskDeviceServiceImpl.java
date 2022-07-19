@@ -131,9 +131,14 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
             {
                 e.setDevicePosition(e.getDevicePosition());
             }
-            else {
+            if(ObjectUtil.isNotEmpty(e.getCustomPosition()))
+             {
                 e.setInspectionPosition(e.getDevicePosition()+"/"+e.getCustomPosition());
                 e.setDevicePosition(null);
+            }
+            else
+            {
+                e.setInspectionPosition("-");
             }
             PatrolStandard taskStandardName = patrolTaskDeviceMapper.getStandardName(e.getId());
             e.setTaskStandardName(taskStandardName.getName());
