@@ -149,7 +149,7 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                 ArrayList<String> userList = new ArrayList<>();
                 collect.forEach(o -> {
                     LoginUser userById = sysBaseAPI.getUserById(o);
-                    userList.add(userById.getUsername());
+                    userList.add(userById.getRealname());
                 });
                 e.setOverhaulName(userList);
             }
