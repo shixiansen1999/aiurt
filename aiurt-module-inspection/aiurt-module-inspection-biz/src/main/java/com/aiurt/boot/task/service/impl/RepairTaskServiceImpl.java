@@ -719,7 +719,7 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
             }
             repairTaskMapper.updateById(repairTask);
         }else {
-            throw new AiurtBootException("检修单未提交完成！");
+            throw new AiurtBootException("小主，该检修任务的检修单还没有提交完成哦！");
         }
 
     }
