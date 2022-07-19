@@ -55,7 +55,9 @@ public class TaskPool implements Job {
 
     @Override
     public void execute(JobExecutionContext context) throws JobExecutionException {
+        log.info("******正在生成巡检任务记录...******");
         generateTaskData();
+        log.info("******巡检任务记录生成完成！*******");
     }
 
     public void execute() {
@@ -68,6 +70,7 @@ public class TaskPool implements Job {
     /**
      * 每天生成巡检任务池数据
      */
+
     private void generateTaskData() {
 
         // 获取计划启用的并且在有效期内的计划列表
