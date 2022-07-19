@@ -221,4 +221,9 @@ public class RepairTaskDTO {
     @TableField(exist = false)
     @ApiModelProperty(value = "是否与设备相关，0否1是")
     private Integer isAppointDevice;
+
+    /**搜索*/
+    @ApiModelProperty(value = "搜索")
+    @TableField(exist = false)
+    private String search;
 }

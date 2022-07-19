@@ -92,6 +92,8 @@ public class SysFileController {
 
 		String userId = ((LoginUser)SecurityUtils.getSubject().getPrincipal()).getId();
 
+		String userName = ((LoginUser)SecurityUtils.getSubject().getPrincipal()).getUsername();
+
 		//查询条件拼接
 		LambdaQueryWrapper<SysFile> queryWrapper = new LambdaQueryWrapper<SysFile>()
 				.orderByDesc(SysFile::getId)
@@ -159,7 +161,7 @@ public class SysFileController {
 		pageList.getRecords().forEach(e -> {
 			SysFileVO vo = new SysFileVO();
 			BeanUtils.copyProperties(e, vo);
-			if (e.getCreateBy().equals(userId)) {
+			if (e.getCreateBy().equals(userName)) {
 				vo.setAllFlag(1);
 			} else {
 				vo.setAllFlag(0);
