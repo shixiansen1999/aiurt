@@ -135,9 +135,9 @@ public class RepairTask implements Serializable {
     @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
     @ApiModelProperty(value = "确认时间，精确到秒")
     private java.util.Date confirmTime;
-    /**确认签名url*/
-    @Excel(name = "确认签名url", width = 15)
-    @ApiModelProperty(value = "确认签名url")
+    /**提交签名url*/
+    @Excel(name = "提交签名url", width = 15)
+    @ApiModelProperty(value = "提交签名url")
     private java.lang.String confirmUrl;
     /**验收人id，关联sys_user的id*/
     @Excel(name = "验收人id，关联sys_user的id", width = 15)

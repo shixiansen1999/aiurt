@@ -32,4 +32,9 @@ public class ExamineDTO {
     @TableField(exist = false)
     @ApiModelProperty(value = "备注")
     private String content;
+
+    /**提交签名*/
+    @TableField(exist = false)
+    @ApiModelProperty(value = "提交签名")
+    private String confirmUrl;
 }
