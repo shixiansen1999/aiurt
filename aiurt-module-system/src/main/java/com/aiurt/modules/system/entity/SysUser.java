@@ -112,22 +112,22 @@ public class SysUser implements Serializable {
     /**
      * 部门id(当前选择登录部门)
      */
-    @ApiModelProperty(value = " 部门id(当前选择登录部门)")
+    @ApiModelProperty(value = " 部门id(所属部门)")
     @Dict(dictTable ="sys_depart",dicText = "depart_name",dicCode = "id")
     private String orgId;
     /**
      * 部门code(当前选择登录部门)
      */
-    @ApiModelProperty(value = " 部门code(当前选择登录部门)")
+    @ApiModelProperty(value = " 部门code(所属部门)")
     private String orgCode;
     /**
      * 部门name(当前选择登录部门)
      */
-    @ApiModelProperty(value = " 部门name(当前选择登录部门)")
+    @ApiModelProperty(value = " 部门name(所属部门)")
     private String orgName;
 
     /**部门名称*/
-    @ApiModelProperty(value = " 部门名称")
+    @ApiModelProperty(value = " 所属部门/部门名称")
     private transient String orgCodeTxt;
 
     /**
@@ -207,8 +207,7 @@ public class SysUser implements Serializable {
     /**
      * 负责部门
      */
-    @ApiModelProperty(value = "负责部门")
-    @Excel(name="负责部门",width = 15,dictTable ="sys_depart",dicText = "depart_name",dicCode = "id")
+    @ApiModelProperty(value = "管理负责部门")
     private String departIds;
 
     /**
@@ -268,5 +267,13 @@ public class SysUser implements Serializable {
     @ApiModelProperty(value = "角色编码")
     @TableField(exist = false)
     private String roleCodes;
+
+    @ApiModelProperty(value = "站点id，查询条件")
+    @TableField(exist = false)
+    private String stationId;
+
+    @ApiModelProperty(value = "专业id， 查询条件")
+    @TableField(exist = false)
+    private String majorId;
 
 }

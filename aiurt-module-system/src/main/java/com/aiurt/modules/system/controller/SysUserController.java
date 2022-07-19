@@ -138,22 +138,6 @@ public class SysUserController {
 		Result<IPage<SysUser>> result = new Result<IPage<SysUser>>();
 		QueryWrapper<SysUser> queryWrapper = QueryGenerator.initQueryWrapper(user, req.getParameterMap());
 
-        //update-begin-Author:wangshuai--Date:20211119--for:【vue3】通过部门id查询用户，通过code查询id
-        //部门ID
-        String departId = req.getParameter("departId");
-        if(oConvertUtils.isNotEmpty(departId)){
-            LambdaQueryWrapper<SysUserDepart> query = new LambdaQueryWrapper<>();
-            query.eq(SysUserDepart::getDepId,departId);
-            List<SysUserDepart> list = sysUserDepartService.list(query);
-            List<String> userIds = list.stream().map(SysUserDepart::getUserId).collect(Collectors.toList());
-            //update-begin---author:wangshuai ---date:20220322  for：[issues/I4XTYB]查询用户时，当部门id 下没有分配用户时接口报错------------
-            if(oConvertUtils.listIsNotEmpty(userIds)){
-                queryWrapper.in("id",userIds);
-            }else{
-                return Result.OK();
-            }
-            //update-end---author:wangshuai ---date:20220322  for：[issues/I4XTYB]查询用户时，当部门id 下没有分配用户时接口报错------------
-        }
         //用户ID
         String code = req.getParameter("code");
         if(oConvertUtils.isNotEmpty(code)){
@@ -182,12 +166,9 @@ public class SysUserController {
             Map<String,String>  useDepNames = sysUserService.getDepNamesByUserIds(userIds);
             pageList.getRecords().forEach(item->{
                 item.setOrgCodeTxt(useDepNames.get(item.getId()));
+                getUserDetail(item);
             });
         }
-        List<SysUser> sysUsers = pageList.getRecords();
-        sysUsers.forEach(sysUser -> {
-            getUserDetail(sysUser);
-        });
         result.setSuccess(true);
 		result.setResult(pageList);
 		log.info(pageList.toString());
@@ -205,6 +186,12 @@ public class SysUserController {
         sysUser.setStationIds(stationIds);
         sysUser.setMajorIds(majorIds);
         sysUser.setSystemCodes(subsystemIds);
+        if (com.baomidou.mybatisplus.core.toolkit.StringUtils.isNotBlank(sysUser.getOrgId())) {
+            SysDepart depart = sysDepartService.getById(sysUser.getOrgId());
+            depart = Optional.ofNullable(depart).orElse(new SysDepart());
+            sysUser.setOrgCode(depart.getOrgCode());
+            sysUser.setOrgName(depart.getDepartName());
+        }
     }
 
     @AutoLog(value = "用户管理-添加用户")

@@ -116,7 +116,11 @@ public class SysDepartServiceImpl extends ServiceImpl<SysDepartMapper, SysDepart
 
 	}
 
-	@Cacheable(value = CacheConstant.SYS_DEPART_IDS_CACHE)
+	/**
+	 * 机构树
+	 * @return
+	 */
+	//@Cacheable(value = CacheConstant.SYS_DEPART_IDS_CACHE)
 	@Override
 	public List<DepartIdModel> queryDepartIdTreeList() {
 		LambdaQueryWrapper<SysDepart> query = new LambdaQueryWrapper<SysDepart>();

@@ -20,6 +20,7 @@ import com.aliyuncs.exceptions.ClientException;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.IdWorker;
+import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
@@ -75,15 +76,10 @@ public class LoginController {
 	@ApiOperation("登录接口")
 	@RequestMapping(value = "/login", method = RequestMethod.POST)
 	public Result<JSONObject> login(@RequestBody SysLoginModel sysLoginModel){
-		Result<JSONObject> result = new Result<JSONObject>();
+		Result result = new Result<JSONObject>();
 		String username = sysLoginModel.getUsername();
 		String password = sysLoginModel.getPassword();
-		//update-begin--Author:scott  Date:20190805 for：暂时注释掉密码加密逻辑，有点问题
-		//前端密码加密，后端进行密码解密
-		//password = AesEncryptUtil.desEncrypt(sysLoginModel.getPassword().replaceAll("%2B", "\\+")).trim();//密码解密
-		//update-begin--Author:scott  Date:20190805 for：暂时注释掉密码加密逻辑，有点问题
 
-		//update-begin-author:taoyan date:20190828 for:校验验证码
         String captcha = sysLoginModel.getCaptcha();
         if(captcha==null){
             result.error500("验证码无效");
@@ -399,6 +395,14 @@ public class LoginController {
 		List<SysDepart> departs = sysDepartService.queryUserDeparts(sysUser.getId());
 		obj.put("departs", departs);
 		obj.put("multi_depart", 0);
+		String orgId = sysUser.getOrgId();
+		if (StringUtils.isNotBlank(orgId)) {
+			SysDepart depart = sysDepartService.getById(orgId);
+			depart = Optional.ofNullable(depart).orElse(new SysDepart());
+			sysUser.setOrgCode(depart.getOrgCode());
+			sysUser.setOrgName(depart.getDepartName());
+		}
+
 		/*if (departs == null || departs.size() == 0) {
 			obj.put("multi_depart", 0);
 		} else if (departs.size() == 1) {
