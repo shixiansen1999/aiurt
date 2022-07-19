@@ -840,13 +840,15 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         Result parse = ToAnalysis.parse(faultPhenomenon);
         List<Term> termList = parse.getTerms();
         Set<String> set = termList.stream().map(Term::getName).filter(name -> name.length() > 1).collect(Collectors.toSet());
+        if (CollectionUtil.isNotEmpty(set)) {
+            String matchName = StrUtil.join(" ", set);
+            log.info("分词解析后的数据：{}", matchName);
 
-        String matchName = StrUtil.join(" ", set);
-        log.info("分词解析后的数据：{}", matchName);
+            faultKnowledgeBase.setMatchName(matchName);
+            faultKnowledgeBase.setFaultPhenomenon(null);
+        }
 
-        faultKnowledgeBase.setMatchName(matchName);
         List<String> list = baseMapper.queryKnowledge(faultKnowledgeBase);
-
         KnowledgeDTO knowledgeDTO = new KnowledgeDTO();
         knowledgeDTO.setKnowledgeIds(StrUtil.join(",", list));
         knowledgeDTO.setTotal((long) list.size());
@@ -868,10 +870,13 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         List<Term> termList = parse.getTerms();
         Set<String> set = termList.stream().map(Term::getName).filter(name -> name.length() > 1).collect(Collectors.toSet());
 
-        String matchName = StrUtil.join(" ", set);
-        log.info("分词解析后的数据：{}", matchName);
+        if (CollectionUtil.isNotEmpty(set)) {
+            String matchName = StrUtil.join(" ", set);
+            log.info("分词解析后的数据：{}", matchName);
 
-        knowledgeBase.setMatchName(matchName);
+            knowledgeBase.setMatchName(matchName);
+            knowledgeBase.setFaultPhenomenon(null);
+        }
 
         List<FaultKnowledgeBase> baseList = baseMapper.pageList(page, knowledgeBase);
         page.setRecords(baseList);

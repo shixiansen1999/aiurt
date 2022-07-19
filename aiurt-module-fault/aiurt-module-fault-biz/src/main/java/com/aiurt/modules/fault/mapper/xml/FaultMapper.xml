@@ -18,17 +18,23 @@
             id
         FROM
             fault_knowledge_base
-        WHERE
-            MATCH (
+        WHERE 1=1
+        <if test="matchName != null and matchName != ''">
+            and MATCH (
             `fault_phenomenon`,
             `fault_reason`,
             `solution`
             ) AGAINST (#{matchName} IN BOOLEAN MODE)
+        </if>
+        <if test="faultPhenomenon != null and faultPhenomenon != ''">
+            and fault_phenomenon like concat('%', #{faultPhenomenon}, '%')
+        </if>
+
         <if test="majorCode != null and majorCode != ''">
             and major_code = #{majorCode}
         </if>
         <if test="systemCode != null and systemCode != ''">
-            and system_code = #{sysOrgCode}
+            and system_code = #{systemCode}
         </if>
     </select>
 
@@ -42,12 +48,17 @@
         ) AGAINST (#{condition.matchName} IN BOOLEAN MODE) as scode
         from
             fault_knowledge_base
-        WHERE
-            MATCH (
+        WHERE 1=1
+        <if test="condition.matchName != null and condition.matchName != ''">
+           and MATCH (
             `fault_phenomenon`,
             `fault_reason`,
             `solution`
             ) AGAINST (#{condition.matchName} IN BOOLEAN MODE)
+        </if>
+        <if test="condition.faultPhenomenon != null and condition.faultPhenomenon != ''">
+            and fault_phenomenon like concat('%', #{condition.faultPhenomenon}, '%')
+        </if>
         <if test="condition.majorCode != null and condition.majorCode != ''">
             and major_code = #{condition.majorCode}
         </if>
