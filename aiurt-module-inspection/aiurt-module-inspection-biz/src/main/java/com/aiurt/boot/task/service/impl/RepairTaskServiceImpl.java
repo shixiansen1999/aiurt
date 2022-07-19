@@ -700,6 +700,7 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
             });
             if (repairTask.getIsConfirm() == 1) {
                 //修改检修任务状态
+                repairTask.setConfirmUrl(examineDTO.getConfirmUrl());
                 repairTask.setStatus(InspectionConstant.PENDING_REVIEW);
                 // 修改对应检修计划状态
                 RepairPool repairPool = repairPoolMapper.selectById(repairTask.getRepairPoolId());
@@ -709,6 +710,7 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                 }
             } else {
                 //修改检修任务状态
+                repairTask.setConfirmUrl(examineDTO.getConfirmUrl());
                 repairTask.setStatus(InspectionConstant.COMPLETED);
                 // 修改对应检修计划状态
                 RepairPool repairPool = repairPoolMapper.selectById(repairTask.getRepairPoolId());
