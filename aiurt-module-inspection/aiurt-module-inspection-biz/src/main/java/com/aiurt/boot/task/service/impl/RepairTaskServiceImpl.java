@@ -621,6 +621,22 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
     @Override
     public void toExamine(ExamineDTO examineDTO) {
         RepairTask repairTask = repairTaskMapper.selectById(examineDTO.getId());
+        if (ObjectUtil.isEmpty(repairTask)) {
+            throw new AiurtBootException(InspectionConstant.ILLEGAL_OPERATION);
+        }
+        // 是任务的检修人才可以审核
+        List<RepairTaskUser> repairTaskUserss = repairTaskUserMapper.selectList(
+                new LambdaQueryWrapper<RepairTaskUser>()
+                        .eq(RepairTaskUser::getRepairTaskCode, repairTask.getCode())
+                        .eq(RepairTaskUser::getDelFlag, CommonConstant.DEL_FLAG_0));
+        if(CollUtil.isEmpty(repairTaskUserss)){
+            throw new AiurtBootException("小主，该任务没有对应的检修人");
+        }else{
+            List<String> userList = repairTaskUserss.stream().map(RepairTaskUser::getUserId).collect(Collectors.toList());
+            if(!userList.contains(manager.checkLogin().getId())){
+                throw new AiurtBootException("小主，只有该任务的检修人才能审核");
+            }
+        }
         LoginUser loginUser = manager.checkLogin();
         LoginUser userById = sysBaseAPI.getUserById(loginUser.getId());
         RepairTask repairTask1 = new RepairTask();
@@ -652,6 +668,23 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
         if (ObjectUtil.isEmpty(repairTask)) {
             throw new AiurtBootException(InspectionConstant.ILLEGAL_OPERATION);
         }
+        // 是任务的检修人才可以执行
+        List<RepairTaskUser> repairTaskUserss = repairTaskUserMapper.selectList(
+                new LambdaQueryWrapper<RepairTaskUser>()
+                        .eq(RepairTaskUser::getRepairTaskCode, repairTask.getCode())
+                        .eq(RepairTaskUser::getDelFlag, CommonConstant.DEL_FLAG_0));
+        if(CollUtil.isEmpty(repairTaskUserss)){
+            throw new AiurtBootException("小主，该任务没有对应的检修人");
+        }else{
+            List<String> userList = repairTaskUserss.stream().map(RepairTaskUser::getUserId).collect(Collectors.toList());
+            if(!userList.contains(manager.checkLogin().getId())){
+                throw new AiurtBootException("小主，只有该任务的检修人才能执行");
+            }
+        }
+
+        if (ObjectUtil.isEmpty(repairTask)) {
+            throw new AiurtBootException(InspectionConstant.ILLEGAL_OPERATION);
+        }
 
         // 待执行状态才可以执行
         if (InspectionConstant.PENDING.equals(repairTask.getStatus())) {
@@ -676,6 +709,22 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
     @Override
     public void inExecution(ExamineDTO examineDTO) {
         RepairTask repairTask = repairTaskMapper.selectById(examineDTO.getId());
+        if (ObjectUtil.isEmpty(repairTask)) {
+            throw new AiurtBootException(InspectionConstant.ILLEGAL_OPERATION);
+        }
+        // 是任务的检修人才可以提交
+        List<RepairTaskUser> repairTaskUserss = repairTaskUserMapper.selectList(
+                new LambdaQueryWrapper<RepairTaskUser>()
+                        .eq(RepairTaskUser::getRepairTaskCode, repairTask.getCode())
+                        .eq(RepairTaskUser::getDelFlag, CommonConstant.DEL_FLAG_0));
+        if(CollUtil.isEmpty(repairTaskUserss)){
+            throw new AiurtBootException("小主，该任务没有对应的检修人");
+        }else{
+            List<String> userList = repairTaskUserss.stream().map(RepairTaskUser::getUserId).collect(Collectors.toList());
+            if(!userList.contains(manager.checkLogin().getId())){
+                throw new AiurtBootException("小主，只有该任务的检修人才能提交");
+            }
+        }
         RepairTaskDeviceRel repairTaskDeviceRel = new RepairTaskDeviceRel();
 
 
@@ -729,6 +778,22 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
     @Override
     public void acceptance(ExamineDTO examineDTO) {
         RepairTask repairTask = repairTaskMapper.selectById(examineDTO.getId());
+        if (ObjectUtil.isEmpty(repairTask)) {
+            throw new AiurtBootException(InspectionConstant.ILLEGAL_OPERATION);
+        }
+        // 是任务的检修人才可以验收
+        List<RepairTaskUser> repairTaskUserss = repairTaskUserMapper.selectList(
+                new LambdaQueryWrapper<RepairTaskUser>()
+                        .eq(RepairTaskUser::getRepairTaskCode, repairTask.getCode())
+                        .eq(RepairTaskUser::getDelFlag, CommonConstant.DEL_FLAG_0));
+        if(CollUtil.isEmpty(repairTaskUserss)){
+            throw new AiurtBootException("小主，该任务没有对应的检修人");
+        }else{
+            List<String> userList = repairTaskUserss.stream().map(RepairTaskUser::getUserId).collect(Collectors.toList());
+            if(!userList.contains(manager.checkLogin().getId())){
+                throw new AiurtBootException("小主，只有该任务的检修人才能验收");
+            }
+        }
         RepairTask repairTask1 = new RepairTask();
         LoginUser loginUser = manager.checkLogin();
         LoginUser userById = sysBaseAPI.getUserById(loginUser.getId());
@@ -786,6 +851,22 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
     @Transactional(rollbackFor = Exception.class)
     public void confirmedDelete(ExamineDTO examineDTO) {
         RepairTask repairTask = repairTaskMapper.selectById(examineDTO.getId());
+        if (ObjectUtil.isEmpty(repairTask)) {
+            throw new AiurtBootException(InspectionConstant.ILLEGAL_OPERATION);
+        }
+        // 是任务的检修人才可以退回
+        List<RepairTaskUser> repairTaskUserss = repairTaskUserMapper.selectList(
+                new LambdaQueryWrapper<RepairTaskUser>()
+                        .eq(RepairTaskUser::getRepairTaskCode, repairTask.getCode())
+                        .eq(RepairTaskUser::getDelFlag, CommonConstant.DEL_FLAG_0));
+        if(CollUtil.isEmpty(repairTaskUserss)){
+            throw new AiurtBootException("小主，该任务没有对应的检修人");
+        }else{
+            List<String> userList = repairTaskUserss.stream().map(RepairTaskUser::getUserId).collect(Collectors.toList());
+            if(!userList.contains(manager.checkLogin().getId())){
+                throw new AiurtBootException("小主，只有该任务的检修人才能退回");
+            }
+        }
 
         //根据任务id查询设备清单
         LambdaQueryWrapper<RepairTaskDeviceRel> objectLambdaQueryWrapper = new LambdaQueryWrapper<>();
