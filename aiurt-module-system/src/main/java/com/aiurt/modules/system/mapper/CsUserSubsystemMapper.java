@@ -20,5 +20,5 @@ public interface CsUserSubsystemMapper extends BaseMapper<CsUserSubsystem> {
      * @param id
      * @return
      */
-    List<CsUserSubsystemModel> getSubsystemByUserId(String id);
+    List<CsUserSubsystemModel> getSubsystemByUserId(@Param("id") String id);
 }

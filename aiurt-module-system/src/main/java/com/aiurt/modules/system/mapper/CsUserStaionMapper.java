@@ -22,5 +22,5 @@ public interface CsUserStaionMapper extends BaseMapper<CsUserStaion> {
      * @param id
      * @return
      */
-    List<CsUserStationModel> getStationByUserId(String id);
+    List<CsUserStationModel> getStationByUserId(@Param("id") String id);
 }

@@ -21,5 +21,5 @@ public interface CsUserMajorMapper extends BaseMapper<CsUserMajor> {
      * @param id
      * @return
      */
-    List<CsUserMajorModel> getMajorByUserId(String id);
+    List<CsUserMajorModel> getMajorByUserId(@Param("id") String id);
 }

@@ -23,5 +23,5 @@ public interface CsUserDepartMapper extends BaseMapper<CsUserDepart> {
      * @param id
      * @return
      */
-    List<CsUserDepartModel> getDepartByUserId(String id);
+    List<CsUserDepartModel> getDepartByUserId(@Param("id") String id);
 }

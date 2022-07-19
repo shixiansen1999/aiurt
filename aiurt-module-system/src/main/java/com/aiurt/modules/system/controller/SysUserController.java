@@ -2,6 +2,7 @@ package com.aiurt.modules.system.controller;
 
 
 import cn.hutool.core.util.RandomUtil;
+import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.util.RedisUtil;
@@ -19,7 +20,7 @@ import io.swagger.annotations.ApiOperation;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.query.QueryGenerator;
 import com.aiurt.common.system.util.JwtUtil;
-import org.jeecg.common.system.vo.LoginUser;
+import org.jeecg.common.system.vo.*;
 import com.aiurt.common.util.ImportExcelUtil;
 import com.aiurt.common.util.PasswordUtil;
 import com.aiurt.common.util.oConvertUtils;
@@ -135,7 +136,7 @@ public class SysUserController {
 	@RequestMapping(value = "/list", method = RequestMethod.GET)
 	public Result<IPage<SysUser>> queryPageList(SysUser user,@RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
 									  @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,HttpServletRequest req) {
-		Result<IPage<SysUser>> result = new Result<IPage<SysUser>>();
+		Result<IPage<SysUser>> result = new Result<>();
 		QueryWrapper<SysUser> queryWrapper = QueryGenerator.initQueryWrapper(user, req.getParameterMap());
 
         //用户ID
@@ -155,6 +156,17 @@ public class SysUserController {
 
         //TODO 外部模拟登陆临时账号，列表不显示
         queryWrapper.ne("username","_reserve_user_external");
+
+        // 根据角色， 站点， 系统， 专业
+        queryWrapper.apply(StrUtil.isNotBlank(user.getMajorId()),
+                "id in (select user_id from cs_user_major where 1=1 and major_id = (select id from cs_major where 1=1 and ( id = {0} or major_code = {0})))",
+                        user.getMajorId());
+        queryWrapper.apply(StrUtil.isNotBlank(user.getRoleCode()),"id in (select user_id from sys_user_role where 1=1 and role_id in (select id from sys_role where 1=1 and (id = {0} or role_code ={0})))",
+                user.getMajorId());
+        queryWrapper.apply(StrUtil.isNotBlank(user.getSystemId()),"id in (select user_id from cs_user_subsystem where 1=1 and system_id ={0})", user.getSystemId());
+
+        queryWrapper.apply(StrUtil.isNotBlank(user.getStationId()),"id in (select user_id from cs_user_station where 1=1 and station_id ={0})", user.getStationId());
+
 		Page<SysUser> page = new Page<SysUser>(pageNo, pageSize);
 		IPage<SysUser> pageList = sysUserService.page(page, queryWrapper);
 
@@ -177,21 +189,41 @@ public class SysUserController {
 
     private void getUserDetail(SysUser sysUser) {
         List<String> roleIds = sysUserRoleMapper.getRoleIds(sysUser.getId());
-        List<String> departIds = csUserDepartMapper.getDepartIds(sysUser.getId());
-        List<String> stationIds = csUserStaionMapper.getStaionIds(sysUser.getId());
-        List<String> majorIds = csUserMajorMapper.getMajorIds(sysUser.getId());
-        List<String> subsystemIds = csUserSubsystemMapper.getSubsystemIds(sysUser.getId());
+        List<CsUserDepartModel> departModelList = csUserDepartMapper.getDepartByUserId(sysUser.getId());
+        List<CsUserStationModel> stationList = csUserStaionMapper.getStationByUserId(sysUser.getId());
+        List<CsUserMajorModel> majorList = csUserMajorMapper.getMajorByUserId(sysUser.getId());
+        List<CsUserSubsystemModel> subsystemList = csUserSubsystemMapper.getSubsystemByUserId(sysUser.getId());
         sysUser.setRoleIds(roleIds);
+
+        List<String> departIds = departModelList.stream().map(CsUserDepartModel::getDepartId).collect(Collectors.toList());
         sysUser.setDepartCodes(departIds);
+        //List<String>  departNameList = departModelList.stream().map(CsUserDepartModel::getDepartName).collect(Collectors.toList())
+
+        List<String> stationIds = stationList.stream().map(CsUserStationModel::getStationId).collect(Collectors.toList());
         sysUser.setStationIds(stationIds);
+
+        List<String> stationNameList = stationList.stream().map(CsUserStationModel::getStationName).collect(Collectors.toList());
+        sysUser.setStationNames(StrUtil.join(",", stationNameList));
+
+        List<String> majorIds = majorList.stream().map(CsUserMajorModel::getMajorId).collect(Collectors.toList());
         sysUser.setMajorIds(majorIds);
+        List<String> majorNameList = majorList.stream().map(CsUserMajorModel::getMajorName).collect(Collectors.toList());
+        sysUser.setMajorNames(StrUtil.join(",", majorNameList));
+
+        List<String> subsystemIds = subsystemList.stream().map(CsUserSubsystemModel::getSystemId).collect(Collectors.toList());
         sysUser.setSystemCodes(subsystemIds);
+        List<String> systemNameList = subsystemList.stream().map(CsUserSubsystemModel::getSystemName).collect(Collectors.toList());
+        sysUser.setSystemNames(StrUtil.join(",", systemNameList));
+
+
         if (com.baomidou.mybatisplus.core.toolkit.StringUtils.isNotBlank(sysUser.getOrgId())) {
             SysDepart depart = sysDepartService.getById(sysUser.getOrgId());
             depart = Optional.ofNullable(depart).orElse(new SysDepart());
             sysUser.setOrgCode(depart.getOrgCode());
             sysUser.setOrgName(depart.getDepartName());
         }
+
+        // 处理
     }
 
     @AutoLog(value = "用户管理-添加用户")

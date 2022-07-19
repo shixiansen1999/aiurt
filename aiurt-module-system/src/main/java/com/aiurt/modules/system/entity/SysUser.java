@@ -225,6 +225,10 @@ public class SysUser implements Serializable {
     @TableField(exist = false)
     private List<String> systemCodes;
 
+    @ApiModelProperty(value = "子系统名称")
+    @TableField(exist = false)
+    private String systemNames;
+
     /**角色*/
     @ApiModelProperty(value = "角色Ids")
     @TableField(exist = false)
@@ -235,6 +239,10 @@ public class SysUser implements Serializable {
     @TableField(exist = false)
     private List<String> majorIds;
 
+    @ApiModelProperty(value = "专业名称")
+    @TableField(exist = false)
+    private String majorNames;
+
     /**部门*/
     @ApiModelProperty(value = "部门权限Codes")
     @TableField(exist = false)
@@ -244,6 +252,10 @@ public class SysUser implements Serializable {
     @ApiModelProperty(value = "站所Ids")
     @TableField(exist = false)
     private List<String> stationIds;
+
+    @ApiModelProperty(value = "站所名称")
+    @TableField(exist = false)
+    private String stationNames;
 
     /**施工证编号*/
     @ApiModelProperty(value = "施工证编号")
@@ -275,5 +287,11 @@ public class SysUser implements Serializable {
     @ApiModelProperty(value = "专业id， 查询条件")
     @TableField(exist = false)
     private String majorId;
+
+    @ApiModelProperty(value = "角色编码， 查询条件")
+    private String roleCode;
+
+    @ApiModelProperty(value = "系统id， 查询条件")
+    private String systemId;
 
 }

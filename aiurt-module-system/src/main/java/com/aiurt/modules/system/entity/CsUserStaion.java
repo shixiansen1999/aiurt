@@ -24,10 +24,10 @@ import lombok.experimental.Accessors;
  * @Version: V1.0
  */
 @Data
-@TableName("cs_user_staion")
+@TableName("cs_user_station")
 @Accessors(chain = true)
 @EqualsAndHashCode(callSuper = false)
-@ApiModel(value="cs_user_staion对象", description="用户站点表")
+@ApiModel(value="cs_user_station对象", description="用户站点表")
 public class CsUserStaion implements Serializable {
     private static final long serialVersionUID = 1L;
 
