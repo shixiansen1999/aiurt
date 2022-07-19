@@ -32,6 +32,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.github.xiaoymin.knife4j.core.util.CollectionUtils;
+import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -148,7 +149,7 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                 ArrayList<String> userList = new ArrayList<>();
                 collect.forEach(o -> {
                     LoginUser userById = sysBaseAPI.getUserById(o);
-                    userList.add(userById.getUsername());
+                    userList.add(userById.getRealname());
                 });
                 e.setOverhaulName(userList);
             }
@@ -287,12 +288,20 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
             //检修任务状态
             if (e.getStartTime() == null) {
                 e.setTaskStatusName("未开始");
+                e.setTaskStatus("0");
             }
             if (e.getStartTime() != null) {
                 e.setTaskStatusName("进行中");
+                e.setTaskStatus("1");
             }
-            if (e.getIsSubmit() != null && e.getIsSubmit() == 1) {
+            if (e.getIsSubmit() != null && e.getIsSubmit().equals(InspectionConstant.IS_EFFECT)) {
                 e.setTaskStatusName("已提交");
+                e.setTaskStatus("2");
+            }
+            //提交人名称
+            if (e.getOverhaulId() != null) {
+                LoginUser userById = sysBaseAPI.getUserById(e.getOverhaulId());
+                e.setOverhaulName(userById.getUsername());
             }
             if (e.getDeviceId() != null && CollectionUtil.isNotEmpty(repairTasks)) {
                 //正常项
@@ -391,6 +400,13 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                 checkListDTO.setRealList(realList);
             }
 
+            //组织机构
+            LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+            if (sysUser.getOrgCode()!=null){
+                String s = manager.translateOrg(Arrays.asList(sysUser.getOrgCode()));
+                checkListDTO.setOrganization(s);
+            }
+
             //同行人名称
             List<String> collect3 = repairTaskPeer.stream().map(RepairTaskPeerRel::getRealName).collect(Collectors.toList());
             if (CollectionUtil.isNotEmpty(collect3)) {
@@ -419,6 +435,15 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
             checkListDTO.setEquipmentName(q.getName());
             //设备类型名称
             checkListDTO.setDeviceTypeName(q.getDeviceTypeName());
+            //根据站点编码翻译站点名称
+            if (q.getStationCode()!=null){
+                String s = manager.translateStation(q.getStationCode());
+                checkListDTO.setStationsName(s);
+            }
+            //设备专业
+            checkListDTO.setDeviceMajorName(q.getMajorName());
+            //设备子系统
+            checkListDTO.setDeviceSystemName(q.getDeviceTypeName());
         });
         //提交人名称
         if (checkListDTO.getOverhaulId() != null) {
@@ -435,9 +460,9 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
         if (checkListDTO.getEquipmentCode() == null && checkListDTO.getSpecificLocation() != null) {
             List<StationDTO> stationDTOList = new ArrayList<>();
             stationDTOList.forEach(e -> {
-                e.setLineCode(checkListDTO.getStationCode());
+                e.setStationCode(checkListDTO.getStationCode());
                 e.setLineCode(checkListDTO.getLineCode());
-                e.setLineCode(checkListDTO.getSpecificLocation());
+                e.setPositionCode(checkListDTO.getSpecificLocation());
             });
             String station = manager.translateStation(stationDTOList);
             String string = checkListDTO.getSpecificLocation() + station;

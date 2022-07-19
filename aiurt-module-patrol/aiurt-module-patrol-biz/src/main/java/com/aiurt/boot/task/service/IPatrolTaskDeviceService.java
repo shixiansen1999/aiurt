@@ -80,4 +80,10 @@ public interface IPatrolTaskDeviceService extends IService<PatrolTaskDevice> {
      * @return
      */
     Page<PatrolTaskDeviceDTO> getPatrolTaskDeviceList(Page<PatrolTaskDeviceDTO> pageList, String id, String search);
+
+    /**
+     * app-提交工单
+     * @param patrolTaskDevice
+     */
+    void getPatrolSubmit(PatrolTaskDevice patrolTaskDevice);
 }

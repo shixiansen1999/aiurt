@@ -442,4 +442,8 @@ public interface CommonConstant {
     */
    public static final Integer MATERIAL_BASE_TYPE_STATUS_1 = 1;
    public static final Integer MATERIAL_BASE_TYPE_STATUS_0 = 0;
+ /**
+  * 超级管理员角色编码
+  */
+ public static final String ADMIN = "admin";
 }

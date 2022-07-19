@@ -156,10 +156,11 @@ public class PatrolPlanServiceImpl extends ServiceImpl<PatrolPlanMapper, PatrolP
         patrolPlanDto.setPatrolStandards(patrolStandardMapper.selectbyIds(ids));
         }
         List<Integer> week =baseMapper.selectWeek(id,code);
+        if (CollUtil.isNotEmpty(week)) {
         if (ObjectUtil.isNotNull(week.get(0))) {
-            if (CollUtil.isNotEmpty(week)) {
                 patrolPlanDto.setWeek(week);
                 List<Integer> time = baseMapper.selectTime(id, code);
+            if (CollUtil.isNotEmpty(time)) {
                 if (ObjectUtil.isNotNull(time.get(0))) {
                     patrolPlanDto.setTime(time);
                     List<Integer> number = new ArrayList<>();
@@ -167,8 +168,9 @@ public class PatrolPlanServiceImpl extends ServiceImpl<PatrolPlanMapper, PatrolP
                         Integer w = week.get(i);
                         Integer t = time.get(i);
                         number.add(7 * (t - 1) + w);
-                    }
+                     }
                     patrolPlanDto.setNumber(number);
+                  }
                 }
             }
         }

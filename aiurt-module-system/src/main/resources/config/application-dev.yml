@@ -78,6 +78,7 @@ spring:
     async-executor-activate: false
     #将databaseSchemaUpdate设置为true。当flowable发现库与数据库表结构不一致时，会自动将数据库表结构升级至新版本。
     database-schema-update: true
+
   aop:
     proxy-target-class: true
   #配置freemarker
@@ -273,7 +274,11 @@ cas:
 #Mybatis输出sql日志
 logging:
   level:
-    org.jeecg.modules.system.mapper: info
+    com:
+     aiurt:
+      boot:
+       plan:
+        mapper: debug
 #swagger
 knife4j:
   #开启增强配置
@@ -362,3 +367,10 @@ swsc:
 patrol:
   missing:
     hour: 44
+datafilter:
+  dataperm:
+    enabled: true
+    # 在拼接数据权限过滤的SQL时，我们会用到sys_dept_relation表，该表的前缀由此配置项指定。
+    # 如果没有前缀，请使用 "" 。
+    deptRelationTablePrefix: ""
+    addTableNamePrefix: true

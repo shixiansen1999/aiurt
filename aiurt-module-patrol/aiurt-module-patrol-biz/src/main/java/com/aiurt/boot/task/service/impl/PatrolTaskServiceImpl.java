@@ -542,11 +542,11 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
             List<PatrolTaskDevice> patrolTaskDevice = patrolTaskDeviceMapper.selectList(new LambdaQueryWrapper<PatrolTaskDevice>().eq(PatrolTaskDevice::getTaskId, patrolTaskDTO.getId()));
             patrolTaskDevice.stream().forEach(e -> {
                 List<PatrolCheckResult> patrolCheckResultList = patrolCheckResultMapper.selectList(new LambdaQueryWrapper<PatrolCheckResult>().eq(PatrolCheckResult::getTaskDeviceId, e.getId()));
-                List<PatrolCheckResult> collect = patrolCheckResultList.stream().filter(s -> s.getCheckResult() != null && 1 == s.getCheckResult()).collect(Collectors.toList());
+                List<PatrolCheckResult> collect = patrolCheckResultList.stream().filter(s -> s.getCheckResult() != null && PatrolConstant.RESULT_EXCEPTION .equals(s.getCheckResult())).collect(Collectors.toList());
                 if (CollUtil.isNotEmpty(collect)) {
-                    e.setCheckResult(1);
+                    e.setCheckResult(PatrolConstant.RESULT_EXCEPTION);
                 } else {
-                    e.setCheckResult(0);
+                    e.setCheckResult(PatrolConstant.RESULT_NORMAL);
                 }
                 patrolTaskDeviceMapper.updateById(e);
             });

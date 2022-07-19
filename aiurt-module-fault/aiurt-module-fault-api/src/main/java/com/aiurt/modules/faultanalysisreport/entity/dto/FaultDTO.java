@@ -1,6 +1,7 @@
 package com.aiurt.modules.faultanalysisreport.entity.dto;
 
 import com.aiurt.common.aspect.annotation.Dict;
+import com.aiurt.modules.basic.entity.DictEntity;
 import com.aiurt.modules.faultanalysisreport.entity.FaultAnalysisReport;
 import com.aiurt.modules.faultknowledgebase.entity.FaultKnowledgeBase;
 import com.baomidou.mybatisplus.annotation.IdType;
@@ -19,9 +20,12 @@ import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.util.Date;
 
+/**
+ * @author lkj
+ */
 @Data
 @ApiModel("故障分析")
-public class FaultDTO implements Serializable {
+public class FaultDTO extends DictEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
 

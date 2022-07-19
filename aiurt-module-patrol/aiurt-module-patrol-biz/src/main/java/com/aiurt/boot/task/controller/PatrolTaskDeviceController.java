@@ -3,28 +3,22 @@ package com.aiurt.boot.task.controller;
 import com.aiurt.boot.manager.PatrolManager;
 import com.aiurt.boot.task.dto.PatrolCheckResultDTO;
 import com.aiurt.boot.task.dto.PatrolTaskDeviceDTO;
-import com.aiurt.boot.task.entity.PatrolTask;
 import com.aiurt.boot.task.entity.PatrolTaskDevice;
 import com.aiurt.boot.task.service.IPatrolCheckResultService;
 import com.aiurt.boot.task.service.IPatrolTaskDeviceService;
 import com.aiurt.boot.task.service.IPatrolTaskService;
 import com.aiurt.common.aspect.annotation.AutoLog;
-import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.system.base.controller.BaseController;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
-import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
-import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -132,21 +126,8 @@ public class PatrolTaskDeviceController extends BaseController<PatrolTaskDevice,
 	@ApiOperation(value = " app巡检-巡检清单-填写检查项-提交工单", notes = " app巡检-巡检清单-填写检查项-提交	工单")
 	@PostMapping(value = "/patrolTaskCheckItemsSubmit")
 	public Result<?> patrolTaskCheckItemsSubmit(@RequestBody PatrolTaskDevice patrolTaskDevice, HttpServletRequest req) {
-		LambdaQueryWrapper<PatrolTaskDevice> queryWrapper= new LambdaQueryWrapper<>();
-		PatrolTaskDevice taskDevice = patrolTaskDeviceService.getOne(new LambdaQueryWrapper<PatrolTaskDevice>().eq(PatrolTaskDevice::getId, patrolTaskDevice.getId()));
-		PatrolTask patrolTask = patrolTaskService.getOne(new LambdaQueryWrapper<PatrolTask>().eq(PatrolTask::getId, taskDevice.getTaskId()));
-		if(manager.checkTaskUser(patrolTask.getCode())==false)
-		{
-			throw new AiurtBootException("小主，该巡检任务不在您的检查范围之内哦");
-		}
-		else
-		{
-			LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-			LambdaUpdateWrapper<PatrolTaskDevice> updateWrapper= new LambdaUpdateWrapper<>();
-			updateWrapper.set(PatrolTaskDevice::getUserId,sysUser.getId()).set(PatrolTaskDevice::getCheckTime, LocalDateTime.now()).set(PatrolTaskDevice::getStatus,2).eq(PatrolTaskDevice::getId,patrolTaskDevice.getId());
-			patrolTaskDeviceService.update(updateWrapper);
-			return Result.OK("提交工单成功");
-		}
+		patrolTaskDeviceService.getPatrolSubmit(patrolTaskDevice);
+		return Result.OK("提交工单成功");
 	}
 	/**
 	 *   添加

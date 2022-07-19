@@ -123,4 +123,12 @@ public interface PatrolConstant {
      * 巡检工单初始状态-未开始
      */
     Integer BILL_INIT = 0;
+    /**
+     * 巡检工单初始状态-进行中
+     */
+    Integer BILL_PROCESSING = 1;
+    /**
+     * 巡检工单初始状态-已完成
+     */
+    Integer BILL_COMPLETE = 2;
 }

@@ -223,8 +223,8 @@
     </select>
     <select id="translateSubsystem" resultType="com.aiurt.boot.task.dto.SubsystemDTO">
         select
-            system_name  as systemName,
-            system_code as systemCode
+            system_name  as subsystemName,
+            system_code as subsystemCode
         from cs_subsystem
         where
             del_flag = 0
