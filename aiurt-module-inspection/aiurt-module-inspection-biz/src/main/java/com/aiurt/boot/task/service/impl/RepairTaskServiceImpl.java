@@ -1097,6 +1097,7 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
         List<RepairTaskResult> repairTaskResults = repairTaskResultMapper.selectList(
                 new LambdaQueryWrapper<RepairTaskResult>()
                         .eq(RepairTaskResult::getTaskDeviceRelId, repairTaskDeviceRel.getId())
+                        .eq(RepairTaskResult::getType,InspectionConstant.CHECKPROJECT)
                         .eq(RepairTaskResult::getDelFlag, CommonConstant.DEL_FLAG_0));
         if (CollUtil.isEmpty(repairTaskResults)) {
             throw new AiurtBootException(InspectionConstant.ILLEGAL_OPERATION);
