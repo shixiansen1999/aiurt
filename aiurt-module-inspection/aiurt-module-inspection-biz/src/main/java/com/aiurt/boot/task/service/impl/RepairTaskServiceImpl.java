@@ -472,9 +472,9 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
         if (checkListDTO.getEquipmentCode() == null) {
             List<StationDTO> stationDTOList = new ArrayList<>();
             stationDTOList.forEach(e -> {
-                e.setLineCode(checkListDTO.getStationCode());
+                e.setStationCode(checkListDTO.getStationCode());
                 e.setLineCode(checkListDTO.getLineCode());
-                e.setLineCode(checkListDTO.getSpecificLocation());
+                e.setPositionCode(checkListDTO.getSpecificLocation());
             });
             String station = manager.translateStation(stationDTOList);
             checkListDTO.setSitePosition(station);
@@ -624,8 +624,9 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
         LoginUser loginUser = manager.checkLogin();
         LoginUser userById = sysBaseAPI.getUserById(loginUser.getId());
         RepairTask repairTask1 = new RepairTask();
-        status(examineDTO, loginUser, userById, repairTask1);
+        status(examineDTO, loginUser, userById, repairTask1,repairTask.getRepairPoolId());
         if (examineDTO.getStatus().equals(InspectionConstant.IS_EFFECT) && repairTask.getIsReceipt().equals(InspectionConstant.IS_EFFECT)) {
+            //修改检修任务状态
             repairTask1.setId(examineDTO.getId());
             repairTask1.setErrorContent(examineDTO.getContent());
             repairTask1.setConfirmTime(new Date());
@@ -633,25 +634,48 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
             repairTask1.setConfirmUserName(userById.getRealname());
             repairTask1.setStatus(InspectionConstant.PENDING_RECEIPT);
             repairTaskMapper.updateById(repairTask1);
+            // 修改对应检修计划状态
+            RepairPool repairPool = repairPoolMapper.selectById(repairTask.getRepairPoolId());
+            if (ObjectUtil.isNotEmpty(repairPool)) {
+                repairPool.setStatus(InspectionConstant.PENDING_RECEIPT);
+                repairPoolMapper.updateById(repairPool);
+            }
         }
         if (examineDTO.getStatus().equals(InspectionConstant.IS_EFFECT) && repairTask.getIsReceipt().equals(InspectionConstant.NO_IS_EFFECT)) {
-            setId(examineDTO, repairTask1, loginUser, userById);
+            setId(examineDTO, repairTask1, loginUser, userById,repairTask.getRepairPoolId());
         }
     }
 
     @Override
     public void toBeImplement(ExamineDTO examineDTO) {
-        RepairTask repairTask1 = new RepairTask();
-        repairTask1.setId(examineDTO.getId());
-        repairTask1.setBeginTime(new Date());
-        repairTask1.setStatus(InspectionConstant.IN_EXECUTION);
-        repairTaskMapper.updateById(repairTask1);
+        RepairTask repairTask = repairTaskMapper.selectById(examineDTO.getId());
+        if (ObjectUtil.isEmpty(repairTask)) {
+            throw new AiurtBootException(InspectionConstant.ILLEGAL_OPERATION);
+        }
+
+        // 待执行状态才可以执行
+        if (InspectionConstant.PENDING.equals(repairTask.getStatus())) {
+            repairTask.setConfirmTime(new Date());
+            repairTask.setStatus(InspectionConstant.IN_EXECUTION);
+            repairTaskMapper.updateById(repairTask);
+
+            // 修改对应检修计划状态
+            RepairPool repairPool = repairPoolMapper.selectById(repairTask.getRepairPoolId());
+            if (ObjectUtil.isNotEmpty(repairPool)) {
+                repairPool.setStatus(InspectionConstant.IN_EXECUTION);
+                repairPoolMapper.updateById(repairPool);
+            }
+
+        } else {
+            throw new AiurtBootException(InspectionConstant.ILLEGAL_OPERATION);
+        }
+
+        repairTaskMapper.updateById(repairTask);
     }
 
     @Override
     public void inExecution(ExamineDTO examineDTO) {
         RepairTask repairTask = repairTaskMapper.selectById(examineDTO.getId());
-        RepairTask repairTask1 = new RepairTask();
         RepairTaskDeviceRel repairTaskDeviceRel = new RepairTaskDeviceRel();
 
 
@@ -675,30 +699,46 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                 repairTaskDeviceRelMapper.updateById(repairTaskDeviceRel);
             });
             if (repairTask.getIsConfirm() == 1) {
-                repairTask1.setId(examineDTO.getId());
-                repairTask1.setStatus(InspectionConstant.PENDING_REVIEW);
+                //修改检修任务状态
+                repairTask.setStatus(InspectionConstant.PENDING_REVIEW);
+                // 修改对应检修计划状态
+                RepairPool repairPool = repairPoolMapper.selectById(repairTask.getRepairPoolId());
+                if (ObjectUtil.isNotEmpty(repairPool)) {
+                    repairPool.setStatus(InspectionConstant.PENDING_REVIEW);
+                    repairPoolMapper.updateById(repairPool);
+                }
             } else {
-                repairTask1.setId(examineDTO.getId());
-                repairTask1.setStatus(InspectionConstant.COMPLETED);
+                //修改检修任务状态
+                repairTask.setStatus(InspectionConstant.COMPLETED);
+                // 修改对应检修计划状态
+                RepairPool repairPool = repairPoolMapper.selectById(repairTask.getRepairPoolId());
+                if (ObjectUtil.isNotEmpty(repairPool)) {
+                    repairPool.setStatus(InspectionConstant.COMPLETED);
+                    repairPoolMapper.updateById(repairPool);
+                }
             }
-            repairTaskMapper.updateById(repairTask1);
+            repairTaskMapper.updateById(repairTask);
+        }else {
+            throw new AiurtBootException("检修单未提交完成！");
         }
 
     }
 
     @Override
     public void acceptance(ExamineDTO examineDTO) {
+        RepairTask repairTask = repairTaskMapper.selectById(examineDTO.getId());
         RepairTask repairTask1 = new RepairTask();
         LoginUser loginUser = manager.checkLogin();
         LoginUser userById = sysBaseAPI.getUserById(loginUser.getId());
-        status(examineDTO, loginUser, userById, repairTask1);
+        status(examineDTO, loginUser, userById, repairTask1,repairTask.getRepairPoolId());
         if (examineDTO.getStatus().equals(InspectionConstant.IS_EFFECT)) {
-            setId(examineDTO, repairTask1, loginUser, userById);
+            setId(examineDTO, repairTask1, loginUser, userById,repairTask.getRepairPoolId());
         }
     }
 
-    private void status(ExamineDTO examineDTO, LoginUser loginUser, LoginUser userById, RepairTask repairTask1) {
+    private void status(ExamineDTO examineDTO, LoginUser loginUser, LoginUser userById, RepairTask repairTask1,String id) {
         if (examineDTO.getStatus().equals(InspectionConstant.NO_IS_EFFECT)) {
+            //修改检修任务状态
             repairTask1.setId(examineDTO.getId());
             repairTask1.setErrorContent(examineDTO.getContent());
             repairTask1.setConfirmTime(new Date());
@@ -706,11 +746,19 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
             repairTask1.setConfirmUserName(userById.getRealname());
             repairTask1.setStatus(InspectionConstant.REJECTED);
             repairTaskMapper.updateById(repairTask1);
+
+            // 修改对应检修计划状态
+            RepairPool repairPool = repairPoolMapper.selectById(id);
+            if (ObjectUtil.isNotEmpty(repairPool)) {
+                repairPool.setStatus(InspectionConstant.REJECTED);
+                repairPoolMapper.updateById(repairPool);
+            }
         }
     }
 
 
-    private void setId(ExamineDTO examineDTO, RepairTask repairTask1, LoginUser loginUser, LoginUser userById) {
+    private void setId(ExamineDTO examineDTO, RepairTask repairTask1, LoginUser loginUser, LoginUser userById,String id) {
+        //修改检修任务状态
         repairTask1.setId(examineDTO.getId());
         repairTask1.setErrorContent(examineDTO.getContent());
         repairTask1.setReceiptTime(new Date());
@@ -718,6 +766,13 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
         repairTask1.setReceiptUserName(userById.getRealname());
         repairTask1.setStatus(InspectionConstant.COMPLETED);
         repairTaskMapper.updateById(repairTask1);
+
+        // 修改对应检修计划状态
+        RepairPool repairPool = repairPoolMapper.selectById(id);
+        if (ObjectUtil.isNotEmpty(repairPool)) {
+            repairPool.setStatus(InspectionConstant.COMPLETED);
+            repairPoolMapper.updateById(repairPool);
+        }
     }
 
     @Override
