@@ -70,7 +70,8 @@
 		<module>aiurt-module-fault</module>
         <module>aiurt-module-inspection</module>
 		<module>aiurt-module-flowable</module>
-  </modules>
+		<module>aiurt-module-base</module>
+	</modules>
 
 	<distributionManagement>
 	  	<repository>
