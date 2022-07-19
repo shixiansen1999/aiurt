@@ -289,9 +289,11 @@ public class SysUser implements Serializable {
     private String majorId;
 
     @ApiModelProperty(value = "角色编码， 查询条件")
+    @TableField(exist = false)
     private String roleCode;
 
     @ApiModelProperty(value = "系统id， 查询条件")
+    @TableField(exist = false)
     private String systemId;
 
 }
