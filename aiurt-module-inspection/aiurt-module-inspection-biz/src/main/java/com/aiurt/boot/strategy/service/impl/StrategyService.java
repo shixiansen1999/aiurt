@@ -399,6 +399,7 @@ public class StrategyService {
         repairPool.setStartTime(startTime);
         repairPool.setEndTime(endTime);
         repairPool.setIsConfirm(ins.getIsConfirm());
+        repairPool.setIsReceipt(ins.getIsReceipt());
         repairPool.setIsOutsource(ins.getIsOutsource());
         repairPool.setIsManual(InspectionConstant.NO_IS_MANUAL);
         repairPool.setInspectionStrCode(ins.getCode());

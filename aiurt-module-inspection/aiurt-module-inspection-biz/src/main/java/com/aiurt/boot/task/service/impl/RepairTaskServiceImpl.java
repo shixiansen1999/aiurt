@@ -1041,7 +1041,7 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
 
         repairTaskPeerRelMapper.delete(
                 new LambdaQueryWrapper<RepairTaskPeerRel>()
-                        .eq(RepairTaskPeerRel::getRepairTaskDeviceCode, repairTaskDeviceRel.getId()));
+                        .eq(RepairTaskPeerRel::getRepairTaskDeviceCode, repairTaskDeviceRel.getCode()));
 
         // 更新同行人
         if (StrUtil.isNotEmpty(peerId)) {
