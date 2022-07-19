@@ -23,7 +23,7 @@ public class PatrolTaskAppointSaveDTO  {
     private java.lang.String id;
     @Excel(name = "任务编号", width = 15)
     @ApiModelProperty(value = "任务编号")
-    @TableField(value = "`code`")
+    @TableField(value = "`planCode`")
     private java.lang.String code;
     /*** 作业类型：1 A1、2 A2、3 A3、4 B1、5 B2、6 C1、7 C2、8 C3*/
     @Excel(name = "作业类型：1 A1、2 A2、3 A3、4 B1、5 B2、6 C1、7 C2、8 C3", width = 15)

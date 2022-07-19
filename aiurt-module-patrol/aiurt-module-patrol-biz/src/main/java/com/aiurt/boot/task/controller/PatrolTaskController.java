@@ -431,7 +431,7 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
     /**
      * app巡检任务-指派人员查询
      *
-     * @param patrolTaskDTO
+     * @param orgCoed
      * @param req
      * @return
      */

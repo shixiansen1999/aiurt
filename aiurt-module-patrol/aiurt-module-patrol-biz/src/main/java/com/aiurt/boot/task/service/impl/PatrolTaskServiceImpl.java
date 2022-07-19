@@ -366,7 +366,20 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
             userDTO.setUserList(user);
             arrayList.add(userDTO);
         }
-        return arrayList;
+        LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+       if(orgCoed.getIdentity().equals(PatrolConstant.TASK_INIT))
+       {
+          arrayList.stream().forEach(e->{
+               List<PatrolTaskUserContentDTO> userList = e.getUserList();
+               List<PatrolTaskUserContentDTO> collect = userList.stream().filter(u -> !u.getId().equals(sysUser.getId())).collect(Collectors.toList());
+               e.setUserList(collect);
+          });
+          return arrayList;
+       }
+        else
+        {
+            return arrayList;
+        }
     }
 
     @Override
@@ -386,7 +399,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         updateWrapper.set(PatrolTask::getSource, 2).set(PatrolTask::getStatus, 1).set(PatrolTask::getStartTime, patrolTaskUserDTO.getStartTime())
                 .set(PatrolTask::getEndTime, patrolTaskUserDTO.getEndTime()).set(PatrolTask::getPlanCode, patrolTaskUserDTO.getPlanCode()).set(PatrolTask::getType, patrolTaskUserDTO.getType())
                 .set(PatrolTask::getPlanOrderCodeUrl, patrolTaskUserDTO.getPlanOrderCodeUrl()).eq(PatrolTask::getCode, patrolTaskUserDTO.getCode());
-        update(updateWrapper);
+        patrolTaskMapper.update(new PatrolTask(),updateWrapper);
     }
 
     @Override
