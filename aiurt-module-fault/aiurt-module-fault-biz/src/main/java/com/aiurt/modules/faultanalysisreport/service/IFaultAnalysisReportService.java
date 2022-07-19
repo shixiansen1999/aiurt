@@ -43,7 +43,7 @@ public interface IFaultAnalysisReportService extends IService<FaultAnalysisRepor
      * @param id
      * @return FaultDTO
      */
-    FaultDTO getDetail(String id);
+    IPage<FaultDTO> getDetail(String id);
 
     /**
      *  审批
