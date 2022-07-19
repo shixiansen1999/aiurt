@@ -91,7 +91,7 @@ public interface IRepairPoolService extends IService<RepairPool> {
      * @param code
      * @return
      */
-    List<StandardDTO> queryStandardList(String code, String majorCode, String systemCode);
+    List<StandardNewDTO> queryStandardList(String code, String majorCode, String systemCode);
 
     /**
      * 分页查询手工下发任务列表

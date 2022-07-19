@@ -76,6 +76,14 @@ public interface PatrolConstant {
      */
     Integer AUDIT_PASS = 1;
     /**
+     * 巡检任务要审核
+     */
+    Integer TASK_CHECK = 1;
+    /**
+     * 巡检任务不要审核
+     */
+    Integer TASK_NOT_CHECK = 0;
+    /**
      * 巡检审核不通过状态
      */
     Integer AUDIT_NOPASS = 0;

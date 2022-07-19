@@ -129,10 +129,10 @@ public class RepairPoolController extends BaseController<RepairPool, IRepairPool
     @AutoLog(value = "检修详情里的检修标准下拉列表")
     @ApiOperation(value = "检修详情里的检修标准下拉列表", notes = "检修详情里的检修标准下拉列表")
     @GetMapping(value = "/queryStandardList")
-    public Result<List<StandardDTO>> queryStandardList(@RequestParam @ApiParam(name = "code", required = true, value = "检修计划code") String code,
+    public Result<List<StandardNewDTO>> queryStandardList(@RequestParam @ApiParam(name = "code", required = true, value = "检修计划code") String code,
                                                        @RequestParam(required = false) @ApiParam(name = "majorCode", value = "专业编码") String majorCode,
                                                        @RequestParam(required = false) @ApiParam(name = "systemCode", value = "子系统编码") String systemCode) {
-        List<StandardDTO> result = repairPoolService.queryStandardList(code, majorCode, systemCode);
+        List<StandardNewDTO> result = repairPoolService.queryStandardList(code, majorCode, systemCode);
         return Result.OK(result);
     }
 

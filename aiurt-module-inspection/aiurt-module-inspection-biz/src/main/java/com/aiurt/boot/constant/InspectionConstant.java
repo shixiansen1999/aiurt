@@ -192,4 +192,8 @@ public class InspectionConstant {
      * 是否生成年计划 1 已生成
      */
     public static final Integer GENERATED = 1;
+    /**
+     * 是否是检查项 1是
+     */
+    public static final Integer CHECKPROJECT = 1;
 }

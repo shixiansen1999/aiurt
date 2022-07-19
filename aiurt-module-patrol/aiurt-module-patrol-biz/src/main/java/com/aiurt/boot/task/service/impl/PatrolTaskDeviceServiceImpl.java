@@ -119,6 +119,8 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
     public Page<PatrolTaskDeviceDTO> getPatrolTaskDeviceList(Page<PatrolTaskDeviceDTO> pageList, String taskId, String search) {
         List<PatrolTaskDeviceDTO> patrolTaskDeviceList = patrolTaskDeviceMapper.getPatrolTaskDeviceList(pageList, taskId,search);
         patrolTaskDeviceList.stream().forEach(e -> {
+            if(ObjectUtil.isNull(e.getCheckResult()))
+            { e.setCheckResult("-"); }
             Date startTime = e.getStartTime();
             Date checkTime = e.getCheckTime();
             if (ObjectUtil.isNotEmpty(startTime) && ObjectUtil.isNotEmpty(checkTime)) {
