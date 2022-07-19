@@ -89,7 +89,7 @@ public class FaultAnalysisReportServiceImpl extends ServiceImpl<FaultAnalysisRep
     }
 
     @Override
-    public IPage<FaultDTO> getDetail(String id) {
+    public FaultDTO getDetail(String id) {
         //获取故障详情
         FaultDTO faultDTO = faultAnalysisReportMapper.getDetail(id);
         //获取故障分析详情
@@ -102,7 +102,7 @@ public class FaultAnalysisReportServiceImpl extends ServiceImpl<FaultAnalysisRep
             FaultKnowledgeBase faultKnowledgeBase = faultKnowledgeBaseMapper.selectById(faultAnalysisReport.getFaultKnowledgeBaseId());
             faultDTO.setFaultKnowledgeBase(faultKnowledgeBase);
         }
-        return page().setRecords(faultDTO);
+        return faultDTO;
     }
 
     @Override

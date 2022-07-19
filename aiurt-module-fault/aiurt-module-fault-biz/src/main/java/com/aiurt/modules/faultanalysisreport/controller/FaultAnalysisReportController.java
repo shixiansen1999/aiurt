@@ -251,8 +251,8 @@ public class FaultAnalysisReportController extends BaseController<FaultAnalysisR
 	 @ApiResponses({
 			 @ApiResponse(code = 200, message = "OK", response = FaultDTO.class)
 	 })
-	 public Result<IPage<FaultDTO>> getDetail(String id) {
-		 IPage<FaultDTO> detail = faultAnalysisReportService.getDetail(id);
+	 public Result<FaultDTO> getDetail(String id) {
+		 FaultDTO detail = faultAnalysisReportService.getDetail(id);
 		 return Result.OK(detail);
 	 }
 
