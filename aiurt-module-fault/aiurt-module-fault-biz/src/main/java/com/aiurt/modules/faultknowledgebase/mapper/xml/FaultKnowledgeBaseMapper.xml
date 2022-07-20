@@ -82,7 +82,7 @@
             </if>
 
             <if test="condition.matchName != null and  condition.matchName != ''">
-                and CONCAT(a.fault_phenomenon, a.deviceTypeName, a.materialName) LIKE CONCAT('%',#{condition.matchName},'%')
+                and CONCAT(IFNULL(a.fault_phenomenon,''), IFNULL(a.deviceTypeName,''), IFNULL(a.materialName,'')) LIKE CONCAT('%',#{condition.matchName},'%')
             </if>
             <if test="condition.majorCode != null and  condition.majorCode != ''">
                 and a.major_code= #{condition.majorCode}
