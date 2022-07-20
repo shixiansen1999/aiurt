@@ -1045,6 +1045,7 @@ public class SysBaseApiImpl implements ISysBaseAPI {
         announcement.setBusType(busType);
         announcement.setOpenType(SysAnnmentTypeEnum.getByType(busType).getOpenType());
         announcement.setOpenPage(SysAnnmentTypeEnum.getByType(busType).getOpenPage());
+        announcement.setUserIds(toUser);
         announcement.setLevel(level);
         announcement.setStartTime(startTime);
         announcement.setEndTime(endTime);

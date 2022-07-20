@@ -129,6 +129,8 @@ public class SysInfoListController {
             messageDTO.setTitle(sysAnnouncement.getTitile());
             messageDTO.setBusType(SysAnnmentTypeEnum.SITUATION.getType());
             messageDTO.setLevel(sysAnnouncement.getLevel());
+            messageDTO.setStartTime(sysAnnouncement.getStartTime());
+            messageDTO.setEndTime(sysAnnouncement.getEndTime());
             iSysBaseAPI.sendBusAnnouncement(messageDTO);
 
             result.success("发布成功！");
