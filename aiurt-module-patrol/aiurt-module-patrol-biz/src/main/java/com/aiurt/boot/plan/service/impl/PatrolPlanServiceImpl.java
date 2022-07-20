@@ -211,12 +211,12 @@ public class PatrolPlanServiceImpl extends ServiceImpl<PatrolPlanMapper, PatrolP
         //根据专业编码查询对应的专业子系统
         List<MajorDTO> majorDTOList = baseMapper.translateMajor(majorCodes1);
         if (CollectionUtil.isNotEmpty(majorDTOList)) {
-            majorDTOList.forEach(q -> {
-                systemCode.forEach(o -> {
-                    List<SubsystemDTO> subsystemDTOList = baseMapper.translateSubsystem(q.getMajorCode(), o);
-                    q.setSubsystemInfo(subsystemDTOList);
-                });
-            });
+            int i =0;
+            for (MajorDTO a :majorDTOList){
+                List<SubsystemDTO> subsystemDTOList = baseMapper.translateSubsystem(majorCodes1.get(i), systemCode.get(i));
+                a.setSubsystemInfo(subsystemDTOList);
+                i++;
+            }
         }
         return majorDTOList;
     }
