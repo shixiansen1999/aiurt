@@ -1,15 +1,15 @@
-package com.aiurt.modules.system.entity;
-
-import java.io.Serializable;
-import java.util.Date;
+package com.aiurt.modules.situation.entity;
 
 import com.aiurt.common.aspect.annotation.Dict;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import lombok.Data;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import lombok.Data;
 import org.springframework.format.annotation.DateTimeFormat;
+
+import java.io.Serializable;
+import java.util.Date;
 
 /**
  * @Description: 用户通告阅读标记表
@@ -24,28 +24,28 @@ public class SysAnnouncementSend implements Serializable {
 
 	/**id*/
 	@TableId(type = IdType.ASSIGN_ID)
-	private java.lang.String id;
+	private String id;
 	/**通告id*/
-	private java.lang.String anntId;
+	private String anntId;
 	/**用户id*/
-	private java.lang.String userId;
+	private String userId;
 	/**阅读状态（0未读，1已读）*/
 	@Dict(dicCode = "read_flag")
-	private java.lang.String readFlag;
+	private String readFlag;
 	/**阅读时间*/
 	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
     @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
-	private java.util.Date readTime;
+	private Date readTime;
 	/**创建人*/
-	private java.lang.String createBy;
+	private String createBy;
 	/**创建时间*/
 	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
     @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
-	private java.util.Date createTime;
+	private Date createTime;
 	/**更新人*/
-	private java.lang.String updateBy;
+	private String updateBy;
 	/**更新时间*/
 	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
     @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
-	private java.util.Date updateTime;
+	private Date updateTime;
 }

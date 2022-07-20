@@ -1,4 +1,4 @@
-package com.aiurt.modules.system.entity;
+package com.aiurt.modules.situation.entity;
 
 import com.aiurt.common.aspect.annotation.Dict;
 import com.baomidou.mybatisplus.annotation.IdType;
@@ -6,7 +6,6 @@ import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.fasterxml.jackson.annotation.JsonFormat;
-import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import org.jeecgframework.poi.excel.annotation.Excel;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -28,17 +27,17 @@ public class SysAnnouncement implements Serializable {
      * id
      */
     @TableId(type = IdType.ASSIGN_ID)
-    private java.lang.String id;
+    private String id;
     /**
      * 标题
      */
     @Excel(name = "标题", width = 15)
-    private java.lang.String titile;
+    private String titile;
     /**
      * 内容
      */
     @Excel(name = "内容", width = 30)
-    private java.lang.String msgContent;
+    private String msgContent;
     /**
      * 开始时间
      */
@@ -57,31 +56,31 @@ public class SysAnnouncement implements Serializable {
      * 发布人
      */
     @Excel(name = "发布人", width = 15)
-    private java.lang.String sender;
+    private String sender;
     /**
      * 优先级（L低，M中，H高）
      */
     @Excel(name = "优先级（L低，M中，H高,）", width = 15, dicCode = "priority")
-    private java.lang.String priority;
+    private String priority;
 
     /**
      * 消息类型1:通知公告2:系统消息
      */
     @Excel(name = "消息类型", width = 15, dicCode = "msg_category")
     @Dict(dicCode = "msg_category")
-    private java.lang.String msgCategory;
+    private String msgCategory;
     /**
      * 通告对象类型（USER:指定用户，ALL:全体用户）
      */
     @Excel(name = "通告对象类型", width = 15, dicCode = "msg_type")
     @Dict(dicCode = "msg_type")
-    private java.lang.String msgType;
+    private String msgType;
     /**
      * 发布状态（0未发布，1已发布，2已撤销）
      */
     @Excel(name = "发布状态", width = 15, dicCode = "send_status")
     @Dict(dicCode = "send_status")
-    private java.lang.String sendStatus;
+    private String sendStatus;
     /**
      * 发布时间
      */
@@ -99,11 +98,11 @@ public class SysAnnouncement implements Serializable {
     /**
      * 删除状态（0，正常，1已删除）
      */
-    private java.lang.String delFlag;
+    private String delFlag;
     /**
      * 创建人
      */
-    private java.lang.String createBy;
+    private String createBy;
     /**
      * 创建时间
      */
@@ -113,7 +112,7 @@ public class SysAnnouncement implements Serializable {
     /**
      * 更新人
      */
-    private java.lang.String updateBy;
+    private String updateBy;
     /**
      * 更新时间
      */
@@ -123,37 +122,37 @@ public class SysAnnouncement implements Serializable {
     /**
      * 指定用户
      **/
-    private java.lang.String userIds;
+    private String userIds;
     /**
      * 业务类型(email:邮件 bpm:流程)
      */
-    private java.lang.String busType;
+    private String busType;
     /**
      * 业务id
      */
-    private java.lang.String busId;
+    private String busId;
     /**
      * 打开方式 组件：component 路由：url
      */
-    private java.lang.String openType;
+    private String openType;
     /**
      * 组件/路由 地址
      */
-    private java.lang.String openPage;
+    private String openPage;
     /**
      * 摘要
      */
-    private java.lang.String msgAbstract;
+    private String msgAbstract;
     /**
      * 钉钉task_id，用于撤回消息
      */
-    private java.lang.String dtTaskId;
+    private String dtTaskId;
 
     /**
      * 指定接收范围
      **/
     @TableField(exist = false)
-    private java.lang.String userNames;
+    private String userNames;
 
     /**
      * 查询发布时间的起始时间
@@ -178,5 +177,5 @@ public class SysAnnouncement implements Serializable {
      */
     @Excel(name = "特情等级", width = 15, dicCode = "level")
     @Dict(dicCode = "level")
-    private java.lang.String level;
+    private String level;
 }

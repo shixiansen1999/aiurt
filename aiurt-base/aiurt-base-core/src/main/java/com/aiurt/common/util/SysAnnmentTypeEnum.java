@@ -16,6 +16,11 @@ public enum SysAnnmentTypeEnum {
     FAULT("fault", "component",""),
 
     /**
+     * 特情
+     */
+    SITUATION("situation", "component",""),
+
+    /**
      * 工作流跳转链接我的办公
      */
     BPM("bpm", "url", "/bpm/task/MyTaskList");

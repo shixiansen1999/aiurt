@@ -355,7 +355,10 @@ public class SysBaseApiImpl implements ISysBaseAPI {
                 message.getContent(),
                 message.getCategory(),
                 message.getBusType(),
-                message.getBusId());
+                message.getBusId(),
+                message.getLevel(),
+                message.getStartTime(),
+                message.getEndTime());
         try {
             // 同步发送第三方APP消息
             wechatEnterpriseService.sendMessage(message, true);
@@ -1027,7 +1030,7 @@ public class SysBaseApiImpl implements ISysBaseAPI {
      * @param busType
      * @param busId
      */
-    private void sendBusAnnouncement(String fromUser, String toUser, String title, String msgContent, String setMsgCategory, String busType, String busId) {
+    private void sendBusAnnouncement(String fromUser, String toUser, String title, String msgContent, String setMsgCategory, String busType, String busId,String level,Date startTime,Date endTime) {
         SysAnnouncement announcement = new SysAnnouncement();
         announcement.setTitile(title);
         announcement.setMsgContent(msgContent);
@@ -1042,6 +1045,9 @@ public class SysBaseApiImpl implements ISysBaseAPI {
         announcement.setBusType(busType);
         announcement.setOpenType(SysAnnmentTypeEnum.getByType(busType).getOpenType());
         announcement.setOpenPage(SysAnnmentTypeEnum.getByType(busType).getOpenPage());
+        announcement.setLevel(level);
+        announcement.setStartTime(startTime);
+        announcement.setEndTime(endTime);
         sysAnnouncementMapper.insert(announcement);
         // 2.插入用户通告阅读标记表记录
         String userId = toUser;
