@@ -26,6 +26,7 @@ import com.aiurt.boot.task.mapper.*;
 import com.aiurt.common.api.dto.message.MessageDTO;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.exception.AiurtBootException;
+import com.aiurt.common.exception.AiurtNoDataException;
 import com.aiurt.common.util.DateUtils;
 import com.aiurt.common.util.UpdateHelperUtils;
 import com.aiurt.config.datafilter.object.GlobalThreadLocal;
@@ -942,15 +943,22 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
             relQueryWrapper.in(RepairPoolOrgRel::getOrgCode, orgList);
         }
         List<RepairPoolOrgRel> repairPoolOrgRels = orgRelMapper.selectList(relQueryWrapper);
+        if (CollUtil.isNotEmpty(orgList) && CollUtil.isEmpty(repairPoolOrgRels)) {
+            throw new AiurtNoDataException(InspectionConstant.NO_DATA,new ArrayList<>());
+        }
 
         // 站点
         LambdaQueryWrapper<RepairPoolStationRel> repairPoolStationRelLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        List<String> stationList = StrUtil.split(manualTaskReq.getStationList(), ',');
         if (StrUtil.isNotEmpty(manualTaskReq.getStationList())) {
-            List<String> stationList = StrUtil.split(manualTaskReq.getStationList(), ',');
             repairPoolStationRelLambdaQueryWrapper.in(RepairPoolStationRel::getStationCode, stationList);
         }
         List<RepairPoolStationRel> repairPoolStationRels = repairPoolStationRelMapper.selectList(repairPoolStationRelLambdaQueryWrapper);
+        if (CollUtil.isNotEmpty(stationList) && CollUtil.isEmpty(repairPoolStationRels)) {
+            throw new AiurtNoDataException(InspectionConstant.NO_DATA,new ArrayList<>());
+        }
 
+        // 组织机构和线路对应任务code的交集
         if (CollUtil.isNotEmpty(repairPoolOrgRels) && CollUtil.isNotEmpty(repairPoolStationRels)) {
             List<String> orgs = repairPoolOrgRels.stream().map(RepairPoolOrgRel::getRepairPoolCode).collect(Collectors.toList());
             List<String> stations = repairPoolStationRels.stream().map(RepairPoolStationRel::getRepairPoolCode).collect(Collectors.toList());

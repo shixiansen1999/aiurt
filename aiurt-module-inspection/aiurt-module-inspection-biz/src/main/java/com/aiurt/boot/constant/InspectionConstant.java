@@ -177,7 +177,10 @@ public class InspectionConstant {
      * 非法操作
      */
     public static final String ILLEGAL_OPERATION = "告诉你个秘密，您在非法操作";
-
+    /**
+     * 未查询到相关数据
+     */
+    public static final String NO_DATA = "未查询到相关数据";
     /**
      * 检修单状态 1 已提交
      */

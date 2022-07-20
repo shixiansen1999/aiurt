@@ -1,10 +1,11 @@
 package com.aiurt.common.exception;
 
 import cn.hutool.core.util.ObjectUtil;
-import org.jeecg.common.api.vo.Result;
 import com.aiurt.common.enums.SentinelErrorInfoEnum;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.authz.AuthorizationException;
 import org.apache.shiro.authz.UnauthorizedException;
+import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.exception.JeecgBoot401Exception;
 import org.jeecg.common.exception.JeecgBootException;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -19,7 +20,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.servlet.NoHandlerFoundException;
 
-import lombok.extern.slf4j.Slf4j;
+import javax.servlet.http.HttpServletRequest;
 
 /**
  * 异常处理器
@@ -160,4 +161,28 @@ public class AiurtBootExceptionHandler {
 		return Result.error(e.getBindingResult().getFieldError().getDefaultMessage());
 	}
 
+	/**
+	 * 处理自定义异常，没有找到对应的数据
+	 * InvalidDataFieldException
+	 * @param e
+	 * @return
+	 */
+	@ExceptionHandler(AiurtNoDataException.class)
+	public Result<?> handleAiurtNoDataException(AiurtNoDataException e){
+		return Result.OK(e.getMessage(),e.getData());
+	}
+
+
+	/**
+	 * 无效的实体对象字段异常。
+	 *
+	 * @param ex       异常对象。
+	 * @param request  http请求。
+	 * @return 应答对象。
+	 */
+	@ExceptionHandler(value = InvalidDataFieldException.class)
+	public Result<Void> invalidDataFieldExceptionHandle(Exception ex, HttpServletRequest request) {
+		log.error("InvalidDataFieldException exception from URL [" + request.getRequestURI() + "]", ex);
+		return Result.error(AiurtErrorEnum.INVALID_DATA_FIELD.getCode(),AiurtErrorEnum.INVALID_DATA_FIELD.getMessage());
+	}
 }

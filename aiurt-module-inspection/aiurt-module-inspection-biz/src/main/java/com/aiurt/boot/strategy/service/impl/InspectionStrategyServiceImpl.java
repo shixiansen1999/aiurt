@@ -10,6 +10,7 @@ import com.aiurt.boot.manager.dto.*;
 import com.aiurt.boot.plan.dto.RepairDeviceDTO;
 import com.aiurt.boot.plan.dto.StationDTO;
 import com.aiurt.boot.plan.entity.RepairPool;
+import com.aiurt.boot.plan.entity.RepairPoolCode;
 import com.aiurt.boot.plan.mapper.RepairPoolMapper;
 import com.aiurt.boot.standard.entity.InspectionCode;
 import com.aiurt.boot.standard.mapper.InspectionCodeMapper;
@@ -400,9 +401,9 @@ public class InspectionStrategyServiceImpl extends ServiceImpl<InspectionStrateg
                     inspectionCode.setSpecifyDevice(CollUtil.isNotEmpty(inspectionStrDeviceRels) ? "是" : "否");
 
                     InspectionCodeDTO inspectionCodeDTO = new InspectionCodeDTO();
-                    List<Device> devices= new ArrayList<>();
+                    List<Device> devices = new ArrayList<>();
                     //查询对应设备
-                    inspectionStrDeviceRels.stream().forEach(f->{
+                    inspectionStrDeviceRels.stream().forEach(f -> {
                         devices.add(baseMapper.viewDetail(f.getId()));
                     });
                     inspectionCodeDTO.setDevices(devices);
@@ -456,46 +457,41 @@ public class InspectionStrategyServiceImpl extends ServiceImpl<InspectionStrateg
         // 站点
         List<InspectionStrStaRel> stationList = strategyService.getInspectionStrStaRels(ins.getCode());
 
+        // 保存检修标准与检修项目
+        List<RepairPoolCode> newStaIds = strategyService.saveInspection(inspectionCodes);
+
         // 根据检修类型查询调用不同的方法
         Integer type = ins.getType();
-        inspectionCodes.forEach(inspectionCode -> {
 
-            // 保存检修标准与检修项目
-            String newStaId = strategyService.saveInspection(inspectionCode);
+        // 周检
+        if (type.equals(InspectionConstant.WEEK)) {
+            strategyService.weekPlan(ins, newStaIds, orgList, stationList);
+        }
 
-            // 查询检修策略对应的检修标准绑定的设备
-            List<String> deviceList = strategyService.getDeviceList(ins.getCode(), inspectionCode.getCode());
+        // 月检
+        if (type.equals(InspectionConstant.MONTH)) {
+            strategyService.monthPlan(ins, newStaIds, orgList, stationList);
+        }
 
-            // 周检
-            if (type.equals(InspectionConstant.WEEK)) {
-                strategyService.weekPlan(ins, newStaId, orgList, stationList, deviceList);
-            }
+        // 双月检
+        if (type.equals(InspectionConstant.DOUBLEMONTH)) {
+            strategyService.doubleMonthPlan(ins, newStaIds, orgList, stationList);
+        }
 
-            // 月检
-            if (type.equals(InspectionConstant.MONTH)) {
-                strategyService.monthPlan(ins, newStaId, orgList, stationList, deviceList);
-            }
+        // 季检
+        if (type.equals(InspectionConstant.QUARTER)) {
+            strategyService.quarterPlan(ins, newStaIds, orgList, stationList);
+        }
 
-            // 双月检
-            if (type.equals(InspectionConstant.DOUBLEMONTH)) {
-                strategyService.doubleMonthPlan(ins, newStaId, orgList, stationList, deviceList);
-            }
+        // 半年检
+        if (type.equals(InspectionConstant.SEMIANNUAL)) {
+            strategyService.semiAnnualPlan(ins, newStaIds, orgList, stationList);
+        }
 
-            // 季检
-            if (type.equals(InspectionConstant.QUARTER)) {
-                strategyService.quarterPlan(ins, newStaId, orgList, stationList, deviceList);
-            }
-
-            // 半年检
-            if (type.equals(InspectionConstant.SEMIANNUAL)) {
-                strategyService.semiAnnualPlan(ins, newStaId, orgList, stationList, deviceList);
-            }
-
-            // 年检
-            if (type.equals(InspectionConstant.ANNUAL)) {
-                strategyService.annualPlan(ins, newStaId, orgList, stationList, deviceList);
-            }
-        });
+        // 年检
+        if (type.equals(InspectionConstant.ANNUAL)) {
+            strategyService.annualPlan(ins, newStaIds, orgList, stationList);
+        }
 
         // 更新是否生成年计划状态
         ins.setGenerateStatus(InspectionConstant.GENERATED);
@@ -658,8 +654,8 @@ public class InspectionStrategyServiceImpl extends ServiceImpl<InspectionStrateg
         //根据专业编码查询对应的专业子系统
         List<MajorDTO> majorDTOList = repairTaskMapper.translateMajor(majorCodes1);
         if (CollectionUtil.isNotEmpty(majorDTOList)) {
-            int i =0;
-            for (MajorDTO a :majorDTOList){
+            int i = 0;
+            for (MajorDTO a : majorDTOList) {
                 List<SubsystemDTO> subsystemDTOList = repairTaskMapper.translateSubsystem(majorCodes1.get(i), systemCode.get(i));
                 a.setSubsystemDTOList(subsystemDTOList);
                 i++;

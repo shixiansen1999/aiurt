@@ -1,7 +1,5 @@
 package com.aiurt.common.exception;
 
-import org.intellij.lang.annotations.Flow;
-
 /**
  *
  */
@@ -19,7 +17,12 @@ public enum AiurtErrorEnum {
     /**
      * 6 开头
      */
-    FLOW_MODEL_NOT_FOUND(61001,"流程模板信息不存在");
+    FLOW_MODEL_NOT_FOUND(61001,"流程模板信息不存在"),
+
+    /**
+     * 7 开头
+     */
+    INVALID_DATA_FIELD(71001,"数据验证失败，无效的数据实体对象字段！");
 
     private Integer code;
     private String message;

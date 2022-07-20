@@ -38,9 +38,9 @@ public class RepairPoolRel implements Serializable {
 	@Excel(name = "检修计划单号，关联repair_pool表的code", width = 15)
     @ApiModelProperty(value = "检修计划单号，关联repair_pool表的code")
     private java.lang.String repairPoolCode;
-	/**检修标准编码，关联repair_pool_code的code*/
+	/**检修标准id，关联repair_pool_code的code*/
 	@Excel(name = "检修标准id", width = 15)
-    @ApiModelProperty(value = "检修标准编码，关联repair_pool_code的id")
+    @ApiModelProperty(value = "检修标准id，关联repair_pool_code的id")
     private java.lang.String repairPoolStaId;
 	/**删除状态： 0未删除 1已删除*/
     @ApiModelProperty(value = "删除状态： 0未删除 1已删除")
