@@ -43,6 +43,11 @@ public class CheckListDTO {
     @ApiModelProperty(value = "提交人名称")
     private String overhaulName;
 
+    /**设备id*/
+    @TableField(exist = false)
+    @ApiModelProperty(value = "设备id")
+    private String equipmentId;
+
     /**设备编码*/
     @TableField(exist = false)
     @ApiModelProperty(value = "设备编码")
@@ -214,4 +219,9 @@ public class CheckListDTO {
     @TableField(exist = false)
     @ApiModelProperty(value = "同行人列表")
     private List<ColleaguesDTO> realList;
+
+    /**站点编码*/
+    @TableField(exist = false)
+    @ApiModelProperty(value = "站点编码")
+    private String siteCode;
 }

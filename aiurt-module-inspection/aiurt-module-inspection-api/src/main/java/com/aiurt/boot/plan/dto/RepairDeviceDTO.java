@@ -13,6 +13,8 @@ import lombok.Data;
 @Data
 public class RepairDeviceDTO {
 
+    @ApiModelProperty(value = "设备id")
+    private String deviceId;
     @ApiModelProperty(value = "设备名称")
     private String name;
     @ApiModelProperty(value = "设备编码")
@@ -44,4 +46,6 @@ public class RepairDeviceDTO {
     private Integer temporary;
     @ApiModelProperty(value = "设备状态")
     private Integer status;
+    @ApiModelProperty(value = "设备类型编码")
+    private String deviceTypeCode;
 }
