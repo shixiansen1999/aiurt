@@ -1,9 +1,9 @@
-package com.aiurt.boot.modules.schedule.mapper;
+package com.aiurt.modules.schedule.mapper;
 
-import com.aiurt.boot.modules.schedule.entity.ScheduleRecord;
-import com.aiurt.boot.modules.schedule.model.ScheduleRecordModel;
-import com.aiurt.boot.modules.schedule.model.ScheduleUser;
-import com.aiurt.boot.modules.schedule.model.SysUserScheduleModel;
+import com.aiurt.modules.schedule.entity.ScheduleRecord;
+import com.aiurt.modules.schedule.model.ScheduleRecordModel;
+import com.aiurt.modules.schedule.model.ScheduleUser;
+import com.aiurt.modules.schedule.model.SysUserScheduleModel;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import org.apache.ibatis.annotations.Param;
 import org.jeecg.common.system.vo.LoginUser;

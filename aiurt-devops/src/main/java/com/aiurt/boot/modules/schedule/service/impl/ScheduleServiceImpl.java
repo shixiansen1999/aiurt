@@ -1,16 +1,16 @@
-package com.aiurt.boot.modules.schedule.service.impl;
+package com.aiurt.modules.schedule.service.impl;
 
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
-import com.aiurt.boot.modules.schedule.entity.Schedule;
-import com.aiurt.boot.modules.schedule.entity.ScheduleItem;
-import com.aiurt.boot.modules.schedule.entity.ScheduleRecord;
-import com.aiurt.boot.modules.schedule.mapper.ScheduleMapper;
-import com.aiurt.boot.modules.schedule.model.ScheduleRecordModel;
-import com.aiurt.boot.modules.schedule.model.ScheduleUser;
-import com.aiurt.boot.modules.schedule.service.IScheduleItemService;
-import com.aiurt.boot.modules.schedule.service.IScheduleRecordService;
-import com.aiurt.boot.modules.schedule.service.IScheduleService;
+import com.aiurt.modules.schedule.entity.Schedule;
+import com.aiurt.modules.schedule.entity.ScheduleItem;
+import com.aiurt.modules.schedule.entity.ScheduleRecord;
+import com.aiurt.modules.schedule.mapper.ScheduleMapper;
+import com.aiurt.modules.schedule.model.ScheduleRecordModel;
+import com.aiurt.modules.schedule.model.ScheduleUser;
+import com.aiurt.modules.schedule.service.IScheduleItemService;
+import com.aiurt.modules.schedule.service.IScheduleRecordService;
+import com.aiurt.modules.schedule.service.IScheduleService;
 import com.aiurt.common.util.DateUtils;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;

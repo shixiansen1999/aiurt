@@ -1,9 +1,9 @@
-package com.aiurt.boot.modules.schedule.mapper;
+package com.aiurt.modules.schedule.mapper;
 
 import java.util.List;
 
 import org.apache.ibatis.annotations.Param;
-import com.aiurt.boot.modules.schedule.entity.ScheduleRuleItem;
+import com.aiurt.modules.schedule.entity.ScheduleRuleItem;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import org.apache.ibatis.annotations.Select;
 

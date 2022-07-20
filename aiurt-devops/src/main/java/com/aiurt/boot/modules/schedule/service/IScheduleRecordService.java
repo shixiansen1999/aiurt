@@ -1,9 +1,9 @@
-package com.aiurt.boot.modules.schedule.service;
+package com.aiurt.modules.schedule.service;
 
-import com.aiurt.boot.modules.schedule.entity.ScheduleRecord;
+import com.aiurt.modules.schedule.entity.ScheduleRecord;
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.aiurt.boot.modules.schedule.model.ScheduleRecordModel;
-import com.aiurt.boot.modules.schedule.model.ScheduleUser;
+import com.aiurt.modules.schedule.model.ScheduleRecordModel;
+import com.aiurt.modules.schedule.model.ScheduleUser;
 import org.jeecg.common.system.vo.LoginUser;
 
 

@@ -1,10 +1,10 @@
-package com.aiurt.boot.modules.schedule.controller;
+package com.aiurt.modules.schedule.controller;
 
 
 import com.aiurt.boot.modules.manage.entity.Collection;
 import com.aiurt.boot.modules.manage.service.ICollectionService;
-import com.aiurt.boot.modules.schedule.entity.ScheduleItem;
-import com.aiurt.boot.modules.schedule.service.IScheduleItemService;
+import com.aiurt.modules.schedule.entity.ScheduleItem;
+import com.aiurt.modules.schedule.service.IScheduleItemService;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.util.oConvertUtils;
 import com.alibaba.fastjson.JSON;

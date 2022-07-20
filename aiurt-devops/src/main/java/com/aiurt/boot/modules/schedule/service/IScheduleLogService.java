@@ -1,6 +1,6 @@
-package com.aiurt.boot.modules.schedule.service;
+package com.aiurt.modules.schedule.service;
 
-import com.aiurt.boot.modules.schedule.entity.ScheduleLog;
+import com.aiurt.modules.schedule.entity.ScheduleLog;
 import com.baomidou.mybatisplus.extension.service.IService;
 
 /**

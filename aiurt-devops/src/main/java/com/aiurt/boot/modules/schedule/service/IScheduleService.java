@@ -1,8 +1,8 @@
-package com.aiurt.boot.modules.schedule.service;
+package com.aiurt.modules.schedule.service;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.aiurt.boot.modules.schedule.entity.Schedule;
+import com.aiurt.modules.schedule.entity.Schedule;
 import com.baomidou.mybatisplus.extension.service.IService;
 
 import javax.servlet.http.HttpServletRequest;

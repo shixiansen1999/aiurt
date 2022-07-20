@@ -25,7 +25,7 @@ import com.aiurt.boot.modules.patrol.vo.PatrolPoolContentTreeVO;
 import com.aiurt.boot.modules.patrol.vo.PatrolTaskVO;
 import com.aiurt.boot.modules.patrol.vo.TaskDetailVO;
 import com.aiurt.boot.modules.repairManage.mapper.RepairTaskMapper;
-import com.aiurt.boot.modules.schedule.mapper.ScheduleRecordMapper;
+import com.aiurt.modules.schedule.mapper.ScheduleRecordMapper;
 import com.aiurt.boot.modules.statistical.service.StatisticalService;
 import com.aiurt.boot.modules.statistical.vo.*;
 import com.aiurt.common.constant.CommonConstant;

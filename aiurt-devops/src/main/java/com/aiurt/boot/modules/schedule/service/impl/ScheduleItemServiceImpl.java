@@ -1,8 +1,8 @@
-package com.aiurt.boot.modules.schedule.service.impl;
+package com.aiurt.modules.schedule.service.impl;
 
-import com.aiurt.boot.modules.schedule.entity.ScheduleItem;
-import com.aiurt.boot.modules.schedule.mapper.ScheduleItemMapper;
-import com.aiurt.boot.modules.schedule.service.IScheduleItemService;
+import com.aiurt.modules.schedule.entity.ScheduleItem;
+import com.aiurt.modules.schedule.mapper.ScheduleItemMapper;
+import com.aiurt.modules.schedule.service.IScheduleItemService;
 import org.springframework.stereotype.Service;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;

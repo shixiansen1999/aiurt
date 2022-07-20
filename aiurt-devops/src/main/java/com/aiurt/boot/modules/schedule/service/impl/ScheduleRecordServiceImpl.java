@@ -1,14 +1,14 @@
-package com.aiurt.boot.modules.schedule.service.impl;
+package com.aiurt.modules.schedule.service.impl;
 
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.aiurt.boot.modules.manage.entity.Line;
 import com.aiurt.boot.modules.manage.service.ILineService;
-import com.aiurt.boot.modules.schedule.entity.ScheduleRecord;
-import com.aiurt.boot.modules.schedule.mapper.ScheduleRecordMapper;
-import com.aiurt.boot.modules.schedule.model.ScheduleRecordModel;
-import com.aiurt.boot.modules.schedule.model.ScheduleUser;
-import com.aiurt.boot.modules.schedule.service.IScheduleRecordService;
+import com.aiurt.modules.schedule.entity.ScheduleRecord;
+import com.aiurt.modules.schedule.mapper.ScheduleRecordMapper;
+import com.aiurt.modules.schedule.model.ScheduleRecordModel;
+import com.aiurt.modules.schedule.model.ScheduleUser;
+import com.aiurt.modules.schedule.service.IScheduleRecordService;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.jeecg.common.system.vo.LoginUser;

@@ -1,9 +1,9 @@
-package com.aiurt.boot.modules.schedule.service.impl;
+package com.aiurt.modules.schedule.service.impl;
 
 import cn.hutool.core.util.ObjectUtil;
-import com.aiurt.boot.modules.schedule.entity.ScheduleHolidays;
-import com.aiurt.boot.modules.schedule.mapper.ScheduleHolidaysMapper;
-import com.aiurt.boot.modules.schedule.service.IScheduleHolidaysService;
+import com.aiurt.modules.schedule.entity.ScheduleHolidays;
+import com.aiurt.modules.schedule.mapper.ScheduleHolidaysMapper;
+import com.aiurt.modules.schedule.service.IScheduleHolidaysService;
 import com.aiurt.common.util.DateUtils;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.extern.slf4j.Slf4j;

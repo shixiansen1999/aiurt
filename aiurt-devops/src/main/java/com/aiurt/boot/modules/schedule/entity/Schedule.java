@@ -1,4 +1,4 @@
-package com.aiurt.boot.modules.schedule.entity;
+package com.aiurt.modules.schedule.entity;
 
 import java.util.Date;
 import java.util.List;
@@ -7,7 +7,7 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.baomidou.mybatisplus.annotation.TableField;
-import com.aiurt.boot.modules.schedule.model.ScheduleRecordModel;
+import com.aiurt.modules.schedule.model.ScheduleRecordModel;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;

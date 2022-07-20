@@ -1,11 +1,11 @@
-package com.aiurt.boot.modules.schedule.service.impl;
+package com.aiurt.modules.schedule.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.aiurt.boot.modules.schedule.entity.ScheduleRule;
-import com.aiurt.boot.modules.schedule.entity.ScheduleRuleItem;
-import com.aiurt.boot.modules.schedule.mapper.ScheduleRuleMapper;
-import com.aiurt.boot.modules.schedule.service.IScheduleRuleItemService;
-import com.aiurt.boot.modules.schedule.service.IScheduleRuleService;
+import com.aiurt.modules.schedule.entity.ScheduleRule;
+import com.aiurt.modules.schedule.entity.ScheduleRuleItem;
+import com.aiurt.modules.schedule.mapper.ScheduleRuleMapper;
+import com.aiurt.modules.schedule.service.IScheduleRuleItemService;
+import com.aiurt.modules.schedule.service.IScheduleRuleService;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

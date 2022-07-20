@@ -3,12 +3,12 @@ package com.aiurt.boot.modules.statistical.controller;
 
 import cn.hutool.core.date.DateUtil;
 import com.aiurt.boot.modules.device.service.IDeviceService;
-import com.aiurt.boot.modules.schedule.entity.ScheduleHolidays;
-import com.aiurt.boot.modules.schedule.model.DayScheduleModel;
-import com.aiurt.boot.modules.schedule.model.ScheduleRecordModel;
-import com.aiurt.boot.modules.schedule.service.IScheduleHolidaysService;
-import com.aiurt.boot.modules.schedule.service.IScheduleRecordService;
-import com.aiurt.boot.modules.schedule.vo.ScheduleCalendarVo;
+import com.aiurt.modules.schedule.entity.ScheduleHolidays;
+import com.aiurt.modules.schedule.model.DayScheduleModel;
+import com.aiurt.modules.schedule.model.ScheduleRecordModel;
+import com.aiurt.modules.schedule.service.IScheduleHolidaysService;
+import com.aiurt.modules.schedule.service.IScheduleRecordService;
+import com.aiurt.modules.schedule.vo.ScheduleCalendarVo;
 import com.aiurt.boot.modules.statistical.vo.DepartDataVo;
 import com.aiurt.boot.modules.statistical.vo.StaffDataVo;
 import com.aiurt.boot.modules.statistical.vo.UserAnalysisDataVo;

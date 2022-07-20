@@ -1,8 +1,8 @@
-package com.aiurt.boot.modules.schedule.controller;
+package com.aiurt.modules.schedule.controller;
 
 
-import com.aiurt.boot.modules.schedule.entity.ScheduleLog;
-import com.aiurt.boot.modules.schedule.service.IScheduleLogService;
+import com.aiurt.modules.schedule.entity.ScheduleLog;
+import com.aiurt.modules.schedule.service.IScheduleLogService;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.util.oConvertUtils;
 import com.alibaba.fastjson.JSON;

@@ -1,6 +1,6 @@
-package com.aiurt.boot.modules.schedule.mapper;
+package com.aiurt.modules.schedule.mapper;
 
-import com.aiurt.boot.modules.schedule.entity.Schedule;
+import com.aiurt.modules.schedule.entity.Schedule;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
 /**

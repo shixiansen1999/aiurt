@@ -1,12 +1,12 @@
-package com.aiurt.boot.modules.schedule.controller;
+package com.aiurt.modules.schedule.controller;
 
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.StrUtil;
-import com.aiurt.boot.modules.schedule.entity.*;
-import com.aiurt.boot.modules.schedule.model.ScheduleUser;
-import com.aiurt.boot.modules.schedule.service.*;
-import com.aiurt.boot.modules.schedule.vo.RecordParam;
-import com.aiurt.boot.modules.schedule.vo.ScheduleRecordVo;
+import com.aiurt.modules.schedule.entity.*;
+import com.aiurt.modules.schedule.model.ScheduleUser;
+import com.aiurt.modules.schedule.service.*;
+import com.aiurt.modules.schedule.vo.RecordParam;
+import com.aiurt.modules.schedule.vo.ScheduleRecordVo;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.util.DateUtils;
 import com.aiurt.common.util.oConvertUtils;

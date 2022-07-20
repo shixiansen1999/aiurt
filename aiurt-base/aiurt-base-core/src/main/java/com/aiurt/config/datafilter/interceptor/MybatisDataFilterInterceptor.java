@@ -77,10 +77,13 @@ public class MybatisDataFilterInterceptor implements Interceptor {
             }
             Class<?> mapperClass = (Class<?>) ReflectUtil.getFieldValue(proxy, "mapperInterface");
             if (properties.getEnabledDataPermFilter()) {
-                EnableDataPerm rule = mapperClass.getAnnotation(EnableDataPerm.class);
-                if (rule != null) {
-                    loadDataPermFilterRules(mapperClass, rule);
+                if(mapperClass!=null){
+                    EnableDataPerm rule = mapperClass.getAnnotation(EnableDataPerm.class);
+                    if (rule != null) {
+                        loadDataPermFilterRules(mapperClass, rule);
+                    }
                 }
+
             }
         }
     }
