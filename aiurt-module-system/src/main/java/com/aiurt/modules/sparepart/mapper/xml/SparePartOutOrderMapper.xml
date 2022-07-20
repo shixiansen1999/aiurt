@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.aiurt.modules.sparepart.mapper.SparePartOutOrderMapper">
+
+    <select id="queryPageList"
+            resultType="com.aiurt.modules.sparepart.entity.vo.SparePartOutVO">
+        select spoo.id,spoo.material_code,mb.name materialName,mb.type,
+        mb.specifications,mb.country_origin countryOrigin,mb.manufacturer,mb.brand,
+        spoo.num,spoo.create_time,spoo.warehouse_code,w.warehouse_name
+        from spare_part_out_order spoo
+        left join spare_part_stock_info w on w.warehouse_code=spoo.warehouse_code
+        left join material_base mb on mb.code=spoo.material_code
+        where 1=1 and spoo.del_flag!=1
+        <if test="sparePartLendQuery.materialName!=null and sparePartLendQuery.materialName!=''">
+            and mb.name like concat('%', #{sparePartLendQuery.materialName}, '%')
+        </if>
+        <if test="sparePartLendQuery.type!=null and sparePartLendQuery.type!=''">
+            and mb.type = #{sparePartLendQuery.type}
+        </if>
+        <if test="sparePartLendQuery.warehouseCode!=null and sparePartLendQuery.warehouseCode!=''">
+            and spoo.warehouse_code = #{sparePartLendQuery.warehouseCode}
+        </if>
+        order by spoo.create_time desc
+    </select>
+    <select id="exportXls"
+            resultType="com.aiurt.modules.sparepart.entity.dto.SparePartOutExcel">
+        select spoo.id,spoo.material_code,mb.name materialName,mb.type,
+        mb.specifications,mb.country_origin countryOrigin,mb.manufacturer,mb.brand,
+        spoo.num,spoo.create_time,spoo.warehouse_code,w.warehouse_name
+        from spare_part_out_order spoo
+        left join spare_part_stock_info w on w.warehouse_code=spoo.warehouse_code
+        left join material_base mb on mb.code=spoo.material_code
+        where 1=1 and spoo.del_flag!=1
+        <if test="sparePartLendQuery.materialName!=null and sparePartLendQuery.materialName!=''">
+            and mb.name like concat('%', #{sparePartLendQuery.materialName}, '%')
+        </if>
+        <if test="sparePartLendQuery.type!=null and sparePartLendQuery.type!=''">
+            and mb.type = #{sparePartLendQuery.type}
+        </if>
+        <if test="sparePartLendQuery.warehouseCode!=null and sparePartLendQuery.warehouseCode!=''">
+            and spoo.warehouse_code = #{sparePartLendQuery.warehouseCode}
+        </if>
+        order by spoo.create_time desc
+
+    </select>
+</mapper>

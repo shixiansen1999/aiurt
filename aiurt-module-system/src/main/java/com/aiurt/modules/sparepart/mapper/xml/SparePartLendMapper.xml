@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.aiurt.modules.sparepart.mapper.SparePartLendMapper">
+
+    <select id="queryPageList" resultType="com.aiurt.modules.sparepart.entity.vo.SparePartLendVO">
+        select spl.id,spl.material_code,mb.name materialName,mb.type materialType,
+                    mb.specifications,mb.country_origin countryOrigin,mb.manufacturer,mb.brand,mb.unit,
+                    spl.lend_time,spl.lend_num,spl.remarks,spl.back_time,spl.status,w.warehouse_name
+        from spare_part_lend spl
+        left join spare_part_stock_info w on w.warehouse_code=spl.warehouse_code
+        left join material_base mb on mb.code=spl.material_code
+        where 1=1 and spl.del_flag!=1
+        <if test="sparePartLendQuery.materialName!=null and sparePartLendQuery.materialName!=''">
+            and mb.name like concat('%', #{sparePartLendQuery.materialName}, '%')
+        </if>
+        <if test="sparePartLendQuery.type!=null and sparePartLendQuery.type!=''">
+            and mb.type = #{sparePartLendQuery.type}
+        </if>
+        <if test="sparePartLendQuery.warehouseCode!=null and sparePartLendQuery.warehouseCode!=''">
+            and spl.warehouse_code = #{sparePartLendQuery.warehouseCode}
+        </if>
+
+    </select>
+    <select id="queryExportXls" resultType="com.aiurt.modules.sparepart.entity.dto.SparePartLendExcel">
+        select spl.material_code,mb.name materialName,mb.type,
+                    mb.specifications,mb.country_origin countryOrigin,mb.manufacturer,mb.brand,mb.unit,
+                    spl.lend_time,spl.lend_num,spl.remarks,spl.back_time,spl.status,w.warehouse_name
+        from spare_part_lend spl
+        left join spare_part_stock_info w on w.warehouse_code=spl.warehouse_code
+        left join material_base mb on mb.code=spl.material_code
+        where 1=1 and spl.del_flag!=1
+        <if test="sparePartLendQuery.materialName!=null and sparePartLendQuery.materialName!=''">
+            and mb.name like concat('%', #{sparePartLendQuery.materialName}, '%')
+        </if>
+        <if test="sparePartLendQuery.type!=null and sparePartLendQuery.type!=''">
+            and mb.type = #{sparePartLendQuery.type}
+        </if>
+        <if test="sparePartLendQuery.warehouseCode!=null and sparePartLendQuery.warehouseCode!=''">
+            and spl.warehouse_code = #{sparePartLendQuery.warehouseCode}
+        </if>
+
+    </select>
+</mapper>

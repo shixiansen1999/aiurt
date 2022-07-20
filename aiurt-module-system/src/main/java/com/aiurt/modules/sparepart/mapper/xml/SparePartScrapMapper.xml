@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.aiurt.modules.sparepart.mapper.SparePartScrapMapper">
+
+    <select id="queryPageList"
+            resultType="com.aiurt.modules.sparepart.entity.vo.SparePartScrapVO">
+        select sps.id,sps.material_code,mb.name materialName,mb.type,
+        mb.specifications,mb.country_origin countryOrigin,mb.manufacturer,
+        sps.num,sps.status,sps.reason,sps.create_time
+        from spare_part_scrap sps
+        left join material_base mb on mb.code=sps.material_code
+        where 1=1 and sps.del_flag!=1
+        <if test="sparePartScrapQuery.materialName!=null and sparePartScrapQuery.materialName!=''">
+            and mb.name like concat('%', #{sparePartLendQuery.materialName}, '%')
+        </if>
+        <if test="sparePartScrapQuery.type!=null and sparePartScrapQuery.type!=''">
+            and mb.type = #{sparePartLendQuery.type}
+        </if>
+        <if test="sparePartScrapQuery.status!=null and sparePartScrapQuery.status!=''">
+            and sps.status = #{sparePartScrapQuery.status}
+        </if>
+        order by sps.create_time desc
+
+
+    </select>
+    <select id="exportXls"
+            resultType="com.aiurt.modules.sparepart.entity.dto.SparePartScrapExcel">
+        select sps.id,sps.material_code,mb.name materialName,mb.type,
+        mb.specifications,mb.country_origin countryOrigin,mb.manufacturer,
+        sps.num,sps.status,sps.reason,sps.create_time
+        from spare_part_scrap sps
+        left join material_base mb on mb.code=sps.material_code
+        where 1=1 and sps.del_flag!=1
+        <if test="sparePartScrapQuery.materialName!=null and sparePartScrapQuery.materialName!=''">
+            and mb.name like concat('%', #{sparePartLendQuery.materialName}, '%')
+        </if>
+        <if test="sparePartScrapQuery.type!=null and sparePartScrapQuery.type!=''">
+            and mb.type = #{sparePartLendQuery.type}
+        </if>
+        <if test="sparePartScrapQuery.status!=null and sparePartScrapQuery.status!=''">
+            and sps.status = #{sparePartScrapQuery.status}
+        </if>
+        order by sps.create_time desc
+    </select>
+</mapper>

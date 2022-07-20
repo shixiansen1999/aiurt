@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.aiurt.modules.sparepart.mapper.SparePartApplyMaterialMapper">
+
+    <select id="queryPageList"
+            resultType="com.aiurt.modules.sparepart.entity.dto.SpareApplyMaterialDTO">
+        select spam,id,spam.apply_code,mb.name,mb.type,
+            mb.specifications,mb.country_origin countryOrigin,
+            mb.manufacturer,mb.brand,spam.apply_num
+        from spare_part_apply_material spam
+        left join material_base mb on mb.code=spam.material_code
+        where spam.apply_code=#{applyCode}
+    </select>
+</mapper>
