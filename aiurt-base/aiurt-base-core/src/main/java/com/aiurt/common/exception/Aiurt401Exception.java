@@ -20,4 +20,5 @@ public class Aiurt401Exception extends RuntimeException {
 	{
 		super(message,cause);
 	}
+
 }

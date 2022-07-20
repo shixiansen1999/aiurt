@@ -70,15 +70,14 @@ public class StrategyService {
      * 周检
      *
      * @param ins         检修策略
-     * @param newStaId    新的检修标准
+     * @param newStaIds   新的检修标准
      * @param orgList     组织机构
      * @param stationList 站点
-     * @param deviceList  设备列表
      */
     public void weekPlan(InspectionStrategy ins,
-                         String newStaId, List<InspectionStrOrgRel> orgList,
-                         List<InspectionStrStaRel> stationList,
-                         List<String> deviceList) {
+                         List<RepairPoolCode> newStaIds,
+                         List<InspectionStrOrgRel> orgList,
+                         List<InspectionStrStaRel> stationList) {
         //获取当前规范的年份,如果是今年就生成今年剩下的任务，如果是明年，则生成明年的所有任务
         Date date;
         if (Integer.valueOf(DateUtils.getYear()).equals(Integer.valueOf(ins.getYear()))) {
@@ -95,7 +94,7 @@ public class StrategyService {
 
         // 生成对应的周计划
         for (int i = 0; i < list.size(); i++) {
-            addEveryWeekTask(InspectionConstant.WEEK, ins, newStaId, list.get(i)[0], list.get(i)[1], orgList, stationList, deviceList);
+            addEveryWeekTask(InspectionConstant.WEEK, ins, newStaIds, list.get(i)[0], list.get(i)[1], orgList, stationList);
         }
     }
 
@@ -104,15 +103,14 @@ public class StrategyService {
      * 月检
      *
      * @param ins         检修策略
-     * @param newStaId    新的检修标准
+     * @param newStaIds   新的检修标准
      * @param orgList     组织机构
      * @param stationList 站点
-     * @param deviceList  设备列表
      */
     public void monthPlan(InspectionStrategy ins,
-                          String newStaId, List<InspectionStrOrgRel> orgList,
-                          List<InspectionStrStaRel> stationList,
-                          List<String> deviceList) {
+                          List<RepairPoolCode> newStaIds,
+                          List<InspectionStrOrgRel> orgList,
+                          List<InspectionStrStaRel> stationList) {
         boolean thisYear = isThisYear(ins.getYear());
 
         //获取当前月
@@ -141,7 +139,7 @@ public class StrategyService {
             }
 
             // 设置每个月的第几周新增任务
-            addEveryWeekTask(InspectionConstant.MONTH, ins, newStaId, date[0], date[1], orgList, stationList, deviceList);
+            addEveryWeekTask(InspectionConstant.MONTH, ins, newStaIds, date[0], date[1], orgList, stationList);
         }
 
     }
@@ -151,15 +149,14 @@ public class StrategyService {
      * 双月检
      *
      * @param ins         检修策略
-     * @param newStaId    新的检修标准
+     * @param newStaIds   新的检修标准
      * @param orgList     组织机构
      * @param stationList 站点
-     * @param deviceList  设备列表
      */
     public void doubleMonthPlan(InspectionStrategy ins,
-                                String newStaId, List<InspectionStrOrgRel> orgList,
-                                List<InspectionStrStaRel> stationList,
-                                List<String> deviceList) {
+                                List<RepairPoolCode> newStaIds,
+                                List<InspectionStrOrgRel> orgList,
+                                List<InspectionStrStaRel> stationList) {
         boolean thisYear = isThisYear(ins.getYear());
 
         // 获取当前月
@@ -198,7 +195,7 @@ public class StrategyService {
                 throw new AiurtBootException("无可生成计划");
             }
 
-            addEveryWeekTask(InspectionConstant.DOUBLEMONTH, ins, newStaId, date[0], date[1], orgList, stationList, deviceList);
+            addEveryWeekTask(InspectionConstant.DOUBLEMONTH, ins, newStaIds, date[0], date[1], orgList, stationList);
         }
     }
 
@@ -206,15 +203,14 @@ public class StrategyService {
      * 季检
      *
      * @param ins         检修策略
-     * @param newStaId    新的检修标准
+     * @param newStaIds   新的检修标准
      * @param orgList     组织机构
      * @param stationList 站点
-     * @param deviceList  设备列表
      */
     public void quarterPlan(InspectionStrategy ins,
-                            String newStaId, List<InspectionStrOrgRel> orgList,
-                            List<InspectionStrStaRel> stationList,
-                            List<String> deviceList) {
+                            List<RepairPoolCode> newStaIds,
+                            List<InspectionStrOrgRel> orgList,
+                            List<InspectionStrStaRel> stationList) {
         boolean thisYear = isThisYear(ins.getYear());
 
         //获取当前月
@@ -255,7 +251,7 @@ public class StrategyService {
                 throw new AiurtBootException("无可生成计划");
             }
 
-            addEveryWeekTask(InspectionConstant.QUARTER, ins, newStaId, date[0], date[1], orgList, stationList, deviceList);
+            addEveryWeekTask(InspectionConstant.QUARTER, ins, newStaIds, date[0], date[1], orgList, stationList);
         }
     }
 
@@ -263,15 +259,14 @@ public class StrategyService {
      * 半年检
      *
      * @param ins         检修策略
-     * @param newStaId    新的检修标准
+     * @param newStaIds   新的检修标准
      * @param orgList     组织机构
      * @param stationList 站点
-     * @param deviceList  设备列表
      */
     public void semiAnnualPlan(InspectionStrategy ins,
-                               String newStaId, List<InspectionStrOrgRel> orgList,
-                               List<InspectionStrStaRel> stationList,
-                               List<String> deviceList) {
+                               List<RepairPoolCode> newStaIds,
+                               List<InspectionStrOrgRel> orgList,
+                               List<InspectionStrStaRel> stationList) {
         boolean thisYear = isThisYear(ins.getYear());
 
         // 获取当前月
@@ -317,7 +312,7 @@ public class StrategyService {
             if (date == null) {
                 throw new AiurtBootException("无可生成计划");
             }
-            addEveryWeekTask(InspectionConstant.SEMIANNUAL, ins, newStaId, date[0], date[1], orgList, stationList, deviceList);
+            addEveryWeekTask(InspectionConstant.SEMIANNUAL, ins, newStaIds, date[0], date[1], orgList, stationList);
         }
 
     }
@@ -326,15 +321,14 @@ public class StrategyService {
      * 年检
      *
      * @param ins         检修策略
-     * @param newStaId    新的检修标准
+     * @param newStaIds   新的检修标准
      * @param orgList     组织机构
      * @param stationList 站点
-     * @param deviceList  设备列表
      */
     public void annualPlan(InspectionStrategy ins,
-                           String newStaId, List<InspectionStrOrgRel> orgList,
-                           List<InspectionStrStaRel> stationList,
-                           List<String> deviceList) {
+                           List<RepairPoolCode> newStaIds,
+                           List<InspectionStrOrgRel> orgList,
+                           List<InspectionStrStaRel> stationList) {
         boolean thisYear = isThisYear(ins.getYear());
 
         //获取当前月
@@ -364,28 +358,26 @@ public class StrategyService {
         }
 
         //设置每个月的第几周新增任务
-        addEveryWeekTask(InspectionConstant.ANNUAL, ins, newStaId, date[0], date[1], orgList, stationList, deviceList);
+        addEveryWeekTask(InspectionConstant.ANNUAL, ins, newStaIds, date[0], date[1], orgList, stationList);
 
     }
 
     /**
      * @param type                 检修类型
      * @param ins                  检修策略
-     * @param newStaId             新的标准id
+     * @param newStaIds            新的标准id
      * @param startTime            开始时间
      * @param endTime              结束时间
      * @param inspectionStrOrgRels 组织机构集合
      * @param stationRels          站点集合
-     * @param deviceCodes          设备列表
      */
     private void addEveryWeekTask(Integer type,
                                   InspectionStrategy ins,
-                                  String newStaId,
+                                  List<RepairPoolCode> newStaIds,
                                   Date startTime,
                                   Date endTime,
                                   List<InspectionStrOrgRel> inspectionStrOrgRels,
-                                  List<InspectionStrStaRel> stationRels,
-                                  List<String> deviceCodes
+                                  List<InspectionStrStaRel> stationRels
     ) {
 
         // 检修计划基本信息
@@ -416,7 +408,7 @@ public class StrategyService {
         insertBatchSta(stationRels, jxCode);
 
         // 处理检修计划与检修标准的关联关系，并绑定设备
-        handle(jxCode, newStaId, deviceCodes);
+        handle(jxCode, newStaIds, ins.getCode());
     }
 
     /**
@@ -452,27 +444,32 @@ public class StrategyService {
      * 处理检修计划与检修标准的关联关系，并绑定设备
      *
      * @param jxCode
-     * @param newStaId
-     * @param deviceCodes
+     * @param newStaIds
      */
-    private void handle(String jxCode, String newStaId, List<String> deviceCodes) {
-        // 保存检修计划关联标准信息
-        RepairPoolRel repairPoolRel = RepairPoolRel.builder()
-                .repairPoolCode(jxCode)
-                .repairPoolStaId(newStaId)
-                .build();
-        relMapper.insert(repairPoolRel);
-        String relId = repairPoolRel.getId();
-
-        // 保存检修标准对应的设备
-        if (CollUtil.isNotEmpty(deviceCodes)) {
-            deviceCodes.forEach(red -> {
-                RepairPoolDeviceRel poolDeviceRel = RepairPoolDeviceRel.builder()
-                        .deviceCode(red)
-                        .repairPoolRelId(relId)
+    private void handle(String jxCode, List<RepairPoolCode> newStaIds, String insCode) {
+        if (CollUtil.isNotEmpty(newStaIds)) {
+            for (RepairPoolCode newStaId : newStaIds) {
+                // 查询检修策略对应的检修标准绑定的设备
+                List<String> deviceCodes = getDeviceList(insCode, newStaId.getCode());
+                // 保存检修计划关联标准信息
+                RepairPoolRel repairPoolRel = RepairPoolRel.builder()
+                        .repairPoolCode(jxCode)
+                        .repairPoolStaId(newStaId.getId())
                         .build();
-                repairPoolDeviceRel.insert(poolDeviceRel);
-            });
+                relMapper.insert(repairPoolRel);
+                String relId = repairPoolRel.getId();
+
+                // 保存检修标准对应的设备
+                if (CollUtil.isNotEmpty(deviceCodes)) {
+                    deviceCodes.forEach(red -> {
+                        RepairPoolDeviceRel poolDeviceRel = RepairPoolDeviceRel.builder()
+                                .deviceCode(red)
+                                .repairPoolRelId(relId)
+                                .build();
+                        repairPoolDeviceRel.insert(poolDeviceRel);
+                    });
+                }
+            }
         }
     }
 
@@ -566,50 +563,59 @@ public class StrategyService {
     /**
      * 保存检修标准与检修项
      *
-     * @param inspectionCode
+     * @param inspectionCodes
      */
-    public String saveInspection(InspectionCode inspectionCode) {
-        // 保存检修标准
-        RepairPoolCode repairPoolCode = new RepairPoolCode();
-        UpdateHelperUtils.copyNullProperties(inspectionCode, repairPoolCode);
-        repairPoolCode.setId(null);
-        repairPoolCodeMapper.insert(repairPoolCode);
-        String staId = repairPoolCode.getId();
+    public List<RepairPoolCode> saveInspection(List<InspectionCode> inspectionCodes) {
 
-        // <K,V> K是旧的id,V新生成的id，用来维护复制检修项目时的pid更新
-        HashMap<String, String> map = new HashMap<>(50);
+        List<RepairPoolCode> result = new ArrayList<>();
 
-        // 查询旧的检修标准对应的检修项
-        List<InspectionCodeContent> inspectionCodeContentList = getInspectionCodeContentList(inspectionCode.getId());
+        if (CollUtil.isNotEmpty(inspectionCodes)) {
+            for (InspectionCode inspectionCode : inspectionCodes) {
+                // 保存检修标准
+                RepairPoolCode repairPoolCode = new RepairPoolCode();
+                UpdateHelperUtils.copyNullProperties(inspectionCode, repairPoolCode);
+                repairPoolCode.setId(null);
+                repairPoolCodeMapper.insert(repairPoolCode);
+                String staId = repairPoolCode.getId();
+                result.add(repairPoolCode);
 
-        if (CollUtil.isNotEmpty(inspectionCodeContentList)) {
-            inspectionCodeContentList.forEach(ins -> {
-                RepairPoolCodeContent repairPoolCodeContent = new RepairPoolCodeContent();
-                repairPoolCodeContent.setRepairPoolCodeId(staId);
-                UpdateHelperUtils.copyNullProperties(ins, repairPoolCodeContent);
-                repairPoolCodeContent.setId(null);
+                // <K,V> K是旧的id,V新生成的id，用来维护复制检修项目时的pid更新
+                HashMap<String, String> map = new HashMap<>(50);
 
-                // 保存检修检查项
-                repairPoolCodeContentMapper.insert(repairPoolCodeContent);
+                // 查询旧的检修标准对应的检修项
+                List<InspectionCodeContent> inspectionCodeContentList = getInspectionCodeContentList(inspectionCode.getId());
 
-                // 记录旧的检修检查项id和新的检修检查项id
-                map.put(ins.getId(), repairPoolCodeContent.getId());
-            });
+                if (CollUtil.isNotEmpty(inspectionCodeContentList)) {
+                    inspectionCodeContentList.forEach(ins -> {
+                        RepairPoolCodeContent repairPoolCodeContent = new RepairPoolCodeContent();
+                        repairPoolCodeContent.setRepairPoolCodeId(staId);
+                        UpdateHelperUtils.copyNullProperties(ins, repairPoolCodeContent);
+                        repairPoolCodeContent.setId(null);
 
-            // 更新新检修检查项的pid
-            List<RepairPoolCodeContent> repairPoolCodeContents = repairPoolCodeContentMapper.selectList(
-                    new LambdaQueryWrapper<RepairPoolCodeContent>()
-                            .eq(RepairPoolCodeContent::getRepairPoolCodeId, staId)
-                            .ne(RepairPoolCodeContent::getPid, 0)
-                            .eq(RepairPoolCodeContent::getDelFlag, CommonConstant.DEL_FLAG_0));
-            if (CollUtil.isNotEmpty(repairPoolCodeContents)) {
-                for (RepairPoolCodeContent repairPoolCodeContent : repairPoolCodeContents) {
-                    repairPoolCodeContent.setPid(map.get(repairPoolCodeContent.getPid()));
-                    repairPoolCodeContentMapper.updateById(repairPoolCodeContent);
+                        // 保存检修检查项
+                        repairPoolCodeContentMapper.insert(repairPoolCodeContent);
+
+                        // 记录旧的检修检查项id和新的检修检查项id
+                        map.put(ins.getId(), repairPoolCodeContent.getId());
+                    });
+
+                    // 更新新检修检查项的pid
+                    List<RepairPoolCodeContent> repairPoolCodeContents = repairPoolCodeContentMapper.selectList(
+                            new LambdaQueryWrapper<RepairPoolCodeContent>()
+                                    .eq(RepairPoolCodeContent::getRepairPoolCodeId, staId)
+                                    .ne(RepairPoolCodeContent::getPid, 0)
+                                    .eq(RepairPoolCodeContent::getDelFlag, CommonConstant.DEL_FLAG_0));
+                    if (CollUtil.isNotEmpty(repairPoolCodeContents)) {
+                        for (RepairPoolCodeContent repairPoolCodeContent : repairPoolCodeContents) {
+                            repairPoolCodeContent.setPid(map.get(repairPoolCodeContent.getPid()));
+                            repairPoolCodeContentMapper.updateById(repairPoolCodeContent);
+                        }
+                    }
                 }
             }
         }
-        return staId;
+
+        return result;
     }
 
     /**
