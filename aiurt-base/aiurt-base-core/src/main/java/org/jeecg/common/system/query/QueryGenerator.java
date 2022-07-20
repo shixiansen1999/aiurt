@@ -571,6 +571,16 @@ public class QueryGenerator {
 			}
 			//TODO 日期类型比较特殊 可能oracle下不一定好使
 		}
+		// yyyy-MM-dd HH:mm
+		if (value.length() == 16) {
+			if(rule==QueryRuleEnum.GE) {
+				//比较大于
+				date = getTime().parse(value + ":00");
+			}else if(rule==QueryRuleEnum.LE) {
+				//比较小于
+				date = getTime().parse(value + ":59");
+			}
+		}
 		if(date==null) {
 			date = getTime().parse(value);
 		}
