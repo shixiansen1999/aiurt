@@ -1,11 +1,9 @@
 package com.aiurt.boot.task.dto;
 
 import com.baomidou.mybatisplus.annotation.TableField;
-import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import org.jeecgframework.poi.excel.annotation.Excel;
-import org.springframework.format.annotation.DateTimeFormat;
 
 import java.util.List;
 
@@ -38,15 +36,11 @@ public class PatrolTaskAppointSaveDTO  {
     @ApiModelProperty(value = "计划令图片")
     private java.lang.String planOrderCodeUrl;
     /*** 巡检开始时间*/
-    @JsonFormat(timezone = "GMT+8", pattern = "HH:mm")
-    @DateTimeFormat(pattern = "HH:mm")
     @ApiModelProperty(value = "巡检开始时间")
-    private java.util.Date startTime;
+    private String startTime;
     /*** 巡检结束时间*/
-    @JsonFormat(timezone = "GMT+8", pattern = "HH:mm")
-    @DateTimeFormat(pattern = "HH:mm")
     @ApiModelProperty(value = "巡检结束时间")
-    private java.util.Date endTime;
+    private String endTime;
     @ApiModelProperty(value = "指派人的信息")
     private List<PatrolAccompanyDTO> accompanyDTOList;
 }

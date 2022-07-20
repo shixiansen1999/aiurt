@@ -8,6 +8,7 @@ import com.aiurt.boot.task.service.IPatrolTaskService;
 import com.aiurt.boot.task.service.IPatrolTaskUserService;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.system.base.controller.BaseController;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
@@ -81,16 +82,12 @@ public class PatrolTaskUserController extends BaseController<PatrolTaskUser, IPa
 	 @PostMapping(value = "/patrolTaskAppointed")
 	 public Result<String> patrolTaskAppointed(@RequestBody PatrolTaskAppointSaveDTO patrolAccompanyList) {
 		 //将任务来源改为常规指派,将任务状态改为待确认
-		 PatrolTask patrolTask = new PatrolTask();
-		 patrolTask.setId(patrolAccompanyList.getId());
-		 patrolTask.setSource(2);
-		 patrolTask.setPlanOrderCodeUrl(patrolAccompanyList.getPlanOrderCodeUrl());
-		 patrolTask.setStartTime(patrolAccompanyList.getStartTime());
-		 patrolTask.setEndTime(patrolAccompanyList.getEndTime());
-		 patrolTask.setStatus(1);
-		 patrolTask.setPlanCode(patrolAccompanyList.getPlanCode());
-		 patrolTask.setType( patrolAccompanyList.getType());
-		 patrolTaskService.updateById(patrolTask);
+		 LambdaUpdateWrapper<PatrolTask> updateWrapper = new LambdaUpdateWrapper<>();
+		 updateWrapper.set(PatrolTask::getSource, 2).set(PatrolTask::getStatus, 1).set(PatrolTask::getStartTime, patrolAccompanyList.getStartTime())
+				 .set(PatrolTask::getEndTime, patrolAccompanyList.getEndTime()).set(PatrolTask::getPlanCode, patrolAccompanyList.getPlanCode()).set(PatrolTask::getType, patrolAccompanyList.getType())
+				 .set(PatrolTask::getPlanOrderCodeUrl, patrolAccompanyList.getPlanOrderCodeUrl()).eq(PatrolTask::getCode, patrolAccompanyList.getCode());
+		 patrolTaskService.update(updateWrapper);
+		 //添加巡检人
 		 List<PatrolAccompanyDTO> list = patrolAccompanyList.getAccompanyDTOList();
 		 list.stream().forEach(e->{
 			 PatrolTaskUser patrolTaskUser = new PatrolTaskUser();

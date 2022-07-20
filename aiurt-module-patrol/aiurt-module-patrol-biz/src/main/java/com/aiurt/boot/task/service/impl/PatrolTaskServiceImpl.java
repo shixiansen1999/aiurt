@@ -399,8 +399,6 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         patrolTask.setId(patrolTaskUserDTO.getId());
         patrolTask.setSource(2);
         patrolTask.setPlanOrderCodeUrl(patrolTaskUserDTO.getPlanOrderCodeUrl());
-        patrolTask.setStartTime(patrolTaskUserDTO.getStartTime());
-        patrolTask.setEndTime(patrolTaskUserDTO.getEndTime());
         patrolTask.setStatus(1);
         patrolTask.setPlanCode(patrolTaskUserDTO.getPlanCode());
         patrolTask.setType( patrolTaskUserDTO.getType());
