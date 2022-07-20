@@ -104,6 +104,9 @@
                <if test="condition.overhaulStandardName!=null ">
                    AND t3.title  = #{condition.overhaulStandardName}
                </if>
+               <if test="condition.standardId!=null ">
+                   AND t3.id  = #{condition.standardId}
+              </if>
         </where>
         order by t2.update_time desc,t2.create_time desc
     </select>
