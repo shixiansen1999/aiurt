@@ -73,4 +73,25 @@ public class FlowApiServiceImpl implements FlowApiService {
         // 启动流程
         return null;
     }
+
+
+    /**
+     * 启动流程并提交第一个用户节点
+     * @param startBpmnDTO 流程定义Id。
+     * @return
+     */
+    @Transactional(rollbackFor = Exception.class)
+    public ProcessInstance startAndCompleteFirst(StartBpmnDTO startBpmnDTO) {
+        log.info("启动流程请求参数：[{}]", JSON.toJSONString(startBpmnDTO));
+        LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        if (Objects.isNull(loginUser)) {
+            throw new AiurtBootException("无法启动流程，请重新登录！");
+        }
+        // 判断是否是动态表单
+
+        // 保存中间业务数据
+
+        // 启动流程
+        return null;
+    }
 }
