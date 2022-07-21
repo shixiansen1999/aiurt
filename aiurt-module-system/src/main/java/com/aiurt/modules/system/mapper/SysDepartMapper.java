@@ -1,5 +1,6 @@
 package com.aiurt.modules.system.mapper;
 
+import com.aiurt.common.aspect.annotation.EnableDataPerm;
 import com.aiurt.modules.system.entity.SysDepart;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import org.apache.ibatis.annotations.Select;
@@ -15,6 +16,7 @@ import java.util.List;
  * @Author: Steve
  * @Since：   2019-01-22
  */
+@EnableDataPerm
 public interface SysDepartMapper extends BaseMapper<SysDepart> {
 
 	/**

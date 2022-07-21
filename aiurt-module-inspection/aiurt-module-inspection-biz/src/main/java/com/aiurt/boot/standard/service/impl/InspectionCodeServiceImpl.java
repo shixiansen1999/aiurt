@@ -7,12 +7,9 @@ import com.aiurt.boot.standard.entity.InspectionCode;
 import com.aiurt.boot.standard.mapper.InspectionCodeMapper;
 import com.aiurt.boot.standard.service.IInspectionCodeService;
 import com.aiurt.boot.strategy.entity.InspectionStrDeviceRel;
-import com.aiurt.boot.strategy.entity.InspectionStrOrgRel;
 import com.aiurt.boot.strategy.entity.InspectionStrRel;
-import com.aiurt.boot.strategy.entity.InspectionStrStaRel;
 import com.aiurt.boot.strategy.mapper.InspectionStrDeviceRelMapper;
 import com.aiurt.boot.strategy.mapper.InspectionStrRelMapper;
-import com.aiurt.boot.strategy.mapper.InspectionStrStaRelMapper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -39,9 +36,9 @@ public class InspectionCodeServiceImpl extends ServiceImpl<InspectionCodeMapper,
     public IPage<InspectionCodeDTO> pageList(Page<InspectionCodeDTO> page, InspectionCodeDTO inspectionCodeDTO) {
 
         // todo 数据权限过滤
-        List<InspectionCodeDTO> inspectionCodeDTOS = baseMapper.pageList(page,inspectionCodeDTO);
+        List<InspectionCodeDTO> inspectionCodeDtoList = baseMapper.pageList(page,inspectionCodeDTO);
         if (ObjectUtils.isNotEmpty(inspectionCodeDTO.getInspectionStrCode())) {
-            for (InspectionCodeDTO il : inspectionCodeDTOS) {
+            for (InspectionCodeDTO il : inspectionCodeDtoList) {
                 InspectionStrRel inspectionStrRel = inspectionStrRelMapper.selectOne(new LambdaQueryWrapper<InspectionStrRel>()
                         .eq(InspectionStrRel::getInspectionStaCode, il.getCode())
                         .eq(InspectionStrRel::getInspectionStrCode,inspectionCodeDTO.getInspectionStrCode()));
@@ -52,7 +49,7 @@ public class InspectionCodeServiceImpl extends ServiceImpl<InspectionCodeMapper,
                 il.setSpecifyDevice(CollUtil.isNotEmpty(inspectionStrDeviceRels) ? "是" : "否");
             }
         }
-        return page.setRecords(inspectionCodeDTOS);
+        return page.setRecords(inspectionCodeDtoList);
     }
 
     @Override

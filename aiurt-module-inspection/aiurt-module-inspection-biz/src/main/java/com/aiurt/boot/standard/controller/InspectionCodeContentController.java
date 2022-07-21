@@ -1,6 +1,7 @@
 package com.aiurt.boot.standard.controller;
 
 
+import com.aiurt.boot.constant.InspectionConstant;
 import com.aiurt.boot.standard.entity.InspectionCodeContent;
 import com.aiurt.boot.standard.mapper.InspectionCodeContentMapper;
 import com.aiurt.boot.standard.service.IInspectionCodeContentService;
@@ -137,8 +138,8 @@ public class InspectionCodeContentController extends BaseController<InspectionCo
 		InspectionCodeContent inspectionCodeContent = new InspectionCodeContent();
 		inspectionCodeContent.setId(id); inspectionCodeContent.setDelFlag(1);
 		InspectionCodeContent ins = inspectionCodeContentService.getById(id);
-		if ("0".equals(ins.getPid())){
-			inspectionCodeContentMapper.updatPId(id);
+		if (InspectionConstant.TREE_ROOT_0.equals(ins.getPid())){
+			inspectionCodeContentMapper.updatePid(id);
 		}
 		inspectionCodeContentService.updateById(inspectionCodeContent);
 		return Result.OK("删除成功!");

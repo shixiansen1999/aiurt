@@ -1,7 +1,6 @@
 package com.aiurt.modules.system.service.impl;
 
 import cn.hutool.core.util.StrUtil;
-import com.aiurt.common.constant.CacheConstant;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.constant.FillRuleConstant;
 import com.aiurt.common.util.FillRuleUtil;
@@ -11,6 +10,7 @@ import com.aiurt.modules.system.entity.*;
 import com.aiurt.modules.system.mapper.*;
 import com.aiurt.modules.system.model.DepartIdModel;
 import com.aiurt.modules.system.model.SysDepartTreeModel;
+import com.aiurt.modules.system.service.ISysDepartService;
 import com.aiurt.modules.system.util.FindsDepartsChildrenUtil;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
@@ -19,9 +19,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import io.netty.util.internal.StringUtil;
 import org.apache.commons.lang.StringUtils;
-import com.aiurt.modules.system.service.ISysDepartService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -81,7 +79,7 @@ public class SysDepartServiceImpl extends ServiceImpl<SysDepartMapper, SysDepart
 	 * queryTreeList 对应 queryTreeList 查询所有的部门数据,以树结构形式响应给前端
 	 */
 	@Override
-	@Cacheable(value = CacheConstant.SYS_DEPARTS_CACHE)
+//	@Cacheable(value = CacheConstant.SYS_DEPARTS_CACHE)
 	public List<SysDepartTreeModel> queryTreeList() {
 		LambdaQueryWrapper<SysDepart> query = new LambdaQueryWrapper<SysDepart>();
 		query.eq(SysDepart::getDelFlag, CommonConstant.DEL_FLAG_0.toString());

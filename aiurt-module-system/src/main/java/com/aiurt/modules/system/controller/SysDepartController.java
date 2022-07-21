@@ -1,5 +1,6 @@
 package com.aiurt.modules.system.controller;
 
+import com.aiurt.common.aspect.annotation.PermissionData;
 import com.aiurt.common.constant.CacheConstant;
 import com.aiurt.common.constant.CommonConstant;
 import io.swagger.annotations.Api;
@@ -101,6 +102,7 @@ public class SysDepartController {
 	 */
 	@ApiOperation(value="部门管理-查询所有部门", notes="部门管理-查询所有部门")
 	@RequestMapping(value = "/queryTreeList", method = RequestMethod.GET)
+	@PermissionData(pageComponent = "system/DepartList")
 	public Result<List<SysDepartTreeModel>> queryTreeList(@RequestParam(name = "ids", required = false) String ids) {
 		Result<List<SysDepartTreeModel>> result = new Result<>();
 		try {

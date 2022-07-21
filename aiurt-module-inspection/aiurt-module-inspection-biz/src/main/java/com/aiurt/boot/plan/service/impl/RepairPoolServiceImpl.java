@@ -62,7 +62,7 @@ import java.util.stream.Collectors;
 public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairPool> implements IRepairPoolService {
 
     @Resource
-    private ISysBaseAPI sysBaseAPI;
+    private ISysBaseAPI sysBaseApi;
     @Resource
     private InspectionManager manager;
     @Resource
@@ -119,7 +119,7 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
         List<Future<RepairPool>> futureList = new ArrayList<>();
         if (CollUtil.isNotEmpty(page.getRecords())) {
             page.getRecords().forEach(repair -> {
-                Future<RepairPool> submit = repairPool.submit(new PoolThreadService(repair, sysBaseAPI, manager, repairPoolStationRelMapper, baseMapper));
+                Future<RepairPool> submit = repairPool.submit(new PoolThreadService(repair, sysBaseApi, manager, repairPoolStationRelMapper, baseMapper));
                 futureList.add(submit);
             });
 
@@ -166,6 +166,7 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
         queryWrapper.eq("is_manual", InspectionConstant.NO_IS_MANUAL);
         queryWrapper.eq("del_flag", CommonConstant.DEL_FLAG_0);
         queryWrapper.orderByAsc("start_time");
+        queryWrapper.orderByAsc("type");
         if (selectPlanReq.getStatus() != null) {
             queryWrapper.eq("status", selectPlanReq.getStatus());
         }
@@ -242,12 +243,12 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
                 // 基本信息
                 result.setCode(repairPoolCode.getCode());
                 result.setTitle(repairPoolCode.getTitle());
-                result.setTypeName(sysBaseAPI.translateDict(DictConstant.INSPECTION_CYCLE_TYPE, String.valueOf(repairPoolCode.getType())));
+                result.setTypeName(sysBaseApi.translateDict(DictConstant.INSPECTION_CYCLE_TYPE, String.valueOf(repairPoolCode.getType())));
                 result.setMajorName(manager.translateMajor(Arrays.asList(repairPoolCode.getMajorCode()), InspectionConstant.MAJOR));
                 result.setSubsystemName(manager.translateMajor(Arrays.asList(repairPoolCode.getSubsystemCode()), InspectionConstant.SUBSYSTEM));
                 result.setDeviceTypeName(manager.queryNameByCode(repairPoolCode.getDeviceTypeCode()));
                 result.setIsAppointDevice(CollUtil.isNotEmpty(repairDeviceDTOList) ? "是" : "否");
-                result.setIsAppointDeviceType(sysBaseAPI.translateDict(DictConstant.IS_APPOINT_DEVICE, String.valueOf(repairPoolCode.getIsAppointDevice())));
+                result.setIsAppointDeviceType(sysBaseApi.translateDict(DictConstant.IS_APPOINT_DEVICE, String.valueOf(repairPoolCode.getIsAppointDevice())));
 
                 // 检修项清单
                 result.setRepairPoolCodeContentList(selectCodeContentList(repairPoolCode.getId()));
@@ -274,8 +275,8 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
 
         if (CollUtil.isNotEmpty(result)) {
             result.forEach(r -> {
-                r.setTypeName(sysBaseAPI.translateDict(DictConstant.INSPECTION_PROJECT, String.valueOf(r.getType())));
-                r.setStatusItemName(sysBaseAPI.translateDict(DictConstant.INSPECTION_STATUS_ITEM, String.valueOf(r.getStatusItem())));
+                r.setTypeName(sysBaseApi.translateDict(DictConstant.INSPECTION_PROJECT, String.valueOf(r.getType())));
+                r.setStatusItemName(sysBaseApi.translateDict(DictConstant.INSPECTION_STATUS_ITEM, String.valueOf(r.getStatusItem())));
             });
         }
 
@@ -362,9 +363,9 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
             List<StationDTO> repairPoolStationRels = repairPoolStationRelMapper.selectStationList(code);
             re.setStationName(manager.translateStation(repairPoolStationRels));
             // 周期类型
-            re.setTypeName(sysBaseAPI.translateDict(DictConstant.INSPECTION_CYCLE_TYPE, String.valueOf(repairPool.getType())));
+            re.setTypeName(sysBaseApi.translateDict(DictConstant.INSPECTION_CYCLE_TYPE, String.valueOf(repairPool.getType())));
             // 状态
-            re.setStatusName(sysBaseAPI.translateDict(DictConstant.INSPECTION_TASK_STATE, String.valueOf(repairPool.getStatus())));
+            re.setStatusName(sysBaseApi.translateDict(DictConstant.INSPECTION_TASK_STATE, String.valueOf(repairPool.getStatus())));
 
             // 组织机构
             List<RepairPoolOrgRel> repairPoolOrgRels = orgRelMapper.selectList(new LambdaQueryWrapper<RepairPoolOrgRel>().eq(RepairPoolOrgRel::getRepairPoolCode, code));
@@ -381,16 +382,16 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
             re.setStrategy(ObjectUtil.isNotEmpty(inspectionStrategy) ? inspectionStrategy.getName() : "");
 
             // 是否审核
-            re.setIsConfirm(sysBaseAPI.translateDict(DictConstant.INSPECTION_IS_CONFIRM, String.valueOf(repairPool.getIsConfirm())));
+            re.setIsConfirm(sysBaseApi.translateDict(DictConstant.INSPECTION_IS_CONFIRM, String.valueOf(repairPool.getIsConfirm())));
 
             // 是否审核
-            re.setIsReceipt(sysBaseAPI.translateDict(DictConstant.INSPECTION_IS_CONFIRM, String.valueOf(repairPool.getIsReceipt())));
+            re.setIsReceipt(sysBaseApi.translateDict(DictConstant.INSPECTION_IS_CONFIRM, String.valueOf(repairPool.getIsReceipt())));
 
             // 作业类型
-            re.setWorkTypeName(sysBaseAPI.translateDict(DictConstant.WORK_TYPE, String.valueOf(repairPool.getWorkType())));
+            re.setWorkTypeName(sysBaseApi.translateDict(DictConstant.WORK_TYPE, String.valueOf(repairPool.getWorkType())));
 
             // 是否委外
-            re.setIsManual(sysBaseAPI.translateDict(DictConstant.INSPECTION_IS_MANUAL, String.valueOf(repairPool.getIsManual())));
+            re.setIsManual(sysBaseApi.translateDict(DictConstant.INSPECTION_IS_MANUAL, String.valueOf(repairPool.getIsManual())));
         }
         return re;
     }
@@ -529,7 +530,7 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
             List<String> userIds = assignDTO.getUserIds();
             if (CollUtil.isNotEmpty(userIds)) {
                 userIds.forEach(userId -> {
-                    LoginUser userById = sysBaseAPI.getUserById(userId);
+                    LoginUser userById = sysBaseApi.getUserById(userId);
                     if (ObjectUtil.isNotEmpty(userById)) {
                         RepairTaskUser repairTaskUser = new RepairTaskUser();
                         repairTaskUser.setRepairTaskCode(repairPool.getCode());
@@ -571,7 +572,7 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
     private void sendMessage(List<String> userIds) {
         if (CollUtil.isNotEmpty(userIds)) {
             String toUser = StrUtil.join(",", userIds);
-            sysBaseAPI.sendSysAnnouncement(new MessageDTO(manager.checkLogin().getId(), toUser, "消息通知", "您有一条新的检修任务!", CommonConstant.MSG_CATEGORY_1));
+            sysBaseApi.sendSysAnnouncement(new MessageDTO(manager.checkLogin().getId(), toUser, "消息通知", "您有一条新的检修任务!", CommonConstant.MSG_CATEGORY_1));
         }
     }
 
@@ -731,7 +732,7 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
                         .eq(RepairPoolCodeContent::getDelFlag, CommonConstant.DEL_FLAG_0));
 
         // <K,V> K是旧的id,V新生成的id
-        HashMap<String, String> map = new HashMap<>();
+        HashMap<String, String> map = new HashMap<>(32);
 
         if (CollUtil.isNotEmpty(repairPoolCodeContents)) {
             for (RepairPoolCodeContent repairPoolCodeContent : repairPoolCodeContents) {
@@ -815,7 +816,7 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
         if (CollUtil.isNotEmpty(repairPoolOrgRels)) {
             List<String> orgCodes = repairPoolOrgRels.stream().map(RepairPoolOrgRel::getOrgCode).collect(Collectors.toList());
             // todo 需要查找当前登录管理的组织机构比较后再查询
-            resutlt = sysBaseAPI.getUserByDepIds(orgCodes);
+            resutlt = sysBaseApi.getUserByDepIds(orgCodes);
         }
         return resutlt;
     }
@@ -1212,8 +1213,8 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
                     repairPoolCodes.setMajorName(manager.translateMajor(Arrays.asList(repairPoolCodes.getMajorCode()), InspectionConstant.MAJOR));
                     repairPoolCodes.setSubsystemName(manager.translateMajor(Arrays.asList(repairPoolCodes.getSubsystemCode()), InspectionConstant.SUBSYSTEM));
                     repairPoolCodes.setDeviceTypeName(manager.queryNameByCode(repairPoolCodes.getDeviceTypeCode()));
-                    repairPoolCodes.setTypeName(sysBaseAPI.translateDict(DictConstant.INSPECTION_CYCLE_TYPE, String.valueOf(repairPoolCodes.getType())));
-                    repairPoolCodes.setIsAppointDeviceName(sysBaseAPI.translateDict(DictConstant.IS_APPOINT_DEVICE, String.valueOf(repairPoolCodes.getIsAppointDevice())));
+                    repairPoolCodes.setTypeName(sysBaseApi.translateDict(DictConstant.INSPECTION_CYCLE_TYPE, String.valueOf(repairPoolCodes.getType())));
+                    repairPoolCodes.setIsAppointDeviceName(sysBaseApi.translateDict(DictConstant.IS_APPOINT_DEVICE, String.valueOf(repairPoolCodes.getIsAppointDevice())));
 
                     // 判断是否指定了设备
                     List<RepairPoolDeviceRel> repairPoolDeviceRels = repairPoolDeviceRel.selectList(
@@ -1369,8 +1370,8 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
             // 分页处理设备信息
             if (CollUtil.isNotEmpty(repairPoolDeviceRels)) {
                 List<String> deviceCodeList = repairPoolDeviceRels.stream().map(RepairPoolDeviceRel::getDeviceCode).collect(Collectors.toList());
-                List<RepairDeviceDTO> repairDeviceDTOS = manager.queryDeviceByCodesPage(deviceCodeList, page);
-                page.setRecords(repairDeviceDTOS);
+                List<RepairDeviceDTO> repairDeviceDto = manager.queryDeviceByCodesPage(deviceCodeList, page);
+                page.setRecords(repairDeviceDto);
             }
         }
 

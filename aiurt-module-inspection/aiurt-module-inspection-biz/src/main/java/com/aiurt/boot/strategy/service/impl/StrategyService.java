@@ -58,7 +58,7 @@ public class StrategyService {
     @Resource
     private RepairPoolDeviceRelMapper repairPoolDeviceRel;
     @Resource
-    private ISysBaseAPI sysBaseAPI;
+    private ISysBaseAPI sysBaseApi;
     @Resource
     private RepairPoolCodeMapper repairPoolCodeMapper;
     @Resource
@@ -385,7 +385,7 @@ public class StrategyService {
         Snowflake snowflake = IdUtil.getSnowflake(1, 1);
         String jxCode = String.format("%s%s", "JX", snowflake.nextIdStr());
         repairPool.setCode(jxCode);
-        repairPool.setName(String.format("%s%s", sysBaseAPI.translateDict(DictConstant.INSPECTION_CYCLE_TYPE, String.valueOf(type)), jxCode));
+        repairPool.setName(String.format("%s%s", sysBaseApi.translateDict(DictConstant.INSPECTION_CYCLE_TYPE, String.valueOf(type)), jxCode));
         repairPool.setType(type);
         repairPool.setWeeks(DateUtils.getWeekOfYear(endTime));
         repairPool.setStartTime(startTime);

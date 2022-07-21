@@ -28,7 +28,7 @@ public class InspectionStrategyDTO extends InspectionStrategy {
     List<String> inspectionCodes;
     @ApiModelProperty(value = "选择的标准集合")
     @TableField(exist = false)
-    List<InspectionCodeDTO> inspectionCodeDTOS;
+    List<InspectionCodeDTO> inspectionCodeDtoList;
     /**专业code*/
     @Excel(name = "专业code", width = 15)
     @ApiModelProperty(value = "专业code")

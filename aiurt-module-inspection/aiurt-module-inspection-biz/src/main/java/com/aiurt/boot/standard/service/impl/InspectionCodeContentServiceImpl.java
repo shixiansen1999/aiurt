@@ -4,6 +4,7 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.constant.DictConstant;
+import com.aiurt.boot.constant.InspectionConstant;
 import com.aiurt.boot.standard.entity.InspectionCodeContent;
 import com.aiurt.boot.standard.mapper.InspectionCodeContentMapper;
 import com.aiurt.boot.standard.service.IInspectionCodeContentService;
@@ -33,7 +34,7 @@ import java.util.stream.Collectors;
 @Service
 public class InspectionCodeContentServiceImpl extends ServiceImpl<InspectionCodeContentMapper, InspectionCodeContent> implements IInspectionCodeContentService {
     @Resource
-    private ISysBaseAPI sysBaseAPI;
+    private ISysBaseAPI sysBaseApi;
 	@Override
 	public void addInspectionCodeContent(InspectionCodeContent inspectionCodeContent) {
 	   //新增时设置hasChild为0
@@ -43,7 +44,7 @@ public class InspectionCodeContentServiceImpl extends ServiceImpl<InspectionCode
 		}else{
 			//如果当前节点父ID不为空 则设置父节点的hasChildren 为1
 			InspectionCodeContent parent = baseMapper.selectById(inspectionCodeContent.getPid());
-			if(parent!=null && !"1".equals(parent.getHasChild())){
+			if(parent!=null && !InspectionConstant.HAS_CHILD_1.equals(parent.getHasChild())){
 				parent.setHasChild("1");
 				baseMapper.updateById(parent);
 			}
@@ -57,11 +58,11 @@ public class InspectionCodeContentServiceImpl extends ServiceImpl<InspectionCode
 		if(entity==null) {
 			throw new AiurtBootException("未找到对应实体");
 		}
-		String old_pid = entity.getPid();
-		String new_pid = inspectionCodeContent.getPid();
-		if(!old_pid.equals(new_pid)) {
-			updateOldParentNode(old_pid);
-			if(oConvertUtils.isEmpty(new_pid)){
+		String oldPid = entity.getPid();
+		String newPid = inspectionCodeContent.getPid();
+		if(!oldPid.equals(newPid)) {
+			updateOldParentNode(oldPid);
+			if(oConvertUtils.isEmpty(newPid)){
 				inspectionCodeContent.setPid(IInspectionCodeContentService.ROOT_PID_VALUE);
 			}
 			if(!IInspectionCodeContentService.ROOT_PID_VALUE.equals(inspectionCodeContent.getPid())) {
@@ -164,13 +165,13 @@ public class InspectionCodeContentServiceImpl extends ServiceImpl<InspectionCode
             return page.setRecords(allList);
         }
         //2.找到所有根节点 ParentId=0
-        List<InspectionCodeContent> rooList = allList.stream().filter(r -> r.getPid().equals("0")).collect(Collectors.toList());
+        List<InspectionCodeContent> rooList = allList.stream().filter(r -> "0".equals(r.getPid())).collect(Collectors.toList());
         //3.找到所有非根节点
-        List<InspectionCodeContent> subLists = allList.stream().filter(r -> !r.getPid().equals("0")).collect(Collectors.toList());
+        List<InspectionCodeContent> subLists = allList.stream().filter(r -> !"0".equals(r.getPid())).collect(Collectors.toList());
         if (rooList.size()<1){
             return page.setRecords(subLists);
         }
-        List<InspectionCodeContent> subList = allList.stream().filter(r -> !r.getPid().equals("0")).collect(Collectors.toList());
+        List<InspectionCodeContent> subList = allList.stream().filter(r -> !"0".equals(r.getPid())).collect(Collectors.toList());
         //4.循环阶段去subList找对应的字节点
         rooList = rooList.stream().map(root -> {
             //通过根节点的id和子节点的pid判断是否相等，如果相等的话，代表是根节点的子集
@@ -278,8 +279,8 @@ public class InspectionCodeContentServiceImpl extends ServiceImpl<InspectionCode
 
         if (CollUtil.isNotEmpty(result)) {
             result.forEach(r -> {
-                r.setTypeName(sysBaseAPI.translateDict(DictConstant.INSPECTION_PROJECT, String.valueOf(r.getType())));
-                r.setStatusItemName(sysBaseAPI.translateDict(DictConstant.INSPECTION_STATUS_ITEM, String.valueOf(r.getStatusItem())));
+                r.setTypeName(sysBaseApi.translateDict(DictConstant.INSPECTION_PROJECT, String.valueOf(r.getType())));
+                r.setStatusItemName(sysBaseApi.translateDict(DictConstant.INSPECTION_STATUS_ITEM, String.valueOf(r.getStatusItem())));
             });
         }
 

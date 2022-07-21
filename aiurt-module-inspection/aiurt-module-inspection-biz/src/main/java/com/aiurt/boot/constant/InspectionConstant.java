@@ -199,4 +199,13 @@ public class InspectionConstant {
      * 是否是检查项 1是
      */
     public static final Integer CHECKPROJECT = 1;
+
+    /**
+     * 树根节点 0
+     */
+    public static final String TREE_ROOT_0 = "0";
+    /**
+     * 有孩子节点
+     */
+    public static final String HAS_CHILD_1 = "1";
 }

@@ -11,7 +11,7 @@
         SET a.del_flag = 1 ,b.del_flag=1,c.del_flag=1,d.del_flag=1
         where a.id= #{id}
     </update>
-    <delete id="deleteIDorCode">
+    <delete id="deleteIdOrCode">
         DELETE  a.*,b.*,c.*,d.*,e.*
         from
             inspection_strategy AS a

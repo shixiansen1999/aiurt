@@ -43,5 +43,5 @@ public interface InspectionCodeContentMapper extends BaseMapper<InspectionCodeCo
 	 * 逻辑删除父节点下面的子节点
 	 * @param id
 	 */
-    void updatPId(String id);
+    void updatePid(String id);
 }

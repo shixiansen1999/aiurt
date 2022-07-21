@@ -4,7 +4,6 @@ package com.aiurt.boot.strategy.mapper;
 import com.aiurt.boot.manager.dto.InspectionCodeDTO;
 import com.aiurt.boot.strategy.dto.InspectionStrategyDTO;
 import com.aiurt.boot.strategy.entity.InspectionStrategy;
-import com.aiurt.boot.task.dto.RepairTaskDTO;
 import com.aiurt.modules.device.entity.Device;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -29,11 +28,11 @@ public interface InspectionStrategyMapper extends BaseMapper<InspectionStrategy>
     IPage<InspectionStrategyDTO> selectPageList(Page<InspectionStrategyDTO> page, @Param("inspectionStrategyDTO") InspectionStrategyDTO inspectionStrategyDTO);
 
     /**
-     *
+     * 根据id或code进行删除
      * @param id
      * @param code
      */
-    void deleteIDorCode(@Param("id")String id,@Param("code")String code);
+    void deleteIdOrCode(@Param("id")String id,@Param("code")String code);
 
     /**
      * 删除关联数据

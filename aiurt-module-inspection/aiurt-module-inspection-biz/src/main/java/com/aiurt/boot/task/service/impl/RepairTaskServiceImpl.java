@@ -73,7 +73,7 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
     @Autowired
     private RepairTaskEnclosureMapper repairTaskEnclosureMapper;
     @Resource
-    private ISysBaseAPI sysBaseAPI;
+    private ISysBaseAPI sysBaseApi;
     @Resource
     private InspectionManager manager;
     @Resource
@@ -122,22 +122,22 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
             }
 
             //检修周期类型
-            e.setTypeName(sysBaseAPI.translateDict(DictConstant.INSPECTION_CYCLE_TYPE, String.valueOf(e.getType())));
+            e.setTypeName(sysBaseApi.translateDict(DictConstant.INSPECTION_CYCLE_TYPE, String.valueOf(e.getType())));
 
             //检修任务状态
-            e.setStatusName(sysBaseAPI.translateDict(DictConstant.INSPECTION_TASK_STATE, String.valueOf(e.getStatus())));
+            e.setStatusName(sysBaseApi.translateDict(DictConstant.INSPECTION_TASK_STATE, String.valueOf(e.getStatus())));
 
             //是否需要审核
-            e.setIsConfirmName(sysBaseAPI.translateDict(DictConstant.INSPECTION_IS_CONFIRM, String.valueOf(e.getIsConfirm())));
+            e.setIsConfirmName(sysBaseApi.translateDict(DictConstant.INSPECTION_IS_CONFIRM, String.valueOf(e.getIsConfirm())));
 
             //是否需要验收
-            e.setIsReceiptName(sysBaseAPI.translateDict(DictConstant.INSPECTION_IS_CONFIRM, String.valueOf(e.getIsReceipt())));
+            e.setIsReceiptName(sysBaseApi.translateDict(DictConstant.INSPECTION_IS_CONFIRM, String.valueOf(e.getIsReceipt())));
 
             //任务来源
-            e.setSourceName(sysBaseAPI.translateDict(DictConstant.PATROL_TASK_ACCESS, String.valueOf(e.getSource())));
+            e.setSourceName(sysBaseApi.translateDict(DictConstant.PATROL_TASK_ACCESS, String.valueOf(e.getSource())));
 
             //作业类型
-            e.setWorkTypeName(sysBaseAPI.translateDict(DictConstant.WORK_TYPE, String.valueOf(e.getWorkType())));
+            e.setWorkTypeName(sysBaseApi.translateDict(DictConstant.WORK_TYPE, String.valueOf(e.getWorkType())));
 
             if (e.getCode() != null) {
                 //根据检修任务code查询
@@ -148,7 +148,7 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                 e.setOverhaulId(collect);
                 ArrayList<String> userList = new ArrayList<>();
                 collect.forEach(o -> {
-                    LoginUser userById = sysBaseAPI.getUserById(o);
+                    LoginUser userById = sysBaseApi.getUserById(o);
                     userList.add(userById.getRealname());
                 });
                 e.setOverhaulName(userList);
@@ -222,7 +222,7 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
             }
             //提交人名称
             if (e.getOverhaulId() != null) {
-                LoginUser userById = sysBaseAPI.getUserById(e.getOverhaulId());
+                LoginUser userById = sysBaseApi.getUserById(e.getOverhaulId());
                 e.setOverhaulName(userById.getRealname());
             }
             if (e.getDeviceId() != null && CollectionUtil.isNotEmpty(repairTasks)) {
@@ -300,7 +300,7 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
             }
             //提交人名称
             if (e.getOverhaulId() != null) {
-                LoginUser userById = sysBaseAPI.getUserById(e.getOverhaulId());
+                LoginUser userById = sysBaseApi.getUserById(e.getOverhaulId());
                 e.setOverhaulName(userById.getUsername());
             }
             if (e.getDeviceId() != null && CollectionUtil.isNotEmpty(repairTasks)) {
@@ -454,7 +454,7 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
         });
         //提交人名称
         if (checkListDTO.getOverhaulId() != null) {
-            LoginUser userById = sysBaseAPI.getUserById(checkListDTO.getOverhaulId());
+            LoginUser userById = sysBaseApi.getUserById(checkListDTO.getOverhaulId());
             checkListDTO.setOverhaulName(userById.getUsername());
         }
 
@@ -537,10 +537,10 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
         List<RepairTaskResult> repairTaskResults1 = repairTaskMapper.selectSingle(id, null);
         repairTaskResults1.forEach(r -> {
             //检修结果
-            r.setStatusName(sysBaseAPI.translateDict(DictConstant.OVERHAUL_RESULT, String.valueOf(r.getStatus())));
+            r.setStatusName(sysBaseApi.translateDict(DictConstant.OVERHAUL_RESULT, String.valueOf(r.getStatus())));
 
             //检查项类型
-            r.setTypeName(sysBaseAPI.translateDict(DictConstant.INSPECTION_PROJECT, String.valueOf(r.getType())));
+            r.setTypeName(sysBaseApi.translateDict(DictConstant.INSPECTION_PROJECT, String.valueOf(r.getType())));
 
             //父级名称
             if (r.getPid()!=null){
@@ -562,7 +562,7 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
             }
             //检修人名称
             if (r.getStaffId() != null) {
-                LoginUser userById = sysBaseAPI.getUserById(r.getStaffId());
+                LoginUser userById = sysBaseApi.getUserById(r.getStaffId());
                 r.setStaffName(userById.getUsername());
             }
             //备注
@@ -575,7 +575,7 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                     r.setInspeciontValueName(null);
                 }
                 if (r.getStatusItem().equals(InspectionConstant.STATUS_ITEM_CHOICE)) {
-                    r.setInspeciontValueName(sysBaseAPI.translateDict(r.getDictCode(), String.valueOf(r.getInspeciontValue())));
+                    r.setInspeciontValueName(sysBaseApi.translateDict(r.getDictCode(), String.valueOf(r.getInspeciontValue())));
                 }
                 if (r.getStatusItem().equals(InspectionConstant.STATUS_ITEM_INPUT)) {
                     r.setInspeciontValueName(r.getNote());
@@ -645,7 +645,7 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
             }
         }
         LoginUser loginUser = manager.checkLogin();
-        LoginUser userById = sysBaseAPI.getUserById(loginUser.getId());
+        LoginUser userById = sysBaseApi.getUserById(loginUser.getId());
         RepairTask repairTask1 = new RepairTask();
         status(examineDTO, loginUser, userById, repairTask1,repairTask.getRepairPoolId());
         if (examineDTO.getStatus().equals(InspectionConstant.IS_EFFECT) && repairTask.getIsReceipt().equals(InspectionConstant.IS_EFFECT)) {
@@ -809,7 +809,7 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
         }
         RepairTask repairTask1 = new RepairTask();
         LoginUser loginUser = manager.checkLogin();
-        LoginUser userById = sysBaseAPI.getUserById(loginUser.getId());
+        LoginUser userById = sysBaseApi.getUserById(loginUser.getId());
         status(examineDTO, loginUser, userById, repairTask1,repairTask.getRepairPoolId());
         if (examineDTO.getStatus().equals(InspectionConstant.IS_EFFECT)) {
             setId(examineDTO, repairTask1, loginUser, userById,repairTask.getRepairPoolId());
@@ -1200,7 +1200,7 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
             userIdS.forEach(userId -> {
                 RepairTaskPeerRel rel = new RepairTaskPeerRel();
                 rel.setUserId(userId);
-                rel.setRealName(ObjectUtil.isNotEmpty(sysBaseAPI.getUserById(userId)) ? sysBaseAPI.getUserById(userId).getRealname() : "");
+                rel.setRealName(ObjectUtil.isNotEmpty(sysBaseApi.getUserById(userId)) ? sysBaseApi.getUserById(userId).getRealname() : "");
                 rel.setRepairTaskDeviceCode(repairTaskDeviceRel.getCode());
                 repairTaskPeerRelMapper.insert(rel);
             });
@@ -1294,7 +1294,7 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
      */
     @Override
     public List<OrgDTO> queryPeerList(String id) {
-        List<OrgDTO> orgDTOS = new ArrayList<>();
+        List<OrgDTO> orgDto = new ArrayList<>();
         // 检修单
         RepairTaskDeviceRel repairTaskDeviceRel = repairTaskDeviceRelMapper.selectById(id);
         if (ObjectUtil.isEmpty(repairTaskDeviceRel)) {
@@ -1313,10 +1313,10 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                         .eq(RepairTaskOrgRel::getDelFlag, CommonConstant.DEL_FLAG_0));
         if (CollUtil.isNotEmpty(repairTaskOrgRels)) {
             String orgStrs = StrUtil.join(",", repairTaskOrgRels.stream().map(RepairTaskOrgRel::getOrgCode).collect(Collectors.toList()));
-            orgDTOS = manager.queryUserByOrdCode(orgStrs);
+            orgDto = manager.queryUserByOrdCode(orgStrs);
         }
 
-        return orgDTOS;
+        return orgDto;
     }
 
     /**

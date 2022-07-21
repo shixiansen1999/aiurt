@@ -131,8 +131,8 @@ public class InspectionStrategyServiceImpl extends ServiceImpl<InspectionStrateg
         }
 
         // 检修标准
-        if (ObjectUtil.isNotNull(inspectionStrategyDTO.getInspectionCodeDTOS())) {
-            for (InspectionCodeDTO ins : inspectionStrategyDTO.getInspectionCodeDTOS()) {
+        if (ObjectUtil.isNotNull(inspectionStrategyDTO.getInspectionCodeDtoList())) {
+            for (InspectionCodeDTO ins : inspectionStrategyDTO.getInspectionCodeDtoList()) {
                 InspectionStrRel inspectionStrRel = new InspectionStrRel();
                 inspectionStrRel.setInspectionStaCode(ins.getCode());
                 inspectionStrRel.setInspectionStrCode(inspectionStrategyDTO.getCode());
@@ -186,13 +186,13 @@ public class InspectionStrategyServiceImpl extends ServiceImpl<InspectionStrateg
             throw new AiurtBootException("组织机构为空");
         }
 
-        List<InspectionCodeDTO> inspectionCodeDTOS = inspectionStrategyDTO.getInspectionCodeDTOS();
-        if (CollUtil.isEmpty(inspectionCodeDTOS)) {
+        List<InspectionCodeDTO> inspectionCodeDto = inspectionStrategyDTO.getInspectionCodeDtoList();
+        if (CollUtil.isEmpty(inspectionCodeDto)) {
             throw new AiurtBootException("请选择检修标准");
         }
 
         // 跟设备类型相关的是否选择了设备
-        inspectionCodeDTOS.forEach(re -> {
+        inspectionCodeDto.forEach(re -> {
             InspectionCode inspectionCode = inspectionCodeMapper.selectOne(
                     new LambdaQueryWrapper<InspectionCode>()
                             .eq(InspectionCode::getCode, re.getCode())
@@ -280,7 +280,7 @@ public class InspectionStrategyServiceImpl extends ServiceImpl<InspectionStrateg
         }
 
         // 更新检修计划策略标准关联表信息
-        List<InspectionCodeDTO> inspectionCode = inspectionStrategyDTO.getInspectionCodeDTOS();
+        List<InspectionCodeDTO> inspectionCode = inspectionStrategyDTO.getInspectionCodeDtoList();
         Optional.ofNullable(inspectionCode).orElseGet(Collections::emptyList).stream().forEach(l -> {
             InspectionStrRel strRel = new InspectionStrRel();
             strRel.setInspectionStrCode(strategyCode);
@@ -375,7 +375,7 @@ public class InspectionStrategyServiceImpl extends ServiceImpl<InspectionStrateg
         // 检修标准
         if (ObjectUtil.isNotNull(ins.getCodes())) {
             List<String> codes = Arrays.asList(ins.getCodes().split(","));
-            ins.setInspectionCodeDTOS(baseMapper.selectbyCodes(codes));
+            ins.setInspectionCodeDtoList(baseMapper.selectbyCodes(codes));
         }
 
         // 检修计划关联检修标准信息
@@ -419,7 +419,7 @@ public class InspectionStrategyServiceImpl extends ServiceImpl<InspectionStrateg
                 }
             });
 
-            ins.setInspectionCodeDTOS(temp);
+            ins.setInspectionCodeDtoList(temp);
         }
 
         return ins;
@@ -630,8 +630,8 @@ public class InspectionStrategyServiceImpl extends ServiceImpl<InspectionStrateg
             // 分页处理设备信息
             if (CollUtil.isNotEmpty(inspectionStrDeviceRels)) {
                 List<String> deviceCodeList = inspectionStrDeviceRels.stream().map(InspectionStrDeviceRel::getDeviceCode).collect(Collectors.toList());
-                List<RepairDeviceDTO> repairDeviceDTOS = manager.queryDeviceByCodesPage(deviceCodeList, page);
-                page.setRecords(repairDeviceDTOS);
+                List<RepairDeviceDTO> repairDeviceDto = manager.queryDeviceByCodesPage(deviceCodeList, page);
+                page.setRecords(repairDeviceDto);
             }
         }
         return page;

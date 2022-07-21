@@ -34,7 +34,7 @@ import java.util.Objects;
 public class InspectionManager {
 
     @Resource
-    private ISysBaseAPI sysBaseAPI;
+    private ISysBaseAPI sysBaseApi;
     @Resource
     private InspectionManagerMapper inspectionManagerMapper;
     @Resource
@@ -174,8 +174,8 @@ public class InspectionManager {
             repairDeviceDTOList = inspectionManagerMapper.queryDeviceByCodes(deviceCodes);
             if (CollUtil.isNotEmpty(repairDeviceDTOList)) {
                 for (RepairDeviceDTO repairDeviceDTO : repairDeviceDTOList) {
-                    repairDeviceDTO.setStatusName(sysBaseAPI.translateDict(DictConstant.DEVICE_STATUS, String.valueOf(repairDeviceDTO.getStatus())));
-                    repairDeviceDTO.setTemporaryName(sysBaseAPI.translateDict(DictConstant.DEVICE_TEMPORARY, String.valueOf(repairDeviceDTO.getTemporary())));
+                    repairDeviceDTO.setStatusName(sysBaseApi.translateDict(DictConstant.DEVICE_STATUS, String.valueOf(repairDeviceDTO.getStatus())));
+                    repairDeviceDTO.setTemporaryName(sysBaseApi.translateDict(DictConstant.DEVICE_TEMPORARY, String.valueOf(repairDeviceDTO.getTemporary())));
                     StationDTO stationDTO = new StationDTO();
                     stationDTO.setLineCode(repairDeviceDTO.getLineCode());
                     stationDTO.setStationCode(repairDeviceDTO.getStationCode());
@@ -223,8 +223,8 @@ public class InspectionManager {
             repairDeviceDTOList = inspectionManagerMapper.queryDeviceByCodesPage(deviceCodes, page);
             if (CollUtil.isNotEmpty(repairDeviceDTOList)) {
                 for (RepairDeviceDTO repairDeviceDTO : repairDeviceDTOList) {
-                    repairDeviceDTO.setStatusName(sysBaseAPI.translateDict(DictConstant.DEVICE_STATUS, String.valueOf(repairDeviceDTO.getStatus())));
-                    repairDeviceDTO.setTemporaryName(sysBaseAPI.translateDict(DictConstant.DEVICE_TEMPORARY, String.valueOf(repairDeviceDTO.getTemporary())));
+                    repairDeviceDTO.setStatusName(sysBaseApi.translateDict(DictConstant.DEVICE_STATUS, String.valueOf(repairDeviceDTO.getStatus())));
+                    repairDeviceDTO.setTemporaryName(sysBaseApi.translateDict(DictConstant.DEVICE_TEMPORARY, String.valueOf(repairDeviceDTO.getTemporary())));
                     StationDTO stationDTO = new StationDTO();
                     stationDTO.setLineCode(repairDeviceDTO.getLineCode());
                     stationDTO.setStationCode(repairDeviceDTO.getStationCode());
@@ -246,14 +246,14 @@ public class InspectionManager {
         if (StrUtil.isEmpty(orgStrs)) {
             return result;
         }
-        List<JSONObject> jsonObjects = sysBaseAPI.queryDepartsByOrgcodes(orgStrs);
+        List<JSONObject> jsonObjects = sysBaseApi.queryDepartsByOrgcodes(orgStrs);
         if (CollUtil.isNotEmpty(jsonObjects)) {
             for (JSONObject jsonObject : jsonObjects) {
                 if (ObjectUtil.isNotEmpty(jsonObject)) {
                     OrgDTO orgDTO = new OrgDTO();
                     orgDTO.setOrgCode(jsonObject.getString("orgCode"));
                     orgDTO.setDepartName(jsonObject.getString("departName"));
-                    orgDTO.setUsers(sysBaseAPI.getUserByDepIds(Arrays.asList(orgDTO.getOrgCode())));
+                    orgDTO.setUsers(sysBaseApi.getUserByDepIds(Arrays.asList(orgDTO.getOrgCode())));
                     result.add(orgDTO);
                 }
             }

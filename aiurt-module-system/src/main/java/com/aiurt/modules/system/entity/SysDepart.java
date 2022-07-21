@@ -1,5 +1,6 @@
 package com.aiurt.modules.system.entity;
 
+import com.aiurt.common.aspect.annotation.DeptFilterColumn;
 import com.aiurt.common.aspect.annotation.Dict;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
@@ -64,6 +65,7 @@ public class SysDepart implements Serializable {
 	/**机构编码*/
 	@ApiModelProperty(value = "机构编码")
 	@Excel(name="机构编码",width=15)
+	@DeptFilterColumn
 	private String orgCode;
 	/**手机号*/
 	@ApiModelProperty(value = "手机号")
