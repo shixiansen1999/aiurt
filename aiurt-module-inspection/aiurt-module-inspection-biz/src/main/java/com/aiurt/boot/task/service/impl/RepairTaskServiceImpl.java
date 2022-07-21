@@ -475,7 +475,7 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
         //提交人名称
         if (checkListDTO.getOverhaulId() != null) {
             LoginUser userById = sysBaseApi.getUserById(checkListDTO.getOverhaulId());
-            checkListDTO.setOverhaulName(userById.getUsername());
+            checkListDTO.setOverhaulName(userById.getRealname());
         }
 
         //设备位置
@@ -583,7 +583,7 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
             //检修人名称
             if (r.getStaffId() != null) {
                 LoginUser userById = sysBaseApi.getUserById(r.getStaffId());
-                r.setStaffName(userById.getUsername());
+                r.setStaffName(userById.getRealname());
             }
             //备注
             if (r.getUnNote() == null) {
