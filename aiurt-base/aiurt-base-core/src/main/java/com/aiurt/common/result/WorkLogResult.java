@@ -31,7 +31,7 @@ public class WorkLogResult {
     /**主键id*/
     @TableId(type= IdType.AUTO)
     @ApiModelProperty(value = "主键id，自动递增")
-    private  Long  id;
+    private  String  id;
 
     /**线路*/
     @Excel(name = "线路", width = 15)

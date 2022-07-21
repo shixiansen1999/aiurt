@@ -375,7 +375,7 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
         Map<Long,List<WorkLogEnclosure>> map1 = null;
 
         if (CollectionUtils.isNotEmpty(records)){
-            List<Long> list = records.stream().map(WorkLogResult::getId).collect(Collectors.toList());
+            List<String> list = records.stream().map(WorkLogResult::getId).collect(Collectors.toList());
             if (CollectionUtils.isNotEmpty(list)) {
                 //附件
                 List<WorkLogEnclosure> list0 = enclosureMapper.selectList(new LambdaQueryWrapper<WorkLogEnclosure>()
