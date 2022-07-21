@@ -107,7 +107,7 @@ public class SysInfoListController {
                 return result;
             }
         }
-        IPage<SysAnnouncement> pageList = bdInfoListService.page(page, queryWrapper);
+        IPage<SysAnnouncement> pageList = bdInfoListService.page(page, queryWrapper.lambda().orderByDesc(SysAnnouncement::getCreateTime));
         List<SysAnnouncement> records = pageList.getRecords();
         for (SysAnnouncement announcement : records) {
             getUserNames(announcement);
