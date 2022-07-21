@@ -1,4 +1,4 @@
-package org.jeecg;
-
-public class JeecgPatrolCloudApplication {
-}
+//package org.jeecg;
+//
+//public class JeecgPatrolCloudApplication {
+//}
