@@ -357,3 +357,10 @@ support:
 
 swsc:
   host: http://116.62.143.85/#/
+datafilter:
+  dataperm:
+    enabled: true
+    # 在拼接数据权限过滤的SQL时，我们会用到sys_dept_relation表，该表的前缀由此配置项指定。
+    # 如果没有前缀，请使用 "" 。
+    deptRelationTablePrefix: ""
+    addTableNamePrefix: true
