@@ -1303,4 +1303,9 @@ public class SysBaseApiImpl implements ISysBaseAPI {
     public List<CsUserSubsystemModel> getSubsystemByUserId(String id) {
         return csUserSubsystemMapper.getSubsystemByUserId(id);
     }
+
+    @Override
+    public List<String> getUserListByName(String realName) {
+        return userMapper.getUserListByName(realName);
+    }
 }

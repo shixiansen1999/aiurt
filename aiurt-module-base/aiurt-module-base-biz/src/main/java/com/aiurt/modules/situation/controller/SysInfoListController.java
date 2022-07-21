@@ -16,6 +16,7 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
 
@@ -80,19 +81,31 @@ public class SysInfoListController {
         if (StrUtil.isNotBlank(sysAnnouncement.getSTime()) || StrUtil.isNotBlank(sysAnnouncement.getETime())) {
             sTime = sysAnnouncement.getSTime();
             eTime = sysAnnouncement.getETime();
-            if (sTime.equals(eTime)) {
-                eTime = eTime + " 23:59:59";
-            }
+            eTime = eTime + " 23:59:59";
             sysAnnouncement.setSTime(null);
             sysAnnouncement.setETime(null);
         }
-        QueryWrapper<SysAnnouncement> queryWrapper = QueryGenerator.initQueryWrapper(sysAnnouncement, req.getParameterMap());
+        //QueryWrapper<SysAnnouncement> queryWrapper = QueryGenerator.initQueryWrapper(sysAnnouncement, req.getParameterMap());
+        QueryWrapper<SysAnnouncement> queryWrapper = new QueryWrapper<>();
         Page<SysAnnouncement> page = new Page<SysAnnouncement>(pageNo, pageSize);
         if (StrUtil.isNotEmpty(sTime)) {
             queryWrapper.lambda().ge(SysAnnouncement::getSendTime, sTime);
         }
         if (StrUtil.isNotEmpty(eTime)) {
             queryWrapper.lambda().le(SysAnnouncement::getSendTime, eTime);
+        }
+        if (StrUtil.isNotEmpty(sysAnnouncement.getMsgContent())) {
+            queryWrapper.lambda().like(SysAnnouncement::getMsgContent, sysAnnouncement.getMsgContent());
+        }
+        if (StrUtil.isNotEmpty(sysAnnouncement.getSender())) {
+            List<String> userNameList = iSysBaseAPI.getUserListByName(sysAnnouncement.getSender());
+            if (CollectionUtils.isNotEmpty(userNameList)) {
+                queryWrapper.lambda().in(SysAnnouncement::getSender, userNameList);
+            } else {
+                result.setSuccess(true);
+                result.setResult(null);
+                return result;
+            }
         }
         IPage<SysAnnouncement> pageList = bdInfoListService.page(page, queryWrapper);
         List<SysAnnouncement> records = pageList.getRecords();
@@ -187,11 +200,12 @@ public class SysInfoListController {
     @ApiOperation(value = " 通过id查看该通告的人是否已读", notes = " 通过id查看该通告的人是否已读")
     @GetMapping(value = "/queryById")
     public Result<IPage<SysAnnouncementSend>> queryById(@RequestParam(name = "id", required = true) String id,
+                                                        @RequestParam(name = "id", required = false) String readFlag,
                                @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
                                @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
                                HttpServletRequest req) {
         Page<SysAnnouncementSend> page = new Page<>(pageNo, pageSize);
-        List<SysAnnouncementSend> sysAnnouncementSends = sysInfoListMapper.getByAnntId(page,id);
+        List<SysAnnouncementSend> sysAnnouncementSends = sysInfoListMapper.getByAnntId(page,id,readFlag);
         if (sysAnnouncementSends == null) {
             return Result.error("未找到数据");
         }

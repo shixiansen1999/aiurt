@@ -4,5 +4,8 @@
 
 <select id="getByAnntId" resultType="com.aiurt.modules.situation.entity.SysAnnouncementSend">
     select  * from sys_announcement_send where annt_id=#{id}
+    <if test="readFlag != null and readFlag != ''">
+        and read_flag = #{readFlag}
+    </if>
     </select>
 </mapper>

@@ -155,4 +155,11 @@ public interface CommonAPI {
      * @return
      */
     List<CsUserSubsystemModel> getSubsystemByUserId(String id);
+
+    /**
+     *20根据用户账号模糊查询用户姓名
+     * @param realName
+     * @return
+     */
+     List<String> getUserListByName(String realName);
 }

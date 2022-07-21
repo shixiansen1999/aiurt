@@ -168,4 +168,8 @@
 			and username != #{username}
 		</if>
 	</select>
+
+	<select id="getUserListByName" resultType="java.lang.String">
+		select username from  sys_user  where realname LIKE concat('%',#{realName},'%')
+	</select>
 </mapper>

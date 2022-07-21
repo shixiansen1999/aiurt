@@ -28,6 +28,7 @@ public class SysAnnouncementSend implements Serializable {
 	/**通告id*/
 	private String anntId;
 	/**用户id*/
+	@Dict(dictTable = "sys_user", dicText = "realname", dicCode = "id")
 	private String userId;
 	/**阅读状态（0未读，1已读）*/
 	@Dict(dicCode = "read_flag")
