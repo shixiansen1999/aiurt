@@ -145,13 +145,33 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                 List<RepairTaskUser> repairTaskUsers = repairTaskUserMapper.selectList(repairTaskUserLambdaQueryWrapper.eq(RepairTaskUser::getRepairTaskCode, e.getCode()));
                 //检修人id集合
                 List<String> collect = repairTaskUsers.stream().map(RepairTaskUser::getUserId).collect(Collectors.toList());
-                e.setOverhaulId(collect);
+                if (CollectionUtil.isNotEmpty(collect)) {
+                    StringBuffer stringBuffer = new StringBuffer();
+                    for (String t : collect) {
+                        stringBuffer.append(t);
+                        stringBuffer.append(",");
+                    }
+                    if (stringBuffer.length() > 0) {
+                        stringBuffer = stringBuffer.deleteCharAt(stringBuffer.length() - 1);
+                    }
+                    e.setOverhaulId(stringBuffer.toString());
+                }
                 ArrayList<String> userList = new ArrayList<>();
                 collect.forEach(o -> {
                     LoginUser userById = sysBaseApi.getUserById(o);
                     userList.add(userById.getRealname());
                 });
-                e.setOverhaulName(userList);
+                if (CollectionUtil.isNotEmpty(userList)) {
+                    StringBuffer stringBuffer = new StringBuffer();
+                    for (String t : userList) {
+                        stringBuffer.append(t);
+                        stringBuffer.append(",");
+                    }
+                    if (stringBuffer.length() > 0) {
+                        stringBuffer = stringBuffer.deleteCharAt(stringBuffer.length() - 1);
+                    }
+                    e.setOverhaulName(stringBuffer.toString());
+                }
             }
 
             // 所属周（相对年）
