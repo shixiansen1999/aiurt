@@ -200,7 +200,7 @@ public class SysInfoListController {
     @ApiOperation(value = " 通过id查看该通告的人是否已读", notes = " 通过id查看该通告的人是否已读")
     @GetMapping(value = "/queryById")
     public Result<IPage<SysAnnouncementSend>> queryById(@RequestParam(name = "id", required = true) String id,
-                                                        @RequestParam(name = "id", required = false) String readFlag,
+                                                        @RequestParam(name = "readFlag", required = false) String readFlag,
                                @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
                                @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
                                HttpServletRequest req) {
