@@ -37,4 +37,11 @@ public interface PatrolStandardMapper extends BaseMapper<PatrolStandard> {
      * @return
      */
     List<PatrolStandardDto> selectbyIds(@Param("ids")List <String> ids);
+
+    /**
+     * 查询可不可删
+     * @param code
+     * @return
+     */
+    Integer number(@Param("code")String code);
 }

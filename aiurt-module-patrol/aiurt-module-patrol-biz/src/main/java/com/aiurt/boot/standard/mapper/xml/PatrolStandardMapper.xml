@@ -57,5 +57,10 @@
            #{ids}
         </foreach>
     </select>
+    <select id="number" resultType="java.lang.Integer">
+        SELECT COUNT(patrol_plan_standard.standard_code)as number
+        FROM patrol_plan_standard
+        WHERE patrol_plan_standard.standard_code = #{code}
+    </select>
 
 </mapper>

@@ -29,4 +29,7 @@ public class PatrolStandardDto extends PatrolStandard {
     @ApiModelProperty(value = "设备类型名称")
     @TableField(exist = false)
     private java.lang.String deviceTypeName;
+    @Excel(name = "判断是否可以删除0为可删,其他都为不可删",width = 15)
+    @ApiModelProperty(value = "判断是否可以删除0为可删,其他都为不可删")
+    private Integer number;
 }
