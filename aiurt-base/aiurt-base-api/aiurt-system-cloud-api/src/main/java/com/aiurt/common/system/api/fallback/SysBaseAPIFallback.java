@@ -298,6 +298,17 @@ public class SysBaseAPIFallback implements ISysBaseAPI {
         return null;
     }
 
+    /**
+     * 20根据用户账号模糊查询用户姓名
+     *
+     * @param realName
+     * @return
+     */
+    @Override
+    public List<String> getUserListByName(String realName) {
+        return null;
+    }
+
     @Override
     public List<LoginUser> getUserByDepIds(List<String> deptCodes) {
         return null;
