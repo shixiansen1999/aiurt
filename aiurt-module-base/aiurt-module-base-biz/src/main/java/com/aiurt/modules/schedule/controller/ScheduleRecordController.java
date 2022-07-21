@@ -2,6 +2,7 @@ package com.aiurt.modules.schedule.controller;
 
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
+import com.aiurt.modules.schedule.mapper.ScheduleRecordMapper;
 import com.aiurt.modules.schedule.service.IScheduleHolidaysService;
 import com.aiurt.modules.schedule.service.IScheduleItemService;
 import com.aiurt.modules.schedule.service.IScheduleLogService;
@@ -28,6 +29,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.query.QueryGenerator;
 import org.jeecg.common.system.vo.LoginUser;
 import org.jeecgframework.poi.excel.ExcelImportUtil;
@@ -68,10 +70,12 @@ public class ScheduleRecordController {
     private IScheduleHolidaysService holidaysService;
     @Autowired
     private IScheduleItemService itemService;
-//    @Autowired
-//    private ISysUserService userService;
+    @Autowired
+    private ISysBaseAPI userService;
     @Autowired
     private IScheduleLogService logService;
+    @Autowired
+    private ScheduleRecordMapper scheduleRecordMapper;
 
     /**
      * 分页列表查询
@@ -362,9 +366,7 @@ public class ScheduleRecordController {
         Result<List<ScheduleRecordModel>> result = new Result<List<ScheduleRecordModel>>();
         LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         LambdaQueryWrapper<LoginUser> queryWrapper = new LambdaQueryWrapper<>();
-        // todo 后期修改
-        List<LoginUser> userList = new ArrayList<>();
-//        List<LoginUser> userList = userService.list(queryWrapper.like(LoginUser::getOrgCode, loginUser.getOrgCode()));
+         List<LoginUser> userList = scheduleRecordMapper.userList(loginUser.getOrgCode());
         if (StringUtils.isNotEmpty(date)&& ObjectUtil.isNotEmpty(userList)) {
             List<String>ids = userList.stream().map(LoginUser::getId).collect(Collectors.toList());
             List<ScheduleRecordModel> recordModelList = scheduleRecordService.getRecordListByDayAndUserIds(date,ids);
@@ -404,13 +406,10 @@ public class ScheduleRecordController {
             log.setTargetItemName(newItem.getName());
             log.setUserId(scheduleRecordEntity.getUserId());
             log.setRemark(scheduleRecord.getRemark());
-            // todo 后期修改
-            LoginUser user = new LoginUser();
-//            LoginUser user = userService.getById(log.getUserId());
+//            LoginUser user = new LoginUser();
+            LoginUser user = userService.getUserById(log.getUserId());
             log.setUserName(user.getRealname());
             logService.save(log);
-
-
             if (ok) {
                 result.success("修改成功!");
             }

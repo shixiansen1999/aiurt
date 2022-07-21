@@ -49,4 +49,11 @@ public interface ScheduleRecordMapper extends BaseMapper<ScheduleRecord> {
     Integer getZhiBanNum(Map map);
 
     List<ScheduleUser> getScheduleUserByDateAndOrgCodeAndOrgId(@Param("date") String date, @Param("username") String username, @Param("orgCode") String orgCode, @Param("orgId") String orgId);
+
+    /**
+     * 查询
+     * @param orgCode
+     * @return
+     */
+    List<LoginUser> userList(@Param("orgCode")String orgCode);
 }
