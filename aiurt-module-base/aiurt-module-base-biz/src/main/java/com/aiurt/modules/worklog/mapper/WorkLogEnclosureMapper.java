@@ -20,7 +20,7 @@ public interface WorkLogEnclosureMapper extends BaseMapper<WorkLogEnclosure> {
      * @param type
      * @return
      */
-    List<String> query(@Param("id") Integer id, @Param("type") Integer type);
+    List<String> query(@Param("id") String id, @Param("type") Integer type);
 
     /**
      * 删除附件

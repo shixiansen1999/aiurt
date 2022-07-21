@@ -1,6 +1,7 @@
 package com.aiurt.modules.worklog.service.impl;
 
 import cn.hutool.core.collection.CollUtil;
+import com.aiurt.common.api.dto.message.BusMessageDTO;
 import com.aiurt.common.enums.WorkLogCheckStatusEnum;
 import com.aiurt.common.enums.WorkLogConfirmStatusEnum;
 import com.aiurt.common.enums.WorkLogStatusEnum;
@@ -10,6 +11,7 @@ import com.aiurt.common.result.LogResult;
 import com.aiurt.common.result.LogSubmitCount;
 import com.aiurt.common.result.WorkLogResult;
 import com.aiurt.common.util.RoleAdditionalUtils;
+import com.aiurt.common.util.SysAnnmentTypeEnum;
 import com.aiurt.modules.worklog.dto.WorkLogDTO;
 import com.aiurt.modules.worklog.entity.Station;
 import com.aiurt.modules.worklog.entity.WorkLog;
@@ -28,8 +30,10 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.constant.CommonConstant;
+import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.LoginUser;
 import org.jeecg.common.system.vo.SysDepartModel;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -78,10 +82,16 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
 //
 //    @Resource
 //    private UserTaskService userTaskService;
+//      @Resource
+//    private ISysDepartService departService;
+//
+//    @Resource
+//    private ISysUserService sysUserService;
 
     @Resource
     private RoleAdditionalUtils roleAdditionalUtils;
-
+    @Autowired
+    private ISysBaseAPI iSysBaseAPI;
     //todo 待处理
 //    @Resource
 //    private IMessageService messageService;
@@ -101,7 +111,6 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
         String userId = loginUser.getId();
         String logCode = generateLogCode();
         depot.setCode(logCode);
-        // todo 后期修改
         depot.setOrgId(loginUser.getOrgId());
         depot.setSubmitId(userId);
         depot.setCreateBy(userId);
@@ -250,10 +259,19 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
 //            userTaskService.add(addParam);
 
             //todo 待处理
-            //发送app消息
-//            Message message = new Message();
-//            message.setTitle("消息通知").setContent("您有一条待接班日志!").setType(MessageConstant.MESSAGE_TYPE_0);
-//            messageService.addMessage(MessageAddParam.builder().message(message).userIds(list).build());
+            LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+            // 发消息
+            BusMessageDTO messageDTO = new BusMessageDTO();
+            messageDTO.setFromUser(sysUser.getUsername());
+            LoginUser userById = iSysBaseAPI.getUserById(dto.getSucceedId());
+            messageDTO.setToUser(userById.getUsername());
+            messageDTO.setContent(dto.getContent().toString());
+            messageDTO.setCategory("2");
+            messageDTO.setTitle("您有一条待接班日志");
+            messageDTO.setBusType(SysAnnmentTypeEnum.WORKLOG.getType());
+            iSysBaseAPI.sendBusAnnouncement(messageDTO);
+
+
         }
     }
 
@@ -340,17 +358,15 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
 //        List<Station> stationList = stationMapper.selectList(new LambdaQueryWrapper<Station>()
 //                .eq(Station::getDelFlag, CommonConstant.DEL_FLAG_0).select(Station::getId,Station::getTeamName,Station::getLineName,Station::getTeamId));
 //       todo 后期修改
-        List<SysDepartModel> departList = new ArrayList<>();
-//        List<SysDepartModel> departList = departService.lambdaQuery().eq(SysDepart::getDelFlag, CommonConstant.DEL_FLAG_0).list();
-
+        List<SysDepartModel> departList = iSysBaseAPI.getAllSysDepart();
         Map<Integer, Station> stationIdMap = null;
         Map<String, List<Station>> stationTeamIdMap =null;
         Map<String, String> departMap = null;
         //todo 待处理
 //        if (CollectionUtils.isNotEmpty(stationList)){
-//            stationIdMap = stationList.stream().collect(Collectors.toMap(Station::getId, s -> s));
-//            stationTeamIdMap = stationList.stream().filter(f->f.getTeamId()!=null).collect(Collectors.groupingBy(Station::getTeamId));
-//        }
+//           stationIdMap = stationList.stream().collect(Collectors.toMap(Station::getId, s -> s));
+//           stationTeamIdMap = stationList.stream().filter(f->f.getTeamId()!=null).collect(Collectors.groupingBy(Station::getTeamId));
+//       }
         if (CollectionUtils.isNotEmpty(departList)){
             departMap = departList.stream().collect(Collectors.toMap(SysDepartModel::getDepartName, SysDepartModel::getId));
         }
@@ -449,7 +465,7 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
      * @return
      */
     @Override
-    public WorkLogResult getDetailById(Integer id) {
+    public WorkLogResult getDetailById(String id) {
         WorkLogResult workLog = depotMapper.queryById(id);
         //提交状态
         workLog.setStatusDesc(WorkLogStatusEnum.findMessage(workLog.getStatus()));

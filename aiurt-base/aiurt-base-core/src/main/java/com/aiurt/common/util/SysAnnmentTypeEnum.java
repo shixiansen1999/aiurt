@@ -19,6 +19,10 @@ public enum SysAnnmentTypeEnum {
      * 特情
      */
     SITUATION("situation", "component",""),
+    /**
+     * 特情
+     */
+    WORKLOG("worklog", "component",""),
 
     /**
      * 工作流跳转链接我的办公

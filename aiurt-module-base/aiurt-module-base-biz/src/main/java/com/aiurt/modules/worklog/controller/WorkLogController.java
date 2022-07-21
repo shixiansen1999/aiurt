@@ -268,7 +268,7 @@ public class WorkLogController {
     @AutoLog(value = "工作日志查看")
     @ApiOperation(value="工作日志查看", notes="工作日志查看")
     @GetMapping(value = "/queryDetail")
-    public Result<WorkLogResult> queryDetail(@RequestParam Integer id) {
+    public Result<WorkLogResult> queryDetail(@RequestParam String id) {
         Result<WorkLogResult> result = new Result<WorkLogResult>();
         WorkLogResult detailById = workLogDepotService.getDetailById(id);
         result.setResult(detailById);
