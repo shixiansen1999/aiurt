@@ -5,6 +5,9 @@ import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.modules.modeler.dto.ModelInfoVo;
 import com.aiurt.modules.modeler.service.IFlowableBpmnService;
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
+import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
@@ -35,6 +38,10 @@ public class BpmnDesignerController {
      * @return
      */
     @GetMapping(value = "/getBpmnByModelId/{modelId}")
+    @ApiOperation("根据modelid 查询bpmn xml")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "modelId", value = "流程模板id", required = true, paramType = "path")
+    })
     public Result<ModelInfoVo> getBpmnByModelId(@PathVariable String modelId) {
         ModelInfoVo modelInfoVo = flowableBpmnService.loadBpmnXmlByModelId(modelId);
         return Result.ok(modelInfoVo);
@@ -47,6 +54,7 @@ public class BpmnDesignerController {
      * @return
      */
     @PostMapping(value = "/saveBpmnModel", produces = "application/json")
+    @ApiOperation("保存bpmn模型")
     public Result<String> saveBpmnModel(@RequestBody ModelInfoVo modelInfoVo) {
         LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(modelInfoVo.getModelXml().getBytes());
@@ -64,6 +72,10 @@ public class BpmnDesignerController {
      */
     @PutMapping(value = "/publishBpmn/{modelId}", produces = "application/json")
     @AutoLog(value = "部署流程")
+    @ApiOperation("部署流程")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "modelId", value = "流程模板id", required = true, paramType = "query")
+    })
     public Result<?> publishBpmn(@PathVariable String modelId) {
         flowableBpmnService.publishBpmn(modelId);
         return Result.OK("部署成功");

@@ -63,7 +63,7 @@
             and major_code = #{condition.majorCode}
         </if>
         <if test="condition.systemCode != null and condition.systemCode != ''">
-            and system_code = #{condition.sysOrgCode}
+            and system_code = #{condition.systemCode}
         </if>
         order by scode desc
     </select>

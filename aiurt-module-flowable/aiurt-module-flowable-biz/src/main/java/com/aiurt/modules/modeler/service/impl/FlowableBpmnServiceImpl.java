@@ -2,6 +2,7 @@ package com.aiurt.modules.modeler.service.impl;
 
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.exception.AiurtErrorEnum;
+import com.aiurt.modules.editor.language.json.converter.CustomBpmnJsonConverter;
 import com.aiurt.modules.manage.entity.ActCustomVersion;
 import com.aiurt.modules.manage.service.IActCustomVersionService;
 import com.aiurt.modules.modeler.dto.ModelInfoVo;
@@ -73,7 +74,7 @@ public class FlowableBpmnServiceImpl implements IFlowableBpmnService {
      * bpmn json和BpmnModel 转换器
      */
     @Autowired
-    protected BpmnJsonConverter bpmnJsonConverter;
+    protected CustomBpmnJsonConverter bpmnJsonConverter;
 
 
     @Autowired
@@ -142,6 +143,7 @@ public class FlowableBpmnServiceImpl implements IFlowableBpmnService {
             xtr = xif.createXMLStreamReader(xmlIn);
 
         } catch (XMLStreamException e) {
+            log.error(e.getMessage());
           throw new AiurtBootException("");
         }
         // 实现将bpmn xml转换成BpmnModel内存模型对象
