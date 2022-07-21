@@ -36,9 +36,12 @@ public class InspectionCodeServiceImpl extends ServiceImpl<InspectionCodeMapper,
     public IPage<InspectionCodeDTO> pageList(Page<InspectionCodeDTO> page, InspectionCodeDTO inspectionCodeDTO) {
 
         // todo 数据权限过滤
-        List<InspectionCodeDTO> inspectionCodeDtoList = baseMapper.pageList(page,inspectionCodeDTO);
+        List<InspectionCodeDTO> inspectionCodeDTOS = baseMapper.pageList(page,inspectionCodeDTO);
+        inspectionCodeDTOS.forEach(i->{
+            i.setNumber(baseMapper.number(i.getCode()));
+        });
         if (ObjectUtils.isNotEmpty(inspectionCodeDTO.getInspectionStrCode())) {
-            for (InspectionCodeDTO il : inspectionCodeDtoList) {
+            for (InspectionCodeDTO il : inspectionCodeDTOS) {
                 InspectionStrRel inspectionStrRel = inspectionStrRelMapper.selectOne(new LambdaQueryWrapper<InspectionStrRel>()
                         .eq(InspectionStrRel::getInspectionStaCode, il.getCode())
                         .eq(InspectionStrRel::getInspectionStrCode,inspectionCodeDTO.getInspectionStrCode()));
@@ -49,7 +52,7 @@ public class InspectionCodeServiceImpl extends ServiceImpl<InspectionCodeMapper,
                 il.setSpecifyDevice(CollUtil.isNotEmpty(inspectionStrDeviceRels) ? "是" : "否");
             }
         }
-        return page.setRecords(inspectionCodeDtoList);
+        return page.setRecords(inspectionCodeDTOS);
     }
 
     @Override
