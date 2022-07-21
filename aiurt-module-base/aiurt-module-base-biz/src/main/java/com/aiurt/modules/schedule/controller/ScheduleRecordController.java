@@ -300,14 +300,12 @@ public class ScheduleRecordController {
         return result;
     }
 
-
+    @ApiOperation(value = "查询工班日历1", notes = "查询工班日历1")
     @GetMapping(value = "getUserSchedule")
     public Result<List<DayScheduleModel>> getUserSchedule(@RequestParam(name = "date", required = false) String date,
                                                           @RequestParam(name = "orgId", required = false) String orgId) {
         LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        // todo 后期修改
-        List<String> roleCodeList = new ArrayList<>();
-//        List<String> roleCodeList = userService.getRoleCodeById(loginUser.getId());
+         List<String> roleCodeList = scheduleRecordMapper.getRoleCodeById(loginUser.getId());
         if (StringUtils.isBlank(orgId)&&!roleCodeList.contains(RoleConstant.DIRECTOR)&&!roleCodeList.contains(RoleConstant.ADMIN)){
             orgId = loginUser.getOrgId();
         }

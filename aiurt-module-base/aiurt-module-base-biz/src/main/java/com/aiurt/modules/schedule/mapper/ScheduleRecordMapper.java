@@ -56,4 +56,11 @@ public interface ScheduleRecordMapper extends BaseMapper<ScheduleRecord> {
      * @return
      */
     List<LoginUser> userList(@Param("orgCode")String orgCode);
+
+    /**
+     * 查询code
+     * @param id
+     * @return
+     */
+    List<String> getRoleCodeById(String id);
 }

@@ -238,5 +238,12 @@
         from sys_user su
         where su.org_code like concat(#{orgCode},'%')
     </select>
+    <select id="getRoleCodeById" resultType="java.lang.String">
+     select role_code
+     from sys_user a
+        inner join sys_user_role b on a.id = b.user_id
+        inner join sys_role c on b.role_id = c.id
+     where a.id = #{id}
+    </select>
 
 </mapper>

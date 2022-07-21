@@ -5,9 +5,9 @@
     <select id="pageList" resultType="com.aiurt.boot.standard.dto.PatrolStandardDto">
         select a.*,b.major_name as professionName, c.system_name as subsystemName ,d.name as deviceTypeName
                from patrol_standard as a
-        left join cs_major b on a.profession_code =b.major_code
-        left join cs_subsystem c on a.subsystem_code =c.system_code
-        left join device_type d on a.device_type_code =d.code
+        left join cs_major b on a.profession_code =b.major_code AND b.del_flag=0
+        left join cs_subsystem c on a.subsystem_code =c.system_code AND c.del_flag=0
+        left join device_type d on a.device_type_code =d.code AND d.del_flag=0
         where a.del_flag =0
         <if test="patrolStandard.name !=null ">
             AND a.name LIKE CONCAT ('%', #{patrolStandard.name}, '%')
