@@ -207,7 +207,7 @@ public class SysInfoListController {
                     if (!Objects.isNull(s)) {
                         LoginUser userById = iSysBaseAPI.getUserById(s);
                         if (!ObjectUtils.isEmpty(userById)) {
-                            str.append(userById.getUsername()).append(",");
+                            str.append(userById.getRealname()).append(",");
                         }
                     }
                 }

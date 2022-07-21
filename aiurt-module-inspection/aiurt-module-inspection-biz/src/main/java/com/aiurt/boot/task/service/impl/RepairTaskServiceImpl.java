@@ -223,7 +223,7 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
             //提交人名称
             if (e.getOverhaulId() != null) {
                 LoginUser userById = sysBaseAPI.getUserById(e.getOverhaulId());
-                e.setOverhaulName(userById.getUsername());
+                e.setOverhaulName(userById.getRealname());
             }
             if (e.getDeviceId() != null && CollectionUtil.isNotEmpty(repairTasks)) {
                 //正常项
@@ -733,7 +733,7 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
             }
         }
         RepairTaskDeviceRel repairTaskDeviceRel = new RepairTaskDeviceRel();
-
+        LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
 
         LambdaQueryWrapper<RepairTaskDeviceRel> objectLambdaQueryWrapper = new LambdaQueryWrapper<>();
         List<RepairTaskDeviceRel> repairTaskDevice1 = repairTaskDeviceRelMapper.selectList(objectLambdaQueryWrapper.eq(RepairTaskDeviceRel::getRepairTaskId, examineDTO.getId()));
@@ -756,6 +756,9 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
             });
             if (repairTask.getIsConfirm() == 1) {
                 //修改检修任务状态
+                repairTask.setSubmitUserId(sysUser.getId());
+                repairTask.setSumitUserName(sysUser.getRealname());
+                repairTask.setSubmitTime(new Date());
                 repairTask.setConfirmUrl(examineDTO.getConfirmUrl());
                 repairTask.setStatus(InspectionConstant.PENDING_REVIEW);
                 // 修改对应检修计划状态
@@ -766,6 +769,9 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                 }
             } else {
                 //修改检修任务状态
+                repairTask.setSubmitUserId(sysUser.getId());
+                repairTask.setSumitUserName(sysUser.getRealname());
+                repairTask.setSubmitTime(new Date());
                 repairTask.setConfirmUrl(examineDTO.getConfirmUrl());
                 repairTask.setStatus(InspectionConstant.COMPLETED);
                 // 修改对应检修计划状态

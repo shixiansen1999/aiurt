@@ -185,21 +185,18 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
         PatrolTask patrolTask = patrolTaskMapper.selectOne(new LambdaQueryWrapper<PatrolTask>().eq(PatrolTask::getId, taskDevice.getTaskId()));
         if(manager.checkTaskUser(patrolTask.getCode())==false)
         {
-            throw new AiurtBootException("小主，该巡检任务不在您的检查范围之内哦");
+            throw new AiurtBootException("小主，该巡检任务不在您的提交范围之内哦");
         }
         else
         {
-            List<PatrolTaskDevice> patrolTaskDevices = patrolTaskDeviceMapper.selectList(new LambdaQueryWrapper<PatrolTaskDevice>().eq(PatrolTaskDevice::getTaskId, patrolTask.getId()));
-            patrolTaskDevices.stream().forEach(e -> {
-                List<PatrolCheckResult> patrolCheckResultList = patrolCheckResultMapper.selectList(new LambdaQueryWrapper<PatrolCheckResult>().eq(PatrolCheckResult::getTaskDeviceId, e.getId()));
+                List<PatrolCheckResult> patrolCheckResultList = patrolCheckResultMapper.selectList(new LambdaQueryWrapper<PatrolCheckResult>().eq(PatrolCheckResult::getTaskDeviceId, taskDevice.getId()));
                 List<PatrolCheckResult> collect = patrolCheckResultList.stream().filter(s -> s.getCheckResult() != null && PatrolConstant.RESULT_EXCEPTION.equals(s.getCheckResult())).collect(Collectors.toList());
                 if (CollUtil.isNotEmpty(collect)) {
-                    e.setCheckResult(PatrolConstant.RESULT_EXCEPTION);
+                    taskDevice.setCheckResult(PatrolConstant.RESULT_EXCEPTION);
                 } else {
-                    e.setCheckResult(PatrolConstant.RESULT_NORMAL);
+                    taskDevice.setCheckResult(PatrolConstant.RESULT_NORMAL);
                 }
-                patrolTaskDeviceMapper.updateById(e);
-            });
+                patrolTaskDeviceMapper.updateById(taskDevice);
             LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
             LambdaUpdateWrapper<PatrolTaskDevice> updateWrapper= new LambdaUpdateWrapper<>();
             updateWrapper.set(PatrolTaskDevice::getUserId,sysUser.getId()).set(PatrolTaskDevice::getCheckTime, LocalDateTime.now()).set(PatrolTaskDevice::getStatus,PatrolConstant.BILL_COMPLETE).eq(PatrolTaskDevice::getId,patrolTaskDevice.getId());

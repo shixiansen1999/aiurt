@@ -81,10 +81,13 @@ public class PatrolTaskUserController extends BaseController<PatrolTaskUser, IPa
 	 @ApiOperation(value="app巡检任务列表-指派", notes="app巡检任务列表-指派")
 	 @PostMapping(value = "/patrolTaskAppointed")
 	 public Result<String> patrolTaskAppointed(@RequestBody PatrolTaskAppointSaveDTO patrolAccompanyList) {
-		 LambdaUpdateWrapper<PatrolTask> updateWrapper= new LambdaUpdateWrapper<>();
-		 updateWrapper.set(PatrolTask::getStartTime,patrolAccompanyList.getStartTime()).set(PatrolTask::getEndTime,patrolAccompanyList.getEndTime()).set(PatrolTask::getStatus,1)
-				 .eq(PatrolTask::getId,patrolAccompanyList.getId());
+		 //将任务来源改为常规指派,将任务状态改为待确认
+		 LambdaUpdateWrapper<PatrolTask> updateWrapper = new LambdaUpdateWrapper<>();
+		 updateWrapper.set(PatrolTask::getSource, 2).set(PatrolTask::getStatus, 1).set(PatrolTask::getStartTime, patrolAccompanyList.getStartTime())
+				 .set(PatrolTask::getEndTime, patrolAccompanyList.getEndTime()).set(PatrolTask::getPlanCode, patrolAccompanyList.getPlanCode()).set(PatrolTask::getType, patrolAccompanyList.getType())
+				 .set(PatrolTask::getPlanOrderCodeUrl, patrolAccompanyList.getPlanOrderCodeUrl()).eq(PatrolTask::getCode, patrolAccompanyList.getCode());
 		 patrolTaskService.update(updateWrapper);
+		 //添加巡检人
 		 List<PatrolAccompanyDTO> list = patrolAccompanyList.getAccompanyDTOList();
 		 list.stream().forEach(e->{
 			 PatrolTaskUser patrolTaskUser = new PatrolTaskUser();

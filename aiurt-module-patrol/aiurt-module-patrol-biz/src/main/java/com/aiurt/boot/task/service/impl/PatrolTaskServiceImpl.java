@@ -395,11 +395,14 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
             patrolTaskUserMapper.insert(patrolTaskUser);
         }
         //将任务来源改为常规指派,将任务状态改为待确认
-        LambdaUpdateWrapper<PatrolTask> updateWrapper = new LambdaUpdateWrapper<>();
-        updateWrapper.set(PatrolTask::getSource, 2).set(PatrolTask::getStatus, 1).set(PatrolTask::getStartTime, patrolTaskUserDTO.getStartTime())
-                .set(PatrolTask::getEndTime, patrolTaskUserDTO.getEndTime()).set(PatrolTask::getPlanCode, patrolTaskUserDTO.getPlanCode()).set(PatrolTask::getType, patrolTaskUserDTO.getType())
-                .set(PatrolTask::getPlanOrderCodeUrl, patrolTaskUserDTO.getPlanOrderCodeUrl()).eq(PatrolTask::getCode, patrolTaskUserDTO.getCode());
-        patrolTaskMapper.update(new PatrolTask(),updateWrapper);
+        PatrolTask patrolTask = new PatrolTask();
+        patrolTask.setId(patrolTaskUserDTO.getId());
+        patrolTask.setSource(2);
+        patrolTask.setPlanOrderCodeUrl(patrolTaskUserDTO.getPlanOrderCodeUrl());
+        patrolTask.setStatus(1);
+        patrolTask.setPlanCode(patrolTaskUserDTO.getPlanCode());
+        patrolTask.setType( patrolTaskUserDTO.getType());
+        patrolTaskMapper.updateById(patrolTask);
     }
 
     @Override
