@@ -881,9 +881,9 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
         // 处理查询参数
         QueryWrapper<RepairPool> queryWrapper = doQuery(manualTaskReq);
         page = baseMapper.selectPage(page, queryWrapper);
-
+        boolean filterFlag = GlobalThreadLocal.setDataFilter(false);
         page.getRecords().forEach(re -> {
-            GlobalThreadLocal.setDataFilter(false);
+
             // 组织机构
             List<RepairPoolOrgRel> repairPoolOrgRels = orgRelMapper.selectList(
                     new LambdaQueryWrapper<RepairPoolOrgRel>()
@@ -899,7 +899,10 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
             // 站点
             List<StationDTO> repairPoolStationRels = repairPoolStationRelMapper.selectStationList(re.getCode());
             re.setStationName(manager.translateStation(repairPoolStationRels));
+
+
         });
+        GlobalThreadLocal.setDataFilter(filterFlag);
         return page;
     }
 
@@ -945,7 +948,7 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
         }
         List<RepairPoolOrgRel> repairPoolOrgRels = orgRelMapper.selectList(relQueryWrapper);
         if (CollUtil.isNotEmpty(orgList) && CollUtil.isEmpty(repairPoolOrgRels)) {
-            throw new AiurtNoDataException(InspectionConstant.NO_DATA,new ArrayList<>());
+            throw new AiurtNoDataException(InspectionConstant.NO_DATA, new ArrayList<>());
         }
 
         // 站点
@@ -956,7 +959,7 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
         }
         List<RepairPoolStationRel> repairPoolStationRels = repairPoolStationRelMapper.selectList(repairPoolStationRelLambdaQueryWrapper);
         if (CollUtil.isNotEmpty(stationList) && CollUtil.isEmpty(repairPoolStationRels)) {
-            throw new AiurtNoDataException(InspectionConstant.NO_DATA,new ArrayList<>());
+            throw new AiurtNoDataException(InspectionConstant.NO_DATA, new ArrayList<>());
         }
 
         // 组织机构和线路对应任务code的交集

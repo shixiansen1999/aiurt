@@ -80,6 +80,7 @@ public class MybatisDataFilterInterceptor implements Interceptor {
                 if(mapperClass!=null){
                     EnableDataPerm rule = mapperClass.getAnnotation(EnableDataPerm.class);
                     if (rule != null) {
+                        log.info("类型是：{}",mapperClass);
                         loadDataPermFilterRules(mapperClass, rule);
                     }
                 }
