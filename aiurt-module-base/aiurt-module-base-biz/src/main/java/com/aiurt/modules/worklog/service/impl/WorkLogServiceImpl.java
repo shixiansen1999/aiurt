@@ -102,9 +102,7 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
         String logCode = generateLogCode();
         depot.setCode(logCode);
         // todo 后期修改
-        LoginUser one = new LoginUser();
-//        LoginUser one = sysUserService.getOne(new QueryWrapper<SysUser>().eq(SysUser.ID, userId), false);
-        depot.setOrgId(one.getOrgId());
+        depot.setOrgId(loginUser.getOrgId());
         depot.setSubmitId(userId);
         depot.setCreateBy(userId);
         //根据当前登录人id获取故障待办消息
