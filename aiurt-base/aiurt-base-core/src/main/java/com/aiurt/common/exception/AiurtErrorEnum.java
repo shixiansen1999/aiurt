@@ -18,6 +18,7 @@ public enum AiurtErrorEnum {
      * 6 开头
      */
     FLOW_MODEL_NOT_FOUND(61001,"流程模板信息不存在"),
+    FLOW_DEFINITION_NOT_FOUND(61002,"流程模板信息不存在"),
 
     /**
      * 7 开头
