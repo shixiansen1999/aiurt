@@ -523,6 +523,23 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                         list.addAll(collect);
                     }
                 }
+                //检查项的数量父级
+                long count1 = repairTaskResultList.stream().filter(repairTaskResult -> repairTaskResult.getType() == 1).count();
+                //检查项的数量子级
+                long count11 = children.stream().filter(repairTaskResult -> repairTaskResult.getType() == 1).count();
+                checkListDTO.setMaintenanceItemsQuantity((int) count1+(int) count11);
+
+                //已检修的数量父级
+                long count2 = repairTaskResultList.stream().filter(repairTaskResult -> repairTaskResult.getStatus() != null && repairTaskResult.getType() == 1).count();
+                //已检修的数量子级
+                long count22 = children.stream().filter(repairTaskResult -> repairTaskResult.getStatus() != null && repairTaskResult.getType() == 1).count();
+                checkListDTO.setOverhauledQuantity((int) count2+(int) count22);
+
+                //待检修的数量父级
+                long count3 = repairTaskResultList.stream().filter(repairTaskResult -> repairTaskResult.getStatus() == null && repairTaskResult.getType() == 1).count();
+                //待检修的数量子级
+                long count33 = children.stream().filter(repairTaskResult -> repairTaskResult.getStatus() == null && repairTaskResult.getType() == 1).count();
+                checkListDTO.setToBeOverhauledQuantity((int) count3+(int) count33);
             });
             if (CollectionUtils.isNotEmpty(list)){
                 LambdaQueryWrapper<RepairTaskEnclosure> objectLambdaQueryWrapper = new LambdaQueryWrapper<>();
@@ -532,17 +549,7 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                        checkListDTO.setEnclosureUrl(repairTaskDevice.stream().map(RepairTaskEnclosure::getUrl).collect(Collectors.toList()));
                    }
             }
-            //检查项的数量
-            long count1 = repairTaskResultList.stream().filter(repairTaskResult -> repairTaskResult.getType() == 1).count();
-            checkListDTO.setMaintenanceItemsQuantity((int) count1);
 
-            //已检修的数量
-            long count2 = repairTaskResultList.stream().filter(repairTaskResult -> repairTaskResult.getStatus() != null).count();
-            checkListDTO.setMaintenanceItemsQuantity((int) count2);
-
-            //待检修的数量
-            long count3 = repairTaskResultList.stream().filter(repairTaskResult -> repairTaskResult.getStatus() == null).count();
-            checkListDTO.setMaintenanceItemsQuantity((int) count3);
         }
         return checkListDTO;
     }
