@@ -84,8 +84,6 @@ public class MaterialBaseServiceImpl extends ServiceImpl<MaterialBaseMapper, Mat
 
 	@Override
 	public MaterialBase translate(MaterialBase materialBase) {
-		//物资类型最小
-		String baseTypeCode = materialBase.getBaseTypeCode()==null?"":materialBase.getBaseTypeCode();
 		//物资类型层级
 		String baseTypeCodeCc = materialBase.getBaseTypeCodeCc()==null?"":materialBase.getBaseTypeCodeCc();
 		String baseTypeCodeCcName = "";
