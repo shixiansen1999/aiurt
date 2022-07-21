@@ -1,6 +1,7 @@
 package com.aiurt.modules.situation.entity;
 
 import com.aiurt.common.aspect.annotation.Dict;
+import com.aiurt.modules.basic.entity.DictEntity;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
@@ -19,7 +20,7 @@ import java.util.Date;
  */
 @Data
 @TableName("sys_announcement_send")
-public class SysAnnouncementSend implements Serializable {
+public class SysAnnouncementSend extends DictEntity implements Serializable {
     private static final long serialVersionUID = 1L;
 
 	/**id*/
