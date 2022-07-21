@@ -122,7 +122,7 @@ public class SysInfoListController {
             LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
             // 发消息
             BusMessageDTO messageDTO = new BusMessageDTO();
-            messageDTO.setFromUser(sysUser.getId());
+            messageDTO.setFromUser(sysUser.getUsername());
             messageDTO.setToUser(sysAnnouncement.getUserIds());
             messageDTO.setContent(sysAnnouncement.getMsgContent());
             messageDTO.setCategory("2");
@@ -205,7 +205,7 @@ public class SysInfoListController {
                 StringBuilder str = new StringBuilder();
                 for (String s : split) {
                     if (!Objects.isNull(s)) {
-                        LoginUser userById = iSysBaseAPI.getUserById(s);
+                        LoginUser userById = iSysBaseAPI.getUserByName(s);
                         if (!ObjectUtils.isEmpty(userById)) {
                             str.append(userById.getRealname()).append(",");
                         }
