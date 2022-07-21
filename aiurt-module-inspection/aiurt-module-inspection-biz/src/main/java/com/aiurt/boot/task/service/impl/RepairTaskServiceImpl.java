@@ -469,7 +469,7 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
             stationDTOList.forEach(e -> {
                 e.setStationCode(checkListDTO.getStationCode());
                 e.setLineCode(checkListDTO.getLineCode());
-                e.setPositionCode(checkListDTO.getSpecificLocation());
+                e.setPositionCode(checkListDTO.getPositionCode());
             });
             String station = manager.translateStation(stationDTOList);
             String string = checkListDTO.getSpecificLocation() + station;
@@ -481,7 +481,7 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
             stationDTOList.forEach(e -> {
                 e.setStationCode(checkListDTO.getStationCode());
                 e.setLineCode(checkListDTO.getLineCode());
-                e.setPositionCode(checkListDTO.getSpecificLocation());
+                e.setPositionCode(checkListDTO.getPositionCode());
             });
             String station = manager.translateStation(stationDTOList);
             checkListDTO.setSitePosition(station);
