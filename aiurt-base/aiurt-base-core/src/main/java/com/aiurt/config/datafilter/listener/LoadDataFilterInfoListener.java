@@ -1,6 +1,7 @@
 package com.aiurt.config.datafilter.listener;
 
 import com.aiurt.config.datafilter.interceptor.MybatisDataFilterInterceptor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.stereotype.Component;
@@ -13,6 +14,7 @@ import org.springframework.stereotype.Component;
  * @author aiurt
  * @date 2022-07-18
  */
+@Slf4j
 @Component
 public class LoadDataFilterInfoListener implements ApplicationListener<ApplicationReadyEvent> {
 
@@ -20,6 +22,7 @@ public class LoadDataFilterInfoListener implements ApplicationListener<Applicati
     public void onApplicationEvent(ApplicationReadyEvent applicationReadyEvent) {
         MybatisDataFilterInterceptor interceptor =
                 applicationReadyEvent.getApplicationContext().getBean(MybatisDataFilterInterceptor.class);
+        log.info("进去预加载调用");
         interceptor.loadInfoWithDataFilter();
     }
 }
