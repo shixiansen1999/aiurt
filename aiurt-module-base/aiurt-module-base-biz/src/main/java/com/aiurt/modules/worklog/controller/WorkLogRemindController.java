@@ -98,8 +98,6 @@ public class WorkLogRemindController {
         LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         String orgId = user.getOrgId();
         String userId = user.getId();
-
-
         WorkLogRemind workLogRemind = workLogRemindService.getById(remind.getId());
         if (workLogRemind == null) {
             result.error500("未找到对应实体");

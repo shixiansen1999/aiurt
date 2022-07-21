@@ -30,7 +30,7 @@ import java.util.Date;
 public class WorkLog {
 
     /**主键id,自动递增*/
-    @TableId(type= IdType.AUTO)
+    @TableId(type = IdType.ASSIGN_ID)
     @ApiModelProperty(value = "主键id,自动递增")
     private  Long  id;
 

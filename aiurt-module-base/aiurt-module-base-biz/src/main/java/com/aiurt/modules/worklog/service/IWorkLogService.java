@@ -99,7 +99,7 @@ public interface IWorkLogService extends IService<WorkLog> {
      * @param dto
      * @return
      */
-    Result editWorkLog(WorkLogDTO dto);
+    void editWorkLog(WorkLogDTO dto);
 
     /**
      * 日志统计

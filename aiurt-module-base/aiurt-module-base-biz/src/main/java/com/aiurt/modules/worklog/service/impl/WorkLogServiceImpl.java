@@ -597,8 +597,9 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Result editWorkLog(WorkLogDTO dto) {
-        WorkLog workLog = this.getOne(new QueryWrapper<WorkLog>().eq(WorkLog.ID, dto.getId()), false);
+    public void editWorkLog(WorkLogDTO dto) {
+        WorkLog workLog = new WorkLog();
+        workLog.setId(dto.getId());
         workLog.setLogTime(dto.getLogTime());
         workLog.setWorkContent(dto.getWorkContent());
         workLog.setContent(dto.getContent());
@@ -610,7 +611,6 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
         workLog.setAssortUnit(dto.getAssortUnit());
         workLog.setAssortContent(dto.getAssortContent());
         depotMapper.updateById(workLog);
-
         //删除原附件列表
         enclosureMapper.deleteByName(workLog.getId());
         //重新插入附件列表
@@ -628,7 +628,6 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
         }
         //如果接班人不为空 发送待办消息
         sendMessage(dto);
-        return Result.ok();
     }
 
     /**

@@ -34,10 +34,7 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author cgkj0
@@ -147,15 +144,14 @@ public class WorkLogController {
     @ApiOperation(value="工作日志-编辑", notes="工作日志-编辑")
     @PutMapping(value = "/edit")
     public Result<WorkLog> edit(@Valid @RequestBody WorkLogDTO dto) {
-        Result<WorkLog> result = new Result<WorkLog>();
         try {
             workLogDepotService.editWorkLog(dto);
-            result.success("修改成功");
+            Result.ok("修改成功");
         }catch (Exception e) {
             log.error(e.getMessage(),e);
-            result.error500(e.getMessage());
+            Result.error(e.getMessage());
         }
-        return result;
+        return  Result.ok("修改成功");
     }
 
     /**
