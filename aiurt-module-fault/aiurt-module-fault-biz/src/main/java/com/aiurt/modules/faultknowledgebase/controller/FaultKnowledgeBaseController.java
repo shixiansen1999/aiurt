@@ -5,6 +5,7 @@ import java.util.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.aiurt.modules.device.entity.DeviceType;
 import com.aiurt.modules.fault.entity.Fault;
 import com.aiurt.modules.faultanalysisreport.constant.FaultConstant;
 import com.aiurt.modules.faultanalysisreport.dto.FaultDTO;
@@ -23,6 +24,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.extern.slf4j.Slf4j;
 
+import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecgframework.poi.excel.ExcelImportUtil;
 import org.jeecgframework.poi.excel.entity.ImportParams;
 import com.aiurt.common.system.base.controller.BaseController;
@@ -52,6 +54,9 @@ public class FaultKnowledgeBaseController extends BaseController<FaultKnowledgeB
 	 private FaultKnowledgeBaseMapper faultKnowledgeBaseMapper;
 	 @Autowired
 	 private IFaultAnalysisReportService faultAnalysisReportService;
+	 @Autowired
+	 private ISysBaseAPI iSysBaseAPI;
+
 	/**
 	 * 分页列表查询
 	 *
@@ -292,12 +297,11 @@ public class FaultKnowledgeBaseController extends BaseController<FaultKnowledgeB
 	 @ApiOperation(value="故障知识库-设备分类查询", notes="device_type-设备分类查询")
 	 @GetMapping(value = "/getDeviceType")
 	 @ApiResponses({
-			 @ApiResponse(code = 200, message = "OK", response = DeviceTypeDTO.class)
+			 @ApiResponse(code = 200, message = "OK", response = DeviceType.class)
 	 })
-	 public Result<List<DeviceTypeDTO>> getDeviceType(@RequestParam(name="majorCode",required = false) String majorCode,
-													  @RequestParam(name="systemCode",required = false) String systemCode,
-													  @RequestParam(name="name",required = false) String name) {
-		 List<DeviceTypeDTO> deviceTypes = faultKnowledgeBaseMapper.getDeviceType(majorCode,systemCode,name);
+	 public Result<List<DeviceType>> getDeviceType(@RequestParam(name="majorCode",required = false) String majorCode,
+													  @RequestParam(name="systemCode",required = false) String systemCode) {
+		 List<DeviceType> deviceTypes = iSysBaseAPI.selectList(majorCode, systemCode);
 		 return Result.OK(deviceTypes);
 	 }
 

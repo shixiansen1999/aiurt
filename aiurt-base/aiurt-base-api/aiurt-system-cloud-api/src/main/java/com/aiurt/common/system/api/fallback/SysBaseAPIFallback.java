@@ -1,5 +1,6 @@
 package com.aiurt.common.system.api.fallback;
 
+import com.aiurt.modules.device.entity.DeviceType;
 import org.jeecg.common.api.dto.OnlineAuthDTO;
 import com.aiurt.common.api.dto.message.*;
 import com.alibaba.fastjson.JSONObject;
@@ -311,6 +312,11 @@ public class SysBaseAPIFallback implements ISysBaseAPI {
 
     @Override
     public List<LoginUser> getUserByDepIds(List<String> deptCodes) {
+        return null;
+    }
+
+    @Override
+    public List<DeviceType> selectList(String majorCode, String systemCode) {
         return null;
     }
 
