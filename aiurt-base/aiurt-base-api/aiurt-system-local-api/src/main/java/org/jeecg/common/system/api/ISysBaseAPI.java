@@ -5,6 +5,7 @@ import com.aiurt.common.api.dto.message.*;
 import com.aiurt.modules.basic.entity.SysAttachment;
 import com.aiurt.modules.position.entity.CsStation;
 import com.alibaba.fastjson.JSONObject;
+import com.aiurt.modules.device.entity.DeviceType;
 import org.jeecg.common.api.dto.OnlineAuthDTO;
 import org.jeecg.common.system.vo.*;
 
@@ -385,4 +386,14 @@ public interface ISysBaseAPI extends CommonAPI {
      * @return
      */
     public List<CsStation> queryAllStation();
+
+    /**
+     * 物资分类列表结构查询（无分页。用于左侧树）
+     *
+     * @param majorCode
+     * @param systemCode
+     * @return
+     */
+    List<DeviceType> selectList(String majorCode, String systemCode);
+
 }

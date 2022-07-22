@@ -2,6 +2,11 @@ package com.aiurt.modules.system.service.impl;
 
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.StrUtil;
+import com.aiurt.modules.basic.entity.SysAttachment;
+import com.aiurt.modules.basic.service.ISysAttachmentService;
+import com.aiurt.modules.device.entity.DeviceType;
+import com.aiurt.modules.device.service.IDeviceTypeService;
+import org.jeecg.common.api.dto.OnlineAuthDTO;
 import com.aiurt.common.api.dto.message.*;
 import com.aiurt.common.aspect.UrlMatchEnum;
 import com.aiurt.common.constant.CacheConstant;
@@ -43,6 +48,7 @@ import org.jeecg.common.system.vo.*;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.util.AntPathMatcher;
 import org.springframework.util.PathMatcher;
@@ -125,6 +131,9 @@ public class SysBaseApiImpl implements ISysBaseAPI {
 
     @Autowired
     private CsUserSubsystemMapper csUserSubsystemMapper;
+
+    @Autowired
+    private IDeviceTypeService deviceTypeService;
 
     @Override
     @Cacheable(cacheNames = CacheConstant.SYS_USERS_CACHE, key = "#username")
@@ -1290,6 +1299,22 @@ public class SysBaseApiImpl implements ISysBaseAPI {
     @Override
     public List<CsStation> queryAllStation() {
         List<CsStation> stationList = csStationMapper.selectList(new LambdaQueryWrapper<CsStation>().eq(CsStation::getDelFlag, CommonConstant.DEL_FLAG_0));return stationList; }
+
+    @Override
+    public List<DeviceType> selectList(String majorCode, String systemCode) {
+        QueryWrapper<DeviceType> deviceTypeQueryWrapper = new QueryWrapper<DeviceType>();
+        deviceTypeQueryWrapper.eq("del_flag", CommonConstant.DEL_FLAG_0);
+        if(majorCode != null && !"".equals(majorCode)){
+            deviceTypeQueryWrapper.eq("major_code", majorCode);
+        }
+        if(systemCode != null && !"".equals(systemCode)){
+            deviceTypeQueryWrapper.eq("system_code", systemCode);
+        }
+        deviceTypeQueryWrapper.orderByDesc("create_time");
+        List<DeviceType> deviceTypeList = deviceTypeService.list(deviceTypeQueryWrapper);
+        List<DeviceType> deviceTypes = deviceTypeService.treeList(deviceTypeList,"0");
+        return deviceTypes;
+    }
 
     @Override
     public List<CsUserDepartModel> getDepartByUserId(String id) {

@@ -1,6 +1,7 @@
 package com.aiurt.common.system.api;
 
 import com.aiurt.common.api.CommonAPI;
+import com.aiurt.modules.device.entity.DeviceType;
 import org.jeecg.common.api.dto.OnlineAuthDTO;
 import com.aiurt.common.api.dto.message.*;
 import com.aiurt.common.constant.ServiceNameConstants;
@@ -543,5 +544,15 @@ public interface ISysBaseAPI extends CommonAPI {
      */
     @GetMapping("/sys/api/getUserByDepIds")
     List<LoginUser> getUserByDepIds(List<String> deptCodes);
+
+    /**
+     * 物资分类列表结构查询（无分页。用于左侧树）
+     *
+     * @param majorCode
+     * @param systemCode
+     * @return
+     */
+    @GetMapping(value = "/sys/api/selectList")
+    List<DeviceType> selectList(String majorCode, String systemCode);
 
 }
