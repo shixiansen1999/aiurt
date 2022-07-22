@@ -17,7 +17,8 @@
     sa.msg_content,
     sa.sender,
     sa.level,
-    sa.priority
+    sa.priority,
+    sa.send_time
     from sys_announcement_send sas left join sys_announcement sa on sas.annt_id = sa.id
     where sa.send_status = 1 and sas.user_id =#{id} ORDER BY sas.create_time desc,sas.update_time desc
     </select>
