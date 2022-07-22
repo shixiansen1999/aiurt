@@ -83,9 +83,13 @@ public class WorkLogDTO implements Serializable {
     private  String  assortUnit;
 
     /**配合施工参与人*/
-    @Excel(name = "配合施工参与人", width = 15)
-    @ApiModelProperty(value = "配合施工参与人")
+    @Excel(name = "配合施工参与人Ids", width = 15)
+    @ApiModelProperty(value = "配合施工参与人Ids")
     private  String  assortIds;
+    /**配合施工参与人*/
+    @Excel(name = "配合施工参与人Ids", width = 15)
+    @ApiModelProperty(value = "配合施工参与人Ids")
+    private  String  assortNames;
 
     /**配合施工人次*/
     @Excel(name = "配合施工人次", width = 15)

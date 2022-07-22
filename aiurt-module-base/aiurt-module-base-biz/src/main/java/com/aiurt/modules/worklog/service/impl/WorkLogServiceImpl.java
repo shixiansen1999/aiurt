@@ -204,7 +204,15 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
         depot.setAssortTime(dto.getAssortTime());
         depot.setAssortLocation(dto.getAssortLocation());
         depot.setAssortUnit(dto.getAssortUnit());
-        depot.setAssortIds(dto.getAssortIds());
+        String[] split = dto.getAssortNames().split(",");
+        List<LoginUser> loginUsers = new ArrayList<>();
+        for(String s:split)
+        {
+            LoginUser queryUser = iSysBaseAPI.queryUser(s);
+            loginUsers.add(queryUser);
+        }
+        String collect = loginUsers.stream().map(LoginUser::getId).collect(Collectors.joining(","));
+        depot.setAssortIds(collect);
         depot.setAssortNum(dto.getAssortNum());
         depot.setAssortContent(dto.getAssortContent());
         depotMapper.insert(depot);
@@ -602,10 +610,19 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
         workLog.setLogTime(dto.getLogTime());
         workLog.setWorkContent(dto.getWorkContent());
         workLog.setContent(dto.getContent());
-        workLog.setSucceedId(dto.getSucceedId());
+        LoginUser user = iSysBaseAPI.queryUser(dto.getSucceedName());
+        workLog.setSucceedId(user.getId());
         workLog.setAssortTime(dto.getAssortTime());
         workLog.setAssortLocation(dto.getAssortLocation());
-        workLog.setAssortIds(dto.getAssortIds());
+        String[] split = dto.getAssortNames().split(",");
+        List<LoginUser> loginUsers = new ArrayList<>();
+        for(String s:split)
+        {
+            LoginUser queryUser = iSysBaseAPI.queryUser(s);
+            loginUsers.add(queryUser);
+        }
+        String collect = loginUsers.stream().map(LoginUser::getId).collect(Collectors.joining(","));
+        workLog.setAssortIds(collect);
         workLog.setAssortNum(dto.getAssortNum());
         workLog.setAssortUnit(dto.getAssortUnit());
         workLog.setAssortContent(dto.getAssortContent());
