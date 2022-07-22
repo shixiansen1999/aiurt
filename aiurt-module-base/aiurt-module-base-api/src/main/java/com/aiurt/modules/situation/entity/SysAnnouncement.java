@@ -183,4 +183,16 @@ public class SysAnnouncement implements Serializable {
     @Dict(dicCode = "read_flag")
     @TableField(exist = false)
     private String readFlag;
+
+    /**
+     * 已读
+     * */
+    @TableField(exist = false)
+    private Integer readCount;
+
+    /**
+     * 未读
+     * */
+    @TableField(exist = false)
+    private Integer unreadCount;
 }

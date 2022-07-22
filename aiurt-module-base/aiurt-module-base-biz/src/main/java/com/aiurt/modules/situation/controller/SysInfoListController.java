@@ -5,6 +5,7 @@ import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.api.dto.message.BusMessageDTO;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.util.SysAnnmentTypeEnum;
+import com.aiurt.modules.situation.dto.SysAnnouncementDTO;
 import com.aiurt.modules.situation.entity.SysAnnouncement;
 import com.aiurt.modules.situation.entity.SysAnnouncementSend;
 import com.aiurt.modules.situation.mapper.SysInfoListMapper;
@@ -33,6 +34,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.*;
+import java.util.stream.Collectors;
 
 
 /**
@@ -247,16 +249,21 @@ public class SysInfoListController {
             @ApiResponse(code = 200, message = "OK", response = SysAnnouncement.class)
     })
     @RequestMapping(value = "/getMyInfo", method = RequestMethod.GET)
-    public Result<IPage<SysAnnouncement>> getMyInfo(SysAnnouncement sysAnnouncement,
+    public Result<SysAnnouncementDTO> getMyInfo(SysAnnouncement sysAnnouncement,
                                                         @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
                                                         @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize,
                                                         HttpServletRequest req) {
-        Result<IPage<SysAnnouncement>> result = new Result<IPage<SysAnnouncement>>();
+        Result<SysAnnouncementDTO> result = new Result<>();
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         Page<SysAnnouncement> page = new Page<>(pageNo, pageSize);
         List<SysAnnouncement> myInfo = sysInfoListMapper.getMyInfo(page, sysUser.getId());
+        List<SysAnnouncement> collect = myInfo.stream().filter(s -> "1".equals(s.getReadFlag())).collect(Collectors.toList());
+        SysAnnouncementDTO sysAnnouncementDTO = new SysAnnouncementDTO();
+        sysAnnouncementDTO.setSysAnnouncementList(myInfo);
+        sysAnnouncementDTO.setReadCount(collect.size());
+        sysAnnouncementDTO.setUnreadCount(myInfo.size()-collect.size());
         result.setSuccess(true);
-        result.setResult(page.setRecords(myInfo));
+        result.setResult(sysAnnouncementDTO);
         return result;
     }
 
