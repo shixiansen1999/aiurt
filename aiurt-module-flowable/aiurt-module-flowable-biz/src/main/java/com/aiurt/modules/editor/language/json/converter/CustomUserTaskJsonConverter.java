@@ -2,15 +2,16 @@ package com.aiurt.modules.editor.language.json.converter;
 
 import com.aiurt.modules.utils.ExtensionPropertiesUtil;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.commons.lang3.StringUtils;
-import org.flowable.bpmn.model.BaseElement;
-import org.flowable.bpmn.model.FlowElement;
-import org.flowable.bpmn.model.UserTask;
+import org.flowable.bpmn.constants.BpmnXMLConstants;
+import org.flowable.bpmn.model.*;
 import org.flowable.editor.language.json.converter.BaseBpmnJsonConverter;
 import org.flowable.editor.language.json.converter.BpmnJsonConverterContext;
 import org.flowable.editor.language.json.converter.UserTaskJsonConverter;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -29,9 +30,10 @@ public class CustomUserTaskJsonConverter  extends UserTaskJsonConverter {
     public static final String NEXT_USER_LABEL = "nextUser";
 
     /**
-     * 节点按钮， json格式，[{id:}]
+     * 操作按钮, [{"formOperation":{"id":"","label":"","type":"","showOrder":""}}]
      */
-    public static final String node_button = "node_button";
+    public static final String OPERATION_LIST = "operationList";
+
 
 
 
@@ -87,6 +89,25 @@ public class CustomUserTaskJsonConverter  extends UserTaskJsonConverter {
                 if (NEXT_USER_LABEL.equals(extensionElement.getName())) {
                     text[7] = extensionElement.getElementText();
                 }
+
+                ObjectNode node = objectMapper.createObjectNode();
+                //  自定义属性:操作按钮
+                if (OPERATION_LIST.equalsIgnoreCase(extensionElement.getName())) {
+                    ArrayNode arrayNode = super.objectMapper.createArrayNode();
+                    Map<String, List<ExtensionElement>> childElements = extensionElement.getChildElements();
+                    childElements.forEach((key,e)->{
+
+                        ExtensionElement extensionElement1 = e.get(0);
+                        Map<String, List<ExtensionAttribute>> attributes = extensionElement1.getAttributes();
+
+                        String id = extensionElement1.getAttributeValue(BpmnXMLConstants.FLOWABLE_EXTENSIONS_NAMESPACE, "id");
+                    });
+                    node.set("formOperation",arrayNode);
+
+                    //node.set(OPERATION_LIST, arrayNode);
+                    propertiesNode.set(OPERATION_LIST, node);
+                }
+
             }));
             if (StringUtils.isNotBlank(text[0])){
                 propertiesNode.put(ASSIGNEE_TYPE, text[0]);
