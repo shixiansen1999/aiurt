@@ -172,11 +172,15 @@ public class SysAnnouncement implements Serializable {
     @TableField(exist = false)
     private String eTime;
 
-
     /**
      * 特情等级
      */
     @Excel(name = "特情等级", width = 15, dicCode = "level")
     @Dict(dicCode = "level")
     private String level;
+
+    /**阅读状态（0未读，1已读）*/
+    @Dict(dicCode = "read_flag")
+    @TableField(exist = false)
+    private String readFlag;
 }

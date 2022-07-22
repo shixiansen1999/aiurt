@@ -232,4 +232,45 @@ public class SysInfoListController {
             }
         }
     }
+
+    /**
+     * 我的通知分页列表查询
+     *
+     * @param
+     * @param pageNo
+     * @param pageSize
+     * @param req
+     * @return
+     */
+    @ApiOperation(value = " 我的通知分页列表查询", notes = " 我的通知分页列表查询")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "OK", response = SysAnnouncement.class)
+    })
+    @RequestMapping(value = "/getMyInfo", method = RequestMethod.GET)
+    public Result<IPage<SysAnnouncement>> getMyInfo(SysAnnouncement sysAnnouncement,
+                                                        @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
+                                                        @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize,
+                                                        HttpServletRequest req) {
+        Result<IPage<SysAnnouncement>> result = new Result<IPage<SysAnnouncement>>();
+        LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        Page<SysAnnouncement> page = new Page<>(pageNo, pageSize);
+        List<SysAnnouncement> myInfo = sysInfoListMapper.getMyInfo(page, sysUser.getId());
+        result.setSuccess(true);
+        result.setResult(page.setRecords(myInfo));
+        return result;
+    }
+
+    /**
+     * 修改阅读状态
+     */
+    @AutoLog(value = "修改阅读状态")
+    @ApiOperation(value = "修改阅读状态", notes = "修改阅读状态")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "OK", response = SysAnnouncementSend.class)
+    })
+    @RequestMapping(value = "/edit", method = {RequestMethod.PUT, RequestMethod.POST})
+    public Result<String> edit(@RequestParam(name = "id") String id) {
+        sysInfoListMapper.updateReadFlag(id,new Date());
+        return Result.OK("编辑成功!");
+    }
 }

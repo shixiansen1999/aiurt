@@ -8,6 +8,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.ibatis.annotations.Param;
 import org.jeecg.common.system.vo.LoginUser;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -26,4 +27,15 @@ public interface SysInfoListMapper extends BaseMapper<SysAnnouncement> {
      * @return
      */
     List<SysAnnouncementSend> getByAnntId(@Param("page") Page<SysAnnouncementSend> page ,@Param("id")String id,@Param("readFlag")String readFlag);
+
+    /**
+     * 我的通知分页列表查询
+     *
+     * @param id
+     * @param page
+     * @return
+     */
+    List<SysAnnouncement> getMyInfo(@Param("page") Page<SysAnnouncement> page,@Param("id")String id);
+
+    void updateReadFlag(@Param("id")String idm, @Param("readTime") Date readTime);
 }
