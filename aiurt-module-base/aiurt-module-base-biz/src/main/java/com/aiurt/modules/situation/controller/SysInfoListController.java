@@ -5,6 +5,7 @@ import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.api.dto.message.BusMessageDTO;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.util.SysAnnmentTypeEnum;
+import com.aiurt.modules.situation.dto.SysAnnouncementDTO;
 import com.aiurt.modules.situation.entity.SysAnnouncement;
 import com.aiurt.modules.situation.entity.SysAnnouncementSend;
 import com.aiurt.modules.situation.mapper.SysInfoListMapper;
@@ -33,6 +34,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.*;
+import java.util.stream.Collectors;
 
 
 /**
@@ -231,5 +233,51 @@ public class SysInfoListController {
                 }
             }
         }
+    }
+
+    /**
+     * 我的通知分页列表查询
+     *
+     * @param
+     * @param pageNo
+     * @param pageSize
+     * @param req
+     * @return
+     */
+    @ApiOperation(value = " 我的通知分页列表查询", notes = " 我的通知分页列表查询")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "OK", response = SysAnnouncement.class)
+    })
+    @RequestMapping(value = "/getMyInfo", method = RequestMethod.GET)
+    public Result<SysAnnouncementDTO> getMyInfo(SysAnnouncement sysAnnouncement,
+                                                        @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
+                                                        @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize,
+                                                        HttpServletRequest req) {
+        Result<SysAnnouncementDTO> result = new Result<>();
+        LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        Page<SysAnnouncement> page = new Page<>(pageNo, pageSize);
+        List<SysAnnouncement> myInfo = sysInfoListMapper.getMyInfo(page, sysUser.getId());
+        List<SysAnnouncement> collect = myInfo.stream().filter(s -> "1".equals(s.getReadFlag())).collect(Collectors.toList());
+        SysAnnouncementDTO sysAnnouncementDTO = new SysAnnouncementDTO();
+        sysAnnouncementDTO.setSysAnnouncementList(myInfo);
+        sysAnnouncementDTO.setReadCount(collect.size());
+        sysAnnouncementDTO.setUnreadCount(myInfo.size()-collect.size());
+        result.setSuccess(true);
+        result.setResult(sysAnnouncementDTO);
+        return result;
+    }
+
+    /**
+     * 修改阅读状态
+     */
+    @AutoLog(value = "修改阅读状态")
+    @ApiOperation(value = "修改阅读状态", notes = "修改阅读状态")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "OK", response = SysAnnouncementSend.class)
+    })
+    @RequestMapping(value = "/edit", method = {RequestMethod.PUT, RequestMethod.POST})
+    public Result<String> edit(@RequestParam(name = "id") String id) {
+        sysInfoListMapper.updateReadFlag(id,new Date());
+        return Result.OK("编辑成功!");
     }
 }
