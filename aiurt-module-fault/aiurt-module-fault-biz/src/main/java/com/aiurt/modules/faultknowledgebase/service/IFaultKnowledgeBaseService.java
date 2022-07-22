@@ -1,13 +1,11 @@
 package com.aiurt.modules.faultknowledgebase.service;
 
-import com.aiurt.modules.faultanalysisreport.entity.dto.FaultDTO;
+import com.aiurt.modules.faultanalysisreport.dto.FaultDTO;
 import com.aiurt.modules.faultknowledgebase.entity.FaultKnowledgeBase;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 import org.jeecg.common.api.vo.Result;
-
-import java.util.List;
 
 /**
  * @Description: 故障知识库

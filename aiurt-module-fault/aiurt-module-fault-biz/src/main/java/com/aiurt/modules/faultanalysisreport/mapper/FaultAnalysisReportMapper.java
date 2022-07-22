@@ -2,9 +2,7 @@ package com.aiurt.modules.faultanalysisreport.mapper;
 
 import java.util.List;
 
-import com.aiurt.modules.fault.entity.Fault;
-import com.aiurt.modules.faultanalysisreport.entity.dto.FaultDTO;
-import com.aiurt.modules.faultknowledgebasetype.dto.SubSystemDTO;
+import com.aiurt.modules.faultanalysisreport.dto.FaultDTO;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.aiurt.modules.faultanalysisreport.entity.FaultAnalysisReport;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;

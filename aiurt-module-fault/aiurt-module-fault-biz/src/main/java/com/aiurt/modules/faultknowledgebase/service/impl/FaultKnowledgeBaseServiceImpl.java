@@ -1,8 +1,7 @@
 package com.aiurt.modules.faultknowledgebase.service.impl;
 
 import com.aiurt.modules.faultanalysisreport.constant.FaultConstant;
-import com.aiurt.modules.faultanalysisreport.entity.FaultAnalysisReport;
-import com.aiurt.modules.faultanalysisreport.entity.dto.FaultDTO;
+import com.aiurt.modules.faultanalysisreport.dto.FaultDTO;
 import com.aiurt.modules.faultanalysisreport.mapper.FaultAnalysisReportMapper;
 import com.aiurt.modules.faultknowledgebase.entity.FaultKnowledgeBase;
 import com.aiurt.modules.faultknowledgebase.mapper.FaultKnowledgeBaseMapper;
@@ -55,7 +54,7 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
             faultKnowledgeBase.setApprovedResult(FaultConstant.PASSED);
         }
         //工班长只能看到审核通过的和自己创建的未审核通过的
-        if (allSubSystem.size()==1 && allSubSystem.contains(FaultConstant.MAINTENANCE_WORKER)) {
+        if (rolesByUsername.size()==1 && rolesByUsername.contains(FaultConstant.MAINTENANCE_WORKER)) {
             faultKnowledgeBase.setCreateBy(sysUser.getUsername());
         }
         List<FaultKnowledgeBase> faultKnowledgeBases = faultKnowledgeBaseMapper.readAll(page, faultKnowledgeBase,allSubSystem);

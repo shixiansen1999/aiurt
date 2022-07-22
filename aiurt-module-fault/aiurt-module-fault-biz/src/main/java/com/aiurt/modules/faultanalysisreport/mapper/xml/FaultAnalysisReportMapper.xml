@@ -80,7 +80,7 @@
         ORDER BY a.create_time DESC
 </select>
 
-<select id="getFault" resultType="com.aiurt.modules.faultanalysisreport.entity.dto.FaultDTO">
+<select id="getFault" resultType="com.aiurt.modules.faultanalysisreport.dto.FaultDTO">
    SELECT
     f.id,
     f.`code`,
@@ -135,7 +135,7 @@
     </if>
 </select>
 
-<select id="getDetail" resultType="com.aiurt.modules.faultanalysisreport.entity.dto.FaultDTO">
+<select id="getDetail" resultType="com.aiurt.modules.faultanalysisreport.dto.FaultDTO">
     SELECT
     f.id,
     f.`code`,

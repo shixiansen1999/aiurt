@@ -1,20 +1,16 @@
 package com.aiurt.modules.faultanalysisreport.service.impl;
 
-import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.ObjectUtil;
-import com.aiurt.modules.fault.entity.Fault;
 import com.aiurt.modules.faultanalysisreport.constant.FaultConstant;
 import com.aiurt.modules.faultanalysisreport.entity.FaultAnalysisReport;
-import com.aiurt.modules.faultanalysisreport.entity.dto.FaultDTO;
+import com.aiurt.modules.faultanalysisreport.dto.FaultDTO;
 import com.aiurt.modules.faultanalysisreport.mapper.FaultAnalysisReportMapper;
 import com.aiurt.modules.faultanalysisreport.service.IFaultAnalysisReportService;
 import com.aiurt.modules.faultknowledgebase.entity.FaultKnowledgeBase;
 import com.aiurt.modules.faultknowledgebase.mapper.FaultKnowledgeBaseMapper;
 import com.aiurt.modules.faultknowledgebase.service.IFaultKnowledgeBaseService;
-import com.aiurt.modules.faultknowledgebasetype.dto.SubSystemDTO;
 import com.aiurt.modules.faultknowledgebasetype.mapper.FaultKnowledgeBaseTypeMapper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.commons.lang3.ObjectUtils;
@@ -59,8 +55,9 @@ public class FaultAnalysisReportServiceImpl extends ServiceImpl<FaultAnalysisRep
         List<String> allSubSystem = faultKnowledgeBaseTypeMapper.getAllSubSystem(sysUser.getId());
         //根据角色决定是否查询未审核通过的故障分析
         if ( getRole()) {faultAnalysisReport.setApprovedResult(FaultConstant.PASSED);}
+        List<String> rolesByUsername = sysBaseAPI.getRolesByUsername(sysUser.getUsername());
         //工班长只能看到审核通过的和自己创建的未审核通过的
-        if (allSubSystem.size()==1 && allSubSystem.contains(FaultConstant.MAINTENANCE_WORKER)) {
+        if (rolesByUsername.size()==1 && rolesByUsername.contains(FaultConstant.MAINTENANCE_WORKER)) {
             faultAnalysisReport.setCreateBy(sysUser.getUsername());
         }
         List<FaultAnalysisReport> faultAnalysisReports = faultAnalysisReportMapper.readAll(page, faultAnalysisReport,allSubSystem);
