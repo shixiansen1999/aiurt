@@ -71,9 +71,9 @@ public class SysInfoListController {
                                                         @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize,
                                                         HttpServletRequest req) {
         Result<IPage<SysAnnouncement>> result = new Result<IPage<SysAnnouncement>>();
-        sysAnnouncement.setTitile("*" + sysAnnouncement.getTitile() + "*");
+        //sysAnnouncement.setTitile("*" + sysAnnouncement.getTitile() + "*");
         // 特情消息类型
-        sysAnnouncement.setMsgCategory("2");
+        //sysAnnouncement.setMsgCategory("2");
         //sysAnnouncement.setSituationType("3");
         sysAnnouncement.setDelFlag(CommonConstant.DEL_FLAG_0.toString());
         String sTime = null;
@@ -107,7 +107,7 @@ public class SysInfoListController {
                 return result;
             }
         }
-        IPage<SysAnnouncement> pageList = bdInfoListService.page(page, queryWrapper.lambda().orderByDesc(SysAnnouncement::getCreateTime));
+        IPage<SysAnnouncement> pageList = bdInfoListService.page(page, queryWrapper.lambda().eq(SysAnnouncement::getMsgCategory,"2").orderByDesc(SysAnnouncement::getCreateTime));
         List<SysAnnouncement> records = pageList.getRecords();
         for (SysAnnouncement announcement : records) {
             getUserNames(announcement);
