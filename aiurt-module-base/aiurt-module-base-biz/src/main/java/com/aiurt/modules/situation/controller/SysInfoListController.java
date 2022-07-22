@@ -107,7 +107,7 @@ public class SysInfoListController {
                 return result;
             }
         }
-        IPage<SysAnnouncement> pageList = bdInfoListService.page(page, queryWrapper.lambda().eq(SysAnnouncement::getMsgCategory,"2").orderByDesc(SysAnnouncement::getCreateTime));
+        IPage<SysAnnouncement> pageList = bdInfoListService.page(page, queryWrapper.lambda().eq(SysAnnouncement::getMsgCategory,"3").orderByDesc(SysAnnouncement::getCreateTime));
         List<SysAnnouncement> records = pageList.getRecords();
         for (SysAnnouncement announcement : records) {
             getUserNames(announcement);
@@ -137,8 +137,9 @@ public class SysInfoListController {
             BusMessageDTO messageDTO = new BusMessageDTO();
             messageDTO.setFromUser(sysUser.getUsername());
             messageDTO.setToUser(sysAnnouncement.getUserIds());
+            messageDTO.setToAll(false);
             messageDTO.setContent(sysAnnouncement.getMsgContent());
-            messageDTO.setCategory("2");
+            messageDTO.setCategory("3");
             messageDTO.setTitle(sysAnnouncement.getTitile());
             messageDTO.setBusType(SysAnnmentTypeEnum.SITUATION.getType());
             messageDTO.setLevel(sysAnnouncement.getLevel());
@@ -175,7 +176,7 @@ public class SysInfoListController {
             messageDTO.setFromUser(sysUser.getId());
             messageDTO.setToUser(sysAnnouncement.getUserIds());
             messageDTO.setContent(sysAnnouncement.getMsgContent());
-            messageDTO.setCategory("2");
+            messageDTO.setCategory("3");
             messageDTO.setTitle(sysAnnouncement.getTitile());
             messageDTO.setBusType(SysAnnmentTypeEnum.SITUATION.getType());
             messageDTO.setLevel(sysAnnouncement.getLevel());

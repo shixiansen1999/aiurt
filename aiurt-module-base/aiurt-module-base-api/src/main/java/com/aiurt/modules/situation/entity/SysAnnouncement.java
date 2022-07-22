@@ -65,7 +65,7 @@ public class SysAnnouncement implements Serializable {
     private String priority;
 
     /**
-     * 消息类型1:通知公告2:系统消息
+     * 消息类型1:通知公告2:系统消息 3：特情消息
      */
     @Excel(name = "消息类型", width = 15, dicCode = "msg_category")
     @Dict(dicCode = "msg_category")
