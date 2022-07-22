@@ -191,7 +191,8 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
         depot.setSubmitTime(dto.getSubmitTime());
         depot.setWorkContent(dto.getWorkContent());
         depot.setContent(dto.getContent());
-        depot.setSucceedId(dto.getSucceedId());
+        LoginUser user = iSysBaseAPI.queryUser(dto.getSucceedName());
+        depot.setSucceedId(user.getId());
         depot.setApproverId(dto.getApproverId());
         if (StringUtils.isNotBlank(dto.getApproverId())) {
             depot.setApprovalTime(new Date());

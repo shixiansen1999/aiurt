@@ -59,6 +59,9 @@ public class WorkLogDTO implements Serializable {
     /**接班人id*/
     @ApiModelProperty(value = "接班人id")
     private  String  succeedId;
+    /**接班人*/
+    @ApiModelProperty(value = "接班人")
+    private  String  succeedName;
 
     /**审批人*/
     @ApiModelProperty(value = "审批人")

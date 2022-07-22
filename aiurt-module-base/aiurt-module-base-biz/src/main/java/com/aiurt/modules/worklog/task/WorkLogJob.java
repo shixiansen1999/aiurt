@@ -1,6 +1,8 @@
 package com.aiurt.modules.worklog.task;
 
 import cn.hutool.core.util.ObjectUtil;
+import com.aiurt.common.api.dto.message.BusMessageDTO;
+import com.aiurt.common.util.SysAnnmentTypeEnum;
 import com.aiurt.common.util.TaskStatusUtil;
 import com.aiurt.modules.worklog.dto.WorkLogJobDTO;
 import com.aiurt.modules.worklog.entity.WorkLog;
@@ -8,10 +10,12 @@ import com.aiurt.modules.worklog.service.IWorkLogService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import org.jeecg.common.constant.CommonConstant;
+import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.LoginUser;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.Resource;
 import java.time.LocalDate;
@@ -34,6 +38,8 @@ public class WorkLogJob implements Job {
 
     @Resource
     private IWorkLogService workLogService;
+    @Autowired
+    private ISysBaseAPI iSysBaseAPI;
 
     //todo 待处理
 //    @Resource
@@ -58,11 +64,11 @@ public class WorkLogJob implements Job {
 		List<String> userIds = orgList.stream().map(SysUser::getId).collect(Collectors.toList());*/
         // todo 后期修改
         List<LoginUser> userList = new ArrayList<>();
-//		List<LoginUser> userList = userMapper.selectUserByTimeAndItemAndOrgId(DateUtils.getDate("yyyy-MM-dd"),"白",dto.getOrgId());
+		//List<LoginUser> userList = userMapper.selectUserByTimeAndItemAndOrgId(DateUtils.getDate("yyyy-MM-dd"),"白",dto.getOrgId());
         if (ObjectUtil.isEmpty(userList)){
             return;
         }
-        List<String> userIds = userList.stream().map(LoginUser::getId).collect(Collectors.toList());
+        List<String> userIds = userList.stream().map(LoginUser::getUsername).collect(Collectors.toList());
         List<WorkLog> workLogList = workLogService.list(new LambdaQueryWrapper<WorkLog>()
                 .eq(WorkLog::getDelFlag, CommonConstant.DEL_FLAG_0)
                 .in(WorkLog::getCreateBy, userIds)
@@ -73,21 +79,25 @@ public class WorkLogJob implements Job {
         userIds.removeAll(successIds);
         if (CollectionUtils.isNotEmpty(userIds)){
             //todo 待处理
-//            Message message = new Message();
-//            message.setTitle("工作日志提醒");
-//            message.setContent(dto.getContent());
-//            messageService.save(message);
-//            if (message.getId()!=null){
-//                List<MessageRead> list = new ArrayList<>();
-//                userIds.forEach(
-//                        u->{
+                userIds.forEach(
+                        u->{
+                            BusMessageDTO messageDTO = new BusMessageDTO();
+                            messageDTO.setFromUser(u);
+                            messageDTO.setToUser(u);
+                            messageDTO.setToAll(false);
+                            messageDTO.setContent(dto.getContent().toString());
+                            messageDTO.setCategory("2");
+                            messageDTO.setTitle("工作日志提醒");
+                            messageDTO.setBusType(SysAnnmentTypeEnum.WORKLOG.getType());
+                            iSysBaseAPI.sendBusAnnouncement(messageDTO);
+//                            List<MessageRead> list = new ArrayList<>();
 //                            MessageRead read = new MessageRead();
 //                            read.setMessageId(message.getId()).setReadFlag(CommonConstant.DEL_FLAG_0).setStaffId(u).setDelFlag(CommonConstant.DEL_FLAG_0);
 //                            list.add(read);
-//                        }
-//                );
-//                messageReadService.saveBatch(list);
-//            }
+                        }
+                );
+               // messageReadService.saveBatch(list);
+
         }
         System.out.println("+++++++++++++++++++++++++++++++++++++++++++++定时任务结束");
     }

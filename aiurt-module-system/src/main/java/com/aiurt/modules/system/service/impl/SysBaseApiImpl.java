@@ -2,11 +2,6 @@ package com.aiurt.modules.system.service.impl;
 
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.StrUtil;
-import com.aiurt.modules.basic.entity.SysAttachment;
-import com.aiurt.modules.basic.service.ISysAttachmentService;
-import com.aiurt.modules.device.entity.DeviceType;
-import com.aiurt.modules.device.service.IDeviceTypeService;
-import org.jeecg.common.api.dto.OnlineAuthDTO;
 import com.aiurt.common.api.dto.message.*;
 import com.aiurt.common.aspect.UrlMatchEnum;
 import com.aiurt.common.constant.CacheConstant;
@@ -19,6 +14,8 @@ import com.aiurt.common.util.YouBianCodeUtil;
 import com.aiurt.common.util.oConvertUtils;
 import com.aiurt.modules.basic.entity.SysAttachment;
 import com.aiurt.modules.basic.service.ISysAttachmentService;
+import com.aiurt.modules.device.entity.DeviceType;
+import com.aiurt.modules.device.service.IDeviceTypeService;
 import com.aiurt.modules.message.entity.SysMessageTemplate;
 import com.aiurt.modules.message.handle.impl.EmailSendMsgHandle;
 import com.aiurt.modules.message.service.ISysMessageTemplateService;
@@ -48,7 +45,6 @@ import org.jeecg.common.system.vo.*;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.util.AntPathMatcher;
 import org.springframework.util.PathMatcher;
@@ -955,6 +951,16 @@ public class SysBaseApiImpl implements ISysBaseAPI {
         LambdaQueryWrapper<SysUser> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.in(SysUser::getUsername, usernames.split(","));
         return JSON.parseArray(JSON.toJSONString(userMapper.selectList(queryWrapper))).toJavaList(JSONObject.class);
+    }
+
+    @Override
+    public LoginUser queryUser(String username) {
+        LambdaQueryWrapper<SysUser> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(SysUser::getUsername,username);
+        SysUser sysUser = userMapper.selectOne(queryWrapper);
+        LoginUser loginUser = new LoginUser();
+        BeanUtils.copyProperties(sysUser, loginUser);
+        return loginUser;
     }
 
     @Override

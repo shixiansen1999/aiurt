@@ -283,7 +283,7 @@ public class WorkLogController {
     @AutoLog(value = "工作日志确认")
     @ApiOperation(value="工作日志确认", notes="工作日志确认")
     @GetMapping(value = "/confirm")
-    public Result<?> confirm(@RequestParam Integer id) {
+    public Result<?> confirm(@RequestParam String id) {
         WorkLog byId = workLogDepotService.getById(id);
         if (byId != null) {
             byId.setConfirmStatus(1).setSucceedTime(new Date());

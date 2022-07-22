@@ -263,7 +263,6 @@ public interface ISysBaseAPI extends CommonAPI {
      * @return
      */
     List<JSONObject> queryUsersByUsernames(String usernames);
-
     /**
      * 37根据多个用户ID(逗号分隔)，查询返回多个用户信息
      * @param ids
@@ -395,5 +394,11 @@ public interface ISysBaseAPI extends CommonAPI {
      * @return
      */
     List<DeviceType> selectList(String majorCode, String systemCode);
+    /**
+     * 根据用户账号 查询用户信息
+     * @param username
+     * @return
+     */
+    LoginUser queryUser(String username);
 
 }
