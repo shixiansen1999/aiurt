@@ -79,7 +79,7 @@ public class WorkLogRemindController {
     public Result<?> getWorkLogRemind(HttpServletRequest req) {
         WorkLogRemind workLogRemind = workLogRemindService.getWorkLogRemind(req);
         if (ObjectUtil.isEmpty(workLogRemind)) {
-            return Result.ok("当前班组没有日志提醒信息");
+            return Result.ok("");
         }
         return Result.ok(workLogRemind);
     }

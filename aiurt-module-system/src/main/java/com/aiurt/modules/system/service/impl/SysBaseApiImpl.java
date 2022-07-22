@@ -2,9 +2,6 @@ package com.aiurt.modules.system.service.impl;
 
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.StrUtil;
-import com.aiurt.modules.basic.entity.SysAttachment;
-import com.aiurt.modules.basic.service.ISysAttachmentService;
-import org.jeecg.common.api.dto.OnlineAuthDTO;
 import com.aiurt.common.api.dto.message.*;
 import com.aiurt.common.aspect.UrlMatchEnum;
 import com.aiurt.common.constant.CacheConstant;
@@ -15,10 +12,14 @@ import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.util.SysAnnmentTypeEnum;
 import com.aiurt.common.util.YouBianCodeUtil;
 import com.aiurt.common.util.oConvertUtils;
+import com.aiurt.modules.basic.entity.SysAttachment;
+import com.aiurt.modules.basic.service.ISysAttachmentService;
 import com.aiurt.modules.message.entity.SysMessageTemplate;
 import com.aiurt.modules.message.handle.impl.EmailSendMsgHandle;
 import com.aiurt.modules.message.service.ISysMessageTemplateService;
 import com.aiurt.modules.message.websocket.WebSocket;
+import com.aiurt.modules.position.entity.CsStation;
+import com.aiurt.modules.position.mapper.CsStationMapper;
 import com.aiurt.modules.system.entity.*;
 import com.aiurt.modules.system.mapper.*;
 import com.aiurt.modules.system.service.*;
@@ -35,6 +36,7 @@ import com.google.common.base.Joiner;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.apache.shiro.SecurityUtils;
+import org.jeecg.common.api.dto.OnlineAuthDTO;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.query.QueryGenerator;
 import org.jeecg.common.system.vo.*;
@@ -104,7 +106,8 @@ public class SysBaseApiImpl implements ISysBaseAPI {
     private ThirdAppWechatEnterpriseServiceImpl wechatEnterpriseService;
     @Autowired
     private ThirdAppDingtalkServiceImpl dingtalkService;
-
+    @Autowired
+    private CsStationMapper csStationMapper;
     @Autowired
     ISysCategoryService sysCategoryService;
 
@@ -1283,6 +1286,10 @@ public class SysBaseApiImpl implements ISysBaseAPI {
         List<SysAttachment> attachmentList = sysAttachmentService.getBaseMapper().selectList(wrapper);
         return attachmentList;
     }
+
+    @Override
+    public List<CsStation> queryAllStation() {
+        List<CsStation> stationList = csStationMapper.selectList(new LambdaQueryWrapper<CsStation>().eq(CsStation::getDelFlag, CommonConstant.DEL_FLAG_0));return stationList; }
 
     @Override
     public List<CsUserDepartModel> getDepartByUserId(String id) {

@@ -32,7 +32,7 @@ public class WorkLog {
     /**主键id,自动递增*/
     @TableId(type = IdType.ASSIGN_ID)
     @ApiModelProperty(value = "主键id,自动递增")
-    private  Long  id;
+    private  String  id;
 
     /**日志编号*/
     @Excel(name = "日志编号", width = 15)

@@ -27,6 +27,6 @@ public interface WorkLogEnclosureMapper extends BaseMapper<WorkLogEnclosure> {
      * @param
      * @return
      */
-    int deleteByName(Long id);
+    int deleteByName(String id);
 
 }

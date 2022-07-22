@@ -1,12 +1,12 @@
 package org.jeecg.common.system.api;
 
 import com.aiurt.common.api.CommonAPI;
-import com.aiurt.modules.basic.entity.SysAttachment;
-import org.jeecg.common.api.dto.OnlineAuthDTO;
 import com.aiurt.common.api.dto.message.*;
+import com.aiurt.modules.basic.entity.SysAttachment;
+import com.aiurt.modules.position.entity.CsStation;
 import com.alibaba.fastjson.JSONObject;
+import org.jeecg.common.api.dto.OnlineAuthDTO;
 import org.jeecg.common.system.vo.*;
-
 
 import java.util.List;
 import java.util.Map;
@@ -380,5 +380,9 @@ public interface ISysBaseAPI extends CommonAPI {
      * @return
      */
     List<SysAttachment> querySysAttachmentByIdList(List<String> idList);
-
+    /**
+     * 查询所有站点
+     * @return
+     */
+    public List<CsStation> queryAllStation();
 }

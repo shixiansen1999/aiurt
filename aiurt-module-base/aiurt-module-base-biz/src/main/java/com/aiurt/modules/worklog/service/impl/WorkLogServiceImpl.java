@@ -1,10 +1,8 @@
 package com.aiurt.modules.worklog.service.impl;
 
-import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.util.ObjectUtil;
 import com.aiurt.common.api.dto.message.BusMessageDTO;
-import com.aiurt.common.enums.WorkLogCheckStatusEnum;
 import com.aiurt.common.enums.WorkLogConfirmStatusEnum;
-import com.aiurt.common.enums.WorkLogStatusEnum;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.result.LogCountResult;
 import com.aiurt.common.result.LogResult;
@@ -12,6 +10,7 @@ import com.aiurt.common.result.LogSubmitCount;
 import com.aiurt.common.result.WorkLogResult;
 import com.aiurt.common.util.RoleAdditionalUtils;
 import com.aiurt.common.util.SysAnnmentTypeEnum;
+import com.aiurt.modules.position.entity.CsStation;
 import com.aiurt.modules.worklog.dto.WorkLogDTO;
 import com.aiurt.modules.worklog.entity.Station;
 import com.aiurt.modules.worklog.entity.WorkLog;
@@ -210,10 +209,10 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
         depot.setAssortContent(dto.getAssortContent());
         depotMapper.insert(depot);
         //插入附件列表
-        if (CollectionUtils.isNotEmpty(dto.getUrlList())) {
-            WorkLogEnclosure enclosure = new WorkLogEnclosure();
-            List<String> urlList = dto.getUrlList();
+        if (ObjectUtil.isNotEmpty(dto.getUrlList())) {
+            String[] urlList = dto.getUrlList().split(",");
             for (String s : urlList) {
+                WorkLogEnclosure enclosure = new WorkLogEnclosure();
                 enclosure.setCreateBy(depot.getCreateBy());
                 enclosure.setParentId(depot.getId());
                 enclosure.setType(0);
@@ -265,6 +264,7 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
             messageDTO.setFromUser(sysUser.getUsername());
             LoginUser userById = iSysBaseAPI.getUserById(dto.getSucceedId());
             messageDTO.setToUser(userById.getUsername());
+            messageDTO.setToAll(false);
             messageDTO.setContent(dto.getContent().toString());
             messageDTO.setCategory("2");
             messageDTO.setTitle("您有一条待接班日志");
@@ -319,12 +319,6 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
 //                List<Station> stations = stationMapper.selectBatchIds(Arrays.asList(record.getAssortLocation().split(",")));
 //                record.setAssortLocationName(StringUtils.join(stations.stream().map(Station::getStationName).collect(Collectors.toList()),","));
 //            }
-            //提交状态
-            record.setStatusDesc(WorkLogStatusEnum.findMessage(record.getStatus()));
-            //确认状态
-            record.setConfirmStatusDesc(WorkLogConfirmStatusEnum.findMessage(record.getConfirmStatus()));
-            //审核状态
-            record.setCheckStatusDesc(WorkLogCheckStatusEnum.findMessage(record.getCheckStatus()));
         }
         return workLogResults;
     }
@@ -355,24 +349,23 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
         IPage<WorkLogResult> result = depotMapper.queryWorkLog(page, param);
         List<WorkLogResult> records = result.getRecords();
         //todo 待处理
-//        List<Station> stationList = stationMapper.selectList(new LambdaQueryWrapper<Station>()
-//                .eq(Station::getDelFlag, CommonConstant.DEL_FLAG_0).select(Station::getId,Station::getTeamName,Station::getLineName,Station::getTeamId));
-//       todo 后期修改
+       List<CsStation> stationList = iSysBaseAPI.queryAllStation();
+       //todo 后期修改
         List<SysDepartModel> departList = iSysBaseAPI.getAllSysDepart();
-        Map<Integer, Station> stationIdMap = null;
+        Map<String, Station> stationIdMap = null;
         Map<String, List<Station>> stationTeamIdMap =null;
         Map<String, String> departMap = null;
         //todo 待处理
-//        if (CollectionUtils.isNotEmpty(stationList)){
+//       if (CollectionUtils.isNotEmpty(stationList)){
 //           stationIdMap = stationList.stream().collect(Collectors.toMap(Station::getId, s -> s));
-//           stationTeamIdMap = stationList.stream().filter(f->f.getTeamId()!=null).collect(Collectors.groupingBy(Station::getTeamId));
+//           stationTeamIdMap = stationList.stream().filter(f->f.getSysOrgCode()!=null).collect(Collectors.groupingBy(Station::getSysOrgCode));
 //       }
         if (CollectionUtils.isNotEmpty(departList)){
             departMap = departList.stream().collect(Collectors.toMap(SysDepartModel::getDepartName, SysDepartModel::getId));
         }
 
-        Map<Long,List<WorkLogEnclosure>> map0 = null;
-        Map<Long,List<WorkLogEnclosure>> map1 = null;
+        Map<String,List<WorkLogEnclosure>> map0 = null;
+        Map<String,List<WorkLogEnclosure>> map1 = null;
 
         if (CollectionUtils.isNotEmpty(records)){
             List<String> list = records.stream().map(WorkLogResult::getId).collect(Collectors.toList());
@@ -423,23 +416,17 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
                 }
             }
             if (map0!=null){
-                List<WorkLogEnclosure> enclosures = map0.get(record.getId());
-                if (CollectionUtils.isNotEmpty(enclosures)) {
-                    record.setUrlList(enclosures.stream().map(WorkLogEnclosure::getUrl).collect(Collectors.toList()));
+                 List<WorkLogEnclosure> workLogEnclosures = map0.get(record.getId());
+                if (CollectionUtils.isNotEmpty(workLogEnclosures)) {
+                    record.setUrlList(workLogEnclosures.stream().map(WorkLogEnclosure::getUrl).collect(Collectors.joining(",")));
                 }
             }
             if (map1!=null){
                 List<WorkLogEnclosure> enclosures = map1.get(record.getId());
                 if (CollectionUtils.isNotEmpty(enclosures)) {
-                    record.setSignature(enclosures.stream().map(WorkLogEnclosure::getUrl).collect(Collectors.toList()));
+                    record.setSignature(enclosures.stream().map(WorkLogEnclosure::getUrl).collect(Collectors.joining(",")));
                 }
             }
-            //提交状态
-            record.setStatusDesc(WorkLogStatusEnum.findMessage(record.getStatus()));
-            //确认状态
-            record.setConfirmStatusDesc(WorkLogConfirmStatusEnum.findMessage(record.getConfirmStatus()));
-            //审核状态
-            record.setCheckStatusDesc(WorkLogCheckStatusEnum.findMessage(record.getCheckStatus()));
         }
         return result;
     }
@@ -467,16 +454,12 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
     @Override
     public WorkLogResult getDetailById(String id) {
         WorkLogResult workLog = depotMapper.queryById(id);
-        //提交状态
-        workLog.setStatusDesc(WorkLogStatusEnum.findMessage(workLog.getStatus()));
-        //确认状态
-        workLog.setConfirmStatusDesc(WorkLogConfirmStatusEnum.findMessage(workLog.getConfirmStatus()));
-        //审核状态
-        workLog.setCheckStatusDesc(WorkLogCheckStatusEnum.findMessage(workLog.getCheckStatus()));
         //附件列表
         List<String> query = enclosureMapper.query(id,0);
+        String collect = query.stream().collect(Collectors.joining(","));
         //签名列表
         List<String> query1 = enclosureMapper.query(id,1);
+        String signUrl = query1.stream().collect(Collectors.joining(","));
         //配合施工参与人姓名
         if (StringUtils.isNotBlank(workLog.getAssortIds())){
             String[] split = workLog.getAssortIds().split(",");
@@ -492,8 +475,8 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
             String str = StringUtils.join(names, ",");
             workLog.setAssortNames(str) ;
         }
-        workLog.setUrlList(query);
-        workLog.setSignature(query1);
+        workLog.setUrlList(collect);
+        workLog.setSignature(signUrl);
         return workLog;
     }
 
@@ -630,8 +613,8 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
         //删除原附件列表
         enclosureMapper.deleteByName(workLog.getId());
         //重新插入附件列表
-        List<String> urlList = dto.getUrlList();
-        if (CollUtil.isNotEmpty(urlList)) {
+        String[] urlList = dto.getUrlList().split(",");
+        if (ObjectUtil.isNotEmpty(urlList)) {
             for (String s : urlList) {
                 WorkLogEnclosure enclosure = new WorkLogEnclosure();
                 enclosure.setParentId(workLog.getId());

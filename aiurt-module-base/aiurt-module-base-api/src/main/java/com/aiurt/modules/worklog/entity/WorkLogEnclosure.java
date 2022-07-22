@@ -28,7 +28,7 @@ import java.util.Date;
 public class WorkLogEnclosure {
 
     /**主键id,自动递增*/
-    @TableId(type= IdType.AUTO)
+    @TableId(type= IdType.ASSIGN_ID)
     @ApiModelProperty(value = "主键id,自动递增")
     private  Long  id;
 
@@ -40,7 +40,7 @@ public class WorkLogEnclosure {
     /**父类库id*/
     @Excel(name = "父类库id", width = 15)
     @ApiModelProperty(value = "父类库id")
-    private  Long  parentId;
+    private  String  parentId;
 
     /**url地址*/
     @Excel(name = "url地址", width = 15)
