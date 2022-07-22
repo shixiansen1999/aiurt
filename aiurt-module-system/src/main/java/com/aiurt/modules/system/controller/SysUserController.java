@@ -162,10 +162,10 @@ public class SysUserController {
                 "id in (select user_id from cs_user_major where 1=1 and major_id in (select id from cs_major where 1=1 and ( id = {0} or major_code = {0})))",
                         user.getMajorId());
         queryWrapper.apply(StrUtil.isNotBlank(user.getRoleCode()),"id in (select user_id from sys_user_role where 1=1 and role_id in (select id from sys_role where 1=1 and (id = {0} or role_code ={0})))",
-                user.getMajorId());
+                user.getRoleCode());
         queryWrapper.apply(StrUtil.isNotBlank(user.getSystemId()),"id in (select user_id from cs_user_subsystem where 1=1 and system_id in (select id from cs_subsystem where 1=1 and (id ={0} or system_code = {0})))", user.getSystemId());
 
-        queryWrapper.apply(StrUtil.isNotBlank(user.getStationId()),"id in (select user_id from cs_user_station where 1=1 and station_id in (select id from cs_station where 1=1 and (id ={0} or cs_station = {0})))", user.getStationId());
+        queryWrapper.apply(StrUtil.isNotBlank(user.getStationId()),"id in (select user_id from cs_user_station where 1=1 and station_id in (select id from cs_station where 1=1 and (id ={0} or station_code = {0})))", user.getStationId());
 
 		Page<SysUser> page = new Page<SysUser>(pageNo, pageSize);
 		IPage<SysUser> pageList = sysUserService.page(page, queryWrapper);
