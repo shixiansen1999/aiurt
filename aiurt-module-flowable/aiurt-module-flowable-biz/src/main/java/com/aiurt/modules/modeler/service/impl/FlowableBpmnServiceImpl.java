@@ -12,6 +12,7 @@ import com.aiurt.modules.modeler.service.IActCustomModelInfoService;
 import com.aiurt.modules.modeler.service.IFlowableBpmnService;
 import com.aiurt.modules.modeler.service.IFlowableModelService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.extern.slf4j.Slf4j;
@@ -34,6 +35,7 @@ import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
@@ -191,6 +193,7 @@ public class FlowableBpmnServiceImpl implements IFlowableBpmnService {
      * @param modelId
      */
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void publishBpmn(String modelId) {
 
         Model model = modelService.getModel(modelId);
@@ -227,10 +230,17 @@ public class FlowableBpmnServiceImpl implements IFlowableBpmnService {
                 .orderByProcessDefinitionVersion().desc().list();
 
         if (CollectionUtils.isNotEmpty(definitionList)) {
+            // 设置其他版本为非主版本
+            LambdaUpdateWrapper<ActCustomVersion> updateWrapper = new LambdaUpdateWrapper<>();
+            updateWrapper.eq(ActCustomVersion::getModelId, modelId).set(ActCustomVersion::getMainVersion, "0");
+            versionService.update(updateWrapper);
+
             ProcessDefinition processDefinition = definitionList.get(0);
             ActCustomVersion actCustomVersion = ActCustomVersion.builder()
                     .deployId(processDefinition.getDeploymentId())
                     .processDefinitionId(processDefinition.getId())
+                    .mainVersion("1")
+                    .modelId(modelId)
                     .deployTime(new Date())
                     .build();
             versionService.save(actCustomVersion);
