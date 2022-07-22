@@ -466,15 +466,15 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
     @AutoLog(value = "巡检任务表- app巡检任务-审核")
     @ApiOperation(value = "巡检任务表- app巡检任务-审核", notes = "巡检任务表- app巡检任务-审核")
     @PostMapping(value = "/patrolTaskAudit")
-    public Result<?> patrolTaskAudit(String id, String status, String remark, String backReason) {
+    public Result<?> patrolTaskAudit(String id, Integer status, String remark, String backReason) {
         LambdaUpdateWrapper<PatrolTask> queryWrapper = new LambdaUpdateWrapper<>();
         //不通过传0
-        if (PatrolConstant.AUDIT_NOPASS.equals(status)) {
-            queryWrapper.set(PatrolTask::getStatus, 5).set(PatrolTask::getRemark, backReason).eq(PatrolTask::getId, id);
+        if (PatrolConstant.AUDIT_NOPASS==status) {
+            queryWrapper.set(PatrolTask::getStatus, PatrolConstant.TASK_AUDIT).set(PatrolTask::getRemark, backReason).eq(PatrolTask::getId, id);
             patrolTaskService.update(queryWrapper);
             return Result.OK("不通过");
         } else {
-            queryWrapper.set(PatrolTask::getStatus, 7).set(PatrolTask::getAuditorRemark, remark).eq(PatrolTask::getId, id);
+            queryWrapper.set(PatrolTask::getStatus, PatrolConstant.TASK_COMPLETE).set(PatrolTask::getAuditorRemark, remark).eq(PatrolTask::getId, id);
             patrolTaskService.update(queryWrapper);
             return Result.OK("通过成功");
         }

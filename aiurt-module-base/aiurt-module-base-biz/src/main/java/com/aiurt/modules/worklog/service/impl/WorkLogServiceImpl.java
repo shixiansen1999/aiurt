@@ -12,7 +12,6 @@ import com.aiurt.common.util.RoleAdditionalUtils;
 import com.aiurt.common.util.SysAnnmentTypeEnum;
 import com.aiurt.modules.position.entity.CsStation;
 import com.aiurt.modules.worklog.dto.WorkLogDTO;
-import com.aiurt.modules.worklog.entity.Station;
 import com.aiurt.modules.worklog.entity.WorkLog;
 import com.aiurt.modules.worklog.entity.WorkLogEnclosure;
 import com.aiurt.modules.worklog.mapper.WorkLogEnclosureMapper;
@@ -352,14 +351,14 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
        List<CsStation> stationList = iSysBaseAPI.queryAllStation();
        //todo 后期修改
         List<SysDepartModel> departList = iSysBaseAPI.getAllSysDepart();
-        Map<String, Station> stationIdMap = null;
-        Map<String, List<Station>> stationTeamIdMap =null;
+        Map<String, CsStation> stationIdMap = null;
+        Map<String, List<CsStation>> stationTeamIdMap =null;
         Map<String, String> departMap = null;
         //todo 待处理
-//       if (CollectionUtils.isNotEmpty(stationList)){
-//           stationIdMap = stationList.stream().collect(Collectors.toMap(Station::getId, s -> s));
-//           stationTeamIdMap = stationList.stream().filter(f->f.getSysOrgCode()!=null).collect(Collectors.groupingBy(Station::getSysOrgCode));
-//       }
+       if (CollectionUtils.isNotEmpty(stationList)){
+           stationIdMap = stationList.stream().collect(Collectors.toMap(CsStation::getId, s -> s));
+           stationTeamIdMap = stationList.stream().filter(f->f.getSysOrgCode()!=null).collect(Collectors.groupingBy(CsStation::getSysOrgCode));
+       }
         if (CollectionUtils.isNotEmpty(departList)){
             departMap = departList.stream().collect(Collectors.toMap(SysDepartModel::getDepartName, SysDepartModel::getId));
         }
@@ -392,7 +391,7 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
             if (departMap!=null && stationTeamIdMap!=null){
                 String id = departMap.get(record.getSubmitOrgName());
                 if (StringUtils.isNotBlank(id)){
-                    List<Station> station = stationTeamIdMap.get(id);
+                    List<CsStation> station = stationTeamIdMap.get(id);
                     if (CollectionUtils.isNotEmpty(station)){
                         record.setLineName(station.get(0).getLineName());
                     }
@@ -404,7 +403,7 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
                 List<String> strName = new ArrayList<>();
                 for (String id : list) {
                     try {
-                        Station station = stationIdMap.get(Integer.parseInt(id));
+                        CsStation station = stationIdMap.get(Integer.parseInt(id));
                         if (station!=null && StringUtils.isNotBlank(station.getStationName())) {
                             strName.add(station.getStationName());
                         }
