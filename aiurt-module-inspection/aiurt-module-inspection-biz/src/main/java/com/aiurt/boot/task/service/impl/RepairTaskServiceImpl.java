@@ -1196,8 +1196,8 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
     public boolean isNeedUpdateStaffId(WriteMonadDTO monadDTO, RepairTaskResult result) {
         return StrUtil.isEmpty(result.getStaffId())
                 || (monadDTO.getStatus()!=null && !monadDTO.getStatus().equals(result.getStatus()))
-                || (monadDTO.getInspeciontValue() != null && !result.getInspeciontValue().equals(monadDTO.getInspeciontValue()))
-                || (StrUtil.isNotEmpty(result.getNote()) && !result.getNote().equals(monadDTO.getNote()));
+                || (monadDTO.getInspeciontValue() != null && !monadDTO.getInspeciontValue().equals(result.getInspeciontValue()))
+                || (StrUtil.isNotEmpty(result.getNote()) && !monadDTO.getNote().equals(result.getNote()));
     }
 
     /**
