@@ -1197,7 +1197,7 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
         return StrUtil.isEmpty(result.getStaffId())
                 || (monadDTO.getStatus()!=null && !monadDTO.getStatus().equals(result.getStatus()))
                 || (monadDTO.getInspeciontValue() != null && !monadDTO.getInspeciontValue().equals(result.getInspeciontValue()))
-                || (StrUtil.isNotEmpty(result.getNote()) && !monadDTO.getNote().equals(result.getNote()));
+                || (StrUtil.isNotEmpty(monadDTO.getNote()) && !monadDTO.getNote().equals(result.getNote()));
     }
 
     /**
