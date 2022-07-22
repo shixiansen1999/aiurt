@@ -50,7 +50,6 @@ public class WorkLogRemindServiceImpl extends ServiceImpl<WorkLogRemindMapper, W
     public Result add(WorkLogRemindDTO dto, HttpServletRequest req) {
         LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         WorkLogRemind one = this.lambdaQuery().eq(WorkLogRemind::getOrgId, user.getOrgId()).last("limit 1").one();
-
         WorkLogRemind remind = new WorkLogRemind();
         if (one!=null){
             remind.setId(one.getId());

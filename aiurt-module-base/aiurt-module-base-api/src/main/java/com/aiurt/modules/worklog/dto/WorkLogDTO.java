@@ -10,8 +10,8 @@ import lombok.experimental.Accessors;
 import org.jeecgframework.poi.excel.annotation.Excel;
 import org.springframework.format.annotation.DateTimeFormat;
 
+import java.io.Serializable;
 import java.util.Date;
-import java.util.List;
 
 /**
  * @author cgkj0
@@ -24,11 +24,11 @@ import java.util.List;
 @EqualsAndHashCode(callSuper = false)
 @Accessors(chain = true)
 @ApiModel(value="t_work_log对象", description="工作日志")
-public class WorkLogDTO {
+public class WorkLogDTO implements Serializable {
 
     /**主键id,自动递增*/
     @ApiModelProperty(value = "主键id,自动递增")
-    private  Long  id;
+    private  String  id;
 
     /**保存状态:0.保存 1.提交 2.确认 3.审阅*/
     @ApiModelProperty(value = "保存状态:0.保存 1.提交 2.确认 3.审阅")
@@ -96,7 +96,7 @@ public class WorkLogDTO {
 
     /**附件列表*/
     @ApiModelProperty(value = "附件列表")
-    public List<String> urlList;
+    public String urlList;
 
     /**签名*/
     @Excel(name = "签名", width = 15)

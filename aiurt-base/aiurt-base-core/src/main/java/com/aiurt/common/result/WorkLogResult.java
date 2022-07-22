@@ -1,5 +1,6 @@
 package com.aiurt.common.result;
 
+import com.aiurt.common.aspect.annotation.Dict;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
@@ -13,7 +14,6 @@ import org.jeecgframework.poi.excel.annotation.Excel;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.util.Date;
-import java.util.List;
 
 /**
  * @Description: 工作日志
@@ -90,21 +90,6 @@ public class WorkLogResult {
     @ApiModelProperty(value = "接班人")
     private  String  succeedName;
 
-    /**提交状态描述:0-未提交 1-已提交*/
-    @Excel(name = "提交状态", width = 15)
-    @ApiModelProperty(value = "提交状态")
-    private  String  statusDesc;
-
-    /**确认状态描述*/
-    @Excel(name = "交接班确认", width = 15)
-    @ApiModelProperty(value = "交接班确认状态")
-    private  String  confirmStatusDesc;
-
-    /**审核状态描述*/
-    @Excel(name = "审核状态", width = 15)
-    @ApiModelProperty(value = "审核状态")
-    private  String  checkStatusDesc;
-
     /**巡检编号*/
     @ApiModelProperty(value = "巡检编号")
     private  String  patrolIds;
@@ -119,10 +104,12 @@ public class WorkLogResult {
 
     /**提交状态:0-未提交 1-已提交*/
     @ApiModelProperty(value = "提交状态:0-未提交 1-已提交")
+    @Dict(dicCode = "work_log_submit_status")
     private  Integer  status;
 
     /**审核状态:0-未审核 1-已审核*/
     @ApiModelProperty(value = "审核状态:0-未审核 1-已审核")
+    @Dict(dicCode = "work_log_audit_status")
     private  Integer  checkStatus;
 
     /**用户头像*/
@@ -131,6 +118,7 @@ public class WorkLogResult {
 
     /**确认状态:0-未确认 1-已确认*/
     @ApiModelProperty(value = "确认状态:0-未确认 1-已确认")
+    @Dict(dicCode = "work_log_confirm_status")
     private  Integer  confirmStatus;
 
     /**提交人id*/
@@ -179,8 +167,8 @@ public class WorkLogResult {
     @ApiModelProperty(value = "配合施工内容")
     private  Object  assortContent;
 
-    public List<String> urlList;
+    public String urlList;
 
     @ApiModelProperty(value = "签名")
-    public List<String> signature;
+    public String signature;
 }
