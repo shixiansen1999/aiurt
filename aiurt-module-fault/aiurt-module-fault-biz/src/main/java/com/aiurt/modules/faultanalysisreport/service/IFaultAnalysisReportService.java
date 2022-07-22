@@ -1,8 +1,7 @@
 package com.aiurt.modules.faultanalysisreport.service;
 
-import com.aiurt.modules.fault.entity.Fault;
 import com.aiurt.modules.faultanalysisreport.entity.FaultAnalysisReport;
-import com.aiurt.modules.faultanalysisreport.entity.dto.FaultDTO;
+import com.aiurt.modules.faultanalysisreport.dto.FaultDTO;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;

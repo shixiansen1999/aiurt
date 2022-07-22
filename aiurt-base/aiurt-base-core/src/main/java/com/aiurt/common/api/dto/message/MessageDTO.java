@@ -44,7 +44,7 @@ public class MessageDTO implements Serializable {
     protected String content;
 
     /**
-     * 消息类型 1:消息  2:系统消息
+     * 消息类型 1:消息  2:系统消息 3:特情消息
      */
     protected String category;
 
