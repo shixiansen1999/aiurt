@@ -652,7 +652,11 @@ public class InspectionStrategyServiceImpl extends ServiceImpl<InspectionStrateg
             });
         }
         //根据专业编码查询对应的专业子系统
-        List<MajorDTO> majorDTOList = repairTaskMapper.translateMajor(majorCodes1);
+        List<MajorDTO> majorDTOList = new ArrayList<>();
+        majorCodes1.forEach(m->{
+            majorDTOList.add(baseMapper.translateMajor(m));
+        });
+       // repairTaskMapper.translateMajor(majorCodes1);
         if (CollectionUtil.isNotEmpty(majorDTOList)) {
             int i = 0;
             for (MajorDTO a : majorDTOList) {

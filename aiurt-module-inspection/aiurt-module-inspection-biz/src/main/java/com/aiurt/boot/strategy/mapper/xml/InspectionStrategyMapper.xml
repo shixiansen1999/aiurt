@@ -190,4 +190,13 @@
         </where>
     GROUP BY t2.inspection_sta_code
     </select>
+    <select id="translateMajor" resultType="com.aiurt.boot.manager.dto.MajorDTO">
+        select
+        major_name as majorName,
+        major_code as majorCode
+        from cs_major
+        where
+        del_flag = 0
+        and major_code=#{majorCode}
+    </select>
 </mapper>

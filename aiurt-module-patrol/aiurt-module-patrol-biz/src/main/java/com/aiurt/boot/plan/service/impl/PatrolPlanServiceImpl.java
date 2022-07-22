@@ -209,7 +209,10 @@ public class PatrolPlanServiceImpl extends ServiceImpl<PatrolPlanMapper, PatrolP
             });
         }
         //根据专业编码查询对应的专业子系统
-        List<MajorDTO> majorDTOList = baseMapper.translateMajor(majorCodes1);
+        List<MajorDTO> majorDTOList = new ArrayList<>();
+        majorCodes1.forEach(m->{
+            majorDTOList.add(baseMapper.translateMajor(m));
+        });
         if (CollectionUtil.isNotEmpty(majorDTOList)) {
             int i =0;
             for (MajorDTO a :majorDTOList){
