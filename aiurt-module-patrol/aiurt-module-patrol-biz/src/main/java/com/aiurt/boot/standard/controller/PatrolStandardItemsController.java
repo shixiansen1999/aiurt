@@ -133,6 +133,9 @@ public class PatrolStandardItemsController extends BaseController<PatrolStandard
 	@ApiOperation(value="巡检标准项目表-编辑", notes="巡检标准项目表-编辑")
 	@RequestMapping(value = "/edit", method = {RequestMethod.PUT,RequestMethod.POST})
 	public Result<String> edit(@RequestBody PatrolStandardItems patrolStandardItems) {
+		if (patrolStandardItems.getCheck()==0){
+			patrolStandardItems.setInputType(0);
+		}
 		patrolStandardItemsService.updateById(patrolStandardItems);
 		return Result.OK("编辑成功!");
 	}
