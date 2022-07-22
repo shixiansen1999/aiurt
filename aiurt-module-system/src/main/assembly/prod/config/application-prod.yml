@@ -164,7 +164,7 @@ spring:
     port: 6379
 #mybatis plus 设置
 mybatis-plus:
-  mapper-locations: classpath*:org/jeecg/modules/**/xml/*Mapper.xml,classpath*:com/aiurt/**/xml/*Mapper.xml
+  mapper-locations: classpath*:org/jeecg/modules/**/xml/*Mapper.xml,classpath*:com/aiurt/**/xml/*Mapper.xml,classpath:/META-INF/modeler-mybatis-mappings/*.xml
   global-config:
     # 关闭MP3.0自带的banner
     banner: false
@@ -178,6 +178,11 @@ mybatis-plus:
     #log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
     # 返回类型为Map,显示null对应的字段
     call-setters-on-nulls: true
+  # flowable
+  configuration-properties:
+    blobType: BLOB
+    boolValue: TRUE
+    prefix:
 #jeecg专用配置
 minidao:
   base-package: org.jeecg.modules.jmreport.*
@@ -219,10 +224,10 @@ jeecg:
   file-view-domain: 127.0.0.1:8012
   # minio文件上传
   minio:
-    minio_url: http://minio.jeecg.com
-    minio_name: ??
-    minio_pass: ??
-    bucketName: otatest
+    minio_url: http://192.168.1.27:9000
+    minio_name: admin
+    minio_pass: gz*&1949
+    bucketName: platform
   #大屏报表参数设置
   jmreport:
     mode: dev
@@ -357,6 +362,12 @@ support:
 
 swsc:
   host: http://116.62.143.85/#/
+
+
+# 任务漏检的缓冲时长(即巡检任务记录从巡检当天0点起往后多久后算漏检)，单位小时
+patrol:
+  missing:
+    hour: 44
 datafilter:
   dataperm:
     enabled: true
@@ -365,3 +376,15 @@ datafilter:
     deptRelationTablePrefix: ""
     addTableNamePrefix: true
 
+flowable:
+  process:
+    definition-cache-limit: -1
+    async:
+      executor:
+        auto-activate: false
+  common:
+    app:
+      idm-url: /
+      idm-admin:
+        password: test
+        user: admin

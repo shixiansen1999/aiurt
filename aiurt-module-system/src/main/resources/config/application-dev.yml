@@ -165,7 +165,7 @@ spring:
     port: 6379
 #mybatis plus 设置
 mybatis-plus:
-  mapper-locations: classpath*:org/jeecg/modules/**/xml/*Mapper.xml,classpath*:com/aiurt/**/xml/*Mapper.xml
+  mapper-locations: classpath*:org/jeecg/modules/**/xml/*Mapper.xml,classpath*:com/aiurt/**/xml/*Mapper.xml,classpath:/META-INF/modeler-mybatis-mappings/*.xml
   global-config:
     # 关闭MP3.0自带的banner
     banner: false
@@ -179,6 +179,11 @@ mybatis-plus:
     #log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
     # 返回类型为Map,显示null对应的字段
     call-setters-on-nulls: true
+  # flowable
+  configuration-properties:
+    blobType: BLOB
+    boolValue: TRUE
+    prefix:
 #jeecg专用配置
 minidao:
   base-package: org.jeecg.modules.jmreport.*
@@ -374,3 +379,16 @@ datafilter:
     # 如果没有前缀，请使用 "" 。
     deptRelationTablePrefix: ""
     addTableNamePrefix: true
+
+flowable:
+  process:
+    definition-cache-limit: -1
+    async:
+      executor:
+        auto-activate: false
+  common:
+    app:
+      idm-url: /
+      idm-admin:
+        password: test
+        user: admin
