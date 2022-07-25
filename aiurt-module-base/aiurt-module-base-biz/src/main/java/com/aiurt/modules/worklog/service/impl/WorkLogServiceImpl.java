@@ -460,9 +460,6 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
          LoginUser successor = iSysBaseAPI.getUserById(workLog.getSucceedId());
          workLog.setSucceedName(successor.getRealname());
          String[] split1 = workLog.getAssortIds().split(",");
-         List<LoginUser> assortNames = iSysBaseAPI.queryAllUserByIds(split1);
-         String collect1 = assortNames.stream().map(s -> s.getRealname()).collect(Collectors.joining(","));
-         workLog.setAssortNames(collect1);
         //附件列表
         List<String> query = enclosureMapper.query(id,0);
         String collect = query.stream().collect(Collectors.joining(","));
@@ -470,20 +467,9 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
         List<String> query1 = enclosureMapper.query(id,1);
         String signUrl = query1.stream().collect(Collectors.joining(","));
         //配合施工参与人姓名
-        if (StringUtils.isNotBlank(workLog.getAssortIds())){
-            String[] split = workLog.getAssortIds().split(",");
-            List<String> names = new ArrayList<>();
-            for (String string : split) {
-                // todo 后期修改
-                LoginUser user = new LoginUser();
-//                LoginUser user = sysUserService.getById(string);
-                if (user!=null) {
-                    names.add(user.getRealname());
-                }
-            }
-            String str = StringUtils.join(names, ",");
-            workLog.setAssortNames(str) ;
-        }
+        List<LoginUser> assortNames = iSysBaseAPI.queryAllUserByIds(split1);
+        String collect1 = assortNames.stream().map(s -> s.getRealname()).collect(Collectors.joining(","));
+        workLog.setAssortNames(collect1);
         workLog.setUrlList(collect);
         workLog.setSignature(signUrl);
         return workLog;
