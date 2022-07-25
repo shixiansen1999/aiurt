@@ -1,9 +1,6 @@
 package com.aiurt.boot.standard.entity;
 
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableField;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableName;
+import com.baomidou.mybatisplus.annotation.*;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -49,6 +46,7 @@ public class PatrolStandardItems implements Serializable {
     private java.lang.String content;
 	/**质量标准*/
 	@Excel(name = "质量标准", width = 15)
+    @TableField(updateStrategy = FieldStrategy.IGNORED)
     @ApiModelProperty(value = "质量标准")
     private java.lang.String qualityStandard;
 	/**层级类型：0一级、1子级*/
@@ -71,6 +69,7 @@ public class PatrolStandardItems implements Serializable {
     private java.lang.Integer check;
 	/**数据填写类型：1开关项(即二选一)、2选择项、3输入项*/
 	@Excel(name = "数据填写类型：1开关项(即二选一)、2选择项、3输入项", width = 15)
+    @TableField(updateStrategy = FieldStrategy.IGNORED)
     @ApiModelProperty(value = "数据填写类型：1开关项(即二选一)、2选择项、3输入项")
     private java.lang.Integer inputType;
 	/**选择项关联的数据字典code*/
