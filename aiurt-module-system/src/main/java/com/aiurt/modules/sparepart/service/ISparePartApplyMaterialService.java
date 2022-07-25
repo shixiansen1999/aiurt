@@ -1,19 +1,17 @@
 package com.aiurt.modules.sparepart.service;
 
+
 import com.aiurt.modules.sparepart.entity.SparePartApplyMaterial;
-import com.aiurt.modules.sparepart.entity.dto.SpareApplyMaterialDTO;
-import com.baomidou.mybatisplus.core.metadata.IPage;
-
+import com.aiurt.modules.sparepart.entity.SparePartStockInfo;
 import com.baomidou.mybatisplus.extension.service.IService;
-
+import org.jeecg.common.api.vo.Result;
 
 /**
- * @Description: 备件申领物资
- * @Author: swsc
- * @Date:   2021-09-17
+ * @Description: spare_part_apply_material
+ * @Author: aiurt
+ * @Date:   2022-07-20
  * @Version: V1.0
  */
 public interface ISparePartApplyMaterialService extends IService<SparePartApplyMaterial> {
 
-    IPage<SpareApplyMaterialDTO> queryPageList(IPage<SpareApplyMaterialDTO> page, String applyCode);
 }

@@ -51,6 +51,15 @@ public class SparePartStockInfoServiceImpl extends ServiceImpl<SparePartStockInf
         if (!nameList.isEmpty()) {
             return Result.error("备件仓库名称重复，请重新填写！");
         }
+        //判断一个仓库仅能所属一个机构
+        LambdaQueryWrapper<SparePartStockInfo> deptWrapper = new LambdaQueryWrapper<>();
+        deptWrapper.eq(SparePartStockInfo::getWarehouseCode, sparePartStockInfo.getWarehouseCode());
+        deptWrapper.eq(SparePartStockInfo::getOrganizationId, sparePartStockInfo.getOrganizationId());
+        deptWrapper.eq(SparePartStockInfo::getDelFlag, CommonConstant.DEL_FLAG_0);
+        List<SparePartStockInfo> deptList = sparePartStockInfoMapper.selectList(deptWrapper);
+        if (!deptList.isEmpty()) {
+            return Result.error("已存在该组织机构的备件仓库！");
+        }
         sparePartStockInfoMapper.insert(sparePartStockInfo);
         return Result.OK("添加成功！");
     }
@@ -79,6 +88,15 @@ public class SparePartStockInfoServiceImpl extends ServiceImpl<SparePartStockInf
         List<SparePartStockInfo> nameList = sparePartStockInfoMapper.selectList(nameWrapper);
         if (!nameList.isEmpty() && nameList.get(0).equals(sparePartStockInfo.getId())) {
             return Result.error("备件仓库名称重复，请重新填写！");
+        }
+        //判断一个仓库仅能所属一个机构
+        LambdaQueryWrapper<SparePartStockInfo> deptWrapper = new LambdaQueryWrapper<>();
+        deptWrapper.eq(SparePartStockInfo::getWarehouseCode, sparePartStockInfo.getWarehouseCode());
+        deptWrapper.eq(SparePartStockInfo::getOrganizationId, sparePartStockInfo.getOrganizationId());
+        deptWrapper.eq(SparePartStockInfo::getDelFlag, CommonConstant.DEL_FLAG_0);
+        List<SparePartStockInfo> deptList = sparePartStockInfoMapper.selectList(deptWrapper);
+        if (!deptList.isEmpty() && deptList.get(0).equals(sparePartStockInfo.getId())) {
+            return Result.error("已存在该组织机构的备件仓库！");
         }
         sparePartStockInfoMapper.updateById(sparePartStockInfo);
         return Result.OK("编辑成功！");

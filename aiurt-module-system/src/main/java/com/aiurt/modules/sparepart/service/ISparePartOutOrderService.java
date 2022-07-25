@@ -20,7 +20,7 @@ import java.util.List;
  */
 public interface ISparePartOutOrderService extends IService<SparePartOutOrder> {
 
-    IPage<SparePartOutVO> queryPageList(Page<SparePartOutVO> page, SparePartLendQuery sparePartLendQuery);
+
 
     Result<?> addOutOrder(Result<?> result, SparePartOutOrder sparePartOutOrder);
 

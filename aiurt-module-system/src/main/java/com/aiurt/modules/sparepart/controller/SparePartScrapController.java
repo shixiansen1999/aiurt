@@ -40,28 +40,7 @@ public class SparePartScrapController {
     @Autowired
     private ISparePartScrapService sparePartScrapService;
 
-    /**
-     * 分页列表查询
-     *
-     * @param sparePartScrapQuery
-     * @param req
-     * @return
-     */
-    @AutoLog(value = "备件报损-分页列表查询")
-    @ApiOperation(value = "备件报损-分页列表查询", notes = "备件报损-分页列表查询")
-    @GetMapping(value = "/list")
-    public Result<IPage<SparePartScrapVO>> queryPageList(
-            SparePartScrapQuery sparePartScrapQuery,
-            HttpServletRequest req,
-            @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
-            @RequestParam(name="pageSize", defaultValue="10") Integer pageSize) {
-        Result<IPage<SparePartScrapVO>> result = new Result<IPage<SparePartScrapVO>>();
-        Page<SparePartScrapVO> page = new Page<SparePartScrapVO>(pageNo,pageSize);
-        IPage<SparePartScrapVO> pageList = sparePartScrapService.queryPageList(page, sparePartScrapQuery);
-        result.setSuccess(true);
-        result.setResult(pageList);
-        return result;
-    }
+
 
     /**
      * 添加

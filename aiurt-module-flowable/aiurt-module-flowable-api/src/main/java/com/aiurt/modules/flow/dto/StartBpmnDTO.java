@@ -1,5 +1,6 @@
 package com.aiurt.modules.flow.dto;
 
+import com.aiurt.modules.flow.entity.CustomTaskComment;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -19,9 +20,9 @@ public class StartBpmnDTO implements Serializable {
     @NotBlank(message = "参数错误， 流程定义key不能为空")
     private String modelKey;
 
-    /**
-     * 业务数据
-     */
     @ApiModelProperty("业务数据")
     private Map<String, Object> busData;
+
+    @ApiModelProperty("流程审批批注对象")
+    private CustomTaskComment customTaskComment;
 }

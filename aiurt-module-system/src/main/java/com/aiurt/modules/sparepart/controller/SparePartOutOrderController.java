@@ -39,28 +39,7 @@ public class SparePartOutOrderController {
     @Autowired
     private ISparePartOutOrderService sparePartOutOrderService;
 
-    /**
-     * 分页列表查询
-     *
-     * @param sparePartLendQuery
-     * @param req
-     * @return
-     */
-    @AutoLog(value = "备件出库表-分页列表查询")
-    @ApiOperation(value = "备件出库表-分页列表查询", notes = "备件出库表-分页列表查询")
-    @GetMapping(value = "/list")
-    public Result<IPage<SparePartOutVO>> queryPageList(
-            SparePartLendQuery sparePartLendQuery,
-            HttpServletRequest req,
-            @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
-            @RequestParam(name="pageSize", defaultValue="10") Integer pageSize) {
-        Result<IPage<SparePartOutVO>> result = new Result<IPage<SparePartOutVO>>();
-        Page<SparePartOutVO> page = new Page<SparePartOutVO>(pageNo,pageSize);
-        IPage<SparePartOutVO> pageList = sparePartOutOrderService.queryPageList(page, sparePartLendQuery);
-        result.setSuccess(true);
-        result.setResult(pageList);
-        return result;
-    }
+
 
     /**
      * 添加

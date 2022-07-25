@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.aiurt.modules.sparepart.mapper.SparePartInOrderMapper">
     <select id="queryPageList"
-            resultType="com.aiurt.modules.sparepart.entity.vo.SparePartInVO">
+            resultType="com.aiurt.modules.sparepart.entity.SparePartInOrder">
         select spio.id,spio.material_code materialCode,mb.name materialName,mb.type,
         mb.specifications,mb.country_origin countryOrigin,
         mb.manufacturer,mb.brand,mb.unit,spio.num,w.warehouse_name warehouseName,

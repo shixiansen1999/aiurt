@@ -1,32 +1,55 @@
 package com.aiurt.modules.sparepart.service;
 
-
-import com.aiurt.common.util.PageLimitUtil;
 import com.aiurt.modules.sparepart.entity.SparePartApply;
-import com.aiurt.modules.sparepart.entity.dto.AddApplyDTO;
 import com.aiurt.modules.sparepart.entity.dto.StockApplyExcel;
-import com.aiurt.modules.sparepart.entity.dto.StockOutDTO;
+import com.aiurt.modules.stock.entity.StockSubmitPlan;
 import com.baomidou.mybatisplus.extension.service.IService;
+import org.jeecg.common.api.vo.Result;
 
-
-import javax.servlet.http.HttpServletRequest;
-import java.text.ParseException;
 import java.util.List;
 
 /**
- * @Description: 备件申领
- * @Author: swsc
- * @Date:   2021-09-17
+ * @Description: spare_part_apply
+ * @Author: aiurt
+ * @Date:   2022-07-20
  * @Version: V1.0
  */
 public interface ISparePartApplyService extends IService<SparePartApply> {
-
-    void addApply(AddApplyDTO addApplyDTO);
-
-    PageLimitUtil<SparePartApply> queryPageList(SparePartApply sparePartApply, Integer pageNo, Integer pageSize,
-                                                String startTime, String endTime, HttpServletRequest req) throws ParseException;
-
+    /**
+     * 添加
+     *
+     * @param sparePartApply
+     * @return
+     */
+    Result<?> add(SparePartApply sparePartApply);
+    /**
+     * 编辑
+     *
+     * @param sparePartApply
+     * @return
+     */
+    Result<?> update(SparePartApply sparePartApply);
+    /**
+     * 提交
+     *
+     * @param sparePartApply
+     * @return
+     */
+    Result<?> submit(SparePartApply sparePartApply);
+    /**
+     * 生成申领单号
+     * @return
+     */
+    String getCode();
+    /**
+     * 生成出库单号
+     * @return
+     */
+    String getStockOutCode();
+    /**
+     * 导出excel
+     *
+     * @param ids
+     */
     List<StockApplyExcel> exportXls(List<Integer> ids);
-
-    Boolean stockOutConfirm(StockOutDTO stockOutDTOList);
 }

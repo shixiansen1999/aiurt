@@ -1,8 +1,11 @@
 package com.aiurt.modules.flow.service;
 
 import com.aiurt.modules.flow.dto.StartBpmnDTO;
+import com.aiurt.modules.flow.entity.CustomTaskComment;
 import org.flowable.engine.runtime.ProcessInstance;
-import org.springframework.transaction.annotation.Transactional;
+import org.flowable.task.api.Task;
+
+import java.util.Map;
 
 /**
  * 流程引擎API的接口封装服务。
@@ -29,6 +32,13 @@ public interface FlowApiService {
      */
     ProcessInstance startAndTakeFirst(StartBpmnDTO startBpmnDTO);
 
-
+    /**
+     * 完成任务，同时提交审批数据。
+     *
+     * @param task     工作流任务对象。
+     * @param comment  审批对象。
+     * @param busData 流程任务的变量数据。
+     */
+    void completeTask(Task task, CustomTaskComment comment,  Map<String, Object> busData);
 
 }

@@ -1,18 +1,27 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.aiurt.modules.sparepart.entity.SparePartApply.SparePartApplyMapper">
-
-    <select id="selectExportXls"
-            resultType="com.aiurt.modules.sparepart.entity.dto.StockApplyExcel">
-        select spa.code,w.warehouse_name warehouseName,w.warehouse_department warehouseDepartment,
-                spa.status,spa.create_time applyTime,spa.remarks
-         from spare_part_apply spa
-        left join warehouse w on w.warehouse_code=spa.warehouse_code
-        left join sys_user su on su.id=spa.create_by
-        where spa.id in(
-        <foreach collection="ids" separator="," item="item">
-            #{item}
-        </foreach>
+<mapper namespace="com.aiurt.modules.sparepart.mapper.SparePartApplyMapper">
+    <select id="selectExportXls" resultType="com.aiurt.modules.sparepart.entity.dto.StockApplyExcel">
+        SELECT
+            d1.item_text STATUS,
+            t.CODE,
+            t1.warehouse_name applyWarehouse,
+            t2.warehouse_name custodialWarehouse,
+            t.apply_number,
+            t3.realname applyUser,
+            t.apply_time,
+            t.remarks
+        FROM
+            spare_part_apply t
+        LEFT JOIN sys_dict AS dict1 ON dict1.dict_code = 'spare_apply_status'
+        LEFT JOIN sys_dict_item AS d1 ON d1.item_value = t.STATUS AND dict1.id = d1.dict_id
+        LEFT JOIN stock_level2_info t1 ON t1.warehouse_code = t.apply_warehouse_code
+        LEFT JOIN spare_part_stock_info t2 ON t2.warehouse_code = t.custodial_warehouse_code
+        LEFT JOIN sys_user t3 ON t3.username = t.apply_user_id
+        where t.id in(
+            <foreach collection="ids" separator="," item="item">
+                #{item}
+            </foreach>
         )
     </select>
 </mapper>
