@@ -1,15 +1,13 @@
 package com.aiurt.modules.sparepart.controller;
 
-import java.util.Arrays;
+import java.util.List;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+
 import com.aiurt.modules.sparepart.entity.SparePartInOrder;
 import com.aiurt.modules.sparepart.service.ISparePartInOrderService;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.jeecg.common.api.vo.Result;
-import org.jeecg.common.system.query.QueryGenerator;
 import lombok.extern.slf4j.Slf4j;
 import com.aiurt.common.system.base.controller.BaseController;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,10 +47,11 @@ public class SparePartInOrderController extends BaseController<SparePartInOrder,
 														 @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
 														 @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
 														 HttpServletRequest req) {
-		QueryWrapper<SparePartInOrder> queryWrapper = QueryGenerator.initQueryWrapper(sparePartInOrder, req.getParameterMap());
+/*		QueryWrapper<SparePartInOrder> queryWrapper = QueryGenerator.initQueryWrapper(sparePartInOrder, req.getParameterMap());*/
 		Page<SparePartInOrder> page = new Page<SparePartInOrder>(pageNo, pageSize);
-		IPage<SparePartInOrder> pageList = sparePartInOrderService.page(page, queryWrapper);
-		return Result.OK(pageList);
+		List<SparePartInOrder> list = sparePartInOrderService.selectList(page, sparePartInOrder);
+        page.setRecords(list);
+		return Result.OK(page);
 	}
 
 	/**
@@ -98,20 +97,6 @@ public class SparePartInOrderController extends BaseController<SparePartInOrder,
 	}
 
 	/**
-	 *  批量删除
-	 *
-	 * @param ids
-	 * @return
-	 */
-	@AutoLog(value = "spare_part_in_order-批量删除")
-	@ApiOperation(value="spare_part_in_order-批量删除", notes="spare_part_in_order-批量删除")
-	@DeleteMapping(value = "/deleteBatch")
-	public Result<String> deleteBatch(@RequestParam(name="ids",required=true) String ids) {
-		this.sparePartInOrderService.removeByIds(Arrays.asList(ids.split(",")));
-		return Result.OK("批量删除成功!");
-	}
-
-	/**
 	 * 通过id查询
 	 *
 	 * @param id
@@ -139,16 +124,5 @@ public class SparePartInOrderController extends BaseController<SparePartInOrder,
 		return super.exportXls(request, sparePartInOrder, SparePartInOrder.class, "spare_part_in_order");
 	}
 
-	/**
-	 * 通过excel导入数据
-	 *
-	 * @param request
-	 * @param response
-	 * @return
-	 */
-	@RequestMapping(value = "/importExcel", method = RequestMethod.POST)
-	public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) {
-		return super.importExcel(request, response, SparePartInOrder.class);
-	}
 
 }

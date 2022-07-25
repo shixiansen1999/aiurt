@@ -37,11 +37,6 @@ public class SparePartOutOrderServiceImpl extends ServiceImpl<SparePartOutOrderM
     private SparePartOutOrderMapper sparePartOutOrderMapper;
     @Resource @Lazy
     private ISparePartOutOrderService iSparePartOutOrderService;
-    @Override
-    public IPage<SparePartOutVO> queryPageList(Page<SparePartOutVO> page, SparePartLendQuery sparePartLendQuery) {
-
-        return sparePartOutOrderMapper.queryPageList(page,sparePartLendQuery);
-    }
 
     @Override
     public Result<?> addOutOrder(Result<?> result, SparePartOutOrder sparePartOutOrder) {

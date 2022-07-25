@@ -6,7 +6,6 @@ import com.aiurt.common.enums.SpareScrapStatusEnums;
 import com.aiurt.modules.sparepart.entity.SparePartScrap;
 import com.aiurt.modules.sparepart.entity.dto.SparePartScrapExcel;
 import com.aiurt.modules.sparepart.entity.dto.SparePartScrapQuery;
-import com.aiurt.modules.sparepart.entity.vo.SparePartScrapVO;
 import com.aiurt.modules.sparepart.mapper.SparePartScrapMapper;
 import com.aiurt.modules.sparepart.service.ISparePartScrapService;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -30,11 +29,7 @@ public class SparePartScrapServiceImpl extends ServiceImpl<SparePartScrapMapper,
     @Resource
     private SparePartScrapMapper sparePartScrapMapper;
 
-    @Override
-    public IPage<SparePartScrapVO> queryPageList(Page<SparePartScrapVO> page, SparePartScrapQuery sparePartScrapQuery) {
-        IPage<SparePartScrapVO> list = sparePartScrapMapper.queryPageList(page, sparePartScrapQuery);
-        return list;
-    }
+
 
     @Override
     public List<SparePartScrapExcel> exportXls(SparePartScrapQuery sparePartScrapQuery) {
