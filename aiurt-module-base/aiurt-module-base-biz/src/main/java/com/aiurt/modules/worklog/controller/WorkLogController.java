@@ -124,15 +124,13 @@ public class WorkLogController {
     @ApiOperation(value="工作日志-添加", notes="工作日志-添加")
     @PostMapping(value = "/add")
     public Result<WorkLog> add(@RequestBody WorkLogDTO dto, HttpServletRequest req) {
-        Result<WorkLog> result = new Result<WorkLog>();
         try {
             workLogDepotService.add(dto,req);
-            Result.ok("添加成功！");
+          return   Result.ok("添加成功！");
         } catch (Exception e) {
             log.error(e.getMessage(),"系统异常");
-            result.error500(e.getMessage());
+           return Result.error("系统异常");
         }
-        return result;
     }
 
     /**
@@ -268,9 +266,9 @@ public class WorkLogController {
     @AutoLog(value = "工作日志查看")
     @ApiOperation(value="工作日志查看", notes="工作日志查看")
     @GetMapping(value = "/queryDetail")
-    public Result<WorkLogResult> queryDetail(@RequestParam String id) {
-        Result<WorkLogResult> result = new Result<WorkLogResult>();
-        WorkLogResult detailById = workLogDepotService.getDetailById(id);
+    public Result<WorkLogDTO> queryDetail(@RequestParam String id) {
+        Result<WorkLogDTO> result = new Result<WorkLogDTO>();
+        WorkLogDTO detailById = workLogDepotService.getDetailById(id);
         result.setResult(detailById);
         return result;
     }

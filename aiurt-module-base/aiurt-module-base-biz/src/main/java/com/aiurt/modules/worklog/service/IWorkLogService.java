@@ -69,7 +69,7 @@ public interface IWorkLogService extends IService<WorkLog> {
      * @param id
      * @return
      */
-    WorkLogResult getDetailById(String id);
+    WorkLogDTO getDetailById(String id);
 
     /**
      * 工作日志确认
