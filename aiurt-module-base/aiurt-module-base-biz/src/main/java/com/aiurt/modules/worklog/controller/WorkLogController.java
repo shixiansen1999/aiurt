@@ -127,9 +127,9 @@ public class WorkLogController {
         Result<WorkLog> result = new Result<WorkLog>();
         try {
             workLogDepotService.add(dto,req);
-            result.success("添加成功！");
+            Result.ok("添加成功！");
         } catch (Exception e) {
-            log.error(e.getMessage(),e);
+            log.error(e.getMessage(),"系统异常");
             result.error500(e.getMessage());
         }
         return result;
@@ -148,7 +148,7 @@ public class WorkLogController {
             workLogDepotService.editWorkLog(dto);
             Result.ok("修改成功");
         }catch (Exception e) {
-            log.error(e.getMessage(),e);
+            log.error(e.getMessage(),"系统异常");
             Result.error(e.getMessage());
         }
         return  Result.ok("修改成功");

@@ -19,6 +19,7 @@ import com.aiurt.modules.worklog.mapper.WorkLogMapper;
 import com.aiurt.modules.worklog.param.LogCountParam;
 import com.aiurt.modules.worklog.param.WorkLogParam;
 import com.aiurt.modules.worklog.service.IWorkLogService;
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -191,8 +192,11 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
         depot.setSubmitTime(dto.getSubmitTime());
         depot.setWorkContent(dto.getWorkContent());
         depot.setContent(dto.getContent());
-        LoginUser user = iSysBaseAPI.queryUser(dto.getSucceedName());
-        depot.setSucceedId(user.getId());
+        List<JSONObject> list = iSysBaseAPI.queryUsersByIds(dto.getAssortNames());
+        String s1= list.stream().map(e->e.getString("id")).collect(Collectors.joining(","));
+        depot.setAssortIds(s1);
+        LoginUser queryUser = iSysBaseAPI.queryUser(dto.getSucceedId());
+        depot.setSucceedId(queryUser.getId());
         depot.setApproverId(dto.getApproverId());
         if (StringUtils.isNotBlank(dto.getApproverId())) {
             depot.setApprovalTime(new Date());
@@ -204,15 +208,6 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
         depot.setAssortTime(dto.getAssortTime());
         depot.setAssortLocation(dto.getAssortLocation());
         depot.setAssortUnit(dto.getAssortUnit());
-        String[] split = dto.getAssortNames().split(",");
-        List<LoginUser> loginUsers = new ArrayList<>();
-        for(String s:split)
-        {
-            LoginUser queryUser = iSysBaseAPI.queryUser(s);
-            loginUsers.add(queryUser);
-        }
-        String collect = loginUsers.stream().map(LoginUser::getId).collect(Collectors.joining(","));
-        depot.setAssortIds(collect);
         depot.setAssortNum(dto.getAssortNum());
         depot.setAssortContent(dto.getAssortContent());
         depotMapper.insert(depot);
@@ -270,7 +265,7 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
             // 发消息
             BusMessageDTO messageDTO = new BusMessageDTO();
             messageDTO.setFromUser(sysUser.getUsername());
-            LoginUser userById = iSysBaseAPI.getUserById(dto.getSucceedId());
+            LoginUser userById = iSysBaseAPI.queryUser(dto.getSucceedId());
             messageDTO.setToUser(userById.getUsername());
             messageDTO.setToAll(false);
             messageDTO.setContent(dto.getContent().toString());
@@ -462,6 +457,12 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
     @Override
     public WorkLogResult getDetailById(String id) {
         WorkLogResult workLog = depotMapper.queryById(id);
+         LoginUser successor = iSysBaseAPI.getUserById(workLog.getSucceedId());
+         workLog.setSucceedName(successor.getRealname());
+         String[] split1 = workLog.getAssortIds().split(",");
+         List<LoginUser> assortNames = iSysBaseAPI.queryAllUserByIds(split1);
+         String collect1 = assortNames.stream().map(s -> s.getRealname()).collect(Collectors.joining(","));
+         workLog.setAssortNames(collect1);
         //附件列表
         List<String> query = enclosureMapper.query(id,0);
         String collect = query.stream().collect(Collectors.joining(","));
@@ -610,8 +611,9 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
         workLog.setLogTime(dto.getLogTime());
         workLog.setWorkContent(dto.getWorkContent());
         workLog.setContent(dto.getContent());
-        LoginUser user = iSysBaseAPI.queryUser(dto.getSucceedName());
-        workLog.setSucceedId(user.getId());
+        List<String> list = iSysBaseAPI.queryDeptUsersByUserId(dto.getSucceedName());
+        String s1 = list.stream().collect(Collectors.joining(","));
+        workLog.setSucceedId(s1);
         workLog.setAssortTime(dto.getAssortTime());
         workLog.setAssortLocation(dto.getAssortLocation());
         String[] split = dto.getAssortNames().split(",");
