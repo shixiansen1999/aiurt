@@ -62,6 +62,7 @@ public class SysAnnouncement implements Serializable {
      * 优先级（L低，M中，H高）
      */
     @Excel(name = "优先级（L低，M中，H高,）", width = 15, dicCode = "priority")
+    @Dict(dicCode = "priority")
     private String priority;
 
     /**
