@@ -3,6 +3,7 @@ package com.aiurt.boot.strategy.mapper;
 
 import com.aiurt.boot.manager.dto.InspectionCodeDTO;
 import com.aiurt.boot.manager.dto.MajorDTO;
+import com.aiurt.boot.manager.dto.SubsystemDTO;
 import com.aiurt.boot.strategy.dto.InspectionStrategyDTO;
 import com.aiurt.boot.strategy.entity.InspectionStrategy;
 import com.aiurt.modules.device.entity.Device;
@@ -78,4 +79,12 @@ public interface InspectionStrategyMapper extends BaseMapper<InspectionStrategy>
     List<InspectionStrategyDTO> selectCodeList(@Param("strategyId")String strategyId, @Param("majorCode")String majorCode, @Param("subsystemCode")String subsystemCode);
 
     MajorDTO translateMajor(@Param("majorCode")String majorCode);
+
+    /**
+     * 查询子系统
+     * @param majorCode
+     * @param systemCode
+     * @return
+     */
+    List<SubsystemDTO> translateSubsystem(@Param("majorCode")String majorCode, List<String> systemCode);
 }

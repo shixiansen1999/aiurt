@@ -235,17 +235,12 @@ public class PatrolPlanServiceImpl extends ServiceImpl<PatrolPlanMapper, PatrolP
             });
         }
         //根据专业编码查询对应的专业子系统
-        List<MajorDTO> majorDTOList = new ArrayList<>();
-        majorCodes1.forEach(m->{
-            majorDTOList.add(baseMapper.translateMajor(m));
-        });
+        List<MajorDTO> majorDTOList = baseMapper.translateMajor(majorCodes1);
         if (CollectionUtil.isNotEmpty(majorDTOList)) {
-            int i =0;
-            for (MajorDTO a :majorDTOList){
-                List<SubsystemDTO> subsystemDTOList = baseMapper.translateSubsystem(majorCodes1.get(i), systemCode.get(i));
-                a.setSubsystemInfo(subsystemDTOList);
-                i++;
-            }
+          majorDTOList.forEach(a->{
+              List<SubsystemDTO> subsystemDTOList = baseMapper.translateSubsystem(a.getMajorCode(), systemCode);
+              a.setSubsystemInfo(subsystemDTOList);
+          });
         }
         return majorDTOList;
     }

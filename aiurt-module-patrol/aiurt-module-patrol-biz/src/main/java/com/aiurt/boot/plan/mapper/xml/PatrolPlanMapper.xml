@@ -229,7 +229,12 @@
         where
             del_flag = 0
           and major_code = #{majorCode}
-          and system_code = #{systemCode}
+        <if test="systemCode.size()>0">
+        and system_code in
+        <foreach item="systemCode" collection="systemCode" separator="," open="(" close=")" index="">
+            #{systemCode}
+        </foreach>
+        </if>
     </select>
     <select id="translateMajor" resultType="com.aiurt.boot.task.dto.MajorDTO">
         select
@@ -238,7 +243,12 @@
         from cs_major
         where
             del_flag = 0
-       and major_code =#{majorCode}
+            <if test="list.size()>0">
+                and major_code in
+                <foreach item="item" collection="list" separator="," open="(" close=")" index="">
+                    #{item}
+                </foreach>
+            </if>
     </select>
     <select id="selectStandardList" resultType="com.aiurt.boot.plan.dto.StandardDTO">
         SELECT

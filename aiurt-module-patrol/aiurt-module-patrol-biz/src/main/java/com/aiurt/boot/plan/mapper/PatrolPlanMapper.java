@@ -105,10 +105,10 @@ public interface PatrolPlanMapper extends BaseMapper<PatrolPlan> {
   List<PatrolPlanDto> selectCodeList(@Param("planId")String planId, @Param("majorCode")String majorCode, @Param("subsystemCode")String subsystemCode);
   /**
    * 翻译专业信息
-   * @param majorCode
+   * @param codeList
    * @return
    */
-  MajorDTO translateMajor(@Param("majorCode")String majorCode);
+  List<MajorDTO> translateMajor(List<String> codeList);
 
   /**
    * 翻译子系统信息
@@ -116,7 +116,7 @@ public interface PatrolPlanMapper extends BaseMapper<PatrolPlan> {
    *  @param systemCode
    * @return
    */
-  List<SubsystemDTO> translateSubsystem(@Param("majorCode")String majorCode, @Param("systemCode")String systemCode);
+  List<SubsystemDTO> translateSubsystem(@Param("majorCode")String majorCode,List<String> systemCode);
 
   /**
    * 查询标准表下拉框
