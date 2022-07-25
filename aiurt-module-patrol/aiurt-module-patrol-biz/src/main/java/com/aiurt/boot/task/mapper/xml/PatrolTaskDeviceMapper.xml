@@ -22,6 +22,13 @@
         LEFT JOIN device_type dt ON pts.device_type_code = dt.`code`
         LEFT JOIN sys_user su ON ptd.user_id = su.id
         WHERE ptd.del_flag = 0
+        AND pts.del_flag = 0
+        AND ps.del_flag = 0
+        AND device.del_flag = 0
+        AND cm.del_flag = 0
+        AND cs.del_flag = 0
+        AND dt.del_flag = 0
+        AND su.del_flag = 0
         <if test="taskDevice.taskId != null and taskDevice.taskId !=''">
             and ptd.task_id = #{taskDevice.taskId}
         </if>
@@ -109,25 +116,31 @@
         LEFT JOIN device d ON ptd.device_code = d.`code`
         WHERE
         ptd.del_flag = 0
+        AND pts.del_flag = 0
+        AND cl.del_flag = 0
+        AND cs.del_flag = 0
+        AND dt.del_flag = 0
+        AND su.del_flag = 0
+        AND d.del_flag = 0
         <if test="patrolNumber != null and patrolNumber !=''">
             and ptd.patrol_number = #{patrolNumber}
         </if>
     </select>
     <select id="getPatrolTaskDeviceList" resultType="com.aiurt.boot.task.dto.PatrolTaskDeviceDTO">
         SELECT concat((SELECT line_name FROM cs_line AS csl WHERE csl.line_code = ptd.line_code), "/",
-                      (SELECT station_name FROM cs_station AS css WHERE css.station_code = ptd.station_code),
-                      IFNULL((SELECT CONCAT("/", position_name)
-                              FROM cs_station_position AS cssp
-                              WHERE cssp.position_code = ptd.position_code), '')) AS devicePosition,
-               dv.name                                                            as deviceName,
-               ptd.*
+        (SELECT station_name FROM cs_station AS css WHERE css.station_code = ptd.station_code),
+        IFNULL((SELECT CONCAT("/", position_name)
+        FROM cs_station_position AS cssp
+        WHERE cssp.position_code = ptd.position_code), '')) AS devicePosition,
+        dv.name as deviceName,
+        ptd.*
         FROM patrol_task_device ptd
-                 LEFT JOIN device dv on ptd.device_code = dv.code
+        LEFT JOIN device dv on ptd.device_code = dv.code
         WHERE ptd.del_flag = 0
-          AND ptd.task_id = #{id}
-          <if test="search != null and search != ''">
-        and CONCAT_WS(',',ptd.patrol_number,ptd.device_code,dv.name) like concat('%',#{search},'%')
-          </if>
+        AND ptd.task_id = #{id}
+        <if test="search != null and search != ''">
+            and CONCAT_WS(',',ptd.patrol_number,ptd.device_code,dv.name) like concat('%',#{search},'%')
+        </if>
     </select>
     <select id="getSubmitName" resultType="java.lang.String">
         select realname
@@ -146,40 +159,41 @@
         FROM device
         WHERE device.del_flag = 0
           AND device.`code` = #{deviceCode}
-	</select>
-<select id="getDevice" resultType="com.aiurt.modules.device.entity.Device">
-select  t1.*
-from device t1
-where t1.code = #{code}
-</select>
-<select id="getTaskStandardDevice" resultType="com.aiurt.boot.task.dto.DeviceDTO">
-    SELECT
-	concat( t2.line_name, "/", t2.station_name ) AS positionCodeName,t3.name as deviceType,t1.*
-    FROM device t1
-	LEFT JOIN cs_station t2 ON t1.station_code = t2.station_code
-	LEFT JOIN device_type t3 on t1.device_type_code = t3.code
-    where t1.code = #{code}
-</select>
-<select id="getDevicePosition" resultType="java.lang.String">
-select t1.position_name
-from cs_station_position t1
-where t1.position_code = #{positionCode}
-</select>
-<select id="getStandardName" resultType="com.aiurt.boot.standard.entity.PatrolStandard">
-   SELECT t3.name,t3.device_type
+    </select>
+    <select id="getDevice" resultType="com.aiurt.modules.device.entity.Device">
+        select t1.*
+        from device t1
+        where t1.code = #{code}
+    </select>
+    <select id="getTaskStandardDevice" resultType="com.aiurt.boot.task.dto.DeviceDTO">
+        SELECT concat(t2.line_name, "/", t2.station_name) AS positionCodeName,
+               t3.name                                    as deviceType,
+               t1.*
+        FROM device t1
+                 LEFT JOIN cs_station t2 ON t1.station_code = t2.station_code
+                 LEFT JOIN device_type t3 on t1.device_type_code = t3.code
+        where t1.code = #{code}
+    </select>
+    <select id="getDevicePosition" resultType="java.lang.String">
+        select t1.position_name
+        from cs_station_position t1
+        where t1.position_code = #{positionCode}
+    </select>
+    <select id="getStandardName" resultType="com.aiurt.boot.standard.entity.PatrolStandard">
+        SELECT t3.name, t3.device_type
         FROM patrol_task_standard t1
                  LEFT JOIN patrol_task_device t2 on t1.id = t2.task_standard_id and t1.task_id = t2.task_id
                  LEFT JOIN patrol_standard t3 on t3.code = t1.standard_code
         WHERE t2.id = #{deviceId}
- </select>
- <select id="getMajorName" resultType="java.lang.String">
- select major_name
- from cs_major
- where major_code =#{majorCode}
- </select>
- <select id="getSysName" resultType="java.lang.String">
-select system_name
-from cs_subsystem
-where system_code = #{systemCode}
- </select>
+    </select>
+    <select id="getMajorName" resultType="java.lang.String">
+        select major_name
+        from cs_major
+        where major_code = #{majorCode}
+    </select>
+    <select id="getSysName" resultType="java.lang.String">
+        select system_name
+        from cs_subsystem
+        where system_code = #{systemCode}
+    </select>
 </mapper>

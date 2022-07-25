@@ -11,6 +11,7 @@
         JOIN sys_depart sd ON pto.org_code = sd.org_code
         WHERE
         pto.del_flag = 0
+        AND sd.del_flag = 0
         <if test="taskCode != null and taskCode != ''">
             AND pto.task_code =#{taskCode}
         </if>
@@ -27,6 +28,8 @@
         LEFT JOIN sys_depart sd ON pto.org_code = sd.org_code
         WHERE
         pto.del_flag = 0
+        AND su.del_flag = 0
+        AND sd.del_flag = 0
         <if test="code != null and code != ''">
             AND pto.task_code = #{code}
         </if>
