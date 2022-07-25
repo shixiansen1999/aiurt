@@ -84,7 +84,6 @@ public class MybatisDataFilterInterceptor implements Interceptor {
                         loadDataPermFilterRules(mapperClass, rule);
                     }
                 }
-
             }
         }
     }
@@ -111,6 +110,8 @@ public class MybatisDataFilterInterceptor implements Interceptor {
         }
 
         // 获取Mapper关联的主表信息，包括表名，user、dept、line、station、major、system等过滤字段名。
+        // clazz.getGenericSuperclass(); 获取父类的类型
+        // p.getActualTypeArguments()[0]; 获取第一个参数
         Class<?> modelClazz = (Class<?>)
                 ((ParameterizedType) mapperClass.getGenericInterfaces()[0]).getActualTypeArguments()[0];
         Field[] fields = ReflectUtil.getFields(modelClazz);

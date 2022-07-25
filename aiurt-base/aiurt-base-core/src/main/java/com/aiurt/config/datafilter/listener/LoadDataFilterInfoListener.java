@@ -22,7 +22,6 @@ public class LoadDataFilterInfoListener implements ApplicationListener<Applicati
     public void onApplicationEvent(ApplicationReadyEvent applicationReadyEvent) {
         MybatisDataFilterInterceptor interceptor =
                 applicationReadyEvent.getApplicationContext().getBean(MybatisDataFilterInterceptor.class);
-        log.info("进去预加载调用");
         interceptor.loadInfoWithDataFilter();
     }
 }

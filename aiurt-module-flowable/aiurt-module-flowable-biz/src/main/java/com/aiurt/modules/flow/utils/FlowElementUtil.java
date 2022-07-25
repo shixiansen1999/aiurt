@@ -1,11 +1,18 @@
 package com.aiurt.modules.flow.utils;
 
+import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.util.ObjectUtil;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.exception.AiurtErrorEnum;
+import com.aiurt.modules.constants.FlowConstant;
+import com.aiurt.modules.manage.entity.ActCustomVersion;
+import com.aiurt.modules.manage.service.IActCustomVersionService;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import org.flowable.bpmn.model.*;
 import org.flowable.engine.RepositoryService;
 import org.flowable.engine.repository.ProcessDefinition;
 import org.flowable.ui.modeler.serviceapi.ModelService;
+import org.jeecg.common.api.vo.Result;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -25,9 +32,13 @@ public class FlowElementUtil {
     @Autowired
     private ModelService modelService;
 
+    @Autowired
+    private IActCustomVersionService actCustomVersionService;
+
 
     /**
      * 获取第一个用户节点, 最近的一个版本
+     *
      * @param modelKey 流程模型key
      * @return
      */
@@ -57,7 +68,8 @@ public class FlowElementUtil {
     }
 
     /**
-     *  获取流程开始节点
+     * 获取流程开始节点
+     *
      * @return
      */
     public FlowElement getStartFlowNodeByModelKey(String modelKey) {
@@ -73,8 +85,9 @@ public class FlowElementUtil {
 
     /**
      * 获取流程所有的元素
-     * @param modelKey  流程模型key
-     * @return  FlowElement
+     *
+     * @param modelKey 流程模型key
+     * @return FlowElement
      */
     private Collection<FlowElement> getFlowElementsByModelKey(String modelKey) {
 
@@ -92,7 +105,6 @@ public class FlowElementUtil {
     }
 
 
-
     /**
      * @param processDefinitionId 流程定义id
      * @return
@@ -104,9 +116,9 @@ public class FlowElementUtil {
     }
 
 
-
     /**
-     *  获取流程开始节点
+     * 获取流程开始节点
+     *
      * @return
      */
     public FlowElement getStartFlowNodeByDefinitionId(String processDefinitionId) {
@@ -123,6 +135,31 @@ public class FlowElementUtil {
     }
 
 
+    /**
+     * 验证并获取流程对象。(根据key查找当前流程的主版本)
+     *
+     * @param processDefinitionKey 流程引擎的流程定义标识。
+     * @return 流程对象。
+     */
+    public Result<ProcessDefinition> verifyAndGetFlowEntry(String processDefinitionKey) {
+        List<ProcessDefinition> processList = repositoryService.createProcessDefinitionQuery()
+                .processDefinitionKey(processDefinitionKey)
+                .list();
 
+        if (CollUtil.isNotEmpty(processList)) {
+            for (ProcessDefinition processDefinition : processList) {
+                if (ObjectUtil.isNotEmpty(processDefinition)) {
+                    ActCustomVersion actCustomVersions = actCustomVersionService.getBaseMapper().selectById(
+                            new LambdaQueryWrapper<ActCustomVersion>()
+                                    .eq(ActCustomVersion::getProcessDefinitionId, processDefinition.getId())
+                                    .eq(ActCustomVersion::getMainVersion, FlowConstant.MAIN_VERSION_1));
+                    if (ObjectUtil.isNotEmpty(actCustomVersions)) {
+                        return Result.OK(processDefinition);
+                    }
+                }
+            }
+        }
 
+        return Result.error(AiurtErrorEnum.FLOW_DEFINITION_NOT_FOUND.getMessage());
+    }
 }

@@ -144,4 +144,9 @@ public class FlowConstant {
      * 作为临时变量存入任务变量JSONObject对象时的key。
      */
     public static final String COPY_DATA_KEY = "copyDataKey";
+
+    /**
+     * 是否为主版本(1是)
+     */
+    public static final String MAIN_VERSION_1 = "1";
 }
