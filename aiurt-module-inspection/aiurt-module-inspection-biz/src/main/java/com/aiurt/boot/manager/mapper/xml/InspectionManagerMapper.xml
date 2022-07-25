@@ -66,7 +66,7 @@
         select name from device_type where code = #{code} and del_flag =0
     </select>
     <select id="queryDeviceByCodesPage" resultType="com.aiurt.boot.plan.dto.RepairDeviceDTO">
-        select cm.major_name,cs.system_name as subsystemName,dt.`name` as deviceTypeName,line_code,station_code,position_code,d.code,d.name,d.status,d.temporary
+        select DISTINCT cm.major_name,cs.system_name as subsystemName,dt.`name` as deviceTypeName,line_code,station_code,position_code,d.code,d.name,d.status,d.temporary
         from device d
         left join cs_major cm on  cm.major_code = d.major_code
         left join cs_subsystem  cs on cs.system_code = d.system_code
