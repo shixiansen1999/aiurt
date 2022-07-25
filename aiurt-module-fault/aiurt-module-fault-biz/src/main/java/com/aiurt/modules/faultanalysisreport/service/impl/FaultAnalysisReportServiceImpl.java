@@ -119,11 +119,17 @@ public class FaultAnalysisReportServiceImpl extends ServiceImpl<FaultAnalysisRep
             if (approvedResult.equals(FaultConstant.PASSED)) {
                 faultKnowledgeBase.setStatus(FaultConstant.APPROVED);
                 faultKnowledgeBase.setApprovedResult(FaultConstant.PASSED);
-                faultAnalysisReport.setDelFlag(0);
+                faultKnowledgeBase.setDelFlag(0);
+                faultKnowledgeBase.setApprovedUserName(sysUser.getUsername());
+                faultKnowledgeBase.setApprovedTime(new Date());
+                faultKnowledgeBase.setApprovedRemark(approvedRemark);
                 faultAnalysisReport.setStatus(FaultConstant.APPROVED);
             } else {
                 faultKnowledgeBase.setStatus(FaultConstant.REJECTED);
                 faultKnowledgeBase.setApprovedResult(FaultConstant.NO_PASS);
+                faultKnowledgeBase.setApprovedUserName(sysUser.getUsername());
+                faultKnowledgeBase.setApprovedTime(new Date());
+                faultKnowledgeBase.setApprovedRemark(approvedRemark);
                 faultAnalysisReport.setStatus(FaultConstant.REJECTED);
             }
             faultKnowledgeBaseService.updateById(faultKnowledgeBase);
@@ -137,12 +143,14 @@ public class FaultAnalysisReportServiceImpl extends ServiceImpl<FaultAnalysisRep
         FaultAnalysisReport faultAnalysisReport = faultDTO.getFaultAnalysisReport();
         faultAnalysisReport.setStatus(FaultConstant.PENDING);
         faultAnalysisReport.setApprovedResult(FaultConstant.NO_PASS);
-
         FaultKnowledgeBase faultKnowledgeBase = faultDTO.getFaultKnowledgeBase();
         //判断是否同步到知识库
         if (ObjectUtil.isNotNull(faultKnowledgeBase)) {
             faultKnowledgeBase.setStatus(FaultConstant.PENDING);
             faultKnowledgeBase.setApprovedResult(FaultConstant.NO_PASS);
+            faultKnowledgeBase.setFaultCodes(faultDTO.getCode());
+            faultKnowledgeBase.setMajorCode(faultDTO.getMajorCode());
+            faultKnowledgeBase.setSystemCode(faultDTO.getSubSystemCode());
             //先隐藏，审批通过后再展示
             faultKnowledgeBase.setDelFlag(1);
             faultKnowledgeBaseService.updateById(faultKnowledgeBase);
@@ -165,6 +173,9 @@ public class FaultAnalysisReportServiceImpl extends ServiceImpl<FaultAnalysisRep
         if (ObjectUtil.isNotNull(faultKnowledgeBase)) {
             faultKnowledgeBase.setStatus(FaultConstant.PENDING);
             faultKnowledgeBase.setApprovedResult(FaultConstant.NO_PASS);
+            faultKnowledgeBase.setFaultCodes(faultDTO.getCode());
+            faultKnowledgeBase.setMajorCode(faultDTO.getMajorCode());
+            faultKnowledgeBase.setSystemCode(faultDTO.getSubSystemCode());
             //先隐藏，审批通过后再展示
             faultKnowledgeBase.setDelFlag(1);
             faultKnowledgeBaseService.save(faultKnowledgeBase);
