@@ -34,7 +34,7 @@ public class WorkLogRemind {
     /**主键id,自动递增*/
     @TableId(type = IdType.ASSIGN_ID)
     @ApiModelProperty(value = "主键id,自动递增")
-    private  Long  id;
+    private  String  id;
 
     /**提醒时间*/
     @Excel(name = "提醒时间", width = 20)
