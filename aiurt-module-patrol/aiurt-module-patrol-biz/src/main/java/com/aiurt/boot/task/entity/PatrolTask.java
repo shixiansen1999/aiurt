@@ -189,6 +189,12 @@ public class PatrolTask implements Serializable {
     @ApiModelProperty(value = "处置用户ID")
     private java.lang.String disposeId;
     /**
+     * 漏检状态:0未漏检，1已漏检
+     */
+    @Excel(name = "漏检状态:0未漏检，1已漏检", width = 15)
+    @ApiModelProperty(value = "漏检状态:0未漏检，1已漏检")
+    private java.lang.Integer omitStatus;
+    /**
      * 漏检说明
      */
     @Excel(name = "漏检说明", width = 15)

@@ -46,7 +46,7 @@ public interface PatrolConstant {
     /**
      * 巡检任务状态(已漏检)
      */
-    Integer TASK_MISSED = 8;
+    Integer OMIT_STATUS = 1;
     /**
      * 巡检任务异常状态
      */
