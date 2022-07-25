@@ -208,4 +208,9 @@ public class InspectionConstant {
      * 有孩子节点
      */
     public static final String HAS_CHILD_1 = "1";
+
+    /**
+     * 是否需要审核 0否
+     */
+    public static final Integer IS_CONFIRM_0 = 0;
 }

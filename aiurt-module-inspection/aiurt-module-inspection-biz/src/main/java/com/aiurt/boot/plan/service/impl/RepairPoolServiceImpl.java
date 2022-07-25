@@ -1136,6 +1136,11 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
             throw new AiurtBootException("请选择检修标准");
         }
 
+        // 如果是否需要审核选否，那么直接不接收是否需要要收的参数
+        if (repairPoolDTO.getIsConfirm() != null && InspectionConstant.IS_CONFIRM_0.equals(repairPoolDTO.getIsConfirm())) {
+            repairPoolDTO.setIsReceipt(null);
+        }
+
         repairPoolCodes.forEach(re -> {
 
             InspectionCode inspectionCode = inspectionCodeMapper.selectOne(
