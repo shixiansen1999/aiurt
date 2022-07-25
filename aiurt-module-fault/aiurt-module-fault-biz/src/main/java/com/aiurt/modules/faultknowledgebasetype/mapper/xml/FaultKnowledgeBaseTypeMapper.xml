@@ -12,7 +12,7 @@
 <select id="getAllMajor" resultType="com.aiurt.modules.faultknowledgebasetype.dto.MajorDTO">
     select id,major_code,major_name
     from cs_major
-    where del_flag = 0
+    where 1=1
     <if test="majorCodes != null and majorCodes.size() != 0">
         and major_code in
         <foreach collection="majorCodes" item="majorCode" open="(" separator="," close=")">
@@ -35,9 +35,29 @@
     cs.system_code,
     cs.major_code
     from cs_user_subsystem cus left join cs_subsystem cs on cs.id = cus.system_id
-    where cus.user_id =#{userId}
+    where
+    <if test="userId != null and userId != ''">
+        cus.user_id =#{userId}
+    </if>
     <if test="majorCode != null and majorCode != ''">
         and cs.major_code =#{majorCode}
+    </if>
+    order by cs.create_time
+    </select>
+
+<select id="getSubSystemByCode" resultType="com.aiurt.modules.faultknowledgebasetype.dto.SubSystemDTO">
+    select
+    cs.id,
+    cs.system_name,
+    cs.system_code,
+    cs.major_code
+    from cs_subsystem cs
+    where 1=1
+    <if test="systemCodes != null and systemCodes.size() != 0">
+        and system_code in
+        <foreach collection="systemCodes" item="systemCode" open="(" separator="," close=")">
+            #{systemCode}
+        </foreach>
     </if>
     order by cs.create_time
     </select>

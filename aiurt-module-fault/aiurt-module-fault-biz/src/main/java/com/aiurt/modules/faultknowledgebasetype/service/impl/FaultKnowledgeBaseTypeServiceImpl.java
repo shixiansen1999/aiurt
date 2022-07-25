@@ -1,6 +1,7 @@
 package com.aiurt.modules.faultknowledgebasetype.service.impl;
 
 import cn.hutool.core.collection.CollectionUtil;
+import com.aiurt.config.datafilter.object.GlobalThreadLocal;
 import com.aiurt.modules.faultknowledgebasetype.dto.MajorDTO;
 import com.aiurt.modules.faultknowledgebasetype.dto.SubSystemDTO;
 import com.aiurt.modules.faultknowledgebasetype.entity.FaultKnowledgeBaseType;
@@ -31,39 +32,37 @@ public class FaultKnowledgeBaseTypeServiceImpl extends ServiceImpl<FaultKnowledg
 
     @Override
     public List<MajorDTO> faultKnowledgeBaseTypeTreeList() {
-        LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        List<String> majorByUser = faultKnowledgeBaseTypeMapper.getMajorByUser(sysUser.getId());
-        if (CollectionUtil.isNotEmpty(majorByUser)) {
+        LambdaQueryWrapper<FaultKnowledgeBaseType> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(FaultKnowledgeBaseType::getDelFlag, "0").orderByDesc(FaultKnowledgeBaseType::getCreateTime);
+        List<FaultKnowledgeBaseType> faultKnowledgeBaseTypes = faultKnowledgeBaseTypeMapper.selectList(queryWrapper);
+        List<String> majors = faultKnowledgeBaseTypes.stream().map(FaultKnowledgeBaseType::getMajorCode).distinct().collect(Collectors.toList());
+        List<String> systems = faultKnowledgeBaseTypes.stream().map(FaultKnowledgeBaseType::getSystemCode).distinct().collect(Collectors.toList());
+        //下面禁用数据过滤
+        boolean b = GlobalThreadLocal.setDataFilter(false);
+        if (CollectionUtil.isNotEmpty(majors)) {
             //用户拥有的专业
-            List<MajorDTO> allMajor = faultKnowledgeBaseTypeMapper.getAllMajor(majorByUser);
+            List<MajorDTO> allMajor = faultKnowledgeBaseTypeMapper.getAllMajor(majors);
             for (MajorDTO majorDTO:allMajor) {
                 //用户拥有的专业的子系统
-                List<SubSystemDTO> subSystemByUser = faultKnowledgeBaseTypeMapper.getSubSystemByUser(sysUser.getId(), majorDTO.getMajorCode());
+                List<SubSystemDTO> subSystemByUser = faultKnowledgeBaseTypeMapper.getSubSystemByCode(systems);
                 if (CollectionUtil.isNotEmpty(subSystemByUser)) {
                     for (SubSystemDTO subSystemDTO : subSystemByUser) {
-                        //该子系统的全部知识库类型
-                        LambdaQueryWrapper<FaultKnowledgeBaseType> queryWrapper = new LambdaQueryWrapper<>();
-                        List<FaultKnowledgeBaseType> faultKnowledgeBaseTypes = faultKnowledgeBaseTypeMapper.selectList(
-                                queryWrapper.eq(FaultKnowledgeBaseType::getDelFlag, 0)
-                                        .eq(FaultKnowledgeBaseType::getSystemCode, subSystemDTO.getSystemCode())
-                                        .orderByDesc(FaultKnowledgeBaseType::getCreateTime));
                         //获取子节点
-                        List<FaultKnowledgeBaseType> treeRes = getTreeRes(faultKnowledgeBaseTypes, 0);
+                        List<FaultKnowledgeBaseType> baseTypeList = faultKnowledgeBaseTypes.stream().filter(f -> f.getSystemCode().equals(subSystemDTO.getSystemCode()) && f.getMajorCode().equals(majorDTO.getMajorCode())).collect(Collectors.toList());
+                        List<FaultKnowledgeBaseType> treeRes = getTreeRes(baseTypeList, 0);
                         subSystemDTO.setFaultKnowledgeBaseTypes(treeRes);
                         majorDTO.setSubSystemDTOS(subSystemByUser);
                     }
                 } else {
-                    LambdaQueryWrapper<FaultKnowledgeBaseType> queryWrapper = new LambdaQueryWrapper<>();
-                    List<FaultKnowledgeBaseType> faultKnowledgeBaseTypes = faultKnowledgeBaseTypeMapper.selectList(
-                            queryWrapper.eq(FaultKnowledgeBaseType::getDelFlag, 0)
-                                    .eq(FaultKnowledgeBaseType::getMajorCode, majorDTO.getMajorCode()));
                     //获取子节点
-                    List<FaultKnowledgeBaseType> treeRes = getTreeRes(faultKnowledgeBaseTypes, 0);
+                    List<FaultKnowledgeBaseType> baseTypeList = faultKnowledgeBaseTypes.stream().filter(f -> f.getMajorCode().equals(majorDTO.getMajorCode())).collect(Collectors.toList());
+                    List<FaultKnowledgeBaseType> treeRes = getTreeRes(baseTypeList, 0);
                     majorDTO.setFaultKnowledgeBaseTypes(treeRes);
                 }
             }
             return allMajor;
         }
+        GlobalThreadLocal.setDataFilter(b);
         return null;
     }
 
