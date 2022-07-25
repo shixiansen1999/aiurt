@@ -20,13 +20,13 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.servlet.http.HttpServletRequest;
 
 /**
- * @Description: 提报物资
+ * @Description: 二级库入库物资
  * @Author: swsc
  * @Date: 2021-09-15
  * @Version: V1.0
  */
 @Slf4j
-@Api(tags = "提报物资")
+@Api(tags = "二级库入库物资")
 @RestController
 @RequestMapping("/stock/stockIncomingMaterials")
 public class StockIncomingMaterialsController {
@@ -44,8 +44,8 @@ public class StockIncomingMaterialsController {
      * @param pageSize
      * @return
      */
-    @AutoLog(value = "提报物资-分页列表查询")
-    @ApiOperation(value = "提报物资-分页列表查询", notes = "提报物资-分页列表查询")
+    @AutoLog(value = "二级库入库物资-分页列表查询")
+    @ApiOperation(value = "二级库入库物资-分页列表查询", notes = "二级库入库物资-分页列表查询")
     @GetMapping(value = "/list")
     public Result<IPage<StockIncomingMaterials>> queryPageList(StockIncomingMaterials stockIncomingMaterials,
                                                          @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
@@ -56,7 +56,7 @@ public class StockIncomingMaterialsController {
         queryWrapper.eq("del_flag", CommonConstant.DEL_FLAG_0);
         String inOrderCode = stockIncomingMaterials==null?"":stockIncomingMaterials.getInOrderCode();
         if(inOrderCode != null && !"".equals(inOrderCode)){
-            queryWrapper.eq("in_order_code",inOrderCode);
+            queryWrapper.eq("submit_plan_code",inOrderCode);
         }
         queryWrapper.orderByDesc("create_time");
         Page<StockIncomingMaterials> page = new Page<StockIncomingMaterials>(pageNo, pageSize);

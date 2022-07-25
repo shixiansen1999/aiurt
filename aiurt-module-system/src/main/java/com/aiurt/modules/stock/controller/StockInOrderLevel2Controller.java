@@ -8,6 +8,7 @@ import com.aiurt.modules.material.service.IMaterialBaseService;
 import com.aiurt.modules.stock.entity.StockIncomingMaterials;
 import com.aiurt.modules.stock.entity.StockInOrderLevel2;
 import com.aiurt.modules.stock.entity.StockLevel2;
+import com.aiurt.modules.stock.entity.StockLevel2Info;
 import com.aiurt.modules.stock.service.IStockIncomingMaterialsService;
 import com.aiurt.modules.stock.service.IStockInOrderLevel2Service;
 import com.aiurt.modules.stock.service.IStockLevel2Service;
@@ -18,10 +19,13 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.system.query.QueryGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.text.ParseException;
 import java.util.Arrays;
 import java.util.List;
 
@@ -56,14 +60,10 @@ public class StockInOrderLevel2Controller {
                                                          @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize,
                                                          HttpServletRequest req) {
         Result<IPage<StockInOrderLevel2>> result = new Result<IPage<StockInOrderLevel2>>();
-        QueryWrapper<StockInOrderLevel2> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("del_flag", CommonConstant.DEL_FLAG_0);
-        String code = stockInOrderLevel2.getOrderCode();
-        queryWrapper.orderByDesc("create_time");
         Page<StockInOrderLevel2> page = new Page<StockInOrderLevel2>(pageNo, pageSize);
-        IPage<StockInOrderLevel2> pageList = iStockInOrderLevel2Service.page(page, queryWrapper);
-        result.setSuccess(true);
-        result.setResult(pageList);
+//        IPage<StockInOrderLevel2> pageList = iStockInOrderLevel2Service.page(page, queryWrapper);
+//        result.setSuccess(true);
+//        result.setResult(pageList);
         return result;
     }
 
@@ -89,7 +89,7 @@ public class StockInOrderLevel2Controller {
      */
     @ApiOperation(value = "提交", notes = "提交")
     @GetMapping(value = "/submitPlanStatus")
-    public Result<String> submitPlan(@RequestParam(name = "status", required = true) Integer status,
+    public Result<String> submitPlan(@RequestParam(name = "status", required = true) String status,
                                      @RequestParam(name = "code", required = true) String code) {
         boolean ok = iStockInOrderLevel2Service.submitPlan(status, code);
         if (ok) {
@@ -105,9 +105,9 @@ public class StockInOrderLevel2Controller {
      * @return
      */
     @ApiOperation(value = "新增获取入库编号", notes = "新增获取入库编号")
-    @GetMapping(value = "/getSubmitPlanCode")
-    public Result<StockInOrderLevel2> getSubmitPlanCode() {
-        return Result.ok(iStockInOrderLevel2Service.getSubmitPlanCode());
+    @GetMapping(value = "/getInOrderCode")
+    public Result<StockInOrderLevel2> getInOrderCode() throws ParseException {
+        return Result.ok(iStockInOrderLevel2Service.getInOrderCode());
     }
 
     /**
@@ -170,5 +170,14 @@ public class StockInOrderLevel2Controller {
             result.success("删除成功!");
         }
         return result;
+    }
+
+    @AutoLog(value = "二级库入库管理-导出")
+    @ApiOperation(value = "二级库入库管理-导出", notes = "二级库入库管理-导出")
+    @GetMapping(value = "/export")
+    public void eqExport(@RequestParam(name = "ids", defaultValue = "") String ids,
+                                 HttpServletRequest request,
+                                 HttpServletResponse response) {
+        iStockInOrderLevel2Service.eqExport(ids, request, response);
     }
 }

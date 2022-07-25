@@ -2,10 +2,7 @@ package com.aiurt.modules.stock.entity;
 
 import com.aiurt.common.aspect.annotation.Dict;
 import com.aiurt.modules.basic.entity.DictEntity;
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableLogic;
-import com.baomidou.mybatisplus.annotation.TableName;
+import com.baomidou.mybatisplus.annotation.*;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
@@ -56,6 +53,12 @@ public class StockSubmitMaterials extends DictEntity {
 	@ApiModelProperty(value = "参考单价")
 	private  String  price;
 
+	/**单位*/
+	@Excel(name = "单位", width = 15)
+	@ApiModelProperty(value = " 单位")
+	@Dict(dicCode = "materian_unit")
+	private  String  unit;
+
 	/**参考总价*/
 	@Excel(name = "参考总价")
     @ApiModelProperty(value = "参考总价")
@@ -85,4 +88,40 @@ public class StockSubmitMaterials extends DictEntity {
 	@ApiModelProperty(value = "删除状态 0-未删除 1-已删除")
 	@TableLogic
 	private  Integer  delFlag;
+
+	/**类型*/
+	@Excel(name = "类型", width = 15)
+	@ApiModelProperty(value = "类型")
+	@Dict(dicCode = "material_type")
+	@TableField(exist = false)
+	private  Integer  type;
+
+	/**名称*/
+	@Excel(name = "物资名称", width = 15)
+	@ApiModelProperty(value = "物资名称")
+	@TableField(exist = false)
+	private  String  name;
+
+	@Excel(name = "物资分类", width = 15)
+	@ApiModelProperty(value = "物资分类")
+	@TableField(exist = false)
+	private  String  baseTypeCodeCc;
+	@Excel(name = "物资分类分级翻译", width = 15)
+	@ApiModelProperty(value = "物资分类分级翻译")
+	@TableField(exist = false)
+	private  String  baseTypeCodeCcName;
+
+	/**专业编码*/
+	@Excel(name = "专业编码", width = 15)
+	@ApiModelProperty(value = "专业编码")
+	@Dict(dictTable ="cs_major",dicText = "major_name",dicCode = "major_code")
+	@TableField(exist = false)
+	private  String  majorCode;
+
+	/**子系统编号*/
+	@Excel(name = "子系统编码", width = 15)
+	@ApiModelProperty(value = "子系统编号")
+	@Dict(dictTable ="cs_subsystem",dicText = "system_name",dicCode = "system_code")
+	@TableField(exist = false)
+	private  String  systemCode;
 }

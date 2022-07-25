@@ -14,6 +14,7 @@ import lombok.experimental.Accessors;
 import org.jeecgframework.poi.excel.annotation.Excel;
 import org.springframework.format.annotation.DateTimeFormat;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -43,13 +44,13 @@ public class StockSubmitPlan extends DictEntity {
 	/**年份*/
 	@Excel(name = "年份")
 	@ApiModelProperty(value = "年份")
-	private  String  year;
+	private Integer  year;
 
 	/**提报类型*/
 	@Excel(name = "提报类型")
 	@ApiModelProperty(value = "提报类型")
 	@Dict(dicCode = "stock_submit_plan_submit_type")
-	private  Integer  submitType;
+	private  String  submitType;
 
 	/**提报部门ID*/
 	@Excel(name = "提报部门ID")
@@ -73,7 +74,7 @@ public class StockSubmitPlan extends DictEntity {
 	@Excel(name = "提报计划状态")
 	@ApiModelProperty(value = "提报计划状态：1待提交、2已提交")
 	@Dict(dicCode = "stock_submit_plan_status")
-	private  Integer  status;
+	private  String  status;
 
 	/**创建人*/
     @ApiModelProperty(value = "创建人")

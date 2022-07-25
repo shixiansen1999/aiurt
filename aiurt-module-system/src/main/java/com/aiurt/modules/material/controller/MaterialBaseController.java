@@ -29,6 +29,7 @@ import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.query.QueryGenerator;
 import org.jeecgframework.poi.excel.entity.ImportParams;
 import org.jeecg.common.system.query.QueryGenerator;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -61,9 +62,6 @@ public class MaterialBaseController {
     private IMaterialBaseService iMaterialBaseService;
 
     @Autowired
-    private IMaterialBaseTypeService iMaterialBaseTypeService;
-
-    @Autowired
     private IDeviceComposeService iDeviceComposeService;
 
     @Autowired
@@ -88,6 +86,7 @@ public class MaterialBaseController {
                                                          @RequestParam(name = "baseTypeCode", required = false) String baseTypeCode,
                                                          @RequestParam(name = "code", required = false) String code,
                                                          @RequestParam(name = "name", required = false) String name,
+                                                         @RequestParam(name = "type", required = false) String type,
                                                          HttpServletRequest req) {
         Result<IPage<MaterialBase>> result = new Result<IPage<MaterialBase>>();
         QueryWrapper<MaterialBase> queryWrapper = new QueryWrapper<>();
@@ -106,12 +105,22 @@ public class MaterialBaseController {
         if(name != null && !"".equals(name)){
             queryWrapper.like("name", name);
         }
+        if(type != null && !"".equals(type)){
+            queryWrapper.eq("type", type);
+        }
         if(baseTypeCode != null && !"".equals(baseTypeCode)){
             queryWrapper.apply(" FIND_IN_SET ( '"+baseTypeCode+"' , REPLACE(base_type_code_cc,'/',',')) ");
         }
         queryWrapper.orderByDesc("create_time");
         Page<MaterialBase> page = new Page<MaterialBase>(pageNo, pageSize);
         IPage<MaterialBase> pageList = iMaterialBaseService.page(page, queryWrapper);
+        List<MaterialBase> records = pageList.getRecords();
+        if(records != null && records.size()>0){
+            for(MaterialBase materialBase1 : records){
+                MaterialBase translate = iMaterialBaseService.translate(materialBase1);
+                BeanUtils.copyProperties(translate, materialBase1);
+            }
+        }
         result.setSuccess(true);
         result.setResult(pageList);
         return result;
@@ -148,6 +157,7 @@ public class MaterialBaseController {
                                      @RequestParam(name = "baseTypeCode", required = false) String baseTypeCode,
                                      @RequestParam(name = "code", required = false) String code,
                                      @RequestParam(name = "name", required = false) String name,
+                                     @RequestParam(name = "type", required = false) String type,
                                      HttpServletRequest req) {
         QueryWrapper<MaterialBase> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("del_flag", CommonConstant.DEL_FLAG_0);
@@ -165,6 +175,9 @@ public class MaterialBaseController {
         }
         if(name != null && !"".equals(name)){
             queryWrapper.like("name", name);
+        }
+        if(type != null && !"".equals(type)){
+            queryWrapper.eq("type", type);
         }
         queryWrapper.orderByDesc("create_time");
         List<MaterialBase> pageList = iMaterialBaseService.list(queryWrapper);

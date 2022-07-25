@@ -3,6 +3,7 @@ package com.aiurt.modules.stock.controller;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.exception.AiurtBootException;
+import com.aiurt.modules.stock.entity.StockLevel2Info;
 import com.aiurt.modules.stock.entity.StockSubmitMaterials;
 import com.aiurt.modules.stock.entity.StockSubmitPlan;
 import com.aiurt.modules.stock.service.IStockSubmitMaterialsService;
@@ -15,13 +16,25 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.system.query.QueryGenerator;
+import org.jeecgframework.poi.excel.entity.ImportParams;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.multipart.MultipartHttpServletRequest;
+import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.BufferedOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.text.ParseException;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @Description: 物资提报计划
@@ -37,8 +50,6 @@ public class StockSubmitPlanController {
 
     @Autowired
     private IStockSubmitPlanService iStockSubmitPlanService;
-    @Autowired
-    private IStockSubmitMaterialsService stockSubmitMaterialsService;
 
     /**
      * 分页列表查询
@@ -56,15 +67,22 @@ public class StockSubmitPlanController {
                                                          @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize,
                                                          HttpServletRequest req) {
         Result<IPage<StockSubmitPlan>> result = new Result<IPage<StockSubmitPlan>>();
-        QueryWrapper<StockSubmitPlan> queryWrapper = new QueryWrapper<>();
+        QueryWrapper<StockSubmitPlan> queryWrapper = QueryGenerator.initQueryWrapper(stockSubmitPlan, req.getParameterMap());
         queryWrapper.eq("del_flag", CommonConstant.DEL_FLAG_0);
-        String code = stockSubmitPlan.getCode();
         queryWrapper.orderByDesc("create_time");
         Page<StockSubmitPlan> page = new Page<StockSubmitPlan>(pageNo, pageSize);
         IPage<StockSubmitPlan> pageList = iStockSubmitPlanService.page(page, queryWrapper);
         result.setSuccess(true);
         result.setResult(pageList);
         return result;
+    }
+
+    @AutoLog(value = "物资提报计划-获取已有数据的部门下拉")
+    @ApiOperation(value = "物资提报计划-获取已有数据的部门下拉", notes = "物资提报计划-获取已有数据的部门下拉")
+    @GetMapping(value = "/getOrgSelect")
+    public Result<?> getOrgSelect(HttpServletRequest req) {
+        List<Map<String, Object>> listres = iStockSubmitPlanService.getOrgSelect();
+        return Result.OK(listres);
     }
 
     @AutoLog(value = "物资提报计划-添加")
@@ -89,7 +107,7 @@ public class StockSubmitPlanController {
      */
     @ApiOperation(value = "修改提报计划状态", notes = "修改提报计划状态")
     @GetMapping(value = "/submitPlanStatus")
-    public Result<String> submitPlan(@RequestParam(name = "status", required = true) Integer status,
+    public Result<String> submitPlan(@RequestParam(name = "status", required = true) String status,
                                      @RequestParam(name = "code", required = true) String code) {
         StockSubmitPlan stockSubmitPlan = iStockSubmitPlanService.getOne(new QueryWrapper<StockSubmitPlan>().eq("code",code));
         stockSubmitPlan.setStatus(status);
@@ -108,7 +126,7 @@ public class StockSubmitPlanController {
      */
     @ApiOperation(value = "新增获取提报计划编号", notes = "新增获取提报计划编号")
     @GetMapping(value = "/getSubmitPlanCode")
-    public Result<StockSubmitPlan> getSubmitPlanCode() {
+    public Result<StockSubmitPlan> getSubmitPlanCode() throws ParseException {
         return Result.ok(iStockSubmitPlanService.getSubmitPlanCode());
     }
 
@@ -121,11 +139,6 @@ public class StockSubmitPlanController {
     @GetMapping(value = "/queryById")
     public Result<StockSubmitPlan> queryById(@RequestParam(name = "id", required = true) String id) {
         StockSubmitPlan stockSubmitPlan = iStockSubmitPlanService.getById(id);
-//        String code = stockSubmitPlan.getCode();
-//        QueryWrapper<StockSubmitMaterials> queryWrapper = new QueryWrapper<StockSubmitMaterials>();
-//        queryWrapper.eq("submit_plan_code",code).orderByDesc("create_time");
-//        List<StockSubmitMaterials> stockSubmitMaterials = stockSubmitMaterialsService.list(queryWrapper);
-//        stockSubmitPlan.setStockSubmitMaterialsList(stockSubmitMaterials);
         return Result.ok(stockSubmitPlan);
     }
 
@@ -177,5 +190,64 @@ public class StockSubmitPlanController {
             result.success("删除成功!");
         }
         return result;
+    }
+
+    @AutoLog(value = "导出")
+    @ApiOperation(value = "导出", notes = "导出")
+    @GetMapping(value = "/export")
+    public void eqFaultAnaExport(@RequestParam(name = "ids", defaultValue = "") String ids,
+                                         HttpServletRequest request,
+                                         HttpServletResponse response) {
+        iStockSubmitPlanService.eqExport(ids, request, response);
+    }
+
+    /**
+     * 通过excel导入数据
+     * @param request
+     * @param response
+     * @return
+     */
+    @AutoLog(value = "物资提报计划-导入")
+    @ApiOperation(value = "物资提报计划-导入", notes = "物资提报计划-导入")
+    @RequestMapping(value = "/importExcel", method = RequestMethod.POST)
+    public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) {
+        MultipartHttpServletRequest multipartRequest = (MultipartHttpServletRequest) request;
+        Map<String, MultipartFile> fileMap = multipartRequest.getFileMap();
+        for (Map.Entry<String, MultipartFile> entity : fileMap.entrySet()) {
+            // 获取上传文件对象
+            MultipartFile file = entity.getValue();
+            ImportParams params = new ImportParams();
+            params.setTitleRows(1);
+            params.setHeadRows(1);
+            params.setNeedSave(true);
+            try {
+                return iStockSubmitPlanService.importExcel(file, params);
+            } catch (Exception e) {
+                log.error(e.getMessage(), e);
+                return Result.error("文件导入失败:" + e.getMessage());
+            } finally {
+                try {
+                    file.getInputStream().close();
+                } catch (IOException e) {
+                    log.error(e.getMessage(), e);
+                }
+            }
+        }
+        return Result.error("文件导入失败！");
+    }
+
+    @AutoLog(value = "下载物资导入模板")
+    @ApiOperation(value = "下载物资导入模板", notes = "下载物资导入模板")
+    @RequestMapping(value = "/downloadExcel", method = RequestMethod.GET)
+    public void downloadExcel(HttpServletResponse response, HttpServletRequest request) throws IOException {
+        ClassPathResource classPathResource =  new ClassPathResource("templates/tbjh.xlsx");
+        InputStream bis = classPathResource.getInputStream();
+        BufferedOutputStream out = new BufferedOutputStream(response.getOutputStream());
+        int len = 0;
+        while ((len = bis.read()) != -1) {
+            out.write(len);
+            out.flush();
+        }
+        out.close();
     }
 }

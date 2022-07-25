@@ -7,8 +7,12 @@ import com.aiurt.modules.device.entity.DeviceAssembly;
 import com.aiurt.modules.device.entity.DeviceCompose;
 import com.aiurt.modules.device.service.IDeviceAssemblyService;
 import com.aiurt.modules.device.service.IDeviceComposeService;
+import com.aiurt.modules.stock.entity.StockInOrderLevel2;
+import com.aiurt.modules.stock.entity.StockLevel2;
 import com.aiurt.modules.stock.entity.StockLevel2Info;
+import com.aiurt.modules.stock.service.IStockInOrderLevel2Service;
 import com.aiurt.modules.stock.service.IStockLevel2InfoService;
+import com.aiurt.modules.stock.service.IStockLevel2Service;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -17,6 +21,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.system.query.QueryGenerator;
 import org.jeecgframework.poi.excel.entity.ImportParams;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
@@ -48,6 +53,10 @@ public class StockLevel2InfoController {
 
     @Autowired
     private IStockLevel2InfoService iStockLevel2InfoService;
+    @Autowired
+    private IStockInOrderLevel2Service iStockInOrderLevel2Service;
+    @Autowired
+    private IStockLevel2Service iStockLevel2Service;
 
     /**
      * 分页列表查询
@@ -65,7 +74,7 @@ public class StockLevel2InfoController {
                                                          @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize,
                                                          HttpServletRequest req) {
         Result<IPage<StockLevel2Info>> result = new Result<IPage<StockLevel2Info>>();
-        QueryWrapper<StockLevel2Info> queryWrapper = new QueryWrapper<>();
+        QueryWrapper<StockLevel2Info> queryWrapper = QueryGenerator.initQueryWrapper(stockLevel2Info, req.getParameterMap());
         queryWrapper.eq("del_flag", CommonConstant.DEL_FLAG_0);
         queryWrapper.orderByDesc("create_time");
         Page<StockLevel2Info> page = new Page<StockLevel2Info>(pageNo, pageSize);
@@ -95,6 +104,7 @@ public class StockLevel2InfoController {
             queryWrapper.like("status",stockLevel2Info.getStatus());
         }
         queryWrapper.eq("del_flag", CommonConstant.DEL_FLAG_0);
+        queryWrapper.eq("status", CommonConstant.STOCK_LEVEL2_STATUS_1);
         queryWrapper.orderByDesc("create_time");
         List<StockLevel2Info> stockLevel2Infos = iStockLevel2InfoService.list(queryWrapper);
         result.setSuccess(true);
@@ -162,8 +172,16 @@ public class StockLevel2InfoController {
         try {
             StockLevel2Info stockLevel2Info = iStockLevel2InfoService.getById(id);
             String code = stockLevel2Info.getWarehouseCode();
-            //是否有对应的设备类型在使用该二级库
-            //是否有对应的设备组件在使用该二级库
+            //是否有对应的二级库入库在使用该二级库
+            List<StockInOrderLevel2> stockInOrderLevel2 = iStockInOrderLevel2Service.list(new QueryWrapper<StockInOrderLevel2>().eq("warehouse_code",code).eq("del_flag", CommonConstant.DEL_FLAG_0));
+            if(stockInOrderLevel2 != null && stockInOrderLevel2.size()>0){
+                return Result.error("该二级库正在使用中，无法删除");
+            }
+            //是否有对应的二级库库存在使用该二级库
+            List<StockLevel2> stockLevel2s = iStockLevel2Service.list(new QueryWrapper<StockLevel2>().eq("warehouse_code",code).eq("del_flag", CommonConstant.DEL_FLAG_0));
+            if(stockLevel2s != null && stockLevel2s.size()>0){
+                return Result.error("该二级库正在使用中，无法删除");
+            }
             iStockLevel2InfoService.removeById(stockLevel2Info);
         } catch (Exception e) {
             log.error("删除失败", e.getMessage());
@@ -185,13 +203,13 @@ public class StockLevel2InfoController {
             for(String id : strings){
                 StockLevel2Info stockLevel2Info = iStockLevel2InfoService.getById(id);
                 String code = stockLevel2Info.getWarehouseCode();
-                //是否有对应的设备组件在使用该二级库
-                //是否有对应的设备类型在使用该二级库
-//                if((deviceComposeList != null && deviceComposeList.size()>0) || (deviceAssemblyList != null && deviceAssemblyList.size()>0)){
-//                    res += stockLevel2Info.getCode() + ",";
-//                }else{
-//                    iStockLevel2InfoService.removeById(stockLevel2Info);
-//                }
+                List<StockInOrderLevel2> stockInOrderLevel2 = iStockInOrderLevel2Service.list(new QueryWrapper<StockInOrderLevel2>().eq("warehouse_code",code).eq("del_flag", CommonConstant.DEL_FLAG_0));
+                List<StockLevel2> stockLevel2s = iStockLevel2Service.list(new QueryWrapper<StockLevel2>().eq("warehouse_code",code).eq("del_flag", CommonConstant.DEL_FLAG_0));
+                if((stockInOrderLevel2 != null && stockInOrderLevel2.size()>0) || (stockLevel2s != null && stockLevel2s.size()>0)){
+                    res += stockLevel2Info.getWarehouseCode() + ",";
+                }else{
+                    iStockLevel2InfoService.removeById(stockLevel2Info);
+                }
             }
             if(res.contains(",")){
                 res = res.substring(0,res.length()-1);

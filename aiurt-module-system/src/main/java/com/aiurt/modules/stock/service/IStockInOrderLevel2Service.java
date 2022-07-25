@@ -3,6 +3,10 @@ package com.aiurt.modules.stock.service;
 import com.aiurt.modules.stock.entity.StockInOrderLevel2;
 import com.baomidou.mybatisplus.extension.service.IService;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.text.ParseException;
+
 /**
  * @Description:
  * @Author: swsc
@@ -14,7 +18,7 @@ public interface IStockInOrderLevel2Service extends IService<StockInOrderLevel2>
      * 新增获取入库编号
      * @return
      */
-    StockInOrderLevel2 getSubmitPlanCode();
+    StockInOrderLevel2 getInOrderCode() throws ParseException;
 
     /**
      * 二级库入库管理-添加
@@ -35,5 +39,13 @@ public interface IStockInOrderLevel2Service extends IService<StockInOrderLevel2>
      * @param code
      * @return
      */
-    boolean submitPlan(Integer status,String code);
+    boolean submitPlan(String status,String code);
+
+    /**
+     * 导出
+     * @param ids
+     * @param request
+     * @param response
+     */
+    void eqExport(String ids, HttpServletRequest request, HttpServletResponse response);
 }

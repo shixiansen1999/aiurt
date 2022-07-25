@@ -61,7 +61,7 @@ public class StockLevel2Controller {
     @ApiOperation(value = "二级库库存管理详情查询", notes = "二级库库存管理详情查询")
     @GetMapping(value = "/queryById")
     public Result<StockLevel2> queryById(@RequestParam(name = "id", required = true) String id) {
-        StockLevel2 stockLevel2 = iStockLevel2Service.getById(id);
+        StockLevel2 stockLevel2 = iStockLevel2Service.getDetailById(id);
         return Result.ok(stockLevel2);
     }
 

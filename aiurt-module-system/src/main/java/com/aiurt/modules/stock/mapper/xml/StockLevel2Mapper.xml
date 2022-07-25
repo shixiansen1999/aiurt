@@ -6,23 +6,34 @@
         select sl.*,mb.`name` materialName, sli.organization_id, mb.unit
         from stock_level2 sl
         left join material_base mb on sl.material_code=mb.code
-        left join material_base_type mbt on sl.base_type_code = mbt.type_code_cc
         left join stock_level2_info sli on sl.warehouse_code = sli.warehouse_code
         LEFT JOIN sys_dict as dict1 ON dict1.dict_code = 'cs_major'
 		LEFT JOIN sys_dict_item as d1 ON d1.item_value = sl.major_code AND dict1.id = d1.dict_id
         LEFT JOIN sys_dict as dict2 ON dict2.dict_code = 'cs_subsystem'
 		LEFT JOIN sys_dict_item as d2 ON d2.item_value = sl.system_code AND dict2.id = d2.dict_id
-        LEFT JOIN sys_dict as dict3 ON dict3.dict_code = 'material_base_type'
-		LEFT JOIN sys_dict_item as d3 ON d3.item_value = sl.base_type_code AND dict3.id = d3.dict_id
 		<where>
+		    and sl.del_flag = 0
             <if test="condition.selectMaterialType != null and condition.selectMaterialType != ''">
-                and (d1.item_text like concat('%', #{condition.selectMaterialType}, '%'))
-                    or d2.item_text like concat('%', #{condition.selectMaterialType}, '%'))
-                    or find_in_set((select base_type_code from material_base_type where base_type_name like concat('%', #{condition.selectMaterialType}, '%'))),sl.base_type_code)
-                    )
+                and (d1.item_text like concat('%', #{condition.selectMaterialType}, '%')
+                    or d2.item_text like concat('%', #{condition.selectMaterialType}, '%')
+                    or CONCAT(',',REPLACE(sl.base_type_code,'/',','),',') REGEXP CONCAT(',(',replace((select GROUP_CONCAT(base_type_code)
+                            from (select base_type_code from material_base_type where base_type_name like concat('%', #{condition.selectMaterialType}, '%')) t),',','|'),'),')
+                )
+            </if>
+            <if test="condition.majorCode != null and condition.majorCode != ''">
+                and sl.major_code = #{condition.majorCode}
+            </if>
+            <if test="condition.systemCode != null and condition.systemCode != ''">
+                and sl.system_code = #{condition.systemCode}
+            </if>
+            <if test="condition.baseType != null and condition.baseType != ''">
+                and mb.base_type_code = #{condition.baseType}
             </if>
             <if test="condition.materialCode != null and condition.materialCode != ''">
                 and sl.material_code like concat('%', #{condition.materialCode}, '%'))
+            </if>
+            <if test="condition.organizationId != null and condition.organizationId != ''">
+                and sl.organization_id = #{condition.organizationId}
             </if>
             <if test="condition.materialName != null and condition.materialName != ''">
                 and mb.`name` like concat('%', #{condition.materialName}, '%'))
@@ -34,6 +45,13 @@
                 and sl.warehouse_code = #{condition.warehouseCode}
             </if>
         </where>
+        order by sl.create_time desc
+    </select>
+
+    <select id="getDetailById" resultType="com.aiurt.modules.stock.entity.StockLevel2">
+        select sl.*,mb.`name` materialName, mb.unit, mb.specifications, mb.price, mb.manufactor_code
+        from stock_level2 sl
+        left join material_base mb on sl.material_code=mb.
     </select>
     
 </mapper>

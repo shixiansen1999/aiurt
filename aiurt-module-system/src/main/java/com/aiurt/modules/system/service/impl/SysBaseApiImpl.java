@@ -1342,6 +1342,10 @@ public class SysBaseApiImpl implements ISysBaseAPI {
         return csUserSubsystemMapper.getSubsystemByUserId(id);
     }
 
+    public List<SysUser> getOrgUsersByOrgid(String orgId) {
+        return userMapper.selectList(new QueryWrapper<SysUser>().eq("org_id",orgId));
+    }
+
     @Override
     public List<String> getUserListByName(String realName) {
         return userMapper.getUserListByName(realName);

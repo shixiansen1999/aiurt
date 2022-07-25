@@ -17,7 +17,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 import java.util.List;
 
 /**
- * @Description: 二级库入库单信息表
+ * @Description: 二级库盘点任务表
  * @Author: swsc
  * @Date:   2021-09-15
  * @Version: V1.0
@@ -26,8 +26,8 @@ import java.util.List;
 @TableName("stock_in_order_level2")
 @EqualsAndHashCode(callSuper = false)
 @Accessors(chain = true)
-@ApiModel(value="二级库入库单信息表", description="二级库入库单信息表")
-public class StockInOrderLevel2 extends DictEntity {
+@ApiModel(value="二级库盘点任务表", description="二级库盘点任务表")
+public class StockLevel2Check extends DictEntity {
 
 	/**主键id*/
 	@TableId(type= IdType.ASSIGN_ID)
@@ -35,10 +35,10 @@ public class StockInOrderLevel2 extends DictEntity {
 	@JsonSerialize(using = ToStringSerializer.class)
 	private  String  id;
 
-	/**入库单号*/
-	@Excel(name = "入库单号")
-	@ApiModelProperty(value = "入库单号")
-	private  String  orderCode;
+	/**盘点任务单号*/
+	@Excel(name = "盘点任务单号")
+	@ApiModelProperty(value = "盘点任务单号")
+	private  String  stockCheckCode;
 
 	/**年份*/
 	@Excel(name = "仓库编号")
@@ -50,28 +50,65 @@ public class StockInOrderLevel2 extends DictEntity {
 	@TableField(exist = false)
 	private  String  warehouseName;
 
-	/**入库时间 CURRENT_TIMESTAMP*/
+
+	/**计划开始时间开始 CURRENT_TIMESTAMP*/
 	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm")
 	@DateTimeFormat(pattern="yyyy-MM-dd HH:mm")
-	@ApiModelProperty(value = "入库时间")
-	private  java.util.Date  entryTime;
+	@ApiModelProperty(value = "计划开始时间开始")
+	private  java.util.Date  planStartTimeStart;
 
-	/**入库操作用户ID*/
-	@Excel(name = "入库操作用户ID")
-	@ApiModelProperty(value = "入库操作用户ID")
+
+	/**计划开始时间结束 CURRENT_TIMESTAMP*/
+	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm")
+	@DateTimeFormat(pattern="yyyy-MM-dd HH:mm")
+	@ApiModelProperty(value = "计划开始时间结束")
+	private  java.util.Date  planStartTimeEnd;
+
+	/**计划开始时间 CURRENT_TIMESTAMP*/
+	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm")
+	@DateTimeFormat(pattern="yyyy-MM-dd HH:mm")
+	@ApiModelProperty(value = "计划开始时间")
+	private  java.util.Date  planStartTime;
+
+	/**计划结束时间 CURRENT_TIMESTAMP*/
+	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm")
+	@DateTimeFormat(pattern="yyyy-MM-dd HH:mm")
+	@ApiModelProperty(value = "计划结束时间")
+	private  java.util.Date  planEndTime;
+
+	/**盘点开始时间 CURRENT_TIMESTAMP*/
+	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm")
+	@DateTimeFormat(pattern="yyyy-MM-dd HH:mm")
+	@ApiModelProperty(value = "盘点开始时间")
+	private  java.util.Date  checkStartTime;
+
+	/**盘点结束时间 CURRENT_TIMESTAMP*/
+	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm")
+	@DateTimeFormat(pattern="yyyy-MM-dd HH:mm")
+	@ApiModelProperty(value = "盘点结束时间")
+	private  java.util.Date  checkEndTime;
+
+	/**盘点数量*/
+	@Excel(name = "盘点数量")
+	@ApiModelProperty(value = "盘点数量")
+	private  Integer  checkNum;
+
+	/**盘点人id*/
+	@Excel(name = "盘点人id")
+	@ApiModelProperty(value = "盘点人id")
 	@Dict(dictTable ="sys_user",dicText = "realname",dicCode = "id")
-	private  String  userId;
-
-	/**入库单状态：1待提交、2待确认、3已确认*/
-	@Excel(name = "入库单状态")
-	@ApiModelProperty(value = "入库单状态：1待提交、2待确认、3已确认")
-	@Dict(dicCode = "stock_in_order_level2_status")
-	private  String  status;
+	private  String  checkerId;
 
 	/**备注*/
 	@Excel(name = "备注")
 	@ApiModelProperty(value = "备注")
 	private  String  note;
+
+	/**盘点任务状态：1待提交、2待确认、3已确认*/
+	@Excel(name = "盘点任务状态")
+	@ApiModelProperty(value = "盘点任务状态：1待提交、2待确认、3已确认")
+	@Dict(dicCode = "stock_in_order_level2_status")
+	private  String  status;
 
 	/**创建人*/
     @ApiModelProperty(value = "创建人")
@@ -100,5 +137,5 @@ public class StockInOrderLevel2 extends DictEntity {
 
 	@ApiModelProperty(value = "提报物资列表")
 	@TableField(exist = false)
-	private List<StockIncomingMaterials> stockIncomingMaterialsList;
+	private List<StockLevel2CheckDetail> stockLevel2CheckDetailList;
 }

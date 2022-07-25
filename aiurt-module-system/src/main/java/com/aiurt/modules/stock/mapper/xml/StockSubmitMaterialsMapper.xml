@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.aiurt.modules.stock.mapper.StockSubmitMaterialsMapper">
+    
+    <select id="pageList" resultType="com.aiurt.modules.stock.entity.StockSubmitMaterials">
+        select ssm.*,mb.major_code, mb.system_code, mb.base_type_code_cc, mb.`name`, mb.`type`
+        from stock_submit_materials ssm
+        left join material_base mb on ssm.materials_code=mb.code
+        <where>
+            and ssm.del_flag = 0
+            <if test="condition.submitPlanCode != null and condition.submitPlanCode != ''">
+                and ssm.submit_plan_code = #{condition.submitPlanCode}
+            </if>
+        </where>
+        order by create_time desc
+    </select>
+
+</mapper>

@@ -443,6 +443,15 @@ public interface CommonConstant {
    public static final Integer MATERIAL_BASE_TYPE_STATUS_1 = 1;
    public static final Integer MATERIAL_BASE_TYPE_STATUS_0 = 0;
  /**
+  * 二级库状态
+  */
+ public static final Integer STOCK_LEVEL2_STATUS_1 = 1;
+ public static final Integer STOCK_LEVEL2_STATUS_0 = 0;
+ /**
+  * 二级库提报默认状态待提交1
+  */
+ public static final String STOCK_LEVEL2_SUBMIT_PLAN_1 = "1";
+ /**
   * 超级管理员角色编码
   */
  public static final String ADMIN = "admin";

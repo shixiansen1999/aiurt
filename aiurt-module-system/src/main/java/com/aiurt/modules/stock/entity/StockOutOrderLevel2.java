@@ -17,17 +17,17 @@ import org.springframework.format.annotation.DateTimeFormat;
 import java.util.List;
 
 /**
- * @Description: 二级库入库单信息表
+ * @Description: 二级库出库单信息表
  * @Author: swsc
  * @Date:   2021-09-15
  * @Version: V1.0
  */
 @Data
-@TableName("stock_in_order_level2")
+@TableName("stock_out_order_level2")
 @EqualsAndHashCode(callSuper = false)
 @Accessors(chain = true)
-@ApiModel(value="二级库入库单信息表", description="二级库入库单信息表")
-public class StockInOrderLevel2 extends DictEntity {
+@ApiModel(value="二级库出库单信息表", description="二级库出库单信息表")
+public class StockOutOrderLevel2 extends DictEntity {
 
 	/**主键id*/
 	@TableId(type= IdType.ASSIGN_ID)
@@ -35,9 +35,9 @@ public class StockInOrderLevel2 extends DictEntity {
 	@JsonSerialize(using = ToStringSerializer.class)
 	private  String  id;
 
-	/**入库单号*/
-	@Excel(name = "入库单号")
-	@ApiModelProperty(value = "入库单号")
+	/**出库单号*/
+	@Excel(name = "出库单号")
+	@ApiModelProperty(value = "出库单号")
 	private  String  orderCode;
 
 	/**年份*/
@@ -50,28 +50,29 @@ public class StockInOrderLevel2 extends DictEntity {
 	@TableField(exist = false)
 	private  String  warehouseName;
 
-	/**入库时间 CURRENT_TIMESTAMP*/
+	/**出库时间 CURRENT_TIMESTAMP*/
 	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm")
 	@DateTimeFormat(pattern="yyyy-MM-dd HH:mm")
-	@ApiModelProperty(value = "入库时间")
-	private  java.util.Date  entryTime;
+	@ApiModelProperty(value = "出库时间")
+	private  java.util.Date  outTime;
 
-	/**入库操作用户ID*/
-	@Excel(name = "入库操作用户ID")
-	@ApiModelProperty(value = "入库操作用户ID")
+	/**出库操作用户ID*/
+	@Excel(name = "出库操作用户ID")
+	@ApiModelProperty(value = "出库操作用户ID")
 	@Dict(dictTable ="sys_user",dicText = "realname",dicCode = "id")
 	private  String  userId;
 
-	/**入库单状态：1待提交、2待确认、3已确认*/
-	@Excel(name = "入库单状态")
-	@ApiModelProperty(value = "入库单状态：1待提交、2待确认、3已确认")
-	@Dict(dicCode = "stock_in_order_level2_status")
-	private  String  status;
+	/**保管人id*/
+	@Excel(name = "保管人id")
+	@ApiModelProperty(value = "保管人id")
+	@Dict(dictTable ="sys_user",dicText = "realname",dicCode = "id")
+	private  String  custodialId;
 
-	/**备注*/
-	@Excel(name = "备注")
-	@ApiModelProperty(value = "备注")
-	private  String  note;
+	/**保管仓库编号*/
+	@Excel(name = "保管仓库编号")
+	@ApiModelProperty(value = "保管仓库编号")
+	@Dict(dictTable ="stock_level2_info",dicText = "warehouse_name",dicCode = "warehouse_code")
+	private  String  custodialWarehouseCode;
 
 	/**创建人*/
     @ApiModelProperty(value = "创建人")

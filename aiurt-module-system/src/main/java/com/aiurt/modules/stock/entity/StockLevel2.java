@@ -137,4 +137,9 @@ public class StockLevel2 extends DictEntity {
 	@Dict(dicCode = "materian_unit")
 	@TableField(exist = false)
 	private  String  unit;
+
+	/**分类无层级*/
+	@ApiModelProperty(value = " 分类无层级")
+	@TableField(exist = false)
+	private  String  baseType;
 }

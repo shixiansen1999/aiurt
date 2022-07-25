@@ -3,6 +3,7 @@ package com.aiurt.modules.stock.controller;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.exception.AiurtBootException;
+import com.aiurt.modules.stock.entity.StockLevel2;
 import com.aiurt.modules.stock.entity.StockSubmitMaterials;
 import com.aiurt.modules.stock.entity.StockSubmitMaterials;
 import com.aiurt.modules.stock.service.IStockSubmitMaterialsService;
@@ -35,8 +36,6 @@ public class StockSubmitMaterialsController {
 
     @Autowired
     private IStockSubmitMaterialsService iStockSubmitMaterialsService;
-    @Autowired
-    private IStockSubmitMaterialsService stockSubmitMaterialsService;
 
     /**
      * 分页列表查询
@@ -53,18 +52,8 @@ public class StockSubmitMaterialsController {
                                                          @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
                                                          @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize,
                                                          HttpServletRequest req) {
-        Result<IPage<StockSubmitMaterials>> result = new Result<IPage<StockSubmitMaterials>>();
-        QueryWrapper<StockSubmitMaterials> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("del_flag", CommonConstant.DEL_FLAG_0);
-        String submitPlanCode = stockSubmitMaterials==null?"":stockSubmitMaterials.getSubmitPlanCode();
-        if(submitPlanCode != null && !"".equals(submitPlanCode)){
-            queryWrapper.eq("submit_plan_code",submitPlanCode);
-        }
-        queryWrapper.orderByDesc("create_time");
         Page<StockSubmitMaterials> page = new Page<StockSubmitMaterials>(pageNo, pageSize);
-        IPage<StockSubmitMaterials> pageList = iStockSubmitMaterialsService.page(page, queryWrapper);
-        result.setSuccess(true);
-        result.setResult(pageList);
-        return result;
+        IPage<StockSubmitMaterials> pageList = iStockSubmitMaterialsService.pageList(page,stockSubmitMaterials);
+        return Result.OK(pageList);
     }
 }

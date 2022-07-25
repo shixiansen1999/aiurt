@@ -17,17 +17,17 @@ import org.springframework.format.annotation.DateTimeFormat;
 import java.util.List;
 
 /**
- * @Description: 二级库入库单信息表
+ * @Description: 二级库盘点任务单详情
  * @Author: swsc
  * @Date:   2021-09-15
  * @Version: V1.0
  */
 @Data
-@TableName("stock_in_order_level2")
+@TableName("stock_level2_check_detail")
 @EqualsAndHashCode(callSuper = false)
 @Accessors(chain = true)
-@ApiModel(value="二级库入库单信息表", description="二级库入库单信息表")
-public class StockInOrderLevel2 extends DictEntity {
+@ApiModel(value="二级库盘点任务单详情", description="二级库盘点任务单详情")
+public class StockLevel2CheckDetail extends DictEntity {
 
 	/**主键id*/
 	@TableId(type= IdType.ASSIGN_ID)
@@ -35,12 +35,12 @@ public class StockInOrderLevel2 extends DictEntity {
 	@JsonSerialize(using = ToStringSerializer.class)
 	private  String  id;
 
-	/**入库单号*/
-	@Excel(name = "入库单号")
-	@ApiModelProperty(value = "入库单号")
-	private  String  orderCode;
+	/**盘点任务单号*/
+	@Excel(name = "盘点任务单号")
+	@ApiModelProperty(value = "盘点任务单号")
+	private  String  stockCheckCode;
 
-	/**年份*/
+	/**仓库编号*/
 	@Excel(name = "仓库编号")
 	@ApiModelProperty(value = "仓库编号")
 	@Dict(dictTable ="stock_level2_info",dicText = "warehouse_name",dicCode = "warehouse_code")
@@ -50,23 +50,35 @@ public class StockInOrderLevel2 extends DictEntity {
 	@TableField(exist = false)
 	private  String  warehouseName;
 
-	/**入库时间 CURRENT_TIMESTAMP*/
-	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm")
-	@DateTimeFormat(pattern="yyyy-MM-dd HH:mm")
-	@ApiModelProperty(value = "入库时间")
-	private  java.util.Date  entryTime;
+	/**物资编号*/
+	@Excel(name = "物资编号")
+	@ApiModelProperty(value = "物资编号")
+	private  String  materialCode;
 
-	/**入库操作用户ID*/
-	@Excel(name = "入库操作用户ID")
-	@ApiModelProperty(value = "入库操作用户ID")
-	@Dict(dictTable ="sys_user",dicText = "realname",dicCode = "id")
-	private  String  userId;
+	/**实盘数量*/
+	@Excel(name = "实盘数量")
+	@ApiModelProperty(value = "实盘数量")
+	private  Integer  actualNum;
 
-	/**入库单状态：1待提交、2待确认、3已确认*/
-	@Excel(name = "入库单状态")
-	@ApiModelProperty(value = "入库单状态：1待提交、2待确认、3已确认")
-	@Dict(dicCode = "stock_in_order_level2_status")
-	private  String  status;
+	/**盘盈数量*/
+	@Excel(name = "盘盈数量")
+	@ApiModelProperty(value = "盘盈数量")
+	private  Integer  profitNum;
+
+	/**盘亏数量*/
+	@Excel(name = "盘亏数量")
+	@ApiModelProperty(value = "盘亏数量")
+	private  String  lossNum;
+
+	/**账面价值*/
+	@Excel(name = "账面价值")
+	@ApiModelProperty(value = "账面价值")
+	private  String  bookValue;
+
+	/**账面数量*/
+	@Excel(name = "账面数量")
+	@ApiModelProperty(value = "账面数量")
+	private  Integer  bookNumber;
 
 	/**备注*/
 	@Excel(name = "备注")
@@ -98,7 +110,4 @@ public class StockInOrderLevel2 extends DictEntity {
 	@TableLogic
 	private  Integer  delFlag;
 
-	@ApiModelProperty(value = "提报物资列表")
-	@TableField(exist = false)
-	private List<StockIncomingMaterials> stockIncomingMaterialsList;
 }

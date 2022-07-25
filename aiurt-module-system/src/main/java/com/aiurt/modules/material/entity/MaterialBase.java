@@ -159,4 +159,8 @@ public class MaterialBase extends DictEntity {
 	@ApiModelProperty(value = "删除状态 0-未删除 1-已删除")
 	@TableField(exist = false)
 	private  String  deviceCode;
+
+	@ApiModelProperty(value = "默认0")
+	@TableField(exist = false)
+	private  Integer  defaultValue = 0;
 }
