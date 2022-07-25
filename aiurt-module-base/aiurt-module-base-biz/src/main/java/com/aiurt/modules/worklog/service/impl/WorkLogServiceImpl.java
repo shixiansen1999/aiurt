@@ -192,10 +192,10 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
         depot.setSubmitTime(dto.getSubmitTime());
         depot.setWorkContent(dto.getWorkContent());
         depot.setContent(dto.getContent());
-        List<JSONObject> list = iSysBaseAPI.queryUsersByIds(dto.getAssortNames());
+        List<JSONObject> list = iSysBaseAPI.queryUsersByUsernames(dto.getAssortNames());
         String s1= list.stream().map(e->e.getString("id")).collect(Collectors.joining(","));
         depot.setAssortIds(s1);
-        LoginUser queryUser = iSysBaseAPI.queryUser(dto.getSucceedId());
+        LoginUser queryUser = iSysBaseAPI.queryUser(dto.getSucceedName());
         depot.setSucceedId(queryUser.getId());
         depot.setApproverId(dto.getApproverId());
         if (StringUtils.isNotBlank(dto.getApproverId())) {
@@ -611,20 +611,13 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
         workLog.setLogTime(dto.getLogTime());
         workLog.setWorkContent(dto.getWorkContent());
         workLog.setContent(dto.getContent());
-        List<String> list = iSysBaseAPI.queryDeptUsersByUserId(dto.getSucceedName());
-        String s1 = list.stream().collect(Collectors.joining(","));
-        workLog.setSucceedId(s1);
+        LoginUser queryUser = iSysBaseAPI.queryUser(dto.getSucceedName());
+        workLog.setSucceedId(queryUser.getId());
         workLog.setAssortTime(dto.getAssortTime());
         workLog.setAssortLocation(dto.getAssortLocation());
-        String[] split = dto.getAssortNames().split(",");
-        List<LoginUser> loginUsers = new ArrayList<>();
-        for(String s:split)
-        {
-            LoginUser queryUser = iSysBaseAPI.queryUser(s);
-            loginUsers.add(queryUser);
-        }
-        String collect = loginUsers.stream().map(LoginUser::getId).collect(Collectors.joining(","));
-        workLog.setAssortIds(collect);
+        List<JSONObject> lists = iSysBaseAPI.queryUsersByUsernames(dto.getAssortNames());
+        String id= lists.stream().map(e->e.getString("id")).collect(Collectors.joining(","));
+        workLog.setAssortIds(id);
         workLog.setAssortNum(dto.getAssortNum());
         workLog.setAssortUnit(dto.getAssortUnit());
         workLog.setAssortContent(dto.getAssortContent());
