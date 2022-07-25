@@ -276,7 +276,7 @@ public class SysInfoListController {
             @ApiResponse(code = 200, message = "OK", response = SysAnnouncementSend.class)
     })
     @RequestMapping(value = "/edit", method = {RequestMethod.PUT, RequestMethod.POST})
-    public Result<String> edit(@RequestParam(name = "id") String id) {
+    public Result<String> edit(@RequestBody String id) {
         sysInfoListMapper.updateReadFlag(id,new Date());
         return Result.OK("编辑成功!");
     }
