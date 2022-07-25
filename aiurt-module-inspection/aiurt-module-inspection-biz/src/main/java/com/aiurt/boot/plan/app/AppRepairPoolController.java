@@ -33,7 +33,7 @@ public class AppRepairPoolController {
     /**
      * 指派时的下拉人员
      *
-     * @param code 检修计划code
+     * @param id 检修计划id
      */
     @AutoLog(value = "指派时的下拉人员")
     @ApiOperation(value = "指派时的下拉人员", notes = "指派时的下拉人员")

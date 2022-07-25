@@ -48,8 +48,11 @@ public class RepairPoolDetailsDTO {
     @ApiModelProperty(value = "所属策略")
     private java.lang.String strategy;
 
+//    @ApiModelProperty(value = "是否委外")
+//    private String isManual;
+
     @ApiModelProperty(value = "是否委外")
-    private String isManual;
+    private String isOutsource;
 
     @ApiModelProperty(value = "是否审核")
     private String isConfirm;

@@ -392,7 +392,7 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
             re.setWorkTypeName(sysBaseApi.translateDict(DictConstant.WORK_TYPE, String.valueOf(repairPool.getWorkType())));
 
             // 是否委外
-            re.setIsManual(sysBaseApi.translateDict(DictConstant.INSPECTION_IS_MANUAL, String.valueOf(repairPool.getIsManual())));
+            re.setIsOutsource(sysBaseApi.translateDict(DictConstant.INSPECTION_IS_MANUAL, String.valueOf(repairPool.getIsOutsource())));
         }
         return re;
     }
