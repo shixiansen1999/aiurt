@@ -16,10 +16,10 @@ import org.springframework.stereotype.Component;
  */
 @Component
 public interface CsLineMapper extends BaseMapper<CsLine> {
-    @Select("SELECT id,line_code FROM cs_line where line_code =#{lineCode} " +
+    @Select("SELECT id,line_code FROM cs_line where line_code =#{lineCode} and del_flag =0 " +
             " UNION " +
-            "SELECT id,station_code FROM  cs_station where station_code =#{lineCode} " +
+            "SELECT id,station_code FROM  cs_station where station_code =#{lineCode}  and del_flag =0 " +
             " UNION " +
-            "SELECT id,position_code FROM cs_station_position where position_code =#{lineCode}")
+            "SELECT id,position_code FROM cs_station_position where  del_flag =0 and position_code =#{lineCode}")
     List<CsLine> selectCode(@Param("lineCode") String lineCode);
 }

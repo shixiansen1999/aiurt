@@ -51,5 +51,5 @@ public interface ISparePartApplyService extends IService<SparePartApply> {
      *
      * @param ids
      */
-    List<StockApplyExcel> exportXls(List<Integer> ids);
+    List<StockApplyExcel> exportXls(List<String> ids);
 }

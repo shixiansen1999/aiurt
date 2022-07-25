@@ -1,30 +1,29 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.aiurt.modules.sparepart.mapper.SparePartInOrderMapper">
-    <select id="queryPageList"
-            resultType="com.aiurt.modules.sparepart.entity.SparePartInOrder">
-        select spio.id,spio.material_code materialCode,mb.name materialName,mb.type,
-        mb.specifications,mb.country_origin countryOrigin,
-        mb.manufacturer,mb.brand,mb.unit,spio.num,w.warehouse_name warehouseName,
-        su.realname keeperName
-        from spare_part_in_order spio
-        left join spare_part_stock_info w on w.warehouse_code=spio.warehouse_code
-        left join material_base mb on mb.code=spio.material_code
-        left join sys_user su on su.id=spio.create_by
-        where 1=1 and spio.del_flag!=1
-        <if test="sparePartInQuery.materialCode!=null and sparePartInQuery.materialCode!=''">
-            and spio.material_code = #{sparePartInQuery.materialCode}
-        </if>
-        <if test="sparePartInQuery.materialName!=null and sparePartInQuery.materialName!=''">
-            and mb.name like concat('%', #{sparePartInQuery.materialName}, '%')
-        </if>
-        <if test="sparePartInQuery.type!=null and sparePartInQuery.type!=''">
-            and mb.type = #{sparePartInQuery.type}
-        </if>
-        <if test="sparePartInQuery.warehouseCode!=null and sparePartInQuery.warehouseCode!=''">
-            and spio.warehouse_code = #{sparePartInQuery.warehouseCode}
-        </if>
-        order by  spio.create_time desc
+    <select id="readAll" resultType="com.aiurt.modules.sparepart.entity.SparePartInOrder">
+        select
+            t.id,
+            t.confirm_status confirmStatus,
+            t2.major_name majorName,
+            t3.system_name systemName ,
+            t4.base_type_name baseTypeCodeName,
+            t1.type,
+            t1.`code`,
+            t1.`name`,
+            t5.warehouse_name warehouseName,
+            t.num,
+            t.confirm_time confirmTime,
+            t6.realname confirmName
+        from
+        spare_part_in_order t
+        LEFT JOIN material_base t1 on t.material_code=t1.code
+        LEFT JOIN cs_major t2 on t.major_code=t2.major_code
+        LEFT JOIN cs_subsystem t3 on t.system_code=t3.system_code
+        LEFT JOIN material_base_type t4 on t.base_type_code=t4.base_type_code
+        LEFT JOIN spare_part_stock_info t5 on t.warehouse_code=t5.warehouse_code
+        LEFT JOIN sys_user t6 on t.confirm_id=t6.username
+        where t.del_flag=0
     </select>
     <select id="exportXls" resultType="com.aiurt.modules.sparepart.entity.dto.SparePartInExcel">
         select spio.id,spio.material_code materialCode,mb.name materialName,mb.type,

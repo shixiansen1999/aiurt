@@ -17,5 +17,5 @@ import org.springframework.stereotype.Component;
  */
 @Component
 public interface SparePartApplyMapper extends BaseMapper<SparePartApply> {
-    List<StockApplyExcel> selectExportXls(@Param("ids") List<Integer> ids);
+    List<StockApplyExcel> selectExportXls(@Param("ids") List<String> ids);
 }

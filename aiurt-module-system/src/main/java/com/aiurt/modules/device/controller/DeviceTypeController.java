@@ -331,6 +331,11 @@ public class DeviceTypeController extends BaseController<DeviceType, IDeviceType
 		//查询设备组成
 		List<DeviceCompose> composeList = deviceComposeList.stream().filter(compose -> compose.getDeviceTypeCode().equals(deviceType.getCode()) ).collect(Collectors.toList());
 		deviceType.setDeviceComposeList(composeList);
+		List<DeviceType> deviceTypeList = deviceTypeService.list(new LambdaQueryWrapper<DeviceType>().eq(DeviceType::getDelFlag, CommonConstant.DEL_FLAG_0));
+		List<DeviceType> childList = deviceTypeList.stream().filter(type -> deviceType.getId().equals(type.getPid())).collect(Collectors.toList());
+		if(childList != null && childList.size()>0){
+			deviceType.setChildren(childList);
+		}
 		return Result.OK(deviceType);
 	}
 
