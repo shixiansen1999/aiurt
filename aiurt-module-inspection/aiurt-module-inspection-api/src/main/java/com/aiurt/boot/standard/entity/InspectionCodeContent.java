@@ -1,10 +1,7 @@
 package com.aiurt.boot.standard.entity;
 
 import com.aiurt.common.aspect.annotation.Dict;
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableField;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableName;
+import com.baomidou.mybatisplus.annotation.*;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -46,6 +43,7 @@ public class InspectionCodeContent implements Serializable {
 	/**质量标准*/
 	@Excel(name = "质量标准", width = 15)
     @ApiModelProperty(value = "质量标准")
+    @TableField(updateStrategy = FieldStrategy.IGNORED)
     private java.lang.String qualityStandard;
 	/**排序编号*/
 	@Excel(name = "排序编号", width = 15)
@@ -57,6 +55,7 @@ public class InspectionCodeContent implements Serializable {
     private java.lang.Integer type;
 	/**数据字典：1 开关项、2 选择项、3 输入项*/
 	@Excel(name = "数据字典：1 开关项、2 选择项、3 输入项", width = 15)
+    @TableField(updateStrategy = FieldStrategy.IGNORED)
     @ApiModelProperty(value = "数据字典：1 开关项、2 选择项、3 输入项")
     private java.lang.Integer statusItem;
 	/**选择项关联的数据字典*/

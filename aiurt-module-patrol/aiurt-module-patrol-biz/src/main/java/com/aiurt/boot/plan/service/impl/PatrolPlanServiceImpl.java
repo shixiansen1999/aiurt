@@ -14,11 +14,13 @@ import com.aiurt.boot.standard.entity.PatrolStandard;
 import com.aiurt.boot.standard.mapper.PatrolStandardMapper;
 import com.aiurt.boot.task.dto.MajorDTO;
 import com.aiurt.boot.task.dto.SubsystemDTO;
+import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.modules.device.entity.Device;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.github.xiaoymin.knife4j.core.util.CollectionUtils;
+import org.jeecg.common.system.api.ISysBaseAPI;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -49,6 +51,8 @@ public class PatrolPlanServiceImpl extends ServiceImpl<PatrolPlanMapper, PatrolP
     private PatrolStandardMapper patrolStandardMapper;
     @Autowired
     private   PatrolPlanDeviceMapper patrolPlanDeviceMapper;
+    @Autowired
+    private ISysBaseAPI sysBaseApi;
     @Override
     public IPage<PatrolPlanDto> pageList(Page<PatrolPlanDto> page, PatrolPlanDto patrolPlan) {
       IPage<PatrolPlanDto> list = baseMapper.list(page,patrolPlan);
@@ -192,6 +196,28 @@ public class PatrolPlanServiceImpl extends ServiceImpl<PatrolPlanMapper, PatrolP
     @Override
     public IPage<Device> viewDetails(Page<Device> page,String standardCode, String planId) {
         IPage<Device> deviceIPage = baseMapper.viewDetails(page, standardCode, planId);
+        List<Device> records = deviceIPage.getRecords();
+        if(records != null && records.size()>0){
+            for(Device d : records){
+                //线路
+                String lineCode = d.getLineCode()==null?"":d.getLineCode();
+                //站点
+                String stationCode = d.getStationCode()==null?"":d.getStationCode();
+                //位置
+                String positionCode = d.getPositionCode()==null?"":d.getPositionCode();
+                String lineCodeName = sysBaseApi.translateDictFromTable("cs_line", "line_name", "line_code", lineCode);
+                String stationCodeName = sysBaseApi.translateDictFromTable("cs_station", "station_name", "station_code", stationCode);
+                String positionCodeName = sysBaseApi.translateDictFromTable("cs_station_position", "position_name", "position_code", positionCode);
+                String positionCodeCcName = lineCodeName ;
+                if(stationCodeName != null && !"".equals(stationCodeName)){
+                    positionCodeCcName +=  CommonConstant.SYSTEM_SPLIT_STR + stationCodeName  ;
+                }
+                if(!"".equals(positionCodeName) && positionCodeName != null){
+                    positionCodeCcName += CommonConstant.SYSTEM_SPLIT_STR + positionCodeName;
+                }
+                d.setPositionCodeCcName(positionCodeCcName);
+            }
+        }
         return deviceIPage;
     }
     @Override
@@ -209,14 +235,12 @@ public class PatrolPlanServiceImpl extends ServiceImpl<PatrolPlanMapper, PatrolP
             });
         }
         //根据专业编码查询对应的专业子系统
-        List<MajorDTO> majorDTOList = new ArrayList<>();
-        majorCodes1.forEach(m->{
-            majorDTOList.add(baseMapper.translateMajor(m));
-        });
+        List<MajorDTO> majorDTOList = baseMapper.translateMajor(majorCodes1);
+       List<String> systemCodes = systemCode.stream().distinct().collect(Collectors.toList());
         if (CollectionUtil.isNotEmpty(majorDTOList)) {
             int i =0;
             for (MajorDTO a :majorDTOList){
-                List<SubsystemDTO> subsystemDTOList = baseMapper.translateSubsystem(majorCodes1.get(i), systemCode.get(i));
+                List<SubsystemDTO> subsystemDTOList = baseMapper.translateSubsystem(a.getMajorCode(), systemCodes.get(i));
                 a.setSubsystemInfo(subsystemDTOList);
                 i++;
             }
