@@ -124,8 +124,14 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
             Date startTime = e.getStartTime();
             Date checkTime = e.getCheckTime();
             if (ObjectUtil.isNotEmpty(startTime) && ObjectUtil.isNotEmpty(checkTime)) {
-                long duration = DateUtil.between(startTime, checkTime, DateUnit.MINUTE);
-                e.setInspectionTime(duration);
+                long time = startTime.getTime();
+                long timeTime = checkTime.getTime();
+                long l1 = (timeTime - time) / (1000*60);
+                if ((timeTime - time) %(1000*60)>0)
+                {
+                    long l = l1 + 1;
+                    e.setInspectionTime(l);
+                }
             }
             if(ObjectUtil.isNotEmpty(e.getDeviceCode()))
             {
@@ -390,9 +396,9 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
 
 
     @Override
-    public List<PatrolCheckResultDTO> getPatrolTaskCheck(PatrolTaskDevice patrolTaskDevice) {
+    public List<PatrolCheckResultDTO> getPatrolTaskCheck(PatrolTaskDevice patrolTaskDevice,Integer checkDetail) {
         PatrolTask patrolTask = patrolTaskMapper.selectById(patrolTaskDevice.getTaskId());
-        if(manager.checkTaskUser(patrolTask.getCode())==false)
+        if(manager.checkTaskUser(patrolTask.getCode())==false&&1!=checkDetail)
         {
             throw new AiurtBootException("小主，该巡检任务不在您的检查范围之内哦");
         }
@@ -400,15 +406,19 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
             //更新任务状态（将未开始改为执行中）、添加开始检查时间，传任务主键id,巡检工单主键
             String taskDeviceId = patrolTaskDevice.getId();
             List<PatrolCheckResultDTO> patrolCheckResultDTOList = patrolCheckResultMapper.getCheckResult(taskDeviceId);
-            if(CollUtil.isEmpty(patrolCheckResultDTOList)) {
-                LambdaUpdateWrapper<PatrolTaskDevice> updateWrapper = new LambdaUpdateWrapper<>();
-                updateWrapper.set(PatrolTaskDevice::getStatus, 1)
-                        .set(PatrolTaskDevice::getStartTime, LocalDateTime.now())
-                        .eq(PatrolTaskDevice::getTaskId, patrolTaskDevice.getTaskId())
-                        .eq(PatrolTaskDevice::getId, patrolTaskDevice.getId());
-                patrolTaskDeviceMapper.update(patrolTaskDevice, updateWrapper);
-                 copyItems(patrolTaskDevice);
+            if(CollUtil.isEmpty(patrolCheckResultDTOList))
+            {
+                copyItems(patrolTaskDevice);
             }
+            if(PatrolConstant.TASK_AUDIT!=patrolTask.getStatus()||PatrolConstant.TASK_COMPLETE!=patrolTask.getStatus())
+                {
+                    LambdaUpdateWrapper<PatrolTaskDevice> updateWrapper = new LambdaUpdateWrapper<>();
+                    updateWrapper.set(PatrolTaskDevice::getStatus, 1)
+                            .set(PatrolTaskDevice::getStartTime, LocalDateTime.now())
+                            .eq(PatrolTaskDevice::getTaskId, patrolTaskDevice.getTaskId())
+                            .eq(PatrolTaskDevice::getId, patrolTaskDevice.getId());
+                    patrolTaskDeviceMapper.update(new PatrolTaskDevice(), updateWrapper);
+                }
            List<PatrolCheckResultDTO> patrolCheckResultDTOS = patrolCheckResultMapper.getCheckResult(taskDeviceId);
                 patrolCheckResultDTOS.stream().forEach(e ->
                 {

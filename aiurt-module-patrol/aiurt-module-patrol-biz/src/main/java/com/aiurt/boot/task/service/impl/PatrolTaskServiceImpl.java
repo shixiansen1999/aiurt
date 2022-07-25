@@ -572,6 +572,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         patrolTask.setDelFlag(0);
         patrolTask.setDiscardStatus(0);
         patrolTask.setRebuild(0);
+        patrolTask.setOmitStatus(0);
         patrolTask.setType(patrolTaskManualDTO.getType());
         patrolTask.setRemark(patrolTaskManualDTO.getRemark());
         patrolTask.setStartTime(patrolTaskManualDTO.getStartTime());

@@ -79,6 +79,7 @@ public class PatrolTaskDeviceDTO {
     private java.util.Date checkTime;
     @Excel(name = "巡检时长", width = 15)
     @ApiModelProperty(value = "巡检时长")
+    @TableField(exist = false)
     private Long inspectionTime;
     /**备注说明*/
     @Excel(name = "备注说明", width = 15)
@@ -139,4 +140,7 @@ public class PatrolTaskDeviceDTO {
     /***附件*/
     @ApiModelProperty(value = "附件")
     private List<PatrolAccessoryDTO> accessoryDTOList;
+    /***工单查看详情*/
+    @ApiModelProperty(value = "工单查看详情（传1标识）")
+    private Integer checkDetail;
 }
