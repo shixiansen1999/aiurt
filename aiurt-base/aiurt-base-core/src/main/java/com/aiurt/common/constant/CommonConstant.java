@@ -452,6 +452,10 @@ public interface CommonConstant {
   */
  public static final String STOCK_LEVEL2_SUBMIT_PLAN_1 = "1";
  /**
+  * 二级库盘点状态待确认
+  */
+ public static final String STOCK_LEVEL2_CHECK_2 = "2";
+ /**
   * 超级管理员角色编码
   */
  public static final String ADMIN = "admin";

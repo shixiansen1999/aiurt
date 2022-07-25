@@ -60,10 +60,16 @@ public class StockInOrderLevel2Controller {
                                                          @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize,
                                                          HttpServletRequest req) {
         Result<IPage<StockInOrderLevel2>> result = new Result<IPage<StockInOrderLevel2>>();
+        QueryWrapper<StockInOrderLevel2> queryWrapper = QueryGenerator.initQueryWrapper(stockInOrderLevel2, req.getParameterMap());
+        queryWrapper.eq("del_flag", CommonConstant.DEL_FLAG_0);
+        if(stockInOrderLevel2.getEntryTimeBegin() != null && stockInOrderLevel2.getEntryTimeEnd() != null ){
+            queryWrapper.between("entry_time",stockInOrderLevel2.getEntryTimeBegin(),stockInOrderLevel2.getEntryTimeEnd());
+        }
+        queryWrapper.orderByDesc("create_time");
         Page<StockInOrderLevel2> page = new Page<StockInOrderLevel2>(pageNo, pageSize);
-//        IPage<StockInOrderLevel2> pageList = iStockInOrderLevel2Service.page(page, queryWrapper);
-//        result.setSuccess(true);
-//        result.setResult(pageList);
+        IPage<StockInOrderLevel2> pageList = iStockInOrderLevel2Service.page(page, queryWrapper);
+        result.setSuccess(true);
+        result.setResult(pageList);
         return result;
     }
 

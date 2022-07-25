@@ -56,6 +56,20 @@ public class StockOutOrderLevel2 extends DictEntity {
 	@ApiModelProperty(value = "出库时间")
 	private  java.util.Date  outTime;
 
+	/**入库时间开始 CURRENT_TIMESTAMP*/
+	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm")
+	@DateTimeFormat(pattern="yyyy-MM-dd HH:mm")
+	@ApiModelProperty(value = "出库时间开始")
+	@TableField(exist = false)
+	private  java.util.Date  outTimeBegin;
+
+	/**入库时间结束 CURRENT_TIMESTAMP*/
+	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm")
+	@DateTimeFormat(pattern="yyyy-MM-dd HH:mm")
+	@ApiModelProperty(value = "出库时间结束")
+	@TableField(exist = false)
+	private  java.util.Date  outTimeEnd;
+
 	/**出库操作用户ID*/
 	@Excel(name = "出库操作用户ID")
 	@ApiModelProperty(value = "出库操作用户ID")

@@ -1,18 +1,22 @@
 package com.aiurt.modules.stock.controller;
 
+import com.aiurt.common.api.dto.message.MessageDTO;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.modules.stock.entity.StockLevel2Check;
 import com.aiurt.modules.stock.service.IStockLevel2CheckService;
+import com.aiurt.modules.system.service.impl.SysBaseApiImpl;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.query.QueryGenerator;
+import org.jeecg.common.system.vo.LoginUser;
 import org.jeecgframework.poi.excel.entity.ImportParams;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
@@ -44,6 +48,8 @@ public class StockLevel2CheckController {
 
     @Autowired
     private IStockLevel2CheckService iStockLevel2CheckService;
+    @Autowired
+    private SysBaseApiImpl sysBaseApi;
 
     /**
      * 分页列表查询
@@ -90,30 +96,11 @@ public class StockLevel2CheckController {
     }
 
     /**
-     * 修改二级库盘点状态
-     * @param
-     * @return
-     */
-    @ApiOperation(value = "修改二级库盘点状态", notes = "修改二级库盘点状态")
-    @GetMapping(value = "/submitPlanStatus")
-    public Result<String> submitPlan(@RequestParam(name = "status", required = true) String status,
-                                     @RequestParam(name = "code", required = true) String code) {
-        StockLevel2Check stockLevel2Check = iStockLevel2CheckService.getOne(new QueryWrapper<StockLevel2Check>().eq("code",code));
-        stockLevel2Check.setStatus(status);
-        boolean ok = iStockLevel2CheckService.updateById(stockLevel2Check);
-        if (ok) {
-            return Result.ok("操作成功！");
-        }else{
-            return Result.ok("操作失败！");
-        }
-    }
-
-    /**
      * 新增获取二级库盘点编号
      * @param
      * @return
      */
-    @ApiOperation(value = "新增获取二级库盘点编号", notes = "新增获取二级库盘点编号")
+    @ApiOperation(value = "二级库盘点-新增获取二级库盘点编号", notes = "二级库盘点-新增获取二级库盘点编号")
     @GetMapping(value = "/getStockCheckCode")
     public Result<StockLevel2Check> getStockCheckCode() throws ParseException {
         return Result.ok(iStockLevel2CheckService.getStockCheckCode());
@@ -124,7 +111,7 @@ public class StockLevel2CheckController {
      * @param
      * @return
      */
-    @ApiOperation(value = "获取仓库所属机构人员", notes = "获取仓库所属机构人员")
+    @ApiOperation(value = "二级库盘点-获取仓库所属机构人员", notes = "二级库盘点-获取仓库所属机构人员")
     @GetMapping(value = "/getStockOrgUsers")
     public Result<?> getStockOrgUsers(@RequestParam(name = "warehouseCode", required = true) String warehouseCode) throws ParseException {
         return iStockLevel2CheckService.getStockOrgUsers(warehouseCode);
@@ -135,11 +122,32 @@ public class StockLevel2CheckController {
      * @param id
      * @return
      */
-    @ApiOperation(value = "二级库盘点详情查询", notes = "二级库盘点详情查询")
+    @ApiOperation(value = "二级库盘点-详情查询", notes = "二级库盘点-详情查询")
     @GetMapping(value = "/queryById")
     public Result<StockLevel2Check> queryById(@RequestParam(name = "id", required = true) String id) {
         StockLevel2Check stockLevel2Check = iStockLevel2CheckService.getById(id);
         return Result.ok(stockLevel2Check);
+    }
+
+    @ApiOperation(value = "二级库盘点-下发", notes = "二级库盘点-下发")
+    @GetMapping(value = "/sendStockCheck")
+    public Result<StockLevel2Check> sendStockCheck(@RequestParam(name = "id", required = true) String id) {
+        StockLevel2Check stockLevel2Check = iStockLevel2CheckService.getById(id);
+        MessageDTO message = new MessageDTO();
+        LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        message.setFromUser(sysUser.getUsername());
+        String checkerId = stockLevel2Check.getCheckerId();
+        String[] ids = new String[1];
+        ids[0] = checkerId;
+        List<LoginUser> loginUsers = sysBaseApi.queryAllUserByIds(ids);
+        message.setToUser(loginUsers==null?"":loginUsers.get(0).getUsername());
+        message.setTitle("二级库盘点下发通知");
+        message.setContent("您有一个新的二级库盘点任务。");
+        message.setCategory("2");
+        sysBaseApi.sendSysAnnouncement(message);
+        stockLevel2Check.setStatus(CommonConstant.STOCK_LEVEL2_CHECK_2);
+        iStockLevel2CheckService.updateById(stockLevel2Check);
+        return Result.ok("下发成功！");
     }
 
     @AutoLog(value = "二级库盘点-编辑")

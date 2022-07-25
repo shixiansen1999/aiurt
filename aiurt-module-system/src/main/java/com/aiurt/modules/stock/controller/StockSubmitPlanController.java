@@ -31,6 +31,7 @@ import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
@@ -108,9 +109,11 @@ public class StockSubmitPlanController {
     @ApiOperation(value = "修改提报计划状态", notes = "修改提报计划状态")
     @GetMapping(value = "/submitPlanStatus")
     public Result<String> submitPlan(@RequestParam(name = "status", required = true) String status,
-                                     @RequestParam(name = "code", required = true) String code) {
+                                     @RequestParam(name = "code", required = true) String code) throws ParseException {
         StockSubmitPlan stockSubmitPlan = iStockSubmitPlanService.getOne(new QueryWrapper<StockSubmitPlan>().eq("code",code));
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
         stockSubmitPlan.setStatus(status);
+        stockSubmitPlan.setSubmitTime(sdf.parse(sdf.format(new Date())));
         boolean ok = iStockSubmitPlanService.updateById(stockSubmitPlan);
         if (ok) {
             return Result.ok("操作成功！");

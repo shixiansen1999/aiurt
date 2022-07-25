@@ -104,10 +104,10 @@ public class StockLevel2Check extends DictEntity {
 	@ApiModelProperty(value = "备注")
 	private  String  note;
 
-	/**盘点任务状态：1待提交、2待确认、3已确认*/
+	/**盘点任务状态：1待下发，2待确认，3待执行，4执行中，5已完成*/
 	@Excel(name = "盘点任务状态")
-	@ApiModelProperty(value = "盘点任务状态：1待提交、2待确认、3已确认")
-	@Dict(dicCode = "stock_in_order_level2_status")
+	@ApiModelProperty(value = "盘点任务状态：1待下发，2待确认，3待执行，4执行中，5已完成")
+	@Dict(dicCode = "stock_level2_check_status")
 	private  String  status;
 
 	/**创建人*/
