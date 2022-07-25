@@ -238,12 +238,7 @@
         from cs_major
         where
             del_flag = 0
-            <if test="list.size()>0">
-                and major_code in
-                <foreach item="item" collection="list" separator="," open="(" close=")" index="">
-                    #{item}
-                </foreach>
-            </if>
+       and major_code =#{majorCode}
     </select>
     <select id="selectStandardList" resultType="com.aiurt.boot.plan.dto.StandardDTO">
         SELECT
