@@ -1,20 +1,21 @@
 package com.aiurt.modules.sparepart.mapper;
 
-import com.aiurt.modules.sparepart.entity.SparePartApply;
-import com.aiurt.modules.sparepart.entity.dto.StockApplyExcel;
-import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import io.lettuce.core.dynamic.annotation.Param;
-
 import java.util.List;
 
+import com.aiurt.modules.sparepart.entity.SparePartApply;
+
+import com.aiurt.modules.sparepart.entity.dto.StockApplyExcel;
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import org.apache.ibatis.annotations.Param;
+import org.springframework.stereotype.Component;
 
 /**
- * @Description: 备件申领
- * @Author: swsc
- * @Date:   2021-09-17
+ * @Description: spare_part_apply
+ * @Author: aiurt
+ * @Date:   2022-07-20
  * @Version: V1.0
  */
+@Component
 public interface SparePartApplyMapper extends BaseMapper<SparePartApply> {
-
     List<StockApplyExcel> selectExportXls(@Param("ids") List<Integer> ids);
 }

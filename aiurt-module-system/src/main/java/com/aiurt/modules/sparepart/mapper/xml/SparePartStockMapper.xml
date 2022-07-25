@@ -2,8 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.aiurt.modules.sparepart.mapper.SparePartStockMapper">
 
-    <select id="queryPageList"
-            resultType="com.aiurt.modules.sparepart.entity.dto.SparePartStockDTO">
+    <select id="queryPageList" resultType="com.aiurt.modules.sparepart.entity.dto.SparePartStockDTO">
         select sps.id,sps.material_code materialCode,mb.name materialName,mb.type materialType,
             mb.specifications,mb.country_origin countryOrigin,
             mb.manufacturer,mb.brand,mb.unit,sps.num,w.warehouse_name warehouseName

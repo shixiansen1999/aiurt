@@ -98,7 +98,7 @@ public class SparePartStockInfoController extends BaseController<SparePartStockI
 	@DeleteMapping(value = "/delete")
 	public Result<String> delete(@RequestParam(name="id",required=true) String id) {
 		SparePartStockInfo sparePartStockInfo = sparePartStockInfoService.getById(id);
-		//判断备件管理，物资入库、物资库存是否使用  todo
+		//判断备件管理，备件入库管理、备件库存信息是否使用  todo
 
 
 

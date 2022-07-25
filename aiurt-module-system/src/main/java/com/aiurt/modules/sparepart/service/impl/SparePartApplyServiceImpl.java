@@ -1,267 +1,197 @@
 package com.aiurt.modules.sparepart.service.impl;
 
+
 import cn.hutool.core.collection.CollUtil;
-import cn.hutool.core.util.ObjectUtil;
-import cn.hutool.core.util.StrUtil;
+import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.enums.MaterialApplyStatusEnum;
-import com.aiurt.common.util.PageLimitUtil;
-import com.aiurt.modules.sparepart.entity.*;
-import com.aiurt.modules.sparepart.entity.dto.AddApplyDTO;
+import com.aiurt.common.enums.MaterialTypeEnum;
+import com.aiurt.modules.position.mapper.CsStationPositionMapper;
+import com.aiurt.modules.sparepart.entity.SparePartApply;
+import com.aiurt.modules.sparepart.entity.SparePartApplyMaterial;
+import com.aiurt.modules.sparepart.entity.SparePartStockInfo;
 import com.aiurt.modules.sparepart.entity.dto.StockApplyExcel;
-import com.aiurt.modules.sparepart.entity.dto.StockOutDTO;
 import com.aiurt.modules.sparepart.mapper.SparePartApplyMapper;
-import com.aiurt.modules.sparepart.mapper.SparePartApplyMaterialMapper;
-import com.aiurt.modules.sparepart.mapper.SparePartInOrderMapper;
 import com.aiurt.modules.sparepart.service.ISparePartApplyMaterialService;
 import com.aiurt.modules.sparepart.service.ISparePartApplyService;
 import com.aiurt.modules.sparepart.service.ISparePartStockInfoService;
-import com.aiurt.modules.sparepart.service.ISparePartStockService;
-import com.aiurt.modules.material.service.IMaterialBaseService;
-import com.aiurt.modules.system.mapper.SysUserMapper;
+import com.aiurt.modules.stock.entity.StockIncomingMaterials;
+import com.aiurt.modules.stock.entity.StockOutOrderLevel2;
+import com.aiurt.modules.stock.entity.StockSubmitPlan;
+import com.aiurt.modules.stock.mapper.StockOutOrderLevel2Mapper;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-
-import org.springframework.beans.BeanUtils;
-import org.springframework.context.annotation.Lazy;
-import org.springframework.stereotype.Service;
-
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import org.apache.shiro.SecurityUtils;
+import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.system.vo.LoginUser;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
-import java.text.ParseException;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.stream.Collectors;
-
-import static org.jeewx.api.core.util.DateUtils.datetimeFormat;
-
 
 /**
- * @Description: 备件申领
- * @Author: swsc
- * @Date:   2021-09-17
+ * @Description: spare_part_apply
+ * @Author: aiurt
+ * @Date:   2022-07-20
  * @Version: V1.0
  */
 @Service
 public class SparePartApplyServiceImpl extends ServiceImpl<SparePartApplyMapper, SparePartApply> implements ISparePartApplyService {
-
-    @Resource
+    @Autowired
     private SparePartApplyMapper sparePartApplyMapper;
-    @Resource @Lazy
-    private ISparePartApplyService iSparePartApplyService;
-    @Resource
-    private ISparePartApplyMaterialService iSparePartApplyMaterialService;
-    @Resource
-    private SparePartApplyMaterialMapper sparePartApplyMaterialMapper;
-    /*    @Resource
-      private IStockLevel2InfoService iStockLevel2InfoService;*/
-    @Resource
-    private ISparePartStockInfoService iSparePartStockInfoService;
-    @Resource
-    private SysUserMapper sysUserMapper;
-    @Resource
-    private IMaterialBaseService iMaterialBaseService;
-    /* @Resource
-     private IStockLevel2Service iStockLevel2Service;*/
-    @Resource
-    private ISparePartStockService iSparePartStockService;
-    @Resource
-    private SparePartInOrderMapper sparePartInOrderMapper;
+    @Autowired
+    private ISparePartApplyMaterialService sparePartApplyMaterialService;
+    @Autowired
+    private ISparePartStockInfoService sparePartStockInfoService;
+    @Autowired
+    private StockOutOrderLevel2Mapper stockOutOrderLevel2Mapper;
+    /**
+     * 添加
+     *
+     * @param sparePartApply
+     * @return
+     */
     @Override
-    public PageLimitUtil<SparePartApply> queryPageList(SparePartApply sparePartApply, Integer pageNo, Integer pageSize,
-                                                       String startTime, String endTime,HttpServletRequest req) throws ParseException {
-        QueryWrapper<SparePartApply> queryWrapper = new QueryWrapper<>();
-        if (StrUtil.isNotEmpty(startTime) && StrUtil.isNotEmpty(endTime)) {
-/*            Date startDate = datetimeFormat.parse(startTime);
-            Date endData = datetimeFormat.parse(endTime);
-            queryWrapper.between(startTime != null && endTime != null, "create_time", startDate, endData);*/
+    @Transactional(rollbackFor = Exception.class)
+    public Result<?> add(SparePartApply sparePartApply) {
+        LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        //申领单号 自动生成
+        String code = getCode();
+        sparePartApply.setCode(code);
+        sparePartApply.setApplyUserId(user.getUsername());
+        LambdaQueryWrapper<SparePartStockInfo> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(SparePartStockInfo::getOrganizationId,user.getOrgId());
+        wrapper.eq(SparePartStockInfo::getDelFlag,CommonConstant.DEL_FLAG_0);
+        SparePartStockInfo info = sparePartStockInfoService.getOne(wrapper);
+        if(null!=info && null!=info.getWarehouseCode()){
+            sparePartApply.setCustodialWarehouseCode(info.getWarehouseCode());
         }
-        queryWrapper.eq(sparePartApply.getCode()!=null,"code",sparePartApply.getCode());
-
-        List<SparePartApply> applyList = sparePartApplyMapper.selectList(queryWrapper);
-        applyList.forEach(e->{
-            SparePartStockInfo sparePartStockInfo = iSparePartStockInfoService.getOne(new QueryWrapper<SparePartStockInfo>()
-                    .eq("warehouse_code", e.getWarehouseCode()), false);
-
-            if(ObjectUtil.isNotEmpty(sparePartStockInfo)){
-                e.setWarehouseDepartment(sparePartStockInfo.getOrganizationId()+"");
-            }
-
-            List<SparePartApplyMaterial> applyMaterials = sparePartApplyMaterialMapper.selectList(
-                    new QueryWrapper<SparePartApplyMaterial>().eq("apply_code", e.getCode()));
-            if(CollUtil.isNotEmpty(applyMaterials)){
-                /*Integer typeByMaterialCode =
-                        iMaterialBaseService.getTypeByMaterialCode(applyMaterials.get(0).getMaterialCode());
-                if(typeByMaterialCode!=null){
-                    e.setMaterialType(typeByMaterialCode);
-                    e.setMaterialTypeName(MaterialTypeEnum.getNameByCode(typeByMaterialCode));
-                }*/
-
-            }
-            int applyNum =
-                    applyMaterials.stream().mapToInt(SparePartApplyMaterial::getApplyNum).sum();
-            e.setApplyAllNum(applyNum);
-        });
-        //备件类型筛选
-        if(sparePartApply.getMaterialType()!=null){
-            applyList = applyList.stream().filter(e -> e.getMaterialType().equals(sparePartApply.getMaterialType())).collect(Collectors.toList());
+        //物资清单
+        if(!sparePartApply.getStockLevel2List().isEmpty()){
+            sparePartApply.getStockLevel2List().stream().forEach(sparePartApplyMaterial ->{
+                sparePartApplyMaterial.setApplyCode(code);
+            });
+            sparePartApplyMaterialService.saveBatch(sparePartApply.getStockLevel2List());
         }
-        PageLimitUtil<SparePartApply> pageLimitUtil = new PageLimitUtil<>(pageNo, pageSize, true, applyList);
-        return pageLimitUtil;
-
+        sparePartApplyMapper.insert(sparePartApply);
+        return Result.OK("添加成功！");
+    }
+    /**
+     * 修改
+     *
+     * @param sparePartApply
+     * @return
+     */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Result<?> update(SparePartApply sparePartApply) {
+        SparePartApply partApply = getById(sparePartApply.getId());
+        //删除原有物资
+        QueryWrapper<SparePartApplyMaterial> queryWrapper = new QueryWrapper<SparePartApplyMaterial>();
+        queryWrapper.eq("apply_code",partApply.getCode());
+        sparePartApplyMaterialService.remove(queryWrapper);
+        //物资清单
+        if(!sparePartApply.getStockLevel2List().isEmpty()){
+            sparePartApply.getStockLevel2List().stream().forEach(sparePartApplyMaterial ->{
+                sparePartApplyMaterial.setApplyCode(partApply.getCode());
+            });
+            sparePartApplyMaterialService.saveBatch(sparePartApply.getStockLevel2List());
+        }
+        sparePartApplyMapper.updateById(sparePartApply);
+        return Result.OK("编辑成功！");
+    }
+    /**
+     * 提交
+     *
+     * @param sparePartApply
+     * @return
+     */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Result<?> submit(SparePartApply sparePartApply) {
+        SparePartApply partApply = getById(sparePartApply.getId());
+        //修改状态为“待确认”
+        sparePartApplyMapper.updateById(sparePartApply);
+        //插入二级库出库表
+        StockOutOrderLevel2 stockOutOrderLevel = new StockOutOrderLevel2();
+        //3.出库人为出库确认人，4.保管人为备件申领人
+        String code = getStockOutCode();
+        //EJCK+日期+自增3位
+        stockOutOrderLevel.setOrderCode(code);
+        //出库仓库为申领仓库
+        stockOutOrderLevel.setWarehouseCode(partApply.getApplyWarehouseCode());
+        //保管人为备件申领人
+        stockOutOrderLevel.setCustodialId(partApply.getApplyUserId());
+        stockOutOrderLevel.setCustodialWarehouseCode(partApply.getCustodialWarehouseCode());
+        stockOutOrderLevel2Mapper.insert(stockOutOrderLevel);
+        return Result.OK("编辑成功！");
     }
 
+    /**
+     * 生成申领单号
+     * @param
+     * @return
+     */
+    @Override
+    public String getCode() {
+        LambdaQueryWrapper<SparePartApply> queryWrapper = new LambdaQueryWrapper<>();
+        String str = "SL";
+        SimpleDateFormat date = new SimpleDateFormat("yyyyMMdd");
+        str += date.format(new Date());
+        queryWrapper.eq(SparePartApply::getDelFlag, CommonConstant.DEL_FLAG_0);
+        queryWrapper.likeRight(SparePartApply::getCreateTime,str);
+        queryWrapper.orderByDesc(SparePartApply::getCreateTime);
+        queryWrapper.last("limit 1");
+        SparePartApply sparePartApply = sparePartApplyMapper.selectOne(queryWrapper);
+        String format = "";
+        if(sparePartApply != null){
+            String code = sparePartApply.getCode();
+            String numstr = code.substring(code.length()-3);
+            format = String.format("%03d", Long.parseLong(numstr) + 1);
+        }else{
+            format = "001";
+        }
+        String code = str + format;
+        return code;
+    }
+    /**
+     * 生成出库单号
+     * @param
+     * @return
+     */
+    @Override
+    public String getStockOutCode() {
+        LambdaQueryWrapper<StockOutOrderLevel2> queryWrapper = new LambdaQueryWrapper<>();
+        String str = "EJCK";
+        SimpleDateFormat date = new SimpleDateFormat("yyyyMMdd");
+        str += date.format(new Date());
+        queryWrapper.eq(StockOutOrderLevel2::getDelFlag, CommonConstant.DEL_FLAG_0);
+        queryWrapper.likeRight(StockOutOrderLevel2::getCreateTime,str);
+        queryWrapper.orderByDesc(StockOutOrderLevel2::getCreateTime);
+        queryWrapper.last("limit 1");
+        StockOutOrderLevel2 orderLevel2 = stockOutOrderLevel2Mapper.selectOne(queryWrapper);
+        String format = "";
+        if(orderLevel2 != null){
+            String code = orderLevel2.getOrderCode();
+            String numstr = code.substring(code.length()-3);
+            format = String.format("%03d", Long.parseLong(numstr) + 1);
+        }else{
+            format = "001";
+        }
+        String code = str + format;
+        return code;
+    }
     @Override
     public List<StockApplyExcel> exportXls(List<Integer> ids) {
         List<StockApplyExcel> excelList = sparePartApplyMapper.selectExportXls(ids);
         AtomicReference<Integer> flag= new AtomicReference<>(1);
         excelList.forEach(e->{
             e.setSerialNumber(flag.getAndSet(flag.get() + 1));
-            List<SparePartApplyMaterial> applyMaterials = sparePartApplyMaterialMapper.selectList(
-                    new QueryWrapper<SparePartApplyMaterial>().eq("apply_code", e.getCode()));
-            int applyNum =
-                    applyMaterials.stream().mapToInt(SparePartApplyMaterial::getApplyNum).sum();
-            e.setApplyAllNum(applyNum);
-
-            //去所属的备件申领单详情里面找备件类型
-            if(CollUtil.isNotEmpty(applyMaterials)){
-              /*  Integer typeByMaterialCode =
-                        iMaterialBaseService.getTypeByMaterialCode(applyMaterials.get(0).getMaterialCode());
-                if(typeByMaterialCode!=null){
-                    e.setMaterialTypeName(MaterialTypeEnum.getNameByCode(typeByMaterialCode));
-                }*/
-            }
-            e.setStatusName(MaterialApplyStatusEnum.getNameByCode(e.getStatus()));
-
-            String format = datetimeFormat.format(e.getApplyTime());
-            e.setApplyTimeString(format);
         });
         return excelList;
     }
-
-    @Transactional(rollbackFor = Exception.class)
-    @Override
-    public Boolean stockOutConfirm(StockOutDTO stockOutDTOList) {
-        //改表spare_part_apply,备件申领表的状态改为已审核
-        SparePartApply apply = sparePartApplyMapper.selectById(stockOutDTOList.getId());
-        apply.setId(stockOutDTOList.getId());
-        apply.setRemarks(stockOutDTOList.getRemarks());
-//        apply.setUpdateBy(stockOutDTOList.getOperatorId());
-        apply.setStatus(MaterialApplyStatusEnum.CHECKED.getCode());
-
-
-        List<SparePartApplyMaterial> applyMaterialList = new ArrayList<>();
-        List<?> stockLevel2List = new ArrayList<>();
-        //List<StockLevel2> stockLevel2List = new ArrayList<>();
-        List<SparePartStock> sparePartStockList = new ArrayList<>();
-        if(CollUtil.isNotEmpty(stockOutDTOList.getMaterialVOList())){
-            stockOutDTOList.getMaterialVOList().forEach(e->{
-                //备件申领物资表spare_part_apply_material设定实际出库量
-                SparePartApplyMaterial applyMaterial = new SparePartApplyMaterial();
-                applyMaterial.setId(e.getId());
-                applyMaterial.setActualNum(e.getMaterialNum());
-//                applyMaterial.setUpdateBy(stockOutDTOList.getOperatorId());
-                applyMaterialList.add(applyMaterial);
-
-
-                //二级库库存，出库(这里找apply.getOutWarehouseCode())
-                /*StockLevel2 outStock = iStockLevel2Service.getOne(
-                        new QueryWrapper<StockLevel2>().eq("material_code", e.getMaterialCode())
-                        .eq("warehouse_code", apply.getOutWarehouseCode()), false);
-                if (ObjectUtil.isNotEmpty(outStock)){
-                    outStock.setNum(outStock.getNum()-applyMaterial.getActualNum());
-
-                    stockLevel2List.add(outStock);
-                }*/
-
-                //备件,入库 (apply.getWarehouseCode())
-                SparePartInOrder sparePartInOrder = new SparePartInOrder();
-                sparePartInOrder.setMaterialCode(e.getMaterialCode());
-                sparePartInOrder.setNum(e.getMaterialNum());
-                sparePartInOrder.setWarehouseCode(apply.getWarehouseCode());
-                sparePartInOrderMapper.insert(sparePartInOrder);
-
-                //备件库存(这里找warehouseCode)
-                //先找该仓库下有没有该物资，没有添加，有则修改
-                SparePartStock applyStock = iSparePartStockService.getOne(new QueryWrapper<SparePartStock>()
-                        .eq("warehouse_code", apply.getWarehouseCode())
-                        .eq("material_code", e.getMaterialCode()), false);
-                if(ObjectUtil.isEmpty(applyStock)){
-                    SparePartStock partStock = new SparePartStock();
-                    partStock.setMaterialCode(e.getMaterialCode());
-                    partStock.setNum(applyMaterial.getActualNum());
-                    partStock.setWarehouseCode(apply.getWarehouseCode());
-//                    partStock.setCreateBy(stockOutDTOList.getOperatorId());
-//                    partStock.setUpdateBy(stockOutDTOList.getOperatorId());
-                    iSparePartStockService.save(partStock);
-                }else{
-                    applyStock.setNum(applyStock.getNum()+applyMaterial.getActualNum());
-//                    applyStock.setUpdateBy(stockOutDTOList.getOperatorId());
-                    sparePartStockList.add(applyStock);
-                }
-
-            });
-        }
-        if(ObjectUtil.isNotEmpty(apply)){
-            iSparePartApplyService.updateById(apply);
-        }
-        if(CollUtil.isNotEmpty(applyMaterialList)){
-            iSparePartApplyMaterialService.updateBatchById(applyMaterialList);
-        }
-        if(CollUtil.isNotEmpty(stockLevel2List)){
-            //iStockLevel2Service.updateBatchById(stockLevel2List);
-        }
-        if(CollUtil.isNotEmpty(sparePartStockList)){
-            iSparePartStockService.updateBatchById(sparePartStockList);
-        }
-        return true;
-    }
-
-    @Override
-    public void addApply(AddApplyDTO addApplyDTO) {
-        //模拟申领单号
-        String code = simulateApplyCode();
-
-        if(CollUtil.isNotEmpty(addApplyDTO.getMaterialVOList())){
-            SparePartApply sparePartApply = new SparePartApply();
-            //TODO
-            //申领单号先这样模拟一下，后续有了具体规则再改
-            sparePartApply.setCode(code);
-            addApplyDTO.getMaterialVOList().forEach(e->{
-                SparePartApplyMaterial sparePartApplyMaterial = new SparePartApplyMaterial();
-                sparePartApplyMaterial.setApplyCode(sparePartApply.getCode());
-                sparePartApplyMaterial.setMaterialCode(e.getMaterialCode());
-                sparePartApplyMaterial.setApplyNum(e.getMaterialNum());
-//                sparePartApplyMaterial.setCreateBy(addApplyDTO.getOperatorId());
-//                sparePartApplyMaterial.setUpdateBy(addApplyDTO.getOperatorId());
-                //插入备件申领的物资表
-                sparePartApplyMaterialMapper.insert(sparePartApplyMaterial);
-            });
-            BeanUtils.copyProperties(addApplyDTO,sparePartApply);
-            //操作人-->创建人
-//            sparePartApply.setCreateBy(addApplyDTO.getOperatorId());
-//            sparePartApply.setUpdateBy(addApplyDTO.getOperatorId());
-
-            //插入备件申领单
-            sparePartApplyMapper.insert(sparePartApply);
-        }
-    }
-
-    private String simulateApplyCode() {
-        String applyCode="SL101.";
-        String y = String.valueOf(LocalDateTime.now().getYear());
-        String year = y.substring(y.length() - 2);
-        int monthValue = LocalDateTime.now().getMonthValue();
-        String month= monthValue +".";
-        if(monthValue<10){
-            month="0"+ monthValue+".";
-        }
-        //Integer integer = sparePartApplyMapper.selectCount(null);
-        Integer integer = 0;
-        return applyCode+year+month+(integer+1);
-    }
-
 }
