@@ -7,15 +7,13 @@
         from stock_level2 sl
         left join material_base mb on sl.material_code=mb.code
         left join stock_level2_info sli on sl.warehouse_code = sli.warehouse_code
-        LEFT JOIN sys_dict as dict1 ON dict1.dict_code = 'cs_major'
-		LEFT JOIN sys_dict_item as d1 ON d1.item_value = sl.major_code AND dict1.id = d1.dict_id
-        LEFT JOIN sys_dict as dict2 ON dict2.dict_code = 'cs_subsystem'
-		LEFT JOIN sys_dict_item as d2 ON d2.item_value = sl.system_code AND dict2.id = d2.dict_id
+        left join cs_major cm on mb.major_code = cm.major_code
+        left join cs_subsystem cs on mb.system_code = cs.system_code
 		<where>
 		    and sl.del_flag = 0
             <if test="condition.selectMaterialType != null and condition.selectMaterialType != ''">
-                and (d1.item_text like concat('%', #{condition.selectMaterialType}, '%')
-                    or d2.item_text like concat('%', #{condition.selectMaterialType}, '%')
+                and (cm.major_name like concat('%', #{condition.selectMaterialType}, '%')
+                    or cs.system_name like concat('%', #{condition.selectMaterialType}, '%')
                     or CONCAT(',',REPLACE(sl.base_type_code,'/',','),',') REGEXP CONCAT(',(',replace((select GROUP_CONCAT(base_type_code)
                             from (select base_type_code from material_base_type where base_type_name like concat('%', #{condition.selectMaterialType}, '%')) t),',','|'),'),')
                 )
@@ -44,6 +42,9 @@
             <if test="condition.warehouseCode != null and condition.warehouseCode != ''">
                 and sl.warehouse_code = #{condition.warehouseCode}
             </if>
+            <if test="condition.warehouseName != null and condition.warehouseName != ''">
+                and sli.warehouse_name like concat('%', #{condition.warehouseName}, '%'))
+            </if>
         </where>
         order by sl.create_time desc
     </select>
@@ -51,7 +52,26 @@
     <select id="getDetailById" resultType="com.aiurt.modules.stock.entity.StockLevel2">
         select sl.*,mb.`name` materialName, mb.unit, mb.specifications, mb.price, mb.manufactor_code
         from stock_level2 sl
-        left join material_base mb on sl.material_code=mb.
+        left join material_base mb on sl.material_code=mb.code
+        where sl.id = #{id}
+    </select>
+    <select id="exportXls" resultType="com.aiurt.modules.stock.entity.StockLevel2">
+        select cm.major_name, cs.system_name, mb.base_type_code_cc base_type_code, sl.material_code, mb.`name` material_name,
+                d1.item_text type_name, sli.warehouse_name, sd.depart_name organization_name, sl.num, d2.item_text unit_name, sl.stock_in_time
+        from stock_level2 sl
+        left join material_base mb on sl.material_code=mb.code
+        left join stock_level2_info sli on sl.warehouse_code = sli.warehouse_code
+        LEFT JOIN sys_dict as dict1 ON dict1.dict_code = 'material_type'
+        LEFT JOIN sys_dict_item as d1 ON d1.item_value = sl.major_code AND dict1.id = d1.dict_id
+        LEFT JOIN sys_dict as dict2 ON dict2.dict_code = 'materian_unit'
+        LEFT JOIN sys_dict_item as d2 ON d2.item_value = sl.system_code AND dict2.id = d2.dict_id
+        left join cs_major cm on mb.major_code = cm.major_code
+        left join cs_subsystem cs on mb.system_code = cs.system_code
+        left join sys_depart sd on sli.organization_id = sd.id
+        where sl.id in
+        <foreach collection="ids" item="id" index="index" open=" ( " close=" ) " separator=",">
+            #{id}
+        </foreach>
     </select>
     
 </mapper>

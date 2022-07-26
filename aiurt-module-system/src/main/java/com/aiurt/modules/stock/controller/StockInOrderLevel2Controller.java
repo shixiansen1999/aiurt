@@ -60,14 +60,8 @@ public class StockInOrderLevel2Controller {
                                                          @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize,
                                                          HttpServletRequest req) {
         Result<IPage<StockInOrderLevel2>> result = new Result<IPage<StockInOrderLevel2>>();
-        QueryWrapper<StockInOrderLevel2> queryWrapper = QueryGenerator.initQueryWrapper(stockInOrderLevel2, req.getParameterMap());
-        queryWrapper.eq("del_flag", CommonConstant.DEL_FLAG_0);
-        if(stockInOrderLevel2.getEntryTimeBegin() != null && stockInOrderLevel2.getEntryTimeEnd() != null ){
-            queryWrapper.between("entry_time",stockInOrderLevel2.getEntryTimeBegin(),stockInOrderLevel2.getEntryTimeEnd());
-        }
-        queryWrapper.orderByDesc("create_time");
         Page<StockInOrderLevel2> page = new Page<StockInOrderLevel2>(pageNo, pageSize);
-        IPage<StockInOrderLevel2> pageList = iStockInOrderLevel2Service.page(page, queryWrapper);
+        IPage<StockInOrderLevel2> pageList = iStockInOrderLevel2Service.pageList(page, stockInOrderLevel2);
         result.setSuccess(true);
         result.setResult(pageList);
         return result;
@@ -94,10 +88,10 @@ public class StockInOrderLevel2Controller {
      * @return
      */
     @ApiOperation(value = "提交", notes = "提交")
-    @GetMapping(value = "/submitPlanStatus")
-    public Result<String> submitPlan(@RequestParam(name = "status", required = true) String status,
-                                     @RequestParam(name = "code", required = true) String code) {
-        boolean ok = iStockInOrderLevel2Service.submitPlan(status, code);
+    @GetMapping(value = "/submitInOrderStatus")
+    public Result<String> submitInOrderStatus(@RequestParam(name = "status", required = true) String status,
+                                     @RequestParam(name = "code", required = true) String code) throws ParseException {
+        boolean ok = iStockInOrderLevel2Service.submitInOrderStatus(status, code);
         if (ok) {
             return Result.ok("操作成功！");
         }else{

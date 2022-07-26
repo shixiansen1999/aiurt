@@ -13,5 +13,11 @@ import com.baomidou.mybatisplus.extension.service.IService;
  * @Version: V1.0
  */
 public interface IStockSubmitMaterialsService extends IService<StockSubmitMaterials> {
+    /**
+     * 获取分页数据
+     * @param page
+     * @param stockSubmitMaterials
+     * @return
+     */
     IPage<StockSubmitMaterials> pageList(Page<StockSubmitMaterials> page, StockSubmitMaterials stockSubmitMaterials);
 }

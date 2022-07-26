@@ -1,6 +1,9 @@
 package com.aiurt.modules.stock.service;
 
+import com.aiurt.modules.stock.entity.StockInOrderLevel2;
 import com.aiurt.modules.stock.entity.StockOutOrderLevel2;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 
 import javax.servlet.http.HttpServletRequest;
@@ -26,4 +29,12 @@ public interface IStockOutOrderLevel2Service extends IService<StockOutOrderLevel
      * @param response
      */
     void eqExport(String ids, HttpServletRequest request, HttpServletResponse response);
+
+    /**
+     * 分页查询
+     * @param page
+     * @param stockOutOrderLevel2
+     * @return
+     */
+    IPage<StockOutOrderLevel2> pageList(Page<StockOutOrderLevel2> page, StockOutOrderLevel2 stockOutOrderLevel2);
 }

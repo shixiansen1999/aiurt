@@ -55,14 +55,8 @@ public class StockOutOrderLevel2Controller {
                                                          @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize,
                                                          HttpServletRequest req) {
         Result<IPage<StockOutOrderLevel2>> result = new Result<IPage<StockOutOrderLevel2>>();
-        QueryWrapper<StockOutOrderLevel2> queryWrapper = QueryGenerator.initQueryWrapper(stockOutOrderLevel2, req.getParameterMap());
-        queryWrapper.eq("del_flag", CommonConstant.DEL_FLAG_0);
-        if(stockOutOrderLevel2.getOutTimeBegin() != null && stockOutOrderLevel2.getOutTimeEnd() != null ){
-            queryWrapper.between("entry_time",stockOutOrderLevel2.getOutTimeBegin(),stockOutOrderLevel2.getOutTimeEnd());
-        }
-        queryWrapper.orderByDesc("create_time");
         Page<StockOutOrderLevel2> page = new Page<StockOutOrderLevel2>(pageNo, pageSize);
-        IPage<StockOutOrderLevel2> pageList = iStockOutOrderLevel2Service.page(page, queryWrapper);
+        IPage<StockOutOrderLevel2> pageList = iStockOutOrderLevel2Service.pageList(page, stockOutOrderLevel2);
         result.setSuccess(true);
         result.setResult(pageList);
         return result;

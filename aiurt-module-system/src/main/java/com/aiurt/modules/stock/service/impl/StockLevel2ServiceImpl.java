@@ -23,10 +23,7 @@ import org.ansj.splitWord.analysis.ToAnalysis;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -62,6 +59,20 @@ public class StockLevel2ServiceImpl extends ServiceImpl<StockLevel2Mapper, Stock
         String baseTypeCodeCcName = getCcName(stockLevel2);
         stockLevel2.setBaseTypeCodeName(baseTypeCodeCcName);
         return stockLevel2;
+    }
+
+    @Override
+    public List<StockLevel2> exportXls(String ids) {
+        String[] split = ids.split(",");
+        List<String> strings = Arrays.asList(split);
+        List<StockLevel2> stockLevel2s = stockLevel2Mapper.exportXls(strings);
+        if(stockLevel2s != null && stockLevel2s.size()>0){
+            for(StockLevel2 stockLevel2 : stockLevel2s){
+                String baseTypeCodeCcName = getCcName(stockLevel2);
+                stockLevel2.setBaseTypeCodeName(baseTypeCodeCcName);
+            }
+        }
+        return stockLevel2s;
     }
 
     public String getCcName(StockLevel2 stockLevel2){

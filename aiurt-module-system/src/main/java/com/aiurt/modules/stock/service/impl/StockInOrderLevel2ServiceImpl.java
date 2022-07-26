@@ -2,6 +2,8 @@ package com.aiurt.modules.stock.service.impl;
 
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.util.XlsExport;
+import com.aiurt.modules.major.entity.CsMajor;
+import com.aiurt.modules.major.service.ICsMajorService;
 import com.aiurt.modules.material.entity.MaterialBase;
 import com.aiurt.modules.material.service.IMaterialBaseService;
 import com.aiurt.modules.stock.entity.*;
@@ -10,8 +12,12 @@ import com.aiurt.modules.stock.mapper.StockInOrderLevel2Mapper;
 import com.aiurt.modules.stock.service.IStockIncomingMaterialsService;
 import com.aiurt.modules.stock.service.IStockInOrderLevel2Service;
 import com.aiurt.modules.stock.service.IStockLevel2Service;
+import com.aiurt.modules.subsystem.entity.CsSubsystem;
+import com.aiurt.modules.subsystem.service.ICsSubsystemService;
 import com.aiurt.modules.system.service.impl.SysBaseApiImpl;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.apache.poi.hssf.usermodel.HSSFCellStyle;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
@@ -48,6 +54,10 @@ public class StockInOrderLevel2ServiceImpl extends ServiceImpl<StockInOrderLevel
 	private IStockLevel2Service stockLevel2Service;
 	@Autowired
 	private SysBaseApiImpl sysBaseApi;
+	@Autowired
+	private ICsMajorService csMajorService;
+	@Autowired
+	private ICsSubsystemService csSubsystemService;
 
 	@Override
 	public StockInOrderLevel2 getInOrderCode() throws ParseException {
@@ -75,11 +85,12 @@ public class StockInOrderLevel2ServiceImpl extends ServiceImpl<StockInOrderLevel
 
 	@Override
 	public void add(StockInOrderLevel2 stockInOrderLevel2) {
+		this.save(stockInOrderLevel2);
 		List<StockIncomingMaterials> stockIncomingMaterialsList = stockInOrderLevel2.getStockIncomingMaterialsList();
 		if(stockIncomingMaterialsList != null && stockIncomingMaterialsList.size()>0){
+			stockIncomingMaterialsList.stream().forEach(s ->s.setInOrderCode(stockInOrderLevel2.getOrderCode()));
 			stockIncomingMaterialsService.saveBatch(stockIncomingMaterialsList);
 		}
-		this.save(stockInOrderLevel2);
 	}
 
 	@Override
@@ -97,11 +108,13 @@ public class StockInOrderLevel2ServiceImpl extends ServiceImpl<StockInOrderLevel
 	}
 
 	@Override
-	public boolean submitPlan(String status, String code) {
-		StockInOrderLevel2 stockInOrderLevel2 = this.getOne(new QueryWrapper<StockInOrderLevel2>().eq("code",code));
+	public boolean submitInOrderStatus(String status, String code) throws ParseException {
+		StockInOrderLevel2 stockInOrderLevel2 = this.getOne(new QueryWrapper<StockInOrderLevel2>().eq("order_code",code));
 		stockInOrderLevel2.setStatus(status);
 		String warehouseCode = stockInOrderLevel2.getWarehouseCode();//仓库编号
-		Date stockInTime = stockInOrderLevel2.getEntryTime();
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+		Date stockInTime = sdf.parse(sdf.format(new Date()));
+		stockInOrderLevel2.setEntryTime(stockInTime);
 		List<StockIncomingMaterials> stockIncomingMaterialsList = stockIncomingMaterialsService.list(new QueryWrapper<StockIncomingMaterials>().eq("in_order_code",code).eq("del_flag", CommonConstant.DEL_FLAG_0));
 		if(stockIncomingMaterialsList != null && stockIncomingMaterialsList.size()>0){
 			for(StockIncomingMaterials stockIncomingMaterials : stockIncomingMaterialsList){
@@ -217,8 +230,12 @@ public class StockInOrderLevel2ServiceImpl extends ServiceImpl<StockInOrderLevel
 						String wzcode = stockIncomingMaterials.getMaterialCode()==null?"":stockIncomingMaterials.getMaterialCode();
 						MaterialBase materialBase = materialBaseService.getOne(new QueryWrapper<MaterialBase>().eq("code",wzcode));
 						materialBase = materialBaseService.translate(materialBase);
-						String zyname = sysBaseApi.translateDictFromTable("cs_major", "major_name", "major_code", materialBase.getMajorCode());
-						String zxyname = sysBaseApi.translateDictFromTable("cs_subsystem", "system_name", "system_code", materialBase.getSystemCode());
+						CsMajor csMajor = csMajorService.getOne(new QueryWrapper<CsMajor>().eq("major_code",materialBase.getMajorCode()).eq("del_flag", CommonConstant.DEL_FLAG_0));
+//						String zyname = sysBaseApi.translateDictFromTable("cs_major", "major_name", "major_code", materialBase.getMajorCode());
+						String zyname = csMajor==null?"":csMajor.getMajorName();
+						CsSubsystem csSubsystem = csSubsystemService.getOne(new QueryWrapper<CsSubsystem>().eq("system_code",materialBase.getSystemCode()).eq("del_flag", CommonConstant.DEL_FLAG_0));
+//						String zxyname = sysBaseApi.translateDictFromTable("cs_subsystem", "system_name", "system_code", materialBase.getSystemCode());
+						String zxyname = csSubsystem==null?"":csSubsystem.getSystemName();
 						String wztype = materialBase.getType()==null?"":materialBase.getType().toString();
 						String wztypename = sysBaseApi.translateDict("material_type",wztype);
 						String unitcode = materialBase.getUnit()==null?"":materialBase.getUnit();
@@ -240,5 +257,12 @@ public class StockInOrderLevel2ServiceImpl extends ServiceImpl<StockInOrderLevel
 			}
 		}
 		excel.exportXls(response);
+	}
+
+	@Override
+	public IPage<StockInOrderLevel2> pageList(Page<StockInOrderLevel2> page, StockInOrderLevel2 stockInOrderLevel2) {
+		List<StockInOrderLevel2> baseList = baseMapper.pageList(page, stockInOrderLevel2);
+		page.setRecords(baseList);
+		return page;
 	}
 }
