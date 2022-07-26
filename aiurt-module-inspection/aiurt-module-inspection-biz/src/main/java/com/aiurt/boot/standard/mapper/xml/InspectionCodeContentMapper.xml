@@ -5,7 +5,7 @@
 	<update id="updateTreeNodeStatus" parameterType="java.lang.String">
 		update inspection_code_content set has_child = #{status} where id = #{id}
 	</update>
-	<update id="updatePId">
+	<update id="updatePid">
 		update  inspection_code_content a
 		set a.del_flag =1
 		where a.pid=#{id}
