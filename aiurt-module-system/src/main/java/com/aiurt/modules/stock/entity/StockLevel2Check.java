@@ -23,7 +23,7 @@ import java.util.List;
  * @Version: V1.0
  */
 @Data
-@TableName("stock_in_order_level2")
+@TableName("stock_level2_check")
 @EqualsAndHashCode(callSuper = false)
 @Accessors(chain = true)
 @ApiModel(value="二级库盘点任务表", description="二级库盘点任务表")
@@ -52,16 +52,18 @@ public class StockLevel2Check extends DictEntity {
 
 
 	/**计划开始时间开始 CURRENT_TIMESTAMP*/
-	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm")
-	@DateTimeFormat(pattern="yyyy-MM-dd HH:mm")
+	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
+	@DateTimeFormat(pattern="yyyy-MM-dd")
 	@ApiModelProperty(value = "计划开始时间开始")
+	@TableField(exist = false)
 	private  java.util.Date  planStartTimeStart;
 
 
 	/**计划开始时间结束 CURRENT_TIMESTAMP*/
-	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm")
-	@DateTimeFormat(pattern="yyyy-MM-dd HH:mm")
+	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
+	@DateTimeFormat(pattern="yyyy-MM-dd")
 	@ApiModelProperty(value = "计划开始时间结束")
+	@TableField(exist = false)
 	private  java.util.Date  planStartTimeEnd;
 
 	/**计划开始时间 CURRENT_TIMESTAMP*/

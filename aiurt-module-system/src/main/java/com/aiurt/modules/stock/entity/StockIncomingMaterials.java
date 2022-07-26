@@ -2,10 +2,7 @@ package com.aiurt.modules.stock.entity;
 
 import com.aiurt.common.aspect.annotation.Dict;
 import com.aiurt.modules.basic.entity.DictEntity;
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableLogic;
-import com.baomidou.mybatisplus.annotation.TableName;
+import com.baomidou.mybatisplus.annotation.*;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
@@ -24,7 +21,7 @@ import org.springframework.format.annotation.DateTimeFormat;
  * @Version: V1.0
  */
 @Data
-@TableName("stock_submit_materials")
+@TableName("stock_incoming_materials")
 @EqualsAndHashCode(callSuper = false)
 @Accessors(chain = true)
 @ApiModel(value="入库物资表", description="入库物资表")
@@ -75,4 +72,47 @@ public class StockIncomingMaterials extends DictEntity {
 	@ApiModelProperty(value = "删除状态 0-未删除 1-已删除")
 	@TableLogic
 	private  Integer  delFlag;
+
+	/**专业编码*/
+	@Excel(name = "专业编码", width = 15)
+	@ApiModelProperty(value = "专业编码")
+	@Dict(dictTable ="cs_major",dicText = "major_name",dicCode = "major_code")
+	@TableField(exist = false)
+	private  String  majorCode;
+
+	/**子系统编号*/
+	@Excel(name = "子系统编码", width = 15)
+	@ApiModelProperty(value = "子系统编号")
+	@Dict(dictTable ="cs_subsystem",dicText = "system_name",dicCode = "system_code")
+	@TableField(exist = false)
+	private  String  systemCode;
+
+	/**分类编码层级*/
+	@ApiModelProperty(value = "分类编码层级")
+	@TableField(exist = false)
+	private  String  baseTypeCodeCc;
+	/**分类编码层级名称*/
+	@ApiModelProperty(value = "分类编码层级名称")
+	@TableField(exist = false)
+	private  String  baseTypeCodeCcName;
+
+	/**类型*/
+	@Excel(name = "类型", width = 15)
+	@ApiModelProperty(value = "类型")
+	@Dict(dicCode = "material_type")
+	@TableField(exist = false)
+	private  String  type;
+
+	/**名称*/
+	@Excel(name = "物资名称", width = 15)
+	@ApiModelProperty(value = "物资名称")
+	@TableField(exist = false)
+	private  String  name;
+
+	/**单位*/
+	@Excel(name = "单位", width = 15)
+	@ApiModelProperty(value = " 单位")
+	@Dict(dicCode = "materian_unit")
+	@TableField(exist = false)
+	private  String  unit;
 }

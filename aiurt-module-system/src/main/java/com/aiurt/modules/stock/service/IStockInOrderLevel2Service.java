@@ -1,6 +1,9 @@
 package com.aiurt.modules.stock.service;
 
 import com.aiurt.modules.stock.entity.StockInOrderLevel2;
+import com.aiurt.modules.stock.entity.StockSubmitMaterials;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 
 import javax.servlet.http.HttpServletRequest;
@@ -39,7 +42,7 @@ public interface IStockInOrderLevel2Service extends IService<StockInOrderLevel2>
      * @param code
      * @return
      */
-    boolean submitPlan(String status,String code);
+    boolean submitInOrderStatus(String status,String code) throws ParseException;
 
     /**
      * 导出
@@ -48,4 +51,12 @@ public interface IStockInOrderLevel2Service extends IService<StockInOrderLevel2>
      * @param response
      */
     void eqExport(String ids, HttpServletRequest request, HttpServletResponse response);
+
+    /**
+     * 获取分页数据
+     * @param page
+     * @param stockInOrderLevel2
+     * @return
+     */
+    IPage<StockInOrderLevel2> pageList(Page<StockInOrderLevel2> page, StockInOrderLevel2 stockInOrderLevel2);
 }

@@ -97,13 +97,13 @@ public class MaterialBaseTypeController {
                     String systemCode1 = materialBaseType1.getSystemCode()==null?"":materialBaseType1.getSystemCode();
                     if(!"".equals(systemCode1)){
                         CsSubsystem csSubsystem = csSubsystemService.getOne(new QueryWrapper<CsSubsystem>().eq("system_code",systemCode1).eq("del_flag", CommonConstant.DEL_FLAG_0));
-                        materialBaseType1.setPidName(csSubsystem.getSystemName());
+                        materialBaseType1.setPidName(csSubsystem==null?"":csSubsystem.getSystemName());
                     }else{
                         CsMajor csMajor = csMajorService.getOne(new QueryWrapper<CsMajor>().eq("major_code",materialBaseType1.getMajorCode()).eq("del_flag", CommonConstant.DEL_FLAG_0));
-                        materialBaseType1.setPidName(csMajor.getMajorName());
+                        materialBaseType1.setPidName(csMajor==null?"":csMajor.getMajorName());
                     }
                 }else{
-                    materialBaseType1.setPidName(iMaterialBaseTypeService.getById(pid).getBaseTypeName());
+                    materialBaseType1.setPidName(iMaterialBaseTypeService.getById(pid)==null?"":iMaterialBaseTypeService.getById(pid).getBaseTypeName());
                 }
             }
         }

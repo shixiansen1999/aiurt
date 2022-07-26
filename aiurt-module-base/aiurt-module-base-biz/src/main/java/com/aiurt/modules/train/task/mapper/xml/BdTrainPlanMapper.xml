@@ -10,18 +10,19 @@
         CONCAT(DATE_FORMAT(btt.start_date,'%Y/%m/%d'),'-',DATE_FORMAT(btt.end_date,'%Y/%m/%d')) as trainTime,
         btt.plan_sub_name,
         btt.task_hours,
-        su.realname as teacher,
+<!--        su.realname as teacher,-->
         btt.train_target,
-        vd.item_text as examnation,
-        vd2.item_text as performance,
+    <!--        vd.item_text as examnation,-->
+    <!--        vd2.item_text as performance,-->
         btt.remarks
         FROM
         bd_train_task btt
-        JOIN sys_user su ON su.id = btt.teacher_id
-        JOIN view_dict vd ON vd.item_value = btt.exam_status
-        JOIN view_dict vd2 ON vd2.item_value = btt.task_state
-        <where>vd.dict_code = "examStatus_type"
-            and vd2.dict_code = "task_state"
+<!--        JOIN sys_user su ON su.id = btt.teacher_id-->
+<!--        JOIN view_dict vd ON vd.item_value = btt.exam_status-->
+<!--        JOIN view_dict vd2 ON vd2.item_value = btt.task_state-->
+        <where>
+<!--        vd.dict_code = "examStatus_type"-->
+<!--            and vd2.dict_code = "task_state"-->
             <if test="reportReqVO.trainStart!=null and reportReqVO.trainEnd!=null">
                 and btt.end_date between #{reportReqVO.trainStart} and #{reportReqVO.trainEnd}
             </if>

@@ -333,7 +333,6 @@ public class StockSubmitPlanServiceImpl extends ServiceImpl<StockSubmitPlanMappe
 						continue;
 					}
 					if(ifImport && ifAdd){
-						successLines +=1;
 						MaterialBase materialBase = materialBaseService.getOne(new QueryWrapper<MaterialBase>().eq("code",code));
 						stockSubmitMaterials.setUnit(materialBase.getUnit());
 						stockSubmitMaterials.setPrice(materialBase.getPrice());
@@ -343,25 +342,30 @@ public class StockSubmitPlanServiceImpl extends ServiceImpl<StockSubmitPlanMappe
 						stockSubmitMaterialsList.add(stockSubmitMaterials);
 					}
 				}
-				if(ifImport){
-					String code = this.getSubmitPlanCode().getCode();
-					String status = CommonConstant.STOCK_LEVEL2_SUBMIT_PLAN_1;
-					LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-					String userId = user.getId();
-					String orgId = user.getOrgId();
-					SimpleDateFormat sdf2 = new SimpleDateFormat("yyyy-MM-dd HH:mm");
-					stockSubmitPlan.setCode(code);
-					stockSubmitPlan.setStatus(status);
-					stockSubmitPlan.setUserId(userId);
-					stockSubmitPlan.setOrgId(orgId);
-					stockSubmitPlan.setSubmitTime(sdf2.parse(sdf2.format(new Date())));
-					this.save(stockSubmitPlan);
-					if(stockSubmitMaterialsList != null && stockSubmitMaterialsList.size()>0){
-						stockSubmitMaterialsList.stream().forEach(s ->s.setSubmitPlanCode(code));
-						stockSubmitMaterialsService.saveBatch(stockSubmitMaterialsList);
-					}
+				if(!ifAdd){
+					errorLines += 1;
 				}
-				errorLines+=errorStrs.size();
+			}
+			if(ifImport){
+				String code = this.getSubmitPlanCode().getCode();
+				String status = CommonConstant.STOCK_LEVEL2_SUBMIT_PLAN_1;
+				LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+				String userId = user.getId();
+				String orgId = user.getOrgId();
+				SimpleDateFormat sdf2 = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+				stockSubmitPlan.setCode(code);
+				stockSubmitPlan.setStatus(status);
+				stockSubmitPlan.setUserId(userId);
+				stockSubmitPlan.setOrgId(orgId);
+				stockSubmitPlan.setSubmitTime(sdf2.parse(sdf2.format(new Date())));
+				this.save(stockSubmitPlan);
+				if(stockSubmitMaterialsList != null && stockSubmitMaterialsList.size()>0){
+					stockSubmitMaterialsList.stream().forEach(s ->s.setSubmitPlanCode(code));
+					stockSubmitMaterialsService.saveBatch(stockSubmitMaterialsList);
+				}
+				successLines += (1 + stockSubmitMaterialsList.size());
+			}else{
+				errorLines +=1;
 			}
 		} catch (Exception e) {
 			// TODO Auto-generated catch block

@@ -2,6 +2,8 @@ package com.aiurt.modules.stock.controller;
 
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.constant.CommonConstant;
+import com.aiurt.modules.material.entity.MaterialBase;
+import com.aiurt.modules.material.service.IMaterialBaseService;
 import com.aiurt.modules.stock.entity.StockIncomingMaterials;
 import com.aiurt.modules.stock.service.IStockIncomingMaterialsService;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -18,6 +20,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.List;
 
 /**
  * @Description: 二级库入库物资
@@ -34,7 +37,7 @@ public class StockIncomingMaterialsController {
     @Autowired
     private IStockIncomingMaterialsService iStockIncomingMaterialsService;
     @Autowired
-    private IStockIncomingMaterialsService stockIncomingMaterialsService;
+    private IMaterialBaseService materialBaseService;
 
     /**
      * 分页列表查询
@@ -56,11 +59,26 @@ public class StockIncomingMaterialsController {
         queryWrapper.eq("del_flag", CommonConstant.DEL_FLAG_0);
         String inOrderCode = stockIncomingMaterials==null?"":stockIncomingMaterials.getInOrderCode();
         if(inOrderCode != null && !"".equals(inOrderCode)){
-            queryWrapper.eq("submit_plan_code",inOrderCode);
+            queryWrapper.eq("in_order_code",inOrderCode);
         }
         queryWrapper.orderByDesc("create_time");
         Page<StockIncomingMaterials> page = new Page<StockIncomingMaterials>(pageNo, pageSize);
         IPage<StockIncomingMaterials> pageList = iStockIncomingMaterialsService.page(page, queryWrapper);
+        List<StockIncomingMaterials> records = pageList.getRecords();
+        if(records != null && records.size()>0){
+            for(StockIncomingMaterials materials : records){
+                String materialCode = materials.getMaterialCode();
+                MaterialBase materialBase = materialBaseService.getOne(new QueryWrapper<MaterialBase>().eq("code", materialCode));
+                materials.setMajorCode(materialBase.getMajorCode());
+                materials.setSystemCode(materialBase.getSystemCode());
+                materials.setBaseTypeCodeCc(materialBase.getBaseTypeCodeCc());
+                materials.setName(materialBase.getName());
+                materials.setUnit(materialBase.getUnit());
+                materials.setType(materialBase.getType());
+                String baseTypeCodeCcName = iStockIncomingMaterialsService.getCcName(materials);
+                materials.setBaseTypeCodeCcName(baseTypeCodeCcName);
+            }
+        }
         result.setSuccess(true);
         result.setResult(pageList);
         return result;
