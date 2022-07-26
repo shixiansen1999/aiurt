@@ -1,9 +1,13 @@
 package com.aiurt.modules.system.controller;
 
 import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.date.DateField;
+import cn.hutool.core.date.DateUnit;
+import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.RandomUtil;
 import cn.hutool.core.util.StrUtil;
+import com.aiurt.common.api.dto.LogDTO;
 import com.aiurt.common.constant.CacheConstant;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.system.util.JwtUtil;
@@ -122,7 +126,7 @@ public class LoginController {
 		//update-begin--Author:liusq  Date:20210126  for：登录成功，删除redis中的验证码
 		LoginUser loginUser = new LoginUser();
 		BeanUtils.copyProperties(sysUser, loginUser);
-		baseCommonService.addLog("用户名: " + username + ",登录成功！", CommonConstant.LOG_TYPE_1, null,loginUser);
+		baseCommonService.addLog("用户名: " + sysUser.getRealname() + ",登录成功！", CommonConstant.LOG_TYPE_1, null,loginUser);
         //update-end--Author:wangshuai  Date:20200714  for：登录日志没有记录人员
 		return result;
 	}
@@ -167,7 +171,25 @@ public class LoginController {
 		LoginUser sysUser = sysBaseApi.getUserByName(username);
 	    if(sysUser!=null) {
 			//update-begin--Author:wangshuai  Date:20200714  for：登出日志没有记录人员
-			baseCommonService.addLog("用户名: "+sysUser.getRealname()+",退出成功！", CommonConstant.LOG_TYPE_1, null,sysUser);
+			// 计算在线时长
+			Date date = JwtUtil.getExpDateByToken(token);
+			int onlineMin = 1;
+			if (Objects.nonNull(date)) {
+				Date now = new Date();
+				date = DateUtil.offset(date, DateField.MILLISECOND, (int) JwtUtil.EXPIRE_TIME*(-1));
+				onlineMin = (int) (DateUtil.between(date, now, DateUnit.MINUTE));
+				onlineMin =onlineMin==0?onlineMin:onlineMin;
+			}
+			LogDTO logDTO = new LogDTO();
+			logDTO.setLogContent(sysUser.getRealname()+",退出成功！");
+			logDTO.setIp(IpUtils.getIpAddr(request));
+			logDTO.setLogType(CommonConstant.LOG_TYPE_1);
+			logDTO.setLoginUser(sysUser);
+			logDTO.setOnlineTime(onlineMin);
+			logDTO.setCreateTime(new Date());
+			logDTO.setUsername(sysUser.getRealname());
+			logDTO.setUserid(sysUser.getUsername());
+			baseCommonService.addLog(logDTO);
 			//update-end--Author:wangshuai  Date:20200714  for：登出日志没有记录人员
 	    	log.info(" 用户名:  "+sysUser.getRealname()+",退出成功！ ");
 	    	//清空用户登录Token缓存

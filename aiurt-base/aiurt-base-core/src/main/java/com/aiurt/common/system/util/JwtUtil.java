@@ -112,7 +112,6 @@ public class JwtUtil {
 		Algorithm algorithm = Algorithm.HMAC256(secret);
 		// 附带username信息
 		return JWT.create().withClaim("username", username).withExpiresAt(date).sign(algorithm);
-
 	}
 
 	/**
@@ -248,8 +247,15 @@ public class JwtUtil {
 		return returnValue;
 	}
 
-//	public static void main(String[] args) {
-//		 String token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE1NjUzMzY1MTMsInVzZXJuYW1lIjoiYWRtaW4ifQ.xjhud_tWCNYBOg_aRlMgOdlZoWFFKB_givNElHNw3X0";
-//		 System.out.println(JwtUtil.getUsername(token));
-//	}
+	public static  Date getExpDateByToken(String token) {
+		try {
+			if (StrUtil.isBlank(token)) {
+				return null;
+			}
+			DecodedJWT jwt = JWT.decode(token);
+			return jwt.getExpiresAt();
+		} catch (JWTDecodeException e) {
+			return null;
+		}
+	}
 }

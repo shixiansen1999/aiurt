@@ -1,18 +1,21 @@
 package com.aiurt.modules.editor.language.json.converter;
 
+import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.map.MapUtil;
 import com.aiurt.modules.utils.ExtensionPropertiesUtil;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.databind.node.TextNode;
 import org.apache.commons.lang3.StringUtils;
 import org.flowable.bpmn.constants.BpmnXMLConstants;
 import org.flowable.bpmn.model.*;
 import org.flowable.editor.language.json.converter.BaseBpmnJsonConverter;
 import org.flowable.editor.language.json.converter.BpmnJsonConverterContext;
 import org.flowable.editor.language.json.converter.UserTaskJsonConverter;
+import org.flowable.editor.language.json.converter.util.JsonConverterUtil;
 
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * 扩展任务节点属性解析器
@@ -33,6 +36,7 @@ public class CustomUserTaskJsonConverter  extends UserTaskJsonConverter {
      * 操作按钮, [{"formOperation":{"id":"","label":"","type":"","showOrder":""}}]
      */
     public static final String OPERATION_LIST = "operationList";
+
 
 
 
@@ -89,26 +93,26 @@ public class CustomUserTaskJsonConverter  extends UserTaskJsonConverter {
                 if (NEXT_USER_LABEL.equals(extensionElement.getName())) {
                     text[7] = extensionElement.getElementText();
                 }
-
-                ObjectNode node = objectMapper.createObjectNode();
-                //  自定义属性:操作按钮
-                if (OPERATION_LIST.equalsIgnoreCase(extensionElement.getName())) {
-                    ArrayNode arrayNode = super.objectMapper.createArrayNode();
-                    Map<String, List<ExtensionElement>> childElements = extensionElement.getChildElements();
-                    childElements.forEach((key,e)->{
-
-                        ExtensionElement extensionElement1 = e.get(0);
-                        Map<String, List<ExtensionAttribute>> attributes = extensionElement1.getAttributes();
-
-                        String id = extensionElement1.getAttributeValue(BpmnXMLConstants.FLOWABLE_EXTENSIONS_NAMESPACE, "id");
-                    });
-                    node.set("formOperation",arrayNode);
-
-                    //node.set(OPERATION_LIST, arrayNode);
-                    propertiesNode.set(OPERATION_LIST, node);
-                }
-
             }));
+            //  自定义属性:操作按钮
+            List<ExtensionElement> formOperationElements =
+                    this.getMyExtensionElementList(baseElement.getExtensionElements(), "operationList", "formOperation");
+            if (CollUtil.isNotEmpty(formOperationElements)) {
+                ObjectNode node = super.objectMapper.createObjectNode();
+                ArrayNode arrayNode = super.objectMapper.createArrayNode();
+                for (ExtensionElement e : formOperationElements) {
+                    ObjectNode objectNode = super.objectMapper.createObjectNode();
+                    objectNode.put("id", e.getAttributeValue(null, "id"));
+                    objectNode.put("label", e.getAttributeValue(null, "label"));
+                    objectNode.put("type", e.getAttributeValue(null, "type"));
+                    objectNode.put("showOrder", e.getAttributeValue(null, "showOrder"));
+                    String multiSignAssignee = e.getAttributeValue(null, "multiSignAssignee");
+                    arrayNode.add(objectNode);
+                }
+                node.set("formOperation", arrayNode);
+                propertiesNode.set(OPERATION_LIST, node);
+            }
+
             if (StringUtils.isNotBlank(text[0])){
                 propertiesNode.put(ASSIGNEE_TYPE, text[0]);
             }
@@ -138,7 +142,7 @@ public class CustomUserTaskJsonConverter  extends UserTaskJsonConverter {
     }
 
     /**
-     *  //重写Json和UserTask Element转换方法
+     *  重写Json和UserTask Element转换方法
      * @param elementNode
      * @param modelNode
      * @param shapeMap
@@ -163,6 +167,76 @@ public class CustomUserTaskJsonConverter  extends UserTaskJsonConverter {
             ExtensionPropertiesUtil.addExtensionPropertiesElement(elementNode, userTask, NODE_TYPE);
             ExtensionPropertiesUtil.addExtensionPropertiesElement(elementNode, userTask, NEXT_SEQUENCE_FLOW_LABEL);
             ExtensionPropertiesUtil.addExtensionPropertiesElement(elementNode, userTask, NEXT_USER_LABEL);
+            // todo 优化
+            JsonNode expansionNode = JsonConverterUtil.getProperty(OPERATION_LIST, elementNode);
+            if (Objects.nonNull(expansionNode)) {
+                ExtensionElement ee = new ExtensionElement();
+                ee.setName(OPERATION_LIST);
+                ee.setNamespacePrefix(BpmnXMLConstants.FLOWABLE_EXTENSIONS_PREFIX);
+                ee.setNamespace(BpmnXMLConstants.FLOWABLE_EXTENSIONS_NAMESPACE);
+                if (expansionNode instanceof ObjectNode) {
+                    ObjectNode objectNode = (ObjectNode) expansionNode;
+                    Iterator<String> keyIt = objectNode.fieldNames();
+                    while(keyIt.hasNext()){
+                        String s = keyIt.next();
+                        JsonNode jsonNode = objectNode.get(s);
+                        Map<String, List<ExtensionElement>> map = new LinkedHashMap<>();
+                        List<ExtensionElement> extensionElementList = new ArrayList<>();
+                        if (jsonNode instanceof ArrayNode) {
+                            ArrayNode arrayNode = (ArrayNode) jsonNode;
+                            Iterator<JsonNode> iterator = arrayNode.iterator();
+                            ExtensionElement child = new ExtensionElement();
+                            child.setName(s);
+                            child.setNamespacePrefix(BpmnXMLConstants.FLOWABLE_EXTENSIONS_PREFIX);
+                            child.setNamespace(BpmnXMLConstants.FLOWABLE_EXTENSIONS_NAMESPACE);
+                            while (iterator.hasNext()) {
+                                ObjectNode next = (ObjectNode) iterator.next();
+
+                                Iterator<String> childNameIt = next.fieldNames();
+                                while (childNameIt.hasNext()) {
+                                    ExtensionAttribute attribute = new ExtensionAttribute();
+                                    String name = childNameIt.next();
+                                    attribute.setName(name);
+                                    JsonNode jsonNode1 = next.get(name);
+                                    if (jsonNode1 instanceof TextNode) {
+                                        attribute.setValue(jsonNode1.asText());
+                                    }
+                                    child.addAttribute(attribute);
+                                }
+                            }
+                            extensionElementList.add(child);
+                            map.put(s, extensionElementList);
+                            ee.setChildElements(map);
+                        }else if (jsonNode instanceof ObjectNode) {
+
+                        }
+
+                    }
+                    // 如果是文本
+                }else if (expansionNode instanceof TextNode) {
+                    ee.setElementText(expansionNode.asText());
+                }
+                userTask.addExtensionElement(ee);
+            }
         }
+    }
+
+
+    private List<ExtensionElement> getMyExtensionElementList(
+            Map<String, List<ExtensionElement>> extensionMap, String rootName, String childName) {
+        List<ExtensionElement> elementList = extensionMap.get(rootName);
+        if (CollUtil.isEmpty(elementList)) {
+            return null;
+        }
+        ExtensionElement ee = elementList.get(0);
+        Map<String, List<ExtensionElement>> childExtensionMap = ee.getChildElements();
+        if (MapUtil.isEmpty(childExtensionMap)) {
+            return null;
+        }
+        List<ExtensionElement> childrenElements = childExtensionMap.get(childName);
+        if (CollUtil.isEmpty(childrenElements)) {
+            return null;
+        }
+        return childrenElements;
     }
 }

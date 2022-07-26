@@ -2,6 +2,7 @@ package com.aiurt.common.aspect.annotation;
 
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.constant.enums.ModuleType;
+import org.springframework.context.annotation.Primary;
 
 import java.lang.annotation.*;
 
@@ -18,7 +19,7 @@ import java.lang.annotation.*;
 public @interface AutoLog {
 
 	/**
-	 * 日志内容
+	 * 日志内容，一级菜单-二级菜单（模块名）- 按钮名称
 	 *
 	 * @return
 	 */
@@ -34,13 +35,21 @@ public @interface AutoLog {
 	/**
 	 * 操作日志类型
 	 *
-	 * @return （1查询，2添加，3修改，4删除）
+	 * @return （1查询，2添加，3修改，4删除, 5导入，6导出）
 	 */
 	int operateType() default 0;
+
+	/**
+	 * 操作日志类型，比如：修改-更新状态
+	 * @return
+	 */
+	String operateTypeAlias() default "";
 
 	/**
 	 * 模块类型 默认为common
 	 * @return
 	 */
 	ModuleType module() default ModuleType.COMMON;
+
+
 }

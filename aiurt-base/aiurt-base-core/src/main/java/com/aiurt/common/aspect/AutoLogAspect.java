@@ -80,6 +80,10 @@ public class AutoLogAspect {
             }
             //注解上的描述,操作日志内容
             dto.setLogType(syslog.logType());
+            dto.setOperateTypeAlias(syslog.operateTypeAlias());
+            dto.setOperateType(syslog.operateType());
+            dto.setModuleType(syslog.module().getCode());
+            dto.setModuleTypeName(syslog.module().getMessage());
             dto.setLogContent(content);
         }
 

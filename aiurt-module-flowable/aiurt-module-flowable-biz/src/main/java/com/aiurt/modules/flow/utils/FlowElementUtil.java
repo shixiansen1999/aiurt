@@ -18,6 +18,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -63,6 +64,8 @@ public class FlowElementUtil {
                 userTask = (UserTask) targetFlowElement;
             }
         }
+
+        // Map<String, List<ExtensionElement>> extensionElements = userTask.getExtensionElements();
 
         return userTask;
     }

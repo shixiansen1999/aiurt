@@ -50,6 +50,16 @@ public class LogDTO implements Serializable {
     /**操作人用户账户*/
     private String userid;
 
+    /**在线时间*/
+    private Integer onlineTime;
+
+    /**操作类型别名*/
+    private String operateTypeAlias;
+
+    private String moduleType;
+
+    private String moduleTypeName;
+
     public LogDTO(){
 
     }

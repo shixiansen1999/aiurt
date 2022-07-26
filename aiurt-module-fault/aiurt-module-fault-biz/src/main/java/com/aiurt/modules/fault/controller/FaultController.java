@@ -2,6 +2,8 @@ package com.aiurt.modules.fault.controller;
 
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.aspect.annotation.AutoLog;
+import com.aiurt.common.constant.enums.ModuleType;
+import com.aiurt.common.constant.enums.OperateTypeEnum;
 import com.aiurt.common.system.base.controller.BaseController;
 import com.aiurt.modules.basic.entity.CsWork;
 import com.aiurt.modules.fault.dto.*;
@@ -54,7 +56,7 @@ public class FaultController extends BaseController<Fault, IFaultService> {
      * @param req
      * @return
      */
-    @AutoLog(value = "故障分页列表查询")
+    @AutoLog(value = "故障管理-故障列表-查询", operateType =  1, operateTypeAlias = "查询", module = ModuleType.FAULT)
     @ApiOperation(value = "分页列表查询", notes = "fault-分页列表查询")
     @GetMapping(value = "/list")
     public Result<IPage<Fault>> queryPageList(Fault fault,
@@ -94,7 +96,7 @@ public class FaultController extends BaseController<Fault, IFaultService> {
      * @param fault
      * @return
      */
-    @AutoLog(value = "故障上报")
+    @AutoLog(value = "故障管理-故障列表-新增故障上报", operateType =  2, operateTypeAlias = "故障上报", module = ModuleType.FAULT)
     @ApiOperation(value = "故障上报", notes = "故障上报")
     @PostMapping(value = "/add")
     public Result<?> add(@Validated @RequestBody Fault fault) {
@@ -110,7 +112,7 @@ public class FaultController extends BaseController<Fault, IFaultService> {
      */
     @PutMapping("/approval")
     @ApiOperation(value = "故障审批", notes = "故障审批")
-    @AutoLog("故障审批")
+    @AutoLog(value = "故障管理-故障列表-上报审批", operateType =  3, operateTypeAlias = "上报审批", module = ModuleType.FAULT)
     public Result<?> approval(@RequestBody ApprovalDTO approvalDTO) {
 
         faultService.approval(approvalDTO);
@@ -124,7 +126,7 @@ public class FaultController extends BaseController<Fault, IFaultService> {
      * @param fault
      * @return
      */
-    @AutoLog(value = "编辑故障单")
+    @AutoLog(value = "故障管理-故障列表-编辑", operateType =  3, operateTypeAlias = "编辑故障单", module = ModuleType.FAULT)
     @ApiOperation(value = "故障编辑", notes = "故障编辑")
     @RequestMapping(value = "/edit", method = {RequestMethod.PUT, RequestMethod.POST})
     public Result<String> edit(@RequestBody Fault fault) {
@@ -138,8 +140,9 @@ public class FaultController extends BaseController<Fault, IFaultService> {
      * @param cancelDTO
      * @return
      */
-    @AutoLog(value = "故障作废")
+
     @ApiOperation(value = "故障作废", notes = "故障作废")
+    @AutoLog(value = "故障管理-故障列表-作废", operateType =  3, operateTypeAlias = "作废故障单", module = ModuleType.FAULT)
     @PutMapping(value = "/cancel")
     public Result<String> cancel(@Valid @RequestBody CancelDTO cancelDTO) {
         faultService.cancel(cancelDTO);
@@ -152,7 +155,7 @@ public class FaultController extends BaseController<Fault, IFaultService> {
      * @param code
      * @return
      */
-    @AutoLog(value = "查看故障详情")
+    @AutoLog(value = "故障管理-故障列表-详情", operateType =  3, operateTypeAlias = "查看故障详情", module = ModuleType.FAULT)
     @ApiOperation(value = "通过故障编码查询详情", notes = "通过故障编码查询详情")
     @GetMapping(value = "/queryByCode")
     @ApiImplicitParams({
@@ -171,7 +174,7 @@ public class FaultController extends BaseController<Fault, IFaultService> {
      * @param assignDTO
      * @return
      */
-    @AutoLog(value = "故障指派")
+    @AutoLog(value = "故障管理-故障列表-指派", operateType =  3, operateTypeAlias = "故障指派", module = ModuleType.FAULT)
     @ApiOperation(value = "故障指派", notes = "故障指派")
     @PutMapping("/assign")
     public Result<?> assign(@RequestBody AssignDTO assignDTO) {

@@ -42,12 +42,12 @@ public enum OperateTypeEnum {
     /**
      * 类型 1列表,2新增,3编辑,4删除,5导入,6导出
      */
-    int type;
+    private int type;
 
     /**
      * 编码(请求方式)
      */
-    String code;
+    private String code;
 
 
     public int getType() {
@@ -90,6 +90,8 @@ public enum OperateTypeEnum {
                 return e.getType();
             }
         }
+
+
         return CommonConstant.OPERATE_TYPE_1;
     }
 }
