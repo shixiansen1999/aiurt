@@ -71,6 +71,7 @@ public class FaultAnalysisReportController extends BaseController<FaultAnalysisR
 	//@AutoLog(value = "fault_analysis_report-分页列表查询")
 	@ApiOperation(value="故障分析-分页列表查询", notes="故障分析-分页列表查询")
 	@GetMapping(value = "/list")
+	@PermissionData(pageComponent = "fault/FaultAnalysisReportListChange")
 	public Result<IPage<FaultAnalysisReport>> queryPageList(FaultAnalysisReport faultAnalysisReport,
 								   @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
 								   @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,

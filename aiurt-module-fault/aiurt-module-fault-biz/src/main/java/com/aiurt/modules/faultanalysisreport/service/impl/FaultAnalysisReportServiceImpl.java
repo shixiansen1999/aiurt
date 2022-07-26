@@ -1,6 +1,9 @@
 package com.aiurt.modules.faultanalysisreport.service.impl;
 
 import cn.hutool.core.util.ObjectUtil;
+import com.aiurt.config.datafilter.object.GlobalThreadLocal;
+import com.aiurt.modules.fault.entity.Fault;
+import com.aiurt.modules.fault.mapper.FaultMapper;
 import com.aiurt.modules.faultanalysisreport.constant.FaultConstant;
 import com.aiurt.modules.faultanalysisreport.entity.FaultAnalysisReport;
 import com.aiurt.modules.faultanalysisreport.dto.FaultDTO;
@@ -47,12 +50,16 @@ public class FaultAnalysisReportServiceImpl extends ServiceImpl<FaultAnalysisRep
     private FaultKnowledgeBaseTypeMapper faultKnowledgeBaseTypeMapper;
     @Autowired
     private IFaultKnowledgeBaseService faultKnowledgeBaseService;
+    @Autowired
+    private FaultMapper faultMapper;
 
     @Override
     public IPage<FaultAnalysisReport> readAll(Page<FaultAnalysisReport> page, FaultAnalysisReport faultAnalysisReport) {
+        //通过数据权限获取当前拥有的子系统
+        LambdaQueryWrapper<Fault> queryWrapper = new LambdaQueryWrapper<>();
+        List<Fault> faults = faultMapper.selectList(queryWrapper);
+        List<String> ids = faults.stream().map(Fault::getId).distinct().collect(Collectors.toList());
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        //当前用户拥有的子系统
-        List<String> allSubSystem = faultKnowledgeBaseTypeMapper.getAllSubSystem(sysUser.getId());
         //根据角色决定是否查询未审核通过的故障分析
         if ( getRole()) {faultAnalysisReport.setApprovedResult(FaultConstant.PASSED);}
         List<String> rolesByUsername = sysBaseAPI.getRolesByUsername(sysUser.getUsername());
@@ -60,7 +67,7 @@ public class FaultAnalysisReportServiceImpl extends ServiceImpl<FaultAnalysisRep
         if (rolesByUsername.size()==1 && rolesByUsername.contains(FaultConstant.MAINTENANCE_WORKER)) {
             faultAnalysisReport.setCreateBy(sysUser.getUsername());
         }
-        List<FaultAnalysisReport> faultAnalysisReports = faultAnalysisReportMapper.readAll(page, faultAnalysisReport,allSubSystem);
+        List<FaultAnalysisReport> faultAnalysisReports = faultAnalysisReportMapper.readAll(page, faultAnalysisReport,ids);
         String asc = "asc";
         if (asc.equals(faultAnalysisReport.getOrder())) {
             List<FaultAnalysisReport> reportList = faultAnalysisReports.stream().sorted(Comparator.comparing(FaultAnalysisReport::getCreateTime)).collect(Collectors.toList());

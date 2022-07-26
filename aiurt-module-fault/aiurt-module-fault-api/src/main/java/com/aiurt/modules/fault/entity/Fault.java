@@ -1,6 +1,8 @@
 package com.aiurt.modules.fault.entity;
 
 import com.aiurt.common.aspect.annotation.Dict;
+import com.aiurt.common.aspect.annotation.MajorFilterColumn;
+import com.aiurt.common.aspect.annotation.SystemFilterColumn;
 import com.aiurt.modules.basic.entity.DictEntity;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
@@ -56,6 +58,7 @@ public class Fault extends DictEntity implements Serializable {
     @ApiModelProperty(value = "专业编码", required = true)
     @NotBlank(message = "请选择所属专业")
     @Dict(dictTable = "cs_major", dicText = "major_name", dicCode = "major_code")
+    @MajorFilterColumn
     private String majorCode;
 
 
@@ -63,6 +66,7 @@ public class Fault extends DictEntity implements Serializable {
 	@Excel(name = "专业子系统编码", width = 15)
     @ApiModelProperty(value = "专业子系统编码")
     @Dict(dictTable = "cs_subsystem", dicText = "system_name", dicCode = "system_code")
+    @SystemFilterColumn
     private String subSystemCode;
 
 

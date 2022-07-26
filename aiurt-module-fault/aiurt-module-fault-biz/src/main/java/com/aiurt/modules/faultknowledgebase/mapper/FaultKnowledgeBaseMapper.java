@@ -2,6 +2,7 @@ package com.aiurt.modules.faultknowledgebase.mapper;
 
 import java.util.List;
 
+import com.aiurt.common.aspect.annotation.EnableDataPerm;
 import com.aiurt.modules.faultknowledgebase.dto.DeviceAssemblyDTO;
 import com.aiurt.modules.faultknowledgebase.dto.DeviceTypeDTO;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestParam;
  * @Date:   2022-06-24
  * @Version: V1.0
  */
+@EnableDataPerm
 public interface FaultKnowledgeBaseMapper extends BaseMapper<FaultKnowledgeBase> {
     /**
      * 分页查询故障知识库
@@ -23,7 +25,7 @@ public interface FaultKnowledgeBaseMapper extends BaseMapper<FaultKnowledgeBase>
      * @param condition
      * @return List<FaultAnalysisReport>
      * */
-    List<FaultKnowledgeBase> readAll(@Param("page")Page<FaultKnowledgeBase> page, @Param("condition")FaultKnowledgeBase condition,@Param("allSubSystem") List<String> allSubSystem);
+    List<FaultKnowledgeBase> readAll(@Param("page")Page<FaultKnowledgeBase> page, @Param("condition")FaultKnowledgeBase condition,@Param("ids") List<String> ids);
 
     /**
      * 分页查询故障知识库

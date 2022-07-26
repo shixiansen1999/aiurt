@@ -22,10 +22,10 @@ public interface FaultAnalysisReportMapper extends BaseMapper<FaultAnalysisRepor
      * 查询全部故障分析
      * @param page
      * @param condition
-     * @param allSubSystem
+     * @param ids
      * @return List<FaultAnalysisReport>
      * */
-    List<FaultAnalysisReport> readAll(@Param("page")Page<FaultAnalysisReport> page, @Param("condition")FaultAnalysisReport condition,@Param("allSubSystem")List<String> allSubSystem);
+    List<FaultAnalysisReport> readAll(@Param("page")Page<FaultAnalysisReport> page, @Param("condition")FaultAnalysisReport condition,@Param("ids")List<String> ids);
 
     /**
      * 故障选择查询

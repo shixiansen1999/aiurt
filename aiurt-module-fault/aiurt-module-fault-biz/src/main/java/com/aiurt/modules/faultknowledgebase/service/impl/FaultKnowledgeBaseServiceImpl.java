@@ -1,5 +1,7 @@
 package com.aiurt.modules.faultknowledgebase.service.impl;
 
+import com.aiurt.config.datafilter.object.GlobalThreadLocal;
+import com.aiurt.modules.fault.entity.Fault;
 import com.aiurt.modules.faultanalysisreport.constant.FaultConstant;
 import com.aiurt.modules.faultanalysisreport.dto.FaultDTO;
 import com.aiurt.modules.faultanalysisreport.mapper.FaultAnalysisReportMapper;
@@ -7,6 +9,7 @@ import com.aiurt.modules.faultknowledgebase.entity.FaultKnowledgeBase;
 import com.aiurt.modules.faultknowledgebase.mapper.FaultKnowledgeBaseMapper;
 import com.aiurt.modules.faultknowledgebase.service.IFaultKnowledgeBaseService;
 import com.aiurt.modules.faultknowledgebasetype.mapper.FaultKnowledgeBaseTypeMapper;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.shiro.SecurityUtils;
@@ -47,7 +50,9 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
     public IPage<FaultKnowledgeBase> readAll(Page<FaultKnowledgeBase> page, FaultKnowledgeBase faultKnowledgeBase) {
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         //当前用户拥有的子系统
-        List<String> allSubSystem = faultKnowledgeBaseTypeMapper.getAllSubSystem(sysUser.getId());
+        LambdaQueryWrapper<FaultKnowledgeBase> queryWrapper = new LambdaQueryWrapper<>();
+        List<FaultKnowledgeBase> bases = faultKnowledgeBaseMapper.selectList(queryWrapper.eq(FaultKnowledgeBase::getDelFlag, "0"));
+        List<String> ids = bases.stream().map(FaultKnowledgeBase::getId).distinct().collect(Collectors.toList());
         List<String> rolesByUsername = sysBaseAPI.getRolesByUsername(sysUser.getUsername());
         //根据用户角色是否显示未通过的知识库
         if (!rolesByUsername.contains(FaultConstant.ADMIN)&&!rolesByUsername.contains(FaultConstant.MAINTENANCE_WORKER)&&!rolesByUsername.contains(FaultConstant.PROFESSIONAL_TECHNICAL_DIRECTOR)) {
@@ -57,7 +62,10 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
         if (rolesByUsername.size()==1 && rolesByUsername.contains(FaultConstant.MAINTENANCE_WORKER)) {
             faultKnowledgeBase.setCreateBy(sysUser.getUsername());
         }
-        List<FaultKnowledgeBase> faultKnowledgeBases = faultKnowledgeBaseMapper.readAll(page, faultKnowledgeBase,allSubSystem);
+        //下面禁用数据过滤
+        boolean b = GlobalThreadLocal.setDataFilter(false);
+        List<FaultKnowledgeBase> faultKnowledgeBases = faultKnowledgeBaseMapper.readAll(page, faultKnowledgeBase,ids);
+        GlobalThreadLocal.setDataFilter(b);
         faultKnowledgeBases.forEach(f->{
             String faultCodes = f.getFaultCodes();
             String[] split = faultCodes.split(",");

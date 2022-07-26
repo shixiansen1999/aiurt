@@ -6,6 +6,8 @@ import java.util.Date;
 import java.math.BigDecimal;
 import java.util.List;
 
+import com.aiurt.common.aspect.annotation.MajorFilterColumn;
+import com.aiurt.common.aspect.annotation.SystemFilterColumn;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
@@ -95,11 +97,13 @@ public class FaultKnowledgeBase implements Serializable {
 	@Excel(name = "专业编码", width = 15)
     @ApiModelProperty(value = "专业编码")
     @Dict(dictTable = "cs_major", dicText = "major_name", dicCode = "major_code")
+    @MajorFilterColumn
     private String majorCode;
 	/**专业子系统*/
 	@Excel(name = "专业子系统", width = 15)
     @ApiModelProperty(value = "专业子系统")
     @Dict(dictTable = "cs_subsystem", dicText = "system_name", dicCode = "system_code")
+    @SystemFilterColumn
     private String systemCode;
 	/**设备类型*/
 	@Excel(name = "设备类型", width = 15)

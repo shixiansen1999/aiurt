@@ -70,10 +70,9 @@
             and DATE_FORMAT(a.createTime ,'%Y-%m-%d') &gt;= DATE_FORMAT(#{condition.startTime},'%Y-%m-%d')
             and DATE_FORMAT(a.createTime ,'%Y-%m-%d') &lt;= DATE_FORMAT(#{condition.endTime},'%Y-%m-%d')
         </if>
-
-        <if test="allSubSystem != null and allSubSystem.size() != 0">
-            and a.sub_system_code in
-            <foreach collection="allSubSystem" index="item" open="(" separator="," close=")">
+        <if test="ids != null and ids.size() > 0">
+            and a.faultId in
+            <foreach collection="ids" index="index" item="item" open="(" separator="," close=")">
                 #{item}
             </foreach>
         </if>
@@ -123,13 +122,13 @@
     </if>
     <if test="allSubSystem != null and allSubSystem.size != 0">
         and f.sub_system_code in
-        <foreach collection="allSubSystem" index="item" open="(" separator="," close=")">
+        <foreach collection="allSubSystem" index="index" item="item" open="(" separator="," close=")">
             #{item}
         </foreach>
     </if>
     <if test="faultCodes != null and faultCodes.size() != 0">
         and  f.`code` not in
-        <foreach collection="faultCodes" item="item" open="(" separator="," close=")">
+        <foreach collection="faultCodes" index="index" item="item" open="(" separator="," close=")">
             #{item}
         </foreach>
     </if>
