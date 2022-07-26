@@ -5,8 +5,10 @@ import java.io.UnsupportedEncodingException;
 import java.util.Date;
 import java.math.BigDecimal;
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.fasterxml.jackson.annotation.JsonAlias;
 import lombok.Data;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -42,7 +44,12 @@ public class CsWork implements Serializable {
 	/**是否需要计划令*/
 	@Excel(name = "是否需要计划令", width = 15)
     @ApiModelProperty(value = "是否需要计划令")
+    @JsonAlias({"isPlan", "isPlan"})
     private Integer isPlan;
+
+	@TableField(exist = false)
+	private Integer isPaln;
+
 	/**说明*/
 	@Excel(name = "说明", width = 15)
     @ApiModelProperty(value = "说明")

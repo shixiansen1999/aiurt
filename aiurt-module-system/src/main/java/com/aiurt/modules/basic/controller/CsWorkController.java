@@ -17,8 +17,9 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Arrays;
+import java.util.List;
 
- /**
+/**
  * @Description: 作业类型
  * @Author: aiurt
  * @Date:   2022-07-04
@@ -26,7 +27,7 @@ import java.util.Arrays;
  */
 @Api(tags="作业类型")
 @RestController
-@RequestMapping("/basic/csWork")
+@RequestMapping("/manage/work")
 @Slf4j
 public class CsWorkController extends BaseController<CsWork, ICsWorkService> {
 	@Autowired
@@ -49,8 +50,10 @@ public class CsWorkController extends BaseController<CsWork, ICsWorkService> {
 								   @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
 								   HttpServletRequest req) {
 		QueryWrapper<CsWork> queryWrapper = QueryGenerator.initQueryWrapper(csWork, req.getParameterMap());
-		Page<CsWork> page = new Page<CsWork>(pageNo, pageSize);
+		Page<CsWork> page = new Page<>(pageNo, pageSize);
 		IPage<CsWork> pageList = csWorkService.page(page, queryWrapper);
+		List<CsWork> records = pageList.getRecords();
+		records.stream().forEach(entity->entity.setIsPaln(entity.getIsPlan()));
 		return Result.OK(pageList);
 	}
 
@@ -64,6 +67,7 @@ public class CsWorkController extends BaseController<CsWork, ICsWorkService> {
 	@ApiOperation(value="作业类型-添加", notes="作业类型-添加")
 	@PostMapping(value = "/add")
 	public Result<String> add(@RequestBody CsWork csWork) {
+		csWork.setIsPlan(csWork.getIsPaln());
 		csWorkService.save(csWork);
 		return Result.OK("添加成功！");
 	}
@@ -78,6 +82,7 @@ public class CsWorkController extends BaseController<CsWork, ICsWorkService> {
 	@ApiOperation(value="作业类型-编辑", notes="作业类型-编辑")
 	@RequestMapping(value = "/edit", method = {RequestMethod.PUT,RequestMethod.POST})
 	public Result<String> edit(@RequestBody CsWork csWork) {
+		csWork.setIsPlan(csWork.getIsPaln());
 		csWorkService.updateById(csWork);
 		return Result.OK("编辑成功!");
 	}

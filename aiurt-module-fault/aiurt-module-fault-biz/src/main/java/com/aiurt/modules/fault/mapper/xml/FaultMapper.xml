@@ -10,7 +10,11 @@
     </select>
 
     <select id="queryCsWorkByMajorCode" parameterType="java.lang.String" resultType="com.aiurt.modules.basic.entity.CsWork">
-        select * from cs_work where major_code = #{majorCode}
+        select * from cs_work where 1=1
+        <if test="majorCode != null and majorCode != ''">
+            and major_code = #{majorCode}
+        </if>
+
     </select>
 
     <select id="queryKnowledge" parameterType="com.aiurt.modules.faultknowledgebase.entity.FaultKnowledgeBase" resultType="java.lang.String">

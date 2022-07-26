@@ -789,11 +789,11 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
     public List<CsWork> queryCsWork(String faultCode) {
         Fault fault = isExist(faultCode);
         String majorCode = fault.getMajorCode();
-        List<CsWork> csWorkLsit = baseMapper.queryCsWorkByMajorCode(majorCode);
-        if (CollectionUtil.isEmpty(csWorkLsit)) {
+        List<CsWork> csWorkList = baseMapper.queryCsWorkByMajorCode(null);
+        if (CollectionUtil.isEmpty(csWorkList)) {
             return Collections.emptyList();
         }
-        return csWorkLsit;
+        return csWorkList;
     }
 
     /**
