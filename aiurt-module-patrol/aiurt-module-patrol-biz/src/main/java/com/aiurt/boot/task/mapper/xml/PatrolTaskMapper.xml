@@ -27,11 +27,12 @@
         order by t1.create_time desc
     </select>
     <select id="getPatrolTaskList" resultType="com.aiurt.boot.task.dto.PatrolTaskDTO">
-        select t1.*,(select realname from sys_user where id= t1.end_user_id) as endUserName,concat(DATE_FORMAT(t1.start_time,'%H:%i'),"-",DATE_FORMAT(t1.end_time,'%H:%i'))as startEndTime
+        select t1.*,(select realname from sys_user where id= t1.end_user_id) as
+        endUserName,concat(DATE_FORMAT(t1.start_time,'%H:%i'),"-",DATE_FORMAT(t1.end_time,'%H:%i'))as startEndTime
         from patrol_task t1
         where t1.status in (6,7) and t1.del_flag = 0 and t1.omit_status=0
         and t1.discard_status = 0
-           <if test="patrolTaskDTO.dateScope !=null and patrolTaskDTO.dateScope !=''">
+        <if test="patrolTaskDTO.dateScope !=null and patrolTaskDTO.dateScope !=''">
             and DATE_FORMAT(t1.patrol_date, '%Y-%m-%d' )
             between DATE_FORMAT(#{patrolTaskDTO.dateHead}, '%Y-%m-%d')
             and DATE_FORMAT(#{patrolTaskDTO.dateEnd}, '%Y-%m-%d')
@@ -48,9 +49,9 @@
         where t1.task_code = #{taskCode}
     </select>
     <select id="getStationName" resultType="com.aiurt.boot.standard.dto.StationDTO">
-        SELECT t2.line_code,t1.station_code
+        SELECT t2.line_code, t1.station_code
         FROM patrol_task_station t1
-        LEFT JOIN cs_station t2 ON t1.station_code = t2.station_code
+                 LEFT JOIN cs_station t2 ON t1.station_code = t2.station_code
         WHERE t1.task_code = #{code}
     </select>
     <select id="getTaskList" resultType="com.aiurt.boot.task.param.PatrolTaskParam">
@@ -169,7 +170,7 @@
         <if test="patrolTaskDTO.status !=null">
             and t1.status = #{patrolTaskDTO.status}
         </if>
-         <if test="patrolTaskDTO.dateScope !=null">
+        <if test="patrolTaskDTO.dateScope !=null">
             and DATE_FORMAT(t1.patrol_date, '%Y-%m-%d' )
             between DATE_FORMAT(#{patrolTaskDTO.dateHead}, '%Y-%m-%d')
             and DATE_FORMAT(#{patrolTaskDTO.dateEnd}, '%Y-%m-%d')
@@ -224,5 +225,16 @@
         select station_code
         from patrol_task_station
         where task_code = #{code}
+    </select>
+    <select id="getLineCode" resultType="java.lang.String">
+        SELECT
+        line_code
+        FROM
+        cs_station
+        WHERE
+        del_flag = 0
+        <if test="stationCode !=null and stationCode !=''">
+            AND station_code = #{stationCode}
+        </if>
     </select>
 </mapper>
