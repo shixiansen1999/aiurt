@@ -481,14 +481,14 @@ public class ScheduleController {
                 wrapper.ge("date", startDate);
                 wrapper.le("date", endDate);
                 wrapper.like("item_name", "夜");
-                vo.setCount(recordService.count(wrapper));
+                vo.setCount((long) recordService.count(wrapper));
                 if (new Date().before(endDate)) {
                     wrapper = new QueryWrapper();
                     wrapper.eq("user_id", sysUser.getId());
                     wrapper.ge("date", startDate);
                     wrapper.le("date", new Date());
                     wrapper.like("item_name", "夜");
-                    vo.setAct(recordService.count(wrapper));
+                    vo.setAct((long) recordService.count(wrapper));
                 } else {
                     vo.setAct(vo.getCount());
                 }

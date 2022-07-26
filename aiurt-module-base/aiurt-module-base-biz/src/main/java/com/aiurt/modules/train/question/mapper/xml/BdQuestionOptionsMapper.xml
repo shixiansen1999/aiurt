@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.aiurt.modules.train.question.mapper.BdQuestionOptionsMapper">
+
+
+<select id="optionList" resultType="com.aiurt.modules.train.question.entity.BdQuestionOptions">
+select bqo.id,bqo.content,bqo.is_right as isRight
+from bd_question_options bqo
+left join bd_question bq on bq.id = bqo.question_id
+where bqo.question_id=#{id}
+</select>
+</mapper>

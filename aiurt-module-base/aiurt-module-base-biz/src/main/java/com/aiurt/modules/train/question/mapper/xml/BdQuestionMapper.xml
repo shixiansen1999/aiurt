@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.aiurt.modules.train.question.mapper.BdQuestionMapper">
+    <select id="list" resultType="com.aiurt.modules.train.question.entity.BdQuestion"
+            parameterType="com.aiurt.modules.train.question.entity.BdQuestion">
+        SELECT
+	     t1.id as id,
+         t2.id as categoryId,
+         t1.content as content,
+         t1.que_type as queType,
+         t1.create_time as createTime,
+         t2.name as categoryName
+      FROM
+	      bd_question t1
+	      LEFT JOIN bd_question_category t2 ON t1.category_id = t2.id
+        <where>
+            t1.idel =0
+            <if test="condition.id != null">
+                and t1.id = #{condition.id}
+            </if>
+            <if test="condition.queType != null">
+                and t1.que_type = #{condition.queType}
+            </if>
+            <if test="condition.createTime != null">
+                and DATE_FORMAT(t1.create_time, '%Y-%m-%d') = DATE_FORMAT(#{condition.createTime}, '%Y-%m-%d')
+            </if>
+            <if test="condition.categoryId != null">
+                and t2.id = #{condition.categoryId}
+            </if>
+            <if test="condition.content != null">
+                and t1.content LIKE CONCAT ('%', #{condition.content}, '%')
+            </if>
+        </where>
+        order by t1.create_time desc 
+    </select>
+
+  <select id="contentList" resultType="com.aiurt.modules.train.question.entity.BdQuestion">
+    SELECT bq.id,bq.content,bq.que_type,bq.category_id
+    FROM bd_question bq
+    LEFT JOIN bd_exam_paper_rel epl ON  bq.id =epl.que_id
+    LEFT JOIN bd_exam_paper ep ON ep.id =epl.paper_id
+    where ep.id =#{id}
+    </select>
+
+    <select id="bdQuestion" resultType="com.aiurt.modules.train.question.entity.BdQuestion">
+         SELECT
+          t1.id as id,
+	      t1.content as content,
+	      t1.que_type as queType,
+	      t1.category_id as categoryId,
+	      t2.name as categoryName
+         FROM
+	       bd_question t1 LEFT JOIN bd_question_category t2 ON t1.category_id = t2.id
+         WHERE
+	       t1.id = #{id}
+    </select>
+
+    <select id="lists" resultType="com.aiurt.modules.train.question.entity.BdQuestionOptions">
+         SELECT content,is_right from bd_question_options WHERE question_id = #{id}
+    </select>
+
+    <select id="listss" resultType="com.aiurt.modules.train.question.entity.BdQuestionOptionsAtt">
+        SELECT path,name,type from bd_question_options_att WHERE question_id = #{id}
+    </select>
+
+    <delete id="deletequestionoptionsatt">
+         DELETE from bd_question_options_att WHERE question_id = #{id}
+    </delete>
+
+    <delete id="deletquestionoptions">
+        DELETE from bd_question_options WHERE question_id = #{id}
+    </delete>
+
+    <select id="getQuesId" resultType="java.lang.String">
+        select que_id from bd_exam_paper_rel where paper_id =#{id}
+    </select>
+
+    <select id="getOptions" resultType="com.aiurt.modules.train.question.entity.BdQuestion">
+        SELECT
+                bdq.id,
+                bdq.content as content,
+        group_concat(concat(bdqo.content))as answer
+        FROM
+                bd_question bdq
+                        left join bd_question_options bdqo on bdqo.question_id = bdq.id
+        <where>
+        bdq.id in
+        <foreach collection="quesId" item="id" open="(" close=")" index="" separator=",">
+            #{id}
+          </foreach>
+          and bdqo.is_right = 1
+        </where>
+        GROUP BY bdq.id
+    </select>
+
+   <!-- <select id="getQues" resultType="com.aiurt.modules.train.question.entity.BdQuestion">
+        select * from bd_question where id = #{questionId}
+    </select>-->
+</mapper>

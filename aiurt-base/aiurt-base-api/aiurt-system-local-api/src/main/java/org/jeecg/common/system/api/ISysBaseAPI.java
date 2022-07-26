@@ -2,10 +2,11 @@ package org.jeecg.common.system.api;
 
 import com.aiurt.common.api.CommonAPI;
 import com.aiurt.common.api.dto.message.*;
+import com.aiurt.common.api.dto.quartz.QuartzJobDTO;
 import com.aiurt.modules.basic.entity.SysAttachment;
+import com.aiurt.modules.device.entity.DeviceType;
 import com.aiurt.modules.position.entity.CsStation;
 import com.alibaba.fastjson.JSONObject;
-import com.aiurt.modules.device.entity.DeviceType;
 import org.jeecg.common.api.dto.OnlineAuthDTO;
 import org.jeecg.common.system.vo.*;
 
@@ -401,4 +402,13 @@ public interface ISysBaseAPI extends CommonAPI {
      */
     LoginUser queryUser(String username);
 
+    /**
+     * 定时任务
+     */
+    void saveAndScheduleJob(QuartzJobDTO quartzJobDTO);
+
+    /**
+     * 定时任务
+     */
+    void deleteAndStopJob(QuartzJobDTO quartzJobDTO);
 }

@@ -1,0 +1,505 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.aiurt.modules.train.task.mapper.BdTrainTaskMapper">
+    <update id="updateSign">
+            UPDATE bd_train_task_sign as tts,bd_train_task_user as ttu
+                 SET tts.sign_time = #{signPeopleDTO.signTime} , tts.number =#{signPeopleDTO.number} ,
+                     tts.remarks = #{signPeopleDTO.remarks}, tts.state_sign =#{signPeopleDTO.stateSign},
+                 ttu.sign_state =#{signPeopleDTO.signState}
+      WHERE  tts.user_id =#{signPeopleDTO.userId} AND tts.train_task_id =#{signPeopleDTO.trainTaskId}
+        AND ttu.user_id =#{signPeopleDTO.userId} AND ttu.train_task_id =#{signPeopleDTO.trainTaskId}
+    </update>
+
+    <select id="getTeamName" resultType="java.lang.String">
+    select name
+    from
+    bd_team
+    where id = #{taskTeamId}
+    </select>
+
+<select id="getName" resultType="java.lang.String">
+    select realname
+    from
+    sys_user
+    where id = #{userId}
+    </select>
+
+<select id="getUserId" resultType="java.lang.String">
+    select id
+    from sys_user
+    where
+    del_flag = 0
+    and team_id = #{teamId}
+    and id not in (#{teacherId})
+   </select>
+
+<select id="queryList" resultType="com.aiurt.modules.train.task.entity.BdTrainTask">
+        SELECT
+        tt.*,su.realname AS teacherName,bt.name AS taskTeamName,
+        CONCAT((DATE_FORMAT(tt.start_date,'%Y/%m/%d')), "-",(DATE_FORMAT(tt.end_date,'%Y/%m/%d'))) AS trainingDateRange
+        FROM bd_train_task tt
+        LEFT JOIN bd_team bt ON tt.task_team_id = bt.id
+        LEFT JOIN sys_user su ON tt.teacher_id = su.id
+        WHERE  tt.teacher_id = #{uid}
+        AND tt.task_state &gt;6
+         <if test="condition.id != null and condition.id != ''">
+        AND  tt.id = #{condition.id}
+        </if>
+         <if test="condition.taskTeamId != null and condition.taskTeamId != ''">
+        AND bt.id = #{condition.taskTeamId}
+         </if>
+         <if test="startTime != null and startTime !=''">
+        AND DATE_FORMAT(tt.start_time, '%Y-%m-%d') = DATE_FORMAT(#{startTime}, '%Y-%m-%d')
+         </if>
+         <if test="condition.taskName != null and condition.taskName != ''">
+         AND tt.task_name LIKE concat('%',#{condition.taskName},'%')
+         </if>
+</select>
+    <select id="studentTrainingDetails" resultType="com.aiurt.modules.train.task.dto.BdTrainTaskDTO">
+        SELECT
+            ttu.user_id as userId,
+            tt.task_name AS taskName,
+            ttu.sign_state AS signState,
+            ttu.feed_state AS feedState,
+            tt.classify as classify,
+            tt.plan_sub_name as planSubName,
+            tt.start_time as startTime,
+            tt.end_time as endTime ,
+            tt.address,
+            tt.task_team_id as taskTeamId,
+            tt.train_target as trainTarget,
+            tt.task_hours as taskHours,
+            tts.sign_time as signTime,
+            tt.number,
+            tt.classify as classify,
+            tt.exam_paper_id  as examPaperId,
+            tt.study_resource_state as studyResourceState,
+            fr.complete_time as completeTime,
+            tt.start_date as startDate,
+            tt.end_date as endDate,
+            (select name
+             from
+                 bd_team
+             where id = tt.task_team_id) as taskTeamName
+        FROM
+            bd_train_task_user AS ttu
+                left join bd_train_student_feedback_record fr on fr.train_task_id =ttu.train_task_id
+                LEFT JOIN bd_train_task tt ON ttu.train_task_id =tt.id
+                LEFT JOIN bd_train_task_sign tts ON ttu.train_task_id = tts.train_task_id
+        WHERE
+            ttu.id = #{id}
+        group by  ttu.user_id
+
+    </select>
+    <select id="selectByUserId" resultType="com.aiurt.modules.train.task.dto.TrainQueryTableDTO">
+        SELECT
+            ttu.id ,
+            tt.id as taskId,
+            ttu.sign_state as signState,
+            ttu.feed_state as feedState,
+            tt.task_name as taskName,
+            tt.end_time as endTime,
+            tt.start_time as startTime,
+            tt.teacher_id as teacherId,
+            su.realname as teacherName
+        FROM
+            bd_train_task_user AS ttu
+                LEFT JOIN bd_train_task tt ON ttu.train_task_id =tt.id
+                LEFT JOIN sys_user su on tt.teacher_id = su.id
+        WHERE
+            ttu.user_id = #{userId} and tt.task_state >2
+        <if test="taskName != null and taskName != ''">
+            and tt.task_name like concat('%',#{taskName},'%')
+        </if>
+        <if test="startTime != null and startTime != ''">
+            AND DATE_FORMAT(tt.start_time, '%Y-%m-%d') = DATE_FORMAT(#{startTime}, '%Y-%m-%d')
+        </if>
+        <if test="signState!= null ">
+        AND ttu.sign_state = #{signState}
+        </if>
+    </select>
+    <select id="feedBackDetails" resultType="com.aiurt.modules.train.task.dto.FeedBackDetailsDTO">
+        SELECT
+            su.realname AS teacherName,
+            su.id AS teacherId,
+            tt.task_name AS taskName,
+            tt.end_time AS endTime,
+            tt.start_time AS startTime,
+            tt.task_team_id as taskTeamId,
+            (select name
+             from
+                 bd_team
+             where id = tt.task_team_id) as taskTeamName
+        FROM bd_train_task_user AS ttu
+                 LEFT JOIN bd_train_task tt ON ttu.train_task_id = tt.id
+                 LEFT JOIN sys_user su on tt.teacher_id = su.id
+        WHERE ttu.user_id =#{userId} AND tt.id = #{id}
+    </select>
+
+
+<select id="getTaskById" resultType="com.aiurt.modules.train.task.entity.BdTrainTask">
+    SELECT *,CONCAT((DATE_FORMAT(start_date,'%Y/%m/%d')),"-",(DATE_FORMAT(end_date,'%Y/%m/%d'))) as trainingDateRange
+    FROM `bd_train_task`
+    where teacher_id = #{id}
+    and task_state &lt; 7
+    and task_state &gt; 0
+    <if test="taskName != null and taskName != ''">
+        and task_name like concat('%',#{taskName},'%')
+    </if>
+    <if test="taskId != null and taskId != ''">
+        and id = #{taskId}
+    </if>
+</select>
+
+    <select id="getTaskByIds" resultType="com.aiurt.modules.train.task.entity.BdTrainTask">
+        SELECT *,CONCAT((DATE_FORMAT(start_date,'%Y/%m/%d')),"-",(DATE_FORMAT(end_date,'%Y/%m/%d'))) as trainingDateRange
+        FROM `bd_train_task`
+        <where>
+            teacher_id = #{condition.teacherId}
+            and task_state &gt; 0
+            <if test="condition.taskName != null and condition.taskName != ''">
+                and task_name like concat('%',#{condition.taskName},'%')
+            </if>
+            <if test="condition.id != null and condition.id != ''">
+                and id = #{condition.id}
+            </if>
+            <if test="condition.taskState != null and condition.stopState != null">
+                and task_state = #{condition.taskState}
+                and stop_state = #{condition.stopState}
+            </if>
+            <if test="condition.taskTeamId != null and condition.taskTeamId!= ''">
+                and task_team_id = #{condition.taskTeamId}
+            </if>
+            <if test="condition.assessmentState != null and  condition.taskState != null">
+                and task_state &gt; #{condition.taskState}
+                and task_state &lt; #{condition.assessmentState}
+            </if>
+            <if test="date != null">
+                and DATE_FORMAT(start_date, '%Y-%m-%d') &lt;= DATE_FORMAT(#{date}, '%Y-%m-%d')
+                and DATE_FORMAT(end_date, '%Y-%m-%d') &gt;= DATE_FORMAT(#{date}, '%Y-%m-%d')
+            </if>
+            <if test="condition.taskState != null and condition.stopState == null and condition.assessmentState == null">
+                and task_state = #{condition.taskState}
+            </if>
+        </where>
+        order by update_time desc
+    </select>
+
+<select id="getBdTrainTaskUser" resultType="com.aiurt.modules.train.task.entity.BdTrainTaskUser">
+    SELECT
+        COUNT( CASE WHEN sign_state = 1 THEN 1 ELSE NULL END ) AS signedInNum,
+        COUNT( CASE WHEN sign_state = 0  THEN 1 ELSE NULL END ) AS notSignedInNum
+    FROM bd_train_task_user
+    where train_task_id = #{id}
+    </select>
+
+<select id="getSignTime" resultType="java.util.Date">
+    SELECT
+    sign_time
+    FROM bd_train_task_sign
+    where train_task_id = #{trainTaskId} and user_id = #{id}
+    </select>
+    <select id="selectTrainTaskId" resultType="com.aiurt.modules.train.task.dto.BdTrainTaskDTO">
+        select
+            tt.start_time as startTime,
+            tt.end_time as endTime,
+            (select name
+             from
+                 bd_team
+             where id = tt.task_team_id) as taskTeamName,
+            (select count(user_id AND er.exam_classify=1 OR not NULL)
+                from bd_exam_record as er
+                where er.train_task_id=#{trainTaskId}) as participantsNumber,
+            tt.address,
+            tt.plan_sub_name
+      from bd_train_task as tt
+      where tt.id =#{trainTaskId}
+    </select>
+    <select id="selectTranscripts" resultType="com.aiurt.modules.train.task.dto.TranscriptDTO">
+        select
+            (select realname
+             from
+                 sys_user
+             where id =er.user_id ) as userName,
+            er.score
+   from bd_exam_record as er
+  where
+        <if test="trainTaskId != null and trainTaskId != ''">
+         er.train_task_id =#{trainTaskId}
+        </if>
+and er.exam_classify=1
+    </select>
+
+<select id="getCompleteTime" resultType="java.util.Date">
+    SELECT
+    complete_time
+    FROM bd_train_student_feedback_record
+    where train_task_id = #{trainTaskId} and user_id = #{id}
+    group by train_task_id
+    </select>
+    <select id="selectTrainList" resultType="com.aiurt.modules.train.task.dto.QuestionDTO">
+        select
+          fq.classify_name as classifyName,
+          fq.question_name as questionName,
+          fq.question_classify as questionClassify,
+          fr.bd_train_question_feedback_options_id as  trainQuestionFeedBackOptionsId,
+          fo.name as trainQuestionFeedBackOptionsName,
+          fr.answer
+     from
+       bd_train_student_feedback_record as fr
+    left join bd_train_question_feedback_ques_record fq on  fr.bd_train_question_feedback_ques_id = fq.id
+    left join bd_train_question_feedback_options_record  fo on fo.id = fr.bd_train_question_feedback_options_id
+    where fr.user_id = #{userId}  and  fr.train_task_id =#{id}
+    </select>
+    <select id="instructorFeedback" resultType="com.aiurt.modules.train.task.dto.TeacherFeedbackDTO">
+        select
+          tt.task_name as taskName,
+          tt.start_date as startDate,
+          tt.exam_status as examStatus,
+          (select name
+           from bd_team
+           where id = tt.task_team_id) as taskTeamName,
+          (select realname
+              from sys_user
+              where id = tt.teacher_id) as teacherName,
+          (select count(user_id)
+           from bd_train_task_user
+           where train_task_id=#{trainTaskId}) as participantsNumber,
+             ifnull((SELECT COUNT(ttu.user_id)
+                       FROM bd_train_task_user AS ttu
+                       WHERE train_task_id=#{trainTaskId}),0)as referenceNumber,
+            ifnull((SELECT COUNT(er.user_id AND er.exam_classify=1 OR not NULL)
+                    FROM bd_exam_record AS er
+                    WHERE train_task_id=#{trainTaskId}),0)AS actualReferenceNumber,
+          (select count(is_pass = 1 AND er.exam_classify=1 or null)
+           from bd_exam_record as er
+           where er.train_task_id=#{trainTaskId}) as qualifiedPersonNumber,
+          (select count(is_pass = 0 AND er.exam_classify=1 or null)
+           from bd_exam_record as er
+           where er.train_task_id=#{trainTaskId}) as failedPersonNumber,
+          (select count(sign_state=1 or null)
+            from bd_train_task_user
+            where bd_train_task_user.train_task_id =#{trainTaskId}) as actualNumber,
+          (select count(sign_state=0 or null)
+           from bd_train_task_user
+           where bd_train_task_user.train_task_id =#{trainTaskId}) as lackNumber
+    from bd_train_task as tt
+        where tt.id=#{trainTaskId}
+    </select>
+    <select id="selectquestionList" resultType="com.aiurt.modules.train.task.dto.QuestionDTO">
+      select
+          fq.classify_name as classifyName,
+          fq.question_name as questionName,
+          fq.question_classify as questionClassify,
+          fr.bd_train_question_feedback_options_id as  trainQuestionFeedBackOptionsId,
+          fo.name as trainQuestionFeedBackOptionsName,
+          fr.answer
+     from
+         bd_train_teacher_feedback_record as fr
+    left join bd_train_question_feedback_ques_record fq on  fr.bd_train_question_feedback_ques_id = fq.id
+    left join bd_train_question_feedback_options_record fo on fo.id = fr.bd_train_question_feedback_options_id
+    where  fr.user_id = #{userId}  and  fr.train_task_id =#{trainTaskId}
+    </select>
+    <select id="queryTrainingLedger" resultType="com.aiurt.modules.train.task.entity.BdTrainTask">
+select tt.id,tt.task_team_id,tt.teacher_id,
+       tt.sys_org_code,tt.exam_classify,tt.plan_sub_id,tt.task_hours,tt.address,tt.train_target,tt.exam_task_name,
+       tt.exam_paper_id,tt.make_up_time,tt.remarks,tt.make_up_state,tt.study_resource_state,tt.exam_status,
+       tt.number,tt.task_state,tt.start_time,tt.start_exam_time,tt.stop_state,tt.start_date,tt.end_date,tt.exam_plan_time,
+       tt.task_name,bt.name as taskTeamName,tt.classify,tt.plan_sub_name,su.realname as teacherName,bep.name as examName
+from bd_train_task tt
+LEFT JOIN bd_team bt ON tt.task_team_id = bt.id
+LEFT JOIN sys_user su ON tt.teacher_id = su.id
+LEFT JOIN  bd_exam_paper bep ON bep.id = tt.exam_paper_id
+<where>
+  tt.task_state>0
+ <if test="condition.id != null and condition.id != ''">
+    and tt.id = #{condition.id}
+</if>
+ <if test="condition.taskState != null">
+   and tt.task_state  = #{condition.taskState}
+</if>
+ <if test="condition.taskName != null and condition.taskName != ''">
+ and task_name like concat('%',#{condition.taskName},'%')
+ </if>
+<if test="condition.startDate != null">
+ AND DATE_FORMAT(tt.start_date, '%Y-%m-%d') = DATE_FORMAT(#{condition.startDate}, '%Y-%m-%d')
+</if>
+</where>
+order by tt.create_time desc,tt.task_name asc
+</select>
+
+<select id="getTeacherRole" resultType="java.lang.String">
+    SELECT sr.role_name FROM sys_user_role sur  LEFT JOIN sys_role sr on sur.role_id = sr.id
+    WHERE sr.role_name = '讲师' and sur.user_id = #{teacherId}
+
+</select>
+
+<select id="getStudentRole" resultType="java.lang.String">
+    SELECT sr.role_name FROM sys_user_role sur  LEFT JOIN sys_role sr on sur.role_id = sr.id
+    WHERE sr.role_name = '学员' and sur.user_id = #{studentId}
+
+</select>
+    <select id="selectTranscriptList" resultType="com.aiurt.modules.train.task.dto.TranscriptDTO">
+        select
+        (select realname
+        from
+        sys_user
+        where id =er.user_id ) as userName,
+        er.score
+        from bd_exam_record as er
+        <where>
+        er.exam_classify =1
+        <if test="trainTaskId != null and trainTaskId != ''">
+            and er.train_task_id =#{trainTaskId}
+        </if>
+        <if test="examPaperId != null and examPaperId != ''">
+            and er.exam_paper_id = #{examPaperId}
+        </if>
+        </where>
+    </select>
+
+<select id="queryPageList" resultType="com.aiurt.modules.train.task.entity.BdTrainTask">
+    select * ,
+    ( select realname from sys_user where id = teacher_id) as teacherName,
+    ( select name from  bd_team  where id = task_team_id) as taskTeamName,
+    ( select name from  bd_exam_paper  where id = exam_paper_id) as examName
+    from bd_train_task where 1=1
+    <if test="bdTrainTask.taskName != null and bdTrainTask.taskName != ''">
+        and task_name like concat('%',#{bdTrainTask.taskName},'%')
+    </if>
+    <if test="bdTrainTask.startDate != null">
+        AND DATE_FORMAT(start_date, '%Y-%m-%d') = DATE_FORMAT(#{bdTrainTask.startDate}, '%Y-%m-%d')
+    </if>
+    <if test="bdTrainTask.taskState!= null">
+        AND task_state = #{bdTrainTask.taskState}
+    </if>
+    ORDER BY id DESC
+    </select>
+    <select id="querySignPeople" resultType="com.aiurt.modules.train.task.dto.SignPeopleDTO">
+        SELECT
+            ttu.user_id as userId,
+            tt.task_name as taskName,
+            ttu.user_name as userName,
+            ttu.sign_state as signState,
+            tts.sign_time as signTime,
+            tts.number,
+            tts.remarks,
+            tts.state_sign as stateSign,
+            tt.id as trainTaskId
+        FROM
+        bd_train_task_user as ttu
+        LEFT JOIN  bd_train_task  tt on ttu.train_task_id =tt.id
+        left JOIN bd_train_task_sign tts on tts.user_id =ttu.user_id AND tts.train_task_id = ttu.train_task_id
+        WHERE
+              tt.id = #{trainTaskId}
+    <if test="signState!= null">
+          and  ttu.sign_state = #{signState}
+    </if>
+    </select>
+    <select id="getSignNumber" resultType="com.aiurt.modules.train.task.entity.BdTrainTaskSign">
+        SELECT * FROM bd_train_task_sign
+        WHERE train_task_id =#{trainTaskId}
+        ORDER BY ABS(#{signTime} - `sign_time`) LIMIT 1
+    </select>
+    <select id="selectClassifyName" resultType="java.lang.String">
+        SELECT fq.classify_name FROM  bd_train_student_feedback_record as sfr
+                                           LEFT JOIN bd_train_question_feedback_ques fq on sfr.bd_train_question_feedback_ques_id = fq.id
+         WHERE sfr.train_task_id =#{id}   AND  sfr.user_id =#{userId}
+</select>
+    <select id="queryStudentList" resultType="com.aiurt.modules.train.task.entity.BdTrainTask">
+    select
+      tt.*,
+      bt.name as taskTeamName,su.realname as teacherName,
+       CONCAT((DATE_FORMAT(tt.start_date,'%Y/%m/%d')), "-",(DATE_FORMAT(tt.end_date,'%Y/%m/%d'))) AS trainingDateRange
+from bd_train_task tt
+LEFT
+JOIN
+    bd_team bt
+        ON tt.task_team_id = bt.id
+LEFT
+JOIN
+    sys_user su
+        ON tt.teacher_id = su.id
+where tt.id =#{id}
+
+ </select>
+  <select id="selectTeacherClassifyName" resultType="java.lang.String">
+        SELECT fq.classify_name FROM  bd_train_teacher_feedback_record as tfr
+                                           LEFT JOIN bd_train_question_feedback_ques fq on tfr.bd_train_question_feedback_ques_id= fq.id
+         WHERE tfr.train_task_id = #{id}   AND  tfr.user_id = #{userId}
+    </select>
+
+    <select id="getTrainees" resultType="com.aiurt.modules.train.task.dto.UserDTO">
+        SELECT
+        a.id as id,
+        a.realname as realname,
+        a.org_code as orgName,
+        b.`name` as teamName,
+        a.security_level as safeLevel ,
+        a.identity_number as identityNumber,
+        (
+        SELECT
+        `name`
+        FROM
+        bd_site
+        WHERE
+        team_id = a.team_id
+        ) siteName,
+        (
+        CASE
+        WHEN a.status = 2 THEN
+        '冻结'
+        ELSE
+        '正常'
+        END
+        ) state
+        FROM
+        bd_train_task_user bttu
+        LEFT JOIN sys_user a ON a.id = bttu.user_id
+        LEFT JOIN bd_team b ON a.team_id = b.id
+        where 1=1
+        and bttu.train_task_id = #{bdTrainTask.id}
+        group by a.id
+    </select>
+
+    <select id="getTrainTeacher" resultType="com.aiurt.modules.train.task.dto.UserDTO">
+        SELECT
+        DISTINCT a.*,
+        a.org_code orgName,
+        b.`name` teamName,
+        d.role_name as roleNames,
+        (
+        SELECT
+        `name`
+        FROM
+        bd_site
+        WHERE
+        team_id = a.team_id
+        ) siteName,
+        (
+        CASE
+        WHEN a.status = 2 THEN
+        '冻结'
+        ELSE
+        '正常'
+        END
+        ) state
+        FROM
+        sys_user a
+        LEFT JOIN bd_team b ON a.team_id = b.id
+        LEFT JOIN sys_user_role c ON c.user_id = a.id
+        LEFT JOIN sys_role d on d.id = c.role_id
+        where 1=1 AND a.del_flag = 0
+        and d.role_name = '讲师'
+        <if test="user.username != null and user.username != '' ">
+            and a.username like  concat('%',#{user.username},'%')
+        </if>
+
+        <if test="user.realname != null and user.realname != '' ">
+            and a.realname like  concat('%',#{user.realname},'%')
+        </if>
+        <if test="user.teamId != null ">
+            and a.team_id = #{user.teamId}
+        </if>
+    </select>
+</mapper>

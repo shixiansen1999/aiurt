@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.aiurt.modules.train.feedback.mapper.BdTrainQuestionFeedbackRecordMapper">
+
+<select id="getTeacherFeedBack" resultType="com.aiurt.modules.train.feedback.entity.BdTrainQuestionFeedbackRecord">
+select btqfr.*
+from bd_train_question_feedback_record  btqfr
+where btqfr.train_task_id = #{taskId}
+and classify = 2
+</select>
+<select id="getStudentFeedBack" resultType="com.aiurt.modules.train.feedback.entity.BdTrainQuestionFeedbackRecord">
+select btqfr.*
+from bd_train_question_feedback_record  btqfr
+where btqfr.train_task_id = #{taskId}
+and classify = 1
+</select>
+</mapper>

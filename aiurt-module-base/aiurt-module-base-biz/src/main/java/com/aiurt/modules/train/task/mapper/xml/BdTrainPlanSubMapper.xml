@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.aiurt.modules.train.task.mapper.BdTrainPlanSubMapper">
+
+    <delete id="deleteByPlanId">
+        delete from bd_train_plan_sub where plan_id =#{id}
+    </delete>
+    <select id="getByPlanId" resultType="com.aiurt.modules.train.task.entity.BdTrainPlanSub">
+        SELECT
+	btps.*,
+	vd.item_text as classifyName
+FROM
+	bd_train_plan_sub btps
+JOIN view_dict vd ON vd.item_value = btps.classify
+WHERE
+ vd.dict_code = "classify_state"
+	AND btps.plan_id = #{id}
+    </select>
+
+    <select id="getList" resultType="com.aiurt.modules.train.task.entity.BdTrainPlanSub">
+        SELECT
+        btps.*,
+        btp.plan_year,
+        btp.dept_id
+        FROM
+        bd_train_plan_sub btps
+        LEFT JOIN bd_train_plan btp ON btp.id = btps.plan_id
+        WHERE
+        btps.id NOT IN ( SELECT btps.id FROM bd_train_plan_sub btps JOIN bd_train_task btt ON btps.id = btt.plan_sub_id GROUP BY btps.id )
+        and btp.state = 1
+        <if test="bdTrainPlanSub.classify!=null">
+            and btps.classify = #{bdTrainPlanSub.classify}
+        </if>
+        <if test="bdTrainPlanSub.courseName!=null and bdTrainPlanSub.courseName!=''">
+            and btps.course_name like concat('%',#{bdTrainPlanSub.courseName},'%')
+        </if>
+        <if test="bdTrainPlanSub.planYear!=null">
+            and btp.plan_year = #{bdTrainPlanSub.planYear}
+        </if>
+        <if test="teamId !=null">
+            and btp.dept_id = #{teamId}
+        </if>
+        <if test="bdTrainPlanSub.planTime!=null and bdTrainPlanSub.planTime!=''">
+            and btps.plan_time = #{bdTrainPlanSub.planTime}
+        </if>
+    </select>
+</mapper>

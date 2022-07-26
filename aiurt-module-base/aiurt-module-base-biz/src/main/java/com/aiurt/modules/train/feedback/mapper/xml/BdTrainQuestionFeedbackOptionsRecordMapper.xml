@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.aiurt.modules.train.feedback.mapper.BdTrainQuestionFeedbackOptionsRecordMapper">
+
+<select id="selectByMainId" resultType="com.aiurt.modules.train.feedback.entity.BdTrainQuestionFeedbackOptionsRecord">
+	SELECT *
+		FROM  bd_train_question_feedback_options_record
+		WHERE
+			 train_question_feedback_id = #{mainId}
+			 and bd_train_question_feedback_options_record.idel=0
+</select>
+
+</mapper>

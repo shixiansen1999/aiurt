@@ -688,7 +688,7 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
     @Override
     public Result<LogSubmitCount> getLogSubmitNum(String startTime, String endTime) {
         LogSubmitCount logSubmitCount = new LogSubmitCount();
-        Long num = depotMapper.selectCount(new LambdaQueryWrapper<WorkLog>()
+        Long num = (long)depotMapper.selectCount(new LambdaQueryWrapper<WorkLog>()
                 .between(StringUtils.isNotBlank(startTime) && StringUtils.isNotBlank(endTime), WorkLog::getSubmitTime, startTime, endTime));
         logSubmitCount.setSubmitNum(num);
         return Result.ok(logSubmitCount);

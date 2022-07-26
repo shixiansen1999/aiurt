@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.aiurt.modules.train.task.mapper.BdTrainTeacherFeedbackRecordMapper">
+    <select id="getTeacherFeedbackRecord" resultType="com.aiurt.modules.train.task.entity.BdTrainTeacherFeedbackRecord">
+        select *
+        from bd_train_teacher_feedback_record
+        where user_id = #{userId}
+        and train_task_id = #{taskId}
+        order by bd_train_question_feedback_options_id desc
+    </select>
+
+    <select id="getBdTrainQuestionFeedbackId"
+            resultType="com.aiurt.modules.train.feedback.entity.BdTrainQuestionFeedback">
+        select *
+        from bd_train_question_feedback
+        where classify = 2 and state = 1
+    </select>
+
+ <select id="getChoiceTeacherFeedbackRecordEvaluate" resultType="com.aiurt.modules.train.task.entity.BdTrainTeacherFeedbackRecord">
+select fr.*,fq.question_name as questionName ,fo.name as optionName
+from
+bd_train_teacher_feedback_record fr,
+bd_train_question_feedback_ques fq,
+bd_train_question_feedback_options fo
+where  fr.bd_train_question_feedback_ques_id = fq.id
+and  fr.bd_train_question_feedback_options_id = fo.id
+and fr.train_task_id = #{taskId}
+and fr.user_id = #{userId}
+</select>
+<select id="getAnswerTeacherFeedbackRecordEvaluate" resultType="com.aiurt.modules.train.task.entity.BdTrainTeacherFeedbackRecord">
+select
+fr.*,
+fq.question_name
+from
+bd_train_teacher_feedback_record fr
+left join bd_train_question_feedback_ques fq on fr.bd_train_question_feedback_ques_id = fq.id
+where fr.train_task_id =  #{taskId}
+and fr.user_id = #{userId}
+and fq.question_classify ='1'
+</select>
+<select id="getFeedbackId" resultType="com.aiurt.modules.train.feedback.entity.BdTrainQuestionFeedback">
+        select *
+        from bd_train_question_feedback_record btqfr
+        where classify = 2 and state = 1
+        and btqfr.train_task_id = #{taskId}
+ </select>
+</mapper>

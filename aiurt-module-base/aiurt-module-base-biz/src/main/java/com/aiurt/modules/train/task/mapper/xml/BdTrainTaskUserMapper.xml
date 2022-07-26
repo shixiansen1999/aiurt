@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.aiurt.modules.train.task.mapper.BdTrainTaskUserMapper">
+
+<select id="taskUserList" resultType="com.aiurt.modules.train.task.entity.BdTrainTaskUser">
+select
+ttu.*
+from bd_train_task_user ttu
+LEFT JOIN bd_train_task tt on ttu.train_task_id = tt.id
+where ttu.train_task_id = #{taskId}  and tt.task_state ='7'
+</select>
+<select id="getUserTasks" resultType="com.aiurt.modules.train.task.entity.BdTrainTaskUser">
+    select bttu.*
+    from bd_train_task_user bttu
+    left join bd_train_task btt on btt.id = bttu.train_task_id
+    where user_id = #{id}
+    and btt.task_state &lt; 3
+    and btt.task_state &gt; 0
+    <if test="taskName != null and taskName != ''">
+        and btt.task_name like concat('%',#{taskName},'%')
+    </if>
+    <if test="taskId != null and taskId != ''">
+        and btt.id = #{taskId}
+    </if>
+    </select>
+
+<update id="updateSignState">
+    update bd_train_task_user set sign_state = 1 where user_id = #{id} and train_task_id = #{trainTaskId}
+    </update>
+
+<update id="updateFeedState">
+    update bd_train_task_user set feed_state = 1 where user_id = #{id} and train_task_id = #{trainTaskId}
+    </update>
+
+<select id="getUserListById" resultType="com.aiurt.modules.train.task.entity.BdTrainTaskUser">
+    select
+    user_id,
+    user_name
+    from bd_train_task_user
+    where train_task_id = #{taskId}
+    </select>
+    <select id="getUserTasksWeb" resultType="com.aiurt.modules.train.task.entity.BdTrainTaskUser">
+    select bttu.*
+    from bd_train_task_user bttu
+    left join bd_train_task btt on btt.id = bttu.train_task_id
+    left join sys_user su on su.id = btt.teacher_id
+    where user_id = #{uid}
+    and btt.task_state>0
+    <if test="condition.signState != null">
+    and bttu.sign_state = #{condition.signState}
+    </if>
+    <if test="condition.bdTrainTask != null">
+    <if test="condition.bdTrainTask.trainingDateRange!=null and condition.bdTrainTask.trainingDateRange!='' ">
+    and DATE_FORMAT(btt.start_date, '%Y/%m/%d') &lt;= DATE_FORMAT(#{condition.bdTrainTask.trainingDateRange}, '%Y/%m/%d')
+    and DATE_FORMAT(btt.end_date, '%Y/%m/%d') &gt;= DATE_FORMAT(#{condition.bdTrainTask.trainingDateRange}, '%Y/%m/%d')
+    </if>
+    <if test="condition.bdTrainTask.teacherName !=null and condition.bdTrainTask.teacherName !=''">
+      and su.realname like concat  ('%',#{condition.bdTrainTask.teacherName},'%')
+    </if>
+     <if test="condition.bdTrainTask.trainingState !=null  and condition.bdTrainTask.taskState==1">
+      and btt.task_state = #{condition.bdTrainTask.taskState}
+    </if>
+      <if test="condition.bdTrainTask.trainingState !=null and condition.bdTrainTask.trainingState !='' and  condition.bdTrainTask.taskState==2 ">
+      and btt.task_state = #{condition.bdTrainTask.taskState}  and btt.stop_state = #{condition.bdTrainTask.stopState}
+    </if>
+      <if test="condition.bdTrainTask.trainingState !=null and condition.bdTrainTask.trainingState !='' and condition.bdTrainTask.trainingState==4">
+      and btt.task_state in (3,4,5,6,7)
+    </if>
+    <if test="condition.bdTrainTask.taskName != null and condition.bdTrainTask.taskName != ''">
+     and btt.task_name like concat  ('%',#{condition.bdTrainTask.taskName},'%')
+   </if>
+    </if>
+    order by btt.create_time desc
+
+</select>
+
+<delete id="deleteByMainId">
+    DELETE
+    FROM  bd_train_task_user
+    WHERE
+    train_task_id = #{mainId}
+    </delete>
+</mapper>

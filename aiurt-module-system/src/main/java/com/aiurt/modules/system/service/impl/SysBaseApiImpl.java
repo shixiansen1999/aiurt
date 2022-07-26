@@ -3,6 +3,7 @@ package com.aiurt.modules.system.service.impl;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.api.dto.message.*;
+import com.aiurt.common.api.dto.quartz.QuartzJobDTO;
 import com.aiurt.common.aspect.UrlMatchEnum;
 import com.aiurt.common.constant.CacheConstant;
 import com.aiurt.common.constant.CommonConstant;
@@ -22,6 +23,8 @@ import com.aiurt.modules.message.service.ISysMessageTemplateService;
 import com.aiurt.modules.message.websocket.WebSocket;
 import com.aiurt.modules.position.entity.CsStation;
 import com.aiurt.modules.position.mapper.CsStationMapper;
+import com.aiurt.modules.quartz.entity.QuartzJob;
+import com.aiurt.modules.quartz.service.IQuartzJobService;
 import com.aiurt.modules.system.entity.*;
 import com.aiurt.modules.system.mapper.*;
 import com.aiurt.modules.system.service.*;
@@ -130,6 +133,9 @@ public class SysBaseApiImpl implements ISysBaseAPI {
 
     @Autowired
     private IDeviceTypeService deviceTypeService;
+
+    @Autowired
+    private IQuartzJobService quartzJobService;
 
     @Override
     @Cacheable(cacheNames = CacheConstant.SYS_USERS_CACHE, key = "#username")
@@ -1349,5 +1355,28 @@ public class SysBaseApiImpl implements ISysBaseAPI {
     @Override
     public List<String> getUserListByName(String realName) {
         return userMapper.getUserListByName(realName);
+    }
+
+    /**
+     * 添加定时任务
+     * @param quartzJobDTO
+     */
+    @Override
+    public void saveAndScheduleJob(QuartzJobDTO quartzJobDTO) {
+        QuartzJob quartzJob = new QuartzJob();
+        BeanUtils.copyProperties(quartzJobDTO, quartzJob);
+        quartzJobService.saveAndScheduleJob(quartzJob);
+        quartzJobDTO.setId(quartzJob.getId());
+    }
+
+    /**
+     * 删除定时任务
+     * @param quartzJobDTO
+     */
+    @Override
+    public void deleteAndStopJob(QuartzJobDTO quartzJobDTO) {
+        QuartzJob quartzJob = new QuartzJob();
+        BeanUtils.copyProperties(quartzJobDTO, quartzJob);
+        quartzJobService.deleteAndStopJob(quartzJob);
     }
 }
