@@ -410,7 +410,7 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
             {
                 copyItems(patrolTaskDevice);
             }
-            if(PatrolConstant.TASK_AUDIT!=patrolTask.getStatus()||PatrolConstant.TASK_COMPLETE!=patrolTask.getStatus())
+            if(!PatrolConstant.TASK_AUDIT.equals(patrolTask.getStatus())&& !PatrolConstant.TASK_COMPLETE.equals(patrolTask.getStatus()))
                 {
                     LambdaUpdateWrapper<PatrolTaskDevice> updateWrapper = new LambdaUpdateWrapper<>();
                     updateWrapper.set(PatrolTaskDevice::getStatus, 1)
