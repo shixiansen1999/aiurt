@@ -63,13 +63,14 @@ public class WorkLogJob implements Job {
        // if (ObjectUtil.isEmpty(userList)){
        //     return;
        // }
-        //发消息提醒去掉创建人
+        //发消息提醒
         List<WorkLog> workLogList = workLogService.list(new LambdaQueryWrapper<WorkLog>()
                 .eq(WorkLog::getDelFlag, CommonConstant.DEL_FLAG_0)
                 .in(WorkLog::getCreateBy, userIds)
                 .between(WorkLog::getCreateTime, startTime, endTime)
                 .select(WorkLog::getCreateBy)
         );
+        //过滤工班长
         List<String> successIds = workLogList.stream().map(WorkLog::getCreateBy).collect(Collectors.toList());
         userIds.removeAll(successIds);
         if (CollectionUtils.isNotEmpty(userIds)){
