@@ -161,8 +161,12 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
         if (ObjectUtil.isEmpty(selectPlanReq)) {
             return queryWrapper;
         }
-        queryWrapper.ge("start_time", selectPlanReq.getStartTime());
-        queryWrapper.le("start_time", selectPlanReq.getEndTime());
+        if(ObjectUtil.isNotEmpty(selectPlanReq.getStartTime())){
+            queryWrapper.ge("start_time", DateUtil.beginOfDay(selectPlanReq.getStartTime()));
+        }
+        if(ObjectUtil.isNotEmpty(selectPlanReq.getEndTime())){
+            queryWrapper.le("start_time", DateUtil.endOfDay(selectPlanReq.getEndTime()));
+        }
         queryWrapper.eq("is_manual", InspectionConstant.NO_IS_MANUAL);
         queryWrapper.eq("del_flag", CommonConstant.DEL_FLAG_0);
         queryWrapper.orderByAsc("start_time");
@@ -1229,6 +1233,9 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
                     List<RepairPoolDeviceRel> repairPoolDeviceRels = repairPoolDeviceRel.selectList(
                             new LambdaQueryWrapper<RepairPoolDeviceRel>()
                                     .eq(RepairPoolDeviceRel::getRepairPoolRelId, sl.getId()));
+                    if(CollUtil.isNotEmpty(repairPoolDeviceRels)){
+                        repairPoolCodes.setDeviceCodes(repairPoolDeviceRels.stream().map(RepairPoolDeviceRel::getDeviceCode).collect(Collectors.toList()));
+                    }
                     repairPoolCodes.setSpecifyDevice(CollUtil.isNotEmpty(repairPoolDeviceRels) ? "是" : "否");
 
                     temp.add(repairPoolCodes);

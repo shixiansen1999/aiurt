@@ -188,8 +188,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
                     // 计划令编号和图片地址
                     task.setPlanOrderCode(patrolAppointInfoDTO.getPlanOrderCode());
                     task.setPlanOrderCodeUrl(patrolAppointInfoDTO.getPlanOrderCodeUrl());
-                    if(ObjectUtil.isEmpty(patrolTask.getSource()))
-                    {
+                    if (ObjectUtil.isEmpty(patrolTask.getSource())) {
                         task.setSource(PatrolConstant.TASK_COMMON);
                     }
                     // 更新检查开始结束时间
@@ -299,34 +298,34 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
                     throw new AiurtBootException("小主，该巡检任务不在您的领取范围之内哦");
                 }
             }
-                updateWrapper.set(PatrolTask::getStatus, 2)
-                        .set(PatrolTask::getSource, 1)
-                        .eq(PatrolTask::getId, patrolTaskDTO.getId());
-                update(updateWrapper);
-                //添加巡检人
-                PatrolTaskUser patrolTaskUser = new PatrolTaskUser();
-                patrolTaskUser.setTaskCode(patrolTask.getCode());
-                patrolTaskUser.setUserId(sysUser.getId());
-                patrolTaskUser.setUserName(sysUser.getRealname());
-                patrolTaskUser.setDelFlag(0);
-                patrolTaskUserMapper.insert(patrolTaskUser);
+            updateWrapper.set(PatrolTask::getStatus, 2)
+                    .set(PatrolTask::getSource, 1)
+                    .eq(PatrolTask::getId, patrolTaskDTO.getId());
+            update(updateWrapper);
+            //添加巡检人
+            PatrolTaskUser patrolTaskUser = new PatrolTaskUser();
+            patrolTaskUser.setTaskCode(patrolTask.getCode());
+            patrolTaskUser.setUserId(sysUser.getId());
+            patrolTaskUser.setUserName(sysUser.getRealname());
+            patrolTaskUser.setDelFlag(0);
+            patrolTaskUserMapper.insert(patrolTaskUser);
         }
-            //确认：将待确认改为待执行
-            if (PatrolConstant.TASK_CONFIRM.equals(patrolTaskDTO.getStatus())) {
-                if (manager.checkTaskUser(patrolTask.getCode()) == false) {
-                    throw new AiurtBootException("小主，该巡检任务不在您的范围之内哦");
-                }
-                updateWrapper.set(PatrolTask::getStatus, 2).eq(PatrolTask::getId, patrolTaskDTO.getId());
-                update(updateWrapper);
+        //确认：将待确认改为待执行
+        if (PatrolConstant.TASK_CONFIRM.equals(patrolTaskDTO.getStatus())) {
+            if (manager.checkTaskUser(patrolTask.getCode()) == false) {
+                throw new AiurtBootException("小主，该巡检任务不在您的范围之内哦");
             }
-            //执行：将待执行改为执行中
-            if (PatrolConstant.TASK_EXECUTE.equals(patrolTaskDTO.getStatus())) {
-                if (manager.checkTaskUser(patrolTask.getCode()) == false) {
-                    throw new AiurtBootException("小主，该巡检任务不在您的范围之内哦");
-                }
-                updateWrapper.set(PatrolTask::getStatus, 4).eq(PatrolTask::getId, patrolTaskDTO.getId());
-                update(updateWrapper);
+            updateWrapper.set(PatrolTask::getStatus, 2).eq(PatrolTask::getId, patrolTaskDTO.getId());
+            update(updateWrapper);
+        }
+        //执行：将待执行改为执行中
+        if (PatrolConstant.TASK_EXECUTE.equals(patrolTaskDTO.getStatus())) {
+            if (manager.checkTaskUser(patrolTask.getCode()) == false) {
+                throw new AiurtBootException("小主，该巡检任务不在您的范围之内哦");
             }
+            updateWrapper.set(PatrolTask::getStatus, 4).eq(PatrolTask::getId, patrolTaskDTO.getId());
+            update(updateWrapper);
+        }
 
     }
 
@@ -367,17 +366,14 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
             arrayList.add(userDTO);
         }
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        if(ObjectUtil.isNull(orgCoed.getIdentity()))
-        {
-            arrayList.stream().forEach(e->{
+        if (ObjectUtil.isNull(orgCoed.getIdentity())) {
+            arrayList.stream().forEach(e -> {
                 List<PatrolTaskUserContentDTO> userList = e.getUserList();
                 List<PatrolTaskUserContentDTO> collect = userList.stream().filter(u -> !u.getId().equals(sysUser.getId())).collect(Collectors.toList());
                 e.setUserList(collect);
             });
             return arrayList;
-        }
-        else
-        {
+        } else {
             return arrayList;
         }
     }
@@ -401,7 +397,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         patrolTask.setPlanOrderCodeUrl(patrolTaskUserDTO.getPlanOrderCodeUrl());
         patrolTask.setStatus(1);
         patrolTask.setPlanCode(patrolTaskUserDTO.getPlanCode());
-        patrolTask.setType( patrolTaskUserDTO.getType());
+        patrolTask.setType(patrolTaskUserDTO.getType());
         patrolTaskMapper.updateById(patrolTask);
     }
 
@@ -554,7 +550,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
                         .set(PatrolTask::getSubmitTime, LocalDateTime.now())
                         .eq(PatrolTask::getId, patrolTaskDTO.getId());
             }
-            patrolTaskMapper.update(new PatrolTask(),updateWrapper);
+            patrolTaskMapper.update(new PatrolTask(), updateWrapper);
         }
 
     }
@@ -617,11 +613,9 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
             PatrolStandard patrolStandard = patrolStandardMapper.selectById(ns.getId());
             if (ObjectUtil.isNotNull(patrolStandard) && 1 == patrolStandard.getDeviceType()) {
                 List<DeviceDTO> deviceList = ns.getDeviceList();
-                if(CollUtil.isEmpty(deviceList))
-                {
+                if (CollUtil.isEmpty(deviceList)) {
                     throw new AiurtBootException("小主，要指定设备才可以保存哦！");
-                }
-                else {
+                } else {
                     //遍历设备单号
                     deviceList.stream().forEach(dv -> {
                         PatrolTaskDevice patrolTaskDevice = new PatrolTaskDevice();
@@ -875,7 +869,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         LambdaUpdateWrapper<PatrolTask> updateWrapper = new LambdaUpdateWrapper<>();
         updateWrapper.set(PatrolTask::getRemark, patrolTaskManualDTO.getRemark()).set(PatrolTask::getAuditor, patrolTaskManualDTO.getAuditor())
                 .set(PatrolTask::getStartTime, patrolTaskManualDTO.getStartTime()).set(PatrolTask::getEndTime, patrolTaskManualDTO.getEndTime())
-                .set(PatrolTask::getType,patrolTaskManualDTO.getType())
+                .set(PatrolTask::getType, patrolTaskManualDTO.getType())
                 .set(PatrolTask::getName, patrolTaskManualDTO.getName()).set(PatrolTask::getPatrolDate, patrolTaskManualDTO.getPatrolDate()).eq(PatrolTask::getId, patrolTaskManualDTO.getId());
         patrolTaskMapper.update(new PatrolTask(), updateWrapper);
         //先删除
@@ -967,5 +961,10 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
                 });
             }
         });
+    }
+
+    @Override
+    public String getLineCode(String stationCode) {
+        return patrolTaskMapper.getLineCode(stationCode);
     }
 }

@@ -1,4 +1,4 @@
-package com.aiurt.modules.train.eaxm.dto;
+package com.aiurt.modules.train.exam.dto;
 
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;

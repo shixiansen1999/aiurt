@@ -1,4 +1,4 @@
-package com.aiurt.modules.train.eaxm.entity;
+package com.aiurt.modules.train.exam.entity;
 
 import java.io.Serializable;
 import java.util.Date;

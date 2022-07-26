@@ -1,4 +1,4 @@
-package com.aiurt.modules.train.eaxm.entity;
+package com.aiurt.modules.train.exam.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;

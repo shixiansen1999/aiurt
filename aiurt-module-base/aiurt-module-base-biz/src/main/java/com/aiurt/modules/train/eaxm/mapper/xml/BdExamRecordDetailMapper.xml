@@ -3,12 +3,12 @@
 <mapper namespace="com.aiurt.modules.train.eaxm.mapper.BdExamRecordDetailMapper">
 
     <select id="getByQuTypeAndExamRecordId"
-            resultType="com.aiurt.modules.train.eaxm.entity.BdExamRecordDetail">
+            resultType="com.aiurt.modules.train.exam.entity.BdExamRecordDetail">
         SELECT * from bd_exam_record_detail where que_id = #{shortQuesReqVo.id} and exam_record_id = #{shortQuesReqVo.examRecordId}
          ORDER BY  create_time desc, ABS(#{date} - create_time) LIMIT 1
 
     </select>
-    <select id="getAnswerList" resultType="com.aiurt.modules.train.eaxm.entity.BdExamRecordDetail">
+    <select id="getAnswerList" resultType="com.aiurt.modules.train.exam.entity.BdExamRecordDetail">
     select berd.answer,berd.score,berd.que_id,berd.id,berd.is_true,bq.que_type
     from bd_exam_record_detail berd,bd_question bq
     where berd.exam_record_id =#{examRecordId}
@@ -16,7 +16,7 @@
     and berd.que_id = #{questionId}
     ORDER BY  berd.create_time desc, ABS(#{date} - berd.create_time) LIMIT 1
     </select>
-    <select id="getByExamRecordId" resultType="com.aiurt.modules.train.eaxm.entity.BdExamRecordDetail">
+    <select id="getByExamRecordId" resultType="com.aiurt.modules.train.exam.entity.BdExamRecordDetail">
     select *
     from bd_exam_record_detail beRd
     where beRd.exam_record_id = #{id}

@@ -4,7 +4,7 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.api.dto.quartz.QuartzJobDTO;
-import com.aiurt.modules.train.eaxm.entity.BdExamRecord;
+import com.aiurt.modules.train.exam.entity.BdExamRecord;
 import com.aiurt.modules.train.eaxm.mapper.BdExamRecordMapper;
 import com.aiurt.modules.train.quzrtz.MakeUpExamServiceImpl;
 import com.aiurt.modules.train.quzrtz.job.CronUtlit;

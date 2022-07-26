@@ -3,10 +3,10 @@ package com.aiurt.modules.train.eaxm.mapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.ibatis.annotations.Param;
-import com.aiurt.modules.train.eaxm.dto.BdAchievementDTO;
-import com.aiurt.modules.train.eaxm.dto.ExamDetailsDTO;
-import com.aiurt.modules.train.eaxm.entity.BdExamPaper;
-import com.aiurt.modules.train.eaxm.entity.BdExamRecord;
+import com.aiurt.modules.train.exam.dto.BdAchievementDTO;
+import com.aiurt.modules.train.exam.dto.ExamDetailsDTO;
+import com.aiurt.modules.train.exam.entity.BdExamPaper;
+import com.aiurt.modules.train.exam.entity.BdExamRecord;
 import com.aiurt.modules.train.task.entity.BdTrainMakeupExamRecord;
 import com.aiurt.modules.train.task.entity.BdTrainTaskUser;
 

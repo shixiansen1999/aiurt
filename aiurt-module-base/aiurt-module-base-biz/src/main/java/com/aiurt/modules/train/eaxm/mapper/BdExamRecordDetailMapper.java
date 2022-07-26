@@ -2,7 +2,7 @@ package com.aiurt.modules.train.eaxm.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import org.apache.ibatis.annotations.Param;
-import com.aiurt.modules.train.eaxm.entity.BdExamRecordDetail;
+import com.aiurt.modules.train.exam.entity.BdExamRecordDetail;
 import com.aiurt.modules.train.task.vo.ShortQuesReqVo;
 
 import java.util.List;

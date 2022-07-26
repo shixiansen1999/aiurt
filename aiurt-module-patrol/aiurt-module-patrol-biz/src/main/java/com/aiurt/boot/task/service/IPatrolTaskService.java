@@ -179,4 +179,11 @@ public interface IPatrolTaskService extends IService<PatrolTask> {
      * @param patrolTaskManualDTO
      */
     void getPatrolTaskManualEdit(PatrolTaskManualDTO patrolTaskManualDTO);
+
+    /**
+     * 根据站点编号获取线路编号
+     * @param stationCode
+     * @return
+     */
+    String getLineCode(String stationCode);
 }

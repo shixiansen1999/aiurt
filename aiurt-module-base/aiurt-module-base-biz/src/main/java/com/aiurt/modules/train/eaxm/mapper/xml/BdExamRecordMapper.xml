@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.aiurt.modules.train.eaxm.mapper.BdExamRecordMapper">
-    <select id="list" resultType="com.aiurt.modules.train.eaxm.entity.BdExamRecord">
+    <select id="list" resultType="com.aiurt.modules.train.exam.entity.BdExamRecord">
          SELECT
 	       t2.id as trainTaskId,
            t2.exam_plan_time as examTime,
@@ -51,7 +51,7 @@
                  </if>
              </where>
     </select>
-    <select id="readOne" resultType="com.aiurt.modules.train.eaxm.entity.BdExamRecord">
+    <select id="readOne" resultType="com.aiurt.modules.train.exam.entity.BdExamRecord">
         SELECT
         t1.id as id,
         t2.id as examPaperId,
@@ -87,7 +87,7 @@
         </where>
     </select>
 
-    <select id="readOness" resultType="com.aiurt.modules.train.eaxm.entity.BdExamRecord">
+    <select id="readOness" resultType="com.aiurt.modules.train.exam.entity.BdExamRecord">
         SELECT a.* FROM ( SELECT
         t1.id as id,
         t2.id as examPaperId,
@@ -125,7 +125,7 @@
         SELECT id from  bd_question_options  where  is_right = 1 AND question_id = #{id}
     </select>
 
-    <select id="lists" resultType="com.aiurt.modules.train.eaxm.entity.BdExamRecord">
+    <select id="lists" resultType="com.aiurt.modules.train.exam.entity.BdExamRecord">
          SELECT
 	         t1.id as id,
 	         t2.id as examPaperId,
@@ -170,7 +170,7 @@
         order by t1.answer_time desc
     </select>
 
-    <select id="lecturerList" resultType="com.aiurt.modules.train.eaxm.entity.BdExamRecord">
+    <select id="lecturerList" resultType="com.aiurt.modules.train.exam.entity.BdExamRecord">
          SELECT
             t2.id as trainTaskId,
             t1.name as paperName,
@@ -223,7 +223,7 @@
         order by t2.update_time desc
     </select>
 
-    <select id="lecturerReadOne" resultType="com.aiurt.modules.train.eaxm.entity.BdExamPaper">
+    <select id="lecturerReadOne" resultType="com.aiurt.modules.train.exam.entity.BdExamPaper">
           SELECT
 	        t1.id as id,
 	        t2.id as taskId,
@@ -327,7 +327,7 @@
         </where>
     </select>
 
-    <select id="recordList" resultType="com.aiurt.modules.train.eaxm.entity.BdExamRecord">
+    <select id="recordList" resultType="com.aiurt.modules.train.exam.entity.BdExamRecord">
         SELECT
         t1.id as id,
         t2.id as trainTaskId,
@@ -353,7 +353,7 @@
            </where>
           order by t2.create_time desc
     </select>
-    <select id="examDetails" resultType="com.aiurt.modules.train.eaxm.dto.ExamDetailsDTO">
+    <select id="examDetails" resultType="com.aiurt.modules.train.exam.dto.ExamDetailsDTO">
         SELECT
             tt.exam_task_name as paperName,  ep.passscore as passcode, ep.number, tt.start_exam_time as examTime,
             ep.score as paperScore,(select task_state from bd_train_task
@@ -433,14 +433,14 @@
                                    exam_state=#{bdExamRecord.examState}  WHERE id=#{bdExamRecord.id}
     </update>
 
-    <select id="examUserList" resultType="com.aiurt.modules.train.eaxm.entity.BdExamRecord">
+    <select id="examUserList" resultType="com.aiurt.modules.train.exam.entity.BdExamRecord">
 select er.*
 FROM  bd_exam_record er
 where
 er.train_task_id=#{taskId} and er.is_release ='3' and er.exam_classify =1
      </select>
 
-    <select id="readOnes" resultType="com.aiurt.modules.train.eaxm.entity.BdExamRecord">
+    <select id="readOnes" resultType="com.aiurt.modules.train.exam.entity.BdExamRecord">
         SELECT
 	       t1.id as trainTaskId,
            t2.id as examPaperId,
@@ -457,14 +457,14 @@ er.train_task_id=#{taskId} and er.is_release ='3' and er.exam_classify =1
 	        AND t1.id = #{trainTaskId}
     </select>
 
-    <select id="getlist" resultType="com.aiurt.modules.train.eaxm.entity.BdExamRecord">
+    <select id="getlist" resultType="com.aiurt.modules.train.exam.entity.BdExamRecord">
         select er.*
         FROM  bd_exam_record er
         where
         er.train_task_id=#{taskId}
     </select>
 
-     <select id="getRecordList" resultType="com.aiurt.modules.train.eaxm.entity.BdExamRecord">
+     <select id="getRecordList" resultType="com.aiurt.modules.train.exam.entity.BdExamRecord">
     select  t1.id,t1.exam_classify,t1.score
     from bd_exam_record t1
     LEFT JOIN bd_exam_paper ep ON ep.id = t1.exam_paper_id
@@ -502,7 +502,7 @@ WHERE
 			id = #{id}
 	)
     </select>
-    <select id="listss" resultType="com.aiurt.modules.train.eaxm.entity.BdExamRecord">
+    <select id="listss" resultType="com.aiurt.modules.train.exam.entity.BdExamRecord">
     SELECT *  from (SELECT
             t1.id as id,
             t2.id as examPaperId,
@@ -568,7 +568,7 @@ WHERE
       order by   a.examination desc,a.trainTaskId asc
     </select>
 
-    <select id="getNum" resultType="com.aiurt.modules.train.eaxm.entity.BdExamRecord">
+    <select id="getNum" resultType="com.aiurt.modules.train.exam.entity.BdExamRecord">
         select * from bd_exam_record where train_task_id = #{taskId} and exam_classify = '1'
     </select>
 </mapper>

@@ -1,4 +1,4 @@
-package com.aiurt.modules.train.eaxm.dto;
+package com.aiurt.modules.train.exam.dto;
 
 import com.aiurt.common.aspect.annotation.Dict;
 import io.swagger.annotations.ApiModelProperty;

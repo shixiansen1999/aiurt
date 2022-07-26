@@ -1,9 +1,7 @@
 package com.aiurt.modules.train.quzrtz.job;
 
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.aiurt.modules.train.eaxm.entity.BdExamRecord;
+import com.aiurt.modules.train.exam.entity.BdExamRecord;
 import com.aiurt.modules.train.eaxm.mapper.BdExamRecordMapper;
-import com.aiurt.modules.train.eaxm.service.IBdExamRecordService;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;

@@ -11,7 +11,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
 import com.aiurt.common.aspect.annotation.Dict;
-import com.aiurt.modules.train.eaxm.entity.BdExamRecordDetail;
+import com.aiurt.modules.train.exam.entity.BdExamRecordDetail;
 import org.jeecgframework.poi.excel.annotation.Excel;
 import org.springframework.format.annotation.DateTimeFormat;
 

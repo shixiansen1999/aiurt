@@ -83,6 +83,10 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
                 Date checkTime = patrolTaskDeviceForDeviceParam.getCheckTime();
                 if (ObjectUtil.isNotEmpty(startTime) && ObjectUtil.isNotEmpty(checkTime)) {
                     long duration = DateUtil.between(startTime, checkTime, DateUnit.MINUTE);
+                    long second = DateUtil.between(startTime, checkTime, DateUnit.SECOND);
+                    if (second % 60 > 0) {
+                        duration += 1;
+                    }
                     patrolTaskDeviceForDeviceParam.setDuration(duration);
                 }
                 // 查询同行人信息
@@ -124,14 +128,12 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
             Date startTime = e.getStartTime();
             Date checkTime = e.getCheckTime();
             if (ObjectUtil.isNotEmpty(startTime) && ObjectUtil.isNotEmpty(checkTime)) {
-                long time = startTime.getTime();
-                long timeTime = checkTime.getTime();
-                long l1 = (timeTime - time) / (1000*60);
-                if ((timeTime - time) %(1000*60)>0)
-                {
-                    long l = l1 + 1;
-                    e.setInspectionTime(l);
+                long duration = DateUtil.between(startTime, checkTime, DateUnit.MINUTE);
+                long second = DateUtil.between(startTime, checkTime, DateUnit.SECOND);
+                if (second % 60 > 0) {
+                    duration += 1;
                 }
+                e.setInspectionTime(duration);
             }
             if(ObjectUtil.isNotEmpty(e.getDeviceCode()))
             {
@@ -219,6 +221,10 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
         Date checkTime = taskDeviceParam.getCheckTime();
         if (ObjectUtil.isNotEmpty(startTime) && ObjectUtil.isNotEmpty(checkTime)) {
             long duration = DateUtil.between(startTime, checkTime, DateUnit.MINUTE);
+            long second = DateUtil.between(startTime, checkTime, DateUnit.SECOND);
+            if (second % 60 > 0) {
+                duration += 1;
+            }
             taskDeviceParam.setDuration(duration);
         }
         StationDTO stationDTO = new StationDTO();

@@ -89,4 +89,15 @@ public class FlowOperationController {
 //        }
         return Result.OK(new TaskInfoDTO());
     }
+
+    /**
+     * 提交流程的用户任务
+     * @return
+     */
+    @DisableDataFilter
+    @PostMapping("/submitUserTask")
+    public Result<?> completeTask() {
+        return Result.OK();
+    }
+
 }

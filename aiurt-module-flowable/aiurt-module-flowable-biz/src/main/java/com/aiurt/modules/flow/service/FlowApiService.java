@@ -4,6 +4,7 @@ import com.aiurt.modules.flow.dto.StartBpmnDTO;
 import com.aiurt.modules.flow.entity.CustomTaskComment;
 import org.flowable.engine.runtime.ProcessInstance;
 import org.flowable.task.api.Task;
+import org.flowable.task.api.TaskInfo;
 
 import java.util.Map;
 
@@ -40,5 +41,19 @@ public interface FlowApiService {
      * @param busData 流程任务的变量数据。
      */
     void completeTask(Task task, CustomTaskComment comment,  Map<String, Object> busData);
+    /**
+     * 判断当前登录用户是否为流程实例中的用户任务的指派人。或是候选人之一。
+     *
+     * @param task 流程实例中的用户任务。
+     * @return 是返回true，否则false。
+     */
+    boolean isAssigneeOrCandidate(TaskInfo task);
 
+    /**
+     * 获取指定的流程实例对象。
+     *
+     * @param processInstanceId 流程实例Id。
+     * @return 流程实例对象。
+     */
+    ProcessInstance getProcessInstance(String processInstanceId);
 }

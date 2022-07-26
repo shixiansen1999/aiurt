@@ -49,6 +49,7 @@ public class WorkLogRemindServiceImpl extends ServiceImpl<WorkLogRemindMapper, W
     @Override
     public Result add(WorkLogRemindDTO dto, HttpServletRequest req) {
         LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        //根据当前登录 人的部门，查同部门的最后的一个时间提醒
         WorkLogRemind one = this.lambdaQuery().eq(WorkLogRemind::getOrgId, user.getOrgId()).last("limit 1").one();
         WorkLogRemind remind = new WorkLogRemind();
         if (one!=null){
@@ -107,7 +108,7 @@ public class WorkLogRemindServiceImpl extends ServiceImpl<WorkLogRemindMapper, W
                 throw new AiurtBootException("设置夜班提醒时间出现错误,请稍后重试");
             }
         }
-        return Result.ok();
+        return Result.ok("添加成功");
     }
 
     /**

@@ -1,6 +1,5 @@
 package com.aiurt.modules.worklog.task;
 
-import cn.hutool.core.util.ObjectUtil;
 import com.aiurt.common.api.dto.message.BusMessageDTO;
 import com.aiurt.common.util.SysAnnmentTypeEnum;
 import com.aiurt.common.util.TaskStatusUtil;
@@ -20,7 +19,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import javax.annotation.Resource;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -57,18 +55,15 @@ public class WorkLogJob implements Job {
         LocalDate now = LocalDate.now();
         LocalDateTime startTime = now.atTime(0, 0, 0);
         LocalDateTime endTime = now.atTime(23, 59, 59);
-		/*List<SysUser> orgList = userMapper.selectList(new LambdaQueryWrapper<SysUser>()
-				.eq(SysUser::getOrgId, dto.getOrgId())
-				.eq(SysUser::getDelFlag, CommonConstant.DEL_FLAG_0)
-				.select(SysUser::getId));
-		List<String> userIds = orgList.stream().map(SysUser::getId).collect(Collectors.toList());*/
+        //根据部门id,获取部门下的全部人员
+        List<LoginUser> personnel = iSysBaseAPI.getUserPersonnel(dto.getOrgId());
+		List<String> userIds = personnel.stream().map(LoginUser::getId).collect(Collectors.toList());
         // todo 后期修改
-        List<LoginUser> userList = new ArrayList<>();
 		//List<LoginUser> userList = userMapper.selectUserByTimeAndItemAndOrgId(DateUtils.getDate("yyyy-MM-dd"),"白",dto.getOrgId());
-        if (ObjectUtil.isEmpty(userList)){
-            return;
-        }
-        List<String> userIds = userList.stream().map(LoginUser::getUsername).collect(Collectors.toList());
+       // if (ObjectUtil.isEmpty(userList)){
+       //     return;
+       // }
+        //发消息提醒去掉创建人
         List<WorkLog> workLogList = workLogService.list(new LambdaQueryWrapper<WorkLog>()
                 .eq(WorkLog::getDelFlag, CommonConstant.DEL_FLAG_0)
                 .in(WorkLog::getCreateBy, userIds)

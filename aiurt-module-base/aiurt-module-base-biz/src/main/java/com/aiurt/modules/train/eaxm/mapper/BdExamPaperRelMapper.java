@@ -1,6 +1,6 @@
 package com.aiurt.modules.train.eaxm.mapper;
 
-import com.aiurt.modules.train.eaxm.entity.BdExamPaperRel;
+import com.aiurt.modules.train.exam.entity.BdExamPaperRel;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
 /**

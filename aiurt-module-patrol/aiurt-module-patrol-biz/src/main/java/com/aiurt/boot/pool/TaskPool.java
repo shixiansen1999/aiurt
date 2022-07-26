@@ -225,6 +225,11 @@ public class TaskPool implements Job {
                     patrolTaskDevice.setLineCode(station.getLineCode());
                     // 站点编号
                     patrolTaskDevice.setStationCode(station.getStationCode());
+                    if(station.getLineCode().isEmpty()){
+                       // 根据站点编号获取线路编号
+                       String lineCode = patrolTaskService.getLineCode(station.getStationCode());
+                        patrolTaskDevice.setLineCode(lineCode);
+                    }
                     // 位置编号
                     patrolTaskDevice.setPositionCode(station.getPositionCode());
                     // 保存巡检单信息

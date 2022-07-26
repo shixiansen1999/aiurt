@@ -348,6 +348,12 @@ public interface ISysBaseAPI extends CommonAPI {
      * @return
      */
      List<LoginUser> getUserByDepIds(List<String> deptCodes);
+     /**
+     * 根据部门id,查询部门下的人员信息
+     * @param deptId 部门编码集合
+     * @return
+     */
+     List<LoginUser> getUserPersonnel(String deptId);
 
 
     /**

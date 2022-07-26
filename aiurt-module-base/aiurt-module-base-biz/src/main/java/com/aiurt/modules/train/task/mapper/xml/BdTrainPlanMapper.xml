@@ -114,7 +114,7 @@ ORDER BY  berd.create_time desc, ABS(#{date} - berd.create_time) LIMIT #{number}
 FROM
 	bd_team
     </select>
-    <select id="getByTrainTaskId" resultType="com.aiurt.modules.train.eaxm.entity.BdExamRecord">
+    <select id="getByTrainTaskId" resultType="com.aiurt.modules.train.exam.entity.BdExamRecord">
         SELECT
 	user_id,
 score
@@ -124,7 +124,7 @@ where  exam_classify = 1
 AND is_pass = 1
 and train_task_id = #{trainTaskId}
     </select>
-    <select id="getAllExamRecord" resultType="com.aiurt.modules.train.eaxm.entity.BdExamRecord">
+    <select id="getAllExamRecord" resultType="com.aiurt.modules.train.exam.entity.BdExamRecord">
                 SELECT
 	user_id,
 score

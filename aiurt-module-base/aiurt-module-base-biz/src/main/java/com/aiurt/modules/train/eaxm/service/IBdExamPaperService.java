@@ -2,7 +2,7 @@ package com.aiurt.modules.train.eaxm.service;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.aiurt.modules.train.eaxm.entity.BdExamPaper;
+import com.aiurt.modules.train.exam.entity.BdExamPaper;
 
 /**
  * @Description: 试卷库表
