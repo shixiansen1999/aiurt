@@ -193,11 +193,17 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
         depot.setSubmitTime(dto.getSubmitTime());
         depot.setWorkContent(dto.getWorkContent());
         depot.setContent(dto.getContent());
-        List<JSONObject> list = iSysBaseAPI.queryUsersByUsernames(dto.getAssortUserNames());
-        String s1= list.stream().map(e->e.getString("id")).collect(Collectors.joining(","));
-        depot.setAssortIds(s1);
-        LoginUser queryUser = iSysBaseAPI.queryUser(dto.getSucceedUserName());
-        depot.setSucceedId(queryUser.getId());
+        if(ObjectUtil.isNotEmpty(dto.getAssortUserNames()))
+        {
+            List<JSONObject> list = iSysBaseAPI.queryUsersByUsernames(dto.getAssortUserNames());
+            String s1= list.stream().map(e->e.getString("id")).collect(Collectors.joining(","));
+            depot.setAssortIds(s1);
+        }
+        if(ObjectUtil.isNotEmpty(dto.getSucceedUserName()))
+        {
+            LoginUser queryUser = iSysBaseAPI.queryUser(dto.getSucceedUserName());
+            depot.setSucceedId(queryUser.getId());
+        }
         depot.setApproverId(dto.getApproverId());
         if (StringUtils.isNotBlank(dto.getApproverId())) {
             depot.setApprovalTime(new Date());
@@ -458,22 +464,29 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
         WorkLogResult workLog = depotMapper.queryById(id);
         WorkLogDTO workLogDTO = new WorkLogDTO();
         BeanUtil.copyProperties(workLog,workLogDTO);
-        LoginUser successor = iSysBaseAPI.getUserById(workLog.getSucceedId());
-        workLog.setSucceedName(successor.getRealname());
-        workLogDTO.setSucceedUserName(successor.getUsername());
-        String[] split1 = workLog.getAssortIds().split(",");
+        if(ObjectUtil.isNotEmpty(workLog.getSucceedId()))
+        {
+            LoginUser successor = iSysBaseAPI.getUserById(workLog.getSucceedId());
+            workLog.setSucceedName(successor.getRealname());
+            workLogDTO.setSucceedUserName(successor.getUsername());
+        }
+        //配合施工参与人姓名
+        if(ObjectUtil.isNotEmpty(workLog.getAssortIds()))
+        {
+
+            String[] split1 = workLog.getAssortIds().split(",");
+            List<LoginUser> assortNames = iSysBaseAPI.queryAllUserByIds(split1);
+            String collect1 = assortNames.stream().map(s -> s.getRealname()).collect(Collectors.joining(","));
+            String s = assortNames.stream().map(u -> u.getUsername()).collect(Collectors.joining(","));
+            workLogDTO.setAssortNames(collect1);
+            workLogDTO.setAssortUserNames(s);
+        }
         //附件列表
         List<String> query = enclosureMapper.query(id,0);
         String collect = query.stream().collect(Collectors.joining(","));
         //签名列表
         List<String> query1 = enclosureMapper.query(id,1);
         String signUrl = query1.stream().collect(Collectors.joining(","));
-        //配合施工参与人姓名
-        List<LoginUser> assortNames = iSysBaseAPI.queryAllUserByIds(split1);
-        String collect1 = assortNames.stream().map(s -> s.getRealname()).collect(Collectors.joining(","));
-        String s = assortNames.stream().map(u -> u.getUsername()).collect(Collectors.joining(","));
-        workLogDTO.setAssortNames(collect1);
-        workLogDTO.setAssortUserNames(s);
         workLogDTO.setUrlList(collect);
         workLogDTO.setSignature(signUrl);
         return workLogDTO;
