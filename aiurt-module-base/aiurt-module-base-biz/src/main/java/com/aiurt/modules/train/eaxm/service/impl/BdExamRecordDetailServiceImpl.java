@@ -1,6 +1,6 @@
 package com.aiurt.modules.train.eaxm.service.impl;
 
-import com.aiurt.modules.train.eaxm.entity.BdExamRecordDetail;
+import com.aiurt.modules.train.exam.entity.BdExamRecordDetail;
 import com.aiurt.modules.train.eaxm.mapper.BdExamRecordDetailMapper;
 import com.aiurt.modules.train.eaxm.service.IBdExamRecordDetailService;
 import org.springframework.stereotype.Service;

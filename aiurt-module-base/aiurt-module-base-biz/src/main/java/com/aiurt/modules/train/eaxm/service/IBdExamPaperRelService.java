@@ -1,6 +1,6 @@
 package com.aiurt.modules.train.eaxm.service;
 
-import com.aiurt.modules.train.eaxm.entity.BdExamPaperRel;
+import com.aiurt.modules.train.exam.entity.BdExamPaperRel;
 import com.baomidou.mybatisplus.extension.service.IService;
 
 /**

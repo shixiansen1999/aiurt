@@ -3,7 +3,7 @@ package com.aiurt.modules.train.eaxm.controller;
 import org.jeecg.common.api.vo.Result;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.system.base.controller.BaseController;
-import com.aiurt.modules.train.eaxm.entity.BdExamPaper;
+import com.aiurt.modules.train.exam.entity.BdExamPaper;
 import com.aiurt.modules.train.eaxm.service.IBdExamPaperService;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.annotations.Api;

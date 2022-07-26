@@ -3,7 +3,7 @@ package com.aiurt.modules.train.task.mapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.ibatis.annotations.Param;
-import com.aiurt.modules.train.eaxm.entity.BdExamRecord;
+import com.aiurt.modules.train.exam.entity.BdExamRecord;
 import com.aiurt.modules.train.question.entity.BdQuestionOptionsAtt;
 import com.aiurt.modules.train.task.entity.BdTrainPlan;
 import com.aiurt.modules.train.task.vo.*;

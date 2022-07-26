@@ -1,6 +1,6 @@
 package com.aiurt.modules.train.eaxm.service.impl;
 
-import com.aiurt.modules.train.eaxm.entity.BdExamPaperRel;
+import com.aiurt.modules.train.exam.entity.BdExamPaperRel;
 import com.aiurt.modules.train.eaxm.mapper.BdExamPaperRelMapper;
 import com.aiurt.modules.train.eaxm.service.IBdExamPaperRelService;
 import org.springframework.stereotype.Service;

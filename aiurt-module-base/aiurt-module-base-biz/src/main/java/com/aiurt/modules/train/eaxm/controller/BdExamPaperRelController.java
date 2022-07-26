@@ -2,7 +2,7 @@ package com.aiurt.modules.train.eaxm.controller;
 
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.system.base.controller.BaseController;
-import com.aiurt.modules.train.eaxm.entity.BdExamPaperRel;
+import com.aiurt.modules.train.exam.entity.BdExamPaperRel;
 import com.aiurt.modules.train.eaxm.service.IBdExamPaperRelService;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;

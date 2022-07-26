@@ -1,8 +1,7 @@
 package com.aiurt.modules.train.quzrtz.job;
 
-import cn.hutool.core.util.ObjectUtil;
 import com.aiurt.modules.train.eaxm.constans.ExamConstans;
-import com.aiurt.modules.train.eaxm.entity.BdExamRecord;
+import com.aiurt.modules.train.exam.entity.BdExamRecord;
 import com.aiurt.modules.train.eaxm.mapper.BdExamPaperMapper;
 import com.aiurt.modules.train.eaxm.mapper.BdExamRecordMapper;
 import com.aiurt.modules.train.task.entity.BdTrainMakeupExamRecord;

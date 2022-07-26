@@ -1,4 +1,4 @@
-package com.aiurt.modules.train.eaxm.dto;
+package com.aiurt.modules.train.exam.dto;
 
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.fasterxml.jackson.annotation.JsonFormat;

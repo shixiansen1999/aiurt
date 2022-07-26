@@ -1,4 +1,4 @@
-package com.aiurt.modules.train.eaxm.entity;
+package com.aiurt.modules.train.exam.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
@@ -11,9 +11,9 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
 import com.aiurt.common.aspect.annotation.Dict;
-import com.aiurt.modules.train.eaxm.dto.BdAchievementDTO;
-import com.aiurt.modules.train.eaxm.dto.BdExamIdDTO;
-import com.aiurt.modules.train.eaxm.dto.BdExamRecordDTO;
+import com.aiurt.modules.train.exam.dto.BdAchievementDTO;
+import com.aiurt.modules.train.exam.dto.BdExamIdDTO;
+import com.aiurt.modules.train.exam.dto.BdExamRecordDTO;
 import com.aiurt.modules.train.task.entity.BdTrainMakeupExamRecord;
 import org.jeecgframework.poi.excel.annotation.Excel;
 import org.springframework.format.annotation.DateTimeFormat;

@@ -1,12 +1,9 @@
 package com.aiurt.modules.train.quzrtz.job;
 
-import com.aiurt.modules.train.eaxm.entity.BdExamRecord;
+import com.aiurt.modules.train.exam.entity.BdExamRecord;
 
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
 import java.util.Date;
-import java.util.GregorianCalendar;
-import java.util.List;
 
 /**
  * @author zwl

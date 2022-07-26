@@ -488,7 +488,7 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
             checkListDTO.setEquipmentLocation(manager.translateStation(stationDTOList));
         }
         //检修位置
-        if (checkListDTO.getEquipmentCode() == null && checkListDTO.getSpecificLocation() != null) {
+        if (checkListDTO.getSpecificLocation() != null) {
             List<StationDTO> stationDTOList = new ArrayList<>();
             stationDTOList.forEach(e -> {
                 e.setStationCode(checkListDTO.getStationCode());
@@ -496,8 +496,13 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                 e.setPositionCode(checkListDTO.getPositionCode());
             });
             String station = manager.translateStation(stationDTOList);
-            String string = checkListDTO.getSpecificLocation() + station;
-            checkListDTO.setMaintenancePosition(string);
+            if(station!=null){
+                String string = checkListDTO.getSpecificLocation() + station;
+                checkListDTO.setMaintenancePosition(string);
+            }else {
+                checkListDTO.setMaintenancePosition(checkListDTO.getSpecificLocation());
+            }
+
         }
         //站点位置
         if (checkListDTO.getEquipmentCode() == null) {

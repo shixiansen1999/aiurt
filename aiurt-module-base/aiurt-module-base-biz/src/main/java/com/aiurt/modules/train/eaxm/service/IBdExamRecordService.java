@@ -1,9 +1,9 @@
 package com.aiurt.modules.train.eaxm.service;
 
-import com.aiurt.modules.train.eaxm.dto.BdAchievementDTO;
-import com.aiurt.modules.train.eaxm.dto.ExamDetailsDTO;
-import com.aiurt.modules.train.eaxm.entity.BdExamPaper;
-import com.aiurt.modules.train.eaxm.entity.BdExamRecord;
+import com.aiurt.modules.train.exam.dto.BdAchievementDTO;
+import com.aiurt.modules.train.exam.dto.ExamDetailsDTO;
+import com.aiurt.modules.train.exam.entity.BdExamPaper;
+import com.aiurt.modules.train.exam.entity.BdExamRecord;
 import com.aiurt.modules.train.task.entity.BdTrainTaskUser;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
