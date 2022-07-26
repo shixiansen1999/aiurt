@@ -9,6 +9,7 @@ import com.aiurt.boot.task.param.PatrolTaskParam;
 import com.aiurt.boot.task.service.IPatrolTaskDeviceService;
 import com.aiurt.boot.task.service.IPatrolTaskService;
 import com.aiurt.common.aspect.annotation.AutoLog;
+import com.aiurt.common.constant.enums.ModuleType;
 import com.aiurt.common.system.base.controller.BaseController;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -51,7 +52,7 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
      * @param req
      * @return
      */
-    @AutoLog(value = "PC巡检任务列表-分页列表查询")
+    @AutoLog(value = "PC巡检任务列表-分页列表查询", operateType = 1, operateTypeAlias = "查询", module = ModuleType.PATROL)
     @ApiOperation(value = "PC巡检任务列表-分页列表查询", notes = "PC巡检任务列表-分页列表查询")
     @RequestMapping(value = "/list", method = {RequestMethod.GET, RequestMethod.POST})
     public Result<IPage<PatrolTaskParam>> queryPageList(PatrolTaskParam patrolTaskParam,
@@ -70,7 +71,7 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
      * @param req
      * @return
      */
-    @AutoLog(value = "PC巡检任务池详情-基本信息")
+    @AutoLog(value = "PC巡检任务池详情-基本信息", operateType = 1, operateTypeAlias = "查询", module = ModuleType.PATROL)
     @ApiOperation(value = "PC巡检任务池详情-基本信息", notes = "PC巡检任务池详情-基本信息")
     @RequestMapping(value = "/basicInfo", method = {RequestMethod.GET, RequestMethod.POST})
     public Result<PatrolTaskParam> selectBasicInfo(@RequestBody PatrolTaskParam patrolTaskParam,
@@ -88,7 +89,7 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
      * @param req
      * @return
      */
-    @AutoLog(value = "PC巡检任务池详情-巡检工单")
+    @AutoLog(value = "PC巡检任务池详情-巡检工单", operateType = 1, operateTypeAlias = "查询", module = ModuleType.PATROL)
     @ApiOperation(value = "PC巡检任务池详情-巡检工单", notes = "PC巡检任务池详情-巡检工单")
     @RequestMapping(value = "/billInfo", method = {RequestMethod.GET, RequestMethod.POST})
     public Result<?> selectBillInfo(PatrolTaskDeviceParam patrolTaskDeviceParam,
@@ -100,7 +101,7 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
         return Result.OK(taskDevicePageList);
     }
 
-    @AutoLog(value = "PC设备台账-巡视履历")
+    @AutoLog(value = "PC设备台账-巡视履历", operateType = 1, operateTypeAlias = "查询", module = ModuleType.PATROL)
     @ApiOperation(value = "PC设备台账-巡视履历", notes = "PC设备台账-巡视履历")
     @RequestMapping(value = "/billInfoForDevice", method = {RequestMethod.GET, RequestMethod.POST})
     public Result<?> selectBillInfoForDevice(PatrolTaskDeviceParam patrolTaskDeviceForDeviceParam,
@@ -112,7 +113,7 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
         return Result.OK(taskDevicePageList);
     }
 
-    @AutoLog(value = "PC巡检任务池详情-根据任务id获得专业和子系统信息")
+    @AutoLog(value = "PC巡检任务池详情-根据任务id获得专业和子系统信息", operateType = 1, operateTypeAlias = "查询", module = ModuleType.PATROL)
     @ApiOperation(value = "PC巡检任务池详情-根据任务id获得专业和子系统信息", notes = "PC巡检任务池详情-根据任务id获得专业和子系统信息")
     @RequestMapping(value = "/getMajorSystemInfo", method = {RequestMethod.GET, RequestMethod.POST})
     public Result<?> getMajorSubsystemGanged(@ApiParam(name = "id", value = "任务记录ID") @RequestParam("id") String id) {
@@ -127,7 +128,7 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
      * @param req
      * @return
      */
-    @AutoLog(value = "PC巡检任务池详情-巡检工单详情")
+    @AutoLog(value = "PC巡检任务池详情-巡检工单详情", operateType = 1, operateTypeAlias = "查询", module = ModuleType.PATROL)
     @ApiOperation(value = "PC巡检任务池详情-巡检工单详情", notes = "PC巡检任务池详情-巡检工单详情")
     @RequestMapping(value = "/billInfoByNumber", method = {RequestMethod.GET, RequestMethod.POST})
     public Result<?> selectBillInfoByNumber(@ApiParam(name = "patrolNumber", value = "巡检单号") @RequestParam("patrolNumber") String patrolNumber,
@@ -142,7 +143,7 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
      * @param list
      * @return
      */
-    @AutoLog(value = "PC巡检任务池-获取指派人员")
+    @AutoLog(value = "PC巡检任务池-获取指派人员", operateType = 1, operateTypeAlias = "查询", module = ModuleType.PATROL)
     @ApiOperation(value = "PC巡检任务池-获取指派人员", notes = "PC巡检任务池-获取指派人员")
     @RequestMapping(value = "/getAssignee", method = {RequestMethod.GET, RequestMethod.POST})
     public Result<?> getAssignee(@ApiParam(name = "code", value = "任务编号集合") @RequestParam("code") List<String> list) {
@@ -155,7 +156,7 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
      *
      * @return
      */
-    @AutoLog(value = "PC巡检任务池-任务指派")
+    @AutoLog(value = "PC巡检任务池-任务指派", operateType = 2, operateTypeAlias = "添加", module = ModuleType.PATROL)
     @ApiOperation(value = "PC巡检任务池-任务指派", notes = "PC巡检任务池-任务指派")
     @PostMapping(value = "/taskAppoint")
     public Result<?> taskAppoint(@RequestBody PatrolAppointInfoDTO patrolAppointInfoDTO) {
@@ -169,7 +170,7 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
      * @param list
      * @return
      */
-    @AutoLog(value = "PC巡检任务池-任务作废")
+    @AutoLog(value = "PC巡检任务池-任务作废", operateType = 3, operateTypeAlias = "修改", module = ModuleType.PATROL)
     @ApiOperation(value = "PC巡检任务池-任务作废", notes = "PC巡检任务池-任务作废")
     @PostMapping(value = "/taskDiscard")
     public Result<?> taskDiscard(@RequestBody List<PatrolTask> list) {
@@ -186,7 +187,7 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
      * @param remark
      * @return
      */
-    @AutoLog(value = "PC巡检任务列表-任务审核")
+    @AutoLog(value = "PC巡检任务列表-任务审核", operateType = 3, operateTypeAlias = "修改", module = ModuleType.PATROL)
     @ApiOperation(value = "PC巡检任务列表-任务审核", notes = "PC巡检任务列表-任务审核")
     @PostMapping(value = "/taskAudit")
     public Result<?> taskAudit(@ApiParam(name = "taskCode", value = "任务编号") @RequestParam("taskCode") String code,
@@ -209,7 +210,7 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
      * @param id
      * @return
      */
-    @AutoLog(value = "巡检漏检任务处理-处置返显信息")
+    @AutoLog(value = "巡检漏检任务处理-处置返显信息", operateType = 1, operateTypeAlias = "查询", module = ModuleType.PATROL)
     @ApiOperation(value = "巡检漏检任务处理-处置返显信息", notes = "巡检漏检任务处理-处置返显信息")
     @RequestMapping(value = "/getDisposeInfo", method = {RequestMethod.POST, RequestMethod.GET})
     public Result<?> taskDisposeInfo(@ApiParam(name = "id", value = "任务记录ID") @RequestParam("id") String id) {
@@ -227,7 +228,7 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
      * @param id
      * @return
      */
-    @AutoLog(value = "巡检漏检任务处理-处置")
+    @AutoLog(value = "巡检漏检任务处理-处置", operateType = 3, operateTypeAlias = "修改", module = ModuleType.PATROL)
     @ApiOperation(value = "巡检漏检任务处理-处置", notes = "巡检漏检任务处理-处置")
     @PostMapping(value = "/dispose")
     public Result<String> taskDispose(@ApiParam(name = "id", value = "任务记录ID") @RequestParam("id") String id,
@@ -240,7 +241,7 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
         return Result.OK("成功处置" + record + "条漏检任务记录！", null);
     }
 
-    @AutoLog(value = "巡检漏检任务处理-重新生成任务")
+    @AutoLog(value = "巡检漏检任务处理-重新生成任务", operateType = 2, operateTypeAlias = "添加", module = ModuleType.PATROL)
     @ApiOperation(value = "巡检漏检任务处理-重新生成任务", notes = "巡检漏检任务处理-重新生成任务")
     @PostMapping(value = "/rebuildTask")
     public Result<String> rebuildTask(@RequestBody PatrolRebuildDTO patrolRebuildDTO) {
@@ -329,7 +330,7 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
      * @param req
      * @return author hlq
      */
-    @AutoLog(value = "巡检任务表-app巡检任务池")
+    @AutoLog(value = "巡检任务表-app巡检任务池", operateType = 1, operateTypeAlias = "查询", module = ModuleType.PATROL)
     @ApiOperation(value = "巡检任务表-app巡检任务池", notes = "巡检任务表-app巡检任务池")
     @GetMapping(value = "/patrolTaskPoolList")
     public Result<IPage<PatrolTaskDTO>> patrolTaskPoolList(PatrolTaskDTO patrolTaskDTO,
@@ -350,7 +351,7 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
      * @param req
      * @return author hlq
      */
-    @AutoLog(value = "巡检任务表-app巡检任务列表")
+    @AutoLog(value = "巡检任务表-app巡检任务列表", operateType = 1, operateTypeAlias = "查询", module = ModuleType.PATROL)
     @ApiOperation(value = "巡检任务表-app巡检任务列表", notes = "巡检任务表-app巡检任务列表")
     @GetMapping(value = "/patrolTaskList")
     public Result<IPage<PatrolTaskDTO>> patrolTaskList(PatrolTaskDTO patrolTaskDTO,
@@ -369,7 +370,7 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
      * @param req
      * @return
      */
-    @AutoLog(value = "巡检任务表-app巡检任务领取")
+    @AutoLog(value = "巡检任务表-app巡检任务领取", operateType = 2, operateTypeAlias = "添加", module = ModuleType.PATROL)
     @ApiOperation(value = "巡检任务表-app巡检任务领取", notes = "巡检任务表-app巡检任务领取")
     @PostMapping(value = "/patrolTaskReceive")
     public Result<?> patrolTaskReceive(PatrolTaskDTO patrolTaskDTO, HttpServletRequest req) {
@@ -390,7 +391,7 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
      * @param req
      * @return
      */
-    @AutoLog(value = "巡检任务表-app巡检任务提交")
+    @AutoLog(value = "巡检任务表-app巡检任务提交", operateType = 3, operateTypeAlias = "修改", module = ModuleType.PATROL)
     @ApiOperation(value = "巡检任务表-app巡检任务提交", notes = "巡检任务表-app巡检任务提交")
     @PostMapping(value = "/patrolTaskSubmit")
     public Result<?> patrolTaskSubmit(@RequestBody PatrolTaskDTO patrolTaskDTO, HttpServletRequest req) {
