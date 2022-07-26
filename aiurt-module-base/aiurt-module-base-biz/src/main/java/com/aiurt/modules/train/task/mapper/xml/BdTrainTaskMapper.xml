@@ -305,9 +305,9 @@ select tt.id,tt.task_team_id,tt.teacher_id,
        tt.sys_org_code,tt.exam_classify,tt.plan_sub_id,tt.task_hours,tt.address,tt.train_target,tt.exam_task_name,
        tt.exam_paper_id,tt.make_up_time,tt.remarks,tt.make_up_state,tt.study_resource_state,tt.exam_status,
        tt.number,tt.task_state,tt.start_time,tt.start_exam_time,tt.stop_state,tt.start_date,tt.end_date,tt.exam_plan_time,
-       tt.task_name,bt.name as taskTeamName,tt.classify,tt.plan_sub_name,su.realname as teacherName,bep.name as examName
+       tt.task_name,bt.depart_name as taskTeamName,tt.classify,tt.plan_sub_name,su.realname as teacherName,bep.name as examName
 from bd_train_task tt
-LEFT JOIN bd_team bt ON tt.task_team_id = bt.id
+LEFT JOIN sys_depart bt ON tt.task_team_id = bt.id
 LEFT JOIN sys_user su ON tt.teacher_id = su.id
 LEFT JOIN  bd_exam_paper bep ON bep.id = tt.exam_paper_id
 <where>
@@ -456,7 +456,7 @@ where tt.id =#{id}
         FROM
         bd_train_task_user bttu
         LEFT JOIN sys_user a ON a.id = bttu.user_id
-        LEFT JOIN bd_team b ON a.team_id = b.id
+        LEFT JOIN sys_depart b ON a.org_id = b.id
         where 1=1
         and bttu.train_task_id = #{bdTrainTask.id}
         group by a.id

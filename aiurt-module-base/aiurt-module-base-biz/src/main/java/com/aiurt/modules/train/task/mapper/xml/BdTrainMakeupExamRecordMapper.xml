@@ -5,7 +5,7 @@
     <select id="getList" resultType="com.aiurt.modules.train.task.entity.BdTrainMakeupExamRecord">
         SELECT
         btmer.id,
-        bt.`name` as sysOrgCode,
+        bt.depart_name as sysOrgCode,
         su.realname as userName,
         btt.task_name as trainTaskName,
         bep.`name` as examPaperName,
@@ -16,7 +16,7 @@
         JOIN bd_train_task btt ON btt.id = btmer.train_task_id
         JOIN bd_exam_paper bep ON bep.id = btmer.exam_paper_id
         JOIN view_dict vd ON vd.item_value = btmer.exam_classify
-        JOIN bd_team bt ON bt.id = btt.task_team_id
+        JOIN sys_depart bt ON bt.id = btt.task_team_id
 <where>
     vd.dict_code = "exam_classify"
     and btmer.is_makeup = 0
