@@ -28,8 +28,6 @@
         bd_train_question_feedback as qf
        where
            qf.idel=0
-    ORDER BY
-        create_time DESC
         <if test="bdTrainQuestionFeedback.state != null">
             and qf.state = #{bdTrainQuestionFeedback.state}
         </if>
