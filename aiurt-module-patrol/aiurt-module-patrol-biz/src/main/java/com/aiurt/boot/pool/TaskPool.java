@@ -19,6 +19,7 @@ import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -54,12 +55,14 @@ public class TaskPool implements Job {
 
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void execute(JobExecutionContext context) throws JobExecutionException {
         log.info("******正在生成巡检任务记录...******");
         generateTaskData();
         log.info("******巡检任务记录生成完成！*******");
     }
 
+    @Transactional(rollbackFor = Exception.class)
     public void execute() {
         log.info("******正在生成巡检任务记录...******");
         generateTaskData();
@@ -70,7 +73,6 @@ public class TaskPool implements Job {
     /**
      * 每天生成巡检任务池数据
      */
-
     private void generateTaskData() {
 
         // 获取计划启用的并且在有效期内的计划列表
@@ -78,6 +80,8 @@ public class TaskPool implements Job {
                 .orElseGet(Collections::emptyList).stream()
                 // 启用状态的计划
                 .filter(l -> PatrolConstant.PLAN_STATUS_ENABLE.equals(l.getStatus()))
+                // 未删除的计划
+                .filter(l -> 0 == l.getDelFlag())
                 // 在有效范围内的计划
                 .filter(l -> {
                     if (ObjectUtil.isEmpty(l.getStartDate()) || ObjectUtil.isEmpty(l.getEndDate())) {
@@ -225,9 +229,9 @@ public class TaskPool implements Job {
                     patrolTaskDevice.setLineCode(station.getLineCode());
                     // 站点编号
                     patrolTaskDevice.setStationCode(station.getStationCode());
-                    if(station.getLineCode().isEmpty()){
-                       // 根据站点编号获取线路编号
-                       String lineCode = patrolTaskService.getLineCode(station.getStationCode());
+                    if (ObjectUtil.isEmpty(station.getLineCode())) {
+                        // 根据站点编号获取线路编号
+                        String lineCode = patrolTaskService.getLineCode(station.getStationCode());
                         patrolTaskDevice.setLineCode(lineCode);
                     }
                     // 位置编号
