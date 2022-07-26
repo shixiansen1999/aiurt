@@ -449,8 +449,8 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
 
             // 查询并处理标准对应的专业、专业子系统
             if (CollUtil.isNotEmpty(repairPoolCodes)) {
-                List<String> majorCode = repairPoolCodes.stream().map(RepairPoolCode::getMajorCode).collect(Collectors.toList());
-                List<String> subSystemCode = repairPoolCodes.stream().map(RepairPoolCode::getSubsystemCode).collect(Collectors.toList());
+                Set<String> majorCode = repairPoolCodes.stream().map(RepairPoolCode::getMajorCode).collect(Collectors.toSet());
+                Set<String> subSystemCode = repairPoolCodes.stream().map(RepairPoolCode::getSubsystemCode).collect(Collectors.toSet());
                 if (CollUtil.isNotEmpty(majorCode) && CollUtil.isNotEmpty(subSystemCode)) {
                     result = baseMapper.queryMajorList(majorCode, subSystemCode);
                 }

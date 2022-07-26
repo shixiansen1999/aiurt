@@ -8,6 +8,7 @@ import org.apache.ibatis.annotations.Param;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 
 /**
  * @Description: repair_pool
@@ -28,14 +29,16 @@ public interface RepairPoolMapper extends BaseMapper<RepairPool> {
 
     /**
      * 根据检修标准原有的专业和专业子系统匹配对应关系
+     *
      * @param majorCode
      * @param subSystemCode
      * @return
      */
-    List<MajorDTO> queryMajorList(@Param("majorCode") List<String> majorCode, @Param("subSystemCode") List<String> subSystemCode);
+    List<MajorDTO> queryMajorList(@Param("majorCode") Set<String> majorCode, @Param("subSystemCode") Set<String> subSystemCode);
 
     /**
      * 根据检修计划code查询检修标准
+     *
      * @param planCode
      * @return
      */
@@ -43,6 +46,7 @@ public interface RepairPoolMapper extends BaseMapper<RepairPool> {
 
     /**
      * 根据检修计划code关联的组织机构
+     *
      * @param planCode
      * @return
      */
