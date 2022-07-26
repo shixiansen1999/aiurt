@@ -1,9 +1,7 @@
 package com.aiurt.boot.strategy.entity;
 
 import com.aiurt.modules.basic.entity.DictEntity;
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableName;
+import com.baomidou.mybatisplus.annotation.*;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -46,6 +44,7 @@ public class InspectionStrategy extends DictEntity implements Serializable {
 	/**周期策略*/
 	@Excel(name = "周期策略", width = 15)
     @ApiModelProperty(value = "周期策略")
+    @TableField(updateStrategy = FieldStrategy.IGNORED)
     private java.lang.Integer tactics;
 	/**检修周期类型*/
 	@Excel(name = "检修周期类型", width = 15)
