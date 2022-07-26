@@ -1235,6 +1235,20 @@ public class SysBaseApiImpl implements ISysBaseAPI {
         return list;
     }
 
+    @Override
+    public List<LoginUser> getUserPersonnel(String deptId) {
+        List<SysUser> userList = userMapper.selectList(new QueryWrapper<SysUser>().in("org_id", deptId).eq("status", 1).eq("del_flag", 0));
+        List<LoginUser> list = new ArrayList<>();
+        for (SysUser user : userList) {
+            LoginUser loginUser = new LoginUser();
+            loginUser.setId(user.getId());
+            loginUser.setUsername(user.getUsername());
+            loginUser.setRealname(user.getRealname());
+            list.add(loginUser);
+        }
+        return list;
+    }
+
 
     @Override
     public Map<String, List<DictModel>> translateManyDict(String dictCodes, String keys) {
