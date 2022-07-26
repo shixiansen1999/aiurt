@@ -11,6 +11,7 @@ import com.aiurt.boot.task.entity.RepairTaskDeviceRel;
 import com.aiurt.boot.task.service.IRepairTaskDeviceRelService;
 import com.aiurt.boot.task.service.IRepairTaskService;
 import com.aiurt.common.aspect.annotation.AutoLog;
+import com.aiurt.common.constant.enums.ModuleType;
 import com.aiurt.common.system.base.controller.BaseController;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.annotations.*;
@@ -183,7 +184,7 @@ public class AppRepairTaskController extends BaseController<RepairTask, IRepairT
      * @param id
      * @return
      */
-    @AutoLog(value = "检修任务-领取检修任务")
+    @AutoLog(value = "检修管理-检修计划-领取检修任务", operateType =  2, operateTypeAlias = "领取检修任务", module = ModuleType.INSPECTION)
     @ApiOperation(value = "领取检修任务", notes = "领取检修任务")
     @GetMapping(value = "/receiveTask")
     public Result<?> receiveTask(@RequestParam @ApiParam(value = "检修计划id", name = "id", required = true) String id) {
@@ -196,7 +197,7 @@ public class AppRepairTaskController extends BaseController<RepairTask, IRepairT
      *
      * @return
      */
-    @AutoLog(value = "填写检修工单")
+    @AutoLog(value = "检修管理-检修任务管理-填写检修工单", operateType =  3, operateTypeAlias = "填写检修工单", module = ModuleType.INSPECTION)
     @ApiOperation(value = "填写检修工单", notes = "填写检修工单")
     @PostMapping(value = "/writeMonad")
     public Result<?> writeMonad(@RequestBody WriteMonadDTO monadDTO) {
@@ -241,7 +242,7 @@ public class AppRepairTaskController extends BaseController<RepairTask, IRepairT
      * @param id
      * @return
      */
-    @AutoLog(value = "提交检修工单")
+    @AutoLog(value = "检修管理-检修任务管理-提交检修工单", operateType =  3, operateTypeAlias = "提交检修工单", module = ModuleType.INSPECTION)
     @ApiOperation(value = "提交检修工单", notes = "提交检修工单")
     @PostMapping(value = "/submitMonad")
     public Result<?> submitMonad(@RequestParam @ApiParam(value = "检修单id", name = "id", required = true) String id) {
@@ -269,7 +270,7 @@ public class AppRepairTaskController extends BaseController<RepairTask, IRepairT
      * @param examineDTO
      * @return
      */
-    @AutoLog(value = "确认检修任务")
+    @AutoLog(value = "检修管理-检修任务管理-确认检修任务", operateType =  3, operateTypeAlias = "确认检修任务", module = ModuleType.INSPECTION)
     @ApiOperation(value = "确认检修任务", notes = "确认检修任务")
     @PostMapping(value = "/confirmTask")
     public Result<String> confirmTask(@RequestBody ExamineDTO examineDTO) {
@@ -284,7 +285,7 @@ public class AppRepairTaskController extends BaseController<RepairTask, IRepairT
      * @param deviceCode 设备编码
      * @return
      */
-    @AutoLog(value = "扫码设备查询检修单")
+    @AutoLog(value = "检修管理-检修任务管理-扫码设备查询检修单", operateType =  1, operateTypeAlias = "扫码设备查询检修单", module = ModuleType.INSPECTION)
     @ApiOperation(value = "扫码设备查询检修单", notes = "扫码设备查询检修单")
     @GetMapping(value = "/scanCodeDevice")
     public Result<List<RepairTaskDeviceRel>> scanCodeDevice(@RequestParam @ApiParam(name = "taskId", required = true, value = "检修任务id") String taskId,

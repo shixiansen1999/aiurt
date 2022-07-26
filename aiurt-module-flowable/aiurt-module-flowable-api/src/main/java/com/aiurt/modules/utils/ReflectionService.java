@@ -56,7 +56,7 @@ public class ReflectionService {
         List<Object> objects = getMethodParamList(targetMethod, paramMap);
 
         // 执行方法
-        method.invoke(proxyObject, objects.toArray());
+        Object invoke = method.invoke(proxyObject, objects.toArray());
     }
 
     /**

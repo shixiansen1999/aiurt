@@ -3,6 +3,7 @@ package com.aiurt.boot.plan.app;
 import com.aiurt.boot.manager.dto.OrgDTO;
 import com.aiurt.boot.plan.service.IRepairPoolService;
 import com.aiurt.common.aspect.annotation.AutoLog;
+import com.aiurt.common.constant.enums.ModuleType;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -35,7 +36,7 @@ public class AppRepairPoolController {
      *
      * @param id 检修计划id
      */
-    @AutoLog(value = "指派时的下拉人员")
+    @AutoLog(value = "检修管理-检修计划-查询指派时可选的人员", operateType =  1, operateTypeAlias = "查询指派时可选的人员", module = ModuleType.INSPECTION)
     @ApiOperation(value = "指派时的下拉人员", notes = "指派时的下拉人员")
     @GetMapping(value = "/queryUserDownList")
     public Result<List<OrgDTO>> queryUserDownList(@RequestParam @ApiParam(value = "检修计划id", name = "id", required = true) String id) {

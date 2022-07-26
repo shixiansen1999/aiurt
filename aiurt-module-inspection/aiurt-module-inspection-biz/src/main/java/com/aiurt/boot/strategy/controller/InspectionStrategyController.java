@@ -7,6 +7,7 @@ import com.aiurt.boot.strategy.dto.InspectionStrategyDTO;
 import com.aiurt.boot.strategy.entity.InspectionStrategy;
 import com.aiurt.boot.strategy.service.IInspectionStrategyService;
 import com.aiurt.common.aspect.annotation.AutoLog;
+import com.aiurt.common.constant.enums.ModuleType;
 import com.aiurt.common.system.base.controller.BaseController;
 import com.aiurt.modules.device.entity.Device;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -250,7 +251,7 @@ public class InspectionStrategyController extends BaseController<InspectionStrat
      * @param id
      * @return
      */
-    @AutoLog(value = "生成年检计划")
+    @AutoLog(value = "检修管理-检修策略-生成年检计划", operateType =  1, operateTypeAlias = "生成年检计划", module = ModuleType.INSPECTION)
     @ApiOperation(value = "生成年检计划-通过id", notes = "生成年检计划-通过id")
     @PostMapping("/addAnnualPlan")
     public Result addAnnualPlan(@RequestParam @ApiParam(name = "id", required = true, value = "检修策略id") String id) {
@@ -263,7 +264,7 @@ public class InspectionStrategyController extends BaseController<InspectionStrat
      * @param id
      * @return
      */
-    @AutoLog(value = "重新生成年检计划")
+    @AutoLog(value = "检修管理-检修策略-重新生成年检计划", operateType =  1, operateTypeAlias = "重新生成年检计划", module = ModuleType.INSPECTION)
     @ApiOperation(value = "重新生成年检计划-通过id", notes = "重新生成年检计划-通过id")
     @PostMapping("/addAnnualNewPlan")
     public Result addAnnualNewPlan(@RequestParam @ApiParam(name = "id", required = true, value = "检修策略id") String id) {
