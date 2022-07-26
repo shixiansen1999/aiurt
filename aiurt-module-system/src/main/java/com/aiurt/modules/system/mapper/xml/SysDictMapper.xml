@@ -76,8 +76,11 @@
 	</select>
 
 	<!--通过查询指定table的 text code key 获取字典值-->
-	<select id="queryTableDictTextByKey" parameterType="String" resultType="String">
+	<select id="queryTableDictTextByKey"  resultType="String">
 		   select ${text} as "text" from ${table} where ${code}= #{key}
+		   <if test="delFlag != null and delFlag >0 ">
+				and del_flag = 0
+		   </if>
 	</select>
 
 	<!--通过查询指定table的 text code key 获取字典值，可批量查询-->

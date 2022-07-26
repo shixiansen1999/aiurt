@@ -72,21 +72,21 @@ public class OperationProcessController extends BaseController<OperationProcess,
 			if (i+1< list.size()) {
 				OperationProcess process2 = list.get(i + 1);
 				long between = DateUtil.between(process2.getProcessTime(), process.getProcessTime(), DateUnit.MINUTE);
-				between = between == 0 ? 1 : between;
-				long day = between / (24 * 60);
-				long hours = between % (24 * 60) / 60;
-				long min = between % (24 * 60) % 60;
-				process.setProcessingTime(day+"天"+hours+"小时"+min + "分");
+				dealTime(process, between);
 			}else {
 				long between = DateUtil.between(new Date(), process.getProcessTime(), DateUnit.MINUTE);
-				between = between == 0 ? 1 : between;
-				long day = between / (24 * 60);
-				long hours = between % (24 * 60) / 60;
-				long min = between % (24 * 60) % 60;
-				process.setProcessingTime(day+"天"+hours+"小时"+min + "分");
+				dealTime(process, between);
 			}
 		}
 		return Result.OK(list);
+	}
+
+	private void dealTime(OperationProcess process, long between) {
+		between = between == 0 ? 1 : between;
+		long day = between / (24 * 60);
+		long hours = between % (24 * 60) / 60;
+		long min = between % (24 * 60) % 60;
+		process.setProcessingTime(day+"天"+hours+"小时"+min + "分");
 	}
 
 }

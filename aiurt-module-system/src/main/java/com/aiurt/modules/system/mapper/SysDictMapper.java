@@ -123,7 +123,7 @@ public interface SysDictMapper extends BaseMapper<SysDict> {
      * @return String
      */
 	@Deprecated
-	public String queryTableDictTextByKey(@Param("table") String table,@Param("text") String text,@Param("code") String code,@Param("key") String key);
+	public String queryTableDictTextByKey(@Param("table") String table,@Param("text") String text,@Param("code") String code,@Param("key") String key, @Param("delFlag") Long delFlag );
 
 	/**
 	 * 通过查询指定table的 text code key 获取字典值，可批量查询
@@ -263,4 +263,12 @@ public interface SysDictMapper extends BaseMapper<SysDict> {
 	 * @return
 	 */
 	List<DictModel> queryTableDictByKeysAndFilterSql(@Param("table") String table, @Param("text") String text, @Param("code") String code, @Param("filterSql") String filterSql,  @Param("codeValues") List<String> codeValues);
+
+	/**
+	 * 判断del_flag 字段是否存在
+	 * @param tableName
+	 * @return
+	 */
+	@Select("select count(*) from information_schema.COLUMNS where TABLE_NAME = #{tableName} and COLLATION_NAME = 'del_flag'")
+	Long isExistDelFlag(@Param("tableName") String tableName);
 }

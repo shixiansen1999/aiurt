@@ -160,7 +160,9 @@ public class SysDictServiceImpl extends ServiceImpl<SysDictMapper, SysDict> impl
 	@Cacheable(value = CacheConstant.SYS_DICT_TABLE_CACHE, unless = "#result == null ")
 	public String queryTableDictTextByKey(String table,String text,String code, String key) {
 		log.debug("无缓存dictTable的时候调用这里！");
-		return sysDictMapper.queryTableDictTextByKey(table,text,code,key);
+		// 判断是否存在del_flag 字段
+		Long delFlag = sysDictMapper.isExistDelFlag(table);
+		return sysDictMapper.queryTableDictTextByKey(table,text,code,key,delFlag);
 	}
 
 	@Override
