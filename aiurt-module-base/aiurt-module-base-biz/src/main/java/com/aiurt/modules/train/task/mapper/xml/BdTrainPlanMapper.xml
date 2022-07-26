@@ -134,19 +134,19 @@ FROM
 where  exam_classify = 1
 and train_task_id = #{trainTaskId}
     </select>
-    <select id="getTeamIdsByTeamId" resultType="java.lang.String">
-	SELECT get_team_child (#{teamId})
+    <select id="getDepartIdsByTeamId" resultType="org.jeecg.common.system.vo.SysDepartModel">
+	SELECT * from sys_depart where parent_id=#{departId}
     </select>
-    <select id="getTeamIdByDeptName" resultType="java.lang.Integer">
-        SELECT id from bd_team where name = #{deptName}
+    <select id="getDepartIdByDeptName" resultType="java.lang.String">
+        SELECT id from sys_depart where depart_name = #{deptName}
     </select>
     <select id="getUserByTeamId" resultType="java.lang.String">
         SELECT
-	username
+	su.username
 FROM
-	sys_user
+        cs_user_depart cud left join sys_user su on cud.user_id = su.id
 WHERE
-status = 1
-and team_id = #{s}
+        su.status = 1
+and cud.depart_id = #{s}
     </select>
 </mapper>

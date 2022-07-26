@@ -90,4 +90,12 @@ public interface SysDepartMapper extends BaseMapper<SysDepart> {
 	 */
 	@Select("SELECT * FROM sys_depart where del_flag ='0' AND parent_id = #{parentId,jdbcType=VARCHAR}")
 	List<SysDepart> queryDeptByPid(@Param("parentId")String parentId);
+
+	/**
+	 * 通过部门编码获取部门id
+	 * @param orgCode 部门编码
+	 * @return String
+	 */
+	@Select("select * from sys_depart where org_code=#{orgCode}")
+	public SysDepart queryDepartByOrgCode(@Param("orgCode") String orgCode);
 }

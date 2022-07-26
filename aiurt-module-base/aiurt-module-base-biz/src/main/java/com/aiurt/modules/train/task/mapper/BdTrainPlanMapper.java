@@ -1,12 +1,13 @@
 package com.aiurt.modules.train.task.mapper;
 
-import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import org.apache.ibatis.annotations.Param;
 import com.aiurt.modules.train.exam.entity.BdExamRecord;
 import com.aiurt.modules.train.question.entity.BdQuestionOptionsAtt;
 import com.aiurt.modules.train.task.entity.BdTrainPlan;
 import com.aiurt.modules.train.task.vo.*;
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import org.apache.ibatis.annotations.Param;
+import org.jeecg.common.system.vo.SysDepartModel;
 
 import java.util.List;
 
@@ -44,12 +45,12 @@ public interface BdTrainPlanMapper extends BaseMapper<BdTrainPlan> {
     List<BdExamRecord> getAllExamRecord(String trainTaskId);
 
     //根据班组节点查询子节点、父节点
-    String getTeamIdsByTeamId(Integer teamId);
+    List<SysDepartModel> getDepartIdsByTeamId(String departId);
 
     //根据部门名查询机构id
-    Integer getTeamIdByDeptName(String deptName);
+    String getDepartIdByDeptName(String deptName);
 
-    //根据班组id查询用户
+    //根据组织机构id查询用户
     List<String> getUserByTeamId(String s);
 
 }

@@ -115,7 +115,7 @@ public class BdTrainPlan implements Serializable {
     /**部门id*/
     @Excel(name = "部门id", width = 15)
     @ApiModelProperty(value = "部门id")
-    private Integer deptId;
+    private String deptId;
 
     /**状态文本值（1：已发布，0未发布）*/
     @Excel(name = "状态文本值（1：已发布，0未发布）", width = 15)
