@@ -225,9 +225,9 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
         stationDTO.setLineCode(taskDeviceParam.getLineCode());
         stationDTO.setStationCode(taskDeviceParam.getStationCode());
         stationDTO.setPositionCode(taskDeviceParam.getPositionCode());
-        List<StationDTO> stationDTOS = new ArrayList<>();
-        stationDTOS.add(stationDTO);
-        String s = manager.translateStation(stationDTOS);
+        List<StationDTO> stationDTOList = new ArrayList<>();
+        stationDTOList.add(stationDTO);
+        String s = manager.translateStation(stationDTOList);
         //设备的位置
         if(ObjectUtil.isNotEmpty(taskDeviceParam.getDeviceCode()))
         {
@@ -419,8 +419,8 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
                             .eq(PatrolTaskDevice::getId, patrolTaskDevice.getId());
                     patrolTaskDeviceMapper.update(new PatrolTaskDevice(), updateWrapper);
                 }
-           List<PatrolCheckResultDTO> patrolCheckResultDTOS = patrolCheckResultMapper.getCheckResult(taskDeviceId);
-                patrolCheckResultDTOS.stream().forEach(e ->
+           List<PatrolCheckResultDTO> checkResultList = patrolCheckResultMapper.getCheckResult(taskDeviceId);
+                checkResultList.stream().forEach(e ->
                 {
                     if(ObjectUtil.isNotNull(e.getDictCode()))
                     {
@@ -442,7 +442,7 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
                     List<PatrolAccessoryDTO> patrolAccessoryDto = patrolAccessoryMapper.getAllAccessory(patrolTaskDevice.getId(), e.getId());
                     e.setAccessoryDTOList(patrolAccessoryDto);
                 });
-            List<PatrolCheckResultDTO> resultList = buildResultTree(Optional.ofNullable(patrolCheckResultDTOS)
+            List<PatrolCheckResultDTO> resultList = buildResultTree(Optional.ofNullable(checkResultList)
                     .orElseGet(Collections::emptyList));
             return resultList;
         }

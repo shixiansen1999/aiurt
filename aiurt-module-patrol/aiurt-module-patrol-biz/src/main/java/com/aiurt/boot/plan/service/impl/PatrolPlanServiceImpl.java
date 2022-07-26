@@ -222,8 +222,8 @@ public class PatrolPlanServiceImpl extends ServiceImpl<PatrolPlanMapper, PatrolP
     }
     @Override
     public List<MajorDTO> selectMajorCodeList(String planId) {
-        List<PatrolPlanDto> patrolPlanDTOs = baseMapper.selectCodeList(planId, null, null);
-        List<PatrolPlanDto> collect = patrolPlanDTOs.stream().distinct().collect(Collectors.toList());
+        List<PatrolPlanDto> patrolPlanDtos = baseMapper.selectCodeList(planId, null, null);
+        List<PatrolPlanDto> collect = patrolPlanDtos.stream().distinct().collect(Collectors.toList());
         List<String> majorCodes1 = new ArrayList<>();
         List<String> systemCode = new ArrayList<>();
         if (CollectionUtil.isNotEmpty(collect)) {
@@ -247,8 +247,8 @@ public class PatrolPlanServiceImpl extends ServiceImpl<PatrolPlanMapper, PatrolP
 
     @Override
     public List<StandardDTO> selectPlanStandard(String planId, String majorCode, String subsystemCode) {
-        List<StandardDTO> standardDTOS = baseMapper.selectStandardList(planId, majorCode, subsystemCode);
-        return standardDTOS;
+        List<StandardDTO> standardDtos = baseMapper.selectStandardList(planId, majorCode, subsystemCode);
+        return standardDtos;
     }
 
 }
