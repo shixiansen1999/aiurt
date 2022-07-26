@@ -5,6 +5,7 @@ import java.util.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.aiurt.common.aspect.annotation.PermissionData;
 import com.aiurt.modules.device.entity.DeviceType;
 import com.aiurt.modules.fault.entity.Fault;
 import com.aiurt.modules.faultanalysisreport.constant.FaultConstant;
@@ -69,6 +70,7 @@ public class FaultKnowledgeBaseController extends BaseController<FaultKnowledgeB
 	//@AutoLog(value = "故障知识库-分页列表查询")
 	@ApiOperation(value="故障知识库-分页列表查询", notes="故障知识库-分页列表查询")
 	@GetMapping(value = "/list")
+	@PermissionData(pageComponent = "fault/FaultKnowledgeBaseListChange")
 	public Result<IPage<FaultKnowledgeBase>> queryPageList(FaultKnowledgeBase faultKnowledgeBase,
 								   @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
 								   @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,

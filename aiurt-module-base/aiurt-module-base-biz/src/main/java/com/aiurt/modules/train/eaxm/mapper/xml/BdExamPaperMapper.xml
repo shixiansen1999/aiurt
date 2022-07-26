@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.aiurt.modules.train.eaxm.mapper.BdExamPaperMapper">
+<select id="queryList" resultType="com.aiurt.modules.train.eaxm.entity.BdExamPaper">
+    select
+            ep.id,
+            ep.scqnumber,
+            ep.scqscore,
+            ep.number,
+            ep.name,
+            ep.danumber,
+            ep.dascore,
+            ep.score,
+            ep.passscore,
+            ep.state
+    from bd_exam_paper ep
+    <where>
+        <if test="condition.id != null and condition.id != ''">
+            ep.id =#{condition.id}
+        </if>
+        <if test="condition.name != null and condition.name != ''">
+            and ep.name like concat ('%',#{condition.name},'%')
+        </if>
+    </where>
+    order by
+    create_time desc, ep.name asc
+</select>
+
+<select id="trainTask" resultType="java.lang.String">
+ select bq.content
+from bd_exam_paper ep
+LEFT JOIN bd_exam_paper_rel epr ON ep.id =epr.paper_id
+LEFT JOIN bd_question bq on bq.id =epr.que_id
+where ep.id = #{id}
+and not ISNULL(epr.que_id)
+and not ISNULL(bq.id)
+order by bq.que_type
+</select>
+
+<insert id="addQuestion">
+    <foreach collection="questionIds" item="item" index="index" separator="," >
+    insert into bd_exam_paper_rel(paper_id,que_id) values(#{examPaperId},#{item})
+    </foreach>
+    </insert>
+
+<select id="getExamineAnswer" resultType="java.lang.String">
+    select  t2.answer as examineAnswer
+    from bd_exam_paper ep
+    LEFT JOIN bd_exam_record  t1 ON ep.id = t1.exam_paper_id
+    LEFT JOIN bd_exam_record_detail t2 ON t2.exam_record_id = t1.id
+    where
+        t1.id = #{examRecordId}
+        and t2.que_id = #{queId}
+        and ep.id =#{condition.id}
+    ORDER BY  t2.create_time desc, ABS(#{date} - t2.create_time) LIMIT 1
+    </select>
+
+<select id="getShortAnswerNum" resultType="java.lang.Integer">
+    select count(*) from bd_question  bq
+    left join bd_exam_paper_rel bepr on bepr.que_id = bq.id
+    left join bd_exam_paper bep on bep.id = bepr.paper_id
+    where que_type = 3 and bep.id = #{examPaperId}
+    </select>
+</mapper>

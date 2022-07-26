@@ -3,13 +3,13 @@
 <mapper namespace="com.aiurt.modules.sparepart.mapper.SparePartApplyMapper">
     <select id="selectExportXls" resultType="com.aiurt.modules.sparepart.entity.dto.StockApplyExcel">
         SELECT
-            d1.item_text STATUS,
-            t.CODE,
+            d1.item_text status,
+            t.CODE code,
             t1.warehouse_name applyWarehouse,
             t2.warehouse_name custodialWarehouse,
-            t.apply_number,
+            t.apply_number applyNumber,
             t3.realname applyUser,
-            t.apply_time,
+            t.apply_time applyTime,
             t.remarks
         FROM
             spare_part_apply t
@@ -18,7 +18,7 @@
         LEFT JOIN stock_level2_info t1 ON t1.warehouse_code = t.apply_warehouse_code
         LEFT JOIN spare_part_stock_info t2 ON t2.warehouse_code = t.custodial_warehouse_code
         LEFT JOIN sys_user t3 ON t3.username = t.apply_user_id
-        where t.id in(
+        where t.del_flag= 0 and t.id in(
             <foreach collection="ids" separator="," item="item">
                 #{item}
             </foreach>

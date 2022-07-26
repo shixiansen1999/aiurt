@@ -68,7 +68,7 @@ public class StockLevel2CheckDetail extends DictEntity {
 	/**盘亏数量*/
 	@Excel(name = "盘亏数量")
 	@ApiModelProperty(value = "盘亏数量")
-	private  String  lossNum;
+	private  Integer  lossNum;
 
 	/**账面价值*/
 	@Excel(name = "账面价值")
@@ -109,5 +109,25 @@ public class StockLevel2CheckDetail extends DictEntity {
 	@ApiModelProperty(value = "删除状态 0-未删除 1-已删除")
 	@TableLogic
 	private  Integer  delFlag;
+
+	/**物资名称*/
+	@Excel(name = "物资名称")
+	@ApiModelProperty(value = "物资名称")
+	@TableField(exist = false)
+	private  String  materialName;
+
+	/**物资类型*/
+	@Excel(name = "物资类型")
+	@ApiModelProperty(value = "物资类型")
+	@TableField(exist = false)
+	@Dict(dicCode = "material_type")
+	private  String  type;
+
+	/**单位*/
+	@Excel(name = "单位")
+	@ApiModelProperty(value = "单位")
+	@TableField(exist = false)
+	@Dict(dicCode = "materian_unit")
+	private  String  unit;
 
 }

@@ -83,7 +83,7 @@ public class MaterialBase extends DictEntity {
 	@Excel(name = "类型", width = 15)
 	@ApiModelProperty(value = "类型")
 	@Dict(dicCode = "material_type")
-	private  Integer  type;
+	private  String  type;
 
 	/**名称*/
 	@Excel(name = "物资名称", width = 15)

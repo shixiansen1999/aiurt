@@ -30,7 +30,6 @@ public class SparePartInOrderServiceImpl extends ServiceImpl<SparePartInOrderMap
      */
     @Override
     public List<SparePartInOrder> selectList(Page page, SparePartInOrder sparePartInOrder){
-         return null;
-         //return sparePartInOrderMapper.selectList(page,sparePartInOrder);
+         return sparePartInOrderMapper.readAll(page,sparePartInOrder);
     }
 }

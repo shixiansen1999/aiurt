@@ -2,6 +2,7 @@ package com.aiurt.modules.faultknowledgebasetype.mapper;
 
 import java.util.List;
 
+import com.aiurt.common.aspect.annotation.EnableDataPerm;
 import com.aiurt.modules.faultknowledgebasetype.dto.MajorDTO;
 import com.aiurt.modules.faultknowledgebasetype.dto.SubSystemDTO;
 import com.aiurt.modules.faultknowledgebasetype.entity.FaultKnowledgeBaseType;
@@ -14,6 +15,7 @@ import org.apache.ibatis.annotations.Param;
  * @Date:   2022-06-24
  * @Version: V1.0
  */
+@EnableDataPerm
 public interface FaultKnowledgeBaseTypeMapper extends BaseMapper<FaultKnowledgeBaseType> {
 
     List<String> getAllSubSystem(@Param("userId")String userId);
@@ -23,4 +25,6 @@ public interface FaultKnowledgeBaseTypeMapper extends BaseMapper<FaultKnowledgeB
     List<String> getMajorByUser(@Param("userId")String userId);
 
     List<SubSystemDTO> getSubSystemByUser(@Param("userId")String userId,@Param("majorCode")String majorCode);
+
+    List<SubSystemDTO> getSubSystemByCode(@Param("systemCodes")List<String> systemCodes);
 }

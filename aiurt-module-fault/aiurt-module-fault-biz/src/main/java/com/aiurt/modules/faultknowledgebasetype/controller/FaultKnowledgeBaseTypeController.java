@@ -10,6 +10,7 @@ import java.net.URLDecoder;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.aiurt.common.aspect.annotation.PermissionData;
 import com.aiurt.modules.faultknowledgebase.entity.FaultKnowledgeBase;
 import com.aiurt.modules.faultknowledgebase.mapper.FaultKnowledgeBaseMapper;
 import com.aiurt.modules.faultknowledgebase.service.IFaultKnowledgeBaseService;
@@ -226,6 +227,7 @@ public class FaultKnowledgeBaseTypeController extends BaseController<FaultKnowle
 	 @ApiResponses({
 			 @ApiResponse(code = 200, message = "OK", response = MajorDTO.class)
 	 })
+	 @PermissionData(pageComponent = "fault/FaultKnowledgeBaseListChange")
 	 public Result<List<MajorDTO>> faultKnowledgeBaseTypeTreeList() {
 		 List<MajorDTO> list = faultKnowledgeBaseTypeService.faultKnowledgeBaseTypeTreeList();
 		 return Result.OK(list);

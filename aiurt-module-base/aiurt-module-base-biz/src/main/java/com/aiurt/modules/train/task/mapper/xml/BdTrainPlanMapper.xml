@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.aiurt.modules.train.task.mapper.BdTrainPlanMapper">
+
+    <select id="report" resultType="com.aiurt.modules.train.task.vo.ReportVO">
+        SELECT
+        btt.id as trainTaskId,
+        btt.plan_sub_id,
+        btt.task_team_id as taskTeamId,
+        CONCAT(DATE_FORMAT(btt.start_date,'%Y/%m/%d'),'-',DATE_FORMAT(btt.end_date,'%Y/%m/%d')) as trainTime,
+        btt.plan_sub_name,
+        btt.task_hours,
+        su.realname as teacher,
+        btt.train_target,
+        vd.item_text as examnation,
+        vd2.item_text as performance,
+        btt.remarks
+        FROM
+        bd_train_task btt
+        JOIN sys_user su ON su.id = btt.teacher_id
+        JOIN view_dict vd ON vd.item_value = btt.exam_status
+        JOIN view_dict vd2 ON vd2.item_value = btt.task_state
+        <where>vd.dict_code = "examStatus_type"
+            and vd2.dict_code = "task_state"
+            <if test="reportReqVO.trainStart!=null and reportReqVO.trainEnd!=null">
+                and btt.end_date between #{reportReqVO.trainStart} and #{reportReqVO.trainEnd}
+            </if>
+            <if test="reportReqVO.sysOrgCode!=null and reportReqVO.sysOrgCode!=''">
+                and btt.task_team_id =#{reportReqVO.sysOrgCode}
+            </if>
+        </where>
+        order by btt.create_time desc
+    </select>
+    <select id="getPlanByPlanSubId" resultType="com.aiurt.modules.train.task.entity.BdTrainPlan">
+SELECT
+	id
+FROM
+	bd_train_plan
+where id = (SELECT plan_id from bd_train_plan_sub where id = #{trainTaskId})
+	</select>
+    <select id="getReCheckList" resultType="com.aiurt.modules.train.task.vo.ReCheckVO">
+        SELECT * from
+       ( SELECT
+        ber.id,
+        btt.task_state as taskState,
+        bep.dascore as daScore,
+        ber.is_release,
+        bt.`name` as sysOrgCode,
+        su.realname as examPersonName,
+        su.username as userName,
+        btt.exam_task_name as examPlanSubName,
+        bep.`name` as examName,
+        ber.is_pass,
+        ber.exam_classify,
+        ber.score as examResult,
+        ber.train_task_id as taskId,
+        ber.create_time
+        FROM
+        bd_exam_record ber
+        JOIN bd_train_task btt ON btt.id = ber.train_task_id
+        JOIN sys_user su ON su.id = ber.user_id
+        JOIN bd_exam_paper bep ON bep.id = ber.exam_paper_id
+        JOIN bd_team bt ON bt.id = btt.task_team_id
+        <where>
+            ber.is_release in(2,4)
+            <if test="reCheckReqVo.reCheckState!=null">
+                and ber.is_release=#{reCheckReqVo.reCheckState}
+            </if>
+          <if test="reCheckReqVo.sysOrgCodeId != null and reCheckReqVo.sysOrgCodeId != ''">
+            and btt.task_team_id=#{reCheckReqVo.sysOrgCodeId}
+          </if>
+            <if test="reCheckReqVo.examPerson!=null and reCheckReqVo.examPerson!=''">
+                and su.realname like concat ('%',#{reCheckReqVo.examPerson},'%')
+            </if>
+            <if test="reCheckReqVo.examPlan!=null and reCheckReqVo.examPlan!=''">
+                and btt.exam_task_name like concat ('%',#{reCheckReqVo.examPlan},'%')
+            </if>
+            <if test="reCheckReqVo.isPass!=null">
+                and ber.is_pass=#{reCheckReqVo.isPass} and ber.is_release =4
+            </if>
+        </where>
+        order by ber.create_time desc ) as a
+        order by a.create_time desc
+    </select>
+    <select id="getMidea" resultType="com.aiurt.modules.train.question.entity.BdQuestionOptionsAtt">
+        SELECT
+	bqoa.path,
+	bqoa.`name`,
+	bqoa.type
+FROM
+	bd_question bq
+JOIN bd_question_options_att bqoa ON bqoa.question_id = bq.id
+where bq.id = #{id} and bqoa.type in ("pic","video")
+order by bqoa.create_time
+    </select>
+    <select id="getShortAnswerQuestion" resultType="com.aiurt.modules.train.task.vo.ShortAnswerVo">
+                SELECT
+    bq.id ,
+	bq.content as question,
+	berd.answer as stuAnswer,
+	bqo.content as answer
+FROM
+bd_question bq
+JOIN bd_exam_record_detail berd ON bq.id = berd.que_id
+JOIN bd_question_options bqo ON bqo.question_id = bq.id
+where
+bq.que_type = 3 and
+berd.exam_record_id = #{id}
+ORDER BY  berd.create_time desc, ABS(#{date} - berd.create_time) LIMIT #{number}
+    </select>
+    <select id="getDept" resultType="java.lang.String">
+        SELECT
+	DISTINCT `name`
+FROM
+	bd_team
+    </select>
+    <select id="getByTrainTaskId" resultType="com.aiurt.modules.train.eaxm.entity.BdExamRecord">
+        SELECT
+	user_id,
+score
+FROM
+	bd_exam_record
+where  exam_classify = 1
+AND is_pass = 1
+and train_task_id = #{trainTaskId}
+    </select>
+    <select id="getAllExamRecord" resultType="com.aiurt.modules.train.eaxm.entity.BdExamRecord">
+                SELECT
+	user_id,
+score
+FROM
+	bd_exam_record
+where  exam_classify = 1
+and train_task_id = #{trainTaskId}
+    </select>
+    <select id="getTeamIdsByTeamId" resultType="java.lang.String">
+	SELECT get_team_child (#{teamId})
+    </select>
+    <select id="getTeamIdByDeptName" resultType="java.lang.Integer">
+        SELECT id from bd_team where name = #{deptName}
+    </select>
+    <select id="getUserByTeamId" resultType="java.lang.String">
+        SELECT
+	username
+FROM
+	sys_user
+WHERE
+status = 1
+and team_id = #{s}
+    </select>
+</mapper>

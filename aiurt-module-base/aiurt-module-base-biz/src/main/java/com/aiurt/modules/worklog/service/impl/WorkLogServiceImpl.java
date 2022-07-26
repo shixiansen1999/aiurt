@@ -1,5 +1,6 @@
 package com.aiurt.modules.worklog.service.impl;
 
+import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.aiurt.common.api.dto.message.BusMessageDTO;
 import com.aiurt.common.enums.WorkLogConfirmStatusEnum;
@@ -192,11 +193,17 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
         depot.setSubmitTime(dto.getSubmitTime());
         depot.setWorkContent(dto.getWorkContent());
         depot.setContent(dto.getContent());
-        List<JSONObject> list = iSysBaseAPI.queryUsersByUsernames(dto.getAssortNames());
-        String s1= list.stream().map(e->e.getString("id")).collect(Collectors.joining(","));
-        depot.setAssortIds(s1);
-        LoginUser queryUser = iSysBaseAPI.queryUser(dto.getSucceedName());
-        depot.setSucceedId(queryUser.getId());
+        if(ObjectUtil.isNotEmpty(dto.getAssortUserNames()))
+        {
+            List<JSONObject> list = iSysBaseAPI.queryUsersByUsernames(dto.getAssortUserNames());
+            String s1= list.stream().map(e->e.getString("id")).collect(Collectors.joining(","));
+            depot.setAssortIds(s1);
+        }
+        if(ObjectUtil.isNotEmpty(dto.getSucceedUserName()))
+        {
+            LoginUser queryUser = iSysBaseAPI.queryUser(dto.getSucceedUserName());
+            depot.setSucceedId(queryUser.getId());
+        }
         depot.setApproverId(dto.getApproverId());
         if (StringUtils.isNotBlank(dto.getApproverId())) {
             depot.setApprovalTime(new Date());
@@ -239,7 +246,7 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
         //完成任务
         //userTaskService.completeWork(userId, DateUtils.date2Str(depot.getSubmitTime(), new SimpleDateFormat("yyyy-MM-dd")));
         //发送待办消息
-        if (StringUtils.isNotBlank(dto.getSucceedId())) {
+        if (StringUtils.isNotBlank(dto.getSucceedUserName())) {
             sendMessage(dto);
         }
         return Result.ok("新增成功");
@@ -250,10 +257,9 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
      * @param dto
      */
     private void sendMessage(WorkLogDTO dto) {
-        if (StringUtils.isNotBlank(dto.getSucceedId())) {
 //            UserTaskAddParam addParam = new UserTaskAddParam();
-            List<String> list = new ArrayList<>();
-            list.add(dto.getSucceedId());
+            //List<String> list = new ArrayList<>();
+          //  list.add(dto.getSucceedUserName());
 //            addParam.setUserIds(list);
 //            addParam.setType(UserTaskConstant.USER_TASK_TYPE_4);
 //            addParam.setTitle("工作日志");
@@ -265,8 +271,7 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
             // 发消息
             BusMessageDTO messageDTO = new BusMessageDTO();
             messageDTO.setFromUser(sysUser.getUsername());
-            LoginUser userById = iSysBaseAPI.queryUser(dto.getSucceedId());
-            messageDTO.setToUser(userById.getUsername());
+            messageDTO.setToUser(dto.getSucceedUserName());
             messageDTO.setToAll(false);
             messageDTO.setContent(dto.getContent().toString());
             messageDTO.setCategory("2");
@@ -275,7 +280,7 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
             iSysBaseAPI.sendBusAnnouncement(messageDTO);
 
 
-        }
+
     }
 
     /**
@@ -455,24 +460,36 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
      * @return
      */
     @Override
-    public WorkLogResult getDetailById(String id) {
+    public WorkLogDTO getDetailById(String id) {
         WorkLogResult workLog = depotMapper.queryById(id);
-         LoginUser successor = iSysBaseAPI.getUserById(workLog.getSucceedId());
-         workLog.setSucceedName(successor.getRealname());
-         String[] split1 = workLog.getAssortIds().split(",");
+        WorkLogDTO workLogDTO = new WorkLogDTO();
+        BeanUtil.copyProperties(workLog,workLogDTO);
+        if(ObjectUtil.isNotEmpty(workLog.getSucceedId()))
+        {
+            LoginUser successor = iSysBaseAPI.getUserById(workLog.getSucceedId());
+            workLog.setSucceedName(successor.getRealname());
+            workLogDTO.setSucceedUserName(successor.getUsername());
+        }
+        //配合施工参与人姓名
+        if(ObjectUtil.isNotEmpty(workLog.getAssortIds()))
+        {
+
+            String[] split1 = workLog.getAssortIds().split(",");
+            List<LoginUser> assortNames = iSysBaseAPI.queryAllUserByIds(split1);
+            String collect1 = assortNames.stream().map(s -> s.getRealname()).collect(Collectors.joining(","));
+            String s = assortNames.stream().map(u -> u.getUsername()).collect(Collectors.joining(","));
+            workLogDTO.setAssortNames(collect1);
+            workLogDTO.setAssortUserNames(s);
+        }
         //附件列表
         List<String> query = enclosureMapper.query(id,0);
         String collect = query.stream().collect(Collectors.joining(","));
         //签名列表
         List<String> query1 = enclosureMapper.query(id,1);
         String signUrl = query1.stream().collect(Collectors.joining(","));
-        //配合施工参与人姓名
-        List<LoginUser> assortNames = iSysBaseAPI.queryAllUserByIds(split1);
-        String collect1 = assortNames.stream().map(s -> s.getRealname()).collect(Collectors.joining(","));
-        workLog.setAssortNames(collect1);
-        workLog.setUrlList(collect);
-        workLog.setSignature(signUrl);
-        return workLog;
+        workLogDTO.setUrlList(collect);
+        workLogDTO.setSignature(signUrl);
+        return workLogDTO;
     }
 
     /**
@@ -597,11 +614,11 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
         workLog.setLogTime(dto.getLogTime());
         workLog.setWorkContent(dto.getWorkContent());
         workLog.setContent(dto.getContent());
-        LoginUser queryUser = iSysBaseAPI.queryUser(dto.getSucceedName());
+        LoginUser queryUser = iSysBaseAPI.queryUser(dto.getSucceedUserName());
         workLog.setSucceedId(queryUser.getId());
         workLog.setAssortTime(dto.getAssortTime());
         workLog.setAssortLocation(dto.getAssortLocation());
-        List<JSONObject> lists = iSysBaseAPI.queryUsersByUsernames(dto.getAssortNames());
+        List<JSONObject> lists = iSysBaseAPI.queryUsersByUsernames(dto.getAssortUserNames());
         String id= lists.stream().map(e->e.getString("id")).collect(Collectors.joining(","));
         workLog.setAssortIds(id);
         workLog.setAssortNum(dto.getAssortNum());
@@ -624,7 +641,10 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
             }
         }
         //如果接班人不为空 发送待办消息
-        sendMessage(dto);
+        if(ObjectUtil.isNotEmpty(dto.getSucceedUserName()))
+        {
+            sendMessage(dto);
+        }
     }
 
     /**
@@ -668,7 +688,7 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
     @Override
     public Result<LogSubmitCount> getLogSubmitNum(String startTime, String endTime) {
         LogSubmitCount logSubmitCount = new LogSubmitCount();
-        Long num = depotMapper.selectCount(new LambdaQueryWrapper<WorkLog>()
+        Long num = (long)depotMapper.selectCount(new LambdaQueryWrapper<WorkLog>()
                 .between(StringUtils.isNotBlank(startTime) && StringUtils.isNotBlank(endTime), WorkLog::getSubmitTime, startTime, endTime));
         logSubmitCount.setSubmitNum(num);
         return Result.ok(logSubmitCount);

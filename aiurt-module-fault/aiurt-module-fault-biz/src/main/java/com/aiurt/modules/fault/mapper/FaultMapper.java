@@ -2,6 +2,7 @@ package com.aiurt.modules.fault.mapper;
 
 import java.util.List;
 
+import com.aiurt.common.aspect.annotation.EnableDataPerm;
 import com.aiurt.modules.basic.entity.CsWork;
 import com.aiurt.modules.fault.entity.Fault;
 import com.aiurt.modules.faultknowledgebase.entity.FaultKnowledgeBase;
@@ -15,6 +16,7 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
  * @Date:   2022-06-22
  * @Version: V1.0
  */
+@EnableDataPerm
 public interface FaultMapper extends BaseMapper<Fault> {
 
      /**

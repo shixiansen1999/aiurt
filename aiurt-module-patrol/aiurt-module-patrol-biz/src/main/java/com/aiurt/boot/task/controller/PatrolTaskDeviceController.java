@@ -112,8 +112,8 @@ public class PatrolTaskDeviceController extends BaseController<PatrolTaskDevice,
 	 @AutoLog(value = "巡检任务表-app巡检任务执行中-检查")
 	 @ApiOperation(value = "巡检任务表-app巡检任务执行中-检查", notes = "巡检任务表-app巡检任务执行中-检查")
 	 @PostMapping(value = "/patrolTaskCheck")
-	 public Result<?> patrolTaskCheck(@RequestBody PatrolTaskDevice patrolTaskDevice, HttpServletRequest req) {
-	 	List<PatrolCheckResultDTO> patrolTaskCheck = patrolTaskDeviceService.getPatrolTaskCheck(patrolTaskDevice);
+	 public Result<?> patrolTaskCheck(@RequestBody PatrolTaskDevice patrolTaskDevice,@RequestParam(name ="checkDetail",required = false) Integer checkDetail, HttpServletRequest req) {
+	 	List<PatrolCheckResultDTO> patrolTaskCheck = patrolTaskDeviceService.getPatrolTaskCheck(patrolTaskDevice,checkDetail);
 		 return Result.OK(patrolTaskCheck);
 	 }
 	/**

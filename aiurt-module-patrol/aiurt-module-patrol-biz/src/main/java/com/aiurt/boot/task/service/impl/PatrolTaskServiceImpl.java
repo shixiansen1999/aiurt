@@ -572,6 +572,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         patrolTask.setDelFlag(0);
         patrolTask.setDiscardStatus(0);
         patrolTask.setRebuild(0);
+        patrolTask.setOmitStatus(0);
         patrolTask.setType(patrolTaskManualDTO.getType());
         patrolTask.setRemark(patrolTaskManualDTO.getRemark());
         patrolTask.setStartTime(patrolTaskManualDTO.getStartTime());
@@ -739,7 +740,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         QueryWrapper<PatrolTask> wrapper = new QueryWrapper<>();
         // 获取未作废、未处置、已漏检、未重新生成的任务
         wrapper.lambda().eq(PatrolTask::getId, taskId)
-                .eq(PatrolTask::getStatus, PatrolConstant.TASK_MISSED)
+                .eq(PatrolTask::getOmitStatus, PatrolConstant.OMIT_STATUS)
                 .eq(PatrolTask::getDisposeStatus, PatrolConstant.TASK_UNDISPOSE)
                 .eq(PatrolTask::getDiscardStatus, PatrolConstant.TASK_UNDISCARD)
                 .eq(PatrolTask::getRebuild, PatrolConstant.TASK_UNREBUILD);

@@ -20,7 +20,7 @@ public enum SysAnnmentTypeEnum {
      */
     SITUATION("situation", "component",""),
     /**
-     * 特情
+     * 工作日志
      */
     WORKLOG("worklog", "component",""),
 

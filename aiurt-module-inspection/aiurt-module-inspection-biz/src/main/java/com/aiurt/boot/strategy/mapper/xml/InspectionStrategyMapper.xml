@@ -199,4 +199,19 @@
         del_flag = 0
         and major_code=#{majorCode}
     </select>
+    <select id="translateSubsystem" resultType="com.aiurt.boot.manager.dto.SubsystemDTO">
+        select
+        system_name  as systemName,
+        system_code as systemCode
+        from cs_subsystem
+        where
+        del_flag = 0
+        and major_code = #{majorCode}
+        <if test="systemCode.size()>0">
+            and system_code in
+            <foreach item="systemCode" collection="systemCode" separator="," open="(" close=")" index="">
+                #{systemCode}
+            </foreach>
+        </if>
+    </select>
 </mapper>

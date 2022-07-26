@@ -6,6 +6,8 @@ import java.util.Date;
 import java.math.BigDecimal;
 import java.util.List;
 
+import com.aiurt.common.aspect.annotation.MajorFilterColumn;
+import com.aiurt.common.aspect.annotation.SystemFilterColumn;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
@@ -41,6 +43,7 @@ public class FaultKnowledgeBaseType implements Serializable {
 	/**子系统编号:0的时候为其他，非0为系统编号*/
 	@Excel(name = "子系统编号:0的时候为其他，非0为系统编号", width = 15)
     @ApiModelProperty(value = "子系统编号:0的时候为其他，非0为系统编号")
+    @SystemFilterColumn
     private String systemCode;
 	/**父id:0的时候为子系统下第一级*/
 	@Excel(name = "父id:0的时候为子系统下第一级", width = 15)
@@ -77,6 +80,7 @@ public class FaultKnowledgeBaseType implements Serializable {
 	/**专业编码*/
 	@Excel(name = "专业编码", width = 15)
     @ApiModelProperty(value = "专业编码")
+    @MajorFilterColumn
     private String majorCode;
 	/**故障知识编码层级结构*/
 	@Excel(name = "故障知识编码层级结构", width = 15)

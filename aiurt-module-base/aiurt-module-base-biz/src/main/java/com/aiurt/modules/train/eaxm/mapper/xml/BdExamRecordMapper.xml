@@ -1,0 +1,574 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.aiurt.modules.train.eaxm.mapper.BdExamRecordMapper">
+    <select id="list" resultType="com.aiurt.modules.train.eaxm.entity.BdExamRecord">
+         SELECT
+	       t2.id as trainTaskId,
+           t2.exam_plan_time as examTime,
+	       t2.exam_task_name as examTaskName,
+	       t2.task_state as taskState,
+           t2.exam_paper_id as examPaperId,
+           t2.exam_status as examStatus,
+           t3.user_id as userId
+         FROM
+           bd_train_task t2
+           LEFT JOIN bd_train_task_user t3 ON t2.id = t3.train_task_id
+         <where>
+             t2.exam_status =1
+             AND t2.exam_classify =0
+             AND t2.task_state !=0
+             <if test="condition.examTaskName !=null ">
+                  AND t2.exam_task_name LIKE CONCAT ('%', #{condition.examTaskName}, '%')
+             </if>
+             <if test="condition.userId !=null ">
+                  AND t3.user_id = #{condition.userId}
+             </if>
+         </where>
+        order by t2.update_time desc
+    </select>
+    <select id="selectOnes" resultType="java.lang.String">
+        SELECT is_release from  bd_exam_record WHERE user_id = #{userId} ANd  train_task_id = #{trainTaskId} and exam_paper_id = #{examPaperId}  order by exam_time desc
+        LIMIT 1
+    </select>
+    <select id="selectOness" resultType="java.lang.String">
+        SELECT is_release from  bd_exam_record WHERE exam_classify=0 and  user_id = #{userId} ANd  train_task_id = #{trainTaskId} and exam_paper_id = #{examPaperId}  order by exam_time desc
+        LIMIT 1
+    </select>
+    <select id="excretory" resultType="com.aiurt.modules.train.task.entity.BdTrainMakeupExamRecord">
+            SELECT
+             id,
+             train_task_id,
+             exam_paper_id,
+             user_id,exam_classify,
+             is_makeup,makeup_time
+             from  bd_train_makeup_exam_record
+             <where>
+                 is_makeup = 1
+                 and user_id = #{userId}
+                 and train_task_id = #{trainTaskId}
+                 <if test="examPaperId!=null">
+                     and exam_paper_id = #{examPaperId}
+                 </if>
+             </where>
+    </select>
+    <select id="readOne" resultType="com.aiurt.modules.train.eaxm.entity.BdExamRecord">
+        SELECT
+        t1.id as id,
+        t2.id as examPaperId,
+        t2.name as paperName,
+        t2.number as number,
+        IFNULL(t1.exam_classify,1) as examClassify,
+        t2.passscore as passcode,
+        t2.score as paperScore,
+        t3.exam_plan_time as examTime,
+        t1.answer_time as answerTime,
+        t1.submit_time as submitTime,
+        t1.usetime as usetime,
+        t1.is_release as isRelease,
+        t1.score as score,
+        t3.id as trainTaskId,
+        t1.is_pass as isPass
+        FROM
+        bd_train_task t3
+        LEFT JOIN bd_train_task_user t4 ON t3.id = t4.train_task_id
+        LEFT JOIN bd_exam_record t1 ON t1.train_task_id = t3.id and t4.user_id = t1.user_id
+        LEFT JOIN bd_exam_paper t2  ON t3.exam_paper_id = t2.id
+        <where>
+             t3.id = #{trainTaskId}
+            <if test="userId != null">
+                and t4.user_id = #{userId}
+            </if>
+            <if test="examClassify != null">
+                and t1.exam_classify = #{examClassify}
+            </if>
+            <if test="id != null">
+                and t1.id = #{id}
+            </if>
+        </where>
+    </select>
+
+    <select id="readOness" resultType="com.aiurt.modules.train.eaxm.entity.BdExamRecord">
+        SELECT a.* FROM ( SELECT
+        t1.id as id,
+        t2.id as examPaperId,
+        t2.name as paperName,
+        t2.number as number,
+        IFNULL(t1.exam_classify,1) as examClassify,
+        t2.passscore as passcode,
+        t2.score as paperScore,
+        t3.exam_plan_time as examTime,
+        t1.answer_time as answerTime,
+        t1.submit_time as submitTime,
+        t1.usetime as usetime,
+        t1.is_release as isRelease,
+        t1.score as score,
+        t3.id as trainTaskId,
+        t1.is_pass as isPass
+        FROM
+        bd_train_task t3
+        LEFT JOIN bd_train_task_user t4 ON t3.id = t4.train_task_id
+        LEFT JOIN bd_exam_record t1 ON t1.train_task_id = t3.id and t4.user_id = t1.user_id
+        LEFT JOIN bd_exam_paper t2  ON t3.exam_paper_id = t2.id
+        <where>
+            t3.id = #{trainTaskId}
+            <if test="userId != null">
+                and t4.user_id = #{userId}
+            </if>
+        </where>)as a
+        <where>
+              <if test="examClassify != null">
+                    a.examClassify = #{examClassify}
+              </if>
+        </where>
+    </select>
+    <select id="listId" resultType="java.lang.String">
+        SELECT id from  bd_question_options  where  is_right = 1 AND question_id = #{id}
+    </select>
+
+    <select id="lists" resultType="com.aiurt.modules.train.eaxm.entity.BdExamRecord">
+         SELECT
+	         t1.id as id,
+	         t2.id as examPaperId,
+	         t3.id as trainTaskId,
+	         t1.exam_time as testTime,
+             t1.answer_time as answerTime,
+             t1.submit_time as submitTime,
+	         t1.exam_classify as examClassify,
+	         t1.score as score,
+             t1.usetime as usetime,
+	         t1.is_pass as isPass,
+	         t2.name as paperName,
+	         t2.score as paperScore,
+	         t2.passscore as passcode,
+	         t3.exam_task_name as examTaskName,
+             t3.exam_classify as examinationType,
+             t3.task_state as task_state,
+             t3.start_exam_time as examPlanTime
+         FROM
+	         bd_exam_record t1
+	         LEFT JOIN bd_exam_paper t2 ON t1.exam_paper_id = t2.id
+	         LEFT JOIN bd_train_task t3 ON t1.train_task_id = t3.id
+        <where>
+                    t1.is_release &gt;=3
+                ANd t1.is_release &lt;=4
+            <if test="condition.paperName !=null ">
+                AND t2.name LIKE CONCAT ('%', #{condition.paperName}, '%')
+            </if>
+            <if test="condition.examinationType !=null ">
+                AND t3.exam_classify = #{condition.examinationType}
+            </if>
+            <if test="condition.isPass !=null ">
+                AND t1.is_pass = #{condition.isPass}
+            </if>
+            <if test="condition.userId !=null ">
+                AND t1.user_id = #{condition.userId}
+            </if>
+            <if test="condition.testTime !=null ">
+                AND DATE_FORMAT(t1.exam_time, '%Y-%m-%d') = DATE_FORMAT(#{condition.testTime}, '%Y-%m-%d')
+            </if>
+        </where>
+        order by t1.answer_time desc
+    </select>
+
+    <select id="lecturerList" resultType="com.aiurt.modules.train.eaxm.entity.BdExamRecord">
+         SELECT
+            t2.id as trainTaskId,
+            t1.name as paperName,
+            t2.make_up_state as examClassify,
+            t2.exam_plan_time as examination,
+            t2.start_exam_time as examPlanTime,
+            t2.exam_task_name as examTaskName,
+            t2.task_state as taskState,
+            t2.exam_status as examStatus,
+            t2.exam_paper_id as examPaperId,
+            t2.exam_classify as examinationType,
+	        t2.teacher_id as userId,
+            t2.exam_validity_period as examValidityPeriod
+         FROM
+             bd_train_task t2 left join  bd_exam_paper t1 ON t2.exam_paper_id = t1.id
+        <where>
+            t2.exam_status =1
+            <if test="condition.examTaskName !=null ">
+                AND t2.exam_task_name LIKE CONCAT ('%', #{condition.examTaskName}, '%')
+            </if>
+            <if test="condition.userId !=null ">
+                AND t2.teacher_id = #{condition.userId}
+            </if>
+            <if test="condition.examinationType !=null ">
+                AND t2.exam_classify = #{condition.examinationType}
+            </if>
+            <if test="condition.isRelease !=null and condition.isRelease == 0">
+                and t2.task_state &gt;= 0
+                and t2.task_state &lt; 4
+            </if>
+            <if test="condition.isRelease !=null and condition.isRelease == 1">
+                AND t2.task_state = 4
+            </if>
+            <if test="condition.isRelease !=null and condition.isRelease == 2">
+                AND t2.task_state = 5
+            </if>
+            <if test="condition.isRelease !=null and condition.isRelease == 3">
+                AND t2.task_state &gt; 5
+                AND t2.task_state &lt; 8
+            </if>
+            <if test="condition.isRelease !=null and condition.isRelease == 4">
+                AND t2.task_state !=6
+                AND t2.task_state !=7
+            </if>
+            <if test="condition.paperName !=null ">
+                AND t1.name LIKE CONCAT ('%', #{condition.paperName}, '%')
+            </if>
+                AND t2.task_state != 0
+        </where>
+        order by t2.update_time desc
+    </select>
+
+    <select id="lecturerReadOne" resultType="com.aiurt.modules.train.eaxm.entity.BdExamPaper">
+          SELECT
+	        t1.id as id,
+	        t2.id as taskId,
+	        t2.exam_plan_time as examination,
+            t2.start_exam_time as examTime,
+            t2.exam_task_name as examTaskName,
+	        t1.name as name,
+	        t1.number as number,
+	        t1.score as score,
+	        t1.passscore as passscore,
+            t2.task_state as state,
+            t2.exam_classify as examinationType,
+            t2.make_up_state as makeUpState,
+            t2.exam_validity_period as examValidityPeriod
+          FROM
+	        bd_exam_paper t1
+	        LEFT JOIN bd_train_task t2 ON t2. exam_paper_id = t1.id
+         <where>
+             t1.id = #{id}
+             <if test="exemplify!=null ">
+                 and t2.exam_classify = #{exemplify}
+             </if>
+              and t2.task_state = #{state} and t2.id = #{taskId}
+         </where>
+    </select>
+
+
+    <select id="userList" resultType="com.aiurt.modules.train.task.entity.BdTrainTaskUser">
+        SELECT
+         id as id,
+	     user_name as userName,
+	     sys_org_code as sysOrgCode,
+         user_id as userId,
+         team_id as teamId,
+         train_task_id as trainTaskId
+        FROM
+	     bd_train_task_user
+        WHERE
+	     train_task_id = #{id}
+    </select>
+
+
+    <select id="resultLists" resultType="com.aiurt.modules.train.task.entity.BdTrainTaskUser">
+        SELECT
+        t1.id as recordId,
+        t1.score as score,
+        t1.exam_time as examTime,
+        t1.submit_time as submitTime,
+        t1.usetime as useTime,
+        t1.is_pass as  isPass,
+        t1.exam_paper_id as examPaperId
+        FROM
+        bd_exam_record t1
+       <where>
+        t1.user_id = #{id} and t1.train_task_id =#{traintaskid}
+           <if test="examClassify !=null">
+           and t1.exam_classify = #{examClassify}
+           </if>
+           <if test="examPaperId !=null">
+               and t1.exam_paper_id = #{examPaperId}
+           </if>
+       </where>
+    </select>
+
+    <select id="resultListss" resultType="com.aiurt.modules.train.task.entity.BdTrainTaskUser">
+        SELECT
+        t1.id as recordId,
+        t1.score as score,
+        t1.answer_time as examTime,
+        t1.submit_time as submitTime,
+        t1.usetime as useTime,
+        t1.is_pass as  isPass,
+        t1.exam_paper_id as examPaperId,
+        t1.exam_classify as makeUpState,
+        t1.is_release as isRelease,
+        t1.exam_state as examState
+        FROM
+        bd_exam_record t1
+        <where>
+            t1.user_id = #{id} and t1.train_task_id =#{traintaskid}
+            <if test="examClassify !=null">
+                and t1.exam_classify = #{examClassify}
+            </if>
+            <if test="examPaperId !=null">
+                and t1.exam_paper_id = #{examPaperId}
+            </if>
+        </where>
+        order by t1.exam_time desc
+        LIMIT 1
+    </select>
+
+    <select id="bdExamPaper" resultType="java.lang.String">
+        SELECT user_id as id  from bd_exam_record
+        <where>
+            <if test="id != null ">
+              exam_paper_id = #{id}
+           </if>
+            <if test="takeId != null ">
+               and train_task_id = #{takeId}
+            </if>
+        </where>
+    </select>
+
+    <select id="recordList" resultType="com.aiurt.modules.train.eaxm.entity.BdExamRecord">
+        SELECT
+        t1.id as id,
+        t2.id as trainTaskId,
+        t2.exam_classify as examinationType,
+        t2.exam_task_name as examTaskName,
+        t2.start_exam_time as examPlanTime,
+        t2.exam_validity_period as examValidityPeriod
+        FROM
+        bd_train_task as t2
+        LEFT JOIN bd_exam_paper t1 ON t2.exam_paper_id = t1.id
+           <where>
+               t2.exam_status =1
+               <if test="condition.examinationType != null ">
+                   and t2.exam_classify = #{condition.examinationType}
+               </if>
+               <if test="condition.times !=null ">
+                   and DATE_FORMAT(t2.start_exam_time, '%Y-%m-%d') = DATE_FORMAT(#{condition.times}, '%Y-%m-%d')
+               </if>
+               <if test="condition.examTaskName !=null">
+                   and t2.exam_task_name LIKE CONCAT ('%', #{condition.examTaskName}, '%')
+               </if>
+                   and t2.task_state in(6,7)
+           </where>
+          order by t2.create_time desc
+    </select>
+    <select id="examDetails" resultType="com.aiurt.modules.train.eaxm.dto.ExamDetailsDTO">
+        SELECT
+            tt.exam_task_name as paperName,  ep.passscore as passcode, ep.number, tt.start_exam_time as examTime,
+            ep.score as paperScore,(select task_state from bd_train_task
+                where id=#{trainTaskId})as isRelease,tt.exam_plan_time as examPlanTime,tt.exam_classify as examClassify,
+        (SELECT COUNT(er.is_pass = 1 AND er.exam_classify=1 OR NULL )FROM bd_exam_record as er WHERE er.train_task_id =#{trainTaskId} )as passesNumber,
+            (
+        SELECT `name`
+            FROM bd_team
+            WHERE  id = tt.task_team_id
+            ) AS taskTeamName,
+            ifnull(
+                    (
+                        SELECT
+                            COUNT(ttu.user_id)
+                        FROM
+                            bd_train_task_user AS ttu
+                        WHERE
+                            train_task_id =#{trainTaskId}
+                    ),
+                    0
+                ) AS referenceNumber,
+            ifnull((SELECT COUNT(er.user_id AND er.exam_classify=1 OR NULL)
+                    FROM bd_exam_record AS er
+                    WHERE train_task_id=#{trainTaskId}),0)AS actualReferenceNumber
+        FROM bd_train_task as tt
+                 LEFT JOIN bd_exam_paper ep ON tt.exam_paper_id = ep.id
+                 LEFT JOIN bd_exam_record er on er.train_task_id =  tt.id
+        WHERE
+              <if test="trainTaskId !=null and trainTaskId != ''">
+        tt.id=#{trainTaskId}
+    </if>
+        <if test="examPaperId != null and examPaperId != ''">
+            AND ep.id =#{examPaperId}
+        </if>
+        GROUP BY ep. NAME
+    </select>
+    <select id="bdExamPaperName" resultType="java.lang.String">
+        SELECT (select realname
+                from
+                    sys_user
+                where id = er.user_id)AS name
+        FROM bd_exam_record as er
+        WHERE
+        <if test="trainTaskId !=null and trainTaskId != ''">
+            er.train_task_id = #{trainTaskId}
+        </if>
+    </select>
+    <select id="actualReferenceNames" resultType="java.lang.String">
+        select ttu.user_name
+          from bd_train_task_user as ttu
+       where
+        <if test="trainTaskId !=null and trainTaskId != ''">
+            ttu.train_task_id = #{trainTaskId}
+        </if>
+    </select>
+
+    <insert id="insertedAchievementDOList">
+             insert into
+             bd_exam_record (user_id,score,is_pass,train_task_id,exam_paper_id)
+             values (#{condition.userId},#{condition.score},#{condition.isPass},#{condition.trainTaskId},#{condition.examPaperId})
+    </insert>
+
+    <update id="updatedAchievementDOList">
+            update  bd_exam_record set score = nullif (#{condition.score},null ),is_pass = #{condition.isPass},exam_state=#{condition.examState} where id = #{condition.recordId}
+    </update>
+    <update id="UpdateById">
+        UPDATE bd_exam_record  SET train_task_id= #{bdExamRecord.trainTaskId},
+                                   exam_time= #{bdExamRecord.examTime},
+                                   is_release=#{bdExamRecord.isRelease},
+                                   answer_time =null,
+                                   submit_time =null,
+                                   score =null,
+                                   is_pass =null,
+                                   usetime =null,
+                                   exam_paper_id=#{bdExamRecord.examPaperId},
+                                   exam_classify=#{bdExamRecord.examClassify},
+                                   exam_state=#{bdExamRecord.examState}  WHERE id=#{bdExamRecord.id}
+    </update>
+
+    <select id="examUserList" resultType="com.aiurt.modules.train.eaxm.entity.BdExamRecord">
+select er.*
+FROM  bd_exam_record er
+where
+er.train_task_id=#{taskId} and er.is_release ='3' and er.exam_classify =1
+     </select>
+
+    <select id="readOnes" resultType="com.aiurt.modules.train.eaxm.entity.BdExamRecord">
+        SELECT
+	       t1.id as trainTaskId,
+           t2.id as examPaperId,
+           t1.exam_plan_time as examPlanTime,
+	       t2.name as paperName,
+	       t2.score as paperScore,
+	       t2.passscore as passcode,
+	       t2.number as number
+        FROM
+	       bd_train_task t1
+	       LEFT JOIN bd_exam_paper t2 ON t1.exam_paper_id = t2.id
+        WHERE
+            t2.id = #{examPaperId}
+	        AND t1.id = #{trainTaskId}
+    </select>
+
+    <select id="getlist" resultType="com.aiurt.modules.train.eaxm.entity.BdExamRecord">
+        select er.*
+        FROM  bd_exam_record er
+        where
+        er.train_task_id=#{taskId}
+    </select>
+
+     <select id="getRecordList" resultType="com.aiurt.modules.train.eaxm.entity.BdExamRecord">
+    select  t1.id,t1.exam_classify,t1.score
+    from bd_exam_record t1
+    LEFT JOIN bd_exam_paper ep ON ep.id = t1.exam_paper_id
+    where
+    ep.id =#{examPaperId}
+    <if test="examClassify != null and examClassify != ''">
+    and t1.exam_classify = #{examClassify}
+    </if>
+    <if test="userId != null and userId != ''">
+     and t1.user_id = #{userId}
+</if>
+<if test="taskId != null and taskId != ''">
+ and t1.train_task_id = #{taskId}
+</if>
+     </select>
+    <select id="getPassSorce" resultType="java.lang.Integer">
+        SELECT passscore FROM bd_exam_paper where id = (SELECT
+b.exam_paper_id
+FROM
+	bd_exam_record b
+where b.id = #{id})
+    </select>
+    <select id="getTeamIdByExamRecordId" resultType="java.lang.String">
+        SELECT
+	task_team_id
+FROM
+	bd_train_task
+WHERE
+	id = (
+		SELECT
+			train_task_id
+		FROM
+			bd_exam_record
+		WHERE
+			id = #{id}
+	)
+    </select>
+    <select id="listss" resultType="com.aiurt.modules.train.eaxm.entity.BdExamRecord">
+    SELECT *  from (SELECT
+            t1.id as id,
+            t2.id as examPaperId,
+            t3.id as trainTaskId,
+            IFNULL(t1.exam_classify,1) as examClassify,
+            t1.score as score,
+            t1.is_pass as isPass,
+            t1.answer_time as answerTime,
+            t1.submit_time as submitTime,
+            IFNULL(t1.is_release, case
+            when  t3.task_state in (1,2,3) then 0
+            when  t3.task_state = 4 then  1
+            when  t3.task_state = 5 then  2
+            else 3
+            end)
+            as isRelease,
+            t2.name as paperName,
+            t2.score as paperScore,
+            t2.passscore as passcode,
+            t3.exam_task_name as examTaskName,
+            t3.exam_classify as examinationType,
+            t3.task_state as taskState,
+            t3.start_exam_time as examPlanTime,
+            t3.exam_plan_time as examination,
+            t4.user_id as userId,
+            ifnull(t1.exam_state,0) as examState,
+            t1.usetime,
+            t1.update_time
+        FROM
+        bd_train_task t3
+        LEFT JOIN bd_train_task_user t4 ON t3.id = t4.train_task_id
+        LEFT JOIN bd_exam_record t1 on t1.train_task_id =t3.id and t4.user_id = t1.user_id
+        LEFT JOIN bd_exam_paper t2 ON t3.exam_paper_id = t2.id
+        where
+            t3.exam_status =1  and t3.task_state != 0
+            <if test="condition.userId !=null ">
+                AND t4.user_id = #{condition.userId}
+            </if>
+        ) as a
+        where
+        1=1
+        <if test="condition.paperName !=null ">
+            AND a.paperName LIKE CONCAT ('%', #{condition.paperName}, '%')
+        </if>
+        <if test="condition.examinationType !=null ">
+            AND a.examinationType = #{condition.examinationType}
+        </if>
+        <if test="condition.isPass !=null ">
+            AND a.isPass = #{condition.isPass}
+        </if>
+        <if test="condition.examTaskName !=null ">
+            AND a.examTaskName LIKE CONCAT ('%', #{condition.examTaskName}, '%')
+        </if>
+            <if test="condition.examState !=null ">
+                and a.examState = #{condition.examState}
+            </if>
+            <if test="condition.examTaskState !=null and condition.examTaskState !=2 ">
+                and a.isRelease =#{condition.examTaskState}
+            </if>
+         <if test="condition.examTaskState !=null and condition.examTaskState ==2">
+             AND a.isRelease in(2,4)
+         </if>
+      order by   a.examination desc,a.trainTaskId asc
+    </select>
+
+    <select id="getNum" resultType="com.aiurt.modules.train.eaxm.entity.BdExamRecord">
+        select * from bd_exam_record where train_task_id = #{taskId} and exam_classify = '1'
+    </select>
+</mapper>

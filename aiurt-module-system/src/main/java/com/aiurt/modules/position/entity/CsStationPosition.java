@@ -124,4 +124,7 @@ public class CsStationPosition implements Serializable {
     @ApiModelProperty(value = "所有位置")
     @TableField(exist = false)
     private String codeCc;
+    /**公里标*/
+    @ApiModelProperty(value = "公里标")
+    private String length;
 }

@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.aiurt.modules.train.task.mapper.BdTrainStudentFeedbackRecordMapper">
+
+<select id="getStudentFeedbackRecordById" resultType="com.aiurt.modules.train.task.entity.BdTrainStudentFeedbackRecord">
+ select
+        fr.*,
+        fq.question_name as questionName,
+        fq.classify_name as classifyName,
+        fo.name as trainQuestionFeedBackOptionsName
+    from
+        bd_train_student_feedback_record fr
+    left join
+        bd_train_question_feedback_ques_record fq
+            on  fr.bd_train_question_feedback_ques_id = fq.id
+    left join
+        bd_train_question_feedback_options_record  fo
+            on fo.id = fr.bd_train_question_feedback_options_id
+    where
+    fr.train_task_id = #{taskId}
+            and fr.user_id = #{userId}
+           order by
+            fr.bd_train_question_feedback_options_id desc
+    </select>
+
+<select id="getBdTrainQuestionFeedbackId"
+            resultType="com.aiurt.modules.train.feedback.entity.BdTrainQuestionFeedback">
+    select *
+    from bd_train_question_feedback
+    where classify = 1 and state = 1
+    </select>
+
+<select id="getStudentFeedbackRecord" resultType="com.aiurt.modules.train.task.entity.BdTrainStudentFeedbackRecord">
+    select btsfr.*,btqfq.question_name as questionName,btqfq.classify_name as classifyName
+    from bd_train_student_feedback_record btsfr
+    left join bd_train_question_feedback_ques_record btqfq on btsfr.bd_train_question_feedback_ques_id = btqfq.id
+    where
+    btsfr.train_task_id = #{taskId}
+    and btsfr.user_id = #{userId}
+    </select>
+</mapper>

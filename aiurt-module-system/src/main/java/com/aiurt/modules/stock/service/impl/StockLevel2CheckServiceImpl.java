@@ -105,17 +105,27 @@ public class StockLevel2CheckServiceImpl extends ServiceImpl<StockLevel2CheckMap
 
 	@Override
 	public boolean edit(StockLevel2Check stockLevel2Check) {
-		/*String code = stockLevel2Check.getCode();
-		QueryWrapper<StockSubmitMaterials> queryWrapper = new QueryWrapper<StockSubmitMaterials>();
-		queryWrapper.eq("submit_plan_code",code);
-		stockSubmitMaterialsService.remove(queryWrapper);
-		List<StockSubmitMaterials> stockSubmitMaterialsList = stockLevel2Check.getStockSubmitMaterialsList();
-		if(stockSubmitMaterialsList != null && stockSubmitMaterialsList.size()>0){
-			stockSubmitMaterialsList.stream().forEach(s ->s.setSubmitPlanCode(stockLevel2Check.getCode()));
-			stockSubmitMaterialsService.saveBatch(stockSubmitMaterialsList);
+		String code = stockLevel2Check.getStockCheckCode();
+		QueryWrapper<StockLevel2CheckDetail> queryWrapper = new QueryWrapper<StockLevel2CheckDetail>();
+		queryWrapper.eq("stock_check_code",code);
+		stockLevel2CheckDetailService.remove(queryWrapper);
+		List<StockLevel2> stockLevel2List = stockLevel2Service.list(new QueryWrapper<StockLevel2>().eq("warehouse_code",stockLevel2Check.getWarehouseCode()));
+		if(stockLevel2List != null && stockLevel2List.size()>0){
+			for(StockLevel2 stockLevel2 : stockLevel2List){
+				MaterialBase materialBase = materialBaseService.getOne(new QueryWrapper<MaterialBase>().eq("code",stockLevel2.getMaterialCode()));
+				Double price = materialBase.getPrice()==null?0.00:Double.parseDouble(materialBase.getPrice());
+				Double totalPrice =price * stockLevel2.getNum();
+				StockLevel2CheckDetail stockLevel2CheckDetail = new StockLevel2CheckDetail();
+				stockLevel2CheckDetail.setStockCheckCode(stockLevel2Check.getStockCheckCode());
+				stockLevel2CheckDetail.setWarehouseCode(stockLevel2Check.getWarehouseCode());
+				stockLevel2CheckDetail.setMaterialCode(stockLevel2.getMaterialCode());
+				stockLevel2CheckDetail.setBookNumber(stockLevel2.getNum());
+				stockLevel2CheckDetail.setBookValue(totalPrice.toString());
+				stockLevel2CheckDetailService.save(stockLevel2CheckDetail);
+			}
 		}
-		boolean ok = this.updateById(stockLevel2Check);*/
-		return true;
+		boolean ok = this.updateById(stockLevel2Check);
+		return ok;
 	}
 
 	@Override
@@ -144,10 +154,10 @@ public class StockLevel2CheckServiceImpl extends ServiceImpl<StockLevel2CheckMap
 		/*if(list != null && list.size()>0){
 			for(StockLevel2Check stockLevel2Check : list){
 				String code = stockLevel2Check.getCode();
-				QueryWrapper<StockSubmitMaterials> queryWrapper = new QueryWrapper<StockSubmitMaterials>();
+				QueryWrapper<StockLevel2CheckDetail> queryWrapper = new QueryWrapper<StockLevel2CheckDetail>();
 				queryWrapper.eq("submit_plan_code",code);
-				List<StockSubmitMaterials> materials = stockSubmitMaterialsService.list(queryWrapper);
-				stockLevel2Check.setStockSubmitMaterialsList(materials);
+				List<StockLevel2CheckDetail> materials = stockLevel2CheckDetailService.list(queryWrapper);
+				stockLevel2Check.setStockLevel2CheckDetailList(materials);
 				String tbrid = stockLevel2Check.getUserId()==null?"":stockLevel2Check.getUserId();
 				String tbrname = sysBaseApi.translateDictFromTable("sys_user", "realname", "id", tbrid);
 				String typecode = stockLevel2Check.getSubmitType()==null?"":stockLevel2Check.getSubmitType();
@@ -203,8 +213,8 @@ public class StockLevel2CheckServiceImpl extends ServiceImpl<StockLevel2CheckMap
 				excel.setCell(9, "参考单价");
 				excel.setCell(10, "参考总价");
 				if(materials != null && materials.size()>0){
-					for(StockSubmitMaterials stockSubmitMaterials : materials){
-						String wzcode = stockSubmitMaterials.getMaterialsCode()==null?"":stockSubmitMaterials.getMaterialsCode();
+					for(StockLevel2CheckDetail stockLevel2CheckDetail : materials){
+						String wzcode = stockLevel2CheckDetail.getMaterialsCode()==null?"":stockLevel2CheckDetail.getMaterialsCode();
 						MaterialBase materialBase = materialBaseService.getOne(new QueryWrapper<MaterialBase>().eq("code",wzcode));
 						materialBase = materialBaseService.translate(materialBase);
 						String zyname = sysBaseApi.translateDictFromTable("cs_major", "major_name", "major_code", materialBase.getMajorCode());
@@ -221,10 +231,10 @@ public class StockLevel2CheckServiceImpl extends ServiceImpl<StockLevel2CheckMap
 						excel.setCell(4, materialBase.getCode());
 						excel.setCell(5, materialBase.getName());
 						excel.setCell(6, wztypename==null?"":wztypename);
-						excel.setCell(7, stockSubmitMaterials.getPlanBuyNumber()==null?"":stockSubmitMaterials.getPlanBuyNumber().toString());
+						excel.setCell(7, stockLevel2CheckDetail.getPlanBuyNumber()==null?"":stockLevel2CheckDetail.getPlanBuyNumber().toString());
 						excel.setCell(8, unitname==null?"":unitname);
-						excel.setCell(9, stockSubmitMaterials.getPrice()==null?"":stockSubmitMaterials.getPrice());
-						excel.setCell(10, stockSubmitMaterials.getTotalPrices()==null?"":stockSubmitMaterials.getTotalPrices());
+						excel.setCell(9, stockLevel2CheckDetail.getPrice()==null?"":stockLevel2CheckDetail.getPrice());
+						excel.setCell(10, stockLevel2CheckDetail.getTotalPrices()==null?"":stockLevel2CheckDetail.getTotalPrices());
 					}
 				}
 				excel.createRow(rowIndex++);

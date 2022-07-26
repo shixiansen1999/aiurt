@@ -68,7 +68,7 @@ public class PatrolTaskMissingDetection implements Job {
             // 如果当前时间大于了漏检的时间
             if (compare >= 0) {
                 // 更新任务为已漏检状态
-                l.setStatus(PatrolConstant.TASK_MISSED);
+                l.setOmitStatus(PatrolConstant.OMIT_STATUS);
                 boolean update = patrolTaskService.updateById(l);
                 if (update) {
                     missNum.getAndAdd(1);

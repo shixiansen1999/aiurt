@@ -56,6 +56,20 @@ public class StockInOrderLevel2 extends DictEntity {
 	@ApiModelProperty(value = "入库时间")
 	private  java.util.Date  entryTime;
 
+	/**入库时间开始 CURRENT_TIMESTAMP*/
+	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm")
+	@DateTimeFormat(pattern="yyyy-MM-dd HH:mm")
+	@ApiModelProperty(value = "入库时间开始")
+	@TableField(exist = false)
+	private  java.util.Date  entryTimeBegin;
+
+	/**入库时间结束 CURRENT_TIMESTAMP*/
+	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm")
+	@DateTimeFormat(pattern="yyyy-MM-dd HH:mm")
+	@ApiModelProperty(value = "入库时间结束")
+	@TableField(exist = false)
+	private  java.util.Date  entryTimeEnd;
+
 	/**入库操作用户ID*/
 	@Excel(name = "入库操作用户ID")
 	@ApiModelProperty(value = "入库操作用户ID")

@@ -17,6 +17,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import liquibase.pro.packaged.Q;
 import lombok.extern.slf4j.Slf4j;
 import org.jeecg.common.api.vo.Result;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -88,6 +89,24 @@ public class MaterialBaseTypeController {
         queryWrapper.orderByDesc("create_time");
         Page<MaterialBaseType> page = new Page<MaterialBaseType>(pageNo, pageSize);
         IPage<MaterialBaseType> pageList = iMaterialBaseTypeService.page(page, queryWrapper);
+        List<MaterialBaseType> records = pageList.getRecords();
+        if(records != null && records.size()>0){
+            for(MaterialBaseType materialBaseType1 : records){
+                String pid = materialBaseType1.getPid();
+                if("0".equals(pid)){
+                    String systemCode1 = materialBaseType1.getSystemCode()==null?"":materialBaseType1.getSystemCode();
+                    if(!"".equals(systemCode1)){
+                        CsSubsystem csSubsystem = csSubsystemService.getOne(new QueryWrapper<CsSubsystem>().eq("system_code",systemCode1).eq("del_flag", CommonConstant.DEL_FLAG_0));
+                        materialBaseType1.setPidName(csSubsystem.getSystemName());
+                    }else{
+                        CsMajor csMajor = csMajorService.getOne(new QueryWrapper<CsMajor>().eq("major_code",materialBaseType1.getMajorCode()).eq("del_flag", CommonConstant.DEL_FLAG_0));
+                        materialBaseType1.setPidName(csMajor.getMajorName());
+                    }
+                }else{
+                    materialBaseType1.setPidName(iMaterialBaseTypeService.getById(pid).getBaseTypeName());
+                }
+            }
+        }
         result.setSuccess(true);
         result.setResult(pageList);
         return result;

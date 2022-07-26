@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.aiurt.modules.train.feedback.mapper.BdTrainQuestionFeedbackQuesMapper">
+
+	<delete id="deleteByMainId" parameterType="java.lang.String">
+		DELETE 
+		FROM  bd_train_question_feedback_ques 
+		WHERE
+			 train_question_feedback_id = #{mainId} 	</delete>
+	
+	<select id="selectByMainId" parameterType="java.lang.String" resultType="com.aiurt.modules.train.feedback.entity.BdTrainQuestionFeedbackQues">
+		SELECT * 
+		FROM  bd_train_question_feedback_ques
+		WHERE
+			 train_question_feedback_id = #{mainId}
+			 and bd_train_question_feedback_ques.idel = 0;
+ </select>
+ <select id="openQuestion" resultType="com.aiurt.modules.train.feedback.entity.BdTrainQuestionFeedbackQues">
+select btqfq.*
+from bd_train_question_feedback_ques btqfq
+where btqfq.train_question_feedback_id = #{id}
+and btqfq.idel=0;
+  </select>
+</mapper>

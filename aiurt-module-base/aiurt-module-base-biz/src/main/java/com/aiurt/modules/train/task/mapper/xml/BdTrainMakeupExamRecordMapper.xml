@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.aiurt.modules.train.task.mapper.BdTrainMakeupExamRecordMapper">
+
+    <select id="getList" resultType="com.aiurt.modules.train.task.entity.BdTrainMakeupExamRecord">
+        SELECT
+        btmer.id,
+        bt.`name` as sysOrgCode,
+        su.realname as userName,
+        btt.task_name as trainTaskName,
+        bep.`name` as examPaperName,
+        vd.item_text as examClassifyText
+        FROM
+        bd_train_makeup_exam_record btmer
+        JOIN sys_user su ON su.id = btmer.user_id
+        JOIN bd_train_task btt ON btt.id = btmer.train_task_id
+        JOIN bd_exam_paper bep ON bep.id = btmer.exam_paper_id
+        JOIN view_dict vd ON vd.item_value = btmer.exam_classify
+        JOIN bd_team bt ON bt.id = btt.task_team_id
+<where>
+    vd.dict_code = "exam_classify"
+    and btmer.is_makeup = 0
+    <if test="bdTrainMakeupExamRecord.sysOrgCode!=null and bdTrainMakeupExamRecord.sysOrgCode!=''">
+        and bt.id = #{bdTrainMakeupExamRecord.sysOrgCode}
+    </if>
+    <if test="bdTrainMakeupExamRecord.trainTaskName!=null and bdTrainMakeupExamRecord.trainTaskName!=''">
+        and btt.exam_task_name like concat ('%',#{bdTrainMakeupExamRecord.trainTaskName},'%')
+    </if>
+    <if test="bdTrainMakeupExamRecord.examClassify!=null">
+        and btmer.exam_classify =  #{bdTrainMakeupExamRecord.examClassify}
+    </if>
+</where>
+order  by btmer.create_time desc
+    </select>
+    <select id="getLastMakeUpTime" resultType="java.lang.String">
+        SELECT
+	exam_time
+FROM
+	bd_exam_record
+where exam_classify = 0
+and train_task_id = #{trainTaskId}
+ORDER BY exam_time DESC LIMIT 1
+
+    </select>
+
+    <select id="getQuartzJobIdById" resultType="java.lang.String">
+        select quartz_job_id from bd_train_makeup_exam_record where user_id =#{userId} and train_task_id = #{trainTaskId} order by create_time desc limit 1
+    </select>
+
+    <select id="getQuartzJobDTO" resultType="com.aiurt.common.api.dto.quartz.QuartzJobDTO">
+        select * from sys_quartz_job where id=#{id}
+    </select>
+</mapper>

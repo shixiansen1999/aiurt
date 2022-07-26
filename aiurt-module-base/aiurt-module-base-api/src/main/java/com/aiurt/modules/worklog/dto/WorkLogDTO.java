@@ -1,5 +1,6 @@
 package com.aiurt.modules.worklog.dto;
 
+import com.aiurt.common.result.WorkLogResult;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModel;
@@ -10,7 +11,6 @@ import lombok.experimental.Accessors;
 import org.jeecgframework.poi.excel.annotation.Excel;
 import org.springframework.format.annotation.DateTimeFormat;
 
-import java.io.Serializable;
 import java.util.Date;
 
 /**
@@ -24,7 +24,7 @@ import java.util.Date;
 @EqualsAndHashCode(callSuper = false)
 @Accessors(chain = true)
 @ApiModel(value="t_work_log对象", description="工作日志")
-public class WorkLogDTO implements Serializable {
+public class WorkLogDTO extends WorkLogResult {
 
     /**主键id,自动递增*/
     @ApiModelProperty(value = "主键id,自动递增")
@@ -56,6 +56,9 @@ public class WorkLogDTO implements Serializable {
     @ApiModelProperty(value = "交接班内容")
     private  Object  content;
 
+    /**接班人账号*/
+    @ApiModelProperty(value = "接班人账号")
+    private  String  succeedUserName;
     /**接班人id*/
     @ApiModelProperty(value = "接班人id")
     private  String  succeedId;
@@ -86,9 +89,13 @@ public class WorkLogDTO implements Serializable {
     @Excel(name = "配合施工参与人Ids", width = 15)
     @ApiModelProperty(value = "配合施工参与人Ids")
     private  String  assortIds;
+    /**配合施工参与人账号*/
+    @Excel(name = "配合施工参与人账号", width = 15)
+    @ApiModelProperty(value = "配合施工参与人账号")
+    private  String  assortUserNames;
     /**配合施工参与人*/
-    @Excel(name = "配合施工参与人Ids", width = 15)
-    @ApiModelProperty(value = "配合施工参与人Ids")
+    @Excel(name = "配合施工参与人", width = 15)
+    @ApiModelProperty(value = "配合施工参与人")
     private  String  assortNames;
 
     /**配合施工人次*/

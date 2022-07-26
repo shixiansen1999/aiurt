@@ -186,7 +186,7 @@ public class SparePartApplyServiceImpl extends ServiceImpl<SparePartApplyMapper,
         return code;
     }
     @Override
-    public List<StockApplyExcel> exportXls(List<Integer> ids) {
+    public List<StockApplyExcel> exportXls(List<String> ids) {
         List<StockApplyExcel> excelList = sparePartApplyMapper.selectExportXls(ids);
         AtomicReference<Integer> flag= new AtomicReference<>(1);
         excelList.forEach(e->{

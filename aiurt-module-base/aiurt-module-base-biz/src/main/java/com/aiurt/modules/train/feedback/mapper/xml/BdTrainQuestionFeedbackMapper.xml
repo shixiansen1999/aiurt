@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.aiurt.modules.train.feedback.mapper.BdTrainQuestionFeedbackMapper">
+
+<select id="getClassify" resultType="com.aiurt.modules.train.feedback.entity.BdTrainQuestionFeedback">
+    select * from bd_train_question_feedback where classify = #{classify} and state = 1
+    </select>
+    <select id="selectPageList" resultType="com.aiurt.modules.train.feedback.entity.BdTrainQuestionFeedback">
+        select qf.create_by as createBy,
+               qf.create_time as createTime,
+               qf.update_by as updateBy,
+               qf.update_time as updateTime,
+               qf.name,
+               qf.classify,
+               qf.state,
+               qf.id,
+               (SELECT  bt.`name`
+                FROM  sys_user as su
+                          LEFT JOIN bd_team bt on su.team_id = bt.id
+                WHERE su.username = createBy )as sysOrgCode
+       from bd_train_question_feedback as qf
+       where
+           qf.idel=0
+        <if test="bdTrainQuestionFeedback.state != null">
+            and qf.state = #{bdTrainQuestionFeedback.state}
+        </if>
+        <if test="bdTrainQuestionFeedback.classify != null and bdTrainQuestionFeedback.classify != ''">
+            and qf.classify =#{bdTrainQuestionFeedback.classify}
+        </if>
+        ORDER BY create_time DESC
+
+
+    </select>
+</mapper>

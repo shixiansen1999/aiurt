@@ -5,7 +5,7 @@
         select t1.*,(select realname from sys_user where id= t1.end_user_id) as
         endUserName,concat(DATE_FORMAT(t1.start_time,'%H:%i'),"-",DATE_FORMAT(t1.end_time,'%H:%i'))as startEndTime
         from patrol_task t1
-        where t1.status not in (6,7,8) and t1.del_flag = 0
+        where t1.status not in (6,7,8) and t1.del_flag = 0 and t1.omit_status=0
         and t1.discard_status = 0
         and t1.id not in(select id from patrol_task where source=3 and (`status` =0 or `status`=3))
         <if test="patrolTaskDTO.dateScope !=null and patrolTaskDTO.dateScope !=''">
@@ -29,7 +29,7 @@
     <select id="getPatrolTaskList" resultType="com.aiurt.boot.task.dto.PatrolTaskDTO">
         select t1.*,(select realname from sys_user where id= t1.end_user_id) as endUserName,concat(DATE_FORMAT(t1.start_time,'%H:%i'),"-",DATE_FORMAT(t1.end_time,'%H:%i'))as startEndTime
         from patrol_task t1
-        where t1.status in (6,7) and t1.del_flag = 0
+        where t1.status in (6,7) and t1.del_flag = 0 and t1.omit_status=0
         and t1.discard_status = 0
            <if test="patrolTaskDTO.dateScope !=null and patrolTaskDTO.dateScope !=''">
             and DATE_FORMAT(t1.patrol_date, '%Y-%m-%d' )
@@ -77,6 +77,9 @@
         </if>
         <if test="patrolTask.status != null">
             and pt.status = #{patrolTask.status}
+        </if>
+        <if test="patrolTask.omitStatus != null">
+            and pt.omit_status = #{patrolTask.omitStatus}
         </if>
         <if test="patrolTask.source != null">
             and pt.source = #{patrolTask.source}
@@ -148,7 +151,7 @@
         t1.*
         FROM
         patrol_task t1
-        where t1.source = 3 and t1.status in (0,3) and t1.discard_status = 0
+        where t1.source = 3 and t1.status in (0,3) and t1.discard_status = 0 and t1.omit_status=0
         <if test="patrolTaskDTO.stationCode!=null and patrolTaskDTO.stationCode!=''">
             and t1.code in(select t3.task_code from patrol_task_station t3 where t3.station_code =
             #{patrolTaskDTO.stationCode})

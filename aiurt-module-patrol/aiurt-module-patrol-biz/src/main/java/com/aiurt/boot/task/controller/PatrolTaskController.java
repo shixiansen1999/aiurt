@@ -374,10 +374,10 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
     @PostMapping(value = "/patrolTaskReceive")
     public Result<?> patrolTaskReceive(PatrolTaskDTO patrolTaskDTO, HttpServletRequest req) {
         patrolTaskService.getPatrolTaskReceive(patrolTaskDTO);
-        if (PatrolConstant.TASK_CONFIRM == patrolTaskDTO.getStatus()) {
+        if (PatrolConstant.TASK_CONFIRM.equals(patrolTaskDTO.getStatus())) {
             return Result.OK("确认成功");
         }
-        if (PatrolConstant.TASK_EXECUTE == patrolTaskDTO.getStatus()) {
+        if (PatrolConstant.TASK_EXECUTE.equals(patrolTaskDTO.getStatus())) {
             return Result.OK("执行成功");
         }
         return Result.OK("领取成功");
@@ -469,7 +469,7 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
     public Result<?> patrolTaskAudit(String id, Integer status, String remark, String backReason) {
         LambdaUpdateWrapper<PatrolTask> queryWrapper = new LambdaUpdateWrapper<>();
         //不通过传0
-        if (PatrolConstant.AUDIT_NOPASS==status) {
+        if (PatrolConstant.AUDIT_NOPASS.equals(status)) {
             queryWrapper.set(PatrolTask::getStatus, PatrolConstant.TASK_AUDIT).set(PatrolTask::getRemark, backReason).eq(PatrolTask::getId, id);
             patrolTaskService.update(queryWrapper);
             return Result.OK("不通过");

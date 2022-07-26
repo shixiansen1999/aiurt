@@ -166,9 +166,9 @@ public class WorkLogResult {
     /**配合施工内容*/
     @ApiModelProperty(value = "配合施工内容")
     private  Object  assortContent;
-
-    public String urlList;
+    @ApiModelProperty(value = "配合施工内容")
+    private String urlList;
 
     @ApiModelProperty(value = "签名")
-    public String signature;
+    private String signature;
 }
