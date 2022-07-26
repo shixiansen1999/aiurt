@@ -2,16 +2,17 @@ package com.aiurt.modules.train.task.service.impl;
 
 
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
-import com.aiurt.modules.situation.entity.SysAnnouncement;
+import com.aiurt.common.api.dto.message.BusMessageDTO;
 import com.aiurt.modules.train.eaxm.constans.ExamConstans;
-import com.aiurt.modules.train.exam.entity.BdExamPaper;
-import com.aiurt.modules.train.exam.entity.BdExamRecord;
-import com.aiurt.modules.train.exam.entity.BdExamRecordDetail;
 import com.aiurt.modules.train.eaxm.mapper.BdExamPaperMapper;
 import com.aiurt.modules.train.eaxm.mapper.BdExamRecordDetailMapper;
 import com.aiurt.modules.train.eaxm.mapper.BdExamRecordMapper;
+import com.aiurt.modules.train.exam.entity.BdExamPaper;
+import com.aiurt.modules.train.exam.entity.BdExamRecord;
+import com.aiurt.modules.train.exam.entity.BdExamRecordDetail;
 import com.aiurt.modules.train.question.entity.BdQuestionOptionsAtt;
 import com.aiurt.modules.train.task.constans.TainPlanConstans;
 import com.aiurt.modules.train.task.enmu.QuarterEnmu;
@@ -20,15 +21,19 @@ import com.aiurt.modules.train.task.listener.NoModelDataListener;
 import com.aiurt.modules.train.task.mapper.*;
 import com.aiurt.modules.train.task.service.IBdTrainPlanService;
 import com.aiurt.modules.train.task.vo.*;
+import com.alibaba.excel.EasyExcel;
+import com.alibaba.excel.enums.CellExtraTypeEnum;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
-import org.jeecg.common.constant.CommonConstant;
+import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.exception.JeecgBootException;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.DictModel;
+import org.jeecg.common.system.vo.LoginUser;
+import org.jeecg.common.system.vo.SysDepartModel;
 import org.jeecgframework.poi.excel.def.NormalExcelConstants;
 import org.jeecgframework.poi.excel.entity.ExportParams;
 import org.jeecgframework.poi.excel.view.JeecgEntityExcelView;
@@ -77,8 +82,6 @@ public class BdTrainPlanServiceImpl extends ServiceImpl<BdTrainPlanMapper, BdTra
     @Autowired
     private BdExamRecordDetailMapper bdExamRecordDetailMapper;
 
-/*    @Autowired
-    private IBdInfoListService bdInfoListService;*/
     @Autowired
     private ISysBaseAPI iSysBaseAPI;
     @Autowired
@@ -101,32 +104,33 @@ public class BdTrainPlanServiceImpl extends ServiceImpl<BdTrainPlanMapper, BdTra
         if (ObjectUtil.isNull(bdTrainPlan)) {
             throw new JeecgBootException("此年计划不存在，请重新选择！");
         }
+        LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        // 发消息
+        BusMessageDTO messageDTO = new BusMessageDTO();
         //设置消息属性
-        SysAnnouncement sysAnnouncement = new SysAnnouncement();
-        sysAnnouncement.setStartTime(new Date());
-        sysAnnouncement.setEndTime(new Date());
-        sysAnnouncement.setPriority("H");
-        sysAnnouncement.setMsgCategory("1");
-        sysAnnouncement.setTitile("年计划发布");
-        sysAnnouncement.setMsgContent("年计划已经发布，请相关人员进行培训计划的制定。");
-        sysAnnouncement.setDelFlag(CommonConstant.DEL_FLAG_0.toString());
+        messageDTO.setStartTime(new Date());
+        messageDTO.setEndTime(new Date());
+        messageDTO.setPriority("H");
+        messageDTO.setCategory("1");
+        messageDTO.setTitle("年计划发布");
+        messageDTO.setContent("年计划已经发布，请相关人员进行培训计划的制定。");
+        messageDTO.setFromUser(sysUser.getUsername());
         //设置接收人（查询部门下面的人员）
         String deptName = bdTrainPlan.getDeptName();
         StringBuilder stringBuilder = new StringBuilder();
         String users = "";
-        //根据部门名查询机构id
-        Integer teamId = baseMapper.getTeamIdByDeptName(deptName);
+        //根据部门名查询部门id
+        String departId = baseMapper.getDepartIdByDeptName(deptName);
         String teamIds = null;
-        if (teamId == null) {
+        if (departId == null) {
             //推送给系统管理员
             users = "admin";
         } else {
-            teamIds = baseMapper.getTeamIdsByTeamId(teamId);
-            //去除#,
-            String substring = teamIds.substring(2);
-            String[] split = substring.split(",");
-            //根据班组id查询用户
-            for (String s : split) {
+            List<String> list = new ArrayList<>();
+            List<SysDepartModel> departsById= baseMapper.getDepartIdsByTeamId(departId);
+            getAllDepart(departsById, list);
+            //根据组织机构id查询用户
+            for (String s : list) {
                 //根据班组id查询用户
                 List<String> userNames = baseMapper.getUserByTeamId(s);
                 for (String userName : userNames) {
@@ -135,29 +139,22 @@ public class BdTrainPlanServiceImpl extends ServiceImpl<BdTrainPlanMapper, BdTra
             }
             users = stringBuilder.deleteCharAt(stringBuilder.length() - 1).toString();
         }
-        sysAnnouncement.setUserIds(users);
-       /* bdInfoListService.save(sysAnnouncement);
-        SysAnnouncement sysAnnouncementTemp = bdInfoListService.getById(sysAnnouncement.getId());
-        if (sysAnnouncementTemp == null) {
-            throw new JeecgBootException("此消息不存在，请联系管理员");
-        } else {
-            // 已发布
-            sysAnnouncementTemp.setSendStatus(CommonSendStatus.PUBLISHED_STATUS_1);
-            sysAnnouncementTemp.setSendTime(new Date());
-            //更新年计划发布时间
-            bdTrainPlan.setPblishTime(new Date());
-            baseMapper.updateById(bdTrainPlan);
-            // 设置发布人
-            sysAnnouncementTemp.setSender("admin");
-            *//*boolean ok = bdInfoListService.updateById(sysAnnouncementTemp);
-            if (ok) {
-                // 发消息
-                iSysBaseAPI.sendSysAnnouncementNew(sysAnnouncementTemp.getUserIds(), sysAnnouncementTemp.getTitile(), sysAnnouncementTemp.getId());
-            }*//*
-        }*/
+        messageDTO.setToUser(users);
+        iSysBaseAPI.sendBusAnnouncement(messageDTO);
         //更改为已发布的状态
         bdTrainPlan.setState(1);
         baseMapper.updateById(bdTrainPlan);
+    }
+
+     void getAllDepart(List<SysDepartModel> departsById, List<String> list) {
+        List<String> ids = departsById.stream().map(SysDepartModel::getId).collect(Collectors.toList());
+        if (CollectionUtil.isNotEmpty(ids)) {
+            list.addAll(ids);
+            for (String id: ids) {
+                List<SysDepartModel> departs= baseMapper.getDepartIdsByTeamId(id);
+                getAllDepart(departs, list);
+            }
+        }
     }
 
     /**
@@ -183,10 +180,10 @@ public class BdTrainPlanServiceImpl extends ServiceImpl<BdTrainPlanMapper, BdTra
         List<ReportVO> list = baseMapper.report(page, reportReqVO);
         for (ReportVO reportVO : list) {
             //处理培训部门
-           /* BdTeam bdTeam = bdTeamMapper.selectById(reportVO.getTaskTeamId());
-            if (ObjectUtil.isNotNull(bdTeam)) {
-                reportVO.setSysOrgCode(bdTeam.getName());
-            }*/
+            SysDepartModel sysDepartModel = sysBaseAPI.selectAllById(reportVO.getTaskTeamId());
+            if (ObjectUtil.isNotNull(sysDepartModel)) {
+                reportVO.setSysOrgCode(sysDepartModel.getDepartName());
+            }
             //根据培训任务id查询培训人员
             int trainNum = bdTrainTaskSignMapper.getByTaskId(reportVO.getTrainTaskId());
             //应到人数
@@ -293,11 +290,11 @@ public class BdTrainPlanServiceImpl extends ServiceImpl<BdTrainPlanMapper, BdTra
         //读取数据并处理
         NoModelDataListener noModelDataListener = new NoModelDataListener();
         try (InputStream inputStream = file.getInputStream()) {
-          /*  EasyExcel.read(inputStream, DemoData.class, noModelDataListener)
+            EasyExcel.read(inputStream, DemoData.class, noModelDataListener)
                     .extraRead(CellExtraTypeEnum.MERGE)
                     .ignoreEmptyRow(false).autoTrim(true)
                     .sheet()
-                    .doRead();*/
+                    .doRead();
         } catch (IOException e) {
             log.error(e.getMessage(), e);
         }
@@ -334,9 +331,8 @@ public class BdTrainPlanServiceImpl extends ServiceImpl<BdTrainPlanMapper, BdTra
         //保存年计划
         bdTrainPlan.setState(0);
         //通过部门名称获取部门id
-/*        LambdaQueryWrapper<BdTeam> queryWrapper = new LambdaQueryWrapper<>();
-        BdTeam bdTeam = bdTeamMapper.selectOne(queryWrapper.eq(BdTeam::getName, bdTrainPlan.getDeptName()));
-        bdTrainPlan.setDeptId(bdTeam.getId());*/
+        String departId = baseMapper.getDepartIdByDeptName(bdTrainPlan.getDeptName());
+        bdTrainPlan.setDeptId(departId);
         baseMapper.insert(bdTrainPlan);
         String id = bdTrainPlan.getId();
         //保存子计划
@@ -494,38 +490,25 @@ public class BdTrainPlanServiceImpl extends ServiceImpl<BdTrainPlanMapper, BdTra
         Date date =new Date();
         SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         for (ReCheckVO checkVO : reCheckVOList) {
+            LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+            // 发消息
+            BusMessageDTO messageDTO = new BusMessageDTO();
             //设置消息属性
-            SysAnnouncement sysAnnouncement = new SysAnnouncement();
-            sysAnnouncement.setStartTime(new Date());
-            sysAnnouncement.setEndTime(new Date());
-            sysAnnouncement.setPriority("H");
-            sysAnnouncement.setMsgCategory("1");
-            sysAnnouncement.setTitile("考试结果发布");
+
+            messageDTO.setStartTime(new Date());
+            messageDTO.setEndTime(new Date());
+            messageDTO.setPriority("H");
+            messageDTO.setCategory("1");
+            messageDTO.setTitle("考试结果发布");
             if (StrUtil.isBlank(checkVO.getUserName()) || StrUtil.isBlank(checkVO.getExamResult())) {
                 throw new JeecgBootException("考生姓名不存在或考生考试结果为空");
             }
-            sysAnnouncement.setMsgContent(String.format("%s你好，你的考试结果为%s分", checkVO.getExamPersonName(), checkVO.getExamResult()));
-            sysAnnouncement.setDelFlag(CommonConstant.DEL_FLAG_0.toString());
+            messageDTO.setContent(String.format("%s你好，你的考试结果为%s分", checkVO.getExamPersonName(), checkVO.getExamResult()));
+
             //设置接收人
-            sysAnnouncement.setUserIds(checkVO.getUserName());
-           /* bdInfoListService.save(sysAnnouncement);
-            SysAnnouncement sysAnnouncementTemp = bdInfoListService.getById(sysAnnouncement.getId());
-            if (sysAnnouncementTemp == null) {
-                throw new JeecgBootException("此消息不存在，请联系管理员");
-            }
-            else {
-                // 已发布
-                sysAnnouncementTemp.setSendStatus(CommonSendStatus.PUBLISHED_STATUS_1);
-                sysAnnouncementTemp.setSendTime(new Date());
-                // 设置发布人
-                LoginUser sysUser = TokenUtils.getLoginUser();
-                sysAnnouncementTemp.setSender(sysUser.getUsername());
-                boolean ok = bdInfoListService.updateById(sysAnnouncementTemp);
-                if (ok) {
-                    // 发消息
-                    iSysBaseAPI.sendSysAnnouncementNew(sysAnnouncementTemp.getUserIds(), sysAnnouncementTemp.getTitile(), sysAnnouncementTemp.getId());
-                }
-            }*/
+            messageDTO.setToUser(checkVO.getUserName());
+            iSysBaseAPI.sendBusAnnouncement(messageDTO);
+
             BdExamRecord bdExamRecord = bdExamRecordMapper.selectById(checkVO.getId());
             BdTrainTask bdTrainTask = bdTrainTaskMapper.selectById(bdExamRecord.getTrainTaskId());
             //对考试记录是否及格做更新，复核没有及格的放入补考管理当中

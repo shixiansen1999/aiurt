@@ -19,6 +19,7 @@ import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.LoginUser;
+import org.jeecg.common.system.vo.SysDepartModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
@@ -69,8 +70,7 @@ public class BdTrainPlanController extends BaseController<BdTrainPlan, IBdTrainP
             return Result.OK();
         }
         //仅管理员查看
-       /* ICommonService commonService = SpringContextUtils.getBean(ICommonService.class);
-        Boolean admin = commonService.isAdmin(sysUser.getId())*/;
+        List<String> rolesByUsername = sysBaseAPI.getRolesByUsername(sysUser.getUsername());
 
         if (StrUtil.isNotBlank(bdTrainPlan.getPlanName())) {
             bdTrainPlan.setPlanName("%" + bdTrainPlan.getPlanName() + "%");
@@ -80,16 +80,15 @@ public class BdTrainPlanController extends BaseController<BdTrainPlan, IBdTrainP
         queryWrapper.eq(bdTrainPlan.getState() != null, "state", bdTrainPlan.getState());
         queryWrapper.eq(bdTrainPlan.getPlanYear() != null, "plan_year", bdTrainPlan.getPlanYear());
         queryWrapper.orderByDesc("id");
-        //if (!admin) {
-          /*  Integer teamId = sysUser.getTeamId();
-            IBdTeamService teamService = SpringContextUtils.getBean(IBdTeamService.class);
-            if (Objects.nonNull(teamId))  {
-                BdTeam bdTeam = teamService.getById(teamId);
-                if (Objects.nonNull(bdTeam)) {
-                    queryWrapper.eq("dept_name", bdTeam.getName());
+        if (rolesByUsername.contains(TainPlanConstans.ADMIN)) {
+            String orgCode = sysUser.getOrgCode();
+            if (Objects.nonNull(orgCode))  {
+                SysDepartModel departByOrgCode = sysBaseAPI.getDepartByOrgCode(orgCode);
+                if (Objects.nonNull(departByOrgCode)) {
+                    queryWrapper.eq("dept_name", departByOrgCode.getDepartName());
                 }
-            }*/
-        //}
+            }
+        }
 
         Page<BdTrainPlan> page = new Page<BdTrainPlan>(pageNo, pageSize);
         IPage<BdTrainPlan> pageList = bdTrainPlanService.page(page, queryWrapper);

@@ -372,7 +372,8 @@ public class SysBaseApiImpl implements ISysBaseAPI {
                 message.getBusId(),
                 message.getLevel(),
                 message.getStartTime(),
-                message.getEndTime());
+                message.getEndTime(),
+                message.getPriority());
         try {
             // 同步发送第三方APP消息
             wechatEnterpriseService.sendMessage(message, true);
@@ -1054,12 +1055,16 @@ public class SysBaseApiImpl implements ISysBaseAPI {
      * @param busType
      * @param busId
      */
-    private void sendBusAnnouncement(String fromUser, String toUser, String title, String msgContent, String setMsgCategory, String busType, String busId,String level,Date startTime,Date endTime) {
+    private void sendBusAnnouncement(String fromUser, String toUser, String title, String msgContent, String setMsgCategory, String busType, String busId,String level,Date startTime,Date endTime,String priority) {
         SysAnnouncement announcement = new SysAnnouncement();
         announcement.setTitile(title);
         announcement.setMsgContent(msgContent);
         announcement.setSender(fromUser);
-        announcement.setPriority(CommonConstant.PRIORITY_M);
+        if (StringUtils.isNotBlank(priority)) {
+            announcement.setPriority(priority);
+        } else {
+            announcement.setPriority(CommonConstant.PRIORITY_M);
+        }
         announcement.setMsgType(CommonConstant.MSG_TYPE_UESR);
         announcement.setSendStatus(CommonConstant.HAS_SEND);
         announcement.setSendTime(new Date());
@@ -1392,5 +1397,13 @@ public class SysBaseApiImpl implements ISysBaseAPI {
         QuartzJob quartzJob = new QuartzJob();
         BeanUtils.copyProperties(quartzJobDTO, quartzJob);
         quartzJobService.deleteAndStopJob(quartzJob);
+    }
+
+    @Override
+    public SysDepartModel getDepartByOrgCode(String orgCode) {
+        SysDepart sysDepart = departMapper.queryDepartByOrgCode(orgCode);
+        SysDepartModel sysDepartModel = new SysDepartModel();
+        BeanUtils.copyProperties(sysDepart, sysDepartModel);
+        return sysDepartModel;
     }
 }

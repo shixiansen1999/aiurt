@@ -1,11 +1,7 @@
 package com.aiurt.common.api.dto.message;
 
-import com.aiurt.common.aspect.annotation.Dict;
-import com.fasterxml.jackson.annotation.JsonFormat;
-import lombok.Data;
 import com.aiurt.common.constant.CommonConstant;
-import org.jeecgframework.poi.excel.annotation.Excel;
-import org.springframework.format.annotation.DateTimeFormat;
+import lombok.Data;
 
 import java.io.Serializable;
 
@@ -52,6 +48,11 @@ public class MessageDTO implements Serializable {
      * 特情等级
      */
     protected String level;
+
+    /**
+     * 优先级（L低，M中，H高）
+     */
+    protected String priority;
 
     /**
      * 开始时间
