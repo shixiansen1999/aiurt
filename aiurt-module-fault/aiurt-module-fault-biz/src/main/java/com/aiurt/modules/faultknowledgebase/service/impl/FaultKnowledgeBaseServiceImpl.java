@@ -1,7 +1,6 @@
 package com.aiurt.modules.faultknowledgebase.service.impl;
 
 import com.aiurt.config.datafilter.object.GlobalThreadLocal;
-import com.aiurt.modules.fault.entity.Fault;
 import com.aiurt.modules.faultanalysisreport.constant.FaultConstant;
 import com.aiurt.modules.faultanalysisreport.dto.FaultDTO;
 import com.aiurt.modules.faultanalysisreport.mapper.FaultAnalysisReportMapper;
@@ -12,14 +11,14 @@ import com.aiurt.modules.faultknowledgebasetype.mapper.FaultKnowledgeBaseTypeMap
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import org.apache.commons.lang.StringUtils;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 
 import javax.annotation.Resource;
 import java.util.Arrays;
@@ -64,6 +63,11 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
         }
         //下面禁用数据过滤
         boolean b = GlobalThreadLocal.setDataFilter(false);
+        String id = faultKnowledgeBase.getId();
+        if (StringUtils.isNotBlank(id)) {
+            String substring = id.substring(0, id.length() - 1);
+            faultKnowledgeBase.setId(substring);
+        }
         List<FaultKnowledgeBase> faultKnowledgeBases = faultKnowledgeBaseMapper.readAll(page, faultKnowledgeBase,ids);
         GlobalThreadLocal.setDataFilter(b);
         faultKnowledgeBases.forEach(f->{
