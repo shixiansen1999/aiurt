@@ -56,7 +56,7 @@ public class FaultController extends BaseController<Fault, IFaultService> {
      * @param req
      * @return
      */
-    @AutoLog(value = "故障管理-故障列表-查询", operateType =  1, operateTypeAlias = "查询", module = ModuleType.FAULT)
+    @AutoLog(value = "故障管理-故障列表-查询", operateType =  1, operateTypeAlias = "查询", permissionUrl = "/fault/list")
     @ApiOperation(value = "分页列表查询", notes = "fault-分页列表查询")
     @GetMapping(value = "/list")
     public Result<IPage<Fault>> queryPageList(Fault fault,

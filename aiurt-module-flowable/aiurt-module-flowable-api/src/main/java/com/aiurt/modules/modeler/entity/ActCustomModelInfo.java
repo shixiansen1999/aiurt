@@ -142,4 +142,9 @@ public class ActCustomModelInfo implements Serializable {
 	@Excel(name = "在线表单Id", width = 15)
     @ApiModelProperty(value = "在线表单Id")
     private String defaultFormId;
+
+	@ApiModelProperty(value = "部署时间")
+	private Date deployTime;
+
+	//private String main
 }

@@ -4,21 +4,21 @@ import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.system.base.controller.BaseController;
 import com.aiurt.modules.modeler.entity.ActCustomVariable;
 import com.aiurt.modules.modeler.service.IActCustomVariableService;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.jeecg.common.api.vo.Result;
-import org.jeecg.common.system.query.QueryGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import javax.servlet.http.HttpServletRequest;
+import javax.validation.Valid;
 import java.util.Arrays;
+import java.util.List;
 
- /**
+/**
  * @Description: 流程变量
  * @Author: aiurt
  * @Date:   2022-07-27
@@ -35,23 +35,22 @@ public class ActCustomVariableController extends BaseController<ActCustomVariabl
 	/**
 	 * 分页列表查询
 	 *
-	 * @param actCustomVariable
-	 * @param pageNo
-	 * @param pageSize
-	 * @param req
+	 * @param modelId 流程模板id
+	 * @param variableType 变量类型
 	 * @return
 	 */
-	@ApiOperation(value="流程变量-分页列表查询", notes="流程变量-分页列表查询")
+	@ApiOperation(value="流程变量查询", notes="流程变量")
 	@GetMapping(value = "/list")
-	public Result<IPage<ActCustomVariable>> queryPageList(ActCustomVariable actCustomVariable,
-								   @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
-								   @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
-								   HttpServletRequest req) {
-		QueryWrapper<ActCustomVariable> queryWrapper = QueryGenerator.initQueryWrapper(actCustomVariable, req.getParameterMap());
-		Page<ActCustomVariable> page = new Page<>(pageNo, pageSize);
-		// 根据mo
-		IPage<ActCustomVariable> pageList = actCustomVariableService.page(page, queryWrapper);
-		return Result.OK(pageList);
+	@ApiImplicitParams({
+			@ApiImplicitParam(dataTypeClass = String.class, name = "modelId", value = "流程模板id", required = true, paramType = "query"),
+			@ApiImplicitParam(dataTypeClass = Integer.class, name = "variableType", value = "变量类型（1：变量，0：状态）", required = true, paramType = "query")
+	})
+	public Result<List<ActCustomVariable>> queryPageList(@RequestParam(value = "modelId") String modelId,  @RequestParam(value = "variableType")Integer variableType) {
+		LambdaQueryWrapper<ActCustomVariable> wrapper = new LambdaQueryWrapper<>();
+		wrapper.eq(ActCustomVariable::getModelId, modelId).eq(ActCustomVariable::getVariableType,
+				variableType);
+		List<ActCustomVariable> list = actCustomVariableService.list(wrapper);
+		return Result.OK(list);
 	}
 
 	/**
@@ -63,7 +62,7 @@ public class ActCustomVariableController extends BaseController<ActCustomVariabl
 	@AutoLog(value = "流程变量-添加")
 	@ApiOperation(value="流程变量-添加", notes="流程变量-添加")
 	@PostMapping(value = "/add")
-	public Result<String> add(@RequestBody ActCustomVariable actCustomVariable) {
+	public Result<String> add(@Valid @RequestBody ActCustomVariable actCustomVariable) {
 		actCustomVariableService.save(actCustomVariable);
 		return Result.OK("添加成功！");
 	}

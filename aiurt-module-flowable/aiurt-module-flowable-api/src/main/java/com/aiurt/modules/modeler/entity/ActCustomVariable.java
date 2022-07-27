@@ -17,6 +17,8 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
 
+import javax.validation.constraints.NotBlank;
+
 /**
  * @Description: 流程变量
  * @Author: aiurt
@@ -43,31 +45,41 @@ public class ActCustomVariable implements Serializable {
     @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
     @ApiModelProperty(value = "创建日期")
     private Date createTime;
+
 	/**更新人*/
     @ApiModelProperty(value = "更新人")
     private String updateBy;
+
 	/**更新日期*/
 	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
     @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
     @ApiModelProperty(value = "更新日期")
     private Date updateTime;
+
 	/**所属部门*/
     @ApiModelProperty(value = "所属部门")
     private String sysOrgCode;
+
 	/**变量名*/
-	@Excel(name = "变量名", width = 15)
     @ApiModelProperty(value = "变量名")
+    @NotBlank(message = "请输入变量(状态)名称")
     private String variableName;
+
 	/**显示名*/
-	@Excel(name = "显示名", width = 15)
     @ApiModelProperty(value = "显示名")
     private String showName;
+
 	/**变量类型（1：变量，0：状态）*/
-	@Excel(name = "变量类型（1：变量，0：状态）", width = 15)
     @ApiModelProperty(value = "变量类型（1：变量，0：状态）")
     private Integer variableType;
+
 	/**排序*/
-	@Excel(name = "排序", width = 15)
     @ApiModelProperty(value = "排序")
     private Integer orderNo;
+
+
+    /**模型id(act_act_re_model的id)*/
+    @ApiModelProperty(value = "模型id(act_act_re_model的id)")
+    @NotBlank(message = "请现在流程模板")
+    private String modelId;
 }
