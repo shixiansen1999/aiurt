@@ -16,8 +16,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -38,6 +40,8 @@ public class SysFileTypeServiceImpl extends ServiceImpl<SysFileTypeMapper, SysFi
 	private final ISysFileRoleService roleService;
 
 //	private final ISysUserService userService;
+    @Autowired
+    private ISysBaseAPI iSysBaseAPI;
 
 	@Override
 	public Result<List<SysFileTypeTreeVO>> tree(String userId) {
@@ -129,12 +133,14 @@ public class SysFileTypeServiceImpl extends ServiceImpl<SysFileTypeMapper, SysFi
 					if (CollectionUtils.isNotEmpty(listMap.get(1))) {
 						Optional.ofNullable(listMap.get(1)).ifPresent(roles -> {
 							List<String> ids = roles.stream().map(SysFileRole::getUserId).collect(Collectors.toList());
-                            // todo 后期修改
-							Collection<LoginUser> sysUsers = new ArrayList<>();
-//							Collection<LoginUser> sysUsers = userService.listByIds(ids);
-							if (sysUsers != null && sysUsers.size() > 0) {
+							String[] array = new String[ids.size()];
+							for(int i = 0; i < ids.size();i++){
+								array[i] = ids.get(i);
+							}
+							List<LoginUser> loginUsers = iSysBaseAPI.queryAllUserByIds(array);
+							if (loginUsers != null && loginUsers.size() > 0) {
 								Set<SimpUserVO> userList = new HashSet<>();
-								for (LoginUser sysUser : sysUsers) {
+								for (LoginUser sysUser : loginUsers) {
 									userList.add(new SimpUserVO().setUserId(sysUser.getId()).setUserName(sysUser.getRealname()));
 								}
 								vo.setEditUsers(userList);
@@ -144,12 +150,14 @@ public class SysFileTypeServiceImpl extends ServiceImpl<SysFileTypeMapper, SysFi
 					//获取查看列表中数据
 					Optional.ofNullable(listMap.get(0)).ifPresent(roles -> {
 						List<String> ids = roles.stream().map(SysFileRole::getUserId).collect(Collectors.toList());
-						// todo 后期修改
-						Collection<LoginUser> sysUsers = new ArrayList<>();
-//						Collection<LoginUser> sysUsers = userService.listByIds(ids);
-						if (sysUsers != null && sysUsers.size() > 0) {
+						String[] array = new String[ids.size()];
+						for(int i = 0; i < ids.size();i++){
+							array[i] = ids.get(i);
+						}
+						List<LoginUser> loginUsers = iSysBaseAPI.queryAllUserByIds(array);
+						if (loginUsers != null && loginUsers.size() > 0) {
 							Set<SimpUserVO> userList = new HashSet<>();
-							for (LoginUser sysUser : sysUsers) {
+							for (LoginUser sysUser : loginUsers) {
 								userList.add(new SimpUserVO().setUserId(sysUser.getId()).setUserName(sysUser.getRealname()));
 							}
 							Optional.ofNullable(vo.getEditUsers()).ifPresent(userList::addAll);
