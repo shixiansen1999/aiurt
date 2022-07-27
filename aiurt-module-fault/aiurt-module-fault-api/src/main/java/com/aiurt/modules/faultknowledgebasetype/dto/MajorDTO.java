@@ -1,6 +1,5 @@
 package com.aiurt.modules.faultknowledgebasetype.dto;
 
-import com.aiurt.modules.faultknowledgebasetype.entity.FaultKnowledgeBaseType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -24,16 +23,12 @@ public class MajorDTO {
     @ApiModelProperty(value = "专业名称")
     private String majorName;
 
-    /**与专业关联的子系统*/
-    private List<SubSystemDTO> subSystemDTOS;
-
-    /**与专业关联的知识库类别*/
-    private List<FaultKnowledgeBaseType> faultKnowledgeBaseTypes;
-
     @TableField(exist = false)
     private String key;
     @TableField(exist = false)
     private String value;
     @TableField(exist = false)
     private String label;
+
+    List<SelectTableDTO> children;
 }

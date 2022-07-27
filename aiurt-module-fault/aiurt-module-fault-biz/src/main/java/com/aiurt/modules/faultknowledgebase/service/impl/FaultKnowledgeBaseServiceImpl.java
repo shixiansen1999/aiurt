@@ -64,6 +64,7 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
         //下面禁用数据过滤
         boolean b = GlobalThreadLocal.setDataFilter(false);
         String id = faultKnowledgeBase.getId();
+        //根据id条件查询时，jeecg前端会传一个id结尾带逗号的id，所以先去掉结尾id
         if (StringUtils.isNotBlank(id)) {
             String substring = id.substring(0, id.length() - 1);
             faultKnowledgeBase.setId(substring);

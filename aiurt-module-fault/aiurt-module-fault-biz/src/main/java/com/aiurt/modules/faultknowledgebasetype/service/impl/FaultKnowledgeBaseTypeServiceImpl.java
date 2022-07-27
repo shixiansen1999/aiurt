@@ -4,6 +4,7 @@ import cn.hutool.core.collection.CollectionUtil;
 import com.aiurt.config.datafilter.object.GlobalThreadLocal;
 import com.aiurt.modules.faultknowledgebasetype.dto.MajorDTO;
 import com.aiurt.modules.faultknowledgebasetype.dto.SubSystemDTO;
+import com.aiurt.modules.faultknowledgebasetype.dto.SelectTableDTO;
 import com.aiurt.modules.faultknowledgebasetype.entity.FaultKnowledgeBaseType;
 import com.aiurt.modules.faultknowledgebasetype.mapper.FaultKnowledgeBaseTypeMapper;
 import com.aiurt.modules.faultknowledgebasetype.service.IFaultKnowledgeBaseTypeService;
@@ -12,6 +13,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -42,34 +44,49 @@ public class FaultKnowledgeBaseTypeServiceImpl extends ServiceImpl<FaultKnowledg
                 majorDTO.setKey(majorDTO.getId());
                 majorDTO.setLabel(majorDTO.getMajorCode());
                 majorDTO.setValue(majorDTO.getMajorName());
+                List<SelectTableDTO> selectTableDTOS = new ArrayList<>();
                 //用户拥有的专业的子系统
                 List<SubSystemDTO> subSystemByUser = faultKnowledgeBaseTypeMapper.getSubSystemByCode(systems);
                 if (CollectionUtil.isNotEmpty(subSystemByUser)) {
                     for (SubSystemDTO subSystemDTO : subSystemByUser) {
-                        subSystemDTO.setKey(subSystemDTO.getId());
-                        subSystemDTO.setLabel(subSystemDTO.getSystemCode());
-                        subSystemDTO.setValue(subSystemDTO.getSystemName());
+                        SelectTableDTO selectTableDTO = new SelectTableDTO();
+                        selectTableDTO.setKey(subSystemDTO.getId());
+                        selectTableDTO.setLabel(subSystemDTO.getSystemCode());
+                        selectTableDTO.setValue(subSystemDTO.getSystemName());
+                        selectTableDTO.setIsBaseType(false);
                         //获取子节点
                         List<FaultKnowledgeBaseType> baseTypeList = faultKnowledgeBaseTypes.stream().filter(f -> f.getSystemCode().equals(subSystemDTO.getSystemCode()) && f.getMajorCode().equals(majorDTO.getMajorCode())).collect(Collectors.toList());
+                        List<SelectTableDTO> childrenTress = new ArrayList<>();
                         baseTypeList.forEach(f->{
-                            f.setKey(f.getId().toString());
-                            f.setLabel(f.getCode());
-                            f.setValue(f.getName());
+                            SelectTableDTO selectTable = new SelectTableDTO();
+                            selectTable.setId(f.getId());
+                            selectTable.setKey(f.getId().toString());
+                            selectTable.setLabel(f.getCode());
+                            selectTable.setValue(f.getName());
+                            selectTable.setPid(f.getPid());
+                            selectTable.setIsBaseType(true);
+                            childrenTress.add(selectTable);
                         });
-                        List<FaultKnowledgeBaseType> treeRes = getTreeRes(baseTypeList, 0);
-                        subSystemDTO.setFaultKnowledgeBaseTypes(treeRes);
-                        majorDTO.setSubSystemDTOS(subSystemByUser);
+                        List<SelectTableDTO> treeRes = getTreeRes(childrenTress, 0);
+                        selectTableDTO.setChildren(treeRes);
+                        selectTableDTOS.add(selectTableDTO);
                     }
+                    majorDTO.setChildren(selectTableDTOS);
                 } else {
                     //获取子节点
                     List<FaultKnowledgeBaseType> baseTypeList = faultKnowledgeBaseTypes.stream().filter(f -> f.getMajorCode().equals(majorDTO.getMajorCode())).collect(Collectors.toList());
+                    List<SelectTableDTO> childrenTress = new ArrayList<>();
                     baseTypeList.forEach(f->{
-                        f.setKey(f.getId().toString());
-                        f.setLabel(f.getCode());
-                        f.setValue(f.getName());
+                        SelectTableDTO selectTable = new SelectTableDTO();
+                        selectTable.setId(f.getId());
+                        selectTable.setKey(f.getId().toString());
+                        selectTable.setLabel(f.getCode());
+                        selectTable.setValue(f.getName());
+                        selectTable.setPid(f.getPid());
+                        childrenTress.add(selectTable);
                     });
-                    List<FaultKnowledgeBaseType> treeRes = getTreeRes(baseTypeList, 0);
-                    majorDTO.setFaultKnowledgeBaseTypes(treeRes);
+                    List<SelectTableDTO> treeRes = getTreeRes(childrenTress, 0);
+                    majorDTO.setChildren(treeRes);
                 }
             }
             return allMajor;
@@ -78,11 +95,11 @@ public class FaultKnowledgeBaseTypeServiceImpl extends ServiceImpl<FaultKnowledg
         return null;
     }
 
-    List<FaultKnowledgeBaseType> getTreeRes(List<FaultKnowledgeBaseType> faultKnowledgeBaseTypes, Integer pid){
-        List<FaultKnowledgeBaseType> childList = faultKnowledgeBaseTypes.stream().filter(f -> f.getPid().equals(pid)).collect(Collectors.toList());
+    List<SelectTableDTO> getTreeRes(List<SelectTableDTO> children, Integer pid){
+        List<SelectTableDTO> childList = children.stream().filter(f -> f.getPid().equals(pid)).collect(Collectors.toList());
         if(CollectionUtil.isNotEmpty(childList)){
-            for (FaultKnowledgeBaseType faultKnowledgeBaseType : childList) {
-                faultKnowledgeBaseType.setFaultKnowledgeBaseTypes(getTreeRes(faultKnowledgeBaseTypes,faultKnowledgeBaseType.getId()));
+            for (SelectTableDTO selectTableDTO : childList) {
+                selectTableDTO.setChildren(getTreeRes(children,selectTableDTO.getId()));
             }
         }
         return childList;

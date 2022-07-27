@@ -1,14 +1,10 @@
 package com.aiurt.modules.faultknowledgebasetype.dto;
 
 import com.aiurt.common.aspect.annotation.Dict;
-import com.aiurt.modules.faultknowledgebasetype.entity.FaultKnowledgeBaseType;
-import com.baomidou.mybatisplus.annotation.TableField;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import org.jeecgframework.poi.excel.annotation.Excel;
-
-import java.util.List;
 
 @Data
 @ApiModel("子系统")
@@ -29,14 +25,4 @@ public class SubSystemDTO {
     @ApiModelProperty(value = "所属专业-专业表")
     @Dict(dictTable = "cs_major", dicText = "major_name", dicCode = "major_code")
     private String majorCode;
-
-    /**与子系统关联的知识库类别*/
-    private List<FaultKnowledgeBaseType> faultKnowledgeBaseTypes;
-
-    @TableField(exist = false)
-    private String key;
-    @TableField(exist = false)
-    private String value;
-    @TableField(exist = false)
-    private String label;
 }
