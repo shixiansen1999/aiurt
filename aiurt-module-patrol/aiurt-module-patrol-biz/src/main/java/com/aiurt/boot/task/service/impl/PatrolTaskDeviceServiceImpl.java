@@ -342,7 +342,7 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
         PatrolTaskStandard taskStandard = patrolTaskStandardMapper.selectById(taskStandardId);
         String standardId = taskStandard.getStandardId();
         //根据巡检标准表ID获取巡检标准项目列表并添加到结果表中
-        List<PatrolStandardItems> patrolStandardItems = patrolStandardItemsMapper.selectList(standardId);
+        List<PatrolStandardItems> patrolStandardItems = patrolStandardItemsMapper.selectItemList(standardId);
         if(CollUtil.isEmpty(patrolStandardItems))
         { throw new AiurtBootException("小主！巡检标准的配置项，未配置哦！"); }
         List<PatrolCheckResult> addResultList = new ArrayList<>();

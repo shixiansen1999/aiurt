@@ -1,6 +1,7 @@
 package com.aiurt.modules.basic.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -57,6 +58,11 @@ public class SysAttachment implements Serializable {
 	@Excel(name = "业务表名", width = 15)
     @ApiModelProperty(value = "业务表名")
     private String businessTableName;
+    /**拼接好的文件路径*/
+    @Excel(name = "拼接好的文件路径", width = 15)
+    @ApiModelProperty(value = "拼接好的文件路径")
+    @TableField(exist = false)
+    private String splicFilePath;
 	/**创建人*/
     @ApiModelProperty(value = "创建人")
     private String createBy;

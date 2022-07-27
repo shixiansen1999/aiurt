@@ -2,6 +2,7 @@ package com.aiurt.modules.schedule.controller;
 
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.StrUtil;
+import com.aiurt.modules.schedule.mapper.ScheduleRecordMapper;
 import com.aiurt.modules.schedule.service.*;
 import com.aiurt.modules.schedule.entity.*;
 import com.aiurt.modules.schedule.model.ScheduleUser;
@@ -20,6 +21,7 @@ import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.query.QueryGenerator;
 import org.jeecg.common.system.vo.LoginUser;
 import org.jeecgframework.poi.excel.def.NormalExcelConstants;
@@ -52,8 +54,8 @@ import java.util.*;
 public class ScheduleController {
     @Autowired
     private IScheduleService scheduleService;
-//    @Autowired
-//    private ISysUserService userService;
+    @Autowired
+    private ISysBaseAPI userService;
     @Autowired
     private IScheduleRecordService recordService;
     @Autowired
@@ -64,6 +66,8 @@ public class ScheduleController {
     private IScheduleItemService ItemService;
     @Autowired
     private IScheduleHolidaysService scheduleHolidaysService;
+    @Autowired
+    private ScheduleRecordMapper scheduleRecordMapper;
 
     @Value("${support.downFilePath.holidayExcelPath}")
     private String excelPath;
@@ -360,16 +364,17 @@ public class ScheduleController {
             return Result.error("文件导入失败:" + e.getMessage());
         }
     }
-
+    @AutoLog(value = "人员排班-查询人员下拉")
+    @ApiOperation(value = "人员排班-查询人员下拉", notes = "人员排班-查询人员下拉")
     @RequestMapping(value = "selectScheduleUser", method = RequestMethod.GET)
     public Result<List<LoginUser>> selectScheduleUser(@RequestParam(name = "startDate", required = true) String startDate,
                                                     @RequestParam(name = "endDate", required = true) String endDate) {
         LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         String orgCode = loginUser.getOrgCode();
         Result<List<LoginUser>> result = new Result<List<LoginUser>>();
-        // todo 后期修改
-        List<LoginUser> userList = new ArrayList<>();
-//        List<LoginUser> userList = userService.getUsersByOrgCode(orgCode);
+
+       // List<LoginUser> userList = new ArrayList<>();
+        List<LoginUser> userList = scheduleRecordMapper.userList(orgCode);
         userList.forEach(user -> {
             List list = recordService.getRecordListInDays(user.getId(), startDate, endDate);
             if (list != null && list.size() > 0) {
