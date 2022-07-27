@@ -69,6 +69,7 @@ public class RepairPool implements Serializable {
      */
     @Excel(name = "检修策略编码，关联inspection_strategy的code", width = 15)
     @ApiModelProperty(value = "检修策略编码，关联inspection_strategy的code",required = false)
+    @Dict(dictTable = "inspection_strategy",dicCode = "code",dicText = "name")
     private java.lang.String inspectionStrCode;
     /**检修状态：0待指派、1待确认、2待执行、3已退回、4执行中、5已驳回、6待审核、7待验收、8已完成*/
     @Excel(name = "检修状态：0待指派、1待确认、2待执行、3已退回、4执行中、5已驳回、6待审核、7待验收、8已完成 ", width = 15)
