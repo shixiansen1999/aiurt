@@ -2,6 +2,7 @@ package com.aiurt.modules.stock.entity;
 
 import com.aiurt.common.aspect.annotation.Dict;
 import com.aiurt.modules.basic.entity.DictEntity;
+import com.aiurt.modules.sparepart.entity.SparePartApply;
 import com.baomidou.mybatisplus.annotation.*;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
@@ -39,6 +40,11 @@ public class StockOutOrderLevel2 extends DictEntity {
 	@Excel(name = "出库单号")
 	@ApiModelProperty(value = "出库单号")
 	private  String  orderCode;
+
+	/**申领单号*/
+	@Excel(name = "申领单号")
+	@ApiModelProperty(value = "申领单号")
+	private  String  applyCode;
 
 	/**年份*/
 	@Excel(name = "仓库编号")
@@ -112,6 +118,10 @@ public class StockOutOrderLevel2 extends DictEntity {
 	@ApiModelProperty(value = "删除状态 0-未删除 1-已删除")
 	@TableLogic
 	private  Integer  delFlag;
+
+	@ApiModelProperty(value = "备件申领表信息")
+	@TableField(exist = false)
+	private SparePartApply sparePartApply;
 
 	@ApiModelProperty(value = "提报物资列表")
 	@TableField(exist = false)

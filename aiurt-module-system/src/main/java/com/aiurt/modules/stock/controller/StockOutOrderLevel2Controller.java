@@ -4,6 +4,8 @@ import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.system.base.controller.BaseController;
+import com.aiurt.modules.sparepart.entity.SparePartApply;
+import com.aiurt.modules.sparepart.service.ISparePartApplyService;
 import com.aiurt.modules.stock.entity.StockOutOrderLevel2;
 import com.aiurt.modules.stock.entity.StockOutOrderLevel2;
 import com.aiurt.modules.stock.service.IStockOutOrderLevel2Service;
@@ -38,7 +40,8 @@ public class StockOutOrderLevel2Controller {
 
     @Autowired
     private IStockOutOrderLevel2Service iStockOutOrderLevel2Service;
-
+	@Autowired
+	private ISparePartApplyService iSparePartApplyService;
     /**
      * 分页列表查询
      *
@@ -69,9 +72,11 @@ public class StockOutOrderLevel2Controller {
      */
     @ApiOperation(value = "二级库出库管理详情查询", notes = "二级库出库管理详情查询")
     @GetMapping(value = "/queryById")
-    public Result<StockOutOrderLevel2> queryById(@RequestParam(name = "id", required = true) String id) {
+    public Result<SparePartApply> queryById(@RequestParam(name = "id", required = true) String id) {
         StockOutOrderLevel2 stockOutOrderLevel2 = iStockOutOrderLevel2Service.getById(id);
-        return Result.ok(stockOutOrderLevel2);
+		String applyCode = stockOutOrderLevel2.getApplyCode();
+		SparePartApply sparePartApply = iSparePartApplyService.getOne(new QueryWrapper<SparePartApply>().eq("code",applyCode).eq("del_flag", CommonConstant.DEL_FLAG_0));
+		return Result.ok(sparePartApply);
     }
 
 

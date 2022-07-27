@@ -6,6 +6,7 @@ import java.util.Date;
 import java.math.BigDecimal;
 import java.util.List;
 
+import com.aiurt.modules.basic.entity.DictEntity;
 import com.aiurt.modules.stock.entity.StockLevel2;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
@@ -32,7 +33,7 @@ import lombok.experimental.Accessors;
 @Accessors(chain = true)
 @EqualsAndHashCode(callSuper = false)
 @ApiModel(value="spare_part_apply对象", description="spare_part_apply")
-public class SparePartApply implements Serializable {
+public class SparePartApply extends DictEntity implements Serializable {
     private static final long serialVersionUID = 1L;
 
 	/**主键id*/

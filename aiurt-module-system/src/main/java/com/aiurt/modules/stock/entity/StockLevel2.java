@@ -112,11 +112,16 @@ public class StockLevel2 extends DictEntity {
 	private  String  unitName;
 
 	/**入库时间*/
-	@Excel(name = "最近更新时间")
 	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm")
 	@DateTimeFormat(pattern="yyyy-MM-dd HH:mm")
 	@ApiModelProperty(value = "入库时间")
 	private  java.util.Date  stockInTime;
+
+
+	/**入库时间*/
+	@Excel(name = "最近更新时间")
+	@ApiModelProperty(value = "表格用时间")
+	private  String  stockInTimeExcel;
 
 	/**备注*/
 	@ApiModelProperty(value = "备注")

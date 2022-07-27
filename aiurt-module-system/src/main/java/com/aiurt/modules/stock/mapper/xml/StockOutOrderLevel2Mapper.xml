@@ -4,7 +4,7 @@
     <select id="pageList" resultType="com.aiurt.modules.stock.entity.StockOutOrderLevel2">
         select sool.*
         from stock_out_order_level2 sool
-        left join stock_level2_info sli on sool.warehouse_code = sli.warehouse_code and sli.del_flag = 0
+        left join stock_level2_info sli on sool.custodial_warehouse_code = sli.warehouse_code and sli.del_flag = 0
         <where>
             and sool.del_flag = 0
             <if test="condition.orderCode != null and condition.orderCode != ''">
