@@ -8,13 +8,9 @@ import com.aiurt.modules.faultknowledgebasetype.entity.FaultKnowledgeBaseType;
 import com.aiurt.modules.faultknowledgebasetype.mapper.FaultKnowledgeBaseTypeMapper;
 import com.aiurt.modules.faultknowledgebasetype.service.IFaultKnowledgeBaseTypeService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import io.swagger.models.auth.In;
-import org.apache.shiro.SecurityUtils;
-import org.jeecg.common.system.vo.LoginUser;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -43,12 +39,23 @@ public class FaultKnowledgeBaseTypeServiceImpl extends ServiceImpl<FaultKnowledg
             //用户拥有的专业
             List<MajorDTO> allMajor = faultKnowledgeBaseTypeMapper.getAllMajor(majors);
             for (MajorDTO majorDTO:allMajor) {
+                majorDTO.setKey(majorDTO.getId());
+                majorDTO.setLabel(majorDTO.getMajorCode());
+                majorDTO.setValue(majorDTO.getMajorName());
                 //用户拥有的专业的子系统
                 List<SubSystemDTO> subSystemByUser = faultKnowledgeBaseTypeMapper.getSubSystemByCode(systems);
                 if (CollectionUtil.isNotEmpty(subSystemByUser)) {
                     for (SubSystemDTO subSystemDTO : subSystemByUser) {
+                        subSystemDTO.setKey(subSystemDTO.getId());
+                        subSystemDTO.setLabel(subSystemDTO.getSystemCode());
+                        subSystemDTO.setValue(subSystemDTO.getSystemName());
                         //获取子节点
                         List<FaultKnowledgeBaseType> baseTypeList = faultKnowledgeBaseTypes.stream().filter(f -> f.getSystemCode().equals(subSystemDTO.getSystemCode()) && f.getMajorCode().equals(majorDTO.getMajorCode())).collect(Collectors.toList());
+                        baseTypeList.forEach(f->{
+                            f.setKey(f.getId().toString());
+                            f.setLabel(f.getCode());
+                            f.setValue(f.getName());
+                        });
                         List<FaultKnowledgeBaseType> treeRes = getTreeRes(baseTypeList, 0);
                         subSystemDTO.setFaultKnowledgeBaseTypes(treeRes);
                         majorDTO.setSubSystemDTOS(subSystemByUser);
@@ -56,6 +63,11 @@ public class FaultKnowledgeBaseTypeServiceImpl extends ServiceImpl<FaultKnowledg
                 } else {
                     //获取子节点
                     List<FaultKnowledgeBaseType> baseTypeList = faultKnowledgeBaseTypes.stream().filter(f -> f.getMajorCode().equals(majorDTO.getMajorCode())).collect(Collectors.toList());
+                    baseTypeList.forEach(f->{
+                        f.setKey(f.getId().toString());
+                        f.setLabel(f.getCode());
+                        f.setValue(f.getName());
+                    });
                     List<FaultKnowledgeBaseType> treeRes = getTreeRes(baseTypeList, 0);
                     majorDTO.setFaultKnowledgeBaseTypes(treeRes);
                 }
