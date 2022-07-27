@@ -5,6 +5,7 @@ import java.io.UnsupportedEncodingException;
 import java.util.Date;
 import java.math.BigDecimal;
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
@@ -42,6 +43,7 @@ public class SparePartApplyMaterial implements Serializable {
     /**二级库出库单号*/
     @Excel(name = "二级库出库单号", width = 15)
     @ApiModelProperty(value = "二级库出库单号")
+    @TableField(exist = false)
     private String orderCode;
 	/**申领编号*/
 	@Excel(name = "申领编号", width = 15)

@@ -68,7 +68,7 @@ public class SparePartApply extends DictEntity implements Serializable {
 	@Excel(name = "申领状态：1待提交、2待确认、3已确认", width = 15)
     @ApiModelProperty(value = "申领状态：1待提交、2待确认、3已确认")
     @Dict(dicCode = "spare_apply_status")
-    private Integer status;
+    private String status;
 	/**备注*/
 	@Excel(name = "备注", width = 15)
     @ApiModelProperty(value = "备注")
@@ -139,5 +139,10 @@ public class SparePartApply extends DictEntity implements Serializable {
     @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm")
     @DateTimeFormat(pattern="yyyy-MM-dd HH:mm")
     @ApiModelProperty(value = "出库时间")
+    @TableField(exist = false)
     private  java.util.Date  outTime;
+    /**出库单号*/
+    @ApiModelProperty(value = "出库单号")
+    @TableField(exist = false)
+    private  String  orderCode;
 }

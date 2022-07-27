@@ -41,5 +41,5 @@ public interface IStockOutOrderLevel2Service extends IService<StockOutOrderLevel
      * 确认出库
      * @param sparePartApply
      */
-    void confirmOutOrder(SparePartApply sparePartApply);
+    void confirmOutOrder(SparePartApply sparePartApply) throws ParseException;
 }

@@ -160,5 +160,6 @@ public class StockOutboundMaterials extends DictEntity {
 	/**单价*/
 	@Excel(name = "单价", width = 15)
 	@ApiModelProperty(value = " 单价")
+	@TableField(exist = false)
 	private  String  price;
 }

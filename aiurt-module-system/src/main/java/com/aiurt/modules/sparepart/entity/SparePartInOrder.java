@@ -42,7 +42,7 @@ public class SparePartInOrder implements Serializable {
 	@Excel(name = "状态", width = 15)
 	@ApiModelProperty(value = "入库单状态：0-未确认 1-已确认")
 	@Dict(dicCode = "spare_in_order_status")
-	private Integer confirmStatus;
+	private String confirmStatus;
 	/**入库单状态名称*/
 	@ApiModelProperty(value = "入库单状态名称")
 	@TableField(exist = false)

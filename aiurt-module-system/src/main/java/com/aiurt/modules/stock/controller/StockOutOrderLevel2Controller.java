@@ -77,6 +77,7 @@ public class StockOutOrderLevel2Controller {
 			iStockOutOrderLevel2Service.confirmOutOrder(sparePartApply);
 			return Result.ok("出库成功！");
 		}catch (Exception e){
+		    e.printStackTrace();
 			return Result.ok("出库失败！");
 		}
 	}

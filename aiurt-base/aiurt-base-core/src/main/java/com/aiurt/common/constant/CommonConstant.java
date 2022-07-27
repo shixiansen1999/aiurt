@@ -456,6 +456,14 @@ public interface CommonConstant {
   */
  public static final String STOCK_LEVEL2_CHECK_2 = "2";
  /**
+  * 备件申领状态已确认-3
+  */
+ public static final String SPARE_PART_APPLY_STATUS_3 = "3";
+ /**
+  * 备件入库记录表确认状态未确认-0
+  */
+ public static final String SPARE_PART_IN_ORDER_CONFRM_STATUS_0 = "0";
+  /**
   * 超级管理员角色编码
   */
  public static final String ADMIN = "admin";
