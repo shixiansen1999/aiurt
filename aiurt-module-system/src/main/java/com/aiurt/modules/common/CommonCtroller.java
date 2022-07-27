@@ -189,13 +189,13 @@ public class CommonCtroller {
     @GetMapping("/position/queryTreeByAuth")
     @ApiOperation("根据个人权限获取位置树")
     public Result<List<SelectTable>> queryPositionTree() {
-        List<CsLine> lineList = lineService.getBaseMapper().selectList(null);
+        List<CsLine> lineList = lineService.getBaseMapper().selectList(new LambdaQueryWrapper<CsLine>().eq(CsLine::getDelFlag,0));
 
         Map<String, String> lineMap = lineList.stream().collect(Collectors.toMap(CsLine::getLineCode, CsLine::getLineName, (t1, t2) -> t2));
 
         LambdaQueryWrapper<CsStation> stationWrapper = new LambdaQueryWrapper<>();
 
-        List<CsStation> stationList = stationService.getBaseMapper().selectList(stationWrapper);
+        List<CsStation> stationList = stationService.getBaseMapper().selectList(stationWrapper.eq(CsStation::getDelFlag,0));
 
         Map<String, List<CsStation>> stationMap = stationList.stream().collect(Collectors.groupingBy(CsStation::getLineCode));
 
