@@ -60,6 +60,11 @@ public class LogDTO implements Serializable {
 
     private String moduleTypeName;
 
+    /**
+     * 菜单url
+     */
+    private String permissionUrl;
+
     public LogDTO(){
 
     }

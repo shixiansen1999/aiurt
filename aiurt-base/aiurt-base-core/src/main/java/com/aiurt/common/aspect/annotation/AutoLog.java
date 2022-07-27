@@ -19,7 +19,7 @@ import java.lang.annotation.*;
 public @interface AutoLog {
 
 	/**
-	 * 日志内容，一级菜单-二级菜单（模块名）- 按钮名称
+	 * 日志内容，按钮名称（操作描述）
 	 *
 	 * @return
 	 */
@@ -50,6 +50,12 @@ public @interface AutoLog {
 	 * @return
 	 */
 	ModuleType module() default ModuleType.COMMON;
+
+	/**
+	 * 菜单路径
+	 * @return
+	 */
+	String permissionUrl() default "";
 
 
 }
