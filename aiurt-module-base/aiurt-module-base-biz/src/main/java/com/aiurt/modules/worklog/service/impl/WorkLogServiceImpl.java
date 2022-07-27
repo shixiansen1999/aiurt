@@ -3,7 +3,9 @@ package com.aiurt.modules.worklog.service.impl;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.aiurt.common.api.dto.message.BusMessageDTO;
+import com.aiurt.common.enums.WorkLogCheckStatusEnum;
 import com.aiurt.common.enums.WorkLogConfirmStatusEnum;
+import com.aiurt.common.enums.WorkLogStatusEnum;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.result.LogCountResult;
 import com.aiurt.common.result.LogResult;
@@ -317,10 +319,10 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
         List<WorkLogResult> workLogResults = depotMapper.exportXls(param);
         for (WorkLogResult record : workLogResults) {
             // todo 后期修改
-            SysDepartModel sysDepartModel = new SysDepartModel();
+//            SysDepartModel sysDepartModel = new SysDepartModel();
 //            SysDepart sysDepart = departService.getOne(new QueryWrapper<SysDepart>().eq(SysDepart.DEPART_NAME, record.getSubmitOrgName()), false);
-            //Station station = stationMapper.selectNameById(sysDepartModel.getId());
-            // todo 待处理
+//            Station station = stationMapper.selectNameById(sysDepartModel.getId());
+//            // todo 待处理
 //            if (ObjectUtil.isNotEmpty(station)) {
 //                String lineName = station.getLineName();
 //                record.setLineName(lineName);
@@ -329,6 +331,12 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
 //                List<Station> stations = stationMapper.selectBatchIds(Arrays.asList(record.getAssortLocation().split(",")));
 //                record.setAssortLocationName(StringUtils.join(stations.stream().map(Station::getStationName).collect(Collectors.toList()),","));
 //            }
+            //提交状态
+            record.setStatusDesc(WorkLogStatusEnum.findMessage(record.getStatus()));
+            //确认状态
+            record.setConfirmStatusDesc(WorkLogConfirmStatusEnum.findMessage(record.getConfirmStatus()));
+            //审核状态
+            record.setCheckStatusDesc(WorkLogCheckStatusEnum.findMessage(record.getCheckStatus()));
         }
         return workLogResults;
     }

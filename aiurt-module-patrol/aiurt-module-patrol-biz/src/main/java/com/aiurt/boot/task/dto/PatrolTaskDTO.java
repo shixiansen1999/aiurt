@@ -130,7 +130,7 @@ public class PatrolTaskDTO
     private java.lang.String sysName;
     @Excel(name = "作业类型", width = 15)
     @ApiModelProperty(value = "作业类型")
-    private java.lang.String type;
+    private java.lang.Integer type;
     /*** 任务计划执行日期范围*/
     @Excel(name = "任务计划执行日期范围", width = 15)
     @ApiModelProperty(value = "任务计划执行日期范围")

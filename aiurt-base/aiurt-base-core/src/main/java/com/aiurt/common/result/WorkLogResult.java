@@ -120,6 +120,20 @@ public class WorkLogResult {
     @ApiModelProperty(value = "确认状态:0-未确认 1-已确认")
     @Dict(dicCode = "work_log_confirm_status")
     private  Integer  confirmStatus;
+    /**提交状态描述:0-未提交 1-已提交*/
+    @Excel(name = "提交状态", width = 15)
+    @ApiModelProperty(value = "提交状态")
+    private  String  statusDesc;
+
+    /**确认状态描述*/
+    @Excel(name = "交接班确认", width = 15)
+    @ApiModelProperty(value = "交接班确认状态")
+    private  String  confirmStatusDesc;
+
+    /**审核状态描述*/
+    @Excel(name = "审核状态", width = 15)
+    @ApiModelProperty(value = "审核状态")
+    private  String  checkStatusDesc;
 
     /**提交人id*/
     @ApiModelProperty(value = "提交人id")
