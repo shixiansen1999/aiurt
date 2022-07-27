@@ -205,7 +205,7 @@
             tt.end_time as endTime,
             (select name
              from
-                 bd_team
+                sys_depart
              where id = tt.task_team_id) as taskTeamName,
             (select count(user_id AND er.exam_classify=1 OR not NULL)
                 from bd_exam_record as er
@@ -257,7 +257,7 @@ and er.exam_classify=1
           tt.start_date as startDate,
           tt.exam_status as examStatus,
           (select name
-           from bd_team
+           from sys_depart
            where id = tt.task_team_id) as taskTeamName,
           (select realname
               from sys_user
