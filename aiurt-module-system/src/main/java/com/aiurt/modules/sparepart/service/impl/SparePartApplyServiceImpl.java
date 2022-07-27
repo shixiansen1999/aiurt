@@ -70,14 +70,16 @@ public class SparePartApplyServiceImpl extends ServiceImpl<SparePartApplyMapper,
         if(null!=info && null!=info.getWarehouseCode()){
             sparePartApply.setCustodialWarehouseCode(info.getWarehouseCode());
         }
+        sparePartApplyMapper.insert(sparePartApply);
         //物资清单
         if(!sparePartApply.getStockLevel2List().isEmpty()){
             sparePartApply.getStockLevel2List().stream().forEach(sparePartApplyMaterial ->{
+                sparePartApplyMaterial.setApplyId(sparePartApply.getId());
                 sparePartApplyMaterial.setApplyCode(code);
             });
             sparePartApplyMaterialService.saveBatch(sparePartApply.getStockLevel2List());
         }
-        sparePartApplyMapper.insert(sparePartApply);
+
         return Result.OK("添加成功！");
     }
     /**
@@ -97,6 +99,7 @@ public class SparePartApplyServiceImpl extends ServiceImpl<SparePartApplyMapper,
         //物资清单
         if(!sparePartApply.getStockLevel2List().isEmpty()){
             sparePartApply.getStockLevel2List().stream().forEach(sparePartApplyMaterial ->{
+                sparePartApplyMaterial.setApplyId(sparePartApply.getId());
                 sparePartApplyMaterial.setApplyCode(partApply.getCode());
             });
             sparePartApplyMaterialService.saveBatch(sparePartApply.getStockLevel2List());

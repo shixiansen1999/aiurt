@@ -4,6 +4,8 @@ import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.util.Date;
 import java.math.BigDecimal;
+import java.util.List;
+
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
@@ -41,6 +43,10 @@ public class SparePartInOrder implements Serializable {
 	@ApiModelProperty(value = "入库单状态：0-未确认 1-已确认")
 	@Dict(dicCode = "spare_in_order_status")
 	private Integer confirmStatus;
+	/**入库单状态名称*/
+	@ApiModelProperty(value = "入库单状态名称")
+	@TableField(exist = false)
+	private String confirmStatusName;
 	/**所属专业*/
 	@Excel(name = "所属专业", width = 15)
 	@ApiModelProperty(value = "专业名称")
@@ -62,8 +68,14 @@ public class SparePartInOrder implements Serializable {
 	@ApiModelProperty(value = "类型")
 	@TableField(exist = false)
 	private  Integer  type;
+	/**物资类型名称*/
+	@Excel(name = "物资类型名称", width = 15)
+	@ApiModelProperty(value = "物资类型名称")
+	@TableField(exist = false)
+	private  String  typeName;
 	/**物资编号*/
 	@Excel(name = "物资编号", width = 15)
+	@ApiModelProperty(value = "物资编号")
 	private String materialCode;
 	/**名称*/
 	@Excel(name = "物资名称", width = 15)
@@ -77,6 +89,7 @@ public class SparePartInOrder implements Serializable {
 	/**仓库名称*/
 	@Excel(name = "仓库名称", width = 15)
 	@ApiModelProperty(value = "仓库名称")
+	@TableField(exist = false)
 	private String warehouseName;
 	/**入库数量*/
 	@Excel(name = "入库数量", width = 15)
@@ -96,12 +109,17 @@ public class SparePartInOrder implements Serializable {
 	@Dict(dictTable = "sys_user", dicText = "realname", dicCode = "username")
 	private String confirmId;
 	/**确认人*/
-	@Excel(name = "确认人", width = 15, format = "yyyy-MM-dd")
+	@Excel(name = "确认人", width = 15)
 	@ApiModelProperty(value = "确认人")
+	@TableField(exist = false)
 	private String confirmName;
 	/**二级库出库单号*/
 	@ApiModelProperty(value = "二级库出库单号")
 	private String outOrderCode;
+	/**二级库出库人*/
+	@ApiModelProperty(value = "二级库出库人")
+	@TableField(exist = false)
+	private String outOrderName;
 	/**删除状态(0.未删除 1.已删除)*/
 	@ApiModelProperty(value = "删除状态(0.未删除 1.已删除)")
 	private Integer delFlag;
@@ -122,6 +140,28 @@ public class SparePartInOrder implements Serializable {
 	@DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
 	@ApiModelProperty(value = "修改时间")
 	private Date updateTime;
-
-
+	/**规格型号*/
+	@TableField(exist = false)
+	@ApiModelProperty(value = "规格型号")
+	private String specifications;
+	/**单位*/
+	@ApiModelProperty(value = " 单位")
+	@TableField(exist = false)
+	private String unit;
+	/**生产厂商*/
+	@ApiModelProperty(value = "生产厂商名称")
+	@TableField(exist = false)
+	private String manufactorCodeName;
+	/**单价(元)*/
+	@ApiModelProperty(value = " 单价")
+	@TableField(exist = false)
+	private String price;
+	/**ids*/
+	@ApiModelProperty(value = "ids")
+	@TableField(exist = false)
+	private List<String> ids;
+	/**批量入库*/
+	@ApiModelProperty(value = "批量入库")
+	@TableField(exist = false)
+	private List<SparePartInOrder> orderList;
 }

@@ -1,24 +1,21 @@
 package com.aiurt.modules.sparepart.mapper;
 
+import com.aiurt.modules.sparepart.entity.SparePartInOrder;
+import com.aiurt.modules.sparepart.entity.SparePartOutOrder;
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import org.apache.ibatis.annotations.Param;
+import org.springframework.stereotype.Component;
+
 import java.util.List;
 
-import com.aiurt.modules.sparepart.entity.SparePartOutOrder;
-import com.aiurt.modules.sparepart.entity.dto.SparePartLendQuery;
-import com.aiurt.modules.sparepart.entity.dto.SparePartOutExcel;
-
-
-import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import io.lettuce.core.dynamic.annotation.Param;
-
 /**
- * @Description: 备件出库表
- * @Author: swsc
- * @Date:   2021-09-22
+ * @Description: spare_part_out_order
+ * @Author: aiurt
+ * @Date:   2022-07-26
  * @Version: V1.0
  */
+@Component
 public interface SparePartOutOrderMapper extends BaseMapper<SparePartOutOrder> {
-
-
-
-    List<SparePartOutExcel>  exportXls(@Param("sparePartLendQuery") SparePartLendQuery sparePartLendQuery);
+    List<SparePartOutOrder> readAll(Page page, @Param("out") SparePartOutOrder sparePartOutOrder);
 }

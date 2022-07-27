@@ -4,6 +4,7 @@ package com.aiurt.modules.sparepart.mapper;
 import com.aiurt.modules.sparepart.entity.SparePartInOrder;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -16,5 +17,5 @@ import java.util.List;
  */
 @Component
 public interface SparePartInOrderMapper extends BaseMapper<SparePartInOrder> {
-    List<SparePartInOrder> readAll(Page page, SparePartInOrder sparePartInOrder);
+    List<SparePartInOrder> readAll(Page page,@Param("order") SparePartInOrder sparePartInOrder);
 }

@@ -1,67 +1,154 @@
 package com.aiurt.modules.sparepart.controller;
 
-import com.aiurt.common.aspect.annotation.AutoLog;
-import com.aiurt.modules.sparepart.entity.dto.SparePartStockDTO;
-import com.aiurt.modules.sparepart.entity.vo.SpareMaterialVO;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import com.aiurt.modules.sparepart.entity.SparePartInOrder;
+import org.apache.shiro.SecurityUtils;
+import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.system.query.QueryGenerator;
+import com.aiurt.modules.sparepart.entity.SparePartStock;
 import com.aiurt.modules.sparepart.service.ISparePartStockService;
+
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import io.swagger.annotations.ApiParam;
 import lombok.extern.slf4j.Slf4j;
 
-import org.jeecg.common.api.vo.Result;
+import com.aiurt.common.system.base.controller.BaseController;
+import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-
+import org.springframework.web.servlet.ModelAndView;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import com.aiurt.common.aspect.annotation.AutoLog;
 
-import java.util.List;
-
-/**
- * @Description: 备件库存
- * @Author: qian
- * @Date:   2021-09-17
+ /**
+ * @Description: spare_part_stock
+ * @Author: aiurt
+ * @Date:   2022-07-25
  * @Version: V1.0
  */
-@Slf4j
-@Api(tags="备件库存")
+@Api(tags="备件管理-备件库存信息")
 @RestController
-@RequestMapping("/secondLevelWarehouse/sparePartStock")
-public class SparePartStockController {
+@RequestMapping("/sparepart/sparePartStock")
+@Slf4j
+public class SparePartStockController extends BaseController<SparePartStock, ISparePartStockService> {
 	@Autowired
 	private ISparePartStockService sparePartStockService;
 
 	/**
-	  * 分页列表查询
+	 * 分页列表查询
+	 *
+	 * @param sparePartStock
 	 * @param pageNo
 	 * @param pageSize
+	 * @param req
 	 * @return
 	 */
-	@AutoLog(value = "备件库存-分页列表查询")
-	@ApiOperation(value="备件库存-分页列表查询", notes="备件库存-分页列表查询")
+	//@AutoLog(value = "spare_part_stock-分页列表查询")
+	@ApiOperation(value="spare_part_stock-分页列表查询", notes="spare_part_stock-分页列表查询")
 	@GetMapping(value = "/list")
-	public Result<IPage<SparePartStockDTO>> queryPageList(SparePartStockDTO sparePartStockDTO,
-														  @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
-														  @RequestParam(name="pageSize", defaultValue="10") Integer pageSize) {
-		Result<IPage<SparePartStockDTO>> result = new Result<IPage<SparePartStockDTO>>();
-		IPage<SparePartStockDTO> page = new Page<>(pageNo, pageSize);
-		IPage<SparePartStockDTO> sparePartStockDTOIPage = sparePartStockService.queryPageList(page, sparePartStockDTO);
-		result.setSuccess(true);
-		result.setResult(sparePartStockDTOIPage);
-		return result;
+	public Result<IPage<SparePartStock>> queryPageList(SparePartStock sparePartStock,
+								   @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
+								   @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
+								   HttpServletRequest req) {
+		//QueryWrapper<SparePartStock> queryWrapper = QueryGenerator.initQueryWrapper(sparePartStock, req.getParameterMap());
+		Page<SparePartStock> page = new Page<SparePartStock>(pageNo, pageSize);
+		List<SparePartStock> list = sparePartStockService.selectList(page, sparePartStock);
+		list = list.stream().distinct().collect(Collectors.toList());
+		page.setRecords(list);
+		return Result.OK(page);
 	}
 
-	 @AutoLog("某个备件仓库下的物料信息-查询")
-	 @ApiOperation("某个备件仓库下的物料-查询")
-	 @GetMapping("/materialByWarehouse")
-	 public Result<List<SpareMaterialVO>> queryMaterialByWarehouse(
-	 		@ApiParam("备件仓库编号") @RequestParam("warehouseCode") String warehouseCode) {
-		 Result<List<SpareMaterialVO>> result = new Result<List<SpareMaterialVO>>();
-		 List<SpareMaterialVO> sparePartStockInfos = sparePartStockService.queryMaterialByWarehouse(warehouseCode);
-		 result.setSuccess(true);
-		 result.setResult(sparePartStockInfos);
-		 return result;
-	 }
+	/**
+	 *   添加
+	 *
+	 * @param sparePartStock
+	 * @return
+	 */
+	@AutoLog(value = "spare_part_stock-添加")
+	@ApiOperation(value="spare_part_stock-添加", notes="spare_part_stock-添加")
+	@PostMapping(value = "/add")
+	public Result<String> add(@RequestBody SparePartStock sparePartStock) {
+		sparePartStockService.save(sparePartStock);
+		return Result.OK("添加成功！");
+	}
 
+	/**
+	 *  编辑
+	 *
+	 * @param sparePartStock
+	 * @return
+	 */
+	@AutoLog(value = "spare_part_stock-编辑")
+	@ApiOperation(value="spare_part_stock-编辑", notes="spare_part_stock-编辑")
+	@RequestMapping(value = "/edit", method = {RequestMethod.PUT,RequestMethod.POST})
+	public Result<String> edit(@RequestBody SparePartStock sparePartStock) {
+		sparePartStockService.updateById(sparePartStock);
+		return Result.OK("编辑成功!");
+	}
+
+	/**
+	 *   通过id删除
+	 *
+	 * @param id
+	 * @return
+	 */
+	@AutoLog(value = "spare_part_stock-通过id删除")
+	@ApiOperation(value="spare_part_stock-通过id删除", notes="spare_part_stock-通过id删除")
+	@DeleteMapping(value = "/delete")
+	public Result<String> delete(@RequestParam(name="id",required=true) String id) {
+		sparePartStockService.removeById(id);
+		return Result.OK("删除成功!");
+	}
+
+	/**
+	 *  批量删除
+	 *
+	 * @param ids
+	 * @return
+	 */
+	@AutoLog(value = "spare_part_stock-批量删除")
+	@ApiOperation(value="spare_part_stock-批量删除", notes="spare_part_stock-批量删除")
+	@DeleteMapping(value = "/deleteBatch")
+	public Result<String> deleteBatch(@RequestParam(name="ids",required=true) String ids) {
+		this.sparePartStockService.removeByIds(Arrays.asList(ids.split(",")));
+		return Result.OK("批量删除成功!");
+	}
+
+	/**
+	 * 通过id查询
+	 *
+	 * @param id
+	 * @return
+	 */
+	//@AutoLog(value = "spare_part_stock-通过id查询")
+	@ApiOperation(value="spare_part_stock-通过id查询", notes="spare_part_stock-通过id查询")
+	@GetMapping(value = "/queryById")
+	public Result<SparePartStock> queryById(@RequestParam(name="id",required=true) String id) {
+		SparePartStock sparePartStock = sparePartStockService.getById(id);
+		if(sparePartStock==null) {
+			return Result.error("未找到对应数据");
+		}
+		return Result.OK(sparePartStock);
+	}
+	 /**
+	  * 登录人所选班组的仓库的备件
+	  *
+	  * @param sparePartStock
+
+	  * @return
+	  */
+	 @AutoLog(value = "备件管理-备件仓库-登录人所选班组的仓库的备件")
+	 @ApiOperation(value="备件管理-备件仓库-登录人所选班组的仓库的备件", notes="备件管理-备件仓库-登录人所选班组的仓库的备件")
+	 @GetMapping(value = "/stockList")
+	 public Result<?> queryPageList(SparePartStock sparePartStock) {
+		 List<SparePartStock> list = sparePartStockService.selectList(null, sparePartStock);
+		 return Result.OK(list);
+	 }
 }

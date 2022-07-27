@@ -19,11 +19,8 @@
         SELECT sd.dict_name,sd.dict_code, sd.description
         FROM sys_dict sd
         WHERE sd.del_flag=0
-        <if test="modules !=null and modules==1">
-            and  sd.modules =1
-        </if>
-        <if test="modules !=null and modules==2">
-            and  sd.modules =2
+        <if test="modules !=null">
+            and  sd.modules = #{modules}
         </if>
     </select>
 </mapper>
