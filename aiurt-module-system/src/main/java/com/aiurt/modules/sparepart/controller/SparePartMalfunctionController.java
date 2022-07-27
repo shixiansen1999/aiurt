@@ -39,7 +39,7 @@ import com.aiurt.common.aspect.annotation.AutoLog;
  * @Date:   2022-07-27
  * @Version: V1.0
  */
-@Api(tags="spare_part_malfunction")
+@Api(tags="备件管理-备件履历")
 @RestController
 @RequestMapping("/sparepart/sparePartMalfunction")
 @Slf4j

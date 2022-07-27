@@ -31,7 +31,7 @@ import java.util.stream.Collectors;
 * @Date:   2022-07-26
 * @Version: V1.0
 */
-@Api(tags="spare_part_out_order")
+@Api(tags="备件管理-备件出库")
 @RestController
 @RequestMapping("/sparepart/sparePartOutOrder")
 @Slf4j

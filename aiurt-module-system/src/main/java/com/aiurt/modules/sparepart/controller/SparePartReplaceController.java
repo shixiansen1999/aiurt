@@ -27,7 +27,7 @@ import com.aiurt.common.aspect.annotation.AutoLog;
  * @Date:   2022-07-27
  * @Version: V1.0
  */
-@Api(tags="spare_part_replace")
+@Api(tags="备件管理-备件更换记录")
 @RestController
 @RequestMapping("/sparepart/sparePartReplace")
 @Slf4j
