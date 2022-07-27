@@ -17,6 +17,7 @@ import com.aiurt.boot.task.dto.*;
 import com.aiurt.boot.task.entity.*;
 import com.aiurt.boot.task.mapper.*;
 import com.aiurt.boot.task.param.PatrolTaskParam;
+import com.aiurt.boot.task.service.IPatrolTaskDeviceService;
 import com.aiurt.boot.task.service.IPatrolTaskService;
 import com.aiurt.boot.utils.PatrolCodeUtil;
 import com.aiurt.common.constant.CommonConstant;
@@ -51,7 +52,8 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
 
     @Autowired
     private PatrolTaskMapper patrolTaskMapper;
-
+    @Autowired
+    private IPatrolTaskDeviceService patrolTaskDeviceService;
     @Autowired
     private PatrolTaskUserMapper patrolTaskUserMapper;
     @Autowired
@@ -630,6 +632,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
                         patrolTaskDevice.setStationCode(device.getStationCode());//站点code
                         patrolTaskDevice.setPositionCode(device.getPositionCode());//位置code
                         patrolTaskDeviceMapper.insert(patrolTaskDevice);
+                        patrolTaskDeviceService.copyItems(patrolTaskDevice);
                     });
                 }
             } else {
@@ -645,6 +648,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
                     patrolTaskDevice.setLineCode(lineCode);//线路code
                     patrolTaskDevice.setStationCode(sc);//站点code
                     patrolTaskDeviceMapper.insert(patrolTaskDevice);
+                    patrolTaskDeviceService.copyItems(patrolTaskDevice);
                 });
             }
         });
@@ -863,6 +867,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         return taskCode;
     }
 
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public void getPatrolTaskManualEdit(PatrolTaskManualDTO patrolTaskManualDTO) {
         //更新任务信息
@@ -908,7 +913,15 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         }
         //删除单号
         List<PatrolTaskDevice> devices = patrolTaskDeviceMapper.selectList(new LambdaQueryWrapper<PatrolTaskDevice>().eq(PatrolTaskDevice::getTaskId, patrolTaskManualDTO.getId()));
+        //删除检查项
         if (CollUtil.isNotEmpty(devices)) {
+            devices.stream().forEach(d->{
+                List<PatrolCheckResult> patrolCheckResult = patrolCheckResultMapper.selectList(new LambdaQueryWrapper<PatrolCheckResult>().eq(PatrolCheckResult::getTaskDeviceId,d.getId()));
+                if(ObjectUtil.isNotEmpty(patrolCheckResult))
+                {
+                    patrolCheckResultMapper.deleteBatchIds(patrolCheckResult);
+                }
+            });
             patrolTaskDeviceMapper.deleteBatchIds(devices);
         }
         //保存巡检任务标准表的信息
@@ -944,6 +957,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
                     patrolTaskDevice.setStationCode(device.getStationCode());//站点code
                     patrolTaskDevice.setPositionCode(device.getPositionCode());//位置code
                     patrolTaskDeviceMapper.insert(patrolTaskDevice);
+                    patrolTaskDeviceService.copyItems(patrolTaskDevice);
                 });
             } else {
                 List<String> stationCodeList1 = patrolTaskManualDTO.getStationCodeList();
@@ -958,6 +972,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
                     patrolTaskDevice.setLineCode(lineCode);//线路code
                     patrolTaskDevice.setStationCode(sc);//站点code
                     patrolTaskDeviceMapper.insert(patrolTaskDevice);
+                    patrolTaskDeviceService.copyItems(patrolTaskDevice);
                 });
             }
         });
