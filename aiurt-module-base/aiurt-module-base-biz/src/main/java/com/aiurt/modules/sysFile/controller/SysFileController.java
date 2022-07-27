@@ -27,6 +27,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.query.QueryGenerator;
 import org.jeecg.common.system.vo.LoginUser;
 import org.jeecgframework.poi.excel.ExcelImportUtil;
@@ -66,7 +67,8 @@ public class SysFileController {
 	private ISysFileRoleService iSysFileRoleService;
 	@Autowired
 	private ISysFileTypeService sysFileTypeService;
-
+	@Autowired
+	private ISysBaseAPI iSysBaseAPI;
 
 	/**
 	 * 分页列表查询
@@ -172,12 +174,12 @@ public class SysFileController {
 					vo.setTypeName(sysFileType.getName());
 				}
 			}
-			if (finalUserMap != null) {
-				LoginUser user = finalUserMap.get(vo.getCreateBy());
-				if (user != null) {
-					vo.setCreateByName(user.getRealname());
+
+			LoginUser loginUser = iSysBaseAPI.queryUser(vo.getCreateBy());
+			if (loginUser != null) {
+					vo.setCreateByName(loginUser.getRealname());
 				}
-			}
+
 			records.add(vo);
 		});
 		pages.setRecords(records);
