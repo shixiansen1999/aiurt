@@ -2,16 +2,20 @@ package com.aiurt.modules.stock.service.impl;
 
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.util.XlsExport;
+import com.aiurt.modules.major.entity.CsMajor;
+import com.aiurt.modules.major.service.ICsMajorService;
 import com.aiurt.modules.material.entity.MaterialBase;
 import com.aiurt.modules.material.service.IMaterialBaseService;
-import com.aiurt.modules.stock.entity.StockInOrderLevel2;
-import com.aiurt.modules.stock.entity.StockOutOrderLevel2;
-import com.aiurt.modules.stock.entity.StockIncomingMaterials;
-import com.aiurt.modules.stock.entity.StockLevel2;
+import com.aiurt.modules.sparepart.entity.SparePartApply;
+import com.aiurt.modules.sparepart.service.ISparePartApplyService;
+import com.aiurt.modules.stock.entity.*;
 import com.aiurt.modules.stock.mapper.StockOutOrderLevel2Mapper;
 import com.aiurt.modules.stock.service.IStockOutOrderLevel2Service;
 import com.aiurt.modules.stock.service.IStockIncomingMaterialsService;
 import com.aiurt.modules.stock.service.IStockLevel2Service;
+import com.aiurt.modules.stock.service.IStockOutboundMaterialsService;
+import com.aiurt.modules.subsystem.entity.CsSubsystem;
+import com.aiurt.modules.subsystem.service.ICsSubsystemService;
 import com.aiurt.modules.system.service.impl.SysBaseApiImpl;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -54,127 +58,9 @@ import org.springframework.stereotype.Service;
 public class StockOutOrderLevel2ServiceImpl extends ServiceImpl<StockOutOrderLevel2Mapper, StockOutOrderLevel2> implements IStockOutOrderLevel2Service {
 
 	@Autowired
-	private StockOutOrderLevel2Mapper stockInOrderLevel2Mapper;
+	private ISparePartApplyService iSparePartApplyService;
 	@Autowired
-	private IStockIncomingMaterialsService stockIncomingMaterialsService;
-	@Autowired
-	private IMaterialBaseService materialBaseService;
-	@Autowired
-	private IStockLevel2Service stockLevel2Service;
-	@Autowired
-	private SysBaseApiImpl sysBaseApi;
-
-
-	@Override
-	public void eqExport(String ids, HttpServletRequest request, HttpServletResponse response) {
-		String[] split = ids.split(",");
-		List<String> strings = Arrays.asList(split);
-		// 过滤选中数据
-		List<StockOutOrderLevel2> list = this.list(new QueryWrapper<StockOutOrderLevel2>().in("id", strings));
-		//设置相应头
-		response.setContentType("Application/excel");
-		try {
-			response.addHeader("Content-Disposition", "attachment;filename="
-					+ new String("物资提报数据导出".getBytes("GBK"), "ISO8859_1")
-					+ ".xls");
-		} catch (UnsupportedEncodingException e) {
-			e.printStackTrace();
-		}
-		//读取excel模板
-		XlsExport excel = new XlsExport();
-		HSSFWorkbook hbook = excel.getWorkbook();
-		HSSFCellStyle hstyle = hbook.createCellStyle();
-		hstyle.setAlignment(HorizontalAlignment.CENTER);
-		hstyle.setVerticalAlignment(VerticalAlignment.CENTER);
-		//设置边框样式
-		int rowIndex = 0;
-		/*if(list != null && list.size()>0){
-			for(StockOutOrderLevel2 stockInOrderLevel2 : list){
-				String code = stockInOrderLevel2.getOrderCode();
-				QueryWrapper<StockIncomingMaterials> queryWrapper = new QueryWrapper<StockIncomingMaterials>();
-				queryWrapper.eq("in_order_code",code);
-				List<StockIncomingMaterials> materials = stockIncomingMaterialsService.list(queryWrapper);
-				stockInOrderLevel2.setStockIncomingMaterialsList(materials);
-				String userid = stockInOrderLevel2.getUserId()==null?"":stockInOrderLevel2.getUserId();
-				String username = sysBaseApi.translateDictFromTable("sys_user", "realname", "id", userid);
-				String warehouseCode = stockInOrderLevel2.getWarehouseCode()==null?"":stockInOrderLevel2.getWarehouseCode();
-				String warehouseCodename = sysBaseApi.translateDictFromTable("stock_level2_info","warehouse_name","warehouse_code",warehouseCode);
-				String statuscode = stockInOrderLevel2.getStatus()==null?"":stockInOrderLevel2.getStatus().toString();
-				String statusname = sysBaseApi.translateDict("stock_in_order_level2_status",statuscode);
-				excel.createRow(rowIndex++);
-				excel.setCell(0, "基本信息");
-				for(int i = 1; i<10; i++){
-					excel.setCell(i, "");
-				}
-				excel.createRow(rowIndex++);
-				excel.setCell(0, "");
-				excel.setCell(1, "入库单号");
-				excel.setCell(2, code==null?"":code);
-				excel.setCell(3, "");
-				excel.setCell(4, "入库时间");
-				Date entryTime = stockInOrderLevel2.getEntryTime();
-				SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
-				excel.setCell(5, sdf.format(entryTime));
-				excel.setCell(6, "");
-				excel.setCell(7, "入库人");
-				excel.setCell(8, username==null?"":username);
-				excel.setCell(9, "");
-				excel.createRow(rowIndex++);
-				excel.setCell(0, "");
-				excel.setCell(1, "入库仓库");
-				excel.setCell(2, warehouseCodename==null?"":warehouseCodename);
-				excel.setCell(3, "");
-				excel.setCell(4, "入库单状态");
-				excel.setCell(5, statusname==null?"":statusname);
-				excel.setCell(6, "");
-				excel.setCell(7, "备注");
-				excel.setCell(8, stockInOrderLevel2.getNote()==null?"":stockInOrderLevel2.getNote());
-				excel.setCell(9, "");
-				excel.createRow(rowIndex++);
-				excel.setCell(0, "提报物资清单");
-				for(int i = 1; i<10; i++){
-					excel.setCell(i, "");
-				}
-				excel.createRow(rowIndex++);
-				excel.setCell(0, "");
-				excel.setCell(1, "所属专业");
-				excel.setCell(2, "所属子系统");
-				excel.setCell(3, "物资分类");
-				excel.setCell(4, "物资编号");
-				excel.setCell(5, "物资名称");
-				excel.setCell(6, "物资类型");
-				excel.setCell(9, "存放仓库");
-				excel.setCell(7, "入库数量");
-				excel.setCell(8, "单位");
-				if(materials != null && materials.size()>0){
-					for(StockIncomingMaterials stockIncomingMaterials : materials){
-						String wzcode = stockIncomingMaterials.getMaterialCode()==null?"":stockIncomingMaterials.getMaterialCode();
-						MaterialBase materialBase = materialBaseService.getOne(new QueryWrapper<MaterialBase>().eq("code",wzcode));
-						materialBase = materialBaseService.translate(materialBase);
-						String zyname = sysBaseApi.translateDictFromTable("cs_major", "major_name", "major_code", materialBase.getMajorCode());
-						String zxyname = sysBaseApi.translateDictFromTable("cs_subsystem", "system_name", "system_code", materialBase.getSystemCode());
-						String wztype = materialBase.getType()==null?"":materialBase.getType().toString();
-						String wztypename = sysBaseApi.translateDict("material_type",wztype);
-						String unitcode = materialBase.getUnit()==null?"":materialBase.getUnit();
-						String unitname = sysBaseApi.translateDict("materian_unit",unitcode);
-						excel.createRow(rowIndex++);
-						excel.setCell(0, "");
-						excel.setCell(1, zyname==null?"":zyname);
-						excel.setCell(2, zxyname==null?"":zxyname);
-						excel.setCell(3, materialBase.getBaseTypeCodeCcName()==null?"":materialBase.getBaseTypeCodeCcName());
-						excel.setCell(4, materialBase.getCode());
-						excel.setCell(5, materialBase.getName());
-						excel.setCell(6, wztypename==null?"":wztypename);
-						excel.setCell(7, warehouseCodename==null?"":warehouseCodename);
-						excel.setCell(9, stockIncomingMaterials.getNumber()==null?"":stockIncomingMaterials.getNumber().toString());
-						excel.setCell(8, unitname==null?"":unitname);
-					}
-				}
-				excel.createRow(rowIndex++);
-			}
-		}*/
-		excel.exportXls(response);
-	}
+	private IStockOutboundMaterialsService iStockOutboundMaterialsService;
 
 	@Override
 	public IPage<StockOutOrderLevel2> pageList(Page<StockOutOrderLevel2> page, StockOutOrderLevel2 stockOutOrderLevel2) {
@@ -182,4 +68,36 @@ public class StockOutOrderLevel2ServiceImpl extends ServiceImpl<StockOutOrderLev
 		page.setRecords(baseList);
 		return page;
 	}
+
+	@Override
+	public SparePartApply getList(String id) {
+		StockOutOrderLevel2 stockOutOrderLevel2 = this.getById(id);
+		String applyCode = stockOutOrderLevel2.getApplyCode();
+		String orderCode = stockOutOrderLevel2.getOrderCode();
+		SparePartApply sparePartApply = iSparePartApplyService.getOne(new QueryWrapper<SparePartApply>().eq("code",applyCode).eq("del_flag", CommonConstant.DEL_FLAG_0));
+		List<StockOutboundMaterials> stockOutboundMaterials = iStockOutboundMaterialsService.list(new QueryWrapper<StockOutboundMaterials>().eq("out_order_code",orderCode).eq("del_flag", CommonConstant.DEL_FLAG_0));
+		int count = 0;
+		if(stockOutboundMaterials != null && stockOutboundMaterials.size()>0){
+			for(StockOutboundMaterials materials : stockOutboundMaterials){
+				materials = iStockOutboundMaterialsService.translate(materials);
+				count += materials.getActualOutput()==null?0:materials.getActualOutput();
+			}
+		}
+		sparePartApply.setUserId(stockOutOrderLevel2.getUserId());
+		sparePartApply.setOutTime(stockOutOrderLevel2.getOutTime());
+		sparePartApply.setTotalCount(count);
+		sparePartApply.setStockOutboundMaterialsList(stockOutboundMaterials);
+		return sparePartApply;
+	}
+
+	@Override
+	public void confirmOutOrder(SparePartApply sparePartApply) {
+		//1. 修改二级库出库表的信息（出库时间、出库操作用户）stock_out_order_level2
+		//2. 修改二级库出库物资表信息（实际出库数量）stock_outbound_materials
+		//3. 修改备件申领表信息（申领状态-已确认、出库时间）spare_part_apply
+		//4. 修改备件申领物资表信息（实际出库数量）spare_part_apply_material
+		//5. 备件入库表插入数据
+	}
+
+
 }

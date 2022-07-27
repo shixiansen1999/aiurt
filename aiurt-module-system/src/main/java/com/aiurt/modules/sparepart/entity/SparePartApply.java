@@ -8,6 +8,7 @@ import java.util.List;
 
 import com.aiurt.modules.basic.entity.DictEntity;
 import com.aiurt.modules.stock.entity.StockLevel2;
+import com.aiurt.modules.stock.entity.StockOutboundMaterials;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
@@ -122,4 +123,21 @@ public class SparePartApply extends DictEntity implements Serializable {
     @ApiModelProperty(value = "物资")
     @TableField(exist = false)
     private List<SparePartApplyMaterial> stockLevel2List;
+    /**物资(二级库出库）*/
+    @ApiModelProperty(value = "物资(二级库出库）")
+    @TableField(exist = false)
+    private List<StockOutboundMaterials> stockOutboundMaterialsList;
+    /**出库合计*/
+    @ApiModelProperty(value = "物资出库合计")
+    @TableField(exist = false)
+    private Integer totalCount;
+    /**出库操作用户ID*/
+    @ApiModelProperty(value = "出库操作用户ID")
+    @TableField(exist = false)
+    @Dict(dictTable ="sys_user",dicText = "realname",dicCode = "id")
+    private  String  userId;
+    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm")
+    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm")
+    @ApiModelProperty(value = "出库时间")
+    private  java.util.Date  outTime;
 }

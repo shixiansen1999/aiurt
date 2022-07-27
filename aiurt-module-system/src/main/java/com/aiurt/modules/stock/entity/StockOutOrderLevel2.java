@@ -91,7 +91,7 @@ public class StockOutOrderLevel2 extends DictEntity {
 	/**保管仓库编号*/
 	@Excel(name = "保管仓库编号")
 	@ApiModelProperty(value = "保管仓库编号")
-	@Dict(dictTable ="stock_level2_info",dicText = "warehouse_name",dicCode = "warehouse_code")
+	@Dict(dictTable ="spare_part_stock_info",dicText = "warehouse_name",dicCode = "warehouse_code")
 	private  String  custodialWarehouseCode;
 
 	/**创建人*/

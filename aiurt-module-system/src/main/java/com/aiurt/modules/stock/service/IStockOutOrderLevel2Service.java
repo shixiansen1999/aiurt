@@ -1,5 +1,6 @@
 package com.aiurt.modules.stock.service;
 
+import com.aiurt.modules.sparepart.entity.SparePartApply;
 import com.aiurt.modules.stock.entity.StockInOrderLevel2;
 import com.aiurt.modules.stock.entity.StockOutOrderLevel2;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -23,18 +24,22 @@ import java.text.ParseException;
 public interface IStockOutOrderLevel2Service extends IService<StockOutOrderLevel2> {
 
     /**
-     * 导出
-     * @param ids
-     * @param request
-     * @param response
-     */
-    void eqExport(String ids, HttpServletRequest request, HttpServletResponse response);
-
-    /**
      * 分页查询
      * @param page
      * @param stockOutOrderLevel2
      * @return
      */
     IPage<StockOutOrderLevel2> pageList(Page<StockOutOrderLevel2> page, StockOutOrderLevel2 stockOutOrderLevel2);
+    /**
+     * 获取物资列表
+     * @param id
+     * @return
+     */
+    SparePartApply getList(String id);
+
+    /**
+     * 确认出库
+     * @param sparePartApply
+     */
+    void confirmOutOrder(SparePartApply sparePartApply);
 }

@@ -2,10 +2,7 @@ package com.aiurt.modules.stock.entity;
 
 import com.aiurt.common.aspect.annotation.Dict;
 import com.aiurt.modules.basic.entity.DictEntity;
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableLogic;
-import com.baomidou.mybatisplus.annotation.TableName;
+import com.baomidou.mybatisplus.annotation.*;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
@@ -91,4 +88,77 @@ public class StockOutboundMaterials extends DictEntity {
 	@ApiModelProperty(value = "删除状态 0-未删除 1-已删除")
 	@TableLogic
 	private  Integer  delFlag;
+
+	@Excel(name = "物资分类")
+	@ApiModelProperty(value = "物资分类")
+	@TableField(exist = false)
+	private  String  baseTypeCodeCc;
+	@Excel(name = "物资分类分级翻译")
+	@ApiModelProperty(value = "物资分类分级翻译")
+	@TableField(exist = false)
+	private  String  baseTypeCodeCcName;
+
+	/**专业编码*/
+	@ApiModelProperty(value = "专业编码")
+	@Dict(dictTable ="cs_major",dicText = "major_name",dicCode = "major_code")
+	@TableField(exist = false)
+	private  String  majorCode;
+	@ApiModelProperty(value = "专业名称")
+	@TableField(exist = false)
+	private  String  majorCodeName;
+
+	/**子系统编号*/
+	@ApiModelProperty(value = "子系统编号")
+	@Dict(dictTable ="cs_subsystem",dicText = "system_name",dicCode = "system_code")
+	@TableField(exist = false)
+	private  String  systemCode;
+	@ApiModelProperty(value = "子系统名称")
+	@TableField(exist = false)
+	private  String  systemCodeName;
+
+	/**类型*/
+	@ApiModelProperty(value = "类型")
+	@Dict(dicCode = "material_type")
+	@TableField(exist = false)
+	private  String  type;
+	@ApiModelProperty(value = "类型名称")
+	@TableField(exist = false)
+	private  String  typeName;
+
+	/**名称*/
+	@ApiModelProperty(value = "物资名称")
+	@TableField(exist = false)
+	private  String  name;
+
+	/**单位*/
+	@ApiModelProperty(value = " 单位")
+	@Dict(dicCode = "materian_unit")
+	@TableField(exist = false)
+	private  String  unit;
+	@ApiModelProperty(value = "单位名称")
+	@TableField(exist = false)
+	private  String  unitName;
+
+	/**规格型号*/
+	@Excel(name = "规格型号", width = 15)
+	@ApiModelProperty(value = "规格型号")
+	@TableField(exist = false)
+	private  String  specifications;
+
+	/**生产厂商*/
+	@Excel(name = "生产厂商编码", width = 15)
+	@ApiModelProperty(value = "生产厂商编码")
+	@TableField(exist = false)
+	@Dict(dictTable ="cs_manufactor",dicText = "name",dicCode = "id")
+	private  String  manufactorCode;
+	/**生产厂商手动翻译*/
+	@Excel(name = "生产厂商名称", width = 15)
+	@ApiModelProperty(value = "生产厂商名称")
+	@TableField(exist = false)
+	private  String  manufactorCodeName;
+
+	/**单价*/
+	@Excel(name = "单价", width = 15)
+	@ApiModelProperty(value = " 单价")
+	private  String  price;
 }

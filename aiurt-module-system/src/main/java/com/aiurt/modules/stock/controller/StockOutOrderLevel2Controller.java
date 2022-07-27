@@ -1,29 +1,20 @@
 package com.aiurt.modules.stock.controller;
 
 import com.aiurt.common.aspect.annotation.AutoLog;
-import com.aiurt.common.constant.CommonConstant;
-import com.aiurt.common.exception.AiurtBootException;
-import com.aiurt.common.system.base.controller.BaseController;
 import com.aiurt.modules.sparepart.entity.SparePartApply;
-import com.aiurt.modules.sparepart.service.ISparePartApplyService;
-import com.aiurt.modules.stock.entity.StockOutOrderLevel2;
 import com.aiurt.modules.stock.entity.StockOutOrderLevel2;
 import com.aiurt.modules.stock.service.IStockOutOrderLevel2Service;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.aiurt.modules.stock.service.IStockOutboundMaterialsService;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.jeecg.common.api.vo.Result;
-import org.jeecg.common.system.query.QueryGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.text.ParseException;
 import java.util.Arrays;
 
 /**
@@ -40,8 +31,6 @@ public class StockOutOrderLevel2Controller {
 
     @Autowired
     private IStockOutOrderLevel2Service iStockOutOrderLevel2Service;
-	@Autowired
-	private ISparePartApplyService iSparePartApplyService;
     /**
      * 分页列表查询
      *
@@ -70,24 +59,27 @@ public class StockOutOrderLevel2Controller {
      * @param id
      * @return
      */
-    @ApiOperation(value = "二级库出库管理详情查询", notes = "二级库出库管理详情查询")
+    @ApiOperation(value = "二级库出库管理-详情查询", notes = "二级库出库管理-详情查询")
     @GetMapping(value = "/queryById")
     public Result<SparePartApply> queryById(@RequestParam(name = "id", required = true) String id) {
-        StockOutOrderLevel2 stockOutOrderLevel2 = iStockOutOrderLevel2Service.getById(id);
-		String applyCode = stockOutOrderLevel2.getApplyCode();
-		SparePartApply sparePartApply = iSparePartApplyService.getOne(new QueryWrapper<SparePartApply>().eq("code",applyCode).eq("del_flag", CommonConstant.DEL_FLAG_0));
+		SparePartApply sparePartApply = iStockOutOrderLevel2Service.getList(id);
 		return Result.ok(sparePartApply);
     }
 
-
-    @AutoLog(value = "二级库出库管理-导出")
-    @ApiOperation(value = "二级库出库管理-导出", notes = "二级库出库管理-导出")
-    @GetMapping(value = "/export")
-    public void eqExport(@RequestParam(name = "ids", defaultValue = "") String ids,
-                                 HttpServletRequest request,
-                                 HttpServletResponse response) {
-        iStockOutOrderLevel2Service.eqExport(ids, request, response);
-    }
+	/**
+	 * 二级库出库管理提交
+	 * @return
+	 */
+	@ApiOperation(value = "二级库出库管理-确认出库", notes = "二级库出库管理-确认出库")
+	@PostMapping(value = "/confirmOutOrder")
+	public Result<?> confirmOutOrder(@RequestBody SparePartApply sparePartApply) {
+		try {
+			iStockOutOrderLevel2Service.confirmOutOrder(sparePartApply);
+			return Result.ok("出库成功！");
+		}catch (Exception e){
+			return Result.ok("出库失败！");
+		}
+	}
 
 	/**
 	 *   添加

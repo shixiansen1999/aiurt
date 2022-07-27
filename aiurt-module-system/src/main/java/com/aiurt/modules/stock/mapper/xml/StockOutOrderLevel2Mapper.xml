@@ -4,14 +4,14 @@
     <select id="pageList" resultType="com.aiurt.modules.stock.entity.StockOutOrderLevel2">
         select sool.*
         from stock_out_order_level2 sool
-        left join stock_level2_info sli on sool.custodial_warehouse_code = sli.warehouse_code and sli.del_flag = 0
+        left join spare_part_stock_info spsi on sool.custodial_warehouse_code = spsi.warehouse_code and spsi.del_flag = 0
         <where>
             and sool.del_flag = 0
             <if test="condition.orderCode != null and condition.orderCode != ''">
                 and sool.order_code like concat(concat('%',#{condition.orderCode}),'%')
             </if>
             <if test="condition.warehouseName != null and condition.warehouseName != ''">
-                and sli.warehouse_name like concat(concat('%',#{condition.warehouseName}),'%')
+                and spsi.warehouse_name like concat(concat('%',#{condition.warehouseName}),'%')
             </if>
             <if test="condition.outTimeBegin != null and condition.outTimeEnd != null">
                 and Date(sool.out_time) &gt;= #{condition.outTimeBegin} and Date(sool.out_time) &lt;= #{condition.outTimeEnd}
