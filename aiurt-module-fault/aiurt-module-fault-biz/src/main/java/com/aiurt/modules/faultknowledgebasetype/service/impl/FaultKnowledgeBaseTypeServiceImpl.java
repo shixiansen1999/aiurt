@@ -45,15 +45,13 @@ public class FaultKnowledgeBaseTypeServiceImpl extends ServiceImpl<FaultKnowledg
         queryWrapper.eq(FaultKnowledgeBaseType::getDelFlag, "0").orderByDesc(FaultKnowledgeBaseType::getCreateTime);
         List<FaultKnowledgeBaseType> faultKnowledgeBaseTypes = faultKnowledgeBaseTypeMapper.selectList(queryWrapper);
 
+        //下面禁用数据过滤
+        boolean b = GlobalThreadLocal.setDataFilter(false);
         //用户用的专业和子系统
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         List<CsUserMajorModel> majorByUserId = commonApi.getMajorByUserId(sysUser.getId());
         List<CsUserSubsystemModel> subsystemByUserId = commonApi.getSubsystemByUserId(sysUser.getId());
-
-        //下面禁用数据过滤
-        boolean b = GlobalThreadLocal.setDataFilter(false);
         if (CollectionUtil.isNotEmpty(majorByUserId)) {
-
             List<MajorDTO> allMajor = new ArrayList<>();
             for (CsUserMajorModel major: majorByUserId) {
                 MajorDTO majorDTO = new MajorDTO();
@@ -65,7 +63,7 @@ public class FaultKnowledgeBaseTypeServiceImpl extends ServiceImpl<FaultKnowledg
                 majorDTO.setKey(majorDTO.getId());
                 majorDTO.setLabel(majorDTO.getMajorName());
                 majorDTO.setValue(majorDTO.getMajorCode());
-                List<SelectTableDTO> selectTableDTOS = new ArrayList<>();
+                List<SelectTableDTO> selectTableDTOList = new ArrayList<>();
                 //用户拥有的专业的子系统
                 if (CollectionUtil.isNotEmpty(subsystemByUserId)) {
                     for (CsUserSubsystemModel csUserSubsystemModel : subsystemByUserId) {
@@ -89,9 +87,9 @@ public class FaultKnowledgeBaseTypeServiceImpl extends ServiceImpl<FaultKnowledg
                         });
                         List<SelectTableDTO> treeRes = getTreeRes(childrenTress, 0);
                         selectTableDTO.setChildren(treeRes);
-                        selectTableDTOS.add(selectTableDTO);
+                        selectTableDTOList.add(selectTableDTO);
                     }
-                    majorDTO.setChildren(selectTableDTOS);
+                    majorDTO.setChildren(selectTableDTOList);
                 } else {
                     //获取子节点
                     List<FaultKnowledgeBaseType> baseTypeList = faultKnowledgeBaseTypes.stream().filter(f -> f.getMajorCode().equals(majorDTO.getMajorCode())).collect(Collectors.toList());
