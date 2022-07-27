@@ -7,6 +7,7 @@
     </select>
 
 <select id="getSubsystemByUserId" resultType="org.jeecg.common.system.vo.CsUserSubsystemModel">
-    select cus.id ,cus.user_id,cus.system_id,cs.system_code ,cs.system_name from cs_user_subsystem cus left join cs_subsystem cs on cs.id = cus.system_id where cus.user_id = #{id}
+    select cus.id ,cus.user_id,cus.system_id,cs.system_code ,cs.system_name from cs_user_subsystem cus left join cs_subsystem cs on cs.id = cus.system_id
+    where cs.del_flag = 0 and cus.user_id = #{id}
 </select>
 </mapper>
