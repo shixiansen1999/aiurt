@@ -1,96 +1,124 @@
 package com.aiurt.modules.sparepart.entity;
 
+import java.io.Serializable;
+import java.io.UnsupportedEncodingException;
 import java.util.Date;
+import java.math.BigDecimal;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.experimental.Accessors;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.jeecgframework.poi.excel.annotation.Excel;
+import com.aiurt.common.aspect.annotation.Dict;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
+import lombok.EqualsAndHashCode;
+import lombok.experimental.Accessors;
 
 /**
- * @Description: 备件报损
- * @Author: swsc
- * @Date:   2021-09-23
+ * @Description: spare_part_scrap
+ * @Author: aiurt
+ * @Date:   2022-07-26
  * @Version: V1.0
  */
 @Data
 @TableName("spare_part_scrap")
-@EqualsAndHashCode(callSuper = false)
 @Accessors(chain = true)
-@ApiModel(value="spare_part_scrap对象", description="备件报损")
-public class SparePartScrap {
+@EqualsAndHashCode(callSuper = false)
+@ApiModel(value="spare_part_scrap对象", description="spare_part_scrap")
+public class SparePartScrap implements Serializable {
+    private static final long serialVersionUID = 1L;
 
 	/**主键id*/
-	@TableId(type= IdType.AUTO)
+	@TableId(type = IdType.ASSIGN_ID)
     @ApiModelProperty(value = "主键id")
-	private  Long  id;
-
+    private java.lang.String id;
 	/**物资编号*/
 	@Excel(name = "物资编号", width = 15)
     @ApiModelProperty(value = "物资编号")
-	private  String  materialCode;
-
+    private java.lang.String materialCode;
 	/**报废数量*/
 	@Excel(name = "报废数量", width = 15)
     @ApiModelProperty(value = "报废数量")
-	private  Integer  num;
-
+    private java.lang.Integer num;
+	/**报损时间*/
+	@Excel(name = "报损时间", width = 15, format = "yyyy-MM-dd")
+	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
+    @DateTimeFormat(pattern="yyyy-MM-dd")
+    @ApiModelProperty(value = "报损时间")
+    private java.util.Date scrapTime;
 	/**报损原因*/
 	@Excel(name = "报损原因", width = 15)
     @ApiModelProperty(value = "报损原因")
-	private  String  reason;
-
-	/**状态（0-未处理 1-报修 2-报废）*/
-	@Excel(name = "状态（0-未处理 1-报修 2-报废）", width = 15)
-    @ApiModelProperty(value = "状态（0-未处理 1-报修 2-报废）")
-	private  Integer  status;
-
+    private java.lang.String reason;
+	/**状态：1待报损、2待确认、3已确认*/
+	@Excel(name = "状态：1待报损、2待确认、3已确认", width = 15)
+    @ApiModelProperty(value = "状态：1待报损、2待确认、3已确认")
+    private java.lang.Integer status;
+	/**线路编号*/
+	@Excel(name = "线路编号", width = 15)
+    @ApiModelProperty(value = "线路编号")
+    private java.lang.String lineCode;
+	/**站点编号*/
+	@Excel(name = "站点编号", width = 15)
+    @ApiModelProperty(value = "站点编号")
+    private java.lang.String stationCode;
+	/**班组id*/
+	@Excel(name = "班组id", width = 15)
+    @ApiModelProperty(value = "班组id")
+    private java.lang.String orgId;
+	/**保管人*/
+	@Excel(name = "保管人", width = 15)
+    @ApiModelProperty(value = "保管人")
+    private java.lang.String keepPerson;
+	/**报修/报废原因*/
+	@Excel(name = "报修/报废原因", width = 15)
+    @ApiModelProperty(value = "报修/报废原因")
+    private java.lang.String scrapReason;
+	/**送修时间*/
+	@Excel(name = "送修时间", width = 15, format = "yyyy-MM-dd")
+	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
+    @DateTimeFormat(pattern="yyyy-MM-dd")
+    @ApiModelProperty(value = "送修时间")
+    private java.util.Date repairTime;
+	/**送修部门*/
+	@Excel(name = "送修部门", width = 15)
+    @ApiModelProperty(value = "送修部门")
+    private java.lang.String scrapDepart;
+	/**购置日期*/
+	@Excel(name = "购置日期", width = 15, format = "yyyy-MM-dd")
+	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
+    @DateTimeFormat(pattern="yyyy-MM-dd")
+    @ApiModelProperty(value = "购置日期")
+    private java.util.Date buyTime;
+	/**规定年限*/
+	@Excel(name = "规定年限", width = 15)
+    @ApiModelProperty(value = "规定年限")
+    private java.lang.Integer serviceLife;
+	/**使用年限*/
+	@Excel(name = "使用年限", width = 15)
+    @ApiModelProperty(value = "使用年限")
+    private java.lang.Integer useLife;
 	/**删除状态(0.未删除 1.已删除)*/
 	@Excel(name = "删除状态(0.未删除 1.已删除)", width = 15)
     @ApiModelProperty(value = "删除状态(0.未删除 1.已删除)")
-	private  Integer  delFlag;
-
+    private java.lang.Integer delFlag;
 	/**创建人*/
-	@Excel(name = "创建人", width = 15)
     @ApiModelProperty(value = "创建人")
-	private  String  createBy;
-
+    private java.lang.String createBy;
 	/**修改人*/
-	@Excel(name = "修改人", width = 15)
     @ApiModelProperty(value = "修改人")
-	private  String  updateBy;
-
+    private java.lang.String updateBy;
 	/**创建时间*/
-	@Excel(name = "创建时间", width = 20, format = "yyyy-MM-dd HH:mm:ss")
-	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
-    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
+	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
+    @DateTimeFormat(pattern="yyyy-MM-dd")
     @ApiModelProperty(value = "创建时间")
-	private  Date  createTime;
-
+    private java.util.Date createTime;
 	/**修改时间*/
-	@Excel(name = "修改时间", width = 20, format = "yyyy-MM-dd HH:mm:ss")
-	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
-    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
+	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
+    @DateTimeFormat(pattern="yyyy-MM-dd")
     @ApiModelProperty(value = "修改时间")
-	private  Date  updateTime;
-
-
-    public static final String ID = "id";
-    public static final String MATERIAL_CODE = "material_code";
-    public static final String NUM = "num";
-    public static final String REASON = "reason";
-    public static final String STATUS = "status";
-    public static final String DEL_FLAG = "del_flag";
-    public static final String CREATE_BY = "create_by";
-    public static final String UPDATE_BY = "update_by";
-    public static final String CREATE_TIME = "create_time";
-    public static final String UPDATE_TIME = "update_time";
-
-
+    private java.util.Date updateTime;
 }

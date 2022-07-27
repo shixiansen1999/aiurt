@@ -1,15 +1,25 @@
 package com.aiurt.modules.sparepart.controller;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import com.aiurt.modules.sparepart.entity.SparePartInOrder;
+import com.aiurt.modules.sparepart.entity.dto.StockApplyExcel;
 import com.aiurt.modules.sparepart.service.ISparePartInOrderService;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import io.swagger.annotations.ApiParam;
+import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
 import lombok.extern.slf4j.Slf4j;
 import com.aiurt.common.system.base.controller.BaseController;
+import org.jeecg.common.system.vo.LoginUser;
+import org.jeecgframework.poi.excel.def.NormalExcelConstants;
+import org.jeecgframework.poi.excel.entity.ExportParams;
+import org.jeecgframework.poi.excel.view.JeecgEntityExcelView;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
@@ -50,50 +60,35 @@ public class SparePartInOrderController extends BaseController<SparePartInOrder,
 /*		QueryWrapper<SparePartInOrder> queryWrapper = QueryGenerator.initQueryWrapper(sparePartInOrder, req.getParameterMap());*/
 		Page<SparePartInOrder> page = new Page<SparePartInOrder>(pageNo, pageSize);
 		List<SparePartInOrder> list = sparePartInOrderService.selectList(page, sparePartInOrder);
+		list = list.stream().distinct().collect(Collectors.toList());
         page.setRecords(list);
 		return Result.OK(page);
 	}
 
 	/**
-	 *   添加
+	 *  确认
 	 *
 	 * @param sparePartInOrder
 	 * @return
 	 */
-	@AutoLog(value = "spare_part_in_order-添加")
-	@ApiOperation(value="spare_part_in_order-添加", notes="spare_part_in_order-添加")
-	@PostMapping(value = "/add")
-	public Result<String> add(@RequestBody SparePartInOrder sparePartInOrder) {
-		sparePartInOrderService.save(sparePartInOrder);
-		return Result.OK("添加成功！");
-	}
-
-	/**
-	 *  编辑
-	 *
-	 * @param sparePartInOrder
-	 * @return
-	 */
-	@AutoLog(value = "spare_part_in_order-编辑")
-	@ApiOperation(value="spare_part_in_order-编辑", notes="spare_part_in_order-编辑")
+	@AutoLog(value = "spare_part_in_order-确认")
+	@ApiOperation(value="spare_part_in_order-确认", notes="spare_part_in_order-确认")
 	@RequestMapping(value = "/edit", method = {RequestMethod.PUT,RequestMethod.POST})
-	public Result<String> edit(@RequestBody SparePartInOrder sparePartInOrder) {
-		sparePartInOrderService.updateById(sparePartInOrder);
-		return Result.OK("编辑成功!");
+	public Result<?> edit(@RequestBody SparePartInOrder sparePartInOrder) {
+		return sparePartInOrderService.update(sparePartInOrder);
 	}
 
 	/**
-	 *   通过id删除
+	 *  批量入库
 	 *
-	 * @param id
+	 * @param list
 	 * @return
 	 */
-	@AutoLog(value = "spare_part_in_order-通过id删除")
-	@ApiOperation(value="spare_part_in_order-通过id删除", notes="spare_part_in_order-通过id删除")
-	@DeleteMapping(value = "/delete")
-	public Result<String> delete(@RequestParam(name="id",required=true) String id) {
-		sparePartInOrderService.removeById(id);
-		return Result.OK("删除成功!");
+	@AutoLog(value = "spare_part_in_order-批量入库")
+	@ApiOperation(value="spare_part_in_order-批量入库", notes="spare_part_in_order-批量入库")
+	@RequestMapping(value = "/batchStorage", method = {RequestMethod.PUT,RequestMethod.POST})
+	public Result<?> batchStorage(@RequestBody List<SparePartInOrder> list) {
+		return sparePartInOrderService.batchStorage(list);
 	}
 
 	/**
@@ -117,11 +112,21 @@ public class SparePartInOrderController extends BaseController<SparePartInOrder,
 	 * 导出excel
 	 *
 	 * @param request
-	 * @param sparePartInOrder
+	 * @param ids
 	 */
 	@RequestMapping(value = "/exportXls")
-	public ModelAndView exportXls(HttpServletRequest request, SparePartInOrder sparePartInOrder) {
-		return super.exportXls(request, sparePartInOrder, SparePartInOrder.class, "spare_part_in_order");
+	public ModelAndView exportXls(@ApiParam(value = "行数据ids" ,required = true) @RequestParam("ids") String ids, HttpServletRequest request, HttpServletResponse response) {
+		LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+		ModelAndView mv = new ModelAndView(new JeecgEntityExcelView());
+		SparePartInOrder sparePartInOrder = new SparePartInOrder();
+		sparePartInOrder.setIds(Arrays.asList(ids.split(",")));
+		List<SparePartInOrder> list = sparePartInOrderService.selectList(null, sparePartInOrder);
+		//导出文件名称
+		mv.addObject(NormalExcelConstants.FILE_NAME, "备件入库单列表");
+		mv.addObject(NormalExcelConstants.CLASS, SparePartInOrder.class);
+		mv.addObject(NormalExcelConstants.PARAMS, new ExportParams("备件入库单列表数据", "导出人:"+user.getRealname(), "导出信息"));
+		mv.addObject(NormalExcelConstants.DATA_LIST, list);
+		return mv;
 	}
 
 

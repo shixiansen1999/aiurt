@@ -12,19 +12,26 @@ import javax.servlet.http.HttpServletResponse;
 
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.modules.sparepart.entity.SparePartApply;
+import com.aiurt.modules.sparepart.entity.SparePartInOrder;
+import com.aiurt.modules.sparepart.entity.SparePartStock;
 import com.aiurt.modules.sparepart.entity.SparePartStockInfo;
 import com.aiurt.modules.sparepart.entity.dto.StockApplyExcel;
 import com.aiurt.modules.sparepart.service.ISparePartApplyService;
+import com.aiurt.modules.sparepart.service.ISparePartInOrderService;
+import com.aiurt.modules.sparepart.service.ISparePartStockService;
 import com.aiurt.modules.stock.entity.StockSubmitPlan;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.annotations.ApiParam;
+import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.query.QueryGenerator;
 
 import lombok.extern.slf4j.Slf4j;
 
+import org.jeecg.common.system.vo.LoginUser;
 import org.jeecgframework.poi.excel.ExcelImportUtil;
 import org.jeecgframework.poi.excel.def.NormalExcelConstants;
 import org.jeecgframework.poi.excel.entity.ExportParams;
@@ -54,6 +61,10 @@ import com.aiurt.common.aspect.annotation.AutoLog;
 public class SparePartApplyController extends BaseController<SparePartApply, ISparePartApplyService> {
 	@Autowired
 	private ISparePartApplyService sparePartApplyService;
+	 @Autowired
+	 private ISparePartInOrderService sparePartInOrderService;
+	 @Autowired
+	 private ISparePartStockService sparePartStockService;
 
 	/**
 	 * 分页列表查询
@@ -139,10 +150,22 @@ public class SparePartApplyController extends BaseController<SparePartApply, ISp
 	@DeleteMapping(value = "/delete")
 	public Result<String> delete(@RequestParam(name="id",required=true) String id) {
 		SparePartApply sparePartApply = sparePartApplyService.getById(id);
-		//判断备件管理，备件入库管理、备件库存信息是否使用  todo
-
-
-
+        //判断是否被备件入库使用
+		LambdaQueryWrapper<SparePartInOrder> wrapper = new LambdaQueryWrapper<>();
+		wrapper.eq(SparePartInOrder::getWarehouseCode,sparePartApply.getCustodialWarehouseCode());
+		wrapper.eq(SparePartInOrder::getDelFlag, CommonConstant.DEL_FLAG_0);
+		List<SparePartInOrder> list = sparePartInOrderService.list(wrapper);
+		if(!list.isEmpty()){
+			return Result.error("被备件入库使用中，不能删除!");
+		}
+		//判断是否被备件库存信息使用
+		LambdaQueryWrapper<SparePartStock> stockWrapper = new LambdaQueryWrapper<>();
+		stockWrapper.eq(SparePartStock::getWarehouseCode,sparePartApply.getCustodialWarehouseCode());
+		stockWrapper.eq(SparePartStock::getDelFlag, CommonConstant.DEL_FLAG_0);
+		List<SparePartStock> stockList = sparePartStockService.list(stockWrapper);
+		if(!stockList.isEmpty()){
+			return Result.error("被备件库存信息使用中，不能删除!");
+		}
 		sparePartApply.setDelFlag(CommonConstant.DEL_FLAG_1);
 		sparePartApplyService.updateById(sparePartApply);
 		return Result.OK("删除成功!");
@@ -175,15 +198,14 @@ public class SparePartApplyController extends BaseController<SparePartApply, ISp
 	  */
 	 @ApiOperation("导出excel")
 	 @GetMapping(value = "/exportXls")
-	 public ModelAndView exportXls(
-			 @ApiParam(value = "行数据ids" ,required = true) @RequestParam("ids") String ids,
-			 HttpServletRequest request, HttpServletResponse response) {
+	 public ModelAndView exportXls(@ApiParam(value = "行数据ids" ,required = true) @RequestParam("ids") String ids,HttpServletRequest request, HttpServletResponse response) {
+		 LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
 		 ModelAndView mv = new ModelAndView(new JeecgEntityExcelView());
 		 List<StockApplyExcel> list = sparePartApplyService.exportXls( Arrays.asList(ids.split(",")));
 		 //导出文件名称
 		 mv.addObject(NormalExcelConstants.FILE_NAME, "备件申领列表");
 		 mv.addObject(NormalExcelConstants.CLASS, StockApplyExcel.class);
-		 mv.addObject(NormalExcelConstants.PARAMS, new ExportParams("备件申领列表数据", "导出人:Jeecg", "导出信息"));
+		 mv.addObject(NormalExcelConstants.PARAMS, new ExportParams("备件申领列表数据", "导出人:"+user.getRealname(), "导出信息"));
 		 mv.addObject(NormalExcelConstants.DATA_LIST, list);
 		 return mv;
 	 }

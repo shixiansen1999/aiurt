@@ -6,7 +6,6 @@ import com.aiurt.common.enums.MaterialLendStatus;
 import com.aiurt.common.enums.MaterialTypeEnum;
 import com.aiurt.modules.sparepart.entity.SparePartInOrder;
 import com.aiurt.modules.sparepart.entity.SparePartLend;
-import com.aiurt.modules.sparepart.entity.SparePartOutOrder;
 import com.aiurt.modules.sparepart.entity.SparePartStock;
 import com.aiurt.modules.sparepart.entity.dto.SparePartLendExcel;
 import com.aiurt.modules.sparepart.entity.dto.SparePartLendQuery;
@@ -15,7 +14,6 @@ import com.aiurt.modules.sparepart.mapper.SparePartLendMapper;
 import com.aiurt.modules.sparepart.mapper.SparePartStockInfoMapper;
 import com.aiurt.modules.sparepart.service.ISparePartInOrderService;
 import com.aiurt.modules.sparepart.service.ISparePartLendService;
-import com.aiurt.modules.sparepart.service.ISparePartOutOrderService;
 import com.aiurt.modules.sparepart.service.ISparePartStockService;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 
@@ -44,8 +42,7 @@ public class SparePartLendServiceImpl extends ServiceImpl<SparePartLendMapper, S
     private SparePartLendMapper sparePartLendMapper;
     @Resource
     private ISparePartStockService iSparePartStockService;
-    @Resource
-    private ISparePartOutOrderService iSparePartOutOrderService;
+
     @Resource
     private SparePartStockInfoMapper sparePartStockInfoMapper;
     @Resource
@@ -74,11 +71,11 @@ public class SparePartLendServiceImpl extends ServiceImpl<SparePartLendMapper, S
         sparePartLend.setStatus(MaterialLendStatus.OFF_THE_STOCK.getCode());
         sparePartLendMapper.insert(sparePartLend);
         //新增出库信息
-        SparePartOutOrder sparePartOutOrder = new SparePartOutOrder();
+       /* SparePartOutOrder sparePartOutOrder = new SparePartOutOrder();
         sparePartOutOrder.setMaterialCode(sparePartLend.getMaterialCode());
         sparePartOutOrder.setNum(sparePartLend.getLendNum());
         sparePartOutOrder.setWarehouseCode(sparePartLend.getWarehouseCode());
-        iSparePartOutOrderService.save(sparePartOutOrder);
+        iSparePartOutOrderService.save(sparePartOutOrder);*/
         //库存减少
         one.setNum(one.getNum()-sparePartLend.getLendNum());
         iSparePartStockService.updateById(one);
