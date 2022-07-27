@@ -831,6 +831,9 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
             taskStandard.setSubsystemCode(l.getSubsystemCode());
             taskStandard.setDeviceTypeCode(l.getDeviceTypeCode());
             patrolTaskStandardMapper.insert(taskStandard);
+            // 新任务标准ID
+            String taskStandardId = taskStandard.getId();
+
             // 根据原任务ID和原任务标准关联表ID 获取原巡检任务设备关联表信息
             QueryWrapper<PatrolTaskDevice> taskDeviceWrapper = new QueryWrapper<>();
             taskDeviceWrapper.lambda().eq(PatrolTaskDevice::getTaskId, taskId)
@@ -861,6 +864,38 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
                         // 检查状态-初始为未开始
                         taskDevice.setStatus(PatrolConstant.BILL_INIT);
                         patrolTaskDeviceMapper.insert(taskDevice);
+
+                        // 根据原任务设备表主键ID获取原工单检查项目内容列表
+                        QueryWrapper<PatrolCheckResult> resultWrapper = new QueryWrapper<>();
+                        resultWrapper.lambda().eq(PatrolCheckResult::getTaskDeviceId, d.getId());
+                        List<PatrolCheckResult> resultList = patrolCheckResultMapper.selectList(resultWrapper);
+
+                        // 新增对应工单检查项目内容
+                        List<PatrolCheckResult> newResultList = new ArrayList<>();
+                        Optional.ofNullable(resultList).orElseGet(Collections::emptyList).stream().forEach(
+                                // result: PatrolCheckResult对象
+                                result -> {
+                                    PatrolCheckResult checkResult = new PatrolCheckResult();
+                                    // 新的任务标准表ID
+                                    checkResult.setTaskStandardId(taskStandardId);
+                                    // 新的任务设备ID
+                                    checkResult.setTaskDeviceId(taskDevice.getId());
+                                    // 检查结果、字典结果值、文本填写结果、检查用户和备注为空
+                                    checkResult.setCode(result.getCode())
+                                            .setContent(result.getContent())
+                                            .setQualityStandard(result.getQualityStandard())
+                                            .setHierarchyType(result.getHierarchyType())
+                                            .setOldId(result.getOldId())
+                                            .setParentId(result.getParentId())
+                                            .setOrder(result.getOrder())
+                                            .setCheck(result.getCheck())
+                                            .setInputType(result.getInputType())
+                                            .setDictCode(result.getDictCode())
+                                            .setRegular(result.getRegular());
+                                    newResultList.add(checkResult);
+                                }
+                        );
+                        patrolCheckResultMapper.addResultList(newResultList);
                     }
             );
         });
@@ -915,10 +950,9 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         List<PatrolTaskDevice> devices = patrolTaskDeviceMapper.selectList(new LambdaQueryWrapper<PatrolTaskDevice>().eq(PatrolTaskDevice::getTaskId, patrolTaskManualDTO.getId()));
         //删除检查项
         if (CollUtil.isNotEmpty(devices)) {
-            devices.stream().forEach(d->{
-                List<PatrolCheckResult> patrolCheckResult = patrolCheckResultMapper.selectList(new LambdaQueryWrapper<PatrolCheckResult>().eq(PatrolCheckResult::getTaskDeviceId,d.getId()));
-                if(ObjectUtil.isNotEmpty(patrolCheckResult))
-                {
+            devices.stream().forEach(d -> {
+                List<PatrolCheckResult> patrolCheckResult = patrolCheckResultMapper.selectList(new LambdaQueryWrapper<PatrolCheckResult>().eq(PatrolCheckResult::getTaskDeviceId, d.getId()));
+                if (ObjectUtil.isNotEmpty(patrolCheckResult)) {
                     patrolCheckResultMapper.deleteBatchIds(patrolCheckResult);
                 }
             });
