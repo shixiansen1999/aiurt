@@ -79,15 +79,15 @@ public class RepairPool implements Serializable {
      * 开始时间
      */
     @Excel(name = "开始时间", width = 15, format = "yyyy-MM-dd HH:mm:ss")
-    @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd HH:mm")
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @ApiModelProperty(value = "开始时间",required = false)
     private java.util.Date startTime;
     /**
      * 结束时间
      */
-    @Excel(name = "结束时间", width = 15, format = "yyyy-MM-dd HH:mm:ss")
-    @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd HH:mm:ss")
+    @Excel(name = "结束时间", width = 15, format = "yyyy-MM-dd HH:mm")
+    @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd HH:mm")
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @ApiModelProperty(value = "结束时间",required = false)
     private java.util.Date endTime;
