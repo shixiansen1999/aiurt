@@ -22,7 +22,7 @@
         <if test="modules !=null and modules==1">
             and  sd.modules =1
         </if>
-        <if test="statusItem !=null and modules==2">
+        <if test="modules !=null and modules==2">
             and  sd.modules =2
         </if>
     </select>
