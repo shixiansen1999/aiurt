@@ -40,7 +40,7 @@ private PatrolTaskStandardMapper patrolTaskStandardMapper;
     @Override
     public List<PatrolStandardItems> queryPageList(String id) {
         //1.查询表中未删除的所有的数据
-        List<PatrolStandardItems> allList = baseMapper.selectList(id);
+        List<PatrolStandardItems> allList = baseMapper.selectItemList(id);
         //2.找到所有根节点 ParentId=0
         List<PatrolStandardItems> rooList = allList.stream().filter(r -> "0".equals(r.getParentId())).collect(Collectors.toList());
         //3.找到所有非根节点
@@ -67,7 +67,7 @@ private PatrolTaskStandardMapper patrolTaskStandardMapper;
 
     @Override
     public Boolean check(Integer order, String parentId, String id) {
-        List<PatrolStandardItems> allList = baseMapper.selectList(id);
+        List<PatrolStandardItems> allList = baseMapper.selectItemList(id);
         List<PatrolStandardItems> rooList = allList.stream().filter(r -> r.getParentId().equals(parentId)).collect(Collectors.toList());
         for (PatrolStandardItems r:rooList) {
             if (r.getOrder().equals(order)){

@@ -7,6 +7,8 @@ import com.aiurt.boot.constant.PatrolConstant;
 import com.aiurt.boot.plan.entity.*;
 import com.aiurt.boot.plan.service.*;
 import com.aiurt.boot.standard.entity.PatrolStandard;
+import com.aiurt.boot.standard.entity.PatrolStandardItems;
+import com.aiurt.boot.standard.service.IPatrolStandardItemsService;
 import com.aiurt.boot.standard.service.IPatrolStandardService;
 import com.aiurt.boot.task.entity.*;
 import com.aiurt.boot.task.service.*;
@@ -52,6 +54,10 @@ public class TaskPool implements Job {
     private IPatrolStandardService patrolStandardService;
     @Autowired
     private IPatrolPlanDeviceService patrolPlanDeviceService;
+    @Autowired
+    private IPatrolStandardItemsService patrolStandardItemsService;
+    @Autowired
+    private IPatrolCheckResultService patrolCheckResultService;
 
 
     @Override
@@ -194,7 +200,7 @@ public class TaskPool implements Job {
 
         // 遍历计划中的每一个标准生成工单数据
         planStandardList.stream().forEach(l -> {
-            // 根据巡检编号获取巡检记录
+            // 根据巡检标准编号获取巡检标准记录
             QueryWrapper<PatrolStandard> standardWrapper = new QueryWrapper<>();
             standardWrapper.lambda().eq(PatrolStandard::getCode, l.getStandardCode());
             PatrolStandard standard = patrolStandardService.getOne(standardWrapper);
@@ -203,6 +209,7 @@ public class TaskPool implements Job {
             String taskStandardId = saveTaskStandardData(task, l, standard);
 
             Integer deviceType = standard.getDeviceType();
+
             if (PatrolConstant.DEVICE_INDEPENDENCE.equals(deviceType)) {
                 // 与设备无关
                 // 根据计划ID获取计划
@@ -238,6 +245,12 @@ public class TaskPool implements Job {
                     patrolTaskDevice.setPositionCode(station.getPositionCode());
                     // 保存巡检单信息
                     patrolTaskDeviceService.save(patrolTaskDevice);
+
+                    String taskDeviceId = patrolTaskDevice.getId();
+                    // 生成巡检单的检查项内容
+                    List<PatrolCheckResult> resultList = copyCheckItems(taskStandardId, taskDeviceId);
+                    patrolCheckResultService.saveBatch(resultList);
+
                 });
             } else {
                 // 与设备相关，根据设备和标准生成巡检单数据
@@ -279,10 +292,54 @@ public class TaskPool implements Job {
                                     }
                                     // 保存巡检单信息
                                     patrolTaskDeviceService.save(patrolTaskDevice);
+
+                                    String taskDeviceId = patrolTaskDevice.getId();
+                                    // 生成巡检单的检查项内容
+                                    List<PatrolCheckResult> resultList = copyCheckItems(taskStandardId, taskDeviceId);
+                                    patrolCheckResultService.saveBatch(resultList);
                                 });
 
             }
         });
+    }
+
+    /**
+     * 生成巡检单的检查项内容
+     *
+     * @param taskStandardId
+     * @param taskDeviceId
+     * @return
+     */
+    private List<PatrolCheckResult> copyCheckItems(String taskStandardId, String taskDeviceId) {
+
+        //根据任务设备的任务ID获取任务标准表主键和巡检标准表ID
+        PatrolTaskStandard taskStandard = patrolTaskStandardService.getById(taskStandardId);
+        String standardId = taskStandard.getStandardId();
+
+        //根据巡检标准表ID获取巡检标准项目列表并添加到结果表中
+        List<PatrolStandardItems> patrolStandardItems = patrolStandardItemsService.lambdaQuery()
+                .eq(PatrolStandardItems::getStandardId, standardId).list();
+
+        List<PatrolCheckResult> addResultList = new ArrayList<>();
+        Optional.ofNullable(patrolStandardItems).orElseGet(Collections::emptyList).stream().forEach(l -> {
+            PatrolCheckResult result = new PatrolCheckResult();
+            result.setTaskStandardId(taskStandard.getId());   // 任务标准关联表ID
+            result.setTaskDeviceId(taskDeviceId); // 任务设备关联表ID
+            result.setCode(l.getCode());    // 巡检项编号
+            result.setContent(l.getContent());  // 巡检项内容
+            result.setQualityStandard(l.getQualityStandard());  // 质量标准
+            result.setHierarchyType(l.getHierarchyType());  // 层级类型
+            result.setOldId(l.getId()); // 原标准项目表ID
+            result.setParentId(l.getParentId()); //父级ID
+            result.setOrder(l.getOrder());  // 内容排序
+            result.setCheck(l.getCheck());  // 是否为巡检项目
+            result.setInputType(l.getInputType());  // 填写数据类型
+            result.setDictCode(l.getDictCode());    // 关联的数据字典
+            result.setRegular(l.getRegular());  // 数据校验表达式
+            result.setDelFlag(0);  // 数据校验表达式
+            addResultList.add(result);
+        });
+        return addResultList;
     }
 
     /**

@@ -15,7 +15,7 @@ import java.util.List;
  */
 public interface PatrolStandardItemsMapper extends BaseMapper<PatrolStandardItems> {
 
-    List<PatrolStandardItems> selectList(String id);
+    List<PatrolStandardItems> selectItemList(String id);
 
     /**
      * app-获取巡检项目信息
