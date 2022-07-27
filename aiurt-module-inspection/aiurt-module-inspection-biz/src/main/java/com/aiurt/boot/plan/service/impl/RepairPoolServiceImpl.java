@@ -161,10 +161,10 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
         if (ObjectUtil.isEmpty(selectPlanReq)) {
             return queryWrapper;
         }
-        if(ObjectUtil.isNotEmpty(selectPlanReq.getStartTime())){
+        if (ObjectUtil.isNotEmpty(selectPlanReq.getStartTime())) {
             queryWrapper.ge("start_time", DateUtil.beginOfDay(selectPlanReq.getStartTime()));
         }
-        if(ObjectUtil.isNotEmpty(selectPlanReq.getEndTime())){
+        if (ObjectUtil.isNotEmpty(selectPlanReq.getEndTime())) {
             queryWrapper.le("start_time", DateUtil.endOfDay(selectPlanReq.getEndTime()));
         }
         queryWrapper.eq("is_manual", InspectionConstant.NO_IS_MANUAL);
@@ -645,11 +645,17 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
                 new LambdaQueryWrapper<RepairPoolOrgRel>()
                         .eq(RepairPoolOrgRel::getRepairPoolCode, repairPool.getCode())
                         .eq(RepairPoolOrgRel::getDelFlag, CommonConstant.DEL_FLAG_0));
-        if (CollUtil.isNotEmpty(repairPoolOrgRels)) {
-            String orgStrs = StrUtil.join(",", repairPoolOrgRels.stream().map(RepairPoolOrgRel::getOrgCode).collect(Collectors.toList()));
-            result = manager.queryUserByOrdCode(orgStrs);
-        }
 
+        if (CollUtil.isNotEmpty(repairPoolOrgRels)) {
+            List<String> orgList = repairPoolOrgRels.stream().map(RepairPoolOrgRel::getOrgCode).collect(Collectors.toList());
+            if (CollUtil.isNotEmpty(orgList)) {
+                List<String> list = manager.handleMixedOrgCode(orgList);
+                if (CollUtil.isNotEmpty(list)) {
+                    String orgStrs = StrUtil.join(",", list);
+                    result = manager.queryUserByOrdCode(orgStrs);
+                }
+            }
+        }
         return result;
     }
 
@@ -820,8 +826,7 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
 
         if (CollUtil.isNotEmpty(repairPoolOrgRels)) {
             List<String> orgCodes = repairPoolOrgRels.stream().map(RepairPoolOrgRel::getOrgCode).collect(Collectors.toList());
-            // todo 需要查找当前登录管理的组织机构比较后再查询
-            resutlt = sysBaseApi.getUserByDepIds(orgCodes);
+            resutlt = sysBaseApi.getUserByDepIds(manager.handleMixedOrgCode(orgCodes));
         }
         return resutlt;
     }
@@ -1233,7 +1238,7 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
                     List<RepairPoolDeviceRel> repairPoolDeviceRels = repairPoolDeviceRel.selectList(
                             new LambdaQueryWrapper<RepairPoolDeviceRel>()
                                     .eq(RepairPoolDeviceRel::getRepairPoolRelId, sl.getId()));
-                    if(CollUtil.isNotEmpty(repairPoolDeviceRels)){
+                    if (CollUtil.isNotEmpty(repairPoolDeviceRels)) {
                         repairPoolCodes.setDeviceCodes(repairPoolDeviceRels.stream().map(RepairPoolDeviceRel::getDeviceCode).collect(Collectors.toList()));
                     }
                     repairPoolCodes.setSpecifyDevice(CollUtil.isNotEmpty(repairPoolDeviceRels) ? "是" : "否");

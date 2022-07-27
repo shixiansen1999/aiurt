@@ -15,14 +15,13 @@ import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.system.api.ISysBaseAPI;
+import org.jeecg.common.system.vo.CsUserDepartModel;
 import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author wgp
@@ -261,5 +260,38 @@ public class InspectionManager {
 
         return result;
     }
+
+    /**
+     * 将部门编码集合和(当前登录人部门、管理部门)作交集处理
+     *
+     * @param orgCodes
+     * @return
+     */
+    public List<String> handleMixedOrgCode(List<String> orgCodes) {
+        List<String> result = new ArrayList<>();
+        if (CollUtil.isEmpty(orgCodes)) {
+            return result;
+        }
+        LoginUser loginUser = checkLogin();
+        List<CsUserDepartModel> departByUserId = sysBaseApi.getDepartByUserId(loginUser.getId());
+        List<String> manageOrgs = new ArrayList<>();
+
+        if (CollUtil.isNotEmpty(departByUserId)) {
+            manageOrgs = departByUserId.stream().map(CsUserDepartModel::getOrgCode).collect(Collectors.toList());
+        }
+
+        if (StrUtil.isNotEmpty(loginUser.getOrgCode())) {
+            manageOrgs.add(loginUser.getOrgCode());
+        }
+
+        if (CollUtil.isNotEmpty(manageOrgs)) {
+            List<String> finalManageOrgs = manageOrgs;
+            Set<String> orgSet = orgCodes.stream().filter(org -> finalManageOrgs.contains(org)).collect(Collectors.toSet());
+            result.addAll(orgSet);
+        }
+
+        return result;
+    }
+
 
 }

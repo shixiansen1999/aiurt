@@ -1,5 +1,6 @@
 package com.aiurt.modules.system.service.impl;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.api.dto.message.*;
@@ -1229,14 +1230,16 @@ public class SysBaseApiImpl implements ISysBaseAPI {
      */
     @Override
     public List<LoginUser> getUserByDepIds(List<String> deptCodes) {
-        List<SysUser> userList = userMapper.selectList(new QueryWrapper<SysUser>().in("org_code", deptCodes).eq("status", 1).eq("del_flag", 0));
         List<LoginUser> list = new ArrayList<>();
-        for (SysUser user : userList) {
-            LoginUser loginUser = new LoginUser();
-            loginUser.setId(user.getId());
-            loginUser.setUsername(user.getUsername());
-            loginUser.setRealname(user.getRealname());
-            list.add(loginUser);
+        if(CollUtil.isNotEmpty(deptCodes)){
+            List<SysUser> userList = userMapper.selectList(new QueryWrapper<SysUser>().in("org_code", deptCodes).eq("status", 1).eq("del_flag", 0));
+            for (SysUser user : userList) {
+                LoginUser loginUser = new LoginUser();
+                loginUser.setId(user.getId());
+                loginUser.setUsername(user.getUsername());
+                loginUser.setRealname(user.getRealname());
+                list.add(loginUser);
+            }
         }
         return list;
     }
