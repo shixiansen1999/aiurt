@@ -79,6 +79,10 @@ public class WorkLogDTO extends WorkLogResult {
     @Excel(name = "配合施工地点", width = 15)
     @ApiModelProperty(value = "配合施工地点")
     private  String  assortLocation;
+    /**配合施工地点*/
+    @ApiModelProperty(value = "配合施工地点")
+    private  String  assortLocationName;
+
 
     /**配合施工单位*/
     @Excel(name = "配合施工单位", width = 15)

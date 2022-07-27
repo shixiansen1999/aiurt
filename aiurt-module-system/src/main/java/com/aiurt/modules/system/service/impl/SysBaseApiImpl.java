@@ -2,6 +2,7 @@ package com.aiurt.modules.system.service.impl;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.api.dto.message.*;
 import com.aiurt.common.api.dto.quartz.QuartzJobDTO;
@@ -1427,5 +1428,26 @@ public class SysBaseApiImpl implements ISysBaseAPI {
         SysDepartModel sysDepartModel = new SysDepartModel();
         BeanUtils.copyProperties(sysDepart, sysDepartModel);
         return sysDepartModel;
+    }
+
+    @Override
+    public String getPosition(String code) {
+        String name =null;
+        String lineName= csStationMapper.getLineName(code);
+        String stationName= csStationMapper.getStationName(code);
+        String positionName= csStationMapper.getPositionName(code);
+        if(ObjectUtil.isNotEmpty(lineName))
+        {
+            name= lineName;
+        }
+        if(ObjectUtil.isNotEmpty(stationName))
+        {
+            name = stationName;
+        }
+        if(ObjectUtil.isNotEmpty(positionName))
+        {
+            name = positionName;
+        }
+        return name;
     }
 }

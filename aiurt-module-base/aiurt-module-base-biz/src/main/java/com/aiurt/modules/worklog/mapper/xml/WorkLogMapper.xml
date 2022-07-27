@@ -121,7 +121,7 @@
 	        wl.create_time DESC
     </select>
 
-    <update id="deleteOne" parameterType="java.lang.Integer">
+    <update id="deleteOne" parameterType="java.lang.String">
         UPDATE t_work_log SET del_flag = '1' WHERE id = #{id}
     </update>
 

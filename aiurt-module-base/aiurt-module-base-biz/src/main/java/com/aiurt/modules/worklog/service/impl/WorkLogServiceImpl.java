@@ -190,7 +190,9 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
         if (dto.getSubmitTime() == null){
             depot.setSubmitTime(new Date());
         }
-        depot.setSubmitTime(dto.getSubmitTime());
+        LocalDateTime localDateTime = LocalDateTime.now();
+        Date date = Date.from(localDateTime.atZone(ZoneId.systemDefault()).toInstant());
+        depot.setSubmitTime(date);
         depot.setWorkContent(dto.getWorkContent());
         depot.setContent(dto.getContent());
         if(ObjectUtil.isNotEmpty(dto.getAssortUserNames()))
@@ -445,7 +447,7 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
      * @return
      */
     @Override
-    public Result<?> deleteById(Integer id) {
+    public Result<?> deleteById(String id) {
         WorkLog workLog = this.getOne(new QueryWrapper<WorkLog>().eq(WorkLog.ID, id), false);
         if (workLog.getConfirmStatus().equals(WorkLogConfirmStatusEnum.YQR.getCode())) {
             throw new AiurtBootException("已确认状态不能删除");
@@ -464,6 +466,11 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
         WorkLogResult workLog = depotMapper.queryById(id);
         WorkLogDTO workLogDTO = new WorkLogDTO();
         BeanUtil.copyProperties(workLog,workLogDTO);
+        if(ObjectUtil.isNotEmpty(workLog.getAssortLocation()))
+        {
+            String position = iSysBaseAPI.getPosition(workLog.getAssortLocation());
+            workLogDTO.setAssortLocationName(position);
+        }
         if(ObjectUtil.isNotEmpty(workLog.getSucceedId()))
         {
             LoginUser successor = iSysBaseAPI.getUserById(workLog.getSucceedId());
@@ -614,13 +621,19 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
         workLog.setLogTime(dto.getLogTime());
         workLog.setWorkContent(dto.getWorkContent());
         workLog.setContent(dto.getContent());
-        LoginUser queryUser = iSysBaseAPI.queryUser(dto.getSucceedUserName());
-        workLog.setSucceedId(queryUser.getId());
+        if(ObjectUtil.isNotEmpty(dto.getSucceedUserName()))
+        {
+            LoginUser queryUser = iSysBaseAPI.queryUser(dto.getSucceedUserName());
+            workLog.setSucceedId(queryUser.getId());
+        }
+        if(ObjectUtil.isNotEmpty(dto.getAssortUserNames()))
+        {
+            List<JSONObject> lists = iSysBaseAPI.queryUsersByUsernames(dto.getAssortUserNames());
+            String id= lists.stream().map(e->e.getString("id")).collect(Collectors.joining(","));
+            workLog.setAssortIds(id);
+        }
         workLog.setAssortTime(dto.getAssortTime());
         workLog.setAssortLocation(dto.getAssortLocation());
-        List<JSONObject> lists = iSysBaseAPI.queryUsersByUsernames(dto.getAssortUserNames());
-        String id= lists.stream().map(e->e.getString("id")).collect(Collectors.joining(","));
-        workLog.setAssortIds(id);
         workLog.setAssortNum(dto.getAssortNum());
         workLog.setAssortUnit(dto.getAssortUnit());
         workLog.setAssortContent(dto.getAssortContent());

@@ -180,10 +180,10 @@ public class BdTrainPlanServiceImpl extends ServiceImpl<BdTrainPlanMapper, BdTra
         List<ReportVO> list = baseMapper.report(page, reportReqVO);
         for (ReportVO reportVO : list) {
             //处理培训部门
-            SysDepartModel sysDepartModel = sysBaseAPI.selectAllById(reportVO.getTaskTeamId());
-            if (ObjectUtil.isNotNull(sysDepartModel)) {
-                reportVO.setSysOrgCode(sysDepartModel.getDepartName());
-            }
+//            SysDepartModel sysDepartModel = sysBaseAPI.selectAllById(reportVO.getTaskTeamId());
+//            if (ObjectUtil.isNotNull(sysDepartModel)) {
+//                reportVO.setSysOrgCode(sysDepartModel.getDepartName());
+//            }
             //根据培训任务id查询培训人员
             int trainNum = bdTrainTaskSignMapper.getByTaskId(reportVO.getTrainTaskId());
             //应到人数

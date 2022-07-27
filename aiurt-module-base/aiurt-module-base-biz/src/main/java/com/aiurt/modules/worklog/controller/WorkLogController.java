@@ -10,6 +10,7 @@ import com.aiurt.modules.worklog.entity.WorkLog;
 import com.aiurt.modules.worklog.param.LogCountParam;
 import com.aiurt.modules.worklog.param.WorkLogParam;
 import com.aiurt.modules.worklog.service.IWorkLogService;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.annotations.Api;
@@ -34,7 +35,11 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.io.IOException;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * @author cgkj0
@@ -160,7 +165,7 @@ public class WorkLogController {
     @AutoLog(value = "工作日志-通过id删除")
     @ApiOperation(value="工作日志-通过id删除", notes="工作日志-通过id删除")
     @DeleteMapping(value = "/delete")
-    public Result<?> delete(@RequestParam(name="id",required=true) Integer id) {
+    public Result<?> delete(@RequestParam(name="id",required=true) String id) {
         try {
             workLogDepotService.deleteById(id);
         } catch (Exception e) {
@@ -306,7 +311,16 @@ public class WorkLogController {
             return Result.error("请选择需审阅记录");
         }
         String[] split = ids.split(",");
-        workLogDepotService.lambdaUpdate().in(WorkLog::getId,split).update(new WorkLog().setCheckStatus(1));
+        List<WorkLog> workLogList = workLogDepotService.list(new LambdaQueryWrapper<WorkLog>().in(WorkLog::getId, split));
+        List<WorkLog> collect = workLogList.stream().filter(w -> w.getSucceedId() != null && 0 == w.getConfirmStatus()).collect(Collectors.toList());
+        if(collect.size()>0)
+            {
+                return Result.error("有接班人，需确认后，才能审批！");
+            }
+        else
+        {
+            workLogDepotService.lambdaUpdate().in(WorkLog::getId,split).update(new WorkLog().setCheckStatus(1));
+        }
         return Result.ok("审阅成功");
     }
 

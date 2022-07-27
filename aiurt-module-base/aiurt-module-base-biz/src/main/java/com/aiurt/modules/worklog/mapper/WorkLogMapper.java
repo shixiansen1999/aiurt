@@ -44,7 +44,7 @@ public interface WorkLogMapper extends BaseMapper<WorkLog> {
      * @param id
      * @return
      */
-    int deleteOne(@Param("id") Integer id);
+    int deleteOne(@Param("id") String id);
 
     /**
      * 根据id查询详情

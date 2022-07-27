@@ -62,7 +62,7 @@ public interface IWorkLogService extends IService<WorkLog> {
      * @param id
      * @return
      */
-    Result<?> deleteById (Integer id);
+    Result<?> deleteById (String id);
 
     /**
      * 根据id查询详情
