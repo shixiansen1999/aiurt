@@ -85,6 +85,7 @@ public class AutoLogAspect {
             dto.setModuleType(syslog.module().getCode());
             dto.setModuleTypeName(syslog.module().getMessage());
             dto.setLogContent(content);
+            dto.setPermissionUrl(syslog.permissionUrl());
         }
 
         //请求的方法名
@@ -109,7 +110,6 @@ public class AutoLogAspect {
         if(sysUser!=null){
             dto.setUserid(sysUser.getUsername());
             dto.setUsername(sysUser.getRealname());
-
         }
         //耗时
         dto.setCostTime(time);

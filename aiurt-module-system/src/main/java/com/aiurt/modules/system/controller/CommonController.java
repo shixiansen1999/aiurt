@@ -138,6 +138,7 @@ public class CommonController {
             String filePathId = String.format("%s?fileName=%s", sysAttachment.getId(), originalFilename);
             result.setMessage(filePathId);
             result.setSuccess(true);
+            sysAttachment.setSplicFilePath(filePathId);
             result.setResult(sysAttachment);
         }else {
             result.setMessage("上传失败！");

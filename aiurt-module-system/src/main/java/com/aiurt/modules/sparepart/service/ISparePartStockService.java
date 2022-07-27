@@ -1,23 +1,24 @@
 package com.aiurt.modules.sparepart.service;
 
+import com.aiurt.modules.sparepart.entity.SparePartInOrder;
 import com.aiurt.modules.sparepart.entity.SparePartStock;
-import com.aiurt.modules.sparepart.entity.dto.SparePartStockDTO;
-import com.aiurt.modules.sparepart.entity.vo.SpareMaterialVO;
-import com.baomidou.mybatisplus.core.metadata.IPage;
-
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 
 import java.util.List;
 
 /**
- * @Description: 备件库存
- * @Author: swsc
- * @Date:   2021-09-17
+ * @Description: spare_part_stock
+ * @Author: aiurt
+ * @Date:   2022-07-25
  * @Version: V1.0
  */
 public interface ISparePartStockService extends IService<SparePartStock> {
-
-    IPage<SparePartStockDTO> queryPageList(IPage<SparePartStockDTO> page, SparePartStockDTO sparePartStockDTO);
-
-    List<SpareMaterialVO> queryMaterialByWarehouse(String warehouseCode);
+    /**
+     * 查询列表
+     * @param page
+     * @param sparePartInOrder
+     * @return
+     */
+    List<SparePartStock> selectList(Page page, SparePartStock sparePartStock);
 }

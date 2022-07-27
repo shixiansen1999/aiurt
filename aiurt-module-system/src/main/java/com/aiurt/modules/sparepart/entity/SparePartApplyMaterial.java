@@ -35,6 +35,14 @@ public class SparePartApplyMaterial implements Serializable {
 	@TableId(type = IdType.ASSIGN_ID)
     @ApiModelProperty(value = "自增主键id")
     private String id;
+    /**申领id*/
+    @Excel(name = "申领id", width = 15)
+    @ApiModelProperty(value = "申领id")
+    private String applyId;
+    /**二级库出库单号*/
+    @Excel(name = "二级库出库单号", width = 15)
+    @ApiModelProperty(value = "二级库出库单号")
+    private String orderCode;
 	/**申领编号*/
 	@Excel(name = "申领编号", width = 15)
     @ApiModelProperty(value = "申领编号")

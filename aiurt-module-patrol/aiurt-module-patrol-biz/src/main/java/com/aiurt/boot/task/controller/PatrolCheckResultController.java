@@ -87,27 +87,33 @@ public class PatrolCheckResultController extends BaseController<PatrolCheckResul
 	 public Result<?> patrolTaskAccessory(@RequestBody PatrolCheckDTO patrolCheckDTO,
 	 									  HttpServletRequest req) {
 		 LambdaUpdateWrapper<PatrolCheckResult> updateWrapper = new LambdaUpdateWrapper<>();
+		  PatrolCheckResult patrolCheckResult = patrolCheckResultService.getById(patrolCheckDTO.getId());
 		 LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
 		 if(ObjectUtil.isNotEmpty(patrolCheckDTO.getInputType()))
 		 {
 			 if(2==patrolCheckDTO.getInputType())
 		 	{
 				updateWrapper.set(PatrolCheckResult::getOptionValue,patrolCheckDTO.getOptionValue()).set(PatrolCheckResult::getUserId,sysUser.getId()).eq(PatrolCheckResult::getId,patrolCheckDTO.getId());
-
 			 }
 			 if(3==patrolCheckDTO.getInputType())
 			 {
-				  boolean matches = Pattern.	matches(patrolCheckDTO.getRegular(), patrolCheckDTO.getWriteValue());
+			 	if(ObjectUtil.isNotEmpty(patrolCheckResult.getRegular()))
+				{
+					boolean matches = Pattern.matches(patrolCheckDTO.getRegular(), patrolCheckDTO.getWriteValue());
+					if(matches)
+					{
+						updateWrapper.set(PatrolCheckResult::getWriteValue,patrolCheckDTO.getWriteValue()).set(PatrolCheckResult::getUserId,sysUser.getId()).eq(PatrolCheckResult::getId,patrolCheckDTO.getId());
+					}
+					else
+					{
+						return Result.error("应该在："+patrolCheckDTO.getRegular()+"的范围内");
+					}
+				}
+			 	else
+				{
+					updateWrapper.set(PatrolCheckResult::getWriteValue,patrolCheckDTO.getWriteValue()).set(PatrolCheckResult::getUserId,sysUser.getId()).eq(PatrolCheckResult::getId,patrolCheckDTO.getId());
 
-				 if(matches)
-				 {
-					 updateWrapper.set(PatrolCheckResult::getWriteValue,patrolCheckDTO.getWriteValue()).set(PatrolCheckResult::getUserId,sysUser.getId()).eq(PatrolCheckResult::getId,patrolCheckDTO.getId());
-				 }
-				 else
-				 {
-				 	return Result.error("应该在："+patrolCheckDTO.getRegular()+"的范围内");
-				 }
-
+				}
 			 }
 		 }
 		 patrolCheckResultService.update(updateWrapper);

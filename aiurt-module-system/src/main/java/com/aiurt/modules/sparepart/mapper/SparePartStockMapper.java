@@ -1,25 +1,20 @@
 package com.aiurt.modules.sparepart.mapper;
 
+import com.aiurt.modules.sparepart.entity.SparePartStock;
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import org.apache.ibatis.annotations.Param;
+import org.springframework.stereotype.Component;
+
 import java.util.List;
 
-import com.aiurt.modules.sparepart.entity.SparePartStock;
-import com.aiurt.modules.sparepart.entity.dto.SparePartStockDTO;
-import com.aiurt.modules.sparepart.entity.vo.SpareMaterialVO;
-import com.baomidou.mybatisplus.core.metadata.IPage;
-
-import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import io.lettuce.core.dynamic.annotation.Param;
-
 /**
- * @Description: 备件库存
- * @Author: swsc
- * @Date:   2021-09-17
+ * @Description: spare_part_stock
+ * @Author: aiurt
+ * @Date:   2022-07-25
  * @Version: V1.0
  */
+@Component
 public interface SparePartStockMapper extends BaseMapper<SparePartStock> {
-
-    IPage<SparePartStockDTO> queryPageList(IPage<SparePartStockDTO> page
-            , @Param("sparePartStock") SparePartStockDTO sparePartStockDTO);
-
-    List<SpareMaterialVO> queryMaterialByWarehouse(@Param("warehouseCode") String warehouseCode);
+    List<SparePartStock> readAll(Page page, @Param("stock") SparePartStock sparePartStock);
 }

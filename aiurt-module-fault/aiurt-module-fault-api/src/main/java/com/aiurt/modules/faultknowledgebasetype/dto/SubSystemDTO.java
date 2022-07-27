@@ -2,8 +2,7 @@ package com.aiurt.modules.faultknowledgebasetype.dto;
 
 import com.aiurt.common.aspect.annotation.Dict;
 import com.aiurt.modules.faultknowledgebasetype.entity.FaultKnowledgeBaseType;
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableField;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -33,4 +32,11 @@ public class SubSystemDTO {
 
     /**与子系统关联的知识库类别*/
     private List<FaultKnowledgeBaseType> faultKnowledgeBaseTypes;
+
+    @TableField(exist = false)
+    private String key;
+    @TableField(exist = false)
+    private String value;
+    @TableField(exist = false)
+    private String label;
 }
