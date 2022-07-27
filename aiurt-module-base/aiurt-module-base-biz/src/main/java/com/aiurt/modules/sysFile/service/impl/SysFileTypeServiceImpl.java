@@ -133,7 +133,6 @@ public class SysFileTypeServiceImpl extends ServiceImpl<SysFileTypeMapper, SysFi
 					if (CollectionUtils.isNotEmpty(listMap.get(1))) {
 						Optional.ofNullable(listMap.get(1)).ifPresent(roles -> {
 							List<String> ids = roles.stream().map(SysFileRole::getUserId).collect(Collectors.toList());
-							ids.remove(0);
 							String[] array = new String[ids.size()];
 							for(int i = 0; i < ids.size();i++){
 								array[i] = ids.get(i);
@@ -151,7 +150,6 @@ public class SysFileTypeServiceImpl extends ServiceImpl<SysFileTypeMapper, SysFi
 					//获取查看列表中数据
 					Optional.ofNullable(listMap.get(0)).ifPresent(roles -> {
 						List<String> ids = roles.stream().map(SysFileRole::getUserId).collect(Collectors.toList());
-						ids.remove(0);
 						String[] array = new String[ids.size()];
 						for(int i = 0; i < ids.size();i++){
 							array[i] = ids.get(i);
