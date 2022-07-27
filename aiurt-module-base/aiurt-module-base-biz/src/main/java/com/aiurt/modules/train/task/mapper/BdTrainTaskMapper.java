@@ -31,7 +31,7 @@ public interface BdTrainTaskMapper extends BaseMapper<BdTrainTask> {
     * @param taskTeamId
     * @return
     * */
-    String getTeamName(@Param("taskTeamId") Integer taskTeamId);
+    String getTeamName(@Param("taskTeamId") String taskTeamId);
 
     /**
      * 获取该部门中的所有用户

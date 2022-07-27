@@ -453,7 +453,7 @@ public class BdTrainTaskServiceImpl extends ServiceImpl<BdTrainTaskMapper, BdTra
 		return pageList.setRecords(taskList);
 	}
 	@Override
-	public void addTrainTaskUser(String trainTaskId, Integer taskTeamId, List<String> userIds) {
+	public void addTrainTaskUser(String trainTaskId, String taskTeamId, List<String> userIds) {
 		for (String userId:userIds) {
 			BdTrainTaskUser bdTrainTaskUser = new BdTrainTaskUser();
 			bdTrainTaskUser.setTrainTaskId(trainTaskId);

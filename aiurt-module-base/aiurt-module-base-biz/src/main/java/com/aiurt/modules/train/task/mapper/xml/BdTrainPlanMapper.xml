@@ -46,7 +46,7 @@ where id = (SELECT plan_id from bd_train_plan_sub where id = #{trainTaskId})
         btt.task_state as taskState,
         bep.dascore as daScore,
         ber.is_release,
-        bt.`name` as sysOrgCode,
+        sd.org_code as sysOrgCode,
         su.realname as examPersonName,
         su.username as userName,
         btt.exam_task_name as examPlanSubName,
@@ -61,7 +61,7 @@ where id = (SELECT plan_id from bd_train_plan_sub where id = #{trainTaskId})
         JOIN bd_train_task btt ON btt.id = ber.train_task_id
         JOIN sys_user su ON su.id = ber.user_id
         JOIN bd_exam_paper bep ON bep.id = ber.exam_paper_id
-        JOIN bd_team bt ON bt.id = btt.task_team_id
+        JOIN sys_depart sd ON sd.id = btt.task_team_id
         <where>
             ber.is_release in(2,4)
             <if test="reCheckReqVo.reCheckState!=null">
@@ -111,9 +111,9 @@ ORDER BY  berd.create_time desc, ABS(#{date} - berd.create_time) LIMIT #{number}
     </select>
     <select id="getDept" resultType="java.lang.String">
         SELECT
-	DISTINCT `name`
+	DISTINCT depart_name
 FROM
-	bd_team
+        sys_depart
     </select>
     <select id="getByTrainTaskId" resultType="com.aiurt.modules.train.exam.entity.BdExamRecord">
         SELECT

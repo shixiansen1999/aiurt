@@ -65,7 +65,7 @@ public class BdTrainTaskUser implements Serializable {
     private String userName;
 	/**班组id*/
     @ApiModelProperty(value = "班组id")
-    private Integer teamId;
+    private String teamId;
 	/**主表id（bd_train_task表id）*/
     @Excel(name = "任务id", width = 15)
     @ApiModelProperty(value = "任务id）")

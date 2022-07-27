@@ -58,7 +58,7 @@ public class BdTrainTask implements Serializable ,Cloneable{
 	/**培训部门*/
 	@Excel(name = "培训部门", width = 15)
     @ApiModelProperty(value = "培训部门")
-    private Integer taskTeamId;
+    private String taskTeamId;
 	/**培训类型*/
 	@Excel(name = "培训类型", width = 15)
     @ApiModelProperty(value = "培训类型")

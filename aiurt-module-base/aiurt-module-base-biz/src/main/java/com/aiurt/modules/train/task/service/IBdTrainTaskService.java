@@ -1,14 +1,13 @@
 package com.aiurt.modules.train.task.service;
 
-import com.aiurt.modules.train.task.entity.BdTrainTask;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.baomidou.mybatisplus.extension.service.IService;
-import org.jeecg.common.api.vo.Result;
 import com.aiurt.modules.train.task.dto.*;
 import com.aiurt.modules.train.task.entity.BdTrainTask;
 import com.aiurt.modules.train.task.entity.BdTrainTaskSign;
 import com.aiurt.modules.train.task.entity.BdTrainTaskUser;
 import com.aiurt.modules.train.task.vo.BdTrainTaskPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.baomidou.mybatisplus.extension.service.IService;
+import org.jeecg.common.api.vo.Result;
 
 import java.io.Serializable;
 import java.util.Collection;
@@ -153,7 +152,7 @@ public interface IBdTrainTaskService extends IService<BdTrainTask> {
 	 * @param userIds
 	 * @return
 	 */
-	void addTrainTaskUser(String trainTaskId, Integer taskTeamId, List<String> userIds);
+	void addTrainTaskUser(String trainTaskId, String taskTeamId, List<String> userIds);
 
 	 /**
 	  * 分页查询培训任务列表

@@ -353,7 +353,7 @@ public class BdExamRecordServiceImpl extends ServiceImpl<BdExamRecordMapper, BdE
             List<BdTrainTaskUser> list = bdExamRecordMapper.userList(bdExamPaper.getTaskId());
             bdExamPaper.setTakeNumber(list.size());
             list.forEach(e -> {
-                SysDepartModel sysDepartModel = sysBaseAPI.selectAllById(e.getTeamId().toString());
+                SysDepartModel sysDepartModel = sysBaseAPI.selectAllById(e.getTeamId());
                 e.setSysOrgCode(sysDepartModel.getDepartName());
             });
             bdExamPaper.setUserList(list);
