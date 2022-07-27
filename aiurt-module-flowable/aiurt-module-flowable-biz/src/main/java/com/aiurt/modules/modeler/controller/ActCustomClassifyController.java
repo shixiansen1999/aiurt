@@ -252,9 +252,9 @@ public class ActCustomClassifyController extends BaseController<ActCustomClassif
 		return Result.OK(actCustomClassify);
 	}
 
-	@GetMapping("/queryTree")
-	@ApiOperation("根据机构人员树")
-	public Result<List<SelectTable>> queryDepartUserTree() {
+	@GetMapping("/queryClassifyTree")
+	@ApiOperation("查询流程分类树")
+	public Result<List<SelectTable>> queryClassifyTree() {
 		List<ActCustomClassify> departList = actCustomClassifyService.getBaseMapper().selectList(null);
 		List<SelectTable> treeList = departList.stream().map(entity -> {
 			SelectTable table = new SelectTable();
