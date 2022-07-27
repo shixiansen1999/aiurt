@@ -32,8 +32,8 @@ public interface PatrolStandardItemsMapper extends BaseMapper<PatrolStandardItem
 
     /**
      * 查询数据字典
-     * @param statusItem
+     * @param modules
      * @return
      */
-    List<SysDictDTO> querySysDict(@Param("statusItem") Integer statusItem);
+    List<SysDictDTO> querySysDict(@Param("modules") Integer modules);
 }
