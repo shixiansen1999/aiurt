@@ -35,10 +35,10 @@ public class SparePartReplace implements Serializable {
 	@TableId(type = IdType.ASSIGN_ID)
     @ApiModelProperty(value = "主键ID")
     private String id;
-	/**故障记录表ID*/
-	@Excel(name = "故障记录表ID", width = 15)
-    @ApiModelProperty(value = "故障记录表ID")
-    private String malfunctionId;
+    /**维修记录单号*/
+    @Excel(name = "维修记录单号", width = 15)
+    @ApiModelProperty(value = "维修记录单号")
+    private String maintenanceRecord;
     /**出库记录表ID*/
     @Excel(name = "出库记录表ID", width = 15)
     @ApiModelProperty(value = "出库记录表ID")
