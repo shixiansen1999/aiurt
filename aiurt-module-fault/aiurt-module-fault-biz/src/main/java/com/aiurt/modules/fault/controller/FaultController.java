@@ -385,5 +385,12 @@ public class FaultController extends BaseController<Fault, IFaultService> {
         return Result.OK("操作成功");
     }
 
+    @PostMapping("/useKnowledgeBase")
+    @ApiOperation("使用知识库")
+    private Result<?> useKnowledgeBase(@RequestBody UseKnowledgeDTO useKnowledgeDTO) {
+        faultService.useKnowledgeBase(useKnowledgeDTO.getFaultCode(), useKnowledgeDTO.getKnowledgeId());
+        return Result.OK("操作成功");
+    }
+
 
 }

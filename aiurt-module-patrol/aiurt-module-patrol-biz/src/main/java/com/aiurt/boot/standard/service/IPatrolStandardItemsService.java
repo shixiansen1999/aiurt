@@ -40,8 +40,8 @@ public interface IPatrolStandardItemsService extends IService<PatrolStandardItem
 
     /**
      * 查询数据字典
-     * @param statusItem
+     * @param modules
      * @return
      */
-    List<SysDictDTO> querySysDict(Integer statusItem);
+    List<SysDictDTO> querySysDict(Integer modules);
 }

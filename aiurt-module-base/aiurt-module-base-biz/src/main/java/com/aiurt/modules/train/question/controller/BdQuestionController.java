@@ -33,7 +33,7 @@ import java.util.List;
 public class BdQuestionController extends BaseController<BdQuestion, IBdQuestionService> {
 	@Autowired
 	private IBdQuestionService bdQuestionService;
-	
+
 	/**
 	 * 分页列表查询
 	 *
@@ -66,7 +66,7 @@ public class BdQuestionController extends BaseController<BdQuestion, IBdQuestion
 		bdQuestionService.addBdQuestion(bdQuestion);
 		return Result.OK("添加成功！");
 	}
-	
+
 	/**
 	 *  编辑
 	 *
@@ -80,7 +80,7 @@ public class BdQuestionController extends BaseController<BdQuestion, IBdQuestion
 		bdQuestionService.updateBdQuestion(bdQuestion);
 		return Result.OK("编辑成功!");
 	}
-	
+
 	/**
 	 *   通过id删除
 	 *
@@ -94,7 +94,7 @@ public class BdQuestionController extends BaseController<BdQuestion, IBdQuestion
 		bdQuestionService.removeById(id);
 		return Result.OK("删除成功!");
 	}
-	
+
 	/**
 	 *  批量删除
 	 *
@@ -108,7 +108,7 @@ public class BdQuestionController extends BaseController<BdQuestion, IBdQuestion
 		this.bdQuestionService.removeByIds(Arrays.asList(ids.split(",")));
 		return Result.OK("批量删除成功!");
 	}
-	
+
 	/**
 	 * 通过id查询
 	 *

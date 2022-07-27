@@ -4,7 +4,7 @@ import com.aiurt.common.api.CommonAPI;
 import com.aiurt.common.api.dto.message.*;
 import com.aiurt.common.api.dto.quartz.QuartzJobDTO;
 import com.aiurt.modules.basic.entity.SysAttachment;
-import com.aiurt.modules.device.entity.DeviceType;
+import com.aiurt.modules.common.entity.DeviceTypeTable;
 import com.aiurt.modules.position.entity.CsStation;
 import com.alibaba.fastjson.JSONObject;
 import org.jeecg.common.api.dto.OnlineAuthDTO;
@@ -400,7 +400,7 @@ public interface ISysBaseAPI extends CommonAPI {
      * @param systemCode
      * @return
      */
-    List<DeviceType> selectList(String majorCode, String systemCode);
+    List<DeviceTypeTable> selectList(String majorCode, String systemCode);
     /**
      * 根据用户账号 查询用户信息
      * @param username

@@ -101,8 +101,8 @@ private PatrolTaskStandardMapper patrolTaskStandardMapper;
     }
 
     @Override
-    public List<SysDictDTO> querySysDict(Integer statusItem) {
-        List<SysDictDTO> list =baseMapper.querySysDict(statusItem);
+    public List<SysDictDTO> querySysDict(Integer modules) {
+        List<SysDictDTO> list =baseMapper.querySysDict(modules);
         return list;
     }
 }

@@ -8,6 +8,7 @@ import com.aiurt.common.util.SysAnnmentTypeEnum;
 import com.aiurt.modules.situation.entity.SysAnnouncement;
 import com.aiurt.modules.situation.entity.SysAnnouncementSend;
 import com.aiurt.modules.situation.mapper.SysInfoListMapper;
+import com.aiurt.modules.situation.service.SysInfoListService;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -19,20 +20,17 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
-
 import org.jeecg.common.constant.CommonConstant;
-
 import org.jeecg.common.system.api.ISysBaseAPI;
-
-import org.jeecg.common.system.query.QueryGenerator;
 import org.jeecg.common.system.vo.LoginUser;
-import com.aiurt.modules.situation.service.SysInfoListService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.ObjectUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.*;
+import java.util.Date;
+import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 
@@ -257,11 +255,14 @@ public class SysInfoListController {
         Page<SysAnnouncement> page = new Page<>(pageNo, pageSize);
         List<SysAnnouncement> myInfo = sysInfoListMapper.getMyInfo(page, sysUser.getId());
         List<SysAnnouncement> collect = myInfo.stream().filter(s -> "1".equals(s.getReadFlag())).collect(Collectors.toList());
-        SysAnnouncement s = myInfo.get(0);
-        s.setReadCount(collect.size());
-        s.setUnreadCount(myInfo.size()-collect.size());
-        result.setSuccess(true);
-        result.setResult(page.setRecords(myInfo));
+        if (CollectionUtils.isNotEmpty(myInfo)) {
+            SysAnnouncement s = myInfo.get(0);
+            s.setReadCount(collect.size());
+            s.setUnreadCount(myInfo.size()-collect.size());
+            result.setSuccess(true);
+            result.setResult(page.setRecords(myInfo));
+            return result;
+        }
         return result;
     }
 

@@ -1,15 +1,14 @@
 package com.aiurt.modules.system.entity;
 
-import java.io.Serializable;
-import java.util.Date;
-
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableLogic;
-
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
+
+import java.io.Serializable;
+import java.util.Date;
 
 /**
  * <p>
@@ -54,7 +53,10 @@ public class SysDict implements Serializable {
      * 描述
      */
     private String description;
-
+    /**
+     * 所属模块
+     */
+    private String modules;
     /**
      * 删除状态
      */

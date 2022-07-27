@@ -92,8 +92,8 @@ public class PatrolStandardItemsController extends BaseController<PatrolStandard
 	 @AutoLog(value = "查询数据字典")
 	 @ApiOperation(value = "查询数据字典", notes = "查询数据字典")
 	 @GetMapping(value = "/querySysDict")
-	 public List<SysDictDTO> querySysDict(@RequestParam(name="statusItem") Integer statusItem) {
-		List<SysDictDTO>  sysDictDto= patrolStandardItemsService.querySysDict(statusItem);
+	 public List<SysDictDTO> querySysDict(@RequestParam(name="modules") Integer modules) {
+		List<SysDictDTO>  sysDictDto= patrolStandardItemsService.querySysDict(modules);
 		 return sysDictDto;
 	 }
 	 /**

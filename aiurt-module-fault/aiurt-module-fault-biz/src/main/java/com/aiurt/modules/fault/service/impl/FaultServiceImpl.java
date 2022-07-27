@@ -257,6 +257,11 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
 
         Fault fault = isExist(assignDTO.getFaultCode());
 
+        LoginUser loginUser = sysBaseAPI.getUserByName(assignDTO.getOperatorUserName());
+        if (Objects.isNull(loginUser)) {
+            throw new AiurtBootException("作业人员不存在");
+        }
+
         // 删除其他记录
         LambdaUpdateWrapper<FaultRepairRecord> updateWrapper = new LambdaUpdateWrapper<>();
         updateWrapper.set(FaultRepairRecord::getDelFlag, CommonConstant.DEL_FLAG_1).eq(FaultRepairRecord::getFaultCode, fault.getCode());
@@ -267,6 +272,8 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         fault.setAssignTime(new Date());
         fault.setAssignUserName(user.getUsername());
         fault.setAppointUserName(assignDTO.getOperatorUserName());
+
+
 
         // 维修记录
         FaultRepairRecord record = FaultRepairRecord.builder()
@@ -293,7 +300,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
 
         // todo 发送消息
         // 日志记录
-        saveLog(user, FaultStatusEnum.ASSIGN.getMessage(), assignDTO.getFaultCode(), FaultStatusEnum.ASSIGN.getStatus(), null);
+        saveLog(user, "指派 " + loginUser.getRealname() , assignDTO.getFaultCode(), FaultStatusEnum.ASSIGN.getStatus(), null);
     }
 
 
@@ -887,6 +894,21 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
     public void confirmDevice(ConfirmDeviceDTO confirmDeviceDTO) {
         Fault fault = isExist(confirmDeviceDTO.getFaultCode());
         dealDevice(fault, confirmDeviceDTO.getFaultDeviceList());
+    }
+
+    /**
+     *
+     * @param faultCode
+     * @param knowledgeId
+     */
+    @Override
+    public void useKnowledgeBase(String faultCode, String knowledgeId) {
+        Fault fault = isExist(faultCode);
+
+        // 使用的解决方案
+        fault.setKnowledgeId(knowledgeId);
+
+        updateById(fault);
     }
 
     /**

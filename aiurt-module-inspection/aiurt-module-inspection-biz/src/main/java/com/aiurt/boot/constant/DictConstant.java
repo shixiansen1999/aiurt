@@ -34,7 +34,6 @@ public class DictConstant {
      */
     public static final String WORK_TYPE = "work_type";
 
-
     /**
      * 是否委外
      */

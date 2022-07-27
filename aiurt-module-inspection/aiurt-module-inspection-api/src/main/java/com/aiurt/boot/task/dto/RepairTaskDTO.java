@@ -226,4 +226,9 @@ public class RepairTaskDTO {
     @ApiModelProperty(value = "搜索")
     @TableField(exist = false)
     private String search;
+
+    /**检修任务状态*/
+    @ApiModelProperty(value = "检修任务状态")
+    @TableField(exist = false)
+    private Integer maintenanceTaskStatus;
 }

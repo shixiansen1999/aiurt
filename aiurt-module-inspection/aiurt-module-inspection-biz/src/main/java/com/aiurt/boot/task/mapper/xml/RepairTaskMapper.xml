@@ -68,7 +68,8 @@
                t2.is_submit as isSubmit,
                t2.staff_id as overhaulId,
                t3.title as overhaulStandardName,
-               t3.is_appoint_device as isAppointDevice
+               t3.is_appoint_device as isAppointDevice,
+               t1.status as maintenanceTaskStatus
            FROM
 	          repair_task t1
 	          LEFT JOIN repair_task_device_rel t2 ON t1.id = t2.repair_task_id
