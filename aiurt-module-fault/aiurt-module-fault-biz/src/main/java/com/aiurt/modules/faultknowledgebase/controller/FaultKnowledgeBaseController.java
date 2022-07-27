@@ -3,7 +3,7 @@ package com.aiurt.modules.faultknowledgebase.controller;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.aspect.annotation.PermissionData;
 import com.aiurt.common.system.base.controller.BaseController;
-import com.aiurt.modules.device.entity.DeviceType;
+import com.aiurt.modules.common.entity.DeviceTypeTable;
 import com.aiurt.modules.fault.entity.Fault;
 import com.aiurt.modules.faultanalysisreport.constant.FaultConstant;
 import com.aiurt.modules.faultanalysisreport.dto.FaultDTO;
@@ -302,11 +302,11 @@ public class FaultKnowledgeBaseController extends BaseController<FaultKnowledgeB
 	 @ApiOperation(value="故障知识库-设备分类查询", notes="device_type-设备分类查询")
 	 @GetMapping(value = "/getDeviceType")
 	 @ApiResponses({
-			 @ApiResponse(code = 200, message = "OK", response = DeviceType.class)
+			 @ApiResponse(code = 200, message = "OK", response = DeviceTypeTable.class)
 	 })
-	 public Result<List<DeviceType>> getDeviceType(@RequestParam(name="majorCode",required = false) String majorCode,
+	 public Result<List<DeviceTypeTable>> getDeviceType(@RequestParam(name="majorCode",required = false) String majorCode,
 													  @RequestParam(name="systemCode",required = false) String systemCode) {
-		 List<DeviceType> deviceTypes = iSysBaseAPI.selectList(majorCode, systemCode);
+		 List<DeviceTypeTable> deviceTypes = iSysBaseAPI.selectList(majorCode, systemCode);
 		 return Result.OK(deviceTypes);
 	 }
 

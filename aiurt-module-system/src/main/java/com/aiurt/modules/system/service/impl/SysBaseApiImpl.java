@@ -15,6 +15,7 @@ import com.aiurt.common.util.YouBianCodeUtil;
 import com.aiurt.common.util.oConvertUtils;
 import com.aiurt.modules.basic.entity.SysAttachment;
 import com.aiurt.modules.basic.service.ISysAttachmentService;
+import com.aiurt.modules.common.entity.DeviceTypeTable;
 import com.aiurt.modules.device.entity.DeviceType;
 import com.aiurt.modules.device.service.IDeviceTypeService;
 import com.aiurt.modules.message.entity.SysMessageTemplate;
@@ -1332,7 +1333,7 @@ public class SysBaseApiImpl implements ISysBaseAPI {
         List<CsStation> stationList = csStationMapper.selectList(new LambdaQueryWrapper<CsStation>().eq(CsStation::getDelFlag, CommonConstant.DEL_FLAG_0));return stationList; }
 
     @Override
-    public List<DeviceType> selectList(String majorCode, String systemCode) {
+    public List<DeviceTypeTable> selectList(String majorCode, String systemCode) {
         QueryWrapper<DeviceType> deviceTypeQueryWrapper = new QueryWrapper<DeviceType>();
         deviceTypeQueryWrapper.eq("del_flag", CommonConstant.DEL_FLAG_0);
         if(majorCode != null && !"".equals(majorCode)){
@@ -1343,10 +1344,28 @@ public class SysBaseApiImpl implements ISysBaseAPI {
         }
         deviceTypeQueryWrapper.orderByDesc("create_time");
         List<DeviceType> deviceTypeList = deviceTypeService.list(deviceTypeQueryWrapper);
-        List<DeviceType> deviceTypes = deviceTypeService.treeList(deviceTypeList,"0");
-        return deviceTypes;
+        List<DeviceTypeTable> list = new ArrayList<>();
+        deviceTypeList.forEach(deviceType -> {
+            DeviceTypeTable deviceTypeTable = new DeviceTypeTable();
+            BeanUtils.copyProperties(deviceType, deviceTypeTable);
+            deviceTypeTable.setKey(deviceType.getId());
+            deviceTypeTable.setValue(deviceType.getCode());
+            deviceTypeTable.setLabel(deviceType.getName());
+            list.add(deviceTypeTable);
+        });
+        List<DeviceTypeTable> deviceTypeTree = getDeviceTypeTree(list, "0");
+        return deviceTypeTree;
     }
 
+    public List<DeviceTypeTable> getDeviceTypeTree(List<DeviceTypeTable> list,String pid) {
+        List<DeviceTypeTable> children = list.stream().filter(deviceTypeTable -> deviceTypeTable.getPid().equals(pid)).collect(Collectors.toList());
+        if(CollectionUtil.isNotEmpty(children)){
+            for (DeviceTypeTable deviceTypeTable : children) {
+                deviceTypeTable.setChildren(getDeviceTypeTree(list,deviceTypeTable.getId()));
+            }
+        }
+        return children;
+    }
     @Override
     public List<CsUserDepartModel> getDepartByUserId(String id) {
         return iCsUserDepartService.getDepartByUserId(id);
