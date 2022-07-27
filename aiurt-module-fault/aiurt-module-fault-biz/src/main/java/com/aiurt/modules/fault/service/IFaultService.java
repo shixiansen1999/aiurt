@@ -151,4 +151,11 @@ public interface IFaultService extends IService<Fault> {
      * @param confirmDeviceDTO
      */
     void confirmDevice(ConfirmDeviceDTO confirmDeviceDTO);
+
+    /***
+     * 使用知识库
+     * @param faultCode
+     * @param knowledgeId
+     */
+    void useKnowledgeBase(String faultCode, String knowledgeId);
 }
