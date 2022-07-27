@@ -5,7 +5,6 @@ import java.io.UnsupportedEncodingException;
 import java.util.Date;
 import java.math.BigDecimal;
 import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
@@ -21,7 +20,7 @@ import lombok.experimental.Accessors;
 /**
  * @Description: flowable流程模板定义信息
  * @Author: aiurt
- * @Date:   2022-07-08
+ * @Date:   2022-07-27
  * @Version: V1.0
  */
 @Data
@@ -37,28 +36,18 @@ public class ActCustomModelInfo implements Serializable {
     @ApiModelProperty(value = "主键")
     private String id;
 	/**模型id(act_act_re_model的id)*/
-	@Excel(name = "模型id(act_re_model的id)", width = 15)
+	@Excel(name = "模型id(act_act_re_model的id)", width = 15)
     @ApiModelProperty(value = "模型id(act_act_re_model的id)")
     private String modelId;
-	/**name*/
-	@Excel(name = "name", width = 15)
-    @ApiModelProperty(value = "name")
+	/**流程名称*/
+	@Excel(name = "流程名称", width = 15)
+    @ApiModelProperty(value = "流程名称")
     private String name;
-
-	/**模型key*/
-	@Excel(name = "模型key", width = 15)
-    @ApiModelProperty(value = "模型key")
+	/**流程标识*/
+	@Excel(name = "流程标识", width = 15)
+    @ApiModelProperty(value = "流程标识")
     private String modelKey;
-
-    /**
-     * flowable的model类型
-     * MODEL_TYPE_BPMN = 0;
-     * MODEL_TYPE_FORM = 2;
-     * MODEL_TYPE_APP = 3;
-     * MODEL_TYPE_DECISION_TABLE = 4;
-     * MODEL_TYPE_CMMN = 5;
-     * MODEL_TYPE_DECISION_SERVICE = 6;
-     */
+	/**模型key*/
 	@Excel(name = "模型key", width = 15)
     @ApiModelProperty(value = "模型key")
     private Integer modelType;
@@ -91,54 +80,24 @@ public class ActCustomModelInfo implements Serializable {
         }
         return "";
     }
-	/**模型类型: 0 自定义流程 1是业务流程*/
-	@Excel(name = "模型类型: 0 自定义流程 1是业务流程", width = 15)
-    @ApiModelProperty(value = "模型类型: 0 自定义流程 1是业务流程")
+	/**表单类型: 0 动态表单 1路由表单*/
+	@Excel(name = "表单类型: 0 动态表单 1路由表单", width = 15)
+    @ApiModelProperty(value = "表单类型: 0 动态表单 1路由表单")
     private Integer formType;
-	/**分类编码*/
-	@Excel(name = "分类编码", width = 15)
-    @ApiModelProperty(value = "分类编码")
+
+	/**流程分类编码*/
+	@Excel(name = "流程分类编码", width = 15)
+    @ApiModelProperty(value = "流程分类编码")
     private String classifyCode;
+
 	/**流程图Model状态*/
 	@Excel(name = "流程图Model状态", width = 15)
     @ApiModelProperty(value = "流程图Model状态")
     private Integer status;
-	/**所属部们id*/
-	@Excel(name = "所属部们id", width = 15)
-    @ApiModelProperty(value = "所属部们id")
-    private String ownDeptId;
-	/**所属部门名称*/
-	@Excel(name = "所属部门名称", width = 15)
-    @ApiModelProperty(value = "所属部门名称")
-    private String ownDeptName;
-	/**流程拥有者ID*/
-	@Excel(name = "流程拥有者ID", width = 15)
-    @ApiModelProperty(value = "流程拥有者ID")
-    private String flowOwnerNo;
-	/**流程拥有者名称*/
-	@Excel(name = "流程拥有者名称", width = 15)
-    @ApiModelProperty(value = "流程拥有者名称")
-    private String flowOwnerName;
-	/**授权管理人员*/
-	@Excel(name = "授权管理人员", width = 15)
-    @ApiModelProperty(value = "授权管理人员")
-    private String superuser;
-	/**授权功能*/
-	@Excel(name = "授权功能", width = 15)
-    @ApiModelProperty(value = "授权功能")
-    private String authPointList;
-	/** 适用范围 @see ModelAppliedRangeEnum*/
-	@Excel(name = " 适用范围 @see ModelAppliedRangeEnum", width = 15)
-    @ApiModelProperty(value = " 适用范围 @see ModelAppliedRangeEnum")
-    private Integer appliedRange;
-	/**业务表单的URL*/
-	@Excel(name = "业务表单的URL", width = 15)
-    @ApiModelProperty(value = "业务表单的URL")
+	/**默认路由表单/业务表单的URL*/
+	@Excel(name = "默认路由表单/业务表单的URL", width = 15)
+    @ApiModelProperty(value = "默认路由表单/业务表单的URL")
     private String businessUrl;
-	/**功能范围(1 允许转办 2允许加签 3允许转阅 4允许打印 5相近节点同一人员自动跳过 可以多选 )*/
-	@Excel(name = "功能范围(1 允许转办 2允许加签 3允许转阅 4允许打印 5相近节点同一人员自动跳过 可以多选 )", width = 15)
-    @ApiModelProperty(value = "功能范围(1 允许转办 2允许加签 3允许转阅 4允许打印 5相近节点同一人员自动跳过 可以多选 )")
-    private String functionRange;
 	/**跳过设置*/
 	@Excel(name = "跳过设置", width = 15)
     @ApiModelProperty(value = "跳过设置")
@@ -174,7 +133,13 @@ public class ActCustomModelInfo implements Serializable {
     @ApiModelProperty(value = "删除标识")
     private Integer delFlag;
 
-	@ApiModelProperty(value = "")
-    @TableField(exist = false)
-	private String bpmnXML;
+	/**  在线表单的页面Id*/
+	@Excel(name = "  在线表单的页面Id", width = 15)
+    @ApiModelProperty(value = "  在线表单的页面Id")
+    private String pageId;
+
+	/**在线表单Id*/
+	@Excel(name = "在线表单Id", width = 15)
+    @ApiModelProperty(value = "在线表单Id")
+    private String defaultFormId;
 }

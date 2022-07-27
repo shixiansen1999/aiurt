@@ -7,6 +7,7 @@ import com.aiurt.common.exception.AiurtErrorEnum;
 import com.aiurt.modules.constants.FlowConstant;
 import com.aiurt.modules.manage.entity.ActCustomVersion;
 import com.aiurt.modules.manage.service.IActCustomVersionService;
+import com.aiurt.modules.modeler.dto.OperationList;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import org.flowable.bpmn.model.*;
 import org.flowable.engine.RepositoryService;
@@ -164,6 +165,14 @@ public class FlowElementUtil {
         }
 
         return Result.error(AiurtErrorEnum.FLOW_DEFINITION_NOT_FOUND.getMessage());
+    }
+
+    /**
+     * 根据节点定义id 获取每个节点的按钮信息
+     * @return
+     */
+    public OperationList getElementOperation(UserTask userTask) {
+        return null;
     }
 
 

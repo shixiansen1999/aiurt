@@ -3,10 +3,14 @@ package com.aiurt.modules.editor.language.json.converter;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.map.MapUtil;
 import com.aiurt.modules.utils.ExtensionPropertiesUtil;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.TextNode;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.flowable.bpmn.constants.BpmnXMLConstants;
 import org.flowable.bpmn.model.*;
@@ -21,6 +25,7 @@ import java.util.*;
  * 扩展任务节点属性解析器
  * @author fgw
  */
+@Slf4j
 public class CustomUserTaskJsonConverter  extends UserTaskJsonConverter {
 
     public static final String ASSIGNEE_TYPE = "assigneeType";
@@ -152,66 +157,47 @@ public class CustomUserTaskJsonConverter  extends UserTaskJsonConverter {
     @Override
     protected FlowElement convertJsonToElement(JsonNode elementNode, JsonNode modelNode, Map<String, JsonNode> shapeMap, BpmnJsonConverterContext converterContex) {
         FlowElement flowElement = super.convertJsonToElement(elementNode, modelNode, shapeMap, converterContex);
-        this.addExtansionPropertiesElement(flowElement, elementNode);
+        try {
+            this.addExtansionPropertiesElement(flowElement, elementNode);
+        } catch (JsonProcessingException e) {
+            log.error(e.getMessage(), e);
+        }
         return flowElement;
     }
 
-    private void addExtansionPropertiesElement(FlowElement flowElement, JsonNode elementNode) {
+    private void addExtansionPropertiesElement(FlowElement flowElement, JsonNode elementNode) throws JsonProcessingException {
         if (flowElement instanceof UserTask){
             UserTask userTask = (UserTask) flowElement;
-            ExtensionPropertiesUtil.addExtensionPropertiesElement(elementNode, userTask, ASSIGNEE_TYPE);
-            ExtensionPropertiesUtil.addExtensionPropertiesElement(elementNode, userTask, IDM_ASSIGNEE);
-            ExtensionPropertiesUtil.addExtensionPropertiesElement(elementNode, userTask, IDM_CANDIDATE_GROUPS);
-            ExtensionPropertiesUtil.addExtensionPropertiesElement(elementNode, userTask, IDM_CANDIDATE_USERS);
-            ExtensionPropertiesUtil.addExtensionPropertiesElement(elementNode, userTask, IS_EDITDATA);
-            ExtensionPropertiesUtil.addExtensionPropertiesElement(elementNode, userTask, NODE_TYPE);
-            ExtensionPropertiesUtil.addExtensionPropertiesElement(elementNode, userTask, NEXT_SEQUENCE_FLOW_LABEL);
-            ExtensionPropertiesUtil.addExtensionPropertiesElement(elementNode, userTask, NEXT_USER_LABEL);
-            // todo 优化
             JsonNode expansionNode = JsonConverterUtil.getProperty(OPERATION_LIST, elementNode);
+            String json = objectMapper.writeValueAsString(expansionNode);
+            log.info("json->{}",json);
             if (Objects.nonNull(expansionNode)) {
                 ExtensionElement ee = new ExtensionElement();
                 ee.setName(OPERATION_LIST);
                 ee.setNamespacePrefix(BpmnXMLConstants.FLOWABLE_EXTENSIONS_PREFIX);
                 ee.setNamespace(BpmnXMLConstants.FLOWABLE_EXTENSIONS_NAMESPACE);
                 if (expansionNode instanceof ObjectNode) {
-                    ObjectNode objectNode = (ObjectNode) expansionNode;
-                    Iterator<String> keyIt = objectNode.fieldNames();
-                    while(keyIt.hasNext()){
-                        String s = keyIt.next();
-                        JsonNode jsonNode = objectNode.get(s);
-                        Map<String, List<ExtensionElement>> map = new LinkedHashMap<>();
-                        List<ExtensionElement> extensionElementList = new ArrayList<>();
-                        if (jsonNode instanceof ArrayNode) {
-                            ArrayNode arrayNode = (ArrayNode) jsonNode;
-                            Iterator<JsonNode> iterator = arrayNode.iterator();
-                            ExtensionElement child = new ExtensionElement();
-                            child.setName(s);
-                            child.setNamespacePrefix(BpmnXMLConstants.FLOWABLE_EXTENSIONS_PREFIX);
-                            child.setNamespace(BpmnXMLConstants.FLOWABLE_EXTENSIONS_NAMESPACE);
-                            while (iterator.hasNext()) {
-                                ObjectNode next = (ObjectNode) iterator.next();
-
-                                Iterator<String> childNameIt = next.fieldNames();
-                                while (childNameIt.hasNext()) {
-                                    ExtensionAttribute attribute = new ExtensionAttribute();
-                                    String name = childNameIt.next();
-                                    attribute.setName(name);
-                                    JsonNode jsonNode1 = next.get(name);
-                                    if (jsonNode1 instanceof TextNode) {
-                                        attribute.setValue(jsonNode1.asText());
-                                    }
-                                    child.addAttribute(attribute);
-                                }
-                            }
-                            extensionElementList.add(child);
-                            map.put(s, extensionElementList);
-                            ee.setChildElements(map);
-                        }else if (jsonNode instanceof ObjectNode) {
-
-                        }
-
+                    JSONObject jsonObject = JSONObject.parseObject(json);
+                    JSONArray operation = jsonObject.getJSONArray("formOperation");
+                    ExtensionElement child = new ExtensionElement();
+                    child.setName("formOperation");
+                    child.setNamespacePrefix(BpmnXMLConstants.FLOWABLE_EXTENSIONS_PREFIX);
+                    child.setNamespace(BpmnXMLConstants.FLOWABLE_EXTENSIONS_NAMESPACE);
+                    Map<String, List<ExtensionElement>> map = new LinkedHashMap<>();
+                    List<ExtensionElement> extensionElementList = new ArrayList<>();
+                    for (int i = 0; i < operation.size(); i++) {
+                        JSONObject object = operation.getJSONObject(i);
+                        Set<String> keySet = object.keySet();
+                        keySet.stream().forEach(key->{
+                            ExtensionAttribute attribute = new ExtensionAttribute();
+                            attribute.setName(key);
+                            attribute.setValue(object.getString(key));
+                            child.addAttribute(attribute);
+                        });
                     }
+                    extensionElementList.add(child);
+                    map.put("formOperation", extensionElementList);
+                    ee.setChildElements(map);
                     // 如果是文本
                 }else if (expansionNode instanceof TextNode) {
                     ee.setElementText(expansionNode.asText());
