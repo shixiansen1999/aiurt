@@ -51,11 +51,21 @@ public class SparePartMalfunction implements Serializable {
     @ApiModelProperty(value = "故障设备编号")
     @Dict(dictTable ="device",dicText = "name",dicCode = "code")
     private String malfunctionDeviceCode;
+    /**故障设备名称*/
+    @Excel(name = "故障设备名称", width = 15)
+    @ApiModelProperty(value = "故障设备名称")
+    @TableField(exist = false)
+    private String deviceName;
 	/**故障类别：1设备故障、2外界妨害、3其他*/
 	@Excel(name = "故障类别：1设备故障、2外界妨害、3其他", width = 15)
     @ApiModelProperty(value = "故障类别：1设备故障、2外界妨害、3其他")
     @Dict(dicCode = "malfunction_type")
     private Integer malfunctionType;
+    /**故障类别名称*/
+    @Excel(name = "故障类别名称", width = 15)
+    @ApiModelProperty(value = "故障类别名称")
+    @TableField(exist = false)
+    private String malfunctionTypeName;
 	/**详细描述*/
 	@Excel(name = "详细描述", width = 15)
     @ApiModelProperty(value = "详细描述")
@@ -69,11 +79,21 @@ public class SparePartMalfunction implements Serializable {
     @ApiModelProperty(value = "维修机构ID")
     @Dict(dictTable ="sys_depart",dicText = "depart_name",dicCode = "id")
     private String orgId;
+    /**维修机构名称*/
+    @Excel(name = "维修机构名称", width = 15)
+    @ApiModelProperty(value = "维修机构名称")
+    @TableField(exist = false)
+    private String orgName;
 	/**维修用戶ID*/
 	@Excel(name = "维修用戶ID", width = 15)
     @ApiModelProperty(value = "维修用戶ID")
     @Dict(dictTable ="sys_user",dicText = "realname",dicCode = "username")
     private String maintainUserId;
+    /**维修用戶名称*/
+    @Excel(name = "维修用戶名称", width = 15)
+    @ApiModelProperty(value = "维修用戶名称")
+    @TableField(exist = false)
+    private String userName;
 	/**维修时间*/
 	@Excel(name = "维修时间", width = 15, format = "yyyy-MM-dd")
 	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
@@ -118,4 +138,25 @@ public class SparePartMalfunction implements Serializable {
     @ApiModelProperty(value = "ids")
     @TableField(exist = false)
     private List<String> ids;
+    /**物资编码*/
+    @Excel(name = "物资编码", width = 15)
+    @ApiModelProperty(value = "物资编码")
+    @TableField(exist = false)
+    private String materialsCode;
+    /**物资名称*/
+    @Excel(name = "物资名称", width = 15)
+    @ApiModelProperty(value = "物资名称")
+    @TableField(exist = false)
+    private String materialsName;
+    /**被替换的组件编码*/
+    @Excel(name = "被替换的组件编码", width = 15)
+    @ApiModelProperty(value = "被替换的组件编码")
+    @TableField(exist = false)
+    private String replaceSubassemblyCode;
+    /**替换的组件编码*/
+    @Excel(name = "替换的组件编码", width = 15)
+    @ApiModelProperty(value = "替换的组件编码")
+    @TableField(exist = false)
+    private String subassemblyCode;
+
 }

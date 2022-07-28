@@ -202,6 +202,7 @@ public class SparePartApplyController extends BaseController<SparePartApply, ISp
 		 LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
 		 ModelAndView mv = new ModelAndView(new JeecgEntityExcelView());
 		 List<StockApplyExcel> list = sparePartApplyService.exportXls( Arrays.asList(ids.split(",")));
+         list = list.stream().distinct().collect(Collectors.toList());
 		 //导出文件名称
 		 mv.addObject(NormalExcelConstants.FILE_NAME, "备件申领列表");
 		 mv.addObject(NormalExcelConstants.CLASS, StockApplyExcel.class);

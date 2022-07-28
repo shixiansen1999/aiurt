@@ -32,10 +32,10 @@
         WHERE
         t.del_flag =0
         <if test="stock.materialCode!=null and stock.materialCode!=''">
-            and t.material_code = #{stock.materialCode}
+            and t.material_code like concat('%',  #{stock.materialCode}, '%')
         </if>
         <if test="stock.name!=null and stock.name!=''">
-            and t2.`name` = #{stock.name}
+            and t2.`name` like concat('%', #{stock.name}, '%')
         </if>
         <if test="stock.type!=null and stock.type!=''">
             and t2.type = #{stock.type}

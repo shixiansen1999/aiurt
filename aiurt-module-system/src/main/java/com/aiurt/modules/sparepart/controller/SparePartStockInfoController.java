@@ -153,7 +153,7 @@ public class SparePartStockInfoController extends BaseController<SparePartStockI
 	/**
 	 * 登录人所选班组的仓库
 	 *
-	 * @param sparePartStockInfo
+	 * @param
 
 	 * @return
 	 */

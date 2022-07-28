@@ -46,7 +46,7 @@ public class SparePartStockInfoServiceImpl extends ServiceImpl<SparePartStockInf
         //判断名称是否重复
         LambdaQueryWrapper<SparePartStockInfo> nameWrapper = new LambdaQueryWrapper<>();
         nameWrapper.eq(SparePartStockInfo::getWarehouseName, sparePartStockInfo.getWarehouseName());
-        queryWrapper.eq(SparePartStockInfo::getDelFlag, CommonConstant.DEL_FLAG_0);
+        nameWrapper.eq(SparePartStockInfo::getDelFlag, CommonConstant.DEL_FLAG_0);
         List<SparePartStockInfo> nameList = sparePartStockInfoMapper.selectList(nameWrapper);
         if (!nameList.isEmpty()) {
             return Result.error("备件仓库名称重复，请重新填写！");
@@ -84,7 +84,7 @@ public class SparePartStockInfoServiceImpl extends ServiceImpl<SparePartStockInf
         //判断名称是否重复
         LambdaQueryWrapper<SparePartStockInfo> nameWrapper = new LambdaQueryWrapper<>();
         nameWrapper.eq(SparePartStockInfo::getWarehouseName, sparePartStockInfo.getWarehouseName());
-        queryWrapper.eq(SparePartStockInfo::getDelFlag, CommonConstant.DEL_FLAG_0);
+        nameWrapper.eq(SparePartStockInfo::getDelFlag, CommonConstant.DEL_FLAG_0);
         List<SparePartStockInfo> nameList = sparePartStockInfoMapper.selectList(nameWrapper);
         if (!nameList.isEmpty() && nameList.get(0).equals(sparePartStockInfo.getId())) {
             return Result.error("备件仓库名称重复，请重新填写！");

@@ -2,6 +2,7 @@ package com.aiurt.modules.sparepart.controller;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -156,14 +157,15 @@ public class SparePartMalfunctionController extends BaseController<SparePartMalf
     public ModelAndView exportXls(@ApiParam(value = "行数据ids" ,required = true) @RequestParam("ids") String ids, HttpServletRequest request, HttpServletResponse response) {
 		LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
 		ModelAndView mv = new ModelAndView(new JeecgEntityExcelView());
-		/*SparePartMalfunction partMalfunction = new SparePartMalfunction();
+		SparePartMalfunction partMalfunction = new SparePartMalfunction();
 		partMalfunction.setIds(Arrays.asList(ids.split(",")));
 		List<SparePartMalfunction> list = sparePartMalfunctionService.selectList(partMalfunction);
+		list = list.stream().distinct().collect(Collectors.toList());
 		//导出文件名称
 		mv.addObject(NormalExcelConstants.FILE_NAME, "备件出库履历详情");
 		mv.addObject(NormalExcelConstants.CLASS, SparePartMalfunction.class);
 		mv.addObject(NormalExcelConstants.PARAMS, new ExportParams("备件出库履历详情", "导出人:"+user.getRealname(), "导出信息"));
-		mv.addObject(NormalExcelConstants.DATA_LIST, list);*/
+		mv.addObject(NormalExcelConstants.DATA_LIST, list);
 		return mv;
     }
 

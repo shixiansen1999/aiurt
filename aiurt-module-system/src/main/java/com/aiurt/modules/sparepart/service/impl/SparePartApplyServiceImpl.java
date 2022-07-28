@@ -11,16 +11,20 @@ import com.aiurt.modules.sparepart.entity.SparePartApplyMaterial;
 import com.aiurt.modules.sparepart.entity.SparePartStockInfo;
 import com.aiurt.modules.sparepart.entity.dto.StockApplyExcel;
 import com.aiurt.modules.sparepart.mapper.SparePartApplyMapper;
+import com.aiurt.modules.sparepart.mapper.SparePartApplyMaterialMapper;
 import com.aiurt.modules.sparepart.service.ISparePartApplyMaterialService;
 import com.aiurt.modules.sparepart.service.ISparePartApplyService;
 import com.aiurt.modules.sparepart.service.ISparePartStockInfoService;
 import com.aiurt.modules.stock.entity.StockIncomingMaterials;
 import com.aiurt.modules.stock.entity.StockOutOrderLevel2;
+import com.aiurt.modules.stock.entity.StockOutboundMaterials;
 import com.aiurt.modules.stock.entity.StockSubmitPlan;
 import com.aiurt.modules.stock.mapper.StockOutOrderLevel2Mapper;
+import com.aiurt.modules.stock.mapper.StockOutboundMaterialsMapper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import javafx.scene.paint.Material;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.vo.LoginUser;
@@ -45,6 +49,8 @@ public class SparePartApplyServiceImpl extends ServiceImpl<SparePartApplyMapper,
     private SparePartApplyMapper sparePartApplyMapper;
     @Autowired
     private ISparePartApplyMaterialService sparePartApplyMaterialService;
+    @Autowired
+    private StockOutboundMaterialsMapper stockOutboundMaterialsMapper;
     @Autowired
     private ISparePartStockInfoService sparePartStockInfoService;
     @Autowired
@@ -75,6 +81,7 @@ public class SparePartApplyServiceImpl extends ServiceImpl<SparePartApplyMapper,
         if(!sparePartApply.getStockLevel2List().isEmpty()){
             sparePartApply.getStockLevel2List().stream().forEach(sparePartApplyMaterial ->{
                 sparePartApplyMaterial.setApplyId(sparePartApply.getId());
+                sparePartApplyMaterial.setWarehouseCode(sparePartApply.getApplyWarehouseCode());
                 sparePartApplyMaterial.setApplyCode(code);
             });
             sparePartApplyMaterialService.saveBatch(sparePartApply.getStockLevel2List());
@@ -100,6 +107,7 @@ public class SparePartApplyServiceImpl extends ServiceImpl<SparePartApplyMapper,
         if(!sparePartApply.getStockLevel2List().isEmpty()){
             sparePartApply.getStockLevel2List().stream().forEach(sparePartApplyMaterial ->{
                 sparePartApplyMaterial.setApplyId(sparePartApply.getId());
+                sparePartApplyMaterial.setWarehouseCode(sparePartApply.getApplyWarehouseCode());
                 sparePartApplyMaterial.setApplyCode(partApply.getCode());
             });
             sparePartApplyMaterialService.saveBatch(sparePartApply.getStockLevel2List());
@@ -117,20 +125,31 @@ public class SparePartApplyServiceImpl extends ServiceImpl<SparePartApplyMapper,
     @Transactional(rollbackFor = Exception.class)
     public Result<?> submit(SparePartApply sparePartApply) {
         SparePartApply partApply = getById(sparePartApply.getId());
-        //修改状态为“待确认”
+        //1.修改状态为“待确认”
         sparePartApplyMapper.updateById(sparePartApply);
-        //插入二级库出库表
+        //2.插入二级库出库表
         StockOutOrderLevel2 stockOutOrderLevel = new StockOutOrderLevel2();
-        //3.出库人为出库确认人，4.保管人为备件申领人
+        //生成出库单号
         String code = getStockOutCode();
         //EJCK+日期+自增3位
         stockOutOrderLevel.setOrderCode(code);
         //出库仓库为申领仓库
         stockOutOrderLevel.setWarehouseCode(partApply.getApplyWarehouseCode());
-        //保管人为备件申领人
+        //出库人为出库确认人，保管人为备件申领人
         stockOutOrderLevel.setCustodialId(partApply.getApplyUserId());
         stockOutOrderLevel.setCustodialWarehouseCode(partApply.getCustodialWarehouseCode());
         stockOutOrderLevel2Mapper.insert(stockOutOrderLevel);
+        //3.插入出库物资
+        List<SparePartApplyMaterial> list = sparePartApplyMaterialService.list(new LambdaQueryWrapper<SparePartApplyMaterial>().eq(SparePartApplyMaterial::getApplyId,sparePartApply.getId()));
+        list.forEach(applyMaterial ->{
+            StockOutboundMaterials stockOutboundMaterials = new StockOutboundMaterials();
+            stockOutboundMaterials.setOutOrderCode(applyMaterial.getOrderCode());
+            stockOutboundMaterials.setMaterialCode(applyMaterial.getMaterialCode());
+            stockOutboundMaterials.setWarehouseCode(partApply.getApplyWarehouseCode());
+            stockOutboundMaterials.setInventory(applyMaterial.getInventory());
+            stockOutboundMaterials.setApplyOutput(applyMaterial.getApplyNum());
+            stockOutboundMaterialsMapper.insert(stockOutboundMaterials);
+        });
         return Result.OK("编辑成功！");
     }
 

@@ -80,4 +80,7 @@ public class SparePartStockInfo extends DictEntity implements Serializable {
     @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
     @ApiModelProperty(value = "修改时间")
     private Date updateTime;
+    /**备注*/
+    @ApiModelProperty(value = "备注")
+    private String remarks;
 }

@@ -121,6 +121,11 @@ public class SparePartInOrderController extends BaseController<SparePartInOrder,
 		SparePartInOrder sparePartInOrder = new SparePartInOrder();
 		sparePartInOrder.setIds(Arrays.asList(ids.split(",")));
 		List<SparePartInOrder> list = sparePartInOrderService.selectList(null, sparePartInOrder);
+		list = list.stream().distinct().collect(Collectors.toList());
+        for(int i=0;i<list.size();i++){
+			SparePartInOrder order = list.get(i);
+			order.setNumber(i+1+"");
+		}
 		//导出文件名称
 		mv.addObject(NormalExcelConstants.FILE_NAME, "备件入库单列表");
 		mv.addObject(NormalExcelConstants.CLASS, SparePartInOrder.class);

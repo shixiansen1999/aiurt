@@ -5,7 +5,6 @@ import java.io.UnsupportedEncodingException;
 import java.util.Date;
 import java.math.BigDecimal;
 import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
@@ -19,72 +18,66 @@ import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
 
 /**
- * @Description: spare_part_apply_material
+ * @Description: spare_part_return_order
  * @Author: aiurt
- * @Date:   2022-07-20
+ * @Date:   2022-07-27
  * @Version: V1.0
  */
 @Data
-@TableName("spare_part_apply_material")
+@TableName("spare_part_return_order")
 @Accessors(chain = true)
 @EqualsAndHashCode(callSuper = false)
-@ApiModel(value="spare_part_apply_material对象", description="spare_part_apply_material")
-public class SparePartApplyMaterial implements Serializable {
+@ApiModel(value="spare_part_return_order对象", description="spare_part_return_order")
+public class SparePartReturnOrder implements Serializable {
     private static final long serialVersionUID = 1L;
 
-	/**自增主键id*/
+	/**主键id*/
 	@TableId(type = IdType.ASSIGN_ID)
-    @ApiModelProperty(value = "自增主键id")
+    @ApiModelProperty(value = "主键id")
     private String id;
-    /**申领id*/
-    @Excel(name = "申领id", width = 15)
-    @ApiModelProperty(value = "申领id")
-    private String applyId;
-    /**二级库出库单号*/
-    @Excel(name = "二级库出库单号", width = 15)
-    @ApiModelProperty(value = "二级库出库单号")
-    @TableField(exist = false)
-    private String orderCode;
-    /**出库仓库(申领仓库)*/
-    @Excel(name = "出库仓库(申领仓库)", width = 15)
-    @ApiModelProperty(value = "出库仓库(申领仓库)")
-    @Dict(dictTable ="stock_level2_info",dicText = "warehouse_name",dicCode = "warehouse_code")
-    private String warehouseCode;
-	/**申领编号*/
-	@Excel(name = "申领编号", width = 15)
-    @ApiModelProperty(value = "申领编号")
-    private String applyCode;
 	/**物资编号*/
 	@Excel(name = "物资编号", width = 15)
     @ApiModelProperty(value = "物资编号")
     private String materialCode;
-    /**仓库现有库存*/
-    @Excel(name = "仓库现有库存")
-    @ApiModelProperty(value = "仓库现有库存")
-    private  Integer  inventory;
-	/**申请出库数量*/
-	@Excel(name = "申请出库数量", width = 15)
-    @ApiModelProperty(value = "申请出库数量")
-    private Integer applyNum;
-	/**实际出库数量*/
-	@Excel(name = "实际出库数量", width = 15)
-    @ApiModelProperty(value = "实际出库数量")
-    private Integer actualNum;
+	/**退入的仓库编号*/
+	@Excel(name = "退入的仓库编号", width = 15)
+    @ApiModelProperty(value = "退入的仓库编号")
+    private String warehouseCode;
+	/**退库数量*/
+	@Excel(name = "退库数量", width = 15)
+    @ApiModelProperty(value = "退库数量")
+    private Integer num;
+	/**班组id*/
+	@Excel(name = "班组id", width = 15)
+    @ApiModelProperty(value = "班组id")
+    private String orgId;
 	/**备注*/
 	@Excel(name = "备注", width = 15)
     @ApiModelProperty(value = "备注")
     private String remarks;
+	/**退库时间*/
+	@Excel(name = "退库时间", width = 15, format = "yyyy-MM-dd")
+	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
+    @DateTimeFormat(pattern="yyyy-MM-dd")
+    @ApiModelProperty(value = "退库时间")
+    private Date returnTime;
+	/**退库人ID*/
+	@Excel(name = "退库人ID", width = 15)
+    @ApiModelProperty(value = "退库人ID")
+    private String userId;
+	/**状态：1待确认、2已确认*/
+	@Excel(name = "状态：1待确认、2已确认", width = 15)
+    @ApiModelProperty(value = "状态：1待确认、2已确认")
+    private Integer status;
 	/**删除状态(0.未删除 1.已删除)*/
 	@Excel(name = "删除状态(0.未删除 1.已删除)", width = 15)
     @ApiModelProperty(value = "删除状态(0.未删除 1.已删除)")
     private Integer delFlag;
 	/**创建人*/
     @ApiModelProperty(value = "创建人")
-    @Dict(dictTable ="sys_user",dicText = "realname",dicCode = "username")
     private String createBy;
 	/**修改人*/
     @ApiModelProperty(value = "修改人")
-    @Dict(dictTable ="sys_user",dicText = "realname",dicCode = "username")
     private String updateBy;
 	/**创建时间*/
 	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")

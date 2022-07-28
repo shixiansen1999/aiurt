@@ -1,7 +1,11 @@
 package com.aiurt.modules.sparepart.service;
 
+import com.aiurt.modules.sparepart.entity.SparePartInOrder;
 import com.aiurt.modules.sparepart.entity.SparePartMalfunction;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
+
+import java.util.List;
 
 /**
  * @Description: spare_part_malfunction
@@ -10,5 +14,11 @@ import com.baomidou.mybatisplus.extension.service.IService;
  * @Version: V1.0
  */
 public interface ISparePartMalfunctionService extends IService<SparePartMalfunction> {
-
+    /**
+     * 查询列表
+     * @param
+     * @param sparePartMalfunction
+     * @return
+     */
+    List<SparePartMalfunction> selectList(SparePartMalfunction sparePartMalfunction);
 }

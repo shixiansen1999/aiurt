@@ -39,13 +39,13 @@
         WHERE
             t.del_flag =0
             <if test="order.materialCode!=null and order.materialCode!=''">
-                and t1.`code` = #{order.materialCode}
+                and t1.`code` like   concat('%', #{order.materialCode}, '%')
             </if>
             <if test="order.name!=null and order.name!=''">
-                and t1.`name` = #{order.name}
+                and t1.`name` like concat('%',#{order.name}, '%')
             </if>
             <if test="order.warehouseName!=null and order.warehouseName!=''">
-                and t5.warehouse_name = #{order.warehouseName}
+                and t5.warehouse_name like concat('%',#{order.warehouseName}, '%')
             </if>
             <if test="order.confirmStatus!=null and order.confirmStatus!=''">
                 and t.confirm_status = #{order.confirmStatus}

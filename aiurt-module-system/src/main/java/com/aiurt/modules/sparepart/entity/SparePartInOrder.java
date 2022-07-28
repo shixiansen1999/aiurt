@@ -38,12 +38,16 @@ public class SparePartInOrder implements Serializable {
 	@TableId(type = IdType.ASSIGN_ID)
 	@ApiModelProperty(value = "主键ID")
 	private String id;
+	/**序号*/
+	@Excel(name = "序号", width = 15)
+	@TableField(exist = false)
+	private String number;
 	/**入库单状态：0-未确认 1-已确认*/
-	@Excel(name = "状态", width = 15)
 	@ApiModelProperty(value = "入库单状态：0-未确认 1-已确认")
 	@Dict(dicCode = "spare_in_order_status")
 	private String confirmStatus;
 	/**入库单状态名称*/
+	@Excel(name = "状态", width = 15)
 	@ApiModelProperty(value = "入库单状态名称")
 	@TableField(exist = false)
 	private String confirmStatusName;
@@ -64,12 +68,11 @@ public class SparePartInOrder implements Serializable {
 	@TableField(exist = false)
 	private  String  baseTypeCodeName;
 	/**物资类型*/
-	@Excel(name = "物资类型", width = 15)
 	@ApiModelProperty(value = "类型")
 	@TableField(exist = false)
 	private  Integer  type;
 	/**物资类型名称*/
-	@Excel(name = "物资类型名称", width = 15)
+	@Excel(name = "物资类型", width = 15)
 	@ApiModelProperty(value = "物资类型名称")
 	@TableField(exist = false)
 	private  String  typeName;
