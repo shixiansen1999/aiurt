@@ -306,7 +306,7 @@ public class FaultKnowledgeBaseController extends BaseController<FaultKnowledgeB
 	 })
 	 public Result<List<DeviceTypeTable>> getDeviceType(@RequestParam(name="majorCode",required = false) String majorCode,
 													  @RequestParam(name="systemCode",required = false) String systemCode,
-														@RequestParam(name="deviceCode",required = false) String deviceCode) {
+														@RequestParam(name="deviceCode",required = false) List<String> deviceCode) {
 		 List<DeviceTypeTable> deviceTypes = iSysBaseAPI.selectList(majorCode, systemCode,deviceCode);
 		 return Result.OK(deviceTypes);
 	 }
