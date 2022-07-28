@@ -9,7 +9,7 @@ import java.util.List;
 @ApiModel("知识库下拉列表")
 public class SelectTableDTO {
 
-    private Integer id;
+    private String id;
 
     private String key;
 
@@ -17,7 +17,11 @@ public class SelectTableDTO {
 
     private String label;
 
-    private Integer pid;
+    private String pid;
+
+    private String systemCode;
+
+    private String majorCode;
 
     List<SelectTableDTO> children;
 

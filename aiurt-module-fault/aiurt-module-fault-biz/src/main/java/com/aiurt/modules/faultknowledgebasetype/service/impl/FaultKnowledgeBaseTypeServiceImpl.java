@@ -73,6 +73,8 @@ public class FaultKnowledgeBaseTypeServiceImpl extends ServiceImpl<FaultKnowledg
                         selectTableDTO.setLabel(csUserSubsystemModel.getSystemName());
                         selectTableDTO.setValue(csUserSubsystemModel.getSystemCode());
                         selectTableDTO.setIsBaseType(false);
+                        selectTableDTO.setSystemCode(csUserSubsystemModel.getSystemCode());
+                        selectTableDTO.setMajorCode(majorDTO.getMajorCode());
                         //获取子节点
                         List<FaultKnowledgeBaseType> baseTypeList = faultKnowledgeBaseTypes.stream().filter(f -> f.getSystemCode().equals(csUserSubsystemModel.getSystemCode()) && f.getMajorCode().equals(majorDTO.getMajorCode())).collect(Collectors.toList());
                         List<SelectTableDTO> childrenTress = new ArrayList<>();
@@ -84,9 +86,11 @@ public class FaultKnowledgeBaseTypeServiceImpl extends ServiceImpl<FaultKnowledg
                             selectTable.setValue(f.getCode());
                             selectTable.setPid(f.getPid());
                             selectTable.setIsBaseType(true);
+                            selectTable.setSystemCode(f.getSystemCode());
+                            selectTable.setMajorCode(majorDTO.getMajorCode());
                             childrenTress.add(selectTable);
                         });
-                        List<SelectTableDTO> treeRes = getTreeRes(childrenTress, 0);
+                        List<SelectTableDTO> treeRes = getTreeRes(childrenTress, "0");
                         selectTableDTO.setChildren(treeRes);
                         selectTableDTOList.add(selectTableDTO);
                     }
@@ -102,9 +106,11 @@ public class FaultKnowledgeBaseTypeServiceImpl extends ServiceImpl<FaultKnowledg
                         selectTable.setLabel(f.getName());
                         selectTable.setValue(f.getCode());
                         selectTable.setPid(f.getPid());
+                        selectTable.setSystemCode(f.getSystemCode());
+                        selectTable.setMajorCode(majorDTO.getMajorCode());
                         childrenTress.add(selectTable);
                     });
-                    List<SelectTableDTO> treeRes = getTreeRes(childrenTress, 0);
+                    List<SelectTableDTO> treeRes = getTreeRes(childrenTress, "0");
                     majorDTO.setChildren(treeRes);
                 }
             }
@@ -114,7 +120,7 @@ public class FaultKnowledgeBaseTypeServiceImpl extends ServiceImpl<FaultKnowledg
         return null;
     }
 
-    List<SelectTableDTO> getTreeRes(List<SelectTableDTO> children, Integer pid){
+    List<SelectTableDTO> getTreeRes(List<SelectTableDTO> children, String pid){
         List<SelectTableDTO> childList = children.stream().filter(f -> f.getPid().equals(pid)).collect(Collectors.toList());
         if(CollectionUtil.isNotEmpty(childList)){
             for (SelectTableDTO selectTableDTO : childList) {
@@ -126,7 +132,8 @@ public class FaultKnowledgeBaseTypeServiceImpl extends ServiceImpl<FaultKnowledg
 
     @Override
     public void add(FaultKnowledgeBaseType faultKnowledgeBaseType) {
-        if (faultKnowledgeBaseType.getPid() == 0) {
+        String pid = "0";
+        if ((pid).equals(faultKnowledgeBaseType.getPid())) {
             faultKnowledgeBaseType.setCodeCc("/" + faultKnowledgeBaseType.getCode() + "/");
         } else {
             FaultKnowledgeBaseType f = faultKnowledgeBaseTypeMapper.selectById(faultKnowledgeBaseType.getPid());

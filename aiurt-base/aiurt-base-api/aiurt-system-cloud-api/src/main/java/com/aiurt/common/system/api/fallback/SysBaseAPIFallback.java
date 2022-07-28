@@ -1,5 +1,6 @@
 package com.aiurt.common.system.api.fallback;
 
+import com.aiurt.common.api.dto.quartz.QuartzJobDTO;
 import com.aiurt.modules.device.entity.DeviceType;
 import org.jeecg.common.api.dto.OnlineAuthDTO;
 import com.aiurt.common.api.dto.message.*;
@@ -317,6 +318,21 @@ public class SysBaseAPIFallback implements ISysBaseAPI {
 
     @Override
     public List<DeviceType> selectList(String majorCode, String systemCode) {
+        return null;
+    }
+
+    @Override
+    public void saveAndScheduleJob(QuartzJobDTO quartzJobDTO) {
+
+    }
+
+    @Override
+    public void deleteAndStopJob(QuartzJobDTO quartzJobDTO) {
+
+    }
+
+    @Override
+    public SysDepartModel getDepartByOrgCode(String orgCode) {
         return null;
     }
 

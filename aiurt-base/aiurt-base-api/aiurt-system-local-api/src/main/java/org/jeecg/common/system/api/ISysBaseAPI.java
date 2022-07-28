@@ -424,7 +424,7 @@ public interface ISysBaseAPI extends CommonAPI {
      * @param orgCode
      * @return
      */
-    public SysDepartModel getDepartByOrgCode(String orgCode);
+    SysDepartModel getDepartByOrgCode(String orgCode);
     /**
      * 通过code查询地点名称（这三个中的一个：线路、站点、位置）
      * @param code

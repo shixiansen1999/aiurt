@@ -1,12 +1,13 @@
 package com.aiurt.common.system.api;
 
 import com.aiurt.common.api.CommonAPI;
-import com.aiurt.modules.device.entity.DeviceType;
-import org.jeecg.common.api.dto.OnlineAuthDTO;
 import com.aiurt.common.api.dto.message.*;
+import com.aiurt.common.api.dto.quartz.QuartzJobDTO;
 import com.aiurt.common.constant.ServiceNameConstants;
 import com.aiurt.common.system.api.factory.SysBaseAPIFallbackFactory;
+import com.aiurt.modules.device.entity.DeviceType;
 import com.alibaba.fastjson.JSONObject;
+import org.jeecg.common.api.dto.OnlineAuthDTO;
 import org.jeecg.common.system.vo.*;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingClass;
 import org.springframework.cloud.openfeign.FeignClient;
@@ -555,4 +556,23 @@ public interface ISysBaseAPI extends CommonAPI {
     @GetMapping(value = "/sys/api/selectList")
     List<DeviceType> selectList(String majorCode, String systemCode);
 
+    /**
+     * 定时任务
+     */
+    @GetMapping(value = "/sys/api/saveAndScheduleJob")
+    void saveAndScheduleJob(QuartzJobDTO quartzJobDTO);
+
+    /**
+     * 定时任务
+     */
+    @GetMapping(value = "/sys/api/deleteAndStopJob")
+    void deleteAndStopJob(QuartzJobDTO quartzJobDTO);
+
+    /**
+     * 通过部门编号查询部门信息
+     * @param orgCode
+     * @return
+     */
+    @GetMapping(value = "/sys/api/getDepartByOrgCode")
+    SysDepartModel getDepartByOrgCode(String orgCode);
 }

@@ -36,7 +36,7 @@ public class FaultKnowledgeBaseType implements Serializable {
 	/**主键id*/
 	@TableId(type = IdType.ASSIGN_ID)
     @ApiModelProperty(value = "主键id")
-    private Integer id;
+    private String id;
 	/**子系统编号:0的时候为其他，非0为系统编号*/
 	@Excel(name = "子系统编号:0的时候为其他，非0为系统编号", width = 15)
     @ApiModelProperty(value = "子系统编号:0的时候为其他，非0为系统编号")
@@ -45,7 +45,7 @@ public class FaultKnowledgeBaseType implements Serializable {
 	/**父id:0的时候为子系统下第一级*/
 	@Excel(name = "父id:0的时候为子系统下第一级", width = 15)
     @ApiModelProperty(value = "父id:0的时候为子系统下第一级")
-    private Integer pid;
+    private String pid;
 	/**类型名称*/
 	@Excel(name = "类型名称", width = 15)
     @ApiModelProperty(value = "类型名称")
