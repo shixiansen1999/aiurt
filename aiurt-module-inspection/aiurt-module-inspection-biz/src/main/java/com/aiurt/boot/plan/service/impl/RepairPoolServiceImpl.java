@@ -356,8 +356,16 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
             re.setName(repairPool.getName());
             // 计划编码
             re.setCode(repairPool.getCode());
-            // 计划所属周
-            re.setWeeks(repairPool.getWeeks());
+            // 所属周（相对年）
+            re.setWeeks(String.valueOf(repairPool.getWeeks()));
+            if (repairPool.getStartTime() != null && repairPool.getWeeks() != null) {
+                Date[] dateByWeek = DateUtils.getDateByWeek(DateUtil.year(repairPool.getStartTime()), repairPool.getWeeks());
+                if (dateByWeek.length != 0) {
+                    String weekName = String.format("第%d周(%s~%s)", repairPool.getWeeks(), DateUtil.format(dateByWeek[0], "yyyy/MM/dd"), DateUtil.format(dateByWeek[1], "yyyy/MM/dd"));
+                    // 计划所属周
+                    re.setWeeks(weekName);
+                }
+            }
             // 退回理由
             re.setRemark(repairPool.getRemark());
             // 状态
@@ -791,8 +799,13 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
         }
 
         List<String> ids = assignDTO.getIds();
-        if (CollUtil.isEmpty(ids)) {
-            throw new AiurtBootException(InspectionConstant.ILLEGAL_OPERATION);
+        if (CollUtil.isEmpty(ids)
+                || CollUtil.isEmpty(assignDTO.getUserIds())
+                || ObjectUtil.isEmpty(assignDTO.getStartTime())
+                || ObjectUtil.isEmpty(assignDTO.getEndTime())
+                || StrUtil.isEmpty(assignDTO.getWorkType())
+                || assignDTO.getIsManual() == null) {
+            throw new AiurtBootException(InspectionConstant.INCOMPLETE_PARAMETERS);
         }
 
         // 是否已经被指派过

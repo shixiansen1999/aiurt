@@ -19,7 +19,7 @@ public class RepairPoolDetailsDTO {
     private java.lang.String code;
 
     @ApiModelProperty(value = "所属周")
-    private java.lang.Integer weeks;
+    private java.lang.String weeks;
 
     @ApiModelProperty(value = "适用站点")
     private String stationName;
