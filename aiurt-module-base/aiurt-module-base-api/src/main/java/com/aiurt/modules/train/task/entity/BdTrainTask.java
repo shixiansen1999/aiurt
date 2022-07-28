@@ -133,7 +133,7 @@ public class BdTrainTask implements Serializable ,Cloneable{
 	/**培训表单任务状态（0：未开始，1：进行中（培训中），2：已暂停，3：结束培训，已关闭（taskState>2）*/
 	@Excel(name = "培训表单任务状态（0：待发布；1：已发布；2：培训中；3：待考试；4：考试中；5：待复核；6;待评估；7：已完成;8:已删除）", width = 15)
     @ApiModelProperty(value = "培训表单任务状态（0：待发布；1：已发布；2：培训中；3：待考试；4：考试中；5：待复核；6;待评估；7：已完成）")
-    @Dict(dicCode = "task_state")
+    @Dict(dicCode = "train_task_state")
     private Integer taskState;
 	/**培训轮数*/
 	@Excel(name = "培训轮数", width = 15)

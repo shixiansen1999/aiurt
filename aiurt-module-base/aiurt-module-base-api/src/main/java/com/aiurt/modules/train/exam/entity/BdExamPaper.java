@@ -177,7 +177,7 @@ public class BdExamPaper implements Serializable {
 
     @ApiModelProperty(value = "计划任务状态")
     @TableField(exist = false)
-    @Dict(dicCode = "task_state")
+    @Dict(dicCode = "train_task_state")
     private Integer taskState;
 
     @ApiModelProperty(value = "参考人数")

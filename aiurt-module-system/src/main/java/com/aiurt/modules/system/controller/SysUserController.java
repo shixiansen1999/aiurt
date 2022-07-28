@@ -5,28 +5,17 @@ import cn.hutool.core.util.RandomUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.constant.CommonConstant;
+import com.aiurt.common.system.util.JwtUtil;
+import com.aiurt.common.util.ImportExcelUtil;
+import com.aiurt.common.util.PasswordUtil;
 import com.aiurt.common.util.RedisUtil;
+import com.aiurt.common.util.oConvertUtils;
 import com.aiurt.modules.major.entity.CsMajor;
 import com.aiurt.modules.major.service.ICsMajorService;
 import com.aiurt.modules.subsystem.entity.CsSubsystem;
 import com.aiurt.modules.subsystem.service.ICsSubsystemService;
-import com.aiurt.modules.system.mapper.*;
-import com.aiurt.modules.system.service.impl.CsUserDepartServiceImpl;
-import com.aiurt.modules.system.service.impl.CsUserMajorServiceImpl;
-import com.aiurt.modules.system.service.impl.CsUserStaionServiceImpl;
-import com.aiurt.modules.system.service.impl.CsUserSubsystemServiceImpl;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import org.jeecg.common.system.api.ISysBaseAPI;
-import org.jeecg.common.system.query.QueryGenerator;
-import com.aiurt.common.system.util.JwtUtil;
-import org.jeecg.common.system.vo.*;
-import com.aiurt.common.util.ImportExcelUtil;
-import com.aiurt.common.util.PasswordUtil;
-import com.aiurt.common.util.oConvertUtils;
-import org.jeecg.common.util.SpringContextUtils;
-import org.jeecg.modules.base.service.BaseCommonService;
 import com.aiurt.modules.system.entity.*;
+import com.aiurt.modules.system.mapper.*;
 import com.aiurt.modules.system.model.DepartIdModel;
 import com.aiurt.modules.system.model.SysUserSysDepartModel;
 import com.aiurt.modules.system.service.*;
@@ -40,11 +29,17 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.system.api.ISysBaseAPI;
+import org.jeecg.common.system.query.QueryGenerator;
+import org.jeecg.common.system.vo.*;
+import org.jeecg.common.util.SpringContextUtils;
+import org.jeecg.modules.base.service.BaseCommonService;
 import org.jeecgframework.poi.excel.ExcelImportUtil;
 import org.jeecgframework.poi.excel.def.NormalExcelConstants;
 import org.jeecgframework.poi.excel.entity.ExportParams;
@@ -121,7 +116,8 @@ public class SysUserController {
     private CsUserMajorMapper csUserMajorMapper;
     @Autowired
     private CsUserSubsystemMapper csUserSubsystemMapper;
-
+    @Autowired
+    private SysUserMapper userMapper;
 
     /**
      * 获取用户列表数据
@@ -1550,5 +1546,29 @@ public class SysUserController {
     public Result<?> getSubsystemByMajor(@RequestParam(name = "majorId", required = false) String majorId) {
         List<CsSubsystem> list = csSubsystemService.list(new LambdaQueryWrapper<CsSubsystem>().eq(CsSubsystem::getDelFlag, 0).eq(CsSubsystem::getMajorCode, majorId));
         return Result.OK(list);
+    }
+
+    /**
+     * 根据部门查询人员
+     *
+     * @param user
+     * @return
+     */
+    @AutoLog(value = "根据部门查询人员")
+    @ApiOperation(value="根据部门查询人员", notes="根据部门查询人员")
+    @GetMapping(value = "/getTrainUser")
+    public Result<IPage<SysUser>> getTrainUser(LoginUser user,
+                                  @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
+                                  @RequestParam(name="pageSize", defaultValue="10") Integer pageSize){
+        Page<SysUser> page = new Page<SysUser>(pageNo, pageSize);
+        LambdaQueryWrapper<SysUser> queryWrapper = new LambdaQueryWrapper<>();
+        if (StringUtils.isNotBlank(user.getOrgId())) {
+            queryWrapper.eq(SysUser::getOrgId, user.getOrgId());
+        }
+        if (StringUtils.isNotBlank(user.getId())) {
+            queryWrapper.ne(SysUser::getId, user.getId());
+        }
+        IPage<SysUser> pageList = sysUserService.page(page, queryWrapper);
+        return Result.OK(pageList);
     }
 }
