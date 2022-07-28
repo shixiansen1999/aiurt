@@ -126,6 +126,7 @@ public class WorkLogRemindController {
             int hour = remindTime.getHour();
             int minute = remindTime.getMinute();
             int second = remindTime.getSecond();
+            //String cron = "*/10 * * * * ?";
             String cron = second + " " + minute + " "+ hour + " " + "* * ?";
             quartzUtils.addJob(QuartConstant.WORK_LOG_JOB +workLogRemind.getOrgId(),
                     QuartConstant.WORK_LOG_JOB+workLogRemind.getOrgId()+QuartConstant.GROUP,

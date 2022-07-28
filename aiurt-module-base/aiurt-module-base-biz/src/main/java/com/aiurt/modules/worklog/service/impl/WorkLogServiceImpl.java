@@ -41,7 +41,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
-import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -117,7 +116,7 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
         depot.setSubmitId(userId);
         depot.setCreateBy(userId);
         //根据当前登录人id获取故障待办消息
-        String nowday = new SimpleDateFormat("yyyy-MM-dd").format(dto.getLogTime());
+        //String nowday = new SimpleDateFormat("yyyy-MM-dd").format(dto.getLogTime());
         //todo 待处理
 //        List<FaultRepairRecordResult> message = recordMapper.getWaitMessage(depot.getCreateBy(),nowday+" 00:00:00",nowday+" 23:59:59");
 //        if (ObjectUtil.isNotEmpty(message)) {

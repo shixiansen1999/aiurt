@@ -13,7 +13,6 @@ import lombok.experimental.Accessors;
 import org.jeecgframework.poi.excel.annotation.Excel;
 import org.springframework.format.annotation.DateTimeFormat;
 
-import javax.validation.constraints.NotNull;
 import java.util.Date;
 
 /**
@@ -101,13 +100,13 @@ public class WorkLog {
     @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
     @DateTimeFormat(pattern="yyyy-MM-dd")
     @ApiModelProperty(value = "日期")
-    @NotNull(message = "日期不能为空")
+    //@NotNull(message = "日期不能为空")
     private  Date  logTime;
 
     /**工作内容*/
     @Excel(name = "工作内容", width = 15)
     @ApiModelProperty(value = "工作内容")
-    @NotNull(message = "工作内容不能为空")
+    //@NotNull(message = "工作内容不能为空")
     private  Object  workContent;
 
     /**交接班内容*/
