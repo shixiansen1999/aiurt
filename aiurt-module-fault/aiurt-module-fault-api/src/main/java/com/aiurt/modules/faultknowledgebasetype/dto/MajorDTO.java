@@ -31,4 +31,8 @@ public class MajorDTO {
     private String label;
 
     List<SelectTableDTO> children;
+
+
+    /**是否是知识库类别*/
+    private Boolean isBaseType;
 }

@@ -18,7 +18,9 @@ import com.aiurt.common.util.oConvertUtils;
 import com.aiurt.modules.basic.entity.SysAttachment;
 import com.aiurt.modules.basic.service.ISysAttachmentService;
 import com.aiurt.modules.common.entity.DeviceTypeTable;
+import com.aiurt.modules.device.entity.Device;
 import com.aiurt.modules.device.entity.DeviceType;
+import com.aiurt.modules.device.mapper.DeviceMapper;
 import com.aiurt.modules.device.service.IDeviceTypeService;
 import com.aiurt.modules.message.entity.SysMessageTemplate;
 import com.aiurt.modules.message.handle.impl.EmailSendMsgHandle;
@@ -139,6 +141,9 @@ public class SysBaseApiImpl implements ISysBaseAPI {
 
     @Autowired
     private IQuartzJobService quartzJobService;
+
+    @Autowired
+    private DeviceMapper deviceMapper;
 
     @Override
     @Cacheable(cacheNames = CacheConstant.SYS_USERS_CACHE, key = "#username")
@@ -1337,7 +1342,8 @@ public class SysBaseApiImpl implements ISysBaseAPI {
         List<CsStation> stationList = csStationMapper.selectList(new LambdaQueryWrapper<CsStation>().eq(CsStation::getDelFlag, CommonConstant.DEL_FLAG_0));return stationList; }
 
     @Override
-    public List<DeviceTypeTable> selectList(String majorCode, String systemCode) {
+    public List<DeviceTypeTable> selectList(String majorCode, String systemCode,String deviceCode) {
+
         QueryWrapper<DeviceType> deviceTypeQueryWrapper = new QueryWrapper<DeviceType>();
         deviceTypeQueryWrapper.eq("del_flag", CommonConstant.DEL_FLAG_0);
         if(majorCode != null && !"".equals(majorCode)){
@@ -1347,6 +1353,15 @@ public class SysBaseApiImpl implements ISysBaseAPI {
             deviceTypeQueryWrapper.eq("system_code", systemCode);
         }
         deviceTypeQueryWrapper.orderByDesc("create_time");
+
+        if (StringUtils.isNotBlank(deviceCode)) {
+            String[] split = deviceCode.split(",");
+            List<String> deviceCodes = Arrays.asList(split);
+            LambdaQueryWrapper<Device> queryWrapper = new LambdaQueryWrapper<>();
+            List<Device> devices = deviceMapper.selectList(queryWrapper.in(Device::getCode, deviceCodes));
+            List<String> collect = devices.stream().map(Device::getDeviceTypeCode).collect(Collectors.toList());
+            deviceTypeQueryWrapper.in("`code`", collect);
+        }
         List<DeviceType> deviceTypeList = deviceTypeService.list(deviceTypeQueryWrapper);
         List<DeviceTypeTable> list = new ArrayList<>();
         deviceTypeList.forEach(deviceType -> {

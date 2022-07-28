@@ -63,6 +63,7 @@ public class FaultKnowledgeBaseTypeServiceImpl extends ServiceImpl<FaultKnowledg
                 majorDTO.setKey(majorDTO.getId());
                 majorDTO.setLabel(majorDTO.getMajorName());
                 majorDTO.setValue(majorDTO.getMajorCode());
+                majorDTO.setIsBaseType(false);
                 List<SelectTableDTO> selectTableDTOList = new ArrayList<>();
                 //用户拥有的专业的子系统
                 if (CollectionUtil.isNotEmpty(subsystemByUserId)) {
