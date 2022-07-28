@@ -446,6 +446,13 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
             }
         }
 
+        //根据站点编码翻译站点名称
+        if (checkListDTO.getStationCode() != null) {
+            String s = manager.translateStation(checkListDTO.getStationCode());
+            checkListDTO.setStationsName(s);
+            checkListDTO.setSiteCode(checkListDTO.getStationCode());
+        }
+
         //专业
         checkListDTO.setMajorName(manager.translateMajor(Arrays.asList(checkListDTO.getMajorCode()), InspectionConstant.MAJOR));
 
@@ -463,14 +470,6 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
             checkListDTO.setDeviceTypeCode(q.getDeviceTypeCode());
             //设备id
             checkListDTO.setEquipmentId(q.getDeviceId());
-            //根据站点编码翻译站点名称
-            if (q.getStationCode() != null) {
-                String s = manager.translateStation(q.getStationCode());
-                checkListDTO.setStationsName(s);
-                checkListDTO.setSiteCode(q.getStationCode());
-            }
-            //线路编码
-            checkListDTO.setLineCode(q.getLineCode());
             //设备专业
             checkListDTO.setDeviceMajorName(q.getMajorName());
             //设备子系统
