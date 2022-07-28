@@ -524,9 +524,9 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
             repairTaskResultList.forEach(r -> {
                 List<RepairTaskResult> children = r.getChildren();
                 //获取检修单的检修结果子
+                list.add(r.getId());
                 if (CollectionUtil.isNotEmpty(children)) {
                     List<String> collect = children.stream().map(RepairTaskResult::getId).collect(Collectors.toList());
-                    list.add(r.getId());
                     if (CollectionUtil.isNotEmpty(collect)) {
                         list.addAll(collect);
                     }
