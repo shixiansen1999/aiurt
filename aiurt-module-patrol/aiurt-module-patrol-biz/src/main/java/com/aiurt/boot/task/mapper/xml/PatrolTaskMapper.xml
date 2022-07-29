@@ -157,8 +157,8 @@
         FROM
         patrol_task t1
         where t1.source = 3 and t1.status in (0,3) and t1.discard_status = 0 and t1.omit_status=0
-        and t1.CODE IN ( SELECT t2.task_code FROM patrol_task_organization t2 WHERE t2.task_code = t1.CODE AND
-            t2.org_code = #{patrolTaskDTO.loginOrgId})
+<!--        and t1.CODE IN ( SELECT t2.task_code FROM patrol_task_organization t2 WHERE t2.task_code = t1.CODE AND-->
+<!--            t2.org_code = #{patrolTaskDTO.loginOrgId})-->
         <if test="patrolTaskDTO.stationCode!=null and patrolTaskDTO.stationCode!=''">
             and t1.code in(select t3.task_code from patrol_task_station t3 where t3.station_code =
             #{patrolTaskDTO.stationCode})

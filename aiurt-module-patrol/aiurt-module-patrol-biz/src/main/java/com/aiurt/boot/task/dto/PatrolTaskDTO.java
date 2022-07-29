@@ -83,7 +83,7 @@ public class PatrolTaskDTO
     /*** 任务获取方式：1 常规分发、2常规指派、3 手工下发*/
     @Excel(name = "任务获取方式：1 常规分发、2常规指派、3 手工下发", width = 15)
     @ApiModelProperty(value = "任务获取方式：1 常规分发、2常规指派、3 手工下发")
-    private java.lang.Integer source;
+    private java.lang.String source;
     /*** 是否需要审核：0否、1是*/
     @Excel(name = "是否需要审核：0否、1是", width = 15)
     @ApiModelProperty(value = "是否需要审核：0否、1是")
