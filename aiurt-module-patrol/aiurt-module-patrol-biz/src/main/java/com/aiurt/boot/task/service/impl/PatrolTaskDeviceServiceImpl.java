@@ -404,9 +404,9 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
     @Override
     public List<PatrolCheckResultDTO> getPatrolTaskCheck(PatrolTaskDevice patrolTaskDevice,Integer checkDetail) {
         PatrolTask patrolTask = patrolTaskMapper.selectById(patrolTaskDevice.getTaskId());
-        if(manager.checkTaskUser(patrolTask.getCode())==false)
+        if(manager.checkTaskUser(patrolTask.getCode())==false&&ObjectUtil.isNull(checkDetail))
         {
-            throw new AiurtBootException("小主，该巡检任务不在您的检查范围之内哦");
+                throw new AiurtBootException("小主，该巡检任务不在您的检查范围之内哦");
         }
         else {
             //更新任务状态（将未开始改为执行中）、添加开始检查时间，传任务主键id,巡检工单主键

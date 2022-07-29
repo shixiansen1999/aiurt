@@ -239,6 +239,8 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
             patrolTaskDTO.setDateEnd(dateEnd);
 
         }
+        LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        patrolTaskDTO.setLoginOrgId(sysUser.getOrgCode());
         List<PatrolTaskDTO> taskList = patrolTaskMapper.getPatrolTaskPoolList(pageList, patrolTaskDTO);
         taskList.stream().forEach(e -> {
             String userName = patrolTaskMapper.getUserName(e.getBackId());
@@ -263,6 +265,8 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
 
     @Override
     public Page<PatrolTaskDTO> getPatrolTaskList(Page<PatrolTaskDTO> pageList, PatrolTaskDTO patrolTaskDTO) {
+        LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        patrolTaskDTO.setLoginOrgId(sysUser.getOrgCode());
         List<PatrolTaskDTO> taskList = patrolTaskMapper.getPatrolTaskList(pageList, patrolTaskDTO);
         taskList.stream().forEach(e -> {
             String userName = patrolTaskMapper.getUserName(e.getBackId());
@@ -443,6 +447,8 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
             patrolTaskDTO.setDateEnd(dateEnd);
 
         }
+        LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        patrolTaskDTO.setLoginOrgId(sysUser.getOrgCode());
         List<PatrolTaskDTO> taskDTOList = patrolTaskMapper.getPatrolTaskManualList(pageList, patrolTaskDTO);
         taskDTOList.stream().forEach(e -> {
             String userName = patrolTaskMapper.getUserName(e.getBackId());
