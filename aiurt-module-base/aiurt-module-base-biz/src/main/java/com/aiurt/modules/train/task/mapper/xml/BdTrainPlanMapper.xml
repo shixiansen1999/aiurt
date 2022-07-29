@@ -12,8 +12,12 @@
         btt.task_hours,
 <!--        su.realname as teacher,-->
         btt.train_target,
-    <!--        vd.item_text as examnation,-->
-    <!--        vd2.item_text as performance,-->
+        btt.exam_status,
+        btt.task_state,
+         ( select realname from sys_user where id = btt.teacher_id) as teacher,
+         ( select depart_name from  sys_depart  where id = btt.task_team_id) as sysOrgCode,
+<!--            vd.item_text as examnation,-->
+<!--            vd2.item_text as performance,-->
         btt.remarks
         FROM
         bd_train_task btt

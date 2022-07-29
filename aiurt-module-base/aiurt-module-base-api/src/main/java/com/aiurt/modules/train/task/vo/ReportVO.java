@@ -1,5 +1,6 @@
 package com.aiurt.modules.train.task.vo;
 
+import com.aiurt.common.aspect.annotation.Dict;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import org.jeecgframework.poi.excel.annotation.Excel;
@@ -49,12 +50,20 @@ public class ReportVO implements Serializable {
     @Excel(name = "有无考核", width = 15)
     @ApiModelProperty(value = "有无考核")
     private String examnation;
+    @Excel(name = "有无考核", width = 15)
+    @ApiModelProperty(value = "有无考核")
+    @Dict(dicCode = "examStatus_type")
+    private Integer examStatus;
     @Excel(name = "考核及格率", width = 15)
     @ApiModelProperty(value = "考核及格率")
     private String examPassRate;
     @Excel(name = "完成情况", width = 15)
     @ApiModelProperty(value = "完成情况")
     private String performance;
+    @Excel(name = "完成情况", width = 15)
+    @ApiModelProperty(value = "完成情况")
+    @Dict(dicCode = "train_task_state")
+    private Integer taskState;
     @Excel(name = "是否为计划内", width = 15)
     @ApiModelProperty(value = "是否为计划内")
     private String isPlan;
