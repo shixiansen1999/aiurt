@@ -1549,7 +1549,7 @@ public class SysUserController {
     }
 
     /**
-     * 根据部门查询人员
+     * 根据部门查询人员(培训管理用)
      *
      * @param user
      * @return
