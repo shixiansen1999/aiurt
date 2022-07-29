@@ -38,6 +38,6 @@
     <select id="number" resultType="java.lang.Integer">
         SELECT COUNT(inspection_str_rel.inspection_sta_code)as number
         FROM inspection_str_rel
-        WHERE inspection_str_rel.inspection_str_code=#{code}
+        WHERE inspection_str_rel.inspection_sta_code=#{code}
     </select>
 </mapper>
