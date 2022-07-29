@@ -452,9 +452,9 @@ public interface CommonConstant {
   */
  public static final String STOCK_LEVEL2_SUBMIT_PLAN_1 = "1";
  /**
-  * 二级库盘点状态待确认
+  * 二级库盘点状态待执行-3
   */
- public static final String STOCK_LEVEL2_CHECK_2 = "2";
+ public static final String STOCK_LEVEL2_CHECK_3 = "3";
  /**
   * 备件申领状态已确认-3
   */
@@ -463,6 +463,14 @@ public interface CommonConstant {
   * 备件入库记录表确认状态未确认-0
   */
  public static final String SPARE_PART_IN_ORDER_CONFRM_STATUS_0 = "0";
+ /**
+  * 二级库盘点状态执行中-4
+  */
+ public static final String StOCK_LEVEL2_CHECK_STATUS_4 = "4";
+ /**
+  * 二级库盘点状态已完成-5
+  */
+ public static final String StOCK_LEVEL2_CHECK_STATUS_5 = "5";
   /**
   * 超级管理员角色编码
   */

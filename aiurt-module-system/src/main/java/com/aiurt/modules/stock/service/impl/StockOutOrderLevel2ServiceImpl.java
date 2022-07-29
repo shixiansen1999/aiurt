@@ -14,10 +14,7 @@ import com.aiurt.modules.sparepart.service.ISparePartApplyService;
 import com.aiurt.modules.sparepart.service.ISparePartInOrderService;
 import com.aiurt.modules.stock.entity.*;
 import com.aiurt.modules.stock.mapper.StockOutOrderLevel2Mapper;
-import com.aiurt.modules.stock.service.IStockOutOrderLevel2Service;
-import com.aiurt.modules.stock.service.IStockIncomingMaterialsService;
-import com.aiurt.modules.stock.service.IStockLevel2Service;
-import com.aiurt.modules.stock.service.IStockOutboundMaterialsService;
+import com.aiurt.modules.stock.service.*;
 import com.aiurt.modules.subsystem.entity.CsSubsystem;
 import com.aiurt.modules.subsystem.service.ICsSubsystemService;
 import com.aiurt.modules.system.service.impl.SysBaseApiImpl;
@@ -61,6 +58,12 @@ public class StockOutOrderLevel2ServiceImpl extends ServiceImpl<StockOutOrderLev
 	private ISparePartApplyMaterialService iSparePartApplyMaterialService;
 	@Autowired
 	private ISparePartInOrderService iSparePartInOrderService;
+    @Autowired
+    private IStockLevel2CheckService iStockLevel2CheckService;
+    @Autowired
+    private IStockLevel2CheckDetailService iStockLevel2CheckDetailService;
+    @Autowired
+    private IStockLevel2Service stockLevel2Service;
 
 	@Override
 	public IPage<StockOutOrderLevel2> pageList(Page<StockOutOrderLevel2> page, StockOutOrderLevel2 stockOutOrderLevel2) {
@@ -85,22 +88,26 @@ public class StockOutOrderLevel2ServiceImpl extends ServiceImpl<StockOutOrderLev
 		}
 		sparePartApply.setUserId(stockOutOrderLevel2.getUserId());
 		sparePartApply.setOutTime(stockOutOrderLevel2.getOutTime());
+		sparePartApply.setOutOrderRemark(stockOutOrderLevel2.getRemark());
 		sparePartApply.setTotalCount(count);
 		sparePartApply.setStockOutboundMaterialsList(stockOutboundMaterials);
 		return sparePartApply;
 	}
 
 	@Override
-	public void confirmOutOrder(SparePartApply sparePartApply) throws ParseException {
+	public void confirmOutOrder(SparePartApply sparePartApply, StockOutOrderLevel2 stockOutOrderLevel2) throws ParseException {
+        String warehouseCode = stockOutOrderLevel2.getWarehouseCode();
+        List<StockLevel2Check> stockLevel2CheckList = iStockLevel2CheckService.list(new QueryWrapper<StockLevel2Check>().eq("del_flag", CommonConstant.DEL_FLAG_0)
+                .eq("warehouse_code",warehouseCode).ne("status",CommonConstant.StOCK_LEVEL2_CHECK_STATUS_5));
 		String orderCode = sparePartApply.getOrderCode();
 		List<StockOutboundMaterials> stockOutboundMaterials = sparePartApply.getStockOutboundMaterialsList();
-		//1. 修改二级库出库表的信息（出库时间、出库操作用户）stock_out_order_level2
-		StockOutOrderLevel2 stockOutOrderLevel2 = this.getOne(new QueryWrapper<StockOutOrderLevel2>().eq("order_code",orderCode).eq("del_flag", CommonConstant.DEL_FLAG_0));
+		//1. 修改二级库出库表的信息（出库时间、出库操作用户、备注）stock_out_order_level2
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
 		Date parse = sdf.parse(sdf.format(new Date()));
 		stockOutOrderLevel2.setOutTime(parse);
 		LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
 		stockOutOrderLevel2.setUserId(user.getId());
+		stockOutOrderLevel2.setRemark(sparePartApply.getOutOrderRemark());
 		this.updateById(stockOutOrderLevel2);
 		//2. 修改二级库出库物资表信息（实际出库数量）stock_outbound_materials
 		iStockOutboundMaterialsService.updateBatchById(stockOutboundMaterials);
@@ -127,6 +134,27 @@ public class StockOutOrderLevel2ServiceImpl extends ServiceImpl<StockOutOrderLev
 				sparePartInOrder.setConfirmStatus(CommonConstant.SPARE_PART_IN_ORDER_CONFRM_STATUS_0);
 				sparePartInOrder.setOutOrderCode(orderCode);
 				iSparePartInOrderService.save(sparePartInOrder);
+                //6. 二级库库存表数量修改
+                StockLevel2 stockLevel2 = stockLevel2Service.getOne(new QueryWrapper<StockLevel2>().eq("material_code",materialCode).eq("warehouse_code",warehouseCode).eq("del_flag", CommonConstant.DEL_FLAG_0));
+                if(stockLevel2 != null){
+                    Integer num = stockLevel2.getNum();
+                    stockLevel2.setNum(num - sparePartApplyMaterial.getActualNum());
+                    stockLevel2Service.updateById(stockLevel2);
+                }
+                //7. 如果存在盘点单，对盘点物资修改
+                if(stockLevel2CheckList != null && stockLevel2CheckList.size()>0){
+                    for(StockLevel2Check stockLevel2Check : stockLevel2CheckList){
+                        String stockCheckCode = stockLevel2Check.getStockCheckCode();
+                        StockLevel2CheckDetail stockLevel2CheckDetail = iStockLevel2CheckDetailService.getOne(new QueryWrapper<StockLevel2CheckDetail>()
+                                .eq("material_code",materialCode).eq("warehouse_code",warehouseCode).eq("del_flag", CommonConstant.DEL_FLAG_0)
+                                .eq("stock_check_code",stockCheckCode));
+                        if(stockLevel2CheckDetail != null){
+                            Integer num = stockLevel2CheckDetail.getActualNum();
+                            stockLevel2CheckDetail.setBookNumber(num - sparePartApplyMaterial.getActualNum());
+                            iStockLevel2CheckDetailService.updateById(stockLevel2CheckDetail);
+                        }
+                    }
+                }
 			}
 			iSparePartApplyMaterialService.updateBatchById(sparePartApplyMaterials);
 		}

@@ -5,12 +5,10 @@ import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.modules.material.entity.MaterialBase;
 import com.aiurt.modules.material.service.IMaterialBaseService;
-import com.aiurt.modules.stock.entity.StockIncomingMaterials;
-import com.aiurt.modules.stock.entity.StockInOrderLevel2;
-import com.aiurt.modules.stock.entity.StockLevel2;
-import com.aiurt.modules.stock.entity.StockLevel2Info;
+import com.aiurt.modules.stock.entity.*;
 import com.aiurt.modules.stock.service.IStockIncomingMaterialsService;
 import com.aiurt.modules.stock.service.IStockInOrderLevel2Service;
+import com.aiurt.modules.stock.service.IStockLevel2CheckService;
 import com.aiurt.modules.stock.service.IStockLevel2Service;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -43,6 +41,8 @@ public class StockInOrderLevel2Controller {
 
     @Autowired
     private IStockInOrderLevel2Service iStockInOrderLevel2Service;
+    @Autowired
+    private IStockLevel2CheckService iStockLevel2CheckService;
 
     /**
      * 分页列表查询
@@ -91,7 +91,14 @@ public class StockInOrderLevel2Controller {
     @GetMapping(value = "/submitInOrderStatus")
     public Result<String> submitInOrderStatus(@RequestParam(name = "status", required = true) String status,
                                      @RequestParam(name = "code", required = true) String code) throws ParseException {
-        boolean ok = iStockInOrderLevel2Service.submitInOrderStatus(status, code);
+        StockInOrderLevel2 stockInOrderLevel2 = iStockInOrderLevel2Service.getOne(new QueryWrapper<StockInOrderLevel2>().eq("order_code",code));
+        String warehouseCode = stockInOrderLevel2.getWarehouseCode();
+        List<StockLevel2Check> stockLevel2CheckList = iStockLevel2CheckService.list(new QueryWrapper<StockLevel2Check>().eq("del_flag", CommonConstant.DEL_FLAG_0)
+                .eq("warehouse_code",warehouseCode).eq("status",CommonConstant.StOCK_LEVEL2_CHECK_STATUS_4));
+        if(stockLevel2CheckList != null && stockLevel2CheckList.size()>0){
+            return Result.error("该二级库有正在执行中的盘点任务，无法提交！");
+        }
+        boolean ok = iStockInOrderLevel2Service.submitInOrderStatus(status, code, stockInOrderLevel2);
         if (ok) {
             return Result.ok("操作成功！");
         }else{

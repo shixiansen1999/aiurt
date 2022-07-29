@@ -121,6 +121,7 @@ public class StockLevel2 extends DictEntity {
 	/**入库时间*/
 	@Excel(name = "最近更新时间")
 	@ApiModelProperty(value = "表格用时间")
+	@TableField(exist = false)
 	private  String  stockInTimeExcel;
 
 	/**备注*/

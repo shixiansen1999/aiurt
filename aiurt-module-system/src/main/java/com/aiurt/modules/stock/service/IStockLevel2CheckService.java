@@ -1,6 +1,9 @@
 package com.aiurt.modules.stock.service;
 
 import com.aiurt.modules.stock.entity.StockLevel2Check;
+import com.aiurt.modules.stock.entity.StockOutOrderLevel2;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 import org.jeecg.common.api.vo.Result;
 import org.jeecgframework.poi.excel.entity.ImportParams;
@@ -52,5 +55,13 @@ public interface IStockLevel2CheckService extends IService<StockLevel2Check> {
      * @return
      */
     Result getStockOrgUsers(String warehouseCode);
+
+    /**
+     * 分页查询
+     * @param page
+     * @param stockLevel2Check
+     * @return
+     */
+    IPage<StockLevel2Check> pageList(Page<StockLevel2Check> page, StockLevel2Check stockLevel2Check);
 
 }

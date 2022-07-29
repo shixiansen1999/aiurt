@@ -80,6 +80,7 @@ public class SparePartApply extends DictEntity implements Serializable {
 	/**出库仓库 二级库*/
 	@Excel(name = "出库仓库 二级库", width = 15)
     @ApiModelProperty(value = "出库仓库 二级库")
+    @Dict(dictTable ="stock_level2_info",dicText = "warehouse_name",dicCode = "warehouse_code")
     private String outWarehouseCode;
 	/**提交状态（0-未提交 1-已提交）*/
 	@Excel(name = "提交状态（0-未提交 1-已提交）", width = 15)
@@ -145,4 +146,7 @@ public class SparePartApply extends DictEntity implements Serializable {
     @ApiModelProperty(value = "出库单号")
     @TableField(exist = false)
     private  String  orderCode;
+    @ApiModelProperty(value = "出库单备注")
+    @TableField(exist = false)
+    private  String  outOrderRemark;
 }

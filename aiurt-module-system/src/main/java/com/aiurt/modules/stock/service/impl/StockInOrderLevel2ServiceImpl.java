@@ -9,9 +9,7 @@ import com.aiurt.modules.material.service.IMaterialBaseService;
 import com.aiurt.modules.stock.entity.*;
 import com.aiurt.modules.stock.entity.StockIncomingMaterials;
 import com.aiurt.modules.stock.mapper.StockInOrderLevel2Mapper;
-import com.aiurt.modules.stock.service.IStockIncomingMaterialsService;
-import com.aiurt.modules.stock.service.IStockInOrderLevel2Service;
-import com.aiurt.modules.stock.service.IStockLevel2Service;
+import com.aiurt.modules.stock.service.*;
 import com.aiurt.modules.subsystem.entity.CsSubsystem;
 import com.aiurt.modules.subsystem.service.ICsSubsystemService;
 import com.aiurt.modules.system.service.impl.SysBaseApiImpl;
@@ -58,6 +56,10 @@ public class StockInOrderLevel2ServiceImpl extends ServiceImpl<StockInOrderLevel
 	private ICsMajorService csMajorService;
 	@Autowired
 	private ICsSubsystemService csSubsystemService;
+	@Autowired
+	private IStockLevel2CheckService iStockLevel2CheckService;
+	@Autowired
+	private IStockLevel2CheckDetailService iStockLevel2CheckDetailService;
 
 	@Override
 	public StockInOrderLevel2 getInOrderCode() throws ParseException {
@@ -108,10 +110,11 @@ public class StockInOrderLevel2ServiceImpl extends ServiceImpl<StockInOrderLevel
 	}
 
 	@Override
-	public boolean submitInOrderStatus(String status, String code) throws ParseException {
-		StockInOrderLevel2 stockInOrderLevel2 = this.getOne(new QueryWrapper<StockInOrderLevel2>().eq("order_code",code));
+	public boolean submitInOrderStatus(String status, String code, StockInOrderLevel2 stockInOrderLevel2) throws ParseException {
+		String warehouseCode = stockInOrderLevel2.getWarehouseCode();
+		List<StockLevel2Check> stockLevel2CheckList = iStockLevel2CheckService.list(new QueryWrapper<StockLevel2Check>().eq("del_flag", CommonConstant.DEL_FLAG_0)
+				.eq("warehouse_code",warehouseCode).ne("status",CommonConstant.StOCK_LEVEL2_CHECK_STATUS_5));
 		stockInOrderLevel2.setStatus(status);
-		String warehouseCode = stockInOrderLevel2.getWarehouseCode();//仓库编号
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
 		Date stockInTime = sdf.parse(sdf.format(new Date()));
 		stockInOrderLevel2.setEntryTime(stockInTime);
@@ -138,6 +141,30 @@ public class StockInOrderLevel2ServiceImpl extends ServiceImpl<StockInOrderLevel
 					stockLevel2new.setStockInTime(stockInTime);
 					stockLevel2Service.save(stockLevel2new);
 				}
+				if(stockLevel2CheckList != null && stockLevel2CheckList.size()>0){
+					for(StockLevel2Check stockLevel2Check : stockLevel2CheckList){
+						String stockCheckCode = stockLevel2Check.getStockCheckCode();
+						StockLevel2CheckDetail stockLevel2CheckDetail = iStockLevel2CheckDetailService.getOne(new QueryWrapper<StockLevel2CheckDetail>()
+										.eq("material_code",materialCode).eq("warehouse_code",warehouseCode).eq("del_flag", CommonConstant.DEL_FLAG_0)
+										.eq("stock_check_code",stockCheckCode));
+						if(stockLevel2CheckDetail != null){
+							Integer num = stockLevel2CheckDetail.getActualNum();
+							stockLevel2CheckDetail.setBookNumber(num + number);
+							iStockLevel2CheckDetailService.updateById(stockLevel2CheckDetail);
+						}else{
+							MaterialBase materialBase = materialBaseService.getOne(new QueryWrapper<MaterialBase>().eq("code",materialCode));
+							Double price = materialBase.getPrice()==null?0.00:Double.valueOf(materialBase.getPrice());
+							StockLevel2CheckDetail stockLevel2CheckDetailknew = new StockLevel2CheckDetail();
+							stockLevel2CheckDetailknew.setStockCheckCode(stockCheckCode);
+							stockLevel2CheckDetailknew.setMaterialCode(materialCode);
+							stockLevel2CheckDetailknew.setWarehouseCode(warehouseCode);
+							stockLevel2CheckDetailknew.setBookNumber(number);
+							stockLevel2CheckDetailknew.setBookValue((price * number)+"");
+							iStockLevel2CheckDetailService.save(stockLevel2CheckDetailknew);
+						}
+					}
+				}
+
 			}
 		}
 		boolean ok = this.updateById(stockInOrderLevel2);

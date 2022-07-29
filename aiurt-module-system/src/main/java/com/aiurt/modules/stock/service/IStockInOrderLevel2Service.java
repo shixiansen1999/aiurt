@@ -42,7 +42,7 @@ public interface IStockInOrderLevel2Service extends IService<StockInOrderLevel2>
      * @param code
      * @return
      */
-    boolean submitInOrderStatus(String status,String code) throws ParseException;
+    boolean submitInOrderStatus(String status,String code, StockInOrderLevel2 stockInOrderLevel2) throws ParseException;
 
     /**
      * 导出

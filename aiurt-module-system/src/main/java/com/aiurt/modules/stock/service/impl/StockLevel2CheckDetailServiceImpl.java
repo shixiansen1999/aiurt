@@ -3,6 +3,7 @@ package com.aiurt.modules.stock.service.impl;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.modules.material.entity.MaterialBaseType;
 import com.aiurt.modules.material.mapper.MaterialBaseTypeMapper;
+import com.aiurt.modules.stock.entity.StockLevel2Check;
 import com.aiurt.modules.stock.entity.StockLevel2CheckDetail;
 import com.aiurt.modules.stock.mapper.StockLevel2CheckDetailMapper;
 import com.aiurt.modules.stock.service.IStockLevel2CheckDetailService;
@@ -25,4 +26,10 @@ import java.util.List;
 @Service
 public class StockLevel2CheckDetailServiceImpl extends ServiceImpl<StockLevel2CheckDetailMapper, StockLevel2CheckDetail> implements IStockLevel2CheckDetailService {
 
+    @Override
+    public IPage<StockLevel2CheckDetail> pageList(Page<StockLevel2CheckDetail> page, StockLevel2CheckDetail stockLevel2CheckDetail) {
+        List<StockLevel2CheckDetail> baseList = baseMapper.pageList(page, stockLevel2CheckDetail);
+        page.setRecords(baseList);
+        return page;
+    }
 }

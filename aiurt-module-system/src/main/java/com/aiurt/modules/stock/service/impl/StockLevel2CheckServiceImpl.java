@@ -11,6 +11,8 @@ import com.aiurt.modules.stock.service.*;
 import com.aiurt.modules.system.entity.SysUser;
 import com.aiurt.modules.system.service.impl.SysBaseApiImpl;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.apache.poi.hssf.usermodel.HSSFCellStyle;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
@@ -89,7 +91,7 @@ public class StockLevel2CheckServiceImpl extends ServiceImpl<StockLevel2CheckMap
 		List<StockLevel2> stockLevel2List = stockLevel2Service.list(new QueryWrapper<StockLevel2>().eq("warehouse_code",stockLevel2Check.getWarehouseCode()));
 		if(stockLevel2List != null && stockLevel2List.size()>0){
 			for(StockLevel2 stockLevel2 : stockLevel2List){
-				MaterialBase materialBase = materialBaseService.getOne(new QueryWrapper<MaterialBase>().eq("code",stockLevel2.getMaterialCode()));
+				MaterialBase materialBase = materialBaseService.getOne(new QueryWrapper<MaterialBase>().eq("code",stockLevel2.getMaterialCode()))==null?new MaterialBase():materialBaseService.getOne(new QueryWrapper<MaterialBase>().eq("code",stockLevel2.getMaterialCode()));
 				Double price = materialBase.getPrice()==null?0.00:Double.parseDouble(materialBase.getPrice());
 				Double totalPrice =price * stockLevel2.getNum();
 				StockLevel2CheckDetail stockLevel2CheckDetail = new StockLevel2CheckDetail();
@@ -248,6 +250,13 @@ public class StockLevel2CheckServiceImpl extends ServiceImpl<StockLevel2CheckMap
 		StockLevel2Info stockLevel2Info = stockLevel2InfoService.getOne(new QueryWrapper<StockLevel2Info>().eq("warehouse_code",warehouseCode));
 		String organizationId = stockLevel2Info.getOrganizationId();
 		return Result.OK(sysBaseApi.getOrgUsersByOrgid(organizationId));
+	}
+
+	@Override
+	public IPage<StockLevel2Check> pageList(Page<StockLevel2Check> page, StockLevel2Check stockLevel2Check) {
+		List<StockLevel2Check> baseList = baseMapper.pageList(page, stockLevel2Check);
+		page.setRecords(baseList);
+		return page;
 	}
 
 }

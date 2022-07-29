@@ -46,6 +46,11 @@ public class StockOutOrderLevel2 extends DictEntity {
 	@ApiModelProperty(value = "申领单号")
 	private  String  applyCode;
 
+	/**备注*/
+	@Excel(name = "备注")
+	@ApiModelProperty(value = "备注")
+	private  String  remark;
+
 	/**年份*/
 	@Excel(name = "仓库编号")
 	@ApiModelProperty(value = "仓库编号")

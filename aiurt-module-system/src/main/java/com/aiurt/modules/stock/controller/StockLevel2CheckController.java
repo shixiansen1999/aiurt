@@ -30,7 +30,9 @@ import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -67,14 +69,8 @@ public class StockLevel2CheckController {
                                                          @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize,
                                                          HttpServletRequest req) {
         Result<IPage<StockLevel2Check>> result = new Result<IPage<StockLevel2Check>>();
-        QueryWrapper<StockLevel2Check> queryWrapper = QueryGenerator.initQueryWrapper(stockLevel2Check, req.getParameterMap());
-        queryWrapper.eq("del_flag", CommonConstant.DEL_FLAG_0);
-        queryWrapper.orderByDesc("create_time");
-        if(stockLevel2Check.getPlanStartTimeStart() != null && stockLevel2Check.getPlanStartTimeEnd() != null ){
-            queryWrapper.between("plan_start_time",stockLevel2Check.getPlanStartTimeStart(),stockLevel2Check.getPlanStartTimeEnd());
-        }
         Page<StockLevel2Check> page = new Page<StockLevel2Check>(pageNo, pageSize);
-        IPage<StockLevel2Check> pageList = iStockLevel2CheckService.page(page, queryWrapper);
+        IPage<StockLevel2Check> pageList = iStockLevel2CheckService.pageList(page, stockLevel2Check);
         result.setSuccess(true);
         result.setResult(pageList);
         return result;
@@ -104,6 +100,25 @@ public class StockLevel2CheckController {
     @GetMapping(value = "/getStockCheckCode")
     public Result<StockLevel2Check> getStockCheckCode() throws ParseException {
         return Result.ok(iStockLevel2CheckService.getStockCheckCode());
+    }
+
+
+
+    /**
+     * 单独更改状态
+     * @param
+     * @return
+     */
+    @ApiOperation(value = "二级库盘点-执行中", notes = "二级库盘点-执行中")
+    @GetMapping(value = "/changeStatus")
+    public Result<?> changeStatus(@RequestParam(name = "id", required = true) String id,
+                                  @RequestParam(name = "status", required = true) String status) throws ParseException {
+        StockLevel2Check stockLevel2Check = iStockLevel2CheckService.getById(id);
+        stockLevel2Check.setStatus(status);
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+        stockLevel2Check.setCheckStartTime(sdf.parse(sdf.format(new Date())));
+        iStockLevel2CheckService.updateById(stockLevel2Check);
+        return Result.ok("操作成功！");
     }
 
     /**
@@ -145,7 +160,7 @@ public class StockLevel2CheckController {
         message.setContent("您有一个新的二级库盘点任务。");
         message.setCategory("2");
         sysBaseApi.sendSysAnnouncement(message);
-        stockLevel2Check.setStatus(CommonConstant.STOCK_LEVEL2_CHECK_2);
+        stockLevel2Check.setStatus(CommonConstant.STOCK_LEVEL2_CHECK_3);
         iStockLevel2CheckService.updateById(stockLevel2Check);
         return Result.ok("下发成功！");
     }

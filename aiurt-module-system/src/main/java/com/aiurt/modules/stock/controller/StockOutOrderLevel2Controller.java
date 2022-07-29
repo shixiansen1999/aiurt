@@ -1,10 +1,15 @@
 package com.aiurt.modules.stock.controller;
 
 import com.aiurt.common.aspect.annotation.AutoLog;
+import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.modules.sparepart.entity.SparePartApply;
+import com.aiurt.modules.stock.entity.StockLevel2Check;
 import com.aiurt.modules.stock.entity.StockOutOrderLevel2;
+import com.aiurt.modules.stock.entity.StockOutboundMaterials;
+import com.aiurt.modules.stock.service.IStockLevel2CheckService;
 import com.aiurt.modules.stock.service.IStockOutOrderLevel2Service;
 import com.aiurt.modules.stock.service.IStockOutboundMaterialsService;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.annotations.Api;
@@ -16,6 +21,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * @Description: 二级库出库管理
@@ -31,6 +37,8 @@ public class StockOutOrderLevel2Controller {
 
     @Autowired
     private IStockOutOrderLevel2Service iStockOutOrderLevel2Service;
+	@Autowired
+	private IStockLevel2CheckService iStockLevel2CheckService;
     /**
      * 分页列表查询
      *
@@ -74,7 +82,15 @@ public class StockOutOrderLevel2Controller {
 	@PostMapping(value = "/confirmOutOrder")
 	public Result<?> confirmOutOrder(@RequestBody SparePartApply sparePartApply) {
 		try {
-			iStockOutOrderLevel2Service.confirmOutOrder(sparePartApply);
+			String orderCode = sparePartApply.getOrderCode();
+			StockOutOrderLevel2 stockOutOrderLevel2 = iStockOutOrderLevel2Service.getOne(new QueryWrapper<StockOutOrderLevel2>().eq("order_code",orderCode).eq("del_flag", CommonConstant.DEL_FLAG_0));
+			String warehouseCode = stockOutOrderLevel2.getWarehouseCode();
+			List<StockLevel2Check> stockLevel2CheckList = iStockLevel2CheckService.list(new QueryWrapper<StockLevel2Check>().eq("del_flag", CommonConstant.DEL_FLAG_0)
+					.eq("warehouse_code",warehouseCode).eq("status",CommonConstant.StOCK_LEVEL2_CHECK_STATUS_4));
+			if(stockLevel2CheckList != null && stockLevel2CheckList.size()>0){
+				return Result.error("该二级库有正在执行中的盘点任务，无法出库！");
+			}
+			iStockOutOrderLevel2Service.confirmOutOrder(sparePartApply, stockOutOrderLevel2);
 			return Result.ok("出库成功！");
 		}catch (Exception e){
 		    e.printStackTrace();
