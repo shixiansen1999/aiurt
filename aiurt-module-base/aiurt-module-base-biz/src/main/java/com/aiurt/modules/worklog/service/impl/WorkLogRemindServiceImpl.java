@@ -73,6 +73,7 @@ public class WorkLogRemindServiceImpl extends ServiceImpl<WorkLogRemindMapper, W
         WorkLogJobDTO workLogJobDTO = new WorkLogJobDTO();
         workLogJobDTO.setOrgId(remind.getOrgId());
         workLogJobDTO.setContent(remind.getContent());
+        workLogJobDTO.setFromUser(remind.getCreateBy());
         Map<String, Object> map = new HashMap<>();
         map.put("orgId", workLogJobDTO);
 

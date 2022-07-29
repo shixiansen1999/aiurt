@@ -119,6 +119,7 @@ public class WorkLogRemindController {
             WorkLogJobDTO workLogJobDTO = new WorkLogJobDTO();
             workLogJobDTO.setOrgId(orgId);
             workLogJobDTO.setContent(workLogRemind.getContent());
+            workLogJobDTO.setFromUser(workLogRemind.getCreateBy());
             Map<String, Object> map = new HashMap<>();
             map.put("orgId",workLogJobDTO);
             //白班调度任务

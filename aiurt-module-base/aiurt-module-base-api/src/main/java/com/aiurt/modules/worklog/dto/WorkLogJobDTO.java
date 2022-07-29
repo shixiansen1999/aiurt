@@ -14,5 +14,6 @@ import java.io.Serializable;
 public class WorkLogJobDTO implements Serializable {
 
     private String orgId;
+    private String fromUser;
     private String content;
 }

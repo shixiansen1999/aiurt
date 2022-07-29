@@ -460,7 +460,7 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
     }
 
     /**
-     * app巡检任务-驳回
+     * app巡检任务-审核
      *
      * @return
      */
@@ -471,7 +471,7 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
         LambdaUpdateWrapper<PatrolTask> queryWrapper = new LambdaUpdateWrapper<>();
         //不通过传0
         if (PatrolConstant.AUDIT_NOPASS.equals(status)) {
-            queryWrapper.set(PatrolTask::getStatus, PatrolConstant.TASK_AUDIT).set(PatrolTask::getRemark, backReason).eq(PatrolTask::getId, id);
+            queryWrapper.set(PatrolTask::getStatus, PatrolConstant.TASK_BACK).set(PatrolTask::getRemark, backReason).eq(PatrolTask::getId, id);
             patrolTaskService.update(queryWrapper);
             return Result.OK("不通过");
         } else {
