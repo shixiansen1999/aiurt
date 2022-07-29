@@ -447,9 +447,9 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
         }
 
         //根据站点编码翻译站点名称
-        if (checkListDTO.getStationCode() != null) {
-            String s = manager.translateStation(checkListDTO.getStationCode());
-            checkListDTO.setStationsName(s);
+        if (checkListDTO.getStationCode() != null && checkListDTO.getLineCode()!=null) {
+            String string1 = manager.translateLine(checkListDTO.getLineCode())+"/"+manager.translateStation(checkListDTO.getStationCode());
+            checkListDTO.setStationsName(string1);
             checkListDTO.setSiteCode(checkListDTO.getStationCode());
         }
 
