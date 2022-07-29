@@ -275,7 +275,7 @@ public class BdTrainPlanController extends BaseController<BdTrainPlan, IBdTrainP
      */
     @AutoLog(value = "培训年计划导入")
     @ApiOperation(value = "培训年计划导入", notes = "培训年计划导入")
-    @PostMapping(value = "/yearPlanImport")
+    @RequestMapping(value = "/yearPlanImport", method = RequestMethod.POST)
     @ApiResponses({
             @ApiResponse(code = 200, message = "OK", response = BdTrainPlan.class)
     })

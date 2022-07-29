@@ -1,10 +1,9 @@
 package com.aiurt.modules.train.task.mapper;
 
+import com.aiurt.modules.train.task.entity.BdTrainPlanSub;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.ibatis.annotations.Param;
-import com.aiurt.modules.train.task.entity.BdTrainPlanSub;
-import com.aiurt.modules.train.task.entity.BdTrainTask;
 
 import java.util.List;
 
@@ -27,8 +26,8 @@ public interface BdTrainPlanSubMapper extends BaseMapper<BdTrainPlanSub> {
      * 查询已使用的子计划
      * @param bdTrainPlanSub
      * @param pageList
-     * @param teamId
+     * @param orgCode
      * @return
      */
-    List<BdTrainPlanSub> getList(@Param("pageList") Page<BdTrainPlanSub> pageList, @Param("bdTrainPlanSub") BdTrainPlanSub bdTrainPlanSub,@Param("teamId")Integer teamId );
+    List<BdTrainPlanSub> getList(@Param("pageList") Page<BdTrainPlanSub> pageList, @Param("bdTrainPlanSub") BdTrainPlanSub bdTrainPlanSub,@Param("orgCode")String orgCode );
 }

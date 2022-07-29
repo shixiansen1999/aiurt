@@ -20,6 +20,10 @@ public enum SysAnnmentTypeEnum {
      */
     SITUATION("situation", "component",""),
     /**
+     * 培训年计划
+     */
+    TRAINPLAN("trainplan", "component",""),
+    /**
      * 工作日志
      */
     WORKLOG("worklog", "component",""),

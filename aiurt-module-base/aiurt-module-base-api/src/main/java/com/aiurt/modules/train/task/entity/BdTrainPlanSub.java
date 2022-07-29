@@ -103,5 +103,5 @@ public class BdTrainPlanSub implements Serializable {
     @Excel(name = "部门id", width = 15)
     @ApiModelProperty(value = "部门id")
     @TableField(exist = false)
-    private Integer deptId;
+    private String deptId;
 }

@@ -6,6 +6,7 @@ import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.api.dto.message.BusMessageDTO;
+import com.aiurt.common.util.SysAnnmentTypeEnum;
 import com.aiurt.modules.train.eaxm.constans.ExamConstans;
 import com.aiurt.modules.train.eaxm.mapper.BdExamPaperMapper;
 import com.aiurt.modules.train.eaxm.mapper.BdExamRecordDetailMapper;
@@ -115,6 +116,7 @@ public class BdTrainPlanServiceImpl extends ServiceImpl<BdTrainPlanMapper, BdTra
         messageDTO.setTitle("年计划发布");
         messageDTO.setContent("年计划已经发布，请相关人员进行培训计划的制定。");
         messageDTO.setFromUser(sysUser.getUsername());
+        messageDTO.setBusType(SysAnnmentTypeEnum.TRAINPLAN.getType());
         //设置接收人（查询部门下面的人员）
         String deptName = bdTrainPlan.getDeptName();
         StringBuilder stringBuilder = new StringBuilder();
@@ -126,23 +128,30 @@ public class BdTrainPlanServiceImpl extends ServiceImpl<BdTrainPlanMapper, BdTra
             //推送给系统管理员
             users = "admin";
         } else {
-            List<String> list = new ArrayList<>();
+           /* List<String> list = new ArrayList<>();
             List<SysDepartModel> departsById= baseMapper.getDepartIdsByTeamId(departId);
             getAllDepart(departsById, list);
             //根据组织机构id查询用户
             for (String s : list) {
-                //根据班组id查询用户
+                //根据组织机构id查询用户
                 List<String> userNames = baseMapper.getUserByTeamId(s);
                 for (String userName : userNames) {
                     stringBuilder.append(userName).append(",");
                 }
+            }*/
+            //根据组织机构id查询用户
+            List<String> userNames = baseMapper.getUserByTeamId(departId);
+            for (String userName : userNames) {
+                stringBuilder.append(userName).append(",");
             }
             users = stringBuilder.deleteCharAt(stringBuilder.length() - 1).toString();
         }
         messageDTO.setToUser(users);
+        messageDTO.setToAll(false);
         iSysBaseAPI.sendBusAnnouncement(messageDTO);
         //更改为已发布的状态
         bdTrainPlan.setState(1);
+        bdTrainPlan.setPblishTime(new Date());
         baseMapper.updateById(bdTrainPlan);
     }
 

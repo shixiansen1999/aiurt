@@ -37,8 +37,8 @@ WHERE
         <if test="bdTrainPlanSub.planYear!=null">
             and btp.plan_year = #{bdTrainPlanSub.planYear}
         </if>
-        <if test="teamId !=null">
-            and btp.dept_id = #{teamId}
+        <if test="orgCode !=null and orgCode!=''">
+            and btp.dept_id = #{orgCode}
         </if>
         <if test="bdTrainPlanSub.planTime!=null and bdTrainPlanSub.planTime!=''">
             and btps.plan_time = #{bdTrainPlanSub.planTime}
