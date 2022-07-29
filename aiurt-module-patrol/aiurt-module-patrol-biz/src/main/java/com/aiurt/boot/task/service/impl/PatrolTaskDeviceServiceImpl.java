@@ -411,7 +411,9 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
         else {
             //更新任务状态（将未开始改为执行中）、添加开始检查时间，传任务主键id,巡检工单主键
             String taskDeviceId = patrolTaskDevice.getId();
-            if(!PatrolConstant.TASK_AUDIT.equals(patrolTask.getStatus())&& !PatrolConstant.TASK_COMPLETE.equals(patrolTask.getStatus()))
+            if(ObjectUtil.isNull(checkDetail))
+            {
+                if(!PatrolConstant.TASK_AUDIT.equals(patrolTask.getStatus())&& !PatrolConstant.TASK_COMPLETE.equals(patrolTask.getStatus()))
                 {
                     LambdaUpdateWrapper<PatrolTaskDevice> updateWrapper = new LambdaUpdateWrapper<>();
                     updateWrapper.set(PatrolTaskDevice::getStatus, 1)
@@ -420,6 +422,7 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
                             .eq(PatrolTaskDevice::getId, patrolTaskDevice.getId());
                     patrolTaskDeviceMapper.update(new PatrolTaskDevice(), updateWrapper);
                 }
+            }
            List<PatrolCheckResultDTO> checkResultList = patrolCheckResultMapper.getCheckResult(taskDeviceId);
                 checkResultList.stream().forEach(e ->
                 {
