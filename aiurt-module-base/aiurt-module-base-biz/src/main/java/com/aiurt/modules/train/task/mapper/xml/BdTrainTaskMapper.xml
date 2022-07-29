@@ -255,7 +255,7 @@ and er.exam_classify=1
           tt.task_name as taskName,
           tt.start_date as startDate,
           tt.exam_status as examStatus,
-          (select name
+          (select depart_name
            from sys_depart
            where id = tt.task_team_id) as taskTeamName,
           (select realname

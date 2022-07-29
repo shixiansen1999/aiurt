@@ -96,6 +96,10 @@ public class FaultKnowledgeBaseController extends BaseController<FaultKnowledgeB
 		//list转string
 		getFaultCodeList(faultKnowledgeBase);
 		faultKnowledgeBase.setDelFlag(0);
+		if (StringUtils.isEmpty(faultKnowledgeBase.getDeviceTypeCode())||StringUtils.isEmpty(faultKnowledgeBase.getMaterialCode())) {
+			Result<String> result = new Result<>();
+			result.error500("设备或组件不能为空");
+		}
 		faultKnowledgeBaseService.save(faultKnowledgeBase);
 		return Result.OK("添加成功！");
 	}

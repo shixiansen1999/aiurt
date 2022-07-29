@@ -139,6 +139,7 @@ public class BdTrainTaskUser implements Serializable {
 
     /**考试类型*/
     @ApiModelProperty(value = "考试类型")
+    @TableField(exist = false)
     @Dict(dicCode = "examClassify_state")
     private Integer examClassify;
 
