@@ -353,11 +353,13 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
         List<RepairTaskDTO> repairTaskDTOList = repairTaskMapper.selectCodeList(taskId, null, null);
         List<String> majorCodes1 = new ArrayList<>();
         List<String> systemCode = new ArrayList<>();
+        Map<String,String> map = new HashMap<>();
         if (CollectionUtil.isNotEmpty(repairTaskDTOList)) {
             repairTaskDTOList.forEach(e -> {
                 String majorCode = e.getMajorCode();
                 String systemCode1 = e.getSystemCode();
                 majorCodes1.add(majorCode);
+                map.put(systemCode1,majorCode);
                 systemCode.add(systemCode1);
             });
         }
@@ -366,8 +368,11 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
         if (CollectionUtil.isNotEmpty(majorDTOList)) {
             majorDTOList.forEach(q -> {
                 systemCode.forEach(o -> {
-                    List<SubsystemDTO> subsystemDTOList = repairTaskMapper.translateSubsystem(q.getMajorCode(), o);
-                    q.setSubsystemDTOList(subsystemDTOList);
+                    String string = map.get(o);
+                    if (q.getMajorCode().equals(string)){
+                        List<SubsystemDTO> subsystemDTOList = repairTaskMapper.translateSubsystem(q.getMajorCode(), o);
+                        q.setSubsystemDTOList(subsystemDTOList);
+                    }
                 });
             });
         }
