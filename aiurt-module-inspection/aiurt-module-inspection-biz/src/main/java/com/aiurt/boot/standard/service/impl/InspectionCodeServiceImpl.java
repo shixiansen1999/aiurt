@@ -68,7 +68,7 @@ public class InspectionCodeServiceImpl extends ServiceImpl<InspectionCodeMapper,
         // todo 数据权限过滤
         List<InspectionCodeDTO> inspectionCodeDTOS = baseMapper.pageList(page,inspectionCodeDTO);
         inspectionCodeDTOS.forEach(i->{
-            i.setNumber(baseMapper.number1(i.getCode()));
+            i.setNumber(baseMapper.number1(i.getId()));
         });
         inspectionCodeDTOS.removeIf(i-> i.getNumber().equals(0));
         if (ObjectUtils.isNotEmpty(inspectionCodeDTO.getInspectionStrCode())) {
