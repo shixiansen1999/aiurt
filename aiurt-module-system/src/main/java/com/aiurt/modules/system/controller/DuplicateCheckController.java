@@ -1,22 +1,21 @@
 package com.aiurt.modules.system.controller;
 
-import javax.servlet.http.HttpServletRequest;
-
-import org.jeecg.common.api.vo.Result;
 import com.aiurt.common.constant.SymbolConstant;
 import com.aiurt.common.util.SqlInjectionUtil;
-import com.aiurt.modules.system.model.DuplicateCheckVo;
-import org.apache.commons.lang.StringUtils;
 import com.aiurt.modules.system.mapper.SysDictMapper;
+import com.aiurt.modules.system.model.DuplicateCheckVo;
 import com.aiurt.modules.system.security.DictQueryBlackListHandler;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang.StringUtils;
+import org.jeecg.common.api.vo.Result;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import lombok.extern.slf4j.Slf4j;
+import javax.servlet.http.HttpServletRequest;
 
 /**
  * @Title: DuplicateCheckAction

@@ -77,6 +77,9 @@
             <if test="condition.solution != null and condition.solution != ''">
                 and a.solution like concat('%',#{condition.solution},'%')
             </if>
+            <if test="condition.method != null and condition.method != ''">
+                and a.method like concat('%',#{condition.method},'%')
+            </if>
             <if test="ids != null and ids.size() != 0">
                 and a.id in
                 <foreach collection="ids" index="index" item="item" open="(" separator="," close=")">

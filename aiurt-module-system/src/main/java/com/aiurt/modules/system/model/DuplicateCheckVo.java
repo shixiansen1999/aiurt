@@ -1,9 +1,10 @@
 package com.aiurt.modules.system.model;
 
-import java.io.Serializable;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
+
+import java.io.Serializable;
 
 /**
  * @Title: DuplicateCheckVo
@@ -41,4 +42,9 @@ public class DuplicateCheckVo implements Serializable {
 	@ApiModelProperty(value="数据ID",name="dataId",example="2000")
 	private String dataId;
 
+	/**
+	 * 删除标记
+	 */
+	@ApiModelProperty(value="删除标记",name="delFlag",example="del_flag")
+	private String delFlag;
 }
