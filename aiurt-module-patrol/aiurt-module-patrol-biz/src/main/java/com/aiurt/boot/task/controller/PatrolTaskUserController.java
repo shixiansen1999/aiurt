@@ -19,6 +19,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -82,9 +85,22 @@ public class PatrolTaskUserController extends BaseController<PatrolTaskUser, IPa
 	 @PostMapping(value = "/patrolTaskAppointed")
 	 public Result<String> patrolTaskAppointed(@RequestBody PatrolTaskAppointSaveDTO patrolAccompanyList) {
 		 //将任务来源改为常规指派,将任务状态改为待确认
+		 SimpleDateFormat format = new SimpleDateFormat("HH:mm");
+		 Date startTime = null;
+		 try {
+			 startTime = format.parse(patrolAccompanyList.getStartTime());
+		 } catch (ParseException e) {
+			 e.printStackTrace();
+		 }
+		 Date endTime = null;
+		 try {
+			 endTime = format.parse(patrolAccompanyList.getEndTime());
+		 } catch (ParseException e) {
+			 e.printStackTrace();
+		 }
 		 LambdaUpdateWrapper<PatrolTask> updateWrapper = new LambdaUpdateWrapper<>();
-		 updateWrapper.set(PatrolTask::getSource, 2).set(PatrolTask::getStatus, 1).set(PatrolTask::getStartTime, patrolAccompanyList.getStartTime())
-				 .set(PatrolTask::getEndTime, patrolAccompanyList.getEndTime()).set(PatrolTask::getPlanCode, patrolAccompanyList.getPlanCode()).set(PatrolTask::getType, patrolAccompanyList.getType())
+		 updateWrapper.set(PatrolTask::getSource, 2).set(PatrolTask::getStatus, 1).set(PatrolTask::getStartTime, startTime)
+				 .set(PatrolTask::getEndTime, endTime).set(PatrolTask::getPlanCode, patrolAccompanyList.getPlanCode()).set(PatrolTask::getType, patrolAccompanyList.getType())
 				 .set(PatrolTask::getPlanOrderCodeUrl, patrolAccompanyList.getPlanOrderCodeUrl()).eq(PatrolTask::getCode, patrolAccompanyList.getCode());
 		 patrolTaskService.update(updateWrapper);
 		 //添加巡检人

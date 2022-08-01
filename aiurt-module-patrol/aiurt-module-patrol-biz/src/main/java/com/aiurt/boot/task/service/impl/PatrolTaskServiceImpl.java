@@ -384,15 +384,28 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
             arrayList.add(userDTO);
         }
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        if (ObjectUtil.isNull(orgCoed.getIdentity())) {
-            arrayList.stream().forEach(e -> {
-                List<PatrolTaskUserContentDTO> userList = e.getUserList();
-                List<PatrolTaskUserContentDTO> collect = userList.stream().filter(u -> !u.getId().equals(sysUser.getId())).collect(Collectors.toList());
-                e.setUserList(collect);
+        PatrolTask patrolTask = patrolTaskMapper.selectById(orgCoed.getTaskId());
+        if (PatrolConstant.TASK_COMMON.equals(patrolTask.getSource())) {
+            List<PatrolTaskUser> patrolTaskUsers = patrolTaskUserMapper.selectList(new LambdaQueryWrapper<PatrolTaskUser>().eq(PatrolTaskUser::getTaskCode, patrolTask.getCode()));
+            arrayList.stream().forEach(a -> {
+                List<String> collect = patrolTaskUsers.stream().map(PatrolTaskUser::getUserId).collect(Collectors.toList());
+                List<PatrolTaskUserContentDTO> userList = a.getUserList();
+                List<PatrolTaskUserContentDTO> list = userList.stream().filter(l -> collect.contains(l.getId())).collect(Collectors.toList());
+                userList.removeAll(list);
+                a.setUserList(userList);
             });
             return arrayList;
         } else {
-            return arrayList;
+            if (ObjectUtil.isNull(orgCoed.getIdentity())) {
+                arrayList.stream().forEach(e -> {
+                    List<PatrolTaskUserContentDTO> userList = e.getUserList();
+                    List<PatrolTaskUserContentDTO> collect = userList.stream().filter(u -> !u.getId().equals(sysUser.getId())).collect(Collectors.toList());
+                    e.setUserList(collect);
+                });
+                return arrayList;
+            } else {
+                return arrayList;
+            }
         }
     }
 
@@ -555,22 +568,58 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         if (manager.checkTaskUser(patrolTask.getCode()) == false) {
             throw new AiurtBootException("小主，该巡检任务不在您的提交范围之内哦");
         } else {
-            LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-            LambdaUpdateWrapper<PatrolTask> updateWrapper = new LambdaUpdateWrapper<>();
-            if (PatrolConstant.TASK_CHECK.equals(patrolTask.getAuditor())) {
-                updateWrapper.set(PatrolTask::getStatus, 6)
-                        .set(PatrolTask::getEndUserId, sysUser.getId())
-                        .set(PatrolTask::getSignUrl, patrolTaskDTO.getSignUrl())
-                        .set(PatrolTask::getSubmitTime, LocalDateTime.now())
-                        .eq(PatrolTask::getId, patrolTaskDTO.getId());
+            List<PatrolTaskDevice> patrolTaskDeviceList = patrolTaskDeviceMapper.selectList(new LambdaQueryWrapper<PatrolTaskDevice>().eq(PatrolTaskDevice::getTaskId, patrolTask.getId()));
+            List<PatrolTaskDevice> taskDeviceList = patrolTaskDeviceList.stream().filter(p -> PatrolConstant.BILL_INIT.equals(p.getStatus()) || PatrolConstant.BILL_INIT.equals(p.getStatus())).collect(Collectors.toList());
+            if (CollUtil.isNotEmpty(taskDeviceList)) {
+                throw new AiurtBootException("小主，要全部的工单提交，才可以提交任务哦");
             } else {
-                updateWrapper.set(PatrolTask::getStatus, 7)
-                        .set(PatrolTask::getEndUserId, sysUser.getId())
-                        .set(PatrolTask::getSignUrl, patrolTaskDTO.getSignUrl())
-                        .set(PatrolTask::getSubmitTime, LocalDateTime.now())
-                        .eq(PatrolTask::getId, patrolTaskDTO.getId());
+                List<PatrolTaskDevice> taskDevices = patrolTaskDeviceMapper.selectList(new LambdaQueryWrapper<PatrolTaskDevice>().eq(PatrolTaskDevice::getTaskId, patrolTask.getId()));
+                List<PatrolTaskDevice> errDeviceList = taskDevices.stream().filter(e -> PatrolConstant.RESULT_EXCEPTION.equals(e.getCheckResult())).collect(Collectors.toList());
+                LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+                LambdaUpdateWrapper<PatrolTask> updateWrapper = new LambdaUpdateWrapper<>();
+                if (PatrolConstant.TASK_CHECK.equals(patrolTask.getAuditor())) {
+                    if(CollUtil.isNotEmpty(errDeviceList))
+                    {
+                        updateWrapper.set(PatrolTask::getStatus, 6)
+                                .set(PatrolTask::getEndUserId, sysUser.getId())
+                                .set(PatrolTask::getSignUrl, patrolTaskDTO.getSignUrl())
+                                .set(PatrolTask::getSubmitTime, LocalDateTime.now())
+                                .set(PatrolTask::getAbnormalState,0)
+                                .eq(PatrolTask::getId, patrolTaskDTO.getId());
+                    }
+                    else
+                    {
+                        updateWrapper.set(PatrolTask::getStatus, 6)
+                                .set(PatrolTask::getEndUserId, sysUser.getId())
+                                .set(PatrolTask::getSignUrl, patrolTaskDTO.getSignUrl())
+                                .set(PatrolTask::getSubmitTime, LocalDateTime.now())
+                                .set(PatrolTask::getAbnormalState,1)
+                                .eq(PatrolTask::getId, patrolTaskDTO.getId());
+                    }
+                }
+                else {
+                    if(CollUtil.isNotEmpty(errDeviceList))
+                    {
+                        updateWrapper.set(PatrolTask::getStatus, 7)
+                                .set(PatrolTask::getEndUserId, sysUser.getId())
+                                .set(PatrolTask::getSignUrl, patrolTaskDTO.getSignUrl())
+                                .set(PatrolTask::getSubmitTime, LocalDateTime.now())
+                                .set(PatrolTask::getAbnormalState,0)
+                                .eq(PatrolTask::getId, patrolTaskDTO.getId());
+                    }
+                    else
+                    {
+                        updateWrapper.set(PatrolTask::getStatus, 7)
+                                .set(PatrolTask::getEndUserId, sysUser.getId())
+                                .set(PatrolTask::getSignUrl, patrolTaskDTO.getSignUrl())
+                                .set(PatrolTask::getAbnormalState,1)
+                                .set(PatrolTask::getSubmitTime, LocalDateTime.now())
+                                .eq(PatrolTask::getId, patrolTaskDTO.getId());
+                    }
+
+                }
+                patrolTaskMapper.update(new PatrolTask(), updateWrapper);
             }
-            patrolTaskMapper.update(new PatrolTask(), updateWrapper);
         }
 
     }
