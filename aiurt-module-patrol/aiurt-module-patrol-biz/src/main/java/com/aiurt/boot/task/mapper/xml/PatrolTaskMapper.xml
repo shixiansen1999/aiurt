@@ -44,7 +44,7 @@
         <if test="patrolTaskDTO.status!=null">
             and t1.status = #{patrolTaskDTO.status}
         </if>
-        t1.`status` asc,  t1.create_time desc
+       ORDER BY  t1.`status` asc,  t1.create_time desc
     </select>
     <select id="getOrganizationName" resultType="java.lang.String">
         SELECT t2.depart_name

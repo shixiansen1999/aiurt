@@ -24,7 +24,7 @@
             AND wl.check_status = #{param.checkStatus}
         </if>
         <if test="param.confirmStatus!= null and param.confirmStatus!= ''">
-            AND wl.confirm_status = #{param.confirmStatus}
+            AND wl.status = #{param.confirmStatus}
         </if>
         <if test="param.departId!=null ">
             AND wl.org_id = #{param.departId}
