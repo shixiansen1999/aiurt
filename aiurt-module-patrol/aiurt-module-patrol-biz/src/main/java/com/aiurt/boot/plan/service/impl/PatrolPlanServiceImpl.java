@@ -15,6 +15,7 @@ import com.aiurt.boot.standard.mapper.PatrolStandardMapper;
 import com.aiurt.boot.task.dto.MajorDTO;
 import com.aiurt.boot.task.dto.SubsystemDTO;
 import com.aiurt.common.constant.CommonConstant;
+import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.modules.device.entity.Device;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -62,6 +63,7 @@ public class PatrolPlanServiceImpl extends ServiceImpl<PatrolPlanMapper, PatrolP
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void add(PatrolPlanDto patrolPlanDto) {
+        this.check(patrolPlanDto);
          PatrolPlan patrolPlan =new PatrolPlan();patrolPlan.setCode(patrolPlanDto.getCode());
          patrolPlan.setName(patrolPlanDto.getName());patrolPlan.setEndDate(patrolPlanDto.getEndDate());
          patrolPlan.setStartDate(patrolPlanDto.getStartDate());patrolPlan.setRemark(patrolPlanDto.getRemark());
@@ -146,6 +148,18 @@ public class PatrolPlanServiceImpl extends ServiceImpl<PatrolPlanMapper, PatrolP
         baseMapper.updates(id);
     }
 
+    public void check(PatrolPlanDto patrolPlanDto){
+       List<PatrolStandardDto>  patrolStandardDto = patrolPlanDto.getPatrolStandards();
+       List<Device> devices = patrolPlanDto.getDevices();
+       patrolStandardDto.forEach(p->{
+           if (p.getDeviceType().equals(1)){
+               boolean i = devices.stream().anyMatch(d -> p.getCode().equals(d.getPlanStandardCode()));
+               if (!i){
+                   throw new AiurtBootException("请指定设备!");
+               }
+           }
+       });
+    }
     @Override
     public PatrolPlanDto selectId(String id,String code) {
         PatrolPlanDto patrolPlanDto = baseMapper.selectId(id,code);
