@@ -55,6 +55,27 @@ public class InspectionCodeController extends BaseController<InspectionCode, IIn
         return Result.OK(pageList);
     }
 
+
+    /**
+     * 分页列表查询是否配置巡检项
+     *
+     * @param inspectionCodeDTO
+     * @param pageNo
+     * @param pageSize
+     * @param req
+     * @return
+     */
+    @AutoLog(value = "检修标准表-分页列表查询是否配置巡检项")
+    @ApiOperation(value = "检修标准表-分页列表查询是否配置巡检项", notes = "检修标准表-分页列表查询是否配置巡检项")
+    @GetMapping(value = "/lists")
+    public Result<IPage<InspectionCodeDTO>> queryPageLists(InspectionCodeDTO inspectionCodeDTO,
+                                                          @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
+                                                          @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize,
+                                                          HttpServletRequest req) {
+        Page<InspectionCodeDTO> page = new Page<InspectionCodeDTO>(pageNo, pageSize);
+        IPage<InspectionCodeDTO> pageList = inspectionCodeService.pageLists(page, inspectionCodeDTO);
+        return Result.OK(pageList);
+    }
     /**
      * 添加
      *

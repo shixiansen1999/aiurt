@@ -61,4 +61,28 @@ public class InspectionCodeServiceImpl extends ServiceImpl<InspectionCodeMapper,
        inspectionCode.setDelFlag(1);
        baseMapper.updateById(inspectionCode);
     }
+
+    @Override
+    public IPage<InspectionCodeDTO> pageLists(Page<InspectionCodeDTO> page, InspectionCodeDTO inspectionCodeDTO) {
+
+        // todo 数据权限过滤
+        List<InspectionCodeDTO> inspectionCodeDTOS = baseMapper.pageList(page,inspectionCodeDTO);
+        inspectionCodeDTOS.forEach(i->{
+            i.setNumber(baseMapper.number1(i.getCode()));
+        });
+        inspectionCodeDTOS.removeIf(i-> i.getNumber().equals(0));
+        if (ObjectUtils.isNotEmpty(inspectionCodeDTO.getInspectionStrCode())) {
+            for (InspectionCodeDTO il : inspectionCodeDTOS) {
+                InspectionStrRel inspectionStrRel = inspectionStrRelMapper.selectOne(new LambdaQueryWrapper<InspectionStrRel>()
+                        .eq(InspectionStrRel::getInspectionStaCode, il.getCode())
+                        .eq(InspectionStrRel::getInspectionStrCode,inspectionCodeDTO.getInspectionStrCode()));
+                // 判断是否指定了设备
+                List<InspectionStrDeviceRel> inspectionStrDeviceRels = inspectionStrDeviceRelMapper.selectList(
+                        new LambdaQueryWrapper<InspectionStrDeviceRel>()
+                                .eq(InspectionStrDeviceRel::getInspectionStrRelId, inspectionStrRel.getId()));
+                il.setSpecifyDevice(CollUtil.isNotEmpty(inspectionStrDeviceRels) ? "是" : "否");
+            }
+        }
+        return page.setRecords(inspectionCodeDTOS);
+    }
 }

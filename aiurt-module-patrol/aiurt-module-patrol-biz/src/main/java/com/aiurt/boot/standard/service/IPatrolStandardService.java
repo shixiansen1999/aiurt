@@ -23,6 +23,13 @@ public interface IPatrolStandardService extends IService<PatrolStandard> {
      * @return
      */
     IPage<PatrolStandardDto> pageList (Page page, PatrolStandard patrolStandard);
+    /**
+     * 分页列表查询配置巡检项的表
+     * @param page
+     * @param patrolStandard
+     * @return
+     */
+    IPage<PatrolStandardDto> pageLists (Page page, PatrolStandard patrolStandard);
 
     /**
      * 获取专业
