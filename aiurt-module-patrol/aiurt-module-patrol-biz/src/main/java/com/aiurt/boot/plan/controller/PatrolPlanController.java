@@ -109,8 +109,8 @@ public class PatrolPlanController extends BaseController<PatrolPlan, IPatrolPlan
 	 @ApiOperation(value="巡检计划表-查询对应巡检表下拉框", notes="巡检计划表-查询对应巡检表下拉框")
 	 @PostMapping(value = "/queryStandard")
 	 public  Result<List<StandardDTO>> queryStandard(@RequestParam(value ="planId",required = true) String planId,
-													 @RequestParam(value ="majorCode",required = true) String majorCode,
-													 @RequestParam(value ="subsystemCode",required = true) String subsystemCode) {
+													 @RequestParam(value ="majorCode",required = false) String majorCode,
+													 @RequestParam(value ="subsystemCode",required = false) String subsystemCode) {
 		 List<StandardDTO> queryStandard = patrolPlanService.selectPlanStandard(planId,majorCode,subsystemCode);
 		 return Result.OK(queryStandard);
 	 }
