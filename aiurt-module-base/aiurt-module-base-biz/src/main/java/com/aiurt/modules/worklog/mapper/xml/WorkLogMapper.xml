@@ -14,7 +14,7 @@
         LEFT JOIN sys_user sur ON wl.submit_id = sur.id
         WHERE
             wl.del_flag = '0'
-        <if test="param.submitId!= null and param.submitId!= ''">
+        <if test="param.submitId!= null">
             AND wl.submit_id = #{param.submitId}
         </if>
         <if test="param.dayStart != null and param.dayStart != '' and param.dayEnd != null and param.dayEnd != ''">
@@ -23,7 +23,7 @@
         <if test="param.checkStatus!= null and param.checkStatus!= ''">
             AND wl.check_status = #{param.checkStatus}
         </if>
-        <if test="param.confirmStatus!= null and param.confirmStatus!= ''">
+        <if test="param.confirmStatus!= null">
             AND wl.status = #{param.confirmStatus}
         </if>
         <if test="param.departId!=null ">
