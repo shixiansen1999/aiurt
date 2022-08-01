@@ -1,6 +1,7 @@
 package com.aiurt.modules.worklog.controller;
 
 import com.aiurt.common.aspect.annotation.AutoLog;
+import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.result.LogCountResult;
 import com.aiurt.common.result.LogResult;
 import com.aiurt.common.result.LogSubmitCount;
@@ -16,7 +17,9 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.system.vo.LoginUser;
 import org.jeecgframework.poi.excel.ExcelImportUtil;
 import org.jeecgframework.poi.excel.def.NormalExcelConstants;
 import org.jeecgframework.poi.excel.entity.ExportParams;
@@ -287,7 +290,12 @@ public class WorkLogController {
     @ApiOperation(value="工作日志确认", notes="工作日志确认")
     @GetMapping(value = "/confirm")
     public Result<?> confirm(@RequestParam String id) {
+        LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         WorkLog byId = workLogDepotService.getById(id);
+        if(byId.getSucceedId()!=user.getId())
+        {
+            throw new AiurtBootException("小主，您不是该日志的接班人！");
+        }
         if (byId != null) {
             byId.setConfirmStatus(1).setSucceedTime(new Date());
             workLogDepotService.updateById(byId);
