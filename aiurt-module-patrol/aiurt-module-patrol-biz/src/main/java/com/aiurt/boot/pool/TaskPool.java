@@ -166,6 +166,11 @@ public class TaskPool implements Job {
     private void saveAndCopyData(PatrolTask task, PatrolPlan plan) {
         // 添加一条巡检任务
         patrolTaskService.save(task);
+        // 更新计划已生成任务状态
+        if (ObjectUtil.isNotEmpty(plan.getCreated()) && 0 == plan.getCreated()) {
+            plan.setCreated(PatrolConstant.PLAN_CREATED);
+            patrolPlanService.updateById(plan);
+        }
 
         // 将复制巡检计划的组织机构和站点关联信息
         log.info("正在复制组织机构、站所任务的关联信息...");
