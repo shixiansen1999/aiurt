@@ -139,4 +139,8 @@ public interface PatrolConstant {
      * 巡检工单初始状态-已完成
      */
     Integer BILL_COMPLETE = 2;
+    /**
+     * 巡检计划生成任务状态-已生成
+     */
+    Integer PLAN_CREATED = 1;
 }

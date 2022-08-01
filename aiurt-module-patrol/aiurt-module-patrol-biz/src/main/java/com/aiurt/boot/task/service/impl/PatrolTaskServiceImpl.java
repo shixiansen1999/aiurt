@@ -34,6 +34,7 @@ import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -99,6 +100,14 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
             if (ObjectUtil.isNotEmpty(l.getDisposeId())) {
                 // 处置用户名称
                 l.setDisposeUserName(patrolTaskMapper.getUsername(l.getDisposeId()));
+            }
+            // 巡检用户信息
+            if (CollectionUtils.isEmpty(l.getUserInfo())) {
+                QueryWrapper<PatrolTaskUser> userWrapper = new QueryWrapper<>();
+                userWrapper.lambda().eq(PatrolTaskUser::getTaskCode, l.getCode());
+                List<PatrolTaskUser> userInfo = Optional.ofNullable(patrolTaskUserMapper.selectList(userWrapper))
+                        .orElseGet(Collections::emptyList).stream().collect(Collectors.toList());
+                l.setUserInfo(userInfo);
             }
         });
         return taskPage;
@@ -450,8 +459,8 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
             patrolTaskDTO.setDateEnd(dateEnd);
 
         }
-      //  LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-      //  patrolTaskDTO.setLoginOrgId(sysUser.getOrgCode());
+        //  LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        //  patrolTaskDTO.setLoginOrgId(sysUser.getOrgCode());
         List<PatrolTaskDTO> taskDTOList = patrolTaskMapper.getPatrolTaskManualList(pageList, patrolTaskDTO);
         taskDTOList.stream().forEach(e -> {
             String userName = patrolTaskMapper.getUserName(e.getBackId());

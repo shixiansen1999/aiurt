@@ -40,4 +40,7 @@
         FROM inspection_str_rel
         WHERE inspection_str_rel.inspection_sta_code=#{code}
     </select>
+    <select id="number1" resultType="java.lang.Integer">
+        SELECT COUNT(icc.inspection_code_id AND icc.inspection_code_id=#{id} AND icc.del_flag=0 OR NULL) FROM inspection_code_content icc WHERE 1=1
+    </select>
 </mapper>

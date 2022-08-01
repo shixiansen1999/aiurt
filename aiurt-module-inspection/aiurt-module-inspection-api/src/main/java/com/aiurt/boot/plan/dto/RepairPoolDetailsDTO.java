@@ -1,7 +1,9 @@
 package com.aiurt.boot.plan.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
+import org.springframework.format.annotation.DateTimeFormat;
 
 /**
  * @author wgp
@@ -69,4 +71,13 @@ public class RepairPoolDetailsDTO {
     @ApiModelProperty(value = "退回理由")
     private String remark;
 
+    @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd HH:mm")
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @ApiModelProperty(value = "开始时间")
+    private java.util.Date startTime;
+
+    @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd HH:mm")
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @ApiModelProperty(value = "结束时间")
+    private java.util.Date endTime;
 }

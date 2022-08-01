@@ -29,4 +29,10 @@ public interface InspectionCodeMapper extends BaseMapper<InspectionCode> {
      * @return
      */
     Integer number(@Param("code")String code);
+    /**
+     * 查询是否显示
+     * @param id
+     * @return
+     */
+    Integer number1(@Param("id") String id);
 }

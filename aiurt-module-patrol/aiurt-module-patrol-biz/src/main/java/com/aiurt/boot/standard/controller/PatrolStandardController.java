@@ -58,6 +58,27 @@ public class PatrolStandardController extends BaseController<PatrolStandard, IPa
 		return Result.OK(pageList);
 	}
 
+
+	 /**
+	  * 分页列表查询配置巡检项的表
+	  *
+	  * @param patrolStandard
+	  * @param pageNo
+	  * @param pageSize
+	  * @param req
+	  * @return
+	  */
+	 @AutoLog(value = "巡检标准表-分页列表查询配置巡检项的表")
+	 @ApiOperation(value="巡检标准表-分页列表查询配置巡检项的表", notes="巡检标准表-分页列表查询配置巡检项的表")
+	 @GetMapping(value = "/lists")
+	 public Result<IPage<PatrolStandardDto>> queryPageLists(PatrolStandardDto patrolStandard,
+														   @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
+														   @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
+														   HttpServletRequest req) {
+		 Page<PatrolStandardDto> page = new Page<PatrolStandardDto>(pageNo, pageSize);
+		 IPage<PatrolStandardDto> pageList = patrolStandardService.pageLists(page, patrolStandard);
+		 return Result.OK(pageList);
+	 }
 	/**
 	 *   添加
 	 *

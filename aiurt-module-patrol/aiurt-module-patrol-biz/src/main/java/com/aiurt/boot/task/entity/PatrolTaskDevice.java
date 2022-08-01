@@ -93,9 +93,9 @@ public class PatrolTaskDevice implements Serializable {
 	@Excel(name = "备注说明", width = 15)
     @ApiModelProperty(value = "备注说明")
     private java.lang.String remark;
-	/**检查状态：0未开始、1巡检中、2已完成*/
-	@Excel(name = "检查状态：0未开始、1巡检中、2已完成", width = 15)
-    @ApiModelProperty(value = "检查状态：0未开始、1巡检中、2已完成")
+	/**工单状态：0未开始、1进行中、2已提交*/
+	@Excel(name = "工单状态：0未开始、1进行中、2已提交", width = 15)
+    @ApiModelProperty(value = "工单状态：0未开始、1进行中、2已提交")
     private java.lang.Integer status;
 	/**删除状态： 0未删除 1已删除*/
 	@Excel(name = "删除状态： 0未删除 1已删除", width = 15)

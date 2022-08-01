@@ -27,4 +27,11 @@ public interface IInspectionCodeService extends IService<InspectionCode> {
      * @param id
      */
     void updateDelFlag(String id);
+    /**
+     * 分页列表查询是否配置巡检项
+     * @param page
+     * @param inspectionCodeDTO
+     * @return
+     */
+    IPage<InspectionCodeDTO> pageLists(Page<InspectionCodeDTO> page, InspectionCodeDTO inspectionCodeDTO);
 }

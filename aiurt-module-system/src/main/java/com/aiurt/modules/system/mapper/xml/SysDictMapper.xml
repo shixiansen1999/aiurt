@@ -102,12 +102,18 @@
 
 	<!-- 重复校验 sql语句 -->
 	<select id="duplicateCheckCountSql" resultType="Long" parameterType="com.aiurt.modules.system.model.DuplicateCheckVo">
-		SELECT COUNT(*) FROM ${tableName} WHERE ${fieldName} = #{fieldVal} and id &lt;&gt; #{dataId} and del_flag = '0'
+		SELECT COUNT(*) FROM ${tableName} WHERE ${fieldName} = #{fieldVal} and id &lt;&gt; #{dataId}
+		<if test="delFlag != null and delFlag != ''">
+			and ${delFlag} = '0'
+		</if>
 	</select>
 
 	<!-- 重复校验 sql语句 -->
 	<select id="duplicateCheckCountSqlNoDataId" resultType="Long" parameterType="com.aiurt.modules.system.model.DuplicateCheckVo">
 		SELECT COUNT(*) FROM ${tableName} WHERE ${fieldName} = #{fieldVal}
+		<if test="delFlag != null and delFlag != ''">
+			and ${delFlag} = '0'
+		</if>
 	</select>
 
 	<!-- 查询部门信息 作为字典数据 -->
@@ -200,6 +206,7 @@
 		</if>
 	</select>
 
-
-
+	<select id="getDelFlag" resultType="java.lang.Long">
+		select count(*) from information_schema.columns where table_schema = 'aiurt-platform' and table_name =#{tableName} and column_name = 'del_flag'
+	</select>
 </mapper>

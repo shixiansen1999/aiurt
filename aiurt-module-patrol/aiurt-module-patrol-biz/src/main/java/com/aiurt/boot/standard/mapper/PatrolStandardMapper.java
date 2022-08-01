@@ -44,4 +44,10 @@ public interface PatrolStandardMapper extends BaseMapper<PatrolStandard> {
      * @return
      */
     Integer number(@Param("code")String code);
+    /**
+     * 查询配置巡检项的表
+     * @param id
+     * @return
+     */
+    Integer number1(@Param("id") String id);
 }

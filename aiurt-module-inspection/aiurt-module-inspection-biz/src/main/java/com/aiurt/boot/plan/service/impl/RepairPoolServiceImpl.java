@@ -352,6 +352,10 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
                 re.setSubsystemName(manager.translateMajor(repairPoolCodes.stream().map(RepairPoolCode::getSubsystemCode).collect(Collectors.toList()), InspectionConstant.SUBSYSTEM));
             }
 
+            // 开始时间
+            re.setStartTime(repairPool.getStartTime());
+            // 结束时间
+            re.setEndTime(repairPool.getEndTime());
             // 计划名称
             re.setName(repairPool.getName());
             // 计划编码

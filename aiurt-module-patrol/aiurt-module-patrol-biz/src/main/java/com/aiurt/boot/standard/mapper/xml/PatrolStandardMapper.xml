@@ -62,5 +62,8 @@
         FROM patrol_plan_standard
         WHERE patrol_plan_standard.standard_code = #{code}
     </select>
+    <select id="number1" resultType="java.lang.Integer">
+        SELECT COUNT(psi.standard_id AND psi.standard_id=#{id} AND psi.del_flag=0 OR NULL) FROM patrol_standard_items psi WHERE 1=1
+    </select>
 
 </mapper>
