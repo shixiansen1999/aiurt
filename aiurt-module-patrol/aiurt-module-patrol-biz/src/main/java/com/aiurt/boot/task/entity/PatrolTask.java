@@ -84,26 +84,26 @@ public class PatrolTask implements Serializable {
     @ApiModelProperty(value = "巡检频次：1 一天1次、2 一周1次、3 一周2次")
     private java.lang.Integer period;
     /**
-     * 巡检的日期
+     * 巡检的日期(yyyy-MM-dd)
      */
     @Excel(name = "巡检的日期", width = 15, format = "yyyy-MM-dd")
     @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd")
     @DateTimeFormat(pattern = "yyyy-MM-dd")
-    @ApiModelProperty(value = "巡检的日期")
+    @ApiModelProperty(value = "巡检的日期(yyyy-MM-dd)")
     private java.util.Date patrolDate;
     /**
-     * 巡检开始时间
+     * 巡检开始时间(HH:mm)
      */
     @JsonFormat(timezone = "GMT+8", pattern = "HH:mm")
     @DateTimeFormat(pattern = "HH:mm")
-    @ApiModelProperty(value = "巡检开始时间")
+    @ApiModelProperty(value = "巡检开始时间(HH:mm)")
     private java.util.Date startTime;
     /**
-     * 巡检结束时间
+     * 巡检结束时间(HH:mm)
      */
     @JsonFormat(timezone = "GMT+8", pattern = "HH:mm")
     @DateTimeFormat(pattern = "HH:mm")
-    @ApiModelProperty(value = "巡检结束时间")
+    @ApiModelProperty(value = "巡检结束时间(HH:mm)")
     private java.util.Date endTime;
     /**
      * 任务获取方式：1 个人领取、2常规指派、3 手工下发
@@ -112,7 +112,7 @@ public class PatrolTask implements Serializable {
     @ApiModelProperty(value = "任务获取方式：1 个人领取、2常规指派、3 手工下发")
     private java.lang.Integer source;
     /**
-     * 巡检结果提交时间
+     * 巡检结果提交时间(yyyy-MM-dd HH:mm:ss)
      */
     @Excel(name = "巡检结果提交时间", width = 15, format = "yyyy-MM-dd HH:mm:ss")
     @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd HH:mm:ss")
@@ -175,12 +175,12 @@ public class PatrolTask implements Serializable {
     @ApiModelProperty(value = "处置状态：0未处置、1已处置")
     private java.lang.Integer disposeStatus;
     /**
-     * 处置时间
+     * 处置时间(yyyy-MM-dd)
      */
     @Excel(name = "处置时间", width = 15, format = "yyyy-MM-dd")
     @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd")
     @DateTimeFormat(pattern = "yyyy-MM-dd")
-    @ApiModelProperty(value = "处置时间")
+    @ApiModelProperty(value = "处置时间(yyyy-MM-dd)")
     private java.util.Date disposeTime;
     /**
      * 处置用户ID
