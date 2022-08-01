@@ -126,4 +126,13 @@ public interface PatrolPlanMapper extends BaseMapper<PatrolPlan> {
    * @return
    */
     List<StandardDTO> selectStandardList(@Param("planId")String planId, @Param("majorCode")String majorCode, @Param("subsystemCode")String subsystemCode);
+  /**
+   * 待条件查询设备
+   * @param siteCodes
+   * @param page
+   * @param majorCode
+   * @param subsystemCode
+   * @return
+   */
+    IPage<Device> deviceList(Page<Device> page, @Param("siteCodes")List<String> siteCodes,@Param("subsystemCode") String subsystemCode, @Param("majorCode")String majorCode,@Param("deviceTypeCode")String deviceTypeCode);
 }

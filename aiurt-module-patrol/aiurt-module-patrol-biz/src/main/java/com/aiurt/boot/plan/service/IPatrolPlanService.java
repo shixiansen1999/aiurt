@@ -1,5 +1,6 @@
 package com.aiurt.boot.plan.service;
 
+import com.aiurt.boot.plan.dto.DeviceListDTO;
 import com.aiurt.boot.plan.dto.PatrolPlanDto;
 import com.aiurt.boot.plan.dto.QuerySiteDto;
 import com.aiurt.boot.plan.dto.StandardDTO;
@@ -83,5 +84,11 @@ public interface IPatrolPlanService extends IService<PatrolPlan> {
      * @return
      */
     List<StandardDTO> selectPlanStandard(String planId, String majorCode, String subsystemCode);
-
+    /**
+     * 带条件查询设备
+     * @param
+     * @param
+     * @return
+     */
+    IPage<Device> deviceList(Page<Device> page, DeviceListDTO deviceListDOT);
 }

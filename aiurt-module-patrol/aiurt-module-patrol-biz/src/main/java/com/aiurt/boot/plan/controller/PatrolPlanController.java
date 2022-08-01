@@ -3,14 +3,15 @@ package com.aiurt.boot.plan.controller;
 import java.util.Arrays;
 import java.util.List;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
+import com.aiurt.boot.plan.dto.DeviceListDTO;
 import com.aiurt.boot.plan.dto.PatrolPlanDto;
 import com.aiurt.boot.plan.dto.QuerySiteDto;
 import com.aiurt.boot.plan.dto.StandardDTO;
 import com.aiurt.boot.task.dto.MajorDTO;
 import com.aiurt.boot.utils.PatrolCodeUtil;
 import com.aiurt.modules.device.entity.Device;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import org.jeecg.common.api.vo.Result;
 import com.aiurt.boot.plan.entity.PatrolPlan;
 import com.aiurt.boot.plan.service.IPatrolPlanService;
@@ -20,9 +21,9 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.extern.slf4j.Slf4j;
 
 import com.aiurt.common.system.base.controller.BaseController;
+import org.jeecg.common.system.query.QueryGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.ModelAndView;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import com.aiurt.common.aspect.annotation.AutoLog;
@@ -62,6 +63,24 @@ public class PatrolPlanController extends BaseController<PatrolPlan, IPatrolPlan
 		return Result.OK(pageList);
 	}
 
+	 /**
+	  * 分页列表待条件查询设备
+	  *
+	  * @param deviceListDTO
+	  * @param pageNo
+	  * @param pageSize
+	  * @return
+	  */
+	 @AutoLog(value = "巡检计划表-分页列表待条件查询设备")
+	 @ApiOperation(value="巡检计划表-分页列表待条件查询设备", notes="巡检计划表-分页列表待条件查询设备")
+	 @GetMapping(value = "/deviceList")
+	 public Result<IPage<Device>> deviceList(           DeviceListDTO deviceListDTO,
+													   @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
+													   @RequestParam(name="pageSize", defaultValue="10") Integer pageSize) {
+		 Page<Device> page = new Page<Device>(pageNo, pageSize);
+		 IPage<Device> pageList = patrolPlanService.deviceList(page, deviceListDTO);
+		 return Result.OK(pageList);
+	 }
 	/**
 	 *   添加
 	 *

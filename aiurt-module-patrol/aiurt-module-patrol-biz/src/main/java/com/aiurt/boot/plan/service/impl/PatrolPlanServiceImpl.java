@@ -3,6 +3,7 @@ package com.aiurt.boot.plan.service.impl;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.ObjectUtil;
+import com.aiurt.boot.plan.dto.DeviceListDTO;
 import com.aiurt.boot.plan.dto.PatrolPlanDto;
 import com.aiurt.boot.plan.dto.QuerySiteDto;
 import com.aiurt.boot.plan.dto.StandardDTO;
@@ -263,6 +264,12 @@ public class PatrolPlanServiceImpl extends ServiceImpl<PatrolPlanMapper, PatrolP
     public List<StandardDTO> selectPlanStandard(String planId, String majorCode, String subsystemCode) {
         List<StandardDTO> standardDtos = baseMapper.selectStandardList(planId, majorCode, subsystemCode);
         return standardDtos;
+    }
+
+    @Override
+    public IPage<Device> deviceList(Page<Device> page, DeviceListDTO deviceListDTO) {
+        IPage<Device> deviceIPage = baseMapper.deviceList(page,deviceListDTO.getSiteCodes(),deviceListDTO.getSubsystemCode(),deviceListDTO.getMajorCode(),deviceListDTO.getDeviceTypeCode());
+        return deviceIPage;
     }
 
 }

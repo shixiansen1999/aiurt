@@ -269,5 +269,26 @@
             </if>
         </where>
     </select>
+    <select id="deviceList" resultType="com.aiurt.modules.device.entity.Device">
+        SELECT *
+        FROM device a
+        WHERE
+            a.del_flag =0
+        <if test="siteCodes.size()>0">
+        AND a.station_code in
+        <foreach item="siteCodes" collection="siteCodes" separator="," open="(" close=")" index="">
+            #{siteCodes}
+        </foreach>
+        </if>
+        <if test="majorCode!=null">
+            AND a.major_code = #{majorCode}
+        </if>
+        <if test="subsystemCode!=null">
+            AND a.system_code = #{subsystemCode}
+        </if>
+        <if test="deviceTypeCode!=null">
+            AND a.device_type_code = #{deviceTypeCode}
+        </if>
+    </select>
 
 </mapper>
