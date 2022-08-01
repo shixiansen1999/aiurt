@@ -229,19 +229,6 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                 List<StationDTO> stationDTOList = repairTaskMapper.selectStationList(e.getTaskCode());
                 e.setEquipmentLocation(manager.translateStation(stationDTOList));
             }
-            //检修任务状态
-            if (e.getStartTime() == null) {
-                e.setTaskStatusName("未开始");
-                e.setTaskStatus("0");
-            }
-            if (e.getStartTime() != null) {
-                e.setTaskStatusName("进行中");
-                e.setTaskStatus("1");
-            }
-            if (e.getIsSubmit() != null && e.getIsSubmit().equals(InspectionConstant.IS_EFFECT)) {
-                e.setTaskStatusName("已提交");
-                e.setTaskStatus("2");
-            }
             //提交人名称
             if (e.getOverhaulId() != null) {
                 LoginUser userById = sysBaseApi.getUserById(e.getOverhaulId());
@@ -250,10 +237,25 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
             if (e.getDeviceId() != null && CollectionUtil.isNotEmpty(repairTasks)) {
                 //正常项
                 List<RepairTaskResult> repairTaskResults = repairTaskMapper.selectSingle(e.getDeviceId(), InspectionConstant.RESULT_STATUS);
-                e.setNormal(repairTaskResults.size());
+                e.setNormal(Integer.toString( repairTaskResults.size()));
                 //异常项
                 List<RepairTaskResult> repairTaskResults1 = repairTaskMapper.selectSingle(e.getDeviceId(), InspectionConstant.NO_RESULT_STATUS);
-                e.setAbnormal(repairTaskResults1.size());
+                e.setAbnormal(Integer.toString( repairTaskResults1.size()));
+            }
+            //检修任务状态
+            if (e.getStartTime() == null) {
+                e.setTaskStatusName("未开始");
+                e.setTaskStatus("0");
+                e.setNormal("-");
+                e.setAbnormal("-");
+            }
+            if (e.getStartTime() != null) {
+                e.setTaskStatusName("进行中");
+                e.setTaskStatus("1");
+            }
+            if (e.getIsSubmit() != null && e.getIsSubmit().equals(InspectionConstant.IS_EFFECT)) {
+                e.setTaskStatusName("已提交");
+                e.setTaskStatus("2");
             }
             //未开始的数量
             long count1 = repairTasks.stream().filter(repairTaskDTO -> repairTaskDTO.getStartTime() == null).count();
@@ -329,10 +331,10 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
             if (e.getDeviceId() != null && CollectionUtil.isNotEmpty(repairTasks)) {
                 //正常项
                 List<RepairTaskResult> repairTaskResults = repairTaskMapper.selectSingle(e.getDeviceId(), InspectionConstant.RESULT_STATUS);
-                e.setNormal(repairTaskResults.size());
+                e.setNormal(Integer.toString(repairTaskResults.size()));
                 //异常项
                 List<RepairTaskResult> repairTaskResults1 = repairTaskMapper.selectSingle(e.getDeviceId(), InspectionConstant.NO_RESULT_STATUS);
-                e.setAbnormal(repairTaskResults1.size());
+                e.setAbnormal(Integer.toString(repairTaskResults1.size()));
             }
             //未开始的数量
             long count1 = repairTasks.stream().filter(repairTaskDTO -> repairTaskDTO.getStartTime() == null).count();
@@ -816,8 +818,7 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                 }
             }
             repairTaskMapper.updateById(repairTask);
-        }
-
+    }
 
     @Override
     public void acceptance(ExamineDTO examineDTO) {

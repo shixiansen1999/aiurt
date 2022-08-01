@@ -168,12 +168,12 @@ public class RepairTaskDTO {
     /**正常项*/
     @ApiModelProperty(value = "正常项")
     @TableField(exist = false)
-    private Integer normal;
+    private String normal;
 
     /**异常项*/
     @ApiModelProperty(value = "异常项")
     @TableField(exist = false)
-    private Integer abnormal;
+    private String abnormal;
 
     /**同行人名称*/
     @ApiModelProperty(value = "同行人名称")
