@@ -524,8 +524,14 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
         checkListDTO.setRepairTaskResultList(selectCodeContentList(checkListDTO.getDeviceId()));
         List<RepairTaskResult> repairTaskResultList = checkListDTO.getRepairTaskResultList();
         ArrayList<String> list = new ArrayList<>();
+        int sum1 = InspectionConstant.NO_IS_EFFECT;
+        int sum2 = InspectionConstant.NO_IS_EFFECT;
+        int sum3 = InspectionConstant.NO_IS_EFFECT;
+        long count1 =InspectionConstant.NO_IS_EFFECT;
+        long count2 =InspectionConstant.NO_IS_EFFECT;
+        long count3 =InspectionConstant.NO_IS_EFFECT;
         if (CollectionUtil.isNotEmpty(repairTaskResultList)) {
-            repairTaskResultList.forEach(r -> {
+            for (RepairTaskResult r :repairTaskResultList){
                 List<RepairTaskResult> children = r.getChildren();
                 //获取检修单的检修结果子
                 list.add(r.getId());
@@ -536,27 +542,32 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                     }
                 }
                 //检查项的数量父级
-                long count1 = repairTaskResultList.stream().filter(repairTaskResult -> repairTaskResult.getType() == 1).count();
+                count1 = repairTaskResultList.stream().filter(repairTaskResult -> repairTaskResult.getType().equals(InspectionConstant.IS_EFFECT)).count();
                 //已检修的数量父级
-                long count2 = repairTaskResultList.stream().filter(repairTaskResult -> repairTaskResult.getStatus() != null && repairTaskResult.getType() == 1).count();
+                count2 = repairTaskResultList.stream().filter(repairTaskResult -> repairTaskResult.getStatus() != null && repairTaskResult.getType().equals(InspectionConstant.IS_EFFECT)).count();
                 //待检修的数量父级
-                long count3 = repairTaskResultList.stream().filter(repairTaskResult -> repairTaskResult.getStatus() == null && repairTaskResult.getType() == 1).count();
-                if (CollectionUtils.isNotEmpty(children)) {
+                count3 = repairTaskResultList.stream().filter(repairTaskResult -> repairTaskResult.getStatus() == null && repairTaskResult.getType().equals(InspectionConstant.IS_EFFECT)).count();
+                checkListDTO.setMaintenanceItemsQuantity((int) count1);
+                checkListDTO.setOverhauledQuantity((int) count2);
+                checkListDTO.setToBeOverhauledQuantity((int) count3);
+                if (CollectionUtils.isNotEmpty(children)){
                     //检查项的数量子级
-                    long count11 = children.stream().filter(repairTaskResult -> repairTaskResult.getType() == 1).count();
-                    checkListDTO.setMaintenanceItemsQuantity((int) count1 + (int) count11);
+                    long count11 = children.stream().filter(repairTaskResult -> repairTaskResult.getType().equals(InspectionConstant.IS_EFFECT)).count();
+                    sum1 = sum1 + (int) count11;
                     //已检修的数量子级
-                    long count22 = children.stream().filter(repairTaskResult -> repairTaskResult.getStatus() != null && repairTaskResult.getType() == 1).count();
-                    checkListDTO.setOverhauledQuantity((int) count2 + (int) count22);
+                    long count22 = children.stream().filter(repairTaskResult -> repairTaskResult.getStatus() != null && repairTaskResult.getType().equals(InspectionConstant.IS_EFFECT)).count();
+                    sum2 = sum2 + (int) count22;
                     //待检修的数量子级
-                    long count33 = children.stream().filter(repairTaskResult -> repairTaskResult.getStatus() == null && repairTaskResult.getType() == 1).count();
-                    checkListDTO.setToBeOverhauledQuantity((int) count3 + (int) count33);
-                } else {
-                    checkListDTO.setMaintenanceItemsQuantity((int) count1);
-                    checkListDTO.setOverhauledQuantity((int) count2);
-                    checkListDTO.setToBeOverhauledQuantity((int) count3);
+                    long count33 = children.stream().filter(repairTaskResult -> repairTaskResult.getStatus() == null && repairTaskResult.getType().equals(InspectionConstant.IS_EFFECT)).count();
+                    sum3 = sum3 + (int) count33;
                 }
-            });
+            };
+            sum1 = sum1 +(int) count1;
+            sum2 = sum2 +(int) count2;
+            sum3 = sum3 +(int) count3;
+            checkListDTO.setMaintenanceItemsQuantity(sum1);
+            checkListDTO.setOverhauledQuantity(sum2);
+            checkListDTO.setToBeOverhauledQuantity(sum3);
             if (CollectionUtils.isNotEmpty(list)) {
                 List<RepairTaskEnclosure> repairTaskDevice = repairTaskEnclosureMapper.selectList(
                         new LambdaQueryWrapper<RepairTaskEnclosure>()

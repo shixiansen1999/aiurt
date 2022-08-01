@@ -86,8 +86,8 @@
                <if test="condition.search !=null ">
                  AND (
                    (( SELECT NAME FROM device WHERE CODE = t2.device_code ) LIKE CONCAT ('%', #{condition.search}, '%'))
-                   or (t2.device_code = #{condition.search})
-                   or (t2.code= #{condition.search})
+                   or (t2.device_code LIKE CONCAT  ('%', #{condition.search}, '%'))
+                   or (t2.code LIKE CONCAT ('%', #{condition.search}, '%'))
                    )
                </if>
                <if test="condition.equipmentCode !=null ">
