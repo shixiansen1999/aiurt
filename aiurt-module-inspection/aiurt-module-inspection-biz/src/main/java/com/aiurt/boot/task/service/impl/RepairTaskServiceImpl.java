@@ -787,28 +787,7 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                 throw new AiurtBootException("小主，只有该任务的检修人才能提交");
             }
         }
-        RepairTaskDeviceRel repairTaskDeviceRel = new RepairTaskDeviceRel();
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-
-        LambdaQueryWrapper<RepairTaskDeviceRel> objectLambdaQueryWrapper = new LambdaQueryWrapper<>();
-        List<RepairTaskDeviceRel> repairTaskDevice1 = repairTaskDeviceRelMapper.selectList(objectLambdaQueryWrapper.eq(RepairTaskDeviceRel::getRepairTaskId, examineDTO.getId()));
-
-        //查询检修单的主键id集合
-        List<String> collect1 = repairTaskDevice1.stream().map(RepairTaskDeviceRel::getId).collect(Collectors.toList());
-
-        //查询未提交的检修单
-        List<RepairTaskDeviceRel> repairTaskDevice = repairTaskDeviceRelMapper.selectList(objectLambdaQueryWrapper
-                .eq(RepairTaskDeviceRel::getRepairTaskId, examineDTO.getId())
-                .eq(RepairTaskDeviceRel::getIsSubmit, InspectionConstant.NO_IS_EFFECT));
-
-        if (CollectionUtil.isNotEmpty(collect1) && CollectionUtil.isEmpty(repairTaskDevice)) {
-            collect1.forEach(e -> {
-                repairTaskDeviceRel.setId(e);
-                repairTaskDeviceRel.setSubmitTime(new Date());
-                repairTaskDeviceRel.setIsSubmit(InspectionConstant.IS_EFFECT);
-                repairTaskDeviceRel.setEndTime(new Date());
-                repairTaskDeviceRelMapper.updateById(repairTaskDeviceRel);
-            });
             if (repairTask.getIsConfirm() == 1) {
                 //修改检修任务状态
                 repairTask.setSubmitUserId(sysUser.getId());
@@ -837,11 +816,8 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                 }
             }
             repairTaskMapper.updateById(repairTask);
-        } else {
-            throw new AiurtBootException("小主，该检修任务的检修单还没有提交完成哦！");
         }
 
-    }
 
     @Override
     public void acceptance(ExamineDTO examineDTO) {
