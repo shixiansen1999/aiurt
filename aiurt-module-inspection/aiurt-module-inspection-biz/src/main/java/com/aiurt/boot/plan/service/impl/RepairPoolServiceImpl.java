@@ -171,7 +171,7 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
         queryWrapper.eq("del_flag", CommonConstant.DEL_FLAG_0);
         queryWrapper.orderByAsc("start_time");
         queryWrapper.orderByAsc("type");
-        queryWrapper.orderByAsc("create_time");
+        queryWrapper.orderByDesc("create_time");
         if (selectPlanReq.getStatus() != null) {
             queryWrapper.eq("status", selectPlanReq.getStatus());
         }
