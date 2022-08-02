@@ -1,15 +1,21 @@
 package com.aiurt.modules.flow.controller;
 
 import com.aiurt.common.aspect.annotation.DisableDataFilter;
+import com.aiurt.modules.flow.dto.FlowTaskDTO;
+import com.aiurt.modules.flow.dto.FlowTaskReqDTO;
 import com.aiurt.modules.flow.dto.StartBpmnDTO;
 import com.aiurt.modules.flow.dto.TaskInfoDTO;
 import com.aiurt.modules.flow.service.FlowApiService;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.flowable.engine.runtime.ProcessInstance;
 import org.jeecg.common.api.vo.Result;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+
+import javax.servlet.http.HttpServletRequest;
 
 /**
  * 流程操作接口类
@@ -41,31 +47,6 @@ public class FlowOperationController {
         return Result.OK(processInstance);
     }
 
-
-    /**
-     * 根据指定流程的主版本，发起一个流程实例。
-     *
-     * @param processDefinitionKey 流程标识。
-     * @return 应答结果对象。
-     */
-    @PostMapping("/startOnly")
-    public Result<Void> startOnly(@RequestBody(required = true) String processDefinitionKey) {
-        // 1. 验证流程数据的合法性。
-//        ResponseResult<FlowEntry> flowEntryResult = flowOperationHelper.verifyAndGetFlowEntry(processDefinitionKey);
-//        if (!flowEntryResult.isSuccess()) {
-//            return ResponseResult.errorFrom(flowEntryResult);
-//        }
-//        // 2. 验证流程一个用户任务的合法性。
-//        FlowEntryPublish flowEntryPublish = flowEntryResult.getData().getMainFlowEntryPublish();
-//        ResponseResult<TaskInfoVo> taskInfoResult =
-//                flowOperationHelper.verifyAndGetInitialTaskInfo(flowEntryPublish, false);
-//        if (!taskInfoResult.isSuccess()) {
-//            return ResponseResult.errorFrom(taskInfoResult);
-//        }
-//        flowApiService.start(flowEntryPublish.getProcessDefinitionId(), null);
-        return Result.OK();
-    }
-
     /**
      * 获取开始节点之后的第一个任务节点的数据。
      *
@@ -92,6 +73,7 @@ public class FlowOperationController {
 
     /**
      * 提交流程的用户任务
+     *
      * @return
      */
     @DisableDataFilter
@@ -100,4 +82,19 @@ public class FlowOperationController {
         return Result.OK();
     }
 
+
+    /**
+     * 待办任务
+     *
+     * @return
+     */
+    @ApiOperation(value = "待办任务", notes = "待办任务")
+    @GetMapping(value = "/listRuntimeTask")
+    public Result<IPage<FlowTaskDTO>> listRuntimeTask(@RequestBody FlowTaskReqDTO flowTaskReqDTO,
+                                                      @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
+                                                      @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize,
+                                                      HttpServletRequest req) {
+        IPage<FlowTaskDTO> pageList = flowApiService.listRuntimeTask(pageNo, pageSize, flowTaskReqDTO);
+        return Result.OK(pageList);
+    }
 }

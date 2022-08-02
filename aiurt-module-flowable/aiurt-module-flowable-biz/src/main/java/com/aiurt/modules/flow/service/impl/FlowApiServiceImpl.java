@@ -6,12 +6,17 @@ import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.modules.constants.FlowConstant;
+import com.aiurt.modules.flow.dto.FlowTaskDTO;
+import com.aiurt.modules.flow.dto.FlowTaskReqDTO;
 import com.aiurt.modules.flow.dto.StartBpmnDTO;
-import com.aiurt.modules.flow.entity.CustomTaskComment;
+import com.aiurt.modules.flow.entity.ActCustomTaskComment;
+import com.aiurt.modules.flow.mapper.ActCustomTaskCommentMapper;
 import com.aiurt.modules.flow.service.FlowApiService;
 import com.aiurt.modules.flow.utils.FlowElementUtil;
 import com.aiurt.modules.utils.ReflectionService;
 import com.alibaba.fastjson.JSON;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.MapUtils;
 import org.apache.shiro.SecurityUtils;
@@ -47,6 +52,8 @@ public class FlowApiServiceImpl implements FlowApiService {
     private ReflectionService reflectionService;
     @Autowired
     private TaskService taskService;
+    @Autowired
+    private ActCustomTaskCommentMapper customTaskCommentMapper;
 
     /**
      * @param startBpmnDTO
@@ -168,10 +175,7 @@ public class FlowApiServiceImpl implements FlowApiService {
      */
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public void completeTask(Task task, CustomTaskComment comment, Map<String, Object> busData) {
-        // 流程实例对象
-        ProcessInstance processInstance = getProcessInstance(task.getProcessInstanceId());
-
+    public void completeTask(Task task, ActCustomTaskComment comment, Map<String, Object> busData) {
         // 获取流程任务
         Task processInstanceActiveTask = this.getProcessInstanceActiveTask(task.getProcessInstanceId(), task.getId());
 
@@ -182,7 +186,9 @@ public class FlowApiServiceImpl implements FlowApiService {
 
         // 增加流程批注数据
         if (comment != null) {
-
+            comment.fillWith(processInstanceActiveTask);
+            comment.setCreateRealname(checkLogin().getRealname());
+            customTaskCommentMapper.insert(comment);
         }
 
         // 完成任务
@@ -236,6 +242,79 @@ public class FlowApiServiceImpl implements FlowApiService {
         return runtimeService.createProcessInstanceQuery().processInstanceId(processInstanceId).singleResult();
     }
 
+    /**
+     * 待办任务
+     *
+     * @param pageNo
+     * @param pageSize
+     * @param flowTaskReqDTO
+     * @return
+     */
+    @Override
+    public IPage<FlowTaskDTO> listRuntimeTask(Integer pageNo, Integer pageSize, FlowTaskReqDTO flowTaskReqDTO) {
+        Page<FlowTaskDTO> result = new Page<>();
+        TaskQuery query = taskService.createTaskQuery().active();
+        if (StrUtil.isNotBlank(flowTaskReqDTO.getProcessDefinitionKey())) {
+            query.processDefinitionKey(flowTaskReqDTO.getProcessDefinitionKey());
+        }
+        if (StrUtil.isNotBlank(flowTaskReqDTO.getProcessDefinitionName())) {
+            query.processDefinitionNameLike("%" + flowTaskReqDTO.getProcessDefinitionName() + "%");
+        }
+        if (StrUtil.isNotBlank(flowTaskReqDTO.getTaskName())) {
+            query.taskNameLike("%" + flowTaskReqDTO.getTaskName() + "%");
+        }
+        this.buildCandidateCondition(query, checkLogin());
+        long totalCount = query.count();
+        query.orderByTaskCreateTime().desc();
+        int firstResult = (pageNo - 1) * pageSize;
+        List<Task> taskList = query.listPage(firstResult, pageSize);
+//        return new MyPageData<>(taskList, totalCount);
+
+        return result;
+    }
+
+    public List<FlowTaskDTO> convertToFlowTaskList(List<Task> taskList) {
+        List<FlowTaskDTO> flowTaskVoList = new LinkedList<>();
+        if (CollUtil.isEmpty(taskList)) {
+            return flowTaskVoList;
+        }
+//        Set<String> processDefinitionIdSet = taskList.stream()
+//                .map(Task::getProcessDefinitionId).collect(Collectors.toSet());
+//        Set<String> procInstanceIdSet = taskList.stream()
+//                .map(Task::getProcessInstanceId).collect(Collectors.toSet());
+//        List<FlowEntryPublish> flowEntryPublishList =
+//                flowEntryService.getFlowEntryPublishList(processDefinitionIdSet);
+//        Map<String, FlowEntryPublish> flowEntryPublishMap =
+//                flowEntryPublishList.stream().collect(Collectors.toMap(FlowEntryPublish::getProcessDefinitionId, c -> c));
+//        List<ProcessInstance> instanceList = this.getProcessInstanceList(procInstanceIdSet);
+//        Map<String, ProcessInstance> instanceMap =
+//                instanceList.stream().collect(Collectors.toMap(ProcessInstance::getId, c -> c));
+//        List<ProcessDefinition> definitionList = this.getProcessDefinitionList(processDefinitionIdSet);
+//        Map<String, ProcessDefinition> definitionMap =
+//                definitionList.stream().collect(Collectors.toMap(ProcessDefinition::getId, c -> c));
+//        for (Task task : taskList) {
+//            FlowTaskDTO flowTaskVo = new FlowTaskDTO();
+//            flowTaskVo.setTaskId(task.getId());
+//            flowTaskVo.setTaskName(task.getName());
+//            flowTaskVo.setTaskKey(task.getTaskDefinitionKey());
+//            flowTaskVo.setTaskFormKey(task.getFormKey());
+//            flowTaskVo.setEntryId(flowEntryPublishMap.get(task.getProcessDefinitionId()).getEntryId());
+//            ProcessDefinition processDefinition = definitionMap.get(task.getProcessDefinitionId());
+//            flowTaskVo.setProcessDefinitionId(processDefinition.getId());
+//            flowTaskVo.setProcessDefinitionName(processDefinition.getName());
+//            flowTaskVo.setProcessDefinitionKey(processDefinition.getKey());
+//            flowTaskVo.setProcessDefinitionVersion(processDefinition.getVersion());
+//            ProcessInstance processInstance = instanceMap.get(task.getProcessInstanceId());
+//            flowTaskVo.setProcessInstanceId(processInstance.getId());
+//            Object initiator = this.getProcessInstanceVariable(
+//                    processInstance.getId(), FlowConstant.PROC_INSTANCE_INITIATOR_VAR);
+//            flowTaskVo.setProcessInstanceInitiator(initiator.toString());
+//            flowTaskVo.setProcessInstanceStartTime(processInstance.getStartTime());
+//            flowTaskVo.setBusinessKey(processInstance.getBusinessKey());
+//            flowTaskVoList.add(flowTaskVo);
+//        }
+        return flowTaskVoList;
+    }
     /**
      * 构建任务查询条件
      *

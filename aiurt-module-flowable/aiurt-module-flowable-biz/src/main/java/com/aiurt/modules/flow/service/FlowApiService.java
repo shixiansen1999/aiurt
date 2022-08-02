@@ -1,7 +1,10 @@
 package com.aiurt.modules.flow.service;
 
+import com.aiurt.modules.flow.dto.FlowTaskDTO;
+import com.aiurt.modules.flow.dto.FlowTaskReqDTO;
 import com.aiurt.modules.flow.dto.StartBpmnDTO;
-import com.aiurt.modules.flow.entity.CustomTaskComment;
+import com.aiurt.modules.flow.entity.ActCustomTaskComment;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import org.flowable.engine.runtime.ProcessInstance;
 import org.flowable.task.api.Task;
 import org.flowable.task.api.TaskInfo;
@@ -19,6 +22,7 @@ public interface FlowApiService {
 
     /**
      * 启动流程
+     *
      * @param startBpmnDTO
      * @return
      */
@@ -36,11 +40,12 @@ public interface FlowApiService {
     /**
      * 完成任务，同时提交审批数据。
      *
-     * @param task     工作流任务对象。
-     * @param comment  审批对象。
+     * @param task    工作流任务对象。
+     * @param comment 审批对象。
      * @param busData 流程任务的变量数据。
      */
-    void completeTask(Task task, CustomTaskComment comment,  Map<String, Object> busData);
+    void completeTask(Task task, ActCustomTaskComment comment, Map<String, Object> busData);
+
     /**
      * 判断当前登录用户是否为流程实例中的用户任务的指派人。或是候选人之一。
      *
@@ -56,4 +61,11 @@ public interface FlowApiService {
      * @return 流程实例对象。
      */
     ProcessInstance getProcessInstance(String processInstanceId);
+
+    /**
+     * 待办任务
+     *
+     * @return
+     */
+    IPage<FlowTaskDTO> listRuntimeTask(Integer pageNo, Integer pageSize, FlowTaskReqDTO flowTaskReqDTO);
 }

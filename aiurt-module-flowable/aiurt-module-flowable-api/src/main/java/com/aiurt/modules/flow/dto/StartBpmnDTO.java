@@ -1,6 +1,6 @@
 package com.aiurt.modules.flow.dto;
 
-import com.aiurt.modules.flow.entity.CustomTaskComment;
+import com.aiurt.modules.flow.entity.ActCustomTaskComment;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -24,5 +24,6 @@ public class StartBpmnDTO implements Serializable {
     private Map<String, Object> busData;
 
     @ApiModelProperty("流程审批批注对象")
-    private CustomTaskComment customTaskComment;
+    private ActCustomTaskComment customTaskComment;
+
 }
