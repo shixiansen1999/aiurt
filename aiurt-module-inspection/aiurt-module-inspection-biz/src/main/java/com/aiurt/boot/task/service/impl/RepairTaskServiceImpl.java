@@ -480,7 +480,7 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
             //设备专业
             checkListDTO.setDeviceMajorName(q.getMajorName());
             //设备子系统
-            checkListDTO.setDeviceSystemName(q.getDeviceTypeName());
+            checkListDTO.setDeviceSystemName(q.getSubsystemName());
         });
         //提交人名称
         if (checkListDTO.getOverhaulId() != null) {
