@@ -225,8 +225,8 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                 e.setDeviceTypeName(q.getDeviceTypeName());
             });
             //设备位置
-            if (e.getTaskCode() != null) {
-                List<StationDTO> stationDTOList = repairTaskMapper.selectStationList(e.getTaskCode());
+            if (e.getEquipmentCode()!=null) {
+                List<StationDTO> stationDTOList = repairTaskMapper.selectStationLists(e.getEquipmentCode());
                 e.setEquipmentLocation(manager.translateStation(stationDTOList));
             }
             //提交人名称
@@ -306,8 +306,8 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                 e.setDeviceTypeName(q.getDeviceTypeName());
             });
             //设备位置
-            if (e.getTaskCode() != null) {
-                List<StationDTO> stationDTOList = repairTaskMapper.selectStationList(e.getTaskCode());
+            if (e.getEquipmentCode()!=null) {
+                List<StationDTO> stationDTOList = repairTaskMapper.selectStationLists(e.getEquipmentCode());
                 e.setEquipmentLocation(manager.translateStation(stationDTOList));
             }
             //检修任务状态
