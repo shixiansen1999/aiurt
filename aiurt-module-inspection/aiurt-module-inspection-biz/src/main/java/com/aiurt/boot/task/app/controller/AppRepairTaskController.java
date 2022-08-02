@@ -15,8 +15,10 @@ import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.constant.enums.ModuleType;
 import com.aiurt.common.system.base.controller.BaseController;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import io.netty.util.internal.ObjectUtil;
 import io.swagger.annotations.*;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ObjectUtils;
 import org.jeecg.common.api.vo.Result;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -329,9 +331,11 @@ public class AppRepairTaskController extends BaseController<RepairTask, IRepairT
     @PostMapping(value = "/editFaultCallback")
     public Result<String> editFaultCallback(@RequestBody FaultCallbackDTO faultCallbackDTO) {
         RepairTaskDeviceRel repairTaskDeviceRel = new RepairTaskDeviceRel();
-        repairTaskDeviceRel.setId(faultCallbackDTO.getDeviceId());
-        repairTaskDeviceRel.setFaultCode(faultCallbackDTO.getFaultCode());
-        repairTaskDeviceRelService.updateById(repairTaskDeviceRel);
+        if(ObjectUtils.isNotEmpty(faultCallbackDTO)){
+            repairTaskDeviceRel.setId(faultCallbackDTO.getDeviceId());
+            repairTaskDeviceRel.setFaultCode(faultCallbackDTO.getFaultCode());
+            repairTaskDeviceRelService.updateById(repairTaskDeviceRel);
+        }
         return Result.OK("编辑故障回调成功!");
     }
 }
