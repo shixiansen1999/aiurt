@@ -1,6 +1,7 @@
 package com.aiurt.modules.fault.dto;
 
 import com.aiurt.common.aspect.annotation.Dict;
+import com.aiurt.modules.basic.entity.DictEntity;
 import com.aiurt.modules.faultknowledgebase.entity.FaultKnowledgeBase;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModel;
@@ -12,9 +13,12 @@ import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
 
+/**
+ * @author fgw
+ */
 @Data
 @ApiModel("维修记录")
-public class RecordDetailDTO implements Serializable {
+public class RecordDetailDTO extends DictEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
