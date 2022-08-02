@@ -4,6 +4,7 @@ package com.aiurt.modules.situation.controller;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.api.dto.message.BusMessageDTO;
 import com.aiurt.common.aspect.annotation.AutoLog;
+import com.aiurt.common.system.base.controller.BaseController;
 import com.aiurt.common.util.SysAnnmentTypeEnum;
 import com.aiurt.modules.situation.entity.SysAnnouncement;
 import com.aiurt.modules.situation.entity.SysAnnouncementSend;
@@ -26,6 +27,7 @@ import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.ObjectUtils;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Date;
@@ -44,7 +46,7 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/situation/sysInfoList")
 @Slf4j
-public class SysInfoListController {
+public class SysInfoListController  extends BaseController<SysAnnouncement, SysInfoListService> {
     @Autowired
     private SysInfoListService bdInfoListService;
     @Autowired
@@ -279,4 +281,19 @@ public class SysInfoListController {
         sysInfoListMapper.updateReadFlag(sysAnnouncementSend.getId(),new Date());
         return Result.OK("编辑成功!");
     }
+
+
+    /**
+     * 导出excel
+     *
+     * @param request
+     * @param sysAnnouncement
+     */
+    @AutoLog(value = "特情消息导出")
+    @ApiOperation(value = "特情消息导出", notes = "特情消息导出")
+    @RequestMapping(value = "/exportXls")
+    public ModelAndView exportXls(HttpServletRequest request, SysAnnouncement sysAnnouncement) {
+        return bdInfoListService.reportExport(request, sysAnnouncement, SysAnnouncement.class, "特情记录表");
+    }
+
 }

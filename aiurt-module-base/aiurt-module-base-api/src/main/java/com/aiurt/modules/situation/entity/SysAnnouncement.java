@@ -39,20 +39,6 @@ public class SysAnnouncement implements Serializable {
     @Excel(name = "内容", width = 30)
     private String msgContent;
     /**
-     * 开始时间
-     */
-    @Excel(name = "开始时间", width = 15, format = "yyyy-MM-dd HH:mm:ss")
-    @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd HH:mm:ss")
-    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    private java.util.Date startTime;
-    /**
-     * 结束时间
-     */
-    @Excel(name = "结束时间", width = 15, format = "yyyy-MM-dd HH:mm:ss")
-    @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd HH:mm:ss")
-    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    private java.util.Date endTime;
-    /**
      * 发布人
      */
     @Excel(name = "发布人", width = 15)
@@ -93,10 +79,25 @@ public class SysAnnouncement implements Serializable {
     /**
      * 撤销时间
      */
-    @Excel(name = "撤销时间", width = 15, format = "yyyy-MM-dd HH:mm:ss")
     @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd HH:mm:ss")
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private java.util.Date cancelTime;
+
+    /**
+     * 开始时间
+     */
+    @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd HH:mm:ss")
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private java.util.Date startTime;
+
+    /**
+     * 结束时间
+     */
+    @Excel(name = "结束时间", width = 15, format = "yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd HH:mm:ss")
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private java.util.Date endTime;
+
     /**
      * 删除状态（0，正常，1已删除）
      */
@@ -154,12 +155,12 @@ public class SysAnnouncement implements Serializable {
      * 指定接收范围
      **/
     @TableField(exist = false)
+    @Excel(name = "指定接收范围", width = 15, dicCode = "userNames")
     private String userNames;
 
     /**
      * 查询发布时间的起始时间
      */
-    @Excel(name = "查询发布时间的起始时间", width = 15, format = "yyyy-MM-dd")
     @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd")
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     @TableField(exist = false)
@@ -167,7 +168,6 @@ public class SysAnnouncement implements Serializable {
     /**
      * 查询发布时间的结束时间
      */
-    @Excel(name = "查询发布时间的结束时间", width = 15, format = "yyyy-MM-dd")
     @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd")
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     @TableField(exist = false)
