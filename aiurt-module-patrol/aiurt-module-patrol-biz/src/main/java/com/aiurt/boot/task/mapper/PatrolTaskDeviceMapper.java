@@ -121,4 +121,11 @@ public interface PatrolTaskDeviceMapper extends BaseMapper<PatrolTaskDevice> {
      * @return
      */
     String getSysName(String systemCode);
+
+    /**
+     * 根据站点code,获取站点下的全部位置
+     * @param stationCode
+     * @return
+     */
+    List<String> getAllPosition(String stationCode);
 }
