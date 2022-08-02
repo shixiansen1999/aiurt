@@ -466,22 +466,30 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
         //子系统
         checkListDTO.setSystemName(manager.translateMajor(Arrays.asList(checkListDTO.getSystemCode()), InspectionConstant.SUBSYSTEM));
 
-        //根据设备编码翻译设备名称和设备类型名称
-        List<RepairDeviceDTO> repairDeviceDTOList = manager.queryDeviceByCodes(Arrays.asList(checkListDTO.getEquipmentCode()));
-        repairDeviceDTOList.forEach(q -> {
-            //设备名称
-            checkListDTO.setEquipmentName(q.getName());
-            //设备类型名称
-            checkListDTO.setDeviceTypeName(q.getDeviceTypeName());
-            //设备类型编码
-            checkListDTO.setDeviceTypeCode(q.getDeviceTypeCode());
-            //设备id
-            checkListDTO.setEquipmentId(q.getDeviceId());
+        if (checkListDTO.getEquipmentCode()!=null){
+            //根据设备编码翻译设备名称和设备类型名称
+            List<RepairDeviceDTO> repairDeviceDTOList = manager.queryDeviceByCodes(Arrays.asList(checkListDTO.getEquipmentCode()));
+            repairDeviceDTOList.forEach(q -> {
+                //设备名称
+                checkListDTO.setEquipmentName(q.getName());
+                //设备类型名称
+                checkListDTO.setDeviceTypeName(q.getDeviceTypeName());
+                //设备类型编码
+                checkListDTO.setDeviceTypeCode(q.getDeviceTypeCode());
+                //设备id
+                checkListDTO.setEquipmentId(q.getDeviceId());
+                //设备专业
+                checkListDTO.setDeviceMajorName(q.getMajorName());
+                //设备子系统
+                checkListDTO.setDeviceSystemName(q.getSubsystemName());
+            });
+        }
+        if (checkListDTO.getEquipmentCode()==null){
             //设备专业
-            checkListDTO.setDeviceMajorName(q.getMajorName());
+            checkListDTO.setDeviceMajorName(manager.translateMajor(Arrays.asList(checkListDTO.getMajorCode()), InspectionConstant.MAJOR));
             //设备子系统
-            checkListDTO.setDeviceSystemName(q.getSubsystemName());
-        });
+            checkListDTO.setDeviceSystemName(manager.translateMajor(Arrays.asList(checkListDTO.getSystemCode()), InspectionConstant.SUBSYSTEM));
+        }
         //提交人名称
         if (checkListDTO.getOverhaulId() != null) {
             LoginUser userById = sysBaseApi.getUserById(checkListDTO.getOverhaulId());
