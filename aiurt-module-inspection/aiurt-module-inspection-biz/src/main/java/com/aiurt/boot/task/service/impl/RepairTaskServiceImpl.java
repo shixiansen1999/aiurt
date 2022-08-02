@@ -453,13 +453,6 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
             }
         }
 
-        //根据站点编码翻译站点名称
-        if (checkListDTO.getStationCode() != null && checkListDTO.getLineCode()!=null) {
-            String string1 = manager.translateLine(checkListDTO.getLineCode())+"/"+manager.translateStation(checkListDTO.getStationCode());
-            checkListDTO.setStationsName(string1);
-            checkListDTO.setSiteCode(checkListDTO.getStationCode());
-        }
-
         //专业
         checkListDTO.setMajorName(manager.translateMajor(Arrays.asList(checkListDTO.getMajorCode()), InspectionConstant.MAJOR));
 
@@ -469,6 +462,8 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
         if (checkListDTO.getEquipmentCode()!=null){
             //根据设备编码翻译设备名称和设备类型名称
             List<RepairDeviceDTO> repairDeviceDTOList = manager.queryDeviceByCodes(Arrays.asList(checkListDTO.getEquipmentCode()));
+            //设备位置
+            List<StationDTO> stationDTOList = repairTaskMapper.selectStationLists(checkListDTO.getEquipmentCode());
             repairDeviceDTOList.forEach(q -> {
                 //设备名称
                 checkListDTO.setEquipmentName(q.getName());
@@ -482,13 +477,37 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                 checkListDTO.setDeviceMajorName(q.getMajorName());
                 //设备子系统
                 checkListDTO.setDeviceSystemName(q.getSubsystemName());
+                //线路编码
+                checkListDTO.setLineCode(q.getLineCode());
+                //位置编码
+                checkListDTO.setPositionCode(q.getPositionCode());
+                //站点编码
+                checkListDTO.setSiteCode(q.getStationCode());
             });
+            checkListDTO.setEquipmentLocation(manager.translateStation(stationDTOList));
+
+            //站点位置
+            List<StationDTO> stationDTOList1 = new ArrayList<>();
+            stationDTOList1.forEach(e -> {
+                e.setStationCode(checkListDTO.getStationCode());
+                e.setLineCode(checkListDTO.getLineCode());
+                e.setPositionCode(checkListDTO.getPositionCode());
+            });
+            String station = manager.translateStation(stationDTOList);
+            checkListDTO.setSitePosition(station);
         }
         if (checkListDTO.getEquipmentCode()==null){
             //设备专业
             checkListDTO.setDeviceMajorName(manager.translateMajor(Arrays.asList(checkListDTO.getMajorCode()), InspectionConstant.MAJOR));
             //设备子系统
             checkListDTO.setDeviceSystemName(manager.translateMajor(Arrays.asList(checkListDTO.getSystemCode()), InspectionConstant.SUBSYSTEM));
+
+            //根据站点编码翻译站点名称
+            if (checkListDTO.getStationCode() != null && checkListDTO.getLineCode()!=null) {
+                String string1 = manager.translateLine(checkListDTO.getLineCode())+"/"+manager.translateStation(checkListDTO.getStationCode());
+                checkListDTO.setStationsName(string1);
+                checkListDTO.setSiteCode(checkListDTO.getStationCode());
+            }
         }
         //提交人名称
         if (checkListDTO.getOverhaulId() != null) {
@@ -496,11 +515,6 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
             checkListDTO.setOverhaulName(userById.getRealname());
         }
 
-        //设备位置
-        if (checkListDTO.getEquipmentCode() != null) {
-            List<StationDTO> stationDTOList = repairTaskMapper.selectStationLists(checkListDTO.getEquipmentCode());
-            checkListDTO.setEquipmentLocation(manager.translateStation(stationDTOList));
-        }
         //检修位置
         if (checkListDTO.getSpecificLocation() != null) {
             List<StationDTO> stationDTOList = new ArrayList<>();
@@ -518,18 +532,6 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
             }
 
         }
-        //站点位置
-        if (checkListDTO.getEquipmentCode() == null) {
-            List<StationDTO> stationDTOList = new ArrayList<>();
-            stationDTOList.forEach(e -> {
-                e.setStationCode(checkListDTO.getStationCode());
-                e.setLineCode(checkListDTO.getLineCode());
-                e.setPositionCode(checkListDTO.getPositionCode());
-            });
-            String station = manager.translateStation(stationDTOList);
-            checkListDTO.setSitePosition(station);
-        }
-
         //构造树形
         checkListDTO.setRepairTaskResultList(selectCodeContentList(checkListDTO.getDeviceId()));
         List<RepairTaskResult> repairTaskResultList = checkListDTO.getRepairTaskResultList();
