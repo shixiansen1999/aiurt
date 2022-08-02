@@ -2,6 +2,7 @@ package com.aiurt.boot.plan.service.impl;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.aiurt.boot.plan.dto.DeviceListDTO;
 import com.aiurt.boot.plan.dto.PatrolPlanDto;
@@ -29,6 +30,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -76,8 +78,20 @@ public class PatrolPlanServiceImpl extends ServiceImpl<PatrolPlanMapper, PatrolP
         if (patrolPlanDto.getPeriod()==1){
             PatrolPlanStrategy patrolPlanStrategy = new PatrolPlanStrategy();
             patrolPlanStrategy.setPlanId(id.getId());patrolPlanStrategy.setType(0);
-            patrolPlanStrategy.setEndTime(patrolPlanDto.getStrategyEndTime());
-            patrolPlanStrategy.setStartTime(patrolPlanDto.getStrategyStartTime());
+            Date strategyStartTime = patrolPlanDto.getStrategyStartTime();
+            Date strategyEndTime = patrolPlanDto.getStrategyEndTime();
+            if (ObjectUtil.isNotEmpty(strategyEndTime) && ObjectUtil.isNotEmpty(strategyEndTime)) {
+                Date startTime = DateUtil.parse(DateUtil.format(strategyStartTime, "HH:mm"), "HH:mm");
+                Date endTime = DateUtil.parse(DateUtil.format(strategyEndTime, "HH:mm"), "HH:mm");
+                int compare = DateUtil.compare(startTime, endTime);
+                if (compare > 0) {
+                    throw new AiurtBootException("巡检策略设置的开始时间不能晚于结束时间！");
+                } else if (compare == 0) {
+                    throw new AiurtBootException("巡检策略设置的开始和结束时间不能相等！");
+                }
+            }
+            patrolPlanStrategy.setEndTime(strategyEndTime);
+            patrolPlanStrategy.setStartTime(strategyStartTime);
             patrolPlanStrategyMapper.insert(patrolPlanStrategy);
         }else if (patrolPlanDto.getPeriod()==2 || patrolPlanDto.getPeriod()==3){
             List<Integer>week = patrolPlanDto.getWeek();
