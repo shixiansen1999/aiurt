@@ -321,21 +321,4 @@ public class AppRepairTaskController extends BaseController<RepairTask, IRepairT
         }
     }
 
-    /**
-     *   编辑故障回调
-     * @param faultCallbackDTO
-     * @return
-     */
-    @AutoLog(value = "app检修任务-编辑故障回调")
-    @ApiOperation(value = "app检修任务-编辑故障回调", notes = "app检修任务-编辑故障回调")
-    @PostMapping(value = "/editFaultCallback")
-    public Result<String> editFaultCallback(@RequestBody FaultCallbackDTO faultCallbackDTO) {
-        RepairTaskDeviceRel repairTaskDeviceRel = new RepairTaskDeviceRel();
-        if(ObjectUtils.isNotEmpty(faultCallbackDTO)){
-            repairTaskDeviceRel.setId(faultCallbackDTO.getDeviceId());
-            repairTaskDeviceRel.setFaultCode(faultCallbackDTO.getFaultCode());
-            repairTaskDeviceRelService.updateById(repairTaskDeviceRel);
-        }
-        return Result.OK("编辑故障回调成功!");
-    }
 }

@@ -6,6 +6,7 @@ import cn.hutool.core.date.DateUnit;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
+import com.aiurt.boot.api.inspectionApi;
 import com.aiurt.boot.constant.DictConstant;
 import com.aiurt.boot.constant.InspectionConstant;
 import com.aiurt.boot.manager.InspectionManager;
@@ -32,6 +33,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.github.xiaoymin.knife4j.core.util.CollectionUtils;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.LoginUser;
@@ -50,7 +52,7 @@ import java.util.stream.Collectors;
  * @Version: V1.0
  */
 @Service
-public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairTask> implements IRepairTaskService {
+public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairTask> implements IRepairTaskService, inspectionApi {
 
     @Autowired
     private RepairTaskMapper repairTaskMapper;
@@ -1437,5 +1439,19 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                         .eq(RepairTaskDeviceRel::getDeviceCode, deviceCode)
                         .eq(RepairTaskDeviceRel::getDelFlag, CommonConstant.DEL_FLAG_0));
         return repairTaskDeviceRels;
+    }
+
+    /**
+     * 故障回调
+     * @param faultCallbackDTO
+     */
+    @Override
+    public void editFaultCallback(FaultCallbackDTO faultCallbackDTO) {
+        RepairTaskDeviceRel repairTaskDeviceRel = new RepairTaskDeviceRel();
+        if(ObjectUtils.isNotEmpty(faultCallbackDTO)){
+            repairTaskDeviceRel.setId(faultCallbackDTO.getSingleId());
+            repairTaskDeviceRel.setFaultCode(faultCallbackDTO.getFaultCode());
+            repairTaskDeviceRelMapper.updateById(repairTaskDeviceRel);
+        }
     }
 }

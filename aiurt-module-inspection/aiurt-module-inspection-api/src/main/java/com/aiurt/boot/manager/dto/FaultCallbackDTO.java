@@ -20,7 +20,7 @@ public class FaultCallbackDTO {
     @TableField(exist = false)
     @ApiModelProperty(value = "检修单id",required = true)
     @NotBlank
-    private String deviceId;
+    private String singleId;
 
 
     /**回调故障编码*/
