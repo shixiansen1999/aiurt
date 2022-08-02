@@ -292,7 +292,7 @@ public class WorkLogController {
     public Result<?> confirm(@RequestParam String id) {
         LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         WorkLog byId = workLogDepotService.getById(id);
-        if(byId.getSucceedId()!=user.getId())
+        if(!byId.getSucceedId().equals(user.getId()))
         {
             throw new AiurtBootException("小主，您不是该日志的接班人！");
         }

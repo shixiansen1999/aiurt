@@ -51,6 +51,14 @@ public class PatrolTaskDeviceDTO {
     @Excel(name = "设备名称", width = 15)
     @ApiModelProperty(value = "设备名称")
     private java.lang.String deviceName;
+    /**专业code*/
+    @Excel(name = "专业code", width = 15)
+    @ApiModelProperty(value = "专业code")
+    private java.lang.String professionCode;
+    /**适用系统code*/
+    @Excel(name = "适用系统code", width = 15)
+    @ApiModelProperty(value = "适用系统code")
+    private java.lang.String subsystemCode;
     /**站点*/
     @Excel(name = "站点", width = 15)
     @ApiModelProperty(value = "站点")
@@ -143,4 +151,20 @@ public class PatrolTaskDeviceDTO {
     /***工单查看详情*/
     @ApiModelProperty(value = "工单查看详情（传1标识）")
     private Integer checkDetail;
+    /**线路编号*/
+    @Excel(name = "线路编号", width = 15)
+    @ApiModelProperty(value = "线路编号")
+    private java.lang.String lineCode;
+    /**站点编号*/
+    @Excel(name = "站点编号", width = 15)
+    @ApiModelProperty(value = "站点编号")
+    private java.lang.String stationCode;
+    /**位置编号*/
+    @Excel(name = "位置编号", width = 15)
+    @ApiModelProperty(value = "位置编号")
+    private java.lang.String positionCode;
+    /**位置选择*/
+    @Excel(name = "位置选择", width = 15)
+    @ApiModelProperty(value = "位置选择")
+    private List <String> allPosition;
 }

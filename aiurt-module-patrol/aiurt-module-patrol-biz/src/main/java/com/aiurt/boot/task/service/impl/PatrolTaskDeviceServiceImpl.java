@@ -135,20 +135,41 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
                 }
                 e.setInspectionTime(duration);
             }
+            List<StationDTO> codeList = new ArrayList<>();
+            StationDTO stationDTO =new StationDTO();
+            stationDTO.setLineCode(e.getLineCode());
+            stationDTO.setStationCode(e.getStationCode());
+            stationDTO.setPositionCode(e.getPositionCode());
+            codeList.add(stationDTO);
+            List<String> allPosition = patrolTaskDeviceMapper.getAllPosition(e.getStationCode());
+            e.setAllPosition(allPosition== null ?new ArrayList<>():allPosition);
+            String positions = manager.translateStation(codeList);
             if(ObjectUtil.isNotEmpty(e.getDeviceCode()))
             {
-                e.setDevicePosition(e.getDevicePosition());
+                List<StationDTO> stationDTOS = new ArrayList<>();
+                StationDTO station =new StationDTO();
+                station.setLineCode(e.getLineCode());
+                station.setStationCode(e.getStationCode());
+                stationDTOS.add(station);
+                String stationName = manager.translateStation(stationDTOS);
+                e.setStationName(stationName);
             }
-            if(ObjectUtil.isNotEmpty(e.getCustomPosition()))
-             {
-                e.setInspectionPosition(e.getDevicePosition()+"/"+e.getCustomPosition());
-                e.setDevicePosition(null);
-            }
-            else
-            {
-                e.setInspectionPosition("-");
+            else {
+                if(ObjectUtil.isNotEmpty(e.getCustomPosition()))
+                {
+                    e.setInspectionPosition(positions+"/"+e.getCustomPosition());
+                    e.setStationName(positions);
+                    e.setDevicePosition(null);
+                }
+                else
+                {
+                    e.setStationName(positions);
+                    e.setInspectionPosition("-");
+                }
             }
             PatrolStandard taskStandardName = patrolTaskDeviceMapper.getStandardName(e.getId());
+            e.setSubsystemCode(taskStandardName.getSubsystemCode());
+            e.setProfessionCode(taskStandardName.getProfessionCode());
             e.setTaskStandardName(taskStandardName.getName());
             e.setDeviceType(taskStandardName.getDeviceType());
             LambdaQueryWrapper<PatrolCheckResult> lambdaQueryWrapper = new LambdaQueryWrapper<>();
@@ -161,9 +182,6 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
             PatrolTask patrolTask = patrolTaskMapper.selectById(e.getTaskId());
             List<String> orgCodes = patrolTaskMapper.getOrgCode(patrolTask.getCode());
             e.setOrgList(orgCodes);
-            List<String> position = patrolTaskDeviceMapper.getPosition(patrolTask.getCode());
-            String stationName = position.stream().collect(Collectors.joining(","));
-            e.setStationName(stationName);
             List<PatrolAccompanyDTO> accompanyDTOList = patrolAccompanyMapper.getAccompanyName(e.getPatrolNumber());
             String userName = accompanyDTOList.stream().map(PatrolAccompanyDTO::getUsername).collect(Collectors.joining(","));
             e.setUserName(userName);

@@ -130,12 +130,7 @@
         </if>
     </select>
     <select id="getPatrolTaskDeviceList" resultType="com.aiurt.boot.task.dto.PatrolTaskDeviceDTO">
-        SELECT concat((SELECT line_name FROM cs_line AS csl WHERE csl.line_code = ptd.line_code), "/",
-        (SELECT station_name FROM cs_station AS css WHERE css.station_code = ptd.station_code),
-        IFNULL((SELECT CONCAT("/", position_name)
-        FROM cs_station_position AS cssp
-        WHERE cssp.position_code = ptd.position_code), '')) AS devicePosition,
-        dv.name as deviceName,
+        SELECT (select dv.name from  device dv where ptd.device_code = dv.code) as deviceName,
         ptd.*
         FROM patrol_task_device ptd
         LEFT JOIN device dv on ptd.device_code = dv.code
@@ -183,7 +178,7 @@
         where t1.position_code = #{positionCode}
     </select>
     <select id="getStandardName" resultType="com.aiurt.boot.standard.entity.PatrolStandard">
-        SELECT t3.name, t3.device_type
+        SELECT t3.*
         FROM patrol_task_standard t1
                  LEFT JOIN patrol_task_device t2 on t1.id = t2.task_standard_id and t1.task_id = t2.task_id
                  LEFT JOIN patrol_standard t3 on t3.code = t1.standard_code
@@ -198,5 +193,11 @@
         select system_name
         from cs_subsystem
         where system_code = #{systemCode}
+    </select>
+    <select id="getAllPosition" resultType="java.lang.String">
+    select position_name
+    from
+    cs_station_position
+    where staion_code = #{stationCode}
     </select>
 </mapper>
