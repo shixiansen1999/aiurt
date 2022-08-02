@@ -225,6 +225,8 @@ public class FlowableBpmnServiceImpl implements IFlowableBpmnService {
         modelInfo.setStatus(ModelFormStatusEnum.YFB.getStatus());
         modelInfoService.updateById(modelInfo);
 
+        //  todo保存其他的属性
+
         // 增加一个版本, 流程定义
         List<ProcessDefinition> definitionList = repositoryService.createProcessDefinitionQuery().processDefinitionKey(model.getKey())
                 .orderByProcessDefinitionVersion().desc().list();

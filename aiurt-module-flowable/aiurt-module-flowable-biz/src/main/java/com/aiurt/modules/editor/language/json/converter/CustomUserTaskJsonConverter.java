@@ -18,6 +18,7 @@ import org.flowable.editor.language.json.converter.BaseBpmnJsonConverter;
 import org.flowable.editor.language.json.converter.BpmnJsonConverterContext;
 import org.flowable.editor.language.json.converter.UserTaskJsonConverter;
 import org.flowable.editor.language.json.converter.util.JsonConverterUtil;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 
@@ -28,19 +29,26 @@ import java.util.*;
 @Slf4j
 public class CustomUserTaskJsonConverter  extends UserTaskJsonConverter {
 
-    public static final String ASSIGNEE_TYPE = "assigneeType";
-    public static final String IDM_ASSIGNEE = "idmAssignee";
-    public static final String IDM_CANDIDATE_GROUPS = "idmCandidateGroups";
-    public static final String IDM_CANDIDATE_USERS = "idmCandidateUsers";
-    public static final String IS_EDITDATA = "isEditdata";
-    public static final String NODE_TYPE = "nodeType";
-    public static final String NEXT_SEQUENCE_FLOW_LABEL = "nextSequenceFlow";
-    public static final String NEXT_USER_LABEL = "nextUser";
 
     /**
      * 操作按钮, [{"formOperation":{"id":"","label":"","type":"","showOrder":""}}]
      */
     public static final String OPERATION_LIST = "operationList";
+
+    /**
+     * 表单操作按钮
+     */
+    public static final String FORM_OPERATION = "formOperation";
+
+    /**
+     * 变量
+     */
+    private static final String FORM_VARIABLE = "formVariable";
+
+    /**
+     * 表格
+     */
+    private static final String FORM = "form";
 
 
 
@@ -72,36 +80,10 @@ public class CustomUserTaskJsonConverter  extends UserTaskJsonConverter {
     protected void convertElementToJson(ObjectNode propertiesNode, BaseElement baseElement, BpmnJsonConverterContext converterContext) {
         super.convertElementToJson(propertiesNode, baseElement, converterContext);
         if (baseElement instanceof UserTask){
-            final String[] text = new String[8];
-            baseElement.getExtensionElements().forEach((s, elements) -> elements.forEach(extensionElement -> {
-                if (ASSIGNEE_TYPE.equals(extensionElement.getName())){
-                    text[0] = extensionElement.getElementText();
-                }
-                if (IDM_ASSIGNEE.equals(extensionElement.getName())){
-                    text[1] = extensionElement.getElementText();
-                }
-                if (IDM_CANDIDATE_GROUPS.equals(extensionElement.getName())){
-                    text[2] = extensionElement.getElementText();
-                }
-                if (IDM_CANDIDATE_USERS.equals(extensionElement.getName())){
-                    text[3] = extensionElement.getElementText();
-                }
-                if (IS_EDITDATA.equals(extensionElement.getName())){
-                    text[4] = extensionElement.getElementText();
-                }
-                if (NODE_TYPE.equals(extensionElement.getName())){
-                    text[5] = extensionElement.getElementText();
-                }
-                if (NEXT_SEQUENCE_FLOW_LABEL.equals(extensionElement.getName())) {
-                    text[6] = extensionElement.getElementText();
-                }
-                if (NEXT_USER_LABEL.equals(extensionElement.getName())) {
-                    text[7] = extensionElement.getElementText();
-                }
-            }));
+            Map<String, List<ExtensionElement>> extensionElements = baseElement.getExtensionElements();
             //  自定义属性:操作按钮
             List<ExtensionElement> formOperationElements =
-                    this.getMyExtensionElementList(baseElement.getExtensionElements(), "operationList", "formOperation");
+                    this.getMyExtensionElementList(extensionElements, OPERATION_LIST, FORM_OPERATION);
             if (CollUtil.isNotEmpty(formOperationElements)) {
                 ObjectNode node = super.objectMapper.createObjectNode();
                 ArrayNode arrayNode = super.objectMapper.createArrayNode();
@@ -114,35 +96,52 @@ public class CustomUserTaskJsonConverter  extends UserTaskJsonConverter {
                     String multiSignAssignee = e.getAttributeValue(null, "multiSignAssignee");
                     arrayNode.add(objectNode);
                 }
-                node.set("formOperation", arrayNode);
+                node.set(FORM_OPERATION, arrayNode);
                 propertiesNode.set(OPERATION_LIST, node);
             }
 
-            if (StringUtils.isNotBlank(text[0])){
-                propertiesNode.put(ASSIGNEE_TYPE, text[0]);
-            }
-            if (StringUtils.isNotBlank(text[1])){
-                propertiesNode.put(IDM_ASSIGNEE, text[1]);
-            }
-            if (StringUtils.isNotBlank(text[2])){
-                propertiesNode.put(IDM_CANDIDATE_GROUPS, text[2]);
-            }
-            if (StringUtils.isNotBlank(text[3])){
-                propertiesNode.put(IDM_CANDIDATE_USERS, text[3]);
-            }
-            if (StringUtils.isNotBlank(text[4])){
-                propertiesNode.put(IS_EDITDATA, text[4]);
-            }
-            if (StringUtils.isNotBlank(text[5])){
-                propertiesNode.put(NODE_TYPE, text[5]);
-            }
-            if (StringUtils.isNotBlank(text[6])) {
-                propertiesNode.put(NEXT_SEQUENCE_FLOW_LABEL, text[6]);
+            // 流程变量
+            List<ExtensionElement> variableElements = this.getMyExtensionElementList(extensionElements, "variableList", "formVariable");
+            if (CollUtil.isNotEmpty(variableElements)) {
+                ObjectNode node = super.objectMapper.createObjectNode();
+                ArrayNode arrayNode = super.objectMapper.createArrayNode();
+                for (ExtensionElement e : variableElements) {
+                    ObjectNode objectNode = super.objectMapper.createObjectNode();
+                    objectNode.put("id", e.getAttributeValue(null, "id"));
+                    arrayNode.add(objectNode);
+                }
+                node.set(FORM_VARIABLE, arrayNode);
+                propertiesNode.set("variableList", node);
             }
 
-            if (StringUtils.isNotBlank(text[7])) {
-                propertiesNode.put(NEXT_USER_LABEL, text[7]);
+            // 流程选人, 上级部门以及
+            List<ExtensionElement> deptPostElements =
+                    this.getMyExtensionElementList(extensionElements, "deptPostList", "deptPost");
+            if (CollUtil.isNotEmpty(deptPostElements)) {
+                ObjectNode node = super.objectMapper.createObjectNode();
+                ArrayNode arrayNode = super.objectMapper.createArrayNode();
+                for (ExtensionElement e : deptPostElements) {
+                    ObjectNode objectNode = super.objectMapper.createObjectNode();
+                    objectNode.put("id", e.getAttributeValue(null, "id"));
+                    objectNode.put("type", e.getAttributeValue(null, "type"));
+                    objectNode.put("postId", e.getAttributeValue(null, "postId"));
+                    objectNode.put("deptPostId", e.getAttributeValue(null, "deptPostId"));
+                    arrayNode.add(objectNode);
+                }
+                node.set("deptPost", arrayNode);
+                propertiesNode.set("deptPostList", node);
             }
+
+
+            List<ExtensionElement> elementCandidateGroupsList = extensionElements.get("userCandidateGroups");
+            if (CollUtil.isNotEmpty(elementCandidateGroupsList)) {
+                ExtensionElement ee = elementCandidateGroupsList.get(0);
+                ObjectNode node = super.objectMapper.createObjectNode();
+                node.put("type", ee.getAttributeValue(null, "type"));
+                node.put("value", ee.getAttributeValue(null, "value"));
+                propertiesNode.set("userCandidateGroups", node);
+            }
+
         }
     }
 
@@ -169,42 +168,68 @@ public class CustomUserTaskJsonConverter  extends UserTaskJsonConverter {
         if (flowElement instanceof UserTask){
             UserTask userTask = (UserTask) flowElement;
             JsonNode expansionNode = JsonConverterUtil.getProperty(OPERATION_LIST, elementNode);
-            String json = objectMapper.writeValueAsString(expansionNode);
-            log.info("json->{}",json);
+
             if (Objects.nonNull(expansionNode)) {
-                ExtensionElement ee = new ExtensionElement();
-                ee.setName(OPERATION_LIST);
-                ee.setNamespacePrefix(BpmnXMLConstants.FLOWABLE_EXTENSIONS_PREFIX);
-                ee.setNamespace(BpmnXMLConstants.FLOWABLE_EXTENSIONS_NAMESPACE);
-                if (expansionNode instanceof ObjectNode) {
-                    JSONObject jsonObject = JSONObject.parseObject(json);
-                    JSONArray operation = jsonObject.getJSONArray("formOperation");
-                    ExtensionElement child = new ExtensionElement();
-                    child.setName("formOperation");
-                    child.setNamespacePrefix(BpmnXMLConstants.FLOWABLE_EXTENSIONS_PREFIX);
-                    child.setNamespace(BpmnXMLConstants.FLOWABLE_EXTENSIONS_NAMESPACE);
-                    Map<String, List<ExtensionElement>> map = new LinkedHashMap<>();
-                    List<ExtensionElement> extensionElementList = new ArrayList<>();
-                    for (int i = 0; i < operation.size(); i++) {
-                        JSONObject object = operation.getJSONObject(i);
-                        Set<String> keySet = object.keySet();
-                        keySet.stream().forEach(key->{
-                            ExtensionAttribute attribute = new ExtensionAttribute();
-                            attribute.setName(key);
-                            attribute.setValue(object.getString(key));
-                            child.addAttribute(attribute);
-                        });
-                    }
-                    extensionElementList.add(child);
-                    map.put("formOperation", extensionElementList);
-                    ee.setChildElements(map);
-                    // 如果是文本
-                }else if (expansionNode instanceof TextNode) {
-                    ee.setElementText(expansionNode.asText());
-                }
+                String json = objectMapper.writeValueAsString(expansionNode);
+                log.info("json->{}",json);
+                ExtensionElement ee = buildElement(expansionNode, json, OPERATION_LIST, FORM_OPERATION);
+                userTask.addExtensionElement(ee);
+            }
+
+            JsonNode variableList = JsonConverterUtil.getProperty("variableList", elementNode);
+
+            if (Objects.nonNull(variableList)) {
+                String json = objectMapper.writeValueAsString(variableList);
+                log.info("json->{}",json);
+                ExtensionElement ee = buildElement(variableList, json, "variableList", FORM_VARIABLE);
+                userTask.addExtensionElement(ee);
+            }
+
+            JsonNode deptPostList = JsonConverterUtil.getProperty("deptPostList", elementNode);
+
+            if (Objects.nonNull(deptPostList)) {
+                String json = objectMapper.writeValueAsString(deptPostList);
+                log.info("json->{}",json);
+                ExtensionElement ee = buildElement(deptPostList, json, "deptPostList", "deptPost");
                 userTask.addExtensionElement(ee);
             }
         }
+    }
+
+    @NotNull
+    private ExtensionElement buildElement(JsonNode expansionNode, String json,String listName, String childListName) {
+        ExtensionElement ee = new ExtensionElement();
+        ee.setName(listName);
+        ee.setNamespacePrefix(BpmnXMLConstants.FLOWABLE_EXTENSIONS_PREFIX);
+        ee.setNamespace(BpmnXMLConstants.FLOWABLE_EXTENSIONS_NAMESPACE);
+        if (expansionNode instanceof ObjectNode) {
+            JSONObject jsonObject = JSONObject.parseObject(json);
+            JSONArray operation = jsonObject.getJSONArray(childListName);
+
+            Map<String, List<ExtensionElement>> map = new LinkedHashMap<>();
+            List<ExtensionElement> extensionElementList = new ArrayList<>();
+            for (int i = 0; i < operation.size(); i++) {
+                ExtensionElement child = new ExtensionElement();
+                child.setName(childListName);
+                child.setNamespacePrefix(BpmnXMLConstants.FLOWABLE_EXTENSIONS_PREFIX);
+                child.setNamespace(BpmnXMLConstants.FLOWABLE_EXTENSIONS_NAMESPACE);
+                JSONObject object = operation.getJSONObject(i);
+                Set<String> keySet = object.keySet();
+                keySet.stream().forEach(key->{
+                    ExtensionAttribute attribute = new ExtensionAttribute();
+                    attribute.setName(key);
+                    attribute.setValue(object.getString(key));
+                    child.addAttribute(attribute);
+                });
+                extensionElementList.add(child);
+            }
+            map.put(childListName, extensionElementList);
+            ee.setChildElements(map);
+            // 如果是文本
+        }else if (expansionNode instanceof TextNode) {
+            ee.setElementText(expansionNode.asText());
+        }
+        return ee;
     }
 
 
