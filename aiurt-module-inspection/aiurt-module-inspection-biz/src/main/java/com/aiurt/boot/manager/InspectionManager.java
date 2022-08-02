@@ -95,14 +95,18 @@ public class InspectionManager {
             }
 
             if (StrUtil.isNotEmpty(stationDTO.getStationCode())) {
-                builder.append("/");
+                if(ObjectUtil.isNotEmpty(builder)){
+                    builder.append("/");
+                }
                 String key = "station_code_" + stationDTO.getStationCode();
                 builder.append(ObjectUtil.isNotEmpty(redisUtil.get(key)) ? (String) redisUtil.get(key) : translateStation(stationDTO.getStationCode()));
             }
 
 
             if (StrUtil.isNotEmpty(stationDTO.getPositionCode())) {
-                builder.append("/");
+                if(ObjectUtil.isNotEmpty(builder)){
+                    builder.append("/");
+                }
                 String key = "position_code_" + stationDTO.getPositionCode();
                 builder.append(ObjectUtil.isNotEmpty(redisUtil.get(key)) ? (String) redisUtil.get(key) : translatePosition(stationDTO.getPositionCode()));
             }
