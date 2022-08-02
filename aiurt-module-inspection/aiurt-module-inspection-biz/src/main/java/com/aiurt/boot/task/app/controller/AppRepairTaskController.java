@@ -2,6 +2,7 @@ package com.aiurt.boot.task.app.controller;
 
 
 import com.aiurt.boot.manager.dto.ExamineDTO;
+import com.aiurt.boot.manager.dto.FaultCallbackDTO;
 import com.aiurt.boot.manager.dto.OrgDTO;
 import com.aiurt.boot.task.dto.CheckListDTO;
 import com.aiurt.boot.task.dto.RepairTaskDTO;
@@ -316,5 +317,21 @@ public class AppRepairTaskController extends BaseController<RepairTask, IRepairT
             repairTaskDeviceRelService.updateById(repairTaskDeviceRel);
             return Result.OK("成功!");
         }
+    }
+
+    /**
+     *   编辑故障回调
+     * @param faultCallbackDTO
+     * @return
+     */
+    @AutoLog(value = "app检修任务-编辑故障回调")
+    @ApiOperation(value = "app检修任务-编辑故障回调", notes = "app检修任务-编辑故障回调")
+    @PostMapping(value = "/editFaultCallback")
+    public Result<String> editFaultCallback(@RequestBody FaultCallbackDTO faultCallbackDTO) {
+        RepairTaskDeviceRel repairTaskDeviceRel = new RepairTaskDeviceRel();
+        repairTaskDeviceRel.setId(faultCallbackDTO.getDeviceId());
+        repairTaskDeviceRel.setFaultCode(faultCallbackDTO.getFaultCode());
+        repairTaskDeviceRelService.updateById(repairTaskDeviceRel);
+        return Result.OK("编辑故障回调成功!");
     }
 }
