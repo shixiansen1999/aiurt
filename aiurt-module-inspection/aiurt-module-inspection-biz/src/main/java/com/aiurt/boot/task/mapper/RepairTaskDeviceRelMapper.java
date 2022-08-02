@@ -11,4 +11,10 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
  */
 public interface RepairTaskDeviceRelMapper extends BaseMapper<RepairTaskDeviceRel> {
 
+    /**
+     * 根据编码查询检修单id
+     * @param code
+     * @return
+     */
+    String getId (String code);
 }

@@ -1448,8 +1448,9 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
     @Override
     public void editFaultCallback(FaultCallbackDTO faultCallbackDTO) {
         RepairTaskDeviceRel repairTaskDeviceRel = new RepairTaskDeviceRel();
-        if(ObjectUtils.isNotEmpty(faultCallbackDTO)){
-            repairTaskDeviceRel.setId(faultCallbackDTO.getSingleId());
+        String id = repairTaskDeviceRelMapper.getId(faultCallbackDTO.getSingleCode());
+        if(id!=null){
+            repairTaskDeviceRel.setId(id);
             repairTaskDeviceRel.setFaultCode(faultCallbackDTO.getFaultCode());
             repairTaskDeviceRelMapper.updateById(repairTaskDeviceRel);
         }

@@ -16,11 +16,11 @@ import javax.validation.constraints.NotNull;
 @Data
 public class FaultCallbackDTO {
 
-    /**检修单id*/
+    /**检修单编码*/
     @TableField(exist = false)
-    @ApiModelProperty(value = "检修单id",required = true)
+    @ApiModelProperty(value = "检修单编码",required = true)
     @NotBlank
-    private String singleId;
+    private String singleCode;
 
 
     /**回调故障编码*/
