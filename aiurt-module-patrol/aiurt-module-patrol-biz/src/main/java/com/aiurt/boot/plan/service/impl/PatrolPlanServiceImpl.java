@@ -19,6 +19,8 @@ import com.aiurt.boot.task.dto.SubsystemDTO;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.modules.device.entity.Device;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -28,16 +30,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
  * @Description: patrol_plan
  * @Author: aiurt
- * @Date:   2022-06-21
+ * @Date: 2022-06-21
  * @Version: V1.0
  */
 @Service
@@ -54,12 +53,15 @@ public class PatrolPlanServiceImpl extends ServiceImpl<PatrolPlanMapper, PatrolP
     @Autowired
     private PatrolStandardMapper patrolStandardMapper;
     @Autowired
-    private   PatrolPlanDeviceMapper patrolPlanDeviceMapper;
+    private PatrolPlanDeviceMapper patrolPlanDeviceMapper;
     @Autowired
     private ISysBaseAPI sysBaseApi;
+    @Autowired
+    private PatrolPlanMapper patrolPlanMapper;
+
     @Override
     public IPage<PatrolPlanDto> pageList(Page<PatrolPlanDto> page, PatrolPlanDto patrolPlan) {
-      IPage<PatrolPlanDto> list = baseMapper.list(page,patrolPlan);
+        IPage<PatrolPlanDto> list = baseMapper.list(page, patrolPlan);
         return list;
     }
 
@@ -67,92 +69,107 @@ public class PatrolPlanServiceImpl extends ServiceImpl<PatrolPlanMapper, PatrolP
     @Transactional(rollbackFor = Exception.class)
     public void add(PatrolPlanDto patrolPlanDto) {
         this.check(patrolPlanDto);
-         PatrolPlan patrolPlan =new PatrolPlan();patrolPlan.setCode(patrolPlanDto.getCode());
-         patrolPlan.setName(patrolPlanDto.getName());patrolPlan.setEndDate(patrolPlanDto.getEndDate());
-         patrolPlan.setStartDate(patrolPlanDto.getStartDate());patrolPlan.setRemark(patrolPlanDto.getRemark());
-         patrolPlan.setType(patrolPlanDto.getType());patrolPlan.setOutsource(patrolPlanDto.getOutsource());
-         patrolPlan.setConfirm(patrolPlanDto.getConfirm());patrolPlan.setPeriod(patrolPlanDto.getPeriod());
-         patrolPlan.setStatus(0);baseMapper.insert(patrolPlan);
+        PatrolPlan patrolPlan = new PatrolPlan();
+        patrolPlan.setCode(patrolPlanDto.getCode());
+        patrolPlan.setName(patrolPlanDto.getName());
+        patrolPlan.setEndDate(patrolPlanDto.getEndDate());
+        patrolPlan.setStartDate(patrolPlanDto.getStartDate());
+        patrolPlan.setRemark(patrolPlanDto.getRemark());
+        patrolPlan.setType(patrolPlanDto.getType());
+        patrolPlan.setOutsource(patrolPlanDto.getOutsource());
+        patrolPlan.setConfirm(patrolPlanDto.getConfirm());
+        patrolPlan.setPeriod(patrolPlanDto.getPeriod());
+        patrolPlan.setStatus(0);
+        baseMapper.insert(patrolPlan);
         PatrolPlan id = baseMapper.selectByCode(patrolPlanDto.getCode());
-        if (patrolPlanDto.getPeriod()!=null){
-        if (patrolPlanDto.getPeriod()==1){
-            PatrolPlanStrategy patrolPlanStrategy = new PatrolPlanStrategy();
-            patrolPlanStrategy.setPlanId(id.getId());patrolPlanStrategy.setType(0);
-            Date strategyStartTime = patrolPlanDto.getStrategyStartTime();
-            Date strategyEndTime = patrolPlanDto.getStrategyEndTime();
-            if (ObjectUtil.isNotEmpty(strategyEndTime) && ObjectUtil.isNotEmpty(strategyEndTime)) {
-                Date startTime = DateUtil.parse(DateUtil.format(strategyStartTime, "HH:mm"), "HH:mm");
-                Date endTime = DateUtil.parse(DateUtil.format(strategyEndTime, "HH:mm"), "HH:mm");
-                int compare = DateUtil.compare(startTime, endTime);
-                if (compare > 0) {
-                    throw new AiurtBootException("巡检策略设置的开始时间不能晚于结束时间！");
-                } else if (compare == 0) {
-                    throw new AiurtBootException("巡检策略设置的开始和结束时间不能相等！");
+        if (patrolPlanDto.getPeriod() != null) {
+            if (patrolPlanDto.getPeriod() == 1) {
+                PatrolPlanStrategy patrolPlanStrategy = new PatrolPlanStrategy();
+                patrolPlanStrategy.setPlanId(id.getId());
+                patrolPlanStrategy.setType(0);
+                Date strategyStartTime = patrolPlanDto.getStrategyStartTime();
+                Date strategyEndTime = patrolPlanDto.getStrategyEndTime();
+                if (ObjectUtil.isNotEmpty(strategyEndTime) && ObjectUtil.isNotEmpty(strategyEndTime)) {
+                    Date startTime = DateUtil.parse(DateUtil.format(strategyStartTime, "HH:mm"), "HH:mm");
+                    Date endTime = DateUtil.parse(DateUtil.format(strategyEndTime, "HH:mm"), "HH:mm");
+                    int compare = DateUtil.compare(startTime, endTime);
+                    if (compare > 0) {
+                        throw new AiurtBootException("巡检策略设置的开始时间不能晚于结束时间！");
+                    } else if (compare == 0) {
+                        throw new AiurtBootException("巡检策略设置的开始和结束时间不能相等！");
+                    }
+                }
+                patrolPlanStrategy.setEndTime(strategyEndTime);
+                patrolPlanStrategy.setStartTime(strategyStartTime);
+                patrolPlanStrategyMapper.insert(patrolPlanStrategy);
+            } else if (patrolPlanDto.getPeriod() == 2 || patrolPlanDto.getPeriod() == 3) {
+                List<Integer> week = patrolPlanDto.getWeek();
+                for (Integer f : week) {
+                    PatrolPlanStrategy patrolPlanStrategy = new PatrolPlanStrategy();
+                    patrolPlanStrategy.setPlanId(id.getId());
+                    patrolPlanStrategy.setType(1);
+                    patrolPlanStrategy.setWeek(f);
+                    patrolPlanStrategy.setEndTime(patrolPlanDto.getStrategyEndTime());
+                    patrolPlanStrategy.setStartTime(patrolPlanDto.getStrategyStartTime());
+                    patrolPlanStrategyMapper.insert(patrolPlanStrategy);
+                }
+            } else if (patrolPlanDto.getPeriod() == 4 || patrolPlanDto.getPeriod() == 5) {
+                List<Integer> week = patrolPlanDto.getWeek();
+                for (Integer f : week) {
+                    PatrolPlanStrategy patrolPlanStrategy = new PatrolPlanStrategy();
+                    patrolPlanStrategy.setPlanId(id.getId());
+                    patrolPlanStrategy.setType(2);
+                    patrolPlanStrategy.setTime((int) Math.ceil(1.0 * f) / 7);
+                    int s = f % 7;
+                    if (s == 0) {
+                        s = 7;
+                    }
+                    patrolPlanStrategy.setWeek(s);
+                    patrolPlanStrategy.setEndTime(patrolPlanDto.getStrategyEndTime());
+                    patrolPlanStrategy.setStartTime(patrolPlanDto.getStrategyStartTime());
+                    patrolPlanStrategyMapper.insert(patrolPlanStrategy);
                 }
             }
-            patrolPlanStrategy.setEndTime(strategyEndTime);
-            patrolPlanStrategy.setStartTime(strategyStartTime);
-            patrolPlanStrategyMapper.insert(patrolPlanStrategy);
-        }else if (patrolPlanDto.getPeriod()==2 || patrolPlanDto.getPeriod()==3){
-            List<Integer>week = patrolPlanDto.getWeek();
-            for (Integer f:week) {
-                PatrolPlanStrategy patrolPlanStrategy = new PatrolPlanStrategy();
-                patrolPlanStrategy.setPlanId(id.getId());
-                patrolPlanStrategy.setType(1);patrolPlanStrategy.setWeek(f);
-                patrolPlanStrategy.setEndTime(patrolPlanDto.getStrategyEndTime());
-                patrolPlanStrategy.setStartTime(patrolPlanDto.getStrategyStartTime());
-                patrolPlanStrategyMapper.insert(patrolPlanStrategy);
-            }
-        }else if (patrolPlanDto.getPeriod()==4||patrolPlanDto.getPeriod()==5){
-            List<Integer> week = patrolPlanDto.getWeek();
-            for (Integer f:week) {
-                PatrolPlanStrategy patrolPlanStrategy = new PatrolPlanStrategy();
-                patrolPlanStrategy.setPlanId(id.getId());
-                patrolPlanStrategy.setType(2);patrolPlanStrategy.setTime((int)Math.ceil(1.0 *f)/7);
-                int s= f % 7;
-                if (s==0){
-                    s=7;
-                }patrolPlanStrategy.setWeek(s);
-                patrolPlanStrategy.setEndTime(patrolPlanDto.getStrategyEndTime());
-                patrolPlanStrategy.setStartTime(patrolPlanDto.getStrategyStartTime());
-                patrolPlanStrategyMapper.insert(patrolPlanStrategy);
-            }
-          }
         }
         List<PatrolStandardDto> list = patrolPlanDto.getPatrolStandards();
-        if(CollectionUtils.isNotEmpty(list)){
-        for (PatrolStandard r:list) {
-            PatrolPlanStandard patrolPlanStandard =new PatrolPlanStandard();patrolPlanStandard.setPlanId(id.getId());
-             patrolPlanStandard.setPlanId(id.getId());patrolPlanStandard.setStandardCode(r.getCode());
-             patrolPlanStandard.setProfessionCode(r.getProfessionCode()); patrolPlanStandard.setDeviceTypeCode(r.getDeviceTypeCode());
-             patrolPlanStandard.setSubsystemCode(r.getSubsystemCode());
-             patrolPlanStandardMapper.insert(patrolPlanStandard);
-           }
+        if (CollectionUtils.isNotEmpty(list)) {
+            for (PatrolStandard r : list) {
+                PatrolPlanStandard patrolPlanStandard = new PatrolPlanStandard();
+                patrolPlanStandard.setPlanId(id.getId());
+                patrolPlanStandard.setPlanId(id.getId());
+                patrolPlanStandard.setStandardCode(r.getCode());
+                patrolPlanStandard.setProfessionCode(r.getProfessionCode());
+                patrolPlanStandard.setDeviceTypeCode(r.getDeviceTypeCode());
+                patrolPlanStandard.setSubsystemCode(r.getSubsystemCode());
+                patrolPlanStandardMapper.insert(patrolPlanStandard);
+            }
         }
         List<String> mechanismCodes = patrolPlanDto.getMechanismCodes();
-        if (CollectionUtils.isNotEmpty(mechanismCodes)){
-        for (String m:mechanismCodes){
-            PatrolPlanOrganization patrolPlanOrganization =new PatrolPlanOrganization();
-            patrolPlanOrganization.setPlanCode(patrolPlanDto.getCode());
-            patrolPlanOrganization.setOrganizationCode(m);
-            patrolPlanOrganizationMapper.insert(patrolPlanOrganization);
-        }
+        if (CollectionUtils.isNotEmpty(mechanismCodes)) {
+            for (String m : mechanismCodes) {
+                PatrolPlanOrganization patrolPlanOrganization = new PatrolPlanOrganization();
+                patrolPlanOrganization.setPlanCode(patrolPlanDto.getCode());
+                patrolPlanOrganization.setOrganizationCode(m);
+                patrolPlanOrganizationMapper.insert(patrolPlanOrganization);
+            }
         }
         List<String> siteCodes = patrolPlanDto.getSiteCodes();
-        if (CollectionUtils.isNotEmpty(siteCodes)){
-        for (String s:siteCodes){
-            PatrolPlanStation patrolPlanStation =new PatrolPlanStation();
-            patrolPlanStation.setPlanCode(patrolPlanDto.getCode());
-            patrolPlanStation.setStationCode(s);
-            patrolPlanStationMapper.insert(patrolPlanStation);}
+        if (CollectionUtils.isNotEmpty(siteCodes)) {
+            for (String s : siteCodes) {
+                PatrolPlanStation patrolPlanStation = new PatrolPlanStation();
+                patrolPlanStation.setPlanCode(patrolPlanDto.getCode());
+                patrolPlanStation.setStationCode(s);
+                patrolPlanStationMapper.insert(patrolPlanStation);
+            }
         }
-        List<Device> devices=patrolPlanDto.getDevices();
-        if (CollectionUtils.isNotEmpty(devices)){
-            for (Device p:devices){
-                PatrolPlanDevice patrolPlanDevice= new PatrolPlanDevice();
+        List<Device> devices = patrolPlanDto.getDevices();
+        if (CollectionUtils.isNotEmpty(devices)) {
+            for (Device p : devices) {
+                PatrolPlanDevice patrolPlanDevice = new PatrolPlanDevice();
                 patrolPlanDevice.setPlanId(id.getId());
-                String standardId= baseMapper.byCode(p.getPlanStandardCode(),id.getId());
-                patrolPlanDevice.setPlanStandardId(standardId);patrolPlanDevice.setDeviceCode(p.getCode());
+                String standardId = baseMapper.byCode(p.getPlanStandardCode(), id.getId());
+                patrolPlanDevice.setPlanStandardId(standardId);
+                patrolPlanDevice.setDeviceCode(p.getCode());
                 patrolPlanDeviceMapper.insert(patrolPlanDevice);
             }
         }
@@ -163,47 +180,48 @@ public class PatrolPlanServiceImpl extends ServiceImpl<PatrolPlanMapper, PatrolP
         baseMapper.updates(id);
     }
 
-    public void check(PatrolPlanDto patrolPlanDto){
-       List<PatrolStandardDto>  patrolStandardDto = patrolPlanDto.getPatrolStandards();
-       List<Device> devices = patrolPlanDto.getDevices();
-       patrolStandardDto.forEach(p->{
-           if (p.getDeviceType().equals(1)){
-               boolean i = devices.stream().anyMatch(d -> p.getCode().equals(d.getPlanStandardCode()));
-               if (!i){
-                   throw new AiurtBootException("请指定设备!");
-               }
-           }
-       });
+    public void check(PatrolPlanDto patrolPlanDto) {
+        List<PatrolStandardDto> patrolStandardDto = patrolPlanDto.getPatrolStandards();
+        List<Device> devices = patrolPlanDto.getDevices();
+        patrolStandardDto.forEach(p -> {
+            if (p.getDeviceType().equals(1)) {
+                boolean i = devices.stream().anyMatch(d -> p.getCode().equals(d.getPlanStandardCode()));
+                if (!i) {
+                    throw new AiurtBootException("请指定设备!");
+                }
+            }
+        });
     }
+
     @Override
-    public PatrolPlanDto selectId(String id,String code) {
-        PatrolPlanDto patrolPlanDto = baseMapper.selectId(id,code);
-        if(ObjectUtil.isNotNull(patrolPlanDto.getSiteCode())){
-        patrolPlanDto.setSiteCodes(Arrays.asList(patrolPlanDto.getSiteCode().split(",")));
+    public PatrolPlanDto selectId(String id, String code) {
+        PatrolPlanDto patrolPlanDto = baseMapper.selectId(id, code);
+        if (ObjectUtil.isNotNull(patrolPlanDto.getSiteCode())) {
+            patrolPlanDto.setSiteCodes(Arrays.asList(patrolPlanDto.getSiteCode().split(",")));
         }
-        if (ObjectUtil.isNotNull(patrolPlanDto.getMechanismCode())){
-        patrolPlanDto.setMechanismCodes(Arrays.asList(patrolPlanDto.getMechanismCode().split(",")));
+        if (ObjectUtil.isNotNull(patrolPlanDto.getMechanismCode())) {
+            patrolPlanDto.setMechanismCodes(Arrays.asList(patrolPlanDto.getMechanismCode().split(",")));
         }
-        if (ObjectUtil.isNotNull(patrolPlanDto.getIds())){
-        List<String>ids= Arrays.asList(patrolPlanDto.getIds().split(","));
-        patrolPlanDto.setPatrolStandards(patrolStandardMapper.selectbyIds(ids));
+        if (ObjectUtil.isNotNull(patrolPlanDto.getIds())) {
+            List<String> ids = Arrays.asList(patrolPlanDto.getIds().split(","));
+            patrolPlanDto.setPatrolStandards(patrolStandardMapper.selectbyIds(ids));
         }
-        List<Integer> week =baseMapper.selectWeek(id,code);
+        List<Integer> week = baseMapper.selectWeek(id, code);
         if (CollUtil.isNotEmpty(week)) {
-        if (ObjectUtil.isNotNull(week.get(0))) {
+            if (ObjectUtil.isNotNull(week.get(0))) {
                 patrolPlanDto.setWeek(week);
                 List<Integer> time = baseMapper.selectTime(id, code);
-            if (CollUtil.isNotEmpty(time)) {
-                if (ObjectUtil.isNotNull(time.get(0))) {
-                    patrolPlanDto.setTime(time);
-                    List<Integer> number = new ArrayList<>();
-                    for (int i = 0; i < week.size(); i++) {
-                        Integer w = week.get(i);
-                        Integer t = time.get(i);
-                        number.add(7 * (t - 1) + w);
-                     }
-                    patrolPlanDto.setNumber(number);
-                  }
+                if (CollUtil.isNotEmpty(time)) {
+                    if (ObjectUtil.isNotNull(time.get(0))) {
+                        patrolPlanDto.setTime(time);
+                        List<Integer> number = new ArrayList<>();
+                        for (int i = 0; i < week.size(); i++) {
+                            Integer w = week.get(i);
+                            Integer t = time.get(i);
+                            number.add(7 * (t - 1) + w);
+                        }
+                        patrolPlanDto.setNumber(number);
+                    }
                 }
             }
         }
@@ -223,25 +241,25 @@ public class PatrolPlanServiceImpl extends ServiceImpl<PatrolPlanMapper, PatrolP
     }
 
     @Override
-    public IPage<Device> viewDetails(Page<Device> page,String standardCode, String planId) {
+    public IPage<Device> viewDetails(Page<Device> page, String standardCode, String planId) {
         IPage<Device> deviceIPage = baseMapper.viewDetails(page, standardCode, planId);
         List<Device> records = deviceIPage.getRecords();
-        if(records != null && records.size()>0){
-            for(Device d : records){
+        if (records != null && records.size() > 0) {
+            for (Device d : records) {
                 //线路
-                String lineCode = d.getLineCode()==null?"":d.getLineCode();
+                String lineCode = d.getLineCode() == null ? "" : d.getLineCode();
                 //站点
-                String stationCode = d.getStationCode()==null?"":d.getStationCode();
+                String stationCode = d.getStationCode() == null ? "" : d.getStationCode();
                 //位置
-                String positionCode = d.getPositionCode()==null?"":d.getPositionCode();
+                String positionCode = d.getPositionCode() == null ? "" : d.getPositionCode();
                 String lineCodeName = sysBaseApi.translateDictFromTable("cs_line", "line_name", "line_code", lineCode);
                 String stationCodeName = sysBaseApi.translateDictFromTable("cs_station", "station_name", "station_code", stationCode);
                 String positionCodeName = sysBaseApi.translateDictFromTable("cs_station_position", "position_name", "position_code", positionCode);
-                String positionCodeCcName = lineCodeName ;
-                if(stationCodeName != null && !"".equals(stationCodeName)){
-                    positionCodeCcName +=  CommonConstant.SYSTEM_SPLIT_STR + stationCodeName  ;
+                String positionCodeCcName = lineCodeName;
+                if (stationCodeName != null && !"".equals(stationCodeName)) {
+                    positionCodeCcName += CommonConstant.SYSTEM_SPLIT_STR + stationCodeName;
                 }
-                if(!"".equals(positionCodeName) && positionCodeName != null){
+                if (!"".equals(positionCodeName) && positionCodeName != null) {
                     positionCodeCcName += CommonConstant.SYSTEM_SPLIT_STR + positionCodeName;
                 }
                 d.setPositionCodeCcName(positionCodeCcName);
@@ -249,6 +267,7 @@ public class PatrolPlanServiceImpl extends ServiceImpl<PatrolPlanMapper, PatrolP
         }
         return deviceIPage;
     }
+
     @Override
     public List<MajorDTO> selectMajorCodeList(String planId) {
         List<PatrolPlanDto> patrolPlanDtos = baseMapper.selectCodeList(planId, null, null);
@@ -266,10 +285,10 @@ public class PatrolPlanServiceImpl extends ServiceImpl<PatrolPlanMapper, PatrolP
         //根据专业编码查询对应的专业子系统
         List<MajorDTO> majorDTOList = baseMapper.translateMajor(majorCodes1);
         if (CollectionUtil.isNotEmpty(majorDTOList)) {
-          majorDTOList.forEach(a->{
-              List<SubsystemDTO> subsystemDTOList = baseMapper.translateSubsystem(a.getMajorCode(), systemCode);
-              a.setSubsystemInfo(subsystemDTOList);
-          });
+            majorDTOList.forEach(a -> {
+                List<SubsystemDTO> subsystemDTOList = baseMapper.translateSubsystem(a.getMajorCode(), systemCode);
+                a.setSubsystemInfo(subsystemDTOList);
+            });
         }
         return majorDTOList;
     }
@@ -282,8 +301,68 @@ public class PatrolPlanServiceImpl extends ServiceImpl<PatrolPlanMapper, PatrolP
 
     @Override
     public IPage<Device> deviceList(Page<Device> page, DeviceListDTO deviceListDTO) {
-        IPage<Device> deviceIPage = baseMapper.deviceList(page,deviceListDTO.getSiteCodes(),deviceListDTO.getSubsystemCode(),deviceListDTO.getMajorCode(),deviceListDTO.getDeviceTypeCode());
+        IPage<Device> deviceIPage = baseMapper.deviceList(page, deviceListDTO.getSiteCodes(), deviceListDTO.getSubsystemCode(), deviceListDTO.getMajorCode(), deviceListDTO.getDeviceTypeCode());
         return deviceIPage;
+    }
+
+    @Override
+    public void modefy(String planId, Integer status) {
+        if (ObjectUtil.isEmpty(planId)) {
+            throw new AiurtBootException("计划主键ID为空！");
+        }
+        PatrolPlan patrolPlan = patrolPlanMapper.selectById(planId);
+        String planCode = patrolPlan.getCode();
+
+        if (0 == status) {
+            // 判断计划的策略是否为空
+            List<PatrolPlanStrategy> planStrategy = patrolPlanStrategyMapper.selectList(
+                    new LambdaQueryWrapper<PatrolPlanStrategy>().eq(PatrolPlanStrategy::getPlanId, planId));
+            if (CollectionUtil.isEmpty(planStrategy)) {
+                throw new AiurtBootException("计划暂未设置巡检策略，不允许启用！");
+            }
+//            // 判断计划的站点信息是否为空
+//            List<PatrolPlanStation> planStation = patrolPlanStationMapper.selectList(
+//                    new LambdaQueryWrapper<PatrolPlanStation>().eq(PatrolPlanStation::getPlanCode, planCode));
+//            if (CollectionUtil.isEmpty(planStation)) {
+//                throw new AiurtBootException("计划暂未设置使用站点，不允许启用！");
+//            }
+//            // 判断计划的组织机构信息是否为空
+//            List<PatrolPlanOrganization> planOrganization = patrolPlanOrganizationMapper.selectList(
+//                    new LambdaQueryWrapper<PatrolPlanOrganization>().eq(PatrolPlanOrganization::getPlanCode, planCode));
+//            if (CollectionUtil.isEmpty(planOrganization)) {
+//                throw new AiurtBootException("计划暂未设置组织机构，不允许启用！");
+//            }
+
+            // 判断计划的是否选择标准表
+            List<PatrolPlanStandard> patrolPlanStandard = patrolPlanStandardMapper.selectList(
+                    new LambdaQueryWrapper<PatrolPlanStandard>().eq(PatrolPlanStandard::getPlanId, planId));
+            if (CollectionUtil.isEmpty(patrolPlanStandard)) {
+                throw new AiurtBootException("计划暂未挑选巡检标准表，不允许启用！");
+            }
+
+            // 判断标准表中如果与设备类型相关是否选定了设备
+            Optional.ofNullable(patrolPlanStandard).orElseGet(Collections::emptyList).stream().forEach(l -> {
+                LambdaQueryWrapper<PatrolStandard> standardWrapper = new LambdaQueryWrapper<>();
+                standardWrapper.eq(PatrolStandard::getCode, l.getStandardCode());
+                PatrolStandard standard = Optional.ofNullable(patrolStandardMapper.selectOne(standardWrapper)).orElseGet(PatrolStandard::new);
+                if (1 == standard.getDeviceType()) {
+                    LambdaQueryWrapper<PatrolPlanDevice> deviceWrapper = new LambdaQueryWrapper<>();
+                    deviceWrapper.eq(PatrolPlanDevice::getPlanId, planId);
+                    deviceWrapper.eq(PatrolPlanDevice::getPlanStandardId, standard.getId());
+                    List<PatrolPlanDevice> deviceList = patrolPlanDeviceMapper.selectList(deviceWrapper);
+                    if (CollectionUtil.isEmpty(deviceList)) {
+                        throw new AiurtBootException("标准表名为：[" + standard.getName() + "]暂未指定设备，不允许启用！");
+                    }
+                }
+            });
+            // 更新计划启用状态
+            status = 1;
+        } else if (1 == status) {
+            status = 0;
+        }
+        patrolPlan.setStatus(status);
+        patrolPlanMapper.updateById(patrolPlan);
+
     }
 
 }
