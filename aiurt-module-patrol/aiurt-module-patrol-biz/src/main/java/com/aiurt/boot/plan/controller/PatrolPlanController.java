@@ -152,18 +152,12 @@ public class PatrolPlanController extends BaseController<PatrolPlan, IPatrolPlan
     @RequestMapping(value = "/modify", method = {RequestMethod.POST})
     public Result<String> modify(@RequestParam(name = "id") String id,
                                  @RequestParam(name = "status") Integer status) {
-        patrolPlanService.modefy(id,status);
-        PatrolPlan patrolPlan = new PatrolPlan();
-        patrolPlan.setId(id);
-        if (status == 0) {
-            patrolPlan.setStatus(1);
+        int modefy = patrolPlanService.modefy(id, status);
+        if (modefy > 0) {
+            return Result.OK("修改成功！");
+        } else {
+            return Result.error("修改失败!");
         }
-        patrolPlan.setId(id);
-        if (status == 1) {
-            patrolPlan.setStatus(0);
-        }
-        patrolPlanService.updateById(patrolPlan);
-        return Result.OK("修改成功！");
     }
 
     /**

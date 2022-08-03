@@ -68,7 +68,7 @@ public class PatrolPlanServiceImpl extends ServiceImpl<PatrolPlanMapper, PatrolP
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void add(PatrolPlanDto patrolPlanDto) {
-        this.check(patrolPlanDto);
+//        this.check(patrolPlanDto);
         PatrolPlan patrolPlan = new PatrolPlan();
         patrolPlan.setCode(patrolPlanDto.getCode());
         patrolPlan.setName(patrolPlanDto.getName());
@@ -306,12 +306,12 @@ public class PatrolPlanServiceImpl extends ServiceImpl<PatrolPlanMapper, PatrolP
     }
 
     @Override
-    public void modefy(String planId, Integer status) {
+    public int modefy(String planId, Integer status) {
         if (ObjectUtil.isEmpty(planId)) {
             throw new AiurtBootException("计划主键ID为空！");
         }
         PatrolPlan patrolPlan = patrolPlanMapper.selectById(planId);
-        String planCode = patrolPlan.getCode();
+//        String planCode = patrolPlan.getCode();
 
         if (0 == status) {
             // 判断计划的策略是否为空
@@ -333,7 +333,7 @@ public class PatrolPlanServiceImpl extends ServiceImpl<PatrolPlanMapper, PatrolP
 //                throw new AiurtBootException("计划暂未设置组织机构，不允许启用！");
 //            }
 
-            // 判断计划的是否选择标准表
+            // 判断计划是否选择标准表
             List<PatrolPlanStandard> patrolPlanStandard = patrolPlanStandardMapper.selectList(
                     new LambdaQueryWrapper<PatrolPlanStandard>().eq(PatrolPlanStandard::getPlanId, planId));
             if (CollectionUtil.isEmpty(patrolPlanStandard)) {
@@ -351,7 +351,7 @@ public class PatrolPlanServiceImpl extends ServiceImpl<PatrolPlanMapper, PatrolP
                     deviceWrapper.eq(PatrolPlanDevice::getPlanStandardId, standard.getId());
                     List<PatrolPlanDevice> deviceList = patrolPlanDeviceMapper.selectList(deviceWrapper);
                     if (CollectionUtil.isEmpty(deviceList)) {
-                        throw new AiurtBootException("标准表名为：[" + standard.getName() + "]暂未指定设备，不允许启用！");
+                        throw new AiurtBootException("标准表名为:【" + standard.getName() + "】暂未指定设备，不允许启用！");
                     }
                 }
             });
@@ -361,7 +361,8 @@ public class PatrolPlanServiceImpl extends ServiceImpl<PatrolPlanMapper, PatrolP
             status = 0;
         }
         patrolPlan.setStatus(status);
-        patrolPlanMapper.updateById(patrolPlan);
+        int updateById = patrolPlanMapper.updateById(patrolPlan);
+        return updateById;
 
     }
 
