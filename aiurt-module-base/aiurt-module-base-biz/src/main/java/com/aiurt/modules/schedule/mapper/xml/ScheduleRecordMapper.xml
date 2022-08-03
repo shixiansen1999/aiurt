@@ -49,7 +49,7 @@
         inner join sys_user su on sr.user_id = su.id
         where su.status = 1
         and su.del_flag = 0
-        AND DATE_FORMAT(sr.date, '%Y-%m') = #{date}
+        AND  sr.date like CONCAT (#{date},'%')
         and sr.del_flag=0
         <if test="orgId !=null and orgId !=''">
             and su.org_id = #{orgId}
