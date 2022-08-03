@@ -5,11 +5,14 @@ import com.aiurt.modules.flow.dto.FlowTaskReqDTO;
 import com.aiurt.modules.flow.dto.StartBpmnDTO;
 import com.aiurt.modules.flow.entity.ActCustomTaskComment;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import org.flowable.engine.repository.ProcessDefinition;
 import org.flowable.engine.runtime.ProcessInstance;
 import org.flowable.task.api.Task;
 import org.flowable.task.api.TaskInfo;
 
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * 流程引擎API的接口封装服务。
@@ -68,4 +71,29 @@ public interface FlowApiService {
      * @return
      */
     IPage<FlowTaskDTO> listRuntimeTask(Integer pageNo, Integer pageSize, FlowTaskReqDTO flowTaskReqDTO);
+
+    /**
+     * 获取流程实例的变量。
+     *
+     * @param processInstanceId 流程实例Id。
+     * @param variableName      变量名。
+     * @return 变量值。
+     */
+    Object getProcessInstanceVariable(String processInstanceId, String variableName);
+
+    /**
+     * 获取流程实例的列表。
+     *
+     * @param processInstanceIdSet 流程实例Id集合。
+     * @return 流程实例列表。
+     */
+    List<ProcessInstance> getProcessInstanceList(Set<String> processInstanceIdSet);
+
+    /**
+     * 获取流程定义的列表。
+     *
+     * @param processDefinitionIdSet 流程定义Id集合。
+     * @return 流程定义列表。
+     */
+    List<ProcessDefinition> getProcessDefinitionList(Set<String> processDefinitionIdSet);
 }

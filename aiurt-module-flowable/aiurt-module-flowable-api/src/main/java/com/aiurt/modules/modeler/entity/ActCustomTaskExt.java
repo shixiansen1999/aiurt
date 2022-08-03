@@ -6,7 +6,6 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
-import org.jeecgframework.poi.excel.annotation.Excel;
 
 import java.io.Serializable;
 
@@ -67,4 +66,8 @@ public class ActCustomTaskExt implements Serializable {
 	/**抄送相关的数据*/
     @ApiModelProperty(value = "抄送相关的数据")
     private String copyListJson;
+
+    /**表单数据*/
+    @ApiModelProperty(value = "表单数据")
+    private String formJson;
 }

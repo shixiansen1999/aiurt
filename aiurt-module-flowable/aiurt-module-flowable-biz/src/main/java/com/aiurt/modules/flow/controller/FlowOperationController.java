@@ -15,8 +15,6 @@ import org.jeecg.common.api.vo.Result;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import javax.servlet.http.HttpServletRequest;
-
 /**
  * 流程操作接口类
  *
@@ -82,18 +80,18 @@ public class FlowOperationController {
         return Result.OK();
     }
 
-
     /**
-     * 待办任务
-     *
+     * 我的待办
+     * @param flowTaskReqDTO
+     * @param pageNo
+     * @param pageSize
      * @return
      */
-    @ApiOperation(value = "待办任务", notes = "待办任务")
+    @ApiOperation(value = "我的待办", notes = "我的待办")
     @GetMapping(value = "/listRuntimeTask")
     public Result<IPage<FlowTaskDTO>> listRuntimeTask(@RequestBody FlowTaskReqDTO flowTaskReqDTO,
                                                       @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
-                                                      @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize,
-                                                      HttpServletRequest req) {
+                                                      @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize) {
         IPage<FlowTaskDTO> pageList = flowApiService.listRuntimeTask(pageNo, pageSize, flowTaskReqDTO);
         return Result.OK(pageList);
     }

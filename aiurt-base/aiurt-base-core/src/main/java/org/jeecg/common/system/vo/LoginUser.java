@@ -136,4 +136,8 @@ public class LoginUser {
 	 * 角色编号
 	 */
 	private String roleCodes;
+	/**
+	 * 角色id
+	 */
+	private String roleIds;
 }

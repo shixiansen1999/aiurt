@@ -13,15 +13,18 @@ import com.aiurt.modules.flow.entity.ActCustomTaskComment;
 import com.aiurt.modules.flow.mapper.ActCustomTaskCommentMapper;
 import com.aiurt.modules.flow.service.FlowApiService;
 import com.aiurt.modules.flow.utils.FlowElementUtil;
+import com.aiurt.modules.modeler.entity.ActCustomTaskExt;
+import com.aiurt.modules.modeler.mapper.ActCustomTaskExtMapper;
 import com.aiurt.modules.utils.ReflectionService;
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections.MapUtils;
 import org.apache.shiro.SecurityUtils;
-import org.flowable.bpmn.model.ExtensionElement;
 import org.flowable.bpmn.model.UserTask;
+import org.flowable.engine.RepositoryService;
 import org.flowable.engine.RuntimeService;
 import org.flowable.engine.TaskService;
 import org.flowable.engine.repository.ProcessDefinition;
@@ -36,6 +39,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author fgw
@@ -53,7 +57,11 @@ public class FlowApiServiceImpl implements FlowApiService {
     @Autowired
     private TaskService taskService;
     @Autowired
+    private RepositoryService repositoryService;
+    @Autowired
     private ActCustomTaskCommentMapper customTaskCommentMapper;
+    @Autowired
+    private ActCustomTaskExtMapper customTaskExtMapper;
 
     /**
      * @param startBpmnDTO
@@ -88,7 +96,7 @@ public class FlowApiServiceImpl implements FlowApiService {
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public ProcessInstance startAndTakeFirst(StartBpmnDTO startBpmnDTO){
+    public ProcessInstance startAndTakeFirst(StartBpmnDTO startBpmnDTO) {
         log.info("启动流程请求参数：[{}]", JSON.toJSONString(startBpmnDTO));
         LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         if (Objects.isNull(loginUser)) {
@@ -109,26 +117,14 @@ public class FlowApiServiceImpl implements FlowApiService {
 
         // 设置流程变量
         Map<String, Object> busData = startBpmnDTO.getBusData();
-        busData.put(FlowConstant.PROC_INSTANCE_INITIATOR_VAR, loginUser.getUsername());
-        busData.put(FlowConstant.PROC_INSTANCE_START_USER_NAME_VAR, loginUser.getUsername());
+        this.initAndGetProcessInstanceVariables(busData);
 
         // 根据key查询第一个用户任务
         UserTask userTask = flowElementUtil.getFirstUserTaskByModelKey(startBpmnDTO.getModelKey());
         Task task = BeanUtil.copyProperties(userTask, Task.class);
 
-        // todo 保存中间业务数据，将业务数据id返回
-        String businessKey = "";
-        Map<String, List<ExtensionElement>> extensionElements = userTask.getExtensionElements();
-        if (MapUtils.isNotEmpty(extensionElements)) {
-            List<ExtensionElement> values = extensionElements.get("");
-            if (CollUtil.isNotEmpty(values)) {
-                try {
-                    reflectionService.invokeService(null, null, null);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-        }
+        // 保存中间业务数据，将业务数据id返回
+        String businessKey = saveBusData(result.getId(), task.getId());
 
         // 启动流程
         ProcessInstance processInstance = runtimeService.startProcessInstanceByKey(startBpmnDTO.getModelKey(), businessKey, busData);
@@ -142,6 +138,50 @@ public class FlowApiServiceImpl implements FlowApiService {
             this.completeTask(task, startBpmnDTO.getCustomTaskComment(), startBpmnDTO.getBusData());
         }
         return processInstance;
+    }
+
+    /**
+     * 设置流程变量
+     *
+     * @param busData
+     */
+    private void initAndGetProcessInstanceVariables(Map<String, Object> busData) {
+        LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        if (Objects.isNull(loginUser)) {
+            throw new AiurtBootException("无法启动流程，请重新登录！");
+        }
+        busData.put(FlowConstant.PROC_INSTANCE_INITIATOR_VAR, loginUser.getUsername());
+        busData.put(FlowConstant.PROC_INSTANCE_START_USER_NAME_VAR, loginUser.getUsername());
+    }
+
+
+    /**
+     * 保存业务数据
+     *
+     * @param pProcessDefinitionId
+     * @param taskId
+     * @return
+     */
+    public String saveBusData(String pProcessDefinitionId, String taskId) {
+        List<ActCustomTaskExt> actCustomTaskExts = customTaskExtMapper.selectList(
+                new LambdaQueryWrapper<ActCustomTaskExt>()
+                        .eq(ActCustomTaskExt::getProcessDefinitionId, pProcessDefinitionId)
+                        .eq(ActCustomTaskExt::getTaskId, taskId));
+
+        if (CollUtil.isNotEmpty(actCustomTaskExts)) {
+            JSONObject jsonObject = JSONObject.parseObject(actCustomTaskExts.get(0).getFormJson());
+            if (ObjectUtil.isNotEmpty(jsonObject)) {
+                List<String> className = StrUtil.split((String) jsonObject.get("className"), '.');
+                try {
+                    if (CollUtil.isNotEmpty(className)) {
+                        reflectionService.invokeService(className.get(0), className.get(1), null);
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        return "";
     }
 
 
@@ -183,6 +223,8 @@ public class FlowApiServiceImpl implements FlowApiService {
         this.verifyAndGetRuntimeTaskInfo(processInstanceActiveTask);
 
         // 流程业务数据状态更改
+
+        // 判断当前完成执行的任务，是否存在抄送设置
 
         // 增加流程批注数据
         if (comment != null) {
@@ -268,53 +310,73 @@ public class FlowApiServiceImpl implements FlowApiService {
         query.orderByTaskCreateTime().desc();
         int firstResult = (pageNo - 1) * pageSize;
         List<Task> taskList = query.listPage(firstResult, pageSize);
-//        return new MyPageData<>(taskList, totalCount);
-
+        result.setTotal(totalCount);
+        result.setRecords(convertToFlowTaskList(taskList));
+        result.setCurrent(pageNo);
+        result.setSize(pageSize);
         return result;
     }
 
+    /**
+     * 将流程任务列表数据，转换为前端可以显示的流程对象。
+     *
+     * @param taskList 流程引擎中的任务列表。
+     * @return 前端可以显示的流程任务列表。
+     */
     public List<FlowTaskDTO> convertToFlowTaskList(List<Task> taskList) {
         List<FlowTaskDTO> flowTaskVoList = new LinkedList<>();
         if (CollUtil.isEmpty(taskList)) {
             return flowTaskVoList;
         }
-//        Set<String> processDefinitionIdSet = taskList.stream()
-//                .map(Task::getProcessDefinitionId).collect(Collectors.toSet());
-//        Set<String> procInstanceIdSet = taskList.stream()
-//                .map(Task::getProcessInstanceId).collect(Collectors.toSet());
-//        List<FlowEntryPublish> flowEntryPublishList =
-//                flowEntryService.getFlowEntryPublishList(processDefinitionIdSet);
-//        Map<String, FlowEntryPublish> flowEntryPublishMap =
-//                flowEntryPublishList.stream().collect(Collectors.toMap(FlowEntryPublish::getProcessDefinitionId, c -> c));
-//        List<ProcessInstance> instanceList = this.getProcessInstanceList(procInstanceIdSet);
-//        Map<String, ProcessInstance> instanceMap =
-//                instanceList.stream().collect(Collectors.toMap(ProcessInstance::getId, c -> c));
-//        List<ProcessDefinition> definitionList = this.getProcessDefinitionList(processDefinitionIdSet);
-//        Map<String, ProcessDefinition> definitionMap =
-//                definitionList.stream().collect(Collectors.toMap(ProcessDefinition::getId, c -> c));
-//        for (Task task : taskList) {
-//            FlowTaskDTO flowTaskVo = new FlowTaskDTO();
-//            flowTaskVo.setTaskId(task.getId());
-//            flowTaskVo.setTaskName(task.getName());
-//            flowTaskVo.setTaskKey(task.getTaskDefinitionKey());
-//            flowTaskVo.setTaskFormKey(task.getFormKey());
+        Set<String> processDefinitionIdSet = taskList.stream()
+                .map(Task::getProcessDefinitionId).collect(Collectors.toSet());
+        Set<String> procInstanceIdSet = taskList.stream()
+                .map(Task::getProcessInstanceId).collect(Collectors.toSet());
+
+        List<ProcessInstance> instanceList = this.getProcessInstanceList(procInstanceIdSet);
+        Map<String, ProcessInstance> instanceMap =
+                instanceList.stream().collect(Collectors.toMap(ProcessInstance::getId, c -> c));
+        List<ProcessDefinition> definitionList = this.getProcessDefinitionList(processDefinitionIdSet);
+        Map<String, ProcessDefinition> definitionMap =
+                definitionList.stream().collect(Collectors.toMap(ProcessDefinition::getId, c -> c));
+
+        for (Task task : taskList) {
+            FlowTaskDTO flowTaskVo = new FlowTaskDTO();
+            flowTaskVo.setTaskId(task.getId());
+            flowTaskVo.setTaskName(task.getName());
+            flowTaskVo.setTaskKey(task.getTaskDefinitionKey());
+            flowTaskVo.setTaskFormKey(task.getFormKey());
 //            flowTaskVo.setEntryId(flowEntryPublishMap.get(task.getProcessDefinitionId()).getEntryId());
-//            ProcessDefinition processDefinition = definitionMap.get(task.getProcessDefinitionId());
-//            flowTaskVo.setProcessDefinitionId(processDefinition.getId());
-//            flowTaskVo.setProcessDefinitionName(processDefinition.getName());
-//            flowTaskVo.setProcessDefinitionKey(processDefinition.getKey());
-//            flowTaskVo.setProcessDefinitionVersion(processDefinition.getVersion());
-//            ProcessInstance processInstance = instanceMap.get(task.getProcessInstanceId());
-//            flowTaskVo.setProcessInstanceId(processInstance.getId());
-//            Object initiator = this.getProcessInstanceVariable(
-//                    processInstance.getId(), FlowConstant.PROC_INSTANCE_INITIATOR_VAR);
-//            flowTaskVo.setProcessInstanceInitiator(initiator.toString());
-//            flowTaskVo.setProcessInstanceStartTime(processInstance.getStartTime());
-//            flowTaskVo.setBusinessKey(processInstance.getBusinessKey());
-//            flowTaskVoList.add(flowTaskVo);
-//        }
+
+            ProcessDefinition processDefinition = definitionMap.get(task.getProcessDefinitionId());
+            flowTaskVo.setProcessDefinitionId(processDefinition.getId());
+            flowTaskVo.setProcessDefinitionName(processDefinition.getName());
+            flowTaskVo.setProcessDefinitionKey(processDefinition.getKey());
+            flowTaskVo.setProcessDefinitionVersion(processDefinition.getVersion());
+            ProcessInstance processInstance = instanceMap.get(task.getProcessInstanceId());
+            flowTaskVo.setProcessInstanceId(processInstance.getId());
+            Object initiator = this.getProcessInstanceVariable(
+                    processInstance.getId(), FlowConstant.PROC_INSTANCE_INITIATOR_VAR);
+            flowTaskVo.setProcessInstanceInitiator(initiator.toString());
+            flowTaskVo.setProcessInstanceStartTime(processInstance.getStartTime());
+            flowTaskVo.setBusinessKey(processInstance.getBusinessKey());
+            flowTaskVoList.add(flowTaskVo);
+        }
         return flowTaskVoList;
     }
+
+    /**
+     * 获取流程实例的变量。
+     *
+     * @param processInstanceId 流程实例Id。
+     * @param variableName      变量名。
+     * @return 变量值。
+     */
+    @Override
+    public Object getProcessInstanceVariable(String processInstanceId, String variableName) {
+        return runtimeService.getVariable(processInstanceId, variableName);
+    }
+
     /**
      * 构建任务查询条件
      *
@@ -326,19 +388,20 @@ public class FlowApiServiceImpl implements FlowApiService {
 
             Set<String> groupIdSet = new HashSet<>();
             // NOTE: 需要注意的是，部门Id、或者其他类型的分组Id，他们之间一定不能重复。
-            String orgCode = loginUser.getOrgCode();
-            if (StrUtil.isNotEmpty(orgCode)) {
-                groupIdSet.add(orgCode);
+            String orgId = loginUser.getOrgId();
+            if (StrUtil.isNotEmpty(orgId)) {
+                groupIdSet.add(orgId);
             }
 
-            String roleCodes = loginUser.getRoleCodes();
-            if (StrUtil.isNotEmpty(roleCodes)) {
-                groupIdSet.addAll(StrUtil.split(roleCodes, ','));
+            String roleIds = loginUser.getRoleIds();
+            if (StrUtil.isNotEmpty(roleIds)) {
+                groupIdSet.addAll(StrUtil.split(roleIds, ','));
             }
 
             if (CollUtil.isNotEmpty(groupIdSet)) {
                 query.or().taskCandidateGroupIn(groupIdSet).taskCandidateOrAssigned(loginUser.getUsername()).endOr();
             } else {
+                // 按照分配组 OR 指派人查询
                 query.taskCandidateOrAssigned(loginUser.getUsername());
             }
         }
@@ -373,5 +436,27 @@ public class FlowApiServiceImpl implements FlowApiService {
         if (StrUtil.isBlank(task.getFormKey())) {
             throw new AiurtBootException("数据验证失败，指定任务的formKey属性不存在，请重新修改流程图！");
         }
+    }
+
+    /**
+     * 获取流程实例的列表。
+     *
+     * @param processInstanceIdSet 流程实例Id集合。
+     * @return 流程实例列表。
+     */
+    @Override
+    public List<ProcessInstance> getProcessInstanceList(Set<String> processInstanceIdSet) {
+        return runtimeService.createProcessInstanceQuery().processInstanceIds(processInstanceIdSet).list();
+    }
+
+    /**
+     * 获取流程定义的列表。
+     *
+     * @param processDefinitionIdSet 流程定义Id集合。
+     * @return 流程定义列表。
+     */
+    @Override
+    public List<ProcessDefinition> getProcessDefinitionList(Set<String> processDefinitionIdSet) {
+        return repositoryService.createProcessDefinitionQuery().processDefinitionIds(processDefinitionIdSet).list();
     }
 }

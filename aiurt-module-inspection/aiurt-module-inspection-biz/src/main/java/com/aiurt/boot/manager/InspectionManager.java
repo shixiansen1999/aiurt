@@ -58,7 +58,7 @@ public class InspectionManager {
         if (InspectionConstant.SUBSYSTEM.equals(type)) {
             nameList = inspectionManagerMapper.translateSubsystem(codeList);
         }
-        return CollUtil.isNotEmpty(nameList) ? StrUtil.join(",", nameList) : "";
+        return CollUtil.isNotEmpty(nameList) ? StrUtil.join("；", nameList) : "";
     }
 
     /**
@@ -72,7 +72,7 @@ public class InspectionManager {
             return "";
         }
         List<String> nameList = inspectionManagerMapper.translateOrg(codeList);
-        return CollUtil.isNotEmpty(nameList) ? StrUtil.join(",", nameList) : "";
+        return CollUtil.isNotEmpty(nameList) ? StrUtil.join("；", nameList) : "";
     }
 
     /**
@@ -112,7 +112,7 @@ public class InspectionManager {
             }
 
             if (ObjectUtil.isNotEmpty(builder)) {
-                builder.append(",");
+                builder.append("；");
             }
         }
         if (ObjectUtil.isNotEmpty(builder)) {
