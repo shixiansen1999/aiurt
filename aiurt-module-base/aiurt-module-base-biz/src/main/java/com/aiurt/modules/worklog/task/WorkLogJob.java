@@ -33,11 +33,11 @@ public class WorkLogJob implements Job {
         LoginUser user = iSysBaseAPI.queryUser(dto.getFromUser());
         // todo 后期修改
         //过滤工班长
-        userIds.remove(user.getId());
+        List<String> list = userIds.stream().filter(e -> !e.equals((user.getId()))).collect(Collectors.toList());
         if (CollectionUtils.isNotEmpty(userIds)){
             //todo 待处理
             //发消息提醒
-                userIds.forEach(
+            list.forEach(
                         u->{
                             BusMessageDTO messageDTO = new BusMessageDTO();
                             messageDTO.setFromUser(dto.getFromUser());
