@@ -1,5 +1,6 @@
 package com.aiurt.modules.system.entity;
 
+import com.aiurt.common.aspect.annotation.Dict;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableLogic;
@@ -56,6 +57,7 @@ public class SysDict implements Serializable {
     /**
      * 所属模块
      */
+    @Dict(dicCode = "standard_dict_type")
     private String modules;
     /**
      * 删除状态
