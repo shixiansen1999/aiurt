@@ -24,4 +24,22 @@
             </foreach>
         )
     </select>
+    <select id="readAll" resultType="com.aiurt.modules.sparepart.entity.SparePartApply">
+        select t.*
+        from spare_part_apply t
+        left join spare_part_stock_info t1 on t.custodial_warehouse_code = t1.warehouse_code
+        <where>
+            t.del_flag= 0
+            <if test="sparePartApply.code != null and sparePartApply.code != ''">
+                and t.code like concat(concat('%',#{sparePartApply.code}),'%')
+            </if>
+            <if test="sparePartApply.warehouseName != null and sparePartApply.warehouseName != ''">
+                and t1.warehouse_name like concat(concat('%',#{sparePartApply.warehouseName}),'%')
+            </if>
+            <if test="sparePartApply.status != null and sparePartApply.status != null">
+                and t.status = #{sparePartApply.status}
+            </if>
+        </where>
+        order by t.create_time desc
+    </select>
 </mapper>

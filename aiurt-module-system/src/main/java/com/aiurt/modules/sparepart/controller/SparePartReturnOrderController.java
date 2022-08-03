@@ -1,21 +1,34 @@
 package com.aiurt.modules.sparepart.controller;
 
 import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.system.base.controller.BaseController;
+import com.aiurt.modules.sparepart.entity.SparePartInOrder;
 import com.aiurt.modules.sparepart.entity.SparePartReturnOrder;
+import com.aiurt.modules.sparepart.entity.SparePartStockInfo;
+import com.aiurt.modules.sparepart.mapper.SparePartStockInfoMapper;
 import com.aiurt.modules.sparepart.service.ISparePartReturnOrderService;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import io.swagger.annotations.ApiParam;
+import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.query.QueryGenerator;
 
 import lombok.extern.slf4j.Slf4j;
 
 
+import org.jeecg.common.system.vo.LoginUser;
+import org.jeecgframework.poi.excel.def.NormalExcelConstants;
+import org.jeecgframework.poi.excel.entity.ExportParams;
+import org.jeecgframework.poi.excel.view.JeecgEntityExcelView;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -31,13 +44,15 @@ import com.aiurt.common.aspect.annotation.AutoLog;
  * @Date:   2022-07-27
  * @Version: V1.0
  */
-@Api(tags="spare_part_return_order")
+@Api(tags="备件管理-备件退库")
 @RestController
 @RequestMapping("/sparepart/sparePartReturnOrder")
 @Slf4j
 public class SparePartReturnOrderController extends BaseController<SparePartReturnOrder, ISparePartReturnOrderService> {
 	@Autowired
 	private ISparePartReturnOrderService sparePartReturnOrderService;
+	@Autowired
+	private SparePartStockInfoMapper sparePartStockInfoMapper;
 
 	/**
 	 * 分页列表查询
@@ -55,10 +70,11 @@ public class SparePartReturnOrderController extends BaseController<SparePartRetu
 															 @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
 															 @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
 															 HttpServletRequest req) {
-		QueryWrapper<SparePartReturnOrder> queryWrapper = QueryGenerator.initQueryWrapper(sparePartReturnOrder, req.getParameterMap());
+		//QueryWrapper<SparePartReturnOrder> queryWrapper = QueryGenerator.initQueryWrapper(sparePartReturnOrder, req.getParameterMap());
 		Page<SparePartReturnOrder> page = new Page<SparePartReturnOrder>(pageNo, pageSize);
-		IPage<SparePartReturnOrder> pageList = sparePartReturnOrderService.page(page, queryWrapper);
-		return Result.OK(pageList);
+		List<SparePartReturnOrder> list = sparePartReturnOrderService.selectList(page, sparePartReturnOrder);
+		page.setRecords(list);
+		return Result.OK(page);
 	}
 
 	/**
@@ -70,9 +86,20 @@ public class SparePartReturnOrderController extends BaseController<SparePartRetu
 	@AutoLog(value = "spare_part_return_order-添加")
 	@ApiOperation(value="spare_part_return_order-添加", notes="spare_part_return_order-添加")
 	@PostMapping(value = "/add")
-	public Result<String> add(@RequestBody SparePartReturnOrder sparePartReturnOrder) {
+	public Result<?> add(@RequestBody SparePartReturnOrder sparePartReturnOrder) {
+		LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+		LambdaQueryWrapper<SparePartStockInfo> wrapper = new LambdaQueryWrapper<>();
+		wrapper.eq(SparePartStockInfo::getWarehouseCode,sparePartReturnOrder.getMaterialCode());
+		wrapper.eq(SparePartStockInfo::getDelFlag, CommonConstant.DEL_FLAG_0);
+		SparePartStockInfo stockInfo = sparePartStockInfoMapper.selectOne(wrapper);
+		if(null!=stockInfo){
+			sparePartReturnOrder.setOrgId(stockInfo.getOrganizationId());
+		}
+
+		sparePartReturnOrder.setUserId(user.getUsername());
 		sparePartReturnOrderService.save(sparePartReturnOrder);
 		return Result.OK("添加成功！");
+
 	}
 
 	/**
@@ -84,9 +111,8 @@ public class SparePartReturnOrderController extends BaseController<SparePartRetu
 	@AutoLog(value = "spare_part_return_order-编辑")
 	@ApiOperation(value="spare_part_return_order-编辑", notes="spare_part_return_order-编辑")
 	@RequestMapping(value = "/edit", method = {RequestMethod.PUT,RequestMethod.POST})
-	public Result<String> edit(@RequestBody SparePartReturnOrder sparePartReturnOrder) {
-		sparePartReturnOrderService.updateById(sparePartReturnOrder);
-		return Result.OK("编辑成功!");
+	public Result<?> edit(@RequestBody SparePartReturnOrder sparePartReturnOrder) {
+		return sparePartReturnOrderService.update(sparePartReturnOrder);
 	}
 
 	/**
@@ -99,22 +125,10 @@ public class SparePartReturnOrderController extends BaseController<SparePartRetu
 	@ApiOperation(value="spare_part_return_order-通过id删除", notes="spare_part_return_order-通过id删除")
 	@DeleteMapping(value = "/delete")
 	public Result<String> delete(@RequestParam(name="id",required=true) String id) {
-		sparePartReturnOrderService.removeById(id);
+		SparePartReturnOrder sparePartReturnOrder = sparePartReturnOrderService.getById(id);
+		sparePartReturnOrder.setDelFlag(CommonConstant.DEL_FLAG_1);
+		sparePartReturnOrderService.updateById(sparePartReturnOrder);
 		return Result.OK("删除成功!");
-	}
-
-	/**
-	 *  批量删除
-	 *
-	 * @param ids
-	 * @return
-	 */
-	@AutoLog(value = "spare_part_return_order-批量删除")
-	@ApiOperation(value="spare_part_return_order-批量删除", notes="spare_part_return_order-批量删除")
-	@DeleteMapping(value = "/deleteBatch")
-	public Result<String> deleteBatch(@RequestParam(name="ids",required=true) String ids) {
-		this.sparePartReturnOrderService.removeByIds(Arrays.asList(ids.split(",")));
-		return Result.OK("批量删除成功!");
 	}
 
 	/**
@@ -138,23 +152,27 @@ public class SparePartReturnOrderController extends BaseController<SparePartRetu
     * 导出excel
     *
     * @param request
-    * @param sparePartReturnOrder
+    * @param
     */
     @RequestMapping(value = "/exportXls")
-    public ModelAndView exportXls(HttpServletRequest request, SparePartReturnOrder sparePartReturnOrder) {
-        return super.exportXls(request, sparePartReturnOrder, SparePartReturnOrder.class, "spare_part_return_order");
-    }
+	public ModelAndView exportXls(@ApiParam(value = "行数据ids" ,required = true) @RequestParam("ids") String ids, HttpServletRequest request, HttpServletResponse response) {
+		LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+		ModelAndView mv = new ModelAndView(new JeecgEntityExcelView());
+		SparePartReturnOrder sparePartReturnOrder = new SparePartReturnOrder();
+		sparePartReturnOrder.setIds(Arrays.asList(ids.split(",")));
+		List<SparePartReturnOrder> list = sparePartReturnOrderService.selectList(null, sparePartReturnOrder);
+		list = list.stream().distinct().collect(Collectors.toList());
+		for(int i=0;i<list.size();i++){
+			SparePartReturnOrder order = list.get(i);
+			order.setNumber(i+1+"");
+		}
+		//导出文件名称
+		mv.addObject(NormalExcelConstants.FILE_NAME, "备件退库管理列表");
+		mv.addObject(NormalExcelConstants.CLASS, SparePartReturnOrder.class);
+		mv.addObject(NormalExcelConstants.PARAMS, new ExportParams("备件退库管理列表数据", "导出人:"+user.getRealname(), "导出信息"));
+		mv.addObject(NormalExcelConstants.DATA_LIST, list);
+		return mv;
+	}
 
-    /**
-      * 通过excel导入数据
-    *
-    * @param request
-    * @param response
-    * @return
-    */
-    @RequestMapping(value = "/importExcel", method = RequestMethod.POST)
-    public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) {
-        return super.importExcel(request, response, SparePartReturnOrder.class);
-    }
 
 }

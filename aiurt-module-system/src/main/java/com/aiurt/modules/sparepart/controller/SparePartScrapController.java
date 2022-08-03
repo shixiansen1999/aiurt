@@ -1,6 +1,7 @@
 package com.aiurt.modules.sparepart.controller;
 
 import java.util.Arrays;
+import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.jeecg.common.api.vo.Result;
@@ -27,7 +28,7 @@ import com.aiurt.common.aspect.annotation.AutoLog;
  * @Date:   2022-07-26
  * @Version: V1.0
  */
-@Api(tags="spare_part_scrap")
+@Api(tags="备件管理-备件报废管理")
 @RestController
 @RequestMapping("/sparepart/sparePartScrap")
 @Slf4j
@@ -51,10 +52,11 @@ public class SparePartScrapController extends BaseController<SparePartScrap, ISp
 								   @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
 								   @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
 								   HttpServletRequest req) {
-		QueryWrapper<SparePartScrap> queryWrapper = QueryGenerator.initQueryWrapper(sparePartScrap, req.getParameterMap());
+		//QueryWrapper<SparePartScrap> queryWrapper = QueryGenerator.initQueryWrapper(sparePartScrap, req.getParameterMap());
 		Page<SparePartScrap> page = new Page<SparePartScrap>(pageNo, pageSize);
-		IPage<SparePartScrap> pageList = sparePartScrapService.page(page, queryWrapper);
-		return Result.OK(pageList);
+		List<SparePartScrap> list = sparePartScrapService.selectList(page, sparePartScrap);
+		page.setRecords(list);
+		return Result.OK(page);
 	}
 
 	/**

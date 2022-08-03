@@ -6,6 +6,7 @@ import com.aiurt.modules.sparepart.entity.SparePartApply;
 
 import com.aiurt.modules.sparepart.entity.dto.StockApplyExcel;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Component;
 
@@ -18,4 +19,5 @@ import org.springframework.stereotype.Component;
 @Component
 public interface SparePartApplyMapper extends BaseMapper<SparePartApply> {
     List<StockApplyExcel> selectExportXls(@Param("ids") List<String> ids);
+    List<SparePartApply> readAll(Page page,@Param("sparePartApply")  SparePartApply sparePartApply);
 }

@@ -180,4 +180,8 @@ public class StockLevel2 extends DictEntity {
 	@ApiModelProperty(value = " 分类无层级")
 	@TableField(exist = false)
 	private  String  baseType;
+
+	@ApiModelProperty(value = "物资分类查询")
+	@TableField(exist = false)
+	private String allCode;
 }

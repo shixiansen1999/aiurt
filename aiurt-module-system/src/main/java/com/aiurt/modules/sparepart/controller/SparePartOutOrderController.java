@@ -1,6 +1,7 @@
 package com.aiurt.modules.sparepart.controller;
 
 import com.aiurt.common.aspect.annotation.AutoLog;
+import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.system.base.controller.BaseController;
 import com.aiurt.modules.sparepart.entity.SparePartOutOrder;
 import com.aiurt.modules.sparepart.entity.SparePartStock;
@@ -13,8 +14,10 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.query.QueryGenerator;
+import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
@@ -22,6 +25,7 @@ import org.springframework.web.servlet.ModelAndView;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -64,7 +68,23 @@ public class SparePartOutOrderController extends BaseController<SparePartOutOrde
        page.setRecords(list);
        return Result.OK(page);
    }
+    /**
+     * 登录人所选班组的已出库的备件
+     *
+     * @param
 
+     * @return
+     */
+    @AutoLog(value = "备件管理-备件退库管理-登录人所选班组的已出库的备件")
+    @ApiOperation(value="备件管理-备件退库管理-登录人所选班组的已出库的备件", notes="备件管理-备件退库管理-登录人所选班组的已出库的备件")
+    @GetMapping(value = "/getMaterialCode")
+    public Result<?> getMaterialCode() {
+        LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        LambdaQueryWrapper<SparePartOutOrder> wrapper = new LambdaQueryWrapper<>();
+        wrapper.apply(" warehouse_code = ( SELECT warehouse_code  FROM spare_part_stock_info  WHERE organization_id = '"+loginUser.getOrgId()+"'  AND del_flag = "+ CommonConstant.DEL_FLAG_0+") ");
+        List<SparePartOutOrder> list = sparePartOutOrderService.list(wrapper);
+        return Result.OK(list);
+    }
    /**
     *   添加
     *
@@ -75,6 +95,8 @@ public class SparePartOutOrderController extends BaseController<SparePartOutOrde
    @ApiOperation(value="spare_part_out_order-添加", notes="spare_part_out_order-添加")
    @PostMapping(value = "/add")
    public Result<String> add(@RequestBody SparePartOutOrder sparePartOutOrder) {
+       LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+       sparePartOutOrder.setApplyUserId(user.getUsername());
        sparePartOutOrderService.save(sparePartOutOrder);
        return Result.OK("添加成功！");
    }
@@ -89,12 +111,15 @@ public class SparePartOutOrderController extends BaseController<SparePartOutOrde
    @ApiOperation(value="spare_part_out_order-编辑", notes="spare_part_out_order-编辑")
    @RequestMapping(value = "/edit", method = {RequestMethod.PUT,RequestMethod.POST})
    public Result<String> edit(@RequestBody SparePartOutOrder sparePartOutOrder) {
+       LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
        // 更新备件库存数据（原库存数-出库数量）
        SparePartStock sparePartStock = sparePartStockMapper.selectOne(new LambdaQueryWrapper<SparePartStock>().eq(SparePartStock::getMaterialCode,sparePartOutOrder.getMaterialCode()).eq(SparePartStock::getWarehouseCode,sparePartOutOrder.getWarehouseCode()));
        if(null!=sparePartStock){
            sparePartStock.setNum(sparePartStock.getNum()-sparePartOutOrder.getNum());
            sparePartStockMapper.updateById(sparePartStock);
        }
+       sparePartOutOrder.setConfirmUserId(user.getUsername());
+       sparePartOutOrder.setConfirmTime(new Date());
        sparePartOutOrderService.updateById(sparePartOutOrder);
        return Result.OK("编辑成功!");
    }

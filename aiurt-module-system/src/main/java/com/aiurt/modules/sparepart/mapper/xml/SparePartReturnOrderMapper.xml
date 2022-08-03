@@ -1,5 +1,65 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.aiurt.modules.sparepart.mapper.SparePartReturnOrderMapper">
+    <select id="readAll" resultType="com.aiurt.modules.sparepart.entity.SparePartReturnOrder">
+        SELECT
+        t.id,
+        d1.item_text statusName,
+        t2.major_name majorName,
+        t3.system_name systemName,
+        t4.base_type_name baseTypeCodeName,
+        d2.item_text typeName,
+        t1.`code` materialCode,
+        t1.`name`,
+        t5.warehouse_name warehouseName,
+        t.num,
+        t6.realname userName,
+        t1.specifications,
+        t7.`name` manufactorCodeName,
+        t1.unit,
+        t1.price,
+        t.confirm_time confirmTime,
+        t8.realname confirmName,
+        t.status,
+        t.return_time
+        FROM
+        spare_part_return_order  t
+        LEFT JOIN material_base t1 ON t.material_code = t1.CODE
+        LEFT JOIN cs_major t2 ON t1.major_code = t2.major_code
+        LEFT JOIN cs_subsystem t3 ON t1.system_code = t3.system_code
+        LEFT JOIN material_base_type t4 ON t1.base_type_code = t4.base_type_code
+        LEFT JOIN spare_part_stock_info t5 ON t.warehouse_code = t5.warehouse_code
+        LEFT JOIN sys_user t6 ON t.user_id = t6.username
+        LEFT JOIN sys_dict AS dict1 ON dict1.dict_code = 'spare_return_status'
+        LEFT JOIN sys_dict_item AS d1 ON d1.item_value = t.STATUS AND dict1.id = d1.dict_id
+        LEFT JOIN cs_manufactor t7 ON t7.id = t1.manufactor_code
+        LEFT JOIN sys_user t8 ON t.confirm_id = t8.username
+        LEFT JOIN sys_dict AS dict2 ON dict2.dict_code = 'material_type'
+        LEFT JOIN sys_dict_item AS d2 ON d2.item_value = t1.type AND dict2.id = d2.dict_id
+        WHERE
+        t.del_flag =0
+        <if test="order.materialCode!=null and order.materialCode!=''">
+            and t1.`code` like concat('%', #{order.materialCode}, '%')
+        </if>
+        <if test="order.name!=null and order.name!=''">
+            and t1.`name` like concat('%', #{order.name}, '%')
+        </if>
+        <if test="order.warehouseName!=null and order.warehouseName!=''">
+            and t5.warehouse_name like concat('%', #{order.warehouseName}, '%')
+        </if>
+        <if test="order.status!=null and order.status!=''">
+            and t.status = #{order.status}
+        </if>
+        <if test="order.majorCode!=null and order.majorCode!=''">
+            and t2.major_code like concat('%', #{order.majorCode}, '%')
+        </if>
+        <if test="order.systemCode!=null and order.systemCode!=''">
+            and t3.system_code like concat('%', #{order.systemCode}, '%')
+        </if>
+        <if test="order.baseTypeCode!=null and order.baseTypeCode!=''">
+            and t4.base_type_code like concat('%', #{order.baseTypeCode}, '%')
+        </if>
+        order by t.create_time desc
 
+    </select>
 </mapper>

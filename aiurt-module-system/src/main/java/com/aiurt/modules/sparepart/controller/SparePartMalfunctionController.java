@@ -69,6 +69,9 @@ public class SparePartMalfunctionController extends BaseController<SparePartMalf
 		if(ObjectUtils.isNotEmpty(sparePartMalfunction.getMaintainTimeBegin()) && ObjectUtils.isNotEmpty(sparePartMalfunction.getMaintainTimeEnd())){
 			queryWrapper.between(SparePartMalfunction::getMaintainTime,sparePartMalfunction.getMaintainTimeBegin(),sparePartMalfunction.getMaintainTimeEnd());
 		}
+		if(ObjectUtils.isNotEmpty(sparePartMalfunction.getOutOrderId())){
+			queryWrapper.eq(SparePartMalfunction::getOutOrderId,sparePartMalfunction.getOutOrderId());
+		}
 		Page<SparePartMalfunction> page = new Page<SparePartMalfunction>(pageNo, pageSize);
 		IPage<SparePartMalfunction> pageList = sparePartMalfunctionService.page(page, queryWrapper);
 		return Result.OK(pageList);
@@ -166,6 +169,7 @@ public class SparePartMalfunctionController extends BaseController<SparePartMalf
 		mv.addObject(NormalExcelConstants.CLASS, SparePartMalfunction.class);
 		mv.addObject(NormalExcelConstants.PARAMS, new ExportParams("备件出库履历详情", "导出人:"+user.getRealname(), "导出信息"));
 		mv.addObject(NormalExcelConstants.DATA_LIST, list);
+
 		return mv;
     }
 

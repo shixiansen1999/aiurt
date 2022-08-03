@@ -17,7 +17,7 @@ public interface ISparePartOutOrderService extends IService<SparePartOutOrder> {
     /**
      * 查询列表
      * @param page
-     * @param sparePartInOrder
+     * @param sparePartOutOrder
      * @return
      */
     List<SparePartOutOrder> selectList(Page page, SparePartOutOrder sparePartOutOrder);

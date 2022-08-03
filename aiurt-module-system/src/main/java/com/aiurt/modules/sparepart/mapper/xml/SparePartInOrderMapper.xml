@@ -4,6 +4,7 @@
     <select id="readAll" resultType="com.aiurt.modules.sparepart.entity.SparePartInOrder">
         SELECT
             t.id,
+            t.confirm_status,
             d1.item_text confirmStatusName,
             t2.major_name majorName,
             t3.system_name systemName,
@@ -32,7 +33,7 @@
             LEFT JOIN sys_user t6 ON t.confirm_id = t6.username
             LEFT JOIN sys_dict AS dict1 ON dict1.dict_code = 'spare_in_order_status'
             LEFT JOIN sys_dict_item AS d1 ON d1.item_value = t.confirm_status AND dict1.id = d1.dict_id
-            LEFT JOIN cs_manufactor t7 ON t7.`code` = t1.manufactor_code
+            LEFT JOIN cs_manufactor t7 ON t7.id = t1.manufactor_code
             LEFT JOIN sys_user t8 ON t.create_by = t8.username
             LEFT JOIN sys_dict AS dict2 ON dict2.dict_code = 'material_type'
             LEFT JOIN sys_dict_item AS d2 ON d2.item_value = t1.type AND dict2.id = d2.dict_id
@@ -56,7 +57,7 @@
                     #{item}
                 </foreach>)
             </if>
-
+            order by t.create_time desc
     </select>
 
 </mapper>

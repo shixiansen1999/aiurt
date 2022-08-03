@@ -14,6 +14,9 @@ import lombok.experimental.Accessors;
 import org.jeecgframework.poi.excel.annotation.Excel;
 import org.springframework.format.annotation.DateTimeFormat;
 
+import java.util.List;
+import java.util.Map;
+
 /**
  * @Description: 设备
  * @Author: swsc
@@ -163,4 +166,5 @@ public class MaterialBase extends DictEntity {
 	@ApiModelProperty(value = "默认0")
 	@TableField(exist = false)
 	private  Integer  defaultValue = 0;
+
 }

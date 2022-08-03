@@ -59,6 +59,11 @@ public class SparePartApply extends DictEntity implements Serializable {
     @ApiModelProperty(value = "保管仓库编号")
     @Dict(dictTable ="spare_part_stock_info",dicText = "warehouse_name",dicCode = "warehouse_code")
     private String custodialWarehouseCode;
+	/**保管仓库名称*/
+	@Excel(name = "保管仓库名称", width = 15)
+    @ApiModelProperty(value = "保管仓库名称")
+    @TableField(exist = false)
+    private String warehouseName;
 	/**申领人ID*/
 	@Excel(name = "申领人ID", width = 15)
     @ApiModelProperty(value = "申领人ID")

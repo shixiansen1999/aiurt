@@ -20,7 +20,8 @@
             t1.unit,
             t1.price,
             t.confirm_time confirmTime,
-            t8.realname confirmName
+            t8.realname confirmName,
+            t.status
         FROM
         spare_part_out_order t
         LEFT JOIN material_base t1 ON t.material_code = t1.CODE
@@ -31,7 +32,7 @@
         LEFT JOIN sys_user t6 ON t.apply_user_id = t6.username
         LEFT JOIN sys_dict AS dict1 ON dict1.dict_code = 'spare_out_order_status'
         LEFT JOIN sys_dict_item AS d1 ON d1.item_value = t.STATUS AND dict1.id = d1.dict_id
-        LEFT JOIN cs_manufactor t7 ON t7.`code` = t1.manufactor_code
+        LEFT JOIN cs_manufactor t7 ON t7.id = t1.manufactor_code
         LEFT JOIN sys_user t8 ON t.confirm_user_id = t8.username
         LEFT JOIN sys_dict AS dict2 ON dict2.dict_code = 'material_type'
         LEFT JOIN sys_dict_item AS d2 ON d2.item_value = t1.type AND dict2.id = d2.dict_id
@@ -49,7 +50,16 @@
         <if test="out.status!=null and out.status!=''">
             and t.status = #{out.status}
         </if>
-
+        <if test="out.majorCode!=null and out.majorCode!=''">
+            and t2.major_code like concat('%', #{out.majorCode}, '%')
+        </if>
+        <if test="out.systemCode!=null and out.systemCode!=''">
+            and t3.system_code like concat('%', #{out.systemCode}, '%')
+        </if>
+        <if test="out.baseTypeCode!=null and out.baseTypeCode!=''">
+            and t4.base_type_code like concat('%', #{out.baseTypeCode}, '%')
+        </if>
+        order by t.create_time desc
 
     </select>
 </mapper>

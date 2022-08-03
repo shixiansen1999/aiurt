@@ -10,6 +10,7 @@ import java.net.URLDecoder;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import cn.hutool.core.util.ObjectUtil;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.modules.sparepart.entity.SparePartApply;
 import com.aiurt.modules.sparepart.entity.SparePartInOrder;
@@ -25,6 +26,8 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.annotations.ApiParam;
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.query.QueryGenerator;
@@ -82,10 +85,11 @@ public class SparePartApplyController extends BaseController<SparePartApply, ISp
 													   @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
 													   @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
 													   HttpServletRequest req) {
-		QueryWrapper<SparePartApply> queryWrapper = QueryGenerator.initQueryWrapper(sparePartApply, req.getParameterMap());
+		//QueryWrapper<SparePartApply> queryWrapper = QueryGenerator.initQueryWrapper(sparePartApply, req.getParameterMap());
 		Page<SparePartApply> page = new Page<SparePartApply>(pageNo, pageSize);
-		IPage<SparePartApply> pageList = sparePartApplyService.page(page, queryWrapper.lambda().eq(SparePartApply::getDelFlag, CommonConstant.DEL_FLAG_0));
-		return Result.OK(pageList);
+		List<SparePartApply> list = sparePartApplyService.selectList(page, sparePartApply);
+		page.setRecords(list);
+		return Result.OK(page);
 	}
 
 

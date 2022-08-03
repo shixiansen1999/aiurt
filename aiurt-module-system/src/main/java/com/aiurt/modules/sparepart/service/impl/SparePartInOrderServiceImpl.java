@@ -22,6 +22,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -57,9 +58,11 @@ public class SparePartInOrderServiceImpl extends ServiceImpl<SparePartInOrderMap
         LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         SparePartInOrder partInOrder = getById(sparePartInOrder.getId());
         // 1.更新当前表状态为已确认
+        partInOrder.setConfirmId(user.getUsername());
+        partInOrder.setConfirmTime(new Date());
         sparePartInOrderMapper.updateById(sparePartInOrder);
         // 2.回填申领单
-        SparePartApplyMaterial material = sparePartApplyMaterialMapper.selectOne(new LambdaQueryWrapper<SparePartApplyMaterial>().eq(SparePartApplyMaterial::getOrderCode,sparePartInOrder.getOutOrderCode()).eq(SparePartApplyMaterial::getMaterialCode,sparePartInOrder.getMaterialCode()));
+        SparePartApplyMaterial material = sparePartApplyMaterialMapper.selectOne(new LambdaQueryWrapper<SparePartApplyMaterial>().eq(SparePartApplyMaterial::getMaterialCode,sparePartInOrder.getMaterialCode()).eq(SparePartApplyMaterial::getApplyCode,sparePartInOrder.getApplyCode()));
         material.setActualNum(sparePartInOrder.getNum());
         sparePartApplyMaterialMapper.updateById(material);
         // 3.更新备件库存数据（原库存数+入库的数量）

@@ -86,16 +86,28 @@ public class SparePartStock implements Serializable {
     @ApiModelProperty(value = "物资名称")
     @TableField(exist = false)
     private String name;
+    /**所属专业code*/
+    @ApiModelProperty(value = "专业名称code")
+    @TableField(exist = false)
+    private  String  majorCode;
     /**所属专业*/
     @Excel(name = "所属专业", width = 15)
     @ApiModelProperty(value = "专业名称")
     @TableField(exist = false)
     private  String  majorName;
+    /**子系统code*/
+    @ApiModelProperty(value = "子系统code")
+    @TableField(exist = false)
+    private  String  systemCode;
     /**子系统名称*/
     @Excel(name = "所属子系统", width = 15)
     @ApiModelProperty(value = "子系统名称")
     @TableField(exist = false)
     private  String  systemName;
+    /**物资分类code*/
+    @ApiModelProperty(value = "物资分类code")
+    @TableField(exist = false)
+    private  String  baseTypeCode;
     /**物资分类*/
     @Excel(name = "物资分类", width = 15)
     @ApiModelProperty(value = "物资分类名称")

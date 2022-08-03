@@ -61,7 +61,10 @@ public class SparePartInOrder implements Serializable {
 	@ApiModelProperty(value = "子系统名称")
 	@TableField(exist = false)
 	private  String  systemName;
-
+	/**申领编号*/
+	@Excel(name = "申领编号", width = 15)
+	@ApiModelProperty(value = "申领编号")
+	private String applyCode;
 	/**物资分类*/
 	@Excel(name = "物资分类", width = 15)
 	@ApiModelProperty(value = "物资分类名称")

@@ -23,6 +23,7 @@ import com.aiurt.modules.stock.mapper.StockOutOrderLevel2Mapper;
 import com.aiurt.modules.stock.mapper.StockOutboundMaterialsMapper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
@@ -54,6 +55,16 @@ public class SparePartApplyServiceImpl extends ServiceImpl<SparePartApplyMapper,
     private ISparePartStockInfoService sparePartStockInfoService;
     @Autowired
     private StockOutOrderLevel2Mapper stockOutOrderLevel2Mapper;
+    /**
+     * 分页列表查询
+     * @param page
+     * @param sparePartApply
+     * @return
+     */
+    @Override
+    public List<SparePartApply> selectList(Page page, SparePartApply sparePartApply){
+        return sparePartApplyMapper.readAll(page,sparePartApply);
+    }
     /**
      * 添加
      *

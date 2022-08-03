@@ -3,6 +3,7 @@ package com.aiurt.modules.sparepart.service;
 import com.aiurt.modules.sparepart.entity.SparePartApply;
 import com.aiurt.modules.sparepart.entity.dto.StockApplyExcel;
 import com.aiurt.modules.stock.entity.StockSubmitPlan;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 import org.jeecg.common.api.vo.Result;
 
@@ -52,4 +53,12 @@ public interface ISparePartApplyService extends IService<SparePartApply> {
      * @param ids
      */
     List<StockApplyExcel> exportXls(List<String> ids);
+
+    /**
+     * 分页列表查询
+     * @param page
+     * @param sparePartApply
+     * @return
+     */
+    List<SparePartApply> selectList(Page page, SparePartApply sparePartApply);
 }

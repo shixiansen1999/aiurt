@@ -28,7 +28,7 @@
         LEFT JOIN sys_depart t6 ON t6.id = t.org_id
         LEFT JOIN sys_dict AS dict1 ON dict1.dict_code = 'material_type'
         LEFT JOIN sys_dict_item AS d1 ON d1.item_value = t2.type  AND dict1.id = d1.dict_id
-        LEFT JOIN cs_manufactor t7 ON t7.`code` = t2.manufactor_code
+        LEFT JOIN cs_manufactor t7 ON t7.id = t2.manufactor_code
         WHERE
         t.del_flag =0
         <if test="stock.materialCode!=null and stock.materialCode!=''">
@@ -40,12 +40,15 @@
         <if test="stock.type!=null and stock.type!=''">
             and t2.type = #{stock.type}
         </if>
-        <if test="stock.baseTypeCodeName != null and condition.baseTypeCodeName != ''">
-            and ( t3.major_name like concat('%', #{condition.baseTypeCodeName}, '%')
-            or t4.system_name like concat('%', #{condition.baseTypeCodeName}, '%')
-            or CONCAT(',',REPLACE(t2.base_type_code,'/',','),',') REGEXP CONCAT(',(',replace((select GROUP_CONCAT(base_type_code)
-            from (select base_type_code from material_base_type where base_type_name like concat('%', #{condition.baseTypeCodeName}, '%')) t),',','|'),'),')
-            )
+        <if test="stock.majorCode!=null and stock.majorCode!=''">
+            and t3.major_code like concat('%', #{stock.majorCode}, '%')
         </if>
+        <if test="stock.systemCode!=null and stock.systemCode!=''">
+            and t4.system_code like concat('%', #{stock.systemCode}, '%')
+        </if>
+        <if test="stock.baseTypeCode!=null and stock.baseTypeCode!=''">
+            and t5.base_type_code like concat('%', #{stock.baseTypeCode}, '%')
+        </if>
+        order by t.create_time desc
     </select>
 </mapper>

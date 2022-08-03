@@ -39,69 +39,63 @@ public class SparePartMalfunction implements Serializable {
     @ApiModelProperty(value = "主键ID")
     private String id;
 	/**出库记录表ID*/
-	@Excel(name = "出库记录表ID", width = 15)
     @ApiModelProperty(value = "出库记录表ID")
     private String outOrderId;
 	/**维修记录单号*/
-	@Excel(name = "维修记录单号", width = 15)
+	@Excel(name = "维修记录单号", width = 15,mergeVertical = true)
     @ApiModelProperty(value = "维修记录单号")
     private String maintenanceRecord;
 	/**故障设备编号*/
-	@Excel(name = "故障设备编号", width = 15)
     @ApiModelProperty(value = "故障设备编号")
     @Dict(dictTable ="device",dicText = "name",dicCode = "code")
     private String malfunctionDeviceCode;
     /**故障设备名称*/
-    @Excel(name = "故障设备名称", width = 15)
+    @Excel(name = "故障设备", width = 15,mergeVertical = true)
     @ApiModelProperty(value = "故障设备名称")
     @TableField(exist = false)
     private String deviceName;
 	/**故障类别：1设备故障、2外界妨害、3其他*/
-	@Excel(name = "故障类别：1设备故障、2外界妨害、3其他", width = 15)
     @ApiModelProperty(value = "故障类别：1设备故障、2外界妨害、3其他")
     @Dict(dicCode = "malfunction_type")
     private Integer malfunctionType;
     /**故障类别名称*/
-    @Excel(name = "故障类别名称", width = 15)
+    @Excel(name = "故障类别", width = 15,mergeVertical = true)
     @ApiModelProperty(value = "故障类别名称")
     @TableField(exist = false)
     private String malfunctionTypeName;
 	/**详细描述*/
-	@Excel(name = "详细描述", width = 15)
     @ApiModelProperty(value = "详细描述")
     private String description;
 	/**替换数量*/
-	@Excel(name = "替换数量", width = 15)
+	@Excel(name = "替换数量", width = 15,mergeVertical = true)
     @ApiModelProperty(value = "替换数量")
     private Integer replaceNumber;
 	/**维修机构ID*/
-	@Excel(name = "维修机构ID", width = 15)
     @ApiModelProperty(value = "维修机构ID")
     @Dict(dictTable ="sys_depart",dicText = "depart_name",dicCode = "id")
     private String orgId;
     /**维修机构名称*/
-    @Excel(name = "维修机构名称", width = 15)
+    @Excel(name = "维修机构", width = 15,mergeVertical = true)
     @ApiModelProperty(value = "维修机构名称")
     @TableField(exist = false)
     private String orgName;
 	/**维修用戶ID*/
-	@Excel(name = "维修用戶ID", width = 15)
     @ApiModelProperty(value = "维修用戶ID")
     @Dict(dictTable ="sys_user",dicText = "realname",dicCode = "username")
     private String maintainUserId;
-    /**维修用戶名称*/
-    @Excel(name = "维修用戶名称", width = 15)
-    @ApiModelProperty(value = "维修用戶名称")
-    @TableField(exist = false)
-    private String userName;
-	/**维修时间*/
-	@Excel(name = "维修时间", width = 15, format = "yyyy-MM-dd")
-	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
+    /**维修时间*/
+    @Excel(name = "维修时间", width = 15, format = "yyyy-MM-dd",mergeVertical = true)
+    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
     @DateTimeFormat(pattern="yyyy-MM-dd")
     @ApiModelProperty(value = "维修时间")
     private Date maintainTime;
+    /**维修用戶名称*/
+    @Excel(name = "维修人", width = 15,mergeVertical = true)
+    @ApiModelProperty(value = "维修用戶名称")
+    @TableField(exist = false)
+    private String userName;
+
 	/**删除状态： 0未删除 1已删除*/
-	@Excel(name = "删除状态： 0未删除 1已删除", width = 15)
     @ApiModelProperty(value = "删除状态： 0未删除 1已删除")
     private Integer delFlag;
 	/**创建人*/

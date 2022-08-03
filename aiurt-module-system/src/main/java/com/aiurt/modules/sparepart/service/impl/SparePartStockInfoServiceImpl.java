@@ -53,7 +53,6 @@ public class SparePartStockInfoServiceImpl extends ServiceImpl<SparePartStockInf
         }
         //判断一个仓库仅能所属一个机构
         LambdaQueryWrapper<SparePartStockInfo> deptWrapper = new LambdaQueryWrapper<>();
-        deptWrapper.eq(SparePartStockInfo::getWarehouseCode, sparePartStockInfo.getWarehouseCode());
         deptWrapper.eq(SparePartStockInfo::getOrganizationId, sparePartStockInfo.getOrganizationId());
         deptWrapper.eq(SparePartStockInfo::getDelFlag, CommonConstant.DEL_FLAG_0);
         List<SparePartStockInfo> deptList = sparePartStockInfoMapper.selectList(deptWrapper);
@@ -91,7 +90,6 @@ public class SparePartStockInfoServiceImpl extends ServiceImpl<SparePartStockInf
         }
         //判断一个仓库仅能所属一个机构
         LambdaQueryWrapper<SparePartStockInfo> deptWrapper = new LambdaQueryWrapper<>();
-        deptWrapper.eq(SparePartStockInfo::getWarehouseCode, sparePartStockInfo.getWarehouseCode());
         deptWrapper.eq(SparePartStockInfo::getOrganizationId, sparePartStockInfo.getOrganizationId());
         deptWrapper.eq(SparePartStockInfo::getDelFlag, CommonConstant.DEL_FLAG_0);
         List<SparePartStockInfo> deptList = sparePartStockInfoMapper.selectList(deptWrapper);
