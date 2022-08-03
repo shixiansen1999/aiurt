@@ -7,6 +7,8 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import org.flowable.bpmn.model.BpmnModel;
 import org.flowable.engine.history.HistoricActivityInstance;
 import org.flowable.engine.history.HistoricProcessInstance;
+import org.flowable.bpmn.model.UserTask;
+import org.flowable.engine.delegate.TaskListener;
 import org.flowable.engine.repository.ProcessDefinition;
 import org.flowable.engine.runtime.ProcessInstance;
 import org.flowable.task.api.Task;
@@ -100,6 +102,7 @@ public interface FlowApiService {
     List<ProcessDefinition> getProcessDefinitionList(Set<String> processDefinitionIdSet);
 
     /**
+<<<<<<< Updated upstream
      * 获取指定流程定义的流程图
      * @param processDefinitionId 流程定义Id
      * @return
@@ -163,4 +166,12 @@ public interface FlowApiService {
      * @return
      */
     IPage<FlowHisTaskDTO> listHistoricTask(String processDefinitionName, String beginDate, String endDate, Integer pageNo, Integer pageSize);
+
+    /**
+     * 给用户节点添加监听器
+     * @param userTask
+     * @param listenerClazz
+     */
+    void addTaskCreateListener(UserTask userTask, Class<? extends TaskListener> listenerClazz);
+
 }

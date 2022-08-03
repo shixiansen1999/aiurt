@@ -1,16 +1,29 @@
 package com.aiurt.modules.modeler.service.impl;
 
+import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.lang.Assert;
+import cn.hutool.core.map.MapUtil;
+import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.exception.AiurtErrorEnum;
+import com.aiurt.modules.constants.FlowConstant;
 import com.aiurt.modules.editor.language.json.converter.CustomBpmnJsonConverter;
+import com.aiurt.modules.flow.service.FlowApiService;
 import com.aiurt.modules.manage.entity.ActCustomVersion;
 import com.aiurt.modules.manage.service.IActCustomVersionService;
 import com.aiurt.modules.modeler.dto.ModelInfoVo;
+import com.aiurt.modules.modeler.dto.TaskInfoVo;
 import com.aiurt.modules.modeler.entity.ActCustomModelInfo;
+import com.aiurt.modules.modeler.entity.ActCustomTaskExt;
 import com.aiurt.modules.modeler.enums.ModelFormStatusEnum;
 import com.aiurt.modules.modeler.service.IActCustomModelInfoService;
+import com.aiurt.modules.modeler.service.IActCustomTaskExtService;
 import com.aiurt.modules.modeler.service.IFlowableBpmnService;
 import com.aiurt.modules.modeler.service.IFlowableModelService;
+import com.aiurt.modules.utils.BaseFlowIdentityExtHelper;
+import com.aiurt.modules.utils.FlowCustomExtFactory;
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -18,7 +31,8 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.flowable.bpmn.converter.BpmnXMLConverter;
-import org.flowable.bpmn.model.BpmnModel;
+import org.flowable.bpmn.model.*;
+import org.flowable.bpmn.model.Process;
 import org.flowable.editor.language.json.converter.BaseBpmnJsonConverter;
 import org.flowable.editor.language.json.converter.BpmnJsonConverter;
 import org.flowable.editor.language.json.converter.util.CollectionUtils;
@@ -43,9 +57,8 @@ import javax.xml.stream.XMLStreamReader;
 import java.io.ByteArrayInputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
-import java.util.Date;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @program: flow
@@ -78,17 +91,24 @@ public class FlowableBpmnServiceImpl implements IFlowableBpmnService {
     @Autowired
     protected CustomBpmnJsonConverter bpmnJsonConverter;
 
-
     @Autowired
     @Lazy
     private IActCustomModelInfoService modelInfoService;
-
 
     @Autowired
     private RepositoryService repositoryService;
 
     @Autowired
     private IActCustomVersionService versionService;
+
+    @Autowired
+    private FlowCustomExtFactory flowCustomExtFactory;
+
+    @Autowired
+    private FlowApiService flowApiService;
+
+    @Autowired
+    private IActCustomTaskExtService taskExtService;
 
     @Override
     public Model createInitBpmn(ActCustomModelInfo modelInfo, LoginUser user) {
@@ -196,20 +216,57 @@ public class FlowableBpmnServiceImpl implements IFlowableBpmnService {
     @Transactional(rollbackFor = Exception.class)
     public void publishBpmn(String modelId) {
 
-        Model model = modelService.getModel(modelId);
-        if (Objects.isNull(model)) {
-            throw new AiurtBootException(AiurtErrorEnum.FLOW_MODEL_NOT_FOUND.getCode(), AiurtErrorEnum.FLOW_MODEL_NOT_FOUND.getMessage());
-        }
-        // 转为bpmnModel 内存模型; 通过model中的editjson转为bpmnl
-        BpmnModel bpmnModel = modelService.getBpmnModel(model);
-        // todo 校验
-
         LambdaQueryWrapper<ActCustomModelInfo> modelInfoLambdaQueryWrapper = new LambdaQueryWrapper<>();
         modelInfoLambdaQueryWrapper.eq(ActCustomModelInfo::getModelId, modelId);
         ActCustomModelInfo modelInfo = modelInfoService.getOne(modelInfoLambdaQueryWrapper);
 
         if (Objects.isNull(modelInfo)) {
             throw new AiurtBootException(AiurtErrorEnum.FLOW_MODEL_NOT_FOUND.getCode(), AiurtErrorEnum.FLOW_MODEL_NOT_FOUND.getMessage());
+        }
+
+        Model model = modelService.getModel(modelId);
+        if (Objects.isNull(model)) {
+            throw new AiurtBootException(AiurtErrorEnum.FLOW_MODEL_NOT_FOUND.getCode(), AiurtErrorEnum.FLOW_MODEL_NOT_FOUND.getMessage());
+        }
+
+        // 转为bpmnModel 内存模型; 通过model中的editjson转为bpmnl， 流程标准模型
+        BpmnModel bpmnModel = modelService.getBpmnModel(model);
+        // todo 校验
+
+        // 增加监听器
+
+        // 选人属性
+        Collection<FlowElement> elementList = bpmnModel.getMainProcess().getFlowElements();
+
+        // list->map
+        Map<String, FlowElement> elementMap =
+                elementList.stream().filter(e -> e instanceof UserTask).collect(Collectors.toMap(FlowElement::getId, c -> c));
+        // todo
+        List<ActCustomTaskExt> actCustomTaskExtList = buildTaskExtList(bpmnModel);
+        if (CollUtil.isNotEmpty(actCustomTaskExtList)) {
+            BaseFlowIdentityExtHelper flowIdentityExtHelper = flowCustomExtFactory.getFlowIdentityExtHelper();
+            for (ActCustomTaskExt t : actCustomTaskExtList) {
+                UserTask userTask = (UserTask) elementMap.get(t.getTaskId());
+                if (StrUtil.equals(t.getGroupType(), FlowConstant.GROUP_TYPE_UP_DEPT_POST_LEADER)) {
+                    userTask.setCandidateGroups(
+                            CollUtil.newArrayList("${" + FlowConstant.GROUP_TYPE_UP_DEPT_POST_LEADER_VAR + "}"));
+                    Assert.notNull(flowIdentityExtHelper);
+                    flowApiService.addTaskCreateListener(userTask, flowIdentityExtHelper.getUpDeptPostLeaderListener());
+                } else if (StrUtil.equals(t.getGroupType(), FlowConstant.GROUP_TYPE_DEPT_POST_LEADER)) {
+                    userTask.setCandidateGroups(
+                            CollUtil.newArrayList("${" + FlowConstant.GROUP_TYPE_DEPT_POST_LEADER_VAR + "}"));
+                    Assert.notNull(flowIdentityExtHelper);
+                    flowApiService.addTaskCreateListener(userTask, flowIdentityExtHelper.getDeptPostLeaderListener());
+                } else if (StrUtil.equals(t.getGroupType(), FlowConstant.GROUP_TYPE_POST)) {
+                    // todo 没有岗位暂时不处理
+                    /*Assert.notNull(t.getDeptPostListJson());
+                    List<FlowTaskPostCandidateGroup> groupDataList =
+                            JSON.parseArray(t.getDeptPostListJson(), FlowTaskPostCandidateGroup.class);
+                    List<String> candidateGroupList =
+                            FlowTaskPostCandidateGroup.buildCandidateGroupList(groupDataList);
+                    userTask.setCandidateGroups(candidateGroupList);*/
+                }
+            }
         }
 
         // 部署流程
@@ -221,11 +278,13 @@ public class FlowableBpmnServiceImpl implements IFlowableBpmnService {
                 .addBpmnModel(model.getKey() + BPMN_EXTENSION, bpmnModel)
                 .deploy();
 
+        // 查询流程定义
+        ProcessDefinition definition = repositoryService.createProcessDefinitionQuery().deploymentId(deploy.getId()).singleResult();
         // 已发布
         modelInfo.setStatus(ModelFormStatusEnum.YFB.getStatus());
         modelInfoService.updateById(modelInfo);
 
-        //  todo保存其他的属性
+        //  todo 保存其他的属性
 
         // 增加一个版本, 流程定义
         List<ProcessDefinition> definitionList = repositoryService.createProcessDefinitionQuery().processDefinitionKey(model.getKey())
@@ -247,10 +306,132 @@ public class FlowableBpmnServiceImpl implements IFlowableBpmnService {
                     .build();
             versionService.save(actCustomVersion);
         }
+
+        if (CollUtil.isNotEmpty(actCustomTaskExtList)) {
+            actCustomTaskExtList.forEach(t -> t.setProcessDefinitionId(definition.getId()));
+            taskExtService.saveBatch(actCustomTaskExtList);
+        }
     }
 
+    /**
+     * 根据流程定义id获取标准流程模型
+     * @param processDefinitionId
+     * @return
+     */
     @Override
     public BpmnModel getBpmnModelByDefinitionId(String processDefinitionId) {
         return repositoryService.getBpmnModel(processDefinitionId);
     }
+
+    private List<ActCustomTaskExt> buildTaskExtList(BpmnModel bpmnModel) {
+        List<ActCustomTaskExt> flowTaskExtList = new LinkedList<>();
+        List<Process> processList = bpmnModel.getProcesses();
+        for (Process process : processList) {
+            for (FlowElement element : process.getFlowElements()) {
+                if (element instanceof UserTask) {
+                    ActCustomTaskExt flowTaskExt = this.buildTaskExt((UserTask) element);
+                    flowTaskExtList.add(flowTaskExt);
+                }
+            }
+        }
+        return flowTaskExtList;
+    }
+
+    /**
+     * 构建属性
+     * @param userTask
+     * @return
+     */
+    private ActCustomTaskExt buildTaskExt(UserTask userTask) {
+        ActCustomTaskExt flowTaskExt = new ActCustomTaskExt();
+        flowTaskExt.setTaskId(userTask.getId());
+        String formKey = userTask.getFormKey();
+        //  todo 表单属性
+        if (StrUtil.isNotBlank(formKey)) {
+            TaskInfoVo taskInfoVo = JSON.parseObject(formKey, TaskInfoVo.class);
+            flowTaskExt.setGroupType(taskInfoVo.getGroupType());
+        }
+        Map<String, List<ExtensionElement>> extensionMap = userTask.getExtensionElements();
+        if (MapUtil.isNotEmpty(extensionMap)) {
+            List<JSONObject> operationList = this.buildOperationListExtensionElement(extensionMap);
+            if (CollUtil.isNotEmpty(operationList)) {
+                flowTaskExt.setOperationListJson(JSON.toJSONString(operationList));
+            }
+            List<JSONObject> variableList = this.buildVariableListExtensionElement(extensionMap);
+            if (CollUtil.isNotEmpty(variableList)) {
+                flowTaskExt.setVariableListJson(JSON.toJSONString(variableList));
+            }
+            // todo 多实例
+            /*JSONObject assigneeListObject = this.buildAssigneeListExtensionElement(extensionMap);
+            if (assigneeListObject != null) {
+                flowTaskExt.setAssigneeListJson(JSON.toJSONString(assigneeListObject));
+            }*/
+            List<JSONObject> deptPostList = this.buildDeptPostListExtensionElement(extensionMap);
+            if (deptPostList != null) {
+                flowTaskExt.setDeptPostListJson(JSON.toJSONString(deptPostList));
+            }
+            // todo 抄送
+           /* List<JSONObject> copyList = this.buildCopyListExtensionElement(extensionMap);
+            if (copyList != null) {
+                flowTaskExt.setCopyListJson(JSON.toJSONString(copyList));
+            }*/
+            JSONObject candidateGroupObject = this.buildUserCandidateGroupsExtensionElement(extensionMap);
+            if (candidateGroupObject != null) {
+                String type = candidateGroupObject.getString("type");
+                String value = candidateGroupObject.getString("value");
+                switch (type) {
+                    case "DEPT":
+                        flowTaskExt.setDeptIds(value);
+                        break;
+                    case "ROLE":
+                        flowTaskExt.setRoleIds(value);
+                        break;
+                    case "USERS":
+                        flowTaskExt.setCandidateUsernames(value);
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
+        return flowTaskExt;
+    }
+
+
+    /**
+     * 构建表单按钮属性
+     * @param extensionMap
+     * @return
+     */
+    private List<JSONObject> buildOperationListExtensionElement(Map<String, List<ExtensionElement>> extensionMap) {
+        return null;
+    }
+
+    /**
+     * 构建变量
+     * @param extensionMap
+     * @return
+     */
+    private List<JSONObject> buildVariableListExtensionElement(Map<String, List<ExtensionElement>> extensionMap) {
+        return null;
+    }
+
+    /**
+     *  岗位
+     * @param extensionMap
+     * @return
+     */
+    private List<JSONObject> buildDeptPostListExtensionElement(Map<String, List<ExtensionElement>> extensionMap) {
+        return null;
+    }
+
+    /**
+     *
+     * @param extensionMap
+     * @return
+     */
+    private JSONObject buildUserCandidateGroupsExtensionElement(Map<String, List<ExtensionElement>> extensionMap) {
+        return null;
+    }
+
 }

@@ -83,7 +83,7 @@ public class CustomUserTaskJsonConverter  extends UserTaskJsonConverter {
             Map<String, List<ExtensionElement>> extensionElements = baseElement.getExtensionElements();
             //  自定义属性:操作按钮
             List<ExtensionElement> formOperationElements =
-                    this.getMyExtensionElementList(extensionElements, OPERATION_LIST, FORM_OPERATION);
+                    ExtensionPropertiesUtil.getMyExtensionElementList(extensionElements, OPERATION_LIST, FORM_OPERATION);
             if (CollUtil.isNotEmpty(formOperationElements)) {
                 ObjectNode node = super.objectMapper.createObjectNode();
                 ArrayNode arrayNode = super.objectMapper.createArrayNode();
@@ -101,7 +101,7 @@ public class CustomUserTaskJsonConverter  extends UserTaskJsonConverter {
             }
 
             // 流程变量
-            List<ExtensionElement> variableElements = this.getMyExtensionElementList(extensionElements, "variableList", "formVariable");
+            List<ExtensionElement> variableElements = ExtensionPropertiesUtil.getMyExtensionElementList(extensionElements, "variableList", "formVariable");
             if (CollUtil.isNotEmpty(variableElements)) {
                 ObjectNode node = super.objectMapper.createObjectNode();
                 ArrayNode arrayNode = super.objectMapper.createArrayNode();
@@ -116,7 +116,7 @@ public class CustomUserTaskJsonConverter  extends UserTaskJsonConverter {
 
             // 流程选人, 上级部门以及
             List<ExtensionElement> deptPostElements =
-                    this.getMyExtensionElementList(extensionElements, "deptPostList", "deptPost");
+                    ExtensionPropertiesUtil.getMyExtensionElementList(extensionElements, "deptPostList", "deptPost");
             if (CollUtil.isNotEmpty(deptPostElements)) {
                 ObjectNode node = super.objectMapper.createObjectNode();
                 ArrayNode arrayNode = super.objectMapper.createArrayNode();
@@ -193,9 +193,39 @@ public class CustomUserTaskJsonConverter  extends UserTaskJsonConverter {
                 ExtensionElement ee = buildElement(deptPostList, json, "deptPostList", "deptPost");
                 userTask.addExtensionElement(ee);
             }
+
+            // 候选用户
+            JsonNode userCandidateGroupNode = JsonConverterUtil.getProperty("userCandidateGroups", elementNode);
+            if (Objects.nonNull(userCandidateGroupNode)) {
+                String json = objectMapper.writeValueAsString(userCandidateGroupNode);
+
+                JSONObject jsonObject = JSONObject.parseObject(json);
+
+                ExtensionElement ee = new ExtensionElement();
+                ee.setName("userCandidateGroups");
+                ee.setNamespacePrefix(BpmnXMLConstants.FLOWABLE_EXTENSIONS_PREFIX);
+                ee.setNamespace(BpmnXMLConstants.FLOWABLE_EXTENSIONS_NAMESPACE);
+                Map<String, List<ExtensionAttribute>> attributes = new LinkedHashMap<>();
+                Set<String> keySet = jsonObject.keySet();
+                keySet.stream().forEach(key-> {
+                    ExtensionAttribute attribute = new ExtensionAttribute();
+                    attribute.setName(key);
+                    attribute.setValue(jsonObject.getString(key));
+                    ee.addAttribute(attribute);
+                });
+                userTask.addExtensionElement(ee);
+            }
         }
     }
 
+    /**
+     *  构建xml
+     * @param expansionNode nodejson
+     * @param json jsonString
+     * @param listName 一级名称
+     * @param childListName 二级
+     * @return
+     */
     @NotNull
     private ExtensionElement buildElement(JsonNode expansionNode, String json,String listName, String childListName) {
         ExtensionElement ee = new ExtensionElement();
@@ -233,21 +263,5 @@ public class CustomUserTaskJsonConverter  extends UserTaskJsonConverter {
     }
 
 
-    private List<ExtensionElement> getMyExtensionElementList(
-            Map<String, List<ExtensionElement>> extensionMap, String rootName, String childName) {
-        List<ExtensionElement> elementList = extensionMap.get(rootName);
-        if (CollUtil.isEmpty(elementList)) {
-            return null;
-        }
-        ExtensionElement ee = elementList.get(0);
-        Map<String, List<ExtensionElement>> childExtensionMap = ee.getChildElements();
-        if (MapUtil.isEmpty(childExtensionMap)) {
-            return null;
-        }
-        List<ExtensionElement> childrenElements = childExtensionMap.get(childName);
-        if (CollUtil.isEmpty(childrenElements)) {
-            return null;
-        }
-        return childrenElements;
-    }
+
 }

@@ -3,6 +3,7 @@ package com.aiurt.modules.flow.service.impl;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.lang.Assert;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.exception.AiurtBootException;
@@ -28,6 +29,7 @@ import org.flowable.engine.HistoryService;
 import org.flowable.engine.RepositoryService;
 import org.flowable.engine.RuntimeService;
 import org.flowable.engine.TaskService;
+import org.flowable.engine.delegate.TaskListener;
 import org.flowable.engine.history.HistoricActivityInstance;
 import org.flowable.engine.history.HistoricProcessInstance;
 import org.flowable.engine.repository.ProcessDefinition;
@@ -720,5 +722,20 @@ public class FlowApiServiceImpl implements FlowApiService {
     public List<HistoricActivityInstance> getHistoricUnfinishedInstanceList(String processInstanceId) {
         return historyService.createHistoricActivityInstanceQuery()
                 .processInstanceId(processInstanceId).unfinished().list();
+    }
+
+    /**
+     * 创建用户任务监听器
+     * @param userTask
+     * @param listenerClazz
+     */
+    @Override
+    public void addTaskCreateListener(UserTask userTask, Class<? extends TaskListener> listenerClazz) {
+        Assert.notNull(listenerClazz);
+        FlowableListener flowableListener = new FlowableListener();
+        flowableListener.setEvent("create");
+        flowableListener.setImplementationType("class");
+        flowableListener.setImplementation(listenerClazz.getName());
+        userTask.getTaskListeners().add(flowableListener);
     }
 }
