@@ -47,6 +47,7 @@ import org.jeecgframework.poi.excel.entity.ImportParams;
 import org.jeecgframework.poi.excel.view.JeecgEntityExcelView;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
@@ -54,7 +55,9 @@ import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.BufferedOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -542,6 +545,7 @@ public class SysUserController {
      * @param request
      * @param sysUser
      */
+    @ApiOperation(value="用户管理-导出excel", notes="用户管理-导出excel")
     @RequestMapping(value = "/exportXls")
     public ModelAndView exportXls(SysUser sysUser,HttpServletRequest request) {
         // Step.1 组装查询条件
@@ -1570,5 +1574,20 @@ public class SysUserController {
         }
         IPage<SysUser> pageList = sysUserService.page(page, queryWrapper);
         return Result.OK(pageList);
+    }
+
+    @AutoLog(value = "下载用户导入模板")
+    @ApiOperation(value = "下载用户导入模板", notes = "下载用户导入模板")
+    @RequestMapping(value = "/downloadExcel", method = RequestMethod.GET)
+    public void downloadExcel(HttpServletResponse response, HttpServletRequest request) throws IOException {
+        ClassPathResource classPathResource = new ClassPathResource("templates/sysUser.xlsx");
+        InputStream bis = classPathResource.getInputStream();
+        BufferedOutputStream out = new BufferedOutputStream(response.getOutputStream());
+        int len = 0;
+        while ((len = bis.read()) != -1) {
+            out.write(len);
+            out.flush();
+        }
+        out.close();
     }
 }
