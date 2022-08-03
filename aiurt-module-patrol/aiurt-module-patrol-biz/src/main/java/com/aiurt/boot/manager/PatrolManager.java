@@ -34,7 +34,7 @@ public class PatrolManager
     private PatrolManagerMapper patrolManagerMapper;
     public String spliceUsername(String code) {
         List<String> nameList = patrolManagerMapper.spliceUsername(code);
-        return CollUtil.isNotEmpty(nameList) ? StrUtil.join(",", nameList) : "-";
+        return CollUtil.isNotEmpty(nameList) ? StrUtil.join("；", nameList) : "-";
     }
     /**
      * 翻译组织机构信息
@@ -47,7 +47,7 @@ public class PatrolManager
             return "";
         }
         List<String> nameList = patrolManagerMapper.translateOrg(codeList);
-        return CollUtil.isNotEmpty(nameList) ? StrUtil.join(",", nameList) : "";
+        return CollUtil.isNotEmpty(nameList) ? StrUtil.join("；", nameList) : "";
     }
 
     /**
@@ -84,7 +84,7 @@ public class PatrolManager
                 }
             }
             if (ObjectUtil.isNotEmpty(builder)) {
-                builder.append(",");
+                builder.append("；");
             }
         }
         if (ObjectUtil.isNotEmpty(builder)) {

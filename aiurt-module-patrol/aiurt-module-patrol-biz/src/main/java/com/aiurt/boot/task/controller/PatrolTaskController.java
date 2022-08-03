@@ -1,16 +1,20 @@
 package com.aiurt.boot.task.controller;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.aiurt.boot.constant.PatrolConstant;
 import com.aiurt.boot.task.dto.*;
 import com.aiurt.boot.task.entity.PatrolTask;
+import com.aiurt.boot.task.entity.PatrolTaskDevice;
 import com.aiurt.boot.task.param.PatrolTaskDeviceParam;
 import com.aiurt.boot.task.param.PatrolTaskParam;
 import com.aiurt.boot.task.service.IPatrolTaskDeviceService;
 import com.aiurt.boot.task.service.IPatrolTaskService;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.constant.enums.ModuleType;
+import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.system.base.controller.BaseController;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -25,6 +29,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * @Description: patrol_task
@@ -400,17 +405,21 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
     }
 
     /**
-     * app巡检任务提交-统计工单数量
+     * app巡检任务提交-校验是否全部提交工单
      *
-     * @param patrolTaskSubmitDTO
+     * @param patrolTaskDTO
      * @param req
      * @return
      */
-    @AutoLog(value = "巡检任务表-app巡检任务提交-统计工单数量")
-    @ApiOperation(value = "巡检任务表-app巡检任务提交-统计工单数量", notes = "巡检任务表-app巡检任务提交-统计工单数量")
+    @AutoLog(value = "app巡检任务提交-校验是否全部提交工单")
+    @ApiOperation(value = "app巡检任务提交-校验是否全部提交工单", notes = "app巡检任务提交-校验是否全部提交工单")
     @PostMapping(value = "/submitTaskCount")
-    public Result<?> submitTaskCount(PatrolTaskSubmitDTO patrolTaskSubmitDTO, HttpServletRequest req) {
-        PatrolTaskSubmitDTO submitTaskCount = patrolTaskService.getSubmitTaskCount(patrolTaskSubmitDTO);
+    public Result<?> submitTaskCount(@RequestBody PatrolTask patrolTaskDTO, HttpServletRequest req) {
+        List<PatrolTaskDevice> patrolTaskDeviceList = patrolTaskDeviceService.list(new LambdaQueryWrapper<PatrolTaskDevice>().eq(PatrolTaskDevice::getTaskId, patrolTaskDTO.getId()));
+        List<PatrolTaskDevice> taskDeviceList = patrolTaskDeviceList.stream().filter(p -> PatrolConstant.BILL_INIT.equals(p.getStatus()) || PatrolConstant.BILL_INIT.equals(p.getStatus())).collect(Collectors.toList());
+        if (CollUtil.isNotEmpty(taskDeviceList)) {
+            throw new AiurtBootException("小主，要全部的工单提交，才可以提交任务哦");
+        }
         return Result.OK("领取成功");
     }
 
@@ -442,21 +451,6 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
     public Result<?> patrolTaskAppointSelect(@RequestBody PatrolOrgDTO orgCoed, HttpServletRequest req) {
         List<PatrolTaskUserDTO> patrolTaskUserDto = patrolTaskService.getPatrolTaskAppointSelect(orgCoed);
         return Result.OK(patrolTaskUserDto);
-    }
-
-    /**
-     * app巡检任务-指派人员
-     *
-     * @param patrolTaskUserDTO
-     * @param req
-     * @return
-     */
-    @AutoLog(value = "巡检任务表-指派人员")
-    @ApiOperation(value = "巡检任务表-指派人员", notes = "巡检任务表-指派人员")
-    @PostMapping(value = "/patrolTaskAppoint")
-    public Result<?> patrolTaskAppoint(@RequestBody PatrolTaskAppointSaveDTO patrolTaskUserDTO, HttpServletRequest req) {
-        patrolTaskService.getPatrolTaskAppoint(patrolTaskUserDTO);
-        return Result.OK("指派成功");
     }
 
     /**

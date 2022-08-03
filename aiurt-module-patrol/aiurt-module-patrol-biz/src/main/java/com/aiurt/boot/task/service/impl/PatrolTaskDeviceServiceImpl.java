@@ -184,7 +184,7 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
             List<String> orgCodes = patrolTaskMapper.getOrgCode(patrolTask.getCode());
             e.setOrgList(orgCodes);
             List<PatrolAccompanyDTO> accompanyDTOList = patrolAccompanyMapper.getAccompanyName(e.getPatrolNumber());
-            String userName = accompanyDTOList.stream().map(PatrolAccompanyDTO::getUsername).collect(Collectors.joining(","));
+            String userName = accompanyDTOList.stream().map(PatrolAccompanyDTO::getUsername).collect(Collectors.joining("；"));
             e.setUserName(userName);
             e.setAccompanyName(accompanyDTOList);
             LambdaQueryWrapper<PatrolCheckResult> queryWrapper = new LambdaQueryWrapper<>();
