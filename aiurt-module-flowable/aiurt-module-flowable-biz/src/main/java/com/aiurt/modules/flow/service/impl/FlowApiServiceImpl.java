@@ -2,19 +2,18 @@ package com.aiurt.modules.flow.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.modules.constants.FlowConstant;
-import com.aiurt.modules.flow.dto.FlowTaskDTO;
-import com.aiurt.modules.flow.dto.FlowTaskReqDTO;
-import com.aiurt.modules.flow.dto.StartBpmnDTO;
+import com.aiurt.modules.flow.dto.*;
 import com.aiurt.modules.flow.entity.ActCustomTaskComment;
-import com.aiurt.modules.flow.mapper.ActCustomTaskCommentMapper;
 import com.aiurt.modules.flow.service.FlowApiService;
+import com.aiurt.modules.flow.service.IActCustomTaskCommentService;
 import com.aiurt.modules.flow.utils.FlowElementUtil;
 import com.aiurt.modules.modeler.entity.ActCustomTaskExt;
-import com.aiurt.modules.modeler.mapper.ActCustomTaskExtMapper;
+import com.aiurt.modules.modeler.service.IActCustomTaskExtService;
 import com.aiurt.modules.utils.ReflectionService;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
@@ -23,15 +22,21 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.SecurityUtils;
-import org.flowable.bpmn.model.UserTask;
+import org.flowable.bpmn.model.Process;
+import org.flowable.bpmn.model.*;
+import org.flowable.engine.HistoryService;
 import org.flowable.engine.RepositoryService;
 import org.flowable.engine.RuntimeService;
 import org.flowable.engine.TaskService;
+import org.flowable.engine.history.HistoricActivityInstance;
+import org.flowable.engine.history.HistoricProcessInstance;
 import org.flowable.engine.repository.ProcessDefinition;
 import org.flowable.engine.runtime.ProcessInstance;
 import org.flowable.task.api.Task;
 import org.flowable.task.api.TaskInfo;
 import org.flowable.task.api.TaskQuery;
+import org.flowable.task.api.history.HistoricTaskInstance;
+import org.flowable.task.api.history.HistoricTaskInstanceQuery;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -59,9 +64,12 @@ public class FlowApiServiceImpl implements FlowApiService {
     @Autowired
     private RepositoryService repositoryService;
     @Autowired
-    private ActCustomTaskCommentMapper customTaskCommentMapper;
+    private HistoryService historyService;
     @Autowired
-    private ActCustomTaskExtMapper customTaskExtMapper;
+    private IActCustomTaskCommentService customTaskCommentService;
+    @Autowired
+    private IActCustomTaskExtService customTaskExtService;
+
 
     /**
      * @param startBpmnDTO
@@ -124,7 +132,7 @@ public class FlowApiServiceImpl implements FlowApiService {
         Task task = BeanUtil.copyProperties(userTask, Task.class);
 
         // 保存中间业务数据，将业务数据id返回
-        String businessKey = saveBusData(result.getId(), task.getId());
+        String businessKey = saveBusData(result.getId(), task.getTaskDefinitionKey());
 
         // 启动流程
         ProcessInstance processInstance = runtimeService.startProcessInstanceByKey(startBpmnDTO.getModelKey(), businessKey, busData);
@@ -163,7 +171,7 @@ public class FlowApiServiceImpl implements FlowApiService {
      * @return
      */
     public String saveBusData(String pProcessDefinitionId, String taskId) {
-        List<ActCustomTaskExt> actCustomTaskExts = customTaskExtMapper.selectList(
+        List<ActCustomTaskExt> actCustomTaskExts = customTaskExtService.getBaseMapper().selectList(
                 new LambdaQueryWrapper<ActCustomTaskExt>()
                         .eq(ActCustomTaskExt::getProcessDefinitionId, pProcessDefinitionId)
                         .eq(ActCustomTaskExt::getTaskId, taskId));
@@ -230,7 +238,7 @@ public class FlowApiServiceImpl implements FlowApiService {
         if (comment != null) {
             comment.fillWith(processInstanceActiveTask);
             comment.setCreateRealname(checkLogin().getRealname());
-            customTaskCommentMapper.insert(comment);
+            customTaskCommentService.getBaseMapper().insert(comment);
         }
 
         // 完成任务
@@ -246,12 +254,160 @@ public class FlowApiServiceImpl implements FlowApiService {
      * @param taskId            流程任务Id。
      * @return 当前流程实例的活动任务。
      */
+    @Override
     public Task getProcessInstanceActiveTask(String processInstanceId, String taskId) {
         TaskQuery query = taskService.createTaskQuery().processInstanceId(processInstanceId);
         if (StrUtil.isNotBlank(taskId)) {
             query.taskId(taskId);
         }
         return query.active().singleResult();
+    }
+
+    /**
+     * 获取流程运行时指定任务的信息。
+     *
+     * @param processDefinitionId 流程引擎的定义Id。
+     * @param processInstanceId   流程引擎的实例Id。
+     * @param taskId              流程引擎的任务Id。
+     * @return 任务节点的自定义对象数据。
+     */
+    @Override
+    public TaskInfoDTO viewRuntimeTaskInfo(String processDefinitionId, String processInstanceId, String taskId) {
+        TaskInfoDTO taskInfoDTO = new TaskInfoDTO();
+        Task task = this.getProcessInstanceActiveTask(processInstanceId, taskId);
+        if (task == null) {
+            throw new AiurtBootException("数据验证失败，指定的任务Id，请刷新后重试！");
+        }
+        if (!this.isAssigneeOrCandidate(task)) {
+            throw new AiurtBootException("数据验证失败，当前用户不是指派人也不是候选人之一！");
+        }
+
+        ActCustomTaskExt flowTaskExt =
+                customTaskExtService.getByProcessDefinitionIdAndTaskId(processDefinitionId, task.getTaskDefinitionKey());
+        if (flowTaskExt != null) {
+            if (StrUtil.isNotBlank(flowTaskExt.getOperationListJson())) {
+                taskInfoDTO.setOperationList(JSON.parseArray(flowTaskExt.getOperationListJson(), JSONObject.class));
+            }
+            if (StrUtil.isNotBlank(flowTaskExt.getVariableListJson())) {
+                taskInfoDTO.setVariableList(JSON.parseArray(flowTaskExt.getVariableListJson(), JSONObject.class));
+            }
+        }
+        return taskInfoDTO;
+    }
+
+    /**
+     * 已办任务
+     *
+     * @param processDefinitionName
+     * @param beginDate
+     * @param endDate
+     * @param pageNo
+     * @param pageSize
+     * @return
+     */
+    @Override
+    public IPage<FlowHisTaskDTO> listHistoricTask(String processDefinitionName, String beginDate, String endDate, Integer pageNo, Integer pageSize) {
+        // 查询已办任务
+        Page<HistoricTaskInstance> hisTaskFinishList = this.getHistoricTaskInstanceFinishedList(processDefinitionName, beginDate, endDate, pageNo, pageSize);
+
+        // 对象转换
+        IPage<FlowHisTaskDTO> result = new Page<>();
+        List<FlowHisTaskDTO> flowHisTaskDTOS = new ArrayList<>();
+        List<HistoricTaskInstance> records = hisTaskFinishList.getRecords();
+        if (CollUtil.isNotEmpty(records)) {
+            records.forEach(re -> {
+                FlowHisTaskDTO flowHisTaskDTO = new FlowHisTaskDTO();
+                flowHisTaskDTO.setId(re.getId());
+                flowHisTaskDTO.setProcessDefinitionId(re.getProcessDefinitionId());
+                flowHisTaskDTO.setProcessInstanceStartTime(re.getCreateTime());
+                flowHisTaskDTO.setTaskName(re.getName());
+                flowHisTaskDTO.setFormKey(re.getFormKey());
+            });
+        }
+
+        // 封装流程定义、名称等相关信息
+        if (CollUtil.isNotEmpty(records)) {
+            Set<String> instanceIdSet = records.stream()
+                    .map(HistoricTaskInstance::getProcessInstanceId).collect(Collectors.toSet());
+            List<HistoricProcessInstance> instanceList = this.getHistoricProcessInstanceList(instanceIdSet);
+            Map<String, HistoricProcessInstance> instanceMap =
+                    instanceList.stream().collect(Collectors.toMap(HistoricProcessInstance::getId, c -> c));
+            flowHisTaskDTOS.forEach(flowHisTaskDTO -> {
+                HistoricProcessInstance instance = instanceMap.get(flowHisTaskDTO.getProcessInstanceId());
+                flowHisTaskDTO.setProcessDefinitionKey(instance.getProcessDefinitionKey());
+                flowHisTaskDTO.setProcessDefinitionName(instance.getProcessDefinitionName());
+                flowHisTaskDTO.setStartUser(instance.getStartUserId());
+                flowHisTaskDTO.setBusinessKey(instance.getBusinessKey());
+            });
+
+            // 封装审批类型
+            Set<String> taskIdSet =
+                    records.stream().map(HistoricTaskInstance::getId).collect(Collectors.toSet());
+            List<ActCustomTaskComment> commentList = customTaskCommentService.getFlowTaskCommentListByTaskIds(taskIdSet);
+            Map<String, List<ActCustomTaskComment>> commentMap =
+                    commentList.stream().collect(Collectors.groupingBy(ActCustomTaskComment::getTaskId));
+            flowHisTaskDTOS.forEach(flowHisTaskDTO -> {
+                List<ActCustomTaskComment> comments = commentMap.get(flowHisTaskDTO.getId());
+                if (CollUtil.isNotEmpty(comments)) {
+                    flowHisTaskDTO.setApprovalType(comments.get(0).getApprovalType());
+                    comments.remove(0);
+                }
+            });
+        }
+
+        result.setRecords(flowHisTaskDTOS);
+        result.setTotal(hisTaskFinishList.getTotal());
+        result.setCurrent(hisTaskFinishList.getCurrent());
+        result.setPages(hisTaskFinishList.getPages());
+        result.setSize(hisTaskFinishList.getSize());
+        return null;
+    }
+
+    /**
+     * 获取流程实例的历史流程实例列表。
+     *
+     * @param processInstanceIdSet 流程实例Id集合。
+     * @return 历史流程实例列表。
+     */
+    public List<HistoricProcessInstance> getHistoricProcessInstanceList(Set<String> processInstanceIdSet) {
+        return historyService.createHistoricProcessInstanceQuery().processInstanceIds(processInstanceIdSet).list();
+    }
+
+    /**
+     * 获取已办任务
+     *
+     * @param processDefinitionName 流程名称
+     * @param beginDate             开始时间
+     * @param endDate               结束时间
+     * @param pageNo                当前页
+     * @param pageSize              每页数量
+     * @return
+     */
+    private Page<HistoricTaskInstance> getHistoricTaskInstanceFinishedList(String processDefinitionName, String beginDate, String endDate, Integer pageNo, Integer pageSize) {
+        Page<HistoricTaskInstance> result = new Page<>();
+        String username = checkLogin().getUsername();
+        HistoricTaskInstanceQuery query = historyService.createHistoricTaskInstanceQuery()
+                .taskAssignee(username)
+                .finished();
+        if (StrUtil.isNotBlank(processDefinitionName)) {
+            query.processDefinitionName(processDefinitionName);
+        }
+        if (StrUtil.isNotBlank(beginDate)) {
+            query.taskCompletedAfter(DateUtil.parse(beginDate, "yyyy-MM-dd HH:mm:ss"));
+        }
+        if (StrUtil.isNotBlank(endDate)) {
+            query.taskCompletedBefore(DateUtil.parse(endDate, "yyyy-MM-dd HH:mm:ss"));
+        }
+        query.orderByHistoricTaskInstanceEndTime().desc();
+        long totalCount = query.count();
+        int firstResult = (pageNo - 1) * pageSize;
+        List<HistoricTaskInstance> instanceList = query.listPage(firstResult, pageSize);
+        result.setRecords(instanceList);
+        result.setCurrent(pageNo);
+        result.setSize(pageSize);
+        result.setTotal(totalCount);
+        result.setPages(totalCount <= 0 ? 0 : (totalCount > 1 ? (totalCount - 1) / pageSize + 1 : 1));
+        return result;
     }
 
     /**
@@ -314,6 +470,7 @@ public class FlowApiServiceImpl implements FlowApiService {
         result.setRecords(convertToFlowTaskList(taskList));
         result.setCurrent(pageNo);
         result.setSize(pageSize);
+        result.setPages(totalCount <= 0 ? 0 : (totalCount > 1 ? (totalCount - 1) / pageSize + 1 : 1));
         return result;
     }
 
@@ -458,5 +615,110 @@ public class FlowApiServiceImpl implements FlowApiService {
     @Override
     public List<ProcessDefinition> getProcessDefinitionList(Set<String> processDefinitionIdSet) {
         return repositoryService.createProcessDefinitionQuery().processDefinitionIds(processDefinitionIdSet).list();
+    }
+
+    /**
+     * 获取指定流程定义的流程图
+     *
+     * @param processDefinitionId 流程定义Id
+     * @return
+     */
+    @Override
+    public BpmnModel getBpmnModelByDefinitionId(String processDefinitionId) {
+        return repositoryService.getBpmnModel(processDefinitionId);
+    }
+
+    /**
+     * 获取流程实例的历史流程实例。
+     *
+     * @param processInstanceId 流程实例Id。
+     * @return 历史流程实例。
+     */
+    @Override
+    public HistoricProcessInstance getHistoricProcessInstance(String processInstanceId) {
+        return historyService.createHistoricProcessInstanceQuery().processInstanceId(processInstanceId).singleResult();
+    }
+
+    /**
+     * 获取流程图高亮数据。
+     *
+     * @param processInstanceId 流程实例Id。
+     * @return 流程图高亮数据。
+     */
+    @Override
+    public JSONObject viewHighlightFlowData(String processInstanceId) {
+        HistoricProcessInstance hpi = this.getHistoricProcessInstance(processInstanceId);
+        BpmnModel bpmnModel = this.getBpmnModelByDefinitionId(hpi.getProcessDefinitionId());
+        //Process对象集合
+        List<Process> processList = bpmnModel.getProcesses();
+        List<FlowElement> flowElementList = new LinkedList<>();
+        processList.forEach(p -> flowElementList.addAll(p.getFlowElements()));
+        Map<String, String> allSequenceFlowMap = new HashMap<>(16);
+
+        //连线信息
+        for (FlowElement flowElement : flowElementList) {
+            if (flowElement instanceof SequenceFlow) {
+                SequenceFlow sequenceFlow = (SequenceFlow) flowElement;
+                String ref = sequenceFlow.getSourceRef();
+                String targetRef = sequenceFlow.getTargetRef();
+                allSequenceFlowMap.put(ref + targetRef, sequenceFlow.getId());
+            }
+        }
+
+        //获取流程实例的历史节点(全部执行过的节点，被拒绝的任务节点将会出现多次)
+        Set<String> finishedTaskSet = new LinkedHashSet<>();
+        List<HistoricActivityInstance> activityInstanceList =
+                this.getHistoricActivityInstanceList(processInstanceId);
+        List<String> activityInstanceTask = activityInstanceList.stream()
+                .filter(s -> !StrUtil.equals(s.getActivityType(), "sequenceFlow"))
+                .map(HistoricActivityInstance::getActivityId).collect(Collectors.toList());
+        Set<String> finishedTaskSequenceSet = new LinkedHashSet<>();
+        for (int i = 0; i < activityInstanceTask.size(); i++) {
+            String current = activityInstanceTask.get(i);
+            if (i != activityInstanceTask.size() - 1) {
+                String next = activityInstanceTask.get(i + 1);
+                finishedTaskSequenceSet.add(current + next);
+            }
+            finishedTaskSet.add(current);
+        }
+        Set<String> finishedSequenceFlowSet = new HashSet<>();
+        finishedTaskSequenceSet.forEach(s -> finishedSequenceFlowSet.add(allSequenceFlowMap.get(s)));
+
+        //获取流程实例当前正在待办的节点
+        List<HistoricActivityInstance> unfinishedInstanceList =
+                this.getHistoricUnfinishedInstanceList(processInstanceId);
+        Set<String> unfinishedTaskSet = new LinkedHashSet<>();
+        for (HistoricActivityInstance unfinishedActivity : unfinishedInstanceList) {
+            unfinishedTaskSet.add(unfinishedActivity.getActivityId());
+        }
+
+        JSONObject jsonData = new JSONObject();
+        jsonData.put("finishedTaskSet", finishedTaskSet);
+        jsonData.put("finishedSequenceFlowSet", finishedSequenceFlowSet);
+        jsonData.put("unfinishedTaskSet", unfinishedTaskSet);
+        return jsonData;
+    }
+
+    /**
+     * 获取流程实例的已完成历史任务列表。
+     *
+     * @param processInstanceId 流程实例Id。
+     * @return 流程实例已完成的历史任务列表。
+     */
+    @Override
+    public List<HistoricActivityInstance> getHistoricActivityInstanceList(String processInstanceId) {
+        return historyService.createHistoricActivityInstanceQuery().processInstanceId(processInstanceId).list();
+    }
+
+    /**
+     * 获取流程实例的待完成任务列表。
+     *
+     * @param processInstanceId 流程实例Id。
+     * @return 流程实例待完成的任务列表。
+     */
+    @Override
+    public List<HistoricActivityInstance> getHistoricUnfinishedInstanceList(String processInstanceId) {
+        return historyService.createHistoricActivityInstanceQuery()
+                .processInstanceId(processInstanceId).unfinished().list();
     }
 }

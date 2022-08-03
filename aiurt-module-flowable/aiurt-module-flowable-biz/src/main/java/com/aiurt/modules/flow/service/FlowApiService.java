@@ -1,10 +1,12 @@
 package com.aiurt.modules.flow.service;
 
-import com.aiurt.modules.flow.dto.FlowTaskDTO;
-import com.aiurt.modules.flow.dto.FlowTaskReqDTO;
-import com.aiurt.modules.flow.dto.StartBpmnDTO;
+import com.aiurt.modules.flow.dto.*;
 import com.aiurt.modules.flow.entity.ActCustomTaskComment;
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import org.flowable.bpmn.model.BpmnModel;
+import org.flowable.engine.history.HistoricActivityInstance;
+import org.flowable.engine.history.HistoricProcessInstance;
 import org.flowable.engine.repository.ProcessDefinition;
 import org.flowable.engine.runtime.ProcessInstance;
 import org.flowable.task.api.Task;
@@ -96,4 +98,69 @@ public interface FlowApiService {
      * @return 流程定义列表。
      */
     List<ProcessDefinition> getProcessDefinitionList(Set<String> processDefinitionIdSet);
+
+    /**
+     * 获取指定流程定义的流程图
+     * @param processDefinitionId 流程定义Id
+     * @return
+     */
+    BpmnModel getBpmnModelByDefinitionId(String processDefinitionId);
+    /**
+     * 获取流程实例的历史流程实例。
+     *
+     * @param processInstanceId 流程实例Id。
+     * @return 历史流程实例。
+     */
+    HistoricProcessInstance getHistoricProcessInstance(String processInstanceId);
+    /**
+     * 获取流程图高亮数据。
+     *
+     * @param processInstanceId 流程实例Id。
+     * @return 流程图高亮数据。
+     */
+    JSONObject viewHighlightFlowData(String processInstanceId);
+
+    /**
+     * 获取流程实例的已完成历史任务列表。
+     *
+     * @param processInstanceId 流程实例Id。
+     * @return 流程实例已完成的历史任务列表。
+     */
+    List<HistoricActivityInstance> getHistoricActivityInstanceList(String processInstanceId);
+
+    /**
+     * 获取流程实例的待完成任务列表。
+     *
+     * @param processInstanceId 流程实例Id。
+     * @return 流程实例待完成的任务列表。
+     */
+    List<HistoricActivityInstance> getHistoricUnfinishedInstanceList(String processInstanceId);
+    /**
+     * 获取指定流程实例和任务Id的当前活动任务。
+     *
+     * @param processInstanceId 流程实例Id。
+     * @param taskId            流程任务Id。
+     * @return 当前流程实例的活动任务。
+     */
+    Task getProcessInstanceActiveTask(String processInstanceId, String taskId);
+    /**
+     * 获取流程运行时指定任务的信息。
+     *
+     * @param processDefinitionId 流程引擎的定义Id。
+     * @param processInstanceId   流程引擎的实例Id。
+     * @param taskId              流程引擎的任务Id。
+     * @return 任务节点的自定义对象数据。
+     */
+    TaskInfoDTO viewRuntimeTaskInfo(String processDefinitionId, String processInstanceId, String taskId);
+
+    /**
+     * 已办任务
+     * @param processDefinitionName
+     * @param beginDate
+     * @param endDate
+     * @param pageNo
+     * @param pageSize
+     * @return
+     */
+    IPage<FlowHisTaskDTO> listHistoricTask(String processDefinitionName, String beginDate, String endDate, Integer pageNo, Integer pageSize);
 }

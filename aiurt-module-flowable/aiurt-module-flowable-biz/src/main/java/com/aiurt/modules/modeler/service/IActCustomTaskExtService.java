@@ -10,5 +10,11 @@ import com.baomidou.mybatisplus.extension.service.IService;
  * @Version: V1.0
  */
 public interface IActCustomTaskExtService extends IService<ActCustomTaskExt> {
-
+    /**
+     * 查询指定的流程任务扩展对象。
+     * @param processDefinitionId 流程引擎的定义Id。
+     * @param taskId              流程引擎的任务唯一标识。
+     * @return 查询结果。
+     */
+    ActCustomTaskExt getByProcessDefinitionIdAndTaskId(String processDefinitionId, String taskId);
 }
