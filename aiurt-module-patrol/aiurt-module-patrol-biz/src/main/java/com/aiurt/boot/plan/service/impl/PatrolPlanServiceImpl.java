@@ -372,7 +372,7 @@ public class PatrolPlanServiceImpl extends ServiceImpl<PatrolPlanMapper, PatrolP
                 if (1 == standard.getDeviceType()) {
                     LambdaQueryWrapper<PatrolPlanDevice> deviceWrapper = new LambdaQueryWrapper<>();
                     deviceWrapper.eq(PatrolPlanDevice::getPlanId, planId);
-                    deviceWrapper.eq(PatrolPlanDevice::getPlanStandardId, standard.getId());
+                    deviceWrapper.eq(PatrolPlanDevice::getPlanStandardId, l.getId());
                     List<PatrolPlanDevice> deviceList = patrolPlanDeviceMapper.selectList(deviceWrapper);
                     if (CollectionUtil.isEmpty(deviceList)) {
                         throw new AiurtBootException("标准表名为:【" + standard.getName() + "】暂未指定设备，不允许启用！");
