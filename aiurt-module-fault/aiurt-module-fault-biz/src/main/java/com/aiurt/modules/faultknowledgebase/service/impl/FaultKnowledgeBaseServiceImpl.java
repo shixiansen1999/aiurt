@@ -69,6 +69,7 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
             String substring = id.substring(0, id.length() - 1);
             faultKnowledgeBase.setId(substring);
         }
+
         List<FaultKnowledgeBase> faultKnowledgeBases = faultKnowledgeBaseMapper.readAll(page, faultKnowledgeBase,ids);
         GlobalThreadLocal.setDataFilter(b);
         faultKnowledgeBases.forEach(f->{

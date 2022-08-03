@@ -86,9 +86,12 @@
                     #{item}
                 </foreach>
             </if>
-
             <if test="condition.matchName != null and  condition.matchName != ''">
-                and CONCAT(IFNULL(a.fault_phenomenon,''), IFNULL(a.deviceTypeName,''), IFNULL(a.materialName,'')) LIKE CONCAT('%',#{condition.matchName},'%')
+                AND (
+                ( a.fault_phenomenon LIKE CONCAT ('%', #{condition.matchName}, '%'))
+                or (a.deviceTypeName LIKE CONCAT  ('%', #{condition.matchName}, '%'))
+                or (a.materialName LIKE CONCAT ('%', #{condition.matchName}, '%'))
+                )
             </if>
             <if test="condition.majorCode != null and  condition.majorCode != ''">
                 and a.major_code= #{condition.majorCode}
