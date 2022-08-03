@@ -55,7 +55,7 @@ public class StockOutboundMaterialsServiceImpl extends ServiceImpl<StockOutbound
         String zyname = csMajor==null?"":csMajor.getMajorName();
         CsSubsystem csSubsystem = csSubsystemService.getOne(new QueryWrapper<CsSubsystem>().eq("system_code",materialBase.getSystemCode()).eq("del_flag", CommonConstant.DEL_FLAG_0));
         String zxyname = csSubsystem==null?"":csSubsystem.getSystemName();
-        CsManufactor csManufactor = csManufactorService.getOne(new QueryWrapper<CsManufactor>().eq("code",materialBase.getManufactorCode()).eq("del_flag", CommonConstant.DEL_FLAG_0));
+        CsManufactor csManufactor = csManufactorService.getById(materialBase.getManufactorCode()==null?"":materialBase.getManufactorCode());
         String csname = csManufactor==null?"":csManufactor.getName();
         String wztype = materialBase.getType()==null?"":materialBase.getType().toString();
         String wztypename = sysBaseApi.translateDict("material_type",wztype);

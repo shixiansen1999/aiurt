@@ -198,7 +198,7 @@ public class StockInOrderLevel2ServiceImpl extends ServiceImpl<StockInOrderLevel
 			for(StockInOrderLevel2 stockInOrderLevel2 : list){
 				String code = stockInOrderLevel2.getOrderCode();
 				QueryWrapper<StockIncomingMaterials> queryWrapper = new QueryWrapper<StockIncomingMaterials>();
-				queryWrapper.eq("in_order_code",code);
+				queryWrapper.eq("in_order_code",code).eq("del_flag", CommonConstant.DEL_FLAG_0);
 				List<StockIncomingMaterials> materials = stockIncomingMaterialsService.list(queryWrapper);
 				stockInOrderLevel2.setStockIncomingMaterialsList(materials);
 				String userid = stockInOrderLevel2.getUserId()==null?"":stockInOrderLevel2.getUserId();

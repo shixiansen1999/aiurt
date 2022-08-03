@@ -187,8 +187,8 @@ public class Device extends DictEntity {
 	/**出厂日期*/
 	@Excel(name = "出厂日期", width = 15)
 	@ApiModelProperty(value = "出厂日期")
-	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
-	@DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
+	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
+	@DateTimeFormat(pattern="yyyy-MM-dd")
 	private  String  factoryDate;
 
 	/**设备等级(字典值)*/

@@ -2,11 +2,11 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.aiurt.modules.stock.mapper.StockLevel2CheckDetailMapper">
     <select id="pageList" resultType="com.aiurt.modules.stock.entity.StockLevel2CheckDetail">
-        select slc.*
+        select slcd.*
         from stock_level2_check_detail slcd
         left join material_base mb on slcd.material_code = mb.`code` and mb.del_flag = 0
         <where>
-            and slcd.del_flag = 0
+            and slcd.del_flag = 0 and slcd.stock_check_code = #{condition.stockCheckCode}
             <if test="condition.materialName != null and condition.materialName != ''">
                 and mb.`name` like concat(concat('%',#{condition.materialName}),'%')
             </if>
@@ -14,6 +14,6 @@
                 and slcd.material_code like concat(concat('%',#{condition.materialCode}),'%')
             </if>
         </where>
-        order by slc.create_time desc
+        order by slcd.create_time desc
     </select>
 </mapper>

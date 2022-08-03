@@ -108,7 +108,7 @@ public class StockLevel2CheckDetailController {
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
             String stockCheckCode = stockLevel2CheckDetailList.get(0).getStockCheckCode();
             StockLevel2Check stockLevel2Check = iStockLevel2CheckService.getOne(new QueryWrapper<StockLevel2Check>().eq("del_flag", CommonConstant.DEL_FLAG_0).eq("stock_check_code",stockCheckCode));
-            stockLevel2Check.setCheckStartTime(sdf.parse(sdf.format(new Date())));
+            stockLevel2Check.setCheckEndTime(sdf.parse(sdf.format(new Date())));
             stockLevel2Check.setStatus(CommonConstant.StOCK_LEVEL2_CHECK_STATUS_5);
             iStockLevel2CheckService.updateById(stockLevel2Check);
             boolean ok = iStockLevel2CheckDetailService.updateBatchById(stockLevel2CheckDetailList);

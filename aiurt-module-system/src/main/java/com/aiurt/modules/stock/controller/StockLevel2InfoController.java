@@ -122,6 +122,10 @@ public class StockLevel2InfoController {
             if (count > 0){
                 return Result.error("二级库编号不能重复");
             }
+            final int countname = (int) iStockLevel2InfoService.count(new LambdaQueryWrapper<StockLevel2Info>().eq(StockLevel2Info::getWarehouseName, stockLevel2Info.getWarehouseName()).eq(StockLevel2Info::getDelFlag, 0).last("limit 1"));
+            if (countname > 0){
+                return Result.error("二级库编号不能重复");
+            }
             iStockLevel2InfoService.save(stockLevel2Info);
             result.success("添加成功！");
         } catch (Exception e) {
@@ -175,12 +179,12 @@ public class StockLevel2InfoController {
             //是否有对应的二级库入库在使用该二级库
             List<StockInOrderLevel2> stockInOrderLevel2 = iStockInOrderLevel2Service.list(new QueryWrapper<StockInOrderLevel2>().eq("warehouse_code",code).eq("del_flag", CommonConstant.DEL_FLAG_0));
             if(stockInOrderLevel2 != null && stockInOrderLevel2.size()>0){
-                return Result.error("该二级库正在使用中，无法删除");
+                return Result.error("该数据已被其他模块引用。");
             }
             //是否有对应的二级库库存在使用该二级库
             List<StockLevel2> stockLevel2s = iStockLevel2Service.list(new QueryWrapper<StockLevel2>().eq("warehouse_code",code).eq("del_flag", CommonConstant.DEL_FLAG_0));
             if(stockLevel2s != null && stockLevel2s.size()>0){
-                return Result.error("该二级库正在使用中，无法删除");
+                return Result.error("该数据已被其他模块引用。");
             }
             iStockLevel2InfoService.removeById(stockLevel2Info);
         } catch (Exception e) {
@@ -213,7 +217,7 @@ public class StockLevel2InfoController {
             }
             if(res.contains(",")){
                 res = res.substring(0,res.length()-1);
-                res += "的二级库因为正在使用中无法删除，其余二级库删除成功!";
+                res += "的二级库已被其他模块引用无法删除，其余二级库删除成功!";
             }else{
                 res = "删除成功!";
             }

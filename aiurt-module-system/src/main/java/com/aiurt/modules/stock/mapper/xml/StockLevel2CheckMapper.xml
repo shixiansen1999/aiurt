@@ -16,6 +16,9 @@
             <if test="condition.planStartTimeStart != null and condition.planStartTimeEnd != null">
                 and Date(slc.plan_start_time) &gt;= #{condition.planStartTimeStart} and Date(slc.plan_start_time) &lt;= #{condition.planStartTimeEnd}
             </if>
+            <if test="condition.status != null and condition.status != ''">
+                and slc.status = #{condition.status}
+            </if>
         </where>
         order by slc.create_time desc
     </select>

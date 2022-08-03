@@ -1,6 +1,7 @@
 package com.aiurt.modules.stock.controller;
 
 import com.aiurt.common.aspect.annotation.AutoLog;
+import com.aiurt.common.aspect.annotation.PermissionData;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.modules.stock.entity.StockLevel2Info;
@@ -8,6 +9,8 @@ import com.aiurt.modules.stock.entity.StockSubmitMaterials;
 import com.aiurt.modules.stock.entity.StockSubmitPlan;
 import com.aiurt.modules.stock.service.IStockSubmitMaterialsService;
 import com.aiurt.modules.stock.service.IStockSubmitPlanService;
+import com.aiurt.modules.system.entity.SysDepart;
+import com.aiurt.modules.system.service.ISysDepartService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -51,6 +54,8 @@ public class StockSubmitPlanController {
 
     @Autowired
     private IStockSubmitPlanService iStockSubmitPlanService;
+    @Autowired
+    private ISysDepartService iSysDepartService;
 
     /**
      * 分页列表查询
@@ -63,6 +68,7 @@ public class StockSubmitPlanController {
     @AutoLog(value = "物资提报计划-分页列表查询")
     @ApiOperation(value = "物资提报计划-分页列表查询", notes = "物资提报计划-分页列表查询")
     @GetMapping(value = "/list")
+    @PermissionData(pageComponent = "secondLevelWarehouse/EscalationPlanList")
     public Result<IPage<StockSubmitPlan>> queryPageList(StockSubmitPlan stockSubmitPlan,
                                                          @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
                                                          @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize,
@@ -73,6 +79,14 @@ public class StockSubmitPlanController {
         queryWrapper.orderByDesc("create_time");
         Page<StockSubmitPlan> page = new Page<StockSubmitPlan>(pageNo, pageSize);
         IPage<StockSubmitPlan> pageList = iStockSubmitPlanService.page(page, queryWrapper);
+        List<StockSubmitPlan> records = pageList.getRecords();
+        if(records!=null && records.size()>0){
+            for(StockSubmitPlan s : records){
+                String orgId = s.getOrgId();
+                SysDepart sysDepart = iSysDepartService.getById(orgId);
+                s.setOrgCode(sysDepart.getOrgCode());
+            }
+        }
         result.setSuccess(true);
         result.setResult(pageList);
         return result;

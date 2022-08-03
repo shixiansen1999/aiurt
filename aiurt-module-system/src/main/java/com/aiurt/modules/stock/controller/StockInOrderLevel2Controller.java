@@ -96,7 +96,7 @@ public class StockInOrderLevel2Controller {
         List<StockLevel2Check> stockLevel2CheckList = iStockLevel2CheckService.list(new QueryWrapper<StockLevel2Check>().eq("del_flag", CommonConstant.DEL_FLAG_0)
                 .eq("warehouse_code",warehouseCode).eq("status",CommonConstant.StOCK_LEVEL2_CHECK_STATUS_4));
         if(stockLevel2CheckList != null && stockLevel2CheckList.size()>0){
-            return Result.error("该二级库有正在执行中的盘点任务，无法提交！");
+            return Result.error("盘点任务执行期间，物资暂时无法进行出入库操作");
         }
         boolean ok = iStockInOrderLevel2Service.submitInOrderStatus(status, code, stockInOrderLevel2);
         if (ok) {

@@ -1,5 +1,6 @@
 package com.aiurt.modules.stock.entity;
 
+import com.aiurt.common.aspect.annotation.DeptFilterColumn;
 import com.aiurt.common.aspect.annotation.Dict;
 import com.aiurt.modules.basic.entity.DictEntity;
 import com.baomidou.mybatisplus.annotation.*;
@@ -57,6 +58,11 @@ public class StockSubmitPlan extends DictEntity {
     @ApiModelProperty(value = "提报部门ID")
 	@Dict(dictTable ="sys_depart",dicText = "depart_name",dicCode = "id")
 	private  String  orgId;
+	/**机构编码*/
+	@ApiModelProperty(value = "机构编码")
+	@Excel(name="机构编码",width=15)
+	@DeptFilterColumn
+	private String orgCode;
 
 	/**提报用户ID*/
 	@Excel(name = "提报用户ID")

@@ -151,7 +151,7 @@ public class StockSubmitPlanServiceImpl extends ServiceImpl<StockSubmitPlanMappe
 			for(StockSubmitPlan stockSubmitPlan : list){
 				String code = stockSubmitPlan.getCode();
 				QueryWrapper<StockSubmitMaterials> queryWrapper = new QueryWrapper<StockSubmitMaterials>();
-				queryWrapper.eq("submit_plan_code",code);
+				queryWrapper.eq("submit_plan_code",code).eq("del_flag", CommonConstant.DEL_FLAG_0);
 				List<StockSubmitMaterials> materials = stockSubmitMaterialsService.list(queryWrapper);
 				stockSubmitPlan.setStockSubmitMaterialsList(materials);
 				String tbrid = stockSubmitPlan.getUserId()==null?"":stockSubmitPlan.getUserId();
