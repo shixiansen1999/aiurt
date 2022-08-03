@@ -1,6 +1,9 @@
 package com.aiurt.modules.material.entity;
 
+import com.aiurt.common.aspect.annotation.DeptFilterColumn;
 import com.aiurt.common.aspect.annotation.Dict;
+import com.aiurt.common.aspect.annotation.MajorFilterColumn;
+import com.aiurt.common.aspect.annotation.SystemFilterColumn;
 import com.aiurt.modules.basic.entity.DictEntity;
 import com.baomidou.mybatisplus.annotation.*;
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -40,6 +43,7 @@ public class MaterialBase extends DictEntity {
 	@Excel(name = "专业编码", width = 15)
 	@ApiModelProperty(value = "专业编码")
 	@Dict(dictTable ="cs_major",dicText = "major_name",dicCode = "major_code")
+	@MajorFilterColumn
 	private  String  majorCode;
 	/**所属专业手动翻译*/
 	@Excel(name = "专业名称", width = 15)
@@ -51,6 +55,7 @@ public class MaterialBase extends DictEntity {
 	@Excel(name = "子系统编码", width = 15)
 	@ApiModelProperty(value = "子系统编号")
 	@Dict(dictTable ="cs_subsystem",dicText = "system_name",dicCode = "system_code")
+	@SystemFilterColumn
 	private  String  systemCode;
 	/**子系统编号手动翻译*/
 	@Excel(name = "子系统名称", width = 15)
@@ -128,6 +133,7 @@ public class MaterialBase extends DictEntity {
 	@Excel(name = "所属部门编码", width = 15)
 	@ApiModelProperty(value = "所属部门编码")
 	@Dict(dictTable ="sys_depart",dicText = "depart_name",dicCode = "org_code")
+	@DeptFilterColumn
 	private  String  sysOrgCode;
 	/**所属部门名称*/
 	@Excel(name = "所属部门名称", width = 15)

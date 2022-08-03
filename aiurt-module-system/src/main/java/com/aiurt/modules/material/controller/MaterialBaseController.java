@@ -1,6 +1,7 @@
 package com.aiurt.modules.material.controller;
 
 import com.aiurt.common.aspect.annotation.AutoLog;
+import com.aiurt.common.aspect.annotation.PermissionData;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.modules.device.entity.Device;
@@ -78,6 +79,7 @@ public class MaterialBaseController {
     @AutoLog(value = "物资-分页列表查询")
     @ApiOperation(value = "物资-分页列表查询", notes = "物资-分页列表查询")
     @GetMapping(value = "/list")
+    @PermissionData(pageComponent = "manage/MainMaterialClassification")
     public Result<IPage<MaterialBase>> queryPageList(MaterialBase materialBase,
                                                          @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
                                                          @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize,

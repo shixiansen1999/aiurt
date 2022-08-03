@@ -1,6 +1,9 @@
 package com.aiurt.modules.material.entity;
 
+import com.aiurt.common.aspect.annotation.DeptFilterColumn;
 import com.aiurt.common.aspect.annotation.Dict;
+import com.aiurt.common.aspect.annotation.MajorFilterColumn;
+import com.aiurt.common.aspect.annotation.SystemFilterColumn;
 import com.baomidou.mybatisplus.annotation.*;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
@@ -38,12 +41,14 @@ public class MaterialBaseType {
 	@Excel(name = "专业编码", width = 15)
 	@ApiModelProperty(value = "专业编码")
 	@Dict(dictTable ="cs_major",dicText = "major_name",dicCode = "major_code")
+	@MajorFilterColumn
 	private  String  majorCode;
 
 	/**子系统编号*/
 	@Excel(name = "子系统编号", width = 15)
 	@ApiModelProperty(value = "子系统编号")
 	@Dict(dictTable ="cs_subsystem",dicText = "system_name",dicCode = "system_code")
+	@SystemFilterColumn
 	private  String  systemCode;
 
 	/**分类编码*/
@@ -82,6 +87,7 @@ public class MaterialBaseType {
 	@Excel(name = "所属部门编码", width = 15)
 	@ApiModelProperty(value = "所属部门编码")
 	@Dict(dictTable ="sys_depart",dicText = "depart_name",dicCode = "org_code")
+	@DeptFilterColumn
 	private  String  sysOrgCode;
 
 	/**创建人*/
