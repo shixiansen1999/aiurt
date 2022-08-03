@@ -187,7 +187,7 @@ public class PatrolPlanServiceImpl extends ServiceImpl<PatrolPlanMapper, PatrolP
             if (p.getDeviceType().equals(1)) {
                 boolean i = devices.stream().anyMatch(d -> p.getCode().equals(d.getPlanStandardCode()));
                 if (!i) {
-                    throw new AiurtBootException("请指定设备!");
+                    throw new AiurtBootException("标准表名为：" +p.getName() + "暂未指定设备,请指定设备!");
                 }
             }
         });
