@@ -187,17 +187,17 @@
     <select id="getMajorName" resultType="java.lang.String">
         select major_name
         from cs_major
-        where major_code = #{majorCode}
+        where major_code = #{majorCode} and del_flag =0
     </select>
     <select id="getSysName" resultType="java.lang.String">
         select system_name
         from cs_subsystem
-        where system_code = #{systemCode}
+        where system_code = #{systemCode} and del_flag =0
     </select>
     <select id="getAllPosition" resultType="java.lang.String">
     select position_name
     from
     cs_station_position
-    where staion_code = #{stationCode}
+    where staion_code = #{stationCode} and del_flag =0
     </select>
 </mapper>
