@@ -146,6 +146,7 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
             String positions = manager.translateStation(codeList);
             if(ObjectUtil.isNotEmpty(e.getDeviceCode()))
             {
+                e.setDevicePosition(positions);
                 List<StationDTO> stationDTOS = new ArrayList<>();
                 StationDTO station =new StationDTO();
                 station.setLineCode(e.getLineCode());
