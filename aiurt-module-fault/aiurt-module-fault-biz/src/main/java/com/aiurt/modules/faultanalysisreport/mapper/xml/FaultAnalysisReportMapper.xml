@@ -153,7 +153,8 @@
     fault f
     left join fault_analysis_report far on far.fault_code = f.`code`
     where
-    f.id = #{id}
+    far.del_flag = 0
+    and f.id = #{id}
     </select>
 
 <select id="readOne" resultType="com.aiurt.modules.faultanalysisreport.entity.FaultAnalysisReport">
