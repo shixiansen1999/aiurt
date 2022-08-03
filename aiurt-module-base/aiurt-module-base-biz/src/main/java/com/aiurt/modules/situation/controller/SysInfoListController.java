@@ -282,6 +282,21 @@ public class SysInfoListController  extends BaseController<SysAnnouncement, SysI
         return Result.OK("编辑成功!");
     }
 
+    /**
+     *   通过id删除
+     *
+     * @param id
+     * @return
+     */
+    @AutoLog(value = "特情管理-通过id删除")
+    @ApiOperation(value="特情管理-通过id删除", notes="特情管理-通过id删除")
+    @DeleteMapping(value = "/delete")
+    public Result<?> delete(@RequestParam(name="id",required=true) String id) {
+        SysAnnouncement byId = bdInfoListService.getById(id);
+        byId.setDelFlag(CommonConstant.DEL_FLAG_1.toString());
+        sysInfoListMapper.updateById(byId);
+        return Result.OK("删除成功!");
+    }
 
     /**
      * 导出excel

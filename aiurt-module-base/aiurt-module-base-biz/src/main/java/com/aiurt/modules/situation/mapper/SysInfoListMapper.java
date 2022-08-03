@@ -3,10 +3,8 @@ package com.aiurt.modules.situation.mapper;
 import com.aiurt.modules.situation.entity.SysAnnouncement;
 import com.aiurt.modules.situation.entity.SysAnnouncementSend;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.ibatis.annotations.Param;
-import org.jeecg.common.system.vo.LoginUser;
 
 import java.util.Date;
 import java.util.List;
