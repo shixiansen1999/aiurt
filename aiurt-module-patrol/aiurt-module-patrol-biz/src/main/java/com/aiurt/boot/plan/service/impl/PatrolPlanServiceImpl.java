@@ -68,7 +68,7 @@ public class PatrolPlanServiceImpl extends ServiceImpl<PatrolPlanMapper, PatrolP
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void add(PatrolPlanDto patrolPlanDto) {
-//        this.check(patrolPlanDto);
+        this.check(patrolPlanDto);
         PatrolPlan patrolPlan = new PatrolPlan();
         patrolPlan.setCode(patrolPlanDto.getCode());
         patrolPlan.setName(patrolPlanDto.getName());
@@ -181,16 +181,18 @@ public class PatrolPlanServiceImpl extends ServiceImpl<PatrolPlanMapper, PatrolP
     }
 
     public void check(PatrolPlanDto patrolPlanDto) {
-        List<PatrolStandardDto> patrolStandardDto = patrolPlanDto.getPatrolStandards();
-        List<Device> devices = patrolPlanDto.getDevices();
-        patrolStandardDto.forEach(p -> {
-            if (p.getDeviceType().equals(1)) {
-                boolean i = devices.stream().anyMatch(d -> p.getCode().equals(d.getPlanStandardCode()));
-                if (!i) {
-                    throw new AiurtBootException("标准表名为：" +p.getName() + "暂未指定设备,请指定设备!");
+        if (CollUtil.isNotEmpty(patrolPlanDto.getPatrolStandards())) {
+            List<PatrolStandardDto> patrolStandardDto = patrolPlanDto.getPatrolStandards();
+            List<Device> devices = patrolPlanDto.getDevices();
+            patrolStandardDto.forEach(p -> {
+                if (p.getDeviceType().equals(1)) {
+                    boolean i = devices.stream().anyMatch(d -> p.getCode().equals(d.getPlanStandardCode()));
+                    if (!i) {
+                        throw new AiurtBootException("标准表名为：" + p.getName() + "暂未指定设备,请指定设备!");
+                    }
                 }
-            }
-        });
+            });
+        }
     }
 
     @Override
