@@ -97,5 +97,5 @@ public interface IPatrolPlanService extends IService<PatrolPlan> {
      * @param planId
      * @param status
      */
-    void modefy(String planId, Integer status);
+    int modefy(String planId, Integer status);
 }
