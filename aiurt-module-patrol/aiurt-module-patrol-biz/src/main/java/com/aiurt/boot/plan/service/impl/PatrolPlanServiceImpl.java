@@ -304,6 +304,28 @@ public class PatrolPlanServiceImpl extends ServiceImpl<PatrolPlanMapper, PatrolP
     @Override
     public IPage<Device> deviceList(Page<Device> page, DeviceListDTO deviceListDTO) {
         IPage<Device> deviceIPage = baseMapper.deviceList(page, deviceListDTO.getSiteCodes(), deviceListDTO.getSubsystemCode(), deviceListDTO.getMajorCode(), deviceListDTO.getDeviceTypeCode());
+        List<Device> records = deviceIPage.getRecords();
+        if (records != null && records.size() > 0) {
+            for (Device d : records) {
+                //线路
+                String lineCode = d.getLineCode() == null ? "" : d.getLineCode();
+                //站点
+                String stationCode = d.getStationCode() == null ? "" : d.getStationCode();
+                //位置
+                String positionCode = d.getPositionCode() == null ? "" : d.getPositionCode();
+                String lineCodeName = sysBaseApi.translateDictFromTable("cs_line", "line_name", "line_code", lineCode);
+                String stationCodeName = sysBaseApi.translateDictFromTable("cs_station", "station_name", "station_code", stationCode);
+                String positionCodeName = sysBaseApi.translateDictFromTable("cs_station_position", "position_name", "position_code", positionCode);
+                String positionCodeCcName = lineCodeName;
+                if (stationCodeName != null && !"".equals(stationCodeName)) {
+                    positionCodeCcName += CommonConstant.SYSTEM_SPLIT_STR + stationCodeName;
+                }
+                if (!"".equals(positionCodeName) && positionCodeName != null) {
+                    positionCodeCcName += CommonConstant.SYSTEM_SPLIT_STR + positionCodeName;
+                }
+                d.setPositionCodeCcName(positionCodeCcName);
+            }
+        }
         return deviceIPage;
     }
 
