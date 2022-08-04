@@ -158,12 +158,13 @@ public class SparePartApplyServiceImpl extends ServiceImpl<SparePartApplyMapper,
         stockOutOrderLevel.setCustodialId(partApply.getApplyUserId());
         stockOutOrderLevel.setCustodialWarehouseCode(partApply.getCustodialWarehouseCode());
         stockOutOrderLevel.setOrgCode(null!=sysDepart?sysDepart.getOrgCode():null);
+        stockOutOrderLevel.setApplyCode(partApply.getCode());
         stockOutOrderLevel2Mapper.insert(stockOutOrderLevel);
         //3.插入出库物资
         List<SparePartApplyMaterial> list = sparePartApplyMaterialService.list(new LambdaQueryWrapper<SparePartApplyMaterial>().eq(SparePartApplyMaterial::getApplyId,sparePartApply.getId()));
         list.forEach(applyMaterial ->{
             StockOutboundMaterials stockOutboundMaterials = new StockOutboundMaterials();
-            stockOutboundMaterials.setOutOrderCode(applyMaterial.getOrderCode());
+            stockOutboundMaterials.setOutOrderCode(code);
             stockOutboundMaterials.setMaterialCode(applyMaterial.getMaterialCode());
             stockOutboundMaterials.setWarehouseCode(partApply.getApplyWarehouseCode());
             stockOutboundMaterials.setInventory(applyMaterial.getInventory());
@@ -185,10 +186,11 @@ public class SparePartApplyServiceImpl extends ServiceImpl<SparePartApplyMapper,
         SimpleDateFormat date = new SimpleDateFormat("yyyyMMdd");
         str += date.format(new Date());
         queryWrapper.eq(SparePartApply::getDelFlag, CommonConstant.DEL_FLAG_0);
-        queryWrapper.likeRight(SparePartApply::getCreateTime,str);
+        queryWrapper.likeRight(SparePartApply::getCode,str);
         queryWrapper.orderByDesc(SparePartApply::getCreateTime);
         queryWrapper.last("limit 1");
         SparePartApply sparePartApply = sparePartApplyMapper.selectOne(queryWrapper);
+
         String format = "";
         if(sparePartApply != null){
             String code = sparePartApply.getCode();
@@ -212,7 +214,7 @@ public class SparePartApplyServiceImpl extends ServiceImpl<SparePartApplyMapper,
         SimpleDateFormat date = new SimpleDateFormat("yyyyMMdd");
         str += date.format(new Date());
         queryWrapper.eq(StockOutOrderLevel2::getDelFlag, CommonConstant.DEL_FLAG_0);
-        queryWrapper.likeRight(StockOutOrderLevel2::getCreateTime,str);
+        queryWrapper.likeRight(StockOutOrderLevel2::getOrderCode,str);
         queryWrapper.orderByDesc(StockOutOrderLevel2::getCreateTime);
         queryWrapper.last("limit 1");
         StockOutOrderLevel2 orderLevel2 = stockOutOrderLevel2Mapper.selectOne(queryWrapper);

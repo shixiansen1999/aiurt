@@ -109,6 +109,7 @@ public class SparePartApplyMaterial implements Serializable {
     /**物资名称-用于前端回显*/
     @Excel(name = "物资名称", width = 15)
     @ApiModelProperty(value = "物资名称")
+    @TableField(exist = false)
     private String materialName;
     /**物资分类-用于前端回显*/
     @ApiModelProperty(value = "物资分类")
@@ -121,6 +122,7 @@ public class SparePartApplyMaterial implements Serializable {
     /**现有库存-用于前端回显*/
     @Excel(name = "现有库存")
     @ApiModelProperty(value = "现有库存")
+    @TableField(exist = false)
     private  Integer  num;
     /**单位-用于前端回显*/
     @ApiModelProperty(value = " 单位")
