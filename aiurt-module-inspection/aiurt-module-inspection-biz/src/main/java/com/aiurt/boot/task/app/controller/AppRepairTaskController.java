@@ -52,7 +52,7 @@ public class AppRepairTaskController extends BaseController<RepairTask, IRepairT
      * @param pageSize
      * @return
      */
-    @AutoLog(value = "app检修任务-检修任务列表查询")
+    @AutoLog(value = "app检修任务-检修任务列表查询", operateType =  1, operateTypeAlias = "检修任务列表", module = ModuleType.INSPECTION)
     @ApiOperation(value = "app检修任务-检修任务列表查询", notes = "app检修任务-检修任务列表查询")
     @GetMapping(value = "/appRepairTaskPageList")
     @ApiResponses({
@@ -75,7 +75,7 @@ public class AppRepairTaskController extends BaseController<RepairTask, IRepairT
      * @param pageSize
      * @return
      */
-    @AutoLog(value = "app检修任务-检修工单列表")
+    @AutoLog(value = "app检修任务-检修工单列表查询", operateType =  1, operateTypeAlias = "检修工单列表", module = ModuleType.INSPECTION)
     @ApiOperation(value = "app检修任务-检修工单列表", notes = "app检修任务-检修工单列表")
     @GetMapping(value = "/appRepairSelectTasklet")
     @ApiResponses({
@@ -96,7 +96,7 @@ public class AppRepairTaskController extends BaseController<RepairTask, IRepairT
      * @param deviceId
      * @return
      */
-    @AutoLog(value = "app检修任务-检修工单详情")
+    @AutoLog(value = "app检修任务-检修工单详情查询", operateType =  1, operateTypeAlias = "检修工单详情", module = ModuleType.INSPECTION)
     @ApiOperation(value = "app检修任务-检修工单详情", notes = "app检修任务-检修工单详情")
     @GetMapping(value = "/appRepairSelectCheckList")
     @ApiResponses({

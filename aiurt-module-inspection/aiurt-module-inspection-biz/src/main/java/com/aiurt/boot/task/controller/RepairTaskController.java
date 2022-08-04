@@ -9,6 +9,7 @@ import com.aiurt.boot.task.entity.RepairTask;
 import com.aiurt.boot.task.entity.RepairTaskEnclosure;
 import com.aiurt.boot.task.service.IRepairTaskService;
 import com.aiurt.common.aspect.annotation.AutoLog;
+import com.aiurt.common.constant.enums.ModuleType;
 import com.aiurt.common.system.base.controller.BaseController;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -73,7 +74,7 @@ public class RepairTaskController extends BaseController<RepairTask, IRepairTask
      * @param pageSize
      * @return
      */
-    @AutoLog(value = "检修任务-检修任务列表查询")
+    @AutoLog(value = "检修任务-检修任务列表查询", operateType =  1, operateTypeAlias = "检修任务列表", module = ModuleType.INSPECTION)
     @ApiOperation(value = "检修任务-检修任务列表查询", notes = "检修任务-检修任务列表查询")
     @GetMapping(value = "/repairTaskPageList")
     @ApiResponses({
@@ -96,7 +97,7 @@ public class RepairTaskController extends BaseController<RepairTask, IRepairTask
      * @param pageSize
      * @return
      */
-    @AutoLog(value = "检修任务-检修任务清单查询")
+    @AutoLog(value = "检修任务-检修任务清单查询", operateType =  1, operateTypeAlias = "检修任务清单", module = ModuleType.INSPECTION)
     @ApiOperation(value = "检修任务-检修任务清单查询", notes = "检修任务-检修任务清单查询")
     @GetMapping(value = "/repairSelectTasklet")
     @ApiResponses({
@@ -139,7 +140,7 @@ public class RepairTaskController extends BaseController<RepairTask, IRepairTask
      * @param resultId
      * @return
      */
-    @AutoLog(value = "检修任务-检修结果附件查询")
+    @AutoLog(value = "检修任务-检修结果附件查询", operateType =  1, operateTypeAlias = "检修结果附件", module = ModuleType.INSPECTION)
     @ApiOperation(value = "检修任务-检修结果附件查询", notes = "检修任务-检修结果附件查询")
     @GetMapping(value = "/selectEnclosure")
     @ApiResponses({
@@ -157,8 +158,8 @@ public class RepairTaskController extends BaseController<RepairTask, IRepairTask
      * @param taskId
      * @return
      */
-    @AutoLog(value = "检修任务-专业和专业子系统下拉列表")
-    @ApiOperation(value = "检修任务-专业和专业子系统下拉列表", notes = "检修任务-专业和专业子系统下拉列表")
+    @AutoLog(value = "检修任务-专业和专业子系统查询", operateType =  1, operateTypeAlias = "专业和专业子系统下拉列表", module = ModuleType.INSPECTION)
+    @ApiOperation(value = "检修任务-专业和专业子系统查询", notes = "检修任务-专业和专业子系统下拉列表")
     @GetMapping(value = "/selectMajorCodeList")
     @ApiResponses({
             @ApiResponse(code = 200, message = "OK", response = MajorDTO.class)
@@ -175,8 +176,8 @@ public class RepairTaskController extends BaseController<RepairTask, IRepairTask
      * @param taskId
      * @return
      */
-    @AutoLog(value = "检修任务-设备类型和检修标准下拉列表")
-    @ApiOperation(value = "检修任务-设备类型和检修标准下拉列表", notes = "检修任务-设备类型和检修标准下拉列表")
+    @AutoLog(value = "检修任务-设备类型和检修标准查询", operateType =  1, operateTypeAlias = "专业和专业子系统下拉列表", module = ModuleType.INSPECTION)
+    @ApiOperation(value = "检修任务-设备类型和检修标准查询", notes = "检修任务-设备类型和检修标准下拉列表")
     @GetMapping(value = "/selectEquipmentOverhaulList")
     @ApiResponses({
             @ApiResponse(code = 200, message = "OK", response = EquipmentOverhaulDTO.class)
@@ -196,8 +197,8 @@ public class RepairTaskController extends BaseController<RepairTask, IRepairTask
      * @param deviceId
      * @return
      */
-    @AutoLog(value = "检修任务-检修单详情")
-    @ApiOperation(value = "检修任务-检修单详情", notes = "检修任务-检修单详情")
+    @AutoLog(value = "检修任务-检修单详情查询", operateType =  1, operateTypeAlias = "检修单详情", module = ModuleType.INSPECTION)
+    @ApiOperation(value = "检修任务-检修单详情查询", notes = "检修任务-检修单详情")
     @GetMapping(value = "/selectCheckList")
     @ApiResponses({
             @ApiResponse(code = 200, message = "OK", response = CheckListDTO.class)
