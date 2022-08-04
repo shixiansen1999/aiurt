@@ -62,6 +62,7 @@ public class SysInfoListController  extends BaseController<SysAnnouncement, SysI
      * @param req
      * @return
      */
+    @AutoLog(value = "特情消息-特情消息列表-查询", operateType =  1, operateTypeAlias = "查询", permissionUrl = "/specialSituation")
     @ApiOperation(value = " 特情消息发送分页列表查询", notes = " 特情消息发送分页列表查询")
     @ApiResponses({
             @ApiResponse(code = 200, message = "OK", response = SysAnnouncement.class)
@@ -124,6 +125,7 @@ public class SysInfoListController  extends BaseController<SysAnnouncement, SysI
      * @param sysAnnouncement
      * @return
      */
+    @AutoLog(value = "特情消息-特情消息列表-添加发布", operateType =  2, operateTypeAlias = "添加-添加发布", permissionUrl = "/specialSituation")
     @ApiOperation(value = " 添加发布特情", notes = " 添加发布特情")
     @ApiResponses({
             @ApiResponse(code = 200, message = "OK", response = SysAnnouncement.class)
@@ -162,6 +164,7 @@ public class SysInfoListController  extends BaseController<SysAnnouncement, SysI
      * @param sysAnnouncement
      * @return
      */
+    @AutoLog(value = "特情消息-特情消息列表-添加发布（移动端）", operateType =  2, operateTypeAlias = "添加-添加发布（移动端）", permissionUrl = "/specialSituation")
     @ApiOperation(value = " 添加发布特情（移动端）", notes = " 添加发布特情（移动端）")
     @ApiResponses({
             @ApiResponse(code = 200, message = "OK", response = SysAnnouncement.class)
@@ -198,7 +201,7 @@ public class SysInfoListController  extends BaseController<SysAnnouncement, SysI
      * @param id
      * @return
      */
-    @AutoLog(value = " 通过id查看该通告的人是否已读")
+    @AutoLog(value = "特情消息-特情消息列表-通过id查看该通告", operateType =  1, operateTypeAlias = "查询-通过id查看该通告", permissionUrl = "/specialSituation")
     @ApiOperation(value = " 通过id查看该通告的人是否已读", notes = " 通过id查看该通告的人是否已读")
     @GetMapping(value = "/queryById")
     public Result<IPage<SysAnnouncementSend>> queryById(@RequestParam(name = "id", required = true) String id,
@@ -243,6 +246,7 @@ public class SysInfoListController  extends BaseController<SysAnnouncement, SysI
      * @param req
      * @return
      */
+    @AutoLog(value = "特情消息-特情消息列表-我的通知分页列表查询", operateType =  1, operateTypeAlias = "查询-我的通知分页列表查询", permissionUrl = "/specialSituation")
     @ApiOperation(value = " 我的通知分页列表查询", notes = " 我的通知分页列表查询")
     @ApiResponses({
             @ApiResponse(code = 200, message = "OK", response = SysAnnouncement.class)
@@ -271,7 +275,7 @@ public class SysInfoListController  extends BaseController<SysAnnouncement, SysI
     /**
      * 修改阅读状态
      */
-    @AutoLog(value = "修改阅读状态")
+    @AutoLog(value = "特情消息-特情消息列表-修改阅读状态", operateType =  3, operateTypeAlias = "修改-修改阅读状态", permissionUrl = "/specialSituation")
     @ApiOperation(value = "修改阅读状态", notes = "修改阅读状态")
     @ApiResponses({
             @ApiResponse(code = 200, message = "OK", response = SysAnnouncementSend.class)
@@ -288,7 +292,7 @@ public class SysInfoListController  extends BaseController<SysAnnouncement, SysI
      * @param ids
      * @return
      */
-    @AutoLog(value = "特情管理-通过id删除")
+    @AutoLog(value = "特情消息-特情消息列表-通过id删除", operateType =  4, operateTypeAlias = "删除-通过id删除", permissionUrl = "/specialSituation/SpecialSituationList")
     @ApiOperation(value="特情管理-通过id删除", notes="特情管理-通过id删除")
     @DeleteMapping(value = "/delete")
     public Result<?> delete(@RequestParam(name="ids",required=true) String ids) {
@@ -307,7 +311,7 @@ public class SysInfoListController  extends BaseController<SysAnnouncement, SysI
      * @param request
      * @param sysAnnouncement
      */
-    @AutoLog(value = "特情消息导出")
+    @AutoLog(value = "特情消息-特情消息列表-特情消息导出", operateType =  6, operateTypeAlias = "导出-特情消息导出", permissionUrl = "/specialSituation/SpecialSituationList")
     @ApiOperation(value = "特情消息导出", notes = "特情消息导出")
     @RequestMapping(value = "/exportXls")
     public ModelAndView exportXls(HttpServletRequest request, SysAnnouncement sysAnnouncement) {

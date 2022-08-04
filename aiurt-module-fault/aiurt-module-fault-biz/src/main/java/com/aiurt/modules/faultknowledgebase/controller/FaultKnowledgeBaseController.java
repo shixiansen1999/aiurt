@@ -70,7 +70,7 @@ public class FaultKnowledgeBaseController extends BaseController<FaultKnowledgeB
 	 * @param req
 	 * @return
 	 */
-	//@AutoLog(value = "故障知识库-分页列表查询")
+	@AutoLog(value = "故障知识库-故障知识库分页列表-查询", operateType =  1, operateTypeAlias = "查询", permissionUrl = "/fault/faultKnowledgeBaseList")
 	@ApiOperation(value="故障知识库-分页列表查询", notes="故障知识库-分页列表查询")
 	@GetMapping(value = "/list")
 	@PermissionData(pageComponent = "fault/FaultKnowledgeBaseListChange")
@@ -89,7 +89,7 @@ public class FaultKnowledgeBaseController extends BaseController<FaultKnowledgeB
 	 * @param faultKnowledgeBase
 	 * @return
 	 */
-	@AutoLog(value = "故障知识库-添加")
+	@AutoLog(value = "故障知识库-故障知识库分页列表-添加", operateType =  2, operateTypeAlias = "添加", permissionUrl = "/fault/faultKnowledgeBaseList")
 	@ApiOperation(value="故障知识库-添加", notes="故障知识库-添加")
 	@PostMapping(value = "/add")
 	public Result<String> add(@RequestBody FaultKnowledgeBase faultKnowledgeBase) {
@@ -111,7 +111,7 @@ public class FaultKnowledgeBaseController extends BaseController<FaultKnowledgeB
 	  * @param approvedResult
 	  * @return
 	  */
-	 @AutoLog(value = "故障知识库-审批")
+	 @AutoLog(value = "故障知识库-故障知识库分页列表-审批", operateType =  3, operateTypeAlias = "修改-审批", permissionUrl = "/fault/faultKnowledgeBaseList")
 	 @ApiOperation(value="故障知识库-审批", notes="故障知识库-审批")
 	 @RequestMapping(value = "/approval", method = {RequestMethod.PUT,RequestMethod.POST})
 	 public Result<String> approval(@RequestParam(name = "approvedRemark") String approvedRemark,
@@ -125,7 +125,7 @@ public class FaultKnowledgeBaseController extends BaseController<FaultKnowledgeB
 	 * @param faultKnowledgeBase
 	 * @return
 	 */
-	@AutoLog(value = "故障知识库-编辑")
+	@AutoLog(value = "故障知识库-故障知识库分页列表-编辑", operateType =  3, operateTypeAlias = "修改-编辑", permissionUrl = "/fault/faultKnowledgeBaseList")
 	@ApiOperation(value="故障知识库-编辑", notes="故障知识库-编辑")
 	@RequestMapping(value = "/edit", method = {RequestMethod.PUT,RequestMethod.POST})
 	public Result<String> edit(@RequestBody FaultKnowledgeBase faultKnowledgeBase) {
@@ -161,7 +161,7 @@ public class FaultKnowledgeBaseController extends BaseController<FaultKnowledgeB
 	 * @param id
 	 * @return
 	 */
-	@AutoLog(value = "故障知识库-通过id删除")
+	@AutoLog(value = "故障知识库-故障知识库分页列表-通过id删除", operateType =  4, operateTypeAlias = "删除-通过id删除", permissionUrl = "/fault/faultKnowledgeBaseList")
 	@ApiOperation(value="故障知识库-通过id删除", notes="故障知识库-通过id删除")
 	@DeleteMapping(value = "/delete")
 	public Result<String> delete(@RequestParam(name="id",required=true) String id) {
@@ -175,7 +175,7 @@ public class FaultKnowledgeBaseController extends BaseController<FaultKnowledgeB
 	 * @param ids
 	 * @return
 	 */
-	@AutoLog(value = "故障知识库-批量删除")
+	@AutoLog(value = "故障知识库-故障知识库分页列表-批量删除", operateType =  4, operateTypeAlias = "删除-批量删除", permissionUrl = "/fault/faultKnowledgeBaseList")
 	@ApiOperation(value="故障知识库-批量删除", notes="故障知识库-批量删除")
 	@DeleteMapping(value = "/deleteBatch")
 	public Result<String> deleteBatch(@RequestParam(name="ids",required=true) String ids) {
@@ -189,7 +189,7 @@ public class FaultKnowledgeBaseController extends BaseController<FaultKnowledgeB
 	 * @param id
 	 * @return
 	 */
-	//@AutoLog(value = "故障知识库-通过id查询")
+	@AutoLog(value = "故障知识库-故障知识库分页列表-通过id查询", operateType =  1, operateTypeAlias = "查询-通过id查询", permissionUrl = "/fault/faultKnowledgeBaseList")
 	@ApiOperation(value="故障知识库-通过id查询", notes="故障知识库-通过id查询")
 	@GetMapping(value = "/queryById")
 	public Result<FaultKnowledgeBase> queryById(@RequestParam(name="id",required=true) String id) {
@@ -210,6 +210,7 @@ public class FaultKnowledgeBaseController extends BaseController<FaultKnowledgeB
     * @param request
     * @param faultKnowledgeBase
     */
+	@AutoLog(value = "故障知识库-故障知识库分页列表-导出excel", operateType =  6, operateTypeAlias = "导出excel", permissionUrl = "/fault/faultKnowledgeBaseList")
 	@ApiOperation(value="故障知识库-导出excel", notes="故障知识库-导出excel")
     @RequestMapping(value = "/exportXls")
     public ModelAndView exportXls(HttpServletRequest request, FaultKnowledgeBase faultKnowledgeBase) {
@@ -223,6 +224,7 @@ public class FaultKnowledgeBaseController extends BaseController<FaultKnowledgeB
     * @param response
     * @return
     */
+	@AutoLog(value = "故障知识库-故障知识库分页列表-通过excel导入数据", operateType =  5, operateTypeAlias = "通过excel导入数据", permissionUrl = "/fault/faultKnowledgeBaseList")
 	@ApiOperation(value="故障知识库-通过excel导入数据", notes="故障知识库-通过excel导入数据")
     @RequestMapping(value = "/importExcel", method = RequestMethod.POST)
     public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) {
@@ -284,7 +286,7 @@ public class FaultKnowledgeBaseController extends BaseController<FaultKnowledgeB
 	  * @param req
 	  * @return
 	  */
-	 @AutoLog(value = "知识库的故障分页查询")
+	 @AutoLog(value = "故障知识库-故障知识库分页列表-知识库的故障分页查询", operateType =  1, operateTypeAlias = "查询-知识库的故障分页查询", permissionUrl = "/fault/faultKnowledgeBaseList")
 	 @ApiOperation(value="知识库的故障分页查询", notes="fault-分页列表查询")
 	 @GetMapping(value = "/getFault")
 	 @ApiResponses({
@@ -303,6 +305,7 @@ public class FaultKnowledgeBaseController extends BaseController<FaultKnowledgeB
 	  * pc设备分类查询
 	  * @return
 	  */
+	 @AutoLog(value = "故障知识库-故障知识库分页列表-设备分类查询", operateType =  1, operateTypeAlias = "查询-设备分类查询", permissionUrl = "/fault/faultKnowledgeBaseList")
 	 @ApiOperation(value="故障知识库-设备分类查询", notes="device_type-设备分类查询")
 	 @GetMapping(value = "/getDeviceType")
 	 @ApiResponses({
@@ -319,6 +322,7 @@ public class FaultKnowledgeBaseController extends BaseController<FaultKnowledgeB
 	  * 设备组件查询
 	  * @return
 	  */
+	 @AutoLog(value = "故障知识库-故障知识库分页列表-设备组件查询", operateType =  1, operateTypeAlias = "查询-设备组件查询", permissionUrl = "/fault/faultKnowledgeBaseList")
 	 @ApiOperation(value="故障知识库-设备组件查询", notes="device_assembly-设备组件查询")
 	 @GetMapping(value = "/getDeviceAssembly")
 	 @ApiResponses({

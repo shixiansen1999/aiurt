@@ -1,40 +1,38 @@
 package com.aiurt.modules.faultanalysisreport.controller;
 
-import java.util.List;
-import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
+import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.aspect.annotation.PermissionData;
+import com.aiurt.common.system.base.controller.BaseController;
 import com.aiurt.modules.fault.entity.Fault;
 import com.aiurt.modules.fault.service.IFaultService;
 import com.aiurt.modules.faultanalysisreport.constant.FaultConstant;
 import com.aiurt.modules.faultanalysisreport.dto.FaultDTO;
+import com.aiurt.modules.faultanalysisreport.entity.FaultAnalysisReport;
+import com.aiurt.modules.faultanalysisreport.service.IFaultAnalysisReportService;
 import com.aiurt.modules.faultknowledgebase.service.IFaultKnowledgeBaseService;
 import com.aiurt.modules.faultknowledgebasetype.mapper.FaultKnowledgeBaseTypeMapper;
 import com.aiurt.modules.faulttype.entity.FaultType;
 import com.aiurt.modules.faulttype.mapper.FaultTypeMapper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
-import com.aiurt.modules.faultanalysisreport.entity.FaultAnalysisReport;
-import com.aiurt.modules.faultanalysisreport.service.IFaultAnalysisReportService;
-
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import lombok.extern.slf4j.Slf4j;
-
 import org.jeecg.common.system.vo.LoginUser;
-import com.aiurt.common.system.base.controller.BaseController;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import com.aiurt.common.aspect.annotation.AutoLog;
+
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.util.List;
 
  /**
  * @Description: fault_analysis_report
@@ -68,7 +66,7 @@ public class FaultAnalysisReportController extends BaseController<FaultAnalysisR
 	 * @param req
 	 * @return
 	 */
-	//@AutoLog(value = "fault_analysis_report-分页列表查询")
+	@AutoLog(value = "故障分析-故障分析列表-查询", operateType =  1, operateTypeAlias = "查询", permissionUrl = "/fault/faultAnalysisReportList")
 	@ApiOperation(value="故障分析-分页列表查询", notes="故障分析-分页列表查询")
 	@GetMapping(value = "/list")
 	@PermissionData(pageComponent = "fault/FaultAnalysisReportListChange")
@@ -87,7 +85,7 @@ public class FaultAnalysisReportController extends BaseController<FaultAnalysisR
 	 * @param faultAnalysisReport
 	 * @return
 	 */
-	@AutoLog(value = "故障分析-添加")
+	@AutoLog(value = "故障分析-故障分析列表-添加", operateType =  2, operateTypeAlias = "添加", permissionUrl = "/fault/faultAnalysisReportList")
 	@ApiOperation(value="故障分析-添加", notes="故障分析-添加")
 	@PostMapping(value = "/add")
 	public Result<String> add(@RequestBody FaultAnalysisReport faultAnalysisReport) {
@@ -105,7 +103,7 @@ public class FaultAnalysisReportController extends BaseController<FaultAnalysisR
 	  * @param id
 	  * @return
 	  */
-	 @AutoLog(value = "故障分析-审批")
+	 @AutoLog(value = "故障分析-故障分析列表-审批", operateType =  3, operateTypeAlias = "修改-审批", permissionUrl = "/fault/faultAnalysisReportList")
 	 @ApiOperation(value="故障分析-审批", notes="故障分析-审批")
 	 @RequestMapping(value = "/approval", method = {RequestMethod.PUT,RequestMethod.POST})
 	 public Result<String> approval(@RequestParam(name = "approvedRemark") String approvedRemark,
@@ -120,7 +118,7 @@ public class FaultAnalysisReportController extends BaseController<FaultAnalysisR
 	 * @param faultDTO
 	 * @return
 	 */
-	@AutoLog(value = "故障分析-编辑提交")
+	@AutoLog(value = "故障分析-故障分析列表-编辑提交", operateType =  3, operateTypeAlias = "修改-编辑提交", permissionUrl = "/fault/faultAnalysisReportList")
 	@ApiOperation(value="故障分析-编辑提交", notes="故障分析-编辑提交")
 	@ApiResponses({
 			@ApiResponse(code = 200, message = "OK", response = FaultDTO.class)
@@ -136,7 +134,7 @@ public class FaultAnalysisReportController extends BaseController<FaultAnalysisR
 	 * @param id
 	 * @return
 	 */
-	@AutoLog(value = "故障分析-通过id删除")
+	@AutoLog(value = "故障分析-故障分析列表-通过id删除", operateType =  4, operateTypeAlias = "删除-通过id删除", permissionUrl = "/fault/faultAnalysisReportList")
 	@ApiOperation(value="故障分析-通过id删除", notes="故障分析-通过id删除")
 	@DeleteMapping(value = "/delete")
 	public Result<String> delete(@RequestParam(name="id",required=true) String id) {
@@ -149,29 +147,13 @@ public class FaultAnalysisReportController extends BaseController<FaultAnalysisR
 	 * @param ids
 	 * @return
 	 */
-	@AutoLog(value = "故障分析-批量删除")
+	@AutoLog(value = "故障分析-故障分析列表-批量删除", operateType =  4, operateTypeAlias = "删除-批量删除", permissionUrl = "/fault/faultAnalysisReportList")
 	@ApiOperation(value="故障分析-批量删除", notes="故障分析-批量删除")
 	@DeleteMapping(value = "/deleteBatch")
 	public Result<String> deleteBatch(@RequestParam(name="ids",required=true) String ids) {
 		return faultAnalysisReportService.deleteBatch(ids);
 	}
 
-	/**
-	 * 通过id查询
-	 *
-	 * @param id
-	 * @return
-	 */
-	//@AutoLog(value = "fault_analysis_report-通过id查询")
-	@ApiOperation(value="故障分析-通过id查询(停用)", notes="故障分析-通过id查询")
-	@GetMapping(value = "/queryById")
-	public Result<FaultAnalysisReport> queryById(@RequestParam(name="id",required=true) String id) {
-		FaultAnalysisReport faultAnalysisReport = faultAnalysisReportService.getById(id);
-		if(faultAnalysisReport==null) {
-			return Result.error("未找到对应数据");
-		}
-		return Result.OK(faultAnalysisReport);
-	}
 
     /**
     * 导出excel
@@ -179,6 +161,7 @@ public class FaultAnalysisReportController extends BaseController<FaultAnalysisR
     * @param request
     * @param faultAnalysisReport
     */
+	@AutoLog(value = "故障分析-故障分析列表-导出excel", operateType =  6, operateTypeAlias = "导出excel", permissionUrl = "/fault/faultAnalysisReportList")
     @RequestMapping(value = "/exportXls")
     public ModelAndView exportXls(HttpServletRequest request, FaultAnalysisReport faultAnalysisReport) {
         return super.exportXls(request, faultAnalysisReport, FaultAnalysisReport.class, "fault_analysis_report");
@@ -191,13 +174,14 @@ public class FaultAnalysisReportController extends BaseController<FaultAnalysisR
     * @param response
     * @return
     */
+	@AutoLog(value = "故障分析-故障分析列表-通过excel导入数据", operateType =  5, operateTypeAlias = "通过excel导入数据", permissionUrl = "/fault/faultAnalysisReportList")
     @RequestMapping(value = "/importExcel", method = RequestMethod.POST)
     public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) {
         return super.importExcel(request, response, FaultAnalysisReport.class);
     }
 
 	 /**
-	  * 新增故障分析的故障分页查询
+	  * 新增故障分析中的故障分页查询
 	  *
 	  * @param faultDTO
 	  * @param pageNo
@@ -205,7 +189,7 @@ public class FaultAnalysisReportController extends BaseController<FaultAnalysisR
 	  * @param req
 	  * @return
 	  */
-	 @AutoLog(value = "新增故障分析的故障分页查询")
+	 @AutoLog(value = "故障分析-故障分析列表-新增故障分析中的故障分页查询", operateType =  1, operateTypeAlias = "查询-新增故障分析中的故障分页查询", permissionUrl = "/fault/faultAnalysisReportList")
 	 @ApiOperation(value="新增故障分析的故障分页查询", notes="fault-分页列表查询")
 	 @GetMapping(value = "/getFault")
 	 @ApiResponses({
@@ -226,8 +210,8 @@ public class FaultAnalysisReportController extends BaseController<FaultAnalysisR
 	  * @param id
 	  * @return
 	  */
-	 @AutoLog(value = "提交中的故障分析的故障详情")
-	 @ApiOperation(value="提交中的故障分析的故障详情", notes="fault-提交中的故障分析的故障详情")
+	 @AutoLog(value = "故障分析-故障分析列表-故障分析的详情", operateType =  1, operateTypeAlias = "查询-故障分析的详情", permissionUrl = "/fault/faultAnalysisReportList")
+	 @ApiOperation(value="故障分析的详情", notes="fault-故障分析的详情")
 	 @GetMapping(value = "/getDetail")
 	 @ApiResponses({
 			 @ApiResponse(code = 200, message = "OK", response = FaultDTO.class)
@@ -242,7 +226,7 @@ public class FaultAnalysisReportController extends BaseController<FaultAnalysisR
 	 * @param faultDTO
 	 * @return
 	 */
-	@AutoLog(value = "提交故障分析")
+	@AutoLog(value = "故障分析-故障分析列表-提交故障分析", operateType =  2, operateTypeAlias = "查询-提交故障分析", permissionUrl = "/fault/faultAnalysisReportList")
 	@ApiOperation(value="提交故障分析", notes="fault-提交故障分析")
 	@PostMapping(value = "/addDetail")
 	@ApiResponses({
@@ -257,6 +241,7 @@ public class FaultAnalysisReportController extends BaseController<FaultAnalysisR
 	  * 故障类别
 	  * @return
 	  */
+	 @AutoLog(value = "故障分析-故障分析列表-故障类别", operateType =  1, operateTypeAlias = "查询-故障类别", permissionUrl = "/fault/faultAnalysisReportList")
 	 @ApiOperation(value="故障分析-故障类别", notes="故障分析-故障类别")
 	 @GetMapping(value = "/getFaultType")
 	 @ApiResponses({
@@ -280,6 +265,7 @@ public class FaultAnalysisReportController extends BaseController<FaultAnalysisR
 	  * @param faultCode
 	  * @return
 	  */
+	 @AutoLog(value = "故障分析-故障分析列表-通过id查询详情", operateType =  1, operateTypeAlias = "查询-通过id查询详情", permissionUrl = "/fault/faultAnalysisReportList")
 	 @ApiOperation(value="故障分析-通过id查询详情", notes="故障分析-通过id查询详情")
 	 @GetMapping(value = "/readone")
 	 @ApiResponses({

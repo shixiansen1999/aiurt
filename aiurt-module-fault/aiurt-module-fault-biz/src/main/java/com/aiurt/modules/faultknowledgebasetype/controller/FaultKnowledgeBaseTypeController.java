@@ -54,7 +54,7 @@ public class FaultKnowledgeBaseTypeController extends BaseController<FaultKnowle
 	 * @param req
 	 * @return
 	 */
-	//@AutoLog(value = "故障知识分类-分页列表查询")
+	@AutoLog(value = "故障知识分类-故障知识分类列表-查询", operateType =  1, operateTypeAlias = "查询", permissionUrl = "/fault/faultKnowledgeBaseList")
 	@ApiOperation(value="故障知识分类-分页列表查询", notes="故障知识分类-分页列表查询")
 	@GetMapping(value = "/list")
 	public Result<IPage<FaultKnowledgeBaseType>> queryPageList(FaultKnowledgeBaseType faultKnowledgeBaseType,
@@ -73,7 +73,7 @@ public class FaultKnowledgeBaseTypeController extends BaseController<FaultKnowle
 	 * @param faultKnowledgeBaseType
 	 * @return
 	 */
-	@AutoLog(value = "故障知识分类-添加")
+	@AutoLog(value = "故障知识分类-故障知识分类列表-添加", operateType =  2, operateTypeAlias = "添加", permissionUrl = "/fault/faultKnowledgeBaseList")
 	@ApiOperation(value="故障知识分类-添加", notes="故障知识分类-添加")
 	@PostMapping(value = "/add")
 	public Result<String> add(@RequestBody FaultKnowledgeBaseType faultKnowledgeBaseType) {
@@ -87,7 +87,7 @@ public class FaultKnowledgeBaseTypeController extends BaseController<FaultKnowle
 	 * @param faultKnowledgeBaseType
 	 * @return
 	 */
-	@AutoLog(value = "故障知识分类-编辑")
+	@AutoLog(value = "故障知识分类-故障知识分类列表-编辑", operateType =  3, operateTypeAlias = "编辑", permissionUrl = "/fault/faultKnowledgeBaseList")
 	@ApiOperation(value="故障知识分类-编辑", notes="故障知识分类-编辑")
 	@RequestMapping(value = "/edit", method = {RequestMethod.PUT,RequestMethod.POST})
 	public Result<String> edit(@RequestBody FaultKnowledgeBaseType faultKnowledgeBaseType) {
@@ -128,7 +128,7 @@ public class FaultKnowledgeBaseTypeController extends BaseController<FaultKnowle
 	 * @param id
 	 * @return
 	 */
-	@AutoLog(value = "故障知识分类-通过id删除")
+	@AutoLog(value = "故障知识分类-故障知识分类列表-通过id删除", operateType =  4, operateTypeAlias = "删除-通过id删除", permissionUrl = "/fault/faultKnowledgeBaseList")
 	@ApiOperation(value="故障知识分类-通过id删除", notes="故障知识分类-通过id删除")
 	@DeleteMapping(value = "/delete")
 	public Result<String> delete(@RequestParam(name="id",required=true) String id) {
@@ -149,7 +149,7 @@ public class FaultKnowledgeBaseTypeController extends BaseController<FaultKnowle
 	 * @param ids
 	 * @return
 	 */
-	@AutoLog(value = "故障知识分类-批量删除")
+	@AutoLog(value = "故障知识分类-故障知识分类列表-批量删除", operateType =  4, operateTypeAlias = "删除-批量删除", permissionUrl = "/fault/faultKnowledgeBaseList")
 	@ApiOperation(value="故障知识分类-批量删除", notes="故障知识分类-批量删除")
 	@DeleteMapping(value = "/deleteBatch")
 	public Result<String> deleteBatch(@RequestParam(name="ids",required=true) String ids) {
@@ -163,7 +163,7 @@ public class FaultKnowledgeBaseTypeController extends BaseController<FaultKnowle
 	 * @param id
 	 * @return
 	 */
-	//@AutoLog(value = "故障知识分类-通过id查询")
+	@AutoLog(value = "故障知识分类-故障知识分类列表-通过id查询", operateType =  1, operateTypeAlias = "查询-通过id查询", permissionUrl = "/fault/faultKnowledgeBaseList")
 	@ApiOperation(value="故障知识分类-通过id查询", notes="故障知识分类-通过id查询")
 	@GetMapping(value = "/queryById")
 	public Result<FaultKnowledgeBaseType> queryById(@RequestParam(name="id",required=true) String id) {
@@ -180,6 +180,7 @@ public class FaultKnowledgeBaseTypeController extends BaseController<FaultKnowle
     * @param request
     * @param faultKnowledgeBaseType
     */
+	@AutoLog(value = "故障知识分类-故障知识分类列表-导出excel", operateType =  6, operateTypeAlias = "导出excel", permissionUrl = "/fault/faultKnowledgeBaseList")
     @RequestMapping(value = "/exportXls")
     public ModelAndView exportXls(HttpServletRequest request, FaultKnowledgeBaseType faultKnowledgeBaseType) {
         return super.exportXls(request, faultKnowledgeBaseType, FaultKnowledgeBaseType.class, "故障知识分类");
@@ -192,6 +193,7 @@ public class FaultKnowledgeBaseTypeController extends BaseController<FaultKnowle
     * @param response
     * @return
     */
+	@AutoLog(value = "故障知识分类-故障知识分类列表-通过excel导入数据", operateType =  5, operateTypeAlias = "通过excel导入数据", permissionUrl = "/fault/faultKnowledgeBaseList")
     @RequestMapping(value = "/importExcel", method = RequestMethod.POST)
     public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) {
         return super.importExcel(request, response, FaultKnowledgeBaseType.class);
@@ -202,6 +204,7 @@ public class FaultKnowledgeBaseTypeController extends BaseController<FaultKnowle
 	  *
 	  * @return
 	  */
+	 @AutoLog(value = "故障知识分类-故障知识分类列表-知识库类别树查询", operateType =  1, operateTypeAlias = "查询-知识库类别树查询", permissionUrl = "/fault/faultKnowledgeBaseList")
 	 @ApiOperation(value = "故障知识分类-知识库类别树", notes = "知识库类别树")
 	 @GetMapping(value = "/faultKnowledgeBaseTypeTreeList")
 	 @ApiResponses({
