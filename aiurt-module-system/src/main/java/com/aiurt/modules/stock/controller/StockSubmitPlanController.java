@@ -87,9 +87,16 @@ public class StockSubmitPlanController {
     @AutoLog(value = "二级库管理-提报计划-获取已有数据的部门下拉", operateType = 1, operateTypeAlias = "查询", permissionUrl = "/secondLevelWarehouse/EscalationPlanList")
     @ApiOperation(value = "二级库管理-提报计划-获取已有数据的部门下拉", notes = "二级库管理-提报计划-获取已有数据的部门下拉")
     @GetMapping(value = "/getOrgSelect")
+    @PermissionData(pageComponent = "secondLevelWarehouse/EscalationPlanList")
     public Result<?> getOrgSelect(HttpServletRequest req) {
-        List<Map<String, Object>> listres = iStockSubmitPlanService.getOrgSelect();
-        return Result.OK(listres);
+        Result<List<StockSubmitPlan>> result = new Result<List<StockSubmitPlan>>();
+        QueryWrapper<StockSubmitPlan> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("del_flag", CommonConstant.DEL_FLAG_0);
+        queryWrapper.orderByDesc("create_time");
+        List<StockSubmitPlan> listres = iStockSubmitPlanService.getOrgSelect();
+        result.setSuccess(true);
+        result.setResult(listres);
+        return result;
     }
 
     @AutoLog(value = "二级库管理-提报计划-添加", operateType = 2, operateTypeAlias = "添加", permissionUrl = "/secondLevelWarehouse/EscalationPlanList")

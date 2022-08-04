@@ -376,7 +376,7 @@ public class StockSubmitPlanServiceImpl extends ServiceImpl<StockSubmitPlanMappe
 	}
 
 	@Override
-	public List<Map<String, Object>> getOrgSelect() {
+	public List<StockSubmitPlan> getOrgSelect() {
 		return stockSubmitPlanMapper.getOrgSelect();
 	}
 }

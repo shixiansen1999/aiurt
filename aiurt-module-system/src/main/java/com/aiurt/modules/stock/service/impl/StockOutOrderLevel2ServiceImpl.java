@@ -133,6 +133,7 @@ public class StockOutOrderLevel2ServiceImpl extends ServiceImpl<StockOutOrderLev
 				sparePartInOrder.setOrgId(user.getOrgId());
 				sparePartInOrder.setConfirmStatus(CommonConstant.SPARE_PART_IN_ORDER_CONFRM_STATUS_0);
 				sparePartInOrder.setOutOrderCode(orderCode);
+				sparePartInOrder.setApplyCode(sparePartApply.getCode());
 				iSparePartInOrderService.save(sparePartInOrder);
                 //6. 二级库库存表数量修改
                 StockLevel2 stockLevel2 = stockLevel2Service.getOne(new QueryWrapper<StockLevel2>().eq("material_code",materialCode).eq("warehouse_code",warehouseCode).eq("del_flag", CommonConstant.DEL_FLAG_0));

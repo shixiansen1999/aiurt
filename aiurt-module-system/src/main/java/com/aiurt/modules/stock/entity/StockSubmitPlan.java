@@ -63,6 +63,10 @@ public class StockSubmitPlan extends DictEntity {
 	@Excel(name="机构编码",width=15)
 	@DeptFilterColumn
 	private String orgCode;
+	/**机构名称*/
+	@ApiModelProperty(value = "机构名称")
+	@TableField(exist = false)
+	private String departName;
 
 	/**提报用户ID*/
 	@Excel(name = "提报用户ID")

@@ -60,5 +60,5 @@ public interface IStockSubmitPlanService extends IService<StockSubmitPlan> {
      * 获取已有数据的部门下拉
      * @return
      */
-    List<Map<String, Object>> getOrgSelect();
+    List<StockSubmitPlan> getOrgSelect();
 }

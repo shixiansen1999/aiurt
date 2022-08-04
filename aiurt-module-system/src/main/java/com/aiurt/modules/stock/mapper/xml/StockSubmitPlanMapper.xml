@@ -2,13 +2,11 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.aiurt.modules.stock.mapper.StockSubmitPlanMapper">
     
-    <select id="getOrgSelect" resultType="java.util.Map">
-        select t.org_id, sd.*
-        from (select org_id
-            from stock_submit_plan sbm
-            where del_flag = 0
-            GROUP BY org_id) t
-        left join sys_depart sd on t.org_id = sd.id
+    <select id="getOrgSelect" resultType="com.aiurt.modules.stock.entity.StockSubmitPlan">
+        select sd.org_code, sd.depart_name
+        from stock_submit_plan stock_submit_plan
+        left join sys_depart sd on stock_submit_plan.org_code = sd.org_code
+        group by sd.org_code
         order by sd.create_time desc
     </select>
 

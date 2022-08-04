@@ -15,5 +15,5 @@ import java.util.Map;
  */
 @EnableDataPerm
 public interface StockSubmitPlanMapper extends BaseMapper<StockSubmitPlan> {
-    List<Map<String, Object>> getOrgSelect();
+    List<StockSubmitPlan> getOrgSelect();
 }
