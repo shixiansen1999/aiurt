@@ -176,6 +176,15 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
             PatrolTask patrolTask = patrolTaskMapper.selectOne(taskWrapper);
 
             if (ObjectUtil.isNotEmpty(patrolTask)) {
+                // 指派之前查询是否指派过巡检用户，存在则删除掉然后再添加(主要是重新生成接口)
+                QueryWrapper<PatrolTaskUser> taskUserWrapper = new QueryWrapper<>();
+                taskUserWrapper.lambda().eq(PatrolTaskUser::getTaskCode, listEntry.getKey());
+                List<PatrolTaskUser> taskUserList = patrolTaskUserMapper.selectList(taskUserWrapper);
+                if (CollectionUtil.isNotEmpty(taskUserList)) {
+                    List<String> collect = taskUserList.stream().map(l -> l.getId()).collect(Collectors.toList());
+                    patrolTaskUserMapper.deleteBatchIds(collect);
+                }
+
                 // 标记是否插入指派的用户信息
                 AtomicInteger insert = new AtomicInteger();
                 Optional.ofNullable(list).orElseGet(Collections::emptyList).stream().forEach(l -> {
