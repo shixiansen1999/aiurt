@@ -1,5 +1,6 @@
 package com.aiurt.modules.stock.entity;
 
+import com.aiurt.common.aspect.annotation.DeptFilterColumn;
 import com.aiurt.common.aspect.annotation.Dict;
 import com.aiurt.modules.basic.entity.DictEntity;
 import com.aiurt.modules.sparepart.entity.SparePartApply;
@@ -45,6 +46,12 @@ public class StockOutOrderLevel2 extends DictEntity {
 	@Excel(name = "申领单号")
 	@ApiModelProperty(value = "申领单号")
 	private  String  applyCode;
+
+	/**机构编码*/
+	@ApiModelProperty(value = "机构编码")
+	@Excel(name="机构编码",width=15)
+	@DeptFilterColumn
+	private String orgCode;
 
 	/**备注*/
 	@Excel(name = "备注")

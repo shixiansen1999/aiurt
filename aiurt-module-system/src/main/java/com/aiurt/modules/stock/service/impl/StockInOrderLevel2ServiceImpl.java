@@ -12,6 +12,8 @@ import com.aiurt.modules.stock.mapper.StockInOrderLevel2Mapper;
 import com.aiurt.modules.stock.service.*;
 import com.aiurt.modules.subsystem.entity.CsSubsystem;
 import com.aiurt.modules.subsystem.service.ICsSubsystemService;
+import com.aiurt.modules.system.entity.SysDepart;
+import com.aiurt.modules.system.service.ISysDepartService;
 import com.aiurt.modules.system.service.impl.SysBaseApiImpl;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -21,6 +23,7 @@ import org.apache.poi.hssf.usermodel.HSSFCellStyle;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.HorizontalAlignment;
 import org.apache.poi.ss.usermodel.VerticalAlignment;
+import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -60,6 +63,10 @@ public class StockInOrderLevel2ServiceImpl extends ServiceImpl<StockInOrderLevel
 	private IStockLevel2CheckService iStockLevel2CheckService;
 	@Autowired
 	private IStockLevel2CheckDetailService iStockLevel2CheckDetailService;
+	@Autowired
+	private IStockLevel2InfoService iStockLevel2InfoService;
+	@Autowired
+	private ISysDepartService iSysDepartService;
 
 	@Override
 	public StockInOrderLevel2 getInOrderCode() throws ParseException {
@@ -87,6 +94,13 @@ public class StockInOrderLevel2ServiceImpl extends ServiceImpl<StockInOrderLevel
 
 	@Override
 	public void add(StockInOrderLevel2 stockInOrderLevel2) {
+		String userId = stockInOrderLevel2.getUserId();
+		String[] ids = new String[1];
+		ids[0] = userId;
+		List<LoginUser> loginUsers = sysBaseApi.queryAllUserByIds(ids);
+		if(loginUsers != null && loginUsers.size()>0){
+			stockInOrderLevel2.setOrgCode(loginUsers.get(0).getOrgCode());
+		}
 		this.save(stockInOrderLevel2);
 		List<StockIncomingMaterials> stockIncomingMaterialsList = stockInOrderLevel2.getStockIncomingMaterialsList();
 		if(stockIncomingMaterialsList != null && stockIncomingMaterialsList.size()>0){
@@ -130,12 +144,16 @@ public class StockInOrderLevel2ServiceImpl extends ServiceImpl<StockInOrderLevel
 					stockLevel2.setStockInTime(stockInTime);
 					stockLevel2Service.updateById(stockLevel2);
 				}else{
+					StockLevel2Info stockLevel2Info = iStockLevel2InfoService.getOne(new QueryWrapper<StockLevel2Info>().eq("warehouse_code",warehouseCode).eq("del_flag", CommonConstant.DEL_FLAG_0));
+					String organizationId = stockLevel2Info.getOrganizationId();
+					SysDepart sysDepart = iSysDepartService.getById(organizationId);
 					MaterialBase materialBase = materialBaseService.getOne(new QueryWrapper<MaterialBase>().eq("code",materialCode));
 					StockLevel2 stockLevel2new = new StockLevel2();
 					stockLevel2new.setMaterialCode(materialCode);
 					stockLevel2new.setBaseTypeCode(materialBase.getBaseTypeCodeCc());
 					stockLevel2new.setWarehouseCode(warehouseCode);
 					stockLevel2new.setNum(number);
+					stockLevel2new.setOrgCode(sysDepart.getOrgCode());
 					stockLevel2new.setMajorCode(materialBase.getMajorCode());
 					stockLevel2new.setSystemCode(materialBase.getSystemCode());
 					stockLevel2new.setStockInTime(stockInTime);

@@ -1,5 +1,6 @@
 package com.aiurt.modules.stock.mapper;
 
+import com.aiurt.common.aspect.annotation.EnableDataPerm;
 import com.aiurt.modules.stock.entity.StockInOrderLevel2;
 import com.aiurt.modules.stock.entity.StockOutOrderLevel2;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
@@ -25,6 +26,7 @@ import org.springframework.stereotype.Component;
  * @Version: V1.0
  */
 @Component
+@EnableDataPerm
 public interface StockOutOrderLevel2Mapper extends BaseMapper<StockOutOrderLevel2> {
     List<StockOutOrderLevel2> pageList(Page<StockOutOrderLevel2> page, @Param("condition") StockOutOrderLevel2 stockInOrderLevel2);
 }
