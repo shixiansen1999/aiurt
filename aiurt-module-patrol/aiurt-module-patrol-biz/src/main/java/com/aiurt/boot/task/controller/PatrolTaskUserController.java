@@ -7,6 +7,7 @@ import com.aiurt.boot.task.entity.PatrolTaskUser;
 import com.aiurt.boot.task.service.IPatrolTaskService;
 import com.aiurt.boot.task.service.IPatrolTaskUserService;
 import com.aiurt.common.aspect.annotation.AutoLog;
+import com.aiurt.common.constant.enums.ModuleType;
 import com.aiurt.common.system.base.controller.BaseController;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import io.swagger.annotations.Api;
@@ -80,7 +81,7 @@ public class PatrolTaskUserController extends BaseController<PatrolTaskUser, IPa
 	  * @param patrolAccompanyList
 	  * @return
 	  */
-	 @AutoLog(value = "app巡检任务列表-指派")
+	 @AutoLog(value = "app巡检任务列表-指派", operateType = 3, operateTypeAlias = "修改", module = ModuleType.PATROL,permissionUrl = "/Inspection/pool")
 	 @ApiOperation(value="app巡检任务列表-指派", notes="app巡检任务列表-指派")
 	 @PostMapping(value = "/patrolTaskAppointed")
 	 public Result<String> patrolTaskAppointed(@RequestBody PatrolTaskAppointSaveDTO patrolAccompanyList) {

@@ -9,6 +9,7 @@ import com.aiurt.boot.task.service.IPatrolAccompanyService;
 import com.aiurt.boot.task.service.IPatrolTaskDeviceService;
 import com.aiurt.boot.task.service.IPatrolTaskService;
 import com.aiurt.common.aspect.annotation.AutoLog;
+import com.aiurt.common.constant.enums.ModuleType;
 import com.aiurt.common.system.base.controller.BaseController;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
@@ -66,12 +67,12 @@ public class PatrolAccompanyController extends BaseController<PatrolAccompany, I
 	}*/
 
 	 /**
-	  *巡检同行人表-app-添加同行人
+	  *app填写巡检工单-添加同行人||巡检位置
 	  * @param patrolAccompanyList
 	  * @return
 	  */
-	 @AutoLog(value = "巡检同行人表-app-添加同行人")
-	 @ApiOperation(value="巡检同行人表-app-添加同行人", notes="巡检同行人表-app-添加同行人")
+	 @AutoLog(value = "app填写巡检工单-添加同行人||巡检位置", operateType = 3, operateTypeAlias = "修改", module = ModuleType.PATROL,permissionUrl = "/Inspection/pool")
+	 @ApiOperation(value="app填写巡检工单-添加同行人||巡检位置", notes="app填写巡检工单-添加同行人||巡检位置")
 	 @PostMapping(value = "/addPatrolAccompany")
 	 public Result<String> addPatrolAccompany(@RequestBody PatrolAccompanySaveDTO patrolAccompanyList) {
 		 LambdaUpdateWrapper<PatrolTaskDevice> updateWrapper= new LambdaUpdateWrapper<>();

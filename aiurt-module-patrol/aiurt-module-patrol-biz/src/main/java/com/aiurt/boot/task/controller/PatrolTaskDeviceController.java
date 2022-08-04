@@ -8,6 +8,7 @@ import com.aiurt.boot.task.service.IPatrolCheckResultService;
 import com.aiurt.boot.task.service.IPatrolTaskDeviceService;
 import com.aiurt.boot.task.service.IPatrolTaskService;
 import com.aiurt.common.aspect.annotation.AutoLog;
+import com.aiurt.common.constant.enums.ModuleType;
 import com.aiurt.common.system.base.controller.BaseController;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -67,7 +68,7 @@ public class PatrolTaskDeviceController extends BaseController<PatrolTaskDevice,
      * app巡检任务-巡检清单列表（巡检工单列表）
      * @return
      */
-    @AutoLog(value = "巡检任务表- app巡检任务-巡检清单列表")
+    @AutoLog(value = "巡检任务表- app巡检任务-巡检清单列表", operateType = 1, operateTypeAlias = "查询", module = ModuleType.PATROL,permissionUrl = "/Inspection/pool")
     @ApiOperation(value = "巡检任务表- app巡检任务-巡检清单列表", notes = "巡检任务表- app巡检任务-巡检清单列表")
     @GetMapping(value = "/patrolTaskDeviceList")
     public Result<Page<PatrolTaskDeviceDTO>> patrolTaskDeviceList(@RequestParam(name="id",required=true)String id,
@@ -93,7 +94,7 @@ public class PatrolTaskDeviceController extends BaseController<PatrolTaskDevice,
 	  * @param req
 	  * @return
 	  */
-	 @AutoLog(value = "app巡检-检查项-故障单号-保存")
+	 @AutoLog(value = "app巡检-检查项-故障单号-保存", operateType = 3, operateTypeAlias = "修改", module = ModuleType.PATROL,permissionUrl = "/Inspection/pool")
 	 @ApiOperation(value = "app巡检-检查项-故障单号-保存", notes = "app巡检-检查项-故障单号-保存")
 	 @PostMapping(value = "/patrolTaskCustomPosition")
 	 public Result<?> patrolTaskCustomPosition(@RequestParam(name ="id")String id,
@@ -109,7 +110,7 @@ public class PatrolTaskDeviceController extends BaseController<PatrolTaskDevice,
 	  * @param req
 	  * @return
 	  */
-	 @AutoLog(value = "巡检任务表-app巡检任务执行中-检查")
+	 @AutoLog(value = "巡检任务表-app巡检任务执行中-检查", operateType = 3, operateTypeAlias = "修改", module = ModuleType.PATROL,permissionUrl = "/Inspection/pool")
 	 @ApiOperation(value = "巡检任务表-app巡检任务执行中-检查", notes = "巡检任务表-app巡检任务执行中-检查")
 	 @PostMapping(value = "/patrolTaskCheck")
 	 public Result<?> patrolTaskCheck(@RequestBody PatrolTaskDevice patrolTaskDevice,@RequestParam(name ="checkDetail",required = false) Integer checkDetail, HttpServletRequest req) {
@@ -122,7 +123,7 @@ public class PatrolTaskDeviceController extends BaseController<PatrolTaskDevice,
 	 * @param req
 	 * @return
 	 */
-	@AutoLog(value = " app巡检-巡检清单-填写检查项-提交工单")
+	@AutoLog(value = " app巡检-巡检清单-填写检查项-提交工单", operateType = 3, operateTypeAlias = "修改", module = ModuleType.PATROL,permissionUrl = "/Inspection/pool")
 	@ApiOperation(value = " app巡检-巡检清单-填写检查项-提交工单", notes = " app巡检-巡检清单-填写检查项-提交	工单")
 	@PostMapping(value = "/patrolTaskCheckItemsSubmit")
 	public Result<?> patrolTaskCheckItemsSubmit(@RequestBody PatrolTaskDevice patrolTaskDevice, HttpServletRequest req) {

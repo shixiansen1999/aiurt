@@ -5,6 +5,7 @@ import com.aiurt.boot.task.dto.PatrolCheckDTO;
 import com.aiurt.boot.task.entity.PatrolCheckResult;
 import com.aiurt.boot.task.service.IPatrolCheckResultService;
 import com.aiurt.common.aspect.annotation.AutoLog;
+import com.aiurt.common.constant.enums.ModuleType;
 import com.aiurt.common.system.base.controller.BaseController;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import io.swagger.annotations.Api;
@@ -62,7 +63,7 @@ public class PatrolCheckResultController extends BaseController<PatrolCheckResul
 	  * @param req
 	  * @return
 	  */
-	 @AutoLog(value = "app巡检-检查项-检查结果备注-保存")
+	 @AutoLog(value = "app巡检-检查项-检查结果备注-保存", operateType = 3, operateTypeAlias = "修改", module = ModuleType.PATROL,permissionUrl = "/Inspection/pool")
 	 @ApiOperation(value = "app巡检-检查项-检查结果备注-保存", notes = "app巡检-检查项-检查结果备注-保存")
 	 @PostMapping(value = "/patrolTaskCheckResult")
 	 public Result<?> patrolTaskCheckResult(@RequestParam(name ="id")String id,
@@ -81,7 +82,7 @@ public class PatrolCheckResultController extends BaseController<PatrolCheckResul
 	  * @param req
 	  * @return
 	  */
-	 @AutoLog(value = "app巡检-检查项-检查值-保存")
+	 @AutoLog(value = "app巡检-检查项-检查值-保存", operateType = 3, operateTypeAlias = "修改", module = ModuleType.PATROL,permissionUrl = "/Inspection/pool")
 	 @ApiOperation(value = "app巡检-检查项-检查值-保存", notes = "app巡检-检查项-检查值-保存")
 	 @PostMapping(value = "/patrolTaskAccessory")
 	 public Result<?> patrolTaskAccessory(@RequestBody PatrolCheckDTO patrolCheckDTO,

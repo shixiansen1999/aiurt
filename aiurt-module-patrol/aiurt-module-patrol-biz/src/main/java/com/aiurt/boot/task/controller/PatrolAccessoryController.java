@@ -5,8 +5,8 @@ import com.aiurt.boot.task.entity.PatrolAccessory;
 import com.aiurt.boot.task.service.IPatrolAccessoryService;
 import com.aiurt.boot.task.service.IPatrolCheckResultService;
 import com.aiurt.common.aspect.annotation.AutoLog;
+import com.aiurt.common.constant.enums.ModuleType;
 import com.aiurt.common.system.base.controller.BaseController;
-import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
@@ -18,7 +18,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.List;
 
 /**
  * @Description: patrol_accessory
@@ -62,28 +61,13 @@ public class PatrolAccessoryController extends BaseController<PatrolAccessory, I
 	  * @param req
 	  * @return
 	  */
-	 @AutoLog(value = "app巡检-检查项-附件-保存")
+	 @AutoLog(value = "app巡检-检查项-附件-保存", operateType = 3, operateTypeAlias = "修改", module = ModuleType.PATROL,permissionUrl = "/Inspection/pool")
 	 @ApiOperation(value = "app巡检-检查项-附件-保存", notes = "app巡检-检查项-附件-保存")
 	 @PostMapping(value = "/patrolTaskAccessorySave")
 	 public Result<?> patrolTaskAccessorySave(@RequestBody PatrolAccessorySaveDTO patrolAccessory,
 										  HttpServletRequest req) {
 		 patrolAccessoryService.savePatrolTaskAccessory(patrolAccessory);
 		 return Result.OK("附件保存成功");
-	 }
-	 /**
-	  * app巡检-检查项-附件-查询
-	  * @param id
-	  * @param req
-	  * @return
-	  */
-	 @AutoLog(value = "app巡检-检查项-附件-查询")
-	 @ApiOperation(value = "app巡检-检查项-附件-查询", notes = "app巡检-检查项-附件-查询")
-	 @PostMapping(value = "/selectA")
-	 public Result<?> selectA(String id,
-										  HttpServletRequest req) {
-	 	List<PatrolAccessory> list = patrolAccessoryService.list(new LambdaUpdateWrapper<PatrolAccessory>().eq(PatrolAccessory::getTaskDeviceId, id));
-	 	//
-		 return Result.OK(list);
 	 }
 	/**
 	 *   添加
