@@ -128,7 +128,7 @@ public class StockOutOrderLevel2ServiceImpl extends ServiceImpl<StockOutOrderLev
 				//5. 备件入库表插入数据
 				SparePartInOrder sparePartInOrder = new SparePartInOrder();
 				sparePartInOrder.setMaterialCode(materialCode);
-				sparePartInOrder.setWarehouseCode(stockOutOrderLevel2.getWarehouseCode());
+				sparePartInOrder.setWarehouseCode(stockOutOrderLevel2.getCustodialWarehouseCode());
 				sparePartInOrder.setNum(sparePartApplyMaterial.getActualNum());
 				sparePartInOrder.setOrgId(user.getOrgId());
 				sparePartInOrder.setConfirmStatus(CommonConstant.SPARE_PART_IN_ORDER_CONFRM_STATUS_0);
