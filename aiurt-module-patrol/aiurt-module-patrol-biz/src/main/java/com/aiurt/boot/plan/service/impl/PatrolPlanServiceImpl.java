@@ -206,6 +206,14 @@ public class PatrolPlanServiceImpl extends ServiceImpl<PatrolPlanMapper, PatrolP
         }
         if (ObjectUtil.isNotNull(patrolPlanDto.getIds())) {
             List<String> ids = Arrays.asList(patrolPlanDto.getIds().split(","));
+            List<PatrolStandardDto>patrolStandardDtos=patrolStandardMapper.selectbyIds(ids);
+            patrolStandardDtos.forEach(p->{
+                List<PatrolPlanDevice> patrolPlanDevices = patrolPlanDeviceMapper.selectList(
+                        new LambdaQueryWrapper<PatrolPlanDevice>().eq(PatrolPlanDevice::getPlanStandardId,p.getId()));
+                if (CollectionUtils.isNotEmpty(patrolPlanDevices)){
+                    p.setSpecifyDevice(1);
+                }
+            });
             patrolPlanDto.setPatrolStandards(patrolStandardMapper.selectbyIds(ids));
         }
         List<Integer> week = baseMapper.selectWeek(id, code);
