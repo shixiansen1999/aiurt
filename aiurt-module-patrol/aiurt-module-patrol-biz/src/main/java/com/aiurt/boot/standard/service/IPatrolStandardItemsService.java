@@ -44,4 +44,10 @@ public interface IPatrolStandardItemsService extends IService<PatrolStandardItem
      * @return
      */
     List<SysDictDTO> querySysDict(Integer modules);
+    /**
+     * 查询Code是否唯一
+     * @param code
+     * @return
+     */
+    void checkCode(String code, String standardId);
 }

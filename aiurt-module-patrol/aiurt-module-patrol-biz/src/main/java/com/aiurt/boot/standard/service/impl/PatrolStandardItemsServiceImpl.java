@@ -12,6 +12,7 @@ import com.aiurt.boot.standard.service.IPatrolStandardItemsService;
 import com.aiurt.boot.task.entity.PatrolTaskDevice;
 import com.aiurt.boot.task.mapper.PatrolTaskDeviceMapper;
 import com.aiurt.boot.task.mapper.PatrolTaskStandardMapper;
+import com.aiurt.common.exception.AiurtBootException;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.github.xiaoymin.knife4j.core.util.CollectionUtils;
@@ -104,5 +105,16 @@ private PatrolTaskStandardMapper patrolTaskStandardMapper;
     public List<SysDictDTO> querySysDict(Integer modules) {
         List<SysDictDTO> list =baseMapper.querySysDict(modules);
         return list;
+    }
+
+    @Override
+    public void checkCode(String code, String standardId) {
+        List<PatrolStandardItems> patrolStandardItems = baseMapper.selectList(
+                 new LambdaQueryWrapper<PatrolStandardItems>()
+                              .eq(PatrolStandardItems::getStandardId,standardId)
+                              .eq(PatrolStandardItems::getCode,code));
+        if (CollUtil.isEmpty(patrolStandardItems)){
+         throw new AiurtBootException("输入的code当前列表重复,请重新输入");
+        }
     }
 }

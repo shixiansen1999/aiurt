@@ -7,6 +7,7 @@ import com.aiurt.boot.standard.mapper.PatrolStandardItemsMapper;
 import com.aiurt.boot.standard.service.IPatrolStandardItemsService;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.constant.enums.ModuleType;
+import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.system.base.controller.BaseController;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -111,7 +112,21 @@ public class PatrolStandardItemsController extends BaseController<PatrolStandard
 	 	if (b){
 			return Result.OK("成功");
 		}
-		 return Result.error("重复排序,请重新输入");
+		 throw new AiurtBootException("重复排序,请重新输入");
+	 }
+
+	 /**
+	  * 校验添加内容排序
+	  * @return
+	  */
+	 @AutoLog(value = "校验添加code唯一",operateType =  1, operateTypeAlias = "查询code唯一", module = ModuleType.PATROL)
+	 @ApiOperation(value = "校验添加code唯一", notes = "校验添加code唯一")
+	 @GetMapping(value = "/checkCode")
+	 public void checkCode(
+							@RequestParam(name="code") String code,
+							@RequestParam(name = "standardId")String standardId) {
+		  patrolStandardItemsService.checkCode(code,standardId);
+
 	 }
 	 /**
 	  * 巡检标准项目表-app查询巡检工单检查项
