@@ -7,6 +7,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import com.aiurt.boot.standard.dto.PatrolStandardDto;
 import com.aiurt.boot.utils.PatrolCodeUtil;
+import com.aiurt.common.constant.enums.ModuleType;
 import org.jeecg.common.api.vo.Result;
 import com.aiurt.boot.standard.entity.PatrolStandard;
 import com.aiurt.boot.standard.service.IPatrolStandardService;
@@ -46,7 +47,7 @@ public class PatrolStandardController extends BaseController<PatrolStandard, IPa
 	 * @param req
 	 * @return
 	 */
-	@AutoLog(value = "巡检标准表-分页列表查询")
+	@AutoLog(value = "巡检标准表-分页列表查询", operateType =  1, operateTypeAlias = "列表查询", module = ModuleType.PATROL)
 	@ApiOperation(value="巡检标准表-分页列表查询", notes="巡检标准表-分页列表查询")
 	@GetMapping(value = "/list")
 	public Result<IPage<PatrolStandardDto>> queryPageList(PatrolStandardDto patrolStandard,
@@ -68,7 +69,7 @@ public class PatrolStandardController extends BaseController<PatrolStandard, IPa
 	  * @param req
 	  * @return
 	  */
-	 @AutoLog(value = "巡检标准表-分页列表查询配置巡检项的表")
+	 @AutoLog(value = "巡检标准表-分页列表查询配置巡检项的表", operateType =  1, operateTypeAlias = "带条件列表查询", module = ModuleType.PATROL)
 	 @ApiOperation(value="巡检标准表-分页列表查询配置巡检项的表", notes="巡检标准表-分页列表查询配置巡检项的表")
 	 @GetMapping(value = "/lists")
 	 public Result<IPage<PatrolStandardDto>> queryPageLists(PatrolStandardDto patrolStandard,
@@ -85,7 +86,7 @@ public class PatrolStandardController extends BaseController<PatrolStandard, IPa
 	 * @param patrolStandard
 	 * @return
 	 */
-	@AutoLog(value = "巡检标准表-添加")
+	@AutoLog(value = "巡检标准表-添加", operateType =  2, operateTypeAlias = "添加", module = ModuleType.PATROL)
 	@ApiOperation(value="巡检标准表-添加", notes="巡检标准表-添加")
 	@PostMapping(value = "/add")
 	public Result<String> add(@RequestBody PatrolStandard patrolStandard) {
@@ -98,7 +99,7 @@ public class PatrolStandardController extends BaseController<PatrolStandard, IPa
 	  * @param id
 	  * @return
 	  */
-	 @AutoLog(value = "巡检标准表-修改关联设备字段")
+	 @AutoLog(value = "巡检标准表-修改关联设备字段", operateType =  3, operateTypeAlias = "修改字段", module = ModuleType.PATROL)
 	 @ApiOperation(value="巡检标准表-修改关联设备字段", notes="巡检标准表-修改关联设备字段")
 	 @PostMapping(value = "/deviceAssociation")
 	 public Result<String> deviceAssociation( @RequestParam(name="id") String id) {
@@ -113,7 +114,7 @@ public class PatrolStandardController extends BaseController<PatrolStandard, IPa
 	  * @param
 	  * @return
 	  */
-	 @AutoLog(value = "生成巡检Code")
+	 @AutoLog(value = "生成巡检Code", operateType =  1, operateTypeAlias = "生成code", module = ModuleType.PATROL)
 	 @ApiOperation(value="生成巡检Code", notes="生成巡检Code")
 	 @GetMapping(value = "/generateCode")
 	 public Result<String> generateCode() {
@@ -125,7 +126,7 @@ public class PatrolStandardController extends BaseController<PatrolStandard, IPa
 	 * @param patrolStandard
 	 * @return
 	 */
-	@AutoLog(value = "巡检标准表-编辑")
+	@AutoLog(value = "巡检标准表-编辑", operateType =  3, operateTypeAlias = "编辑", module = ModuleType.PATROL)
 	@ApiOperation(value="巡检标准表-编辑", notes="巡检标准表-编辑")
 	@RequestMapping(value = "/edit", method = {RequestMethod.PUT,RequestMethod.POST})
 	public Result<String> edit(@RequestBody PatrolStandard patrolStandard) {
@@ -139,7 +140,7 @@ public class PatrolStandardController extends BaseController<PatrolStandard, IPa
 	 * @param id
 	 * @return
 	 */
-	@AutoLog(value = "巡检标准表-通过id删除")
+	@AutoLog(value = "巡检标准表-通过id删除", operateType =  4, operateTypeAlias = "删除", module = ModuleType.PATROL)
 	@ApiOperation(value="巡检标准表-通过id删除", notes="巡检标准表-通过id删除")
 	@DeleteMapping(value = "/delete")
 	public Result<String> delete(@RequestParam(name="id",required=true) String id) {
@@ -155,7 +156,7 @@ public class PatrolStandardController extends BaseController<PatrolStandard, IPa
 	 * @param ids
 	 * @return
 	 */
-	@AutoLog(value = "巡检标准表-批量删除")
+	@AutoLog(value = "巡检标准表-批量删除", operateType =  4, operateTypeAlias = "批量删除", module = ModuleType.PATROL)
 	@ApiOperation(value="巡检标准表-批量删除", notes="巡检标准表-批量删除")
 	@DeleteMapping(value = "/deleteBatch")
 	public Result<String> deleteBatch(@RequestParam(name="ids",required=true) String ids) {
@@ -172,7 +173,7 @@ public class PatrolStandardController extends BaseController<PatrolStandard, IPa
 	 * @param id
 	 * @return
 	 */
-	@AutoLog(value = "巡检标准表-通过id查询")
+	@AutoLog(value = "巡检标准表-通过id查询", operateType =  1, operateTypeAlias = "通过id查询", module = ModuleType.PATROL)
 	@ApiOperation(value="巡检标准表-通过id查询", notes="巡检标准表-通过id查询")
 	@GetMapping(value = "/queryById")
 	public Result<PatrolStandard> queryById(@RequestParam(name="id",required=true) String id) {
@@ -183,7 +184,7 @@ public class PatrolStandardController extends BaseController<PatrolStandard, IPa
 		return Result.OK(patrolStandard);
 	}
 
-	 @AutoLog(value = "巡检标准表-获取适用专业")
+	 @AutoLog(value = "巡检标准表-获取适用专业", operateType =  1, operateTypeAlias = "查询专业", module = ModuleType.PATROL)
 	 @ApiOperation(value="获取适用专业", notes="获取适用专业")
 	 @GetMapping(value = "/obtainApplicableDisciplines")
 	 public List<?> obtainApplicableDisciplines(@RequestParam(name="professionCode",required=false) String professionCode,

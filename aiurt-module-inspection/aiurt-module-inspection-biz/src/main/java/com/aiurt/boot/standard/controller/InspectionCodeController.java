@@ -4,6 +4,7 @@ import com.aiurt.boot.manager.dto.InspectionCodeDTO;
 import com.aiurt.boot.standard.entity.InspectionCode;
 import com.aiurt.boot.standard.service.IInspectionCodeService;
 import com.aiurt.common.aspect.annotation.AutoLog;
+import com.aiurt.common.constant.enums.ModuleType;
 import com.aiurt.common.system.base.controller.BaseController;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -43,7 +44,7 @@ public class InspectionCodeController extends BaseController<InspectionCode, IIn
      * @param req
      * @return
      */
-    @AutoLog(value = "检修标准表-分页列表查询")
+    @AutoLog(value = "检修标准表-分页列表查询", operateType =  1, operateTypeAlias = "分页列表查询", module = ModuleType.INSPECTION)
     @ApiOperation(value = "检修标准表-分页列表查询", notes = "检修标准表-分页列表查询")
     @GetMapping(value = "/list")
     public Result<IPage<InspectionCodeDTO>> queryPageList(InspectionCodeDTO inspectionCodeDTO,
@@ -65,7 +66,7 @@ public class InspectionCodeController extends BaseController<InspectionCode, IIn
      * @param req
      * @return
      */
-    @AutoLog(value = "检修标准表-分页列表查询是否配置巡检项")
+    @AutoLog(value = "检修标准表-分页列表查询是否配置巡检项", operateType =  1, operateTypeAlias = "列表查询筛选是否有检查项", module = ModuleType.INSPECTION)
     @ApiOperation(value = "检修标准表-分页列表查询是否配置巡检项", notes = "检修标准表-分页列表查询是否配置巡检项")
     @GetMapping(value = "/lists")
     public Result<IPage<InspectionCodeDTO>> queryPageLists(InspectionCodeDTO inspectionCodeDTO,
@@ -82,7 +83,7 @@ public class InspectionCodeController extends BaseController<InspectionCode, IIn
      * @param inspectionCode
      * @return
      */
-    @AutoLog(value = "检修标准表-添加")
+    @AutoLog(value = "检修标准表-添加", operateType =  2, operateTypeAlias = "添加", module = ModuleType.INSPECTION)
     @ApiOperation(value = "检修标准表-添加", notes = "检修标准表-添加")
     @PostMapping(value = "/add")
     public Result<String> add(@RequestBody InspectionCode inspectionCode) {
@@ -95,7 +96,7 @@ public class InspectionCodeController extends BaseController<InspectionCode, IIn
      * @param inspectionCode
      * @return
      */
-    @AutoLog(value = "检修标准表-编辑")
+    @AutoLog(value = "检修标准表-编辑", operateType =  3, operateTypeAlias = "编辑", module = ModuleType.INSPECTION)
     @ApiOperation(value = "检修标准表-编辑", notes = "检修标准表-编辑")
     @RequestMapping(value = "/edit", method = {RequestMethod.PUT, RequestMethod.POST})
     public Result<String> edit(@RequestBody InspectionCode inspectionCode) {
@@ -109,7 +110,7 @@ public class InspectionCodeController extends BaseController<InspectionCode, IIn
      * @param id
      * @return
      */
-    @AutoLog(value = "检修标准表-通过id删除")
+    @AutoLog(value = "检修标准表-通过id删除", operateType =  4, operateTypeAlias = "通过id删除", module = ModuleType.INSPECTION)
     @ApiOperation(value = "检修标准表-通过id删除", notes = "检修标准表-通过id删除")
     @DeleteMapping(value = "/delete")
     public Result<String> delete(@RequestParam(name = "id", required = true) String id) {
@@ -123,7 +124,7 @@ public class InspectionCodeController extends BaseController<InspectionCode, IIn
      * @param ids
      * @return
      */
-    @AutoLog(value = "检修标准表-批量删除")
+    @AutoLog(value = "检修标准表-批量删除", operateType =  4, operateTypeAlias = "批量删除", module = ModuleType.INSPECTION)
     @ApiOperation(value = "检修标准表-批量删除", notes = "检修标准表-批量删除")
     @DeleteMapping(value = "/deleteBatch")
     public Result<String> deleteBatch(@RequestParam(name = "ids", required = true) String ids) {
@@ -140,7 +141,7 @@ public class InspectionCodeController extends BaseController<InspectionCode, IIn
      * @param id
      * @return
      */
-    @AutoLog(value = "检修标准表-通过id查询")
+    @AutoLog(value = "检修标准表-通过id查询", operateType =  1, operateTypeAlias = "通过id查询", module = ModuleType.INSPECTION)
     @ApiOperation(value = "检修标准表-通过id查询", notes = "检修标准表-通过id查询")
     @GetMapping(value = "/queryById")
     public Result<InspectionCode> queryById(@RequestParam(name = "id", required = true) String id) {

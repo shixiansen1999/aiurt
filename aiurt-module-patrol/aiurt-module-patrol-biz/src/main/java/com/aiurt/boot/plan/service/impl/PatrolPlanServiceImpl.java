@@ -303,7 +303,7 @@ public class PatrolPlanServiceImpl extends ServiceImpl<PatrolPlanMapper, PatrolP
 
     @Override
     public IPage<Device> deviceList(Page<Device> page, DeviceListDTO deviceListDTO) {
-        IPage<Device> deviceIPage = baseMapper.deviceList(page, deviceListDTO.getSiteCodes(), deviceListDTO.getSubsystemCode(), deviceListDTO.getMajorCode(), deviceListDTO.getDeviceTypeCode());
+        IPage<Device> deviceIPage = baseMapper.deviceList(page, deviceListDTO.getSiteCodes(), deviceListDTO.getSubsystemCode(), deviceListDTO.getMajorCode(), deviceListDTO.getDeviceTypeCode(),deviceListDTO.getDeviceCode(),deviceListDTO.getDeviceName());
         List<Device> records = deviceIPage.getRecords();
         if (records != null && records.size() > 0) {
             for (Device d : records) {

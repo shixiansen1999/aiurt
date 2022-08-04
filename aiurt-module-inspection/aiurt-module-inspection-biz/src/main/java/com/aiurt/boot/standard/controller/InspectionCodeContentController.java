@@ -6,6 +6,7 @@ import com.aiurt.boot.standard.entity.InspectionCodeContent;
 import com.aiurt.boot.standard.mapper.InspectionCodeContentMapper;
 import com.aiurt.boot.standard.service.IInspectionCodeContentService;
 import com.aiurt.common.aspect.annotation.AutoLog;
+import com.aiurt.common.constant.enums.ModuleType;
 import com.aiurt.common.system.base.controller.BaseController;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -85,7 +86,7 @@ public class InspectionCodeContentController extends BaseController<InspectionCo
 	  * @param req
 	  * @return
 	  */
-	 @AutoLog(value = "检修检查项表-树型分页列表查询")
+	 @AutoLog(value = "检修检查项表-树型分页列表查询", operateType =  1, operateTypeAlias = "树型分页列表查询", module = ModuleType.INSPECTION)
 	 @ApiOperation(value="检修检查项表-树型分页列表查询", notes="检修检查项表-树型分页列表查询")
 	 @GetMapping(value = "/list")
 	 public Result<IPage<InspectionCodeContent>> queryList(   InspectionCodeContent inspectionCodeContent,
@@ -102,7 +103,7 @@ public class InspectionCodeContentController extends BaseController<InspectionCo
 	 * @param inspectionCodeContent
 	 * @return
 	 */
-	@AutoLog(value = "inspection_code_content-添加")
+	@AutoLog(value = "inspection_code_content-添加", operateType =  2, operateTypeAlias = "添加", module = ModuleType.INSPECTION)
 	@ApiOperation(value="inspection_code_content-添加", notes="inspection_code_content-添加")
 	@PostMapping(value = "/add")
 	public Result<String> add(@RequestBody InspectionCodeContent inspectionCodeContent) {
@@ -117,7 +118,7 @@ public class InspectionCodeContentController extends BaseController<InspectionCo
 	 * @param inspectionCodeContent
 	 * @return
 	 */
-	@AutoLog(value = "inspection_code_content-编辑")
+	@AutoLog(value = "inspection_code_content-编辑", operateType =  3, operateTypeAlias = "编辑", module = ModuleType.INSPECTION)
 	@ApiOperation(value="inspection_code_content-编辑", notes="inspection_code_content-编辑")
 	@RequestMapping(value = "/edit", method = {RequestMethod.PUT,RequestMethod.POST})
 	public Result<String> edit(@RequestBody InspectionCodeContent inspectionCodeContent) {
@@ -131,7 +132,7 @@ public class InspectionCodeContentController extends BaseController<InspectionCo
 	 * @param id
 	 * @return
 	 */
-	@AutoLog(value = "inspection_code_content-通过id删除")
+	@AutoLog(value = "inspection_code_content-通过id删除", operateType =  4, operateTypeAlias = "通过id删除", module = ModuleType.INSPECTION)
 	@ApiOperation(value="inspection_code_content-通过id删除", notes="inspection_code_content-通过id删除")
 	@DeleteMapping(value = "/delete")
 	public Result<String> delete(@RequestParam(name="id",required=true) String id) {
@@ -151,7 +152,7 @@ public class InspectionCodeContentController extends BaseController<InspectionCo
 	 * @param ids
 	 * @return
 	 */
-	@AutoLog(value = "inspection_code_content-批量删除")
+	@AutoLog(value = "inspection_code_content-批量删除", operateType =  4, operateTypeAlias = "批量删除", module = ModuleType.INSPECTION)
 	@ApiOperation(value="inspection_code_content-批量删除", notes="inspection_code_content-批量删除")
 	@DeleteMapping(value = "/deleteBatch")
 	public Result<String> deleteBatch(@RequestParam(name="ids",required=true) String ids) {
@@ -168,7 +169,7 @@ public class InspectionCodeContentController extends BaseController<InspectionCo
 	 * @param id
 	 * @return
 	 */
-	@AutoLog(value = "inspection_code_content-通过id查询")
+	@AutoLog(value = "inspection_code_content-通过id查询", operateType =  1, operateTypeAlias = "通过id查询", module = ModuleType.INSPECTION)
 	@ApiOperation(value="inspection_code_content-通过id查询", notes="inspection_code_content-通过id查询")
 	@GetMapping(value = "/queryById")
 	public Result<InspectionCodeContent> queryById(@RequestParam(name="id",required=true) String id) {
@@ -207,7 +208,7 @@ public class InspectionCodeContentController extends BaseController<InspectionCo
 	  * @param id  检修标准id
 	  * @return
 	  */
-	 @AutoLog(value = "通过检修标准id查看检修项")
+	 @AutoLog(value = "通过检修标准id查看检修项", operateType =  1, operateTypeAlias = "通过检修标准id查看检修项", module = ModuleType.INSPECTION)
 	 @ApiOperation(value = "通过检修标准id查看检修项", notes = "通过检修标准id查看检修项")
 	 @GetMapping(value = "/selectCodeContentList")
 	 public Result<List<InspectionCodeContent>> selectCodeContentList(@RequestParam @ApiParam(name = "id", required = true, value = "检修标准id") String id) {

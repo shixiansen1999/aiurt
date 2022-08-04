@@ -25,4 +25,8 @@ public class DeviceListDTO {
     String majorCode;
     @ApiModelProperty(value = "设备类型code")
     String deviceTypeCode;
+    @ApiModelProperty(value = "设备code")
+    String deviceCode;
+    @ApiModelProperty(value = "设备name")
+    String deviceName;
 }

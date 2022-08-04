@@ -6,6 +6,7 @@ import com.aiurt.boot.standard.entity.PatrolStandardItems;
 import com.aiurt.boot.standard.mapper.PatrolStandardItemsMapper;
 import com.aiurt.boot.standard.service.IPatrolStandardItemsService;
 import com.aiurt.common.aspect.annotation.AutoLog;
+import com.aiurt.common.constant.enums.ModuleType;
 import com.aiurt.common.system.base.controller.BaseController;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -66,7 +67,7 @@ public class PatrolStandardItemsController extends BaseController<PatrolStandard
 	  *
 	  * @return
 	  */
-	 @AutoLog(value = "巡检标准项目表-查询配置巡检项树")
+	 @AutoLog(value = "巡检标准项目表-查询配置巡检项树", operateType =  1, operateTypeAlias = "树型查询", module = ModuleType.PATROL)
 	 @ApiOperation(value = "巡检标准项目表-查询配置巡检项树", notes = "巡检标准项目表-查询配置巡检项树")
 	 @GetMapping(value = "/rootList")
 	 public Result<List<PatrolStandardItems>> queryPageList( @RequestParam(name="standardId") String id) {
@@ -78,7 +79,7 @@ public class PatrolStandardItemsController extends BaseController<PatrolStandard
 	 * @param patrolStandardItems
 	 * @return
 	 */
-	@AutoLog(value = "巡检标准项目表-添加")
+	@AutoLog(value = "巡检标准项目表-添加", operateType =  2, operateTypeAlias = "添加", module = ModuleType.PATROL)
 	@ApiOperation(value="巡检标准项目表-添加", notes="巡检标准项目表-添加")
 	@PostMapping(value = "/add")
 	public Result<String> add(@RequestBody PatrolStandardItems patrolStandardItems) {
@@ -89,7 +90,7 @@ public class PatrolStandardItemsController extends BaseController<PatrolStandard
 	  * 查询数据字典
 	  * @return
 	  */
-	 @AutoLog(value = "查询数据字典")
+	 @AutoLog(value = "查询数据字典", operateType =  1, operateTypeAlias = "查询数据字典", module = ModuleType.PATROL)
 	 @ApiOperation(value = "查询数据字典", notes = "查询数据字典")
 	 @GetMapping(value = "/querySysDict")
 	 public List<SysDictDTO> querySysDict(@RequestParam(name="modules") Integer modules) {
@@ -129,7 +130,7 @@ public class PatrolStandardItemsController extends BaseController<PatrolStandard
 	 * @param patrolStandardItems
 	 * @return
 	 */
-	@AutoLog(value = "巡检标准项目表-编辑")
+	@AutoLog(value = "巡检标准项目表-编辑", operateType =  3, operateTypeAlias = "编辑", module = ModuleType.PATROL)
 	@ApiOperation(value="巡检标准项目表-编辑", notes="巡检标准项目表-编辑")
 	@RequestMapping(value = "/edit", method = {RequestMethod.PUT,RequestMethod.POST})
 	public Result<String> edit(@RequestBody PatrolStandardItems patrolStandardItems) {
@@ -146,7 +147,7 @@ public class PatrolStandardItemsController extends BaseController<PatrolStandard
 	 * @param id
 	 * @return
 	 */
-	@AutoLog(value = "巡检标准项目表-通过id删除")
+	@AutoLog(value = "巡检标准项目表-通过id删除", operateType =  4, operateTypeAlias = "删除", module = ModuleType.PATROL)
 	@ApiOperation(value="巡检标准项目表-通过id删除", notes="巡检标准项目表-通过id删除")
 	@DeleteMapping(value = "/delete")
 	public Result<String> delete(@RequestParam(name="id",required=true) String id) {
@@ -166,7 +167,7 @@ public class PatrolStandardItemsController extends BaseController<PatrolStandard
 	 * @param ids
 	 * @return
 	 */
-	@AutoLog(value = "巡检标准项目表-批量删除")
+	@AutoLog(value = "巡检标准项目表-批量删除", operateType =  4, operateTypeAlias = "批量删除", module = ModuleType.PATROL)
 	@ApiOperation(value="巡检标准项目表-批量删除", notes="巡检标准项目表-批量删除")
 	@DeleteMapping(value = "/deleteBatch")
 	public Result<String> deleteBatch(@RequestParam(name="ids",required=true) String ids) {
@@ -183,7 +184,7 @@ public class PatrolStandardItemsController extends BaseController<PatrolStandard
 	 * @param id
 	 * @return
 	 */
-	@AutoLog(value = "巡检标准项目表-通过id查询")
+	@AutoLog(value = "巡检标准项目表-通过id查询", operateType =  1, operateTypeAlias = "根据id查询", module = ModuleType.PATROL)
 	@ApiOperation(value="巡检标准项目表-通过id查询", notes="巡检标准项目表-通过id查询")
 	@GetMapping(value = "/queryById")
 	public Result<PatrolStandardItems> queryById(@RequestParam(name="id",required=true) String id) {

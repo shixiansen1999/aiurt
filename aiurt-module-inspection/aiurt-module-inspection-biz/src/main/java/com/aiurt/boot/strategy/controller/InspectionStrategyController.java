@@ -47,7 +47,7 @@ public class InspectionStrategyController extends BaseController<InspectionStrat
      * @param req
      * @return
      */
-    @AutoLog(value = "检修策略表-分页列表查询")
+    @AutoLog(value = "检修策略表-分页列表查询", operateType =  1, operateTypeAlias = "列表查询", module = ModuleType.INSPECTION)
     @ApiOperation(value = "检修策略表-分页列表查询", notes = "检修策略表-分页列表查询")
     @GetMapping(value = "/list")
     public Result<IPage<InspectionStrategyDTO>> queryPageList(InspectionStrategyDTO inspectionStrategyDTO,
@@ -65,7 +65,7 @@ public class InspectionStrategyController extends BaseController<InspectionStrat
      * @param inspectionStrategyDTO
      * @return
      */
-    @AutoLog(value = "添加检修策略")
+    @AutoLog(value = "添加检修策略", operateType =  2, operateTypeAlias = "添加", module = ModuleType.INSPECTION)
     @ApiOperation(value = "添加检修策略", notes = "添加检修策略")
     @PostMapping(value = "/add")
     public Result<String> add(@RequestBody InspectionStrategyDTO inspectionStrategyDTO) {
@@ -80,7 +80,7 @@ public class InspectionStrategyController extends BaseController<InspectionStrat
      * @param inspectionStrategyDTO
      * @return
      */
-    @AutoLog(value = "检修策略表-编辑")
+    @AutoLog(value = "检修策略表-编辑", operateType =  3, operateTypeAlias = "编辑", module = ModuleType.INSPECTION)
     @ApiOperation(value = "检修策略表-编辑", notes = "检修策略表-编辑")
     @RequestMapping(value = "/edit", method = {RequestMethod.PUT, RequestMethod.POST})
     public Result<String> edit(@RequestBody InspectionStrategyDTO inspectionStrategyDTO) {
@@ -108,7 +108,7 @@ public class InspectionStrategyController extends BaseController<InspectionStrat
      * @param id
      * @return
      */
-    @AutoLog(value = "检修策略表-通过id删除")
+    @AutoLog(value = "检修策略表-通过id删除", operateType =  4, operateTypeAlias = "通过id删除", module = ModuleType.INSPECTION)
     @ApiOperation(value = "检修策略表-通过id删除", notes = "检修策略表-通过id删除")
     @DeleteMapping(value = "/delete")
     public Result<String> delete(@RequestParam(name = "id", required = true) String id) {
@@ -122,7 +122,7 @@ public class InspectionStrategyController extends BaseController<InspectionStrat
      * @param ids
      * @return
      */
-    @AutoLog(value = "检修策略表-批量删除")
+    @AutoLog(value = "检修策略表-批量删除", operateType =  4, operateTypeAlias = "批量删除", module = ModuleType.INSPECTION)
     @ApiOperation(value = "检修策略表-批量删除", notes = "检修策略表-批量删除")
     @DeleteMapping(value = "/deleteBatch")
     public Result<String> deleteBatch(@RequestParam(name = "ids", required = true) String ids) {
@@ -139,7 +139,7 @@ public class InspectionStrategyController extends BaseController<InspectionStrat
      * @param id,status
      * @return
      */
-    @AutoLog(value = "检修策略表-修改生效状态")
+    @AutoLog(value = "检修策略表-修改生效状态", operateType =  3, operateTypeAlias = "修改生效状态", module = ModuleType.INSPECTION)
     @ApiOperation(value = "检修策略表-修改生效状态", notes = "检修策略表-修改生效状态")
     @RequestMapping(value = "/modify", method = {RequestMethod.POST})
     public Result<String> modify(@RequestParam(name = "id") String id) {
@@ -153,7 +153,7 @@ public class InspectionStrategyController extends BaseController<InspectionStrat
      * @param id
      * @return
      */
-    @AutoLog(value = "通过id查询检修策略")
+    @AutoLog(value = "通过id查询检修策略", operateType =  1, operateTypeAlias = "通过id查询", module = ModuleType.INSPECTION)
     @ApiOperation(value = "通过id查询检修策略", notes = "通过id查询检修策略")
     @GetMapping(value = "/queryById")
     public Result<InspectionStrategyDTO> queryById(@RequestParam(name = "id") String id) {
@@ -170,7 +170,7 @@ public class InspectionStrategyController extends BaseController<InspectionStrat
      * @param code
      * @return
      */
-    @AutoLog(value = "检修策略表-查看设备详情")
+    @AutoLog(value = "检修策略表-查看设备详情", operateType =  1, operateTypeAlias = "通过code查询设备", module = ModuleType.INSPECTION)
     @ApiOperation(value = "检修策略表-查看设备详情", notes = "检修策略表-查看设备详情")
     @RequestMapping(value = "/viewDetails", method = {RequestMethod.POST})
     public List<Device> viewDetails(@RequestParam(name = "standardCode") String code) {
@@ -206,7 +206,7 @@ public class InspectionStrategyController extends BaseController<InspectionStrat
 	 * @param subsystemCode
 	 * @return
 	 */
-	@AutoLog(value = "检修策略表-检修标准名称下拉列表")
+	@AutoLog(value = "检修策略表-检修标准名称下拉列表", operateType =  1, operateTypeAlias = "查询选择的标准", module = ModuleType.INSPECTION)
 	@ApiOperation(value = "检修策略表-检修标准名称下拉列表", notes = "检修策略表-检修标准名称下拉列表")
 	@GetMapping(value = "/selectEquipmentOverhaulList")
 	@ApiResponses({
@@ -278,7 +278,7 @@ public class InspectionStrategyController extends BaseController<InspectionStrat
      * @param inspectionStaCode   检修标准cde
      * @return
      */
-    @AutoLog(value = "查询检修标准对应的设备")
+    @AutoLog(value = "查询检修标准对应的设备", operateType =  1, operateTypeAlias = "查询标准对应的设备", module = ModuleType.INSPECTION)
     @ApiOperation(value = "查询检修标准对应的设备", notes = "查询检修标准对应的设备")
     @GetMapping(value = "/queryDeviceByCodeAndId")
     public Result<IPage<RepairDeviceDTO>> queryDeviceByCodeAndId(@RequestParam @ApiParam(name = "inspectionStrCode", required = true, value = "检修策略code") String inspectionStrCode,

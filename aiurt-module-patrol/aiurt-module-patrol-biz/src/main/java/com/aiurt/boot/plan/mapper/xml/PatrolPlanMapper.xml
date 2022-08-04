@@ -297,6 +297,12 @@
         <if test="deviceTypeCode!=null">
             AND a.device_type_code = #{deviceTypeCode}
         </if>
+        <if test="code!=null">
+            AND a.`code` = #{code}
+        </if>
+        <if test="name!=null">
+            AND a.name = #{name}
+        </if>
     </select>
 
 </mapper>
