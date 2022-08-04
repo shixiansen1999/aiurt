@@ -30,7 +30,7 @@ import java.util.List;
  * @Version: V1.0
  */
 @Slf4j
-@Api(tags = "二级库出库管理")
+@Api(tags = "二级库管理-二级库出库管理")
 @RestController
 @RequestMapping("/stock/stockOutOrderLevel2")
 public class StockOutOrderLevel2Controller {
@@ -47,8 +47,8 @@ public class StockOutOrderLevel2Controller {
      * @param pageSize
      * @return
      */
-    @AutoLog(value = "二级库出库管理-分页列表查询")
-    @ApiOperation(value = "二级库出库管理-分页列表查询", notes = "二级库出库管理-分页列表查询")
+    @AutoLog(value = "二级库管理-二级库出库管理-分页列表查询", operateType = 1, operateTypeAlias = "查询", permissionUrl = "/secondLevelWarehouse/StockLevel2SecondaryList")
+    @ApiOperation(value = "二级库管理-二级库出库管理-分页列表查询", notes = "二级库管理-二级库出库管理-分页列表查询")
     @GetMapping(value = "/list")
     public Result<IPage<StockOutOrderLevel2>> queryPageList(StockOutOrderLevel2 stockOutOrderLevel2,
                                                          @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
@@ -67,7 +67,8 @@ public class StockOutOrderLevel2Controller {
      * @param id
      * @return
      */
-    @ApiOperation(value = "二级库出库管理-详情查询", notes = "二级库出库管理-详情查询")
+	@AutoLog(value = "二级库管理-二级库出库管理-详情查询", operateType = 1, operateTypeAlias = "查询", permissionUrl = "/secondLevelWarehouse/StockLevel2SecondaryList")
+    @ApiOperation(value = "二级库管理-二级库出库管理-详情查询", notes = "二级库管理-二级库出库管理-详情查询")
     @GetMapping(value = "/queryById")
     public Result<SparePartApply> queryById(@RequestParam(name = "id", required = true) String id) {
 		SparePartApply sparePartApply = iStockOutOrderLevel2Service.getList(id);
@@ -78,7 +79,8 @@ public class StockOutOrderLevel2Controller {
 	 * 二级库出库管理提交
 	 * @return
 	 */
-	@ApiOperation(value = "二级库出库管理-确认出库", notes = "二级库出库管理-确认出库")
+	@AutoLog(value = "二级库管理-二级库出库管理-确认出库", operateType = 3, operateTypeAlias = "修改", permissionUrl = "/secondLevelWarehouse/StockLevel2SecondaryList")
+	@ApiOperation(value = "二级库管理-二级库出库管理-确认出库", notes = "二级库管理-二级库出库管理-确认出库")
 	@PostMapping(value = "/confirmOutOrder")
 	public Result<?> confirmOutOrder(@RequestBody SparePartApply sparePartApply) {
 		try {
@@ -104,7 +106,7 @@ public class StockOutOrderLevel2Controller {
 	 * @param stockOutOrderLevel2
 	 * @return
 	 */
-	@AutoLog(value = "stock_out_order_level2-添加")
+	@AutoLog(value = "二级库管理-二级库出库管理-添加", operateType = 2, operateTypeAlias = "添加", permissionUrl = "/secondLevelWarehouse/StockLevel2SecondaryList")
 	@ApiOperation(value="stock_out_order_level2-添加", notes="stock_out_order_level2-添加")
 	@PostMapping(value = "/add")
 	public Result<String> add(@RequestBody StockOutOrderLevel2 stockOutOrderLevel2) {
@@ -118,7 +120,7 @@ public class StockOutOrderLevel2Controller {
 	 * @param stockOutOrderLevel2
 	 * @return
 	 */
-	@AutoLog(value = "stock_out_order_level2-编辑")
+	@AutoLog(value = "二级库管理-二级库出库管理-编辑", operateType = 3, operateTypeAlias = "修改", permissionUrl = "/secondLevelWarehouse/StockLevel2SecondaryList")
 	@ApiOperation(value="stock_out_order_level2-编辑", notes="stock_out_order_level2-编辑")
 	@RequestMapping(value = "/edit", method = {RequestMethod.PUT,RequestMethod.POST})
 	public Result<String> edit(@RequestBody StockOutOrderLevel2 stockOutOrderLevel2) {
@@ -132,7 +134,7 @@ public class StockOutOrderLevel2Controller {
 	 * @param id
 	 * @return
 	 */
-	@AutoLog(value = "stock_out_order_level2-通过id删除")
+	@AutoLog(value = "二级库管理-二级库出库管理-通过id删除", operateType = 4, operateTypeAlias = "删除", permissionUrl = "/secondLevelWarehouse/StockLevel2SecondaryList")
 	@ApiOperation(value="stock_out_order_level2-通过id删除", notes="stock_out_order_level2-通过id删除")
 	@DeleteMapping(value = "/delete")
 	public Result<String> delete(@RequestParam(name="id",required=true) String id) {
@@ -146,7 +148,7 @@ public class StockOutOrderLevel2Controller {
 	 * @param ids
 	 * @return
 	 */
-	@AutoLog(value = "stock_out_order_level2-批量删除")
+	@AutoLog(value = "二级库管理-二级库出库管理-批量删除", operateType = 4, operateTypeAlias = "删除", permissionUrl = "/secondLevelWarehouse/StockLevel2SecondaryList")
 	@ApiOperation(value="stock_out_order_level2-批量删除", notes="stock_out_order_level2-批量删除")
 	@DeleteMapping(value = "/deleteBatch")
 	public Result<String> deleteBatch(@RequestParam(name="ids",required=true) String ids) {

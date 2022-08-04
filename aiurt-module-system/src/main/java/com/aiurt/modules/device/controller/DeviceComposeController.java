@@ -44,7 +44,7 @@ import com.aiurt.common.aspect.annotation.AutoLog;
  * @Date:   2022-06-22
  * @Version: V1.0
  */
-@Api(tags="device_compose")
+@Api(tags="设备管理-设备主数据-设备组件")
 @RestController
 @RequestMapping("/deviceCompose")
 @Slf4j
@@ -61,8 +61,8 @@ public class DeviceComposeController extends BaseController<DeviceCompose, IDevi
 	 * @param req
 	 * @return
 	 */
-	//@AutoLog(value = "device_compose-分页列表查询")
-	@ApiOperation(value="device_compose-分页列表查询", notes="device_compose-分页列表查询")
+	@AutoLog(value = "设备管理-设备主数据-设备组件-分页列表查询", operateType = 1, operateTypeAlias = "查询", permissionUrl = "/equipmentData/masterData")
+	@ApiOperation(value="设备管理-设备主数据-设备组件-分页列表查询", notes="设备管理-设备主数据-设备组件-分页列表查询")
 	@GetMapping(value = "/list")
 	public Result<IPage<DeviceCompose>> queryPageList(DeviceCompose deviceCompose,
 								   @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
@@ -80,8 +80,8 @@ public class DeviceComposeController extends BaseController<DeviceCompose, IDevi
 	 * @param deviceCompose
 	 * @return
 	 */
-	@AutoLog(value = "device_compose-添加")
-	@ApiOperation(value="device_compose-添加", notes="device_compose-添加")
+	@AutoLog(value = "设备管理-设备主数据-设备组件-添加", operateType = 2, operateTypeAlias = "添加", permissionUrl = "/equipmentData/masterData")
+	@ApiOperation(value="设备管理-设备主数据-设备组件-添加", notes="设备管理-设备主数据-设备组件-添加")
 	@PostMapping(value = "/add")
 	public Result<String> add(@RequestBody DeviceCompose deviceCompose) {
 		deviceComposeService.save(deviceCompose);
@@ -94,8 +94,8 @@ public class DeviceComposeController extends BaseController<DeviceCompose, IDevi
 	 * @param deviceCompose
 	 * @return
 	 */
-	@AutoLog(value = "device_compose-编辑")
-	@ApiOperation(value="device_compose-编辑", notes="device_compose-编辑")
+	@AutoLog(value = "设备管理-设备主数据-设备组件-编辑", operateType = 3, operateTypeAlias = "修改", permissionUrl = "/equipmentData/masterData")
+	@ApiOperation(value="设备管理-设备主数据-设备组件-编辑", notes="设备管理-设备主数据-设备组件-编辑")
 	@RequestMapping(value = "/edit", method = {RequestMethod.PUT,RequestMethod.POST})
 	public Result<String> edit(@RequestBody DeviceCompose deviceCompose) {
 		deviceComposeService.updateById(deviceCompose);
@@ -108,8 +108,8 @@ public class DeviceComposeController extends BaseController<DeviceCompose, IDevi
 	 * @param id
 	 * @return
 	 */
-	@AutoLog(value = "device_compose-通过id删除")
-	@ApiOperation(value="device_compose-通过id删除", notes="device_compose-通过id删除")
+	@AutoLog(value = "设备管理-设备主数据-设备组件-通过id删除", operateType = 4, operateTypeAlias = "删除", permissionUrl = "/equipmentData/masterData")
+	@ApiOperation(value="设备管理-设备主数据-设备组件-通过id删除", notes="设备管理-设备主数据-设备组件-通过id删除")
 	@DeleteMapping(value = "/delete")
 	public Result<String> delete(@RequestParam(name="id",required=true) String id) {
 		DeviceCompose compose = deviceComposeService.getById(id);
@@ -124,8 +124,8 @@ public class DeviceComposeController extends BaseController<DeviceCompose, IDevi
 	 * @param ids
 	 * @return
 	 */
-	@AutoLog(value = "device_compose-批量删除")
-	@ApiOperation(value="device_compose-批量删除", notes="device_compose-批量删除")
+	@AutoLog(value = "设备管理-设备主数据-设备组件-批量删除", operateType = 4, operateTypeAlias = "删除", permissionUrl = "/equipmentData/masterData")
+	@ApiOperation(value="设备管理-设备主数据-设备组件-批量删除", notes="设备管理-设备主数据-设备组件-批量删除")
 	@DeleteMapping(value = "/deleteBatch")
 	public Result<String> deleteBatch(@RequestParam(name="ids",required=true) String ids) {
 		Arrays.asList(ids.split(",")).stream().forEach(id -> delete(id));
@@ -138,8 +138,8 @@ public class DeviceComposeController extends BaseController<DeviceCompose, IDevi
 	 * @param id
 	 * @return
 	 */
-	//@AutoLog(value = "device_compose-通过id查询")
-	@ApiOperation(value="device_compose-通过id查询", notes="device_compose-通过id查询")
+	@AutoLog(value = "设备管理-设备主数据-设备组件-通过id查询", operateType = 1, operateTypeAlias = "查询", permissionUrl = "/equipmentData/masterData")
+	@ApiOperation(value="设备管理-设备主数据-设备组件-通过id查询", notes="设备管理-设备主数据-设备组件-通过id查询")
 	@GetMapping(value = "/queryById")
 	public Result<DeviceCompose> queryById(@RequestParam(name="id",required=true) String id) {
 		DeviceCompose deviceCompose = deviceComposeService.getById(id);

@@ -100,6 +100,7 @@ public class StockSubmitPlanServiceImpl extends ServiceImpl<StockSubmitPlanMappe
 		if(loginUsers != null && loginUsers.size()>0){
 			String orgId = loginUsers.get(0).getOrgId();
 			stockSubmitPlan.setOrgId(orgId);
+			stockSubmitPlan.setOrgCode(loginUsers.get(0).getOrgCode());
 		}
 		this.save(stockSubmitPlan);
 		List<StockSubmitMaterials> stockSubmitMaterialsList = stockSubmitPlan.getStockSubmitMaterialsList();

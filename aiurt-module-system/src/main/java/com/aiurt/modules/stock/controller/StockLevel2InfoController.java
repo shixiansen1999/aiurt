@@ -46,7 +46,7 @@ import java.util.Map;
  * @Version: V1.0
  */
 @Slf4j
-@Api(tags = "二级库")
+@Api(tags = "系统管理-基础数据-二级库仓库")
 @RestController
 @RequestMapping("/stock/stockLevel2Info")
 public class StockLevel2InfoController {
@@ -66,8 +66,8 @@ public class StockLevel2InfoController {
      * @param pageSize
      * @return
      */
-    @AutoLog(value = "二级库-分页列表查询")
-    @ApiOperation(value = "二级库-分页列表查询", notes = "二级库-分页列表查询")
+    @AutoLog(value = "系统管理-基础数据-二级库仓库-分页列表查询", operateType = 1, operateTypeAlias = "查询", permissionUrl = "/manage/StockLevelTwoList")
+    @ApiOperation(value = "系统管理-基础数据-二级库仓库-分页列表查询", notes = "系统管理-基础数据-二级库仓库-分页列表查询")
     @GetMapping(value = "/list")
     public Result<IPage<StockLevel2Info>> queryPageList(StockLevel2Info stockLevel2Info,
                                                          @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
@@ -84,8 +84,8 @@ public class StockLevel2InfoController {
         return result;
     }
 
-    @AutoLog(value = "二级库-下拉列表查询")
-    @ApiOperation(value = "二级库-下拉列表查询", notes = "二级库-下拉列表查询")
+    @AutoLog(value = "系统管理-基础数据-二级库仓库-下拉列表查询", operateType = 1, operateTypeAlias = "查询", permissionUrl = "/manage/StockLevelTwoList")
+    @ApiOperation(value = "系统管理-基础数据-二级库仓库-下拉列表查询", notes = "系统管理-基础数据-二级库仓库-下拉列表查询")
     @GetMapping(value = "/selectList")
     public Result<List<StockLevel2Info>> selectList(StockLevel2Info stockLevel2Info,
                                                         HttpServletRequest req) {
@@ -112,8 +112,8 @@ public class StockLevel2InfoController {
         return result;
     }
 
-    @AutoLog(value = "二级库-添加")
-    @ApiOperation(value = "二级库-添加", notes = "二级库-添加")
+    @AutoLog(value = "系统管理-基础数据-二级库仓库-添加", operateType = 2, operateTypeAlias = "添加", permissionUrl = "/manage/StockLevelTwoList")
+    @ApiOperation(value = "系统管理-基础数据-二级库仓库-添加", notes = "系统管理-基础数据-二级库仓库-添加")
     @PostMapping(value = "/add")
     public Result<StockLevel2Info> add(@RequestBody StockLevel2Info stockLevel2Info) {
         Result<StockLevel2Info> result = new Result<StockLevel2Info>();
@@ -140,15 +140,16 @@ public class StockLevel2InfoController {
      * @param id
      * @return
      */
-    @ApiOperation(value = "二级库详情查询", notes = "二级库详情查询")
+    @AutoLog(value = "系统管理-基础数据-二级库仓库-详情查询", operateType = 1, operateTypeAlias = "查询", permissionUrl = "/manage/StockLevelTwoList")
+    @ApiOperation(value = "二级库-详情查询", notes = "二级库-详情查询")
     @GetMapping(value = "/queryById")
     public Result<StockLevel2Info> queryById(@RequestParam(name = "id", required = true) String id) {
         StockLevel2Info stockLevel2Info = iStockLevel2InfoService.getById(id);
         return Result.ok(stockLevel2Info);
     }
 
-    @AutoLog(value = "二级库-编辑")
-    @ApiOperation(value = "二级库-编辑", notes = "二级库-编辑")
+    @AutoLog(value = "系统管理-基础数据-二级库仓库-编辑", operateType = 3, operateTypeAlias = "修改", permissionUrl = "/manage/StockLevelTwoList")
+    @ApiOperation(value = "系统管理-基础数据-二级库仓库-编辑", notes = "系统管理-基础数据-二级库仓库-编辑")
     @PutMapping(value = "/edit")
     public Result<StockLevel2Info> edit(@RequestBody StockLevel2Info stockLevel2Info) {
         Result<StockLevel2Info> result = new Result<StockLevel2Info>();
@@ -169,8 +170,8 @@ public class StockLevel2InfoController {
         return result;
     }
 
-    @AutoLog(value = "二级库-通过id删除")
-    @ApiOperation(value = "二级库-通过id删除", notes = "二级库-通过id删除")
+    @AutoLog(value = "系统管理-基础数据-二级库仓库-通过id删除", operateType = 4, operateTypeAlias = "删除", permissionUrl = "/manage/StockLevelTwoList")
+    @ApiOperation(value = "系统管理-基础数据-二级库仓库-通过id删除", notes = "系统管理-基础数据-二级库仓库-通过id删除")
     @DeleteMapping(value = "/delete")
     public Result<?> delete(@RequestParam(name = "id", required = true) String id) {
         try {
@@ -194,7 +195,7 @@ public class StockLevel2InfoController {
         return Result.ok("删除成功!");
     }
 
-    @AutoLog(value = "二级库分类-批量删除")
+    @AutoLog(value = "二级库分类-批量删除", operateType = 4, operateTypeAlias = "删除", permissionUrl = "/manage/StockLevelTwoList")
     @ApiOperation(value = "二级库分类-批量删除", notes = "二级库分类-批量删除")
     @DeleteMapping(value = "/deleteBatch")
     public Result<String> deleteBatch(@RequestParam(name = "ids", required = true) String ids) {

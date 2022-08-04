@@ -36,7 +36,7 @@ import java.util.stream.Collectors;
  * @Version: V1.0
  */
 @Slf4j
-@Api(tags = "物资分类")
+@Api(tags = "系统管理-基础数据管理-物资分类")
 @RestController
 @RequestMapping("/material/materialBaseType")
 public class MaterialBaseTypeController {
@@ -57,8 +57,8 @@ public class MaterialBaseTypeController {
      * @param pageSize
      * @return
      */
-    @AutoLog(value = "物资分类-分页列表查询")
-    @ApiOperation(value = "物资分类-分页列表查询", notes = "物资分类-分页列表查询")
+    @AutoLog(value = "系统管理-基础数据管理-物资分类-分页列表查询", operateType = 1, operateTypeAlias = "查询", permissionUrl = "/manage/MaterialClassification")
+    @ApiOperation(value = "系统管理-基础数据管理-物资分类-分页列表查询", notes = "系统管理-基础数据管理-物资分类-分页列表查询")
     @GetMapping(value = "/list")
     @PermissionData(pageComponent = "manage/MaterialClassification")
     public Result<IPage<MaterialBaseType>> queryPageList(MaterialBaseType materialBaseType,
@@ -121,7 +121,7 @@ public class MaterialBaseTypeController {
      * @param req
      * @return
      */
-    @AutoLog(value = "物资分类列表结构查询")
+    @AutoLog(value = "系统管理-基础数据管理-物资分类-列表结构查询", operateType = 1, operateTypeAlias = "查询", permissionUrl = "/manage/MaterialClassification")
     @ApiOperation(value = "物资分类列表结构查询", notes = "物资分类列表结构查询")
     @GetMapping(value = "/selectList")
     public Result<List<MaterialBaseType>> selectList(
@@ -151,7 +151,7 @@ public class MaterialBaseTypeController {
      * @param req
      * @return
      */
-    @AutoLog(value = "物资分类左侧树")
+    @AutoLog(value = "系统管理-基础数据管理-物资分类-左侧树", operateType = 1, operateTypeAlias = "查询", permissionUrl = "/manage/MaterialClassification")
     @ApiOperation(value = "物资分类左侧树")
     @GetMapping(value = "/treeLeft")
     public Result<?> treeLeft(
@@ -181,7 +181,7 @@ public class MaterialBaseTypeController {
      * @param req
      * @return
      */
-    @AutoLog(value = "物资分类树结构查询")
+    @AutoLog(value = "系统管理-基础数据管理-物资分类-树结构数据", operateType = 1, operateTypeAlias = "查询", permissionUrl = "/manage/MaterialClassification")
     @ApiOperation(value = "物资分类树结构查询")
     @GetMapping(value = "/treeList")
     public Result<List<MaterialBaseType>> treeList(
@@ -208,7 +208,7 @@ public class MaterialBaseTypeController {
         return result;
     }
 
-    @AutoLog(value = "用于下拉的物资分类")
+    @AutoLog(value = "系统管理-基础数据管理-物资分类-下拉的物资分类", operateType = 1, operateTypeAlias = "查询", permissionUrl = "/manage/MaterialClassification")
     @ApiOperation(value = "用于下拉的物资分类")
     @GetMapping(value = "/listNoPage")
     public Result<List<MaterialBaseType>> listNoPage(
@@ -226,12 +226,12 @@ public class MaterialBaseTypeController {
     }
 
     /**
-     * 物资分类-添加
+     * 系统管理-基础数据管理-物资分类-添加
      * @param materialBaseType
      * @return
      */
-    @AutoLog(value = "物资分类-添加")
-    @ApiOperation(value = "物资分类-添加", notes = "物资分类-添加")
+    @AutoLog(value = "系统管理-基础数据管理-物资分类-添加", operateType = 2, operateTypeAlias = "添加", permissionUrl = "/manage/MaterialClassification")
+    @ApiOperation(value = "系统管理-基础数据管理-物资分类-添加", notes = "系统管理-基础数据管理-物资分类-添加")
     @PostMapping(value = "/add")
     public Result<MaterialBaseType> add(@RequestBody MaterialBaseType materialBaseType) {
         Result<MaterialBaseType> result = new Result<MaterialBaseType>();
@@ -272,6 +272,7 @@ public class MaterialBaseTypeController {
      * @param id
      * @return
      */
+    @AutoLog(value = "系统管理-基础数据管理-物资分类-详情查询", operateType = 1, operateTypeAlias = "查询", permissionUrl = "/manage/MaterialClassification")
     @ApiOperation(value = "物资分类详情查询", notes = "物资分类详情查询")
     @GetMapping(value = "/queryById")
     public Result<MaterialBaseType> queryById(@RequestParam(name = "id", required = true) String id) {
@@ -287,12 +288,12 @@ public class MaterialBaseTypeController {
     }
 
     /**
-     * 物资分类-编辑
+     * 系统管理-基础数据管理-物资分类-编辑
      * @param materialBaseType
      * @return
      */
-    @AutoLog(value = "物资分类-编辑")
-    @ApiOperation(value = "物资分类-编辑", notes = "物资分类-编辑")
+    @AutoLog(value = "系统管理-基础数据管理-物资分类-编辑", operateType = 3, operateTypeAlias = "修改", permissionUrl = "/manage/MaterialClassification")
+    @ApiOperation(value = "系统管理-基础数据管理-物资分类-编辑", notes = "系统管理-基础数据管理-物资分类-编辑")
     @PutMapping(value = "/edit")
     public Result<MaterialBaseType> edit(@RequestBody MaterialBaseType materialBaseType) {
         Result<MaterialBaseType> result = new Result<MaterialBaseType>();
@@ -335,12 +336,12 @@ public class MaterialBaseTypeController {
     }
 
     /**
-     * 物资分类-通过id删除
+     * 系统管理-基础数据管理-物资分类-通过id删除
      * @param id
      * @return
      */
-    @AutoLog(value = "物资分类-通过id删除")
-    @ApiOperation(value = "物资分类-通过id删除", notes = "物资分类-通过id删除")
+    @AutoLog(value = "系统管理-基础数据管理-物资分类-通过id删除", operateType = 4, operateTypeAlias = "删除", permissionUrl = "/manage/MaterialClassification")
+    @ApiOperation(value = "系统管理-基础数据管理-物资分类-通过id删除", notes = "系统管理-基础数据管理-物资分类-通过id删除")
     @DeleteMapping(value = "/delete")
     public Result<?> delete(@RequestParam(name = "id", required = true) String id) {
         try {
@@ -364,12 +365,12 @@ public class MaterialBaseTypeController {
     }
 
     /**
-     * 物资分类-批量删除
+     * 系统管理-基础数据管理-物资分类-批量删除
      * @param ids
      * @return
      */
-    @AutoLog(value = "物资分类-批量删除")
-    @ApiOperation(value = "物资分类-批量删除", notes = "物资分类-批量删除")
+    @AutoLog(value = "系统管理-基础数据管理-物资分类-批量删除", operateType = 4, operateTypeAlias = "删除", permissionUrl = "/manage/MaterialClassification")
+    @ApiOperation(value = "系统管理-基础数据管理-物资分类-批量删除", notes = "系统管理-基础数据管理-物资分类-批量删除")
     @DeleteMapping(value = "/deleteBatch")
     public Result<String> deleteBatch(@RequestParam(name = "ids", required = true) String ids) {
         Result<String> result = new Result<String>();

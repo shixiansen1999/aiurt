@@ -19,13 +19,13 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.servlet.http.HttpServletRequest;
 
 /**
- * @Description: 提报物资
+ * @Description: 二级库管理-二级库出库管理-出库物资
  * @Author: swsc
  * @Date: 2021-09-15
  * @Version: V1.0
  */
 @Slf4j
-@Api(tags = "提报物资")
+@Api(tags = "二级库管理-二级库出库管理-出库物资")
 @RestController
 @RequestMapping("/stock/stockOutboundMaterials")
 public class StockOutboundMaterialsController {
@@ -38,6 +38,7 @@ public class StockOutboundMaterialsController {
      * @param id
      * @return
      */
+    @AutoLog(value = "二级库管理-二级库出库管理-出库物资-分页列表查询", operateType = 1, operateTypeAlias = "查询", permissionUrl = "/secondLevelWarehouse/StockLevel2SecondaryList")
     @ApiOperation(value = "详情查询", notes = "详情查询")
     @GetMapping(value = "/queryById")
     public Result<StockOutboundMaterials> queryById(@RequestParam(name = "id", required = true) String id) {

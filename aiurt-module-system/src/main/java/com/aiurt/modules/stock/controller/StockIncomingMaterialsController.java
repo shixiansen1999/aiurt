@@ -29,7 +29,7 @@ import java.util.List;
  * @Version: V1.0
  */
 @Slf4j
-@Api(tags = "二级库入库物资")
+@Api(tags = "二级库管理-二级库入库管理-入库物资")
 @RestController
 @RequestMapping("/stock/stockIncomingMaterials")
 public class StockIncomingMaterialsController {
@@ -47,8 +47,8 @@ public class StockIncomingMaterialsController {
      * @param pageSize
      * @return
      */
-    @AutoLog(value = "二级库入库物资-分页列表查询")
-    @ApiOperation(value = "二级库入库物资-分页列表查询", notes = "二级库入库物资-分页列表查询")
+    @AutoLog(value = "二级库管理-二级库入库管理-入库物资-分页列表查询", operateType = 1, operateTypeAlias = "查询", permissionUrl = "/secondLevelWarehouse/StockInOrderLevel2List")
+    @ApiOperation(value = "二级库管理-二级库入库管理-入库物资-分页列表查询", notes = "二级库管理-二级库入库管理-入库物资-分页列表查询")
     @GetMapping(value = "/list")
     public Result<IPage<StockIncomingMaterials>> queryPageList(StockIncomingMaterials stockIncomingMaterials,
                                                          @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,

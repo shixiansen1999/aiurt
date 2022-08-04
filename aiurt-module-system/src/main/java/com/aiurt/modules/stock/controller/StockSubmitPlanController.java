@@ -47,7 +47,7 @@ import java.util.Map;
  * @Version: V1.0
  */
 @Slf4j
-@Api(tags = "物资提报计划")
+@Api(tags = "二级库管理-提报计划")
 @RestController
 @RequestMapping("/stock/stockSubmitPlan")
 public class StockSubmitPlanController {
@@ -65,8 +65,8 @@ public class StockSubmitPlanController {
      * @param pageSize
      * @return
      */
-    @AutoLog(value = "物资提报计划-分页列表查询")
-    @ApiOperation(value = "物资提报计划-分页列表查询", notes = "物资提报计划-分页列表查询")
+    @AutoLog(value = "二级库管理-提报计划-分页列表查询", operateType = 1, operateTypeAlias = "查询", permissionUrl = "/secondLevelWarehouse/EscalationPlanList")
+    @ApiOperation(value = "二级库管理-提报计划-分页列表查询", notes = "二级库管理-提报计划-分页列表查询")
     @GetMapping(value = "/list")
     @PermissionData(pageComponent = "secondLevelWarehouse/EscalationPlanList")
     public Result<IPage<StockSubmitPlan>> queryPageList(StockSubmitPlan stockSubmitPlan,
@@ -92,16 +92,16 @@ public class StockSubmitPlanController {
         return result;
     }
 
-    @AutoLog(value = "物资提报计划-获取已有数据的部门下拉")
-    @ApiOperation(value = "物资提报计划-获取已有数据的部门下拉", notes = "物资提报计划-获取已有数据的部门下拉")
+    @AutoLog(value = "二级库管理-提报计划-获取已有数据的部门下拉", operateType = 1, operateTypeAlias = "查询", permissionUrl = "/secondLevelWarehouse/EscalationPlanList")
+    @ApiOperation(value = "二级库管理-提报计划-获取已有数据的部门下拉", notes = "二级库管理-提报计划-获取已有数据的部门下拉")
     @GetMapping(value = "/getOrgSelect")
     public Result<?> getOrgSelect(HttpServletRequest req) {
         List<Map<String, Object>> listres = iStockSubmitPlanService.getOrgSelect();
         return Result.OK(listres);
     }
 
-    @AutoLog(value = "物资提报计划-添加")
-    @ApiOperation(value = "物资提报计划-添加", notes = "物资提报计划-添加")
+    @AutoLog(value = "二级库管理-提报计划-添加", operateType = 2, operateTypeAlias = "添加", permissionUrl = "/secondLevelWarehouse/EscalationPlanList")
+    @ApiOperation(value = "二级库管理-提报计划-添加", notes = "二级库管理-提报计划-添加")
     @PostMapping(value = "/add")
     public Result<StockSubmitPlan> add(@RequestBody StockSubmitPlan stockSubmitPlan) {
         Result<StockSubmitPlan> result = new Result<StockSubmitPlan>();
@@ -120,6 +120,7 @@ public class StockSubmitPlanController {
      * @param
      * @return
      */
+    @AutoLog(value = "二级库管理-提报计划-修改提报计划状态", operateType = 3, operateTypeAlias = "修改", permissionUrl = "/secondLevelWarehouse/EscalationPlanList")
     @ApiOperation(value = "修改提报计划状态", notes = "修改提报计划状态")
     @GetMapping(value = "/submitPlanStatus")
     public Result<String> submitPlan(@RequestParam(name = "status", required = true) String status,
@@ -141,6 +142,7 @@ public class StockSubmitPlanController {
      * @param
      * @return
      */
+    @AutoLog(value = "二级库管理-提报计划-获取提报计划编号", operateType = 1, operateTypeAlias = "查询", permissionUrl = "/secondLevelWarehouse/EscalationPlanList")
     @ApiOperation(value = "新增获取提报计划编号", notes = "新增获取提报计划编号")
     @GetMapping(value = "/getSubmitPlanCode")
     public Result<StockSubmitPlan> getSubmitPlanCode() throws ParseException {
@@ -152,6 +154,7 @@ public class StockSubmitPlanController {
      * @param id
      * @return
      */
+    @AutoLog(value = "二级库管理-提报计划-详情查询", operateType = 1, operateTypeAlias = "查询", permissionUrl = "/secondLevelWarehouse/EscalationPlanList")
     @ApiOperation(value = "物资提报计划详情查询", notes = "物资提报计划详情查询")
     @GetMapping(value = "/queryById")
     public Result<StockSubmitPlan> queryById(@RequestParam(name = "id", required = true) String id) {
@@ -159,8 +162,8 @@ public class StockSubmitPlanController {
         return Result.ok(stockSubmitPlan);
     }
 
-    @AutoLog(value = "物资提报计划-编辑")
-    @ApiOperation(value = "物资提报计划-编辑", notes = "物资提报计划-编辑")
+    @AutoLog(value = "二级库管理-提报计划-编辑", operateType = 3, operateTypeAlias = "修改", permissionUrl = "/secondLevelWarehouse/EscalationPlanList")
+    @ApiOperation(value = "二级库管理-提报计划-编辑", notes = "二级库管理-提报计划-编辑")
     @PostMapping(value = "/edit")
     public Result<StockSubmitPlan> edit(@RequestBody StockSubmitPlan stockSubmitPlan) {
         Result<StockSubmitPlan> result = new Result<StockSubmitPlan>();
@@ -181,8 +184,8 @@ public class StockSubmitPlanController {
         return result;
     }
 
-    @AutoLog(value = "物资提报计划-通过id删除")
-    @ApiOperation(value = "物资提报计划-通过id删除", notes = "物资提报计划-通过id删除")
+    @AutoLog(value = "二级库管理-提报计划-通过id删除", operateType = 4, operateTypeAlias = "删除", permissionUrl = "/secondLevelWarehouse/EscalationPlanList")
+    @ApiOperation(value = "二级库管理-提报计划-通过id删除", notes = "二级库管理-提报计划-通过id删除")
     @DeleteMapping(value = "/delete")
     public Result<?> delete(@RequestParam(name = "id", required = true) String id) {
         try {
@@ -195,7 +198,7 @@ public class StockSubmitPlanController {
         return Result.ok("删除成功!");
     }
 
-    @AutoLog(value = "物资提报计划分类-批量删除")
+    @AutoLog(value = "二级库管理-提报计划-批量删除", operateType = 4, operateTypeAlias = "删除", permissionUrl = "/secondLevelWarehouse/EscalationPlanList")
     @ApiOperation(value = "物资提报计划分类-批量删除", notes = "物资提报计划分类-批量删除")
     @DeleteMapping(value = "/deleteBatch")
     public Result<String> deleteBatch(@RequestParam(name = "ids", required = true) String ids) {
@@ -209,7 +212,7 @@ public class StockSubmitPlanController {
         return result;
     }
 
-    @AutoLog(value = "导出")
+    @AutoLog(value = "二级库管理-提报计划-导出", operateType = 6, operateTypeAlias = "导出", permissionUrl = "/secondLevelWarehouse/EscalationPlanList")
     @ApiOperation(value = "导出", notes = "导出")
     @GetMapping(value = "/export")
     public void eqFaultAnaExport(@RequestParam(name = "ids", defaultValue = "") String ids,
@@ -224,8 +227,8 @@ public class StockSubmitPlanController {
      * @param response
      * @return
      */
-    @AutoLog(value = "物资提报计划-导入")
-    @ApiOperation(value = "物资提报计划-导入", notes = "物资提报计划-导入")
+    @AutoLog(value = "二级库管理-提报计划-导入", operateType = 5, operateTypeAlias = "导入", permissionUrl = "/secondLevelWarehouse/EscalationPlanList")
+    @ApiOperation(value = "二级库管理-提报计划-导入", notes = "二级库管理-提报计划-导入")
     @RequestMapping(value = "/importExcel", method = RequestMethod.POST)
     public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) {
         MultipartHttpServletRequest multipartRequest = (MultipartHttpServletRequest) request;
@@ -253,7 +256,7 @@ public class StockSubmitPlanController {
         return Result.error("文件导入失败！");
     }
 
-    @AutoLog(value = "下载物资导入模板")
+    @AutoLog(value = "二级库管理-提报计划-下载物资导入模板", operateType = 1, operateTypeAlias = "查询", permissionUrl = "/secondLevelWarehouse/EscalationPlanList")
     @ApiOperation(value = "下载物资导入模板", notes = "下载物资导入模板")
     @RequestMapping(value = "/downloadExcel", method = RequestMethod.GET)
     public void downloadExcel(HttpServletResponse response, HttpServletRequest request) throws IOException {

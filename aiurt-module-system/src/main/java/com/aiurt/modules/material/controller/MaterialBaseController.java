@@ -54,7 +54,7 @@ import java.util.List;
  * @Version: V1.0
  */
 @Slf4j
-@Api(tags = "物资")
+@Api(tags = "系统管理-基础数据管理-物资主数据")
 @RestController
 @RequestMapping("/material/materialBase")
 public class MaterialBaseController {
@@ -76,8 +76,8 @@ public class MaterialBaseController {
      * @param pageSize
      * @return
      */
-    @AutoLog(value = "物资-分页列表查询")
-    @ApiOperation(value = "物资-分页列表查询", notes = "物资-分页列表查询")
+    @AutoLog(value = "系统管理-基础数据管理-物资主数据-分页列表查询", operateType = 1, operateTypeAlias = "查询", permissionUrl = "/manage/MainMaterialClassification")
+    @ApiOperation(value = "系统管理-基础数据管理-物资主数据-分页列表查询", notes = "系统管理-基础数据管理-物资主数据-分页列表查询")
     @GetMapping(value = "/list")
     @PermissionData(pageComponent = "manage/MainMaterialClassification")
     public Result<IPage<MaterialBase>> queryPageList(MaterialBase materialBase,
@@ -128,8 +128,8 @@ public class MaterialBaseController {
         return result;
     }
 
-    @AutoLog(value = "物资-添加")
-    @ApiOperation(value = "物资-添加", notes = "物资-添加")
+    @AutoLog(value = "系统管理-基础数据管理-物资主数据-添加", operateType = 2, operateTypeAlias = "添加", permissionUrl = "/manage/MainMaterialClassification")
+    @ApiOperation(value = "系统管理-基础数据管理-物资主数据-添加", notes = "系统管理-基础数据管理-物资主数据-添加")
     @PostMapping(value = "/add")
     public Result<MaterialBase> add(@RequestBody MaterialBase materialBase) {
         Result<MaterialBase> result = new Result<MaterialBase>();
@@ -150,7 +150,7 @@ public class MaterialBaseController {
         return result;
     }
 
-    @AutoLog(value = "物资列表查询-无分页")
+    @AutoLog(value = "系统管理-基础数据管理-物资主数据-物资列表查询（无分页）", operateType = 1, operateTypeAlias = "查询", permissionUrl = "/manage/MainMaterialClassification")
     @ApiOperation(value = "物资列表查询-无分页", notes = "物资列表查询-无分页")
     @GetMapping(value = "/listnoPage")
     public Result<?> queryPageList(
@@ -198,6 +198,7 @@ public class MaterialBaseController {
      * @param id
      * @return
      */
+    @AutoLog(value = "系统管理-基础数据管理-物资主数据-详情查询", operateType = 1, operateTypeAlias = "查询", permissionUrl = "/manage/MainMaterialClassification")
     @ApiOperation(value = "物资详情查询", notes = "物资详情查询")
     @GetMapping(value = "/queryById")
     public Result<MaterialBase> queryById(@RequestParam(name = "id", required = true) String id) {
@@ -206,8 +207,8 @@ public class MaterialBaseController {
         return Result.ok(materialBasefinal);
     }
 
-    @AutoLog(value = "物资-编辑")
-    @ApiOperation(value = "物资-编辑", notes = "物资-编辑")
+    @AutoLog(value = "系统管理-基础数据管理-物资主数据-编辑", operateType = 3, operateTypeAlias = "修改", permissionUrl = "/manage/MainMaterialClassification")
+    @ApiOperation(value = "系统管理-基础数据管理-物资主数据-编辑", notes = "系统管理-基础数据管理-物资主数据-编辑")
     @PutMapping(value = "/edit")
     public Result<MaterialBase> edit(@RequestBody MaterialBase materialBase) {
         Result<MaterialBase> result = new Result<MaterialBase>();
@@ -228,8 +229,8 @@ public class MaterialBaseController {
         return result;
     }
 
-    @AutoLog(value = "物资-通过id删除")
-    @ApiOperation(value = "物资-通过id删除", notes = "物资-通过id删除")
+    @AutoLog(value = "系统管理-基础数据管理-物资主数据-通过id删除", operateType = 4, operateTypeAlias = "删除", permissionUrl = "/manage/MainMaterialClassification")
+    @ApiOperation(value = "系统管理-基础数据管理-物资主数据-通过id删除", notes = "系统管理-基础数据管理-物资主数据-通过id删除")
     @DeleteMapping(value = "/delete")
     public Result<?> delete(@RequestParam(name = "id", required = true) String id) {
         try {
@@ -253,7 +254,7 @@ public class MaterialBaseController {
         return Result.ok("删除成功!");
     }
 
-    @AutoLog(value = "物资分类-批量删除")
+    @AutoLog(value = "系统管理-基础数据管理-物资主数据-批量删除", operateType = 4, operateTypeAlias = "删除", permissionUrl = "/manage/MainMaterialClassification")
     @ApiOperation(value = "物资分类-批量删除", notes = "物资分类-批量删除")
     @DeleteMapping(value = "/deleteBatch")
     public Result<String> deleteBatch(@RequestParam(name = "ids", required = true) String ids) {
@@ -293,6 +294,7 @@ public class MaterialBaseController {
      * @param response
      * @return
      */
+    @AutoLog(value = "系统管理-基础数据管理-物资主数据-导入", operateType = 5, operateTypeAlias = "导入", permissionUrl = "/manage/MainMaterialClassification")
     @RequestMapping(value = "/importExcel", method = RequestMethod.POST)
     public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) {
         MultipartHttpServletRequest multipartRequest = (MultipartHttpServletRequest) request;
@@ -320,7 +322,7 @@ public class MaterialBaseController {
         return Result.error("文件导入失败！");
     }
 
-    @AutoLog(value = "下载物资导入模板")
+    @AutoLog(value = "系统管理-基础数据管理-物资主数据-下载物资导入模板", operateType = 1, operateTypeAlias = "查询", permissionUrl = "/manage/MainMaterialClassification")
     @ApiOperation(value = "下载物资导入模板", notes = "下载物资导入模板")
     @RequestMapping(value = "/downloadExcel", method = RequestMethod.GET)
     public void downloadExcel(HttpServletResponse response, HttpServletRequest request) throws IOException {

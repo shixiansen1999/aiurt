@@ -43,7 +43,7 @@ import java.util.Map;
  * @Version: V1.0
  */
 @Slf4j
-@Api(tags = "二级库盘点")
+@Api(tags = "二级库管理-二级库盘点管理")
 @RestController
 @RequestMapping("/stock/stockLevel2Check")
 public class StockLevel2CheckController {
@@ -61,8 +61,8 @@ public class StockLevel2CheckController {
      * @param pageSize
      * @return
      */
-    @AutoLog(value = "二级库盘点-分页列表查询")
-    @ApiOperation(value = "二级库盘点-分页列表查询", notes = "二级库盘点-分页列表查询")
+    @AutoLog(value = "二级库管理-二级库盘点管理-分页列表查询", operateType = 1, operateTypeAlias = "查询", permissionUrl = "/secondLevelWarehouse/StockLevel2CheckList")
+    @ApiOperation(value = "二级库管理-二级库盘点管理-分页列表查询", notes = "二级库管理-二级库盘点管理-分页列表查询")
     @GetMapping(value = "/list")
     public Result<IPage<StockLevel2Check>> queryPageList(StockLevel2Check stockLevel2Check,
                                                          @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
@@ -76,8 +76,8 @@ public class StockLevel2CheckController {
         return result;
     }
 
-    @AutoLog(value = "二级库盘点-添加")
-    @ApiOperation(value = "二级库盘点-添加", notes = "二级库盘点-添加")
+    @AutoLog(value = "二级库管理-二级库盘点管理-添加", operateType = 2, operateTypeAlias = "添加", permissionUrl = "/secondLevelWarehouse/StockLevel2CheckList")
+    @ApiOperation(value = "二级库管理-二级库盘点管理-添加", notes = "二级库管理-二级库盘点管理-添加")
     @PostMapping(value = "/add")
     public Result<StockLevel2Check> add(@RequestBody StockLevel2Check stockLevel2Check) {
         Result<StockLevel2Check> result = new Result<StockLevel2Check>();
@@ -96,7 +96,8 @@ public class StockLevel2CheckController {
      * @param
      * @return
      */
-    @ApiOperation(value = "二级库盘点-新增获取二级库盘点编号", notes = "二级库盘点-新增获取二级库盘点编号")
+    @AutoLog(value = "二级库管理-二级库盘点管理-获取盘点单号", operateType = 1, operateTypeAlias = "查询", permissionUrl = "/secondLevelWarehouse/StockLevel2CheckList")
+    @ApiOperation(value = "二级库管理-二级库盘点管理-新增获取二级库盘点编号", notes = "二级库管理-二级库盘点管理-新增获取二级库盘点编号")
     @GetMapping(value = "/getStockCheckCode")
     public Result<StockLevel2Check> getStockCheckCode() throws ParseException {
         return Result.ok(iStockLevel2CheckService.getStockCheckCode());
@@ -109,7 +110,8 @@ public class StockLevel2CheckController {
      * @param
      * @return
      */
-    @ApiOperation(value = "二级库盘点-执行中", notes = "二级库盘点-执行中")
+    @AutoLog(value = "二级库管理-二级库盘点管理-执行中", operateType = 3, operateTypeAlias = "修改", permissionUrl = "/secondLevelWarehouse/StockLevel2CheckList")
+    @ApiOperation(value = "二级库管理-二级库盘点管理-执行中", notes = "二级库管理-二级库盘点管理-执行中")
     @GetMapping(value = "/changeStatus")
     public Result<?> changeStatus(@RequestParam(name = "id", required = true) String id,
                                   @RequestParam(name = "status", required = true) String status) throws ParseException {
@@ -126,7 +128,8 @@ public class StockLevel2CheckController {
      * @param
      * @return
      */
-    @ApiOperation(value = "二级库盘点-获取仓库所属机构人员", notes = "二级库盘点-获取仓库所属机构人员")
+    @AutoLog(value = "二级库管理-二级库盘点管理-获取仓库所属机构人员", operateType = 1, operateTypeAlias = "查询", permissionUrl = "/secondLevelWarehouse/StockLevel2CheckList")
+    @ApiOperation(value = "二级库管理-二级库盘点管理-获取仓库所属机构人员", notes = "二级库管理-二级库盘点管理-获取仓库所属机构人员")
     @GetMapping(value = "/getStockOrgUsers")
     public Result<?> getStockOrgUsers(@RequestParam(name = "warehouseCode", required = true) String warehouseCode) throws ParseException {
         return iStockLevel2CheckService.getStockOrgUsers(warehouseCode);
@@ -137,14 +140,16 @@ public class StockLevel2CheckController {
      * @param id
      * @return
      */
-    @ApiOperation(value = "二级库盘点-详情查询", notes = "二级库盘点-详情查询")
+    @AutoLog(value = "二级库管理-二级库盘点管理-详情查询", operateType = 1, operateTypeAlias = "查询", permissionUrl = "/secondLevelWarehouse/StockLevel2CheckList")
+    @ApiOperation(value = "二级库管理-二级库盘点管理-详情查询", notes = "二级库管理-二级库盘点管理-详情查询")
     @GetMapping(value = "/queryById")
     public Result<StockLevel2Check> queryById(@RequestParam(name = "id", required = true) String id) {
         StockLevel2Check stockLevel2Check = iStockLevel2CheckService.getById(id);
         return Result.ok(stockLevel2Check);
     }
 
-    @ApiOperation(value = "二级库盘点-下发", notes = "二级库盘点-下发")
+    @AutoLog(value = "二级库管理-二级库盘点管理-下发", operateType = 3, operateTypeAlias = "修改", permissionUrl = "/secondLevelWarehouse/StockLevel2CheckList")
+    @ApiOperation(value = "二级库管理-二级库盘点管理-下发", notes = "二级库管理-二级库盘点管理-下发")
     @GetMapping(value = "/sendStockCheck")
     public Result<StockLevel2Check> sendStockCheck(@RequestParam(name = "id", required = true) String id) {
         StockLevel2Check stockLevel2Check = iStockLevel2CheckService.getById(id);
@@ -165,8 +170,8 @@ public class StockLevel2CheckController {
         return Result.ok("下发成功！");
     }
 
-    @AutoLog(value = "二级库盘点-编辑")
-    @ApiOperation(value = "二级库盘点-编辑", notes = "二级库盘点-编辑")
+    @AutoLog(value = "二级库管理-二级库盘点管理-编辑", operateType = 3, operateTypeAlias = "修改", permissionUrl = "/secondLevelWarehouse/StockLevel2CheckList")
+    @ApiOperation(value = "二级库管理-二级库盘点管理-编辑", notes = "二级库管理-二级库盘点管理-编辑")
     @PostMapping(value = "/edit")
     public Result<StockLevel2Check> edit(@RequestBody StockLevel2Check stockLevel2Check) {
         Result<StockLevel2Check> result = new Result<StockLevel2Check>();
@@ -187,8 +192,8 @@ public class StockLevel2CheckController {
         return result;
     }
 
-    @AutoLog(value = "二级库盘点-通过id删除")
-    @ApiOperation(value = "二级库盘点-通过id删除", notes = "二级库盘点-通过id删除")
+    @AutoLog(value = "二级库管理-二级库盘点管理-通过id删除", operateType = 4, operateTypeAlias = "删除", permissionUrl = "/secondLevelWarehouse/StockLevel2CheckList")
+    @ApiOperation(value = "二级库管理-二级库盘点管理-通过id删除", notes = "二级库管理-二级库盘点管理-通过id删除")
     @DeleteMapping(value = "/delete")
     public Result<?> delete(@RequestParam(name = "id", required = true) String id) {
         try {
@@ -201,7 +206,7 @@ public class StockLevel2CheckController {
         return Result.ok("删除成功!");
     }
 
-    @AutoLog(value = "二级库盘点分类-批量删除")
+    @AutoLog(value = "二级库管理-二级库盘点管理-批量删除", operateType = 4, operateTypeAlias = "删除", permissionUrl = "/secondLevelWarehouse/StockLevel2CheckList")
     @ApiOperation(value = "二级库盘点分类-批量删除", notes = "二级库盘点分类-批量删除")
     @DeleteMapping(value = "/deleteBatch")
     public Result<String> deleteBatch(@RequestParam(name = "ids", required = true) String ids) {
@@ -215,7 +220,7 @@ public class StockLevel2CheckController {
         return result;
     }
 
-    @AutoLog(value = "导出")
+    @AutoLog(value = "二级库管理-二级库盘点管理-导出", operateType = 6, operateTypeAlias = "导出", permissionUrl = "/secondLevelWarehouse/StockLevel2CheckList")
     @ApiOperation(value = "导出", notes = "导出")
     @GetMapping(value = "/export")
     public void eqFaultAnaExport(@RequestParam(name = "ids", defaultValue = "") String ids,

@@ -1,6 +1,7 @@
 package com.aiurt.modules.stock.controller;
 
 import com.aiurt.common.aspect.annotation.AutoLog;
+import com.aiurt.common.aspect.annotation.PermissionData;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.modules.stock.entity.StockLevel2;
 import com.aiurt.modules.stock.service.IStockLevel2Service;
@@ -34,7 +35,7 @@ import java.util.stream.Collectors;
  * @Version: V1.0
  */
 @Slf4j
-@Api(tags = "二级库库存管理")
+@Api(tags = "二级库管理-二级库库存管理")
 @RestController
 @RequestMapping("/stock/stockLevel2")
 public class StockLevel2Controller {
@@ -53,9 +54,10 @@ public class StockLevel2Controller {
      * @param pageSize
      * @return
      */
-    @AutoLog(value = "二级库库存管理-分页列表查询")
-    @ApiOperation(value = "二级库库存管理-分页列表查询", notes = "二级库库存管理-分页列表查询")
+    @AutoLog(value = "二级库管理-二级库库存管理-分页列表查询", operateType = 1, operateTypeAlias = "查询", permissionUrl = "/secondLevelWarehouse/StockLevel2List")
+    @ApiOperation(value = "二级库管理-二级库库存管理-分页列表查询", notes = "二级库管理-二级库库存管理-分页列表查询")
     @GetMapping(value = "/list")
+    @PermissionData(pageComponent = "secondLevelWarehouse/StockLevel2List")
     public Result<IPage<StockLevel2>> queryPageList(StockLevel2 stockLevel2,
                                                          @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
                                                          @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize,
@@ -70,15 +72,16 @@ public class StockLevel2Controller {
      * @param id
      * @return
      */
-    @ApiOperation(value = "二级库库存管理-详情查询", notes = "二级库库存管理-详情查询")
+    @AutoLog(value = "二级库管理-二级库库存管理-详情查询", operateType = 1, operateTypeAlias = "查询", permissionUrl = "/secondLevelWarehouse/StockLevel2List")
+    @ApiOperation(value = "二级库管理-二级库库存管理-详情查询", notes = "二级库管理-二级库库存管理-详情查询")
     @GetMapping(value = "/queryById")
     public Result<StockLevel2> queryById(@RequestParam(name = "id", required = true) String id) {
         StockLevel2 stockLevel2 = iStockLevel2Service.getDetailById(id);
         return Result.ok(stockLevel2);
     }
 
-    @AutoLog(value = "二级库库存管理-导出")
-    @ApiOperation(value = "二级库库存管理-导出", notes = "二级库库存管理-导出")
+    @AutoLog(value = "二级库管理-二级库库存管理-导出", operateType = 6, operateTypeAlias = "导出", permissionUrl = "/secondLevelWarehouse/StockLevel2List")
+    @ApiOperation(value = "二级库管理-二级库库存管理-导出", notes = "二级库管理-二级库库存管理-导出")
     @RequestMapping(value = "/exportXls")
     public ModelAndView exportXls(@RequestParam(name = "ids", required = true) String ids, HttpServletRequest request) {
         List<StockLevel2> exportList = iStockLevel2Service.exportXls(ids);

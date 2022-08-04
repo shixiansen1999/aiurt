@@ -34,7 +34,7 @@ import java.util.List;
  * @Version: V1.0
  */
 @Slf4j
-@Api(tags = "盘点物资")
+@Api(tags = "二级库管理-二级库盘点管理-盘点物资")
 @RestController
 @RequestMapping("/stock/stockLevel2CheckDetail")
 public class StockLevel2CheckDetailController {
@@ -54,8 +54,8 @@ public class StockLevel2CheckDetailController {
      * @param pageSize
      * @return
      */
-    @AutoLog(value = "盘点物资-分页列表查询")
-    @ApiOperation(value = "盘点物资-分页列表查询", notes = "盘点物资-分页列表查询")
+    @AutoLog(value = "二级库管理-二级库盘点管理-盘点物资-分页列表查询", operateType = 1, operateTypeAlias = "查询", permissionUrl = "/secondLevelWarehouse/StockLevel2CheckList")
+    @ApiOperation(value = "二级库管理-二级库盘点管理-盘点物资-分页列表查询", notes = "二级库管理-二级库盘点管理-盘点物资-分页列表查询")
     @GetMapping(value = "/list")
     public Result<IPage<StockLevel2CheckDetail>> queryPageList(StockLevel2CheckDetail stockLevel2CheckDetail,
                                                          @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
@@ -76,14 +76,22 @@ public class StockLevel2CheckDetailController {
         return Result.OK(pageList);
     }
 
-    @AutoLog(value = "盘点物资-编辑")
-    @ApiOperation(value = "盘点物资-编辑", notes = "盘点物资-编辑")
+    @AutoLog(value = "二级库管理-二级库盘点管理-盘点物资-编辑", operateType = 3, operateTypeAlias = "修改", permissionUrl = "/secondLevelWarehouse/StockLevel2CheckList")
+    @ApiOperation(value = "二级库管理-二级库盘点管理-盘点物资-编辑", notes = "二级库管理-二级库盘点管理-盘点物资-编辑")
     @PostMapping(value = "/edit")
     public Result<StockLevel2CheckDetail> edit(@RequestBody List<StockLevel2CheckDetail> stockLevel2CheckDetailList) {
         Result<StockLevel2CheckDetail> result = new Result<StockLevel2CheckDetail>();
         if (stockLevel2CheckDetailList == null) {
             result.onnull("未找到对应实体");
         } else {
+            String stockCheckCode = stockLevel2CheckDetailList.get(0).getStockCheckCode();
+            StockLevel2Check stockLevel2Check = iStockLevel2CheckService.getOne(new QueryWrapper<StockLevel2Check>().eq("del_flag", CommonConstant.DEL_FLAG_0).eq("stock_check_code",stockCheckCode));
+            int count = 0;
+            for(StockLevel2CheckDetail stockLevel2CheckDetail : stockLevel2CheckDetailList){
+                count += stockLevel2CheckDetail.getActualNum()==null?0:stockLevel2CheckDetail.getActualNum();
+            }
+            stockLevel2Check.setCheckNum(count);
+            iStockLevel2CheckService.updateById(stockLevel2Check);
             boolean ok = iStockLevel2CheckDetailService.updateBatchById(stockLevel2CheckDetailList);
             try{
             }catch (Exception e){
@@ -97,8 +105,8 @@ public class StockLevel2CheckDetailController {
         return result;
     }
 
-    @AutoLog(value = "盘点物资-提交")
-    @ApiOperation(value = "盘点物资-提交", notes = "盘点物资-提交")
+    @AutoLog(value = "二级库管理-二级库盘点管理-盘点物资-提交", operateType = 3, operateTypeAlias = "修改", permissionUrl = "/secondLevelWarehouse/StockLevel2CheckList")
+    @ApiOperation(value = "二级库管理-二级库盘点管理-盘点物资-提交", notes = "二级库管理-二级库盘点管理-盘点物资-提交")
     @PostMapping(value = "/commitCheckInfo")
     public Result<StockLevel2CheckDetail> commitCheckInfo(@RequestBody List<StockLevel2CheckDetail> stockLevel2CheckDetailList) throws ParseException {
         Result<StockLevel2CheckDetail> result = new Result<StockLevel2CheckDetail>();
@@ -110,6 +118,11 @@ public class StockLevel2CheckDetailController {
             StockLevel2Check stockLevel2Check = iStockLevel2CheckService.getOne(new QueryWrapper<StockLevel2Check>().eq("del_flag", CommonConstant.DEL_FLAG_0).eq("stock_check_code",stockCheckCode));
             stockLevel2Check.setCheckEndTime(sdf.parse(sdf.format(new Date())));
             stockLevel2Check.setStatus(CommonConstant.StOCK_LEVEL2_CHECK_STATUS_5);
+            int count = 0;
+            for(StockLevel2CheckDetail stockLevel2CheckDetail : stockLevel2CheckDetailList){
+                count += stockLevel2CheckDetail.getActualNum()==null?0:stockLevel2CheckDetail.getActualNum();
+            }
+            stockLevel2Check.setCheckNum(count);
             iStockLevel2CheckService.updateById(stockLevel2Check);
             boolean ok = iStockLevel2CheckDetailService.updateBatchById(stockLevel2CheckDetailList);
             try{

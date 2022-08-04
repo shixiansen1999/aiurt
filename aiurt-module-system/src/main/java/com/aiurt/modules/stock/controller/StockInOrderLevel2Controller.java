@@ -34,7 +34,7 @@ import java.util.List;
  * @Version: V1.0
  */
 @Slf4j
-@Api(tags = "二级库入库管理")
+@Api(tags = "二级库管理-二级库入库管理")
 @RestController
 @RequestMapping("/stock/stockInOrderLevel2")
 public class StockInOrderLevel2Controller {
@@ -52,8 +52,8 @@ public class StockInOrderLevel2Controller {
      * @param pageSize
      * @return
      */
-    @AutoLog(value = "二级库入库管理-分页列表查询")
-    @ApiOperation(value = "二级库入库管理-分页列表查询", notes = "二级库入库管理-分页列表查询")
+    @AutoLog(value = "二级库管理-二级库入库管理-分页列表查询", operateType = 1, operateTypeAlias = "查询", permissionUrl = "/secondLevelWarehouse/StockInOrderLevel2List")
+    @ApiOperation(value = "二级库管理-二级库入库管理-分页列表查询", notes = "二级库管理-二级库入库管理-分页列表查询")
     @GetMapping(value = "/list")
     public Result<IPage<StockInOrderLevel2>> queryPageList(StockInOrderLevel2 stockInOrderLevel2,
                                                          @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
@@ -67,8 +67,8 @@ public class StockInOrderLevel2Controller {
         return result;
     }
 
-    @AutoLog(value = "二级库入库管理-添加")
-    @ApiOperation(value = "二级库入库管理-添加", notes = "二级库入库管理-添加")
+    @AutoLog(value = "二级库管理-二级库入库管理-添加", operateType = 2, operateTypeAlias = "添加", permissionUrl = "/secondLevelWarehouse/StockInOrderLevel2List")
+    @ApiOperation(value = "二级库管理-二级库入库管理-添加", notes = "二级库管理-二级库入库管理-添加")
     @PostMapping(value = "/add")
     public Result<StockInOrderLevel2> add(@RequestBody StockInOrderLevel2 stockInOrderLevel2) {
         Result<StockInOrderLevel2> result = new Result<StockInOrderLevel2>();
@@ -87,6 +87,7 @@ public class StockInOrderLevel2Controller {
      * @param
      * @return
      */
+    @AutoLog(value = "二级库管理-二级库入库管理-提交", operateType = 3, operateTypeAlias = "修改", permissionUrl = "/secondLevelWarehouse/StockInOrderLevel2List")
     @ApiOperation(value = "提交", notes = "提交")
     @GetMapping(value = "/submitInOrderStatus")
     public Result<String> submitInOrderStatus(@RequestParam(name = "status", required = true) String status,
@@ -111,6 +112,7 @@ public class StockInOrderLevel2Controller {
      * @param
      * @return
      */
+    @AutoLog(value = "二级库管理-二级库入库管理-获取入库单号", operateType = 1, operateTypeAlias = "查询", permissionUrl = "/secondLevelWarehouse/StockInOrderLevel2List")
     @ApiOperation(value = "新增获取入库编号", notes = "新增获取入库编号")
     @GetMapping(value = "/getInOrderCode")
     public Result<StockInOrderLevel2> getInOrderCode() throws ParseException {
@@ -122,6 +124,7 @@ public class StockInOrderLevel2Controller {
      * @param id
      * @return
      */
+    @AutoLog(value = "二级库管理-二级库入库管理-详情查询", operateType = 1, operateTypeAlias = "查询", permissionUrl = "/secondLevelWarehouse/StockInOrderLevel2List")
     @ApiOperation(value = "二级库入库管理详情查询", notes = "二级库入库管理详情查询")
     @GetMapping(value = "/queryById")
     public Result<StockInOrderLevel2> queryById(@RequestParam(name = "id", required = true) String id) {
@@ -129,8 +132,8 @@ public class StockInOrderLevel2Controller {
         return Result.ok(stockInOrderLevel2);
     }
 
-    @AutoLog(value = "二级库入库管理-编辑")
-    @ApiOperation(value = "二级库入库管理-编辑", notes = "二级库入库管理-编辑")
+    @AutoLog(value = "二级库管理-二级库入库管理-编辑", operateType = 3, operateTypeAlias = "修改", permissionUrl = "/secondLevelWarehouse/StockInOrderLevel2List")
+    @ApiOperation(value = "二级库管理-二级库入库管理-编辑", notes = "二级库管理-二级库入库管理-编辑")
     @PostMapping(value = "/edit")
     public Result<StockInOrderLevel2> edit(@RequestBody StockInOrderLevel2 stockInOrderLevel2) {
         Result<StockInOrderLevel2> result = new Result<StockInOrderLevel2>();
@@ -151,8 +154,8 @@ public class StockInOrderLevel2Controller {
         return result;
     }
 
-    @AutoLog(value = "二级库入库管理-通过id删除")
-    @ApiOperation(value = "二级库入库管理-通过id删除", notes = "二级库入库管理-通过id删除")
+    @AutoLog(value = "二级库管理-二级库入库管理-通过id删除", operateType = 3, operateTypeAlias = "删除", permissionUrl = "/secondLevelWarehouse/StockInOrderLevel2List")
+    @ApiOperation(value = "二级库管理-二级库入库管理-通过id删除", notes = "二级库管理-二级库入库管理-通过id删除")
     @DeleteMapping(value = "/delete")
     public Result<?> delete(@RequestParam(name = "id", required = true) String id) {
         try {
@@ -165,7 +168,7 @@ public class StockInOrderLevel2Controller {
         return Result.ok("删除成功!");
     }
 
-    @AutoLog(value = "二级库入库管理分类-批量删除")
+    @AutoLog(value = "二级库入库管理分类-批量删除", operateType = 3, operateTypeAlias = "删除", permissionUrl = "/secondLevelWarehouse/StockInOrderLevel2List")
     @ApiOperation(value = "二级库入库管理分类-批量删除", notes = "二级库入库管理分类-批量删除")
     @DeleteMapping(value = "/deleteBatch")
     public Result<String> deleteBatch(@RequestParam(name = "ids", required = true) String ids) {
@@ -179,8 +182,8 @@ public class StockInOrderLevel2Controller {
         return result;
     }
 
-    @AutoLog(value = "二级库入库管理-导出")
-    @ApiOperation(value = "二级库入库管理-导出", notes = "二级库入库管理-导出")
+    @AutoLog(value = "二级库管理-二级库入库管理-导出", operateType = 6, operateTypeAlias = "导出", permissionUrl = "/secondLevelWarehouse/StockInOrderLevel2List")
+    @ApiOperation(value = "二级库管理-二级库入库管理-导出", notes = "二级库管理-二级库入库管理-导出")
     @GetMapping(value = "/export")
     public void eqExport(@RequestParam(name = "ids", defaultValue = "") String ids,
                                  HttpServletRequest request,

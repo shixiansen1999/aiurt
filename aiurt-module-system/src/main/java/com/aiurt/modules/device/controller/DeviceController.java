@@ -34,7 +34,7 @@ import java.util.*;
  * @Version: V1.0
  */
 @Slf4j
-@Api(tags = "设备(system)")
+@Api(tags = "设备管理-设备主数据/设备台账（system）")
 @RestController
 @RequestMapping("/device/device")
 public class DeviceController {
@@ -56,8 +56,8 @@ public class DeviceController {
      * @param pageSize
      * @return
      */
-    @AutoLog(value = "设备-分页列表查询")
-    @ApiOperation(value = "设备-分页列表查询", notes = "设备-分页列表查询")
+    @AutoLog(value = "设备管理-设备主数据/设备台账-分页列表查询", operateType = 1, operateTypeAlias = "查询", permissionUrl = "/equipmentData/masterData")
+    @ApiOperation(value = "设备管理-设备主数据-分页列表查询", notes = "设备管理-设备主数据-分页列表查询")
     @GetMapping(value = "/list")
     public Result<IPage<Device>> queryPageList(
                                                @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
@@ -102,8 +102,8 @@ public class DeviceController {
         return result;
     }
 
-    @AutoLog(value = "设备-列表查询")
-    @ApiOperation(value = "设备-列表查询", notes = "设备-列表查询")
+    @AutoLog(value = "设备管理-设备主数据-列表查询", operateType = 1, operateTypeAlias = "查询", permissionUrl = "/equipmentData/masterData")
+    @ApiOperation(value = "设备管理-设备主数据-列表查询", notes = "设备管理-设备主数据-列表查询")
     @GetMapping(value = "/selectList")
     public Result<List<Device>> selectList(
             @RequestParam(name = "codeCc", required = false) String positionCodeCc,
@@ -131,6 +131,7 @@ public class DeviceController {
         return Result.OK(deviceList);
     }
 
+    @AutoLog(value = "设备管理-设备主数据-详情查询", operateType = 1, operateTypeAlias = "查询", permissionUrl = "/equipmentData/masterData")
     @ApiOperation(value = "设备详情查询", notes = "设备详情查询")
     @GetMapping(value = "/queryById")
     public Result<Device> queryById(@RequestParam(name = "id", required = true) String deviceId) {
@@ -141,8 +142,8 @@ public class DeviceController {
      * 添加时获取设备编号
      * @return
      */
-    @AutoLog(value = "设备-添加时获取设备编号")
-    @ApiOperation(value = "设备-添加时获取设备编号", notes = "设备-添加时获取设备编号")
+    @AutoLog(value = "设备管理-设备主数据-添加时获取设备编号", operateType = 1, operateTypeAlias = "查询", permissionUrl = "/equipmentData/masterData")
+    @ApiOperation(value = "设备管理-设备主数据-添加时获取设备编号", notes = "设备管理-设备主数据-添加时获取设备编号")
     @GetMapping(value = "/getDeviceCode")
     public Result<String> getDeviceCode(
             @RequestParam(name = "majorCode", required = false) String majorCode,
@@ -178,8 +179,8 @@ public class DeviceController {
      * @param device
      * @return
      */
-    @AutoLog(value = "设备-添加")
-    @ApiOperation(value = "设备-添加", notes = "设备-添加")
+    @AutoLog(value = "设备管理-设备主数据-添加", operateType = 2, operateTypeAlias = "添加", permissionUrl = "/equipmentData/masterData")
+    @ApiOperation(value = "设备管理-设备主数据-添加", notes = "设备管理-设备主数据-添加")
     @PostMapping(value = "/add")
     public Result<Device> add(@RequestBody Device device) {
         Result<Device> result = new Result<Device>();
@@ -254,8 +255,8 @@ public class DeviceController {
      * @param device
      * @return
      */
-    @AutoLog(value = "设备-编辑")
-    @ApiOperation(value = "设备-编辑", notes = "设备-编辑")
+    @AutoLog(value = "设备管理-设备主数据-编辑", operateType = 3, operateTypeAlias = "修改", permissionUrl = "/equipmentData/masterData")
+    @ApiOperation(value = "设备管理-设备主数据-编辑", notes = "设备管理-设备主数据-编辑")
     @PutMapping(value = "/edit")
     public Result<Device> edit(@RequestBody Device device) {
         Result<Device> result = new Result<Device>();
@@ -311,8 +312,8 @@ public class DeviceController {
      * @param id
      * @return
      */
-    @AutoLog(value = "设备-通过id删除")
-    @ApiOperation(value = "设备-通过id删除", notes = "设备-通过id删除")
+    @AutoLog(value = "设备管理-设备主数据-通过id删除", operateType = 4, operateTypeAlias = "删除", permissionUrl = "/equipmentData/masterData")
+    @ApiOperation(value = "设备管理-设备主数据-通过id删除", notes = "设备管理-设备主数据-通过id删除")
     @DeleteMapping(value = "/delete")
     public Result<?> delete(@RequestParam(name = "id", required = true) String id) {
         try {
@@ -333,8 +334,8 @@ public class DeviceController {
      * @param ids
      * @return
      */
-    @AutoLog(value = "设备-批量删除")
-    @ApiOperation(value = "设备-批量删除", notes = "设备-批量删除")
+    @AutoLog(value = "设备管理-设备主数据-批量删除", operateType = 4, operateTypeAlias = "删除", permissionUrl = "/equipmentData/masterData")
+    @ApiOperation(value = "设备管理-设备主数据-批量删除", notes = "设备管理-设备主数据-批量删除")
     @DeleteMapping(value = "/deleteBatch")
     public Result<String> deleteBatch(@RequestParam(name = "ids", required = true) String ids) {
         Result<String> result = new Result<String>();
