@@ -291,8 +291,9 @@ public class SysInfoListController  extends BaseController<SysAnnouncement, SysI
     @AutoLog(value = "特情管理-通过id删除")
     @ApiOperation(value="特情管理-通过id删除", notes="特情管理-通过id删除")
     @DeleteMapping(value = "/delete")
-    public Result<?> delete(@RequestParam(name="ids",required=true) List<String> ids) {
-        for (String id : ids) {
+    public Result<?> delete(@RequestParam(name="ids",required=true) String ids) {
+        String[] selectionList = ids.split(",");
+        for (String id : selectionList) {
             SysAnnouncement byId = bdInfoListService.getById(id);
             byId.setDelFlag(CommonConstant.DEL_FLAG_1.toString());
             sysInfoListMapper.updateById(byId);
