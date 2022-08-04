@@ -1,5 +1,6 @@
 package com.aiurt.boot.task.controller;
 
+import cn.hutool.core.collection.CollUtil;
 import com.aiurt.boot.task.dto.PatrolAccompanyDTO;
 import com.aiurt.boot.task.dto.PatrolTaskAppointSaveDTO;
 import com.aiurt.boot.task.entity.PatrolTask;
@@ -9,6 +10,7 @@ import com.aiurt.boot.task.service.IPatrolTaskUserService;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.constant.enums.ModuleType;
 import com.aiurt.common.system.base.controller.BaseController;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -98,6 +100,11 @@ public class PatrolTaskUserController extends BaseController<PatrolTaskUser, IPa
 			 endTime = format.parse(patrolAccompanyList.getEndTime());
 		 } catch (ParseException e) {
 			 e.printStackTrace();
+		 }
+		List <PatrolTaskUser> taskUserList = patrolTaskUserService.list(new LambdaQueryWrapper<PatrolTaskUser>().eq(PatrolTaskUser::getTaskCode, patrolAccompanyList.getCode()));
+		 if(CollUtil.isNotEmpty(taskUserList))
+		 {
+			 patrolTaskUserService.removeBatchByIds(taskUserList);
 		 }
 		 LambdaUpdateWrapper<PatrolTask> updateWrapper = new LambdaUpdateWrapper<>();
 		 updateWrapper.set(PatrolTask::getSource, 2).set(PatrolTask::getStatus, 1).set(PatrolTask::getStartTime, startTime)

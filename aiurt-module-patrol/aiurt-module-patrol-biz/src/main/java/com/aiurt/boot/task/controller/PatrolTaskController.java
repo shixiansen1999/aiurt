@@ -422,7 +422,7 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
      * @return
      */
     @AutoLog(value = "app巡检任务-指派人员查询", operateType = 1, operateTypeAlias = "查询", module = ModuleType.PATROL,permissionUrl = "/Inspection/pool")
-    @ApiOperation(value = "app巡检任务-同行人查询", notes = "app巡检任务-指派人员查询")
+    @ApiOperation(value = "app巡检任务-指派人员查询", notes = "app巡检任务-指派人员查询")
     @PostMapping(value = "/patrolTaskAppointSelect")
     public Result<?> patrolTaskAppointSelect(@RequestBody PatrolOrgDTO orgCoed, HttpServletRequest req) {
         List<PatrolTaskUserDTO> patrolTaskUserDto = patrolTaskService.getPatrolTaskAppointSelect(orgCoed);

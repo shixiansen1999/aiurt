@@ -366,11 +366,6 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
                     .set(PatrolTask::getBackReason, patrolTaskDTO.getBackReason())
                     .eq(PatrolTask::getId, patrolTaskDTO.getId());
             update(updateWrapper);
-            //删除这个任务的巡检人
-            LambdaQueryWrapper<PatrolTaskUser> wrapper = new LambdaQueryWrapper<>();
-            wrapper.eq(PatrolTaskUser::getTaskCode, patrolTask.getCode());
-            List<PatrolTaskUser> patrolTaskUsers = patrolTaskUserMapper.selectList(wrapper);
-            patrolTaskUserMapper.deleteBatchIds(patrolTaskUsers);
         }
     }
 
