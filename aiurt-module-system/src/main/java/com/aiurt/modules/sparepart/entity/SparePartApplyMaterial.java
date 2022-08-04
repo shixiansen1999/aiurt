@@ -4,6 +4,8 @@ import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.util.Date;
 import java.math.BigDecimal;
+
+import com.aiurt.modules.basic.entity.DictEntity;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
@@ -96,4 +98,33 @@ public class SparePartApplyMaterial implements Serializable {
     @DateTimeFormat(pattern="yyyy-MM-dd")
     @ApiModelProperty(value = "修改时间")
     private Date updateTime;
+    /**所属专业-用于前端回显*/
+    @ApiModelProperty(value = "所属专业")
+    @TableField(exist = false)
+    private  String  majorName;
+    /**所属子系统-用于前端回显*/
+    @ApiModelProperty(value = "所属子系统")
+    @TableField(exist = false)
+    private  String  systemName;
+    /**物资名称-用于前端回显*/
+    @Excel(name = "物资名称", width = 15)
+    @ApiModelProperty(value = "物资名称")
+    private String materialName;
+    /**物资分类-用于前端回显*/
+    @ApiModelProperty(value = "物资分类")
+    @TableField(exist = false)
+    private  String  baseTypeCodeName;
+    /**物资类型-用于前端回显*/
+    @ApiModelProperty(value = "物资类型")
+    @TableField(exist = false)
+    private  String  typeName;
+    /**现有库存-用于前端回显*/
+    @Excel(name = "现有库存")
+    @ApiModelProperty(value = "现有库存")
+    private  Integer  num;
+    /**单位-用于前端回显*/
+    @ApiModelProperty(value = " 单位")
+    @TableField(exist = false)
+    private String unit;
+
 }

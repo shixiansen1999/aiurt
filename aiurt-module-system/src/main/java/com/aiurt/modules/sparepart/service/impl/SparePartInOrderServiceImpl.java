@@ -60,11 +60,14 @@ public class SparePartInOrderServiceImpl extends ServiceImpl<SparePartInOrderMap
         // 1.更新当前表状态为已确认
         partInOrder.setConfirmId(user.getUsername());
         partInOrder.setConfirmTime(new Date());
-        sparePartInOrderMapper.updateById(sparePartInOrder);
+        partInOrder.setConfirmStatus(sparePartInOrder.getConfirmStatus());
+        sparePartInOrderMapper.updateById(partInOrder);
         // 2.回填申领单
         SparePartApplyMaterial material = sparePartApplyMaterialMapper.selectOne(new LambdaQueryWrapper<SparePartApplyMaterial>().eq(SparePartApplyMaterial::getMaterialCode,sparePartInOrder.getMaterialCode()).eq(SparePartApplyMaterial::getApplyCode,sparePartInOrder.getApplyCode()));
-        material.setActualNum(sparePartInOrder.getNum());
-        sparePartApplyMaterialMapper.updateById(material);
+        if(null!=material){
+            material.setActualNum(sparePartInOrder.getNum());
+            sparePartApplyMaterialMapper.updateById(material);
+        }
         // 3.更新备件库存数据（原库存数+入库的数量）
         //查询要入库的物资，备件库存中是否存在
         SparePartStock sparePartStock = sparePartStockMapper.selectOne(new LambdaQueryWrapper<SparePartStock>().eq(SparePartStock::getMaterialCode,partInOrder.getMaterialCode()).eq(SparePartStock::getWarehouseCode,partInOrder.getWarehouseCode()));
@@ -102,12 +105,12 @@ public class SparePartInOrderServiceImpl extends ServiceImpl<SparePartInOrderMap
     @Transactional(rollbackFor = Exception.class)
     public Result<?> batchStorage(List<SparePartInOrder>  sparePartInOrder) {
         //查询状态为“已确认”的数据数量
-        Long confirmedNum = sparePartInOrder.stream().filter(order -> order.getConfirmStatus().equals("1")).count();
+        Long confirmedNum = sparePartInOrder.stream().filter(order -> order.getStatus().equals("1")).count();
         if(sparePartInOrder.size() == confirmedNum){
             return Result.error("勾选备件已入库，不用重复操作！");
         }
         //查询状态为“待确认”的数据
-        sparePartInOrder.stream().filter(order -> order.getConfirmStatus().equals("0")).forEach(order -> {
+        sparePartInOrder.stream().filter(order -> order.getStatus().equals("0")).forEach(order -> {
             confirm(order);
         });
         return Result.OK("编辑成功！");

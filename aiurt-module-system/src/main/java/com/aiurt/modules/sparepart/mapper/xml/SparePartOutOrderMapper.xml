@@ -17,7 +17,7 @@
             t6.realname applyUserName,
             t1.specifications,
             t7.`name` manufactorCodeName,
-            t1.unit,
+            d3.item_text unit,
             t1.price,
             t.confirm_time confirmTime,
             t8.realname confirmName,
@@ -36,6 +36,9 @@
         LEFT JOIN sys_user t8 ON t.confirm_user_id = t8.username
         LEFT JOIN sys_dict AS dict2 ON dict2.dict_code = 'material_type'
         LEFT JOIN sys_dict_item AS d2 ON d2.item_value = t1.type AND dict2.id = d2.dict_id
+        LEFT JOIN sys_dict AS dict3 ON dict3.dict_code = 'materian_unit'
+        LEFT JOIN sys_dict_item AS d3 ON d3.item_value = t1.unit AND dict3.id = d3.dict_id
+
         WHERE
         t.del_flag =0
         <if test="out.materialCode!=null and out.materialCode!=''">

@@ -12,14 +12,13 @@ import javax.servlet.http.HttpServletResponse;
 
 import cn.hutool.core.util.ObjectUtil;
 import com.aiurt.common.constant.CommonConstant;
-import com.aiurt.modules.sparepart.entity.SparePartApply;
-import com.aiurt.modules.sparepart.entity.SparePartInOrder;
-import com.aiurt.modules.sparepart.entity.SparePartStock;
-import com.aiurt.modules.sparepart.entity.SparePartStockInfo;
+import com.aiurt.modules.sparepart.entity.*;
 import com.aiurt.modules.sparepart.entity.dto.StockApplyExcel;
+import com.aiurt.modules.sparepart.service.ISparePartApplyMaterialService;
 import com.aiurt.modules.sparepart.service.ISparePartApplyService;
 import com.aiurt.modules.sparepart.service.ISparePartInOrderService;
 import com.aiurt.modules.sparepart.service.ISparePartStockService;
+import com.aiurt.modules.stock.entity.StockOutboundMaterials;
 import com.aiurt.modules.stock.entity.StockSubmitPlan;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -68,6 +67,9 @@ public class SparePartApplyController extends BaseController<SparePartApply, ISp
 	 private ISparePartInOrderService sparePartInOrderService;
 	 @Autowired
 	 private ISparePartStockService sparePartStockService;
+	 @Autowired
+	 private ISparePartApplyMaterialService sparePartApplyMaterialService;
+
 
 	/**
 	 * 分页列表查询
@@ -88,6 +90,12 @@ public class SparePartApplyController extends BaseController<SparePartApply, ISp
 		//QueryWrapper<SparePartApply> queryWrapper = QueryGenerator.initQueryWrapper(sparePartApply, req.getParameterMap());
 		Page<SparePartApply> page = new Page<SparePartApply>(pageNo, pageSize);
 		List<SparePartApply> list = sparePartApplyService.selectList(page, sparePartApply);
+		List<SparePartApplyMaterial> applyMaterials = sparePartApplyMaterialService.selectList();
+		list.forEach(apply ->{
+			List<SparePartApplyMaterial> materials = applyMaterials.stream().filter(meterials -> meterials.getApplyId().equals(apply.getId()) ).collect(Collectors.toList());
+
+			apply.setStockLevel2List(materials);
+		});
 		page.setRecords(list);
 		return Result.OK(page);
 	}

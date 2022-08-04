@@ -2,8 +2,14 @@ package com.aiurt.modules.sparepart.controller;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
+import com.aiurt.common.constant.CommonConstant;
+import com.aiurt.modules.sparepart.entity.SparePartReturnOrder;
+import io.swagger.annotations.ApiParam;
+import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.query.QueryGenerator;
 import com.aiurt.modules.sparepart.entity.SparePartScrap;
@@ -15,6 +21,10 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.extern.slf4j.Slf4j;
 
 import com.aiurt.common.system.base.controller.BaseController;
+import org.jeecg.common.system.vo.LoginUser;
+import org.jeecgframework.poi.excel.def.NormalExcelConstants;
+import org.jeecgframework.poi.excel.entity.ExportParams;
+import org.jeecgframework.poi.excel.view.JeecgEntityExcelView;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
@@ -69,6 +79,7 @@ public class SparePartScrapController extends BaseController<SparePartScrap, ISp
 	@ApiOperation(value="spare_part_scrap-添加", notes="spare_part_scrap-添加")
 	@PostMapping(value = "/add")
 	public Result<String> add(@RequestBody SparePartScrap sparePartScrap) {
+		sparePartScrap.setStatus(2);
 		sparePartScrapService.save(sparePartScrap);
 		return Result.OK("添加成功！");
 	}
@@ -82,9 +93,8 @@ public class SparePartScrapController extends BaseController<SparePartScrap, ISp
 	@AutoLog(value = "spare_part_scrap-编辑")
 	@ApiOperation(value="spare_part_scrap-编辑", notes="spare_part_scrap-编辑")
 	@RequestMapping(value = "/edit", method = {RequestMethod.PUT,RequestMethod.POST})
-	public Result<String> edit(@RequestBody SparePartScrap sparePartScrap) {
-		sparePartScrapService.updateById(sparePartScrap);
-		return Result.OK("编辑成功!");
+	public Result<?> edit(@RequestBody SparePartScrap sparePartScrap) {
+		return sparePartScrapService.update(sparePartScrap);
 	}
 
 	/**
@@ -97,23 +107,13 @@ public class SparePartScrapController extends BaseController<SparePartScrap, ISp
 	@ApiOperation(value="spare_part_scrap-通过id删除", notes="spare_part_scrap-通过id删除")
 	@DeleteMapping(value = "/delete")
 	public Result<String> delete(@RequestParam(name="id",required=true) String id) {
-		sparePartScrapService.removeById(id);
+		SparePartScrap sparePartScrap = sparePartScrapService.getById(id);
+		sparePartScrap.setDelFlag(CommonConstant.DEL_FLAG_1);
+		sparePartScrapService.updateById(sparePartScrap);
 		return Result.OK("删除成功!");
 	}
 
-	/**
-	 *  批量删除
-	 *
-	 * @param ids
-	 * @return
-	 */
-	@AutoLog(value = "spare_part_scrap-批量删除")
-	@ApiOperation(value="spare_part_scrap-批量删除", notes="spare_part_scrap-批量删除")
-	@DeleteMapping(value = "/deleteBatch")
-	public Result<String> deleteBatch(@RequestParam(name="ids",required=true) String ids) {
-		this.sparePartScrapService.removeByIds(Arrays.asList(ids.split(",")));
-		return Result.OK("批量删除成功!");
-	}
+
 
 	/**
 	 * 通过id查询
@@ -136,12 +136,27 @@ public class SparePartScrapController extends BaseController<SparePartScrap, ISp
     * 导出excel
     *
     * @param request
-    * @param sparePartScrap
+    * @param  ids
     */
     @RequestMapping(value = "/exportXls")
-    public ModelAndView exportXls(HttpServletRequest request, SparePartScrap sparePartScrap) {
-        return super.exportXls(request, sparePartScrap, SparePartScrap.class, "spare_part_scrap");
-    }
+	public ModelAndView exportXls(@ApiParam(value = "行数据ids" ,required = true) @RequestParam("ids") String ids, HttpServletRequest request, HttpServletResponse response) {
+		LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+		ModelAndView mv = new ModelAndView(new JeecgEntityExcelView());
+		SparePartScrap sparePartScrap = new SparePartScrap();
+		sparePartScrap.setIds(Arrays.asList(ids.split(",")));
+		List<SparePartScrap> list = sparePartScrapService.selectList(null, sparePartScrap);
+		list = list.stream().distinct().collect(Collectors.toList());
+		for(int i=0;i<list.size();i++){
+			SparePartScrap order = list.get(i);
+			order.setNumber(i+1+"");
+		}
+		//导出文件名称
+		mv.addObject(NormalExcelConstants.FILE_NAME, "备件报废管理列表");
+		mv.addObject(NormalExcelConstants.CLASS, SparePartScrap.class);
+		mv.addObject(NormalExcelConstants.PARAMS, new ExportParams("备件报废管理列表数据", "导出人:"+user.getRealname(), "导出信息"));
+		mv.addObject(NormalExcelConstants.DATA_LIST, list);
+		return mv;
+	}
 
     /**
       * 通过excel导入数据

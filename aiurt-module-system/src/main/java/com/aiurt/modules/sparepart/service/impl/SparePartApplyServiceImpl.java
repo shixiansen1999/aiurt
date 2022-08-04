@@ -15,12 +15,13 @@ import com.aiurt.modules.sparepart.mapper.SparePartApplyMaterialMapper;
 import com.aiurt.modules.sparepart.service.ISparePartApplyMaterialService;
 import com.aiurt.modules.sparepart.service.ISparePartApplyService;
 import com.aiurt.modules.sparepart.service.ISparePartStockInfoService;
-import com.aiurt.modules.stock.entity.StockIncomingMaterials;
-import com.aiurt.modules.stock.entity.StockOutOrderLevel2;
-import com.aiurt.modules.stock.entity.StockOutboundMaterials;
-import com.aiurt.modules.stock.entity.StockSubmitPlan;
+import com.aiurt.modules.stock.entity.*;
+import com.aiurt.modules.stock.mapper.StockInOrderLevel2Mapper;
+import com.aiurt.modules.stock.mapper.StockLevel2InfoMapper;
 import com.aiurt.modules.stock.mapper.StockOutOrderLevel2Mapper;
 import com.aiurt.modules.stock.mapper.StockOutboundMaterialsMapper;
+import com.aiurt.modules.system.entity.SysDepart;
+import com.aiurt.modules.system.service.ISysDepartService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -55,6 +56,11 @@ public class SparePartApplyServiceImpl extends ServiceImpl<SparePartApplyMapper,
     private ISparePartStockInfoService sparePartStockInfoService;
     @Autowired
     private StockOutOrderLevel2Mapper stockOutOrderLevel2Mapper;
+    @Autowired
+    private StockLevel2InfoMapper stockLevel2InfoMapper;
+    @Autowired
+    private ISysDepartService iSysDepartService;
+
     /**
      * 分页列表查询
      * @param page
@@ -76,7 +82,8 @@ public class SparePartApplyServiceImpl extends ServiceImpl<SparePartApplyMapper,
     public Result<?> add(SparePartApply sparePartApply) {
         LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         //申领单号 自动生成
-        String code = getCode();
+        //String code = getCode();
+        String code = sparePartApply.getCode();
         sparePartApply.setCode(code);
         sparePartApply.setApplyUserId(user.getUsername());
         LambdaQueryWrapper<SparePartStockInfo> wrapper = new LambdaQueryWrapper<>();
@@ -135,6 +142,8 @@ public class SparePartApplyServiceImpl extends ServiceImpl<SparePartApplyMapper,
     @Transactional(rollbackFor = Exception.class)
     public Result<?> submit(SparePartApply sparePartApply) {
         SparePartApply partApply = getById(sparePartApply.getId());
+        StockLevel2Info stockLevel2Info = stockLevel2InfoMapper.selectOne(new LambdaQueryWrapper<StockLevel2Info>().eq(StockLevel2Info::getDelFlag,CommonConstant.DEL_FLAG_0).eq(StockLevel2Info::getWarehouseCode,partApply.getApplyWarehouseCode()));
+        SysDepart sysDepart = iSysDepartService.getById(stockLevel2Info.getOrganizationId());
         //1.修改状态为“待确认”
         sparePartApplyMapper.updateById(sparePartApply);
         //2.插入二级库出库表
@@ -148,6 +157,7 @@ public class SparePartApplyServiceImpl extends ServiceImpl<SparePartApplyMapper,
         //出库人为出库确认人，保管人为备件申领人
         stockOutOrderLevel.setCustodialId(partApply.getApplyUserId());
         stockOutOrderLevel.setCustodialWarehouseCode(partApply.getCustodialWarehouseCode());
+        stockOutOrderLevel.setOrgCode(null!=sysDepart?sysDepart.getOrgCode():null);
         stockOutOrderLevel2Mapper.insert(stockOutOrderLevel);
         //3.插入出库物资
         List<SparePartApplyMaterial> list = sparePartApplyMaterialService.list(new LambdaQueryWrapper<SparePartApplyMaterial>().eq(SparePartApplyMaterial::getApplyId,sparePartApply.getId()));

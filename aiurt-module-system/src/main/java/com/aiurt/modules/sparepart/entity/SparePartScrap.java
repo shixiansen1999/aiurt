@@ -4,6 +4,8 @@ import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.util.Date;
 import java.math.BigDecimal;
+import java.util.List;
+
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
@@ -36,6 +38,10 @@ public class SparePartScrap implements Serializable {
 	@TableId(type = IdType.ASSIGN_ID)
     @ApiModelProperty(value = "主键id")
     private String id;
+    /**序号*/
+    @Excel(name = "序号", width = 15)
+    @TableField(exist = false)
+    private String number;
     /**所属专业*/
     @Excel(name = "所属专业", width = 15)
     @ApiModelProperty(value = "专业名称")
@@ -80,6 +86,7 @@ public class SparePartScrap implements Serializable {
     @ApiModelProperty(value = "报废原因")
     private String reason;
     /**报废人*/
+    @Excel(name = "报废人", width = 15)
     @ApiModelProperty(value = "报废人")
     private String createBy;
 	/**状态：1待报损、2待确认、3已确认*/
@@ -135,4 +142,61 @@ public class SparePartScrap implements Serializable {
     @DateTimeFormat(pattern="yyyy-MM-dd")
     @ApiModelProperty(value = "修改时间")
     private Date updateTime;
+    /**ids*/
+    @ApiModelProperty(value = "ids")
+    @TableField(exist = false)
+    private List<String> ids;
+    /**所属专业code*/
+    @ApiModelProperty(value = "专业名称code")
+    @TableField(exist = false)
+    private  String  majorCode;
+
+    /**子系统code*/
+    @ApiModelProperty(value = "子系统code")
+    @TableField(exist = false)
+    private  String  systemCode;
+
+    /**物资分类code*/
+    @ApiModelProperty(value = "物资分类code")
+    @TableField(exist = false)
+    private  String  baseTypeCode;
+
+    /**物资类型*/
+    @ApiModelProperty(value = "类型")
+    @TableField(exist = false)
+    private  Integer  type;
+
+    /**规格型号*/
+    @TableField(exist = false)
+    @ApiModelProperty(value = "规格型号")
+    private String specifications;
+    /**单位*/
+    @ApiModelProperty(value = " 单位")
+    @TableField(exist = false)
+    private String unit;
+    /**生产厂商*/
+    @ApiModelProperty(value = "生产厂商名称")
+    @TableField(exist = false)
+    private String manufactorCodeName;
+    /**单价(元)*/
+    @ApiModelProperty(value = " 单价")
+    @TableField(exist = false)
+    private String price;
+    /** 状态名称*/
+    @ApiModelProperty(value = "状态名称")
+    @TableField(exist = false)
+    private String statusName;
+    /**确认时间*/
+    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
+    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
+    @ApiModelProperty(value = "确认时间")
+    private Date confirmTime;
+    /**确认人ID*/
+    @ApiModelProperty(value = "确认人ID")
+    @Dict(dictTable = "sys_user", dicText = "realname", dicCode = "username")
+    private String confirmId;
+    /**确认人*/
+    @ApiModelProperty(value = "确认人")
+    @TableField(exist = false)
+    private String confirmName;
 }

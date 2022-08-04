@@ -8,7 +8,6 @@
         t.material_code materialCode,
         t2.NAME,
         t.num,
-        t2.unit,
         t3.major_name majorName,
         t4.system_name systemName,
         t5.base_type_name baseTypeCodeName,
@@ -16,7 +15,7 @@
         t6.depart_name orgName,
         t2.specifications,
         t7.`name` manufactorCodeName,
-        t2.unit,
+        d3.item_text unit,
         t2.price
         FROM
         spare_part_stock t
@@ -29,6 +28,9 @@
         LEFT JOIN sys_dict AS dict1 ON dict1.dict_code = 'material_type'
         LEFT JOIN sys_dict_item AS d1 ON d1.item_value = t2.type  AND dict1.id = d1.dict_id
         LEFT JOIN cs_manufactor t7 ON t7.id = t2.manufactor_code
+        LEFT JOIN sys_dict AS dict3 ON dict3.dict_code = 'materian_unit'
+        LEFT JOIN sys_dict_item AS d3 ON d3.item_value = t2.unit AND dict3.id = d3.dict_id
+
         WHERE
         t.del_flag =0
         <if test="stock.materialCode!=null and stock.materialCode!=''">

@@ -42,6 +42,10 @@ public class SparePartInOrder implements Serializable {
 	@Excel(name = "序号", width = 15)
 	@TableField(exist = false)
 	private String number;
+	/**用于批量入库时，查询是否为“已确认”*/
+	@ApiModelProperty(value = "用于批量入库时，查询是否为“已确认”")
+	@TableField(exist = false)
+	private String status;
 	/**入库单状态：0-未确认 1-已确认*/
 	@ApiModelProperty(value = "入库单状态：0-未确认 1-已确认")
 	@Dict(dicCode = "spare_in_order_status")

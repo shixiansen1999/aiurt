@@ -22,7 +22,7 @@
         LEFT JOIN sys_dict AS dict1 ON dict1.dict_code = 'malfunction_type'
         LEFT JOIN sys_dict_item AS d1 ON d1.item_value = t.malfunction_type  AND dict1.id = d1.dict_id
         LEFT JOIN sys_depart t3 ON t3.id = t.org_id
-        LEFT JOIN sys_user t4 ON t4.id = t.maintain_user_id
+        LEFT JOIN sys_user t4 ON t4.username= t.maintain_user_id
         LEFT JOIN material_base t5 ON t5.`code` = t1.materials_code
         WHERE
         t.del_flag =0
