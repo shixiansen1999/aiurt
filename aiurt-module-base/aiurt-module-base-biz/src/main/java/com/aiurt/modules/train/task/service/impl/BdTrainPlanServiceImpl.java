@@ -509,6 +509,8 @@ public class BdTrainPlanServiceImpl extends ServiceImpl<BdTrainPlanMapper, BdTra
             messageDTO.setPriority("H");
             messageDTO.setCategory("1");
             messageDTO.setTitle("考试结果发布");
+            messageDTO.setBusType(SysAnnmentTypeEnum.TRAINRECHECK.getType());
+            messageDTO.setToAll(false);
             if (StrUtil.isBlank(checkVO.getUserName()) || StrUtil.isBlank(checkVO.getExamResult())) {
                 throw new JeecgBootException("考生姓名不存在或考生考试结果为空");
             }

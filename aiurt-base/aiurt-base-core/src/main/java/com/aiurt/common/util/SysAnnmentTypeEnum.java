@@ -24,6 +24,10 @@ public enum SysAnnmentTypeEnum {
      */
     TRAINPLAN("trainplan", "component",""),
     /**
+     * 培训复核
+     */
+    TRAINRECHECK("trainrecheck", "component",""),
+    /**
      * 工作日志
      */
     WORKLOG("worklog", "component",""),
