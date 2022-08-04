@@ -2,6 +2,7 @@ package com.aiurt.modules.stock.controller;
 
 import com.aiurt.common.api.dto.message.MessageDTO;
 import com.aiurt.common.aspect.annotation.AutoLog;
+import com.aiurt.common.aspect.annotation.PermissionData;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.modules.stock.entity.StockLevel2Check;
@@ -64,6 +65,7 @@ public class StockLevel2CheckController {
     @AutoLog(value = "二级库管理-二级库盘点管理-分页列表查询", operateType = 1, operateTypeAlias = "查询", permissionUrl = "/secondLevelWarehouse/StockLevel2CheckList")
     @ApiOperation(value = "二级库管理-二级库盘点管理-分页列表查询", notes = "二级库管理-二级库盘点管理-分页列表查询")
     @GetMapping(value = "/list")
+    @PermissionData(pageComponent = "secondLevelWarehouse/StockLevel2CheckList")
     public Result<IPage<StockLevel2Check>> queryPageList(StockLevel2Check stockLevel2Check,
                                                          @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
                                                          @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize,

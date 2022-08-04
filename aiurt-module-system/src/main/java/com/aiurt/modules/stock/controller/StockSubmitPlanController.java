@@ -79,14 +79,6 @@ public class StockSubmitPlanController {
         queryWrapper.orderByDesc("create_time");
         Page<StockSubmitPlan> page = new Page<StockSubmitPlan>(pageNo, pageSize);
         IPage<StockSubmitPlan> pageList = iStockSubmitPlanService.page(page, queryWrapper);
-        List<StockSubmitPlan> records = pageList.getRecords();
-        if(records!=null && records.size()>0){
-            for(StockSubmitPlan s : records){
-                String orgId = s.getOrgId();
-                SysDepart sysDepart = iSysDepartService.getById(orgId);
-                s.setOrgCode(sysDepart.getOrgCode());
-            }
-        }
         result.setSuccess(true);
         result.setResult(pageList);
         return result;
@@ -125,7 +117,7 @@ public class StockSubmitPlanController {
     @GetMapping(value = "/submitPlanStatus")
     public Result<String> submitPlan(@RequestParam(name = "status", required = true) String status,
                                      @RequestParam(name = "code", required = true) String code) throws ParseException {
-        StockSubmitPlan stockSubmitPlan = iStockSubmitPlanService.getOne(new QueryWrapper<StockSubmitPlan>().eq("code",code));
+        StockSubmitPlan stockSubmitPlan = iStockSubmitPlanService.getOne(new QueryWrapper<StockSubmitPlan>().eq("code",code).eq("del_flag", CommonConstant.DEL_FLAG_0));
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
         stockSubmitPlan.setStatus(status);
         stockSubmitPlan.setSubmitTime(sdf.parse(sdf.format(new Date())));

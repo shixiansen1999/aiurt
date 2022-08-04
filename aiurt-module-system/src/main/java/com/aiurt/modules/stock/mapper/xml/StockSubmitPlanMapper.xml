@@ -3,7 +3,7 @@
 <mapper namespace="com.aiurt.modules.stock.mapper.StockSubmitPlanMapper">
     
     <select id="getOrgSelect" resultType="java.util.Map">
-        select t.org_id, sd.depart_name
+        select t.org_id, sd.*
         from (select org_id
             from stock_submit_plan sbm
             where del_flag = 0

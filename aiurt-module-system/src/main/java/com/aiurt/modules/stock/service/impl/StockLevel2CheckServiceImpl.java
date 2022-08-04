@@ -8,7 +8,9 @@ import com.aiurt.modules.material.service.IMaterialBaseService;
 import com.aiurt.modules.stock.entity.*;
 import com.aiurt.modules.stock.mapper.StockLevel2CheckMapper;
 import com.aiurt.modules.stock.service.*;
+import com.aiurt.modules.system.entity.SysDepart;
 import com.aiurt.modules.system.entity.SysUser;
+import com.aiurt.modules.system.service.ISysDepartService;
 import com.aiurt.modules.system.service.impl.SysBaseApiImpl;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -60,6 +62,8 @@ public class StockLevel2CheckServiceImpl extends ServiceImpl<StockLevel2CheckMap
 	private IStockLevel2InfoService stockLevel2InfoService;
 	@Autowired
 	private IStockLevel2Service stockLevel2Service;
+	@Autowired
+	private ISysDepartService iSysDepartService;
 
 	@Override
 	public StockLevel2Check getStockCheckCode() throws ParseException {
@@ -87,6 +91,10 @@ public class StockLevel2CheckServiceImpl extends ServiceImpl<StockLevel2CheckMap
 
 	@Override
 	public void add(StockLevel2Check stockLevel2Check) {
+		StockLevel2Info stockLevel2Info = stockLevel2InfoService.getOne(new QueryWrapper<StockLevel2Info>().eq("warehouse_code",stockLevel2Check.getWarehouseCode()).eq("del_flag", CommonConstant.DEL_FLAG_0));
+		String organizationId = stockLevel2Info.getOrganizationId();
+		SysDepart sysDepart = iSysDepartService.getById(organizationId);
+		stockLevel2Check.setOrgCode(sysDepart.getOrgCode());
 		this.save(stockLevel2Check);
 		List<StockLevel2> stockLevel2List = stockLevel2Service.list(new QueryWrapper<StockLevel2>().eq("warehouse_code",stockLevel2Check.getWarehouseCode()));
 		if(stockLevel2List != null && stockLevel2List.size()>0){

@@ -124,7 +124,7 @@ public class StockLevel2InfoController {
             }
             final int countname = (int) iStockLevel2InfoService.count(new LambdaQueryWrapper<StockLevel2Info>().eq(StockLevel2Info::getWarehouseName, stockLevel2Info.getWarehouseName()).eq(StockLevel2Info::getDelFlag, 0).last("limit 1"));
             if (countname > 0){
-                return Result.error("二级库编号不能重复");
+                return Result.error("二级库名称不能重复");
             }
             iStockLevel2InfoService.save(stockLevel2Info);
             result.success("添加成功！");
