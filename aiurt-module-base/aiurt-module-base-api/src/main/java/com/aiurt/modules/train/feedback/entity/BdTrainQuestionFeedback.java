@@ -78,7 +78,7 @@ public class BdTrainQuestionFeedback implements Serializable {
     @Excel(name = "问题反馈问题", width = 15)
     @ApiModelProperty(value = "问题反馈问题")
     @TableField(exist = false)
-   List<List<BdTrainQuestionFeedbackQues>> queList;
+   List<List<BdTrainQuestionFeedbackQuesRecord>> queList;
 
     /**问题反馈选项*/
     @Excel(name = "问题反馈选项", width = 15)
