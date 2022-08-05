@@ -42,7 +42,7 @@ public class ManualTaskController {
      * @param pageSize
      * @return
      */
-    @AutoLog(value = "检修管理-手工下发任务-列表查询", operateType =  1, operateTypeAlias = "列表查询", module = ModuleType.INSPECTION)
+    @AutoLog(value = "检修管理-手工下发任务-列表查询", operateType =  1, operateTypeAlias = "列表查询", permissionUrl = "/views/overhaul/RepairManualPoolList")
     @ApiOperation(value = "分页查询手工下发任务列表", notes = "分页查询手工下发任务列表")
     @PermissionData(pageComponent = "overhaul/RepairManualPoolList")
     @GetMapping(value = "/listPage")

@@ -40,11 +40,10 @@ public class RepairPoolController extends BaseController<RepairPool, IRepairPool
      *
      * @return
      */
-    @AutoLog(value = "检修管理-检修计划-列表查询", operateType =  1, operateTypeAlias = "查询", module = ModuleType.INSPECTION)
+    @AutoLog(value = "检修管理-检修计划-列表查询", operateType =  1, operateTypeAlias = "查询", permissionUrl = "/overhaul/RepairPoolList")
     @ApiOperation(value = "检修计划池列表查询", notes = "检修计划池列表查询")
     @GetMapping(value = "/list")
     public Result<IPage<RepairPool>> queryList(SelectPlanReq selectPlanReq) {
-        // todo 数据权限过滤
         IPage<RepairPool> pageList = repairPoolService.queryList(selectPlanReq);
         return Result.OK(pageList);
     }
