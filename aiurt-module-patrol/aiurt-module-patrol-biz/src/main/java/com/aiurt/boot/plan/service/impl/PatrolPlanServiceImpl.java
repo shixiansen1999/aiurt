@@ -93,9 +93,10 @@ public class PatrolPlanServiceImpl extends ServiceImpl<PatrolPlanMapper, PatrolP
                     Date startTime = DateUtil.parse(DateUtil.format(strategyStartTime, "HH:mm"), "HH:mm");
                     Date endTime = DateUtil.parse(DateUtil.format(strategyEndTime, "HH:mm"), "HH:mm");
                     int compare = DateUtil.compare(startTime, endTime);
-                    if (compare > 0) {
-                        throw new AiurtBootException("巡检策略设置的开始时间不能晚于结束时间！");
-                    } else if (compare == 0) {
+//                    if (compare > 0) {
+//                        throw new AiurtBootException("巡检策略设置的开始时间不能晚于结束时间！");
+//                    } else
+                    if (compare == 0) {
                         throw new AiurtBootException("巡检策略设置的开始和结束时间不能相等！");
                     }
                 }
@@ -206,15 +207,15 @@ public class PatrolPlanServiceImpl extends ServiceImpl<PatrolPlanMapper, PatrolP
         }
         if (ObjectUtil.isNotNull(patrolPlanDto.getIds())) {
             List<String> ids = Arrays.asList(patrolPlanDto.getIds().split(","));
-            List<PatrolStandardDto>patrolStandardDtos=patrolStandardMapper.selectbyIds(ids);
-            patrolStandardDtos.forEach(p->{
+            List<PatrolStandardDto> patrolStandardDtos = patrolStandardMapper.selectbyIds(ids);
+            patrolStandardDtos.forEach(p -> {
                 PatrolPlanStandard patrolPlanStandard = patrolPlanStandardMapper.selectOne(
                         new LambdaQueryWrapper<PatrolPlanStandard>()
-                                .eq(PatrolPlanStandard::getStandardCode,p.getCode()));
+                                .eq(PatrolPlanStandard::getStandardCode, p.getCode()));
                 List<PatrolPlanDevice> patrolPlanDevices = patrolPlanDeviceMapper.selectList(
                         new LambdaQueryWrapper<PatrolPlanDevice>()
-                                .eq(PatrolPlanDevice::getPlanStandardId,patrolPlanStandard.getId()));
-                if (CollUtil.isNotEmpty(patrolPlanDevices)){
+                                .eq(PatrolPlanDevice::getPlanStandardId, patrolPlanStandard.getId()));
+                if (CollUtil.isNotEmpty(patrolPlanDevices)) {
                     p.setSpecifyDevice(1);
                 }
             });
@@ -315,7 +316,7 @@ public class PatrolPlanServiceImpl extends ServiceImpl<PatrolPlanMapper, PatrolP
 
     @Override
     public IPage<Device> deviceList(Page<Device> page, DeviceListDTO deviceListDTO) {
-        IPage<Device> deviceIPage = baseMapper.deviceList(page, deviceListDTO.getSiteCodes(), deviceListDTO.getSubsystemCode(), deviceListDTO.getMajorCode(), deviceListDTO.getDeviceTypeCode(),deviceListDTO.getDeviceCode(),deviceListDTO.getDeviceName());
+        IPage<Device> deviceIPage = baseMapper.deviceList(page, deviceListDTO.getSiteCodes(), deviceListDTO.getSubsystemCode(), deviceListDTO.getMajorCode(), deviceListDTO.getDeviceTypeCode(), deviceListDTO.getDeviceCode(), deviceListDTO.getDeviceName());
         List<Device> records = deviceIPage.getRecords();
         if (records != null && records.size() > 0) {
             for (Device d : records) {
