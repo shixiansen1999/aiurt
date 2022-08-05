@@ -593,7 +593,7 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
             List<LoginUser> loginUsers = sysBaseApi.queryAllUserByIds(strings);
             if (CollUtil.isNotEmpty(loginUsers)) {
                 String userNameStr = loginUsers.stream().map(LoginUser::getUsername).collect(Collectors.joining(","));
-                sysBaseApi.sendSysAnnouncement(new MessageDTO(manager.checkLogin().getId(), userNameStr, "消息通知", "您有一条新的检修任务!", CommonConstant.MSG_CATEGORY_2));
+                sysBaseApi.sendSysAnnouncement(new MessageDTO(manager.checkLogin().getRealname(), userNameStr, "检修任务", "您有一条新的检修任务，请注意检修开始时间!", CommonConstant.MSG_CATEGORY_2));
             }
         }
     }
