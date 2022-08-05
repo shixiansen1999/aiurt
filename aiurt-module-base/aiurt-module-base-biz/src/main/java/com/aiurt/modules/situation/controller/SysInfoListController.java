@@ -109,7 +109,8 @@ public class SysInfoListController  extends BaseController<SysAnnouncement, SysI
                 return result;
             }
         }
-        IPage<SysAnnouncement> pageList = bdInfoListService.page(page, queryWrapper.lambda().eq(SysAnnouncement::getMsgCategory,"3").orderByDesc(SysAnnouncement::getCreateTime));
+        queryWrapper.lambda().eq(SysAnnouncement::getMsgCategory, "3").eq(SysAnnouncement::getDelFlag,CommonConstant.DEL_FLAG_0.toString()).orderByDesc(SysAnnouncement::getCreateTime);
+        IPage<SysAnnouncement> pageList = bdInfoListService.page(page, queryWrapper);
         List<SysAnnouncement> records = pageList.getRecords();
         for (SysAnnouncement announcement : records) {
             getUserNames(announcement);
