@@ -84,6 +84,18 @@ public class DateUtils extends PropertyEditorSupport {
     private static final long MINUTE_IN_MILLIS = 60 * 1000;
     private static final long SECOND_IN_MILLIS = 1000;
 
+    // 天的单位
+    private final static String DAY = "天";
+    // 小时的单位
+    private final static String HOUR = "小时";
+    // 分钟的单位
+    private final static String MINUTE = "分钟";
+
+//    private final static Long ZERO = 0L;
+//    private final static Long TWENTY_FOUR = 24L;
+//    private final static Long SIXTY = 60L;
+
+
     /**
      * 指定模式的时间格式
      *
@@ -952,5 +964,56 @@ public class DateUtils extends PropertyEditorSupport {
         Date weekEndTime = DateUtils.getWeekEndTime(time);
         Date[] dates = new Date[]{weekStartTime, weekEndTime};
         return dates;
+    }
+
+    /**
+     * 根据分钟获取耗时时长
+     *
+     * @param minute
+     * @return
+     */
+    public static String getTimeByMinute(long minute) {
+//        // 如果minute等于0，则返回0分钟
+//        if (0 == minute) {
+//            return minute + MINUTE;
+//        }
+
+        // 如果minute小于60，默认返回分钟
+        if (0 <= minute && minute < 60) {
+            return minute + MINUTE;
+        }
+
+        // 如果分钟小于24小时（1440分钟），返回小时和分钟
+        if (60 <= minute && minute < 1440) {
+            if (minute % 60 == 0) {
+                long hour = minute / 60;
+                return hour + HOUR;
+            } else {
+                long hour = minute / 60;
+                long m = minute % 60;
+                return hour + HOUR + m + MINUTE;
+            }
+
+        }
+        // 如果分钟大于1天
+        if (minute >= 1440) {
+
+            long day = minute / 60 / 24;
+            long hour = minute / 60 % 24;
+            long m = minute % 60;
+            String time = null;
+            if (day > 0) {
+                time = day + DAY;
+            }
+            if (hour >= 1) {
+                time += hour + HOUR;
+            }
+            if (m > 0) {
+                time += m + MINUTE;
+            }
+
+            return time;
+        }
+        return null;
     }
 }
