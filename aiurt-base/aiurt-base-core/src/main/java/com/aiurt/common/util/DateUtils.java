@@ -90,10 +90,9 @@ public class DateUtils extends PropertyEditorSupport {
     private final static String HOUR = "小时";
     // 分钟的单位
     private final static String MINUTE = "分钟";
-
-//    private final static Long ZERO = 0L;
-//    private final static Long TWENTY_FOUR = 24L;
-//    private final static Long SIXTY = 60L;
+    private final static long ZERO = 0;
+    private final static long TWENTY_FOUR = 24;
+    private final static long SIXTY = 60;
 
 
     /**
@@ -949,6 +948,7 @@ public class DateUtils extends PropertyEditorSupport {
 
     /**
      * 根据年月周数计算开始时间和结束时间
+     *
      * @param year
      * @param week
      * @return
@@ -973,47 +973,42 @@ public class DateUtils extends PropertyEditorSupport {
      * @return
      */
     public static String getTimeByMinute(long minute) {
-//        // 如果minute等于0，则返回0分钟
-//        if (0 == minute) {
-//            return minute + MINUTE;
-//        }
 
-        // 如果minute小于60，默认返回分钟
-        if (0 <= minute && minute < 60) {
-            return minute + MINUTE;
+        // 如果minute小于0，返回空
+        if (minute < ZERO) {
+            return null;
         }
+        StringBuilder time = new StringBuilder();
+        if (minute >= ZERO && minute < SIXTY) {
+            // 如果minute小于60，默认返回分钟
+            time.append(minute + MINUTE);
 
-        // 如果分钟小于24小时（1440分钟），返回小时和分钟
-        if (60 <= minute && minute < 1440) {
-            if (minute % 60 == 0) {
-                long hour = minute / 60;
-                return hour + HOUR;
+        } else if (minute >= SIXTY && minute < 1440) {
+            // 如果分钟小于24小时（1440分钟），返回小时和分钟
+            if (minute % SIXTY == 0) {
+                long hour = minute / SIXTY;
+                time.append(hour + HOUR);
             } else {
-                long hour = minute / 60;
-                long m = minute % 60;
-                return hour + HOUR + m + MINUTE;
+                long hour = minute / SIXTY;
+                long m = minute % SIXTY;
+                time.append(hour + HOUR + m + MINUTE);
             }
 
-        }
-        // 如果分钟大于1天
-        if (minute >= 1440) {
-
-            long day = minute / 60 / 24;
-            long hour = minute / 60 % 24;
-            long m = minute % 60;
-            String time = null;
+        } else if (minute >= 1440) {
+            // 如果分钟大于1天
+            long day = minute / SIXTY / TWENTY_FOUR;
+            long hour = minute / SIXTY % TWENTY_FOUR;
+            long m = minute % SIXTY;
             if (day > 0) {
-                time = day + DAY;
+                time.append(day + DAY);
             }
             if (hour >= 1) {
-                time += hour + HOUR;
+                time.append(hour + HOUR);
             }
             if (m > 0) {
-                time += m + MINUTE;
+                time.append(m + MINUTE);
             }
-
-            return time;
         }
-        return null;
+        return time.toString();
     }
 }
