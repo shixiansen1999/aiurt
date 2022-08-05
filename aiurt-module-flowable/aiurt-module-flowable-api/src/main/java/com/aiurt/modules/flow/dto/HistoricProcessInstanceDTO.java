@@ -39,17 +39,22 @@ public class HistoricProcessInstanceDTO implements Serializable {
     @ApiModelProperty(value = "流程实例id")
     private String processInstanceId;
 
+    /**
+     * 业务数据id
+     */
     @ApiModelProperty(value = "业务数据id")
     private String businessKey;
 
     /**
      * 流程定义名称
      */
+    @ApiModelProperty(value = "流程定义名称")
     private String processDefinitionName;
 
     /**
-     *
+     * 流程定义id
      */
+    @ApiModelProperty(value = "流程定义id")
     private String processDefinitionId;
 
 }
