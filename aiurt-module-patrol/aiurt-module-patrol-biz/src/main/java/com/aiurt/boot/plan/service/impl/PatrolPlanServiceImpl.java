@@ -120,7 +120,7 @@ public class PatrolPlanServiceImpl extends ServiceImpl<PatrolPlanMapper, PatrolP
                     PatrolPlanStrategy patrolPlanStrategy = new PatrolPlanStrategy();
                     patrolPlanStrategy.setPlanId(id.getId());
                     patrolPlanStrategy.setType(2);
-                    patrolPlanStrategy.setTime((int) Math.ceil(1.0 * f) / 7);
+                    patrolPlanStrategy.setTime((int) Math.ceil(1.0 * f / 7));
                     int s = f % 7;
                     if (s == 0) {
                         s = 7;
