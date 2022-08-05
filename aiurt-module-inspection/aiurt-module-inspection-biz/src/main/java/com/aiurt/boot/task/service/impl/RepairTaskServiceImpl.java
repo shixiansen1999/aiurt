@@ -26,6 +26,7 @@ import com.aiurt.boot.task.dto.WriteMonadDTO;
 import com.aiurt.boot.task.entity.*;
 import com.aiurt.boot.task.mapper.*;
 import com.aiurt.boot.task.service.IRepairTaskService;
+import com.aiurt.common.api.dto.message.MessageDTO;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.util.DateUtils;
@@ -915,10 +916,11 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                 new LambdaQueryWrapper<RepairTaskUser>()
                         .eq(RepairTaskUser::getRepairTaskCode, repairTask.getCode())
                         .eq(RepairTaskUser::getDelFlag, CommonConstant.DEL_FLAG_0));
+        //保留检修人的id
+        List<String> userList = repairTaskUserss.stream().map(RepairTaskUser::getUserId).collect(Collectors.toList());
         if (CollUtil.isEmpty(repairTaskUserss)) {
             throw new AiurtBootException("小主，该任务没有对应的检修人");
         } else {
-            List<String> userList = repairTaskUserss.stream().map(RepairTaskUser::getUserId).collect(Collectors.toList());
             if (!userList.contains(manager.checkLogin().getId())) {
                 throw new AiurtBootException("小主，只有该任务的检修人才能退回");
             }
@@ -996,6 +998,8 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
         repairPool.setRemark(examineDTO.getContent());
         repairPoolMapper.updateById(repairPool);
 
+        // 发送消息给对应的检修人
+        this.sendMessage(userList);
     }
 
     /**
@@ -1452,6 +1456,18 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
             repairTaskDeviceRel.setId(id);
             repairTaskDeviceRel.setFaultCode(faultCallbackDTO.getFaultCode());
             repairTaskDeviceRelMapper.updateById(repairTaskDeviceRel);
+        }
+    }
+
+    /**
+     * 检修消息发送
+     *
+     * @param userIds
+     */
+    private void sendMessage(List<String> userIds) {
+        if (CollUtil.isNotEmpty(userIds)) {
+            String toUser = StrUtil.join(",", userIds);
+            sysBaseApi.sendSysAnnouncement(new MessageDTO(manager.checkLogin().getId(), toUser, "消息通知", "您有一条新的检修任务!", CommonConstant.MSG_CATEGORY_1));
         }
     }
 }
