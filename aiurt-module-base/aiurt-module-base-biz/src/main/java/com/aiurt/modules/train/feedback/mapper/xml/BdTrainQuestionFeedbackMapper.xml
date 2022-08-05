@@ -6,28 +6,17 @@
     select * from bd_train_question_feedback where classify = #{classify} and state = 1
     </select>
     <select id="selectPageList" resultType="com.aiurt.modules.train.feedback.entity.BdTrainQuestionFeedback">
- select
-               (select su.realname	from sys_user su where su.username=qf.create_by) as createBy,
-               qf.create_time as createTime,
-               qf.update_by as updateBy,
-               qf.update_time as updateTime,
-               qf.name,
-               qf.classify,
-               qf.state,
-               qf.id,
-               (SELECT
-            bt.depart_name
-        FROM
-            sys_user as su
-        LEFT JOIN
-            sys_depart bt
-                on su.org_id = bt.id
-        WHERE
-            su.username = createBy )as sysOrgCode
-    from
-        bd_train_question_feedback as qf
-       where
-           qf.idel=0
+         select
+           (select su.realname	from sys_user su where su.username=qf.create_by) as createBy,
+           qf.create_time as createTime,
+           qf.update_by as updateBy,
+           qf.update_time as updateTime,
+           qf.name,
+           qf.classify,
+           qf.state,
+           qf.id,
+           (SELECT sd.depart_name FROM sys_depart sd WHERE qf.sys_org_code = sd.org_code )as sysOrgCode
+        from bd_train_question_feedback as qf where qf.idel=0
         <if test="bdTrainQuestionFeedback.state != null">
             and qf.state = #{bdTrainQuestionFeedback.state}
         </if>

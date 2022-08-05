@@ -393,6 +393,10 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         }
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         PatrolTask patrolTask = patrolTaskMapper.selectById(orgCoed.getTaskId());
+        if(PatrolConstant.TASK_RETURNED.equals(patrolTask.getStatus()))
+        {
+            return arrayList;
+        }
         if (PatrolConstant.TASK_COMMON.equals(patrolTask.getSource())) {
             List<PatrolTaskUser> patrolTaskUsers = patrolTaskUserMapper.selectList(new LambdaQueryWrapper<PatrolTaskUser>().eq(PatrolTaskUser::getTaskCode, patrolTask.getCode()));
             arrayList.stream().forEach(a -> {
@@ -403,7 +407,8 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
                 a.setUserList(userList);
             });
             return arrayList;
-        } else {
+        }
+        else {
             if (ObjectUtil.isNull(orgCoed.getIdentity())) {
                 arrayList.stream().forEach(e -> {
                     List<PatrolTaskUserContentDTO> userList = e.getUserList();

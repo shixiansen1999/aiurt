@@ -1,19 +1,6 @@
 package com.aiurt.modules.train.feedback.controller;
 
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.ObjectUtils;
-import org.apache.shiro.SecurityUtils;
-import org.jeecg.common.api.vo.Result;
 import com.aiurt.common.aspect.annotation.AutoLog;
-import org.jeecg.common.system.query.QueryGenerator;
-import org.jeecg.common.system.vo.LoginUser;
-import org.jeecg.common.util.oConvertUtils;
 import com.aiurt.modules.train.feedback.entity.BdTrainQuestionFeedback;
 import com.aiurt.modules.train.feedback.entity.BdTrainQuestionFeedbackOptions;
 import com.aiurt.modules.train.feedback.entity.BdTrainQuestionFeedbackQues;
@@ -22,8 +9,17 @@ import com.aiurt.modules.train.feedback.service.IBdTrainQuestionFeedbackOptionsS
 import com.aiurt.modules.train.feedback.service.IBdTrainQuestionFeedbackQuesService;
 import com.aiurt.modules.train.feedback.service.IBdTrainQuestionFeedbackService;
 import com.aiurt.modules.train.feedback.vo.BdTrainQuestionFeedbackPage;
-import com.aiurt.modules.train.task.entity.BdTrainTask;
 import com.aiurt.modules.train.task.mapper.BdTrainTaskMapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.shiro.SecurityUtils;
+import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.system.query.QueryGenerator;
+import org.jeecg.common.system.vo.LoginUser;
+import org.jeecg.common.util.oConvertUtils;
 import org.jeecgframework.poi.excel.ExcelImportUtil;
 import org.jeecgframework.poi.excel.def.NormalExcelConstants;
 import org.jeecgframework.poi.excel.entity.ExportParams;
@@ -39,7 +35,6 @@ import org.springframework.web.servlet.ModelAndView;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -99,6 +94,8 @@ public class BdTrainQuestionFeedbackController {
 	@ApiOperation(value="问题反馈主表-添加", notes="问题反馈主表-添加")
 	@PostMapping(value = "/add")
 	public Result<?> add(@RequestBody BdTrainQuestionFeedbackPage bdTrainQuestionFeedbackPage) {
+		LoginUser sysUser = (LoginUser)SecurityUtils.getSubject().getPrincipal();
+		bdTrainQuestionFeedbackPage.setSysOrgCode(sysUser.getOrgCode());
 		BdTrainQuestionFeedback bdTrainQuestionFeedback = new BdTrainQuestionFeedback();
 		BeanUtils.copyProperties(bdTrainQuestionFeedbackPage, bdTrainQuestionFeedback);
 		bdTrainQuestionFeedbackService.add(bdTrainQuestionFeedback,bdTrainQuestionFeedbackPage);

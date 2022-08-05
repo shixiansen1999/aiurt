@@ -126,8 +126,8 @@ public class BdTrainQuestionFeedbackServiceImpl extends ServiceImpl<BdTrainQuest
 	}
 	@Override
 	public Page<BdTrainQuestionFeedback> queryPageList(Page<BdTrainQuestionFeedback> page, BdTrainQuestionFeedback bdTrainQuestionFeedback){
-		Page<BdTrainQuestionFeedback> pageList = bdTrainQuestionFeedbackMapper.selectPageList(page,bdTrainQuestionFeedback);
-		return pageList;
+		List<BdTrainQuestionFeedback> pageList = bdTrainQuestionFeedbackMapper.selectPageList(page,bdTrainQuestionFeedback);
+		return page.setRecords(pageList);
 	}
 
 	@Override

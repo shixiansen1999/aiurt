@@ -5,6 +5,8 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.ibatis.annotations.Param;
 
+import java.util.List;
+
 /**
  * @Description: 问题反馈主表
  * @Author: jeecg-boot
@@ -19,5 +21,5 @@ public interface BdTrainQuestionFeedbackMapper extends BaseMapper<BdTrainQuestio
      * @param page
      * @return
      */
-    public Page<BdTrainQuestionFeedback> selectPageList(@Param("page") Page<BdTrainQuestionFeedback> page, @Param("bdTrainQuestionFeedback") BdTrainQuestionFeedback bdTrainQuestionFeedback);
+    List<BdTrainQuestionFeedback> selectPageList(@Param("page") Page<BdTrainQuestionFeedback> page, @Param("bdTrainQuestionFeedback") BdTrainQuestionFeedback bdTrainQuestionFeedback);
 }
