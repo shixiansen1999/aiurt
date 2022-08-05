@@ -5,6 +5,8 @@ import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateUnit;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.StrUtil;
+import com.aiurt.boot.api.InspectionApi;
+import com.aiurt.boot.manager.dto.FaultCallbackDTO;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.modules.basic.entity.CsWork;
@@ -67,6 +69,9 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
     @Autowired
     private IDeviceChangeSparePartService sparePartService;
 
+    @Autowired
+    private InspectionApi inspectionApi;
+
     /**
      * 故障上报
      *
@@ -127,6 +132,14 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
 
         // todo 消息通知
 
+
+        // 回调
+        if (StrUtil.isNotBlank(fault.getRepairCode())) {
+            FaultCallbackDTO faultCallbackDTO = new FaultCallbackDTO();
+            faultCallbackDTO.setFaultCode(fault.getCode());
+            faultCallbackDTO.setSingleCode(fault.getRepairCode());
+            inspectionApi.editFaultCallback(faultCallbackDTO);
+        }
         return builder.toString();
     }
 
