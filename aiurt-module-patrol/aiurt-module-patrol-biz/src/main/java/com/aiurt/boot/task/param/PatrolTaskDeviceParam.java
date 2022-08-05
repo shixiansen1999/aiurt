@@ -120,11 +120,11 @@ public class PatrolTaskDeviceParam extends PatrolTaskDevice {
     @TableField(exist = false)
     private String inspectionPositionName;
     /**
-     * 巡检时长，单位分钟
+     * 巡检时长
      */
-    @Excel(name = "巡检时长，单位分钟", width = 15)
-    @ApiModelProperty(value = "巡检时长，单位分钟")
-    private Long duration;
+    @Excel(name = "巡检时长", width = 15)
+    @ApiModelProperty(value = "巡检时长")
+    private String duration;
     /**
      * 同行人信息
      */

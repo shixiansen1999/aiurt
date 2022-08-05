@@ -20,6 +20,7 @@ import com.aiurt.boot.task.mapper.*;
 import com.aiurt.boot.task.param.PatrolTaskDeviceParam;
 import com.aiurt.boot.task.service.IPatrolTaskDeviceService;
 import com.aiurt.common.exception.AiurtBootException;
+import com.aiurt.common.util.DateUtils;
 import com.aiurt.modules.device.entity.Device;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -83,11 +84,11 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
                 Date checkTime = patrolTaskDeviceForDeviceParam.getCheckTime();
                 if (ObjectUtil.isNotEmpty(startTime) && ObjectUtil.isNotEmpty(checkTime)) {
                     long duration = DateUtil.between(startTime, checkTime, DateUnit.MINUTE);
-                    long second = DateUtil.between(startTime, checkTime, DateUnit.SECOND);
-                    if (second % 60 > 0) {
-                        duration += 1;
-                    }
-                    patrolTaskDeviceForDeviceParam.setDuration(duration);
+//                    long second = DateUtil.between(startTime, checkTime, DateUnit.SECOND);
+//                    if (second % 60 > 0) {
+//                        duration += 1;
+//                    }
+                    patrolTaskDeviceForDeviceParam.setDuration(DateUtils.getTimeByMinute(duration));
                 }
                 // 查询同行人信息
                 QueryWrapper<PatrolAccompany> accompanyWrapper = new QueryWrapper<>();
@@ -121,10 +122,11 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
 
     @Override
     public Page<PatrolTaskDeviceDTO> getPatrolTaskDeviceList(Page<PatrolTaskDeviceDTO> pageList, String taskId, String search) {
-        List<PatrolTaskDeviceDTO> patrolTaskDeviceList = patrolTaskDeviceMapper.getPatrolTaskDeviceList(pageList, taskId,search);
+        List<PatrolTaskDeviceDTO> patrolTaskDeviceList = patrolTaskDeviceMapper.getPatrolTaskDeviceList(pageList, taskId, search);
         patrolTaskDeviceList.stream().forEach(e -> {
-            if(ObjectUtil.isNull(e.getCheckResult()))
-            { e.setCheckResult("-"); }
+            if (ObjectUtil.isNull(e.getCheckResult())) {
+                e.setCheckResult("-");
+            }
             Date startTime = e.getStartTime();
             Date checkTime = e.getCheckTime();
             if (ObjectUtil.isNotEmpty(startTime) && ObjectUtil.isNotEmpty(checkTime)) {
@@ -136,34 +138,29 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
                 e.setInspectionTime(duration);
             }
             List<StationDTO> codeList = new ArrayList<>();
-            StationDTO stationDTO =new StationDTO();
+            StationDTO stationDTO = new StationDTO();
             stationDTO.setLineCode(e.getLineCode());
             stationDTO.setStationCode(e.getStationCode());
             stationDTO.setPositionCode(e.getPositionCode());
             codeList.add(stationDTO);
             List<String> allPosition = patrolTaskDeviceMapper.getAllPosition(e.getStationCode());
-            e.setAllPosition(allPosition== null ?new ArrayList<>():allPosition);
+            e.setAllPosition(allPosition == null ? new ArrayList<>() : allPosition);
             String positions = manager.translateStation(codeList);
-            if(ObjectUtil.isNotEmpty(e.getDeviceCode()))
-            {
+            if (ObjectUtil.isNotEmpty(e.getDeviceCode())) {
                 e.setDevicePosition(positions);
                 List<StationDTO> stationDTOS = new ArrayList<>();
-                StationDTO station =new StationDTO();
+                StationDTO station = new StationDTO();
                 station.setLineCode(e.getLineCode());
                 station.setStationCode(e.getStationCode());
                 stationDTOS.add(station);
                 String stationName = manager.translateStation(stationDTOS);
                 e.setStationName(stationName);
-            }
-            else {
-                if(ObjectUtil.isNotEmpty(e.getCustomPosition()))
-                {
-                    e.setInspectionPosition(positions+"/"+e.getCustomPosition());
+            } else {
+                if (ObjectUtil.isNotEmpty(e.getCustomPosition())) {
+                    e.setInspectionPosition(positions + "/" + e.getCustomPosition());
                     e.setStationName(positions);
                     e.setDevicePosition(null);
-                }
-                else
-                {
+                } else {
                     e.setStationName(positions);
                     e.setInspectionPosition("-");
                 }
@@ -190,8 +187,8 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
             LambdaQueryWrapper<PatrolCheckResult> queryWrapper = new LambdaQueryWrapper<>();
             queryWrapper.eq(PatrolCheckResult::getTaskDeviceId, e.getId());
             List<PatrolCheckResult> list = patrolCheckResultMapper.selectList(queryWrapper);
-            List<PatrolCheckResult> rightCheck = list.stream().filter(s -> s.getCheckResult() != null && 1==s.getCheckResult()).collect(Collectors.toList());
-            List<PatrolCheckResult> aberrant = list.stream().filter(s -> s.getCheckResult() != null && 0==s.getCheckResult()).collect(Collectors.toList());
+            List<PatrolCheckResult> rightCheck = list.stream().filter(s -> s.getCheckResult() != null && 1 == s.getCheckResult()).collect(Collectors.toList());
+            List<PatrolCheckResult> aberrant = list.stream().filter(s -> s.getCheckResult() != null && 0 == s.getCheckResult()).collect(Collectors.toList());
             if (CollUtil.isNotEmpty(rightCheck)) {
                 e.setRightCheckNumber(rightCheck.size());
             } else {
@@ -210,24 +207,21 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
     public void getPatrolSubmit(PatrolTaskDevice patrolTaskDevice) {
         PatrolTaskDevice taskDevice = patrolTaskDeviceMapper.selectOne(new LambdaQueryWrapper<PatrolTaskDevice>().eq(PatrolTaskDevice::getId, patrolTaskDevice.getId()));
         PatrolTask patrolTask = patrolTaskMapper.selectOne(new LambdaQueryWrapper<PatrolTask>().eq(PatrolTask::getId, taskDevice.getTaskId()));
-        if(manager.checkTaskUser(patrolTask.getCode())==false)
-        {
+        if (manager.checkTaskUser(patrolTask.getCode()) == false) {
             throw new AiurtBootException("小主，该巡检任务不在您的提交范围之内哦");
-        }
-        else
-        {
-                List<PatrolCheckResult> patrolCheckResultList = patrolCheckResultMapper.selectList(new LambdaQueryWrapper<PatrolCheckResult>().eq(PatrolCheckResult::getTaskDeviceId, taskDevice.getId()));
-                List<PatrolCheckResult> collect = patrolCheckResultList.stream().filter(s -> s.getCheckResult() != null && PatrolConstant.RESULT_EXCEPTION.equals(s.getCheckResult())).collect(Collectors.toList());
-                if (CollUtil.isNotEmpty(collect)) {
-                    taskDevice.setCheckResult(PatrolConstant.RESULT_EXCEPTION);
-                } else {
-                    taskDevice.setCheckResult(PatrolConstant.RESULT_NORMAL);
-                }
-                patrolTaskDeviceMapper.updateById(taskDevice);
+        } else {
+            List<PatrolCheckResult> patrolCheckResultList = patrolCheckResultMapper.selectList(new LambdaQueryWrapper<PatrolCheckResult>().eq(PatrolCheckResult::getTaskDeviceId, taskDevice.getId()));
+            List<PatrolCheckResult> collect = patrolCheckResultList.stream().filter(s -> s.getCheckResult() != null && PatrolConstant.RESULT_EXCEPTION.equals(s.getCheckResult())).collect(Collectors.toList());
+            if (CollUtil.isNotEmpty(collect)) {
+                taskDevice.setCheckResult(PatrolConstant.RESULT_EXCEPTION);
+            } else {
+                taskDevice.setCheckResult(PatrolConstant.RESULT_NORMAL);
+            }
+            patrolTaskDeviceMapper.updateById(taskDevice);
             LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-            LambdaUpdateWrapper<PatrolTaskDevice> updateWrapper= new LambdaUpdateWrapper<>();
-            updateWrapper.set(PatrolTaskDevice::getUserId,sysUser.getId()).set(PatrolTaskDevice::getCheckTime, LocalDateTime.now()).set(PatrolTaskDevice::getStatus,PatrolConstant.BILL_COMPLETE).eq(PatrolTaskDevice::getId,patrolTaskDevice.getId());
-            patrolTaskDeviceMapper.update(patrolTaskDevice,updateWrapper);
+            LambdaUpdateWrapper<PatrolTaskDevice> updateWrapper = new LambdaUpdateWrapper<>();
+            updateWrapper.set(PatrolTaskDevice::getUserId, sysUser.getId()).set(PatrolTaskDevice::getCheckTime, LocalDateTime.now()).set(PatrolTaskDevice::getStatus, PatrolConstant.BILL_COMPLETE).eq(PatrolTaskDevice::getId, patrolTaskDevice.getId());
+            patrolTaskDeviceMapper.update(patrolTaskDevice, updateWrapper);
         }
     }
 
@@ -240,11 +234,11 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
         Date checkTime = taskDeviceParam.getCheckTime();
         if (ObjectUtil.isNotEmpty(startTime) && ObjectUtil.isNotEmpty(checkTime)) {
             long duration = DateUtil.between(startTime, checkTime, DateUnit.MINUTE);
-            long second = DateUtil.between(startTime, checkTime, DateUnit.SECOND);
-            if (second % 60 > 0) {
-                duration += 1;
-            }
-            taskDeviceParam.setDuration(duration);
+//            long second = DateUtil.between(startTime, checkTime, DateUnit.SECOND);
+//            if (second % 60 > 0) {
+//                duration += 1;
+//            }
+            taskDeviceParam.setDuration(DateUtils.getTimeByMinute(duration));
         }
         StationDTO stationDTO = new StationDTO();
         stationDTO.setLineCode(taskDeviceParam.getLineCode());
@@ -254,11 +248,9 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
         stationDTOList.add(stationDTO);
         String s = manager.translateStation(stationDTOList);
         //设备的位置
-        if(ObjectUtil.isNotEmpty(taskDeviceParam.getDeviceCode()))
-        {
+        if (ObjectUtil.isNotEmpty(taskDeviceParam.getDeviceCode())) {
             taskDeviceParam.setDevicePositionName(s);
-        }
-        else {
+        } else {
             taskDeviceParam.setInspectionPositionName(s);
             taskDeviceParam.setDevicePositionName(null);
         }
@@ -268,19 +260,16 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
         List<PatrolAccompany> accompanyList = patrolAccompanyMapper.selectList(accompanyWrapper);
         taskDeviceParam.setAccompanyInfo(accompanyList);
         List<PatrolCheckResultDTO> checkResultList = patrolCheckResultMapper.getListByTaskDeviceId(taskDeviceParam.getId());
-        checkResultList.stream().forEach(c->{
-            if(ObjectUtil.isNotNull(c.getDictCode()))
-            {
-                    List<DictModel> list = sysBaseAPI.getDictItems(c.getDictCode());
-                    list.stream().forEach(l->{
-                        if(2==c.getInputType())
-                        {
-                            if(l.getValue().equals(c.getOptionValue()))
-                            {
-                                c.setCheckDictName(l.getTitle());
-                            }
+        checkResultList.stream().forEach(c -> {
+            if (ObjectUtil.isNotNull(c.getDictCode())) {
+                List<DictModel> list = sysBaseAPI.getDictItems(c.getDictCode());
+                list.stream().forEach(l -> {
+                    if (2 == c.getInputType()) {
+                        if (l.getValue().equals(c.getOptionValue())) {
+                            c.setCheckDictName(l.getTitle());
                         }
-                    });
+                    }
+                });
             }
             String userName = patrolTaskMapper.getUserName(c.getUserId());
             c.setCheckUserName(userName);
@@ -362,8 +351,9 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
         String standardId = taskStandard.getStandardId();
         //根据巡检标准表ID获取巡检标准项目列表并添加到结果表中
         List<PatrolStandardItems> patrolStandardItems = patrolStandardItemsMapper.selectItemList(standardId);
-        if(CollUtil.isEmpty(patrolStandardItems))
-        { throw new AiurtBootException("小主！巡检标准的配置项，未配置哦！"); }
+        if (CollUtil.isEmpty(patrolStandardItems)) {
+            throw new AiurtBootException("小主！巡检标准的配置项，未配置哦！");
+        }
         List<PatrolCheckResult> addResultList = new ArrayList<>();
         Optional.ofNullable(patrolStandardItems).orElseGet(Collections::emptyList).stream().forEach(l -> {
             PatrolCheckResult result = new PatrolCheckResult();
@@ -421,19 +411,15 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
 
 
     @Override
-    public List<PatrolCheckResultDTO> getPatrolTaskCheck(PatrolTaskDevice patrolTaskDevice,Integer checkDetail) {
+    public List<PatrolCheckResultDTO> getPatrolTaskCheck(PatrolTaskDevice patrolTaskDevice, Integer checkDetail) {
         PatrolTask patrolTask = patrolTaskMapper.selectById(patrolTaskDevice.getTaskId());
-        if(manager.checkTaskUser(patrolTask.getCode())==false&&ObjectUtil.isNull(checkDetail))
-        {
-                throw new AiurtBootException("小主，该巡检任务不在您的检查范围之内哦");
-        }
-        else {
+        if (manager.checkTaskUser(patrolTask.getCode()) == false && ObjectUtil.isNull(checkDetail)) {
+            throw new AiurtBootException("小主，该巡检任务不在您的检查范围之内哦");
+        } else {
             //更新任务状态（将未开始改为执行中）、添加开始检查时间，传任务主键id,巡检工单主键
             String taskDeviceId = patrolTaskDevice.getId();
-            if(ObjectUtil.isNull(checkDetail))
-            {
-                if(!PatrolConstant.TASK_AUDIT.equals(patrolTask.getStatus())&& !PatrolConstant.TASK_COMPLETE.equals(patrolTask.getStatus()))
-                {
+            if (ObjectUtil.isNull(checkDetail)) {
+                if (!PatrolConstant.TASK_AUDIT.equals(patrolTask.getStatus()) && !PatrolConstant.TASK_COMPLETE.equals(patrolTask.getStatus())) {
                     LambdaUpdateWrapper<PatrolTaskDevice> updateWrapper = new LambdaUpdateWrapper<>();
                     updateWrapper.set(PatrolTaskDevice::getStatus, 1)
                             .set(PatrolTaskDevice::getStartTime, LocalDateTime.now())
@@ -442,29 +428,26 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
                     patrolTaskDeviceMapper.update(new PatrolTaskDevice(), updateWrapper);
                 }
             }
-           List<PatrolCheckResultDTO> checkResultList = patrolCheckResultMapper.getCheckResult(taskDeviceId);
-                checkResultList.stream().forEach(e ->
-                {
-                    if(ObjectUtil.isNotNull(e.getDictCode()))
-                    {
-                        List<DictModel> list = sysBaseAPI.getDictItems(e.getDictCode());
-                        e.setList(list);
-                        list.stream().forEach(l->{
-                            if(2==e.getInputType())
-                            {
-                                if(l.getValue().equals(e.getOptionValue()))
-                                {
-                                    e.setCheckDictName(l.getTitle());
-                                }
+            List<PatrolCheckResultDTO> checkResultList = patrolCheckResultMapper.getCheckResult(taskDeviceId);
+            checkResultList.stream().forEach(e ->
+            {
+                if (ObjectUtil.isNotNull(e.getDictCode())) {
+                    List<DictModel> list = sysBaseAPI.getDictItems(e.getDictCode());
+                    e.setList(list);
+                    list.stream().forEach(l -> {
+                        if (2 == e.getInputType()) {
+                            if (l.getValue().equals(e.getOptionValue())) {
+                                e.setCheckDictName(l.getTitle());
                             }
-                        });
-                    }
-                     String userName = patrolTaskMapper.getUserName(e.getUserId());
-                    e.setCheckUserName(userName);
-                    //获取这个单号下一个巡检项的所有附件
-                    List<PatrolAccessoryDTO> patrolAccessoryDto = patrolAccessoryMapper.getAllAccessory(patrolTaskDevice.getId(), e.getId());
-                    e.setAccessoryDTOList(patrolAccessoryDto);
-                });
+                        }
+                    });
+                }
+                String userName = patrolTaskMapper.getUserName(e.getUserId());
+                e.setCheckUserName(userName);
+                //获取这个单号下一个巡检项的所有附件
+                List<PatrolAccessoryDTO> patrolAccessoryDto = patrolAccessoryMapper.getAllAccessory(patrolTaskDevice.getId(), e.getId());
+                e.setAccessoryDTOList(patrolAccessoryDto);
+            });
             List<PatrolCheckResultDTO> resultList = buildResultTree(Optional.ofNullable(checkResultList)
                     .orElseGet(Collections::emptyList));
             return resultList;
