@@ -16,6 +16,8 @@ import com.aiurt.modules.fault.enums.FaultStatusEnum;
 import com.aiurt.modules.fault.mapper.FaultMapper;
 import com.aiurt.modules.fault.service.*;
 import com.aiurt.modules.faultknowledgebase.entity.FaultKnowledgeBase;
+import com.aiurt.modules.faultlevel.entity.FaultLevel;
+import com.aiurt.modules.faultlevel.service.IFaultLevelService;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -69,6 +71,9 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
 
     @Autowired
     private InspectionApi inspectionApi;
+
+    @Autowired
+    private IFaultLevelService faultLevelService;
 
     /**
      * 故障上报
@@ -251,6 +256,30 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         // 设备
         List<FaultDevice> faultDeviceList = faultDeviceService.queryByFaultCode(code);
         fault.setFaultDeviceList(faultDeviceList);
+
+        // 故障等级,权重登记
+        if (StrUtil.isNotBlank(fault.getFaultLevel())) {
+            LambdaQueryWrapper<FaultLevel> wrapper = new LambdaQueryWrapper<>();
+            wrapper.eq(FaultLevel::getCode, fault.getFaultLevel()).last("limit 1");
+            FaultLevel faultLevel = faultLevelService.getBaseMapper().selectOne(wrapper);
+            if (Objects.isNull(faultLevel)) {
+                fault.setWeight(0);
+            }else {
+                String weight = faultLevel.getWeight();
+                if (StrUtil.isNotBlank(weight)) {
+                    try {
+                        fault.setWeight(Integer.valueOf(weight));
+                    } catch (NumberFormatException e) {
+                        fault.setWeight(0);
+                    }
+                }else {
+                    fault.setWeight(0);
+                }
+            }
+
+        }else {
+            fault.setWeight(0);
+        }
 
         // 按钮权限
         return fault;
