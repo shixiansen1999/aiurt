@@ -191,5 +191,25 @@ public class FlowOperationController {
         return Result.OK(pageList);
     }
 
+    /**
+     * 流程实例
+     * @return
+     */
+    @PostMapping("/listAllHistoricProcessInstance")
+    @ApiOperation("流程实例")
+    public Result<IPage<HistoricProcessInstanceDTO>> listAllHistoricProcessInstance() {
+        return Result.OK();
+    }
+
+    /**
+     * 历史任务查询
+     * @return
+     */
+    @ApiOperation("历史任务查询")
+    @PostMapping("listHistoricProcessInstance")
+    public Result<?> listHistoricProcessInstance() {
+        return Result.OK();
+    }
+
 
 }
