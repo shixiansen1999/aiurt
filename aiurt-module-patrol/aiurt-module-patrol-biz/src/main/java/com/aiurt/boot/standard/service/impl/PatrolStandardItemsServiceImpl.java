@@ -113,7 +113,7 @@ private PatrolTaskStandardMapper patrolTaskStandardMapper;
                  new LambdaQueryWrapper<PatrolStandardItems>()
                               .eq(PatrolStandardItems::getStandardId,standardId)
                               .eq(PatrolStandardItems::getCode,code));
-        if (CollUtil.isEmpty(patrolStandardItems)){
+        if (CollUtil.isNotEmpty(patrolStandardItems)){
          throw new AiurtBootException("输入的code当前列表重复,请重新输入");
         }
     }
