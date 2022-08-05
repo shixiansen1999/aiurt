@@ -68,6 +68,7 @@ public class CsWorkController extends BaseController<CsWork, ICsWorkService> {
 	@PostMapping(value = "/add")
 	public Result<String> add(@RequestBody CsWork csWork) {
 		csWork.setIsPlan(csWork.getIsPaln());
+		csWork.setWorkCode(csWork.getWorkName());
 		csWorkService.save(csWork);
 		return Result.OK("添加成功！");
 	}
@@ -83,6 +84,7 @@ public class CsWorkController extends BaseController<CsWork, ICsWorkService> {
 	@RequestMapping(value = "/edit", method = {RequestMethod.PUT,RequestMethod.POST})
 	public Result<String> edit(@RequestBody CsWork csWork) {
 		csWork.setIsPlan(csWork.getIsPaln());
+		csWork.setWorkCode(csWork.getWorkName());
 		csWorkService.updateById(csWork);
 		return Result.OK("编辑成功!");
 	}
