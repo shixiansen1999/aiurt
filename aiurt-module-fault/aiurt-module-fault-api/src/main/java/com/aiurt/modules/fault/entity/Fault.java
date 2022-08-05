@@ -303,4 +303,8 @@ public class Fault extends DictEntity implements Serializable {
     @TableField(exist = false)
     private String deviceCodes;
 
+    @ApiModelProperty(value = "权重等级")
+    @TableField(exist = false)
+    private Integer weight;
+
 }
