@@ -2,8 +2,10 @@ package com.aiurt.boot.api;
 
 import com.aiurt.boot.manager.dto.FaultCallbackDTO;
 
-
-public interface inspectionApi {
+/**
+ * @author zwl
+ */
+public interface InspectionApi {
 
     /**
      * 故障回调
