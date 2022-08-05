@@ -156,6 +156,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public int taskAppoint(PatrolAppointInfoDTO patrolAppointInfoDTO) {
         // 用户信息数据
         Map<String, List<PatrolAppointUserDTO>> map = Optional.ofNullable(patrolAppointInfoDTO.getMap()).orElseGet(ConcurrentHashMap::new);
@@ -229,7 +230,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
     }
 
     @Override
-    @Transactional(rollbackFor = AiurtBootException.class)
+    @Transactional(rollbackFor = Exception.class)
     public int taskDiscard(List<PatrolTask> list) {
         AtomicInteger count = new AtomicInteger();
         Optional.ofNullable(list).orElseGet(Collections::emptyList).stream().forEach(l -> {
@@ -663,6 +664,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public int taskDispose(PatrolTask task, String omitExplain) {
         // 获取当前登录用户
         LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
@@ -741,6 +743,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public String rebuildTask(PatrolRebuildDTO patrolRebuildDTO) {
         String taskId = patrolRebuildDTO.getTaskId();
         QueryWrapper<PatrolTask> wrapper = new QueryWrapper<>();
