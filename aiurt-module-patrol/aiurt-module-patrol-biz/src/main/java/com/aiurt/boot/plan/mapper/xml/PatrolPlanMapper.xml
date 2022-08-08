@@ -74,8 +74,6 @@
         WHERE
         c.plan_id = pp.id
         and c.del_flag=0
-        and csm.del_flag) AS professionCode,
-            and c.del_flag=0
         and csm.del_flag=0) AS professionCode,
         ( SELECT
         GROUP_CONCAT(DISTINCT csm.major_name)
@@ -85,8 +83,7 @@
         WHERE
         c.plan_id = pp.id
         and c.del_flag=0
-        and csm.del_flag) AS professionName,
-            and csm.del_flag =0) AS professionName,
+        and csm.del_flag =0) AS professionName,
         ( SELECT
         GROUP_CONCAT(DISTINCT c.subsystem_code)
         FROM
