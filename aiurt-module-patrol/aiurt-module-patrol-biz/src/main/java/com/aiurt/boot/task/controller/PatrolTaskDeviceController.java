@@ -4,8 +4,10 @@ import com.aiurt.boot.manager.PatrolManager;
 import com.aiurt.boot.task.dto.PatrolCheckResultDTO;
 import com.aiurt.boot.task.dto.PatrolTaskDeviceDTO;
 import com.aiurt.boot.task.entity.PatrolTaskDevice;
+import com.aiurt.boot.task.entity.PatrolTaskFault;
 import com.aiurt.boot.task.service.IPatrolCheckResultService;
 import com.aiurt.boot.task.service.IPatrolTaskDeviceService;
+import com.aiurt.boot.task.service.IPatrolTaskFaultService;
 import com.aiurt.boot.task.service.IPatrolTaskService;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.constant.enums.ModuleType;
@@ -34,6 +36,8 @@ import java.util.List;
 public class PatrolTaskDeviceController extends BaseController<PatrolTaskDevice, IPatrolTaskDeviceService> {
     @Autowired
     private IPatrolTaskDeviceService patrolTaskDeviceService;
+	@Autowired
+	private IPatrolTaskFaultService patrolTaskFaultService;
 	@Autowired
 	private IPatrolCheckResultService patrolCheckResultService;
 	@Autowired
@@ -98,6 +102,25 @@ public class PatrolTaskDeviceController extends BaseController<PatrolTaskDevice,
 	 	List<PatrolCheckResultDTO> patrolTaskCheck = patrolTaskDeviceService.getPatrolTaskCheck(patrolTaskDevice,checkDetail);
 		 return Result.OK(patrolTaskCheck);
 	 }
+	/**
+	 * app巡检-检查项-故障单号-保存
+	 * @param id
+	 * @param faultCode
+	 * @param req
+	 * @return
+	 */
+	@AutoLog(value = "app巡检-检查项-故障单号-保存", operateType = 3, operateTypeAlias = "修改", module = ModuleType.PATROL,permissionUrl = "/Inspection/pool")
+	@ApiOperation(value = "app巡检-检查项-故障单号-保存", notes = "app巡检-检查项-故障单号-保存")
+	@PostMapping(value = "/patrolTaskCustomPosition")
+	public Result<?> patrolTaskCustomPosition(@RequestParam(name ="id")String id,
+											  @RequestParam(name="faultCode") String faultCode, HttpServletRequest req) {
+		PatrolTaskFault fault = new PatrolTaskFault();
+		fault.setPatrolNumber(id);
+		fault.setFaultCode(faultCode);
+		fault.setDelFlag(0);
+		patrolTaskFaultService.save(fault);
+		return Result.OK("故障单号保存成功");
+	}
 	/**
 	 * app巡检-巡检清单-填写检查项-提交工单
 	 * @param patrolTaskDevice
