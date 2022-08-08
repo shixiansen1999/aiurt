@@ -17,7 +17,7 @@ public interface ISparePartStockService extends IService<SparePartStock> {
     /**
      * 查询列表
      * @param page
-     * @param sparePartInOrder
+     * @param sparePartStock
      * @return
      */
     List<SparePartStock> selectList(Page page, SparePartStock sparePartStock);

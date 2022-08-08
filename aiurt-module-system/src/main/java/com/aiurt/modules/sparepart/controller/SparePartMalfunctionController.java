@@ -7,6 +7,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import cn.hutool.core.util.StrUtil;
+import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.modules.sparepart.entity.SparePartInOrder;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import io.swagger.annotations.ApiParam;
@@ -73,7 +74,7 @@ public class SparePartMalfunctionController extends BaseController<SparePartMalf
 			queryWrapper.eq(SparePartMalfunction::getOutOrderId,sparePartMalfunction.getOutOrderId());
 		}
 		Page<SparePartMalfunction> page = new Page<SparePartMalfunction>(pageNo, pageSize);
-		IPage<SparePartMalfunction> pageList = sparePartMalfunctionService.page(page, queryWrapper);
+		IPage<SparePartMalfunction> pageList = sparePartMalfunctionService.page(page, queryWrapper.eq(SparePartMalfunction::getDelFlag, CommonConstant.DEL_FLAG_0));
 		return Result.OK(pageList);
 	}
 

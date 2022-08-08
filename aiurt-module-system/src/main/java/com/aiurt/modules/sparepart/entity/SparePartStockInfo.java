@@ -7,6 +7,7 @@ import java.math.BigDecimal;
 
 import com.aiurt.modules.basic.entity.DictEntity;
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
@@ -83,4 +84,8 @@ public class SparePartStockInfo extends DictEntity implements Serializable {
     /**备注*/
     @ApiModelProperty(value = "备注")
     private String remarks;
+    /**当前模块*/
+    @ApiModelProperty(value = "当前模块")
+    @TableField(exist = false)
+    private String module;
 }

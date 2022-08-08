@@ -71,6 +71,9 @@ public class SparePartReturnOrder implements Serializable {
 	@Excel(name = "物资编号", width = 15)
     @ApiModelProperty(value = "物资编号")
     private String materialCode;
+    /**出库表id*/
+    @ApiModelProperty(value = "出库表id")
+    private String outOrderId;
     /**物资名称*/
     @Excel(name = "物资名称", width = 15)
     @ApiModelProperty(value = "物资名称")

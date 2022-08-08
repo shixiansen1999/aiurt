@@ -2,11 +2,14 @@ package com.aiurt.modules.sparepart.service.impl;
 
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.modules.sparepart.entity.SparePartInOrder;
+import com.aiurt.modules.sparepart.entity.SparePartOutOrder;
 import com.aiurt.modules.sparepart.entity.SparePartReturnOrder;
 import com.aiurt.modules.sparepart.entity.SparePartStock;
+import com.aiurt.modules.sparepart.mapper.SparePartOutOrderMapper;
 import com.aiurt.modules.sparepart.mapper.SparePartReturnOrderMapper;
 import com.aiurt.modules.sparepart.mapper.SparePartStockMapper;
 import com.aiurt.modules.sparepart.service.ISparePartInOrderService;
+import com.aiurt.modules.sparepart.service.ISparePartOutOrderService;
 import com.aiurt.modules.sparepart.service.ISparePartReturnOrderService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -36,6 +39,8 @@ public class SparePartReturnOrderServiceImpl extends ServiceImpl<SparePartReturn
     private SparePartStockMapper sparePartStockMapper;
     @Autowired
     private ISparePartInOrderService sparePartInOrderService;
+    @Autowired
+    private SparePartOutOrderMapper sparePartOutOrderMapper;
     /**
      * 查询列表
      * @param page
@@ -77,7 +82,13 @@ public class SparePartReturnOrderServiceImpl extends ServiceImpl<SparePartReturn
         sparePartInOrder.setConfirmStatus(CommonConstant.SPARE_PART_IN_ORDER_CONFRM_STATUS_0);
         //sparePartInOrder.setOutOrderCode(orderCode);
         sparePartInOrderService.save(sparePartInOrder);
-
+        //4.更新已出库库存数量,做减法
+        SparePartOutOrder sparePartOutOrder = sparePartOutOrderMapper.selectOne(new LambdaQueryWrapper<SparePartOutOrder>().eq(SparePartOutOrder::getId,returnOrder.getOutOrderId()));
+        if(null!=sparePartOutOrder){
+            Integer number = Integer.parseInt(sparePartOutOrder.getUnused())-returnOrder.getNum();
+            sparePartOutOrder.setUnused(number+"");
+            sparePartOutOrderMapper.updateById(sparePartOutOrder);
+        }
         return Result.OK("编辑成功！");
     }
 }

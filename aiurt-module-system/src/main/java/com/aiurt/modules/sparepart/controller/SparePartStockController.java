@@ -6,7 +6,9 @@ import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import cn.hutool.core.util.ObjectUtil;
 import com.aiurt.modules.sparepart.entity.SparePartInOrder;
+import com.aiurt.modules.sparepart.entity.SparePartStockInfo;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.query.QueryGenerator;
@@ -58,6 +60,10 @@ public class SparePartStockController extends BaseController<SparePartStock, ISp
 								   @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
 								   HttpServletRequest req) {
 		//QueryWrapper<SparePartStock> queryWrapper = QueryGenerator.initQueryWrapper(sparePartStock, req.getParameterMap());
+		LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+		if(ObjectUtil.isNotNull(sparePartStock.getModule())){
+			sparePartStock.setOrgId(user.getOrgId());
+		}
 		Page<SparePartStock> page = new Page<SparePartStock>(pageNo, pageSize);
 		List<SparePartStock> list = sparePartStockService.selectList(page, sparePartStock);
 		list = list.stream().distinct().collect(Collectors.toList());

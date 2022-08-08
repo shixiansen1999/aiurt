@@ -1,10 +1,8 @@
 package com.aiurt.modules.sparepart.service.impl;
 
 import com.aiurt.common.constant.CommonConstant;
-import com.aiurt.modules.sparepart.entity.SparePartInOrder;
-import com.aiurt.modules.sparepart.entity.SparePartReturnOrder;
-import com.aiurt.modules.sparepart.entity.SparePartScrap;
-import com.aiurt.modules.sparepart.entity.SparePartStock;
+import com.aiurt.modules.sparepart.entity.*;
+import com.aiurt.modules.sparepart.mapper.SparePartOutOrderMapper;
 import com.aiurt.modules.sparepart.mapper.SparePartScrapMapper;
 import com.aiurt.modules.sparepart.mapper.SparePartStockMapper;
 import com.aiurt.modules.sparepart.service.ISparePartScrapService;
@@ -32,6 +30,8 @@ import java.util.List;
 public class SparePartScrapServiceImpl extends ServiceImpl<SparePartScrapMapper, SparePartScrap> implements ISparePartScrapService {
     @Autowired
     private SparePartScrapMapper sparePartScrapMapper;
+    @Autowired
+    private SparePartOutOrderMapper sparePartOutOrderMapper;
     /**
      * 查询列表
      * @param page
@@ -52,9 +52,17 @@ public class SparePartScrapServiceImpl extends ServiceImpl<SparePartScrapMapper,
     @Transactional(rollbackFor = Exception.class)
     public Result<?> update(SparePartScrap sparePartScrap) {
         LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        SparePartScrap scrap = getById(sparePartScrap.getId());
         if(sparePartScrap.getStatus()==3){
             sparePartScrap.setConfirmId(user.getUsername());
             sparePartScrap.setConfirmTime(new Date());
+            //更新已出库库存数量,做减法
+            SparePartOutOrder sparePartOutOrder = sparePartOutOrderMapper.selectOne(new LambdaQueryWrapper<SparePartOutOrder>().eq(SparePartOutOrder::getId,scrap.getOutOrderId()));
+            if(null!=sparePartOutOrder){
+                Integer number = Integer.parseInt(sparePartOutOrder.getUnused())-scrap.getNum();
+                sparePartOutOrder.setUnused(number+"");
+                sparePartOutOrderMapper.updateById(sparePartOutOrder);
+            }
         }
         sparePartScrapMapper.updateById(sparePartScrap);
         return Result.OK("编辑成功！");
