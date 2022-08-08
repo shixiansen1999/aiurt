@@ -207,8 +207,9 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
     @Override
     public void getPatrolSubmit(PatrolTaskDevice patrolTaskDevice) {
         PatrolTaskDevice taskDevice = patrolTaskDeviceMapper.selectOne(new LambdaQueryWrapper<PatrolTaskDevice>().eq(PatrolTaskDevice::getId, patrolTaskDevice.getId()));
+        LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         PatrolTask patrolTask = patrolTaskMapper.selectOne(new LambdaQueryWrapper<PatrolTask>().eq(PatrolTask::getId, taskDevice.getTaskId()));
-        if (manager.checkTaskUser(patrolTask.getCode()) == false) {
+        if (manager.checkTaskUser(patrolTask.getCode()) == false&&!sysUser.getRoleIds().contains("f6817f48af4fb3af11b9e8bf182f618b")) {
             throw new AiurtBootException("小主，该巡检任务不在您的提交范围之内哦");
         } else {
             List<PatrolCheckResult> patrolCheckResultList = patrolCheckResultMapper.selectList(new LambdaQueryWrapper<PatrolCheckResult>().eq(PatrolCheckResult::getTaskDeviceId, taskDevice.getId()));
@@ -219,7 +220,6 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
                 taskDevice.setCheckResult(PatrolConstant.RESULT_NORMAL);
             }
             patrolTaskDeviceMapper.updateById(taskDevice);
-            LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
             LambdaUpdateWrapper<PatrolTaskDevice> updateWrapper = new LambdaUpdateWrapper<>();
             updateWrapper.set(PatrolTaskDevice::getUserId, sysUser.getId()).set(PatrolTaskDevice::getCheckTime, LocalDateTime.now()).set(PatrolTaskDevice::getStatus, PatrolConstant.BILL_COMPLETE).eq(PatrolTaskDevice::getId, patrolTaskDevice.getId());
             patrolTaskDeviceMapper.update(patrolTaskDevice, updateWrapper);
@@ -413,8 +413,9 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
 
     @Override
     public List<PatrolCheckResultDTO> getPatrolTaskCheck(PatrolTaskDevice patrolTaskDevice, Integer checkDetail) {
+        LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         PatrolTask patrolTask = patrolTaskMapper.selectById(patrolTaskDevice.getTaskId());
-        if (manager.checkTaskUser(patrolTask.getCode()) == false && ObjectUtil.isNull(checkDetail)) {
+        if (manager.checkTaskUser(patrolTask.getCode()) == false && ObjectUtil.isNull(checkDetail)&&!sysUser.getRoleIds().contains("f6817f48af4fb3af11b9e8bf182f618b")) {
             throw new AiurtBootException("小主，该巡检任务不在您的检查范围之内哦");
         } else {
             //更新任务状态（将未开始改为执行中）、添加开始检查时间，传任务主键id,巡检工单主键
@@ -424,6 +425,7 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
                     LambdaUpdateWrapper<PatrolTaskDevice> updateWrapper = new LambdaUpdateWrapper<>();
                     updateWrapper.set(PatrolTaskDevice::getStatus, 1)
                             .set(PatrolTaskDevice::getStartTime, LocalDateTime.now())
+                            .set(PatrolTaskDevice::getCheckTime,null)
                             .eq(PatrolTaskDevice::getTaskId, patrolTaskDevice.getTaskId())
                             .eq(PatrolTaskDevice::getId, patrolTaskDevice.getId());
                     patrolTaskDeviceMapper.update(new PatrolTaskDevice(), updateWrapper);

@@ -8,12 +8,14 @@
         where t1.status not in (6,7,8) and t1.del_flag = 0 and t1.omit_status=0
         and t1.discard_status = 0
         and t1.id not in(select id from patrol_task where source=3 and (`status` =0 or `status`=3))
-        and t1.CODE IN ( SELECT t2.task_code FROM patrol_task_organization t2 WHERE t2.task_code = t1.CODE AND
-            t2.org_code = #{patrolTaskDTO.loginOrgId})
         <if test="patrolTaskDTO.dateScope !=null and patrolTaskDTO.dateScope !=''">
             and DATE_FORMAT(t1.patrol_date, '%Y-%m-%d' )
             between DATE_FORMAT(#{patrolTaskDTO.dateHead}, '%Y-%m-%d')
             and DATE_FORMAT(#{patrolTaskDTO.dateEnd}, '%Y-%m-%d')
+        </if>
+        <if test="patrolTaskDTO.loginOrgId != null and patrolTaskDTO.loginOrgId != ''">
+            and t1.CODE IN ( SELECT t2.task_code FROM patrol_task_organization t2 WHERE t2.task_code = t1.CODE AND
+            t2.org_code = #{patrolTaskDTO.loginOrgId})
         </if>
         <if test="patrolTaskDTO.status!=null">
             and t1.status = #{patrolTaskDTO.status}
@@ -34,8 +36,10 @@
         from patrol_task t1
         where t1.status in (6,7) and t1.del_flag = 0 and t1.omit_status=0
         and t1.discard_status = 0
-        and t1.CODE IN ( SELECT t2.task_code FROM patrol_task_organization t2 WHERE t2.task_code = t1.CODE AND
+        <if test="patrolTaskDTO.loginOrgId != null and patrolTaskDTO.loginOrgId != ''">
+            and t1.CODE IN ( SELECT t2.task_code FROM patrol_task_organization t2 WHERE t2.task_code = t1.CODE AND
             t2.org_code = #{patrolTaskDTO.loginOrgId})
+        </if>
         <if test="patrolTaskDTO.dateScope !=null and patrolTaskDTO.dateScope !=''">
             and DATE_FORMAT(t1.patrol_date, '%Y-%m-%d' )
             between DATE_FORMAT(#{patrolTaskDTO.dateHead}, '%Y-%m-%d')
