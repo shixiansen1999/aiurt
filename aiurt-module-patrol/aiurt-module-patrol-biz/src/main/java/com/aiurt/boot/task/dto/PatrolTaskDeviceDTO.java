@@ -88,7 +88,7 @@ public class PatrolTaskDeviceDTO {
     @Excel(name = "巡检时长", width = 15)
     @ApiModelProperty(value = "巡检时长")
     @TableField(exist = false)
-    private Long inspectionTime;
+    private String inspectionTime;
     /**备注说明*/
     @Excel(name = "备注说明", width = 15)
     @ApiModelProperty(value = "备注说明")

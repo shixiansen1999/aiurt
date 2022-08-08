@@ -131,11 +131,11 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
             Date checkTime = e.getCheckTime();
             if (ObjectUtil.isNotEmpty(startTime) && ObjectUtil.isNotEmpty(checkTime)) {
                 long duration = DateUtil.between(startTime, checkTime, DateUnit.MINUTE);
-                long second = DateUtil.between(startTime, checkTime, DateUnit.SECOND);
-                if (second % 60 > 0) {
-                    duration += 1;
-                }
-                e.setInspectionTime(duration);
+//                long second = DateUtil.between(startTime, checkTime, DateUnit.SECOND);
+//                if (second % 60 > 0) {
+//                    duration += 1;
+//                }
+                e.setInspectionTime(DateUtils.getTimeByMinute(duration));
             }
             List<StationDTO> codeList = new ArrayList<>();
             StationDTO stationDTO = new StationDTO();
