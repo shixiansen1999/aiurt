@@ -209,8 +209,8 @@ public class FlowOperationController {
      * @return
      */
     @ApiOperation("历史任务查询")
-    @PostMapping("listHistoricTask")
-    public Result<IPage<HistoricProcessInstanceDTO>> listHistoricTask(@RequestBody HistoricProcessInstanceReqDTO reqDTO) {
+    @PostMapping("listHistoricProcessInstance")
+    public Result<IPage<HistoricProcessInstanceDTO>> listHistoricProcessInstance(@RequestBody HistoricProcessInstanceReqDTO reqDTO) {
         LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         reqDTO.setLoginName(loginUser.getUsername());
         IPage<HistoricProcessInstanceDTO> result = flowApiService.listAllHistoricProcessInstance(reqDTO);
