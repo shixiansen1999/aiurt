@@ -45,26 +45,6 @@ public class CsLineController extends BaseController<CsLine, ICsLineService> {
 	private ICsStationService csStationService;
 	@Autowired
 	private IDeviceService deviceService;
-	/**
-	 * 分页列表查询
-	 *
-	 * @param csLine
-	 * @param pageNo
-	 * @param pageSize
-	 * @param req
-	 * @return
-	 */
-	@ApiOperation(value="cs_line-分页列表查询", notes="cs_line-分页列表查询")
-	@GetMapping(value = "/list")
-	public Result<IPage<CsLine>> queryPageList(CsLine csLine,
-											   @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
-											   @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
-											   HttpServletRequest req) {
-		QueryWrapper<CsLine> queryWrapper = QueryGenerator.initQueryWrapper(csLine, req.getParameterMap());
-		Page<CsLine> page = new Page<CsLine>(pageNo, pageSize);
-		IPage<CsLine> pageList = csLineService.page(page, queryWrapper.lambda().eq(CsLine::getDelFlag, CommonConstant.DEL_FLAG_0));
-		return Result.OK(pageList);
-	}
 
 	/**
 	 *   添加
@@ -72,7 +52,7 @@ public class CsLineController extends BaseController<CsLine, ICsLineService> {
 	 * @param position
 	 * @return
 	 */
-	@AutoLog(value = "cs_line-添加")
+	@AutoLog(value = "添加",operateType = 2,operateTypeAlias = "添加一级位置",permissionUrl = "/position/list")
 	@ApiOperation(value="cs_line-添加", notes="cs_line-添加")
 	@PostMapping(value = "/add")
 	public Result<?> add(@RequestBody CsStationPosition position) {
@@ -86,7 +66,7 @@ public class CsLineController extends BaseController<CsLine, ICsLineService> {
 	 * @param position
 	 * @return
 	 */
-	@AutoLog(value = "cs_line-编辑")
+	@AutoLog(value = "编辑",operateType = 3,operateTypeAlias = "编辑一级位置",permissionUrl = "/position/list")
 	@ApiOperation(value="cs_line-编辑", notes="cs_line-编辑")
 	@RequestMapping(value = "/edit", method = {RequestMethod.PUT,RequestMethod.POST})
 	public Result<?> edit(@RequestBody CsStationPosition position) {
@@ -115,7 +95,7 @@ public class CsLineController extends BaseController<CsLine, ICsLineService> {
 	 * @param id
 	 * @return
 	 */
-	@AutoLog(value = "cs_line-通过id删除")
+	@AutoLog(value = "删除",operateType = 4,operateTypeAlias = "删除一级位置",permissionUrl = "/position/list")
 	@ApiOperation(value="cs_line-通过id删除", notes="cs_line-通过id删除")
 	@DeleteMapping(value = "/delete")
 	public Result<String> delete(@RequestParam(name="id",required=true) String id) {
@@ -147,6 +127,7 @@ public class CsLineController extends BaseController<CsLine, ICsLineService> {
 	 * @param id
 	 * @return
 	 */
+	@AutoLog(value = "查询",operateType = 1,operateTypeAlias = "通过id查询一级位置",permissionUrl = "/position/list")
 	@ApiOperation(value="cs_line-通过id查询", notes="cs_line-通过id查询")
 	@GetMapping(value = "/queryById")
 	public Result<CsLine> queryById(@RequestParam(name="id",required=true) String id) {

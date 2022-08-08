@@ -62,7 +62,7 @@ public class SparePartStockInfoController extends BaseController<SparePartStockI
 	 * @param req
 	 * @return
 	 */
-	//@AutoLog(value = "spare_part_stock_info-分页列表查询")
+	@AutoLog(value = "查询",operateType = 1,operateTypeAlias = "备件仓库分页列表查询",permissionUrl = "/sparepart/sparePartStockInfo/list")
 	@ApiOperation(value="spare_part_stock_info-分页列表查询", notes="spare_part_stock_info-分页列表查询")
 	@GetMapping(value = "/list")
 	public Result<IPage<SparePartStockInfo>> queryPageList(SparePartStockInfo sparePartStockInfo,
@@ -85,7 +85,7 @@ public class SparePartStockInfoController extends BaseController<SparePartStockI
 	 * @param sparePartStockInfo
 	 * @return
 	 */
-	@AutoLog(value = "spare_part_stock_info-添加")
+	@AutoLog(value = "添加",operateType = 2,operateTypeAlias = "添加备件仓库",permissionUrl = "/sparepart/sparePartStockInfo/list")
 	@ApiOperation(value="spare_part_stock_info-添加", notes="spare_part_stock_info-添加")
 	@PostMapping(value = "/add")
 	public Result<?> add(@RequestBody SparePartStockInfo sparePartStockInfo) {
@@ -98,7 +98,7 @@ public class SparePartStockInfoController extends BaseController<SparePartStockI
 	 * @param sparePartStockInfo
 	 * @return
 	 */
-	@AutoLog(value = "spare_part_stock_info-编辑")
+	@AutoLog(value = "编辑",operateType = 3,operateTypeAlias = "编辑备件仓库分",permissionUrl = "/sparepart/sparePartStockInfo/list")
 	@ApiOperation(value="spare_part_stock_info-编辑", notes="spare_part_stock_info-编辑")
 	@RequestMapping(value = "/edit", method = {RequestMethod.PUT,RequestMethod.POST})
 	public Result<?> edit(@RequestBody SparePartStockInfo sparePartStockInfo) {
@@ -111,7 +111,7 @@ public class SparePartStockInfoController extends BaseController<SparePartStockI
 	 * @param id
 	 * @return
 	 */
-	@AutoLog(value = "spare_part_stock_info-通过id删除")
+	@AutoLog(value = "删除",operateType = 4,operateTypeAlias = "删除备件仓库",permissionUrl = "/sparepart/sparePartStockInfo/list")
 	@ApiOperation(value="spare_part_stock_info-通过id删除", notes="spare_part_stock_info-通过id删除")
 	@DeleteMapping(value = "/delete")
 	public Result<String> delete(@RequestParam(name="id",required=true) String id) {
@@ -145,7 +145,7 @@ public class SparePartStockInfoController extends BaseController<SparePartStockI
 	 * @param id
 	 * @return
 	 */
-	//@AutoLog(value = "spare_part_stock_info-通过id查询")
+	@AutoLog(value = "查询",operateType = 1,operateTypeAlias = "通过id查询备件仓库",permissionUrl = "/sparepart/sparePartStockInfo/list")
 	@ApiOperation(value="spare_part_stock_info-通过id查询", notes="spare_part_stock_info-通过id查询")
 	@GetMapping(value = "/queryById")
 	public Result<SparePartStockInfo> queryById(@RequestParam(name="id",required=true) String id) {
@@ -162,7 +162,7 @@ public class SparePartStockInfoController extends BaseController<SparePartStockI
 
 	 * @return
 	 */
-	@AutoLog(value = "备件管理-备件仓库-登录人所选班组的仓库")
+	@AutoLog(value = "查询",operateType = 1,operateTypeAlias = "登录人所选班组的仓库",permissionUrl = "/sparepart/sparePartStockInfo/list")
 	@ApiOperation(value="备件管理-备件仓库-登录人所选班组的仓库", notes="备件管理-备件仓库-登录人所选班组的仓库")
 	@GetMapping(value = "/stockInfoList")
 	public Result<?> queryPageList() {

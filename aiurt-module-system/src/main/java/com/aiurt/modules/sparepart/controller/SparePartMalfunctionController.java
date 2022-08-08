@@ -58,7 +58,7 @@ public class SparePartMalfunctionController extends BaseController<SparePartMalf
 	 * @param req
 	 * @return
 	 */
-	//@AutoLog(value = "spare_part_malfunction-分页列表查询")
+	@AutoLog(value = "查询",operateType = 1,operateTypeAlias = "查询备件履历",permissionUrl = "/sparepart/sparePartMalfunction/list")
 	@ApiOperation(value="spare_part_malfunction-分页列表查询", notes="spare_part_malfunction-分页列表查询")
 	@GetMapping(value = "/list")
 	public Result<IPage<SparePartMalfunction>> queryPageList(SparePartMalfunction sparePartMalfunction,
@@ -84,7 +84,7 @@ public class SparePartMalfunctionController extends BaseController<SparePartMalf
 	 * @param sparePartMalfunction
 	 * @return
 	 */
-	@AutoLog(value = "spare_part_malfunction-添加")
+	@AutoLog(value = "添加",operateType = 2,operateTypeAlias = "添加备件履历",permissionUrl = "/sparepart/sparePartMalfunction/list")
 	@ApiOperation(value="spare_part_malfunction-添加", notes="spare_part_malfunction-添加")
 	@PostMapping(value = "/add")
 	public Result<String> add(@RequestBody SparePartMalfunction sparePartMalfunction) {
@@ -98,7 +98,7 @@ public class SparePartMalfunctionController extends BaseController<SparePartMalf
 	 * @param sparePartMalfunction
 	 * @return
 	 */
-	@AutoLog(value = "spare_part_malfunction-编辑")
+	@AutoLog(value = "编辑",operateType = 3,operateTypeAlias = "编辑备件履历",permissionUrl = "/sparepart/sparePartMalfunction/list")
 	@ApiOperation(value="spare_part_malfunction-编辑", notes="spare_part_malfunction-编辑")
 	@RequestMapping(value = "/edit", method = {RequestMethod.PUT,RequestMethod.POST})
 	public Result<String> edit(@RequestBody SparePartMalfunction sparePartMalfunction) {
@@ -112,7 +112,7 @@ public class SparePartMalfunctionController extends BaseController<SparePartMalf
 	 * @param id
 	 * @return
 	 */
-	@AutoLog(value = "spare_part_malfunction-通过id删除")
+	@AutoLog(value = "删除",operateType = 4,operateTypeAlias = "通过id删除备件履历",permissionUrl = "/sparepart/sparePartMalfunction/list")
 	@ApiOperation(value="spare_part_malfunction-通过id删除", notes="spare_part_malfunction-通过id删除")
 	@DeleteMapping(value = "/delete")
 	public Result<String> delete(@RequestParam(name="id",required=true) String id) {
@@ -120,19 +120,6 @@ public class SparePartMalfunctionController extends BaseController<SparePartMalf
 		return Result.OK("删除成功!");
 	}
 
-	/**
-	 *  批量删除
-	 *
-	 * @param ids
-	 * @return
-	 */
-	@AutoLog(value = "spare_part_malfunction-批量删除")
-	@ApiOperation(value="spare_part_malfunction-批量删除", notes="spare_part_malfunction-批量删除")
-	@DeleteMapping(value = "/deleteBatch")
-	public Result<String> deleteBatch(@RequestParam(name="ids",required=true) String ids) {
-		this.sparePartMalfunctionService.removeByIds(Arrays.asList(ids.split(",")));
-		return Result.OK("批量删除成功!");
-	}
 
 	/**
 	 * 通过id查询
@@ -140,7 +127,7 @@ public class SparePartMalfunctionController extends BaseController<SparePartMalf
 	 * @param id
 	 * @return
 	 */
-	//@AutoLog(value = "spare_part_malfunction-通过id查询")
+	@AutoLog(value = "查询",operateType = 1,operateTypeAlias = "通过id查询备件履历",permissionUrl = "/sparepart/sparePartMalfunction/list")
 	@ApiOperation(value="spare_part_malfunction-通过id查询", notes="spare_part_malfunction-通过id查询")
 	@GetMapping(value = "/queryById")
 	public Result<SparePartMalfunction> queryById(@RequestParam(name="id",required=true) String id) {
@@ -157,6 +144,7 @@ public class SparePartMalfunctionController extends BaseController<SparePartMalf
     * @param request
     * @param
     */
+	@AutoLog(value = "导出",operateType = 6,operateTypeAlias = "导出备件履历",permissionUrl = "/sparepart/sparePartMalfunction/list")
     @RequestMapping(value = "/exportXls")
     public ModelAndView exportXls(@ApiParam(value = "行数据ids" ,required = true) @RequestParam("ids") String ids, HttpServletRequest request, HttpServletResponse response) {
 		LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
@@ -174,16 +162,6 @@ public class SparePartMalfunctionController extends BaseController<SparePartMalf
 		return mv;
     }
 
-    /**
-      * 通过excel导入数据
-    *
-    * @param request
-    * @param response
-    * @return
-    */
-    @RequestMapping(value = "/importExcel", method = RequestMethod.POST)
-    public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) {
-        return super.importExcel(request, response, SparePartMalfunction.class);
-    }
+
 
 }

@@ -63,7 +63,7 @@ public class SparePartReturnOrderController extends BaseController<SparePartRetu
 	 * @param req
 	 * @return
 	 */
-	//@AutoLog(value = "spare_part_return_order-分页列表查询")
+	@AutoLog(value = "查询",operateType = 1,operateTypeAlias = "备件退库分页列表查询",permissionUrl = "/sparepart/sparePartReturnOrder/list")
 	@ApiOperation(value="spare_part_return_order-分页列表查询", notes="spare_part_return_order-分页列表查询")
 	@GetMapping(value = "/list")
 	public Result<IPage<SparePartReturnOrder>> queryPageList(SparePartReturnOrder sparePartReturnOrder,
@@ -83,7 +83,7 @@ public class SparePartReturnOrderController extends BaseController<SparePartRetu
 	 * @param sparePartReturnOrder
 	 * @return
 	 */
-	@AutoLog(value = "spare_part_return_order-添加")
+	@AutoLog(value = "添加",operateType = 2,operateTypeAlias = "添加备件退库",permissionUrl = "/sparepart/sparePartReturnOrder/list")
 	@ApiOperation(value="spare_part_return_order-添加", notes="spare_part_return_order-添加")
 	@PostMapping(value = "/add")
 	public Result<?> add(@RequestBody SparePartReturnOrder sparePartReturnOrder) {
@@ -108,7 +108,7 @@ public class SparePartReturnOrderController extends BaseController<SparePartRetu
 	 * @param sparePartReturnOrder
 	 * @return
 	 */
-	@AutoLog(value = "spare_part_return_order-编辑")
+	@AutoLog(value = "编辑",operateType = 3,operateTypeAlias = "编辑备件退库",permissionUrl = "/sparepart/sparePartReturnOrder/list")
 	@ApiOperation(value="spare_part_return_order-编辑", notes="spare_part_return_order-编辑")
 	@RequestMapping(value = "/edit", method = {RequestMethod.PUT,RequestMethod.POST})
 	public Result<?> edit(@RequestBody SparePartReturnOrder sparePartReturnOrder) {
@@ -121,7 +121,7 @@ public class SparePartReturnOrderController extends BaseController<SparePartRetu
 	 * @param id
 	 * @return
 	 */
-	@AutoLog(value = "spare_part_return_order-通过id删除")
+	@AutoLog(value = "删除",operateType = 4,operateTypeAlias = "通过id删除备件退库",permissionUrl = "/sparepart/sparePartReturnOrder/list")
 	@ApiOperation(value="spare_part_return_order-通过id删除", notes="spare_part_return_order-通过id删除")
 	@DeleteMapping(value = "/delete")
 	public Result<String> delete(@RequestParam(name="id",required=true) String id) {
@@ -137,7 +137,7 @@ public class SparePartReturnOrderController extends BaseController<SparePartRetu
 	 * @param id
 	 * @return
 	 */
-	//@AutoLog(value = "spare_part_return_order-通过id查询")
+	@AutoLog(value = "查询",operateType = 1,operateTypeAlias = "通过id查询备件退库",permissionUrl = "/sparepart/sparePartReturnOrder/list")
 	@ApiOperation(value="spare_part_return_order-通过id查询", notes="spare_part_return_order-通过id查询")
 	@GetMapping(value = "/queryById")
 	public Result<SparePartReturnOrder> queryById(@RequestParam(name="id",required=true) String id) {
@@ -154,6 +154,7 @@ public class SparePartReturnOrderController extends BaseController<SparePartRetu
     * @param request
     * @param
     */
+	@AutoLog(value = "导出",operateType = 6,operateTypeAlias = "导出备件退库",permissionUrl = "/sparepart/sparePartReturnOrder/list")
     @RequestMapping(value = "/exportXls")
 	public ModelAndView exportXls(@ApiParam(value = "行数据ids" ,required = true) @RequestParam("ids") String ids, HttpServletRequest request, HttpServletResponse response) {
 		LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();

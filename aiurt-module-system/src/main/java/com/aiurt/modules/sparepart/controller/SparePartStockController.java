@@ -52,7 +52,7 @@ public class SparePartStockController extends BaseController<SparePartStock, ISp
 	 * @param req
 	 * @return
 	 */
-	//@AutoLog(value = "spare_part_stock-分页列表查询")
+	@AutoLog(value = "查询",operateType = 1,operateTypeAlias = "备件库存信息分页列表查询",permissionUrl = "/sparepart/sparePartStock/list")
 	@ApiOperation(value="spare_part_stock-分页列表查询", notes="spare_part_stock-分页列表查询")
 	@GetMapping(value = "/list")
 	public Result<IPage<SparePartStock>> queryPageList(SparePartStock sparePartStock,
@@ -77,7 +77,7 @@ public class SparePartStockController extends BaseController<SparePartStock, ISp
 	 * @param sparePartStock
 	 * @return
 	 */
-	@AutoLog(value = "spare_part_stock-添加")
+	@AutoLog(value = "添加",operateType = 2,operateTypeAlias = "添加备件库存信息",permissionUrl = "/sparepart/sparePartStock/list")
 	@ApiOperation(value="spare_part_stock-添加", notes="spare_part_stock-添加")
 	@PostMapping(value = "/add")
 	public Result<String> add(@RequestBody SparePartStock sparePartStock) {
@@ -91,7 +91,7 @@ public class SparePartStockController extends BaseController<SparePartStock, ISp
 	 * @param sparePartStock
 	 * @return
 	 */
-	@AutoLog(value = "spare_part_stock-编辑")
+	@AutoLog(value = "编辑",operateType = 3,operateTypeAlias = "编辑备件库存信息",permissionUrl = "/sparepart/sparePartStock/list")
 	@ApiOperation(value="spare_part_stock-编辑", notes="spare_part_stock-编辑")
 	@RequestMapping(value = "/edit", method = {RequestMethod.PUT,RequestMethod.POST})
 	public Result<String> edit(@RequestBody SparePartStock sparePartStock) {
@@ -105,7 +105,7 @@ public class SparePartStockController extends BaseController<SparePartStock, ISp
 	 * @param id
 	 * @return
 	 */
-	@AutoLog(value = "spare_part_stock-通过id删除")
+	@AutoLog(value = "删除",operateType = 4,operateTypeAlias = "删除备件库存信息",permissionUrl = "/sparepart/sparePartStock/list")
 	@ApiOperation(value="spare_part_stock-通过id删除", notes="spare_part_stock-通过id删除")
 	@DeleteMapping(value = "/delete")
 	public Result<String> delete(@RequestParam(name="id",required=true) String id) {
@@ -114,26 +114,12 @@ public class SparePartStockController extends BaseController<SparePartStock, ISp
 	}
 
 	/**
-	 *  批量删除
-	 *
-	 * @param ids
-	 * @return
-	 */
-	@AutoLog(value = "spare_part_stock-批量删除")
-	@ApiOperation(value="spare_part_stock-批量删除", notes="spare_part_stock-批量删除")
-	@DeleteMapping(value = "/deleteBatch")
-	public Result<String> deleteBatch(@RequestParam(name="ids",required=true) String ids) {
-		this.sparePartStockService.removeByIds(Arrays.asList(ids.split(",")));
-		return Result.OK("批量删除成功!");
-	}
-
-	/**
 	 * 通过id查询
 	 *
 	 * @param id
 	 * @return
 	 */
-	//@AutoLog(value = "spare_part_stock-通过id查询")
+	@AutoLog(value = "查询",operateType = 1,operateTypeAlias = "通过id查询备件库存信息",permissionUrl = "/sparepart/sparePartStock/list")
 	@ApiOperation(value="spare_part_stock-通过id查询", notes="spare_part_stock-通过id查询")
 	@GetMapping(value = "/queryById")
 	public Result<SparePartStock> queryById(@RequestParam(name="id",required=true) String id) {
@@ -150,7 +136,7 @@ public class SparePartStockController extends BaseController<SparePartStock, ISp
 
 	  * @return
 	  */
-	 @AutoLog(value = "备件管理-备件仓库-登录人所选班组的仓库的备件")
+	 @AutoLog(value = "查询",operateType = 1,operateTypeAlias = "登录人所选班组的仓库的备件",permissionUrl = "/sparepart/sparePartOutOrder/list")
 	 @ApiOperation(value="备件管理-备件仓库-登录人所选班组的仓库的备件", notes="备件管理-备件仓库-登录人所选班组的仓库的备件")
 	 @GetMapping(value = "/stockList")
 	 public Result<?> queryPageList(SparePartStock sparePartStock) {

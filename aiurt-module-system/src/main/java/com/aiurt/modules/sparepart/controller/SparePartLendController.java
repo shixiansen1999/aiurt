@@ -54,7 +54,7 @@ public class SparePartLendController extends BaseController<SparePartLend, ISpar
 	 * @param req
 	 * @return
 	 */
-	//@AutoLog(value = "spare_part_lend-分页列表查询")
+	@AutoLog(value = "查询",operateType = 1,operateTypeAlias = "查询备件借入",permissionUrl = "/sparepart/sparePartLend/list")
 	@ApiOperation(value="spare_part_lend-分页列表查询", notes="spare_part_lend-分页列表查询")
 	@GetMapping(value = "/list")
 	public Result<IPage<SparePartLend>> queryPageList(SparePartLend sparePartLend,
@@ -75,7 +75,7 @@ public class SparePartLendController extends BaseController<SparePartLend, ISpar
 	 * @param sparePartLend
 	 * @return
 	 */
-	@AutoLog(value = "spare_part_lend-添加")
+	@AutoLog(value = "添加",operateType = 2,operateTypeAlias = "添加备件借入",permissionUrl = "/sparepart/sparePartLend/list")
 	@ApiOperation(value="spare_part_lend-添加", notes="spare_part_lend-添加")
 	@PostMapping(value = "/add")
 	public Result<?> add(@RequestBody SparePartLend sparePartLend) {
@@ -88,7 +88,7 @@ public class SparePartLendController extends BaseController<SparePartLend, ISpar
 	 * @param sparePartLend
 	 * @return
 	 */
-	@AutoLog(value = "spare_part_lend-借出确认")
+	@AutoLog(value = "借出确认",operateType = 3,operateTypeAlias = "备件借入借出确认",permissionUrl = "/sparepart/sparePartLend/list")
 	@ApiOperation(value="spare_part_lend-借出确认", notes="spare_part_lend-借出确认")
 	@RequestMapping(value = "/lendConfirm", method = {RequestMethod.PUT,RequestMethod.POST})
 	public Result<?> lendConfirm(@RequestBody SparePartLend sparePartLend) {
@@ -101,7 +101,7 @@ public class SparePartLendController extends BaseController<SparePartLend, ISpar
 	  * @param sparePartLend
 	  * @return
 	  */
-	 @AutoLog(value = "spare_part_lend-归还")
+	 @AutoLog(value = "归还",operateType = 3,operateTypeAlias = "备件借入的归还",permissionUrl = "/sparepart/sparePartLend/list")
 	 @ApiOperation(value="spare_part_lend-归还", notes="spare_part_lend-归还")
 	 @RequestMapping(value = "/back", method = {RequestMethod.PUT,RequestMethod.POST})
 	 public Result<?> back(@RequestBody SparePartLend sparePartLend) {
@@ -116,7 +116,7 @@ public class SparePartLendController extends BaseController<SparePartLend, ISpar
 	  * @param sparePartLend
 	  * @return
 	  */
-	 @AutoLog(value = "spare_part_lend-归还确认")
+	 @AutoLog(value = "归还确认",operateType = 3,operateTypeAlias = "备件借入归还确认",permissionUrl = "/sparepart/sparePartLend/list")
 	 @ApiOperation(value="spare_part_lend-归还确认", notes="spare_part_lend-归还确认")
 	 @RequestMapping(value = "/backConfirm", method = {RequestMethod.PUT,RequestMethod.POST})
 	 public Result<?> backConfirm(@RequestBody SparePartLend sparePartLend) {
@@ -128,7 +128,7 @@ public class SparePartLendController extends BaseController<SparePartLend, ISpar
 	 * @param id
 	 * @return
 	 */
-	@AutoLog(value = "spare_part_lend-通过id删除")
+	@AutoLog(value = "删除",operateType = 4,operateTypeAlias = "通过id删除备件借入",permissionUrl = "/sparepart/sparePartLend/list")
 	@ApiOperation(value="spare_part_lend-通过id删除", notes="spare_part_lend-通过id删除")
 	@DeleteMapping(value = "/delete")
 	public Result<String> delete(@RequestParam(name="id",required=true) String id) {
@@ -143,7 +143,7 @@ public class SparePartLendController extends BaseController<SparePartLend, ISpar
 	 * @param id
 	 * @return
 	 */
-	//@AutoLog(value = "spare_part_lend-通过id查询")
+	@AutoLog(value = "查询",operateType = 1,operateTypeAlias = "通过id查询备件借入",permissionUrl = "/sparepart/sparePartLend/list")
 	@ApiOperation(value="spare_part_lend-通过id查询", notes="spare_part_lend-通过id查询")
 	@GetMapping(value = "/queryById")
 	public Result<SparePartLend> queryById(@RequestParam(name="id",required=true) String id) {
@@ -160,6 +160,7 @@ public class SparePartLendController extends BaseController<SparePartLend, ISpar
     * @param request
     * @param
     */
+	@AutoLog(value = "导出",operateType = 6,operateTypeAlias = "导出备件借入",permissionUrl = "/sparepart/sparePartLend/list")
     @RequestMapping(value = "/exportXls")
 	public ModelAndView exportXls(@ApiParam(value = "行数据ids" ,required = true) @RequestParam("ids") String ids, HttpServletRequest request, HttpServletResponse response) {
 		LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
@@ -180,16 +181,5 @@ public class SparePartLendController extends BaseController<SparePartLend, ISpar
 		return mv;
 	}
 
-    /**
-      * 通过excel导入数据
-    *
-    * @param request
-    * @param response
-    * @return
-    */
-    @RequestMapping(value = "/importExcel", method = RequestMethod.POST)
-    public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) {
-        return super.importExcel(request, response, SparePartLend.class);
-    }
 
 }

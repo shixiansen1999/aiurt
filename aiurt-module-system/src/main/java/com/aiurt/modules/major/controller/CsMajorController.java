@@ -71,6 +71,7 @@ public class CsMajorController  {
 	 * @param req
 	 * @return
 	 */
+	@AutoLog(value = "查询",operateType = 1,operateTypeAlias = "专业分页列表查询",permissionUrl = "/major/list")
 	@ApiOperation(value="专业分页列表查询", notes="专业分页列表查询")
 	@GetMapping(value = "/list")
 	public Result<?> queryPageList(CsMajor csMajor,
@@ -82,7 +83,14 @@ public class CsMajorController  {
 		IPage<CsMajor> pageList = csMajorService.page(page, queryWrapper.lambda().eq(CsMajor::getDelFlag, CommonConstant.DEL_FLAG_0));
 		return Result.OK(pageList);
 	}
-
+	 /**
+	  * 不分页列表查询
+	  *
+	  * @param csMajor
+	  * @param req
+	  * @return
+	  */
+	 @AutoLog(value = "查询",operateType = 1,operateTypeAlias = "专业不分页列表查询",permissionUrl = "/major/list")
 	 @ApiOperation(value="专业列表查询", notes="专业列表查询")
 	 @GetMapping(value = "/selectList")
 	 public Result<?> selectList(CsMajor csMajor,
@@ -98,7 +106,7 @@ public class CsMajorController  {
 	 * @param csMajor
 	 * @return
 	 */
-	@AutoLog(value = "专业添加")
+	@AutoLog(value = "添加",operateType = 2,operateTypeAlias = "添加专业",permissionUrl = "/major/list")
 	@ApiOperation(value="专业添加", notes="专业添加")
 	@PostMapping(value = "/add")
 	public Result<?> add(@RequestBody CsMajor csMajor) {
@@ -111,7 +119,7 @@ public class CsMajorController  {
 	 * @param csMajor
 	 * @return
 	 */
-	@AutoLog(value = "专业编辑")
+	@AutoLog(value = "编辑",operateType = 3,operateTypeAlias = "编辑专业",permissionUrl = "/major/list")
 	@ApiOperation(value="专业编辑", notes="专业编辑")
 	@PutMapping(value = "/edit")
 	public Result<?> edit(@RequestBody CsMajor csMajor) {
@@ -124,7 +132,7 @@ public class CsMajorController  {
 	 * @param id
 	 * @return
 	 */
-	@AutoLog(value = "专业通过id删除")
+	@AutoLog(value = "删除",operateType = 4,operateTypeAlias = "通过id删除专业",permissionUrl = "/major/list")
 	@ApiOperation(value="专业通过id删除", notes="专业通过id删除")
 	@DeleteMapping(value = "/delete")
 	public Result<?> delete(@RequestParam(name="id",required=true) String id) {
@@ -187,6 +195,7 @@ public class CsMajorController  {
 	 * @param id
 	 * @return
 	 */
+	@AutoLog(value = "查询",operateType = 1,operateTypeAlias = "通过id查询专业",permissionUrl = "/major/list")
 	@ApiOperation(value="专业通过id查询", notes="专业通过id查询")
 	@GetMapping(value = "/queryById")
 	public Result<?> queryById(@RequestParam(name="id",required=true) String id) {

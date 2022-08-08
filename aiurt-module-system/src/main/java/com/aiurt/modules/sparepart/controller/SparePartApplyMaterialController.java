@@ -49,7 +49,7 @@ public class SparePartApplyMaterialController extends BaseController<SparePartAp
 	 * @param req
 	 * @return
 	 */
-	//@AutoLog(value = "spare_part_apply_material-分页列表查询")
+	@AutoLog(value = "查询",operateType = 1,operateTypeAlias = "查询备件申领物资",permissionUrl = "/sparepart/sparePartApplyMaterial/list")
 	@ApiOperation(value="spare_part_apply_material-分页列表查询", notes="spare_part_apply_material-分页列表查询")
 	@GetMapping(value = "/list")
 	public Result<IPage<SparePartApplyMaterial>> queryPageList(SparePartApplyMaterial sparePartApplyMaterial,
@@ -68,7 +68,7 @@ public class SparePartApplyMaterialController extends BaseController<SparePartAp
 	 * @param sparePartApplyMaterial
 	 * @return
 	 */
-	@AutoLog(value = "spare_part_apply_material-添加")
+	@AutoLog(value = "添加",operateType = 2,operateTypeAlias = "添加备件申领物资",permissionUrl = "/sparepart/sparePartApplyMaterial/list")
 	@ApiOperation(value="spare_part_apply_material-添加", notes="spare_part_apply_material-添加")
 	@PostMapping(value = "/add")
 	public Result<String> add(@RequestBody SparePartApplyMaterial sparePartApplyMaterial) {
@@ -82,7 +82,7 @@ public class SparePartApplyMaterialController extends BaseController<SparePartAp
 	 * @param sparePartApplyMaterial
 	 * @return
 	 */
-	@AutoLog(value = "spare_part_apply_material-编辑")
+	@AutoLog(value = "编辑",operateType = 3,operateTypeAlias = "编辑备件申领物资",permissionUrl = "/sparepart/sparePartApplyMaterial/list")
 	@ApiOperation(value="spare_part_apply_material-编辑", notes="spare_part_apply_material-编辑")
 	@RequestMapping(value = "/edit", method = {RequestMethod.PUT,RequestMethod.POST})
 	public Result<String> edit(@RequestBody SparePartApplyMaterial sparePartApplyMaterial) {
@@ -96,7 +96,7 @@ public class SparePartApplyMaterialController extends BaseController<SparePartAp
 	 * @param id
 	 * @return
 	 */
-	@AutoLog(value = "spare_part_apply_material-通过id删除")
+	@AutoLog(value = "删除",operateType = 4,operateTypeAlias = "删除备件申领物资",permissionUrl = "/sparepart/sparePartApplyMaterial/list")
 	@ApiOperation(value="spare_part_apply_material-通过id删除", notes="spare_part_apply_material-通过id删除")
 	@DeleteMapping(value = "/delete")
 	public Result<String> delete(@RequestParam(name="id",required=true) String id) {
@@ -105,26 +105,12 @@ public class SparePartApplyMaterialController extends BaseController<SparePartAp
 	}
 
 	/**
-	 *  批量删除
-	 *
-	 * @param ids
-	 * @return
-	 */
-	@AutoLog(value = "spare_part_apply_material-批量删除")
-	@ApiOperation(value="spare_part_apply_material-批量删除", notes="spare_part_apply_material-批量删除")
-	@DeleteMapping(value = "/deleteBatch")
-	public Result<String> deleteBatch(@RequestParam(name="ids",required=true) String ids) {
-		this.sparePartApplyMaterialService.removeByIds(Arrays.asList(ids.split(",")));
-		return Result.OK("批量删除成功!");
-	}
-
-	/**
 	 * 通过id查询
 	 *
 	 * @param id
 	 * @return
 	 */
-	//@AutoLog(value = "spare_part_apply_material-通过id查询")
+	@AutoLog(value = "查询",operateType = 1,operateTypeAlias = "通过id查询备件申领物资",permissionUrl = "/sparepart/sparePartApplyMaterial/list")
 	@ApiOperation(value="spare_part_apply_material-通过id查询", notes="spare_part_apply_material-通过id查询")
 	@GetMapping(value = "/queryById")
 	public Result<SparePartApplyMaterial> queryById(@RequestParam(name="id",required=true) String id) {
@@ -135,27 +121,5 @@ public class SparePartApplyMaterialController extends BaseController<SparePartAp
 		return Result.OK(sparePartApplyMaterial);
 	}
 
-    /**
-    * 导出excel
-    *
-    * @param request
-    * @param sparePartApplyMaterial
-    */
-    @RequestMapping(value = "/exportXls")
-    public ModelAndView exportXls(HttpServletRequest request, SparePartApplyMaterial sparePartApplyMaterial) {
-        return super.exportXls(request, sparePartApplyMaterial, SparePartApplyMaterial.class, "spare_part_apply_material");
-    }
-
-    /**
-      * 通过excel导入数据
-    *
-    * @param request
-    * @param response
-    * @return
-    */
-    @RequestMapping(value = "/importExcel", method = RequestMethod.POST)
-    public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) {
-        return super.importExcel(request, response, SparePartApplyMaterial.class);
-    }
 
 }

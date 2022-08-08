@@ -62,7 +62,7 @@ public class CsSubsystemController  {
 	  *
 	  * @return
 	  */
-	 @AutoLog(value = "专业子系统树")
+	 @AutoLog(value = "查询",operateType = 1,operateTypeAlias = "查询专业子系统树",permissionUrl = "/subsystem/list")
 	 @ApiOperation(value="专业子系统树", notes="专业子系统树")
 	 @GetMapping(value = "/treeList")
 	 public Result<?> queryTreeList() {
@@ -74,35 +74,7 @@ public class CsSubsystemController  {
 		 });
 		 return Result.OK(majorList);
 	 }
-	 /**
-	  * 子系统-专业子系统树--废弃
-	  *
-	  * @return
-	  */
-	 @ApiOperation(value="子系统-专业子系统树", notes="子系统-专业子系统树")
-	 @GetMapping(value = "/systemTreeList")
-	 public Result<?> systemTreeList(Integer level) {
-	 	 //查询专业
-		 LambdaQueryWrapper<CsMajor> majorWrapper = new LambdaQueryWrapper<CsMajor>().eq(CsMajor::getDelFlag, CommonConstant.DEL_FLAG_0);
-		 List<CsMajor> majorList = csMajorService.list(majorWrapper);
-		 //查询子系统
-		 LambdaQueryWrapper<CsSubsystem> systemWrapper = new LambdaQueryWrapper<CsSubsystem>().eq(CsSubsystem::getDelFlag, CommonConstant.DEL_FLAG_0);
-		 List<CsSubsystem> systemList = csSubsystemService.list(systemWrapper.orderByDesc(CsSubsystem::getCreateTime));
-		 List<CsSubsystem> newList = new ArrayList<>();
-		 majorList.forEach(major -> {
-			 CsSubsystem subSystem = new CsSubsystem();
-			 subSystem.setSystemName(major.getMajorName());
-			 subSystem.setSystemCode(major.getMajorCode());
-			 List sysList = systemList.stream().filter(system-> system.getMajorCode().equals(major.getMajorCode())).collect(Collectors.toList());
-			 subSystem.setChildren(sysList);
-			 if(level>2){
-
-			 }
-			 newList.add(subSystem);
-		 });
-		 return Result.OK(newList);
-	 }
-
+	 @AutoLog(value = "查询",operateType = 1,operateTypeAlias = "子系统列表查询",permissionUrl = "/subsystem/list")
 	 @ApiOperation(value="子系统列表查询", notes="子系统列表查询")
 	 @GetMapping(value = "/selectList")
 	 public Result<?> selectlist(
@@ -163,7 +135,7 @@ public class CsSubsystemController  {
 	 * @param csSubsystem
 	 * @return
 	 */
-	@AutoLog(value = "子系统添加")
+	@AutoLog(value = "添加",operateType = 2,operateTypeAlias = "添加子系统",permissionUrl = "/subsystem/list")
 	@ApiOperation(value="子系统添加", notes="子系统添加")
 	@PostMapping(value = "/add")
 	public Result<?> add(@RequestBody CsSubsystem csSubsystem) {
@@ -176,7 +148,7 @@ public class CsSubsystemController  {
 	 * @param csSubsystem
 	 * @return
 	 */
-	@AutoLog(value = "子系统编辑")
+	@AutoLog(value = "编辑",operateType = 3,operateTypeAlias = "编辑子系统",permissionUrl = "/subsystem/list")
 	@ApiOperation(value="子系统编辑", notes="子系统编辑")
 	@PutMapping(value = "/edit")
 	public Result<?> edit(@RequestBody CsSubsystem csSubsystem) {
@@ -189,7 +161,7 @@ public class CsSubsystemController  {
 	 * @param id
 	 * @return
 	 */
-	@AutoLog(value = "子系统通过id删除")
+	@AutoLog(value = "删除",operateType = 4,operateTypeAlias = "子系统通过id删除",permissionUrl = "/subsystem/list")
 	@ApiOperation(value="子系统通过id删除", notes="子系统通过id删除")
 	@DeleteMapping(value = "/delete")
 	public Result<?> delete(@RequestParam(name="id",required=true) String id) {
@@ -225,6 +197,7 @@ public class CsSubsystemController  {
 	 * @param id
 	 * @return
 	 */
+	@AutoLog(value = "查询",operateType = 1,operateTypeAlias = "子系统通过id查询",permissionUrl = "/subsystem/list")
 	@ApiOperation(value="子系统通过id查询", notes="子系统通过id查询")
 	@GetMapping(value = "/queryById")
 	public Result<?> queryById(@RequestParam(name="id",required=true) String id) {
@@ -240,6 +213,7 @@ public class CsSubsystemController  {
 	  * @param majorIds
 	  * @return
 	  */
+	 @AutoLog(value = "查询",operateType = 1,operateTypeAlias = "根据专业查子系统",permissionUrl = "/subsystem/list")
 	 @ApiOperation(value="根据专业查子系统", notes="根据专业查子系统")
 	 @GetMapping(value = "/getList")
 	 public Result<?> getList(@RequestParam(name="majorIds",required=true) List<String> majorIds) {

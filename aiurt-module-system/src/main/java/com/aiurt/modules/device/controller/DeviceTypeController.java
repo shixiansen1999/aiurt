@@ -64,7 +64,7 @@ public class DeviceTypeController extends BaseController<DeviceType, IDeviceType
 	  * @param
 	  * @return
 	  */
-	 @AutoLog(value = "设备类型左侧树")
+	 @AutoLog(value = "查询",operateType = 1,operateTypeAlias = "查询设备类型左侧树",permissionUrl = "/deviceType/list")
 	 @ApiOperation(value = "设备类型左侧树")
 	 @GetMapping(value = "/treeList")
 	 public Result<?> treeList(Integer level) {
@@ -109,8 +109,8 @@ public class DeviceTypeController extends BaseController<DeviceType, IDeviceType
 	 * @param req
 	 * @return
 	 */
-	@AutoLog(value = "设备分类列表结构查询")
-	@ApiOperation(value = "设备分类列表结构查询", notes = "设备分类列表结构查询")
+	@AutoLog(value = "查询",operateType = 1,operateTypeAlias = "查询物资分类列表左侧树",permissionUrl = "/material/materialBaseType/list")
+	@ApiOperation(value = "无分页物资分类列表左侧树", notes = "无分页物资分类列表左侧树查询")
 	@GetMapping(value = "/selectList")
 	public Result<List<DeviceType>> selectList(
 			@RequestParam(name = "majorCode", required = false) String majorCode,
@@ -169,6 +169,7 @@ public class DeviceTypeController extends BaseController<DeviceType, IDeviceType
 	 * @param
 	 * @return
 	 */
+	 @AutoLog(value = "查询",operateType = 1,operateTypeAlias = "查询设备类型",permissionUrl = "/deviceType/list")
 	@ApiOperation(value="设备类型分页列表查询", notes="设备类型分页列表查询")
 	@GetMapping(value = "/list")
 	public Result<IPage<DeviceType>> queryPageList(DeviceType deviceType,
@@ -248,7 +249,7 @@ public class DeviceTypeController extends BaseController<DeviceType, IDeviceType
 	 * @param deviceType
 	 * @return
 	 */
-	@AutoLog(value = "设备类型添加")
+	@AutoLog(value = "添加",operateType = 2,operateTypeAlias = "添加设备类型",permissionUrl = "/deviceType/list")
 	@ApiOperation(value="设备类型添加", notes="设备类型添加")
 	@PostMapping(value = "/add")
 	public Result<?> add(@RequestBody DeviceType deviceType) {
@@ -261,7 +262,7 @@ public class DeviceTypeController extends BaseController<DeviceType, IDeviceType
 	 * @param deviceType
 	 * @return
 	 */
-	@AutoLog(value = "设备类型编辑")
+	@AutoLog(value = "编辑",operateType = 3,operateTypeAlias = "编辑设备类型",permissionUrl = "/deviceType/list")
 	@ApiOperation(value="设备类型编辑", notes="设备类型编辑")
 	@RequestMapping(value = "/edit", method = {RequestMethod.PUT,RequestMethod.POST})
 	public Result<?> edit(@RequestBody DeviceType deviceType) {
@@ -274,7 +275,7 @@ public class DeviceTypeController extends BaseController<DeviceType, IDeviceType
 	 * @param id
 	 * @return
 	 */
-	@AutoLog(value = "设备类型通过id删除")
+	@AutoLog(value = "删除",operateType = 4,operateTypeAlias = "删除设备类型",permissionUrl = "/deviceType/list")
 	@ApiOperation(value="设备类型通过id删除", notes="设备类型通过id删除")
 	@DeleteMapping(value = "/delete")
 	public Result<String> delete(@RequestParam(name="id",required=true) String id) {
@@ -318,6 +319,7 @@ public class DeviceTypeController extends BaseController<DeviceType, IDeviceType
 	 * @param id
 	 * @return
 	 */
+	@AutoLog(value = "查询",operateType = 1,operateTypeAlias = "设备类型通过id查询",permissionUrl = "/deviceType/list")
 	@ApiOperation(value="设备类型通过id查询", notes="设备类型通过id查询")
 	@GetMapping(value = "/queryById")
 	public Result<DeviceType> queryById(@RequestParam(name="id",required=true) String id) {

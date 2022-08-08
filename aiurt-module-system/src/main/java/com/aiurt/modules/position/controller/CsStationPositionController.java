@@ -54,7 +54,7 @@ public class CsStationPositionController  {
 	  *
 	  * @return
 	  */
-	 @AutoLog(value = "位置管理树")
+	 @AutoLog(value = "查询",operateType = 1,operateTypeAlias = "查询位置管理树",permissionUrl = "/position/list")
 	 @ApiOperation(value="位置管理树", notes="位置管理树")
 	 @GetMapping(value = "/treeList")
 	 public Result<?> queryTreeList() {
@@ -124,6 +124,7 @@ public class CsStationPositionController  {
 	 * @param req
 	 * @return
 	 */
+	@AutoLog(value = "查询",operateType = 1,operateTypeAlias = "位置管理分页列表查询",permissionUrl = "/position/list")
 	@ApiOperation(value="位置管理分页列表查询", notes="位置管理分页列表查询")
 	@GetMapping(value = "/list")
 	public Result<?> queryPageList(CsStationPosition csStationPosition,
@@ -145,7 +146,7 @@ public class CsStationPositionController  {
 	 * @param csStationPosition
 	 * @return
 	 */
-	@AutoLog(value = "位置管理添加")
+	@AutoLog(value = "添加",operateType = 2,operateTypeAlias = "添加三级位置",permissionUrl = "/position/list")
 	@ApiOperation(value="位置管理添加", notes="位置管理添加")
 	@PostMapping(value = "/add")
 	public Result<?> add(@RequestBody CsStationPosition csStationPosition) {
@@ -158,7 +159,7 @@ public class CsStationPositionController  {
 	 * @param csStationPosition
 	 * @return
 	 */
-	@AutoLog(value = "位置管理编辑")
+	@AutoLog(value = "编辑",operateType = 3,operateTypeAlias = "编辑三级位置",permissionUrl = "/position/list")
 	@ApiOperation(value="位置管理编辑", notes="位置管理编辑")
 	@PutMapping(value = "/edit")
 	public Result<?> edit(@RequestBody CsStationPosition csStationPosition) {
@@ -171,7 +172,7 @@ public class CsStationPositionController  {
 	 * @param id
 	 * @return
 	 */
-	@AutoLog(value = "位置管理通过id删除")
+	@AutoLog(value = "删除",operateType = 4,operateTypeAlias = "删除三级位置",permissionUrl = "/position/list")
 	@ApiOperation(value="位置管理通过id删除", notes="位置管理通过id删除")
 	@DeleteMapping(value = "/delete")
 	public Result<?> delete(@RequestParam(name="id",required=true) String id) {
@@ -195,6 +196,7 @@ public class CsStationPositionController  {
 	 * @param id
 	 * @return
 	 */
+	@AutoLog(value = "查询",operateType = 1,operateTypeAlias = "通过id查询三级位置",permissionUrl = "/position/list")
 	@ApiOperation(value="位置管理通过id查询", notes="位置管理通过id查询")
 	@GetMapping(value = "/queryById")
 	public Result<?> queryById(@RequestParam(name="id",required=true) String id) {
@@ -209,7 +211,7 @@ public class CsStationPositionController  {
 	  *
 	  * @return
 	  */
-	 @AutoLog(value = "查询最大排序数")
+	 @AutoLog(value = "查询",operateType = 1,operateTypeAlias = "查询最大排序数",permissionUrl = "/position/list")
 	 @ApiOperation(value="查询最大排序数", notes="查询最大排序数")
 	 @GetMapping(value = "/getSort")
 	 public Result<?> getSort(String level) {

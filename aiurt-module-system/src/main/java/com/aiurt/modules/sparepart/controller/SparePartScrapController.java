@@ -55,7 +55,7 @@ public class SparePartScrapController extends BaseController<SparePartScrap, ISp
 	 * @param req
 	 * @return
 	 */
-	//@AutoLog(value = "spare_part_scrap-分页列表查询")
+	@AutoLog(value = "查询",operateType = 1,operateTypeAlias = "备件报废分页列表查询",permissionUrl = "/sparepart/sparePartScrap/list")
 	@ApiOperation(value="spare_part_scrap-分页列表查询", notes="spare_part_scrap-分页列表查询")
 	@GetMapping(value = "/list")
 	public Result<IPage<SparePartScrap>> queryPageList(SparePartScrap sparePartScrap,
@@ -75,7 +75,7 @@ public class SparePartScrapController extends BaseController<SparePartScrap, ISp
 	 * @param sparePartScrap
 	 * @return
 	 */
-	@AutoLog(value = "spare_part_scrap-添加")
+	@AutoLog(value = "添加",operateType = 2,operateTypeAlias = "添加备件报废",permissionUrl = "/sparepart/sparePartScrap/list")
 	@ApiOperation(value="spare_part_scrap-添加", notes="spare_part_scrap-添加")
 	@PostMapping(value = "/add")
 	public Result<String> add(@RequestBody SparePartScrap sparePartScrap) {
@@ -90,7 +90,7 @@ public class SparePartScrapController extends BaseController<SparePartScrap, ISp
 	 * @param sparePartScrap
 	 * @return
 	 */
-	@AutoLog(value = "spare_part_scrap-编辑")
+	@AutoLog(value = "编辑",operateType = 3,operateTypeAlias = "编辑备件报废",permissionUrl = "/sparepart/sparePartScrap/list")
 	@ApiOperation(value="spare_part_scrap-编辑", notes="spare_part_scrap-编辑")
 	@RequestMapping(value = "/edit", method = {RequestMethod.PUT,RequestMethod.POST})
 	public Result<?> edit(@RequestBody SparePartScrap sparePartScrap) {
@@ -103,7 +103,7 @@ public class SparePartScrapController extends BaseController<SparePartScrap, ISp
 	 * @param id
 	 * @return
 	 */
-	@AutoLog(value = "spare_part_scrap-通过id删除")
+	@AutoLog(value = "删除",operateType = 4,operateTypeAlias = "删除备件报废",permissionUrl = "/sparepart/sparePartScrap/list")
 	@ApiOperation(value="spare_part_scrap-通过id删除", notes="spare_part_scrap-通过id删除")
 	@DeleteMapping(value = "/delete")
 	public Result<String> delete(@RequestParam(name="id",required=true) String id) {
@@ -121,7 +121,7 @@ public class SparePartScrapController extends BaseController<SparePartScrap, ISp
 	 * @param id
 	 * @return
 	 */
-	//@AutoLog(value = "spare_part_scrap-通过id查询")
+	@AutoLog(value = "查询",operateType = 1,operateTypeAlias = "通过id查询备件报废",permissionUrl = "/sparepart/sparePartScrap/list")
 	@ApiOperation(value="spare_part_scrap-通过id查询", notes="spare_part_scrap-通过id查询")
 	@GetMapping(value = "/queryById")
 	public Result<SparePartScrap> queryById(@RequestParam(name="id",required=true) String id) {
@@ -138,6 +138,7 @@ public class SparePartScrapController extends BaseController<SparePartScrap, ISp
     * @param request
     * @param  ids
     */
+	@AutoLog(value = "导出",operateType = 6,operateTypeAlias = "导出备件报废",permissionUrl = "/sparepart/sparePartScrap/list")
     @RequestMapping(value = "/exportXls")
 	public ModelAndView exportXls(@ApiParam(value = "行数据ids" ,required = true) @RequestParam("ids") String ids, HttpServletRequest request, HttpServletResponse response) {
 		LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
@@ -157,17 +158,5 @@ public class SparePartScrapController extends BaseController<SparePartScrap, ISp
 		mv.addObject(NormalExcelConstants.DATA_LIST, list);
 		return mv;
 	}
-
-    /**
-      * 通过excel导入数据
-    *
-    * @param request
-    * @param response
-    * @return
-    */
-    @RequestMapping(value = "/importExcel", method = RequestMethod.POST)
-    public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) {
-        return super.importExcel(request, response, SparePartScrap.class);
-    }
 
 }

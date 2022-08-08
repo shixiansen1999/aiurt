@@ -80,7 +80,7 @@ public class SparePartApplyController extends BaseController<SparePartApply, ISp
 	 * @param req
 	 * @return
 	 */
-	//@AutoLog(value = "spare_part_apply-分页列表查询")
+    @AutoLog(value = "查询",operateType = 1,operateTypeAlias = "备件分页列表查询",permissionUrl = "/sparepart/sparePartApply/list")
 	@ApiOperation(value="spare_part_apply-分页列表查询", notes="spare_part_apply-分页列表查询")
 	@GetMapping(value = "/list")
 	public Result<IPage<SparePartApply>> queryPageList(SparePartApply sparePartApply,
@@ -107,6 +107,7 @@ public class SparePartApplyController extends BaseController<SparePartApply, ISp
 	  * @param
 	  * @return
 	  */
+     @AutoLog(value = "查询",operateType = 1,operateTypeAlias = "查询申领单号",permissionUrl = "/sparepart/sparePartApply/list")
 	 @ApiOperation(value = "生成申领单号", notes = "生成申领单号")
 	 @GetMapping(value = "/getCode")
 	 public Result<String> getCode() {
@@ -119,7 +120,7 @@ public class SparePartApplyController extends BaseController<SparePartApply, ISp
 	 * @param sparePartApply
 	 * @return
 	 */
-	@AutoLog(value = "spare_part_apply-添加")
+	@AutoLog(value = "添加",operateType = 2,operateTypeAlias = "添加备件申领",permissionUrl = "/sparepart/sparePartApply/list")
 	@ApiOperation(value="spare_part_apply-添加", notes="spare_part_apply-添加")
 	@PostMapping(value = "/add")
 	public Result<?> add(@RequestBody SparePartApply sparePartApply) {
@@ -132,7 +133,7 @@ public class SparePartApplyController extends BaseController<SparePartApply, ISp
 	 * @param sparePartApply
 	 * @return
 	 */
-	@AutoLog(value = "spare_part_apply-编辑")
+	@AutoLog(value = "编辑",operateType = 3,operateTypeAlias = "编辑备件申领",permissionUrl = "/sparepart/sparePartApply/list")
 	@ApiOperation(value="spare_part_apply-编辑", notes="spare_part_apply-编辑")
 	@RequestMapping(value = "/edit", method = {RequestMethod.PUT,RequestMethod.POST})
 	public Result<?> edit(@RequestBody SparePartApply sparePartApply) {
@@ -145,7 +146,7 @@ public class SparePartApplyController extends BaseController<SparePartApply, ISp
 	  * @param sparePartApply
 	  * @return
 	  */
-	 @AutoLog(value = "spare_part_apply-提交")
+	 @AutoLog(value = "提交",operateType = 3,operateTypeAlias = "提交备件申领",permissionUrl = "/sparepart/sparePartApply/list")
 	 @ApiOperation(value="spare_part_apply-提交", notes="spare_part_apply-提交")
 	 @RequestMapping(value = "/submit", method = {RequestMethod.PUT,RequestMethod.POST})
 	 public Result<?> submit(@RequestBody SparePartApply sparePartApply) {
@@ -158,7 +159,7 @@ public class SparePartApplyController extends BaseController<SparePartApply, ISp
 	 * @param id
 	 * @return
 	 */
-	@AutoLog(value = "spare_part_apply-通过id删除")
+	@AutoLog(value = "删除",operateType = 4,operateTypeAlias = "通过id删除备件申领",permissionUrl = "/sparepart/sparePartApply/list")
 	@ApiOperation(value="spare_part_apply-通过id删除", notes="spare_part_apply-通过id删除")
 	@DeleteMapping(value = "/delete")
 	public Result<String> delete(@RequestParam(name="id",required=true) String id) {
@@ -192,7 +193,7 @@ public class SparePartApplyController extends BaseController<SparePartApply, ISp
 	 * @param id
 	 * @return
 	 */
-	//@AutoLog(value = "spare_part_apply-通过id查询")
+    @AutoLog(value = "spare_part_apply-查询",operateType = 1,operateTypeAlias = "通过id查询备件申领",permissionUrl = "/sparepart/sparePartApply/list")
 	@ApiOperation(value="spare_part_apply-通过id查询", notes="spare_part_apply-通过id查询")
 	@GetMapping(value = "/queryById")
 	public Result<SparePartApply> queryById(@RequestParam(name="id",required=true) String id) {
@@ -209,6 +210,7 @@ public class SparePartApplyController extends BaseController<SparePartApply, ISp
 	  * @param request
 	  * @param response
 	  */
+     @AutoLog(value = "导出",operateType = 6,operateTypeAlias = "导出备件申领",permissionUrl = "/sparepart/sparePartApply/list")
 	 @ApiOperation("导出excel")
 	 @GetMapping(value = "/exportXls")
 	 public ModelAndView exportXls(@ApiParam(value = "行数据ids" ,required = true) @RequestParam("ids") String ids,HttpServletRequest request, HttpServletResponse response) {

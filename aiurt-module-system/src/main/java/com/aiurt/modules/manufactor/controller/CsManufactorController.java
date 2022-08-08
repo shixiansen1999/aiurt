@@ -53,6 +53,7 @@ public class CsManufactorController  {
 	 * @param req
 	 * @return
 	 */
+	@AutoLog(value = "查询",operateType = 1,operateTypeAlias = "厂商分页列表查询",permissionUrl = "/manufactor/list")
 	@ApiOperation(value="厂商信息分页列表查询", notes="厂商信息分页列表查询")
 	@GetMapping(value = "/list")
 	public Result<?> queryPageList(CsManufactor csManufactor,
@@ -64,7 +65,7 @@ public class CsManufactorController  {
 		IPage<CsManufactor> pageList = csManufactorService.page(page, queryWrapper.lambda().eq(CsManufactor::getDelFlag, CommonConstant.DEL_FLAG_0));
 		return Result.OK(pageList);
 	}
-
+	 @AutoLog(value = "查询",operateType = 1,operateTypeAlias = "厂商不分页列表查询",permissionUrl = "/manufactor/list")
 	 @ApiOperation(value="厂商信息列表查询", notes="厂商信息列表查询")
 	 @GetMapping(value = "/selectList")
 	 public Result<?> selectList(CsManufactor csManufactor,
@@ -80,7 +81,7 @@ public class CsManufactorController  {
 	 * @param csManufactor
 	 * @return
 	 */
-	@AutoLog(value = "厂商信息添加")
+	@AutoLog(value = "添加",operateType = 2,operateTypeAlias = "添加厂商信息添加",permissionUrl = "/manufactor/list")
 	@ApiOperation(value="厂商信息添加", notes="厂商信息添加")
 	@PostMapping(value = "/add")
 	public Result<?> add(@RequestBody CsManufactor csManufactor) {
@@ -93,7 +94,7 @@ public class CsManufactorController  {
 	 * @param csManufactor
 	 * @return
 	 */
-	@AutoLog(value = "厂商信息编辑")
+	@AutoLog(value = "编辑",operateType = 3,operateTypeAlias = "编辑厂商信息",permissionUrl = "/manufactor/list")
 	@ApiOperation(value="厂商信息编辑", notes="厂商信息编辑")
 	@PutMapping(value = "/edit")
 	public Result<?> edit(@RequestBody CsManufactor csManufactor) {
@@ -106,7 +107,7 @@ public class CsManufactorController  {
 	 * @param id
 	 * @return
 	 */
-	@AutoLog(value = "厂商信息通过id删除")
+	@AutoLog(value = "删除",operateType = 4,operateTypeAlias = "厂商信息通过id删除",permissionUrl = "/manufactor/list")
 	@ApiOperation(value="厂商信息通过id删除", notes="厂商信息通过id删除")
 	@DeleteMapping(value = "/delete")
 	public Result<?> delete(@RequestParam(name="id",required=true) String id) {
@@ -139,6 +140,7 @@ public class CsManufactorController  {
 	 * @param id
 	 * @return
 	 */
+	@AutoLog(value = "查询",operateType = 1,operateTypeAlias = "通过id查询厂商",permissionUrl = "/manufactor/list")
 	@ApiOperation(value="厂商信息通过id查询", notes="厂商信息通过id查询")
 	@GetMapping(value = "/queryById")
 	public Result<?> queryById(@RequestParam(name="id",required=true) String id) {

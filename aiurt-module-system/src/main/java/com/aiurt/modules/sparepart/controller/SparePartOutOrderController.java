@@ -54,7 +54,7 @@ public class SparePartOutOrderController extends BaseController<SparePartOutOrde
     * @param req
     * @return
     */
-   //@AutoLog(value = "spare_part_out_order-分页列表查询")
+   @AutoLog(value = "查询",operateType = 1,operateTypeAlias = "查询备件出库",permissionUrl = "/sparepart/sparePartOutOrder/list")
    @ApiOperation(value="spare_part_out_order-分页列表查询", notes="spare_part_out_order-分页列表查询")
    @GetMapping(value = "/list")
    public Result<IPage<SparePartOutOrder>> queryPageList(SparePartOutOrder sparePartOutOrder,
@@ -75,7 +75,7 @@ public class SparePartOutOrderController extends BaseController<SparePartOutOrde
 
      * @return
      */
-    @AutoLog(value = "备件管理-备件退库管理-登录人所选班组的已出库的备件")
+    @AutoLog(value = "查询",operateType = 1,operateTypeAlias = "登录人所选班组的已出库的备件",permissionUrl = "/sparepart/sparePartReturnOrder/list")
     @ApiOperation(value="备件管理-备件退库管理-登录人所选班组的已出库的备件", notes="备件管理-备件退库管理-登录人所选班组的已出库的备件")
     @GetMapping(value = "/getMaterialCode")
     public Result<?> getMaterialCode() {
@@ -91,7 +91,7 @@ public class SparePartOutOrderController extends BaseController<SparePartOutOrde
     * @param sparePartOutOrder
     * @return
     */
-   @AutoLog(value = "spare_part_out_order-添加")
+   @AutoLog(value = "添加",operateType = 2,operateTypeAlias = "添加备件出库",permissionUrl = "/sparepart/sparePartOutOrder/list")
    @ApiOperation(value="spare_part_out_order-添加", notes="spare_part_out_order-添加")
    @PostMapping(value = "/add")
    public Result<String> add(@RequestBody SparePartOutOrder sparePartOutOrder) {
@@ -107,7 +107,7 @@ public class SparePartOutOrderController extends BaseController<SparePartOutOrde
     * @param sparePartOutOrder
     * @return
     */
-   @AutoLog(value = "spare_part_out_order-编辑")
+   @AutoLog(value = "编辑",operateType = 3,operateTypeAlias = "编辑备件出库",permissionUrl = "/sparepart/sparePartOutOrder/list")
    @ApiOperation(value="spare_part_out_order-编辑", notes="spare_part_out_order-编辑")
    @RequestMapping(value = "/edit", method = {RequestMethod.PUT,RequestMethod.POST})
    public Result<String> edit(@RequestBody SparePartOutOrder sparePartOutOrder) {
@@ -131,7 +131,7 @@ public class SparePartOutOrderController extends BaseController<SparePartOutOrde
     * @param id
     * @return
     */
-   //@AutoLog(value = "spare_part_out_order-通过id查询")
+   @AutoLog(value = "查询",operateType = 1,operateTypeAlias = "通过id查询备件出库",permissionUrl = "/sparepart/sparePartOutOrder/list")
    @ApiOperation(value="spare_part_out_order-通过id查询", notes="spare_part_out_order-通过id查询")
    @GetMapping(value = "/queryById")
    public Result<SparePartOutOrder> queryById(@RequestParam(name="id",required=true) String id) {

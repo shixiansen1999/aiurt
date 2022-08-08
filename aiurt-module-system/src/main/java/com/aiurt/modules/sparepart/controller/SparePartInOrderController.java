@@ -50,7 +50,7 @@ public class SparePartInOrderController extends BaseController<SparePartInOrder,
 	 * @param req
 	 * @return
 	 */
-	//@AutoLog(value = "spare_part_in_order-分页列表查询")
+	@AutoLog(value = "查询",operateType = 1,operateTypeAlias = "查询备件入库",permissionUrl = "/sparepart/sparePartInOrder/list")
 	@ApiOperation(value="spare_part_in_order-分页列表查询", notes="spare_part_in_order-分页列表查询")
 	@GetMapping(value = "/list")
 	public Result<IPage<SparePartInOrder>> queryPageList(SparePartInOrder sparePartInOrder,
@@ -71,7 +71,7 @@ public class SparePartInOrderController extends BaseController<SparePartInOrder,
 	 * @param sparePartInOrder
 	 * @return
 	 */
-	@AutoLog(value = "spare_part_in_order-确认")
+	@AutoLog(value = "确认",operateType = 3,operateTypeAlias = "确认备件入库",permissionUrl = "/sparepart/sparePartInOrder/list")
 	@ApiOperation(value="spare_part_in_order-确认", notes="spare_part_in_order-确认")
 	@RequestMapping(value = "/edit", method = {RequestMethod.PUT,RequestMethod.POST})
 	public Result<?> edit(@RequestBody SparePartInOrder sparePartInOrder) {
@@ -84,7 +84,7 @@ public class SparePartInOrderController extends BaseController<SparePartInOrder,
 	 * @param list
 	 * @return
 	 */
-	@AutoLog(value = "spare_part_in_order-批量入库")
+	@AutoLog(value = "批量入库",operateType = 3,operateTypeAlias = "备件批量入库",permissionUrl = "/sparepart/sparePartInOrder/list")
 	@ApiOperation(value="spare_part_in_order-批量入库", notes="spare_part_in_order-批量入库")
 	@RequestMapping(value = "/batchStorage", method = {RequestMethod.PUT,RequestMethod.POST})
 	public Result<?> batchStorage(@RequestBody List<SparePartInOrder> list) {
@@ -97,7 +97,7 @@ public class SparePartInOrderController extends BaseController<SparePartInOrder,
 	 * @param id
 	 * @return
 	 */
-	//@AutoLog(value = "spare_part_in_order-通过id查询")
+	@AutoLog(value = "查询",operateType = 1,operateTypeAlias = "通过id查询备件入库",permissionUrl = "/sparepart/sparePartInOrder/list")
 	@ApiOperation(value="spare_part_in_order-通过id查询", notes="spare_part_in_order-通过id查询")
 	@GetMapping(value = "/queryById")
 	public Result<SparePartInOrder> queryById(@RequestParam(name="id",required=true) String id) {
@@ -114,6 +114,7 @@ public class SparePartInOrderController extends BaseController<SparePartInOrder,
 	 * @param request
 	 * @param ids
 	 */
+	@AutoLog(value = "导出",operateType = 6,operateTypeAlias = "导出备件入库",permissionUrl = "/sparepart/sparePartInOrder/list")
 	@RequestMapping(value = "/exportXls")
 	public ModelAndView exportXls(@ApiParam(value = "行数据ids" ,required = true) @RequestParam("ids") String ids, HttpServletRequest request, HttpServletResponse response) {
 		LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();

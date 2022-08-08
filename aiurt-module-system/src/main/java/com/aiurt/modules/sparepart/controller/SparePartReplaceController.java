@@ -44,7 +44,7 @@ public class SparePartReplaceController extends BaseController<SparePartReplace,
 	 * @param req
 	 * @return
 	 */
-	//@AutoLog(value = "spare_part_replace-分页列表查询")
+	@AutoLog(value = "查询",operateType = 1,operateTypeAlias = "备件更换记录分页列表查询",permissionUrl = "/sparepart/sparePartReplace/list")
 	@ApiOperation(value="spare_part_replace-分页列表查询", notes="spare_part_replace-分页列表查询")
 	@GetMapping(value = "/list")
 	public Result<IPage<SparePartReplace>> queryPageList(SparePartReplace sparePartReplace,
@@ -63,7 +63,7 @@ public class SparePartReplaceController extends BaseController<SparePartReplace,
 	 * @param sparePartReplace
 	 * @return
 	 */
-	@AutoLog(value = "spare_part_replace-添加")
+	@AutoLog(value = "添加",operateType = 2,operateTypeAlias = "添加备件更换记录",permissionUrl = "/sparepart/sparePartReplace/list")
 	@ApiOperation(value="spare_part_replace-添加", notes="spare_part_replace-添加")
 	@PostMapping(value = "/add")
 	public Result<String> add(@RequestBody SparePartReplace sparePartReplace) {
@@ -77,7 +77,7 @@ public class SparePartReplaceController extends BaseController<SparePartReplace,
 	 * @param sparePartReplace
 	 * @return
 	 */
-	@AutoLog(value = "spare_part_replace-编辑")
+	@AutoLog(value = "编辑",operateType = 3,operateTypeAlias = "编辑备件更换记录",permissionUrl = "/sparepart/sparePartReplace/list")
 	@ApiOperation(value="spare_part_replace-编辑", notes="spare_part_replace-编辑")
 	@RequestMapping(value = "/edit", method = {RequestMethod.PUT,RequestMethod.POST})
 	public Result<String> edit(@RequestBody SparePartReplace sparePartReplace) {
@@ -91,7 +91,7 @@ public class SparePartReplaceController extends BaseController<SparePartReplace,
 	 * @param id
 	 * @return
 	 */
-	@AutoLog(value = "spare_part_replace-通过id删除")
+	@AutoLog(value = "删除",operateType = 4,operateTypeAlias = "通过id删除备件更换记录",permissionUrl = "/sparepart/sparePartReplace/list")
 	@ApiOperation(value="spare_part_replace-通过id删除", notes="spare_part_replace-通过id删除")
 	@DeleteMapping(value = "/delete")
 	public Result<String> delete(@RequestParam(name="id",required=true) String id) {
@@ -99,19 +99,7 @@ public class SparePartReplaceController extends BaseController<SparePartReplace,
 		return Result.OK("删除成功!");
 	}
 
-	/**
-	 *  批量删除
-	 *
-	 * @param ids
-	 * @return
-	 */
-	@AutoLog(value = "spare_part_replace-批量删除")
-	@ApiOperation(value="spare_part_replace-批量删除", notes="spare_part_replace-批量删除")
-	@DeleteMapping(value = "/deleteBatch")
-	public Result<String> deleteBatch(@RequestParam(name="ids",required=true) String ids) {
-		this.sparePartReplaceService.removeByIds(Arrays.asList(ids.split(",")));
-		return Result.OK("批量删除成功!");
-	}
+
 
 	/**
 	 * 通过id查询
@@ -119,7 +107,7 @@ public class SparePartReplaceController extends BaseController<SparePartReplace,
 	 * @param id
 	 * @return
 	 */
-	//@AutoLog(value = "spare_part_replace-通过id查询")
+	@AutoLog(value = "查询",operateType = 1,operateTypeAlias = "通过id查询备件更换记录",permissionUrl = "/sparepart/sparePartReplace/list")
 	@ApiOperation(value="spare_part_replace-通过id查询", notes="spare_part_replace-通过id查询")
 	@GetMapping(value = "/queryById")
 	public Result<SparePartReplace> queryById(@RequestParam(name="id",required=true) String id) {
@@ -136,21 +124,10 @@ public class SparePartReplaceController extends BaseController<SparePartReplace,
     * @param request
     * @param sparePartReplace
     */
+	@AutoLog(value = "导出",operateType = 6,operateTypeAlias = "导出备件更换记录",permissionUrl = "/sparepart/sparePartReplace/list")
     @RequestMapping(value = "/exportXls")
     public ModelAndView exportXls(HttpServletRequest request, SparePartReplace sparePartReplace) {
         return super.exportXls(request, sparePartReplace, SparePartReplace.class, "spare_part_replace");
-    }
-
-    /**
-      * 通过excel导入数据
-    *
-    * @param request
-    * @param response
-    * @return
-    */
-    @RequestMapping(value = "/importExcel", method = RequestMethod.POST)
-    public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) {
-        return super.importExcel(request, response, SparePartReplace.class);
     }
 
 }

@@ -44,26 +44,6 @@ public class CsStationController extends BaseController<CsStation, ICsStationSer
 	private ICsStationPositionService csStationPositionService;
 	 @Autowired
 	 private IDeviceService deviceService;
-	/**
-	 * 分页列表查询
-	 *
-	 * @param csStation
-	 * @param pageNo
-	 * @param pageSize
-	 * @param req
-	 * @return
-	 */
-	@ApiOperation(value="cs_station-分页列表查询", notes="cs_station-分页列表查询")
-	@GetMapping(value = "/list")
-	public Result<IPage<CsStation>> queryPageList(CsStation csStation,
-                                                  @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
-                                                  @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
-                                                  HttpServletRequest req) {
-		QueryWrapper<CsStation> queryWrapper = QueryGenerator.initQueryWrapper(csStation, req.getParameterMap());
-		Page<CsStation> page = new Page<CsStation>(pageNo, pageSize);
-		IPage<CsStation> pageList = csStationService.page(page, queryWrapper.lambda().eq(CsStation::getDelFlag, CommonConstant.DEL_FLAG_0));
-		return Result.OK(pageList);
-	}
 
 	/**
 	 *   添加
@@ -71,7 +51,7 @@ public class CsStationController extends BaseController<CsStation, ICsStationSer
 	 * @param position
 	 * @return
 	 */
-	@AutoLog(value = "cs_station-添加")
+	@AutoLog(value = "添加",operateType = 2,operateTypeAlias = "添加二级位置",permissionUrl = "/position/list")
 	@ApiOperation(value="cs_station-添加", notes="cs_station-添加")
 	@PostMapping(value = "/add")
 	public Result<?> add(@RequestBody CsStationPosition position) {
@@ -85,7 +65,7 @@ public class CsStationController extends BaseController<CsStation, ICsStationSer
 	 * @param position
 	 * @return
 	 */
-	@AutoLog(value = "cs_station-编辑")
+	@AutoLog(value = "编辑",operateType = 3,operateTypeAlias = "编辑二级位置",permissionUrl = "/position/list")
 	@ApiOperation(value="cs_station-编辑", notes="cs_station-编辑")
 	@RequestMapping(value = "/edit", method = {RequestMethod.PUT,RequestMethod.POST})
 	public Result<?> edit(@RequestBody CsStationPosition position) {
@@ -117,7 +97,7 @@ public class CsStationController extends BaseController<CsStation, ICsStationSer
 	 * @param id
 	 * @return
 	 */
-	@AutoLog(value = "cs_station-通过id删除")
+	@AutoLog(value = "删除",operateType = 4,operateTypeAlias = "通过id删除二级位置",permissionUrl = "/position/list")
 	@ApiOperation(value="cs_station-通过id删除", notes="cs_station-通过id删除")
 	@DeleteMapping(value = "/delete")
 	public Result<String> delete(@RequestParam(name="id",required=true) String id) {
@@ -149,6 +129,7 @@ public class CsStationController extends BaseController<CsStation, ICsStationSer
 	 * @param id
 	 * @return
 	 */
+	@AutoLog(value = "查询",operateType = 1,operateTypeAlias = "通过id查询二级位置",permissionUrl = "/position/list")
 	@ApiOperation(value="cs_station-通过id查询", notes="cs_station-通过id查询")
 	@GetMapping(value = "/queryById")
 	public Result<CsStation> queryById(@RequestParam(name="id",required=true) String id) {
@@ -164,6 +145,7 @@ public class CsStationController extends BaseController<CsStation, ICsStationSer
 	  * @param
 	  * @return
 	  */
+	 @AutoLog(value = "查询",operateType = 1,operateTypeAlias = "站所列表查询",permissionUrl = "/position/list")
 	 @ApiOperation(value="站所列表查询", notes="站所列表查询")
 	 @GetMapping(value = "/selectList")
 	 public Result<?> selectList() {
