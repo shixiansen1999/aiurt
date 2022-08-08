@@ -72,7 +72,7 @@
         WHERE
         c.plan_id = pp.id
             and c.del_flag=0
-        and csm.del_flag) AS professionCode,
+        and csm.del_flag=0) AS professionCode,
         ( SELECT
         GROUP_CONCAT(DISTINCT csm.major_name)
         FROM
@@ -81,7 +81,7 @@
         WHERE
         c.plan_id = pp.id
         and c.del_flag=0
-            and csm.del_flag) AS professionName,
+            and csm.del_flag =0) AS professionName,
         ( SELECT
         GROUP_CONCAT(DISTINCT c.subsystem_code)
         FROM
@@ -90,7 +90,7 @@
         WHERE
         c.plan_id = pp.id
         and c.del_flag=0
-        and css.del_flag) AS subsystemCode,
+        and css.del_flag=0) AS subsystemCode,
         ( SELECT
         GROUP_CONCAT(DISTINCT css.system_name)
         FROM
@@ -99,7 +99,7 @@
         WHERE
         c.plan_id = pp.id
         and c.del_flag=0
-        and css.del_flag) AS subsystemName
+        and css.del_flag =0) AS subsystemName
         FROM patrol_plan pp
         WHERE pp.del_flag = 0
             ) AS abc
@@ -264,9 +264,9 @@
         t2.`name` as standardName,
         t2.`code` as standardCode
         FROM
-        patrol_plan t1
-        LEFT JOIN patrol_plan_standard t3 ON t1.id=t3.plan_id
-        LEFT JOIN patrol_standard t2 ON t2.`code`=t3.standard_code
+        patrol_standard t2
+        LEFT JOIN patrol_plan_standard t3 ON t2.`code`=t3.standard_code
+        LEFT JOIN  patrol_plan t1 ON t1.id=t3.plan_id
         <where>
             t1.id = #{planId}
             <if test="majorCode!=null">
