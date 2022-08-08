@@ -66,8 +66,6 @@ public class FlowElementUtil {
             }
         }
 
-        // Map<String, List<ExtensionElement>> extensionElements = userTask.getExtensionElements();
-
         return userTask;
     }
 
@@ -128,14 +126,9 @@ public class FlowElementUtil {
     public FlowElement getStartFlowNodeByDefinitionId(String processDefinitionId) {
         BpmnModel bpmnModel = repositoryService.getBpmnModel(processDefinitionId);
 
-        Collection<FlowElement> flowElements = null;
-        FlowElement startFlowElement = null;
-        for (FlowElement flowElement : flowElements) {
-            if (flowElement instanceof StartEvent) {
-                startFlowElement = flowElement;
-            }
-        }
-        return startFlowElement;
+        StartEvent startEvent = bpmnModel.getMainProcess().findFlowElementsOfType(StartEvent.class, false).get(0);
+
+        return startEvent;
     }
 
 
@@ -175,6 +168,33 @@ public class FlowElementUtil {
         return null;
     }
 
+    /**
+     * 根据流程定义id以及节点id 获取流程元素节点
+     * @param processDefinitionId
+     * @param flowElementId
+     * @return
+     */
+    public FlowElement getFlowElement(String processDefinitionId, String flowElementId) {
+        BpmnModel bpmnModel = repositoryService.getBpmnModel(processDefinitionId);
+        if (Objects.isNull(bpmnModel)) {
+            throw new AiurtBootException("");
+        }
+        FlowElement flowElement = bpmnModel.getMainProcess().getFlowElement(flowElementId);
 
+        return flowElement;
+    }
 
+    /**
+     * 根据流程定义id，获取结束节点
+     * @param processDefinitionId
+     * @return
+     */
+    public EndEvent getEndEvent(String processDefinitionId) {
+
+        BpmnModel bpmnModel = repositoryService.getBpmnModel(processDefinitionId);
+
+        EndEvent endEvent = bpmnModel.getMainProcess().findFlowElementsOfType(EndEvent.class, false).get(0);
+
+        return endEvent;
+    }
 }

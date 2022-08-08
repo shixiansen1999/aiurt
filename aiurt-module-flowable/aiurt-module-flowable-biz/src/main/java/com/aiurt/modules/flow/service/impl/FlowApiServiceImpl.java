@@ -818,4 +818,44 @@ public class FlowApiServiceImpl implements FlowApiService {
         pages.setTotal(count);
         return pages;
     }
+
+
+    /**
+     * 终止流程
+     * @param instanceDTO
+     */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void stopProcessInstance(StopProcessInstanceDTO instanceDTO) {
+        List<Task> list = taskService.createTaskQuery().processDefinitionId(instanceDTO.getProcessInstanceId()).active().list();
+
+        if (CollUtil.isEmpty(list)) {
+            throw new AiurtBootException("当前流程尚未开始或已经结束！");
+        }
+
+        for (Task task : list) {
+            // 流程定义id
+            String processDefinitionId = task.getProcessDefinitionId();
+            // 任务定义id
+            String taskDefinitionKey = task.getTaskDefinitionKey();
+            // 结束节点
+            EndEvent endEvent = flowElementUtil.getEndEvent(processDefinitionId);
+
+            // 流程跳转, flowable 已提供
+            runtimeService.createChangeActivityStateBuilder()
+                    .processInstanceId(instanceDTO.getProcessInstanceId())
+                    .moveActivityIdTo(taskDefinitionKey, endEvent.getId())
+                    .changeState();
+        }
+    }
+
+    /**
+     * 删除流程
+     * @param processInstanceId
+     */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void deleteProcessInstance(String processInstanceId) {
+        historyService.deleteHistoricProcessInstance(processInstanceId);
+    }
 }

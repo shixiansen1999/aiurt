@@ -21,6 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.StreamUtils;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -215,6 +216,29 @@ public class FlowOperationController {
         reqDTO.setLoginName(loginUser.getUsername());
         IPage<HistoricProcessInstanceDTO> result = flowApiService.listAllHistoricProcessInstance(reqDTO);
         return Result.OK(result);
+    }
+
+    /**
+     * 终止流程
+     * @param instanceDTO
+     * @return
+     */
+    @ApiOperation("终止流程")
+    @PutMapping("stopProcessInstance")
+    public Result<?> stopProcessInstance(@Valid @RequestBody StopProcessInstanceDTO instanceDTO) {
+        flowApiService.stopProcessInstance(instanceDTO);
+        return Result.OK("终止流程成功");
+    }
+
+    /**
+     * 删除流程
+     * @return
+     */
+    @DeleteMapping("/deleteProcessInstance")
+    @ApiOperation("删除流程")
+    public Result<?> deleteProcessInstance(@RequestParam(value = "processInstanceId") String processInstanceId) {
+        flowApiService.deleteProcessInstance(processInstanceId);
+        return Result.OK("终止流程成功");
     }
 
 

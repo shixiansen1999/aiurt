@@ -180,4 +180,16 @@ public interface FlowApiService {
      * @return
      */
     IPage<HistoricProcessInstanceDTO> listAllHistoricProcessInstance(HistoricProcessInstanceReqDTO reqDTO);
+
+    /**
+     * 终止流程
+     * @param instanceDTO
+     */
+    void stopProcessInstance(StopProcessInstanceDTO instanceDTO);
+
+    /**
+     * 删除流程
+     * @param processInstanceId
+     */
+    void deleteProcessInstance(String processInstanceId);
 }
