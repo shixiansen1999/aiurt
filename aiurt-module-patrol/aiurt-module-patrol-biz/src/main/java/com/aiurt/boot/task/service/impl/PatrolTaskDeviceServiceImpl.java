@@ -164,7 +164,7 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
                 }
             }
             List<PatrolTaskFault> faultList = patrolTaskFaultMapper.selectList(new LambdaQueryWrapper<PatrolTaskFault>().eq(PatrolTaskFault::getPatrolNumber, e.getPatrolNumber()));
-            List<String> collect = faultList.stream().map(PatrolTaskFault::getId).collect(Collectors.toList());
+            List<String> collect = faultList.stream().map(PatrolTaskFault::getFaultCode).collect(Collectors.toList());
             e.setFaultList(collect);
             PatrolStandard taskStandardName = patrolTaskDeviceMapper.getStandardName(e.getId());
             e.setSubsystemCode(taskStandardName.getSubsystemCode());
