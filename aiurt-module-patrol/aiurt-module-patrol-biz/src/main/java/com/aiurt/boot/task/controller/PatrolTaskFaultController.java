@@ -2,20 +2,12 @@ package com.aiurt.boot.task.controller;
 
 import com.aiurt.boot.task.entity.PatrolTaskFault;
 import com.aiurt.boot.task.service.IPatrolTaskFaultService;
-import com.aiurt.common.aspect.annotation.AutoLog;
-import com.aiurt.common.constant.enums.ModuleType;
 import com.aiurt.common.system.base.controller.BaseController;
 import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
-import org.jeecg.common.api.vo.Result;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
-import javax.servlet.http.HttpServletRequest;
 
 /**
  * @Description: patrol_task_fault
@@ -25,7 +17,7 @@ import javax.servlet.http.HttpServletRequest;
  */
 @Api(tags="patrol_task_fault")
 @RestController
-@RequestMapping("/task/patrolTaskFault")
+@RequestMapping("/patrolTaskFault")
 @Slf4j
 public class PatrolTaskFaultController extends BaseController<PatrolTaskFault, IPatrolTaskFaultService> {
 	@Autowired
@@ -59,25 +51,6 @@ public class PatrolTaskFaultController extends BaseController<PatrolTaskFault, I
 	 * @param patrolTaskFault
 	 * @return
 	 */
-	 /**
-	  * app巡检-检查项-故障单号-保存
-	  * @param id
-	  * @param faultCode
-	  * @param req
-	  * @return
-	  */
-	 @AutoLog(value = "app巡检-检查项-故障单号-保存", operateType = 3, operateTypeAlias = "修改", module = ModuleType.PATROL,permissionUrl = "/Inspection/pool")
-	 @ApiOperation(value = "app巡检-检查项-故障单号-保存", notes = "app巡检-检查项-故障单号-保存")
-	 @PostMapping(value = "/patrolTaskCustomPosition")
-	 public Result<?> patrolTaskCustomPosition(@RequestParam(name ="id")String id,
-											   @RequestParam(name="faultCode") String faultCode, HttpServletRequest req) {
-	 	 PatrolTaskFault fault = new PatrolTaskFault();
-	 	 fault.setPatrolNumber(id);
-	 	 fault.setFaultCode(faultCode);
-	 	 fault.setDelFlag(0);
-		 patrolTaskFaultService.save(fault);
-		 return Result.OK("故障单号保存成功");
-	 }
 //	@AutoLog(value = "patrol_task_fault-添加")
 //	@ApiOperation(value="patrol_task_fault-添加", notes="patrol_task_fault-添加")
 //	@PostMapping(value = "/add")
