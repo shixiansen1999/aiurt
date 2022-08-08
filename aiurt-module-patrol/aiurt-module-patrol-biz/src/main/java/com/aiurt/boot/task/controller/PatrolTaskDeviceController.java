@@ -115,7 +115,8 @@ public class PatrolTaskDeviceController extends BaseController<PatrolTaskDevice,
 	public Result<?> patrolTaskCustomPosition(@RequestParam(name ="id")String id,
 											  @RequestParam(name="faultCode") String faultCode, HttpServletRequest req) {
 		PatrolTaskFault fault = new PatrolTaskFault();
-		fault.setPatrolNumber(id);
+		PatrolTaskDevice taskDevice = patrolTaskDeviceService.getById(id);
+		fault.setPatrolNumber(taskDevice.getPatrolNumber());
 		fault.setFaultCode(faultCode);
 		fault.setDelFlag(0);
 		patrolTaskFaultService.save(fault);
