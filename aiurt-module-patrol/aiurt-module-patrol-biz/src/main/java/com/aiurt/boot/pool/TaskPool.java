@@ -261,14 +261,17 @@ public class TaskPool implements Job {
                 // 与设备相关，根据设备和标准生成巡检单数据
                 // 根据计划ID获取计划设备关联表记录
                 QueryWrapper<PatrolPlanDevice> planDeviceWrapper = new QueryWrapper<>();
-                planDeviceWrapper.lambda().eq(PatrolPlanDevice::getPlanId, plan.getId());
+                planDeviceWrapper.lambda()
+                        // 对应计划的id
+                        .eq(PatrolPlanDevice::getPlanId, plan.getId())
+                        // 对应计划标准下的设备
+                        .eq(PatrolPlanDevice::getPlanStandardId, l.getId());
                 List<PatrolPlanDevice> planDeviceList = patrolPlanDeviceService.list(planDeviceWrapper);
                 // 遍历设备列表信息
                 Optional.ofNullable(planDeviceList).orElseGet(Collections::emptyList)
                         .stream().forEach(
                                 // ps 表示巡检计划标准对象
                                 ps -> {
-
                                     // 生成巡检单数据
                                     PatrolTaskDevice patrolTaskDevice = new PatrolTaskDevice();
                                     // 任务表ID

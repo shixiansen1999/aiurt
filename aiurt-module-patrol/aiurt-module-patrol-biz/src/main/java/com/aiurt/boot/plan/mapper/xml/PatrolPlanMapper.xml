@@ -9,13 +9,14 @@
             LEFT JOIN patrol_plan_station e on e.plan_code = a.`code`
             LEFT JOIN patrol_plan_strategy f on f.plan_id = a.id
             )
-        SET a.del_flag = 1 ,b.del_flag=1,c.del_flag=1,d.del_flag=1,e.del_flag=1,f.del_flag=1
-         where a.id= #{id}
+        SET a.del_flag = 1, b.del_flag=1, c.del_flag=1, d.del_flag=1, e.del_flag=1, f.del_flag=1
+        where a.id= #{id}
     </update>
 
     <delete id="deleteIdorCode">
 
-        DELETE  a.*,b.*,c.*,d.*,e.*,f.*
+        DELETE
+        a.*,b.*,c.*,d.*,e.*,f.*
         from
             patrol_plan AS a
                 LEFT JOIN patrol_plan_device b on a.id=b.plan_id
@@ -25,7 +26,8 @@
                 LEFT JOIN patrol_plan_strategy f on a.id =f.plan_id
         WHERE
 
-            a.id=#{id}
+            a.id=
+        #{id}
 
 
     </delete>
@@ -33,7 +35,7 @@
     <select id="list" resultType="com.aiurt.boot.plan.dto.PatrolPlanDto">
         SELECT * FROM
         ( SELECT pp.*,
-                 ( SELECT
+        ( SELECT
         GROUP_CONCAT(e.depart_name)
         FROM patrol_plan_organization PPO
         LEFT JOIN sys_depart e ON PPO.organization_code = e.org_code
@@ -71,7 +73,7 @@
         LEFT JOIN cs_major csm ON c.profession_code = csm.major_code
         WHERE
         c.plan_id = pp.id
-            and c.del_flag=0
+        and c.del_flag=0
         and csm.del_flag) AS professionCode,
         ( SELECT
         GROUP_CONCAT(DISTINCT csm.major_name)
@@ -81,7 +83,7 @@
         WHERE
         c.plan_id = pp.id
         and c.del_flag=0
-            and csm.del_flag) AS professionName,
+        and csm.del_flag) AS professionName,
         ( SELECT
         GROUP_CONCAT(DISTINCT c.subsystem_code)
         FROM
@@ -102,17 +104,17 @@
         and css.del_flag) AS subsystemName
         FROM patrol_plan pp
         WHERE pp.del_flag = 0
-            ) AS abc
+        ) AS abc
         WHERE
         1 = 1
         <if test="patrolPlan.name !=null ">
             AND name LIKE CONCAT ('%', #{patrolPlan.name}, '%')
         </if>
         <if test="patrolPlan.professionCode !=null ">
-            AND professionCode  LIKE CONCAT ('%', #{patrolPlan.professionCode}, '%')
+            AND professionCode LIKE CONCAT ('%', #{patrolPlan.professionCode}, '%')
         </if>
         <if test="patrolPlan.subsystemCode !=null ">
-            AND subsystemCode  LIKE CONCAT ('%', #{patrolPlan.subsystemCode}, '%')
+            AND subsystemCode LIKE CONCAT ('%', #{patrolPlan.subsystemCode}, '%')
         </if>
         <if test="patrolPlan.code !=null ">
             AND code LIKE CONCAT ('%', #{patrolPlan.code}, '%')
@@ -124,23 +126,22 @@
             AND mechanismCode LIKE CONCAT ('%', #{patrolPlan.mechanismCode}, '%')
         </if>
         <if test="patrolPlan.siteCode!=null ">
-            AND siteCode  LIKE CONCAT ('%', #{patrolPlan.siteCode}, '%')
+            AND siteCode LIKE CONCAT ('%', #{patrolPlan.siteCode}, '%')
         </if>
         ORDER BY create_time DESC
     </select>
     <select id="getMajorInfoByPlanId" resultType="java.lang.String">
-      SELECT
+        SELECT
         DISTINCT
         cm.major_name
         FROM
         patrol_task_standard pps
-    JOIN
-        cs_major cm
-            ON pps.profession_code = cm.major_code
+        JOIN cs_major cm ON pps.profession_code = cm.major_code
+        AND cm.del_flag = 0
         WHERE
         pps.del_flag=0
         <if test="planId != null and planId != ''">
-            and pps.task_id  = #{planId}
+            and pps.task_id = #{planId}
         </if>
 
     </select>
@@ -151,6 +152,7 @@
         FROM
         patrol_task_standard pps
         JOIN cs_subsystem cs ON pps.subsystem_code = cs.system_code
+        AND cs.del_flag = 0
         WHERE
         pps.del_flag = 0
         <if test="planId != null and planId != ''">
@@ -159,54 +161,77 @@
 
     </select>
     <select id="selectId" resultType="com.aiurt.boot.plan.dto.PatrolPlanDto">
-        SELECT a.*,( SELECT GROUP_CONCAT(e.depart_name) FROM patrol_plan_organization PPO
-          LEFT JOIN sys_depart e ON PPO.organization_code = e.org_code  WHERE  PPO.plan_code =#{code}
-                    AND PPO.del_flag = 0   ) AS mechanismName,
-               ( SELECT GROUP_CONCAT(f.station_name) FROM  patrol_plan_station d
-                LEFT JOIN cs_station f ON d.station_code = f.station_code
-                 WHERE  d.plan_code =#{code} AND d.del_flag = 0 ) AS siteName,
-               ( SELECT GROUP_CONCAT(e.org_code) FROM patrol_plan_organization PPO
-             LEFT JOIN sys_depart e ON PPO.organization_code = e.org_code
-               WHERE PPO.plan_code=#{code} AND PPO.del_flag = 0) AS mechanismCode,
-               ( SELECT GROUP_CONCAT(f.station_code) FROM  patrol_plan_station d
-                     LEFT JOIN cs_station f ON d.station_code = f.station_code
-                 WHERE d.plan_code =#{code} AND d.del_flag = 0 ) AS siteCode,
-               ( SELECT GROUP_CONCAT(d.id) FROM  patrol_standard d
-                LEFT JOIN patrol_plan_standard c on d.`code` =c.standard_code
-                 WHERE c.plan_id =#{id} AND d.del_flag = 0 ) AS ids,
-               b.type as strategyType,b.start_time as strategyStartTime,b.end_time as strategyEndTime
+        SELECT a.*,
+               (SELECT GROUP_CONCAT(e.depart_name)
+                FROM patrol_plan_organization PPO
+                         LEFT JOIN sys_depart e ON PPO.organization_code = e.org_code
+                WHERE PPO.plan_code = #{code}
+                  AND PPO.del_flag = 0) AS mechanismName,
+               (SELECT GROUP_CONCAT(f.station_name)
+                FROM patrol_plan_station d
+                         LEFT JOIN cs_station f ON d.station_code = f.station_code
+                WHERE d.plan_code = #{code}
+                  AND d.del_flag = 0)   AS siteName,
+               (SELECT GROUP_CONCAT(e.org_code)
+                FROM patrol_plan_organization PPO
+                         LEFT JOIN sys_depart e ON PPO.organization_code = e.org_code
+                WHERE PPO.plan_code = #{code}
+                  AND PPO.del_flag = 0) AS mechanismCode,
+               (SELECT GROUP_CONCAT(f.station_code)
+                FROM patrol_plan_station d
+                         LEFT JOIN cs_station f ON d.station_code = f.station_code
+                WHERE d.plan_code = #{code}
+                  AND d.del_flag = 0)   AS siteCode,
+               (SELECT GROUP_CONCAT(d.id)
+                FROM patrol_standard d
+                         LEFT JOIN patrol_plan_standard c on d.`code` = c.standard_code
+                WHERE c.plan_id = #{id}
+                  AND d.del_flag = 0)   AS ids,
+               b.type                   as strategyType,
+               b.start_time             as strategyStartTime,
+               b.end_time               as strategyEndTime
         FROM patrol_plan a
-                 LEFT JOIN patrol_plan_strategy b on a.id= b.plan_id AND b.del_flag=0
-        WHERE
-            a.del_flag=0
-          and a.id = #{id}
-        LIMIT 1
+                 LEFT JOIN patrol_plan_strategy b on a.id = b.plan_id AND b.del_flag = 0
+        WHERE a.del_flag = 0
+          and a.id = #{id} LIMIT 1
     </select>
     <select id="selectByCode" resultType="com.aiurt.boot.plan.entity.PatrolPlan">
-        select * from  patrol_plan where patrol_plan.code =#{code}
+        select *
+        from patrol_plan
+        where patrol_plan.code = #{code}
     </select>
     <select id="querySite" resultType="com.aiurt.boot.plan.dto.QuerySiteDto">
-        select cs_station.station_name as siteName,cs_station.station_code as siteCode from cs_station where 1=1
+        select cs_station.station_name as siteName, cs_station.station_code as siteCode
+        from cs_station
+        where 1 = 1
     </select>
     <select id="byCode" resultType="java.lang.String">
         select patrol_plan_standard.id
         from patrol_plan_standard
-        where patrol_plan_standard.standard_code=#{planStandardCode} and patrol_plan_standard.plan_id=#{planId}
-       and patrol_plan_standard.del_flag=0
+        where patrol_plan_standard.standard_code = #{planStandardCode}
+          and patrol_plan_standard.plan_id = #{planId}
+          and patrol_plan_standard.del_flag = 0
     </select>
     <select id="viewDetails" resultType="com.aiurt.modules.device.entity.Device">
-        SELECT a.* FROM device a
-                            LEFT JOIN patrol_plan_device b on a.`code`=b.device_code
-                            LEFT JOIN patrol_plan_standard c ON b.plan_standard_id =c.id
-        WHERE c.standard_code= #{standardCode} and   b.plan_id =#{planId}
+        SELECT a.*
+        FROM device a
+                 LEFT JOIN patrol_plan_device b on a.`code` = b.device_code
+                 LEFT JOIN patrol_plan_standard c ON b.plan_standard_id = c.id
+        WHERE c.standard_code = #{standardCode}
+          and b.plan_id = #{planId}
     </select>
     <select id="selectWeek" resultType="java.lang.Integer">
-     SELECT d.`week` FROM  patrol_plan_strategy d
-          where d.plan_id=#{id} and d.del_flag=0 and d.`week` is not null
+        SELECT d.`week`
+        FROM patrol_plan_strategy d
+        where d.plan_id = #{id}
+          and d.del_flag = 0
+          and d.`week` is not null
     </select>
     <select id="selectTime" resultType="java.lang.Integer">
-         SELECT d.time FROM  patrol_plan_strategy d
-          where d.plan_id=#{id} and d.del_flag=0
+        SELECT d.time
+        FROM patrol_plan_strategy d
+        where d.plan_id = #{id}
+          and d.del_flag = 0
     </select>
     <select id="selectCodeList" resultType="com.aiurt.boot.plan.dto.PatrolPlanDto">
         SELECT
@@ -231,17 +256,17 @@
     </select>
     <select id="translateSubsystem" resultType="com.aiurt.boot.task.dto.SubsystemDTO">
         select
-            system_name  as subsystemName,
-            system_code as subsystemCode
+        system_name as subsystemName,
+        system_code as subsystemCode
         from cs_subsystem
         where
-            del_flag = 0
-          and major_code = #{majorCode}
+        del_flag = 0
+        and major_code = #{majorCode}
         <if test="systemCode.size()>0">
-        and system_code in
-        <foreach item="systemCode" collection="systemCode" separator="," open="(" close=")" index="">
-            #{systemCode}
-        </foreach>
+            and system_code in
+            <foreach item="systemCode" collection="systemCode" separator="," open="(" close=")" index="">
+                #{systemCode}
+            </foreach>
         </if>
     </select>
     <select id="translateMajor" resultType="com.aiurt.boot.task.dto.MajorDTO">
@@ -250,13 +275,13 @@
         major_code as majorCode
         from cs_major
         where
-            del_flag = 0
-            <if test="list.size()>0">
-                and major_code in
-                <foreach item="item" collection="list" separator="," open="(" close=")" index="">
-                    #{item}
-                </foreach>
-            </if>
+        del_flag = 0
+        <if test="list.size()>0">
+            and major_code in
+            <foreach item="item" collection="list" separator="," open="(" close=")" index="">
+                #{item}
+            </foreach>
+        </if>
     </select>
     <select id="selectStandardList" resultType="com.aiurt.boot.plan.dto.StandardDTO">
         SELECT
@@ -281,12 +306,12 @@
         SELECT *
         FROM device a
         WHERE
-            a.del_flag =0
+        a.del_flag =0
         <if test="siteCodes.size()>0">
-        AND a.station_code in
-        <foreach item="siteCodes" collection="siteCodes" separator="," open="(" close=")" index="">
-            #{siteCodes}
-        </foreach>
+            AND a.station_code in
+            <foreach item="siteCodes" collection="siteCodes" separator="," open="(" close=")" index="">
+                #{siteCodes}
+            </foreach>
         </if>
         <if test="majorCode!=null">
             AND a.major_code = #{majorCode}
