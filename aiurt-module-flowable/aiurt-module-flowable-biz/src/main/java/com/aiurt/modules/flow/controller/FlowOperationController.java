@@ -11,10 +11,12 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.shiro.SecurityUtils;
 import org.flowable.bpmn.converter.BpmnXMLConverter;
 import org.flowable.bpmn.model.BpmnModel;
 import org.flowable.engine.runtime.ProcessInstance;
 import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.StreamUtils;
 import org.springframework.web.bind.annotation.*;
@@ -192,23 +194,27 @@ public class FlowOperationController {
     }
 
     /**
-     * 流程实例
+     * 流程实例, 所有历史流程数据。
      * @return
      */
     @PostMapping("/listAllHistoricProcessInstance")
     @ApiOperation("流程实例")
-    public Result<IPage<HistoricProcessInstanceDTO>> listAllHistoricProcessInstance() {
-        return Result.OK();
+    public Result<IPage<HistoricProcessInstanceDTO>> listAllHistoricProcessInstance(@RequestBody HistoricProcessInstanceReqDTO reqDTO) {
+        IPage<HistoricProcessInstanceDTO> result = flowApiService.listAllHistoricProcessInstance(reqDTO);
+        return Result.OK(result);
     }
 
     /**
-     * 历史任务查询
+     * 根据输入参数查询，当前用户的历史流程数据。
      * @return
      */
     @ApiOperation("历史任务查询")
-    @PostMapping("listHistoricProcessInstance")
-    public Result<?> listHistoricProcessInstance() {
-        return Result.OK();
+    @PostMapping("listHistoricTask")
+    public Result<?> listHistoricTask(@RequestBody HistoricProcessInstanceReqDTO reqDTO) {
+        LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        reqDTO.setLoginName(loginUser.getUsername());
+        IPage<HistoricProcessInstanceDTO> result = flowApiService.listAllHistoricProcessInstance(reqDTO);
+        return Result.OK(result);
     }
 
 

@@ -2,6 +2,7 @@ package com.aiurt.modules.flow.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.lang.Assert;
 import cn.hutool.core.util.ObjectUtil;
@@ -21,6 +22,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import liquibase.pro.packaged.O;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.SecurityUtils;
 import org.flowable.bpmn.model.Process;
@@ -32,6 +34,7 @@ import org.flowable.engine.TaskService;
 import org.flowable.engine.delegate.TaskListener;
 import org.flowable.engine.history.HistoricActivityInstance;
 import org.flowable.engine.history.HistoricProcessInstance;
+import org.flowable.engine.history.HistoricProcessInstanceQuery;
 import org.flowable.engine.repository.ProcessDefinition;
 import org.flowable.engine.runtime.ProcessInstance;
 import org.flowable.task.api.Task;
@@ -40,6 +43,7 @@ import org.flowable.task.api.TaskQuery;
 import org.flowable.task.api.history.HistoricTaskInstance;
 import org.flowable.task.api.history.HistoricTaskInstanceQuery;
 import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -71,6 +75,9 @@ public class FlowApiServiceImpl implements FlowApiService {
     private IActCustomTaskCommentService customTaskCommentService;
     @Autowired
     private IActCustomTaskExtService customTaskExtService;
+
+    @Autowired
+    private ISysBaseAPI sysBaseAPI;
 
 
     /**
@@ -737,5 +744,67 @@ public class FlowApiServiceImpl implements FlowApiService {
         flowableListener.setImplementationType("class");
         flowableListener.setImplementation(listenerClazz.getName());
         userTask.getTaskListeners().add(flowableListener);
+    }
+
+    /**
+     * 流程实例
+     * @param reqDTO
+     * @return
+     */
+    @Override
+    public IPage<HistoricProcessInstanceDTO> listAllHistoricProcessInstance(HistoricProcessInstanceReqDTO reqDTO) {
+
+        IPage<HistoricProcessInstanceDTO> pages = new Page<>();
+        HistoricProcessInstanceQuery query = historyService.createHistoricProcessInstanceQuery();
+
+        if (Objects.nonNull(reqDTO.getStartTime())) {
+            DateTime dateTime = DateUtil.beginOfDay(reqDTO.getStartTime());
+            query.startedAfter(dateTime);
+        }
+
+        if (Objects.nonNull(reqDTO.getEndTime())) {
+            DateTime dateTime = DateUtil.endOfDay(reqDTO.getEndTime());
+            query.startedBefore(dateTime);
+        }
+        if (StrUtil.isNotBlank(reqDTO.getLoginName())) {
+            query.startedBy(reqDTO.getLoginName());
+        }
+
+        query.orderByProcessInstanceStartTime().desc();
+
+        long count = query.count();
+
+        int firstResult = (reqDTO.getPageNo() - 1) * reqDTO.getPageSize();
+
+        List<HistoricProcessInstance> instanceList = query.listPage(firstResult, reqDTO.getPageSize());
+
+        List<HistoricProcessInstanceDTO> instanceDTOList = instanceList.stream().map(historicProcessInstance -> {
+            // 用户名处理
+            String startUserId = historicProcessInstance.getStartUserId();
+            LoginUser userByName = sysBaseAPI.getUserByName(startUserId);
+            String realName = startUserId;
+            if (Objects.nonNull(userByName)) {
+                realName = userByName.getRealname();
+            }
+            return HistoricProcessInstanceDTO.builder()
+                    .businessKey(historicProcessInstance.getBusinessKey())
+                    .startTime(historicProcessInstance.getStartTime())
+                    .name(historicProcessInstance.getName())
+                    .processDefinitionName(historicProcessInstance.getProcessDefinitionName())
+                    .processDefinitionId(historicProcessInstance.getProcessDefinitionId())
+                    .endTime(historicProcessInstance.getEndTime())
+                    .durationInMillis(historicProcessInstance.getDurationInMillis())
+                    .processInstanceId(historicProcessInstance.getProcessDefinitionId())
+                    .processDefinitionKey(historicProcessInstance.getProcessDefinitionKey())
+                    .realName(realName)
+                    .userName(startUserId).build();
+
+        }).collect(Collectors.toList());
+
+        pages.setCurrent(reqDTO.getPageNo());
+
+        pages.setRecords(instanceDTOList);
+        pages.setTotal(count);
+        return pages;
     }
 }

@@ -205,7 +205,6 @@ public class CustomUserTaskJsonConverter  extends UserTaskJsonConverter {
                 ee.setName("userCandidateGroups");
                 ee.setNamespacePrefix(BpmnXMLConstants.FLOWABLE_EXTENSIONS_PREFIX);
                 ee.setNamespace(BpmnXMLConstants.FLOWABLE_EXTENSIONS_NAMESPACE);
-                Map<String, List<ExtensionAttribute>> attributes = new LinkedHashMap<>();
                 Set<String> keySet = jsonObject.keySet();
                 keySet.stream().forEach(key-> {
                     ExtensionAttribute attribute = new ExtensionAttribute();

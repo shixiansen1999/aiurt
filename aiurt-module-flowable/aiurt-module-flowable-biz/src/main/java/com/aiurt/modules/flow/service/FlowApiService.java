@@ -174,4 +174,10 @@ public interface FlowApiService {
      */
     void addTaskCreateListener(UserTask userTask, Class<? extends TaskListener> listenerClazz);
 
+    /**
+     * 流程实例
+     * @param reqDTO
+     * @return
+     */
+    IPage<HistoricProcessInstanceDTO> listAllHistoricProcessInstance(HistoricProcessInstanceReqDTO reqDTO);
 }
