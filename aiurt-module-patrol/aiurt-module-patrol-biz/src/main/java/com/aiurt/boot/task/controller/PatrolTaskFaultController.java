@@ -1,42 +1,23 @@
 package com.aiurt.boot.task.controller;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import org.jeecg.common.api.vo.Result;
-import org.jeecg.common.system.query.QueryGenerator;
-import com.aiurt.common.util.oConvertUtils;
 import com.aiurt.boot.task.entity.PatrolTaskFault;
 import com.aiurt.boot.task.service.IPatrolTaskFaultService;
-
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import lombok.extern.slf4j.Slf4j;
-
-import org.jeecgframework.poi.excel.ExcelImportUtil;
-import org.jeecgframework.poi.excel.def.NormalExcelConstants;
-import org.jeecgframework.poi.excel.entity.ExportParams;
-import org.jeecgframework.poi.excel.entity.ImportParams;
-import org.jeecgframework.poi.excel.view.JeecgEntityExcelView;
+import com.aiurt.common.aspect.annotation.AutoLog;
+import com.aiurt.common.constant.enums.ModuleType;
 import com.aiurt.common.system.base.controller.BaseController;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.multipart.MultipartHttpServletRequest;
-import org.springframework.web.servlet.ModelAndView;
-import com.alibaba.fastjson.JSON;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import com.aiurt.common.aspect.annotation.AutoLog;
+import lombok.extern.slf4j.Slf4j;
+import org.jeecg.common.api.vo.Result;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
- /**
+import javax.servlet.http.HttpServletRequest;
+
+/**
  * @Description: patrol_task_fault
  * @Author: aiurt
  * @Date:   2022-08-08
@@ -78,6 +59,25 @@ public class PatrolTaskFaultController extends BaseController<PatrolTaskFault, I
 	 * @param patrolTaskFault
 	 * @return
 	 */
+	 /**
+	  * app巡检-检查项-故障单号-保存
+	  * @param id
+	  * @param faultCode
+	  * @param req
+	  * @return
+	  */
+	 @AutoLog(value = "app巡检-检查项-故障单号-保存", operateType = 3, operateTypeAlias = "修改", module = ModuleType.PATROL,permissionUrl = "/Inspection/pool")
+	 @ApiOperation(value = "app巡检-检查项-故障单号-保存", notes = "app巡检-检查项-故障单号-保存")
+	 @PostMapping(value = "/patrolTaskCustomPosition")
+	 public Result<?> patrolTaskCustomPosition(@RequestParam(name ="id")String id,
+											   @RequestParam(name="faultCode") String faultCode, HttpServletRequest req) {
+	 	 PatrolTaskFault fault = new PatrolTaskFault();
+	 	 fault.setPatrolNumber(id);
+	 	 fault.setFaultCode(faultCode);
+	 	 fault.setDelFlag(0);
+		 patrolTaskFaultService.save(fault);
+		 return Result.OK("故障单号保存成功");
+	 }
 //	@AutoLog(value = "patrol_task_fault-添加")
 //	@ApiOperation(value="patrol_task_fault-添加", notes="patrol_task_fault-添加")
 //	@PostMapping(value = "/add")

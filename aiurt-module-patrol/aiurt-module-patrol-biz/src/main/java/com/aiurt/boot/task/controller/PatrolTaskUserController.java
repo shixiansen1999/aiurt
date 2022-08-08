@@ -90,13 +90,9 @@ public class PatrolTaskUserController extends BaseController<PatrolTaskUser, IPa
 		 //将任务来源改为常规指派,将任务状态改为待确认
 		 SimpleDateFormat format = new SimpleDateFormat("HH:mm");
 		 Date startTime = null;
-		 try {
-			 startTime = format.parse(patrolAccompanyList.getStartTime());
-		 } catch (ParseException e) {
-			 e.printStackTrace();
-		 }
 		 Date endTime = null;
 		 try {
+			 startTime = format.parse(patrolAccompanyList.getStartTime());
 			 endTime = format.parse(patrolAccompanyList.getEndTime());
 		 } catch (ParseException e) {
 			 e.printStackTrace();

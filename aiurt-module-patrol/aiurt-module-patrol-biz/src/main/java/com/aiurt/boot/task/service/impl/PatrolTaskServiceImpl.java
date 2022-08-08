@@ -329,6 +329,12 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
                     throw new AiurtBootException("小主，该巡检任务不在您的领取范围之内哦");
                 }
             }
+            //删除之前的巡检人
+            List <PatrolTaskUser> taskUserList = patrolTaskUserMapper.selectList(new LambdaQueryWrapper<PatrolTaskUser>().eq(PatrolTaskUser::getTaskCode, patrolTask.getCode()));
+            if(CollUtil.isNotEmpty(taskUserList))
+            {
+                patrolTaskUserMapper.deleteBatchIds(taskUserList);
+            }
             updateWrapper.set(PatrolTask::getStatus, 2)
                     .set(PatrolTask::getSource, 1)
                     .eq(PatrolTask::getId, patrolTaskDTO.getId());

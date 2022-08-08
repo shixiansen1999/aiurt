@@ -167,4 +167,8 @@ public class PatrolTaskDeviceDTO {
     @Excel(name = "位置选择", width = 15)
     @ApiModelProperty(value = "位置选择")
     private List <String> allPosition;
+    /**故障单号集合*/
+    @Excel(name = "故障单号集合", width = 15)
+    @ApiModelProperty(value = "故障单号集合")
+    private List <String> faultList;
 }

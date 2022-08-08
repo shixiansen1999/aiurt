@@ -10,7 +10,6 @@ import com.aiurt.boot.task.service.IPatrolTaskService;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.constant.enums.ModuleType;
 import com.aiurt.common.system.base.controller.BaseController;
-import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -86,24 +85,6 @@ public class PatrolTaskDeviceController extends BaseController<PatrolTaskDevice,
 		return Result.OK(resultList);
     }*/
 
-
-	 /**
-	  * app巡检-检查项-故障单号-保存
-	  * @param id
-	  * @param faultCode
-	  * @param req
-	  * @return
-	  */
-	 @AutoLog(value = "app巡检-检查项-故障单号-保存", operateType = 3, operateTypeAlias = "修改", module = ModuleType.PATROL,permissionUrl = "/Inspection/pool")
-	 @ApiOperation(value = "app巡检-检查项-故障单号-保存", notes = "app巡检-检查项-故障单号-保存")
-	 @PostMapping(value = "/patrolTaskCustomPosition")
-	 public Result<?> patrolTaskCustomPosition(@RequestParam(name ="id")String id,
-									  @RequestParam(name="faultCode") String faultCode, HttpServletRequest req) {
-		 LambdaUpdateWrapper<PatrolTaskDevice> updateWrapper= new LambdaUpdateWrapper<>();
-		 updateWrapper.set(PatrolTaskDevice::getFaultCode,faultCode).eq(PatrolTaskDevice::getId,id);
-		 patrolTaskDeviceService.update(updateWrapper);
-		 return Result.OK("故障单号保存成功");
-	 }
 	 /**
 	  * app巡检任务执行中-检查
 	  * @param patrolTaskDevice

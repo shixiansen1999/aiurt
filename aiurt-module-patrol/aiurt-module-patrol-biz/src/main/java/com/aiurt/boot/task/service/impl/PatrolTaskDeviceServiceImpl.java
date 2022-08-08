@@ -66,6 +66,8 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
     private ISysBaseAPI sysBaseAPI;
     @Autowired
     private PatrolManager manager;
+    @Autowired
+    private PatrolTaskFaultMapper patrolTaskFaultMapper;
 
 
     @Override
@@ -131,10 +133,6 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
             Date checkTime = e.getCheckTime();
             if (ObjectUtil.isNotEmpty(startTime) && ObjectUtil.isNotEmpty(checkTime)) {
                 long duration = DateUtil.between(startTime, checkTime, DateUnit.MINUTE);
-//                long second = DateUtil.between(startTime, checkTime, DateUnit.SECOND);
-//                if (second % 60 > 0) {
-//                    duration += 1;
-//                }
                 e.setInspectionTime(DateUtils.getTimeByMinute(duration));
             }
             List<StationDTO> codeList = new ArrayList<>();
@@ -165,6 +163,9 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
                     e.setInspectionPosition("-");
                 }
             }
+            List<PatrolTaskFault> faultList = patrolTaskFaultMapper.selectList(new LambdaQueryWrapper<PatrolTaskFault>().eq(PatrolTaskFault::getPatrolNumber, e.getPatrolNumber()));
+            List<String> collect = faultList.stream().map(PatrolTaskFault::getId).collect(Collectors.toList());
+            e.setFaultList(collect);
             PatrolStandard taskStandardName = patrolTaskDeviceMapper.getStandardName(e.getId());
             e.setSubsystemCode(taskStandardName.getSubsystemCode());
             e.setProfessionCode(taskStandardName.getProfessionCode());
