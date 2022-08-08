@@ -135,8 +135,8 @@ public class FlowOperationController {
      * @return 流程图高亮数据。
      */
     @GetMapping("/viewHighlightFlowData")
-    public Result<JSONObject> viewHighlightFlowData(@RequestParam String processInstanceId) {
-        JSONObject jsonData = flowApiService.viewHighlightFlowData(processInstanceId);
+    public Result<HighLightedNodeDTO> viewHighlightFlowData(@RequestParam String processInstanceId) {
+        HighLightedNodeDTO jsonData = flowApiService.viewHighlightFlowData(processInstanceId);
         return Result.OK(jsonData);
     }
 
@@ -210,7 +210,7 @@ public class FlowOperationController {
      */
     @ApiOperation("历史任务查询")
     @PostMapping("listHistoricTask")
-    public Result<?> listHistoricTask(@RequestBody HistoricProcessInstanceReqDTO reqDTO) {
+    public Result<IPage<HistoricProcessInstanceDTO>> listHistoricTask(@RequestBody HistoricProcessInstanceReqDTO reqDTO) {
         LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         reqDTO.setLoginName(loginUser.getUsername());
         IPage<HistoricProcessInstanceDTO> result = flowApiService.listAllHistoricProcessInstance(reqDTO);

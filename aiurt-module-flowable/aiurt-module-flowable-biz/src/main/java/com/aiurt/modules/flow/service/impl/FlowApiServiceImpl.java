@@ -42,6 +42,7 @@ import org.flowable.task.api.TaskInfo;
 import org.flowable.task.api.TaskQuery;
 import org.flowable.task.api.history.HistoricTaskInstance;
 import org.flowable.task.api.history.HistoricTaskInstanceQuery;
+import org.flowable.ui.modeler.serviceapi.ModelService;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.LoginUser;
@@ -49,6 +50,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -78,6 +80,9 @@ public class FlowApiServiceImpl implements FlowApiService {
 
     @Autowired
     private ISysBaseAPI sysBaseAPI;
+
+    @Autowired
+    private ModelService modelService;
 
 
     /**
@@ -655,7 +660,8 @@ public class FlowApiServiceImpl implements FlowApiService {
      * @return 流程图高亮数据。
      */
     @Override
-    public JSONObject viewHighlightFlowData(String processInstanceId) {
+    public HighLightedNodeDTO viewHighlightFlowData(String processInstanceId) {
+
         HistoricProcessInstance hpi = this.getHistoricProcessInstance(processInstanceId);
         BpmnModel bpmnModel = this.getBpmnModelByDefinitionId(hpi.getProcessDefinitionId());
         //Process对象集合
@@ -701,11 +707,16 @@ public class FlowApiServiceImpl implements FlowApiService {
             unfinishedTaskSet.add(unfinishedActivity.getActivityId());
         }
 
-        JSONObject jsonData = new JSONObject();
-        jsonData.put("finishedTaskSet", finishedTaskSet);
-        jsonData.put("finishedSequenceFlowSet", finishedSequenceFlowSet);
-        jsonData.put("unfinishedTaskSet", unfinishedTaskSet);
-        return jsonData;
+        byte[] bpmnXML = modelService.getBpmnXML(bpmnModel);
+        String modelXml = new String(bpmnXML, StandardCharsets.UTF_8);
+        HighLightedNodeDTO highLightedNodeDTO = HighLightedNodeDTO.builder()
+                .finishedTaskSet(finishedTaskSet)
+                .finishedSequenceFlowSet(finishedSequenceFlowSet)
+                .unfinishedTaskSet(unfinishedTaskSet)
+                .modelName(hpi.getProcessDefinitionName())
+                .modelXml(modelXml)
+                .build();
+        return highLightedNodeDTO;
     }
 
     /**

@@ -121,7 +121,7 @@ public interface FlowApiService {
      * @param processInstanceId 流程实例Id。
      * @return 流程图高亮数据。
      */
-    JSONObject viewHighlightFlowData(String processInstanceId);
+    HighLightedNodeDTO viewHighlightFlowData(String processInstanceId);
 
     /**
      * 获取流程实例的已完成历史任务列表。
