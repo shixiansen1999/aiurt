@@ -51,6 +51,9 @@
         <if test="stock.baseTypeCode!=null and stock.baseTypeCode!=''">
             and t5.base_type_code like concat('%', #{stock.baseTypeCode}, '%')
         </if>
+        <if test="stock.orgId!=null and stock.orgId!=''">
+            and t.org_id not in (#{stock.orgId})
+        </if>
         order by t.create_time desc
     </select>
 </mapper>

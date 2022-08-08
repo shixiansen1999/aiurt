@@ -4,6 +4,7 @@ package com.aiurt.modules.sparepart.controller;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import cn.hutool.core.util.ObjectUtil;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.system.base.controller.BaseController;
 import com.aiurt.modules.manufactor.entity.CsManufactor;
@@ -69,6 +70,10 @@ public class SparePartStockInfoController extends BaseController<SparePartStockI
 														   @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
 														   HttpServletRequest req) {
 		QueryWrapper<SparePartStockInfo> queryWrapper = QueryGenerator.initQueryWrapper(sparePartStockInfo, req.getParameterMap());
+		LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+		if(ObjectUtil.isNotNull(sparePartStockInfo.getModule())){
+			queryWrapper.lambda().notIn(SparePartStockInfo::getOrganizationId,user.getOrgId());
+		}
 		Page<SparePartStockInfo> page = new Page<SparePartStockInfo>(pageNo, pageSize);
 		IPage<SparePartStockInfo> pageList = sparePartStockInfoService.page(page, queryWrapper.lambda().eq(SparePartStockInfo::getDelFlag, CommonConstant.DEL_FLAG_0));
 		return Result.OK(pageList);

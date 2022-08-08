@@ -144,4 +144,8 @@ public class SparePartStock implements Serializable {
     @ApiModelProperty(value = " 单价")
     @TableField(exist = false)
     private String price;
+    /**当前模块*/
+    @ApiModelProperty(value = "当前模块")
+    @TableField(exist = false)
+    private String module;
 }

@@ -1,5 +1,71 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.aiurt.modules.sparepart.mapper.SparePartLendMapper">
+    <select id="readAll" resultType="com.aiurt.modules.sparepart.entity.SparePartLend">
+        SELECT
+        t.id,
+        t.lend_warehouse_code,
+        t.back_warehouse_code,
+        d1.item_text statusName,
+        t2.major_name majorName,
+        t3.system_name systemName,
+        t4.base_type_name baseTypeCodeName,
+        d2.item_text typeName,
+        t1.`code` materialCode,
+        t1.`name`,
+        t5.warehouse_name lendWarehouseName,
+        t.lend_num,
+        t.back_num,
+        t6.realname lendPersonName,
+        t1.specifications,
+        t7.`name` manufactorCodeName,
+        d3.item_text unit,
+        t1.price,
+        t.STATUS,
+        t8.warehouse_name backWarehouseName ,
+        t.out_time,
+        t.back_time,
+        t9.realname backPersonName,
+        t.create_time,
+        t11.depart_name borrowName,
+        t12.depart_name lendName,
+        t13.depart_name returnName,
+        t.borrow_num
+        FROM
+        spare_part_lend t
+        LEFT JOIN material_base t1 ON t.material_code = t1.CODE
+        LEFT JOIN cs_major t2 ON t1.major_code = t2.major_code
+        LEFT JOIN cs_subsystem t3 ON t1.system_code = t3.system_code
+        LEFT JOIN material_base_type t4 ON t1.base_type_code = t4.base_type_code
+        LEFT JOIN spare_part_stock_info t5 ON t.lend_warehouse_code = t5.warehouse_code
+        LEFT JOIN sys_user t6 ON t.lend_person = t6.username
+        LEFT JOIN sys_dict AS dict1 ON dict1.dict_code = 'spare_lend_status'
+        LEFT JOIN sys_dict_item AS d1 ON d1.item_value = t.STATUS AND dict1.id = d1.dict_id
+        LEFT JOIN cs_manufactor t7 ON t7.id = t1.manufactor_code
+        LEFT JOIN spare_part_stock_info t8 ON t.back_warehouse_code = t8.warehouse_code
+        LEFT JOIN sys_dict AS dict2 ON dict2.dict_code = 'material_type'
+        LEFT JOIN sys_dict_item AS d2 ON d2.item_value = t1.type  AND dict2.id = d2.dict_id
+        LEFT JOIN sys_dict AS dict3 ON dict3.dict_code = 'materian_unit'
+        LEFT JOIN sys_dict_item AS d3 ON d3.item_value = t1.unit AND dict3.id = d3.dict_id
+        LEFT JOIN sys_user t9 ON t.back_person = t9.username
+        LEFT JOIN sys_user t10 ON t.create_by = t9.username
+        LEFT JOIN sys_depart t11 ON t11.id = t10.org_id
+        LEFT JOIN sys_depart t12 ON t12.id = t6.org_id
+        LEFT JOIN sys_depart t13 ON t13.id = t9.org_id
+        WHERE
+        t.del_flag = 0
 
+        <if test="lend.materialCode!=null and lend.materialCode!=''">
+            and t1.`code` like concat('%', #{lend.materialCode}, '%')
+        </if>
+        <if test="lend.name!=null and lend.name!=''">
+            and t1.`name` like concat('%', #{lend.name}, '%')
+        </if>
+        <if test="lend.status!=null and lend.status!=''">
+            and t.status = #{lend.status}
+        </if>
+
+        order by t.create_time desc
+
+    </select>
 </mapper>

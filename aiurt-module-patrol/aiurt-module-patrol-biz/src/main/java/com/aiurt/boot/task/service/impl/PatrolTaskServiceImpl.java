@@ -262,7 +262,8 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
 
         }
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        if(!sysUser.getRoleIds().contains("f6817f48af4fb3af11b9e8bf182f618b"))
+        boolean admin = SecurityUtils.getSubject().hasRole("admin");
+        if(!admin)
         {
             patrolTaskDTO.setLoginOrgId(sysUser.getOrgCode());
         }
@@ -291,7 +292,8 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
     @Override
     public Page<PatrolTaskDTO> getPatrolTaskList(Page<PatrolTaskDTO> pageList, PatrolTaskDTO patrolTaskDTO) {
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        if(!sysUser.getRoleIds().contains("f6817f48af4fb3af11b9e8bf182f618b"))
+        boolean admin = SecurityUtils.getSubject().hasRole("admin");
+        if(!admin)
         {
             patrolTaskDTO.setLoginOrgId(sysUser.getOrgCode());
         }
@@ -321,6 +323,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
     public void getPatrolTaskReceive(PatrolTaskDTO patrolTaskDTO) {
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         LambdaUpdateWrapper<PatrolTask> updateWrapper = new LambdaUpdateWrapper<>();
+        boolean admin = SecurityUtils.getSubject().hasRole("admin");
         PatrolTask patrolTask = patrolTaskMapper.selectById(patrolTaskDTO.getId());
         //个人领取：将待指派或退回之后重新领取改为待执行，变为个人领取（传任务主键id,状态）
         if (PatrolConstant.TASK_INIT.equals(patrolTaskDTO.getStatus()) || PatrolConstant.TASK_RETURNED.equals(patrolTaskDTO.getStatus())) {
@@ -330,7 +333,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
                             .eq(PatrolTaskOrganization::getDelFlag, CommonConstant.DEL_FLAG_0));
             if (CollUtil.isNotEmpty(patrolTaskOrganizations)) {
                 List<String> orgList = patrolTaskOrganizations.stream().map(PatrolTaskOrganization::getOrgCode).collect(Collectors.toList());
-                if (!orgList.contains(manager.checkLogin().getOrgCode())&&!sysUser.getRoleIds().contains("f6817f48af4fb3af11b9e8bf182f618b")) {
+                if (!orgList.contains(manager.checkLogin().getOrgCode())&&!admin) {
                     throw new AiurtBootException("小主，该巡检任务不在您的领取范围之内哦");
                 }
             }
@@ -354,7 +357,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         }
         //确认：将待确认改为待执行
         if (PatrolConstant.TASK_CONFIRM.equals(patrolTaskDTO.getStatus())) {
-            if (manager.checkTaskUser(patrolTask.getCode()) == false&&!sysUser.getRoleIds().contains("f6817f48af4fb3af11b9e8bf182f618b")) {
+            if (manager.checkTaskUser(patrolTask.getCode()) == false&&!admin) {
                 throw new AiurtBootException("小主，该巡检任务不在您的范围之内哦");
             }
             updateWrapper.set(PatrolTask::getStatus, 2).eq(PatrolTask::getId, patrolTaskDTO.getId());
@@ -362,7 +365,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         }
         //执行：将待执行改为执行中
         if (PatrolConstant.TASK_EXECUTE.equals(patrolTaskDTO.getStatus())) {
-            if (manager.checkTaskUser(patrolTask.getCode()) == false&&!sysUser.getRoleIds().contains("f6817f48af4fb3af11b9e8bf182f618b")) {
+            if (manager.checkTaskUser(patrolTask.getCode()) == false&&!admin) {
                 throw new AiurtBootException("小主，该巡检任务不在您的范围之内哦");
             }
             updateWrapper.set(PatrolTask::getStatus, 4).eq(PatrolTask::getId, patrolTaskDTO.getId());
@@ -376,8 +379,9 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         LambdaQueryWrapper<PatrolTask> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(PatrolTask::getId, patrolTaskDTO.getId());
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        boolean admin = SecurityUtils.getSubject().hasRole("admin");
         PatrolTask patrolTask = patrolTaskMapper.selectOne(queryWrapper);
-        if (manager.checkTaskUser(patrolTask.getCode()) == false&&!sysUser.getRoleIds().contains("f6817f48af4fb3af11b9e8bf182f618b")) {
+        if (manager.checkTaskUser(patrolTask.getCode()) == false&&!admin) {
             throw new AiurtBootException("小主，该巡检任务不在您的退回范围之内哦");
         } else {
             //更新巡检状态及添加退回理由、退回人Id（传任务主键id、退回理由）
@@ -536,8 +540,9 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
     public void getPatrolTaskSubmit(PatrolTaskDTO patrolTaskDTO) {
         //提交任务：将待执行、执行中，变为待审核、添加任务结束人id,传签名地址、任务主键id、审核状态
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        boolean admin = SecurityUtils.getSubject().hasRole("admin");
         PatrolTask patrolTask = patrolTaskMapper.selectById(patrolTaskDTO.getId());
-        if (manager.checkTaskUser(patrolTask.getCode()) == false&&!sysUser.getRoleIds().contains("f6817f48af4fb3af11b9e8bf182f618b")) {
+        if (manager.checkTaskUser(patrolTask.getCode()) == false&&!admin) {
             throw new AiurtBootException("小主，该巡检任务不在您的提交范围之内哦");
         } else {
             List<PatrolTaskDevice> taskDevices = patrolTaskDeviceMapper.selectList(new LambdaQueryWrapper<PatrolTaskDevice>().eq(PatrolTaskDevice::getTaskId, patrolTask.getId()));

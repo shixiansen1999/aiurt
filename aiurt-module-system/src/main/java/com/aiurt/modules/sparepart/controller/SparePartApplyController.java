@@ -96,6 +96,7 @@ public class SparePartApplyController extends BaseController<SparePartApply, ISp
 
 			apply.setStockLevel2List(materials);
 		});
+		list = list.stream().distinct().collect(Collectors.toList());
 		page.setRecords(list);
 		return Result.OK(page);
 	}

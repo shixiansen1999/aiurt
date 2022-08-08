@@ -311,7 +311,10 @@ public class PatrolPlanServiceImpl extends ServiceImpl<PatrolPlanMapper, PatrolP
 
     @Override
     public List<StandardDTO> selectPlanStandard(String planId, String majorCode, String subsystemCode) {
-        List<StandardDTO> standardDtos = baseMapper.selectStandardList(planId, majorCode, subsystemCode);
+        List<StandardDTO> standardDtos = new ArrayList<StandardDTO>();
+        if (CollUtil.isNotEmpty(baseMapper.selectStandardList(planId, majorCode, subsystemCode))){
+           standardDtos = baseMapper.selectStandardList(planId, majorCode, subsystemCode);
+        }
         return standardDtos;
     }
 

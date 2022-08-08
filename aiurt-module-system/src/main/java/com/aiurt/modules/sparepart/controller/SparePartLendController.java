@@ -1,11 +1,16 @@
 package com.aiurt.modules.sparepart.controller;
 
 import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import com.aiurt.modules.sparepart.entity.SparePartLend;
+import com.aiurt.modules.sparepart.entity.SparePartReturnOrder;
 import com.aiurt.modules.sparepart.service.ISparePartLendService;
+import io.swagger.annotations.ApiParam;
+import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.query.QueryGenerator;
 
@@ -15,6 +20,10 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.extern.slf4j.Slf4j;
 
 import com.aiurt.common.system.base.controller.BaseController;
+import org.jeecg.common.system.vo.LoginUser;
+import org.jeecgframework.poi.excel.def.NormalExcelConstants;
+import org.jeecgframework.poi.excel.entity.ExportParams;
+import org.jeecgframework.poi.excel.view.JeecgEntityExcelView;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
@@ -28,7 +37,7 @@ import com.aiurt.common.aspect.annotation.AutoLog;
  * @Date:   2022-07-27
  * @Version: V1.0
  */
-@Api(tags="spare_part_lend")
+@Api(tags="备件管理-备件借入管理")
 @RestController
 @RequestMapping("/sparepart/sparePartLend")
 @Slf4j
@@ -52,10 +61,12 @@ public class SparePartLendController extends BaseController<SparePartLend, ISpar
 								   @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
 								   @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
 								   HttpServletRequest req) {
-		QueryWrapper<SparePartLend> queryWrapper = QueryGenerator.initQueryWrapper(sparePartLend, req.getParameterMap());
+		//QueryWrapper<SparePartLend> queryWrapper = QueryGenerator.initQueryWrapper(sparePartLend, req.getParameterMap());
 		Page<SparePartLend> page = new Page<SparePartLend>(pageNo, pageSize);
-		IPage<SparePartLend> pageList = sparePartLendService.page(page, queryWrapper);
-		return Result.OK(pageList);
+		List<SparePartLend> list = sparePartLendService.selectList(page, sparePartLend);
+		list = list.stream().distinct().collect(Collectors.toList());
+		page.setRecords(list);
+		return Result.OK(page);
 	}
 
 	/**
@@ -67,25 +78,50 @@ public class SparePartLendController extends BaseController<SparePartLend, ISpar
 	@AutoLog(value = "spare_part_lend-添加")
 	@ApiOperation(value="spare_part_lend-添加", notes="spare_part_lend-添加")
 	@PostMapping(value = "/add")
-	public Result<String> add(@RequestBody SparePartLend sparePartLend) {
-		sparePartLendService.save(sparePartLend);
-		return Result.OK("添加成功！");
+	public Result<?> add(@RequestBody SparePartLend sparePartLend) {
+		return sparePartLendService.add(sparePartLend);
 	}
 
 	/**
-	 *  编辑
+	 *  借出确认
 	 *
 	 * @param sparePartLend
 	 * @return
 	 */
-	@AutoLog(value = "spare_part_lend-编辑")
-	@ApiOperation(value="spare_part_lend-编辑", notes="spare_part_lend-编辑")
-	@RequestMapping(value = "/edit", method = {RequestMethod.PUT,RequestMethod.POST})
-	public Result<String> edit(@RequestBody SparePartLend sparePartLend) {
-		sparePartLendService.updateById(sparePartLend);
-		return Result.OK("编辑成功!");
+	@AutoLog(value = "spare_part_lend-借出确认")
+	@ApiOperation(value="spare_part_lend-借出确认", notes="spare_part_lend-借出确认")
+	@RequestMapping(value = "/lendConfirm", method = {RequestMethod.PUT,RequestMethod.POST})
+	public Result<?> lendConfirm(@RequestBody SparePartLend sparePartLend) {
+		return sparePartLendService.lendConfirm(sparePartLend);
 	}
 
+	 /**
+	  *  归还
+	  *
+	  * @param sparePartLend
+	  * @return
+	  */
+	 @AutoLog(value = "spare_part_lend-归还")
+	 @ApiOperation(value="spare_part_lend-归还", notes="spare_part_lend-归还")
+	 @RequestMapping(value = "/back", method = {RequestMethod.PUT,RequestMethod.POST})
+	 public Result<?> back(@RequestBody SparePartLend sparePartLend) {
+		 LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+		 sparePartLend.setBackPerson(user.getUsername());
+		 sparePartLendService.updateById(sparePartLend);
+		 return Result.OK("编辑成功！");
+	 }
+	 /**
+	  *  归还确认
+	  *
+	  * @param sparePartLend
+	  * @return
+	  */
+	 @AutoLog(value = "spare_part_lend-归还确认")
+	 @ApiOperation(value="spare_part_lend-归还确认", notes="spare_part_lend-归还确认")
+	 @RequestMapping(value = "/backConfirm", method = {RequestMethod.PUT,RequestMethod.POST})
+	 public Result<?> backConfirm(@RequestBody SparePartLend sparePartLend) {
+		 return sparePartLendService.backConfirm(sparePartLend);
+	 }
 	/**
 	 *   通过id删除
 	 *
@@ -100,19 +136,6 @@ public class SparePartLendController extends BaseController<SparePartLend, ISpar
 		return Result.OK("删除成功!");
 	}
 
-	/**
-	 *  批量删除
-	 *
-	 * @param ids
-	 * @return
-	 */
-	@AutoLog(value = "spare_part_lend-批量删除")
-	@ApiOperation(value="spare_part_lend-批量删除", notes="spare_part_lend-批量删除")
-	@DeleteMapping(value = "/deleteBatch")
-	public Result<String> deleteBatch(@RequestParam(name="ids",required=true) String ids) {
-		this.sparePartLendService.removeByIds(Arrays.asList(ids.split(",")));
-		return Result.OK("批量删除成功!");
-	}
 
 	/**
 	 * 通过id查询
@@ -135,12 +158,27 @@ public class SparePartLendController extends BaseController<SparePartLend, ISpar
     * 导出excel
     *
     * @param request
-    * @param sparePartLend
+    * @param
     */
     @RequestMapping(value = "/exportXls")
-    public ModelAndView exportXls(HttpServletRequest request, SparePartLend sparePartLend) {
-        return super.exportXls(request, sparePartLend, SparePartLend.class, "spare_part_lend");
-    }
+	public ModelAndView exportXls(@ApiParam(value = "行数据ids" ,required = true) @RequestParam("ids") String ids, HttpServletRequest request, HttpServletResponse response) {
+		LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+		ModelAndView mv = new ModelAndView(new JeecgEntityExcelView());
+		SparePartLend sparePartLend = new SparePartLend();
+		sparePartLend.setIds(Arrays.asList(ids.split(",")));
+		List<SparePartLend> list = sparePartLendService.selectList(null, sparePartLend);
+		list = list.stream().distinct().collect(Collectors.toList());
+		for(int i=0;i<list.size();i++){
+			SparePartLend lend = list.get(i);
+			lend.setNumber(i+1+"");
+		}
+		//导出文件名称
+		mv.addObject(NormalExcelConstants.FILE_NAME, "备件借入管理列表");
+		mv.addObject(NormalExcelConstants.CLASS, SparePartLend.class);
+		mv.addObject(NormalExcelConstants.PARAMS, new ExportParams("备件借入管理列表数据", "导出人:"+user.getRealname(), "导出信息"));
+		mv.addObject(NormalExcelConstants.DATA_LIST, list);
+		return mv;
+	}
 
     /**
       * 通过excel导入数据
