@@ -70,9 +70,18 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
     private PatrolTaskFaultMapper patrolTaskFaultMapper;
 
 
+
     @Override
     public IPage<PatrolTaskDeviceParam> selectBillInfo(Page<PatrolTaskDeviceParam> page, PatrolTaskDeviceParam patrolTaskDeviceParam) {
-        return patrolTaskDeviceMapper.selectBillInfo(page, patrolTaskDeviceParam);
+        IPage<PatrolTaskDeviceParam> patrolTaskDeviceParamList = patrolTaskDeviceMapper.selectBillInfo(page, patrolTaskDeviceParam);
+        List<PatrolTaskDeviceParam> records = patrolTaskDeviceParamList.getRecords();
+        for (PatrolTaskDeviceParam param:records)
+        {
+             List<PatrolTaskFault> faultList = patrolTaskFaultMapper.selectList(new LambdaQueryWrapper<PatrolTaskFault>().eq(PatrolTaskFault::getPatrolNumber, param.getPatrolNumber()));
+             List<String> list = faultList.stream().map(f -> f.getFaultCode()).collect(Collectors.toList());
+             param.setFaultList(list);
+        }
+        return patrolTaskDeviceParamList;
     }
 
     @Override

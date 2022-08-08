@@ -35,6 +35,12 @@ public class PatrolTaskDeviceParam extends PatrolTaskDevice {
     @ApiModelProperty(value = "专业名称")
     private String majorName;
     /**
+     * 故障单号集合
+     */
+    @Excel(name = "故障单号集合", width = 15)
+    @ApiModelProperty(value = "故障单号集合")
+    private List<String> faultList;
+    /**
      * 子系统编码
      */
     @Excel(name = "子系统编码", width = 15)
