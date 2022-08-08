@@ -288,6 +288,16 @@ public class InspectionCodeContentServiceImpl extends ServiceImpl<InspectionCode
         return treeFirst(result);
     }
 
+    @Override
+    public void checkCode(String code, String inspectionCodeId) {
+        List<InspectionCodeContent> inspectionCodeContents = baseMapper.selectList(
+                new LambdaQueryWrapper<InspectionCodeContent>()
+                        .eq(InspectionCodeContent::getInspectionCodeId,inspectionCodeId)
+                        .eq(InspectionCodeContent::getCode,code));
+        if (CollUtil.isNotEmpty(inspectionCodeContents)){
+            throw new AiurtBootException("输入的code当前列表重复,请重新输入");
+        }
+    }
     /**
      * 构造树，不固定根节点
      *

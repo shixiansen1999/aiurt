@@ -88,4 +88,11 @@ public interface IInspectionCodeContentService extends IService<InspectionCodeCo
 	 * @return
 	 */
     List<InspectionCodeContent> selectCodeContentList(String id);
+
+	/**
+	 * 校验code
+	 * @param code
+	 * @param inspectionCodeId
+	 */
+    void checkCode(String code, String inspectionCodeId);
 }

@@ -162,7 +162,19 @@ public class InspectionCodeContentController extends BaseController<InspectionCo
 		}
 		return Result.OK("批量删除成功！");
 	}
+	 /**
+	  * 校验添加内容排序
+	  * @return
+	  */
+	 @AutoLog(value = "校验添加code唯一",operateType =  1, operateTypeAlias = "查询code唯一", module = ModuleType.PATROL)
+	 @ApiOperation(value = "校验添加code唯一", notes = "校验添加code唯一")
+	 @GetMapping(value = "/checkCode")
+	 public void checkCode(
+			 @RequestParam(name="code") String code,
+			 @RequestParam(name = "inspectionCodeId")String inspectionCodeId) {
+		 inspectionCodeContentService.checkCode(code,inspectionCodeId);
 
+	 }
 	/**
 	 * 通过id查询
 	 *
