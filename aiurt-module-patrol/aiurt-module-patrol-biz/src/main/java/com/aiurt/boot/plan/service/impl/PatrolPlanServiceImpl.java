@@ -212,7 +212,8 @@ public class PatrolPlanServiceImpl extends ServiceImpl<PatrolPlanMapper, PatrolP
             patrolStandardDtos.forEach(p -> {
                 PatrolPlanStandard patrolPlanStandard = patrolPlanStandardMapper.selectOne(
                         new LambdaQueryWrapper<PatrolPlanStandard>()
-                                .eq(PatrolPlanStandard::getStandardCode, p.getCode()));
+                                .eq(PatrolPlanStandard::getStandardCode, p.getCode())
+                                .eq(PatrolPlanStandard::getPlanId,id));
                 List<PatrolPlanDevice> patrolPlanDevices = patrolPlanDeviceMapper.selectList(
                         new LambdaQueryWrapper<PatrolPlanDevice>()
                                 .eq(PatrolPlanDevice::getPlanStandardId, patrolPlanStandard.getId()));
