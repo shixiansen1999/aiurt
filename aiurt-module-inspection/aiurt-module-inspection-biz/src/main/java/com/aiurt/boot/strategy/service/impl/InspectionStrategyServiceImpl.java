@@ -187,10 +187,7 @@ public class InspectionStrategyServiceImpl extends ServiceImpl<InspectionStrateg
         }
 
         List<InspectionCodeDTO> inspectionCodeDto = inspectionStrategyDTO.getInspectionCodeDtoList();
-        if (CollUtil.isEmpty(inspectionCodeDto)) {
-            throw new AiurtBootException("请选择检修标准");
-        }
-
+        if (CollUtil.isNotEmpty(inspectionCodeDto)) {
         // 跟设备类型相关的是否选择了设备
         inspectionCodeDto.forEach(re -> {
             InspectionCode inspectionCode = inspectionCodeMapper.selectOne(
@@ -204,7 +201,7 @@ public class InspectionStrategyServiceImpl extends ServiceImpl<InspectionStrateg
                 throw new AiurtBootException(String.format("名字为%s需要指定设备", ObjectUtil.isNotEmpty(inspectionCode) ? inspectionCode.getTitle() : ""));
             }
         });
-
+      }
     }
 
     @Override

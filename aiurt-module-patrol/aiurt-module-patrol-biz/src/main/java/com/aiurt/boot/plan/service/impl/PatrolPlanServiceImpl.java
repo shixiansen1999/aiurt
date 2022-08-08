@@ -182,9 +182,7 @@ public class PatrolPlanServiceImpl extends ServiceImpl<PatrolPlanMapper, PatrolP
     }
 
     public void check(PatrolPlanDto patrolPlanDto) {
-        if (CollUtil.isEmpty(patrolPlanDto.getPatrolStandards())) {
-            throw new AiurtBootException("请选择标准表!");
-        }
+        if (CollUtil.isNotEmpty(patrolPlanDto.getPatrolStandards())) {
             List<PatrolStandardDto> patrolStandardDto = patrolPlanDto.getPatrolStandards();
             List<Device> devices = patrolPlanDto.getDevices();
             patrolStandardDto.forEach(p -> {
@@ -195,6 +193,7 @@ public class PatrolPlanServiceImpl extends ServiceImpl<PatrolPlanMapper, PatrolP
                     }
                 }
             });
+          }
         }
 
     @Override
