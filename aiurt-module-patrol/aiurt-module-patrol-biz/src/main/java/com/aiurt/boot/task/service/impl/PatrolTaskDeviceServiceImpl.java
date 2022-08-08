@@ -73,15 +73,7 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
 
     @Override
     public IPage<PatrolTaskDeviceParam> selectBillInfo(Page<PatrolTaskDeviceParam> page, PatrolTaskDeviceParam patrolTaskDeviceParam) {
-        IPage<PatrolTaskDeviceParam> patrolTaskDeviceParamList = patrolTaskDeviceMapper.selectBillInfo(page, patrolTaskDeviceParam);
-        List<PatrolTaskDeviceParam> records = patrolTaskDeviceParamList.getRecords();
-        for (PatrolTaskDeviceParam param:records)
-        {
-             List<PatrolTaskFault> faultList = patrolTaskFaultMapper.selectList(new LambdaQueryWrapper<PatrolTaskFault>().eq(PatrolTaskFault::getPatrolNumber, param.getPatrolNumber()));
-             List<String> list = faultList.stream().map(f -> f.getFaultCode()).collect(Collectors.toList());
-             param.setFaultList(list);
-        }
-        return patrolTaskDeviceParamList;
+        return  patrolTaskDeviceMapper.selectBillInfo(page, patrolTaskDeviceParam);
     }
 
     @Override
@@ -240,6 +232,9 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
     public Map<String, Object> selectBillInfoByNumber(String patrolNumber) {
         PatrolTaskDeviceParam taskDeviceParam = Optional.ofNullable(patrolTaskDeviceMapper.selectBillInfoByNumber(patrolNumber))
                 .orElseGet(PatrolTaskDeviceParam::new);
+        List<PatrolTaskFault> faultList = patrolTaskFaultMapper.selectList(new LambdaQueryWrapper<PatrolTaskFault>().eq(PatrolTaskFault::getPatrolNumber, patrolNumber));
+        List<String> faultCodeList = faultList.stream().map(f -> f.getFaultCode()).collect(Collectors.toList());
+        taskDeviceParam.setFaultList(faultCodeList);
         // 计算巡检时长
         Date startTime = taskDeviceParam.getStartTime();
         Date checkTime = taskDeviceParam.getCheckTime();
