@@ -4,6 +4,7 @@ package com.aiurt.modules.device.controller;
 import javax.servlet.http.HttpServletRequest;
 
 import cn.hutool.core.util.StrUtil;
+import com.aiurt.common.aspect.annotation.PermissionData;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.modules.device.entity.Device;
 import com.aiurt.modules.device.entity.DeviceCompose;
@@ -67,6 +68,7 @@ public class DeviceTypeController extends BaseController<DeviceType, IDeviceType
 	 @AutoLog(value = "查询",operateType = 1,operateTypeAlias = "查询设备类型左侧树",permissionUrl = "/deviceType/list")
 	 @ApiOperation(value = "设备类型左侧树")
 	 @GetMapping(value = "/treeList")
+	 @PermissionData(pageComponent = "/equipmentData/classify")
 	 public Result<?> treeList(Integer level) {
 		 List<CsMajor> majorList = csMajorService.list(new LambdaQueryWrapper<CsMajor>().eq(CsMajor::getDelFlag, CommonConstant.DEL_FLAG_0));
 		 List<CsSubsystem> systemList = csSubsystemService.list(new LambdaQueryWrapper<CsSubsystem>().eq(CsSubsystem::getDelFlag, CommonConstant.DEL_FLAG_0).orderByDesc(CsSubsystem::getCreateTime));
@@ -112,6 +114,7 @@ public class DeviceTypeController extends BaseController<DeviceType, IDeviceType
 	@AutoLog(value = "查询",operateType = 1,operateTypeAlias = "查询物资分类列表左侧树",permissionUrl = "/material/materialBaseType/list")
 	@ApiOperation(value = "无分页物资分类列表左侧树", notes = "无分页物资分类列表左侧树查询")
 	@GetMapping(value = "/selectList")
+	@PermissionData(pageComponent = "/equipmentData/classify")
 	public Result<List<DeviceType>> selectList(
 			@RequestParam(name = "majorCode", required = false) String majorCode,
 			@RequestParam(name = "systemCode", required = false) String systemCode,
@@ -172,6 +175,7 @@ public class DeviceTypeController extends BaseController<DeviceType, IDeviceType
 	 @AutoLog(value = "查询",operateType = 1,operateTypeAlias = "查询设备类型",permissionUrl = "/deviceType/list")
 	@ApiOperation(value="设备类型分页列表查询", notes="设备类型分页列表查询")
 	@GetMapping(value = "/list")
+	 @PermissionData(pageComponent = "/equipmentData/classify")
 	public Result<IPage<DeviceType>> queryPageList(DeviceType deviceType,
 								   @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
 								   @RequestParam(name="pageSize", defaultValue="10") Integer pageSize) {

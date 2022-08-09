@@ -4,6 +4,8 @@ import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
 
+import com.aiurt.common.aspect.annotation.MajorFilterColumn;
+import com.aiurt.common.aspect.annotation.SystemFilterColumn;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
@@ -39,10 +41,12 @@ public class DeviceType implements Serializable {
 	/**所属专业*/
 	@Excel(name = "所属专业", width = 15)
     @ApiModelProperty(value = "所属专业")
+    @MajorFilterColumn
     private String majorCode;
 	/**系统编号*/
 	@Excel(name = "系统编号", width = 15)
     @ApiModelProperty(value = "系统编号")
+    @SystemFilterColumn
     private String systemCode;
 	/**分类编号*/
 	@Excel(name = "分类编号", width = 15)
