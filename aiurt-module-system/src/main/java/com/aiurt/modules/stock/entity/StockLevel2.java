@@ -171,6 +171,22 @@ public class StockLevel2 extends DictEntity {
 	@Dict(dicCode = "material_type")
 	private  String  type;
 
+	/**物资类型*/
+	@ApiModelProperty(value = "规格型号")
+	@TableField(exist = false)
+	private  String  specifications;
+
+	/**物资类型*/
+	@ApiModelProperty(value = "单价")
+	@TableField(exist = false)
+	private  String  price;
+
+	/**物资类型*/
+	@ApiModelProperty(value = "生产厂商")
+	@TableField(exist = false)
+	@Dict(dictTable ="cs_manufactor",dicText = "name",dicCode = "id")
+	private  String  manufactorCode;
+
 	/**组织机构id*/
 	@ApiModelProperty(value = "组织机构id")
 	@Dict(dictTable ="sys_depart",dicText = "depart_name",dicCode = "id")

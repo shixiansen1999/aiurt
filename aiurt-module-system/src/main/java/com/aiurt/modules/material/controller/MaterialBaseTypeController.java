@@ -154,6 +154,7 @@ public class MaterialBaseTypeController {
     @AutoLog(value = "系统管理-基础数据管理-物资分类-左侧树", operateType = 1, operateTypeAlias = "查询", permissionUrl = "/manage/MaterialClassification")
     @ApiOperation(value = "物资分类左侧树")
     @GetMapping(value = "/treeLeft")
+    @PermissionData(pageComponent = "manage/MaterialClassification")
     public Result<?> treeLeft(
             HttpServletRequest req) {
         List<CsMajor> majorList = csMajorService.list(new LambdaQueryWrapper<CsMajor>().eq(CsMajor::getDelFlag,0));

@@ -49,6 +49,11 @@ public class StockOutboundMaterials extends DictEntity {
 	@Dict(dictTable ="stock_level2_info",dicText = "warehouse_name",dicCode = "warehouse_code")
 	private  String  warehouseCode;
 
+	/**备注*/
+	@Excel(name = "备注")
+	@ApiModelProperty(value = "备注")
+	private  String  remark;
+
 	/**仓库现有库存*/
 	@Excel(name = "仓库现有库存")
 	@ApiModelProperty(value = "仓库现有库存")

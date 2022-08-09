@@ -5,6 +5,7 @@ import java.util.Date;
 import java.util.List;
 
 import com.aiurt.common.aspect.annotation.Dict;
+import com.aiurt.common.aspect.annotation.SystemFilterColumn;
 import com.aiurt.modules.device.entity.DeviceType;
 import com.aiurt.modules.material.entity.MaterialBaseType;
 import com.baomidou.mybatisplus.annotation.IdType;
@@ -45,6 +46,7 @@ public class CsSubsystem implements Serializable {
 	/**编号*/
 	@Excel(name = "编号", width = 15)
     @ApiModelProperty(value = "编号")
+    @SystemFilterColumn
     private String systemCode;
 	/**说明*/
 	@Excel(name = "说明", width = 15)
