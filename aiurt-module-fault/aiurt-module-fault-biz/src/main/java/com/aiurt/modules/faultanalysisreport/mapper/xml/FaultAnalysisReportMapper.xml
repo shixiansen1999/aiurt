@@ -113,7 +113,9 @@
         and f.fault_mode_code = #{condition.faultModeCode}
     </if>
     <if test="condition.stationCode != null and condition.stationCode != ''">
-        and f.station_code = #{condition.stationCode}
+        and (f.station_code = #{condition.stationCode}
+        or f.line_code =#{condition.stationCode}
+        or f.station_position_code =#{condition.stationCode})
     </if>
     <if test="condition.deviceCode != null and condition.deviceCode != ''">
         and f.`code` in ((select fault_code from fault_device where device_code like concat('%',#{condition.deviceCode},'%')))
@@ -155,10 +157,7 @@
     f.happen_time
     FROM
     fault f
-    left join fault_analysis_report far on far.fault_code = f.`code`
-    where
-    far.del_flag = 0
-    and f.id = #{id}
+    where f.id = #{id}
     </select>
 
 <select id="readOne" resultType="com.aiurt.modules.faultanalysisreport.entity.FaultAnalysisReport">
