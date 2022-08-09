@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import com.aiurt.common.aspect.annotation.AutoLog;
+import com.aiurt.common.aspect.annotation.PermissionData;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.modules.device.entity.DeviceType;
 import com.aiurt.modules.device.service.IDeviceTypeService;
@@ -65,6 +66,7 @@ public class CsSubsystemController  {
 	 @AutoLog(value = "查询",operateType = 1,operateTypeAlias = "查询专业子系统树",permissionUrl = "/subsystem/list")
 	 @ApiOperation(value="专业子系统树", notes="专业子系统树")
 	 @GetMapping(value = "/treeList")
+	 @PermissionData(pageComponent = "manage/SubsystemList")
 	 public Result<?> queryTreeList() {
 		 List<CsMajor> majorList = csMajorService.list(new LambdaQueryWrapper<CsMajor>().eq(CsMajor::getDelFlag,0));
 		 List<CsSubsystem> systemList = csSubsystemService.list(new LambdaQueryWrapper<CsSubsystem>().eq(CsSubsystem::getDelFlag,0));
@@ -77,6 +79,7 @@ public class CsSubsystemController  {
 	 @AutoLog(value = "查询",operateType = 1,operateTypeAlias = "子系统列表查询",permissionUrl = "/subsystem/list")
 	 @ApiOperation(value="子系统列表查询", notes="子系统列表查询")
 	 @GetMapping(value = "/selectList")
+	 @PermissionData(pageComponent = "manage/SubsystemList")
 	 public Result<?> selectlist(
 									@RequestParam(name="majorCode", required = false) String majorCode,
 									@RequestParam(name="systemName", required = false) String systemName,
