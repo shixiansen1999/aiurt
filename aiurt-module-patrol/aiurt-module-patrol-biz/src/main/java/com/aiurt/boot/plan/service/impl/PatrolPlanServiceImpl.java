@@ -219,6 +219,7 @@ public class PatrolPlanServiceImpl extends ServiceImpl<PatrolPlanMapper, PatrolP
                 if (CollUtil.isNotEmpty(patrolPlanDevices)) {
                     p.setSpecifyDevice(1);
                     List<Device>devices = viewDetails(patrolPlanStandard.getStandardCode(),id);
+                    devices.forEach(object -> object.setStationCode(patrolPlanStandard.getStandardCode()));
                     p.setDevicesSs(devices);
                 }
             });
