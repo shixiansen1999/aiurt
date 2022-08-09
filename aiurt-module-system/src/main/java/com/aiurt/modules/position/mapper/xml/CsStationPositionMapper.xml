@@ -4,7 +4,7 @@
 
     <select id="queryCsStationPositionAll"  resultType="com.aiurt.modules.position.entity.CsStationPosition">
         SELECT
-            t.id,
+            t.id,'' length,
             '1' level,
             t.sort,
             t.line_code position_code,
@@ -21,7 +21,7 @@
         </where>
         UNION
         SELECT
-            t1.id,
+            t1.id,'' length,
             '2' level,
             t1.sort,
             t1.station_code position_code,
@@ -39,7 +39,7 @@
         </where>
         UNION
         SELECT
-            t2.id,
+            t2.id,t2.length,
             '3' level,
             t2.sort,
             t2.position_code,

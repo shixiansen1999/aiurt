@@ -59,28 +59,28 @@ public class CsStationPositionController  {
 	 @GetMapping(value = "/treeList")
 	 public Result<?> queryTreeList() {
 	 	 //查询所有一级
-		 List<CsLine> lineList = csLineService.list(new LambdaQueryWrapper<CsLine>().eq(CsLine::getDelFlag, CommonConstant.DEL_FLAG_0).orderByAsc(CsLine::getSort));
+		 List<CsLine> lineList = csLineService.list(new LambdaQueryWrapper<CsLine>().eq(CsLine::getDelFlag, CommonConstant.DEL_FLAG_0).orderByAsc(CsLine::getSort).orderByDesc(CsLine::getUpdateTime));
 		 //查询所有二级
-		 List<CsStation> stationList = csStationService.list(new LambdaQueryWrapper<CsStation>().eq(CsStation::getDelFlag, CommonConstant.DEL_FLAG_0).orderByAsc(CsStation::getSort));
+		 List<CsStation> stationList = csStationService.list(new LambdaQueryWrapper<CsStation>().eq(CsStation::getDelFlag, CommonConstant.DEL_FLAG_0).orderByAsc(CsStation::getSort).orderByDesc(CsStation::getUpdateTime));
 		 //查询所有三级
-		 List<CsStationPosition> positionList = csStationPositionService.list(new LambdaQueryWrapper<CsStationPosition>().eq(CsStationPosition::getDelFlag, CommonConstant.DEL_FLAG_0).orderByAsc(CsStationPosition::getSort));
+		 List<CsStationPosition> positionList = csStationPositionService.list(new LambdaQueryWrapper<CsStationPosition>().eq(CsStationPosition::getDelFlag, CommonConstant.DEL_FLAG_0).orderByAsc(CsStationPosition::getSort).orderByDesc(CsStationPosition::getUpdateTime));
 		 List<CsStationPosition> newList = new ArrayList<>();
 		 //循环一级
 		 lineList.forEach(line -> {
 		 	String codeCc1 = line.getLineCode();
-			 CsStationPosition onePosition = setEntity(line.getId(),1,line.getSort(),line.getLineCode(),line.getLineName(),null,null,codeCc1,line.getLineType());
+			 CsStationPosition onePosition = setEntity(line.getId(),1,line.getSort(),line.getLineCode(),line.getLineName(),null,null,codeCc1,line.getLineType(),"");
 			 List<CsStation> twoStationList = stationList.stream().filter(station-> station.getLineCode().equals(line.getLineCode())).collect(Collectors.toList());
 			 List<CsStationPosition> twoList = new ArrayList<>();
 			 //循环二级
 			 twoStationList.forEach(two->{
 				 String codeCc2 = line.getLineCode()+"/"+two.getStationCode();
-				 CsStationPosition twoPosition = setEntity(two.getId(),2,two.getSort(),two.getStationCode(),two.getStationName(),line.getLineCode(),line.getLineName(),codeCc2,two.getStationType());
+				 CsStationPosition twoPosition = setEntity(two.getId(),2,two.getSort(),two.getStationCode(),two.getStationName(),line.getLineCode(),line.getLineName(),codeCc2,two.getStationType(),"");
 				 List<CsStationPosition> threeStationList = positionList.stream().filter(position-> position.getStaionCode().equals(two.getStationCode())).collect(Collectors.toList());
 				 List<CsStationPosition> threeList = new ArrayList<>();
 				 //循环三级
 				 threeStationList.forEach(three->{
 					 String codeCc3 = line.getLineCode()+"/"+two.getStationCode()+"/"+three.getPositionCode();
-					 CsStationPosition threePosition = setEntity(three.getId(),3,three.getSort(),three.getPositionCode(),three.getPositionName(),two.getStationCode(),two.getStationName(),codeCc3,three.getPositionType());
+					 CsStationPosition threePosition = setEntity(three.getId(),3,three.getSort(),three.getPositionCode(),three.getPositionName(),two.getStationCode(),two.getStationName(),codeCc3,three.getPositionType(),three.getLength());
 					 threeList.add(threePosition);
 				 });
 				 twoPosition.setChildren(threeList);
@@ -102,7 +102,7 @@ public class CsStationPositionController  {
 	  * @param positionName
 	  * @return
 	  */
-	 public CsStationPosition setEntity(String id,Integer level,Integer sort,String positionCode,String positionName,String pCode,String pName,String codeCc,Integer positionType){
+	 public CsStationPosition setEntity(String id,Integer level,Integer sort,String positionCode,String positionName,String pCode,String pName,String codeCc,Integer positionType,String length){
 		 CsStationPosition position = new CsStationPosition();
 		 position.setId(id);
 		 position.setLevel(level);
@@ -113,6 +113,7 @@ public class CsStationPositionController  {
 		 position.setPUrl(pName);
 		 position.setCodeCc(codeCc);
 		 position.setPositionType(positionType);
+		 position.setLength(length);
          return position;
 	 }
 	/**

@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -47,7 +48,7 @@ public class CsLineServiceImpl extends ServiceImpl<CsLineMapper, CsLine> impleme
         if (!list.isEmpty()) {
             return Result.error("编码重复，请重新填写！");
         }
-
+        csLine.setUpdateTime(new Date());
         csLineMapper.insert(csLine);
         return Result.OK("添加成功！");
     }

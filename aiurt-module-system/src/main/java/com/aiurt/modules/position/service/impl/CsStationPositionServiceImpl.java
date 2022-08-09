@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -73,6 +74,7 @@ public class CsStationPositionServiceImpl extends ServiceImpl<CsStationPositionM
         csStationPosition.setLineCode(sta.getLineCode());
         //拼接position_code_cc
         csStationPosition.setPositionCodeCc("/"+sta.getLineCode()+"/"+csStationPosition.getStaionCode()+"/"+csStationPosition.getPositionCode());
+        csStationPosition.setUpdateTime(new Date());
         csStationPositionMapper.insert(csStationPosition);
         return Result.OK("添加成功！");
     }
