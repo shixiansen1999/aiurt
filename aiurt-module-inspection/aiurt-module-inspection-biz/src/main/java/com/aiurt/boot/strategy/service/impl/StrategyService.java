@@ -379,7 +379,6 @@ public class StrategyService {
                                   List<InspectionStrOrgRel> inspectionStrOrgRels,
                                   List<InspectionStrStaRel> stationRels
     ) {
-
         // 检修计划基本信息
         RepairPool repairPool = new RepairPool();
         Snowflake snowflake = IdUtil.getSnowflake(1, 1);
