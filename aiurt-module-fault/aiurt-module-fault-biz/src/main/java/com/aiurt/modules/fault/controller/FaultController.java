@@ -80,7 +80,7 @@ public class FaultController extends BaseController<Fault, IFaultService> {
         }
         String appointUserName = fault.getAppointUserName();
         if (StrUtil.isNotBlank(appointUserName)) {
-            fault.setFaultPhenomenon(null);
+            fault.setAppointUserName(null);
         }
         QueryWrapper<Fault> queryWrapper = QueryGenerator.initQueryWrapper(fault, req.getParameterMap());
         Page<Fault> page = new Page<>(pageNo, pageSize);
