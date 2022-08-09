@@ -124,8 +124,6 @@ public class CsStation implements Serializable {
     @ApiModelProperty(value = "所属部门")
     private String sysOrgCode;
 	/**更新人*/
-	@JsonFormat(timezone = "GMT+8")
-    @DateTimeFormat(pattern="yyyy-MM-dd")
     @ApiModelProperty(value = "更新人")
     private Date updateBy;
     /**级别*/
