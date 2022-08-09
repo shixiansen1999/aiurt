@@ -4,27 +4,27 @@
     <select id="getMajorSystemName" resultType="com.aiurt.boot.task.dto.PatrolTaskStandardDTO">
         SELECT t2.major_name as majorName,t3.system_name sysName
         FROM patrol_task_standard t1
-        LEFT JOIN cs_major t2 ON t1.profession_code = t2.major_code
-        LEFT JOIN cs_subsystem t3 ON t1.subsystem_code = t3.system_code
+        LEFT JOIN cs_major t2 ON t1.profession_code = t2.major_code and t2.del_flag = 0
+        LEFT JOIN cs_subsystem t3 ON t1.subsystem_code = t3.system_code and t3.del_flag = 0
         AND t2.major_code = t3.major_code
         where t1.task_id= #{id}
         and t2.major_name is not null and t3.system_name is not null
     </select>
     <select id="getStandard" resultType="com.aiurt.boot.task.dto.PatrolTaskStandardDTO">
-        SELECT
+         SELECT
             t1.id AS taskStandardId,
             t1.task_id AS taskId,
             t2.id AS standardId,
-            t3.name AS deviceTypeName,
-            t4.major_name as majorName,
-            t5.system_name as sysName,
+            t3.NAME AS deviceTypeName,
+            t4.major_name AS majorName,
+            t5.system_name AS sysName,
             t2.*
         FROM
             patrol_task_standard t1
             LEFT JOIN patrol_standard t2 ON t1.standard_id = t2.id
-            LEFT JOIN device_type t3 on t2.device_type_code = t3.code
-            left join cs_major t4 on t1.profession_code = t4.major_code
-            LEFT JOIN cs_subsystem t5 on t1.subsystem_code = t5.system_code
+            LEFT JOIN device_type t3 ON t2.device_type_code = t3.code and t3.del_flag = 0
+            LEFT JOIN cs_major t4 ON t1.profession_code = t4.major_code and t4.del_flag = 0
+            LEFT JOIN cs_subsystem t5 ON t1.subsystem_code = t5.system_code and t5.del_flag = 0
         WHERE
             t1.task_id = #{taskId}
 </select>

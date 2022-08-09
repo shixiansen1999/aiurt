@@ -143,4 +143,13 @@ public interface PatrolConstant {
      * 巡检计划生成任务状态-已生成
      */
     Integer PLAN_CREATED = 1;
+
+    /**
+     * 巡检检修项是巡检项目
+     */
+    Integer IS_CHECK_RESULT = 1;
+    /**
+     * 巡检检查结果异常状态
+     */
+    Integer NOT_CHECK_RESULT = 0;
 }

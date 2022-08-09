@@ -1,8 +1,11 @@
 package com.aiurt.boot.task.controller;
 
+import com.aiurt.boot.constant.PatrolConstant;
 import com.aiurt.boot.manager.PatrolManager;
 import com.aiurt.boot.task.dto.PatrolCheckResultDTO;
+import com.aiurt.boot.task.dto.PatrolCheckResultStatusDTO;
 import com.aiurt.boot.task.dto.PatrolTaskDeviceDTO;
+import com.aiurt.boot.task.entity.PatrolCheckResult;
 import com.aiurt.boot.task.entity.PatrolTaskDevice;
 import com.aiurt.boot.task.entity.PatrolTaskFault;
 import com.aiurt.boot.task.service.IPatrolCheckResultService;
@@ -12,6 +15,7 @@ import com.aiurt.boot.task.service.IPatrolTaskService;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.constant.enums.ModuleType;
 import com.aiurt.common.system.base.controller.BaseController;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -22,6 +26,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @Description: patrol_task_device
@@ -102,6 +107,27 @@ public class PatrolTaskDeviceController extends BaseController<PatrolTaskDevice,
 	 	List<PatrolCheckResultDTO> patrolTaskCheck = patrolTaskDeviceService.getPatrolTaskCheck(patrolTaskDevice,checkDetail);
 		 return Result.OK(patrolTaskCheck);
 	 }
+
+	/**
+	 * app巡检任务-巡检清单列表-填写工单检查状态数量统计（已检数、未检数）
+	 * @return
+	 */
+	@AutoLog(value = "app巡检任务-巡检清单列表-填写工单检查状态数量统计（已检数、未检数）", operateType = 1, operateTypeAlias = "查询", module = ModuleType.PATROL,permissionUrl = "/Inspection/pool")
+	@ApiOperation(value = "app巡检任务-巡检清单列表-填写工单检查状态数量统计（已检数、未检数）", notes = "app巡检任务-巡检清单列表-填写工单检查状态数量统计（已检数、未检数）")
+	@GetMapping(value = "/checkResultStatus")
+	public Result<PatrolCheckResultStatusDTO> checkResultStatus(@RequestParam(name="id",required=true)String id,
+																	  HttpServletRequest req) {
+		LambdaQueryWrapper<PatrolCheckResult> queryWrapper = new LambdaQueryWrapper<>();
+		queryWrapper.eq(PatrolCheckResult::getTaskDeviceId, id);
+		List<PatrolCheckResult> list = patrolCheckResultService.list(queryWrapper);
+		List<PatrolCheckResult> checkResultNumber = list.stream().filter(s -> s.getCheckResult() != null).collect(Collectors.toList());
+		List<PatrolCheckResult> unCheckResultNumber = list.stream().filter(s -> s.getCheckResult() == null && PatrolConstant.IS_CHECK_RESULT.equals(s.getCheck())).collect(Collectors.toList());
+		PatrolCheckResultStatusDTO resultStatusDTO = new PatrolCheckResultStatusDTO();
+		resultStatusDTO.setCheckedNumber(checkResultNumber.size());
+		resultStatusDTO.setUnCheckedNumber(unCheckResultNumber.size());
+		return Result.OK(resultStatusDTO);
+	}
+
 	/**
 	 * app巡检-检查项-故障单号-保存
 	 * @param id

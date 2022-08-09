@@ -63,6 +63,8 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
     @Autowired
     private PatrolAccessoryMapper patrolAccessoryMapper;
     @Autowired
+    private PatrolTaskUserMapper patrolTaskUserMapper;
+    @Autowired
     private ISysBaseAPI sysBaseAPI;
     @Autowired
     private PatrolManager manager;
@@ -125,6 +127,7 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
 
     @Override
     public Page<PatrolTaskDeviceDTO> getPatrolTaskDeviceList(Page<PatrolTaskDeviceDTO> pageList, String taskId, String search) {
+        LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         List<PatrolTaskDeviceDTO> patrolTaskDeviceList = patrolTaskDeviceMapper.getPatrolTaskDeviceList(pageList, taskId, search);
         patrolTaskDeviceList.stream().forEach(e -> {
             if (ObjectUtil.isNull(e.getCheckResult())) {
@@ -180,6 +183,16 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
             String submitName = patrolTaskDeviceMapper.getSubmitName(e.getUserId());
             e.setSubmitName(submitName);
             PatrolTask patrolTask = patrolTaskMapper.selectById(e.getTaskId());
+            List<PatrolTaskUser> userList = patrolTaskUserMapper.selectList(new LambdaQueryWrapper<PatrolTaskUser>().eq(PatrolTaskUser::getTaskCode, patrolTask.getCode()));
+            List<PatrolTaskUser> showButton = userList.stream().filter(u -> u.getUserId().equals(sysUser.getId())).collect(Collectors.toList());
+            if(showButton.size()>0)
+            {
+                e.setShowEditButton(1);
+            }
+            else
+            {
+                e.setShowEditButton(0);
+            }
             List<String> orgCodes = patrolTaskMapper.getOrgCode(patrolTask.getCode());
             e.setOrgList(orgCodes);
             List<PatrolAccompanyDTO> accompanyDTOList = patrolAccompanyMapper.getAccompanyName(e.getPatrolNumber());

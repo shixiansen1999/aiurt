@@ -171,4 +171,8 @@ public class PatrolTaskDeviceDTO {
     @Excel(name = "故障单号集合", width = 15)
     @ApiModelProperty(value = "故障单号集合")
     private List <String> faultList;
+    /**显示填写工单编辑按钮判断，0不显示，1显示*/
+    @Excel(name = "显示填写工单编辑按钮判断，0不显示，1显示", width = 15)
+    @ApiModelProperty(value = "显示填写工单编辑按钮判断，0不显示，1显示")
+    private java.lang.Integer showEditButton;
 }
