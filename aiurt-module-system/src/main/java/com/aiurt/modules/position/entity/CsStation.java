@@ -109,8 +109,8 @@ public class CsStation implements Serializable {
     @ApiModelProperty(value = "创建时间")
     private Date createTime;
 	/**更新时间*/
-	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
-    @DateTimeFormat(pattern="yyyy-MM-dd")
+	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
+    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
     @ApiModelProperty(value = "更新时间")
     private Date updateTime;
 	/**删除标志*/
@@ -124,7 +124,7 @@ public class CsStation implements Serializable {
     @ApiModelProperty(value = "所属部门")
     private String sysOrgCode;
 	/**更新人*/
-	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
+	@JsonFormat(timezone = "GMT+8")
     @DateTimeFormat(pattern="yyyy-MM-dd")
     @ApiModelProperty(value = "更新人")
     private Date updateBy;

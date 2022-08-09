@@ -56,8 +56,8 @@ public class CsLine implements Serializable {
     @ApiModelProperty(value = "createTime")
     private Date createTime;
 	/**updateTime*/
-	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
-    @DateTimeFormat(pattern="yyyy-MM-dd")
+	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
+    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
     @ApiModelProperty(value = "updateTime")
     private Date updateTime;
 	/**线路类型（1:线路、2:区域）*/

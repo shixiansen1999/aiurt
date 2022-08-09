@@ -9,6 +9,7 @@ import com.aiurt.boot.standard.entity.PatrolStandard;
 import com.aiurt.boot.standard.service.IInspectionCodeService;
 import com.aiurt.boot.standard.service.IPatrolStandardService;
 import com.aiurt.common.aspect.annotation.AutoLog;
+import com.aiurt.common.aspect.annotation.PermissionData;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.modules.device.entity.DeviceType;
 import com.aiurt.modules.device.service.IDeviceTypeService;
@@ -74,6 +75,7 @@ public class CsMajorController  {
 	@AutoLog(value = "查询",operateType = 1,operateTypeAlias = "专业分页列表查询",permissionUrl = "/major/list")
 	@ApiOperation(value="专业分页列表查询", notes="专业分页列表查询")
 	@GetMapping(value = "/list")
+	@PermissionData(pageComponent = "manage/MajorList")
 	public Result<?> queryPageList(CsMajor csMajor,
 								   @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
 								   @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,

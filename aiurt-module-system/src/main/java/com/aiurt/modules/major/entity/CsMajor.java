@@ -4,6 +4,8 @@ import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
 
+import com.aiurt.common.aspect.annotation.DeptFilterColumn;
+import com.aiurt.common.aspect.annotation.MajorFilterColumn;
 import com.aiurt.modules.device.entity.DeviceType;
 import com.aiurt.modules.material.entity.MaterialBaseType;
 import com.aiurt.modules.subsystem.entity.CsSubsystem;
@@ -41,6 +43,7 @@ public class CsMajor implements Serializable {
 	/**专业编码*/
 	@Excel(name = "专业编码", width = 15)
     @ApiModelProperty(value = "专业编码")
+    @MajorFilterColumn
     private String majorCode;
 	/**专业名称*/
 	@Excel(name = "专业名称", width = 15)
@@ -65,6 +68,7 @@ public class CsMajor implements Serializable {
     private Date updateTime;
 	/**所属部门*/
     @ApiModelProperty(value = "所属部门")
+    @DeptFilterColumn
     private String sysOrgCode;
 	/**更新人*/
     @ApiModelProperty(value = "更新人")
