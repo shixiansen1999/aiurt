@@ -2,18 +2,19 @@ package com.aiurt.modules.flow.service;
 
 import com.aiurt.modules.flow.dto.*;
 import com.aiurt.modules.flow.entity.ActCustomTaskComment;
-import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import org.flowable.bpmn.model.BpmnModel;
-import org.flowable.engine.history.HistoricActivityInstance;
-import org.flowable.engine.history.HistoricProcessInstance;
+import org.flowable.bpmn.model.FlowElement;
 import org.flowable.bpmn.model.UserTask;
 import org.flowable.engine.delegate.TaskListener;
+import org.flowable.engine.history.HistoricActivityInstance;
+import org.flowable.engine.history.HistoricProcessInstance;
 import org.flowable.engine.repository.ProcessDefinition;
 import org.flowable.engine.runtime.ProcessInstance;
 import org.flowable.task.api.Task;
 import org.flowable.task.api.TaskInfo;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -102,12 +103,14 @@ public interface FlowApiService {
     List<ProcessDefinition> getProcessDefinitionList(Set<String> processDefinitionIdSet);
 
     /**
-<<<<<<< Updated upstream
+     * <<<<<<< Updated upstream
      * 获取指定流程定义的流程图
+     *
      * @param processDefinitionId 流程定义Id
      * @return
      */
     BpmnModel getBpmnModelByDefinitionId(String processDefinitionId);
+
     /**
      * 获取流程实例的历史流程实例。
      *
@@ -115,6 +118,7 @@ public interface FlowApiService {
      * @return 历史流程实例。
      */
     HistoricProcessInstance getHistoricProcessInstance(String processInstanceId);
+
     /**
      * 获取流程图高亮数据。
      *
@@ -138,6 +142,7 @@ public interface FlowApiService {
      * @return 流程实例待完成的任务列表。
      */
     List<HistoricActivityInstance> getHistoricUnfinishedInstanceList(String processInstanceId);
+
     /**
      * 获取指定流程实例和任务Id的当前活动任务。
      *
@@ -146,6 +151,7 @@ public interface FlowApiService {
      * @return 当前流程实例的活动任务。
      */
     Task getProcessInstanceActiveTask(String processInstanceId, String taskId);
+
     /**
      * 获取流程运行时指定任务的信息。
      *
@@ -158,6 +164,7 @@ public interface FlowApiService {
 
     /**
      * 已办任务
+     *
      * @param processDefinitionName
      * @param beginDate
      * @param endDate
@@ -169,17 +176,64 @@ public interface FlowApiService {
 
     /**
      * 给用户节点添加监听器
+     *
      * @param userTask
      * @param listenerClazz
      */
     void addTaskCreateListener(UserTask userTask, Class<? extends TaskListener> listenerClazz);
 
     /**
+     * 转办任务
+     *
+     * @param params
+     */
+    void turnTask(TurnTaskDTO params);
+
+    /**
+     * 获取可驳回节点列表
+     *
+     * @param processInstanceId
+     * @param taskId
+     * @return
+     */
+    List<FlowNodeDTO> getBackNodesByProcessInstanceId(String processInstanceId, String taskId);
+    /**
      * 流程实例
      * @param reqDTO
      * @return
      */
     IPage<HistoricProcessInstanceDTO> listAllHistoricProcessInstance(HistoricProcessInstanceReqDTO reqDTO);
+    /**
+     * 回退到上一个用户任务节点。如果没有指定，则回退到上一个任务。
+     *
+     * @param task      当前活动任务。
+     * @param targetKey 指定回退到的任务标识。如果为null，则回退到上一个任务。
+     * @param forReject true表示驳回，false为撤回。
+     * @param comment    驳回或者撤销的原因。
+     */
+    void backToRuntimeTask(Task task, String targetKey, boolean forReject, String comment);
+    /**
+     * 根据流程定义Id查询流程定义对象。
+     *
+     * @param processDefinitionId 流程定义Id。
+     * @return 流程定义对象。
+     */
+    ProcessDefinition getProcessDefinitionById(String processDefinitionId);
+    /**
+     * 获取指定流程定义的全部流程节点。
+     *
+     * @param processDefinitionId 流程定义Id。
+     * @return 当前流程定义的全部节点集合。
+     */
+    Collection<FlowElement> getProcessAllElements(String processDefinitionId);
+    /**
+     * 获取流程实例的已完成历史任务列表，同时按照每个活动实例的开始时间升序排序。
+     *
+     * @param processInstanceId 流程实例Id。
+     * @return 流程实例已完成的历史任务列表。
+     */
+    List<HistoricActivityInstance> getHistoricActivityInstanceListOrderByStartTime(String processInstanceId);
+
 
     /**
      * 终止流程

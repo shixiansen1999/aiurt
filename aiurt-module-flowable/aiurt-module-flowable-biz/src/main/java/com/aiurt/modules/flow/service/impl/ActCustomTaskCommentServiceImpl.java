@@ -7,6 +7,8 @@ import com.aiurt.modules.flow.entity.ActCustomTaskComment;
 import com.aiurt.modules.flow.mapper.ActCustomTaskCommentMapper;
 import com.aiurt.modules.flow.service.IActCustomTaskCommentService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.stereotype.Service;
 
@@ -85,5 +87,22 @@ public class ActCustomTaskCommentServiceImpl extends ServiceImpl<ActCustomTaskCo
                 new LambdaQueryWrapper<ActCustomTaskComment>().in(ActCustomTaskComment::getTaskId, taskIdSet);
         queryWrapper.orderByDesc(ActCustomTaskComment::getId);
         return baseMapper.selectList(queryWrapper);
+    }
+
+    /**
+     * 获取指定流程实例和任务定义标识的最后一条审批任务。
+     *
+     * @param processInstanceId 流程实例Id。
+     * @param taskDefinitionKey 任务定义标识。
+     * @return 查询结果。
+     */
+    @Override
+    public ActCustomTaskComment getLatestFlowTaskComment(String processInstanceId, String taskDefinitionKey) {
+        LambdaQueryWrapper<ActCustomTaskComment> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(ActCustomTaskComment::getProcessInstanceId, processInstanceId);
+        queryWrapper.eq(ActCustomTaskComment::getTaskKey, taskDefinitionKey);
+        queryWrapper.orderByDesc(ActCustomTaskComment::getId);
+        IPage<ActCustomTaskComment> pageData = baseMapper.selectPage(new Page<>(1, 1), queryWrapper);
+        return CollUtil.isEmpty(pageData.getRecords()) ? null : pageData.getRecords().get(0);
     }
 }

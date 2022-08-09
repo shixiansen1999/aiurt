@@ -8,6 +8,7 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
 import org.flowable.task.api.TaskInfo;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -26,6 +27,7 @@ import java.util.Date;
 @Accessors(chain = true)
 @EqualsAndHashCode(callSuper = false)
 @ApiModel(value="act_custom_task_comment对象", description="act_custom_task_comment")
+@NoArgsConstructor
 public class ActCustomTaskComment implements Serializable {
     private static final long serialVersionUID = 1L;
 

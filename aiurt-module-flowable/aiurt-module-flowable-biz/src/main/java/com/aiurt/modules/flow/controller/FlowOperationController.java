@@ -5,7 +5,6 @@ import com.aiurt.modules.flow.dto.*;
 import com.aiurt.modules.flow.entity.ActCustomTaskComment;
 import com.aiurt.modules.flow.service.FlowApiService;
 import com.aiurt.modules.flow.service.IActCustomTaskCommentService;
-import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -190,12 +189,15 @@ public class FlowOperationController {
             @RequestParam String endDate,
             @RequestParam(name = "pageNo", defaultValue = "1") @ApiParam(required = true) Integer pageNo,
             @RequestParam(name = "pageSize", defaultValue = "10") @ApiParam(required = true) Integer pageSize) throws ParseException {
-        IPage<FlowHisTaskDTO> pageList =flowApiService.listHistoricTask(processDefinitionName,beginDate,endDate,pageNo,pageSize);
+        IPage<FlowHisTaskDTO> pageList = flowApiService.listHistoricTask(processDefinitionName, beginDate, endDate, pageNo, pageSize);
         return Result.OK(pageList);
     }
 
     /**
+     * 流程实例
+     * <p>
      * 流程实例, 所有历史流程数据。
+     *
      * @return
      */
     @PostMapping("/listAllHistoricProcessInstance")
@@ -207,6 +209,8 @@ public class FlowOperationController {
 
     /**
      * 根据输入参数查询，当前用户的历史流程数据。
+     * 历史任务查询
+     *
      * @return
      */
     @ApiOperation("历史任务查询")
@@ -218,6 +222,29 @@ public class FlowOperationController {
         return Result.OK(result);
     }
 
+    /**
+     * 转办任务
+     *
+     * @param params 参数
+     * @return
+     */
+    @PostMapping(value = "/turnTask")
+    public Result<?> turnTask(TurnTaskDTO params) {
+        flowApiService.turnTask(params);
+        return Result.OK("转办成功");
+    }
+
+    /**
+     * 获取可驳回节点列表
+     *
+     * @param processInstanceId 流程实例id
+     * @return
+     */
+    @GetMapping(value = "/getBackNodesByProcessInstanceId/{processInstanceId}/{taskId}")
+    public Result<List<FlowNodeDTO>> getBackNodesByProcessInstanceId(@PathVariable String processInstanceId, @PathVariable String taskId) {
+        List<FlowNodeDTO> datas = flowApiService.getBackNodesByProcessInstanceId(processInstanceId, taskId);
+        return Result.OK(datas);
+    }
     /**
      * 终止流程
      * @param instanceDTO

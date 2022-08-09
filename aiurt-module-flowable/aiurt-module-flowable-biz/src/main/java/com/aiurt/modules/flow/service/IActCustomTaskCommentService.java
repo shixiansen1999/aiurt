@@ -36,5 +36,12 @@ public interface IActCustomTaskCommentService extends IService<ActCustomTaskComm
      * @return 查询结果集。
      */
     List<ActCustomTaskComment> getFlowTaskCommentListByTaskIds(Set<String> taskIdSet);
-
+    /**
+     * 获取指定流程实例和任务定义标识的最后一条审批任务。
+     *
+     * @param processInstanceId 流程实例Id。
+     * @param taskDefinitionKey 任务定义标识。
+     * @return 查询结果。
+     */
+    ActCustomTaskComment getLatestFlowTaskComment(String processInstanceId, String taskDefinitionKey);
 }

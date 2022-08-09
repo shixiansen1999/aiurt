@@ -1,7 +1,6 @@
 package com.aiurt.boot.task.dto;
 
 import com.aiurt.boot.manager.dto.ColleaguesDTO;
-import com.aiurt.boot.plan.entity.RepairPoolCodeContent;
 import com.aiurt.boot.task.entity.RepairTaskResult;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -123,6 +122,11 @@ public class CheckListDTO {
     @ApiModelProperty(value = "检修时长")
     @TableField(exist = false)
     private Integer duration;
+
+    /**检修时长*/
+    @ApiModelProperty(value = "检修时长格式")
+    @TableField(exist = false)
+    private String durationName;
 
     /**站点位置*/
     @ApiModelProperty(value = "站点位置")

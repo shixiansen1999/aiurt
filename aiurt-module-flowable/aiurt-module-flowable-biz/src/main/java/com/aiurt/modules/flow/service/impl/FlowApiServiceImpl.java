@@ -22,20 +22,23 @@ import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import liquibase.pro.packaged.O;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.SecurityUtils;
+import org.flowable.bpmn.constants.BpmnXMLConstants;
 import org.flowable.bpmn.model.Process;
 import org.flowable.bpmn.model.*;
-import org.flowable.engine.HistoryService;
-import org.flowable.engine.RepositoryService;
-import org.flowable.engine.RuntimeService;
-import org.flowable.engine.TaskService;
+import org.flowable.editor.language.json.converter.util.CollectionUtils;
+import org.flowable.engine.*;
 import org.flowable.engine.delegate.TaskListener;
 import org.flowable.engine.history.HistoricActivityInstance;
 import org.flowable.engine.history.HistoricProcessInstance;
 import org.flowable.engine.history.HistoricProcessInstanceQuery;
+import org.flowable.engine.impl.bpmn.behavior.ParallelMultiInstanceBehavior;
+import org.flowable.engine.impl.bpmn.behavior.SequentialMultiInstanceBehavior;
 import org.flowable.engine.repository.ProcessDefinition;
+import org.flowable.engine.runtime.ActivityInstance;
+import org.flowable.engine.runtime.ChangeActivityStateBuilder;
+import org.flowable.engine.runtime.Execution;
 import org.flowable.engine.runtime.ProcessInstance;
 import org.flowable.task.api.Task;
 import org.flowable.task.api.TaskInfo;
@@ -52,6 +55,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 /**
@@ -77,6 +81,8 @@ public class FlowApiServiceImpl implements FlowApiService {
     private IActCustomTaskCommentService customTaskCommentService;
     @Autowired
     private IActCustomTaskExtService customTaskExtService;
+    @Autowired
+    protected IdentityService identityService;
 
     @Autowired
     private ISysBaseAPI sysBaseAPI;
@@ -374,7 +380,7 @@ public class FlowApiServiceImpl implements FlowApiService {
         result.setCurrent(hisTaskFinishList.getCurrent());
         result.setPages(hisTaskFinishList.getPages());
         result.setSize(hisTaskFinishList.getSize());
-        return null;
+        return result;
     }
 
     /**
@@ -744,6 +750,7 @@ public class FlowApiServiceImpl implements FlowApiService {
 
     /**
      * 创建用户任务监听器
+     *
      * @param userTask
      * @param listenerClazz
      */
@@ -758,7 +765,155 @@ public class FlowApiServiceImpl implements FlowApiService {
     }
 
     /**
+     * 转办任务
+     *
+     * @param params
+     */
+    @Override
+    public void turnTask(TurnTaskDTO params) {
+        Task task = taskService.createTaskQuery().taskId(params.getTaskId()).singleResult();
+        if (ObjectUtil.isNull(task)) {
+            throw new AiurtBootException("没有运行时的任务实例,请确认!");
+        }
+        if (StrUtil.isEmpty(params.getUsername())) {
+            throw new AiurtBootException("请指定转办的人员");
+        }
+
+        // 添加审批意见
+        customTaskCommentService.getBaseMapper().insert(new ActCustomTaskComment(task));
+
+        // 转办
+        taskService.setAssignee(params.getTaskId(), params.getUsername());
+    }
+
+    /**
+     * 获取可驳回节点列表
+     *
+     * @param processInstanceId
+     * @param taskId
+     * @return
+     */
+    @Override
+    public List<FlowNodeDTO> getBackNodesByProcessInstanceId(String processInstanceId, String taskId) {
+        List<FlowNodeDTO> result = new ArrayList<>();
+        Task task = taskService.createTaskQuery().taskId(taskId).singleResult();
+        if (ObjectUtil.isNull(task)) {
+            return result;
+        }
+        String taskDefinitionKey = task.getTaskDefinitionKey();
+
+        // 获取运行节点表中usertask
+        String sql = "select t.* from act_ru_actinst t where t.ACT_TYPE_ = 'userTask' " +
+                " and t.PROC_INST_ID_=#{processInstanceId} and t.END_TIME_ is not null ";
+        List<ActivityInstance> activityInstances = runtimeService.createNativeActivityInstanceQuery().sql(sql)
+                .parameter("processInstanceId", processInstanceId)
+                .list();
+
+        // 获取运行节点表的parallelGateway节点并去重
+        sql = "SELECT t.ID_, t.REV_,t.PROC_DEF_ID_,t.PROC_INST_ID_,t.EXECUTION_ID_,t.ACT_ID_, t.TASK_ID_, t.CALL_PROC_INST_ID_, t.ACT_NAME_, t.ACT_TYPE_, " +
+                " t.ASSIGNEE_, t.START_TIME_, max(t.END_TIME_) as END_TIME_, t.DURATION_, t.DELETE_REASON_, t.TENANT_ID_" +
+                " FROM  act_ru_actinst t WHERE t.ACT_TYPE_ = 'parallelGateway' AND t.PROC_INST_ID_ = #{processInstanceId} and t.END_TIME_ is not null" +
+                " and t.ACT_ID_ <> #{actId} GROUP BY t.act_id_";
+        List<ActivityInstance> parallelGatewaies = runtimeService.createNativeActivityInstanceQuery().sql(sql)
+                .parameter("processInstanceId", processInstanceId)
+                .parameter("actId", taskDefinitionKey)
+                .list();
+
+        // 排序
+        if (CollectionUtils.isNotEmpty(parallelGatewaies)) {
+            activityInstances.addAll(parallelGatewaies);
+            activityInstances.sort(Comparator.comparing(ActivityInstance::getEndTime));
+        }
+
+        // 分组节点
+        int count = 0;
+
+        // 并行网关节点
+        Map<ActivityInstance, List<ActivityInstance>> parallelGatewayUserTasks = new HashMap<>();
+        List<ActivityInstance> userTasks = new ArrayList<>();
+        ActivityInstance currActivityInstance = null;
+        for (ActivityInstance activityInstance : activityInstances) {
+            // 网关处理
+            if (BpmnXMLConstants.ELEMENT_GATEWAY_PARALLEL.equals(activityInstance.getActivityType())) {
+                count++;
+                if (count % 2 != 0) {
+                    List<ActivityInstance> datas = new ArrayList<>();
+                    currActivityInstance = activityInstance;
+                    parallelGatewayUserTasks.put(currActivityInstance, datas);
+                }
+            }
+            // 用户节点
+            if (BpmnXMLConstants.ELEMENT_TASK_USER.equals(activityInstance.getActivityType())) {
+                if (count % 2 == 0) {
+                    userTasks.add(activityInstance);
+                } else {
+                    if (parallelGatewayUserTasks.containsKey(currActivityInstance)) {
+                        parallelGatewayUserTasks.get(currActivityInstance).add(activityInstance);
+                    }
+                }
+            }
+        }
+
+        // 组装人员名称
+        List<HistoricTaskInstance> historicTaskInstances = historyService.createHistoricTaskInstanceQuery()
+                .processInstanceId(processInstanceId)
+                .finished()
+                .list();
+
+        // 获取每一步的人员信息
+        if (CollectionUtils.isNotEmpty(userTasks)) {
+            userTasks.forEach(activityInstance -> {
+                FlowNodeDTO node = new FlowNodeDTO();
+                node.setNodeId(activityInstance.getActivityId());
+                node.setNodeName(activityInstance.getActivityName());
+                node.setEndTime(activityInstance.getEndTime());
+                result.add(node);
+            });
+        }
+
+        // 组装会签节点数据
+        if (CollUtil.isNotEmpty(historicTaskInstances)) {
+            parallelGatewayUserTasks.forEach((activity, activities) -> {
+                FlowNodeDTO node = new FlowNodeDTO();
+                node.setNodeId(activity.getActivityId());
+                node.setEndTime(activity.getEndTime());
+                StringBuffer nodeNames = new StringBuffer("会签:");
+                if (CollectionUtils.isNotEmpty(activities)) {
+                    activities.forEach(activityInstance -> {
+                        nodeNames.append(activityInstance.getActivityName()).append(",");
+                    });
+                    node.setNodeName(nodeNames.toString());
+                    result.add(node);
+                }
+            });
+        }
+
+        // 去重合并
+        List<FlowNodeDTO> datas = result.stream().collect(
+                Collectors.collectingAndThen(Collectors.toCollection(() ->
+                        new TreeSet<>(Comparator.comparing(nodeVo -> nodeVo.getNodeId()))), ArrayList::new));
+
+        // 排序
+        datas.sort(Comparator.comparing(FlowNodeDTO::getEndTime));
+        return datas;
+    }
+
+    /**
+     * 获取每一步的人员信息
+     *
+     * @param processInstanceId
+     * @param userList
+     * @param taskInstanceMap
+     * @return map
+     */
+    private Map<String, String> getApplyers(String processInstanceId, List<String> userList, Map<String, List<HistoricTaskInstance>> taskInstanceMap) {
+        ProcessInstance processInstance = runtimeService.createProcessInstanceQuery().processInstanceId(processInstanceId).singleResult();
+        return null;
+    }
+
+    /**
      * 流程实例
+     *
      * @param reqDTO
      * @return
      */
@@ -858,4 +1013,636 @@ public class FlowApiServiceImpl implements FlowApiService {
     public void deleteProcessInstance(String processInstanceId) {
         historyService.deleteHistoricProcessInstance(processInstanceId);
     }
+
+    /**
+     * 回退到上一个用户任务节点。如果没有指定，则回退到上一个任务。
+     *
+     * @param task      当前活动任务。
+     * @param targetKey 指定回退到的任务标识。如果为null，则回退到上一个任务。
+     * @param forReject true表示驳回，false为撤回。
+     * @param comment   驳回或者撤销的原因。
+     */
+    @Override
+    public void backToRuntimeTask(Task task, String targetKey, boolean forReject, String comment) {
+        ProcessDefinition processDefinition = this.getProcessDefinitionById(task.getProcessDefinitionId());
+        Collection<FlowElement> allElements = this.getProcessAllElements(processDefinition.getId());
+        FlowElement source = null;
+        // 获取跳转的节点元素
+        FlowElement target = null;
+        for (FlowElement flowElement : allElements) {
+            if (flowElement.getId().equals(task.getTaskDefinitionKey())) {
+                source = flowElement;
+                if (StrUtil.isBlank(targetKey)) {
+                    break;
+                }
+            }
+            if (StrUtil.isNotBlank(targetKey)) {
+                if (flowElement.getId().equals(targetKey)) {
+                    target = flowElement;
+                }
+            }
+        }
+        if (targetKey != null && target == null) {
+            throw new AiurtBootException("数据验证失败，被驳回的指定目标节点不存在！");
+        }
+
+        UserTask oneUserTask = null;
+        List<String> targetIds = null;
+        if (target == null) {
+            List<UserTask> parentUserTaskList =
+                    this.getParentUserTaskList(source, null, null);
+            if (CollUtil.isEmpty(parentUserTaskList)) {
+                throw new AiurtBootException("数据验证失败，当前节点为初始任务节点，不能驳回！");
+            }
+            // 获取活动ID, 即节点Key
+            Set<String> parentUserTaskKeySet = new HashSet<>();
+            parentUserTaskList.forEach(item -> parentUserTaskKeySet.add(item.getId()));
+            List<HistoricActivityInstance> historicActivityIdList =
+                    this.getHistoricActivityInstanceListOrderByStartTime(task.getProcessInstanceId());
+            // 数据清洗，将回滚导致的脏数据清洗掉
+            List<String> lastHistoricTaskInstanceList =
+                    this.cleanHistoricTaskInstance(allElements, historicActivityIdList);
+            // 此时历史任务实例为倒序，获取最后走的节点
+            targetIds = new ArrayList<>();
+            // 循环结束标识，遇到当前目标节点的次数
+            int number = 0;
+            StringBuilder parentHistoricTaskKey = new StringBuilder();
+            for (String historicTaskInstanceKey : lastHistoricTaskInstanceList) {
+                // 当会签时候会出现特殊的，连续都是同一个节点历史数据的情况，这种时候跳过
+                if (parentHistoricTaskKey.toString().equals(historicTaskInstanceKey)) {
+                    continue;
+                }
+                parentHistoricTaskKey = new StringBuilder(historicTaskInstanceKey);
+                if (historicTaskInstanceKey.equals(task.getTaskDefinitionKey())) {
+                    number++;
+                }
+                if (number == 2) {
+                    break;
+                }
+                // 如果当前历史节点，属于父级的节点，说明最后一次经过了这个点，需要退回这个点
+                if (parentUserTaskKeySet.contains(historicTaskInstanceKey)) {
+                    targetIds.add(historicTaskInstanceKey);
+                }
+            }
+            // 目的获取所有需要被跳转的节点 currentIds
+            // 取其中一个父级任务，因为后续要么存在公共网关，要么就是串行公共线路
+            oneUserTask = parentUserTaskList.get(0);
+        }
+        // 获取所有正常进行的执行任务的活动节点ID，这些任务不能直接使用，需要找出其中需要撤回的任务
+        List<Execution> runExecutionList =
+                runtimeService.createExecutionQuery().processInstanceId(task.getProcessInstanceId()).list();
+        List<String> runActivityIdList = runExecutionList.stream()
+                .filter(c -> StrUtil.isNotBlank(c.getActivityId()))
+                .map(Execution::getActivityId).collect(Collectors.toList());
+        // 需驳回任务列表
+        List<String> currentIds = new ArrayList<>();
+        // 通过父级网关的出口连线，结合 runExecutionList 比对，获取需要撤回的任务
+        List<FlowElement> currentFlowElementList = this.getChildUserTaskList(
+                target != null ? target : oneUserTask, runActivityIdList, null, null);
+        currentFlowElementList.forEach(item -> currentIds.add(item.getId()));
+        if (target == null) {
+            // 规定：并行网关之前节点必须需存在唯一用户任务节点，如果出现多个任务节点，则并行网关节点默认为结束节点，原因为不考虑多对多情况
+            if (targetIds.size() > 1 && currentIds.size() > 1) {
+                throw new AiurtBootException("数据验证失败，任务出现多对多情况，无法撤回！");
+            }
+        }
+        AtomicReference<List<HistoricActivityInstance>> tmp = new AtomicReference<>();
+        // 用于下面新增网关删除信息时使用
+        String targetTmp = targetKey != null ? targetKey : String.join(",", targetIds);
+        // currentIds 为活动ID列表
+        // currentExecutionIds 为执行任务ID列表
+        // 需要通过执行任务ID来设置驳回信息，活动ID不行
+        currentIds.forEach(currentId -> runExecutionList.forEach(runExecution -> {
+            if (StrUtil.isNotBlank(runExecution.getActivityId()) && currentId.equals(runExecution.getActivityId())) {
+                // 查询当前节点的执行任务的历史数据
+                tmp.set(historyService.createHistoricActivityInstanceQuery()
+                        .processInstanceId(task.getProcessInstanceId())
+                        .executionId(runExecution.getId())
+                        .activityId(runExecution.getActivityId()).list());
+                // 如果这个列表的数据只有 1 条数据
+                // 网关肯定只有一条，且为包容网关或并行网关
+                // 这里的操作目的是为了给网关在扭转前提前加上删除信息，结构与普通节点的删除信息一样，目的是为了知道这个网关也是有经过跳转的
+                if (tmp.get() != null && tmp.get().size() == 1 && StrUtil.isNotBlank(tmp.get().get(0).getActivityType())
+                        && ("parallelGateway".equals(tmp.get().get(0).getActivityType()) || "inclusiveGateway".equals(tmp.get().get(0).getActivityType()))) {
+                    // singleResult 能够执行更新操作
+                    // 利用 流程实例ID + 执行任务ID + 活动节点ID 来指定唯一数据，保证数据正确
+                    historyService.createNativeHistoricActivityInstanceQuery().sql(
+                            "UPDATE ACT_HI_ACTINST SET DELETE_REASON_ = 'Change activity to " + targetTmp + "'  WHERE PROC_INST_ID_='" + task.getProcessInstanceId() + "' AND EXECUTION_ID_='" + runExecution.getId() + "' AND ACT_ID_='" + runExecution.getActivityId() + "'").singleResult();
+                }
+            }
+        }));
+        try {
+            if (StrUtil.isNotBlank(targetKey)) {
+                runtimeService.createChangeActivityStateBuilder()
+                        .processInstanceId(task.getProcessInstanceId())
+                        .moveActivityIdsToSingleActivityId(currentIds, targetKey).changeState();
+            } else {
+                // 如果父级任务多于 1 个，说明当前节点不是并行节点，原因为不考虑多对多情况
+                if (targetIds.size() > 1) {
+                    // 1 对 多任务跳转，currentIds 当前节点(1)，targetIds 跳转到的节点(多)
+                    ChangeActivityStateBuilder builder = runtimeService.createChangeActivityStateBuilder()
+                            .processInstanceId(task.getProcessInstanceId())
+                            .moveSingleActivityIdToActivityIds(currentIds.get(0), targetIds);
+                    for (String targetId : targetIds) {
+                        ActCustomTaskComment taskComment =
+                                customTaskCommentService.getLatestFlowTaskComment(task.getProcessInstanceId(), targetId);
+                        // 如果驳回后的目标任务包含指定人，则直接通过变量回抄，如果没有则自动忽略该变量，不会给流程带来任何影响。
+                        String submitLoginName = taskComment.getCreateBy();
+                        if (StrUtil.isNotBlank(submitLoginName)) {
+                            builder.localVariable(targetId, FlowConstant.TASK_APPOINTED_ASSIGNEE_VAR, submitLoginName);
+                        }
+                    }
+                    builder.changeState();
+                }
+                // 如果父级任务只有一个，因此当前任务可能为网关中的任务
+                if (targetIds.size() == 1) {
+                    // 1 对 1 或 多 对 1 情况，currentIds 当前要跳转的节点列表(1或多)，targetIds.get(0) 跳转到的节点(1)
+                    // 如果驳回后的目标任务包含指定人，则直接通过变量回抄，如果没有则自动忽略该变量，不会给流程带来任何影响。
+                    ChangeActivityStateBuilder builder = runtimeService.createChangeActivityStateBuilder()
+                            .processInstanceId(task.getProcessInstanceId())
+                            .moveActivityIdsToSingleActivityId(currentIds, targetIds.get(0));
+                    ActCustomTaskComment taskComment =
+                            customTaskCommentService.getLatestFlowTaskComment(task.getProcessInstanceId(), targetIds.get(0));
+                    String submitLoginName = taskComment.getCreateBy();
+                    if (StrUtil.isNotBlank(submitLoginName)) {
+                        builder.localVariable(targetIds.get(0), FlowConstant.TASK_APPOINTED_ASSIGNEE_VAR, submitLoginName);
+                    }
+                    builder.changeState();
+                }
+            }
+            ActCustomTaskComment customTaskComment = new ActCustomTaskComment();
+            customTaskComment.setTaskId(task.getId());
+            customTaskComment.setTaskKey(task.getTaskDefinitionKey());
+            customTaskComment.setTaskName(task.getName());
+            customTaskComment.setApprovalType(forReject ? "reject" : "revoke");
+            customTaskComment.setProcessInstanceId(task.getProcessInstanceId());
+            customTaskComment.setComment(comment);
+            customTaskCommentService.getBaseMapper().insert(customTaskComment);
+        } catch (Exception e) {
+            log.error("Failed to execute moveSingleActivityIdToActivityIds", e);
+            throw new AiurtBootException(e.getMessage());
+        }
+    }
+
+    /**
+     * 根据流程定义Id查询流程定义对象。
+     *
+     * @param processDefinitionId 流程定义Id。
+     * @return 流程定义对象。
+     */
+    @Override
+    public ProcessDefinition getProcessDefinitionById(String processDefinitionId) {
+        return repositoryService.createProcessDefinitionQuery().processDefinitionId(processDefinitionId).singleResult();
+    }
+
+    /**
+     * 获取指定流程定义的全部流程节点。
+     *
+     * @param processDefinitionId 流程定义Id。
+     * @return 当前流程定义的全部节点集合。
+     */
+    @Override
+    public Collection<FlowElement> getProcessAllElements(String processDefinitionId) {
+        Process process = repositoryService.getBpmnModel(processDefinitionId).getProcesses().get(0);
+        return this.getAllElements(process.getFlowElements(), null);
+    }
+
+    /**
+     * 获取流程实例的已完成历史任务列表，同时按照每个活动实例的开始时间升序排序。
+     *
+     * @param processInstanceId 流程实例Id。
+     * @return 流程实例已完成的历史任务列表。
+     */
+    @Override
+    public List<HistoricActivityInstance> getHistoricActivityInstanceListOrderByStartTime(String processInstanceId) {
+        return historyService.createHistoricActivityInstanceQuery()
+                .processInstanceId(processInstanceId).orderByHistoricActivityInstanceStartTime().asc().list();
+    }
+
+    private List<FlowElement> getChildUserTaskList(
+            FlowElement source, List<String> runActiveIdList, Set<String> hasSequenceFlow, List<FlowElement> flowElementList) {
+        hasSequenceFlow = hasSequenceFlow == null ? new HashSet<>() : hasSequenceFlow;
+        flowElementList = flowElementList == null ? new ArrayList<>() : flowElementList;
+        // 如果该节点为开始节点，且存在上级子节点，则顺着上级子节点继续迭代
+        if (source instanceof EndEvent && source.getSubProcess() != null) {
+            flowElementList = getChildUserTaskList(
+                    source.getSubProcess(), runActiveIdList, hasSequenceFlow, flowElementList);
+        }
+        // 根据类型，获取出口连线
+        List<SequenceFlow> sequenceFlows = getElementOutgoingFlows(source);
+        if (sequenceFlows != null) {
+            // 循环找到目标元素
+            for (SequenceFlow sequenceFlow : sequenceFlows) {
+                // 如果发现连线重复，说明循环了，跳过这个循环
+                if (hasSequenceFlow.contains(sequenceFlow.getId())) {
+                    continue;
+                }
+                // 添加已经走过的连线
+                hasSequenceFlow.add(sequenceFlow.getId());
+                // 如果为用户任务类型，或者为网关
+                // 活动节点ID 在运行的任务中存在，添加
+                FlowElement targetElement = sequenceFlow.getTargetFlowElement();
+                if ((targetElement instanceof UserTask || targetElement instanceof Gateway)
+                        && runActiveIdList.contains(targetElement.getId())) {
+                    flowElementList.add(sequenceFlow.getTargetFlowElement());
+                    continue;
+                }
+                // 如果节点为子流程节点情况，则从节点中的第一个节点开始获取
+                if (sequenceFlow.getTargetFlowElement() instanceof SubProcess) {
+                    List<FlowElement> childUserTaskList = getChildUserTaskList(
+                            (FlowElement) (((SubProcess) sequenceFlow.getTargetFlowElement()).getFlowElements().toArray()[0]), runActiveIdList, hasSequenceFlow, null);
+                    // 如果找到节点，则说明该线路找到节点，不继续向下找，反之继续
+                    if (childUserTaskList != null && childUserTaskList.size() > 0) {
+                        flowElementList.addAll(childUserTaskList);
+                        continue;
+                    }
+                }
+                // 继续迭代
+                // 注意：已经经过的节点与连线都应该用浅拷贝出来的对象
+                // 比如分支：a->b->c与a->d->c，走完a->b->c后走另一个路线是，已经经过的节点应该不包含a->b->c路线的数据
+                flowElementList = getChildUserTaskList(
+                        sequenceFlow.getTargetFlowElement(), runActiveIdList, new HashSet<>(hasSequenceFlow), flowElementList);
+            }
+        }
+        return flowElementList;
+    }
+
+    private Collection<FlowElement> getAllElements(Collection<FlowElement> flowElements, Collection<FlowElement> allElements) {
+        allElements = allElements == null ? new ArrayList<>() : allElements;
+        for (FlowElement flowElement : flowElements) {
+            allElements.add(flowElement);
+            if (flowElement instanceof SubProcess) {
+                allElements = getAllElements(((SubProcess) flowElement).getFlowElements(), allElements);
+            }
+        }
+        return allElements;
+    }
+
+    private List<String> cleanHistoricTaskInstance(
+            Collection<FlowElement> allElements, List<HistoricActivityInstance> historicActivityList) {
+        // 会签节点收集
+        List<String> multiTask = new ArrayList<>();
+        allElements.forEach(flowElement -> {
+            if (flowElement instanceof UserTask) {
+                // 如果该节点的行为为会签行为，说明该节点为会签节点
+                if (((UserTask) flowElement).getBehavior() instanceof ParallelMultiInstanceBehavior
+                        || ((UserTask) flowElement).getBehavior() instanceof SequentialMultiInstanceBehavior) {
+                    multiTask.add(flowElement.getId());
+                }
+            }
+        });
+        // 循环放入栈，栈 LIFO：后进先出
+        Stack<HistoricActivityInstance> stack = new Stack<>();
+        historicActivityList.forEach(stack::push);
+        // 清洗后的历史任务实例
+        List<String> lastHistoricTaskInstanceList = new ArrayList<>();
+        // 网关存在可能只走了部分分支情况，且还存在跳转废弃数据以及其他分支数据的干扰，因此需要对历史节点数据进行清洗
+        // 临时用户任务 key
+        StringBuilder userTaskKey = null;
+        // 临时被删掉的任务 key，存在并行情况
+        List<String> deleteKeyList = new ArrayList<>();
+        // 临时脏数据线路
+        List<Set<String>> dirtyDataLineList = new ArrayList<>();
+        // 由某个点跳到会签点,此时出现多个会签实例对应 1 个跳转情况，需要把这些连续脏数据都找到
+        // 会签特殊处理下标
+        int multiIndex = -1;
+        // 会签特殊处理 key
+        StringBuilder multiKey = null;
+        // 会签特殊处理操作标识
+        boolean multiOpera = false;
+        while (!stack.empty()) {
+            // 从这里开始 userTaskKey 都还是上个栈的 key
+            // 是否是脏数据线路上的点
+            final boolean[] isDirtyData = {false};
+            for (Set<String> oldDirtyDataLine : dirtyDataLineList) {
+                if (oldDirtyDataLine.contains(stack.peek().getActivityId())) {
+                    isDirtyData[0] = true;
+                }
+            }
+            // 删除原因不为空，说明从这条数据开始回跳或者回退的
+            // MI_END：会签完成后，其他未签到节点的删除原因，不在处理范围内
+            if (stack.peek().getDeleteReason() != null && !"MI_END".equals(stack.peek().getDeleteReason())) {
+                // 可以理解为脏线路起点
+                String dirtyPoint = "";
+                if (stack.peek().getDeleteReason().contains("Change activity to ")) {
+                    dirtyPoint = stack.peek().getDeleteReason().replace("Change activity to ", "");
+                }
+                // 会签回退删除原因有点不同
+                if (stack.peek().getDeleteReason().contains("Change parent activity to ")) {
+                    dirtyPoint = stack.peek().getDeleteReason().replace("Change parent activity to ", "");
+                }
+                FlowElement dirtyTask = null;
+                // 获取变更节点的对应的入口处连线
+                // 如果是网关并行回退情况，会变成两条脏数据路线，效果一样
+                for (FlowElement flowElement : allElements) {
+                    if (flowElement.getId().equals(stack.peek().getActivityId())) {
+                        dirtyTask = flowElement;
+                    }
+                }
+                // 获取脏数据线路
+                Set<String> dirtyDataLine = findDirtyRoads(
+                        dirtyTask, null, null, StrUtil.split(dirtyPoint, ','), null);
+                // 自己本身也是脏线路上的点，加进去
+                dirtyDataLine.add(stack.peek().getActivityId());
+                log.info(stack.peek().getActivityId() + "点脏路线集合：" + dirtyDataLine);
+                // 是全新的需要添加的脏线路
+                boolean isNewDirtyData = true;
+                for (Set<String> strings : dirtyDataLineList) {
+                    // 如果发现他的上个节点在脏线路内，说明这个点可能是并行的节点，或者连续驳回
+                    // 这时，都以之前的脏线路节点为标准，只需合并脏线路即可，也就是路线补全
+                    if (strings.contains(userTaskKey.toString())) {
+                        isNewDirtyData = false;
+                        strings.addAll(dirtyDataLine);
+                    }
+                }
+                // 已确定时全新的脏线路
+                if (isNewDirtyData) {
+                    // deleteKey 单一路线驳回到并行，这种同时生成多个新实例记录情况，这时 deleteKey 其实是由多个值组成
+                    // 按照逻辑，回退后立刻生成的实例记录就是回退的记录
+                    // 至于驳回所生成的 Key，直接从删除原因中获取，因为存在驳回到并行的情况
+                    deleteKeyList.add(dirtyPoint + ",");
+                    dirtyDataLineList.add(dirtyDataLine);
+                }
+                // 添加后，现在这个点变成脏线路上的点了
+                isDirtyData[0] = true;
+            }
+            // 如果不是脏线路上的点，说明是有效数据，添加历史实例 Key
+            if (!isDirtyData[0]) {
+                lastHistoricTaskInstanceList.add(stack.peek().getActivityId());
+            }
+            // 校验脏线路是否结束
+            for (int i = 0; i < deleteKeyList.size(); i++) {
+                // 如果发现脏数据属于会签，记录下下标与对应 Key，以备后续比对，会签脏数据范畴开始
+                if (multiKey == null && multiTask.contains(stack.peek().getActivityId())
+                        && deleteKeyList.get(i).contains(stack.peek().getActivityId())) {
+                    multiIndex = i;
+                    multiKey = new StringBuilder(stack.peek().getActivityId());
+                }
+                // 会签脏数据处理，节点退回会签清空
+                // 如果在会签脏数据范畴中发现 Key改变，说明会签脏数据在上个节点就结束了，可以把会签脏数据删掉
+                if (multiKey != null && !multiKey.toString().equals(stack.peek().getActivityId())) {
+                    deleteKeyList.set(multiIndex, deleteKeyList.get(multiIndex).replace(stack.peek().getActivityId() + ",", ""));
+                    multiKey = null;
+                    // 结束进行下校验删除
+                    multiOpera = true;
+                }
+                // 其他脏数据处理
+                // 发现该路线最后一条脏数据，说明这条脏数据线路处理完了，删除脏数据信息
+                // 脏数据产生的新实例中是否包含这条数据
+                if (multiKey == null && deleteKeyList.get(i).contains(stack.peek().getActivityId())) {
+                    // 删除匹配到的部分
+                    deleteKeyList.set(i, deleteKeyList.get(i).replace(stack.peek().getActivityId() + ",", ""));
+                }
+                // 如果每组中的元素都以匹配过，说明脏数据结束
+                if ("".equals(deleteKeyList.get(i))) {
+                    // 同时删除脏数据
+                    deleteKeyList.remove(i);
+                    dirtyDataLineList.remove(i);
+                    break;
+                }
+            }
+            // 会签数据处理需要在循环外处理，否则可能导致溢出
+            // 会签的数据肯定是之前放进去的所以理论上不会溢出，但还是校验下
+            if (multiOpera && deleteKeyList.size() > multiIndex && "".equals(deleteKeyList.get(multiIndex))) {
+                // 同时删除脏数据
+                deleteKeyList.remove(multiIndex);
+                dirtyDataLineList.remove(multiIndex);
+                multiIndex = -1;
+                multiOpera = false;
+            }
+            // pop() 方法与 peek() 方法不同，在返回值的同时，会把值从栈中移除
+            // 保存新的 userTaskKey 在下个循环中使用
+            userTaskKey = new StringBuilder(stack.pop().getActivityId());
+        }
+        log.info("清洗后的历史节点数据：" + lastHistoricTaskInstanceList);
+        return lastHistoricTaskInstanceList;
+    }
+
+    private Set<String> findDirtyRoads(
+            FlowElement source, List<String> passRoads, Set<String> hasSequenceFlow, List<String> targets, Set<String> dirtyRoads) {
+        passRoads = passRoads == null ? new ArrayList<>() : passRoads;
+        dirtyRoads = dirtyRoads == null ? new HashSet<>() : dirtyRoads;
+        hasSequenceFlow = hasSequenceFlow == null ? new HashSet<>() : hasSequenceFlow;
+        // 如果该节点为开始节点，且存在上级子节点，则顺着上级子节点继续迭代
+        if (source instanceof StartEvent && source.getSubProcess() != null) {
+            dirtyRoads = findDirtyRoads(source.getSubProcess(), passRoads, hasSequenceFlow, targets, dirtyRoads);
+        }
+        // 根据类型，获取入口连线
+        List<SequenceFlow> sequenceFlows = getElementIncomingFlows(source);
+        if (sequenceFlows != null) {
+            // 循环找到目标元素
+            for (SequenceFlow sequenceFlow : sequenceFlows) {
+                // 如果发现连线重复，说明循环了，跳过这个循环
+                if (hasSequenceFlow.contains(sequenceFlow.getId())) {
+                    continue;
+                }
+                // 添加已经走过的连线
+                hasSequenceFlow.add(sequenceFlow.getId());
+                // 新增经过的路线
+                passRoads.add(sequenceFlow.getSourceFlowElement().getId());
+                // 如果此点为目标点，确定经过的路线为脏线路，添加点到脏线路中，然后找下个连线
+                if (targets.contains(sequenceFlow.getSourceFlowElement().getId())) {
+                    dirtyRoads.addAll(passRoads);
+                    continue;
+                }
+                // 如果该节点为开始节点，且存在上级子节点，则顺着上级子节点继续迭代
+                if (sequenceFlow.getSourceFlowElement() instanceof SubProcess) {
+                    dirtyRoads = findChildProcessAllDirtyRoad(
+                            (StartEvent) ((SubProcess) sequenceFlow.getSourceFlowElement()).getFlowElements().toArray()[0], null, dirtyRoads);
+                    // 是否存在子流程上，true 是，false 否
+                    Boolean isInChildProcess = dirtyTargetInChildProcess(
+                            (StartEvent) ((SubProcess) sequenceFlow.getSourceFlowElement()).getFlowElements().toArray()[0], null, targets, null);
+                    if (isInChildProcess) {
+                        // 已在子流程上找到，该路线结束
+                        continue;
+                    }
+                }
+                // 继续迭代
+                // 注意：已经经过的节点与连线都应该用浅拷贝出来的对象
+                // 比如分支：a->b->c与a->d->c，走完a->b->c后走另一个路线是，已经经过的节点应该不包含a->b->c路线的数据
+                dirtyRoads = findDirtyRoads(sequenceFlow.getSourceFlowElement(),
+                        new ArrayList<>(passRoads), new HashSet<>(hasSequenceFlow), targets, dirtyRoads);
+            }
+        }
+        return dirtyRoads;
+    }
+
+    private Boolean dirtyTargetInChildProcess(
+            FlowElement source, Set<String> hasSequenceFlow, List<String> targets, Boolean inChildProcess) {
+        hasSequenceFlow = hasSequenceFlow == null ? new HashSet<>() : hasSequenceFlow;
+        inChildProcess = inChildProcess == null ? false : inChildProcess;
+        // 根据类型，获取出口连线
+        List<SequenceFlow> sequenceFlows = getElementOutgoingFlows(source);
+        if (sequenceFlows != null && !inChildProcess) {
+            // 循环找到目标元素
+            for (SequenceFlow sequenceFlow : sequenceFlows) {
+                // 如果发现连线重复，说明循环了，跳过这个循环
+                if (hasSequenceFlow.contains(sequenceFlow.getId())) {
+                    continue;
+                }
+                // 添加已经走过的连线
+                hasSequenceFlow.add(sequenceFlow.getId());
+                // 如果发现目标点在子流程上存在，说明只到子流程为止
+                if (targets.contains(sequenceFlow.getTargetFlowElement().getId())) {
+                    inChildProcess = true;
+                    break;
+                }
+                // 如果节点为子流程节点情况，则从节点中的第一个节点开始获取
+                if (sequenceFlow.getTargetFlowElement() instanceof SubProcess) {
+                    inChildProcess = dirtyTargetInChildProcess((FlowElement) (((SubProcess) sequenceFlow.getTargetFlowElement()).getFlowElements().toArray()[0]), hasSequenceFlow, targets, inChildProcess);
+                }
+                // 继续迭代
+                // 注意：已经经过的节点与连线都应该用浅拷贝出来的对象
+                // 比如分支：a->b->c与a->d->c，走完a->b->c后走另一个路线是，已经经过的节点应该不包含a->b->c路线的数据
+                inChildProcess = dirtyTargetInChildProcess(sequenceFlow.getTargetFlowElement(), new HashSet<>(hasSequenceFlow), targets, inChildProcess);
+            }
+        }
+        return inChildProcess;
+    }
+
+    private Set<String> findChildProcessAllDirtyRoad(
+            FlowElement source, Set<String> hasSequenceFlow, Set<String> dirtyRoads) {
+        hasSequenceFlow = hasSequenceFlow == null ? new HashSet<>() : hasSequenceFlow;
+        dirtyRoads = dirtyRoads == null ? new HashSet<>() : dirtyRoads;
+        // 根据类型，获取出口连线
+        List<SequenceFlow> sequenceFlows = getElementOutgoingFlows(source);
+        if (sequenceFlows != null) {
+            // 循环找到目标元素
+            for (SequenceFlow sequenceFlow : sequenceFlows) {
+                // 如果发现连线重复，说明循环了，跳过这个循环
+                if (hasSequenceFlow.contains(sequenceFlow.getId())) {
+                    continue;
+                }
+                // 添加已经走过的连线
+                hasSequenceFlow.add(sequenceFlow.getId());
+                // 添加脏路线
+                dirtyRoads.add(sequenceFlow.getTargetFlowElement().getId());
+                // 如果节点为子流程节点情况，则从节点中的第一个节点开始获取
+                if (sequenceFlow.getTargetFlowElement() instanceof SubProcess) {
+                    dirtyRoads = findChildProcessAllDirtyRoad(
+                            (FlowElement) (((SubProcess) sequenceFlow.getTargetFlowElement()).getFlowElements().toArray()[0]), hasSequenceFlow, dirtyRoads);
+                }
+                // 继续迭代
+                // 注意：已经经过的节点与连线都应该用浅拷贝出来的对象
+                // 比如分支：a->b->c与a->d->c，走完a->b->c后走另一个路线是，已经经过的节点应该不包含a->b->c路线的数据
+                dirtyRoads = findChildProcessAllDirtyRoad(
+                        sequenceFlow.getTargetFlowElement(), new HashSet<>(hasSequenceFlow), dirtyRoads);
+            }
+        }
+        return dirtyRoads;
+    }
+
+    private List<UserTask> getParentUserTaskList(
+            FlowElement source, Set<String> hasSequenceFlow, List<UserTask> userTaskList) {
+        userTaskList = userTaskList == null ? new ArrayList<>() : userTaskList;
+        hasSequenceFlow = hasSequenceFlow == null ? new HashSet<>() : hasSequenceFlow;
+        // 如果该节点为开始节点，且存在上级子节点，则顺着上级子节点继续迭代
+        if (source instanceof StartEvent && source.getSubProcess() != null) {
+            userTaskList = getParentUserTaskList(source.getSubProcess(), hasSequenceFlow, userTaskList);
+        }
+        List<SequenceFlow> sequenceFlows = getElementIncomingFlows(source);
+        if (sequenceFlows != null) {
+            // 循环找到目标元素
+            for (SequenceFlow sequenceFlow : sequenceFlows) {
+                // 如果发现连线重复，说明循环了，跳过这个循环
+                if (hasSequenceFlow.contains(sequenceFlow.getId())) {
+                    continue;
+                }
+                // 添加已经走过的连线
+                hasSequenceFlow.add(sequenceFlow.getId());
+                // 类型为用户节点，则新增父级节点
+                if (sequenceFlow.getSourceFlowElement() instanceof UserTask) {
+                    userTaskList.add((UserTask) sequenceFlow.getSourceFlowElement());
+                    continue;
+                }
+                // 类型为子流程，则添加子流程开始节点出口处相连的节点
+                if (sequenceFlow.getSourceFlowElement() instanceof SubProcess) {
+                    // 获取子流程用户任务节点
+                    List<UserTask> childUserTaskList = findChildProcessUserTasks(
+                            (StartEvent) ((SubProcess) sequenceFlow.getSourceFlowElement()).getFlowElements().toArray()[0], null, null);
+                    // 如果找到节点，则说明该线路找到节点，不继续向下找，反之继续
+                    if (childUserTaskList != null && childUserTaskList.size() > 0) {
+                        userTaskList.addAll(childUserTaskList);
+                        continue;
+                    }
+                }
+                // 网关场景的继续迭代
+                // 注意：已经经过的节点与连线都应该用浅拷贝出来的对象
+                // 比如分支：a->b->c与a->d->c，走完a->b->c后走另一个路线是，已经经过的节点应该不包含a->b->c路线的数据
+                userTaskList = getParentUserTaskList(
+                        sequenceFlow.getSourceFlowElement(), new HashSet<>(hasSequenceFlow), userTaskList);
+            }
+        }
+        return userTaskList;
+    }
+
+    private List<UserTask> findChildProcessUserTasks(FlowElement source, Set<String> hasSequenceFlow, List<UserTask> userTaskList) {
+        hasSequenceFlow = hasSequenceFlow == null ? new HashSet<>() : hasSequenceFlow;
+        userTaskList = userTaskList == null ? new ArrayList<>() : userTaskList;
+        // 根据类型，获取出口连线
+        List<SequenceFlow> sequenceFlows = getElementOutgoingFlows(source);
+        if (sequenceFlows != null) {
+            // 循环找到目标元素
+            for (SequenceFlow sequenceFlow : sequenceFlows) {
+                // 如果发现连线重复，说明循环了，跳过这个循环
+                if (hasSequenceFlow.contains(sequenceFlow.getId())) {
+                    continue;
+                }
+                // 添加已经走过的连线
+                hasSequenceFlow.add(sequenceFlow.getId());
+                // 如果为用户任务类型，且任务节点的 Key 正在运行的任务中存在，添加
+                if (sequenceFlow.getTargetFlowElement() instanceof UserTask) {
+                    userTaskList.add((UserTask) sequenceFlow.getTargetFlowElement());
+                    continue;
+                }
+                // 如果节点为子流程节点情况，则从节点中的第一个节点开始获取
+                if (sequenceFlow.getTargetFlowElement() instanceof SubProcess) {
+                    List<UserTask> childUserTaskList = findChildProcessUserTasks((FlowElement) (((SubProcess) sequenceFlow.getTargetFlowElement()).getFlowElements().toArray()[0]), hasSequenceFlow, null);
+                    // 如果找到节点，则说明该线路找到节点，不继续向下找，反之继续
+                    if (childUserTaskList != null && childUserTaskList.size() > 0) {
+                        userTaskList.addAll(childUserTaskList);
+                        continue;
+                    }
+                }
+                // 继续迭代
+                // 注意：已经经过的节点与连线都应该用浅拷贝出来的对象
+                // 比如分支：a->b->c与a->d->c，走完a->b->c后走另一个路线是，已经经过的节点应该不包含a->b->c路线的数据
+                userTaskList = findChildProcessUserTasks(sequenceFlow.getTargetFlowElement(), new HashSet<>(hasSequenceFlow), userTaskList);
+            }
+        }
+        return userTaskList;
+    }
+
+    private List<SequenceFlow> getElementOutgoingFlows(FlowElement source) {
+        List<SequenceFlow> sequenceFlows = null;
+        if (source instanceof org.flowable.bpmn.model.Task) {
+            sequenceFlows = ((org.flowable.bpmn.model.Task) source).getOutgoingFlows();
+        } else if (source instanceof Gateway) {
+            sequenceFlows = ((Gateway) source).getOutgoingFlows();
+        } else if (source instanceof SubProcess) {
+            sequenceFlows = ((SubProcess) source).getOutgoingFlows();
+        } else if (source instanceof StartEvent) {
+            sequenceFlows = ((StartEvent) source).getOutgoingFlows();
+        } else if (source instanceof EndEvent) {
+            sequenceFlows = ((EndEvent) source).getOutgoingFlows();
+        }
+        return sequenceFlows;
+    }
+
+    private List<SequenceFlow> getElementIncomingFlows(FlowElement source) {
+        List<SequenceFlow> sequenceFlows = null;
+        if (source instanceof org.flowable.bpmn.model.Task) {
+            sequenceFlows = ((org.flowable.bpmn.model.Task) source).getIncomingFlows();
+        } else if (source instanceof Gateway) {
+            sequenceFlows = ((Gateway) source).getIncomingFlows();
+        } else if (source instanceof SubProcess) {
+            sequenceFlows = ((SubProcess) source).getIncomingFlows();
+        } else if (source instanceof StartEvent) {
+            sequenceFlows = ((StartEvent) source).getIncomingFlows();
+        } else if (source instanceof EndEvent) {
+            sequenceFlows = ((EndEvent) source).getIncomingFlows();
+        }
+        return sequenceFlows;
+    }
+
 }
