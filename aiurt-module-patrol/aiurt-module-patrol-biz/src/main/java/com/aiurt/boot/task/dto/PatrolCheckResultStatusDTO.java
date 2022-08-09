@@ -20,7 +20,7 @@ public class PatrolCheckResultStatusDTO {
     @ApiModelProperty(value = "已检查数")
     private java.lang.Integer checkedNumber;
     @Excel(name = "未检查数", width = 15)
-    @ApiModelProperty(value = "已检查数")
+    @ApiModelProperty(value = "未检查数")
     private java.lang.Integer unCheckedNumber;
 
 }
