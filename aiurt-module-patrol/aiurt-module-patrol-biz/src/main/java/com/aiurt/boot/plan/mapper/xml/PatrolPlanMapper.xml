@@ -18,16 +18,14 @@
         DELETE
         a.*,b.*,c.*,d.*,e.*,f.*
         from
-            patrol_plan AS a
+            patrol_plan  a
                 LEFT JOIN patrol_plan_device b on a.id=b.plan_id
                 LEFT JOIN patrol_plan_organization c on a.`code`=c.plan_code
                 LEFT JOIN patrol_plan_standard d ON a.id=d.plan_id
                 LEFT JOIN patrol_plan_station e ON a.`code`=e.plan_code
                 LEFT JOIN patrol_plan_strategy f on a.id =f.plan_id
         WHERE
-
-            a.id=
-        #{id}
+            a.id= #{id,jdbcType=VARCHAR}
 
 
     </delete>
