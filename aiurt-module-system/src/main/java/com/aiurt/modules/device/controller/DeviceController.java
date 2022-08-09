@@ -6,12 +6,10 @@ import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.modules.device.entity.Device;
 import com.aiurt.modules.device.entity.DeviceAssembly;
 import com.aiurt.modules.device.entity.DeviceCompose;
-import com.aiurt.modules.device.entity.DeviceType;
 import com.aiurt.modules.device.service.IDeviceAssemblyService;
 import com.aiurt.modules.device.service.IDeviceComposeService;
 import com.aiurt.modules.device.service.IDeviceService;
 import com.aiurt.modules.device.service.IDeviceTypeService;
-import com.aiurt.modules.material.entity.MaterialBaseType;
 import com.aiurt.modules.system.service.impl.SysBaseApiImpl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -25,7 +23,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * @Description: 设备
@@ -70,10 +70,11 @@ public class DeviceController {
                                                @RequestParam(name = "code", required = false) String code,
                                                @RequestParam(name = "name", required = false) String name,
                                                @RequestParam(name = "status", required = false) String status,
+                                               @RequestParam(name = "scode", required = false) String scode,
                                                HttpServletRequest req) {
         Result<IPage<Device>> result = new Result<IPage<Device>>();
         Page<Device> page = new Page<Device>(pageNo, pageSize);
-        QueryWrapper<Device> queryWrapper = deviceService.getQueryWrapper(positionCodeCc, temporary, majorCode, systemCode, deviceTypeCode, code, name, status);
+        QueryWrapper<Device> queryWrapper = deviceService.getQueryWrapper(scode,positionCodeCc, temporary, majorCode, systemCode, deviceTypeCode, code, name, status);
         IPage<Device> pageList = deviceService.page(page, queryWrapper);
         List<Device> records = pageList.getRecords();
         if(records != null && records.size()>0){
@@ -116,7 +117,7 @@ public class DeviceController {
             @RequestParam(name = "status", required = false) String status,
             @RequestParam(name = "ids", required = false) String ids,
                                                HttpServletRequest req) {
-        QueryWrapper<Device> queryWrapper = deviceService.getQueryWrapper(positionCodeCc, temporary, majorCode, systemCode, deviceTypeCode, code, name, status);
+        QueryWrapper<Device> queryWrapper = deviceService.getQueryWrapper(null,positionCodeCc, temporary, majorCode, systemCode, deviceTypeCode, code, name, status);
         if(ids != null && !"".equals(ids)){
             queryWrapper.in("id",Arrays.asList(ids.split(",")));
         }

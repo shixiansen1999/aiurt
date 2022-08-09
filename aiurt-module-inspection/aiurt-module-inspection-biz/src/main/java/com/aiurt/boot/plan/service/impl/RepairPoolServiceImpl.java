@@ -224,6 +224,7 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
 
             LambdaQueryWrapper<RepairPoolCode> poolCodeQueryWrapper = new LambdaQueryWrapper<>();
             poolCodeQueryWrapper.eq(RepairPoolCode::getId, req.getStandardId());
+            poolCodeQueryWrapper.eq(RepairPoolCode::getDelFlag, CommonConstant.DEL_FLAG_0);
 
             RepairPoolCode repairPoolCode = repairPoolCodeMapper.selectOne(poolCodeQueryWrapper);
             if (ObjectUtil.isNotEmpty(repairPoolCode)) {
@@ -276,6 +277,7 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
         List<RepairPoolCodeContent> result = repairPoolCodeContentMapper.selectList(
                 new LambdaQueryWrapper<RepairPoolCodeContent>()
                         .eq(RepairPoolCodeContent::getRepairPoolCodeId, id)
+                        .eq(RepairPoolCodeContent::getDelFlag,CommonConstant.DEL_FLAG_0)
                         .orderByAsc(RepairPoolCodeContent::getSortNo));
 
         if (CollUtil.isNotEmpty(result)) {
@@ -385,7 +387,9 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
             re.setStatusName(sysBaseApi.translateDict(DictConstant.INSPECTION_TASK_STATE, String.valueOf(repairPool.getStatus())));
 
             // 组织机构
-            List<RepairPoolOrgRel> repairPoolOrgRels = orgRelMapper.selectList(new LambdaQueryWrapper<RepairPoolOrgRel>().eq(RepairPoolOrgRel::getRepairPoolCode, code));
+            List<RepairPoolOrgRel> repairPoolOrgRels = orgRelMapper.selectList(new LambdaQueryWrapper<RepairPoolOrgRel>()
+                    .eq(RepairPoolOrgRel::getRepairPoolCode, code)
+                    .eq(RepairPoolOrgRel::getDelFlag,CommonConstant.DEL_FLAG_0));
             List<String> orgList = new ArrayList<>();
             if (CollUtil.isNotEmpty(repairPoolOrgRels)) {
                 orgList = repairPoolOrgRels.stream().map(r -> r.getOrgCode()).collect(Collectors.toList());
@@ -395,7 +399,9 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
             // 年份
             re.setYear(ObjectUtil.isNotEmpty(repairPool.getStartTime()) ? DateUtil.year(repairPool.getStartTime()) : null);
             // 所属策略
-            InspectionStrategy inspectionStrategy = inspectionStrategyMapper.selectOne(new QueryWrapper<InspectionStrategy>().eq("code", repairPool.getInspectionStrCode()));
+            InspectionStrategy inspectionStrategy = inspectionStrategyMapper.selectOne(new QueryWrapper<InspectionStrategy>()
+                    .eq("code", repairPool.getInspectionStrCode())
+                    .eq("del_flag",CommonConstant.DEL_FLAG_0));
             re.setStrategy(ObjectUtil.isNotEmpty(inspectionStrategy) ? inspectionStrategy.getName() : "");
 
             // 是否审核
@@ -451,12 +457,14 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
         // 根据检修任务code查询关联的标准
         List<RepairPoolRel> repairPoolRels = relMapper.selectList(
                 new LambdaQueryWrapper<RepairPoolRel>()
-                        .eq(RepairPoolRel::getRepairPoolCode, code));
+                        .eq(RepairPoolRel::getRepairPoolCode, code)
+                        .eq(RepairPoolRel::getDelFlag,CommonConstant.DEL_FLAG_0));
 
         if (CollUtil.isNotEmpty(repairPoolRels)) {
             List<String> rid = repairPoolRels.stream().map(RepairPoolRel::getRepairPoolStaId).collect(Collectors.toList());
             List<RepairPoolCode> repairPoolCodes = repairPoolCodeMapper.selectList(
                     new LambdaQueryWrapper<RepairPoolCode>()
+                            .eq(RepairPoolCode::getDelFlag,CommonConstant.DEL_FLAG_0)
                             .in(RepairPoolCode::getId, rid));
 
             // 查询并处理标准对应的专业、专业子系统
@@ -844,7 +852,8 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
         // 当前计划关联的组织机构里的人员
         List<RepairPoolOrgRel> repairPoolOrgRels = orgRelMapper.selectList(
                 new LambdaQueryWrapper<RepairPoolOrgRel>()
-                        .eq(RepairPoolOrgRel::getRepairPoolCode, code));
+                        .eq(RepairPoolOrgRel::getRepairPoolCode, code)
+                        .eq(RepairPoolOrgRel::getDelFlag,CommonConstant.DEL_FLAG_0));
 
         if (CollUtil.isNotEmpty(repairPoolOrgRels)) {
             List<String> orgCodes = repairPoolOrgRels.stream().map(RepairPoolOrgRel::getOrgCode).collect(Collectors.toList());
@@ -870,6 +879,7 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
 
         LambdaQueryWrapper<RepairPoolRel> lambdaQueryWrapper = new LambdaQueryWrapper<RepairPoolRel>();
         lambdaQueryWrapper.eq(RepairPoolRel::getRepairPoolCode, code);
+        lambdaQueryWrapper.eq(RepairPoolRel::getDelFlag,CommonConstant.DEL_FLAG_0);
 
         List<RepairPoolRel> repairPoolRels = relMapper.selectList(lambdaQueryWrapper);
 
@@ -879,7 +889,7 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
 
                 LambdaQueryWrapper<RepairPoolCode> poolCodeLambdaQueryWrapper = new LambdaQueryWrapper<RepairPoolCode>();
                 poolCodeLambdaQueryWrapper.in(RepairPoolCode::getId, codeList);
-
+                poolCodeLambdaQueryWrapper.eq(RepairPoolCode::getDelFlag,CommonConstant.DEL_FLAG_0);
                 if (StrUtil.isNotEmpty(majorCode)) {
                     poolCodeLambdaQueryWrapper.eq(RepairPoolCode::getMajorCode, majorCode);
                 }
@@ -950,6 +960,7 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
 
         // 只查询是手工下发的检修任务
         queryWrapper.eq("is_manual", InspectionConstant.IS_MANUAL);
+        queryWrapper.eq("del_flag",CommonConstant.DEL_FLAG_0);
         queryWrapper.orderByDesc("create_time");
         if (ObjectUtil.isNotEmpty(manualTaskReq.getStartTime())) {
             queryWrapper.ge("start_time", manualTaskReq.getStartTime());
@@ -1167,17 +1178,22 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
             throw new AiurtBootException("请选择检修标准");
         }
 
-        // 如果是否需要审核选否，那么直接不接收是否需要要收的参数
+        // 如果是否需要审核选否，那么直接不接收是否需要验收的参数
         if (repairPoolDTO.getIsConfirm() != null && InspectionConstant.IS_CONFIRM_0.equals(repairPoolDTO.getIsConfirm())) {
             repairPoolDTO.setIsReceipt(null);
         }
 
+        // 不能存在相同设备类型的检修标准
+        List<String> deviceTypes = new ArrayList<>();
         repairPoolCodes.forEach(re -> {
 
             InspectionCode inspectionCode = inspectionCodeMapper.selectOne(
                     new LambdaQueryWrapper<InspectionCode>()
                             .eq(InspectionCode::getCode, re.getCode())
                             .eq(InspectionCode::getDelFlag, CommonConstant.DEL_FLAG_0));
+            if (StrUtil.isNotEmpty(inspectionCode.getDeviceTypeCode())) {
+
+            }
             if (ObjectUtil.isEmpty(inspectionCode)) {
                 throw new AiurtBootException(InspectionConstant.ILLEGAL_OPERATION);
             }

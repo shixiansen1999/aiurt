@@ -1,5 +1,6 @@
 package com.aiurt.modules.device.service.impl;
 
+import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.modules.device.entity.Device;
 import com.aiurt.modules.device.entity.DeviceAssembly;
@@ -135,7 +136,7 @@ public class DeviceServiceImpl extends ServiceImpl<DeviceMapper, Device> impleme
 	}
 
 	@Override
-	public QueryWrapper<Device> getQueryWrapper(String positionCodeCc, String temporary, String majorCode, String systemCode, String deviceTypeCode, String code, String name, String status) {
+	public QueryWrapper<Device> getQueryWrapper(String stationCode,String positionCodeCc, String temporary, String majorCode, String systemCode, String deviceTypeCode, String code, String name, String status) {
 		QueryWrapper<Device> queryWrapper = new QueryWrapper<>();
 		if(majorCode != null && !"".equals(majorCode)){
 			queryWrapper.eq("major_code", majorCode);
@@ -178,6 +179,10 @@ public class DeviceServiceImpl extends ServiceImpl<DeviceMapper, Device> impleme
 		}
 		if(status != null && !"".equals(status)){
 			queryWrapper.eq("status", status);
+		}
+        // 多个已逗号分割
+		if(StrUtil.isNotEmpty(stationCode)){
+			queryWrapper.in("station_code", StrUtil.split(stationCode,','));
 		}
 		queryWrapper.eq("del_flag", CommonConstant.DEL_FLAG_0);
 		return queryWrapper;

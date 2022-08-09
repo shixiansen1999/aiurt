@@ -186,7 +186,6 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                 }
             }
 
-
         });
         return pageList.setRecords(lists);
     }
