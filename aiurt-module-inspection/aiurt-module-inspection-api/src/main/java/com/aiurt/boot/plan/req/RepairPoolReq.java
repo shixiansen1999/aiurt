@@ -21,10 +21,10 @@ import java.util.List;
 @ApiModel(value = "手工下发检修任务", description = "repair_manual_task")
 public class RepairPoolReq {
 
-    @ApiModelProperty(value = "主键id",required = false)
+    @ApiModelProperty(value = "主键id")
     private java.lang.String id;
 
-    @ApiModelProperty(value = "检修计划单号",required = false)
+    @ApiModelProperty(value = "检修计划单号")
     private java.lang.String code;
 
     @ApiModelProperty(value = "检修周期类型：0周检、1月检、2双月检、3季检、4半年检、5年检", required = true)
@@ -57,10 +57,12 @@ public class RepairPoolReq {
     @ApiModelProperty(value = "使用站点code",required = true)
     @TableField(exist = false)
     private List<StationDTO> addStationCode;
+
     @ApiModelProperty(value = "组织机构code", required = true)
     @TableField(exist = false)
     private List<String> orgCodes;
-    @ApiModelProperty(value = "检修标准信息", required = true)
-    @TableField(exist = true)
+
+    @ApiModelProperty(value = "检修标准信息")
+    @TableField(exist = false)
     private List<RepairPoolCodeReq> repairPoolCodes;
 }
