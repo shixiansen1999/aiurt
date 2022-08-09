@@ -313,8 +313,6 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         fault.setAssignUserName(user.getUsername());
         fault.setAppointUserName(assignDTO.getOperatorUserName());
 
-
-
         // 维修记录
         FaultRepairRecord record = FaultRepairRecord.builder()
                 // 做类型
@@ -438,21 +436,21 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
 
         Fault fault = isExist(refuseAssignmentDTO.getFaultCode());
 
-        FaultRepairRecord repairRecord = getFaultRepairRecord(refuseAssignmentDTO.getFaultCode(), loginUser);
+        /*FaultRepairRecord repairRecord = getFaultRepairRecord(refuseAssignmentDTO.getFaultCode(), loginUser);
 
         if (Objects.isNull(repairRecord)) {
             throw new AiurtBootException("该工单您的，您没有权限拒绝接收指派工单！");
         }
 
         repairRecord.setRefuseAssignTime(new Date());
-        repairRecord.setRefuseAssignRemark(refuseAssignmentDTO.getRefuseRemark());
+        repairRecord.setRefuseAssignRemark(refuseAssignmentDTO.getRefuseRemark());*/
 
         // 状态-已审批待指派
         fault.setStatus(FaultStatusEnum.APPROVAL_PASS.getStatus());
 
         updateById(fault);
 
-        repairRecordService.updateById(repairRecord);
+        // repairRecordService.updateById(repairRecord);
 
         // 设置状态
         saveLog(loginUser, "拒绝接收指派", refuseAssignmentDTO.getFaultCode(), FaultStatusEnum.APPROVAL_PASS.getStatus(), refuseAssignmentDTO.getRefuseRemark());

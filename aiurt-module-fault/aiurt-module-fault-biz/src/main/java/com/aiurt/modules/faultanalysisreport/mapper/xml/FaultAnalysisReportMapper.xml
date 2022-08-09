@@ -4,7 +4,7 @@
 
 <select id="readAll" resultType="com.aiurt.modules.faultanalysisreport.entity.FaultAnalysisReport">
     select
-    a.id,a.status,a.faultCode ,a.fault_phenomenon,a.solution,a.name,a.createTime,a.faultId
+    a.id,a.status,a.faultCode ,a.fault_phenomenon,a.solution,a.name,a.createTime,a.faultId,a.fault_analysis,a.file_path
     from
     (( SELECT
             far.id,
@@ -17,7 +17,9 @@
             f.id as faultId,
             ft.`code` as faultTypeCode,
             far.create_time as createTime,
-            f.sub_system_code
+            f.sub_system_code,
+            far.fault_analysis,
+            far.file_path
     FROM
             fault_analysis_report far
                     LEFT JOIN fault f ON f.CODE = far.fault_code
@@ -44,7 +46,9 @@
             f.id AS faultId,
             ft.`code` as faultTypeCode,
             far.create_time as createTime,
-            f.sub_system_code
+            f.sub_system_code,
+            far.fault_analysis,
+            far.file_path
     FROM
             fault_analysis_report far
             LEFT JOIN fault f ON f.CODE = far.fault_code
