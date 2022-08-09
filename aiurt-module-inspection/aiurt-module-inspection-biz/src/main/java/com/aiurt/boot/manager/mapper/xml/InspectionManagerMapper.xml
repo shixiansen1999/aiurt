@@ -54,8 +54,9 @@
         left join cs_subsystem  cs on cs.system_code = d.system_code
         left join device_type dt on dt.`code` = d.device_type_code
         <where>
+           d.del_flag = 0 and cm.del_flag = 0 and cs.del_flag = 0 and dt.del_flag = 0
             <if test="deviceCodes.size()>0">
-                d.code in
+               and d.code in
                 <foreach collection="deviceCodes" item="deviceCode" open="(" close=")" separator=",">
                 #{deviceCode}
                 </foreach>
@@ -72,8 +73,9 @@
         left join cs_subsystem  cs on cs.system_code = d.system_code
         left join device_type dt on dt.`code` = d.device_type_code
         <where>
+         d.del_flag = 0 and cm.del_flag = 0 and cs.del_flag = 0 and dt.del_flag = 0
             <if test="deviceCodes.size()>0">
-                d.code in
+               and d.code in
                 <foreach collection="deviceCodes" item="deviceCode" open="(" close=")" separator=",">
                     #{deviceCode}
                 </foreach>
