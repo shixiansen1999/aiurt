@@ -485,8 +485,12 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                 checkListDTO.setEquipmentId(q.getDeviceId());
                 //设备专业
                 checkListDTO.setDeviceMajorName(q.getMajorName());
+                //设备专业编码
+                checkListDTO.setDeviceMajorCode(q.getMajorCode());
                 //设备子系统
                 checkListDTO.setDeviceSystemName(q.getSubsystemName());
+                //设备子系统编码
+                checkListDTO.setDeviceSystemCode(q.getSubsystemCode());
                 //线路编码
                 checkListDTO.setLineCode(q.getLineCode());
                 //位置编码
@@ -509,9 +513,12 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
         if (checkListDTO.getEquipmentCode() == null) {
             //设备专业
             checkListDTO.setDeviceMajorName(manager.translateMajor(Arrays.asList(checkListDTO.getMajorCode()), InspectionConstant.MAJOR));
+            //设备专业编码
+            checkListDTO.setDeviceMajorCode(checkListDTO.getMajorCode());
             //设备子系统
             checkListDTO.setDeviceSystemName(manager.translateMajor(Arrays.asList(checkListDTO.getSystemCode()), InspectionConstant.SUBSYSTEM));
-
+            //设备子系统编码
+            checkListDTO.setDeviceSystemCode(checkListDTO.getSystemCode());
             //根据站点编码翻译站点名称
             if (checkListDTO.getStationCode() != null && checkListDTO.getLineCode() != null) {
                 String string1 = manager.translateLine(checkListDTO.getLineCode()) + "/" + manager.translateStation(checkListDTO.getStationCode());
