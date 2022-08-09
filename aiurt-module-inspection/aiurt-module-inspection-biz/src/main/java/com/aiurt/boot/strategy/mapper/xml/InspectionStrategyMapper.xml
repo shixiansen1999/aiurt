@@ -47,7 +47,7 @@
                           inspection_str_sta_rel inssr
                               LEFT JOIN cs_station f ON inssr.station_code = f.station_code
                       WHERE
-                          isy.`code` = inssr.inspection_str_code
+                          isy.`code` = inssr.inspection_str_code and f.del_flag = 0
                         AND inssr.del_flag = 0) AS siteName,
                      (SELECT
                           GROUP_CONCAT(f.station_code)
@@ -55,7 +55,7 @@
                           inspection_str_sta_rel inssr
                               LEFT JOIN cs_station f ON inssr.station_code = f.station_code
                       WHERE
-                          isy.`code` = inssr.inspection_str_code
+                          isy.`code` = inssr.inspection_str_code and f.del_flag = 0
                         AND inssr.del_flag = 0) AS siteCode,
                      (SELECT
                           GROUP_CONCAT(DISTINCT ic.major_code)
@@ -64,7 +64,8 @@
                               LEFT JOIN inspection_code ic on ic.`code`= insr.inspection_sta_code
                               LEFT JOIN cs_major csm ON ic.major_code = csm.major_code
                       WHERE
-                          insr.inspection_str_code = isy.`code`) AS professionCode,
+                          insr.inspection_str_code = isy.`code`
+                          and ic.del_flag = 0 and csm.del_flag = 0 ) AS professionCode,
                      ( SELECT
                            GROUP_CONCAT(DISTINCT csm.major_name)
                        FROM
@@ -72,7 +73,8 @@
                                LEFT JOIN inspection_code ic on ic.`code`= insr.inspection_sta_code
                                LEFT JOIN cs_major csm ON ic.major_code = csm.major_code
                        WHERE
-                           insr.inspection_str_code = isy.`code` ) AS professionName,
+                           insr.inspection_str_code = isy.`code`
+                         and ic.del_flag = 0 and csm.del_flag = 0) AS professionName,
                      ( SELECT
                            GROUP_CONCAT(DISTINCT ic.subsystem_code)
                        FROM
@@ -80,7 +82,8 @@
                                LEFT JOIN inspection_code ic on ic.`code`= insr.inspection_sta_code
                                LEFT JOIN cs_subsystem css ON ic.subsystem_code = css.system_code
                        WHERE
-                           insr.inspection_str_code = isy.`code`) AS subsystemCode,
+                           insr.inspection_str_code = isy.`code`
+                          and ic.del_flag = 0 and css.del_flag = 0) AS subsystemCode,
                      ( SELECT
                            GROUP_CONCAT(DISTINCT css.system_name)
                        FROM
@@ -88,7 +91,8 @@
                                LEFT JOIN inspection_code ic on ic.`code`= insr.inspection_sta_code
                                LEFT JOIN cs_subsystem css ON ic.subsystem_code = css.system_code
                        WHERE
-                           insr.inspection_str_code = isy.`code` ) AS subsystemName
+                           insr.inspection_str_code = isy.`code`
+                        and ic.del_flag = 0 and css.del_flag = 0) AS subsystemName
               FROM inspection_strategy isy
               WHERE isy.del_flag = 0
             ) AS abc
