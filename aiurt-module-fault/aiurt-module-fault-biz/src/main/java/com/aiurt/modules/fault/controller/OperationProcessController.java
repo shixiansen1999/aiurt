@@ -78,6 +78,8 @@ public class OperationProcessController extends BaseController<OperationProcess,
 				dealTime(process, between);
 			}
 		}
+		list = list.stream().
+				sorted(Comparator.comparing(OperationProcess::getProcessTime).reversed()).collect(Collectors.toList());
 		return Result.OK(list);
 	}
 
