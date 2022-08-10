@@ -465,7 +465,7 @@ er.train_task_id=#{taskId} and er.is_release ='3' and er.exam_classify =1
     </select>
 
      <select id="getRecordList" resultType="com.aiurt.modules.train.exam.entity.BdExamRecord">
-    select  t1.id,t1.exam_classify,t1.score
+    select  t1.id,t1.exam_classify,t1.score,t1.is_pass
     from bd_exam_record t1
     LEFT JOIN bd_exam_paper ep ON ep.id = t1.exam_paper_id
     where
