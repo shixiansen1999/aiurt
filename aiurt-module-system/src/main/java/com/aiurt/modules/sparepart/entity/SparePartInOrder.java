@@ -110,9 +110,9 @@ public class SparePartInOrder implements Serializable {
 	@ApiModelProperty(value = "组织机构id")
 	private String orgId;
 	/**确认时间*/
-	@Excel(name = "确认时间", width = 15, format = "yyyy-MM-dd")
-	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
-	@DateTimeFormat(pattern="yyyy-MM-dd")
+	@Excel(name = "确认时间", width = 15, format = "yyyy-MM-dd HH:mm")
+	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm")
+	@DateTimeFormat(pattern="yyyy-MM-dd HH:mm")
 	@ApiModelProperty(value = "确认时间")
 	private Date confirmTime;
 	/**确认人ID*/
@@ -142,8 +142,8 @@ public class SparePartInOrder implements Serializable {
 	@ApiModelProperty(value = "修改人")
 	private String updateBy;
 	/**创建时间*/
-	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
-	@DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
+	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm")
+	@DateTimeFormat(pattern="yyyy-MM-dd HH:mm")
 	@ApiModelProperty(value = "创建时间")
 	private Date createTime;
 	/**修改时间*/

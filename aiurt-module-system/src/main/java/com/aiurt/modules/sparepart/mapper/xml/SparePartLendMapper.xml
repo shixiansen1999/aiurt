@@ -30,7 +30,11 @@
         t11.depart_name borrowName,
         t12.depart_name lendName,
         t13.depart_name returnName,
-        t.borrow_num
+        t.borrow_num,
+        t.create_org_code,
+        t.entry_org_code,
+        t.exit_org_code,
+        t14.num
         FROM
         spare_part_lend t
         LEFT JOIN material_base t1 ON t.material_code = t1.CODE
@@ -52,6 +56,7 @@
         LEFT JOIN sys_depart t11 ON t11.id = t10.org_id
         LEFT JOIN sys_depart t12 ON t12.id = t6.org_id
         LEFT JOIN sys_depart t13 ON t13.id = t9.org_id
+        LEFT JOIN spare_part_stock t14 ON t14.material_code=t.material_code and t14.warehouse_code=t.lend_warehouse_code
         WHERE
         t.del_flag = 0
 
@@ -64,7 +69,9 @@
         <if test="lend.status!=null and lend.status!=''">
             and t.status = #{lend.status}
         </if>
-
+        <if test="lend.warehouseName!=null and lend.warehouseName!=''">
+            and  (t5.warehouse_name like concat('%', #{lend.warehouseName}, '%') or t8.warehouse_name like concat('%', #{lend.warehouseName}, '%'))
+        </if>
         order by t.create_time desc
 
     </select>

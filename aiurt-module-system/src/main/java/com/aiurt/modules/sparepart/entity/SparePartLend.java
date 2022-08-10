@@ -49,13 +49,13 @@ public class SparePartLend implements Serializable {
     @Excel(name = "序号", width = 15)
     @TableField(exist = false)
     private String number;
-    /**状态（	1：待借出、2：已借、3：待确认、4：已完结）*/
+    /** 状态名称*/
     @Excel(name = "状态", width = 15)
-    @ApiModelProperty(value = "状态（1：待借出、2：已借、3：待确认、4：已完结）")
-    @Dict(dicCode = "spare_lend_status")
-    private Integer status;
-	/**物资编号*/
-	@Excel(name = "物资编号", width = 15)
+    @ApiModelProperty(value = "状态名称")
+    @TableField(exist = false)
+    private String statusName;
+    /**物资编号*/
+    @Excel(name = "物资编号", width = 15)
     @ApiModelProperty(value = "物资编号")
     private String materialCode;
     /**物资名称*/
@@ -67,10 +67,11 @@ public class SparePartLend implements Serializable {
     @Excel(name = "借入数量", width = 15)
     @ApiModelProperty(value = "借入数量")
     private Integer borrowNum;
+
     /**申请借入时间*/
-    @Excel(name = "申请借入时间", width = 15, format = "yyyy-MM-dd HH:mm:ss")
-    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
-    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
+    @Excel(name = "申请借入时间", width = 15, format = "yyyy-MM-dd HH:mm")
+    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm")
+    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm")
     @ApiModelProperty(value = "申请借入时间")
     private Date createTime;
     /**借入仓库名称*/
@@ -88,9 +89,9 @@ public class SparePartLend implements Serializable {
     @ApiModelProperty(value = "借出数量")
     private Integer lendNum;
     /**借出时间*/
-    @Excel(name = "借出时间", width = 15, format = "yyyy-MM-dd HH:mm:ss")
-    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
-    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
+    @Excel(name = "借出时间", width = 15, format = "yyyy-MM-dd HH:mm")
+    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm")
+    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm")
     @ApiModelProperty(value = "借出时间")
     private Date outTime;
     /**借出仓库名称*/
@@ -103,9 +104,9 @@ public class SparePartLend implements Serializable {
     @ApiModelProperty(value = "归还数量")
     private Integer backNum;
     /**归还时间*/
-    @Excel(name = "归还时间", width = 15, format = "yyyy-MM-dd HH:mm:ss")
-    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
-    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
+    @Excel(name = "归还时间", width = 15, format = "yyyy-MM-dd HH:mm")
+    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm")
+    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm")
     @ApiModelProperty(value = "归还时间")
     private Date backTime;
     /**备注*/
@@ -132,7 +133,11 @@ public class SparePartLend implements Serializable {
 	/**删除状态(0.未删除 1.已删除)*/
     @ApiModelProperty(value = "删除状态(0.未删除 1.已删除)")
     private Integer delFlag;
-	/**创建人*/
+    /**状态（	1：待借出、2：已借、3：待确认、4：已完结）*/
+    @ApiModelProperty(value = "状态（1：待借出、2：已借、3：待确认、4：已完结）")
+    @Dict(dicCode = "spare_lend_status")
+    private Integer status;
+    /**创建人*/
     @ApiModelProperty(value = "创建人")
     private String createBy;
 	/**修改人*/
@@ -217,4 +222,11 @@ public class SparePartLend implements Serializable {
     @ApiModelProperty(value = "借出的组织机构编码")
     @DeptFilterColumn
     private String exitOrgCode;
+    /**列表查询：仓库*/
+    @ApiModelProperty(value = " 仓库")
+    @TableField(exist = false)
+    private String warehouseName;
+    /**库存数量*/
+    @TableField(exist = false)
+    private String num;
 }

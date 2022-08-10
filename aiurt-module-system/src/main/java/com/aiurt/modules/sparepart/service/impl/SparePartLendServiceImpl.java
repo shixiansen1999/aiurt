@@ -11,6 +11,7 @@ import com.aiurt.modules.sparepart.service.ISparePartLendService;
 import com.aiurt.modules.sparepart.service.ISparePartOutOrderService;
 import com.aiurt.modules.system.entity.SysUser;
 import com.aiurt.modules.system.mapper.SysUserMapper;
+import com.aiurt.modules.system.service.ISysDepartService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.shiro.SecurityUtils;
@@ -45,6 +46,8 @@ public class SparePartLendServiceImpl extends ServiceImpl<SparePartLendMapper, S
     private ISparePartOutOrderService sparePartOutOrderService;
     @Autowired
     private ISparePartInOrderService sparePartInOrderService;
+    @Autowired
+    private ISysDepartService sysDepartService;
     /**
      * 查询列表
      * @param page
@@ -70,8 +73,13 @@ public class SparePartLendServiceImpl extends ServiceImpl<SparePartLendMapper, S
         if(null!=sparePartStockInfo){
             sparePartLend.setBackWarehouseCode(sparePartStockInfo.getWarehouseCode());
         }
+        //查询借出仓库
+        SparePartStockInfo lendStockInfo = sparePartStockInfoMapper.selectOne(new LambdaQueryWrapper<SparePartStockInfo>().eq(SparePartStockInfo::getWarehouseCode,sparePartLend.getLendWarehouseCode()).eq(SparePartStockInfo::getDelFlag, CommonConstant.DEL_FLAG_0));
         sparePartLend.setOutTime(new Date());
         sparePartLend.setLendPerson(user.getUsername());
+        sparePartLend.setCreateOrgCode(user.getOrgCode());
+        sparePartLend.setEntryOrgCode(sysDepartService.getById(sparePartStockInfo.getOrganizationId()).getOrgCode());
+        sparePartLend.setExitOrgCode(sysDepartService.getById(lendStockInfo.getOrganizationId()).getOrgCode());
         sparePartLendMapper.insert(sparePartLend);
         return Result.OK("添加成功！");
     }
@@ -91,13 +99,13 @@ public class SparePartLendServiceImpl extends ServiceImpl<SparePartLendMapper, S
         updateById(sparePartLend);
         //2.借出仓库库存数做减法
         SparePartStock lendStock = sparePartStockMapper.selectOne(new LambdaQueryWrapper<SparePartStock>().eq(SparePartStock::getMaterialCode,partLend.getMaterialCode()).eq(SparePartStock::getWarehouseCode,partLend.getLendWarehouseCode()));
-        lendStock.setNum(lendStock.getNum()-partLend.getLendNum());
+        lendStock.setNum(lendStock.getNum()-sparePartLend.getLendNum());
         sparePartStockMapper.updateById(lendStock);
         //3.添加出库记录
         SparePartOutOrder sparePartOutOrder = new SparePartOutOrder();
         sparePartOutOrder.setMaterialCode(partLend.getMaterialCode());
         sparePartOutOrder.setWarehouseCode(partLend.getBackWarehouseCode());
-        sparePartOutOrder.setNum(partLend.getLendNum());
+        sparePartOutOrder.setNum(sparePartLend.getLendNum());
         sparePartOutOrder.setConfirmTime(date);
         sparePartOutOrder.setConfirmUserId(user.getUsername());
         sparePartOutOrder.setApplyOutTime(date);
@@ -106,13 +114,13 @@ public class SparePartLendServiceImpl extends ServiceImpl<SparePartLendMapper, S
         sparePartOutOrderService.save(sparePartOutOrder);
         //4.借入仓库库存数做加法
         SparePartStock backStock = sparePartStockMapper.selectOne(new LambdaQueryWrapper<SparePartStock>().eq(SparePartStock::getMaterialCode,partLend.getMaterialCode()).eq(SparePartStock::getWarehouseCode,partLend.getBackWarehouseCode()));
-        backStock.setNum(backStock.getNum()+partLend.getLendNum());
+        backStock.setNum(backStock.getNum()+sparePartLend.getLendNum());
         sparePartStockMapper.updateById(backStock);
         //5.添加入库记录
         SparePartInOrder sparePartInOrder = new SparePartInOrder();
         sparePartInOrder.setMaterialCode(partLend.getMaterialCode());
         sparePartInOrder.setWarehouseCode(partLend.getBackWarehouseCode());
-        sparePartInOrder.setNum(partLend.getLendNum());
+        sparePartInOrder.setNum(sparePartLend.getLendNum());
         sparePartInOrder.setOrgId(sysUserMapper.selectOne(new LambdaQueryWrapper<SysUser>().eq(SysUser::getUsername,partLend.getLendPerson())).getOrgId());
         sparePartInOrder.setConfirmStatus(CommonConstant.SPARE_PART_IN_ORDER_STATUS_1);
         sparePartInOrder.setConfirmId(user.getUsername());
@@ -136,13 +144,13 @@ public class SparePartLendServiceImpl extends ServiceImpl<SparePartLendMapper, S
         updateById(sparePartLend);
         //2.借出仓库库存数做加法
         SparePartStock lendStock = sparePartStockMapper.selectOne(new LambdaQueryWrapper<SparePartStock>().eq(SparePartStock::getMaterialCode,partLend.getMaterialCode()).eq(SparePartStock::getWarehouseCode,partLend.getLendWarehouseCode()));
-        lendStock.setNum(lendStock.getNum()+partLend.getLendNum());
+        lendStock.setNum(lendStock.getNum()+sparePartLend.getBackNum());
         sparePartStockMapper.updateById(lendStock);
         //3.添加入库记录
         SparePartInOrder sparePartInOrder = new SparePartInOrder();
         sparePartInOrder.setMaterialCode(partLend.getMaterialCode());
         sparePartInOrder.setWarehouseCode(partLend.getLendWarehouseCode());
-        sparePartInOrder.setNum(partLend.getLendNum());
+        sparePartInOrder.setNum(sparePartLend.getBackNum());
         sparePartInOrder.setOrgId(sysUserMapper.selectOne(new LambdaQueryWrapper<SysUser>().eq(SysUser::getUsername,partLend.getBackPerson())).getOrgId());
         sparePartInOrder.setConfirmStatus(CommonConstant.SPARE_PART_IN_ORDER_STATUS_1);
         sparePartInOrder.setConfirmId(user.getUsername());
@@ -150,13 +158,13 @@ public class SparePartLendServiceImpl extends ServiceImpl<SparePartLendMapper, S
         sparePartInOrderService.save(sparePartInOrder);
         //3.借入仓库库存数做减法
         SparePartStock backStock = sparePartStockMapper.selectOne(new LambdaQueryWrapper<SparePartStock>().eq(SparePartStock::getMaterialCode,partLend.getMaterialCode()).eq(SparePartStock::getWarehouseCode,partLend.getBackWarehouseCode()));
-        backStock.setNum(backStock.getNum()-partLend.getLendNum());
+        backStock.setNum(backStock.getNum()-sparePartLend.getBackNum());
         sparePartStockMapper.updateById(backStock);
         //4.添加出库记录
         SparePartOutOrder sparePartOutOrder = new SparePartOutOrder();
         sparePartOutOrder.setMaterialCode(partLend.getMaterialCode());
         sparePartOutOrder.setWarehouseCode(partLend.getBackWarehouseCode());
-        sparePartOutOrder.setNum(partLend.getLendNum());
+        sparePartOutOrder.setNum(sparePartLend.getBackNum());
         sparePartOutOrder.setConfirmTime(date);
         sparePartOutOrder.setConfirmUserId(user.getUsername());
         sparePartOutOrder.setApplyOutTime(date);

@@ -4,6 +4,7 @@
     <select id="readAll" resultType="com.aiurt.modules.sparepart.entity.SparePartStock">
         SELECT
         t.id,
+        t1.warehouse_code,
         t1.warehouse_name warehouseName,
         t.material_code materialCode,
         t2.NAME,
@@ -53,6 +54,12 @@
         </if>
         <if test="stock.orgId!=null and stock.orgId!=''">
             and t.org_id not in (#{stock.orgId})
+        </if>
+        <if test="stock.num != null and stock.num != ''">
+            and t.num <![CDATA[ <> ]]> 0
+        </if>
+        <if test="stock.warehouseCode!=null and stock.warehouseCode!=''">
+            and t1.warehouse_code = #{stock.warehouseCode}
         </if>
         order by t.create_time desc
     </select>

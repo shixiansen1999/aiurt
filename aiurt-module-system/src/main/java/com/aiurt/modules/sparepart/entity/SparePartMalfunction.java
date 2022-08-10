@@ -118,16 +118,12 @@ public class SparePartMalfunction implements Serializable {
     private Date updateTime;
     /**維修時間-起始*/
     @ApiModelProperty(value = "維修時間-起始")
-    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
-    @DateTimeFormat(pattern="yyyy-MM-dd")
     @TableField(exist = false)
-    private Date maintainTimeBegin;
+    private String maintainTimeBegin;
     /**維修時間-結束*/
     @ApiModelProperty(value = "維修時間-結束")
-    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
-    @DateTimeFormat(pattern="yyyy-MM-dd")
     @TableField(exist = false)
-    private Date maintainTimeEnd;
+    private String maintainTimeEnd;
     /**ids*/
     @ApiModelProperty(value = "ids")
     @TableField(exist = false)

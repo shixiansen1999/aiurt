@@ -166,24 +166,12 @@ public class SparePartApplyController extends BaseController<SparePartApply, ISp
 	@DeleteMapping(value = "/delete")
 	public Result<String> delete(@RequestParam(name="id",required=true) String id) {
 		SparePartApply sparePartApply = sparePartApplyService.getById(id);
-        //判断是否被备件入库使用
-		LambdaQueryWrapper<SparePartInOrder> wrapper = new LambdaQueryWrapper<>();
-		wrapper.eq(SparePartInOrder::getWarehouseCode,sparePartApply.getCustodialWarehouseCode());
-		wrapper.eq(SparePartInOrder::getDelFlag, CommonConstant.DEL_FLAG_0);
-		List<SparePartInOrder> list = sparePartInOrderService.list(wrapper);
-		if(!list.isEmpty()){
-			return Result.error("被备件入库使用中，不能删除!");
-		}
-		//判断是否被备件库存信息使用
-		LambdaQueryWrapper<SparePartStock> stockWrapper = new LambdaQueryWrapper<>();
-		stockWrapper.eq(SparePartStock::getWarehouseCode,sparePartApply.getCustodialWarehouseCode());
-		stockWrapper.eq(SparePartStock::getDelFlag, CommonConstant.DEL_FLAG_0);
-		List<SparePartStock> stockList = sparePartStockService.list(stockWrapper);
-		if(!stockList.isEmpty()){
-			return Result.error("被备件库存信息使用中，不能删除!");
-		}
 		sparePartApply.setDelFlag(CommonConstant.DEL_FLAG_1);
 		sparePartApplyService.updateById(sparePartApply);
+		//删除申领物资
+        LambdaQueryWrapper<SparePartApplyMaterial> materialWrapper = new LambdaQueryWrapper<>();
+        materialWrapper.eq(SparePartApplyMaterial::getApplyId,id);
+        sparePartApplyMaterialService.remove(materialWrapper);
 		return Result.OK("删除成功!");
 	}
 

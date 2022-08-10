@@ -69,7 +69,8 @@ public class SparePartMalfunctionController extends BaseController<SparePartMalf
 		//QueryWrapper<SparePartMalfunction> queryWrapper = QueryGenerator.initQueryWrapper(sparePartMalfunction, req.getParameterMap());
 		LambdaQueryWrapper<SparePartMalfunction> queryWrapper = new LambdaQueryWrapper<>();
 		if(ObjectUtils.isNotEmpty(sparePartMalfunction.getMaintainTimeBegin()) && ObjectUtils.isNotEmpty(sparePartMalfunction.getMaintainTimeEnd())){
-			queryWrapper.between(SparePartMalfunction::getMaintainTime,sparePartMalfunction.getMaintainTimeBegin(),sparePartMalfunction.getMaintainTimeEnd());
+			queryWrapper.ge(SparePartMalfunction::getMaintainTime,sparePartMalfunction.getMaintainTimeBegin()+" 00:00:00");
+			queryWrapper.le(SparePartMalfunction::getMaintainTime,sparePartMalfunction.getMaintainTimeEnd()+" 23:59:59");
 		}
 		if(ObjectUtils.isNotEmpty(sparePartMalfunction.getOutOrderId())){
 			queryWrapper.eq(SparePartMalfunction::getOutOrderId,sparePartMalfunction.getOutOrderId());

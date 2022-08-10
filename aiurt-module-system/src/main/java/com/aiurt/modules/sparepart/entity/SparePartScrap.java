@@ -195,8 +195,8 @@ public class SparePartScrap implements Serializable {
     @TableField(exist = false)
     private String statusName;
     /**确认时间*/
-    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
-    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm")
+    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm")
     @ApiModelProperty(value = "确认时间")
     private Date confirmTime;
     /**确认人ID*/

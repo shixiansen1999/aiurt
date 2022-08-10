@@ -61,10 +61,11 @@ public class SparePartReturnOrderServiceImpl extends ServiceImpl<SparePartReturn
     @Transactional(rollbackFor = Exception.class)
     public Result<?> update(SparePartReturnOrder sparePartReturnOrder) {
         LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        Date date = new Date();
         SparePartReturnOrder returnOrder = getById(sparePartReturnOrder.getId());
         //1.更改状态为“已确认”
         returnOrder.setConfirmId(user.getUsername());
-        returnOrder.setConfirmTime(new Date());
+        returnOrder.setConfirmTime(date);
         returnOrder.setStatus(sparePartReturnOrder.getStatus());
         sparePartReturnOrderMapper.updateById(returnOrder);
         //2.库存做对应的加法
@@ -80,6 +81,8 @@ public class SparePartReturnOrderServiceImpl extends ServiceImpl<SparePartReturn
         sparePartInOrder.setNum(returnOrder.getNum());
         sparePartInOrder.setOrgId(user.getOrgId());
         sparePartInOrder.setConfirmStatus(CommonConstant.SPARE_PART_IN_ORDER_CONFRM_STATUS_0);
+        sparePartInOrder.setConfirmId(user.getUsername());
+        sparePartInOrder.setConfirmTime(date);
         //sparePartInOrder.setOutOrderCode(orderCode);
         sparePartInOrderService.save(sparePartInOrder);
         //4.更新已出库库存数量,做减法

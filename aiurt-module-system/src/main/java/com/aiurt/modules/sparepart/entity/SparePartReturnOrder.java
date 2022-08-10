@@ -172,13 +172,12 @@ public class SparePartReturnOrder implements Serializable {
     @TableField(exist = false)
     private String price;
     /**确认时间*/
-    @Excel(name = "确认时间", width = 15, format = "yyyy-MM-dd HH:mm:ss")
-    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
-    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
+    @Excel(name = "确认时间", width = 15, format = "yyyy-MM-dd HH:mm")
+    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm")
+    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm")
     @ApiModelProperty(value = "确认时间")
     private Date confirmTime;
     /**确认人ID*/
-    @Excel(name = "确认人ID", width = 15)
     @ApiModelProperty(value = "确认人ID")
     @Dict(dictTable = "sys_user", dicText = "realname", dicCode = "username")
     private String confirmId;
