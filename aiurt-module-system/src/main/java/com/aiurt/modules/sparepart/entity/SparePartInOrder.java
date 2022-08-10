@@ -6,6 +6,7 @@ import java.util.Date;
 import java.math.BigDecimal;
 import java.util.List;
 
+import com.aiurt.common.aspect.annotation.DeptFilterColumn;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
@@ -174,4 +175,8 @@ public class SparePartInOrder implements Serializable {
 	@ApiModelProperty(value = "批量入库")
 	@TableField(exist = false)
 	private List<SparePartInOrder> orderList;
+	/**所属部门*/
+	@ApiModelProperty(value = "所属部门")
+	@DeptFilterColumn
+	private String sysOrgCode;
 }
