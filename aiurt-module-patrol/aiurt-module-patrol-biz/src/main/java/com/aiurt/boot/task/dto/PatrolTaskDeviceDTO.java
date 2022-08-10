@@ -74,15 +74,15 @@ public class PatrolTaskDeviceDTO {
     @ApiModelProperty(value = "设备位置")
     private java.lang.String devicePosition;
     /**开始巡检时间*/
-    @Excel(name = "开始巡检时间", width = 15, format = "yyyy-MM-dd HH:mm")
-    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm")
-    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm")
+    @Excel(name = "开始巡检时间", width = 15, format = "yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
+    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
     @ApiModelProperty(value = "开始巡检时间")
     private java.util.Date startTime;
     /**工单提交时间*/
-    @Excel(name = "结束巡检时间", width = 15, format = "yyyy-MM-dd HH:mm")
-    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm")
-    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm")
+    @Excel(name = "结束巡检时间", width = 15, format = "yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
+    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
     @ApiModelProperty(value = "结束巡检时间")
     private java.util.Date checkTime;
     @Excel(name = "巡检时长", width = 15)
