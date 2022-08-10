@@ -90,11 +90,10 @@ public interface IPatrolTaskDeviceService extends IService<PatrolTaskDevice> {
     void getPatrolSubmit(PatrolTaskDevice patrolTaskDevice);
 
     /**
-     * 根据巡检单号获取工单站点和巡检表联动信息
+     * 根据任务ID获取工单站点和巡检表联动信息
      *
      * @param taskId
-     * @param billId
      * @return
      */
-    List<PatrolStationDTO> getBillGangedInfo(String taskId, String billId);
+    List<PatrolStationDTO> getBillGangedInfo(String taskId);
 }

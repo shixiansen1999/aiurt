@@ -105,8 +105,8 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
     @AutoLog(value = "PC巡检工单详情-站点巡检表联动", operateType = 1, operateTypeAlias = "查询", permissionUrl = "/pollingCheck/PatrolPoolListDetail")
     @ApiOperation(value = "PC巡检工单详情-站点巡检表联动", notes = "PC巡检工单详情-站点巡检表联动")
     @RequestMapping(value = "/getBillGangedInfo", method = {RequestMethod.GET, RequestMethod.POST})
-    public Result<?> selectBillInfo(@RequestParam(name = "taskId") String taskId, String billId) {
-        List<PatrolStationDTO> billGangedInfo = patrolTaskDeviceService.getBillGangedInfo(taskId, billId);
+    public Result<?> selectBillInfo(@RequestParam(name = "taskId") String taskId) {
+        List<PatrolStationDTO> billGangedInfo = patrolTaskDeviceService.getBillGangedInfo(taskId);
         return Result.OK(billGangedInfo);
     }
 

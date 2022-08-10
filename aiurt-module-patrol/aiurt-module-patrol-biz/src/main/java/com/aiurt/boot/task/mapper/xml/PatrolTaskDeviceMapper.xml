@@ -130,7 +130,7 @@
         </if>
     </select>
     <select id="getPatrolTaskDeviceList" resultType="com.aiurt.boot.task.dto.PatrolTaskDeviceDTO">
-        SELECT (select dv.name from  device dv where ptd.device_code = dv.code) as deviceName,
+        SELECT (select dv.name from device dv where ptd.device_code = dv.code) as deviceName,
         ptd.*
         FROM patrol_task_device ptd
         LEFT JOIN device dv on ptd.device_code = dv.code
@@ -187,52 +187,44 @@
     <select id="getMajorName" resultType="java.lang.String">
         select major_name
         from cs_major
-        where major_code = #{majorCode} and del_flag =0
+        where major_code = #{majorCode}
+          and del_flag = 0
     </select>
     <select id="getSysName" resultType="java.lang.String">
         select system_name
         from cs_subsystem
-        where system_code = #{systemCode} and del_flag =0
+        where system_code = #{systemCode}
+          and del_flag = 0
     </select>
     <select id="getAllPosition" resultType="java.lang.String">
-    select position_name
-    from
-    cs_station_position
-    where staion_code = #{stationCode} and del_flag =0
+        select position_name
+        from cs_station_position
+        where staion_code = #{stationCode}
+          and del_flag = 0
     </select>
     <select id="getBillGangedInfo" resultType="com.aiurt.boot.task.dto.PatrolBillDTO">
         SELECT
-            *
+        ptd.id billId,
+        ptd.patrol_number billCode,
+        CONCAT( ps.`name`, IF ( d.`name` IS NOT NULL, CONCAT( '(', d.`name`, ')' ), '' ) ) tableName,
+        IF ( ptd.device_code IS NOT NULL, d.station_code, ptd.station_code ) stationCode,
+        cs.station_name
         FROM
-            (
-                SELECT
-                    ptd.id billId,
-                    ptd.patrol_number billCode,
-                    CONCAT( ps.`name`, IF ( d.`name` IS NOT NULL, CONCAT( '(', d.`name`, ')' ), '' ) ) tableName,
-                    IF ( ptd.device_code IS NOT NULL, d.station_code, ptd.station_code ) stationCode,
-                    cs.station_name
-                FROM
-                    patrol_task_device ptd
-                        LEFT JOIN device d ON ptd.device_code = d.`code`
-                        AND d.del_flag = 0
-                        LEFT JOIN cs_station cs ON
-                                IF ( ptd.device_code IS NOT NULL, d.station_code, ptd.station_code ) = cs.station_code
-                            AND cs.del_flag = 0
-                        JOIN patrol_task_standard pts ON ptd.task_standard_id = pts.id
-                        AND pts.del_flag = 0
-                        JOIN patrol_standard ps ON pts.standard_id = ps.id
-                        AND ps.del_flag = 0
-                WHERE
-                    ptd.del_flag = 0
-                    <if test="taskId != null and taskId !=''">
-                        AND ptd.task_id = #{taskId}
-                    </if>
-            ) bill
+        patrol_task_device ptd
+        LEFT JOIN device d ON ptd.device_code = d.`code`
+        AND d.del_flag = 0
+        LEFT JOIN cs_station cs ON
+        IF ( ptd.device_code IS NOT NULL, d.station_code, ptd.station_code ) = cs.station_code
+        AND cs.del_flag = 0
+        JOIN patrol_task_standard pts ON ptd.task_standard_id = pts.id
+        AND pts.del_flag = 0
+        JOIN patrol_standard ps ON pts.standard_id = ps.id
+        AND ps.del_flag = 0
         WHERE
-            1 = 1
-            <if test="billId != null and billId !=''">
-                AND billId = #{billId}
-            </if>
+        ptd.del_flag = 0
+        <if test="taskId != null and taskId !=''">
+            AND ptd.task_id = #{taskId}
+        </if>
     </select>
     <select id="getStationName" resultType="java.lang.String">
         SELECT

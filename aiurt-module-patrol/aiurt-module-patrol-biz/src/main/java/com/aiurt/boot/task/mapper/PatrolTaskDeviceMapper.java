@@ -139,13 +139,12 @@ public interface PatrolTaskDeviceMapper extends BaseMapper<PatrolTaskDevice> {
     List<String> getAllPosition(String stationCode);
 
     /**
-     * 根据巡检单号获取工单站点和巡检表联动信息
+     * 根据任务ID获取工单站点和巡检表联动信息
      *
      * @param taskId
-     * @param billId
      * @return
      */
-    List<PatrolBillDTO> getBillGangedInfo(@Param("taskId") String taskId, @Param("billId") String billId);
+    List<PatrolBillDTO> getBillGangedInfo(@Param("taskId") String taskId);
 
     /**
      * 根据站点编号获取站点名称
