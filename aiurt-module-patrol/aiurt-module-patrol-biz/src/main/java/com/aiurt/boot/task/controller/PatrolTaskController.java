@@ -101,6 +101,15 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
         return Result.OK(taskDevicePageList);
     }
 
+
+    @AutoLog(value = "PC巡检工单详情-站点巡检表联动", operateType = 1, operateTypeAlias = "查询", permissionUrl = "/pollingCheck/PatrolPoolListDetail")
+    @ApiOperation(value = "PC巡检工单详情-站点巡检表联动", notes = "PC巡检工单详情-站点巡检表联动")
+    @RequestMapping(value = "/getBillGangedInfo", method = {RequestMethod.GET, RequestMethod.POST})
+    public Result<?> selectBillInfo(@RequestParam(name = "taskId") String taskId, String billId) {
+        List<PatrolStationDTO> billGangedInfo = patrolTaskDeviceService.getBillGangedInfo(taskId, billId);
+        return Result.OK(billGangedInfo);
+    }
+
     @AutoLog(value = "PC设备台账-巡视履历", operateType = 1, operateTypeAlias = "查询")
     @ApiOperation(value = "PC设备台账-巡视履历", notes = "PC设备台账-巡视履历")
     @RequestMapping(value = "/billInfoForDevice", method = {RequestMethod.GET, RequestMethod.POST})
@@ -330,7 +339,7 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
      * @param req
      * @return author hlq
      */
-    @AutoLog(value = "巡检任务表-app巡检任务池", operateType = 1, operateTypeAlias = "查询", module = ModuleType.PATROL,permissionUrl = "/Inspection/pool")
+    @AutoLog(value = "巡检任务表-app巡检任务池", operateType = 1, operateTypeAlias = "查询", module = ModuleType.PATROL, permissionUrl = "/Inspection/pool")
     @ApiOperation(value = "巡检任务表-app巡检任务池", notes = "巡检任务表-app巡检任务池")
     @GetMapping(value = "/patrolTaskPoolList")
     public Result<IPage<PatrolTaskDTO>> patrolTaskPoolList(PatrolTaskDTO patrolTaskDTO,
@@ -351,7 +360,7 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
      * @param req
      * @return author hlq
      */
-    @AutoLog(value = "巡检任务表-app巡检任务列表", operateType = 1, operateTypeAlias = "查询", module = ModuleType.PATROL,permissionUrl = "/Inspection/list")
+    @AutoLog(value = "巡检任务表-app巡检任务列表", operateType = 1, operateTypeAlias = "查询", module = ModuleType.PATROL, permissionUrl = "/Inspection/list")
     @ApiOperation(value = "巡检任务表-app巡检任务列表", notes = "巡检任务表-app巡检任务列表")
     @GetMapping(value = "/patrolTaskList")
     public Result<IPage<PatrolTaskDTO>> patrolTaskList(PatrolTaskDTO patrolTaskDTO,
@@ -370,7 +379,7 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
      * @param req
      * @return
      */
-    @AutoLog(value = "巡检任务表-app巡检任务领取", operateType = 3, operateTypeAlias = "修改-更新任务状态", module = ModuleType.PATROL,permissionUrl = "/Inspection/pool")
+    @AutoLog(value = "巡检任务表-app巡检任务领取", operateType = 3, operateTypeAlias = "修改-更新任务状态", module = ModuleType.PATROL, permissionUrl = "/Inspection/pool")
     @ApiOperation(value = "巡检任务表-app巡检任务领取", notes = "巡检任务表-app巡检任务领取")
     @PostMapping(value = "/patrolTaskReceive")
     public Result<?> patrolTaskReceive(PatrolTaskDTO patrolTaskDTO, HttpServletRequest req) {
@@ -391,7 +400,7 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
      * @param req
      * @return
      */
-    @AutoLog(value = "巡检任务表-app巡检任务提交", operateType = 3, operateTypeAlias = "修改-更新任务状态", module = ModuleType.PATROL,permissionUrl = "/Inspection/pool")
+    @AutoLog(value = "巡检任务表-app巡检任务提交", operateType = 3, operateTypeAlias = "修改-更新任务状态", module = ModuleType.PATROL, permissionUrl = "/Inspection/pool")
     @ApiOperation(value = "巡检任务表-app巡检任务提交", notes = "巡检任务表-app巡检任务提交")
     @PostMapping(value = "/patrolTaskSubmit")
     public Result<?> patrolTaskSubmit(@RequestBody PatrolTaskDTO patrolTaskDTO, HttpServletRequest req) {
@@ -406,7 +415,7 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
      * @param req
      * @return
      */
-    @AutoLog(value = "巡检任务表-app巡检任务-退回" ,operateType = 3, operateTypeAlias = "修改-更新任务状态", module = ModuleType.PATROL,permissionUrl = "/Inspection/pool")
+    @AutoLog(value = "巡检任务表-app巡检任务-退回", operateType = 3, operateTypeAlias = "修改-更新任务状态", module = ModuleType.PATROL, permissionUrl = "/Inspection/pool")
     @ApiOperation(value = "巡检任务表-app巡检任务-退回", notes = "巡检任务表-app巡检任务-退回")
     @PostMapping(value = "/patrolTaskReturn")
     public Result<?> patrolTaskReturn(PatrolTaskDTO patrolTaskDTO, HttpServletRequest req) {
@@ -421,7 +430,7 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
      * @param req
      * @return
      */
-    @AutoLog(value = "app巡检任务-指派人员查询", operateType = 1, operateTypeAlias = "查询", module = ModuleType.PATROL,permissionUrl = "/Inspection/pool")
+    @AutoLog(value = "app巡检任务-指派人员查询", operateType = 1, operateTypeAlias = "查询", module = ModuleType.PATROL, permissionUrl = "/Inspection/pool")
     @ApiOperation(value = "app巡检任务-指派人员查询", notes = "app巡检任务-指派人员查询")
     @PostMapping(value = "/patrolTaskAppointSelect")
     public Result<?> patrolTaskAppointSelect(@RequestBody PatrolOrgDTO orgCoed, HttpServletRequest req) {
@@ -434,7 +443,7 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
      *
      * @return
      */
-    @AutoLog(value = "巡检任务表- app巡检任务-审核", operateType = 3, operateTypeAlias = "修改-更新任务状态", module = ModuleType.PATROL,permissionUrl = "/Inspection/list")
+    @AutoLog(value = "巡检任务表- app巡检任务-审核", operateType = 3, operateTypeAlias = "修改-更新任务状态", module = ModuleType.PATROL, permissionUrl = "/Inspection/list")
     @ApiOperation(value = "巡检任务表- app巡检任务-审核", notes = "巡检任务表- app巡检任务-审核")
     @PostMapping(value = "/patrolTaskAudit")
     public Result<?> patrolTaskAudit(String id, Integer status, String remark, String backReason) {
@@ -450,12 +459,13 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
             return Result.OK("通过成功");
         }
     }
+
     /**
      * pc手工下放任务列表-分页列表查询
      *
      * @return
      */
-    @AutoLog(value = "PC手工下放任务列表-分页列表查询", operateType = 1, operateTypeAlias = "查询", module = ModuleType.PATROL,permissionUrl = "/pollingCheck/issue")
+    @AutoLog(value = "PC手工下放任务列表-分页列表查询", operateType = 1, operateTypeAlias = "查询", module = ModuleType.PATROL, permissionUrl = "/pollingCheck/issue")
     @ApiOperation(value = "PC手工下放任务列表", notes = "PC手工下放任务列表")
     @GetMapping(value = "/patrolTaskManual")
     public Result<?> patrolTaskManual(PatrolTaskDTO patrolTaskDTO,
@@ -471,7 +481,7 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
      *
      * @return
      */
-    @AutoLog(value = "pc手工下放任务-新增手工任务", operateType = 2, operateTypeAlias = "手工任务", module = ModuleType.PATROL,permissionUrl = "/pollingCheck/issue")
+    @AutoLog(value = "pc手工下放任务-新增手工任务", operateType = 2, operateTypeAlias = "手工任务", module = ModuleType.PATROL, permissionUrl = "/pollingCheck/issue")
     @ApiOperation(value = "PC手工下放任务列表-新增", notes = "PC手工下放任务列表-新增")
     @PostMapping(value = "/patrolTaskManualAdd")
     public Result<?> patrolTaskManualAdd(@RequestBody PatrolTaskManualDTO patrolTaskManualDTO,
@@ -485,7 +495,7 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
      *
      * @return
      */
-    @AutoLog(value = "pc手工下放任务-编辑-详情", operateType = 1, operateTypeAlias = "查询", module = ModuleType.PATROL,permissionUrl = "/pollingCheck/issue")
+    @AutoLog(value = "pc手工下放任务-编辑-详情", operateType = 1, operateTypeAlias = "查询", module = ModuleType.PATROL, permissionUrl = "/pollingCheck/issue")
     @ApiOperation(value = "pc手工下放任务-编辑-详情", notes = "pc手工下放任务-编辑-详情")
     @PostMapping(value = "/patrolTaskManualDetail")
     public Result<?> patrolTaskManualDetail(String id,
@@ -501,7 +511,7 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
      *
      * @return
      */
-    @AutoLog(value = "pc手工下放任务-编辑", operateType = 3, operateTypeAlias = "修改", module = ModuleType.PATROL,permissionUrl = "/pollingCheck/issue")
+    @AutoLog(value = "pc手工下放任务-编辑", operateType = 3, operateTypeAlias = "修改", module = ModuleType.PATROL, permissionUrl = "/pollingCheck/issue")
     @ApiOperation(value = "pc手工下放任务-编辑", notes = "pc手工下放任务-编辑")
     @PostMapping(value = "/patrolTaskManualEdit")
     public Result<?> patrolTaskManualEdit(@RequestBody PatrolTaskManualDTO patrolTaskManualDTO,

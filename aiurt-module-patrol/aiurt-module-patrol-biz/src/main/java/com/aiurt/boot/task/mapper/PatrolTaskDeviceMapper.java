@@ -3,6 +3,7 @@ package com.aiurt.boot.task.mapper;
 
 import com.aiurt.boot.standard.entity.PatrolStandard;
 import com.aiurt.boot.task.dto.DeviceDTO;
+import com.aiurt.boot.task.dto.PatrolBillDTO;
 import com.aiurt.boot.task.dto.PatrolTaskDeviceDTO;
 import com.aiurt.boot.task.entity.PatrolTaskDevice;
 import com.aiurt.boot.task.param.PatrolTaskDeviceParam;
@@ -49,12 +50,13 @@ public interface PatrolTaskDeviceMapper extends BaseMapper<PatrolTaskDevice> {
 
     /**
      * app-获取巡检清单列表
+     *
      * @param pageList
      * @param id
      * @param search
      * @return
      */
-    List<PatrolTaskDeviceDTO> getPatrolTaskDeviceList(@Param("pageList") Page<PatrolTaskDeviceDTO> pageList, @Param("id") String id,@Param("search")String search);
+    List<PatrolTaskDeviceDTO> getPatrolTaskDeviceList(@Param("pageList") Page<PatrolTaskDeviceDTO> pageList, @Param("id") String id, @Param("search") String search);
 
     /**
      * app-获取提交人名称
@@ -82,6 +84,7 @@ public interface PatrolTaskDeviceMapper extends BaseMapper<PatrolTaskDevice> {
 
     /**
      * pc -获取设备的位置
+     *
      * @param code
      * @return
      */
@@ -94,8 +97,10 @@ public interface PatrolTaskDeviceMapper extends BaseMapper<PatrolTaskDevice> {
      * @return
      */
     Device getDeviceInfoByCode(String deviceCode);
+
     /**
      * 根据设备编号获取这个设备的信息
+     *
      * @param deviceCode
      * @return
      */
@@ -103,6 +108,7 @@ public interface PatrolTaskDeviceMapper extends BaseMapper<PatrolTaskDevice> {
 
     /**
      * 根据位置code,获取设备位置
+     *
      * @param positionCode
      * @return
      */
@@ -110,6 +116,7 @@ public interface PatrolTaskDeviceMapper extends BaseMapper<PatrolTaskDevice> {
 
     /**
      * 获取设备的专业
+     *
      * @param majorCode
      * @return
      */
@@ -117,6 +124,7 @@ public interface PatrolTaskDeviceMapper extends BaseMapper<PatrolTaskDevice> {
 
     /**
      * 获取设备的子系统
+     *
      * @param systemCode
      * @return
      */
@@ -124,8 +132,25 @@ public interface PatrolTaskDeviceMapper extends BaseMapper<PatrolTaskDevice> {
 
     /**
      * 根据站点code,获取站点下的全部位置
+     *
      * @param stationCode
      * @return
      */
     List<String> getAllPosition(String stationCode);
+
+    /**
+     * 根据巡检单号获取工单站点和巡检表联动信息
+     *
+     * @param taskId
+     * @param billId
+     * @return
+     */
+    List<PatrolBillDTO> getBillGangedInfo(@Param("taskId") String taskId, @Param("billId") String billId);
+
+    /**
+     * 根据站点编号获取站点名称
+     * @param stationCode
+     * @return
+     */
+    String getStationName(String stationCode);
 }

@@ -11,10 +11,7 @@ import com.aiurt.boot.standard.dto.StationDTO;
 import com.aiurt.boot.standard.entity.PatrolStandard;
 import com.aiurt.boot.standard.entity.PatrolStandardItems;
 import com.aiurt.boot.standard.mapper.PatrolStandardItemsMapper;
-import com.aiurt.boot.task.dto.PatrolAccessoryDTO;
-import com.aiurt.boot.task.dto.PatrolAccompanyDTO;
-import com.aiurt.boot.task.dto.PatrolCheckResultDTO;
-import com.aiurt.boot.task.dto.PatrolTaskDeviceDTO;
+import com.aiurt.boot.task.dto.*;
 import com.aiurt.boot.task.entity.*;
 import com.aiurt.boot.task.mapper.*;
 import com.aiurt.boot.task.param.PatrolTaskDeviceParam;
@@ -72,10 +69,9 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
     private PatrolTaskFaultMapper patrolTaskFaultMapper;
 
 
-
     @Override
     public IPage<PatrolTaskDeviceParam> selectBillInfo(Page<PatrolTaskDeviceParam> page, PatrolTaskDeviceParam patrolTaskDeviceParam) {
-        return  patrolTaskDeviceMapper.selectBillInfo(page, patrolTaskDeviceParam);
+        return patrolTaskDeviceMapper.selectBillInfo(page, patrolTaskDeviceParam);
     }
 
     @Override
@@ -185,12 +181,9 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
             PatrolTask patrolTask = patrolTaskMapper.selectById(e.getTaskId());
             List<PatrolTaskUser> userList = patrolTaskUserMapper.selectList(new LambdaQueryWrapper<PatrolTaskUser>().eq(PatrolTaskUser::getTaskCode, patrolTask.getCode()));
             List<PatrolTaskUser> showButton = userList.stream().filter(u -> u.getUserId().equals(sysUser.getId())).collect(Collectors.toList());
-            if(showButton.size()>0)
-            {
+            if (showButton.size() > 0) {
                 e.setShowEditButton(1);
-            }
-            else
-            {
+            } else {
                 e.setShowEditButton(0);
             }
             List<String> orgCodes = patrolTaskMapper.getOrgCode(patrolTask.getCode());
@@ -224,7 +217,7 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         boolean admin = SecurityUtils.getSubject().hasRole("admin");
         PatrolTask patrolTask = patrolTaskMapper.selectOne(new LambdaQueryWrapper<PatrolTask>().eq(PatrolTask::getId, taskDevice.getTaskId()));
-        if (manager.checkTaskUser(patrolTask.getCode()) == false&&!admin) {
+        if (manager.checkTaskUser(patrolTask.getCode()) == false && !admin) {
             throw new AiurtBootException("小主，该巡检任务不在您的提交范围之内哦");
         } else {
             List<PatrolCheckResult> patrolCheckResultList = patrolCheckResultMapper.selectList(new LambdaQueryWrapper<PatrolCheckResult>().eq(PatrolCheckResult::getTaskDeviceId, taskDevice.getId()));
@@ -239,6 +232,25 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
             updateWrapper.set(PatrolTaskDevice::getUserId, sysUser.getId()).set(PatrolTaskDevice::getCheckTime, LocalDateTime.now()).set(PatrolTaskDevice::getStatus, PatrolConstant.BILL_COMPLETE).eq(PatrolTaskDevice::getId, patrolTaskDevice.getId());
             patrolTaskDeviceMapper.update(patrolTaskDevice, updateWrapper);
         }
+    }
+
+    @Override
+    public List<PatrolStationDTO> getBillGangedInfo(String taskId, String billId) {
+        List<PatrolBillDTO> billGangedInfo = patrolTaskDeviceMapper.getBillGangedInfo(taskId, billId);
+        Map<String, List<PatrolBillDTO>> collect = billGangedInfo.stream().collect(Collectors.groupingBy(PatrolBillDTO::getStationCode));
+        List<PatrolStationDTO> stationList = new ArrayList<>();
+        for (Map.Entry<String, List<PatrolBillDTO>> entry : collect.entrySet()) {
+            String stationCode = entry.getKey();
+            if (ObjectUtil.isEmpty(stationCode)) {
+                continue;
+            }
+            PatrolStationDTO station = new PatrolStationDTO();
+            station.setStationCode(stationCode);
+            station.setStationName(patrolTaskDeviceMapper.getStationName(stationCode));
+            station.setBillInfo(entry.getValue());
+            stationList.add(station);
+        }
+        return stationList;
     }
 
     @Override
@@ -434,7 +446,7 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         PatrolTask patrolTask = patrolTaskMapper.selectById(patrolTaskDevice.getTaskId());
         boolean admin = SecurityUtils.getSubject().hasRole("admin");
-        if (manager.checkTaskUser(patrolTask.getCode()) == false && ObjectUtil.isNull(checkDetail)&&!admin) {
+        if (manager.checkTaskUser(patrolTask.getCode()) == false && ObjectUtil.isNull(checkDetail) && !admin) {
             throw new AiurtBootException("小主，该巡检任务不在您的检查范围之内哦");
         } else {
             //更新任务状态（将未开始改为执行中）、添加开始检查时间，传任务主键id,巡检工单主键
@@ -444,7 +456,7 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
                     LambdaUpdateWrapper<PatrolTaskDevice> updateWrapper = new LambdaUpdateWrapper<>();
                     updateWrapper.set(PatrolTaskDevice::getStatus, 1)
                             .set(PatrolTaskDevice::getStartTime, LocalDateTime.now())
-                            .set(PatrolTaskDevice::getCheckTime,null)
+                            .set(PatrolTaskDevice::getCheckTime, null)
                             .eq(PatrolTaskDevice::getTaskId, patrolTaskDevice.getTaskId())
                             .eq(PatrolTaskDevice::getId, patrolTaskDevice.getId());
                     patrolTaskDeviceMapper.update(new PatrolTaskDevice(), updateWrapper);

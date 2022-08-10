@@ -200,4 +200,49 @@
     cs_station_position
     where staion_code = #{stationCode} and del_flag =0
     </select>
+    <select id="getBillGangedInfo" resultType="com.aiurt.boot.task.dto.PatrolBillDTO">
+        SELECT
+            *
+        FROM
+            (
+                SELECT
+                    ptd.id billId,
+                    ptd.patrol_number billCode,
+                    CONCAT( ps.`name`, IF ( d.`name` IS NOT NULL, CONCAT( '(', d.`name`, ')' ), '' ) ) tableName,
+                    IF ( ptd.device_code IS NOT NULL, d.station_code, ptd.station_code ) stationCode,
+                    cs.station_name
+                FROM
+                    patrol_task_device ptd
+                        LEFT JOIN device d ON ptd.device_code = d.`code`
+                        AND d.del_flag = 0
+                        LEFT JOIN cs_station cs ON
+                                IF ( ptd.device_code IS NOT NULL, d.station_code, ptd.station_code ) = cs.station_code
+                            AND cs.del_flag = 0
+                        JOIN patrol_task_standard pts ON ptd.task_standard_id = pts.id
+                        AND pts.del_flag = 0
+                        JOIN patrol_standard ps ON pts.standard_id = ps.id
+                        AND ps.del_flag = 0
+                WHERE
+                    ptd.del_flag = 0
+                    <if test="taskId != null and taskId !=''">
+                        AND ptd.task_id = #{taskId}
+                    </if>
+            ) bill
+        WHERE
+            1 = 1
+            <if test="billId != null and billId !=''">
+                AND billId = #{billId}
+            </if>
+    </select>
+    <select id="getStationName" resultType="java.lang.String">
+        SELECT
+        station_name
+        FROM
+        cs_station
+        WHERE
+        del_flag = 0
+        <if test="stationCode != null and stationCode !=''">
+            AND station_code = #{stationCode}
+        </if>
+    </select>
 </mapper>

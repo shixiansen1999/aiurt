@@ -1,6 +1,8 @@
 package com.aiurt.boot.task.service;
 
+import com.aiurt.boot.task.dto.PatrolBillDTO;
 import com.aiurt.boot.task.dto.PatrolCheckResultDTO;
+import com.aiurt.boot.task.dto.PatrolStationDTO;
 import com.aiurt.boot.task.dto.PatrolTaskDeviceDTO;
 import com.aiurt.boot.task.entity.PatrolTaskDevice;
 import com.aiurt.boot.task.param.PatrolTaskDeviceParam;
@@ -38,8 +40,6 @@ public interface IPatrolTaskDeviceService extends IService<PatrolTaskDevice> {
     IPage<PatrolTaskDeviceParam> selectBillInfoForDevice(Page<PatrolTaskDeviceParam> page, PatrolTaskDeviceParam patrolTaskDeviceParam);
 
 
-
-
     /**
      * PC巡检任务池详情-巡检工单详情
      *
@@ -62,7 +62,7 @@ public interface IPatrolTaskDeviceService extends IService<PatrolTaskDevice> {
      * @param patrolTaskDevice
      * @return
      */
-    List<PatrolCheckResultDTO> getPatrolTaskCheck(PatrolTaskDevice patrolTaskDevice,Integer checkDetail);
+    List<PatrolCheckResultDTO> getPatrolTaskCheck(PatrolTaskDevice patrolTaskDevice, Integer checkDetail);
 
     /**
      * 根据设备编号获取设备信息
@@ -74,6 +74,7 @@ public interface IPatrolTaskDeviceService extends IService<PatrolTaskDevice> {
 
     /**
      * app-巡检清单列表
+     *
      * @param pageList
      * @param id
      * @param search
@@ -83,7 +84,17 @@ public interface IPatrolTaskDeviceService extends IService<PatrolTaskDevice> {
 
     /**
      * app-提交工单
+     *
      * @param patrolTaskDevice
      */
     void getPatrolSubmit(PatrolTaskDevice patrolTaskDevice);
+
+    /**
+     * 根据巡检单号获取工单站点和巡检表联动信息
+     *
+     * @param taskId
+     * @param billId
+     * @return
+     */
+    List<PatrolStationDTO> getBillGangedInfo(String taskId, String billId);
 }
