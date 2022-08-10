@@ -106,6 +106,11 @@ public class FaultAnalysisReportServiceImpl extends ServiceImpl<FaultAnalysisRep
         //获取故障知识详情
         if (ObjectUtils.isNotEmpty(faultAnalysisReport) && StringUtils.isNotEmpty(faultAnalysisReport.getFaultKnowledgeBaseId())) {
             FaultKnowledgeBase faultKnowledgeBase = faultKnowledgeBaseMapper.selectById(faultAnalysisReport.getFaultKnowledgeBaseId());
+            if (ObjectUtils.isEmpty(faultKnowledgeBase)) {
+                FaultKnowledgeBase faultKnowledgeBase1 = new FaultKnowledgeBase();
+                faultKnowledgeBase1.setFaultPhenomenon(faultDTO.getFaultPhenomenon());
+                faultDTO.setFaultKnowledgeBase(faultKnowledgeBase1);
+            }
             faultDTO.setFaultKnowledgeBase(faultKnowledgeBase);
         }
         return faultDTO;
