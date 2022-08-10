@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import org.jeecg.common.api.vo.Result;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.List;
 
 public interface IWorkLogRemindService extends IService<WorkLogRemind> {
 
@@ -23,4 +24,11 @@ public interface IWorkLogRemindService extends IService<WorkLogRemind> {
      * @return
      */
     WorkLogRemind getWorkLogRemind(HttpServletRequest req);
+    /**
+     * 根据当前时间和组织，查询当天部门上班的人员
+     * @param dateNow
+     * @param orgId
+     * @return
+     */
+    List<String> getOrgUserTodayWork(String dateNow, String orgId);
 }

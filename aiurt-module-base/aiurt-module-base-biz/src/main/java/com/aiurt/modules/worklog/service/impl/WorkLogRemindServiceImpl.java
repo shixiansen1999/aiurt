@@ -22,6 +22,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
+import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -37,6 +38,8 @@ public class WorkLogRemindServiceImpl extends ServiceImpl<WorkLogRemindMapper, W
 
     @Autowired
     private QuartzUtils quartzUtils;
+    @Autowired
+    private WorkLogRemindMapper workLogRemindMapper;
 
 
     /**
@@ -125,6 +128,11 @@ public class WorkLogRemindServiceImpl extends ServiceImpl<WorkLogRemindMapper, W
         return workLogRemind;
     }
 
+    @Override
+    public List<String> getOrgUserTodayWork(String dateNow, String orgId) {
+        List<String> userName = workLogRemindMapper.getOrgUserTodayWork(dateNow,orgId);
+        return userName;
+    }
 
 
     @PostConstruct
