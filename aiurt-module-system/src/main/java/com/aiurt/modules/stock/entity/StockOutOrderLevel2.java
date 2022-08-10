@@ -49,7 +49,6 @@ public class StockOutOrderLevel2 extends DictEntity {
 
 	/**机构编码*/
 	@ApiModelProperty(value = "机构编码")
-	@Excel(name="机构编码",width=15)
 	@DeptFilterColumn
 	private String orgCode;
 

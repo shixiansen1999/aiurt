@@ -91,10 +91,8 @@ public class StockLevel2CheckServiceImpl extends ServiceImpl<StockLevel2CheckMap
 
 	@Override
 	public void add(StockLevel2Check stockLevel2Check) {
-		StockLevel2Info stockLevel2Info = stockLevel2InfoService.getOne(new QueryWrapper<StockLevel2Info>().eq("warehouse_code",stockLevel2Check.getWarehouseCode()).eq("del_flag", CommonConstant.DEL_FLAG_0));
-		String organizationId = stockLevel2Info.getOrganizationId();
-		SysDepart sysDepart = iSysDepartService.getById(organizationId);
-		stockLevel2Check.setOrgCode(sysDepart.getOrgCode());
+		LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+		stockLevel2Check.setOrgCode(user.getOrgCode());
 		this.save(stockLevel2Check);
 		List<StockLevel2> stockLevel2List = stockLevel2Service.list(new QueryWrapper<StockLevel2>().eq("warehouse_code",stockLevel2Check.getWarehouseCode()));
 		if(stockLevel2List != null && stockLevel2List.size()>0){

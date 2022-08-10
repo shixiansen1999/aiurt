@@ -3,22 +3,22 @@
 <mapper namespace="com.aiurt.modules.stock.mapper.StockInOrderLevel2Mapper">
 
     <select id="pageList" resultType="com.aiurt.modules.stock.entity.StockInOrderLevel2">
-        select siol.*
-        from stock_in_order_level2 siol
-        left join stock_level2_info sli on siol.warehouse_code = sli.warehouse_code and sli.del_flag = 0
+        select stock_in_order_level2.*
+        from stock_in_order_level2 stock_in_order_level2
+        left join stock_level2_info sli on stock_in_order_level2.warehouse_code = sli.warehouse_code and sli.del_flag = 0
         <where>
-            and siol.del_flag = 0
+            and stock_in_order_level2.del_flag = 0
             <if test="condition.orderCode != null and condition.orderCode != ''">
-                and siol.order_code like concat(concat('%',#{condition.orderCode}),'%')
+                and stock_in_order_level2.order_code like concat(concat('%',#{condition.orderCode}),'%')
             </if>
             <if test="condition.warehouseName != null and condition.warehouseName != ''">
                 and sli.warehouse_name like concat(concat('%',#{condition.warehouseName}),'%')
             </if>
             <if test="condition.entryTimeBegin != null and condition.entryTimeEnd != null">
-                and Date(siol.entry_time) &gt;= #{condition.entryTimeBegin} and Date(siol.entry_time) &lt;= #{condition.entryTimeEnd}
+                and Date(stock_in_order_level2.entry_time) &gt;= #{condition.entryTimeBegin} and Date(stock_in_order_level2.entry_time) &lt;= #{condition.entryTimeEnd}
             </if>
         </where>
-        order by siol.create_time desc
+        order by stock_in_order_level2.create_time desc
     </select>
 
 </mapper>

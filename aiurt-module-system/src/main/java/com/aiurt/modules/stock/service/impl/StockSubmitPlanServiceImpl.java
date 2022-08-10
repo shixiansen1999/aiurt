@@ -174,7 +174,7 @@ public class StockSubmitPlanServiceImpl extends ServiceImpl<StockSubmitPlanMappe
 				excel.setCell(4, "提报时间");
 				Date submitTime = stockSubmitPlan.getSubmitTime();
 				SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
-				excel.setCell(5, sdf.format(submitTime));
+				excel.setCell(5, submitTime==null?"":sdf.format(submitTime));
 				excel.setCell(6, "");
 				excel.setCell(7, "填报人");
 				excel.setCell(8, tbrname==null?"":tbrname);

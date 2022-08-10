@@ -117,6 +117,7 @@ public class StockInOrderLevel2ServiceImpl extends ServiceImpl<StockInOrderLevel
 		stockIncomingMaterialsService.remove(queryWrapper);
 		List<StockIncomingMaterials> stockIncomingMaterialsList = stockInOrderLevel2.getStockIncomingMaterialsList();
 		if(stockIncomingMaterialsList != null && stockIncomingMaterialsList.size()>0){
+			stockIncomingMaterialsList.stream().forEach(s ->s.setInOrderCode(stockInOrderLevel2.getOrderCode()));
 			stockIncomingMaterialsService.saveBatch(stockIncomingMaterialsList);
 		}
 		boolean ok = this.updateById(stockInOrderLevel2);
@@ -267,9 +268,9 @@ public class StockInOrderLevel2ServiceImpl extends ServiceImpl<StockInOrderLevel
 				excel.setCell(4, "物资编号");
 				excel.setCell(5, "物资名称");
 				excel.setCell(6, "物资类型");
-				excel.setCell(9, "存放仓库");
-				excel.setCell(7, "入库数量");
-				excel.setCell(8, "单位");
+				excel.setCell(7, "存放仓库");
+				excel.setCell(8, "入库数量");
+				excel.setCell(9, "单位");
 				if(materials != null && materials.size()>0){
 					for(StockIncomingMaterials stockIncomingMaterials : materials){
 						String wzcode = stockIncomingMaterials.getMaterialCode()==null?"":stockIncomingMaterials.getMaterialCode();
@@ -294,8 +295,8 @@ public class StockInOrderLevel2ServiceImpl extends ServiceImpl<StockInOrderLevel
 						excel.setCell(5, materialBase.getName());
 						excel.setCell(6, wztypename==null?"":wztypename);
 						excel.setCell(7, warehouseCodename==null?"":warehouseCodename);
-						excel.setCell(9, stockIncomingMaterials.getNumber()==null?"":stockIncomingMaterials.getNumber().toString());
-						excel.setCell(8, unitname==null?"":unitname);
+						excel.setCell(8, stockIncomingMaterials.getNumber()==null?"":stockIncomingMaterials.getNumber().toString());
+						excel.setCell(9, unitname==null?"":unitname);
 					}
 				}
 				excel.createRow(rowIndex++);
