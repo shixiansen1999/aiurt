@@ -161,12 +161,11 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
         if (ObjectUtil.isEmpty(selectPlanReq)) {
             return queryWrapper;
         }
-        if (ObjectUtil.isNotEmpty(selectPlanReq.getStartTime())) {
-            queryWrapper.ge("start_time", DateUtil.beginOfDay(selectPlanReq.getStartTime()));
-        }
-        if (ObjectUtil.isNotEmpty(selectPlanReq.getEndTime())) {
-            queryWrapper.le("start_time", DateUtil.endOfDay(selectPlanReq.getEndTime()));
-        }
+        Date currDate = new Date();
+        queryWrapper.ge("start_time",
+                ObjectUtil.isNotEmpty(selectPlanReq.getStartTime()) ? DateUtil.beginOfDay(selectPlanReq.getStartTime()) : DateUtil.beginOfWeek(currDate));
+        queryWrapper.le("start_time",
+                ObjectUtil.isNotEmpty(selectPlanReq.getEndTime())?DateUtil.endOfDay(selectPlanReq.getEndTime()): DateUtil.endOfWeek(currDate));
         queryWrapper.eq("is_manual", InspectionConstant.NO_IS_MANUAL);
         queryWrapper.eq("del_flag", CommonConstant.DEL_FLAG_0);
         queryWrapper.orderByAsc("start_time");

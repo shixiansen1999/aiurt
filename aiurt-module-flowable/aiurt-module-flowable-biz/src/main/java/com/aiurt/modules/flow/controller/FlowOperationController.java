@@ -14,6 +14,7 @@ import org.apache.shiro.SecurityUtils;
 import org.flowable.bpmn.converter.BpmnXMLConverter;
 import org.flowable.bpmn.model.BpmnModel;
 import org.flowable.engine.runtime.ProcessInstance;
+import org.flowable.task.api.Task;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -245,8 +246,10 @@ public class FlowOperationController {
         List<FlowNodeDTO> datas = flowApiService.getBackNodesByProcessInstanceId(processInstanceId, taskId);
         return Result.OK(datas);
     }
+
     /**
      * 终止流程
+     *
      * @param instanceDTO
      * @return
      */
@@ -259,6 +262,7 @@ public class FlowOperationController {
 
     /**
      * 删除流程
+     *
      * @return
      */
     @DeleteMapping("/deleteProcessInstance")
@@ -268,5 +272,23 @@ public class FlowOperationController {
         return Result.OK("终止流程成功");
     }
 
-
+    /**
+     * 主动驳回当前的待办任务，只用当前待办任务的指派人或者候选者才能完成该操作。
+     *
+     * @param processInstanceId 流程实例Id。
+     * @param taskId            待办任务Id。
+     * @param targetKey         驳回到哪一步的任务标识。
+     * @param comment           驳回备注。
+     * @return
+     */
+    @PostMapping("/rejectRuntimeTask")
+    public Result<Void> rejectRuntimeTask(
+            @RequestParam String processInstanceId,
+            @RequestParam String taskId,
+            @RequestParam(required = false) String targetKey,
+            @RequestParam String comment) {
+        Task task = flowApiService.getProcessInstanceActiveTask(processInstanceId, taskId);
+        flowApiService.backToRuntimeTask(task, targetKey, true, comment);
+        return Result.OK();
+    }
 }

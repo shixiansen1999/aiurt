@@ -977,6 +977,7 @@ public class FlowApiServiceImpl implements FlowApiService {
 
     /**
      * 终止流程
+     *
      * @param instanceDTO
      */
     @Override
@@ -1006,6 +1007,7 @@ public class FlowApiServiceImpl implements FlowApiService {
 
     /**
      * 删除流程
+     *
      * @param processInstanceId
      */
     @Override
@@ -1024,7 +1026,16 @@ public class FlowApiServiceImpl implements FlowApiService {
      */
     @Override
     public void backToRuntimeTask(Task task, String targetKey, boolean forReject, String comment) {
+        // 验证并获取流程的实时任务信息。
+        this.verifyAndGetRuntimeTaskInfo(task);
+
+        // 判断当前登录用户是否为流程实例中的用户任务的指派人。或是候选人之一，如果是候选人则拾取该任务并成为指派人。
+        // 如果都不是，就会返回具体的错误信息。
+        this.verifyAssigneeOrCandidateAndClaim(task);
+
         ProcessDefinition processDefinition = this.getProcessDefinitionById(task.getProcessDefinitionId());
+
+        // 全部流程节点
         Collection<FlowElement> allElements = this.getProcessAllElements(processDefinition.getId());
         FlowElement source = null;
         // 获取跳转的节点元素
@@ -1048,20 +1059,25 @@ public class FlowApiServiceImpl implements FlowApiService {
 
         UserTask oneUserTask = null;
         List<String> targetIds = null;
+
+        // 没有指定跳到哪一步的情况，则跳回当前任务的上一步
         if (target == null) {
             List<UserTask> parentUserTaskList =
                     this.getParentUserTaskList(source, null, null);
             if (CollUtil.isEmpty(parentUserTaskList)) {
                 throw new AiurtBootException("数据验证失败，当前节点为初始任务节点，不能驳回！");
             }
+
             // 获取活动ID, 即节点Key
             Set<String> parentUserTaskKeySet = new HashSet<>();
             parentUserTaskList.forEach(item -> parentUserTaskKeySet.add(item.getId()));
             List<HistoricActivityInstance> historicActivityIdList =
                     this.getHistoricActivityInstanceListOrderByStartTime(task.getProcessInstanceId());
+
             // 数据清洗，将回滚导致的脏数据清洗掉
             List<String> lastHistoricTaskInstanceList =
                     this.cleanHistoricTaskInstance(allElements, historicActivityIdList);
+
             // 此时历史任务实例为倒序，获取最后走的节点
             targetIds = new ArrayList<>();
             // 循环结束标识，遇到当前目标节点的次数
@@ -1181,6 +1197,26 @@ public class FlowApiServiceImpl implements FlowApiService {
         } catch (Exception e) {
             log.error("Failed to execute moveSingleActivityIdToActivityIds", e);
             throw new AiurtBootException(e.getMessage());
+        }
+    }
+
+    private void verifyAssigneeOrCandidateAndClaim(Task task) {
+        LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        if (Objects.isNull(loginUser)) {
+            throw new AiurtBootException("请重新登录！");
+        }
+        // 这里必须先执行拾取操作，如果当前用户是候选人，特别是对于分布式场景，更是要先完成候选人的拾取。
+        if (task.getAssignee() == null) {
+            // 没有指派人
+            if (!this.isAssigneeOrCandidate(task)) {
+                throw new AiurtBootException("数据验证失败，当前用户不是该待办任务的候选人，请刷新后重试！");
+            }
+            // 作为候选人主动拾取任务。
+            taskService.claim(task.getId(), loginUser.getUsername());
+        } else {
+            if (!task.getAssignee().equals(loginUser.getUsername())) {
+                throw new AiurtBootException("数据验证失败，当前用户不是该待办任务的指派人，请刷新后重试！");
+            }
         }
     }
 
