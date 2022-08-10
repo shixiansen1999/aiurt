@@ -31,13 +31,13 @@ public class RepairDeviceDTO {
     @JsonProperty(value = "status_dictText")
     private String statusName;
     @ApiModelProperty(value = "适用专业名称")
-    @JsonProperty(value = "majorCode_dictText")
+    @JsonProperty(value = "majorName_dictText")
     private String majorName;
     @ApiModelProperty(value = "适用专业编码")
     @JsonProperty(value = "majorCode_dictText")
     private String majorCode;
     @ApiModelProperty(value = "适用专业子系统名称")
-    @JsonProperty(value = "systemCode_dictText")
+    @JsonProperty(value = "systemName_dictText")
     private String subsystemName;
     @ApiModelProperty(value = "适用专业子系统编码")
     @JsonProperty(value = "systemCode_dictText")
