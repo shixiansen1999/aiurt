@@ -44,6 +44,8 @@ import java.util.Objects;
 @Slf4j
 public class FaultController extends BaseController<Fault, IFaultService> {
 
+    public static final String  PERMISSION_URL = "/fault/list";
+
 
     @Autowired
     private IFaultService faultService;
@@ -63,7 +65,7 @@ public class FaultController extends BaseController<Fault, IFaultService> {
      * @param req
      * @return
      */
-    @AutoLog(value = "查询", operateType =  1, operateTypeAlias = "查询", permissionUrl = "/fault/list")
+    @AutoLog(value = "查询", operateType =  1, operateTypeAlias = "查询", permissionUrl = PERMISSION_URL)
     @ApiOperation(value = "分页列表查询", notes = "fault-分页列表查询")
     @GetMapping(value = "/list")
     public Result<IPage<Fault>> queryPageList(Fault fault,
@@ -133,7 +135,7 @@ public class FaultController extends BaseController<Fault, IFaultService> {
      * @param fault
      * @return
      */
-    @AutoLog(value = "新增故障上报", operateType =  2, operateTypeAlias = "故障上报", permissionUrl = "/fault/list")
+    @AutoLog(value = "新增故障上报", operateType =  2, operateTypeAlias = "故障上报", permissionUrl = PERMISSION_URL)
     @ApiOperation(value = "故障上报", notes = "故障上报")
     @PostMapping(value = "/add")
     public Result<?> add(@Validated @RequestBody Fault fault) {
@@ -149,7 +151,7 @@ public class FaultController extends BaseController<Fault, IFaultService> {
      */
     @PutMapping("/approval")
     @ApiOperation(value = "故障审批", notes = "故障审批")
-    @AutoLog(value = "上报审批", operateType =  3, operateTypeAlias = "上报审批", permissionUrl = "/fault/list")
+    @AutoLog(value = "上报审批", operateType =  3, operateTypeAlias = "上报审批", permissionUrl = PERMISSION_URL)
     public Result<?> approval(@RequestBody ApprovalDTO approvalDTO) {
 
         faultService.approval(approvalDTO);
@@ -163,7 +165,7 @@ public class FaultController extends BaseController<Fault, IFaultService> {
      * @param fault
      * @return
      */
-    @AutoLog(value = "编辑", operateType =  3, operateTypeAlias = "编辑故障单",  permissionUrl = "/fault/list")
+    @AutoLog(value = "编辑", operateType =  3, operateTypeAlias = "编辑故障单",  permissionUrl = PERMISSION_URL)
     @ApiOperation(value = "故障编辑", notes = "故障编辑")
     @RequestMapping(value = "/edit", method = {RequestMethod.PUT, RequestMethod.POST})
     public Result<String> edit(@RequestBody Fault fault) {
@@ -179,7 +181,7 @@ public class FaultController extends BaseController<Fault, IFaultService> {
      */
 
     @ApiOperation(value = "故障作废", notes = "故障作废")
-    @AutoLog(value = "作废", operateType =  3, operateTypeAlias = "作废故障单",  permissionUrl = "/fault/list")
+    @AutoLog(value = "作废", operateType =  3, operateTypeAlias = "作废故障单",  permissionUrl = PERMISSION_URL)
     @PutMapping(value = "/cancel")
     public Result<String> cancel(@Valid @RequestBody CancelDTO cancelDTO) {
         faultService.cancel(cancelDTO);
@@ -192,7 +194,7 @@ public class FaultController extends BaseController<Fault, IFaultService> {
      * @param code
      * @return
      */
-    @AutoLog(value = "详情", operateType =  3, operateTypeAlias = "查看故障详情",  permissionUrl = "/fault/list")
+    @AutoLog(value = "详情", operateType =  3, operateTypeAlias = "查看故障详情",  permissionUrl = PERMISSION_URL)
     @ApiOperation(value = "通过故障编码查询详情", notes = "通过故障编码查询详情")
     @GetMapping(value = "/queryByCode")
     @ApiImplicitParams({
@@ -224,7 +226,7 @@ public class FaultController extends BaseController<Fault, IFaultService> {
      * @param assignDTO
      * @return
      */
-    @AutoLog(value = "领取故障工单", operateType = 3, operateTypeAlias = "领取故障工单",  permissionUrl = "/fault/list")
+    @AutoLog(value = "领取故障工单", operateType = 3, operateTypeAlias = "领取故障工单",  permissionUrl = PERMISSION_URL)
     @ApiOperation(value = "领取故障工单", notes = "领取故障工单")
     @PutMapping("/receive")
     public Result<?> receive(@RequestBody AssignDTO assignDTO) {
@@ -237,7 +239,7 @@ public class FaultController extends BaseController<Fault, IFaultService> {
      * @param assignDTO
      * @return
      */
-    @AutoLog(value = "接收指派", operateType = 3, operateTypeAlias = "接收指派工单",  permissionUrl = "/fault/list")
+    @AutoLog(value = "接收指派", operateType = 3, operateTypeAlias = "接收指派工单",  permissionUrl = PERMISSION_URL)
     @ApiOperation(value = "接收指派", notes = "接收指派")
     @PutMapping("/receiveAssignment")
     public Result<?> receiveAssignment(@RequestBody AssignDTO assignDTO) {
@@ -250,7 +252,7 @@ public class FaultController extends BaseController<Fault, IFaultService> {
      * @param refuseAssignmentDTO
      * @return
      */
-    @AutoLog(value = "拒收指派")
+    @AutoLog(value = "拒收指派", operateType = 3, operateTypeAlias = "拒收指派", permissionUrl = PERMISSION_URL)
     @ApiOperation(value = "拒收指派", notes = "拒收指派")
     @PutMapping("/refuseAssignment")
     public Result<?> refuseAssignment(@RequestBody RefuseAssignmentDTO refuseAssignmentDTO) {
@@ -263,7 +265,7 @@ public class FaultController extends BaseController<Fault, IFaultService> {
      * @param refuseAssignmentDTO
      * @return
      */
-    @AutoLog(value = "开始维修")
+    @AutoLog(value = "开始维修", operateType = 3, operateTypeAlias = "开始维修", permissionUrl = PERMISSION_URL)
     @ApiOperation(value = "开始维修", notes = "开始维修")
     @PutMapping("/startRepair")
     public Result<?> startRepair(@RequestBody RefuseAssignmentDTO refuseAssignmentDTO) {
@@ -276,7 +278,7 @@ public class FaultController extends BaseController<Fault, IFaultService> {
      * @param hangUpDTO
      * @return
      */
-    @AutoLog(value = "挂起")
+    @AutoLog(value = "挂起", operateType = 3, operateTypeAlias = "挂起", permissionUrl = PERMISSION_URL)
     @ApiOperation(value = "挂起", notes = "挂起")
     @PutMapping("/hangUp")
     public Result<?> hangUp(@RequestBody HangUpDTO hangUpDTO) {
@@ -289,7 +291,7 @@ public class FaultController extends BaseController<Fault, IFaultService> {
      * @param approvalHangUpDTO
      * @return
      */
-    @AutoLog(value = "审批挂起")
+    @AutoLog(value = "审批挂起", operateType = 3, operateTypeAlias = "审批挂起", permissionUrl = PERMISSION_URL)
     @ApiOperation(value = "审批挂起", notes = "审批挂起")
     @PutMapping("/approvalHangUp")
     public Result<?> approvalHangUp(@RequestBody ApprovalHangUpDTO approvalHangUpDTO) {
@@ -302,7 +304,7 @@ public class FaultController extends BaseController<Fault, IFaultService> {
      * @param hangUpDTO
      * @return
      */
-    @AutoLog(value = "取消挂起")
+    @AutoLog(value = "取消挂起", operateType = 3, operateTypeAlias = "审批挂起", permissionUrl = PERMISSION_URL)
     @ApiOperation(value = "取消挂起", notes = "取消挂起")
     @PutMapping("/cancelHangup")
     public Result<?> cancelHangup(@RequestBody HangUpDTO hangUpDTO) {
