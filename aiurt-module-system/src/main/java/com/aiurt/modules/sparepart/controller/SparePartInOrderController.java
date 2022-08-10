@@ -6,6 +6,7 @@ import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.aiurt.common.aspect.annotation.PermissionData;
 import com.aiurt.modules.sparepart.entity.SparePartInOrder;
 import com.aiurt.modules.sparepart.entity.dto.StockApplyExcel;
 import com.aiurt.modules.sparepart.service.ISparePartInOrderService;
@@ -53,6 +54,7 @@ public class SparePartInOrderController extends BaseController<SparePartInOrder,
 	@AutoLog(value = "查询",operateType = 1,operateTypeAlias = "查询备件入库",permissionUrl = "/sparepart/sparePartInOrder/list")
 	@ApiOperation(value="spare_part_in_order-分页列表查询", notes="spare_part_in_order-分页列表查询")
 	@GetMapping(value = "/list")
+	@PermissionData(pageComponent = "sparePartsFor/SparePartInOrderList")
 	public Result<IPage<SparePartInOrder>> queryPageList(SparePartInOrder sparePartInOrder,
 														 @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
 														 @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,

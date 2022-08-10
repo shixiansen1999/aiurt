@@ -6,6 +6,7 @@ import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.aiurt.common.aspect.annotation.PermissionData;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.system.base.controller.BaseController;
 import com.aiurt.modules.sparepart.entity.SparePartInOrder;
@@ -66,6 +67,7 @@ public class SparePartReturnOrderController extends BaseController<SparePartRetu
 	@AutoLog(value = "查询",operateType = 1,operateTypeAlias = "备件退库分页列表查询",permissionUrl = "/sparepart/sparePartReturnOrder/list")
 	@ApiOperation(value="spare_part_return_order-分页列表查询", notes="spare_part_return_order-分页列表查询")
 	@GetMapping(value = "/list")
+	@PermissionData(pageComponent = "sparePartsFor/back")
 	public Result<IPage<SparePartReturnOrder>> queryPageList(SparePartReturnOrder sparePartReturnOrder,
 															 @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
 															 @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
@@ -95,7 +97,7 @@ public class SparePartReturnOrderController extends BaseController<SparePartRetu
 		if(null!=stockInfo){
 			sparePartReturnOrder.setOrgId(stockInfo.getOrganizationId());
 		}
-
+		sparePartReturnOrder.setSysOrgCode(user.getOrgCode());
 		sparePartReturnOrder.setUserId(user.getUsername());
 		sparePartReturnOrderService.save(sparePartReturnOrder);
 		return Result.OK("添加成功！");

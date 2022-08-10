@@ -21,6 +21,7 @@ import com.aiurt.modules.stock.mapper.StockLevel2InfoMapper;
 import com.aiurt.modules.stock.mapper.StockOutOrderLevel2Mapper;
 import com.aiurt.modules.stock.mapper.StockOutboundMaterialsMapper;
 import com.aiurt.modules.system.entity.SysDepart;
+import com.aiurt.modules.system.mapper.SysDepartMapper;
 import com.aiurt.modules.system.service.ISysDepartService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -61,6 +62,7 @@ public class SparePartApplyServiceImpl extends ServiceImpl<SparePartApplyMapper,
     @Autowired
     private ISysDepartService iSysDepartService;
 
+
     /**
      * 分页列表查询
      * @param page
@@ -86,6 +88,7 @@ public class SparePartApplyServiceImpl extends ServiceImpl<SparePartApplyMapper,
         String code = sparePartApply.getCode();
         sparePartApply.setCode(code);
         sparePartApply.setApplyUserId(user.getUsername());
+        sparePartApply.setSysOrgCode(user.getOrgCode());
         LambdaQueryWrapper<SparePartStockInfo> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(SparePartStockInfo::getOrganizationId,user.getOrgId());
         wrapper.eq(SparePartStockInfo::getDelFlag,CommonConstant.DEL_FLAG_0);
@@ -115,6 +118,7 @@ public class SparePartApplyServiceImpl extends ServiceImpl<SparePartApplyMapper,
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Result<?> update(SparePartApply sparePartApply) {
+        LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         SparePartApply partApply = getById(sparePartApply.getId());
         //删除原有物资
         QueryWrapper<SparePartApplyMaterial> queryWrapper = new QueryWrapper<SparePartApplyMaterial>();
@@ -129,6 +133,7 @@ public class SparePartApplyServiceImpl extends ServiceImpl<SparePartApplyMapper,
             });
             sparePartApplyMaterialService.saveBatch(sparePartApply.getStockLevel2List());
         }
+        sparePartApply.setSysOrgCode(user.getOrgCode());
         sparePartApplyMapper.updateById(sparePartApply);
         return Result.OK("编辑成功！");
     }
@@ -171,7 +176,7 @@ public class SparePartApplyServiceImpl extends ServiceImpl<SparePartApplyMapper,
             stockOutboundMaterials.setApplyOutput(applyMaterial.getApplyNum());
             stockOutboundMaterialsMapper.insert(stockOutboundMaterials);
         });
-        return Result.OK("编辑成功！");
+        return Result.OK("提交成功！");
     }
 
     /**

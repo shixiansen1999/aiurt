@@ -7,6 +7,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import cn.hutool.core.util.ObjectUtil;
+import com.aiurt.common.aspect.annotation.PermissionData;
 import com.aiurt.modules.sparepart.entity.SparePartInOrder;
 import com.aiurt.modules.sparepart.entity.SparePartStockInfo;
 import org.apache.shiro.SecurityUtils;
@@ -55,6 +56,7 @@ public class SparePartStockController extends BaseController<SparePartStock, ISp
 	@AutoLog(value = "查询",operateType = 1,operateTypeAlias = "备件库存信息分页列表查询",permissionUrl = "/sparepart/sparePartStock/list")
 	@ApiOperation(value="spare_part_stock-分页列表查询", notes="spare_part_stock-分页列表查询")
 	@GetMapping(value = "/list")
+	@PermissionData(pageComponent = "sparePartsFor/SparePartStockList")
 	public Result<IPage<SparePartStock>> queryPageList(SparePartStock sparePartStock,
 								   @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
 								   @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,

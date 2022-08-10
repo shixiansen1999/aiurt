@@ -2,6 +2,7 @@ package com.aiurt.modules.sparepart.mapper;
 
 import java.util.List;
 
+import com.aiurt.common.aspect.annotation.EnableDataPerm;
 import com.aiurt.modules.sparepart.entity.SparePartReturnOrder;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -15,6 +16,7 @@ import org.springframework.stereotype.Component;
  * @Version: V1.0
  */
 @Component
+@EnableDataPerm
 public interface SparePartReturnOrderMapper extends BaseMapper<SparePartReturnOrder> {
     List<SparePartReturnOrder> readAll(Page page, @Param("order") SparePartReturnOrder sparePartReturnOrder);
 }

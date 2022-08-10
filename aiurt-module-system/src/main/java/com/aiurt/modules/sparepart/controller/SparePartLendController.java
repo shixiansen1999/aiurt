@@ -6,6 +6,7 @@ import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.aiurt.common.aspect.annotation.PermissionData;
 import com.aiurt.modules.sparepart.entity.SparePartLend;
 import com.aiurt.modules.sparepart.entity.SparePartReturnOrder;
 import com.aiurt.modules.sparepart.service.ISparePartLendService;
@@ -57,6 +58,7 @@ public class SparePartLendController extends BaseController<SparePartLend, ISpar
 	@AutoLog(value = "查询",operateType = 1,operateTypeAlias = "查询备件借入",permissionUrl = "/sparepart/sparePartLend/list")
 	@ApiOperation(value="spare_part_lend-分页列表查询", notes="spare_part_lend-分页列表查询")
 	@GetMapping(value = "/list")
+	@PermissionData(pageComponent = "sparePartsFor/SparePartLendList")
 	public Result<IPage<SparePartLend>> queryPageList(SparePartLend sparePartLend,
 								   @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
 								   @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,

@@ -80,6 +80,7 @@ public class SparePartInOrderServiceImpl extends ServiceImpl<SparePartInOrderMap
             stock.setNum(partInOrder.getNum());
             stock.setWarehouseCode(partInOrder.getWarehouseCode());
             stock.setOrgId(user.getOrgId());
+            stock.setSysOrgCode(user.getOrgCode());
             sparePartStockMapper.insert(stock);
         }
     }

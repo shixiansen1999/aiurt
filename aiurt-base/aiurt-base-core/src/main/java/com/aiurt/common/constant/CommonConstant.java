@@ -471,6 +471,22 @@ public interface CommonConstant {
   * 二级库盘点状态已完成-5
   */
  public static final String StOCK_LEVEL2_CHECK_STATUS_5 = "5";
+ /**
+  * 备件报废状态 待确认-2
+  */
+ public static final Integer SPARE_PART_SCRAP_STATUS_2 = 2;
+ /**
+  * 备件报废状态 已确认-3
+  */
+ public static final Integer SPARE_PART_SCRAP_STATUS_3 = 3;
+ /**
+  * 备件出库状态 已确认-2
+  */
+ public static final Integer SPARE_PART_OUT_ORDER_STATUS_2 = 2;
+ /**
+  * 备件入库状态 已确认-1
+  */
+ public static final String SPARE_PART_IN_ORDER_STATUS_1 = "1";
   /**
   * 超级管理员角色编码
   */

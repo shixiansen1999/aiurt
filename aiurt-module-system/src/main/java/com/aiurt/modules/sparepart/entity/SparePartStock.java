@@ -4,6 +4,10 @@ import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.util.Date;
 import java.math.BigDecimal;
+
+import com.aiurt.common.aspect.annotation.DeptFilterColumn;
+import com.aiurt.common.aspect.annotation.MajorFilterColumn;
+import com.aiurt.common.aspect.annotation.SystemFilterColumn;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
@@ -89,6 +93,7 @@ public class SparePartStock implements Serializable {
     /**所属专业code*/
     @ApiModelProperty(value = "专业名称code")
     @TableField(exist = false)
+    @MajorFilterColumn
     private  String  majorCode;
     /**所属专业*/
     @Excel(name = "所属专业", width = 15)
@@ -98,6 +103,7 @@ public class SparePartStock implements Serializable {
     /**子系统code*/
     @ApiModelProperty(value = "子系统code")
     @TableField(exist = false)
+    @SystemFilterColumn
     private  String  systemCode;
     /**子系统名称*/
     @Excel(name = "所属子系统", width = 15)
@@ -148,4 +154,8 @@ public class SparePartStock implements Serializable {
     @ApiModelProperty(value = "当前模块")
     @TableField(exist = false)
     private String module;
+    /**所属部门*/
+    @ApiModelProperty(value = "所属部门")
+    @DeptFilterColumn
+    private String sysOrgCode;
 }

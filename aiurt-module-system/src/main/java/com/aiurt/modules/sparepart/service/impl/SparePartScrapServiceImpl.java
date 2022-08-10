@@ -53,7 +53,7 @@ public class SparePartScrapServiceImpl extends ServiceImpl<SparePartScrapMapper,
     public Result<?> update(SparePartScrap sparePartScrap) {
         LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         SparePartScrap scrap = getById(sparePartScrap.getId());
-        if(sparePartScrap.getStatus()==3){
+        if(sparePartScrap.getStatus().equals(CommonConstant.SPARE_PART_SCRAP_STATUS_3)){
             sparePartScrap.setConfirmId(user.getUsername());
             sparePartScrap.setConfirmTime(new Date());
             //更新已出库库存数量,做减法

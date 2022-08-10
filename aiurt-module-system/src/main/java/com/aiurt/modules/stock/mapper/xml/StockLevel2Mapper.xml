@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.aiurt.modules.stock.mapper.StockLevel2Mapper">
-    
+
     <select id="pageList" resultType="com.aiurt.modules.stock.entity.StockLevel2">
         select sl.*,mb.`name` materialName, sli.organization_id, mb.unit, mb.`type`
         from stock_level2 sl
@@ -45,6 +45,15 @@
             <if test="condition.warehouseName != null and condition.warehouseName != ''">
                 and sli.warehouse_name like concat('%', #{condition.warehouseName}, '%')
             </if>
+            <if test="condition.num != null and condition.num != ''">
+                and sl.num <![CDATA[ <> ]]> 0
+            </if>
+            <if test="condition.materialCode != null and condition.materialCode != ''">
+                and mb.code like concat('%', #{condition.materialCode}, '%')
+            </if>
+            <if test="condition.materialName != null and condition.materialName != ''">
+                and mb.name like concat('%', #{condition.materialName}, '%')
+            </if>
         </where>
         order by sl.create_time desc
     </select>
@@ -73,5 +82,5 @@
             #{id}
         </foreach>
     </select>
-    
+
 </mapper>

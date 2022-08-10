@@ -1,6 +1,7 @@
 package com.aiurt.modules.sparepart.controller;
 
 import com.aiurt.common.aspect.annotation.AutoLog;
+import com.aiurt.common.aspect.annotation.PermissionData;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.system.base.controller.BaseController;
 import com.aiurt.modules.sparepart.entity.SparePartOutOrder;
@@ -57,6 +58,7 @@ public class SparePartOutOrderController extends BaseController<SparePartOutOrde
    @AutoLog(value = "查询",operateType = 1,operateTypeAlias = "查询备件出库",permissionUrl = "/sparepart/sparePartOutOrder/list")
    @ApiOperation(value="spare_part_out_order-分页列表查询", notes="spare_part_out_order-分页列表查询")
    @GetMapping(value = "/list")
+   @PermissionData(pageComponent = "sparePartsFor/SparePartOutOrderList")
    public Result<IPage<SparePartOutOrder>> queryPageList(SparePartOutOrder sparePartOutOrder,
                                   @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
                                   @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
@@ -97,6 +99,7 @@ public class SparePartOutOrderController extends BaseController<SparePartOutOrde
    public Result<String> add(@RequestBody SparePartOutOrder sparePartOutOrder) {
        LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
        sparePartOutOrder.setApplyUserId(user.getUsername());
+       sparePartOutOrder.setSysOrgCode(user.getOrgCode());
        sparePartOutOrderService.save(sparePartOutOrder);
        return Result.OK("添加成功！");
    }
@@ -120,6 +123,7 @@ public class SparePartOutOrderController extends BaseController<SparePartOutOrde
        }
        sparePartOutOrder.setConfirmUserId(user.getUsername());
        sparePartOutOrder.setConfirmTime(new Date());
+       sparePartOutOrder.setSysOrgCode(user.getOrgCode());
        sparePartOutOrderService.updateById(sparePartOutOrder);
        return Result.OK("编辑成功!");
    }

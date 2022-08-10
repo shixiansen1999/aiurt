@@ -6,6 +6,7 @@ import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.aiurt.common.aspect.annotation.PermissionData;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.modules.sparepart.entity.SparePartReturnOrder;
 import io.swagger.annotations.ApiParam;
@@ -58,6 +59,7 @@ public class SparePartScrapController extends BaseController<SparePartScrap, ISp
 	@AutoLog(value = "查询",operateType = 1,operateTypeAlias = "备件报废分页列表查询",permissionUrl = "/sparepart/sparePartScrap/list")
 	@ApiOperation(value="spare_part_scrap-分页列表查询", notes="spare_part_scrap-分页列表查询")
 	@GetMapping(value = "/list")
+	@PermissionData(pageComponent = "sparePartsFor/SparePartScrap")
 	public Result<IPage<SparePartScrap>> queryPageList(SparePartScrap sparePartScrap,
 								   @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
 								   @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
@@ -79,7 +81,9 @@ public class SparePartScrapController extends BaseController<SparePartScrap, ISp
 	@ApiOperation(value="spare_part_scrap-添加", notes="spare_part_scrap-添加")
 	@PostMapping(value = "/add")
 	public Result<String> add(@RequestBody SparePartScrap sparePartScrap) {
-		sparePartScrap.setStatus(2);
+		LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+		sparePartScrap.setSysOrgCode(user.getOrgCode());
+		sparePartScrap.setStatus(CommonConstant.SPARE_PART_SCRAP_STATUS_2);
 		sparePartScrapService.save(sparePartScrap);
 		return Result.OK("添加成功！");
 	}
@@ -94,6 +98,8 @@ public class SparePartScrapController extends BaseController<SparePartScrap, ISp
 	@ApiOperation(value="spare_part_scrap-编辑", notes="spare_part_scrap-编辑")
 	@RequestMapping(value = "/edit", method = {RequestMethod.PUT,RequestMethod.POST})
 	public Result<?> edit(@RequestBody SparePartScrap sparePartScrap) {
+		LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+		sparePartScrap.setSysOrgCode(user.getOrgCode());
 		return sparePartScrapService.update(sparePartScrap);
 	}
 

@@ -1,6 +1,7 @@
 package com.aiurt.modules.sparepart.mapper;
 
 
+import com.aiurt.common.aspect.annotation.EnableDataPerm;
 import com.aiurt.modules.sparepart.entity.SparePartInOrder;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -16,6 +17,7 @@ import java.util.List;
  * @Version: V1.0
  */
 @Component
+@EnableDataPerm
 public interface SparePartInOrderMapper extends BaseMapper<SparePartInOrder> {
     List<SparePartInOrder> readAll(Page page,@Param("order") SparePartInOrder sparePartInOrder);
 }

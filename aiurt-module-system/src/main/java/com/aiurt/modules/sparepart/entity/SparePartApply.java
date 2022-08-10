@@ -6,6 +6,7 @@ import java.util.Date;
 import java.math.BigDecimal;
 import java.util.List;
 
+import com.aiurt.common.aspect.annotation.DeptFilterColumn;
 import com.aiurt.modules.basic.entity.DictEntity;
 import com.aiurt.modules.stock.entity.StockLevel2;
 import com.aiurt.modules.stock.entity.StockOutboundMaterials;
@@ -154,4 +155,8 @@ public class SparePartApply extends DictEntity implements Serializable {
     @ApiModelProperty(value = "出库单备注")
     @TableField(exist = false)
     private  String  outOrderRemark;
+    /**所属部门*/
+    @ApiModelProperty(value = "所属部门")
+    @DeptFilterColumn
+    private String sysOrgCode;
 }

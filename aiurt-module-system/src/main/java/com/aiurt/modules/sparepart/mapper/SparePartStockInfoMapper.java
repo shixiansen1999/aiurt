@@ -2,6 +2,7 @@ package com.aiurt.modules.sparepart.mapper;
 
 import java.util.List;
 
+import com.aiurt.common.aspect.annotation.EnableDataPerm;
 import com.aiurt.modules.sparepart.entity.SparePartStockInfo;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import org.springframework.stereotype.Component;
@@ -13,6 +14,7 @@ import org.springframework.stereotype.Component;
  * @Version: V1.0
  */
 @Component
+@EnableDataPerm
 public interface SparePartStockInfoMapper extends BaseMapper<SparePartStockInfo> {
 
 }

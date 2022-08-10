@@ -102,7 +102,7 @@ public class SparePartLendServiceImpl extends ServiceImpl<SparePartLendMapper, S
         sparePartOutOrder.setConfirmUserId(user.getUsername());
         sparePartOutOrder.setApplyOutTime(date);
         sparePartOutOrder.setApplyUserId(partLend.getLendPerson());
-        sparePartOutOrder.setStatus(2);
+        sparePartOutOrder.setStatus(CommonConstant.SPARE_PART_OUT_ORDER_STATUS_2 );
         sparePartOutOrderService.save(sparePartOutOrder);
         //4.借入仓库库存数做加法
         SparePartStock backStock = sparePartStockMapper.selectOne(new LambdaQueryWrapper<SparePartStock>().eq(SparePartStock::getMaterialCode,partLend.getMaterialCode()).eq(SparePartStock::getWarehouseCode,partLend.getBackWarehouseCode()));
@@ -114,7 +114,7 @@ public class SparePartLendServiceImpl extends ServiceImpl<SparePartLendMapper, S
         sparePartInOrder.setWarehouseCode(partLend.getBackWarehouseCode());
         sparePartInOrder.setNum(partLend.getLendNum());
         sparePartInOrder.setOrgId(sysUserMapper.selectOne(new LambdaQueryWrapper<SysUser>().eq(SysUser::getUsername,partLend.getLendPerson())).getOrgId());
-        sparePartInOrder.setConfirmStatus("1");
+        sparePartInOrder.setConfirmStatus(CommonConstant.SPARE_PART_IN_ORDER_STATUS_1);
         sparePartInOrder.setConfirmId(user.getUsername());
         sparePartInOrder.setConfirmTime(date);
         sparePartInOrderService.save(sparePartInOrder);
@@ -144,7 +144,7 @@ public class SparePartLendServiceImpl extends ServiceImpl<SparePartLendMapper, S
         sparePartInOrder.setWarehouseCode(partLend.getLendWarehouseCode());
         sparePartInOrder.setNum(partLend.getLendNum());
         sparePartInOrder.setOrgId(sysUserMapper.selectOne(new LambdaQueryWrapper<SysUser>().eq(SysUser::getUsername,partLend.getBackPerson())).getOrgId());
-        sparePartInOrder.setConfirmStatus("1");
+        sparePartInOrder.setConfirmStatus(CommonConstant.SPARE_PART_IN_ORDER_STATUS_1);
         sparePartInOrder.setConfirmId(user.getUsername());
         sparePartInOrder.setConfirmTime(date);
         sparePartInOrderService.save(sparePartInOrder);
@@ -161,7 +161,7 @@ public class SparePartLendServiceImpl extends ServiceImpl<SparePartLendMapper, S
         sparePartOutOrder.setConfirmUserId(user.getUsername());
         sparePartOutOrder.setApplyOutTime(date);
         sparePartOutOrder.setApplyUserId(partLend.getBackPerson());
-        sparePartOutOrder.setStatus(2);
+        sparePartOutOrder.setStatus(CommonConstant.SPARE_PART_OUT_ORDER_STATUS_2);
         sparePartOutOrderService.save(sparePartOutOrder);
         return Result.OK("编辑成功！");
     }

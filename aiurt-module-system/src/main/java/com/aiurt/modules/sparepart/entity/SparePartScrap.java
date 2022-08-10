@@ -6,6 +6,9 @@ import java.util.Date;
 import java.math.BigDecimal;
 import java.util.List;
 
+import com.aiurt.common.aspect.annotation.DeptFilterColumn;
+import com.aiurt.common.aspect.annotation.MajorFilterColumn;
+import com.aiurt.common.aspect.annotation.SystemFilterColumn;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
@@ -152,11 +155,13 @@ public class SparePartScrap implements Serializable {
     /**所属专业code*/
     @ApiModelProperty(value = "专业名称code")
     @TableField(exist = false)
+    @MajorFilterColumn
     private  String  majorCode;
 
     /**子系统code*/
     @ApiModelProperty(value = "子系统code")
     @TableField(exist = false)
+    @SystemFilterColumn
     private  String  systemCode;
 
     /**物资分类code*/
@@ -202,4 +207,8 @@ public class SparePartScrap implements Serializable {
     @ApiModelProperty(value = "确认人")
     @TableField(exist = false)
     private String confirmName;
+    /**所属部门*/
+    @ApiModelProperty(value = "所属部门")
+    @DeptFilterColumn
+    private String sysOrgCode;
 }

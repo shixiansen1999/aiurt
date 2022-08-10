@@ -11,6 +11,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import cn.hutool.core.util.ObjectUtil;
+import com.aiurt.common.aspect.annotation.PermissionData;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.modules.sparepart.entity.*;
 import com.aiurt.modules.sparepart.entity.dto.StockApplyExcel;
@@ -83,6 +84,7 @@ public class SparePartApplyController extends BaseController<SparePartApply, ISp
     @AutoLog(value = "查询",operateType = 1,operateTypeAlias = "备件分页列表查询",permissionUrl = "/sparepart/sparePartApply/list")
 	@ApiOperation(value="spare_part_apply-分页列表查询", notes="spare_part_apply-分页列表查询")
 	@GetMapping(value = "/list")
+	@PermissionData(pageComponent = "sparePartsFor/SparePartApplyList")
 	public Result<IPage<SparePartApply>> queryPageList(SparePartApply sparePartApply,
 													   @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
 													   @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,

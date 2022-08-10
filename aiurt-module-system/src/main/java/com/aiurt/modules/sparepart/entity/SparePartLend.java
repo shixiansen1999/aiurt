@@ -6,6 +6,9 @@ import java.util.Date;
 import java.math.BigDecimal;
 import java.util.List;
 
+import com.aiurt.common.aspect.annotation.DeptFilterColumn;
+import com.aiurt.common.aspect.annotation.MajorFilterColumn;
+import com.aiurt.common.aspect.annotation.SystemFilterColumn;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
@@ -143,6 +146,7 @@ public class SparePartLend implements Serializable {
     /**所属专业code*/
     @ApiModelProperty(value = "专业名称code")
     @TableField(exist = false)
+    @MajorFilterColumn
     private  String  majorCode;
     /**所属专业*/
     @ApiModelProperty(value = "专业名称")
@@ -151,6 +155,7 @@ public class SparePartLend implements Serializable {
     /**子系统code*/
     @ApiModelProperty(value = "子系统code")
     @TableField(exist = false)
+    @SystemFilterColumn
     private  String  systemCode;
     /**子系统名称*/
     @ApiModelProperty(value = "子系统名称")
@@ -200,4 +205,16 @@ public class SparePartLend implements Serializable {
     @ApiModelProperty(value = " 归还部门")
     @TableField(exist = false)
     private String returnName;
+    /**创建人的组织机构编码*/
+    @ApiModelProperty(value = "创建人的组织机构编码")
+    @DeptFilterColumn
+    private String createOrgCode;
+    /**借入的组织机构编码*/
+    @ApiModelProperty(value = "借入的组织机构编码")
+    @DeptFilterColumn
+    private String entryOrgCode;
+    /**借出的组织机构编码*/
+    @ApiModelProperty(value = "借出的组织机构编码")
+    @DeptFilterColumn
+    private String exitOrgCode;
 }
