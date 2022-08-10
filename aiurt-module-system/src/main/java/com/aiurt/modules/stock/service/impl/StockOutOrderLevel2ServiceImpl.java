@@ -132,6 +132,7 @@ public class StockOutOrderLevel2ServiceImpl extends ServiceImpl<StockOutOrderLev
 				sparePartInOrder.setWarehouseCode(stockOutOrderLevel2.getCustodialWarehouseCode());
 				sparePartInOrder.setNum(sparePartApplyMaterial.getActualNum());
 				sparePartInOrder.setOrgId(user.getOrgId());
+                sparePartInOrder.setSysOrgCode(user.getOrgCode());
 				sparePartInOrder.setConfirmStatus(CommonConstant.SPARE_PART_IN_ORDER_CONFRM_STATUS_0);
 				sparePartInOrder.setOutOrderCode(orderCode);
 				sparePartInOrder.setApplyCode(sparePartApply.getCode());
