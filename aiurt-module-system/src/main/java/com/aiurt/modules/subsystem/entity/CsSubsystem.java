@@ -6,6 +6,7 @@ import java.util.List;
 
 import com.aiurt.common.aspect.annotation.DeptFilterColumn;
 import com.aiurt.common.aspect.annotation.Dict;
+import com.aiurt.common.aspect.annotation.SystemFilterColumn;
 import com.aiurt.common.aspect.annotation.MajorFilterColumn;
 import com.aiurt.common.aspect.annotation.SystemFilterColumn;
 import com.aiurt.modules.device.entity.DeviceType;

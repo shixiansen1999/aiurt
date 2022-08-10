@@ -1,10 +1,13 @@
 package com.aiurt.boot.standard.dto;
 
 import com.aiurt.boot.standard.entity.PatrolStandard;
+import com.aiurt.modules.device.entity.Device;
 import com.baomidou.mybatisplus.annotation.TableField;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import org.jeecgframework.poi.excel.annotation.Excel;
+
+import java.util.List;
 
 /**
  * @projectName: aiurt-platform
@@ -32,4 +35,8 @@ public class PatrolStandardDto extends PatrolStandard {
     @Excel(name = "判断是否可以删除0为可删,其他都为不可删",width = 15)
     @ApiModelProperty(value = "判断是否可以删除0为可删,其他都为不可删")
     private Integer number;
+    @TableField(exist = false)
+    @Excel(name = "设备集合", width = 15)
+    @ApiModelProperty(value = "设备集合")
+    List<Device> devicesSs;
 }

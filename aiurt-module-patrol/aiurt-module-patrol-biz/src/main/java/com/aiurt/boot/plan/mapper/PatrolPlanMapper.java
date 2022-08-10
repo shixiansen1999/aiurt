@@ -89,6 +89,7 @@ public interface PatrolPlanMapper extends BaseMapper<PatrolPlan> {
      * @return
      */
     IPage<Device> viewDetails(@Param("page")Page<Device> page,@Param("standardCode")String standardCode,@Param("planId")String planId);
+    List<Device> viewDetails(@Param("standardCode")String standardCode,@Param("planId")String planId);
   /**
    * 查询哪个星期
    * @param id

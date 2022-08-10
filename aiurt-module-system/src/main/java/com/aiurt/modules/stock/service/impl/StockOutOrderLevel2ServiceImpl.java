@@ -90,6 +90,7 @@ public class StockOutOrderLevel2ServiceImpl extends ServiceImpl<StockOutOrderLev
 		sparePartApply.setOutTime(stockOutOrderLevel2.getOutTime());
 		sparePartApply.setOutOrderRemark(stockOutOrderLevel2.getRemark());
 		sparePartApply.setTotalCount(count);
+		sparePartApply.setOrderCode(orderCode);
 		sparePartApply.setStockOutboundMaterialsList(stockOutboundMaterials);
 		return sparePartApply;
 	}

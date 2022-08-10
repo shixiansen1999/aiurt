@@ -72,6 +72,11 @@ public class CheckListDTO {
     @TableField(exist = false)
     private String deviceMajorName;
 
+    /**设备专业编码*/
+    @ApiModelProperty(value = "设备专业编码")
+    @TableField(exist = false)
+    private String deviceMajorCode;
+
     /**系统编码*/
     @ApiModelProperty(value = "系统编码")
     @TableField(exist = false)
@@ -86,6 +91,11 @@ public class CheckListDTO {
     @ApiModelProperty(value = "设备系统名称")
     @TableField(exist = false)
     private String deviceSystemName;
+
+    /**设备系统编码*/
+    @ApiModelProperty(value = "设备系统编码")
+    @TableField(exist = false)
+    private String deviceSystemCode;
 
     /**设备类型编码*/
     @ApiModelProperty(value = "设备类型编码")

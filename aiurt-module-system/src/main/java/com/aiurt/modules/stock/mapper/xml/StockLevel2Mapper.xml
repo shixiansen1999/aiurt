@@ -50,7 +50,7 @@
     </select>
 
     <select id="getDetailById" resultType="com.aiurt.modules.stock.entity.StockLevel2">
-        select sl.*,mb.`name` materialName, mb.unit, mb.specifications, mb.price, mb.manufactor_code
+        select sl.*,mb.`name` materialName, mb.unit, mb.specifications, mb.price, mb.manufactor_code, mb.`type`
         from stock_level2 sl
         left join material_base mb on sl.material_code=mb.code
         where sl.id = #{id}

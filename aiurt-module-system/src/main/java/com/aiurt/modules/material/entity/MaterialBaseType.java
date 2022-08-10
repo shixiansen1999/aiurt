@@ -43,6 +43,9 @@ public class MaterialBaseType {
 	@Dict(dictTable ="cs_major",dicText = "major_name",dicCode = "major_code")
 	@MajorFilterColumn
 	private  String  majorCode;
+	@ApiModelProperty(value = "专业名称")
+	@TableField(exist = false)
+	private  String  majorName;
 
 	/**子系统编号*/
 	@Excel(name = "子系统编号", width = 15)
@@ -50,6 +53,9 @@ public class MaterialBaseType {
 	@Dict(dictTable ="cs_subsystem",dicText = "system_name",dicCode = "system_code")
 	@SystemFilterColumn
 	private  String  systemCode;
+	@ApiModelProperty(value = "子系统名称")
+	@TableField(exist = false)
+	private  String  systemName;
 
 	/**分类编码*/
 	@Excel(name = "分类编码", width = 15)

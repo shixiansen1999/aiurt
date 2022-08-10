@@ -218,6 +218,9 @@ public class PatrolPlanServiceImpl extends ServiceImpl<PatrolPlanMapper, PatrolP
                                 .eq(PatrolPlanDevice::getPlanStandardId, patrolPlanStandard.getId()));
                 if (CollUtil.isNotEmpty(patrolPlanDevices)) {
                     p.setSpecifyDevice(1);
+                    List<Device>devices = viewDetails(patrolPlanStandard.getStandardCode(),id);
+                    devices.forEach(object -> object.setPlanStandardCode(patrolPlanStandard.getStandardCode()));
+                    p.setDevicesSs(devices);
                 }
             });
             patrolPlanDto.setPatrolStandards(patrolStandardDtos);
@@ -251,8 +254,16 @@ public class PatrolPlanServiceImpl extends ServiceImpl<PatrolPlanMapper, PatrolP
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void updateId(PatrolPlanDto patrolPlanDto) {
         baseMapper.deleteIdorCode(patrolPlanDto.getId());
+         List<String> is = patrolPlanDto.getSiteCodes();
+        List<Device> devices = patrolPlanDto.getDevices();
+        List<Device> result = null;
+        result = devices.stream()
+                .filter((Device s) -> is.contains(s.getStationCode()))
+                .collect(Collectors.toList());
+        patrolPlanDto.setDevices(result);
         this.add(patrolPlanDto);
     }
 
@@ -405,6 +416,32 @@ public class PatrolPlanServiceImpl extends ServiceImpl<PatrolPlanMapper, PatrolP
         int updateById = patrolPlanMapper.updateById(patrolPlan);
         return updateById;
 
+    }
+
+    public List<Device> viewDetails(String standardCode, String planId) {
+        List<Device> records =   baseMapper.viewDetails(standardCode, planId);
+        if (records != null && records.size() > 0) {
+            for (Device d : records) {
+                //线路
+                String lineCode = d.getLineCode() == null ? "" : d.getLineCode();
+                //站点
+                String stationCode = d.getStationCode() == null ? "" : d.getStationCode();
+                //位置
+                String positionCode = d.getPositionCode() == null ? "" : d.getPositionCode();
+                String lineCodeName = sysBaseApi.translateDictFromTable("cs_line", "line_name", "line_code", lineCode);
+                String stationCodeName = sysBaseApi.translateDictFromTable("cs_station", "station_name", "station_code", stationCode);
+                String positionCodeName = sysBaseApi.translateDictFromTable("cs_station_position", "position_name", "position_code", positionCode);
+                String positionCodeCcName = lineCodeName;
+                if (stationCodeName != null && !"".equals(stationCodeName)) {
+                    positionCodeCcName += CommonConstant.SYSTEM_SPLIT_STR + stationCodeName;
+                }
+                if (!"".equals(positionCodeName) && positionCodeName != null) {
+                    positionCodeCcName += CommonConstant.SYSTEM_SPLIT_STR + positionCodeName;
+                }
+                d.setPositionCodeCcName(positionCodeCcName);
+            }
+        }
+        return records;
     }
 
 }
