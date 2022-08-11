@@ -20,4 +20,5 @@ import java.util.List;
 @EnableDataPerm
 public interface SparePartOutOrderMapper extends BaseMapper<SparePartOutOrder> {
     List<SparePartOutOrder> readAll(Page page, @Param("out") SparePartOutOrder sparePartOutOrder);
+    List<SparePartOutOrder> selectMaterial(Page page, @Param("out") SparePartOutOrder sparePartOutOrder);
 }

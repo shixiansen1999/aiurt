@@ -5,6 +5,7 @@ import com.aiurt.modules.sparepart.entity.*;
 import com.aiurt.modules.sparepart.mapper.SparePartOutOrderMapper;
 import com.aiurt.modules.sparepart.mapper.SparePartScrapMapper;
 import com.aiurt.modules.sparepart.mapper.SparePartStockMapper;
+import com.aiurt.modules.sparepart.service.ISparePartReturnOrderService;
 import com.aiurt.modules.sparepart.service.ISparePartScrapService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -32,6 +33,8 @@ public class SparePartScrapServiceImpl extends ServiceImpl<SparePartScrapMapper,
     private SparePartScrapMapper sparePartScrapMapper;
     @Autowired
     private SparePartOutOrderMapper sparePartOutOrderMapper;
+    @Autowired
+    private ISparePartReturnOrderService sparePartReturnOrderService;
     /**
      * 查询列表
      * @param page
@@ -56,12 +59,20 @@ public class SparePartScrapServiceImpl extends ServiceImpl<SparePartScrapMapper,
         if(sparePartScrap.getStatus().equals(CommonConstant.SPARE_PART_SCRAP_STATUS_3)){
             sparePartScrap.setConfirmId(user.getUsername());
             sparePartScrap.setConfirmTime(new Date());
+
             //更新已出库库存数量,做减法
-            SparePartOutOrder sparePartOutOrder = sparePartOutOrderMapper.selectOne(new LambdaQueryWrapper<SparePartOutOrder>().eq(SparePartOutOrder::getId,scrap.getOutOrderId()));
-            if(null!=sparePartOutOrder){
-                Integer number = Integer.parseInt(sparePartOutOrder.getUnused())-scrap.getNum();
-                sparePartOutOrder.setUnused(number+"");
-                sparePartOutOrderMapper.updateById(sparePartOutOrder);
+            List<SparePartOutOrder> orderList = sparePartOutOrderMapper.selectList(new LambdaQueryWrapper<SparePartOutOrder>().eq(SparePartOutOrder::getDelFlag, CommonConstant.DEL_FLAG_0).eq(SparePartOutOrder::getMaterialCode,sparePartScrap.getMaterialCode()).eq(SparePartOutOrder::getWarehouseCode,sparePartScrap.getWarehouseCode()));
+            if(!orderList.isEmpty()){
+                for(int i =0;i<orderList.size();i++){
+                    SparePartOutOrder order = orderList.get(i);
+                    if(Integer.parseInt(order.getUnused())>=scrap.getNum()){
+                        Integer number = Integer.parseInt(order.getUnused())-scrap.getNum();
+                        order.setUnused(number+"");
+                        sparePartReturnOrderService.updateOrder(order);
+                    }else{
+                        return Result.error("剩余数量不足！");
+                    }
+                }
             }
         }
         sparePartScrapMapper.updateById(sparePartScrap);

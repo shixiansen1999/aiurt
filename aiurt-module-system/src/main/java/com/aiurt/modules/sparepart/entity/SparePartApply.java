@@ -117,13 +117,13 @@ public class SparePartApply extends DictEntity implements Serializable {
     @ApiModelProperty(value = "出库时间")
     private Date stockOutTime;
 	/**创建时间*/
-	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
-    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
+	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm")
+    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm")
     @ApiModelProperty(value = "创建时间")
     private Date createTime;
 	/**修改时间*/
-	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
-    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
+	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm")
+    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm")
     @ApiModelProperty(value = "修改时间")
     private Date updateTime;
     /**物资*/

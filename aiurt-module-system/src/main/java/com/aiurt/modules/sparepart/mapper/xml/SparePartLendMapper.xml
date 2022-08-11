@@ -29,9 +29,9 @@
         spare_part_lend.create_time,
 
         spare_part_lend.borrow_num,
-        spare_part_lend.create_org_code,
-        spare_part_lend.entry_org_code,
-        spare_part_lend.exit_org_code,
+        spare_part_lend.create_org_code createOrgCode,
+        spare_part_lend.entry_org_code entryOrgCode,
+        spare_part_lend.exit_org_code exitOrgCode,
         t14.num
         FROM
         spare_part_lend spare_part_lend

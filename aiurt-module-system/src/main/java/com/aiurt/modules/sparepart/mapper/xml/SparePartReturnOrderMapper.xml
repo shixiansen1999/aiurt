@@ -11,6 +11,7 @@
         d2.item_text typeName,
         t1.`code` materialCode,
         t1.`name`,
+        t5.warehouse_code,
         t5.warehouse_name warehouseName,
         spare_part_return_order.num,
         t6.realname userName,

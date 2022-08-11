@@ -72,7 +72,33 @@ public class SparePartStockController extends BaseController<SparePartStock, ISp
 		page.setRecords(list);
 		return Result.OK(page);
 	}
-
+	 /**
+	  * 分页列表查询
+	  *
+	  * @param sparePartStock
+	  * @param pageNo
+	  * @param pageSize
+	  * @param req
+	  * @return
+	  */
+	 @AutoLog(value = "查询",operateType = 1,operateTypeAlias = "备件库存信息分页列表查询",permissionUrl = "/sparepart/sparePartStock/list")
+	 @ApiOperation(value="spare_part_stock-分页列表查询", notes="spare_part_stock-分页列表查询")
+	 @GetMapping(value = "/queryLendList")
+	 public Result<IPage<SparePartStock>> queryLendList(SparePartStock sparePartStock,
+														@RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
+														@RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
+														HttpServletRequest req) {
+		 //QueryWrapper<SparePartStock> queryWrapper = QueryGenerator.initQueryWrapper(sparePartStock, req.getParameterMap());
+		 LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+		 if(ObjectUtil.isNotNull(sparePartStock.getModule())){
+			 sparePartStock.setOrgId(user.getOrgId());
+		 }
+		 Page<SparePartStock> page = new Page<SparePartStock>(pageNo, pageSize);
+		 List<SparePartStock> list = sparePartStockService.selectLendList(page, sparePartStock);
+		 list = list.stream().distinct().collect(Collectors.toList());
+		 page.setRecords(list);
+		 return Result.OK(page);
+	 }
 	/**
 	 *   添加
 	 *
@@ -142,6 +168,7 @@ public class SparePartStockController extends BaseController<SparePartStock, ISp
 	 @ApiOperation(value="备件管理-备件仓库-登录人所选班组的仓库的备件", notes="备件管理-备件仓库-登录人所选班组的仓库的备件")
 	 @GetMapping(value = "/stockList")
 	 public Result<?> queryPageList(SparePartStock sparePartStock) {
+		 sparePartStock.setNum(999);
 		 List<SparePartStock> list = sparePartStockService.selectList(null, sparePartStock);
 		 return Result.OK(list);
 	 }

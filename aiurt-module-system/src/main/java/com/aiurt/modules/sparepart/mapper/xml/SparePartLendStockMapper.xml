@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.aiurt.modules.sparepart.mapper.SparePartStockMapper">
+<mapper namespace="com.aiurt.modules.sparepart.mapper.SparePartLendStockMapper">
     <select id="readAll" resultType="com.aiurt.modules.sparepart.entity.SparePartStock">
         SELECT
         spare_part_stock.id,
@@ -60,9 +60,6 @@
         </if>
         <if test="stock.warehouseCode!=null and stock.warehouseCode!=''">
             and t1.warehouse_code = #{stock.warehouseCode}
-        </if>
-        <if test="stock.num!=null and stock.num!=''">
-            and spare_part_stock.num <![CDATA[ <> ]]>  0
         </if>
         order by spare_part_stock.create_time desc
     </select>

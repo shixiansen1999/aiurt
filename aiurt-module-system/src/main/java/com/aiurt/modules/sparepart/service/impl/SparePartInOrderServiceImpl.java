@@ -54,6 +54,7 @@ public class SparePartInOrderServiceImpl extends ServiceImpl<SparePartInOrderMap
      * 确认
      * @param sparePartInOrder
      */
+    @Transactional(rollbackFor = Exception.class)
     public void confirm(SparePartInOrder sparePartInOrder){
         LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         SparePartInOrder partInOrder = getById(sparePartInOrder.getId());

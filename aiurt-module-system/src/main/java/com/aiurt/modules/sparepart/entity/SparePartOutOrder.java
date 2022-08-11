@@ -63,9 +63,9 @@ public class SparePartOutOrder implements Serializable {
     @ApiModelProperty(value = "出库数量")
     private Integer num;
 	/**确认时间*/
-	@Excel(name = "确认时间", width = 15, format = "yyyy-MM-dd HH:mm:ss")
-	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
-    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
+	@Excel(name = "确认时间", width = 15, format = "yyyy-MM-dd HH:mm")
+	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm")
+    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm")
     @ApiModelProperty(value = "确认时间")
     private Date confirmTime;
 	/**确认人ID*/
@@ -190,4 +190,8 @@ public class SparePartOutOrder implements Serializable {
     @ApiModelProperty(value = "所属部门")
     @DeptFilterColumn
     private String sysOrgCode;
+    /**备件退库、报废列表拼接条件*/
+    @ApiModelProperty(value = " 报废列表拼接条件")
+    @TableField(exist = false)
+    private String orgId;
 }

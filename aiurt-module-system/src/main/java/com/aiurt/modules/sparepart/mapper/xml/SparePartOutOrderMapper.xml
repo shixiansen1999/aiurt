@@ -62,6 +62,72 @@
         <if test="out.baseTypeCode!=null and out.baseTypeCode!=''">
             and t4.base_type_code like concat('%', #{out.baseTypeCode}, '%')
         </if>
+        <if test="out.orgId!=null and out.orgId!=''">
+            and t5.organization_id = #{out.orgId} and spare_part_out_order.unused <![CDATA[ <> ]]>  0
+        </if>
+
+        order by spare_part_out_order.create_time desc
+
+    </select>
+    <select id="selectMaterial" resultType="com.aiurt.modules.sparepart.entity.SparePartOutOrder">
+        SELECT DISTINCT
+        cs_major.major_name majorName,
+        cs_subsystem.system_name systemName,
+        t4.base_type_name baseTypeCodeName,
+        d2.item_text typeName,
+        t1.`code` materialCode,
+        t1.`name`,
+        t5.warehouse_code,
+        t5.warehouse_name warehouseName,
+        t1.specifications,
+        t7.`name` manufactorCodeName,
+        d3.item_text unit,
+        t1.price,
+        spare_part_out_order.unused
+        FROM
+        spare_part_out_order spare_part_out_order
+        LEFT JOIN material_base t1 ON spare_part_out_order.material_code = t1.CODE
+        LEFT JOIN cs_major cs_major ON t1.major_code = cs_major.major_code
+        LEFT JOIN cs_subsystem cs_subsystem ON t1.system_code = cs_subsystem.system_code
+        LEFT JOIN material_base_type t4 ON t1.base_type_code = t4.base_type_code
+        LEFT JOIN spare_part_stock_info t5 ON spare_part_out_order.warehouse_code = t5.warehouse_code
+        LEFT JOIN sys_user t6 ON spare_part_out_order.apply_user_id = t6.username
+        LEFT JOIN sys_dict AS dict1 ON dict1.dict_code = 'spare_out_order_status'
+        LEFT JOIN sys_dict_item AS d1 ON d1.item_value = spare_part_out_order.STATUS AND dict1.id = d1.dict_id
+        LEFT JOIN cs_manufactor t7 ON t7.id = t1.manufactor_code
+        LEFT JOIN sys_user t8 ON spare_part_out_order.confirm_user_id = t8.username
+        LEFT JOIN sys_dict AS dict2 ON dict2.dict_code = 'material_type'
+        LEFT JOIN sys_dict_item AS d2 ON d2.item_value = t1.type AND dict2.id = d2.dict_id
+        LEFT JOIN sys_dict AS dict3 ON dict3.dict_code = 'materian_unit'
+        LEFT JOIN sys_dict_item AS d3 ON d3.item_value = t1.unit AND dict3.id = d3.dict_id
+
+        WHERE
+        spare_part_out_order.del_flag =0 and spare_part_out_order.status = 2
+        <if test="out.materialCode!=null and out.materialCode!=''">
+            and t1.`code` like concat('%', #{out.materialCode}, '%')
+        </if>
+        <if test="out.name!=null and out.name!=''">
+            and t1.`name` like concat('%', #{out.name}, '%')
+        </if>
+        <if test="out.warehouseName!=null and out.warehouseName!=''">
+            and t5.warehouse_name like concat('%', #{out.warehouseName}, '%')
+        </if>
+        <if test="out.status!=null and out.status!=''">
+            and spare_part_out_order.status = #{out.status}
+        </if>
+        <if test="out.majorCode!=null and out.majorCode!=''">
+            and cs_major.major_code like concat('%', #{out.majorCode}, '%')
+        </if>
+        <if test="out.systemCode!=null and out.systemCode!=''">
+            and cs_subsystem.system_code like concat('%', #{out.systemCode}, '%')
+        </if>
+        <if test="out.baseTypeCode!=null and out.baseTypeCode!=''">
+            and t4.base_type_code like concat('%', #{out.baseTypeCode}, '%')
+        </if>
+        <if test="out.orgId!=null and out.orgId!=''">
+            and t5.organization_id = #{out.orgId} and spare_part_out_order.unused <![CDATA[ <> ]]>  0
+        </if>
+
         order by spare_part_out_order.create_time desc
 
     </select>

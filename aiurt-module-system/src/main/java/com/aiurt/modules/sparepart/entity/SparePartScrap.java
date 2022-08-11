@@ -69,6 +69,9 @@ public class SparePartScrap implements Serializable {
     @Excel(name = "物资编号", width = 15)
     @ApiModelProperty(value = "物资编号")
     private String materialCode;
+    /**仓库编号*/
+    @ApiModelProperty(value = "仓库编号")
+    private String warehouseCode;
     /**出库表id*/
     @ApiModelProperty(value = "出库表id")
     private String outOrderId;

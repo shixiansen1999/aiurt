@@ -43,8 +43,7 @@ import java.util.stream.Collectors;
 public class SparePartOutOrderController extends BaseController<SparePartOutOrder, ISparePartOutOrderService> {
    @Autowired
    private ISparePartOutOrderService sparePartOutOrderService;
-   @Autowired
-   private SparePartStockMapper sparePartStockMapper;
+
 
    /**
     * 分页列表查询
@@ -80,11 +79,10 @@ public class SparePartOutOrderController extends BaseController<SparePartOutOrde
     @AutoLog(value = "查询",operateType = 1,operateTypeAlias = "登录人所选班组的已出库的备件",permissionUrl = "/sparepart/sparePartReturnOrder/list")
     @ApiOperation(value="备件管理-备件退库管理-登录人所选班组的已出库的备件", notes="备件管理-备件退库管理-登录人所选班组的已出库的备件")
     @GetMapping(value = "/getMaterialCode")
-    public Result<?> getMaterialCode() {
+    public Result<?> getMaterialCode(SparePartOutOrder sparePartOutOrder) {
         LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        LambdaQueryWrapper<SparePartOutOrder> wrapper = new LambdaQueryWrapper<>();
-        wrapper.apply(" warehouse_code = ( SELECT warehouse_code  FROM spare_part_stock_info  WHERE organization_id = '"+loginUser.getOrgId()+"'  AND del_flag = "+ CommonConstant.DEL_FLAG_0+") ");
-        List<SparePartOutOrder> list = sparePartOutOrderService.list(wrapper);
+        sparePartOutOrder.setOrgId(loginUser.getOrgId());
+        List<SparePartOutOrder> list = sparePartOutOrderService.selectMaterial(null, sparePartOutOrder);
         return Result.OK(list);
     }
    /**
@@ -101,32 +99,25 @@ public class SparePartOutOrderController extends BaseController<SparePartOutOrde
        sparePartOutOrder.setApplyUserId(user.getUsername());
        sparePartOutOrder.setSysOrgCode(user.getOrgCode());
        sparePartOutOrderService.save(sparePartOutOrder);
+       List<SparePartOutOrder> orderList = sparePartOutOrderService.list(new LambdaQueryWrapper<SparePartOutOrder>().eq(SparePartOutOrder::getDelFlag, CommonConstant.DEL_FLAG_0).eq(SparePartOutOrder::getMaterialCode,sparePartOutOrder.getMaterialCode()).eq(SparePartOutOrder::getWarehouseCode,sparePartOutOrder.getWarehouseCode()));
+       if(!orderList.isEmpty()){
+           sparePartOutOrder.setUnused(orderList.get(0).getUnused());
+       }
+       sparePartOutOrderService.updateById(sparePartOutOrder);
        return Result.OK("添加成功！");
    }
 
    /**
-    *  编辑
+    *  确认
     *
     * @param sparePartOutOrder
     * @return
     */
-   @AutoLog(value = "编辑",operateType = 3,operateTypeAlias = "编辑备件出库",permissionUrl = "/sparepart/sparePartOutOrder/list")
-   @ApiOperation(value="spare_part_out_order-编辑", notes="spare_part_out_order-编辑")
+   @AutoLog(value = "确认",operateType = 3,operateTypeAlias = "确认备件出库",permissionUrl = "/sparepart/sparePartOutOrder/list")
+   @ApiOperation(value="spare_part_out_order-确认", notes="spare_part_out_order-确认")
    @RequestMapping(value = "/edit", method = {RequestMethod.PUT,RequestMethod.POST})
-   public Result<String> edit(@RequestBody SparePartOutOrder sparePartOutOrder) {
-       LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-       SparePartOutOrder outOrder = sparePartOutOrderService.getById(sparePartOutOrder.getId());
-       // 更新备件库存数据（原库存数-出库数量）
-       SparePartStock sparePartStock = sparePartStockMapper.selectOne(new LambdaQueryWrapper<SparePartStock>().eq(SparePartStock::getMaterialCode,outOrder.getMaterialCode()).eq(SparePartStock::getWarehouseCode,outOrder.getWarehouseCode()));
-       if(null!=sparePartStock){
-           sparePartStock.setNum(sparePartStock.getNum()-outOrder.getNum());
-           sparePartStockMapper.updateById(sparePartStock);
-       }
-       sparePartOutOrder.setConfirmUserId(user.getUsername());
-       sparePartOutOrder.setConfirmTime(new Date());
-       sparePartOutOrder.setSysOrgCode(user.getOrgCode());
-       sparePartOutOrderService.updateById(sparePartOutOrder);
-       return Result.OK("编辑成功!");
+   public Result<?> edit(@RequestBody SparePartOutOrder sparePartOutOrder) {
+       return sparePartOutOrderService.update(sparePartOutOrder);
    }
 
 

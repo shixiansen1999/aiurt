@@ -1,6 +1,7 @@
 package com.aiurt.modules.sparepart.service;
 
 import com.aiurt.modules.sparepart.entity.SparePartInOrder;
+import com.aiurt.modules.sparepart.entity.SparePartOutOrder;
 import com.aiurt.modules.sparepart.entity.SparePartReturnOrder;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
@@ -29,4 +30,5 @@ public interface ISparePartReturnOrderService extends IService<SparePartReturnOr
      * @return
      */
     Result<?> update(SparePartReturnOrder sparePartReturnOrder);
+    void updateOrder(SparePartOutOrder sparePartOutOrder);
 }

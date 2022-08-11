@@ -2,6 +2,7 @@ package com.aiurt.modules.sparepart.service.impl;
 
 import com.aiurt.modules.sparepart.entity.SparePartInOrder;
 import com.aiurt.modules.sparepart.entity.SparePartStock;
+import com.aiurt.modules.sparepart.mapper.SparePartLendStockMapper;
 import com.aiurt.modules.sparepart.mapper.SparePartStockMapper;
 import com.aiurt.modules.sparepart.service.ISparePartStockService;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -22,6 +23,8 @@ import java.util.List;
 public class SparePartStockServiceImpl extends ServiceImpl<SparePartStockMapper, SparePartStock> implements ISparePartStockService {
     @Autowired
     private SparePartStockMapper sparePartStockMapper;
+    @Autowired
+    private SparePartLendStockMapper sparePartLendStockMapper;
     /**
      * 查询列表
      * @param page
@@ -31,5 +34,15 @@ public class SparePartStockServiceImpl extends ServiceImpl<SparePartStockMapper,
     @Override
     public List<SparePartStock> selectList(Page page, SparePartStock sparePartStock){
         return sparePartStockMapper.readAll(page,sparePartStock);
+    }
+    /**
+     * 查询列表
+     * @param page
+     * @param sparePartStock
+     * @return
+     */
+    @Override
+    public List<SparePartStock> selectLendList(Page page, SparePartStock sparePartStock){
+        return sparePartLendStockMapper.readAll(page,sparePartStock);
     }
 }

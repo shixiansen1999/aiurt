@@ -41,6 +41,8 @@ public class SparePartReturnOrderServiceImpl extends ServiceImpl<SparePartReturn
     private ISparePartInOrderService sparePartInOrderService;
     @Autowired
     private SparePartOutOrderMapper sparePartOutOrderMapper;
+    @Autowired
+    private ISparePartOutOrderService sparePartOutOrderService;
     /**
      * 查询列表
      * @param page
@@ -63,6 +65,20 @@ public class SparePartReturnOrderServiceImpl extends ServiceImpl<SparePartReturn
         LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         Date date = new Date();
         SparePartReturnOrder returnOrder = getById(sparePartReturnOrder.getId());
+        //更新已出库库存数量,做减法
+        List<SparePartOutOrder> orderList = sparePartOutOrderMapper.selectList(new LambdaQueryWrapper<SparePartOutOrder>().eq(SparePartOutOrder::getDelFlag, CommonConstant.DEL_FLAG_0).eq(SparePartOutOrder::getMaterialCode,sparePartReturnOrder.getMaterialCode()).eq(SparePartOutOrder::getWarehouseCode,sparePartReturnOrder.getWarehouseCode()));
+        if(!orderList.isEmpty()){
+            for(int i =0;i<orderList.size();i++){
+                SparePartOutOrder order = orderList.get(i);
+                if(Integer.parseInt(order.getUnused())>=returnOrder.getNum()){
+                    Integer number = Integer.parseInt(order.getUnused())-returnOrder.getNum();
+                    order.setUnused(number+"");
+                    updateOrder(order);
+                }else{
+                    return Result.error("剩余数量不足！");
+                }
+            }
+        }
         //1.更改状态为“已确认”
         returnOrder.setConfirmId(user.getUsername());
         returnOrder.setConfirmTime(date);
@@ -85,13 +101,17 @@ public class SparePartReturnOrderServiceImpl extends ServiceImpl<SparePartReturn
         sparePartInOrder.setConfirmTime(date);
         //sparePartInOrder.setOutOrderCode(orderCode);
         sparePartInOrderService.save(sparePartInOrder);
-        //4.更新已出库库存数量,做减法
-        SparePartOutOrder sparePartOutOrder = sparePartOutOrderMapper.selectOne(new LambdaQueryWrapper<SparePartOutOrder>().eq(SparePartOutOrder::getId,returnOrder.getOutOrderId()));
-        if(null!=sparePartOutOrder){
-            Integer number = Integer.parseInt(sparePartOutOrder.getUnused())-returnOrder.getNum();
-            sparePartOutOrder.setUnused(number+"");
-            sparePartOutOrderMapper.updateById(sparePartOutOrder);
-        }
+
         return Result.OK("编辑成功！");
+
+
+    }
+    @Override
+    public void updateOrder(SparePartOutOrder sparePartOutOrder){
+        LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        sparePartOutOrder.setConfirmUserId(user.getUsername());
+        sparePartOutOrder.setConfirmTime(new Date());
+        sparePartOutOrder.setSysOrgCode(user.getOrgCode());
+        sparePartOutOrderService.updateById(sparePartOutOrder);
     }
 }

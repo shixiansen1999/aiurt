@@ -21,7 +21,8 @@
         spare_part_scrap.confirm_time confirmTime,
         t8.realname confirmName,
         spare_part_scrap.reason ,
-        spare_part_scrap.status
+        spare_part_scrap.status,
+        spare_part_scrap.warehouse_code
         FROM
         spare_part_scrap spare_part_scrap
         LEFT JOIN material_base t1 ON spare_part_scrap.material_code = t1.CODE

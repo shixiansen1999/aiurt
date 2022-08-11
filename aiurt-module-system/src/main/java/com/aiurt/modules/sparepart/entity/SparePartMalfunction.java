@@ -103,8 +103,8 @@ public class SparePartMalfunction implements Serializable {
     @Dict(dictTable ="sys_user",dicText = "realname",dicCode = "username")
     private String createBy;
 	/**创建时间*/
-	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
-    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
+	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm")
+    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm")
     @ApiModelProperty(value = "创建时间")
     private Date createTime;
 	/**更新人*/
@@ -112,8 +112,8 @@ public class SparePartMalfunction implements Serializable {
     @Dict(dictTable ="sys_user",dicText = "realname",dicCode = "username")
     private String updateBy;
 	/**更新时间*/
-	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
-    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
+	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm")
+    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm")
     @ApiModelProperty(value = "更新时间")
     private Date updateTime;
     /**維修時間-起始*/
