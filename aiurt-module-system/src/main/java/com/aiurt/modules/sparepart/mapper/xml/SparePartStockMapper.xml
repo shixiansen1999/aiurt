@@ -3,12 +3,12 @@
 <mapper namespace="com.aiurt.modules.sparepart.mapper.SparePartStockMapper">
     <select id="readAll" resultType="com.aiurt.modules.sparepart.entity.SparePartStock">
         SELECT
-        t.id,
+        spare_part_stock.id,
         t1.warehouse_code,
         t1.warehouse_name warehouseName,
-        t.material_code materialCode,
+        spare_part_stock.material_code materialCode,
         t2.NAME,
-        t.num,
+        spare_part_stock.num,
         t3.major_name majorName,
         t4.system_name systemName,
         t5.base_type_name baseTypeCodeName,
@@ -19,13 +19,13 @@
         d3.item_text unit,
         t2.price
         FROM
-        spare_part_stock t
-        LEFT JOIN spare_part_stock_info t1 ON t.warehouse_code = t1.warehouse_code
-        LEFT JOIN material_base t2 ON t.material_code = t2.CODE
+        spare_part_stock spare_part_stock
+        LEFT JOIN spare_part_stock_info t1 ON spare_part_stock.warehouse_code = t1.warehouse_code
+        LEFT JOIN material_base t2 ON spare_part_stock.material_code = t2.CODE
         LEFT JOIN cs_major t3 ON t2.major_code = t3.major_code
         LEFT JOIN cs_subsystem t4 ON t2.system_code = t4.system_code
         LEFT JOIN material_base_type t5 ON t2.base_type_code = t5.base_type_code
-        LEFT JOIN sys_depart t6 ON t6.id = t.org_id
+        LEFT JOIN sys_depart t6 ON t6.id = spare_part_stock.org_id
         LEFT JOIN sys_dict AS dict1 ON dict1.dict_code = 'material_type'
         LEFT JOIN sys_dict_item AS d1 ON d1.item_value = t2.type  AND dict1.id = d1.dict_id
         LEFT JOIN cs_manufactor t7 ON t7.id = t2.manufactor_code
@@ -33,9 +33,9 @@
         LEFT JOIN sys_dict_item AS d3 ON d3.item_value = t2.unit AND dict3.id = d3.dict_id
 
         WHERE
-        t.del_flag =0
+        spare_part_stock.del_flag =0
         <if test="stock.materialCode!=null and stock.materialCode!=''">
-            and t.material_code like concat('%',  #{stock.materialCode}, '%')
+            and spare_part_stock.material_code like concat('%',  #{stock.materialCode}, '%')
         </if>
         <if test="stock.name!=null and stock.name!=''">
             and t2.`name` like concat('%', #{stock.name}, '%')
@@ -53,14 +53,14 @@
             and t5.base_type_code like concat('%', #{stock.baseTypeCode}, '%')
         </if>
         <if test="stock.orgId!=null and stock.orgId!=''">
-            and t.org_id not in (#{stock.orgId})
+            and spare_part_stock.org_id not in (#{stock.orgId})
         </if>
         <if test="stock.num != null and stock.num != ''">
-            and t.num <![CDATA[ <> ]]> 0
+            and spare_part_stock.num <![CDATA[ <> ]]> 0
         </if>
         <if test="stock.warehouseCode!=null and stock.warehouseCode!=''">
             and t1.warehouse_code = #{stock.warehouseCode}
         </if>
-        order by t.create_time desc
+        order by spare_part_stock.create_time desc
     </select>
 </mapper>

@@ -3,40 +3,40 @@
 <mapper namespace="com.aiurt.modules.sparepart.mapper.SparePartMalfunctionMapper">
     <select id="readAll" resultType="com.aiurt.modules.sparepart.entity.SparePartMalfunction">
         SELECT
-        t.maintenance_record maintenanceRecord,
+        spare_part_malfunction.maintenance_record maintenanceRecord,
         t2.NAME deviceName,
         d1.item_text malfunctionTypeName,
-        t.replace_number replaceNumber,
+        spare_part_malfunction.replace_number replaceNumber,
         t3.depart_name orgName,
-        t.maintain_time maintainTime,
+        spare_part_malfunction.maintain_time maintainTime,
         t4.realname userName,
         t1.materials_code materialsCode,
         t5.`name` materialsName,
         t1.replace_subassembly_code replaceSubassemblyCode,
         t1.subassembly_code  subassemblyCode
         FROM
-        spare_part_malfunction t
-        RIGHT JOIN spare_part_replace t1 ON t.maintenance_record = t1.maintenance_record
-        AND t.out_order_id = t.out_order_id
-        LEFT JOIN device t2 ON t2.`code` = t.malfunction_device_code
+        spare_part_malfunction spare_part_malfunction
+        RIGHT JOIN spare_part_replace t1 ON spare_part_malfunction.maintenance_record = t1.maintenance_record
+        AND spare_part_malfunction.out_order_id = spare_part_malfunction.out_order_id
+        LEFT JOIN device t2 ON t2.`code` = spare_part_malfunction.malfunction_device_code
         LEFT JOIN sys_dict AS dict1 ON dict1.dict_code = 'malfunction_type'
-        LEFT JOIN sys_dict_item AS d1 ON d1.item_value = t.malfunction_type  AND dict1.id = d1.dict_id
-        LEFT JOIN sys_depart t3 ON t3.id = t.org_id
-        LEFT JOIN sys_user t4 ON t4.username= t.maintain_user_id
+        LEFT JOIN sys_dict_item AS d1 ON d1.item_value = spare_part_malfunction.malfunction_type  AND dict1.id = d1.dict_id
+        LEFT JOIN sys_depart t3 ON t3.id = spare_part_malfunction.org_id
+        LEFT JOIN sys_user t4 ON t4.username= spare_part_malfunction.maintain_user_id
         LEFT JOIN material_base t5 ON t5.`code` = t1.materials_code
         WHERE
-        t.del_flag =0
+        spare_part_malfunction.del_flag =0
         <if test="malfunction.maintainTimeBegin!=null and malfunction.maintainTimeBegin!='' and malfunction.maintainTimeEnd!=null and malfunction.maintainTimeEnd!=''">
-            and t.maintainTimeEnd between  #{malfunction.maintainTimeBegin} and #{malfunction.maintainTimeEnd}
+            and spare_part_malfunction.maintainTimeEnd between  #{malfunction.maintainTimeBegin} and #{malfunction.maintainTimeEnd}
         </if>
 
         <if test="malfunction.ids!=null and malfunction.ids!=''">
-            and t.id in(
+            and spare_part_malfunction.id in(
             <foreach collection="malfunction.ids" separator="," item="item">
                 #{item}
             </foreach>)
         </if>
-        order by t.create_time desc
+        order by spare_part_malfunction.create_time desc
     </select>
 
 </mapper>
