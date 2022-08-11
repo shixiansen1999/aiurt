@@ -276,4 +276,22 @@ public interface ISysUserService extends IService<SysUser> {
      */
 	List<String> userIdToUsername(Collection<String> userIdList);
 
+	/**
+	 * 查询部门树
+	 * @return
+	 */
+    List<Object> departAndUserTree();
+
+	/**
+	 * 查询部门下面所有人员
+	 *
+	 * @param page
+	 * @param username
+	 * @param phone
+	 * @param realname
+	 * @param orgCode
+	 * @param status
+	 * @return
+	 */
+	IPage<SysUser> userByOrgCode(Page<SysUser> page, String orgCode, String phone, String realname, String username , Integer status);
 }

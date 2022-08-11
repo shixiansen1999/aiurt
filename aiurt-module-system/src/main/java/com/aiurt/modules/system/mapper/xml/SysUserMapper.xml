@@ -172,4 +172,30 @@
 	<select id="getUserListByName" resultType="java.lang.String">
 		select username from  sys_user  where realname LIKE concat('%',#{realName},'%')
 	</select>
+	<select id="queryByOrgCode" resultType="java.lang.String">
+		SELECT id  FROM sys_depart
+		WHERE del_flag =0
+		  and org_code_cc LIKE CONCAT('%' #{code} '%')
+	</select>
+	<select id="queryByorgIds" resultType="com.aiurt.modules.system.entity.SysUser">
+		select * from sys_user  where del_flag = 0
+		<if test="orgId.size()>0">
+			AND org_id in
+			<foreach item="orgId" collection="orgId" separator="," open="(" close=")" index="">
+				#{orgId}
+			</foreach>
+		</if>
+		<if test="status !=null ">
+			AND status =#{status}
+		</if>
+		<if test="username !=null ">
+			AND username LIKE CONCAT ('%', #{username}, '%')
+		</if>
+		<if test="realname !=null ">
+		AND realname LIKE CONCAT ('%', #{realname}, '%')
+		</if>
+		<if test="phone !=null ">
+			AND phone LIKE CONCAT ('%', #{phone}, '%')
+		</if>
+	</select>
 </mapper>

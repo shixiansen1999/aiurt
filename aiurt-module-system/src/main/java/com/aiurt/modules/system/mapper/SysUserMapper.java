@@ -9,7 +9,6 @@ import com.baomidou.mybatisplus.core.toolkit.Constants;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.ibatis.annotations.Param;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import org.jeecg.common.system.vo.LoginUser;
 
 import java.util.List;
 
@@ -165,4 +164,23 @@ public interface SysUserMapper extends BaseMapper<SysUser> {
 	 * @return
 	 */
 	List<String> getUserListByName(String realName);
+
+	/**
+	 * 查询机构下的子机构id
+	 * @param code
+	 * @return
+	 */
+	List<String> queryByOrgCode(@Param("code") String code);
+
+	/**
+	 * 根据机构Ids查询用户信息
+	 * @param page
+	 * @param orgId
+	 * @param phone
+	 * @param realname
+	 * @param username
+	 * @param status
+	 * @return
+	 */
+	IPage<SysUser> queryByorgIds(Page<SysUser> page,@Param("orgId") List<String>  orgId,@Param("phone") String phone,@Param("realname") String realname, @Param("username")String username,@Param("status") Integer status);
 }

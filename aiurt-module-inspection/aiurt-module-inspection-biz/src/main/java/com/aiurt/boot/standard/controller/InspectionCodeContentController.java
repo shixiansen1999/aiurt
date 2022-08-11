@@ -171,8 +171,9 @@ public class InspectionCodeContentController extends BaseController<InspectionCo
 	 @GetMapping(value = "/checkCode")
 	 public void checkCode(
 			 @RequestParam(name="code") String code,
-			 @RequestParam(name = "inspectionCodeId")String inspectionCodeId) {
-		 inspectionCodeContentService.checkCode(code,inspectionCodeId);
+			 @RequestParam(name = "inspectionCodeId")String inspectionCodeId,
+			 @RequestParam(name = "id",required = false)String id) {
+		 inspectionCodeContentService.checkCode(code,inspectionCodeId,id);
 
 	 }
 	/**

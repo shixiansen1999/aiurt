@@ -10,6 +10,7 @@ import com.aiurt.common.util.ImportExcelUtil;
 import com.aiurt.common.util.PasswordUtil;
 import com.aiurt.common.util.RedisUtil;
 import com.aiurt.common.util.oConvertUtils;
+import com.aiurt.modules.device.entity.Device;
 import com.aiurt.modules.major.entity.CsMajor;
 import com.aiurt.modules.major.service.ICsMajorService;
 import com.aiurt.modules.subsystem.entity.CsSubsystem;
@@ -19,6 +20,7 @@ import com.aiurt.modules.system.mapper.*;
 import com.aiurt.modules.system.model.DepartIdModel;
 import com.aiurt.modules.system.model.SysUserSysDepartModel;
 import com.aiurt.modules.system.service.*;
+import com.aiurt.modules.system.vo.DepartAndUserTree;
 import com.aiurt.modules.system.vo.SysDepartUsersVO;
 import com.aiurt.modules.system.vo.SysUserRoleVO;
 import com.alibaba.fastjson.JSON;
@@ -26,6 +28,7 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -486,6 +489,57 @@ public class SysUserController {
         return result;
     }
 
+    /**
+     * 查询部门树
+     * @return
+     */
+    @ApiOperation(value="组织树型", notes="组织树型")
+    @RequestMapping(value = "OrganizationTree", method = RequestMethod.GET)
+    public List<Object> treeOrUser() {
+         List<Object> tree = sysUserService.departAndUserTree();
+        return tree;
+    }
+    /**
+     * 查询部门与子部门下所有人员
+     * @return
+     */
+    @ApiOperation(value="分页查询部门与子部门下所有人员", notes="分页查询部门与子部门下所有人员")
+    @RequestMapping(value = "listUserByOegCode", method = RequestMethod.GET)
+    public Result<?> queryUserByOrgCode(@RequestParam(name = "orgCode",required = true)String orgCode,
+                                        @RequestParam(name = "phone",required = false)String phone,
+                                        @RequestParam(name = "realname",required = false)String realname,
+                                        @RequestParam(name = "username",required = false)String username,
+                                        @RequestParam(name = "status",required = false)Integer status,
+                                        @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
+                                        @RequestParam(name="pageSize", defaultValue="10") Integer pageSize){
+        Page<SysUser> page = new Page<SysUser>(pageNo, pageSize);
+        IPage<SysUser> users = sysUserService.userByOrgCode(page,orgCode,phone,realname,username,status);
+        List<String> userIds = users.getRecords().stream().map(SysUser::getId).collect(Collectors.toList());
+        if(userIds!=null && userIds.size()>0){
+            Map<String,String>  useDepNames = sysUserService.getDepNamesByUserIds(userIds);
+            users.getRecords().forEach(item->{
+                item.setOrgCodeTxt(useDepNames.get(item.getId()));
+                getUserDetail(item);
+            });
+        }
+        return Result.ok(users);
+    }
+    /**
+     * 根据id更换人员组织机构
+     * @return
+     */
+    @ApiOperation(value="根据id更换人员组织机构", notes="根据id更换人员组织机构")
+    @RequestMapping(value = "userUpDataOrg", method = RequestMethod.GET)
+    public Result<?> userUpDataOrg(@RequestParam(name = "orgId")String orgId,
+                                        @RequestParam(name = "orgCode")String orgCode,
+                                        @RequestParam(name = "ids")String ids){
+        List<String> id= Arrays.asList(ids.split(","));
+        sysUserService.update(new LambdaUpdateWrapper<SysUser>().in(SysUser::getId,id)
+                                                                .eq(SysUser::getDelFlag,0)
+                                                                .set(SysUser::getOrgId,orgId)
+                                                                .set(SysUser::getOrgCode,orgCode));
+        return Result.ok("修改成功!");
+    }
     /**
      * 根据部门id查询用户信息
      *

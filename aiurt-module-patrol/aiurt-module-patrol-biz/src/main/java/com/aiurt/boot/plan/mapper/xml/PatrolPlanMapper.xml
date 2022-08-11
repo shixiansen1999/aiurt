@@ -305,12 +305,14 @@
         FROM device a
         WHERE
         a.del_flag =0
+          <if test="siteCodes!=null">
         <if test="siteCodes.size()>0">
             AND a.station_code in
             <foreach item="siteCodes" collection="siteCodes" separator="," open="(" close=")" index="">
                 #{siteCodes}
             </foreach>
         </if>
+          </if>
         <if test="majorCode!=null">
             AND a.major_code = #{majorCode}
         </if>

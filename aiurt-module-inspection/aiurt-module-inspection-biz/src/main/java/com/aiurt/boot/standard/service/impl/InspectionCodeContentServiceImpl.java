@@ -289,11 +289,14 @@ public class InspectionCodeContentServiceImpl extends ServiceImpl<InspectionCode
     }
 
     @Override
-    public void checkCode(String code, String inspectionCodeId) {
-        List<InspectionCodeContent> inspectionCodeContents = baseMapper.selectList(
-                new LambdaQueryWrapper<InspectionCodeContent>()
-                        .eq(InspectionCodeContent::getInspectionCodeId,inspectionCodeId)
-                        .eq(InspectionCodeContent::getCode,code));
+    public void checkCode(String code, String inspectionCodeId, String id) {
+        QueryWrapper<InspectionCodeContent> queryWrapper = new QueryWrapper<InspectionCodeContent>();
+               queryWrapper.lambda().eq(InspectionCodeContent::getInspectionCodeId,inspectionCodeId)
+                .eq(InspectionCodeContent::getCode,code);
+        if (id!="" && id!=null){
+            queryWrapper.ne("id",id);
+        }
+        List<InspectionCodeContent> inspectionCodeContents = baseMapper.selectList(queryWrapper);
         if (CollUtil.isNotEmpty(inspectionCodeContents)){
             throw new AiurtBootException("输入的code当前列表重复,请重新输入");
         }

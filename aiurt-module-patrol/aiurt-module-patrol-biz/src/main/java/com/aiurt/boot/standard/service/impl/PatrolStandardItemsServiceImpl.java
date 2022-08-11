@@ -14,6 +14,7 @@ import com.aiurt.boot.task.mapper.PatrolTaskDeviceMapper;
 import com.aiurt.boot.task.mapper.PatrolTaskStandardMapper;
 import com.aiurt.common.exception.AiurtBootException;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.github.xiaoymin.knife4j.core.util.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -108,11 +109,14 @@ private PatrolTaskStandardMapper patrolTaskStandardMapper;
     }
 
     @Override
-    public void checkCode(String code, String standardId) {
-        List<PatrolStandardItems> patrolStandardItems = baseMapper.selectList(
-                 new LambdaQueryWrapper<PatrolStandardItems>()
-                              .eq(PatrolStandardItems::getStandardId,standardId)
-                              .eq(PatrolStandardItems::getCode,code));
+    public void checkCode(String code, String standardId,String id) {
+        QueryWrapper<PatrolStandardItems> queryWrapper = new QueryWrapper<PatrolStandardItems>();
+        queryWrapper.eq("standard_id",standardId);
+        queryWrapper.eq("code", code);
+        if (id!="" && id!=null){
+           queryWrapper.ne("id",id);
+        }
+        List<PatrolStandardItems> patrolStandardItems = baseMapper.selectList(queryWrapper);
         if (CollUtil.isNotEmpty(patrolStandardItems)){
          throw new AiurtBootException("输入的code当前列表重复,请重新输入");
         }

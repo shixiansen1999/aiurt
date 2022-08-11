@@ -629,4 +629,50 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
 		return userList.stream().map(SysUser::getUsername).collect(Collectors.toList());
 	}
 
+	@Override
+	public List<Object> departAndUserTree() {
+		List<SysDepart> sysDeparts = sysDepartMapper.selectList(new LambdaQueryWrapper<SysDepart>().eq(SysDepart::getDelFlag,0));
+		List<Object> departAndUserTrees = new ArrayList<>();
+		sysDeparts.forEach(s->{
+			Map<String,Object> map = new LinkedHashMap<>();
+			if (s.getParentId().equals("")){
+				map.put("id", s.getId());
+				map.put("parentId", s.getParentId());
+				map.put("departName", s.getDepartName());
+				map.put("orgCode",s.getOrgCode());
+				map.put("departOrder",s.getDepartOrder());
+				map.put("status",s.getStatus());
+				map.put("children", menuChild(s.getId()));
+				departAndUserTrees.add(map);
+			}
+		});
+		return departAndUserTrees;
+	}
+
+	@Override
+	public IPage<SysUser> userByOrgCode(Page<SysUser> page, String orgCode, String phone, String realname, String username, Integer status) {
+		  String code = "/"+orgCode+"/";
+		  List<String> orgId = new ArrayList<>();
+		  List<SysDepart> sysDeparts =sysDepartMapper.selectList(new LambdaQueryWrapper<SysDepart>().like(SysDepart::getOrgCodeCc,code));
+		  sysDeparts.forEach(s->orgId.add(s.getId()));
+		  IPage<SysUser> users = baseMapper.queryByorgIds(page,orgId,phone,realname,username,status);
+		return users;
+	}
+
+	public List<Object> menuChild (String id){
+		List<SysDepart> sysDeparts = sysDepartMapper.selectList(new LambdaQueryWrapper<SysDepart>().eq(SysDepart::getParentId,id).eq(SysDepart::getDelFlag,0));
+		List<Object> trees = new ArrayList<>();
+		sysDeparts.forEach(s -> {
+			Map<String,Object> map = new LinkedHashMap<>();
+			map.put("id", s.getId());
+			map.put("parentId", s.getParentId());
+			map.put("departName", s.getDepartName());
+			map.put("orgCode",s.getOrgCode());
+			map.put("departOrder",s.getDepartOrder());
+			map.put("status",s.getStatus());
+			map.put("children", menuChild(s.getId()));
+			trees.add(map);
+		});
+		return trees;
+	}
 }

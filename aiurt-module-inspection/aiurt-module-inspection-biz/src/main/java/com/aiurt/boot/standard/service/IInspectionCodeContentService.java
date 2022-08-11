@@ -91,8 +91,9 @@ public interface IInspectionCodeContentService extends IService<InspectionCodeCo
 
 	/**
 	 * 校验code
-	 * @param code
-	 * @param inspectionCodeId
-	 */
-    void checkCode(String code, String inspectionCodeId);
+     * @param code
+     * @param inspectionCodeId
+     * @param id
+     */
+    void checkCode(String code, String inspectionCodeId, String id);
 }

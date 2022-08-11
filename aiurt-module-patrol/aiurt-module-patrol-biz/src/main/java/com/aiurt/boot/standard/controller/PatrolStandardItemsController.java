@@ -124,8 +124,9 @@ public class PatrolStandardItemsController extends BaseController<PatrolStandard
 	 @GetMapping(value = "/checkCode")
 	 public void checkCode(
 							@RequestParam(name="code") String code,
-							@RequestParam(name = "standardId")String standardId) {
-		  patrolStandardItemsService.checkCode(code,standardId);
+							@RequestParam(name = "standardId")String standardId,
+							@RequestParam(name = "id",required = false)String id) {
+		  patrolStandardItemsService.checkCode(code,standardId,id);
 
 	 }
 	 /**
