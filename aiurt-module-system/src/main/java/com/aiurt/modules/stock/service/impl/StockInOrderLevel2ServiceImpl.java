@@ -195,7 +195,7 @@ public class StockInOrderLevel2ServiceImpl extends ServiceImpl<StockInOrderLevel
 		String[] split = ids.split(",");
 		List<String> strings = Arrays.asList(split);
 		// 过滤选中数据
-		List<StockInOrderLevel2> list = this.list(new QueryWrapper<StockInOrderLevel2>().in("id", strings));
+		List<StockInOrderLevel2> list = this.list(new QueryWrapper<StockInOrderLevel2>().in("id", strings).orderByDesc("create_time"));
 		//设置相应头
 		response.setContentType("Application/excel");
 		try {

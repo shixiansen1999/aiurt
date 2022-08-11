@@ -42,18 +42,6 @@ public class StockLevel2ServiceImpl extends ServiceImpl<StockLevel2Mapper, Stock
 
     @Override
     public IPage<StockLevel2> pageList(Page<StockLevel2> page, StockLevel2 stockLevel2) {
-        if(stockLevel2.getAllCode() != null && !"".equals(stockLevel2.getAllCode())){
-            String[] arr = stockLevel2.getAllCode().split(",");
-            if(arr.length==1 && null !=arr[0] && !"".equals(arr[0])){
-                stockLevel2.setMajorCode(arr[0]);
-            }
-            if(arr.length==2 && null !=arr[1] && !"".equals(arr[1])){
-                stockLevel2.setSystemCode(arr[1]);
-            }
-            if(arr.length==3 && null !=arr[2] && !"".equals(arr[2])){
-                stockLevel2.setBaseType(arr[2]);
-            }
-        }
         List<StockLevel2> baseList = baseMapper.pageList(page, stockLevel2);
         if(baseList != null && baseList.size()>0){
             for(StockLevel2 stockLevel21 : baseList){

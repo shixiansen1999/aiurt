@@ -81,6 +81,7 @@
         <foreach collection="ids" item="id" index="index" open=" ( " close=" ) " separator=",">
             #{id}
         </foreach>
+        order by sl.create_time desc
     </select>
 
 </mapper>

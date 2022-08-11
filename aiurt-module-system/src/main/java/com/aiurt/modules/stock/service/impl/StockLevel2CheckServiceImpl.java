@@ -141,7 +141,7 @@ public class StockLevel2CheckServiceImpl extends ServiceImpl<StockLevel2CheckMap
 		String[] split = ids.split(",");
 		List<String> strings = Arrays.asList(split);
 		// 过滤选中数据
-		List<StockLevel2Check> list = this.list(new QueryWrapper<StockLevel2Check>().in("id", strings));
+		List<StockLevel2Check> list = this.list(new QueryWrapper<StockLevel2Check>().in("id", strings).orderByDesc("create_time"));
 		//设置相应头
 		response.setContentType("Application/excel");
 		try {

@@ -79,20 +79,23 @@ public class StockLevel2CheckDetailController {
     @AutoLog(value = "二级库管理-二级库盘点管理-盘点物资-编辑", operateType = 3, operateTypeAlias = "修改", permissionUrl = "/secondLevelWarehouse/StockLevel2CheckList")
     @ApiOperation(value = "二级库管理-二级库盘点管理-盘点物资-编辑", notes = "二级库管理-二级库盘点管理-盘点物资-编辑")
     @PostMapping(value = "/edit")
-    public Result<StockLevel2CheckDetail> edit(@RequestBody List<StockLevel2CheckDetail> stockLevel2CheckDetailList) {
-        Result<StockLevel2CheckDetail> result = new Result<StockLevel2CheckDetail>();
-        if (stockLevel2CheckDetailList == null) {
+    public Result<?> edit(@RequestBody StockLevel2Check stockLevel2Checkold) {
+        Result<?> result = new Result<>();
+        if (stockLevel2Checkold == null) {
             result.onnull("未找到对应实体");
         } else {
-            String stockCheckCode = stockLevel2CheckDetailList.get(0).getStockCheckCode();
+            String stockCheckCode = stockLevel2Checkold.getStockCheckCode();
+            List<StockLevel2CheckDetail> stockLevel2CheckDetailList = stockLevel2Checkold.getStockLevel2CheckDetailList();
             StockLevel2Check stockLevel2Check = iStockLevel2CheckService.getOne(new QueryWrapper<StockLevel2Check>().eq("del_flag", CommonConstant.DEL_FLAG_0).eq("stock_check_code",stockCheckCode));
             int count = 0;
-            for(StockLevel2CheckDetail stockLevel2CheckDetail : stockLevel2CheckDetailList){
-                count += stockLevel2CheckDetail.getActualNum()==null?0:stockLevel2CheckDetail.getActualNum();
+            if(stockLevel2CheckDetailList != null && stockLevel2CheckDetailList.size()>0){
+                for(StockLevel2CheckDetail stockLevel2CheckDetail : stockLevel2CheckDetailList){
+                    count += stockLevel2CheckDetail.getActualNum()==null?0:stockLevel2CheckDetail.getActualNum();
+                }
+                iStockLevel2CheckDetailService.updateBatchById(stockLevel2CheckDetailList);
             }
             stockLevel2Check.setCheckNum(count);
-            iStockLevel2CheckService.updateById(stockLevel2Check);
-            boolean ok = iStockLevel2CheckDetailService.updateBatchById(stockLevel2CheckDetailList);
+            boolean ok = iStockLevel2CheckService.updateById(stockLevel2Check);
             try{
             }catch (Exception e){
                 throw new AiurtBootException(e.getMessage());
@@ -108,23 +111,27 @@ public class StockLevel2CheckDetailController {
     @AutoLog(value = "二级库管理-二级库盘点管理-盘点物资-提交", operateType = 3, operateTypeAlias = "修改", permissionUrl = "/secondLevelWarehouse/StockLevel2CheckList")
     @ApiOperation(value = "二级库管理-二级库盘点管理-盘点物资-提交", notes = "二级库管理-二级库盘点管理-盘点物资-提交")
     @PostMapping(value = "/commitCheckInfo")
-    public Result<StockLevel2CheckDetail> commitCheckInfo(@RequestBody List<StockLevel2CheckDetail> stockLevel2CheckDetailList) throws ParseException {
-        Result<StockLevel2CheckDetail> result = new Result<StockLevel2CheckDetail>();
-        if (stockLevel2CheckDetailList == null) {
+    public Result<?> commitCheckInfo(@RequestBody StockLevel2Check stockLevel2Checkold) throws ParseException {
+        Result<?> result = new Result<>();
+        if (stockLevel2Checkold == null) {
             result.onnull("未找到对应实体");
         } else {
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
-            String stockCheckCode = stockLevel2CheckDetailList.get(0).getStockCheckCode();
+            String stockCheckCode = stockLevel2Checkold.getStockCheckCode();
+            List<StockLevel2CheckDetail> stockLevel2CheckDetailList = stockLevel2Checkold.getStockLevel2CheckDetailList();
             StockLevel2Check stockLevel2Check = iStockLevel2CheckService.getOne(new QueryWrapper<StockLevel2Check>().eq("del_flag", CommonConstant.DEL_FLAG_0).eq("stock_check_code",stockCheckCode));
             stockLevel2Check.setCheckEndTime(sdf.parse(sdf.format(new Date())));
             stockLevel2Check.setStatus(CommonConstant.StOCK_LEVEL2_CHECK_STATUS_5);
             int count = 0;
-            for(StockLevel2CheckDetail stockLevel2CheckDetail : stockLevel2CheckDetailList){
-                count += stockLevel2CheckDetail.getActualNum()==null?0:stockLevel2CheckDetail.getActualNum();
+            if(stockLevel2CheckDetailList != null && stockLevel2CheckDetailList.size()>0){
+                for(StockLevel2CheckDetail stockLevel2CheckDetail : stockLevel2CheckDetailList){
+                    count += stockLevel2CheckDetail.getActualNum()==null?0:stockLevel2CheckDetail.getActualNum();
+                }
+                iStockLevel2CheckDetailService.updateBatchById(stockLevel2CheckDetailList);
             }
+
             stockLevel2Check.setCheckNum(count);
-            iStockLevel2CheckService.updateById(stockLevel2Check);
-            boolean ok = iStockLevel2CheckDetailService.updateBatchById(stockLevel2CheckDetailList);
+            boolean ok = iStockLevel2CheckService.updateById(stockLevel2Check);
             try{
             }catch (Exception e){
                 throw new AiurtBootException(e.getMessage());

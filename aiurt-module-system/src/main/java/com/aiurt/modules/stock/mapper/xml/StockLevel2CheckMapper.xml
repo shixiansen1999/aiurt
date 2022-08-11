@@ -20,6 +20,6 @@
                 and stock_level2_check.status = #{condition.status}
             </if>
         </where>
-        order by stock_level2_checka.create_time desc
+        order by stock_level2_check.create_time desc
     </select>
 </mapper>

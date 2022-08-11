@@ -130,7 +130,7 @@ public class StockSubmitPlanServiceImpl extends ServiceImpl<StockSubmitPlanMappe
 		String[] split = ids.split(",");
 		List<String> strings = Arrays.asList(split);
 		// 过滤选中数据
-		List<StockSubmitPlan> list = this.list(new QueryWrapper<StockSubmitPlan>().in("id", strings));
+		List<StockSubmitPlan> list = this.list(new QueryWrapper<StockSubmitPlan>().in("id", strings).orderByDesc("create_time"));
 		//设置相应头
 		response.setContentType("Application/excel");
 		try {
