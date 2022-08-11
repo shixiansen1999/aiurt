@@ -9,11 +9,11 @@
         spare_part_stock.material_code materialCode,
         t2.NAME,
         spare_part_stock.num,
-        t3.major_name majorName,
-        t4.system_name systemName,
+        cs_major.major_name majorName,
+        cs_subsystem.system_name systemName,
         t5.base_type_name baseTypeCodeName,
         d1.item_text typeName,
-        t6.depart_name orgName,
+        sys_depart.depart_name orgName,
         t2.specifications,
         t7.`name` manufactorCodeName,
         d3.item_text unit,
@@ -22,10 +22,10 @@
         spare_part_stock spare_part_stock
         LEFT JOIN spare_part_stock_info t1 ON spare_part_stock.warehouse_code = t1.warehouse_code
         LEFT JOIN material_base t2 ON spare_part_stock.material_code = t2.CODE
-        LEFT JOIN cs_major t3 ON t2.major_code = t3.major_code
-        LEFT JOIN cs_subsystem t4 ON t2.system_code = t4.system_code
+        LEFT JOIN cs_major cs_major ON t2.major_code = cs_major.major_code
+        LEFT JOIN cs_subsystem cs_subsystem ON t2.system_code = cs_subsystem.system_code
         LEFT JOIN material_base_type t5 ON t2.base_type_code = t5.base_type_code
-        LEFT JOIN sys_depart t6 ON t6.id = spare_part_stock.org_id
+        LEFT JOIN sys_depart sys_depart ON sys_depart.id = spare_part_stock.org_id
         LEFT JOIN sys_dict AS dict1 ON dict1.dict_code = 'material_type'
         LEFT JOIN sys_dict_item AS d1 ON d1.item_value = t2.type  AND dict1.id = d1.dict_id
         LEFT JOIN cs_manufactor t7 ON t7.id = t2.manufactor_code
@@ -44,10 +44,10 @@
             and t2.type = #{stock.type}
         </if>
         <if test="stock.majorCode!=null and stock.majorCode!=''">
-            and t3.major_code like concat('%', #{stock.majorCode}, '%')
+            and cs_major.major_code like concat('%', #{stock.majorCode}, '%')
         </if>
         <if test="stock.systemCode!=null and stock.systemCode!=''">
-            and t4.system_code like concat('%', #{stock.systemCode}, '%')
+            and cs_subsystem.system_code like concat('%', #{stock.systemCode}, '%')
         </if>
         <if test="stock.baseTypeCode!=null and stock.baseTypeCode!=''">
             and t5.base_type_code like concat('%', #{stock.baseTypeCode}, '%')

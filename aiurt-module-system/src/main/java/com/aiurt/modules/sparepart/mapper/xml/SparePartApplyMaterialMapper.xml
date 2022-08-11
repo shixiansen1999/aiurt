@@ -21,6 +21,7 @@
             LEFT JOIN sys_dict_item AS d2 ON d2.item_value = t1.type AND dict2.id = d2.dict_id
             LEFT JOIN sys_dict AS dict3 ON dict3.dict_code = 'materian_unit'
             LEFT JOIN sys_dict_item AS d3 ON d3.item_value = t1.unit AND dict3.id = d3.dict_id
+
         WHERE
             spare_part_apply_material.del_flag =0
 

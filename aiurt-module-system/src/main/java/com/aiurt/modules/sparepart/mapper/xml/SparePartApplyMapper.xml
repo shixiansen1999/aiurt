@@ -18,6 +18,7 @@
         LEFT JOIN stock_level2_info t1 ON t1.warehouse_code = spare_part_apply.apply_warehouse_code
         LEFT JOIN spare_part_stock_info t2 ON t2.warehouse_code = spare_part_apply.custodial_warehouse_code
         LEFT JOIN sys_user t3 ON t3.username = spare_part_apply.apply_user_id
+        LEFT JOIN sys_depart sys_depart ON sys_depart.org_code = spare_part_apply.sys_org_code
         where spare_part_apply.del_flag= 0
             and spare_part_apply.id in(
             <foreach collection="ids" separator="," item="item">
@@ -29,6 +30,7 @@
         select spare_part_apply.*
         from spare_part_apply spare_part_apply
         left join spare_part_stock_info t1 on spare_part_apply.custodial_warehouse_code = t1.warehouse_code
+        LEFT JOIN sys_depart sys_depart ON sys_depart.org_code = spare_part_apply.sys_org_code
         <where>
             spare_part_apply.del_flag= 0
             <if test="sparePartApply.code != null and sparePartApply.code != ''">
