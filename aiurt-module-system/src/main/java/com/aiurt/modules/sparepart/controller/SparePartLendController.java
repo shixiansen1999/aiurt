@@ -10,6 +10,9 @@ import com.aiurt.common.aspect.annotation.PermissionData;
 import com.aiurt.modules.sparepart.entity.SparePartLend;
 import com.aiurt.modules.sparepart.entity.SparePartReturnOrder;
 import com.aiurt.modules.sparepart.service.ISparePartLendService;
+import com.aiurt.modules.system.entity.SysDepart;
+import com.aiurt.modules.system.service.ISysDepartService;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import io.swagger.annotations.ApiParam;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
@@ -45,7 +48,8 @@ import com.aiurt.common.aspect.annotation.AutoLog;
 public class SparePartLendController extends BaseController<SparePartLend, ISparePartLendService> {
 	@Autowired
 	private ISparePartLendService sparePartLendService;
-
+	 @Autowired
+	 private ISysDepartService sysDepartService;
 	/**
 	 * 分页列表查询
 	 *
@@ -67,6 +71,11 @@ public class SparePartLendController extends BaseController<SparePartLend, ISpar
 		Page<SparePartLend> page = new Page<SparePartLend>(pageNo, pageSize);
 		List<SparePartLend> list = sparePartLendService.selectList(page, sparePartLend);
 		list = list.stream().distinct().collect(Collectors.toList());
+		list.forEach(lend -> {
+			lend.setCreateDeptName(sysDepartService.getOne(new LambdaQueryWrapper<SysDepart>().eq(SysDepart::getOrgCode,lend.getCreateOrgCode())).getDepartName());
+			lend.setLendDeptName(sysDepartService.getOne(new LambdaQueryWrapper<SysDepart>().eq(SysDepart::getOrgCode,lend.getExitOrgCode())).getDepartName());
+			lend.setReturnDeptName(sysDepartService.getOne(new LambdaQueryWrapper<SysDepart>().eq(SysDepart::getOrgCode,lend.getEntryOrgCode())).getDepartName());
+		});
 		page.setRecords(list);
 		return Result.OK(page);
 	}

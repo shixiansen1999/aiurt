@@ -201,15 +201,15 @@ public class SparePartLend implements Serializable {
     /**申请借入部门*/
     @ApiModelProperty(value = " 申请借入部门")
     @TableField(exist = false)
-    private String borrowName;
+    private String createDeptName;
     /**借出部门*/
     @ApiModelProperty(value = " 借出部门")
     @TableField(exist = false)
-    private String lendName;
+    private String lendDeptName;
     /**归还部门*/
     @ApiModelProperty(value = " 归还部门")
     @TableField(exist = false)
-    private String returnName;
+    private String returnDeptName;
     /**创建人的组织机构编码*/
     @ApiModelProperty(value = "创建人的组织机构编码")
     @DeptFilterColumn

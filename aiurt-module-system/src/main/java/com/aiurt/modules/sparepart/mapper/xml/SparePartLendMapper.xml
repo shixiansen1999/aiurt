@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.aiurt.modules.sparepart.mapper.SparePartLendMapper">
     <select id="readAll" resultType="com.aiurt.modules.sparepart.entity.SparePartLend">
-        SELECT
+        SELECT DISTINCT
         t.id,
         t.lend_warehouse_code,
         t.back_warehouse_code,
@@ -27,9 +27,7 @@
         t.back_time,
         t9.realname backPersonName,
         t.create_time,
-        t11.depart_name borrowName,
-        t12.depart_name lendName,
-        t13.depart_name returnName,
+
         t.borrow_num,
         t.create_org_code,
         t.entry_org_code,
@@ -53,9 +51,7 @@
         LEFT JOIN sys_dict_item AS d3 ON d3.item_value = t1.unit AND dict3.id = d3.dict_id
         LEFT JOIN sys_user t9 ON t.back_person = t9.username
         LEFT JOIN sys_user t10 ON t.create_by = t9.username
-        LEFT JOIN sys_depart t11 ON t11.id = t10.org_id
-        LEFT JOIN sys_depart t12 ON t12.id = t6.org_id
-        LEFT JOIN sys_depart t13 ON t13.id = t9.org_id
+
         LEFT JOIN spare_part_stock t14 ON t14.material_code=t.material_code and t14.warehouse_code=t.lend_warehouse_code
         WHERE
         t.del_flag = 0

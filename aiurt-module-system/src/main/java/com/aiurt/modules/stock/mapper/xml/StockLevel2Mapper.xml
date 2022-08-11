@@ -46,7 +46,7 @@
                 and stock_level2i.warehouse_name like concat('%', #{condition.warehouseName}, '%')
             </if>
             <if test="condition.num != null and condition.num != ''">
-                and sl.num <![CDATA[ <> ]]> 0
+                and stock_level2.num <![CDATA[ <> ]]> 0
             </if>
             <if test="condition.materialCode != null and condition.materialCode != ''">
                 and mb.code like concat('%', #{condition.materialCode}, '%')
