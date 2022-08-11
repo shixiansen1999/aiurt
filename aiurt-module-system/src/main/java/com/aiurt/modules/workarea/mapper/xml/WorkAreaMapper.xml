@@ -2,4 +2,52 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.aiurt.modules.workarea.mapper.WorkAreaMapper">
 
+<select id="getWorkAreaList" resultType="com.aiurt.modules.workarea.dto.WorkAreaDTO">
+    select a.*,(select major_name from cs_major cm where cm.major_code=a.major_code)as majorName,
+    (select realname from sys_user su where su.id=a.manager_id)as managerName,
+    (select realname from sys_user su where su.id=a.technical_id)as technicalName
+    from work_area a
+    where a.del_flag=0
+    <if test="workArea.name != null and workArea.name != ''">
+     and a.name like concat ('%',#{workArea.name},'%')
+    </if>
+    <if test="workArea.code != null and workArea.code != ''">
+     and a.code like concat ('%',#{workArea.code},'%')
+    </if>
+    <if test="workArea.type != null">
+     and a.type=#{workArea.type}
+    </if>
+</select>
+<select id="getMajorName" resultType="java.lang.String">
+select major_name from cs_major  where major_code = #{majorCode}
+</select>
+<select id="getMajorAllUser" resultType="com.aiurt.modules.workarea.dto.MajorUserDTO">
+SELECT
+su.id,
+su.sex,
+su.username,
+su.phone,
+su.org_name,
+su.realname
+FROM
+sys_user su
+LEFT JOIN cs_user_major cum on cum.user_id = su.id
+WHERE
+cum.major_id = #{majorId}
+<if test="name != null and name != ''">
+  and su.realname like concat ('%',#{name},'%')
+  </if>
+</select>
+<select id="getUserAllMajor" resultType="com.aiurt.modules.workarea.dto.MajorDTO">
+select  cm.*
+from cs_major cm
+left join cs_user_major cum on cm.id = cum.major_id
+where cum.user_id = #{userId}
+</select>
+<select id="getMajorAllSubSystem" resultType="com.aiurt.modules.workarea.dto.SubSystem">
+select  cs.*
+from cs_subsystem cs
+left join cs_major cm on cm.major_code = cs.major_code
+where cm.major_code = #{majorCode}
+</select>
 </mapper>
