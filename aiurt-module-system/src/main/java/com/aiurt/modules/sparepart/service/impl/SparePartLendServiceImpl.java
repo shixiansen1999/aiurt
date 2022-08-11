@@ -111,6 +111,7 @@ public class SparePartLendServiceImpl extends ServiceImpl<SparePartLendMapper, S
         sparePartOutOrder.setApplyOutTime(date);
         sparePartOutOrder.setApplyUserId(partLend.getLendPerson());
         sparePartOutOrder.setStatus(CommonConstant.SPARE_PART_OUT_ORDER_STATUS_2 );
+        sparePartOutOrder.setSysOrgCode(user.getOrgCode());
         sparePartOutOrderService.save(sparePartOutOrder);
         //4.借入仓库库存数做加法
         SparePartStock backStock = sparePartStockMapper.selectOne(new LambdaQueryWrapper<SparePartStock>().eq(SparePartStock::getMaterialCode,partLend.getMaterialCode()).eq(SparePartStock::getWarehouseCode,partLend.getBackWarehouseCode()));
@@ -125,6 +126,7 @@ public class SparePartLendServiceImpl extends ServiceImpl<SparePartLendMapper, S
         sparePartInOrder.setConfirmStatus(CommonConstant.SPARE_PART_IN_ORDER_STATUS_1);
         sparePartInOrder.setConfirmId(user.getUsername());
         sparePartInOrder.setConfirmTime(date);
+        sparePartInOrder.setSysOrgCode(sysUserMapper.selectOne(new LambdaQueryWrapper<SysUser>().eq(SysUser::getUsername,partLend.getLendPerson())).getOrgCode());
         sparePartInOrderService.save(sparePartInOrder);
         return Result.OK("编辑成功！");
     }
@@ -155,6 +157,7 @@ public class SparePartLendServiceImpl extends ServiceImpl<SparePartLendMapper, S
         sparePartInOrder.setConfirmStatus(CommonConstant.SPARE_PART_IN_ORDER_STATUS_1);
         sparePartInOrder.setConfirmId(user.getUsername());
         sparePartInOrder.setConfirmTime(date);
+        sparePartInOrder.setSysOrgCode(user.getOrgCode());
         sparePartInOrderService.save(sparePartInOrder);
         //3.借入仓库库存数做减法
         SparePartStock backStock = sparePartStockMapper.selectOne(new LambdaQueryWrapper<SparePartStock>().eq(SparePartStock::getMaterialCode,partLend.getMaterialCode()).eq(SparePartStock::getWarehouseCode,partLend.getBackWarehouseCode()));
@@ -170,6 +173,7 @@ public class SparePartLendServiceImpl extends ServiceImpl<SparePartLendMapper, S
         sparePartOutOrder.setApplyOutTime(date);
         sparePartOutOrder.setApplyUserId(partLend.getBackPerson());
         sparePartOutOrder.setStatus(CommonConstant.SPARE_PART_OUT_ORDER_STATUS_2);
+        sparePartOutOrder.setSysOrgCode(sysUserMapper.selectOne(new LambdaQueryWrapper<SysUser>().eq(SysUser::getUsername,partLend.getBackPerson())).getOrgCode());
         sparePartOutOrderService.save(sparePartOutOrder);
         return Result.OK("编辑成功！");
     }

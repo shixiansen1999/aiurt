@@ -1,6 +1,7 @@
 package com.aiurt.modules.sparepart.controller;
 
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletRequest;
@@ -118,6 +119,7 @@ public class SparePartLendController extends BaseController<SparePartLend, ISpar
 	 public Result<?> back(@RequestBody SparePartLend sparePartLend) {
 		 LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
 		 sparePartLend.setBackPerson(user.getUsername());
+		 sparePartLend.setBackTime(new Date());
 		 sparePartLendService.updateById(sparePartLend);
 		 return Result.OK("编辑成功！");
 	 }

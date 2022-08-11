@@ -229,4 +229,5 @@ public class SparePartLend implements Serializable {
     /**库存数量*/
     @TableField(exist = false)
     private String num;
+
 }

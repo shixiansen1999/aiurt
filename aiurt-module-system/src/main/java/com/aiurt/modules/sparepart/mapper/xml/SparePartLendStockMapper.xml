@@ -53,7 +53,7 @@
             and t5.base_type_code like concat('%', #{stock.baseTypeCode}, '%')
         </if>
         <if test="stock.orgId!=null and stock.orgId!=''">
-            and spare_part_stock.org_id not in (#{stock.orgId})
+            and   t1.organization_id   not in (#{stock.orgId})
         </if>
         <if test="stock.num != null and stock.num != ''">
             and spare_part_stock.num <![CDATA[ <> ]]> 0
