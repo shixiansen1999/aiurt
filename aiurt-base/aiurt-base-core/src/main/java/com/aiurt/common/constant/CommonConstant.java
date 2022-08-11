@@ -464,6 +464,10 @@ public interface CommonConstant {
   */
  public static final String SPARE_PART_IN_ORDER_CONFRM_STATUS_0 = "0";
  /**
+  * 备件入库记录表确认状态已确认-1
+  */
+ public static final String SPARE_PART_IN_ORDER_CONFRM_STATUS_1 = "1";
+ /**
   * 二级库盘点状态执行中-4
   */
  public static final String StOCK_LEVEL2_CHECK_STATUS_4 = "4";

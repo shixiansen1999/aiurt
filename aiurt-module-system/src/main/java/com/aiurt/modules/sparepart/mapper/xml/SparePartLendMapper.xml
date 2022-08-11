@@ -53,7 +53,7 @@
         LEFT JOIN sys_user t10 ON spare_part_lend.create_by = t9.username
 
         LEFT JOIN spare_part_stock t14 ON t14.material_code=spare_part_lend.material_code and t14.warehouse_code=spare_part_lend.lend_warehouse_code
-        LEFT JOIN sys_depart sys_depart ON sys_depart.org_code = spare_part_lend.sys_org_code
+
         WHERE
         spare_part_lend.del_flag = 0
 

@@ -9,6 +9,8 @@ import com.aiurt.modules.material.service.IMaterialBaseService;
 import com.aiurt.modules.sparepart.entity.SparePartApply;
 import com.aiurt.modules.sparepart.entity.SparePartApplyMaterial;
 import com.aiurt.modules.sparepart.entity.SparePartInOrder;
+import com.aiurt.modules.sparepart.entity.SparePartStockInfo;
+import com.aiurt.modules.sparepart.mapper.SparePartStockInfoMapper;
 import com.aiurt.modules.sparepart.service.ISparePartApplyMaterialService;
 import com.aiurt.modules.sparepart.service.ISparePartApplyService;
 import com.aiurt.modules.sparepart.service.ISparePartInOrderService;
@@ -17,7 +19,10 @@ import com.aiurt.modules.stock.mapper.StockOutOrderLevel2Mapper;
 import com.aiurt.modules.stock.service.*;
 import com.aiurt.modules.subsystem.entity.CsSubsystem;
 import com.aiurt.modules.subsystem.service.ICsSubsystemService;
+import com.aiurt.modules.system.entity.SysDepart;
+import com.aiurt.modules.system.service.ISysDepartService;
 import com.aiurt.modules.system.service.impl.SysBaseApiImpl;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -64,7 +69,10 @@ public class StockOutOrderLevel2ServiceImpl extends ServiceImpl<StockOutOrderLev
     private IStockLevel2CheckDetailService iStockLevel2CheckDetailService;
     @Autowired
     private IStockLevel2Service stockLevel2Service;
-
+    @Autowired
+    private SparePartStockInfoMapper sparePartStockInfoMapper;
+	@Autowired
+	private ISysDepartService iSysDepartService;
 	@Override
 	public IPage<StockOutOrderLevel2> pageList(Page<StockOutOrderLevel2> page, StockOutOrderLevel2 stockOutOrderLevel2) {
 		List<StockOutOrderLevel2> baseList = baseMapper.pageList(page, stockOutOrderLevel2);
@@ -131,8 +139,10 @@ public class StockOutOrderLevel2ServiceImpl extends ServiceImpl<StockOutOrderLev
 				sparePartInOrder.setMaterialCode(materialCode);
 				sparePartInOrder.setWarehouseCode(stockOutOrderLevel2.getCustodialWarehouseCode());
 				sparePartInOrder.setNum(sparePartApplyMaterial.getActualNum());
-				sparePartInOrder.setOrgId(user.getOrgId());
-                sparePartInOrder.setSysOrgCode(user.getOrgCode());
+				SparePartStockInfo sparePartStockInfo = sparePartStockInfoMapper.selectOne(new LambdaQueryWrapper<SparePartStockInfo>().eq(SparePartStockInfo::getDelFlag,CommonConstant.DEL_FLAG_0).eq(SparePartStockInfo::getWarehouseCode,stockOutOrderLevel2.getCustodialWarehouseCode()));
+				SysDepart sysDepart = iSysDepartService.getById(sparePartStockInfo.getOrganizationId());
+				sparePartInOrder.setOrgId(null!=sysDepart?sysDepart.getId():null);
+                sparePartInOrder.setSysOrgCode(null!=sysDepart?sysDepart.getOrgCode():null);
 				sparePartInOrder.setConfirmStatus(CommonConstant.SPARE_PART_IN_ORDER_CONFRM_STATUS_0);
 				sparePartInOrder.setOutOrderCode(orderCode);
 				sparePartInOrder.setApplyCode(sparePartApply.getCode());

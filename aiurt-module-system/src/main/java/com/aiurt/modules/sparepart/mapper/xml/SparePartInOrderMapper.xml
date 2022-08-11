@@ -40,7 +40,7 @@
             LEFT JOIN sys_dict_item AS d2 ON d2.item_value = t1.type AND dict2.id = d2.dict_id
             LEFT JOIN sys_dict AS dict3 ON dict3.dict_code = 'materian_unit'
             LEFT JOIN sys_dict_item AS d3 ON d3.item_value = t1.unit AND dict3.id = d3.dict_id
-            LEFT JOIN sys_depart sys_depart ON sys_depart.org_code = spare_part_in_order.sys_org_code
+
         WHERE
             spare_part_in_order.del_flag =0
             <if test="order.materialCode!=null and order.materialCode!=''">

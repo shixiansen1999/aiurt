@@ -1,5 +1,6 @@
 package com.aiurt.modules.sparepart.mapper;
 
+import com.aiurt.common.aspect.annotation.EnableDataPerm;
 import com.aiurt.modules.sparepart.entity.SparePartStock;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -15,6 +16,7 @@ import java.util.List;
  * @Version: V1.0
  */
 @Component
+@EnableDataPerm
 public interface SparePartStockMapper extends BaseMapper<SparePartStock> {
     List<SparePartStock> readAll(Page page, @Param("stock") SparePartStock sparePartStock);
 }

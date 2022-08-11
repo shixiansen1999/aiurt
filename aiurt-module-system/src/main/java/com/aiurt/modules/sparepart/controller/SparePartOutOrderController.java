@@ -115,10 +115,11 @@ public class SparePartOutOrderController extends BaseController<SparePartOutOrde
    @RequestMapping(value = "/edit", method = {RequestMethod.PUT,RequestMethod.POST})
    public Result<String> edit(@RequestBody SparePartOutOrder sparePartOutOrder) {
        LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+       SparePartOutOrder outOrder = sparePartOutOrderService.getById(sparePartOutOrder.getId());
        // 更新备件库存数据（原库存数-出库数量）
-       SparePartStock sparePartStock = sparePartStockMapper.selectOne(new LambdaQueryWrapper<SparePartStock>().eq(SparePartStock::getMaterialCode,sparePartOutOrder.getMaterialCode()).eq(SparePartStock::getWarehouseCode,sparePartOutOrder.getWarehouseCode()));
+       SparePartStock sparePartStock = sparePartStockMapper.selectOne(new LambdaQueryWrapper<SparePartStock>().eq(SparePartStock::getMaterialCode,outOrder.getMaterialCode()).eq(SparePartStock::getWarehouseCode,outOrder.getWarehouseCode()));
        if(null!=sparePartStock){
-           sparePartStock.setNum(sparePartStock.getNum()-sparePartOutOrder.getNum());
+           sparePartStock.setNum(sparePartStock.getNum()-outOrder.getNum());
            sparePartStockMapper.updateById(sparePartStock);
        }
        sparePartOutOrder.setConfirmUserId(user.getUsername());

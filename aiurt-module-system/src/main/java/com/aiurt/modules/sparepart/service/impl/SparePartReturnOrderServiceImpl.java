@@ -80,7 +80,7 @@ public class SparePartReturnOrderServiceImpl extends ServiceImpl<SparePartReturn
         sparePartInOrder.setWarehouseCode(returnOrder.getWarehouseCode());
         sparePartInOrder.setNum(returnOrder.getNum());
         sparePartInOrder.setOrgId(user.getOrgId());
-        sparePartInOrder.setConfirmStatus(CommonConstant.SPARE_PART_IN_ORDER_CONFRM_STATUS_0);
+        sparePartInOrder.setConfirmStatus(CommonConstant.SPARE_PART_IN_ORDER_CONFRM_STATUS_1);
         sparePartInOrder.setConfirmId(user.getUsername());
         sparePartInOrder.setConfirmTime(date);
         //sparePartInOrder.setOutOrderCode(orderCode);
