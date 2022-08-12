@@ -225,9 +225,10 @@ public class BdTrainPlanServiceImpl extends ServiceImpl<BdTrainPlanMapper, BdTra
             BdTrainPlan bdTrainPlan = bdTrainPlanMapper.getPlanByPlanSubId(reportVO.getPlanSubId());
             //是否为计划内
             if (ObjectUtil.isNotNull(bdTrainPlan)) {
-                if (StrUtil.isNotBlank(bdTrainPlan.getId())) {
                     reportVO.setIsPlan("是");
-                }
+            }
+            else {
+                reportVO.setIsPlan("否");
             }
         }
         return page.setRecords(list);
