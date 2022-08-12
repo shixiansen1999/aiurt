@@ -2,79 +2,117 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.aiurt.modules.sparepart.mapper.SparePartLendMapper">
     <select id="readAll" resultType="com.aiurt.modules.sparepart.entity.SparePartLend">
-        SELECT DISTINCT
-        spare_part_lend.id,
-        spare_part_lend.lend_warehouse_code,
-        spare_part_lend.back_warehouse_code,
-        d1.item_text statusName,
-        cs_major.major_name majorName,
-        cs_subsystem.system_name systemName,
-        t4.base_type_name baseTypeCodeName,
-        d2.item_text typeName,
-        t1.`code` materialCode,
-        t1.`name`,
-        t5.warehouse_name lendWarehouseName,
-        spare_part_lend.lend_num,
-        spare_part_lend.back_num,
-        t6.realname lendPersonName,
-        t1.specifications,
-        t7.`name` manufactorCodeName,
-        d3.item_text unit,
-        t1.price,
-        spare_part_lend.STATUS,
-        t8.warehouse_name backWarehouseName ,
-        spare_part_lend.out_time,
-        spare_part_lend.back_time,
-        t9.realname backPersonName,
-        spare_part_lend.create_time,
-
-        spare_part_lend.borrow_num,
-        spare_part_lend.create_org_code createOrgCode,
-        spare_part_lend.entry_org_code entryOrgCode,
-        spare_part_lend.exit_org_code exitOrgCode,
-        t14.num
+        SELECT
+            spare_part_lend.id,
+            spare_part_lend.lend_warehouse_code,
+            spare_part_lend.back_warehouse_code,
+            spare_part_lend.statusName,
+            spare_part_lend.majorName,
+            spare_part_lend.systemName,
+            spare_part_lend.baseTypeCodeName,
+            spare_part_lend.typeName,
+            spare_part_lend.materialCode,
+            spare_part_lend.`name`,
+            spare_part_lend.lendWarehouseName,
+            spare_part_lend.lend_num,
+            spare_part_lend.back_num,
+            spare_part_lend.lendPersonName,
+            spare_part_lend.specifications,
+            spare_part_lend.manufactorCodeName,
+            spare_part_lend.unit,
+            spare_part_lend.price,
+            spare_part_lend.STATUS,
+            spare_part_lend.backWarehouseName,
+            spare_part_lend.out_time,
+            spare_part_lend.back_time,
+            spare_part_lend.backPersonName,
+            spare_part_lend.create_time,
+            spare_part_lend.borrow_num,
+            spare_part_lend.create_org_code,
+            spare_part_lend.entry_org_code,
+            spare_part_lend.exit_org_code,
+            t11.depart_name createDeptName,
+            t12.depart_name returnDeptName,
+            t13.depart_name lendDeptName,
+            spare_part_lend.num
         FROM
-        spare_part_lend spare_part_lend
-        LEFT JOIN material_base t1 ON spare_part_lend.material_code = t1.CODE
-        LEFT JOIN cs_major cs_major ON t1.major_code = cs_major.major_code
-        LEFT JOIN cs_subsystem cs_subsystem ON t1.system_code = cs_subsystem.system_code
-        LEFT JOIN material_base_type t4 ON t1.base_type_code = t4.base_type_code
-        LEFT JOIN spare_part_stock_info t5 ON spare_part_lend.lend_warehouse_code = t5.warehouse_code
-        LEFT JOIN sys_user t6 ON spare_part_lend.lend_person = t6.username
-        LEFT JOIN sys_dict AS dict1 ON dict1.dict_code = 'spare_lend_status'
-        LEFT JOIN sys_dict_item AS d1 ON d1.item_value = spare_part_lend.STATUS AND dict1.id = d1.dict_id
-        LEFT JOIN cs_manufactor t7 ON t7.id = t1.manufactor_code
-        LEFT JOIN spare_part_stock_info t8 ON spare_part_lend.back_warehouse_code = t8.warehouse_code
-        LEFT JOIN sys_dict AS dict2 ON dict2.dict_code = 'material_type'
-        LEFT JOIN sys_dict_item AS d2 ON d2.item_value = t1.type  AND dict2.id = d2.dict_id
-        LEFT JOIN sys_dict AS dict3 ON dict3.dict_code = 'materian_unit'
-        LEFT JOIN sys_dict_item AS d3 ON d3.item_value = t1.unit AND dict3.id = d3.dict_id
-        LEFT JOIN sys_user t9 ON spare_part_lend.back_person = t9.username
-        LEFT JOIN sys_user t10 ON spare_part_lend.create_by = t9.username
-
-        LEFT JOIN spare_part_stock t14 ON t14.material_code=spare_part_lend.material_code and t14.warehouse_code=spare_part_lend.lend_warehouse_code
-
-        WHERE
+        (
+            SELECT
+                DISTINCT
+                spare_part_lend.id,
+                spare_part_lend.lend_warehouse_code,
+                spare_part_lend.back_warehouse_code,
+                d1.item_text statusName,
+                t2.major_name majorName,
+                t3.system_name systemName,
+                t4.base_type_name baseTypeCodeName,
+                d2.item_text typeName,
+                t1.`code` materialCode,
+                t1.`name`,
+                t5.warehouse_name lendWarehouseName,
+                spare_part_lend.lend_num,
+                spare_part_lend.back_num,
+                t6.realname lendPersonName,
+                t1.specifications,
+                t7.`name` manufactorCodeName,
+                d3.item_text unit,
+                t1.price,
+                spare_part_lend.STATUS,
+                t8.warehouse_name backWarehouseName,
+                spare_part_lend.out_time,
+                spare_part_lend.back_time,
+                t9.realname backPersonName,
+                spare_part_lend.create_time,
+                spare_part_lend.borrow_num,
+                spare_part_lend.create_org_code,
+                spare_part_lend.entry_org_code,
+                spare_part_lend.exit_org_code,
+                t14.num
+            FROM
+            spare_part_lend spare_part_lend
+            LEFT JOIN material_base t1 ON spare_part_lend.material_code = t1.CODE
+            LEFT JOIN cs_major t2 ON t1.major_code = t2.major_code
+            LEFT JOIN cs_subsystem t3 ON t1.system_code = t3.system_code
+            LEFT JOIN material_base_type t4 ON t1.base_type_code = t4.base_type_code
+            LEFT JOIN spare_part_stock_info t5 ON spare_part_lend.lend_warehouse_code = t5.warehouse_code
+            LEFT JOIN sys_user t6 ON spare_part_lend.lend_person = t6.username
+            LEFT JOIN sys_dict AS dict1 ON dict1.dict_code = 'spare_lend_status'
+            LEFT JOIN sys_dict_item AS d1 ON d1.item_value = spare_part_lend.STATUS AND dict1.id = d1.dict_id
+            LEFT JOIN cs_manufactor t7 ON t7.id = t1.manufactor_code
+            LEFT JOIN spare_part_stock_info t8 ON spare_part_lend.back_warehouse_code = t8.warehouse_code
+            LEFT JOIN sys_dict AS dict2 ON dict2.dict_code = 'material_type'
+            LEFT JOIN sys_dict_item AS d2 ON d2.item_value = t1.type AND dict2.id = d2.dict_id
+            LEFT JOIN sys_dict AS dict3 ON dict3.dict_code = 'materian_unit'
+            LEFT JOIN sys_dict_item AS d3 ON d3.item_value = t1.unit AND dict3.id = d3.dict_id
+            LEFT JOIN sys_user t9 ON spare_part_lend.back_person = t9.username
+            LEFT JOIN sys_user t10 ON spare_part_lend.create_by = t9.username
+            LEFT JOIN spare_part_stock t14 ON t14.material_code = spare_part_lend.material_code AND t14.warehouse_code = spare_part_lend.lend_warehouse_code
+            WHERE
         spare_part_lend.del_flag = 0
 
-        <if test="lend.materialCode!=null and lend.materialCode!=''">
-            and t1.`code` like concat('%', #{lend.materialCode}, '%')
-        </if>
-        <if test="lend.name!=null and lend.name!=''">
-            and t1.`name` like concat('%', #{lend.name}, '%')
-        </if>
-        <if test="lend.status!=null and lend.status!=''">
-            and spare_part_lend.status = #{lend.status}
-        </if>
-        <if test="lend.warehouseName!=null and lend.warehouseName!=''">
-            and  (t5.warehouse_name like concat('%', #{lend.warehouseName}, '%') or t8.warehouse_name like concat('%', #{lend.warehouseName}, '%'))
-        </if>
-        <if test="lend.ids!=null and lend.ids!=''">
-            and spare_part_lend.id in(
-            <foreach collection="lend.ids" separator="," item="item">
-                #{item}
-            </foreach>)
-        </if>
+            <if test="lend.materialCode!=null and lend.materialCode!=''">
+                and t1.`code` like concat('%', #{lend.materialCode}, '%')
+            </if>
+            <if test="lend.name!=null and lend.name!=''">
+                and t1.`name` like concat('%', #{lend.name}, '%')
+            </if>
+            <if test="lend.status!=null and lend.status!=''">
+                and spare_part_lend.status = #{lend.status}
+            </if>
+            <if test="lend.warehouseName!=null and lend.warehouseName!=''">
+                and  (t5.warehouse_name like concat('%', #{lend.warehouseName}, '%') or t8.warehouse_name like concat('%', #{lend.warehouseName}, '%'))
+            </if>
+            <if test="lend.ids!=null and lend.ids!=''">
+                and spare_part_lend.id in(
+                <foreach collection="lend.ids" separator="," item="item">
+                    #{item}
+                </foreach>)
+            </if>
+
+        ) spare_part_lend
+        LEFT JOIN sys_depart t11 ON t11.org_code = spare_part_lend.create_org_code
+        LEFT JOIN sys_depart t12 ON t12.org_code = spare_part_lend.entry_org_code
+        LEFT JOIN sys_depart t13 ON t13.org_code = spare_part_lend.exit_org_code
         order by spare_part_lend.create_time desc
 
     </select>

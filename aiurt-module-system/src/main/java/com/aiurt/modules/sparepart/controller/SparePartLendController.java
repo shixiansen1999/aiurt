@@ -17,6 +17,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import io.swagger.annotations.ApiParam;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.query.QueryGenerator;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -47,10 +48,12 @@ import com.aiurt.common.aspect.annotation.AutoLog;
 @RequestMapping("/sparepart/sparePartLend")
 @Slf4j
 public class SparePartLendController extends BaseController<SparePartLend, ISparePartLendService> {
-	@Autowired
-	private ISparePartLendService sparePartLendService;
+	 @Autowired
+	 private ISparePartLendService sparePartLendService;
 	 @Autowired
 	 private ISysDepartService sysDepartService;
+	 @Autowired
+	 private ISysBaseAPI sysBaseAPI;
 	/**
 	 * 分页列表查询
 	 *
@@ -72,11 +75,11 @@ public class SparePartLendController extends BaseController<SparePartLend, ISpar
 		Page<SparePartLend> page = new Page<SparePartLend>(pageNo, pageSize);
 		List<SparePartLend> list = sparePartLendService.selectList(page, sparePartLend);
 		list = list.stream().distinct().collect(Collectors.toList());
-		list.forEach(lend -> {
-			lend.setCreateDeptName(null!=lend.getCreateOrgCode()?sysDepartService.getOne(new LambdaQueryWrapper<SysDepart>().eq(SysDepart::getOrgCode,lend.getCreateOrgCode())).getDepartName():null);
-			lend.setLendDeptName(null!=lend.getExitOrgCode()?sysDepartService.getOne(new LambdaQueryWrapper<SysDepart>().eq(SysDepart::getOrgCode,lend.getExitOrgCode())).getDepartName():null);
-			lend.setReturnDeptName(null!=lend.getEntryOrgCode()?sysDepartService.getOne(new LambdaQueryWrapper<SysDepart>().eq(SysDepart::getOrgCode,lend.getEntryOrgCode())).getDepartName():null);
-		});
+		/*list.forEach(lend -> {
+			lend.setCreateDeptName(null!=sysBaseAPI.getDepartByOrgCode(lend.getCreateOrgCode())?sysBaseAPI.getDepartByOrgCode(lend.getCreateOrgCode()).getDepartName():null);
+			lend.setLendDeptName(null!=sysBaseAPI.getDepartByOrgCode(lend.getExitOrgCode())?sysBaseAPI.getDepartByOrgCode(lend.getExitOrgCode()).getDepartName():null);
+			lend.setReturnDeptName(null!=sysBaseAPI.getDepartByOrgCode(lend.getEntryOrgCode())?sysBaseAPI.getDepartByOrgCode(lend.getEntryOrgCode()).getDepartName():null);
+		});*/
 		page.setRecords(list);
 		return Result.OK(page);
 	}

@@ -84,7 +84,7 @@ public class SparePartOutOrderServiceImpl extends ServiceImpl<SparePartOutOrderM
                     updateOrder(order);
                 });
             }
-            return Result.OK("编辑成功!");
+            return Result.OK("操作成功!");
         }else{
             return Result.error("库存数量不足!");
         }

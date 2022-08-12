@@ -95,7 +95,7 @@ public class SparePartInOrderServiceImpl extends ServiceImpl<SparePartInOrderMap
     @Transactional(rollbackFor = Exception.class)
     public Result<?> update(SparePartInOrder sparePartInOrder) {
         confirm(sparePartInOrder);
-        return Result.OK("编辑成功！");
+        return Result.OK("操作成功！");
     }
     /**
      * 批量入库
@@ -115,6 +115,6 @@ public class SparePartInOrderServiceImpl extends ServiceImpl<SparePartInOrderMap
         sparePartInOrder.stream().filter(order -> order.getStatus().equals("0")).forEach(order -> {
             confirm(order);
         });
-        return Result.OK("编辑成功！");
+        return Result.OK("操作成功！");
     }
 }

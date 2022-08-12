@@ -102,7 +102,7 @@ public class SparePartReturnOrderServiceImpl extends ServiceImpl<SparePartReturn
         //sparePartInOrder.setOutOrderCode(orderCode);
         sparePartInOrderService.save(sparePartInOrder);
 
-        return Result.OK("编辑成功！");
+        return Result.OK("操作成功！");
 
 
     }

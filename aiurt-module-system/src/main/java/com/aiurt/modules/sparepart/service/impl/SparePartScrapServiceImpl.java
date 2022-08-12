@@ -76,6 +76,6 @@ public class SparePartScrapServiceImpl extends ServiceImpl<SparePartScrapMapper,
             }
         }
         sparePartScrapMapper.updateById(sparePartScrap);
-        return Result.OK("编辑成功！");
+        return Result.OK("操作成功！");
     }
 }

@@ -214,14 +214,15 @@ public class SparePartLend implements Serializable {
     @ApiModelProperty(value = "创建人的组织机构编码")
     @DeptFilterColumn
     private String createOrgCode;
-    /**借入的组织机构编码*/
-    @ApiModelProperty(value = "借入的组织机构编码")
-    @DeptFilterColumn
-    private String entryOrgCode;
     /**借出的组织机构编码*/
     @ApiModelProperty(value = "借出的组织机构编码")
     @DeptFilterColumn
     private String exitOrgCode;
+    /**借入的组织机构编码*/
+    @ApiModelProperty(value = "借入的组织机构编码")
+    @DeptFilterColumn
+    private String entryOrgCode;
+
     /**列表查询：仓库*/
     @ApiModelProperty(value = " 仓库")
     @TableField(exist = false)

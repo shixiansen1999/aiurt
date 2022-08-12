@@ -128,7 +128,7 @@ public class SparePartLendServiceImpl extends ServiceImpl<SparePartLendMapper, S
         sparePartInOrder.setConfirmTime(date);
         sparePartInOrder.setSysOrgCode(sysUserMapper.selectOne(new LambdaQueryWrapper<SysUser>().eq(SysUser::getUsername,partLend.getLendPerson())).getOrgCode());
         sparePartInOrderService.save(sparePartInOrder);
-        return Result.OK("编辑成功！");
+        return Result.OK("操作成功！");
     }
     /**
      * 归还确认
@@ -175,6 +175,6 @@ public class SparePartLendServiceImpl extends ServiceImpl<SparePartLendMapper, S
         sparePartOutOrder.setStatus(CommonConstant.SPARE_PART_OUT_ORDER_STATUS_2);
         sparePartOutOrder.setSysOrgCode(sysUserMapper.selectOne(new LambdaQueryWrapper<SysUser>().eq(SysUser::getUsername,partLend.getBackPerson())).getOrgCode());
         sparePartOutOrderService.save(sparePartOutOrder);
-        return Result.OK("编辑成功！");
+        return Result.OK("操作成功！");
     }
 }
