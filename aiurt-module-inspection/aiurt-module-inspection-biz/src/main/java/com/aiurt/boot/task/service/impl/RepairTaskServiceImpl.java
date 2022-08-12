@@ -1329,14 +1329,15 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
             if (repair.getStatus() == null) {
                 throw new AiurtBootException("有检修结果未填写");
             }
-            // 选择项
-            if (InspectionConstant.STATUS_ITEM_CHOICE.equals(repair.getStatusItem()) && repair.getInspeciontValue() == null) {
-                throw new AiurtBootException("有检修值未填写");
-            }
-            // 输入项
-            if (InspectionConstant.STATUS_ITEM_INPUT.equals(repair.getStatusItem()) && StrUtil.isEmpty(repair.getNote())) {
-                throw new AiurtBootException("有检修值未填写");
-            }
+            // TODO 暂默认非必填，此处校验后期需求有调整
+//            // 选择项
+//            if (InspectionConstant.STATUS_ITEM_CHOICE.equals(repair.getStatusItem()) && repair.getInspeciontValue() == null) {
+//                throw new AiurtBootException("有检修值未填写");
+//            }
+//            // 输入项
+//            if (InspectionConstant.STATUS_ITEM_INPUT.equals(repair.getStatusItem()) && StrUtil.isEmpty(repair.getNote())) {
+//                throw new AiurtBootException("有检修值未填写");
+//            }
         });
 
         // 检修结束时间为空则修改
