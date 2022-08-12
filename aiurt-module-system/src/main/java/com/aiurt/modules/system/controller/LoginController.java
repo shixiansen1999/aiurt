@@ -131,6 +131,45 @@ public class LoginController {
 		return result;
 	}
 
+	@ApiOperation("登录接口无验证码")
+	@RequestMapping(value = "/loginWithoutCaptcha", method = RequestMethod.POST)
+	public Result<JSONObject> loginWithoutCaptcha(@RequestBody SysLoginModel sysLoginModel){
+		Result result = new Result<JSONObject>();
+		String username = sysLoginModel.getUsername();
+		String password = sysLoginModel.getPassword();
+
+		//update-end-author:taoyan date:20190828 for:校验验证码
+
+		//1. 校验用户是否有效
+		//update-begin-author:wangshuai date:20200601 for: 登录代码验证用户是否注销bug，if条件永远为false
+		LambdaQueryWrapper<SysUser> queryWrapper = new LambdaQueryWrapper<>();
+		queryWrapper.eq(SysUser::getUsername,username);
+		SysUser sysUser = sysUserService.getOne(queryWrapper);
+		//update-end-author:wangshuai date:20200601 for: 登录代码验证用户是否注销bug，if条件永远为false
+		result = sysUserService.checkUserIsEffective(sysUser);
+		if(!result.isSuccess()) {
+			return result;
+		}
+
+		//2. 校验用户名或密码是否正确
+		String userpassword = PasswordUtil.encrypt(username, password, sysUser.getSalt());
+		String syspassword = sysUser.getPassword();
+		if (!syspassword.equals(userpassword)) {
+			result.error500("用户名或密码错误");
+			return result;
+		}
+
+		//用户登录信息
+		userInfo(sysUser, result);
+		//update-begin--Author:liusq  Date:20210126  for：登录成功，删除redis中的验证码
+		//update-begin--Author:liusq  Date:20210126  for：登录成功，删除redis中的验证码
+		LoginUser loginUser = new LoginUser();
+		BeanUtils.copyProperties(sysUser, loginUser);
+		baseCommonService.addLog("用户名: " + sysUser.getRealname() + ",登录成功！", CommonConstant.LOG_TYPE_1, null,loginUser);
+		//update-end--Author:wangshuai  Date:20200714  for：登录日志没有记录人员
+		return result;
+	}
+
 
 	/**
 	 * 【vue3专用】获取用户信息
