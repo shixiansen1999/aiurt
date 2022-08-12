@@ -2,25 +2,23 @@ package com.aiurt.modules.workarea.controller;
 
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.system.base.controller.BaseController;
+import com.aiurt.modules.workarea.dto.MajorUserDTO;
+import com.aiurt.modules.workarea.dto.WorkAreaDTO;
 import com.aiurt.modules.workarea.entity.WorkArea;
 import com.aiurt.modules.workarea.service.IWorkAreaService;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.jeecg.common.api.vo.Result;
-import org.jeecg.common.system.query.QueryGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.util.Arrays;
 
- /**
+/**
  * @Description: work_area
  * @Author: aiurt
  * @Date:   2022-08-11
@@ -43,44 +41,42 @@ public class WorkAreaController extends BaseController<WorkArea, IWorkAreaServic
 	 * @param req
 	 * @return
 	 */
-	//@AutoLog(value = "work_area-分页列表查询")
-	@ApiOperation(value="work_area-分页列表查询", notes="work_area-分页列表查询")
+	@AutoLog(value = "工区列表-分页列表查询")
+	@ApiOperation(value="工区列表-分页列表查询", notes="工区列表-分页列表查询")
 	@GetMapping(value = "/list")
-	public Result<IPage<WorkArea>> queryPageList(WorkArea workArea,
-								   @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
-								   @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
-								   HttpServletRequest req) {
-		QueryWrapper<WorkArea> queryWrapper = QueryGenerator.initQueryWrapper(workArea, req.getParameterMap());
-		Page<WorkArea> page = new Page<WorkArea>(pageNo, pageSize);
-		IPage<WorkArea> pageList = workAreaService.page(page, queryWrapper);
+	public Result<IPage<WorkAreaDTO>> queryPageList(WorkAreaDTO workArea,
+												 @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
+												 @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
+												 HttpServletRequest req) {
+		Page<WorkAreaDTO> pageList = new Page<>(pageNo,pageSize);
+		pageList = workAreaService.getWorkAreaList(pageList,workArea);
 		return Result.OK(pageList);
 	}
 
 	/**
-	 *   添加
-	 *
-	 * @param workArea
+	 *  添加
+	 * @param workAreaDTO
 	 * @return
 	 */
-	@AutoLog(value = "work_area-添加")
-	@ApiOperation(value="work_area-添加", notes="work_area-添加")
+	@AutoLog(value = "工区-添加")
+	@ApiOperation(value="工区-添加", notes="工区-添加")
 	@PostMapping(value = "/add")
-	public Result<String> add(@RequestBody WorkArea workArea) {
-		workAreaService.save(workArea);
+	public Result<String> add(@RequestBody WorkAreaDTO workAreaDTO) {
+		workAreaService.addWorkArea(workAreaDTO);
 		return Result.OK("添加成功！");
 	}
 
 	/**
 	 *  编辑
 	 *
-	 * @param workArea
+	 * @param workAreaDTO
 	 * @return
 	 */
-	@AutoLog(value = "work_area-编辑")
-	@ApiOperation(value="work_area-编辑", notes="work_area-编辑")
+	@AutoLog(value = "工区-编辑")
+	@ApiOperation(value="工区-编辑", notes="工区-编辑")
 	@RequestMapping(value = "/edit", method = {RequestMethod.PUT,RequestMethod.POST})
-	public Result<String> edit(@RequestBody WorkArea workArea) {
-		workAreaService.updateById(workArea);
+	public Result<String> edit(@RequestBody WorkAreaDTO workAreaDTO) {
+		workAreaService.updateWorkArea(workAreaDTO);
 		return Result.OK("编辑成功!");
 	}
 
@@ -90,11 +86,11 @@ public class WorkAreaController extends BaseController<WorkArea, IWorkAreaServic
 	 * @param id
 	 * @return
 	 */
-	@AutoLog(value = "work_area-通过id删除")
-	@ApiOperation(value="work_area-通过id删除", notes="work_area-通过id删除")
+	@AutoLog(value = "工区-通过id删除")
+	@ApiOperation(value="工区-通过id删除", notes="工区-通过id删除")
 	@DeleteMapping(value = "/delete")
 	public Result<String> delete(@RequestParam(name="id",required=true) String id) {
-		workAreaService.removeById(id);
+		workAreaService.deleteWorkArea(id);
 		return Result.OK("删除成功!");
 	}
 
@@ -104,8 +100,8 @@ public class WorkAreaController extends BaseController<WorkArea, IWorkAreaServic
 	 * @param ids
 	 * @return
 	 */
-	@AutoLog(value = "work_area-批量删除")
-	@ApiOperation(value="work_area-批量删除", notes="work_area-批量删除")
+	@AutoLog(value = "工区-批量删除")
+	@ApiOperation(value="工区-批量删除", notes="工区-批量删除")
 	@DeleteMapping(value = "/deleteBatch")
 	public Result<String> deleteBatch(@RequestParam(name="ids",required=true) String ids) {
 		this.workAreaService.removeByIds(Arrays.asList(ids.split(",")));
@@ -113,43 +109,54 @@ public class WorkAreaController extends BaseController<WorkArea, IWorkAreaServic
 	}
 
 	/**
-	 * 通过id查询
-	 *
+	 * 根据专业id,查询专业下的全部用户
+	 * @param majorId
+	 * @return
+	 */
+	@AutoLog(value = "根据专业id,查询专业下的全部用户")
+	@ApiOperation(value="根据专业id,查询专业下的全部用户", notes="根据专业id,查询专业下的全部用户")
+	@GetMapping(value = "/majorUser")
+	public Result<IPage<MajorUserDTO>> getMajorUser(@RequestParam(name="majorId",required=true) String majorId,
+													@RequestParam(name="name",required=false) String name,
+													@RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
+													@RequestParam(name="pageSize", defaultValue="10") Integer pageSize) {
+		Page<MajorUserDTO> pageList = new Page<>(pageNo,pageSize);
+		pageList = workAreaService.getMajorUser(pageList,majorId,name);
+		return Result.OK(pageList);
+	}	/**
+	 * 工区详情
 	 * @param id
 	 * @return
 	 */
-	//@AutoLog(value = "work_area-通过id查询")
-	@ApiOperation(value="work_area-通过id查询", notes="work_area-通过id查询")
+	@AutoLog(value = "工区详情")
+	@ApiOperation(value="工区详情", notes="工区详情")
 	@GetMapping(value = "/queryById")
-	public Result<WorkArea> queryById(@RequestParam(name="id",required=true) String id) {
-		WorkArea workArea = workAreaService.getById(id);
-		if(workArea==null) {
-			return Result.error("未找到对应数据");
-		}
-		return Result.OK(workArea);
+	public Result<WorkAreaDTO> queryById(@RequestParam(name="id",required=true) String id) {
+		WorkAreaDTO workAreaDTO = workAreaService.getWorkAreaDetail(id);
+		return Result.OK(workAreaDTO);
 	}
-
-    /**
-    * 导出excel
-    *
-    * @param request
-    * @param workArea
-    */
-    @RequestMapping(value = "/exportXls")
-    public ModelAndView exportXls(HttpServletRequest request, WorkArea workArea) {
-        return super.exportXls(request, workArea, WorkArea.class, "work_area");
-    }
-
-    /**
-      * 通过excel导入数据
-    *
-    * @param request
-    * @param response
-    * @return
-    */
-    @RequestMapping(value = "/importExcel", method = RequestMethod.POST)
-    public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) {
-        return super.importExcel(request, response, WorkArea.class);
-    }
+//
+//    /**
+//    * 导出excel
+//    *
+//    * @param request
+//    * @param workArea
+//    */
+//    @RequestMapping(value = "/exportXls")
+//    public ModelAndView exportXls(HttpServletRequest request, WorkArea workArea) {
+//        return super.exportXls(request, workArea, WorkArea.class, "work_area");
+//    }
+//
+//    /**
+//      * 通过excel导入数据
+//    *
+//    * @param request
+//    * @param response
+//    * @return
+//    */
+//    @RequestMapping(value = "/importExcel", method = RequestMethod.POST)
+//    public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) {
+//        return super.importExcel(request, response, WorkArea.class);
+//    }
 
 }

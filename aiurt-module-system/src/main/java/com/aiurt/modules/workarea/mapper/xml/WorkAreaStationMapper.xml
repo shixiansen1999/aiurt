@@ -2,4 +2,14 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.aiurt.modules.workarea.mapper.WorkAreaStationMapper">
 
-</mapper>
+<select id="getLineStationName" resultType="java.lang.String">
+    select
+       CONCAT(cs.line_name,"/",
+        cs.station_name) as lineStationName
+from work_area_station was
+LEFT JOIN
+cs_station cs
+            on was.station_code = cs.station_code
+where
+was.work_area_code =  #{code}
+</select></mapper>

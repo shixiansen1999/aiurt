@@ -1,6 +1,9 @@
 package com.aiurt.modules.workarea.service;
 
+import com.aiurt.modules.workarea.dto.MajorUserDTO;
+import com.aiurt.modules.workarea.dto.WorkAreaDTO;
 import com.aiurt.modules.workarea.entity.WorkArea;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 
 /**
@@ -11,4 +14,46 @@ import com.baomidou.mybatisplus.extension.service.IService;
  */
 public interface IWorkAreaService extends IService<WorkArea> {
 
+    /**
+     * 工区列表查询
+     * @param pageList
+     * @param workArea
+     * @return
+     */
+    Page<WorkAreaDTO> getWorkAreaList(Page<WorkAreaDTO> pageList, WorkAreaDTO workArea);
+
+    /**
+     * 添加工区
+     * @param workAreaDTO
+     */
+    void addWorkArea(WorkAreaDTO workAreaDTO);
+
+    /**
+     * 编辑工区
+     * @param workAreaDTO
+     */
+    void updateWorkArea(WorkAreaDTO workAreaDTO);
+
+    /**
+     * 删除工区
+     * @param id
+     */
+    void deleteWorkArea(String id);
+
+    /**
+     * 工区详情
+     * @param id
+     * @return
+     */
+    WorkAreaDTO getWorkAreaDetail(String id);
+
+    /**
+     *
+     * 根据专业id,查询专业下的全部用户
+     * @param pageList
+     * @param majorId
+     * @param name
+     * @return
+     */
+    Page<MajorUserDTO> getMajorUser(Page<MajorUserDTO> pageList, String majorId,String name);
 }

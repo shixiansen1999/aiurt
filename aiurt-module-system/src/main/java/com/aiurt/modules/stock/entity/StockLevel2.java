@@ -2,6 +2,8 @@ package com.aiurt.modules.stock.entity;
 
 import com.aiurt.common.aspect.annotation.DeptFilterColumn;
 import com.aiurt.common.aspect.annotation.Dict;
+import com.aiurt.common.aspect.annotation.MajorFilterColumn;
+import com.aiurt.common.aspect.annotation.SystemFilterColumn;
 import com.aiurt.modules.basic.entity.DictEntity;
 import com.baomidou.mybatisplus.annotation.*;
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -104,11 +106,13 @@ public class StockLevel2 extends DictEntity {
 	/**专业编码*/
 	@ApiModelProperty(value = "专业编码")
 	@Dict(dictTable ="cs_major",dicText = "major_name",dicCode = "major_code")
+	@MajorFilterColumn
 	private  String  majorCode;
 
 	/**子系统编号*/
 	@ApiModelProperty(value = "子系统编号")
 	@Dict(dictTable ="cs_subsystem",dicText = "system_name",dicCode = "system_code")
+	@SystemFilterColumn
 	private  String  systemCode;
 
 	/**单位名称*/
