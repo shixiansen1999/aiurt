@@ -206,11 +206,11 @@ public class SparePartApplyController extends BaseController<SparePartApply, ISp
 	 public ModelAndView exportXls(@ApiParam(value = "行数据ids" ,required = true) @RequestParam("ids") String ids,HttpServletRequest request, HttpServletResponse response) {
 		 LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
 		 ModelAndView mv = new ModelAndView(new JeecgEntityExcelView());
-		 List<StockApplyExcel> list = sparePartApplyService.exportXls( Arrays.asList(ids.split(",")));
+		 List<SparePartApply> list = sparePartApplyService.exportXls( Arrays.asList(ids.split(",")));
          list = list.stream().distinct().collect(Collectors.toList());
 		 //导出文件名称
 		 mv.addObject(NormalExcelConstants.FILE_NAME, "备件申领列表");
-		 mv.addObject(NormalExcelConstants.CLASS, StockApplyExcel.class);
+		 mv.addObject(NormalExcelConstants.CLASS, SparePartApply.class);
 		 mv.addObject(NormalExcelConstants.PARAMS, new ExportParams("备件申领列表数据", "导出人:"+user.getRealname(), "导出信息"));
 		 mv.addObject(NormalExcelConstants.DATA_LIST, list);
 		 return mv;

@@ -42,58 +42,77 @@ public class SparePartApply extends DictEntity implements Serializable {
 	@TableId(type = IdType.ASSIGN_ID)
     @ApiModelProperty(value = "主键id")
     private String id;
+    @Excel(name="序号",width = 15)
+    @TableField(exist = false)
+    private Integer serialNumber;
+    /**申领状态：1待提交、2待确认、3已确认*/
+    @Excel(name = "申领状态：1待提交、2待确认、3已确认", width = 15)
+    @ApiModelProperty(value = "申领状态：1待提交、2待确认、3已确认")
+    @Dict(dicCode = "spare_apply_status")
+    private String status;
 	/**申领编号*/
 	@Excel(name = "申领编号", width = 15)
     @ApiModelProperty(value = "申领编号")
     private String code;
+    /**申领仓库*/
+    @Excel(name = "申领仓库", width = 15)
+    @ApiModelProperty(value = "申领仓库")
+    @TableField(exist = false)
+    private  String  applyWarehouse;
+    /**保管仓库*/
+    @Excel(name = "保管仓库", width = 15)
+    @ApiModelProperty(value = "保管仓库")
+    @TableField(exist = false)
+    private  String  custodialWarehouse;
+    /**申领数量*/
+    @Excel(name = "申领数量", width = 15)
+    @ApiModelProperty(value = "申领数量")
+    private Integer applyNumber;
+
 	/**申领仓库编号*/
-	@Excel(name = "申领仓库编号", width = 15)
     @ApiModelProperty(value = "申领仓库编号")
     @Dict(dictTable ="stock_level2_info",dicText = "warehouse_name",dicCode = "warehouse_code")
     private String applyWarehouseCode;
-	/**申领数量*/
-	@Excel(name = "申领数量", width = 15)
-    @ApiModelProperty(value = "申领数量")
-    private Integer applyNumber;
+
 	/**保管仓库编号*/
-	@Excel(name = "保管仓库编号", width = 15)
     @ApiModelProperty(value = "保管仓库编号")
     @Dict(dictTable ="spare_part_stock_info",dicText = "warehouse_name",dicCode = "warehouse_code")
     private String custodialWarehouseCode;
 	/**保管仓库名称*/
-	@Excel(name = "保管仓库名称", width = 15)
     @ApiModelProperty(value = "保管仓库名称")
     @TableField(exist = false)
     private String warehouseName;
+    @Excel(name = "申领人", width = 15)
+    @ApiModelProperty("申领人")
+    @TableField(exist = false)
+    private String applyUser;
+    /**申领时间*/
+    @Excel(name = "申领时间", width = 15, format = "yyyy-MM-dd HH:mm")
+    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm")
+    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm")
+    @ApiModelProperty(value = "申领时间")
+    private Date applyTime;
+
 	/**申领人ID*/
-	@Excel(name = "申领人ID", width = 15)
     @ApiModelProperty(value = "申领人ID")
     @Dict(dictTable ="sys_user",dicText = "realname",dicCode = "username")
     private String applyUserId;
-	/**申领状态：1待提交、2待确认、3已确认*/
-	@Excel(name = "申领状态：1待提交、2待确认、3已确认", width = 15)
-    @ApiModelProperty(value = "申领状态：1待提交、2待确认、3已确认")
-    @Dict(dicCode = "spare_apply_status")
-    private String status;
+
 	/**备注*/
 	@Excel(name = "备注", width = 15)
     @ApiModelProperty(value = "备注")
     private String remarks;
 	/**班组*/
-	@Excel(name = "班组", width = 15)
     @ApiModelProperty(value = "班组")
     private String departId;
 	/**出库仓库 二级库*/
-	@Excel(name = "出库仓库 二级库", width = 15)
     @ApiModelProperty(value = "出库仓库 二级库")
     @Dict(dictTable ="stock_level2_info",dicText = "warehouse_name",dicCode = "warehouse_code")
     private String outWarehouseCode;
 	/**提交状态（0-未提交 1-已提交）*/
-	@Excel(name = "提交状态（0-未提交 1-已提交）", width = 15)
     @ApiModelProperty(value = "提交状态（0-未提交 1-已提交）")
     private Integer commitStatus;
 	/**删除状态(0.未删除 1.已删除)*/
-	@Excel(name = "删除状态(0.未删除 1.已删除)", width = 15)
     @ApiModelProperty(value = "删除状态(0.未删除 1.已删除)")
     private Integer delFlag;
 	/**创建人*/
@@ -104,12 +123,7 @@ public class SparePartApply extends DictEntity implements Serializable {
     @ApiModelProperty(value = "修改人")
     @Dict(dictTable ="sys_user",dicText = "realname",dicCode = "username")
     private String updateBy;
-	/**申领时间*/
-	@Excel(name = "申领时间", width = 15, format = "yyyy-MM-dd HH:mm")
-	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm")
-    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm")
-    @ApiModelProperty(value = "申领时间")
-    private Date applyTime;
+
 	/**出库时间*/
 	@Excel(name = "出库时间", width = 15, format = "yyyy-MM-dd")
 	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
@@ -159,4 +173,6 @@ public class SparePartApply extends DictEntity implements Serializable {
     @ApiModelProperty(value = "所属部门")
     @DeptFilterColumn
     private String sysOrgCode;
+
+
 }

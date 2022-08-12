@@ -20,6 +20,6 @@ import org.springframework.stereotype.Component;
 @Component
 @EnableDataPerm
 public interface SparePartApplyMapper extends BaseMapper<SparePartApply> {
-    List<StockApplyExcel> selectExportXls(@Param("ids") List<String> ids);
+    List<SparePartApply> selectExportXls(@Param("ids") List<String> ids);
     List<SparePartApply> readAll(Page page,@Param("sparePartApply")  SparePartApply sparePartApply);
 }

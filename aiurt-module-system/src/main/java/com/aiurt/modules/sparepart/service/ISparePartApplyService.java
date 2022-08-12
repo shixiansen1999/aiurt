@@ -52,7 +52,7 @@ public interface ISparePartApplyService extends IService<SparePartApply> {
      *
      * @param ids
      */
-    List<StockApplyExcel> exportXls(List<String> ids);
+    List<SparePartApply> exportXls(List<String> ids);
 
     /**
      * 分页列表查询
