@@ -73,9 +73,9 @@ public class SparePartLendController extends BaseController<SparePartLend, ISpar
 		List<SparePartLend> list = sparePartLendService.selectList(page, sparePartLend);
 		list = list.stream().distinct().collect(Collectors.toList());
 		list.forEach(lend -> {
-			lend.setCreateDeptName(sysDepartService.getOne(new LambdaQueryWrapper<SysDepart>().eq(SysDepart::getOrgCode,lend.getCreateOrgCode())).getDepartName());
-			lend.setLendDeptName(sysDepartService.getOne(new LambdaQueryWrapper<SysDepart>().eq(SysDepart::getOrgCode,lend.getExitOrgCode())).getDepartName());
-			lend.setReturnDeptName(sysDepartService.getOne(new LambdaQueryWrapper<SysDepart>().eq(SysDepart::getOrgCode,lend.getEntryOrgCode())).getDepartName());
+			lend.setCreateDeptName(null!=lend.getCreateOrgCode()?sysDepartService.getOne(new LambdaQueryWrapper<SysDepart>().eq(SysDepart::getOrgCode,lend.getCreateOrgCode())).getDepartName():null);
+			lend.setLendDeptName(null!=lend.getExitOrgCode()?sysDepartService.getOne(new LambdaQueryWrapper<SysDepart>().eq(SysDepart::getOrgCode,lend.getExitOrgCode())).getDepartName():null);
+			lend.setReturnDeptName(null!=lend.getEntryOrgCode()?sysDepartService.getOne(new LambdaQueryWrapper<SysDepart>().eq(SysDepart::getOrgCode,lend.getEntryOrgCode())).getDepartName():null);
 		});
 		page.setRecords(list);
 		return Result.OK(page);

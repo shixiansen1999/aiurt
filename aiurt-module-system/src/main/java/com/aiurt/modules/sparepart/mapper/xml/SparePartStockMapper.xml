@@ -61,6 +61,9 @@
         <if test="stock.warehouseCode!=null and stock.warehouseCode!=''">
             and t1.warehouse_code = #{stock.warehouseCode}
         </if>
+        <if test="stock.warehouseName!=null and stock.warehouseName!=''">
+            and t1.warehouse_name like concat('%', #{stock.warehouseName}, '%')
+        </if>
         <if test="stock.num!=null and stock.num!=''">
             and spare_part_stock.num <![CDATA[ <> ]]>  0
         </if>
