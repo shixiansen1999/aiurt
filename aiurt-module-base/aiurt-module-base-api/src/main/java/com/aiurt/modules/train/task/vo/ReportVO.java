@@ -47,20 +47,14 @@ public class ReportVO implements Serializable {
     @Excel(name = "培训出勤率", width = 15)
     @ApiModelProperty(value = "培训出勤率")
     private String trainRate;
-    @Excel(name = "有无考核", width = 15)
-    @ApiModelProperty(value = "有无考核")
-    private String examnation;
-    @Excel(name = "有无考核", width = 15)
+    @Excel(name = "有无考核", width = 15,dicCode = "examStatus_type")
     @ApiModelProperty(value = "有无考核")
     @Dict(dicCode = "examStatus_type")
     private Integer examStatus;
     @Excel(name = "考核及格率", width = 15)
     @ApiModelProperty(value = "考核及格率")
     private String examPassRate;
-    @Excel(name = "完成情况", width = 15)
-    @ApiModelProperty(value = "完成情况")
-    private String performance;
-    @Excel(name = "完成情况", width = 15)
+    @Excel(name = "完成情况", width = 15,dicCode = "train_task_state")
     @ApiModelProperty(value = "完成情况")
     @Dict(dicCode = "train_task_state")
     private Integer taskState;

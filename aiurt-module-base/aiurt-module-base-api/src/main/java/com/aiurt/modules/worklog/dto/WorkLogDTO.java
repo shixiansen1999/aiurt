@@ -54,7 +54,7 @@ public class WorkLogDTO extends WorkLogResult {
 
     /**交接班内容*/
     @ApiModelProperty(value = "交接班内容")
-    private  Object  content;
+    private  String  content;
 
     /**接班人账号*/
     @ApiModelProperty(value = "接班人账号")

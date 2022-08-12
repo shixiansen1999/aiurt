@@ -1,5 +1,6 @@
 package com.aiurt.modules.worklog.service;
 
+import com.aiurt.modules.schedule.entity.ScheduleRecord;
 import com.aiurt.modules.worklog.dto.WorkLogRemindDTO;
 import com.aiurt.modules.worklog.entity.WorkLogRemind;
 import com.baomidou.mybatisplus.extension.service.IService;
@@ -30,5 +31,5 @@ public interface IWorkLogRemindService extends IService<WorkLogRemind> {
      * @param orgId
      * @return
      */
-    List<String> getOrgUserTodayWork(String dateNow, String orgId);
+    List<ScheduleRecord> getOrgUserTodayWork(String dateNow, String orgId);
 }

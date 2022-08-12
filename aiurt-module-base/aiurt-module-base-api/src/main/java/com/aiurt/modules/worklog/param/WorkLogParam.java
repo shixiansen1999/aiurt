@@ -44,6 +44,10 @@ public class WorkLogParam {
      * 提交人id
      */
     private  String  submitId;
+    /**
+     * 接班人id
+     */
+    private  String  successorId;
 
     /**
      * 提交人班组id

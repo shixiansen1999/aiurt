@@ -276,7 +276,7 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
             messageDTO.setFromUser(sysUser.getUsername());
             messageDTO.setToUser(dto.getSucceedUserName());
             messageDTO.setToAll(false);
-            messageDTO.setContent(dto.getContent().toString());
+            messageDTO.setContent(dto.getContent()==null?"您有一条待接班日志":dto.getContent());
             messageDTO.setCategory("2");
             messageDTO.setTitle("您有一条待接班日志");
             messageDTO.setBusType(SysAnnmentTypeEnum.WORKLOG.getType());
@@ -294,11 +294,8 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
      */
     @Override
     public IPage<WorkLogResult> pageList(IPage<WorkLogResult> page, WorkLogParam param, HttpServletRequest req) {
-        //String userId = TokenUtils.getUserId(req, iSysBaseAPI);
-        //param.setSubmitId(userId);
         LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        param.setDepartId(user.getOrgId());
-
+        param.setSubmitId(user.getId());
         return getWorkLogResultIPage(page, param);
     }
 
@@ -349,9 +346,11 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
     @Override
     public IPage<WorkLogResult> queryConfirmList(IPage<WorkLogResult> page, WorkLogParam param, HttpServletRequest req) {
         LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        List<String> departIdsByUserId = roleAdditionalUtils.getListDepartIdsByUserId(user.getId());
-        if (CollectionUtils.isNotEmpty(departIdsByUserId)) {
-            param.setDepartList(departIdsByUserId);
+        boolean admin = SecurityUtils.getSubject().hasRole("admin");
+//        List<String> departIdsByUserId = roleAdditionalUtils.getListDepartIdsByUserId(user.getId());
+        if (!admin) {
+            param.setSubmitId(user.getId());
+            param.setSuccessorId(user.getId());
         }
         return getWorkLogResultIPage(page, param);
     }

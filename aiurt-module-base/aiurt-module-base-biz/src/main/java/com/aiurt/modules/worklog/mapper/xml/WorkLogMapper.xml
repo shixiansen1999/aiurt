@@ -17,6 +17,9 @@
         <if test="param.submitId!= null">
             AND wl.submit_id = #{param.submitId}
         </if>
+        <if test="param.successorId!= null">
+            or wl.succeed_id = #{param.successorId}
+        </if>
         <if test="param.dayStart != null and param.dayStart != '' and param.dayEnd != null and param.dayEnd != ''">
             AND wl.submit_time &gt;= #{param.dayStart} and wl.submit_time &lt; #{param.dayEnd}
         </if>

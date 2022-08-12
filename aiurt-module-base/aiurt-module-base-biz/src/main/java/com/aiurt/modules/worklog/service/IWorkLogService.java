@@ -49,7 +49,7 @@ public interface IWorkLogService extends IService<WorkLog> {
     List<WorkLogResult> exportXls(WorkLogParam param, HttpServletRequest req);
 
     /**
-     * 工作日志上报-分页列表查询
+     * 工作日志确认-分页列表查询
      * @param page
      * @param param
      * @param req

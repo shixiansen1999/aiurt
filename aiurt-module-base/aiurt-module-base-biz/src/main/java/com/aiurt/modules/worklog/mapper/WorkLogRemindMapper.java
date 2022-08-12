@@ -1,5 +1,6 @@
 package com.aiurt.modules.worklog.mapper;
 
+import com.aiurt.modules.schedule.entity.ScheduleRecord;
 import com.aiurt.modules.worklog.entity.WorkLogRemind;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import org.apache.ibatis.annotations.Param;
@@ -19,5 +20,5 @@ public interface WorkLogRemindMapper extends BaseMapper<WorkLogRemind> {
      * @param orgId
      * @return
      */
-    List<String> getOrgUserTodayWork(@Param("dateNow") String dateNow,@Param("orgId") String orgId);
+    List<ScheduleRecord> getOrgUserTodayWork(@Param("dateNow") String dateNow, @Param("orgId") String orgId);
 }

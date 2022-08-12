@@ -3,6 +3,7 @@ package com.aiurt.modules.worklog.service.impl;
 import com.aiurt.common.constant.QuartConstant;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.util.QuartzUtils;
+import com.aiurt.modules.schedule.entity.ScheduleRecord;
 import com.aiurt.modules.worklog.dto.WorkLogJobDTO;
 import com.aiurt.modules.worklog.dto.WorkLogRemindDTO;
 import com.aiurt.modules.worklog.entity.WorkLogRemind;
@@ -22,7 +23,6 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
-import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -129,8 +129,8 @@ public class WorkLogRemindServiceImpl extends ServiceImpl<WorkLogRemindMapper, W
     }
 
     @Override
-    public List<String> getOrgUserTodayWork(String dateNow, String orgId) {
-        List<String> userName = workLogRemindMapper.getOrgUserTodayWork(dateNow,orgId);
+    public List<ScheduleRecord> getOrgUserTodayWork(String dateNow, String orgId) {
+        List<ScheduleRecord> userName = workLogRemindMapper.getOrgUserTodayWork(dateNow,orgId);
         return userName;
     }
 
