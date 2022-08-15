@@ -175,7 +175,7 @@ public class DeviceTypeController extends BaseController<DeviceType, IDeviceType
 	 @AutoLog(value = "查询",operateType = 1,operateTypeAlias = "查询设备类型",permissionUrl = "/deviceType/list")
 	@ApiOperation(value="设备类型分页列表查询", notes="设备类型分页列表查询")
 	@GetMapping(value = "/list")
-	 @PermissionData(pageComponent = "/equipmentData/classify")
+     @PermissionData(pageComponent = "manage/MajorList")
 	public Result<IPage<DeviceType>> queryPageList(DeviceType deviceType,
 								   @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
 								   @RequestParam(name="pageSize", defaultValue="10") Integer pageSize) {
