@@ -4,7 +4,6 @@ import com.aiurt.common.aspect.annotation.EnableDataPerm;
 import com.aiurt.modules.stock.entity.StockLevel2;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import liquibase.pro.packaged.S;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
