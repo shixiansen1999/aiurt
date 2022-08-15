@@ -23,6 +23,11 @@ public interface IDeviceTypeService extends IService<DeviceType> {
      */
     List<DeviceType> treeList(List<DeviceType> typeList, String id);
     /**
+     * 列表
+     * @return
+     */
+    List<DeviceType> selectList();
+    /**
      * 添加
      *
      * @param deviceType

@@ -2,9 +2,11 @@ package com.aiurt.modules.device.mapper;
 
 import com.aiurt.common.aspect.annotation.EnableDataPerm;
 import com.aiurt.modules.device.entity.DeviceType;
+import com.aiurt.modules.sparepart.entity.SparePartInOrder;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import liquibase.pro.packaged.E;
 import org.springframework.stereotype.Component;
+
+import java.util.List;
 
 /**
  * @Description: device_type
@@ -15,5 +17,5 @@ import org.springframework.stereotype.Component;
 @Component
 @EnableDataPerm
 public interface DeviceTypeMapper extends BaseMapper<DeviceType> {
-
+    List<DeviceType> readAll();
 }

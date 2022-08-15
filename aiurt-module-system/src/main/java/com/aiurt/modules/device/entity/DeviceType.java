@@ -43,11 +43,20 @@ public class DeviceType implements Serializable {
     @ApiModelProperty(value = "所属专业")
     @MajorFilterColumn
     private String majorCode;
+    /**专业名称*/
+    @ApiModelProperty(value = "专业名称")
+    @TableField(exist = false)
+    @Dict(dictTable ="cs_major",dicText = "major_name",dicCode = "major_code")
+    private String majorName;
 	/**系统编号*/
 	@Excel(name = "系统编号", width = 15)
     @ApiModelProperty(value = "系统编号")
     @SystemFilterColumn
     private String systemCode;
+    /**系统名称*/
+    @ApiModelProperty(value = "系统名称")
+    @TableField(exist = false)
+    private String systemName;
 	/**分类编号*/
 	@Excel(name = "分类编号", width = 15)
     @ApiModelProperty(value = "分类编号")

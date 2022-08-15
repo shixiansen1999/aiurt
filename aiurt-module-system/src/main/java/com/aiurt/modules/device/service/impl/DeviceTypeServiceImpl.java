@@ -44,6 +44,16 @@ public class DeviceTypeServiceImpl extends ServiceImpl<DeviceTypeMapper, DeviceT
     private CsSubsystemMapper subsystemMapper;
     @Autowired
     private CsMajorMapper majorMapper;
+
+
+
+    /**
+     * 列表
+     * @return
+     */
+    public List<DeviceType> selectList(){
+        return deviceTypeMapper.readAll();
+    }
     /**
      * 添加
      *
@@ -152,15 +162,11 @@ public class DeviceTypeServiceImpl extends ServiceImpl<DeviceTypeMapper, DeviceT
                 if(pid.equals("0")){
                     //如果systemCode不是null，查询systemCode的名称
                     if(null!=deviceType.getSystemCode()){
-                        LambdaQueryWrapper<CsSubsystem> wrapper = new LambdaQueryWrapper<>();
-                        CsSubsystem system = subsystemMapper.selectOne(wrapper.eq(CsSubsystem::getSystemCode,deviceType.getSystemCode()));
-                        pUrl = system.getSystemName();
+                        pUrl = deviceType.getSystemName();
                     }
                     //如果systemCode是null，查询majorCode的名称
                     if(null==deviceType.getSystemCode() && null!= deviceType.getMajorCode()){
-                        LambdaQueryWrapper<CsMajor> wrapper = new LambdaQueryWrapper<>();
-                        CsMajor major = majorMapper.selectOne(wrapper.eq(CsMajor::getMajorCode,deviceType.getMajorCode()));
-                        pUrl = major.getMajorName();
+                        pUrl = deviceType.getMajorName();
                     }
                 }else{
                     //如果pid不是0，查询设备类型名称
