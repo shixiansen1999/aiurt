@@ -159,10 +159,10 @@ public class StockLevel2CheckController {
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         message.setFromUser(sysUser.getUsername());
         String checkerId = stockLevel2Check.getCheckerId();
-        String[] ids = new String[1];
-        ids[0] = checkerId;
-        List<LoginUser> loginUsers = sysBaseApi.queryAllUserByIds(ids);
-        message.setToUser(loginUsers==null?"":loginUsers.get(0).getUsername());
+//        String[] ids = new String[1];
+//        ids[0] = checkerId;
+//        List<LoginUser> loginUsers = sysBaseApi.queryAllUserByIds(ids);
+        message.setToUser(checkerId==null?"":checkerId);
         message.setTitle("二级库盘点下发通知");
         message.setContent("您有一个新的二级库盘点任务。");
         message.setCategory("2");
