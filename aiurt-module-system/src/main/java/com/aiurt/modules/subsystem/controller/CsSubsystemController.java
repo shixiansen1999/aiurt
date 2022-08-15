@@ -79,7 +79,7 @@ public class CsSubsystemController  {
 	 @AutoLog(value = "查询",operateType = 1,operateTypeAlias = "子系统列表查询",permissionUrl = "/subsystem/list")
 	 @ApiOperation(value="子系统列表查询", notes="子系统列表查询")
 	 @GetMapping(value = "/selectList")
-	 @PermissionData(pageComponent = "manage/SubsystemList")
+	 @PermissionData(pageComponent = "manage/MajorList")
 	 public Result<?> selectlist(
 									@RequestParam(name="majorCode", required = false) String majorCode,
 									@RequestParam(name="systemName", required = false) String systemName,
