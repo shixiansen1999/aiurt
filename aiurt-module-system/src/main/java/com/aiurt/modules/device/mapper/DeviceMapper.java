@@ -1,5 +1,6 @@
 package com.aiurt.modules.device.mapper;
 
+import com.aiurt.common.aspect.annotation.EnableDataPerm;
 import com.aiurt.modules.device.entity.Device;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import org.springframework.data.repository.query.Param;
@@ -13,6 +14,7 @@ import java.util.Map;
  * @Date:   2021-09-15
  * @Version: V1.0
  */
+@EnableDataPerm
 public interface DeviceMapper extends BaseMapper<Device> {
 
 //    String selectNameByCode(String code);

@@ -167,7 +167,7 @@ public class StockLevel2CheckServiceImpl extends ServiceImpl<StockLevel2CheckMap
 				List<StockLevel2CheckDetail> materials = stockLevel2CheckDetailService.list(queryWrapper);
 				stockLevel2Check.setStockLevel2CheckDetailList(materials);
 				String pdrid = stockLevel2Check.getCheckerId()==null?"":stockLevel2Check.getCheckerId();
-				String tbrname = sysBaseApi.translateDictFromTable("sys_user", "realname", "id", pdrid);
+				String tbrname = sysBaseApi.translateDictFromTable("sys_user", "realname", "username", pdrid);
 				String warehouseCode = stockLevel2Check.getWarehouseCode()==null?"":stockLevel2Check.getWarehouseCode();
 				StockLevel2Info stockLevel2Info = stockLevel2InfoService.getOne(new QueryWrapper<StockLevel2Info>().eq("del_flag", CommonConstant.DEL_FLAG_0).eq("warehouse_code",warehouseCode));
 				String statuscode = stockLevel2Check.getStatus()==null?"":stockLevel2Check.getStatus().toString();
