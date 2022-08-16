@@ -4,7 +4,7 @@
 
     <select id="selectStationByTaskCode" resultType="com.aiurt.boot.task.dto.PatrolTaskStationDTO">
         SELECT
-        cs.station_name,
+        CONCAT_WS( '/', cs.line_name, cs.station_name ) stationName,
         pts.*
         FROM
         patrol_task_station pts
