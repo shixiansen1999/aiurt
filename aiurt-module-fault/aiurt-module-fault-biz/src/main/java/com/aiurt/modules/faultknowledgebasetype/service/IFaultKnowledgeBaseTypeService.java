@@ -17,7 +17,7 @@ public interface IFaultKnowledgeBaseTypeService extends IService<FaultKnowledgeB
      * 知识库类别树
      * @return
      */
-    List<MajorDTO> faultKnowledgeBaseTypeTreeList();
+    List<MajorDTO> faultKnowledgeBaseTypeTreeList(String systemCode);
     /**
      *   添加
      * @param faultKnowledgeBaseType
