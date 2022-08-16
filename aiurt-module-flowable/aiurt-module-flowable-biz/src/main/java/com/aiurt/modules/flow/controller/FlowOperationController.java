@@ -291,4 +291,22 @@ public class FlowOperationController {
         flowApiService.backToRuntimeTask(task, targetKey, true, comment);
         return Result.OK();
     }
+
+    /**
+     * 任务签收
+     * @return
+     */
+    @PostMapping("/claimTask")
+    public Result<?> claimTask(@RequestBody ClaimTaskDTO claimTaskDTO){
+        return Result.ok();
+    }
+
+    /**
+     * 根据业务id 获取历史记录
+     * @return
+     */
+    @GetMapping("/getHistoricLog")
+    public Result<?> getHistoricLog(@RequestParam(value = "businessKey") String businessKey) {
+        return null;
+    }
 }

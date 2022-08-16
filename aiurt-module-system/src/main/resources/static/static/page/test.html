@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+  <html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+    <link rel="stylesheet" href="https://unpkg.com/form-making/dist/FormMaking.css">
+  </head>
+  <body>
+    <div id="app">
+      <fm-generate-form :data="jsonData" :remote="remoteFuncs" :value="editData" ref="generateForm">
+        
+      </fm-generate-form>
+      <el-button type="primary" @click="handleSubmit">提交</el-button>
+    </div>
+    <script src="https://unpkg.com/vue/dist/vue.js"></script>
+    <script src="https://unpkg.com/element-ui/lib/index.js"></script>
+    <script src="https://unpkg.com/form-making/dist/FormMaking.umd.js"></script>
+    <script>
+      new Vue({
+        el: '#app',
+        data: {
+          jsonData: {"list":[{"type":"input","icon":"icon-input","options":{"width":"100%","defaultValue":"","required":false,"dataType":"string","pattern":"","placeholder":"","disabled":false,"remoteFunc":"func_1617328903000_34217"},"name":"单行文本","key":"1617328903000_34217","model":"input_1617328903000_34217","rules":[{"type":"string","message":"单行文本格式不正确"}]},{"type":"number","icon":"icon-number","options":{"width":"","required":false,"defaultValue":0,"min":0,"max":0,"step":1,"disabled":false,"controlsPosition":"","remoteFunc":"func_1617328905000_10292"},"name":"计数器","key":"1617328905000_10292","model":"number_1617328905000_10292","rules":[]},{"type":"color","icon":"icon-color","options":{"defaultValue":"","disabled":false,"showAlpha":false,"required":false,"remoteFunc":"func_1617336059000_6254"},"name":"颜色选择器","key":"1617336059000_6254","model":"color_1617336059000_6254","rules":[]},{"type":"date","icon":"icon-date","options":{"defaultValue":"","readonly":false,"disabled":false,"editable":true,"clearable":true,"placeholder":"","startPlaceholder":"","endPlaceholder":"","type":"date","format":"yyyy-MM-dd","timestamp":false,"required":false,"width":"","remoteFunc":"func_1617336060000_23020"},"name":"日期选择器","key":"1617336060000_23020","model":"date_1617336060000_23020","rules":[]},{"type":"imgupload","icon":"icon-tupian","options":{"defaultValue":[],"size":{"width":100,"height":100},"width":"","tokenFunc":"funcGetToken","token":"","domain":"http://pfp81ptt6.bkt.clouddn.com/","disabled":false,"length":8,"multiple":false,"isQiniu":false,"isDelete":false,"min":0,"isEdit":false,"action":"https://jsonplaceholder.typicode.com/photos/","remoteFunc":"func_1617336064000_12602"},"name":"图片","key":"1617336064000_12602","model":"imgupload_1617336064000_12602","rules":[]}],"config":{"labelWidth":100,"labelPosition":"right","size":"small"}},
+          editData: {},
+          remoteFuncs: {
+            
+            funcGetToken (resolve) {
+              // 图片 imgupload_1617336064000_12602
+              // Call callback function once get the token
+              // resolve(token)
+            },
+    
+          }
+        },
+        methods: {
+          handleSubmit () {
+            this.$refs.generateForm.getData().then(data => {
+              // data check success
+              // data - form data
+            }).catch(e => {
+              // data check failed
+            })
+          }
+        }
+      })
+    </script>
+  </body>
+  </html>

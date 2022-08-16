@@ -19,6 +19,8 @@ import com.aiurt.modules.subsystem.entity.CsSubsystem;
 import com.aiurt.modules.subsystem.service.ICsSubsystemService;
 import com.aiurt.modules.system.entity.SysDepart;
 import com.aiurt.modules.system.entity.SysUser;
+import com.aiurt.modules.system.service.ICsUserMajorService;
+import com.aiurt.modules.system.service.ICsUserSubsystemService;
 import com.aiurt.modules.system.service.ISysDepartService;
 import com.aiurt.modules.system.service.ISysUserService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -27,7 +29,11 @@ import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.system.vo.CsUserMajorModel;
+import org.jeecg.common.system.vo.CsUserSubsystemModel;
+import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -67,6 +73,12 @@ public class CommonCtroller {
     @Autowired
     private ISysDepartService sysDepartService;
 
+    @Autowired
+    private ICsUserMajorService csUserMajorService;
+
+    @Autowired
+    private ICsUserSubsystemService csUserSubsystemService;
+
 
     public Result<List<Device>> query() {
         return Result.OK();
@@ -80,13 +92,12 @@ public class CommonCtroller {
     @GetMapping("/major/queryMajorByAuth")
     @ApiOperation("查询当前人员所管辖的专业")
     public Result<List<SelectTable>> queryMajorByAuth() {
-        LambdaQueryWrapper<CsMajor> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(CsMajor::getDelFlag, 0);
 
-        //todo 查询当前人员所管辖的专业。
-        List<CsMajor> csMajorList = csMajorService.getBaseMapper().selectList(queryWrapper);
+        LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
 
-        List<SelectTable> list = csMajorList.stream().map(csMajor -> {
+        List<CsUserMajorModel> majorModelList = csUserMajorService.getMajorByUserId(loginUser.getId());
+
+        List<SelectTable> list = majorModelList.stream().map(csMajor -> {
             SelectTable table = new SelectTable();
             table.setLabel(csMajor.getMajorName());
             table.setKey(csMajor.getId());
@@ -109,15 +120,10 @@ public class CommonCtroller {
             @ApiImplicitParam(name = "majorCode", value = "专业编码", required = false, paramType = "query"),
     })
     public Result<List<SelectTable>> querySubSystemByAuth(@RequestParam(value = "majorCode", required = false) String majorCode) {
-        LambdaQueryWrapper<CsSubsystem> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(CsSubsystem::getDelFlag, 0);
+        LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
 
-        //todo 查询当前人员所管辖的子系统
-        if (StrUtil.isNotBlank(majorCode)) {
-            queryWrapper.eq(CsSubsystem::getMajorCode, majorCode);
-        }
+        List<CsUserSubsystemModel> csMajorList = csUserSubsystemService.getSubsystemByUserId(loginUser.getId());
 
-        List<CsSubsystem> csMajorList = csSubsystemService.getBaseMapper().selectList(queryWrapper);
         List<SelectTable> list = csMajorList.stream().map(subsystem -> {
             SelectTable table = new SelectTable();
             table.setLabel(subsystem.getSystemName());

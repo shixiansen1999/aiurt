@@ -1,5 +1,6 @@
 package com.aiurt.modules.system.service.impl;
 
+import com.aiurt.modules.major.entity.CsMajor;
 import com.aiurt.modules.system.entity.CsUserMajor;
 import com.aiurt.modules.system.mapper.CsUserMajorMapper;
 import com.aiurt.modules.system.service.ICsUserMajorService;
