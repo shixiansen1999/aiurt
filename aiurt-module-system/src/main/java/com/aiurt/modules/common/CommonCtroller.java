@@ -123,13 +123,22 @@ public class CommonCtroller {
         LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
 
         List<CsUserSubsystemModel> csMajorList = csUserSubsystemService.getSubsystemByUserId(loginUser.getId());
-
-        List<SelectTable> list = csMajorList.stream().map(subsystem -> {
-            SelectTable table = new SelectTable();
-            table.setLabel(subsystem.getSystemName());
-            table.setValue(subsystem.getSystemCode());
-            return table;
-        }).collect(Collectors.toList());
+        List<SelectTable> list = Collections.emptyList();
+        if (StrUtil.isNotBlank(majorCode)) {
+            list = csMajorList.stream().filter(entity -> StrUtil.equalsIgnoreCase(majorCode, entity.getMajorCode())).map(subsystem -> {
+                SelectTable table = new SelectTable();
+                table.setLabel(subsystem.getSystemName());
+                table.setValue(subsystem.getSystemCode());
+                return table;
+            }).collect(Collectors.toList());
+        }else {
+            list = csMajorList.stream().map(subsystem -> {
+                SelectTable table = new SelectTable();
+                table.setLabel(subsystem.getSystemName());
+                table.setValue(subsystem.getSystemCode());
+                return table;
+            }).collect(Collectors.toList());
+        }
 
         return Result.OK(list);
     }
