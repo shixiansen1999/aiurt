@@ -1,15 +1,21 @@
 package com.aiurt.modules.device.controller;
 
 import com.aiurt.common.aspect.annotation.AutoLog;
+import com.aiurt.common.aspect.annotation.PermissionData;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.modules.device.entity.Device;
 import com.aiurt.modules.device.entity.DeviceAssembly;
 import com.aiurt.modules.device.entity.DeviceCompose;
+import com.aiurt.modules.device.entity.DeviceType;
 import com.aiurt.modules.device.service.IDeviceAssemblyService;
 import com.aiurt.modules.device.service.IDeviceComposeService;
 import com.aiurt.modules.device.service.IDeviceService;
 import com.aiurt.modules.device.service.IDeviceTypeService;
+import com.aiurt.modules.major.entity.CsMajor;
+import com.aiurt.modules.major.service.ICsMajorService;
+import com.aiurt.modules.subsystem.entity.CsSubsystem;
+import com.aiurt.modules.subsystem.service.ICsSubsystemService;
 import com.aiurt.modules.system.service.impl.SysBaseApiImpl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -26,6 +32,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @Description: 设备
@@ -45,9 +52,13 @@ public class DeviceController {
     @Autowired
     private IDeviceAssemblyService iDeviceAssemblyService;
     @Autowired
-    private IDeviceTypeService iDeviceTypeService;
-    @Autowired
     private SysBaseApiImpl sysBaseApi;
+    @Autowired
+    private IDeviceTypeService deviceTypeService;
+    @Autowired
+    private ICsSubsystemService csSubsystemService;
+    @Autowired
+    private ICsMajorService csMajorService;
 
     /**
      * 分页列表查询
@@ -56,9 +67,10 @@ public class DeviceController {
      * @param pageSize
      * @return
      */
-    @AutoLog(value = "设备管理-设备主数据/设备台账-分页列表查询", operateType = 1, operateTypeAlias = "查询", permissionUrl = "/equipmentData/masterData")
+    @AutoLog(value = "设备管理-设备台账-分页列表查询", operateType = 1, operateTypeAlias = "查询", permissionUrl = "/equipmentData/masterData")
     @ApiOperation(value = "设备管理-设备主数据-分页列表查询", notes = "设备管理-设备主数据-分页列表查询")
     @GetMapping(value = "/list")
+    @PermissionData(pageComponent = "equipmentData/masterData")
     public Result<IPage<Device>> queryPageList(
                                                @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
                                                @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize,
@@ -72,6 +84,11 @@ public class DeviceController {
                                                @RequestParam(name = "status", required = false) String status,
                                                @RequestParam(name = "scode", required = false) String scode,
                                                HttpServletRequest req) {
+        return getList(pageNo, pageSize, positionCodeCc, temporary, majorCode, systemCode, deviceTypeCode, code, name, status, scode);
+    }
+
+    public Result<IPage<Device>> getList(Integer pageNo, Integer pageSize, String positionCodeCc, String temporary, String majorCode,
+                             String systemCode, String deviceTypeCode, String code, String name, String status, String scode){
         Result<IPage<Device>> result = new Result<IPage<Device>>();
         Page<Device> page = new Page<Device>(pageNo, pageSize);
         QueryWrapper<Device> queryWrapper = deviceService.getQueryWrapper(scode,positionCodeCc, temporary, majorCode, systemCode, deviceTypeCode, code, name, status);
@@ -101,6 +118,33 @@ public class DeviceController {
         result.setSuccess(true);
         result.setResult(pageList);
         return result;
+    }
+
+    /**
+     * 分页列表查询
+     *
+     * @param pageNo
+     * @param pageSize
+     * @return
+     */
+    @AutoLog(value = "设备管理-设备台账-分页列表查询", operateType = 1, operateTypeAlias = "查询", permissionUrl = "/equipmentData/masterData")
+    @ApiOperation(value = "设备管理-设备主数据-分页列表查询", notes = "设备管理-设备主数据-分页列表查询")
+    @GetMapping(value = "/listTz")
+    @PermissionData(pageComponent = "/equipmentData/standingBook")
+    public Result<IPage<Device>> queryPageTzList(
+            @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
+            @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize,
+            @RequestParam(name = "codeCc", required = false) String positionCodeCc,
+            @RequestParam(name = "temporary", required = false) String temporary,
+            @RequestParam(name = "majorCode", required = false) String majorCode,
+            @RequestParam(name = "systemCode", required = false) String systemCode,
+            @RequestParam(name = "deviceTypeCode", required = false) String deviceTypeCode,
+            @RequestParam(name = "code", required = false) String code,
+            @RequestParam(name = "name", required = false) String name,
+            @RequestParam(name = "status", required = false) String status,
+            @RequestParam(name = "scode", required = false) String scode,
+            HttpServletRequest req) {
+        return getList(pageNo, pageSize, positionCodeCc, temporary, majorCode, systemCode, deviceTypeCode, code, name, status, scode);
     }
 
     @AutoLog(value = "设备管理-设备主数据-列表查询", operateType = 1, operateTypeAlias = "查询", permissionUrl = "/equipmentData/masterData")

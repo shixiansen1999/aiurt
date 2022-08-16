@@ -370,7 +370,7 @@ public class ScheduleController {
     public Result<List<LoginUser>> selectScheduleUser(@RequestParam(name = "startDate", required = true) String startDate,
                                                     @RequestParam(name = "endDate", required = true) String endDate) {
         LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        String orgCode = loginUser.getOrgCode();
+        String orgCode = loginUser.getOrgId();
         Result<List<LoginUser>> result = new Result<List<LoginUser>>();
 
        // List<LoginUser> userList = new ArrayList<>();

@@ -236,7 +236,7 @@
     <select id="userList" resultType="org.jeecg.common.system.vo.LoginUser">
         select *
         from sys_user su
-        where su.org_code like concat(#{orgCode},'%')
+        where su.org_id = #{orgCode}
     </select>
     <select id="getRoleCodeById" resultType="java.lang.String">
      select role_code

@@ -1,6 +1,6 @@
 package com.aiurt.modules.device.entity;
 
-import com.aiurt.common.aspect.annotation.Dict;
+import com.aiurt.common.aspect.annotation.*;
 import com.aiurt.modules.basic.entity.DictEntity;
 import com.baomidou.mybatisplus.annotation.*;
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -39,6 +39,7 @@ public class Device extends DictEntity {
 	@Excel(name = "所属专业", width = 15)
 	@ApiModelProperty(value = "所属专业")
 	@Dict(dictTable ="cs_major",dicText = "major_name",dicCode = "major_code")
+	@MajorFilterColumn
 	private  String  majorCode;
 	/**所属专业名称*/
 	@Excel(name = "所属专业名称", width = 15)
@@ -50,6 +51,7 @@ public class Device extends DictEntity {
 	@Excel(name = "子系统编号", width = 15)
 	@ApiModelProperty(value = "子系统编号")
 	@Dict(dictTable ="cs_subsystem",dicText = "system_name",dicCode = "system_code")
+	@SystemFilterColumn
 	private  String  systemCode;
 	/**子系统编号名称*/
 	@Excel(name = "子系统编号名称", width = 15)
@@ -98,6 +100,7 @@ public class Device extends DictEntity {
 	@Excel(name = "线路", width = 15)
 	@ApiModelProperty(value = "线路编号")
 	@Dict(dictTable ="cs_line",dicText = "line_name",dicCode = "line_code")
+	@LineFilterColumn
 	private  String  lineCode;
 	/**线路名称*/
 	@Excel(name = "线路名称", width = 15)
@@ -109,6 +112,7 @@ public class Device extends DictEntity {
 	@Excel(name = "站点", width = 15)
 	@ApiModelProperty(value = "站点编号")
 	@Dict(dictTable ="cs_station",dicText = "station_name",dicCode = "station_code")
+	@StaionFilterColumn
 	private  String  stationCode;
 	/**站点名称*/
 	@Excel(name = "站点名称", width = 15)
@@ -144,7 +148,7 @@ public class Device extends DictEntity {
 	/**设备管理员*/
 	@Excel(name = "设备管理员", width = 15)
 	@ApiModelProperty(value = "设备管理员")
-	@Dict(dictTable ="sys_user",dicText = "realname",dicCode = "id")
+	@Dict(dictTable ="sys_user",dicText = "realname",dicCode = "username")
 	private  String  manageUserName;
 	/**设备管理员名称*/
 	@Excel(name = "设备管理员名称", width = 15)
@@ -156,6 +160,7 @@ public class Device extends DictEntity {
 	@Excel(name = "负责班组", width = 15)
 	@ApiModelProperty(value = "负责班组")
 	@Dict(dictTable ="sys_depart",dicText = "depart_name",dicCode = "id")
+	@DeptFilterColumn
 	private  String  orgCode;
 	/**负责班组名称*/
 	@Excel(name = "负责班组名称", width = 15)

@@ -105,7 +105,7 @@ public class StockLevel2Check extends DictEntity {
 	/**盘点人id*/
 	@Excel(name = "盘点人id")
 	@ApiModelProperty(value = "盘点人id")
-	@Dict(dictTable ="sys_user",dicText = "realname",dicCode = "id")
+	@Dict(dictTable ="sys_user",dicText = "realname",dicCode = "username")
 	private  String  checkerId;
 
 	/**备注*/

@@ -63,6 +63,12 @@
         <if test="order.baseTypeCode!=null and order.baseTypeCode!=''">
             and t4.base_type_code like concat('%', #{order.baseTypeCode}, '%')
         </if>
+        <if test="order.ids!=null and order.ids!=''">
+            and spare_part_return_order.id in(
+            <foreach collection="order.ids" separator="," item="item">
+                #{item}
+            </foreach>)
+        </if>
         order by spare_part_return_order.create_time desc
 
     </select>

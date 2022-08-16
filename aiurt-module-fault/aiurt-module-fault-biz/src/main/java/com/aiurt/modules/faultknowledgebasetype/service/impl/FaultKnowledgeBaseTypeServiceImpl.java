@@ -11,6 +11,7 @@ import com.aiurt.modules.faultknowledgebasetype.service.IFaultKnowledgeBaseTypeS
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.system.vo.CsUserMajorModel;
 import org.jeecg.common.system.vo.CsUserSubsystemModel;
@@ -40,9 +41,11 @@ public class FaultKnowledgeBaseTypeServiceImpl extends ServiceImpl<FaultKnowledg
     private CommonAPI commonApi;
 
     @Override
-    public List<MajorDTO> faultKnowledgeBaseTypeTreeList() {
-
+    public List<MajorDTO> faultKnowledgeBaseTypeTreeList(String systemCode) {
         LambdaQueryWrapper<FaultKnowledgeBaseType> queryWrapper = new LambdaQueryWrapper<>();
+        if (StringUtils.isNotEmpty(systemCode)) {
+            queryWrapper.eq(FaultKnowledgeBaseType::getSystemCode, systemCode);
+        }
         queryWrapper.eq(FaultKnowledgeBaseType::getDelFlag, "0").orderByDesc(FaultKnowledgeBaseType::getCreateTime);
         List<FaultKnowledgeBaseType> faultKnowledgeBaseTypes = faultKnowledgeBaseTypeMapper.selectList(queryWrapper);
 
