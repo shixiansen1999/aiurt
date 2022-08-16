@@ -533,8 +533,7 @@ public class SysUserController {
     public Result<?> userUpDataOrg(@RequestParam(name = "orgId")String orgId,
                                         @RequestParam(name = "orgCode")String orgCode,
                                         @RequestParam(name = "ids")String ids){
-        List<String> id= Arrays.asList(ids.split(","));
-        sysUserService.update(new LambdaUpdateWrapper<SysUser>().in(SysUser::getId,id)
+        sysUserService.update(new LambdaUpdateWrapper<SysUser>().in(SysUser::getId,ids.split(","))
                                                                 .eq(SysUser::getDelFlag,0)
                                                                 .set(SysUser::getOrgId,orgId)
                                                                 .set(SysUser::getOrgCode,orgCode));
