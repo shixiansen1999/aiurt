@@ -5,6 +5,7 @@ import com.aiurt.boot.plan.dto.PatrolPlanDto;
 import com.aiurt.boot.plan.dto.QuerySiteDto;
 import com.aiurt.boot.plan.dto.StandardDTO;
 import com.aiurt.boot.plan.entity.PatrolPlan;
+import com.aiurt.boot.standard.dto.StationDTO;
 import com.aiurt.boot.task.dto.MajorDTO;
 import com.aiurt.boot.task.dto.SubsystemDTO;
 import com.aiurt.modules.device.entity.Device;
@@ -136,4 +137,11 @@ public interface PatrolPlanMapper extends BaseMapper<PatrolPlan> {
    * @return
    */
     IPage<Device> deviceList(Page<Device> page, @Param("siteCodes")List<String> siteCodes,@Param("subsystemCode") String subsystemCode, @Param("majorCode")String majorCode,@Param("deviceTypeCode")String deviceTypeCode,@Param("code") String code,@Param("name") String name);
+
+  /**
+   * 查询站点信息
+   * @param asList
+   * @return
+   */
+  List<StationDTO> selectStations(List<String> asList);
 }

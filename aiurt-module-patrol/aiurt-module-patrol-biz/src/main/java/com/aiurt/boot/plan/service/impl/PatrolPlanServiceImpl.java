@@ -4,6 +4,7 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
+import com.aiurt.boot.manager.PatrolManager;
 import com.aiurt.boot.plan.dto.DeviceListDTO;
 import com.aiurt.boot.plan.dto.PatrolPlanDto;
 import com.aiurt.boot.plan.dto.QuerySiteDto;
@@ -12,6 +13,7 @@ import com.aiurt.boot.plan.entity.*;
 import com.aiurt.boot.plan.mapper.*;
 import com.aiurt.boot.plan.service.IPatrolPlanService;
 import com.aiurt.boot.standard.dto.PatrolStandardDto;
+import com.aiurt.boot.standard.dto.StationDTO;
 import com.aiurt.boot.standard.entity.PatrolStandard;
 import com.aiurt.boot.standard.mapper.PatrolStandardMapper;
 import com.aiurt.boot.task.dto.MajorDTO;
@@ -19,6 +21,7 @@ import com.aiurt.boot.task.dto.SubsystemDTO;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.modules.device.entity.Device;
+import com.aiurt.modules.position.entity.CsStation;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -58,10 +61,16 @@ public class PatrolPlanServiceImpl extends ServiceImpl<PatrolPlanMapper, PatrolP
     private ISysBaseAPI sysBaseApi;
     @Autowired
     private PatrolPlanMapper patrolPlanMapper;
-
+    @Autowired
+    private PatrolManager patrolManager;
     @Override
     public IPage<PatrolPlanDto> pageList(Page<PatrolPlanDto> page, PatrolPlanDto patrolPlan) {
         IPage<PatrolPlanDto> list = baseMapper.list(page, patrolPlan);
+        List <PatrolPlanDto> list1 =list.getRecords();
+        list1.forEach(l->{
+            List<StationDTO> stationDTOS = baseMapper.selectStations(Arrays.asList(l.getSiteCode().split(";")));
+            l.setSiteName(patrolManager.translateStation( stationDTOS));
+        });
         return list;
     }
 
