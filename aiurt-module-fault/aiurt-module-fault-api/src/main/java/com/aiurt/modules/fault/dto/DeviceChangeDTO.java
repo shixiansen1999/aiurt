@@ -9,6 +9,9 @@ import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
 
+/**
+ * @author fgw
+ */
 @Data
 @ApiModel("组件更换信息")
 @Builder
@@ -49,4 +52,7 @@ public class DeviceChangeDTO implements Serializable {
     /**维修记录id*/
     @ApiModelProperty(value = "维修记录id")
     private String repairRecordId;
+
+    @ApiModelProperty(value = "出库记录表ID")
+    private String outOrderId;
 }

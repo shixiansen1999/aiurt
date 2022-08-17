@@ -8,11 +8,14 @@ import com.aiurt.modules.sparepart.entity.SparePartOutOrder;
 import com.aiurt.modules.sparepart.entity.SparePartStock;
 import com.aiurt.modules.sparepart.mapper.SparePartStockMapper;
 import com.aiurt.modules.sparepart.service.ISparePartOutOrderService;
+import com.aiurt.modules.stock.entity.StockOutboundMaterials;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.SecurityUtils;
@@ -137,5 +140,18 @@ public class SparePartOutOrderController extends BaseController<SparePartOutOrde
        }
        return Result.OK(sparePartOutOrder);
    }
+
+    /**
+     * 查询本班组的信息出库的物资
+     */
+    @ApiOperation(value="查询本班组的信息出库的物资", notes="查询本班组的信息出库的物资")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "materialCode", value = "物资编号")
+    })
+    @GetMapping("/querySparePartOutOrder")
+    public Result<List<SparePartOutOrder>> querySparePartOutOrder(@RequestParam(value = "materialCode", required = false) String materialCode) {
+        List<SparePartOutOrder> list = sparePartOutOrderService.querySparePartOutOrder(materialCode);
+        return Result.OK(list);
+    }
 
 }

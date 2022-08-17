@@ -37,4 +37,10 @@ public interface ISparePartOutOrderService extends IService<SparePartOutOrder> {
      */
     Result<?> update( SparePartOutOrder sparePartOutOrder);
 
+    /**
+     * 查询本班组的信息出库的物资
+     * @param materialCode 物资编码
+     * @return
+     */
+    List<SparePartOutOrder> querySparePartOutOrder(String materialCode);
 }

@@ -116,4 +116,7 @@ public class DeviceChangeSparePart implements Serializable {
 	/**是否易耗品(1是,0否)*/
 	@ApiModelProperty(value = "是否易耗品(1是,0否)")
     private String consumables;
+
+    @ApiModelProperty(value = "出库记录表ID")
+	private String outOrderId;
 }

@@ -1,16 +1,20 @@
 package com.aiurt.modules.sparepart.service.impl;
 
+import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.constant.CommonConstant;
-import com.aiurt.modules.sparepart.entity.SparePartInOrder;
-import com.aiurt.modules.sparepart.entity.SparePartOutOrder;
-import com.aiurt.modules.sparepart.entity.SparePartScrap;
-import com.aiurt.modules.sparepart.entity.SparePartStock;
+import com.aiurt.modules.sparepart.entity.*;
 import com.aiurt.modules.sparepart.mapper.SparePartInOrderMapper;
 import com.aiurt.modules.sparepart.mapper.SparePartOutOrderMapper;
 import com.aiurt.modules.sparepart.mapper.SparePartStockMapper;
 import com.aiurt.modules.sparepart.service.ISparePartOutOrderService;
+import com.aiurt.modules.sparepart.service.ISparePartStockInfoService;
+import com.aiurt.modules.stock.entity.StockLevel2;
+import com.aiurt.modules.system.entity.SysDepart;
+import com.aiurt.modules.system.service.ISysDepartService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.vo.LoginUser;
@@ -20,8 +24,11 @@ import org.springframework.stereotype.Service;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * @Description: spare_part_out_order
@@ -29,12 +36,19 @@ import java.util.List;
  * @Date:   2022-07-26
  * @Version: V1.0
  */
+@Slf4j
 @Service
 public class SparePartOutOrderServiceImpl extends ServiceImpl<SparePartOutOrderMapper, SparePartOutOrder> implements ISparePartOutOrderService {
     @Autowired
     private SparePartOutOrderMapper sparePartOutOrderMapper;
     @Autowired
     private SparePartStockMapper sparePartStockMapper;
+
+    @Autowired
+    private ISysDepartService sysDepartService;
+
+    @Autowired
+    private ISparePartStockInfoService sparePartStockInfoService;
     /**
      * 查询列表
      * @param page
@@ -96,5 +110,50 @@ public class SparePartOutOrderServiceImpl extends ServiceImpl<SparePartOutOrderM
         sparePartOutOrder.setConfirmTime(new Date());
         sparePartOutOrder.setSysOrgCode(user.getOrgCode());
         updateById(sparePartOutOrder);
+    }
+
+    /**
+     *
+     * @param materialCode 物资编码
+     * @return
+     */
+    @Override
+    public List<SparePartOutOrder> querySparePartOutOrder(String materialCode) {
+
+        // 获取当前登录人所属机构， 根据所属机构擦查询管理二级管理仓库
+        LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+
+        String orgId = loginUser.getOrgId();
+
+        if (StrUtil.isBlank(orgId)) {
+            log.info("该用户没绑定机构：{}-{}", loginUser.getRealname(), loginUser.getUsername());
+            return Collections.emptyList();
+        }
+        // todo 能否查询下级机构的仓库信息
+        SysDepart sysDepart = sysDepartService.getById(orgId);
+        if (Objects.isNull(sysDepart)) {
+            log.info("该机构不存在：{}", orgId);
+            return Collections.emptyList();
+        }
+
+        // 查询仓库
+        LambdaQueryWrapper<SparePartStockInfo> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(SparePartStockInfo::getOrganizationId, orgId);
+        List<SparePartStockInfo> stockInfoList = sparePartStockInfoService.getBaseMapper().selectList(wrapper);
+        if (CollectionUtil.isEmpty(stockInfoList)) {
+            return Collections.emptyList();
+        }
+
+        List<String> wareHouseCodeList = stockInfoList.stream().map(SparePartStockInfo::getWarehouseCode).collect(Collectors.toList());
+
+        if (CollectionUtil.isEmpty(wareHouseCodeList)) {
+            return Collections.emptyList();
+        }
+
+        LambdaQueryWrapper<SparePartOutOrder> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(SparePartOutOrder::getMaterialCode, materialCode)
+                .in(SparePartOutOrder::getWarehouseCode, wareHouseCodeList).eq(SparePartOutOrder::getStatus, 2);
+        List<SparePartOutOrder> outOrders = baseMapper.selectList(queryWrapper);
+        return outOrders;
     }
 }
