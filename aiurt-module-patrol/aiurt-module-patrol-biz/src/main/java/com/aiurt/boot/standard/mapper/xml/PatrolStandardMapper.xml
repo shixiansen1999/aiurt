@@ -25,7 +25,7 @@
             AND a.subsystem_code = #{patrolStandard.subsystemCode}
         </if>
         <if test="patrolStandard.code !=null ">
-            AND a.code = #{patrolStandard.code}
+            AND a.code = LIKE CONCAT ('%', #{patrolStandard.code}, '%')
         </if>
         <if test="patrolStandard.createBy !=null ">
             AND a.create_by LIKE CONCAT ('%', #{patrolStandard.createBy}, '%')

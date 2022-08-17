@@ -110,7 +110,22 @@ public class SysDepart implements Serializable {
 	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
     @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
 	private Date updateTime;
-
+	/**联系人id*/
+	@ApiModelProperty(value = "联系人id")
+	@Excel(name="联系人id",width=15)
+	private String contactId;
+	/**联系人方式*/
+	@ApiModelProperty(value = "联系人方式")
+	@Excel(name="联系人方式",width=15)
+	private String concatWay;
+	/**管理负责人id*/
+	@ApiModelProperty(value = "管理负责人id")
+	@Excel(name="管理负责人id",width=15)
+	private String managerId;
+	/**技术负责人id*/
+	@ApiModelProperty(value = "技术负责人id")
+	@Excel(name="技术负责人id",width=15)
+	private String technicalId;
     //update-begin---author:wangshuai ---date:20200308  for：[JTC-119]在部门管理菜单下设置部门负责人，新增字段负责人ids和旧的负责人ids
     /**部门负责人的ids*/
 	@ApiModelProperty(value = "部门负责人的ids")
