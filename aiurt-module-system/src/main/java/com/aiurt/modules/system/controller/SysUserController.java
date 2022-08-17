@@ -494,7 +494,7 @@ public class SysUserController {
      * @return
      */
     @ApiOperation(value="组织树型", notes="组织树型")
-    @RequestMapping(value = "OrganizationTree", method = RequestMethod.GET)
+    @RequestMapping(value = "/OrganizationTree", method = RequestMethod.GET)
     public List<Object> treeOrUser() {
          List<Object> tree = sysUserService.departAndUserTree();
         return tree;
@@ -504,7 +504,7 @@ public class SysUserController {
      * @return
      */
     @ApiOperation(value="分页查询部门与子部门下所有人员", notes="分页查询部门与子部门下所有人员")
-    @RequestMapping(value = "listUserByOegCode", method = RequestMethod.GET)
+    @RequestMapping(value = "/listUserByOegCode", method = RequestMethod.GET)
     public Result<?> queryUserByOrgCode(@RequestParam(name = "orgCode",required = true)String orgCode,
                                         @RequestParam(name = "phone",required = false)String phone,
                                         @RequestParam(name = "realname",required = false)String realname,
@@ -529,7 +529,7 @@ public class SysUserController {
      * @return
      */
     @ApiOperation(value="根据id更换人员组织机构", notes="根据id更换人员组织机构")
-    @RequestMapping(value = "userUpDataOrg", method = RequestMethod.GET)
+    @RequestMapping(value = "/userUpDataOrg", method = RequestMethod.GET)
     public Result<?> userUpDataOrg(@RequestParam(name = "orgId")String orgId,
                                         @RequestParam(name = "orgCode")String orgCode,
                                         @RequestParam(name = "ids")String ids){
