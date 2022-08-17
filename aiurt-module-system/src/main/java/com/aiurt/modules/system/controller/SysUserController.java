@@ -505,7 +505,7 @@ public class SysUserController {
      */
     @ApiOperation(value="分页查询部门与子部门下所有人员", notes="分页查询部门与子部门下所有人员")
     @RequestMapping(value = "/listUserByOegCode", method = RequestMethod.GET)
-    public Result<?> queryUserByOrgCode(@RequestParam(name = "orgCode",required = true)String orgCode,
+    public Result<?> queryUserByOrgCode(@RequestParam(name = "orgCode",required = false)String orgCode,
                                         @RequestParam(name = "phone",required = false)String phone,
                                         @RequestParam(name = "realname",required = false)String realname,
                                         @RequestParam(name = "username",required = false)String username,

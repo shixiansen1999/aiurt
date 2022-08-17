@@ -651,10 +651,15 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
 
 	@Override
 	public IPage<SysUser> userByOrgCode(Page<SysUser> page, String orgCode, String phone, String realname, String username, Integer status) {
-		  String code = "/"+orgCode+"/";
-		  List<String> orgId = new ArrayList<>();
-		  List<SysDepart> sysDeparts =sysDepartMapper.selectList(new LambdaQueryWrapper<SysDepart>().like(SysDepart::getOrgCodeCc,code));
-		  sysDeparts.forEach(s->orgId.add(s.getId()));
+		List<String> orgId = new ArrayList<>();
+		if (orgCode!=""&&orgCode!=null){
+			String code = "/"+orgCode+"/";
+			List<SysDepart> sysDeparts =sysDepartMapper.selectList(new LambdaQueryWrapper<SysDepart>().like(SysDepart::getOrgCodeCc,code));
+			sysDeparts.forEach(s->orgId.add(s.getId()));
+		}else {
+			List<SysDepart> sysDeparts =sysDepartMapper.selectList(new LambdaQueryWrapper<SysDepart>().like(SysDepart::getOrgCodeCc,"A"));
+			sysDeparts.forEach(s->orgId.add(s.getId()));
+		}
 		  IPage<SysUser> users = baseMapper.queryByorgIds(page,orgId,phone,realname,username,status);
 		return users;
 	}

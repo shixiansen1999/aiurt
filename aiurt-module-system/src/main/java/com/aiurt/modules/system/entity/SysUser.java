@@ -219,7 +219,30 @@ public class SysUser implements Serializable {
     /**设备id uniapp推送用*/
     @ApiModelProperty(value = "设备id")
     private String clientId;
-
+    /**岗位职级：1初级、2中级、3高级、4上岗及以下*/
+    @ApiModelProperty(value = "岗位职级：1初级、2中级、3高级、4上岗及以下")
+    @Excel(name="（岗位职级：1初级、2中级、3高级、4上岗及以下）",width = 15)
+    @Dict(dicCode = "job_grade")
+    private Integer jobGrade;
+    /**岗位*/
+    @ApiModelProperty(value = "岗位")
+    private String jobName;
+    /**工作证编号*/
+    @ApiModelProperty(value = "工作证编号")
+    private String cardCode;
+    @ApiModelProperty(value = "参加工作时间")
+    @Excel(name = "参加工作时间", width = 15, format = "yyyy-MM-dd")
+    @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd")
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
+    private Date workingTime;
+    @ApiModelProperty(value = "入职日期")
+    @Excel(name = "入职日期", width = 15, format = "yyyy-MM-dd")
+    @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd")
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
+    private Date entryDate;
+    /**上级*/
+    @ApiModelProperty(value = "上级ID")
+    private String superiorUserId;
     /**系统权限*/
     @ApiModelProperty(value = "系统权限codes")
     @TableField(exist = false)
