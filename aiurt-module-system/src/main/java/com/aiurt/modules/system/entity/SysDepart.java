@@ -40,6 +40,10 @@ public class SysDepart implements Serializable {
 	@ApiModelProperty(value = "机构/部门名称")
 	@Excel(name="机构/部门名称",width=15)
 	private String departName;
+	/**机构全称*/
+	@ApiModelProperty(value = "机构全称")
+	@Excel(name="机构全称",width=15)
+	private String departFullName;
 	/**英文名*/
 	@ApiModelProperty(value = "英文名")
 	@Excel(name="英文名",width=15)
@@ -126,6 +130,11 @@ public class SysDepart implements Serializable {
 	@ApiModelProperty(value = "技术负责人id")
 	@Excel(name="技术负责人id",width=15)
 	private String technicalId;
+	/**班组类别*/
+	@ApiModelProperty(value = "班组类别")
+	@Excel(name="班组类别",width=15)
+	@Dict(dicCode = "team_type")
+	private Integer teamType;
     //update-begin---author:wangshuai ---date:20200308  for：[JTC-119]在部门管理菜单下设置部门负责人，新增字段负责人ids和旧的负责人ids
     /**部门负责人的ids*/
 	@ApiModelProperty(value = "部门负责人的ids")

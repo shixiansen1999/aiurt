@@ -1,6 +1,9 @@
 package com.aiurt.modules.system.model;
 
 import com.aiurt.modules.system.entity.SysDepart;
+import io.swagger.annotations.ApiModelProperty;
+import lombok.Data;
+import org.jeecgframework.poi.excel.annotation.Excel;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -16,6 +19,7 @@ import java.util.Objects;
  * @Author Steve
  * @Since 2019-01-22
  */
+@Data
 public class SysDepartTreeModel implements Serializable{
 
     private static final long serialVersionUID = 1L;
@@ -75,6 +79,17 @@ public class SysDepartTreeModel implements Serializable{
 
     private Date updateTime;
 
+    private String contactId;
+
+    private String concatWay;
+
+    private String managerId;
+
+    private String technicalId;
+
+    private Integer teamType;
+
+    private String departFullName;
     //update-begin---author:wangshuai ---date:20200308  for：[JTC-119]在部门管理菜单下设置部门负责人，新增字段部门负责人ids
     /**部门负责人ids*/
     private String directorUserIds;
@@ -113,6 +128,11 @@ public class SysDepartTreeModel implements Serializable{
         this.updateBy = sysDepart.getUpdateBy();
         this.updateTime = sysDepart.getUpdateTime();
         this.directorUserIds = sysDepart.getDirectorUserIds();
+        this.contactId= sysDepart.getContactId();
+        this.concatWay =sysDepart.getConcatWay();
+        this.managerId = sysDepart.getManagerId();
+        this.technicalId =sysDepart.getTechnicalId();
+        this.teamType =sysDepart.getTeamType();
     }
 
     public boolean getIsLeaf() {
@@ -307,7 +327,36 @@ public class SysDepartTreeModel implements Serializable{
     public String getCreateBy() {
         return createBy;
     }
-
+    public String getContactId(){
+        return contactId;
+    }
+    public void setContactId(){
+        this.contactId =contactId;
+    }
+    public String getConcatWay(){
+        return contactId;
+    }
+    public void setConcatWay(){
+        this.concatWay =concatWay;
+    }
+    public String getManagerId(){
+        return managerId;
+    }
+    public void setManagerId(){
+        this.managerId =managerId;
+    }
+    public String getTechnicalId(){
+        return technicalId;
+    }
+    public void setTechnicalId(){
+        this.technicalId =technicalId;
+    }
+    public Integer getTeamType(){
+        return teamType;
+    }
+    public void setTeamType(){
+        this.teamType =teamType;
+    }
     public void setCreateBy(String createBy) {
         this.createBy = createBy;
     }
@@ -380,7 +429,12 @@ public class SysDepartTreeModel implements Serializable{
                 Objects.equals(updateBy, model.updateBy) &&
                 Objects.equals(updateTime, model.updateTime) &&
                 Objects.equals(directorUserIds, model.directorUserIds) &&
-                Objects.equals(children, model.children);
+                Objects.equals(children, model.children)&&
+                Objects.equals(contactId,model.contactId)&&
+                Objects.equals(concatWay,model.concatWay)&&
+                Objects.equals(managerId,model.managerId)&&
+                Objects.equals(technicalId,model.technicalId)&&
+                Objects.equals(teamType,model.teamType);
     }
 
     /**
@@ -392,7 +446,7 @@ public class SysDepartTreeModel implements Serializable{
         return Objects.hash(id, parentId, departName, departNameEn, departNameAbbr,
         		departOrder, description, orgCategory, orgType, orgCode, mobile, fax, address,
         		memo, status, delFlag, qywxIdentifier, createBy, createTime, updateBy, updateTime,
-        		children,directorUserIds);
+        		children,directorUserIds,concatWay,managerId,technicalId,contactId,teamType);
     }
 
 }
