@@ -78,7 +78,7 @@ public interface PatrolTaskMapper extends BaseMapper<PatrolTask> {
     List<String> getOrgCode(String taskCode);
     /**
      * app-获取指派人员信息
-     *
+     *@param code
      * @return
      */
     List<PatrolTaskUserContentDTO> getUser(@Param("code") String code);

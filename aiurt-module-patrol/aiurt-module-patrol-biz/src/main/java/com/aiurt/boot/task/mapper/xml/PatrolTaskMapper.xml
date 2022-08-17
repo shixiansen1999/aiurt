@@ -140,7 +140,7 @@
                t1.id,
                t1.org_code
         from sys_user t1
-        where t1.org_code = #{code}
+        where t1.org_code = #{code} and t1.del_flag = 0
     </select>
     <select id="getOrgName" resultType="java.lang.String">
         select t2.depart_name
