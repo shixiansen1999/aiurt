@@ -33,6 +33,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.jeecg.common.api.vo.Result;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -68,7 +69,8 @@ public class InspectionStrategyServiceImpl extends ServiceImpl<InspectionStrateg
     private RepairTaskMapper repairTaskMapper;
     @Resource
     private InspectionManager manager;
-
+    @Autowired
+    public RedisTemplate redisTemplate;
 
     @Override
     public IPage<InspectionStrategyDTO> pageList(Page<InspectionStrategyDTO> page, InspectionStrategyDTO inspectionStrategyDTO) {
@@ -233,6 +235,9 @@ public class InspectionStrategyServiceImpl extends ServiceImpl<InspectionStrateg
         strategy.setIsReceipt(inspectionStrategyDTO.getIsReceipt());
         strategy.setWorkType(inspectionStrategyDTO.getWorkType());
         inspectionStrategyMapper.updateById(strategy);
+
+        // 清除对应的缓存
+        redisTemplate.delete(String.format("sys:cache:dictTable::SimpleKey [%s,%s]", "inspection_strategy,name,code", strategy.getCode()));
 
         // 把原来的组织机构信息删除
         inspectionStrOrgRelMapper.delete(new LambdaQueryWrapper<InspectionStrOrgRel>()
