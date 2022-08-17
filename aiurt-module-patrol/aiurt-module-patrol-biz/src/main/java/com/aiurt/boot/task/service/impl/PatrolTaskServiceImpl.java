@@ -30,7 +30,9 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.apache.shiro.SecurityUtils;
+import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.LoginUser;
+import org.jeecg.common.system.vo.SysDepartModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -76,6 +78,8 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
     private PatrolStandardMapper patrolStandardMapper;
     @Autowired
     private PatrolManager manager;
+    @Autowired
+    private ISysBaseAPI sysBaseAPI;
 
     @Override
     public IPage<PatrolTaskParam> getTaskList(Page<PatrolTaskParam> page, PatrolTaskParam patrolTaskParam) {
@@ -122,19 +126,13 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         wrapper.lambda().eq(PatrolTaskParam::getId, patrolTaskParam.getId());
         PatrolTaskParam taskParam = Optional.ofNullable(patrolTaskMapper.selectBasicInfo(patrolTaskParam)).orElseGet(PatrolTaskParam::new);
         // 组织机构信息
-        List<PatrolTaskOrganizationDTO> organizationInfo = Optional.ofNullable(patrolTaskOrganizationMapper.selectOrgByTaskCode(taskParam.getCode()))
-                .orElseGet(Collections::emptyList)
-                .stream().collect(Collectors.toList());
+        List<PatrolTaskOrganizationDTO> organizationInfo = patrolTaskOrganizationMapper.selectOrgByTaskCode(taskParam.getCode());
         // 站点信息
-        List<PatrolTaskStationDTO> stationInfo = Optional.ofNullable(patrolTaskStationMapper.selectStationByTaskCode(taskParam.getCode()))
-                .orElseGet(Collections::emptyList)
-                .stream().collect(Collectors.toList());
+        List<PatrolTaskStationDTO> stationInfo = patrolTaskStationMapper.selectStationByTaskCode(taskParam.getCode());
         // 巡检用户
         QueryWrapper<PatrolTaskUser> userQueryWrapper = new QueryWrapper<>();
         userQueryWrapper.lambda().eq(PatrolTaskUser::getTaskCode, taskParam.getCode());
-        List<PatrolTaskUser> userList = Optional.ofNullable(patrolTaskUserMapper.selectList(userQueryWrapper))
-                .orElseGet(Collections::emptyList)
-                .stream().collect(Collectors.toList());
+        List<PatrolTaskUser> userList = patrolTaskUserMapper.selectList(userQueryWrapper);
 
         PatrolPlan patrolPlan = Optional.ofNullable(patrolPlanMapper.selectOne(new QueryWrapper<PatrolPlan>().lambda().eq(PatrolPlan::getCode, taskParam.getPlanCode())))
                 .orElseGet(PatrolPlan::new);
@@ -263,8 +261,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         }
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         boolean admin = SecurityUtils.getSubject().hasRole("admin");
-        if(!admin)
-        {
+        if (!admin) {
             patrolTaskDTO.setLoginOrgId(sysUser.getOrgCode());
         }
         List<PatrolTaskDTO> taskList = patrolTaskMapper.getPatrolTaskPoolList(pageList, patrolTaskDTO);
@@ -293,8 +290,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
     public Page<PatrolTaskDTO> getPatrolTaskList(Page<PatrolTaskDTO> pageList, PatrolTaskDTO patrolTaskDTO) {
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         boolean admin = SecurityUtils.getSubject().hasRole("admin");
-        if(!admin)
-        {
+        if (!admin) {
             patrolTaskDTO.setLoginOrgId(sysUser.getOrgCode());
         }
         List<PatrolTaskDTO> taskList = patrolTaskMapper.getPatrolTaskList(pageList, patrolTaskDTO);
@@ -329,18 +325,17 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         if (PatrolConstant.TASK_INIT.equals(patrolTaskDTO.getStatus()) || PatrolConstant.TASK_RETURNED.equals(patrolTaskDTO.getStatus())) {
             // 当前登录人所属部门是在检修任务的指派部门范围内才可以领取
             List<PatrolTaskOrganization> patrolTaskOrganizations = patrolTaskOrganizationMapper.selectList(new LambdaQueryWrapper<PatrolTaskOrganization>()
-                            .eq(PatrolTaskOrganization::getTaskCode, patrolTask.getCode())
-                            .eq(PatrolTaskOrganization::getDelFlag, CommonConstant.DEL_FLAG_0));
+                    .eq(PatrolTaskOrganization::getTaskCode, patrolTask.getCode())
+                    .eq(PatrolTaskOrganization::getDelFlag, CommonConstant.DEL_FLAG_0));
             if (CollUtil.isNotEmpty(patrolTaskOrganizations)) {
                 List<String> orgList = patrolTaskOrganizations.stream().map(PatrolTaskOrganization::getOrgCode).collect(Collectors.toList());
-                if (!orgList.contains(manager.checkLogin().getOrgCode())&&!admin) {
+                if (!orgList.contains(manager.checkLogin().getOrgCode()) && !admin) {
                     throw new AiurtBootException("小主，该巡检任务不在您的领取范围之内哦");
                 }
             }
             //删除之前的巡检人
-            List <PatrolTaskUser> taskUserList = patrolTaskUserMapper.selectList(new LambdaQueryWrapper<PatrolTaskUser>().eq(PatrolTaskUser::getTaskCode, patrolTask.getCode()));
-            if(CollUtil.isNotEmpty(taskUserList))
-            {
+            List<PatrolTaskUser> taskUserList = patrolTaskUserMapper.selectList(new LambdaQueryWrapper<PatrolTaskUser>().eq(PatrolTaskUser::getTaskCode, patrolTask.getCode()));
+            if (CollUtil.isNotEmpty(taskUserList)) {
                 patrolTaskUserMapper.deleteBatchIds(taskUserList);
             }
             updateWrapper.set(PatrolTask::getStatus, 2)
@@ -357,7 +352,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         }
         //确认：将待确认改为待执行
         if (PatrolConstant.TASK_CONFIRM.equals(patrolTaskDTO.getStatus())) {
-            if (manager.checkTaskUser(patrolTask.getCode()) == false&&!admin) {
+            if (manager.checkTaskUser(patrolTask.getCode()) == false && !admin) {
                 throw new AiurtBootException("小主，该巡检任务不在您的范围之内哦");
             }
             updateWrapper.set(PatrolTask::getStatus, 2).eq(PatrolTask::getId, patrolTaskDTO.getId());
@@ -365,7 +360,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         }
         //执行：将待执行改为执行中
         if (PatrolConstant.TASK_EXECUTE.equals(patrolTaskDTO.getStatus())) {
-            if (manager.checkTaskUser(patrolTask.getCode()) == false&&!admin) {
+            if (manager.checkTaskUser(patrolTask.getCode()) == false && !admin) {
                 throw new AiurtBootException("小主，该巡检任务不在您的范围之内哦");
             }
             updateWrapper.set(PatrolTask::getStatus, 4).eq(PatrolTask::getId, patrolTaskDTO.getId());
@@ -381,7 +376,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         boolean admin = SecurityUtils.getSubject().hasRole("admin");
         PatrolTask patrolTask = patrolTaskMapper.selectOne(queryWrapper);
-        if (manager.checkTaskUser(patrolTask.getCode()) == false&&!admin) {
+        if (manager.checkTaskUser(patrolTask.getCode()) == false && !admin) {
             throw new AiurtBootException("小主，该巡检任务不在您的退回范围之内哦");
         } else {
             //更新巡检状态及添加退回理由、退回人Id（传任务主键id、退回理由）
@@ -408,8 +403,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         }
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         PatrolTask patrolTask = patrolTaskMapper.selectById(orgCoed.getTaskId());
-        if(PatrolConstant.TASK_RETURNED.equals(patrolTask.getStatus()))
-        {
+        if (PatrolConstant.TASK_RETURNED.equals(patrolTask.getStatus())) {
             return arrayList;
         }
         if (PatrolConstant.TASK_COMMON.equals(patrolTask.getSource())) {
@@ -422,8 +416,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
                 a.setUserList(userList);
             });
             return arrayList;
-        }
-        else {
+        } else {
             if (ObjectUtil.isNull(orgCoed.getIdentity())) {
                 arrayList.stream().forEach(e -> {
                     List<PatrolTaskUserContentDTO> userList = e.getUserList();
@@ -474,7 +467,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
     public List<MajorDTO> getMajorSubsystemGanged(String id) {
         QueryWrapper<PatrolTaskStandard> wrapper = new QueryWrapper<>();
         wrapper.lambda().eq(PatrolTaskStandard::getTaskId, id);
-        List<PatrolTaskStandard> list = Optional.ofNullable(patrolTaskStandardMapper.selectList(wrapper)).orElseGet(Collections::emptyList);
+        List<PatrolTaskStandard> list = patrolTaskStandardMapper.selectList(wrapper);
         // 专业编码
         List<String> majorInfo = list.stream().map(PatrolTaskStandard::getProfessionCode).distinct().collect(Collectors.toList());
         // 子系统编码
@@ -502,8 +495,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         // 获取专业下的子系统信息
         Optional.ofNullable(major).orElseGet(Collections::emptyList).stream().forEach(l -> {
             if (ObjectUtil.isNotEmpty(l.getMajorCode()) && CollectionUtil.isNotEmpty(subsystem)) {
-                List<SubsystemDTO> subsystemInfo = Optional.ofNullable(patrolTaskMapper.getMajorSubsystemGanged(l.getMajorCode(), subsystem))
-                        .orElseGet(Collections::emptyList).stream().collect(Collectors.toList());
+                List<SubsystemDTO> subsystemInfo = patrolTaskMapper.getMajorSubsystemGanged(l.getMajorCode(), subsystem);
                 l.setSubsystemInfo(subsystemInfo);
             }
         });
@@ -542,7 +534,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         boolean admin = SecurityUtils.getSubject().hasRole("admin");
         PatrolTask patrolTask = patrolTaskMapper.selectById(patrolTaskDTO.getId());
-        if (manager.checkTaskUser(patrolTask.getCode()) == false&&!admin) {
+        if (manager.checkTaskUser(patrolTask.getCode()) == false && !admin) {
             throw new AiurtBootException("小主，该巡检任务不在您的提交范围之内哦");
         } else {
             List<PatrolTaskDevice> taskDevices = patrolTaskDeviceMapper.selectList(new LambdaQueryWrapper<PatrolTaskDevice>().eq(PatrolTaskDevice::getTaskId, patrolTask.getId()));
@@ -739,17 +731,18 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
 
     @Override
     public List<PatrolUserInfoDTO> getAssignee(List<String> list) {
+
         if (CollectionUtil.isEmpty(list)) {
             throw new AiurtBootException("任务编号的集合对象为空！");
         }
         int size = list.size();
-        List<PatrolUserInfoDTO> userInfo = Optional.ofNullable(patrolTaskOrganizationMapper.getUserListByTaskCode(list.get(0))).orElseGet(Collections::emptyList);
+        List<PatrolUserInfoDTO> userInfo = patrolTaskOrganizationMapper.getUserListByTaskCode(list.get(0));
 
         // 获取批量指派时的用户 需要相同的组织机构
         if (size > 1) {
-            List<String> orgCode = Optional.ofNullable(patrolTaskOrganizationMapper.getOrgCode(list.get(0))).orElseGet(Collections::emptyList);
+            List<String> orgCode = patrolTaskOrganizationMapper.getOrgCode(list.get(0));
             for (int i = 1; i < size; i++) {
-                List<String> code = Optional.ofNullable(patrolTaskOrganizationMapper.getOrgCode(list.get(i))).orElseGet(Collections::emptyList);
+                List<String> code = patrolTaskOrganizationMapper.getOrgCode(list.get(i));
                 boolean contains1 = orgCode.containsAll(code);
                 boolean contains2 = code.containsAll(orgCode);
                 if (contains1 && contains2) {
@@ -758,7 +751,6 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
                     throw new AiurtBootException("请选择组织机构一致的任务进行批量指派！");
                 }
             }
-
         }
         return userInfo;
     }
@@ -811,8 +803,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
 
         // 组织机构信息
         if (ObjectUtil.isEmpty(patrolRebuildDTO.getDeptCode())) {
-            List<PatrolTaskOrganizationDTO> patrolTaskOrgList = Optional.ofNullable(patrolTaskOrganizationMapper.selectOrgByTaskCode(patrolTask.getCode()))
-                    .orElseGet(Collections::emptyList);
+            List<PatrolTaskOrganizationDTO> patrolTaskOrgList = patrolTaskOrganizationMapper.selectOrgByTaskCode(patrolTask.getCode());
             patrolTaskOrgList.stream().forEach(l -> {
                 PatrolTaskOrganization organization = new PatrolTaskOrganization();
                 organization.setTaskCode(taskCode);
@@ -831,8 +822,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
 
         // 站所信息
         if (ObjectUtil.isEmpty(patrolRebuildDTO.getStationCode())) {
-            List<PatrolTaskStationDTO> taskStationList = Optional.ofNullable(patrolTaskStationMapper.selectStationByTaskCode(patrolTask.getCode()))
-                    .orElseGet(Collections::emptyList);
+            List<PatrolTaskStationDTO> taskStationList = patrolTaskStationMapper.selectStationByTaskCode(patrolTask.getCode());
             taskStationList.stream().forEach(l -> {
                 PatrolTaskStation station = new PatrolTaskStation();
                 station.setTaskCode(taskCode);
@@ -852,8 +842,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         // 根据原任务ID获取巡检任务标准关联表信息
         QueryWrapper<PatrolTaskStandard> taskStandardWrapper = new QueryWrapper<>();
         taskStandardWrapper.lambda().eq(PatrolTaskStandard::getTaskId, taskId);
-        List<PatrolTaskStandard> taskStandardList = Optional.ofNullable(patrolTaskStandardMapper.selectList(taskStandardWrapper))
-                .orElseGet(Collections::emptyList).stream().collect(Collectors.toList());
+        List<PatrolTaskStandard> taskStandardList = patrolTaskStandardMapper.selectList(taskStandardWrapper);
         taskStandardList.stream().forEach(l -> {
             PatrolTaskStandard taskStandard = new PatrolTaskStandard();
             taskStandard.setTaskId(newTaskId);
@@ -870,8 +859,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
             QueryWrapper<PatrolTaskDevice> taskDeviceWrapper = new QueryWrapper<>();
             taskDeviceWrapper.lambda().eq(PatrolTaskDevice::getTaskId, taskId)
                     .eq(PatrolTaskDevice::getTaskStandardId, l.getId());
-            List<PatrolTaskDevice> taskDeviceList = Optional.ofNullable(patrolTaskDeviceMapper.selectList(taskDeviceWrapper))
-                    .orElseGet(Collections::emptyList).stream().collect(Collectors.toList());
+            List<PatrolTaskDevice> taskDeviceList = patrolTaskDeviceMapper.selectList(taskDeviceWrapper);
 
             // 新增对应的设备工单信息
             taskDeviceList.stream().forEach(

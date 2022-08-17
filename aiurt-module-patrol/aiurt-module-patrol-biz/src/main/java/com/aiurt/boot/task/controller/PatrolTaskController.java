@@ -9,6 +9,7 @@ import com.aiurt.boot.task.param.PatrolTaskParam;
 import com.aiurt.boot.task.service.IPatrolTaskDeviceService;
 import com.aiurt.boot.task.service.IPatrolTaskService;
 import com.aiurt.common.aspect.annotation.AutoLog;
+import com.aiurt.common.aspect.annotation.PermissionData;
 import com.aiurt.common.constant.enums.ModuleType;
 import com.aiurt.common.system.base.controller.BaseController;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
@@ -155,6 +156,7 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
     @AutoLog(value = "PC巡检任务池-获取指派人员", operateType = 1, operateTypeAlias = "查询")
     @ApiOperation(value = "PC巡检任务池-获取指派人员", notes = "PC巡检任务池-获取指派人员")
     @RequestMapping(value = "/getAssignee", method = {RequestMethod.GET, RequestMethod.POST})
+    @PermissionData(pageComponent = "pollingCheck/PatrolPoolList")
     public Result<?> getAssignee(@ApiParam(name = "code", value = "任务编号集合") @RequestParam("code") List<String> list) {
         List<PatrolUserInfoDTO> userInfo = patrolTaskService.getAssignee(list);
         return Result.OK(userInfo);

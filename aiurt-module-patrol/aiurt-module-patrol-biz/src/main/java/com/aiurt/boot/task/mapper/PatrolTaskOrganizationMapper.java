@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.aiurt.boot.task.dto.PatrolTaskOrganizationDTO;
 import com.aiurt.boot.task.dto.PatrolUserInfoDTO;
+import com.aiurt.common.aspect.annotation.EnableDataPerm;
 import org.apache.ibatis.annotations.Param;
 import com.aiurt.boot.task.entity.PatrolTaskOrganization;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
@@ -14,6 +15,7 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
  * @Date: 2022-06-27
  * @Version: V1.0
  */
+@EnableDataPerm
 public interface PatrolTaskOrganizationMapper extends BaseMapper<PatrolTaskOrganization> {
 
     List<PatrolTaskOrganizationDTO> selectOrgByTaskCode(@Param("taskCode") String taskCode);

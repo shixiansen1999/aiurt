@@ -21,17 +21,17 @@
         GROUP_CONCAT( su.id ) userId,
         GROUP_CONCAT( su.realname ) userName,
         sd.depart_name orgName,
-        pto.*
+        patrol_task_organization.*
         FROM
-        patrol_task_organization pto
-        LEFT JOIN sys_user su ON pto.org_code = su.org_code
-        LEFT JOIN sys_depart sd ON pto.org_code = sd.org_code
+        patrol_task_organization
+        LEFT JOIN sys_user su ON patrol_task_organization.org_code = su.org_code
+        LEFT JOIN sys_depart sd ON patrol_task_organization.org_code = sd.org_code
         WHERE
-        pto.del_flag = 0
+        patrol_task_organization.del_flag = 0
         AND su.del_flag = 0
         AND sd.del_flag = 0
         <if test="code != null and code != ''">
-            AND pto.task_code = #{code}
+            AND patrol_task_organization.task_code = #{code}
         </if>
         GROUP BY
         org_code
