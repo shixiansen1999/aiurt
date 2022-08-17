@@ -1365,6 +1365,7 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
     @Override
     public List<OrgDTO> queryPeerList(String id) {
         List<OrgDTO> orgDto = new ArrayList<>();
+        LoginUser loginUser = manager.checkLogin();
         // 检修单
         RepairTaskDeviceRel repairTaskDeviceRel = repairTaskDeviceRelMapper.selectById(id);
         if (ObjectUtil.isEmpty(repairTaskDeviceRel)) {
@@ -1388,6 +1389,21 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                 List<String> list = manager.handleMixedOrgCode(orgList);
                 if (CollUtil.isNotEmpty(list)) {
                     orgDto = manager.queryUserByOrdCode(StrUtil.join(",", list));
+
+                    // 过滤自己
+                    if (CollUtil.isNotEmpty(orgDto)) {
+                        for (OrgDTO orgDTO : orgDto) {
+                            if (ObjectUtil.isNotEmpty(orgDTO)) {
+                                if (orgDTO.getOrgCode().equals(loginUser.getOrgCode())) {
+                                    List<LoginUser> users = orgDTO.getUsers();
+                                    if (CollUtil.isNotEmpty(users)) {
+                                        orgDTO.setUsers(users.stream().filter(u -> !u.getId().equals(loginUser.getId())).collect(Collectors.toList()));
+                                    }
+                                }
+                            }
+                        }
+                    }
+
                 }
             }
         }
