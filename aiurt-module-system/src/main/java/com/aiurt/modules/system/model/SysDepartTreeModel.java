@@ -133,6 +133,7 @@ public class SysDepartTreeModel implements Serializable{
         this.managerId = sysDepart.getManagerId();
         this.technicalId =sysDepart.getTechnicalId();
         this.teamType =sysDepart.getTeamType();
+        this.departFullName = sysDepart.getDepartFullName();
     }
 
     public boolean getIsLeaf() {
@@ -334,7 +335,7 @@ public class SysDepartTreeModel implements Serializable{
         this.contactId =contactId;
     }
     public String getConcatWay(){
-        return contactId;
+        return concatWay;
     }
     public void setConcatWay(){
         this.concatWay =concatWay;
@@ -350,6 +351,12 @@ public class SysDepartTreeModel implements Serializable{
     }
     public void setTechnicalId(){
         this.technicalId =technicalId;
+    }
+    public String getDepartFullName(){
+        return departFullName;
+    }
+    public void setDepartFullName(){
+        this.departFullName =departFullName;
     }
     public Integer getTeamType(){
         return teamType;
@@ -434,7 +441,8 @@ public class SysDepartTreeModel implements Serializable{
                 Objects.equals(concatWay,model.concatWay)&&
                 Objects.equals(managerId,model.managerId)&&
                 Objects.equals(technicalId,model.technicalId)&&
-                Objects.equals(teamType,model.teamType);
+                Objects.equals(teamType,model.teamType)&&
+                Objects.equals(departFullName,model.departFullName);
     }
 
     /**
@@ -446,7 +454,7 @@ public class SysDepartTreeModel implements Serializable{
         return Objects.hash(id, parentId, departName, departNameEn, departNameAbbr,
         		departOrder, description, orgCategory, orgType, orgCode, mobile, fax, address,
         		memo, status, delFlag, qywxIdentifier, createBy, createTime, updateBy, updateTime,
-        		children,directorUserIds,concatWay,managerId,technicalId,contactId,teamType);
+        		children,directorUserIds,concatWay,managerId,technicalId,contactId,teamType,departFullName);
     }
 
 }
