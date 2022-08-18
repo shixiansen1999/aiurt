@@ -1,4 +1,5 @@
 package com.aiurt.modules.fault.service.impl;
+import java.util.Date;
 
 
 import cn.hutool.core.collection.CollectionUtil;
@@ -18,6 +19,9 @@ import com.aiurt.modules.fault.service.*;
 import com.aiurt.modules.faultknowledgebase.entity.FaultKnowledgeBase;
 import com.aiurt.modules.faultlevel.entity.FaultLevel;
 import com.aiurt.modules.faultlevel.service.IFaultLevelService;
+import com.aiurt.modules.sparepart.dto.SparePartMalfunctionDTO;
+import com.aiurt.modules.sparepart.dto.SparePartReplaceDTO;
+import com.aiurt.modules.sparepart.dto.SparePartScrapDTO;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -728,9 +732,12 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
 
 
         List<DeviceChangeDTO> deviceChangeList = repairRecordDTO.getDeviceChangeList();
-
+        List<SparePartReplaceDTO> list = new ArrayList<>();
+        List<SparePartMalfunctionDTO> malfunctionList = new ArrayList<>();
+        List<SparePartScrapDTO> sparePartScrapList = new ArrayList<>();
         if (CollectionUtil.isNotEmpty(deviceChangeList)) {
             List<DeviceChangeSparePart> sparePartList = deviceChangeList.stream().map(deviceChangeDTO -> {
+                String outOrderId = deviceChangeDTO.getOutOrderId();
                 DeviceChangeSparePart build = DeviceChangeSparePart.builder()
                         .code(faultCode)
                         .consumables("0")
@@ -742,7 +749,60 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
                         .oldSparePartNum(deviceChangeDTO.getOldSparePartNum())
                         .oldSparePartCode(deviceChangeDTO.getOldSparePartCode())
                         .delFlag(CommonConstant.DEL_FLAG_0)
+                        .outOrderId(outOrderId)
                         .build();
+
+                // 备件更换记录表
+                SparePartReplaceDTO replaceDTO = new SparePartReplaceDTO();
+                replaceDTO.setMaintenanceRecord(faultCode);
+                replaceDTO.setMaterialsCode(deviceChangeDTO.getNewSparePartCode());
+                replaceDTO.setOutOrderId(outOrderId);
+                replaceDTO.setSubassemblyCode(deviceChangeDTO.getOldSparePartCode());
+                replaceDTO.setSubassemblyCode(deviceChangeDTO.getNewSparePartCode());
+                list.add(replaceDTO);
+                // 备件故障记录表
+                SparePartMalfunctionDTO malfunctionDTO = new SparePartMalfunctionDTO();
+                malfunctionDTO.setOutOrderId(outOrderId);
+                malfunctionDTO.setMaintenanceRecord(faultCode);
+                malfunctionDTO.setMalfunctionDeviceCode(deviceChangeDTO.getDeviceCode());
+                malfunctionDTO.setMalfunctionType(1);
+                malfunctionDTO.setDescription("");
+                malfunctionDTO.setReplaceNumber(deviceChangeDTO.getNewSparePartNum());
+                malfunctionDTO.setOrgId(loginUser.getOrgId());
+                malfunctionDTO.setMaintainUserId(loginUser.getId());
+                malfunctionDTO.setMaintainTime(new Date());
+                malfunctionDTO.setDelFlag(0);
+                malfunctionList.add(malfunctionDTO);
+
+                //
+                SparePartScrapDTO sparePartScrapDTO = new SparePartScrapDTO();
+                sparePartScrapDTO.setNumber("1");
+                sparePartScrapDTO.setMaterialCode("");
+                sparePartScrapDTO.setWarehouseCode("");
+                sparePartScrapDTO.setOutOrderId("");
+                sparePartScrapDTO.setNum(0);
+                sparePartScrapDTO.setScrapTime(new Date());
+                sparePartScrapDTO.setReason("");
+                sparePartScrapDTO.setCreateBy("");
+                sparePartScrapDTO.setStatus(0);
+                sparePartScrapDTO.setLineCode("");
+                sparePartScrapDTO.setStationCode("");
+                sparePartScrapDTO.setOrgId("");
+                sparePartScrapDTO.setKeepPerson("");
+                sparePartScrapDTO.setScrapReason("");
+                sparePartScrapDTO.setRepairTime(new Date());
+                sparePartScrapDTO.setScrapDepart("");
+                sparePartScrapDTO.setBuyTime(new Date());
+                sparePartScrapDTO.setDelFlag(0);
+                sparePartScrapDTO.setUpdateBy("");
+                sparePartScrapDTO.setCreateTime(new Date());
+                sparePartScrapDTO.setUpdateTime(new Date());
+                sparePartScrapDTO.setConfirmTime(new Date());
+                sparePartScrapDTO.setConfirmId("");
+                sparePartScrapDTO.setConfirmName("");
+                sparePartScrapDTO.setSysOrgCode("");
+                sparePartScrapList.add(sparePartScrapDTO);
+
                 return build;
             }).collect(Collectors.toList());
 
@@ -789,6 +849,10 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
 
         updateById(fault);
 
+
+        // 备件更换记录
+
+
         saveLog(loginUser, "填写维修记录", faultCode, FaultStatusEnum.REPAIR.getStatus(), null);
 
         // todo 发送消息
@@ -815,8 +879,8 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
 
         if (flag.equals(approvalStatus)) {
             fault.setStatus(FaultStatusEnum.Close.getStatus());
+            // 修改备件, 更改状态
             saveLog(loginUser,"维修结果审核通过", faultCode, FaultStatusEnum.Close.getStatus(), null);
-            // todo 库存计算
         }else {
             fault.setStatus(FaultStatusEnum.REPAIR.getStatus());
             saveLog(loginUser,"维修结果驳回", faultCode, FaultStatusEnum.REPAIR.getStatus(), resultDTO.getApprovalRejection());
