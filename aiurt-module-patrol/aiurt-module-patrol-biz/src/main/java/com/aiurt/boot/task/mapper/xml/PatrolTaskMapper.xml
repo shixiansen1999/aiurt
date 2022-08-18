@@ -116,11 +116,24 @@
             )
         </if>
         <if test="patrolTask.stationCode != null and patrolTask.stationCode != ''">
-            and pt.code in (
-            SELECT pps.task_code
-            FROM patrol_task_station pps
-            WHERE pps.del_flag = 0 and pps.station_code = #{patrolTask.stationCode}
-            )
+            <choose>
+                <when test="patrolTask.level != null and patrolTask.level == 1 ">
+                    and pt.code in (
+                    SELECT pps.task_code
+                    FROM patrol_task_station pps
+                    JOIN cs_station cs ON pps.station_code = cs.station_code
+                    AND cs.del_flag = 0
+                    WHERE pps.del_flag = 0 AND cs.line_code = #{patrolTask.stationCode}
+                    )
+                </when>
+                <when test="patrolTask.level != null and patrolTask.level == 2 ">
+                    and pt.code in (
+                    SELECT pps.task_code
+                    FROM patrol_task_station pps
+                    WHERE pps.del_flag = 0 and pps.station_code = #{patrolTask.stationCode}
+                    )
+                </when>
+            </choose>
         </if>
         <if test="patrolTask.dateHead != null and patrolTask.dateEnd != null">
             AND DATE_FORMAT( pt.patrol_date, '%Y-%m-%d' )
