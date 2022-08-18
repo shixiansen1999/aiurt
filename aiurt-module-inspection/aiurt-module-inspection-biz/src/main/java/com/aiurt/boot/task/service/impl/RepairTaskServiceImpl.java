@@ -1365,6 +1365,7 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
     @Override
     public List<OrgDTO> queryPeerList(String id) {
         List<OrgDTO> orgDto = new ArrayList<>();
+
         LoginUser loginUser = manager.checkLogin();
         // 检修单
         RepairTaskDeviceRel repairTaskDeviceRel = repairTaskDeviceRelMapper.selectById(id);
@@ -1378,35 +1379,33 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
             throw new AiurtBootException(InspectionConstant.ILLEGAL_OPERATION);
         }
 
-        List<RepairTaskOrgRel> repairTaskOrgRels = repairTaskOrgRelMapper.selectList(
-                new LambdaQueryWrapper<RepairTaskOrgRel>()
-                        .eq(RepairTaskOrgRel::getRepairTaskCode, repairTask.getCode())
-                        .eq(RepairTaskOrgRel::getDelFlag, CommonConstant.DEL_FLAG_0));
+        // 查询任务的检修人
+        List<String> userIds = null;
+        List<RepairTaskUser> repairTaskUsers = repairTaskUserMapper.selectList(
+                new LambdaQueryWrapper<RepairTaskUser>()
+                        .eq(RepairTaskUser::getRepairTaskCode, repairTask.getCode()));
+        if (CollUtil.isNotEmpty(repairTaskUsers)) {
+            userIds = repairTaskUsers.stream().map(RepairTaskUser::getUserId).collect(Collectors.toList());
+        }
 
-        if (CollUtil.isNotEmpty(repairTaskOrgRels)) {
-            List<String> orgList = repairTaskOrgRels.stream().map(RepairTaskOrgRel::getOrgCode).collect(Collectors.toList());
-            if (CollUtil.isNotEmpty(orgList)) {
-                List<String> list = manager.handleMixedOrgCode(orgList);
-                if (CollUtil.isNotEmpty(list)) {
-                    orgDto = manager.queryUserByOrdCode(StrUtil.join(",", list));
+        // 查询登录人部门下所有的人员
+        orgDto = manager.queryUserByOrdCode(loginUser.getOrgCode());
 
-                    // 过滤自己
-                    if (CollUtil.isNotEmpty(orgDto)) {
-                        for (OrgDTO orgDTO : orgDto) {
-                            if (ObjectUtil.isNotEmpty(orgDTO)) {
-                                if (orgDTO.getOrgCode().equals(loginUser.getOrgCode())) {
-                                    List<LoginUser> users = orgDTO.getUsers();
-                                    if (CollUtil.isNotEmpty(users)) {
-                                        orgDTO.setUsers(users.stream().filter(u -> !u.getId().equals(loginUser.getId())).collect(Collectors.toList()));
-                                    }
-                                }
-                            }
+        // 过滤掉检修人
+        if (CollUtil.isNotEmpty(orgDto)) {
+            for (OrgDTO orgDTO : orgDto) {
+                if (ObjectUtil.isNotEmpty(orgDTO)) {
+                    if (orgDTO.getOrgCode().equals(loginUser.getOrgCode())) {
+                        List<LoginUser> users = orgDTO.getUsers();
+                        if (CollUtil.isNotEmpty(users) && CollUtil.isNotEmpty(userIds)) {
+                            List<String> finalUserIds = userIds;
+                            orgDTO.setUsers(users.stream().filter(u -> !finalUserIds.contains(u.getId())).collect(Collectors.toList()));
                         }
                     }
-
                 }
             }
         }
+
         return orgDto;
     }
 
