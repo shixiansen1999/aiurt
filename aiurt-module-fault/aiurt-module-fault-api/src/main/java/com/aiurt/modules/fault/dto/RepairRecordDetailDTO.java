@@ -13,6 +13,9 @@ import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
 
+/**
+ * @author fgw
+ */
 @Data
 @ApiModel("维修记录详情")
 public class RepairRecordDetailDTO implements Serializable {
@@ -97,5 +100,8 @@ public class RepairRecordDetailDTO implements Serializable {
     /**维修响应时长*/
     @ApiModelProperty(value = "维修响应时长")
     private String responseDuration;
+
+    @ApiModelProperty(value = "签名路径")
+    private String signPath;
 
 }

@@ -223,4 +223,8 @@ public class FaultRepairRecord implements Serializable {
     @ApiModelProperty(value = "提交时间")
     @TableField(exist = false)
     private Date commitTime;
+
+
+    @ApiModelProperty(value = "签名路径")
+    private String signPath;
 }

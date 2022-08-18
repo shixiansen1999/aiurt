@@ -17,7 +17,8 @@
             a.file_path,
             a.fault_analysis,
             a.fault_phenomenon,
-            a.maintenance_measures
+            a.maintenance_measures,
+            a.sign_path
         from
         fault_repair_record a
         LEFT JOIN sys_user su on a.appoint_user_name = su.username
