@@ -103,8 +103,6 @@ public class FaultRepairRecordServiceImpl extends ServiceImpl<FaultRepairRecordM
             FaultKnowledgeBase knowledgeBase = knowledgeBaseService.getById(knowledgeId);
             recordDetailDTO.setFaultKnowledgeBase(knowledgeBase);
         }
-
-        recordDetailDTO.setFaultKnowledgeBase(new FaultKnowledgeBase());
         return recordDetailDTO;
     }
 

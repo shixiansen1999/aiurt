@@ -22,7 +22,7 @@
             id
         FROM
             fault_knowledge_base
-        WHERE 1=1
+        WHERE 1=1 and del_flag = 0 and status = 1
         <if test="matchName != null and matchName != ''">
             and MATCH (
             `fault_phenomenon`,
@@ -52,7 +52,7 @@
         ) AGAINST (#{condition.matchName} IN BOOLEAN MODE) as scode
         from
             fault_knowledge_base
-        WHERE 1=1
+        WHERE 1=1 and  del_flag = 0 and status = 1
         <if test="condition.matchName != null and condition.matchName != ''">
            and MATCH (
             `fault_phenomenon`,
