@@ -53,7 +53,8 @@ public interface IWorkAreaService extends IService<WorkArea> {
      * @param pageList
      * @param majorId
      * @param name
+     * @param orgName
      * @return
      */
-    Page<MajorUserDTO> getMajorUser(Page<MajorUserDTO> pageList, String majorId,String name);
+    Page<MajorUserDTO> getMajorUser(Page<MajorUserDTO> pageList, String majorId,String name,String orgName);
 }

@@ -37,6 +37,9 @@ cum.major_id = #{majorId}
 <if test="name != null and name != ''">
   and su.realname like concat ('%',#{name},'%')
   </if>
+  <if test="orgName != null and orgName != ''">
+  and su.org_name like concat ('%',#{orgName},'%')
+  </if>
 </select>
 <select id="getUserAllMajor" resultType="com.aiurt.modules.workarea.dto.MajorDTO">
 select  cm.*

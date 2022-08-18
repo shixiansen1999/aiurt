@@ -1,5 +1,6 @@
 package com.aiurt.modules.workarea.dto;
 
+import com.aiurt.common.aspect.annotation.Dict;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
@@ -35,6 +36,7 @@ public class WorkAreaDTO {
     @Excel(name = "工区类型：1运行工区、2检修工区", width = 15)
     @ApiModelProperty(value = "工区类型：1运行工区、2检修工区")
     @TableField(value = "`type`")
+    @Dict(dicCode = "work_area_type")
     private Integer type;
     /**工区地点*/
     @Excel(name = "工区地点", width = 15)

@@ -158,8 +158,8 @@ public class WorkAreaServiceImpl extends ServiceImpl<WorkAreaMapper, WorkArea> i
     }
 
     @Override
-    public Page<MajorUserDTO> getMajorUser(Page<MajorUserDTO> pageList, String majorId,String name) {
-        List<MajorUserDTO> majorUserDTOList = workAreaMapper.getMajorAllUser(pageList,majorId,name);
+    public Page<MajorUserDTO> getMajorUser(Page<MajorUserDTO> pageList, String majorId,String name,String orgName) {
+        List<MajorUserDTO> majorUserDTOList = workAreaMapper.getMajorAllUser(pageList,majorId,name,orgName);
         List<SubSystem> systemNameList = new ArrayList<>();
         for(MajorUserDTO majorUserDTO:majorUserDTOList)
         {

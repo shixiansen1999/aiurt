@@ -39,9 +39,10 @@ public interface WorkAreaMapper extends BaseMapper<WorkArea> {
      * @param pageList
      * @param majorId
      * @param name
+     * @param orgName
      * @return
      */
-    List<MajorUserDTO> getMajorAllUser(@Param("pageList")Page<MajorUserDTO> pageList, @Param("majorId")String majorId,@Param("name")String name);
+    List<MajorUserDTO> getMajorAllUser(@Param("pageList")Page<MajorUserDTO> pageList, @Param("majorId")String majorId,@Param("name")String name,@Param("orgName")String orgName);
 
     /**
      * 根据用户id,查询该用户下的所有专业
