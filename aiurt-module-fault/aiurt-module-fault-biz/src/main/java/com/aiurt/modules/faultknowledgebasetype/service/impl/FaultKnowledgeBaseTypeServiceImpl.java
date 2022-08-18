@@ -11,7 +11,7 @@ import com.aiurt.modules.faultknowledgebasetype.service.IFaultKnowledgeBaseTypeS
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.system.vo.CsUserMajorModel;
 import org.jeecg.common.system.vo.CsUserSubsystemModel;
@@ -41,11 +41,8 @@ public class FaultKnowledgeBaseTypeServiceImpl extends ServiceImpl<FaultKnowledg
     private CommonAPI commonApi;
 
     @Override
-    public List<MajorDTO> faultKnowledgeBaseTypeTreeList(String systemCode) {
+    public List<MajorDTO> faultKnowledgeBaseTypeTreeList(String majorCode,String systemCode) {
         LambdaQueryWrapper<FaultKnowledgeBaseType> queryWrapper = new LambdaQueryWrapper<>();
-        if (StringUtils.isNotEmpty(systemCode)) {
-            queryWrapper.eq(FaultKnowledgeBaseType::getSystemCode, systemCode);
-        }
         queryWrapper.eq(FaultKnowledgeBaseType::getDelFlag, "0").orderByDesc(FaultKnowledgeBaseType::getCreateTime);
         List<FaultKnowledgeBaseType> faultKnowledgeBaseTypes = faultKnowledgeBaseTypeMapper.selectList(queryWrapper);
 
@@ -55,6 +52,12 @@ public class FaultKnowledgeBaseTypeServiceImpl extends ServiceImpl<FaultKnowledg
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         List<CsUserMajorModel> majorByUserId = commonApi.getMajorByUserId(sysUser.getId());
         List<CsUserSubsystemModel> subsystemByUserId = commonApi.getSubsystemByUserId(sysUser.getId());
+        if (StringUtils.isNotBlank(majorCode) && StringUtils.isNotBlank(systemCode)) {
+            List<CsUserMajorModel> majorModels = majorByUserId.stream().filter(m -> !m.getMajorCode().equals(majorCode)).collect(Collectors.toList());
+            List<CsUserSubsystemModel> subsystemModels = subsystemByUserId.stream().filter(s -> !s.getSystemCode().equals(systemCode)).collect(Collectors.toList());
+            majorByUserId.removeAll(majorModels);
+            subsystemByUserId.removeAll(subsystemModels);
+        }
         if (CollectionUtil.isNotEmpty(majorByUserId)) {
             List<MajorDTO> allMajor = new ArrayList<>();
             for (CsUserMajorModel major: majorByUserId) {

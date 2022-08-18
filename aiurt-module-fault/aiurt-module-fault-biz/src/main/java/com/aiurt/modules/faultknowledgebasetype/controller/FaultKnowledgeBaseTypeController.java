@@ -211,8 +211,8 @@ public class FaultKnowledgeBaseTypeController extends BaseController<FaultKnowle
 			 @ApiResponse(code = 200, message = "OK", response = MajorDTO.class)
 	 })
 	 @PermissionData(pageComponent = "fault/FaultKnowledgeBaseListChange")
-	 public Result<List<MajorDTO>> faultKnowledgeBaseTypeTreeList(@RequestParam(name="id",required=false)String systemCode) {
-		 List<MajorDTO> list = faultKnowledgeBaseTypeService.faultKnowledgeBaseTypeTreeList(systemCode);
+	 public Result<List<MajorDTO>> faultKnowledgeBaseTypeTreeList(@RequestParam(name="majorCode",required=false)String majorCode,@RequestParam(name="systemCode",required=false)String systemCode) {
+		 List<MajorDTO> list = faultKnowledgeBaseTypeService.faultKnowledgeBaseTypeTreeList(majorCode,systemCode);
 		 return Result.OK(list);
 	 }
 }
