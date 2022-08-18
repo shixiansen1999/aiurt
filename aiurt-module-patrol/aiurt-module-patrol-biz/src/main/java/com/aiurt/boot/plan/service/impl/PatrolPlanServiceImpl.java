@@ -211,15 +211,15 @@ public class PatrolPlanServiceImpl extends ServiceImpl<PatrolPlanMapper, PatrolP
     public PatrolPlanDto selectId(String id, String code) {
         PatrolPlanDto patrolPlanDto = baseMapper.selectId(id, code);
         if (ObjectUtil.isNotNull(patrolPlanDto.getSiteCode())) {
-            patrolPlanDto.setSiteCodes(Arrays.asList(patrolPlanDto.getSiteCode().split(";")));
+            patrolPlanDto.setSiteCodes(Arrays.asList(patrolPlanDto.getSiteCode().split(",")));
             List<StationDTO>stationDTOS=baseMapper.selectStations(patrolPlanDto.getSiteCodes());
             patrolPlanDto.setSiteName(patrolManager.translateStation(stationDTOS));
         }
         if (ObjectUtil.isNotNull(patrolPlanDto.getMechanismCode())) {
-            patrolPlanDto.setMechanismCodes(Arrays.asList(patrolPlanDto.getMechanismCode().split(";")));
+            patrolPlanDto.setMechanismCodes(Arrays.asList(patrolPlanDto.getMechanismCode().split(",")));
         }
         if (ObjectUtil.isNotNull(patrolPlanDto.getIds())) {
-            List<String> ids = Arrays.asList(patrolPlanDto.getIds().split(";"));
+            List<String> ids = Arrays.asList(patrolPlanDto.getIds().split(","));
             List<PatrolStandardDto> patrolStandardDtos = patrolStandardMapper.selectbyIds(ids);
             patrolStandardDtos.forEach(p -> {
                 PatrolPlanStandard patrolPlanStandard = patrolPlanStandardMapper.selectOne(

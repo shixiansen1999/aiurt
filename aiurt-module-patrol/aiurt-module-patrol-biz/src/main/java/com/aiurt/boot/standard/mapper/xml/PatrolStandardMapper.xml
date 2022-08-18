@@ -99,7 +99,7 @@
                  left join cs_subsystem c on a.subsystem_code =c.system_code and c.del_flag =0
                  left join device_type d on a.device_type_code =d.code and d.del_flag =0
         where a.del_flag =0 and a.id in
-        <foreach collection="ids" open="(" close=")"  index="index"   separator=";" item="ids">
+        <foreach collection="ids" open="(" close=")"  index="index"   separator="," item="ids">
            #{ids}
         </foreach>
     </select>
