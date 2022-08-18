@@ -181,7 +181,7 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
             PatrolTask patrolTask = patrolTaskMapper.selectById(e.getTaskId());
             List<PatrolTaskUser> userList = patrolTaskUserMapper.selectList(new LambdaQueryWrapper<PatrolTaskUser>().eq(PatrolTaskUser::getTaskCode, patrolTask.getCode()));
             List<PatrolTaskUser> showButton = userList.stream().filter(u -> u.getUserId().equals(sysUser.getId())).collect(Collectors.toList());
-            if (showButton.size() > 0) {
+            if (showButton.size() > 0||SecurityUtils.getSubject().hasRole("admin")) {
                 e.setShowEditButton(1);
             } else {
                 e.setShowEditButton(0);

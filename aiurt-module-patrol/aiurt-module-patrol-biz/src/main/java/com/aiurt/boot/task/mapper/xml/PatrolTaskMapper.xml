@@ -28,6 +28,10 @@
             AND t1.CODE IN (SELECT t3.task_code FROM patrol_task_station t3 WHERE t3.task_code = t1.CODE AND
             t3.station_code =#{patrolTaskDTO.stationCode})
         </if>
+         <if test="patrolTaskDTO.lineCode!=null and patrolTaskDTO.lineCode!=''">
+            AND t1.CODE IN( SELECT t3.task_code FROM patrol_task_station t3 LEFT JOIN cs_station t4 on t3.station_code = t4.station_code
+            WHERE t3.task_code = t1.CODE AND t4.line_code = #{patrolTaskDTO.lineCode})
+        </if>
         order by t1.create_time desc
     </select>
     <select id="getPatrolTaskList" resultType="com.aiurt.boot.task.dto.PatrolTaskDTO">
@@ -47,6 +51,14 @@
         </if>
         <if test="patrolTaskDTO.status!=null">
             and t1.status = #{patrolTaskDTO.status}
+        </if>
+            <if test="patrolTaskDTO.stationCode!=null and patrolTaskDTO.stationCode!=''">
+            AND t1.CODE IN (SELECT t3.task_code FROM patrol_task_station t3 WHERE t3.task_code = t1.CODE AND
+            t3.station_code =#{patrolTaskDTO.stationCode})
+        </if>
+        <if test="patrolTaskDTO.lineCode!=null and patrolTaskDTO.lineCode!=''">
+        AND t1.CODE IN( SELECT t3.task_code FROM patrol_task_station t3 LEFT JOIN cs_station t4 on t3.station_code = t4.station_code
+        WHERE t3.task_code = t1.CODE AND t4.line_code = #{patrolTaskDTO.lineCode})
         </if>
        ORDER BY  t1.`status` asc,  t1.create_time desc
     </select>
@@ -166,6 +178,10 @@
         <if test="patrolTaskDTO.stationCode!=null and patrolTaskDTO.stationCode!=''">
             and t1.code in(select t3.task_code from patrol_task_station t3 where t3.station_code =
             #{patrolTaskDTO.stationCode})
+        </if>
+         <if test="patrolTaskDTO.lineCode!=null and patrolTaskDTO.lineCode!=''">
+        AND t1.CODE IN
+	    ( SELECT t3.task_code FROM patrol_task_station t3 LEFT JOIN cs_station t4 on t3.station_code = t4.station_code WHERE t3.task_code = t1.CODE AND t4.line_code = #{patrolTaskDTO.lineCode})
         </if>
         <if test="patrolTaskDTO.orgCode != null and patrolTaskDTO.orgCode!=''">
             and t1.code in (SELECT t2.task_code FROM patrol_task_organization t2 where t2.org_code =
