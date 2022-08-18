@@ -36,13 +36,8 @@ public class PatrolStandardServiceImpl extends ServiceImpl<PatrolStandardMapper,
     }
 
     @Override
-    public IPage<PatrolStandardDto> pageLists(Page page, PatrolStandard patrolStandard) {
-        List<PatrolStandardDto> page1 = patrolStandardMapper.pageList(page,patrolStandard);
-        page1.forEach(a->{
-            a.setNumber(baseMapper.number1(a.getId()));
-
-        });
-        page1.removeIf(i-> i.getNumber().equals(0));
+    public IPage<PatrolStandardDto> pageLists(Page page, PatrolStandardDto patrolStandard) {
+        List<PatrolStandardDto> page1 = patrolStandardMapper.pageLists(page,patrolStandard,patrolStandard.getStations());
         return page.setRecords(page1);
     }
 

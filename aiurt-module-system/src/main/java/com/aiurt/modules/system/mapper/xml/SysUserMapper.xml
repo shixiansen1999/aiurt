@@ -185,6 +185,9 @@
 				#{orgId}
 			</foreach>
 		</if>
+		<if test="status == null ">
+			or status = 2
+		</if>
 		<if test="status !=null ">
 			AND status =#{status}
 		</if>

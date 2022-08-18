@@ -67,12 +67,12 @@ public class PatrolPlanServiceImpl extends ServiceImpl<PatrolPlanMapper, PatrolP
     @Override
     public IPage<PatrolPlanDto> pageList(Page<PatrolPlanDto> page, PatrolPlanDto patrolPlan) {
         IPage<PatrolPlanDto> list = baseMapper.list(page, patrolPlan);
- //       List <PatrolPlanDto> list1 =list.getRecords();
-//        list1.forEach(l->{
-//            List<String> strings = Arrays.asList(l.getSiteCode().split(";"));
-//            List<StationDTO> stationDTOS = baseMapper.selectStations(strings);
-//            l.setSiteName(patrolManager.translateStation(stationDTOS));
-//        });
+        List <PatrolPlanDto> list1 =list.getRecords();
+        list1.forEach(l->{
+            List<String> strings = Arrays.asList(l.getSiteCode().split(";"));
+            List<StationDTO> stationDTOS = baseMapper.selectStations(strings);
+            l.setSiteName(patrolManager.translateStation(stationDTOS));
+        });
         return list;
     }
 
@@ -212,6 +212,8 @@ public class PatrolPlanServiceImpl extends ServiceImpl<PatrolPlanMapper, PatrolP
         PatrolPlanDto patrolPlanDto = baseMapper.selectId(id, code);
         if (ObjectUtil.isNotNull(patrolPlanDto.getSiteCode())) {
             patrolPlanDto.setSiteCodes(Arrays.asList(patrolPlanDto.getSiteCode().split(";")));
+            List<StationDTO>stationDTOS=baseMapper.selectStations(patrolPlanDto.getSiteCodes());
+            patrolPlanDto.setSiteName(patrolManager.translateStation(stationDTOS));
         }
         if (ObjectUtil.isNotNull(patrolPlanDto.getMechanismCode())) {
             patrolPlanDto.setMechanismCodes(Arrays.asList(patrolPlanDto.getMechanismCode().split(";")));

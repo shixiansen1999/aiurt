@@ -1,8 +1,6 @@
 package com.aiurt.boot.standard.entity;
 
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableName;
+import com.baomidou.mybatisplus.annotation.*;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -59,6 +57,7 @@ public class PatrolStandard implements Serializable {
 	/**设备类型code*/
 	@Excel(name = "设备类型code", width = 15)
     @ApiModelProperty(value = "设备类型code")
+    @TableField(updateStrategy = FieldStrategy.IGNORED)
     private java.lang.String deviceTypeCode;
 	/**生效状态：0停用 1启用*/
 	@Excel(name = "生效状态：0停用 1启用", width = 15)

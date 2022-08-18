@@ -35,6 +35,9 @@ public class PatrolStandardDto extends PatrolStandard {
     @Excel(name = "判断是否可以删除0为可删,其他都为不可删",width = 15)
     @ApiModelProperty(value = "判断是否可以删除0为可删,其他都为不可删")
     private Integer number;
+    @Excel(name = "选择站点集合",width = 15)
+    @ApiModelProperty(value = "选择站点集合")
+    private List<String> stations;
     @TableField(exist = false)
     @Excel(name = "设备集合", width = 15)
     @ApiModelProperty(value = "设备集合")

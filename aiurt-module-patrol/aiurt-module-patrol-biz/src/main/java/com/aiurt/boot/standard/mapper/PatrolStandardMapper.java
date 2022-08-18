@@ -23,6 +23,13 @@ public interface PatrolStandardMapper extends BaseMapper<PatrolStandard> {
      * @return
      */
     List<PatrolStandardDto> pageList (@Param("page") Page page, @Param("patrolStandard") PatrolStandard patrolStandard);
+    /**
+     * 分页查询
+     * @param page
+     * @param patrolStandard
+     * @return
+     */
+    List<PatrolStandardDto> pageLists (@Param("page") Page page, @Param("patrolStandard") PatrolStandardDto patrolStandard,List<String>stations);
 
     /**
      * 获取分类

@@ -66,11 +66,7 @@ public class InspectionCodeServiceImpl extends ServiceImpl<InspectionCodeMapper,
     public IPage<InspectionCodeDTO> pageLists(Page<InspectionCodeDTO> page, InspectionCodeDTO inspectionCodeDTO) {
 
         // todo 数据权限过滤
-        List<InspectionCodeDTO> inspectionCodeDTOS = baseMapper.pageList(page,inspectionCodeDTO);
-        inspectionCodeDTOS.forEach(i->{
-            i.setNumber(baseMapper.number1(i.getId()));
-        });
-        inspectionCodeDTOS.removeIf(i-> i.getNumber().equals(0));
+        List<InspectionCodeDTO> inspectionCodeDTOS = baseMapper.pageLists(page,inspectionCodeDTO);
         if (ObjectUtils.isNotEmpty(inspectionCodeDTO.getInspectionStrCode())) {
             for (InspectionCodeDTO il : inspectionCodeDTOS) {
                 InspectionStrRel inspectionStrRel = inspectionStrRelMapper.selectOne(new LambdaQueryWrapper<InspectionStrRel>()

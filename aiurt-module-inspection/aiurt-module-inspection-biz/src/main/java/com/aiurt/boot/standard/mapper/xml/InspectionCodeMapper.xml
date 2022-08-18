@@ -35,6 +35,40 @@
         </if>
         ORDER BY  a.create_time DESC
     </select>
+    <select id="pageLists" resultType="com.aiurt.boot.manager.dto.InspectionCodeDTO">
+       SELECT * from (SELECT a.* ,b.`name` as deviceTypeName,c.major_name as majorName,d.system_name as subsystemName,
+        (SELECT COUNT(icc.inspection_code_id AND icc.inspection_code_id=a.id AND icc.del_flag=0 OR NULL) FROM inspection_code_content icc WHERE 1=1) as number
+        FROM inspection_code a
+        LEFT JOIN device_type b on a.device_type_code =b.`code` and b.del_flag =0
+        LEFT JOIN cs_major c on a.major_code =c.major_code and c.del_flag =0
+        LEFT JOIN cs_subsystem d on a.subsystem_code = d.system_code and d.del_flag =0 where 1=1)
+        WHERE a.del_flag =0 and  a.number >0
+        <if test="inspectionCodeDTO.title !=null ">
+            AND a.title LIKE CONCAT ('%', #{inspectionCodeDTO.title}, '%')
+        </if>
+        <if test="inspectionCodeDTO.id !=null ">
+            AND a.id = #{inspectionCodeDTO.id}
+        </if>
+        <if test="inspectionCodeDTO.code !=null ">
+            AND a.`code` LIKE CONCAT ('%', #{inspectionCodeDTO.code}, '%')
+        </if>
+        <if test="inspectionCodeDTO.status !=null ">
+            AND a.status = #{inspectionCodeDTO.status}
+        </if>
+        <if test="inspectionCodeDTO.majorCode !=null ">
+            AND a.major_code = #{inspectionCodeDTO.majorCode}
+        </if>
+        <if test="inspectionCodeDTO.subsystemCode !=null ">
+            AND a.subsystem_code = #{inspectionCodeDTO.subsystemCode}
+        </if>
+        <if test="inspectionCodeDTO.type !=null ">
+            AND a.type = #{inspectionCodeDTO.type}
+        </if>
+        <if test="inspectionCodeDTO.deviceTypeCode !=null ">
+            AND a.device_type_code = #{inspectionCodeDTO.deviceTypeCode}
+        </if>
+        ORDER BY  a.create_time DESC
+    </select>
     <select id="number" resultType="java.lang.Integer">
         SELECT COUNT(inspection_str_rel.inspection_sta_code)as number
         FROM inspection_str_rel

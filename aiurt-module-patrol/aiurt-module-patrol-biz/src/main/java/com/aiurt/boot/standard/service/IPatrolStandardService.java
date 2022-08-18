@@ -29,7 +29,7 @@ public interface IPatrolStandardService extends IService<PatrolStandard> {
      * @param patrolStandard
      * @return
      */
-    IPage<PatrolStandardDto> pageLists (Page page, PatrolStandard patrolStandard);
+    IPage<PatrolStandardDto> pageLists (Page page, PatrolStandardDto patrolStandard);
 
     /**
      * 获取专业

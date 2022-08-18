@@ -22,6 +22,12 @@ public interface InspectionCodeMapper extends BaseMapper<InspectionCode> {
      * @return
      */
     List<InspectionCodeDTO> pageList(@Param("page")Page<InspectionCodeDTO> page,@Param("inspectionCodeDTO") InspectionCodeDTO inspectionCodeDTO);
+    /**
+     * 分页判断是否有关联
+     * @param inspectionCodeDTO
+     * @return
+     */
+    List<InspectionCodeDTO> pageLists(@Param("page")Page<InspectionCodeDTO> page,@Param("inspectionCodeDTO") InspectionCodeDTO inspectionCodeDTO);
 
     /**
      * 查询是否可以删除

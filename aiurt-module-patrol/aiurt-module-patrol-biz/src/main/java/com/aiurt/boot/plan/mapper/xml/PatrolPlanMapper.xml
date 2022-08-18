@@ -330,13 +330,13 @@
         </if>
     </select>
     <select id="selectStations" resultType="com.aiurt.boot.standard.dto.StationDTO">
-        select a.line_name as lineName,a.station_name as stationName
+        select *
           from cs_station a
            where a.del_flag =0
    <if test="asList!=null">
         <if test="asList.size()>0">
             AND a.station_code in
-            <foreach item="asList" collection="asList" separator=";" open="(" close=")" index="">
+            <foreach item="asList" collection="asList" separator="," open="(" close=")" index="">
                 #{asList}
             </foreach>
         </if>

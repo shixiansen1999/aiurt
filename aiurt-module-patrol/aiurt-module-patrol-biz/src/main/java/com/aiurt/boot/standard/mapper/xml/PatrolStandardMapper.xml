@@ -35,6 +35,52 @@
         </if>
         order by a.create_time desc
     </select>
+    <select id="pageLists" resultType="com.aiurt.boot.standard.dto.PatrolStandardDto">
+        SELECT * from (select a.*,b.major_name as professionName, c.system_name as subsystemName ,d.name as deviceTypeName,
+        (SELECT COUNT(psi.standard_id AND psi.standard_id= a.id AND psi.del_flag=0 OR NULL) FROM patrol_standard_items psi WHERE 1=1) as number,
+        <if test="stations!=null and stations.size() >0">
+          (select count(dev.id and dev.device_type_code = d.code and dev.del_flag =0
+        <if test="stations.size()>0">
+            and dev.station_code in
+            <foreach item="stations" collection="stations" separator="," open="(" close=")" index="">
+                #{stations}
+            </foreach>
+        </if> or null)from device dev where 1=1) as number1
+        </if>
+        from patrol_standard as a
+        left join cs_major b on a.profession_code =b.major_code AND b.del_flag=0
+        left join cs_subsystem c on a.subsystem_code =c.system_code AND c.del_flag=0
+        left join device_type d on a.device_type_code =d.code AND d.del_flag=0 WHERE 1=1) as a
+        where a.del_flag =0   and  a.number >0
+        <if test="stations!=null and stations.size() >0">
+          and a.number1>0
+        </if>
+        <if test="patrolStandard.name !=null ">
+            AND a.name LIKE CONCAT ('%', #{patrolStandard.name}, '%')
+        </if>
+        <if test="patrolStandard.id !=null ">
+            AND a.id = #{patrolStandard.id}
+        </if>
+        <if test="patrolStandard.deviceTypeCode !=null ">
+            AND a.device_type_code = #{patrolStandard.deviceTypeCode}
+        </if>
+        <if test="patrolStandard.professionCode !=null ">
+            AND a.profession_code = #{patrolStandard.professionCode}
+        </if>
+        <if test="patrolStandard.subsystemCode !=null ">
+            AND a.subsystem_code = #{patrolStandard.subsystemCode}
+        </if>
+        <if test="patrolStandard.code !=null ">
+            AND a.code  LIKE CONCAT ('%', #{patrolStandard.code}, '%')
+        </if>
+        <if test="patrolStandard.createBy !=null ">
+            AND a.create_by LIKE CONCAT ('%', #{patrolStandard.createBy}, '%')
+        </if>
+        <if test="patrolStandard.status !=null ">
+            AND a.status = #{patrolStandard.status}
+        </if>
+        order by a.create_time desc
+    </select>
     <select id="list" resultType="com.aiurt.boot.standard.dto.InspectionStandardDto">
             SELECT d.name as deviceTypeName ,d.code as deviceTypeCode
             FROM device_type d
