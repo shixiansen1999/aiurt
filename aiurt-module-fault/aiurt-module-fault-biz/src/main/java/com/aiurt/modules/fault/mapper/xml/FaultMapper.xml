@@ -69,6 +69,17 @@
         <if test="condition.systemCode != null and condition.systemCode != ''">
             and system_code = #{condition.systemCode}
         </if>
+        <if test="condition.method != null and condition.method != ''">
+            and method like concat('%', #{condition.method}, '%')
+        </if>
+
+        <if test="condition.faultReason != null and condition.faultReason != ''">
+            and fault_reason like concat('%', #{condition.faultReason}, '%')
+        </if>
+
+        <if test="condition.solution != null and condition.solution != ''">
+            and solution like concat('%', #{condition.solution}, '%')
+        </if>
         order by scode desc
     </select>
 </mapper>
