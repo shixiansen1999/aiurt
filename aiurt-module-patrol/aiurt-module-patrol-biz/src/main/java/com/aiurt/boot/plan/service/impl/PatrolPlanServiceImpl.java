@@ -33,6 +33,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.lang.reflect.Array;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -66,11 +67,12 @@ public class PatrolPlanServiceImpl extends ServiceImpl<PatrolPlanMapper, PatrolP
     @Override
     public IPage<PatrolPlanDto> pageList(Page<PatrolPlanDto> page, PatrolPlanDto patrolPlan) {
         IPage<PatrolPlanDto> list = baseMapper.list(page, patrolPlan);
-        List <PatrolPlanDto> list1 =list.getRecords();
-        list1.forEach(l->{
-            List<StationDTO> stationDTOS = baseMapper.selectStations(Arrays.asList(l.getSiteCode().split(";")));
-            l.setSiteName(patrolManager.translateStation( stationDTOS));
-        });
+ //       List <PatrolPlanDto> list1 =list.getRecords();
+//        list1.forEach(l->{
+//            List<String> strings = Arrays.asList(l.getSiteCode().split(";"));
+//            List<StationDTO> stationDTOS = baseMapper.selectStations(strings);
+//            l.setSiteName(patrolManager.translateStation(stationDTOS));
+//        });
         return list;
     }
 
@@ -209,13 +211,13 @@ public class PatrolPlanServiceImpl extends ServiceImpl<PatrolPlanMapper, PatrolP
     public PatrolPlanDto selectId(String id, String code) {
         PatrolPlanDto patrolPlanDto = baseMapper.selectId(id, code);
         if (ObjectUtil.isNotNull(patrolPlanDto.getSiteCode())) {
-            patrolPlanDto.setSiteCodes(Arrays.asList(patrolPlanDto.getSiteCode().split(",")));
+            patrolPlanDto.setSiteCodes(Arrays.asList(patrolPlanDto.getSiteCode().split(";")));
         }
         if (ObjectUtil.isNotNull(patrolPlanDto.getMechanismCode())) {
-            patrolPlanDto.setMechanismCodes(Arrays.asList(patrolPlanDto.getMechanismCode().split(",")));
+            patrolPlanDto.setMechanismCodes(Arrays.asList(patrolPlanDto.getMechanismCode().split(";")));
         }
         if (ObjectUtil.isNotNull(patrolPlanDto.getIds())) {
-            List<String> ids = Arrays.asList(patrolPlanDto.getIds().split(","));
+            List<String> ids = Arrays.asList(patrolPlanDto.getIds().split(";"));
             List<PatrolStandardDto> patrolStandardDtos = patrolStandardMapper.selectbyIds(ids);
             patrolStandardDtos.forEach(p -> {
                 PatrolPlanStandard patrolPlanStandard = patrolPlanStandardMapper.selectOne(
