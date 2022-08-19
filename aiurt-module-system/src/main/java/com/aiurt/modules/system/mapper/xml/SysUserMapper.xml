@@ -197,7 +197,7 @@
 		<if test="phone !=null ">
 			AND phone LIKE CONCAT ('%', #{phone}, '%')
 		</if>
-		<if test="status == null and username !=null and realname !=null and phone !=null and id == 0">
+		<if test="status == null and username ==null and realname ==null and phone ==null and name=='admin'">
 			or status = 2
 		</if>
 	</select>
