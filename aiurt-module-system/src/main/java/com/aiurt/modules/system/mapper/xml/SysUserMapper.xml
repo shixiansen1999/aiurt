@@ -185,9 +185,6 @@
 				#{orgId}
 			</foreach>
 		</if>
-		<if test="status == null ">
-			or status = 2
-		</if>
 		<if test="status !=null ">
 			AND status =#{status}
 		</if>
@@ -199,6 +196,9 @@
 		</if>
 		<if test="phone !=null ">
 			AND phone LIKE CONCAT ('%', #{phone}, '%')
+		</if>
+		<if test="status == null and username !=null and realname !=null and phone !=null and id == 0">
+			or status = 2
 		</if>
 	</select>
 </mapper>

@@ -1,8 +1,10 @@
 package com.aiurt.modules.system.service.impl;
 
+import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
 import com.aiurt.common.constant.CacheConstant;
 import com.aiurt.common.constant.CommonConstant;
+import org.jeecg.common.system.vo.LoginUser;
 import org.jeecg.common.system.vo.SysUserCacheInfo;
 import com.aiurt.common.util.PasswordUtil;
 import com.aiurt.common.util.UUIDGenerator;
@@ -660,7 +662,8 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
 			List<SysDepart> sysDeparts =sysDepartMapper.selectList(new LambdaQueryWrapper<SysDepart>().like(SysDepart::getOrgCodeCc,"A"));
 			sysDeparts.forEach(s->orgId.add(s.getId()));
 		}
-		  IPage<SysUser> users = baseMapper.queryByorgIds(page,orgId,phone,realname,username,status);
+		LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+		  IPage<SysUser> users = baseMapper.queryByorgIds(page,orgId,phone,realname,username,status,sysUser.getId());
 		return users;
 	}
 
