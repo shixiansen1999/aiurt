@@ -323,10 +323,10 @@
             AND a.device_type_code = #{deviceTypeCode}
         </if>
         <if test="code!=null">
-            AND a.`code` = #{code}
+            AND a.`code` LIKE CONCAT('%',#{code},'%')
         </if>
         <if test="name!=null">
-            AND a.name = #{name}
+            AND a.name LIKE CONCAT('%',#{name},'%')
         </if>
     </select>
     <select id="selectStations" resultType="com.aiurt.boot.standard.dto.StationDTO">
