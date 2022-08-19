@@ -531,12 +531,12 @@ public class SysUserController {
     @ApiOperation(value="根据id更换人员组织机构", notes="根据id更换人员组织机构")
     @RequestMapping(value = "/userUpDataOrg", method = RequestMethod.GET)
     public Result<?> userUpDataOrg(@RequestParam(name = "orgId")String orgId,
-                                        @RequestParam(name = "orgCode")String orgCode,
                                         @RequestParam(name = "ids")String ids){
+        SysDepart sysDepart = sysDepartService.getById(orgId);
         sysUserService.update(new LambdaUpdateWrapper<SysUser>().in(SysUser::getId,ids.split(","))
                                                                 .eq(SysUser::getDelFlag,0)
                                                                 .set(SysUser::getOrgId,orgId)
-                                                                .set(SysUser::getOrgCode,orgCode));
+                                                                .set(SysUser::getOrgCode,sysDepart.getOrgCode()));
         return Result.ok("修改成功!");
     }
     /**
