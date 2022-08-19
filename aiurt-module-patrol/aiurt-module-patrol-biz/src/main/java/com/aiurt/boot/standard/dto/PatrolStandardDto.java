@@ -42,4 +42,5 @@ public class PatrolStandardDto extends PatrolStandard {
     @Excel(name = "设备集合", width = 15)
     @ApiModelProperty(value = "设备集合")
     List<Device> devicesSs;
+    String number1;
 }
