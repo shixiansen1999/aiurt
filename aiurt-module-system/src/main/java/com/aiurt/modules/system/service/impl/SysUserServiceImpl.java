@@ -663,7 +663,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
 			sysDeparts.forEach(s->orgId.add(s.getId()));
 		}
 		LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-		  IPage<SysUser> users = baseMapper.queryByorgIds(page,orgId,phone,realname,username,status,sysUser.getId());
+		  IPage<SysUser> users = baseMapper.queryByorgIds(page,orgId,phone,realname,username,status,sysUser.getUsername());
 		return users;
 	}
 
