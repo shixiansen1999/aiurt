@@ -307,4 +307,7 @@ public class Fault extends DictEntity implements Serializable {
     @TableField(exist = false)
     private Integer weight;
 
+    @ApiModelProperty(value = "是否重新指派, 1是, 0否")
+    private Integer signAgainFlag;
+
 }

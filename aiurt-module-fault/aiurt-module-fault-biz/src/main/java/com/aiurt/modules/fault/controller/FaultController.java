@@ -9,7 +9,9 @@ import com.aiurt.modules.basic.entity.CsWork;
 import com.aiurt.modules.fault.dto.*;
 import com.aiurt.modules.fault.entity.Fault;
 import com.aiurt.modules.fault.entity.FaultDevice;
+import com.aiurt.modules.fault.entity.FaultRepairRecord;
 import com.aiurt.modules.fault.service.IFaultDeviceService;
+import com.aiurt.modules.fault.service.IFaultRepairRecordService;
 import com.aiurt.modules.fault.service.IFaultService;
 import com.aiurt.modules.faultknowledgebase.entity.FaultKnowledgeBase;
 import com.aiurt.modules.faultlevel.entity.FaultLevel;
@@ -56,6 +58,9 @@ public class FaultController extends BaseController<Fault, IFaultService> {
     @Autowired
     private IFaultLevelService faultLevelService;
 
+    @Autowired
+    private IFaultRepairRecordService faultRepairRecordService;
+
     /**
      * 分页列表查询
      *
@@ -98,7 +103,6 @@ public class FaultController extends BaseController<Fault, IFaultService> {
         List<Fault> records = pageList.getRecords();
         records.stream().forEach(fault1 -> {
             List<FaultDevice> faultDeviceList = faultDeviceService.queryByFaultCode(fault1.getCode());
-
             // 权重登记
             if (StrUtil.isNotBlank(fault1.getFaultLevel())) {
                 LambdaQueryWrapper<FaultLevel> wrapper = new LambdaQueryWrapper<>();
@@ -123,6 +127,12 @@ public class FaultController extends BaseController<Fault, IFaultService> {
                 fault1.setWeight(0);
             }
             fault1.setFaultDeviceList(faultDeviceList);
+
+            // 是否重新指派
+            LambdaQueryWrapper<FaultRepairRecord> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+            lambdaQueryWrapper.eq(FaultRepairRecord::getFaultCode, fault1.getCode());
+            Long count = faultRepairRecordService.getBaseMapper().selectCount(lambdaQueryWrapper);
+            fault1.setSignAgainFlag(count>0?1:0);
         });
 
         // todo 优化排序
