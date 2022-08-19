@@ -79,6 +79,9 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
     @Autowired
     private IFaultLevelService faultLevelService;
 
+   /* @Autowired
+    private ISparePartBaseApi sparePartBaseApi;
+*/
     /**
      * 故障上报
      *
@@ -851,6 +854,9 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
 
 
         // 备件更换记录
+     /*   sparePartBaseApi.updateSparePartReplace(list);
+
+        sparePartBaseApi.updateSparePartMalfunction(malfunctionList);*/
 
 
         saveLog(loginUser, "填写维修记录", faultCode, FaultStatusEnum.REPAIR.getStatus(), null);
@@ -972,22 +978,25 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
     public IPage<FaultKnowledgeBase> pageList(Page<FaultKnowledgeBase> page,FaultKnowledgeBase knowledgeBase) {
         String faultPhenomenon = knowledgeBase.getFaultPhenomenon();
         log.info("分词解析前数据：{}",faultPhenomenon);
+        if (StrUtil.isNotBlank(faultPhenomenon)) {
+            // 分词
+            Result parse = ToAnalysis.parse(faultPhenomenon);
+            List<Term> termList = parse.getTerms();
+            Set<String> set = termList.stream().map(Term::getName).filter(name -> name.length() > 1).collect(Collectors.toSet());
 
-        if (StrUtil.isBlank(faultPhenomenon)) {
-            return page;
+            if (CollectionUtil.isNotEmpty(set)) {
+                String matchName = StrUtil.join(" ", set);
+                log.info("分词解析后的数据：{}", matchName);
+                knowledgeBase.setMatchName(matchName);
+                knowledgeBase.setFaultPhenomenon(null);
+            }
         }
-        // 分词
-        Result parse = ToAnalysis.parse(faultPhenomenon);
-        List<Term> termList = parse.getTerms();
-        Set<String> set = termList.stream().map(Term::getName).filter(name -> name.length() > 1).collect(Collectors.toSet());
+        String id = knowledgeBase.getId();
 
-        if (CollectionUtil.isNotEmpty(set)) {
-            String matchName = StrUtil.join(" ", set);
-            log.info("分词解析后的数据：{}", matchName);
-
-            knowledgeBase.setMatchName(matchName);
-            knowledgeBase.setFaultPhenomenon(null);
+        if (StrUtil.isNotBlank(id)) {
+            knowledgeBase.setIdList(StrUtil.split(id,','));
         }
+
 
         List<FaultKnowledgeBase> baseList = baseMapper.pageList(page, knowledgeBase);
         page.setRecords(baseList);

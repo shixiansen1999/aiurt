@@ -80,6 +80,12 @@
         <if test="condition.solution != null and condition.solution != ''">
             and solution like concat('%', #{condition.solution}, '%')
         </if>
+        <if test="condition.idList != null and condition.idList.size()>0">
+            and id in
+            <foreach collection="condition.idList" item="item" close=")" open="(" separator=",">
+                #{item}
+            </foreach>
+        </if>
         order by scode desc
     </select>
 </mapper>

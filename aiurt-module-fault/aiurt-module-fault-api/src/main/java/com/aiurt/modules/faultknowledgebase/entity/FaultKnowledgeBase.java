@@ -173,4 +173,7 @@ public class FaultKnowledgeBase implements Serializable {
     @TableField(exist = false)
     private String matchName;
 
+    @TableField(exist = false)
+    private List<String> idList;
+
 }
