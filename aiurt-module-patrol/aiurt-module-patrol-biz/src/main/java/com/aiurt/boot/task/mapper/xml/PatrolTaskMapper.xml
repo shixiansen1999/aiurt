@@ -24,13 +24,25 @@
             AND t1.CODE IN ( SELECT t2.task_code FROM patrol_task_organization t2 WHERE t2.task_code = t1.CODE AND
             t2.org_code = #{patrolTaskDTO.orgCode})
         </if>
-        <if test="patrolTaskDTO.stationCode!=null and patrolTaskDTO.stationCode!=''">
-            AND t1.CODE IN (SELECT t3.task_code FROM patrol_task_station t3 WHERE t3.task_code = t1.CODE AND
-            t3.station_code =#{patrolTaskDTO.stationCode})
-        </if>
-         <if test="patrolTaskDTO.lineCode!=null and patrolTaskDTO.lineCode!=''">
-            AND t1.CODE IN( SELECT t3.task_code FROM patrol_task_station t3 LEFT JOIN cs_station t4 on t3.station_code = t4.station_code
-            WHERE t3.task_code = t1.CODE AND t4.line_code = #{patrolTaskDTO.lineCode})
+        <if test="patrolTaskDTO.stationCode != null and patrolTaskDTO.stationCode != ''">
+            <choose>
+                <when test="patrolTaskDTO.level != null and patrolTaskDTO.level == 1 ">
+                    and t1.code in (
+                    SELECT pps.task_code
+                    FROM patrol_task_station pps
+                    JOIN cs_station cs ON pps.station_code = cs.station_code
+                    AND cs.del_flag = 0
+                    WHERE pps.del_flag = 0 AND cs.line_code = #{patrolTaskDTO.stationCode}
+                    )
+                </when>
+                <when test="patrolTaskDTO.level != null and patrolTaskDTO.level == 2 ">
+                    and t1.code in (
+                    SELECT pps.task_code
+                    FROM patrol_task_station pps
+                    WHERE pps.del_flag = 0 and pps.station_code = #{patrolTaskDTO.stationCode}
+                    )
+                </when>
+            </choose>
         </if>
         order by t1.create_time desc
     </select>
@@ -52,13 +64,25 @@
         <if test="patrolTaskDTO.status!=null">
             and t1.status = #{patrolTaskDTO.status}
         </if>
-            <if test="patrolTaskDTO.stationCode!=null and patrolTaskDTO.stationCode!=''">
-            AND t1.CODE IN (SELECT t3.task_code FROM patrol_task_station t3 WHERE t3.task_code = t1.CODE AND
-            t3.station_code =#{patrolTaskDTO.stationCode})
-        </if>
-        <if test="patrolTaskDTO.lineCode!=null and patrolTaskDTO.lineCode!=''">
-        AND t1.CODE IN( SELECT t3.task_code FROM patrol_task_station t3 LEFT JOIN cs_station t4 on t3.station_code = t4.station_code
-        WHERE t3.task_code = t1.CODE AND t4.line_code = #{patrolTaskDTO.lineCode})
+        <if test="patrolTaskDTO.stationCode != null and patrolTaskDTO.stationCode != ''">
+            <choose>
+                <when test="patrolTaskDTO.level != null and patrolTaskDTO.level == 1 ">
+                    and t1.code in (
+                    SELECT pps.task_code
+                    FROM patrol_task_station pps
+                    JOIN cs_station cs ON pps.station_code = cs.station_code
+                    AND cs.del_flag = 0
+                    WHERE pps.del_flag = 0 AND cs.line_code = #{patrolTaskDTO.stationCode}
+                    )
+                </when>
+                <when test="patrolTaskDTO.level != null and patrolTaskDTO.level == 2 ">
+                    and t1.code in (
+                    SELECT pps.task_code
+                    FROM patrol_task_station pps
+                    WHERE pps.del_flag = 0 and pps.station_code = #{patrolTaskDTO.stationCode}
+                    )
+                </when>
+            </choose>
         </if>
        ORDER BY  t1.`status` asc,  t1.create_time desc
     </select>
@@ -188,13 +212,25 @@
         where t1.source = 3 and t1.status in (0,3) and t1.discard_status = 0 and t1.omit_status=0
 <!--        and t1.CODE IN ( SELECT t2.task_code FROM patrol_task_organization t2 WHERE t2.task_code = t1.CODE AND-->
 <!--            t2.org_code = #{patrolTaskDTO.loginOrgId})-->
-        <if test="patrolTaskDTO.stationCode!=null and patrolTaskDTO.stationCode!=''">
-            and t1.code in(select t3.task_code from patrol_task_station t3 where t3.station_code =
-            #{patrolTaskDTO.stationCode})
-        </if>
-         <if test="patrolTaskDTO.lineCode!=null and patrolTaskDTO.lineCode!=''">
-        AND t1.CODE IN
-	    ( SELECT t3.task_code FROM patrol_task_station t3 LEFT JOIN cs_station t4 on t3.station_code = t4.station_code WHERE t3.task_code = t1.CODE AND t4.line_code = #{patrolTaskDTO.lineCode})
+       <if test="patrolTaskDTO.stationCode != null and patrolTaskDTO.stationCode != ''">
+            <choose>
+                <when test="patrolTaskDTO.level != null and patrolTaskDTO.level == 1 ">
+                    and t1.code in (
+                    SELECT pps.task_code
+                    FROM patrol_task_station pps
+                    JOIN cs_station cs ON pps.station_code = cs.station_code
+                    AND cs.del_flag = 0
+                    WHERE pps.del_flag = 0 AND cs.line_code = #{patrolTaskDTO.stationCode}
+                    )
+                </when>
+                <when test="patrolTaskDTO.level != null and patrolTaskDTO.level == 2 ">
+                    and t1.code in (
+                    SELECT pps.task_code
+                    FROM patrol_task_station pps
+                    WHERE pps.del_flag = 0 and pps.station_code = #{patrolTaskDTO.stationCode}
+                    )
+                </when>
+            </choose>
         </if>
         <if test="patrolTaskDTO.orgCode != null and patrolTaskDTO.orgCode!=''">
             and t1.code in (SELECT t2.task_code FROM patrol_task_organization t2 where t2.org_code =
