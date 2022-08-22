@@ -17,6 +17,7 @@
     <if test="workArea.type != null">
      and a.type=#{workArea.type}
     </if>
+    order by a.create_time desc
 </select>
 <select id="getMajorName" resultType="java.lang.String">
 select major_name from cs_major  where major_code = #{majorCode}

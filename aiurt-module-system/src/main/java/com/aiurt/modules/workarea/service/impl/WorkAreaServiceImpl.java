@@ -4,6 +4,8 @@ import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.aiurt.common.exception.AiurtBootException;
+import com.aiurt.modules.position.entity.CsStation;
+import com.aiurt.modules.position.mapper.CsStationMapper;
 import com.aiurt.modules.workarea.dto.MajorDTO;
 import com.aiurt.modules.workarea.dto.MajorUserDTO;
 import com.aiurt.modules.workarea.dto.SubSystem;
@@ -48,6 +50,8 @@ public class WorkAreaServiceImpl extends ServiceImpl<WorkAreaMapper, WorkArea> i
     @Autowired
     private WorkAreaOrgMapper workAreaOrgMapper;
     @Autowired
+    private CsStationMapper csStationMapper;
+    @Autowired
     private ISysBaseAPI iSysBaseAPI;
     @Override
     public Page<WorkAreaDTO> getWorkAreaList(Page<WorkAreaDTO> pageList, WorkAreaDTO workArea) {
@@ -73,17 +77,14 @@ public class WorkAreaServiceImpl extends ServiceImpl<WorkAreaMapper, WorkArea> i
             throw new AiurtBootException("该工区编码已存在，请重新填写!");
         }
         workAreaMapper.insert(workArea);
-        //保存线路
-        for(String lineCode:workAreaDTO.getLineCodeList())
-        {
-            WorkAreaLine workAreaLine =new WorkAreaLine();
-            workAreaLine.setWorkAreaCode(workAreaDTO.getCode());
-            workAreaLine.setLineCode(lineCode);
-            workAreaLineMapper.insert(workAreaLine);
-        }
-       //保存站点
+       //保存线路和站点
         for(String stationCode:workAreaDTO.getStationCodeList())
         {
+            CsStation csStation = csStationMapper.selectOne(new LambdaQueryWrapper<CsStation>().eq(CsStation::getStationCode, stationCode));
+            WorkAreaLine workAreaLine =new WorkAreaLine();
+            workAreaLine.setWorkAreaCode(workAreaDTO.getCode());
+            workAreaLine.setLineCode(csStation.getLineCode());
+            workAreaLineMapper.insert(workAreaLine);
             WorkAreaStation workAreaStation = new WorkAreaStation();
             workAreaStation.setWorkAreaCode(workAreaDTO.getCode());
             workAreaStation.setStationCode(stationCode);
