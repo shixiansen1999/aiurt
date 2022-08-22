@@ -1017,11 +1017,10 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
     @Override
     public void useKnowledgeBase(String faultCode, String knowledgeId) {
         Fault fault = isExist(faultCode);
-
         // 使用的解决方案
-        fault.setKnowledgeId(knowledgeId);
-
-        updateById(fault);
+        LambdaUpdateWrapper<Fault> updateWrapper = new LambdaUpdateWrapper<>();
+        updateWrapper.set(Fault::getKnowledgeId, knowledgeId).eq(Fault::getCode, faultCode);
+        update(updateWrapper);
     }
 
     /**
