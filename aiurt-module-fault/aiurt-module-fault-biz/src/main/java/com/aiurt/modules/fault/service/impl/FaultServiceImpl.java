@@ -830,7 +830,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         // 未解决，需要重新指派
         if (!flag.equals(solveStatus) && flag.equals(assignFlag)) {
             // 重新指派
-            fault.setStatus(FaultStatusEnum.ASSIGN.getStatus());
+            fault.setStatus(FaultStatusEnum.APPROVAL_PASS.getStatus());
             one.setEndTime(new Date());
         }
         // 已解决
