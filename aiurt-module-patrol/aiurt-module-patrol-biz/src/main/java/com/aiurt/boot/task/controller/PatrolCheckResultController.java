@@ -72,7 +72,15 @@ public class PatrolCheckResultController extends BaseController<PatrolCheckResul
 											HttpServletRequest req) {
 		 LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
 		 LambdaUpdateWrapper<PatrolCheckResult> updateWrapper= new LambdaUpdateWrapper<>();
-		 updateWrapper.set(PatrolCheckResult::getCheckResult,checkResult).set(PatrolCheckResult::getRemark,remark).set(PatrolCheckResult::getUserId,sysUser.getId()).eq(PatrolCheckResult::getId,id);
+		 if(!checkResult.equals("null")&&ObjectUtil.isNotEmpty(checkResult))
+		 {
+			 updateWrapper.set(PatrolCheckResult::getCheckResult,checkResult).set(PatrolCheckResult::getUserId,sysUser.getId()).eq(PatrolCheckResult::getId,id);
+
+		 }
+		 if(ObjectUtil.isNotNull(remark))
+		 {
+			 updateWrapper.set(PatrolCheckResult::getRemark,remark).set(PatrolCheckResult::getUserId,sysUser.getId()).eq(PatrolCheckResult::getId,id);
+		 }
 		 patrolCheckResultService.update(updateWrapper);
 		 return Result.OK("保存成功");
 	 }
