@@ -137,6 +137,18 @@ public class WorkAreaServiceImpl extends ServiceImpl<WorkAreaMapper, WorkArea> i
         WorkArea workArea = workAreaMapper.selectById(id);
         WorkAreaDTO workAreaDTO= new WorkAreaDTO();
         BeanUtil.copyProperties(workArea,workAreaDTO);
+         List<WorkAreaStation> workAreaStationList = workAreaStationMapper.selectList(new LambdaQueryWrapper<WorkAreaStation>().eq(WorkAreaStation::getWorkAreaCode, workAreaDTO.getCode()));
+         List<String> stationList = workAreaStationList.stream().map(WorkAreaStation::getStationCode).collect(Collectors.toList());
+         workAreaDTO.setStationCodeList(stationList);
+
+        List<WorkAreaLine> workAreaLineList = workAreaLineMapper.selectList(new LambdaQueryWrapper<WorkAreaLine>().eq(WorkAreaLine::getWorkAreaCode, workAreaDTO.getCode()));
+        List<String> lineList = workAreaLineList.stream().map(WorkAreaLine::getLineCode).collect(Collectors.toList());
+        workAreaDTO.setLineCodeList(lineList);
+
+        List<WorkAreaOrg> workAreaOrgList = workAreaOrgMapper.selectList(new LambdaQueryWrapper<WorkAreaOrg>().eq(WorkAreaOrg::getWorkAreaCode, workAreaDTO.getCode()));
+        List<String> orgList = workAreaOrgList.stream().map(WorkAreaOrg::getOrgCode).collect(Collectors.toList());
+        workAreaDTO.setOrgCodeList(orgList);
+
         //查询该工区的站点
         List<String> lineStationNameList = workAreaStationMapper.getLineStationName(workAreaDTO.getCode());
         String lineStationName = lineStationNameList.stream().collect(Collectors.joining(";"));
