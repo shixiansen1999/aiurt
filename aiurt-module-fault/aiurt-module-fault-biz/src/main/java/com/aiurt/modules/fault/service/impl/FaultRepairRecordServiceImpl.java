@@ -101,6 +101,12 @@ public class FaultRepairRecordServiceImpl extends ServiceImpl<FaultRepairRecordM
         String knowledgeId = fault.getKnowledgeId();
         if (StrUtil.isNotBlank(knowledgeId)) {
             FaultKnowledgeBase knowledgeBase = knowledgeBaseService.getById(knowledgeId);
+            String deviceTypeCode = knowledgeBase.getDeviceTypeCode();
+            if (StrUtil.isNotBlank(deviceTypeCode)) {
+                String deviceTypeName = baseMapper.queryDeviceTypeName(deviceTypeCode);
+                knowledgeBase.setDeviceTypeName(deviceTypeName);
+            }
+            // 设备类型
             recordDetailDTO.setFaultKnowledgeBase(knowledgeBase);
         }
         return recordDetailDTO;

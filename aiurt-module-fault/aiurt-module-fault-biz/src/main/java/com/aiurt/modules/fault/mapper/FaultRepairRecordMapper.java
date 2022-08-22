@@ -6,6 +6,7 @@ import com.aiurt.modules.fault.dto.RepairRecordDetailDTO;
 import com.aiurt.modules.fault.entity.FaultRepairRecord;
 import org.apache.ibatis.annotations.Param;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import org.apache.ibatis.annotations.Select;
 
 /**
  * @Description: 维修记录
@@ -16,4 +17,7 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 public interface FaultRepairRecordMapper extends BaseMapper<FaultRepairRecord> {
 
     List<RepairRecordDetailDTO> queryRecordByFaultCode(@Param("faultCode") String faultCode);
+
+    @Select("select`name` from device_type where `code` = #{deviceTypeCode} ")
+    String queryDeviceTypeName(@Param("deviceTypeCode") String deviceTypeCode);
 }
