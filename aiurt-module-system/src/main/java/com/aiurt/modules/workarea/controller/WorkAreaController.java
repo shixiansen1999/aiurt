@@ -10,6 +10,8 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 import lombok.extern.slf4j.Slf4j;
 import org.jeecg.common.api.vo.Result;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -132,6 +134,9 @@ public class WorkAreaController extends BaseController<WorkArea, IWorkAreaServic
 	@AutoLog(value = "工区详情")
 	@ApiOperation(value="工区详情", notes="工区详情")
 	@GetMapping(value = "/queryById")
+	@ApiResponses({
+			@ApiResponse(code = 200, message = "OK", response = WorkAreaDTO.class)
+	})
 	public Result<WorkAreaDTO> queryById(@RequestParam(name="id",required=true) String id) {
 		WorkAreaDTO workAreaDTO = workAreaService.getWorkAreaDetail(id);
 		return Result.OK(workAreaDTO);
