@@ -59,6 +59,11 @@ public class RepairTask implements Serializable {
     @TableField(exist = false)
     @ApiModelProperty(value = "所属周")
     private String weekName;
+
+    /**年*/
+    @TableField(exist = false)
+    @ApiModelProperty(value = "年")
+    private Long years;
     /**计划开始时间，精确到分钟*/
     @Excel(name = "计划开始时间，精确到分钟", width = 15, format = "yyyy-MM-dd HH:mm")
     @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm")
