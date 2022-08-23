@@ -1,6 +1,7 @@
 package com.aiurt.modules.faultlevel.controller;
 
 import com.aiurt.common.aspect.annotation.AutoLog;
+import com.aiurt.common.aspect.annotation.PermissionData;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.system.base.controller.BaseController;
 import com.aiurt.modules.common.entity.SelectTable;
@@ -51,6 +52,7 @@ public class FaultLevelController extends BaseController<FaultLevel, IFaultLevel
 	 */
 	@ApiOperation(value="故障等级-分页列表查询", notes="故障等级-分页列表查询")
 	@GetMapping(value = "/list")
+	@PermissionData(pageComponent = "manage/MajorList")
 	public Result<IPage<FaultLevel>> queryPageList(FaultLevel faultLevel,
 												   @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
 												   @RequestParam(name="pageSize", defaultValue="10") Integer pageSize) {

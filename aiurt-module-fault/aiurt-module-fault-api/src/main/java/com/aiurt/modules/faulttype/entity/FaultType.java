@@ -2,6 +2,8 @@ package com.aiurt.modules.faulttype.entity;
 
 import java.io.Serializable;
 import java.util.Date;
+
+import com.aiurt.common.aspect.annotation.MajorFilterColumn;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
@@ -44,6 +46,7 @@ public class FaultType implements Serializable {
 	/**专业编码*/
 	@Excel(name = "专业编码", width = 15)
     @ApiModelProperty(value = "专业编码")
+    @MajorFilterColumn
     @Dict(dictTable = "cs_major", dicText = "major_name", dicCode = "major_code")
     private String majorCode;
 	/**说明*/

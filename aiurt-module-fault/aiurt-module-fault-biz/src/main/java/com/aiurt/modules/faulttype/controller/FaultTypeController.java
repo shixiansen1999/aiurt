@@ -1,6 +1,7 @@
 package com.aiurt.modules.faulttype.controller;
 
 import com.aiurt.common.aspect.annotation.AutoLog;
+import com.aiurt.common.aspect.annotation.PermissionData;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.system.base.controller.BaseController;
 import com.aiurt.modules.common.entity.SelectTable;
@@ -52,6 +53,7 @@ public class FaultTypeController extends BaseController<FaultType, IFaultTypeSer
 	 */
 	@ApiOperation(value="fault_type-分页列表查询", notes="fault_type-分页列表查询")
 	@GetMapping(value = "/list")
+	@PermissionData(pageComponent = "manage/MajorList")
 	public Result<IPage<FaultType>> queryPageList(FaultType faultType,
 												  @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
 												  @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,

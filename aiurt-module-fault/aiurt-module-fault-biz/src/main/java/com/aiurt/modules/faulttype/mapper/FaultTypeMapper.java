@@ -1,5 +1,6 @@
 package com.aiurt.modules.faulttype.mapper;
 
+import com.aiurt.common.aspect.annotation.EnableDataPerm;
 import com.aiurt.modules.faulttype.entity.FaultType;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import org.springframework.stereotype.Component;
@@ -11,6 +12,7 @@ import org.springframework.stereotype.Component;
  * @Version: V1.0
  */
 @Component
+@EnableDataPerm
 public interface FaultTypeMapper extends BaseMapper<FaultType> {
 
 }
