@@ -209,7 +209,12 @@ public class SysUser implements Serializable {
      */
     @ApiModelProperty(value = "管理负责部门")
     private String departIds;
-
+    /**
+     * 负责部门名称
+     */
+    @ApiModelProperty(value = "管理负责部门名称")
+    @TableField(exist = false)
+    private String departNames;
     /**
      * 多租户id配置，编辑用户的时候设置
      */

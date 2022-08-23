@@ -518,6 +518,9 @@ public class SysUserController {
         if(userIds!=null && userIds.size()>0){
             Map<String,String>  useDepNames = sysUserService.getDepNamesByUserIds(userIds);
             users.getRecords().forEach(item->{
+                if (Objects.nonNull(item.getDepartIds())){
+                List<String> departNames = userMapper.getDepartIds(Arrays.asList(item.getDepartIds().split(",")));
+                item.setDepartNames(departNames.stream().collect(Collectors.joining(",")));}
                 item.setOrgCodeTxt(useDepNames.get(item.getId()));
                 getUserDetail(item);
             });
