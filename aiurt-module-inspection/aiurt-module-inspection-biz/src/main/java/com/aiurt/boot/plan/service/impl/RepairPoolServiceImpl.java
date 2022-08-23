@@ -165,7 +165,7 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
         queryWrapper.ge("start_time",
                 ObjectUtil.isNotEmpty(selectPlanReq.getStartTime()) ? DateUtil.beginOfDay(selectPlanReq.getStartTime()) : DateUtil.beginOfWeek(currDate));
         queryWrapper.le("start_time",
-                ObjectUtil.isNotEmpty(selectPlanReq.getEndTime())?DateUtil.endOfDay(selectPlanReq.getEndTime()): DateUtil.endOfWeek(currDate));
+                ObjectUtil.isNotEmpty(selectPlanReq.getEndTime()) ? DateUtil.endOfDay(selectPlanReq.getEndTime()) : DateUtil.endOfWeek(currDate));
         queryWrapper.eq("is_manual", InspectionConstant.NO_IS_MANUAL);
         queryWrapper.eq("del_flag", CommonConstant.DEL_FLAG_0);
         queryWrapper.orderByAsc("start_time");
@@ -1085,21 +1085,33 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
         if (CollUtil.isNotEmpty(repairPoolCodes) && CollUtil.isNotEmpty(stationCodes)) {
 
             for (RepairPoolCodeReq repairPoolCode : repairPoolCodes) {
-                List<String> deviceCodes = repairPoolCode.getDeviceCodes();
-                List<RepairDeviceDTO> repairDeviceDTOS = manager.queryDeviceByCodes(deviceCodes);
-                if (CollUtil.isNotEmpty(repairDeviceDTOS)) {
-                    List<String> result = repairDeviceDTOS.stream()
-                            .filter(stationCode -> stationCodes.contains(stationCode.getStationCode()))
-                            .map(RepairDeviceDTO::getCode)
-                            .collect(Collectors.toList());
-                    repairPoolCode.setDeviceCodes(new ArrayList<>());
-                    repairPoolCode.setDeviceCodes(result);
-                    if (CollUtil.isEmpty(repairPoolCode.getDeviceCodes())) {
+                InspectionCode inspectionCode = inspectionCodeMapper.selectOne(
+                        new LambdaQueryWrapper<InspectionCode>()
+                                .eq(InspectionCode::getCode, repairPoolCode.getCode())
+                                .eq(InspectionCode::getDelFlag, CommonConstant.DEL_FLAG_0));
+
+                if (ObjectUtil.isNotEmpty(inspectionCode)
+                        && InspectionConstant.IS_APPOINT_DEVICE.equals(inspectionCode.getIsAppointDevice())) {
+                    // 获取前端传输的设备
+                    List<String> deviceCodes = repairPoolCode.getDeviceCodes();
+                    List<RepairDeviceDTO> repairDeviceDTOS = manager.queryDeviceByCodes(deviceCodes);
+
+                    // 根据站点过滤设备
+                    if (CollUtil.isNotEmpty(repairDeviceDTOS)) {
+                        List<String> result = repairDeviceDTOS.stream()
+                                .filter(stationCode -> stationCodes.contains(stationCode.getStationCode()))
+                                .map(RepairDeviceDTO::getCode)
+                                .collect(Collectors.toList());
+                        repairPoolCode.setDeviceCodes(new ArrayList<>());
+                        repairPoolCode.setDeviceCodes(result);
+                        if (CollUtil.isEmpty(repairPoolCode.getDeviceCodes())) {
+                            throw new AiurtBootException("有检修标准未指定设备");
+                        }
+                    } else {
                         throw new AiurtBootException("有检修标准未指定设备");
                     }
-                } else {
-                    throw new AiurtBootException("有检修标准未指定设备");
                 }
+
             }
         }
     }
