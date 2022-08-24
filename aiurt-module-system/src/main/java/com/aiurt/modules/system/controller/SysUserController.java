@@ -191,11 +191,12 @@ public class SysUserController {
 
     private void getUserDetail(SysUser sysUser) {
         List<String> roleIds = sysUserRoleMapper.getRoleIds(sysUser.getId());
+        List<String> roleNames = sysUserRoleMapper.getRoleNames(sysUser.getId());
         List<CsUserDepartModel> departModelList = csUserDepartMapper.getDepartByUserId(sysUser.getId());
         List<CsUserStationModel> stationList = csUserStaionMapper.getStationByUserId(sysUser.getId());
         List<CsUserMajorModel> majorList = csUserMajorMapper.getMajorByUserId(sysUser.getId());
         List<CsUserSubsystemModel> subsystemList = csUserSubsystemMapper.getSubsystemByUserId(sysUser.getId());
-        sysUser.setRoleIds(roleIds);
+        sysUser.setRoleIds(roleIds); sysUser.setRoleNames(StrUtil.join(",", roleNames));
 
         List<String> departIds = departModelList.stream().map(CsUserDepartModel::getDepartId).collect(Collectors.toList());
         sysUser.setDepartCodes(departIds);
