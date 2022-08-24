@@ -38,7 +38,7 @@
         <if test="taskDevice.deviceName != null and taskDevice.deviceName !=''">
             and device.`name` like concat('%',#{taskDevice.deviceName},'%')
         </if>
-        <if test="taskDevice.checkResult != null and taskDevice.checkResult !=''">
+        <if test="taskDevice.checkResult != null ">
             and ptd.check_result = #{taskDevice.checkResult}
         </if>
         <if test="taskDevice.patrolNumber != null and taskDevice.patrolNumber !=''">
