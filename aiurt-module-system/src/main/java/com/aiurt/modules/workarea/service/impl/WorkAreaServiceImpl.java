@@ -4,7 +4,6 @@ import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.aiurt.common.exception.AiurtBootException;
-import com.aiurt.modules.major.entity.CsMajor;
 import com.aiurt.modules.major.mapper.CsMajorMapper;
 import com.aiurt.modules.position.entity.CsStation;
 import com.aiurt.modules.position.mapper.CsStationMapper;
@@ -73,8 +72,8 @@ public class WorkAreaServiceImpl extends ServiceImpl<WorkAreaMapper, WorkArea> i
         //保存工区
         WorkArea workArea = new WorkArea();
         workArea.setCode(workAreaDTO.getCode());
-        CsMajor csMajor = csMajorMapper.selectById(workAreaDTO.getMajorId());
-        workArea.setMajorCode(csMajor.getMajorCode());
+       // CsMajor csMajor = csMajorMapper.selectById(workAreaDTO.getMajorId());
+        workArea.setMajorCode(workAreaDTO.getMajorCode());
         workArea.setManagerId(workAreaDTO.getManagerId());
         workArea.setTechnicalId(workAreaDTO.getTechnicalId());
         workArea.setName(workAreaDTO.getName());
@@ -174,7 +173,7 @@ public class WorkAreaServiceImpl extends ServiceImpl<WorkAreaMapper, WorkArea> i
         List<String> orgNameList = workAreaOrgMapper.getOrgName(workAreaDTO.getCode());
         String orgName = orgNameList.stream().collect(Collectors.joining(";"));
         //查询专业名称
-        String majorName = workAreaMapper.getMajorName(workAreaDTO.getMajorId());
+        String majorName = workAreaMapper.getMajorName(workAreaDTO.getMajorCode());
         //查询工区管理负责人
         LoginUser managerName = sysBaseApi.getUserById(workAreaDTO.getManagerId());
         //查询工区技术负责人

@@ -20,7 +20,7 @@
     order by a.create_time desc
 </select>
 <select id="getMajorName" resultType="java.lang.String">
-select major_name from cs_major  where id = #{majorId}
+select major_name from cs_major  where major_code = #{majorCode}
 </select>
 <select id="getMajorAllUser" resultType="com.aiurt.modules.workarea.dto.MajorUserDTO">
 SELECT

@@ -47,6 +47,9 @@ public class WorkAreaDTO extends DictEntity{
     @Excel(name = "专业Id", width = 15)
     @ApiModelProperty(value = "专业Id")
     private String majorId;
+    @Excel(name = "专业code", width = 15)
+    @ApiModelProperty(value = "专业code")
+    private String majorCode;
     /**工区管理负责人ID*/
     @Excel(name = "工区管理负责人ID", width = 15)
     @ApiModelProperty(value = "工区管理负责人ID")

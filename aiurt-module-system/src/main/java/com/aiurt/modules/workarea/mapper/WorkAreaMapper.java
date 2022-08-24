@@ -29,10 +29,10 @@ public interface WorkAreaMapper extends BaseMapper<WorkArea> {
 
     /**
      * 根据专业code,获取专业名称
-     * @param majorId
+     * @param majorCode
      * @return
      */
-    String getMajorName(String majorId);
+    String getMajorName(String majorCode);
 
     /**
      * 根据专业id,查询专业下的全部用户
