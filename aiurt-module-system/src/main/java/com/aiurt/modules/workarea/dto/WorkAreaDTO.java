@@ -44,9 +44,9 @@ public class WorkAreaDTO extends DictEntity{
     @TableField(value = "`position`")
     private String position;
     /**专业编号*/
-    @Excel(name = "专业编号", width = 15)
-    @ApiModelProperty(value = "专业编号")
-    private String majorCode;
+    @Excel(name = "专业Id", width = 15)
+    @ApiModelProperty(value = "专业Id")
+    private String majorId;
     /**工区管理负责人ID*/
     @Excel(name = "工区管理负责人ID", width = 15)
     @ApiModelProperty(value = "工区管理负责人ID")
@@ -77,7 +77,7 @@ public class WorkAreaDTO extends DictEntity{
     /**组织机构编号*/
     @Excel(name = "组织机构编号", width = 15)
     @ApiModelProperty(value = "组织机构编号")
-    private List <String> orgCodeList;
+    private List <String> orgIdList;
     /**线路编号*/
     @Excel(name = "线路编号", width = 15)
     @ApiModelProperty(value = "线路编号")
