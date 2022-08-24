@@ -1,9 +1,11 @@
 package com.aiurt.modules.major.service.impl;
 
 import com.aiurt.common.constant.CommonConstant;
+import com.aiurt.common.util.dynamic.db.DataSourceCachePool;
 import com.aiurt.modules.major.entity.CsMajor;
 import com.aiurt.modules.major.mapper.CsMajorMapper;
 import com.aiurt.modules.major.service.ICsMajorService;
+import com.aiurt.modules.system.controller.SysDictController;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import org.jeecg.common.api.vo.Result;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +26,8 @@ import java.util.List;
 public class CsMajorServiceImpl extends ServiceImpl<CsMajorMapper, CsMajor> implements ICsMajorService {
     @Autowired
     private CsMajorMapper csMajorMapper;
+    @Autowired
+    private SysDictController sysDictController;
     /**
      * 添加
      *
@@ -78,6 +82,8 @@ public class CsMajorServiceImpl extends ServiceImpl<CsMajorMapper, CsMajor> impl
             return Result.error("专业名称重复，请重新填写！");
         }
         csMajorMapper.updateById(csMajor);
+        //刷新缓存
+        sysDictController.refleshCache();
         return Result.OK("编辑成功！");
     }
 }
