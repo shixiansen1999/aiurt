@@ -199,7 +199,8 @@ public class SysUserController {
 
         List<String> departIds = departModelList.stream().map(CsUserDepartModel::getDepartId).collect(Collectors.toList());
         sysUser.setDepartCodes(departIds);
-        //List<String>  departNameList = departModelList.stream().map(CsUserDepartModel::getDepartName).collect(Collectors.toList())
+        List<String>  departNameList = departModelList.stream().map(CsUserDepartModel::getDepartName).collect(Collectors.toList());
+        sysUser.setDepartNames(StrUtil.join(",", departNameList));
 
         List<String> stationIds = stationList.stream().map(CsUserStationModel::getStationId).collect(Collectors.toList());
         sysUser.setStationIds(stationIds);
