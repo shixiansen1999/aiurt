@@ -4,6 +4,7 @@ import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.aiurt.common.exception.AiurtBootException;
+import com.aiurt.modules.major.entity.CsMajor;
 import com.aiurt.modules.major.mapper.CsMajorMapper;
 import com.aiurt.modules.position.entity.CsStation;
 import com.aiurt.modules.position.mapper.CsStationMapper;
@@ -187,8 +188,9 @@ public class WorkAreaServiceImpl extends ServiceImpl<WorkAreaMapper, WorkArea> i
     }
 
     @Override
-    public Page<MajorUserDTO> getMajorUser(Page<MajorUserDTO> pageList, String majorId,String name,String orgName) {
-        List<MajorUserDTO> majorUserDTOList = workAreaMapper.getMajorAllUser(pageList,majorId,name,orgName);
+    public Page<MajorUserDTO> getMajorUser(Page<MajorUserDTO> pageList, String majorCode,String name,String orgName) {
+        CsMajor csMajor = csMajorMapper.selectOne(new LambdaQueryWrapper<CsMajor>().eq(CsMajor::getMajorCode, majorCode));
+        List<MajorUserDTO> majorUserDTOList = workAreaMapper.getMajorAllUser(pageList,csMajor.getId(),name,orgName);
         List<SubSystem> systemNameList = new ArrayList<>();
         for(MajorUserDTO majorUserDTO:majorUserDTOList)
         {

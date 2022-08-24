@@ -51,10 +51,10 @@ public interface IWorkAreaService extends IService<WorkArea> {
      *
      * 根据专业id,查询专业下的全部用户
      * @param pageList
-     * @param majorId
+     * @param majorCode
      * @param name
      * @param orgName
      * @return
      */
-    Page<MajorUserDTO> getMajorUser(Page<MajorUserDTO> pageList, String majorId,String name,String orgName);
+    Page<MajorUserDTO> getMajorUser(Page<MajorUserDTO> pageList, String majorCode,String name,String orgName);
 }

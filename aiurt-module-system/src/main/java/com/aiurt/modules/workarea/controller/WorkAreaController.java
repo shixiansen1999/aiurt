@@ -111,20 +111,20 @@ public class WorkAreaController extends BaseController<WorkArea, IWorkAreaServic
 	}
 
 	/**
-	 * 根据专业id,查询专业下的全部用户
-	 * @param majorId
+	 * 根据专业Code,查询专业下的全部用户
+	 * @param majorCode
 	 * @return
 	 */
-	@AutoLog(value = "根据专业id,查询专业下的全部用户")
-	@ApiOperation(value="根据专业id,查询专业下的全部用户", notes="根据专业id,查询专业下的全部用户")
+	@AutoLog(value = "根据专业Code,查询专业下的全部用户")
+	@ApiOperation(value="根据专业Code,查询专业下的全部用户", notes="根据专业Code,查询专业下的全部用户")
 	@GetMapping(value = "/majorUser")
-	public Result<IPage<MajorUserDTO>> getMajorUser(@RequestParam(name="majorId",required=true) String majorId,
+	public Result<IPage<MajorUserDTO>> getMajorUser(@RequestParam(name="majorCode",required=true) String majorCode,
 													@RequestParam(name="name",required=false) String name,
 													@RequestParam(name="orgName",required=false) String orgName,
 													@RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
 													@RequestParam(name="pageSize", defaultValue="10") Integer pageSize) {
 		Page<MajorUserDTO> pageList = new Page<>(pageNo,pageSize);
-		pageList = workAreaService.getMajorUser(pageList,majorId,name,orgName);
+		pageList = workAreaService.getMajorUser(pageList,majorCode,name,orgName);
 		return Result.OK(pageList);
 	}	/**
 	 * 工区详情
