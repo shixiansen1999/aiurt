@@ -1,6 +1,5 @@
 package com.aiurt.modules.workarea.service.impl;
 
-import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.aiurt.common.exception.AiurtBootException;
@@ -65,15 +64,12 @@ public class WorkAreaServiceImpl extends ServiceImpl<WorkAreaMapper, WorkArea> i
     public Page<WorkAreaDTO> getWorkAreaList(Page<WorkAreaDTO> pageList, WorkAreaDTO workArea) {
         List<WorkAreaDTO> workAreaDTOList = workAreaMapper.getWorkAreaList(pageList,workArea);
         workAreaDTOList.stream().forEach(w->{
-
             List<WorkAreaStation> workAreaStationList = workAreaStationMapper.selectList(new LambdaQueryWrapper<WorkAreaStation>().eq(WorkAreaStation::getWorkAreaCode, w.getCode()));
             List<String> stationList = workAreaStationList.stream().map(WorkAreaStation::getStationCode).collect(Collectors.toList());
             w.setStationCodeList(stationList);
-
             List<WorkAreaLine> workAreaLineList = workAreaLineMapper.selectList(new LambdaQueryWrapper<WorkAreaLine>().eq(WorkAreaLine::getWorkAreaCode, w.getCode()));
             List<String> lineList = workAreaLineList.stream().map(WorkAreaLine::getLineCode).collect(Collectors.toList());
             w.setLineCodeList(lineList);
-
             List<WorkAreaOrg> workAreaOrgList = workAreaOrgMapper.selectList(new LambdaQueryWrapper<WorkAreaOrg>().eq(WorkAreaOrg::getWorkAreaCode, w.getCode()));
             List<String> orgCodeList = workAreaOrgList.stream().map(WorkAreaOrg::getOrgCode).collect(Collectors.toList());
             List<SysDepart> sysDepartList =new ArrayList<>();
@@ -84,7 +80,6 @@ public class WorkAreaServiceImpl extends ServiceImpl<WorkAreaMapper, WorkArea> i
             }
             List<String> orgIdList = sysDepartList.stream().map(SysDepart::getId).collect(Collectors.toList());
             w.setOrgIdList(orgIdList);
-
             //查询该工区的站点
             List<String> lineStationNameList = workAreaStationMapper.getLineStationName(w.getCode());
             String lineStationName = lineStationNameList.stream().collect(Collectors.joining(";"));
@@ -154,7 +149,6 @@ public class WorkAreaServiceImpl extends ServiceImpl<WorkAreaMapper, WorkArea> i
         deleteWorkArea(workArea.getId());
         addWorkArea(workAreaDTO);
     }
-
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void deleteWorkArea(String id) {
@@ -180,56 +174,11 @@ public class WorkAreaServiceImpl extends ServiceImpl<WorkAreaMapper, WorkArea> i
         //删除工区
         workAreaMapper.deleteById(id);
     }
-
     @Override
-    public WorkAreaDTO getWorkAreaDetail(String id) {
-        WorkArea workArea = workAreaMapper.selectById(id);
-        WorkAreaDTO workAreaDTO= new WorkAreaDTO();
-        BeanUtil.copyProperties(workArea,workAreaDTO);
-         List<WorkAreaStation> workAreaStationList = workAreaStationMapper.selectList(new LambdaQueryWrapper<WorkAreaStation>().eq(WorkAreaStation::getWorkAreaCode, workAreaDTO.getCode()));
-         List<String> stationList = workAreaStationList.stream().map(WorkAreaStation::getStationCode).collect(Collectors.toList());
-         workAreaDTO.setStationCodeList(stationList);
-
-        List<WorkAreaLine> workAreaLineList = workAreaLineMapper.selectList(new LambdaQueryWrapper<WorkAreaLine>().eq(WorkAreaLine::getWorkAreaCode, workAreaDTO.getCode()));
-        List<String> lineList = workAreaLineList.stream().map(WorkAreaLine::getLineCode).collect(Collectors.toList());
-        workAreaDTO.setLineCodeList(lineList);
-
-        List<WorkAreaOrg> workAreaOrgList = workAreaOrgMapper.selectList(new LambdaQueryWrapper<WorkAreaOrg>().eq(WorkAreaOrg::getWorkAreaCode, workAreaDTO.getCode()));
-        List<String> orgCodeList = workAreaOrgList.stream().map(WorkAreaOrg::getOrgCode).collect(Collectors.toList());
-        List<SysDepart> sysDepartList =new ArrayList<>();
-        for(String orgCode:orgCodeList)
-        {
-             SysDepart sysDepart = sysDepartMapper.selectOne(new LambdaQueryWrapper<SysDepart>().eq(SysDepart::getOrgCode, orgCode));
-            sysDepartList.add(sysDepart);
-        }
-        List<String> orgIdList = sysDepartList.stream().map(SysDepart::getId).collect(Collectors.toList());
-        workAreaDTO.setOrgIdList(orgIdList);
-
-        //查询该工区的站点
-        List<String> lineStationNameList = workAreaStationMapper.getLineStationName(workAreaDTO.getCode());
-        String lineStationName = lineStationNameList.stream().collect(Collectors.joining(";"));
-        //查询该工区的组织
-        List<String> orgNameList = workAreaOrgMapper.getOrgName(workAreaDTO.getCode());
-        String orgName = orgNameList.stream().collect(Collectors.joining(";"));
-        //查询专业名称
-        String majorName = workAreaMapper.getMajorName(workAreaDTO.getMajorCode());
-        //查询工区管理负责人
-        LoginUser managerName = sysBaseApi.getUserById(workAreaDTO.getManagerId());
-        //查询工区技术负责人
-        LoginUser technicalName = sysBaseApi.getUserById(workAreaDTO.getTechnicalId());
-        workAreaDTO.setManagerName(managerName.getRealname());
-        workAreaDTO.setTechnicalName(technicalName.getRealname());
-        workAreaDTO.setMajorName(majorName);
-        workAreaDTO.setLineStationName(lineStationName);
-        workAreaDTO.setOrgName(orgName);
-        return workAreaDTO;
-    }
-
-    @Override
-    public Page<MajorUserDTO> getMajorUser(Page<MajorUserDTO> pageList, String majorCode,String name,String orgName) {
+    public Page<MajorUserDTO> getMajorUser(Page<MajorUserDTO> pageList, String majorCode,String name,String orgId) {
         CsMajor csMajor = csMajorMapper.selectOne(new LambdaQueryWrapper<CsMajor>().eq(CsMajor::getMajorCode, majorCode));
         //查询该专业下的所有用户
-        List<MajorUserDTO> majorUserDTOList = workAreaMapper.getMajorAllUser(pageList,csMajor.getId(),name,orgName);
+        List<MajorUserDTO> majorUserDTOList = workAreaMapper.getMajorAllUser(pageList,csMajor.getId(),name,orgId);
         List<SubSystem> systemNameList = new ArrayList<>();
         for(MajorUserDTO majorUserDTO:majorUserDTOList)
         {
