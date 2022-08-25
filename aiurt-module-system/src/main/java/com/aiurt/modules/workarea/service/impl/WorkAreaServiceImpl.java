@@ -64,6 +64,45 @@ public class WorkAreaServiceImpl extends ServiceImpl<WorkAreaMapper, WorkArea> i
     @Override
     public Page<WorkAreaDTO> getWorkAreaList(Page<WorkAreaDTO> pageList, WorkAreaDTO workArea) {
         List<WorkAreaDTO> workAreaDTOList = workAreaMapper.getWorkAreaList(pageList,workArea);
+        workAreaDTOList.stream().forEach(w->{
+
+            List<WorkAreaStation> workAreaStationList = workAreaStationMapper.selectList(new LambdaQueryWrapper<WorkAreaStation>().eq(WorkAreaStation::getWorkAreaCode, w.getCode()));
+            List<String> stationList = workAreaStationList.stream().map(WorkAreaStation::getStationCode).collect(Collectors.toList());
+            w.setStationCodeList(stationList);
+
+            List<WorkAreaLine> workAreaLineList = workAreaLineMapper.selectList(new LambdaQueryWrapper<WorkAreaLine>().eq(WorkAreaLine::getWorkAreaCode, w.getCode()));
+            List<String> lineList = workAreaLineList.stream().map(WorkAreaLine::getLineCode).collect(Collectors.toList());
+            w.setLineCodeList(lineList);
+
+            List<WorkAreaOrg> workAreaOrgList = workAreaOrgMapper.selectList(new LambdaQueryWrapper<WorkAreaOrg>().eq(WorkAreaOrg::getWorkAreaCode, w.getCode()));
+            List<String> orgCodeList = workAreaOrgList.stream().map(WorkAreaOrg::getOrgCode).collect(Collectors.toList());
+            List<SysDepart> sysDepartList =new ArrayList<>();
+            for(String orgCode:orgCodeList)
+            {
+                SysDepart sysDepart = sysDepartMapper.selectOne(new LambdaQueryWrapper<SysDepart>().eq(SysDepart::getOrgCode, orgCode));
+                sysDepartList.add(sysDepart);
+            }
+            List<String> orgIdList = sysDepartList.stream().map(SysDepart::getId).collect(Collectors.toList());
+            w.setOrgIdList(orgIdList);
+
+            //查询该工区的站点
+            List<String> lineStationNameList = workAreaStationMapper.getLineStationName(w.getCode());
+            String lineStationName = lineStationNameList.stream().collect(Collectors.joining(";"));
+            //查询该工区的组织
+            List<String> orgNameList = workAreaOrgMapper.getOrgName(w.getCode());
+            String orgName = orgNameList.stream().collect(Collectors.joining(";"));
+            //查询专业名称
+            String majorName = workAreaMapper.getMajorName(w.getMajorCode());
+            //查询工区管理负责人
+            LoginUser managerName = sysBaseApi.getUserById(w.getManagerId());
+            //查询工区技术负责人
+            LoginUser technicalName = sysBaseApi.getUserById(w.getTechnicalId());
+            w.setManagerName(managerName.getRealname());
+            w.setTechnicalName(technicalName.getRealname());
+            w.setMajorName(majorName);
+            w.setLineStationName(lineStationName);
+            w.setOrgName(orgName);
+        });
         return pageList.setRecords(workAreaDTOList);
     }
 
