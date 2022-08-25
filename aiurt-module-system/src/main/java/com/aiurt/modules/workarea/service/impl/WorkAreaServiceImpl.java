@@ -185,6 +185,7 @@ public class WorkAreaServiceImpl extends ServiceImpl<WorkAreaMapper, WorkArea> i
             //1.获取子系统
             //1.1查询用户下所有的专业
             List<MajorDTO> majorDTOList = workAreaMapper.getUserAllMajor(majorUserDTO.getId());
+            List<String> majorCodeList = majorDTOList.stream().map(MajorDTO::getMajorCode).collect(Collectors.toList());
             for(MajorDTO majorDTO:majorDTOList)
             {
                 //1.2查询专业下所有的子系统
@@ -195,6 +196,7 @@ public class WorkAreaServiceImpl extends ServiceImpl<WorkAreaMapper, WorkArea> i
             String systemNames = systemNameList.stream().map(SubSystem::getSystemName).collect(Collectors.joining("；"));
             majorUserDTO.setMajorNames(majorNames);
             majorUserDTO.setSystemNames(systemNames);
+            majorUserDTO.setMajorCodeList(majorCodeList);
         }
         return pageList.setRecords(majorUserDTOList);
     }
