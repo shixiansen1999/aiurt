@@ -73,7 +73,6 @@ public class WorkAreaServiceImpl extends ServiceImpl<WorkAreaMapper, WorkArea> i
         //保存工区
         WorkArea workArea = new WorkArea();
         workArea.setCode(workAreaDTO.getCode());
-       // CsMajor csMajor = csMajorMapper.selectById(workAreaDTO.getMajorId());
         workArea.setMajorCode(workAreaDTO.getMajorCode());
         workArea.setManagerId(workAreaDTO.getManagerId());
         workArea.setTechnicalId(workAreaDTO.getTechnicalId());
@@ -190,15 +189,17 @@ public class WorkAreaServiceImpl extends ServiceImpl<WorkAreaMapper, WorkArea> i
     @Override
     public Page<MajorUserDTO> getMajorUser(Page<MajorUserDTO> pageList, String majorCode,String name,String orgName) {
         CsMajor csMajor = csMajorMapper.selectOne(new LambdaQueryWrapper<CsMajor>().eq(CsMajor::getMajorCode, majorCode));
+        //查询该专业下的所有用户
         List<MajorUserDTO> majorUserDTOList = workAreaMapper.getMajorAllUser(pageList,csMajor.getId(),name,orgName);
         List<SubSystem> systemNameList = new ArrayList<>();
         for(MajorUserDTO majorUserDTO:majorUserDTOList)
         {
-            //查询用户下所有的专业
+            //1.获取子系统
+            //1.1查询用户下所有的专业
             List<MajorDTO> majorDTOList = workAreaMapper.getUserAllMajor(majorUserDTO.getId());
             for(MajorDTO majorDTO:majorDTOList)
             {
-                //查询专业下所有的子系统
+                //1.2查询专业下所有的子系统
                 List<SubSystem> subSystemList = workAreaMapper.getMajorAllSubSystem(majorDTO.getMajorCode());
                 systemNameList.addAll(subSystemList);
             }
