@@ -129,10 +129,15 @@ public class WorkAreaServiceImpl extends ServiceImpl<WorkAreaMapper, WorkArea> i
         for(String stationCode:workAreaDTO.getStationCodeList())
         {
             CsStation csStation = csStationMapper.selectOne(new LambdaQueryWrapper<CsStation>().eq(CsStation::getStationCode, stationCode));
-            WorkAreaLine workAreaLine =new WorkAreaLine();
-            workAreaLine.setWorkAreaCode(workAreaDTO.getCode());
-            workAreaLine.setLineCode(csStation.getLineCode());
-            workAreaLineMapper.insert(workAreaLine);
+            WorkAreaLine areaLine = workAreaLineMapper.selectOne(new LambdaQueryWrapper<WorkAreaLine>()
+                    .eq(WorkAreaLine::getWorkAreaCode, workArea.getCode()).eq(WorkAreaLine::getLineCode, csStation.getLineCode()));
+            if(ObjectUtil.isEmpty(areaLine))
+            {
+                WorkAreaLine workAreaLine =new WorkAreaLine();
+                workAreaLine.setWorkAreaCode(workAreaDTO.getCode());
+                workAreaLine.setLineCode(csStation.getLineCode());
+                workAreaLineMapper.insert(workAreaLine);
+            }
             WorkAreaStation workAreaStation = new WorkAreaStation();
             workAreaStation.setWorkAreaCode(workAreaDTO.getCode());
                 workAreaStation.setStationCode(stationCode);
