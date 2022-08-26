@@ -245,7 +245,7 @@ public class MaterialBaseTypeController {
             String systemCode = materialBaseType.getSystemCode();
             QueryWrapper<MaterialBaseType> queryWrapper = new QueryWrapper<MaterialBaseType>().eq("major_code", majorCode);
             queryWrapper.eq("del_flag",0);
-            queryWrapper.ne("id",materialBaseType.getId());
+//            queryWrapper.ne("id",materialBaseType.getId());
             queryWrapper.eq("base_type_name",materialBaseType.getBaseTypeName());
             if(systemCode != null && !"".equals(systemCode)){
                 queryWrapper.eq("system_code", systemCode);
