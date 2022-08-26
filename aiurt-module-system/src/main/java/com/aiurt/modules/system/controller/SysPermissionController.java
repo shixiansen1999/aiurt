@@ -4,6 +4,7 @@ import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.constant.enums.RoleIndexConfigEnum;
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import org.jeecg.common.system.vo.LoginUser;
 import com.aiurt.common.util.Md5Util;
 import com.aiurt.common.util.oConvertUtils;
@@ -217,7 +218,8 @@ public class SysPermissionController {
 	 * @return
 	 */
 	@RequestMapping(value = "/getUserPermissionByToken", method = RequestMethod.GET)
-	public Result<?> getUserPermissionByToken(HttpServletRequest request) {
+	@ApiOperation("获取菜单权限以及按钮权限")
+	public Result<?> getUserPermissionByToken(HttpServletRequest request, String type) {
 		Result<JSONObject> result = new Result<JSONObject>();
 		try {
 			//直接获取当前用户不适用前端token
