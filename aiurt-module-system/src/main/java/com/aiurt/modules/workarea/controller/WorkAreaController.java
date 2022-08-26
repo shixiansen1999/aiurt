@@ -118,7 +118,7 @@ public class WorkAreaController extends BaseController<WorkArea, IWorkAreaServic
 	@GetMapping(value = "/majorUser")
 	public Result<IPage<MajorUserDTO>> getMajorUser(@RequestParam(name="majorCode",required=true) String majorCode,
 													@RequestParam(name="name",required=false) String name,
-													@RequestParam(name="orgName",required=false) String orgId,
+													@RequestParam(name="orgId",required=false) String orgId,
 													@RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
 													@RequestParam(name="pageSize", defaultValue="10") Integer pageSize) {
 		Page<MajorUserDTO> pageList = new Page<>(pageNo,pageSize);
