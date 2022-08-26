@@ -646,6 +646,8 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
                             .newSparePartName(sparepart.getNewSparePartName())
                             .oldSparePartCode(sparepart.getOldSparePartCode())
                             .oldSparePartName(sparepart.getOldSparePartName())
+                            .deviceCode(sparepart.getDeviceName())
+                            .specifications(sparepart.getSpecifications())
                             .id(sparepart.getId())
                             .repairRecordId(sparepart.getRepairRecordId())
                             .build();

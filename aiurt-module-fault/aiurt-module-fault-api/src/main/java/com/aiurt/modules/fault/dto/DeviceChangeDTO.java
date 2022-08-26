@@ -55,4 +55,7 @@ public class DeviceChangeDTO implements Serializable {
 
     @ApiModelProperty(value = "出库记录表ID")
     private String outOrderId;
+
+    @ApiModelProperty(value = "规格")
+    private String specifications;
 }

@@ -121,4 +121,8 @@ public class DeviceChangeSparePart implements Serializable {
 
     @ApiModelProperty(value = "出库记录表ID")
 	private String outOrderId;
+
+    @ApiModelProperty("规格")
+    @TableField(exist = false)
+    private String specifications;
 }
