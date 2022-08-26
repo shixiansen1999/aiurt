@@ -140,7 +140,7 @@ public class WorkAreaServiceImpl extends ServiceImpl<WorkAreaMapper, WorkArea> i
             }
             WorkAreaStation workAreaStation = new WorkAreaStation();
             workAreaStation.setWorkAreaCode(workAreaDTO.getCode());
-                workAreaStation.setStationCode(stationCode);
+            workAreaStation.setStationCode(stationCode);
             workAreaStationMapper.insert(workAreaStation);
         }
         //保存组织机构
