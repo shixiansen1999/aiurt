@@ -215,7 +215,7 @@ public class CsStationPositionController  {
 	 @AutoLog(value = "查询",operateType = 1,operateTypeAlias = "查询最大排序数",permissionUrl = "/position/list")
 	 @ApiOperation(value="查询最大排序数", notes="查询最大排序数")
 	 @GetMapping(value = "/getSort")
-	 public Result<?> getSort(String level) {
+	 public Result<?> getSort(String level,String code) {
 	 	Integer sort = 1;
 	 	 if(null!=level && level.equals("1")){
 			 LambdaQueryWrapper<CsLine> wrapper = new LambdaQueryWrapper<>();
@@ -227,14 +227,18 @@ public class CsStationPositionController  {
 		 }else if(null!=level && level.equals("2")){
 			 LambdaQueryWrapper<CsStation> wrapper = new LambdaQueryWrapper<>();
 			 wrapper.orderByDesc(CsStation::getSort);
-			 List<CsStation> list = csStationService.list(wrapper.eq(CsStation::getDelFlag, CommonConstant.DEL_FLAG_0));
+			 wrapper.eq(CsStation::getDelFlag, CommonConstant.DEL_FLAG_0);
+			 wrapper.eq(CsStation::getLineCode,code);
+			 List<CsStation> list = csStationService.list(wrapper);
 			 if(!list.isEmpty()){
 				 sort = list.get(0).getSort()+1;
 			 }
 		 }else if(null!=level && level.equals("3")){
 			 LambdaQueryWrapper<CsStationPosition> wrapper = new LambdaQueryWrapper<>();
 			 wrapper.orderByDesc(CsStationPosition::getSort);
-			 List<CsStationPosition> list = csStationPositionService.list(wrapper.eq(CsStationPosition::getDelFlag, CommonConstant.DEL_FLAG_0));
+			 wrapper.eq(CsStationPosition::getPositionCode,code);
+			 wrapper.eq(CsStationPosition::getDelFlag, CommonConstant.DEL_FLAG_0);
+			 List<CsStationPosition> list = csStationPositionService.list(wrapper);
 			 if(!list.isEmpty()){
 				 sort = list.get(0).getSort()+1;
 			 }
