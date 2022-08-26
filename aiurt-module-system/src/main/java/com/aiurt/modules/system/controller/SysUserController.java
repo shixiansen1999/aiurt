@@ -364,7 +364,7 @@ public class SysUserController {
         ISysBaseAPI sysBaseAPI = SpringContextUtils.getBean(ISysBaseAPI.class);
         LoginUser loginUser = sysBaseAPI.getUserByName(userName);
         if (sysUser == null) {
-            result.error500("未找到对应实体");
+            result.error500("该用户不存在！");
         } else {
             if (Objects.nonNull(loginUser)) {
                 sysUser.setRoleCodes(loginUser.getRoleCodes());
