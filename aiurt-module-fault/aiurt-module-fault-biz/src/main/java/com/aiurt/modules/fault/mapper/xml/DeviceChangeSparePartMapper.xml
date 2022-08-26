@@ -8,11 +8,11 @@
         b.name as new_spare_part_name,
         b.specifications,
         c.name as device_name,
-        da.manufactor_code as old_spare_part_name
+        da.material_name as old_spare_part_name
         from device_change_spare_part a
-        LEFT JOIN material_base b ON  a.new_spare_part_code = b.code
-        LEFT JOIN device c on c.code = a.code
-        LEFT join device_assembly da on a.old_spare_part_code = da.code
+        LEFT JOIN material_base b ON  a.new_spare_part_code = b.`code`
+        LEFT JOIN device c on c.code = a.device_code
+        LEFT join device_assembly da on a.old_spare_part_code = da.`code`
         where a.code = #{faultCode}
         and a.del_flag = 0
     </select>
