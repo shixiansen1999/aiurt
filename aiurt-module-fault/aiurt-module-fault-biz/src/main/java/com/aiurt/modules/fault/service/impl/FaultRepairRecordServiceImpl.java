@@ -3,13 +3,16 @@ package com.aiurt.modules.fault.service.impl;
 import cn.hutool.core.date.DateUnit;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.StrUtil;
+import com.aiurt.modules.fault.dto.DeviceChangeDTO;
 import com.aiurt.modules.fault.dto.DeviceChangeRecordDTO;
 import com.aiurt.modules.fault.dto.RecordDetailDTO;
 import com.aiurt.modules.fault.dto.RepairRecordDetailDTO;
+import com.aiurt.modules.fault.entity.DeviceChangeSparePart;
 import com.aiurt.modules.fault.entity.Fault;
 import com.aiurt.modules.fault.entity.FaultRepairParticipants;
 import com.aiurt.modules.fault.entity.FaultRepairRecord;
 import com.aiurt.modules.fault.mapper.FaultRepairRecordMapper;
+import com.aiurt.modules.fault.service.IDeviceChangeSparePartService;
 import com.aiurt.modules.fault.service.IFaultRepairParticipantsService;
 import com.aiurt.modules.fault.service.IFaultRepairRecordService;
 import com.aiurt.modules.fault.service.IFaultService;
@@ -27,6 +30,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * @Description: 维修记录
@@ -52,6 +56,9 @@ public class FaultRepairRecordServiceImpl extends ServiceImpl<FaultRepairRecordM
 
     @Autowired
     private IFaultKnowledgeBaseService knowledgeBaseService;
+
+    @Autowired
+    private IDeviceChangeSparePartService sparePartService;
 
     @Override
     public RecordDetailDTO queryDetailByFaultCode(String faultCode) {
@@ -114,9 +121,25 @@ public class FaultRepairRecordServiceImpl extends ServiceImpl<FaultRepairRecordM
 
     @Override
     public DeviceChangeRecordDTO queryDeviceChangeRecord(String faultCode) {
-        // todo
         DeviceChangeRecordDTO deviceChangeRecordDTO = new DeviceChangeRecordDTO();
-        deviceChangeRecordDTO.setDeviceChangeList(Collections.emptyList());
+        List<DeviceChangeSparePart> deviceChangeSparePartList = sparePartService.queryDeviceChangeByFaultCode(faultCode, null);
+        List<DeviceChangeDTO> deviceChangeList = deviceChangeSparePartList.stream().filter(sparepart -> StrUtil.equalsIgnoreCase("0", sparepart.getConsumables()))
+                .map(sparepart -> {
+                    DeviceChangeDTO build = DeviceChangeDTO.builder()
+                            .deviceCode(sparepart.getDeviceCode())
+                            .newSparePartCode(sparepart.getNewSparePartCode())
+                            .newSparePartName(sparepart.getNewSparePartName())
+                            .oldSparePartCode(sparepart.getOldSparePartCode())
+                            .oldSparePartName(sparepart.getOldSparePartName())
+                            .deviceCode(sparepart.getDeviceName())
+                            .specifications(sparepart.getSpecifications())
+                            .newSparePartNum(sparepart.getNewSparePartNum())
+                            .id(sparepart.getId())
+                            .repairRecordId(sparepart.getRepairRecordId())
+                            .build();
+                    return build;
+                }).collect(Collectors.toList());
+        deviceChangeRecordDTO.setDeviceChangeList(deviceChangeList);
         deviceChangeRecordDTO.setConsumableList(Collections.emptyList());
         return deviceChangeRecordDTO;
     }
