@@ -288,6 +288,14 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
     @Override
     public Page<PatrolTaskDTO> getPatrolTaskList(Page<PatrolTaskDTO> pageList, PatrolTaskDTO patrolTaskDTO) {
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        if (ObjectUtil.isNotEmpty(patrolTaskDTO.getDateScope())) {
+            String[] split = patrolTaskDTO.getDateScope().split(",");
+            Date dateHead = DateUtil.parse(split[0], "yyyy-MM-dd");
+            Date dateEnd = DateUtil.parse(split[1], "yyyy-MM-dd");
+            patrolTaskDTO.setDateHead(dateHead);
+            patrolTaskDTO.setDateEnd(dateEnd);
+
+        }
         boolean admin = SecurityUtils.getSubject().hasRole("admin");
         if (!admin) {
             patrolTaskDTO.setLoginOrgId(sysUser.getOrgCode());
