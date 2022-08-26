@@ -92,8 +92,14 @@ public class WorkAreaServiceImpl extends ServiceImpl<WorkAreaMapper, WorkArea> i
             LoginUser managerName = sysBaseApi.getUserById(w.getManagerId());
             //查询工区技术负责人
             LoginUser technicalName = sysBaseApi.getUserById(w.getTechnicalId());
-            w.setManagerName(managerName.getRealname());
-            w.setTechnicalName(technicalName.getRealname());
+            if(ObjectUtil.isNotEmpty(managerName))
+            {
+                w.setManagerName(managerName.getRealname());
+            }
+            if(ObjectUtil.isNotEmpty(technicalName))
+            {
+                w.setTechnicalName(technicalName.getRealname());
+            }
             w.setMajorName(majorName);
             w.setLineStationName(lineStationName);
             w.setOrgName(orgName);
