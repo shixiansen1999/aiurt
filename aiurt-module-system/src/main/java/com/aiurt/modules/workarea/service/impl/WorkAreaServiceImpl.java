@@ -1,5 +1,6 @@
 package com.aiurt.modules.workarea.service.impl;
 
+import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.aiurt.common.exception.AiurtBootException;
@@ -112,13 +113,7 @@ public class WorkAreaServiceImpl extends ServiceImpl<WorkAreaMapper, WorkArea> i
     public void addWorkArea(WorkAreaDTO workAreaDTO) {
         //保存工区
         WorkArea workArea = new WorkArea();
-        workArea.setCode(workAreaDTO.getCode());
-        workArea.setMajorCode(workAreaDTO.getMajorCode());
-        workArea.setManagerId(workAreaDTO.getManagerId());
-        workArea.setTechnicalId(workAreaDTO.getTechnicalId());
-        workArea.setName(workAreaDTO.getName());
-        workArea.setPosition(workAreaDTO.getPosition());
-        workArea.setType(workAreaDTO.getType());
+        BeanUtil.copyProperties(workAreaDTO,workArea);
         WorkArea area = workAreaMapper.selectOne(new LambdaQueryWrapper<WorkArea>().eq(WorkArea::getCode, workAreaDTO.getCode()));
         if(ObjectUtil.isNotEmpty(area))
         {
@@ -156,8 +151,7 @@ public class WorkAreaServiceImpl extends ServiceImpl<WorkAreaMapper, WorkArea> i
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void updateWorkArea(WorkAreaDTO workAreaDTO) {
-        WorkArea workArea = workAreaMapper.selectOne(new LambdaQueryWrapper<WorkArea>().eq(WorkArea::getCode, workAreaDTO.getCode()));
-        deleteWorkArea(workArea.getId());
+        deleteWorkArea(workAreaDTO.getId());
         addWorkArea(workAreaDTO);
     }
     @Override
@@ -190,13 +184,13 @@ public class WorkAreaServiceImpl extends ServiceImpl<WorkAreaMapper, WorkArea> i
         CsMajor csMajor = csMajorMapper.selectOne(new LambdaQueryWrapper<CsMajor>().eq(CsMajor::getMajorCode, majorCode));
         //查询该专业下的所有用户
         List<MajorUserDTO> majorUserDTOList = workAreaMapper.getMajorAllUser(pageList,csMajor.getId(),name,orgId);
-        List<SubSystem> systemNameList = new ArrayList<>();
         for(MajorUserDTO majorUserDTO:majorUserDTOList)
         {
             //1.获取子系统
             //1.1查询用户下所有的专业
             List<MajorDTO> majorDTOList = workAreaMapper.getUserAllMajor(majorUserDTO.getId());
             List<String> majorCodeList = majorDTOList.stream().map(MajorDTO::getMajorCode).collect(Collectors.toList());
+            List<SubSystem> systemNameList = new ArrayList<>();
             for(MajorDTO majorDTO:majorDTOList)
             {
                 //1.2查询专业下所有的子系统
