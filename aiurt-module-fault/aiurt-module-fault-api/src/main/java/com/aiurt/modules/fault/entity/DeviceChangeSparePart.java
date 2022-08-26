@@ -74,6 +74,7 @@ public class DeviceChangeSparePart implements Serializable {
     private String oldOrgCode;
 
     @ApiModelProperty("机构名称")
+    @TableField(exist = false)
     private String oldOrgName;
 
 	/**新组件编号*/
@@ -81,6 +82,7 @@ public class DeviceChangeSparePart implements Serializable {
     private String newSparePartCode;
 
     @ApiModelProperty(value = "新组件名称", required = true)
+    @TableField(exist = false)
     private String newSparePartName;
 
 	/**新组件数量*/
