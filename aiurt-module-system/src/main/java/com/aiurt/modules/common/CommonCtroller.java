@@ -187,7 +187,7 @@ public class CommonCtroller {
 
         List<SelectTable> list = csMajorList.stream().map(device -> {
             SelectTable table = new SelectTable();
-            table.setLabel(device.getName());
+            table.setLabel(String.format("%s(%s)", device.getName(), device.getCode()));
             table.setValue(device.getCode());
             return table;
         }).collect(Collectors.toList());
