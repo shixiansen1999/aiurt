@@ -733,6 +733,9 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
             sparePartService.saveOrUpdateBatch(sparePartList);
         }
 
+        LambdaUpdateWrapper<DeviceChangeSparePart> delete = new LambdaUpdateWrapper<>();
+        delete.eq(DeviceChangeSparePart::getCode, faultCode);
+        sparePartService.remove(delete);
 
         List<DeviceChangeDTO> deviceChangeList = repairRecordDTO.getDeviceChangeList();
         List<SparePartReplaceDTO> list = new ArrayList<>();
