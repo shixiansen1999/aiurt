@@ -40,12 +40,6 @@ public interface IWorkAreaService extends IService<WorkArea> {
      */
     void deleteWorkArea(String id);
 
-    /**
-     * 工区详情
-     * @param id
-     * @return
-     */
-    WorkAreaDTO getWorkAreaDetail(String id);
 
     /**
      *
@@ -53,8 +47,8 @@ public interface IWorkAreaService extends IService<WorkArea> {
      * @param pageList
      * @param majorCode
      * @param name
-     * @param orgName
+     * @param orgId
      * @return
      */
-    Page<MajorUserDTO> getMajorUser(Page<MajorUserDTO> pageList, String majorCode,String name,String orgName);
+    Page<MajorUserDTO> getMajorUser(Page<MajorUserDTO> pageList, String majorCode,String name,String orgId);
 }

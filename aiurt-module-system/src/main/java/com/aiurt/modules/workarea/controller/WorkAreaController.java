@@ -10,8 +10,6 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
 import lombok.extern.slf4j.Slf4j;
 import org.jeecg.common.api.vo.Result;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -120,27 +118,14 @@ public class WorkAreaController extends BaseController<WorkArea, IWorkAreaServic
 	@GetMapping(value = "/majorUser")
 	public Result<IPage<MajorUserDTO>> getMajorUser(@RequestParam(name="majorCode",required=true) String majorCode,
 													@RequestParam(name="name",required=false) String name,
-													@RequestParam(name="orgName",required=false) String orgName,
+													@RequestParam(name="orgId",required=false) String orgId,
 													@RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
 													@RequestParam(name="pageSize", defaultValue="10") Integer pageSize) {
 		Page<MajorUserDTO> pageList = new Page<>(pageNo,pageSize);
-		pageList = workAreaService.getMajorUser(pageList,majorCode,name,orgName);
+		pageList = workAreaService.getMajorUser(pageList,majorCode,name,orgId);
 		return Result.OK(pageList);
-	}	/**
-	 * 工区详情
-	 * @param id
-	 * @return
-	 */
-	@AutoLog(value = "工区详情")
-	@ApiOperation(value="工区详情", notes="工区详情")
-	@GetMapping(value = "/queryById")
-	@ApiResponses({
-			@ApiResponse(code = 200, message = "OK", response = WorkAreaDTO.class)
-	})
-	public Result<WorkAreaDTO> queryById(@RequestParam(name="id",required=true) String id) {
-		WorkAreaDTO workAreaDTO = workAreaService.getWorkAreaDetail(id);
-		return Result.OK(workAreaDTO);
 	}
+
 //
 //    /**
 //    * 导出excel

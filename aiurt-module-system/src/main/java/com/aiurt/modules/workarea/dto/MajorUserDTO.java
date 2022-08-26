@@ -8,6 +8,8 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import org.jeecgframework.poi.excel.annotation.Excel;
 
+import java.util.List;
+
 /**
  * @author cgkj0
  * @version 1.0
@@ -56,4 +58,8 @@ public class MajorUserDTO {
     @ApiModelProperty(value = "子系统名称")
     @TableField(exist = false)
     private String systemNames;
+
+    @Excel(name = "专业code", width = 15)
+    @ApiModelProperty(value = "专业code")
+    private List<String> majorCodeList;
 }
