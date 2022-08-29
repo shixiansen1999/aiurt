@@ -12,6 +12,7 @@ import com.aiurt.modules.faultknowledgebase.dto.DeviceAssemblyDTO;
 import com.aiurt.modules.faultknowledgebase.entity.FaultKnowledgeBase;
 import com.aiurt.modules.faultknowledgebase.mapper.FaultKnowledgeBaseMapper;
 import com.aiurt.modules.faultknowledgebase.service.IFaultKnowledgeBaseService;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.annotations.Api;
@@ -151,10 +152,20 @@ public class FaultKnowledgeBaseController extends BaseController<FaultKnowledgeB
 			 }
 			 faultKnowledgeBase.setFaultCodes(stringBuilder.toString());
 		 }
-		 faultKnowledgeBase.setStatus(FaultConstant.PENDING);
 		 faultKnowledgeBase.setApprovedResult(FaultConstant.NO_PASS);
 	 }
-
+	 /**
+	  *  已驳回-提交审核
+	  * @param id
+	  * @return
+	  */
+	 @AutoLog(value = "已驳回-提交审核")
+	 @ApiOperation(value = "已驳回-提交审核", notes = "已驳回-提交审核")
+	 @PutMapping("/submitFaultKnowledgeResult")
+	 public Result<?> submitResult(@RequestParam  String id) {
+		 faultKnowledgeBaseService.update(new LambdaUpdateWrapper<FaultKnowledgeBase>().set(FaultKnowledgeBase::getStatus,FaultConstant.PENDING).eq(FaultKnowledgeBase::getId,id));
+		 return Result.OK("操作成功");
+	 }
 	 /**
 	 *   通过id删除
 	 *

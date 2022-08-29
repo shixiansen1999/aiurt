@@ -1,7 +1,4 @@
 package com.aiurt.modules.fault.service.impl;
-import java.util.Date;
-
-
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateUnit;
 import cn.hutool.core.date.DateUtil;
@@ -1027,6 +1024,31 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         LambdaUpdateWrapper<Fault> updateWrapper = new LambdaUpdateWrapper<>();
         updateWrapper.set(Fault::getKnowledgeId, knowledgeId).eq(Fault::getCode, faultCode);
         update(updateWrapper);
+    }
+
+    @Override
+    public void submitResult(String faultCode) {
+        // update status
+        LambdaUpdateWrapper<Fault> updateWrapper = new LambdaUpdateWrapper<>();
+        updateWrapper.set(Fault::getStatus,FaultStatusEnum.NEW_FAULT.getStatus()).eq(Fault::getCode, faultCode);
+        update(updateWrapper);
+    }
+
+    @Override
+    public void saveResult(Fault fault) {
+        log.info("修改故障工单：[{}]", JSON.toJSONString(fault));
+
+        isExist(fault.getCode());
+
+        LoginUser loginUser = checkLogin();
+
+        dealDevice(fault, fault.getFaultDeviceList());
+
+        updateById(fault);
+
+        // 记录日志
+        saveLog(loginUser, "修改故障工单", fault.getCode(), FaultStatusEnum.APPROVAL_REJECT.getStatus(), null);
+
     }
 
     /**
