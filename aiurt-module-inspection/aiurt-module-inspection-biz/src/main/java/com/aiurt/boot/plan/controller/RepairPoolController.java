@@ -8,6 +8,7 @@ import com.aiurt.boot.plan.req.RepairStrategyReq;
 import com.aiurt.boot.plan.req.SelectPlanReq;
 import com.aiurt.boot.plan.service.IRepairPoolService;
 import com.aiurt.common.aspect.annotation.AutoLog;
+import com.aiurt.common.aspect.annotation.LimitSubmit;
 import com.aiurt.common.constant.enums.ModuleType;
 import com.aiurt.common.system.base.controller.BaseController;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -145,6 +146,7 @@ public class RepairPoolController extends BaseController<RepairPool, IRepairPool
     @AutoLog(value = "检修管理-检修计划-指派检修任务", operateType =  2, operateTypeAlias = "指派检修任务", module = ModuleType.INSPECTION)
     @ApiOperation(value = "指派检修任务", notes = "指派检修任务")
     @PostMapping(value = "/assigned")
+    @LimitSubmit(key = "assigned:#assignDTO")
     public Result assigned(@RequestBody AssignDTO assignDTO) {
         return repairPoolService.assigned(assignDTO);
     }

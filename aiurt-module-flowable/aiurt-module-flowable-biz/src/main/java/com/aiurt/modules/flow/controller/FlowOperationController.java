@@ -56,6 +56,7 @@ public class FlowOperationController {
      */
     @DisableDataFilter
     @PostMapping("/startAndTakeUserTask")
+    @ApiOperation(value = "启动流程", notes = "启动流程")
     public Result<?> startAndTakeUserTask(@RequestBody StartBpmnDTO startBpmnDTO) {
         ProcessInstance processInstance = flowApiService.startAndTakeFirst(startBpmnDTO);
         return Result.OK(processInstance);
@@ -68,6 +69,7 @@ public class FlowOperationController {
      * @return 任务节点的自定义对象数据。
      */
     @GetMapping("/viewInitialTaskInfo")
+    @ApiOperation(value = "获取开始节点之后的第一个任务节点的数据", notes = "获取开始节点之后的第一个任务节点的数据")
     public Result<TaskInfoDTO> viewInitialTaskInfo(@RequestParam String processDefinitionKey) {
 //        ResponseResult<FlowEntry> flowEntryResult = flowOperationHelper.verifyAndGetFlowEntry(processDefinitionKey);
 //        if (!flowEntryResult.isSuccess()) {
@@ -92,6 +94,7 @@ public class FlowOperationController {
      */
     @DisableDataFilter
     @PostMapping("/submitUserTask")
+    @ApiOperation(value = "提交流程的用户任务", notes = "提交流程的用户任务")
     public Result<?> completeTask() {
         return Result.OK();
     }
@@ -120,6 +123,7 @@ public class FlowOperationController {
      * @return 流程图。
      */
     @GetMapping("/viewProcessBpmn")
+    @ApiOperation(value = "获取指定流程定义的流程图", notes = "获取指定流程定义的流程图")
     public Result<String> viewProcessBpmn(@RequestParam String processDefinitionId) throws IOException {
         BpmnXMLConverter converter = new BpmnXMLConverter();
         BpmnModel bpmnModel = flowApiService.getBpmnModelByDefinitionId(processDefinitionId);
@@ -136,6 +140,7 @@ public class FlowOperationController {
      * @return 流程图高亮数据。
      */
     @GetMapping("/viewHighlightFlowData")
+    @ApiOperation(value = "获取流程图高亮数据", notes = "获取流程图高亮数据")
     public Result<HighLightedNodeDTO> viewHighlightFlowData(@RequestParam String processInstanceId) {
         HighLightedNodeDTO jsonData = flowApiService.viewHighlightFlowData(processInstanceId);
         return Result.OK(jsonData);
@@ -148,6 +153,7 @@ public class FlowOperationController {
      * @return 当前流程实例的详情数据。
      */
     @GetMapping("/listFlowTaskComment")
+    @ApiOperation(value = "获取当前流程任务的审批列表", notes = "获取当前流程任务的审批列表")
     public Result<List<FlowTaskCommentDTO>> listFlowTaskComment(@RequestParam String processInstanceId) {
         List<ActCustomTaskComment> actCustomTaskComments =
                 actCustomTaskCommentService.getFlowTaskCommentList(processInstanceId);
@@ -165,6 +171,7 @@ public class FlowOperationController {
      * @return 任务节点的自定义对象数据。
      */
     @GetMapping("/viewRuntimeTaskInfo")
+    @ApiOperation(value = "获取流程运行时指定任务的信息", notes = "获取流程运行时指定任务的信息")
     public Result<TaskInfoDTO> viewRuntimeTaskInfo(
             @RequestParam String processDefinitionId,
             @RequestParam String processInstanceId,
@@ -184,6 +191,7 @@ public class FlowOperationController {
      * @return 查询结果应答。
      */
     @PostMapping("/listHistoricTask")
+    @ApiOperation(value = "已办任务", notes = "已办任务")
     public Result<IPage<FlowHisTaskDTO>> listHistoricTask(
             @RequestParam String processDefinitionName,
             @RequestParam String beginDate,
@@ -202,7 +210,7 @@ public class FlowOperationController {
      * @return
      */
     @PostMapping("/listAllHistoricProcessInstance")
-    @ApiOperation("流程实例")
+    @ApiOperation(value = "获取流程实例", notes = "获取流程实例")
     public Result<IPage<HistoricProcessInstanceDTO>> listAllHistoricProcessInstance(@RequestBody HistoricProcessInstanceReqDTO reqDTO) {
         IPage<HistoricProcessInstanceDTO> result = flowApiService.listAllHistoricProcessInstance(reqDTO);
         return Result.OK(result);
@@ -214,7 +222,7 @@ public class FlowOperationController {
      *
      * @return
      */
-    @ApiOperation("历史任务查询")
+    @ApiOperation(value = "历史任务查询", notes = "历史任务查询")
     @PostMapping("listHistoricProcessInstance")
     public Result<IPage<HistoricProcessInstanceDTO>> listHistoricProcessInstance(@RequestBody HistoricProcessInstanceReqDTO reqDTO) {
         LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
@@ -230,6 +238,7 @@ public class FlowOperationController {
      * @return
      */
     @PostMapping(value = "/turnTask")
+    @ApiOperation(value = "转办任务", notes = "转办任务")
     public Result<?> turnTask(TurnTaskDTO params) {
         flowApiService.turnTask(params);
         return Result.OK("转办成功");
@@ -241,6 +250,7 @@ public class FlowOperationController {
      * @param processInstanceId 流程实例id
      * @return
      */
+    @ApiOperation(value = "获取可驳回节点列表", notes = "获取可驳回节点列表")
     @GetMapping(value = "/getBackNodesByProcessInstanceId/{processInstanceId}/{taskId}")
     public Result<List<FlowNodeDTO>> getBackNodesByProcessInstanceId(@PathVariable String processInstanceId, @PathVariable String taskId) {
         List<FlowNodeDTO> datas = flowApiService.getBackNodesByProcessInstanceId(processInstanceId, taskId);
@@ -253,7 +263,7 @@ public class FlowOperationController {
      * @param instanceDTO
      * @return
      */
-    @ApiOperation("终止流程")
+    @ApiOperation(value = "终止流程", notes = "终止流程")
     @PutMapping("stopProcessInstance")
     public Result<?> stopProcessInstance(@Valid @RequestBody StopProcessInstanceDTO instanceDTO) {
         flowApiService.stopProcessInstance(instanceDTO);
@@ -266,7 +276,7 @@ public class FlowOperationController {
      * @return
      */
     @DeleteMapping("/deleteProcessInstance")
-    @ApiOperation("删除流程")
+    @ApiOperation(value = "删除流程",notes = "删除流程")
     public Result<?> deleteProcessInstance(@RequestParam(value = "processInstanceId") String processInstanceId) {
         flowApiService.deleteProcessInstance(processInstanceId);
         return Result.OK("终止流程成功");
@@ -282,6 +292,7 @@ public class FlowOperationController {
      * @return
      */
     @PostMapping("/rejectRuntimeTask")
+    @ApiOperation(value = "驳回任务", notes = "驳回任务")
     public Result<Void> rejectRuntimeTask(
             @RequestParam String processInstanceId,
             @RequestParam String taskId,
@@ -297,6 +308,7 @@ public class FlowOperationController {
      * @return
      */
     @PostMapping("/claimTask")
+    @ApiOperation(value = "任务签收", notes = "任务签收")
     public Result<?> claimTask(@RequestBody ClaimTaskDTO claimTaskDTO){
         return Result.ok();
     }
@@ -306,6 +318,7 @@ public class FlowOperationController {
      * @return
      */
     @GetMapping("/getHistoricLog")
+    @ApiOperation(value = "根据业务id 获取历史记录", notes = "根据业务id 获取历史记录")
     public Result<?> getHistoricLog(@RequestParam(value = "businessKey") String businessKey) {
         return null;
     }
