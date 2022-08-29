@@ -69,7 +69,7 @@
         <module>aiurt-module-patrol</module>
 		<module>aiurt-module-fault</module>
         <module>aiurt-module-inspection</module>
-	<!--	<module>aiurt-module-flowable</module>-->
+		<module>aiurt-module-flowable</module>
 		<module>aiurt-module-base</module>
 	</modules>
 
