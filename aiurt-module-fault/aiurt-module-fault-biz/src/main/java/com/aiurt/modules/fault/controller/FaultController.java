@@ -3,7 +3,6 @@ package com.aiurt.modules.fault.controller;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.constant.enums.ModuleType;
-import com.aiurt.common.constant.enums.OperateTypeEnum;
 import com.aiurt.common.system.base.controller.BaseController;
 import com.aiurt.modules.basic.entity.CsWork;
 import com.aiurt.modules.fault.dto.*;
@@ -29,6 +28,7 @@ import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import java.util.List;
@@ -353,7 +353,31 @@ public class FaultController extends BaseController<Fault, IFaultService> {
         faultService.fillRepairRecord(repairRecordDTO);
         return Result.OK("操作成功");
     }
+    /**
+     *  已驳回-保存
+     * @param fault
+     * @return
+     */
+    @AutoLog(value = "已驳回-保存")
+    @ApiOperation(value = "已驳回-保存", notes = "已驳回-保存")
+    @PutMapping("/saveResult")
+    public Result<?> saveResult(@RequestBody Fault fault) {
+        faultService.saveResult(fault);
+        return Result.OK("操作成功");
+    }
 
+    /**
+     *  已驳回-提交审核
+     * @param faultCode
+     * @return
+     */
+    @AutoLog(value = "已驳回-提交审核")
+    @ApiOperation(value = "已驳回-提交审核", notes = "已驳回-提交审核")
+    @PutMapping("/submitResult")
+    public Result<?> submitResult(@RequestParam  String faultCode) {
+        faultService.submitResult(faultCode);
+        return Result.OK("操作成功");
+    }
     /**
      *  维修结果审核
      * @param resultDTO
