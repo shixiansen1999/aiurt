@@ -150,4 +150,35 @@ public interface PatrolPlanMapper extends BaseMapper<PatrolPlan> {
    * @return
    */
     List<String> selectBySite(String siteCode);
+  /**
+   * 查询子系统名称
+   * @param systemCode
+   * @return
+   */
+  String systemCodeName(@Param("subsystemCode")String systemCode);
+  /**
+   * 设备类型名字
+   * @param deviceTypeCode
+   * @return
+   */
+  String deviceTypeCodeName(@Param("deviceTypeCode")String deviceTypeCode);
+  /**
+   * 查询状态
+   * @param status
+   * @return
+   */
+  String statusDesc(@Param("status")Integer status);
+  /**
+   * 翻译
+   * @param temporary
+   * @return
+   */
+  String temporaryName(@Param("temporary")String temporary);
+
+  /**
+   * 翻译
+   * @param majorCode
+   * @return
+   */
+  String majorName(@Param("majorCode")String majorCode);
 }

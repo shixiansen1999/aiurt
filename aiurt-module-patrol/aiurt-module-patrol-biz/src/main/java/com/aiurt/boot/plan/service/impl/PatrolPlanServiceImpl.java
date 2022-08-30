@@ -458,6 +458,11 @@ public class PatrolPlanServiceImpl extends ServiceImpl<PatrolPlanMapper, PatrolP
                     positionCodeCcName += CommonConstant.SYSTEM_SPLIT_STR + positionCodeName;
                 }
                 d.setPositionCodeCcName(positionCodeCcName);
+                d.setStatusDesc(baseMapper.statusDesc(d.getStatus()));
+                d.setTemporaryName(baseMapper.temporaryName(d.getTemporary()));
+                d.setMajorCodeName(baseMapper.majorName(d.getMajorCode()));
+                d.setSystemCodeName(baseMapper.systemCodeName(d.getSystemCode()));
+                d.setDeviceTypeCodeName(baseMapper.deviceTypeCodeName(d.getDeviceTypeCode()));
             }
         }
         return records;
