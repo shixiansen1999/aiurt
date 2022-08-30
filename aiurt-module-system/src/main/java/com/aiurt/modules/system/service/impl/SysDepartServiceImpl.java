@@ -84,6 +84,7 @@ public class SysDepartServiceImpl extends ServiceImpl<SysDepartMapper, SysDepart
 		LambdaQueryWrapper<SysDepart> query = new LambdaQueryWrapper<SysDepart>();
 		query.eq(SysDepart::getDelFlag, CommonConstant.DEL_FLAG_0.toString());
 		query.orderByAsc(SysDepart::getDepartOrder);
+		query.orderByDesc(SysDepart::getCreateTime);
 		List<SysDepart> list = this.list(query);
         //update-begin---author:wangshuai ---date:20220307  for：[JTC-119]在部门管理菜单下设置部门负责人 创建用户的时候不需要处理
 		//设置用户id,让前台显示
@@ -106,6 +107,7 @@ public class SysDepartServiceImpl extends ServiceImpl<SysDepartMapper, SysDepart
 			query.in(true,SysDepart::getId,ids.split(","));
 		}
 		query.orderByAsc(SysDepart::getDepartOrder);
+		query.orderByDesc(SysDepart::getCreateTime);
 		List<SysDepart> list= this.list(query);
 		for (SysDepart depart : list) {
 			listResult.add(new SysDepartTreeModel(depart));
