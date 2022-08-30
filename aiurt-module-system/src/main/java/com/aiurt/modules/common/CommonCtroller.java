@@ -123,7 +123,9 @@ public class CommonCtroller {
         LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
 
         List<CsUserSubsystemModel> csMajorList = csUserSubsystemService.getSubsystemByUserId(loginUser.getId());
-        List<SelectTable> list = Collections.emptyList();
+        List<SelectTable> list = new ArrayList<>();
+        SelectTable selectTable = new SelectTable();
+        selectTable.setLabel("无"); selectTable.setValue(null);
         if (StrUtil.isNotBlank(majorCode)) {
             list = csMajorList.stream().filter(entity -> StrUtil.equalsIgnoreCase(majorCode, entity.getMajorCode())).map(subsystem -> {
                 SelectTable table = new SelectTable();
@@ -139,7 +141,7 @@ public class CommonCtroller {
                 return table;
             }).collect(Collectors.toList());
         }
-
+        list.add(0,selectTable);
         return Result.OK(list);
     }
 
