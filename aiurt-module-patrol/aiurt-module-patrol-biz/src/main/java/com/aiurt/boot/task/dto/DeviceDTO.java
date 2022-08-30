@@ -74,5 +74,8 @@ public class DeviceDTO extends DictEntity {
     @ApiModelProperty(value = "状态 0-停用 1-正常")
     @Dict(dicCode = "device_status")
     private  Integer  status;
+	@Excel(name = "状态 0-停用 1-正常", width = 15)
+    @ApiModelProperty(value = "状态 0-停用 1-正常")
+    private  String  statusName;
     /**删除状态 0-未删除 1-已删除*/
 }
