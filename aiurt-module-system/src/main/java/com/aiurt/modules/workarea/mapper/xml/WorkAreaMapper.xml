@@ -52,6 +52,6 @@ where cum.user_id = #{userId}
 select  cs.*
 from cs_subsystem cs
 left join cs_major cm on cm.major_code = cs.major_code
-where cm.major_code = #{majorCode}
+where cm.major_code = #{majorCode} and cs.del_flag = 0
 </select>
 </mapper>
