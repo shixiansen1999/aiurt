@@ -124,7 +124,7 @@
             AND mechanismCode LIKE CONCAT ('%', #{patrolPlan.mechanismCode}, '%')
         </if>
         <if test="patrolPlan.siteCode!=null ">
-            AND siteCode LIKE CONCAT ('%', #{patrolPlan.siteCode}, '%')
+            AND siteCode REGEXP #{patrolPlan.siteCode}
         </if>
         ORDER BY create_time DESC
     </select>
@@ -341,6 +341,9 @@
             </foreach>
         </if>
         </if>
+    </select>
+    <select id="selectBySite" resultType="java.lang.String">
+        select station_code from cs_station  where  line_code =#{siteCode}
     </select>
 
 </mapper>

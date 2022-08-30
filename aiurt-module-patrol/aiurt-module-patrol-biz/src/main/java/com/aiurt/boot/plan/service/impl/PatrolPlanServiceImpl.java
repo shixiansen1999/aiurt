@@ -66,6 +66,12 @@ public class PatrolPlanServiceImpl extends ServiceImpl<PatrolPlanMapper, PatrolP
     private PatrolManager patrolManager;
     @Override
     public IPage<PatrolPlanDto> pageList(Page<PatrolPlanDto> page, PatrolPlanDto patrolPlan) {
+        if (Objects.nonNull(patrolPlan.getSiteCode())){
+            List<String> strings = baseMapper.selectBySite(patrolPlan.getSiteCode());
+            if (CollUtil.isNotEmpty(strings)){
+                patrolPlan.setSiteCode(String.join("|",strings));
+            }
+        }
         IPage<PatrolPlanDto> list = baseMapper.list(page, patrolPlan);
         List <PatrolPlanDto> list1 =list.getRecords();
         list1.forEach(l->{

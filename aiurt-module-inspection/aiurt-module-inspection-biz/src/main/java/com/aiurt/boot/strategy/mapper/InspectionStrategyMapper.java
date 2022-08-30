@@ -78,7 +78,7 @@ public interface InspectionStrategyMapper extends BaseMapper<InspectionStrategy>
      */
     List<InspectionStrategyDTO> selectCodeList(@Param("strategyId")String strategyId, @Param("majorCode")String majorCode, @Param("subsystemCode")String subsystemCode);
 
-    MajorDTO translateMajor(@Param("majorCode")String majorCode);
+    String translateMajor(@Param("majorCode")String majorCode);
 
     /**
      * 查询子系统
@@ -87,4 +87,34 @@ public interface InspectionStrategyMapper extends BaseMapper<InspectionStrategy>
      * @return
      */
     List<SubsystemDTO> translateSubsystem(@Param("majorCode")String majorCode, List<String> systemCode);
+    /**
+     * 查询线路下的站点
+     * @param siteCode
+     * @return
+     */
+    List<String> selectBySite(@Param("siteCode")String siteCode);
+    /**
+     * 查询子系统名称
+     * @param systemCode
+     * @return
+     */
+    String systemCodeName(@Param("subsystemCode")String systemCode);
+    /**
+     * 设备类型名字
+     * @param deviceTypeCode
+     * @return
+     */
+    String deviceTypeCodeName(@Param("deviceTypeCode")String deviceTypeCode);
+    /**
+     * 查询状态
+     * @param status
+     * @return
+     */
+    String statusDesc(@Param("status")Integer status);
+    /**
+     * 翻译
+     * @param temporary
+     * @return
+     */
+    String temporaryName(@Param("temporary")String temporary);
 }

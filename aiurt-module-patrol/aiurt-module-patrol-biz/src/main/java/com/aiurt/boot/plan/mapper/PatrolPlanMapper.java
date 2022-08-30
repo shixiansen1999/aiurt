@@ -144,4 +144,10 @@ public interface PatrolPlanMapper extends BaseMapper<PatrolPlan> {
    * @return
    */
   List<StationDTO> selectStations(List<String> asList);
+  /**
+   * 查询线路下站点
+   * @param siteCode
+   * @return
+   */
+    List<String> selectBySite(String siteCode);
 }

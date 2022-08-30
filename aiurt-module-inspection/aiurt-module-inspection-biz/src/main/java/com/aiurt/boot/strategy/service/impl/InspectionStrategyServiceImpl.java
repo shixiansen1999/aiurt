@@ -31,6 +31,7 @@ import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -71,9 +72,18 @@ public class InspectionStrategyServiceImpl extends ServiceImpl<InspectionStrateg
     private InspectionManager manager;
     @Autowired
     public RedisTemplate redisTemplate;
+    @Autowired
+    private ISysBaseAPI sysBaseApi;
 
     @Override
     public IPage<InspectionStrategyDTO> pageList(Page<InspectionStrategyDTO> page, InspectionStrategyDTO inspectionStrategyDTO) {
+        if (Objects.nonNull(inspectionStrategyDTO.getSiteCode())){
+         List<String> strings = baseMapper.selectBySite(inspectionStrategyDTO.getSiteCode());
+         if (CollUtil.isNotEmpty(strings)){
+             inspectionStrategyDTO.setSiteCode(String.join("|",strings));
+         }
+        }
+
         IPage<InspectionStrategyDTO> list = baseMapper.selectPageList(page, inspectionStrategyDTO);
 
         if (ObjectUtil.isNotEmpty(list)) {
@@ -406,7 +416,31 @@ public class InspectionStrategyServiceImpl extends ServiceImpl<InspectionStrateg
                     List<Device> devices = new ArrayList<>();
                     //查询对应设备
                     inspectionStrDeviceRels.stream().forEach(f -> {
-                        devices.add(baseMapper.viewDetail(f.getId()));
+                      Device device=  baseMapper.viewDetail(f.getId());
+                                //线路
+                                String lineCode = device.getLineCode() == null ? "" : device.getLineCode();
+                                //站点
+                                String stationCode = device.getStationCode() == null ? "" : device.getStationCode();
+                                //位置
+                                String positionCode = device.getPositionCode() == null ? "" : device.getPositionCode();
+                                String lineCodeName = sysBaseApi.translateDictFromTable("cs_line", "line_name", "line_code", lineCode);
+                                String stationCodeName = sysBaseApi.translateDictFromTable("cs_station", "station_name", "station_code", stationCode);
+                                String positionCodeName = sysBaseApi.translateDictFromTable("cs_station_position", "position_name", "position_code", positionCode);
+                                String positionCodeCcName = lineCodeName;
+                                if (stationCodeName != null && !"".equals(stationCodeName)) {
+                                    positionCodeCcName += CommonConstant.SYSTEM_SPLIT_STR + stationCodeName;
+                                }
+                                if (!"".equals(positionCodeName) && positionCodeName != null) {
+                                    positionCodeCcName += CommonConstant.SYSTEM_SPLIT_STR + positionCodeName;
+                                }
+                      device.setPositionCodeCcName(positionCodeCcName);
+                      device.setStatusDesc(baseMapper.statusDesc(device.getStatus()));
+                      device.setTemporaryName(baseMapper.temporaryName(device.getTemporary()));
+                      device.setMajorCodeName(baseMapper.translateMajor(device.getMajorCode()));
+                      device.setSystemCodeName(baseMapper.systemCodeName(device.getSystemCode()));
+                      device.setDeviceTypeCodeName(baseMapper.deviceTypeCodeName(device.getDeviceTypeCode()));
+
+                        devices.add(device);
                     });
                     inspectionCodeDTO.setDevices(devices);
                     UpdateHelperUtils.copyNullProperties(inspectionCode, inspectionCodeDTO);
