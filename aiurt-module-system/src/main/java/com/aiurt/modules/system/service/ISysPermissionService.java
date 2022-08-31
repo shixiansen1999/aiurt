@@ -1,13 +1,11 @@
 package com.aiurt.modules.system.service;
 
-import java.util.List;
-
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.modules.system.entity.SysPermission;
 import com.aiurt.modules.system.model.TreeModel;
-
-
 import com.baomidou.mybatisplus.extension.service.IService;
+
+import java.util.List;
 
 /**
  * <p>
@@ -58,7 +56,7 @@ public interface ISysPermissionService extends IService<SysPermission> {
      * @param username 用户名
      * @return
      */
-	public List<SysPermission> queryByUser(String username);
+	public List<SysPermission> queryByUser( String username, Integer isApp);
 
 	/**
 	 * 根据permissionId删除其关联的SysPermissionDataRule表中的数据

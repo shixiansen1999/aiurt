@@ -1,14 +1,13 @@
 package com.aiurt.modules.system.mapper;
 
-import java.util.List;
-
 import com.aiurt.modules.system.entity.SysPermission;
 import com.aiurt.modules.system.model.TreeModel;
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.annotations.Update;
 
-import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import java.util.List;
 
 /**
  * <p>
@@ -31,7 +30,7 @@ public interface SysPermissionMapper extends BaseMapper<SysPermission> {
      * @param username 用户账户名称
      * @return List<SysPermission>
 	 */
-	public List<SysPermission> queryByUser(@Param("username") String username);
+	public List<SysPermission> queryByUser(@Param("username") String username,@Param("isApp") Integer isApp);
 
 	/**
 	 * 修改菜单状态字段： 是否子节点

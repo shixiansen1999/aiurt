@@ -1,33 +1,31 @@
 package com.aiurt.modules.system.service.impl;
 
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import javax.annotation.Resource;
-
 import com.aiurt.common.constant.CacheConstant;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.util.oConvertUtils;
 import com.aiurt.modules.system.entity.SysPermission;
 import com.aiurt.modules.system.entity.SysPermissionDataRule;
-import com.aiurt.modules.system.model.TreeModel;
 import com.aiurt.modules.system.mapper.SysDepartPermissionMapper;
 import com.aiurt.modules.system.mapper.SysDepartRolePermissionMapper;
 import com.aiurt.modules.system.mapper.SysPermissionMapper;
 import com.aiurt.modules.system.mapper.SysRolePermissionMapper;
+import com.aiurt.modules.system.model.TreeModel;
 import com.aiurt.modules.system.service.ISysPermissionDataRuleService;
 import com.aiurt.modules.system.service.ISysPermissionService;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import javax.annotation.Resource;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * <p>
@@ -217,8 +215,8 @@ public class SysPermissionServiceImpl extends ServiceImpl<SysPermissionMapper, S
 	}
 
 	@Override
-	public List<SysPermission> queryByUser(String username) {
-		return this.sysPermissionMapper.queryByUser(username);
+	public List<SysPermission> queryByUser(String username,Integer isApp) {
+		return this.sysPermissionMapper.queryByUser(username,isApp);
 	}
 
 	/**

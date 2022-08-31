@@ -102,6 +102,10 @@ public interface CommonConstant {
      *  2：按钮权限
      */
     public static final Integer MENU_TYPE_2  = 2;
+    /**
+     * 0 不是app菜单或者按钮
+     */
+    public static final Integer IS_APP_0  = 0;
 
     /**通告对象类型（USER:指定用户，ALL:全体用户）*/
     public static final String MSG_TYPE_UESR  = "USER";

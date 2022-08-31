@@ -190,7 +190,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
 	@Override
 	public Set<String> getUserPermissionsSet(String username) {
 		Set<String> permissionSet = new HashSet<>();
-		List<SysPermission> permissionList = sysPermissionMapper.queryByUser(username);
+		List<SysPermission> permissionList = sysPermissionMapper.queryByUser(username,null);
 		for (SysPermission po : permissionList) {
 //			// TODO URL规则有问题？
 //			if (oConvertUtils.isNotEmpty(po.getUrl())) {

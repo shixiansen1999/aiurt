@@ -30,7 +30,7 @@ public class NgAlainServiceImpl implements NgAlainService {
     }
     @Override
     public JSONArray getJeecgMenu(String id) throws Exception {
-        List<SysPermission> metaList = sysPermissionService.queryByUser(id);
+        List<SysPermission> metaList = sysPermissionService.queryByUser(id,null);
         JSONArray jsonArray = new JSONArray();
         getPermissionJsonArray(jsonArray, metaList, null);
         JSONArray menulist= parseNgAlain(jsonArray);

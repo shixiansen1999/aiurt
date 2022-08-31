@@ -886,7 +886,7 @@ public class SysBaseApiImpl implements ISysBaseAPI {
     @Override
     public Set<String> getUserPermissionSet(String username) {
         Set<String> permissionSet = new HashSet<>();
-        List<SysPermission> permissionList = sysPermissionMapper.queryByUser(username);
+        List<SysPermission> permissionList = sysPermissionMapper.queryByUser(username,null);
         for (SysPermission po : permissionList) {
 //			// TODO URL规则有问题？
 //			if (oConvertUtils.isNotEmpty(po.getUrl())) {

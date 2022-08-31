@@ -54,6 +54,9 @@
 					or (p.url like '%:code' and p.url like '/online%' and p.hidden = 1)
 					or p.url = '/online')
 			   and p.del_flag = 0
+			    <if test="isApp!=null">
+					and p.is_app = #{isApp}
+				</if>
 			<!--update begin Author:lvdandan  Date:20200213 for：加入部门权限 -->
 			   UNION
 			   SELECT p.*
@@ -66,6 +69,9 @@
 					where p.id = a.permission_id AND d.username = #{username,jdbcType=VARCHAR}
 			   )
 			   and p.del_flag = 0
+		       <if test="isApp!=null">
+			      and p.is_app = #{isApp}
+		       </if>
 			<!--update end Author:lvdandan  Date:20200213 for：加入部门权限 -->
 		   ) h order by h.sort_no ASC
 	</select>
