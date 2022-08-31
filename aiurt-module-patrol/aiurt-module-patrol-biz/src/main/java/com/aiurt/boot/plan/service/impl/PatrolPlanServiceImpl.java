@@ -373,6 +373,9 @@ public class PatrolPlanServiceImpl extends ServiceImpl<PatrolPlanMapper, PatrolP
                 d.setPositionCodeCcName(positionCodeCcName);
             }
         }
+        if(deviceListDTO.getSiteCodes().size()>1){
+            return null;
+        }
         return deviceIPage;
     }
 
