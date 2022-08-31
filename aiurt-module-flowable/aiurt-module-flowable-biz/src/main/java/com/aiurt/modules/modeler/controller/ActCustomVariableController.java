@@ -49,6 +49,7 @@ public class ActCustomVariableController extends BaseController<ActCustomVariabl
 		LambdaQueryWrapper<ActCustomVariable> wrapper = new LambdaQueryWrapper<>();
 		wrapper.eq(ActCustomVariable::getModelId, modelId).eq(ActCustomVariable::getVariableType,
 				variableType);
+		// 需要默认添加两个变量
 		List<ActCustomVariable> list = actCustomVariableService.list(wrapper);
 		return Result.OK(list);
 	}

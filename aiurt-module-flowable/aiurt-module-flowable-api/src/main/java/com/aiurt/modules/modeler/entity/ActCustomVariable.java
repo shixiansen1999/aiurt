@@ -61,7 +61,7 @@ public class ActCustomVariable implements Serializable {
     private String sysOrgCode;
 
 	/**变量名*/
-    @ApiModelProperty(value = "变量名")
+    @ApiModelProperty(value = "变量标识/变量名")
     @NotBlank(message = "请输入变量(状态)名称")
     private String variableName;
 
@@ -80,6 +80,10 @@ public class ActCustomVariable implements Serializable {
 
     /**模型id(act_act_re_model的id)*/
     @ApiModelProperty(value = "模型id(act_act_re_model的id)")
-    @NotBlank(message = "请现在流程模板")
+    @NotBlank(message = "请选择流程模板")
     private String modelId;
+
+
+    @ApiModelProperty(value = "是否内置变量（1是，0否）")
+    private String type;
 }
