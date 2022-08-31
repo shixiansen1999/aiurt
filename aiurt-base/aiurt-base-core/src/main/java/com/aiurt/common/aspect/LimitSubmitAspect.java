@@ -28,7 +28,7 @@ import java.lang.reflect.Method;
 @Aspect
 @Slf4j
 public class LimitSubmitAspect {
-    //封装了redis操作各种方法
+
     @Autowired
     private RedisUtil redisUtil;
 
@@ -69,6 +69,7 @@ public class LimitSubmitAspect {
      * 支持多参数，从请求参数进行处理
      */
     private String getRedisKey(LoginUser sysUser, ProceedingJoinPoint joinPoint, String key) {
+        // 这时候的key就是你在注解里面写的表达式：addAnnualNewPlan:#id
         if (key.contains("%s")) {
             key = String.format(key, sysUser.getId());
         }
@@ -79,6 +80,7 @@ public class LimitSubmitAspect {
         if (parameterNames != null) {
             for (int i = 0; i < parameterNames.length; i++) {
                 String item = parameterNames[i];
+                // 这里是要将#id替换成真正的id值
                 if (key.contains("#" + item)) {
                     key = key.replace("#" + item, joinPoint.getArgs()[i].toString());
                 }

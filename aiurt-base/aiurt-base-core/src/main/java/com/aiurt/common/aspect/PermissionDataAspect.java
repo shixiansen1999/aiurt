@@ -8,6 +8,7 @@ import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.constant.SymbolConstant;
 import com.aiurt.common.system.util.JeecgDataAutorUtils;
 import com.aiurt.common.system.util.JwtUtil;
+import com.aiurt.common.util.HttpRequestDeviceUtils;
 import com.aiurt.common.util.oConvertUtils;
 import com.aiurt.config.datafilter.constant.DataPermRuleType;
 import com.aiurt.config.datafilter.utils.ContextUtil;
@@ -77,6 +78,12 @@ public class PermissionDataAspect {
         //update-end-author:taoyan date:20211027 for:JTC-132【online报表权限】online报表带参数的菜单配置数据权限无效
         log.info("拦截请求 >> {} ; 请求类型 >> {} . ", requestPath, requestMethod);
         String username = JwtUtil.getUserNameByToken(request);
+
+        // 判断请求是否来自app端
+        if (HttpRequestDeviceUtils.isMobileDevice(request)) {
+            // 将注解里面的appComponent的值赋给component
+            component = pd.appComponent();
+        }
 
         // 查询数据权限信息
         // 微服务情况下也得支持缓存机制

@@ -26,4 +26,9 @@ public @interface PermissionData {
 	 * 配置菜单的组件路径,用于数据权限
 	 */
 	String pageComponent() default "";
+
+	/**
+	 * app端的配置菜单的组件路径,用于数据权限
+	 */
+	String appComponent() default "";
 }
