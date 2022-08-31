@@ -1,11 +1,11 @@
 package com.aiurt.modules.system.model;
 
+import com.aiurt.modules.system.entity.SysPermission;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-
-import com.aiurt.modules.system.entity.SysPermission;
 
 /**
  * @Description: 菜单树，封装树结构
@@ -88,6 +88,18 @@ public class SysPermissionTree implements Serializable {
 	 */
 	private boolean keepAlive;
 
+	/**
+	 * 是否导航栏: 0:不是  1:是
+	 */
+	private boolean isNavBar ;
+	/**
+	 * 是否筛选器: 0:不是  1:是
+	 */
+	private boolean isFilter ;
+	/**
+	 * 是否快捷搜索: 0:不是  1:是
+	 */
+	private boolean isSearch ;
 
 	/**
 	 * 描述
@@ -157,6 +169,9 @@ public class SysPermissionTree implements Serializable {
 		this.redirect = permission.getRedirect();
 		this.url = permission.getUrl();
 		this.hidden = permission.isHidden();
+		this.isSearch = permission.isSearch();
+		this.isFilter = permission.isFilter();
+		this.isNavBar = permission.isNavBar();
 		this.route = permission.isRoute();
 		this.keepAlive = permission.isKeepAlive();
 		this.alwaysShow= permission.isAlwaysShow();
@@ -241,6 +256,30 @@ public class SysPermissionTree implements Serializable {
 
 	public void setHidden(boolean hidden) {
 		this.hidden = hidden;
+	}
+
+	public boolean isNavBar() {
+		return isNavBar;
+	}
+
+	public void setNavBar(boolean navBar) {
+		isNavBar = navBar;
+	}
+
+	public boolean isFilter() {
+		return isFilter;
+	}
+
+	public void setFilter(boolean filter) {
+		isFilter = filter;
+	}
+
+	public boolean isSearch() {
+		return isSearch;
+	}
+
+	public void setSearch(boolean search) {
+		isSearch = search;
 	}
 
 	public String getName() {

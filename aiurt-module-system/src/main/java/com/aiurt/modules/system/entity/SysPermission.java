@@ -1,8 +1,5 @@
 package com.aiurt.modules.system.entity;
 
-import java.io.Serializable;
-import java.util.Date;
-
 import com.aiurt.common.aspect.annotation.Dict;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
@@ -10,7 +7,9 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
-import org.jeecgframework.poi.excel.annotation.Excel;
+
+import java.io.Serializable;
+import java.util.Date;
 
 /**
  * <p>
@@ -98,6 +97,21 @@ public class SysPermission implements Serializable {
 	 */
 	@TableField(value="is_route")
 	private boolean route;
+	/**
+	 * 是否导航栏: 0:不是  1:是
+	 */
+	@TableField(value="is_navBar")
+	private boolean isNavBar ;
+	/**
+	 * 是否筛选器: 0:不是  1:是
+	 */
+	@TableField(value="is_filter")
+	private boolean isFilter ;
+	/**
+	 * 是否快捷搜索: 0:不是  1:是
+	 */
+	@TableField(value="is_search")
+	private boolean isSearch ;
 
 
 	/**
@@ -139,7 +153,7 @@ public class SysPermission implements Serializable {
 	/**
 	 * 是否为手机app(1是,0否)
 	 */
-	private boolean isApp;
+	private Integer isApp;
 
 	/**
 	 * 创建时间
@@ -187,6 +201,9 @@ public class SysPermission implements Serializable {
         	this.keepAlive=true;
         	this.leaf=true;
         	this.hidden=false;
+        	this.isSearch=false;
+        	this.isFilter=false;
+        	this.isNavBar=false;
     	}
 
     }

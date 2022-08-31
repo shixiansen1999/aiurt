@@ -1,56 +1,44 @@
 package com.aiurt.modules.system.controller;
 
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
+import cn.hutool.core.util.ObjectUtil;
 import com.aiurt.common.aspect.annotation.AutoLog;
-import com.aiurt.common.constant.CommonConstant;
-import io.swagger.annotations.ApiOperation;
-import org.jeecg.common.system.query.QueryGenerator;
-import org.jeecg.common.system.vo.LoginUser;
 import com.aiurt.common.util.oConvertUtils;
 import com.aiurt.modules.system.entity.SysPermission;
 import com.aiurt.modules.system.entity.SysPermissionDataRule;
+import com.aiurt.modules.system.entity.SysRole;
 import com.aiurt.modules.system.entity.SysRolePermission;
 import com.aiurt.modules.system.model.TreeModel;
-import org.jeecg.common.api.vo.Result;
-import com.aiurt.modules.system.entity.SysRole;
 import com.aiurt.modules.system.service.ISysPermissionDataRuleService;
 import com.aiurt.modules.system.service.ISysPermissionService;
 import com.aiurt.modules.system.service.ISysRolePermissionService;
 import com.aiurt.modules.system.service.ISysRoleService;
-import org.jeecgframework.poi.excel.def.NormalExcelConstants;
-import org.jeecgframework.poi.excel.entity.ExportParams;
-import org.jeecgframework.poi.excel.entity.ImportParams;
-import org.jeecgframework.poi.excel.view.JeecgEntityExcelView;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.multipart.MultipartHttpServletRequest;
-import org.springframework.web.servlet.ModelAndView;
-import org.apache.shiro.SecurityUtils;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-
+import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.shiro.SecurityUtils;
+import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.constant.CommonConstant;
+import org.jeecg.common.system.query.QueryGenerator;
+import org.jeecg.common.system.vo.LoginUser;
+import org.jeecgframework.poi.excel.def.NormalExcelConstants;
+import org.jeecgframework.poi.excel.entity.ExportParams;
+import org.jeecgframework.poi.excel.entity.ImportParams;
+import org.jeecgframework.poi.excel.view.JeecgEntityExcelView;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.multipart.MultipartHttpServletRequest;
+import org.springframework.web.servlet.ModelAndView;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.util.*;
 
 /**
  * <p>
@@ -368,14 +356,19 @@ public class SysRoleController {
 	 * @param request
 	 * @return
 	 */
+	@ApiOperation("查询菜单权限树")
 	@RequestMapping(value = "/queryTreeList", method = RequestMethod.GET)
-	public Result<Map<String,Object>> queryTreeList(HttpServletRequest request) {
+	public Result<Map<String,Object>> queryTreeList(HttpServletRequest request,Integer isApp) {
 		Result<Map<String,Object>> result = new Result<>();
 		//全部权限ids
 		List<String> ids = new ArrayList<>();
 		try {
 			LambdaQueryWrapper<SysPermission> query = new LambdaQueryWrapper<SysPermission>();
-			query.eq(SysPermission::getDelFlag, CommonConstant.DEL_FLAG_0);
+			if(ObjectUtil.isEmpty(isApp))
+			{
+				isApp=0;
+			}
+			query.eq(SysPermission::getDelFlag, CommonConstant.DEL_FLAG_0).eq(SysPermission::getIsApp,isApp);
 			query.orderByAsc(SysPermission::getSortNo);
 			List<SysPermission> list = sysPermissionService.list(query);
 			for(SysPermission sysPer : list) {

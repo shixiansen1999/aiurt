@@ -717,22 +717,8 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
             taskDeviceList.stream().forEach(td -> {
                 if (ObjectUtil.isNotNull(td.getDeviceCode())) {
                     DeviceDTO deviceDTO = patrolTaskDeviceMapper.getTaskStandardDevice(td.getDeviceCode());
-                    if(deviceDTO.getStatus()==0)
-                    {
-                        deviceDTO.setStatusName("停用");
-                    }
-                    if(deviceDTO.getStatus()==1)
-                    {
-                        deviceDTO.setStatusName("启用");
-                    }
-                    if(deviceDTO.getStatus()==2)
-                    {
-                        deviceDTO.setStatusName("故障");
-                    }
-                    if(deviceDTO.getStatus()==3)
-                    {
-                        deviceDTO.setStatusName("报废");
-                    }
+                    String statusName = patrolTaskDeviceMapper.getStatusName(deviceDTO.getStatus());
+                    deviceDTO.setStatusName(statusName);
                     if (ObjectUtil.isNotEmpty(deviceDTO.getPositionCode())) {
                         String positionDevice = patrolTaskDeviceMapper.getDevicePosition(deviceDTO.getPositionCode());
                         String position = deviceDTO.getPositionCodeName() + "/" + positionDevice;

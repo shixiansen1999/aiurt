@@ -1,15 +1,12 @@
 package com.aiurt.modules.system.controller;
 
+import cn.hutool.core.util.ObjectUtil;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.constant.enums.RoleIndexConfigEnum;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import org.jeecg.common.system.vo.LoginUser;
 import com.aiurt.common.util.Md5Util;
 import com.aiurt.common.util.oConvertUtils;
 import com.aiurt.config.JeeccgBaseConfig;
-import org.jeecg.modules.base.service.BaseCommonService;
 import com.aiurt.modules.system.entity.SysDepartPermission;
 import com.aiurt.modules.system.entity.SysPermission;
 import com.aiurt.modules.system.entity.SysPermissionDataRule;
@@ -22,10 +19,14 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.system.vo.LoginUser;
+import org.jeecg.modules.base.service.BaseCommonService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -77,12 +78,16 @@ public class SysPermissionController {
 	 * @return
 	 */
 	@RequestMapping(value = "/list", method = RequestMethod.GET)
-	public Result<List<SysPermissionTree>> list() {
+	public Result<List<SysPermissionTree>> list(@RequestParam(name = "isApp",required = false) Integer isApp) {
         long start = System.currentTimeMillis();
 		Result<List<SysPermissionTree>> result = new Result<>();
 		try {
 			LambdaQueryWrapper<SysPermission> query = new LambdaQueryWrapper<SysPermission>();
-			query.eq(SysPermission::getDelFlag, CommonConstant.DEL_FLAG_0);
+			if(ObjectUtil.isEmpty(isApp))
+			{
+				isApp=0;
+			}
+			query.eq(SysPermission::getDelFlag, CommonConstant.DEL_FLAG_0).eq(SysPermission::getIsApp,isApp);
 			query.orderByAsc(SysPermission::getSortNo);
 			List<SysPermission> list = sysPermissionService.list(query);
 			List<SysPermissionTree> treeList = new ArrayList<>();
@@ -219,7 +224,7 @@ public class SysPermissionController {
 	 */
 	@RequestMapping(value = "/getUserPermissionByToken", method = RequestMethod.GET)
 	@ApiOperation("获取菜单权限以及按钮权限")
-	public Result<?> getUserPermissionByToken(HttpServletRequest request, String type) {
+	public Result<?> getUserPermissionByToken(HttpServletRequest request, String type,Integer isApp) {
 		Result<JSONObject> result = new Result<JSONObject>();
 		try {
 			//直接获取当前用户不适用前端token
@@ -256,6 +261,11 @@ public class SysPermissionController {
 			LambdaQueryWrapper<SysPermission> query = new LambdaQueryWrapper<SysPermission>();
 			query.eq(SysPermission::getDelFlag, CommonConstant.DEL_FLAG_0);
 			query.eq(SysPermission::getMenuType, CommonConstant.MENU_TYPE_2);
+			if(ObjectUtil.isEmpty(isApp))
+			{
+				isApp=0;
+			}
+			query.eq(SysPermission::getIsApp, isApp);
 			//query.eq(SysPermission::getStatus, "1");
 			List<SysPermission> allAuthList = sysPermissionService.list(query);
 			JSONArray allauthjsonArray = new JSONArray();
@@ -714,6 +724,21 @@ public class SysPermissionController {
 				meta.put("keepAlive", true);
 			} else {
 				meta.put("keepAlive", false);
+			}
+			if (permission.isNavBar()) {
+				meta.put("navBar", true);
+			} else {
+				meta.put("navBar", false);
+			}
+			if (permission.isSearch()) {
+				meta.put("search", true);
+			} else {
+				meta.put("search", false);
+			}
+			if (permission.isFilter()) {
+				meta.put("filter", true);
+			} else {
+				meta.put("filter", false);
 			}
 
 			/*update_begin author:wuxianquan date:20190908 for:往菜单信息里添加外链菜单打开方式 */

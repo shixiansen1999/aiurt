@@ -152,4 +152,11 @@ public interface PatrolTaskDeviceMapper extends BaseMapper<PatrolTaskDevice> {
      * @return
      */
     String getStationName(String stationCode);
+
+    /**
+     * 根据字典项值，查询字典文本
+     * @param status
+     * @return
+     */
+    String getStatusName(Integer status);
 }

@@ -237,4 +237,10 @@
             AND station_code = #{stationCode}
         </if>
     </select>
+     <select id="getStatusName" resultType="java.lang.String">
+        select sdt.item_text
+        from sys_dict sd
+        LEFT JOIN sys_dict_item sdt on sd.id = sdt.dict_id
+        where sd.dict_code ="device_status" and sdt.item_value = #{status}
+    </select>
 </mapper>
