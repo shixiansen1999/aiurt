@@ -432,12 +432,17 @@ public class SysPermissionController {
      * @return
      */
     @RequestMapping(value = "/queryTreeList", method = RequestMethod.GET)
-    public Result<Map<String, Object>> queryTreeList() {
+    public Result<Map<String, Object>> queryTreeList(Integer isApp) {
         Result<Map<String, Object>> result = new Result<>();
         // 全部权限ids
         List<String> ids = new ArrayList<>();
         try {
             LambdaQueryWrapper<SysPermission> query = new LambdaQueryWrapper<SysPermission>();
+            if(ObjectUtil.isEmpty(isApp))
+            {
+                isApp = 0;
+            }
+            query.eq(SysPermission::getIsApp, isApp);
             query.eq(SysPermission::getDelFlag, CommonConstant.DEL_FLAG_0);
             query.orderByAsc(SysPermission::getSortNo);
             List<SysPermission> list = sysPermissionService.list(query);
