@@ -787,6 +787,8 @@ public class SysPermissionController {
                     meta.put("icon", permission.getIcon());
                 }
             } else {
+                // 其他也需要跳转地址
+                json.put("redirect", permission.getRedirect());
                 if (oConvertUtils.isNotEmpty(permission.getIcon())) {
                     meta.put("icon", permission.getIcon());
                 }
