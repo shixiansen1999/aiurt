@@ -1,10 +1,9 @@
 package com.aiurt.modules.subsystem.controller;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
+import cn.hutool.core.collection.CollUtil;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.aspect.annotation.PermissionData;
 import com.aiurt.common.constant.CommonConstant;
@@ -232,6 +231,35 @@ public class CsSubsystemController  {
 			 major.setChildren(systemList);
 		 });
 		 return Result.OK(majorList);
+	 }
+
+
+	 /**
+	  * 根据专业查子系统
+	  * @param majorIds
+	  * @return
+	  */
+	 //@AutoLog(value = "查询",operateType = 1,operateTypeAlias = "根据专业查子系统",permissionUrl = "/subsystem/list")
+	 @ApiOperation(value="根据专业id查子系统", notes="根据专业id查子系统")
+	 @GetMapping(value = "/queryCsSubsystemBy")
+	 public Result<?> queryCsSubsystemBy(@RequestParam(name="majorIds",required=false) List<String> majorIds) {
+
+	 	if (CollUtil.isEmpty(majorIds)) {
+	 		return Result.OK(Collections.emptyList());
+		}
+		 List<CsMajor> majorList = csMajorService.list(new LambdaQueryWrapper<CsMajor>()
+				 .eq(CsMajor::getDelFlag, CommonConstant.DEL_FLAG_0)
+				 .in(CsMajor::getMajorCode,majorIds)
+				 .select(CsMajor::getMajorCode,CsMajor::getMajorName));
+
+		 Set<String> set = majorList.stream().map(CsMajor::getMajorCode).collect(Collectors.toSet());
+
+
+		 List<CsSubsystem> systemList = csSubsystemService.list(new LambdaQueryWrapper<CsSubsystem>()
+				 .eq(CsSubsystem::getDelFlag, CommonConstant.DEL_FLAG_0)
+				 .in(CsSubsystem::getMajorCode,set));
+
+		 return Result.OK(systemList);
 	 }
 
 

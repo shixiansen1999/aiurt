@@ -1,7 +1,6 @@
-package com.aiurt.modules.common;
+package com.aiurt.modules.common.controller;
 
 import cn.hutool.core.collection.CollectionUtil;
-import cn.hutool.core.util.ServiceLoaderUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.modules.common.dto.DeviceDTO;
 import com.aiurt.modules.common.entity.SelectTable;
