@@ -245,16 +245,18 @@ public class CsSubsystemController  {
 	 @GetMapping(value = "/queryCsSubsystemBy")
 	 public Result<?> queryCsSubsystemBy(@RequestParam(name="majorIds",required=false) String majorIds) {
 
-	 	if (StrUtil.isBlank(majorIds)) {
+	 	 if (StrUtil.isBlank(majorIds)) {
 	 		return Result.OK(Collections.emptyList());
-		}
+		 }
 		 List<CsMajor> majorList = csMajorService.list(new LambdaQueryWrapper<CsMajor>()
 				 .eq(CsMajor::getDelFlag, CommonConstant.DEL_FLAG_0)
-				 .in(CsMajor::getMajorCode,StrUtil.split(majorIds, ','))
-				 .select(CsMajor::getMajorCode,CsMajor::getMajorName));
+				 .in(CsMajor::getId,StrUtil.split(majorIds, ',')));
 
 		 Set<String> set = majorList.stream().map(CsMajor::getMajorCode).collect(Collectors.toSet());
 
+		 if (CollUtil.isEmpty(set)) {
+		 	return Result.OK(Collections.emptyList());
+		 }
 
 		 List<CsSubsystem> systemList = csSubsystemService.list(new LambdaQueryWrapper<CsSubsystem>()
 				 .eq(CsSubsystem::getDelFlag, CommonConstant.DEL_FLAG_0)
