@@ -4,6 +4,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.aspect.annotation.PermissionData;
 import com.aiurt.common.constant.CommonConstant;
@@ -242,14 +243,14 @@ public class CsSubsystemController  {
 	 //@AutoLog(value = "查询",operateType = 1,operateTypeAlias = "根据专业查子系统",permissionUrl = "/subsystem/list")
 	 @ApiOperation(value="根据专业id查子系统", notes="根据专业id查子系统")
 	 @GetMapping(value = "/queryCsSubsystemBy")
-	 public Result<?> queryCsSubsystemBy(@RequestParam(name="majorIds",required=false) List<String> majorIds) {
+	 public Result<?> queryCsSubsystemBy(@RequestParam(name="majorIds",required=false) String majorIds) {
 
-	 	if (CollUtil.isEmpty(majorIds)) {
+	 	if (StrUtil.isBlank(majorIds)) {
 	 		return Result.OK(Collections.emptyList());
 		}
 		 List<CsMajor> majorList = csMajorService.list(new LambdaQueryWrapper<CsMajor>()
 				 .eq(CsMajor::getDelFlag, CommonConstant.DEL_FLAG_0)
-				 .in(CsMajor::getMajorCode,majorIds)
+				 .in(CsMajor::getMajorCode,StrUtil.split(majorIds, ','))
 				 .select(CsMajor::getMajorCode,CsMajor::getMajorName));
 
 		 Set<String> set = majorList.stream().map(CsMajor::getMajorCode).collect(Collectors.toSet());
