@@ -1,6 +1,8 @@
 package com.aiurt.boot.pool;
 
+import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.util.ObjectUtil;
 import com.aiurt.boot.constant.PatrolConstant;
 import com.aiurt.boot.task.entity.PatrolTask;
 import com.aiurt.boot.task.service.IPatrolTaskService;
@@ -11,7 +13,9 @@ import org.quartz.JobExecutionException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.*;
@@ -27,11 +31,12 @@ public class PatrolTaskMissingDetection implements Job {
     @Autowired
     private IPatrolTaskService patrolTaskService;
 
-    // 默认44个小时，即第二天晚上8点后算漏检
-    @Value("${patrol.missing.hour:44}")
-    private Integer missingTime;
+//    // 默认44个小时，即第二天晚上8点后算漏检
+//    @Value("${patrol.missing.hour:44}")
+//    private Integer missingTime;
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void execute(JobExecutionContext context) throws JobExecutionException {
         taskDetection();
     }
@@ -41,7 +46,7 @@ public class PatrolTaskMissingDetection implements Job {
     }
 
     /**
-     * 每天固定时间检测漏检的任务
+     * 周一和周五0点检测漏检的任务
      */
     private void taskDetection() {
 
@@ -58,13 +63,18 @@ public class PatrolTaskMissingDetection implements Job {
             if (null == l.getPatrolDate()) {
                 return;
             }
-            Date patrolDate = DateUtil.parseDate(DateUtil.format(l.getPatrolDate(), "yyyy-MM-dd 00:00:00"));
-            LocalDateTime localDateTime = patrolDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
-            // 漏检时间
-            Date missDate = Date.from(localDateTime.plusHours(missingTime).atZone(ZoneId.systemDefault()).toInstant());
+//            Date patrolDate = DateUtil.parseDate(DateUtil.format(l.getPatrolDate(), "yyyy-MM-dd 00:00:00"));
+//            LocalDateTime localDateTime = patrolDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+//            // 漏检时间
+//            Date missDate = Date.from(localDateTime.plusHours(missingTime).atZone(ZoneId.systemDefault()).toInstant());
+            Date patrolDate = l.getPatrolDate();
+            if (ObjectUtil.isNotEmpty(l.getEndTime())) {
+                String endTime = DateUtil.format(l.getEndTime(), "HH:mm:ss");
+                patrolDate = DateUtil.parse(DateUtil.format(patrolDate, "yyyy-MM-dd " + endTime));
+            }
             // 当前时间
             Date now = new Date();
-            int compare = DateUtil.compare(now, missDate);
+            int compare = DateUtil.compare(now, patrolDate);
             // 如果当前时间大于了漏检的时间
             if (compare >= 0) {
                 // 更新任务为已漏检状态
