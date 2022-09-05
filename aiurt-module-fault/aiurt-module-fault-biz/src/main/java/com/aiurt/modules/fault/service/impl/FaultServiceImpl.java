@@ -170,8 +170,10 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
                 .faultCode(fault.getCode())
                 .processPerson(user.getUsername())
                 .build();
+        fault.setApprovalTime(new Date());
         if (Objects.isNull(approvalStatus) || status.equals(approvalStatus)) {
             // 审批通过
+            fault.setApprovalPassTime(new Date());
             fault.setStatus(FaultStatusEnum.APPROVAL_PASS.getStatus());
             operationProcess.setProcessLink(FaultStatusEnum.APPROVAL_PASS.getMessage())
                     .setProcessCode(FaultStatusEnum.APPROVAL_PASS.getStatus()).setRemark(approvalDTO.getApprovalRejection());

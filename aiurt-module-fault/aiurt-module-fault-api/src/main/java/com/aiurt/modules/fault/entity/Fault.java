@@ -311,4 +311,14 @@ public class Fault extends DictEntity implements Serializable {
     @TableField(exist = false)
     private Integer signAgainFlag;
 
+    @ApiModelProperty(value = "最近一次审核时间")
+    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
+    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
+    private Date approvalTime;
+
+    @ApiModelProperty(value = "审核通过时间")
+    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
+    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
+    private Date approvalPassTime;
+
 }
