@@ -36,7 +36,7 @@ public class PlanIndexDTO implements Serializable {
      * 已检修率
      */
     @ApiModelProperty(value = "已检修率")
-    private Double finishRate;
+    private String finishRate;
     /**
      * 漏检修总数
      */
@@ -46,7 +46,7 @@ public class PlanIndexDTO implements Serializable {
      * 漏检修率
      */
     @ApiModelProperty(value = "漏检修率")
-    private Double omitRate;
+    private String omitRate;
     /**
      * 开始日期
      */

@@ -1,6 +1,8 @@
 package com.aiurt.boot.index.service;
 
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.util.ObjectUtil;
 import com.aiurt.boot.constant.InspectionConstant;
 import com.aiurt.boot.index.dto.PlanIndexDTO;
 import com.aiurt.boot.index.dto.TaskDetailsDTO;
@@ -13,6 +15,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 
@@ -36,28 +39,39 @@ public class IndexPlanService {
      */
     public PlanIndexDTO getOverviewInfo(Date startDate, Date endDate) {
         PlanIndexDTO result = new PlanIndexDTO();
-        if (startDate == null || endDate == null) {
+        if (ObjectUtil.isEmpty(startDate) || ObjectUtil.isEmpty(endDate)) {
             return result;
         }
+
         // 将符合条件的检修计划查出
         LambdaQueryWrapper<RepairPool> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(RepairPool::getStartTime, startDate);
-        queryWrapper.eq(RepairPool::getEndTime, endDate);
+        queryWrapper.eq(RepairPool::getStartTime, DateUtil.beginOfDay(startDate));
+        queryWrapper.eq(RepairPool::getEndTime, DateUtil.endOfDay(endDate));
+        queryWrapper.eq(RepairPool::getIsManual, InspectionConstant.NO_IS_MANUAL);
         List<RepairPool> repairPoolList = repairPoolMapper.selectList(queryWrapper);
 
         // 检修总数
         result.setSum(CollUtil.isNotEmpty(repairPoolList) ? repairPoolList.size() : 0L);
         // 已检修数
-
         result.setFinish(CollUtil.isNotEmpty(repairPoolList) ? repairPoolList.stream().filter(re -> InspectionConstant.COMPLETED.equals(re.getStatus())).count() : 0L);
         // 未检修数量
-
+        result.setUnfinish(CollUtil.isNotEmpty(repairPoolList) ? repairPoolList.stream().filter(re -> !InspectionConstant.COMPLETED.equals(re.getStatus())).count() : 0L);
         // 已检修率
-
+        if (result.getSum() <= 0 || result.getFinish() <= 0) {
+            result.setFinishRate("0%");
+        } else {
+            double d = new BigDecimal((double) result.getFinish() * 100 / result.getSum()).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
+            result.setFinishRate(d + "%");
+        }
         // 漏检数量
 
         // 漏检率
-
+        if (result.getSum() <= 0 || result.getOmit() <= 0) {
+            result.setOmitRate("0%");
+        } else {
+            double d = new BigDecimal((double) result.getOmit() * 100 / result.getSum()).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
+            result.setOmitRate(d + "%");
+        }
         return result;
     }
 
@@ -73,7 +87,7 @@ public class IndexPlanService {
                                                         Integer type,
                                                         TaskDetailsReq taskDetailsReq) {
         IPage<TaskDetailsDTO> result = new Page<>();
-        if (type == null) {
+        if (ObjectUtil.isEmpty(type)) {
             return result;
         }
         return null;

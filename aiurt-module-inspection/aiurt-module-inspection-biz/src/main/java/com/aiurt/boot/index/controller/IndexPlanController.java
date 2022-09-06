@@ -14,6 +14,7 @@ import org.jeecg.common.api.vo.Result;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -43,7 +44,7 @@ public class IndexPlanController {
      */
     @AutoLog(value = "首页-检修概况", operateType = 1, operateTypeAlias = "查询", permissionUrl = "")
     @ApiOperation(value = "首页-检修概况", notes = "首页-检修概况")
-    @RequestMapping("/overviewInfo")
+    @RequestMapping(value = "/overviewInfo", method = RequestMethod.GET)
     public Result<PlanIndexDTO> getOverviewInfo(@ApiParam(name = "startDate", value = "开始日期") @RequestParam("startDate") @DateTimeFormat(pattern = "yyyy-MM-dd") Date startDate,
                                                 @ApiParam(name = "endDate", value = "结束日期") @RequestParam("endDate") @DateTimeFormat(pattern = "yyyy-MM-dd") Date endDate) {
         PlanIndexDTO result = indexPlanService.getOverviewInfo(startDate, endDate);
@@ -53,15 +54,15 @@ public class IndexPlanController {
     /**
      * 获取首页的检修概况详情
      *
-     * @param pageNo 第几页
-     * @param pageSize  每页显示多少数据
-     * @param type 类型：1总数2已检修3未检修4漏检
+     * @param pageNo         第几页
+     * @param pageSize       每页显示多少数据
+     * @param type           类型：1总数2已检修3未检修4漏检
      * @param taskDetailsReq 查询条件
      * @return
      */
     @AutoLog(value = "首页-检修概况详情", operateType = 1, operateTypeAlias = "查询", permissionUrl = "")
     @ApiOperation(value = "首页-检修概况详情", notes = "首页-检修概况详情")
-    @RequestMapping("/getOverviewInfoDetails")
+    @RequestMapping(value = "/getOverviewInfoDetails", method = RequestMethod.POST)
     public Result<IPage<TaskDetailsDTO>> getOverviewInfoDetails(@RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
                                                                 @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize,
                                                                 @ApiParam(name = "type", value = "类型：1总数2已检修3未检修4漏检") @RequestParam("type") Integer type,
