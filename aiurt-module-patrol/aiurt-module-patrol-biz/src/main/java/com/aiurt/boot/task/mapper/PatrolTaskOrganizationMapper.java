@@ -2,6 +2,7 @@ package com.aiurt.boot.task.mapper;
 
 import java.util.List;
 
+import com.aiurt.boot.statistics.dto.IndexOrgDTO;
 import com.aiurt.boot.task.dto.PatrolTaskOrganizationDTO;
 import com.aiurt.boot.task.dto.PatrolUserInfoDTO;
 import com.aiurt.common.aspect.annotation.EnableDataPerm;
@@ -23,4 +24,12 @@ public interface PatrolTaskOrganizationMapper extends BaseMapper<PatrolTaskOrgan
     List<PatrolUserInfoDTO> getUserListByTaskCode(@Param("code") String code);
 
     List<String> getOrgCode(@Param("taskCode") String taskCode);
+
+    /**
+     * 首页巡视异常任务的组织机构信息
+     *
+     * @param taskCode
+     * @return
+     */
+    List<IndexOrgDTO> getOrgInfo(@Param("taskCode") String taskCode);
 }

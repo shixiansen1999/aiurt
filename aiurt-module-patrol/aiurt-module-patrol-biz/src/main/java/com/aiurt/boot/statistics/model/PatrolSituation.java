@@ -1,15 +1,12 @@
-package com.aiurt.boot.statistics.dto;
+package com.aiurt.boot.statistics.model;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
-import org.springframework.format.annotation.DateTimeFormat;
 
 import java.io.Serializable;
-import java.util.Date;
 
 @Data
 @NoArgsConstructor
@@ -33,6 +30,11 @@ public class PatrolSituation implements Serializable {
     @ApiModelProperty(value = "未巡视数")
     private Long unfinish;
     /**
+     * 异常数
+     */
+    @ApiModelProperty(value = "异常数")
+    private Long abnormal;
+    /**
      * 漏巡视总数
      */
     @ApiModelProperty(value = "漏巡视总数")
@@ -41,19 +43,5 @@ public class PatrolSituation implements Serializable {
      * 漏巡视率
      */
     @ApiModelProperty(value = "漏巡视率")
-    private Double omitRate;
-    /**
-     * 开始日期
-     */
-    @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd")
-    @DateTimeFormat(pattern = "yyyy-MM-dd")
-    @ApiModelProperty(value = "开始日期")
-    private Date startDate;
-    /**
-     * 结束日期
-     */
-    @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd")
-    @DateTimeFormat(pattern = "yyyy-MM-dd")
-    @ApiModelProperty(value = "结束日期")
-    private Date endDate;
+    private String omitRate;
 }

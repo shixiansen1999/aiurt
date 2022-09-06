@@ -1,6 +1,10 @@
 package com.aiurt.boot.task.mapper;
 
 import com.aiurt.boot.standard.dto.StationDTO;
+import com.aiurt.boot.statistics.dto.AbnormalDTO;
+import com.aiurt.boot.statistics.model.PatrolAbnormalTask;
+import com.aiurt.boot.statistics.model.PatrolCondition;
+import com.aiurt.boot.statistics.model.PatrolIndexTask;
 import com.aiurt.boot.task.dto.PatrolTaskDTO;
 import com.aiurt.boot.task.dto.PatrolTaskUserContentDTO;
 import com.aiurt.boot.task.dto.SubsystemDTO;
@@ -153,4 +157,21 @@ public interface PatrolTaskMapper extends BaseMapper<PatrolTask> {
      * @return
      */
     String getLineCode(String stationCode);
+
+    /**
+     * 获取首页巡检的巡视列表
+     * @param page
+     * @param condition
+     * @return
+     */
+    IPage<PatrolIndexTask> getIndexPatrolList(Page<PatrolIndexTask> page,@Param("condition") PatrolCondition condition);
+
+    /**
+     * 获取首页巡视异常任务列表
+     *
+     * @param page
+     * @param condition
+     * @return
+     */
+    IPage<PatrolAbnormalTask> getAbnormalList(Page<PatrolAbnormalTask> page, @Param("condition") AbnormalDTO condition);
 }

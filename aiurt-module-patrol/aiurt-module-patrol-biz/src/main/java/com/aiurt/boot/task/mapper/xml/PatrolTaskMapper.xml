@@ -312,4 +312,31 @@
             AND station_code = #{stationCode}
         </if>
     </select>
+    <select id="getIndexPatrolList" resultType="com.aiurt.boot.statistics.model.PatrolIndexTask">
+        select pt.`status`, pt.submit_time
+        from patrol_task pt
+                 join patrol_task_user ptu on pt.`code` = ptu.task_code and ptu.del_flag = 0
+                 join patrol_task_organization pto on pt.code = pto.task_code and pto.del_flag = 0
+        where pt.del_flag = 0
+    </select>
+    <select id="getAbnormalList" resultType="com.aiurt.boot.statistics.model.PatrolAbnormalTask">
+        SELECT
+        pt.`name`,
+        pt.abnormal_state,
+        pt.`code`,
+        pt.`status`,
+        pt.submit_time
+        FROM
+        patrol_task pt
+        WHERE
+        pt.del_flag = 0
+        <if test="condition.state != null">
+            AND pt.abnormal_state = #{condition.state}
+        </if>
+        <if test="condition.startDate != null and condition.endDate != null">
+            AND DATE_FORMAT( pt.patrol_date, '%Y-%m-%d' )
+            BETWEEN DATE_FORMAT( #{condition.startDate}, '%Y-%m-%d' )
+            AND DATE_FORMAT( #{condition.endDate}, '%Y-%m-%d')
+        </if>
+    </select>
 </mapper>
