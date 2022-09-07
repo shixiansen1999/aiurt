@@ -217,4 +217,19 @@ public class InspectionConstant {
      * 是否需要审核 0否
      */
     public static final Integer IS_CONFIRM_0 = 0;
+
+    /**
+     * 故障单状态（已完成）
+     */
+    public static final Integer FAULT_STATUS = 12;
+
+    /**
+     * 故障报修方式（1:报修）
+     */
+    public static final String FAULT_MODE_CODE_1 = "1";
+
+    /**
+     * 故障报修方式（0:自检自修）
+     */
+    public static final String FAULT_MODE_CODE_0 = "0";
 }

@@ -1,9 +1,11 @@
 package com.aiurt.modules.fault.mapper;
 
+import java.util.Date;
 import java.util.List;
 
 import com.aiurt.common.aspect.annotation.EnableDataPerm;
 import com.aiurt.modules.basic.entity.CsWork;
+import com.aiurt.modules.fault.dto.FaultFrequencyDTO;
 import com.aiurt.modules.fault.entity.Fault;
 import com.aiurt.modules.faultknowledgebase.entity.FaultKnowledgeBase;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -48,4 +50,13 @@ public interface FaultMapper extends BaseMapper<Fault> {
       * @return
       */
      List<FaultKnowledgeBase> pageList(Page<FaultKnowledgeBase> page, @Param("condition") FaultKnowledgeBase knowledgeBase);
+
+
+     /**
+      *
+      * @param startDate
+      * @param endDate
+      * @return
+      */
+     List<FaultFrequencyDTO> selectBySubSystemCode(@Param("startDate") Date startDate, @Param("endDate") Date endDate);
 }
