@@ -1,15 +1,13 @@
 package com.aiurt.boot.index.dto;
 
-import com.aiurt.boot.plan.dto.RepairPoolDetailsDTO;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
-import org.springframework.data.domain.Page;
 
 import java.io.Serializable;
+import java.util.Date;
 
 /**
  * @author wgp
@@ -36,16 +34,5 @@ public class TaskDetailsDTO implements Serializable {
     @ApiModelProperty("任务状态")
     private String statusName;
     @ApiModelProperty("提交时间")
-    private String submitTime;
-    @ApiModelProperty("检修人员id")
-    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
-    private String userIdStr;
-    @ApiModelProperty("检修任务code")
-    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
-    private String repairCode;
-    @ApiModelProperty("检修任务状态")
-    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
-    private String statusStr;
-    @ApiModelProperty("详情")
-    private Page<RepairPoolDetailsDTO> detailList;
+    private Date submitTime;
 }

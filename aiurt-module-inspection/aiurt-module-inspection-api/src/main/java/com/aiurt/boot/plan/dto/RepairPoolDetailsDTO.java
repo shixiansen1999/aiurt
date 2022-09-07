@@ -29,6 +29,9 @@ public class RepairPoolDetailsDTO {
     @ApiModelProperty(value = "组织结构名称")
     private String orgName;
 
+    @ApiModelProperty(value = "检修周期类型")
+    private Integer type;
+
     @ApiModelProperty(value = "检修周期类型名称")
     private String typeName;
 
@@ -70,6 +73,9 @@ public class RepairPoolDetailsDTO {
 
     @ApiModelProperty(value = "退回理由")
     private String remark;
+
+    @ApiModelProperty(value = "所属周")
+    private String weekName;
 
     @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd HH:mm")
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")

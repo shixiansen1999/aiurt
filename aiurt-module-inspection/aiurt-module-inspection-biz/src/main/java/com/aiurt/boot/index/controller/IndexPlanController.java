@@ -5,8 +5,10 @@ import com.aiurt.boot.index.dto.PlanIndexDTO;
 import com.aiurt.boot.index.dto.TaskDetailsDTO;
 import com.aiurt.boot.index.dto.TaskDetailsReq;
 import com.aiurt.boot.index.service.IndexPlanService;
+import com.aiurt.boot.plan.dto.RepairPoolDetailsDTO;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -56,25 +58,36 @@ public class IndexPlanController {
     /**
      * 获取首页的检修概况详情
      *
-     * @param pageNo         第几页
-     * @param pageSize       每页显示多少数据
-     * @param type           类型：1总数2已检修3未检修4漏检
      * @param taskDetailsReq 查询条件
      * @return
      */
     @AutoLog(value = "首页-检修概况详情", operateType = 1, operateTypeAlias = "查询", permissionUrl = "")
     @ApiOperation(value = "首页-检修概况详情", notes = "首页-检修概况详情")
     @RequestMapping(value = "/getOverviewInfoDetails", method = RequestMethod.POST)
-    public Result<IPage<TaskDetailsDTO>> getOverviewInfoDetails(@RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
-                                                                @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize,
-                                                                @ApiParam(name = "type", value = "类型：1总数2已检修3未检修4漏检") @RequestParam("type") Integer type,
-                                                                @ApiParam(name = "taskDetailsReq", value = "查询条件") @RequestParam("taskDetailsReq") @Validated TaskDetailsReq taskDetailsReq
+    public Result<IPage<TaskDetailsDTO>> getOverviewInfoDetails(@ApiParam(name = "taskDetailsReq", value = "查询条件") @RequestParam("taskDetailsReq") @Validated TaskDetailsReq taskDetailsReq
 
     ) {
-        IPage<TaskDetailsDTO> result = indexPlanService.getOverviewInfoDetails(pageNo, pageSize, type, taskDetailsReq);
+        IPage<TaskDetailsDTO> result = indexPlanService.getOverviewInfoDetails(taskDetailsReq);
         return Result.OK(result);
     }
 
+    /**
+     * 点击站点获取检修数据
+     *
+
+     * @param taskDetailsReq   查询条件
+     * @return
+     */
+    @AutoLog(value = "首页-检修概况详情", operateType = 1, operateTypeAlias = "查询", permissionUrl = "")
+    @ApiOperation(value = "首页-检修概况详情", notes = "首页-检修概况详情")
+    @RequestMapping(value = "/getMaintenancDataByStationCode", method = RequestMethod.POST)
+    public Result<IPage<RepairPoolDetailsDTO>> getMaintenancDataByStationCode(@ApiParam(name = "taskDetailsReq", value = "查询条件") @RequestParam("taskDetailsReq") @Validated TaskDetailsReq taskDetailsReq
+
+    ) {
+
+        IPage<RepairPoolDetailsDTO> result = indexPlanService.getMaintenancDataByStationCode(taskDetailsReq);
+        return Result.OK(result);
+    }
 
     /**
      * 获取首页的日代办事项
@@ -89,7 +102,7 @@ public class IndexPlanController {
     public Result<List<DayTodoDTO>> getUserSchedule(@ApiParam(value = "年份") @RequestParam(name = "year") Integer year,
                                                     @ApiParam(value = "月份") @RequestParam(name = "month") Integer month
     ) {
-        List<DayTodoDTO> result = indexPlanService.getUserSchedule(year,month);
+        List<DayTodoDTO> result = indexPlanService.getUserSchedule(year, month);
         return Result.OK(result);
     }
 }

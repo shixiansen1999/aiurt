@@ -7,23 +7,17 @@
     SELECT
         rpsr.station_code AS stationCode,
         cs.station_name AS stationName,
-        cs.line_name AS lineName,
-        GROUP_CONCAT( DISTINCT rtu.`name` ) as realName,
-        GROUP_CONCAT( DISTINCT rtu.`user_id` ) as userIdStr,
-        GROUP_CONCAT( DISTINCT rp.`code` )  as repairCode,
-        GROUP_CONCAT( DISTINCT rp.`status` )  as statusStr
+        cs.line_name AS lineName
     FROM
         repair_pool rp
         LEFT JOIN repair_pool_station_rel rpsr ON rpsr.repair_pool_code = rp.`code`
-        LEFT JOIN repair_task rt ON rt.`code` = rp.`code`
-        LEFT JOIN repair_task_user rtu ON rtu.repair_task_code = rt.`code`
         left join cs_station cs on cs.station_code = rpsr.station_code
     <where>
         rp.is_manual = 0
         <if test="type!=null and type==2">
             and rp.status = 8
         </if>
-         <if test="type!=null and type==3">
+        <if test="type!=null and type==3">
             and rp.status &lt;&gt; 8
         </if>
         <if test="taskDetailsReq.status!=null and taskDetailsReq.status==1">
@@ -33,7 +27,8 @@
             and rp.status &lt;&gt; 8
         </if>
         <if test="taskDetailsReq.startTime!=null and taskDetailsReq.endTime!=null">
-            and rp.start_time  &gt;= #{taskDetailsReq.startTime}  and rp.end_time &lt;= #{taskDetailsReq.endTime}
+            and date_format(rp.start_time ,'%Y-%m-%d') &gt;=  date_format(#{taskDetailsReq.startTime},'%Y-%m-%d')
+            and date_format(rp.start_time ,'%Y-%m-%d') &lt;= date_format(#{taskDetailsReq.endTime},'%Y-%m-%d')
         </if>
         <if test="taskDetailsReq.stationCode!=null">
             and cs.station_code = #{taskDetailsReq.stationCode}
@@ -44,5 +39,40 @@
     </where>
     GROUP BY
         rpsr.station_code
+    </select>
+    <select id="getMaintenancDataByStationCode" resultType="com.aiurt.boot.plan.dto.RepairPoolDetailsDTO">
+    SELECT
+	rp.code,rp.name,rp.weeks,rp.type,rp.status,rp.start_time,rp.end_time
+    FROM   repair_pool rp
+	LEFT JOIN repair_pool_station_rel rpsr ON rpsr.repair_pool_code = rp.`code`
+	<where>
+       rp.is_manual = 0 and rpsr.station_code = #{taskDetailsReq.stationCode}
+       <if test="taskDetailsReq.status!=null">
+       and  status = #{taskDetailsReq.status}
+       </if>
+       <if test="type!=null and type == 2">
+           and status = 8
+       </if>
+        <if test="type!=null and type == 3">
+           and status &lt;&gt; 8
+       </if>
+        <if test="taskDetailsReq.startTime!=null and taskDetailsReq.endTime!=null">
+            and date_format(rp.start_time ,'%Y-%m-%d') &gt;=  date_format(#{taskDetailsReq.startTime},'%Y-%m-%d')
+            and date_format(rp.start_time ,'%Y-%m-%d') &lt;= date_format(#{taskDetailsReq.endTime},'%Y-%m-%d')
+        </if>
+    </where>
+    </select>
+    <select id="getMainDataByStationCodeNoPage" resultType="com.aiurt.boot.plan.dto.RepairPoolDetailsDTO">
+        SELECT
+        rp.code,rp.name,rp.weeks,rp.type,rp.status,rp.start_time,rp.end_time
+        FROM   repair_pool rp
+        LEFT JOIN repair_pool_station_rel rpsr ON rpsr.repair_pool_code = rp.`code`
+        <where>
+            rp.is_manual = 0 and rpsr.station_code = #{taskDetailsReq.stationCode}
+            <if test="taskDetailsReq.startTime!=null and taskDetailsReq.endTime!=null">
+                and date_format(rp.start_time ,'%Y-%m-%d') &gt;=  date_format(#{taskDetailsReq.startTime},'%Y-%m-%d')
+                and date_format(rp.start_time ,'%Y-%m-%d') &lt;= date_format(#{taskDetailsReq.endTime},'%Y-%m-%d')
+            </if>
+        </where>
     </select>
 </mapper>

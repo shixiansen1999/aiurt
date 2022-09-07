@@ -23,16 +23,17 @@ public class TaskDetailsReq {
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     @NotNull(message = "结束时间不能为空")
     private Date endTime;
-    @ApiModelProperty(value = "任务状态")
+    @ApiModelProperty(value = "状态")
     private Integer status;
-    @ApiModelProperty(value = "检修任务状态")
-    private Integer taskStatus;
     @ApiModelProperty(value = "站点code")
     private String stationCode;
     @ApiModelProperty(value = "线路code")
     private String lineCode;
-    @ApiModelProperty(value = "pageNo")
-    private Integer pageNo = 1;
-    @ApiModelProperty(value = "pageSize")
-    private Integer pageSize = 10;
+    @ApiModelProperty("第几页")
+    private Integer pageNo;
+    @ApiModelProperty("每页显示条数")
+    private Integer pageSize;
+    @ApiModelProperty("类型：1总数2已检修3未检修4漏检")
+    private Integer type;
+
 }
