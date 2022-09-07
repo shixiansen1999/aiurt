@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.aiurt.modules.index.mapper.FaultCountMapper">
+    <select id="queryFaultCount" parameterType="Date" resultType="com.aiurt.modules.fault.entity.Fault">
+        select * from fault
+        <where>
+            <if test="startDate != null ">
+                AND <![CDATA[ approval_pass_time >= #{startDate,jdbcType=DATE}  ]]>
+            </if>
+            <if test="endDate != null ">
+                AND <![CDATA[ approval_pass_time <= #{endDate,jdbcType=DATE}  ]]>
+            </if>
+        </where>
+    </select>
+
+</mapper>
