@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.aiurt.boot.index.mapper.IndexPlanMapper">
+
+
+    <select id="getGropuByData" resultType="com.aiurt.boot.index.dto.TaskDetailsDTO">
+    SELECT
+        rpsr.station_code AS stationCode,
+        cs.station_name AS stationName,
+        cs.line_name AS lineName,
+        GROUP_CONCAT( DISTINCT rtu.`name` ) as realName,
+        GROUP_CONCAT( DISTINCT rtu.`user_id` ) as userIdStr,
+        GROUP_CONCAT( DISTINCT rp.`code` )  as repairCode,
+        GROUP_CONCAT( DISTINCT rp.`status` )  as statusStr
+    FROM
+        repair_pool rp
+        LEFT JOIN repair_pool_station_rel rpsr ON rpsr.repair_pool_code = rp.`code`
+        LEFT JOIN repair_task rt ON rt.`code` = rp.`code`
+        LEFT JOIN repair_task_user rtu ON rtu.repair_task_code = rt.`code`
+        left join cs_station cs on cs.station_code = rpsr.station_code
+    <where>
+        rp.is_manual = 0
+        <if test="type!=null and type==2">
+            and rp.status = 8
+        </if>
+         <if test="type!=null and type==3">
+            and rp.status &lt;&gt; 8
+        </if>
+        <if test="taskDetailsReq.status!=null and taskDetailsReq.status==1">
+            and rp.status = 8
+        </if>
+        <if test="taskDetailsReq.status!=null and taskDetailsReq.status==0">
+            and rp.status &lt;&gt; 8
+        </if>
+        <if test="taskDetailsReq.startTime!=null and taskDetailsReq.endTime!=null">
+            and rp.start_time  &gt;= #{taskDetailsReq.startTime}  and rp.end_time &lt;= #{taskDetailsReq.endTime}
+        </if>
+        <if test="taskDetailsReq.stationCode!=null">
+            and cs.station_code = #{taskDetailsReq.stationCode}
+        </if>
+        <if test="taskDetailsReq.lineCode!=null">
+            and cs.line_code = #{taskDetailsReq.lineCode}
+        </if>
+    </where>
+    GROUP BY
+        rpsr.station_code
+    </select>
+</mapper>

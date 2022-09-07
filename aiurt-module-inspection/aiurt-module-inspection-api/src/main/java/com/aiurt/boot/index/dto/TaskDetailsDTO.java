@@ -1,6 +1,7 @@
 package com.aiurt.boot.index.dto;
 
 import com.aiurt.boot.plan.dto.RepairPoolDetailsDTO;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -24,6 +25,8 @@ public class TaskDetailsDTO implements Serializable {
     private static final long serialVersionUID = 1L;
     @ApiModelProperty("站点")
     private String stationName;
+    @ApiModelProperty("站点code")
+    private String stationCode;
     @ApiModelProperty("线路")
     private String lineName;
     @ApiModelProperty("所属班组")
@@ -34,6 +37,15 @@ public class TaskDetailsDTO implements Serializable {
     private String statusName;
     @ApiModelProperty("提交时间")
     private String submitTime;
+    @ApiModelProperty("检修人员id")
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+    private String userIdStr;
+    @ApiModelProperty("检修任务code")
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+    private String repairCode;
+    @ApiModelProperty("检修任务状态")
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+    private String statusStr;
     @ApiModelProperty("详情")
     private Page<RepairPoolDetailsDTO> detailList;
 }

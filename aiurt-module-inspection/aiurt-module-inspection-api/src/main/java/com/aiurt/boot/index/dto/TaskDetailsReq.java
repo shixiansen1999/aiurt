@@ -23,8 +23,10 @@ public class TaskDetailsReq {
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     @NotNull(message = "结束时间不能为空")
     private Date endTime;
-    @ApiModelProperty(value = "状态")
+    @ApiModelProperty(value = "任务状态")
     private Integer status;
+    @ApiModelProperty(value = "检修任务状态")
+    private Integer taskStatus;
     @ApiModelProperty(value = "站点code")
     private String stationCode;
     @ApiModelProperty(value = "线路code")

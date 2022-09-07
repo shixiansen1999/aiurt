@@ -1,5 +1,6 @@
 package com.aiurt.boot.index.controller;
 
+import com.aiurt.boot.index.dto.DayTodoDTO;
 import com.aiurt.boot.index.dto.PlanIndexDTO;
 import com.aiurt.boot.index.dto.TaskDetailsDTO;
 import com.aiurt.boot.index.dto.TaskDetailsReq;
@@ -20,6 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
 import java.util.Date;
+import java.util.List;
 
 /**
  * @author wgp
@@ -73,4 +75,21 @@ public class IndexPlanController {
         return Result.OK(result);
     }
 
+
+    /**
+     * 获取首页的日代办事项
+     *
+     * @param year  年份
+     * @param month 月份
+     * @return
+     */
+    @AutoLog(value = "首页-日代办事项", operateType = 1, operateTypeAlias = "查询", permissionUrl = "")
+    @ApiOperation(value = "首页-日代办事项", notes = "首页-日代办事项")
+    @RequestMapping(value = "/getUserSchedule", method = RequestMethod.GET)
+    public Result<List<DayTodoDTO>> getUserSchedule(@ApiParam(value = "年份") @RequestParam(name = "year") Integer year,
+                                                    @ApiParam(value = "月份") @RequestParam(name = "month") Integer month
+    ) {
+        List<DayTodoDTO> result = indexPlanService.getUserSchedule(year,month);
+        return Result.OK(result);
+    }
 }
