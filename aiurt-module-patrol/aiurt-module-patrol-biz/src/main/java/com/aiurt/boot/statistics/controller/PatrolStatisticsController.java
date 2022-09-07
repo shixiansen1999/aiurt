@@ -1,7 +1,7 @@
 package com.aiurt.boot.statistics.controller;
 
 import com.aiurt.boot.statistics.dto.AbnormalDTO;
-import com.aiurt.boot.statistics.model.PatrolAbnormalTask;
+import com.aiurt.boot.statistics.model.IndexTaskInfo;
 import com.aiurt.boot.statistics.model.PatrolCondition;
 import com.aiurt.boot.statistics.model.PatrolIndexTask;
 import com.aiurt.boot.statistics.model.PatrolSituation;
@@ -59,40 +59,25 @@ public class PatrolStatisticsController {
     @RequestMapping("/getPatrolList")
     public Result<IPage<PatrolIndexTask>> getPatrolList(@RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
                                                         @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize,
-                                                        PatrolCondition patrolCondition) {
+                                                        @Validated PatrolCondition patrolCondition) {
         Page<PatrolIndexTask> page = new Page<PatrolIndexTask>(pageNo, pageSize);
         IPage<PatrolIndexTask> pageList = patrolStatisticsService.getIndexPatrolList(page, patrolCondition);
         return Result.ok(pageList);
     }
 
     /**
-     * 获取首页的巡视列表下的任务列表
-     *
-     * @return
-     */
-    @AutoLog(value = "首页-巡视列表的任务列表", operateType = 1, operateTypeAlias = "查询", permissionUrl = "")
-    @ApiOperation(value = "首页-巡视列表的任务列表", notes = "首页-巡视列表的任务列表")
-    @RequestMapping("/getList")
-    public Result<IPage<PatrolIndexTask>> getPatrolList(@RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
-                                                        @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize) {
-//        Page<PatrolIndexTask> page = new Page<PatrolIndexTask>(pageNo, pageSize);
-//        IPage<PatrolIndexTask> pageList = patrolStatisticsService.getPatrolList(page,Object);
-        return Result.ok();
-    }
-
-    /**
-     * 获取首页的巡视异常列表
+     * 获取首页的巡视任务列表
      *
      * @return
      */
     @AutoLog(value = "首页-巡视异常列表", operateType = 1, operateTypeAlias = "查询", permissionUrl = "")
     @ApiOperation(value = "首页-巡视异常列表", notes = "首页-巡视异常列表")
     @RequestMapping("/getAbnormalList")
-    public Result<IPage<PatrolAbnormalTask>> getAbnormalList(@RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
-                                                             @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize,
-                                                             @Validated AbnormalDTO abnormalDTO) {
-        Page<PatrolAbnormalTask> page = new Page<>(pageNo, pageSize);
-        IPage<PatrolAbnormalTask> pageList = patrolStatisticsService.getAbnormalList(page, abnormalDTO);
+    public Result<IPage<IndexTaskInfo>> getAbnormalList(@RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
+                                                        @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize,
+                                                        @Validated AbnormalDTO abnormalDTO) {
+        Page<IndexTaskInfo> page = new Page<>(pageNo, pageSize);
+        IPage<IndexTaskInfo> pageList = patrolStatisticsService.getAbnormalList(page, abnormalDTO);
         return Result.ok(pageList);
     }
 }

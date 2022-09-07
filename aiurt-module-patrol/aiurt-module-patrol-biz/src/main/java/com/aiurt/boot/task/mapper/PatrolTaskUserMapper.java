@@ -13,4 +13,11 @@ import org.apache.ibatis.annotations.Param;
 public interface PatrolTaskUserMapper extends BaseMapper<PatrolTaskUser> {
 
     String getUsername(@Param("userId") String userId);
+
+    /**
+     * 根据用户ID获取部门名称
+     * @param userId
+     * @return
+     */
+    String getDeptName(String userId);
 }

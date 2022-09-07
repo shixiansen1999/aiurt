@@ -44,7 +44,9 @@ public class AbnormalDTO implements Serializable {
      */
     @ApiModelProperty(value = "巡视用户名称")
     private String username;
-    @ApiModelProperty(value = "异常状态：0异常、1正常")
-    @NotNull(message = "任务的异常状态不能为空")
+    @ApiModelProperty(value = "巡检结果：0异常、1正常")
+//    @NotNull(message = "任务的异常状态不能为空")
     private Integer state;
+    @ApiModelProperty(value = "站点编号")
+    private String stationCode;
 }

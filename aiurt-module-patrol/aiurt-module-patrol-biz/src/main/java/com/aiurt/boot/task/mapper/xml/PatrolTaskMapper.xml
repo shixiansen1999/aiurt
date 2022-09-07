@@ -84,7 +84,7 @@
                 </when>
             </choose>
         </if>
-       ORDER BY  t1.`status` asc,  t1.create_time desc
+        ORDER BY t1.`status` asc, t1.create_time desc
     </select>
     <select id="getOrganizationName" resultType="java.lang.String">
         SELECT t2.depart_name
@@ -189,7 +189,8 @@
                t1.id,
                t1.org_code
         from sys_user t1
-        where t1.org_code = #{code} and t1.del_flag = 0
+        where t1.org_code = #{code}
+          and t1.del_flag = 0
     </select>
     <select id="getOrgName" resultType="java.lang.String">
         select t2.depart_name
@@ -210,9 +211,9 @@
         FROM
         patrol_task t1
         where t1.source = 3 and t1.status in (0,3) and t1.discard_status = 0 and t1.omit_status=0
-<!--        and t1.CODE IN ( SELECT t2.task_code FROM patrol_task_organization t2 WHERE t2.task_code = t1.CODE AND-->
-<!--            t2.org_code = #{patrolTaskDTO.loginOrgId})-->
-       <if test="patrolTaskDTO.stationCode != null and patrolTaskDTO.stationCode != ''">
+        <!--        and t1.CODE IN ( SELECT t2.task_code FROM patrol_task_organization t2 WHERE t2.task_code = t1.CODE AND-->
+        <!--            t2.org_code = #{patrolTaskDTO.loginOrgId})-->
+        <if test="patrolTaskDTO.stationCode != null and patrolTaskDTO.stationCode != ''">
             <choose>
                 <when test="patrolTaskDTO.level != null and patrolTaskDTO.level == 1 ">
                     and t1.code in (
@@ -313,23 +314,26 @@
         </if>
     </select>
     <select id="getIndexPatrolList" resultType="com.aiurt.boot.statistics.model.PatrolIndexTask">
-        select pt.`status`, pt.submit_time
-        from patrol_task pt
-                 join patrol_task_user ptu on pt.`code` = ptu.task_code and ptu.del_flag = 0
-                 join patrol_task_organization pto on pt.code = pto.task_code and pto.del_flag = 0
-        where pt.del_flag = 0
+        SELECT pts.station_code, cs.station_name, cs.line_code, cs.line_name
+        FROM patrol_task pt
+        JOIN patrol_task_station pts ON pt.`code` = pts.task_code
+        JOIN cs_station cs ON pts.station_code = cs.station_code
+        WHERE pt.del_flag = 0
+        <if test="condition.stationCode != null and condition.stationCode != ''">
+            AND pt.abnormal_state = #{condition.state}
+        </if>
+        <if test="condition.startDate != null and condition.endDate != null">
+            AND DATE_FORMAT( pt.patrol_date, '%Y-%m-%d' )
+            BETWEEN DATE_FORMAT( #{condition.startDate}, '%Y-%m-%d' )
+            AND DATE_FORMAT( #{condition.endDate}, '%Y-%m-%d')
+        </if>
+        GROUP BY
+        pts.station_code
     </select>
-    <select id="getAbnormalList" resultType="com.aiurt.boot.statistics.model.PatrolAbnormalTask">
-        SELECT
-        pt.`name`,
-        pt.abnormal_state,
-        pt.`code`,
-        pt.`status`,
-        pt.submit_time
-        FROM
-        patrol_task pt
-        WHERE
-        pt.del_flag = 0
+    <select id="getAbnormalList" resultType="com.aiurt.boot.statistics.model.IndexTaskInfo">
+        SELECT pt.`name`, pt.abnormal_state, pt.`code`, pt.`status`, pt.submit_time
+        FROM patrol_task pt
+        WHERE pt.del_flag = 0
         <if test="condition.state != null">
             AND pt.abnormal_state = #{condition.state}
         </if>
@@ -337,6 +341,16 @@
             AND DATE_FORMAT( pt.patrol_date, '%Y-%m-%d' )
             BETWEEN DATE_FORMAT( #{condition.startDate}, '%Y-%m-%d' )
             AND DATE_FORMAT( #{condition.endDate}, '%Y-%m-%d')
+        </if>
+        <if test="condition.stationCode != null and condition.stationCode != ''">
+            AND pt.`code` IN ( SELECT task_code FROM patrol_task_station WHERE station_code = #{condition.stationCode})
+        </if>
+        <if test="condition.username != null and condition.username != ''">
+            AND pt.`code` IN ( SELECT task_code FROM patrol_task_user WHERE user_name
+            LIKE CONCAT('%',#{condition.username},'%'))
+        </if>
+        <if test="condition.orgCode != null and condition.orgCode != ''">
+            AND pt.`code` IN ( SELECT task_code FROM patrol_task_organization WHERE org_code = #{condition.orgCode})
         </if>
     </select>
 </mapper>

@@ -13,4 +13,15 @@
             AND su.id = #{userId}
         </if>
     </select>
+    <select id="getDeptName" resultType="java.lang.String">
+        select sd.depart_name
+        from sys_user su
+        left join sys_depart sd on su.org_id = sd.id
+        and sd.del_flag = 0
+        where
+        su.del_flag = 0
+        <if test="userId != null and userId != ''">
+            AND su.id = #{userId}
+        </if>
+    </select>
 </mapper>

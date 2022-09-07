@@ -19,7 +19,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Accessors(chain = true)
-public class PatrolAbnormalTask implements Serializable {
+public class IndexTaskInfo implements Serializable {
     private static final long serialVersionUID = 1L;
     /**
      * 任务名称
@@ -29,12 +29,12 @@ public class PatrolAbnormalTask implements Serializable {
     /**
      * 异常状态：0异常、1正常
      */
-    @ApiModelProperty(value = "异常状态：0异常、1正常")
+    @ApiModelProperty(value = "巡视结果：0异常、1正常")
     private java.lang.Integer abnormalState;
     /**
      * 异常状态字典名称
      */
-    @ApiModelProperty(value = "异常状态字典名称")
+    @ApiModelProperty(value = "巡视结果字典名称")
     private java.lang.String abnormalDictName;
     /**
      * 任务编号

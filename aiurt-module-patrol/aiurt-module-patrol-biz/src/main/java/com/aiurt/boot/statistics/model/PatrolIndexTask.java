@@ -1,5 +1,7 @@
 package com.aiurt.boot.statistics.model;
 
+import com.aiurt.boot.statistics.dto.IndexOrgDTO;
+import com.aiurt.boot.statistics.dto.IndexUserDTO;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
@@ -9,6 +11,7 @@ import lombok.experimental.Accessors;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.io.Serializable;
+import java.util.List;
 
 @Data
 @NoArgsConstructor
@@ -38,25 +41,15 @@ public class PatrolIndexTask implements Serializable {
     @ApiModelProperty(value = "线路名称")
     private String lineName;
     /**
-     * 组织机构编号
+     * 组织机构信息
      */
-    @ApiModelProperty(value = "组织机构编号")
-    private String orgCode;
+    @ApiModelProperty(value = "组织机构信息")
+    private String orgInfo;
     /**
-     * 组织机构名称
+     * 巡视人员信息
      */
-    @ApiModelProperty(value = "组织机构名称")
-    private String orgName;
-    /**
-     * 巡视人员ID
-     */
-    @ApiModelProperty(value = "巡视人员ID")
-    private String userId;
-    /**
-     * 巡视人员名称
-     */
-    @ApiModelProperty(value = "巡视人员名称")
-    private String username;
+    @ApiModelProperty(value = "巡视人员信息")
+    private String userInfo;
     /**
      * 提交时间
      */
@@ -68,5 +61,5 @@ public class PatrolIndexTask implements Serializable {
      * 任务状态
      */
     @ApiModelProperty(value = "任务状态")
-    private Integer status;
+    private String status;
 }
