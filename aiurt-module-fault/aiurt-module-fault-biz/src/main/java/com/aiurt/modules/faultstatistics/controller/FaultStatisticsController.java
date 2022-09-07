@@ -1,13 +1,10 @@
 package com.aiurt.modules.faultstatistics.controller;
 
-import com.aiurt.boot.index.dto.PlanIndexDTO;
-import com.aiurt.boot.index.service.IndexPlanService;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.modules.fault.dto.FaultStatisticsDTO;
+import com.aiurt.modules.faultanalysisreport.dto.SpareConsumeDTO;
 import com.aiurt.modules.faultstatistics.service.FaultStatisticsService;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.*;
 import lombok.extern.slf4j.Slf4j;
 import org.jeecg.common.api.vo.Result;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -18,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
 import java.util.Date;
+import java.util.List;
 
 /**
  * @author zwl
@@ -48,5 +46,14 @@ public class FaultStatisticsController {
                                                 @ApiParam(name = "endDate", value = "结束日期") @RequestParam("endDate") @DateTimeFormat(pattern = "yyyy-MM-dd") Date endDate) {
         FaultStatisticsDTO overviewInfo = faultStatisticsService.getFaultList(startDate, endDate);
         return Result.OK(overviewInfo);
+    }
+
+    @ApiOperation(value = "首页-备件消耗排行榜", notes = "首页-备件消耗排行榜")
+    @RequestMapping(value = "/getSpareConsume", method = RequestMethod.GET)
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "type", value = "1-4:表示1-4季度，5-6：半年，年度", required = true, paramType = "query")
+    })
+    public Result<List<SpareConsumeDTO>> getSpareConsume(@RequestParam(value = "type", defaultValue = "1") String type) {
+        return Result.OK();
     }
 }
