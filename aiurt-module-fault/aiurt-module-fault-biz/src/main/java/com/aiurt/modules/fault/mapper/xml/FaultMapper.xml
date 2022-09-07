@@ -96,8 +96,9 @@
       FROM
 	       fault t2
         <where>
+            1=1
             <if test="startDate!=null">
-                 DATE_FORMAT(t2.happen_time,'%Y-%m-%d') &gt;= DATE_FORMAT(#{startDate},'%Y-%m-%d')
+                and DATE_FORMAT(t2.happen_time,'%Y-%m-%d') &gt;= DATE_FORMAT(#{startDate},'%Y-%m-%d')
             </if>
             <if test="endDate!=null">
                 and  DATE_FORMAT(t2.happen_time,'%Y-%m-%d') &lt;= DATE_FORMAT(#{endDate},'%Y-%m-%d')

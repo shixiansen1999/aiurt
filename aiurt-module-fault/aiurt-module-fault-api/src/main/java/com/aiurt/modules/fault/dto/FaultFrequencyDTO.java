@@ -35,5 +35,5 @@ public class FaultFrequencyDTO implements Serializable {
 
     @ApiModelProperty(value = "次数")
     @TableField(exist = false)
-    private String number;
+    private Long number;
 }
