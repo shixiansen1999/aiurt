@@ -3,7 +3,7 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.ListUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
-import com.aiurt.boot.manager.InspectionManager;
+import cn.hutool.core.util.StrUtil;
 import com.aiurt.modules.fault.constants.FaultConstant;
 import com.aiurt.modules.fault.dto.FaultFrequencyDTO;
 import com.aiurt.modules.fault.dto.FaultStatisticsDTO;
@@ -12,7 +12,6 @@ import com.aiurt.modules.fault.mapper.FaultMapper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
-import java.math.BigDecimal;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -28,8 +27,6 @@ public class FaultStatisticsService {
     @Resource
     private FaultMapper faultMapper;
 
-    @Resource
-    private InspectionManager manager;
 
 
     public FaultStatisticsDTO getFaultList(Date startDate, Date endDate) {
@@ -85,7 +82,7 @@ public class FaultStatisticsService {
 
     private void subList(FaultStatisticsDTO faultStatisticsDTO, List<FaultFrequencyDTO> sub) {
         List<String> collect = sub.stream().map(FaultFrequencyDTO::getSubSystemCode).collect(Collectors.toList());
-        String string5 = manager.translateMajors(collect, FaultConstant.SUBSYSTEM);
+        String string5 = this.translateMajor(collect, FaultConstant.SUBSYSTEM);
         String[] split4 = string5.split("；");
         List<String> list4 = Arrays.asList(split4);
         for (int i = 0; i < sub.size(); i++) {
@@ -96,4 +93,24 @@ public class FaultStatisticsService {
         faultStatisticsDTO.setFaultFrequencyDTOList(sub);
     }
 
+    /**
+     * 翻译专业、专业子系统信息
+     *
+     * @param codeList code值
+     * @param type     类型：major代表专业、subsystem代表子系统
+     * @return
+     */
+    public String translateMajor(List<String> codeList, String type) {
+        if (CollUtil.isEmpty(codeList) || StrUtil.isEmpty(type)) {
+            return "";
+        }
+        List<String> nameList = new ArrayList<>();
+        if (FaultConstant.MAJOR.equals(type)) {
+            nameList = faultMapper.translateMajors(codeList);
+        }
+        if (FaultConstant.SUBSYSTEM.equals(type)) {
+            nameList = faultMapper.translateSubsystems(codeList);
+        }
+        return CollUtil.isNotEmpty(nameList) ? StrUtil.join("；", nameList) : "";
+    }
 }

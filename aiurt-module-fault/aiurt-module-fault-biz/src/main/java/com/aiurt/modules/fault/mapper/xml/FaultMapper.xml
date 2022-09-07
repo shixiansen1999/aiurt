@@ -107,5 +107,27 @@
        GROUP BY sub_system_code
     </select>
 
+    <select id="translateMajors" resultType="java.lang.String">
+        select major_name from cs_major
+        <where>
+            <if test="codeList.size()>0">
+                major_code in
+                <foreach item="item" collection="codeList" separator="," open="(" close=")" index="">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+    </select>
 
+    <select id="translateSubsystems" resultType="java.lang.String">
+        select system_name from cs_subsystem
+        <where>
+            <if test="codeList.size()>0">
+                system_code in
+                <foreach item="item" collection="codeList" separator="," open="(" close=")" index="">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+    </select>
 </mapper>

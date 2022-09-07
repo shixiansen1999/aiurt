@@ -59,4 +59,19 @@ public interface FaultMapper extends BaseMapper<Fault> {
       * @return
       */
      List<FaultFrequencyDTO> selectBySubSystemCode(@Param("startDate") Date startDate, @Param("endDate") Date endDate);
+
+     /**
+      * 翻译专业信息
+      * @param codeList
+      * @return
+      */
+     List<String> translateMajors(List<String> codeList);
+
+
+     /**
+      * 翻译专业子系统信息
+      * @param codeList
+      * @return
+      */
+     List<String> translateSubsystems(List<String> codeList);
 }
