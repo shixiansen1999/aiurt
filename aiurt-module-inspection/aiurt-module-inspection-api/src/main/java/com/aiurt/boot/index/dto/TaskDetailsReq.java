@@ -29,8 +29,11 @@ public class TaskDetailsReq {
     private String stationCode;
     @ApiModelProperty(value = "线路code")
     private String lineCode;
-    @ApiModelProperty(value = "pageNo")
-    private Integer pageNo = 1;
-    @ApiModelProperty(value = "pageSize")
-    private Integer pageSize = 10;
+    @ApiModelProperty("第几页")
+    private Integer pageNo;
+    @ApiModelProperty("每页显示条数")
+    private Integer pageSize;
+    @ApiModelProperty("类型：1总数2已检修3未检修4漏检")
+    private Integer type;
+
 }

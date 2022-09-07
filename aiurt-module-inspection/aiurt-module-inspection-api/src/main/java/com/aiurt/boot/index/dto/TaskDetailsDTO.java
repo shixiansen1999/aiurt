@@ -1,14 +1,13 @@
 package com.aiurt.boot.index.dto;
 
-import com.aiurt.boot.plan.dto.RepairPoolDetailsDTO;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
-import org.springframework.data.domain.Page;
 
 import java.io.Serializable;
+import java.util.Date;
 
 /**
  * @author wgp
@@ -24,6 +23,8 @@ public class TaskDetailsDTO implements Serializable {
     private static final long serialVersionUID = 1L;
     @ApiModelProperty("站点")
     private String stationName;
+    @ApiModelProperty("站点code")
+    private String stationCode;
     @ApiModelProperty("线路")
     private String lineName;
     @ApiModelProperty("所属班组")
@@ -33,7 +34,5 @@ public class TaskDetailsDTO implements Serializable {
     @ApiModelProperty("任务状态")
     private String statusName;
     @ApiModelProperty("提交时间")
-    private String submitTime;
-    @ApiModelProperty("详情")
-    private Page<RepairPoolDetailsDTO> detailList;
+    private Date submitTime;
 }

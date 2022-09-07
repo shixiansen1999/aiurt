@@ -60,6 +60,26 @@ public class InspectionManager {
         }
         return CollUtil.isNotEmpty(nameList) ? StrUtil.join("；", nameList) : "";
     }
+    /**
+     * 翻译专业、专业子系统信息
+     *
+     * @param codeList code值
+     * @param type     类型：major代表专业、subsystem代表子系统
+     * @return
+     */
+    public String translateMajors(List<String> codeList, String type) {
+        if (CollUtil.isEmpty(codeList) || StrUtil.isEmpty(type)) {
+            return "";
+        }
+        List<String> nameList = new ArrayList<>();
+        if (InspectionConstant.MAJOR.equals(type)) {
+            nameList = inspectionManagerMapper.translateMajors(codeList);
+        }
+        if (InspectionConstant.SUBSYSTEM.equals(type)) {
+            nameList = inspectionManagerMapper.translateSubsystems(codeList);
+        }
+        return CollUtil.isNotEmpty(nameList) ? StrUtil.join("；", nameList) : "";
+    }
 
     /**
      * 翻译组织机构信息
