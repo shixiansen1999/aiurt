@@ -27,4 +27,9 @@ public class FaultConstant {
      * 专业子系统
      */
     public static final String SUBSYSTEM = "subsystem";
+
+    /**
+     * 专业
+     */
+    public static final String MAJOR = "major";
 }
