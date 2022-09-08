@@ -387,3 +387,12 @@ flowable:
       idm-admin:
         password: test
         user: admin
+
+aiurt:
+  weather:
+    # 请求获取天气url, 目前使用高德
+    url: https://restapi.amap.com/v3/weather/weatherInfo
+    # 应用key
+    key: ddb048301e3d8a730dbe7cbe5d90a6fd
+    # 城市编码
+    city: 220100
