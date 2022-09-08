@@ -33,7 +33,9 @@ import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.vo.CsUserMajorModel;
 import org.jeecg.common.system.vo.CsUserSubsystemModel;
 import org.jeecg.common.system.vo.LoginUser;
+import org.nlpcn.commons.lang.util.tuples.valueintf.IValue0;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -117,10 +119,11 @@ public class CommonCtroller {
     @ApiOperation("查询当前人员所管理的专业子系统")
     @ApiImplicitParams({
             @ApiImplicitParam(name = "majorCode", value = "专业编码", required = false, paramType = "query"),
+            @ApiImplicitParam(name = "majorIds", value = "专业编码", required = false, paramType = "query"),
     })
-    public Result<List<SelectTable>> querySubSystemByAuth(@RequestParam(value = "majorCode", required = false) String majorCode) {
+    public Result<List<SelectTable>> querySubSystemByAuth(@RequestParam(value = "majorCode", required = false) String majorCode,
+                                                          @RequestParam(value ="majorIds",required = false) List<String> majorIds) {
         LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-
         List<CsUserSubsystemModel> csMajorList = csUserSubsystemService.getSubsystemByUserId(loginUser.getId());
         List<SelectTable> list = new ArrayList<>();
        // SelectTable selectTable = new SelectTable();
@@ -132,8 +135,16 @@ public class CommonCtroller {
                 table.setValue(subsystem.getSystemCode());
                 return table;
             }).collect(Collectors.toList());
-        }else {
+        }else if(StrUtil.isBlank(majorCode) && CollectionUtils.isEmpty(majorIds)) {
             list = csMajorList.stream().map(subsystem -> {
+                SelectTable table = new SelectTable();
+                table.setLabel(subsystem.getSystemName());
+                table.setValue(subsystem.getSystemCode());
+                return table;
+            }).collect(Collectors.toList());
+        }
+        if (CollectionUtil.isNotEmpty(majorIds)) {
+            list = csMajorList.stream().filter(entity -> majorIds.contains(entity.getMajorId())).map(subsystem -> {
                 SelectTable table = new SelectTable();
                 table.setLabel(subsystem.getSystemName());
                 table.setValue(subsystem.getSystemCode());

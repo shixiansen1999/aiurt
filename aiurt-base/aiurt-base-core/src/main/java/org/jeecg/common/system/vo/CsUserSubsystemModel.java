@@ -41,4 +41,8 @@ public class CsUserSubsystemModel {
     @Excel(name = "专业编码", width = 15)
     @ApiModelProperty(value = "专业编码")
     private String majorCode;
+    /**专业编码*/
+    @Excel(name = "专业ID", width = 15)
+    @ApiModelProperty(value = "专业iD")
+    private String majorId;
 }

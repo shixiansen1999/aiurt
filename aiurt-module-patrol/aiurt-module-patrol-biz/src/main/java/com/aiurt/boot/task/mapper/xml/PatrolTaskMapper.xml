@@ -314,23 +314,32 @@
         </if>
     </select>
     <select id="getIndexPatrolList" resultType="com.aiurt.boot.statistics.model.PatrolIndexTask">
-        SELECT pts.station_code, cs.station_name, cs.line_code, cs.line_name
+        SELECT pts.station_code, cs.station_name, cs.line_code, cs.line_name, GROUP_CONCAT( pt.`code` ) taskCode
         FROM patrol_task pt
         JOIN patrol_task_station pts ON pt.`code` = pts.task_code
         JOIN cs_station cs ON pts.station_code = cs.station_code
         WHERE pt.del_flag = 0
         <if test="condition.stationCode != null and condition.stationCode != ''">
-            AND pt.abnormal_state = #{condition.state}
+            AND pts.station_code = #{condition.stationCode}
+        </if>
+        <if test="condition.lineCode != null and condition.lineCode != ''">
+            AND cs.line_code = #{condition.lineCode}
         </if>
         <if test="condition.startDate != null and condition.endDate != null">
             AND DATE_FORMAT( pt.patrol_date, '%Y-%m-%d' )
             BETWEEN DATE_FORMAT( #{condition.startDate}, '%Y-%m-%d' )
             AND DATE_FORMAT( #{condition.endDate}, '%Y-%m-%d')
         </if>
+        <if test="condition.status != null and condition.status.length>0">
+            AND pt.`status` IN
+            <foreach collection="condition.status" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
         GROUP BY
         pts.station_code
     </select>
-    <select id="getAbnormalList" resultType="com.aiurt.boot.statistics.model.IndexTaskInfo">
+    <select id="getIndexTaskList" resultType="com.aiurt.boot.statistics.model.IndexTaskInfo">
         SELECT pt.`name`, pt.abnormal_state, pt.`code`, pt.`status`, pt.submit_time
         FROM patrol_task pt
         WHERE pt.del_flag = 0
@@ -351,6 +360,12 @@
         </if>
         <if test="condition.orgCode != null and condition.orgCode != ''">
             AND pt.`code` IN ( SELECT task_code FROM patrol_task_organization WHERE org_code = #{condition.orgCode})
+        </if>
+        <if test="condition.taskCode != null and condition.taskCode.size>0">
+            AND pt.`code` IN
+            <foreach collection="condition.taskCode" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
         </if>
     </select>
 </mapper>
