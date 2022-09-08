@@ -1,6 +1,7 @@
 package com.aiurt.boot.index.service;
 
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
@@ -14,6 +15,7 @@ import com.aiurt.boot.plan.entity.RepairPool;
 import com.aiurt.boot.plan.mapper.RepairPoolMapper;
 import com.aiurt.boot.plan.mapper.RepairPoolStationRelMapper;
 import com.aiurt.boot.task.entity.RepairTask;
+import com.aiurt.boot.task.entity.RepairTaskStationRel;
 import com.aiurt.boot.task.entity.RepairTaskUser;
 import com.aiurt.boot.task.mapper.RepairTaskMapper;
 import com.aiurt.boot.task.mapper.RepairTaskStationRelMapper;
@@ -56,6 +58,7 @@ public class IndexPlanService {
     private RepairTaskUserMapper repairTaskUserMapper;
     @Resource
     private RepairTaskStationRelMapper repairTaskStationRelMapper;
+
     /**
      * 首页巡视概况
      *
@@ -73,7 +76,7 @@ public class IndexPlanService {
         LambdaQueryWrapper<RepairPool> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.ge(RepairPool::getStartTime, DateUtil.beginOfDay(startDate));
         queryWrapper.le(RepairPool::getStartTime, DateUtil.endOfDay(endDate));
-        queryWrapper.eq(RepairPool::getIsManual, InspectionConstant.NO_IS_MANUAL);
+        queryWrapper.isNotNull(RepairPool::getStartTime);
         List<RepairPool> repairPoolList = repairPoolMapper.selectList(queryWrapper);
 
         // 检修总数
@@ -230,10 +233,11 @@ public class IndexPlanService {
         int dayNum = getMonthDays(year, month);
 
         // 故障、检修、巡检、施工,key是日期，value是数量
-        Map<String, Integer> inspectionMap = new HashMap<>(32);
+        Map<String, Integer> inspectionMap = this.inspectionNumByDay(beginDate, dayNum);
         Map<String, Integer> patrolMap = new HashMap<>(32);
         Map<String, Integer> faultMap = new HashMap<>(32);
         Map<String, Integer> constructionMap = new HashMap<>(32);
+
         // 日程信息
 //        Map<String, List<DailySchedule>> scheduleMap = baseApi.queryDailyScheduleList(year, month);
         Map<String, List<DailySchedule>> scheduleMap = new HashMap<>();
@@ -256,6 +260,27 @@ public class IndexPlanService {
 
         return result;
     }
+
+    /**
+     * 按天查询检修任务完成数
+     *
+     * @param beginDate
+     * @param dayNum
+     * @return
+     */
+    private Map<String, Integer> inspectionNumByDay(Date beginDate, int dayNum) {
+        Map<String, Integer> result = new HashMap<>(31);
+        if (ObjectUtil.isNotEmpty(beginDate)) {
+            for (int i = 0; i < dayNum; i++) {
+                DateTime dateTime = DateUtil.offsetDay(beginDate, i);
+                String currDateStr = DateUtil.format(dateTime, "yyyy/MM/dd");
+                List<RepairPoolDetailsDTO> repairPoolDetailsDTOList = repairTaskMapper.inspectionNumByDay(dateTime);
+                result.put(currDateStr, CollUtil.isNotEmpty(repairPoolDetailsDTOList) ? repairPoolDetailsDTOList.size() : 0);
+            }
+        }
+        return result;
+    }
+
 
     /**
      * 计算某年某月一共有多少天
@@ -332,11 +357,21 @@ public class IndexPlanService {
      * @param page
      * @param startDate
      * @param stationCode
-     * @param status
      * @return
      */
-    public IPage<RepairPoolDetailsDTO> getMaintenanceSituation(Page<RepairPoolDetailsDTO> page, Date startDate, String stationCode, Integer status) {
-        List<RepairPoolDetailsDTO> result = repairTaskMapper.selectRepairPoolList(page, startDate, stationCode, status);
+    public IPage<RepairPoolDetailsDTO> getMaintenanceSituation(Page<RepairPoolDetailsDTO> page, Date startDate, String stationCode) {
+        // 存在站点查询
+        Set<String> taskCode = new HashSet<>();
+        if (StrUtil.isNotEmpty(stationCode)) {
+            LambdaQueryWrapper<RepairTaskStationRel> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+            lambdaQueryWrapper.eq(RepairTaskStationRel::getStationCode, stationCode);
+            List<RepairTaskStationRel> repairTaskStationRels = repairTaskStationRelMapper.selectList(lambdaQueryWrapper);
+            if (CollUtil.isNotEmpty(repairTaskStationRels)) {
+                taskCode = repairTaskStationRels.stream().map(RepairTaskStationRel::getRepairTaskCode).collect(Collectors.toSet());
+            }
+        }
+
+        List<RepairPoolDetailsDTO> result = repairTaskMapper.selectRepairPoolList(page, startDate, stationCode, taskCode);
         if (CollUtil.isNotEmpty(result)) {
             for (RepairPoolDetailsDTO repairPool : result) {
                 String planCode = repairPool.getCode();
@@ -352,7 +387,7 @@ public class IndexPlanService {
                 if (repairPool.getYear() != null && repairPool.getWeeks() != null) {
                     Date[] dateByWeek = DateUtils.getDateByWeek(repairPool.getYear(), Integer.parseInt(repairPool.getWeeks()));
                     if (dateByWeek.length != 0) {
-                        String weekName = String.format("第%d周(%s~%s)", repairPool.getWeeks(), DateUtil.format(dateByWeek[0], "yyyy/MM/dd"), DateUtil.format(dateByWeek[1], "yyyy/MM/dd"));
+                        String weekName = String.format("第%s周(%s~%s)", repairPool.getWeeks(), DateUtil.format(dateByWeek[0], "yyyy/MM/dd"), DateUtil.format(dateByWeek[1], "yyyy/MM/dd"));
                         repairPool.setWeekName(weekName);
                     }
                 }

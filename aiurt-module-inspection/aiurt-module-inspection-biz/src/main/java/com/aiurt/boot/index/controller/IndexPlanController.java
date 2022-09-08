@@ -49,8 +49,8 @@ public class IndexPlanController {
     @AutoLog(value = "首页-检修概况", operateType = 1, operateTypeAlias = "查询", permissionUrl = "")
     @ApiOperation(value = "首页-检修概况", notes = "首页-检修概况")
     @RequestMapping(value = "/overviewInfo", method = RequestMethod.GET)
-    public Result<PlanIndexDTO> getOverviewInfo(@ApiParam(name = "startDate", value = "开始日期") @RequestParam("startDate") @DateTimeFormat(pattern = "yyyy-MM-dd") Date startDate,
-                                                @ApiParam(name = "endDate", value = "结束日期") @RequestParam("endDate") @DateTimeFormat(pattern = "yyyy-MM-dd") Date endDate) {
+    public Result<PlanIndexDTO> getOverviewInfo(@ApiParam(name = "startDate", value = "开始日期yyyy-MM-dd") @RequestParam("startDate") @DateTimeFormat(pattern = "yyyy-MM-dd") Date startDate,
+                                                @ApiParam(name = "endDate", value = "结束日期yyyy-MM-dd") @RequestParam("endDate") @DateTimeFormat(pattern = "yyyy-MM-dd") Date endDate) {
         PlanIndexDTO result = indexPlanService.getOverviewInfo(startDate, endDate);
         return Result.OK(result);
     }
@@ -112,20 +112,18 @@ public class IndexPlanController {
      * @param pageNo
      * @param pageSize
      * @param stationCode
-     * @param status
      * @return
      */
     @AutoLog(value = "首页-代办事项检修情况", operateType = 1, operateTypeAlias = "查询", permissionUrl = "")
     @ApiOperation(value = "首页-代办事项检修情况", notes = "首页-代办事项检修情况")
     @RequestMapping(value = "/getMaintenanceSituation", method = RequestMethod.GET)
-    public Result<IPage<RepairPoolDetailsDTO>> getMaintenanceSituation(@ApiParam(name = "startDate", value = "开始日期") @RequestParam("startDate") @DateTimeFormat(pattern = "yyyy-MM-dd") Date startDate,
+    public Result<IPage<RepairPoolDetailsDTO>> getMaintenanceSituation(@ApiParam(name = "startDate", value = "开始日期yyyy-MM-dd") @RequestParam("startDate") @DateTimeFormat(pattern = "yyyy-MM-dd") Date startDate,
                                                                        @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
                                                                        @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize,
-                                                                       @ApiParam(name = "stationCode", value = "站点") @RequestParam(value = "startDate", required = false) String stationCode,
-                                                                       @ApiParam(name = "status", value = "状态") @RequestParam(value = "status", required = false) Integer status
+                                                                       @ApiParam(name = "stationCode", value = "站点") @RequestParam(value = "stationCode", required = false) String stationCode
     ) {
         Page<RepairPoolDetailsDTO> page = new Page<>(pageNo,pageSize);
-        IPage<RepairPoolDetailsDTO> maintenanceSituation = indexPlanService.getMaintenanceSituation(page, startDate, stationCode, status);
+        IPage<RepairPoolDetailsDTO> maintenanceSituation = indexPlanService.getMaintenanceSituation(page, startDate, stationCode);
         return Result.OK(maintenanceSituation);
     }
 }

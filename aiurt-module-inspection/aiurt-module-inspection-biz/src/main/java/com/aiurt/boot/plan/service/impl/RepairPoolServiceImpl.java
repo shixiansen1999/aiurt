@@ -1006,7 +1006,7 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
             throw new AiurtNoDataException(InspectionConstant.NO_DATA, new ArrayList<>());
         }
 
-        // 组织机构和线路对应任务code的交集
+        // 组织机构和站点对应任务code的交集
         if (CollUtil.isNotEmpty(repairPoolOrgRels) && CollUtil.isNotEmpty(repairPoolStationRels)) {
             List<String> orgs = repairPoolOrgRels.stream().map(RepairPoolOrgRel::getRepairPoolCode).collect(Collectors.toList());
             List<String> stations = repairPoolStationRels.stream().map(RepairPoolStationRel::getRepairPoolCode).collect(Collectors.toList());

@@ -1,5 +1,6 @@
 package com.aiurt.boot.task.mapper;
 
+import cn.hutool.core.date.DateTime;
 import com.aiurt.boot.manager.dto.EquipmentDTO;
 import com.aiurt.boot.manager.dto.MajorDTO;
 import com.aiurt.boot.manager.dto.SubsystemDTO;
@@ -16,17 +17,19 @@ import org.apache.ibatis.annotations.Param;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 
 /**
  * @Description: repair_task
  * @Author: aiurt
- * @Date:   2022-06-22
+ * @Date: 2022-06-22
  * @Version: V1.0
  */
 public interface RepairTaskMapper extends BaseMapper<RepairTask> {
 
     /**
      * 检修任务列表查询
+     *
      * @param pageList
      * @param condition
      * @return
@@ -36,6 +39,7 @@ public interface RepairTaskMapper extends BaseMapper<RepairTask> {
 
     /**
      * 检修任务清单查询
+     *
      * @param pageList
      * @param condition
      * @return
@@ -44,6 +48,7 @@ public interface RepairTaskMapper extends BaseMapper<RepairTask> {
 
     /**
      * 设备台账-检修履历
+     *
      * @param pageList
      * @param condition
      * @return
@@ -53,6 +58,7 @@ public interface RepairTaskMapper extends BaseMapper<RepairTask> {
 
     /**
      * 查询站点信息
+     *
      * @param planCode
      * @return
      */
@@ -60,6 +66,7 @@ public interface RepairTaskMapper extends BaseMapper<RepairTask> {
 
     /**
      * 查询设备信息
+     *
      * @param code
      * @return
      */
@@ -67,15 +74,17 @@ public interface RepairTaskMapper extends BaseMapper<RepairTask> {
 
     /**
      * 查询编码信息
+     *
      * @param id
      * @param majorCode
      * @param subsystemCode
      * @return
      */
-    List<RepairTaskDTO> selectCodeList(@Param("id")String id,@Param("majorCode")String majorCode,@Param("subsystemCode")String subsystemCode);
+    List<RepairTaskDTO> selectCodeList(@Param("id") String id, @Param("majorCode") String majorCode, @Param("subsystemCode") String subsystemCode);
 
     /**
      * 翻译专业信息
+     *
      * @param codeList
      * @return
      */
@@ -83,15 +92,17 @@ public interface RepairTaskMapper extends BaseMapper<RepairTask> {
 
     /**
      * 翻译子系统信息
+     *
      * @param majorCode
-     *  @param systemCode
+     * @param systemCode
      * @return
      */
-    List<SubsystemDTO> translateSubsystem(@Param("majorCode")String majorCode,@Param("systemCode")String systemCode);
+    List<SubsystemDTO> translateSubsystem(@Param("majorCode") String majorCode, @Param("systemCode") String systemCode);
 
 
     /**
      * 根据设备类型编码集合查询设备类型信息
+     *
      * @param codeList 设备类型编码
      * @return
      */
@@ -99,6 +110,7 @@ public interface RepairTaskMapper extends BaseMapper<RepairTask> {
 
     /**
      * 查询检修单信息
+     *
      * @param id
      * @return
      */
@@ -106,35 +118,43 @@ public interface RepairTaskMapper extends BaseMapper<RepairTask> {
 
     /**
      * 查询任务结果
+     *
      * @param id
      * @param status
      * @return
      */
-    List<RepairTaskResult> selectSingle(@Param("id") String id,@Param("status")Integer status);
+    List<RepairTaskResult> selectSingle(@Param("id") String id, @Param("status") Integer status);
 
 
     /**
      * 查询附件信息
+     *
      * @param resultId
      * @return
      */
     List<RepairTaskEnclosure> selectEnclosure(String resultId);
 
     /**
-     *
      * @param page
      * @param startDate
      * @param stationCode
-     * @param status
      * @return
      */
-    List<RepairPoolDetailsDTO> selectRepairPoolList(@Param("page") Page<RepairPoolDetailsDTO> page,@Param("startDate") Date startDate, @Param("stationCode")String stationCode, @Param("status")Integer status);
+    List<RepairPoolDetailsDTO> selectRepairPoolList(@Param("page") Page<RepairPoolDetailsDTO> page, @Param("startDate") Date startDate, @Param("stationCode") String stationCode, @Param("taskCode") Set<String> taskCode);
 
     /**
      * 根据code查询检修任务对应的组织机构编码
+     *
      * @param planCode
      * @return
      */
     List<String> selectOrgByCode(String planCode);
 
+    /**
+     * 按天查询检修任务完成数
+     *
+     * @param dateTime
+     * @return
+     */
+    List<RepairPoolDetailsDTO> inspectionNumByDay(@Param("dateTime") DateTime dateTime);
 }
