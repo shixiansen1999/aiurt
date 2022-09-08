@@ -1,19 +1,20 @@
 package com.aiurt.boot.task.mapper;
 
 import com.aiurt.boot.manager.dto.EquipmentDTO;
-import com.aiurt.boot.manager.dto.EquipmentOverhaulDTO;
 import com.aiurt.boot.manager.dto.MajorDTO;
 import com.aiurt.boot.manager.dto.SubsystemDTO;
+import com.aiurt.boot.plan.dto.RepairPoolDetailsDTO;
 import com.aiurt.boot.plan.dto.StationDTO;
 import com.aiurt.boot.task.dto.CheckListDTO;
-import com.aiurt.boot.task.entity.RepairTask;
 import com.aiurt.boot.task.dto.RepairTaskDTO;
+import com.aiurt.boot.task.entity.RepairTask;
 import com.aiurt.boot.task.entity.RepairTaskEnclosure;
 import com.aiurt.boot.task.entity.RepairTaskResult;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.ibatis.annotations.Param;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -118,5 +119,22 @@ public interface RepairTaskMapper extends BaseMapper<RepairTask> {
      * @return
      */
     List<RepairTaskEnclosure> selectEnclosure(String resultId);
+
+    /**
+     *
+     * @param page
+     * @param startDate
+     * @param stationCode
+     * @param status
+     * @return
+     */
+    List<RepairPoolDetailsDTO> selectRepairPoolList(@Param("page") Page<RepairPoolDetailsDTO> page,@Param("startDate") Date startDate, @Param("stationCode")String stationCode, @Param("status")Integer status);
+
+    /**
+     * 根据code查询检修任务对应的组织机构编码
+     * @param planCode
+     * @return
+     */
+    List<String> selectOrgByCode(String planCode);
 
 }

@@ -30,10 +30,13 @@ public class TaskDetailsReq {
     @ApiModelProperty(value = "线路code")
     private String lineCode;
     @ApiModelProperty("第几页")
-    private Integer pageNo;
+    private Integer pageNo =1 ;
     @ApiModelProperty("每页显示条数")
-    private Integer pageSize;
+    private Integer pageSize = 10;
     @ApiModelProperty("类型：1总数2已检修3未检修4漏检")
+    @NotNull(message = "类型不能为空")
     private Integer type;
+    @ApiModelProperty("检修周期")
+    private Integer maintenanceCycle;
 
 }

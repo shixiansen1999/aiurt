@@ -1,7 +1,10 @@
 package com.aiurt.boot.index.dto;
 
+import com.aiurt.modules.dailyschedule.entity.DailySchedule;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
+
+import java.util.List;
 
 /**
  * @author wgp
@@ -21,4 +24,7 @@ public class DayTodoDTO {
     private Integer inspectionNum;
     @ApiModelProperty("日期")
     private String currDate;
+    @ApiModelProperty("代办事项")
+    List<DailySchedule> dailyScheduleList;
+
 }

@@ -294,4 +294,15 @@
        WHERE
 	   repair_task_result_id =#{resultId}
     </select>
+    <select id="selectRepairPoolList" resultType="com.aiurt.boot.plan.dto.RepairPoolDetailsDTO">
+    select year,code,type,weeks,start_time,end_time,status from repair_task
+    where status = 8 and is_confirm = 0 and date_format(submit_time ,'%Y-%m-%d') =date_format(#{startDate} ,'%Y-%m-%d')
+    union
+    select year,code,type,weeks,start_time,end_time,status from repair_task where status = 8 and is_confirm = 1 ans is_receipt =0 and date_format(confirm_time ,'%Y-%m-%d') =date_format(#{startDate} ,'%Y-%m-%d')
+    union
+    select year,code,type,weeks,start_time,end_time,status from repair_task where status = 8 and is_confirm = 1 ans is_receipt =1 and date_format(receipt_time ,'%Y-%m-%d') =date_format(#{startDate} ,'%Y-%m-%d')
+    </select>
+    <select id="selectOrgByCode" resultType="java.lang.String">
+            select org_code from  repair_task_org_rel where del_flag = 0 and repair_task_code = #{planCode}
+    </select>
 </mapper>

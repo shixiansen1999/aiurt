@@ -63,8 +63,8 @@ public class IndexPlanController {
      */
     @AutoLog(value = "首页-检修概况详情", operateType = 1, operateTypeAlias = "查询", permissionUrl = "")
     @ApiOperation(value = "首页-检修概况详情", notes = "首页-检修概况详情")
-    @RequestMapping(value = "/getOverviewInfoDetails", method = RequestMethod.POST)
-    public Result<IPage<TaskDetailsDTO>> getOverviewInfoDetails(@ApiParam(name = "taskDetailsReq", value = "查询条件") @RequestParam("taskDetailsReq") @Validated TaskDetailsReq taskDetailsReq
+    @RequestMapping(value = "/getOverviewInfoDetails", method = RequestMethod.GET)
+    public Result<IPage<TaskDetailsDTO>> getOverviewInfoDetails(@Validated TaskDetailsReq taskDetailsReq
 
     ) {
         IPage<TaskDetailsDTO> result = indexPlanService.getOverviewInfoDetails(taskDetailsReq);
@@ -74,14 +74,13 @@ public class IndexPlanController {
     /**
      * 点击站点获取检修数据
      *
-
-     * @param taskDetailsReq   查询条件
+     * @param taskDetailsReq 查询条件
      * @return
      */
-    @AutoLog(value = "首页-检修概况详情", operateType = 1, operateTypeAlias = "查询", permissionUrl = "")
-    @ApiOperation(value = "首页-检修概况详情", notes = "首页-检修概况详情")
-    @RequestMapping(value = "/getMaintenancDataByStationCode", method = RequestMethod.POST)
-    public Result<IPage<RepairPoolDetailsDTO>> getMaintenancDataByStationCode(@ApiParam(name = "taskDetailsReq", value = "查询条件") @RequestParam("taskDetailsReq") @Validated TaskDetailsReq taskDetailsReq
+    @AutoLog(value = "首页-点击站点获取检修数据", operateType = 1, operateTypeAlias = "查询", permissionUrl = "")
+    @ApiOperation(value = "首页-点击站点获取检修数据", notes = "首页-点击站点获取检修数据")
+    @RequestMapping(value = "/getMaintenancDataByStationCode", method = RequestMethod.GET)
+    public Result<IPage<RepairPoolDetailsDTO>> getMaintenancDataByStationCode(@Validated TaskDetailsReq taskDetailsReq
 
     ) {
 
@@ -104,5 +103,29 @@ public class IndexPlanController {
     ) {
         List<DayTodoDTO> result = indexPlanService.getUserSchedule(year, month);
         return Result.OK(result);
+    }
+
+
+    /**
+     * 代办事项检修情况
+     * @param startDate
+     * @param pageNo
+     * @param pageSize
+     * @param stationCode
+     * @param status
+     * @return
+     */
+    @AutoLog(value = "首页-代办事项检修情况", operateType = 1, operateTypeAlias = "查询", permissionUrl = "")
+    @ApiOperation(value = "首页-代办事项检修情况", notes = "首页-代办事项检修情况")
+    @RequestMapping(value = "/getMaintenanceSituation", method = RequestMethod.GET)
+    public Result<IPage<RepairPoolDetailsDTO>> getMaintenanceSituation(@ApiParam(name = "startDate", value = "开始日期") @RequestParam("startDate") @DateTimeFormat(pattern = "yyyy-MM-dd") Date startDate,
+                                                                       @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
+                                                                       @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize,
+                                                                       @ApiParam(name = "stationCode", value = "站点") @RequestParam(value = "startDate", required = false) String stationCode,
+                                                                       @ApiParam(name = "status", value = "状态") @RequestParam(value = "status", required = false) Integer status
+    ) {
+        Page<RepairPoolDetailsDTO> page = new Page<>(pageNo,pageSize);
+        IPage<RepairPoolDetailsDTO> maintenanceSituation = indexPlanService.getMaintenanceSituation(page, startDate, stationCode, status);
+        return Result.OK(maintenanceSituation);
     }
 }

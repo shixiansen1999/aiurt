@@ -52,5 +52,4 @@ public interface RepairPoolMapper extends BaseMapper<RepairPool> {
      */
     List<String> selectOrgByCode(String planCode);
 
-
-}
+    }

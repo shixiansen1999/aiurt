@@ -20,12 +20,6 @@
         <if test="type!=null and type==3">
             and rp.status &lt;&gt; 8
         </if>
-        <if test="taskDetailsReq.status!=null and taskDetailsReq.status==1">
-            and rp.status = 8
-        </if>
-        <if test="taskDetailsReq.status!=null and taskDetailsReq.status==0">
-            and rp.status &lt;&gt; 8
-        </if>
         <if test="taskDetailsReq.startTime!=null and taskDetailsReq.endTime!=null">
             and date_format(rp.start_time ,'%Y-%m-%d') &gt;=  date_format(#{taskDetailsReq.startTime},'%Y-%m-%d')
             and date_format(rp.start_time ,'%Y-%m-%d') &lt;= date_format(#{taskDetailsReq.endTime},'%Y-%m-%d')
@@ -35,6 +29,15 @@
         </if>
         <if test="taskDetailsReq.lineCode!=null">
             and cs.line_code = #{taskDetailsReq.lineCode}
+        </if>
+        <if test="condition.size()>0">
+            and cs.station_code in
+            <foreach collection="condition" open="(" close=")" item="code" separator=",">
+                #{code}
+            </foreach>
+        </if>
+        <if test="taskDetailsReq.maintenanceCycle!=null">
+          and  rp.type = #{taskDetailsReq.maintenanceCycle}
         </if>
     </where>
     GROUP BY
@@ -68,11 +71,27 @@
         FROM   repair_pool rp
         LEFT JOIN repair_pool_station_rel rpsr ON rpsr.repair_pool_code = rp.`code`
         <where>
-            rp.is_manual = 0 and rpsr.station_code = #{taskDetailsReq.stationCode}
+            rp.is_manual = 0 and rpsr.station_code = #{stationCode}
             <if test="taskDetailsReq.startTime!=null and taskDetailsReq.endTime!=null">
                 and date_format(rp.start_time ,'%Y-%m-%d') &gt;=  date_format(#{taskDetailsReq.startTime},'%Y-%m-%d')
                 and date_format(rp.start_time ,'%Y-%m-%d') &lt;= date_format(#{taskDetailsReq.endTime},'%Y-%m-%d')
             </if>
         </where>
+    </select>
+    <select id="selectStationState" resultType="com.aiurt.boot.index.dto.TaskStateDTO">
+        SELECT
+        rpsr.station_code AS stationCode,
+        GROUP_CONCAT(rp.`status`) as statusStr
+        FROM
+        repair_pool rp
+        LEFT JOIN repair_pool_station_rel rpsr ON rpsr.repair_pool_code = rp.`code`
+        <where>
+            rp.is_manual = 0
+            <if test="startTime!=null and endTime!=null">
+                and date_format(rp.start_time ,'%Y-%m-%d') &gt;=  date_format(#{startTime},'%Y-%m-%d')
+                and date_format(rp.start_time ,'%Y-%m-%d') &lt;= date_format(#{endTime},'%Y-%m-%d')
+            </if>
+        </where>
+        GROUP BY rpsr.station_code
     </select>
 </mapper>

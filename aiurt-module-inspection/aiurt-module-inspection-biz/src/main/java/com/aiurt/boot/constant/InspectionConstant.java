@@ -232,4 +232,13 @@ public class InspectionConstant {
      * 故障报修方式（0:自检自修）
      */
     public static final String FAULT_MODE_CODE_0 = "0";
+    /**
+     * 站点任务：未完成
+     */
+    public static final Integer INDEX_TASK_STATUS_0 = 0;
+    /**
+     * 站点任务：已完成
+     */
+    public static final Integer INDEX_TASK_STATUS_1 = 1;
+
 }
