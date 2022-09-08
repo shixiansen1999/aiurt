@@ -1,6 +1,6 @@
 package com.aiurt.boot.statistics.controller;
 
-import com.aiurt.boot.statistics.dto.AbnormalDTO;
+import com.aiurt.boot.statistics.dto.IndexTaskDTO;
 import com.aiurt.boot.statistics.model.IndexTaskInfo;
 import com.aiurt.boot.statistics.model.PatrolCondition;
 import com.aiurt.boot.statistics.model.PatrolIndexTask;
@@ -17,6 +17,7 @@ import org.jeecg.common.api.vo.Result;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -70,14 +71,12 @@ public class PatrolStatisticsController {
      *
      * @return
      */
-    @AutoLog(value = "首页-巡视异常列表", operateType = 1, operateTypeAlias = "查询", permissionUrl = "")
-    @ApiOperation(value = "首页-巡视异常列表", notes = "首页-巡视异常列表")
-    @RequestMapping("/getAbnormalList")
-    public Result<IPage<IndexTaskInfo>> getAbnormalList(@RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
-                                                        @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize,
-                                                        @Validated AbnormalDTO abnormalDTO) {
-        Page<IndexTaskInfo> page = new Page<>(pageNo, pageSize);
-        IPage<IndexTaskInfo> pageList = patrolStatisticsService.getAbnormalList(page, abnormalDTO);
+    @AutoLog(value = "首页-获取首页的巡视任务列表", operateType = 1, operateTypeAlias = "查询", permissionUrl = "")
+    @ApiOperation(value = "首页-获取首页的巡视任务列表", notes = "首页-获取首页的巡视任务列表")
+    @RequestMapping("/getIndexTaskList")
+    public Result<IPage<IndexTaskInfo>> getIndexTaskList(@Validated @RequestBody IndexTaskDTO abnormalDTO) {
+        Page<IndexTaskInfo> page = new Page<>(abnormalDTO.getPageNo(), abnormalDTO.getPageSize());
+        IPage<IndexTaskInfo> pageList = patrolStatisticsService.getIndexTaskList(page, abnormalDTO);
         return Result.ok(pageList);
     }
 }

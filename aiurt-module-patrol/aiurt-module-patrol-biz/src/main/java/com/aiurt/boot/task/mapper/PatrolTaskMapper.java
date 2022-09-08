@@ -1,7 +1,7 @@
 package com.aiurt.boot.task.mapper;
 
 import com.aiurt.boot.standard.dto.StationDTO;
-import com.aiurt.boot.statistics.dto.AbnormalDTO;
+import com.aiurt.boot.statistics.dto.IndexTaskDTO;
 import com.aiurt.boot.statistics.model.IndexTaskInfo;
 import com.aiurt.boot.statistics.model.PatrolCondition;
 import com.aiurt.boot.statistics.model.PatrolIndexTask;
@@ -173,5 +173,5 @@ public interface PatrolTaskMapper extends BaseMapper<PatrolTask> {
      * @param condition
      * @return
      */
-    IPage<IndexTaskInfo> getAbnormalList(Page<IndexTaskInfo> page, @Param("condition") AbnormalDTO condition);
+    IPage<IndexTaskInfo> getIndexTaskList(Page<IndexTaskInfo> page, @Param("condition") IndexTaskDTO condition);
 }

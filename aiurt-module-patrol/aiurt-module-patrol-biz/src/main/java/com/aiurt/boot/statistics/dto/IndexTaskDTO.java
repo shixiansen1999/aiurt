@@ -6,18 +6,34 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.util.Date;
+import java.util.List;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Accessors(chain = true)
-public class AbnormalDTO implements Serializable {
+public class IndexTaskDTO implements Serializable {
     private static final long serialVersionUID = 1L;
+    /**
+     * 当前页
+     */
+    @ApiModelProperty(value = "当前页")
+    @Value(value = "1")
+    @NotNull(message = "当前页值为空")
+    private Integer pageNo;
+    /**
+     * 页面大小
+     */
+    @ApiModelProperty(value = "页面大小")
+    @NotNull(message = "页面大小为空")
+    @Value(value = "10")
+    private Integer pageSize;
     /**
      * 开始时间，格式yyyy-MM-dd
      */
@@ -44,9 +60,20 @@ public class AbnormalDTO implements Serializable {
      */
     @ApiModelProperty(value = "巡视用户名称")
     private String username;
+    /**
+     * 巡检结果：0异常、1正常
+     */
     @ApiModelProperty(value = "巡检结果：0异常、1正常")
 //    @NotNull(message = "任务的异常状态不能为空")
     private Integer state;
+    /**
+     * 站点编号
+     */
     @ApiModelProperty(value = "站点编号")
     private String stationCode;
+    /**
+     * 任务编号
+     */
+    @ApiModelProperty(value = "任务编号")
+    private List<String> taskCode;
 }

@@ -4,7 +4,7 @@ import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.constant.PatrolConstant;
-import com.aiurt.boot.statistics.dto.AbnormalDTO;
+import com.aiurt.boot.statistics.dto.IndexTaskDTO;
 import com.aiurt.boot.statistics.dto.IndexOrgDTO;
 import com.aiurt.boot.statistics.dto.IndexStationDTO;
 import com.aiurt.boot.statistics.dto.IndexUserDTO;
@@ -13,7 +13,6 @@ import com.aiurt.boot.statistics.model.PatrolCondition;
 import com.aiurt.boot.statistics.model.PatrolIndexTask;
 import com.aiurt.boot.statistics.model.PatrolSituation;
 import com.aiurt.boot.task.entity.PatrolTask;
-import com.aiurt.boot.task.entity.PatrolTaskStation;
 import com.aiurt.boot.task.entity.PatrolTaskUser;
 import com.aiurt.boot.task.mapper.*;
 import com.aiurt.boot.task.service.IPatrolTaskService;
@@ -22,7 +21,6 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.DictModel;
-import org.jeecg.common.system.vo.LoginUser;
 import org.jeecg.common.util.DateUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -127,15 +125,10 @@ public class PatrolStatisticsService {
     public IPage<PatrolIndexTask> getIndexPatrolList(Page<PatrolIndexTask> page, PatrolCondition patrolCondition) {
         IPage<PatrolIndexTask> pageList = patrolTaskMapper.getIndexPatrolList(page, patrolCondition);
         pageList.getRecords().stream().forEach(l -> {
-            String stationCode = l.getStationCode();
-            // 查询数据这个站点的任务
-            QueryWrapper<PatrolTaskStation> taskStationWrapper = new QueryWrapper<>();
-            taskStationWrapper.lambda()
-                    .eq(PatrolTaskStation::getDelFlag, 0)
-                    .eq(PatrolTaskStation::getStationCode, stationCode);
-            List<String> taskCodeList = patrolTaskStationMapper.selectList(taskStationWrapper)
-                    .stream().map(PatrolTaskStation::getTaskCode)
-                    .collect(Collectors.toList());
+            List<String> taskCodeList = new ArrayList<>();
+            if(StrUtil.isNotEmpty(l.getTaskCode())){
+                taskCodeList = Arrays.asList(l.getTaskCode().split(","));
+            }
 
             // 任务下的巡视人员
             Set<String> userSet = new HashSet<>();
@@ -146,13 +139,16 @@ public class PatrolStatisticsService {
                 QueryWrapper<PatrolTaskUser> userWrapper = new QueryWrapper<>();
                 userWrapper.lambda().eq(PatrolTaskUser::getDelFlag, 0).eq(PatrolTaskUser::getTaskCode, taskCode);
                 List<PatrolTaskUser> patrolTaskUsers = patrolTaskUserMapper.selectList(userWrapper);
-                Set<String> userId = patrolTaskUsers.stream().map(PatrolTaskUser::getUserId).collect(Collectors.toSet());
-                Set<String> username = patrolTaskUsers.stream().map(PatrolTaskUser::getUserName).collect(Collectors.toSet());
-                userId.stream().forEach(uid -> {
-                    String deptName = patrolTaskUserMapper.getDeptName(uid);
-                    orgSet.add(deptName);
-                });
+                List<String> userId = patrolTaskUsers.stream().map(PatrolTaskUser::getUserId).distinct().collect(Collectors.toList());
+                List<String> username = patrolTaskUsers.stream().map(PatrolTaskUser::getUserName).distinct().collect(Collectors.toList());
+//                userId.stream().forEach(uid -> {
+//                    String deptName = patrolTaskUserMapper.getDeptName(uid);
+//                    orgSet.add(deptName);
+//                });
+                List<String> deptName = patrolTaskUserMapper.getDeptName(userId);
+
                 userSet.addAll(username);
+                orgSet.addAll(deptName);
             });
 
             String userInfo = userSet.stream().collect(Collectors.joining("；"));
@@ -171,8 +167,8 @@ public class PatrolStatisticsService {
      * @param abnormalDTO
      * @return
      */
-    public IPage<IndexTaskInfo> getAbnormalList(Page<IndexTaskInfo> page, AbnormalDTO abnormalDTO) {
-        IPage<IndexTaskInfo> pageList = patrolTaskMapper.getAbnormalList(page, abnormalDTO);
+    public IPage<IndexTaskInfo> getIndexTaskList(Page<IndexTaskInfo> page, IndexTaskDTO abnormalDTO) {
+        IPage<IndexTaskInfo> pageList = patrolTaskMapper.getIndexTaskList(page, abnormalDTO);
         pageList.getRecords().stream().forEach(l -> {
             String taskCode = l.getCode();
             // 巡视用户信息
