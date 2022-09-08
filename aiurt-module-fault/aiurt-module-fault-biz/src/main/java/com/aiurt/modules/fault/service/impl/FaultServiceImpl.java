@@ -76,9 +76,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
     @Autowired
     private IFaultLevelService faultLevelService;
 
-   /* @Autowired
-    private ISparePartBaseApi sparePartBaseApi;
-*/
+
     /**
      * 故障上报
      *

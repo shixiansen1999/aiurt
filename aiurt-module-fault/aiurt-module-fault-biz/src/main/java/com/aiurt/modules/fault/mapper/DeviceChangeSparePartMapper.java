@@ -2,9 +2,11 @@ package com.aiurt.modules.fault.mapper;
 
 
 import com.aiurt.modules.fault.entity.DeviceChangeSparePart;
+import com.aiurt.modules.faultanalysisreport.dto.SpareConsumeDTO;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import org.apache.ibatis.annotations.Param;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -22,4 +24,13 @@ public interface DeviceChangeSparePartMapper extends BaseMapper<DeviceChangeSpar
      * @return
      */
     List<DeviceChangeSparePart> queryDeviceChangeByFaultCode(@Param("faultCode") String faultCode, @Param("recordId") String recordId);
+
+
+    /**
+     * 统计该时间段内的备件消耗品
+     * @param startDate 开始时间
+     * @param endDate   结束时间
+     * @return
+     */
+    List<SpareConsumeDTO> querySpareConsume(@Param("startDate")Date startDate, @Param("endDate")Date endDate);
 }

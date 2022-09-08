@@ -16,4 +16,15 @@
         where a.code = #{faultCode}
         and a.del_flag = 0
     </select>
+
+    <select id="querySpareConsume" resultType="com.aiurt.modules.faultanalysisreport.dto.SpareConsumeDTO">
+        select
+            sum(ifnull(dcsp.new_spare_part_num,0)) num,
+            mb.name spare_name
+        from device_change_spare_part dcsp LEFT join material_base mb on dcsp.new_spare_part_code = mb.code
+        where dcsp.create_time between #{startDate} and #{endDate}
+        and mb.name is not NULL
+        GROUP BY dcsp.new_spare_part_code
+        order by num  DESC limit 5
+    </select>
 </mapper>

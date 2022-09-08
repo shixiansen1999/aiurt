@@ -54,6 +54,8 @@ public class FaultStatisticsController {
             @ApiImplicitParam(name = "type", value = "1-4:表示1-4季度，5-6：半年，年度", required = true, paramType = "query")
     })
     public Result<List<SpareConsumeDTO>> getSpareConsume(@RequestParam(value = "type", defaultValue = "1") String type) {
-        return Result.OK();
+
+        List<SpareConsumeDTO> list = faultStatisticsService.getSpareConsume(type);
+        return Result.OK(list);
     }
 }

@@ -9,7 +9,10 @@ import com.aiurt.modules.fault.dto.FaultFrequencyDTO;
 import com.aiurt.modules.fault.dto.FaultStatisticsDTO;
 import com.aiurt.modules.fault.entity.Fault;
 import com.aiurt.modules.fault.mapper.FaultMapper;
+import com.aiurt.modules.fault.service.IDeviceChangeSparePartService;
+import com.aiurt.modules.faultanalysisreport.dto.SpareConsumeDTO;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import java.util.*;
@@ -26,6 +29,9 @@ public class FaultStatisticsService {
 
     @Resource
     private FaultMapper faultMapper;
+
+    @Autowired
+    private IDeviceChangeSparePartService deviceChangeSparePartService;
 
 
 
@@ -112,5 +118,44 @@ public class FaultStatisticsService {
             nameList = faultMapper.translateSubsystems(codeList);
         }
         return CollUtil.isNotEmpty(nameList) ? StrUtil.join("；", nameList) : "";
+    }
+
+    /**
+     * 获取备件消耗top
+     * @param type 1-4:表示1-4季度，5-6：半年，年度
+     * @return
+     */
+    public List<SpareConsumeDTO> getSpareConsume(String type) {
+        //Date
+        Date startDate = null;
+        Date endDate = null;
+        Calendar calendar = Calendar.getInstance();
+        switch (type) {
+            case "1":
+                startDate = DateUtil.parse(calendar.get(Calendar.YEAR)+"-01-01 00:00:00", "yyyy-MM-dd HH:mm:ss");
+                endDate = DateUtil.parse(calendar.get(Calendar.YEAR)+"-03-31 23:59:59", "yyyy-MM-dd HH:mm:ss");
+                break;
+            case "2":
+                startDate = DateUtil.parse(calendar.get(Calendar.YEAR)+"-04-01 00:00:00", "yyyy-MM-dd HH:mm:ss");
+                endDate = DateUtil.parse(calendar.get(Calendar.YEAR)+"-06-30 23:59:59", "yyyy-MM-dd HH:mm:ss");
+                break;
+            case "3":
+                startDate = DateUtil.parse(calendar.get(Calendar.YEAR)+"-07-01 00:00:00", "yyyy-MM-dd HH:mm:ss");
+                endDate = DateUtil.parse(calendar.get(Calendar.YEAR)+"-09-30 23:59:59", "yyyy-MM-dd HH:mm:ss");
+                break;
+            case "4":
+                startDate = DateUtil.parse(calendar.get(Calendar.YEAR)+"-10-01 00:00:00", "yyyy-MM-dd HH:mm:ss");
+                endDate = DateUtil.parse(calendar.get(Calendar.YEAR)+"-12-31 23:59:59", "yyyy-MM-dd HH:mm:ss");
+                break;
+            case "5":
+                startDate = DateUtil.parse(calendar.get(Calendar.YEAR)+"-01-01 00:00:00", "yyyy-MM-dd HH:mm:ss");
+                endDate = DateUtil.parse(calendar.get(Calendar.YEAR)+"-06-30 23:59:59", "yyyy-MM-dd HH:mm:ss");
+                break;
+            default:
+                startDate = DateUtil.parse(calendar.get(Calendar.YEAR)+"-01-01 00:00:00", "yyyy-MM-dd HH:mm:ss");
+                endDate = DateUtil.parse(calendar.get(Calendar.YEAR)+"-12-31 23:59:59", "yyyy-MM-dd HH:mm:ss");
+        }
+        List<SpareConsumeDTO> spareConsumeDTOS = deviceChangeSparePartService.querySpareConsume(startDate, endDate);
+        return spareConsumeDTOS;
     }
 }

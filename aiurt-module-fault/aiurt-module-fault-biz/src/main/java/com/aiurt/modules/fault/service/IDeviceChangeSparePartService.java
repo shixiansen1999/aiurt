@@ -1,8 +1,10 @@
 package com.aiurt.modules.fault.service;
 
 import com.aiurt.modules.fault.entity.DeviceChangeSparePart;
+import com.aiurt.modules.faultanalysisreport.dto.SpareConsumeDTO;
 import com.baomidou.mybatisplus.extension.service.IService;
 
+import java.util.Date;
 import java.util.List;
 import java.util.function.Function;
 
@@ -21,4 +23,13 @@ public interface IDeviceChangeSparePartService extends IService<DeviceChangeSpar
      * @return
      */
      List<DeviceChangeSparePart> queryDeviceChangeByFaultCode(String faultCode, String recordId);
+
+
+    /**
+     * 统计该时间段内的备件消耗品
+     * @param startDate 开始时间
+     * @param endDate 结束时间
+     * @return
+     */
+    List<SpareConsumeDTO> querySpareConsume(Date startDate, Date endDate);
 }
