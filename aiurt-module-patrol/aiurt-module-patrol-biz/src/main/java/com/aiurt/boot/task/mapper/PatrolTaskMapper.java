@@ -1,5 +1,6 @@
 package com.aiurt.boot.task.mapper;
 
+import com.aiurt.boot.constant.PatrolConstant;
 import com.aiurt.boot.standard.dto.StationDTO;
 import com.aiurt.boot.statistics.dto.IndexTaskDTO;
 import com.aiurt.boot.statistics.model.IndexTaskInfo;
@@ -15,6 +16,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.ibatis.annotations.Param;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -164,7 +166,7 @@ public interface PatrolTaskMapper extends BaseMapper<PatrolTask> {
      * @param condition
      * @return
      */
-    IPage<PatrolIndexTask> getIndexPatrolList(Page<PatrolIndexTask> page,@Param("condition") PatrolCondition condition);
+    IPage<PatrolIndexTask> getIndexPatrolList(Page<PatrolIndexTask> page, @Param("condition") PatrolCondition condition, @Param("regexp")String regexp);
 
     /**
      * 获取首页巡视异常任务列表
@@ -174,4 +176,10 @@ public interface PatrolTaskMapper extends BaseMapper<PatrolTask> {
      * @return
      */
     IPage<IndexTaskInfo> getIndexTaskList(Page<IndexTaskInfo> page, @Param("condition") IndexTaskDTO condition);
+
+    /**
+     * 首页巡视列表获取存在未完成/已经完成任务的站点编号
+     * @return
+     */
+    List<String> getStationCodeUnfinish(@Param("startDate")Date startDate,@Param("endDate") Date endDate,@Param("finishStatus")Integer finishStatus);
 }

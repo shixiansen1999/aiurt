@@ -1,5 +1,7 @@
 package com.aiurt.boot.statistics.service;
 
+import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
@@ -18,6 +20,7 @@ import com.aiurt.boot.task.mapper.*;
 import com.aiurt.boot.task.service.IPatrolTaskService;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.core.metadata.OrderItem;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.DictModel;
@@ -53,10 +56,12 @@ public class PatrolStatisticsService {
      * @return
      */
     public PatrolSituation getOverviewInfo(Date startDate, Date endDate) {
+        Date newStartDate = DateUtil.parse(DateUtil.format(startDate, "yyyy-MM-dd 00:00:00"));
+        Date newEndDate = DateUtil.parse(DateUtil.format(endDate, "yyyy-MM-dd 23:59:59"));
         PatrolSituation situation = new PatrolSituation();
         List<PatrolTask> list = patrolTaskService.lambdaQuery().eq(PatrolTask::getDelFlag, 0)
                 .and(i -> i.ne(PatrolTask::getSource, PatrolConstant.TASK_MANUAL).or().isNull(PatrolTask::getSource))
-                .between(PatrolTask::getPatrolDate, startDate, endDate).list();
+                .between(PatrolTask::getPatrolDate, newStartDate, newEndDate).list();
         long sum = list.stream().count();
         long finish = list.stream().filter(l -> PatrolConstant.TASK_COMPLETE.equals(l.getStatus())).count();
         long unfinish = sum - finish;
@@ -123,12 +128,29 @@ public class PatrolStatisticsService {
      * @return
      */
     public IPage<PatrolIndexTask> getIndexPatrolList(Page<PatrolIndexTask> page, PatrolCondition patrolCondition) {
-        IPage<PatrolIndexTask> pageList = patrolTaskMapper.getIndexPatrolList(page, patrolCondition);
+//        Integer finishStatus = patrolCondition.getFinishStatus();
+//        if (ObjectUtil.isNotEmpty(finishStatus)) {
+//            List<String> stationCodes = patrolTaskMapper.getStationCodeUnfinish(patrolCondition.getStartDate(), patrolCondition.getEndDate(), finishStatus);
+//            if (CollectionUtil.isEmpty(stationCodes)) {
+//                return new Page<>(page.getCurrent(), page.getSize());
+//            }
+//            patrolCondition.setCodeList(stationCodes);
+//        }
+
+        // todo 检验数据正确性的集合,验证正确可删除
+//        Set<String> set = new HashSet<>();
+
+
+        String regexp = "^" + PatrolConstant.TASK_COMPLETE + "{1}$";
+
+        IPage<PatrolIndexTask> pageList = patrolTaskMapper.getIndexPatrolList(page, patrolCondition, regexp);
         pageList.getRecords().stream().forEach(l -> {
             List<String> taskCodeList = new ArrayList<>();
-            if(StrUtil.isNotEmpty(l.getTaskCode())){
+            if (StrUtil.isNotEmpty(l.getTaskCode())) {
                 taskCodeList = Arrays.asList(l.getTaskCode().split(","));
             }
+            // todo 检验数据正确性的集合,验证正确可删除
+//            set.addAll(taskCodeList);
 
             // 任务下的巡视人员
             Set<String> userSet = new HashSet<>();
@@ -151,12 +173,18 @@ public class PatrolStatisticsService {
                 orgSet.addAll(deptName);
             });
 
+            // 获取站点下的任务
+
             String userInfo = userSet.stream().collect(Collectors.joining("；"));
             String orgInfo = orgSet.stream().collect(Collectors.joining("；"));
 
             l.setUserInfo(userInfo);
             l.setOrgInfo(orgInfo);
         });
+
+        // todo 检验数据正确性的集合,验证正确可删除
+//        System.out.println(set.size());
+
         return pageList;
     }
 

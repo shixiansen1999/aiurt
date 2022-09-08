@@ -1,5 +1,6 @@
 package com.aiurt.boot.statistics.model;
 
+import com.aiurt.boot.constant.PatrolConstant;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
@@ -11,6 +12,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.util.Date;
+import java.util.List;
 
 @Data
 @NoArgsConstructor
@@ -54,4 +56,25 @@ public class PatrolCondition implements Serializable {
      */
     @ApiModelProperty(value = "漏巡状态")
     private Integer omitStatus;
+    /**
+     * 存在未完成任务的站点编号
+     */
+    @ApiModelProperty(value = "存在未完成任务的站点编号")
+    private List<String> codeList;
+    /**
+     * 完成状态：0未完成，1已完成
+     */
+    @ApiModelProperty(value = "完成状态：0未完成，1已完成")
+    private Integer finishStatus;
+    /**
+     * 完成状态名称
+     */
+    @ApiModelProperty(value = "完成状态名称")
+    private String finishStatusName;
+    /**
+     * 手工下发标志
+     */
+    @ApiModelProperty(value = "手工下发标志,字典值3 为手工下发")
+    private Integer source = 3;
+
 }

@@ -314,21 +314,28 @@
         </if>
     </select>
     <select id="getIndexPatrolList" resultType="com.aiurt.boot.statistics.model.PatrolIndexTask">
-        SELECT pts.station_code, cs.station_name, cs.line_code, cs.line_name, GROUP_CONCAT( pt.`code` ) taskCode
+        SELECT sub.*
+        FROM
+        ( SELECT
+        pts.station_code,
+        cs.station_name,
+        cs.line_code,
+        cs.line_name,
+        GROUP_CONCAT( pt.`code` ) taskCode,
+        <if test="">
+            IF(GROUP_CONCAT(DISTINCT pt.`status`) REGEXP #{regexp}, 1, 0) finishStatus
+        </if>
         FROM patrol_task pt
         JOIN patrol_task_station pts ON pt.`code` = pts.task_code
         JOIN cs_station cs ON pts.station_code = cs.station_code
         WHERE pt.del_flag = 0
-        <if test="condition.stationCode != null and condition.stationCode != ''">
-            AND pts.station_code = #{condition.stationCode}
-        </if>
-        <if test="condition.lineCode != null and condition.lineCode != ''">
-            AND cs.line_code = #{condition.lineCode}
-        </if>
         <if test="condition.startDate != null and condition.endDate != null">
             AND DATE_FORMAT( pt.patrol_date, '%Y-%m-%d' )
             BETWEEN DATE_FORMAT( #{condition.startDate}, '%Y-%m-%d' )
             AND DATE_FORMAT( #{condition.endDate}, '%Y-%m-%d')
+        </if>
+        <if test="condition.source != null">
+            AND (pt.source IS NULL OR pt.source != #{condition.source})
         </if>
         <if test="condition.status != null and condition.status.length>0">
             AND pt.`status` IN
@@ -336,20 +343,43 @@
                 #{item}
             </foreach>
         </if>
+        <if test="condition.stationCode != null and condition.stationCode != ''">
+            AND pts.station_code = #{condition.stationCode}
+        </if>
+        <if test="condition.codeList != null and condition.codeList.size>0">
+            AND pts.station_code IN
+            <foreach collection="condition.codeList" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        <if test="condition.lineCode != null and condition.lineCode != ''">
+            AND cs.line_code = #{condition.lineCode}
+        </if>
         GROUP BY
         pts.station_code
+        ) sub
+        <if test="condition.finishStatus != null">
+            where finishStatus = #{condition.finishStatus}
+        </if>
+
     </select>
     <select id="getIndexTaskList" resultType="com.aiurt.boot.statistics.model.IndexTaskInfo">
         SELECT pt.`name`, pt.abnormal_state, pt.`code`, pt.`status`, pt.submit_time
         FROM patrol_task pt
         WHERE pt.del_flag = 0
-        <if test="condition.state != null">
-            AND pt.abnormal_state = #{condition.state}
-        </if>
         <if test="condition.startDate != null and condition.endDate != null">
             AND DATE_FORMAT( pt.patrol_date, '%Y-%m-%d' )
             BETWEEN DATE_FORMAT( #{condition.startDate}, '%Y-%m-%d' )
             AND DATE_FORMAT( #{condition.endDate}, '%Y-%m-%d')
+        </if>
+        <if test="condition.state != null">
+            AND pt.abnormal_state = #{condition.state}
+        </if>
+        <if test="condition.taskCode != null and condition.taskCode.size>0">
+            AND pt.`code` IN
+            <foreach collection="condition.taskCode" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
         </if>
         <if test="condition.stationCode != null and condition.stationCode != ''">
             AND pt.`code` IN ( SELECT task_code FROM patrol_task_station WHERE station_code = #{condition.stationCode})
@@ -361,11 +391,27 @@
         <if test="condition.orgCode != null and condition.orgCode != ''">
             AND pt.`code` IN ( SELECT task_code FROM patrol_task_organization WHERE org_code = #{condition.orgCode})
         </if>
-        <if test="condition.taskCode != null and condition.taskCode.size>0">
-            AND pt.`code` IN
-            <foreach collection="condition.taskCode" item="item" open="(" separator="," close=")">
-                #{item}
-            </foreach>
+    </select>
+    <select id="getStationCodeUnfinish" resultType="java.lang.String">
+        SELECT DISTINCT pts.station_code
+        FROM patrol_task pt
+        join patrol_task_station pts on pt.`code` = pts.task_code
+        AND pts.del_flag=0
+        WHERE pt.del_flag = 0
+        <choose>
+            <when test="finishStatus != null and 0==finishStatus">
+                AND pt.`status` != 7
+            </when>
+            <when test="finishStatus != null and 1==finishStatus">
+                AND (SELECT count(*) FROM patrol_task_station WHERE station_code = pts.station_code)=
+                (SELECT count(*) FROM patrol_task_station pts JOIN patrol_task pt ON pts.task_code = pt.`code` WHERE
+                station_code = pts.station_code AND pt.`status` =7)
+            </when>
+        </choose>
+        <if test="startDate != null and endDate != null">
+            AND DATE_FORMAT( pt.patrol_date, '%Y-%m-%d' )
+            BETWEEN DATE_FORMAT( #{startDate}, '%Y-%m-%d' )
+            AND DATE_FORMAT( #{endDate}, '%Y-%m-%d')
         </if>
     </select>
 </mapper>
