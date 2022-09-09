@@ -1,5 +1,6 @@
 package com.aiurt.modules.dailyschedule.service.impl;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.modules.dailyschedule.entity.DailySchedule;
 import com.aiurt.modules.dailyschedule.mapper.DailyScheduleMapper;
@@ -12,6 +13,7 @@ import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -58,6 +60,9 @@ public class DailyScheduleServiceImpl extends ServiceImpl<DailyScheduleMapper, D
     public Map<String, List<DailySchedule>> queryDailyScheduleList(Integer year, Integer month) {
         LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         List<DailySchedule> dailyScheduleList = dailyScheduleMapper.queryDailyScheduleList(year, month, null, loginUser.getId());
+        if (CollUtil.isEmpty(dailyScheduleList)) {
+            return new HashMap<>(16);
+        }
         dealUserInfo(dailyScheduleList);
         Map<String, List<DailySchedule>> map = dailyScheduleList.stream().collect(Collectors.groupingBy(DailySchedule::getAddTimeAlias));
         return map;
