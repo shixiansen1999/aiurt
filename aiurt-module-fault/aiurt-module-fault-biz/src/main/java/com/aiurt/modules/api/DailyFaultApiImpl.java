@@ -6,7 +6,6 @@ import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.aiurt.modules.fault.entity.Fault;
 import com.aiurt.modules.index.mapper.FaultCountMapper;
-import com.aiurt.modules.index.service.IFaultCountService;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.*;
@@ -18,8 +17,6 @@ import java.util.*;
  * @date: 2022-09-09 15:11
  */
 public class DailyFaultApiImpl implements DailyFaultApi{
-    @Autowired
-    private IFaultCountService faultCountService;
 
     @Autowired
     private FaultCountMapper faultCountMapper;

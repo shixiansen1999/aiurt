@@ -27,15 +27,14 @@ public class FaultTimeoutLevelReq {
     @NotNull(message = "结束时间不能为空")
     private Date endTime;
 
-    @ApiModelProperty(value = "故障超时等级")
-    @NotNull(message = "结束时间不能为空")
+    @ApiModelProperty(value = "故障超时等级:1.一级故障 2.二级故障 3,三级故障")
+    @NotNull(message = "故障等级不能为空")
     Integer level;
 
     @ApiModelProperty(value = "故障状态")
     private Integer faultStatus;
 
     /**故障级别*/
-    @Excel(name = "故障级别", width = 15)
     @ApiModelProperty(value = "故障级别")
     @Dict(dictTable = "fault_level", dicCode = "code", dicText = "name")
     private String faultLevel;
