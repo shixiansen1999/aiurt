@@ -476,7 +476,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         wrapper.lambda().eq(PatrolTaskStandard::getTaskId, id);
         List<PatrolTaskStandard> list = patrolTaskStandardMapper.selectList(wrapper);
         // 专业编码
-            List<String> majorInfo = list.stream().map(PatrolTaskStandard::getProfessionCode).distinct().collect(Collectors.toList());
+        List<String> majorInfo = list.stream().map(PatrolTaskStandard::getProfessionCode).distinct().collect(Collectors.toList());
         // 子系统编码
         List<String> subSystemInfo = list.stream().map(PatrolTaskStandard::getSubsystemCode).distinct().collect(Collectors.toList());
 
@@ -530,6 +530,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         } else {
             patrolTask.setStatus(PatrolConstant.TASK_COMPLETE);
             patrolTask.setAuditorRemark(remark);
+            patrolTask.setAuditorTime(new Date());
         }
         int updateById = patrolTaskMapper.updateById(patrolTask);
         return updateById;

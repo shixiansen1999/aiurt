@@ -1,26 +1,18 @@
 package com.aiurt.boot.statistics.service;
 
-import cn.hutool.core.collection.CollectionUtil;
-import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.constant.PatrolConstant;
-import com.aiurt.boot.statistics.dto.IndexTaskDTO;
-import com.aiurt.boot.statistics.dto.IndexOrgDTO;
-import com.aiurt.boot.statistics.dto.IndexStationDTO;
-import com.aiurt.boot.statistics.dto.IndexUserDTO;
-import com.aiurt.boot.statistics.model.IndexTaskInfo;
-import com.aiurt.boot.statistics.model.PatrolCondition;
-import com.aiurt.boot.statistics.model.PatrolIndexTask;
-import com.aiurt.boot.statistics.model.PatrolSituation;
+import com.aiurt.boot.statistics.dto.*;
+import com.aiurt.boot.statistics.model.*;
 import com.aiurt.boot.task.entity.PatrolTask;
 import com.aiurt.boot.task.entity.PatrolTaskUser;
 import com.aiurt.boot.task.mapper.*;
+import com.aiurt.boot.task.param.PatrolTaskParam;
 import com.aiurt.boot.task.service.IPatrolTaskService;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.core.metadata.OrderItem;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.DictModel;
@@ -255,6 +247,42 @@ public class PatrolStatisticsService {
             l.setAbnormalDictName(abnormalDictName);
             l.setStatusDictName(statusDictName);
         });
+        return pageList;
+    }
+
+    /**
+     * 首页-统计日程的巡视完成数
+     *
+     * @param year
+     * @param month
+     * @return
+     */
+    public Map<String, Integer> getPatrolFinishNumber(int year, int month) {
+        Map<String, Integer> map = new HashMap<>();
+        Calendar instance = Calendar.getInstance();
+        // 当月的第一天
+//        instance.set
+        // 当月的最后一天
+
+        instance.set(year, month - 1, 1);
+        List<Date> allDate = new ArrayList<>();
+//        Date first = DateUtil.
+        while (instance.get(Calendar.MONTH) == month - 1) {
+            String date = DateUtil.format(instance.getTime(), "yyyy/MM/dd");
+            instance.add(Calendar.DATE, 1);
+        }
+        return map;
+    }
+
+    /**
+     * 获取首页的日程的巡检列表
+     *
+     * @param page
+     * @param indexScheduleDTO
+     * @return
+     */
+    public IPage<ScheduleTask> getScheduleList(Page<ScheduleTask> page, IndexScheduleDTO indexScheduleDTO) {
+        IPage<ScheduleTask> pageList = patrolTaskMapper.getScheduleList(page, indexScheduleDTO);
         return pageList;
     }
 }

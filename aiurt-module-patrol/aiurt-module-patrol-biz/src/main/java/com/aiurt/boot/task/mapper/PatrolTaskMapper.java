@@ -2,10 +2,12 @@ package com.aiurt.boot.task.mapper;
 
 import com.aiurt.boot.constant.PatrolConstant;
 import com.aiurt.boot.standard.dto.StationDTO;
+import com.aiurt.boot.statistics.dto.IndexScheduleDTO;
 import com.aiurt.boot.statistics.dto.IndexTaskDTO;
 import com.aiurt.boot.statistics.model.IndexTaskInfo;
 import com.aiurt.boot.statistics.model.PatrolCondition;
 import com.aiurt.boot.statistics.model.PatrolIndexTask;
+import com.aiurt.boot.statistics.model.ScheduleTask;
 import com.aiurt.boot.task.dto.PatrolTaskDTO;
 import com.aiurt.boot.task.dto.PatrolTaskUserContentDTO;
 import com.aiurt.boot.task.dto.SubsystemDTO;
@@ -182,4 +184,12 @@ public interface PatrolTaskMapper extends BaseMapper<PatrolTask> {
      * @return
      */
     List<String> getStationCodeUnfinish(@Param("startDate")Date startDate,@Param("endDate") Date endDate,@Param("finishStatus")Integer finishStatus);
+
+    /**
+     * 获取首页的日程的巡检列表
+     * @param page
+     * @param indexScheduleDTO
+     * @return
+     */
+    IPage<ScheduleTask> getScheduleList(Page<ScheduleTask> page,@Param("condition") IndexScheduleDTO indexScheduleDTO);
 }

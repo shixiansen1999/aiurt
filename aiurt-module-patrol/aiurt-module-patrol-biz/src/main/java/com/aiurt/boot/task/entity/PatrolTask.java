@@ -157,6 +157,14 @@ public class PatrolTask implements Serializable {
     @ApiModelProperty(value = "审核用户ID")
     private java.lang.String auditorId;
     /**
+     * 审核时间
+     */
+    @Excel(name = "审核时间", width = 15, format = "yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd HH:mm:ss")
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @ApiModelProperty(value = "审核时间(yyyy-MM-dd HH:mm:ss)")
+    private java.util.Date auditorTime;
+    /**
      * 审核备注信息
      */
     @Excel(name = "审核备注信息", width = 15)

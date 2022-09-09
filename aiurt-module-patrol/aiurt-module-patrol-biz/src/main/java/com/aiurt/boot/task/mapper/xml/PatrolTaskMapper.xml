@@ -412,4 +412,56 @@
             AND DATE_FORMAT( #{endDate}, '%Y-%m-%d')
         </if>
     </select>
+    <select id="getScheduleList" resultType="com.aiurt.boot.statistics.model.ScheduleTask">
+        SELECT
+        pt.`name`,
+        pt.`code`,
+        pt.`status`,
+        pt.patrol_date,
+        pt.submit_time,
+        GROUP_CONCAT( DISTINCT ptu.user_name ) userInfo,
+        GROUP_CONCAT( DISTINCT cs.station_name ) stationInfo,
+        GROUP_CONCAT( DISTINCT sd.depart_name ) orgInfo
+        FROM
+        patrol_task pt
+        LEFT JOIN patrol_task_user ptu ON pt.`code` = ptu.task_code
+        AND ptu.del_flag = 0
+        LEFT JOIN patrol_task_station pts ON pt.`code` = pts.task_code
+        AND pts.del_flag = 0
+        LEFT JOIN cs_station cs ON pts.station_code = cs.station_code
+        AND cs.del_flag = 0
+        LEFT JOIN patrol_task_organization pto ON pt.`code` = pto.task_code
+        AND pto.del_flag = 0
+        LEFT JOIN sys_depart sd ON pto.org_code = sd.org_code
+        AND sd.del_flag = 0
+        WHERE
+        pt.del_flag = 0
+        <if test="condition.date != null">
+            AND DATE_FORMAT( pt.patrol_date, '%Y-%m-%d' ) = DATE_FORMAT(#{condition.date} , '%Y-%m-%d' )
+        </if>
+        <if test="condition.source != null">
+            and pt.source = #{condition.source}
+        </if>
+        <if test="condition.stationCode != null and condition.stationCode != ''">
+            <choose>
+                <when test="condition.level != null and condition.level == 1 ">
+                    and pt.code in (
+                    SELECT pps.task_code
+                    FROM patrol_task_station pps
+                    JOIN cs_station cs ON pps.station_code = cs.station_code
+                    AND cs.del_flag = 0
+                    WHERE pps.del_flag = 0 AND cs.line_code = #{patrolTask.stationCode}
+                    )
+                </when>
+                <when test="patrolTask.level != null and patrolTask.level == 2 ">
+                    and pt.code in (
+                    SELECT pps.task_code
+                    FROM patrol_task_station pps
+                    WHERE pps.del_flag = 0 and pps.station_code = #{patrolTask.stationCode}
+                    )
+                </when>
+            </choose>
+        </if>
+        GROUP BY pt.`code`
+    </select>
 </mapper>

@@ -1,10 +1,8 @@
 package com.aiurt.boot.statistics.controller;
 
+import com.aiurt.boot.statistics.dto.IndexScheduleDTO;
 import com.aiurt.boot.statistics.dto.IndexTaskDTO;
-import com.aiurt.boot.statistics.model.IndexTaskInfo;
-import com.aiurt.boot.statistics.model.PatrolCondition;
-import com.aiurt.boot.statistics.model.PatrolIndexTask;
-import com.aiurt.boot.statistics.model.PatrolSituation;
+import com.aiurt.boot.statistics.model.*;
 import com.aiurt.boot.statistics.service.PatrolStatisticsService;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -79,4 +77,21 @@ public class PatrolStatisticsController {
         IPage<IndexTaskInfo> pageList = patrolStatisticsService.getIndexTaskList(page, abnormalDTO);
         return Result.ok(pageList);
     }
+
+    /**
+     * 获取首页的日程的巡检列表
+     *
+     * @return
+     */
+    @AutoLog(value = "首页-获取首页的日程的巡检列表", operateType = 1, operateTypeAlias = "查询", permissionUrl = "")
+    @ApiOperation(value = "首页-获取首页的日程的巡检列表", notes = "首页-获取首页的日程的巡检列表")
+    @RequestMapping("/getScheduleList")
+    public Result<IPage<ScheduleTask>> getScheduleList(@RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
+                                                       @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize,
+                                                       @Validated IndexScheduleDTO indexScheduleDTO) {
+        Page<ScheduleTask> page = new Page<>(pageNo, pageSize);
+        IPage<ScheduleTask> pageList = patrolStatisticsService.getScheduleList(page, indexScheduleDTO);
+        return Result.ok(pageList);
+    }
+
 }
