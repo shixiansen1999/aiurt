@@ -107,7 +107,7 @@ public class IndexPlanService {
         return result;
     }
 
-    /**
+    /** 获取首页的检修概况详情
      * @param taskDetailsReq 查询条件
      * @return
      */

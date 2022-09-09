@@ -15,11 +15,11 @@ import java.util.Date;
  */
 @Data
 public class TaskDetailsReq {
-    @ApiModelProperty(value = "开始时间",required = true)
+    @ApiModelProperty(value = "开始时间yyyy-MM-dd",required = true)
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     @NotNull(message = "开始时间不能为空")
     private java.util.Date startTime;
-    @ApiModelProperty(value = "结束时间",required = true)
+    @ApiModelProperty(value = "结束时间yyyy-MM-dd",required = true)
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     @NotNull(message = "结束时间不能为空")
     private Date endTime;
