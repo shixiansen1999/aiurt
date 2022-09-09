@@ -2,22 +2,24 @@ package com.aiurt.modules.schedule.controller;
 
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
-import com.aiurt.modules.schedule.mapper.ScheduleRecordMapper;
-import com.aiurt.modules.schedule.service.IScheduleHolidaysService;
-import com.aiurt.modules.schedule.service.IScheduleItemService;
-import com.aiurt.modules.schedule.service.IScheduleLogService;
-import com.aiurt.modules.schedule.service.IScheduleRecordService;
-import com.aiurt.modules.schedule.entity.ScheduleHolidays;
-import com.aiurt.modules.schedule.entity.ScheduleItem;
-import com.aiurt.modules.schedule.entity.ScheduleLog;
-import com.aiurt.modules.schedule.entity.ScheduleRecord;
-import com.aiurt.modules.schedule.model.DayScheduleModel;
-import com.aiurt.modules.schedule.model.ScheduleRecordModel;
-import com.aiurt.modules.schedule.vo.ScheduleCalendarVo;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.constant.RoleConstant;
 import com.aiurt.common.util.DateUtils;
 import com.aiurt.common.util.oConvertUtils;
+import com.aiurt.modules.schedule.dto.ScheduleRecordDTO;
+import com.aiurt.modules.schedule.dto.SysUserScheduleDTO;
+import com.aiurt.modules.schedule.entity.ScheduleHolidays;
+import com.aiurt.modules.schedule.entity.ScheduleItem;
+import com.aiurt.modules.schedule.entity.ScheduleLog;
+import com.aiurt.modules.schedule.entity.ScheduleRecord;
+import com.aiurt.modules.schedule.mapper.ScheduleRecordMapper;
+import com.aiurt.modules.schedule.model.DayScheduleModel;
+import com.aiurt.modules.schedule.model.ScheduleRecordModel;
+import com.aiurt.modules.schedule.service.IScheduleHolidaysService;
+import com.aiurt.modules.schedule.service.IScheduleItemService;
+import com.aiurt.modules.schedule.service.IScheduleLogService;
+import com.aiurt.modules.schedule.service.IScheduleRecordService;
+import com.aiurt.modules.schedule.vo.ScheduleCalendarVo;
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -25,6 +27,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.apache.shiro.SecurityUtils;
@@ -414,5 +417,21 @@ public class ScheduleRecordController {
         }
 
         return result;
+    }
+
+
+    /**
+     * 首页-根据日期查询班次情况
+     * @param scheduleRecordDTO
+     * @return
+     */
+    @AutoLog(value = "首页-根据日期查询班次情况", operateType = 1, operateTypeAlias = "查询", permissionUrl = "")
+    @ApiOperation(value = "首页-根据日期查询班次情况", notes = "首页-根据日期查询班次情况")
+    @RequestMapping(value = "/getStaffOnDuty", method = RequestMethod.GET)
+    public Result<IPage<SysUserScheduleDTO>> getStaffOnDuty(@ApiParam(name = "scheduleRecordDTO", value = "查询条件") @RequestParam("scheduleRecordDTO")ScheduleRecordDTO scheduleRecordDTO
+    ) {
+        Page<SysUserScheduleDTO> page = new Page<>(scheduleRecordDTO.getPageNo(),scheduleRecordDTO.getPageSize());
+        IPage<SysUserScheduleDTO> maintenanceSituation = scheduleRecordService.getStaffOnDuty(page, scheduleRecordDTO);
+        return Result.OK(maintenanceSituation);
     }
 }

@@ -3,6 +3,7 @@ package com.aiurt.boot.index.service;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.map.MapUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.constant.DictConstant;
@@ -236,7 +237,7 @@ public class IndexPlanService {
         int dayNum = getMonthDays(year, month);
 
         // 检修(key是日期，value是数量)
-        Map<String, Integer> inspectionMap = this.inspectionNumByDay(beginDate, dayNum);
+        Map<String, Integer> inspectionMap =  MapUtil.isNotEmpty(this.inspectionNumByDay(beginDate, dayNum))?this.inspectionNumByDay(beginDate, dayNum):new HashMap<>(32);
         // 巡检
         Map<String, Integer> patrolMap = new HashMap<>(32);
         // 故障
@@ -244,7 +245,7 @@ public class IndexPlanService {
         // 施工
         Map<String, Integer> constructionMap = new HashMap<>(32);
         // 日程信息
-        Map<String, List<DailySchedule>> scheduleMap = baseApi.queryDailyScheduleList(year, month);
+        Map<String, List<DailySchedule>> scheduleMap = MapUtil.isNotEmpty(baseApi.queryDailyScheduleList(year, month))?baseApi.queryDailyScheduleList(year, month):new HashMap<>(32);
 
         // 组装数据
         if (ObjectUtil.isNotEmpty(beginDate)) {

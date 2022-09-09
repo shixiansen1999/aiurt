@@ -1,9 +1,13 @@
 package com.aiurt.modules.schedule.service;
 
 
+import com.aiurt.modules.schedule.dto.ScheduleRecordDTO;
+import com.aiurt.modules.schedule.dto.SysUserScheduleDTO;
 import com.aiurt.modules.schedule.entity.ScheduleRecord;
 import com.aiurt.modules.schedule.model.ScheduleRecordModel;
 import com.aiurt.modules.schedule.model.ScheduleUser;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 
 import org.jeecg.common.system.vo.LoginUser;
@@ -46,5 +50,11 @@ public interface IScheduleRecordService extends IService<ScheduleRecord> {
      */
     Integer getZhiBanNum(Map map);
 
-
+    /**
+     * 根据日期查询班次情况
+     * @param page
+     * @param scheduleRecordDTO
+     * @return
+     */
+    IPage<SysUserScheduleDTO> getStaffOnDuty(Page<SysUserScheduleDTO> page, ScheduleRecordDTO scheduleRecordDTO);
 }

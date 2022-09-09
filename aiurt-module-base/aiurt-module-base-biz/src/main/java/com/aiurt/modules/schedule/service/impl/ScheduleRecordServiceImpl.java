@@ -3,12 +3,16 @@ package com.aiurt.modules.schedule.service.impl;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 
+import com.aiurt.modules.schedule.dto.ScheduleRecordDTO;
+import com.aiurt.modules.schedule.dto.SysUserScheduleDTO;
 import com.aiurt.modules.schedule.mapper.ScheduleRecordMapper;
 ;
 import com.aiurt.modules.schedule.service.IScheduleRecordService;
 import com.aiurt.modules.schedule.entity.ScheduleRecord;
 import com.aiurt.modules.schedule.model.ScheduleRecordModel;
 import com.aiurt.modules.schedule.model.ScheduleUser;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.stereotype.Service;
@@ -103,5 +107,16 @@ public class ScheduleRecordServiceImpl extends ServiceImpl<ScheduleRecordMapper,
         return this.baseMapper.getZhiBanNum(map);
     }
 
+    /**
+     * 根据日期查询班次情况
+     *
+     * @param page
+     * @param scheduleRecordDTO
+     * @return
+     */
+    @Override
+    public IPage<SysUserScheduleDTO> getStaffOnDuty(Page<SysUserScheduleDTO> page, ScheduleRecordDTO scheduleRecordDTO) {
+        return page;
+    }
 
 }
