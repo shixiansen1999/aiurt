@@ -2,11 +2,14 @@ package com.aiurt.modules.schedule.mapper;
 
 
 
+import com.aiurt.modules.schedule.dto.ScheduleRecordDTO;
+import com.aiurt.modules.schedule.dto.SysUserScheduleDTO;
 import com.aiurt.modules.schedule.entity.ScheduleRecord;
 import com.aiurt.modules.schedule.model.ScheduleRecordModel;
 import com.aiurt.modules.schedule.model.ScheduleUser;
 import com.aiurt.modules.schedule.model.SysUserScheduleModel;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.ibatis.annotations.Param;
 import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.stereotype.Repository;
@@ -63,4 +66,12 @@ public interface ScheduleRecordMapper extends BaseMapper<ScheduleRecord> {
      * @return
      */
     List<String> getRoleCodeById(String id);
+
+    /**
+     * 根据日期条件查询班次情况
+     * @param page
+     * @param scheduleRecordDTO
+     * @return
+     */
+    List<SysUserScheduleDTO> getStaffOnDuty(@Param("page") Page<SysUserScheduleDTO> page,@Param("scheduleRecordDTO") ScheduleRecordDTO scheduleRecordDTO);
 }

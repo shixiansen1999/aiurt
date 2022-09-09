@@ -8,6 +8,7 @@ import com.aiurt.modules.workarea.entity.WorkArea;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.ibatis.annotations.Param;
+import org.jeecg.common.system.vo.SiteModel;
 
 import java.util.List;
 
@@ -57,4 +58,11 @@ public interface WorkAreaMapper extends BaseMapper<WorkArea> {
      * @return
      */
     List<SubSystem> getMajorAllSubSystem(String majorCode);
+
+    /**
+     * 根据组织机构查找对应的工区信息
+     * @param orgCode
+     * @return
+     */
+    List<SiteModel> getSiteByOrgCode(String orgCode);
 }

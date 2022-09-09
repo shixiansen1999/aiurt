@@ -34,6 +34,7 @@ import com.aiurt.modules.system.entity.*;
 import com.aiurt.modules.system.mapper.*;
 import com.aiurt.modules.system.service.*;
 import com.aiurt.modules.system.util.SecurityUtil;
+import com.aiurt.modules.workarea.mapper.WorkAreaMapper;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -145,6 +146,9 @@ public class SysBaseApiImpl implements ISysBaseAPI {
 
     @Autowired
     private DeviceMapper deviceMapper;
+
+    @Autowired
+    private WorkAreaMapper workAreaMapper;
 
     @Override
     @Cacheable(cacheNames = CacheConstant.SYS_USERS_CACHE, key = "#username")
@@ -886,7 +890,7 @@ public class SysBaseApiImpl implements ISysBaseAPI {
     @Override
     public Set<String> getUserPermissionSet(String username) {
         Set<String> permissionSet = new HashSet<>();
-        List<SysPermission> permissionList = sysPermissionMapper.queryByUser(username,null);
+        List<SysPermission> permissionList = sysPermissionMapper.queryByUser(username, null);
         for (SysPermission po : permissionList) {
 //			// TODO URL规则有问题？
 //			if (oConvertUtils.isNotEmpty(po.getUrl())) {
@@ -974,7 +978,7 @@ public class SysBaseApiImpl implements ISysBaseAPI {
     @Override
     public LoginUser queryUser(String username) {
         LambdaQueryWrapper<SysUser> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(SysUser::getUsername,username);
+        queryWrapper.eq(SysUser::getUsername, username);
         SysUser sysUser = userMapper.selectOne(queryWrapper);
         LoginUser loginUser = new LoginUser();
         BeanUtils.copyProperties(sysUser, loginUser);
@@ -1066,7 +1070,7 @@ public class SysBaseApiImpl implements ISysBaseAPI {
      * @param busType
      * @param busId
      */
-    private void sendBusAnnouncement(String fromUser, String toUser, String title, String msgContent, String setMsgCategory, String busType, String busId,String level,Date startTime,Date endTime,String priority) {
+    private void sendBusAnnouncement(String fromUser, String toUser, String title, String msgContent, String setMsgCategory, String busType, String busId, String level, Date startTime, Date endTime, String priority) {
         SysAnnouncement announcement = new SysAnnouncement();
         announcement.setTitile(title);
         announcement.setMsgContent(msgContent);
@@ -1240,7 +1244,7 @@ public class SysBaseApiImpl implements ISysBaseAPI {
     @Override
     public List<LoginUser> getUserByDepIds(List<String> deptCodes) {
         List<LoginUser> list = new ArrayList<>();
-        if(CollUtil.isNotEmpty(deptCodes)){
+        if (CollUtil.isNotEmpty(deptCodes)) {
             List<SysUser> userList = userMapper.selectList(new QueryWrapper<SysUser>().in("org_code", deptCodes).eq("status", 1).eq("del_flag", 0));
             for (SysUser user : userList) {
                 LoginUser loginUser = new LoginUser();
@@ -1282,23 +1286,25 @@ public class SysBaseApiImpl implements ISysBaseAPI {
 
     /**
      * 更新文件业务id
-     * @param id 文件主键即文件路径
-     * @param businessId 业务数据
+     *
+     * @param id                文件主键即文件路径
+     * @param businessId        业务数据
      * @param businessTableName 业务模块
      */
     @Override
     public void updateSysAttachmentBiz(String id, String businessId, String businessTableName) {
         LambdaUpdateWrapper<SysAttachment> queryWrapper = new LambdaUpdateWrapper<>();
-        id = StrUtil.contains(id, '?')? id.substring(0, id.indexOf('?')) : id;
+        id = StrUtil.contains(id, '?') ? id.substring(0, id.indexOf('?')) : id;
         queryWrapper.eq(SysAttachment::getId, id).set(StrUtil.isNotBlank(businessId), SysAttachment::getBusinessId, businessId)
-                .set(StrUtil.isNotBlank(businessTableName), SysAttachment::getBusinessTableName,businessTableName);
+                .set(StrUtil.isNotBlank(businessTableName), SysAttachment::getBusinessTableName, businessTableName);
         sysAttachmentService.update(queryWrapper);
     }
 
     /**
      * 批量更新文件业务id
-     * @param idList 文件主键即文件路径
-     * @param businessId 业务数据
+     *
+     * @param idList            文件主键即文件路径
+     * @param businessId        业务数据
      * @param businessTableName 业务模块
      */
     @Override
@@ -1312,7 +1318,7 @@ public class SysBaseApiImpl implements ISysBaseAPI {
             return id;
         }).collect(Collectors.toList());
         queryWrapper.in(SysAttachment::getId, list).set(StrUtil.isNotBlank(businessId), SysAttachment::getBusinessId, businessId)
-                .set(StrUtil.isNotBlank(businessTableName), SysAttachment::getBusinessTableName,businessTableName);
+                .set(StrUtil.isNotBlank(businessTableName), SysAttachment::getBusinessTableName, businessTableName);
         sysAttachmentService.update(queryWrapper);
     }
 
@@ -1342,17 +1348,19 @@ public class SysBaseApiImpl implements ISysBaseAPI {
 
     @Override
     public List<CsStation> queryAllStation() {
-        List<CsStation> stationList = csStationMapper.selectList(new LambdaQueryWrapper<CsStation>().eq(CsStation::getDelFlag, CommonConstant.DEL_FLAG_0));return stationList; }
+        List<CsStation> stationList = csStationMapper.selectList(new LambdaQueryWrapper<CsStation>().eq(CsStation::getDelFlag, CommonConstant.DEL_FLAG_0));
+        return stationList;
+    }
 
     @Override
     public List<DeviceTypeTable> selectList(String majorCode, String systemCode, List<String> deviceCode) {
 
         QueryWrapper<DeviceType> deviceTypeQueryWrapper = new QueryWrapper<DeviceType>();
         deviceTypeQueryWrapper.eq("del_flag", CommonConstant.DEL_FLAG_0);
-        if(majorCode != null && !"".equals(majorCode)){
+        if (majorCode != null && !"".equals(majorCode)) {
             deviceTypeQueryWrapper.eq("major_code", majorCode);
         }
-        if(systemCode != null && !"".equals(systemCode)){
+        if (systemCode != null && !"".equals(systemCode)) {
             deviceTypeQueryWrapper.eq("system_code", systemCode);
         }
         deviceTypeQueryWrapper.orderByDesc("create_time");
@@ -1385,15 +1393,16 @@ public class SysBaseApiImpl implements ISysBaseAPI {
         return deviceTypeTree;
     }
 
-    public List<DeviceTypeTable> getDeviceTypeTree(List<DeviceTypeTable> list,String pid) {
+    public List<DeviceTypeTable> getDeviceTypeTree(List<DeviceTypeTable> list, String pid) {
         List<DeviceTypeTable> children = list.stream().filter(deviceTypeTable -> deviceTypeTable.getPid().equals(pid)).collect(Collectors.toList());
-        if(CollectionUtil.isNotEmpty(children)){
+        if (CollectionUtil.isNotEmpty(children)) {
             for (DeviceTypeTable deviceTypeTable : children) {
-                deviceTypeTable.setChildren(getDeviceTypeTree(list,deviceTypeTable.getId()));
+                deviceTypeTable.setChildren(getDeviceTypeTree(list, deviceTypeTable.getId()));
             }
         }
         return children;
     }
+
     @Override
     public List<CsUserDepartModel> getDepartByUserId(String id) {
         return iCsUserDepartService.getDepartByUserId(id);
@@ -1415,7 +1424,7 @@ public class SysBaseApiImpl implements ISysBaseAPI {
     }
 
     public List<SysUser> getOrgUsersByOrgid(String orgId) {
-        return userMapper.selectList(new QueryWrapper<SysUser>().eq("org_id",orgId));
+        return userMapper.selectList(new QueryWrapper<SysUser>().eq("org_id", orgId));
     }
 
     @Override
@@ -1425,6 +1434,7 @@ public class SysBaseApiImpl implements ISysBaseAPI {
 
     /**
      * 添加定时任务
+     *
      * @param quartzJobDTO
      */
     @Override
@@ -1437,6 +1447,7 @@ public class SysBaseApiImpl implements ISysBaseAPI {
 
     /**
      * 删除定时任务
+     *
      * @param quartzJobDTO
      */
     @Override
@@ -1456,22 +1467,46 @@ public class SysBaseApiImpl implements ISysBaseAPI {
 
     @Override
     public String getPosition(String code) {
-        String name =null;
-        String lineName= csStationMapper.getLineName(code);
-        String stationName= csStationMapper.getStationName(code);
-        String positionName= csStationMapper.getPositionName(code);
-        if(ObjectUtil.isNotEmpty(lineName))
-        {
-            name= lineName;
+        String name = null;
+        String lineName = csStationMapper.getLineName(code);
+        String stationName = csStationMapper.getStationName(code);
+        String positionName = csStationMapper.getPositionName(code);
+        if (ObjectUtil.isNotEmpty(lineName)) {
+            name = lineName;
         }
-        if(ObjectUtil.isNotEmpty(stationName))
-        {
+        if (ObjectUtil.isNotEmpty(stationName)) {
             name = stationName;
         }
-        if(ObjectUtil.isNotEmpty(positionName))
-        {
+        if (ObjectUtil.isNotEmpty(positionName)) {
             name = positionName;
         }
         return name;
+    }
+
+    /**
+     * 通过用户id查询角色名称
+     *
+     * @param userId
+     * @return
+     */
+    @Override
+    public List<String> getRoleNamesById(String userId) {
+        List<String> roles = sysUserRoleMapper.getRoleName(userId);
+        return roles;
+    }
+
+    /**
+     * 通过部门编码查询工区信息
+     *
+     * @param orgCode
+     * @return
+     */
+    @Override
+    public List<SiteModel> getSiteByOrgCode(String orgCode) {
+        if (StrUtil.isEmpty(orgCode)) {
+            return new ArrayList<>();
+        }
+        List<SiteModel> result = workAreaMapper.getSiteByOrgCode(orgCode);
+        return result;
     }
 }

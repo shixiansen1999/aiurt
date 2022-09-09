@@ -432,4 +432,17 @@ public interface ISysBaseAPI extends CommonAPI {
      */
     public String getPosition(String code);
 
+    /**
+     * 通过用户id查询角色名称
+     * @param userId
+     * @return
+     */
+    List<String> getRoleNamesById(String userId);
+    /**
+     * 通过部门编码查询工区信息
+     * @param orgCode
+     * @return
+     */
+    List<SiteModel> getSiteByOrgCode(String orgCode);
+
 }

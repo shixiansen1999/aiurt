@@ -245,5 +245,30 @@
         inner join sys_role c on b.role_id = c.id
      where a.id = #{id}
     </select>
+    <select id="getStaffOnDuty" resultType="com.aiurt.modules.schedule.dto.SysUserScheduleDTO">
+     SELECT
+	sr.user_id AS userId,
+	sr.date AS date,
+	su.realname AS userName,
+	si.NAME AS itemName,
+	su.phone as telephone
+    FROM
+	schedule_record sr
+	INNER JOIN schedule_item si ON sr.item_id = si.id
+	INNER JOIN sys_user su ON sr.user_id = su.id
+    WHERE
+	DATE_FORMAT( sr.date, '%Y-%m-%d' ) =DATE_FORMAT( #{scheduleRecordDTO.startTime},'%Y-%m-%d')
+	AND sr.del_flag = 0
+	AND si.del_flag = 0
+	<if test="scheduleRecordDTO.name!=null and scheduleRecordDTO.name!=''">
+        AND  su.realname LIKE CONCAT('%', #{scheduleRecordDTO.name}, '%')
+    </if>
+    <if test="scheduleRecordDTO.shift!=null">
+        AND  sr.item_id #{scheduleRecordDTO.shift}
+    </if>
+    ORDER BY
+	sr.date,
+	sr.item_id
+    </select>
 
 </mapper>

@@ -1,26 +1,32 @@
 package com.aiurt.modules.schedule.service.impl;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
-
+import cn.hutool.core.util.StrUtil;
 import com.aiurt.modules.schedule.dto.ScheduleRecordDTO;
 import com.aiurt.modules.schedule.dto.SysUserScheduleDTO;
-import com.aiurt.modules.schedule.mapper.ScheduleRecordMapper;
-;
-import com.aiurt.modules.schedule.service.IScheduleRecordService;
 import com.aiurt.modules.schedule.entity.ScheduleRecord;
+import com.aiurt.modules.schedule.mapper.ScheduleRecordMapper;
 import com.aiurt.modules.schedule.model.ScheduleRecordModel;
 import com.aiurt.modules.schedule.model.ScheduleUser;
+import com.aiurt.modules.schedule.service.IScheduleRecordService;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.LoginUser;
+import org.jeecg.common.system.vo.SiteModel;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+
+;
 
 /**
  * @Description: schedule_record
@@ -31,10 +37,12 @@ import java.util.Map;
 @Service
 public class ScheduleRecordServiceImpl extends ServiceImpl<ScheduleRecordMapper, ScheduleRecord> implements IScheduleRecordService {
 
-//    @Autowired
+    //    @Autowired
 //    private ISysUserService sysUserService;
 //    @Autowired
 //    private ILineService lineService;
+    @Autowired
+    private ISysBaseAPI sysBaseAPI;
 
     @Override
     public List<ScheduleRecord> getScheduleRecordBySchedule(Integer scheduleId) {
@@ -43,7 +51,7 @@ public class ScheduleRecordServiceImpl extends ServiceImpl<ScheduleRecordMapper,
 
     @Override
     public List<ScheduleUser> getScheduleUserByDate(String date, String username) {
-        return this.baseMapper.getScheduleUserByDate(date,username);
+        return this.baseMapper.getScheduleUserByDate(date, username);
     }
 
     @Override
@@ -52,13 +60,13 @@ public class ScheduleRecordServiceImpl extends ServiceImpl<ScheduleRecordMapper,
     }
 
     @Override
-    public List<ScheduleRecordModel> getAllScheduleRecordsByMonth(String date,String orgId) {
-        return this.baseMapper.getAllScheduleRecordsByMonth(date,orgId);
+    public List<ScheduleRecordModel> getAllScheduleRecordsByMonth(String date, String orgId) {
+        return this.baseMapper.getAllScheduleRecordsByMonth(date, orgId);
     }
 
     @Override
     public List<LoginUser> getScheduleUserDataByDay(String day, String orgId) {
-        return this.baseMapper.getScheduleUserDataByDay(day,orgId);
+        return this.baseMapper.getScheduleUserDataByDay(day, orgId);
     }
 
     @Override
@@ -67,43 +75,45 @@ public class ScheduleRecordServiceImpl extends ServiceImpl<ScheduleRecordMapper,
     }
 
     @Override
-    public List<ScheduleRecordModel>getRecordListByDayAndUserIds(String date,List<String>userIds) {
-        return this.baseMapper.getRecordListByDayAndUserIds(date,userIds);
+    public List<ScheduleRecordModel> getRecordListByDayAndUserIds(String date, List<String> userIds) {
+        return this.baseMapper.getRecordListByDayAndUserIds(date, userIds);
     }
 
     @Override
-    public List<ScheduleRecord> getRecordListInDays(String userId,String startDate, String endDate) {
-        return this.baseMapper.getRecordListInDays(userId,startDate,endDate);
+    public List<ScheduleRecord> getRecordListInDays(String userId, String startDate, String endDate) {
+        return this.baseMapper.getRecordListInDays(userId, startDate, endDate);
     }
+
     @Override
-    public List<ScheduleUser> getScheduleUserByDateAndOrgCode(String date,String username, String orgCode) {
-        return this.baseMapper.getScheduleUserByDateAndOrgCode(date,username,orgCode);
+    public List<ScheduleUser> getScheduleUserByDateAndOrgCode(String date, String username, String orgCode) {
+        return this.baseMapper.getScheduleUserByDateAndOrgCode(date, username, orgCode);
     }
 
     @Override
     public List<ScheduleUser> getScheduleUserByDateAndOrgCodeAndOrgId(String date, String username, String orgCode, String orgId) {
         return this.baseMapper.getScheduleUserByDateAndOrgCodeAndOrgId(date, username, orgCode, orgId);
     }
+
     @Override
     public Integer getZhiBanNum(Map map) {
         if (ObjectUtil.isNotEmpty(map.get("lineId"))) {
             String lineCode = map.get("lineId").toString();
-         // CsLine line=lineService.getOne(new QueryWrapper<CsLine>().eq("line_code",lineCode));
+            // CsLine line=lineService.getOne(new QueryWrapper<CsLine>().eq("line_code",lineCode));
             // todo 后期修改
             List<String> banzuList = new ArrayList<>();
-           //List<String> banzuList = sysUserService.getBanzuListByLine(line.getId());
+            //List<String> banzuList = sysUserService.getBanzuListByLine(line.getId());
             if (banzuList != null && banzuList.size() > 0) {
-                String[] emp=new String[banzuList.size()];
-                int i=0;
-                for(String ce:banzuList){
-                    emp[i]=ce;
+                String[] emp = new String[banzuList.size()];
+                int i = 0;
+                for (String ce : banzuList) {
+                    emp[i] = ce;
                     i++;
                 }
                 map.put("orgIds", emp);
             }
         }
-        String today= DateUtil.format(new Date(),"yyyy-MM-dd");
-        map.put("today",today);
+        String today = DateUtil.format(new Date(), "yyyy-MM-dd");
+        map.put("today", today);
         return this.baseMapper.getZhiBanNum(map);
     }
 
@@ -116,7 +126,32 @@ public class ScheduleRecordServiceImpl extends ServiceImpl<ScheduleRecordMapper,
      */
     @Override
     public IPage<SysUserScheduleDTO> getStaffOnDuty(Page<SysUserScheduleDTO> page, ScheduleRecordDTO scheduleRecordDTO) {
-        return page;
+        if (ObjectUtil.isEmpty(scheduleRecordDTO) || ObjectUtil.isEmpty(scheduleRecordDTO.getStartTime())) {
+            return page;
+        }
+        // 根据日期条件查询班次情况
+        List<SysUserScheduleDTO> result = baseMapper.getStaffOnDuty(page, scheduleRecordDTO);
+
+        // 补充人员角色，工区，工区位置，工区负责人
+        if (CollUtil.isNotEmpty(result)) {
+            for (SysUserScheduleDTO sysUserScheduleDTO : result) {
+                // 角色
+                List<String> roleNamesByUsername = sysBaseAPI.getRoleNamesById(sysUserScheduleDTO.getUserId());
+                if (CollUtil.isNotEmpty(roleNamesByUsername)) {
+                    sysUserScheduleDTO.setRoleName(StrUtil.join(",", roleNamesByUsername));
+                }
+                LoginUser userById = sysBaseAPI.getUserById(sysUserScheduleDTO.getUserId());
+                if (ObjectUtil.isNotEmpty(userById)) {
+                    List<SiteModel> siteByOrgCode = sysBaseAPI.getSiteByOrgCode(userById.getOrgCode());
+                    if(CollUtil.isNotEmpty(siteByOrgCode)){
+                        sysUserScheduleDTO.setSiteName(siteByOrgCode.stream().map(SiteModel::getSiteName).filter(site->StrUtil.isNotEmpty(site)).collect(Collectors.joining(",")));
+                        sysUserScheduleDTO.setSiteLocationName(siteByOrgCode.stream().map(SiteModel::getPosition).filter(site->StrUtil.isNotEmpty(site)).collect(Collectors.joining(",")));
+                        sysUserScheduleDTO.setSitPrincipalName(siteByOrgCode.stream().map(SiteModel::getRealName).filter(site->StrUtil.isNotEmpty(site)).collect(Collectors.joining(",")));
+                    }
+                }
+            }
+        }
+        return page.setRecords(result);
     }
 
 }

@@ -575,4 +575,20 @@ public interface ISysBaseAPI extends CommonAPI {
      */
     @GetMapping(value = "/sys/api/getDepartByOrgCode")
     SysDepartModel getDepartByOrgCode(String orgCode);
+
+    /**
+     * 通过用户id查询角色名称
+     * @param userId
+     * @return
+     */
+    @GetMapping(value = "/sys/api/getRoleNamesById")
+    List<String> getRoleNamesById(String userId);
+
+    /**
+     * 通过部门编码查询工区信息
+     * @param orgCode
+     * @return
+     */
+    @GetMapping(value = "/sys/api/getSiteByOrgCode")
+    List<SiteModel> getSiteByOrgCode(String orgCode);
 }

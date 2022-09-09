@@ -336,6 +336,28 @@ public class SysBaseAPIFallback implements ISysBaseAPI {
         return null;
     }
 
+    /**
+     * 通过用户id查询角色名称
+     *
+     * @param userId
+     * @return
+     */
+    @Override
+    public List<String> getRoleNamesById(String userId) {
+        return null;
+    }
+
+    /**
+     * 通过部门编码查询工区信息
+     *
+     * @param orgCode
+     * @return
+     */
+    @Override
+    public List<SiteModel> getSiteByOrgCode(String orgCode) {
+        return null;
+    }
+
     @Override
     public void sendEmailMsg(String email,String title,String content) {
 

@@ -54,4 +54,11 @@ from cs_subsystem cs
 left join cs_major cm on cm.major_code = cs.major_code
 where cm.major_code = #{majorCode} and cs.del_flag = 0
 </select>
+    <select id="getSiteByOrgCode" resultType="org.jeecg.common.system.vo.SiteModel">
+    select wa.name as siteName,wa.position,sy.realname from work_area wa
+    left join work_area_org wao on wao.work_area_code = wa.`code`
+    left join sys_depart sd on sd.org_code = wao.org_code
+    left join sys_user sy on sy.id = wa.manager_id
+    where sd.org_code = #{orgCode}
+    </select>
 </mapper>

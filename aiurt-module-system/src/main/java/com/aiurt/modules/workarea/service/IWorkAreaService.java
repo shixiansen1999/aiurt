@@ -5,6 +5,9 @@ import com.aiurt.modules.workarea.dto.WorkAreaDTO;
 import com.aiurt.modules.workarea.entity.WorkArea;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
+import org.jeecg.common.system.vo.SiteModel;
+
+import java.util.List;
 
 /**
  * @Description: work_area
@@ -51,4 +54,11 @@ public interface IWorkAreaService extends IService<WorkArea> {
      * @return
      */
     Page<MajorUserDTO> getMajorUser(Page<MajorUserDTO> pageList, String majorCode,String name,String orgId);
+
+    /**
+     * 根据组织结构编码查找对应的工区信息
+     * @param orgCode
+     * @return
+     */
+    List<SiteModel> getSiteByOrgCode(String orgCode);
 }

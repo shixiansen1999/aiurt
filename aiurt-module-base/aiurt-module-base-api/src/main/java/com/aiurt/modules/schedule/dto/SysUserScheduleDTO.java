@@ -15,6 +15,8 @@ public class SysUserScheduleDTO {
     private String itemName;
     @ApiModelProperty(value = "排班人员姓名")
     private String userName;
+    @ApiModelProperty(value = "排班人员id")
+    private String userId;
     @ApiModelProperty(value = "联系电话")
     private String telephone;
     @ApiModelProperty(value = "角色")
