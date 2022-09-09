@@ -22,19 +22,21 @@ public class FaultTimeoutLevelReq {
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     @NotNull(message = "开始时间不能为空")
     private java.util.Date startTime;
+
     @ApiModelProperty(value = "结束时间",required = true)
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     @NotNull(message = "结束时间不能为空")
     private Date endTime;
 
-    @ApiModelProperty(value = "故障超时等级:1.一级故障 2.二级故障 3,三级故障")
-    @NotNull(message = "故障等级不能为空")
-    Integer level;
+    @ApiModelProperty(value = "故障超时等级:1.一级超时 2.二级超时  3.三级超时")
+    @NotNull(message = "超时等级不能为空")
+    private Integer level;
 
     @ApiModelProperty(value = "故障状态")
-    private Integer faultStatus;
+    private Integer status;
 
     /**故障级别*/
+    @Excel(name = "故障级别", width = 15)
     @ApiModelProperty(value = "故障级别")
     @Dict(dictTable = "fault_level", dicCode = "code", dicText = "name")
     private String faultLevel;
@@ -42,7 +44,7 @@ public class FaultTimeoutLevelReq {
     @ApiModelProperty(value = "维修负责人")
     private String appointUserName;
 
-    @ApiModelProperty(value = "报修方式",example = "")
+    @ApiModelProperty(value = "报修方式")
     @Dict(dicCode = "fault_mode_code")
     private String faultModeCode;
 

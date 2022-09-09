@@ -34,6 +34,15 @@
             <if test="faultTimeoutLevelReq.startTime!=null and faultTimeoutLevelReq.endTime!=null">
                 and approval_pass_time  &gt;= #{faultTimeoutLevelReq.startTime}  and approval_pass_time &lt;= #{faultTimeoutLevelReq.endTime}
             </if>
+            <if test="faultTimeoutLevelReq.faultLevel != null">
+                and fault_level  = #{faultTimeoutLevelReq.faultLevel}
+            </if>
+            <if test="faultTimeoutLevelReq.status != null">
+                and status  = #{faultTimeoutLevelReq.status}
+            </if>
+            <if test="faultTimeoutLevelReq.faultModeCode != null">
+                and fault_mode_code  = #{faultTimeoutLevelReq.faultModeCode}
+            </if>
         </where>
     </select>
 
