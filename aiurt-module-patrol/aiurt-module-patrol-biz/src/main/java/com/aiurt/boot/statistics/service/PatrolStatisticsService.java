@@ -3,17 +3,17 @@ package com.aiurt.boot.statistics.service;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
-import com.aiurt.boot.api.PatrolApi;
 import com.aiurt.boot.constant.PatrolConstant;
 import com.aiurt.boot.statistics.dto.*;
 import com.aiurt.boot.statistics.model.*;
 import com.aiurt.boot.task.entity.PatrolTask;
 import com.aiurt.boot.task.entity.PatrolTaskUser;
 import com.aiurt.boot.task.mapper.*;
-import com.aiurt.boot.task.param.PatrolTaskParam;
 import com.aiurt.boot.task.service.IPatrolTaskService;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.DictModel;
@@ -135,19 +135,44 @@ public class PatrolStatisticsService {
             patrolCondition.setOmitStatus(null);
         }
 
-        // todo 检验数据正确性的集合,验证正确可删除
-        Set<String> set = new HashSet<>();
-
         // 任务为已完成状态的正则
         String regexp = "^" + PatrolConstant.TASK_COMPLETE + "{1}$";
 
         IPage<PatrolIndexTask> pageList = patrolTaskMapper.getIndexPatrolList(page, patrolCondition, regexp);
+
+        Set<String> taskCodeSet = new HashSet<>();
+        pageList.getRecords().stream().forEach(l -> {
+            if (StrUtil.isNotEmpty(l.getTaskCode())) {
+               taskCodeSet.addAll(Arrays.asList(l.getTaskCode().split(",")));
+            }
+        });
+        // todo 检验数据正确性的集合,验证正确可删除
+//        System.out.println(taskCodeSet.size());
+
+        // 任务下的巡视人员
+        Map<String, Set<String>> userMap = new HashMap<>();
+        // 巡视人员对应的组织机构
+        Map<String, Set<String>> orgMap = new HashMap<>();
+        taskCodeSet.stream().forEach(code -> {
+            Set<String> userSet = new HashSet<>();
+            Set<String> orgSet = new HashSet<>();
+            LambdaQueryWrapper<PatrolTaskUser> userWrapper = Wrappers.<PatrolTaskUser>lambdaQuery()
+                    .select(PatrolTaskUser::getUserId)
+                    .eq(PatrolTaskUser::getDelFlag, 0)
+                    .eq(PatrolTaskUser::getTaskCode, code);
+            List<PatrolTaskUser> patrolTaskUsers = patrolTaskUserMapper.selectList(userWrapper);
+            List<String> userId = patrolTaskUsers.stream().map(PatrolTaskUser::getUserId).distinct().collect(Collectors.toList());
+            List<String> username = patrolTaskUsers.stream().map(PatrolTaskUser::getUserName).distinct().collect(Collectors.toList());
+            List<String> deptName = patrolTaskUserMapper.getDeptName(userId);
+            userSet.addAll(username);
+            orgSet.addAll(deptName);
+            userMap.put(code, userSet);
+            orgMap.put(code, orgSet);
+        });
+
+
         pageList.getRecords().stream().forEach(l -> {
             List<String> taskCodeList = new ArrayList<>();
-            if (StrUtil.isNotEmpty(l.getTaskCode())) {
-                taskCodeList = Arrays.asList(l.getTaskCode().split(","));
-            }
-
             // 任务状态翻译，0未完成，1已完成
             Integer status = l.getStatus();
             if (ObjectUtil.isNotEmpty(status)) {
@@ -158,43 +183,21 @@ public class PatrolStatisticsService {
                 }
             }
 
-
-            // todo 检验数据正确性的集合,验证正确可删除
-            set.addAll(taskCodeList);
-
             // 任务下的巡视人员
             Set<String> userSet = new HashSet<>();
             // 巡视人员对应的组织机构
             Set<String> orgSet = new HashSet<>();
 
             taskCodeList.stream().forEach(taskCode -> {
-                QueryWrapper<PatrolTaskUser> userWrapper = new QueryWrapper<>();
-                userWrapper.lambda().eq(PatrolTaskUser::getDelFlag, 0).eq(PatrolTaskUser::getTaskCode, taskCode);
-                List<PatrolTaskUser> patrolTaskUsers = patrolTaskUserMapper.selectList(userWrapper);
-                List<String> userId = patrolTaskUsers.stream().map(PatrolTaskUser::getUserId).distinct().collect(Collectors.toList());
-                List<String> username = patrolTaskUsers.stream().map(PatrolTaskUser::getUserName).distinct().collect(Collectors.toList());
-//                userId.stream().forEach(uid -> {
-//                    String deptName = patrolTaskUserMapper.getDeptName(uid);
-//                    orgSet.add(deptName);
-//                });
-                List<String> deptName = patrolTaskUserMapper.getDeptName(userId);
-
-                userSet.addAll(username);
-                orgSet.addAll(deptName);
+                userSet.addAll(userMap.get(taskCode));
+                orgSet.addAll(orgMap.get(taskCode));
             });
-
-            // 获取站点下的任务
 
             String userInfo = userSet.stream().collect(Collectors.joining("；"));
             String orgInfo = orgSet.stream().collect(Collectors.joining("；"));
-
             l.setUserInfo(userInfo);
             l.setOrgInfo(orgInfo);
         });
-
-        // todo 检验数据正确性的集合,验证正确可删除
-        System.out.println(set.size());
-
         return pageList;
     }
 
