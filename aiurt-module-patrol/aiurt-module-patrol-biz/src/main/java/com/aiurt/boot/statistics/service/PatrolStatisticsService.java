@@ -3,6 +3,7 @@ package com.aiurt.boot.statistics.service;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
+import com.aiurt.boot.api.PatrolApi;
 import com.aiurt.boot.constant.PatrolConstant;
 import com.aiurt.boot.statistics.dto.*;
 import com.aiurt.boot.statistics.model.*;
@@ -41,6 +42,8 @@ public class PatrolStatisticsService {
     private PatrolTaskStationMapper patrolTaskStationMapper;
     @Autowired
     private PatrolTaskDeviceMapper patrolTaskDeviceMapper;
+    @Autowired
+    private PatrolApi patrolApi;
 
     /**
      * 首页巡视概况
@@ -248,30 +251,6 @@ public class PatrolStatisticsService {
             l.setStatusDictName(statusDictName);
         });
         return pageList;
-    }
-
-    /**
-     * 首页-统计日程的巡视完成数
-     *
-     * @param year
-     * @param month
-     * @return
-     */
-    public Map<String, Integer> getPatrolFinishNumber(int year, int month) {
-        Map<String, Integer> map = new HashMap<>();
-        Calendar instance = Calendar.getInstance();
-        // 当月的第一天
-//        instance.set
-        // 当月的最后一天
-
-        instance.set(year, month - 1, 1);
-        List<Date> allDate = new ArrayList<>();
-//        Date first = DateUtil.
-        while (instance.get(Calendar.MONTH) == month - 1) {
-            String date = DateUtil.format(instance.getTime(), "yyyy/MM/dd");
-            instance.add(Calendar.DATE, 1);
-        }
-        return map;
     }
 
     /**

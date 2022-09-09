@@ -418,7 +418,7 @@
         pt.`code`,
         pt.`status`,
         pt.patrol_date,
-        pt.submit_time,
+        IF( 1 = pt.auditor, pt.auditor_time, pt.submit_time ) submitTime,
         GROUP_CONCAT( DISTINCT ptu.user_name ) userInfo,
         GROUP_CONCAT( DISTINCT cs.station_name ) stationInfo,
         GROUP_CONCAT( DISTINCT sd.depart_name ) orgInfo
@@ -443,24 +443,11 @@
             and pt.source = #{condition.source}
         </if>
         <if test="condition.stationCode != null and condition.stationCode != ''">
-            <choose>
-                <when test="condition.level != null and condition.level == 1 ">
-                    and pt.code in (
-                    SELECT pps.task_code
-                    FROM patrol_task_station pps
-                    JOIN cs_station cs ON pps.station_code = cs.station_code
-                    AND cs.del_flag = 0
-                    WHERE pps.del_flag = 0 AND cs.line_code = #{patrolTask.stationCode}
-                    )
-                </when>
-                <when test="patrolTask.level != null and patrolTask.level == 2 ">
-                    and pt.code in (
-                    SELECT pps.task_code
-                    FROM patrol_task_station pps
-                    WHERE pps.del_flag = 0 and pps.station_code = #{patrolTask.stationCode}
-                    )
-                </when>
-            </choose>
+            and pt.code in (
+            SELECT pps.task_code
+            FROM patrol_task_station pps
+            WHERE pps.del_flag = 0 and pps.station_code = #{condition.stationCode}
+            )
         </if>
         GROUP BY pt.`code`
     </select>

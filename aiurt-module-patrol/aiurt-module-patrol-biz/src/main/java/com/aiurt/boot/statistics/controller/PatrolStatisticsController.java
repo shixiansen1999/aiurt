@@ -1,5 +1,6 @@
 package com.aiurt.boot.statistics.controller;
 
+import com.aiurt.boot.api.PatrolApi;
 import com.aiurt.boot.statistics.dto.IndexScheduleDTO;
 import com.aiurt.boot.statistics.dto.IndexTaskDTO;
 import com.aiurt.boot.statistics.model.*;
@@ -21,6 +22,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Date;
+import java.util.Map;
 
 @Api(tags = "巡检首页统计")
 @RestController
@@ -93,5 +95,4 @@ public class PatrolStatisticsController {
         IPage<ScheduleTask> pageList = patrolStatisticsService.getScheduleList(page, indexScheduleDTO);
         return Result.ok(pageList);
     }
-
 }
