@@ -60,7 +60,8 @@ public class PatrolStatisticsService {
         Date newEndDate = DateUtil.parse(DateUtil.format(endDate, "yyyy-MM-dd 23:59:59"));
         PatrolSituation situation = new PatrolSituation();
         List<PatrolTask> list = patrolTaskService.lambdaQuery().eq(PatrolTask::getDelFlag, 0)
-                .and(i -> i.ne(PatrolTask::getSource, PatrolConstant.TASK_MANUAL).or().isNull(PatrolTask::getSource))
+                // 过滤手工下发
+//                .and(i -> i.ne(PatrolTask::getSource, PatrolConstant.TASK_MANUAL).or().isNull(PatrolTask::getSource))
                 .between(PatrolTask::getPatrolDate, newStartDate, newEndDate).list();
         long sum = list.stream().count();
         long finish = list.stream().filter(l -> PatrolConstant.TASK_COMPLETE.equals(l.getStatus())).count();
@@ -140,7 +141,7 @@ public class PatrolStatisticsService {
         // todo 检验数据正确性的集合,验证正确可删除
 //        Set<String> set = new HashSet<>();
 
-
+        // 任务为已完成状态的正则
         String regexp = "^" + PatrolConstant.TASK_COMPLETE + "{1}$";
 
         IPage<PatrolIndexTask> pageList = patrolTaskMapper.getIndexPatrolList(page, patrolCondition, regexp);
@@ -149,6 +150,18 @@ public class PatrolStatisticsService {
             if (StrUtil.isNotEmpty(l.getTaskCode())) {
                 taskCodeList = Arrays.asList(l.getTaskCode().split(","));
             }
+
+            // 任务状态翻译，0未完成，1已完成
+            Integer status = l.getStatus();
+            if (ObjectUtil.isNotEmpty(status)) {
+                if (Integer.valueOf(1).equals(status)) {
+                    l.setStatusName("已完成");
+                } else {
+                    l.setStatusName("未完成");
+                }
+            }
+
+
             // todo 检验数据正确性的集合,验证正确可删除
 //            set.addAll(taskCodeList);
 

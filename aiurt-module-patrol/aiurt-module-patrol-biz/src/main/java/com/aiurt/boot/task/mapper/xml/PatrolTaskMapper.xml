@@ -322,8 +322,9 @@
         cs.line_code,
         cs.line_name,
         GROUP_CONCAT( pt.`code` ) taskCode,
-        <if test="">
-            IF(GROUP_CONCAT(DISTINCT pt.`status`) REGEXP #{regexp}, 1, 0) finishStatus
+        MAX( pt.submit_time ) submitTime,
+        <if test="regexp !=null and regexp !=''">
+            IF(GROUP_CONCAT(DISTINCT pt.`status`) REGEXP #{regexp}, 1, 0) `status`
         </if>
         FROM patrol_task pt
         JOIN patrol_task_station pts ON pt.`code` = pts.task_code
@@ -333,9 +334,6 @@
             AND DATE_FORMAT( pt.patrol_date, '%Y-%m-%d' )
             BETWEEN DATE_FORMAT( #{condition.startDate}, '%Y-%m-%d' )
             AND DATE_FORMAT( #{condition.endDate}, '%Y-%m-%d')
-        </if>
-        <if test="condition.source != null">
-            AND (pt.source IS NULL OR pt.source != #{condition.source})
         </if>
         <if test="condition.status != null and condition.status.length>0">
             AND pt.`status` IN
@@ -359,7 +357,7 @@
         pts.station_code
         ) sub
         <if test="condition.finishStatus != null">
-            where finishStatus = #{condition.finishStatus}
+            where sub.`status` = #{condition.finishStatus}
         </if>
 
     </select>

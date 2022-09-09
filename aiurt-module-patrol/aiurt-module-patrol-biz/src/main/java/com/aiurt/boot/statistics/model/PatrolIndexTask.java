@@ -58,10 +58,15 @@ public class PatrolIndexTask implements Serializable {
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private String submitTime;
     /**
-     * 任务状态
+     * 任务状态,0未完成，1已完成
      */
-    @ApiModelProperty(value = "任务状态")
-    private String status;
+    @ApiModelProperty(value = "任务状态,0未完成，1已完成")
+    private Integer status;
+    /**
+     * 任务状态名称,0未完成，1已完成
+     */
+    @ApiModelProperty(value = "任务状态名称,0未完成，1已完成")
+    private String statusName;
     /**
      * 任务编号
      */
