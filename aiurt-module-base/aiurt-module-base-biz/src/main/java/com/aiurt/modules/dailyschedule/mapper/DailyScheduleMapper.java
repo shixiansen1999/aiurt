@@ -14,4 +14,15 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
  */
 public interface DailyScheduleMapper extends BaseMapper<DailySchedule> {
 
+
+    /**
+     *
+     * @param year 年
+     * @param month 月
+     * @param day 日
+     * @param userId 用户id
+     * @return
+     */
+    List<DailySchedule> queryDailyScheduleList(@Param("year")Integer year, @Param("month")Integer month,
+                                               @Param("day")Integer day, @Param("userId")String userId);
 }

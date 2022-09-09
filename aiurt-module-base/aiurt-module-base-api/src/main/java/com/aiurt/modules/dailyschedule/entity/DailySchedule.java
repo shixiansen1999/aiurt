@@ -5,6 +5,7 @@ import java.io.UnsupportedEncodingException;
 import java.util.Date;
 import java.math.BigDecimal;
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
@@ -59,6 +60,10 @@ public class DailySchedule implements Serializable {
     @ApiModelProperty(value = "添加人")
     @Dict(dictTable = "sys_user", dicCode = "id", dicText = "realname")
     private String addedUserId;
+
+	@TableField(exist = false)
+    @ApiModelProperty("详情-添加人名称")
+	private String addedUserName;
 	/**时间*/
 	@Excel(name = "时间", width = 15, format = "yyyy-MM-dd")
 	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
@@ -74,4 +79,11 @@ public class DailySchedule implements Serializable {
     @ApiModelProperty(value = "通知人")
     @Dict(dictTable = "sys_user", dicCode = "id", dicText = "realname")
     private String notifyUserId;
+
+    @ApiModelProperty("详情-通知人名称")
+    @TableField(exist = false)
+    private String notifyUserName;
+
+	@TableField(exist = false)
+	private String addTimeAlias;
 }

@@ -12,6 +12,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import com.aiurt.modules.dailyschedule.entity.DailySchedule;
 import com.aiurt.modules.dailyschedule.service.IDailyScheduleService;
+import io.swagger.annotations.ApiParam;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.query.QueryGenerator;
 import com.aiurt.common.util.oConvertUtils;
@@ -73,6 +74,15 @@ public class DailyScheduleController extends BaseController<DailySchedule, IDail
 		return Result.OK(pageList);
 	}
 
+
+	 @ApiOperation(value="日程安排-首页", notes="日程安排-首页")
+	 @GetMapping(value = "/list")
+	 public Result<List<DailySchedule>> queryList(@ApiParam(value = "年份") @RequestParam(name = "year") Integer year,
+												  @ApiParam(value = "月份") @RequestParam(name = "month") Integer month,
+												  @ApiParam(value = "日") @RequestParam(name = "day") Integer day) {
+		 List<DailySchedule> resultList = dailyScheduleService.queryList(year, month, day);
+		 return Result.OK(resultList);
+	 }
 	/**
 	 *   添加
 	 *
