@@ -264,7 +264,7 @@
         AND  su.realname LIKE CONCAT('%', #{scheduleRecordDTO.name}, '%')
     </if>
     <if test="scheduleRecordDTO.shift!=null">
-        AND  sr.item_id #{scheduleRecordDTO.shift}
+        AND  sr.item_id =  #{scheduleRecordDTO.shift}
     </if>
     ORDER BY
 	sr.date,
