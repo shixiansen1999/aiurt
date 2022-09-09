@@ -1,26 +1,28 @@
 package com.aiurt.modules.index.service.impl;
 
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.date.DateUnit;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
-import com.aiurt.boot.plan.entity.RepairPool;
 import com.aiurt.modules.fault.dto.FaultIndexDTO;
+import com.aiurt.modules.fault.dto.FaultTimeoutLevelDTO;
+import com.aiurt.modules.fault.dto.FaultTimeoutLevelReq;
 import com.aiurt.modules.fault.entity.Fault;
 import com.aiurt.modules.fault.enums.FaultStatusEnum;
 import com.aiurt.modules.index.mapper.FaultCountMapper;
 import com.aiurt.modules.index.service.IFaultCountService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 
 /**
- * 功能描述
+ * 首页故障统计
  *
  * @author: qkx
  * @date: 2022年09月05日 15:54
@@ -75,33 +77,20 @@ public class FaultCountServiceImpl implements IFaultCountService {
             int number2 = 0;
             int number3 = 0;
             for (Fault fault : faultList) {
-                //计算故障发生时间是否大于12,24,48小时
-                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-M-d HH:mm:ss");
-                Date date = new Date();
-                String format = sdf.format(date);
-                String format1 = sdf.format(fault.getHappenTime());
-                Date start = null;
-                Date end = null;
-                try {
-                    start = sdf.parse(format1);
-                    end = sdf.parse(format);
-                } catch (ParseException e) {
-                    throw new RuntimeException(e);
-                }
-                //当前时间减去故障发生时间
-                long cha = end.getTime() - start.getTime();
-                double result = cha * 1.0 / (1000 * 60 * 60);
-                //三级故障超时
+                //计算故障发生时间到当前时间时间差
+                long result=DateUtil.between(fault.getHappenTime(),new Date(), DateUnit.HOUR);
+
+                //三级故障超时(12-24小时)
                 if(result>=12 && result<=24 & !FaultStatusEnum.Close.getStatus().equals(fault.getStatus())){
                     number1++;
                     faultIndexDTO.setLevelThreeNumber(number1);
                 }
-                //二级故障超时
+                //二级故障超时(24-48小时)
                 else if(result>=24 && result<=48 & !FaultStatusEnum.Close.getStatus().equals(fault.getStatus())){
                     number2++;
                     faultIndexDTO.setLevelTwoNumber(number2);
                 }
-                //一级故障超时
+                //一级故障超时(大于48小时)
                 else if(result>=48 && !FaultStatusEnum.Close.getStatus().equals(fault.getStatus())){
                     number3++;
                     faultIndexDTO.setLevelOneNumber(number3);
@@ -112,4 +101,65 @@ public class FaultCountServiceImpl implements IFaultCountService {
         }
         return faultIndexDTO;
     }
+
+    /**
+     *分页查询故障超时等级
+     * @param faultTimeoutLevelReq 查询条件
+     * @return
+     */
+    public IPage<FaultTimeoutLevelDTO> getFaultLevelInfo(FaultTimeoutLevelReq faultTimeoutLevelReq) {
+        IPage<FaultTimeoutLevelDTO> result = new Page<>();
+        if (ObjectUtil.isEmpty(faultTimeoutLevelReq.getLevel())
+                || ObjectUtil.isEmpty(faultTimeoutLevelReq)
+                || ObjectUtil.isEmpty(faultTimeoutLevelReq.getStartTime())
+                || ObjectUtil.isEmpty(faultTimeoutLevelReq.getEndTime())) {
+            return result;
+        }
+        // 分页数据
+        Page<FaultTimeoutLevelDTO> page = new Page<>(faultTimeoutLevelReq.getPageNo(), faultTimeoutLevelReq.getPageSize());
+        List<FaultTimeoutLevelDTO> faultData = faultCountMapper.getFaultData(faultTimeoutLevelReq.getLevel(), page, faultTimeoutLevelReq);
+        if (CollUtil.isNotEmpty(faultData)) {
+            for (FaultTimeoutLevelDTO faultDatum : faultData) {
+                //计算超时时长
+                long hour=DateUtil.between(faultDatum.getHappenTime(),new Date(), DateUnit.HOUR);
+                long min=DateUtil.between(faultDatum.getHappenTime(),new Date(), DateUnit.MINUTE);
+                int m = ((new Double(min % 60))).intValue();
+                String time = hour + "h" + m + "min";
+
+                if (faultTimeoutLevelReq.getLevel() == 1) {
+                    faultDatum.setTimeoutDuration(time);
+                    if (hour >= 48 && !FaultStatusEnum.Close.getStatus().equals(faultDatum.getStatus())) {
+                        faultDatum.setTimeoutType("一级超时");
+                    }
+                } else if (faultTimeoutLevelReq.getLevel() == 2) {
+                    faultDatum.setTimeoutDuration(time);
+                    if (hour >= 24 && hour <= 48 & !FaultStatusEnum.Close.getStatus().equals(faultDatum.getStatus())) {
+                        faultDatum.setTimeoutType("二级超时");
+                    }
+                } else if (faultTimeoutLevelReq.getLevel() == 3) {
+                    faultDatum.setTimeoutDuration(time);
+                    if (hour >= 12 && hour <= 24 & !FaultStatusEnum.Close.getStatus().equals(faultDatum.getStatus())) {
+                        faultDatum.setTimeoutType("三级超时");
+                    }
+                }
+
+            }
+        }
+        page.setRecords(faultData);
+        return page;
+    }
+
+
+
+    /**
+     *分页查询待办事项故障情况
+     * @param page
+     * @param startDate
+     * @return
+     */
+    public IPage<FaultTimeoutLevelDTO> getMainFaultCondition(Page<FaultTimeoutLevelDTO> page, Date startDate){
+        List<FaultTimeoutLevelDTO> mainFaultCondition = faultCountMapper.getMainFaultCondition(page, startDate);
+        return page.setRecords(mainFaultCondition);
+    }
+
 }
