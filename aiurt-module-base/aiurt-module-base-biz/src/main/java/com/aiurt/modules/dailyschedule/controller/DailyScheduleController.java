@@ -60,7 +60,7 @@ public class DailyScheduleController extends BaseController<DailySchedule, IDail
 
 
 	 @ApiOperation(value="日程安排-首页", notes="日程安排-首页")
-	 @GetMapping(value = "/list")
+	 @GetMapping(value = "/queryList")
 	 public Result<List<DailySchedule>> queryList(@ApiParam(value = "年份") @RequestParam(name = "year") Integer year,
 												  @ApiParam(value = "月份") @RequestParam(name = "month") Integer month,
 												  @ApiParam(value = "日") @RequestParam(name = "day") Integer day) {
