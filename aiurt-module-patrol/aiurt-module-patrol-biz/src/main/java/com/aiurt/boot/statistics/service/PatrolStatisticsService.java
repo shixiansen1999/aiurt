@@ -42,8 +42,6 @@ public class PatrolStatisticsService {
     private PatrolTaskStationMapper patrolTaskStationMapper;
     @Autowired
     private PatrolTaskDeviceMapper patrolTaskDeviceMapper;
-    @Autowired
-    private PatrolApi patrolApi;
 
     /**
      * 首页巡视概况
@@ -262,6 +260,13 @@ public class PatrolStatisticsService {
      */
     public IPage<ScheduleTask> getScheduleList(Page<ScheduleTask> page, IndexScheduleDTO indexScheduleDTO) {
         IPage<ScheduleTask> pageList = patrolTaskMapper.getScheduleList(page, indexScheduleDTO);
+        pageList.getRecords().stream().forEach(l -> {
+            // 字典翻译
+            String statusName = sysBaseApi.getDictItems("patrol_task_status").stream()
+                    .filter(item -> item.getValue().equals(String.valueOf(l.getStatus())))
+                    .map(DictModel::getText).collect(Collectors.joining());
+            l.setStatusName(statusName);
+        });
         return pageList;
     }
 }

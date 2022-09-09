@@ -33,6 +33,11 @@ public class ScheduleTask implements Serializable {
     @ApiModelProperty(value = "任务状态：0待指派、1待确认、2待执行、3已退回、4执行中、5已驳回、6待审核、7已完成")
     private java.lang.Integer status;
     /**
+     * 任务状态名称
+     */
+    @ApiModelProperty(value = "任务状态名称")
+    private java.lang.String statusName;
+    /**
      * 巡视人
      */
     @ApiModelProperty(value = "巡视人")
