@@ -171,19 +171,13 @@ public interface PatrolTaskMapper extends BaseMapper<PatrolTask> {
     IPage<PatrolIndexTask> getIndexPatrolList(Page<PatrolIndexTask> page, @Param("condition") PatrolCondition condition, @Param("regexp")String regexp);
 
     /**
-     * 获取首页巡视异常任务列表
+     * 获取首页巡视列表下的任务列表
      *
      * @param page
      * @param condition
      * @return
      */
     IPage<IndexTaskInfo> getIndexTaskList(Page<IndexTaskInfo> page, @Param("condition") IndexTaskDTO condition);
-
-    /**
-     * 首页巡视列表获取存在未完成/已经完成任务的站点编号
-     * @return
-     */
-    List<String> getStationCodeUnfinish(@Param("startDate")Date startDate,@Param("endDate") Date endDate,@Param("finishStatus")Integer finishStatus);
 
     /**
      * 获取首页的日程的巡检列表

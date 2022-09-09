@@ -12,7 +12,6 @@ import org.springframework.format.annotation.DateTimeFormat;
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.util.Date;
-import java.util.List;
 
 @Data
 @NoArgsConstructor
@@ -72,8 +71,18 @@ public class IndexTaskDTO implements Serializable {
     @ApiModelProperty(value = "站点编号")
     private String stationCode;
     /**
-     * 任务编号
+     * 任务状态：0待指派、1待确认、2待执行、3已退回、4执行中、5已驳回、6待审核、7已完成
      */
-    @ApiModelProperty(value = "任务编号")
-    private List<String> taskCode;
+    @ApiModelProperty(value = "任务状态：0待指派、1待确认、2待执行、3已退回、4执行中、5已驳回、6待审核、7已完成")
+    private Integer[] status;
+    /**
+     * 漏巡状态,0未漏检，1已漏检
+     */
+    @ApiModelProperty(value = "漏巡状态:0未漏检，1已漏检,查询漏检总数列表下的任务列表该字段必传")
+    private Integer omitStatus;
+//    /**
+//     * 任务编号
+//     */
+//    @ApiModelProperty(value = "任务编号")
+//    private List<String> taskCode;
 }

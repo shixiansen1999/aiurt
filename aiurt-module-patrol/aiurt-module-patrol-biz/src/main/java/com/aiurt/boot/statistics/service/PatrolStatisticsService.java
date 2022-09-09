@@ -56,20 +56,29 @@ public class PatrolStatisticsService {
                 // 过滤手工下发
 //                .and(i -> i.ne(PatrolTask::getSource, PatrolConstant.TASK_MANUAL).or().isNull(PatrolTask::getSource))
                 .between(PatrolTask::getPatrolDate, newStartDate, newEndDate).list();
+
         long sum = list.stream().count();
         long finish = list.stream().filter(l -> PatrolConstant.TASK_COMPLETE.equals(l.getStatus())).count();
         long unfinish = sum - finish;
         long abnormal = list.stream().filter(l -> PatrolConstant.TASK_ABNORMAL.equals(l.getAbnormalState())).count();
-        long omit = this.getOmitData(startDate);
+        long omit = 0L;
         String omitRate = String.format("%.2f", 0F);
 
-        // 日期是周五-周日统计的是周一至周四的漏检总数，是周一至周四统计的是周五至周日的漏检总数
-        omit += list.stream().filter(l -> PatrolConstant.OMIT_STATUS.equals(l.getOmitStatus())).count();
-//        omit += this.getOmitData(endDate);
+        List<Date> startList = this.getOmitDateScope(startDate);
+        List<Date> endList = this.getOmitDateScope(startDate);
+        Date startTime = startList.stream().min(Comparator.comparingLong(Date::getTime)).get();
+        Date endTime = endList.stream().max(Comparator.comparingLong(Date::getTime)).get();
+        // 漏检任务列表
+        List<PatrolTask> omitList = patrolTaskService.lambdaQuery().eq(PatrolTask::getDelFlag, 0)
+                .between(PatrolTask::getPatrolDate, startTime, endTime).list();
+        // 漏检时间范围内的任务总数
+        long omitScopeSum = omitList.size();
+        omit += omitList.stream().filter(l -> PatrolConstant.OMIT_STATUS.equals(l.getOmitStatus())).count();
+
         // 漏检率精确到小数点后两位，需要四舍五入
-        if (omit != 0 && sum != 0) {
+        if (omit != 0 && omitScopeSum != 0) {
             // 漏检率=漏检数除以总数X100%
-            double rate = (1.0 * omit / sum) * 100;
+            double rate = (1.0 * omit / omitScopeSum) * 100;
             omitRate = String.format("%.2f", rate);
         }
         situation.setSum(sum);
@@ -82,13 +91,12 @@ public class PatrolStatisticsService {
     }
 
     /**
-     * 如果参数日期是周一到周四，则获取上周五至周日的漏检数据，如果是周五到周日，则获取周一至周四的漏检数据
+     * 如果参数日期是周一至周四，则返回上周五00时00分00秒和周日23时59分59秒，否则返回周一00时00分00秒和周四23时59分59秒
      *
      * @param date
      * @return
      */
-    public long getOmitData(Date date) {
-        long omit = 0L;
+    public List<Date> getOmitDateScope(Date date) {
         // 参数日期所在周的周一
         Date monday = DateUtils.getWeekStartTime(date);
         ZoneId zoneId = ZoneId.systemDefault();
@@ -97,21 +105,16 @@ public class PatrolStatisticsService {
                 || Calendar.SUNDAY == DateUtil.dayOfWeek(date)) {
             // 周一往后3天，星期四
             Date thursday = Date.from(localDate.plusDays(3).atStartOfDay().atZone(zoneId).toInstant());
-            omit = patrolTaskService.lambdaQuery().eq(PatrolTask::getDelFlag, 0)
-                    .eq(PatrolTask::getOmitStatus, PatrolConstant.OMIT_STATUS)
-                    .between(PatrolTask::getPatrolDate, monday, thursday)
-                    .count();
+            return Arrays.asList(DateUtil.parse(DateUtil.format(monday, "yyyy-MM-dd 00:00:00")),
+                    DateUtil.parse(DateUtil.format(thursday, "yyyy-MM-dd 23:59:59")));
         } else {
             // 周一往前3天，星期五
             Date friday = Date.from(localDate.minusDays(3).atStartOfDay().atZone(zoneId).toInstant());
             // 周一往前1天，星期天
             Date sunday = Date.from(localDate.minusDays(1).atStartOfDay().atZone(zoneId).toInstant());
-            omit = patrolTaskService.lambdaQuery().eq(PatrolTask::getDelFlag, 0)
-                    .eq(PatrolTask::getOmitStatus, PatrolConstant.OMIT_STATUS)
-                    .between(PatrolTask::getPatrolDate, friday, sunday)
-                    .count();
+            return Arrays.asList(DateUtil.parse(DateUtil.format(friday, "yyyy-MM-dd 00:00:00")),
+                    DateUtil.parse(DateUtil.format(sunday, "yyyy-MM-dd 23:59:59")));
         }
-        return omit;
     }
 
     /**
@@ -122,17 +125,18 @@ public class PatrolStatisticsService {
      * @return
      */
     public IPage<PatrolIndexTask> getIndexPatrolList(Page<PatrolIndexTask> page, PatrolCondition patrolCondition) {
-//        Integer finishStatus = patrolCondition.getFinishStatus();
-//        if (ObjectUtil.isNotEmpty(finishStatus)) {
-//            List<String> stationCodes = patrolTaskMapper.getStationCodeUnfinish(patrolCondition.getStartDate(), patrolCondition.getEndDate(), finishStatus);
-//            if (CollectionUtil.isEmpty(stationCodes)) {
-//                return new Page<>(page.getCurrent(), page.getSize());
-//            }
-//            patrolCondition.setCodeList(stationCodes);
-//        }
+        Integer omitStatus = patrolCondition.getOmitStatus();
+        if (ObjectUtil.isNotEmpty(omitStatus) && PatrolConstant.OMIT_STATUS.equals(omitStatus)) {
+            Date startDate = this.getOmitDateScope(patrolCondition.getStartDate()).stream().min(Comparator.comparingLong(Date::getTime)).get();
+            Date endDate = this.getOmitDateScope(patrolCondition.getEndDate()).stream().max(Comparator.comparingLong(Date::getTime)).get();
+            patrolCondition.setStartDate(startDate);
+            patrolCondition.setEndDate(endDate);
+        } else {
+            patrolCondition.setOmitStatus(null);
+        }
 
         // todo 检验数据正确性的集合,验证正确可删除
-//        Set<String> set = new HashSet<>();
+        Set<String> set = new HashSet<>();
 
         // 任务为已完成状态的正则
         String regexp = "^" + PatrolConstant.TASK_COMPLETE + "{1}$";
@@ -156,7 +160,7 @@ public class PatrolStatisticsService {
 
 
             // todo 检验数据正确性的集合,验证正确可删除
-//            set.addAll(taskCodeList);
+            set.addAll(taskCodeList);
 
             // 任务下的巡视人员
             Set<String> userSet = new HashSet<>();
@@ -189,7 +193,7 @@ public class PatrolStatisticsService {
         });
 
         // todo 检验数据正确性的集合,验证正确可删除
-//        System.out.println(set.size());
+        System.out.println(set.size());
 
         return pageList;
     }
@@ -198,11 +202,16 @@ public class PatrolStatisticsService {
      * 首页巡视列表下的任务列表
      *
      * @param page
-     * @param abnormalDTO
+     * @param indexTaskDTO
      * @return
      */
-    public IPage<IndexTaskInfo> getIndexTaskList(Page<IndexTaskInfo> page, IndexTaskDTO abnormalDTO) {
-        IPage<IndexTaskInfo> pageList = patrolTaskMapper.getIndexTaskList(page, abnormalDTO);
+    public IPage<IndexTaskInfo> getIndexTaskList(Page<IndexTaskInfo> page, IndexTaskDTO indexTaskDTO) {
+
+        if (!PatrolConstant.OMIT_STATUS.equals(indexTaskDTO.getOmitStatus())) {
+            indexTaskDTO.setOmitStatus(null);
+        }
+
+        IPage<IndexTaskInfo> pageList = patrolTaskMapper.getIndexTaskList(page, indexTaskDTO);
         pageList.getRecords().stream().forEach(l -> {
             String taskCode = l.getCode();
             // 巡视用户信息
@@ -226,7 +235,7 @@ public class PatrolStatisticsService {
 
             // 巡视站点信息
             List<IndexStationDTO> stationInfo = new ArrayList<>();
-            String stationCode = abnormalDTO.getStationCode();
+            String stationCode = indexTaskDTO.getStationCode();
             if (ObjectUtil.isEmpty(stationCode)) {
                 stationInfo = patrolTaskStationMapper.getStationInfo(taskCode);
             } else {

@@ -51,15 +51,10 @@ public class PatrolCondition implements Serializable {
     @ApiModelProperty(value = "任务状态：0待指派、1待确认、2待执行、3已退回、4执行中、5已驳回、6待审核、7已完成")
     private Integer[] status;
     /**
-     * 漏巡状态
+     * 漏巡状态,0未漏检，1已漏检
      */
-    @ApiModelProperty(value = "漏巡状态")
+    @ApiModelProperty(value = "漏巡状态:0未漏检，1已漏检")
     private Integer omitStatus;
-    /**
-     * 存在未完成任务的站点编号
-     */
-    @ApiModelProperty(value = "存在未完成任务的站点编号")
-    private List<String> codeList;
     /**
      * 完成状态：0未完成，1已完成
      */
