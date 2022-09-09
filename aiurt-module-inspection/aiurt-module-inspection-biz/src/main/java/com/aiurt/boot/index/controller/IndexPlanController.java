@@ -40,14 +40,14 @@ public class IndexPlanController {
     private IndexPlanService indexPlanService;
 
     /**
-     * 获取首页的检修概况信息
+     * 获取首页的检修概况数量
      *
      * @param startDate 开始日期
      * @param endDate   结束日期
      * @return
      */
-    @AutoLog(value = "首页-检修概况", operateType = 1, operateTypeAlias = "查询", permissionUrl = "")
-    @ApiOperation(value = "首页-检修概况", notes = "首页-检修概况")
+    @AutoLog(value = "首页-获取首页的检修概况数量", operateType = 1, operateTypeAlias = "查询", permissionUrl = "")
+    @ApiOperation(value = "首页-获取首页的检修概况数量", notes = "首页-获取首页的检修概况数量")
     @RequestMapping(value = "/overviewInfo", method = RequestMethod.GET)
     public Result<PlanIndexDTO> getOverviewInfo(@ApiParam(name = "startDate", value = "开始日期yyyy-MM-dd") @RequestParam("startDate") @DateTimeFormat(pattern = "yyyy-MM-dd") Date startDate,
                                                 @ApiParam(name = "endDate", value = "结束日期yyyy-MM-dd") @RequestParam("endDate") @DateTimeFormat(pattern = "yyyy-MM-dd") Date endDate) {
@@ -61,8 +61,8 @@ public class IndexPlanController {
      * @param taskDetailsReq 查询条件
      * @return
      */
-    @AutoLog(value = "首页-检修概况详情", operateType = 1, operateTypeAlias = "查询", permissionUrl = "")
-    @ApiOperation(value = "首页-检修概况详情", notes = "首页-检修概况详情")
+    @AutoLog(value = "首页-获取首页的检修概况详情", operateType = 1, operateTypeAlias = "查询", permissionUrl = "")
+    @ApiOperation(value = "首页-获取首页的检修概况详情", notes = "首页-获取首页的检修概况详情")
     @RequestMapping(value = "/getOverviewInfoDetails", method = RequestMethod.GET)
     public Result<IPage<TaskDetailsDTO>> getOverviewInfoDetails(@Validated TaskDetailsReq taskDetailsReq
 
@@ -72,7 +72,7 @@ public class IndexPlanController {
     }
 
     /**
-     * 点击站点获取检修数据
+     * 点击站点获取检修计划数据
      *
      * @param taskDetailsReq 查询条件
      * @return
@@ -80,10 +80,7 @@ public class IndexPlanController {
     @AutoLog(value = "首页-点击站点获取检修数据", operateType = 1, operateTypeAlias = "查询", permissionUrl = "")
     @ApiOperation(value = "首页-点击站点获取检修数据", notes = "首页-点击站点获取检修数据")
     @RequestMapping(value = "/getMaintenancDataByStationCode", method = RequestMethod.GET)
-    public Result<IPage<RepairPoolDetailsDTO>> getMaintenancDataByStationCode(@Validated TaskDetailsReq taskDetailsReq
-
-    ) {
-
+    public Result<IPage<RepairPoolDetailsDTO>> getMaintenancDataByStationCode(@Validated TaskDetailsReq taskDetailsReq) {
         IPage<RepairPoolDetailsDTO> result = indexPlanService.getMaintenancDataByStationCode(taskDetailsReq);
         return Result.OK(result);
     }

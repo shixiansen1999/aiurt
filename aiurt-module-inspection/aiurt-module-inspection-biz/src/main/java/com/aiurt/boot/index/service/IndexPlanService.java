@@ -21,6 +21,7 @@ import com.aiurt.boot.task.mapper.RepairTaskMapper;
 import com.aiurt.boot.task.mapper.RepairTaskStationRelMapper;
 import com.aiurt.boot.task.mapper.RepairTaskUserMapper;
 import com.aiurt.common.util.DateUtils;
+import com.aiurt.modules.api.IBaseApi;
 import com.aiurt.modules.dailyschedule.entity.DailySchedule;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -58,6 +59,8 @@ public class IndexPlanService {
     private RepairTaskUserMapper repairTaskUserMapper;
     @Resource
     private RepairTaskStationRelMapper repairTaskStationRelMapper;
+    @Resource
+    private IBaseApi baseApi;
 
     /**
      * 首页巡视概况
@@ -232,15 +235,16 @@ public class IndexPlanService {
         // 计算某年某月一共有多少天
         int dayNum = getMonthDays(year, month);
 
-        // 故障、检修、巡检、施工,key是日期，value是数量
+        // 检修(key是日期，value是数量)
         Map<String, Integer> inspectionMap = this.inspectionNumByDay(beginDate, dayNum);
+        // 巡检
         Map<String, Integer> patrolMap = new HashMap<>(32);
+        // 故障
         Map<String, Integer> faultMap = new HashMap<>(32);
+        // 施工
         Map<String, Integer> constructionMap = new HashMap<>(32);
-
         // 日程信息
-//        Map<String, List<DailySchedule>> scheduleMap = baseApi.queryDailyScheduleList(year, month);
-        Map<String, List<DailySchedule>> scheduleMap = new HashMap<>();
+        Map<String, List<DailySchedule>> scheduleMap = baseApi.queryDailyScheduleList(year, month);
 
         // 组装数据
         if (ObjectUtil.isNotEmpty(beginDate)) {
@@ -269,7 +273,7 @@ public class IndexPlanService {
      * @return
      */
     private Map<String, Integer> inspectionNumByDay(Date beginDate, int dayNum) {
-        Map<String, Integer> result = new HashMap<>(31);
+        Map<String, Integer> result = new HashMap<>(32);
         if (ObjectUtil.isNotEmpty(beginDate)) {
             for (int i = 0; i < dayNum; i++) {
                 DateTime dateTime = DateUtil.offsetDay(beginDate, i);
