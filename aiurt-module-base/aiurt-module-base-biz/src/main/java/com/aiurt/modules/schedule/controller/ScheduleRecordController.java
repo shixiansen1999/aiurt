@@ -27,7 +27,6 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.apache.shiro.SecurityUtils;
@@ -41,6 +40,7 @@ import org.jeecgframework.poi.excel.entity.ExportParams;
 import org.jeecgframework.poi.excel.entity.ImportParams;
 import org.jeecgframework.poi.excel.view.JeecgEntityExcelView;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
@@ -428,7 +428,7 @@ public class ScheduleRecordController {
     @AutoLog(value = "首页-根据日期查询班次情况", operateType = 1, operateTypeAlias = "查询", permissionUrl = "")
     @ApiOperation(value = "首页-根据日期查询班次情况", notes = "首页-根据日期查询班次情况")
     @RequestMapping(value = "/getStaffOnDuty", method = RequestMethod.GET)
-    public Result<IPage<SysUserScheduleDTO>> getStaffOnDuty(@ApiParam(name = "scheduleRecordDTO", value = "查询条件") @RequestParam("scheduleRecordDTO")ScheduleRecordDTO scheduleRecordDTO
+    public Result<IPage<SysUserScheduleDTO>> getStaffOnDuty(@Validated ScheduleRecordDTO scheduleRecordDTO
     ) {
         Page<SysUserScheduleDTO> page = new Page<>(scheduleRecordDTO.getPageNo(),scheduleRecordDTO.getPageSize());
         IPage<SysUserScheduleDTO> maintenanceSituation = scheduleRecordService.getStaffOnDuty(page, scheduleRecordDTO);
