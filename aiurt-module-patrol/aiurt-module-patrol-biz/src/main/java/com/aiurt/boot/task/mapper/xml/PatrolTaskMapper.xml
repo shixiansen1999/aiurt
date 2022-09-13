@@ -467,7 +467,7 @@
         FROM patrol_task pt
         WHERE pt.del_flag = 0
         <if test="startDate != null and endDate != null">
-            AND pt.patrol_date BETWEEN #{condition.startDate} AND #{condition.endDate}
+            AND pt.patrol_date BETWEEN #{startDate} AND #{endDate}
         </if>
         <if test="departList != null and departList.size>0">
             AND pt.`code` in (
