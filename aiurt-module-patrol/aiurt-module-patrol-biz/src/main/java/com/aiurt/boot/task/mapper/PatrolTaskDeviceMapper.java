@@ -159,4 +159,11 @@ public interface PatrolTaskDeviceMapper extends BaseMapper<PatrolTaskDevice> {
      * @return
      */
     String getStatusName(Integer status);
+
+    /**
+     * 工单-获取站点名
+     * @param stationCode
+     * @return
+     */
+    String getLineStationName(String stationCode);
 }

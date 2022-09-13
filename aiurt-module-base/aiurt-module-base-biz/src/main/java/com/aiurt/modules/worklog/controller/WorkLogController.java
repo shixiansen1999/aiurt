@@ -7,6 +7,7 @@ import com.aiurt.common.result.LogResult;
 import com.aiurt.common.result.LogSubmitCount;
 import com.aiurt.common.result.WorkLogResult;
 import com.aiurt.modules.worklog.dto.WorkLogDTO;
+import com.aiurt.modules.worklog.dto.WorkLogUserTaskDTO;
 import com.aiurt.modules.worklog.entity.WorkLog;
 import com.aiurt.modules.worklog.param.LogCountParam;
 import com.aiurt.modules.worklog.param.WorkLogParam;
@@ -158,6 +159,18 @@ public class WorkLogController {
             Result.error(e.getMessage());
         }
         return  Result.ok("修改成功");
+    }
+    /**
+     *  查看当前用户，当天的检修、巡检、故障的工单
+     * @param
+     * @return
+     */
+    @AutoLog(value = "查看当前用户，当天的检修、巡检、故障的工单")
+    @ApiOperation(value="查看当前用户，当天的检修、巡检、故障的工单", notes="查看当前用户，当天的检修、巡检、故障的工单")
+    @PutMapping(value = "/getUseTask")
+    public Result<WorkLogUserTaskDTO> getUseTask() {
+        WorkLogUserTaskDTO patrolWorkLogDTO = workLogDepotService.getUseTask();
+        return Result.ok(patrolWorkLogDTO);
     }
 
     /**

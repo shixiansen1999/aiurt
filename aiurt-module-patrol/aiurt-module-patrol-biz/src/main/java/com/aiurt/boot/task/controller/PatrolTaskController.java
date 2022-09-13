@@ -24,6 +24,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -456,7 +457,7 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
             patrolTaskService.update(queryWrapper);
             return Result.OK("不通过");
         } else {
-            queryWrapper.set(PatrolTask::getStatus, PatrolConstant.TASK_COMPLETE).set(PatrolTask::getAuditorRemark, remark).eq(PatrolTask::getId, id);
+            queryWrapper.set(PatrolTask::getStatus, PatrolConstant.TASK_COMPLETE).set(PatrolTask::getAuditorRemark, remark).set(PatrolTask::getAuditorTime,new Date()).eq(PatrolTask::getId, id);
             patrolTaskService.update(queryWrapper);
             return Result.OK("通过成功");
         }

@@ -2,9 +2,16 @@ package com.aiurt.boot.api;
 
 import cn.hutool.core.date.DateUtil;
 import com.aiurt.boot.constant.PatrolConstant;
+import com.aiurt.boot.dto.PatrolWorkLogDTO;
+import com.aiurt.boot.standard.entity.PatrolStandard;
 import com.aiurt.boot.task.entity.PatrolTask;
+import com.aiurt.boot.task.entity.PatrolTaskDevice;
+import com.aiurt.boot.task.mapper.PatrolTaskDeviceMapper;
 import com.aiurt.boot.task.mapper.PatrolTaskMapper;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import org.apache.shiro.SecurityUtils;
+import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -15,6 +22,8 @@ public class PatrolApiServiceImpl implements PatrolApi {
 
     @Autowired
     private PatrolTaskMapper patrolTaskMapper;
+    @Autowired
+    private PatrolTaskDeviceMapper patrolTaskDeviceMapper;
 
     /**
      * 首页-统计日程的巡视完成数
@@ -47,6 +56,35 @@ public class PatrolApiServiceImpl implements PatrolApi {
             instance.add(Calendar.DATE, 1);
         }
         return map;
+    }
+
+    @Override
+    public String getUserTask() {
+        LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        //获取当前登录人的全部任务
+        List<PatrolTask> patrolTasks = patrolTaskMapper.getUserTask(sysUser.getId(), new Date());
+        List<PatrolWorkLogDTO> dtoList = new ArrayList<>();
+        List<String> list = new ArrayList<>();
+        for (PatrolTask task : patrolTasks) {
+            //获取当前用户，在这个任务下，提交的所有工单
+            List<PatrolTaskDevice> devices = patrolTaskDeviceMapper.selectList(new LambdaQueryWrapper<PatrolTaskDevice>().
+                    eq(PatrolTaskDevice::getTaskId, task.getId()).eq(PatrolTaskDevice::getUserId, sysUser.getId()).eq(PatrolTaskDevice::getStatus, 2));
+            //获取这个任务下的工单所对应的站点
+            for (PatrolTaskDevice patrolTaskDevice : devices) {
+                PatrolWorkLogDTO dto = new PatrolWorkLogDTO();
+                String stationName = patrolTaskDeviceMapper.getLineStationName(patrolTaskDevice.getStationCode());
+                PatrolStandard standardName = patrolTaskDeviceMapper.getStandardName(patrolTaskDevice.getId());
+                String submitName = patrolTaskDeviceMapper.getSubmitName(patrolTaskDevice.getUserId());
+                String deviceStationName = standardName+"-"+stationName+" 巡视人："+submitName+"。";
+                list.add(deviceStationName);
+                dto.setPatrolTaskTable(standardName.getName());
+                dto.setStation(stationName);
+                dto.setName(submitName);
+                dtoList.add(dto);
+            }
+
+        }
+        return list.toString();
     }
 
 }

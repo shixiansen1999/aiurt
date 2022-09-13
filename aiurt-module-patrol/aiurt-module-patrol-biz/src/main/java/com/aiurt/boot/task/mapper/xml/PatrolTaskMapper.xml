@@ -479,4 +479,14 @@
             )
         </if>
     </select>
+    <select id="getUserTask" resultType="com.aiurt.boot.task.entity.PatrolTask">
+    SELECT
+	pt.id,pt.`code`,pt.`name`
+FROM
+	patrol_task_user ptu
+	LEFT JOIN patrol_task pt on ptu.task_code = pt.`code`
+WHERE
+	DATE_FORMAT( ptu.create_time, '%Y-%m-%d' ) = DATE_FORMAT(#{date} ,'%Y-%m-%d' )
+	and ptu.user_id = #{userId}
+</select>
 </mapper>

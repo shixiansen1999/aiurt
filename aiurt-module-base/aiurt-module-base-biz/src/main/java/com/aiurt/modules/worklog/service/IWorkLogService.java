@@ -5,6 +5,7 @@ import com.aiurt.common.result.LogResult;
 import com.aiurt.common.result.LogSubmitCount;
 import com.aiurt.common.result.WorkLogResult;
 import com.aiurt.modules.worklog.dto.WorkLogDTO;
+import com.aiurt.modules.worklog.dto.WorkLogUserTaskDTO;
 import com.aiurt.modules.worklog.entity.WorkLog;
 import com.aiurt.modules.worklog.param.LogCountParam;
 import com.aiurt.modules.worklog.param.WorkLogParam;
@@ -115,5 +116,11 @@ public interface IWorkLogService extends IService<WorkLog> {
      * @return
      */
     Result<LogSubmitCount> getLogSubmitNum(String startTime, String endTime);
+
+    /**
+     * 查看当前用户，当天的检修、巡检、故障的工单
+     * @return
+     */
+    WorkLogUserTaskDTO getUseTask();
 }
 

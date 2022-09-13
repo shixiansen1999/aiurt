@@ -206,4 +206,12 @@ public interface PatrolTaskMapper extends BaseMapper<PatrolTask> {
      * @return
      */
     List<PatrolTask> getOverviewInfo(@Param("startDate") Date startDate, @Param("endDate") Date endDate, @Param("departList") List<CsUserDepartModel> departList);
+
+    /**
+     * 查看当前用户，当天的巡检任务
+     * @param userId
+     * @param date
+     * @return
+     */
+    List<PatrolTask> getUserTask(@Param("userId")String userId,@Param("date") Date date);
 }

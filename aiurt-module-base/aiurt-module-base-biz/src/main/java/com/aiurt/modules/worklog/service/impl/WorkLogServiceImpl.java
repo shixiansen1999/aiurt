@@ -2,6 +2,7 @@ package com.aiurt.modules.worklog.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.ObjectUtil;
+import com.aiurt.boot.api.PatrolApi;
 import com.aiurt.common.api.dto.message.BusMessageDTO;
 import com.aiurt.common.enums.WorkLogCheckStatusEnum;
 import com.aiurt.common.enums.WorkLogConfirmStatusEnum;
@@ -15,6 +16,7 @@ import com.aiurt.common.util.RoleAdditionalUtils;
 import com.aiurt.common.util.SysAnnmentTypeEnum;
 import com.aiurt.modules.position.entity.CsStation;
 import com.aiurt.modules.worklog.dto.WorkLogDTO;
+import com.aiurt.modules.worklog.dto.WorkLogUserTaskDTO;
 import com.aiurt.modules.worklog.entity.WorkLog;
 import com.aiurt.modules.worklog.entity.WorkLogEnclosure;
 import com.aiurt.modules.worklog.mapper.WorkLogEnclosureMapper;
@@ -64,6 +66,8 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
 
     @Resource
     private WorkLogEnclosureMapper enclosureMapper;
+    @Autowired
+    private PatrolApi patrolApi;
 
     //todo 待处理
 //    @Resource
@@ -711,6 +715,18 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
                 .between(StringUtils.isNotBlank(startTime) && StringUtils.isNotBlank(endTime), WorkLog::getSubmitTime, startTime, endTime));
         logSubmitCount.setSubmitNum(num);
         return Result.ok(logSubmitCount);
+    }
+
+    @Override
+    public WorkLogUserTaskDTO getUseTask() {
+        WorkLogUserTaskDTO patrolWorkLogDTO = new WorkLogUserTaskDTO();
+        //获取巡检内容
+        String userPatrolTask = patrolApi.getUserTask();
+        //获取检修内容
+
+        patrolWorkLogDTO.setPatrolContent(userPatrolTask);
+        //获取故障内容
+       return  patrolWorkLogDTO;
     }
 
     /**

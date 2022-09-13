@@ -243,4 +243,9 @@
         LEFT JOIN sys_dict_item sdt on sd.id = sdt.dict_id
         where sd.dict_code ="device_status" and sdt.item_value = #{status}
     </select>
+    <select id="getLineStationName" resultType="java.lang.String">
+    select cs.station_name
+from cs_station cs
+where cs.station_code = #{stationCode}
+</select>
 </mapper>
