@@ -1,5 +1,6 @@
 package com.aiurt.modules.faultstatistics.service;
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.collection.ListUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
@@ -69,19 +70,27 @@ public class FaultStatisticsService {
         //故障发生次数列表
         List<FaultFrequencyDTO> frequencyDTOList = faultMapper.selectBySubSystemCode(startDate, endDate);
 
-        //根据次数排序
-        List<FaultFrequencyDTO> number = ListUtil.sortByProperty(frequencyDTOList, "number");
+        List<FaultFrequencyDTO> dtoList = new ArrayList<>();
+        frequencyDTOList.forEach(e->{
+            if (StrUtil.isNotBlank(e.getSubSystemCode())){
+                dtoList.add(e);
+            }
+        });
+        if (CollectionUtil.isNotEmpty(dtoList)){
+            //根据次数排序
+            List<FaultFrequencyDTO> number = ListUtil.sortByProperty(dtoList, "number");
 
-        if (l1>=5){
-            //截取后五个值
-            List<FaultFrequencyDTO> sub = ListUtil.sub(number, number.size()-5, number.size());
-            //子系统
-            subList(faultStatisticsDTO, sub);
-        }else {
-            //截取总数的值
-            List<FaultFrequencyDTO> sub = ListUtil.sub(number, 0,Integer.parseInt(String.valueOf(number.size())));
-            //子系统
-            subList(faultStatisticsDTO, sub);
+            if (l1>=5){
+                //截取后五个值
+                List<FaultFrequencyDTO> sub = ListUtil.sub(number, number.size()-5, number.size());
+                //子系统
+                subList(faultStatisticsDTO, sub);
+            }else {
+                //截取总数的值
+                List<FaultFrequencyDTO> sub = ListUtil.sub(number, 0,Integer.parseInt(String.valueOf(number.size())));
+                //子系统
+                subList(faultStatisticsDTO, sub);
+            }
         }
         return faultStatisticsDTO;
     }
