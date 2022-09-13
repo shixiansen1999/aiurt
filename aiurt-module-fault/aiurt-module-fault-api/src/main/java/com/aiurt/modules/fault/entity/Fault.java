@@ -152,6 +152,10 @@ public class Fault extends DictEntity implements Serializable {
     @Dict(dicCode = "fault_status")
     private Integer status;
 
+    @ApiModelProperty(value = "状态,多状态查询,逗号隔开")
+    @TableField(exist = false)
+	private String statusCondition;
+
 
 	/**紧急程度*/
 	@Excel(name = "紧急程度", width = 15)

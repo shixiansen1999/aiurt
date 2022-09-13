@@ -89,6 +89,10 @@ public class FaultController extends BaseController<Fault, IFaultService> {
         if (StrUtil.isNotBlank(appointUserName)) {
             fault.setAppointUserName(null);
         }
+        String statusCondition = fault.getStatusCondition();
+        if (StrUtil.isNotBlank(statusCondition)) {
+            fault.setStatusCondition(null);
+        }
         QueryWrapper<Fault> queryWrapper = QueryGenerator.initQueryWrapper(fault, req.getParameterMap());
         Page<Fault> page = new Page<>(pageNo, pageSize);
         //修改查询条件
@@ -98,6 +102,9 @@ public class FaultController extends BaseController<Fault, IFaultService> {
         // 负责人查询
         queryWrapper.apply(StrUtil.isNotBlank(appointUserName), "( appoint_user_name in (select username from sys_user where (username like concat('%', {0}, '%') or realname like concat('%', {0}, '%'))))", appointUserName);
         queryWrapper.orderByDesc("create_time");
+        if (StrUtil.isNotBlank(statusCondition)) {
+            queryWrapper.in("status", StrUtil.split(statusCondition, ','));
+        }
         IPage<Fault> pageList = faultService.page(page, queryWrapper);
 
         List<Fault> records = pageList.getRecords();
