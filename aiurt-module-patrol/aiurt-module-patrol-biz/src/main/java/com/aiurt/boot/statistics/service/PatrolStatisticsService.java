@@ -65,7 +65,7 @@ public class PatrolStatisticsService {
         String omitRate = String.format("%.2f", 0F);
 
         List<Date> startList = this.getOmitDateScope(startDate);
-        List<Date> endList = this.getOmitDateScope(startDate);
+        List<Date> endList = this.getOmitDateScope(endDate);
         Date startTime = startList.stream().min(Comparator.comparingLong(Date::getTime)).get();
         Date endTime = endList.stream().max(Comparator.comparingLong(Date::getTime)).get();
         // 漏检任务列表
@@ -143,7 +143,7 @@ public class PatrolStatisticsService {
         Set<String> taskCodeSet = new HashSet<>();
         pageList.getRecords().stream().forEach(l -> {
             if (StrUtil.isNotEmpty(l.getTaskCode())) {
-               taskCodeSet.addAll(Arrays.asList(l.getTaskCode().split(",")));
+                taskCodeSet.addAll(Arrays.asList(l.getTaskCode().split(",")));
             }
         });
         // todo 检验数据正确性的集合,验证正确可删除

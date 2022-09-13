@@ -322,9 +322,9 @@
         cs.line_code,
         cs.line_name,
         GROUP_CONCAT( pt.`code` ) taskCode,
-        MAX( pt.submit_time ) submitTime,
+        MAX( pt.submit_time ) submitTime
         <if test="regexp !=null and regexp !=''">
-            IF(GROUP_CONCAT(DISTINCT pt.`status`) REGEXP #{regexp}, 1, 0) `status`
+            ,IF(GROUP_CONCAT(DISTINCT pt.`status`) REGEXP #{regexp}, 1, 0) `status`
         </if>
         FROM patrol_task pt
         JOIN patrol_task_station pts ON pt.`code` = pts.task_code
@@ -342,7 +342,7 @@
             </foreach>
         </if>
         <if test="condition.omitStatus != null">
-            AND pt.omitStatus = #{condition.omitStatus}
+            AND pt.omit_status = #{condition.omitStatus}
         </if>
         <if test="condition.stationCode != null and condition.stationCode != ''">
             AND pts.station_code = #{condition.stationCode}
@@ -386,7 +386,7 @@
             </foreach>
         </if>
         <if test="condition.omitStatus != null">
-            AND pt.omitStatus = #{condition.omitStatus}
+            AND pt.omit_status = #{condition.omitStatus}
         </if>
         <if test="condition.username != null and condition.username != ''">
             AND pt.`code` IN ( SELECT task_code FROM patrol_task_user WHERE user_name
