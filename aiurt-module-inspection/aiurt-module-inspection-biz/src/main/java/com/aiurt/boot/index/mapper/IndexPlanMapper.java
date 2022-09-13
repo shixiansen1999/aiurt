@@ -26,7 +26,7 @@ public interface IndexPlanMapper {
      * @param taskDetailsReq
      * @return
      */
-    List<TaskDetailsDTO> getGropuByData(@Param("type") Integer type, @Param("page") Page<TaskDetailsDTO> page, @Param("taskDetailsReq") TaskDetailsReq taskDetailsReq,@Param("condition") List<String> condition);
+    List<TaskDetailsDTO> getGropuByData(@Param("type") Integer type, @Param("page") Page<TaskDetailsDTO> page, @Param("taskDetailsReq") TaskDetailsReq taskDetailsReq,@Param("codeByOrgCode") List<String> codeByOrgCode);
 
     /**
      * 点击站点获取检修数据
@@ -35,7 +35,7 @@ public interface IndexPlanMapper {
      * @param taskDetailsReq
      * @return
      */
-    List<RepairPoolDetailsDTO> getMaintenancDataByStationCode(@Param("page")Page<RepairPoolDetailsDTO> page,@Param("type")Integer type, @Param("taskDetailsReq")TaskDetailsReq taskDetailsReq);
+    List<RepairPoolDetailsDTO> getMaintenancDataByStationCode(@Param("page")Page<RepairPoolDetailsDTO> page,@Param("type")Integer type, @Param("taskDetailsReq")TaskDetailsReq taskDetailsReq,@Param("codeByOrgCode")List<String> codeByOrgCode);
 
     /**
      * 根据条件查询检修数据（无分页）

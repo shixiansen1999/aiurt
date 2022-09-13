@@ -12,6 +12,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.data.redis.connection.PoolException;
 import org.springframework.http.HttpStatus;
+import org.springframework.validation.BindException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -184,5 +185,16 @@ public class AiurtBootExceptionHandler {
 	public Result<Void> invalidDataFieldExceptionHandle(Exception ex, HttpServletRequest request) {
 		log.error("InvalidDataFieldException exception from URL [" + request.getRequestURI() + "]", ex);
 		return Result.error(AiurtErrorEnum.INVALID_DATA_FIELD.getCode(),AiurtErrorEnum.INVALID_DATA_FIELD.getMessage());
+	}
+
+	/**
+	 * 验证异常处理
+	 * @param e
+	 * @return
+	 */
+	@ExceptionHandler(BindException.class)
+	public Result<?> handleBindException(BindException e) {
+		log.error(e.getMessage(), e);
+		return Result.error(e.getMessage());
 	}
 }

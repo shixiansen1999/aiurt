@@ -49,9 +49,10 @@ public class IndexPlanController {
     @AutoLog(value = "首页-获取首页的检修概况数量", operateType = 1, operateTypeAlias = "查询", permissionUrl = "")
     @ApiOperation(value = "首页-获取首页的检修概况数量", notes = "首页-获取首页的检修概况数量")
     @RequestMapping(value = "/overviewInfo", method = RequestMethod.GET)
-    public Result<PlanIndexDTO> getOverviewInfo(@ApiParam(name = "startDate", value = "开始日期yyyy-MM-dd") @RequestParam("startDate") @DateTimeFormat(pattern = "yyyy-MM-dd") Date startDate,
+    public Result<PlanIndexDTO> getOverviewInfo(@ApiParam(name = "isAllData", value = "是否全部数据0否1是",defaultValue = "0") @RequestParam("isAllData") Integer isAllData,
+                                                @ApiParam(name = "startDate", value = "开始日期yyyy-MM-dd") @RequestParam("startDate") @DateTimeFormat(pattern = "yyyy-MM-dd") Date startDate,
                                                 @ApiParam(name = "endDate", value = "结束日期yyyy-MM-dd") @RequestParam("endDate") @DateTimeFormat(pattern = "yyyy-MM-dd") Date endDate) {
-        PlanIndexDTO result = indexPlanService.getOverviewInfo(startDate, endDate);
+        PlanIndexDTO result = indexPlanService.getOverviewInfo(isAllData,startDate, endDate);
         return Result.OK(result);
     }
 

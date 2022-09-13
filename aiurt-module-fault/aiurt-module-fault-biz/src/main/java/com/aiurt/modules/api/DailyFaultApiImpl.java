@@ -7,6 +7,7 @@ import cn.hutool.core.util.ObjectUtil;
 import com.aiurt.modules.fault.entity.Fault;
 import com.aiurt.modules.index.mapper.FaultCountMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.util.*;
 
@@ -16,6 +17,7 @@ import java.util.*;
  * @author: qkx
  * @date: 2022-09-09 15:11
  */
+@Service
 public class DailyFaultApiImpl implements DailyFaultApi{
 
     @Autowired

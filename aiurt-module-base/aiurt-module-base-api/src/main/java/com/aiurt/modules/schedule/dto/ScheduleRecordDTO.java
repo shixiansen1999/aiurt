@@ -21,7 +21,7 @@ public class ScheduleRecordDTO {
     private java.util.Date startTime;
     @ApiModelProperty(value = "姓名")
     private String name;
-    @ApiModelProperty(value = "班次")
+    @ApiModelProperty(value = "值班类型")
     private Integer shift;
     @ApiModelProperty("第几页")
     private Integer pageNo =1;

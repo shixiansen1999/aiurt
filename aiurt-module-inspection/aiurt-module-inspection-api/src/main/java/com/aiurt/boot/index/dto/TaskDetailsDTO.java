@@ -35,4 +35,7 @@ public class TaskDetailsDTO implements Serializable {
     private String statusName;
     @ApiModelProperty("提交时间")
     private Date submitTime;
+    @ApiModelProperty("任务编码")
+    private String codeStr;
+
 }

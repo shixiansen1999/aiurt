@@ -105,8 +105,6 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
      */
     @Override
     public IPage<RepairPool> queryList(SelectPlanReq selectPlanReq) {
-        // 幂等性校验
-
         // 构造查询条件
         QueryWrapper<RepairPool> queryWrapper = doQuery(selectPlanReq);
         Page<RepairPool> page = new Page<RepairPool>(selectPlanReq.getPageNo(), selectPlanReq.getPageSize());

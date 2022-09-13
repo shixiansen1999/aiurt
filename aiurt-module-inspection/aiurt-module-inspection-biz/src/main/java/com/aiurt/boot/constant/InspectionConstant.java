@@ -240,5 +240,14 @@ public class InspectionConstant {
      * 站点任务：已完成
      */
     public static final Integer INDEX_TASK_STATUS_1 = 1;
+    /**
+     * 首页：全部数据
+     */
+    public static final Integer IS_ALL_DATA_1 = 1;
+
+    /**
+     * 首页：管理部门的数据
+     */
+    public static final Integer IS_ALL_DATA_0 = 0;
 
 }

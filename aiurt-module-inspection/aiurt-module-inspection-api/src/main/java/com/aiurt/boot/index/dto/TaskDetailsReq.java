@@ -38,5 +38,7 @@ public class TaskDetailsReq {
     private Integer type;
     @ApiModelProperty("检修周期")
     private Integer maintenanceCycle;
+    @ApiModelProperty("是否是全部数据0个人数据1全部数据")
+    private Integer isAllData;
 
 }

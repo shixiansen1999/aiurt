@@ -4,44 +4,56 @@
 
 
     <select id="getGropuByData" resultType="com.aiurt.boot.index.dto.TaskDetailsDTO">
-    SELECT
+     select * from (SELECT
         rpsr.station_code AS stationCode,
         cs.station_name AS stationName,
-        cs.line_name AS lineName
-    FROM
+        cs.line_name AS lineName,
+        MIN(rp.`status`) as minStatus,
+        CASE WHEN MIN(rp.`status`)=8 THEN '已完成' ELSE '未完成' END as statusName
+        FROM
         repair_pool rp
         LEFT JOIN repair_pool_station_rel rpsr ON rpsr.repair_pool_code = rp.`code`
         left join cs_station cs on cs.station_code = rpsr.station_code
-    <where>
-        rp.start_time is not null
-        <if test="type!=null and type==2">
-            and rp.status = 8
-        </if>
-        <if test="type!=null and type==3">
-            and rp.status &lt;&gt; 8
-        </if>
-        <if test="taskDetailsReq.startTime!=null and taskDetailsReq.endTime!=null">
-            and date_format(rp.start_time ,'%Y-%m-%d') &gt;=  date_format(#{taskDetailsReq.startTime},'%Y-%m-%d')
-            and date_format(rp.start_time ,'%Y-%m-%d') &lt;= date_format(#{taskDetailsReq.endTime},'%Y-%m-%d')
-        </if>
-        <if test="taskDetailsReq.stationCode!=null">
-            and cs.station_code = #{taskDetailsReq.stationCode}
-        </if>
-        <if test="taskDetailsReq.lineCode!=null">
-            and cs.line_code = #{taskDetailsReq.lineCode}
-        </if>
-        <if test="condition.size()>0">
-            and cs.station_code in
-            <foreach collection="condition" open="(" close=")" item="code" separator=",">
-                #{code}
-            </foreach>
-        </if>
-        <if test="taskDetailsReq.maintenanceCycle!=null">
-          and  rp.type = #{taskDetailsReq.maintenanceCycle}
-        </if>
-    </where>
-    GROUP BY
+        <where>
+            rp.start_time is not null
+            <if test="type!=null and type==2">
+                and rp.status = 8
+            </if>
+            <if test="type!=null and type==3">
+                and rp.status &lt;&gt; 8
+            </if>
+            <if test="taskDetailsReq.startTime!=null and taskDetailsReq.endTime!=null">
+                and date_format(rp.start_time ,'%Y-%m-%d') &gt;=  date_format(#{taskDetailsReq.startTime},'%Y-%m-%d')
+                and date_format(rp.start_time ,'%Y-%m-%d') &lt;= date_format(#{taskDetailsReq.endTime},'%Y-%m-%d')
+            </if>
+            <if test="taskDetailsReq.stationCode!=null">
+                and cs.station_code = #{taskDetailsReq.stationCode}
+            </if>
+            <if test="taskDetailsReq.lineCode!=null">
+                and cs.line_code = #{taskDetailsReq.lineCode}
+            </if>
+            <if test="taskDetailsReq.maintenanceCycle!=null">
+                and  rp.type = #{taskDetailsReq.maintenanceCycle}
+            </if>
+            <if test="taskDetailsReq.isAllData!=null and taskDetailsReq.isAllData==0 and codeByOrgCode.size()>0">
+                and  rp.code in
+                <foreach collection="codeByOrgCode" item="code" open="(" close=")" separator=",">
+                    #{code}
+                </foreach>
+            </if>
+        </where>
+        GROUP BY
         rpsr.station_code
+        ) temptable
+        <where>
+            <if test="taskDetailsReq.status!=null and taskDetailsReq.status==2">
+                temptable.minStatus =8
+             </if>
+            <if test="taskDetailsReq.status!=null and taskDetailsReq.status==3">
+                and temptable.minStatus &lt;&gt; 8
+            </if>
+        </where>
+
     </select>
     <select id="getMaintenancDataByStationCode" resultType="com.aiurt.boot.plan.dto.RepairPoolDetailsDTO">
     SELECT
@@ -62,6 +74,12 @@
         <if test="taskDetailsReq.startTime!=null and taskDetailsReq.endTime!=null">
             and date_format(rp.start_time ,'%Y-%m-%d') &gt;=  date_format(#{taskDetailsReq.startTime},'%Y-%m-%d')
             and date_format(rp.start_time ,'%Y-%m-%d') &lt;= date_format(#{taskDetailsReq.endTime},'%Y-%m-%d')
+        </if>
+        <if test="taskDetailsReq.isAllData!=null and taskDetailsReq.isAllData==0 and codeByOrgCode.size()>0">
+            and  rp.code in
+            <foreach collection="codeByOrgCode" item="code" open="(" close=")" separator=",">
+                #{code}
+            </foreach>
         </if>
     </where>
     </select>
