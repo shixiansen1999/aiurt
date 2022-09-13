@@ -45,7 +45,7 @@ public class DailyScheduleServiceImpl extends ServiceImpl<DailyScheduleMapper, D
     @Override
     public List<DailySchedule> queryList(Integer year, Integer month, Integer day) {
         LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        List<DailySchedule> dailyScheduleList = dailyScheduleMapper.queryDailyScheduleList(year, month, day, loginUser.getId());
+        List<DailySchedule> dailyScheduleList = dailyScheduleMapper.queryDailyScheduleList(year, month, day, loginUser.getUsername());
         dealUserInfo(dailyScheduleList);
         return dailyScheduleList;
     }
@@ -59,7 +59,7 @@ public class DailyScheduleServiceImpl extends ServiceImpl<DailyScheduleMapper, D
     @Override
     public Map<String, List<DailySchedule>> queryDailyScheduleList(Integer year, Integer month) {
         LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        List<DailySchedule> dailyScheduleList = dailyScheduleMapper.queryDailyScheduleList(year, month, null, loginUser.getId());
+        List<DailySchedule> dailyScheduleList = dailyScheduleMapper.queryDailyScheduleList(year, month, null, loginUser.getUsername());
         if (CollUtil.isEmpty(dailyScheduleList)) {
             return new HashMap<>(16);
         }
@@ -76,7 +76,7 @@ public class DailyScheduleServiceImpl extends ServiceImpl<DailyScheduleMapper, D
         dailyScheduleList.stream().forEach(dailySchedule -> {
             String addedUserId = dailySchedule.getAddedUserId();
             if (StrUtil.isNotBlank(addedUserId)) {
-                LoginUser lo = sysBaseAPI.getUserById(addedUserId);
+                LoginUser lo = sysBaseAPI.getUserByName(addedUserId);
                 if (Objects.nonNull(lo)) {
                     dailySchedule.setAddedUserName(lo.getRealname());
                 }
@@ -86,7 +86,7 @@ public class DailyScheduleServiceImpl extends ServiceImpl<DailyScheduleMapper, D
             if (StrUtil.isNotBlank(notifyUserId)) {
                 List<String> userIdList = StrUtil.split(notifyUserId, ',');
                 List<String> userNameList = userIdList.stream().map(id -> {
-                    LoginUser lo = sysBaseAPI.getUserById(addedUserId);
+                    LoginUser lo = sysBaseAPI.getUserByName(addedUserId);
                     if (Objects.nonNull(lo)) {
                         return lo.getRealname();
                     } else {

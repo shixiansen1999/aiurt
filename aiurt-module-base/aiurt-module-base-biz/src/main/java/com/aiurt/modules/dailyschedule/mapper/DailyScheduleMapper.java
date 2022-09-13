@@ -20,7 +20,7 @@ public interface DailyScheduleMapper extends BaseMapper<DailySchedule> {
      * @param year 年
      * @param month 月
      * @param day 日
-     * @param userId 用户id
+     * @param userId 用户账号
      * @return
      */
     List<DailySchedule> queryDailyScheduleList(@Param("year")Integer year, @Param("month")Integer month,

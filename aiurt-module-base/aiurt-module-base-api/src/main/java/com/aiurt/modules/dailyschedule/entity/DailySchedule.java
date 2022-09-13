@@ -59,8 +59,8 @@ public class DailySchedule  extends DictEntity implements Serializable {
     private String sysOrgCode;
 	/**添加人*/
 	@Excel(name = "添加人", width = 15)
-    @ApiModelProperty(value = "添加人")
-    @Dict(dictTable = "sys_user", dicCode = "id", dicText = "realname")
+    @ApiModelProperty(value = "添加人账号")
+    @Dict(dictTable = "sys_user", dicCode = "username", dicText = "realname")
     private String addedUserId;
 
 	@TableField(exist = false)
@@ -78,8 +78,8 @@ public class DailySchedule  extends DictEntity implements Serializable {
     private String content;
 	/**通知人*/
 	@Excel(name = "通知人", width = 15)
-    @ApiModelProperty(value = "通知人")
-    @Dict(dictTable = "sys_user", dicCode = "id", dicText = "realname")
+    @ApiModelProperty(value = "通知人账号")
+    @Dict(dictTable = "sys_user", dicCode = "username", dicText = "realname")
     private String notifyUserId;
 
     @ApiModelProperty("详情-通知人名称")
