@@ -36,4 +36,9 @@ public class IndexScheduleDTO implements Serializable {
      */
     @ApiModelProperty(value = "任务获取方式：1 个人领取、2常规指派、3 手工下发")
     private java.lang.Integer source;
+    /**
+     * 数据权限过滤，0按当前登录用户所管理的组织机构来进行过滤，1不进行过滤
+     */
+    @ApiModelProperty(value = "数据权限过滤，0按当前登录用户所管理的组织机构来进行过滤，1不进行过滤")
+    private Integer isAllData;
 }

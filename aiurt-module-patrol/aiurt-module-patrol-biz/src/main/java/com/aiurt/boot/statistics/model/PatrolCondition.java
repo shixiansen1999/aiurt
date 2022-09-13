@@ -65,5 +65,10 @@ public class PatrolCondition implements Serializable {
 //     */
 //    @ApiModelProperty(value = "手工下发标志,字典值3 为手工下发")
 //    private Integer source = 3;
+    /**
+     * 数据权限过滤，0按当前登录用户所管理的组织机构来进行过滤，1不进行过滤
+     */
+    @ApiModelProperty(value = "数据权限过滤，0按当前登录用户所管理的组织机构来进行过滤，1不进行过滤")
+    private Integer isAllData;
 
 }

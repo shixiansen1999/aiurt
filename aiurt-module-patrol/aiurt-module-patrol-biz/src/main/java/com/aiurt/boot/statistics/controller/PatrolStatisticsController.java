@@ -45,8 +45,10 @@ public class PatrolStatisticsController {
                                                    @RequestParam("startDate") Date startDate,
                                                    @ApiParam(name = "endDate", value = "结束日期")
                                                    @DateTimeFormat(pattern = "yyyy-MM-dd")
-                                                   @RequestParam("endDate") Date endDate) {
-        PatrolSituation situation = patrolStatisticsService.getOverviewInfo(startDate, endDate);
+                                                   @RequestParam("endDate") Date endDate,
+                                                   @ApiParam(name = "isAllData", value = "数据权限过滤，0按当前登录用户所管理的组织机构来进行过滤，1不进行过滤")
+                                                   @RequestParam("isAllData") Integer isAllData) {
+        PatrolSituation situation = patrolStatisticsService.getOverviewInfo(startDate, endDate, isAllData);
         return Result.ok(situation);
     }
 

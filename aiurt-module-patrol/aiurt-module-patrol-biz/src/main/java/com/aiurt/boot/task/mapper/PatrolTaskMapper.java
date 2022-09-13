@@ -1,6 +1,5 @@
 package com.aiurt.boot.task.mapper;
 
-import com.aiurt.boot.constant.PatrolConstant;
 import com.aiurt.boot.standard.dto.StationDTO;
 import com.aiurt.boot.statistics.dto.IndexScheduleDTO;
 import com.aiurt.boot.statistics.dto.IndexTaskDTO;
@@ -17,6 +16,7 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.ibatis.annotations.Param;
+import org.jeecg.common.system.vo.CsUserDepartModel;
 
 import java.util.Date;
 import java.util.List;
@@ -60,6 +60,7 @@ public interface PatrolTaskMapper extends BaseMapper<PatrolTask> {
      * @return author hlq
      */
     List<StationDTO> getStationName(String code);
+
     /**
      * 查询巡检任务列表
      *
@@ -84,12 +85,15 @@ public interface PatrolTaskMapper extends BaseMapper<PatrolTask> {
      * @return
      */
     List<String> getOrgCode(String taskCode);
+
     /**
      * app-获取指派人员信息
-     *@param code
+     *
+     * @param code
      * @return
      */
     List<PatrolTaskUserContentDTO> getUser(@Param("code") String code);
+
     /**
      * app-获取组织机构名称
      *
@@ -150,6 +154,7 @@ public interface PatrolTaskMapper extends BaseMapper<PatrolTask> {
 
     /**
      * 获取stationCodeList
+     *
      * @param code
      * @return
      */
@@ -157,6 +162,7 @@ public interface PatrolTaskMapper extends BaseMapper<PatrolTask> {
 
     /**
      * 根据站点编号获取线路编号
+     *
      * @param stationCode
      * @return
      */
@@ -164,26 +170,40 @@ public interface PatrolTaskMapper extends BaseMapper<PatrolTask> {
 
     /**
      * 获取首页巡检的巡视列表
+     *
      * @param page
      * @param condition
+     * @param departList
      * @return
      */
-    IPage<PatrolIndexTask> getIndexPatrolList(Page<PatrolIndexTask> page, @Param("condition") PatrolCondition condition, @Param("regexp")String regexp);
+    IPage<PatrolIndexTask> getIndexPatrolList(Page<PatrolIndexTask> page, @Param("condition") PatrolCondition condition, @Param("regexp") String regexp, @Param("departList") List<CsUserDepartModel> departList);
 
     /**
      * 获取首页巡视列表下的任务列表
      *
      * @param page
      * @param condition
+     * @param departList
      * @return
      */
-    IPage<IndexTaskInfo> getIndexTaskList(Page<IndexTaskInfo> page, @Param("condition") IndexTaskDTO condition);
+    IPage<IndexTaskInfo> getIndexTaskList(Page<IndexTaskInfo> page, @Param("condition") IndexTaskDTO condition, @Param("departList") List<CsUserDepartModel> departList);
 
     /**
      * 获取首页的日程的巡检列表
+     *
      * @param page
      * @param indexScheduleDTO
      * @return
      */
-    IPage<ScheduleTask> getScheduleList(Page<ScheduleTask> page,@Param("condition") IndexScheduleDTO indexScheduleDTO);
+    IPage<ScheduleTask> getScheduleList(Page<ScheduleTask> page, @Param("condition") IndexScheduleDTO indexScheduleDTO, @Param("departList") List<CsUserDepartModel> departList);
+
+    /**
+     * 获取首页指定日期范围的任务列表
+     *
+     * @param startDate
+     * @param endDate
+     * @param departList
+     * @return
+     */
+    List<PatrolTask> getOverviewInfo(@Param("startDate") Date startDate, @Param("endDate") Date endDate, @Param("departList") List<CsUserDepartModel> departList);
 }

@@ -10,13 +10,17 @@ import com.aiurt.boot.task.entity.PatrolTask;
 import com.aiurt.boot.task.entity.PatrolTaskUser;
 import com.aiurt.boot.task.mapper.*;
 import com.aiurt.boot.task.service.IPatrolTaskService;
+import com.aiurt.common.exception.AiurtBootException;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.system.api.ISysBaseAPI;
+import org.jeecg.common.system.vo.CsUserDepartModel;
 import org.jeecg.common.system.vo.DictModel;
+import org.jeecg.common.system.vo.LoginUser;
 import org.jeecg.common.util.DateUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -42,20 +46,33 @@ public class PatrolStatisticsService {
     private PatrolTaskStationMapper patrolTaskStationMapper;
     @Autowired
     private PatrolTaskDeviceMapper patrolTaskDeviceMapper;
+    /**
+     * 权限过滤标识
+     */
+    private final Integer ALLDATA = 1;
 
     /**
      * 首页巡视概况
      *
      * @return
      */
-    public PatrolSituation getOverviewInfo(Date startDate, Date endDate) {
+    public PatrolSituation getOverviewInfo(Date startDate, Date endDate, Integer isAllData) {
         Date newStartDate = DateUtil.parse(DateUtil.format(startDate, "yyyy-MM-dd 00:00:00"));
         Date newEndDate = DateUtil.parse(DateUtil.format(endDate, "yyyy-MM-dd 23:59:59"));
         PatrolSituation situation = new PatrolSituation();
-        List<PatrolTask> list = patrolTaskService.lambdaQuery().eq(PatrolTask::getDelFlag, 0)
-                // 过滤手工下发
-//                .and(i -> i.ne(PatrolTask::getSource, PatrolConstant.TASK_MANUAL).or().isNull(PatrolTask::getSource))
-                .between(PatrolTask::getPatrolDate, newStartDate, newEndDate).list();
+//        List<PatrolTask> list = patrolTaskService.lambdaQuery().eq(PatrolTask::getDelFlag, 0)
+//                // 过滤手工下发
+////                .and(i -> i.ne(PatrolTask::getSource, PatrolConstant.TASK_MANUAL).or().isNull(PatrolTask::getSource))
+//                .between(PatrolTask::getPatrolDate, newStartDate, newEndDate).list();
+        List<CsUserDepartModel> departList = null;
+        if (ObjectUtil.isEmpty(isAllData) || !ALLDATA.equals(isAllData)) {
+            LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+            if (ObjectUtil.isEmpty(loginUser)) {
+                throw new AiurtBootException("检测到暂未登录，请登录系统后操作！");
+            }
+            departList = sysBaseApi.getDepartByUserId(loginUser.getId());
+        }
+        List<PatrolTask> list = patrolTaskMapper.getOverviewInfo(newStartDate, newEndDate, departList);
 
         long sum = list.stream().count();
         long finish = list.stream().filter(l -> PatrolConstant.TASK_COMPLETE.equals(l.getStatus())).count();
@@ -69,8 +86,10 @@ public class PatrolStatisticsService {
         Date startTime = startList.stream().min(Comparator.comparingLong(Date::getTime)).get();
         Date endTime = endList.stream().max(Comparator.comparingLong(Date::getTime)).get();
         // 漏检任务列表
-        List<PatrolTask> omitList = patrolTaskService.lambdaQuery().eq(PatrolTask::getDelFlag, 0)
-                .between(PatrolTask::getPatrolDate, startTime, endTime).list();
+//        List<PatrolTask> omitList = patrolTaskService.lambdaQuery().eq(PatrolTask::getDelFlag, 0)
+//                .between(PatrolTask::getPatrolDate, startTime, endTime).list();
+        List<PatrolTask> omitList = patrolTaskMapper.getOverviewInfo(startTime, endTime, departList);
+
         // 漏检时间范围内的任务总数
         long omitScopeSum = omitList.size();
         omit += omitList.stream().filter(l -> PatrolConstant.OMIT_STATUS.equals(l.getOmitStatus())).count();
@@ -138,7 +157,17 @@ public class PatrolStatisticsService {
         // 任务为已完成状态的正则
         String regexp = "^" + PatrolConstant.TASK_COMPLETE + "{1}$";
 
-        IPage<PatrolIndexTask> pageList = patrolTaskMapper.getIndexPatrolList(page, patrolCondition, regexp);
+        IPage<PatrolIndexTask> pageList = null;
+        if (ObjectUtil.isNotEmpty(patrolCondition.getIsAllData()) && ALLDATA.equals(patrolCondition.getIsAllData())) {
+            pageList = patrolTaskMapper.getIndexPatrolList(page, patrolCondition, regexp, null);
+        } else {
+            LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+            if (ObjectUtil.isEmpty(loginUser)) {
+                throw new AiurtBootException("检测到暂未登录，请登录系统后操作！");
+            }
+            List<CsUserDepartModel> departList = sysBaseApi.getDepartByUserId(loginUser.getId());
+            pageList = patrolTaskMapper.getIndexPatrolList(page, patrolCondition, regexp, departList);
+        }
 
         Set<String> taskCodeSet = new HashSet<>();
         pageList.getRecords().stream().forEach(l -> {
@@ -214,7 +243,17 @@ public class PatrolStatisticsService {
             indexTaskDTO.setOmitStatus(null);
         }
 
-        IPage<IndexTaskInfo> pageList = patrolTaskMapper.getIndexTaskList(page, indexTaskDTO);
+        IPage<IndexTaskInfo> pageList = null;
+        if (ObjectUtil.isNotEmpty(indexTaskDTO.getIsAllData()) && ALLDATA.equals(indexTaskDTO.getIsAllData())) {
+            pageList = patrolTaskMapper.getIndexTaskList(page, indexTaskDTO, null);
+        } else {
+            LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+            if (ObjectUtil.isEmpty(loginUser)) {
+                throw new AiurtBootException("检测到暂未登录，请登录系统后操作！");
+            }
+            List<CsUserDepartModel> departList = sysBaseApi.getDepartByUserId(loginUser.getId());
+            pageList = patrolTaskMapper.getIndexTaskList(page, indexTaskDTO, departList);
+        }
         pageList.getRecords().stream().forEach(l -> {
             String taskCode = l.getCode();
             // 巡视用户信息
@@ -271,7 +310,18 @@ public class PatrolStatisticsService {
      * @return
      */
     public IPage<ScheduleTask> getScheduleList(Page<ScheduleTask> page, IndexScheduleDTO indexScheduleDTO) {
-        IPage<ScheduleTask> pageList = patrolTaskMapper.getScheduleList(page, indexScheduleDTO);
+        IPage<ScheduleTask> pageList = null;
+        if (ObjectUtil.isNotEmpty(indexScheduleDTO.getIsAllData()) && ALLDATA.equals(indexScheduleDTO.getIsAllData())) {
+            pageList = patrolTaskMapper.getScheduleList(page, indexScheduleDTO, null);
+        } else {
+            LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+            if (ObjectUtil.isEmpty(loginUser)) {
+                throw new AiurtBootException("检测到暂未登录，请登录系统后操作！");
+            }
+            List<CsUserDepartModel> departList = sysBaseApi.getDepartByUserId(loginUser.getId());
+            pageList = patrolTaskMapper.getScheduleList(page, indexScheduleDTO, departList);
+        }
+
         pageList.getRecords().stream().forEach(l -> {
             // 字典翻译
             String statusName = sysBaseApi.getDictItems("patrol_task_status").stream()
