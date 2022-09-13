@@ -84,6 +84,10 @@ public class FaultTimeoutLevelDTO {
     @TableField(exist = false)
     private String deviceCode;
 
+    @ApiModelProperty(value = "设备名称")
+    @TableField(exist = false)
+    private String deviceName;
+
     /**故障现象*/
     @ApiModelProperty(value = "故障现象",  required = true)
     @NotBlank(message = "请填写故障现象!")

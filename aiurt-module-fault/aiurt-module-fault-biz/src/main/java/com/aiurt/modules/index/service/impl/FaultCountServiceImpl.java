@@ -8,7 +8,9 @@ import com.aiurt.modules.fault.dto.FaultIndexDTO;
 import com.aiurt.modules.fault.dto.FaultTimeoutLevelDTO;
 import com.aiurt.modules.fault.dto.FaultTimeoutLevelReq;
 import com.aiurt.modules.fault.entity.Fault;
+import com.aiurt.modules.fault.entity.FaultDevice;
 import com.aiurt.modules.fault.enums.FaultStatusEnum;
+import com.aiurt.modules.fault.service.IFaultDeviceService;
 import com.aiurt.modules.index.mapper.FaultCountMapper;
 import com.aiurt.modules.index.service.IFaultCountService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -32,6 +34,9 @@ public class FaultCountServiceImpl implements IFaultCountService {
 
    @Autowired
    private FaultCountMapper faultCountMapper;
+
+   @Autowired
+   private IFaultDeviceService faultDeviceService;
 
     /**
      * 首页统计故障概况
@@ -120,6 +125,14 @@ public class FaultCountServiceImpl implements IFaultCountService {
         List<FaultTimeoutLevelDTO> faultData = faultCountMapper.getFaultData(faultTimeoutLevelReq.getLevel(), page, faultTimeoutLevelReq);
         if (CollUtil.isNotEmpty(faultData)) {
             for (FaultTimeoutLevelDTO faultDatum : faultData) {
+                //查找设备编码
+                List<FaultDevice> faultDeviceList = faultDeviceService.queryByFaultCode(faultDatum.getCode());
+                if(CollUtil.isNotEmpty(faultDeviceList)){
+                    for (FaultDevice faultDevice : faultDeviceList) {
+                        faultDatum.setDeviceCode(faultDevice.getDeviceCode());
+                        faultDatum.setDeviceName(faultDevice.getDeviceName());
+                    }
+                }
                 //计算超时时长
                 long hour=DateUtil.between(faultDatum.getHappenTime(),new Date(), DateUnit.HOUR);
                 long min=DateUtil.between(faultDatum.getHappenTime(),new Date(), DateUnit.MINUTE);
