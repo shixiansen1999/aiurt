@@ -60,8 +60,7 @@ public class FaultTimeoutLevelDTO {
     private String teamUser;
 
     @ApiModelProperty("维修负责人")
-    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
-    private String appointUserName_dictText;
+    private String appointUserName;
 
     /**专业子系统编码*/
     @ApiModelProperty(value = "专业子系统编码")
