@@ -261,7 +261,7 @@ public class CsSubsystemController  {
 		 List<CsSubsystem> systemList = csSubsystemService.list(new LambdaQueryWrapper<CsSubsystem>()
 				 .eq(CsSubsystem::getDelFlag, CommonConstant.DEL_FLAG_0)
 				 .in(CsSubsystem::getMajorCode,set));
-
+		 systemList.forEach(s->{s.setKey(s.getId());});
 		 return Result.OK(systemList);
 	 }
 
