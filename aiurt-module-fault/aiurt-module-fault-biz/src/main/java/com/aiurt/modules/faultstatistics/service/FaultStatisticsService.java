@@ -80,7 +80,7 @@ public class FaultStatisticsService {
             //根据次数排序
             List<FaultFrequencyDTO> number = ListUtil.sortByProperty(dtoList, "number");
 
-            if (l1>=5){
+            if (number.size()>=5){
                 //截取后五个值
                 List<FaultFrequencyDTO> sub = ListUtil.sub(number, number.size()-5, number.size());
                 //子系统
