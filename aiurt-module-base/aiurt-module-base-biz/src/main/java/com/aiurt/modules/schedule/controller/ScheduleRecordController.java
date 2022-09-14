@@ -369,7 +369,7 @@ public class ScheduleRecordController {
         Result<List<ScheduleRecordModel>> result = new Result<List<ScheduleRecordModel>>();
         LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         LambdaQueryWrapper<LoginUser> queryWrapper = new LambdaQueryWrapper<>();
-         List<LoginUser> userList = scheduleRecordMapper.userList(loginUser.getOrgCode());
+         List<LoginUser> userList = scheduleRecordMapper.userList(loginUser.getOrgId());
         if (StringUtils.isNotEmpty(date)&& ObjectUtil.isNotEmpty(userList)) {
             List<String>ids = userList.stream().map(LoginUser::getId).collect(Collectors.toList());
             List<ScheduleRecordModel> recordModelList = scheduleRecordService.getRecordListByDayAndUserIds(date,ids);
