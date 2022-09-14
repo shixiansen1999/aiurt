@@ -444,5 +444,10 @@ public interface ISysBaseAPI extends CommonAPI {
      * @return
      */
     List<SiteModel> getSiteByOrgCode(String orgCode);
-
+    /**
+     * 通过线路查询对应的站点
+     * @param lineCode
+     * @return
+     */
+    public List<String> getStationCodeByLineCode(String lineCode);
 }

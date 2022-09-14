@@ -4,6 +4,7 @@ package com.aiurt.modules.schedule.service;
 import com.aiurt.modules.schedule.dto.ScheduleBigScreenDTO;
 import com.aiurt.modules.schedule.dto.ScheduleRecordDTO;
 import com.aiurt.modules.schedule.dto.SysUserScheduleDTO;
+import com.aiurt.modules.schedule.dto.SysUserTeamDTO;
 import com.aiurt.modules.schedule.entity.ScheduleRecord;
 import com.aiurt.modules.schedule.model.ScheduleRecordModel;
 import com.aiurt.modules.schedule.model.ScheduleUser;
@@ -66,4 +67,19 @@ public interface IScheduleRecordService extends IService<ScheduleRecord> {
      * @return
      */
     ScheduleBigScreenDTO getTeamData(String lineCode, Integer type);
+    /**
+     * 获取大屏的班组信息-点击今日当班人数
+     *
+     * @param lineCode 线路code
+     * @return
+     */
+    IPage<SysUserTeamDTO> getTodayOndutyDetail(String lineCode,  String orgId,Page<SysUserTeamDTO> page);
+    /**
+     * 获取大屏的班组信息-点击总人员数
+     *
+     * @param lineCode 线路code
+     * @return
+     */
+    IPage<SysUserTeamDTO> getTotalPepoleDetail(String lineCode,  String orgId,Page<SysUserTeamDTO> page);
+
 }

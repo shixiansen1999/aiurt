@@ -358,6 +358,17 @@ public class SysBaseAPIFallback implements ISysBaseAPI {
         return null;
     }
 
+    /**
+     * 通过线路code查询站点code
+     *
+     * @param lineCode
+     * @return
+     */
+    @Override
+    public List<String> getStationCodeByLineCode(String lineCode) {
+        return null;
+    }
+
     @Override
     public void sendEmailMsg(String email,String title,String content) {
 

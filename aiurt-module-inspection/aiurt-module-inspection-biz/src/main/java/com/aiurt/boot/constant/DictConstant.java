@@ -67,5 +67,8 @@ public class DictConstant {
      * 	检修管理-手工下发任务状态
      */
     public static final String 	INSPECTION_MANUAL_TASK = "inspection_manual_task";
-
+    /**
+     * 看板时间字典
+     */
+    public static final String 	BOARD_TIME_TYPE = "board_time_type";
 }
