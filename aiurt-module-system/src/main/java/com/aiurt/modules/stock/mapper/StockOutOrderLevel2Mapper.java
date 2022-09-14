@@ -29,4 +29,5 @@ import org.springframework.stereotype.Component;
 @EnableDataPerm
 public interface StockOutOrderLevel2Mapper extends BaseMapper<StockOutOrderLevel2> {
     List<StockOutOrderLevel2> pageList(Page<StockOutOrderLevel2> page, @Param("condition") StockOutOrderLevel2 stockInOrderLevel2);
+    List<StockOutOrderLevel2> selectListAll();
 }

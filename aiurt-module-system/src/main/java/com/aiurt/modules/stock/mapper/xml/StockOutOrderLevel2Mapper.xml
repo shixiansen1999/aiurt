@@ -14,10 +14,23 @@
             <if test="condition.warehouseName != null and condition.warehouseName != ''">
                 and spsi.warehouse_name like concat(concat('%',#{condition.warehouseName}),'%')
             </if>
+            <if test="condition.custodialWarehouseCode != null and condition.custodialWarehouseCode != ''">
+                and spsi.warehouse_code = #{condition.custodialWarehouseCode}
+            </if>
             <if test="condition.outTimeBegin != null and condition.outTimeEnd != null">
                 and Date(stock_out_order_level2.out_time) &gt;= #{condition.outTimeBegin} and Date(stock_out_order_level2.out_time) &lt;= #{condition.outTimeEnd}
             </if>
         </where>
+        order by stock_out_order_level2.create_time desc
+    </select>
+    <select id="selectListAll" resultType="com.aiurt.modules.stock.entity.StockOutOrderLevel2">
+        select stock_out_order_level2.custodial_warehouse_code, spsi.warehouse_name custodial_warehouse_name
+        from stock_out_order_level2 stock_out_order_level2
+        left join spare_part_stock_info spsi on stock_out_order_level2.custodial_warehouse_code = spsi.warehouse_code and spsi.del_flag = 0
+        <where>
+            and stock_out_order_level2.del_flag = 0 and stock_out_order_level2.custodial_warehouse_code is not null
+        </where>
+        group by stock_out_order_level2.custodial_warehouse_code
         order by stock_out_order_level2.create_time desc
     </select>
 </mapper>

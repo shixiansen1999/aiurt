@@ -83,6 +83,12 @@ public class StockOutOrderLevel2ServiceImpl extends ServiceImpl<StockOutOrderLev
 	}
 
 	@Override
+	public List<StockOutOrderLevel2> selectList() {
+		List<StockOutOrderLevel2> baseList = baseMapper.selectListAll();
+		return baseList;
+	}
+
+	@Override
 	public SparePartApply getList(String id) {
 		StockOutOrderLevel2 stockOutOrderLevel2 = this.getById(id);
 		String applyCode = stockOutOrderLevel2.getApplyCode();

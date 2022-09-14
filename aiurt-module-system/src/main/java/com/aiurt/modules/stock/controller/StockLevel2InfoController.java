@@ -1,6 +1,7 @@
 package com.aiurt.modules.stock.controller;
 
 import com.aiurt.common.aspect.annotation.AutoLog;
+import com.aiurt.common.aspect.annotation.PermissionData;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.modules.device.entity.DeviceAssembly;
@@ -13,6 +14,8 @@ import com.aiurt.modules.stock.entity.StockLevel2Info;
 import com.aiurt.modules.stock.service.IStockInOrderLevel2Service;
 import com.aiurt.modules.stock.service.IStockLevel2InfoService;
 import com.aiurt.modules.stock.service.IStockLevel2Service;
+import com.aiurt.modules.system.entity.SysDepart;
+import com.aiurt.modules.system.service.ISysDepartService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -57,6 +60,8 @@ public class StockLevel2InfoController {
     private IStockInOrderLevel2Service iStockInOrderLevel2Service;
     @Autowired
     private IStockLevel2Service iStockLevel2Service;
+    @Autowired
+    private ISysDepartService iSysDepartService;
 
     /**
      * 分页列表查询
@@ -112,6 +117,35 @@ public class StockLevel2InfoController {
         return result;
     }
 
+    @AutoLog(value = "系统管理-基础数据-二级库仓库-下拉列表查询(权限控制)", operateType = 1, operateTypeAlias = "查询", permissionUrl = "/manage/StockLevelTwoList")
+    @ApiOperation(value = "系统管理-基础数据-二级库仓库-下拉列表查询(权限控制)", notes = "系统管理-基础数据-二级库仓库-下拉列表查询")
+    @GetMapping(value = "/selectListAuth")
+    @PermissionData(pageComponent = "manage/StockLevelTwoList")
+    public Result<List<StockLevel2Info>> selectListAuth(StockLevel2Info stockLevel2Info,
+                                                    HttpServletRequest req) {
+        Result<List<StockLevel2Info>> result = new Result<List<StockLevel2Info>>();
+        QueryWrapper<StockLevel2Info> queryWrapper = new QueryWrapper<>();
+        if(stockLevel2Info.getWarehouseName() != null && !"".equals(stockLevel2Info.getWarehouseName())){
+            queryWrapper.like("warehouse_name",stockLevel2Info.getWarehouseName());
+        }
+        if(stockLevel2Info.getWarehouseCode() != null && !"".equals(stockLevel2Info.getWarehouseCode())){
+            queryWrapper.like("warehouse_code",stockLevel2Info.getWarehouseCode());
+        }
+        if(stockLevel2Info.getOrganizationId() != null && !"".equals(stockLevel2Info.getOrganizationId())){
+            queryWrapper.like("organization_id",stockLevel2Info.getOrganizationId());
+        }
+        if(stockLevel2Info.getStatus() != null && !"".equals(stockLevel2Info.getStatus())){
+            queryWrapper.like("status",stockLevel2Info.getStatus());
+        }
+        queryWrapper.eq("del_flag", CommonConstant.DEL_FLAG_0);
+        queryWrapper.eq("status", CommonConstant.STOCK_LEVEL2_STATUS_1);
+        queryWrapper.orderByDesc("create_time");
+        List<StockLevel2Info> stockLevel2Infos = iStockLevel2InfoService.list(queryWrapper);
+        result.setSuccess(true);
+        result.setResult(stockLevel2Infos);
+        return result;
+    }
+
     @AutoLog(value = "系统管理-基础数据-二级库仓库-添加", operateType = 2, operateTypeAlias = "添加", permissionUrl = "/manage/StockLevelTwoList")
     @ApiOperation(value = "系统管理-基础数据-二级库仓库-添加", notes = "系统管理-基础数据-二级库仓库-添加")
     @PostMapping(value = "/add")
@@ -126,6 +160,9 @@ public class StockLevel2InfoController {
             if (countname > 0){
                 return Result.error("二级库名称不能重复");
             }
+            String organizationId = stockLevel2Info.getOrganizationId();
+            SysDepart sysDepart = iSysDepartService.getById(organizationId);
+            stockLevel2Info.setOrgCode(sysDepart.getOrgCode());
             iStockLevel2InfoService.save(stockLevel2Info);
             result.success("添加成功！");
         } catch (Exception e) {
@@ -157,6 +194,9 @@ public class StockLevel2InfoController {
         if (stockLevel2InfoEntity == null) {
             result.onnull("未找到对应实体");
         } else {
+            String organizationId = stockLevel2Info.getOrganizationId();
+            SysDepart sysDepart = iSysDepartService.getById(organizationId);
+            stockLevel2Info.setOrgCode(sysDepart.getOrgCode());
             boolean ok = iStockLevel2InfoService.updateById(stockLevel2Info);
             try{
             }catch (Exception e){

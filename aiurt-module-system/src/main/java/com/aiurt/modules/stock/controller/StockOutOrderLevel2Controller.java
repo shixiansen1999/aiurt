@@ -4,6 +4,7 @@ import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.aspect.annotation.PermissionData;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.modules.sparepart.entity.SparePartApply;
+import com.aiurt.modules.sparepart.entity.SparePartStockInfo;
 import com.aiurt.modules.stock.entity.StockLevel2Check;
 import com.aiurt.modules.stock.entity.StockOutOrderLevel2;
 import com.aiurt.modules.stock.entity.StockOutboundMaterials;
@@ -63,6 +64,18 @@ public class StockOutOrderLevel2Controller {
         result.setResult(pageList);
         return result;
     }
+
+	@AutoLog(value = "二级库管理-二级库出库管理-保管仓库下拉", operateType = 1, operateTypeAlias = "查询", permissionUrl = "/secondLevelWarehouse/StockLevel2SecondaryList")
+	@ApiOperation(value = "二级库管理-二级库出库管理-保管仓库下拉", notes = "二级库管理-二级库出库管理-保管仓库下拉")
+	@GetMapping(value = "/sparePartsStocklist")
+	@PermissionData(pageComponent = "secondLevelWarehouse/StockLevel2SecondaryList")
+	public Result<List<StockOutOrderLevel2>> sparePartsWarelist(HttpServletRequest req) {
+		Result<List<StockOutOrderLevel2>> result = new Result<List<StockOutOrderLevel2>>();
+		List<StockOutOrderLevel2> pageList = iStockOutOrderLevel2Service.selectList();
+		result.setSuccess(true);
+		result.setResult(pageList);
+		return result;
+	}
 
     /**
      * 二级库出库管理详情查询

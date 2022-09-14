@@ -5,6 +5,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import cn.hutool.core.util.ObjectUtil;
+import com.aiurt.common.aspect.annotation.PermissionData;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.system.base.controller.BaseController;
 import com.aiurt.modules.manufactor.entity.CsManufactor;
@@ -14,7 +15,6 @@ import com.aiurt.modules.sparepart.entity.SparePartStockInfo;
 import com.aiurt.modules.sparepart.service.ISparePartInOrderService;
 import com.aiurt.modules.sparepart.service.ISparePartStockInfoService;
 import com.aiurt.modules.sparepart.service.ISparePartStockService;
-import com.aiurt.modules.subsystem.entity.CsSubsystem;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -173,4 +173,31 @@ public class SparePartStockInfoController extends BaseController<SparePartStockI
 		return Result.OK(list);
 	}
 
+	@AutoLog(value = "系统管理-基础数据-备件仓库-下拉列表查询（部门权限）", operateType = 1, operateTypeAlias = "查询", permissionUrl = "/sparepart/sparePartStockInfo/list")
+	@ApiOperation(value = "系统管理-基础数据-备件仓库-下拉列表查询", notes = "系统管理-基础数据-备件仓库-下拉列表查询")
+	@GetMapping(value = "/selectListAuth")
+	@PermissionData(pageComponent = "manage/StockSparePartList")
+	public Result<List<SparePartStockInfo>> selectList(SparePartStockInfo SparePartStockInfo,
+													HttpServletRequest req) {
+		Result<List<SparePartStockInfo>> result = new Result<List<SparePartStockInfo>>();
+		QueryWrapper<SparePartStockInfo> queryWrapper = new QueryWrapper<>();
+		if(SparePartStockInfo.getWarehouseName() != null && !"".equals(SparePartStockInfo.getWarehouseName())){
+			queryWrapper.like("warehouse_name",SparePartStockInfo.getWarehouseName());
+		}
+		if(SparePartStockInfo.getWarehouseCode() != null && !"".equals(SparePartStockInfo.getWarehouseCode())){
+			queryWrapper.like("warehouse_code",SparePartStockInfo.getWarehouseCode());
+		}
+		if(SparePartStockInfo.getOrganizationId() != null && !"".equals(SparePartStockInfo.getOrganizationId())){
+			queryWrapper.like("organization_id",SparePartStockInfo.getOrganizationId());
+		}
+		if(SparePartStockInfo.getWarehouseStatus() != null && !"".equals(SparePartStockInfo.getWarehouseStatus())){
+			queryWrapper.like("warehouse_status",SparePartStockInfo.getWarehouseStatus());
+		}
+		queryWrapper.eq("del_flag", CommonConstant.DEL_FLAG_0);
+		queryWrapper.orderByDesc("create_time");
+		List<SparePartStockInfo> SparePartStockInfos = sparePartStockInfoService.list(queryWrapper);
+		result.setSuccess(true);
+		result.setResult(SparePartStockInfos);
+		return result;
+	}
 }

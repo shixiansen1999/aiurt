@@ -5,6 +5,8 @@ import com.aiurt.modules.manufactor.mapper.CsManufactorMapper;
 import com.aiurt.modules.sparepart.entity.SparePartStockInfo;
 import com.aiurt.modules.sparepart.mapper.SparePartStockInfoMapper;
 import com.aiurt.modules.sparepart.service.ISparePartStockInfoService;
+import com.aiurt.modules.system.entity.SysDepart;
+import com.aiurt.modules.system.service.ISysDepartService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.constant.CommonConstant;
@@ -26,6 +28,8 @@ import java.util.List;
 public class SparePartStockInfoServiceImpl extends ServiceImpl<SparePartStockInfoMapper, SparePartStockInfo> implements ISparePartStockInfoService {
     @Autowired
     private SparePartStockInfoMapper sparePartStockInfoMapper;
+    @Autowired
+    private ISysDepartService iSysDepartService;
     /**
      * 添加
      *
@@ -59,6 +63,9 @@ public class SparePartStockInfoServiceImpl extends ServiceImpl<SparePartStockInf
         if (!deptList.isEmpty()) {
             return Result.error("已存在该组织机构的备件仓库！");
         }
+        String organizationId = sparePartStockInfo.getOrganizationId();
+        SysDepart sysDepart = iSysDepartService.getById(organizationId);
+        sparePartStockInfo.setOrgCode(sysDepart.getOrgCode());
         sparePartStockInfoMapper.insert(sparePartStockInfo);
         return Result.OK("添加成功！");
     }
@@ -96,6 +103,9 @@ public class SparePartStockInfoServiceImpl extends ServiceImpl<SparePartStockInf
         if (!deptList.isEmpty() && deptList.get(0).equals(sparePartStockInfo.getId())) {
             return Result.error("已存在该组织机构的备件仓库！");
         }
+        String organizationId = sparePartStockInfo.getOrganizationId();
+        SysDepart sysDepart = iSysDepartService.getById(organizationId);
+        sparePartStockInfo.setOrgCode(sysDepart.getOrgCode());
         sparePartStockInfoMapper.updateById(sparePartStockInfo);
         return Result.OK("编辑成功！");
     }

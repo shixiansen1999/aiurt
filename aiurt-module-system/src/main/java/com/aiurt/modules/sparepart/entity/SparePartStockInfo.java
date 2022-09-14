@@ -5,6 +5,7 @@ import java.io.UnsupportedEncodingException;
 import java.util.Date;
 import java.math.BigDecimal;
 
+import com.aiurt.common.aspect.annotation.DeptFilterColumn;
 import com.aiurt.modules.basic.entity.DictEntity;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
@@ -42,6 +43,11 @@ public class SparePartStockInfo extends DictEntity implements Serializable {
 	@Excel(name = "备件仓库名称", width = 15)
     @ApiModelProperty(value = "备件仓库名称")
     private String warehouseName;
+
+    /**所属部门*/
+    @ApiModelProperty(value = "所属部门")
+    @DeptFilterColumn
+    private String orgCode;
 	/**备件仓库编号*/
 	@Excel(name = "备件仓库编号", width = 15)
     @ApiModelProperty(value = "备件仓库编号")

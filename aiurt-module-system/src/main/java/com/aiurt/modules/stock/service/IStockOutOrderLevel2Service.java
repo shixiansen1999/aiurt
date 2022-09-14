@@ -1,6 +1,7 @@
 package com.aiurt.modules.stock.service;
 
 import com.aiurt.modules.sparepart.entity.SparePartApply;
+import com.aiurt.modules.sparepart.entity.SparePartStockInfo;
 import com.aiurt.modules.stock.entity.StockInOrderLevel2;
 import com.aiurt.modules.stock.entity.StockOutOrderLevel2;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -10,6 +11,7 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.text.ParseException;
+import java.util.List;
 
 /**
  * @Description:
@@ -30,6 +32,12 @@ public interface IStockOutOrderLevel2Service extends IService<StockOutOrderLevel
      * @return
      */
     IPage<StockOutOrderLevel2> pageList(Page<StockOutOrderLevel2> page, StockOutOrderLevel2 stockOutOrderLevel2);
+
+    /**
+     * 权限过滤后，列表数据整体
+     * @return
+     */
+    List<StockOutOrderLevel2> selectList();
     /**
      * 获取物资列表
      * @param id

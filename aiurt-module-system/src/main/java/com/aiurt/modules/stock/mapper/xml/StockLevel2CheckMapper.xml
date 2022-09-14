@@ -13,6 +13,9 @@
             <if test="condition.warehouseName != null and condition.warehouseName != ''">
                 and sli.warehouse_name like concat(concat('%',#{condition.warehouseName}),'%')
             </if>
+            <if test="condition.warehouseCode != null and condition.warehouseCode != ''">
+                and stock_level2_check.warehouse_code = #{condition.warehouseCode}
+            </if>
             <if test="condition.planStartTimeStart != null and condition.planStartTimeEnd != null">
                 and Date(stock_level2_check.plan_start_time) &gt;= #{condition.planStartTimeStart} and Date(stock_level2_check.plan_start_time) &lt;= #{condition.planStartTimeEnd}
             </if>

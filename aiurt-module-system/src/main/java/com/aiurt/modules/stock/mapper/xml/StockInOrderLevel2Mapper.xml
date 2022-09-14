@@ -14,6 +14,9 @@
             <if test="condition.warehouseName != null and condition.warehouseName != ''">
                 and sli.warehouse_name like concat(concat('%',#{condition.warehouseName}),'%')
             </if>
+            <if test="condition.warehouseCode != null and condition.warehouseCode != ''">
+                and stock_in_order_level2.warehouse_code = #{condition.warehouseCode}
+            </if>
             <if test="condition.entryTimeBegin != null and condition.entryTimeEnd != null">
                 and Date(stock_in_order_level2.entry_time) &gt;= #{condition.entryTimeBegin} and Date(stock_in_order_level2.entry_time) &lt;= #{condition.entryTimeEnd}
             </if>
