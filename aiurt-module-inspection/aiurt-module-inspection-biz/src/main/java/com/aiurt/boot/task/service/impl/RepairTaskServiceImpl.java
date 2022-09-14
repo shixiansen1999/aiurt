@@ -550,7 +550,8 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
 
         }
         //构造树形
-        checkListDTO.setRepairTaskResultList(selectCodeContentList(checkListDTO.getDeviceId()));
+        List<RepairTaskResult> repairTaskResults = selectCodeContentList(checkListDTO.getDeviceId());
+        checkListDTO.setRepairTaskResultList(repairTaskResults);
         List<RepairTaskResult> repairTaskResultList = checkListDTO.getRepairTaskResultList();
         ArrayList<String> list = new ArrayList<>();
         int sum1 = InspectionConstant.NO_IS_EFFECT;
@@ -648,7 +649,9 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
             //检修人名称
             if (r.getStaffId() != null) {
                 LoginUser userById = sysBaseApi.getUserById(r.getStaffId());
-                r.setStaffName(userById.getRealname());
+                if (ObjectUtil.isNotNull(userById)){
+                    r.setStaffName(userById.getRealname());
+                }
             }
             //备注
             if (r.getUnNote() == null) {
