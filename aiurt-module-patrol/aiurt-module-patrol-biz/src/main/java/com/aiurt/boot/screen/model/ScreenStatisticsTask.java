@@ -50,15 +50,30 @@ public class ScreenStatisticsTask {
     @ApiModelProperty(value = "任务状态：0待指派、1待确认、2待执行、3已退回、4执行中、5已驳回、6待审核、7已完成")
     private Integer status;
     /**
+     * 任务状态字典名
+     */
+    @ApiModelProperty(value = "任务状态字典名")
+    private String statusName;
+    /**
      * 异常状态：0异常、1正常
      */
     @ApiModelProperty(value = "异常状态：0异常、1正常")
     private Integer abnormalState;
     /**
+     * 异常状态字典名
+     */
+    @ApiModelProperty(value = "异常状态字典名")
+    private String abnormalStateName;
+    /**
      * 漏检状态:0未漏检，1已漏检
      */
     @ApiModelProperty(value = "漏检状态:0未漏检，1已漏检")
     private Integer omitStatus;
+    /**
+     * 漏检状态字典名
+     */
+    @ApiModelProperty(value = "漏检状态字典名")
+    private String omitStatusName;
     /**
      * 站点信息
      */

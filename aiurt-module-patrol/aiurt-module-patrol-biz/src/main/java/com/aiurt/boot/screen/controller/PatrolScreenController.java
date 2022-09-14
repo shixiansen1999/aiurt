@@ -4,12 +4,14 @@ import com.aiurt.boot.screen.model.ScreenImportantData;
 import com.aiurt.boot.screen.model.ScreenStatistics;
 import com.aiurt.boot.screen.model.ScreenStatisticsPieGraph;
 import com.aiurt.boot.screen.model.ScreenStatisticsTask;
+import com.aiurt.boot.screen.service.PatrolScreenService;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import lombok.extern.slf4j.Slf4j;
 import org.jeecg.common.api.vo.Result;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -24,6 +26,9 @@ import java.util.List;
 @Slf4j
 public class PatrolScreenController {
 
+    @Autowired
+    private PatrolScreenService screenService;
+
     /**
      * 大屏巡视模块-重要数据展示
      *
@@ -36,8 +41,8 @@ public class PatrolScreenController {
     public Result<ScreenImportantData> getImportantData(@ApiParam(name = "timeType", value = "看板时间类型：1本周、2上周、3本月、4上月")
                                                         @RequestParam("timeType") Integer timeType,
                                                         @ApiParam(name = "lineCode", value = "线路编号")
-                                                        @RequestParam("lineCode") String lineCode) {
-        ScreenImportantData data = new ScreenImportantData();
+                                                                String lineCode) {
+        ScreenImportantData data = screenService.getImportantData(timeType, lineCode);
         return Result.ok(data);
     }
 
@@ -53,10 +58,8 @@ public class PatrolScreenController {
     public Result<List<ScreenStatistics>> getStatisticsData(@ApiParam(name = "timeType", value = "看板时间类型：1本周、2上周")
                                                             @RequestParam("timeType") Integer timeType,
                                                             @ApiParam(name = "lineCode", value = "线路编号")
-                                                            @RequestParam("lineCode") String lineCode) {
-        List<ScreenStatistics> list = new ArrayList<>();
-        ScreenStatistics statistics = new ScreenStatistics();
-        list.add(statistics);
+                                                                    String lineCode) {
+        List<ScreenStatistics> list = screenService.getStatisticsData(timeType, lineCode);
         return Result.ok(list);
     }
 
@@ -72,10 +75,8 @@ public class PatrolScreenController {
     public Result<List<ScreenStatisticsTask>> getStatisticsTaskInfo(@ApiParam(name = "timeType", value = "看板时间类型：1本周、2上周")
                                                                     @RequestParam("timeType") Integer timeType,
                                                                     @ApiParam(name = "lineCode", value = "线路编号")
-                                                                    @RequestParam("lineCode") String lineCode) {
-        List<ScreenStatisticsTask> list = new ArrayList<>();
-        ScreenStatisticsTask taskInfo = new ScreenStatisticsTask();
-        list.add(taskInfo);
+                                                                            String lineCode) {
+        List<ScreenStatisticsTask> list = screenService.getStatisticsTaskInfo(timeType, lineCode);
         return Result.ok(list);
     }
 
@@ -91,10 +92,8 @@ public class PatrolScreenController {
     public Result<List<ScreenStatisticsPieGraph>> getStatisticsPieGraph(@ApiParam(name = "timeType", value = "看板时间类型：1本周、2上周")
                                                                         @RequestParam("timeType") Integer timeType,
                                                                         @ApiParam(name = "lineCode", value = "线路编号")
-                                                                        @RequestParam("lineCode") String lineCode) {
-        List<ScreenStatisticsPieGraph> list = new ArrayList<>();
-        ScreenStatisticsPieGraph pieGraph = new ScreenStatisticsPieGraph();
-        list.add(pieGraph);
+                                                                                String lineCode) {
+        List<ScreenStatisticsPieGraph> list = screenService.getStatisticsPieGraph(timeType, lineCode);
         return Result.ok(list);
     }
 }
