@@ -55,12 +55,12 @@ public class PatrolScreenController {
     @AutoLog(value = "大屏巡视模块-巡视数据统计", operateType = 1, operateTypeAlias = "查询")
     @ApiOperation(value = "大屏巡视模块-巡视数据统计", notes = "大屏巡视模块-巡视数据统计")
     @RequestMapping(value = "/statistics", method = {RequestMethod.GET, RequestMethod.POST})
-    public Result<List<ScreenStatistics>> getStatisticsData(@ApiParam(name = "timeType", value = "看板时间类型：1本周、2上周")
-                                                            @RequestParam("timeType") Integer timeType,
-                                                            @ApiParam(name = "lineCode", value = "线路编号")
-                                                                    String lineCode) {
-        List<ScreenStatistics> list = screenService.getStatisticsData(timeType, lineCode);
-        return Result.ok(list);
+    public Result<ScreenStatistics> getStatisticsData(@ApiParam(name = "timeType", value = "看板时间类型：1本周、2上周")
+                                                      @RequestParam("timeType") Integer timeType,
+                                                      @ApiParam(name = "lineCode", value = "线路编号")
+                                                              String lineCode) {
+        ScreenStatistics statistics = screenService.getStatisticsData(timeType, lineCode);
+        return Result.ok(statistics);
     }
 
     /**
