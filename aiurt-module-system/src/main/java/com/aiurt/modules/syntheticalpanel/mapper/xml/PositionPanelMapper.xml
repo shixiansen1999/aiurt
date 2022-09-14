@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.aiurt.modules.syntheticalpanel.mapper.PositionPanelMapper">
+
+<select id="getAllWorkArea" resultType="com.aiurt.modules.syntheticalpanel.model.PositionPanel">
+    SELECT
+    wa.id,
+    wa.`code`,
+    wa.`name`
+    FROM
+    work_area wa
+    LEFT JOIN work_area_line wac ON wac.work_area_code = wa.`code`
+    WHERE
+    wa.del_flag = 0
+    <if test="positionPanel.lineCode != null and positionPanel.lineCode != ''">
+        and wac.line_code =#{positionPanel.lineCode}
+    </if>
+    group by wa.id
+    </select>
+
+<select id="getStations" resultType="com.aiurt.modules.position.entity.CsStation">
+    SELECT
+    cs.id,
+    cs.station_name,
+    cs.station_code,
+    cs.sort,
+    cs.line_code,
+    cs.line_name,
+    cs.warning_status,
+    cs.open_status
+    FROM
+    cs_station cs
+    LEFT JOIN work_area_station was ON was.station_code = cs.station_code
+    WHERE
+    cs.del_flag = 0
+    AND was.work_area_code = #{code}
+    </select>
+
+<select id="queryById" resultType="com.aiurt.modules.syntheticalpanel.model.PositionPanel">
+    SELECT
+            cs.id,
+            cs.line_name,
+            cs.phone_num,
+            cs.warning_status,
+            cs.open_status,
+            sd.mobile,
+            sd.concat_way,
+            sd.depart_name
+    FROM
+            cs_station cs
+                    LEFT JOIN work_area_station was ON was.station_code = cs.station_code
+                    LEFT JOIN work_area_org wao ON wao.work_area_code = was.work_area_code
+                    LEFT JOIN sys_depart sd ON sd.org_code = wao.org_code
+    where cs.id = #{id}
+    GROUP BY sd.org_code
+    </select>
+
+<update id="edit">
+    UPDATE cs_station
+    SET warning_status = #{positionPanel.warningStatus},open_status =#{positionPanel.openStatus}
+    WHERE
+    id = #{positionPanel.id}
+    </update>
+
+<select id="getStation" resultType="com.aiurt.modules.position.entity.CsStation">
+    SELECT
+    id,
+    warning_status,
+    open_status
+    FROM
+    cs_station
+    WHERE
+    id = #{positionPanel.id}
+    </select>
+
+<select id="getUserById" resultType="com.aiurt.modules.system.entity.SysUser">
+    SELECT
+            id,
+            username,
+            realname,
+            avatar
+    FROM
+            sys_user
+    WHERE
+            del_flag = 0
+      AND org_id = #{id}
+    </select>
+</mapper>

@@ -1,0 +1,99 @@
+package com.aiurt.modules.syntheticalpanel.model;
+
+import com.aiurt.modules.position.entity.CsStation;
+import com.aiurt.modules.system.entity.SysUser;
+import com.baomidou.mybatisplus.annotation.TableField;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.experimental.Accessors;
+
+import java.io.Serializable;
+import java.util.List;
+
+/**
+ * @author lkj
+ */
+
+@Data
+@Accessors(chain = true)
+@EqualsAndHashCode(callSuper = false)
+@ApiModel(value="综合看板线路信息", description="综合看板线路信息")
+public class PositionPanel implements Serializable {
+
+    /**id*/
+    @ApiModelProperty(value = "id")
+    private String id;
+
+    /**线路编号*/
+    @ApiModelProperty(value = "线路编号")
+    private java.lang.String lineCode;
+
+    /**线路名称*/
+    @ApiModelProperty(value = "线路名称")
+    private String lineName;
+
+    /**站点*/
+    @ApiModelProperty(value = "站点")
+    private String stationName;
+
+    /**站点编号*/
+    @ApiModelProperty(value = "站点编号")
+    private String stationCode;
+
+    /**序号*/
+    @ApiModelProperty(value = "序号")
+    private Integer sort;
+
+    @ApiModelProperty(value = "工区编号")
+    @TableField(value = "`code`")
+    private String code;
+
+    /**工区名称*/
+    @ApiModelProperty(value = "工区名称")
+    @TableField(value = "`name`")
+    private String name;
+
+    /**关联班组集合*/
+    @ApiModelProperty(value = "lineId")
+    private List<CsStation> csStationList;
+
+    /**查询站点id集合*/
+    @ApiModelProperty(value = "ids")
+    private List<String> ids;
+
+    /**站点电话号码*/
+    @ApiModelProperty(value = "站点电话号码")
+    private String phoneNum;
+
+    /**机构/部门名称*/
+    @ApiModelProperty(value = "机构/部门名称")
+    private String departName;
+
+    /**手机号*/
+    @ApiModelProperty(value = "手机号")
+    private String mobile;
+
+    /**联系人id*/
+    @ApiModelProperty(value = "联系人id")
+    private String contactId;
+
+    /**联系人方式*/
+    @ApiModelProperty(value = "联系人方式")
+    private String concatWay;
+
+    /**预警信息状态*/
+    @ApiModelProperty(value = "预警信息状态")
+    private Integer warningStatus;
+
+    /**开关站状态*/
+    @ApiModelProperty(value = "开关站状态")
+    private Integer openStatus;
+
+    private List<SysUser> userList;
+
+
+
+
+}
