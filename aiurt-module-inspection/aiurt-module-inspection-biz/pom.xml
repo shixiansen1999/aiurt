@@ -14,7 +14,21 @@
             <artifactId>aiurt-module-inspection-api</artifactId>
             <version>3.2.0</version>
         </dependency>
-
+        <dependency>
+            <groupId>com.aiurt.boot</groupId>
+            <artifactId>aiurt-module-patrol-api</artifactId>
+            <version>3.2.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.aiurt.boot</groupId>
+            <artifactId>aiurt-module-fault-api</artifactId>
+            <version>3.2.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.aiurt.boot</groupId>
+            <artifactId>aiurt-module-base-api</artifactId>
+            <version>3.2.0</version>
+        </dependency>
     </dependencies>
     <build>
         <!-- 打包名称 -->

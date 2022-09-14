@@ -4,6 +4,7 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
+import com.aiurt.modules.schedule.dto.ScheduleBigScreenDTO;
 import com.aiurt.modules.schedule.dto.ScheduleRecordDTO;
 import com.aiurt.modules.schedule.dto.SysUserScheduleDTO;
 import com.aiurt.modules.schedule.entity.ScheduleRecord;
@@ -152,6 +153,11 @@ public class ScheduleRecordServiceImpl extends ServiceImpl<ScheduleRecordMapper,
             }
         }
         return page.setRecords(result);
+    }
+
+    @Override
+    public ScheduleBigScreenDTO getTeamData(String lineCode, Integer type) {
+        return null;
     }
 
 }

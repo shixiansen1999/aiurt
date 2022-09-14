@@ -1,6 +1,7 @@
 package com.aiurt.modules.schedule.service;
 
 
+import com.aiurt.modules.schedule.dto.ScheduleBigScreenDTO;
 import com.aiurt.modules.schedule.dto.ScheduleRecordDTO;
 import com.aiurt.modules.schedule.dto.SysUserScheduleDTO;
 import com.aiurt.modules.schedule.entity.ScheduleRecord;
@@ -57,4 +58,12 @@ public interface IScheduleRecordService extends IService<ScheduleRecord> {
      * @return
      */
     IPage<SysUserScheduleDTO> getStaffOnDuty(Page<SysUserScheduleDTO> page, ScheduleRecordDTO scheduleRecordDTO);
+    /**
+     * 获取大屏的班组信息
+     *
+     * @param lineCode 线路code
+     * @param type   类型:1：本周，2：上周，3：本月， 4：上月
+     * @return
+     */
+    ScheduleBigScreenDTO getTeamData(String lineCode, Integer type);
 }

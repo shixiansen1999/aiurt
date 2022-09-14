@@ -6,6 +6,7 @@ import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.constant.RoleConstant;
 import com.aiurt.common.util.DateUtils;
 import com.aiurt.common.util.oConvertUtils;
+import com.aiurt.modules.schedule.dto.ScheduleBigScreenDTO;
 import com.aiurt.modules.schedule.dto.ScheduleRecordDTO;
 import com.aiurt.modules.schedule.dto.SysUserScheduleDTO;
 import com.aiurt.modules.schedule.entity.ScheduleHolidays;
@@ -27,6 +28,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.apache.shiro.SecurityUtils;
@@ -433,5 +435,21 @@ public class ScheduleRecordController {
         Page<SysUserScheduleDTO> page = new Page<>(scheduleRecordDTO.getPageNo(),scheduleRecordDTO.getPageSize());
         IPage<SysUserScheduleDTO> maintenanceSituation = scheduleRecordService.getStaffOnDuty(page, scheduleRecordDTO);
         return Result.OK(maintenanceSituation);
+    }
+
+    /**
+     * 获取大屏的班组信息
+     *
+     * @param lineCode 线路code
+     * @param type   类型:1：本周，2：上周，3：本月， 4：上月
+     * @return
+     */
+    @AutoLog(value = "首页-获取大屏的班组信息", operateType = 1, operateTypeAlias = "查询", permissionUrl = "")
+    @ApiOperation(value = "首页-获取大屏的班组信息", notes = "首页-获取大屏的班组信息")
+    @RequestMapping(value = "/overviewInfo", method = RequestMethod.GET)
+    public Result<ScheduleBigScreenDTO> getOverviewInfo(@ApiParam(name = "lineCode", value = "线路code") @RequestParam(value = "lineCode",required = false) String lineCode,
+                                                        @ApiParam(name = "type", value = "类型:1：本周，2：上周，3：本月， 4：上月",defaultValue = "1") @RequestParam("type") Integer type) {
+        ScheduleBigScreenDTO result = scheduleRecordService.getTeamData(lineCode,type);
+        return Result.OK(result);
     }
 }
