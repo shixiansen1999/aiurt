@@ -236,7 +236,7 @@ public class CsStationPositionController  {
 		 }else if(null!=level && level.equals("3")){
 			 LambdaQueryWrapper<CsStationPosition> wrapper = new LambdaQueryWrapper<>();
 			 wrapper.orderByDesc(CsStationPosition::getSort);
-			 wrapper.eq(CsStationPosition::getPositionCode,code);
+			 wrapper.eq(CsStationPosition::getStaionCode,code);
 			 wrapper.eq(CsStationPosition::getDelFlag, CommonConstant.DEL_FLAG_0);
 			 List<CsStationPosition> list = csStationPositionService.list(wrapper);
 			 if(!list.isEmpty()){
