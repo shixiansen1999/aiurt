@@ -296,29 +296,52 @@
         sr.user_id AS userId,
         su.realname AS realName,
         su.username,
+        su.avatar,
         su.permit_code,
         su.salary_code
         FROM
         schedule_record sr
         INNER JOIN schedule_item si ON sr.item_id = si.id
         INNER JOIN sys_user su ON sr.user_id = su.id
-        left join sys_user_depart sud on sud.user_id = su.id
         WHERE
         DATE_FORMAT( sr.date, '%Y-%m-%d' ) =DATE_FORMAT( #{date},'%Y-%m-%d')
         AND sr.del_flag = 0
         AND si.del_flag = 0
-        <if test="users.size()>0">
-            and su.id in
-            <foreach collection="users" separator="," open="(" close=")" item="user">
-                #{user}
+        <if test="orgCodes.size()>0">
+            and su.org_code in
+            <foreach collection="orgCodes" separator="," open="(" close=")" item="org">
+                #{org}
             </foreach>
         </if>
-        <if test="orgId!=null and orgId!=''">
-            and su.dep_id = #{orgId}
+        <if test="orgCode!=null and orgCode!=''">
+            and su.org_code = #{orgCode}
         </if>
         ORDER BY
         sr.date,
         sr.item_id
+    </select>
+    <select id="getUserByDepIds" resultType="com.aiurt.modules.schedule.dto.SysUserTeamDTO">
+    SELECT
+        su.id AS userId,
+        su.avatar,
+        su.realname AS realName,
+        su.username,
+        su.permit_code,
+        su.salary_code
+    FROM
+        sys_user su
+    <where>
+     su.del_flag =0
+    <if test="orgCode!=null and orgCode!=''">
+        and su.org_code = #{orgCode}
+    </if>
+    <if test="orgCodes.size()>0">
+      and  su.org_code in
+      <foreach collection="orgCodes" item="orgCode" open="(" close=")" separator=",">
+          #{orgCode}
+      </foreach>
+    </if>
+    </where>
     </select>
 
 </mapper>

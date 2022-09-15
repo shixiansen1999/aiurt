@@ -63,23 +63,22 @@ public interface IScheduleRecordService extends IService<ScheduleRecord> {
      * 获取大屏的班组信息
      *
      * @param lineCode 线路code
-     * @param type   类型:1：本周，2：上周，3：本月， 4：上月
      * @return
      */
-    ScheduleBigScreenDTO getTeamData(String lineCode, Integer type);
+    ScheduleBigScreenDTO getTeamData(String lineCode);
     /**
      * 获取大屏的班组信息-点击今日当班人数
      *
      * @param lineCode 线路code
      * @return
      */
-    IPage<SysUserTeamDTO> getTodayOndutyDetail(String lineCode,  String orgId,Page<SysUserTeamDTO> page);
+    IPage<SysUserTeamDTO> getTodayOndutyDetail(String lineCode,  String orgcode,Page<SysUserTeamDTO> page);
     /**
      * 获取大屏的班组信息-点击总人员数
      *
      * @param lineCode 线路code
      * @return
      */
-    IPage<SysUserTeamDTO> getTotalPepoleDetail(String lineCode,  String orgId,Page<SysUserTeamDTO> page);
+    IPage<SysUserTeamDTO> getTotalPepoleDetail(String lineCode,  String orgcode,Page<SysUserTeamDTO> page);
 
 }

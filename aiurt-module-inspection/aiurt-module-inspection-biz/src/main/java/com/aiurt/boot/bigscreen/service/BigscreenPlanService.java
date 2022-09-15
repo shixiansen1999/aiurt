@@ -16,7 +16,6 @@ import com.aiurt.boot.plan.entity.RepairPoolStationRel;
 import com.aiurt.boot.plan.mapper.RepairPoolMapper;
 import com.aiurt.boot.plan.mapper.RepairPoolStationRelMapper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import io.swagger.annotations.ApiModelProperty;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.CsUserMajorModel;
 import org.springframework.stereotype.Service;
@@ -34,7 +33,7 @@ import java.util.stream.Collectors;
 @Service
 public class BigscreenPlanService {
 
-    @ApiModelProperty
+    @Resource
     private ISysBaseAPI sysBaseAPI;
     @Resource
     private RepairPoolStationRelMapper repairPoolStationRelMapper;
@@ -77,8 +76,8 @@ public class BigscreenPlanService {
 
             // 时间过滤
             LambdaQueryWrapper<RepairPool> lambdaQueryWrapper = new LambdaQueryWrapper<>();
-            lambdaQueryWrapper.ge(RepairPool::getStartTime, time[1]);
-            lambdaQueryWrapper.le(RepairPool::getStartTime, time[2]);
+            lambdaQueryWrapper.ge(RepairPool::getStartTime, time[0]);
+            lambdaQueryWrapper.le(RepairPool::getStartTime, time[1]);
             if (CollUtil.isNotEmpty(codeList)) {
                 lambdaQueryWrapper.in(RepairPool::getCode, codeList);
             }
@@ -93,12 +92,13 @@ public class BigscreenPlanService {
             // 今日检修数
             LambdaQueryWrapper<RepairPool> repairPoolLambdaQueryWrapper = new LambdaQueryWrapper<>();
             Date date = new Date();
-            repairPoolLambdaQueryWrapper.ge(RepairPool::getStartTime, date);
-            repairPoolLambdaQueryWrapper.le(RepairPool::getEndTime, date);
+
+            repairPoolLambdaQueryWrapper.le(RepairPool::getStartTime, date);
+            repairPoolLambdaQueryWrapper.ge(RepairPool::getEndTime, date);
             if (CollUtil.isNotEmpty(codeList)) {
                 lambdaQueryWrapper.in(RepairPool::getCode, codeList);
             }
-            List<RepairPool> repairPoolList = repairPoolMapper.selectList(lambdaQueryWrapper);
+            List<RepairPool> repairPoolList = repairPoolMapper.selectList(repairPoolLambdaQueryWrapper);
             result.setTodayFinish(CollUtil.isNotEmpty(repairPoolList) ? repairPoolList.size() : 0L);
         }
         return result;
@@ -140,15 +140,15 @@ public class BigscreenPlanService {
 
             if (InspectionConstant.THIS_WEEK_1.equals(type)) {
                 Date date = new Date();
-                DateTime beginDate = DateUtil.beginOfDay(date);
-                DateTime endDate = DateUtil.endOfDay(date);
+                DateTime beginDate = DateUtil.beginOfWeek(date);
+                DateTime endDate = DateUtil.endOfWeek(date);
                 return new Date[]{beginDate, endDate};
             }
 
             if (InspectionConstant.LAST_WEEK_2.equals(type)) {
                 DateTime dateTime = DateUtil.lastWeek();
-                DateTime beginDate = DateUtil.beginOfDay(dateTime);
-                DateTime endDate = DateUtil.endOfDay(dateTime);
+                DateTime beginDate = DateUtil.beginOfWeek(dateTime);
+                DateTime endDate = DateUtil.endOfWeek(dateTime);
                 return new Date[]{beginDate, endDate};
             }
 

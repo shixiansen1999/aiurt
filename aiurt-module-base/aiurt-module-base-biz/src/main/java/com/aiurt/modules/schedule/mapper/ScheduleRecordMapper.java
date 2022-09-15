@@ -81,5 +81,7 @@ public interface ScheduleRecordMapper extends BaseMapper<ScheduleRecord> {
 
     List<String> getTeamBylineAndMajor(@Param("lineCode") List<String> lineCode, @Param("majorList") List<String> majorList);
 
-    List<SysUserTeamDTO> getTodayOndutyDetail(@Param("page") Page<SysUserTeamDTO> page,@Param("orgId") String orgId, @Param("users") List<String> users, @Param("date") Date date);
+    List<SysUserTeamDTO> getTodayOndutyDetail(@Param("page") Page<SysUserTeamDTO> page,@Param("orgCode") String orgCode, @Param("orgCodes") List<String> orgCodes, @Param("date") Date date);
+
+    List<SysUserTeamDTO> getUserByDepIds(@Param("orgCodes") List<String> orgCodes,@Param("page") Page<SysUserTeamDTO> page,@Param("orgCode") String orgCode);
 }

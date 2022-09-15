@@ -25,10 +25,7 @@ import org.jeecg.common.system.vo.SiteModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 ;
@@ -160,7 +157,7 @@ public class ScheduleRecordServiceImpl extends ServiceImpl<ScheduleRecordMapper,
     }
 
     @Override
-    public ScheduleBigScreenDTO getTeamData(String lineCode, Integer type) {
+    public ScheduleBigScreenDTO getTeamData(String lineCode) {
         List<String> orgCodes = getTeamByLineAndMajor(lineCode);
         List<LoginUser> userByDepIds = sysBaseAPI.getUserByDepIds(orgCodes);
 
@@ -176,7 +173,7 @@ public class ScheduleRecordServiceImpl extends ServiceImpl<ScheduleRecordMapper,
             userIdList = userByDepIds.stream().map(LoginUser::getId).collect(Collectors.toList());
         }
         if (CollUtil.isNotEmpty(userIdList)) {
-            List<SysUserTeamDTO> sysUserTeamDTOS = baseMapper.getTodayOndutyDetail(page, null, userIdList, new Date());
+            List<SysUserTeamDTO> sysUserTeamDTOS = baseMapper.getTodayOndutyDetail(page, null, orgCodes, new Date());
             page.setRecords(sysUserTeamDTOS);
             result.setScheduleNum(page.getTotal());
         }
@@ -184,29 +181,39 @@ public class ScheduleRecordServiceImpl extends ServiceImpl<ScheduleRecordMapper,
         return result;
     }
 
+    /**
+     * 根据线路code或专业code获取班组信息
+     *
+     * @param lineCode
+     * @return
+     */
     public List<String> getTeamByLineAndMajor(String lineCode) {
         LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         if (ObjectUtil.isEmpty(user)) {
             throw new AiurtBootException("请重新登录");
         }
+
+        // 线路筛选
+        List<String> lineCodeList = new ArrayList<>();
+        if (StrUtil.isNotEmpty(lineCode)) {
+            lineCodeList = StrUtil.split(lineCode, ',');
+            List<String> lineList = baseMapper.getTeamBylineAndMajor(lineCodeList, new ArrayList<>());
+            if (CollUtil.isEmpty(lineList)) {
+                return new ArrayList<>();
+            }
+        }
+
+        // 专业筛选
         List<CsUserMajorModel> majorByUserId = sysBaseAPI.getMajorByUserId(user.getId());
         List<String> majorList = new ArrayList<>();
         if (CollUtil.isNotEmpty(majorByUserId)) {
             majorList = majorByUserId.stream().map(CsUserMajorModel::getMajorCode).collect(Collectors.toList());
+            List<String> majors = baseMapper.getTeamBylineAndMajor(new ArrayList<>(), majorList);
+            if (CollUtil.isEmpty(majors)) {
+                return new ArrayList<>();
+            }
         }
 
-        List<String> lineCodeList = new ArrayList<>();
-        if (StrUtil.isNotEmpty(lineCode)) {
-            lineCodeList = StrUtil.split(lineCode, ',');
-        }
-        List<String> lineList = baseMapper.getTeamBylineAndMajor(lineCodeList, null);
-        if (CollUtil.isEmpty(lineList)) {
-            return new ArrayList<>();
-        }
-        List<String> majors = baseMapper.getTeamBylineAndMajor(null, majorList);
-        if (CollUtil.isEmpty(majors)) {
-            return new ArrayList<>();
-        }
         return baseMapper.getTeamBylineAndMajor(lineCodeList, majorList);
     }
 
@@ -215,32 +222,33 @@ public class ScheduleRecordServiceImpl extends ServiceImpl<ScheduleRecordMapper,
      *
      * @param lineCode 线路code
      * @param page
-     * @param orgId
+     * @param orgcode
      * @return
      */
     @Override
-    public IPage<SysUserTeamDTO> getTodayOndutyDetail(String lineCode, String orgId, Page<SysUserTeamDTO> page) {
+    public IPage<SysUserTeamDTO> getTodayOndutyDetail(String lineCode, String orgcode, Page<SysUserTeamDTO> page) {
+        // 根据线路code或专业code获取班组信息
         List<String> orgCodes = getTeamByLineAndMajor(lineCode);
-        List<LoginUser> users = sysBaseAPI.getUserByDepIds(orgCodes);
-        List<String> userIdList = new ArrayList<>();
-        if (CollUtil.isNotEmpty(users)) {
-            userIdList = users.stream().map(LoginUser::getId).collect(Collectors.toList());
-        }
-        // 根据日期条件查询班次情况
-        List<SysUserTeamDTO> result = baseMapper.getTodayOndutyDetail(page, orgId, userIdList, new Date());
-        for (SysUserTeamDTO sysUserTeamDTO : result) {
-            // 角色
-            List<String> roleNamesByUsername = sysBaseAPI.getRoleNamesById(sysUserTeamDTO.getUserId());
-            if (CollUtil.isNotEmpty(roleNamesByUsername)) {
-                sysUserTeamDTO.setRoleName(StrUtil.join("；", roleNamesByUsername));
-            }
 
-            List<String> departNamesByUsername = sysBaseAPI.getDepartNamesByUsername(sysUserTeamDTO.getUsername());
-            if (CollUtil.isNotEmpty(departNamesByUsername)) {
-                sysUserTeamDTO.setTeamName(StrUtil.join("；", departNamesByUsername));
+        // 根据日期条件查询班次情况
+        if (CollUtil.isNotEmpty(orgCodes)) {
+            List<SysUserTeamDTO> result = baseMapper.getTodayOndutyDetail(page, orgcode, orgCodes, new Date());
+            for (SysUserTeamDTO sysUserTeamDTO : result) {
+                // 角色
+                List<String> roleNamesByUsername = sysBaseAPI.getRoleNamesById(sysUserTeamDTO.getUserId());
+                if (CollUtil.isNotEmpty(roleNamesByUsername)) {
+                    sysUserTeamDTO.setRoleName(StrUtil.join("；", roleNamesByUsername));
+                }
+
+                List<String> departNamesByUsername = sysBaseAPI.getDepartNamesByUsername(sysUserTeamDTO.getUsername());
+                if (CollUtil.isNotEmpty(departNamesByUsername)) {
+                    sysUserTeamDTO.setTeamName(StrUtil.join("；", departNamesByUsername));
+                }
             }
+            return page.setRecords(result);
         }
-        return page.setRecords(result);
+
+        return page;
     }
 
     /**
@@ -251,14 +259,28 @@ public class ScheduleRecordServiceImpl extends ServiceImpl<ScheduleRecordMapper,
      * @return
      */
     @Override
-    public IPage<SysUserTeamDTO> getTotalPepoleDetail(String lineCode, String orgId, Page<SysUserTeamDTO> page) {
+    public IPage<SysUserTeamDTO> getTotalPepoleDetail(String lineCode, String orgcode, Page<SysUserTeamDTO> page) {
         List<String> orgCodes = getTeamByLineAndMajor(lineCode);
-        List<LoginUser> users = sysBaseAPI.getUserByDepIds(orgCodes);
-        List<String> userIdList = new ArrayList<>();
-        if (CollUtil.isNotEmpty(users)) {
-            userIdList = users.stream().map(LoginUser::getId).collect(Collectors.toList());
+
+        if (CollUtil.isNotEmpty(orgCodes)) {
+            List<SysUserTeamDTO> users = baseMapper.getUserByDepIds(orgCodes, page, orgcode);
+
+            for (SysUserTeamDTO sysUserTeamDTO : users) {
+                // 角色
+                List<String> roleNamesByUsername = sysBaseAPI.getRoleNamesById(sysUserTeamDTO.getUserId());
+                if (CollUtil.isNotEmpty(roleNamesByUsername)) {
+                    sysUserTeamDTO.setRoleName(StrUtil.join("；", roleNamesByUsername));
+                }
+
+                // 班组
+                List<String> departNamesByUsername = sysBaseAPI.getDepartNamesByUsername(sysUserTeamDTO.getUsername());
+                if (CollUtil.isNotEmpty(departNamesByUsername)) {
+                    sysUserTeamDTO.setTeamName(StrUtil.join("；", departNamesByUsername));
+                }
+            }
+            return page.setRecords(users);
         }
-        return null;
+        return page;
     }
 
 }
