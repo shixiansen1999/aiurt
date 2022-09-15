@@ -46,10 +46,10 @@
         rpsr.station_code
         ) temptable
         <where>
-            <if test="taskDetailsReq.status!=null and taskDetailsReq.status==2">
+            <if test="taskDetailsReq.status!=null and taskDetailsReq.status==1">
                 temptable.minStatus =8
              </if>
-            <if test="taskDetailsReq.status!=null and taskDetailsReq.status==3">
+            <if test="taskDetailsReq.status!=null and taskDetailsReq.status==0">
                 and temptable.minStatus &lt;&gt; 8
             </if>
         </where>
@@ -80,6 +80,9 @@
             <foreach collection="codeByOrgCode" item="code" open="(" close=")" separator=",">
                 #{code}
             </foreach>
+        </if>
+        <if test="taskDetailsReq.maintenanceCycle!=null">
+            and rp.type = #{taskDetailsReq.maintenanceCycle}
         </if>
     </where>
     </select>

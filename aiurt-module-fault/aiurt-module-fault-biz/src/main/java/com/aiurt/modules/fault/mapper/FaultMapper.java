@@ -4,6 +4,7 @@ import com.aiurt.common.aspect.annotation.EnableDataPerm;
 import com.aiurt.modules.basic.entity.CsWork;
 import com.aiurt.modules.fault.dto.FaultFrequencyDTO;
 import com.aiurt.modules.fault.entity.Fault;
+import com.aiurt.modules.fault.entity.FaultRepairRecord;
 import com.aiurt.modules.faultknowledgebase.entity.FaultKnowledgeBase;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -88,4 +89,12 @@ public interface FaultMapper extends BaseMapper<Fault> {
       * @return
       */
      String getStatusName(Integer status);
+
+    /**
+     * 获取维修单是否是当天
+     * @param id
+     * @param date
+     * @return
+     */
+    FaultRepairRecord getUserToday(@Param("id") String id, @Param("date")Date date);
 }

@@ -37,6 +37,7 @@ import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.query.QueryGenerator;
 import org.jeecg.common.system.vo.LoginUser;
+import org.jeecg.common.system.vo.SysDepartModel;
 import org.jeecgframework.poi.excel.ExcelImportUtil;
 import org.jeecgframework.poi.excel.def.NormalExcelConstants;
 import org.jeecgframework.poi.excel.entity.ExportParams;
@@ -488,6 +489,20 @@ public class ScheduleRecordController {
     ) {
         Page<SysUserTeamDTO> page = new Page<>(pageNo, pageSize);
         IPage<SysUserTeamDTO> result = scheduleRecordService.getTotalPepoleDetail(lineCode, orgcode, page);
+        return Result.OK(result);
+    }
+
+    /**
+     * 根据线路获取班组
+     *
+     * @param lineCode 线路code
+     * @return
+     */
+    @AutoLog(value = "根据线路获取班组", operateType = 1, operateTypeAlias = "查询", permissionUrl = "")
+    @ApiOperation(value = "根据线路获取班组", notes = "根据线路获取班组")
+    @RequestMapping(value = "/getTeamBylineAndMajors", method = RequestMethod.GET)
+    public Result<List<SysDepartModel>> getTeamBylineAndMajors(@ApiParam(name = "lineCode", value = "线路code,多个用,隔开") @RequestParam(value = "lineCode", required = false) String lineCode) {
+        List<SysDepartModel> result = scheduleRecordService.getTeamBylineAndMajors(lineCode);
         return Result.OK(result);
     }
 }

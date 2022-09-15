@@ -22,6 +22,7 @@ import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.CsUserMajorModel;
 import org.jeecg.common.system.vo.LoginUser;
 import org.jeecg.common.system.vo.SiteModel;
+import org.jeecg.common.system.vo.SysDepartModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -271,6 +272,36 @@ public class ScheduleRecordServiceImpl extends ServiceImpl<ScheduleRecordMapper,
             return page.setRecords(users);
         }
         return page;
+    }
+
+    @Override
+    public List<SysDepartModel> getTeamBylineAndMajors(String lineCode) {
+        LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        if (ObjectUtil.isEmpty(user)) {
+            throw new AiurtBootException("请重新登录");
+        }
+        // 线路筛选
+        List<String> lineCodeList = new ArrayList<>();
+        if (StrUtil.isNotEmpty(lineCode)) {
+            lineCodeList = StrUtil.split(lineCode, ',');
+            List<String> lineList = baseMapper.getTeamBylineAndMajor(lineCodeList, new ArrayList<>());
+            if (CollUtil.isEmpty(lineList)) {
+                return new ArrayList<>();
+            }
+        }
+
+        // 专业筛选
+        List<CsUserMajorModel> majorByUserId = sysBaseAPI.getMajorByUserId(user.getId());
+        List<String> majorList = new ArrayList<>();
+        if (CollUtil.isNotEmpty(majorByUserId)) {
+            majorList = majorByUserId.stream().map(CsUserMajorModel::getMajorCode).collect(Collectors.toList());
+            List<String> majors = baseMapper.getTeamBylineAndMajor(new ArrayList<>(), majorList);
+            if (CollUtil.isEmpty(majors)) {
+                return new ArrayList<>();
+            }
+        }
+
+        return baseMapper.getTeamBylineAndMajors(lineCodeList,majorList);
     }
 
 }

@@ -32,6 +32,7 @@ import java.util.Date;
 public class FaultTimeoutLevelDTO {
     private static final long serialVersionUID = 1L;
     @ApiModelProperty("故障状态")
+    @Dict(dicCode = "fault_status")
     private String status;
 
     @ApiModelProperty("故障编号")

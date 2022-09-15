@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
 
 import java.util.Date;
+import java.util.List;
 
 @Data
 @NoArgsConstructor
@@ -39,5 +40,5 @@ public class ScreenModule {
     /**
      * 线路编号
      */
-    private String lineCode;
+    private List<String> lines;
 }

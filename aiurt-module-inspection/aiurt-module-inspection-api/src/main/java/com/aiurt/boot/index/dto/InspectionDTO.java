@@ -3,8 +3,6 @@ package com.aiurt.boot.index.dto;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
-import java.util.Date;
-
 /**
  * @author wgp
  * @Title:
@@ -13,10 +11,10 @@ import java.util.Date;
  */
 @Data
 public class InspectionDTO {
-    @ApiModelProperty("施工数")
+    @ApiModelProperty("班组")
     private String teamName;
 
-    @ApiModelProperty("施工数")
+    @ApiModelProperty("站点")
     private String stationName;
 
     @ApiModelProperty("检修任务")
@@ -26,8 +24,18 @@ public class InspectionDTO {
     private String realName;
 
     @ApiModelProperty("检修时间")
-    private Date time;
+    private String time;
+
+    @ApiModelProperty(value = "状态名称")
+    private String statusName;
 
     @ApiModelProperty(value = "状态")
-    private String statusName;
+    private Integer status;
+
+    @ApiModelProperty("所属周")
+    private Integer weeks;
+
+    @ApiModelProperty("单号")
+    private String code;
+
 }

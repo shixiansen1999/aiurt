@@ -60,9 +60,9 @@ public class DailyFaultApiImpl implements DailyFaultApi {
         //获取当前用户作为被指派/领取人，负责过的故障报修单
         List<FaultRepairRecord> faultList = recordMapper.selectList(new LambdaQueryWrapper<FaultRepairRecord>().eq(FaultRepairRecord::getAppointUserName, sysUser.getUsername()));
        //获取已经填写的维修单
-        List<FaultRepairRecord> recordList = faultList.stream().filter(f -> f.getEndTime() != null).collect(Collectors.toList());
+        List<FaultRepairRecord> recordList = faultList.stream().filter(f -> f.getArriveTime() != null).collect(Collectors.toList());
         //去重复
-        List<FaultRepairRecord> list = recordList.stream().collect(Collectors.collectingAndThen(Collectors.toCollection(() -> new TreeSet<>(Comparator.comparing(o -> o.getFaultCode() + o.getAppointUserName()))), ArrayList::new));
+        List<FaultRepairRecord> list=recordList.stream().collect(Collectors.collectingAndThen(Collectors.toCollection(()->new TreeSet<>(Comparator.comparing(o->o.getFaultCode()+";"+o.getAppointUserName()))), ArrayList::new));
         //获取当前用户作为参与人，参与过的故障报修单
         List<FaultRepairParticipants> participantsList = participantsMapper.selectList(new LambdaQueryWrapper<FaultRepairParticipants>().eq(FaultRepairParticipants::getUserName, sysUser.getUsername()));
         //去重复
@@ -73,15 +73,18 @@ public class DailyFaultApiImpl implements DailyFaultApi {
         });
         list.addAll(faultRepairRecords);
         //查出当天用户是否进行维修
-
         List<String> faultNames = new ArrayList<>();
         for (FaultRepairRecord record : list) {
-             Fault fault = faultMapper.selectOne(new LambdaQueryWrapper<Fault>().eq(Fault::getCode, record.getFaultCode()));
-             String stationName = faultMapper.getStationName(fault.getStationCode());
-             LoginUser loginUser = sysBaseAPI.queryUser(fault.getAppointUserName());
-             String faultStatus = faultMapper.getStatusName(fault.getStatus());
-             String faultName = stationName+" "+fault.getFaultPhenomenon()+" "+loginUser.getRealname()+"-"+faultStatus;
-             faultNames.add(faultName);
+             FaultRepairRecord faultRepairRecord = faultMapper.getUserToday(record.getId(),new Date());
+             if(ObjectUtil.isNotEmpty(faultRepairRecord))
+             {
+                 Fault fault = faultMapper.selectOne(new LambdaQueryWrapper<Fault>().eq(Fault::getCode, record.getFaultCode()));
+                 String stationName = faultMapper.getStationName(fault.getStationCode());
+                 LoginUser loginUser = sysBaseAPI.queryUser(fault.getAppointUserName());
+                 String faultStatus = faultMapper.getStatusName(fault.getStatus());
+                 String faultName = stationName+" "+fault.getFaultPhenomenon()+" "+loginUser.getRealname()+"-"+faultStatus;
+                 faultNames.add(faultName);
+             }
         }
         return   CollUtil.join(faultNames, "。");
     }

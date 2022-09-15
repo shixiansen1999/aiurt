@@ -12,6 +12,7 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.ibatis.annotations.Param;
 import org.jeecg.common.system.vo.LoginUser;
+import org.jeecg.common.system.vo.SysDepartModel;
 import org.springframework.stereotype.Repository;
 
 import java.util.Date;
@@ -84,4 +85,7 @@ public interface ScheduleRecordMapper extends BaseMapper<ScheduleRecord> {
     List<SysUserTeamDTO> getTodayOndutyDetail(@Param("page") Page<SysUserTeamDTO> page,@Param("orgCode") String orgCode, @Param("orgCodes") List<String> orgCodes, @Param("date") Date date);
 
     List<SysUserTeamDTO> getUserByDepIds(@Param("orgCodes") List<String> orgCodes,@Param("page") Page<SysUserTeamDTO> page,@Param("orgCode") String orgCode);
+
+    List<SysDepartModel> getTeamBylineAndMajors(@Param("lineCode") List<String> lineCode,@Param("majorList") List<String> majorList);
+
 }
