@@ -262,6 +262,21 @@ public class PatrolScreenService {
                 break;
         }
         IPage<ScreenStatisticsTask> pageList = patrolTaskMapper.getStatisticsDataList(page, moduleType);
+        pageList.getRecords().stream().forEach(l -> {
+            // 字典翻译
+            String statusName = sysBaseApi.getDictItems(PatrolDictCode.TASK_STATUS).stream()
+                    .filter(item -> item.getValue().equals(String.valueOf(l.getStatus())))
+                    .map(DictModel::getText).collect(Collectors.joining());
+            String omitStatusName = sysBaseApi.getDictItems(PatrolDictCode.OMIT_STATUS).stream()
+                    .filter(item -> item.getValue().equals(String.valueOf(l.getOmitStatus())))
+                    .map(DictModel::getText).collect(Collectors.joining());
+            String abnormalName = sysBaseApi.getDictItems(PatrolDictCode.ABNORMAL_STATE).stream()
+                    .filter(item -> item.getValue().equals(String.valueOf(l.getAbnormalState())))
+                    .map(DictModel::getText).collect(Collectors.joining());
+            l.setStatusName(statusName);
+            l.setOmitStatusName(omitStatusName);
+            l.setAbnormalStateName(abnormalName);
+        });
         return pageList;
     }
 }
