@@ -37,7 +37,7 @@
                 and spare_part_apply.code like concat(concat('%',#{sparePartApply.code}),'%')
             </if>
             <if test="sparePartApply.warehouseName != null and sparePartApply.warehouseName != ''">
-                and t1.warehouse_name like concat(concat('%',#{sparePartApply.warehouseName}),'%')
+                and t1.warehouse_name = #{sparePartApply.warehouseName}
             </if>
             <if test="sparePartApply.status != null and sparePartApply.status != null">
                 and spare_part_apply.status = #{sparePartApply.status}

@@ -48,7 +48,7 @@
             and t1.`name` like concat('%', #{out.name}, '%')
         </if>
         <if test="out.warehouseName!=null and out.warehouseName!=''">
-            and t5.warehouse_name like concat('%', #{out.warehouseName}, '%')
+            and t5.warehouse_name = #{out.warehouseName}
         </if>
         <if test="out.status!=null and out.status!=''">
             and spare_part_out_order.status = #{out.status}
