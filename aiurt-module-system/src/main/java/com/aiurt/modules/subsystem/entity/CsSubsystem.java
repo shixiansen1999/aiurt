@@ -49,6 +49,10 @@ public class CsSubsystem implements Serializable {
 	@Excel(name = "名称", width = 15)
     @ApiModelProperty(value = "名称")
     private String systemName;
+    @TableField(exist = false)
+    private String label;
+    @TableField(exist = false)
+    private String value;
 	/**编号*/
 	@Excel(name = "编号", width = 15)
     @ApiModelProperty(value = "编号")
