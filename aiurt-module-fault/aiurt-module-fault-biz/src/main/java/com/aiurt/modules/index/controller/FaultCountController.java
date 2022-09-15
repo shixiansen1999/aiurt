@@ -53,17 +53,6 @@ public class FaultCountController {
     @Autowired
     IFaultCountService faultCountService;
 
-    @Autowired
-    private IFaultService faultService;
-
-    @Autowired
-    private IFaultDeviceService faultDeviceService;
-
-    @Autowired
-    private IFaultLevelService faultLevelService;
-
-    @Autowired
-    private IFaultRepairRecordService faultRepairRecordService;
 
     /**
      * 获取首页的故障概况信息
