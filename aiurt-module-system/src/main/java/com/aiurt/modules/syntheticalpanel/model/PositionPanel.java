@@ -84,11 +84,11 @@ public class PositionPanel implements Serializable {
     private String concatWay;
 
     /**预警信息状态*/
-    @ApiModelProperty(value = "预警信息状态")
+    @ApiModelProperty(value = "预警信息状态（0 开启 ，1 关闭）")
     private Integer warningStatus;
 
     /**开关站状态*/
-    @ApiModelProperty(value = "开关站状态")
+    @ApiModelProperty(value = "开关站状态（0 开启 ，1 关闭）")
     private Integer openStatus;
 
     private List<SysUser> userList;
