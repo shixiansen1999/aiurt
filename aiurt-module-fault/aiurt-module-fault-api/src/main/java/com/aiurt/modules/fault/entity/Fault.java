@@ -83,6 +83,7 @@ public class Fault extends DictEntity implements Serializable {
     private String lineCode;
 
     @ApiModelProperty(value = "线路编码", required = true)
+    @TableField(exist = false)
     private String lineName;
 
 	/**站点*/
