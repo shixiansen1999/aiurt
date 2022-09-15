@@ -489,4 +489,28 @@ WHERE
 	DATE_FORMAT( ptu.create_time, '%Y-%m-%d' ) = DATE_FORMAT(#{date} ,'%Y-%m-%d' )
 	and ptu.user_id = #{userId}
 </select>
+    <select id="getScreenTask" resultType="com.aiurt.boot.screen.model.ScreenStatisticsTask">
+        SELECT
+        pt.`code`,
+        pt.`name`,
+        pt.submit_time,
+        pt.auditor,
+        pt.auditor_time,
+        pt.`status`,
+        pt.abnormal_state,
+        pt.omit_status,
+        GROUP_CONCAT( DISTINCT cs.station_name ) stationInfo,
+        GROUP_CONCAT( DISTINCT ptu.user_name ) userInfo
+        FROM
+        patrol_task pt
+        LEFT JOIN patrol_task_station pts ON pt.`code` = pts.task_code AND pts.del_flag = 0
+        JOIN cs_station cs ON pts.station_code = cs.station_code AND cs.del_flag = 0
+        LEFT JOIN patrol_task_user ptu ON pt.`code` = pts.task_code AND ptu.del_flag = 0
+        WHERE
+        pt.del_flag = 0
+        <if test="startTime != null and endTime != null">
+            AND pt.patrol_date BETWEEN #{startTime} AND #{endTime}
+        </if>
+        GROUP BY pt.`code`
+    </select>
 </mapper>

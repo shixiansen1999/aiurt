@@ -591,4 +591,11 @@ public interface ISysBaseAPI extends CommonAPI {
      */
     @GetMapping(value = "/sys/api/getSiteByOrgCode")
     List<SiteModel> getSiteByOrgCode(String orgCode);
+    /**
+     * 通过线路code查询站点code
+     * @param lineCode
+     * @return
+     */
+    @GetMapping(value = "/sys/api/getStationCodeByLineCode")
+    List<String> getStationCodeByLineCode(String lineCode);
 }

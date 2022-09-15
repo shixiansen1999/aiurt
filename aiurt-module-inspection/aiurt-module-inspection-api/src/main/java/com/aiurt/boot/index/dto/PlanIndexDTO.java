@@ -39,6 +39,11 @@ public class PlanIndexDTO implements Serializable {
     @ApiModelProperty(value = "未检修数")
     private Long unfinish;
     /**
+     * 未检修数率
+     */
+    @ApiModelProperty(value = "未检修数率")
+    private String unfinishRate;
+    /**
      * 已检修率
      */
     @ApiModelProperty(value = "已检修率")

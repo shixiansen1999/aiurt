@@ -1509,4 +1509,27 @@ public class SysBaseApiImpl implements ISysBaseAPI {
         List<SiteModel> result = workAreaMapper.getSiteByOrgCode(orgCode);
         return result;
     }
+
+    /**
+     * 通过线路查询对应的站点
+     *
+     * @param lineCode
+     * @return
+     */
+    @Override
+    public List<String> getStationCodeByLineCode(String lineCode) {
+        if (StrUtil.isNotEmpty(lineCode)) {
+            List<String> lineCodeList = StrUtil.split(lineCode, ',');
+            LambdaQueryWrapper<CsStation> csStationLambdaQueryWrapper = new LambdaQueryWrapper<>();
+            csStationLambdaQueryWrapper.eq(CsStation::getDelFlag, CommonConstant.DEL_FLAG_0);
+            if (CollUtil.isNotEmpty(lineCodeList)) {
+                csStationLambdaQueryWrapper.in(CsStation::getLineCode, lineCodeList);
+            }
+            List<CsStation> csStations = csStationMapper.selectList(csStationLambdaQueryWrapper);
+            if (CollUtil.isNotEmpty(csStations)) {
+                return csStations.stream().map(CsStation::getStationCode).collect(Collectors.toList());
+            }
+        }
+        return new ArrayList<>();
+    }
 }

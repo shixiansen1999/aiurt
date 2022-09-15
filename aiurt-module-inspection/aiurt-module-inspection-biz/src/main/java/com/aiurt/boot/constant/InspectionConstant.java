@@ -249,5 +249,21 @@ public class InspectionConstant {
      * 首页：管理部门的数据
      */
     public static final Integer IS_ALL_DATA_0 = 0;
+    /**
+     * 看板时间字典：本周
+     */
+    public static final Integer THIS_WEEK_1 = 1;
+    /**
+     * 看板时间字典：上周
+     */
+    public static final Integer LAST_WEEK_2 = 2;
+    /**
+     * 看板时间字典：本月
+     */
+    public static final Integer THIS_MONTH_3 = 3;
+    /**
+     * 看板时间字典：上月
+     */
+    public static final Integer LAST_MONTH_4 = 4;
 
 }

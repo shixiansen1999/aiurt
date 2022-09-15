@@ -9,6 +9,7 @@ import com.aiurt.common.util.oConvertUtils;
 import com.aiurt.modules.schedule.dto.ScheduleBigScreenDTO;
 import com.aiurt.modules.schedule.dto.ScheduleRecordDTO;
 import com.aiurt.modules.schedule.dto.SysUserScheduleDTO;
+import com.aiurt.modules.schedule.dto.SysUserTeamDTO;
 import com.aiurt.modules.schedule.entity.ScheduleHolidays;
 import com.aiurt.modules.schedule.entity.ScheduleItem;
 import com.aiurt.modules.schedule.entity.ScheduleLog;
@@ -310,8 +311,8 @@ public class ScheduleRecordController {
     public Result<List<DayScheduleModel>> getUserSchedule(@RequestParam(name = "date", required = false) String date,
                                                           @RequestParam(name = "orgId", required = false) String orgId) {
         LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-         List<String> roleCodeList = scheduleRecordMapper.getRoleCodeById(loginUser.getId());
-        if (StringUtils.isBlank(orgId)&&!roleCodeList.contains(RoleConstant.DIRECTOR)&&!roleCodeList.contains(RoleConstant.ADMIN)){
+        List<String> roleCodeList = scheduleRecordMapper.getRoleCodeById(loginUser.getId());
+        if (StringUtils.isBlank(orgId) && !roleCodeList.contains(RoleConstant.DIRECTOR) && !roleCodeList.contains(RoleConstant.ADMIN)) {
             orgId = loginUser.getOrgId();
         }
         Result<List<DayScheduleModel>> result = new Result<List<DayScheduleModel>>();
@@ -333,7 +334,7 @@ public class ScheduleRecordController {
             model.setVoList(new ArrayList<ScheduleCalendarVo>());
             list.add(model);
         }
-        List<ScheduleRecordModel> allRecordList = scheduleRecordService.getAllScheduleRecordsByMonth(date,orgId);
+        List<ScheduleRecordModel> allRecordList = scheduleRecordService.getAllScheduleRecordsByMonth(date, orgId);
         if (allRecordList != null && allRecordList.size() > 0) {
             for (ScheduleRecordModel recordModel : allRecordList) {
                 calendar.setTime(recordModel.getDate());
@@ -369,10 +370,10 @@ public class ScheduleRecordController {
         Result<List<ScheduleRecordModel>> result = new Result<List<ScheduleRecordModel>>();
         LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         LambdaQueryWrapper<LoginUser> queryWrapper = new LambdaQueryWrapper<>();
-         List<LoginUser> userList = scheduleRecordMapper.userList(loginUser.getOrgId());
-        if (StringUtils.isNotEmpty(date)&& ObjectUtil.isNotEmpty(userList)) {
-            List<String>ids = userList.stream().map(LoginUser::getId).collect(Collectors.toList());
-            List<ScheduleRecordModel> recordModelList = scheduleRecordService.getRecordListByDayAndUserIds(date,ids);
+        List<LoginUser> userList = scheduleRecordMapper.userList(loginUser.getOrgId());
+        if (StringUtils.isNotEmpty(date) && ObjectUtil.isNotEmpty(userList)) {
+            List<String> ids = userList.stream().map(LoginUser::getId).collect(Collectors.toList());
+            List<ScheduleRecordModel> recordModelList = scheduleRecordService.getRecordListByDayAndUserIds(date, ids);
             result.setResult(recordModelList);
         }
         result.setSuccess(true);
@@ -399,7 +400,7 @@ public class ScheduleRecordController {
 
             boolean ok = scheduleRecordService.updateById(scheduleRecordEntity);
 
-            ScheduleLog log=new ScheduleLog();
+            ScheduleLog log = new ScheduleLog();
             log.setDate(scheduleRecordEntity.getDate());
             log.setRecordId(scheduleRecordEntity.getId());
             log.setDelFlag(0);
@@ -424,6 +425,7 @@ public class ScheduleRecordController {
 
     /**
      * 首页-根据日期查询班次情况
+     *
      * @param scheduleRecordDTO
      * @return
      */
@@ -432,7 +434,7 @@ public class ScheduleRecordController {
     @RequestMapping(value = "/getStaffOnDuty", method = RequestMethod.GET)
     public Result<IPage<SysUserScheduleDTO>> getStaffOnDuty(@Validated ScheduleRecordDTO scheduleRecordDTO
     ) {
-        Page<SysUserScheduleDTO> page = new Page<>(scheduleRecordDTO.getPageNo(),scheduleRecordDTO.getPageSize());
+        Page<SysUserScheduleDTO> page = new Page<>(scheduleRecordDTO.getPageNo(), scheduleRecordDTO.getPageSize());
         IPage<SysUserScheduleDTO> maintenanceSituation = scheduleRecordService.getStaffOnDuty(page, scheduleRecordDTO);
         return Result.OK(maintenanceSituation);
     }
@@ -441,15 +443,53 @@ public class ScheduleRecordController {
      * 获取大屏的班组信息
      *
      * @param lineCode 线路code
-     * @param type   类型:1：本周，2：上周，3：本月， 4：上月
+     * @param type     类型:1：本周，2：上周，3：本月， 4：上月
      * @return
      */
-    @AutoLog(value = "首页-获取大屏的班组信息", operateType = 1, operateTypeAlias = "查询", permissionUrl = "")
-    @ApiOperation(value = "首页-获取大屏的班组信息", notes = "首页-获取大屏的班组信息")
+    @AutoLog(value = "获取大屏的班组信息", operateType = 1, operateTypeAlias = "查询", permissionUrl = "")
+    @ApiOperation(value = "获取大屏的班组信息", notes = "获取大屏的班组信息")
     @RequestMapping(value = "/overviewInfo", method = RequestMethod.GET)
-    public Result<ScheduleBigScreenDTO> getOverviewInfo(@ApiParam(name = "lineCode", value = "线路code") @RequestParam(value = "lineCode",required = false) String lineCode,
-                                                        @ApiParam(name = "type", value = "类型:1：本周，2：上周，3：本月， 4：上月",defaultValue = "1") @RequestParam("type") Integer type) {
-        ScheduleBigScreenDTO result = scheduleRecordService.getTeamData(lineCode,type);
+    public Result<ScheduleBigScreenDTO> getOverviewInfo(@ApiParam(name = "lineCode", value = "线路code,多个用,隔开") @RequestParam(value = "lineCode", required = false) String lineCode,
+                                                        @ApiParam(name = "type", value = "类型:1：本周，2：上周，3：本月， 4：上月", defaultValue = "1") @RequestParam("type") Integer type) {
+        ScheduleBigScreenDTO result = scheduleRecordService.getTeamData(lineCode, type);
+        return Result.OK(result);
+    }
+
+    /**
+     * 获取大屏的班组信息-点击今日当班人数
+     *
+     * @param lineCode 线路code
+     * @return
+     */
+    @AutoLog(value = "获取大屏的班组信息-点击今日当班人数", operateType = 1, operateTypeAlias = "查询", permissionUrl = "")
+    @ApiOperation(value = "获取大屏的班组信息-点击今日当班人数", notes = "获取大屏的班组信息-点击今日当班人数")
+    @RequestMapping(value = "/getTodayOndutyDetail", method = RequestMethod.GET)
+    public Result<IPage<SysUserTeamDTO>> getTodayOndutyDetail(@ApiParam(name = "lineCode", value = "线路code,多个用,隔开") @RequestParam(value = "lineCode", required = false) String lineCode,
+                                                              @ApiParam(name = "orgId", value = "班组id") @RequestParam(value = "orgId", required = false) String orgId,
+                                                              @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
+                                                              @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize
+    ) {
+        Page<SysUserTeamDTO> page = new Page<>(pageNo, pageSize);
+        IPage<SysUserTeamDTO> result = scheduleRecordService.getTodayOndutyDetail(lineCode, orgId, page);
+        return Result.OK(result);
+    }
+
+    /**
+     * 获取大屏的班组信息-点击总人员数
+     *
+     * @param lineCode 线路code
+     * @return
+     */
+    @AutoLog(value = "获取大屏的班组信息-点击总人员数", operateType = 1, operateTypeAlias = "查询", permissionUrl = "")
+    @ApiOperation(value = "获取大屏的班组信息-点击总人员数", notes = "获取大屏的班组信息-点击总人员数")
+    @RequestMapping(value = "/getTotalPepoleDetail", method = RequestMethod.GET)
+    public Result<IPage<SysUserTeamDTO>> getTotalPepoleDetail(@ApiParam(name = "lineCode", value = "线路code,多个用,隔开") @RequestParam(value = "lineCode", required = false) String lineCode,
+                                                              @ApiParam(name = "orgId", value = "班组id") @RequestParam(value = "orgId", required = false) String orgId,
+                                                              @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
+                                                              @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize
+    ) {
+        Page<SysUserTeamDTO> page = new Page<>(pageNo, pageSize);
+        IPage<SysUserTeamDTO> result = scheduleRecordService.getTotalPepoleDetail(lineCode, orgId, page);
         return Result.OK(result);
     }
 }

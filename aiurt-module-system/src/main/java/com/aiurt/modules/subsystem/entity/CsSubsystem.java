@@ -42,10 +42,17 @@ public class CsSubsystem implements Serializable {
 	@TableId(type = IdType.ASSIGN_ID)
     @ApiModelProperty(value = "id")
     private String id;
+    @TableField(exist = false)
+    @ApiModelProperty(value = "key")
+    private String key;
 	/**名称*/
 	@Excel(name = "名称", width = 15)
     @ApiModelProperty(value = "名称")
     private String systemName;
+    @TableField(exist = false)
+    private String label;
+    @TableField(exist = false)
+    private String value;
 	/**编号*/
 	@Excel(name = "编号", width = 15)
     @ApiModelProperty(value = "编号")

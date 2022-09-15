@@ -2,6 +2,7 @@ package com.aiurt.boot.screen.service;
 
 import cn.hutool.core.date.DateUtil;
 import com.aiurt.boot.constant.PatrolConstant;
+import com.aiurt.boot.constant.PatrolDictCode;
 import com.aiurt.boot.screen.constant.ScreenConstant;
 import com.aiurt.boot.screen.model.ScreenImportantData;
 import com.aiurt.boot.screen.model.ScreenStatistics;
@@ -9,7 +10,10 @@ import com.aiurt.boot.screen.model.ScreenStatisticsPieGraph;
 import com.aiurt.boot.screen.model.ScreenStatisticsTask;
 import com.aiurt.boot.screen.utils.ScreenDateUtil;
 import com.aiurt.boot.task.entity.PatrolTask;
+import com.aiurt.boot.task.mapper.PatrolTaskMapper;
 import com.aiurt.boot.task.service.IPatrolTaskService;
+import org.jeecg.common.system.api.ISysBaseAPI;
+import org.jeecg.common.system.vo.DictModel;
 import org.jeecg.common.util.DateUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -20,11 +24,16 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class PatrolScreenService {
     @Autowired
+    private ISysBaseAPI sysBaseApi;
+    @Autowired
     private IPatrolTaskService patrolTaskService;
+    @Autowired
+    private PatrolTaskMapper patrolTaskMapper;
 
     /**
      * 大屏巡视模块-重要数据展示
@@ -34,16 +43,8 @@ public class PatrolScreenService {
      * @return
      */
     public ScreenImportantData getImportantData(Integer timeType, String lineCode) {
-        // 默认本周
-        String date = ScreenDateUtil.getThisWeek(new Date());
-        if (ScreenConstant.LAST_WEEK.equals(timeType)) {
-            date = ScreenDateUtil.getLastWeek(new Date());
-        } else if (ScreenConstant.THIS_MONTH.equals(timeType)) {
-            date = ScreenDateUtil.getThisMonth(new Date());
-        } else if (ScreenConstant.LAST_MONTH.equals(timeType)) {
-            date = ScreenDateUtil.getLastMonth(new Date());
-        }
-        String[] split = date.split("~");
+        String dateTime = ScreenDateUtil.getDateTime(timeType);
+        String[] split = dateTime.split("~");
         Date startTime = DateUtil.parse(split[0]);
         Date endTime = DateUtil.parse(split[1]);
         List<PatrolTask> list = patrolTaskService.lambdaQuery().eq(PatrolTask::getDelFlag, 0)
@@ -75,17 +76,45 @@ public class PatrolScreenService {
      * @return
      */
     public ScreenStatistics getStatisticsData(Integer timeType, String lineCode) {
-        // 默认本周
-        String date = ScreenDateUtil.getThisWeek(new Date());
-        String[] split = date.split("~");
+        String dateTime = ScreenDateUtil.getDateTime(timeType);
+        String[] split = dateTime.split("~");
         Date startTime = DateUtil.parse(split[0]);
         Date endTime = DateUtil.parse(split[1]);
         List<PatrolTask> list = patrolTaskService.lambdaQuery().eq(PatrolTask::getDelFlag, 0)
                 .between(PatrolTask::getPatrolDate, startTime, endTime)
                 .list();
 
+        String omitStartTime = this.getOmitDateScope(startTime).split("~")[0];
+        String omitEndTime = this.getOmitDateScope(endTime).split("~")[1];
 
-        return new ScreenStatistics();
+        List<PatrolTask> todayList = list.stream()
+                .filter(l -> DateUtil.format(new Date(), "yyyy-MM-dd").equals(DateUtil.format(l.getPatrolDate(), "yyyy-MM-dd")))
+                .collect(Collectors.toList());
+        if (!ScreenConstant.THIS_WEEK.equals(timeType) || !ScreenConstant.THIS_MONTH.equals(timeType)) {
+            todayList = patrolTaskService.lambdaQuery().eq(PatrolTask::getDelFlag, 0)
+                    .eq(PatrolTask::getOmitStatus, PatrolConstant.OMIT_STATUS)
+                    .between(PatrolTask::getPatrolDate, DateUtil.parse(DateUtil.format(new Date(), "yyyy-MM-dd 00:00:00")),
+                            DateUtil.parse(DateUtil.format(new Date(), "yyyy-MM-dd 23:59:59"))).list();
+        }
+        ScreenStatistics data = new ScreenStatistics();
+
+        long planNum = list.stream().count();
+        long finishNum = list.stream().filter(l -> PatrolConstant.TASK_COMPLETE.equals(l.getStatus())).count();
+        long omitNum = patrolTaskService.lambdaQuery().eq(PatrolTask::getDelFlag, 0)
+                .eq(PatrolTask::getOmitStatus, PatrolConstant.OMIT_STATUS)
+                .between(PatrolTask::getPatrolDate, DateUtil.parse(omitStartTime), DateUtil.parse(omitEndTime))
+                .count();
+        long abnormalNum = list.stream().filter(l -> PatrolConstant.TASK_ABNORMAL.equals(l.getAbnormalState())).count();
+        long todayNum = todayList.stream().count();
+        long todayFinishNum = todayList.stream().filter(l -> PatrolConstant.TASK_COMPLETE.equals(l.getStatus())).count();
+
+        data.setPlanNum(planNum);
+        data.setFinishNum(finishNum);
+        data.setOmitNum(omitNum);
+        data.setAbnormalNum(abnormalNum);
+        data.setTodayNum(todayNum);
+        data.setTodayFinishNum(todayFinishNum);
+        return data;
     }
 
     /**
@@ -96,7 +125,27 @@ public class PatrolScreenService {
      * @return
      */
     public List<ScreenStatisticsTask> getStatisticsTaskInfo(Integer timeType, String lineCode) {
-        return new ArrayList<>();
+        String dateTime = ScreenDateUtil.getDateTime(timeType);
+        String[] split = dateTime.split("~");
+        Date startTime = DateUtil.parse(split[0]);
+        Date endTime = DateUtil.parse(split[1]);
+        List<ScreenStatisticsTask> list = patrolTaskMapper.getScreenTask(startTime, endTime, lineCode);
+        list.stream().forEach(l -> {
+            // 字典翻译
+            String statusName = sysBaseApi.getDictItems(PatrolDictCode.TASK_STATUS).stream()
+                    .filter(item -> item.getValue().equals(String.valueOf(l.getStatus())))
+                    .map(DictModel::getText).collect(Collectors.joining());
+            String omitStatusName = sysBaseApi.getDictItems(PatrolDictCode.OMIT_STATUS).stream()
+                    .filter(item -> item.getValue().equals(String.valueOf(l.getOmitStatus())))
+                    .map(DictModel::getText).collect(Collectors.joining());
+            String abnormalName = sysBaseApi.getDictItems(PatrolDictCode.ABNORMAL_STATE).stream()
+                    .filter(item -> item.getValue().equals(String.valueOf(l.getAbnormalState())))
+                    .map(DictModel::getText).collect(Collectors.joining());
+            l.setStatusName(statusName);
+            l.setOmitStatusName(omitStatusName);
+            l.setAbnormalStateName(abnormalName);
+        });
+        return list;
     }
 
     /**

@@ -1,5 +1,6 @@
 package com.aiurt.boot.task.mapper;
 
+import com.aiurt.boot.screen.model.ScreenStatisticsTask;
 import com.aiurt.boot.standard.dto.StationDTO;
 import com.aiurt.boot.statistics.dto.IndexScheduleDTO;
 import com.aiurt.boot.statistics.dto.IndexTaskDTO;
@@ -209,9 +210,20 @@ public interface PatrolTaskMapper extends BaseMapper<PatrolTask> {
 
     /**
      * 查看当前用户，当天的巡检任务
+     *
      * @param userId
      * @param date
      * @return
      */
-    List<PatrolTask> getUserTask(@Param("userId")String userId,@Param("date") Date date);
+    List<PatrolTask> getUserTask(@Param("userId") String userId, @Param("date") Date date);
+
+    /**
+     * 大屏巡视模块-巡视数据统计任务列表
+     *
+     * @param startTime
+     * @param endTime
+     * @param lineCode
+     * @return
+     */
+    List<ScreenStatisticsTask> getScreenTask(@Param("startTime") Date startTime, @Param("endTime") Date endTime, @Param("lineCode") String lineCode);
 }

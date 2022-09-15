@@ -2,6 +2,7 @@ package com.aiurt.boot.screen.utils;
 
 import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
+import com.aiurt.boot.screen.constant.ScreenConstant;
 
 import java.util.Date;
 
@@ -62,5 +63,21 @@ public class ScreenDateUtil {
         DateTime end = DateUtil.endOfMonth(date);
         String lastMonth = DateUtil.format(start, "yyyy-MM-dd 00:00:00") + "~" + DateUtil.format(end, "yyyy-MM-dd 23:59:59");
         return lastMonth;
+    }
+
+    /**
+     * 根据时间类型获取时间范围,1本周、2上周、3本月、4上月
+     */
+    public static String getDateTime(Integer timeType) {
+        // 默认本周
+        String date = getThisWeek(new Date());
+        if (ScreenConstant.LAST_WEEK.equals(timeType)) {
+            date = getLastWeek(new Date());
+        } else if (ScreenConstant.THIS_MONTH.equals(timeType)) {
+            date = getThisMonth(new Date());
+        } else if (ScreenConstant.LAST_MONTH.equals(timeType)) {
+            date = getLastMonth(new Date());
+        }
+        return date;
     }
 }

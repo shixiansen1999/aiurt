@@ -270,5 +270,55 @@
 	sr.date,
 	sr.item_id
     </select>
+    <select id="getTeamBylineAndMajor" resultType="java.lang.String">
+    select DISTINCT sd.org_code from sys_depart sd
+    left join work_area_org wao on wao.org_code = sd.org_code
+    left join work_area wa on wa.`code` = wao.work_area_code
+    left join work_area_line wal on wal.work_area_code = wa.`code`
+    <where>
+        sd.del_flag = 0 and wao.del_flag= 0 and wa.del_flag = 0 and wal.del_flag = 0
+        <if test="lineCode.size()>0">
+           and wal.line_code in
+           <foreach collection="lineCode" item="code" open="(" close=")" separator=",">
+               #{code}
+           </foreach>
+        </if>
+        <if test="majorList.size()>0">
+           and wa.major_code in
+           <foreach collection="majorList" item="code" open="(" close=")" separator=",">
+               #{code}
+           </foreach>
+        </if>
+    </where>
+    </select>
+    <select id="getTodayOndutyDetail" resultType="com.aiurt.modules.schedule.dto.SysUserTeamDTO">
+        SELECT
+        sr.user_id AS userId,
+        su.realname AS realName,
+        su.username,
+        su.permit_code,
+        su.salary_code
+        FROM
+        schedule_record sr
+        INNER JOIN schedule_item si ON sr.item_id = si.id
+        INNER JOIN sys_user su ON sr.user_id = su.id
+        left join sys_user_depart sud on sud.user_id = su.id
+        WHERE
+        DATE_FORMAT( sr.date, '%Y-%m-%d' ) =DATE_FORMAT( #{date},'%Y-%m-%d')
+        AND sr.del_flag = 0
+        AND si.del_flag = 0
+        <if test="users.size()>0">
+            and su.id in
+            <foreach collection="users" separator="," open="(" close=")" item="user">
+                #{user}
+            </foreach>
+        </if>
+        <if test="orgId!=null and orgId!=''">
+            and su.dep_id = #{orgId}
+        </if>
+        ORDER BY
+        sr.date,
+        sr.item_id
+    </select>
 
 </mapper>

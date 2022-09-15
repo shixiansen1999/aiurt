@@ -1,9 +1,9 @@
 package com.aiurt.modules.schedule.mapper;
 
 
-
 import com.aiurt.modules.schedule.dto.ScheduleRecordDTO;
 import com.aiurt.modules.schedule.dto.SysUserScheduleDTO;
+import com.aiurt.modules.schedule.dto.SysUserTeamDTO;
 import com.aiurt.modules.schedule.entity.ScheduleRecord;
 import com.aiurt.modules.schedule.model.ScheduleRecordModel;
 import com.aiurt.modules.schedule.model.ScheduleUser;
@@ -14,13 +14,14 @@ import org.apache.ibatis.annotations.Param;
 import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.stereotype.Repository;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
 /**
  * @Description: schedule_record
  * @Author: swsc
- * @Date:   2021-09-23
+ * @Date: 2021-09-23
  * @Version: V1.0
  */
 @Repository
@@ -28,23 +29,23 @@ public interface ScheduleRecordMapper extends BaseMapper<ScheduleRecord> {
 
     List<ScheduleRecord> getScheduleRecordBySchedule(@Param("scheduleId") Integer scheduleId);
 
-    List<ScheduleUser> getScheduleUserByDate(@Param("date") String date, @Param("username")String username);
+    List<ScheduleUser> getScheduleUserByDate(@Param("date") String date, @Param("username") String username);
 
     List<ScheduleRecordModel> getRecordListByUserAndDate(@Param("userId") String userId, @Param("date") String date);
 
-    List<ScheduleRecordModel> getAllScheduleRecordsByMonth(@Param("date") String date,@Param("orgId")String orgId);
+    List<ScheduleRecordModel> getAllScheduleRecordsByMonth(@Param("date") String date, @Param("orgId") String orgId);
 
-    List<LoginUser> getScheduleUserDataByDay(@Param("day") String day, @Param("orgId")String orgId);
+    List<LoginUser> getScheduleUserDataByDay(@Param("day") String day, @Param("orgId") String orgId);
 
     List<ScheduleRecordModel> getRecordListByDay(String date);
 
-    List<ScheduleRecordModel> getRecordListByDayAndUserIds(@Param("date")String date,@Param("userIds")List<String>userIds);
+    List<ScheduleRecordModel> getRecordListByDayAndUserIds(@Param("date") String date, @Param("userIds") List<String> userIds);
 
-    List<ScheduleRecord> getRecordListInDays(@Param("userId") String userId,@Param("start") String startDate, @Param("end") String endDate);
+    List<ScheduleRecord> getRecordListInDays(@Param("userId") String userId, @Param("start") String startDate, @Param("end") String endDate);
 
-    List<ScheduleUser> getScheduleUserByDateAndOrgCode(@Param("date") String date,@Param("username")String username,@Param("orgCode") String orgCode);
+    List<ScheduleUser> getScheduleUserByDateAndOrgCode(@Param("date") String date, @Param("username") String username, @Param("orgCode") String orgCode);
 
-    List<LoginUser> getDutyUserListByOrgIdsAndDate(@Param("date") String date, @Param("orgIds") List<String>orgIds);
+    List<LoginUser> getDutyUserListByOrgIdsAndDate(@Param("date") String date, @Param("orgIds") List<String> orgIds);
 
     List<SysUserScheduleModel> getDutyUserByOrgIdAndDate(String orgId, String date);
 
@@ -55,13 +56,15 @@ public interface ScheduleRecordMapper extends BaseMapper<ScheduleRecord> {
 
     /**
      * 查询
+     *
      * @param orgCode
      * @return
      */
-    List<LoginUser> userList(@Param("orgCode")String orgCode);
+    List<LoginUser> userList(@Param("orgCode") String orgCode);
 
     /**
      * 查询code
+     *
      * @param id
      * @return
      */
@@ -69,9 +72,14 @@ public interface ScheduleRecordMapper extends BaseMapper<ScheduleRecord> {
 
     /**
      * 根据日期条件查询班次情况
+     *
      * @param page
      * @param scheduleRecordDTO
      * @return
      */
-    List<SysUserScheduleDTO> getStaffOnDuty(@Param("page") Page<SysUserScheduleDTO> page,@Param("scheduleRecordDTO") ScheduleRecordDTO scheduleRecordDTO);
+    List<SysUserScheduleDTO> getStaffOnDuty(@Param("page") Page<SysUserScheduleDTO> page, @Param("scheduleRecordDTO") ScheduleRecordDTO scheduleRecordDTO);
+
+    List<String> getTeamBylineAndMajor(@Param("lineCode") List<String> lineCode, @Param("majorList") List<String> majorList);
+
+    List<SysUserTeamDTO> getTodayOndutyDetail(@Param("page") Page<SysUserTeamDTO> page,@Param("orgId") String orgId, @Param("users") List<String> users, @Param("date") Date date);
 }

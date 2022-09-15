@@ -52,4 +52,10 @@ public interface RepairPoolMapper extends BaseMapper<RepairPool> {
      */
     List<String> selectOrgByCode(String planCode);
 
-    }
+    /**
+     * 根据专业获取检修任务编码
+     * @param majorList
+     * @return
+     */
+    Set<String> getCodeByMajor(List<String> majorList);
+}

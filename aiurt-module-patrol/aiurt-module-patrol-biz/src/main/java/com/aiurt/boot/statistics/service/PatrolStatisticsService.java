@@ -4,6 +4,7 @@ import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.constant.PatrolConstant;
+import com.aiurt.boot.constant.PatrolDictCode;
 import com.aiurt.boot.statistics.dto.*;
 import com.aiurt.boot.statistics.model.*;
 import com.aiurt.boot.task.entity.PatrolTask;
@@ -286,10 +287,10 @@ public class PatrolStatisticsService {
             }
 
             // 字典翻译
-            String abnormalDictName = sysBaseApi.getDictItems("patrol_abnormal_state").stream()
-                    .filter(item -> item.getValue().equals(String.valueOf(l.getStatus())))
+            String abnormalDictName = sysBaseApi.getDictItems(PatrolDictCode.ABNORMAL_STATE).stream()
+                    .filter(item -> item.getValue().equals(String.valueOf(l.getAbnormalState())))
                     .map(DictModel::getText).collect(Collectors.joining());
-            String statusDictName = sysBaseApi.getDictItems("patrol_task_status").stream()
+            String statusDictName = sysBaseApi.getDictItems(PatrolDictCode.TASK_STATUS).stream()
                     .filter(item -> item.getValue().equals(String.valueOf(l.getStatus())))
                     .map(DictModel::getText).collect(Collectors.joining());
 
@@ -324,7 +325,7 @@ public class PatrolStatisticsService {
 
         pageList.getRecords().stream().forEach(l -> {
             // 字典翻译
-            String statusName = sysBaseApi.getDictItems("patrol_task_status").stream()
+            String statusName = sysBaseApi.getDictItems(PatrolDictCode.TASK_STATUS).stream()
                     .filter(item -> item.getValue().equals(String.valueOf(l.getStatus())))
                     .map(DictModel::getText).collect(Collectors.joining());
             l.setStatusName(statusName);

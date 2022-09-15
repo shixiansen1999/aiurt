@@ -16,5 +16,5 @@ public class ScheduleBigScreenDTO {
     @ApiModelProperty("总人员数")
     private Integer userTotal;
     @ApiModelProperty("今日当班数")
-    private Integer scheduleNum;
+    private Long scheduleNum;
 }
