@@ -1,5 +1,6 @@
 package com.aiurt.modules.sparepart.controller;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
@@ -83,7 +84,28 @@ public class SparePartLendController extends BaseController<SparePartLend, ISpar
 		page.setRecords(list);
 		return Result.OK(page);
 	}
-
+	 /**
+	  * 备件借出-获取仓库查询条件
+	  *
+	  * @param sparePartLend
+	  * @param req
+	  * @return
+	  */
+	 @AutoLog(value = "查询",operateType = 1,operateTypeAlias = "备件借出-获取仓库查询条件",permissionUrl = "/sparepart/sparePartLend/list")
+	 @ApiOperation(value="备件借出-获取仓库查询条件", notes="备件借出-获取仓库查询条件")
+	 @GetMapping(value = "/selectList")
+	 @PermissionData(pageComponent = "sparePartsFor/SparePartLendList")
+	 public Result<?> selectList(SparePartLend sparePartLend, HttpServletRequest req) {
+		 List<SparePartLend> list = sparePartLendService.selectList(null, sparePartLend);
+		 List<String> backList = list.stream().map(SparePartLend::getBackWarehouseName).collect(Collectors.toList());
+		 List<String> lendList = list.stream().map(SparePartLend::getLendWarehouseName).collect(Collectors.toList());
+		 List<String> newList = new ArrayList<>();
+		 newList.addAll(backList);
+		 newList.addAll(lendList);
+		 newList = newList.stream().distinct().collect(Collectors.toList());
+		 newList.remove(null);
+		 return Result.OK(newList);
+	 }
 	/**
 	 *   添加
 	 *

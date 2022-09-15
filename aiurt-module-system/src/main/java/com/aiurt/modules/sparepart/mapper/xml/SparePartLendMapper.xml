@@ -100,7 +100,7 @@
                 and spare_part_lend.status = #{lend.status}
             </if>
             <if test="lend.warehouseName!=null and lend.warehouseName!=''">
-                and  (t5.warehouse_name like concat('%', #{lend.warehouseName}, '%') or t8.warehouse_name like concat('%', #{lend.warehouseName}, '%'))
+                and  (t5.warehouse_name  = #{lend.warehouseName}    or t8.warehouse_name  = #{lend.warehouseName}  )
             </if>
             <if test="lend.ids!=null and lend.ids!=''">
                 and spare_part_lend.id in(

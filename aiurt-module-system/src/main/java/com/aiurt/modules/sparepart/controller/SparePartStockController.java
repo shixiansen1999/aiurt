@@ -73,6 +73,27 @@ public class SparePartStockController extends BaseController<SparePartStock, ISp
 		return Result.OK(page);
 	}
 	 /**
+	  * 备件库存-获取存放仓库查询条件
+	  *
+	  * @param sparePartStock
+	  * @param req
+	  * @return
+	  */
+	 @AutoLog(value = "查询",operateType = 1,operateTypeAlias = "备件库存-获取存放仓库查询条件",permissionUrl = "/sparepart/sparePartStock/list")
+	 @ApiOperation(value="备件库存-获取存放仓库查询条件", notes="备件库存-获取存放仓库查询条件")
+	 @GetMapping(value = "/selectList")
+	 @PermissionData(pageComponent = "sparePartsFor/SparePartStockList")
+	 public Result<?> selectList(SparePartStock sparePartStock,HttpServletRequest req) {
+		 LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+		 if(ObjectUtil.isNotNull(sparePartStock.getModule())){
+			 sparePartStock.setOrgId(user.getOrgId());
+		 }
+		 List<SparePartStock> list = sparePartStockService.selectList(null,sparePartStock);
+		 List<String> newList = list.stream().map(SparePartStock::getWarehouseName).collect(Collectors.toList());
+		 newList = newList.stream().distinct().collect(Collectors.toList());
+		 return Result.OK(newList);
+	 }
+	 /**
 	  * 分页列表查询
 	  *
 	  * @param sparePartStock
