@@ -5,6 +5,7 @@ import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
+import com.aiurt.boot.constant.DictConstant;
 import com.aiurt.boot.constant.InspectionConstant;
 import com.aiurt.boot.index.dto.InspectionDTO;
 import com.aiurt.boot.index.dto.PlanIndexDTO;
@@ -157,7 +158,20 @@ public class BigscreenPlanService {
             // 统一处理
             if (CollUtil.isNotEmpty(result)) {
                 for (InspectionDTO inspectionDTO : result) {
+                    // 组织机构
+                    inspectionDTO.setTeamName(manager.translateOrg(repairPoolMapper.selectOrgByCode(inspectionDTO.getCode())));
+                    // 站点
+                    inspectionDTO.setStationName(manager.translateStation(repairPoolStationRelMapper.selectStationList(inspectionDTO.getCode())));
+                    // 状态，如果状态是已完成，存在检修单异常需要将状态改成结果异常
 
+                    inspectionDTO.setStatusName(sysBaseAPI.translateDict(DictConstant.INSPECTION_TASK_STATE, String.valueOf(inspectionDTO.getStatus())));
+                    if(InspectionConstant.COMPLETED.equals(inspectionDTO.getStatus())){
+                        // 查询该任务是否有检修单存在异常项
+                        inspectionDTO.setStatusName("结果异常");
+                    }
+                    // 检修时间，无审核拿提交时间，有审核拿审核时间
+
+                    // 检修人
 
                 }
 

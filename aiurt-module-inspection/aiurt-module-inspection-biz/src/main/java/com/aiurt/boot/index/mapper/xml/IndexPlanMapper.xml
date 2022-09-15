@@ -9,7 +9,8 @@
         cs.station_name AS stationName,
         cs.line_name AS lineName,
         MIN(rp.`status`) as minStatus,
-        CASE WHEN MIN(rp.`status`)=8 THEN '已完成' ELSE '未完成' END as statusName
+        CASE WHEN MIN(rp.`status`)=8 THEN '已完成' ELSE '未完成' END as statusName,
+        GROUP_CONCAT(rp.code) as codeStr
         FROM
         repair_pool rp
         LEFT JOIN repair_pool_station_rel rpsr ON rpsr.repair_pool_code = rp.`code`
