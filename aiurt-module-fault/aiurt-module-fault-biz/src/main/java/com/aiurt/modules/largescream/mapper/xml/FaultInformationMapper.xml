@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.aiurt.modules.largescream.mapper.FaultInformationMapper">
+    <select id="queryLargeFaultInformation" resultType="com.aiurt.modules.fault.entity.Fault">
+        select * from fault
+        <where>
+            <if test="startDate!=null and endDate!=null">
+                and approval_pass_time  &gt;= #{startDate}  and approval_pass_time &lt;= #{endDate}
+            </if>
+            <if test="lineCode != null">
+                and line_code  = #{lineCode}
+            </if>
+        </where>
+    </select>
+
+    <select id="queryLargeFaultInformationTodaySolve" resultType="com.aiurt.modules.fault.entity.Fault">
+        select * from fault
+        <where>
+            status = 12
+            <if test="todayStartDate!=null and todayEndDate!=null">
+                and end_time  &gt;= #{todayStartDate}  and end_time &lt;= #{todayEndDate}
+            </if>
+            <if test="lineCode != null">
+                and line_code  = #{lineCode}
+            </if>
+        </where>
+    </select>
+
+    <select id="queryLargeFaultInformationTodayAdd" resultType="com.aiurt.modules.fault.entity.Fault">
+        select * from fault
+        <where>
+            <if test="todayStartDate!=null and todayEndDate!=null">
+                and happen_time  &gt;= #{todayStartDate}  and happen_time &lt;= #{todayEndDate}
+            </if>
+            <if test="lineCode != null">
+                and line_code  = #{lineCode}
+            </if>
+        </where>
+    </select>
+
+    <select id="getLargeFaultInfo" resultType="com.aiurt.modules.fault.dto.FaultLargeInfoDTO">
+        select * from fault
+        <where>
+            <if test="startDate!=null and endDate!=null">
+                and approval_pass_time  &gt;= #{startDate}  and approval_pass_time &lt;= #{endDate}
+            </if>
+            <if test="lineCode != null">
+                and line_code  = #{lineCode}
+            </if>
+        </where>
+    </select>
+
+    <select id="getLargeLineFaultInfo" resultType="com.aiurt.modules.fault.entity.Fault">
+        select * from fault
+        <where>
+            <if test="startDate!=null and endDate!=null">
+                and approval_pass_time  &gt;= #{startDate}  and approval_pass_time &lt;= #{endDate}
+            </if>
+        </where>
+    </select>
+</mapper>
