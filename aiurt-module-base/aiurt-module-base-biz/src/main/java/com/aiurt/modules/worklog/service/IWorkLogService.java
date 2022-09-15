@@ -121,6 +121,6 @@ public interface IWorkLogService extends IService<WorkLog> {
      * 查看当前用户，当天的检修、巡检、故障的工单
      * @return
      */
-    WorkLogUserTaskDTO getUseTask();
+     WorkLogUserTaskDTO getUseTask();
 }
 

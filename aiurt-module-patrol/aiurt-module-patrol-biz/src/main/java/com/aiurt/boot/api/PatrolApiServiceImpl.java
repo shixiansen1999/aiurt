@@ -1,13 +1,18 @@
 package com.aiurt.boot.api;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.util.ObjectUtil;
 import com.aiurt.boot.constant.PatrolConstant;
-import com.aiurt.boot.dto.PatrolWorkLogDTO;
 import com.aiurt.boot.standard.entity.PatrolStandard;
+import com.aiurt.boot.standard.mapper.PatrolStandardMapper;
+import com.aiurt.boot.task.entity.PatrolAccompany;
 import com.aiurt.boot.task.entity.PatrolTask;
 import com.aiurt.boot.task.entity.PatrolTaskDevice;
+import com.aiurt.boot.task.mapper.PatrolAccompanyMapper;
 import com.aiurt.boot.task.mapper.PatrolTaskDeviceMapper;
 import com.aiurt.boot.task.mapper.PatrolTaskMapper;
+import com.aiurt.boot.task.mapper.PatrolTaskUserMapper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import org.apache.shiro.SecurityUtils;
@@ -24,6 +29,12 @@ public class PatrolApiServiceImpl implements PatrolApi {
     private PatrolTaskMapper patrolTaskMapper;
     @Autowired
     private PatrolTaskDeviceMapper patrolTaskDeviceMapper;
+    @Autowired
+    private PatrolStandardMapper patrolStandardMapper;
+    @Autowired
+    private PatrolAccompanyMapper patrolAccompanyMapper;
+    @Autowired
+    private PatrolTaskUserMapper patrolTaskUserMapper;
 
     /**
      * 首页-统计日程的巡视完成数
@@ -60,31 +71,41 @@ public class PatrolApiServiceImpl implements PatrolApi {
 
     @Override
     public String getUserTask() {
+        //获取当前用户的巡检任务信息
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        //获取当前登录人的全部任务
-        List<PatrolTask> patrolTasks = patrolTaskMapper.getUserTask(sysUser.getId(), new Date());
-        List<PatrolWorkLogDTO> dtoList = new ArrayList<>();
+        List<PatrolTask> taskList = patrolTaskUserMapper.getUserTask(sysUser.getId());
         List<String> list = new ArrayList<>();
-        for (PatrolTask task : patrolTasks) {
-            //获取当前用户，在这个任务下，提交的所有工单
-            List<PatrolTaskDevice> devices = patrolTaskDeviceMapper.selectList(new LambdaQueryWrapper<PatrolTaskDevice>().
-                    eq(PatrolTaskDevice::getTaskId, task.getId()).eq(PatrolTaskDevice::getUserId, sysUser.getId()).eq(PatrolTaskDevice::getStatus, 2));
-            //获取这个任务下的工单所对应的站点
-            for (PatrolTaskDevice patrolTaskDevice : devices) {
-                PatrolWorkLogDTO dto = new PatrolWorkLogDTO();
-                String stationName = patrolTaskDeviceMapper.getLineStationName(patrolTaskDevice.getStationCode());
-                PatrolStandard standardName = patrolTaskDeviceMapper.getStandardName(patrolTaskDevice.getId());
-                String submitName = patrolTaskDeviceMapper.getSubmitName(patrolTaskDevice.getUserId());
-                String deviceStationName = standardName+"-"+stationName+" 巡视人："+submitName+"。";
-                list.add(deviceStationName);
-                dto.setPatrolTaskTable(standardName.getName());
-                dto.setStation(stationName);
-                dto.setName(submitName);
-                dtoList.add(dto);
+        if(CollUtil.isNotEmpty(taskList))
+        {
+            List<PatrolTaskDevice> taskDeviceList = new ArrayList<>();
+            for (PatrolTask task : taskList) {
+                //获取当前用户的任务中，获取当天，已提交的所有的工单
+                PatrolTaskDevice devices = patrolTaskDeviceMapper.getTodaySubmit(new Date(), task.getId(), null);
+                if(ObjectUtil.isNotEmpty(devices))
+                {
+                    taskDeviceList.add(devices);
+                }
             }
-
+            //获取当前用户作为同行人参与的单号
+            List<PatrolAccompany> accompanyList = patrolAccompanyMapper.selectList(new LambdaQueryWrapper<PatrolAccompany>().eq(PatrolAccompany::getUserId, sysUser.getId()));
+            //获取当前用户参与的单号，并且当天，已提交
+            for (PatrolAccompany accompany : accompanyList) {
+                PatrolTaskDevice devices = patrolTaskDeviceMapper.getTodaySubmit(new Date(), null, accompany.getTaskDeviceCode());
+                if(ObjectUtil.isNotEmpty(devices))
+                {
+                    taskDeviceList.add(devices);
+                }
+            }
+            //获取这个任务下的工单所对应的站点
+            for (PatrolTaskDevice patrolTaskDevice : taskDeviceList) {
+                String stationName = patrolTaskDeviceMapper.getLineStationName(patrolTaskDevice.getStationCode());
+                PatrolStandard standardName = patrolStandardMapper.selectById(patrolTaskDevice.getTaskStandardId());
+                String submitName = patrolTaskDeviceMapper.getSubmitName(patrolTaskDevice.getUserId());
+                String deviceStationName = standardName.getName() + "-" + stationName + " 巡视人：" + submitName ;
+                list.add(deviceStationName);
+            }
         }
-        return list.toString();
+        return  CollUtil.join(list, "。");
     }
 
 }

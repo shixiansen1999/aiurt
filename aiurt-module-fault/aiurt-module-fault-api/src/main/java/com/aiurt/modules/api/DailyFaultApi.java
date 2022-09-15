@@ -1,9 +1,7 @@
 package com.aiurt.modules.api;
 
-import org.jeecg.common.system.api.ISysBaseAPI;
 import org.springframework.stereotype.Service;
 
-import java.util.Date;
 import java.util.Map;
 
 @Service
@@ -15,4 +13,10 @@ public interface DailyFaultApi {
      * @return
      */
     Map<String, Integer> getDailyFaultNum(Integer year, Integer month);
+
+    /**
+     * 获取当前用户，当天的故障维修单
+     * @return
+     */
+    String getFaultTask();
 }

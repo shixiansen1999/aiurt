@@ -13,6 +13,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.ibatis.annotations.Param;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -166,4 +167,13 @@ public interface PatrolTaskDeviceMapper extends BaseMapper<PatrolTaskDevice> {
      * @return
      */
     String getLineStationName(String stationCode);
+
+    /**
+     * 获取当天已提交的工单
+     * @param date
+     * @param taskId
+     * @param taskDeviceCode
+     * @return
+     */
+    PatrolTaskDevice getTodaySubmit(@Param("date") Date date,@Param("taskId") String taskId,@Param("taskDeviceCode") String taskDeviceCode);
 }

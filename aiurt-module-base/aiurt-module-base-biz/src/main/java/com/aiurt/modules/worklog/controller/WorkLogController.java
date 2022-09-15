@@ -167,7 +167,7 @@ public class WorkLogController {
      */
     @AutoLog(value = "查看当前用户，当天的检修、巡检、故障的工单")
     @ApiOperation(value="查看当前用户，当天的检修、巡检、故障的工单", notes="查看当前用户，当天的检修、巡检、故障的工单")
-    @PutMapping(value = "/getUseTask")
+    @GetMapping(value = "/getUseTask")
     public Result<WorkLogUserTaskDTO> getUseTask() {
         WorkLogUserTaskDTO patrolWorkLogDTO = workLogDepotService.getUseTask();
         return Result.ok(patrolWorkLogDTO);

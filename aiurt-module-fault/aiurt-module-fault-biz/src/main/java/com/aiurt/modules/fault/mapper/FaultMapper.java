@@ -1,16 +1,16 @@
 package com.aiurt.modules.fault.mapper;
 
-import java.util.Date;
-import java.util.List;
-
 import com.aiurt.common.aspect.annotation.EnableDataPerm;
 import com.aiurt.modules.basic.entity.CsWork;
 import com.aiurt.modules.fault.dto.FaultFrequencyDTO;
 import com.aiurt.modules.fault.entity.Fault;
 import com.aiurt.modules.faultknowledgebase.entity.FaultKnowledgeBase;
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.ibatis.annotations.Param;
-import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+
+import java.util.Date;
+import java.util.List;
 
 /**
  * @Description: fault
@@ -74,4 +74,18 @@ public interface FaultMapper extends BaseMapper<Fault> {
       * @return
       */
      List<String> translateSubsystems(List<String> codeList);
+
+     /**
+      * 获取线路名
+      * @param stationCode
+      * @return
+      */
+    String getStationName(String stationCode);
+
+     /**
+      * 获取维修状态名
+      * @param status
+      * @return
+      */
+     String getStatusName(Integer status);
 }

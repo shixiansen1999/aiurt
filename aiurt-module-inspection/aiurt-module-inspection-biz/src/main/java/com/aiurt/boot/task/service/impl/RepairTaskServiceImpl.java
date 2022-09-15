@@ -1495,6 +1495,69 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
         }
     }
 
+    @Override
+    public String getInspectionTaskDevice() {
+        LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        //获取当前用户的检修任务编号
+        List<RepairTaskUser> taskUsers = repairTaskUserMapper.selectList(new LambdaQueryWrapper<RepairTaskUser>().eq(RepairTaskUser::getUserId, sysUser.getId()));
+        List<String> userTaskName = new ArrayList<>();
+        if (CollUtil.isNotEmpty(taskUsers)) {
+            //根据任务编号，获取检修任务信息
+            List<RepairTask> taskList = new ArrayList<>();
+            List<RepairTaskDeviceRel> taskDeviceRelList = new ArrayList<>();
+            List<RepairTaskDeviceRel> oldTaskDeviceRelList = new ArrayList<>();
+            for (RepairTaskUser user : taskUsers) {
+                RepairTask task = repairTaskMapper.selectOne(new LambdaQueryWrapper<RepairTask>().eq(RepairTask::getCode, user.getRepairTaskCode()));
+                taskList.add(task);
+            }
+            for (RepairTask repairTask : taskList) {
+                //获取当前用户作为领取/指派人，当天，已提交的工单
+                RepairTaskDeviceRel deviceRelList = repairTaskDeviceRelMapper.getTodaySubmit(new Date(), repairTask.getId(), null);
+                if(ObjectUtil.isNotEmpty(deviceRelList))
+                {
+                    taskDeviceRelList.add(deviceRelList);
+                }
+
+            }
+            //获取当前用户作为同行人参与的单号
+            List<RepairTaskPeerRel> relList = repairTaskPeerRelMapper.selectList(new LambdaQueryWrapper<RepairTaskPeerRel>().eq(RepairTaskPeerRel::getUserId, sysUser.getId()));
+            //获取单号信息
+            for (RepairTaskPeerRel taskPeerRel : relList) {
+                RepairTaskDeviceRel deviceRelList = repairTaskDeviceRelMapper.getTodaySubmit(new Date(), null, taskPeerRel.getRepairTaskDeviceCode());
+                if(ObjectUtil.isNotEmpty(deviceRelList))
+                {
+                    oldTaskDeviceRelList.add(deviceRelList);
+                }
+            }
+            taskDeviceRelList.addAll(oldTaskDeviceRelList);
+            if(CollUtil.isNotEmpty(taskDeviceRelList))
+            {  //去重
+                Set<RepairTaskDeviceRel> list = taskDeviceRelList.stream().collect(Collectors.toSet());
+                if (CollUtil.isNotEmpty(list)) {
+                    for (RepairTaskDeviceRel deviceRel : list) {
+                        //获取检查表名
+                        RepairTaskStandardRel standardRel = repairTaskStandardRelMapper.selectById(deviceRel.getTaskStandardRelId());
+                        //获取提交人
+                        String submitName = repairTaskDeviceRelMapper.getSubmitName(deviceRel.getStaffId());
+                        //获取站点名
+                        if (ObjectUtil.isNotEmpty(deviceRel.getDeviceCode())) {
+                            String stationCode = repairTaskDeviceRelMapper.getStationCode(deviceRel.getDeviceCode());
+                            String stationName = repairTaskDeviceRelMapper.getStationName(stationCode);
+                            String userNameTask = standardRel.getTitle() + "-" + stationName + " 检修人：" + submitName;
+                            userTaskName.add(userNameTask);
+                        } else {
+                            String stationName = repairTaskDeviceRelMapper.getStationName(deviceRel.getStationCode());
+                            String userNameTask = standardRel.getTitle() + "-" + stationName + " 检修人：" + submitName;
+                            userTaskName.add(userNameTask);
+                        }
+                    }
+                }
+            }
+        }
+
+        return  CollUtil.join(userTaskName, "。");
+    }
+
     /**
      * 检修消息发送
      *

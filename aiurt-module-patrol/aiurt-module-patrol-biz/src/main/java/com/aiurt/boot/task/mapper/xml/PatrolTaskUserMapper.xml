@@ -27,4 +27,10 @@
             </foreach>
         </if>
     </select>
+    <select id="getUserTask" resultType="com.aiurt.boot.task.entity.PatrolTask">
+       select pt.*
+        from patrol_task pt
+				LEFT JOIN patrol_task_user ptu on ptu.task_code = pt.`code`
+        where ptu.user_id = #{id}
+    </select>
 </mapper>

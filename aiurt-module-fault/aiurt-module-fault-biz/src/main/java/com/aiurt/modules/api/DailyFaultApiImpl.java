@@ -5,11 +5,21 @@ import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.aiurt.modules.fault.entity.Fault;
+import com.aiurt.modules.fault.entity.FaultRepairParticipants;
+import com.aiurt.modules.fault.entity.FaultRepairRecord;
+import com.aiurt.modules.fault.mapper.FaultMapper;
+import com.aiurt.modules.fault.mapper.FaultRepairParticipantsMapper;
+import com.aiurt.modules.fault.mapper.FaultRepairRecordMapper;
 import com.aiurt.modules.index.mapper.FaultCountMapper;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import org.apache.shiro.SecurityUtils;
+import org.jeecg.common.system.api.ISysBaseAPI;
+import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * 日待办故障数
@@ -18,10 +28,18 @@ import java.util.*;
  * @date: 2022-09-09 15:11
  */
 @Service
-public class DailyFaultApiImpl implements DailyFaultApi{
+public class DailyFaultApiImpl implements DailyFaultApi {
 
     @Autowired
     private FaultCountMapper faultCountMapper;
+    @Autowired
+    private FaultMapper faultMapper;
+    @Autowired
+    private FaultRepairParticipantsMapper participantsMapper;
+    @Autowired
+    private FaultRepairRecordMapper recordMapper;
+    @Autowired
+    private ISysBaseAPI sysBaseAPI;
 
     @Override
     public Map<String, Integer> getDailyFaultNum(Integer year, Integer month) {
@@ -34,6 +52,38 @@ public class DailyFaultApiImpl implements DailyFaultApi{
         Map<String, Integer> dailyFaultNum = getDailyFaultNum(beginDate, dayNum);
 
         return dailyFaultNum;
+    }
+
+    @Override
+    public String getFaultTask() {
+        LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        //获取当前用户作为被指派/领取人，负责过的故障报修单
+        List<FaultRepairRecord> faultList = recordMapper.selectList(new LambdaQueryWrapper<FaultRepairRecord>().eq(FaultRepairRecord::getAppointUserName, sysUser.getUsername()));
+       //获取已经填写的维修单
+        List<FaultRepairRecord> recordList = faultList.stream().filter(f -> f.getEndTime() != null).collect(Collectors.toList());
+        //去重复
+        List<FaultRepairRecord> list = recordList.stream().collect(Collectors.collectingAndThen(Collectors.toCollection(() -> new TreeSet<>(Comparator.comparing(o -> o.getFaultCode() + o.getAppointUserName()))), ArrayList::new));
+        //获取当前用户作为参与人，参与过的故障报修单
+        List<FaultRepairParticipants> participantsList = participantsMapper.selectList(new LambdaQueryWrapper<FaultRepairParticipants>().eq(FaultRepairParticipants::getUserName, sysUser.getUsername()));
+        //去重复
+        Set <FaultRepairRecord> faultRepairRecords = new HashSet<>();
+        participantsList.stream().forEach(p->{
+             FaultRepairRecord record = recordMapper.selectById(p.getFaultRepairRecordId());
+             faultRepairRecords.add(record);
+        });
+        list.addAll(faultRepairRecords);
+        //查出当天用户是否进行维修
+
+        List<String> faultNames = new ArrayList<>();
+        for (FaultRepairRecord record : list) {
+             Fault fault = faultMapper.selectOne(new LambdaQueryWrapper<Fault>().eq(Fault::getCode, record.getFaultCode()));
+             String stationName = faultMapper.getStationName(fault.getStationCode());
+             LoginUser loginUser = sysBaseAPI.queryUser(fault.getAppointUserName());
+             String faultStatus = faultMapper.getStatusName(fault.getStatus());
+             String faultName = stationName+" "+fault.getFaultPhenomenon()+" "+loginUser.getRealname()+"-"+faultStatus;
+             faultNames.add(faultName);
+        }
+        return   CollUtil.join(faultNames, "。");
     }
 
     /**
@@ -78,9 +128,9 @@ public class DailyFaultApiImpl implements DailyFaultApi{
      * @param dayNum
      * @return
      */
-    public Map<String,Integer> getDailyFaultNum(Date beginDate,int dayNum){
-        Map<String,Integer> map = new HashMap<>(32);
-        if(ObjectUtil.isNotEmpty(beginDate)){
+    public Map<String, Integer> getDailyFaultNum(Date beginDate, int dayNum) {
+        Map<String, Integer> map = new HashMap<>(32);
+        if (ObjectUtil.isNotEmpty(beginDate)) {
             for (int i = 0; i < dayNum; i++) {
                 DateTime dateTime = DateUtil.offsetDay(beginDate, i);
                 String currDateStr = DateUtil.format(dateTime, "yyyy/MM/dd");

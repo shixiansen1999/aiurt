@@ -2,6 +2,7 @@ package com.aiurt.modules.worklog.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.ObjectUtil;
+import com.aiurt.boot.api.InspectionApi;
 import com.aiurt.boot.api.PatrolApi;
 import com.aiurt.common.api.dto.message.BusMessageDTO;
 import com.aiurt.common.enums.WorkLogCheckStatusEnum;
@@ -14,6 +15,7 @@ import com.aiurt.common.result.LogSubmitCount;
 import com.aiurt.common.result.WorkLogResult;
 import com.aiurt.common.util.RoleAdditionalUtils;
 import com.aiurt.common.util.SysAnnmentTypeEnum;
+import com.aiurt.modules.api.DailyFaultApi;
 import com.aiurt.modules.position.entity.CsStation;
 import com.aiurt.modules.worklog.dto.WorkLogDTO;
 import com.aiurt.modules.worklog.dto.WorkLogUserTaskDTO;
@@ -66,9 +68,12 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
 
     @Resource
     private WorkLogEnclosureMapper enclosureMapper;
-    @Autowired
+    @Resource
     private PatrolApi patrolApi;
-
+    @Resource
+    private InspectionApi inspectionApi;
+    @Resource
+    private DailyFaultApi dailyFaultApi;
     //todo 待处理
 //    @Resource
 //    private FaultRepairRecordMapper recordMapper;
@@ -721,12 +726,15 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
     public WorkLogUserTaskDTO getUseTask() {
         WorkLogUserTaskDTO patrolWorkLogDTO = new WorkLogUserTaskDTO();
         //获取巡检内容
-        String userPatrolTask = patrolApi.getUserTask();
+        //String userPatrolTask = patrolApi.getUserTask();
         //获取检修内容
-
-        patrolWorkLogDTO.setPatrolContent(userPatrolTask);
+        //String inspectionTaskDevice = inspectionApi.getInspectionTaskDevice();
         //获取故障内容
-       return  patrolWorkLogDTO;
+        String faultContent = dailyFaultApi.getFaultTask();
+        //patrolWorkLogDTO.setPatrolContent(userPatrolTask);
+        //patrolWorkLogDTO.setRepairContent(inspectionTaskDevice);
+        patrolWorkLogDTO.setFaultContent(faultContent);
+        return  patrolWorkLogDTO;
     }
 
     /**

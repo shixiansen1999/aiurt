@@ -2,6 +2,43 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.aiurt.boot.task.mapper.RepairTaskDeviceRelMapper">
     <select id="getId" resultType="java.lang.String">
-        select id from  repair_task_device_rel where code =#{code}
+        select id
+        from repair_task_device_rel
+        where code = #{code}
+    </select>
+    <select id="getUser" resultType="com.aiurt.boot.task.entity.RepairTaskDeviceRel">
+        select rt.staff_id, rt.task_standard_rel_id, rt.device_code, rt.station_code
+        from repair_task_device_rel rt
+        where rt.staff_id = #{userId}
+          and DATE_FORMAT(rt.submit_time, '%Y-%m-%d') = DATE_FORMAT(#{date}, '%Y-%m-%d')
+          and rt.is_submit = 1
+    </select>
+    <select id="getSubmitName" resultType="java.lang.String">
+        select realname
+        from sys_user
+        where id = #{staffId}
+    </select>
+    <select id="getStationCode" resultType="java.lang.String">
+        select station_code
+        from device
+        where code = #{deviceCode}
+    </select>
+    <select id="getStationName" resultType="java.lang.String">
+        select cs.station_name
+        from cs_station cs
+        where cs.station_code = #{stationCode}
+    </select>
+    <select id="getTodaySubmit" resultType="com.aiurt.boot.task.entity.RepairTaskDeviceRel">
+        select rt.staff_id, rt.task_standard_rel_id, rt.device_code, rt.station_code
+        from repair_task_device_rel rt
+        where
+        DATE_FORMAT(rt.submit_time, '%Y-%m-%d') = DATE_FORMAT(#{date}, '%Y-%m-%d')
+        and rt.is_submit = 1
+        <if test="taskId != null and taskId != ''">
+        and rt.repair_task_id = #{taskId}
+        </if>
+        <if test="taskDeviceCode != null and taskDeviceCode != ''">
+        and rt.code = #{taskDeviceCode}
+        </if>
     </select>
 </mapper>

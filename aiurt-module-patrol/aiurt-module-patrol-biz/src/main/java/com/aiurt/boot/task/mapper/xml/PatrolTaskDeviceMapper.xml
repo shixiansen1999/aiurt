@@ -1,143 +1,139 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.aiurt.boot.task.mapper.PatrolTaskDeviceMapper">
-
     <select id="selectBillInfo" resultType="com.aiurt.boot.task.param.PatrolTaskDeviceParam">
-        SELECT
-        pts.profession_code majorCode,
-        cm.major_name majorName,
-        pts.subsystem_code,
-        cs.system_name subsystemName,
-        pts.device_type_code,
-        dt.`name` deviceTypeName,
-        ps.`name` standardName,
-        device.`name` deviceName,
-        su.realname username,
-        ptd.*
-        FROM
-        patrol_task_device ptd
-        JOIN patrol_task_standard pts ON ptd.task_standard_id = pts.id
-        AND pts.del_flag = 0
-        LEFT JOIN patrol_standard ps ON pts.standard_id = ps.id
-        AND ps.del_flag = 0
-        LEFT JOIN device ON ptd.device_code = device.`code`
-        AND device.del_flag = 0
-        LEFT JOIN cs_major cm ON pts.profession_code = cm.major_code
-        AND cm.del_flag = 0
-        LEFT JOIN cs_subsystem cs ON pts.subsystem_code = cs.system_code
-        AND cs.del_flag = 0
-        LEFT JOIN device_type dt ON pts.device_type_code = dt.`code`
-        AND dt.del_flag = 0
-        LEFT JOIN sys_user su ON ptd.user_id = su.id
-        AND su.del_flag = 0
-        WHERE
-        ptd.del_flag = 0
-        <if test="taskDevice.taskId != null and taskDevice.taskId !=''">
+        SELECT pts.profession_code majorCode,
+               cm.major_name       majorName,
+               pts.subsystem_code,
+               cs.system_name      subsystemName,
+               pts.device_type_code,
+               dt.`name`           deviceTypeName,
+               ps.`name`           standardName,
+               device.`name`       deviceName,
+               su.realname         username,
+               ptd.*
+        FROM patrol_task_device ptd
+                     JOIN patrol_task_standard pts ON ptd.task_standard_id = pts.id
+                AND pts.del_flag = 0
+                     LEFT JOIN patrol_standard ps ON pts.standard_id = ps.id
+                AND ps.del_flag = 0
+                     LEFT JOIN device ON ptd.device_code = device.`code`
+                AND device.del_flag = 0
+                     LEFT JOIN cs_major cm ON pts.profession_code = cm.major_code
+                AND cm.del_flag = 0
+                     LEFT JOIN cs_subsystem cs ON pts.subsystem_code = cs.system_code
+                AND cs.del_flag = 0
+                     LEFT JOIN device_type dt ON pts.device_type_code = dt.`code`
+                AND dt.del_flag = 0
+                     LEFT JOIN sys_user su ON ptd.user_id = su.id
+                AND su.del_flag = 0
+                WHERE
+                ptd.del_flag = 0
+        <if test="taskDevice.taskId != null and taskDevice.taskId != ''">
             and ptd.task_id = #{taskDevice.taskId}
         </if>
-        <if test="taskDevice.deviceName != null and taskDevice.deviceName !=''">
-            and device.`name` like concat('%',#{taskDevice.deviceName},'%')
+        <if test="taskDevice.deviceName != null and taskDevice.deviceName != ''">
+            and device.`name` like concat('%', #{taskDevice.deviceName}, '%')
         </if>
-        <if test="taskDevice.checkResult != null ">
+        <if test="taskDevice.checkResult != null">
             and ptd.check_result = #{taskDevice.checkResult}
         </if>
-        <if test="taskDevice.patrolNumber != null and taskDevice.patrolNumber !=''">
-            and ptd.patrol_number like concat('%',#{taskDevice.patrolNumber},'%')
+        <if test="taskDevice.patrolNumber != null and taskDevice.patrolNumber != ''">
+            and ptd.patrol_number like concat('%', #{taskDevice.patrolNumber}, '%')
         </if>
-        <if test="taskDevice.username != null and taskDevice.username !=''">
-            and su.realname like concat('%',#{taskDevice.username},'%')
+        <if test="taskDevice.username != null and taskDevice.username != ''">
+            and su.realname like concat('%', #{taskDevice.username}, '%')
         </if>
-        <if test="taskDevice.majorCode != null and taskDevice.majorCode !=''">
+        <if test="taskDevice.majorCode != null and taskDevice.majorCode != ''">
             and pts.profession_code = #{taskDevice.majorCode}
         </if>
-        <if test="taskDevice.subsystemCode != null and taskDevice.subsystemCode !=''">
+        <if test="taskDevice.subsystemCode != null and taskDevice.subsystemCode != ''">
             and pts.subsystem_code = #{taskDevice.subsystemCode}
         </if>
     </select>
     <select id="selectBillInfoForDevice" resultType="com.aiurt.boot.task.param.PatrolTaskDeviceParam">
         SELECT pts.profession_code majorCode,
-        cm.major_name majorName,
-        pts.subsystem_code,
-        cs.system_name subsystemName,
-        pts.device_type_code,
-        dt.`name` deviceTypeName,
-        ps.`name` standardName,
-        device.`name` deviceName,
-        su.realname username,
-        ptd.*
+               cm.major_name       majorName,
+               pts.subsystem_code,
+               cs.system_name      subsystemName,
+               pts.device_type_code,
+               dt.`name`           deviceTypeName,
+               ps.`name`           standardName,
+               device.`name`       deviceName,
+               su.realname         username,
+               ptd.*
         FROM patrol_task_device ptd
-        JOIN patrol_task_standard pts ON ptd.task_standard_id = pts.id
-        LEFT JOIN patrol_standard ps ON pts.standard_id = ps.id
-        LEFT JOIN device ON ptd.device_code = device.`code`
-        LEFT JOIN cs_major cm ON pts.profession_code = cm.major_code
-        LEFT JOIN cs_subsystem cs ON pts.subsystem_code = cs.system_code
-        LEFT JOIN device_type dt ON pts.device_type_code = dt.`code`
-        LEFT JOIN sys_user su ON ptd.user_id = su.id
-        WHERE ptd.del_flag = 0 and ptd.status = 2
-        <if test="taskDevice.taskId != null and taskDevice.taskId !=''">
+                     JOIN patrol_task_standard pts ON ptd.task_standard_id = pts.id
+                     LEFT JOIN patrol_standard ps ON pts.standard_id = ps.id
+                     LEFT JOIN device ON ptd.device_code = device.`code`
+                     LEFT JOIN cs_major cm ON pts.profession_code = cm.major_code
+                     LEFT JOIN cs_subsystem cs ON pts.subsystem_code = cs.system_code
+                     LEFT JOIN device_type dt ON pts.device_type_code = dt.`code`
+                     LEFT JOIN sys_user su ON ptd.user_id = su.id
+                WHERE ptd.del_flag = 0
+                  and ptd.status = 2
+        <if test="taskDevice.taskId != null and taskDevice.taskId != ''">
             and ptd.task_id = #{taskDevice.taskId}
         </if>
-        <if test="taskDevice.deviceCode != null and taskDevice.deviceCode !=''">
+        <if test="taskDevice.deviceCode != null and taskDevice.deviceCode != ''">
             and ptd.device_code = #{taskDevice.deviceCode}
         </if>
-        <if test="taskDevice.deviceName != null and taskDevice.deviceName !=''">
-            and device.`name` like concat('%',#{taskDevice.deviceName},'%')
+        <if test="taskDevice.deviceName != null and taskDevice.deviceName != ''">
+            and device.`name` like concat('%', #{taskDevice.deviceName}, '%')
         </if>
-        <if test="taskDevice.checkResult != null and taskDevice.checkResult !=''">
+        <if test="taskDevice.checkResult != null and taskDevice.checkResult != ''">
             and ptd.check_result = #{taskDevice.checkResult}
         </if>
-        <if test="taskDevice.patrolNumber != null and taskDevice.patrolNumber !=''">
-            and ptd.patrol_number like concat('%',#{taskDevice.patrolNumber},'%')
+        <if test="taskDevice.patrolNumber != null and taskDevice.patrolNumber != ''">
+            and ptd.patrol_number like concat('%', #{taskDevice.patrolNumber}, '%')
         </if>
-        <if test="taskDevice.username != null and taskDevice.username !=''">
-            and su.realname like concat('%',#{taskDevice.username},'%')
+        <if test="taskDevice.username != null and taskDevice.username != ''">
+            and su.realname like concat('%', #{taskDevice.username}, '%')
         </if>
-        <if test="taskDevice.standardName != null and taskDevice.standardName !=''">
-            and ps.`name` like concat('%',#{taskDevice.standardName},'%')
+        <if test="taskDevice.standardName != null and taskDevice.standardName != ''">
+            and ps.`name` like concat('%', #{taskDevice.standardName}, '%')
         </if>
-        <if test="taskDevice.startTimeBegin!=null and taskDevice.startTimeEnd!=null ">
+        <if test="taskDevice.startTimeBegin != null and taskDevice.startTimeEnd != null">
             and DATE_FORMAT(ptd.start_time, '%Y-%m-%d') &gt;= DATE_FORMAT(#{taskDevice.startTimeBegin}, '%Y-%m-%d')
             and DATE_FORMAT(ptd.start_time, '%Y-%m-%d') &lt;= DATE_FORMAT(#{taskDevice.startTimeEnd}, '%Y-%m-%d')
         </if>
     </select>
     <select id="selectBillInfoByNumber" resultType="com.aiurt.boot.task.param.PatrolTaskDeviceParam">
-        SELECT
-        pts.device_type_code,
-        dt.`name` deviceTypeName,
-        d.`name` deviceName,
-        su.realname username,
-        cl.line_name,
-        cs.station_name,
-        ptd.*
-        FROM
-        patrol_task_device ptd
-        JOIN patrol_task_standard pts ON ptd.task_standard_id = pts.id
-        AND pts.del_flag = 0
-        LEFT JOIN cs_line cl ON ptd.line_code = cl.line_code
-        AND cl.del_flag = 0
-        LEFT JOIN cs_station cs ON ptd.station_code = cs.station_code
-        AND cs.del_flag = 0
-        LEFT JOIN device_type dt ON pts.device_type_code = dt.`code`
-        AND dt.del_flag = 0
-        LEFT JOIN sys_user su ON ptd.user_id = su.id
-        AND su.del_flag = 0
-        LEFT JOIN device d ON ptd.device_code = d.`code`
-        AND d.del_flag = 0
-        WHERE
-        ptd.del_flag = 0
-        <if test="patrolNumber != null and patrolNumber !=''">
+        SELECT pts.device_type_code,
+               dt.`name`   deviceTypeName,
+               d.`name`    deviceName,
+               su.realname username,
+               cl.line_name,
+               cs.station_name,
+               ptd.*
+        FROM patrol_task_device ptd
+                     JOIN patrol_task_standard pts ON ptd.task_standard_id = pts.id
+                AND pts.del_flag = 0
+                     LEFT JOIN cs_line cl ON ptd.line_code = cl.line_code
+                AND cl.del_flag = 0
+                     LEFT JOIN cs_station cs ON ptd.station_code = cs.station_code
+                AND cs.del_flag = 0
+                     LEFT JOIN device_type dt ON pts.device_type_code = dt.`code`
+                AND dt.del_flag = 0
+                     LEFT JOIN sys_user su ON ptd.user_id = su.id
+                AND su.del_flag = 0
+                     LEFT JOIN device d ON ptd.device_code = d.`code`
+                AND d.del_flag = 0
+                WHERE
+                ptd.del_flag = 0
+        <if test="patrolNumber != null and patrolNumber != ''">
             and ptd.patrol_number = #{patrolNumber}
         </if>
     </select>
     <select id="getPatrolTaskDeviceList" resultType="com.aiurt.boot.task.dto.PatrolTaskDeviceDTO">
         SELECT (select dv.name from device dv where ptd.device_code = dv.code) as deviceName,
-        ptd.*
+               ptd.*
         FROM patrol_task_device ptd
-        LEFT JOIN device dv on ptd.device_code = dv.code
-        WHERE ptd.del_flag = 0
-        AND ptd.task_id = #{id}
+                     LEFT JOIN device dv on ptd.device_code = dv.code
+                WHERE ptd.del_flag = 0
+                  AND ptd.task_id = #{id}
         <if test="search != null and search != ''">
-            and CONCAT_WS(',',ptd.patrol_number,ptd.device_code,dv.name) like concat('%',#{search},'%')
+            and CONCAT_WS(',', ptd.patrol_number, ptd.device_code, dv.name) like concat('%', #{search}, '%')
         </if>
     </select>
     <select id="getSubmitName" resultType="java.lang.String">
@@ -168,8 +164,8 @@
                t3.name                                    as deviceType,
                t1.*
         FROM device t1
-                 LEFT JOIN cs_station t2 ON t1.station_code = t2.station_code
-                 LEFT JOIN device_type t3 on t1.device_type_code = t3.code
+                     LEFT JOIN cs_station t2 ON t1.station_code = t2.station_code
+                     LEFT JOIN device_type t3 on t1.device_type_code = t3.code
         where t1.code = #{code}
     </select>
     <select id="getDevicePosition" resultType="java.lang.String">
@@ -180,8 +176,8 @@
     <select id="getStandardName" resultType="com.aiurt.boot.standard.entity.PatrolStandard">
         SELECT t3.*
         FROM patrol_task_standard t1
-                 LEFT JOIN patrol_task_device t2 on t1.id = t2.task_standard_id and t1.task_id = t2.task_id
-                 LEFT JOIN patrol_standard t3 on t3.code = t1.standard_code
+                     LEFT JOIN patrol_task_device t2 on t1.id = t2.task_standard_id and t1.task_id = t2.task_id
+                     LEFT JOIN patrol_standard t3 on t3.code = t1.standard_code
         WHERE t2.id = #{deviceId}
     </select>
     <select id="getMajorName" resultType="java.lang.String">
@@ -203,49 +199,59 @@
           and del_flag = 0
     </select>
     <select id="getBillGangedInfo" resultType="com.aiurt.boot.task.dto.PatrolBillDTO">
-        SELECT
-        ptd.id billId,
-        ptd.patrol_number billCode,
-        CONCAT( ps.`name`, IF ( d.`name` IS NOT NULL, CONCAT( '(', d.`name`, ')' ), '' ) ) tableName,
-        IF ( ptd.device_code IS NOT NULL, d.station_code, ptd.station_code ) stationCode,
-        cs.station_name
-        FROM
-        patrol_task_device ptd
-        LEFT JOIN device d ON ptd.device_code = d.`code`
-        AND d.del_flag = 0
-        LEFT JOIN cs_station cs ON
-        IF ( ptd.device_code IS NOT NULL, d.station_code, ptd.station_code ) = cs.station_code
-        AND cs.del_flag = 0
-        JOIN patrol_task_standard pts ON ptd.task_standard_id = pts.id
-        AND pts.del_flag = 0
-        JOIN patrol_standard ps ON pts.standard_id = ps.id
-        AND ps.del_flag = 0
-        WHERE
-        ptd.del_flag = 0
-        <if test="taskId != null and taskId !=''">
+        SELECT ptd.id                                                                      billId,
+               ptd.patrol_number                                                           billCode,
+               CONCAT(ps.`name`, IF(d.`name` IS NOT NULL, CONCAT('(', d.`name`, ')'), '')) tableName,
+               IF(ptd.device_code IS NOT NULL, d.station_code, ptd.station_code)           stationCode,
+               cs.station_name
+        FROM patrol_task_device ptd
+                     LEFT JOIN device d ON ptd.device_code = d.`code`
+                AND d.del_flag = 0
+                     LEFT JOIN cs_station cs ON
+                IF(ptd.device_code IS NOT NULL, d.station_code, ptd.station_code) = cs.station_code
+                        AND cs.del_flag = 0
+                     JOIN patrol_task_standard pts ON ptd.task_standard_id = pts.id
+                AND pts.del_flag = 0
+                     JOIN patrol_standard ps ON pts.standard_id = ps.id
+                AND ps.del_flag = 0
+                WHERE
+                ptd.del_flag = 0
+        <if test="taskId != null and taskId != ''">
             AND ptd.task_id = #{taskId}
         </if>
     </select>
     <select id="getStationName" resultType="java.lang.String">
-        SELECT
-        station_name
-        FROM
-        cs_station
-        WHERE
-        del_flag = 0
-        <if test="stationCode != null and stationCode !=''">
+        SELECT station_name
+        FROM cs_station
+                WHERE
+                del_flag = 0
+        <if test="stationCode != null and stationCode != ''">
             AND station_code = #{stationCode}
         </if>
     </select>
-     <select id="getStatusName" resultType="java.lang.String">
+    <select id="getStatusName" resultType="java.lang.String">
         select sdt.item_text
         from sys_dict sd
-        LEFT JOIN sys_dict_item sdt on sd.id = sdt.dict_id
-        where sd.dict_code ="device_status" and sdt.item_value = #{status}
+                     LEFT JOIN sys_dict_item sdt on sd.id = sdt.dict_id
+        where sd.dict_code = "device_status"
+          and sdt.item_value = #{status}
     </select>
     <select id="getLineStationName" resultType="java.lang.String">
-    select cs.station_name
-from cs_station cs
-where cs.station_code = #{stationCode}
-</select>
+        select cs.station_name
+        from cs_station cs
+        where cs.station_code = #{stationCode}
+    </select>
+    <select id="getTodaySubmit" resultType="com.aiurt.boot.task.entity.PatrolTaskDevice">
+        SELECT pt.*
+        FROM patrol_task_device pt
+        WHERE
+        DATE_FORMAT(pt.check_time, '%Y-%m-%d') = DATE_FORMAT(#{date}, '%Y-%m-%d')
+        AND pt.`status` = 2
+        <if test="taskId != null and taskId != ''">
+         and pt.task_id = #{taskId}
+        </if>
+        <if test="taskDeviceCode != null and taskDeviceCode != ''">
+        and pt.patrol_number = #{taskDeviceCode}
+        </if>
+    </select>
 </mapper>

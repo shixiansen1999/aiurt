@@ -12,4 +12,10 @@ public interface InspectionApi {
      * @param faultCallbackDTO
      */
     void editFaultCallback(FaultCallbackDTO faultCallbackDTO);
+
+    /**
+     *获取当前用户，当天提交的工单
+     * @return
+     */
+    String getInspectionTaskDevice();
 }

@@ -1,5 +1,6 @@
 package com.aiurt.boot.task.mapper;
 
+import com.aiurt.boot.task.entity.PatrolTask;
 import com.aiurt.boot.task.entity.PatrolTaskUser;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import org.apache.ibatis.annotations.Param;
@@ -22,4 +23,11 @@ public interface PatrolTaskUserMapper extends BaseMapper<PatrolTaskUser> {
      * @return
      */
     List<String> getDeptName(@Param("list")List<String> list);
+
+    /**
+     * 获取当前用户
+     * @param id
+     * @return
+     */
+    List<PatrolTask> getUserTask(String id);
 }

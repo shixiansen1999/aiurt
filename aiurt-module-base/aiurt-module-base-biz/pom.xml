@@ -24,6 +24,21 @@
             <version>3.2.0</version>
         </dependency>
         <dependency>
+            <groupId>com.aiurt.boot</groupId>
+            <artifactId>aiurt-module-patrol-api</artifactId>
+            <version>3.2.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.aiurt.boot</groupId>
+            <artifactId>aiurt-module-inspection-api</artifactId>
+            <version>3.2.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.aiurt.boot</groupId>
+            <artifactId>aiurt-module-fault-api</artifactId>
+            <version>3.2.0</version>
+        </dependency>
+        <dependency>
             <groupId>com.alibaba</groupId>
             <artifactId>easyexcel</artifactId>
             <version>2.2.10</version>

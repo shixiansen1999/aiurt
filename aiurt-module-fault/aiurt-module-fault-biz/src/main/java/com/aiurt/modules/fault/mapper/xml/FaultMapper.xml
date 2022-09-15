@@ -2,36 +2,37 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.aiurt.modules.fault.mapper.FaultMapper">
     <select id="selectByCode" parameterType="java.lang.String" resultType="com.aiurt.modules.fault.entity.Fault">
-        select
-        *
+        select *
         from fault
 
         where code = #{code}
     </select>
 
-    <select id="queryCsWorkByMajorCode" parameterType="java.lang.String" resultType="com.aiurt.modules.basic.entity.CsWork">
-        select * from cs_work where 1=1
+    <select id="queryCsWorkByMajorCode" parameterType="java.lang.String"
+            resultType="com.aiurt.modules.basic.entity.CsWork">
+        select *
+        from cs_work where 1 = 1
         <if test="majorCode != null and majorCode != ''">
             and major_code = #{majorCode}
         </if>
-
     </select>
 
-    <select id="queryKnowledge" parameterType="com.aiurt.modules.faultknowledgebase.entity.FaultKnowledgeBase" resultType="java.lang.String">
-        SELECT
-            id
-        FROM
-            fault_knowledge_base
-        WHERE 1=1 and del_flag = 0 and status = 1
+    <select id="queryKnowledge" parameterType="com.aiurt.modules.faultknowledgebase.entity.FaultKnowledgeBase"
+            resultType="java.lang.String">
+        SELECT id
+        FROM fault_knowledge_base
+                WHERE 1 = 1 and del_flag = 0 and status = 1
         <if test="matchName != null and matchName != ''">
             and MATCH (
-            `fault_phenomenon`,
-            `fault_reason`,
-            `solution`
-            ) AGAINST (#{matchName} IN BOOLEAN MODE)
+                              `fault_phenomenon`,
+                              `fault_reason`,
+                              `solution`
+                              ) AGAINST (#{matchName} IN BOOLEAN MODE)
         </if>
         <if test="faultPhenomenon != null and faultPhenomenon != ''">
-            and fault_phenomenon like concat('%', #{faultPhenomenon}, '%')
+            and fault_phenomenon like concat('%'
+              , #{faultPhenomenon}
+              , '%')
         </if>
 
         <if test="majorCode != null and majorCode != ''">
@@ -43,25 +44,31 @@
     </select>
 
     <select id="pageList" resultType="com.aiurt.modules.faultknowledgebase.entity.FaultKnowledgeBase">
-        select
-             *,
-        MATCH (
-        `fault_phenomenon`,
-        `fault_reason`,
-        `solution`
-        ) AGAINST (#{condition.matchName} IN BOOLEAN MODE) as scode
+        select *,
+                MATCH (
+                `fault_phenomenon`,
+                `fault_reason`,
+                `solution`
+                ) AGAINST (
+               #{condition.matchName} IN BOOLEAN MODE) as scode
         from
-            fault_knowledge_base
-        WHERE 1=1 and  del_flag = 0 and status = 1
+                fault_knowledge_base
+                WHERE 1=1
+                  and  del_flag = 0
+                  and status = 1
         <if test="condition.matchName != null and condition.matchName != ''">
-           and MATCH (
-            `fault_phenomenon`,
-            `fault_reason`,
-            `solution`
-            ) AGAINST (#{condition.matchName} IN BOOLEAN MODE)
+            and MATCH (
+                    `fault_phenomenon`
+              ,
+                    `fault_reason`
+              ,
+                    `solution`
+                    ) AGAINST (#{condition.matchName} IN BOOLEAN MODE)
         </if>
         <if test="condition.faultPhenomenon != null and condition.faultPhenomenon != ''">
-            and fault_phenomenon like concat('%', #{condition.faultPhenomenon}, '%')
+            and fault_phenomenon like concat('%'
+              , #{condition.faultPhenomenon}
+              , '%')
         </if>
         <if test="condition.majorCode != null and condition.majorCode != ''">
             and major_code = #{condition.majorCode}
@@ -70,17 +77,23 @@
             and system_code = #{condition.systemCode}
         </if>
         <if test="condition.method != null and condition.method != ''">
-            and method like concat('%', #{condition.method}, '%')
+            and method like concat('%'
+              , #{condition.method}
+              , '%')
         </if>
 
         <if test="condition.faultReason != null and condition.faultReason != ''">
-            and fault_reason like concat('%', #{condition.faultReason}, '%')
+            and fault_reason like concat('%'
+              , #{condition.faultReason}
+              , '%')
         </if>
 
         <if test="condition.solution != null and condition.solution != ''">
-            and solution like concat('%', #{condition.solution}, '%')
+            and solution like concat('%'
+              , #{condition.solution}
+              , '%')
         </if>
-        <if test="condition.idList != null and condition.idList.size()>0">
+        <if test="condition.idList != null and condition.idList.size() > 0">
             and id in
             <foreach collection="condition.idList" item="item" close=")" open="(" separator=",">
                 #{item}
@@ -90,27 +103,26 @@
     </select>
 
     <select id="selectBySubSystemCode" resultType="com.aiurt.modules.fault.dto.FaultFrequencyDTO">
-      SELECT
-	       sub_system_code as subSystemCode,
-	       count(*) AS number
-      FROM
-	       fault t2
+        SELECT sub_system_code as subSystemCode,
+               count(*)        AS number
+        FROM fault t2
         <where>
-            1=1
-            <if test="startDate!=null">
-               and DATE_FORMAT(t2.happen_time,'%Y-%m-%d') &gt;= DATE_FORMAT(#{startDate},'%Y-%m-%d')
+            1 = 1
+            <if test="startDate != null">
+                and DATE_FORMAT(t2.happen_time, '%Y-%m-%d') &gt;= DATE_FORMAT(#{startDate}, '%Y-%m-%d')
             </if>
-            <if test="endDate!=null">
-                and  DATE_FORMAT(t2.happen_time,'%Y-%m-%d') &lt;= DATE_FORMAT(#{endDate},'%Y-%m-%d')
+            <if test="endDate != null">
+                and  DATE_FORMAT(t2.happen_time, '%Y-%m-%d') &lt;= DATE_FORMAT(#{endDate}, '%Y-%m-%d')
             </if>
         </where>
-       GROUP BY sub_system_code
+        GROUP BY sub_system_code
     </select>
 
     <select id="translateMajors" resultType="java.lang.String">
-        select major_name from cs_major
+        select major_name
+        from cs_major
         <where>
-            <if test="codeList.size()>0">
+            <if test="codeList.size() > 0">
                 major_code in
                 <foreach item="item" collection="codeList" separator="," open="(" close=")" index="">
                     #{item}
@@ -120,14 +132,27 @@
     </select>
 
     <select id="translateSubsystems" resultType="java.lang.String">
-        select system_name from cs_subsystem
+        select system_name
+        from cs_subsystem
         <where>
-            <if test="codeList.size()>0">
+            <if test="codeList.size() > 0">
                 system_code in
                 <foreach item="item" collection="codeList" separator="," open="(" close=")" index="">
                     #{item}
                 </foreach>
             </if>
         </where>
+    </select>
+    <select id="getStationName" resultType="java.lang.String">
+        select CONCAT(cs.line_name, '/', cs.station_name) as lineStationName
+        from cs_station cs
+        where cs.station_code = #{stationCode}
+    </select>
+    <select id="getStatusName" resultType="java.lang.String">
+        select sdt.item_text
+        from sys_dict_item sdt
+        LEFT JOIN sys_dict sd on sd.id = sdt.dict_id
+        where sd.dict_code = 'fault_status'
+        and sdt.item_value = #{status}
     </select>
 </mapper>
