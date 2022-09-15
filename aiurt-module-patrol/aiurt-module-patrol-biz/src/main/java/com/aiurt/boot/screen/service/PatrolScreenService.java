@@ -1,6 +1,7 @@
 package com.aiurt.boot.screen.service;
 
 import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.constant.PatrolConstant;
 import com.aiurt.boot.constant.PatrolDictCode;
 import com.aiurt.boot.screen.constant.ScreenConstant;
@@ -41,6 +42,7 @@ public class PatrolScreenService {
      * @return
      */
     public ScreenImportantData getImportantData(Integer timeType, String lineCode) {
+        StrUtil.splitTrim(lineCode, ',');
         String dateTime = ScreenDateUtil.getDateTime(timeType);
         String[] split = dateTime.split("~");
         Date startTime = DateUtil.parse(split[0]);
@@ -127,7 +129,12 @@ public class PatrolScreenService {
         String[] split = dateTime.split("~");
         Date startTime = DateUtil.parse(split[0]);
         Date endTime = DateUtil.parse(split[1]);
-        List<ScreenStatisticsTask> list = patrolTaskMapper.getScreenTask(startTime, endTime, lineCode);
+        List<String> lines = null;
+        if (StrUtil.isNotEmpty(lineCode)) {
+            lines = StrUtil.splitTrim(lineCode, ',');
+        }
+
+        List<ScreenStatisticsTask> list = patrolTaskMapper.getScreenTask(startTime, endTime, lines);
         list.stream().forEach(l -> {
             // 字典翻译
             String statusName = sysBaseApi.getDictItems(PatrolDictCode.TASK_STATUS).stream()
@@ -153,12 +160,17 @@ public class PatrolScreenService {
      * @param lineCode
      * @return
      */
-    public List<ScreenStatisticsGraph> getStatisticsGraph(Integer timeType, String lineCode) {
-        String dateTime = ScreenDateUtil.getDateTime(timeType);
+    public List<ScreenStatisticsGraph> getStatisticsGraph(String lineCode) {
+        String dateTime = ScreenDateUtil.getDateTime(ScreenConstant.THIS_WEEK);
         String[] split = dateTime.split("~");
         Date startTime = DateUtil.parse(split[0]);
         Date endTime = DateUtil.parse(split[1]);
-        List<ScreenStatisticsGraph> list = patrolTaskMapper.getScreenGraph(startTime, endTime, lineCode);
+        List<String> lines = null;
+        if (StrUtil.isNotEmpty(lineCode)) {
+            lines = StrUtil.splitTrim(lineCode, ',');
+        }
+
+        List<ScreenStatisticsGraph> list = patrolTaskMapper.getScreenGraph(startTime, endTime, lines);
         list.stream().forEach(l -> {
             Long total = l.getTotal();
             String finishRate = String.format("%.2f", (1.0 * l.getFinish() / total) * 100);
@@ -205,7 +217,9 @@ public class PatrolScreenService {
     public IPage<ScreenStatisticsTask> getStatisticsDataList(Page<ScreenStatisticsTask> page, Integer timeType,
                                                              Integer screenModule, String lineCode) {
         ScreenModule moduleType = new ScreenModule();
-        moduleType.setLineCode(lineCode);
+        if (StrUtil.isNotEmpty(lineCode)) {
+            moduleType.setLines(StrUtil.splitTrim(lineCode, ','));
+        }
 
         String dateTime = ScreenDateUtil.getDateTime(timeType);
         String[] split = dateTime.split("~");
