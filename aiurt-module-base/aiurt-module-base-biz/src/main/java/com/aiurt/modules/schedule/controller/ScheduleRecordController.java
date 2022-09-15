@@ -482,7 +482,7 @@ public class ScheduleRecordController {
     @ApiOperation(value = "获取大屏的班组信息-点击总人员数", notes = "获取大屏的班组信息-点击总人员数")
     @RequestMapping(value = "/getTotalPepoleDetail", method = RequestMethod.GET)
     public Result<IPage<SysUserTeamDTO>> getTotalPepoleDetail(@ApiParam(name = "lineCode", value = "线路code,多个用,隔开") @RequestParam(value = "lineCode", required = false) String lineCode,
-                                                              @ApiParam(name = "orgcode", value = "班组code") @RequestParam(value = "orgId", required = false) String orgcode,
+                                                              @ApiParam(name = "orgcode", value = "班组code") @RequestParam(value = "orgcode", required = false) String orgcode,
                                                               @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
                                                               @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize
     ) {

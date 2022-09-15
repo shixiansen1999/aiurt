@@ -298,7 +298,8 @@
         su.username,
         su.avatar,
         su.permit_code,
-        su.salary_code
+        su.salary_code,
+        su.org_name as teamName
         FROM
         schedule_record sr
         INNER JOIN schedule_item si ON sr.item_id = si.id
@@ -327,7 +328,8 @@
         su.realname AS realName,
         su.username,
         su.permit_code,
-        su.salary_code
+        su.salary_code,
+        su.org_name as teamName
     FROM
         sys_user su
     <where>

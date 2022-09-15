@@ -239,11 +239,6 @@ public class ScheduleRecordServiceImpl extends ServiceImpl<ScheduleRecordMapper,
                 if (CollUtil.isNotEmpty(roleNamesByUsername)) {
                     sysUserTeamDTO.setRoleName(StrUtil.join("；", roleNamesByUsername));
                 }
-
-                List<String> departNamesByUsername = sysBaseAPI.getDepartNamesByUsername(sysUserTeamDTO.getUsername());
-                if (CollUtil.isNotEmpty(departNamesByUsername)) {
-                    sysUserTeamDTO.setTeamName(StrUtil.join("；", departNamesByUsername));
-                }
             }
             return page.setRecords(result);
         }
@@ -272,11 +267,6 @@ public class ScheduleRecordServiceImpl extends ServiceImpl<ScheduleRecordMapper,
                     sysUserTeamDTO.setRoleName(StrUtil.join("；", roleNamesByUsername));
                 }
 
-                // 班组
-                List<String> departNamesByUsername = sysBaseAPI.getDepartNamesByUsername(sysUserTeamDTO.getUsername());
-                if (CollUtil.isNotEmpty(departNamesByUsername)) {
-                    sysUserTeamDTO.setTeamName(StrUtil.join("；", departNamesByUsername));
-                }
             }
             return page.setRecords(users);
         }
