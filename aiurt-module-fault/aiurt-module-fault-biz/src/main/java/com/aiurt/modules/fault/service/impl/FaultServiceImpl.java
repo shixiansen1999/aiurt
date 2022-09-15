@@ -104,6 +104,8 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         if (StrUtil.equalsIgnoreCase(faultModeCode, "0")) {
             fault.setAppointUserName(user.getUsername());
             fault.setStatus(FaultStatusEnum.REPAIR.getStatus());
+            // 方便统计
+            fault.setApprovalPassTime(fault.getReceiveTime());
             // 创建维修记录
             FaultRepairRecord record = FaultRepairRecord.builder()
                     // 做类型
