@@ -10,6 +10,7 @@ import com.aiurt.common.aspect.annotation.PermissionData;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.system.base.controller.BaseController;
 import com.aiurt.modules.sparepart.entity.SparePartInOrder;
+import com.aiurt.modules.sparepart.entity.SparePartOutOrder;
 import com.aiurt.modules.sparepart.entity.SparePartReturnOrder;
 import com.aiurt.modules.sparepart.entity.SparePartStockInfo;
 import com.aiurt.modules.sparepart.mapper.SparePartStockInfoMapper;
@@ -78,7 +79,24 @@ public class SparePartReturnOrderController extends BaseController<SparePartRetu
 		page.setRecords(list);
 		return Result.OK(page);
 	}
-
+	 /**
+	  * 备件退库-获取退入仓库查询条件
+	  *
+	  * @param sparePartReturnOrder
+	  * @param req
+	  * @return
+	  */
+	 @AutoLog(value = "查询",operateType = 1,operateTypeAlias = "备件退库-获取退入仓库查询条件",permissionUrl = "/sparepart/sparePartReturnOrder/list")
+	 @ApiOperation(value="备件退库-获取退入仓库查询条件", notes="备件退库-获取退入仓库查询条件")
+	 @GetMapping(value = "/selectList")
+	 @PermissionData(pageComponent = "sparePartsFor/back")
+	 public Result<?> selectList(SparePartReturnOrder sparePartReturnOrder, HttpServletRequest req) {
+		 List<SparePartReturnOrder> list = sparePartReturnOrderService.selectList(null, sparePartReturnOrder);
+		 List<String> newList = list.stream().map(SparePartReturnOrder::getWarehouseName).collect(Collectors.toList());
+		 newList = newList.stream().distinct().collect(Collectors.toList());
+		 newList.remove(null);
+		 return Result.OK(newList);
+	 }
 	/**
 	 *   添加
 	 *

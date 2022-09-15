@@ -4,6 +4,7 @@ import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.aspect.annotation.PermissionData;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.system.base.controller.BaseController;
+import com.aiurt.modules.sparepart.entity.SparePartInOrder;
 import com.aiurt.modules.sparepart.entity.SparePartOutOrder;
 import com.aiurt.modules.sparepart.entity.SparePartStock;
 import com.aiurt.modules.sparepart.mapper.SparePartStockMapper;
@@ -72,6 +73,24 @@ public class SparePartOutOrderController extends BaseController<SparePartOutOrde
        page.setRecords(list);
        return Result.OK(page);
    }
+    /**
+     * 备件出库-获取出库仓库查询条件
+     *
+     * @param sparePartOutOrder
+     * @param req
+     * @return
+     */
+    @AutoLog(value = "查询",operateType = 1,operateTypeAlias = "备件出库-获取出库仓库查询条件",permissionUrl = "/sparepart/sparePartOutOrder/list")
+    @ApiOperation(value="备件出库-获取出库仓库查询条件", notes="备件出库-获取出库仓库查询条件")
+    @GetMapping(value = "/selectList")
+    @PermissionData(pageComponent = "sparePartsFor/SparePartOutOrderList")
+    public Result<?> selectList(SparePartOutOrder sparePartOutOrder, HttpServletRequest req) {
+        List<SparePartOutOrder> list = sparePartOutOrderService.selectList(null, sparePartOutOrder);
+        List<String> newList = list.stream().map(SparePartOutOrder::getWarehouseName).collect(Collectors.toList());
+        newList = newList.stream().distinct().collect(Collectors.toList());
+        newList.remove(null);
+        return Result.OK(newList);
+    }
     /**
      * 登录人所选班组的已出库的备件
      *

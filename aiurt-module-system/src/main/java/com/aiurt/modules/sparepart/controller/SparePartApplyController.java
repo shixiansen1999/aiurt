@@ -1,5 +1,6 @@
 package com.aiurt.modules.sparepart.controller;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -15,10 +16,7 @@ import com.aiurt.common.aspect.annotation.PermissionData;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.modules.sparepart.entity.*;
 import com.aiurt.modules.sparepart.entity.dto.StockApplyExcel;
-import com.aiurt.modules.sparepart.service.ISparePartApplyMaterialService;
-import com.aiurt.modules.sparepart.service.ISparePartApplyService;
-import com.aiurt.modules.sparepart.service.ISparePartInOrderService;
-import com.aiurt.modules.sparepart.service.ISparePartStockService;
+import com.aiurt.modules.sparepart.service.*;
 import com.aiurt.modules.stock.entity.StockOutboundMaterials;
 import com.aiurt.modules.stock.entity.StockSubmitPlan;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -69,6 +67,8 @@ public class SparePartApplyController extends BaseController<SparePartApply, ISp
 	 @Autowired
 	 private ISparePartStockService sparePartStockService;
 	 @Autowired
+	 private ISparePartStockInfoService sparePartStockInfoService;
+	 @Autowired
 	 private ISparePartApplyMaterialService sparePartApplyMaterialService;
 
 
@@ -102,7 +102,24 @@ public class SparePartApplyController extends BaseController<SparePartApply, ISp
 		page.setRecords(list);
 		return Result.OK(page);
 	}
-
+	 /**
+	  * 备件申领-获取保管仓库查询条件
+	  *
+	  * @param sparePartApply
+	  * @param req
+	  * @return
+	  */
+	 @AutoLog(value = "查询",operateType = 1,operateTypeAlias = "备件申领-获取保管仓库查询条件",permissionUrl = "/sparepart/sparePartApply/list")
+	 @ApiOperation(value="备件申领-获取保管仓库查询条件", notes="备件申领-获取保管仓库查询条件")
+	 @GetMapping(value = "/selectList")
+	 @PermissionData(pageComponent = "sparePartsFor/SparePartApplyList")
+	 public Result<?> selectList(SparePartApply sparePartApply,HttpServletRequest req) {
+		 List<SparePartApply> list = sparePartApplyService.selectList(null, sparePartApply);
+		 List<String> codeList = list.stream().map(SparePartApply::getWarehouseName).collect(Collectors.toList());
+		 codeList = codeList.stream().distinct().collect(Collectors.toList());
+		 codeList.remove(null);
+		 return Result.OK(codeList);
+	 }
 
 	 /**
 	  * 生成申领单号

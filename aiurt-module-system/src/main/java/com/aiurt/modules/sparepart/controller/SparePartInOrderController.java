@@ -7,6 +7,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import com.aiurt.common.aspect.annotation.PermissionData;
+import com.aiurt.modules.sparepart.entity.SparePartApply;
 import com.aiurt.modules.sparepart.entity.SparePartInOrder;
 import com.aiurt.modules.sparepart.entity.dto.StockApplyExcel;
 import com.aiurt.modules.sparepart.service.ISparePartInOrderService;
@@ -66,7 +67,24 @@ public class SparePartInOrderController extends BaseController<SparePartInOrder,
         page.setRecords(list);
 		return Result.OK(page);
 	}
-
+	/**
+	 * 备件入库-获取保管仓库查询条件
+	 *
+	 * @param sparePartInOrder
+	 * @param req
+	 * @return
+	 */
+	@AutoLog(value = "查询",operateType = 1,operateTypeAlias = "备件入库-获取保管仓库查询条件",permissionUrl = "/sparepart/sparePartInOrder/list")
+	@ApiOperation(value="备件入库-获取保管仓库查询条件", notes="备件入库-获取保管仓库查询条件")
+	@GetMapping(value = "/selectList")
+	@PermissionData(pageComponent = "sparePartsFor/SparePartInOrderList")
+	public Result<?> selectList(SparePartInOrder sparePartInOrder, HttpServletRequest req) {
+		List<SparePartInOrder> list = sparePartInOrderService.selectList(null, sparePartInOrder);
+		List<String> newList = list.stream().map(SparePartInOrder::getWarehouseName).collect(Collectors.toList());
+		newList = newList.stream().distinct().collect(Collectors.toList());
+		newList.remove(null);
+		return Result.OK(newList);
+	}
 	/**
 	 *  确认
 	 *

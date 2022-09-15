@@ -27,7 +27,7 @@
         )
     </select>
     <select id="readAll" resultType="com.aiurt.modules.sparepart.entity.SparePartApply">
-        select spare_part_apply.*
+        select spare_part_apply.*,t1.warehouse_name warehouseName
         from spare_part_apply spare_part_apply
         left join spare_part_stock_info t1 on spare_part_apply.custodial_warehouse_code = t1.warehouse_code
 
