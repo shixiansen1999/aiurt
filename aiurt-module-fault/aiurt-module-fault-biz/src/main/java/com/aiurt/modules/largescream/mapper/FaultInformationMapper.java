@@ -20,7 +20,7 @@ public interface FaultInformationMapper {
      * @param lineCode
      * @return
      */
-    List<Fault> queryLargeFaultInformation(@Param("startDate") String startDate, @Param("endDate") String endDate,@Param("lineCode") String lineCode);
+    List<Fault> queryLargeFaultInformation(@Param("startDate") Date startDate, @Param("endDate") Date endDate,@Param("lineCode") String lineCode);
 
     /**
      * 故障信息统计当天已解决
@@ -47,7 +47,7 @@ public interface FaultInformationMapper {
      * @param lineCode
      * @return
      */
-    List<FaultLargeInfoDTO> getLargeFaultInfo(@Param("startDate") String startDate, @Param("endDate") String endDate,@Param("lineCode") String lineCode);
+    List<FaultLargeInfoDTO> getLargeFaultInfo(@Param("startDate") Date startDate, @Param("endDate") Date endDate,@Param("lineCode") String lineCode);
 
 
     /**
@@ -56,5 +56,5 @@ public interface FaultInformationMapper {
      * @param endDate
      * @return
      */
-    List<Fault> getLargeLineFaultInfo(@Param("startDate") String startDate, @Param("endDate") String endDate);
+    List<Fault> getLargeLineFaultInfo(@Param("startDate") Date startDate, @Param("endDate") Date endDate);
 }

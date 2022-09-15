@@ -32,15 +32,20 @@ public class FaultLargeInfoDTO extends DictEntity {
 
     /**专业子系统编码*/
     @ApiModelProperty(value = "专业子系统编码")
-    @Dict(dictTable = "cs_subsystem", dicText = "system_name", dicCode = "system_code")
     @SystemFilterColumn
     private String subSystemCode;
+
+    @ApiModelProperty(value = "专业子系统编码")
+    private String systemName;
 
 
     /**站点*/
     @ApiModelProperty(value = "站点",  required = true)
     @Dict(dictTable = "cs_station", dicText = "station_name", dicCode = "station_code")
     private String stationCode;
+
+    @ApiModelProperty(value = "站点",  required = true)
+    private String stationName;
 
     /**故障发生时间*/
     @JsonFormat(timezone = "GMT+8",pattern = "dd日 HH:mm")
@@ -52,12 +57,13 @@ public class FaultLargeInfoDTO extends DictEntity {
     private String appointUserName;
 
     @ApiModelProperty("故障状态")
-    @Dict(dicCode ="fault_status")
     private String status;
+
+    @ApiModelProperty("故障状态名称")
+    private String statusName;
 
     /**线路编码*/
     @ApiModelProperty(value = "线路编码", required = true)
-    @Dict(dictTable = "cs_line", dicText = "line_name", dicCode = "line_code")
     private String lineCode;
 
 

@@ -82,6 +82,9 @@ public class Fault extends DictEntity implements Serializable {
     @Dict(dictTable = "cs_line", dicText = "line_name", dicCode = "line_code")
     private String lineCode;
 
+    @ApiModelProperty(value = "线路编码", required = true)
+    private String lineName;
+
 	/**站点*/
 	@Excel(name = "故障位置-站所编码", width = 15)
     @ApiModelProperty(value = "站点",  required = true)

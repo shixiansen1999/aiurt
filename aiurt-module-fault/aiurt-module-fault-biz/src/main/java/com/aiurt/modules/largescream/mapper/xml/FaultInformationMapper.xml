@@ -39,22 +39,26 @@
     </select>
 
     <select id="getLargeFaultInfo" resultType="com.aiurt.modules.fault.dto.FaultLargeInfoDTO">
-        select * from fault
+        select * from fault f
+            left join cs_subsystem cs on cs.system_code = f.sub_system_code
+            left join  cs_line cl on cl.line_code = f.line_code
+            left join cs_station ct on ct.station_code = f.station_code
         <where>
             <if test="startDate!=null and endDate!=null">
-                and approval_pass_time  &gt;= #{startDate}  and approval_pass_time &lt;= #{endDate}
+                and f.approval_pass_time  &gt;= #{startDate}  and f.approval_pass_time &lt;= #{endDate}
             </if>
             <if test="lineCode != null">
-                and line_code  = #{lineCode}
+                and f.line_code  = #{lineCode}
             </if>
         </where>
     </select>
 
     <select id="getLargeLineFaultInfo" resultType="com.aiurt.modules.fault.entity.Fault">
-        select * from fault
+        select * from fault f
+        left join cs_line cl on f.line_code = cl.line_code
         <where>
             <if test="startDate!=null and endDate!=null">
-                and approval_pass_time  &gt;= #{startDate}  and approval_pass_time &lt;= #{endDate}
+                and f.approval_pass_time  &gt;= #{startDate}  and f.approval_pass_time &lt;= #{endDate}
             </if>
         </where>
     </select>
