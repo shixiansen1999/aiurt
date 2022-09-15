@@ -6,6 +6,8 @@ import com.aiurt.boot.screen.model.ScreenStatisticsGraph;
 import com.aiurt.boot.screen.model.ScreenStatisticsTask;
 import com.aiurt.boot.screen.service.PatrolScreenService;
 import com.aiurt.common.aspect.annotation.AutoLog;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -63,6 +65,30 @@ public class PatrolScreenController {
     }
 
     /**
+     * 大屏巡视模块-巡视数据统计详情列表
+     *
+     * @param pageNo
+     * @param pageSize
+     * @param screenModule
+     * @param lineCode
+     * @return
+     */
+    @AutoLog(value = "大屏巡视模块-巡视数据统计详情列表", operateType = 1, operateTypeAlias = "查询")
+    @ApiOperation(value = "大屏巡视模块-巡视数据统计详情列表", notes = "大屏巡视模块-巡视数据统计详情列表")
+    @RequestMapping(value = "/statisticsDetails", method = {RequestMethod.GET, RequestMethod.POST})
+    public Result<IPage<ScreenStatisticsTask>> getStatisticsDataList(@RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
+                                                                     @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize,
+                                                                     @ApiParam(name = "timeType", value = "看板时间类型：1本周、2上周")
+                                                                     @RequestParam("timeType") Integer timeType,
+                                                                     @ApiParam(name = "screenModule", value = "巡视数据统计模块标识：1计划数、2完成数、3漏检数、4巡视异常数、5今日巡视数、6今日巡视完成数")
+                                                                     @RequestParam("screenModule") Integer screenModule,
+                                                                     @ApiParam(name = "lineCode", value = "线路编号") String lineCode) {
+        Page<ScreenStatisticsTask> page = new Page<>(pageNo, pageSize);
+        IPage<ScreenStatisticsTask> pageList = screenService.getStatisticsDataList(page, timeType, screenModule, lineCode);
+        return Result.ok(pageList);
+    }
+
+    /**
      * 大屏巡视模块-巡视数据统计任务列表
      *
      * @param timeType
@@ -89,9 +115,9 @@ public class PatrolScreenController {
     @ApiOperation(value = "大屏巡视模块-巡视任务完成情况", notes = "大屏巡视模块-巡视任务完成情况")
     @RequestMapping(value = "/statisticsGraph", method = {RequestMethod.GET, RequestMethod.POST})
     public Result<List<ScreenStatisticsGraph>> getStatisticsPieGraph(@ApiParam(name = "timeType", value = "看板时间类型：1本周、2上周")
-                                                                        @RequestParam("timeType") Integer timeType,
+                                                                     @RequestParam("timeType") Integer timeType,
                                                                      @ApiParam(name = "lineCode", value = "线路编号")
-                                                                                String lineCode) {
+                                                                             String lineCode) {
         List<ScreenStatisticsGraph> list = screenService.getStatisticsGraph(timeType, lineCode);
         return Result.ok(list);
     }

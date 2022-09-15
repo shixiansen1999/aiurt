@@ -523,4 +523,40 @@
         where pt.del_flag = 0
         group by pto.org_code
     </select>
+    <select id="getStatisticsDataList" resultType="com.aiurt.boot.screen.model.ScreenStatisticsTask">
+        SELECT
+        pt.`code`,
+        pt.`name`,
+        pt.submit_time,
+        pt.auditor,
+        pt.auditor_time,
+        pt.`status`,
+        pt.abnormal_state,
+        pt.omit_status,
+        GROUP_CONCAT( DISTINCT cs.station_name ) stationInfo,
+        GROUP_CONCAT( DISTINCT ptu.user_name ) userInfo
+        FROM
+        patrol_task pt
+        LEFT JOIN patrol_task_station pts ON pt.`code` = pts.task_code AND pts.del_flag = 0
+        JOIN cs_station cs ON pts.station_code = cs.station_code AND cs.del_flag = 0
+        LEFT JOIN patrol_task_user ptu ON pt.`code` = pts.task_code AND ptu.del_flag = 0
+        WHERE
+        pt.del_flag = 0
+        <if test="condition.startTime != null and condition.endTime != null">
+            AND pt.patrol_date BETWEEN #{condition.startTime} AND #{condition.endTime}
+        </if>
+        <if test="condition.status != null">
+            AND pt.`status` = #{condition.status}
+        </if>
+        <if test="condition.omit != null">
+            AND pt.omit_status = #{condition.omit}
+        </if>
+        <if test="condition.abnormal != null">
+            AND pt.abnormal_state = #{condition.abnormal}
+        </if>
+        <if test="condition.today != null">
+            AND DATE_FORMAT( pt.patrol_date, '%Y-%m-%d' ) = DATE_FORMAT(#{condition.today} , '%Y-%m-%d' )
+        </if>
+        GROUP BY pt.`code`
+    </select>
 </mapper>

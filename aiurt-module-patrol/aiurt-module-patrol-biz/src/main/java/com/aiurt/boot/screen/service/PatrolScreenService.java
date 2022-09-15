@@ -4,14 +4,13 @@ import cn.hutool.core.date.DateUtil;
 import com.aiurt.boot.constant.PatrolConstant;
 import com.aiurt.boot.constant.PatrolDictCode;
 import com.aiurt.boot.screen.constant.ScreenConstant;
-import com.aiurt.boot.screen.model.ScreenImportantData;
-import com.aiurt.boot.screen.model.ScreenStatistics;
-import com.aiurt.boot.screen.model.ScreenStatisticsGraph;
-import com.aiurt.boot.screen.model.ScreenStatisticsTask;
+import com.aiurt.boot.screen.model.*;
 import com.aiurt.boot.screen.utils.ScreenDateUtil;
 import com.aiurt.boot.task.entity.PatrolTask;
 import com.aiurt.boot.task.mapper.PatrolTaskMapper;
 import com.aiurt.boot.task.service.IPatrolTaskService;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.DictModel;
 import org.jeecg.common.util.DateUtils;
@@ -20,7 +19,6 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.ZoneId;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -194,5 +192,62 @@ public class PatrolScreenService {
             Date sunday = Date.from(localDate.minusDays(1).atStartOfDay().atZone(zoneId).toInstant());
             return DateUtil.format(friday, "yyyy-MM-dd 00:00:00") + "~" + DateUtil.format(sunday, "yyyy-MM-dd 23:59:59");
         }
+    }
+
+    /**
+     * 大屏巡视模块-巡视数据统计详情列表
+     *
+     * @param page
+     * @param screenModule
+     * @param lineCode
+     * @return
+     */
+    public IPage<ScreenStatisticsTask> getStatisticsDataList(Page<ScreenStatisticsTask> page, Integer timeType,
+                                                             Integer screenModule, String lineCode) {
+        ScreenModule moduleType = new ScreenModule();
+        moduleType.setLineCode(lineCode);
+
+        String dateTime = ScreenDateUtil.getDateTime(timeType);
+        String[] split = dateTime.split("~");
+        Date startTime = DateUtil.parse(split[0]);
+        Date endTime = DateUtil.parse(split[1]);
+        switch (screenModule) {
+            // 计划数
+            case 1:
+                moduleType.setStartTime(startTime);
+                moduleType.setEndTime(endTime);
+                break;
+            // 完成数
+            case 2:
+                moduleType.setStartTime(startTime);
+                moduleType.setEndTime(endTime);
+                moduleType.setStatus(PatrolConstant.TASK_COMPLETE);
+                break;
+            // 漏巡数
+            case 3:
+                String omitStartTime = this.getOmitDateScope(startTime).split("~")[0];
+                String omitEndTime = this.getOmitDateScope(endTime).split("~")[1];
+                moduleType.setStartTime(DateUtil.parse(omitStartTime));
+                moduleType.setEndTime(DateUtil.parse(omitEndTime));
+                moduleType.setOmit(PatrolConstant.OMIT_STATUS);
+                break;
+            // 巡视异常数
+            case 4:
+                moduleType.setStartTime(startTime);
+                moduleType.setEndTime(endTime);
+                moduleType.setAbnormal(PatrolConstant.TASK_ABNORMAL);
+                break;
+            // 今日巡视数
+            case 5:
+                moduleType.setToday(new Date());
+                break;
+            // 今日巡视完成数
+            case 6:
+                moduleType.setToday(new Date());
+                moduleType.setStatus(PatrolConstant.TASK_COMPLETE);
+                break;
+        }
+        IPage<ScreenStatisticsTask> pageList = patrolTaskMapper.getStatisticsDataList(page, moduleType);
+        return pageList;
     }
 }

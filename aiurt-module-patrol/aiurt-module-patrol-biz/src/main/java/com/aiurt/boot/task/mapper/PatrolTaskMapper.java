@@ -1,5 +1,6 @@
 package com.aiurt.boot.task.mapper;
 
+import com.aiurt.boot.screen.model.ScreenModule;
 import com.aiurt.boot.screen.model.ScreenStatisticsGraph;
 import com.aiurt.boot.screen.model.ScreenStatisticsTask;
 import com.aiurt.boot.standard.dto.StationDTO;
@@ -237,4 +238,13 @@ public interface PatrolTaskMapper extends BaseMapper<PatrolTask> {
      * @return
      */
     List<ScreenStatisticsGraph> getScreenGraph(@Param("startTime") Date startTime, @Param("endTime") Date endTime, @Param("lineCode") String lineCode);
+
+    /**
+     * 大屏巡视模块-巡视数据统计详情列表
+     *
+     * @param page
+     * @param moduleType
+     * @return
+     */
+    IPage<ScreenStatisticsTask> getStatisticsDataList(Page<ScreenStatisticsTask> page, @Param("condition") ScreenModule moduleType);
 }
