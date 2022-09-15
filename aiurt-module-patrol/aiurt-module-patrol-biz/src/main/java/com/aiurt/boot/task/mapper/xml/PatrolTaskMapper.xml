@@ -480,15 +480,14 @@
         </if>
     </select>
     <select id="getUserTask" resultType="com.aiurt.boot.task.entity.PatrolTask">
-    SELECT
-	pt.id,pt.`code`,pt.`name`
-FROM
-	patrol_task_user ptu
-	LEFT JOIN patrol_task pt on ptu.task_code = pt.`code`
-WHERE
-	DATE_FORMAT( ptu.create_time, '%Y-%m-%d' ) = DATE_FORMAT(#{date} ,'%Y-%m-%d' )
-	and ptu.user_id = #{userId}
-</select>
+        SELECT pt.id,
+               pt.`code`,
+               pt.`name`
+        FROM patrol_task_user ptu
+                 LEFT JOIN patrol_task pt on ptu.task_code = pt.`code`
+        WHERE DATE_FORMAT(ptu.create_time, '%Y-%m-%d') = DATE_FORMAT(#{date}, '%Y-%m-%d')
+          and ptu.user_id = #{userId}
+    </select>
     <select id="getScreenTask" resultType="com.aiurt.boot.screen.model.ScreenStatisticsTask">
         SELECT
         pt.`code`,
@@ -512,5 +511,16 @@ WHERE
             AND pt.patrol_date BETWEEN #{startTime} AND #{endTime}
         </if>
         GROUP BY pt.`code`
+    </select>
+    <select id="getScreenGraph" resultType="com.aiurt.boot.screen.model.ScreenStatisticsGraph">
+        select sd.depart_name        orgName,
+               count(pt.`code`)      total,
+               sum(pt.`status` = 7)  finish,
+               sum(pt.`status` != 7) unfinish
+        from patrol_task pt
+                 join patrol_task_organization pto on pt.`code` = pto.task_code and pto.del_flag = 0
+                 join sys_depart sd on pto.org_code = sd.org_code
+        where pt.del_flag = 0
+        group by pto.org_code
     </select>
 </mapper>

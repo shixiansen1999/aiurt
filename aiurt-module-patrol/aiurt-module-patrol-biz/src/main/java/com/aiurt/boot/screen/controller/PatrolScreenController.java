@@ -2,7 +2,7 @@ package com.aiurt.boot.screen.controller;
 
 import com.aiurt.boot.screen.model.ScreenImportantData;
 import com.aiurt.boot.screen.model.ScreenStatistics;
-import com.aiurt.boot.screen.model.ScreenStatisticsPieGraph;
+import com.aiurt.boot.screen.model.ScreenStatisticsGraph;
 import com.aiurt.boot.screen.model.ScreenStatisticsTask;
 import com.aiurt.boot.screen.service.PatrolScreenService;
 import com.aiurt.common.aspect.annotation.AutoLog;
@@ -17,7 +17,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Api(tags = "大屏巡视模块")
@@ -88,12 +87,12 @@ public class PatrolScreenController {
      */
     @AutoLog(value = "大屏巡视模块-巡视任务完成情况", operateType = 1, operateTypeAlias = "查询")
     @ApiOperation(value = "大屏巡视模块-巡视任务完成情况", notes = "大屏巡视模块-巡视任务完成情况")
-    @RequestMapping(value = "/statisticsPieGraph", method = {RequestMethod.GET, RequestMethod.POST})
-    public Result<List<ScreenStatisticsPieGraph>> getStatisticsPieGraph(@ApiParam(name = "timeType", value = "看板时间类型：1本周、2上周")
+    @RequestMapping(value = "/statisticsGraph", method = {RequestMethod.GET, RequestMethod.POST})
+    public Result<List<ScreenStatisticsGraph>> getStatisticsPieGraph(@ApiParam(name = "timeType", value = "看板时间类型：1本周、2上周")
                                                                         @RequestParam("timeType") Integer timeType,
-                                                                        @ApiParam(name = "lineCode", value = "线路编号")
+                                                                     @ApiParam(name = "lineCode", value = "线路编号")
                                                                                 String lineCode) {
-        List<ScreenStatisticsPieGraph> list = screenService.getStatisticsPieGraph(timeType, lineCode);
+        List<ScreenStatisticsGraph> list = screenService.getStatisticsGraph(timeType, lineCode);
         return Result.ok(list);
     }
 }

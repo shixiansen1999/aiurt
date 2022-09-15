@@ -6,7 +6,7 @@ import com.aiurt.boot.constant.PatrolDictCode;
 import com.aiurt.boot.screen.constant.ScreenConstant;
 import com.aiurt.boot.screen.model.ScreenImportantData;
 import com.aiurt.boot.screen.model.ScreenStatistics;
-import com.aiurt.boot.screen.model.ScreenStatisticsPieGraph;
+import com.aiurt.boot.screen.model.ScreenStatisticsGraph;
 import com.aiurt.boot.screen.model.ScreenStatisticsTask;
 import com.aiurt.boot.screen.utils.ScreenDateUtil;
 import com.aiurt.boot.task.entity.PatrolTask;
@@ -155,8 +155,20 @@ public class PatrolScreenService {
      * @param lineCode
      * @return
      */
-    public List<ScreenStatisticsPieGraph> getStatisticsPieGraph(Integer timeType, String lineCode) {
-        return new ArrayList<>();
+    public List<ScreenStatisticsGraph> getStatisticsGraph(Integer timeType, String lineCode) {
+        String dateTime = ScreenDateUtil.getDateTime(timeType);
+        String[] split = dateTime.split("~");
+        Date startTime = DateUtil.parse(split[0]);
+        Date endTime = DateUtil.parse(split[1]);
+        List<ScreenStatisticsGraph> list = patrolTaskMapper.getScreenGraph(startTime, endTime, lineCode);
+        list.stream().forEach(l -> {
+            Long total = l.getTotal();
+            String finishRate = String.format("%.2f", (1.0 * l.getFinish() / total) * 100);
+            String unfinishRate = String.format("%.2f", (1.0 * l.getUnfinish() / total) * 100);
+            l.setFinishRate(finishRate + "%");
+            l.setUnfinishRate(unfinishRate + "%");
+        });
+        return list;
     }
 
     /**
