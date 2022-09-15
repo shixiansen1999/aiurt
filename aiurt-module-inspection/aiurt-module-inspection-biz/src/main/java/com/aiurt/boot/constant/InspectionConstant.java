@@ -266,4 +266,20 @@ public class InspectionConstant {
      */
     public static final Integer LAST_MONTH_4 = 4;
 
+    /**
+     * 总计划数
+     */
+    public static final Integer PLAN_TOTAL_1 = 1;
+    /**
+     * 完成数
+     */
+    public static final Integer PLAN_FINISH_2 = 2;
+    /**
+     * 漏检数
+     */
+    public static final Integer PLAN_MISSED_DETECTION_3 = 3;
+    /**
+     * 今日检修数
+     */
+    public static final Integer PLAN_TODAY_4 =4;
 }

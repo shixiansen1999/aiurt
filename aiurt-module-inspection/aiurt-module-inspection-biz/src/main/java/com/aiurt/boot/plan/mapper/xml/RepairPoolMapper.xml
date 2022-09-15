@@ -41,17 +41,52 @@
         select org_code from  repair_pool_org_rel where del_flag = 0 and repair_pool_code = #{planCode}
     </select>
     <select id="getCodeByMajor" resultType="java.lang.String">
-    SELECT DISTINCT repair_pool_code FROM repair_pool_rel rpr
-    LEFT JOIN repair_pool_code rpc ON rpc.id = rpr.repair_pool_sta_id
-    <where>
-        rpr.del_flag =0
-        <if test="majorList.size()>0">
-            and rpc.major_code in
-            <foreach collection="majorList" separator="," open="(" close=")" item="majorcode">
-                #{majorcode}
-            </foreach>
-        </if>
-    </where>
+        SELECT DISTINCT repair_pool_code FROM repair_pool_rel rpr
+        LEFT JOIN repair_pool_code rpc ON rpc.id = rpr.repair_pool_sta_id
+        <where>
+            rpr.del_flag =0
+            <if test="majorList.size()>0">
+                and rpc.major_code in
+                <foreach collection="majorList" separator="," open="(" close=")" item="majorcode">
+                    #{majorcode}
+                </foreach>
+            </if>
+        </where>
+    </select>
+    <select id="getInspectionData" resultType="com.aiurt.boot.index.dto.InspectionDTO">
+        select code,weeks,status from repair_pool
+        <where>
+            del_flag = 0
+            <if test="beginDate!=null and endDate!=null">
+             and start_time &gt;= #{beginDate}
+             and start_time &lt;=#{endDate}
+            </if>
+            <if test="codeList.size()>0">
+                and code in
+                <foreach collection="codeList" separator="," open="(" close=")" item="code">
+                    #{code}
+                </foreach>
+            </if>
+            <if test="item!=null and item==2">
+                and status = #{item}
+            </if>
+        </where>
+    </select>
+    <select id="getInspectionTodayData" resultType="com.aiurt.boot.index.dto.InspectionDTO">
+        select code,weeks,status from repair_pool
+        <where>
+            del_flag = 0
+            <if test="date!=null">
+                and start_time &lt;= #{date}
+                and end_time &gt;=#{date}
+            </if>
+            <if test="codeList.size()>0">
+                and code in
+                <foreach collection="codeList" separator="," open="(" close=")" item="code">
+                    #{code}
+                </foreach>
+            </if>
+        </where>
     </select>
 
 

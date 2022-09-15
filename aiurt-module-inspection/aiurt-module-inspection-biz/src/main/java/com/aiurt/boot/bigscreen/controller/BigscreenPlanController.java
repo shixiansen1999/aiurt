@@ -6,6 +6,8 @@ import com.aiurt.boot.index.dto.PlanIndexDTO;
 import com.aiurt.boot.index.dto.TeamPortraitDTO;
 import com.aiurt.boot.index.dto.TeamWorkingHourDTO;
 import com.aiurt.common.aspect.annotation.AutoLog;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -60,10 +62,13 @@ public class BigscreenPlanController {
     @AutoLog(value = "大屏-检修数据统计", operateType = 1, operateTypeAlias = "查询", permissionUrl = "")
     @ApiOperation(value = "大屏-检修数据统计", notes = "大屏-检修数据统计")
     @RequestMapping(value = "/getInspectionData", method = RequestMethod.GET)
-    public Result<List<InspectionDTO>> getInspectionData(@ApiParam(name = "lineCode", value = "线路code,多个用,隔开") @RequestParam(value = "lineCode", required = false) String lineCode,
-                                                         @ApiParam(name = "type", value = "类型:1：本周，2：上周，3：本月， 4：上月", defaultValue = "1") @RequestParam("type") Integer type,
-                                                         @ApiParam(name = "item", value = "1计划数，2完成数，3漏检数，4今日检修数") @RequestParam(value = "lineCode", required = false) Integer item) {
-        List<InspectionDTO> result = bigscreenPlanService.getInspectionData(lineCode, type, item);
+    public Result<IPage<InspectionDTO>> getInspectionData(@ApiParam(name = "lineCode", value = "线路code,多个用,隔开") @RequestParam(value = "lineCode", required = false) String lineCode,
+                                                          @ApiParam(name = "type", value = "类型:1：本周，2：上周，3：本月， 4：上月", defaultValue = "1") @RequestParam("type") Integer type,
+                                                          @ApiParam(name = "item", value = "1计划数，2完成数，3漏检数，4今日检修数") @RequestParam(value = "lineCode", required = false) Integer item,
+                                                          @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
+                                                          @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize) {
+        Page<InspectionDTO> page = new Page<>(pageNo, pageSize);
+        IPage<InspectionDTO> result = bigscreenPlanService.getInspectionData(lineCode, type, item,page);
         return Result.OK(result);
     }
 

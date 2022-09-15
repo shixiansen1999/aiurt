@@ -1,9 +1,11 @@
 package com.aiurt.boot.plan.mapper;
 
+import com.aiurt.boot.index.dto.InspectionDTO;
 import com.aiurt.boot.manager.dto.MajorDTO;
 import com.aiurt.boot.plan.entity.RepairPool;
 import com.aiurt.boot.plan.entity.RepairPoolCode;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.Date;
@@ -58,4 +60,24 @@ public interface RepairPoolMapper extends BaseMapper<RepairPool> {
      * @return
      */
     Set<String> getCodeByMajor(List<String> majorList);
+
+    /**
+     * 检修计划总数和完成总数
+     * @param page
+     * @param codeList
+     * @param item
+     * @param beginDate
+     * @param endDate
+     * @return
+     */
+    List<InspectionDTO> getInspectionData(@Param("page") Page<InspectionDTO> page,@Param("codeList") Set<String> codeList,@Param("item") Integer item,@Param("beginDate") Date beginDate,@Param("endDate") Date endDate);
+
+    /**
+     * 今日检修
+     * @param page
+     * @param date
+     * @param codeList
+     * @return
+     */
+    List<InspectionDTO> getInspectionTodayData(@Param("page") Page<InspectionDTO> page, @Param("date") Date date, @Param("codeList") Set<String> codeList);
 }

@@ -13,6 +13,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 
 import org.jeecg.common.system.vo.LoginUser;
+import org.jeecg.common.system.vo.SysDepartModel;
 
 
 import java.util.List;
@@ -80,5 +81,7 @@ public interface IScheduleRecordService extends IService<ScheduleRecord> {
      * @return
      */
     IPage<SysUserTeamDTO> getTotalPepoleDetail(String lineCode,  String orgcode,Page<SysUserTeamDTO> page);
+
+    List<SysDepartModel> getTeamBylineAndMajors(String lineCode);
 
 }

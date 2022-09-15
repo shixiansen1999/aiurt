@@ -16,8 +16,11 @@ import com.aiurt.boot.plan.entity.RepairPoolStationRel;
 import com.aiurt.boot.plan.mapper.RepairPoolMapper;
 import com.aiurt.boot.plan.mapper.RepairPoolStationRelMapper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.CsUserMajorModel;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -41,6 +44,7 @@ public class BigscreenPlanService {
     private RepairPoolMapper repairPoolMapper;
     @Resource
     private InspectionManager manager;
+
     /**
      * 获取大屏的检修概况数量
      *
@@ -56,22 +60,13 @@ public class BigscreenPlanService {
 
         if (time.length > 0) {
             // 专业和线路过滤
-            Set<String> codeList = new HashSet<>();
-            List<CsUserMajorModel> majorByUserId = sysBaseAPI.getMajorByUserId(manager.checkLogin().getId());
-            if(CollUtil.isNotEmpty(majorByUserId)){
-                List<String> majorList = majorByUserId.stream().map(CsUserMajorModel::getMajorCode).collect(Collectors.toList());
-                codeList.addAll(repairPoolMapper.getCodeByMajor(majorList));
-            }
-
-            if (StrUtil.isNotEmpty(lineCode)) {
-                // 站点
-                List<String> stationCodeByLineCode = sysBaseAPI.getStationCodeByLineCode(lineCode);
-                if (CollUtil.isNotEmpty(stationCodeByLineCode)) {
-                    LambdaQueryWrapper<RepairPoolStationRel> repairPoolStationRelLambdaQueryWrapper = new LambdaQueryWrapper<>();
-                    repairPoolStationRelLambdaQueryWrapper.in(RepairPoolStationRel::getStationCode, stationCodeByLineCode);
-                    List<RepairPoolStationRel> repairPoolStationRels = repairPoolStationRelMapper.selectList(repairPoolStationRelLambdaQueryWrapper);
-                    codeList.addAll(Optional.ofNullable(repairPoolStationRels).orElse(new ArrayList<>()).stream().map(RepairPoolStationRel::getRepairPoolCode).collect(Collectors.toSet()));
-                }
+            Set<String> codeList = getCodeByLineAndMajor(lineCode);
+            if (CollUtil.isEmpty(codeList)) {
+                result.setSum(0L);
+                result.setFinish(0L);
+                result.setOmit(0L);
+                result.setTodayFinish(0L);
+                return result;
             }
 
             // 时间过滤
@@ -104,6 +99,32 @@ public class BigscreenPlanService {
         return result;
     }
 
+    @NotNull
+    public Set<String> getCodeByLineAndMajor(String lineCode) {
+        Set<String> codeList = new HashSet<>();
+
+        if (StrUtil.isNotEmpty(lineCode)) {
+            // 站点
+            List<String> stationCodeByLineCode = sysBaseAPI.getStationCodeByLineCode(lineCode);
+            if (CollUtil.isNotEmpty(stationCodeByLineCode)) {
+                LambdaQueryWrapper<RepairPoolStationRel> repairPoolStationRelLambdaQueryWrapper = new LambdaQueryWrapper<>();
+                repairPoolStationRelLambdaQueryWrapper.in(RepairPoolStationRel::getStationCode, stationCodeByLineCode);
+                List<RepairPoolStationRel> repairPoolStationRels = repairPoolStationRelMapper.selectList(repairPoolStationRelLambdaQueryWrapper);
+                codeList.addAll(Optional.ofNullable(repairPoolStationRels).orElse(new ArrayList<>()).stream().map(RepairPoolStationRel::getRepairPoolCode).collect(Collectors.toSet()));
+            }
+            if (CollUtil.isEmpty(stationCodeByLineCode) || CollUtil.isEmpty(codeList)) {
+                return new HashSet<>();
+            }
+        }
+
+        List<CsUserMajorModel> majorByUserId = sysBaseAPI.getMajorByUserId(manager.checkLogin().getId());
+        if (CollUtil.isNotEmpty(majorByUserId)) {
+            List<String> majorList = majorByUserId.stream().map(CsUserMajorModel::getMajorCode).collect(Collectors.toList());
+            codeList.addAll(repairPoolMapper.getCodeByMajor(majorList));
+        }
+        return codeList;
+    }
+
 
     /**
      * 功能：巡检修数据分析->检修数据统计
@@ -113,8 +134,38 @@ public class BigscreenPlanService {
      * @param item     1计划数，2完成数，3漏检数，4今日检修数
      * @return
      */
-    public List<InspectionDTO> getInspectionData(String lineCode, Integer type, Integer item) {
-        return null;
+    public IPage<InspectionDTO> getInspectionData(String lineCode, Integer type, Integer item, Page<InspectionDTO> page) {
+
+        // 根据类型获取开始时间和结束时间
+        Date[] time = getTimeByType(type);
+        if (time.length > 0) {
+            List<InspectionDTO> result = new ArrayList<>();
+            Set<String> codeList = getCodeByLineAndMajor(lineCode);
+            if (CollUtil.isEmpty(codeList)) {
+                return page;
+            }
+            // 计划数、完成数
+            if (InspectionConstant.PLAN_TOTAL_1.equals(item) || InspectionConstant.PLAN_FINISH_2.equals(item)) {
+                result = repairPoolMapper.getInspectionData(page, codeList, item, time[0], time[1]);
+            }
+
+            // 漏检
+            // 今日检修
+            if (InspectionConstant.PLAN_TODAY_4.equals(item)) {
+                result = repairPoolMapper.getInspectionTodayData(page, new Date(), codeList);
+            }
+            // 统一处理
+            if (CollUtil.isNotEmpty(result)) {
+                for (InspectionDTO inspectionDTO : result) {
+
+
+                }
+
+                return page.setRecords(result);
+            }
+
+        }
+        return page;
     }
 
     /**
