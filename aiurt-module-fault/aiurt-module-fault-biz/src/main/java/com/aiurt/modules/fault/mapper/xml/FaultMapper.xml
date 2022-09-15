@@ -151,8 +151,14 @@
     <select id="getStatusName" resultType="java.lang.String">
         select sdt.item_text
         from sys_dict_item sdt
-        LEFT JOIN sys_dict sd on sd.id = sdt.dict_id
+                     LEFT JOIN sys_dict sd on sd.id = sdt.dict_id
         where sd.dict_code = 'fault_status'
-        and sdt.item_value = #{status}
+          and sdt.item_value = #{status}
+    </select>
+    <select id="getUserToday" resultType="com.aiurt.modules.fault.entity.FaultRepairRecord">
+        select *
+        from fault_repair_record
+        where id = #{id}
+        and end_time = #{date}
     </select>
 </mapper>

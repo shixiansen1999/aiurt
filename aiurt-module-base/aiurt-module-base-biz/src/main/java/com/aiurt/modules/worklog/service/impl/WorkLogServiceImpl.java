@@ -726,13 +726,13 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
     public WorkLogUserTaskDTO getUseTask() {
         WorkLogUserTaskDTO patrolWorkLogDTO = new WorkLogUserTaskDTO();
         //获取巡检内容
-        //String userPatrolTask = patrolApi.getUserTask();
+        String userPatrolTask = patrolApi.getUserTask();
         //获取检修内容
-        //String inspectionTaskDevice = inspectionApi.getInspectionTaskDevice();
+        String inspectionTaskDevice = inspectionApi.getInspectionTaskDevice();
         //获取故障内容
         String faultContent = dailyFaultApi.getFaultTask();
-        //patrolWorkLogDTO.setPatrolContent(userPatrolTask);
-        //patrolWorkLogDTO.setRepairContent(inspectionTaskDevice);
+        patrolWorkLogDTO.setPatrolContent(userPatrolTask);
+        patrolWorkLogDTO.setRepairContent(inspectionTaskDevice);
         patrolWorkLogDTO.setFaultContent(faultContent);
         return  patrolWorkLogDTO;
     }

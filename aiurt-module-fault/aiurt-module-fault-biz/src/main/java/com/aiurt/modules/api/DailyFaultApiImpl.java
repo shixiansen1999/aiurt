@@ -73,15 +73,18 @@ public class DailyFaultApiImpl implements DailyFaultApi {
         });
         list.addAll(faultRepairRecords);
         //查出当天用户是否进行维修
-
         List<String> faultNames = new ArrayList<>();
         for (FaultRepairRecord record : list) {
-             Fault fault = faultMapper.selectOne(new LambdaQueryWrapper<Fault>().eq(Fault::getCode, record.getFaultCode()));
-             String stationName = faultMapper.getStationName(fault.getStationCode());
-             LoginUser loginUser = sysBaseAPI.queryUser(fault.getAppointUserName());
-             String faultStatus = faultMapper.getStatusName(fault.getStatus());
-             String faultName = stationName+" "+fault.getFaultPhenomenon()+" "+loginUser.getRealname()+"-"+faultStatus;
-             faultNames.add(faultName);
+             FaultRepairRecord faultRepairRecord = faultMapper.getUserToday(record.getId(),new Date());
+             if(ObjectUtil.isNotEmpty(faultRepairRecord))
+             {
+                 Fault fault = faultMapper.selectOne(new LambdaQueryWrapper<Fault>().eq(Fault::getCode, record.getFaultCode()));
+                 String stationName = faultMapper.getStationName(fault.getStationCode());
+                 LoginUser loginUser = sysBaseAPI.queryUser(fault.getAppointUserName());
+                 String faultStatus = faultMapper.getStatusName(fault.getStatus());
+                 String faultName = stationName+" "+fault.getFaultPhenomenon()+" "+loginUser.getRealname()+"-"+faultStatus;
+                 faultNames.add(faultName);
+             }
         }
         return   CollUtil.join(faultNames, "。");
     }
