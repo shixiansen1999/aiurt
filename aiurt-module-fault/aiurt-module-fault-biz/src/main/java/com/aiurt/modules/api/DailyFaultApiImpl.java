@@ -60,9 +60,9 @@ public class DailyFaultApiImpl implements DailyFaultApi {
         //获取当前用户作为被指派/领取人，负责过的故障报修单
         List<FaultRepairRecord> faultList = recordMapper.selectList(new LambdaQueryWrapper<FaultRepairRecord>().eq(FaultRepairRecord::getAppointUserName, sysUser.getUsername()));
        //获取已经填写的维修单
-        List<FaultRepairRecord> recordList = faultList.stream().filter(f -> f.getEndTime() != null).collect(Collectors.toList());
+        List<FaultRepairRecord> recordList = faultList.stream().filter(f -> f.getArriveTime() != null).collect(Collectors.toList());
         //去重复
-        List<FaultRepairRecord> list = recordList.stream().collect(Collectors.collectingAndThen(Collectors.toCollection(() -> new TreeSet<>(Comparator.comparing(o -> o.getFaultCode() + o.getAppointUserName()))), ArrayList::new));
+        List<FaultRepairRecord> list=recordList.stream().collect(Collectors.collectingAndThen(Collectors.toCollection(()->new TreeSet<>(Comparator.comparing(o->o.getFaultCode()+";"+o.getAppointUserName()))), ArrayList::new));
         //获取当前用户作为参与人，参与过的故障报修单
         List<FaultRepairParticipants> participantsList = participantsMapper.selectList(new LambdaQueryWrapper<FaultRepairParticipants>().eq(FaultRepairParticipants::getUserName, sysUser.getUsername()));
         //去重复

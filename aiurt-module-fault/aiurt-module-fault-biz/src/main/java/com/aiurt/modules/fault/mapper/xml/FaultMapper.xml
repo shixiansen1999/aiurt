@@ -159,6 +159,6 @@
         select *
         from fault_repair_record
         where id = #{id}
-        and end_time = #{date}
+        and DATE_FORMAT(update_time, '%Y-%m-%d') &gt;= DATE_FORMAT(#{date}, '%Y-%m-%d')
     </select>
 </mapper>
