@@ -394,6 +394,9 @@
                 #{item}
             </foreach>
         </if>
+        <if test="condition.taskStatus != null">
+            AND pt.`status` = #{condition.taskStatus}
+        </if>
         <if test="condition.omitStatus != null">
             AND pt.omit_status = #{condition.omitStatus}
         </if>
@@ -522,13 +525,13 @@
         GROUP BY pt.`code`
     </select>
     <select id="getScreenGraph" resultType="com.aiurt.boot.screen.model.ScreenStatisticsGraph">
-        select sd.depart_name        orgName,
-               count(pt.`code`)      total,
-               sum(pt.`status` = 7)  finish,
-               sum(pt.`status` != 7) unfinish
+        select sd.depart_name orgName,
+        count(pt.`code`) total,
+        sum(pt.`status` = 7) finish,
+        sum(pt.`status` != 7) unfinish
         from patrol_task pt
-                 join patrol_task_organization pto on pt.`code` = pto.task_code and pto.del_flag = 0
-                 join sys_depart sd on pto.org_code = sd.org_code
+        join patrol_task_organization pto on pt.`code` = pto.task_code and pto.del_flag = 0
+        join sys_depart sd on pto.org_code = sd.org_code
         where pt.del_flag = 0
         <if test="lines != null and lines.size>0 ">
             AND pt.`code` in (

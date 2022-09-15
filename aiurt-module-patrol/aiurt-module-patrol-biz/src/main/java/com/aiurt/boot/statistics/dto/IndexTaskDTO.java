@@ -76,6 +76,11 @@ public class IndexTaskDTO implements Serializable {
     @ApiModelProperty(value = "任务状态：0待指派、1待确认、2待执行、3已退回、4执行中、5已驳回、6待审核、7已完成")
     private Integer[] status;
     /**
+     * 条件筛选的任务状态
+     */
+    @ApiModelProperty(value = "条件筛选的任务状态")
+    private Integer taskStatus;
+    /**
      * 漏巡状态,0未漏检，1已漏检
      */
     @ApiModelProperty(value = "漏巡状态:0未漏检，1已漏检,查询漏检总数列表下的任务列表该字段必传")
