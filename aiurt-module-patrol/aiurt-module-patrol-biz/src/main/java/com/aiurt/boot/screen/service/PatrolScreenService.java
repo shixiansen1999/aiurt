@@ -56,6 +56,10 @@ public class PatrolScreenService {
      * @return
      */
     public ScreenImportantData getImportantData(Integer timeType, String lineCode) {
+        // 默认本周
+        if (ObjectUtil.isEmpty(timeType)) {
+            timeType = ScreenConstant.THIS_WEEK;
+        }
         List<String> lines = StrUtil.splitTrim(lineCode, ',');
         String dateTime = ScreenDateUtil.getDateTime(timeType);
         String[] split = dateTime.split("~");
@@ -107,6 +111,10 @@ public class PatrolScreenService {
      * @return
      */
     public ScreenStatistics getStatisticsData(Integer timeType, String lineCode) {
+        // 默认本周
+        if (ObjectUtil.isEmpty(timeType)) {
+            timeType = ScreenConstant.THIS_WEEK;
+        }
         String dateTime = ScreenDateUtil.getDateTime(timeType);
         String[] split = dateTime.split("~");
         Date startTime = DateUtil.parse(split[0]);
@@ -178,6 +186,10 @@ public class PatrolScreenService {
      * @return
      */
     public List<ScreenStatisticsTask> getStatisticsTaskInfo(Integer timeType, String lineCode) {
+        // 默认本周
+        if (ObjectUtil.isEmpty(timeType)) {
+            timeType = ScreenConstant.THIS_WEEK;
+        }
         String dateTime = ScreenDateUtil.getDateTime(timeType);
         String[] split = dateTime.split("~");
         Date startTime = DateUtil.parse(split[0]);
@@ -289,6 +301,15 @@ public class PatrolScreenService {
      */
     public IPage<ScreenStatisticsTask> getStatisticsDataList(Page<ScreenStatisticsTask> page, Integer timeType,
                                                              Integer screenModule, String lineCode) {
+        // 默认本周
+        if (ObjectUtil.isEmpty(timeType)) {
+            timeType = ScreenConstant.THIS_WEEK;
+        }
+        // 模块参数未传直接返回空
+        if (ObjectUtil.isEmpty(screenModule)) {
+            return page;
+        }
+
         ScreenModule moduleType = new ScreenModule();
         List<String> lines = null;
         if (StrUtil.isNotEmpty(lineCode)) {
