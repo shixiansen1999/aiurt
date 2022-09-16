@@ -89,9 +89,9 @@ where cm.major_code = #{majorCode} and cs.del_flag = 0
         left join work_area_line wal on wal.work_area_code = wa.`code`
         <where>
             sd.del_flag = 0 and wao.del_flag= 0 and wa.del_flag = 0 and wal.del_flag = 0
-            <if test="lineCode.size()>0">
+            <if test="lineCodeList.size()>0">
                 and wal.line_code in
-                <foreach collection="lineCode" item="code" open="(" close=")" separator=",">
+                <foreach collection="lineCodeList" item="code" open="(" close=")" separator=",">
                     #{code}
                 </foreach>
             </if>

@@ -606,4 +606,5 @@ public interface ISysBaseAPI extends CommonAPI {
      */
     @GetMapping(value = "/sys/api/getTeamBylineAndMajor")
     List<String> getTeamBylineAndMajor(String lineCode);
+
 }
