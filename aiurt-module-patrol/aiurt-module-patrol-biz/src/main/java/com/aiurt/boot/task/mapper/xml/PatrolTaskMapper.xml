@@ -447,6 +447,9 @@
         <if test="condition.source != null">
             and pt.source = #{condition.source}
         </if>
+        <if test="condition.status != null">
+            and pt.`status` = #{condition.status}
+        </if>
         <if test="condition.stationCode != null and condition.stationCode != ''">
             and pt.`code` in (
             SELECT pps.task_code
@@ -510,14 +513,14 @@
         LEFT JOIN patrol_task_user ptu ON pt.`code` = pts.task_code AND ptu.del_flag = 0
         WHERE
         pt.del_flag = 0
-        <if test="startTime != null and endTime != null">
-            AND pt.patrol_date BETWEEN #{startTime} AND #{endTime}
+        <if test="condition.startTime != null and condition.endTime != null">
+            AND pt.patrol_date BETWEEN #{condition.startTime} AND #{condition.endTime}
         </if>
-        <if test="lines != null and lines.size>0 ">
+        <if test="condition.lines != null and condition.lines.size>0 ">
             AND pt.`code` in (
             SELECT task_code FROM patrol_task_station WHERE del_flag = 0
             AND line_code IN
-            <foreach collection="lines" item="item" open="(" separator="," close=")">
+            <foreach collection="condition.lines" item="item" open="(" separator="," close=")">
                 #{item}
             </foreach>
             )
@@ -533,11 +536,14 @@
         join patrol_task_organization pto on pt.`code` = pto.task_code and pto.del_flag = 0
         join sys_depart sd on pto.org_code = sd.org_code
         where pt.del_flag = 0
-        <if test="lines != null and lines.size>0 ">
+        <if test="condition.startTime != null and condition.endTime != null">
+            AND pt.patrol_date BETWEEN #{condition.startTime} AND #{condition.endTime}
+        </if>
+        <if test="condition.lines != null and condition.lines.size>0 ">
             AND pt.`code` in (
             SELECT task_code FROM patrol_task_station WHERE del_flag = 0
             AND line_code IN
-            <foreach collection="lines" item="item" open="(" separator="," close=")">
+            <foreach collection="condition.lines" item="item" open="(" separator="," close=")">
                 #{item}
             </foreach>
             )

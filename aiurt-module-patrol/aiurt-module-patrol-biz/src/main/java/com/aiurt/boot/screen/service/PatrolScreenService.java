@@ -1,6 +1,7 @@
 package com.aiurt.boot.screen.service;
 
 import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.constant.PatrolConstant;
 import com.aiurt.boot.constant.PatrolDictCode;
@@ -8,18 +9,29 @@ import com.aiurt.boot.screen.constant.ScreenConstant;
 import com.aiurt.boot.screen.model.*;
 import com.aiurt.boot.screen.utils.ScreenDateUtil;
 import com.aiurt.boot.task.entity.PatrolTask;
+import com.aiurt.boot.task.entity.PatrolTaskStandard;
 import com.aiurt.boot.task.mapper.PatrolTaskMapper;
+import com.aiurt.boot.task.mapper.PatrolTaskStandardMapper;
+import com.aiurt.boot.task.mapper.PatrolTaskStationMapper;
 import com.aiurt.boot.task.service.IPatrolTaskService;
+import com.aiurt.common.exception.AiurtBootException;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import org.apache.ibatis.annotations.Select;
+import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.system.api.ISysBaseAPI;
+import org.jeecg.common.system.vo.CsUserMajorModel;
 import org.jeecg.common.system.vo.DictModel;
+import org.jeecg.common.system.vo.LoginUser;
 import org.jeecg.common.util.DateUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -33,6 +45,8 @@ public class PatrolScreenService {
     private IPatrolTaskService patrolTaskService;
     @Autowired
     private PatrolTaskMapper patrolTaskMapper;
+    @Autowired
+    private PatrolTaskStandardMapper patrolTaskStandardMapper;
 
     /**
      * 大屏巡视模块-重要数据展示
@@ -42,11 +56,14 @@ public class PatrolScreenService {
      * @return
      */
     public ScreenImportantData getImportantData(Integer timeType, String lineCode) {
-        StrUtil.splitTrim(lineCode, ',');
+        List<String> lines = StrUtil.splitTrim(lineCode, ',');
         String dateTime = ScreenDateUtil.getDateTime(timeType);
         String[] split = dateTime.split("~");
         Date startTime = DateUtil.parse(split[0]);
         Date endTime = DateUtil.parse(split[1]);
+        // 获取当前登录人的专业编号
+        List<String> majors = this.getCurrentLoginUserMajors();
+
         List<PatrolTask> list = patrolTaskService.lambdaQuery().eq(PatrolTask::getDelFlag, 0)
                 .between(PatrolTask::getPatrolDate, startTime, endTime)
                 .list();
@@ -133,8 +150,16 @@ public class PatrolScreenService {
         if (StrUtil.isNotEmpty(lineCode)) {
             lines = StrUtil.splitTrim(lineCode, ',');
         }
+        // 当前登录人的专业编号
+        List<String> majors = this.getCurrentLoginUserMajors();
 
-        List<ScreenStatisticsTask> list = patrolTaskMapper.getScreenTask(startTime, endTime, lines);
+        ScreenTran tran = new ScreenTran();
+        tran.setStartTime(startTime);
+        tran.setEndTime(endTime);
+        tran.setLines(lines);
+        tran.setMajors(majors);
+
+        List<ScreenStatisticsTask> list = patrolTaskMapper.getScreenTask(tran);
         list.stream().forEach(l -> {
             // 字典翻译
             String statusName = sysBaseApi.getDictItems(PatrolDictCode.TASK_STATUS).stream()
@@ -156,7 +181,6 @@ public class PatrolScreenService {
     /**
      * 大屏巡视模块-巡视任务完成情况
      *
-     * @param timeType
      * @param lineCode
      * @return
      */
@@ -169,12 +193,20 @@ public class PatrolScreenService {
         if (StrUtil.isNotEmpty(lineCode)) {
             lines = StrUtil.splitTrim(lineCode, ',');
         }
+        // 当前登录人的专业编号
+        List<String> majors = this.getCurrentLoginUserMajors();
 
-        List<ScreenStatisticsGraph> list = patrolTaskMapper.getScreenGraph(startTime, endTime, lines);
+        ScreenTran tran = new ScreenTran();
+        tran.setStartTime(startTime);
+        tran.setEndTime(endTime);
+        tran.setLines(lines);
+        tran.setMajors(majors);
+
+        List<ScreenStatisticsGraph> list = patrolTaskMapper.getScreenGraph(tran);
         list.stream().forEach(l -> {
             Long total = l.getTotal();
-            String finishRate = String.format("%.2f", (1.0 * l.getFinish() / total) * 100);
-            String unfinishRate = String.format("%.2f", (1.0 * l.getUnfinish() / total) * 100);
+            String finishRate = String.format("%.1f", (1.0 * l.getFinish() / total) * 100);
+            String unfinishRate = String.format("%.1f", (1.0 * l.getUnfinish() / total) * 100);
             l.setFinishRate(finishRate + "%");
             l.setUnfinishRate(unfinishRate + "%");
         });
@@ -278,5 +310,20 @@ public class PatrolScreenService {
             l.setAbnormalStateName(abnormalName);
         });
         return pageList;
+    }
+
+    /**
+     * 获取当前登录用户的专业编号
+     *
+     * @return
+     */
+    public List<String> getCurrentLoginUserMajors() {
+        LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        if (ObjectUtil.isEmpty(loginUser)) {
+            throw new AiurtBootException("检测到未登录系统，请登录后操作！");
+        }
+        List<CsUserMajorModel> majorList = sysBaseApi.getMajorByUserId(loginUser.getId());
+        List<String> majors = majorList.stream().map(CsUserMajorModel::getMajorCode).collect(Collectors.toList());
+        return majors;
     }
 }
