@@ -40,8 +40,8 @@ public class FaultInformationController {
         return Result.ok(faultLargeCountDTO);
     }
 
-    @AutoLog(value = "综合大屏-故障信息统计详情", operateType = 1, operateTypeAlias = "查询", permissionUrl = "")
-    @ApiOperation(value = "综合大屏-故障信息统计详情", notes = "综合大屏-故障信息统计详情")
+    @AutoLog(value = "综合大屏-故障信息统计列表", operateType = 1, operateTypeAlias = "查询", permissionUrl = "")
+    @ApiOperation(value = "综合大屏-故障信息统计列表", notes = "综合大屏-故障信息统计列表")
     @RequestMapping(value = "/getLargeFaultInfo", method = RequestMethod.GET)
     public Result<List<FaultLargeInfoDTO>> getLargeFaultInfo(@ApiParam(name = "boardTimeType", value = "1:本周 2:上周 3:本月 4:上月") @RequestParam("boardTimeType")Integer boardTimeType,
                                                              @ApiParam(name = "lineCode",value = "线路")@RequestParam("lineCode")String lineCode){
@@ -105,5 +105,22 @@ public class FaultInformationController {
     {
         List<FaultMonthTimeDTO> largeFaultTime = faultInformationService.getLargeFaultTime(lineCode);
         return Result.ok(largeFaultTime);
+    }
+
+
+    @AutoLog(value = "大屏-故障数据分析-故障数据统计")
+    @ApiOperation(value="大屏-故障数据分析-故障数据统计", notes="大屏-故障数据分析-故障数据统计")
+    @GetMapping(value = "/queryLargeFaultDataCount")
+    public Result<FaultDataAnalysisCountDTO> queryLargeFaultDataCount(@ApiParam(name = "lineCode",value = "线路")@RequestParam("lineCode")String lineCode){
+        FaultDataAnalysisCountDTO faultDataAnalysisCountDTO = faultInformationService.queryLargeFaultDataCount(lineCode);
+        return Result.ok(faultDataAnalysisCountDTO);
+    }
+
+    @AutoLog(value = "大屏-故障数据分析-故障数据统计列表", operateType = 1, operateTypeAlias = "查询", permissionUrl = "")
+    @ApiOperation(value = "大屏-故障数据分析-故障数据统计列表", notes = "大屏-故障数据分析-故障数据统计列表")
+    @RequestMapping(value = "/getLargeFaultDataInfo", method = RequestMethod.GET)
+    public Result<List<FaultDataAnalysisInfoDTO>> getLargeFaultDataInfo(@ApiParam(name = "lineCode",value = "线路")@RequestParam("lineCode")String lineCode){
+        List<FaultDataAnalysisInfoDTO> largeFaultDataInfo = faultInformationService.getLargeFaultDataInfo(lineCode);
+        return Result.ok(largeFaultDataInfo);
     }
 }

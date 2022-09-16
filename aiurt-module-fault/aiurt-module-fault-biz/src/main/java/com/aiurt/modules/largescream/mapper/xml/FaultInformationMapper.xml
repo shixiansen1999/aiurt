@@ -26,6 +26,19 @@
         </where>
     </select>
 
+    <select id="queryFaultDataInformationWeekSolve" resultType="com.aiurt.modules.fault.entity.Fault">
+        select * from fault
+        <where>
+            status = 12
+            <if test="weekStartDate!=null and weekEndDate!=null">
+                and end_time  &gt;= #{weekStartDate}  and end_time &lt;= #{weekEndDate}
+            </if>
+            <if test="lineCode != null">
+                and line_code  = #{lineCode}
+            </if>
+        </where>
+    </select>
+
     <select id="queryLargeFaultInformationTodayAdd" resultType="com.aiurt.modules.fault.entity.Fault">
         select * from fault
         <where>
@@ -38,15 +51,41 @@
         </where>
     </select>
 
+    <select id="queryFaultDataInformationWeekAdd" resultType="com.aiurt.modules.fault.entity.Fault">
+        select * from fault
+        <where>
+            <if test="weekStartDate!=null and weekEndDate!=null">
+                and happen_time  &gt;= #{weekStartDate}  and happen_time &lt;= #{weekEndDate}
+            </if>
+            <if test="lineCode != null">
+                and line_code  = #{lineCode}
+            </if>
+        </where>
+    </select>
+
     <select id="getLargeFaultInfo" resultType="com.aiurt.modules.fault.dto.FaultLargeInfoDTO">
         select * from fault f
             left join cs_subsystem cs on cs.system_code = f.sub_system_code
             left join  cs_line cl on cl.line_code = f.line_code
             left join cs_station ct on ct.station_code = f.station_code
+            left join sys_user s on s.username = f.appoint_user_name
         <where>
             <if test="startDate!=null and endDate!=null">
                 and f.approval_pass_time  &gt;= #{startDate}  and f.approval_pass_time &lt;= #{endDate}
             </if>
+            <if test="lineCode != null">
+                and f.line_code  = #{lineCode}
+            </if>
+        </where>
+    </select>
+
+    <select id="getLargeFaultDataInfo" resultType="com.aiurt.modules.fault.dto.FaultDataAnalysisInfoDTO">
+        select * from fault f
+        left join cs_subsystem cs on cs.system_code = f.sub_system_code
+        left join  cs_line cl on cl.line_code = f.line_code
+        left join cs_station ct on ct.station_code = f.station_code
+        left join sys_user s on s.username = f.appoint_user_name
+        <where>
             <if test="lineCode != null">
                 and f.line_code  = #{lineCode}
             </if>
@@ -103,5 +142,14 @@
             </if>
         </where>
         group by f.sub_system_code,f.line_Code
+    </select>
+
+    <select id="queryFaultDataInformation" resultType="com.aiurt.modules.fault.entity.Fault">
+        select * from fault
+        <where>
+            <if test="lineCode != null">
+                and line_code  = #{lineCode}
+            </if>
+        </where>
     </select>
 </mapper>

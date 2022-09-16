@@ -269,4 +269,82 @@ public class FaultInformationService {
 
         return faultDataStatisticsDTO;
     }
+
+
+    /**
+     * 故障数据统计
+     * @param lineCode
+     * @return
+     */
+    public FaultDataAnalysisCountDTO queryLargeFaultDataCount(String lineCode){
+        FaultDataAnalysisCountDTO result = new FaultDataAnalysisCountDTO();
+        //获取本周时间
+        String dateTime = FaultLargeDateUtil.getDateTime(1);
+        String[] split = dateTime.split("~");
+        Date weekStartDate = DateUtil.parse(split[0]);
+        Date weekEndDate = DateUtil.parse(split[1]);
+        int count =0;
+        List<Fault> faultList = faultInformationMapper.queryFaultDataInformation(lineCode);
+        //总故障数
+        if(CollUtil.isNotEmpty(faultList)){
+            result.setSum(faultList.size());
+        }
+        //未解决数
+        if(CollUtil.isNotEmpty(faultList)){
+            for (Fault fault : faultList) {
+                if(!FaultStatusEnum.Close.getStatus().equals(fault.getStatus())){
+                    count++;
+                }
+                result.setUnSolve(count);
+            }
+        }
+        //本周已解决
+        List<Fault> faultDataInformationweekSolve = faultInformationMapper.queryFaultDataInformationWeekSolve(weekStartDate, weekEndDate, lineCode);
+        if(CollUtil.isNotEmpty(faultDataInformationweekSolve)){
+            result.setWeekSolve(faultDataInformationweekSolve.size());
+        }
+        //本周新增
+        List<Fault> faultDataInformationweekAdd = faultInformationMapper.queryFaultDataInformationWeekAdd(weekStartDate, weekEndDate, lineCode);
+        if(CollUtil.isNotEmpty(faultDataInformationweekAdd)){
+            result.setWeekAdd(faultDataInformationweekAdd.size());
+        }
+        //当天开始结束时间
+        Date todayStartDate = DateUtil.beginOfDay(new Date());
+        Date todayEndDate = DateUtil.endOfDay(new Date());
+        //当天已解决数
+        List<Fault> faultInformationTodaySolve = faultInformationMapper.queryLargeFaultInformationTodaySolve(todayStartDate,todayEndDate, lineCode);
+        if(CollUtil.isNotEmpty(faultInformationTodaySolve)){
+            result.setTodaySolve(faultInformationTodaySolve.size());
+        }
+        //当天新增
+        List<Fault> faults = faultInformationMapper.queryLargeFaultInformationTodayAdd(todayStartDate,todayEndDate, lineCode);
+        if(CollUtil.isNotEmpty(faultInformationTodaySolve)){
+            result.setTodayAdd(faults.size());
+        }
+        return result;
+    }
+
+
+    /**
+     * 大屏分析-故障数据统计列表
+     * @param lineCode
+     * @return
+     */
+    public List<FaultDataAnalysisInfoDTO> getLargeFaultDataInfo(String lineCode){
+        List<FaultDataAnalysisInfoDTO> largeFaultDataInfo = faultInformationMapper.getLargeFaultDataInfo(lineCode);
+        largeFaultDataInfo.stream().forEach(l -> {
+            // 字典翻译
+            String statusName = sysBaseAPI.getDictItems(FaultDictCodeConstant.FAULT_STATUS).stream()
+                    .filter(item -> item.getValue().equals(String.valueOf(l.getStatus())))
+                    .map(DictModel::getText).collect(Collectors.joining());
+            l.setStatusName(statusName);
+
+            String faultModeName = sysBaseAPI.getDictItems(FaultDictCodeConstant.FAULT_MODE_CODE).stream()
+                    .filter(item -> item.getValue().equals(String.valueOf(l.getFaultModeCode())))
+                    .map(DictModel::getText).collect(Collectors.joining());
+            l.setFaultModeName(faultModeName);
+        });
+        return largeFaultDataInfo;
+    }
+
 }
