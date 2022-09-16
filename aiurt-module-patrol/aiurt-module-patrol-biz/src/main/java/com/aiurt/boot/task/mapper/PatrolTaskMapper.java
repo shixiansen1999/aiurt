@@ -244,4 +244,12 @@ public interface PatrolTaskMapper extends BaseMapper<PatrolTask> {
      * @return
      */
     IPage<ScreenStatisticsTask> getStatisticsDataList(Page<ScreenStatisticsTask> page, @Param("condition") ScreenModule moduleType);
+
+    /**
+     * 大屏巡视模块-数据统计和重要数据展示任务查询
+     *
+     * @param module
+     * @return
+     */
+    List<PatrolTask> getScreenDataCount(@Param("condition") ScreenModule module);
 }
