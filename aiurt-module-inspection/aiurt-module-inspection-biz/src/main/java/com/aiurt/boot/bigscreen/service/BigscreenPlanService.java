@@ -241,7 +241,7 @@ public class BigscreenPlanService {
      * @return
      */
     public List<TeamPortraitDTO> getTeamPortrait(Integer type) {
-        return null;
+        return  Arrays.asList(new TeamPortraitDTO());
     }
 
     /**
@@ -251,6 +251,6 @@ public class BigscreenPlanService {
      * @return
      */
     public TeamWorkingHourDTO getTeamPortraitDetails(Integer type, String teamId) {
-        return null;
+        return new TeamWorkingHourDTO();
     }
 }
