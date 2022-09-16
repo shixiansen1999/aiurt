@@ -57,8 +57,8 @@ public interface PositionPanelMapper {
     /**
      * 通过id查询班组人员信息
      *
-     * @param id
+     * @param orgCode
      * @return
      */
-    List<SysUser> getUserById(@Param("id")String id);
+    List<SysUser> getUserById(@Param("orgCode")String orgCode);
 }

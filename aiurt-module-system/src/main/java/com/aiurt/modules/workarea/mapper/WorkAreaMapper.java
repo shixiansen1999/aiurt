@@ -9,6 +9,7 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.ibatis.annotations.Param;
 import org.jeecg.common.system.vo.SiteModel;
+import org.jeecg.common.system.vo.SysDepartModel;
 
 import java.util.List;
 
@@ -65,4 +66,19 @@ public interface WorkAreaMapper extends BaseMapper<WorkArea> {
      * @return
      */
     List<SiteModel> getSiteByOrgCode(String orgCode);
+
+    /**
+     * 通过线路和专业过滤出班组
+     * @param lineCodeList
+     * @param majorList
+     * @return
+     */
+    List<String> getTeamBylineAndMajor(@Param("lineCodeList") List<String> lineCodeList, @Param("majorList") List<String> majorList);
+    /**
+     * 通过线路和专业过滤出班组详细信息
+     * @param lineCodeList
+     * @param majorList
+     * @return
+     */
+    List<SysDepartModel> getTeamBylineAndMajors(@Param("lineCodeList") List<String> lineCodeList,@Param("majorList") List<String> majorList);
 }

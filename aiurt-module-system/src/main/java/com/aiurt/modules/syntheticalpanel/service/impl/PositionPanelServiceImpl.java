@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @author lkj
@@ -42,12 +43,14 @@ public class PositionPanelServiceImpl implements PositionPanelService {
         if (CollectionUtil.isNotEmpty(ids)) {
             for (String id : ids) {
                 List<PositionPanel> list = positionPanelMapper.queryById(id);
-                if (CollectionUtil.isNotEmpty(list)) {
-                    for (PositionPanel panel : list) {
-                        List<SysUser> userById = positionPanelMapper.getUserById(panel.getId());
+                //去掉没有班组的线路
+                List<PositionPanel> collect = list.stream().filter(p -> !p.getOrgCode().isEmpty()).collect(Collectors.toList());
+                if (CollectionUtil.isNotEmpty(collect)) {
+                    for (PositionPanel panel : collect) {
+                        List<SysUser> userById = positionPanelMapper.getUserById(panel.getOrgCode());
                         panel.setUserList(userById);
                     }
-                    positionPanels.addAll(list);
+                    positionPanels.addAll(collect);
                 }
                 return positionPanels;
             }

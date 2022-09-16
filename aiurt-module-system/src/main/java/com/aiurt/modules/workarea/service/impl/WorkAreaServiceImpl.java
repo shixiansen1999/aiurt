@@ -10,7 +10,10 @@ import com.aiurt.modules.major.mapper.CsMajorMapper;
 import com.aiurt.modules.position.entity.CsStation;
 import com.aiurt.modules.position.mapper.CsStationMapper;
 import com.aiurt.modules.system.entity.SysDepart;
+import com.aiurt.modules.system.entity.SysUser;
+import com.aiurt.modules.system.mapper.CsUserMajorMapper;
 import com.aiurt.modules.system.mapper.SysDepartMapper;
+import com.aiurt.modules.system.mapper.SysUserMapper;
 import com.aiurt.modules.workarea.dto.MajorDTO;
 import com.aiurt.modules.workarea.dto.MajorUserDTO;
 import com.aiurt.modules.workarea.dto.SubSystem;
@@ -27,9 +30,11 @@ import com.aiurt.modules.workarea.service.IWorkAreaService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import org.jeecg.common.system.api.ISysBaseAPI;
+import org.apache.shiro.SecurityUtils;
+import org.jeecg.common.system.vo.CsUserMajorModel;
 import org.jeecg.common.system.vo.LoginUser;
 import org.jeecg.common.system.vo.SiteModel;
+import org.jeecg.common.system.vo.SysDepartModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -58,11 +63,13 @@ public class WorkAreaServiceImpl extends ServiceImpl<WorkAreaMapper, WorkArea> i
     @Autowired
     private CsStationMapper csStationMapper;
     @Autowired
-    private ISysBaseAPI sysBaseApi;
-    @Autowired
     private CsMajorMapper csMajorMapper;
     @Autowired
     private SysDepartMapper sysDepartMapper;
+    @Autowired
+    private CsUserMajorMapper csUserMajorMapper;
+    @Autowired
+    private SysUserMapper sysUserMapper;
 
     @Override
     public Page<WorkAreaDTO> getWorkAreaList(Page<WorkAreaDTO> pageList, WorkAreaDTO workArea) {
@@ -92,9 +99,9 @@ public class WorkAreaServiceImpl extends ServiceImpl<WorkAreaMapper, WorkArea> i
             //查询专业名称
             String majorName = workAreaMapper.getMajorName(w.getMajorCode());
             //查询工区管理负责人
-            LoginUser managerName = sysBaseApi.getUserById(w.getManagerId());
+            SysUser managerName = sysUserMapper.selectById(w.getManagerId());
             //查询工区技术负责人
-            LoginUser technicalName = sysBaseApi.getUserById(w.getTechnicalId());
+            SysUser technicalName = sysUserMapper.selectById(w.getTechnicalId());
             if (ObjectUtil.isNotEmpty(managerName)) {
                 w.setManagerName(managerName.getRealname());
             }
@@ -213,5 +220,43 @@ public class WorkAreaServiceImpl extends ServiceImpl<WorkAreaMapper, WorkArea> i
         }
         List<SiteModel> result = baseMapper.getSiteByOrgCode(orgCode);
         return result;
+    }
+
+    /**
+     * 根据线路获取班组(根据登录用户专业过滤)
+     *
+     * @param lineCode 线路code
+     * @return
+     */
+    @Override
+    public List<SysDepartModel> getTeamBylineAndMajors(String lineCode) {
+        LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        if (ObjectUtil.isEmpty(user)) {
+            throw new AiurtBootException("请重新登录");
+        }
+        // 线路筛选
+        List<String> lineCodeList = new ArrayList<>();
+        if (StrUtil.isNotEmpty(lineCode)) {
+            lineCodeList = StrUtil.split(lineCode, ',');
+            List<String> lineList = baseMapper.getTeamBylineAndMajor(lineCodeList, new ArrayList<>());
+            if (CollUtil.isEmpty(lineList)) {
+                return new ArrayList<>();
+            }
+        }
+        // 专业筛选
+        List<CsUserMajorModel> majorByUserId = csUserMajorMapper.getMajorByUserId(user.getId());
+        List<String> majorList = new ArrayList<>();
+        if(CollUtil.isEmpty(majorByUserId)){
+            return new ArrayList<>();
+        }
+        if (CollUtil.isNotEmpty(majorByUserId)) {
+            majorList = majorByUserId.stream().map(CsUserMajorModel::getMajorCode).collect(Collectors.toList());
+            List<String> majors = baseMapper.getTeamBylineAndMajor(new ArrayList<>(), majorList);
+            if (CollUtil.isEmpty(majors)) {
+                return new ArrayList<>();
+            }
+        }
+
+        return baseMapper.getTeamBylineAndMajors(lineCodeList,majorList);
     }
 }

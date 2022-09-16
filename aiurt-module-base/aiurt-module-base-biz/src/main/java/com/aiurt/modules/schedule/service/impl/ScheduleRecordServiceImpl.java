@@ -19,14 +19,16 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.system.api.ISysBaseAPI;
-import org.jeecg.common.system.vo.CsUserMajorModel;
 import org.jeecg.common.system.vo.LoginUser;
 import org.jeecg.common.system.vo.SiteModel;
 import org.jeecg.common.system.vo.SysDepartModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 ;
@@ -159,7 +161,7 @@ public class ScheduleRecordServiceImpl extends ServiceImpl<ScheduleRecordMapper,
 
     @Override
     public ScheduleBigScreenDTO getTeamData(String lineCode) {
-        List<String> orgCodes = getTeamByLineAndMajor(lineCode);
+        List<String> orgCodes = sysBaseAPI.getTeamBylineAndMajor(lineCode);
         List<LoginUser> userByDepIds = sysBaseAPI.getUserByDepIds(orgCodes);
 
         ScheduleBigScreenDTO result = new ScheduleBigScreenDTO();
@@ -182,41 +184,6 @@ public class ScheduleRecordServiceImpl extends ServiceImpl<ScheduleRecordMapper,
         return result;
     }
 
-    /**
-     * 根据线路code或专业code获取班组信息
-     *
-     * @param lineCode
-     * @return
-     */
-    public List<String> getTeamByLineAndMajor(String lineCode) {
-        LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        if (ObjectUtil.isEmpty(user)) {
-            throw new AiurtBootException("请重新登录");
-        }
-
-        // 线路筛选
-        List<String> lineCodeList = new ArrayList<>();
-        if (StrUtil.isNotEmpty(lineCode)) {
-            lineCodeList = StrUtil.split(lineCode, ',');
-            List<String> lineList = baseMapper.getTeamBylineAndMajor(lineCodeList, new ArrayList<>());
-            if (CollUtil.isEmpty(lineList)) {
-                return new ArrayList<>();
-            }
-        }
-
-        // 专业筛选
-        List<CsUserMajorModel> majorByUserId = sysBaseAPI.getMajorByUserId(user.getId());
-        List<String> majorList = new ArrayList<>();
-        if (CollUtil.isNotEmpty(majorByUserId)) {
-            majorList = majorByUserId.stream().map(CsUserMajorModel::getMajorCode).collect(Collectors.toList());
-            List<String> majors = baseMapper.getTeamBylineAndMajor(new ArrayList<>(), majorList);
-            if (CollUtil.isEmpty(majors)) {
-                return new ArrayList<>();
-            }
-        }
-
-        return baseMapper.getTeamBylineAndMajor(lineCodeList, majorList);
-    }
 
     /**
      * 获取大屏的班组信息-点击今日当班人数
@@ -229,7 +196,7 @@ public class ScheduleRecordServiceImpl extends ServiceImpl<ScheduleRecordMapper,
     @Override
     public IPage<SysUserTeamDTO> getTodayOndutyDetail(String lineCode, String orgcode, Page<SysUserTeamDTO> page) {
         // 根据线路code或专业code获取班组信息
-        List<String> orgCodes = getTeamByLineAndMajor(lineCode);
+        List<String> orgCodes = sysBaseAPI.getTeamBylineAndMajor(lineCode);
 
         // 根据日期条件查询班次情况
         if (CollUtil.isNotEmpty(orgCodes)) {
@@ -256,7 +223,7 @@ public class ScheduleRecordServiceImpl extends ServiceImpl<ScheduleRecordMapper,
      */
     @Override
     public IPage<SysUserTeamDTO> getTotalPepoleDetail(String lineCode, String orgcode, Page<SysUserTeamDTO> page) {
-        List<String> orgCodes = getTeamByLineAndMajor(lineCode);
+        List<String> orgCodes = sysBaseAPI.getTeamBylineAndMajor(lineCode);
 
         if (CollUtil.isNotEmpty(orgCodes)) {
             List<SysUserTeamDTO> users = baseMapper.getUserByDepIds(orgCodes, page, orgcode);
@@ -267,7 +234,6 @@ public class ScheduleRecordServiceImpl extends ServiceImpl<ScheduleRecordMapper,
                 if (CollUtil.isNotEmpty(roleNamesByUsername)) {
                     sysUserTeamDTO.setRoleName(StrUtil.join("；", roleNamesByUsername));
                 }
-
             }
             return page.setRecords(users);
         }
@@ -282,25 +248,8 @@ public class ScheduleRecordServiceImpl extends ServiceImpl<ScheduleRecordMapper,
         }
         // 线路筛选
         List<String> lineCodeList = new ArrayList<>();
-        if (StrUtil.isNotEmpty(lineCode)) {
-            lineCodeList = StrUtil.split(lineCode, ',');
-            List<String> lineList = baseMapper.getTeamBylineAndMajor(lineCodeList, new ArrayList<>());
-            if (CollUtil.isEmpty(lineList)) {
-                return new ArrayList<>();
-            }
-        }
-
         // 专业筛选
-        List<CsUserMajorModel> majorByUserId = sysBaseAPI.getMajorByUserId(user.getId());
         List<String> majorList = new ArrayList<>();
-        if (CollUtil.isNotEmpty(majorByUserId)) {
-            majorList = majorByUserId.stream().map(CsUserMajorModel::getMajorCode).collect(Collectors.toList());
-            List<String> majors = baseMapper.getTeamBylineAndMajor(new ArrayList<>(), majorList);
-            if (CollUtil.isEmpty(majors)) {
-                return new ArrayList<>();
-            }
-        }
-
         return baseMapper.getTeamBylineAndMajors(lineCodeList,majorList);
     }
 

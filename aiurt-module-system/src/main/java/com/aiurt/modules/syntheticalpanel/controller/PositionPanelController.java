@@ -63,7 +63,7 @@ public class PositionPanelController {
      * @param positionPanel
      * @return
      */
-    @AutoLog(value = "综合看板线路站点信息-编辑", operateType =  3, operateTypeAlias = "编辑", permissionUrl = "/fault/faultKnowledgeBaseList")
+    @AutoLog(value = "综合看板线路站点信息-编辑", operateType =  3, operateTypeAlias = "编辑", permissionUrl = "")
     @ApiOperation(value="综合看板线路站点信息-编辑", notes="综合看板线路站点信息-编辑")
     @RequestMapping(value = "/edit", method = {RequestMethod.PUT,RequestMethod.POST})
     public Result<String> edit(@RequestBody PositionPanel positionPanel) {

@@ -41,4 +41,8 @@ public class ScreenModule {
      * 线路编号
      */
     private List<String> lines;
+    /**
+     * 专业编号
+     */
+    private List<String> majors;
 }

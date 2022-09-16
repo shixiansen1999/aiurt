@@ -80,7 +80,6 @@ public interface ScheduleRecordMapper extends BaseMapper<ScheduleRecord> {
      */
     List<SysUserScheduleDTO> getStaffOnDuty(@Param("page") Page<SysUserScheduleDTO> page, @Param("scheduleRecordDTO") ScheduleRecordDTO scheduleRecordDTO);
 
-    List<String> getTeamBylineAndMajor(@Param("lineCode") List<String> lineCode, @Param("majorList") List<String> majorList);
 
     List<SysUserTeamDTO> getTodayOndutyDetail(@Param("page") Page<SysUserTeamDTO> page,@Param("orgCode") String orgCode, @Param("orgCodes") List<String> orgCodes, @Param("date") Date date);
 
