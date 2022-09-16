@@ -43,8 +43,7 @@
             cs.phone_num,
             cs.warning_status,
             cs.open_status,
-            sd.mobile,
-            sd.concat_way,
+            sd.depart_phone_num,
             sd.depart_name
     FROM
             cs_station cs

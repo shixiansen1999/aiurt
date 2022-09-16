@@ -65,23 +65,15 @@ public class PositionPanel implements Serializable {
 
     /**站点电话号码*/
     @ApiModelProperty(value = "站点电话号码")
-    private String phoneNum;
+    private String stationPhoneNum;
 
     /**机构/部门名称*/
     @ApiModelProperty(value = "机构/部门名称")
     private String departName;
 
-    /**手机号*/
-    @ApiModelProperty(value = "手机号")
-    private String mobile;
-
-    /**联系人id*/
-    @ApiModelProperty(value = "联系人id")
-    private String contactId;
-
-    /**联系人方式*/
-    @ApiModelProperty(value = "联系人方式")
-    private String concatWay;
+    /**机构电话*/
+    @ApiModelProperty(value = "机构电话")
+    private String departPhoneNum;
 
     /**预警信息状态*/
     @ApiModelProperty(value = "预警信息状态（0 开启 ，1 关闭）")
@@ -92,8 +84,5 @@ public class PositionPanel implements Serializable {
     private Integer openStatus;
 
     private List<SysUser> userList;
-
-
-
 
 }
