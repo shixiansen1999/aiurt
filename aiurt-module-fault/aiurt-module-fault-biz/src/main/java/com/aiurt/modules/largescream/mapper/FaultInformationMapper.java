@@ -3,6 +3,8 @@ package com.aiurt.modules.largescream.mapper;
 
 import com.aiurt.modules.fault.dto.FaultDataStatisticsDTO;
 import com.aiurt.modules.fault.dto.FaultLargeInfoDTO;
+import com.aiurt.modules.fault.dto.FaultLargeLineInfoDTO;
+import com.aiurt.modules.fault.dto.FaultSystemTimeDTO;
 import com.aiurt.modules.fault.entity.Fault;
 import org.apache.ibatis.annotations.Param;
 
@@ -28,7 +30,7 @@ public interface FaultInformationMapper {
      * @param lineCode
      * @return
      */
-    List<Fault> queryLargeFaultInformationTodaySolve(@Param("todayStartDate") String todayStartDate,@Param("todayEndDate") String todayEndDate,@Param("lineCode") String lineCode);
+    List<Fault> queryLargeFaultInformationTodaySolve(@Param("todayStartDate") Date todayStartDate,@Param("todayEndDate") Date todayEndDate,@Param("lineCode") String lineCode);
 
     /**
      * 故障信息统计当天新增
@@ -37,7 +39,7 @@ public interface FaultInformationMapper {
      * @param lineCode
      * @return
      */
-    List<Fault> queryLargeFaultInformationTodayAdd(@Param("todayStartDate") String todayStartDate,@Param("todayEndDate") String todayEndDate,@Param("lineCode") String lineCode);
+    List<Fault> queryLargeFaultInformationTodayAdd(@Param("todayStartDate") Date todayStartDate,@Param("todayEndDate") Date todayEndDate,@Param("lineCode") String lineCode);
 
     /**
      * 故障信息统计列表
@@ -56,6 +58,9 @@ public interface FaultInformationMapper {
      * @return
      */
     List<Fault> getLargeLineFaultInfo(@Param("startDate") Date startDate, @Param("endDate") Date endDate);
+
+    List<FaultSystemTimeDTO> getLargeFaultTime(@Param("month") String month, @Param("lineCode") String lineCode);
+
 
 
     /**

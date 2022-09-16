@@ -41,7 +41,6 @@ public class FaultLargeInfoDTO extends DictEntity {
 
     /**站点*/
     @ApiModelProperty(value = "站点",  required = true)
-    @Dict(dictTable = "cs_station", dicText = "station_name", dicCode = "station_code")
     private String stationCode;
 
     @ApiModelProperty(value = "站点",  required = true)

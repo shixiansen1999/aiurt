@@ -5,6 +5,7 @@ import com.aiurt.modules.fault.dto.FaultDataStatisticsDTO;
 import com.aiurt.modules.fault.dto.FaultLargeCountDTO;
 import com.aiurt.modules.fault.dto.FaultLargeInfoDTO;
 import com.aiurt.modules.fault.dto.FaultLargeLineInfoDTO;
+import com.aiurt.modules.fault.dto.*;
 import com.aiurt.modules.largescream.service.FaultInformationService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -17,7 +18,7 @@ import javax.annotation.Resource;
 import java.util.List;
 
 /**
- * 功能描述
+ * 大屏综合看板
  *
  * @author: qkx
  * @date: 2022-09-13 14:37
@@ -96,4 +97,13 @@ public class FaultInformationController {
         return Result.ok(faultAnalysis);
     }
 
+
+    @AutoLog(value = "综合大屏-故障时长趋势图", operateType = 1, operateTypeAlias = "查询", permissionUrl = "")
+    @ApiOperation(value = "综合大屏-故障时长趋势图", notes = "综合大屏-故障时长趋势图")
+    @RequestMapping(value = "/getLargeFaultTime", method = RequestMethod.GET)
+    public Result<List<FaultMonthTimeDTO>> getLargeFaultTime( @ApiParam(name = "lineCode",value = "线路")@RequestParam("lineCode")String lineCode)
+    {
+        List<FaultMonthTimeDTO> largeFaultTime = faultInformationService.getLargeFaultTime(lineCode);
+        return Result.ok(largeFaultTime);
+    }
 }

@@ -6,6 +6,9 @@ import com.aiurt.modules.largescream.constant.FaultLargeConstant;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -14,6 +17,19 @@ import java.util.Map;
  * 大屏巡视模块获取本周、上周、本月、上月的时间工具类
  */
 public class FaultLargeDateUtil {
+    /**
+     * 获取当前月前半年月份
+     * @param i
+     * @return
+     */
+    public static String getLast12Months(int i) {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM");
+        Calendar c = Calendar.getInstance();
+        c.setTime(new Date());
+        c.add(Calendar.MONTH, -i);
+        Date m = c.getTime();
+        return sdf.format(m);
+    }
 
     /**
      * 获取参数日期所在周时间范围，格式如下:yyyy-MM-dd 00:00:00~yyyy-MM-dd 23:59:59

@@ -10,6 +10,7 @@ import com.aiurt.modules.fault.dto.FaultDataStatisticsDTO;
 import com.aiurt.modules.fault.dto.FaultLargeCountDTO;
 import com.aiurt.modules.fault.dto.FaultLargeInfoDTO;
 import com.aiurt.modules.fault.dto.FaultLargeLineInfoDTO;
+import com.aiurt.modules.fault.dto.*;
 import com.aiurt.modules.fault.entity.Fault;
 import com.aiurt.modules.fault.enums.FaultStatusEnum;
 import com.aiurt.modules.largescream.mapper.FaultInformationMapper;
@@ -66,8 +67,8 @@ public class FaultInformationService {
                             result.setUnSolve(count);
                         }
                     }
-                    String todayStartDate = DateTimeutil.getDayBegin();
-                    String todayEndDate = DateTimeutil.getDayEnd();
+                    Date todayStartDate = DateUtil.beginOfDay(new Date());
+                    Date todayEndDate = DateUtil.endOfDay(new Date());
                     //当天已解决数
                     List<Fault> faultInformationTodaySolve = faultInformationMapper.queryLargeFaultInformationTodaySolve(todayStartDate,todayEndDate, lineCode);
                    if(CollUtil.isNotEmpty(faultInformationTodaySolve)){
@@ -154,6 +155,53 @@ public class FaultInformationService {
                 largeLineInfoDTOS.add(faultLargeLineInfoDTO);
             }
        return largeLineInfoDTOS;
+    }
+
+
+    /**
+     * 故障时长趋势图接口
+     * @param lineCode
+     * @return
+     */
+    public List<FaultMonthTimeDTO> getLargeFaultTime(String lineCode){
+        List<FaultMonthTimeDTO> monthList = new ArrayList<>();
+        for (int i = 1; i<=6; i++) {
+            int sum = 0;
+            //创建一个新的系统故障单集合
+            List<FaultSystemTimeDTO> systemlist = new ArrayList<>();
+            //月份故障单
+            FaultMonthTimeDTO faultMonthTimeDTO = new FaultMonthTimeDTO();
+            //获取最近半年月份，上一个开始
+            String month = FaultLargeDateUtil.getLast12Months(i);
+            String substring = month.substring(5,7);
+            String changmonth = substring+"月";
+            faultMonthTimeDTO.setMonth(changmonth);
+            //查询按系统分类好的并计算了故障消耗总时长的记录
+            List<FaultSystemTimeDTO> largeFaultTime = faultInformationMapper.getLargeFaultTime(month, lineCode);
+                for (FaultSystemTimeDTO faultSystemTimeDTO : largeFaultTime) {
+                    if (!"0".equals(faultSystemTimeDTO.getRepairTime()) && faultSystemTimeDTO.getRepairTime()!=null) {
+                        sum += Integer.parseInt(faultSystemTimeDTO.getRepairTime());
+                    }
+                    //将故障处理时间为null的改为0
+                    if(faultSystemTimeDTO.getRepairTime()==null){
+                        faultSystemTimeDTO.setRepairTime("0");
+                    }
+                       //将故障处理时间+H
+                        String h = faultSystemTimeDTO.getRepairTime()+"H";
+                        faultSystemTimeDTO.setRepairTime(h);
+                        //将名字改成系统+小时数
+                      String strm = faultSystemTimeDTO.getSystemName().substring(0,faultSystemTimeDTO.getSystemName().length()-2);   //截掉
+                      String name = strm+" "+faultSystemTimeDTO.getRepairTime();
+                      faultSystemTimeDTO.setSystemName(name);
+                        //将月份内的所有故障处理时间求和
+                        faultMonthTimeDTO.setMonthTime(String.valueOf(sum));
+                        systemlist.add(faultSystemTimeDTO);
+                }
+                faultMonthTimeDTO.setSysTimeList(systemlist);
+            monthList.add(faultMonthTimeDTO);
+        }
+
+        return monthList;
     }
 
     public List<FaultDataStatisticsDTO> getYearFault(FaultDataStatisticsDTO faultDataStatisticsDTO) {

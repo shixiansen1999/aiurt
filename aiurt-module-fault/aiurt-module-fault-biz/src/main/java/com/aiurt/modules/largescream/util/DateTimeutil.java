@@ -26,11 +26,6 @@ public class DateTimeutil {
         return sdf().format(cal.getTime());
     }
 
-    public static void main(String[] args) {
-        System.out.println("今天0点时间：" + getDayBegin());
-        System.out.println("今天24点时间：" + getDayEnd());
-    }
-
     //获取当天的结束时间
     public static String getDayEnd() {
         Calendar cal = new GregorianCalendar();
