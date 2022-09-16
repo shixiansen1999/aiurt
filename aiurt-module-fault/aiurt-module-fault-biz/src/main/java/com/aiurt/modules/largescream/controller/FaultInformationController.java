@@ -1,7 +1,7 @@
 package com.aiurt.modules.largescream.controller;
 
 import com.aiurt.common.aspect.annotation.AutoLog;
-import com.aiurt.modules.fault.dto.FaultIndexDTO;
+import com.aiurt.modules.fault.dto.FaultDataStatisticsDTO;
 import com.aiurt.modules.fault.dto.FaultLargeCountDTO;
 import com.aiurt.modules.fault.dto.FaultLargeInfoDTO;
 import com.aiurt.modules.fault.dto.FaultLargeLineInfoDTO;
@@ -11,11 +11,9 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import lombok.extern.slf4j.Slf4j;
 import org.jeecg.common.api.vo.Result;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
-import java.util.Date;
 import java.util.List;
 
 /**
@@ -58,4 +56,44 @@ public class FaultInformationController {
         List<FaultLargeLineInfoDTO> largeLineFaultInfo = faultInformationService.getLargeLineFaultInfo(boardTimeType);
         return Result.ok(largeLineFaultInfo);
     }
+
+    /**
+     * 年度故障维修情况统计
+     * @author: lkj
+     * @return List<FaultDataStatisticsDTO>
+     */
+    @AutoLog(value = "综合大屏-年度故障维修情况统计", operateType = 1, operateTypeAlias = "查询", permissionUrl = "")
+    @ApiOperation(value = "综合大屏-年度故障维修情况统计", notes = "综合大屏-年度故障维修情况统计")
+    @RequestMapping(value = "/getYearFault", method = RequestMethod.GET)
+    public Result<List<FaultDataStatisticsDTO>> getYearFault(FaultDataStatisticsDTO faultDataStatisticsDTO) {
+        List<FaultDataStatisticsDTO> yearFault = faultInformationService.getYearFault(faultDataStatisticsDTO);
+        return Result.ok(yearFault);
+    }
+
+    /**
+     * 各子系统年度故障维修情况统计
+     * @author: lkj
+     * @return List<FaultDataStatisticsDTO>
+     */
+    @AutoLog(value = "综合大屏-各子系统年度故障维修情况统计", operateType = 1, operateTypeAlias = "查询", permissionUrl = "")
+    @ApiOperation(value = "综合大屏-各子系统年度故障维修情况统计", notes = "综合大屏-各子系统年度故障维修情况统计")
+    @RequestMapping(value = "/getSystemYearFault", method = RequestMethod.GET)
+    public Result<List<FaultDataStatisticsDTO>> getSystemYearFault(FaultDataStatisticsDTO faultDataStatisticsDTO) {
+        List<FaultDataStatisticsDTO> systemYearFault = faultInformationService.getSystemYearFault(faultDataStatisticsDTO);
+        return Result.ok(systemYearFault);
+    }
+
+    /**
+     * 故障分析饼状图数据
+     * @author: lkj
+     * @return FaultDataStatisticsDTO
+     */
+    @AutoLog(value = "综合大屏-故障分析饼状图数据", operateType = 1, operateTypeAlias = "查询", permissionUrl = "")
+    @ApiOperation(value = "综合大屏-故障分析饼状图数据", notes = "综合大屏-故障分析饼状图数据")
+    @RequestMapping(value = "/getFaultAnalysis", method = RequestMethod.GET)
+    public Result<FaultDataStatisticsDTO> getFaultAnalysis(FaultDataStatisticsDTO faultDataStatisticsDTO) {
+        FaultDataStatisticsDTO faultAnalysis = faultInformationService.getFaultAnalysis(faultDataStatisticsDTO);
+        return Result.ok(faultAnalysis);
+    }
+
 }

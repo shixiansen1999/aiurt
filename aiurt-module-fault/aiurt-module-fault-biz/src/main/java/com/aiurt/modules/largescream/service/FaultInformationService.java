@@ -1,8 +1,12 @@
 package com.aiurt.modules.largescream.service;
 
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.convert.Convert;
 import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.util.StrUtil;
+import com.aiurt.modules.fault.constants.FaultConstant;
 import com.aiurt.modules.fault.constants.FaultDictCodeConstant;
+import com.aiurt.modules.fault.dto.FaultDataStatisticsDTO;
 import com.aiurt.modules.fault.dto.FaultLargeCountDTO;
 import com.aiurt.modules.fault.dto.FaultLargeInfoDTO;
 import com.aiurt.modules.fault.dto.FaultLargeLineInfoDTO;
@@ -152,4 +156,69 @@ public class FaultInformationService {
        return largeLineInfoDTOS;
     }
 
+    public List<FaultDataStatisticsDTO> getYearFault(FaultDataStatisticsDTO faultDataStatisticsDTO) {
+        int month = 12;
+        List<FaultDataStatisticsDTO> dtoList = new ArrayList<>();
+        for (int i = 0; i < month ; i++) {
+            FaultDataStatisticsDTO dto = new FaultDataStatisticsDTO();
+            Map<String, String> map = FaultLargeDateUtil.getMonthFirstAndLast(i);
+            String firstDay = map.get("firstDay");
+            String lastDay = map.get("lastDay");
+            faultDataStatisticsDTO.setFirstDay(firstDay);
+            faultDataStatisticsDTO.setLastDay(lastDay);
+            Integer yearFault = faultInformationMapper.getYearFault(faultDataStatisticsDTO);
+            dto.setId(String.valueOf(i));
+            dto.setMonth(String.valueOf(i+1));
+            dto.setFaultSum(yearFault);
+            dtoList.add(dto);
+        }
+        return dtoList;
+    }
+
+    public List<FaultDataStatisticsDTO> getSystemYearFault(FaultDataStatisticsDTO faultDataStatisticsDTO) {
+        List<FaultDataStatisticsDTO> dtoList = new ArrayList<>();
+        String firstDay = null;
+        String lastDay = null;
+        if (StrUtil.isNotBlank(faultDataStatisticsDTO.getMonth())) {
+            String month = faultDataStatisticsDTO.getMonth();
+            Integer i = Convert.toInt(month);
+            Map<String, String> map = FaultLargeDateUtil.getMonthFirstAndLast(i+1);
+             firstDay = map.get("firstDay");
+             lastDay = map.get("lastDay");
+            faultDataStatisticsDTO.setFirstDay(firstDay);
+            faultDataStatisticsDTO.setLastDay(lastDay);
+        }
+
+        List<String> allSystemCode = faultInformationMapper.getAllSystemCode();
+        for (int i = 0; i < allSystemCode.size(); i++) {
+            faultDataStatisticsDTO.setSubSystemCode(allSystemCode.get(i));
+            Integer yearFault = faultInformationMapper.getYearFault(faultDataStatisticsDTO);
+            FaultDataStatisticsDTO dto = new FaultDataStatisticsDTO();
+            dto.setId(String.valueOf(i));
+            dto.setSubSystemCode(allSystemCode.get(i));
+            dto.setFaultSum(yearFault);
+            dtoList.add(dto);
+        }
+        return dtoList;
+    }
+
+    public FaultDataStatisticsDTO getFaultAnalysis(FaultDataStatisticsDTO faultDataStatisticsDTO) {
+        //总数
+        Integer yearFault = faultInformationMapper.getYearFault(faultDataStatisticsDTO);
+        //自检数量
+        faultDataStatisticsDTO.setFaultModeCode(FaultConstant.FAULT_MODE_CODE_0);
+        Integer selfCheckFaultNum = faultInformationMapper.getYearFault(faultDataStatisticsDTO);
+        faultDataStatisticsDTO.setSelfCheckFaultNum(selfCheckFaultNum);
+        //报修数量
+        faultDataStatisticsDTO.setRepairFaultNum(yearFault-selfCheckFaultNum);
+        //已完成数量
+        faultDataStatisticsDTO.setFaultModeCode(null);
+        faultDataStatisticsDTO.setStatus(FaultStatusEnum.Close.getStatus());
+        Integer completedFaultNum = faultInformationMapper.getYearFault(faultDataStatisticsDTO);
+        faultDataStatisticsDTO.setCompletedFaultNum(completedFaultNum);
+        //未完成数量
+        faultDataStatisticsDTO.setUndoneFaultNum(yearFault - completedFaultNum);
+
+        return faultDataStatisticsDTO;
+    }
 }

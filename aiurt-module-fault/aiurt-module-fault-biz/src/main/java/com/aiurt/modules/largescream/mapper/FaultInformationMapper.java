@@ -1,9 +1,8 @@
 package com.aiurt.modules.largescream.mapper;
 
 
-import com.aiurt.modules.fault.dto.FaultLargeCountDTO;
+import com.aiurt.modules.fault.dto.FaultDataStatisticsDTO;
 import com.aiurt.modules.fault.dto.FaultLargeInfoDTO;
-import com.aiurt.modules.fault.dto.FaultLargeLineInfoDTO;
 import com.aiurt.modules.fault.entity.Fault;
 import org.apache.ibatis.annotations.Param;
 
@@ -57,4 +56,16 @@ public interface FaultInformationMapper {
      * @return
      */
     List<Fault> getLargeLineFaultInfo(@Param("startDate") Date startDate, @Param("endDate") Date endDate);
+
+
+    /**
+     * 每月故障维修情况统计
+     * @param condition
+     */
+    Integer getYearFault(@Param("condition")FaultDataStatisticsDTO condition);
+
+    /**
+     * 所有子系统
+     */
+    List<String> getAllSystemCode();
 }
