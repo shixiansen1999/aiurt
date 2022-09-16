@@ -67,6 +67,10 @@ public class PositionPanel implements Serializable {
     @ApiModelProperty(value = "站点电话号码")
     private String stationPhoneNum;
 
+    /**机构/部门编码*/
+    @ApiModelProperty(value = "机构/部门编码")
+    private String orgCode;
+
     /**机构/部门名称*/
     @ApiModelProperty(value = "机构/部门名称")
     private String departName;
