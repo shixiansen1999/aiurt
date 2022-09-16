@@ -17,12 +17,6 @@
         left join cs_station cs on cs.station_code = rpsr.station_code
         <where>
             rp.start_time is not null
-            <if test="type!=null and type==2">
-                and rp.status = 8
-            </if>
-            <if test="type!=null and type==3">
-                and rp.status &lt;&gt; 8
-            </if>
             <if test="taskDetailsReq.startTime!=null and taskDetailsReq.endTime!=null">
                 and date_format(rp.start_time ,'%Y-%m-%d') &gt;=  date_format(#{taskDetailsReq.startTime},'%Y-%m-%d')
                 and date_format(rp.start_time ,'%Y-%m-%d') &lt;= date_format(#{taskDetailsReq.endTime},'%Y-%m-%d')
@@ -45,6 +39,12 @@
         </where>
         GROUP BY
         rpsr.station_code
+        <if test="type!=null and type==2">
+            HAVING MAX( rp.`status` ) = 8
+        </if>
+        <if test="type!=null and type==3">
+            HAVING MIN( rp.`status` ) &lt;&gt;  8
+        </if>
         ) temptable
         <where>
             <if test="taskDetailsReq.status!=null and taskDetailsReq.status==1">
