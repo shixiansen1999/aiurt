@@ -1,9 +1,7 @@
 package com.aiurt.modules.system.model;
 
 import com.aiurt.modules.system.entity.SysDepart;
-import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
-import org.jeecgframework.poi.excel.annotation.Excel;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -90,6 +88,8 @@ public class SysDepartTreeModel implements Serializable{
     private Integer teamType;
 
     private String departFullName;
+
+    private String departPhoneNum;
     //update-begin---author:wangshuai ---date:20200308  for：[JTC-119]在部门管理菜单下设置部门负责人，新增字段部门负责人ids
     /**部门负责人ids*/
     private String directorUserIds;
@@ -134,6 +134,7 @@ public class SysDepartTreeModel implements Serializable{
         this.technicalId =sysDepart.getTechnicalId();
         this.teamType =sysDepart.getTeamType();
         this.departFullName = sysDepart.getDepartFullName();
+        this.departPhoneNum = sysDepart.getDepartPhoneNum();
     }
 
     public boolean getIsLeaf() {
@@ -364,6 +365,8 @@ public class SysDepartTreeModel implements Serializable{
     public void setTeamType(){
         this.teamType =teamType;
     }
+    public String getDepartPhoneNum(){return departPhoneNum;}
+    public void  setDepartPhoneNum(){this.departPhoneNum = departPhoneNum;}
     public void setCreateBy(String createBy) {
         this.createBy = createBy;
     }
@@ -442,7 +445,8 @@ public class SysDepartTreeModel implements Serializable{
                 Objects.equals(managerId,model.managerId)&&
                 Objects.equals(technicalId,model.technicalId)&&
                 Objects.equals(teamType,model.teamType)&&
-                Objects.equals(departFullName,model.departFullName);
+                Objects.equals(departFullName,model.departFullName)&&
+                Objects.equals(departPhoneNum,model.departPhoneNum);
     }
 
     /**
@@ -454,7 +458,7 @@ public class SysDepartTreeModel implements Serializable{
         return Objects.hash(id, parentId, departName, departNameEn, departNameAbbr,
         		departOrder, description, orgCategory, orgType, orgCode, mobile, fax, address,
         		memo, status, delFlag, qywxIdentifier, createBy, createTime, updateBy, updateTime,
-        		children,directorUserIds,concatWay,managerId,technicalId,contactId,teamType,departFullName);
+        		children,directorUserIds,concatWay,managerId,technicalId,contactId,teamType,departFullName,departPhoneNum);
     }
 
 }
