@@ -598,4 +598,12 @@ public interface ISysBaseAPI extends CommonAPI {
      */
     @GetMapping(value = "/sys/api/getStationCodeByLineCode")
     List<String> getStationCodeByLineCode(String lineCode);
+
+    /**
+     * 通过线路和专业过滤出班组
+     * @param lineCode
+     * @return
+     */
+    @GetMapping(value = "/sys/api/getTeamBylineAndMajor")
+    List<String> getTeamBylineAndMajor(String lineCode);
 }

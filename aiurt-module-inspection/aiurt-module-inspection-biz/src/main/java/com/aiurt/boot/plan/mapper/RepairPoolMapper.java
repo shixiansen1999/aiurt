@@ -1,6 +1,7 @@
 package com.aiurt.boot.plan.mapper;
 
 import com.aiurt.boot.index.dto.InspectionDTO;
+import com.aiurt.boot.index.dto.PlanIndexDTO;
 import com.aiurt.boot.manager.dto.MajorDTO;
 import com.aiurt.boot.plan.entity.RepairPool;
 import com.aiurt.boot.plan.entity.RepairPoolCode;
@@ -70,7 +71,7 @@ public interface RepairPoolMapper extends BaseMapper<RepairPool> {
      * @param endDate
      * @return
      */
-    List<InspectionDTO> getInspectionData(@Param("page") Page<InspectionDTO> page,@Param("codeList") Set<String> codeList,@Param("item") Integer item,@Param("beginDate") Date beginDate,@Param("endDate") Date endDate);
+    List<InspectionDTO> getInspectionData(@Param("page") Page<InspectionDTO> page,@Param("codeList") List<String> codeList,@Param("item") Integer item,@Param("beginDate") Date beginDate,@Param("endDate") Date endDate);
 
     /**
      * 今日检修
@@ -79,5 +80,14 @@ public interface RepairPoolMapper extends BaseMapper<RepairPool> {
      * @param codeList
      * @return
      */
-    List<InspectionDTO> getInspectionTodayData(@Param("page") Page<InspectionDTO> page, @Param("date") Date date, @Param("codeList") Set<String> codeList);
+    List<InspectionDTO> getInspectionTodayData(@Param("page") Page<InspectionDTO> page, @Param("date") Date date, @Param("codeList") List<String> codeList);
+
+    /**
+     * 获取完成数量和未完成数量
+     * @param orgCode
+     * @param beginDate
+     * @param endDate
+     * @return
+     */
+    PlanIndexDTO getNumByTimeAndOrgCode(@Param("orgCode") String orgCode,@Param("beginDate") Date beginDate,@Param("endDate") Date endDate);
 }

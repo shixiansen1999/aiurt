@@ -10,13 +10,16 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import lombok.extern.slf4j.Slf4j;
 import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.system.vo.SysDepartModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * @Description: work_area
@@ -24,7 +27,7 @@ import java.util.Arrays;
  * @Date:   2022-08-11
  * @Version: V1.0
  */
-@Api(tags="work_area")
+@Api(tags="工区")
 @RestController
 @RequestMapping("/workarea/workArea")
 @Slf4j
@@ -126,28 +129,17 @@ public class WorkAreaController extends BaseController<WorkArea, IWorkAreaServic
 		return Result.OK(pageList);
 	}
 
-//
-//    /**
-//    * 导出excel
-//    *
-//    * @param request
-//    * @param workArea
-//    */
-//    @RequestMapping(value = "/exportXls")
-//    public ModelAndView exportXls(HttpServletRequest request, WorkArea workArea) {
-//        return super.exportXls(request, workArea, WorkArea.class, "work_area");
-//    }
-//
-//    /**
-//      * 通过excel导入数据
-//    *
-//    * @param request
-//    * @param response
-//    * @return
-//    */
-//    @RequestMapping(value = "/importExcel", method = RequestMethod.POST)
-//    public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) {
-//        return super.importExcel(request, response, WorkArea.class);
-//    }
-
+	/**
+	 * 根据线路获取班组(根据登录用户专业过滤)
+	 *
+	 * @param lineCode 线路code
+	 * @return
+	 */
+	@AutoLog(value = "根据线路获取班组(根据登录用户专业过滤)", operateType = 1, operateTypeAlias = "查询", permissionUrl = "")
+	@ApiOperation(value = "根据线路获取班组(根据登录用户专业过滤)", notes = "根据线路获取班组(根据登录用户专业过滤)")
+	@RequestMapping(value = "/getTeamBylineAndMajors", method = RequestMethod.GET)
+	public Result<List<SysDepartModel>> getTeamBylineAndMajors(@ApiParam(name = "lineCode", value = "线路code,多个用,隔开") @RequestParam(value = "lineCode", required = false) String lineCode) {
+		List<SysDepartModel> result = workAreaService.getTeamBylineAndMajors(lineCode);
+		return Result.OK(result);
+	}
 }

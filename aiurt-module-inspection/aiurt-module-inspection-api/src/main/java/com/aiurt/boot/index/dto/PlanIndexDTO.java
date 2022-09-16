@@ -18,6 +18,11 @@ import java.util.Date;
 public class PlanIndexDTO implements Serializable {
     private static final long serialVersionUID = 1L;
     /**
+     * 班组名称
+     */
+    @ApiModelProperty(value = "班组名称")
+    private String  teamName;
+    /**
      * 检修总数
      */
     @ApiModelProperty(value = "检修总数")

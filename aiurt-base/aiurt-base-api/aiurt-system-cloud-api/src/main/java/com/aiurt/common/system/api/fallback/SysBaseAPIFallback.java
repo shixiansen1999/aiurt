@@ -369,6 +369,17 @@ public class SysBaseAPIFallback implements ISysBaseAPI {
         return null;
     }
 
+    /**
+     * 通过线路和专业过滤出班组
+     *
+     * @param lineCode
+     * @return
+     */
+    @Override
+    public List<String> getTeamBylineAndMajor(String lineCode) {
+        return null;
+    }
+
     @Override
     public void sendEmailMsg(String email,String title,String content) {
 

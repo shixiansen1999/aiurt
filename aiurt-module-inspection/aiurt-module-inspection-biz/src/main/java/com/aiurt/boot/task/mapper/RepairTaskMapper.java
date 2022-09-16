@@ -157,4 +157,18 @@ public interface RepairTaskMapper extends BaseMapper<RepairTask> {
      * @return
      */
     List<RepairPoolDetailsDTO> inspectionNumByDay(@Param("dateTime") DateTime dateTime);
+
+    /**
+     * 根据检修任务单号查询异常项目
+     * @param code
+     * @return
+     */
+    Integer getTaskExceptionItem(String code);
+
+    /**
+     * 根据检修任务单号的检修时间，不用审核和验收取提交时间，审核不验收取审核时间，审核且验收取验收时间
+     * @param code
+     * @return
+     */
+    List<Date> getTaskInspectionTime(String code);
 }

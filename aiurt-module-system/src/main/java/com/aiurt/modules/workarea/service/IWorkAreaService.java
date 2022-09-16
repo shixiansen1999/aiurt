@@ -6,6 +6,7 @@ import com.aiurt.modules.workarea.entity.WorkArea;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 import org.jeecg.common.system.vo.SiteModel;
+import org.jeecg.common.system.vo.SysDepartModel;
 
 import java.util.List;
 
@@ -61,4 +62,11 @@ public interface IWorkAreaService extends IService<WorkArea> {
      * @return
      */
     List<SiteModel> getSiteByOrgCode(String orgCode);
+    /**
+     * 根据线路获取班组(根据登录用户专业过滤)
+     *
+     * @param lineCode 线路code
+     * @return
+     */
+    List<SysDepartModel> getTeamBylineAndMajors(String lineCode);
 }
