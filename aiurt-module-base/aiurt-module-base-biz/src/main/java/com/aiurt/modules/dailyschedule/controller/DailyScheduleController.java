@@ -1,9 +1,14 @@
 package com.aiurt.modules.dailyschedule.controller;
 
+import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.aspect.annotation.AutoLog;
+import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.system.base.controller.BaseController;
 import com.aiurt.modules.dailyschedule.entity.DailySchedule;
 import com.aiurt.modules.dailyschedule.service.IDailyScheduleService;
+import com.alibaba.fastjson.JSONObject;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -12,13 +17,16 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import lombok.extern.slf4j.Slf4j;
 import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.query.QueryGenerator;
+import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -35,6 +43,9 @@ import java.util.List;
 public class DailyScheduleController extends BaseController<DailySchedule, IDailyScheduleService> {
 	@Autowired
 	private IDailyScheduleService dailyScheduleService;
+
+	@Autowired
+	private ISysBaseAPI sysBaseAPI;
 
 	/**
 	 * 分页列表查询
@@ -77,6 +88,23 @@ public class DailyScheduleController extends BaseController<DailySchedule, IDail
 	@ApiOperation(value="日程安排-添加", notes="日程安排-添加")
 	@PostMapping(value = "/add")
 	public Result<String> add(@RequestBody DailySchedule dailySchedule) {
+		String notifyUserId = dailySchedule.getNotifyUserId();
+		List<String> userNameList = StrUtil.split(notifyUserId, ',');
+		List<String> realNameList = new ArrayList<>();
+		userNameList.stream().forEach(userName->{
+			LambdaQueryWrapper<DailySchedule> queryWrapper = new LambdaQueryWrapper<>();
+			queryWrapper.eq(DailySchedule::getAddTime, dailySchedule.getAddTime()).apply("(FIND_IN_SET({0},notify_user_id)>0)", userName);
+			long count = dailyScheduleService.count(queryWrapper);
+			if (count>3) {
+				LoginUser userByName = sysBaseAPI.getUserByName(userName);
+				realNameList.add(userByName.getRealname());
+			}
+		});
+
+		if (CollectionUtil.isNotEmpty(realNameList)) {
+			throw new AiurtBootException(String.format("%s日程已经超过三次，请勿添加！", JSONObject.toJSONString(realNameList)));
+		}
+
 		dailyScheduleService.save(dailySchedule);
 		return Result.OK("添加成功！");
 	}
@@ -91,7 +119,24 @@ public class DailyScheduleController extends BaseController<DailySchedule, IDail
 	@ApiOperation(value="日程安排-编辑", notes="日程安排-编辑")
 	@RequestMapping(value = "/edit", method = {RequestMethod.PUT,RequestMethod.POST})
 	public Result<String> edit(@RequestBody DailySchedule dailySchedule) {
+		List<String> userNameList = StrUtil.split(dailySchedule.getNotifyUserId(), ',');
+		List<String> realNameList = new ArrayList<>();
+		userNameList.stream().forEach(userName->{
+			LambdaQueryWrapper<DailySchedule> queryWrapper = new LambdaQueryWrapper<>();
+			queryWrapper.eq(DailySchedule::getAddTime, dailySchedule.getAddTime()).ne(DailySchedule::getId, dailySchedule.getId())
+					.apply("(FIND_IN_SET({0},notify_user_id)>0)", userName);
+			long count = dailyScheduleService.count(queryWrapper);
+			if (count>3) {
+				LoginUser userByName = sysBaseAPI.getUserByName(userName);
+				realNameList.add(userByName.getRealname());
+			}
+		});
+
+		if (CollectionUtil.isNotEmpty(realNameList)) {
+			throw new AiurtBootException(String.format("%s日程已经超过三次，请勿添加！", JSONObject.toJSONString(realNameList)));
+		}
 		dailyScheduleService.updateById(dailySchedule);
+
 		return Result.OK("编辑成功!");
 	}
 
