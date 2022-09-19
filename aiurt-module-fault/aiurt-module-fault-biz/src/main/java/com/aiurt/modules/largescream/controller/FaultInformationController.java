@@ -32,12 +32,22 @@ public class FaultInformationController {
     private FaultInformationService faultInformationService;
 
     @AutoLog(value = "综合大屏-故障信息统计")
-    @ApiOperation(value="故障信息统计", notes="故障信息统计")
+    @ApiOperation(value="综合大屏-故障信息统计", notes="综合大屏-故障信息统计")
     @GetMapping(value = "/queryLargeFaultInformation")
     public Result<FaultLargeCountDTO> queryFaultCount(@ApiParam(name = "boardTimeType", value = "1:本周 2:上周 3:本月 4:上月") @RequestParam("boardTimeType")Integer boardTimeType,
                                                  @ApiParam(name = "lineCode",value = "线路")@RequestParam("lineCode")String lineCode){
         FaultLargeCountDTO faultLargeCountDTO = faultInformationService.queryLargeFaultInformation(boardTimeType,lineCode);
         return Result.ok(faultLargeCountDTO);
+    }
+
+    @AutoLog(value = "综合大屏-故障信息统计详情", operateType = 1, operateTypeAlias = "查询", permissionUrl = "")
+    @ApiOperation(value = "综合大屏-故障信息统计详情", notes = "综合大屏-故障信息统计详情")
+    @RequestMapping(value = "/getLargeFaultDatails", method = RequestMethod.GET)
+    public Result<List<FaultLargeInfoDTO>> getLargeFaultDatails(@ApiParam(name = "boardTimeType", value = "1:本周 2:上周 3:本月 4:上月") @RequestParam("boardTimeType")Integer boardTimeType,
+                                                                @ApiParam(name = "faultModule", value = "故障信息统计详情模块：1:总故障数 2:未解决故障数 3:当日新增 4:当日已解决") @RequestParam("faultModule")Integer faultModule,
+                                                             @ApiParam(name = "lineCode",value = "线路")@RequestParam("lineCode")String lineCode){
+        List<FaultLargeInfoDTO> largeFaultDatails = faultInformationService.getLargeFaultDatails(boardTimeType, faultModule, lineCode);
+        return Result.ok(largeFaultDatails);
     }
 
     @AutoLog(value = "综合大屏-故障信息统计列表", operateType = 1, operateTypeAlias = "查询", permissionUrl = "")
@@ -114,6 +124,16 @@ public class FaultInformationController {
     public Result<FaultDataAnalysisCountDTO> queryLargeFaultDataCount(@ApiParam(name = "lineCode",value = "线路")@RequestParam("lineCode")String lineCode){
         FaultDataAnalysisCountDTO faultDataAnalysisCountDTO = faultInformationService.queryLargeFaultDataCount(lineCode);
         return Result.ok(faultDataAnalysisCountDTO);
+    }
+
+    @AutoLog(value = "大屏-故障数据分析-故障数据统计详情", operateType = 1, operateTypeAlias = "查询", permissionUrl = "")
+    @ApiOperation(value = "大屏-故障数据分析-故障数据统计详情", notes = "大屏-故障数据分析-故障数据统计详情")
+    @RequestMapping(value = "/getLargeFaultDataDatails", method = RequestMethod.GET)
+    public Result<List<FaultLargeInfoDTO>> getLargeFaultDataDatails(
+                                                                @ApiParam(name = "faultModule", value = "故障数据统计详情模块：1:故障总数 2:未修复故障数 3:本周增加 4:本周修复 5:今日增加 6:今日修复") @RequestParam("faultModule")Integer faultModule,
+                                                                @ApiParam(name = "lineCode",value = "线路")@RequestParam("lineCode")String lineCode){
+        List<FaultLargeInfoDTO> largeFaultDataDatails = faultInformationService.getLargeFaultDataDatails(faultModule, lineCode);
+        return Result.ok(largeFaultDataDatails);
     }
 
     @AutoLog(value = "大屏-故障数据分析-故障数据统计列表", operateType = 1, operateTypeAlias = "查询", permissionUrl = "")

@@ -14,8 +14,10 @@ import com.aiurt.modules.fault.dto.*;
 import com.aiurt.modules.fault.entity.Fault;
 import com.aiurt.modules.fault.enums.FaultStatusEnum;
 import com.aiurt.modules.largescream.mapper.FaultInformationMapper;
+import com.aiurt.modules.largescream.model.FaultScreenModule;
 import com.aiurt.modules.largescream.util.DateTimeutil;
 import com.aiurt.modules.largescream.util.FaultLargeDateUtil;
+import com.aiurt.modules.sysFile.constant.PatrolConstant;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.DictModel;
 import org.springframework.stereotype.Service;
@@ -82,9 +84,64 @@ public class FaultInformationService {
       return result;
     }
 
-
     /**
      * 综合大屏-故障信息统计详情
+     * @param boardTimeType
+     * @param lineCode
+     * @return
+     */
+    public List<FaultLargeInfoDTO> getLargeFaultDatails(Integer boardTimeType,Integer faultModule, String lineCode){
+        FaultScreenModule faultScreenModule = new FaultScreenModule();
+        String dateTime = FaultLargeDateUtil.getDateTime(boardTimeType);
+        String[] split = dateTime.split("~");
+        Date startDate = DateUtil.parse(split[0]);
+        Date endDate = DateUtil.parse(split[1]);
+        switch (faultModule) {
+            // 总故障数详情
+            case 1:
+                faultScreenModule.setStartDate(startDate);
+                faultScreenModule.setEndDate(endDate);
+                faultScreenModule.setLineCode(lineCode);
+                break;
+            // 未解决故障
+            case 2:
+                faultScreenModule.setStartDate(startDate);
+                faultScreenModule.setEndDate(endDate);
+                faultScreenModule.setUnSo(1);
+                faultScreenModule.setLineCode(lineCode);
+                break;
+            // 当日新增
+            case 3:
+                faultScreenModule.setStartDate(null);
+                faultScreenModule.setEndDate(null);
+                faultScreenModule.setTodayStartDate(DateUtil.beginOfDay(new Date()));
+                faultScreenModule.setTodayEndDate(DateUtil.endOfDay(new Date()));
+                faultScreenModule.setTodayAdd(1);
+                faultScreenModule.setLineCode(lineCode);
+                break;
+            // 当日已解决
+            case 4:
+                faultScreenModule.setStartDate(null);
+                faultScreenModule.setEndDate(null);
+                faultScreenModule.setTodayStartDate(DateUtil.beginOfDay(new Date()));
+                faultScreenModule.setTodayStartDate(DateUtil.endOfDay(new Date()));
+                faultScreenModule.setTodaySolve(1);
+                faultScreenModule.setLineCode(lineCode);
+                break;
+        }
+        List<FaultLargeInfoDTO> largeFaultInfo = faultInformationMapper.getLargeFaultDatails(faultScreenModule);
+        largeFaultInfo.stream().forEach(l -> {
+            // 字典翻译
+            String statusName = sysBaseAPI.getDictItems(FaultDictCodeConstant.FAULT_STATUS).stream()
+                    .filter(item -> item.getValue().equals(String.valueOf(l.getStatus())))
+                    .map(DictModel::getText).collect(Collectors.joining());
+            l.setStatusName(statusName);
+        });
+        return  largeFaultInfo;
+    }
+
+    /**
+     * 综合大屏-故障信息统计列表
      * @param boardTimeType
      * @param lineCode
      * @return
@@ -322,6 +379,71 @@ public class FaultInformationService {
             result.setTodayAdd(faults.size());
         }
         return result;
+    }
+
+    /**
+     * 大屏-故障数据分析-故障数据统计详情
+     * @param lineCode
+     * @return
+     */
+    public List<FaultLargeInfoDTO> getLargeFaultDataDatails(Integer faultModule, String lineCode){
+        FaultScreenModule faultScreenModule = new FaultScreenModule();
+        String dateTime = FaultLargeDateUtil.getDateTime(1);
+        String[] split = dateTime.split("~");
+        Date startDate = DateUtil.parse(split[0]);
+        Date endDate = DateUtil.parse(split[1]);
+        switch (faultModule) {
+            // 故障总数
+            case 1:
+                faultScreenModule.setLineCode(lineCode);
+                break;
+            // 未解决故障
+            case 2:
+                faultScreenModule.setUnSo(1);
+                faultScreenModule.setLineCode(lineCode);
+                break;
+            // 本周新增
+            case 3:
+                faultScreenModule.setStartDate(startDate);
+                faultScreenModule.setEndDate(endDate);
+                faultScreenModule.setWeekAdd(1);
+                faultScreenModule.setLineCode(lineCode);
+                break;
+            // 本周修复
+            case 4:
+                faultScreenModule.setStartDate(startDate);
+                faultScreenModule.setEndDate(startDate);
+                faultScreenModule.setWeekSolve(1);
+                faultScreenModule.setLineCode(lineCode);
+                break;
+            // 当日新增
+            case 5:
+                faultScreenModule.setStartDate(null);
+                faultScreenModule.setEndDate(null);
+                faultScreenModule.setTodayStartDate(DateUtil.beginOfDay(new Date()));
+                faultScreenModule.setTodayEndDate(DateUtil.endOfDay(new Date()));
+                faultScreenModule.setTodayAdd(1);
+                faultScreenModule.setLineCode(lineCode);
+                break;
+            // 当日已解决
+            case 6:
+                faultScreenModule.setStartDate(null);
+                faultScreenModule.setEndDate(null);
+                faultScreenModule.setTodayStartDate(DateUtil.beginOfDay(new Date()));
+                faultScreenModule.setTodayStartDate(DateUtil.endOfDay(new Date()));
+                faultScreenModule.setTodaySolve(1);
+                faultScreenModule.setLineCode(lineCode);
+                break;
+        }
+        List<FaultLargeInfoDTO> largeFaultDataInfo = faultInformationMapper.getLargeFaultDataDatails(faultScreenModule);
+        largeFaultDataInfo.stream().forEach(l -> {
+            // 字典翻译
+            String statusName = sysBaseAPI.getDictItems(FaultDictCodeConstant.FAULT_STATUS).stream()
+                    .filter(item -> item.getValue().equals(String.valueOf(l.getStatus())))
+                    .map(DictModel::getText).collect(Collectors.joining());
+            l.setStatusName(statusName);
+        });
+        return  largeFaultDataInfo;
     }
 
 

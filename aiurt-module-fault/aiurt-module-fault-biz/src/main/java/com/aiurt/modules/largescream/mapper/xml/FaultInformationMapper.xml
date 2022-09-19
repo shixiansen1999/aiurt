@@ -13,6 +13,19 @@
         </where>
     </select>
 
+    <select id="queryLargeFaultInformationUnSo" resultType="com.aiurt.modules.fault.entity.Fault">
+        select * from fault
+        <where>
+            status != 12
+            <if test="startDate!=null and endDate!=null">
+                and approval_pass_time  &gt;= #{startDate}  and approval_pass_time &lt;= #{endDate}
+            </if>
+            <if test="lineCode != null">
+                and line_code  = #{lineCode}
+            </if>
+        </where>
+    </select>
+
     <select id="queryLargeFaultInformationTodaySolve" resultType="com.aiurt.modules.fault.entity.Fault">
         select * from fault
         <where>
@@ -59,6 +72,68 @@
             </if>
             <if test="lineCode != null">
                 and line_code  = #{lineCode}
+            </if>
+        </where>
+    </select>
+
+    <select id="getLargeFaultDatails" resultType="com.aiurt.modules.fault.dto.FaultLargeInfoDTO">
+        select * from fault f
+        left join cs_subsystem cs on cs.system_code = f.sub_system_code
+        left join  cs_line cl on cl.line_code = f.line_code
+        left join cs_station ct on ct.station_code = f.station_code
+        left join sys_user s on s.username = f.appoint_user_name
+        <where>
+            <if test="condition.startDate!=null and condition.endDate!=null">
+                and f.approval_pass_time  &gt;= #{condition.startDate}  and f.approval_pass_time &lt;= #{condition.endDate}
+            </if>
+            <if test="condition.lineCode != null">
+                and f.line_code  = #{condition.lineCode}
+            </if>
+            <if test="condition.unSo !=null and condition.unSo !=''">
+                and f.status != 12
+            </if>
+            <if test="condition.todayAdd != null and condition.todayAdd !=''">
+                and f.happen_time  &gt;= #{condition.todayStartDate}  and f.happen_time &lt;= #{condition.todayEndDate}
+            </if>
+            <if test="condition.todaySolve != null and condition.todaySolve !=''">
+                and f.status = 12
+            </if>
+            <if test=" condition.todaySolve != null and condition.todaySolve !=''">
+                and f.approval_pass_time  &gt;= #{condition.todayStartDate}  and f.approval_pass_time &lt;= #{condition.todayEndDate}
+            </if>
+        </where>
+    </select>
+
+    <select id="getLargeFaultDataDatails" resultType="com.aiurt.modules.fault.dto.FaultLargeInfoDTO">
+        select * from fault f
+        left join cs_subsystem cs on cs.system_code = f.sub_system_code
+        left join  cs_line cl on cl.line_code = f.line_code
+        left join cs_station ct on ct.station_code = f.station_code
+        left join sys_user s on s.username = f.appoint_user_name
+        <where>
+            <if test="condition.lineCode != null">
+                and f.line_code  = #{condition.lineCode}
+            </if>
+            <if test="condition.unSo !=null and condition.unSo !=''">
+                and f.status != 12
+            </if>
+            <if test="condition.weekAdd != null and condition.weekAdd !=''">
+                and f.happen_time  &gt;= #{condition.startDate}  and f.happen_time &lt;= #{condition.endDate}
+            </if>
+            <if test="condition.weekSolve != null and condition.weekSolve !=''">
+                and f.status = 12
+            </if>
+            <if test=" condition.weekSolve != null and condition.weekSolve !=''">
+                and f.approval_pass_time  &gt;= #{condition.startDate}  and f.approval_pass_time &lt;= #{condition.endDate}
+            </if>
+            <if test="condition.todayAdd != null and condition.todayAdd !=''">
+                and f.happen_time  &gt;= #{condition.todayStartDate}  and f.happen_time &lt;= #{condition.todayEndDate}
+            </if>
+            <if test="condition.todaySolve != null and condition.todaySolve !=''">
+                and f.status = 12
+            </if>
+            <if test=" condition.todaySolve != null and condition.todaySolve !=''">
+                and f.approval_pass_time  &gt;= #{condition.todayStartDate}  and f.approval_pass_time &lt;= #{condition.todayEndDate}
             </if>
         </where>
     </select>

@@ -3,6 +3,7 @@ package com.aiurt.modules.largescream.mapper;
 
 import com.aiurt.modules.fault.dto.*;
 import com.aiurt.modules.fault.entity.Fault;
+import com.aiurt.modules.largescream.model.FaultScreenModule;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.Date;
@@ -19,6 +20,15 @@ public interface FaultInformationMapper {
      * @return
      */
     List<Fault> queryLargeFaultInformation(@Param("startDate") Date startDate, @Param("endDate") Date endDate,@Param("lineCode") String lineCode);
+
+    /**
+     * 故障信息统计详情未解决
+     * @param startDate
+     * @param endDate
+     * @param lineCode
+     * @return
+     */
+    List<Fault> queryLargeFaultInformationUnSo(@Param("startDate") Date startDate, @Param("endDate") Date endDate,@Param("lineCode") String lineCode);
 
     /**
      * 数据分析-故障数据统计
@@ -62,6 +72,21 @@ public interface FaultInformationMapper {
      * @return
      */
     List<Fault> queryFaultDataInformationWeekAdd(@Param("weekStartDate") Date weekStartDate,@Param("weekEndDate") Date weekEndDate,@Param("lineCode") String lineCode);
+
+    /**
+     * 故障统计详情
+     * @param faultScreenModule
+     * @return
+     */
+    List<FaultLargeInfoDTO> getLargeFaultDatails(@Param("condition") FaultScreenModule faultScreenModule);
+
+    /**
+     * 故障数据统计详情
+     * @param faultScreenModule
+     * @return
+     */
+    List<FaultLargeInfoDTO> getLargeFaultDataDatails(@Param("condition") FaultScreenModule faultScreenModule);
+
 
     /**
      * 故障信息统计列表
