@@ -16,7 +16,7 @@ public interface PatrolApi {
     public String getUserTask();
 
     /**
-     * 大屏班组画像巡视工时统计
+     * 大屏班组画像巡视工时统计，用户ID:巡视时长
      */
     Map<String, BigDecimal> getPatrolUserHours(int type, String teamId);
 }

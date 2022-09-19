@@ -32,8 +32,6 @@ public class PatrolScreenController {
 
     @Autowired
     private PatrolScreenService screenService;
-    @Autowired
-    private PatrolApi patrolApi;
 
     /**
      * 大屏巡视模块-重要数据展示
@@ -121,11 +119,5 @@ public class PatrolScreenController {
     public Result<List<ScreenStatisticsGraph>> getStatisticsPieGraph(@ApiParam(name = "lineCode", value = "线路编号,多选的话英文逗号分割") String lineCode) {
         List<ScreenStatisticsGraph> list = screenService.getStatisticsGraph(lineCode);
         return Result.ok(list);
-    }
-
-    @RequestMapping("/getdata")
-    public Result<Map<String, BigDecimal>> getdata(int type,String orgId) {
-        Map<String, BigDecimal> patrolUserHours = patrolApi.getPatrolUserHours(type, orgId);
-        return Result.ok(patrolUserHours);
     }
 }
