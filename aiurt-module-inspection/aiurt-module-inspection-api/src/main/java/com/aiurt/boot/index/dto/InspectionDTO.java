@@ -1,5 +1,6 @@
 package com.aiurt.boot.index.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
@@ -36,6 +37,7 @@ public class InspectionDTO {
     private Integer weeks;
 
     @ApiModelProperty("单号")
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String code;
 
 }

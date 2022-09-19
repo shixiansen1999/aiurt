@@ -223,7 +223,7 @@ public class WorkAreaServiceImpl extends ServiceImpl<WorkAreaMapper, WorkArea> i
     }
 
     /**
-     * 根据线路获取班组(根据登录用户专业过滤)
+     * 根据线路和登录用户专业获取班组信息
      *
      * @param lineCode 线路code
      * @return
@@ -234,26 +234,28 @@ public class WorkAreaServiceImpl extends ServiceImpl<WorkAreaMapper, WorkArea> i
         if (ObjectUtil.isEmpty(user)) {
             throw new AiurtBootException("请重新登录");
         }
+
         // 线路筛选
         List<String> lineCodeList = new ArrayList<>();
         if (StrUtil.isNotEmpty(lineCode)) {
             lineCodeList = StrUtil.split(lineCode, ',');
             List<String> lineList = baseMapper.getTeamBylineAndMajor(lineCodeList, new ArrayList<>());
             if (CollUtil.isEmpty(lineList)) {
-                return new ArrayList<>();
+                return CollUtil.newArrayList();
             }
         }
+
         // 专业筛选
         List<CsUserMajorModel> majorByUserId = csUserMajorMapper.getMajorByUserId(user.getId());
         List<String> majorList = new ArrayList<>();
         if(CollUtil.isEmpty(majorByUserId)){
-            return new ArrayList<>();
+            return CollUtil.newArrayList();
         }
         if (CollUtil.isNotEmpty(majorByUserId)) {
             majorList = majorByUserId.stream().map(CsUserMajorModel::getMajorCode).collect(Collectors.toList());
             List<String> majors = baseMapper.getTeamBylineAndMajor(new ArrayList<>(), majorList);
             if (CollUtil.isEmpty(majors)) {
-                return new ArrayList<>();
+                return CollUtil.newArrayList();
             }
         }
 
