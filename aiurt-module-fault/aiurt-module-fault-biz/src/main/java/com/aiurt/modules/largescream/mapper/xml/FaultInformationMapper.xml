@@ -7,7 +7,7 @@
             <if test="startDate!=null and endDate!=null">
                 and approval_pass_time  &gt;= #{startDate}  and approval_pass_time &lt;= #{endDate}
             </if>
-            <if test="lineCode != null">
+            <if test="lineCode != null and lineCode !=''">
                 and line_code  = #{lineCode}
             </if>
         </where>
@@ -20,7 +20,7 @@
             <if test="startDate!=null and endDate!=null">
                 and approval_pass_time  &gt;= #{startDate}  and approval_pass_time &lt;= #{endDate}
             </if>
-            <if test="lineCode != null">
+            <if test="lineCode != null and lineCode != ''">
                 and line_code  = #{lineCode}
             </if>
         </where>
@@ -33,7 +33,7 @@
             <if test="todayStartDate!=null and todayEndDate!=null">
                 and end_time  &gt;= #{todayStartDate}  and end_time &lt;= #{todayEndDate}
             </if>
-            <if test="lineCode != null">
+            <if test="lineCode != null and lineCode !=''">
                 and line_code  = #{lineCode}
             </if>
         </where>
@@ -46,7 +46,7 @@
             <if test="weekStartDate!=null and weekEndDate!=null">
                 and end_time  &gt;= #{weekStartDate}  and end_time &lt;= #{weekEndDate}
             </if>
-            <if test="lineCode != null">
+            <if test="lineCode != null and lineCode !=''">
                 and line_code  = #{lineCode}
             </if>
         </where>
@@ -58,7 +58,7 @@
             <if test="todayStartDate!=null and todayEndDate!=null">
                 and happen_time  &gt;= #{todayStartDate}  and happen_time &lt;= #{todayEndDate}
             </if>
-            <if test="lineCode != null">
+            <if test="lineCode != null and lineCode !=''">
                 and line_code  = #{lineCode}
             </if>
         </where>
@@ -70,7 +70,7 @@
             <if test="weekStartDate!=null and weekEndDate!=null">
                 and happen_time  &gt;= #{weekStartDate}  and happen_time &lt;= #{weekEndDate}
             </if>
-            <if test="lineCode != null">
+            <if test="lineCode != null and lineCode !=''">
                 and line_code  = #{lineCode}
             </if>
         </where>
@@ -86,7 +86,7 @@
             <if test="condition.startDate!=null and condition.endDate!=null">
                 and f.approval_pass_time  &gt;= #{condition.startDate}  and f.approval_pass_time &lt;= #{condition.endDate}
             </if>
-            <if test="condition.lineCode != null">
+            <if test="condition.lineCode != null and condition.lineCode != ''">
                 and f.line_code  = #{condition.lineCode}
             </if>
             <if test="condition.unSo !=null and condition.unSo !=''">
@@ -111,7 +111,7 @@
         left join cs_station ct on ct.station_code = f.station_code
         left join sys_user s on s.username = f.appoint_user_name
         <where>
-            <if test="condition.lineCode != null">
+            <if test="condition.lineCode != null and condition.lineCode != ''">
                 and f.line_code  = #{condition.lineCode}
             </if>
             <if test="condition.unSo !=null and condition.unSo !=''">
@@ -148,7 +148,7 @@
             <if test="startDate!=null and endDate!=null">
                 and f.approval_pass_time  &gt;= #{startDate}  and f.approval_pass_time &lt;= #{endDate}
             </if>
-            <if test="lineCode != null">
+            <if test="lineCode != null and lineCode != ''">
                 and f.line_code  = #{lineCode}
             </if>
         </where>
@@ -161,7 +161,7 @@
         left join cs_station ct on ct.station_code = f.station_code
         left join sys_user s on s.username = f.appoint_user_name
         <where>
-            <if test="lineCode != null">
+            <if test="lineCode != null and lineCode != ''">
                 and f.line_code  = #{lineCode}
             </if>
         </where>
@@ -212,7 +212,7 @@
             <if test="month!=null">
                 and DATE_FORMAT(f.approval_pass_time,'%Y-%m') = #{month}
             </if>
-            <if test="lineCode != null">
+            <if test="lineCode != null and lineCode != ''">
                 and f.line_code  = #{lineCode}
             </if>
         </where>
@@ -222,7 +222,7 @@
     <select id="queryFaultDataInformation" resultType="com.aiurt.modules.fault.entity.Fault">
         select * from fault
         <where>
-            <if test="lineCode != null">
+            <if test="lineCode != null and lineCode != ''">
                 and line_code  = #{lineCode}
             </if>
         </where>
