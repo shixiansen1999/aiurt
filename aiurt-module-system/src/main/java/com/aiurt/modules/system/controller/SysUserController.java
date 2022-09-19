@@ -10,6 +10,7 @@ import com.aiurt.common.util.ImportExcelUtil;
 import com.aiurt.common.util.PasswordUtil;
 import com.aiurt.common.util.RedisUtil;
 import com.aiurt.common.util.oConvertUtils;
+import com.aiurt.modules.common.entity.SelectTable;
 import com.aiurt.modules.device.entity.Device;
 import com.aiurt.modules.major.entity.CsMajor;
 import com.aiurt.modules.major.service.ICsMajorService;
@@ -1650,11 +1651,18 @@ public class SysUserController {
      * 获取当前班组所管辖的人员信息,不包括自己
      * @return
      */
-    @RequestMapping("/queryManageUser")
+    @GetMapping("/queryManageUser")
     @ApiOperation("获取当前班组所管辖的人员信息,不包括自己")
     public Result<List<SysUser>> queryManageUser() {
         List<SysUser> resultList = sysUserService.queryManageUser();
         return Result.OK(resultList);
     }
 
+
+    @GetMapping("/sysuser/queryManageDepartUserTree")
+    @ApiOperation("根据机构人员树")
+    public Result<List<SelectTable>> queryManageDepartUserTree() {
+        List<SelectTable> tables = sysUserService.queryManageDepartUserTree();
+        return Result.OK(tables);
+    }
 }

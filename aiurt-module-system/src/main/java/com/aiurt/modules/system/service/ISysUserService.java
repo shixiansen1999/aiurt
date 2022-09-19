@@ -1,5 +1,6 @@
 package com.aiurt.modules.system.service;
 
+import com.aiurt.modules.common.entity.SelectTable;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.vo.SysUserCacheInfo;
 import com.aiurt.modules.system.model.SysUserSysDepartModel;
@@ -300,4 +301,10 @@ public interface ISysUserService extends IService<SysUser> {
 	 * @return
 	 */
     List<SysUser> queryManageUser();
+
+	/**
+	 *
+	 * @return
+	 */
+	List<SelectTable> queryManageDepartUserTree();
 }

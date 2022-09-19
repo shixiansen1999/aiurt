@@ -1,6 +1,8 @@
 package com.aiurt.modules.system.service.impl;
 
 import cn.hutool.core.util.StrUtil;
+import com.aiurt.modules.common.entity.SelectTable;
+import com.aiurt.modules.common.service.ICommonService;
 import jdk.nashorn.internal.ir.ObjectNode;
 import liquibase.pro.packaged.C;
 import org.apache.shiro.SecurityUtils;
@@ -27,6 +29,7 @@ import com.aiurt.modules.system.service.ISysUserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -79,6 +82,10 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
 	private CsUserMajorMapper csUserMajorMapper;
 	@Autowired
 	private CsUserSubsystemMapper csUserSubsystemMapper;
+
+	@Lazy
+	@Autowired
+	private ICommonService commonService;
 
 
     @Override
@@ -706,5 +713,25 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
 		List<SysUser> sysUsers = baseMapper.selectList(wrapper);
 
 		return sysUsers;
+	}
+
+	@Override
+	public List<SelectTable> queryManageDepartUserTree() {
+		LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+
+		if (Objects.isNull(loginUser)) {
+			log.info("当前用户没登录");
+			return Collections.emptyList();
+		}
+		String orgId = loginUser.getOrgId();
+		if (StrUtil.isBlank(orgId)) {
+			log.info("当前用户没绑定机构");
+			return Collections.emptyList();
+		}
+
+		List<String> subDepIdList = sysDepartMapper.getSubDepIdsByDepId(orgId);
+
+		List<SelectTable> selectTables = commonService.queryDepartUserTree(subDepIdList, loginUser.getId());
+		return selectTables;
 	}
 }

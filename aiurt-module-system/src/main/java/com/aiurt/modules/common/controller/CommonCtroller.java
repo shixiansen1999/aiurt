@@ -4,6 +4,7 @@ import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.modules.common.dto.DeviceDTO;
 import com.aiurt.modules.common.entity.SelectTable;
+import com.aiurt.modules.common.service.ICommonService;
 import com.aiurt.modules.device.entity.Device;
 import com.aiurt.modules.device.service.IDeviceService;
 import com.aiurt.modules.major.entity.CsMajor;
@@ -68,17 +69,15 @@ public class CommonCtroller {
     @Autowired
     private ICsStationPositionService stationPositionService;
 
-    @Autowired
-    private ISysUserService sysUserService;
-
-    @Autowired
-    private ISysDepartService sysDepartService;
 
     @Autowired
     private ICsUserMajorService csUserMajorService;
 
     @Autowired
     private ICsUserSubsystemService csUserSubsystemService;
+
+    @Autowired
+    private ICommonService commonService;
 
 
     public Result<List<Device>> query() {
@@ -386,67 +385,9 @@ public class CommonCtroller {
     @GetMapping("/sysuser/queryDepartUserTree")
     @ApiOperation("根据机构人员树")
     public Result<List<SelectTable>> queryDepartUserTree() {
-        List<SysDepart> departList = sysDepartService.getBaseMapper().selectList(null);
-        List<SelectTable> treeList = departList.stream().map(entity -> {
-            SelectTable table = new SelectTable();
-            table.setValue(entity.getId());
-            table.setLabel(entity.getDepartName());
-            table.setIsOrg(true);
-            table.setKey(entity.getOrgCode());
-            table.setParentValue(StrUtil.isBlank(entity.getParentId())?"-9999":entity.getParentId());
-            return table;
-        }).collect(Collectors.toList());
-
-        Map<String, SelectTable> root = new LinkedHashMap<>();
-        for (SelectTable item : treeList) {
-            SelectTable parent = root.get(item.getParentValue());
-            if (Objects.isNull(parent)) {
-                parent = new SelectTable();
-                root.put(item.getParentValue(), parent);
-            }
-            SelectTable table = root.get(item.getValue());
-            if (Objects.nonNull(table)) {
-                item.setChildren(table.getChildren());
-            }
-            root.put(item.getValue(), item);
-            parent.addChildren(item);
-        }
-        List<SelectTable> resultList = new ArrayList<>();
-        List<SelectTable> collect = root.values().stream().filter(entity -> StrUtil.isBlank(entity.getParentValue())).collect(Collectors.toList());
-        for (SelectTable entity : collect) {
-            resultList.addAll(CollectionUtil.isEmpty(entity.getChildren()) ? Collections.emptyList() : entity.getChildren());
-        }
-        dealUser(resultList);
-        return Result.OK(resultList);
+        List<SelectTable> tables = commonService.queryDepartUserTree(null, null);
+        return Result.OK(tables);
     }
 
-    private void dealUser(List<SelectTable> children) {
-        if (CollectionUtil.isEmpty(children)) {
-            return;
-        }
-        for (SelectTable child : children) {
-            List<SelectTable> list = child.getChildren();
-            dealUser(list);
-            if (CollectionUtil.isEmpty(list)) {
-                list = new ArrayList<>();
-            }
-            // 部门id
-            String orgId = child.getValue();
-            LambdaQueryWrapper<SysUser> wrapper = new LambdaQueryWrapper<>();
-            wrapper.eq(SysUser::getOrgId, orgId);
-            List<SysUser> sysUserList = sysUserService.getBaseMapper().selectList(wrapper);
-            List<SelectTable> tableList = sysUserList.stream().map(sysUser -> {
-                SelectTable table = new SelectTable();
-                table.setKey(sysUser.getId());
-                table.setValue(sysUser.getUsername());
-                table.setLabel(sysUser.getRealname());
-                table.setOrgCode(child.getKey());
-                table.setOrgName(child.getLabel());
-                return table;
-            }).collect(Collectors.toList());
-            child.setUserNum((long) tableList.size());
-            list.addAll(list.size(), tableList);
-            child.setChildren(list);
-        }
-    }
+
 }
