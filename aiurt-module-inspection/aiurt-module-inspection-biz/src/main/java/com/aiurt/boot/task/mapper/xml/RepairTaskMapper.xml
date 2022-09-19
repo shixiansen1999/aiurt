@@ -335,4 +335,23 @@
         select year,code,type,weeks,start_time,end_time,status from repair_task
         where status = 8 and is_confirm = 1 and is_receipt =1 and date_format(receipt_time ,'%Y-%m-%d') =date_format(#{dateTime} ,'%Y-%m-%d')
     </select>
+    <select id="getTaskExceptionItem" resultType="java.lang.Integer">
+    select COUNT(DISTINCT rt.id) from repair_task rt
+    left join repair_task_device_rel rtdr on rtdr.repair_task_id = rt.id
+    left join repair_task_result rtr on rtr.task_device_rel_id = rtdr.repair_task_id
+    where rtr.status =2 and rt.`status` = 8
+    <if test="code!=null and code !=''">
+        and rt.code = #{code}
+    </if>
+    </select>
+    <select id="getTaskInspectionTime" resultType="date">
+        select rt.submit_time as inspectionTime from repair_task rt
+        where  rt.is_receipt = 0 and rt.is_confirm =0 and rt.code = #{code}
+        union all
+        select rt.confirm_time as inspectionTime from repair_task rt
+        where  rt.is_receipt = 0 and rt.is_confirm =1 and rt.code = #{code}
+        union all
+        select rt.receipt_time as inspectionTime from repair_task rt
+        where  rt.is_receipt = 1 and rt.is_confirm =1 and rt.code = #{code}
+    </select>
 </mapper>

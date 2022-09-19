@@ -35,6 +35,7 @@ import com.aiurt.modules.system.mapper.*;
 import com.aiurt.modules.system.service.*;
 import com.aiurt.modules.system.util.SecurityUtil;
 import com.aiurt.modules.workarea.mapper.WorkAreaMapper;
+import com.aiurt.modules.workarea.service.IWorkAreaService;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -149,6 +150,9 @@ public class SysBaseApiImpl implements ISysBaseAPI {
 
     @Autowired
     private WorkAreaMapper workAreaMapper;
+    @Autowired
+    private IWorkAreaService workAreaService;
+
 
     @Override
     @Cacheable(cacheNames = CacheConstant.SYS_USERS_CACHE, key = "#username")
@@ -1531,6 +1535,58 @@ public class SysBaseApiImpl implements ISysBaseAPI {
             }
         }
         return new ArrayList<>();
+    }
+
+    /**
+     * 通过线路和专业过滤出班组
+     *
+     * @param lineCode
+     * @return
+     */
+    @Override
+    public List<String> getTeamBylineAndMajor(String lineCode) {
+
+        LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        if (ObjectUtil.isEmpty(user)) {
+            throw new AiurtBootException("请重新登录");
+        }
+
+        // 线路筛选
+        List<String> lineCodeList = new ArrayList<>();
+        if (StrUtil.isNotEmpty(lineCode)) {
+            lineCodeList = StrUtil.split(lineCode, ',');
+            List<String> lineList = workAreaMapper.getTeamBylineAndMajor(lineCodeList, new ArrayList<>());
+            if (CollUtil.isEmpty(lineList)) {
+                return new ArrayList<>();
+            }
+        }
+
+        // 专业筛选
+        List<CsUserMajorModel> majorByUserId = this.getMajorByUserId(user.getId());
+        List<String> majorList = new ArrayList<>();
+        if (CollUtil.isNotEmpty(majorByUserId)) {
+            majorList = majorByUserId.stream().map(CsUserMajorModel::getMajorCode).collect(Collectors.toList());
+            List<String> majors = workAreaMapper.getTeamBylineAndMajor(new ArrayList<>(), majorList);
+            if (CollUtil.isEmpty(majors)) {
+                return new ArrayList<>();
+            }
+        } else {
+            return new ArrayList<>();
+        }
+
+        return workAreaMapper.getTeamBylineAndMajor(lineCodeList, majorList);
+    }
+
+    /**
+     * 通过线路和专业过滤出班组详细信息
+     *
+     * @param lineCode
+     * @return
+     */
+    @Override
+    public List<SysDepartModel> getTeamBylineAndMajors(String lineCode) {
+
+        return workAreaService.getTeamBylineAndMajors(lineCode);
     }
 
 

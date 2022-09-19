@@ -44,6 +44,10 @@ public class SysDepart implements Serializable {
 	@ApiModelProperty(value = "机构全称")
 	@Excel(name="机构全称",width=15)
 	private String departFullName;
+	/**机构电话*/
+	@Excel(name = "机构电话", width = 15)
+	@ApiModelProperty(value = "机构电话")
+	private String departPhoneNum;
 	/**英文名*/
 	@ApiModelProperty(value = "英文名")
 	@Excel(name="英文名",width=15)

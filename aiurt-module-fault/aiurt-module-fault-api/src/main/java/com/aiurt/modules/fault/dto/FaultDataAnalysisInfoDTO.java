@@ -3,18 +3,14 @@ package com.aiurt.modules.fault.dto;
 import com.aiurt.common.aspect.annotation.Dict;
 import com.aiurt.common.aspect.annotation.SystemFilterColumn;
 import com.aiurt.modules.basic.entity.DictEntity;
-import com.baomidou.mybatisplus.annotation.TableField;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
-import org.hibernate.validator.constraints.Length;
 import org.springframework.format.annotation.DateTimeFormat;
 
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
 import java.util.Date;
 
 /**
@@ -27,7 +23,7 @@ import java.util.Date;
 @NoArgsConstructor
 @AllArgsConstructor
 @Accessors(chain = true)
-public class FaultLargeInfoDTO extends DictEntity {
+public class FaultDataAnalysisInfoDTO extends DictEntity {
     private static final long serialVersionUID = 1L;
 
     /**专业子系统编码*/
@@ -46,16 +42,23 @@ public class FaultLargeInfoDTO extends DictEntity {
     @ApiModelProperty(value = "站点",  required = true)
     private String stationName;
 
+    /**报修方式*/
+    @ApiModelProperty(value = "报修方式",example = "")
+    private String faultModeCode;
+
+    @ApiModelProperty("报修方式名称")
+    private String faultModeName;
+
     /**故障发生时间*/
-    @JsonFormat(timezone = "GMT+8",pattern = "dd日 HH:mm")
-    @DateTimeFormat(pattern="dd日 HH:mm" )
-    @ApiModelProperty(value = "故障发生时间dd HH:mm",  required = true)
+    @JsonFormat(timezone = "GMT+8",pattern = "MM月dd日 HH:mm")
+    @DateTimeFormat(pattern="MM月dd日 HH:mm" )
+    @ApiModelProperty(value = "故障发生时间MM月dd日 HH:mm",  required = true)
     private Date happenTime;
 
     @ApiModelProperty("维修负责人")
     private String appointUserName;
 
-    @ApiModelProperty("负责人真实姓名")
+    @ApiModelProperty("真实姓名")
     private String realName;
 
     @ApiModelProperty("故障状态")

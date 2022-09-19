@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.validation.constraints.NotNull;
@@ -41,4 +42,9 @@ public class IndexScheduleDTO implements Serializable {
      */
     @ApiModelProperty(value = "数据权限过滤，0按当前登录用户所管理的组织机构来进行过滤，1不进行过滤")
     private Integer isAllData;
+    /**
+     * 任务状态：0待指派、1待确认、2待执行、3已退回、4执行中、5已驳回、6待审核、7已完成
+     */
+    @ApiModelProperty(value = "任务状态：0待指派、1待确认、2待执行、3已退回、4执行中、5已驳回、6待审核、7已完成")
+    private Integer status;
 }

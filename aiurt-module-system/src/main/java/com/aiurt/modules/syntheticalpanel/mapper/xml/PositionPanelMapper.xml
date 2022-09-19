@@ -40,12 +40,13 @@
     SELECT
             cs.id,
             cs.line_name,
+            cs.station_name,
             cs.phone_num,
             cs.warning_status,
             cs.open_status,
-            sd.mobile,
-            sd.concat_way,
-            sd.depart_name
+            sd.depart_phone_num,
+            sd.depart_name,
+            sd.org_code
     FROM
             cs_station cs
                     LEFT JOIN work_area_station was ON was.station_code = cs.station_code
@@ -83,6 +84,6 @@
             sys_user
     WHERE
             del_flag = 0
-      AND org_id = #{id}
+      AND org_code= #{orgCode}
     </select>
 </mapper>

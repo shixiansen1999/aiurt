@@ -370,7 +370,9 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
             if (manager.checkTaskUser(patrolTask.getCode()) == false && !admin) {
                 throw new AiurtBootException("小主，该巡检任务不在您的范围之内哦");
             }
-            updateWrapper.set(PatrolTask::getStatus, 4).eq(PatrolTask::getId, patrolTaskDTO.getId());
+            updateWrapper.set(PatrolTask::getStatus, 4)
+                    .set(PatrolTask::getBeginTime,new Date())
+                    .eq(PatrolTask::getId, patrolTaskDTO.getId());
             update(updateWrapper);
         }
 

@@ -8,35 +8,22 @@ import lombok.experimental.Accessors;
 import java.util.Date;
 import java.util.List;
 
+/**
+ * 业务层封装的传输实体
+ */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Accessors(chain = true)
-public class ScreenModule {
+public class ScreenTran {
     /**
-     * 结束时间
+     * 起始时间
      */
     private Date startTime;
     /**
      * 结束时间
      */
     private Date endTime;
-    /**
-     * 任务状态
-     */
-    private Integer status;
-    /**
-     * 漏检状态
-     */
-    private Integer omit;
-    /**
-     * 异常状态
-     */
-    private Integer abnormal;
-    /**
-     * 当天日期
-     */
-    private Date today;
     /**
      * 线路编号
      */

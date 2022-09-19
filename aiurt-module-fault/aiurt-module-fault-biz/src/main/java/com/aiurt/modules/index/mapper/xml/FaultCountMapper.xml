@@ -41,7 +41,7 @@
                 and status  = #{faultTimeoutLevelReq.status}
             </if>
             <if test="faultTimeoutLevelReq.appointUserName != null">
-                and appoint_user_name  = #{faultTimeoutLevelReq.appointUserName}
+                and appoint_user_name  like concat( '%' , #{faultTimeoutLevelReq.appointUserName}, '%')
             </if>
             <if test="faultTimeoutLevelReq.faultModeCode != null">
                 and fault_mode_code  = #{faultTimeoutLevelReq.faultModeCode}

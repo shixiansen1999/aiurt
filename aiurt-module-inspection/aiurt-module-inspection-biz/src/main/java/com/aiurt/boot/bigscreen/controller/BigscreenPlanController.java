@@ -59,12 +59,12 @@ public class BigscreenPlanController {
      * @param item     1计划数，2完成数，3漏检数，4今日检修数
      * @return
      */
-    @AutoLog(value = "大屏-检修数据统计", operateType = 1, operateTypeAlias = "查询", permissionUrl = "")
-    @ApiOperation(value = "大屏-检修数据统计", notes = "大屏-检修数据统计")
+    @AutoLog(value = "大屏-巡检修数据分析->检修数据统计", operateType = 1, operateTypeAlias = "查询", permissionUrl = "")
+    @ApiOperation(value = "大屏-巡检修数据分析->检修数据统计", notes = "大屏-巡检修数据分析->检修数据统计")
     @RequestMapping(value = "/getInspectionData", method = RequestMethod.GET)
     public Result<IPage<InspectionDTO>> getInspectionData(@ApiParam(name = "lineCode", value = "线路code,多个用,隔开") @RequestParam(value = "lineCode", required = false) String lineCode,
                                                           @ApiParam(name = "type", value = "类型:1：本周，2：上周，3：本月， 4：上月", defaultValue = "1") @RequestParam("type") Integer type,
-                                                          @ApiParam(name = "item", value = "1计划数，2完成数，3漏检数，4今日检修数") @RequestParam(value = "lineCode", required = false) Integer item,
+                                                          @ApiParam(name = "item", value = "1计划数，2完成数，3漏检数，4今日检修数") @RequestParam(value = "item") Integer item,
                                                           @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
                                                           @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize) {
         Page<InspectionDTO> page = new Page<>(pageNo, pageSize);
@@ -113,9 +113,11 @@ public class BigscreenPlanController {
     @AutoLog(value = "大屏-班组画像-详情", operateType = 1, operateTypeAlias = "查询", permissionUrl = "")
     @ApiOperation(value = "大屏-班组画像-详情", notes = "大屏-班组画像-详情")
     @RequestMapping(value = "/getTeamPortraitDetails", method = RequestMethod.GET)
-    public Result<TeamWorkingHourDTO> getTeamPortraitDetails(@ApiParam(name = "type", value = "类型:1：本周，2：上周，3：本月， 4：上月", defaultValue = "1") @RequestParam("type") Integer type,
-                                                             @ApiParam(name = "teamId", value = "班组id") @RequestParam("teamId") String teamId) {
-        TeamWorkingHourDTO result = bigscreenPlanService.getTeamPortraitDetails(type,teamId);
+    public Result<IPage<TeamWorkingHourDTO>> getTeamPortraitDetails(@ApiParam(name = "type", value = "类型:1：本周，2：上周，3：本月， 4：上月", defaultValue = "1") @RequestParam("type") Integer type,
+                                                             @ApiParam(name = "teamId", value = "班组id") @RequestParam("teamId") String teamId,
+                                                             @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
+                                                             @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize) {
+        Page<TeamWorkingHourDTO> result = bigscreenPlanService.getTeamPortraitDetails(type,teamId,pageNo,pageSize);
         return Result.OK(result);
     }
 }

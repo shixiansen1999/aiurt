@@ -61,4 +61,46 @@ where cm.major_code = #{majorCode} and cs.del_flag = 0
     left join sys_user sy on sy.id = wa.manager_id
     where sd.org_code = #{orgCode}
     </select>
+    <select id="getTeamBylineAndMajor" resultType="string">
+        select DISTINCT sd.org_code from sys_depart sd
+        left join work_area_org wao on wao.org_code = sd.org_code
+        left join work_area wa on wa.`code` = wao.work_area_code
+        left join work_area_line wal on wal.work_area_code = wa.`code`
+        <where>
+            sd.del_flag = 0 and wao.del_flag= 0 and wa.del_flag = 0 and wal.del_flag = 0
+            <if test="lineCodeList.size()>0">
+                and wal.line_code in
+                <foreach collection="lineCodeList" item="code" open="(" close=")" separator=",">
+                    #{code}
+                </foreach>
+            </if>
+            <if test="majorList.size()>0">
+                and wa.major_code in
+                <foreach collection="majorList" item="code" open="(" close=")" separator=",">
+                    #{code}
+                </foreach>
+            </if>
+        </where>
+    </select>
+    <select id="getTeamBylineAndMajors" resultType="org.jeecg.common.system.vo.SysDepartModel">
+        select DISTINCT sd.org_code,sd.depart_name  from sys_depart sd
+        left join work_area_org wao on wao.org_code = sd.org_code
+        left join work_area wa on wa.`code` = wao.work_area_code
+        left join work_area_line wal on wal.work_area_code = wa.`code`
+        <where>
+            sd.del_flag = 0 and wao.del_flag= 0 and wa.del_flag = 0 and wal.del_flag = 0
+            <if test="lineCodeList.size()>0">
+                and wal.line_code in
+                <foreach collection="lineCodeList" item="code" open="(" close=")" separator=",">
+                    #{code}
+                </foreach>
+            </if>
+            <if test="majorList.size()>0">
+                and wa.major_code in
+                <foreach collection="majorList" item="code" open="(" close=")" separator=",">
+                    #{code}
+                </foreach>
+            </if>
+        </where>
+    </select>
 </mapper>

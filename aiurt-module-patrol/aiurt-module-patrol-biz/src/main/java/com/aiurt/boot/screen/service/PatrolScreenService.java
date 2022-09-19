@@ -1,6 +1,8 @@
 package com.aiurt.boot.screen.service;
 
+import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.constant.PatrolConstant;
 import com.aiurt.boot.constant.PatrolDictCode;
@@ -8,18 +10,30 @@ import com.aiurt.boot.screen.constant.ScreenConstant;
 import com.aiurt.boot.screen.model.*;
 import com.aiurt.boot.screen.utils.ScreenDateUtil;
 import com.aiurt.boot.task.entity.PatrolTask;
+import com.aiurt.boot.task.entity.PatrolTaskStandard;
 import com.aiurt.boot.task.mapper.PatrolTaskMapper;
+import com.aiurt.boot.task.mapper.PatrolTaskStandardMapper;
+import com.aiurt.boot.task.mapper.PatrolTaskStationMapper;
 import com.aiurt.boot.task.service.IPatrolTaskService;
+import com.aiurt.common.exception.AiurtBootException;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import org.apache.ibatis.annotations.Select;
+import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.system.api.ISysBaseAPI;
+import org.jeecg.common.system.vo.CsUserMajorModel;
 import org.jeecg.common.system.vo.DictModel;
+import org.jeecg.common.system.vo.LoginUser;
 import org.jeecg.common.util.DateUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -42,26 +56,47 @@ public class PatrolScreenService {
      * @return
      */
     public ScreenImportantData getImportantData(Integer timeType, String lineCode) {
-        StrUtil.splitTrim(lineCode, ',');
+        // 默认本周
+        if (ObjectUtil.isEmpty(timeType)) {
+            timeType = ScreenConstant.THIS_WEEK;
+        }
+        List<String> lines = StrUtil.splitTrim(lineCode, ',');
         String dateTime = ScreenDateUtil.getDateTime(timeType);
         String[] split = dateTime.split("~");
         Date startTime = DateUtil.parse(split[0]);
         Date endTime = DateUtil.parse(split[1]);
-        List<PatrolTask> list = patrolTaskService.lambdaQuery().eq(PatrolTask::getDelFlag, 0)
-                .between(PatrolTask::getPatrolDate, startTime, endTime)
-                .list();
+        // 获取当前登录人的专业编号
+        List<String> majors = this.getCurrentLoginUserMajors();
+        if (CollectionUtil.isEmpty(majors)) {
+            return new ScreenImportantData();
+        }
+
+        ScreenModule module = new ScreenModule();
+        module.setLines(lines);
+        module.setMajors(majors);
+        module.setStartTime(startTime);
+        module.setEndTime(endTime);
+
+        List<PatrolTask> list = patrolTaskMapper.getScreenDataCount(module);
+//        List<PatrolTask> list = patrolTaskService.lambdaQuery().eq(PatrolTask::getDelFlag, 0)
+//                .between(PatrolTask::getPatrolDate, startTime, endTime)
+//                .list();
 
         String omitStartTime = this.getOmitDateScope(startTime).split("~")[0];
         String omitEndTime = this.getOmitDateScope(endTime).split("~")[1];
 
+        module.setStartTime(DateUtil.parse(omitStartTime));
+        module.setEndTime(DateUtil.parse(omitEndTime));
+        module.setOmit(PatrolConstant.OMIT_STATUS);
+
         ScreenImportantData data = new ScreenImportantData();
         long planNum = list.stream().count();
         long finishNum = list.stream().filter(l -> PatrolConstant.TASK_COMPLETE.equals(l.getStatus())).count();
-        long omitNum = patrolTaskService.lambdaQuery().eq(PatrolTask::getDelFlag, 0)
-                .eq(PatrolTask::getOmitStatus, PatrolConstant.OMIT_STATUS)
-                .between(PatrolTask::getPatrolDate, DateUtil.parse(omitStartTime), DateUtil.parse(omitEndTime))
-                .count();
-
+//        long omitNum = patrolTaskService.lambdaQuery().eq(PatrolTask::getDelFlag, 0)
+//                .eq(PatrolTask::getOmitStatus, PatrolConstant.OMIT_STATUS)
+//                .between(PatrolTask::getPatrolDate, DateUtil.parse(omitStartTime), DateUtil.parse(omitEndTime))
+//                .count();
+        long omitNum = patrolTaskMapper.getScreenDataCount(module).stream().count();
         data.setPatrolNumber(planNum);
         data.setFinishNumber(finishNum);
         data.setOmitNumber(omitNum);
@@ -76,34 +111,60 @@ public class PatrolScreenService {
      * @return
      */
     public ScreenStatistics getStatisticsData(Integer timeType, String lineCode) {
+        // 默认本周
+        if (ObjectUtil.isEmpty(timeType)) {
+            timeType = ScreenConstant.THIS_WEEK;
+        }
         String dateTime = ScreenDateUtil.getDateTime(timeType);
         String[] split = dateTime.split("~");
         Date startTime = DateUtil.parse(split[0]);
         Date endTime = DateUtil.parse(split[1]);
-        List<PatrolTask> list = patrolTaskService.lambdaQuery().eq(PatrolTask::getDelFlag, 0)
-                .between(PatrolTask::getPatrolDate, startTime, endTime)
-                .list();
+
+        List<String> lines = StrUtil.splitTrim(lineCode, ',');
+        // 获取当前登录人的专业编号
+        List<String> majors = this.getCurrentLoginUserMajors();
+        if (CollectionUtil.isEmpty(majors)) {
+            return new ScreenStatistics();
+        }
+        ScreenModule module = new ScreenModule();
+        module.setLines(lines);
+        module.setMajors(majors);
+        module.setStartTime(startTime);
+        module.setEndTime(endTime);
+//        List<PatrolTask> list = patrolTaskService.lambdaQuery().eq(PatrolTask::getDelFlag, 0)
+//                .between(PatrolTask::getPatrolDate, startTime, endTime)
+//                .list();
+        List<PatrolTask> list = patrolTaskMapper.getScreenDataCount(module);
 
         String omitStartTime = this.getOmitDateScope(startTime).split("~")[0];
         String omitEndTime = this.getOmitDateScope(endTime).split("~")[1];
+        module.setStartTime(DateUtil.parse(omitStartTime));
+        module.setEndTime(DateUtil.parse(omitEndTime));
+        module.setOmit(PatrolConstant.OMIT_STATUS);
 
         List<PatrolTask> todayList = list.stream()
                 .filter(l -> DateUtil.format(new Date(), "yyyy-MM-dd").equals(DateUtil.format(l.getPatrolDate(), "yyyy-MM-dd")))
                 .collect(Collectors.toList());
         if (!ScreenConstant.THIS_WEEK.equals(timeType) || !ScreenConstant.THIS_MONTH.equals(timeType)) {
-            todayList = patrolTaskService.lambdaQuery().eq(PatrolTask::getDelFlag, 0)
-                    .eq(PatrolTask::getOmitStatus, PatrolConstant.OMIT_STATUS)
-                    .between(PatrolTask::getPatrolDate, DateUtil.parse(DateUtil.format(new Date(), "yyyy-MM-dd 00:00:00")),
-                            DateUtil.parse(DateUtil.format(new Date(), "yyyy-MM-dd 23:59:59"))).list();
+//            todayList = patrolTaskService.lambdaQuery().eq(PatrolTask::getDelFlag, 0)
+//                    .eq(PatrolTask::getOmitStatus, PatrolConstant.OMIT_STATUS)
+//                    .between(PatrolTask::getPatrolDate, DateUtil.parse(DateUtil.format(new Date(), "yyyy-MM-dd 00:00:00")),
+//                            DateUtil.parse(DateUtil.format(new Date(), "yyyy-MM-dd 23:59:59"))).list();
+            ScreenModule todayModule = new ScreenModule();
+            BeanUtils.copyProperties(module, todayModule);
+            todayModule.setStartTime(DateUtil.parse(DateUtil.format(new Date(), "yyyy-MM-dd 00:00:00")));
+            todayModule.setEndTime(DateUtil.parse(DateUtil.format(new Date(), "yyyy-MM-dd 23:59:59")));
+            todayList = patrolTaskMapper.getScreenDataCount(todayModule);
         }
         ScreenStatistics data = new ScreenStatistics();
 
         long planNum = list.stream().count();
         long finishNum = list.stream().filter(l -> PatrolConstant.TASK_COMPLETE.equals(l.getStatus())).count();
-        long omitNum = patrolTaskService.lambdaQuery().eq(PatrolTask::getDelFlag, 0)
-                .eq(PatrolTask::getOmitStatus, PatrolConstant.OMIT_STATUS)
-                .between(PatrolTask::getPatrolDate, DateUtil.parse(omitStartTime), DateUtil.parse(omitEndTime))
-                .count();
+//        long omitNum = patrolTaskService.lambdaQuery().eq(PatrolTask::getDelFlag, 0)
+//                .eq(PatrolTask::getOmitStatus, PatrolConstant.OMIT_STATUS)
+//                .between(PatrolTask::getPatrolDate, DateUtil.parse(omitStartTime), DateUtil.parse(omitEndTime))
+//                .count();
+        long omitNum = patrolTaskMapper.getScreenDataCount(module).stream().count();
         long abnormalNum = list.stream().filter(l -> PatrolConstant.TASK_ABNORMAL.equals(l.getAbnormalState())).count();
         long todayNum = todayList.stream().count();
         long todayFinishNum = todayList.stream().filter(l -> PatrolConstant.TASK_COMPLETE.equals(l.getStatus())).count();
@@ -125,6 +186,10 @@ public class PatrolScreenService {
      * @return
      */
     public List<ScreenStatisticsTask> getStatisticsTaskInfo(Integer timeType, String lineCode) {
+        // 默认本周
+        if (ObjectUtil.isEmpty(timeType)) {
+            timeType = ScreenConstant.THIS_WEEK;
+        }
         String dateTime = ScreenDateUtil.getDateTime(timeType);
         String[] split = dateTime.split("~");
         Date startTime = DateUtil.parse(split[0]);
@@ -133,8 +198,19 @@ public class PatrolScreenService {
         if (StrUtil.isNotEmpty(lineCode)) {
             lines = StrUtil.splitTrim(lineCode, ',');
         }
+        // 当前登录人的专业编号
+        List<String> majors = this.getCurrentLoginUserMajors();
+        if (CollectionUtil.isEmpty(majors)) {
+            return new ArrayList<>();
+        }
 
-        List<ScreenStatisticsTask> list = patrolTaskMapper.getScreenTask(startTime, endTime, lines);
+        ScreenTran tran = new ScreenTran();
+        tran.setStartTime(startTime);
+        tran.setEndTime(endTime);
+        tran.setLines(lines);
+        tran.setMajors(majors);
+
+        List<ScreenStatisticsTask> list = patrolTaskMapper.getScreenTask(tran);
         list.stream().forEach(l -> {
             // 字典翻译
             String statusName = sysBaseApi.getDictItems(PatrolDictCode.TASK_STATUS).stream()
@@ -156,7 +232,6 @@ public class PatrolScreenService {
     /**
      * 大屏巡视模块-巡视任务完成情况
      *
-     * @param timeType
      * @param lineCode
      * @return
      */
@@ -169,12 +244,22 @@ public class PatrolScreenService {
         if (StrUtil.isNotEmpty(lineCode)) {
             lines = StrUtil.splitTrim(lineCode, ',');
         }
+        // 当前登录人的专业编号
+        List<String> majors = this.getCurrentLoginUserMajors();
+        if (CollectionUtil.isEmpty(majors)) {
+            return new ArrayList<>();
+        }
+        ScreenTran tran = new ScreenTran();
+        tran.setStartTime(startTime);
+        tran.setEndTime(endTime);
+        tran.setLines(lines);
+        tran.setMajors(majors);
 
-        List<ScreenStatisticsGraph> list = patrolTaskMapper.getScreenGraph(startTime, endTime, lines);
+        List<ScreenStatisticsGraph> list = patrolTaskMapper.getScreenGraph(tran);
         list.stream().forEach(l -> {
             Long total = l.getTotal();
-            String finishRate = String.format("%.2f", (1.0 * l.getFinish() / total) * 100);
-            String unfinishRate = String.format("%.2f", (1.0 * l.getUnfinish() / total) * 100);
+            String finishRate = String.format("%.1f", (1.0 * l.getFinish() / total) * 100);
+            String unfinishRate = String.format("%.1f", (1.0 * l.getUnfinish() / total) * 100);
             l.setFinishRate(finishRate + "%");
             l.setUnfinishRate(unfinishRate + "%");
         });
@@ -216,10 +301,27 @@ public class PatrolScreenService {
      */
     public IPage<ScreenStatisticsTask> getStatisticsDataList(Page<ScreenStatisticsTask> page, Integer timeType,
                                                              Integer screenModule, String lineCode) {
-        ScreenModule moduleType = new ScreenModule();
-        if (StrUtil.isNotEmpty(lineCode)) {
-            moduleType.setLines(StrUtil.splitTrim(lineCode, ','));
+        // 默认本周
+        if (ObjectUtil.isEmpty(timeType)) {
+            timeType = ScreenConstant.THIS_WEEK;
         }
+        // 模块参数未传直接返回空
+        if (ObjectUtil.isEmpty(screenModule)) {
+            return page;
+        }
+
+        ScreenModule moduleType = new ScreenModule();
+        List<String> lines = null;
+        if (StrUtil.isNotEmpty(lineCode)) {
+            lines = StrUtil.splitTrim(lineCode, ',');
+        }
+        // 当前登录人的专业编号
+        List<String> majors = this.getCurrentLoginUserMajors();
+        if (CollectionUtil.isEmpty(majors)) {
+            return page;
+        }
+        moduleType.setLines(lines);
+        moduleType.setMajors(majors);
 
         String dateTime = ScreenDateUtil.getDateTime(timeType);
         String[] split = dateTime.split("~");
@@ -278,5 +380,20 @@ public class PatrolScreenService {
             l.setAbnormalStateName(abnormalName);
         });
         return pageList;
+    }
+
+    /**
+     * 获取当前登录用户的专业编号
+     *
+     * @return
+     */
+    public List<String> getCurrentLoginUserMajors() {
+        LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        if (ObjectUtil.isEmpty(loginUser)) {
+            throw new AiurtBootException("检测到未登录系统，请登录后操作！");
+        }
+        List<CsUserMajorModel> majorList = sysBaseApi.getMajorByUserId(loginUser.getId());
+        List<String> majors = majorList.stream().map(CsUserMajorModel::getMajorCode).collect(Collectors.toList());
+        return majors;
     }
 }

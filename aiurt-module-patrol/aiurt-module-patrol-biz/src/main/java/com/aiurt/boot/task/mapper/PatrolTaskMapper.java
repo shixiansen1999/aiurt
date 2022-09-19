@@ -3,6 +3,7 @@ package com.aiurt.boot.task.mapper;
 import com.aiurt.boot.screen.model.ScreenModule;
 import com.aiurt.boot.screen.model.ScreenStatisticsGraph;
 import com.aiurt.boot.screen.model.ScreenStatisticsTask;
+import com.aiurt.boot.screen.model.ScreenTran;
 import com.aiurt.boot.standard.dto.StationDTO;
 import com.aiurt.boot.statistics.dto.IndexScheduleDTO;
 import com.aiurt.boot.statistics.dto.IndexTaskDTO;
@@ -222,22 +223,18 @@ public interface PatrolTaskMapper extends BaseMapper<PatrolTask> {
     /**
      * 大屏巡视模块-巡视数据统计任务列表
      *
-     * @param startTime
-     * @param endTime
-     * @param lines
+     * @param screenTran
      * @return
      */
-    List<ScreenStatisticsTask> getScreenTask(@Param("startTime") Date startTime, @Param("endTime") Date endTime, @Param("lines") List<String> lines);
+    List<ScreenStatisticsTask> getScreenTask(@Param("condition") ScreenTran screenTran);
 
     /**
      * 大屏巡视模块-巡视任务完成情况
      *
-     * @param startTime
-     * @param endTime
-     * @param lines
+     * @param screenTran
      * @return
      */
-    List<ScreenStatisticsGraph> getScreenGraph(@Param("startTime") Date startTime, @Param("endTime") Date endTime, @Param("lines") List<String> lines);
+    List<ScreenStatisticsGraph> getScreenGraph(@Param("condition") ScreenTran screenTran);
 
     /**
      * 大屏巡视模块-巡视数据统计详情列表
@@ -247,4 +244,12 @@ public interface PatrolTaskMapper extends BaseMapper<PatrolTask> {
      * @return
      */
     IPage<ScreenStatisticsTask> getStatisticsDataList(Page<ScreenStatisticsTask> page, @Param("condition") ScreenModule moduleType);
+
+    /**
+     * 大屏巡视模块-数据统计和重要数据展示任务查询
+     *
+     * @param module
+     * @return
+     */
+    List<PatrolTask> getScreenDataCount(@Param("condition") ScreenModule module);
 }

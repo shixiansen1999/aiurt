@@ -312,6 +312,10 @@ public class PatrolStatisticsService {
      */
     public IPage<ScheduleTask> getScheduleList(Page<ScheduleTask> page, IndexScheduleDTO indexScheduleDTO) {
         IPage<ScheduleTask> pageList = null;
+        // 默认已完成
+        if (ObjectUtil.isEmpty(indexScheduleDTO.getStatus())) {
+            indexScheduleDTO.setStatus(PatrolConstant.TASK_COMPLETE);
+        }
         if (ObjectUtil.isNotEmpty(indexScheduleDTO.getIsAllData()) && ALLDATA.equals(indexScheduleDTO.getIsAllData())) {
             pageList = patrolTaskMapper.getScheduleList(page, indexScheduleDTO, null);
         } else {

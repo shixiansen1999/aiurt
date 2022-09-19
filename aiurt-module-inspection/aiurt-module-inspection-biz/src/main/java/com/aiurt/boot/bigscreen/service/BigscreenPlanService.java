@@ -16,15 +16,22 @@ import com.aiurt.boot.plan.entity.RepairPool;
 import com.aiurt.boot.plan.entity.RepairPoolStationRel;
 import com.aiurt.boot.plan.mapper.RepairPoolMapper;
 import com.aiurt.boot.plan.mapper.RepairPoolStationRelMapper;
+import com.aiurt.boot.task.entity.RepairTaskUser;
+import com.aiurt.boot.task.mapper.RepairTaskMapper;
+import com.aiurt.boot.task.mapper.RepairTaskUserMapper;
+import com.aiurt.common.constant.CommonConstant;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.CsUserMajorModel;
+import org.jeecg.common.system.vo.LoginUser;
+import org.jeecg.common.system.vo.SysDepartModel;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.math.BigDecimal;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -45,6 +52,10 @@ public class BigscreenPlanService {
     private RepairPoolMapper repairPoolMapper;
     @Resource
     private InspectionManager manager;
+    @Resource
+    private RepairTaskMapper repairTaskMapper;
+    @Resource
+    private RepairTaskUserMapper repairTaskUserMapper;
 
     /**
      * 获取大屏的检修概况数量
@@ -60,7 +71,7 @@ public class BigscreenPlanService {
         Date[] time = getTimeByType(type);
 
         if (time.length > 0) {
-            // 专业和线路过滤
+            // 专业和线路过滤出班组
             Set<String> codeList = getCodeByLineAndMajor(lineCode);
             if (CollUtil.isEmpty(codeList)) {
                 result.setSum(0L);
@@ -102,7 +113,9 @@ public class BigscreenPlanService {
 
     @NotNull
     public Set<String> getCodeByLineAndMajor(String lineCode) {
-        Set<String> codeList = new HashSet<>();
+        Set<String> codeLineList = new HashSet<>();
+        Set<String> codeMajorList = new HashSet<>();
+
 
         if (StrUtil.isNotEmpty(lineCode)) {
             // 站点
@@ -111,9 +124,9 @@ public class BigscreenPlanService {
                 LambdaQueryWrapper<RepairPoolStationRel> repairPoolStationRelLambdaQueryWrapper = new LambdaQueryWrapper<>();
                 repairPoolStationRelLambdaQueryWrapper.in(RepairPoolStationRel::getStationCode, stationCodeByLineCode);
                 List<RepairPoolStationRel> repairPoolStationRels = repairPoolStationRelMapper.selectList(repairPoolStationRelLambdaQueryWrapper);
-                codeList.addAll(Optional.ofNullable(repairPoolStationRels).orElse(new ArrayList<>()).stream().map(RepairPoolStationRel::getRepairPoolCode).collect(Collectors.toSet()));
+                codeLineList.addAll(Optional.ofNullable(repairPoolStationRels).orElse(new ArrayList<>()).stream().map(RepairPoolStationRel::getRepairPoolCode).collect(Collectors.toSet()));
             }
-            if (CollUtil.isEmpty(stationCodeByLineCode) || CollUtil.isEmpty(codeList)) {
+            if (CollUtil.isEmpty(stationCodeByLineCode) || CollUtil.isEmpty(codeLineList)) {
                 return new HashSet<>();
             }
         }
@@ -121,9 +134,10 @@ public class BigscreenPlanService {
         List<CsUserMajorModel> majorByUserId = sysBaseAPI.getMajorByUserId(manager.checkLogin().getId());
         if (CollUtil.isNotEmpty(majorByUserId)) {
             List<String> majorList = majorByUserId.stream().map(CsUserMajorModel::getMajorCode).collect(Collectors.toList());
-            codeList.addAll(repairPoolMapper.getCodeByMajor(majorList));
+            codeMajorList.addAll(repairPoolMapper.getCodeByMajor(majorList));
         }
-        return codeList;
+
+        return codeMajorList;
     }
 
 
@@ -141,7 +155,7 @@ public class BigscreenPlanService {
         Date[] time = getTimeByType(type);
         if (time.length > 0) {
             List<InspectionDTO> result = new ArrayList<>();
-            Set<String> codeList = getCodeByLineAndMajor(lineCode);
+            List<String> codeList = sysBaseAPI.getTeamBylineAndMajor(lineCode);
             if (CollUtil.isEmpty(codeList)) {
                 return page;
             }
@@ -162,17 +176,37 @@ public class BigscreenPlanService {
                     inspectionDTO.setTeamName(manager.translateOrg(repairPoolMapper.selectOrgByCode(inspectionDTO.getCode())));
                     // 站点
                     inspectionDTO.setStationName(manager.translateStation(repairPoolStationRelMapper.selectStationList(inspectionDTO.getCode())));
-                    // 状态，如果状态是已完成，存在检修单异常需要将状态改成结果异常
-
+                    // 翻译状态
                     inspectionDTO.setStatusName(sysBaseAPI.translateDict(DictConstant.INSPECTION_TASK_STATE, String.valueOf(inspectionDTO.getStatus())));
-                    if(InspectionConstant.COMPLETED.equals(inspectionDTO.getStatus())){
-                        // 查询该任务是否有检修单存在异常项
-                        inspectionDTO.setStatusName("结果异常");
+                    // 检修任务
+                    if (ObjectUtil.isNotEmpty(inspectionDTO.getWeeks())) {
+                        inspectionDTO.setInspectionTask(String.format("第%d周检修", inspectionDTO.getWeeks()));
                     }
-                    // 检修时间，无审核拿提交时间，有审核拿审核时间
-
-                    // 检修人
-
+                    // 如果状态是已完成，并且存在检修单异常需要将状态改成结果异常
+                    if (StrUtil.isNotEmpty(inspectionDTO.getCode())) {
+                        if (InspectionConstant.COMPLETED.equals(inspectionDTO.getStatus())) {
+                            // 查询该任务是否有检修单存在异常项
+                            Integer num = repairTaskMapper.getTaskExceptionItem(inspectionDTO.getCode());
+                            if (num > 0) {
+                                inspectionDTO.setStatusName("结果异常");
+                            }
+                        }
+                        // 检修时间，无审核拿提交时间，有审核拿审核时间
+                        List<Date> inspectionTime = repairTaskMapper.getTaskInspectionTime(inspectionDTO.getCode());
+                        // 29日 12：23
+                        inspectionDTO.setTime(CollUtil.isNotEmpty(inspectionTime) ? DateUtil.format(inspectionTime.get(0), "dd日 HH:mm") : "");
+                        // 检修人
+                        List<RepairTaskUser> repairTaskUsers = repairTaskUserMapper.selectList(
+                                new LambdaQueryWrapper<RepairTaskUser>()
+                                        .eq(RepairTaskUser::getRepairTaskCode, inspectionDTO.getCode())
+                                        .eq(RepairTaskUser::getDelFlag, CommonConstant.DEL_FLAG_0));
+                        if (CollUtil.isNotEmpty(repairTaskUsers)) {
+                            List<LoginUser> loginUsers = sysBaseAPI.queryAllUserByIds(repairTaskUsers.stream().map(RepairTaskUser::getUserId).toArray(String[]::new));
+                            if (CollUtil.isNotEmpty(loginUsers)) {
+                                inspectionDTO.setRealName(loginUsers.stream().map(LoginUser::getRealname).collect(Collectors.joining("；")));
+                            }
+                        }
+                    }
                 }
 
                 return page.setRecords(result);
@@ -190,7 +224,38 @@ public class BigscreenPlanService {
      * @return
      */
     public List<PlanIndexDTO> getTaskCompletion(String lineCode, Integer type) {
-        return null;
+        List<PlanIndexDTO> result = new ArrayList<>();
+        Date[] time = getTimeByType(type);
+        if (time.length > 0) {
+            List<SysDepartModel> teamBylineAndMajors = sysBaseAPI.getTeamBylineAndMajors(lineCode);
+            if (CollUtil.isNotEmpty(teamBylineAndMajors)) {
+                for (SysDepartModel teamBylineAndMajor : teamBylineAndMajors) {
+                    PlanIndexDTO planIndexDTO = new PlanIndexDTO();
+                    // 已完成，未完成
+                    planIndexDTO = repairPoolMapper.getNumByTimeAndOrgCode(teamBylineAndMajor.getOrgCode(), time[0], time[1]);
+                    planIndexDTO.setTeamName(teamBylineAndMajor.getDepartName());
+                    // 计算比例
+                    // 已检占比
+                    if (planIndexDTO.getSum() <= 0 || planIndexDTO.getFinish() <= 0) {
+                        planIndexDTO.setFinishRate("0%");
+                    } else {
+                        double d = new BigDecimal((double) planIndexDTO.getFinish() * 100 / planIndexDTO.getSum()).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
+                        planIndexDTO.setFinishRate(d + "%");
+                    }
+                    // 未检占比
+                    if (planIndexDTO.getSum() <= 0 || planIndexDTO.getUnfinish() <= 0) {
+                        planIndexDTO.setUnfinishRate("0%");
+                    } else {
+                        double d = new BigDecimal((double) planIndexDTO.getUnfinish() * 100 / planIndexDTO.getSum()).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
+                        planIndexDTO.setUnfinishRate(d + "%");
+                    }
+                    result.add(planIndexDTO);
+                }
+
+            }
+
+        }
+        return result;
     }
 
 
@@ -241,7 +306,7 @@ public class BigscreenPlanService {
      * @return
      */
     public List<TeamPortraitDTO> getTeamPortrait(Integer type) {
-        return null;
+        return  Arrays.asList(new TeamPortraitDTO());
     }
 
     /**
@@ -250,7 +315,8 @@ public class BigscreenPlanService {
      * @param type 类型:1：本周，2：上周，3：本月， 4：上月
      * @return
      */
-    public TeamWorkingHourDTO getTeamPortraitDetails(Integer type, String teamId) {
-        return null;
+    public Page<TeamWorkingHourDTO> getTeamPortraitDetails(Integer type, String teamId, Integer pageNo, Integer pageSize) {
+        Page<TeamWorkingHourDTO> page = new Page<>(pageNo,pageSize);
+        return page;
     }
 }
