@@ -11,10 +11,7 @@ import com.aiurt.modules.schedule.model.ScheduleUser;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
-
 import org.jeecg.common.system.vo.LoginUser;
-import org.jeecg.common.system.vo.SysDepartModel;
-
 
 import java.util.List;
 import java.util.Map;
@@ -82,6 +79,5 @@ public interface IScheduleRecordService extends IService<ScheduleRecord> {
      */
     IPage<SysUserTeamDTO> getTotalPepoleDetail(String lineCode,  String orgcode,Page<SysUserTeamDTO> page);
 
-    List<SysDepartModel> getTeamBylineAndMajors(String lineCode);
 
 }

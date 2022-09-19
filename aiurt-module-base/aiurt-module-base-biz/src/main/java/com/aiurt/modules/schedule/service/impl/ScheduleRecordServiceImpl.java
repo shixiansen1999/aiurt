@@ -4,7 +4,6 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
-import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.modules.schedule.dto.ScheduleBigScreenDTO;
 import com.aiurt.modules.schedule.dto.ScheduleRecordDTO;
 import com.aiurt.modules.schedule.dto.SysUserScheduleDTO;
@@ -17,11 +16,9 @@ import com.aiurt.modules.schedule.service.IScheduleRecordService;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.LoginUser;
 import org.jeecg.common.system.vo.SiteModel;
-import org.jeecg.common.system.vo.SysDepartModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -161,11 +158,18 @@ public class ScheduleRecordServiceImpl extends ServiceImpl<ScheduleRecordMapper,
 
     @Override
     public ScheduleBigScreenDTO getTeamData(String lineCode) {
+        ScheduleBigScreenDTO result = new ScheduleBigScreenDTO();
+
+        // 查询总班组数
         List<String> orgCodes = sysBaseAPI.getTeamBylineAndMajor(lineCode);
+
+        // 查询班组总人员数
         List<LoginUser> userByDepIds = sysBaseAPI.getUserByDepIds(orgCodes);
 
-        ScheduleBigScreenDTO result = new ScheduleBigScreenDTO();
+        // 填充总班组数
         result.setTeamTotal(CollUtil.isNotEmpty(orgCodes) ? orgCodes.size() : 0);
+
+        // 填充班组总人员数
         result.setUserTotal(CollUtil.isNotEmpty(userByDepIds) ? userByDepIds.size() : 0);
         result.setScheduleNum(0L);
 
@@ -175,6 +179,8 @@ public class ScheduleRecordServiceImpl extends ServiceImpl<ScheduleRecordMapper,
         if (CollUtil.isNotEmpty(userByDepIds)) {
             userIdList = userByDepIds.stream().map(LoginUser::getId).collect(Collectors.toList());
         }
+
+        // 填充今日当班人数
         if (CollUtil.isNotEmpty(userIdList)) {
             List<SysUserTeamDTO> sysUserTeamDTOS = baseMapper.getTodayOndutyDetail(page, null, orgCodes, new Date());
             page.setRecords(sysUserTeamDTOS);
@@ -189,29 +195,32 @@ public class ScheduleRecordServiceImpl extends ServiceImpl<ScheduleRecordMapper,
      * 获取大屏的班组信息-点击今日当班人数
      *
      * @param lineCode 线路code
-     * @param page
-     * @param orgcode
+     * @param page  分页参数
+     * @param orgcode 班组code
      * @return
      */
     @Override
     public IPage<SysUserTeamDTO> getTodayOndutyDetail(String lineCode, String orgcode, Page<SysUserTeamDTO> page) {
-        // 根据线路code或专业code获取班组信息
+        List<SysUserTeamDTO> result = new ArrayList<>();
+
+        // 根据传入线路和自身管理专业获取班组信息
         List<String> orgCodes = sysBaseAPI.getTeamBylineAndMajor(lineCode);
 
-        // 根据日期条件查询班次情况
         if (CollUtil.isNotEmpty(orgCodes)) {
-            List<SysUserTeamDTO> result = baseMapper.getTodayOndutyDetail(page, orgcode, orgCodes, new Date());
+
+            // 根据日期条件查询班次情况
+            result = baseMapper.getTodayOndutyDetail(page, orgcode, orgCodes, new Date());
+
+            // 填充角色名称
             for (SysUserTeamDTO sysUserTeamDTO : result) {
-                // 角色
                 List<String> roleNamesByUsername = sysBaseAPI.getRoleNamesById(sysUserTeamDTO.getUserId());
                 if (CollUtil.isNotEmpty(roleNamesByUsername)) {
                     sysUserTeamDTO.setRoleName(StrUtil.join("；", roleNamesByUsername));
                 }
             }
-            return page.setRecords(result);
         }
 
-        return page;
+        return page.setRecords(result);
     }
 
     /**
@@ -223,34 +232,23 @@ public class ScheduleRecordServiceImpl extends ServiceImpl<ScheduleRecordMapper,
      */
     @Override
     public IPage<SysUserTeamDTO> getTotalPepoleDetail(String lineCode, String orgcode, Page<SysUserTeamDTO> page) {
+        List<SysUserTeamDTO> result = new ArrayList<>();
+
+        // 根据传入线路和自身管理专业获取班组信息
         List<String> orgCodes = sysBaseAPI.getTeamBylineAndMajor(lineCode);
 
         if (CollUtil.isNotEmpty(orgCodes)) {
-            List<SysUserTeamDTO> users = baseMapper.getUserByDepIds(orgCodes, page, orgcode);
+             // 查询总人员列表
+             result = baseMapper.getUserByDepIds(orgCodes, page, orgcode);
 
-            for (SysUserTeamDTO sysUserTeamDTO : users) {
-                // 角色
+            // 填充角色名称
+            for (SysUserTeamDTO sysUserTeamDTO : result) {
                 List<String> roleNamesByUsername = sysBaseAPI.getRoleNamesById(sysUserTeamDTO.getUserId());
                 if (CollUtil.isNotEmpty(roleNamesByUsername)) {
                     sysUserTeamDTO.setRoleName(StrUtil.join("；", roleNamesByUsername));
                 }
             }
-            return page.setRecords(users);
         }
-        return page;
+        return page.setRecords(result);
     }
-
-    @Override
-    public List<SysDepartModel> getTeamBylineAndMajors(String lineCode) {
-        LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        if (ObjectUtil.isEmpty(user)) {
-            throw new AiurtBootException("请重新登录");
-        }
-        // 线路筛选
-        List<String> lineCodeList = new ArrayList<>();
-        // 专业筛选
-        List<String> majorList = new ArrayList<>();
-        return baseMapper.getTeamBylineAndMajors(lineCodeList,majorList);
-    }
-
 }

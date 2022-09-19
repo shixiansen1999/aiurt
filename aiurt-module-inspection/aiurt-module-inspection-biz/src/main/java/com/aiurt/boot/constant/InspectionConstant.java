@@ -252,19 +252,19 @@ public class InspectionConstant {
     /**
      * 看板时间字典：本周
      */
-    public static final Integer THIS_WEEK_1 = 1;
+    public static final String THIS_WEEK_1 = "1";
     /**
      * 看板时间字典：上周
      */
-    public static final Integer LAST_WEEK_2 = 2;
+    public static final String LAST_WEEK_2 = "2";
     /**
      * 看板时间字典：本月
      */
-    public static final Integer THIS_MONTH_3 = 3;
+    public static final String THIS_MONTH_3 = "3";
     /**
      * 看板时间字典：上月
      */
-    public static final Integer LAST_MONTH_4 = 4;
+    public static final String LAST_MONTH_4 = "4";
 
     /**
      * 总计划数

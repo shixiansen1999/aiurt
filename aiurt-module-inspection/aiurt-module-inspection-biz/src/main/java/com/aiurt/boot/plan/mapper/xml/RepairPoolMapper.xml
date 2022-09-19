@@ -59,12 +59,12 @@
         <where>
             rp.del_flag = 0
             <if test="beginDate!=null and endDate!=null">
-             and start_time &gt;= #{beginDate}
-             and start_time &lt;=#{endDate}
+                and date_format(rp.start_time ,'%Y-%m-%d') &gt;= date_format(#{beginDate} ,'%Y-%m-%d')
+                and date_format(rp.start_time ,'%Y-%m-%d') &lt;= date_format(#{endDate} ,'%Y-%m-%d')
             </if>
-            <if test="codeList.size()>0">
+            <if test="orgCodes.size()>0">
                 and rpor.org_code in
-                <foreach collection="codeList" separator="," open="(" close=")" item="code">
+                <foreach collection="orgCodes" separator="," open="(" close=")" item="code">
                     #{code}
                 </foreach>
             </if>
@@ -79,8 +79,8 @@
         <where>
             rp.del_flag = 0
             <if test="date!=null">
-                and rp.start_time &lt;= #{date}
-                and rp.end_time &gt;=#{date}
+                and date_format(rp.start_time ,'%Y-%m-%d') &lt;= date_format(#{date},'%Y-%m-%d')
+                and date_format(rp.end_time ,'%Y-%m-%d') &gt;=date_format(#{date},'%Y-%m-%d')
             </if>
             <if test="codeList.size()>0">
                 and rpor.org_code in
@@ -94,7 +94,7 @@
     SELECT
 	count( DISTINCT temp.id ) AS sum,
 	sum( CASE WHEN temp.`status` = 8 THEN 1 ELSE 0 END ) AS finish,
-	sum( CASE WHEN temp.`status` != 8 THEN 1 ELSE 0 END ) AS unfinish
+	sum( CASE WHEN temp.`status` = 8 THEN 0 ELSE 1 END ) AS unfinish
     FROM
 	(
 	SELECT DISTINCT rp.id,rp.CODE,rp.`status` FROM repair_pool rp
@@ -105,11 +105,48 @@
             and  rpor.org_code  = #{orgCode}
         </if>
         <if test="beginDate!=null and endDate!=null">
-            and start_time &gt;= #{beginDate}
-            and start_time &lt;=#{endDate}
+            and date_format(rp.start_time ,'%Y-%m-%d') &gt;= date_format(#{beginDate} ,'%Y-%m-%d')
+            and date_format(rp.start_time ,'%Y-%m-%d') &lt;= date_format(#{endDate} ,'%Y-%m-%d')
         </if>
     </where>
 	) temp
+    </select>
+    <select id="getInspectionDataNoPage" resultType="com.aiurt.boot.index.dto.InspectionDTO">
+        select distinct code,weeks,status from repair_pool rp
+        left join repair_pool_org_rel rpor on rpor.repair_pool_code = rp.code
+        <where>
+            rp.del_flag = 0
+            <if test="beginDate!=null and endDate!=null">
+                and date_format(rp.start_time ,'%Y-%m-%d') &gt;= date_format(#{beginDate} ,'%Y-%m-%d')
+                and date_format(rp.start_time ,'%Y-%m-%d') &lt;= date_format(#{endDate} ,'%Y-%m-%d')
+            </if>
+            <if test="orgCodes.size()>0">
+                and rpor.org_code in
+                <foreach collection="orgCodes" separator="," open="(" close=")" item="code">
+                    #{code}
+                </foreach>
+            </if>
+            <if test="item!=null and item==2">
+                and status = 8
+            </if>
+        </where>
+    </select>
+    <select id="getInspectionTodayDataNoPage" resultType="com.aiurt.boot.index.dto.InspectionDTO">
+        select  distinct code,weeks,status from repair_pool rp
+        left join repair_pool_org_rel rpor on rpor.repair_pool_code = rp.code
+        <where>
+            rp.del_flag = 0
+            <if test="date!=null">
+                and date_format(rp.start_time ,'%Y-%m-%d') &lt;= date_format(#{date},'%Y-%m-%d')
+                and date_format(rp.end_time ,'%Y-%m-%d') &gt;=date_format(#{date},'%Y-%m-%d')
+            </if>
+            <if test="orgCodes.size()>0">
+                and rpor.org_code in
+                <foreach collection="orgCodes" separator="," open="(" close=")" item="code">
+                    #{code}
+                </foreach>
+            </if>
+        </where>
     </select>
 
 

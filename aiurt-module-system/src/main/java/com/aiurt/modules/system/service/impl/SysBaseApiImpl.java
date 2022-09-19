@@ -1508,7 +1508,7 @@ public class SysBaseApiImpl implements ISysBaseAPI {
     @Override
     public List<SiteModel> getSiteByOrgCode(String orgCode) {
         if (StrUtil.isEmpty(orgCode)) {
-            return new ArrayList<>();
+            return CollUtil.newArrayList();
         }
         List<SiteModel> result = workAreaMapper.getSiteByOrgCode(orgCode);
         return result;
@@ -1534,7 +1534,7 @@ public class SysBaseApiImpl implements ISysBaseAPI {
                 return csStations.stream().map(CsStation::getStationCode).collect(Collectors.toList());
             }
         }
-        return new ArrayList<>();
+        return CollUtil.newArrayList();
     }
 
     /**
@@ -1552,26 +1552,30 @@ public class SysBaseApiImpl implements ISysBaseAPI {
         }
 
         // 线路筛选
-        List<String> lineCodeList = new ArrayList<>();
+        List<String> lineCodeList = CollUtil.newArrayList();
         if (StrUtil.isNotEmpty(lineCode)) {
             lineCodeList = StrUtil.split(lineCode, ',');
             List<String> lineList = workAreaMapper.getTeamBylineAndMajor(lineCodeList, new ArrayList<>());
             if (CollUtil.isEmpty(lineList)) {
-                return new ArrayList<>();
+                return CollUtil.newArrayList();
             }
         }
 
         // 专业筛选
         List<CsUserMajorModel> majorByUserId = this.getMajorByUserId(user.getId());
-        List<String> majorList = new ArrayList<>();
+        List<String> majorList = CollUtil.newArrayList();
+
+        // 筛选无数据，则直接返回
+        if(CollUtil.isEmpty(majorByUserId)) {
+            return CollUtil.newArrayList();
+        }
+
         if (CollUtil.isNotEmpty(majorByUserId)) {
             majorList = majorByUserId.stream().map(CsUserMajorModel::getMajorCode).collect(Collectors.toList());
             List<String> majors = workAreaMapper.getTeamBylineAndMajor(new ArrayList<>(), majorList);
             if (CollUtil.isEmpty(majors)) {
-                return new ArrayList<>();
+                return CollUtil.newArrayList();
             }
-        } else {
-            return new ArrayList<>();
         }
 
         return workAreaMapper.getTeamBylineAndMajor(lineCodeList, majorList);
@@ -1585,7 +1589,6 @@ public class SysBaseApiImpl implements ISysBaseAPI {
      */
     @Override
     public List<SysDepartModel> getTeamBylineAndMajors(String lineCode) {
-
         return workAreaService.getTeamBylineAndMajors(lineCode);
     }
 
