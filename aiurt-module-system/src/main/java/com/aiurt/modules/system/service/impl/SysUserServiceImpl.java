@@ -1,5 +1,8 @@
 package com.aiurt.modules.system.service.impl;
 
+import cn.hutool.core.util.StrUtil;
+import jdk.nashorn.internal.ir.ObjectNode;
+import liquibase.pro.packaged.C;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
 import com.aiurt.common.constant.CacheConstant;
@@ -679,5 +682,29 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
 			trees.add(map);
 		});
 		return trees;
+	}
+
+	@Override
+	public List<SysUser> queryManageUser() {
+		LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+
+		if (Objects.isNull(loginUser)) {
+			log.info("当前用户没登录");
+			return Collections.emptyList();
+		}
+		String orgId = loginUser.getOrgId();
+		if (StrUtil.isBlank(orgId)) {
+			log.info("当前用户没绑定机构");
+			return Collections.emptyList();
+		}
+
+		List<String> subDepIdList = sysDepartMapper.getSubDepIdsByDepId(orgId);
+
+		LambdaQueryWrapper<SysUser> wrapper = new LambdaQueryWrapper<>();
+		wrapper.in(SysUser::getOrgId, subDepIdList).notIn(SysUser::getId, Collections.singleton(loginUser.getId()))
+		.eq(SysUser::getStatus, 1).eq(SysUser::getDelFlag, 0);
+		List<SysUser> sysUsers = baseMapper.selectList(wrapper);
+
+		return sysUsers;
 	}
 }

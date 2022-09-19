@@ -1645,4 +1645,16 @@ public class SysUserController {
         }
         out.close();
     }
+
+    /**
+     * 获取当前班组所管辖的人员信息,不包括自己
+     * @return
+     */
+    @RequestMapping("/queryManageUser")
+    @ApiOperation("获取当前班组所管辖的人员信息,不包括自己")
+    public Result<List<SysUser>> queryManageUser() {
+        List<SysUser> resultList = sysUserService.queryManageUser();
+        return Result.OK(resultList);
+    }
+
 }
