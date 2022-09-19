@@ -1,5 +1,6 @@
 package com.aiurt.boot.statistics.service;
 
+import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
@@ -170,39 +171,41 @@ public class PatrolStatisticsService {
             pageList = patrolTaskMapper.getIndexPatrolList(page, patrolCondition, regexp, departList);
         }
 
+        // 巡视任务集
         Set<String> taskCodeSet = new HashSet<>();
         pageList.getRecords().stream().forEach(l -> {
             if (StrUtil.isNotEmpty(l.getTaskCode())) {
                 taskCodeSet.addAll(Arrays.asList(l.getTaskCode().split(",")));
             }
         });
-        // todo 检验数据正确性的集合,验证正确可删除
-//        System.out.println(taskCodeSet.size());
 
         // 任务下的巡视人员
         Map<String, Set<String>> userMap = new HashMap<>();
         // 巡视人员对应的组织机构
         Map<String, Set<String>> orgMap = new HashMap<>();
         taskCodeSet.stream().forEach(code -> {
-            Set<String> userSet = new HashSet<>();
-            Set<String> orgSet = new HashSet<>();
             LambdaQueryWrapper<PatrolTaskUser> userWrapper = Wrappers.<PatrolTaskUser>lambdaQuery()
-                    .select(PatrolTaskUser::getUserId)
+                    .select(PatrolTaskUser::getUserId, PatrolTaskUser::getUserName)
                     .eq(PatrolTaskUser::getDelFlag, 0)
                     .eq(PatrolTaskUser::getTaskCode, code);
             List<PatrolTaskUser> patrolTaskUsers = patrolTaskUserMapper.selectList(userWrapper);
             List<String> userId = patrolTaskUsers.stream().map(PatrolTaskUser::getUserId).distinct().collect(Collectors.toList());
             List<String> username = patrolTaskUsers.stream().map(PatrolTaskUser::getUserName).distinct().collect(Collectors.toList());
-            List<String> deptName = patrolTaskUserMapper.getDeptName(userId);
-            userSet.addAll(username);
-            orgSet.addAll(deptName);
-            userMap.put(code, userSet);
-            orgMap.put(code, orgSet);
+            // 用户名称
+            if (CollectionUtil.isNotEmpty(username)) {
+                userMap.put(code, new HashSet<>(username));
+            }
+            // 组织机构名称
+            if (CollectionUtil.isNotEmpty(userId)) {
+                List<String> deptName = patrolTaskUserMapper.getDeptName(userId);
+                if (CollectionUtil.isNotEmpty(deptName)) {
+                    orgMap.put(code, new HashSet<>(deptName));
+                }
+            }
         });
 
-
         pageList.getRecords().stream().forEach(l -> {
-            List<String> taskCodeList = new ArrayList<>();
+            List<String> taskCodeList = StrUtil.splitTrim(l.getTaskCode(), ',');
             // 任务状态翻译，0未完成，1已完成
             Integer status = l.getStatus();
             if (ObjectUtil.isNotEmpty(status)) {
@@ -217,11 +220,16 @@ public class PatrolStatisticsService {
             Set<String> userSet = new HashSet<>();
             // 巡视人员对应的组织机构
             Set<String> orgSet = new HashSet<>();
-
-            taskCodeList.stream().forEach(taskCode -> {
-                userSet.addAll(userMap.get(taskCode));
-                orgSet.addAll(orgMap.get(taskCode));
-            });
+            for (String taskCode : taskCodeList) {
+                Set<String> userInfo = userMap.get(taskCode);
+                Set<String> orgInfo = orgMap.get(taskCode);
+                if (CollectionUtil.isNotEmpty(userInfo)) {
+                    userSet.addAll(userInfo);
+                }
+                if (CollectionUtil.isNotEmpty(orgInfo)) {
+                    orgSet.addAll(orgInfo);
+                }
+            }
 
             String userInfo = userSet.stream().collect(Collectors.joining("；"));
             String orgInfo = orgSet.stream().collect(Collectors.joining("；"));
