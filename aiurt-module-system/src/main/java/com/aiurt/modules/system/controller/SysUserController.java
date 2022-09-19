@@ -1659,8 +1659,8 @@ public class SysUserController {
     }
 
 
-    @GetMapping("/sysuser/queryManageDepartUserTree")
-    @ApiOperation("根据机构人员树")
+    @GetMapping("/queryManageDepartUserTree")
+    @ApiOperation("获取当前班组所管辖部门人员信息树,不包括自己")
     public Result<List<SelectTable>> queryManageDepartUserTree() {
         List<SelectTable> tables = sysUserService.queryManageDepartUserTree();
         return Result.OK(tables);
