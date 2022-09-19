@@ -33,4 +33,20 @@
 				LEFT JOIN patrol_task_user ptu on ptu.task_code = pt.`code`
         where ptu.user_id = #{id}
     </select>
+    <select id="getScreenUserDuration" resultType="com.aiurt.boot.screen.model.ScreenDurationTask">
+        SELECT
+            ptu.user_id,
+            sum( TIMESTAMPDIFF( SECOND, pt.begin_time, IF ( 1 = pt.auditor, pt.auditor_time, pt.submit_time ) ) ) duration
+        FROM
+            patrol_task pt
+                JOIN patrol_task_user ptu ON pt.`code` = ptu.task_code
+                AND ptu.del_flag = 0
+        WHERE
+            pt.del_flag = 0
+        <if test="startTime != null and endTime != null">
+            AND pt.patrol_date BETWEEN #{startTime} AND #{endTime}
+        </if>
+        GROUP BY
+            ptu.user_id
+    </select>
 </mapper>

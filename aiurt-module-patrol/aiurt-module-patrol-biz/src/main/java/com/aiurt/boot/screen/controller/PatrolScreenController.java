@@ -1,5 +1,6 @@
 package com.aiurt.boot.screen.controller;
 
+import com.aiurt.boot.api.PatrolApi;
 import com.aiurt.boot.screen.model.ScreenImportantData;
 import com.aiurt.boot.screen.model.ScreenStatistics;
 import com.aiurt.boot.screen.model.ScreenStatisticsGraph;
@@ -19,7 +20,9 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 
 @Api(tags = "大屏巡视模块")
 @RestController
@@ -29,6 +32,8 @@ public class PatrolScreenController {
 
     @Autowired
     private PatrolScreenService screenService;
+    @Autowired
+    private PatrolApi patrolApi;
 
     /**
      * 大屏巡视模块-重要数据展示
@@ -116,5 +121,11 @@ public class PatrolScreenController {
     public Result<List<ScreenStatisticsGraph>> getStatisticsPieGraph(@ApiParam(name = "lineCode", value = "线路编号,多选的话英文逗号分割") String lineCode) {
         List<ScreenStatisticsGraph> list = screenService.getStatisticsGraph(lineCode);
         return Result.ok(list);
+    }
+
+    @RequestMapping("/getdata")
+    public Result<Map<String, BigDecimal>> getdata(int type,String orgId) {
+        Map<String, BigDecimal> patrolUserHours = patrolApi.getPatrolUserHours(type, orgId);
+        return Result.ok(patrolUserHours);
     }
 }
