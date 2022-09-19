@@ -112,6 +112,14 @@ public class PatrolTask implements Serializable {
     @ApiModelProperty(value = "任务获取方式：1 个人领取、2常规指派、3 手工下发")
     private java.lang.Integer source;
     /**
+     * 开始点击执行巡视任务的时间(yyyy-MM-dd HH:mm:ss)
+     */
+    @Excel(name = "开始点击执行巡视任务的时间", width = 15, format = "yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd HH:mm:ss")
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @ApiModelProperty(value = "开始点击执行巡视任务的时间,格式yyyy-MM-dd HH:mm:ss")
+    private java.util.Date beginTime;
+    /**
      * 巡检结果提交时间(yyyy-MM-dd HH:mm:ss)
      */
     @Excel(name = "巡检结果提交时间", width = 15, format = "yyyy-MM-dd HH:mm:ss")
