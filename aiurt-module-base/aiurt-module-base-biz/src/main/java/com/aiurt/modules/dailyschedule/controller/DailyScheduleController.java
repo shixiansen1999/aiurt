@@ -95,7 +95,7 @@ public class DailyScheduleController extends BaseController<DailySchedule, IDail
 			LambdaQueryWrapper<DailySchedule> queryWrapper = new LambdaQueryWrapper<>();
 			queryWrapper.eq(DailySchedule::getAddTime, dailySchedule.getAddTime()).apply("(FIND_IN_SET({0},notify_user_id)>0)", userName);
 			long count = dailyScheduleService.count(queryWrapper);
-			if (count>3) {
+			if (count>=3) {
 				LoginUser userByName = sysBaseAPI.getUserByName(userName);
 				realNameList.add(userByName.getRealname());
 			}
@@ -126,7 +126,7 @@ public class DailyScheduleController extends BaseController<DailySchedule, IDail
 			queryWrapper.eq(DailySchedule::getAddTime, dailySchedule.getAddTime()).ne(DailySchedule::getId, dailySchedule.getId())
 					.apply("(FIND_IN_SET({0},notify_user_id)>0)", userName);
 			long count = dailyScheduleService.count(queryWrapper);
-			if (count>3) {
+			if (count>=3) {
 				LoginUser userByName = sysBaseAPI.getUserByName(userName);
 				realNameList.add(userByName.getRealname());
 			}
