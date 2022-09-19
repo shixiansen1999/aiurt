@@ -695,4 +695,9 @@
             )
         </if>
     </select>
+    <select id="getReportTastList" resultType="com.aiurt.boot.report.model.PatrolReport">
+        select t1.*
+        from patrol_task t1
+        and t1.del_flag = 0
+    </select>
 </mapper>
