@@ -41,7 +41,7 @@
             cs.id,
             cs.line_name,
             cs.station_name,
-            cs.phone_num,
+            cs.phone_num as stationPhoneNum,
             cs.warning_status,
             cs.open_status,
             sd.depart_phone_num,
