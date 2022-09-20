@@ -12,7 +12,7 @@
             <fileMode>0755</fileMode><!--文件执行权限-->
         </fileSet>
         <fileSet>
-            <directory>src/main/assembly/prod/config</directory>
+            <directory>src/main/assembly/test/config</directory>
             <outputDirectory>aiurt-module-system/config</outputDirectory>
             <directoryMode>0744</directoryMode>
             <fileMode>0644</fileMode>
