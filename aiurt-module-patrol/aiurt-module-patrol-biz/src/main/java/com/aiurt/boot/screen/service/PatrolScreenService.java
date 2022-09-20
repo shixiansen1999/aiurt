@@ -60,20 +60,29 @@ public class PatrolScreenService {
         if (ObjectUtil.isEmpty(timeType)) {
             timeType = ScreenConstant.THIS_WEEK;
         }
-        List<String> lines = StrUtil.splitTrim(lineCode, ',');
         String dateTime = ScreenDateUtil.getDateTime(timeType);
         String[] split = dateTime.split("~");
         Date startTime = DateUtil.parse(split[0]);
         Date endTime = DateUtil.parse(split[1]);
-        // 获取当前登录人的专业编号
-        List<String> majors = this.getCurrentLoginUserMajors();
-        if (CollectionUtil.isEmpty(majors)) {
-            return new ScreenImportantData();
-        }
 
+//        List<String> lines = StrUtil.splitTrim(lineCode, ',');
+//        // 获取当前登录人的专业编号
+//        List<String> majors = this.getCurrentLoginUserMajors();
+//        if (CollectionUtil.isEmpty(majors)) {
+//            return new ScreenImportantData();
+//        }
+//
+//        ScreenModule module = new ScreenModule();
+//        module.setLines(lines);
+//        module.setMajors(majors);
+//        module.setStartTime(startTime);
+//        module.setEndTime(endTime);
+        List<String> orgCodes = sysBaseApi.getTeamBylineAndMajor(lineCode);
+        if (CollectionUtil.isEmpty(orgCodes)) {
+            return new ScreenImportantData(0L,0L,0L);
+        }
         ScreenModule module = new ScreenModule();
-        module.setLines(lines);
-        module.setMajors(majors);
+        module.setOrgCodes(orgCodes);
         module.setStartTime(startTime);
         module.setEndTime(endTime);
 
@@ -81,7 +90,6 @@ public class PatrolScreenService {
 //        List<PatrolTask> list = patrolTaskService.lambdaQuery().eq(PatrolTask::getDelFlag, 0)
 //                .between(PatrolTask::getPatrolDate, startTime, endTime)
 //                .list();
-
         String omitStartTime = this.getOmitDateScope(startTime).split("~")[0];
         String omitEndTime = this.getOmitDateScope(endTime).split("~")[1];
 
@@ -89,7 +97,6 @@ public class PatrolScreenService {
         module.setEndTime(DateUtil.parse(omitEndTime));
         module.setOmit(PatrolConstant.OMIT_STATUS);
 
-        ScreenImportantData data = new ScreenImportantData();
         long planNum = list.stream().count();
         long finishNum = list.stream().filter(l -> PatrolConstant.TASK_COMPLETE.equals(l.getStatus())).count();
 //        long omitNum = patrolTaskService.lambdaQuery().eq(PatrolTask::getDelFlag, 0)
@@ -97,6 +104,7 @@ public class PatrolScreenService {
 //                .between(PatrolTask::getPatrolDate, DateUtil.parse(omitStartTime), DateUtil.parse(omitEndTime))
 //                .count();
         long omitNum = patrolTaskMapper.getScreenDataCount(module).stream().count();
+        ScreenImportantData data = new ScreenImportantData();
         data.setPatrolNumber(planNum);
         data.setFinishNumber(finishNum);
         data.setOmitNumber(omitNum);
@@ -120,20 +128,28 @@ public class PatrolScreenService {
         Date startTime = DateUtil.parse(split[0]);
         Date endTime = DateUtil.parse(split[1]);
 
-        List<String> lines = StrUtil.splitTrim(lineCode, ',');
-        // 获取当前登录人的专业编号
-        List<String> majors = this.getCurrentLoginUserMajors();
-        if (CollectionUtil.isEmpty(majors)) {
-            return new ScreenStatistics();
-        }
-        ScreenModule module = new ScreenModule();
-        module.setLines(lines);
-        module.setMajors(majors);
-        module.setStartTime(startTime);
-        module.setEndTime(endTime);
+//        List<String> lines = StrUtil.splitTrim(lineCode, ',');
+//        // 获取当前登录人的专业编号
+//        List<String> majors = this.getCurrentLoginUserMajors();
+//        if (CollectionUtil.isEmpty(majors)) {
+//            return new ScreenStatistics();
+//        }
+//        ScreenModule module = new ScreenModule();
+//        module.setLines(lines);
+//        module.setMajors(majors);
+//        module.setStartTime(startTime);
+//        module.setEndTime(endTime);
 //        List<PatrolTask> list = patrolTaskService.lambdaQuery().eq(PatrolTask::getDelFlag, 0)
 //                .between(PatrolTask::getPatrolDate, startTime, endTime)
 //                .list();
+        List<String> orgCodes = sysBaseApi.getTeamBylineAndMajor(lineCode);
+        if (CollectionUtil.isEmpty(orgCodes)) {
+            return new ScreenStatistics(0L,0L,0L,0L,0L,0L);
+        }
+        ScreenModule module = new ScreenModule();
+        module.setOrgCodes(orgCodes);
+        module.setStartTime(startTime);
+        module.setEndTime(endTime);
         List<PatrolTask> list = patrolTaskMapper.getScreenDataCount(module);
 
         String omitStartTime = this.getOmitDateScope(startTime).split("~")[0];
@@ -194,21 +210,29 @@ public class PatrolScreenService {
         String[] split = dateTime.split("~");
         Date startTime = DateUtil.parse(split[0]);
         Date endTime = DateUtil.parse(split[1]);
-        List<String> lines = null;
-        if (StrUtil.isNotEmpty(lineCode)) {
-            lines = StrUtil.splitTrim(lineCode, ',');
-        }
-        // 当前登录人的专业编号
-        List<String> majors = this.getCurrentLoginUserMajors();
-        if (CollectionUtil.isEmpty(majors)) {
+//        List<String> lines = null;
+//        if (StrUtil.isNotEmpty(lineCode)) {
+//            lines = StrUtil.splitTrim(lineCode, ',');
+//        }
+//        // 当前登录人的专业编号
+//        List<String> majors = this.getCurrentLoginUserMajors();
+//        if (CollectionUtil.isEmpty(majors)) {
+//            return new ArrayList<>();
+//        }
+//
+//        ScreenTran tran = new ScreenTran();
+//        tran.setStartTime(startTime);
+//        tran.setEndTime(endTime);
+//        tran.setLines(lines);
+//        tran.setMajors(majors);
+        List<String> orgCodes = sysBaseApi.getTeamBylineAndMajor(lineCode);
+        if (CollectionUtil.isEmpty(orgCodes)) {
             return new ArrayList<>();
         }
-
         ScreenTran tran = new ScreenTran();
         tran.setStartTime(startTime);
         tran.setEndTime(endTime);
-        tran.setLines(lines);
-        tran.setMajors(majors);
+        tran.setOrgCodes(orgCodes);
 
         List<ScreenStatisticsTask> list = patrolTaskMapper.getScreenTask(tran);
         list.stream().forEach(l -> {
@@ -240,20 +264,28 @@ public class PatrolScreenService {
         String[] split = dateTime.split("~");
         Date startTime = DateUtil.parse(split[0]);
         Date endTime = DateUtil.parse(split[1]);
-        List<String> lines = null;
-        if (StrUtil.isNotEmpty(lineCode)) {
-            lines = StrUtil.splitTrim(lineCode, ',');
-        }
-        // 当前登录人的专业编号
-        List<String> majors = this.getCurrentLoginUserMajors();
-        if (CollectionUtil.isEmpty(majors)) {
+//        List<String> lines = null;
+//        if (StrUtil.isNotEmpty(lineCode)) {
+//            lines = StrUtil.splitTrim(lineCode, ',');
+//        }
+//        // 当前登录人的专业编号
+//        List<String> majors = this.getCurrentLoginUserMajors();
+//        if (CollectionUtil.isEmpty(majors)) {
+//            return new ArrayList<>();
+//        }
+//        ScreenTran tran = new ScreenTran();
+//        tran.setStartTime(startTime);
+//        tran.setEndTime(endTime);
+//        tran.setLines(lines);
+//        tran.setMajors(majors);
+        List<String> orgCodes = sysBaseApi.getTeamBylineAndMajor(lineCode);
+        if (CollectionUtil.isEmpty(orgCodes)) {
             return new ArrayList<>();
         }
         ScreenTran tran = new ScreenTran();
         tran.setStartTime(startTime);
         tran.setEndTime(endTime);
-        tran.setLines(lines);
-        tran.setMajors(majors);
+        tran.setOrgCodes(orgCodes);
 
         List<ScreenStatisticsGraph> list = patrolTaskMapper.getScreenGraph(tran);
         list.stream().forEach(l -> {
@@ -310,18 +342,24 @@ public class PatrolScreenService {
             return page;
         }
 
-        ScreenModule moduleType = new ScreenModule();
-        List<String> lines = null;
-        if (StrUtil.isNotEmpty(lineCode)) {
-            lines = StrUtil.splitTrim(lineCode, ',');
-        }
-        // 当前登录人的专业编号
-        List<String> majors = this.getCurrentLoginUserMajors();
-        if (CollectionUtil.isEmpty(majors)) {
+//        List<String> lines = null;
+//        if (StrUtil.isNotEmpty(lineCode)) {
+//            lines = StrUtil.splitTrim(lineCode, ',');
+//        }
+//        // 当前登录人的专业编号
+//        List<String> majors = this.getCurrentLoginUserMajors();
+//        if (CollectionUtil.isEmpty(majors)) {
+//            return page;
+//        }
+//        ScreenModule moduleType = new ScreenModule();
+//        moduleType.setLines(lines);
+//        moduleType.setMajors(majors);
+        List<String> orgCodes = sysBaseApi.getTeamBylineAndMajor(lineCode);
+        if (CollectionUtil.isEmpty(orgCodes)) {
             return page;
         }
-        moduleType.setLines(lines);
-        moduleType.setMajors(majors);
+        ScreenModule moduleType = new ScreenModule();
+        moduleType.setOrgCodes(orgCodes);
 
         String dateTime = ScreenDateUtil.getDateTime(timeType);
         String[] split = dateTime.split("~");

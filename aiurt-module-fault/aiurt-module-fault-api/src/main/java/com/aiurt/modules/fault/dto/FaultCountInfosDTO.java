@@ -10,6 +10,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
 import org.hibernate.validator.constraints.Length;
+import org.jeecgframework.poi.excel.annotation.Excel;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.validation.constraints.NotBlank;
@@ -44,6 +45,11 @@ public class FaultCountInfosDTO {
     @ApiModelProperty(value = "报修方式",example = "")
     @Dict(dicCode = "fault_mode_code")
     private String faultModeCode;
+
+    /**报修编号*/
+    @Excel(name = "报修编号", width = 15)
+    @ApiModelProperty(value = "关联流程编号/报修编号")
+    private String repairCode;
 
 
     @ApiModelProperty("班组名称")
