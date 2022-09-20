@@ -7,10 +7,13 @@ import com.aiurt.boot.manager.dto.SubsystemDTO;
 import com.aiurt.boot.plan.dto.RepairPoolDetailsDTO;
 import com.aiurt.boot.plan.dto.StationDTO;
 import com.aiurt.boot.task.dto.CheckListDTO;
+import com.aiurt.boot.task.dto.MaintenanceNameDTO;
 import com.aiurt.boot.task.dto.RepairTaskDTO;
+import com.aiurt.boot.task.dto.TeamDTO;
 import com.aiurt.boot.task.entity.RepairTask;
 import com.aiurt.boot.task.entity.RepairTaskEnclosure;
 import com.aiurt.boot.task.entity.RepairTaskResult;
+import com.aiurt.modules.fault.dto.FaultFrequencyDTO;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.ibatis.annotations.Param;
@@ -171,4 +174,9 @@ public interface RepairTaskMapper extends BaseMapper<RepairTask> {
      * @return
      */
     List<Date> getTaskInspectionTime(String code);
+
+
+    List<TeamDTO> readTeamList(@Param("condition") TeamDTO condition);
+
+    List<MaintenanceNameDTO> readNameList(@Param("condition") MaintenanceNameDTO condition);
 }
