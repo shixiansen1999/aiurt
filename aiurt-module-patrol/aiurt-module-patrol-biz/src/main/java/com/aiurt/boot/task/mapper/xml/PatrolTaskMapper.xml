@@ -424,9 +424,9 @@
         pt.`status`,
         pt.patrol_date,
         IF( 1 = pt.auditor, pt.auditor_time, pt.submit_time ) submitTime,
-        GROUP_CONCAT( DISTINCT ptu.user_name ) userInfo,
-        GROUP_CONCAT( DISTINCT cs.station_name ) stationInfo,
-        GROUP_CONCAT( DISTINCT sd.depart_name ) orgInfo
+        GROUP_CONCAT( DISTINCT ptu.user_name SEPARATOR '；' ) userInfo,
+        GROUP_CONCAT( DISTINCT cs.station_name SEPARATOR '；'  ) stationInfo,
+        GROUP_CONCAT( DISTINCT sd.depart_name SEPARATOR '；'  ) orgInfo
         FROM
         patrol_task pt
         LEFT JOIN patrol_task_user ptu ON pt.`code` = ptu.task_code
@@ -504,8 +504,8 @@
         pt.`status`,
         pt.abnormal_state,
         pt.omit_status,
-        GROUP_CONCAT( DISTINCT cs.station_name ) stationInfo,
-        GROUP_CONCAT( DISTINCT ptu.user_name ) userInfo
+        GROUP_CONCAT( DISTINCT CONCAT_WS( '/', cs.line_name, cs.station_name ) SEPARATOR '；' ) stationInfo,
+        GROUP_CONCAT( DISTINCT ptu.user_name SEPARATOR '；' ) userInfo
         FROM
         patrol_task pt
         LEFT JOIN patrol_task_station pts ON pt.`code` = pts.task_code AND pts.del_flag = 0
@@ -516,33 +516,13 @@
         <if test="condition.startTime != null and condition.endTime != null">
             AND pt.patrol_date BETWEEN #{condition.startTime} AND #{condition.endTime}
         </if>
-        <if test="condition.lines != null and condition.lines.size>0 ">
+        <if test="condition.orgCodes != null and condition.orgCodes.size>0 ">
             AND pt.`code` IN(
                 select distinct task_code from patrol_task_organization where del_flag = 0
-                and org_code in (
-                    select wao.org_code
-                    from work_area_line wal
-                    join work_area_org wao on wal.work_area_code = wao.work_area_code and wao.del_flag = 0
-                    where wal.del_flag = 0
-                    and wal.line_code in
-                    <foreach collection="condition.lines" item="item" open="(" separator="," close=")">
-                        #{item}
-                    </foreach>
-                )
-            )
-        </if>
-        <if test="condition.majors != null and condition.majors.size>0 ">
-            AND pt.`code` IN(
-                select distinct task_code from patrol_task_organization where del_flag = 0
-                and org_code in (
-                    select distinct wao.org_code from work_area wa
-                    join work_area_org wao on wa.`code` = wao.work_area_code and wao.del_flag = 0
-                    where wa.del_flag = 0
-                    and wa.major_code in
-                    <foreach collection="condition.majors" item="item" open="(" separator="," close=")">
-                        #{item}
-                    </foreach>
-                )
+                and org_code in
+                <foreach collection="condition.orgCodes" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
             )
         </if>
         GROUP BY pt.`code`
@@ -559,33 +539,13 @@
         <if test="condition.startTime != null and condition.endTime != null">
             AND pt.patrol_date BETWEEN #{condition.startTime} AND #{condition.endTime}
         </if>
-        <if test="condition.lines != null and condition.lines.size>0 ">
+        <if test="condition.orgCodes != null and condition.orgCodes.size>0 ">
             AND pt.`code` IN(
                 select distinct task_code from patrol_task_organization where del_flag = 0
-                and org_code in (
-                    select wao.org_code
-                    from work_area_line wal
-                    join work_area_org wao on wal.work_area_code = wao.work_area_code and wao.del_flag = 0
-                    where wal.del_flag = 0
-                    and wal.line_code in
-                    <foreach collection="condition.lines" item="item" open="(" separator="," close=")">
-                        #{item}
-                    </foreach>
-                )
-            )
-        </if>
-        <if test="condition.majors != null and condition.majors.size>0 ">
-            AND pt.`code` IN(
-                select distinct task_code from patrol_task_organization where del_flag = 0
-                and org_code in (
-                    select distinct wao.org_code from work_area wa
-                    join work_area_org wao on wa.`code` = wao.work_area_code and wao.del_flag = 0
-                    where wa.del_flag = 0
-                    and wa.major_code in
-                    <foreach collection="condition.majors" item="item" open="(" separator="," close=")">
-                        #{item}
-                    </foreach>
-                )
+                and org_code in
+                <foreach collection="condition.orgCodes" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
             )
         </if>
         group by pto.org_code
@@ -600,8 +560,8 @@
         pt.`status`,
         pt.abnormal_state,
         pt.omit_status,
-        GROUP_CONCAT( DISTINCT cs.station_name ) stationInfo,
-        GROUP_CONCAT( DISTINCT ptu.user_name ) userInfo
+        GROUP_CONCAT( DISTINCT cs.station_name SEPARATOR '；' ) stationInfo,
+        GROUP_CONCAT( DISTINCT ptu.user_name SEPARATOR '；' ) userInfo
         FROM
         patrol_task pt
         LEFT JOIN patrol_task_station pts ON pt.`code` = pts.task_code AND pts.del_flag = 0
@@ -624,33 +584,13 @@
         <if test="condition.today != null">
             AND DATE_FORMAT( pt.patrol_date, '%Y-%m-%d' ) = DATE_FORMAT(#{condition.today} , '%Y-%m-%d' )
         </if>
-        <if test="condition.lines != null and condition.lines.size>0 ">
+        <if test="condition.orgCodes != null and condition.orgCodes.size>0 ">
             AND pt.`code` IN(
                 select distinct task_code from patrol_task_organization where del_flag = 0
-                and org_code in (
-                    select wao.org_code
-                    from work_area_line wal
-                    join work_area_org wao on wal.work_area_code = wao.work_area_code and wao.del_flag = 0
-                    where wal.del_flag = 0
-                    and wal.line_code in
-                    <foreach collection="condition.lines" item="item" open="(" separator="," close=")">
-                        #{item}
-                    </foreach>
-                )
-            )
-        </if>
-        <if test="condition.majors != null and condition.majors.size>0 ">
-            AND pt.`code` IN(
-                select distinct task_code from patrol_task_organization where del_flag = 0
-                and org_code in (
-                    select distinct wao.org_code from work_area wa
-                    join work_area_org wao on wa.`code` = wao.work_area_code and wao.del_flag = 0
-                    where wa.del_flag = 0
-                    and wa.major_code in
-                    <foreach collection="condition.majors" item="item" open="(" separator="," close=")">
-                        #{item}
-                    </foreach>
-                )
+                and org_code in
+                <foreach collection="condition.orgCodes" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
             )
         </if>
         GROUP BY pt.`code`
@@ -665,33 +605,13 @@
         <if test="condition.omit != null">
             AND omit_status = #{condition.omit}
         </if>
-        <if test="condition.lines != null and condition.lines.size>0 ">
+        <if test="condition.orgCodes != null and condition.orgCodes.size>0 ">
             AND `code` IN(
                 select distinct task_code from patrol_task_organization where del_flag = 0
-                and org_code in (
-                    select wao.org_code
-                    from work_area_line wal
-                    join work_area_org wao on wal.work_area_code = wao.work_area_code and wao.del_flag = 0
-                    where wal.del_flag = 0
-                    and wal.line_code in
-                    <foreach collection="condition.lines" item="item" open="(" separator="," close=")">
-                        #{item}
-                    </foreach>
-                )
-            )
-        </if>
-        <if test="condition.majors != null and condition.majors.size>0 ">
-            AND `code` IN(
-                select distinct task_code from patrol_task_organization where del_flag = 0
-                and org_code in (
-                    select distinct wao.org_code from work_area wa
-                    join work_area_org wao on wa.`code` = wao.work_area_code and wao.del_flag = 0
-                    where wa.del_flag = 0
-                    and wa.major_code in
-                    <foreach collection="condition.majors" item="item" open="(" separator="," close=")">
-                        #{item}
-                    </foreach>
-                )
+                and org_code in
+                <foreach collection="condition.orgCodes" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
             )
         </if>
     </select>

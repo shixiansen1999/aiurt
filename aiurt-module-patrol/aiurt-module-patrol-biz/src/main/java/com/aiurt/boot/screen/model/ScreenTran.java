@@ -25,11 +25,15 @@ public class ScreenTran {
      */
     private Date endTime;
     /**
-     * 线路编号
+     * 组织机构编号
      */
-    private List<String> lines;
-    /**
-     * 专业编号
-     */
-    private List<String> majors;
+    private List<String> orgCodes;
+//    /**
+//     * 线路编号
+//     */
+//    private List<String> lines;
+//    /**
+//     * 专业编号
+//     */
+//    private List<String> majors;
 }
