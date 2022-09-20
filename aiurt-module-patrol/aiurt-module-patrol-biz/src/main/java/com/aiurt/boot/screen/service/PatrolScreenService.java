@@ -145,19 +145,18 @@ public class PatrolScreenService {
         List<PatrolTask> todayList = list.stream()
                 .filter(l -> DateUtil.format(new Date(), "yyyy-MM-dd").equals(DateUtil.format(l.getPatrolDate(), "yyyy-MM-dd")))
                 .collect(Collectors.toList());
-        if (!ScreenConstant.THIS_WEEK.equals(timeType) || !ScreenConstant.THIS_MONTH.equals(timeType)) {
+        if (!ScreenConstant.THIS_WEEK.equals(timeType) && !ScreenConstant.THIS_MONTH.equals(timeType)) {
 //            todayList = patrolTaskService.lambdaQuery().eq(PatrolTask::getDelFlag, 0)
 //                    .eq(PatrolTask::getOmitStatus, PatrolConstant.OMIT_STATUS)
 //                    .between(PatrolTask::getPatrolDate, DateUtil.parse(DateUtil.format(new Date(), "yyyy-MM-dd 00:00:00")),
 //                            DateUtil.parse(DateUtil.format(new Date(), "yyyy-MM-dd 23:59:59"))).list();
             ScreenModule todayModule = new ScreenModule();
             BeanUtils.copyProperties(module, todayModule);
-            todayModule.setStartTime(DateUtil.parse(DateUtil.format(new Date(), "yyyy-MM-dd 00:00:00")));
-            todayModule.setEndTime(DateUtil.parse(DateUtil.format(new Date(), "yyyy-MM-dd 23:59:59")));
+            Date taday = new Date();
+            todayModule.setStartTime(DateUtil.parse(DateUtil.format(taday, "yyyy-MM-dd 00:00:00")));
+            todayModule.setEndTime(DateUtil.parse(DateUtil.format(taday, "yyyy-MM-dd 23:59:59")));
             todayList = patrolTaskMapper.getScreenDataCount(todayModule);
         }
-        ScreenStatistics data = new ScreenStatistics();
-
         long planNum = list.stream().count();
         long finishNum = list.stream().filter(l -> PatrolConstant.TASK_COMPLETE.equals(l.getStatus())).count();
 //        long omitNum = patrolTaskService.lambdaQuery().eq(PatrolTask::getDelFlag, 0)
@@ -169,6 +168,7 @@ public class PatrolScreenService {
         long todayNum = todayList.stream().count();
         long todayFinishNum = todayList.stream().filter(l -> PatrolConstant.TASK_COMPLETE.equals(l.getStatus())).count();
 
+        ScreenStatistics data = new ScreenStatistics();
         data.setPlanNum(planNum);
         data.setFinishNum(finishNum);
         data.setOmitNum(omitNum);
