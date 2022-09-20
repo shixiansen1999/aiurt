@@ -4,9 +4,7 @@ import cn.hutool.core.date.DateTime;
 import com.aiurt.boot.index.dto.TaskDetailsDTO;
 import com.aiurt.boot.index.dto.TaskDetailsReq;
 import com.aiurt.boot.plan.dto.RepairPoolDetailsDTO;
-import com.aiurt.modules.fault.dto.FaultIndexDTO;
-import com.aiurt.modules.fault.dto.FaultTimeoutLevelDTO;
-import com.aiurt.modules.fault.dto.FaultTimeoutLevelReq;
+import com.aiurt.modules.fault.dto.*;
 import com.aiurt.modules.fault.entity.Fault;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -27,6 +25,27 @@ public interface FaultCountMapper extends BaseMapper<FaultIndexDTO> {
      * @return
      */
     List<FaultTimeoutLevelDTO> getFaultData(@Param("level") Integer level, @Param("page") Page<FaultTimeoutLevelDTO> page, @Param("faultTimeoutLevelReq") FaultTimeoutLevelReq faultTimeoutLevelReq);
+
+    /**
+     *故障概况统计详情(总数和已解决)分页
+     * @param type
+     * @param page
+     * @param faultCountInfoReq
+     * @return
+     */
+    List<FaultCountInfoDTO> getFaultCountInfo(@Param("type") Integer type, @Param("page") Page<FaultCountInfoDTO> page, @Param("faultCountInfoReq") FaultCountInfoReq faultCountInfoReq);
+
+    /**
+     *故障概况统计详情(未解决和挂起)分页
+     * @param type
+     * @param page
+     * @param faultCountInfoReq
+     * @return
+     */
+    List<FaultCountInfosDTO> getFaultCountInfos(@Param("type") Integer type, @Param("page") Page<FaultCountInfosDTO> page, @Param("faultCountInfoReq") FaultCountInfoReq faultCountInfoReq);
+
+
+
 
 
     /**

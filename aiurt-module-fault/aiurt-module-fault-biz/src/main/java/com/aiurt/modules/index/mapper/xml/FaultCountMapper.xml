@@ -13,6 +13,61 @@
         </where>
     </select>
 
+    <select id="getFaultCountInfo" resultType="com.aiurt.modules.fault.dto.FaultCountInfoDTO">
+        select * from fault
+        <where>
+            <if test="faultCountInfoReq.type == 1">
+                AND 1 = 1
+            </if>
+            <if test="faultCountInfoReq.type == 2">
+                AND status = 12
+            </if>
+            <if test="faultCountInfoReq.startDate!=null and faultCountInfoReq.endDate!=null">
+                and approval_pass_time  &gt;= #{faultCountInfoReq.startDate}  and approval_pass_time &lt;= #{faultCountInfoReq.endDate}
+            </if>
+            <if test="faultCountInfoReq.faultLevel != null">
+                and fault_level  = #{faultCountInfoReq.faultLevel}
+            </if>
+            <if test="faultCountInfoReq.status != null">
+                and status  = #{faultTimeoutLevelReq.status}
+            </if>
+            <if test="faultCountInfoReq.appointUserName != null">
+                and appoint_user_name  like concat( '%' , #{faultCountInfoReq.appointUserName}, '%')
+            </if>
+            <if test="faultCountInfoReq.faultModeCode != null">
+                and fault_mode_code  = #{faultCountInfoReq.faultModeCode}
+            </if>
+        </where>
+    </select>
+
+    <select id="getFaultCountInfos" resultType="com.aiurt.modules.fault.dto.FaultCountInfosDTO">
+        select * from fault
+        <where>
+            <if test="faultCountInfoReq.type == 3">
+                AND status &lt;&gt; 12
+            </if>
+            <if test="faultCountInfoReq.type == 4">
+                AND status = 10
+            </if>
+            <if test="faultCountInfoReq.startDate!=null and faultCountInfoReq.endDate!=null">
+                and approval_pass_time  &gt;= #{faultCountInfoReq.startDate}  and approval_pass_time &lt;= #{faultCountInfoReq.endDate}
+            </if>
+            <if test="faultCountInfoReq.faultLevel != null">
+                and fault_level  = #{faultCountInfoReq.faultLevel}
+            </if>
+            <if test="faultCountInfoReq.status != null">
+                and status  = #{faultTimeoutLevelReq.status}
+            </if>
+            <if test="faultCountInfoReq.appointUserName != null">
+                and appoint_user_name  like concat( '%' , #{faultCountInfoReq.appointUserName}, '%')
+            </if>
+            <if test="faultCountInfoReq.faultModeCode != null">
+                and fault_mode_code  = #{faultCountInfoReq.faultModeCode}
+            </if>
+        </where>
+    </select>
+
+
 
     <select id="getFaultData" resultType="com.aiurt.modules.fault.dto.FaultTimeoutLevelDTO">
         select * from fault
@@ -31,8 +86,8 @@
                     and TIMESTAMPDIFF(HOUR,happen_time,now()) &gt;=12
                     and TIMESTAMPDIFF(HOUR,happen_time,now()) &lt;= 24
             </if>
-            <if test="faultTimeoutLevelReq.startTime!=null and faultTimeoutLevelReq.endTime!=null">
-                and approval_pass_time  &gt;= #{faultTimeoutLevelReq.startTime}  and approval_pass_time &lt;= #{faultTimeoutLevelReq.endTime}
+            <if test="faultTimeoutLevelReq.startDate!=null and faultTimeoutLevelReq.endDate!=null">
+                and approval_pass_time  &gt;= #{faultTimeoutLevelReq.startDate}  and approval_pass_time &lt;= #{faultTimeoutLevelReq.endDate}
             </if>
             <if test="faultTimeoutLevelReq.faultLevel != null">
                 and fault_level  = #{faultTimeoutLevelReq.faultLevel}

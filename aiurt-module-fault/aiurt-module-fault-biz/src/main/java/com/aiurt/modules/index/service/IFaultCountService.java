@@ -2,9 +2,7 @@ package com.aiurt.modules.index.service;
 
 import com.aiurt.boot.index.dto.TaskDetailsDTO;
 import com.aiurt.boot.index.dto.TaskDetailsReq;
-import com.aiurt.modules.fault.dto.FaultIndexDTO;
-import com.aiurt.modules.fault.dto.FaultTimeoutLevelDTO;
-import com.aiurt.modules.fault.dto.FaultTimeoutLevelReq;
+import com.aiurt.modules.fault.dto.*;
 import com.aiurt.modules.fault.entity.Fault;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -23,6 +21,21 @@ public interface IFaultCountService{
      * @return
      */
     FaultIndexDTO queryFaultCount(Date startDate, Date endDate);
+
+    /**
+     * 首页故障统计详情(故障总数和已解决)
+     * @param faultCountInfoReq
+     * @return
+     */
+    IPage<FaultCountInfoDTO> getFaultCountInfo(FaultCountInfoReq faultCountInfoReq);
+
+
+    /**
+     * 首页故障统计详情(未解决和挂起数)
+     * @param faultCountInfoReq
+     * @return
+     */
+    IPage<FaultCountInfosDTO> getFaultCountInfos(FaultCountInfoReq faultCountInfoReq);
 
     /**
      * 故障超时等级详情分页

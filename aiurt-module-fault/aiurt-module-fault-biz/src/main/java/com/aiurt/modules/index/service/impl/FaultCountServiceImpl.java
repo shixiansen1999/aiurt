@@ -4,9 +4,7 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.DateUnit;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
-import com.aiurt.modules.fault.dto.FaultIndexDTO;
-import com.aiurt.modules.fault.dto.FaultTimeoutLevelDTO;
-import com.aiurt.modules.fault.dto.FaultTimeoutLevelReq;
+import com.aiurt.modules.fault.dto.*;
 import com.aiurt.modules.fault.entity.Fault;
 import com.aiurt.modules.fault.entity.FaultDevice;
 import com.aiurt.modules.fault.enums.FaultStatusEnum;
@@ -107,6 +105,71 @@ public class FaultCountServiceImpl implements IFaultCountService {
         return faultIndexDTO;
     }
 
+
+    /**
+     * 首页-故障概况详情(总数和已解决)
+     * @param faultCountInfoReq
+     * @return
+     */
+    public IPage<FaultCountInfoDTO> getFaultCountInfo(FaultCountInfoReq faultCountInfoReq) {
+        IPage<FaultCountInfoDTO> result = new Page<>();
+        if (ObjectUtil.isEmpty(faultCountInfoReq.getType())
+                || ObjectUtil.isEmpty(faultCountInfoReq)
+                || ObjectUtil.isEmpty(faultCountInfoReq.getStartDate())
+                || ObjectUtil.isEmpty(faultCountInfoReq.getEndDate())) {
+            return result;
+        }
+        // 分页数据
+        Page<FaultCountInfoDTO> page = new Page<>(faultCountInfoReq.getPageNo(), faultCountInfoReq.getPageSize());
+        List<FaultCountInfoDTO> faultData = faultCountMapper.getFaultCountInfo(faultCountInfoReq.getType(), page, faultCountInfoReq);
+        if (CollUtil.isNotEmpty(faultData)) {
+            for (FaultCountInfoDTO faultDatum : faultData) {
+                //查找设备编码
+                List<FaultDevice> faultDeviceList = faultDeviceService.queryByFaultCode(faultDatum.getCode());
+                if(CollUtil.isNotEmpty(faultDeviceList)){
+                    for (FaultDevice faultDevice : faultDeviceList) {
+                        faultDatum.setDeviceCode(faultDevice.getDeviceCode());
+                        faultDatum.setDeviceName(faultDevice.getDeviceName());
+                    }
+                }
+            }
+        }
+        page.setRecords(faultData);
+        return page;
+    }
+
+    /**
+     * 首页-故障概况详情(未解决和挂起数)
+     * @param faultCountInfoReq
+     * @return
+     */
+    public IPage<FaultCountInfosDTO> getFaultCountInfos(FaultCountInfoReq faultCountInfoReq) {
+        IPage<FaultCountInfosDTO> result = new Page<>();
+        if (ObjectUtil.isEmpty(faultCountInfoReq.getType())
+                || ObjectUtil.isEmpty(faultCountInfoReq)
+                || ObjectUtil.isEmpty(faultCountInfoReq.getStartDate())
+                || ObjectUtil.isEmpty(faultCountInfoReq.getEndDate())) {
+            return result;
+        }
+        // 分页数据
+        Page<FaultCountInfosDTO> page = new Page<>(faultCountInfoReq.getPageNo(), faultCountInfoReq.getPageSize());
+        List<FaultCountInfosDTO> faultData = faultCountMapper.getFaultCountInfos(faultCountInfoReq.getType(), page, faultCountInfoReq);
+        if (CollUtil.isNotEmpty(faultData)) {
+            for (FaultCountInfosDTO faultDatum : faultData) {
+                //查找设备编码
+                List<FaultDevice> faultDeviceList = faultDeviceService.queryByFaultCode(faultDatum.getCode());
+                if(CollUtil.isNotEmpty(faultDeviceList)){
+                    for (FaultDevice faultDevice : faultDeviceList) {
+                        faultDatum.setDeviceCode(faultDevice.getDeviceCode());
+                        faultDatum.setDeviceName(faultDevice.getDeviceName());
+                    }
+                }
+            }
+        }
+        page.setRecords(faultData);
+        return page;
+    }
+
     /**
      *分页查询故障超时等级
      * @param faultTimeoutLevelReq 查询条件
@@ -116,8 +179,8 @@ public class FaultCountServiceImpl implements IFaultCountService {
         IPage<FaultTimeoutLevelDTO> result = new Page<>();
         if (ObjectUtil.isEmpty(faultTimeoutLevelReq.getLevel())
                 || ObjectUtil.isEmpty(faultTimeoutLevelReq)
-                || ObjectUtil.isEmpty(faultTimeoutLevelReq.getStartTime())
-                || ObjectUtil.isEmpty(faultTimeoutLevelReq.getEndTime())) {
+                || ObjectUtil.isEmpty(faultTimeoutLevelReq.getStartDate())
+                || ObjectUtil.isEmpty(faultTimeoutLevelReq.getEndDate())) {
             return result;
         }
         // 分页数据
