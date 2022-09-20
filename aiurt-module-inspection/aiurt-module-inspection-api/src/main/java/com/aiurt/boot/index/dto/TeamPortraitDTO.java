@@ -15,6 +15,8 @@ import java.math.BigDecimal;
 public class TeamPortraitDTO {
     @ApiModelProperty("班组id")
     private String teamId;
+    @ApiModelProperty("班组code")
+    private String teamCode;
     @ApiModelProperty("班组名称")
     private String teamName;
     @ApiModelProperty("班组组长名称")
@@ -35,4 +37,6 @@ public class TeamPortraitDTO {
     private BigDecimal patrolTotalTime;
     @ApiModelProperty("维修总工时")
     private BigDecimal faultTotalTime;
+
+    private String parentId;
 }
