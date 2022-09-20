@@ -246,6 +246,7 @@ public class CommonCtroller {
                 selectTable.setValue(csStation.getStationCode());
                 selectTable.setLabel(csStation.getStationName());
                 selectTable.setLevel(2);
+                selectTable.setId(csStation.getId());
                 selectTable.setLineCode(lineCode);
                 selectTable.setStationCode(csStation.getStationCode());
 
@@ -255,6 +256,7 @@ public class CommonCtroller {
                     SelectTable tableV = new SelectTable();
                     tableV.setLabel(csStationPosition.getPositionName());
                     tableV.setValue(csStationPosition.getPositionCode());
+                    tableV.setId(csStationPosition.getId());
                     tableV.setLevel(3);
                     tableV.setLineCode(lineCode);
                     tableV.setStationCode(csStation.getStationCode());
