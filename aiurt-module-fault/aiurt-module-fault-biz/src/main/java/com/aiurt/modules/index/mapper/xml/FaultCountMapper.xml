@@ -29,7 +29,7 @@
                 and fault_level  = #{faultCountInfoReq.faultLevel}
             </if>
             <if test="faultCountInfoReq.status != null">
-                and status  = #{faultTimeoutLevelReq.status}
+                and status  = #{faultCountInfoReq.status}
             </if>
             <if test="faultCountInfoReq.appointUserName != null">
                 and appoint_user_name  like concat( '%' , #{faultCountInfoReq.appointUserName}, '%')
@@ -56,7 +56,7 @@
                 and fault_level  = #{faultCountInfoReq.faultLevel}
             </if>
             <if test="faultCountInfoReq.status != null">
-                and status  = #{faultTimeoutLevelReq.status}
+                and status  = #{faultCountInfoReq.status}
             </if>
             <if test="faultCountInfoReq.appointUserName != null">
                 and appoint_user_name  like concat( '%' , #{faultCountInfoReq.appointUserName}, '%')
