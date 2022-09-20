@@ -791,15 +791,19 @@ public class SysBaseApiImpl implements ISysBaseAPI {
     @Override
     public List<LoginUser> queryAllUserByIds(String[] userIds) {
         QueryWrapper<SysUser> queryWrapper = new QueryWrapper<SysUser>().eq("status", 1).eq("del_flag", 0);
-        queryWrapper.in("id", userIds);
-        List<LoginUser> loginUsers = new ArrayList<>();
-        List<SysUser> sysUsers = userMapper.selectList(queryWrapper);
-        for (SysUser user : sysUsers) {
-            LoginUser loginUser = new LoginUser();
-            BeanUtils.copyProperties(user, loginUser);
-            loginUsers.add(loginUser);
+        if (userIds != null && userIds.length > 0) {
+            queryWrapper.in("id", userIds);
+            List<LoginUser> loginUsers = new ArrayList<>();
+            List<SysUser> sysUsers = userMapper.selectList(queryWrapper);
+            for (SysUser user : sysUsers) {
+                LoginUser loginUser = new LoginUser();
+                BeanUtils.copyProperties(user, loginUser);
+                loginUsers.add(loginUser);
+            }
+            return loginUsers;
         }
-        return loginUsers;
+
+        return CollUtil.newArrayList();
     }
 
     /**
@@ -1566,7 +1570,7 @@ public class SysBaseApiImpl implements ISysBaseAPI {
         List<String> majorList = CollUtil.newArrayList();
 
         // 筛选无数据，则直接返回
-        if(CollUtil.isEmpty(majorByUserId)) {
+        if (CollUtil.isEmpty(majorByUserId)) {
             return CollUtil.newArrayList();
         }
 

@@ -9,6 +9,19 @@
             <result column="system_name" property="systemName"></result>
         </collection>
     </resultMap>
+    <resultMap id="codemap" type="com.aiurt.boot.plan.dto.CodeManageDTO">
+        <result column="code" property="code"/>
+        <collection property="list" ofType="string"/>
+    </resultMap>
+    <resultMap id="stacode" type="com.aiurt.boot.plan.dto.CodeManageDTO">
+        <result column="code" property="code"/>
+        <collection property="stationDTOS" ofType="com.aiurt.boot.plan.dto.StationDTO">
+            <result property="stationCode" column="stationCode"/>
+            <result property="lineCode" column="lineCode"/>
+            <result property="positionCode" column="positionCode"/>
+        </collection>
+
+    </resultMap>
     <select id="queryList" resultType="com.aiurt.boot.plan.entity.RepairPool">
 
     </select>
@@ -147,6 +160,25 @@
                 </foreach>
             </if>
         </where>
+    </select>
+    <select id="selectOrgByCodes" parameterType="list" resultMap="codemap">
+     select  org_code as list,repair_pool_code as code from  repair_pool_org_rel where del_flag = 0
+     <if test="taskCodes.size()>0">
+         and repair_pool_code in
+         <foreach collection="taskCodes" item="code" open="(" close=")" separator=",">
+             #{code}
+         </foreach>
+     </if>
+    </select>
+    <select id="selectStationList"  resultMap="stacode">
+    select repair_pool_code as code,station_code as stationCode,position_code as positionCode,line_code  as lineCode from repair_pool_station_rel
+    where del_flag = 0
+        <if test="taskCodes.size()>0">
+            and repair_pool_code in
+            <foreach collection="taskCodes" item="code" open="(" close=")" separator=",">
+                #{code}
+            </foreach>
+        </if>
     </select>
 
 

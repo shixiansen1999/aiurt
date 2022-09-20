@@ -4,10 +4,7 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
-import com.aiurt.modules.schedule.dto.ScheduleBigScreenDTO;
-import com.aiurt.modules.schedule.dto.ScheduleRecordDTO;
-import com.aiurt.modules.schedule.dto.SysUserScheduleDTO;
-import com.aiurt.modules.schedule.dto.SysUserTeamDTO;
+import com.aiurt.modules.schedule.dto.*;
 import com.aiurt.modules.schedule.entity.ScheduleRecord;
 import com.aiurt.modules.schedule.mapper.ScheduleRecordMapper;
 import com.aiurt.modules.schedule.model.ScheduleRecordModel;
@@ -22,10 +19,7 @@ import org.jeecg.common.system.vo.SiteModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 ;
@@ -195,8 +189,8 @@ public class ScheduleRecordServiceImpl extends ServiceImpl<ScheduleRecordMapper,
      * 获取大屏的班组信息-点击今日当班人数
      *
      * @param lineCode 线路code
-     * @param page  分页参数
-     * @param orgcode 班组code
+     * @param page     分页参数
+     * @param orgcode  班组code
      * @return
      */
     @Override
@@ -238,8 +232,8 @@ public class ScheduleRecordServiceImpl extends ServiceImpl<ScheduleRecordMapper,
         List<String> orgCodes = sysBaseAPI.getTeamBylineAndMajor(lineCode);
 
         if (CollUtil.isNotEmpty(orgCodes)) {
-             // 查询总人员列表
-             result = baseMapper.getUserByDepIds(orgCodes, page, orgcode);
+            // 查询总人员列表
+            result = baseMapper.getUserByDepIds(orgCodes, page, orgcode);
 
             // 填充角色名称
             for (SysUserTeamDTO sysUserTeamDTO : result) {
@@ -250,5 +244,11 @@ public class ScheduleRecordServiceImpl extends ServiceImpl<ScheduleRecordMapper,
             }
         }
         return page.setRecords(result);
+    }
+
+    @Override
+    public IPage<SysTotalTeamDTO> getTotalTeamDetail(Page<SysTotalTeamDTO> page, String lineCode) {
+        page.setRecords(Arrays.asList(new SysTotalTeamDTO()));
+        return page;
     }
 }

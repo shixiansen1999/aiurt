@@ -1,10 +1,7 @@
 package com.aiurt.modules.schedule.service;
 
 
-import com.aiurt.modules.schedule.dto.ScheduleBigScreenDTO;
-import com.aiurt.modules.schedule.dto.ScheduleRecordDTO;
-import com.aiurt.modules.schedule.dto.SysUserScheduleDTO;
-import com.aiurt.modules.schedule.dto.SysUserTeamDTO;
+import com.aiurt.modules.schedule.dto.*;
 import com.aiurt.modules.schedule.entity.ScheduleRecord;
 import com.aiurt.modules.schedule.model.ScheduleRecordModel;
 import com.aiurt.modules.schedule.model.ScheduleUser;
@@ -29,22 +26,23 @@ public interface IScheduleRecordService extends IService<ScheduleRecord> {
 
     List<ScheduleRecordModel> getRecordListByUserAndDate(String userId, String date);
 
-    List<ScheduleRecordModel> getAllScheduleRecordsByMonth(String date,String orgId);
+    List<ScheduleRecordModel> getAllScheduleRecordsByMonth(String date, String orgId);
 
     List<LoginUser> getScheduleUserDataByDay(String day, String orgId);
 
     List<ScheduleRecordModel> getRecordListByDay(String date);
 
-    List<ScheduleRecordModel> getRecordListByDayAndUserIds(String date,List<String>userIds);
+    List<ScheduleRecordModel> getRecordListByDayAndUserIds(String date, List<String> userIds);
 
-    List<ScheduleRecord> getRecordListInDays(String userId,String startDate,String endDate);
+    List<ScheduleRecord> getRecordListInDays(String userId, String startDate, String endDate);
 
-    List<ScheduleUser> getScheduleUserByDateAndOrgCode(String date,String username, String orgCode);
+    List<ScheduleUser> getScheduleUserByDateAndOrgCode(String date, String username, String orgCode);
 
     List<ScheduleUser> getScheduleUserByDateAndOrgCodeAndOrgId(String date, String username, String orgCode, String orgId);
 
     /**
      * 统计分析
+     *
      * @param map
      * @return
      */
@@ -52,11 +50,13 @@ public interface IScheduleRecordService extends IService<ScheduleRecord> {
 
     /**
      * 根据日期查询班次情况
+     *
      * @param page
      * @param scheduleRecordDTO
      * @return
      */
     IPage<SysUserScheduleDTO> getStaffOnDuty(Page<SysUserScheduleDTO> page, ScheduleRecordDTO scheduleRecordDTO);
+
     /**
      * 获取大屏的班组信息
      *
@@ -64,20 +64,29 @@ public interface IScheduleRecordService extends IService<ScheduleRecord> {
      * @return
      */
     ScheduleBigScreenDTO getTeamData(String lineCode);
+
     /**
      * 获取大屏的班组信息-点击今日当班人数
      *
      * @param lineCode 线路code
      * @return
      */
-    IPage<SysUserTeamDTO> getTodayOndutyDetail(String lineCode,  String orgcode,Page<SysUserTeamDTO> page);
+    IPage<SysUserTeamDTO> getTodayOndutyDetail(String lineCode, String orgcode, Page<SysUserTeamDTO> page);
+
     /**
      * 获取大屏的班组信息-点击总人员数
      *
      * @param lineCode 线路code
      * @return
      */
-    IPage<SysUserTeamDTO> getTotalPepoleDetail(String lineCode,  String orgcode,Page<SysUserTeamDTO> page);
+    IPage<SysUserTeamDTO> getTotalPepoleDetail(String lineCode, String orgcode, Page<SysUserTeamDTO> page);
 
-
+    /**
+     * 获取大屏的班组信息-点击总班组数
+     *
+     * @param page
+     * @param lineCode
+     * @return
+     */
+    IPage<SysTotalTeamDTO> getTotalTeamDetail(Page<SysTotalTeamDTO> page, String lineCode);
 }

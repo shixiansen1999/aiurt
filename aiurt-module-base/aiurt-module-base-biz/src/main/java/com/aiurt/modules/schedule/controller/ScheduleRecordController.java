@@ -6,10 +6,7 @@ import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.constant.RoleConstant;
 import com.aiurt.common.util.DateUtils;
 import com.aiurt.common.util.oConvertUtils;
-import com.aiurt.modules.schedule.dto.ScheduleBigScreenDTO;
-import com.aiurt.modules.schedule.dto.ScheduleRecordDTO;
-import com.aiurt.modules.schedule.dto.SysUserScheduleDTO;
-import com.aiurt.modules.schedule.dto.SysUserTeamDTO;
+import com.aiurt.modules.schedule.dto.*;
 import com.aiurt.modules.schedule.entity.ScheduleHolidays;
 import com.aiurt.modules.schedule.entity.ScheduleItem;
 import com.aiurt.modules.schedule.entity.ScheduleLog;
@@ -36,7 +33,9 @@ import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.query.QueryGenerator;
+import org.jeecg.common.system.vo.DepartScheduleModel;
 import org.jeecg.common.system.vo.LoginUser;
+import org.jeecg.common.system.vo.SysDepartModel;
 import org.jeecgframework.poi.excel.ExcelImportUtil;
 import org.jeecgframework.poi.excel.def.NormalExcelConstants;
 import org.jeecgframework.poi.excel.entity.ExportParams;
@@ -491,4 +490,22 @@ public class ScheduleRecordController {
         return Result.OK(result);
     }
 
+    /**
+     * 大屏的班组信息-点击总班组数
+     *
+     * @param lineCode 线路code
+     * @return
+     */
+    @AutoLog(value = "获取大屏的班组信息-点击总班组数", operateType = 1, operateTypeAlias = "查询", permissionUrl = "")
+    @ApiOperation(value = "获取大屏的班组信息-点击总班组数", notes = "获取大屏的班组信息-点击总班组数")
+    @RequestMapping(value = "/getTotalTeamDetail", method = RequestMethod.GET)
+    public Result<IPage<SysTotalTeamDTO>> getTotalTeamDetail(@ApiParam(name = "lineCode", value = "线路code,多个用,隔开")
+                                                             @RequestParam(value = "lineCode", required = false) String lineCode,
+                                                             @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
+                                                             @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize
+    ) {
+        Page<SysTotalTeamDTO> page = new Page<>(pageNo, pageSize);
+        IPage<SysTotalTeamDTO> result = scheduleRecordService.getTotalTeamDetail(page, lineCode);
+        return Result.OK(result);
+    }
 }

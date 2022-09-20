@@ -64,9 +64,9 @@ public class ActCustomVariableController extends BaseController<ActCustomVariabl
 	@AutoLog(value = "流程变量-添加")
 	@ApiOperation(value="流程变量-添加", notes="流程变量-添加")
 	@PostMapping(value = "/add")
-	public Result<String> add(@Valid @RequestBody ActCustomVariable actCustomVariable) {
+	public Result<ActCustomVariable> add(@Valid @RequestBody ActCustomVariable actCustomVariable) {
 		actCustomVariableService.save(actCustomVariable);
-		return Result.OK("添加成功！");
+		return Result.OK(actCustomVariable);
 	}
 
 	/**
@@ -78,9 +78,9 @@ public class ActCustomVariableController extends BaseController<ActCustomVariabl
 	@AutoLog(value = "流程变量-编辑")
 	@ApiOperation(value="流程变量-编辑", notes="流程变量-编辑")
 	@RequestMapping(value = "/edit", method = {RequestMethod.PUT,RequestMethod.POST})
-	public Result<String> edit(@RequestBody ActCustomVariable actCustomVariable) {
+	public Result<ActCustomVariable> edit(@RequestBody ActCustomVariable actCustomVariable) {
 		actCustomVariableService.updateById(actCustomVariable);
-		return Result.OK("编辑成功!");
+		return Result.OK(actCustomVariable);
 	}
 
 	/**
