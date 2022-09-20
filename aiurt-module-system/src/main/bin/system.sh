@@ -5,15 +5,15 @@ JAVA_OPTIONS_MAX=-Xmx2048M
 
 ##spring boot 打包完成后的jar包名称
 ##spring boot project package jar name
-APP_JAR_NAME=aiurt-module-system-3.2.0.jar
+APP_JAR_NAME=aiurt-module-system-3.2.0-test.jar
 
 ##应用名称
 ##application name
-APP_NAME=platform
+APP_NAME=platform_test
 
 ##系统home目录  linux系统默认为 /home/ywpt/bdyw
 ##application home dir
-HyERP_HOME=/home/platform/aiurt-module-system
+HyERP_HOME=/home/test/aiurt-module-system
 
 
 ##查询应用进程pid命令
