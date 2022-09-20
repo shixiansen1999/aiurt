@@ -3,6 +3,7 @@ package com.aiurt.boot.plan.mapper;
 import com.aiurt.boot.index.dto.InspectionDTO;
 import com.aiurt.boot.index.dto.PlanIndexDTO;
 import com.aiurt.boot.manager.dto.MajorDTO;
+import com.aiurt.boot.plan.dto.CodeManageDTO;
 import com.aiurt.boot.plan.entity.RepairPool;
 import com.aiurt.boot.plan.entity.RepairPoolCode;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
@@ -108,4 +109,18 @@ public interface RepairPoolMapper extends BaseMapper<RepairPool> {
      * @return
      */
     List<InspectionDTO> getInspectionTodayDataNoPage(@Param("date") Date date, @Param("orgCodes") List<String> orgCodes);
+
+    /**
+     * 根据检修任务code查询关联的组织机构
+     * @param taskCodes
+     * @return
+     */
+    List<CodeManageDTO> selectOrgByCodes(List<String> taskCodes);
+
+    /**
+     * 根据检修任务code查询关联的站点
+     * @param taskCodes
+     * @return
+     */
+    List<CodeManageDTO> selectStationList(List<String> taskCodes);
 }

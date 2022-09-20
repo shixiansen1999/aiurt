@@ -1,8 +1,8 @@
 package com.aiurt.boot.task.app.controller;
 
 
+import cn.hutool.core.util.ObjectUtil;
 import com.aiurt.boot.manager.dto.ExamineDTO;
-import com.aiurt.boot.manager.dto.FaultCallbackDTO;
 import com.aiurt.boot.manager.dto.OrgDTO;
 import com.aiurt.boot.task.dto.CheckListDTO;
 import com.aiurt.boot.task.dto.RepairTaskDTO;
@@ -15,10 +15,8 @@ import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.constant.enums.ModuleType;
 import com.aiurt.common.system.base.controller.BaseController;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import io.netty.util.internal.ObjectUtil;
 import io.swagger.annotations.*;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.ObjectUtils;
 import org.jeecg.common.api.vo.Result;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -52,7 +50,7 @@ public class AppRepairTaskController extends BaseController<RepairTask, IRepairT
      * @param pageSize
      * @return
      */
-    @AutoLog(value = "app检修任务-检修任务列表查询", operateType =  1, operateTypeAlias = "检修任务列表", module = ModuleType.INSPECTION)
+    @AutoLog(value = "app检修任务-检修任务列表查询", operateType = 1, operateTypeAlias = "检修任务列表", module = ModuleType.INSPECTION)
     @ApiOperation(value = "app检修任务-检修任务列表查询", notes = "app检修任务-检修任务列表查询")
     @GetMapping(value = "/appRepairTaskPageList")
     @ApiResponses({
@@ -75,7 +73,7 @@ public class AppRepairTaskController extends BaseController<RepairTask, IRepairT
      * @param pageSize
      * @return
      */
-    @AutoLog(value = "app检修任务-检修工单列表查询", operateType =  1, operateTypeAlias = "检修工单列表", module = ModuleType.INSPECTION)
+    @AutoLog(value = "app检修任务-检修工单列表查询", operateType = 1, operateTypeAlias = "检修工单列表", module = ModuleType.INSPECTION)
     @ApiOperation(value = "app检修任务-检修工单列表", notes = "app检修任务-检修工单列表")
     @GetMapping(value = "/appRepairSelectTasklet")
     @ApiResponses({
@@ -96,7 +94,7 @@ public class AppRepairTaskController extends BaseController<RepairTask, IRepairT
      * @param deviceId
      * @return
      */
-    @AutoLog(value = "app检修任务-检修工单详情查询", operateType =  1, operateTypeAlias = "检修工单详情", module = ModuleType.INSPECTION)
+    @AutoLog(value = "app检修任务-检修工单详情查询", operateType = 1, operateTypeAlias = "检修工单详情", module = ModuleType.INSPECTION)
     @ApiOperation(value = "app检修任务-检修工单详情", notes = "app检修任务-检修工单详情")
     @GetMapping(value = "/appRepairSelectCheckList")
     @ApiResponses({
@@ -187,7 +185,7 @@ public class AppRepairTaskController extends BaseController<RepairTask, IRepairT
      * @param id
      * @return
      */
-    @AutoLog(value = "检修管理-检修计划-领取检修任务", operateType =  2, operateTypeAlias = "领取检修任务", module = ModuleType.INSPECTION)
+    @AutoLog(value = "检修管理-检修计划-领取检修任务", operateType = 2, operateTypeAlias = "领取检修任务", module = ModuleType.INSPECTION)
     @ApiOperation(value = "领取检修任务", notes = "领取检修任务")
     @GetMapping(value = "/receiveTask")
     public Result<?> receiveTask(@RequestParam @ApiParam(value = "检修计划id", name = "id", required = true) String id) {
@@ -200,7 +198,7 @@ public class AppRepairTaskController extends BaseController<RepairTask, IRepairT
      *
      * @return
      */
-    @AutoLog(value = "检修管理-检修任务管理-填写检修工单", operateType =  3, operateTypeAlias = "填写检修工单", module = ModuleType.INSPECTION)
+    @AutoLog(value = "检修管理-检修任务管理-填写检修工单", operateType = 3, operateTypeAlias = "填写检修工单", module = ModuleType.INSPECTION)
     @ApiOperation(value = "填写检修工单", notes = "填写检修工单")
     @PostMapping(value = "/writeMonad")
     public Result<?> writeMonad(@RequestBody WriteMonadDTO monadDTO) {
@@ -245,7 +243,7 @@ public class AppRepairTaskController extends BaseController<RepairTask, IRepairT
      * @param id
      * @return
      */
-    @AutoLog(value = "检修管理-检修任务管理-提交检修工单", operateType =  3, operateTypeAlias = "提交检修工单", module = ModuleType.INSPECTION)
+    @AutoLog(value = "检修管理-检修任务管理-提交检修工单", operateType = 3, operateTypeAlias = "提交检修工单", module = ModuleType.INSPECTION)
     @ApiOperation(value = "提交检修工单", notes = "提交检修工单")
     @PostMapping(value = "/submitMonad")
     public Result<?> submitMonad(@RequestParam @ApiParam(value = "检修单id", name = "id", required = true) String id) {
@@ -273,7 +271,7 @@ public class AppRepairTaskController extends BaseController<RepairTask, IRepairT
      * @param examineDTO
      * @return
      */
-    @AutoLog(value = "检修管理-检修任务管理-确认检修任务", operateType =  3, operateTypeAlias = "确认检修任务", module = ModuleType.INSPECTION)
+    @AutoLog(value = "检修管理-检修任务管理-确认检修任务", operateType = 3, operateTypeAlias = "确认检修任务", module = ModuleType.INSPECTION)
     @ApiOperation(value = "确认检修任务", notes = "确认检修任务")
     @PostMapping(value = "/confirmTask")
     public Result<String> confirmTask(@RequestBody ExamineDTO examineDTO) {
@@ -288,7 +286,7 @@ public class AppRepairTaskController extends BaseController<RepairTask, IRepairT
      * @param deviceCode 设备编码
      * @return
      */
-    @AutoLog(value = "检修管理-检修任务管理-扫码设备查询检修单", operateType =  1, operateTypeAlias = "扫码设备查询检修单", module = ModuleType.INSPECTION)
+    @AutoLog(value = "检修管理-检修任务管理-扫码设备查询检修单", operateType = 1, operateTypeAlias = "扫码设备查询检修单", module = ModuleType.INSPECTION)
     @ApiOperation(value = "扫码设备查询检修单", notes = "扫码设备查询检修单")
     @GetMapping(value = "/scanCodeDevice")
     public Result<List<RepairTaskDeviceRel>> scanCodeDevice(@RequestParam @ApiParam(name = "taskId", required = true, value = "检修任务id") String taskId,
@@ -312,6 +310,16 @@ public class AppRepairTaskController extends BaseController<RepairTask, IRepairT
     @PostMapping(value = "/overhaul")
     public Result<String> edit(@RequestBody RepairTaskDeviceRel repairTaskDeviceRel) {
         RepairTaskDeviceRel repairTaskDeviceRel1 = repairTaskDeviceRelService.getById(repairTaskDeviceRel.getId());
+        // 同步更新检修任务的开始时间
+        if (ObjectUtil.isNotEmpty(repairTaskDeviceRel1)) {
+            RepairTask repairTask = repairTaskService.getBaseMapper().selectById(repairTaskDeviceRel1.getRepairTaskId());
+            if (ObjectUtil.isNotEmpty(repairTask) && ObjectUtil.isEmpty(repairTask.getBeginTime())) {
+                repairTask.setBeginTime(new Date());
+                repairTaskService.getBaseMapper().updateById(repairTask);
+            }
+        }
+
+        // 更新检修单上的开始时间
         if (repairTaskDeviceRel1.getStartTime() != null) {
             return Result.OK("检修已开始!");
         } else {

@@ -3,6 +3,7 @@ package com.aiurt.boot.bigscreen.service;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.map.MapUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.constant.DictConstant;
@@ -12,6 +13,8 @@ import com.aiurt.boot.index.dto.PlanIndexDTO;
 import com.aiurt.boot.index.dto.TeamPortraitDTO;
 import com.aiurt.boot.index.dto.TeamWorkingHourDTO;
 import com.aiurt.boot.manager.InspectionManager;
+import com.aiurt.boot.plan.dto.CodeManageDTO;
+import com.aiurt.boot.plan.dto.StationDTO;
 import com.aiurt.boot.plan.mapper.RepairPoolMapper;
 import com.aiurt.boot.plan.mapper.RepairPoolStationRelMapper;
 import com.aiurt.boot.task.entity.RepairTaskUser;
@@ -22,16 +25,14 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.jeecg.common.system.api.ISysBaseAPI;
+import org.jeecg.common.system.vo.DictModel;
 import org.jeecg.common.system.vo.LoginUser;
 import org.jeecg.common.system.vo.SysDepartModel;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -196,7 +197,11 @@ public class BigscreenPlanService {
 
             // 统一处理结果
             if (CollUtil.isNotEmpty(result)) {
+                long start = System.currentTimeMillis();
+
                 handleResult(result);
+                long end = System.currentTimeMillis();
+                System.out.println(end - start);
             }
         }
         return result;
@@ -208,49 +213,83 @@ public class BigscreenPlanService {
      * @param result
      */
     public void handleResult(List<InspectionDTO> result) {
-        for (InspectionDTO inspectionDTO : result) {
-            // 填充组织机构
-            inspectionDTO.setTeamName(manager.translateOrg(repairPoolMapper.selectOrgByCode(inspectionDTO.getCode())));
+        if (CollUtil.isNotEmpty(result)) {
+            // 任务状态字典
+            Map<String, String> taskStateMap = Optional.ofNullable(sysBaseAPI.getDictItems(DictConstant.INSPECTION_TASK_STATE)).orElse(CollUtil.newArrayList()).stream().collect(Collectors.toMap(DictModel::getValue, DictModel::getText));
 
-            // 填充站点
-            inspectionDTO.setStationName(manager.translateStation(repairPoolStationRelMapper.selectStationList(inspectionDTO.getCode())));
+            // 检修状态
+            List<String> taskCodes = result.stream().map(InspectionDTO::getCode).collect(Collectors.toList());
 
-            // 翻译状态
-            inspectionDTO.setStatusName(sysBaseAPI.translateDict(DictConstant.INSPECTION_TASK_STATE, String.valueOf(inspectionDTO.getStatus())));
-
-            // 填充检修任务
-            if (ObjectUtil.isNotEmpty(inspectionDTO.getWeeks())) {
-                inspectionDTO.setInspectionTask(String.format("第%d周检修", inspectionDTO.getWeeks()));
+            // 组织机构
+            Map<String, List<String>> orgMap = new HashMap<>(64);
+            List<CodeManageDTO> orgList = repairPoolMapper.selectOrgByCodes(taskCodes);
+            if (CollUtil.isNotEmpty(orgList)) {
+                orgMap = orgList.stream().collect(Collectors.toMap(CodeManageDTO::getCode, CodeManageDTO::getList));
             }
+            Map<String, List<String>> finalOrgMap = orgMap;
 
-            // 如果状态是已完成，并且存在检修单异常需要将状态改成结果异常
-            if (StrUtil.isNotEmpty(inspectionDTO.getCode())) {
-                if (InspectionConstant.COMPLETED.equals(inspectionDTO.getStatus())) {
-                    // 查询该任务是否有检修单存在异常项
-                    Integer num = repairTaskMapper.getTaskExceptionItem(inspectionDTO.getCode());
-                    if (num > 0) {
-                        inspectionDTO.setStatusName("结果异常");
-                    }
+            // 站点
+            Map<String, List<StationDTO>> staMap = new HashMap<>(64);
+            List<CodeManageDTO> staList = repairPoolMapper.selectStationList(taskCodes);
+            if (CollUtil.isNotEmpty(orgList)) {
+                staMap = staList.stream().collect(Collectors.toMap(CodeManageDTO::getCode, CodeManageDTO::getStationDTOS));
+            }
+            Map<String, List<StationDTO>> finalStaMap = staMap;
+
+            // 检修人
+            Map<String, List<RepairTaskUser>> userMap = new HashMap<>(64);
+            List<RepairTaskUser> repairTaskUsers = repairTaskUserMapper.selectList(
+                    new LambdaQueryWrapper<RepairTaskUser>()
+                            .in(RepairTaskUser::getRepairTaskCode, taskCodes)
+                            .eq(RepairTaskUser::getDelFlag, CommonConstant.DEL_FLAG_0));
+            if (CollUtil.isNotEmpty(repairTaskUsers)) {
+                 userMap = repairTaskUsers.stream().collect(Collectors.groupingBy(RepairTaskUser::getRepairTaskCode));
+            }
+            Map<String, List<RepairTaskUser>> finalUserMap = userMap;
+
+            // 并行流处理
+            result.parallelStream().forEach(inspectionDTO -> {
+                // 填充组织机构
+                if (MapUtil.isNotEmpty(finalOrgMap)) {
+                    inspectionDTO.setTeamName(manager.translateOrg(finalOrgMap.get(inspectionDTO.getCode())));
                 }
 
-                // 填充检修时间，无审核拿提交时间，有审核拿审核时间
-                List<Date> inspectionTime = repairTaskMapper.getTaskInspectionTime(inspectionDTO.getCode());
+                // 填充站点
+                inspectionDTO.setStationName(manager.translateStation(finalStaMap.get(inspectionDTO.getCode())));
 
-                // 29日 12：23
-                inspectionDTO.setTime(CollUtil.isNotEmpty(inspectionTime) ? DateUtil.format(inspectionTime.get(0), "dd日 HH:mm") : "");
+                // 翻译状态
+                if (ObjectUtil.isNotEmpty(inspectionDTO.getStatus())) {
+                    inspectionDTO.setStatusName(taskStateMap.get(String.valueOf(inspectionDTO.getStatus())));
+                }
 
-                // 填充检修人
-                List<RepairTaskUser> repairTaskUsers = repairTaskUserMapper.selectList(
-                        new LambdaQueryWrapper<RepairTaskUser>()
-                                .eq(RepairTaskUser::getRepairTaskCode, inspectionDTO.getCode())
-                                .eq(RepairTaskUser::getDelFlag, CommonConstant.DEL_FLAG_0));
-                if (CollUtil.isNotEmpty(repairTaskUsers)) {
-                    List<LoginUser> loginUsers = sysBaseAPI.queryAllUserByIds(repairTaskUsers.stream().map(RepairTaskUser::getUserId).toArray(String[]::new));
+                // 填充检修任务
+                if (ObjectUtil.isNotEmpty(inspectionDTO.getWeeks())) {
+                    inspectionDTO.setInspectionTask(String.format("第%d周检修", inspectionDTO.getWeeks()));
+                }
+
+                // 如果状态是已完成，并且存在检修单异常需要将状态改成结果异常
+                if (StrUtil.isNotEmpty(inspectionDTO.getCode())) {
+                    if (InspectionConstant.COMPLETED.equals(inspectionDTO.getStatus())) {
+                        // 查询该任务是否有检修单存在异常项
+                        Integer num = repairTaskMapper.getTaskExceptionItem(inspectionDTO.getCode());
+                        if (num > 0) {
+                            inspectionDTO.setStatusName("结果异常");
+                        }
+                    }
+
+                    // 填充检修时间，无审核拿提交时间，有审核拿审核时间
+                    List<Date> inspectionTime = repairTaskMapper.getTaskInspectionTime(inspectionDTO.getCode());
+
+                    // 29日 12：23
+                    inspectionDTO.setTime(CollUtil.isNotEmpty(inspectionTime) ? DateUtil.format(inspectionTime.get(0), "dd日 HH:mm") : "");
+
+                    // 填充检修人
+                    List<LoginUser> loginUsers = sysBaseAPI.queryAllUserByIds(Optional.ofNullable(finalUserMap.get(inspectionDTO.getCode())).orElse(CollUtil.newArrayList()).stream().map(RepairTaskUser::getUserId).toArray(String[]::new));
                     if (CollUtil.isNotEmpty(loginUsers)) {
                         inspectionDTO.setRealName(loginUsers.stream().map(LoginUser::getRealname).collect(Collectors.joining("；")));
                     }
                 }
-            }
+            });
         }
     }
 
@@ -262,7 +301,7 @@ public class BigscreenPlanService {
      * @return
      */
     public List<PlanIndexDTO> getTaskCompletion(String lineCode) {
-        List<PlanIndexDTO> result = new ArrayList<>();
+        List<PlanIndexDTO> result = Collections.synchronizedList(new ArrayList<>());
 
         // 默认是本周的时间范围
         Date[] time = getTimeByType(InspectionConstant.THIS_WEEK_1);
@@ -272,7 +311,7 @@ public class BigscreenPlanService {
             List<SysDepartModel> teamBylineAndMajors = sysBaseAPI.getTeamBylineAndMajors(lineCode);
 
             if (CollUtil.isNotEmpty(teamBylineAndMajors)) {
-                for (SysDepartModel teamBylineAndMajor : teamBylineAndMajors) {
+                teamBylineAndMajors.parallelStream().forEach(teamBylineAndMajor -> {
                     PlanIndexDTO planIndexDTO = new PlanIndexDTO();
 
                     // 查询已完成数量、未完成数量
@@ -298,7 +337,7 @@ public class BigscreenPlanService {
                     }
 
                     result.add(planIndexDTO);
-                }
+                });
             }
         }
         return result;
