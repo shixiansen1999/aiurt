@@ -1,5 +1,5 @@
 <assembly>
-    <id>prod</id> <!--输出文件名-->
+    <id>test</id> <!--输出文件名-->
     <formats>
         <format>tar.gz</format> <!--打包文件结构-->
     </formats>
