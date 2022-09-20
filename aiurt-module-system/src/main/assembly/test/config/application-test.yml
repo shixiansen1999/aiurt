@@ -78,6 +78,7 @@ spring:
     async-executor-activate: false
     #将databaseSchemaUpdate设置为true。当flowable发现库与数据库表结构不一致时，会自动将数据库表结构升级至新版本。
     database-schema-update: true
+
   aop:
     proxy-target-class: true
   #配置freemarker
@@ -278,7 +279,11 @@ cas:
 #Mybatis输出sql日志
 logging:
   level:
-    org.jeecg.modules.system.mapper: info
+    com:
+      aiurt:
+        boot:
+          plan:
+            mapper: debug
 #swagger
 knife4j:
   #开启增强配置
@@ -329,7 +334,7 @@ third-app:
         agent-id: 1000002
       #自建应用秘钥（新版企微需要配置）
       # agent-app-secret: ??
-    #钉钉
+      #钉钉
       DINGTALK:
         enabled: false
         # appKey
