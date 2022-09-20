@@ -96,6 +96,7 @@ public class FaultKnowledgeBaseController extends BaseController<FaultKnowledgeB
 	public Result<String> add(@RequestBody FaultKnowledgeBase faultKnowledgeBase) {
 		//list转string
 		getFaultCodeList(faultKnowledgeBase);
+		faultKnowledgeBase.setStatus(FaultConstant.PENDING);
 		faultKnowledgeBase.setDelFlag(0);
 		if (StringUtils.isEmpty(faultKnowledgeBase.getDeviceTypeCode())||StringUtils.isEmpty(faultKnowledgeBase.getMaterialCode())) {
 			Result<String> result = new Result<>();
