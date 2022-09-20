@@ -3,28 +3,19 @@ package com.aiurt.boot.screen.service;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
-import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.constant.PatrolConstant;
 import com.aiurt.boot.constant.PatrolDictCode;
 import com.aiurt.boot.screen.constant.ScreenConstant;
 import com.aiurt.boot.screen.model.*;
 import com.aiurt.boot.screen.utils.ScreenDateUtil;
 import com.aiurt.boot.task.entity.PatrolTask;
-import com.aiurt.boot.task.entity.PatrolTaskStandard;
 import com.aiurt.boot.task.mapper.PatrolTaskMapper;
-import com.aiurt.boot.task.mapper.PatrolTaskStandardMapper;
-import com.aiurt.boot.task.mapper.PatrolTaskStationMapper;
-import com.aiurt.boot.task.service.IPatrolTaskService;
 import com.aiurt.common.exception.AiurtBootException;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import org.apache.ibatis.annotations.Select;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.CsUserMajorModel;
-import org.jeecg.common.system.vo.DictModel;
 import org.jeecg.common.system.vo.LoginUser;
 import org.jeecg.common.util.DateUtils;
 import org.springframework.beans.BeanUtils;
@@ -33,18 +24,13 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.ZoneId;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
 public class PatrolScreenService {
     @Autowired
     private ISysBaseAPI sysBaseApi;
-    @Autowired
-    private IPatrolTaskService patrolTaskService;
     @Autowired
     private PatrolTaskMapper patrolTaskMapper;
 
@@ -79,7 +65,7 @@ public class PatrolScreenService {
 //        module.setEndTime(endTime);
         List<String> orgCodes = sysBaseApi.getTeamBylineAndMajor(lineCode);
         if (CollectionUtil.isEmpty(orgCodes)) {
-            return new ScreenImportantData(0L,0L,0L);
+            return new ScreenImportantData(0L, 0L, 0L);
         }
         ScreenModule module = new ScreenModule();
         module.setOrgCodes(orgCodes);
@@ -144,7 +130,7 @@ public class PatrolScreenService {
 //                .list();
         List<String> orgCodes = sysBaseApi.getTeamBylineAndMajor(lineCode);
         if (CollectionUtil.isEmpty(orgCodes)) {
-            return new ScreenStatistics(0L,0L,0L,0L,0L,0L);
+            return new ScreenStatistics(0L, 0L, 0L, 0L, 0L, 0L);
         }
         ScreenModule module = new ScreenModule();
         module.setOrgCodes(orgCodes);
@@ -158,8 +144,9 @@ public class PatrolScreenService {
         module.setEndTime(DateUtil.parse(omitEndTime));
         module.setOmit(PatrolConstant.OMIT_STATUS);
 
+        Date today = new Date();
         List<PatrolTask> todayList = list.stream()
-                .filter(l -> DateUtil.format(new Date(), "yyyy-MM-dd").equals(DateUtil.format(l.getPatrolDate(), "yyyy-MM-dd")))
+                .filter(l -> DateUtil.format(today, "yyyy-MM-dd").equals(DateUtil.format(l.getPatrolDate(), "yyyy-MM-dd")))
                 .collect(Collectors.toList());
         if (!ScreenConstant.THIS_WEEK.equals(timeType) && !ScreenConstant.THIS_MONTH.equals(timeType)) {
 //            todayList = patrolTaskService.lambdaQuery().eq(PatrolTask::getDelFlag, 0)
@@ -167,10 +154,9 @@ public class PatrolScreenService {
 //                    .between(PatrolTask::getPatrolDate, DateUtil.parse(DateUtil.format(new Date(), "yyyy-MM-dd 00:00:00")),
 //                            DateUtil.parse(DateUtil.format(new Date(), "yyyy-MM-dd 23:59:59"))).list();
             ScreenModule todayModule = new ScreenModule();
-            BeanUtils.copyProperties(module, todayModule);
-            Date taday = new Date();
-            todayModule.setStartTime(DateUtil.parse(DateUtil.format(taday, "yyyy-MM-dd 00:00:00")));
-            todayModule.setEndTime(DateUtil.parse(DateUtil.format(taday, "yyyy-MM-dd 23:59:59")));
+            todayModule.setStartTime(DateUtil.parse(DateUtil.format(today, "yyyy-MM-dd 00:00:00")));
+            todayModule.setEndTime(DateUtil.parse(DateUtil.format(today, "yyyy-MM-dd 23:59:59")));
+            todayModule.setOrgCodes(orgCodes);
             todayList = patrolTaskMapper.getScreenDataCount(todayModule);
         }
         long planNum = list.stream().count();
@@ -235,17 +221,18 @@ public class PatrolScreenService {
         tran.setOrgCodes(orgCodes);
 
         List<ScreenStatisticsTask> list = patrolTaskMapper.getScreenTask(tran);
+
+        // 字典翻译
+        Map<String, String> statusItems = sysBaseApi.getDictItems(PatrolDictCode.TASK_STATUS)
+                .stream().collect(Collectors.toMap(k -> k.getValue(), v -> v.getText(), (a, b) -> a));
+        Map<String, String> omitItems = sysBaseApi.getDictItems(PatrolDictCode.TASK_STATUS)
+                .stream().collect(Collectors.toMap(k -> k.getValue(), v -> v.getText(), (a, b) -> a));
+        Map<String, String> abnormalItems = sysBaseApi.getDictItems(PatrolDictCode.TASK_STATUS)
+                .stream().collect(Collectors.toMap(k -> k.getValue(), v -> v.getText(), (a, b) -> a));
         list.stream().forEach(l -> {
-            // 字典翻译
-            String statusName = sysBaseApi.getDictItems(PatrolDictCode.TASK_STATUS).stream()
-                    .filter(item -> item.getValue().equals(String.valueOf(l.getStatus())))
-                    .map(DictModel::getText).collect(Collectors.joining());
-            String omitStatusName = sysBaseApi.getDictItems(PatrolDictCode.OMIT_STATUS).stream()
-                    .filter(item -> item.getValue().equals(String.valueOf(l.getOmitStatus())))
-                    .map(DictModel::getText).collect(Collectors.joining());
-            String abnormalName = sysBaseApi.getDictItems(PatrolDictCode.ABNORMAL_STATE).stream()
-                    .filter(item -> item.getValue().equals(String.valueOf(l.getAbnormalState())))
-                    .map(DictModel::getText).collect(Collectors.joining());
+            String statusName = statusItems.get(String.valueOf(l.getStatus()));
+            String omitStatusName = omitItems.get(String.valueOf(l.getOmitStatus()));
+            String abnormalName = abnormalItems.get(String.valueOf(l.getAbnormalState()));
             l.setStatusName(statusName);
             l.setOmitStatusName(omitStatusName);
             l.setAbnormalStateName(abnormalName);
@@ -402,17 +389,17 @@ public class PatrolScreenService {
                 break;
         }
         IPage<ScreenStatisticsTask> pageList = patrolTaskMapper.getStatisticsDataList(page, moduleType);
+        // 字典翻译
+        Map<String, String> statusItems = sysBaseApi.getDictItems(PatrolDictCode.TASK_STATUS)
+                .stream().collect(Collectors.toMap(k -> k.getValue(), v -> v.getText(), (a, b) -> a));
+        Map<String, String> omitItems = sysBaseApi.getDictItems(PatrolDictCode.TASK_STATUS)
+                .stream().collect(Collectors.toMap(k -> k.getValue(), v -> v.getText(), (a, b) -> a));
+        Map<String, String> abnormalItems = sysBaseApi.getDictItems(PatrolDictCode.TASK_STATUS)
+                .stream().collect(Collectors.toMap(k -> k.getValue(), v -> v.getText(), (a, b) -> a));
         pageList.getRecords().stream().forEach(l -> {
-            // 字典翻译
-            String statusName = sysBaseApi.getDictItems(PatrolDictCode.TASK_STATUS).stream()
-                    .filter(item -> item.getValue().equals(String.valueOf(l.getStatus())))
-                    .map(DictModel::getText).collect(Collectors.joining());
-            String omitStatusName = sysBaseApi.getDictItems(PatrolDictCode.OMIT_STATUS).stream()
-                    .filter(item -> item.getValue().equals(String.valueOf(l.getOmitStatus())))
-                    .map(DictModel::getText).collect(Collectors.joining());
-            String abnormalName = sysBaseApi.getDictItems(PatrolDictCode.ABNORMAL_STATE).stream()
-                    .filter(item -> item.getValue().equals(String.valueOf(l.getAbnormalState())))
-                    .map(DictModel::getText).collect(Collectors.joining());
+            String statusName = statusItems.get(String.valueOf(l.getStatus()));
+            String omitStatusName = omitItems.get(String.valueOf(l.getOmitStatus()));
+            String abnormalName = abnormalItems.get(String.valueOf(l.getAbnormalState()));
             l.setStatusName(statusName);
             l.setOmitStatusName(omitStatusName);
             l.setAbnormalStateName(abnormalName);
