@@ -4,11 +4,11 @@ import cn.hutool.core.util.ObjectUtil;
 import com.aiurt.boot.report.model.PatrolReport;
 import com.aiurt.boot.report.model.PatrolReportModel;
 import com.aiurt.boot.task.mapper.PatrolTaskMapper;
-import com.aiurt.common.api.CommonAPI;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.shiro.SecurityUtils;
-import org.jeecg.common.system.vo.CsUserDepartModel;
+import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.LoginUser;
+import org.jeecg.common.system.vo.SysDepartModel;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -29,13 +29,12 @@ public class PatrolReportService {
     @Autowired
     private PatrolTaskMapper patrolTaskMapper;
     @Autowired
-    private CommonAPI commonAPI;
+    private ISysBaseAPI iSysBaseAPI;
     public Page<PatrolReport> getTaskDate(Page<PatrolReport> pageList, PatrolReportModel report) {
-        //根据当前用户管理的部门权限，获取部门code
+        //根据当前用户id
         LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-         List<CsUserDepartModel> departByUserId = commonAPI.getDepartByUserId(user.getId());
-         List<String> orgList = departByUserId.stream().map(CsUserDepartModel::getOrgCode).collect(Collectors.toList());
-         List<String> orgNames = departByUserId.stream().map(CsUserDepartModel::getDepartName).collect(Collectors.toList());
+        List<SysDepartModel> userSysDepart = iSysBaseAPI.getUserSysDepart(user.getId());
+        List<String> orgList = userSysDepart.stream().map(SysDepartModel::getOrgCode).collect(Collectors.toList());
         Calendar cal = Calendar.getInstance();
         // 设置一个星期的第一天
         cal.setFirstDayOfWeek(Calendar.MONDAY);
@@ -62,6 +61,7 @@ public class PatrolReportService {
         model.setSubsystemCode(null);
         List<PatrolReport> list = patrolTaskMapper.getReportTaskList(pageList,model);
         List<PatrolReport> reportList =patrolTaskMapper.getReportTaskList(pageList,report);
+
        return  pageList.setRecords(list);
     }
 }

@@ -92,6 +92,8 @@ public class SysBaseApiImpl implements ISysBaseAPI {
     @Autowired
     private ISysDepartService sysDepartService;
     @Autowired
+    private SysDepartMapper sysDepartMapper;
+    @Autowired
     private ISysDictService sysDictService;
     @Resource
     private SysAnnouncementMapper sysAnnouncementMapper;
@@ -1594,6 +1596,18 @@ public class SysBaseApiImpl implements ISysBaseAPI {
     @Override
     public List<SysDepartModel> getTeamBylineAndMajors(String lineCode) {
         return workAreaService.getTeamBylineAndMajors(lineCode);
+    }
+
+    @Override
+    public List<SysDepartModel> getUserSysDepart(String userId) {
+        List <SysDepartModel> list = sysDepartMapper.getUserDepart(userId);
+        if (CollUtil.isEmpty(list)) {
+            return CollUtil.newArrayList();
+        }
+        else
+        {
+            return  list;
+        }
     }
 
 

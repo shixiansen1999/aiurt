@@ -640,7 +640,7 @@ FROM
          </foreach>
 	 </if>
 	 <if test="condition.startDate != null and condition.endDate != null">
-	 AND DATE_FORMAT( pt.create_time, '%Y-%m-%d' ) BETWEEN DATE_FORMAT( #{condition.startDate}, '%Y-%m-%d' )
+	 AND DATE_FORMAT( pt.patrol_date, '%Y-%m-%d' ) BETWEEN DATE_FORMAT( #{condition.startDate}, '%Y-%m-%d' )
 	 AND DATE_FORMAT( #{condition.endDate}, '%Y-%m-%d' )
      </if>
     <if test="condition.lineCode != null and condition.stationCode != ''">
@@ -674,6 +674,9 @@ FROM
         where  pts.subsystem_code = #{condition.subsystemCode}
     )
     </if>
+    <if test="condition.orgCode != null and condition.orgCode != ''">
+    and pto.org_code = #{condition.orgCode}
+   </if>
 GROUP BY
 	orgName
     </select>
