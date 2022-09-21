@@ -7,11 +7,13 @@ import com.aiurt.modules.fault.dto.FaultLargeInfoDTO;
 import com.aiurt.modules.fault.dto.FaultLargeLineInfoDTO;
 import com.aiurt.modules.fault.dto.*;
 import com.aiurt.modules.largescream.service.FaultInformationService;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import lombok.extern.slf4j.Slf4j;
 import org.jeecg.common.api.vo.Result;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
@@ -121,26 +123,43 @@ public class FaultInformationController {
     @AutoLog(value = "大屏-故障数据分析-故障数据统计")
     @ApiOperation(value="大屏-故障数据分析-故障数据统计", notes="大屏-故障数据分析-故障数据统计")
     @GetMapping(value = "/queryLargeFaultDataCount")
-    public Result<FaultDataAnalysisCountDTO> queryLargeFaultDataCount(@ApiParam(name = "lineCode",value = "线路")@RequestParam(value = "lineCode",required = false)String lineCode){
-        FaultDataAnalysisCountDTO faultDataAnalysisCountDTO = faultInformationService.queryLargeFaultDataCount(lineCode);
+    public Result<FaultDataAnalysisCountDTO> queryLargeFaultDataCount(@ApiParam(name = "boardTimeType", value = "1:本周 2:上周 3:本月 4:上月",defaultValue = "1") @RequestParam("boardTimeType")Integer boardTimeType,
+                                                                      @ApiParam(name = "lineCode",value = "线路")@RequestParam(value = "lineCode",required = false)String lineCode){
+        FaultDataAnalysisCountDTO faultDataAnalysisCountDTO = faultInformationService.queryLargeFaultDataCount(boardTimeType,lineCode);
         return Result.ok(faultDataAnalysisCountDTO);
     }
 
     @AutoLog(value = "大屏-故障数据分析-故障数据统计详情", operateType = 1, operateTypeAlias = "查询", permissionUrl = "")
     @ApiOperation(value = "大屏-故障数据分析-故障数据统计详情", notes = "大屏-故障数据分析-故障数据统计详情")
     @RequestMapping(value = "/getLargeFaultDataDatails", method = RequestMethod.GET)
-    public Result<List<FaultLargeInfoDTO>> getLargeFaultDataDatails(
+    public Result<List<FaultLargeInfoDTO>> getLargeFaultDataDatails(@ApiParam(name = "boardTimeType", value = "1:本周 2:上周 3:本月 4:上月",defaultValue = "1") @RequestParam("boardTimeType")Integer boardTimeType,
                                                                 @ApiParam(name = "faultModule", value = "故障数据统计详情模块：1:故障总数 2:未修复故障数 3:本周增加 4:本周修复 5:今日增加 6:今日修复") @RequestParam("faultModule")Integer faultModule,
                                                                 @ApiParam(name = "lineCode",value = "线路")@RequestParam(value = "lineCode",required = false)String lineCode){
-        List<FaultLargeInfoDTO> largeFaultDataDatails = faultInformationService.getLargeFaultDataDatails(faultModule, lineCode);
+        List<FaultLargeInfoDTO> largeFaultDataDatails = faultInformationService.getLargeFaultDataDatails(boardTimeType,faultModule, lineCode);
         return Result.ok(largeFaultDataDatails);
     }
 
     @AutoLog(value = "大屏-故障数据分析-故障数据统计列表", operateType = 1, operateTypeAlias = "查询", permissionUrl = "")
     @ApiOperation(value = "大屏-故障数据分析-故障数据统计列表", notes = "大屏-故障数据分析-故障数据统计列表")
     @RequestMapping(value = "/getLargeFaultDataInfo", method = RequestMethod.GET)
-    public Result<List<FaultDataAnalysisInfoDTO>> getLargeFaultDataInfo(@ApiParam(name = "lineCode",value = "线路")@RequestParam(value = "lineCode",required = false)String lineCode){
-        List<FaultDataAnalysisInfoDTO> largeFaultDataInfo = faultInformationService.getLargeFaultDataInfo(lineCode);
+    public Result<List<FaultDataAnalysisInfoDTO>> getLargeFaultDataInfo(@ApiParam(name = "boardTimeType", value = "1:本周 2:上周 3:本月 4:上月",defaultValue = "1") @RequestParam("boardTimeType")Integer boardTimeType,
+                                                                        @ApiParam(name = "lineCode",value = "线路")@RequestParam(value = "lineCode",required = false)String lineCode){
+        List<FaultDataAnalysisInfoDTO> largeFaultDataInfo = faultInformationService.getLargeFaultDataInfo(boardTimeType,lineCode);
         return Result.ok(largeFaultDataInfo);
+    }
+
+    /**
+     * 大屏-故障数据分析-故障超时等级详情接口
+     *
+     * @param faultTimeoutLevelReq 查询条件
+     * @return
+     */
+    @AutoLog(value = "大屏-故障数据分析-故障超时等级详情", operateType = 1, operateTypeAlias = "查询", permissionUrl = "")
+    @ApiOperation(value = "大屏-故障数据分析-故障超时等级详情", notes = "大屏-故障数据分析-故障超时等级详情")
+    @RequestMapping(value = "/getFaultLevelInfo", method = RequestMethod.GET)
+    public Result<IPage<FaultTimeoutLevelDTO>> getFaultLevelInfo(@Validated FaultTimeoutLevelReq faultTimeoutLevelReq)
+    {
+        IPage<FaultTimeoutLevelDTO> result = faultInformationService.getFaultLevelInfo(faultTimeoutLevelReq);
+        return Result.OK(result);
     }
 }

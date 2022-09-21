@@ -114,8 +114,14 @@
             <if test="condition.lineCode != null and condition.lineCode != ''">
                 and f.line_code  = #{condition.lineCode}
             </if>
+            <if test="condition.startDate!=null and condition.endDate!=null">
+                and f.approval_pass_time  &gt;= #{condition.startDate}  and f.approval_pass_time &lt;= #{condition.endDate}
+            </if>
             <if test="condition.unSo !=null and condition.unSo !=''">
                 and f.status != 12
+            </if>
+            <if test="condition.unSo !=null and condition.unSo !=''">
+                and f.approval_pass_time  &gt;= #{condition.startDate}  and f.approval_pass_time &lt;= #{condition.endDate}
             </if>
             <if test="condition.weekAdd != null and condition.weekAdd !=''">
                 and f.happen_time  &gt;= #{condition.startDate}  and f.happen_time &lt;= #{condition.endDate}
@@ -163,6 +169,9 @@
         <where>
             <if test="lineCode != null and lineCode != ''">
                 and f.line_code  = #{lineCode}
+            </if>
+            <if test="startDate!=null and endDate!=null">
+                and f.approval_pass_time  &gt;= #{startDate}  and f.approval_pass_time &lt;= #{endDate}
             </if>
         </where>
     </select>
@@ -224,6 +233,44 @@
         <where>
             <if test="lineCode != null and lineCode != ''">
                 and line_code  = #{lineCode}
+            </if>
+            <if test="startDate!=null and endDate!=null">
+                and approval_pass_time  &gt;= #{startDate}  and approval_pass_time &lt;= #{endDate}
+            </if>
+        </where>
+    </select>
+
+    <select id="getFaultData" resultType="com.aiurt.modules.fault.dto.FaultTimeoutLevelDTO">
+        select * from fault
+        <where>
+            <if test="level == 1">
+                AND status &lt;&gt; 12
+                and TIMESTAMPDIFF(HOUR,happen_time,now()) &gt;=48
+            </if>
+            <if test="level == 2">
+                AND status &lt;&gt; 12
+                and TIMESTAMPDIFF(HOUR,happen_time,now()) &gt;=24
+                and TIMESTAMPDIFF(HOUR,happen_time,now()) &lt;= 48
+            </if>
+            <if test="level == 3">
+                AND status &lt;&gt; 12
+                and TIMESTAMPDIFF(HOUR,happen_time,now()) &gt;=12
+                and TIMESTAMPDIFF(HOUR,happen_time,now()) &lt;= 24
+            </if>
+            <if test="faultTimeoutLevelReq.startDate!=null and faultTimeoutLevelReq.endDate!=null">
+                and approval_pass_time  &gt;= #{faultTimeoutLevelReq.startDate}  and approval_pass_time &lt;= #{faultTimeoutLevelReq.endDate}
+            </if>
+            <if test="faultTimeoutLevelReq.faultLevel != null">
+                and fault_level  = #{faultTimeoutLevelReq.faultLevel}
+            </if>
+            <if test="faultTimeoutLevelReq.status != null">
+                and status  = #{faultTimeoutLevelReq.status}
+            </if>
+            <if test="faultTimeoutLevelReq.appointUserName != null">
+                and appoint_user_name  like concat( '%' , #{faultTimeoutLevelReq.appointUserName}, '%')
+            </if>
+            <if test="faultTimeoutLevelReq.faultModeCode != null">
+                and fault_mode_code  = #{faultTimeoutLevelReq.faultModeCode}
             </if>
         </where>
     </select>

@@ -4,6 +4,7 @@ package com.aiurt.modules.largescream.mapper;
 import com.aiurt.modules.fault.dto.*;
 import com.aiurt.modules.fault.entity.Fault;
 import com.aiurt.modules.largescream.model.FaultScreenModule;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.Date;
@@ -35,7 +36,7 @@ public interface FaultInformationMapper {
      * @param lineCode
      * @return
      */
-    List<Fault> queryFaultDataInformation(@Param("lineCode") String lineCode);
+    List<Fault> queryFaultDataInformation(@Param("startDate") Date startDate, @Param("endDate") Date endDate,@Param("lineCode") String lineCode);
 
     /**
      * 故障信息统计当天已解决
@@ -102,7 +103,7 @@ public interface FaultInformationMapper {
      * @param lineCode
      * @return
      */
-    List<FaultDataAnalysisInfoDTO> getLargeFaultDataInfo(@Param("lineCode") String lineCode);
+    List<FaultDataAnalysisInfoDTO> getLargeFaultDataInfo(@Param("startDate") Date startDate, @Param("endDate") Date endDate,@Param("lineCode") String lineCode);
 
 
     /**
@@ -115,6 +116,15 @@ public interface FaultInformationMapper {
 
     List<FaultSystemTimeDTO> getLargeFaultTime(@Param("month") String month, @Param("lineCode") String lineCode);
 
+
+    /**
+     *故障等级详情分页
+     * @param level
+     * @param page
+     * @param faultTimeoutLevelReq
+     * @return
+     */
+    List<FaultTimeoutLevelDTO> getFaultData(@Param("level") Integer level, @Param("page") Page<FaultTimeoutLevelDTO> page, @Param("faultTimeoutLevelReq") FaultTimeoutLevelReq faultTimeoutLevelReq);
 
 
     /**

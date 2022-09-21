@@ -18,7 +18,7 @@ import javax.validation.constraints.NotNull;
 import java.util.Date;
 
 /**
- * 功能描述
+ * 首页故障统计详情（总数和已解决）
  *
  * @author: qkx
  * @date: 2022-09-08 9:59
