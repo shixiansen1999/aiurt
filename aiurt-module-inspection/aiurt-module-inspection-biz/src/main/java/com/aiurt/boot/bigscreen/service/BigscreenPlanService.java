@@ -16,7 +16,6 @@ import com.aiurt.boot.manager.InspectionManager;
 import com.aiurt.boot.plan.dto.CodeManageDTO;
 import com.aiurt.boot.plan.dto.StationDTO;
 import com.aiurt.boot.plan.mapper.RepairPoolMapper;
-import com.aiurt.boot.plan.mapper.RepairPoolStationRelMapper;
 import com.aiurt.boot.task.entity.RepairTaskUser;
 import com.aiurt.boot.task.mapper.RepairTaskMapper;
 import com.aiurt.boot.task.mapper.RepairTaskUserMapper;
@@ -46,8 +45,6 @@ public class BigscreenPlanService {
 
     @Resource
     private ISysBaseAPI sysBaseAPI;
-    @Resource
-    private RepairPoolStationRelMapper repairPoolStationRelMapper;
     @Resource
     private RepairPoolMapper repairPoolMapper;
     @Resource
