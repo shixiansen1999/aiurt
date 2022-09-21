@@ -633,11 +633,48 @@ SELECT
 FROM
 	patrol_task pt
 	JOIN patrol_task_organization pto ON pt.`code` = pto.task_code
-	AND pto.org_code IN ( "A01A01A02A01", "A01A02A02", "A05A01", "A06A01A01A02", "A06A01A01", "A07", "A06A01A01A01" )
-	AND DATE_FORMAT( pt.create_time, '%Y-%m-%d' ) BETWEEN DATE_FORMAT( '2022-09-19', '%Y-%m-%d' )
-	AND DATE_FORMAT( '2022-09-25', '%Y-%m-%d' )
+	 <if test="condition.orgList != null and condition.orgList.size>0 ">
+	  AND pto.org_code IN
+	    <foreach collection="condition.orgList" item="item" open="(" separator="," close=")">
+                    #{item}
+         </foreach>
+	 </if>
+	 <if test="condition.startDate != null and condition.endDate != null">
+	 AND DATE_FORMAT( pt.create_time, '%Y-%m-%d' ) BETWEEN DATE_FORMAT( #{condition.startDate}, '%Y-%m-%d' )
+	 AND DATE_FORMAT( #{condition.endDate}, '%Y-%m-%d' )
+     </if>
+    <if test="condition.lineCode != null and condition.stationCode != ''">
+	and pt.code in (
+	SELECT pps.task_code
+	FROM patrol_task_station pps
+	LEFT JOIN cs_station cs on pps.station_code = cs.station_code
+	where  pps.station_code = #{condition.stationCode}  and cs.line_code = #{condition.lineCode}
+     )
+    </if>
+    <if test="condition.lineCode != null and condition.stationCode ==null ">
+    and pt.code in (
+	SELECT pps.task_code
+	FROM patrol_task_station pps
+	LEFT JOIN cs_station cs on pps.station_code = cs.station_code
+	where  cs.line_code = #{condition.lineCode}
+     )
+    </if>
+     <if test="condition.stationCode != null and condition.lineCode == null">
+	and pt.code in (
+	SELECT pps.task_code
+	FROM patrol_task_station pps
+	LEFT JOIN cs_station cs on pps.station_code = cs.station_code
+	where  pps.station_code = #{condition.stationCode}
+     )
+    </if>
+    <if test="condition.subsystemCode != null and condition.subsystemCode != ''">
+    and pt.id in(
+        SELECT  pts.task_id
+        FROM patrol_task_standard pts
+        where  pts.subsystem_code = #{condition.subsystemCode}
+    )
+    </if>
 GROUP BY
 	orgName
-	LIMIT
     </select>
 </mapper>
