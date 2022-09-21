@@ -45,4 +45,13 @@ public interface PatrolTaskUserMapper extends BaseMapper<PatrolTaskUser> {
      * @return
      */
     List<ScreenDurationTask> getScreenUserDuration(@Param("startTime") Date startTime, @Param("endTime") Date endTime);
+
+    /**
+     * 获取同行人在指定时间范围内的任务时长(单位秒)
+     *
+     * @param startTime
+     * @param endTime
+     * @return
+     */
+    List<ScreenDurationTask> getScreentAccompanyDuration(@Param("startTime") Date startTime, @Param("endTime") Date endTime);
 }
