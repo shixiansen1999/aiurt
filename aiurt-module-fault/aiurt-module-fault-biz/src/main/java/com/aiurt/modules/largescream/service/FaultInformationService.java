@@ -328,25 +328,32 @@ public class FaultInformationService {
         }
         //总数
         Integer yearFault = faultInformationMapper.getYearFault(faultDataStatisticsDTO);
-        //自检数量
-        faultDataStatisticsDTO.setFaultModeCode(FaultConstant.FAULT_MODE_CODE_0);
-        Integer selfCheckFaultNum = faultInformationMapper.getYearFault(faultDataStatisticsDTO);
-        BigDecimal decimal1 = new BigDecimal(selfCheckFaultNum / yearFault).setScale(1, BigDecimal.ROUND_HALF_UP);
-        faultDataStatisticsDTO.setSelfCheckFaultNum(decimal1);
-        //报修数量
-        Integer repairFaultNum = yearFault - selfCheckFaultNum;
-        BigDecimal decimal2 = new BigDecimal(repairFaultNum / yearFault).setScale(1, BigDecimal.ROUND_HALF_UP);
-        faultDataStatisticsDTO.setRepairFaultNum(decimal2);
-        //已完成数量
-        faultDataStatisticsDTO.setFaultModeCode(null);
-        faultDataStatisticsDTO.setStatus(FaultStatusEnum.Close.getStatus());
-        Integer completedFaultNum = faultInformationMapper.getYearFault(faultDataStatisticsDTO);
-        BigDecimal decimal3 = new BigDecimal(completedFaultNum / yearFault).setScale(1, BigDecimal.ROUND_HALF_UP);
-        faultDataStatisticsDTO.setCompletedFaultNum(decimal3);
-        //未完成数量
-        Integer undoneFaultNum = yearFault - completedFaultNum;
-        BigDecimal decimal4 = new BigDecimal(undoneFaultNum / yearFault).setScale(1, BigDecimal.ROUND_HALF_UP);
-        faultDataStatisticsDTO.setUndoneFaultNum(decimal4);
+        if (yearFault != 0) {
+            //自检数量
+            faultDataStatisticsDTO.setFaultModeCode(FaultConstant.FAULT_MODE_CODE_0);
+            Integer selfCheckFaultNum = faultInformationMapper.getYearFault(faultDataStatisticsDTO);
+            BigDecimal decimal1 = new BigDecimal((selfCheckFaultNum / yearFault) * 100).setScale(1, BigDecimal.ROUND_HALF_UP);
+            faultDataStatisticsDTO.setSelfCheckFaultNum(decimal1);
+            //报修数量
+            Integer repairFaultNum = yearFault - selfCheckFaultNum;
+            BigDecimal decimal2 = new BigDecimal((repairFaultNum / yearFault) * 100).setScale(1, BigDecimal.ROUND_HALF_UP);
+            faultDataStatisticsDTO.setRepairFaultNum(decimal2);
+            //已完成数量
+            faultDataStatisticsDTO.setFaultModeCode(null);
+            faultDataStatisticsDTO.setStatus(FaultStatusEnum.Close.getStatus());
+            Integer completedFaultNum = faultInformationMapper.getYearFault(faultDataStatisticsDTO);
+            BigDecimal decimal3 = new BigDecimal((completedFaultNum / yearFault) * 100).setScale(1, BigDecimal.ROUND_HALF_UP);
+            faultDataStatisticsDTO.setCompletedFaultNum(decimal3);
+            //未完成数量
+            Integer undoneFaultNum = yearFault - completedFaultNum;
+            BigDecimal decimal4 = new BigDecimal((undoneFaultNum / yearFault) * 100).setScale(1, BigDecimal.ROUND_HALF_UP);
+            faultDataStatisticsDTO.setUndoneFaultNum(decimal4);
+        } else {
+            faultDataStatisticsDTO.setSelfCheckFaultNum(new BigDecimal(0));
+            faultDataStatisticsDTO.setRepairFaultNum(new BigDecimal(0));
+            faultDataStatisticsDTO.setCompletedFaultNum(new BigDecimal(0));
+            faultDataStatisticsDTO.setUndoneFaultNum(new BigDecimal(0));
+        }
 
         return faultDataStatisticsDTO;
     }
