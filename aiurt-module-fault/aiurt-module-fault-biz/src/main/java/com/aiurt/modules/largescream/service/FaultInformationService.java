@@ -2,7 +2,9 @@ package com.aiurt.modules.largescream.service;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.convert.Convert;
+import cn.hutool.core.date.DateUnit;
 import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.modules.fault.constants.FaultConstant;
 import com.aiurt.modules.fault.constants.FaultDictCodeConstant;
@@ -12,14 +14,19 @@ import com.aiurt.modules.fault.dto.FaultLargeInfoDTO;
 import com.aiurt.modules.fault.dto.FaultLargeLineInfoDTO;
 import com.aiurt.modules.fault.dto.*;
 import com.aiurt.modules.fault.entity.Fault;
+import com.aiurt.modules.fault.entity.FaultDevice;
 import com.aiurt.modules.fault.enums.FaultStatusEnum;
+import com.aiurt.modules.fault.service.IFaultDeviceService;
 import com.aiurt.modules.largescream.mapper.FaultInformationMapper;
 import com.aiurt.modules.largescream.model.FaultScreenModule;
 import com.aiurt.modules.largescream.util.DateTimeutil;
 import com.aiurt.modules.largescream.util.FaultLargeDateUtil;
 import com.aiurt.modules.sysFile.constant.PatrolConstant;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.DictModel;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -41,6 +48,9 @@ public class FaultInformationService {
     @Resource
     private ISysBaseAPI sysBaseAPI;
 
+    @Resource
+    private IFaultDeviceService faultDeviceService;
+
 
     /**
      * 综合大屏-故障信息统计数量
@@ -59,6 +69,8 @@ public class FaultInformationService {
                     //总故障数
                     if(CollUtil.isNotEmpty(faultList)){
                         result.setSum(faultList.size());
+                    }else{
+                        result.setSum(0);
                     }
                     //未解决数
                     if(CollUtil.isNotEmpty(faultList)){
@@ -68,6 +80,8 @@ public class FaultInformationService {
                             }
                             result.setUnSolve(count);
                         }
+                    }else{
+                        result.setUnSolve(0);
                     }
                     Date todayStartDate = DateUtil.beginOfDay(new Date());
                     Date todayEndDate = DateUtil.endOfDay(new Date());
@@ -75,11 +89,15 @@ public class FaultInformationService {
                     List<Fault> faultInformationTodaySolve = faultInformationMapper.queryLargeFaultInformationTodaySolve(todayStartDate,todayEndDate, lineCode);
                    if(CollUtil.isNotEmpty(faultInformationTodaySolve)){
                           result.setSolve(faultInformationTodaySolve.size());
-                    }
+                    }else{
+                       result.setSolve(0);
+                   }
                     //当天新增
                     List<Fault> faults = faultInformationMapper.queryLargeFaultInformationTodayAdd(todayStartDate,todayEndDate, lineCode);
                    if(CollUtil.isNotEmpty(faultInformationTodaySolve)){
                        result.setNewAddNumber(faults.size());
+                   }else{
+                       result.setNewAddNumber(0);
                    }
       return result;
     }
@@ -333,10 +351,14 @@ public class FaultInformationService {
      * @param lineCode
      * @return
      */
-    public FaultDataAnalysisCountDTO queryLargeFaultDataCount(String lineCode){
+    public FaultDataAnalysisCountDTO queryLargeFaultDataCount(Integer boardTimeType,String lineCode){
         FaultDataAnalysisCountDTO result = new FaultDataAnalysisCountDTO();
-        //获取本周时间
-        String dateTime = FaultLargeDateUtil.getDateTime(1);
+//        String dateTime1 = FaultLargeDateUtil.getDateTime(boardTimeType);
+//        String[] split1 = dateTime1.split("~");
+//        Date startDate = DateUtil.parse(split1[0]);
+//        Date endDate = DateUtil.parse(split1[1]);
+        //获取本周或本月时间
+        String dateTime = FaultLargeDateUtil.getDateTime(boardTimeType);
         String[] split = dateTime.split("~");
         Date weekStartDate = DateUtil.parse(split[0]);
         Date weekEndDate = DateUtil.parse(split[1]);
@@ -345,6 +367,8 @@ public class FaultInformationService {
         //总故障数
         if(CollUtil.isNotEmpty(faultList)){
             result.setSum(faultList.size());
+        }else{
+            result.setSum(0);
         }
         //未解决数
         if(CollUtil.isNotEmpty(faultList)){
@@ -354,16 +378,22 @@ public class FaultInformationService {
                 }
                 result.setUnSolve(count);
             }
+        }else{
+            result.setUnSolve(0);
         }
         //本周已解决
         List<Fault> faultDataInformationweekSolve = faultInformationMapper.queryFaultDataInformationWeekSolve(weekStartDate, weekEndDate, lineCode);
         if(CollUtil.isNotEmpty(faultDataInformationweekSolve)){
             result.setWeekSolve(faultDataInformationweekSolve.size());
+        }else{
+            result.setWeekSolve(0);
         }
         //本周新增
         List<Fault> faultDataInformationweekAdd = faultInformationMapper.queryFaultDataInformationWeekAdd(weekStartDate, weekEndDate, lineCode);
         if(CollUtil.isNotEmpty(faultDataInformationweekAdd)){
             result.setWeekAdd(faultDataInformationweekAdd.size());
+        }else{
+            result.setWeekAdd(0);
         }
         //当天开始结束时间
         Date todayStartDate = DateUtil.beginOfDay(new Date());
@@ -372,12 +402,17 @@ public class FaultInformationService {
         List<Fault> faultInformationTodaySolve = faultInformationMapper.queryLargeFaultInformationTodaySolve(todayStartDate,todayEndDate, lineCode);
         if(CollUtil.isNotEmpty(faultInformationTodaySolve)){
             result.setTodaySolve(faultInformationTodaySolve.size());
+        }else{
+            result.setTodaySolve(0);
         }
         //当天新增
         List<Fault> faults = faultInformationMapper.queryLargeFaultInformationTodayAdd(todayStartDate,todayEndDate, lineCode);
         if(CollUtil.isNotEmpty(faultInformationTodaySolve)){
             result.setTodayAdd(faults.size());
+        }else{
+            result.setTodayAdd(0);
         }
+
         return result;
     }
 
@@ -386,9 +421,10 @@ public class FaultInformationService {
      * @param lineCode
      * @return
      */
-    public List<FaultLargeInfoDTO> getLargeFaultDataDatails(Integer faultModule, String lineCode){
+    public List<FaultLargeInfoDTO> getLargeFaultDataDatails(Integer boardTimeType,Integer faultModule, String lineCode){
         FaultScreenModule faultScreenModule = new FaultScreenModule();
-        String dateTime = FaultLargeDateUtil.getDateTime(1);
+        //本周或本月时间
+        String dateTime = FaultLargeDateUtil.getDateTime(boardTimeType);
         String[] split = dateTime.split("~");
         Date startDate = DateUtil.parse(split[0]);
         Date endDate = DateUtil.parse(split[1]);
@@ -402,17 +438,17 @@ public class FaultInformationService {
                 faultScreenModule.setUnSo(1);
                 faultScreenModule.setLineCode(lineCode);
                 break;
-            // 本周新增
+            // 本周或本月新增
             case 3:
                 faultScreenModule.setStartDate(startDate);
                 faultScreenModule.setEndDate(endDate);
                 faultScreenModule.setWeekAdd(1);
                 faultScreenModule.setLineCode(lineCode);
                 break;
-            // 本周修复
+            // 本周或本月修复
             case 4:
                 faultScreenModule.setStartDate(startDate);
-                faultScreenModule.setEndDate(startDate);
+                faultScreenModule.setEndDate(endDate);
                 faultScreenModule.setWeekSolve(1);
                 faultScreenModule.setLineCode(lineCode);
                 break;
@@ -452,8 +488,12 @@ public class FaultInformationService {
      * @param lineCode
      * @return
      */
-    public List<FaultDataAnalysisInfoDTO> getLargeFaultDataInfo(String lineCode){
-        List<FaultDataAnalysisInfoDTO> largeFaultDataInfo = faultInformationMapper.getLargeFaultDataInfo(lineCode);
+    public List<FaultDataAnalysisInfoDTO> getLargeFaultDataInfo(Integer boardTimeType,String lineCode){
+        String dateTime1 = FaultLargeDateUtil.getDateTime(boardTimeType);
+        String[] split1 = dateTime1.split("~");
+        Date startDate = DateUtil.parse(split1[0]);
+        Date endDate = DateUtil.parse(split1[1]);
+        List<FaultDataAnalysisInfoDTO> largeFaultDataInfo = faultInformationMapper.getLargeFaultDataInfo(startDate,endDate,lineCode);
         largeFaultDataInfo.stream().forEach(l -> {
             // 字典翻译
             String statusName = sysBaseAPI.getDictItems(FaultDictCodeConstant.FAULT_STATUS).stream()
@@ -468,5 +508,68 @@ public class FaultInformationService {
         });
         return largeFaultDataInfo;
     }
+
+
+    /**
+     * 故障超时等级详情
+     * @param boardTimeType
+     * @param lineCode
+     * @return
+     */
+    public List<FaultLevelDTO> getFaultLevelInfo(Integer boardTimeType,String lineCode) {
+        List<FaultLevelDTO> faultLevelList = new ArrayList<>();
+        //设置时间查询条件
+        String dateTime1 = FaultLargeDateUtil.getDateTime(boardTimeType);
+        String[] split1 = dateTime1.split("~");
+        Date startDate = DateUtil.parse(split1[0]);
+        Date endDate = DateUtil.parse(split1[1]);
+
+        Integer level = null;
+        for (int i = 1; i <=3 ; i++) {
+             level = i;
+            //创建一个新的超时故障单集合
+            List<FaultTimeoutLevelDTO> faultTimeOutList = new ArrayList<>();
+            //故障等级实体
+            FaultLevelDTO faultLevelDTO = new FaultLevelDTO();
+            if(level==1){
+                faultLevelDTO.setLevel("一级");
+            }
+            else if(level ==2){
+                faultLevelDTO.setLevel("二级");
+            }
+            else if(level ==3){
+                faultLevelDTO.setLevel("三级");
+            }
+            List<FaultTimeoutLevelDTO> faultData = faultInformationMapper.getFaultData(level,startDate, endDate,lineCode);
+            //计算i级故障数量
+            faultLevelDTO.setFaultNumber(faultData.size());
+
+            if (CollUtil.isNotEmpty(faultData)) {
+                for (FaultTimeoutLevelDTO faultDatum : faultData) {
+                    //查找设备编码
+                    List<FaultDevice> faultDeviceList = faultDeviceService.queryByFaultCode(faultDatum.getCode());
+                    if(CollUtil.isNotEmpty(faultDeviceList)){
+                        for (FaultDevice faultDevice : faultDeviceList) {
+                            faultDatum.setDeviceCode(faultDevice.getDeviceCode());
+                            faultDatum.setDeviceName(faultDevice.getDeviceName());
+                        }
+                    }
+                    //计算超时时长
+                    long hour=DateUtil.between(faultDatum.getHappenTime(),new Date(), DateUnit.HOUR);
+                        String time = hour + "H" ;
+                        faultDatum.setTimeoutDuration(time);
+
+                    faultTimeOutList.add(faultDatum);
+                }
+                faultLevelDTO.setFaultLevelList(faultTimeOutList);
+
+               faultLevelList.add(faultLevelDTO);
+            }
+
+        }
+
+        return faultLevelList;
+    }
+
 
 }

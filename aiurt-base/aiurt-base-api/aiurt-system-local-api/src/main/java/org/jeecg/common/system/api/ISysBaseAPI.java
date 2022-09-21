@@ -528,4 +528,10 @@ public interface ISysBaseAPI extends CommonAPI {
      */
     List<SysDepartModel> getTeamBylineAndMajors(String lineCode);
 
+    /**
+     * 根据用户id，作为管理负责人条件,获取部门信息
+     * @param userId
+     * @return
+     */
+    List<SysDepartModel> getUserSysDepart(String userId);
 }

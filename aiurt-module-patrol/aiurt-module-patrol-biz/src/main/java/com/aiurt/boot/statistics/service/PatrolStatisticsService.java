@@ -206,16 +206,6 @@ public class PatrolStatisticsService {
 
         pageList.getRecords().stream().forEach(l -> {
             List<String> taskCodeList = StrUtil.splitTrim(l.getTaskCode(), ',');
-            // 任务状态翻译，0未完成，1已完成
-            Integer status = l.getStatus();
-            if (ObjectUtil.isNotEmpty(status)) {
-                if (Integer.valueOf(1).equals(status)) {
-                    l.setStatusName("已完成");
-                } else {
-                    l.setStatusName("未完成");
-                }
-            }
-
             // 任务下的巡视人员
             Set<String> userSet = new HashSet<>();
             // 巡视人员对应的组织机构

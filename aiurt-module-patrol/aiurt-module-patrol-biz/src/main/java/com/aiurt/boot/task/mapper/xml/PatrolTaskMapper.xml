@@ -322,6 +322,7 @@
         cs.line_code,
         cs.line_name,
         GROUP_CONCAT( pt.`code` ) taskCode,
+        IF ( MIN( pt.`status` )= 7, '已完成', '未完成' ) statusName,
         MAX( pt.submit_time ) submitTime
         <if test="regexp !=null and regexp !=''">
             ,IF(GROUP_CONCAT(DISTINCT pt.`status`) REGEXP #{regexp}, 1, 0) `status`
@@ -334,12 +335,6 @@
             AND DATE_FORMAT( pt.patrol_date, '%Y-%m-%d' )
             BETWEEN DATE_FORMAT( #{condition.startDate}, '%Y-%m-%d' )
             AND DATE_FORMAT( #{condition.endDate}, '%Y-%m-%d')
-        </if>
-        <if test="condition.status != null and condition.status.length>0">
-            AND pt.`status` IN
-            <foreach collection="condition.status" item="item" open="(" separator="," close=")">
-                #{item}
-            </foreach>
         </if>
         <if test="departList != null and departList.size>0">
             AND pt.`code` in (
@@ -361,11 +356,16 @@
         </if>
         GROUP BY
         pts.station_code
+        <if test="condition.type != null and condition.type == 1">
+            HAVING MAX( pt.`status` ) = 7
+        </if>
+        <if test="condition.type != null and condition.type == 2">
+            HAVING MIN( pt.`status` ) &lt;&gt; 7
+        </if>
         ) sub
         <if test="condition.finishStatus != null">
             where sub.`status` = #{condition.finishStatus}
         </if>
-
     </select>
     <select id="getIndexTaskList" resultType="com.aiurt.boot.statistics.model.IndexTaskInfo">
         SELECT pt.`name`, pt.abnormal_state, pt.`code`, pt.`status`, pt.submit_time
@@ -615,9 +615,69 @@
             )
         </if>
     </select>
-    <select id="getReportTastList" resultType="com.aiurt.boot.report.model.PatrolReport">
-        select t1.*
-        from patrol_task t1
-        and t1.del_flag = 0
+    <select id="getReportTaskList" resultType="com.aiurt.boot.report.model.PatrolReport">
+
+SELECT
+	count( pt.id ) AS taskTotal,
+	count( pt.STATUS = 7 OR NULL ) AS inspectedNumber,
+	(
+	count( pt.id ) - count( pt.STATUS = 7 OR NULL )) AS notInspectedNumber,
+	count( pt.omit_status = 1 OR NULL ) AS missInspectedNumber,
+	CONCAT(
+		CAST( round(( count( pt.STATUS = 7 OR NULL )/ count( pt.id ))* 100, 2 ) AS CHAR ),
+		'%'
+	) AS completionRate,
+	pt.create_time,
+	( SELECT sd.depart_name FROM sys_depart sd WHERE pto.org_code = sd.org_code ) AS orgName,
+	pto.org_code
+FROM
+	patrol_task pt
+	JOIN patrol_task_organization pto ON pt.`code` = pto.task_code
+	 <if test="condition.orgList != null and condition.orgList.size>0 ">
+	  AND pto.org_code IN
+	    <foreach collection="condition.orgList" item="item" open="(" separator="," close=")">
+                    #{item}
+         </foreach>
+	 </if>
+	 <if test="condition.startDate != null and condition.endDate != null">
+	 AND DATE_FORMAT( pt.patrol_date, '%Y-%m-%d' ) BETWEEN DATE_FORMAT( #{condition.startDate}, '%Y-%m-%d' )
+	 AND DATE_FORMAT( #{condition.endDate}, '%Y-%m-%d' )
+     </if>
+    <if test="condition.lineCode != null and condition.stationCode != ''">
+	and pt.code in (
+	SELECT pps.task_code
+	FROM patrol_task_station pps
+	LEFT JOIN cs_station cs on pps.station_code = cs.station_code
+	where  pps.station_code = #{condition.stationCode}  and cs.line_code = #{condition.lineCode}
+     )
+    </if>
+    <if test="condition.lineCode != null and condition.stationCode ==null ">
+    and pt.code in (
+	SELECT pps.task_code
+	FROM patrol_task_station pps
+	LEFT JOIN cs_station cs on pps.station_code = cs.station_code
+	where  cs.line_code = #{condition.lineCode}
+     )
+    </if>
+     <if test="condition.stationCode != null and condition.lineCode == null">
+	and pt.code in (
+	SELECT pps.task_code
+	FROM patrol_task_station pps
+	LEFT JOIN cs_station cs on pps.station_code = cs.station_code
+	where  pps.station_code = #{condition.stationCode}
+     )
+    </if>
+    <if test="condition.subsystemCode != null and condition.subsystemCode != ''">
+    and pt.id in(
+        SELECT  pts.task_id
+        FROM patrol_task_standard pts
+        where  pts.subsystem_code = #{condition.subsystemCode}
+    )
+    </if>
+    <if test="condition.orgCode != null and condition.orgCode != ''">
+    and pto.org_code = #{condition.orgCode}
+   </if>
+GROUP BY
+	orgName
     </select>
 </mapper>

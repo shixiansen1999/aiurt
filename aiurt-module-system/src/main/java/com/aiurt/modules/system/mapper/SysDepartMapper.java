@@ -4,6 +4,7 @@ import com.aiurt.common.aspect.annotation.EnableDataPerm;
 import com.aiurt.modules.system.entity.SysDepart;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import org.apache.ibatis.annotations.Select;
+import org.jeecg.common.system.vo.SysDepartModel;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
@@ -98,4 +99,19 @@ public interface SysDepartMapper extends BaseMapper<SysDepart> {
 	 */
 	@Select("select * from sys_depart where org_code=#{orgCode}")
 	public SysDepart queryDepartByOrgCode(@Param("orgCode") String orgCode);
+	/**
+	 * 通过管理负责人id,获取部门信息
+	 * @param userId
+	 * @return List
+	 */
+	@Select("select * from sys_depart where manager_id=#{userId}")
+	List<SysDepartModel> getUserDepart(@Param("userId")String userId);
+
+	/**
+	 * 通过id，查询改id的子级
+	 * @param id
+	 * @return
+	 */
+	@Select("select * from sys_depart where parent_id=#{id}  and org_category in(3,4,5)")
+	List<SysDepartModel> getUserOrgCategory(@Param("id")String id);
 }

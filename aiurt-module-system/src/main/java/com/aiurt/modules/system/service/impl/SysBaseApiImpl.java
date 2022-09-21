@@ -92,6 +92,8 @@ public class SysBaseApiImpl implements ISysBaseAPI {
     @Autowired
     private ISysDepartService sysDepartService;
     @Autowired
+    private SysDepartMapper sysDepartMapper;
+    @Autowired
     private ISysDictService sysDictService;
     @Resource
     private SysAnnouncementMapper sysAnnouncementMapper;
@@ -1594,6 +1596,46 @@ public class SysBaseApiImpl implements ISysBaseAPI {
     @Override
     public List<SysDepartModel> getTeamBylineAndMajors(String lineCode) {
         return workAreaService.getTeamBylineAndMajors(lineCode);
+    }
+
+    @Override
+    public List<SysDepartModel> getUserSysDepart(String userId) {
+        List <SysDepartModel> sysDepartModels = sysDepartMapper.getUserDepart(userId);
+        if (CollUtil.isEmpty(sysDepartModels)) {
+            return CollUtil.newArrayList();
+        }
+        else
+        {
+            List<SysDepartModel> list = new ArrayList<>();
+            for(SysDepartModel model :sysDepartModels)
+            {
+                if(model.getOrgCategory().equals("3")||model.getOrgCategory().equals("4")||model.getOrgCategory().equals("5"))
+                {
+                    list.add(model);
+                    List<SysDepartModel> models = sysDepartMapper.getUserOrgCategory(model.getId());
+                    if(CollUtil.isNotEmpty(models))
+                    {
+                        list.addAll(models);
+                    }
+                }
+                else
+                {
+                    List<SysDepartModel> models = sysDepartMapper.getUserOrgCategory(model.getId());
+                    if(CollUtil.isNotEmpty(models))
+                    {
+                        list.addAll(models);
+                    }
+                }
+            }
+            if (CollUtil.isEmpty(list)) {
+                return CollUtil.newArrayList();
+            }
+            else
+            {
+                return  list;
+            }
+
+        }
     }
 
 

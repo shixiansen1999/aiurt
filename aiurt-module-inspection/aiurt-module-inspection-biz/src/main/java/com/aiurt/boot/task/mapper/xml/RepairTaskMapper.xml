@@ -5,7 +5,7 @@
         SELECT
         t1.*,
         ( SELECT group_concat( t2.org_code ) FROM repair_task_org_rel AS t2 WHERE t1.`code` = t2.repair_task_code ) AS orgCode,
-        ( SELECT group_concat( t4.repair_task_code ) FROM repair_task_station_rel AS t4 WHERE t1.`code` = t4.repair_task_code ) AS siteCode,
+        ( SELECT group_concat( t4.station_code ) FROM repair_task_station_rel AS t4 WHERE t1.`code` = t4.repair_task_code ) AS siteCode,
         ( SELECT group_concat( t6.major_code ) FROM repair_task_standard_rel AS t6 WHERE t1.id = t6.repair_task_id ) AS majorCode,
         ( SELECT group_concat( t6.subsystem_code ) FROM repair_task_standard_rel AS t6 WHERE t1.id = t6.repair_task_id ) AS systemCode,
         t8.start_time as startOverhaulTime,
@@ -353,5 +353,82 @@
         union all
         select rt.receipt_time as inspectionTime from repair_task rt
         where  rt.is_receipt = 1 and rt.is_confirm =1 and rt.code = #{code}
+    </select>
+
+    <select id="readTeamList" resultType="com.aiurt.boot.task.dto.OverhaulStatisticsDTO">
+	    SELECT
+		   t2.org_code as orgCode,
+           t1.start_time as startDate,
+           t1.end_time as endDate
+        FROM
+	       repair_task t1
+	       LEFT JOIN repair_task_org_rel t2 ON t1.`code`= t2.repair_task_code
+	       LEFT JOIN repair_task_station_rel t3 ON t1.`code`= t3.repair_task_code
+	       LEFT JOIN repair_task_standard_rel t4 ON t1.id= t4.repair_task_id
+        <where>
+            t1.del_flag =0
+            and t2.del_flag = 0
+            and t3.del_flag = 0
+            and t4.del_flag = 0
+            <if test="condition.lineCode!=null ">
+             and t3.line_code = #{condition.lineCode}
+            </if>
+            <if test="condition.stationCode!=null ">
+                and t3.station_code = #{condition.stationCode}
+            </if>
+            <if test="condition.orgCode!=null ">
+                and t2.org_code = #{condition.orgCode}
+            </if>
+            <if test="condition.subsystemCode!=null ">
+                and t4.subsystem_code = #{condition.subsystemCode}
+            </if>
+            <if test="condition.startDate!=null and condition.endDate!=null ">
+                and DATE_FORMAT(t1.start_time ,'%Y-%m-%d') =date_format(#{condition.startDate} ,'%Y-%m-%d')
+                and DATE_FORMAT(t1.end_time ,'%Y-%m-%d') =date_format(#{condition.endDate} ,'%Y-%m-%d')
+            </if>
+            <if test="condition.status!=null ">
+                and t1.status = #{condition.status}
+            </if>
+        </where>
+    </select>
+
+    <select id="readNameList" resultType="com.aiurt.boot.task.dto.OverhaulStatisticsDTO">
+         SELECT
+            t2.user_id as userId,
+            t2.name as userName,
+            t1.start_time as startDate,
+            t1.end_time as endDate
+          FROM
+	        repair_task t1
+	       LEFT JOIN repair_task_user t2 ON t1.`code`= t2.repair_task_code
+	       LEFT JOIN repair_task_org_rel t3 ON t1.`code`= t3.repair_task_code
+	       LEFT JOIN repair_task_station_rel t4 ON t1.`code`= t4.repair_task_code
+	       LEFT JOIN repair_task_standard_rel t5 ON t1.id= t5.repair_task_id
+        <where>
+            t1.del_flag =0
+            and t2.del_flag = 0
+            and t3.del_flag = 0
+            and t4.del_flag = 0
+            and t5.del_flag = 0
+            <if test="condition.lineCode!=null ">
+                and t4.line_code = #{condition.lineCode}
+            </if>
+            <if test="condition.stationCode!=null ">
+                and t4.station_code = #{condition.stationCode}
+            </if>
+            <if test="condition.orgCode!=null ">
+                and t3.org_code = #{condition.orgCode}
+            </if>
+            <if test="condition.subsystemCode!=null ">
+                and t5.subsystem_code = #{condition.subsystemCode}
+            </if>
+            <if test="condition.startDate!=null and condition.endDate!=null ">
+                and DATE_FORMAT(t1.start_time ,'%Y-%m-%d') =date_format(#{condition.startDate} ,'%Y-%m-%d')
+                and DATE_FORMAT(t1.end_time ,'%Y-%m-%d') =date_format(#{condition.endDate} ,'%Y-%m-%d')
+            </if>
+            <if test="condition.status!=null ">
+                and t1.status = #{condition.status}
+            </if>
+        </where>
     </select>
 </mapper>

@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.aiurt.boot.bigscreen.mapper.BigScreenPlanMapper">
+
+<select id="getAllSysDepart" resultType="com.aiurt.boot.index.dto.TeamPortraitDTO">
+    select sd.id as teamId,sd.org_code as teamCode ,sd.depart_name as teamName,su.realname as teamLeaderName,sd.parent_id  from sys_depart sd left join sys_user su on sd.manager_id = su.id where sd.del_flag = 0
+    </select>
+
+<select id="getWorkAreaById" resultType="com.aiurt.boot.index.dto.TeamPortraitDTO">
+    SELECT
+    wa.position AS position,
+    (
+    SELECT
+    GROUP_CONCAT( cl.line_name )
+    FROM
+    work_area_line wal
+    LEFT JOIN cs_line cl ON wal.line_code = cl.line_code
+    WHERE
+    wal.work_area_code = wa.`code`
+    ) as teamLineName,
+    ( SELECT COUNT(*) FROM work_area_station was WHERE was.work_area_code = wa.`code` ) as stationNum
+    FROM
+    work_area wa
+    LEFT JOIN work_area_org wao ON wa.`code` = wao.work_area_code
+    WHERE
+    wa.del_flag = 0 AND wao.org_code = #{teamCode}
+
+    GROUP BY
+    wa.`code`
+</select>
+
+<select id="getOnDuty" resultType="java.lang.String">
+    SELECT
+            su.realname
+    FROM
+            schedule_record sr
+                    LEFT JOIN sys_user su ON sr.user_id = su.id
+    WHERE
+            sr.del_flag = 0
+      AND  DATE_FORMAT(sr.date ,'%Y-%m-%d') = DATE_FORMAT(#{today},'%Y-%m-%d')
+
+    <if test="userList != null and userList.size() != 0">
+        and sr.user_id in
+        <foreach collection="userList" item="item" index="index" open="(" close=")" separator=",">
+            #{item.id}
+        </foreach>
+    </if>
+
+    </select>
+
+<select id="getRepairDuration" resultType="com.aiurt.modules.fault.dto.RepairRecordDetailDTO">
+    select
+    a.id,
+    a.appoint_user_name,
+    su.realname as appoint_real_name,
+    if(a.recevice_time is null, a.assign_time, a.recevice_time) as recevice_time,
+    a.start_time,
+    a.end_time
+    from
+    fault_repair_record a
+    LEFT JOIN sys_user su on a.appoint_user_name = su.username
+    where 1=1
+    AND  DATE_FORMAT(a.create_time ,'%Y-%m-%d') &gt;= DATE_FORMAT(#{beginDate},'%Y-%m-%d')
+    AND  DATE_FORMAT(a.create_time ,'%Y-%m-%d') &lt;= DATE_FORMAT(#{endDate},'%Y-%m-%d')
+    <if test="userList != null and userList.size() != 0">
+        AND  su.id in
+        <foreach collection="userList" item="item" index="index" open="(" close=")" separator=",">
+            #{item.id}
+        </foreach>
+    </if>
+    </select>
+
+<select id="getFaultTotalTime" resultType="java.lang.Long">
+    SELECT
+    sum(
+    TIMESTAMPDIFF(
+    MINUTE,
+    rt.begin_time,
+    IF
+    ( 1 = rt.is_receipt, rt.receipt_time, IF ( 1 = rt.is_confirm, rt.confirm_time, rt.submit_time ) )
+    )) faultTotalTime
+    FROM
+    repair_pool rp
+    LEFT JOIN repair_task rt ON rp.`code` = rt.`code` LEFT JOIN repair_task_user rts ON rts.repair_task_code = rt.`code`
+    where rt.status = 8
+    AND  DATE_FORMAT(rp.start_time ,'%Y-%m-%d') &gt;= DATE_FORMAT(#{beginDate},'%Y-%m-%d')
+    AND  DATE_FORMAT(rp.end_time ,'%Y-%m-%d') &lt;= DATE_FORMAT(#{endDate},'%Y-%m-%d')
+    <if test="userList != null and userList.size() != 0">
+        AND  rts.user_id in
+        <foreach collection="userList" item="item" index="index" open="(" close=")" separator=",">
+            #{item.id}
+        </foreach>
+    </if>
+    </select>
+
+<select id="getFaultTotalTimeByPeer" resultType="java.lang.Long">
+    SELECT
+    sum(
+    TIMESTAMPDIFF(
+    MINUTE,
+    rt.begin_time,
+    IF
+    ( 1 = rt.is_receipt, rt.receipt_time, IF ( 1 = rt.is_confirm, rt.confirm_time, rt.submit_time ) )
+    )) faultTotalTime
+    FROM
+    repair_pool rp
+    LEFT JOIN repair_task rt ON rp.`code` = rt.`code`
+    LEFT JOIN repair_task_device_rel rtdr ON rtdr.repair_task_id = rt.id
+    LEFT JOIN repair_task_peer_rel rtpr ON rtpr.repair_task_device_code = rt.`code`
+    where rt.status = 8
+    AND  DATE_FORMAT(rp.start_time ,'%Y-%m-%d') &gt;= DATE_FORMAT(#{beginDate},'%Y-%m-%d')
+    AND  DATE_FORMAT(rp.end_time ,'%Y-%m-%d') &lt;= DATE_FORMAT(#{endDate},'%Y-%m-%d')
+    <if test="userList != null and userList.size() != 0">
+        AND  rtpr.user_id in
+        <foreach collection="userList" item="item" index="index" open="(" close=")" separator=",">
+            #{item.id}
+        </foreach>
+    </if>
+    </select>
+</mapper>
