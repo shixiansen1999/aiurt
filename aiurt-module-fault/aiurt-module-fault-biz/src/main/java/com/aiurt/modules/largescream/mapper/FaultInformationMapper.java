@@ -32,11 +32,11 @@ public interface FaultInformationMapper {
     List<Fault> queryLargeFaultInformationUnSo(@Param("startDate") Date startDate, @Param("endDate") Date endDate,@Param("lineCode") String lineCode);
 
     /**
-     * 数据分析-故障数据统计
+     * 数据分析-故障数据统计总数和未解决
      * @param lineCode
      * @return
      */
-    List<Fault> queryFaultDataInformation(@Param("startDate") Date startDate, @Param("endDate") Date endDate,@Param("lineCode") String lineCode);
+    List<Fault> queryFaultDataInformation(@Param("lineCode") String lineCode);
 
     /**
      * 故障信息统计当天已解决
@@ -118,13 +118,14 @@ public interface FaultInformationMapper {
 
 
     /**
-     *故障等级详情分页
+     *
      * @param level
-     * @param page
-     * @param faultTimeoutLevelReq
+     * @param startDate
+     * @param endDate
+     * @param lineCode
      * @return
      */
-    List<FaultTimeoutLevelDTO> getFaultData(@Param("level") Integer level, @Param("page") Page<FaultTimeoutLevelDTO> page, @Param("faultTimeoutLevelReq") FaultTimeoutLevelReq faultTimeoutLevelReq);
+    List<FaultTimeoutLevelDTO> getFaultData(@Param("level") Integer level,@Param("startDate") Date startDate, @Param("endDate") Date endDate ,@Param("lineCode") String lineCode);
 
 
     /**

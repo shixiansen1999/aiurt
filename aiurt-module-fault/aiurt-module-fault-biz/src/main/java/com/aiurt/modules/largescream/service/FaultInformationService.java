@@ -345,17 +345,17 @@ public class FaultInformationService {
      */
     public FaultDataAnalysisCountDTO queryLargeFaultDataCount(Integer boardTimeType,String lineCode){
         FaultDataAnalysisCountDTO result = new FaultDataAnalysisCountDTO();
-        String dateTime1 = FaultLargeDateUtil.getDateTime(boardTimeType);
-        String[] split1 = dateTime1.split("~");
-        Date startDate = DateUtil.parse(split1[0]);
-        Date endDate = DateUtil.parse(split1[1]);
-        //获取本周时间
-        String dateTime = FaultLargeDateUtil.getDateTime(1);
+//        String dateTime1 = FaultLargeDateUtil.getDateTime(boardTimeType);
+//        String[] split1 = dateTime1.split("~");
+//        Date startDate = DateUtil.parse(split1[0]);
+//        Date endDate = DateUtil.parse(split1[1]);
+        //获取本周或本月时间
+        String dateTime = FaultLargeDateUtil.getDateTime(boardTimeType);
         String[] split = dateTime.split("~");
         Date weekStartDate = DateUtil.parse(split[0]);
         Date weekEndDate = DateUtil.parse(split[1]);
         int count =0;
-        List<Fault> faultList = faultInformationMapper.queryFaultDataInformation(startDate,endDate,lineCode);
+        List<Fault> faultList = faultInformationMapper.queryFaultDataInformation(lineCode);
         //总故障数
         if(CollUtil.isNotEmpty(faultList)){
             result.setSum(faultList.size());
@@ -403,40 +403,31 @@ public class FaultInformationService {
     public List<FaultLargeInfoDTO> getLargeFaultDataDatails(Integer boardTimeType,Integer faultModule, String lineCode){
         FaultScreenModule faultScreenModule = new FaultScreenModule();
         //本周或本月时间
-        String dateTime1 = FaultLargeDateUtil.getDateTime(boardTimeType);
-        String[] split1 = dateTime1.split("~");
-        Date startDate = DateUtil.parse(split1[0]);
-        Date endDate = DateUtil.parse(split1[1]);
-        //本周时间
-        String dateTime = FaultLargeDateUtil.getDateTime(1);
+        String dateTime = FaultLargeDateUtil.getDateTime(boardTimeType);
         String[] split = dateTime.split("~");
-        Date weekStartDate = DateUtil.parse(split[0]);
-        Date weekEndDate = DateUtil.parse(split[1]);
+        Date startDate = DateUtil.parse(split[0]);
+        Date endDate = DateUtil.parse(split[1]);
         switch (faultModule) {
             // 故障总数
             case 1:
                 faultScreenModule.setLineCode(lineCode);
-                faultScreenModule.setStartDate(startDate);
-                faultScreenModule.setEndDate(endDate);
                 break;
             // 未解决故障
             case 2:
                 faultScreenModule.setUnSo(1);
                 faultScreenModule.setLineCode(lineCode);
+                break;
+            // 本周或本月新增
+            case 3:
                 faultScreenModule.setStartDate(startDate);
                 faultScreenModule.setEndDate(endDate);
-                break;
-            // 本周新增
-            case 3:
-                faultScreenModule.setStartDate(weekStartDate);
-                faultScreenModule.setEndDate(weekEndDate);
                 faultScreenModule.setWeekAdd(1);
                 faultScreenModule.setLineCode(lineCode);
                 break;
-            // 本周修复
+            // 本周或本月修复
             case 4:
-                faultScreenModule.setStartDate(weekStartDate);
-                faultScreenModule.setEndDate(weekEndDate);
+                faultScreenModule.setStartDate(startDate);
+                faultScreenModule.setEndDate(endDate);
                 faultScreenModule.setWeekSolve(1);
                 faultScreenModule.setLineCode(lineCode);
                 break;
@@ -499,58 +490,64 @@ public class FaultInformationService {
 
 
     /**
-     *分页查询故障超时等级
-     * @param faultTimeoutLevelReq 查询条件
+     * 故障超时等级详情
+     * @param boardTimeType
+     * @param lineCode
      * @return
      */
-    public IPage<FaultTimeoutLevelDTO> getFaultLevelInfo(FaultTimeoutLevelReq faultTimeoutLevelReq) {
-        IPage<FaultTimeoutLevelDTO> result = new Page<>();
-        if (ObjectUtil.isEmpty(faultTimeoutLevelReq.getLevel())
-                || ObjectUtil.isEmpty(faultTimeoutLevelReq)
-                || ObjectUtil.isEmpty(faultTimeoutLevelReq.getStartDate())
-                || ObjectUtil.isEmpty(faultTimeoutLevelReq.getEndDate())) {
-            return result;
-        }
-        // 分页数据
-        Page<FaultTimeoutLevelDTO> page = new Page<>(faultTimeoutLevelReq.getPageNo(), faultTimeoutLevelReq.getPageSize());
-        List<FaultTimeoutLevelDTO> faultData = faultInformationMapper.getFaultData(faultTimeoutLevelReq.getLevel(), page, faultTimeoutLevelReq);
-        if (CollUtil.isNotEmpty(faultData)) {
-            for (FaultTimeoutLevelDTO faultDatum : faultData) {
-                //查找设备编码
-                List<FaultDevice> faultDeviceList = faultDeviceService.queryByFaultCode(faultDatum.getCode());
-                if(CollUtil.isNotEmpty(faultDeviceList)){
-                    for (FaultDevice faultDevice : faultDeviceList) {
-                        faultDatum.setDeviceCode(faultDevice.getDeviceCode());
-                        faultDatum.setDeviceName(faultDevice.getDeviceName());
-                    }
-                }
-                //计算超时时长
-                long hour=DateUtil.between(faultDatum.getHappenTime(),new Date(), DateUnit.HOUR);
-                long min=DateUtil.between(faultDatum.getHappenTime(),new Date(), DateUnit.MINUTE);
-                int m = ((new Double(min % 60))).intValue();
-                String time = hour + "h" + m + "min";
+    public List<FaultLevelDTO> getFaultLevelInfo(Integer boardTimeType,String lineCode) {
+        List<FaultLevelDTO> faultLevelList = new ArrayList<>();
+        //设置时间查询条件
+        String dateTime1 = FaultLargeDateUtil.getDateTime(boardTimeType);
+        String[] split1 = dateTime1.split("~");
+        Date startDate = DateUtil.parse(split1[0]);
+        Date endDate = DateUtil.parse(split1[1]);
 
-                if (faultTimeoutLevelReq.getLevel() == 1) {
-                    faultDatum.setTimeoutDuration(time);
-                    if (hour >= 48 && !FaultStatusEnum.Close.getStatus().equals(faultDatum.getStatus())) {
-                        faultDatum.setTimeoutType("一级超时");
-                    }
-                } else if (faultTimeoutLevelReq.getLevel() == 2) {
-                    faultDatum.setTimeoutDuration(time);
-                    if (hour >= 24 && hour <= 48 & !FaultStatusEnum.Close.getStatus().equals(faultDatum.getStatus())) {
-                        faultDatum.setTimeoutType("二级超时");
-                    }
-                } else if (faultTimeoutLevelReq.getLevel() == 3) {
-                    faultDatum.setTimeoutDuration(time);
-                    if (hour >= 12 && hour <= 24 & !FaultStatusEnum.Close.getStatus().equals(faultDatum.getStatus())) {
-                        faultDatum.setTimeoutType("三级超时");
-                    }
-                }
-
+        Integer level = null;
+        for (int i = 1; i <=3 ; i++) {
+             level = i;
+            //创建一个新的超时故障单集合
+            List<FaultTimeoutLevelDTO> faultTimeOutList = new ArrayList<>();
+            //故障等级实体
+            FaultLevelDTO faultLevelDTO = new FaultLevelDTO();
+            if(level==1){
+                faultLevelDTO.setLevel("一级");
             }
+            else if(level ==2){
+                faultLevelDTO.setLevel("二级");
+            }
+            else if(level ==3){
+                faultLevelDTO.setLevel("三级");
+            }
+            List<FaultTimeoutLevelDTO> faultData = faultInformationMapper.getFaultData(level,startDate, endDate,lineCode);
+            //计算i级故障数量
+            faultLevelDTO.setFaultNumber(faultData.size());
+
+            if (CollUtil.isNotEmpty(faultData)) {
+                for (FaultTimeoutLevelDTO faultDatum : faultData) {
+                    //查找设备编码
+                    List<FaultDevice> faultDeviceList = faultDeviceService.queryByFaultCode(faultDatum.getCode());
+                    if(CollUtil.isNotEmpty(faultDeviceList)){
+                        for (FaultDevice faultDevice : faultDeviceList) {
+                            faultDatum.setDeviceCode(faultDevice.getDeviceCode());
+                            faultDatum.setDeviceName(faultDevice.getDeviceName());
+                        }
+                    }
+                    //计算超时时长
+                    long hour=DateUtil.between(faultDatum.getHappenTime(),new Date(), DateUnit.HOUR);
+                        String time = hour + "H" ;
+                        faultDatum.setTimeoutDuration(time);
+
+                    faultTimeOutList.add(faultDatum);
+                }
+                faultLevelDTO.setFaultLevelList(faultTimeOutList);
+
+               faultLevelList.add(faultLevelDTO);
+            }
+
         }
-        page.setRecords(faultData);
-        return page;
+
+        return faultLevelList;
     }
 
 

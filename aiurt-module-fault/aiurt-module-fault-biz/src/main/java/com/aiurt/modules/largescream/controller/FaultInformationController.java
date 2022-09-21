@@ -150,16 +150,16 @@ public class FaultInformationController {
 
     /**
      * 大屏-故障数据分析-故障超时等级详情接口
-     *
-     * @param faultTimeoutLevelReq 查询条件
+     * @param boardTimeType
+     * @param lineCode
      * @return
      */
     @AutoLog(value = "大屏-故障数据分析-故障超时等级详情", operateType = 1, operateTypeAlias = "查询", permissionUrl = "")
     @ApiOperation(value = "大屏-故障数据分析-故障超时等级详情", notes = "大屏-故障数据分析-故障超时等级详情")
     @RequestMapping(value = "/getFaultLevelInfo", method = RequestMethod.GET)
-    public Result<IPage<FaultTimeoutLevelDTO>> getFaultLevelInfo(@Validated FaultTimeoutLevelReq faultTimeoutLevelReq)
-    {
-        IPage<FaultTimeoutLevelDTO> result = faultInformationService.getFaultLevelInfo(faultTimeoutLevelReq);
-        return Result.OK(result);
+    public Result<List<FaultLevelDTO>> getFaultLevelInfo(@ApiParam(name = "boardTimeType", value = "1:本周 2:上周 3:本月 4:上月",defaultValue = "1") @RequestParam("boardTimeType")Integer boardTimeType,
+                                                         @ApiParam(name = "lineCode",value = "线路")@RequestParam(value = "lineCode",required = false)String lineCode){
+        List<FaultLevelDTO> faultLevelInfo = faultInformationService.getFaultLevelInfo(boardTimeType, lineCode);
+        return Result.OK(faultLevelInfo);
     }
 }
