@@ -23,6 +23,10 @@ public class PatrolReport {
      */
     private String orgName;
     /**
+     * 班组
+     */
+    private String orgCode;
+    /**
      * 巡视任务总数
      */
     private Integer taskTotal;
@@ -49,7 +53,7 @@ public class PatrolReport {
     /**
      * 完成率
      */
-    private double completionRate;
+    private String completionRate;
     /**
      * 异常数量
      */
@@ -58,7 +62,6 @@ public class PatrolReport {
      * 故障数量
      */
     private Integer faultNumber;
-;
 }
 
 

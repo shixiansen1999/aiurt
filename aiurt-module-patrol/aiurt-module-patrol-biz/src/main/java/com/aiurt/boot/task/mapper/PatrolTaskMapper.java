@@ -1,6 +1,7 @@
 package com.aiurt.boot.task.mapper;
 
 import com.aiurt.boot.report.model.PatrolReport;
+import com.aiurt.boot.report.model.PatrolReportModel;
 import com.aiurt.boot.screen.model.ScreenModule;
 import com.aiurt.boot.screen.model.ScreenStatisticsGraph;
 import com.aiurt.boot.screen.model.ScreenStatisticsTask;
@@ -253,11 +254,13 @@ public interface PatrolTaskMapper extends BaseMapper<PatrolTask> {
      * @return
      */
     List<PatrolTask> getScreenDataCount(@Param("condition") ScreenModule module);
-
     /**
      * 报表统计-巡检任务查询
-     * @param report
+     * @param pageList
+     * @param condition
      * @return
      */
-    List<PatrolReport> getReportTastList(PatrolReport report);
+
+    List<PatrolReport> getReportTaskList(@Param("pageList")Page<PatrolReport> pageList, @Param("condition")PatrolReportModel condition);
+
 }
