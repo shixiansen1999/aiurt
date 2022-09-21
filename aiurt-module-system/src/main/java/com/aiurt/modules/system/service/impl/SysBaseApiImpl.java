@@ -1600,13 +1600,41 @@ public class SysBaseApiImpl implements ISysBaseAPI {
 
     @Override
     public List<SysDepartModel> getUserSysDepart(String userId) {
-        List <SysDepartModel> list = sysDepartMapper.getUserDepart(userId);
-        if (CollUtil.isEmpty(list)) {
+        List <SysDepartModel> sysDepartModels = sysDepartMapper.getUserDepart(userId);
+        if (CollUtil.isEmpty(sysDepartModels)) {
             return CollUtil.newArrayList();
         }
         else
         {
-            return  list;
+            List<SysDepartModel> list = new ArrayList<>();
+            for(SysDepartModel model :sysDepartModels)
+            {
+                if(model.getOrgCategory().equals("3")||model.getOrgCategory().equals("4")||model.getOrgCategory().equals("5"))
+                {
+                    list.add(model);
+                    List<SysDepartModel> models = sysDepartMapper.getUserOrgCategory(model.getId());
+                    if(CollUtil.isNotEmpty(models))
+                    {
+                        list.addAll(models);
+                    }
+                }
+                else
+                {
+                    List<SysDepartModel> models = sysDepartMapper.getUserOrgCategory(model.getId());
+                    if(CollUtil.isNotEmpty(models))
+                    {
+                        list.addAll(models);
+                    }
+                }
+            }
+            if (CollUtil.isEmpty(list)) {
+                return CollUtil.newArrayList();
+            }
+            else
+            {
+                return  list;
+            }
+
         }
     }
 

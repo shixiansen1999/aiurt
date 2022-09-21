@@ -104,6 +104,14 @@ public interface SysDepartMapper extends BaseMapper<SysDepart> {
 	 * @param userId
 	 * @return List
 	 */
-	@Select("select * from sys_depart where manager_id=#{userId} and org_category in(3,4,5)")
+	@Select("select * from sys_depart where manager_id=#{userId}")
 	List<SysDepartModel> getUserDepart(@Param("userId")String userId);
+
+	/**
+	 * 通过id，查询改id的子级
+	 * @param id
+	 * @return
+	 */
+	@Select("select * from sys_depart where parent_id=#{id}  and org_category in(3,4,5)")
+	List<SysDepartModel> getUserOrgCategory(@Param("id")String id);
 }
