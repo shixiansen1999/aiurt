@@ -45,11 +45,12 @@ public class PatrolCondition implements Serializable {
      */
     @ApiModelProperty(value = "线路code")
     private String lineCode;
+
     /**
-     * 任务状态：0待指派、1待确认、2待执行、3已退回、4执行中、5已驳回、6待审核、7已完成
+     * 巡视列表标识：1为已巡视，2为未巡视，其余的不传
      */
-    @ApiModelProperty(value = "任务状态：0待指派、1待确认、2待执行、3已退回、4执行中、5已驳回、6待审核、7已完成")
-    private Integer[] status;
+    @ApiModelProperty(value = "巡视列表标识：1为已巡视，2为未巡视，其余的不传")
+    private Integer type;
     /**
      * 漏巡状态,0未漏检，1已漏检
      */

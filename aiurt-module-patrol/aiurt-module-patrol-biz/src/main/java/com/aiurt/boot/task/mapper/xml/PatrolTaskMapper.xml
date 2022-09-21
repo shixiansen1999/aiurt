@@ -322,6 +322,7 @@
         cs.line_code,
         cs.line_name,
         GROUP_CONCAT( pt.`code` ) taskCode,
+        IF ( MIN( pt.`status` )= 7, '已完成', '未完成' ) statusName,
         MAX( pt.submit_time ) submitTime
         <if test="regexp !=null and regexp !=''">
             ,IF(GROUP_CONCAT(DISTINCT pt.`status`) REGEXP #{regexp}, 1, 0) `status`
@@ -334,12 +335,6 @@
             AND DATE_FORMAT( pt.patrol_date, '%Y-%m-%d' )
             BETWEEN DATE_FORMAT( #{condition.startDate}, '%Y-%m-%d' )
             AND DATE_FORMAT( #{condition.endDate}, '%Y-%m-%d')
-        </if>
-        <if test="condition.status != null and condition.status.length>0">
-            AND pt.`status` IN
-            <foreach collection="condition.status" item="item" open="(" separator="," close=")">
-                #{item}
-            </foreach>
         </if>
         <if test="departList != null and departList.size>0">
             AND pt.`code` in (
@@ -361,11 +356,16 @@
         </if>
         GROUP BY
         pts.station_code
+        <if test="condition.type != null and condition.type == 1">
+            HAVING MAX( pt.`status` ) = 7
+        </if>
+        <if test="condition.type != null and condition.type == 2">
+            HAVING MIN( pt.`status` ) &lt;&gt; 7
+        </if>
         ) sub
         <if test="condition.finishStatus != null">
             where sub.`status` = #{condition.finishStatus}
         </if>
-
     </select>
     <select id="getIndexTaskList" resultType="com.aiurt.boot.statistics.model.IndexTaskInfo">
         SELECT pt.`name`, pt.abnormal_state, pt.`code`, pt.`status`, pt.submit_time
