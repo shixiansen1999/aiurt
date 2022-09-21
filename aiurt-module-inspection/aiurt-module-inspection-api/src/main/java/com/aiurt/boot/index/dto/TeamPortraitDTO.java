@@ -39,4 +39,8 @@ public class TeamPortraitDTO {
     private BigDecimal faultTotalTime;
 
     private String parentId;
+    @ApiModelProperty("工区名称")
+    private String siteName;
+    @ApiModelProperty("工区code")
+    private String workAreaCode;
 }

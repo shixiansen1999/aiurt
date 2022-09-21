@@ -11,10 +11,7 @@ import com.aiurt.boot.api.PatrolApi;
 import com.aiurt.boot.bigscreen.mapper.BigScreenPlanMapper;
 import com.aiurt.boot.constant.DictConstant;
 import com.aiurt.boot.constant.InspectionConstant;
-import com.aiurt.boot.index.dto.InspectionDTO;
-import com.aiurt.boot.index.dto.PlanIndexDTO;
-import com.aiurt.boot.index.dto.TeamPortraitDTO;
-import com.aiurt.boot.index.dto.TeamWorkingHourDTO;
+import com.aiurt.boot.index.dto.*;
 import com.aiurt.boot.manager.InspectionManager;
 import com.aiurt.boot.plan.dto.CodeManageDTO;
 import com.aiurt.boot.plan.dto.StationDTO;
@@ -35,6 +32,9 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.Period;
+import java.time.ZoneId;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -418,7 +418,7 @@ public class BigscreenPlanService {
             int i = 0;
             for (TeamPortraitDTO teamPortraitDTO : teamPortraitDTOS) {
               //找到当前班组关联的工区信息
-                List<TeamPortraitDTO> workAreaById = bigScreenPlanMapper.getWorkAreaById(teamPortraitDTO.getTeamCode());
+                List<TeamPortraitDTO> workAreaById = bigScreenPlanMapper.getWorkAreaByCode(teamPortraitDTO.getTeamCode());
                 if (CollUtil.isNotEmpty(workAreaById)) {
                     List<String> teamLineName = workAreaById.stream().map(TeamPortraitDTO::getTeamLeaderName).collect(Collectors.toList());
                     List<String> position = workAreaById.stream().map(TeamPortraitDTO::getPosition).collect(Collectors.toList());
@@ -460,11 +460,15 @@ public class BigscreenPlanService {
                             l = l + between;
                         }
                     }
-                    int size = teamPortraitDTOS.size();
+                    int size = repairDuration.size();
                     BigDecimal bigDecimal = new BigDecimal(l);
-                    BigDecimal bigDecimal1 = new BigDecimal(size);
-                    String s = bigDecimal.divide(bigDecimal1,0, BigDecimal.ROUND_HALF_UP).toString();
-                    teamPortraitDTO.setAverageTime(s);
+                    if (size != 0) {
+                        BigDecimal bigDecimal1 = new BigDecimal(size);
+                        String s = bigDecimal.divide(bigDecimal1, 0, BigDecimal.ROUND_HALF_UP).toString();
+                        teamPortraitDTO.setAverageTime(s);
+                    } else {
+                        teamPortraitDTO.setAverageTime("0");
+                    }
 
                     //获取维修工时
 
@@ -472,27 +476,28 @@ public class BigscreenPlanService {
                     Map<String, BigDecimal> patrolUserHours = patrolApi.getPatrolUserHours(type, teamPortraitDTO.getTeamId());
                     if (CollUtil.isNotEmpty(patrolUserHours)) {
                         BigDecimal sum = new BigDecimal("0.00");
-                        for(Map.Entry<String, BigDecimal> vo : patrolUserHours.entrySet()){
+                        for (Map.Entry<String, BigDecimal> vo : patrolUserHours.entrySet()) {
                             BigDecimal value = vo.getValue();
-                            sum= sum.add(value) ;
+                            sum = sum.add(value);
                         }
                         teamPortraitDTO.setPatrolTotalTime(sum.setScale(0, BigDecimal.ROUND_HALF_UP));
+                    } else {
+                        teamPortraitDTO.setPatrolTotalTime(new BigDecimal(0));
                     }
 
 
-                    //获取检修任务人员工时和同行人工时
-                    Long faultTotalTime1 = bigScreenPlanMapper.getFaultTotalTime(userList, timeByType[0], timeByType[1]);
-                    Long faultTotalTime2 = bigScreenPlanMapper.getFaultTotalTimeByPeer(userList, timeByType[0], timeByType[1]);
+                    //获取所有检修任务人员总工时和所有同行人总工时
+                    Long faultTotalTime1 = bigScreenPlanMapper.getInspecitonTotalTime(userList, timeByType[0], timeByType[1]);
+                    Long faultTotalTime2 = bigScreenPlanMapper.getInspecitonTotalTimeByPeer(userList, timeByType[0], timeByType[1]);
                     long time = 0L;
-                    if (faultTotalTime1 != null && faultTotalTime2 != null) {
-                        time = faultTotalTime1 + faultTotalTime2;
-                    } else if (faultTotalTime1 != null && faultTotalTime2 == null) {
-                         time = faultTotalTime1;
-                    } else if (faultTotalTime1 == null && faultTotalTime2 != null) {
-                         time = faultTotalTime2;
+                    if (faultTotalTime1 != null) {
+                         time = time + faultTotalTime1;
                     }
-                    BigDecimal decimal = new BigDecimal(1.0 * time / 60).setScale(0, BigDecimal.ROUND_HALF_UP);
-                    teamPortraitDTO.setFaultTotalTime(decimal);
+                     if (faultTotalTime2 != null) {
+                         time = time + faultTotalTime2;
+                    }
+                    BigDecimal decimal = new BigDecimal(1.0 * time / 3600).setScale(0, BigDecimal.ROUND_HALF_UP);
+                    teamPortraitDTO.setInspecitonTotalTime(decimal);
                 }
             }
         }
@@ -508,11 +513,107 @@ public class BigscreenPlanService {
      * @param type 类型:1：本周，2：上周，3：本月， 4：上月
      * @return
      */
-    public Page<TeamWorkingHourDTO> getTeamPortraitDetails(Integer type, String teamId, Integer pageNo, Integer pageSize) {
+    public TeamWorkingHourDTO getTeamPortraitDetails(Integer type, String teamId, Integer pageNo, Integer pageSize) {
+        TeamWorkingHourDTO teamWorkingHourDTO = new TeamWorkingHourDTO();
+        //找到当前班组关联的工区信息
+        List<TeamPortraitDTO> workAreaById = bigScreenPlanMapper.getWorkAreaById(teamId);
+        if (CollUtil.isNotEmpty(workAreaById)) {
+            List<String> position = workAreaById.stream().map(TeamPortraitDTO::getPosition).collect(Collectors.toList());
+            List<String> siteName = workAreaById.stream().map(TeamPortraitDTO::getSiteName).collect(Collectors.toList());
+            int num = 0;
+            StringBuilder jurisdiction = new StringBuilder();
+            for (TeamPortraitDTO portraitDTO : workAreaById) {
+                num = num + portraitDTO.getStationNum();
+                jurisdiction.append(portraitDTO.getSiteName()).append(":");
+                //获取工区管辖范围
+                List<TeamWorkAreaDTO> stationDetails = bigScreenPlanMapper.getStationDetails(portraitDTO.getWorkAreaCode());
+                if (CollUtil.isNotEmpty(stationDetails)) {
+                    List<String> line = stationDetails.stream().map(TeamWorkAreaDTO::getLineCode).collect(Collectors.toList());
+                    if (CollUtil.isNotEmpty(line)) {
+                        for (String s : line) {
+                            List<TeamWorkAreaDTO> collect = stationDetails.stream().filter(t -> t.getLineCode().equals(s)).collect(Collectors.toList());
+                            jurisdiction.append(collect.get(0).getLineName())
+                                    .append(collect.get(0).getStationName())
+                                    .append(collect.get(collect.size() - 1).getStationName())
+                                    .append(collect.size()).append("站，");
+                        }
+                        if (jurisdiction.length() > 0)
+                        {
+                            // 截取字符，去调最后一个，
+                            jurisdiction.deleteCharAt(jurisdiction.length() - 1);
+                        }
+                    }
+                }
+                jurisdiction.append("共").append(stationDetails.size()).append("站；");
+            }
+            if (jurisdiction.length() > 0)
+            {
+                // 截取字符,去掉最后一个；
+                jurisdiction.deleteCharAt(jurisdiction.length() - 1);
+            }
+            teamWorkingHourDTO.setPositionName(CollUtil.join(position, ","));
+            teamWorkingHourDTO.setSiteName(CollUtil.join(siteName, ","));
+            teamWorkingHourDTO.setStationNum(num);
+            teamWorkingHourDTO.setJurisdiction(jurisdiction.toString());
+        }
+
         // 班组的人员
-        List<LoginUser> userList = sysBaseAPI.getUserPersonnel(teamId);
-        Page<TeamWorkingHourDTO> page = new Page<>(pageNo, pageSize);
-        return page;
+        Page<TeamUserDTO> page = new Page<>(pageNo, pageSize);
+        List<TeamUserDTO> userList = bigScreenPlanMapper.getUserList(page, teamId);
+
+        if (CollUtil.isNotEmpty(userList)) {
+
+            //获取巡检任务人员个人总工时和同行人个人总工时
+            Map<String, BigDecimal> patrolUserHours = patrolApi.getPatrolUserHours(type, teamId);
+            //获取检修任务人员个人总工时和同行人个人总工时
+            Map<String, BigDecimal> map = new HashMap<>();
+            Date[] timeByType = getTimeByType(String.valueOf(type));
+            Map<String, Long> collect1 = new HashMap<>();
+            Map<String, Long> collect2 = new HashMap<>();
+
+            if (timeByType.length > 0) {
+                List<TeamUserDTO> reconditionTime = bigScreenPlanMapper.getReconditionTime(userList, timeByType[0], timeByType[1]);
+                List<TeamUserDTO> reconditionTimeByPeer = bigScreenPlanMapper.getReconditionTimeByPeer(userList, timeByType[0], timeByType[1]);
+                collect1 = reconditionTime.stream().collect(Collectors.toMap(TeamUserDTO::getUserId,
+                        v -> ObjectUtil.isEmpty(v.getInspecitonTotalTime()) ? 0L : v.getInspecitonTotalTime(), (a, b) -> a));
+
+                collect2 = reconditionTimeByPeer.stream().collect(Collectors.toMap(TeamUserDTO::getUserId,
+                        v -> ObjectUtil.isEmpty(v.getInspecitonTotalTime()) ? 0L : v.getInspecitonTotalTime(), (a, b) -> a));
+
+            }
+
+            for (TeamUserDTO teamUserDTO : userList) {
+                //获取工作年限
+                Date workingTime = teamUserDTO.getWorkingTime();
+                LocalDate startDate = workingTime.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+                Date date = DateUtil.date();
+                LocalDate endDate = date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+                Period p = Period.between(startDate, endDate);
+                teamUserDTO.setWorkingYears(p.getYears() +"年"+p.getMonths()+"个月");
+                //获取维修总工时
+
+                //获取检修总工时
+                Long hours = collect1.get(teamUserDTO.getUserId());
+                Long peerHours = collect2.get(teamUserDTO.getUserId());
+                long time = 0L;
+                if (hours != null) {
+                    time = time + hours;
+                }
+                if (peerHours != null) {
+                    time = time + peerHours;
+                }
+                BigDecimal decimal = new BigDecimal(1.0 * time / 3600).setScale(0, BigDecimal.ROUND_HALF_UP);
+                teamUserDTO.setFaultTotalTime(decimal);
+
+                //获取巡检总工时
+                BigDecimal bigDecimal = patrolUserHours.get(teamUserDTO.getUserId());
+                teamUserDTO.setPatrolTotalTime(bigDecimal);
+
+            }
+        }
+        page.setRecords(userList);
+        teamWorkingHourDTO.setTeamUserDTOS(page);
+        return teamWorkingHourDTO;
     }
 
 

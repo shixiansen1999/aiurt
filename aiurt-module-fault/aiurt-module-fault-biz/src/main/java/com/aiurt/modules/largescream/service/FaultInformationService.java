@@ -4,14 +4,9 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.convert.Convert;
 import cn.hutool.core.date.DateUnit;
 import cn.hutool.core.date.DateUtil;
-import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.modules.fault.constants.FaultConstant;
 import com.aiurt.modules.fault.constants.FaultDictCodeConstant;
-import com.aiurt.modules.fault.dto.FaultDataStatisticsDTO;
-import com.aiurt.modules.fault.dto.FaultLargeCountDTO;
-import com.aiurt.modules.fault.dto.FaultLargeInfoDTO;
-import com.aiurt.modules.fault.dto.FaultLargeLineInfoDTO;
 import com.aiurt.modules.fault.dto.*;
 import com.aiurt.modules.fault.entity.Fault;
 import com.aiurt.modules.fault.entity.FaultDevice;
@@ -19,18 +14,14 @@ import com.aiurt.modules.fault.enums.FaultStatusEnum;
 import com.aiurt.modules.fault.service.IFaultDeviceService;
 import com.aiurt.modules.largescream.mapper.FaultInformationMapper;
 import com.aiurt.modules.largescream.model.FaultScreenModule;
-import com.aiurt.modules.largescream.util.DateTimeutil;
 import com.aiurt.modules.largescream.util.FaultLargeDateUtil;
-import com.aiurt.modules.sysFile.constant.PatrolConstant;
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.DictModel;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -326,21 +317,36 @@ public class FaultInformationService {
     }
 
     public FaultDataStatisticsDTO getFaultAnalysis(FaultDataStatisticsDTO faultDataStatisticsDTO) {
+        if (faultDataStatisticsDTO.getBoardTimeType() != null) {
+            String dateTime = FaultLargeDateUtil.getDateTime(faultDataStatisticsDTO.getBoardTimeType());
+            String[] split = dateTime.split("~");
+            Date startDate = DateUtil.parse(split[0]);
+            Date endDate = DateUtil.parse(split[1]);
+            SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            faultDataStatisticsDTO.setFirstDay(format.format(startDate));
+            faultDataStatisticsDTO.setLastDay(format.format(endDate));
+        }
         //总数
         Integer yearFault = faultInformationMapper.getYearFault(faultDataStatisticsDTO);
         //自检数量
         faultDataStatisticsDTO.setFaultModeCode(FaultConstant.FAULT_MODE_CODE_0);
         Integer selfCheckFaultNum = faultInformationMapper.getYearFault(faultDataStatisticsDTO);
-        faultDataStatisticsDTO.setSelfCheckFaultNum(selfCheckFaultNum);
+        BigDecimal decimal1 = new BigDecimal(selfCheckFaultNum / yearFault).setScale(1, BigDecimal.ROUND_HALF_UP);
+        faultDataStatisticsDTO.setSelfCheckFaultNum(decimal1);
         //报修数量
-        faultDataStatisticsDTO.setRepairFaultNum(yearFault-selfCheckFaultNum);
+        Integer repairFaultNum = yearFault - selfCheckFaultNum;
+        BigDecimal decimal2 = new BigDecimal(repairFaultNum / yearFault).setScale(1, BigDecimal.ROUND_HALF_UP);
+        faultDataStatisticsDTO.setRepairFaultNum(decimal2);
         //已完成数量
         faultDataStatisticsDTO.setFaultModeCode(null);
         faultDataStatisticsDTO.setStatus(FaultStatusEnum.Close.getStatus());
         Integer completedFaultNum = faultInformationMapper.getYearFault(faultDataStatisticsDTO);
-        faultDataStatisticsDTO.setCompletedFaultNum(completedFaultNum);
+        BigDecimal decimal3 = new BigDecimal(completedFaultNum / yearFault).setScale(1, BigDecimal.ROUND_HALF_UP);
+        faultDataStatisticsDTO.setCompletedFaultNum(decimal3);
         //未完成数量
-        faultDataStatisticsDTO.setUndoneFaultNum(yearFault - completedFaultNum);
+        Integer undoneFaultNum = yearFault - completedFaultNum;
+        BigDecimal decimal4 = new BigDecimal(undoneFaultNum / yearFault).setScale(1, BigDecimal.ROUND_HALF_UP);
+        faultDataStatisticsDTO.setUndoneFaultNum(decimal4);
 
         return faultDataStatisticsDTO;
     }
