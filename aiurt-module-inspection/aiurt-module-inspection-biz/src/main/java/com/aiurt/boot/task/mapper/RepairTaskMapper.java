@@ -6,10 +6,7 @@ import com.aiurt.boot.manager.dto.MajorDTO;
 import com.aiurt.boot.manager.dto.SubsystemDTO;
 import com.aiurt.boot.plan.dto.RepairPoolDetailsDTO;
 import com.aiurt.boot.plan.dto.StationDTO;
-import com.aiurt.boot.task.dto.CheckListDTO;
-import com.aiurt.boot.task.dto.MaintenanceNameDTO;
-import com.aiurt.boot.task.dto.RepairTaskDTO;
-import com.aiurt.boot.task.dto.TeamDTO;
+import com.aiurt.boot.task.dto.*;
 import com.aiurt.boot.task.entity.RepairTask;
 import com.aiurt.boot.task.entity.RepairTaskEnclosure;
 import com.aiurt.boot.task.entity.RepairTaskResult;
@@ -176,7 +173,7 @@ public interface RepairTaskMapper extends BaseMapper<RepairTask> {
     List<Date> getTaskInspectionTime(String code);
 
 
-    List<TeamDTO> readTeamList(@Param("condition") TeamDTO condition);
+    List<OverhaulStatisticsDTO> readTeamList(@Param("condition") OverhaulStatisticsDTO condition);
 
-    List<MaintenanceNameDTO> readNameList(@Param("condition") MaintenanceNameDTO condition);
+    List<OverhaulStatisticsDTO> readNameList(@Param("condition") OverhaulStatisticsDTO condition);
 }

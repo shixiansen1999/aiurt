@@ -23,7 +23,7 @@ import java.util.List;
  * @Description: 检修统计分析控制层
  * @date 2022/9/2011:14
  */
-@Api(tags = "首页故障单统计接口")
+@Api(tags = "检修-统计分析")
 @RestController
 @RequestMapping("/overhaul/statistics")
 @Slf4j
