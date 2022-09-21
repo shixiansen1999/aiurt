@@ -7,29 +7,43 @@ import lombok.Data;
 import org.jeecgframework.poi.excel.annotation.Excel;
 import org.springframework.format.annotation.DateTimeFormat;
 
+import java.util.List;
+
 /**
  * @author zwl
  */
 @Data
 public class OverhaulStatisticsDTO {
 
+    /**任务id*/
+    @TableField(exist = false)
+    @ApiModelProperty(value = "任务id")
+    private String taskId;
+
+    /**任务编码*/
+    @TableField(exist = false)
+    @ApiModelProperty(value = "任务编码")
+    private String taskCode;
 
     /**班组编码*/
     @TableField(exist = false)
     @ApiModelProperty(value = "班组编码")
     private String orgCode;
 
-
     /**班组名称*/
     @TableField(exist = false)
     @ApiModelProperty(value = "班组名称")
     private String orgName;
 
+    /**用户id*/
+    @TableField(exist = false)
+    @ApiModelProperty(value = "用户id")
+    private String  userId;
 
     /**姓名*/
     @TableField(exist = false)
     @ApiModelProperty(value = "姓名")
-    private String deviceId;
+    private String userName;
 
     /**总检修时长*/
     @TableField(exist = false)
@@ -39,7 +53,7 @@ public class OverhaulStatisticsDTO {
     /**计划检修总数*/
     @TableField(exist = false)
     @ApiModelProperty(value = "检修任务总数")
-    private String taskTotal;
+    private Long taskTotal;
 
 
     /**已完成数*/
@@ -95,16 +109,6 @@ public class OverhaulStatisticsDTO {
     @ApiModelProperty(value = "子系统编码")
     private String subsystemCode;
 
-    /**用户id*/
-    @TableField(exist = false)
-    @ApiModelProperty(value = "用户id")
-    private Long  userId;
-
-    /**姓名*/
-    @TableField(exist = false)
-    @ApiModelProperty(value = "姓名")
-    private String  userName;
-
     /**状态*/
     @TableField(exist = false)
     @ApiModelProperty(value = "状态")
@@ -116,7 +120,7 @@ public class OverhaulStatisticsDTO {
     @Excel(name = "开始时间，精确到分钟", width = 15, format = "yyyy-MM-dd")
     @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
     @DateTimeFormat(pattern="yyyy-MM-dd")
-    private Data startDate;
+    private java.util.Date startDate;
 
 
     /**结束时间*/
@@ -125,7 +129,12 @@ public class OverhaulStatisticsDTO {
     @Excel(name = "结束时间，精确到分钟", width = 15, format = "yyyy-MM-dd")
     @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
     @DateTimeFormat(pattern="yyyy-MM-dd")
-    private Data endDate;
+    private java.util.Date endDate;
 
+
+    /**名称集合*/
+    @TableField(exist = false)
+    @ApiModelProperty(value = "名称集合")
+    private List<OverhaulStatisticsDTO> nameList;
 
 }

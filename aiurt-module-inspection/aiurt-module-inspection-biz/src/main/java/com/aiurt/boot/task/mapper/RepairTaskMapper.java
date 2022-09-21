@@ -176,4 +176,10 @@ public interface RepairTaskMapper extends BaseMapper<RepairTask> {
     List<OverhaulStatisticsDTO> readTeamList(@Param("condition") OverhaulStatisticsDTO condition);
 
     List<OverhaulStatisticsDTO> readNameList(@Param("condition") OverhaulStatisticsDTO condition);
+
+    List<Integer> getStatus(String id);
+
+    String getOrgCode(String id);
+
+    String getOrgName(String id);
 }
