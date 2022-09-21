@@ -514,6 +514,11 @@ public interface ISysBaseAPI extends CommonAPI {
     List<String> getStationCodeByLineCode(String lineCode);
 
     /**
+     * 根据线路编号集合查询对应的站点编号集合
+     */
+    List<String> getStationCodeByLineCode(List<String> lineCodes);
+
+    /**
      * 通过线路和专业过滤出班组
      *
      * @param lineCode

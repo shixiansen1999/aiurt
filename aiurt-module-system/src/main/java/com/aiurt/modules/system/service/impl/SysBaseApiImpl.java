@@ -38,11 +38,13 @@ import com.aiurt.modules.workarea.mapper.WorkAreaMapper;
 import com.aiurt.modules.workarea.service.IWorkAreaService;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.google.common.base.Joiner;
 import lombok.extern.slf4j.Slf4j;
@@ -1543,6 +1545,20 @@ public class SysBaseApiImpl implements ISysBaseAPI {
         return CollUtil.newArrayList();
     }
 
+    @Override
+    public List<String> getStationCodeByLineCode(List<String> lineCodes) {
+        List<String> list = new ArrayList<>();
+        if (CollectionUtil.isNotEmpty(lineCodes)) {
+            LambdaQueryWrapper<CsStation> wrapper = new LambdaQueryWrapper<>();
+            wrapper.eq(CsStation::getDelFlag, CommonConstant.DEL_FLAG_0).in(CsStation::getLineCode, lineCodes);
+            List<CsStation> stationList = csStationMapper.selectList(wrapper);
+            if (CollectionUtil.isNotEmpty(stationList)) {
+                return stationList.stream().map(CsStation::getStationCode).collect(Collectors.toList());
+            }
+        }
+        return list;
+    }
+
     /**
      * 通过线路和专业过滤出班组
      *
@@ -1600,39 +1616,29 @@ public class SysBaseApiImpl implements ISysBaseAPI {
 
     @Override
     public List<SysDepartModel> getUserSysDepart(String userId) {
-        List <SysDepartModel> sysDepartModels = sysDepartMapper.getUserDepart(userId);
+        List<SysDepartModel> sysDepartModels = sysDepartMapper.getUserDepart(userId);
         if (CollUtil.isEmpty(sysDepartModels)) {
             return CollUtil.newArrayList();
-        }
-        else
-        {
+        } else {
             List<SysDepartModel> list = new ArrayList<>();
-            for(SysDepartModel model :sysDepartModels)
-            {
-                if(model.getOrgCategory().equals("3")||model.getOrgCategory().equals("4")||model.getOrgCategory().equals("5"))
-                {
+            for (SysDepartModel model : sysDepartModels) {
+                if (model.getOrgCategory().equals("3") || model.getOrgCategory().equals("4") || model.getOrgCategory().equals("5")) {
                     list.add(model);
                     List<SysDepartModel> models = sysDepartMapper.getUserOrgCategory(model.getId());
-                    if(CollUtil.isNotEmpty(models))
-                    {
+                    if (CollUtil.isNotEmpty(models)) {
                         list.addAll(models);
                     }
-                }
-                else
-                {
+                } else {
                     List<SysDepartModel> models = sysDepartMapper.getUserOrgCategory(model.getId());
-                    if(CollUtil.isNotEmpty(models))
-                    {
+                    if (CollUtil.isNotEmpty(models)) {
                         list.addAll(models);
                     }
                 }
             }
             if (CollUtil.isEmpty(list)) {
                 return CollUtil.newArrayList();
-            }
-            else
-            {
-                return  list;
+            } else {
+                return list;
             }
 
         }
