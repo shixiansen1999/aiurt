@@ -69,6 +69,8 @@ public class FaultInformationService {
                     //总故障数
                     if(CollUtil.isNotEmpty(faultList)){
                         result.setSum(faultList.size());
+                    }else{
+                        result.setSum(0);
                     }
                     //未解决数
                     if(CollUtil.isNotEmpty(faultList)){
@@ -78,6 +80,8 @@ public class FaultInformationService {
                             }
                             result.setUnSolve(count);
                         }
+                    }else{
+                        result.setUnSolve(0);
                     }
                     Date todayStartDate = DateUtil.beginOfDay(new Date());
                     Date todayEndDate = DateUtil.endOfDay(new Date());
@@ -85,11 +89,15 @@ public class FaultInformationService {
                     List<Fault> faultInformationTodaySolve = faultInformationMapper.queryLargeFaultInformationTodaySolve(todayStartDate,todayEndDate, lineCode);
                    if(CollUtil.isNotEmpty(faultInformationTodaySolve)){
                           result.setSolve(faultInformationTodaySolve.size());
-                    }
+                    }else{
+                       result.setSolve(0);
+                   }
                     //当天新增
                     List<Fault> faults = faultInformationMapper.queryLargeFaultInformationTodayAdd(todayStartDate,todayEndDate, lineCode);
                    if(CollUtil.isNotEmpty(faultInformationTodaySolve)){
                        result.setNewAddNumber(faults.size());
+                   }else{
+                       result.setNewAddNumber(0);
                    }
       return result;
     }
@@ -359,6 +367,8 @@ public class FaultInformationService {
         //总故障数
         if(CollUtil.isNotEmpty(faultList)){
             result.setSum(faultList.size());
+        }else{
+            result.setSum(0);
         }
         //未解决数
         if(CollUtil.isNotEmpty(faultList)){
@@ -368,16 +378,22 @@ public class FaultInformationService {
                 }
                 result.setUnSolve(count);
             }
+        }else{
+            result.setUnSolve(0);
         }
         //本周已解决
         List<Fault> faultDataInformationweekSolve = faultInformationMapper.queryFaultDataInformationWeekSolve(weekStartDate, weekEndDate, lineCode);
         if(CollUtil.isNotEmpty(faultDataInformationweekSolve)){
             result.setWeekSolve(faultDataInformationweekSolve.size());
+        }else{
+            result.setWeekSolve(0);
         }
         //本周新增
         List<Fault> faultDataInformationweekAdd = faultInformationMapper.queryFaultDataInformationWeekAdd(weekStartDate, weekEndDate, lineCode);
         if(CollUtil.isNotEmpty(faultDataInformationweekAdd)){
             result.setWeekAdd(faultDataInformationweekAdd.size());
+        }else{
+            result.setWeekAdd(0);
         }
         //当天开始结束时间
         Date todayStartDate = DateUtil.beginOfDay(new Date());
@@ -386,12 +402,17 @@ public class FaultInformationService {
         List<Fault> faultInformationTodaySolve = faultInformationMapper.queryLargeFaultInformationTodaySolve(todayStartDate,todayEndDate, lineCode);
         if(CollUtil.isNotEmpty(faultInformationTodaySolve)){
             result.setTodaySolve(faultInformationTodaySolve.size());
+        }else{
+            result.setTodaySolve(0);
         }
         //当天新增
         List<Fault> faults = faultInformationMapper.queryLargeFaultInformationTodayAdd(todayStartDate,todayEndDate, lineCode);
         if(CollUtil.isNotEmpty(faultInformationTodaySolve)){
             result.setTodayAdd(faults.size());
+        }else{
+            result.setTodayAdd(0);
         }
+
         return result;
     }
 
