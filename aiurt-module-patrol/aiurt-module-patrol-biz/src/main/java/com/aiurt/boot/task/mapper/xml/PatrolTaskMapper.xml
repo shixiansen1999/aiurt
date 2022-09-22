@@ -558,7 +558,7 @@
         pt.`status`,
         pt.abnormal_state,
         pt.omit_status,
-        GROUP_CONCAT( DISTINCT cs.station_name SEPARATOR '；' ) stationInfo,
+        GROUP_CONCAT( DISTINCT CONCAT_WS( '/', cs.line_name, cs.station_name ) SEPARATOR '；' ) stationInfo,
         GROUP_CONCAT( DISTINCT ptu.user_name SEPARATOR '；' ) userInfo
         FROM
         patrol_task pt
