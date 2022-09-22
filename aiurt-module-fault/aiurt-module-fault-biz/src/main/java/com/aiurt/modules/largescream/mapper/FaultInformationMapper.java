@@ -3,6 +3,7 @@ package com.aiurt.modules.largescream.mapper;
 
 import com.aiurt.modules.fault.dto.*;
 import com.aiurt.modules.fault.entity.Fault;
+import com.aiurt.modules.largescream.model.FaultDurationTask;
 import com.aiurt.modules.largescream.model.FaultScreenModule;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.ibatis.annotations.Param;
@@ -159,4 +160,6 @@ public interface FaultInformationMapper {
      * 所有子系统
      */
     List<FaultDataStatisticsDTO> getAllSystemCode();
+
+    List<FaultDurationTask> getFaultUserDuration(@Param("startTime") Date startTime, @Param("endTime") Date endTime);
 }
