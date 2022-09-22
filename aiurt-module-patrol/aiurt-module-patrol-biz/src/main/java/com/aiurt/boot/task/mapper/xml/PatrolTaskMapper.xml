@@ -620,12 +620,8 @@ SELECT
 	count( pt.STATUS = 7 OR NULL ) AS inspectedNumber,
 	(
 	count( pt.id ) - count( pt.STATUS = 7 OR NULL )) AS notInspectedNumber,
-	count( pt.omit_status = 1 OR NULL ) AS missInspectedNumber,
-	CONCAT(
-		CAST( round(( count( pt.STATUS = 7 OR NULL )/ count( pt.id ))* 100, 2 ) AS CHAR ),
-		'%'
-	) AS completionRate,
-	pt.create_time,
+    GROUP_CONCAT(pt.id) as taskId,
+	GROUP_CONCAT(pt.code) as taskCode,
 	( SELECT sd.depart_name FROM sys_depart sd WHERE pto.org_code = sd.org_code ) AS orgName,
 	pto.org_code
 FROM
