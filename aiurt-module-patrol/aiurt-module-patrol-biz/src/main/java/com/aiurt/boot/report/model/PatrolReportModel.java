@@ -1,5 +1,6 @@
 package com.aiurt.boot.report.model;
 
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 import java.util.Date;
@@ -42,4 +43,8 @@ public class PatrolReportModel {
      * 结束时间
      */
     private List<String> orgList;
+    @ApiModelProperty("分页参数")
+    private Integer pageNo;
+    @ApiModelProperty("分页参数")
+    private Integer pageSize;
 }

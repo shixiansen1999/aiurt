@@ -14,10 +14,8 @@ import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.jeecg.common.api.vo.Result;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
@@ -116,5 +114,17 @@ public class PatrolReportController {
         Page<FailureReport> page = new Page<>(pageNo, pageSize);
         IPage<FailureReport> pages = reportService.getFailureOrgReport(page,lineCode,stationCode,startTime,endTime,systemCode);
         return Result.ok(pages);
+    }
+
+    /**
+     * 统计报表-巡检报表导出
+     * @param reportReqVO
+     * @return
+     */
+    @AutoLog(value = "统计报表-巡检报表导出", operateType = 6, operateTypeAlias = "导出")
+    @ApiOperation(value = "统计报表-巡检报表导出", notes = "统计报表-巡检报表导出")
+    @GetMapping(value = "/reportExport")
+    public ModelAndView export(HttpServletRequest request, PatrolReportModel reportReqVO) {
+        return reportService.reportExport(request, reportReqVO);
     }
 }

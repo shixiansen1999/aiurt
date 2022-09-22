@@ -1,11 +1,11 @@
 package com.aiurt.boot.report.service;
 
-import cn.hutool.core.util.NumberUtil;
-import com.aiurt.boot.report.model.FailureReport;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.util.NumberUtil;
 import cn.hutool.core.util.ObjectUtil;
+import com.aiurt.boot.report.model.FailureReport;
 import com.aiurt.boot.report.model.PatrolReport;
 import com.aiurt.boot.report.model.PatrolReportModel;
 import com.aiurt.boot.report.model.dto.MonthDTO;
@@ -15,24 +15,22 @@ import com.aiurt.boot.task.entity.PatrolTaskDevice;
 import com.aiurt.boot.task.mapper.PatrolTaskDeviceMapper;
 import com.aiurt.boot.task.mapper.PatrolTaskMapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.aiurt.common.api.CommonAPI;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import io.swagger.models.auth.In;
-import org.apache.poi.util.StringUtil;
-import org.apache.shiro.SecurityUtils;
-import org.jeecg.common.system.vo.LoginUser;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.LoginUser;
 import org.jeecg.common.system.vo.SysDepartModel;
+import org.jeecgframework.poi.excel.def.NormalExcelConstants;
+import org.jeecgframework.poi.excel.view.JeecgEntityExcelView;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.servlet.ModelAndView;
 
+import javax.servlet.http.HttpServletRequest;
 import java.math.BigDecimal;
-import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
-import java.util.Arrays;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
@@ -155,6 +153,20 @@ public class PatrolReportService {
                  patrolReport.setAbnormalNumber(abnormalNumber);
             }
         }
+        //时间为空，默认前四周
+        // 平均每周漏巡视数
+        if(ObjectUtil.isEmpty(report.getStartDate()))
+        {
+            Date start = DateUtil.beginOfWeek(new Date());
+            DateTime end = DateUtil.endOfWeek(new Date());
+            for (int i = 0; i <4 ; i++)
+            {
+                Date date  = DateUtil.offsetDay(start, -7);
+                start=date;
+
+            }
+            DateTime lastSunday = DateUtil.offsetDay(end, -7);
+        }
        return  pageList.setRecords(list);
     }
     public static String getThisWeek(Date date) {
@@ -164,6 +176,25 @@ public class PatrolReportService {
         return thisWeek;
     }
 
+    public ModelAndView reportExport(HttpServletRequest request, PatrolReportModel reportReqVO) {
+        ModelAndView mv = new ModelAndView(new JeecgEntityExcelView());
+        //获取数据
+        Page<PatrolReport> page = new Page<>(reportReqVO.getPageNo(), reportReqVO.getPageSize());
+        IPage<PatrolReport> report = this.getTaskDate(page, reportReqVO);
+        List<PatrolReport> reportData = report.getRecords();
+        HSSFWorkbook workbook = null;
+        if (CollUtil.isNotEmpty(reportData)) {
+            //导出文件名称
+            mv.addObject(NormalExcelConstants.FILE_NAME, "巡视报表");
+            //excel注解对象Class
+            mv.addObject(NormalExcelConstants.CLASS, PatrolReport.class);
+            //自定义表格参数
+            mv.addObject(NormalExcelConstants.PARAMS);
+            //导出数据列表
+            mv.addObject(NormalExcelConstants.DATA_LIST, reportData);
+        }
+        return mv;
+    }
     public IPage<FailureReport> getFailureReport(Page<FailureReport> page,String lineCode,String stationCode,String startTime,String endTime) {
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         SimpleDateFormat mm= new SimpleDateFormat("yyyy-MM");
