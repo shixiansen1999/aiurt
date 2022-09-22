@@ -1,10 +1,14 @@
 package com.aiurt.boot.overhaulstatistics.service;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.NumberUtil;
+import com.aiurt.boot.constant.InspectionConstant;
 import com.aiurt.boot.manager.InspectionManager;
 import com.aiurt.boot.task.dto.OverhaulStatisticsDTO;
-import com.aiurt.boot.task.mapper.RepairTaskMapper;import org.springframework.beans.factory.annotation.Autowired;
+import com.aiurt.boot.task.mapper.RepairTaskMapper;
+import com.aiurt.modules.fault.constants.FaultConstant;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import java.util.Arrays;
@@ -52,7 +56,8 @@ public class OverhaulStatisticsService{
 
                 //异常数量
                 List<Integer> status1 = repairTaskMapper.getStatus(q.getTaskId());
-                q.setAbnormalNumber(Integer.valueOf(status1.size()).longValue());
+                long count = CollUtil.isNotEmpty(status1) ? status1.stream().filter(InspectionConstant.NO_RESULT_STATUS::equals).count() : 0L;
+                q.setAbnormalNumber(count);
 
                 //姓名
                 String userId = q.getUserId();
@@ -83,9 +88,11 @@ public class OverhaulStatisticsService{
 
                 //完成率
                 getCompletionRate(e, size2);
+
                 //异常数量
                 List<Integer> status = repairTaskMapper.getStatus(e.getTaskId());
-                e.setAbnormalNumber(Integer.valueOf(status.size()).longValue());
+                long count = CollUtil.isNotEmpty(status) ? status.stream().filter(InspectionConstant.NO_RESULT_STATUS::equals).count() : 0L;
+                e.setAbnormalNumber(count);
 
                 //人员是否属于该班组
                 List<OverhaulStatisticsDTO> collect = nameList.stream().filter(y -> y.getOrgCode().equals(e.getOrgCode())).collect(Collectors.toList());
