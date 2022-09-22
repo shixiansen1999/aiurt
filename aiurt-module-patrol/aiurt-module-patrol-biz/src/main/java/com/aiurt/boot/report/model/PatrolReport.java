@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
+import org.jeecgframework.poi.excel.annotation.Excel;
 
 /**
  * @author cgkj0
@@ -28,6 +29,7 @@ public class PatrolReport {
     private String taskCode;/**
      * 班组
      */
+    @Excel(name = "班组", width = 15)
     private String orgName;
     /**
      * 班组code
@@ -36,38 +38,47 @@ public class PatrolReport {
     /**
      * 巡视任务总数
      */
+    @Excel(name = "巡视任务总数", width = 15)
     private Integer taskTotal;
     /**
      * 已巡视数
      */
+    @Excel(name = "已巡视数", width = 15)
     private Integer inspectedNumber;
     /**
      * 未巡视数
      */
+    @Excel(name = "未巡视数", width = 15)
     private Integer notInspectedNumber;
     /**
      * 漏巡视数
      */
+    @Excel(name = "漏巡视数", width = 15)
     private Integer missInspectedNumber;
     /**
      * 平均每周漏巡视数
      */
+    @Excel(name = "平均每周漏巡视数", width = 15)
     private Integer awmPatrolNumber;
     /**
      * 平均每月漏巡视数
      */
+    @Excel(name = "平均每月漏巡视数", width = 15)
     private Integer ammPatrolNumber;
     /**
      * 完成率
      */
+    @Excel(name = "完成率", width = 15)
     private String completionRate;
     /**
      * 异常数量
      */
+    @Excel(name = "异常数量", width = 15)
     private Integer abnormalNumber;
     /**
      * 故障数量
      */
+    @Excel(name = "故障数量", width = 15)
     private Integer faultNumber;
 }
 

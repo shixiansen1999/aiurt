@@ -263,4 +263,10 @@ public interface PatrolTaskMapper extends BaseMapper<PatrolTask> {
 
     List<PatrolReport> getReportTaskList(@Param("pageList")Page<PatrolReport> pageList, @Param("condition")PatrolReportModel condition);
 
+    /**
+     * 报表统计-漏检数查询
+     * @param omitModel
+     * @return
+     */
+    List<PatrolReport> getReportOmitList(@Param("condition")PatrolReportModel omitModel);
 }

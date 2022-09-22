@@ -1,9 +1,13 @@
 package com.aiurt.boot.report.service;
 
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.date.DateTime;
+import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.aiurt.boot.report.model.PatrolReport;
 import com.aiurt.boot.report.model.PatrolReportModel;
+import com.aiurt.boot.screen.service.PatrolScreenService;
+import com.aiurt.boot.screen.utils.ScreenDateUtil;
 import com.aiurt.boot.task.entity.PatrolTaskDevice;
 import com.aiurt.boot.task.mapper.PatrolTaskDeviceMapper;
 import com.aiurt.boot.task.mapper.PatrolTaskMapper;
@@ -17,7 +21,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Arrays;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -35,25 +38,18 @@ public class PatrolReportService {
     @Autowired
     private PatrolTaskDeviceMapper patrolTaskDeviceMapper;
     @Autowired
-    private ISysBaseAPI iSysBaseAPI;
+    private ISysBaseAPI sysBaseAPI;
+    @Autowired
+    private PatrolScreenService screenService;
     public Page<PatrolReport> getTaskDate(Page<PatrolReport> pageList, PatrolReportModel report) {
         //根据当前用户id
         LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        List<SysDepartModel> userSysDepart = iSysBaseAPI.getUserSysDepart(user.getId());
+        List<SysDepartModel> userSysDepart = sysBaseAPI.getUserSysDepart(user.getId());
         List<String> orgList = userSysDepart.stream().map(SysDepartModel::getOrgCode).collect(Collectors.toList());
-        Calendar cal = Calendar.getInstance();
-        // 设置一个星期的第一天
-        cal.setFirstDayOfWeek(Calendar.MONDAY);
-        // 获得当前日期是一个星期的第几天
-        int dayWeek = cal.get(Calendar.DAY_OF_WEEK);
-        if(dayWeek==1){
-            dayWeek = 8;
-        }
-        // 根据日历的规则，给当前日期减去星期几与一个星期第一天的差值
-        cal.add(Calendar.DATE, cal.getFirstDayOfWeek() - dayWeek);
-        Date mondayDate = cal.getTime();
-        cal.add(Calendar.DATE, 4 +cal.getFirstDayOfWeek());
-        Date sundayDate = cal.getTime();
+         String thisWeek = getThisWeek(new Date());
+        Date mondayDate = DateUtil.parse(thisWeek.split("~")[0]);
+        Date sundayDate = DateUtil.parse(thisWeek.split("~")[1]);
+        //默认本周
         if(ObjectUtil.isEmpty(report.getStartDate()))
         {
             report.setStartDate(mondayDate);
@@ -72,6 +68,39 @@ public class PatrolReportService {
                 if(patrolReport.getOrgCode().equals(d.getOrgCode()))
                 {
                     BeanUtils.copyProperties(d,patrolReport);
+                }
+            }
+        }
+        //获取漏巡的时间范围
+        PatrolReportModel omitModel = new PatrolReportModel();
+        //默认本周
+        if(ObjectUtil.isEmpty(report.getStartDate()))
+        {
+            String date = ScreenDateUtil.getThisWeek(new Date());
+            Date startTime = DateUtil.parse(date.split("~")[0]);
+            Date endTime = DateUtil.parse(date.split("~")[1]);
+            omitModel.setStartDate(startTime);
+            omitModel.setEndDate(endTime);
+        }
+        else
+        {
+            String omitStartTime = screenService.getOmitDateScope(report.getStartDate()).split("~")[0];
+            String omitEndTime = screenService.getOmitDateScope(report.getEndDate()).split("~")[1];
+            Date startTime = DateUtil.parse(omitEndTime, "yyyy-MM-dd");
+            Date endTime = DateUtil.parse(omitStartTime, "yyyy-MM-dd");
+            omitModel.setStartDate(startTime);
+            omitModel.setEndDate(endTime);
+        }
+        BeanUtils.copyProperties(report,omitModel);
+        List<PatrolReport> omitList =patrolTaskMapper.getReportOmitList(omitModel);
+        if(CollUtil.isNotEmpty(list)&&CollUtil.isNotEmpty(omitList))
+        {
+            for (PatrolReport patrolReport : list) {
+                for (PatrolReport d : omitList) {
+                    if(patrolReport.getOrgCode().equals(d.getOrgCode()))
+                    {
+                        patrolReport.setMissInspectedNumber(d.getMissInspectedNumber());
+                    }
                 }
             }
         }
@@ -98,16 +127,28 @@ public class PatrolReportService {
                          }
                      }
                  }
+
                 if (patrolReport.getTaskTotal() != 0 && patrolReport.getInspectedNumber() != 0) {
                     // 完成率=已完成数除以总数X100%
                     double rate = (1.0 * patrolReport.getInspectedNumber() / patrolReport.getTaskTotal()) * 100;
                     completionRate = String.format("%.2f", rate);
+                    patrolReport.setCompletionRate(completionRate+"%");
                 }
-                 patrolReport.setCompletionRate(completionRate);
+                else
+                {
+                    patrolReport.setCompletionRate("0.00%");
+                }
                  patrolReport.setAbnormalNumber(faultNumber);
                  patrolReport.setAbnormalNumber(abnormalNumber);
             }
         }
        return  pageList.setRecords(list);
     }
+    public static String getThisWeek(Date date) {
+        DateTime start = DateUtil.beginOfWeek(date);
+        DateTime end = DateUtil.endOfWeek(date);
+        String thisWeek = DateUtil.format(start, "yyyy-MM-dd 00:00:00") + "~" + DateUtil.format(end, "yyyy-MM-dd 23:59:59");
+        return thisWeek;
+    }
+
 }
