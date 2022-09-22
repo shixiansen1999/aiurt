@@ -110,6 +110,11 @@ public class FaultInformationController {
     }
 
 
+    /**
+     * 故障时长趋势图接口
+     * @param lineCode
+     * @return
+     */
     @AutoLog(value = "综合大屏-故障时长趋势图", operateType = 1, operateTypeAlias = "查询", permissionUrl = "")
     @ApiOperation(value = "综合大屏-故障时长趋势图", notes = "综合大屏-故障时长趋势图")
     @RequestMapping(value = "/getLargeFaultTime", method = RequestMethod.GET)
@@ -119,7 +124,12 @@ public class FaultInformationController {
         return Result.ok(largeFaultTime);
     }
 
-
+    /**
+     * 故障数据统计接口
+     * @param boardTimeType
+     * @param lineCode
+     * @return
+     */
     @AutoLog(value = "大屏-故障数据分析-故障数据统计")
     @ApiOperation(value="大屏-故障数据分析-故障数据统计", notes="大屏-故障数据分析-故障数据统计")
     @GetMapping(value = "/queryLargeFaultDataCount")
@@ -129,6 +139,13 @@ public class FaultInformationController {
         return Result.ok(faultDataAnalysisCountDTO);
     }
 
+    /**
+     * 故障数据统计详情
+     * @param boardTimeType
+     * @param faultModule
+     * @param lineCode
+     * @return
+     */
     @AutoLog(value = "大屏-故障数据分析-故障数据统计详情", operateType = 1, operateTypeAlias = "查询", permissionUrl = "")
     @ApiOperation(value = "大屏-故障数据分析-故障数据统计详情", notes = "大屏-故障数据分析-故障数据统计详情")
     @RequestMapping(value = "/getLargeFaultDataDatails", method = RequestMethod.GET)
@@ -139,6 +156,12 @@ public class FaultInformationController {
         return Result.ok(largeFaultDataDatails);
     }
 
+    /**
+     * 故障数据统计列表接口
+     * @param boardTimeType
+     * @param lineCode
+     * @return
+     */
     @AutoLog(value = "大屏-故障数据分析-故障数据统计列表", operateType = 1, operateTypeAlias = "查询", permissionUrl = "")
     @ApiOperation(value = "大屏-故障数据分析-故障数据统计列表", notes = "大屏-故障数据分析-故障数据统计列表")
     @RequestMapping(value = "/getLargeFaultDataInfo", method = RequestMethod.GET)
@@ -161,5 +184,18 @@ public class FaultInformationController {
                                                          @ApiParam(name = "lineCode",value = "线路")@RequestParam(value = "lineCode",required = false)String lineCode){
         List<FaultLevelDTO> faultLevelInfo = faultInformationService.getFaultLevelInfo(boardTimeType, lineCode);
         return Result.OK(faultLevelInfo);
+    }
+
+
+    /**
+     * 子系统可靠度接口
+     * @return
+     */
+    @AutoLog(value = "综合大屏-子系统可靠度", operateType = 1, operateTypeAlias = "查询", permissionUrl = "")
+    @ApiOperation(value = "综合大屏-子系统可靠度", notes = "综合大屏-子系统可靠度")
+    @RequestMapping(value = "/getSystemReliability", method = RequestMethod.GET)
+    public Result<List<FaultSystemReliabilityDTO>> getSystemReliability(@ApiParam(name = "boardTimeType", value = "1:本周 2:上周 3:本月 4:上月",defaultValue = "1") @RequestParam(value="boardTimeType",required = false)Integer boardTimeType){
+        List<FaultSystemReliabilityDTO> systemReliability = faultInformationService.getSystemReliability(boardTimeType);
+        return Result.ok(systemReliability);
     }
 }

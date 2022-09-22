@@ -222,6 +222,27 @@
         group by f.sub_system_code,f.line_Code
     </select>
 
+    <select id="getSystemFaultSum" resultType="com.aiurt.modules.fault.dto.FaultSystemTimeDTO">
+        select cs.system_name,f.sub_system_code,f.line_code,f.happen_time,f.end_time,
+        sum(TIMESTAMPDIFF(HOUR,f.happen_time,f.end_time)) as repairTime  from fault f
+        left join cs_subSystem cs on f.sub_system_code = cs.system_code
+        <where>
+            <if test="startDate!=null and endDate!=null">
+                and f.approval_pass_time  &gt;= #{startDate}  and f.approval_pass_time &lt;= #{endDate}
+            </if>
+        </where>
+        group by f.sub_system_code
+    </select>
+
+    <select id="getSystemDeviceSum" resultType="com.aiurt.modules.fault.dto.FaultSystemDeviceSumDTO">
+        select cs.system_name,d.system_code,d.code,d.name,count(code) as deviceNumber
+        from device d
+        left join cs_subSystem cs on d.system_code = cs.system_code
+        where
+            d.scrap_flag = 0
+        group by d.system_code
+    </select>
+
     <select id="queryFaultDataInformation" resultType="com.aiurt.modules.fault.entity.Fault">
         select * from fault
         <where>

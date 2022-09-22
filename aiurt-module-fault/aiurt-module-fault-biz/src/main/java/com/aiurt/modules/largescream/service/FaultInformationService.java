@@ -4,6 +4,7 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.convert.Convert;
 import cn.hutool.core.date.DateUnit;
 import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.modules.fault.constants.FaultConstant;
 import com.aiurt.modules.fault.constants.FaultDictCodeConstant;
@@ -584,5 +585,71 @@ public class FaultInformationService {
         return faultLevelList;
     }
 
+    /**
+     * 子系统可靠度
+     * @param boardTimeType
+     * @return
+     */
+    public List<FaultSystemReliabilityDTO> getSystemReliability(Integer boardTimeType){
+        List<FaultSystemReliabilityDTO> reliabilityList = new ArrayList<>();
+        //设置时间查询条件
+        String dateTime1 = FaultLargeDateUtil.getDateTime(boardTimeType);
+        String[] split1 = dateTime1.split("~");
+        Date startDate = DateUtil.parse(split1[0]);
+        Date endDate = DateUtil.parse(split1[1]);
+
+        //本周/本月时长总数
+        Integer time = Math.toIntExact(DateUtil.between(startDate, endDate, DateUnit.HOUR));
+        //计划时长
+        Integer planTime = 0;
+        //实际时长
+        Integer actualTime = 0;
+
+        //查询按系统分类好的并计算了故障消耗总时长的记录
+        List<FaultSystemTimeDTO> systemFaultSum = faultInformationMapper.getSystemFaultSum(startDate, endDate);
+        //查询子系统设备数
+        List<FaultSystemDeviceSumDTO> systemDeviceSum = faultInformationMapper.getSystemDeviceSum();
+        if(ObjectUtil.isNotEmpty(systemDeviceSum)){
+            //遍历所有设备
+            for (FaultSystemDeviceSumDTO faultSystemDeviceSumDTO : systemDeviceSum) {
+                FaultSystemReliabilityDTO faultSystemReliabilityDTO = new FaultSystemReliabilityDTO();
+                faultSystemReliabilityDTO.setSystemName(faultSystemDeviceSumDTO.getSystemName());
+                faultSystemReliabilityDTO.setSubSystemCode(faultSystemDeviceSumDTO.getSystemCode());
+                //计划时长
+                planTime =faultSystemDeviceSumDTO.getDeviceNumber()*time;
+                faultSystemReliabilityDTO.setScheduledRuntime(planTime);
+                actualTime = planTime;
+                if(ObjectUtil.isNotEmpty(systemFaultSum)){
+                    //遍历故障时间
+                    for (FaultSystemTimeDTO faultSystemTimeDTO : systemFaultSum) {
+                        if(ObjectUtil.isNotEmpty(faultSystemTimeDTO.getSubSystemCode())) {
+                            //实际时长
+                            if (faultSystemTimeDTO.getSubSystemCode().equals(faultSystemDeviceSumDTO.getSystemCode())) {
+                                if (ObjectUtil.isNotEmpty(faultSystemTimeDTO.getRepairTime())) {
+                                    Integer repairTime = Integer.valueOf(faultSystemTimeDTO.getRepairTime());
+                                    actualTime = planTime - repairTime;
+                                    faultSystemReliabilityDTO.setActualRuntime(actualTime);
+                                } else {
+                                    actualTime = planTime;
+                                    faultSystemReliabilityDTO.setActualRuntime(actualTime);
+                                }
+                            } else {
+                                faultSystemReliabilityDTO.setActualRuntime(actualTime);
+                            }
+                        }
+
+                    }
+                }
+                if (planTime <= 0 || actualTime <= 0) {
+                    faultSystemReliabilityDTO.setReliability("0");
+                } else {
+                    Integer d = new BigDecimal(faultSystemReliabilityDTO.getActualRuntime() * 100 /planTime).setScale(1, BigDecimal.ROUND_HALF_UP).intValue();
+                    faultSystemReliabilityDTO.setReliability(d + "%");
+                }
+                reliabilityList.add(faultSystemReliabilityDTO);
+            }
+        }
+        return reliabilityList;
+    }
 
 }
