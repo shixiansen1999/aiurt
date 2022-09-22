@@ -35,7 +35,7 @@ public class PositionPanel implements Serializable {
     private String lineName;
 
     /**站点*/
-    @ApiModelProperty(value = "站点")
+    @ApiModelProperty(value = "站点名称")
     private String stationName;
 
     /**站点编号*/

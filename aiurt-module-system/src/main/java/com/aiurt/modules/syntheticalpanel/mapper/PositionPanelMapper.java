@@ -31,12 +31,12 @@ public interface PositionPanelMapper {
     List<CsStation> getStations(@Param("code") String code);
 
     /**
-     * 通过id查询班组信息
+     * 通过站点名称查询班组信息
      *
-     * @param id
+     * @param stationName
      * @return
      */
-    List<PositionPanel>  queryById(@Param("id") String id);
+    List<PositionPanel>  queryById(@Param("stationName") String stationName);
 
     /**
      * 修改

@@ -52,7 +52,7 @@
                     LEFT JOIN work_area_station was ON was.station_code = cs.station_code
                     LEFT JOIN work_area_org wao ON wao.work_area_code = was.work_area_code
                     LEFT JOIN sys_depart sd ON sd.org_code = wao.org_code
-    where cs.id = #{id}
+    where cs.station_name = #{stationName}
     GROUP BY sd.org_code
     </select>
 
