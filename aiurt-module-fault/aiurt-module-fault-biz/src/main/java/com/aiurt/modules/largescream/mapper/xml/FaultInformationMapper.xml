@@ -164,6 +164,9 @@
             <if test="lineCode != null and lineCode != ''">
                 and f.line_code  = #{lineCode}
             </if>
+            <if test="startDate!=null and endDate!=null">
+                and f.approval_pass_time  &gt;= #{startDate}  and f.approval_pass_time &lt;= #{endDate}
+            </if>
         </where>
     </select>
 
@@ -224,6 +227,32 @@
         <where>
             <if test="lineCode != null and lineCode != ''">
                 and line_code  = #{lineCode}
+            </if>
+        </where>
+    </select>
+
+    <select id="getFaultData" resultType="com.aiurt.modules.fault.dto.FaultTimeoutLevelDTO">
+        select * from fault
+        <where>
+            <if test="level == 1">
+                AND status &lt;&gt; 12
+                and TIMESTAMPDIFF(HOUR,happen_time,now()) &gt;=48
+            </if>
+            <if test="level == 2">
+                AND status &lt;&gt; 12
+                and TIMESTAMPDIFF(HOUR,happen_time,now()) &gt;=24
+                and TIMESTAMPDIFF(HOUR,happen_time,now()) &lt; 48
+            </if>
+            <if test="level == 3">
+                AND status &lt;&gt; 12
+                and TIMESTAMPDIFF(HOUR,happen_time,now()) &gt;=12
+                and TIMESTAMPDIFF(HOUR,happen_time,now()) &lt; 24
+            </if>
+            <if test="lineCode != null and lineCode != ''">
+                and line_code  = #{lineCode}
+            </if>
+            <if test="startDate!=null and endDate!=null">
+                and approval_pass_time  &gt;= #{startDate}  and approval_pass_time &lt;= #{endDate}
             </if>
         </where>
     </select>

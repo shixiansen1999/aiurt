@@ -660,11 +660,13 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
             return result;
         }
 
+        // 查询对应的检修计划
         RepairPool repairPool = baseMapper.selectById(id);
         if (ObjectUtil.isEmpty(repairPool)) {
             throw new AiurtBootException(InspectionConstant.ILLEGAL_OPERATION);
         }
 
+        // 查询检修计划关联的组织结构
         List<RepairPoolOrgRel> repairPoolOrgRels = orgRelMapper.selectList(
                 new LambdaQueryWrapper<RepairPoolOrgRel>()
                         .eq(RepairPoolOrgRel::getRepairPoolCode, repairPool.getCode())

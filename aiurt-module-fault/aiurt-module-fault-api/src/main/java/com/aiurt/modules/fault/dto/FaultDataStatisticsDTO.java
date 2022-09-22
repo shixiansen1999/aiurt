@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 
 /**
  * @author LKJ
@@ -32,12 +33,11 @@ public class FaultDataStatisticsDTO implements Serializable {
     @ApiModelProperty("月份")
     private String month;
 
-    @ApiModelProperty("月份第一天")
+    @ApiModelProperty("第一天")
     private String firstDay;
 
-    @ApiModelProperty("月份最后一天")
+    @ApiModelProperty("最后一天")
     private String lastDay;
-
 
     /**报修方式*/
     @ApiModelProperty("报修方式")
@@ -56,16 +56,20 @@ public class FaultDataStatisticsDTO implements Serializable {
     @ApiModelProperty("故障数量")
     private Integer faultSum;
 
-    @ApiModelProperty("报修故障数量")
-    private Integer repairFaultNum;
 
-    @ApiModelProperty("自检故障数量")
-    private Integer selfCheckFaultNum;
+    @ApiModelProperty("报修故障数量百分比")
+    private BigDecimal repairFaultNum;
 
-    @ApiModelProperty("已完成故障数量")
-    private Integer completedFaultNum;
+    @ApiModelProperty("自检故障数量百分比")
+    private BigDecimal selfCheckFaultNum;
 
-    @ApiModelProperty("未完成故障数量")
-    private Integer undoneFaultNum;
+    @ApiModelProperty("已完成故障数量百分比")
+    private BigDecimal completedFaultNum;
+
+    @ApiModelProperty("未完成故障数量百分比")
+    private BigDecimal undoneFaultNum;
+
+    @ApiModelProperty("类型:1：本周，2：上周，3：本月， 4：上月")
+    private Integer boardTimeType;
 
 }

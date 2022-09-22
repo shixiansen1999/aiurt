@@ -4,6 +4,7 @@ package com.aiurt.modules.largescream.mapper;
 import com.aiurt.modules.fault.dto.*;
 import com.aiurt.modules.fault.entity.Fault;
 import com.aiurt.modules.largescream.model.FaultScreenModule;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.Date;
@@ -31,7 +32,7 @@ public interface FaultInformationMapper {
     List<Fault> queryLargeFaultInformationUnSo(@Param("startDate") Date startDate, @Param("endDate") Date endDate,@Param("lineCode") String lineCode);
 
     /**
-     * 数据分析-故障数据统计
+     * 数据分析-故障数据统计总数和未解决
      * @param lineCode
      * @return
      */
@@ -102,7 +103,7 @@ public interface FaultInformationMapper {
      * @param lineCode
      * @return
      */
-    List<FaultDataAnalysisInfoDTO> getLargeFaultDataInfo(@Param("lineCode") String lineCode);
+    List<FaultDataAnalysisInfoDTO> getLargeFaultDataInfo(@Param("startDate") Date startDate, @Param("endDate") Date endDate,@Param("lineCode") String lineCode);
 
 
     /**
@@ -115,6 +116,16 @@ public interface FaultInformationMapper {
 
     List<FaultSystemTimeDTO> getLargeFaultTime(@Param("month") String month, @Param("lineCode") String lineCode);
 
+
+    /**
+     *
+     * @param level
+     * @param startDate
+     * @param endDate
+     * @param lineCode
+     * @return
+     */
+    List<FaultTimeoutLevelDTO> getFaultData(@Param("level") Integer level,@Param("startDate") Date startDate, @Param("endDate") Date endDate ,@Param("lineCode") String lineCode);
 
 
     /**

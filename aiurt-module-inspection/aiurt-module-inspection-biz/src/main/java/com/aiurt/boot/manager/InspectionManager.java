@@ -290,7 +290,7 @@ public class InspectionManager {
     /**
      * 将部门编码集合和(当前登录人部门、管理部门)作交集处理
      *
-     * @param orgCodes
+     * @param orgCodes 目标部门
      * @return
      */
     public List<String> handleMixedOrgCode(List<String> orgCodes) {
@@ -298,14 +298,15 @@ public class InspectionManager {
         if (CollUtil.isEmpty(orgCodes)) {
             return result;
         }
+        // 登录人管理部门
+        List<String> manageOrgs = new ArrayList<>();
         LoginUser loginUser = checkLogin();
         List<CsUserDepartModel> departByUserId = sysBaseApi.getDepartByUserId(loginUser.getId());
-        List<String> manageOrgs = new ArrayList<>();
-
         if (CollUtil.isNotEmpty(departByUserId)) {
             manageOrgs = departByUserId.stream().map(CsUserDepartModel::getOrgCode).collect(Collectors.toList());
         }
 
+        // 登录人所在部门
         if (StrUtil.isNotEmpty(loginUser.getOrgCode())) {
             manageOrgs.add(loginUser.getOrgCode());
         }

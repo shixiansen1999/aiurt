@@ -2,6 +2,7 @@ package com.aiurt.modules.schedule.mapper;
 
 
 import com.aiurt.modules.schedule.dto.ScheduleRecordDTO;
+import com.aiurt.modules.schedule.dto.SysTotalTeamDTO;
 import com.aiurt.modules.schedule.dto.SysUserScheduleDTO;
 import com.aiurt.modules.schedule.dto.SysUserTeamDTO;
 import com.aiurt.modules.schedule.entity.ScheduleRecord;
@@ -98,4 +99,11 @@ public interface ScheduleRecordMapper extends BaseMapper<ScheduleRecord> {
      */
     List<SysUserTeamDTO> getUserByDepIds(@Param("orgCodes") List<String> orgCodes,@Param("page") Page<SysUserTeamDTO> page,@Param("orgCode") String orgCode);
 
+    /**
+     * 获取大屏的班组信息-点击总班组数
+     * @param page 分页参数
+     * @param orgCodes 组织机构
+     * @return
+     */
+    List<SysTotalTeamDTO> getTotalTeamDetail(@Param("page") Page<SysTotalTeamDTO> page, @Param("orgCodes") List<String> orgCodes);
 }

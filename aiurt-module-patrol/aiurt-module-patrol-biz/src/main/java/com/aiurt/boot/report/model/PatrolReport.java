@@ -19,9 +19,20 @@ import lombok.experimental.Accessors;
 public class PatrolReport {
 
     /**
+     * 任务id
+     */
+    private String taskId;
+    /**
+     * 任务code
+     */
+    private String taskCode;/**
      * 班组
      */
     private String orgName;
+    /**
+     * 班组code
+     */
+    private String orgCode;
     /**
      * 巡视任务总数
      */
@@ -49,7 +60,7 @@ public class PatrolReport {
     /**
      * 完成率
      */
-    private double completionRate;
+    private String completionRate;
     /**
      * 异常数量
      */
@@ -58,7 +69,6 @@ public class PatrolReport {
      * 故障数量
      */
     private Integer faultNumber;
-;
 }
 
 

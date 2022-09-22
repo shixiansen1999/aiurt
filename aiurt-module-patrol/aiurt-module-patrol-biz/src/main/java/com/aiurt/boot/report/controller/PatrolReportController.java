@@ -1,6 +1,7 @@
 package com.aiurt.boot.report.controller;
 
 import com.aiurt.boot.report.model.PatrolReport;
+import com.aiurt.boot.report.model.PatrolReportModel;
 import com.aiurt.boot.report.service.PatrolReportService;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -37,10 +38,10 @@ public class PatrolReportController {
      */
     @AutoLog(value = "统计报表-巡视数据统计", operateType = 1, operateTypeAlias = "查询")
     @ApiOperation(value = "统计报表-巡视数据统计", notes = "统计报表-巡视数据统计")
-    @RequestMapping(value = "/statistics", method = {RequestMethod.GET, RequestMethod.POST})
-    public Result<IPage<PatrolReport>> getStatisticsData(PatrolReport report,
-                                                  @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
-                                                  @RequestParam(name="pageSize", defaultValue="10") Integer pageSize, HttpServletRequest req) {
+    @RequestMapping(value = "/patrolTaskList", method = {RequestMethod.GET, RequestMethod.POST})
+    public Result<IPage<PatrolReport>> getStatisticsDate(PatrolReportModel report,
+                                                         @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
+                                                         @RequestParam(name="pageSize", defaultValue="10") Integer pageSize, HttpServletRequest req) {
         Page<PatrolReport> pageList = new Page<>(pageNo, pageSize);
         pageList = reportService.getTaskDate(pageList, report);
 
