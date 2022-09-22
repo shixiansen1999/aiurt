@@ -1,7 +1,9 @@
 package com.aiurt.boot.task.mapper;
 
+import com.aiurt.boot.report.model.FailureReport;
 import com.aiurt.boot.report.model.PatrolReport;
 import com.aiurt.boot.report.model.PatrolReportModel;
+import com.aiurt.boot.report.model.dto.MonthDTO;
 import com.aiurt.boot.screen.model.ScreenModule;
 import com.aiurt.boot.screen.model.ScreenStatisticsGraph;
 import com.aiurt.boot.screen.model.ScreenStatisticsTask;
@@ -269,4 +271,69 @@ public interface PatrolTaskMapper extends BaseMapper<PatrolTask> {
      * @return
      */
     List<PatrolReport> getReportOmitList(@Param("condition")PatrolReportModel omitModel);
+    /**
+     * 报表统计-故障列表
+     * @param page
+     * @param id
+     * @param lineCode
+     * @param stationCode
+     * @param startTime
+     * @param endTime
+     * @return
+     */
+    IPage<FailureReport> getFailureReport(Page<FailureReport> page,@Param("id")String id,@Param("lineCode") String lineCode,@Param("stationCode") String stationCode,@Param("startTime") String startTime, @Param("endTime")String endTime);
+
+    /**
+     * 查询数量
+     * @param code
+     * @param lineCode
+     * @param stationCode
+     * @param startTime
+     * @param endTime
+     * @return
+     */
+    List<Integer> selectNum(@Param("code") String code,@Param("orgCode")String orgCode,@Param("lineCode") String lineCode,@Param("stationCode") String stationCode,@Param("startTime") String startTime, @Param("endTime")String endTime);
+
+    /**
+     * 查询时间
+     * @param code
+     * @param lineCode
+     * @param stationCode
+     * @param startTime
+     * @param endTime
+     * @return
+     */
+    List<Integer> selectNum1(@Param("code") String code,@Param("orgCode")String orgCode,@Param("lineCode") String lineCode,@Param("stationCode") String stationCode,@Param("startTime") String startTime, @Param("endTime")String endTime);
+
+    /**
+     * 查当年总数
+     * @param id
+     * @param lineCode
+     * @param stationCode
+     * @return
+     */
+    List<MonthDTO> selectMonth(@Param("id")String id,@Param("lineCode") String lineCode,@Param("stationCode") String stationCode);
+
+    /**
+     *查询班组报表
+     * @param page
+     * @param ids
+     * @param lineCode
+     * @param stationCode
+     * @param startTime
+     * @param endTime
+     * @param systemCode
+     * @return
+     */
+    IPage<FailureReport> getOrgReport(Page<FailureReport> page, @Param("ids")List<String> ids,@Param("lineCode") String lineCode,@Param("stationCode") String stationCode,@Param("startTime") String startTime, @Param("endTime")String endTime,@Param("systemCode") String systemCode);
+
+    /**
+     * 查询班组时间
+     * @param orgCodes
+     * @param lineCode
+     * @param stationCode
+     * @param systemCode
+     * @return
+     */
+    List<MonthDTO> selectMonthOrg(@Param("orgCodes") List<String> orgCodes,@Param("lineCode") String lineCode,@Param("stationCode") String stationCode,@Param("systemCode") String systemCode);
 }

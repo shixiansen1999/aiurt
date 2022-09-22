@@ -1,17 +1,26 @@
 package com.aiurt.boot.report.service;
 
+import cn.hutool.core.util.NumberUtil;
+import com.aiurt.boot.report.model.FailureReport;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.aiurt.boot.report.model.PatrolReport;
 import com.aiurt.boot.report.model.PatrolReportModel;
+import com.aiurt.boot.report.model.dto.MonthDTO;
 import com.aiurt.boot.screen.service.PatrolScreenService;
 import com.aiurt.boot.screen.utils.ScreenDateUtil;
 import com.aiurt.boot.task.entity.PatrolTaskDevice;
 import com.aiurt.boot.task.mapper.PatrolTaskDeviceMapper;
 import com.aiurt.boot.task.mapper.PatrolTaskMapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.aiurt.common.api.CommonAPI;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import io.swagger.models.auth.In;
+import org.apache.poi.util.StringUtil;
+import org.apache.shiro.SecurityUtils;
+import org.jeecg.common.system.vo.LoginUser;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.LoginUser;
@@ -20,6 +29,10 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
+import java.text.NumberFormat;
+import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
@@ -150,5 +163,85 @@ public class PatrolReportService {
         String thisWeek = DateUtil.format(start, "yyyy-MM-dd 00:00:00") + "~" + DateUtil.format(end, "yyyy-MM-dd 23:59:59");
         return thisWeek;
     }
+
+    public IPage<FailureReport> getFailureReport(Page<FailureReport> page,String lineCode,String stationCode,String startTime,String endTime) {
+        LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        SimpleDateFormat mm= new SimpleDateFormat("yyyy-MM");
+        if (ObjectUtil.isEmpty(startTime) && ObjectUtil.isEmpty(endTime)){
+            startTime = mm.format(new Date())+"-01"; endTime = mm.format(new Date())+"-31";
+        }
+        IPage<FailureReport> failureReportIPage = patrolTaskMapper.getFailureReport(page,sysUser.getId(),lineCode,stationCode,startTime,endTime);
+        String finalStartTime = startTime;
+        String finalEndTime = endTime;
+        failureReportIPage.getRecords().forEach(f->{
+            if (f.getLastMonthNum()!=0){
+            double sub = NumberUtil.sub(f.getMonthNum(), f.getLastMonthNum());
+            BigDecimal div = NumberUtil.div(sub,NumberUtil.round(f.getLastMonthNum(),2));
+            f.setLastMonthStr(NumberUtil.round(NumberUtil.mul(div,100),2).toString()+"%");
+            }else {
+                f.setLastMonthStr(NumberUtil.mul(NumberUtil.round(f.getMonthNum(),2),100).toString()+"%");
+            }
+            if (f.getLastYearNum()!=0){
+                double sub = NumberUtil.sub(f.getYearNum(), f.getLastYearNum());
+                BigDecimal div = NumberUtil.div(sub,NumberUtil.round(f.getLastYearNum(),2));
+                f.setLastMonthStr(NumberUtil.round(NumberUtil.mul(div,100),2).toString()+"%");
+            }else {
+                f.setLastYearStr(NumberUtil.mul(NumberUtil.round(f.getYearNum(),2),100).toString()+"%");
+            }
+            List<Integer> num = patrolTaskMapper.selectNum(f.getCode(),null,lineCode,stationCode, finalStartTime, finalEndTime);
+            int s = num.stream().reduce(Integer::sum).orElse(0);
+            f.setAverageResponse(f.getResolvedNum()==0?0:s/f.getResolvedNum());
+            List<Integer> num1 = patrolTaskMapper.selectNum1(f.getCode(),null,lineCode,stationCode, finalStartTime, finalEndTime);
+            int s1 = num1.stream().reduce(Integer::sum).orElse(0);
+            f.setAverageResolution(f.getResolvedNum()==0?0:s1/f.getResolvedNum());
+        });
+        return failureReportIPage;
+    }
+
+    public List<MonthDTO> getMonthNum(String lineCode, String stationCode) {
+        LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        List<MonthDTO> monthDTOS = patrolTaskMapper.selectMonth(sysUser.getId(),lineCode,stationCode);
+        return monthDTOS;
+    }
+    public List<MonthDTO> getMonthOrgNum(String lineCode, String stationCode,String systemCode) {
+        LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        List<SysDepartModel> userSysDepart = sysBaseAPI.getUserSysDepart(user.getId());
+        List<String> orgCodes =userSysDepart.stream().map(SysDepartModel::getOrgCode).collect(Collectors.toList());
+        List<MonthDTO> monthDTOS = patrolTaskMapper.selectMonthOrg(orgCodes,lineCode,stationCode,systemCode);
+        return monthDTOS;
+    }
+
+    public IPage<FailureReport> getFailureOrgReport(Page<FailureReport> page, String lineCode, String stationCode, String startTime, String endTime, String systemCode) {
+        LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        List<SysDepartModel> userSysDepart = sysBaseAPI.getUserSysDepart(user.getId());
+        List<String> ids =userSysDepart.stream().map(SysDepartModel::getId).collect(Collectors.toList());
+        IPage<FailureReport> orgReport = patrolTaskMapper.getOrgReport(page,ids,lineCode,stationCode,startTime,endTime,systemCode);
+        String finalStartTime = startTime;
+        String finalEndTime = endTime;
+        orgReport.getRecords().forEach(f->{
+            if (f.getLastMonthNum()!=0){
+                double sub = NumberUtil.sub(f.getMonthNum(), f.getLastMonthNum());
+                BigDecimal div = NumberUtil.div(sub,NumberUtil.round(f.getLastMonthNum(),2));
+                f.setLastMonthStr(NumberUtil.round(NumberUtil.mul(div,100),2).toString()+"%");
+            }else {
+                f.setLastMonthStr(NumberUtil.mul(NumberUtil.round(f.getMonthNum(),2),100).toString()+"%");
+            }
+            if (f.getLastYearNum()!=0){
+                double sub = NumberUtil.sub(f.getYearNum(), f.getLastYearNum());
+                BigDecimal div = NumberUtil.div(sub,NumberUtil.round(f.getLastYearNum(),2));
+                f.setLastMonthStr(NumberUtil.round(NumberUtil.mul(div,100),2).toString()+"%");
+            }else {
+                f.setLastYearStr(NumberUtil.mul(NumberUtil.round(f.getYearNum(),2),100).toString()+"%");
+            }
+            List<Integer> num = patrolTaskMapper.selectNum(null,f.getOrgCode(),lineCode,stationCode, finalStartTime, finalEndTime);
+            int s = num.stream().reduce(Integer::sum).orElse(0);
+            f.setAverageResponse(f.getResolvedNum()==0?0:s/f.getResolvedNum());
+            List<Integer> num1 = patrolTaskMapper.selectNum1(null,f.getOrgCode(),lineCode,stationCode, finalStartTime, finalEndTime);
+            int s1 = num1.stream().reduce(Integer::sum).orElse(0);
+            f.setAverageResolution(f.getResolvedNum()==0?0:s1/f.getResolvedNum());
+        });
+        return orgReport;
+    }
+
 
 }

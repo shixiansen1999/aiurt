@@ -11,6 +11,6 @@
     from cs_user_subsystem cus
     left join cs_subsystem cs on cs.id = cus.system_id
     LEFT JOIN cs_major cm on cs.major_code = cm.major_code
-    where cs.del_flag = 0 and cus.user_id = #{id}
+    where cs.del_flag = 0 and cm.del_flag = 0 and cus.user_id = #{id}
 </select>
 </mapper>
