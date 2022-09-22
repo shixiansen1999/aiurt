@@ -15,6 +15,11 @@ import java.util.List;
 @Data
 public class OverhaulStatisticsDTO {
 
+    /**id*/
+    @TableField(exist = false)
+    @ApiModelProperty(value = "id")
+    private String id;
+
     /**任务id*/
     @TableField(exist = false)
     @ApiModelProperty(value = "任务id")
@@ -30,8 +35,14 @@ public class OverhaulStatisticsDTO {
     @ApiModelProperty(value = "班组编码")
     private String orgCode;
 
+    /**班组编码*/
+    @TableField(exist = false)
+    @ApiModelProperty(value = "班组编码id")
+    private String orgCodeId;
+
     /**班组名称*/
     @TableField(exist = false)
+    @Excel(name = "班组名称", width = 15)
     @ApiModelProperty(value = "班组名称")
     private String orgName;
 
@@ -42,53 +53,63 @@ public class OverhaulStatisticsDTO {
 
     /**姓名*/
     @TableField(exist = false)
+    @Excel(name = "姓名", width = 15)
     @ApiModelProperty(value = "姓名")
     private String userName;
 
     /**总检修时长*/
     @TableField(exist = false)
+    @Excel(name = "总检修时长", width = 15)
     @ApiModelProperty(value = "总检修时长")
     private Long maintenanceDuration;
 
     /**计划检修总数*/
     @TableField(exist = false)
+    @Excel(name = "检修任务总数", width = 15)
     @ApiModelProperty(value = "检修任务总数")
     private Long taskTotal;
 
 
     /**已完成数*/
     @TableField(exist = false)
+    @Excel(name = "已完成数", width = 15)
     @ApiModelProperty(value = "已完成数")
     private Long completedNumber;
 
     /**未完成数*/
     @TableField(exist = false)
+    @Excel(name = "未完成数", width = 15)
     @ApiModelProperty(value = "未完成数")
     private Long notCompletedNumber;
 
     /**漏检修数*/
     @TableField(exist = false)
+    @Excel(name = "漏检修数", width = 15)
     @ApiModelProperty(value = "漏检修数")
     private Long leakOverhaulNumber;
 
 
     /**平均每周漏检修数*/
     @TableField(exist = false)
+    @Excel(name = "平均每周漏检修数", width = 15)
     @ApiModelProperty(value = "平均每周漏检修数")
     private Long avgWeekNumber;
 
     /**平均每周漏检修数*/
     @TableField(exist = false)
+    @Excel(name = "平均每月漏检修数", width = 15)
     @ApiModelProperty(value = "平均每月漏检修数")
     private Long avgMonthNumber;
 
     /**完成率*/
     @TableField(exist = false)
+    @Excel(name = "完成率", width = 15)
     @ApiModelProperty(value = "完成率")
     private String completionRate;
 
     /**异常数量*/
     @TableField(exist = false)
+    @Excel(name = "异常数量", width = 15)
     @ApiModelProperty(value = "异常数量")
     private Long abnormalNumber;
 

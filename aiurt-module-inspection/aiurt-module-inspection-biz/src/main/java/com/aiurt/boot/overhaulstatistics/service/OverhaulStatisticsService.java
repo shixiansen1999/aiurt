@@ -3,14 +3,24 @@ package com.aiurt.boot.overhaulstatistics.service;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.NumberUtil;
+import cn.hutool.core.util.ObjectUtil;
 import com.aiurt.boot.constant.InspectionConstant;
 import com.aiurt.boot.manager.InspectionManager;
 import com.aiurt.boot.task.dto.OverhaulStatisticsDTO;
 import com.aiurt.boot.task.mapper.RepairTaskMapper;
 import com.aiurt.modules.fault.constants.FaultConstant;
+import com.aiurt.modules.train.task.vo.ReportReqVO;
+import com.aiurt.modules.train.task.vo.ReportVO;
+import org.jeecgframework.poi.excel.def.NormalExcelConstants;
+import org.jeecgframework.poi.excel.entity.ExportParams;
+import org.jeecgframework.poi.excel.view.JeecgEntityExcelView;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.servlet.ModelAndView;
+
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -65,6 +75,8 @@ public class OverhaulStatisticsService{
 
                 //班组编码
                 String orgCode = repairTaskMapper.getOrgCode(userId);
+                String id = q.getId();
+                q.setOrgCodeId(orgCode+id);
                 q.setOrgCode(orgCode);
             });
         }
@@ -97,6 +109,9 @@ public class OverhaulStatisticsService{
                 //人员是否属于该班组
                 List<OverhaulStatisticsDTO> collect = nameList.stream().filter(y -> y.getOrgCode().equals(e.getOrgCode())).collect(Collectors.toList());
                 e.setNameList(collect);
+
+                //父级编码id
+                e.setOrgCodeId(e.getOrgCode());
             });
         }
         return statisticsDTOList;
@@ -110,6 +125,36 @@ public class OverhaulStatisticsService{
         e.setLeakOverhaulNumber(0L);
         e.setAvgWeekNumber(0L);
         e.setAvgMonthNumber(0L);
+    }
+
+    /**
+     * 统计分析-检修报表导出
+     *
+     * @param request
+     * @return
+     */
+    public ModelAndView reportExport(HttpServletRequest request, OverhaulStatisticsDTO overhaulStatisticsDTO) {
+        ModelAndView mv = new ModelAndView(new JeecgEntityExcelView());
+        List<OverhaulStatisticsDTO> overhaulList = this.getOverhaulList(overhaulStatisticsDTO);
+        List<OverhaulStatisticsDTO> dtos = new ArrayList<>();
+        for (OverhaulStatisticsDTO statisticsDTO : overhaulList) {
+            dtos.add(statisticsDTO);
+           List<OverhaulStatisticsDTO> nameList = statisticsDTO.getNameList();
+            if (CollUtil.isNotEmpty(nameList)) {
+                dtos.addAll(nameList);
+            }
+        }
+        if (CollectionUtil.isNotEmpty(overhaulList)) {
+            //导出文件名称
+            mv.addObject(NormalExcelConstants.FILE_NAME, "检修报表");
+            //excel注解对象Class
+            mv.addObject(NormalExcelConstants.CLASS, OverhaulStatisticsDTO.class);
+            //自定义表格参数
+            mv.addObject(NormalExcelConstants.PARAMS, new ExportParams("统计分析-检修报表", "检修报表"));
+            //导出数据列表
+            mv.addObject(NormalExcelConstants.DATA_LIST, dtos);
+        }
+        return mv;
     }
 
 }

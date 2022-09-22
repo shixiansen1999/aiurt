@@ -6,15 +6,19 @@ import com.aiurt.boot.task.entity.RepairTask;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.modules.fault.dto.FaultStatisticsDTO;
 import com.aiurt.modules.faultanalysisreport.dto.SpareConsumeDTO;
+import com.aiurt.modules.train.task.vo.ReportReqVO;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.jeecg.common.api.vo.Result;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.ModelAndView;
 ;
+import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
 /**
@@ -44,5 +48,18 @@ public class OverhaulStatisticsController {
     public Result<List<OverhaulStatisticsDTO>> getOverhaulList(OverhaulStatisticsDTO condition) {
         List<OverhaulStatisticsDTO> overhaulList = overhaulStatisticsService.getOverhaulList(condition);
         return Result.OK(overhaulList);
+    }
+
+    /**
+     * 统计分析-检修报表导出
+     *
+     * @param request
+     * @return
+     */
+    @AutoLog(value = "统计分析-检修报表导出")
+    @ApiOperation(value = "统计分析-检修报表导出", notes = "统计分析-检修报表导出")
+    @GetMapping(value = "/reportExport")
+    public ModelAndView reportExport(HttpServletRequest request, OverhaulStatisticsDTO overhaulStatisticsDTO) {
+        return overhaulStatisticsService.reportExport(request, overhaulStatisticsDTO);
     }
 }

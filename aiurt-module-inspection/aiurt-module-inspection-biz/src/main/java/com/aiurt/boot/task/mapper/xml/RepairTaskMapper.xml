@@ -358,6 +358,7 @@
     <select id="readTeamList" resultType="com.aiurt.boot.task.dto.OverhaulStatisticsDTO">
 	    SELECT
            t1.id as taskId,
+           t2.id as id,
            t1.code as taskCode,
            TIMESTAMPDIFF(MINUTE,t1.start_time,t1.end_time) as maintenanceDuration,
            t1.start_time as startDate,
@@ -402,6 +403,7 @@
     <select id="readNameList" resultType="com.aiurt.boot.task.dto.OverhaulStatisticsDTO">
          SELECT
             t1.id as taskId,
+            t2.id as id,
             t1.code as taskCode,
             TIMESTAMPDIFF(MINUTE,t1.start_time,t1.end_time) as maintenanceDuration,
             t1.start_time as startDate,
