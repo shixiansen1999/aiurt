@@ -1,5 +1,6 @@
 package com.aiurt.modules.syntheticalpanel.service.impl;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.modules.position.entity.CsStation;
@@ -43,18 +44,19 @@ public class PositionPanelServiceImpl implements PositionPanelService {
         List<PositionPanel> positionPanels = new ArrayList<>();
         if (StrUtil.isNotEmpty(stationName)) {
             List<PositionPanel> list = positionPanelMapper.queryById(stationName);
-            //去掉没有班组的线路
-            List<PositionPanel> collect = list.stream().filter(p -> !p.getOrgCode().isEmpty()).collect(Collectors.toList());
-            if (CollectionUtil.isNotEmpty(collect)) {
-                for (PositionPanel panel : collect) {
-                    List<SysUser> userById = positionPanelMapper.getUserById(panel.getOrgCode());
-                    panel.setUserList(userById);
+            if (CollUtil.isNotEmpty(list)) {
+                //去掉没有班组的线路
+                List<PositionPanel> collect = list.stream().filter(p -> !p.getOrgCode().isEmpty()).collect(Collectors.toList());
+                if (CollectionUtil.isNotEmpty(collect)) {
+                    for (PositionPanel panel : collect) {
+                        List<SysUser> userById = positionPanelMapper.getUserById(panel.getOrgCode());
+                        panel.setUserList(userById);
+                    }
+                    positionPanels.addAll(collect);
                 }
-                positionPanels.addAll(collect);
             }
-            return positionPanels;
         }
-        return new ArrayList<>();
+        return positionPanels;
     }
 
     @Override
