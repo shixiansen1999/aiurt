@@ -389,8 +389,8 @@
                 and t4.subsystem_code = #{condition.subsystemCode}
             </if>
             <if test="condition.startDate!=null and condition.endDate!=null ">
-                and DATE_FORMAT(t1.start_time ,'%Y-%m-%d') =date_format(#{condition.startDate} ,'%Y-%m-%d')
-                and DATE_FORMAT(t1.end_time ,'%Y-%m-%d') =date_format(#{condition.endDate} ,'%Y-%m-%d')
+                and DATE_FORMAT(t1.start_time ,'%Y-%m-%d') &gt;= DATE_FORMAT(#{condition.startDate} ,'%Y-%m-%d')
+                and DATE_FORMAT(t1.end_time ,'%Y-%m-%d') &lt;= DATE_FORMAT(#{condition.endDate} ,'%Y-%m-%d')
             </if>
             <if test="condition.status!=null ">
                 and t1.status = #{condition.status}
@@ -435,8 +435,8 @@
                 and t5.subsystem_code = #{condition.subsystemCode}
             </if>
             <if test="condition.startDate!=null and condition.endDate!=null ">
-                and DATE_FORMAT(t1.start_time ,'%Y-%m-%d') =date_format(#{condition.startDate} ,'%Y-%m-%d')
-                and DATE_FORMAT(t1.end_time ,'%Y-%m-%d') =date_format(#{condition.endDate} ,'%Y-%m-%d')
+                and DATE_FORMAT(t1.start_time ,'%Y-%m-%d') &gt;= DATE_FORMAT(#{condition.startDate} ,'%Y-%m-%d')
+                and DATE_FORMAT(t1.end_time ,'%Y-%m-%d') &lt;= DATE_FORMAT(#{condition.endDate} ,'%Y-%m-%d')
             </if>
             <if test="condition.status!=null ">
                 and t1.status = #{condition.status}
@@ -463,7 +463,7 @@
         select org_code from sys_user where id = #{id}
     </select>
 
-    <select id="getOrgName" resultType="java.lang.String">
-        select org_name from sys_user where id = #{id}
+    <select id="getRealName" resultType="java.lang.String">
+        select realname from sys_user where id = #{id}
     </select>
 </mapper>

@@ -181,5 +181,5 @@ public interface RepairTaskMapper extends BaseMapper<RepairTask> {
 
     String getOrgCode(String id);
 
-    String getOrgName(String id);
+    String getRealName(String id);
 }
