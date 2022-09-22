@@ -33,6 +33,9 @@
             <if test="condition.organizationId != null and condition.organizationId != ''">
                 and stock_level2i.organization_id = #{condition.organizationId}
             </if>
+            <if test="condition.baseTypeCode != null and condition.baseTypeCode != ''">
+                and FIND_IN_SET ( #{condition.baseTypeCode} , REPLACE(mb.base_type_code_cc,'/',','))
+            </if>
             <if test="condition.materialName != null and condition.materialName != ''">
                 and mb.`name` like concat('%', #{condition.materialName}, '%')
             </if>
