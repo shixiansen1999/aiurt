@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
  * @date 2022/9/2011:14
  */
 @Service
-public class OverhaulStatisticsService implements Runnable {
+public class OverhaulStatisticsService{
 
     @Autowired
     private RepairTaskMapper repairTaskMapper;
@@ -105,8 +105,4 @@ public class OverhaulStatisticsService implements Runnable {
         e.setAvgMonthNumber(0L);
     }
 
-    @Override
-    public void run() {
-
-    }
 }
