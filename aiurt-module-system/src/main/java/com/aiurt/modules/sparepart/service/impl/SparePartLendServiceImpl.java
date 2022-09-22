@@ -78,12 +78,16 @@ public class SparePartLendServiceImpl extends ServiceImpl<SparePartLendMapper, S
         }
         //查询借出仓库
         SparePartStockInfo lendStockInfo = sparePartStockInfoMapper.selectOne(new LambdaQueryWrapper<SparePartStockInfo>().eq(SparePartStockInfo::getWarehouseCode,sparePartLend.getLendWarehouseCode()).eq(SparePartStockInfo::getDelFlag, CommonConstant.DEL_FLAG_0));
-        sparePartLend.setLendPerson(user.getUsername());
-        sparePartLend.setCreateOrgCode(user.getOrgCode());
-        sparePartLend.setEntryOrgCode(sysDepartService.getById(sparePartStockInfo.getOrganizationId()).getOrgCode());
-        sparePartLend.setExitOrgCode(sysDepartService.getById(lendStockInfo.getOrganizationId()).getOrgCode());
-        sparePartLendMapper.insert(sparePartLend);
-        return Result.OK("添加成功！");
+        if(null!=lendStockInfo){
+            sparePartLend.setLendPerson(user.getUsername());
+            sparePartLend.setCreateOrgCode(user.getOrgCode());
+            sparePartLend.setEntryOrgCode(sysDepartService.getById(sparePartStockInfo.getOrganizationId()).getOrgCode());
+            sparePartLend.setExitOrgCode(sysDepartService.getById(lendStockInfo.getOrganizationId()).getOrgCode());
+            sparePartLendMapper.insert(sparePartLend);
+            return Result.OK("添加成功！");
+        }else{
+            return Result.error("当前所在班组没有备件仓库！");
+        }
     }
     /**
      * 借出确认

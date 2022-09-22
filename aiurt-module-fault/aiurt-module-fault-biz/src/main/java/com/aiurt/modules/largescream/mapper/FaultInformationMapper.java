@@ -31,7 +31,7 @@ public interface FaultInformationMapper {
     List<Fault> queryLargeFaultInformationUnSo(@Param("startDate") Date startDate, @Param("endDate") Date endDate,@Param("lineCode") String lineCode);
 
     /**
-     * 数据分析-故障数据统计
+     * 数据分析-故障数据统计总数和未解决
      * @param lineCode
      * @return
      */
@@ -102,7 +102,7 @@ public interface FaultInformationMapper {
      * @param lineCode
      * @return
      */
-    List<FaultDataAnalysisInfoDTO> getLargeFaultDataInfo(@Param("lineCode") String lineCode);
+    List<FaultDataAnalysisInfoDTO> getLargeFaultDataInfo(@Param("startDate") Date startDate, @Param("endDate") Date endDate,@Param("lineCode") String lineCode);
 
 
     /**
@@ -113,8 +113,39 @@ public interface FaultInformationMapper {
      */
     List<Fault> getLargeLineFaultInfo(@Param("startDate") Date startDate, @Param("endDate") Date endDate);
 
+    /**
+     * 获取子系统下故障维修时长
+     * @param month
+     * @param lineCode
+     * @return
+     */
     List<FaultSystemTimeDTO> getLargeFaultTime(@Param("month") String month, @Param("lineCode") String lineCode);
 
+    /**
+     * 按系统分类获取子系统下故障维修时长
+     * @param startDate
+     * @param endDate
+     * @return
+     */
+    List<FaultSystemTimeDTO> getSystemFaultSum(@Param("startDate") Date startDate, @Param("endDate") Date endDate);
+
+
+    /**
+     * 按系统分类获取子系统下设备使用年限
+     * @return
+     */
+    List<FaultSystemDeviceSumDTO> getSystemDeviceSum();
+
+
+    /**
+     *故障超时等级详情
+     * @param level
+     * @param startDate
+     * @param endDate
+     * @param lineCode
+     * @return
+     */
+    List<FaultTimeoutLevelDTO> getFaultData(@Param("level") Integer level,@Param("startDate") Date startDate, @Param("endDate") Date endDate ,@Param("lineCode") String lineCode);
 
 
     /**
@@ -126,5 +157,5 @@ public interface FaultInformationMapper {
     /**
      * 所有子系统
      */
-    List<String> getAllSystemCode();
+    List<FaultDataStatisticsDTO> getAllSystemCode();
 }

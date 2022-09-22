@@ -84,8 +84,8 @@ public interface IScheduleRecordService extends IService<ScheduleRecord> {
     /**
      * 获取大屏的班组信息-点击总班组数
      *
-     * @param page
-     * @param lineCode
+     * @param page 分页参数
+     * @param lineCode 线路code
      * @return
      */
     IPage<SysTotalTeamDTO> getTotalTeamDetail(Page<SysTotalTeamDTO> page, String lineCode);

@@ -18,8 +18,7 @@
 
         <if test=" userId != null and userId != ''">
             and  (
-            a.added_user_id = #{userId}
-            or find_in_set(#{userId}, a.notify_user_id)>0
+               find_in_set(#{userId}, a.notify_user_id)>0
             )
         </if>
     </select>

@@ -128,6 +128,70 @@ public class MaterialBaseController {
         return result;
     }
 
+    /**
+     * 分页列表查询
+     *
+     * @param materialBase
+     * @param pageNo
+     * @param pageSize
+     * @return
+     */
+    @AutoLog(value = "系统管理-基础数据管理-物资主数据-分页列表查询", operateType = 1, operateTypeAlias = "查询", permissionUrl = "/manage/MainMaterialClassification")
+    @ApiOperation(value = "系统管理-基础数据管理-物资主数据-分页列表查询", notes = "系统管理-基础数据管理-物资主数据-分页列表查询")
+    @GetMapping(value = "/listLevel2Stock")
+    @PermissionData(pageComponent = "manage/MainMaterialClassification")
+    public Result<IPage<MaterialBase>> listLevel2Stock(MaterialBase materialBase,
+                                                     @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
+                                                     @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize,
+                                                     @RequestParam(name = "majorCode", required = false) String majorCode,
+                                                     @RequestParam(name = "systemCode", required = false) String systemCode,
+                                                     @RequestParam(name = "baseTypeCode", required = false) String baseTypeCode,
+                                                     @RequestParam(name = "code", required = false) String code,
+                                                     @RequestParam(name = "name", required = false) String name,
+                                                     @RequestParam(name = "type", required = false) String type,
+                                                     @RequestParam(name = "codeList", required = false) String codeList,
+                                                     HttpServletRequest req) {
+        Result<IPage<MaterialBase>> result = new Result<IPage<MaterialBase>>();
+        QueryWrapper<MaterialBase> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("del_flag", CommonConstant.DEL_FLAG_0);
+        if(majorCode != null && !"".equals(majorCode)){
+            queryWrapper.eq("major_code", majorCode);
+            if(systemCode != null && !"".equals(systemCode)){
+                queryWrapper.eq("system_code", systemCode);
+            }else{
+                queryWrapper.apply(" (system_code is null or system_code ='') ");
+            }
+        }
+        if(codeList != null && !"".equals(codeList)){
+            queryWrapper.notIn("code", Arrays.asList(codeList.split(",")));
+        }
+        if(code != null && !"".equals(code)){
+            queryWrapper.like("code", code);
+        }
+        if(name != null && !"".equals(name)){
+            queryWrapper.like("name", name);
+        }
+        if(type != null && !"".equals(type)){
+            queryWrapper.eq("type", type);
+        }
+        if(baseTypeCode != null && !"".equals(baseTypeCode)){
+            queryWrapper.apply(" FIND_IN_SET ( '"+baseTypeCode+"' , REPLACE(base_type_code_cc,'/',',')) ");
+        }
+        queryWrapper.orderByDesc("create_time");
+        Page<MaterialBase> page = new Page<MaterialBase>(pageNo, pageSize);
+        IPage<MaterialBase> pageList = iMaterialBaseService.page(page, queryWrapper);
+        List<MaterialBase> records = pageList.getRecords();
+        if(records != null && records.size()>0){
+            for(MaterialBase materialBase1 : records){
+                MaterialBase translate = iMaterialBaseService.translate(materialBase1);
+                BeanUtils.copyProperties(translate, materialBase1);
+            }
+        }
+        result.setSuccess(true);
+        result.setResult(pageList);
+        return result;
+    }
+
     @AutoLog(value = "系统管理-基础数据管理-物资主数据-添加", operateType = 2, operateTypeAlias = "添加", permissionUrl = "/manage/MainMaterialClassification")
     @ApiOperation(value = "系统管理-基础数据管理-物资主数据-添加", notes = "系统管理-基础数据管理-物资主数据-添加")
     @PostMapping(value = "/add")

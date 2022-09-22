@@ -164,6 +164,9 @@
             <if test="lineCode != null and lineCode != ''">
                 and f.line_code  = #{lineCode}
             </if>
+            <if test="startDate!=null and endDate!=null">
+                and f.approval_pass_time  &gt;= #{startDate}  and f.approval_pass_time &lt;= #{endDate}
+            </if>
         </where>
     </select>
 
@@ -199,8 +202,8 @@
         </if>
     </select>
 
-    <select id="getAllSystemCode" resultType="java.lang.String">
-        select system_code from cs_subsystem where del_flag = 0
+    <select id="getAllSystemCode" resultType="com.aiurt.modules.fault.dto.FaultDataStatisticsDTO">
+        select system_code as subSystemCode ,system_name as subSystemName  from cs_subsystem where del_flag = 0
     </select>
 
 
@@ -219,11 +222,58 @@
         group by f.sub_system_code,f.line_Code
     </select>
 
+    <select id="getSystemFaultSum" resultType="com.aiurt.modules.fault.dto.FaultSystemTimeDTO">
+        select cs.system_name,f.sub_system_code,f.line_code,f.happen_time,f.end_time,
+        sum(TIMESTAMPDIFF(HOUR,f.happen_time,f.end_time)) as repairTime  from fault f
+        left join cs_subSystem cs on f.sub_system_code = cs.system_code
+        <where>
+            <if test="startDate!=null and endDate!=null">
+                and f.approval_pass_time  &gt;= #{startDate}  and f.approval_pass_time &lt;= #{endDate}
+            </if>
+        </where>
+        group by f.sub_system_code
+    </select>
+
+    <select id="getSystemDeviceSum" resultType="com.aiurt.modules.fault.dto.FaultSystemDeviceSumDTO">
+        select cs.system_name,d.system_code,d.code,d.name,count(code) as deviceNumber
+        from device d
+        left join cs_subSystem cs on d.system_code = cs.system_code
+        where
+            d.scrap_flag = 0
+        group by d.system_code
+    </select>
+
     <select id="queryFaultDataInformation" resultType="com.aiurt.modules.fault.entity.Fault">
         select * from fault
         <where>
             <if test="lineCode != null and lineCode != ''">
                 and line_code  = #{lineCode}
+            </if>
+        </where>
+    </select>
+
+    <select id="getFaultData" resultType="com.aiurt.modules.fault.dto.FaultTimeoutLevelDTO">
+        select * from fault
+        <where>
+            <if test="level == 1">
+                AND status &lt;&gt; 12
+                and TIMESTAMPDIFF(HOUR,happen_time,now()) &gt;=48
+            </if>
+            <if test="level == 2">
+                AND status &lt;&gt; 12
+                and TIMESTAMPDIFF(HOUR,happen_time,now()) &gt;=24
+                and TIMESTAMPDIFF(HOUR,happen_time,now()) &lt; 48
+            </if>
+            <if test="level == 3">
+                AND status &lt;&gt; 12
+                and TIMESTAMPDIFF(HOUR,happen_time,now()) &gt;=12
+                and TIMESTAMPDIFF(HOUR,happen_time,now()) &lt; 24
+            </if>
+            <if test="lineCode != null and lineCode != ''">
+                and line_code  = #{lineCode}
+            </if>
+            <if test="startDate!=null and endDate!=null">
+                and approval_pass_time  &gt;= #{startDate}  and approval_pass_time &lt;= #{endDate}
             </if>
         </where>
     </select>

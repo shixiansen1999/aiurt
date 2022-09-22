@@ -287,7 +287,7 @@
         DATE_FORMAT( sr.date, '%Y-%m-%d' ) =DATE_FORMAT( #{date},'%Y-%m-%d')
         AND sr.del_flag = 0
         AND si.del_flag = 0
-        <if test="orgCodes.size()>0">
+        <if test="orgCodes.size()>0  and orgCodes!=null">
             and su.org_code in
             <foreach collection="orgCodes" separator="," open="(" close=")" item="org">
                 #{org}
@@ -316,13 +316,36 @@
     <if test="orgCode!=null and orgCode!=''">
         and su.org_code = #{orgCode}
     </if>
-    <if test="orgCodes.size()>0">
+    <if test="orgCodes.size()>0  and orgCodes!=null">
       and  su.org_code in
       <foreach collection="orgCodes" item="orgCode" open="(" close=")" separator=",">
           #{orgCode}
       </foreach>
     </if>
     </where>
+    </select>
+    <select id="getTotalTeamDetail" resultType="com.aiurt.modules.schedule.dto.SysTotalTeamDTO">
+    SELECT
+        sd.depart_name as teamName,
+        GROUP_CONCAT( DISTINCT wa.position ) as location,
+        GROUP_CONCAT( DISTINCT su.realname ) as teamLeader,
+        count( DISTINCT was.station_code )  as number
+    FROM
+        sys_depart sd
+        LEFT JOIN work_area_org wao ON wao.org_code = sd.org_code AND wao.del_flag = 0
+        left join sys_user su on su.id = sd.manager_id AND su.del_flag = 0
+        LEFT JOIN work_area wa ON wa.CODE = wao.work_area_code AND wa.del_flag = 0
+        LEFT JOIN work_area_station was ON was.work_area_code = wa.`code` AND was.del_flag = 0
+    WHERE
+        sd.del_flag = 0
+        <if test="orgCodes.size()>0 and orgCodes!=null">
+            AND sd.org_code in
+            <foreach collection="orgCodes" item="code" open="(" close=")" separator=",">
+                #{code}
+            </foreach>
+        </if>
+    GROUP BY
+        sd.id
     </select>
 
 </mapper>

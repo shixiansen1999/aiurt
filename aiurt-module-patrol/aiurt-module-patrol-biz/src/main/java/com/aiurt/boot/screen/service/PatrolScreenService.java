@@ -51,18 +51,6 @@ public class PatrolScreenService {
         Date startTime = DateUtil.parse(split[0]);
         Date endTime = DateUtil.parse(split[1]);
 
-//        List<String> lines = StrUtil.splitTrim(lineCode, ',');
-//        // 获取当前登录人的专业编号
-//        List<String> majors = this.getCurrentLoginUserMajors();
-//        if (CollectionUtil.isEmpty(majors)) {
-//            return new ScreenImportantData();
-//        }
-//
-//        ScreenModule module = new ScreenModule();
-//        module.setLines(lines);
-//        module.setMajors(majors);
-//        module.setStartTime(startTime);
-//        module.setEndTime(endTime);
         List<String> orgCodes = sysBaseApi.getTeamBylineAndMajor(lineCode);
         if (CollectionUtil.isEmpty(orgCodes)) {
             return new ScreenImportantData(0L, 0L, 0L);
@@ -73,22 +61,15 @@ public class PatrolScreenService {
         module.setEndTime(endTime);
 
         List<PatrolTask> list = patrolTaskMapper.getScreenDataCount(module);
-//        List<PatrolTask> list = patrolTaskService.lambdaQuery().eq(PatrolTask::getDelFlag, 0)
-//                .between(PatrolTask::getPatrolDate, startTime, endTime)
-//                .list();
+
         String omitStartTime = this.getOmitDateScope(startTime).split("~")[0];
         String omitEndTime = this.getOmitDateScope(endTime).split("~")[1];
-
         module.setStartTime(DateUtil.parse(omitStartTime));
         module.setEndTime(DateUtil.parse(omitEndTime));
         module.setOmit(PatrolConstant.OMIT_STATUS);
 
         long planNum = list.stream().count();
         long finishNum = list.stream().filter(l -> PatrolConstant.TASK_COMPLETE.equals(l.getStatus())).count();
-//        long omitNum = patrolTaskService.lambdaQuery().eq(PatrolTask::getDelFlag, 0)
-//                .eq(PatrolTask::getOmitStatus, PatrolConstant.OMIT_STATUS)
-//                .between(PatrolTask::getPatrolDate, DateUtil.parse(omitStartTime), DateUtil.parse(omitEndTime))
-//                .count();
         long omitNum = patrolTaskMapper.getScreenDataCount(module).stream().count();
         ScreenImportantData data = new ScreenImportantData();
         data.setPatrolNumber(planNum);
@@ -114,20 +95,6 @@ public class PatrolScreenService {
         Date startTime = DateUtil.parse(split[0]);
         Date endTime = DateUtil.parse(split[1]);
 
-//        List<String> lines = StrUtil.splitTrim(lineCode, ',');
-//        // 获取当前登录人的专业编号
-//        List<String> majors = this.getCurrentLoginUserMajors();
-//        if (CollectionUtil.isEmpty(majors)) {
-//            return new ScreenStatistics();
-//        }
-//        ScreenModule module = new ScreenModule();
-//        module.setLines(lines);
-//        module.setMajors(majors);
-//        module.setStartTime(startTime);
-//        module.setEndTime(endTime);
-//        List<PatrolTask> list = patrolTaskService.lambdaQuery().eq(PatrolTask::getDelFlag, 0)
-//                .between(PatrolTask::getPatrolDate, startTime, endTime)
-//                .list();
         List<String> orgCodes = sysBaseApi.getTeamBylineAndMajor(lineCode);
         if (CollectionUtil.isEmpty(orgCodes)) {
             return new ScreenStatistics(0L, 0L, 0L, 0L, 0L, 0L);
@@ -149,10 +116,6 @@ public class PatrolScreenService {
                 .filter(l -> DateUtil.format(today, "yyyy-MM-dd").equals(DateUtil.format(l.getPatrolDate(), "yyyy-MM-dd")))
                 .collect(Collectors.toList());
         if (!ScreenConstant.THIS_WEEK.equals(timeType) && !ScreenConstant.THIS_MONTH.equals(timeType)) {
-//            todayList = patrolTaskService.lambdaQuery().eq(PatrolTask::getDelFlag, 0)
-//                    .eq(PatrolTask::getOmitStatus, PatrolConstant.OMIT_STATUS)
-//                    .between(PatrolTask::getPatrolDate, DateUtil.parse(DateUtil.format(new Date(), "yyyy-MM-dd 00:00:00")),
-//                            DateUtil.parse(DateUtil.format(new Date(), "yyyy-MM-dd 23:59:59"))).list();
             ScreenModule todayModule = new ScreenModule();
             todayModule.setStartTime(DateUtil.parse(DateUtil.format(today, "yyyy-MM-dd 00:00:00")));
             todayModule.setEndTime(DateUtil.parse(DateUtil.format(today, "yyyy-MM-dd 23:59:59")));
@@ -161,10 +124,6 @@ public class PatrolScreenService {
         }
         long planNum = list.stream().count();
         long finishNum = list.stream().filter(l -> PatrolConstant.TASK_COMPLETE.equals(l.getStatus())).count();
-//        long omitNum = patrolTaskService.lambdaQuery().eq(PatrolTask::getDelFlag, 0)
-//                .eq(PatrolTask::getOmitStatus, PatrolConstant.OMIT_STATUS)
-//                .between(PatrolTask::getPatrolDate, DateUtil.parse(omitStartTime), DateUtil.parse(omitEndTime))
-//                .count();
         long omitNum = patrolTaskMapper.getScreenDataCount(module).stream().count();
         long abnormalNum = list.stream().filter(l -> PatrolConstant.TASK_ABNORMAL.equals(l.getAbnormalState())).count();
         long todayNum = todayList.stream().count();
@@ -196,21 +155,7 @@ public class PatrolScreenService {
         String[] split = dateTime.split("~");
         Date startTime = DateUtil.parse(split[0]);
         Date endTime = DateUtil.parse(split[1]);
-//        List<String> lines = null;
-//        if (StrUtil.isNotEmpty(lineCode)) {
-//            lines = StrUtil.splitTrim(lineCode, ',');
-//        }
-//        // 当前登录人的专业编号
-//        List<String> majors = this.getCurrentLoginUserMajors();
-//        if (CollectionUtil.isEmpty(majors)) {
-//            return new ArrayList<>();
-//        }
-//
-//        ScreenTran tran = new ScreenTran();
-//        tran.setStartTime(startTime);
-//        tran.setEndTime(endTime);
-//        tran.setLines(lines);
-//        tran.setMajors(majors);
+
         List<String> orgCodes = sysBaseApi.getTeamBylineAndMajor(lineCode);
         if (CollectionUtil.isEmpty(orgCodes)) {
             return new ArrayList<>();
@@ -229,14 +174,14 @@ public class PatrolScreenService {
                 .stream().collect(Collectors.toMap(k -> k.getValue(), v -> v.getText(), (a, b) -> a));
         Map<String, String> abnormalItems = sysBaseApi.getDictItems(PatrolDictCode.TASK_STATUS)
                 .stream().collect(Collectors.toMap(k -> k.getValue(), v -> v.getText(), (a, b) -> a));
-        list.stream().forEach(l -> {
-            String statusName = statusItems.get(String.valueOf(l.getStatus()));
-            String omitStatusName = omitItems.get(String.valueOf(l.getOmitStatus()));
-            String abnormalName = abnormalItems.get(String.valueOf(l.getAbnormalState()));
-            l.setStatusName(statusName);
-            l.setOmitStatusName(omitStatusName);
-            l.setAbnormalStateName(abnormalName);
-        });
+        for (ScreenStatisticsTask task : list) {
+            String statusName = statusItems.get(String.valueOf(task.getStatus()));
+            String omitStatusName = omitItems.get(String.valueOf(task.getOmitStatus()));
+            String abnormalName = abnormalItems.get(String.valueOf(task.getAbnormalState()));
+            task.setStatusName(statusName);
+            task.setOmitStatusName(omitStatusName);
+            task.setAbnormalStateName(abnormalName);
+        }
         return list;
     }
 
@@ -251,20 +196,7 @@ public class PatrolScreenService {
         String[] split = dateTime.split("~");
         Date startTime = DateUtil.parse(split[0]);
         Date endTime = DateUtil.parse(split[1]);
-//        List<String> lines = null;
-//        if (StrUtil.isNotEmpty(lineCode)) {
-//            lines = StrUtil.splitTrim(lineCode, ',');
-//        }
-//        // 当前登录人的专业编号
-//        List<String> majors = this.getCurrentLoginUserMajors();
-//        if (CollectionUtil.isEmpty(majors)) {
-//            return new ArrayList<>();
-//        }
-//        ScreenTran tran = new ScreenTran();
-//        tran.setStartTime(startTime);
-//        tran.setEndTime(endTime);
-//        tran.setLines(lines);
-//        tran.setMajors(majors);
+
         List<String> orgCodes = sysBaseApi.getTeamBylineAndMajor(lineCode);
         if (CollectionUtil.isEmpty(orgCodes)) {
             return new ArrayList<>();
@@ -275,13 +207,13 @@ public class PatrolScreenService {
         tran.setOrgCodes(orgCodes);
 
         List<ScreenStatisticsGraph> list = patrolTaskMapper.getScreenGraph(tran);
-        list.stream().forEach(l -> {
-            Long total = l.getTotal();
-            String finishRate = String.format("%.1f", (1.0 * l.getFinish() / total) * 100);
-            String unfinishRate = String.format("%.1f", (1.0 * l.getUnfinish() / total) * 100);
-            l.setFinishRate(finishRate + "%");
-            l.setUnfinishRate(unfinishRate + "%");
-        });
+        for (ScreenStatisticsGraph graph : list) {
+            Long total = graph.getTotal();
+            String finishRate = String.format("%.1f", (1.0 * graph.getFinish() / total) * 100);
+            String unfinishRate = String.format("%.1f", (1.0 * graph.getUnfinish() / total) * 100);
+            graph.setFinishRate(finishRate + "%");
+            graph.setUnfinishRate(unfinishRate + "%");
+        }
         return list;
     }
 
@@ -329,18 +261,6 @@ public class PatrolScreenService {
             return page;
         }
 
-//        List<String> lines = null;
-//        if (StrUtil.isNotEmpty(lineCode)) {
-//            lines = StrUtil.splitTrim(lineCode, ',');
-//        }
-//        // 当前登录人的专业编号
-//        List<String> majors = this.getCurrentLoginUserMajors();
-//        if (CollectionUtil.isEmpty(majors)) {
-//            return page;
-//        }
-//        ScreenModule moduleType = new ScreenModule();
-//        moduleType.setLines(lines);
-//        moduleType.setMajors(majors);
         List<String> orgCodes = sysBaseApi.getTeamBylineAndMajor(lineCode);
         if (CollectionUtil.isEmpty(orgCodes)) {
             return page;
@@ -396,14 +316,14 @@ public class PatrolScreenService {
                 .stream().collect(Collectors.toMap(k -> k.getValue(), v -> v.getText(), (a, b) -> a));
         Map<String, String> abnormalItems = sysBaseApi.getDictItems(PatrolDictCode.TASK_STATUS)
                 .stream().collect(Collectors.toMap(k -> k.getValue(), v -> v.getText(), (a, b) -> a));
-        pageList.getRecords().stream().forEach(l -> {
-            String statusName = statusItems.get(String.valueOf(l.getStatus()));
-            String omitStatusName = omitItems.get(String.valueOf(l.getOmitStatus()));
-            String abnormalName = abnormalItems.get(String.valueOf(l.getAbnormalState()));
-            l.setStatusName(statusName);
-            l.setOmitStatusName(omitStatusName);
-            l.setAbnormalStateName(abnormalName);
-        });
+        for (ScreenStatisticsTask task : pageList.getRecords()) {
+            String statusName = statusItems.get(String.valueOf(task.getStatus()));
+            String omitStatusName = omitItems.get(String.valueOf(task.getOmitStatus()));
+            String abnormalName = abnormalItems.get(String.valueOf(task.getAbnormalState()));
+            task.setStatusName(statusName);
+            task.setOmitStatusName(omitStatusName);
+            task.setAbnormalStateName(abnormalName);
+        }
         return pageList;
     }
 

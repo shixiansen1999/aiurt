@@ -150,6 +150,12 @@ public class ScheduleRecordServiceImpl extends ServiceImpl<ScheduleRecordMapper,
         return page.setRecords(result);
     }
 
+    /**
+     * 获取大屏的班组信息
+     *
+     * @param lineCode 线路code
+     * @return
+     */
     @Override
     public ScheduleBigScreenDTO getTeamData(String lineCode) {
         ScheduleBigScreenDTO result = new ScheduleBigScreenDTO();
@@ -246,9 +252,24 @@ public class ScheduleRecordServiceImpl extends ServiceImpl<ScheduleRecordMapper,
         return page.setRecords(result);
     }
 
+    /**
+     * 获取大屏的班组信息-点击总班组数
+     *
+     * @param page     分页参数
+     * @param lineCode 线路code
+     * @return
+     */
     @Override
     public IPage<SysTotalTeamDTO> getTotalTeamDetail(Page<SysTotalTeamDTO> page, String lineCode) {
-        page.setRecords(Arrays.asList(new SysTotalTeamDTO()));
+        // 查询总班组数
+        List<String> orgCodes = sysBaseAPI.getTeamBylineAndMajor(lineCode);
+        if (CollUtil.isEmpty(orgCodes)) {
+            return page;
+        }
+
+        // 获取总班组列表
+        List<SysTotalTeamDTO> result = baseMapper.getTotalTeamDetail(page, orgCodes);
+        page.setRecords(result);
         return page;
     }
 }

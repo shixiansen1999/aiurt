@@ -1,6 +1,8 @@
 package com.aiurt.modules.syntheticalpanel.service.impl;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.util.StrUtil;
 import com.aiurt.modules.position.entity.CsStation;
 import com.aiurt.modules.syntheticalpanel.mapper.PositionPanelMapper;
 import com.aiurt.modules.syntheticalpanel.model.PositionPanel;
@@ -37,14 +39,13 @@ public class PositionPanelServiceImpl implements PositionPanelService {
     }
 
     @Override
-    public List<PositionPanel> queryById(PositionPanel positionPanel) {
-        List<String> ids = positionPanel.getIds();
+    public List<PositionPanel> queryById(String stationName) {
         List<PositionPanel> positionPanels = new ArrayList<>();
-        if (CollectionUtil.isNotEmpty(ids)) {
-            for (String id : ids) {
-                List<PositionPanel> list = positionPanelMapper.queryById(id);
+        if (StrUtil.isNotEmpty(stationName)) {
+            List<PositionPanel> list = positionPanelMapper.queryById(stationName);
+            if (CollUtil.isNotEmpty(list)) {
                 //去掉没有班组的线路
-                List<PositionPanel> collect = list.stream().filter(p -> !p.getOrgCode().isEmpty()).collect(Collectors.toList());
+                List<PositionPanel> collect = list.stream().filter(p -> p.getOrgCode()!=null).collect(Collectors.toList());
                 if (CollectionUtil.isNotEmpty(collect)) {
                     for (PositionPanel panel : collect) {
                         List<SysUser> userById = positionPanelMapper.getUserById(panel.getOrgCode());
@@ -52,10 +53,9 @@ public class PositionPanelServiceImpl implements PositionPanelService {
                     }
                     positionPanels.addAll(collect);
                 }
-                return positionPanels;
             }
         }
-        return null;
+        return positionPanels;
     }
 
     @Override

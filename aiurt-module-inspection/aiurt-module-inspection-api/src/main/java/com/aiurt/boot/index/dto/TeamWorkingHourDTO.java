@@ -1,9 +1,8 @@
 package com.aiurt.boot.index.dto;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
-
-import java.util.List;
 
 /**
  * @author wgp
@@ -18,9 +17,9 @@ public class TeamWorkingHourDTO {
     @ApiModelProperty("工区位置")
     private String positionName;
     @ApiModelProperty("站点个数")
-    private String stationNum;
+    private Integer stationNum;
     @ApiModelProperty("管辖范围")
     private String jurisdiction;
     @ApiModelProperty("班组人员信息")
-    List<TeamUserDTO> teamUserDTOS;
+    IPage<TeamUserDTO> teamUserDTOS;
 }

@@ -125,16 +125,25 @@ public class PatrolApiServiceImpl implements PatrolApi {
 
         // 获取巡视人员在指定时间范围内的任务时长(单位秒)
         List<ScreenDurationTask> list = patrolTaskUserMapper.getScreenUserDuration(startTime, endTime);
+        // 获取同行人在指定时间范围内的任务时长(单位秒)
+        List<ScreenDurationTask> accompanyList = patrolTaskUserMapper.getScreentAccompanyDuration(startTime, endTime);
         Map<String, Long> durationMap = list.stream().collect(Collectors.toMap(k -> k.getUserId(),
+                v -> ObjectUtil.isEmpty(v.getDuration()) ? 0L : v.getDuration(), (a, b) -> a));
+        Map<String, Long> accompanyMap = accompanyList.stream().collect(Collectors.toMap(k -> k.getUserId(),
                 v -> ObjectUtil.isEmpty(v.getDuration()) ? 0L : v.getDuration(), (a, b) -> a));
         userList.stream().forEach(l -> {
             String userId = l.getId();
-            Long time = durationMap.get(userId);
-            if (ObjectUtil.isEmpty(time)) {
-                time = 0L;
+            Long timeOne = durationMap.get(userId);
+            Long timeTwo = accompanyMap.get(userId);
+            if (ObjectUtil.isEmpty(timeOne)) {
+                timeOne = 0L;
             }
+            if (ObjectUtil.isEmpty(timeTwo)) {
+                timeTwo = 0L;
+            }
+            double time = 1.0 * (timeOne + timeTwo) / 3600;
             // 展示需要以小时数展示，并保留两位小数
-            BigDecimal decimal = new BigDecimal(1.0 * time / 3600).setScale(2, BigDecimal.ROUND_HALF_UP);
+            BigDecimal decimal = new BigDecimal(time).setScale(2, BigDecimal.ROUND_HALF_UP);
             userDurationMap.put(userId, decimal);
         });
         return userDurationMap;
