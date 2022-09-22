@@ -759,7 +759,6 @@ FROM
    </if>
 GROUP BY
 	pto.org_code
-	orgName
     </select>
     <select id="selectNum" resultType="java.lang.Integer">
         select ifnull((TIME_TO_SEC(a.time)/60),0)as times from
