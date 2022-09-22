@@ -593,7 +593,7 @@ public class FaultInformationService {
     public List<FaultSystemReliabilityDTO> getSystemReliability(Integer boardTimeType){
         List<FaultSystemReliabilityDTO> reliabilityList = new ArrayList<>();
         //设置时间查询条件
-        String dateTime1 = FaultLargeDateUtil.getDateTime(boardTimeType);
+        String dateTime1 = FaultLargeDateUtil.getDateTimes(boardTimeType);
         String[] split1 = dateTime1.split("~");
         Date startDate = DateUtil.parse(split1[0]);
         Date endDate = DateUtil.parse(split1[1]);

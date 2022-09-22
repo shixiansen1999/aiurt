@@ -101,6 +101,22 @@ public class FaultLargeDateUtil {
         return date;
     }
 
+    /**
+     * 根据时间类型获取时间范围,1本周、2上周、3本月、4上月
+     */
+    public static String getDateTimes(Integer timeType) {
+        // 默认本周
+        String date = getThisMonth(new Date());
+        if (FaultLargeConstant.LAST_WEEK.equals(timeType)) {
+            date = getThisMonth(new Date());
+        } else if (FaultLargeConstant.THIS_MONTH.equals(timeType)) {
+            date = getThisMonth(new Date());
+        } else if (FaultLargeConstant.LAST_MONTH.equals(timeType)) {
+            date = getLastMonth(new Date());
+        }
+        return date;
+    }
+
 
 
     /**
