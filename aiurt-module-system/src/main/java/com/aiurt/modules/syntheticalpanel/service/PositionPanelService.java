@@ -17,12 +17,12 @@ public interface PositionPanelService {
     List<PositionPanel> readAll(PositionPanel positionPanel);
 
     /**
-     * 通过id查询
+     * 通过名称查询
      *
-     * @param positionPanel
+     * @param stationName
      * @return
      */
-    List<PositionPanel> queryById(PositionPanel positionPanel);
+    List<PositionPanel> queryById(String stationName);
 
     /**
      *  编辑

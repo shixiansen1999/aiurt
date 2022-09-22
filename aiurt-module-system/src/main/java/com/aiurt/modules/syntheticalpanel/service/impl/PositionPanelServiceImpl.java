@@ -39,8 +39,7 @@ public class PositionPanelServiceImpl implements PositionPanelService {
     }
 
     @Override
-    public List<PositionPanel> queryById(PositionPanel positionPanel) {
-        String stationName = positionPanel.getStationName();
+    public List<PositionPanel> queryById(String stationName) {
         List<PositionPanel> positionPanels = new ArrayList<>();
         if (StrUtil.isNotEmpty(stationName)) {
             List<PositionPanel> list = positionPanelMapper.queryById(stationName);

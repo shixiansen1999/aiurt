@@ -44,16 +44,16 @@ public class PositionPanelController {
     }
 
     /**
-     * 通过id查询
+     * 通过名称查询
      *
-     * @param positionPanel
+     * @param stationName
      * @return
      */
-    @AutoLog(value = "综合看板线路站点信息-通过id查询", operateType =  1, operateTypeAlias = "查询-通过id查询", permissionUrl = "")
-    @ApiOperation(value="综合看板线路站点信息-通过id查询", notes="综合看板线路站点信息-通过id查询")
+    @AutoLog(value = "综合看板线路站点信息-通过名称查询", operateType =  1, operateTypeAlias = "查询-通过名称查询", permissionUrl = "")
+    @ApiOperation(value="综合看板线路站点信息-通过名称查询", notes="综合看板线路站点信息-通过名称查询")
     @PostMapping(value = "/queryById")
-    public Result<List<PositionPanel>> queryById(@RequestBody PositionPanel positionPanel) {
-        List<PositionPanel> positionPanels = positionPanelService.queryById(positionPanel);
+    public Result<List<PositionPanel>> queryById(@RequestParam(name="stationName",required=true)  String stationName) {
+        List<PositionPanel> positionPanels = positionPanelService.queryById(stationName);
         return Result.OK(positionPanels);
     }
 
