@@ -45,7 +45,7 @@ public class PositionPanelServiceImpl implements PositionPanelService {
             List<PositionPanel> list = positionPanelMapper.queryById(stationName);
             if (CollUtil.isNotEmpty(list)) {
                 //去掉没有班组的线路
-                List<PositionPanel> collect = list.stream().filter(p -> !p.getOrgCode().isEmpty()).collect(Collectors.toList());
+                List<PositionPanel> collect = list.stream().filter(p -> p.getOrgCode()!=null).collect(Collectors.toList());
                 if (CollectionUtil.isNotEmpty(collect)) {
                     for (PositionPanel panel : collect) {
                         List<SysUser> userById = positionPanelMapper.getUserById(panel.getOrgCode());
