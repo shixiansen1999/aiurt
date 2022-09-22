@@ -18,6 +18,7 @@ import com.aiurt.modules.largescream.model.FaultScreenModule;
 import com.aiurt.modules.largescream.util.FaultLargeDateUtil;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.DictModel;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;

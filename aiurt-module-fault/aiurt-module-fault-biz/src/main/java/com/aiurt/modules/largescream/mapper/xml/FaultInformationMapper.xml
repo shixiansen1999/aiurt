@@ -277,4 +277,17 @@
             </if>
         </where>
     </select>
+
+    <select id="getFaultUserDuration" resultType="com.aiurt.modules.largescream.model.FaultDurationTask">
+        select s.id,s.realname, fr.appoint_user_name,f.approval_pass_time,fr.recevice_time,fr.end_time,fr.assign_time,
+        sum(TIMESTAMPDIFF(second,IFNULL(fr.recevice_time,fr.assign_time),fr.end_time)) as duration from  fault_repair_record  fr
+        left join sys_user s on s.username = fr.appoint_user_name
+        left join  fault f on f.code = fr.fault_code
+        <where>
+        <if test="startTime != null and endTime != null">
+            AND f.approval_pass_time BETWEEN #{startTime} AND #{endTime}
+        </if>
+        </where>
+        group by fr.appoint_user_name
+    </select>
 </mapper>

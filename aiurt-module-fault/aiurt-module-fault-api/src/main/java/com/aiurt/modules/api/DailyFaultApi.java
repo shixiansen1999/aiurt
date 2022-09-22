@@ -2,6 +2,7 @@ package com.aiurt.modules.api;
 
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.Map;
 
 @Service
@@ -19,4 +20,9 @@ public interface DailyFaultApi {
      * @return
      */
     String getFaultTask();
+
+    /**
+     * 大屏班组画像维修工时统计，用户ID:维修时长
+     */
+    Map<String, BigDecimal> getFaultUserHours(int type, String teamId);
 }
