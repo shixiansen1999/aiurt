@@ -4,7 +4,6 @@ package com.aiurt.modules.largescream.mapper;
 import com.aiurt.modules.fault.dto.*;
 import com.aiurt.modules.fault.entity.Fault;
 import com.aiurt.modules.largescream.model.FaultScreenModule;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.Date;
@@ -158,5 +157,5 @@ public interface FaultInformationMapper {
     /**
      * 所有子系统
      */
-    List<String> getAllSystemCode();
+    List<FaultDataStatisticsDTO> getAllSystemCode();
 }

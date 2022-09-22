@@ -202,8 +202,8 @@
         </if>
     </select>
 
-    <select id="getAllSystemCode" resultType="java.lang.String">
-        select system_code from cs_subsystem where del_flag = 0
+    <select id="getAllSystemCode" resultType="com.aiurt.modules.fault.dto.FaultDataStatisticsDTO">
+        select system_code as subSystemCode ,system_name as subSystemName  from cs_subsystem where del_flag = 0
     </select>
 
 

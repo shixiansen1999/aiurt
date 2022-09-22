@@ -1,12 +1,9 @@
 package com.aiurt.modules.fault.dto;
 
-import com.aiurt.common.aspect.annotation.Dict;
-import com.aiurt.common.aspect.annotation.SystemFilterColumn;
+import com.aiurt.modules.basic.entity.DictEntity;
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.experimental.Accessors;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -15,10 +12,8 @@ import java.math.BigDecimal;
  * @author LKJ
  */
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
-@Accessors(chain = true)
-public class FaultDataStatisticsDTO implements Serializable {
+@ApiModel("综合大屏-年度故障维修情况")
+public class FaultDataStatisticsDTO extends DictEntity implements Serializable {
     private static final long serialVersionUID = 1L;
 
     /**主键*/
@@ -27,8 +22,10 @@ public class FaultDataStatisticsDTO implements Serializable {
 
     /**线路编码*/
     @ApiModelProperty("线路编码")
-    @Dict(dictTable = "cs_line", dicText = "line_name", dicCode = "line_code")
     private String lineCode;
+
+    @ApiModelProperty("线路名称")
+    private String lineName;
 
     @ApiModelProperty("月份")
     private String month;
@@ -49,9 +46,11 @@ public class FaultDataStatisticsDTO implements Serializable {
 
     /**专业子系统编码*/
     @ApiModelProperty(value = "专业子系统编码")
-    @Dict(dictTable = "cs_subsystem", dicText = "system_name", dicCode = "system_code")
-    @SystemFilterColumn
     private String subSystemCode;
+
+    /**专业子系统编码*/
+    @ApiModelProperty(value = "专业子系统名称")
+    private String subSystemName;
 
     @ApiModelProperty("故障数量")
     private Integer faultSum;

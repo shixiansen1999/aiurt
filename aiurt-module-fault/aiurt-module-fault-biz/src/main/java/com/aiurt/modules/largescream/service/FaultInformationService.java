@@ -304,13 +304,14 @@ public class FaultInformationService {
             faultDataStatisticsDTO.setLastDay(lastDay);
         }
 
-        List<String> allSystemCode = faultInformationMapper.getAllSystemCode();
+        List<FaultDataStatisticsDTO> allSystemCode = faultInformationMapper.getAllSystemCode();
         for (int i = 0; i < allSystemCode.size(); i++) {
-            faultDataStatisticsDTO.setSubSystemCode(allSystemCode.get(i));
+            faultDataStatisticsDTO.setSubSystemCode(allSystemCode.get(i).getSubSystemCode());
             Integer yearFault = faultInformationMapper.getYearFault(faultDataStatisticsDTO);
             FaultDataStatisticsDTO dto = new FaultDataStatisticsDTO();
             dto.setId(String.valueOf(i));
-            dto.setSubSystemCode(allSystemCode.get(i));
+            dto.setSubSystemCode(allSystemCode.get(i).getSubSystemCode());
+            dto.setSubSystemName(allSystemCode.get(i).getSubSystemName());
             dto.setFaultSum(yearFault);
             dtoList.add(dto);
         }
