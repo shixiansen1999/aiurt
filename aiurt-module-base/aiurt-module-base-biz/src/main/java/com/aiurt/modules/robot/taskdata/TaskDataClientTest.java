@@ -4,7 +4,6 @@ import cn.hutool.core.util.ObjectUtil;
 import com.aiurt.common.util.webservice.WebServiceUtils;
 import com.aiurt.modules.robot.taskdata.wsdl.*;
 import lombok.extern.slf4j.Slf4j;
-import org.testng.annotations.Test;
 
 import java.util.List;
 
@@ -29,7 +28,6 @@ public class TaskDataClientTest {
     /**
      * 机器人任务模板信息
      */
-    @Test
     public void getTaskPathInfo() {
         TaskPathInfos taskPathInfo = WebServiceUtils.getWebService(ServicePortType.class, ADDRESS).getTaskPathInfo();
         if (ObjectUtil.isNotEmpty(taskPathInfo)) {
@@ -49,7 +47,6 @@ public class TaskDataClientTest {
     /**
      * 根据任务模板id给机器人发任务
      */
-    @Test
     public void startTaskByPathId() {
         // 任务模板id
         String taskPathId = "0c53b6942b728218301d0aaef2384fd5";
@@ -68,7 +65,6 @@ public class TaskDataClientTest {
      * ResumeTask 恢复机器人当前任务
      * ChargeTask 机器人返回充电
      */
-    @Test
     public void robotControlTask() {
         int result = WebServiceUtils.getWebService(ServicePortType.class, ADDRESS).robotControlTask(ControlTaskType.PAUSE_TASK);
         System.out.println(result > 0 ? "失败" : "成功");
@@ -81,7 +77,6 @@ public class TaskDataClientTest {
      * ResumeTask 恢复机器人当前任务
      * ChargeTask 机器人返回充电
      */
-    @Test
     public void getTaskExcuteData() {
         TaskExcuteData info = WebServiceUtils.getWebService(ServicePortType.class, ADDRESS).getTaskExcuteData(ROBOT_IP);
         if (ObjectUtil.isNotEmpty(info)) {

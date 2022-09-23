@@ -4,7 +4,6 @@ import cn.hutool.core.util.ObjectUtil;
 import com.aiurt.common.util.webservice.WebServiceUtils;
 import com.aiurt.modules.robot.taskfinish.wsdl.*;
 import lombok.extern.slf4j.Slf4j;
-import org.testng.annotations.Test;
 
 import java.util.List;
 
@@ -31,7 +30,6 @@ public class TaskFinishClientTest {
     /**
      * 根据时间获取机器人任务列表信息
      */
-    @Test
     public void getTaskFinishInfoByTime() {
         // 开始时间
         String startTime = "2022-09-19 00:00:00";
@@ -59,7 +57,6 @@ public class TaskFinishClientTest {
     /**
      * 根据任务id获取机器人完成任务数据信息
      */
-    @Test
     public void getTaskExcuteInfoByTaskId() {
         // 任务id：T2018-12-10 14:43:53
         String taskId = "T20220920102157470";
