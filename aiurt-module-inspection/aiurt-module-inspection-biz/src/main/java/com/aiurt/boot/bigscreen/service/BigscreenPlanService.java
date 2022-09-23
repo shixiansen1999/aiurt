@@ -392,7 +392,8 @@ public class BigscreenPlanService {
                 Date date = new Date();
                 DateTime beginDate = DateUtil.beginOfMonth(date);
                 DateTime endDate = DateUtil.endOfMonth(date);
-                return new Date[]{beginDate, endDate};
+                JudgeIsMonthQuery judgeIsMonthQuery = new JudgeIsMonthQuery(beginDate, endDate).invoke();
+                return new Date[]{judgeIsMonthQuery.getDayBegin(), judgeIsMonthQuery.getDayEnd()};
             }
 
             // 上月
@@ -400,7 +401,8 @@ public class BigscreenPlanService {
                 DateTime dateTime = DateUtil.lastMonth();
                 DateTime beginDate = DateUtil.beginOfMonth(dateTime);
                 DateTime endDate = DateUtil.endOfMonth(dateTime);
-                return new Date[]{beginDate, endDate};
+                JudgeIsMonthQuery judgeIsMonthQuery = new JudgeIsMonthQuery(beginDate, endDate).invoke();
+                return new Date[]{judgeIsMonthQuery.getDayBegin(), judgeIsMonthQuery.getDayEnd()};
             }
         }
         return new Date[0];
@@ -429,7 +431,7 @@ public class BigscreenPlanService {
         if (CollUtil.isNotEmpty(teamPortraitDTOS)) {
             int i = 0;
             for (TeamPortraitDTO teamPortraitDTO : teamPortraitDTOS) {
-              //找到当前班组关联的工区信息
+                //找到当前班组关联的工区信息
                 List<TeamPortraitDTO> workAreaById = bigScreenPlanMapper.getWorkAreaByCode(teamPortraitDTO.getTeamCode());
                 if (CollUtil.isNotEmpty(workAreaById)) {
                     List<String> teamLineName = workAreaById.stream().map(TeamPortraitDTO::getTeamLeaderName).collect(Collectors.toList());
@@ -482,14 +484,14 @@ public class BigscreenPlanService {
                         teamPortraitDTO.setAverageTime("0");
                     }
                     //获取总工时
-                    getTotalTimes(teamPortraitDTO,userList,type,timeByType);
+                    getTotalTimes(teamPortraitDTO, userList, type, timeByType);
                 }
             }
         }
         return teamPortraitDTOS;
     }
 
-    public void getTotalTimes(TeamPortraitDTO teamPortraitDTO,List<LoginUser> userList,Integer type, Date[] timeByType) {
+    public void getTotalTimes(TeamPortraitDTO teamPortraitDTO, List<LoginUser> userList, Integer type, Date[] timeByType) {
         //获取维修工时
         Map<String, BigDecimal> faultUserHours = dailyFaultApi.getFaultUserHours(type, teamPortraitDTO.getTeamId());
         if (CollUtil.isNotEmpty(faultUserHours)) {
@@ -523,10 +525,10 @@ public class BigscreenPlanService {
         Long faultTotalTime2 = bigScreenPlanMapper.getInspecitonTotalTimeByPeer(userList, timeByType[0], timeByType[1]);
         long time = 0L;
         if (faultTotalTime1 != null) {
-             time = time + faultTotalTime1;
+            time = time + faultTotalTime1;
         }
-         if (faultTotalTime2 != null) {
-             time = time + faultTotalTime2;
+        if (faultTotalTime2 != null) {
+            time = time + faultTotalTime2;
         }
         BigDecimal decimal = new BigDecimal(1.0 * time / 3600).setScale(0, BigDecimal.ROUND_HALF_UP);
         teamPortraitDTO.setInspecitonTotalTime(decimal);
@@ -562,8 +564,7 @@ public class BigscreenPlanService {
                                     .append(collect.get(collect.size() - 1).getStationName())
                                     .append(collect.size()).append("站，");
                         }
-                        if (jurisdiction.length() > 0)
-                        {
+                        if (jurisdiction.length() > 0) {
                             // 截取字符，去调最后一个，
                             jurisdiction.deleteCharAt(jurisdiction.length() - 1);
                         }
@@ -571,8 +572,7 @@ public class BigscreenPlanService {
                 }
                 jurisdiction.append("共").append(stationDetails.size()).append("站；");
             }
-            if (jurisdiction.length() > 0)
-            {
+            if (jurisdiction.length() > 0) {
                 // 截取字符,去掉最后一个；
                 jurisdiction.deleteCharAt(jurisdiction.length() - 1);
             }
@@ -595,7 +595,7 @@ public class BigscreenPlanService {
         return teamWorkingHourDTO;
     }
 
-    public void getEveryOneTotalTimes(List<TeamUserDTO> userList,Integer type,String teamId) {
+    public void getEveryOneTotalTimes(List<TeamUserDTO> userList, Integer type, String teamId) {
         //获取维修任务人员个人个人总工时
         Map<String, BigDecimal> faultUserHours = dailyFaultApi.getFaultUserHours(type, teamId);
         //获取巡检任务人员个人总工时和同行人个人总工时
@@ -624,7 +624,7 @@ public class BigscreenPlanService {
                 Date date = DateUtil.date();
                 LocalDate endDate = date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
                 Period p = Period.between(startDate, endDate);
-                teamUserDTO.setWorkingYears(p.getYears() +"年"+p.getMonths()+"个月");
+                teamUserDTO.setWorkingYears(p.getYears() + "年" + p.getMonths() + "个月");
             }
 
             //获取维修个人总总工时
