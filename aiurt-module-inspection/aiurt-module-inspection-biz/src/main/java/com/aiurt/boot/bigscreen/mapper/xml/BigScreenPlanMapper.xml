@@ -9,6 +9,8 @@
 <select id="getWorkAreaByCode" resultType="com.aiurt.boot.index.dto.TeamPortraitDTO">
     SELECT
     wa.position AS position,
+    wa.name as siteName,
+    wa.code as workAreaCode,
     (
     SELECT
     GROUP_CONCAT( cl.line_name )

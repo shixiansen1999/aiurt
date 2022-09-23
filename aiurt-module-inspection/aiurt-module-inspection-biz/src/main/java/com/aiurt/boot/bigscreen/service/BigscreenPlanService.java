@@ -435,14 +435,43 @@ public class BigscreenPlanService {
                 List<TeamPortraitDTO> workAreaById = bigScreenPlanMapper.getWorkAreaByCode(teamPortraitDTO.getTeamCode());
                 if (CollUtil.isNotEmpty(workAreaById)) {
                     List<String> teamLineName = workAreaById.stream().map(TeamPortraitDTO::getTeamLeaderName).collect(Collectors.toList());
+                    teamPortraitDTO.setTeamLineName(CollUtil.join(teamLineName, ","));
+
                     List<String> position = workAreaById.stream().map(TeamPortraitDTO::getPosition).collect(Collectors.toList());
+                    List<String> siteName = workAreaById.stream().map(TeamPortraitDTO::getSiteName).collect(Collectors.toList());
                     int num = 0;
+                    StringBuilder jurisdiction = new StringBuilder();
                     for (TeamPortraitDTO portraitDTO : workAreaById) {
                         num = num + portraitDTO.getStationNum();
+                        jurisdiction.append(portraitDTO.getSiteName()).append(":");
+                        //获取工区管辖范围
+                        List<TeamWorkAreaDTO> stationDetails = bigScreenPlanMapper.getStationDetails(portraitDTO.getWorkAreaCode());
+                        if (CollUtil.isNotEmpty(stationDetails)) {
+                            List<String> line = stationDetails.stream().map(TeamWorkAreaDTO::getLineCode).collect(Collectors.toList());
+                            if (CollUtil.isNotEmpty(line)) {
+                                for (String s : line) {
+                                    List<TeamWorkAreaDTO> collect = stationDetails.stream().filter(t -> t.getLineCode().equals(s)).collect(Collectors.toList());
+                                    jurisdiction.append(collect.get(0).getLineName())
+                                            .append(collect.get(0).getStationName())
+                                            .append(collect.get(collect.size() - 1).getStationName())
+                                            .append(collect.size()).append("站，");
+                                }
+                                if (jurisdiction.length() > 0) {
+                                    // 截取字符，去调最后一个，
+                                    jurisdiction.deleteCharAt(jurisdiction.length() - 1);
+                                }
+                            }
+                        }
+                        jurisdiction.append("共").append(stationDetails.size()).append("站；");
                     }
-                    teamPortraitDTO.setTeamLineName(CollUtil.join(teamLineName, ","));
-                    teamPortraitDTO.setPosition(CollUtil.join(position, ","));
+                    if (jurisdiction.length() > 0) {
+                        // 截取字符,去掉最后一个；
+                        jurisdiction.deleteCharAt(jurisdiction.length() - 1);
+                    }
+                    teamPortraitDTO.setPositionName(CollUtil.join(position, ","));
+                    teamPortraitDTO.setSiteName(CollUtil.join(siteName, ","));
                     teamPortraitDTO.setStationNum(num);
+                    teamPortraitDTO.setJurisdiction(jurisdiction.toString());
                 }
                 //获取当前值班人员
                 // 班组的人员
@@ -540,48 +569,7 @@ public class BigscreenPlanService {
      * @param type 类型:1：本周，2：上周，3：本月， 4：上月
      * @return
      */
-    public TeamWorkingHourDTO getTeamPortraitDetails(Integer type, String teamId, Integer pageNo, Integer pageSize) {
-        TeamWorkingHourDTO teamWorkingHourDTO = new TeamWorkingHourDTO();
-        //找到当前班组关联的工区信息
-        List<TeamPortraitDTO> workAreaById = bigScreenPlanMapper.getWorkAreaById(teamId);
-        if (CollUtil.isNotEmpty(workAreaById)) {
-            List<String> position = workAreaById.stream().map(TeamPortraitDTO::getPosition).collect(Collectors.toList());
-            List<String> siteName = workAreaById.stream().map(TeamPortraitDTO::getSiteName).collect(Collectors.toList());
-            int num = 0;
-            StringBuilder jurisdiction = new StringBuilder();
-            for (TeamPortraitDTO portraitDTO : workAreaById) {
-                num = num + portraitDTO.getStationNum();
-                jurisdiction.append(portraitDTO.getSiteName()).append(":");
-                //获取工区管辖范围
-                List<TeamWorkAreaDTO> stationDetails = bigScreenPlanMapper.getStationDetails(portraitDTO.getWorkAreaCode());
-                if (CollUtil.isNotEmpty(stationDetails)) {
-                    List<String> line = stationDetails.stream().map(TeamWorkAreaDTO::getLineCode).collect(Collectors.toList());
-                    if (CollUtil.isNotEmpty(line)) {
-                        for (String s : line) {
-                            List<TeamWorkAreaDTO> collect = stationDetails.stream().filter(t -> t.getLineCode().equals(s)).collect(Collectors.toList());
-                            jurisdiction.append(collect.get(0).getLineName())
-                                    .append(collect.get(0).getStationName())
-                                    .append(collect.get(collect.size() - 1).getStationName())
-                                    .append(collect.size()).append("站，");
-                        }
-                        if (jurisdiction.length() > 0) {
-                            // 截取字符，去调最后一个，
-                            jurisdiction.deleteCharAt(jurisdiction.length() - 1);
-                        }
-                    }
-                }
-                jurisdiction.append("共").append(stationDetails.size()).append("站；");
-            }
-            if (jurisdiction.length() > 0) {
-                // 截取字符,去掉最后一个；
-                jurisdiction.deleteCharAt(jurisdiction.length() - 1);
-            }
-            teamWorkingHourDTO.setPositionName(CollUtil.join(position, ","));
-            teamWorkingHourDTO.setSiteName(CollUtil.join(siteName, ","));
-            teamWorkingHourDTO.setStationNum(num);
-            teamWorkingHourDTO.setJurisdiction(jurisdiction.toString());
-        }
-
+    public IPage<TeamUserDTO> getTeamPortraitDetails(Integer type, String teamId, Integer pageNo, Integer pageSize) {
         // 班组的人员
         Page<TeamUserDTO> page = new Page<>(pageNo, pageSize);
         List<TeamUserDTO> userList = bigScreenPlanMapper.getUserList(page, teamId);
@@ -591,8 +579,7 @@ public class BigscreenPlanService {
             getEveryOneTotalTimes(userList, type, teamId);
         }
         page.setRecords(userList);
-        teamWorkingHourDTO.setTeamUserDTOS(page);
-        return teamWorkingHourDTO;
+        return page;
     }
 
     public void getEveryOneTotalTimes(List<TeamUserDTO> userList, Integer type, String teamId) {

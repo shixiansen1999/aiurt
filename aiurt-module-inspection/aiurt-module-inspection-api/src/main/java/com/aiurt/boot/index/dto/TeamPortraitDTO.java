@@ -43,4 +43,8 @@ public class TeamPortraitDTO {
     private String siteName;
     @ApiModelProperty("工区code")
     private String workAreaCode;
+    @ApiModelProperty("工区位置")
+    private String positionName;
+    @ApiModelProperty("管辖范围")
+    private String jurisdiction;
 }
