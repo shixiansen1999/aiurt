@@ -194,7 +194,7 @@
     rt.begin_time,
     IF
     ( 1 = rt.is_receipt, rt.receipt_time, IF ( 1 = rt.is_confirm, rt.confirm_time, rt.submit_time ) )
-    )) inspecitonTotalTime
+    )) time
     FROM
     repair_pool rp
     LEFT JOIN repair_task rt ON rp.`code` = rt.`code` LEFT JOIN repair_task_user rts ON rts.repair_task_code = rt.`code`
@@ -219,7 +219,7 @@
     rt.begin_time,
     IF
     ( 1 = rt.is_receipt, rt.receipt_time, IF ( 1 = rt.is_confirm, rt.confirm_time, rt.submit_time ) )
-    )) faultTotalTime
+    )) time
     FROM
     repair_task_peer_rel rtpr
     LEFT JOIN repair_task_device_rel rtdr ON rtpr.repair_task_device_code = rtdr.`code`
