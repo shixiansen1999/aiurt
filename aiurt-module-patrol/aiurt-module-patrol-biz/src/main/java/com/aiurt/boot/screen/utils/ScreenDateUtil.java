@@ -12,6 +12,19 @@ import java.util.Date;
 public class ScreenDateUtil {
 
     /**
+     * 起始时间格式
+     */
+    private static final String START_FORMAT = "yyyy-MM-dd 00:00:00";
+    /**
+     * 结束时间格式
+     */
+    private static final String END_FORMAT = "yyyy-MM-dd 23:59:59";
+    /**
+     * 时间分隔符
+     */
+    private static final String SEPARATOR = ScreenConstant.TIME_SEPARATOR;
+
+    /**
      * 获取参数日期所在周时间范围，格式如下:yyyy-MM-dd 00:00:00~yyyy-MM-dd 23:59:59
      *
      * @param date
@@ -20,7 +33,7 @@ public class ScreenDateUtil {
     public static String getThisWeek(Date date) {
         DateTime start = DateUtil.beginOfWeek(date);
         DateTime end = DateUtil.endOfWeek(date);
-        String thisWeek = DateUtil.format(start, "yyyy-MM-dd 00:00:00") + "~" + DateUtil.format(end, "yyyy-MM-dd 23:59:59");
+        String thisWeek = DateUtil.format(start, START_FORMAT).concat(SEPARATOR).concat(DateUtil.format(end, END_FORMAT));
         return thisWeek;
     }
 
@@ -34,7 +47,7 @@ public class ScreenDateUtil {
         date = DateUtil.offsetWeek(date, -1);
         DateTime start = DateUtil.beginOfWeek(date);
         DateTime end = DateUtil.endOfWeek(date);
-        String lastWeek = DateUtil.format(start, "yyyy-MM-dd 00:00:00") + "~" + DateUtil.format(end, "yyyy-MM-dd 23:59:59");
+        String lastWeek = DateUtil.format(start, START_FORMAT).concat(SEPARATOR).concat(DateUtil.format(end, END_FORMAT));
         return lastWeek;
     }
 
@@ -47,7 +60,7 @@ public class ScreenDateUtil {
     public static String getThisMonth(Date date) {
         DateTime start = DateUtil.beginOfMonth(date);
         DateTime end = DateUtil.endOfMonth(date);
-        String thisMonth = DateUtil.format(start, "yyyy-MM-dd 00:00:00") + "~" + DateUtil.format(end, "yyyy-MM-dd 23:59:59");
+        String thisMonth = DateUtil.format(start, START_FORMAT).concat(SEPARATOR).concat(DateUtil.format(end, END_FORMAT));
         return thisMonth;
     }
 
@@ -61,7 +74,7 @@ public class ScreenDateUtil {
         date = DateUtil.offsetMonth(date, -1);
         DateTime start = DateUtil.beginOfMonth(date);
         DateTime end = DateUtil.endOfMonth(date);
-        String lastMonth = DateUtil.format(start, "yyyy-MM-dd 00:00:00") + "~" + DateUtil.format(end, "yyyy-MM-dd 23:59:59");
+        String lastMonth = DateUtil.format(start, START_FORMAT).concat(SEPARATOR).concat(DateUtil.format(end, END_FORMAT));
         return lastMonth;
     }
 

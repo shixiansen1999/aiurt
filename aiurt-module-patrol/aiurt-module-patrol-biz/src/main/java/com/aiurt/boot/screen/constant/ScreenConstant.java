@@ -17,4 +17,8 @@ public interface ScreenConstant {
      * 上个月
      */
     Integer LAST_MONTH = 4;
+    /**
+     * 获取本周、上周、本月、上月的时间范围的时间分隔符
+     */
+    String TIME_SEPARATOR = "~";
 }

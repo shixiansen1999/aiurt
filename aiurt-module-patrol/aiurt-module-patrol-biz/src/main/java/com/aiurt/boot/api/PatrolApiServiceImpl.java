@@ -4,8 +4,8 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.aiurt.boot.constant.PatrolConstant;
+import com.aiurt.boot.screen.constant.ScreenConstant;
 import com.aiurt.boot.screen.model.ScreenDurationTask;
-import com.aiurt.boot.screen.service.PatrolScreenService;
 import com.aiurt.boot.screen.utils.ScreenDateUtil;
 import com.aiurt.boot.standard.entity.PatrolStandard;
 import com.aiurt.boot.standard.mapper.PatrolStandardMapper;
@@ -42,8 +42,6 @@ public class PatrolApiServiceImpl implements PatrolApi {
     private PatrolAccompanyMapper patrolAccompanyMapper;
     @Autowired
     private PatrolTaskUserMapper patrolTaskUserMapper;
-    @Autowired
-    private PatrolScreenService patrolScreenService;
 
     /**
      * 首页-统计日程的巡视完成数
@@ -120,8 +118,8 @@ public class PatrolApiServiceImpl implements PatrolApi {
         // 班组的人员
         List<LoginUser> userList = sysBaseApi.getUserPersonnel(teamId);
         String dateTime = ScreenDateUtil.getDateTime(type);
-        Date startTime = DateUtil.parse(dateTime.split("~")[0]);
-        Date endTime = DateUtil.parse(dateTime.split("~")[1]);
+        Date startTime = DateUtil.parse(dateTime.split(ScreenConstant.TIME_SEPARATOR)[0]);
+        Date endTime = DateUtil.parse(dateTime.split(ScreenConstant.TIME_SEPARATOR)[1]);
 
         // 获取巡视人员在指定时间范围内的任务时长(单位秒)
         List<ScreenDurationTask> list = patrolTaskUserMapper.getScreenUserDuration(startTime, endTime);
@@ -141,8 +139,8 @@ public class PatrolApiServiceImpl implements PatrolApi {
             if (ObjectUtil.isEmpty(timeTwo)) {
                 timeTwo = 0L;
             }
-            double time = 1.0 * (timeOne + timeTwo) / 3600;
             // 展示需要以小时数展示，并保留两位小数
+            double time = 1.0 * (timeOne + timeTwo) / 3600;
             BigDecimal decimal = new BigDecimal(time).setScale(2, BigDecimal.ROUND_HALF_UP);
             userDurationMap.put(userId, decimal);
         });
