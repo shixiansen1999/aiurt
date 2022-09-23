@@ -6,6 +6,7 @@ import cn.hutool.core.util.NumberUtil;
 import com.aiurt.boot.constant.InspectionConstant;
 import com.aiurt.boot.manager.InspectionManager;
 import com.aiurt.boot.task.dto.OverhaulStatisticsDTO;
+import com.aiurt.boot.task.entity.RepairTask;
 import com.aiurt.boot.task.mapper.RepairTaskMapper;
 import org.jeecgframework.poi.excel.def.NormalExcelConstants;
 import org.jeecgframework.poi.excel.entity.ExportParams;
@@ -15,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.ModelAndView;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -35,9 +37,9 @@ public class OverhaulStatisticsService{
     @Resource
     private InspectionManager manager;
 
-    public List<OverhaulStatisticsDTO> getOverhaulList(OverhaulStatisticsDTO condition) {
+    public Page<OverhaulStatisticsDTO> getOverhaulList(Page<OverhaulStatisticsDTO> pageList,OverhaulStatisticsDTO condition) {
         //查询班组的信息
-        List<OverhaulStatisticsDTO> statisticsDTOList = repairTaskMapper.readTeamList(condition);
+        List<OverhaulStatisticsDTO> statisticsDTOList = repairTaskMapper.readTeamList(pageList,condition);
 
         //查询人员信息
         List<OverhaulStatisticsDTO> nameList = repairTaskMapper.readNameList(condition);
@@ -80,7 +82,7 @@ public class OverhaulStatisticsService{
                 //查询已完成的班组信息
                 condition.setStatus(8L);
                 condition.setTaskId(e.getTaskId());
-                List<OverhaulStatisticsDTO> dtoList = repairTaskMapper.readTeamList(condition);
+                List<OverhaulStatisticsDTO> dtoList = repairTaskMapper.readTeamList(pageList,condition);
 
                 //已完成数
                 int size2 = dtoList.size();
@@ -109,7 +111,7 @@ public class OverhaulStatisticsService{
                 e.setOrgCodeId(e.getOrgCode());
             });
         }
-        return statisticsDTOList;
+        return pageList.setRecords(statisticsDTOList);
     }
 
     private void getCompletionRate(OverhaulStatisticsDTO e, int size2) {
@@ -121,9 +123,6 @@ public class OverhaulStatisticsService{
             String string = NumberUtil.round(i, 2).toString();
             e.setCompletionRate(string);
         }
-        e.setLeakOverhaulNumber(0L);
-        e.setAvgWeekNumber(0L);
-        e.setAvgMonthNumber(0L);
     }
 
     /**
@@ -134,16 +133,19 @@ public class OverhaulStatisticsService{
      */
     public ModelAndView reportExport(HttpServletRequest request, OverhaulStatisticsDTO overhaulStatisticsDTO) {
         ModelAndView mv = new ModelAndView(new JeecgEntityExcelView());
-        List<OverhaulStatisticsDTO> overhaulList = this.getOverhaulList(overhaulStatisticsDTO);
+
+        Page<OverhaulStatisticsDTO> page = new Page<>(overhaulStatisticsDTO.getPageNo(), overhaulStatisticsDTO.getPageSize());
+        Page<OverhaulStatisticsDTO> overhaulList = this.getOverhaulList(page, overhaulStatisticsDTO);
+        List<OverhaulStatisticsDTO> records = overhaulList.getRecords();
         List<OverhaulStatisticsDTO> dtos = new ArrayList<>();
-        for (OverhaulStatisticsDTO statisticsDTO : overhaulList) {
+        for (OverhaulStatisticsDTO statisticsDTO : records) {
             dtos.add(statisticsDTO);
            List<OverhaulStatisticsDTO> nameList = statisticsDTO.getNameList();
             if (CollUtil.isNotEmpty(nameList)) {
                 dtos.addAll(nameList);
             }
         }
-        if (CollectionUtil.isNotEmpty(overhaulList)) {
+        if (CollectionUtil.isNotEmpty(records)) {
             //导出文件名称
             mv.addObject(NormalExcelConstants.FILE_NAME, "检修报表");
             //excel注解对象Class

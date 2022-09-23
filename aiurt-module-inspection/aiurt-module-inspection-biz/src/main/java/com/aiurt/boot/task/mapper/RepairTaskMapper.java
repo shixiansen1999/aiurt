@@ -173,7 +173,7 @@ public interface RepairTaskMapper extends BaseMapper<RepairTask> {
     List<Date> getTaskInspectionTime(String code);
 
 
-    List<OverhaulStatisticsDTO> readTeamList(@Param("condition") OverhaulStatisticsDTO condition);
+    List<OverhaulStatisticsDTO> readTeamList(@Param("pageList") Page<OverhaulStatisticsDTO> pageList,@Param("condition") OverhaulStatisticsDTO condition);
 
     List<OverhaulStatisticsDTO> readNameList(@Param("condition") OverhaulStatisticsDTO condition);
 

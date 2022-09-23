@@ -158,4 +158,11 @@ public class OverhaulStatisticsDTO {
     @ApiModelProperty(value = "名称集合")
     private List<OverhaulStatisticsDTO> nameList;
 
+    @ApiModelProperty("分页参数")
+    private Integer pageNo;
+
+
+    @ApiModelProperty("分页参数")
+    private Integer pageSize;
+
 }
