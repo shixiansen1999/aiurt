@@ -423,7 +423,7 @@ public class FaultInformationService {
         }
         //当天新增
         List<Fault> faults = faultInformationMapper.queryLargeFaultInformationTodayAdd(todayStartDate,todayEndDate, lineCode);
-        if(CollUtil.isNotEmpty(faultInformationTodaySolve)){
+        if(CollUtil.isNotEmpty(faults)){
             result.setTodayAdd(faults.size());
         }else{
             result.setTodayAdd(0);
