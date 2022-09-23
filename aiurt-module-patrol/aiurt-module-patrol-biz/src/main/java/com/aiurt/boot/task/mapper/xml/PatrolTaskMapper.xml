@@ -646,13 +646,35 @@
   group by a.id
     </select>
     <select id="getReportTaskList" resultType="com.aiurt.boot.report.model.PatrolReport">
-
 SELECT
+	( SELECT sd.depart_name FROM sys_depart sd WHERE pto.org_code = sd.org_code ) AS orgName,
+	pto.org_code
+FROM
+	patrol_task pt
+	JOIN patrol_task_organization pto ON pt.`code` = pto.task_code
+	 <if test="condition.orgList != null and condition.orgList.size>0 ">
+	  AND pto.org_code IN
+	    <foreach collection="condition.orgList" item="item" open="(" separator="," close=")">
+                    #{item}
+         </foreach>
+	 </if>
+    <if test="condition.orgCode != null and condition.orgCode != ''">
+    and pto.org_code = #{condition.orgCode}
+   </if>
+GROUP BY
+	pto.org_code
+    </select>
+    <select id="getTasks" resultType="com.aiurt.boot.report.model.PatrolReport">
+    SELECT
 	count( pt.id ) AS taskTotal,
 	count( pt.STATUS = 7 OR NULL ) AS inspectedNumber,
 	count( pt.abnormal_state = 0 OR NULL ) AS abnormalNumber,
 	(
 	count( pt.id ) - count( pt.STATUS = 7 OR NULL )) AS notInspectedNumber,
+	CONCAT(
+   cast(count( pt.STATUS = 7 OR NULL )/count( pt.id ) as   decimal(10,   2))*100,
+    '%'
+  ) AS completionRate,
     GROUP_CONCAT(pt.id) as taskId,
 	GROUP_CONCAT(pt.code) as taskCode,
 	( SELECT sd.depart_name FROM sys_depart sd WHERE pto.org_code = sd.org_code ) AS orgName,
@@ -706,7 +728,8 @@ FROM
    </if>
 GROUP BY
 	pto.org_code
-    </select>
+
+</select>
     <select id="getReportOmitList" resultType="com.aiurt.boot.report.model.PatrolReport">
     select
 	count( pt.omit_status = 0 OR NULL ) AS missInspectedNumber,
