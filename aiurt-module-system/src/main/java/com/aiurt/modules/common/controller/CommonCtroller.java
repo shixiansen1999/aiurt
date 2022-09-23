@@ -327,7 +327,9 @@ public class CommonCtroller {
         //todo 查询当前人员所管辖的专业。
         List<CsMajor> csMajorList = csMajorService.getBaseMapper().selectList(queryWrapper);
 
-        List<CsSubsystem> csSubsystemList = csSubsystemService.getBaseMapper().selectList(null);
+        LambdaQueryWrapper<CsSubsystem> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(CsSubsystem::getDelFlag, 0);
+        List<CsSubsystem> csSubsystemList = csSubsystemService.getBaseMapper().selectList(wrapper);
         Map<String, List<CsSubsystem>> map = csSubsystemList.stream().collect(Collectors.groupingBy(CsSubsystem::getMajorCode));
 
         List<SelectTable> tableList = csMajorList.stream().map(csMajor -> {
