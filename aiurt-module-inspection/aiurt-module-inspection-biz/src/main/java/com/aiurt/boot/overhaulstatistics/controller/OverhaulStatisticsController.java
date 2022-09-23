@@ -2,11 +2,7 @@ package com.aiurt.boot.overhaulstatistics.controller;
 
 import com.aiurt.boot.overhaulstatistics.service.OverhaulStatisticsService;
 import com.aiurt.boot.task.dto.OverhaulStatisticsDTO;
-import com.aiurt.boot.task.entity.RepairTask;
 import com.aiurt.common.aspect.annotation.AutoLog;
-import com.aiurt.modules.fault.dto.FaultStatisticsDTO;
-import com.aiurt.modules.faultanalysisreport.dto.SpareConsumeDTO;
-import com.aiurt.modules.train.task.vo.ReportReqVO;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
