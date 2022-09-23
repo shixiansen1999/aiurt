@@ -161,5 +161,11 @@ public interface FaultInformationMapper {
      */
     List<FaultDataStatisticsDTO> getAllSystemCode();
 
+    /**
+     * 班组画像维修工时
+     * @param startTime
+     * @param endTime
+     * @return
+     */
     List<FaultDurationTask> getFaultUserDuration(@Param("startTime") Date startTime, @Param("endTime") Date endTime);
 }

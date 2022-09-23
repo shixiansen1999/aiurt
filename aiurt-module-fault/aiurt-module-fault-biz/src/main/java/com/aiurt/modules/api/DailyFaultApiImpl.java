@@ -96,6 +96,12 @@ public class DailyFaultApiImpl implements DailyFaultApi {
         return   CollUtil.join(faultNames, "。");
     }
 
+    /**
+     * 班组画像获取维修工时
+     * @param type
+     * @param teamId
+     * @return
+     */
     @Override
     public Map<String, BigDecimal> getFaultUserHours(int type, String teamId) {
         Map<String, BigDecimal> userDurationMap = new HashMap<>();
