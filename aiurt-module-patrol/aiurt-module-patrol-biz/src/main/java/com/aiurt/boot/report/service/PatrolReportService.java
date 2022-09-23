@@ -58,13 +58,25 @@ public class PatrolReportService {
         List<SysDepartModel> userSysDepart = sysBaseAPI.getUserSysDepart(user.getId());
         List<String> orgList = userSysDepart.stream().map(SysDepartModel::getOrgCode).collect(Collectors.toList());
          String thisWeek = getThisWeek(new Date());
-        Date mondayDate = DateUtil.parse(thisWeek.split("~")[0]);
-        Date sundayDate = DateUtil.parse(thisWeek.split("~")[1]);
+        String mondayDate = thisWeek.split("~")[0];
+        String sundayDate = thisWeek.split("~")[1];
         //默认本周
+        PatrolReportModel omitModel = new PatrolReportModel();
         if(ObjectUtil.isEmpty(report.getStartDate()))
         {
             report.setStartDate(mondayDate);
             report.setEndDate(sundayDate);
+            String date = ScreenDateUtil.getThisWeek(new Date());
+            omitModel.setStartDate(date.split("~")[0]);
+            omitModel.setEndDate(date.split("~")[1]);
+        }
+        else
+        {
+           ;
+            String omitStartTime = screenService.getOmitDateScope( DateUtil.parse(report.getStartDate())).split("~")[0];
+            String omitEndTime = screenService.getOmitDateScope(DateUtil.parse(report.getEndDate())).split("~")[1];
+            omitModel.setStartDate(omitStartTime);
+            omitModel.setEndDate(omitEndTime);
         }
         report.setOrgList(orgList);
         PatrolReportModel model = new PatrolReportModel();
@@ -75,43 +87,40 @@ public class PatrolReportService {
         List<PatrolReport> list = patrolTaskMapper.getReportTaskList(pageList,model);
         List<PatrolReport> reportList =patrolTaskMapper.getReportTaskList(pageList,report);
         for (PatrolReport patrolReport : list) {
-            for (PatrolReport d : reportList) {
-                if(patrolReport.getOrgCode().equals(d.getOrgCode()))
-                {
-                    BeanUtils.copyProperties(d,patrolReport);
+            if(CollUtil.isNotEmpty(reportList))
+            {
+                for (PatrolReport d : reportList) {
+                    if(patrolReport.getOrgCode().equals(d.getOrgCode()))
+                    {
+                        BeanUtils.copyProperties(d,patrolReport);
+                    }
                 }
             }
-        }
-        //获取漏巡的时间范围
-        PatrolReportModel omitModel = new PatrolReportModel();
-        //默认本周
-        if(ObjectUtil.isEmpty(report.getStartDate()))
-        {
-            String date = ScreenDateUtil.getThisWeek(new Date());
-            Date startTime = DateUtil.parse(date.split("~")[0]);
-            Date endTime = DateUtil.parse(date.split("~")[1]);
-            omitModel.setStartDate(startTime);
-            omitModel.setEndDate(endTime);
-        }
-        else
-        {
-            String omitStartTime = screenService.getOmitDateScope(report.getStartDate()).split("~")[0];
-            String omitEndTime = screenService.getOmitDateScope(report.getEndDate()).split("~")[1];
-            Date startTime = DateUtil.parse(omitEndTime, "yyyy-MM-dd");
-            Date endTime = DateUtil.parse(omitStartTime, "yyyy-MM-dd");
-            omitModel.setStartDate(startTime);
-            omitModel.setEndDate(endTime);
+          else
+            {
+                PatrolReport patrolReport1 = setZero(patrolReport);
+                BeanUtils.copyProperties(patrolReport1,patrolReport);
+            }
         }
         BeanUtils.copyProperties(report,omitModel);
         List<PatrolReport> omitList =patrolTaskMapper.getReportOmitList(omitModel);
         if(CollUtil.isNotEmpty(list)&&CollUtil.isNotEmpty(omitList))
         {
             for (PatrolReport patrolReport : list) {
-                for (PatrolReport d : omitList) {
-                    if(patrolReport.getOrgCode().equals(d.getOrgCode()))
-                    {
-                        patrolReport.setMissInspectedNumber(d.getMissInspectedNumber());
+                if(CollUtil.isNotEmpty(omitList))
+                {
+
+                    for (PatrolReport d : omitList) {
+                        if(patrolReport.getOrgCode().equals(d.getOrgCode()))
+                        {
+                            patrolReport.setMissInspectedNumber(d.getMissInspectedNumber());
+                        }
                     }
+                }
+                else
+                {
+                    PatrolReport patrolReport1 = setZero(patrolReport);
+                    BeanUtils.copyProperties(patrolReport1,patrolReport);
                 }
             }
         }
@@ -126,12 +135,7 @@ public class PatrolReportService {
                  if(CollUtil.isNotEmpty(taskIds))
                  {
                      for (String  taskId: taskIds) {
-                         List<PatrolTaskDevice> taskDeviceList = patrolTaskDeviceMapper.getTaskAbnormal(taskId);
                          List<PatrolTaskDevice> faultList = patrolTaskDeviceMapper.getFaultList(taskId);
-                         if(taskDeviceList.size()>0)
-                         {
-                             abnormalNumber=abnormalNumber+1;
-                         }
                          if(faultList.size()>0)
                          {
                              faultNumber=faultNumber+1;
@@ -166,8 +170,57 @@ public class PatrolReportService {
 
             }
             DateTime lastSunday = DateUtil.offsetDay(end, -7);
+            report.setStartDate( DateUtil.formatDate(start));
+            report.setEndDate( DateUtil.formatDate(lastSunday));
+            List<PatrolReport> avgWeekOmitList =patrolTaskMapper.getReportOmitList(omitModel);
+            if(CollUtil.isNotEmpty(list))
+            {
+                for (PatrolReport patrolReport : list) {
+                    if(CollUtil.isNotEmpty(avgWeekOmitList))
+                    {
+
+                        for (PatrolReport d : avgWeekOmitList) {
+                            if(patrolReport.getOrgCode().equals(d.getOrgCode()))
+                            {
+                                if(patrolReport.getMissInspectedNumber()==0)
+                                {
+                                    patrolReport.setAwmPatrolNumber("0.00");
+                                }
+                                else
+                                {
+                                    double avg = patrolReport.getMissInspectedNumber()/ 4;
+                                    String completionRated = String.format("%.2f", avg);
+                                    patrolReport.setAwmPatrolNumber(completionRated);
+                                }
+
+                            }
+                        }
+                    }
+                    else
+                    {
+                         PatrolReport patrolReport1 = setZero(patrolReport);
+                         BeanUtils.copyProperties(patrolReport1,patrolReport);
+                    }
+
+                }
+            }
         }
        return  pageList.setRecords(list);
+    }
+    public PatrolReport setZero(PatrolReport report)
+    {
+        PatrolReport patrolReport = new PatrolReport();
+        patrolReport.setTaskId(report.getTaskId());
+        patrolReport.setOrgName(report.getOrgName());
+        patrolReport.setTaskTotal(0);
+        patrolReport.setCompletionRate("-");
+        patrolReport.setAbnormalNumber(0);
+        patrolReport.setMissInspectedNumber(0);
+        patrolReport.setAwmPatrolNumber("-");
+        patrolReport.setFaultNumber(0);
+        patrolReport.setInspectedNumber(0);
+        patrolReport.setNotInspectedNumber(0);
+        return patrolReport;
     }
     public static String getThisWeek(Date date) {
         DateTime start = DateUtil.beginOfWeek(date);

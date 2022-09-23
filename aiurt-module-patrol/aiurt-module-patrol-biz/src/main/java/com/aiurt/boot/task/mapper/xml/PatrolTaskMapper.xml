@@ -650,6 +650,7 @@
 SELECT
 	count( pt.id ) AS taskTotal,
 	count( pt.STATUS = 7 OR NULL ) AS inspectedNumber,
+	count( pt.abnormal_state = 0 OR NULL ) AS abnormalNumber,
 	(
 	count( pt.id ) - count( pt.STATUS = 7 OR NULL )) AS notInspectedNumber,
     GROUP_CONCAT(pt.id) as taskId,

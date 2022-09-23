@@ -254,11 +254,6 @@
         and pt.patrol_number = #{taskDeviceCode}
         </if>
     </select>
-    <select id="getTaskAbnormal" resultType="com.aiurt.boot.task.entity.PatrolTaskDevice">
-      SELECT ptd.id
-      FROM patrol_task_device ptd
-      WHERE ptd.check_result = 1 and ptd.task_id = #{taskId}
-    </select>
     <select id="getFaultList" resultType="com.aiurt.boot.task.entity.PatrolTaskDevice">
     	SELECT ptf.patrol_number
         FROM

@@ -24,10 +24,7 @@ public class PatrolReport {
      * 任务id
      */
     private String taskId;
-    /**
-     * 任务code
-     */
-    private String taskCode;/**
+    /*
      * 班组
      */
     @ApiModelProperty("班组名")
