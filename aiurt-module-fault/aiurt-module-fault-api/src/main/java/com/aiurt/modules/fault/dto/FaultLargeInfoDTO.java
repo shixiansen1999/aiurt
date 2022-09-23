@@ -38,6 +38,13 @@ public class FaultLargeInfoDTO extends DictEntity {
     @ApiModelProperty(value = "专业子系统编码")
     private String systemName;
 
+    /**报修方式*/
+    @ApiModelProperty(value = "报修方式",example = "")
+    private String faultModeCode;
+
+    @ApiModelProperty("报修方式名称")
+    private String faultModeName;
+
 
     /**站点*/
     @ApiModelProperty(value = "站点",  required = true)

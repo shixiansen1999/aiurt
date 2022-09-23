@@ -258,7 +258,7 @@ public class FaultInformationService {
                         String h = faultSystemTimeDTO.getRepairTime()+"H";
                         faultSystemTimeDTO.setRepairTime(h);
                         //将名字改成系统+小时数
-                      String strm = faultSystemTimeDTO.getSystemName().substring(0,faultSystemTimeDTO.getSystemName().length()-2);   //截掉
+                      String strm = faultSystemTimeDTO.getSystemName().substring(0,faultSystemTimeDTO.getSystemName().length()-2);
                       String name = strm+" "+faultSystemTimeDTO.getRepairTime();
                       faultSystemTimeDTO.setSystemName(name);
                         //将月份内的所有故障处理时间求和
@@ -444,6 +444,9 @@ public class FaultInformationService {
         String[] split = dateTime.split("~");
         Date startDate = DateUtil.parse(split[0]);
         Date endDate = DateUtil.parse(split[1]);
+        if(ObjectUtil.isEmpty(faultModule)){
+            faultModule = 1;
+        }
         switch (faultModule) {
             // 故障总数
             case 1:
@@ -494,6 +497,11 @@ public class FaultInformationService {
                     .filter(item -> item.getValue().equals(String.valueOf(l.getStatus())))
                     .map(DictModel::getText).collect(Collectors.joining());
             l.setStatusName(statusName);
+
+            String faultModeName = sysBaseAPI.getDictItems(FaultDictCodeConstant.FAULT_MODE_CODE).stream()
+                    .filter(item -> item.getValue().equals(String.valueOf(l.getFaultModeCode())))
+                    .map(DictModel::getText).collect(Collectors.joining());
+            l.setFaultModeName(faultModeName);
         });
         return  largeFaultDataInfo;
     }
