@@ -233,6 +233,17 @@
 			<groupId>com.squareup.okhttp3</groupId>
 			<artifactId>okhttp</artifactId>
 		</dependency>
+		<!-- cxf-->
+		<dependency>
+			  <groupId>org.apache.cxf</groupId>
+			  <artifactId>cxf-rt-frontend-jaxws</artifactId>
+			  <version>3.5.0</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.cxf</groupId>
+			<artifactId>cxf-rt-transports-http</artifactId>
+			<version>3.4.3</version>
+		</dependency>
 		<!-- 解决okhttp引用了kotlin,应用启动有警告日志问题 -->
 		<dependency>
 			<groupId>com.fasterxml.jackson.module</groupId>

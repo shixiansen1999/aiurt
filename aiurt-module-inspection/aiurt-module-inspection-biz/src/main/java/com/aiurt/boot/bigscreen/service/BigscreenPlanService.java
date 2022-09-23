@@ -101,7 +101,7 @@ public class BigscreenPlanService {
             // 填充漏检数
             result.setOmit(0L);
 
-            // 填充今日检修数
+            // 填充今日检修数（规则：当前时间在检修计划的开始时间和结束时间范围内）
             List<InspectionDTO> todayInspectionNum = repairPoolMapper.getInspectionTodayDataNoPage(new Date(), orgCodes);
             result.setTodayFinish(CollUtil.isNotEmpty(todayInspectionNum) ? todayInspectionNum.size() : 0L);
         }
@@ -133,30 +133,34 @@ public class BigscreenPlanService {
 
         // 根据类型获取开始时间和结束时间
         Date[] time = getTimeByType(type);
-        if (time.length > 0) {
-            List<String> orgCodes = sysBaseAPI.getTeamBylineAndMajor(lineCode);
-            // 通过传入的线路和自身管理的专业没有查询到班组，则直接返回
-            if (CollUtil.isEmpty(orgCodes)) {
-                return page;
-            }
 
-            // 查询计划数、完成数
-            if (InspectionConstant.PLAN_TOTAL_1.equals(item) || InspectionConstant.PLAN_FINISH_2.equals(item)) {
-                result = repairPoolMapper.getInspectionData(page, orgCodes, item, time[0], time[1]);
-            }
-
-            // TODO 漏检
-            // 查询今日检修
-            if (InspectionConstant.PLAN_TODAY_4.equals(item)) {
-                result = repairPoolMapper.getInspectionTodayData(page, new Date(), orgCodes);
-            }
-
-            // 统一处理结果
-            if (CollUtil.isNotEmpty(result)) {
-                handleResult(result);
-            }
-
+        // 时间为空直接返回
+        if (time.length <= 0) {
+            return page;
         }
+
+        List<String> orgCodes = sysBaseAPI.getTeamBylineAndMajor(lineCode);
+        // 通过传入的线路和自身管理的专业没有查询到班组，则直接返回
+        if (CollUtil.isEmpty(orgCodes)) {
+            return page;
+        }
+
+        // 查询计划数、完成数
+        if (InspectionConstant.PLAN_TOTAL_1.equals(item) || InspectionConstant.PLAN_FINISH_2.equals(item)) {
+            result = repairPoolMapper.getInspectionData(page, orgCodes, item, time[0], time[1]);
+        }
+
+        // TODO 漏检
+        // 查询今日检修
+        if (InspectionConstant.PLAN_TODAY_4.equals(item)) {
+            result = repairPoolMapper.getInspectionTodayData(page, new Date(), orgCodes);
+        }
+
+        // 统一处理结果
+        if (CollUtil.isNotEmpty(result)) {
+            handleResult(result);
+        }
+
         return page.setRecords(result);
     }
 
@@ -169,7 +173,7 @@ public class BigscreenPlanService {
      * @return
      */
     public List<InspectionDTO> getInspectionDataNoPage(String lineCode, String type, Integer item) {
-        List<InspectionDTO> result = new ArrayList<>();
+        List<InspectionDTO> result = CollUtil.newArrayList();
 
         // 校验,必填字段为空则直接返回
         if (StrUtil.isEmpty(type)) {
@@ -184,32 +188,32 @@ public class BigscreenPlanService {
         // 根据类型获取开始时间和结束时间
         Date[] time = getTimeByType(type);
 
-        if (time.length > 0) {
-            List<String> orgCodes = sysBaseAPI.getTeamBylineAndMajor(lineCode);
-            if (CollUtil.isEmpty(orgCodes)) {
-                return result;
-            }
-
-            // 填充计划数、完成数
-            if (InspectionConstant.PLAN_TOTAL_1.equals(item) || InspectionConstant.PLAN_FINISH_2.equals(item)) {
-                result = repairPoolMapper.getInspectionDataNoPage(orgCodes, item, time[0], time[1]);
-            }
-
-            // TODO 漏检
-            // 填充今日检修
-            if (InspectionConstant.PLAN_TODAY_4.equals(item)) {
-                result = repairPoolMapper.getInspectionTodayDataNoPage(new Date(), orgCodes);
-            }
-
-            // 统一处理结果
-            if (CollUtil.isNotEmpty(result)) {
-                long start = System.currentTimeMillis();
-
-                handleResult(result);
-                long end = System.currentTimeMillis();
-                System.out.println(end - start);
-            }
+        // 时间为空直接返回
+        if (time.length <= 0) {
+            return result;
         }
+
+        List<String> orgCodes = sysBaseAPI.getTeamBylineAndMajor(lineCode);
+        if (CollUtil.isEmpty(orgCodes)) {
+            return result;
+        }
+
+        // 填充计划数、完成数
+        if (InspectionConstant.PLAN_TOTAL_1.equals(item) || InspectionConstant.PLAN_FINISH_2.equals(item)) {
+            result = repairPoolMapper.getInspectionDataNoPage(orgCodes, item, time[0], time[1]);
+        }
+
+        // TODO 漏检
+        // 填充今日检修
+        if (InspectionConstant.PLAN_TODAY_4.equals(item)) {
+            result = repairPoolMapper.getInspectionTodayDataNoPage(new Date(), orgCodes);
+        }
+
+        // 统一处理结果
+        if (CollUtil.isNotEmpty(result)) {
+            handleResult(result);
+        }
+
         return result;
     }
 
@@ -249,7 +253,7 @@ public class BigscreenPlanService {
                             .in(RepairTaskUser::getRepairTaskCode, taskCodes)
                             .eq(RepairTaskUser::getDelFlag, CommonConstant.DEL_FLAG_0));
             if (CollUtil.isNotEmpty(repairTaskUsers)) {
-                 userMap = repairTaskUsers.stream().collect(Collectors.groupingBy(RepairTaskUser::getRepairTaskCode));
+                userMap = repairTaskUsers.stream().collect(Collectors.groupingBy(RepairTaskUser::getRepairTaskCode));
             }
             Map<String, List<RepairTaskUser>> finalUserMap = userMap;
 
@@ -312,40 +316,44 @@ public class BigscreenPlanService {
         // 默认是本周的时间范围
         Date[] time = getTimeByType(InspectionConstant.THIS_WEEK_1);
 
-        if (time.length > 0) {
-            // 通过传入线路和自身专业过滤出班组详细信息
-            List<SysDepartModel> teamBylineAndMajors = sysBaseAPI.getTeamBylineAndMajors(lineCode);
-
-            if (CollUtil.isNotEmpty(teamBylineAndMajors)) {
-                teamBylineAndMajors.parallelStream().forEach(teamBylineAndMajor -> {
-                    PlanIndexDTO planIndexDTO = new PlanIndexDTO();
-
-                    // 查询已完成数量、未完成数量
-                    planIndexDTO = repairPoolMapper.getNumByTimeAndOrgCode(teamBylineAndMajor.getOrgCode(), time[0], time[1]);
-
-                    // 填充班组名称
-                    planIndexDTO.setTeamName(teamBylineAndMajor.getDepartName());
-
-                    // 计算已检占比
-                    if (planIndexDTO.getSum() <= 0 || planIndexDTO.getFinish() <= 0) {
-                        planIndexDTO.setFinishRate("0%");
-                    } else {
-                        double d = new BigDecimal((double) planIndexDTO.getFinish() * 100 / planIndexDTO.getSum()).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
-                        planIndexDTO.setFinishRate(d + "%");
-                    }
-
-                    // 计算未检占比
-                    if (planIndexDTO.getSum() <= 0 || planIndexDTO.getUnfinish() <= 0) {
-                        planIndexDTO.setUnfinishRate("0%");
-                    } else {
-                        double d = new BigDecimal((double) planIndexDTO.getUnfinish() * 100 / planIndexDTO.getSum()).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
-                        planIndexDTO.setUnfinishRate(d + "%");
-                    }
-
-                    result.add(planIndexDTO);
-                });
-            }
+        // 时间范围为空直接返回
+        if (time.length <= 0) {
+            return result;
         }
+
+        // 通过传入线路和自身专业过滤出班组详细信息
+        List<SysDepartModel> teamBylineAndMajors = sysBaseAPI.getTeamBylineAndMajors(lineCode);
+
+        if (CollUtil.isNotEmpty(teamBylineAndMajors)) {
+            teamBylineAndMajors.parallelStream().forEach(teamBylineAndMajor -> {
+                PlanIndexDTO planIndexDTO = new PlanIndexDTO();
+
+                // 查询已完成数量、未完成数量
+                planIndexDTO = repairPoolMapper.getNumByTimeAndOrgCode(teamBylineAndMajor.getOrgCode(), time[0], time[1]);
+
+                // 填充班组名称
+                planIndexDTO.setTeamName(teamBylineAndMajor.getDepartName());
+
+                // 计算已检占比
+                if (planIndexDTO.getSum() <= 0 || planIndexDTO.getFinish() <= 0) {
+                    planIndexDTO.setFinishRate("0%");
+                } else {
+                    double d = new BigDecimal((double) planIndexDTO.getFinish() * 100 / planIndexDTO.getSum()).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
+                    planIndexDTO.setFinishRate(d + "%");
+                }
+
+                // 计算未检占比
+                if (planIndexDTO.getSum() <= 0 || planIndexDTO.getUnfinish() <= 0) {
+                    planIndexDTO.setUnfinishRate("0%");
+                } else {
+                    double d = new BigDecimal((double) planIndexDTO.getUnfinish() * 100 / planIndexDTO.getSum()).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
+                    planIndexDTO.setUnfinishRate(d + "%");
+                }
+
+                result.add(planIndexDTO);
+            });
+        }
+
         return result;
     }
 
@@ -426,23 +434,23 @@ public class BigscreenPlanService {
                     for (TeamPortraitDTO portraitDTO : workAreaById) {
                         num = num + portraitDTO.getStationNum();
                     }
-                    teamPortraitDTO.setTeamLineName(CollUtil.join(teamLineName,","));
+                    teamPortraitDTO.setTeamLineName(CollUtil.join(teamLineName, ","));
                     teamPortraitDTO.setPosition(CollUtil.join(position, ","));
                     teamPortraitDTO.setStationNum(num);
                 }
                 //获取当前值班人员
                 // 班组的人员
                 List<LoginUser> userList = sysBaseAPI.getUserPersonnel(teamPortraitDTO.getTeamId());
-                String today= DateUtil.today();
+                String today = DateUtil.today();
                 List<String> onDuty = bigScreenPlanMapper.getOnDuty(today, userList);
                 if (CollUtil.isNotEmpty(onDuty)) {
-                    teamPortraitDTO.setStaffOnDuty(CollUtil.join(onDuty,","));
+                    teamPortraitDTO.setStaffOnDuty(CollUtil.join(onDuty, ","));
                 }
 
                 Date[] timeByType = getTimeByType(String.valueOf(type));
                 if (timeByType.length > 0) {
                     //获取一周内的班组平均维修响应时间
-                    List<RepairRecordDetailDTO> repairDuration = bigScreenPlanMapper.getRepairDuration(userList,timeByType[0],timeByType[1]);
+                    List<RepairRecordDetailDTO> repairDuration = bigScreenPlanMapper.getRepairDuration(userList, timeByType[0], timeByType[1]);
                     long l = 0;
                     for (RepairRecordDetailDTO repairRecordDetailDTO : repairDuration) {
                         // 响应时长： 接收到任务，开始维修时长
@@ -451,12 +459,12 @@ public class BigscreenPlanService {
                         Date time = repairRecordDetailDTO.getEndTime();
                         if (Objects.nonNull(startTime) && Objects.nonNull(receviceTime)) {
                             long between = DateUtil.between(receviceTime, startTime, DateUnit.MINUTE);
-                            between = between == 0 ? 1: between;
+                            between = between == 0 ? 1 : between;
                             l = l + between;
                         }
                         if (Objects.nonNull(startTime) && Objects.nonNull(time)) {
                             long between = DateUtil.between(time, startTime, DateUnit.MINUTE);
-                            between = between == 0 ? 1: between;
+                            between = between == 0 ? 1 : between;
                             l = l + between;
                         }
                     }
@@ -501,7 +509,6 @@ public class BigscreenPlanService {
                 }
             }
         }
-
 
 
         return teamPortraitDTOS;
