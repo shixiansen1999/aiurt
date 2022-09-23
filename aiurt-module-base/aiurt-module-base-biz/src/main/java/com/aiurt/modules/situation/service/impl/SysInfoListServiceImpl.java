@@ -9,6 +9,7 @@ import com.aiurt.modules.situation.service.SysInfoListService;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.apache.commons.beanutils.PropertyUtils;
+import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.query.QueryGenerator;
 import org.jeecg.common.system.vo.LoginUser;
@@ -48,8 +49,8 @@ public class SysInfoListServiceImpl extends ServiceImpl<SysInfoListMapper, SysAn
 
         // Step.1 组装查询条件
         QueryWrapper<SysAnnouncement> queryWrapper = QueryGenerator.initQueryWrapper(sysAnnouncement, request.getParameterMap());
-        //LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        LoginUser sysUser = iSysBaseAPI.getUserByName("admin");
+        LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+
         // Step.2 获取导出数据
         List<SysAnnouncement> pageList = this.list(queryWrapper);
         List<SysAnnouncement> exportList = null;
