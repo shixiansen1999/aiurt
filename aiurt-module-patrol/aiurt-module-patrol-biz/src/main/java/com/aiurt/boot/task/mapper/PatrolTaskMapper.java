@@ -1,5 +1,6 @@
 package com.aiurt.boot.task.mapper;
 
+import com.aiurt.boot.report.model.FailureOrgReport;
 import com.aiurt.boot.report.model.FailureReport;
 import com.aiurt.boot.report.model.PatrolReport;
 import com.aiurt.boot.report.model.PatrolReportModel;
@@ -273,7 +274,6 @@ public interface PatrolTaskMapper extends BaseMapper<PatrolTask> {
     List<PatrolReport> getReportOmitList(@Param("condition")PatrolReportModel omitModel);
     /**
      * 报表统计-故障列表
-     * @param page
      * @param id
      * @param lineCode
      * @param stationCode
@@ -281,7 +281,7 @@ public interface PatrolTaskMapper extends BaseMapper<PatrolTask> {
      * @param endTime
      * @return
      */
-    IPage<FailureReport> getFailureReport(Page<FailureReport> page,@Param("id")String id,@Param("lineCode") String lineCode,@Param("stationCode") String stationCode,@Param("startTime") String startTime, @Param("endTime")String endTime);
+    List<FailureReport> getFailureReport(@Param("id")String id,@Param("lineCode") String lineCode,@Param("stationCode") String stationCode,@Param("startTime") String startTime, @Param("endTime")String endTime);
 
     /**
      * 查询数量
@@ -316,7 +316,6 @@ public interface PatrolTaskMapper extends BaseMapper<PatrolTask> {
 
     /**
      *查询班组报表
-     * @param page
      * @param ids
      * @param lineCode
      * @param stationCode
@@ -325,7 +324,7 @@ public interface PatrolTaskMapper extends BaseMapper<PatrolTask> {
      * @param systemCode
      * @return
      */
-    IPage<FailureReport> getOrgReport(Page<FailureReport> page, @Param("ids")List<String> ids,@Param("lineCode") String lineCode,@Param("stationCode") String stationCode,@Param("startTime") String startTime, @Param("endTime")String endTime,@Param("systemCode") String systemCode);
+    List<FailureOrgReport> getOrgReport(@Param("ids")List<String> ids, @Param("lineCode") String lineCode, @Param("stationCode") String stationCode, @Param("startTime") String startTime, @Param("endTime")String endTime, @Param("systemCode") String systemCode);
 
     /**
      * 查询班组时间

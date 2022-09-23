@@ -1,10 +1,12 @@
 package com.aiurt.boot.report.service;
 
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.NumberUtil;
 import cn.hutool.core.util.ObjectUtil;
+import com.aiurt.boot.report.model.FailureOrgReport;
 import com.aiurt.boot.report.model.FailureReport;
 import com.aiurt.boot.report.model.PatrolReport;
 import com.aiurt.boot.report.model.PatrolReportModel;
@@ -22,6 +24,7 @@ import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.LoginUser;
 import org.jeecg.common.system.vo.SysDepartModel;
 import org.jeecgframework.poi.excel.def.NormalExcelConstants;
+import org.jeecgframework.poi.excel.entity.ExportParams;
 import org.jeecgframework.poi.excel.view.JeecgEntityExcelView;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,6 +34,7 @@ import org.springframework.web.servlet.ModelAndView;
 import javax.servlet.http.HttpServletRequest;
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
@@ -248,16 +252,16 @@ public class PatrolReportService {
         }
         return mv;
     }
-    public IPage<FailureReport> getFailureReport(Page<FailureReport> page,String lineCode,String stationCode,String startTime,String endTime) {
+    public List<FailureReport> getFailureReport(String lineCode,String stationCode,String startTime,String endTime) {
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         SimpleDateFormat mm= new SimpleDateFormat("yyyy-MM");
         if (ObjectUtil.isEmpty(startTime) && ObjectUtil.isEmpty(endTime)){
             startTime = mm.format(new Date())+"-01"; endTime = mm.format(new Date())+"-31";
         }
-        IPage<FailureReport> failureReportIPage = patrolTaskMapper.getFailureReport(page,sysUser.getId(),lineCode,stationCode,startTime,endTime);
+        List<FailureReport> failureReportIPage = patrolTaskMapper.getFailureReport(sysUser.getId(),lineCode,stationCode,startTime,endTime);
         String finalStartTime = startTime;
         String finalEndTime = endTime;
-        failureReportIPage.getRecords().forEach(f->{
+        failureReportIPage.forEach(f->{
             if (f.getLastMonthNum()!=0){
             double sub = NumberUtil.sub(f.getMonthNum(), f.getLastMonthNum());
             BigDecimal div = NumberUtil.div(sub,NumberUtil.round(f.getLastMonthNum(),2));
@@ -295,14 +299,14 @@ public class PatrolReportService {
         return monthDTOS;
     }
 
-    public IPage<FailureReport> getFailureOrgReport(Page<FailureReport> page, String lineCode, String stationCode, String startTime, String endTime, String systemCode) {
+    public List<FailureOrgReport> getFailureOrgReport(String lineCode, String stationCode, String startTime, String endTime, String systemCode) {
         LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         List<SysDepartModel> userSysDepart = sysBaseAPI.getUserSysDepart(user.getId());
         List<String> ids =userSysDepart.stream().map(SysDepartModel::getId).collect(Collectors.toList());
-        IPage<FailureReport> orgReport = patrolTaskMapper.getOrgReport(page,ids,lineCode,stationCode,startTime,endTime,systemCode);
+        List<FailureOrgReport> orgReport = patrolTaskMapper.getOrgReport(ids,lineCode,stationCode,startTime,endTime,systemCode);
         String finalStartTime = startTime;
         String finalEndTime = endTime;
-        orgReport.getRecords().forEach(f->{
+        orgReport.forEach(f->{
             if (f.getLastMonthNum()!=0){
                 double sub = NumberUtil.sub(f.getMonthNum(), f.getLastMonthNum());
                 BigDecimal div = NumberUtil.div(sub,NumberUtil.round(f.getLastMonthNum(),2));
@@ -327,5 +331,46 @@ public class PatrolReportService {
         return orgReport;
     }
 
-
+    /**
+     * 子系统故障列表报表导出
+     *
+     * @param request
+     * @return
+     */
+    public ModelAndView reportSystemExport(HttpServletRequest request, String lineCode, String stationCode, String startTime, String endTime) {
+        ModelAndView mv = new ModelAndView(new JeecgEntityExcelView());
+        List<FailureReport> failureReportList = this.getFailureReport(lineCode,stationCode,startTime,endTime);
+        if (CollectionUtil.isNotEmpty(failureReportList)) {
+            //导出文件名称
+            mv.addObject(NormalExcelConstants.FILE_NAME, "子系统故障报表");
+            //excel注解对象Class
+            mv.addObject(NormalExcelConstants.CLASS, FailureReport.class);
+            //自定义表格参数
+            mv.addObject(NormalExcelConstants.PARAMS, new ExportParams("统计分析-子系统故障报表", "子系统故障报表"));
+            //导出数据列表
+            mv.addObject(NormalExcelConstants.DATA_LIST, failureReportList);
+        }
+        return mv;
+    }
+    /**
+     * 班组故障列表报表导出
+     *
+     * @param request
+     * @return
+     */
+    public ModelAndView reportOrgExport(HttpServletRequest request, String lineCode, String stationCode, String startTime, String endTime, String systemCode) {
+        ModelAndView mv = new ModelAndView(new JeecgEntityExcelView());
+        List<FailureOrgReport> failureOrgReport = this.getFailureOrgReport(lineCode,stationCode,startTime,endTime,systemCode);
+        if (CollectionUtil.isNotEmpty(failureOrgReport)) {
+            //导出文件名称
+            mv.addObject(NormalExcelConstants.FILE_NAME, "班组故障报表");
+            //excel注解对象Class
+            mv.addObject(NormalExcelConstants.CLASS, FailureOrgReport.class);
+            //自定义表格参数
+            mv.addObject(NormalExcelConstants.PARAMS, new ExportParams("统计分析-班组故障报表", "班组故障报表"));
+            //导出数据列表
+            mv.addObject(NormalExcelConstants.DATA_LIST, failureOrgReport);
+        }
+        return mv;
+    }
 }

@@ -844,8 +844,9 @@ GROUP BY
           AND a.id in(select system_id from cs_user_subsystem where user_id = #{id})
         GROUP BY  a.system_name
     </select>
-    <select id="getOrgReport" resultType="com.aiurt.boot.report.model.FailureReport">
+    <select id="getOrgReport" resultType="com.aiurt.boot.report.model.FailureOrgReport">
         SELECT
+            a.id,
             a.depart_name as orgName,
             a.org_code,
             count( c.id) AS failureNum,

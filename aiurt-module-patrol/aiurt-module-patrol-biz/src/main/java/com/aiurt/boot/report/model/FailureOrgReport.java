@@ -11,9 +11,9 @@ import org.jeecgframework.poi.excel.annotation.Excel;
 /**
  * @projectName: aiurt-platform
  * @package: com.aiurt.boot.report.model
- * @className: FailureReport
+ * @className: FailureOrgReport
  * @author: life-0
- * @date: 2022/9/19 15:48
+ * @date: 2022/9/23 10:55
  * @description: TODO
  * @version: 1.0
  */
@@ -21,16 +21,17 @@ import org.jeecgframework.poi.excel.annotation.Excel;
 @NoArgsConstructor
 @AllArgsConstructor
 @Accessors(chain = true)
-@ApiModel(value = "FailureReport", description = "统计报表-故障列表-子系统维度")
-public class FailureReport {
+@ApiModel(value = "FailureOrgReport", description = "统计报表-故障列表-班组维度")
+public class FailureOrgReport {
     private String id;
-
     /**
-     * 子系统名称
+     * 班组名称
      */
-    @ApiModelProperty(value = "子系统名称")
-    @Excel(name = "子系统名称", width = 15)
-    private String systemName;
+    @ApiModelProperty(value = "班组名称")
+    @Excel(name = "班组", width = 15)
+    private String orgName;
+    private String orgCode;
+
 
     private String code;
     /**

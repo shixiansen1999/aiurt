@@ -1,5 +1,6 @@
 package com.aiurt.boot.report.controller;
 
+import com.aiurt.boot.report.model.FailureOrgReport;
 import com.aiurt.boot.report.model.FailureReport;
 import com.aiurt.boot.report.model.PatrolReport;
 import com.aiurt.boot.report.model.PatrolReportModel;
@@ -57,15 +58,13 @@ public class PatrolReportController {
     @AutoLog(value = "统计报表-子系统故障列表", operateType = 1, operateTypeAlias = "查询")
     @ApiOperation(value = "统计报表-子系统故障列表", notes = "统计报表-子系统故障列表")
     @RequestMapping(value = "/failureReport", method = {RequestMethod.GET, RequestMethod.POST})
-    public Result<IPage<FailureReport>> getFailureReport(@RequestParam(name = "lineCode",required = false) String lineCode,
+    public Result<List<FailureReport>> getFailureReport(@RequestParam(name = "lineCode",required = false) String lineCode,
                                                          @RequestParam(name = "stationCode",required = false) String stationCode,
                                                          @RequestParam(name = "startTime",required = false) String startTime,
                                                          @RequestParam(name = "endTime",required = false) String endTime,
-                                                         @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
-                                                         @RequestParam(name="pageSize", defaultValue="10") Integer pageSize, HttpServletRequest req) {
+                                                         HttpServletRequest req) {
 
-        Page<FailureReport> page = new Page<>(pageNo, pageSize);
-        IPage<FailureReport> pages = reportService.getFailureReport(page,lineCode,stationCode,startTime,endTime);
+        List<FailureReport> pages = reportService.getFailureReport(lineCode,stationCode,startTime,endTime);
         return Result.ok(pages);
     }
     /**
@@ -103,16 +102,13 @@ public class PatrolReportController {
     @AutoLog(value = "统计报表-班组故障列表", operateType = 1, operateTypeAlias = "查询")
     @ApiOperation(value = "统计报表-班组故障列表", notes = "统计报表-班组故障列表")
     @RequestMapping(value = "/failureOrgReport", method = {RequestMethod.GET})
-    public Result<IPage<FailureReport>> getFailureOrgReport(@RequestParam(name = "lineCode",required = false) String lineCode,
-                                                         @RequestParam(name = "stationCode",required = false) String stationCode,
-                                                         @RequestParam(name = "systemCode",required = false) String systemCode,
-                                                         @RequestParam(name = "startTime",required = false) String startTime,
-                                                         @RequestParam(name = "endTime",required = false) String endTime,
-                                                         @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
-                                                         @RequestParam(name="pageSize", defaultValue="10") Integer pageSize, HttpServletRequest req) {
-
-        Page<FailureReport> page = new Page<>(pageNo, pageSize);
-        IPage<FailureReport> pages = reportService.getFailureOrgReport(page,lineCode,stationCode,startTime,endTime,systemCode);
+    public Result<List<FailureOrgReport>> getFailureOrgReport(@RequestParam(name = "lineCode",required = false) String lineCode,
+                                                               @RequestParam(name = "stationCode",required = false) String stationCode,
+                                                               @RequestParam(name = "systemCode",required = false) String systemCode,
+                                                               @RequestParam(name = "startTime",required = false) String startTime,
+                                                               @RequestParam(name = "endTime",required = false) String endTime,
+                                                                HttpServletRequest req) {
+        List<FailureOrgReport> pages = reportService.getFailureOrgReport(lineCode,stationCode,startTime,endTime,systemCode);
         return Result.ok(pages);
     }
 
@@ -126,5 +122,39 @@ public class PatrolReportController {
     @GetMapping(value = "/reportExport")
     public ModelAndView export(HttpServletRequest request, PatrolReportModel reportReqVO) {
         return reportService.reportExport(request, reportReqVO);
+    }
+    /**
+     * 统计分析-子系统故障列表导出
+     *
+     * @param request
+     * @return
+     */
+    @AutoLog(value = "统计报表-子系统故障列表导出", operateType = 6, operateTypeAlias = "导出")
+    @ApiOperation(value = "统计报表-子系统故障列表导出", notes = "统计报表-子系统故障列表导出")
+    @GetMapping(value = "/reportSystemExport")
+    public ModelAndView reportExport(HttpServletRequest request,
+                                     @RequestParam(name = "lineCode",required = false) String lineCode,
+                                     @RequestParam(name = "stationCode",required = false) String stationCode,
+                                     @RequestParam(name = "startTime",required = false) String startTime,
+                                     @RequestParam(name = "endTime",required = false) String endTime) {
+        return reportService.reportSystemExport(request,lineCode,stationCode,startTime,endTime);
+    }
+        /**
+         * 统计分析-班组故障报表导出
+         *
+         * @param request
+         * @return
+         */
+        @AutoLog(value = "统计报表-班组故障报表导出", operateType = 6, operateTypeAlias = "导出")
+        @ApiOperation(value = "统计报表-子系统故障列表导出", notes = "统计报表-子系统故障列表导出")
+        @GetMapping(value = "/reportOrgExport")
+        public ModelAndView reportOrgExport(HttpServletRequest request,
+                                            @RequestParam(name = "lineCode",required = false) String lineCode,
+                                            @RequestParam(name = "stationCode",required = false) String stationCode,
+                                            @RequestParam(name = "systemCode",required = false) String systemCode,
+                                            @RequestParam(name = "startTime",required = false) String startTime,
+                                            @RequestParam(name = "endTime",required = false) String endTime) {
+            return reportService.reportOrgExport(request,lineCode,stationCode,startTime,endTime,systemCode);
+
     }
 }
