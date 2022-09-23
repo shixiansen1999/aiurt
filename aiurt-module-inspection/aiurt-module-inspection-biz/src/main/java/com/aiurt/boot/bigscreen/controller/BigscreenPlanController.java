@@ -111,7 +111,10 @@ public class BigscreenPlanController {
     @AutoLog(value = "班组画像", operateType = 1, operateTypeAlias = "查询", permissionUrl = "")
     @ApiOperation(value = "班组画像", notes = "班组画像")
     @RequestMapping(value = "/getTeamPortrait", method = RequestMethod.GET)
-    public Result<List<TeamPortraitDTO>> getTeamPortrait(@ApiParam(name = "type", value = "类型:1：本周，2：上周，3：本月， 4：上月", defaultValue = "1") @RequestParam("type") Integer type) {
+    public Result<List<TeamPortraitDTO>> getTeamPortrait(@ApiParam(name = "type", value = "类型:1：本周，2：上周，3：本月， 4：上月", defaultValue = "1") @RequestParam(value = "type", required = false) Integer type) {
+        if (type == null) {
+            type = 1;
+        }
         List<TeamPortraitDTO> result = bigscreenPlanService.getTeamPortrait(type);
         return Result.OK(result);
     }
@@ -125,10 +128,13 @@ public class BigscreenPlanController {
     @AutoLog(value = "班组画像详情", operateType = 1, operateTypeAlias = "查询", permissionUrl = "")
     @ApiOperation(value = "班组画像详情", notes = "班组画像详情")
     @RequestMapping(value = "/getTeamPortraitDetails", method = RequestMethod.GET)
-    public Result<IPage<TeamUserDTO>> getTeamPortraitDetails(@ApiParam(name = "type", value = "类型:1：本周，2：上周，3：本月， 4：上月", defaultValue = "1") @RequestParam("type") Integer type,
+    public Result<IPage<TeamUserDTO>> getTeamPortraitDetails(@ApiParam(name = "type", value = "类型:1：本周，2：上周，3：本月， 4：上月", defaultValue = "1") @RequestParam(value = "type",required = false) Integer type,
                                                                     @ApiParam(name = "teamId", value = "班组id") @RequestParam("teamId") String teamId,
                                                                     @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
                                                                     @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize) {
+        if (type == null) {
+            type = 1;
+        }
         IPage<TeamUserDTO> teamPortraitDetails = bigscreenPlanService.getTeamPortraitDetails(type, teamId, pageNo, pageSize);
         return Result.OK(teamPortraitDetails);
     }

@@ -183,10 +183,10 @@
     <select id="getYearFault" resultType="java.lang.Integer">
         select count(*) from fault where 1=1
         <if test="condition.firstDay != null and condition.firstDay != ''">
-            and DATE_FORMAT(create_time ,'%Y-%m-%d') &gt;= DATE_FORMAT(#{condition.firstDay},'%Y-%m-%d')
+            and DATE_FORMAT(approval_pass_time ,'%Y-%m-%d') &gt;= DATE_FORMAT(#{condition.firstDay},'%Y-%m-%d')
         </if>
         <if test="condition.lastDay != null and condition.lastDay != ''">
-            and DATE_FORMAT(create_time ,'%Y-%m-%d') &lt;= DATE_FORMAT(#{condition.lastDay},'%Y-%m-%d')
+            and DATE_FORMAT(approval_pass_time ,'%Y-%m-%d') &lt;= DATE_FORMAT(#{condition.lastDay},'%Y-%m-%d')
         </if>
         <if test="condition.lineCode != null">
             and line_code  = #{condition.lineCode}

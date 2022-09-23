@@ -18,7 +18,6 @@ import com.aiurt.modules.largescream.model.FaultScreenModule;
 import com.aiurt.modules.largescream.util.FaultLargeDateUtil;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.DictModel;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -332,25 +331,26 @@ public class FaultInformationService {
         //总数
         Integer yearFault = faultInformationMapper.getYearFault(faultDataStatisticsDTO);
         if (yearFault != 0) {
+            BigDecimal total = new BigDecimal(yearFault);
             //自检数量
             faultDataStatisticsDTO.setFaultModeCode(FaultConstant.FAULT_MODE_CODE_0);
-            Integer selfCheckFaultNum = faultInformationMapper.getYearFault(faultDataStatisticsDTO);
-            BigDecimal decimal1 = new BigDecimal((selfCheckFaultNum / yearFault) * 100).setScale(1, BigDecimal.ROUND_HALF_UP);
-            faultDataStatisticsDTO.setSelfCheckFaultNum(decimal1);
+            BigDecimal selfCheckFault= new BigDecimal(faultInformationMapper.getYearFault(faultDataStatisticsDTO));
+            BigDecimal selfCheckFaultNum = selfCheckFault.divide(total, 3, BigDecimal.ROUND_HALF_UP);
+            faultDataStatisticsDTO.setSelfCheckFaultNum(selfCheckFaultNum.multiply(new BigDecimal(100)));
             //报修数量
-            Integer repairFaultNum = yearFault - selfCheckFaultNum;
-            BigDecimal decimal2 = new BigDecimal((repairFaultNum / yearFault) * 100).setScale(1, BigDecimal.ROUND_HALF_UP);
-            faultDataStatisticsDTO.setRepairFaultNum(decimal2);
+            BigDecimal repairFault = total.subtract(selfCheckFault);
+            BigDecimal repairFaultNum = repairFault.divide(total, 3, BigDecimal.ROUND_HALF_UP);
+            faultDataStatisticsDTO.setRepairFaultNum(repairFaultNum.multiply(new BigDecimal(100)));
             //已完成数量
             faultDataStatisticsDTO.setFaultModeCode(null);
             faultDataStatisticsDTO.setStatus(FaultStatusEnum.Close.getStatus());
-            Integer completedFaultNum = faultInformationMapper.getYearFault(faultDataStatisticsDTO);
-            BigDecimal decimal3 = new BigDecimal((completedFaultNum / yearFault) * 100).setScale(1, BigDecimal.ROUND_HALF_UP);
-            faultDataStatisticsDTO.setCompletedFaultNum(decimal3);
+            BigDecimal completedFault = new BigDecimal(faultInformationMapper.getYearFault(faultDataStatisticsDTO));
+            BigDecimal completedFaultNum =  completedFault.divide(total, 3, BigDecimal.ROUND_HALF_UP);
+            faultDataStatisticsDTO.setCompletedFaultNum(completedFaultNum.multiply(new BigDecimal(100)));
             //未完成数量
-            Integer undoneFaultNum = yearFault - completedFaultNum;
-            BigDecimal decimal4 = new BigDecimal((undoneFaultNum / yearFault) * 100).setScale(1, BigDecimal.ROUND_HALF_UP);
-            faultDataStatisticsDTO.setUndoneFaultNum(decimal4);
+            BigDecimal undoneFault = total.subtract(completedFault);
+            BigDecimal undoneFaultNum = undoneFault.divide(total, 3, BigDecimal.ROUND_HALF_UP);
+            faultDataStatisticsDTO.setUndoneFaultNum(undoneFaultNum.multiply(new BigDecimal(100)));
         } else {
             faultDataStatisticsDTO.setSelfCheckFaultNum(new BigDecimal(0));
             faultDataStatisticsDTO.setRepairFaultNum(new BigDecimal(0));
