@@ -758,6 +758,7 @@ public class ThirdAppWechatEnterpriseServiceImpl implements IThirdAppService {
         }
         Text text = new Text();
         text.setMsgtype("text");
+        // 系统的用户与企业微信的用户处理-sys_third_account
         text.setTouser(this.getTouser(message.getToUser(), message.getToAll()));
         TextEntity entity = new TextEntity();
         entity.setContent(message.getContent());
