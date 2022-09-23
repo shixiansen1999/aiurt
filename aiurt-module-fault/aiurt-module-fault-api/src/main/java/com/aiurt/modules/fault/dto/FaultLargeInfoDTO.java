@@ -3,7 +3,9 @@ package com.aiurt.modules.fault.dto;
 import com.aiurt.common.aspect.annotation.Dict;
 import com.aiurt.common.aspect.annotation.SystemFilterColumn;
 import com.aiurt.modules.basic.entity.DictEntity;
+import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableId;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
@@ -29,6 +31,10 @@ import java.util.Date;
 @Accessors(chain = true)
 public class FaultLargeInfoDTO extends DictEntity {
     private static final long serialVersionUID = 1L;
+    /**主键*/
+    @TableId(type = IdType.ASSIGN_ID)
+    @ApiModelProperty(value = "主键")
+    private String id;
 
     /**专业子系统编码*/
     @ApiModelProperty(value = "专业子系统编码")
