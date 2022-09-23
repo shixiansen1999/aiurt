@@ -20,6 +20,7 @@ import com.aiurt.boot.task.entity.RepairTaskUser;
 import com.aiurt.boot.task.mapper.RepairTaskMapper;
 import com.aiurt.boot.task.mapper.RepairTaskUserMapper;
 import com.aiurt.common.constant.CommonConstant;
+import com.aiurt.modules.api.DailyFaultApi;
 import com.aiurt.modules.fault.dto.RepairRecordDetailDTO;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -62,6 +63,9 @@ public class BigscreenPlanService {
 
     @Resource
     private PatrolApi patrolApi;
+
+    @Resource
+    private DailyFaultApi dailyFaultApi;
 
     /**
      * 获取大屏的检修概况数量
@@ -477,41 +481,55 @@ public class BigscreenPlanService {
                     } else {
                         teamPortraitDTO.setAverageTime("0");
                     }
-
-                    //获取维修工时
-
-                    //获取巡检工时
-                    Map<String, BigDecimal> patrolUserHours = patrolApi.getPatrolUserHours(type, teamPortraitDTO.getTeamId());
-                    if (CollUtil.isNotEmpty(patrolUserHours)) {
-                        BigDecimal sum = new BigDecimal("0.00");
-                        for (Map.Entry<String, BigDecimal> vo : patrolUserHours.entrySet()) {
-                            BigDecimal value = vo.getValue();
-                            sum = sum.add(value);
-                        }
-                        teamPortraitDTO.setPatrolTotalTime(sum.setScale(0, BigDecimal.ROUND_HALF_UP));
-                    } else {
-                        teamPortraitDTO.setPatrolTotalTime(new BigDecimal(0));
-                    }
-
-
-                    //获取所有检修任务人员总工时和所有同行人总工时
-                    Long faultTotalTime1 = bigScreenPlanMapper.getInspecitonTotalTime(userList, timeByType[0], timeByType[1]);
-                    Long faultTotalTime2 = bigScreenPlanMapper.getInspecitonTotalTimeByPeer(userList, timeByType[0], timeByType[1]);
-                    long time = 0L;
-                    if (faultTotalTime1 != null) {
-                         time = time + faultTotalTime1;
-                    }
-                     if (faultTotalTime2 != null) {
-                         time = time + faultTotalTime2;
-                    }
-                    BigDecimal decimal = new BigDecimal(1.0 * time / 3600).setScale(0, BigDecimal.ROUND_HALF_UP);
-                    teamPortraitDTO.setInspecitonTotalTime(decimal);
+                    //获取总工时
+                    getTotalTimes(teamPortraitDTO,userList,type,timeByType);
                 }
             }
         }
-
-
         return teamPortraitDTOS;
+    }
+
+    public void getTotalTimes(TeamPortraitDTO teamPortraitDTO,List<LoginUser> userList,Integer type, Date[] timeByType) {
+        //获取维修工时
+        Map<String, BigDecimal> faultUserHours = dailyFaultApi.getFaultUserHours(type, teamPortraitDTO.getTeamId());
+        if (CollUtil.isNotEmpty(faultUserHours)) {
+            BigDecimal sum = new BigDecimal("0.00");
+            for (Map.Entry<String, BigDecimal> vo : faultUserHours.entrySet()) {
+                BigDecimal value = vo.getValue();
+                sum = sum.add(value);
+            }
+            teamPortraitDTO.setFaultTotalTime(sum.setScale(0, BigDecimal.ROUND_HALF_UP));
+        } else {
+            teamPortraitDTO.setFaultTotalTime(new BigDecimal(0));
+        }
+
+
+        //获取巡检工时
+        Map<String, BigDecimal> patrolUserHours = patrolApi.getPatrolUserHours(type, teamPortraitDTO.getTeamId());
+        if (CollUtil.isNotEmpty(patrolUserHours)) {
+            BigDecimal sum = new BigDecimal("0.00");
+            for (Map.Entry<String, BigDecimal> vo : patrolUserHours.entrySet()) {
+                BigDecimal value = vo.getValue();
+                sum = sum.add(value);
+            }
+            teamPortraitDTO.setPatrolTotalTime(sum.setScale(0, BigDecimal.ROUND_HALF_UP));
+        } else {
+            teamPortraitDTO.setPatrolTotalTime(new BigDecimal(0));
+        }
+
+
+        //获取所有检修任务人员总工时和所有同行人总工时
+        Long faultTotalTime1 = bigScreenPlanMapper.getInspecitonTotalTime(userList, timeByType[0], timeByType[1]);
+        Long faultTotalTime2 = bigScreenPlanMapper.getInspecitonTotalTimeByPeer(userList, timeByType[0], timeByType[1]);
+        long time = 0L;
+        if (faultTotalTime1 != null) {
+             time = time + faultTotalTime1;
+        }
+         if (faultTotalTime2 != null) {
+             time = time + faultTotalTime2;
+        }
+        BigDecimal decimal = new BigDecimal(1.0 * time / 3600).setScale(0, BigDecimal.ROUND_HALF_UP);
+        teamPortraitDTO.setInspecitonTotalTime(decimal);
     }
 
     /**
@@ -569,59 +587,66 @@ public class BigscreenPlanService {
         List<TeamUserDTO> userList = bigScreenPlanMapper.getUserList(page, teamId);
 
         if (CollUtil.isNotEmpty(userList)) {
-
-            //获取巡检任务人员个人总工时和同行人个人总工时
-            Map<String, BigDecimal> patrolUserHours = patrolApi.getPatrolUserHours(type, teamId);
-            //获取检修任务人员个人总工时和同行人个人总工时
-            Map<String, BigDecimal> map = new HashMap<>();
-            Date[] timeByType = getTimeByType(String.valueOf(type));
-            Map<String, Long> collect1 = new HashMap<>();
-            Map<String, Long> collect2 = new HashMap<>();
-
-            if (timeByType.length > 0) {
-                List<TeamUserDTO> reconditionTime = bigScreenPlanMapper.getReconditionTime(userList, timeByType[0], timeByType[1]);
-                List<TeamUserDTO> reconditionTimeByPeer = bigScreenPlanMapper.getReconditionTimeByPeer(userList, timeByType[0], timeByType[1]);
-                collect1 = reconditionTime.stream().collect(Collectors.toMap(TeamUserDTO::getUserId,
-                        v -> ObjectUtil.isEmpty(v.getInspecitonTotalTime()) ? 0L : v.getInspecitonTotalTime(), (a, b) -> a));
-
-                collect2 = reconditionTimeByPeer.stream().collect(Collectors.toMap(TeamUserDTO::getUserId,
-                        v -> ObjectUtil.isEmpty(v.getInspecitonTotalTime()) ? 0L : v.getInspecitonTotalTime(), (a, b) -> a));
-
-            }
-
-            for (TeamUserDTO teamUserDTO : userList) {
-                //获取工作年限
-                Date workingTime = teamUserDTO.getWorkingTime();
-                LocalDate startDate = workingTime.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-                Date date = DateUtil.date();
-                LocalDate endDate = date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-                Period p = Period.between(startDate, endDate);
-                teamUserDTO.setWorkingYears(p.getYears() +"年"+p.getMonths()+"个月");
-                //获取维修总工时
-
-                //获取检修总工时
-                Long hours = collect1.get(teamUserDTO.getUserId());
-                Long peerHours = collect2.get(teamUserDTO.getUserId());
-                long time = 0L;
-                if (hours != null) {
-                    time = time + hours;
-                }
-                if (peerHours != null) {
-                    time = time + peerHours;
-                }
-                BigDecimal decimal = new BigDecimal(1.0 * time / 3600).setScale(0, BigDecimal.ROUND_HALF_UP);
-                teamUserDTO.setFaultTotalTime(decimal);
-
-                //获取巡检总工时
-                BigDecimal bigDecimal = patrolUserHours.get(teamUserDTO.getUserId());
-                teamUserDTO.setPatrolTotalTime(bigDecimal);
-
-            }
+            //获取每个班组成员的总工时
+            getEveryOneTotalTimes(userList, type, teamId);
         }
         page.setRecords(userList);
         teamWorkingHourDTO.setTeamUserDTOS(page);
         return teamWorkingHourDTO;
     }
 
+    public void getEveryOneTotalTimes(List<TeamUserDTO> userList,Integer type,String teamId) {
+        //获取维修任务人员个人个人总工时
+        Map<String, BigDecimal> faultUserHours = dailyFaultApi.getFaultUserHours(type, teamId);
+        //获取巡检任务人员个人总工时和同行人个人总工时
+        Map<String, BigDecimal> patrolUserHours = patrolApi.getPatrolUserHours(type, teamId);
+        //获取检修任务人员个人总工时和同行人个人总工时
+        Date[] timeByType = getTimeByType(String.valueOf(type));
+        Map<String, Long> collect1 = new HashMap<>();
+        Map<String, Long> collect2 = new HashMap<>();
 
+        if (timeByType.length > 0) {
+            List<TeamUserDTO> reconditionTime = bigScreenPlanMapper.getReconditionTime(userList, timeByType[0], timeByType[1]);
+            List<TeamUserDTO> reconditionTimeByPeer = bigScreenPlanMapper.getReconditionTimeByPeer(userList, timeByType[0], timeByType[1]);
+            collect1 = reconditionTime.stream().collect(Collectors.toMap(TeamUserDTO::getUserId,
+                    v -> ObjectUtil.isEmpty(v.getTime()) ? 0L : v.getTime(), (a, b) -> a));
+
+            collect2 = reconditionTimeByPeer.stream().collect(Collectors.toMap(TeamUserDTO::getUserId,
+                    v -> ObjectUtil.isEmpty(v.getTime()) ? 0L : v.getTime(), (a, b) -> a));
+
+        }
+
+        for (TeamUserDTO teamUserDTO : userList) {
+            //获取个人工作年限
+            Date workingTime = teamUserDTO.getWorkingTime();
+            if (ObjectUtil.isNotNull(workingTime)) {
+                LocalDate startDate = workingTime.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+                Date date = DateUtil.date();
+                LocalDate endDate = date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+                Period p = Period.between(startDate, endDate);
+                teamUserDTO.setWorkingYears(p.getYears() +"年"+p.getMonths()+"个月");
+            }
+
+            //获取维修个人总总工时
+            BigDecimal faultTotalTime = faultUserHours.get(teamUserDTO.getUserId());
+            teamUserDTO.setFaultTotalTime(faultTotalTime != null ? faultTotalTime : new BigDecimal("0"));
+            //获取检修个人总总工时
+            Long hours = collect1.get(teamUserDTO.getUserId());
+            Long peerHours = collect2.get(teamUserDTO.getUserId());
+            long time = 0L;
+            if (hours != null) {
+                time = time + hours;
+            }
+            if (peerHours != null) {
+                time = time + peerHours;
+            }
+            BigDecimal decimal = new BigDecimal(1.0 * time / 3600).setScale(2, BigDecimal.ROUND_HALF_UP);
+            teamUserDTO.setInspecitonTotalTime(decimal);
+
+            //获取巡检个人总总工时
+            BigDecimal patrolTotalTime = patrolUserHours.get(teamUserDTO.getUserId());
+            teamUserDTO.setPatrolTotalTime(patrolTotalTime != null ? patrolTotalTime : new BigDecimal("0"));
+
+        }
+    }
 }

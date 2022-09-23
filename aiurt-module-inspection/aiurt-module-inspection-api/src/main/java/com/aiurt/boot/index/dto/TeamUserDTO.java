@@ -38,7 +38,7 @@ public class TeamUserDTO {
     private String workingYears;
 
     @ApiModelProperty("检修总工时")
-    private Long inspecitonTotalTime;
+    private BigDecimal inspecitonTotalTime;
 
     @ApiModelProperty("巡检总工时")
     private BigDecimal patrolTotalTime;
@@ -51,4 +51,6 @@ public class TeamUserDTO {
     @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd")
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     private Date workingTime;
+
+    private Long time;
 }
