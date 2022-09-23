@@ -60,13 +60,19 @@ public class PositionPanelServiceImpl implements PositionPanelService {
 
     @Override
     public void edit(PositionPanel positionPanel) {
-        CsStation station = positionPanelMapper.getStation(positionPanel);
-        if (positionPanel.getWarningStatus() == null) {
-            positionPanel.setWarningStatus(station.getWarningStatus());
+        List<CsStation> stations = positionPanelMapper.getStation(positionPanel);
+        if (CollUtil.isNotEmpty(stations)) {
+            for (CsStation csStation : stations) {
+                if (positionPanel.getWarningStatus() == null) {
+                    positionPanel.setWarningStatus(csStation.getWarningStatus());
+                }
+                if (positionPanel.getOpenStatus() == null) {
+                    positionPanel.setOpenStatus(csStation.getOpenStatus());
+                }
+                positionPanel.setId(csStation.getId());
+                positionPanelMapper.edit(positionPanel);
+            }
         }
-        if (positionPanel.getOpenStatus() == null) {
-            positionPanel.setOpenStatus(station.getOpenStatus());
-        }
-        positionPanelMapper.edit(positionPanel);
+
     }
 }

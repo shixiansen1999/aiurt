@@ -58,10 +58,11 @@
     a.end_time
     from
     fault_repair_record a
+    LEFT JOIN fault f ON f.`code` = a.fault_code
     LEFT JOIN sys_user su on a.appoint_user_name = su.username
     where 1=1
-    AND  DATE_FORMAT(a.create_time ,'%Y-%m-%d') &gt;= DATE_FORMAT(#{beginDate},'%Y-%m-%d')
-    AND  DATE_FORMAT(a.create_time ,'%Y-%m-%d') &lt;= DATE_FORMAT(#{endDate},'%Y-%m-%d')
+    AND  DATE_FORMAT(f.approval_pass_time ,'%Y-%m-%d') &gt;= DATE_FORMAT(#{beginDate},'%Y-%m-%d')
+    AND  DATE_FORMAT(f.approval_pass_time ,'%Y-%m-%d') &lt;= DATE_FORMAT(#{endDate},'%Y-%m-%d')
     <if test="userList != null and userList.size() != 0">
         AND  su.id in
         <foreach collection="userList" item="item" index="index" open="(" close=")" separator=",">

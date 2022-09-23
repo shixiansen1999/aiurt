@@ -47,12 +47,12 @@ public interface PositionPanelMapper {
     void edit(@Param("positionPanel") PositionPanel positionPanel);
 
     /**
-     * 通过id查询站点信息
+     * 通过名字查询站点信息
      *
      * @param positionPanel
      * @return
      */
-    CsStation getStation(@Param("positionPanel") PositionPanel positionPanel);
+    List<CsStation> getStation(@Param("positionPanel") PositionPanel positionPanel);
 
     /**
      * 通过id查询班组人员信息

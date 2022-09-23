@@ -71,7 +71,7 @@
     FROM
     cs_station
     WHERE
-    id = #{positionPanel.id}
+    station_name = #{positionPanel.stationName}
     </select>
 
 <select id="getUserById" resultType="com.aiurt.modules.system.entity.SysUser">
