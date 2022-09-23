@@ -3,14 +3,10 @@ package com.aiurt.boot.overhaulstatistics.service;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.NumberUtil;
-import cn.hutool.core.util.ObjectUtil;
 import com.aiurt.boot.constant.InspectionConstant;
 import com.aiurt.boot.manager.InspectionManager;
 import com.aiurt.boot.task.dto.OverhaulStatisticsDTO;
 import com.aiurt.boot.task.mapper.RepairTaskMapper;
-import com.aiurt.modules.fault.constants.FaultConstant;
-import com.aiurt.modules.train.task.vo.ReportReqVO;
-import com.aiurt.modules.train.task.vo.ReportVO;
 import org.jeecgframework.poi.excel.def.NormalExcelConstants;
 import org.jeecgframework.poi.excel.entity.ExportParams;
 import org.jeecgframework.poi.excel.view.JeecgEntityExcelView;
@@ -120,8 +116,12 @@ public class OverhaulStatisticsService{
     private void getCompletionRate(OverhaulStatisticsDTO e, int size2) {
         double div = NumberUtil.div(size2, e.getTaskTotal().longValue());
         double i = div*100;
-        String string = NumberUtil.round(i, 0).toString();
-        e.setCompletionRate(string+"%");
+        if (i==0){
+            e.setCompletionRate("0");
+        }else {
+            String string = NumberUtil.round(i, 2).toString();
+            e.setCompletionRate(string);
+        }
         e.setLeakOverhaulNumber(0L);
         e.setAvgWeekNumber(0L);
         e.setAvgMonthNumber(0L);
