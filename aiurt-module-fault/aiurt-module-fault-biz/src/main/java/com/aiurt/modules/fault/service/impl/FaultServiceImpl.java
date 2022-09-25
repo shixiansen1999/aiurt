@@ -782,7 +782,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
                 malfunctionDTO.setDelFlag(0);
                 malfunctionList.add(malfunctionDTO);
 
-                //
+                // 报废记录
                 SparePartScrapDTO sparePartScrapDTO = new SparePartScrapDTO();
                 sparePartScrapDTO.setNumber("1");
                 sparePartScrapDTO.setMaterialCode("");
