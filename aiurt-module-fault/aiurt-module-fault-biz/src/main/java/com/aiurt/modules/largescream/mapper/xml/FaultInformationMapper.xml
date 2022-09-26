@@ -325,11 +325,18 @@
     </select>
 
     <select id="getSystemDeviceSum" resultType="com.aiurt.modules.fault.dto.FaultSystemDeviceSumDTO">
-        select cs.system_name,d.system_code,d.code,d.name,count(code) as deviceNumber
+        select cs.system_name,d.system_code,d.code,d.major_code,d.name,count(code) as deviceNumber
         from device d
         left join cs_subSystem cs on d.system_code = cs.system_code
-        where
+        <where>
             d.scrap_flag = 0
+            <if test="majors != null and majors.size>0 ">
+                and d.major_code in
+                <foreach collection="majors" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
         group by d.system_code
     </select>
 

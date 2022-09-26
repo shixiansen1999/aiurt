@@ -123,7 +123,7 @@ public interface FaultInformationMapper {
     List<FaultSystemTimeDTO> getLargeFaultTime(@Param("month") String month, @Param("lineCode") String lineCode,@Param("majors") List<String> majors);
 
     /**
-     * 按系统分类获取子系统下故障维修时长
+     * 按系统分类获取子系统下故障维修时长总数
      * @param startDate
      * @param endDate
      * @return
@@ -132,10 +132,10 @@ public interface FaultInformationMapper {
 
 
     /**
-     * 按系统分类获取子系统下设备使用年限
+     * 按系统分类获取专业下设备数
      * @return
      */
-    List<FaultSystemDeviceSumDTO> getSystemDeviceSum();
+    List<FaultSystemDeviceSumDTO> getSystemDeviceSum(@Param("majors") List<String> majors);
 
 
     /**
