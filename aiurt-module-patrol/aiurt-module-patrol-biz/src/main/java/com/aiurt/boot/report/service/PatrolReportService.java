@@ -12,6 +12,7 @@ import com.aiurt.boot.report.model.PatrolReport;
 import com.aiurt.boot.report.model.PatrolReportModel;
 import com.aiurt.boot.report.model.dto.LineOrStationDTO;
 import com.aiurt.boot.report.model.dto.MonthDTO;
+import com.aiurt.boot.report.utils.PatrolDateUtils;
 import com.aiurt.boot.screen.service.PatrolScreenService;
 import com.aiurt.boot.task.entity.PatrolTaskDevice;
 import com.aiurt.boot.task.mapper.PatrolTaskDeviceMapper;
@@ -267,7 +268,9 @@ public class PatrolReportService {
             return 0;
         }
         if (endTime == true) {
-            DateUtil.weekCount(new Date(), new Date());
+             boolean sameDate = PatrolDateUtils.isSameDate(start, end);
+             Integer weekNumber = PatrolDateUtils.countTwoDayWeek(start, end, sameDate);
+             return  weekNumber;
         }
         return 1;
     }
@@ -453,7 +456,10 @@ public class PatrolReportService {
         public List<LineOrStationDTO> selectLine () {
             LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
             List<LineOrStationDTO> line = patrolTaskMapper.selectLine(sysUser.getId());
-            return line;
+            List<LineOrStationDTO> list = line.stream()
+                    .collect(Collectors.collectingAndThen(Collectors.toCollection(
+                            () -> new TreeSet<>(Comparator.comparing(LineOrStationDTO::getCode))), ArrayList::new));
+            return list;
        }
         public List<LineOrStationDTO> selectSystem () {
             LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
