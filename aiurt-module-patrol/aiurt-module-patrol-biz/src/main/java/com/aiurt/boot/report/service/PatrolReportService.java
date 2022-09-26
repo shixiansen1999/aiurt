@@ -110,12 +110,12 @@ public class PatrolReportService {
         List<PatrolReport> avgMonthOmitList = patrolTaskMapper.getReportOmitList(avgMonthOmit);
         Integer faultNumber = 0;
         for (PatrolReport patrolReport : list) {
-            //计算完成率、巡检总数、未完成、完成数、异常任务数
+            //计算完成率、巡检总数、未完成、完成数、异常任务数、故障数量
             if (CollUtil.isNotEmpty(reportList)) {
                 for (PatrolReport d : reportList) {
                     List<String> taskIds = Arrays.asList(d.getTaskId().split(","));
                     if (CollUtil.isNotEmpty(taskIds)) {
-                        //计算异常数量
+                        //计算故障数量
                         for (String taskId : taskIds) {
                             List<PatrolTaskDevice> faultList = patrolTaskDeviceMapper.getFaultList(taskId);
                             if (faultList.size() > 0) {
@@ -191,7 +191,7 @@ public class PatrolReportService {
                                 String completionRated = String.format("%.2f", fave);
                                 patrolReport.setAmmPatrolNumber(completionRated);
                             } else {
-                                Integer weekNumber = getWeekNumber(startDate, endDate);
+                                long weekNumber = getMonthNumber(startDate, endDate);
                                 if (weekNumber == 0) {
                                     patrolReport.setAmmPatrolNumber("-");
                                 } else {
@@ -259,6 +259,11 @@ public class PatrolReportService {
         Date lastMonday = DateUtil.endOfMonth(lastDay);
         String thisOmitDate = DateUtil.format(lastYearFirstDay, "yyyy-MM-dd 00:00:00") + "~" + DateUtil.format(lastMonday, "yyyy-MM-dd 23:59:59");
         return thisOmitDate;
+    }
+    public long getMonthNumber(String startDate, String endDate) {
+        DateUtil.parse(startDate);
+        long between3 = DateUtil.betweenMonth( DateUtil.parse(startDate),  DateUtil.parse(endDate), false);
+        return between3;
     }
 
     public Integer getWeekNumber(String start, String end) {

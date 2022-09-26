@@ -128,7 +128,7 @@ public class PatrolDateUtils {
     }
 
     /**
-     * 比较两个日期：相等、之前、之后
+     * 比较两个日期：相等（0）、之前（1）、之后（2）
      * @param tagDateTime
      * @return
      */
