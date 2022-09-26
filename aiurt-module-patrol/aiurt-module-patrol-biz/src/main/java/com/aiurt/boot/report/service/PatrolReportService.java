@@ -10,6 +10,7 @@ import com.aiurt.boot.report.model.FailureOrgReport;
 import com.aiurt.boot.report.model.FailureReport;
 import com.aiurt.boot.report.model.PatrolReport;
 import com.aiurt.boot.report.model.PatrolReportModel;
+import com.aiurt.boot.report.model.dto.LineOrStationDTO;
 import com.aiurt.boot.report.model.dto.MonthDTO;
 import com.aiurt.boot.screen.service.PatrolScreenService;
 import com.aiurt.boot.task.entity.PatrolTaskDevice;
@@ -291,21 +292,31 @@ public class PatrolReportService {
             mv.addObject(NormalExcelConstants.PARAMS);
             //导出数据列表
             mv.addObject(NormalExcelConstants.DATA_LIST, reportData);
-
         }
         return mv;
     }
-
-    public List<FailureReport> getFailureReport(String lineCode, String stationCode, String startTime, String endTime) {
+     public List<FailureReport> getFailureReport(String lineCode, List<String> stationCode, String startTime, String endTime) {
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         SimpleDateFormat mm = new SimpleDateFormat("yyyy-MM");
         if (ObjectUtil.isEmpty(startTime) && ObjectUtil.isEmpty(endTime)) {
-            startTime = mm.format(new Date()) + "-01";
-            endTime = mm.format(new Date()) + "-31";
+            startTime = mm.format(new Date()) + "-01"; endTime = mm.format(new Date()) + "-31";
+        }
+        if (ObjectUtil.isNotEmpty(lineCode)&& CollectionUtil.isEmpty(stationCode)){
+            stationCode= this.selectStation(lineCode).stream().map(LineOrStationDTO::getCode).collect(Collectors.toList());
+        }else if (ObjectUtil.isEmpty(lineCode)&& CollectionUtil.isEmpty(stationCode)){
+            stationCode = this.selectStation(null).stream().map(LineOrStationDTO::getCode).collect(Collectors.toList());
         }
         List<FailureReport> failureReportIPage = patrolTaskMapper.getFailureReport(sysUser.getId(), lineCode, stationCode, startTime, endTime);
         String finalStartTime = startTime;
         String finalEndTime = endTime;
+           for (FailureReport failureReport : failureReportIPage) {
+            if (failureReport.getLastMonthNum() != 0) {
+        double sub = NumberUtil.sub(failureReport.getMonthNum(), failureReport.getLastMonthNum());
+        BigDecimal div = NumberUtil.div(sub, NumberUtil.round(failureReport.getLastMonthNum(), 2));
+        failureReport.setLastMonthStr(NumberUtil.round(NumberUtil.mul(div, 100), 2).toString() + "%");
+             } else {
+        failureReport.setLastMonthStr(NumberUtil.mul(NumberUtil.round(failureReport.getMonthNum(), 2), 100).toString() + "%");
+        List<String> finalStationCode = stationCode;
         failureReportIPage.forEach(f -> {
             if (f.getLastMonthNum() != 0) {
                 double sub = NumberUtil.sub(f.getMonthNum(), f.getLastMonthNum());
@@ -321,13 +332,16 @@ public class PatrolReportService {
             } else {
                 f.setLastYearStr(NumberUtil.mul(NumberUtil.round(f.getYearNum(), 2), 100).toString() + "%");
             }
-            List<Integer> num = patrolTaskMapper.selectNum(f.getCode(), null, lineCode, stationCode, finalStartTime, finalEndTime);
+            List<Integer> num = patrolTaskMapper.selectNum(f.getCode(), null, lineCode, finalStationCode, finalStartTime, finalEndTime);
             int s = num.stream().reduce(Integer::sum).orElse(0);
             f.setAverageResponse(f.getResolvedNum() == 0 ? 0 : s / f.getResolvedNum());
-            List<Integer> num1 = patrolTaskMapper.selectNum1(f.getCode(), null, lineCode, stationCode, finalStartTime, finalEndTime);
+            f.setAverageResponse(f.getResolvedNum() == 0 ? 0 : s / f.getResolvedNum());
+            List<Integer> num1 = patrolTaskMapper.selectNum1(f.getCode(), null, lineCode, finalStationCode, finalStartTime, finalEndTime);
             int s1 = num1.stream().reduce(Integer::sum).orElse(0);
             f.setAverageResolution(f.getResolvedNum() == 0 ? 0 : s1 / f.getResolvedNum());
         });
+    }
+}
         return failureReportIPage;
     }
 
@@ -336,7 +350,6 @@ public class PatrolReportService {
         List<MonthDTO> monthDTOS = patrolTaskMapper.selectMonth(sysUser.getId(), lineCode, stationCode);
         return monthDTOS;
     }
-
     public List<MonthDTO> getMonthOrgNum(String lineCode, String stationCode, String systemCode) {
         LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         List<SysDepartModel> userSysDepart = sysBaseAPI.getUserSysDepart(user.getId());
@@ -345,13 +358,26 @@ public class PatrolReportService {
         return monthDTOS;
     }
 
-    public List<FailureOrgReport> getFailureOrgReport(String lineCode, String stationCode, String startTime, String endTime, String systemCode) {
+    public List<FailureOrgReport> getFailureOrgReport(String lineCode, List<String> stationCode, String startTime, String endTime, List<String> systemCode) {
         LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         List<SysDepartModel> userSysDepart = sysBaseAPI.getUserSysDepart(user.getId());
-        List<String> ids = userSysDepart.stream().map(SysDepartModel::getId).collect(Collectors.toList());
-        List<FailureOrgReport> orgReport = patrolTaskMapper.getOrgReport(ids, lineCode, stationCode, startTime, endTime, systemCode);
+        List<String> ids =userSysDepart.stream().map(SysDepartModel::getId).collect(Collectors.toList());
+        SimpleDateFormat mm= new SimpleDateFormat("yyyy-MM");
+        if (ObjectUtil.isEmpty(startTime) && ObjectUtil.isEmpty(endTime)){
+            startTime = mm.format(new Date())+"-01"; endTime = mm.format(new Date())+"-31";
+        }
+        if (ObjectUtil.isNotEmpty(lineCode)&& CollectionUtil.isEmpty(stationCode)){
+            stationCode= this.selectStation(lineCode).stream().map(LineOrStationDTO::getCode).collect(Collectors.toList());
+        }else if (ObjectUtil.isEmpty(lineCode)&& CollectionUtil.isEmpty(stationCode)){
+            stationCode = this.selectStation(null).stream().map(LineOrStationDTO::getCode).collect(Collectors.toList());
+        }
+        if ( CollectionUtil.isEmpty(systemCode)){
+            systemCode = this.selectSystem().stream().map(LineOrStationDTO::getCode).collect(Collectors.toList());
+        }
+        List<FailureOrgReport> orgReport = patrolTaskMapper.getOrgReport(ids,lineCode,stationCode,startTime,endTime,systemCode);
         String finalStartTime = startTime;
         String finalEndTime = endTime;
+        List<String> finalStationCode = stationCode;
         orgReport.forEach(f -> {
             if (f.getLastMonthNum() != 0) {
                 double sub = NumberUtil.sub(f.getMonthNum(), f.getLastMonthNum());
@@ -367,23 +393,24 @@ public class PatrolReportService {
             } else {
                 f.setLastYearStr(NumberUtil.mul(NumberUtil.round(f.getYearNum(), 2), 100).toString() + "%");
             }
-            List<Integer> num = patrolTaskMapper.selectNum(null, f.getOrgCode(), lineCode, stationCode, finalStartTime, finalEndTime);
+            List<Integer> num = patrolTaskMapper.selectNum(null, f.getOrgCode(), lineCode, finalStationCode, finalStartTime, finalEndTime);
             int s = num.stream().reduce(Integer::sum).orElse(0);
             f.setAverageResponse(f.getResolvedNum() == 0 ? 0 : s / f.getResolvedNum());
-            List<Integer> num1 = patrolTaskMapper.selectNum1(null, f.getOrgCode(), lineCode, stationCode, finalStartTime, finalEndTime);
+            f.setAverageResponse(f.getResolvedNum() == 0 ? 0 : s / f.getResolvedNum());
+            List<Integer> num1 = patrolTaskMapper.selectNum1(null, f.getOrgCode(), lineCode, finalStationCode, finalStartTime, finalEndTime);
             int s1 = num1.stream().reduce(Integer::sum).orElse(0);
             f.setAverageResolution(f.getResolvedNum() == 0 ? 0 : s1 / f.getResolvedNum());
         });
-        return orgReport;
-    }
+                  return orgReport;
+            }
 
-    /**
-     * 子系统故障列表报表导出
-     *
-     * @param request
-     * @return
-     */
-    public ModelAndView reportSystemExport(HttpServletRequest request, String lineCode, String stationCode, String startTime, String endTime) {
+            /**
+             * 子系统故障列表报表导出
+             *
+             * @param request
+             * @return
+             */
+    public ModelAndView reportSystemExport (HttpServletRequest request, String lineCode, List < String > stationCode, String startTime, String endTime){
         ModelAndView mv = new ModelAndView(new JeecgEntityExcelView());
         List<FailureReport> failureReportList = this.getFailureReport(lineCode, stationCode, startTime, endTime);
         if (CollectionUtil.isNotEmpty(failureReportList)) {
@@ -398,14 +425,13 @@ public class PatrolReportService {
         }
         return mv;
     }
-
     /**
      * 班组故障列表报表导出
      *
      * @param request
      * @return
      */
-    public ModelAndView reportOrgExport(HttpServletRequest request, String lineCode, String stationCode, String startTime, String endTime, String systemCode) {
+    public ModelAndView reportOrgExport (HttpServletRequest request, String lineCode, List <String> stationCode, String startTime, String endTime, List < String > systemCode){
         ModelAndView mv = new ModelAndView(new JeecgEntityExcelView());
         List<FailureOrgReport> failureOrgReport = this.getFailureOrgReport(lineCode, stationCode, startTime, endTime, systemCode);
         if (CollectionUtil.isNotEmpty(failureOrgReport)) {
@@ -420,4 +446,21 @@ public class PatrolReportService {
         }
         return mv;
     }
-}
+
+    public List<LineOrStationDTO> selectStation (String lineCode){
+        LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        List<LineOrStationDTO> station = patrolTaskMapper.selectStation(sysUser.getId(), lineCode);
+        return station;
+    }
+
+    public List<LineOrStationDTO> selectLine () {
+        LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        List<LineOrStationDTO> line = patrolTaskMapper.selectLine(sysUser.getId());
+        return line;
+    }
+    public List<LineOrStationDTO> selectSystem () {
+        LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        List<LineOrStationDTO> system = patrolTaskMapper.selectSystem(sysUser.getId());
+        return system;
+    }
+        }

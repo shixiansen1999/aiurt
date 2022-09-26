@@ -4,6 +4,7 @@ import com.aiurt.boot.report.model.FailureOrgReport;
 import com.aiurt.boot.report.model.FailureReport;
 import com.aiurt.boot.report.model.PatrolReport;
 import com.aiurt.boot.report.model.PatrolReportModel;
+import com.aiurt.boot.report.model.dto.LineOrStationDTO;
 import com.aiurt.boot.report.model.dto.MonthDTO;
 import com.aiurt.boot.screen.model.ScreenModule;
 import com.aiurt.boot.screen.model.ScreenStatisticsGraph;
@@ -287,7 +288,7 @@ public interface PatrolTaskMapper extends BaseMapper<PatrolTask> {
      * @param endTime
      * @return
      */
-    List<FailureReport> getFailureReport(@Param("id")String id,@Param("lineCode") String lineCode,@Param("stationCode") String stationCode,@Param("startTime") String startTime, @Param("endTime")String endTime);
+    List<FailureReport> getFailureReport(@Param("id")String id,@Param("lineCode") String lineCode,@Param("stationCode") List<String> stationCode,@Param("startTime") String startTime, @Param("endTime")String endTime);
 
     /**
      * 查询数量
@@ -298,7 +299,7 @@ public interface PatrolTaskMapper extends BaseMapper<PatrolTask> {
      * @param endTime
      * @return
      */
-    List<Integer> selectNum(@Param("code") String code,@Param("orgCode")String orgCode,@Param("lineCode") String lineCode,@Param("stationCode") String stationCode,@Param("startTime") String startTime, @Param("endTime")String endTime);
+    List<Integer> selectNum(@Param("code") String code,@Param("orgCode")String orgCode,@Param("lineCode") String lineCode,@Param("stationCode") List<String> stationCode,@Param("startTime") String startTime, @Param("endTime")String endTime);
 
     /**
      * 查询时间
@@ -309,7 +310,7 @@ public interface PatrolTaskMapper extends BaseMapper<PatrolTask> {
      * @param endTime
      * @return
      */
-    List<Integer> selectNum1(@Param("code") String code,@Param("orgCode")String orgCode,@Param("lineCode") String lineCode,@Param("stationCode") String stationCode,@Param("startTime") String startTime, @Param("endTime")String endTime);
+    List<Integer> selectNum1(@Param("code") String code,@Param("orgCode")String orgCode,@Param("lineCode") String lineCode,@Param("stationCode") List<String> stationCode,@Param("startTime") String startTime, @Param("endTime")String endTime);
 
     /**
      * 查当年总数
@@ -330,7 +331,7 @@ public interface PatrolTaskMapper extends BaseMapper<PatrolTask> {
      * @param systemCode
      * @return
      */
-    List<FailureOrgReport> getOrgReport(@Param("ids")List<String> ids, @Param("lineCode") String lineCode, @Param("stationCode") String stationCode, @Param("startTime") String startTime, @Param("endTime")String endTime, @Param("systemCode") String systemCode);
+    List<FailureOrgReport> getOrgReport(@Param("ids")List<String> ids, @Param("lineCode") String lineCode, @Param("stationCode") List<String> stationCode, @Param("startTime") String startTime, @Param("endTime")String endTime, @Param("systemCode")  List<String> systemCode);
 
     /**
      * 查询班组时间
@@ -341,4 +342,26 @@ public interface PatrolTaskMapper extends BaseMapper<PatrolTask> {
      * @return
      */
     List<MonthDTO> selectMonthOrg(@Param("orgCodes") List<String> orgCodes,@Param("lineCode") String lineCode,@Param("stationCode") String stationCode,@Param("systemCode") String systemCode);
+
+    /**
+     * 权限查询
+     * @param id
+     * @return
+     */
+    List<LineOrStationDTO> selectLine(@Param("id") String id);
+
+    /**
+     * 权限查询
+     * @param id
+     * @param lineCode
+     * @return
+     */
+    List<LineOrStationDTO> selectStation(@Param("id") String id,@Param("lineCode") String lineCode);
+
+    /**
+     * 权限查询
+     * @param id
+     * @return
+     */
+    List<LineOrStationDTO> selectSystem(@Param("id") String id);
 }

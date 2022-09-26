@@ -4,6 +4,7 @@ import com.aiurt.boot.report.model.FailureOrgReport;
 import com.aiurt.boot.report.model.FailureReport;
 import com.aiurt.boot.report.model.PatrolReport;
 import com.aiurt.boot.report.model.PatrolReportModel;
+import com.aiurt.boot.report.model.dto.LineOrStationDTO;
 import com.aiurt.boot.report.model.dto.MonthDTO;
 import com.aiurt.boot.report.service.PatrolReportService;
 import com.aiurt.boot.screen.model.ScreenStatisticsTask;
@@ -59,7 +60,7 @@ public class PatrolReportController {
     @ApiOperation(value = "统计报表-子系统故障列表", notes = "统计报表-子系统故障列表")
     @RequestMapping(value = "/failureReport", method = {RequestMethod.GET, RequestMethod.POST})
     public Result<List<FailureReport>> getFailureReport(@RequestParam(name = "lineCode",required = false) String lineCode,
-                                                         @RequestParam(name = "stationCode",required = false) String stationCode,
+                                                         @RequestParam(name = "stationCode",required = false) List<String> stationCode,
                                                          @RequestParam(name = "startTime",required = false) String startTime,
                                                          @RequestParam(name = "endTime",required = false) String endTime,
                                                          HttpServletRequest req) {
@@ -103,8 +104,8 @@ public class PatrolReportController {
     @ApiOperation(value = "统计报表-班组故障列表", notes = "统计报表-班组故障列表")
     @RequestMapping(value = "/failureOrgReport", method = {RequestMethod.GET})
     public Result<List<FailureOrgReport>> getFailureOrgReport(@RequestParam(name = "lineCode",required = false) String lineCode,
-                                                               @RequestParam(name = "stationCode",required = false) String stationCode,
-                                                               @RequestParam(name = "systemCode",required = false) String systemCode,
+                                                               @RequestParam(name = "stationCode",required = false) List<String> stationCode,
+                                                               @RequestParam(name = "systemCode",required = false) List<String> systemCode,
                                                                @RequestParam(name = "startTime",required = false) String startTime,
                                                                @RequestParam(name = "endTime",required = false) String endTime,
                                                                 HttpServletRequest req) {
@@ -134,7 +135,7 @@ public class PatrolReportController {
     @GetMapping(value = "/reportSystemExport")
     public ModelAndView reportExport(HttpServletRequest request,
                                      @RequestParam(name = "lineCode",required = false) String lineCode,
-                                     @RequestParam(name = "stationCode",required = false) String stationCode,
+                                     @RequestParam(name = "stationCode",required = false) List<String> stationCode,
                                      @RequestParam(name = "startTime",required = false) String startTime,
                                      @RequestParam(name = "endTime",required = false) String endTime) {
         return reportService.reportSystemExport(request,lineCode,stationCode,startTime,endTime);
@@ -146,15 +147,51 @@ public class PatrolReportController {
          * @return
          */
         @AutoLog(value = "统计报表-班组故障报表导出", operateType = 6, operateTypeAlias = "导出")
-        @ApiOperation(value = "统计报表-子系统故障列表导出", notes = "统计报表-子系统故障列表导出")
+        @ApiOperation(value = "统计报表-班组故障列表导出", notes = "统计报表-班组故障列表导出")
         @GetMapping(value = "/reportOrgExport")
         public ModelAndView reportOrgExport(HttpServletRequest request,
                                             @RequestParam(name = "lineCode",required = false) String lineCode,
-                                            @RequestParam(name = "stationCode",required = false) String stationCode,
-                                            @RequestParam(name = "systemCode",required = false) String systemCode,
+                                            @RequestParam(name = "stationCode",required = false) List<String> stationCode,
+                                            @RequestParam(name = "systemCode",required = false)  List<String> systemCode,
                                             @RequestParam(name = "startTime",required = false) String startTime,
                                             @RequestParam(name = "endTime",required = false) String endTime) {
             return reportService.reportOrgExport(request,lineCode,stationCode,startTime,endTime,systemCode);
+
+    }
+    /**
+     * 线路下拉框
+     * @param
+     * @return
+     */
+    @AutoLog(value = "统计报表-下拉框", operateType = 1, operateTypeAlias = "查询")
+    @ApiOperation(value = "统计报表-下拉框", notes = "统计报表-下拉框")
+    @GetMapping(value = "/selectLine")
+    public List<LineOrStationDTO> selectLine() {
+        return reportService.selectLine();
+
+    }
+    /**
+     * 站点下拉框
+     * @param
+     * @return
+     */
+    @AutoLog(value = "统计报表-下拉框", operateType = 1, operateTypeAlias = "查询")
+    @ApiOperation(value = "统计报表-下拉框", notes = "统计报表-下拉框")
+    @GetMapping(value = "/selectStation")
+    public List<LineOrStationDTO> selectStation(@RequestParam(name = "lineCode",required = false) String lineCode) {
+        return reportService.selectStation(lineCode);
+
+    }
+    /**
+     * 子系统下拉框
+     * @param
+     * @return
+     */
+    @AutoLog(value = "统计报表-下拉框", operateType = 1, operateTypeAlias = "查询")
+    @ApiOperation(value = "统计报表-下拉框", notes = "统计报表-下拉框")
+    @GetMapping(value = "/selectSystem")
+    public List<LineOrStationDTO> selectSystem() {
+        return reportService.selectSystem();
 
     }
 }
