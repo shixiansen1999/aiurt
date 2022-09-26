@@ -972,7 +972,7 @@ GROUP BY
         where c.user_id = #{id}
     </select>
     <select id="selectDepart" resultType="com.aiurt.boot.report.model.dto.LineOrStationDTO">
-         select a.org_code as code, a.depart_name as name from sys_depart a left join sys_user_depart b on a.id = b.dep_id
+         select a.org_code as code, a.depart_name as name from sys_depart a left join cs_user_depart b on a.id = b.depart_id
          where b.user_id = #{id}
     </select>
 </mapper>
