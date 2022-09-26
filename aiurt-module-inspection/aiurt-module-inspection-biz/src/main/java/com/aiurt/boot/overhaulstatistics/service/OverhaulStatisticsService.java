@@ -8,6 +8,10 @@ import com.aiurt.boot.manager.InspectionManager;
 import com.aiurt.boot.task.dto.OverhaulStatisticsDTO;
 import com.aiurt.boot.task.entity.RepairTask;
 import com.aiurt.boot.task.mapper.RepairTaskMapper;
+import org.apache.shiro.SecurityUtils;
+import org.jeecg.common.system.api.ISysBaseAPI;
+import org.jeecg.common.system.vo.LoginUser;
+import org.jeecg.common.system.vo.SysDepartModel;
 import org.jeecgframework.poi.excel.def.NormalExcelConstants;
 import org.jeecgframework.poi.excel.entity.ExportParams;
 import org.jeecgframework.poi.excel.view.JeecgEntityExcelView;
@@ -34,10 +38,25 @@ public class OverhaulStatisticsService{
     @Autowired
     private RepairTaskMapper repairTaskMapper;
 
+    @Autowired
+    private ISysBaseAPI sysBaseAPI;
+
     @Resource
     private InspectionManager manager;
 
     public Page<OverhaulStatisticsDTO> getOverhaulList(Page<OverhaulStatisticsDTO> pageList,OverhaulStatisticsDTO condition) {
+        LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        //管理负责人组织机构编码
+        List<SysDepartModel> userSysDepart = sysBaseAPI.getUserSysDepart(sysUser.getId());
+        List<String> collect1 = userSysDepart.stream().map(SysDepartModel::getOrgCode).collect(Collectors.toList());
+        if(CollUtil.isEmpty(collect1))
+        {
+            condition.setOrgCode("null");
+        }
+        else
+        {
+            condition.setOrgCodeList(collect1);
+        }
         //查询班组的信息
         List<OverhaulStatisticsDTO> statisticsDTOList = repairTaskMapper.readTeamList(pageList,condition);
 

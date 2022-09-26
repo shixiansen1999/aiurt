@@ -383,8 +383,11 @@
             <if test="condition.stationCode!=null ">
                 and t3.station_code = #{condition.stationCode}
             </if>
-            <if test="condition.orgCode!=null ">
-                and t2.org_code = #{condition.orgCode}
+            <if test="condition.orgCodeList!=null and condition.orgCodeList.size()!=0">
+                and t2.org_code in
+                <foreach collection="condition.orgCodeList" index="index" item="item" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
             </if>
             <if test="condition.subsystemCode!=null ">
                 and t4.subsystem_code = #{condition.subsystemCode}
@@ -430,8 +433,11 @@
             <if test="condition.stationCode!=null ">
                 and t4.station_code = #{condition.stationCode}
             </if>
-            <if test="condition.orgCode!=null ">
-                and t3.org_code = #{condition.orgCode}
+            <if test="condition.orgCodeList!=null and condition.orgCodeList.size()!=0">
+                and t3.org_code in
+                <foreach collection="condition.orgCodeList" index="index" item="item" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
             </if>
             <if test="condition.subsystemCode!=null ">
                 and t5.subsystem_code = #{condition.subsystemCode}
