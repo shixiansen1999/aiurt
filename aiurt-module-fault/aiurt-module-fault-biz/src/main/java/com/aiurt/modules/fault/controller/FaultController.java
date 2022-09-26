@@ -16,6 +16,7 @@ import com.aiurt.modules.fault.service.IFaultService;
 import com.aiurt.modules.faultknowledgebase.entity.FaultKnowledgeBase;
 import com.aiurt.modules.faultlevel.entity.FaultLevel;
 import com.aiurt.modules.faultlevel.service.IFaultLevelService;
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -25,6 +26,7 @@ import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.annotations.Param;
 import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.query.QueryGenerator;
 import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -63,6 +65,9 @@ public class FaultController extends BaseController<Fault, IFaultService> {
     @Autowired
     private IFaultRepairRecordService faultRepairRecordService;
 
+    @Autowired
+    private ISysBaseAPI sysBaseAPI;
+
     /**
      * 分页列表查询
      *
@@ -96,6 +101,16 @@ public class FaultController extends BaseController<Fault, IFaultService> {
         if (StrUtil.isNotBlank(statusCondition)) {
             fault.setStatusCondition(null);
         }
+        // 专业查询
+        String subSystemCode = fault.getSubSystemCode();
+        if (StrUtil.isNotBlank(subSystemCode)) {
+            JSONObject csMajor = sysBaseAPI.getCsMajorByCode(subSystemCode);
+            if (Objects.nonNull(csMajor)) {
+                fault.setMajorCode(subSystemCode);
+                fault.setSubSystemCode(null);
+            }
+        }
+
         QueryWrapper<Fault> queryWrapper = QueryGenerator.initQueryWrapper(fault, req.getParameterMap());
         Page<Fault> page = new Page<>(pageNo, pageSize);
         //修改查询条件

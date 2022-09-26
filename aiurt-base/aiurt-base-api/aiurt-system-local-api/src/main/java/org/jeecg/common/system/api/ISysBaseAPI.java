@@ -539,4 +539,7 @@ public interface ISysBaseAPI extends CommonAPI {
      * @return
      */
     List<SysDepartModel> getUserSysDepart(String userId);
+
+
+    JSONObject getCsMajorByCode(String majorCode);
 }
