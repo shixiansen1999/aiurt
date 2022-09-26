@@ -460,4 +460,10 @@ public class PatrolReportService {
         List<LineOrStationDTO> system = patrolTaskMapper.selectSystem(sysUser.getId());
         return system;
     }
+
+    public List<LineOrStationDTO> selectDepart () {
+        LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        List<LineOrStationDTO> lineOrStationDTOS = patrolTaskMapper.selectDepart(sysUser.getId());
+        return lineOrStationDTOS;
+    }
         }

@@ -968,7 +968,11 @@ GROUP BY
         </if>
     </select>
     <select id="selectSystem" resultType="com.aiurt.boot.report.model.dto.LineOrStationDTO">
-        select a.system_name as name, a.system_code as code from cs_subsystem left join  cs_user_subsystem c on c.system_id = a.id
+        select a.system_name as name, a.system_code as code from cs_subsystem a left join  cs_user_subsystem c on c.system_id = a.id
         where c.user_id = #{id}
+    </select>
+    <select id="selectDepart" resultType="com.aiurt.boot.report.model.dto.LineOrStationDTO">
+         select a.org_code as code, a.depart_name as name from sys_depart a left join sys_user_depart b on a.id = b.dep_id
+         where b.user_id = #{id}
     </select>
 </mapper>
