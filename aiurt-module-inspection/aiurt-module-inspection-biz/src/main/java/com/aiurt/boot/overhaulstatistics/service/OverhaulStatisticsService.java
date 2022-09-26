@@ -82,7 +82,7 @@ public class OverhaulStatisticsService{
                 //查询已完成的班组信息
                 condition.setStatus(8L);
                 condition.setTaskId(e.getTaskId());
-                List<OverhaulStatisticsDTO> dtoList = repairTaskMapper.readTeamList(pageList,condition);
+                List<OverhaulStatisticsDTO> dtoList = repairTaskMapper.readTeamList(null,condition);
 
                 //已完成数
                 int size2 = dtoList.size();
