@@ -281,6 +281,11 @@ public class PatrolScreenService {
                 moduleType.setToday(new Date());
                 moduleType.setStatus(PatrolConstant.TASK_COMPLETE);
                 break;
+            // 默认计划数
+            default:
+                moduleType.setStartTime(startTime);
+                moduleType.setEndTime(endTime);
+                break;
         }
         IPage<ScreenStatisticsTask> pageList = patrolTaskMapper.getStatisticsDataList(page, moduleType);
         // 字典翻译
