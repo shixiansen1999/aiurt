@@ -427,7 +427,7 @@ public class BigscreenPlanService {
                 }
             }
         }
-
+        List<String> collect1 = teamPortraitDTOS.stream().map(TeamPortraitDTO::getTeamId).collect(Collectors.toList());
         if (CollUtil.isNotEmpty(teamPortraitDTOS)) {
             int i = 0;
             for (TeamPortraitDTO teamPortraitDTO : teamPortraitDTOS) {
