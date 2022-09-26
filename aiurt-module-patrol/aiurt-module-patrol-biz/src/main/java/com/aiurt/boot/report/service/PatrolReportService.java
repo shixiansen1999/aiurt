@@ -262,17 +262,48 @@ public class PatrolReportService {
     }
 
     public Integer getWeekNumber(String start, String end) {
-        boolean sameTime = DateUtil.isSameDay(new Date(), DateUtil.parseDate(start));
         boolean endTime = DateUtil.isSameDay(new Date(), DateUtil.parseDate(end));
-        if (sameTime == true) {
+        DateTime nowStart = DateUtil.beginOfWeek(new Date());
+        DateTime endDayMonday = DateUtil.beginOfWeek(DateUtil.parseDate(end));
+        //判断当前时间的周一与结束时间的周一是否相等，即是否同一周
+        boolean nowIsEndTime = DateUtil.isSameDay(nowStart, endDayMonday);
+        //判断开始时间在当前时间之前、之后、相等
+        Integer calendarBefore = PatrolDateUtils.belongCalendarBefore(start);
+        //判断结束时间在当前时间之前、之后、相等
+        Integer calendarEnd = PatrolDateUtils.belongCalendarBefore(end);
+        if (calendarBefore==2) {
             return 0;
         }
-        if (endTime == true) {
-             boolean sameDate = PatrolDateUtils.isSameDate(start, end);
-             Integer weekNumber = PatrolDateUtils.countTwoDayWeek(start, end, sameDate);
-             return  weekNumber;
+        else if (calendarBefore==0) {
+            return  0;
         }
-        return 1;
+        else if (calendarBefore==1) {
+            DateTime day = DateUtil.beginOfWeek(DateUtil.parse(start));
+            //判断开始时间与当前时间是否是同一周
+            boolean beforeStartDay = DateUtil.isSameDay(nowStart, day);
+            //判断结束时间与当前时间是否是同一周
+            boolean beforeEndDay = DateUtil.isSameDay(endDayMonday, day);
+            if(beforeStartDay==true)
+            {
+                return  0;
+            }
+            //开始和结束不是同一周
+            else if(beforeStartDay==false&&beforeEndDay==false)
+            {
+                boolean sameDate = PatrolDateUtils.isSameDate(start, end);
+                Integer weekNumber = PatrolDateUtils.countTwoDayWeek(start, end, sameDate);
+                return  weekNumber;
+            }
+            //开始不是，结束时间是同一周
+            else if(beforeStartDay==false&&nowIsEndTime==true)
+            {
+                DateTime lastDay = DateUtil.offsetDay( DateUtil.parseDate(end), -7);
+                boolean sameDate = PatrolDateUtils.isSameDate(start, DateUtil.formatTime(lastDay));
+                Integer weekNumber = PatrolDateUtils.countTwoDayWeek(start, end, sameDate);
+                return  weekNumber;
+            }
+        }
+            return 0;
     }
 
     public ModelAndView reportExport(HttpServletRequest request, PatrolReportModel reportReqVO) {

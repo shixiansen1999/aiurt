@@ -1,6 +1,7 @@
 package com.aiurt.boot.report.utils;
 
 import cn.hutool.core.date.DateTime;
+import cn.hutool.core.date.DateUnit;
 import cn.hutool.core.date.DateUtil;
 
 import java.text.SimpleDateFormat;
@@ -65,18 +66,13 @@ public class PatrolDateUtils {
     public static Integer countTwoDayWeek(String startDate, String endDate,boolean sameDate)
     {
 
-        DateTime start = DateUtil.parse(startDate);
+        Date start = DateUtil.parse(startDate);
         DateTime end = DateUtil.parse(endDate);
         Calendar cal=Calendar.getInstance();
-
         cal.setTime(start);
-
         long time1=cal.getTimeInMillis();
-
         cal.setTime(end);
-
         long time2=cal.getTimeInMillis();
-
         long between_days=(time2-time1)/(1000*3600*24);
         Double days=Double.parseDouble(String.valueOf(between_days));
         if((days/7)>0 && (days/7)<=1&&sameDate==true){
@@ -87,19 +83,74 @@ public class PatrolDateUtils {
         {
             return  1+1;
         }
-        else if(days/7>1){
-            int day= days.intValue();
-            if(day%7>0){
-                return day/7+1;
-            }else{
-                return day/7;
+        else if(sameDate==false){
+            int weekNumber= 2;
+            //周一是相等
+            DateTime startThisMonDay = DateUtil.beginOfWeek(start);
+            DateTime endThisMonDay = DateUtil.beginOfWeek(end);
+
+            DateTime stayDay = DateUtil.offsetDay(startThisMonDay, 7);
+            DateTime endDay = DateUtil.offsetDay(endThisMonDay, -7);
+            //开始时间的下周一与结束时间的周一是否是同一天
+            boolean nowIsMonDay = DateUtil.isSameDay(endThisMonDay, stayDay);
+            //开始时间的下周一与结束时间的上周一，是否是同一天
+            boolean sameTime = DateUtil.isSameDay(stayDay, endDay);
+            //本周一不是当前，开始和结束的周一是同一天
+            if(sameTime==true&&nowIsMonDay==false)
+            {
+                return  weekNumber+1;
             }
-        }else if((days/7)==0){
+            if(nowIsMonDay==true)
+            {
+                return  weekNumber;
+            }
+            if(sameTime==false&&nowIsMonDay==false)
+            {
+                Date day = DateUtil.endOfWeek(endDay);
+                DateTime lastDay = DateUtil.offsetDay(day, 1);
+                long betweenDay = DateUtil.between(stayDay, lastDay, DateUnit.DAY);
+                Long number = betweenDay/7;
+                return weekNumber+number.intValue();
+            }
+            else
+            {
+                return null;
+            }
+
+        }
+        else if((days/7)==0){
             return 0;
         }else{
             //负数返还null
             return null;
         }
 
+    }
+
+    /**
+     * 比较两个日期：相等、之前、之后
+     * @param tagDateTime
+     * @return
+     */
+    public static Integer belongCalendarBefore(String tagDateTime) {
+        Date fomatDate1=DateUtil.parse(tagDateTime,"yyyy-MM-dd");
+        String today= DateUtil.today();
+        Date date = DateUtil.parse(today);
+        //比较两个日期
+        int result=date.compareTo(fomatDate1);
+        //如果日期相等返回0
+        if(result==0){
+            System.out.println("两个时间相等");
+            return 0;
+        }else if(result<0){
+            //小于0，参数date1就是在date2之后
+
+            System.out.println("在当前时间之后");
+            return 2;
+        }else{
+            //大于0，参数date1就是在date2之前
+            System.out.println("在当前时间之前");
+            return 1;
+        }
     }
 }
