@@ -163,8 +163,8 @@ public class PatrolReportController {
      * @param
      * @return
      */
-    @AutoLog(value = "统计报表-下拉框", operateType = 1, operateTypeAlias = "查询")
-    @ApiOperation(value = "统计报表-下拉框", notes = "统计报表-下拉框")
+    @AutoLog(value = "统计报表-线路下拉框", operateType = 1, operateTypeAlias = "查询")
+    @ApiOperation(value = "统计报表-线路下拉框", notes = "统计报表-线路下拉框")
     @GetMapping(value = "/selectLine")
     public List<LineOrStationDTO> selectLine() {
         return reportService.selectLine();
@@ -175,8 +175,8 @@ public class PatrolReportController {
      * @param
      * @return
      */
-    @AutoLog(value = "统计报表-下拉框", operateType = 1, operateTypeAlias = "查询")
-    @ApiOperation(value = "统计报表-下拉框", notes = "统计报表-下拉框")
+    @AutoLog(value = "统计报表-站点下拉框", operateType = 1, operateTypeAlias = "查询")
+    @ApiOperation(value = "统计报表-站点下拉框", notes = "统计报表-站点下拉框")
     @GetMapping(value = "/selectStation")
     public List<LineOrStationDTO> selectStation(@RequestParam(name = "lineCode",required = false) String lineCode) {
         return reportService.selectStation(lineCode);
@@ -187,8 +187,8 @@ public class PatrolReportController {
      * @param
      * @return
      */
-    @AutoLog(value = "统计报表-下拉框", operateType = 1, operateTypeAlias = "查询")
-    @ApiOperation(value = "统计报表-下拉框", notes = "统计报表-下拉框")
+    @AutoLog(value = "统计报表-子系统下拉框", operateType = 1, operateTypeAlias = "查询")
+    @ApiOperation(value = "统计报表-子系统下拉框", notes = "统计报表-子系统下拉框")
     @GetMapping(value = "/selectSystem")
     public List<LineOrStationDTO> selectSystem() {
         return reportService.selectSystem();
