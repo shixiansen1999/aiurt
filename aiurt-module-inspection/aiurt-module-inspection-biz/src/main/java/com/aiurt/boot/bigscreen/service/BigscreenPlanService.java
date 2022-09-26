@@ -572,13 +572,15 @@ public class BigscreenPlanService {
     public IPage<TeamUserDTO> getTeamPortraitDetails(Integer type, String teamId, Integer pageNo, Integer pageSize) {
         // 班组的人员
         Page<TeamUserDTO> page = new Page<>(pageNo, pageSize);
-        List<TeamUserDTO> userList = bigScreenPlanMapper.getUserList(page, teamId);
+        if (StrUtil.isNotEmpty(teamId)) {
+            List<TeamUserDTO> userList = bigScreenPlanMapper.getUserList(page, teamId);
 
-        if (CollUtil.isNotEmpty(userList)) {
-            //获取每个班组成员的总工时
-            getEveryOneTotalTimes(userList, type, teamId);
+            if (CollUtil.isNotEmpty(userList)) {
+                //获取每个班组成员的总工时
+                getEveryOneTotalTimes(userList, type, teamId);
+            }
+            page.setRecords(userList);
         }
-        page.setRecords(userList);
         return page;
     }
 
