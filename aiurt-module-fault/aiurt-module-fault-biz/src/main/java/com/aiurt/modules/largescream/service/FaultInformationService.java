@@ -1,11 +1,13 @@
 package com.aiurt.modules.largescream.service;
 
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.convert.Convert;
 import cn.hutool.core.date.DateUnit;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
+import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.modules.fault.constants.FaultConstant;
 import com.aiurt.modules.fault.constants.FaultDictCodeConstant;
 import com.aiurt.modules.fault.dto.*;
@@ -16,8 +18,12 @@ import com.aiurt.modules.fault.service.IFaultDeviceService;
 import com.aiurt.modules.largescream.mapper.FaultInformationMapper;
 import com.aiurt.modules.largescream.model.FaultScreenModule;
 import com.aiurt.modules.largescream.util.FaultLargeDateUtil;
+import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.system.api.ISysBaseAPI;
+import org.jeecg.common.system.vo.CsUserMajorModel;
 import org.jeecg.common.system.vo.DictModel;
+import org.jeecg.common.system.vo.LoginUser;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -44,6 +50,9 @@ public class FaultInformationService {
     @Resource
     private IFaultDeviceService faultDeviceService;
 
+    @Autowired
+    private ISysBaseAPI sysBaseApi;
+
 
     /**
      * 综合大屏-故障信息统计数量
@@ -57,8 +66,12 @@ public class FaultInformationService {
         String[] split = dateTime.split("~");
         Date startDate = DateUtil.parse(split[0]);
         Date endDate = DateUtil.parse(split[1]);
+
+        //获取当前登录人的专业编码
+        List<String> majors = getCurrentLoginUserMajors();
+
         int count =0;
-                    List<Fault> faultList = faultInformationMapper.queryLargeFaultInformation(startDate, endDate, lineCode);
+                    List<Fault> faultList = faultInformationMapper.queryLargeFaultInformation(startDate, endDate, lineCode,majors);
                     //总故障数
                     if(CollUtil.isNotEmpty(faultList)){
                         result.setSum(faultList.size());
@@ -79,14 +92,14 @@ public class FaultInformationService {
                     Date todayStartDate = DateUtil.beginOfDay(new Date());
                     Date todayEndDate = DateUtil.endOfDay(new Date());
                     //当天已解决数
-                    List<Fault> faultInformationTodaySolve = faultInformationMapper.queryLargeFaultInformationTodaySolve(todayStartDate,todayEndDate, lineCode);
+                    List<Fault> faultInformationTodaySolve = faultInformationMapper.queryLargeFaultInformationTodaySolve(todayStartDate,todayEndDate, lineCode,majors);
                    if(CollUtil.isNotEmpty(faultInformationTodaySolve)){
                           result.setSolve(faultInformationTodaySolve.size());
                     }else{
                        result.setSolve(0);
                    }
                     //当天新增
-                    List<Fault> faults = faultInformationMapper.queryLargeFaultInformationTodayAdd(todayStartDate,todayEndDate, lineCode);
+                    List<Fault> faults = faultInformationMapper.queryLargeFaultInformationTodayAdd(todayStartDate,todayEndDate, lineCode,majors);
                    if(CollUtil.isNotEmpty(faults)){
                        result.setNewAddNumber(faults.size());
                    }else{
@@ -107,12 +120,17 @@ public class FaultInformationService {
         String[] split = dateTime.split("~");
         Date startDate = DateUtil.parse(split[0]);
         Date endDate = DateUtil.parse(split[1]);
+
+        //获取当前登录人的专业编码
+        List<String> majors = getCurrentLoginUserMajors();
+
         switch (faultModule) {
             // 总故障数详情
             case 1:
                 faultScreenModule.setStartDate(startDate);
                 faultScreenModule.setEndDate(endDate);
                 faultScreenModule.setLineCode(lineCode);
+                faultScreenModule.setMajors(majors);
                 break;
             // 未解决故障
             case 2:
@@ -120,6 +138,7 @@ public class FaultInformationService {
                 faultScreenModule.setEndDate(endDate);
                 faultScreenModule.setUnSo(1);
                 faultScreenModule.setLineCode(lineCode);
+                faultScreenModule.setMajors(majors);
                 break;
             // 当日新增
             case 3:
@@ -129,6 +148,7 @@ public class FaultInformationService {
                 faultScreenModule.setTodayEndDate(DateUtil.endOfDay(new Date()));
                 faultScreenModule.setTodayAdd(1);
                 faultScreenModule.setLineCode(lineCode);
+                faultScreenModule.setMajors(majors);
                 break;
             // 当日已解决
             case 4:
@@ -138,6 +158,7 @@ public class FaultInformationService {
                 faultScreenModule.setTodayStartDate(DateUtil.endOfDay(new Date()));
                 faultScreenModule.setTodaySolve(1);
                 faultScreenModule.setLineCode(lineCode);
+                faultScreenModule.setMajors(majors);
                 break;
         }
         List<FaultLargeInfoDTO> largeFaultInfo = faultInformationMapper.getLargeFaultDatails(faultScreenModule);
@@ -162,7 +183,11 @@ public class FaultInformationService {
         String[] split = dateTime.split("~");
         Date startDate = DateUtil.parse(split[0]);
         Date endDate = DateUtil.parse(split[1]);
-        List<FaultLargeInfoDTO> largeFaultInfo = faultInformationMapper.getLargeFaultInfo(startDate, endDate, lineCode);
+
+        //获取当前登录人的专业编码
+        List<String> majors = getCurrentLoginUserMajors();
+
+        List<FaultLargeInfoDTO> largeFaultInfo = faultInformationMapper.getLargeFaultInfo(startDate, endDate, lineCode,majors);
         largeFaultInfo.stream().forEach(l -> {
             // 字典翻译
             String statusName = sysBaseAPI.getDictItems(FaultDictCodeConstant.FAULT_STATUS).stream()
@@ -186,7 +211,10 @@ public class FaultInformationService {
         Date startDate = DateUtil.parse(split[0]);
         Date endDate = DateUtil.parse(split[1]);
 
-        List<Fault> largeLineFaultInfo = faultInformationMapper.getLargeLineFaultInfo(startDate, endDate);
+        //获取当前登录人的专业编码
+        List<String> majors = getCurrentLoginUserMajors();
+
+        List<Fault> largeLineFaultInfo = faultInformationMapper.getLargeLineFaultInfo(startDate, endDate,majors);
         //根据line_code分组，查询同一条线路下的所有故障
         Map<String, List<Fault>> collect = largeLineFaultInfo.stream().collect(Collectors.groupingBy(Fault::getLineCode));
         Set<String> keys = collect.keySet();
@@ -233,6 +261,10 @@ public class FaultInformationService {
      */
     public List<FaultMonthTimeDTO> getLargeFaultTime(String lineCode){
         List<FaultMonthTimeDTO> monthList = new ArrayList<>();
+
+        //获取当前登录人的专业编码
+        List<String> majors = getCurrentLoginUserMajors();
+
         for (int i = 1; i<=6; i++) {
             int sum = 0;
             //创建一个新的系统故障单集合
@@ -245,7 +277,7 @@ public class FaultInformationService {
             String changmonth = substring+"月";
             faultMonthTimeDTO.setMonth(changmonth);
             //查询按系统分类好的并计算了故障消耗总时长的记录
-            List<FaultSystemTimeDTO> largeFaultTime = faultInformationMapper.getLargeFaultTime(month, lineCode);
+            List<FaultSystemTimeDTO> largeFaultTime = faultInformationMapper.getLargeFaultTime(month, lineCode,majors);
                 for (FaultSystemTimeDTO faultSystemTimeDTO : largeFaultTime) {
                     if (!"0".equals(faultSystemTimeDTO.getRepairTime()) && faultSystemTimeDTO.getRepairTime()!=null) {
                         sum += Integer.parseInt(faultSystemTimeDTO.getRepairTime());
@@ -379,8 +411,12 @@ public class FaultInformationService {
         String[] split = dateTime.split("~");
         Date weekStartDate = DateUtil.parse(split[0]);
         Date weekEndDate = DateUtil.parse(split[1]);
+
+        //获取当前登录人的专业编码
+        List<String> majors = getCurrentLoginUserMajors();
+
         int count =0;
-        List<Fault> faultList = faultInformationMapper.queryFaultDataInformation(lineCode);
+        List<Fault> faultList = faultInformationMapper.queryFaultDataInformation(lineCode,majors);
         //总故障数
         if(CollUtil.isNotEmpty(faultList)){
             result.setSum(faultList.size());
@@ -399,14 +435,14 @@ public class FaultInformationService {
             result.setUnSolve(0);
         }
         //本周已解决
-        List<Fault> faultDataInformationweekSolve = faultInformationMapper.queryFaultDataInformationWeekSolve(weekStartDate, weekEndDate, lineCode);
+        List<Fault> faultDataInformationweekSolve = faultInformationMapper.queryFaultDataInformationWeekSolve(weekStartDate, weekEndDate, lineCode,majors);
         if(CollUtil.isNotEmpty(faultDataInformationweekSolve)){
             result.setWeekSolve(faultDataInformationweekSolve.size());
         }else{
             result.setWeekSolve(0);
         }
         //本周新增
-        List<Fault> faultDataInformationweekAdd = faultInformationMapper.queryFaultDataInformationWeekAdd(weekStartDate, weekEndDate, lineCode);
+        List<Fault> faultDataInformationweekAdd = faultInformationMapper.queryFaultDataInformationWeekAdd(weekStartDate, weekEndDate, lineCode,majors);
         if(CollUtil.isNotEmpty(faultDataInformationweekAdd)){
             result.setWeekAdd(faultDataInformationweekAdd.size());
         }else{
@@ -416,14 +452,14 @@ public class FaultInformationService {
         Date todayStartDate = DateUtil.beginOfDay(new Date());
         Date todayEndDate = DateUtil.endOfDay(new Date());
         //当天已解决数
-        List<Fault> faultInformationTodaySolve = faultInformationMapper.queryLargeFaultInformationTodaySolve(todayStartDate,todayEndDate, lineCode);
+        List<Fault> faultInformationTodaySolve = faultInformationMapper.queryLargeFaultInformationTodaySolve(todayStartDate,todayEndDate, lineCode,majors);
         if(CollUtil.isNotEmpty(faultInformationTodaySolve)){
             result.setTodaySolve(faultInformationTodaySolve.size());
         }else{
             result.setTodaySolve(0);
         }
         //当天新增
-        List<Fault> faults = faultInformationMapper.queryLargeFaultInformationTodayAdd(todayStartDate,todayEndDate, lineCode);
+        List<Fault> faults = faultInformationMapper.queryLargeFaultInformationTodayAdd(todayStartDate,todayEndDate, lineCode,majors);
         if(CollUtil.isNotEmpty(faults)){
             result.setTodayAdd(faults.size());
         }else{
@@ -445,6 +481,10 @@ public class FaultInformationService {
         String[] split = dateTime.split("~");
         Date startDate = DateUtil.parse(split[0]);
         Date endDate = DateUtil.parse(split[1]);
+
+        //获取当前登录人的专业编码
+        List<String> majors = getCurrentLoginUserMajors();
+
         if(ObjectUtil.isEmpty(faultModule)){
             faultModule = 1;
         }
@@ -452,11 +492,13 @@ public class FaultInformationService {
             // 故障总数
             case 1:
                 faultScreenModule.setLineCode(lineCode);
+                faultScreenModule.setMajors(majors);
                 break;
             // 未解决故障
             case 2:
                 faultScreenModule.setUnSo(1);
                 faultScreenModule.setLineCode(lineCode);
+                faultScreenModule.setMajors(majors);
                 break;
             // 本周或本月新增
             case 3:
@@ -464,6 +506,7 @@ public class FaultInformationService {
                 faultScreenModule.setEndDate(endDate);
                 faultScreenModule.setWeekAdd(1);
                 faultScreenModule.setLineCode(lineCode);
+                faultScreenModule.setMajors(majors);
                 break;
             // 本周或本月修复
             case 4:
@@ -471,6 +514,7 @@ public class FaultInformationService {
                 faultScreenModule.setEndDate(endDate);
                 faultScreenModule.setWeekSolve(1);
                 faultScreenModule.setLineCode(lineCode);
+                faultScreenModule.setMajors(majors);
                 break;
             // 当日新增
             case 5:
@@ -480,6 +524,7 @@ public class FaultInformationService {
                 faultScreenModule.setTodayEndDate(DateUtil.endOfDay(new Date()));
                 faultScreenModule.setTodayAdd(1);
                 faultScreenModule.setLineCode(lineCode);
+                faultScreenModule.setMajors(majors);
                 break;
             // 当日已解决
             case 6:
@@ -489,6 +534,7 @@ public class FaultInformationService {
                 faultScreenModule.setTodayStartDate(DateUtil.endOfDay(new Date()));
                 faultScreenModule.setTodaySolve(1);
                 faultScreenModule.setLineCode(lineCode);
+                faultScreenModule.setMajors(majors);
                 break;
         }
         List<FaultLargeInfoDTO> largeFaultDataInfo = faultInformationMapper.getLargeFaultDataDatails(faultScreenModule);
@@ -518,7 +564,11 @@ public class FaultInformationService {
         String[] split1 = dateTime1.split("~");
         Date startDate = DateUtil.parse(split1[0]);
         Date endDate = DateUtil.parse(split1[1]);
-        List<FaultDataAnalysisInfoDTO> largeFaultDataInfo = faultInformationMapper.getLargeFaultDataInfo(startDate,endDate,lineCode);
+
+        //获取当前登录人的专业编码
+        List<String> majors = getCurrentLoginUserMajors();
+
+        List<FaultDataAnalysisInfoDTO> largeFaultDataInfo = faultInformationMapper.getLargeFaultDataInfo(startDate,endDate,lineCode,majors);
         largeFaultDataInfo.stream().forEach(l -> {
             // 字典翻译
             String statusName = sysBaseAPI.getDictItems(FaultDictCodeConstant.FAULT_STATUS).stream()
@@ -549,6 +599,9 @@ public class FaultInformationService {
         Date startDate = DateUtil.parse(split1[0]);
         Date endDate = DateUtil.parse(split1[1]);
 
+        //登录人专业
+        List<String> majors = getCurrentLoginUserMajors();
+
         Integer level = null;
         for (int i = 1; i <=3 ; i++) {
              level = i;
@@ -565,7 +618,7 @@ public class FaultInformationService {
             else if(level ==3){
                 faultLevelDTO.setLevel("三级");
             }
-            List<FaultTimeoutLevelDTO> faultData = faultInformationMapper.getFaultData(level,startDate, endDate,lineCode);
+            List<FaultTimeoutLevelDTO> faultData = faultInformationMapper.getFaultData(level,startDate, endDate,lineCode,majors);
             //计算i级故障数量
             faultLevelDTO.setFaultNumber(faultData.size());
 
@@ -609,6 +662,9 @@ public class FaultInformationService {
         Date startDate = DateUtil.parse(split1[0]);
         Date endDate = DateUtil.parse(split1[1]);
 
+        //获取登录人专业
+        List<String> majors = getCurrentLoginUserMajors();
+
         //本周/本月时长总数
         Integer time = Math.toIntExact(DateUtil.between(startDate, endDate, DateUnit.MINUTE));
         //计划时长
@@ -617,7 +673,7 @@ public class FaultInformationService {
         Double actualTime = null;
 
         //查询按系统分类好的并计算了故障消耗总时长的记录
-        List<FaultSystemTimesDTO> systemFaultSum = faultInformationMapper.getSystemFaultSum(startDate, endDate);
+        List<FaultSystemTimesDTO> systemFaultSum = faultInformationMapper.getSystemFaultSum(startDate, endDate,majors);
         //查询子系统设备数
         List<FaultSystemDeviceSumDTO> systemDeviceSum = faultInformationMapper.getSystemDeviceSum();
         if(ObjectUtil.isNotEmpty(systemDeviceSum)){
@@ -665,6 +721,21 @@ public class FaultInformationService {
             }
         }
         return reliabilityList;
+    }
+
+    /**
+     * 获取当前登录用户的专业编号
+     *
+     * @return
+     */
+    public List<String> getCurrentLoginUserMajors() {
+        LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        if (ObjectUtil.isEmpty(loginUser)) {
+            throw new AiurtBootException("检测到未登录系统，请登录后操作！");
+        }
+        List<CsUserMajorModel> majorList = sysBaseApi.getMajorByUserId(loginUser.getId());
+        List<String> majors = majorList.stream().map(CsUserMajorModel::getMajorCode).collect(Collectors.toList());
+        return majors;
     }
 
 }

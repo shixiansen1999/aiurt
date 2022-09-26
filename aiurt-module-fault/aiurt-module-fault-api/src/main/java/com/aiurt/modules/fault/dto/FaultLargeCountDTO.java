@@ -48,18 +48,4 @@ public class FaultLargeCountDTO implements Serializable {
     @ApiModelProperty(value = "当日已解决数")
     private Integer solve;
 
-    /**
-     * 开始日期
-     */
-    @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd")
-    @DateTimeFormat(pattern = "yyyy-MM-dd")
-    @ApiModelProperty(value = "开始日期")
-    private Date startDate;
-    /**
-     * 结束日期
-     */
-    @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd")
-    @DateTimeFormat(pattern = "yyyy-MM-dd")
-    @ApiModelProperty(value = "结束日期")
-    private Date endDate;
 }

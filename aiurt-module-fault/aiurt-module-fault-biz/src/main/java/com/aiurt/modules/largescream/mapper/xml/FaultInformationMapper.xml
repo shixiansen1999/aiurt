@@ -10,6 +10,12 @@
             <if test="lineCode != null and lineCode !=''">
                 and line_code  = #{lineCode}
             </if>
+            <if test="majors != null and majors.size>0 ">
+                and major_code in
+                <foreach collection="majors" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
         </where>
     </select>
 
@@ -36,6 +42,12 @@
             <if test="lineCode != null and lineCode !=''">
                 and line_code  = #{lineCode}
             </if>
+            <if test="majors != null and majors.size>0 ">
+                and major_code in
+                <foreach collection="majors" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
         </where>
     </select>
 
@@ -49,6 +61,12 @@
             <if test="lineCode != null and lineCode !=''">
                 and line_code  = #{lineCode}
             </if>
+            <if test="majors != null and majors.size>0 ">
+                and major_code in
+                <foreach collection="majors" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
         </where>
     </select>
 
@@ -61,6 +79,12 @@
             <if test="lineCode != null and lineCode !=''">
                 and line_code  = #{lineCode}
             </if>
+            <if test="majors != null and majors.size>0 ">
+                and major_code in
+                <foreach collection="majors" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
         </where>
     </select>
 
@@ -72,6 +96,12 @@
             </if>
             <if test="lineCode != null and lineCode !=''">
                 and line_code  = #{lineCode}
+            </if>
+            <if test="majors != null and majors.size>0 ">
+                and major_code in
+                <foreach collection="majors" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
             </if>
         </where>
     </select>
@@ -88,6 +118,12 @@
             </if>
             <if test="condition.lineCode != null and condition.lineCode != ''">
                 and f.line_code  = #{condition.lineCode}
+            </if>
+            <if test="condition.majors != null and condition.majors.size>0 ">
+                and f.major_code in
+                <foreach collection="condition.majors" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
             </if>
             <if test="condition.unSo !=null and condition.unSo !=''">
                 and f.status != 12
@@ -113,6 +149,12 @@
         <where>
             <if test="condition.lineCode != null and condition.lineCode != ''">
                 and f.line_code  = #{condition.lineCode}
+            </if>
+            <if test="condition.majors != null and condition.majors.size>0 ">
+                and f.major_code in
+                <foreach collection="condition.majors" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
             </if>
             <if test="condition.unSo !=null and condition.unSo !=''">
                 and f.status != 12
@@ -151,6 +193,12 @@
             <if test="lineCode != null and lineCode != ''">
                 and f.line_code  = #{lineCode}
             </if>
+            <if test="majors != null and majors.size>0 ">
+                and f.major_code in
+                <foreach collection="majors" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
         </where>
     </select>
 
@@ -167,6 +215,12 @@
             <if test="startDate!=null and endDate!=null">
                 and f.approval_pass_time  &gt;= #{startDate}  and f.approval_pass_time &lt;= #{endDate}
             </if>
+            <if test="majors != null and majors.size>0 ">
+                and f.major_code in
+                <foreach collection="majors" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
         </where>
     </select>
 
@@ -176,6 +230,12 @@
         <where>
             <if test="startDate!=null and endDate!=null">
                 and f.approval_pass_time  &gt;= #{startDate}  and f.approval_pass_time &lt;= #{endDate}
+            </if>
+            <if test="majors != null and majors.size>0 ">
+                and f.major_code in
+                <foreach collection="majors" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
             </if>
         </where>
     </select>
@@ -218,6 +278,12 @@
             <if test="lineCode != null and lineCode != ''">
                 and f.line_code  = #{lineCode}
             </if>
+            <if test="majors != null and majors.size>0 ">
+                and f.major_code in
+                <foreach collection="majors" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
         </where>
         group by f.sub_system_code,f.line_Code
     </select>
@@ -229,6 +295,12 @@
         <where>
             <if test="startDate!=null and endDate!=null">
                 and f.approval_pass_time  &gt;= #{startDate}  and f.approval_pass_time &lt;= #{endDate}
+            </if>
+            <if test="majors != null and majors.size>0 ">
+                and f.major_code in
+                <foreach collection="majors" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
             </if>
         </where>
         group by f.sub_system_code
@@ -248,6 +320,12 @@
         <where>
             <if test="lineCode != null and lineCode != ''">
                 and line_code  = #{lineCode}
+            </if>
+            <if test="majors != null and majors.size>0 ">
+                and major_code in
+                <foreach collection="majors" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
             </if>
         </where>
     </select>
@@ -274,6 +352,12 @@
             </if>
             <if test="startDate!=null and endDate!=null">
                 and approval_pass_time  &gt;= #{startDate}  and approval_pass_time &lt;= #{endDate}
+            </if>
+            <if test="majors != null and majors.size>0 ">
+                and major_code in
+                <foreach collection="majors" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
             </if>
         </where>
     </select>
