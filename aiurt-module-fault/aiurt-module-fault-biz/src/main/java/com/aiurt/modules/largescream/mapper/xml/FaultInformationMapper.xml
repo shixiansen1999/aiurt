@@ -222,9 +222,9 @@
         group by f.sub_system_code,f.line_Code
     </select>
 
-    <select id="getSystemFaultSum" resultType="com.aiurt.modules.fault.dto.FaultSystemTimeDTO">
+    <select id="getSystemFaultSum" resultType="com.aiurt.modules.fault.dto.FaultSystemTimesDTO">
         select cs.system_name,f.sub_system_code,f.line_code,f.happen_time,f.end_time,
-        sum(TIMESTAMPDIFF(HOUR,f.happen_time,f.end_time)) as repairTime  from fault f
+        sum(TIMESTAMPDIFF(minute,f.happen_time,f.end_time)) as repairTime  from fault f
         left join cs_subSystem cs on f.sub_system_code = cs.system_code
         <where>
             <if test="startDate!=null and endDate!=null">
