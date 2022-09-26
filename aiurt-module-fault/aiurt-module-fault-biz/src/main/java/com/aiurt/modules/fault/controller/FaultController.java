@@ -2,6 +2,7 @@ package com.aiurt.modules.fault.controller;
 
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.aspect.annotation.AutoLog;
+import com.aiurt.common.aspect.annotation.PermissionData;
 import com.aiurt.common.constant.enums.ModuleType;
 import com.aiurt.common.system.base.controller.BaseController;
 import com.aiurt.modules.basic.entity.CsWork;
@@ -20,6 +21,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.annotations.*;
+import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.annotations.Param;
 import org.jeecg.common.api.vo.Result;
@@ -73,6 +75,7 @@ public class FaultController extends BaseController<Fault, IFaultService> {
     @AutoLog(value = "查询", operateType =  1, operateTypeAlias = "查询", permissionUrl = PERMISSION_URL)
     @ApiOperation(value = "分页列表查询", notes = "fault-分页列表查询")
     @GetMapping(value = "/list")
+    @PermissionData(pageComponent = "fault/FaultList")
     public Result<IPage<Fault>> queryPageList(Fault fault,
                                               @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
                                               @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize,
