@@ -261,9 +261,69 @@ public class PatrolReportService {
         return thisOmitDate;
     }
     public long getMonthNumber(String startDate, String endDate) {
-        DateUtil.parse(startDate);
-        long between3 = DateUtil.betweenMonth( DateUtil.parse(startDate),  DateUtil.parse(endDate), false);
-        return between3;
+        String today= DateUtil.today();
+        Date s = DateUtil.parse(startDate, "yyyy-MM");
+        Date e = DateUtil.parse(endDate, "yyyy-MM");
+        Date n = DateUtil.parse(today, "yyyy-MM");
+        Date start = DateUtil.parse(startDate, "yyyy-MM-dd");
+        Date end = DateUtil.parse(endDate, "yyyy-MM-dd");
+        int startMonth = DateUtil.month(start)+1;
+        int endMonth = DateUtil.month(end)+1;
+        //开始时间大于等于当前时间
+        if(s.after(n)||s.equals(n))
+        {
+            return 0;
+           // System.out.println("开始时间大于当前时间");
+        }
+        //开始时间小于当前时间
+        else
+        {
+            //结束时间小于当前时间
+            if(e.before(n))
+            {
+                int startYear = DateUtil.year(start);
+                int endYear = DateUtil.year(end);
+                //结束月份大于开始月份
+                if(endYear>startYear)
+                {
+
+                    int monthNumber = 12-startMonth+1+endMonth;
+                    //System.out.println("结束时间小于当前时间的,并且结束年份大于开始月份，月数:"+monthNumber);
+                    return monthNumber;
+                }
+                //结束月份大于等于开始月份
+                else
+                {
+                    int monthNumber = endMonth-startMonth+1;
+                    //System.out.println("结束时间小于当前时间的,并且结束年份等于开始月份，月数:"+monthNumber);
+                    return monthNumber;
+                }
+
+            }
+            //结束时间大于等于当前时间
+            if(e.equals(n)||e.after(n))
+            {
+                //结束月份大于开始月份
+                int startYear = DateUtil.year(start);
+                int endYear = DateUtil.year(end);
+                DateTime dateTime = DateUtil.lastMonth();
+                int lastMonth = DateUtil.month(dateTime)+1;
+                //结束年份大于开始年份
+                if(endYear>startYear) {
+                    int monthNumber = lastMonth+12-startMonth+1;
+                   // System.out.println("结束时间大于等于当前时间，结束年份大于开始年份，月数:"+monthNumber);
+                    return monthNumber;
+                }
+                //结束年份小于开始年份
+                else
+                {
+                    int monthNumber = lastMonth-startMonth+1;
+                    //System.out.println("结束时间大于等于当前时间，结束年份小于开始年份，月数:"+monthNumber);
+                    return monthNumber;
+                }
+            }
+        }
+        return 0;
     }
 
     public Integer getWeekNumber(String start, String end) {
