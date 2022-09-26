@@ -25,7 +25,9 @@ import com.aiurt.modules.fault.dto.RepairRecordDetailDTO;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.system.api.ISysBaseAPI;
+import org.jeecg.common.system.vo.CsUserMajorModel;
 import org.jeecg.common.system.vo.DictModel;
 import org.jeecg.common.system.vo.LoginUser;
 import org.jeecg.common.system.vo.SysDepartModel;
@@ -415,8 +417,12 @@ public class BigscreenPlanService {
      * @return
      */
     public List<TeamPortraitDTO> getTeamPortrait(Integer type) {
-        //获取所有班组
-        List<TeamPortraitDTO> allSysDepart = bigScreenPlanMapper.getAllSysDepart();
+        //获取用户拥有的专业下的所有班组
+        LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        List<CsUserMajorModel> majorByUserId = sysBaseAPI.getMajorByUserId(sysUser.getId());
+        List<String> majorCodes = majorByUserId.stream().map(CsUserMajorModel::getMajorCode).collect(Collectors.toList());
+
+        List<TeamPortraitDTO> allSysDepart = bigScreenPlanMapper.getAllSysDepart(majorCodes);
         List<TeamPortraitDTO> teamPortraitDTOS = new ArrayList<>();
         if (CollUtil.isNotEmpty(allSysDepart)) {
             for (TeamPortraitDTO sysDepartModel : allSysDepart) {
