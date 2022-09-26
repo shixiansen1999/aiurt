@@ -40,7 +40,6 @@
     WHERE
             sr.del_flag = 0
       AND  DATE_FORMAT(sr.date ,'%Y-%m-%d') = DATE_FORMAT(#{today},'%Y-%m-%d')
-
     <if test="userList != null and userList.size() != 0">
         and sr.user_id in
         <foreach collection="userList" item="item" index="index" open="(" close=")" separator=",">

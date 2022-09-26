@@ -421,7 +421,7 @@ public class BigscreenPlanService {
         if (CollUtil.isNotEmpty(allSysDepart)) {
             for (TeamPortraitDTO sysDepartModel : allSysDepart) {
                 //找到没有作为父节点的组织结构
-                Optional<TeamPortraitDTO> first = allSysDepart.stream().filter(a -> a.getTeamId().equals(sysDepartModel.getParentId())).findFirst();
+                Optional<TeamPortraitDTO> first = allSysDepart.stream().filter(a -> a.getParentId().equals(sysDepartModel.getTeamId())).findFirst();
                 if (!first.isPresent()) {
                     teamPortraitDTOS.add(sysDepartModel);
                 }
@@ -476,11 +476,12 @@ public class BigscreenPlanService {
                 // 班组的人员
                 List<LoginUser> userList = sysBaseAPI.getUserPersonnel(teamPortraitDTO.getTeamId());
                 String today = DateUtil.today();
-                List<String> onDuty = bigScreenPlanMapper.getOnDuty(today, userList);
-                if (CollUtil.isNotEmpty(onDuty)) {
-                    teamPortraitDTO.setStaffOnDuty(CollUtil.join(onDuty, ","));
+                if (CollUtil.isNotEmpty(userList)) {
+                    List<String> onDuty = bigScreenPlanMapper.getOnDuty(today, userList);
+                    if (CollUtil.isNotEmpty(onDuty)) {
+                        teamPortraitDTO.setStaffOnDuty(CollUtil.join(onDuty, ","));
+                    }
                 }
-
                 Date[] timeByType = getTimeByType(String.valueOf(type));
                 if (timeByType.length > 0) {
                     //获取一周内的班组平均维修响应时间
