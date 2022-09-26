@@ -202,7 +202,7 @@ public class PatrolReportController {
      */
     @AutoLog(value = "统计报表-班组下拉框", operateType = 1, operateTypeAlias = "查询")
     @ApiOperation(value = "统计报表-班组下拉框", notes = "统计报表-班组下拉框")
-    @GetMapping(value = "/selectSystem")
+    @GetMapping(value = "/selectDepart")
     public List<LineOrStationDTO> selectDepart() {
         return reportService.selectDepart();
 
