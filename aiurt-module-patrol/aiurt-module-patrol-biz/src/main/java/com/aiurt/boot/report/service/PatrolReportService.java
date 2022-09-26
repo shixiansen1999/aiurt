@@ -146,7 +146,7 @@ public class PatrolReportService {
             if (CollUtil.isNotEmpty(avgWeekOmitList)) {
                 for (PatrolReport d : avgWeekOmitList) {
                     if (patrolReport.getOrgCode().equals(d.getOrgCode())) {
-                        if (patrolReport.getMissInspectedNumber() == 0) {
+                        if (ObjectUtil.isNull(patrolReport.getMissInspectedNumber())||patrolReport.getMissInspectedNumber() == 0) {
                             patrolReport.setAwmPatrolNumber("-");
                         } else {
                             //是否是默认
@@ -179,7 +179,7 @@ public class PatrolReportService {
             if (CollUtil.isNotEmpty(avgMonthOmitList)) {
                 for (PatrolReport d : avgWeekOmitList) {
                     if (patrolReport.getOrgCode().equals(d.getOrgCode())) {
-                        if (patrolReport.getMissInspectedNumber() == 0) {
+                        if (ObjectUtil.isNull(patrolReport.getMissInspectedNumber())||patrolReport.getMissInspectedNumber() == 0) {
                             patrolReport.setAmmPatrolNumber("-");
                         } else {
                             //是否是默认
