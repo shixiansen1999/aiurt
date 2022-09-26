@@ -670,21 +670,26 @@ public class FaultInformationService {
      */
     public List<FaultSystemReliabilityDTO> getSystemReliability(Integer boardTimeType){
         List<FaultSystemReliabilityDTO> reliabilityList = new ArrayList<>();
-        //设置时间查询条件
-        String dateTime1 = FaultLargeDateUtil.getDateTimes(boardTimeType);
+        //设置时间获取本月/周小时数
+        String dateTime1 = FaultLargeDateUtil.getDateHours(boardTimeType);
         String[] split1 = dateTime1.split("~");
-        Date startDate = DateUtil.parse(split1[0]);
-        Date endDate = DateUtil.parse(split1[1]);
+        Date startDate1 = DateUtil.parse(split1[0]);
+        Date endDate1 = DateUtil.parse(split1[1]);
 
         //获取登录人专业
         List<String> majors = getCurrentLoginUserMajors();
 
         //本周/本月时长总数
-        Integer time = Math.toIntExact(DateUtil.between(startDate, endDate, DateUnit.MINUTE));
+        Integer time = Math.toIntExact(DateUtil.between(startDate1, endDate1, DateUnit.MINUTE));
         //计划时长
         Double planTime =null;
         //实际时长
         Double actualTime = null;
+        //设置时间查询条件
+        String dateTime = FaultLargeDateUtil.getDateTimes(boardTimeType);
+        String[] split = dateTime.split("~");
+        Date startDate = DateUtil.parse(split[0]);
+        Date endDate = DateUtil.parse(split[1]);
 
         //查询按系统分类好的并计算了故障消耗总时长的记录
         List<FaultSystemTimesDTO> systemFaultSum = faultInformationMapper.getSystemFaultSum(startDate, endDate,majors);

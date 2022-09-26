@@ -72,6 +72,20 @@ public class FaultLargeDateUtil {
     }
 
     /**
+     * 获取参数日期所在月时间范围，格式如下:yyyy-MM-dd 00:00:00~yyyy-MM-dd 00:00:00,最后一天后一天0点(可靠度专用)
+     *
+     * @param date
+     * @return
+     */
+    public static String getThisMonths(Date date) {
+        DateTime start = DateUtil.beginOfMonth(date);
+        DateTime newDate2 = DateUtil.endOfMonth(date);
+        DateTime end = DateUtil.offsetDay(newDate2, 1);
+        String thisMonth = DateUtil.format(start, "yyyy-MM-dd 00:00:00") + "~" + DateUtil.format(end, "yyyy-MM-dd 00:00:00");
+        return thisMonth;
+    }
+
+    /**
      * 获取参数日期上个月时间范围，格式如下:yyyy-MM-dd 00:00:00~yyyy-MM-dd 23:59:59
      *
      * @param date
@@ -82,6 +96,21 @@ public class FaultLargeDateUtil {
         DateTime start = DateUtil.beginOfMonth(date);
         DateTime end = DateUtil.endOfMonth(date);
         String lastMonth = DateUtil.format(start, "yyyy-MM-dd 00:00:00") + "~" + DateUtil.format(end, "yyyy-MM-dd 23:59:59");
+        return lastMonth;
+    }
+
+    /**
+     * 获取参数日期上个月时间范围，格式如下:yyyy-MM-dd 00:00:00~yyyy-MM-dd 23:59:59(可靠度专用)
+     *
+     * @param date
+     * @return
+     */
+    public static String getLastMonths(Date date) {
+        date = DateUtil.offsetMonth(date, -1);
+        DateTime start = DateUtil.beginOfMonth(date);
+        DateTime newDate2 = DateUtil.endOfMonth(date);
+        DateTime end = DateUtil.offsetDay(newDate2, 1);
+        String lastMonth = DateUtil.format(start, "yyyy-MM-dd 00:00:00") + "~" + DateUtil.format(end, "yyyy-MM-dd 00:00:00");
         return lastMonth;
     }
 
@@ -102,7 +131,7 @@ public class FaultLargeDateUtil {
     }
 
     /**
-     * 根据时间类型获取时间范围,1本周、2上周、3本月、4上月
+     * 根据时间类型获取时间范围,1本周、2上周、3本月、4上月(可靠度接口专用)
      */
     public static String getDateTimes(Integer timeType) {
         // 默认本周
@@ -113,6 +142,22 @@ public class FaultLargeDateUtil {
             date = getThisMonth(new Date());
         } else if (FaultLargeConstant.LAST_MONTH.equals(timeType)) {
             date = getLastMonth(new Date());
+        }
+        return date;
+    }
+
+    /**
+     * 根据时间类型获取时间范围,1本周、2上周、3本月、4上月,计算小时(可靠度接口专用)
+     */
+    public static String getDateHours(Integer timeType) {
+        // 默认本周
+        String date = getThisMonths(new Date());
+        if (FaultLargeConstant.LAST_WEEK.equals(timeType)) {
+            date = getThisMonths(new Date());
+        } else if (FaultLargeConstant.THIS_MONTH.equals(timeType)) {
+            date = getThisMonths(new Date());
+        } else if (FaultLargeConstant.LAST_MONTH.equals(timeType)) {
+            date = getLastMonths(new Date());
         }
         return date;
     }
