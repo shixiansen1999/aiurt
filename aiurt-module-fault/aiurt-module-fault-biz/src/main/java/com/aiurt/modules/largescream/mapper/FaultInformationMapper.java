@@ -129,7 +129,7 @@ public interface FaultInformationMapper {
      * @param endDate
      * @return
      */
-    List<FaultSystemTimeDTO> getSystemFaultSum(@Param("startDate") Date startDate, @Param("endDate") Date endDate);
+    List<FaultSystemTimesDTO> getSystemFaultSum(@Param("startDate") Date startDate, @Param("endDate") Date endDate);
 
 
     /**

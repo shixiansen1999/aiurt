@@ -22,6 +22,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -609,14 +610,14 @@ public class FaultInformationService {
         Date endDate = DateUtil.parse(split1[1]);
 
         //本周/本月时长总数
-        Integer time = Math.toIntExact(DateUtil.between(startDate, endDate, DateUnit.HOUR));
+        Integer time = Math.toIntExact(DateUtil.between(startDate, endDate, DateUnit.MINUTE));
         //计划时长
-        Integer planTime = 0;
+        Double planTime =null;
         //实际时长
-        Integer actualTime = 0;
+        Double actualTime = null;
 
         //查询按系统分类好的并计算了故障消耗总时长的记录
-        List<FaultSystemTimeDTO> systemFaultSum = faultInformationMapper.getSystemFaultSum(startDate, endDate);
+        List<FaultSystemTimesDTO> systemFaultSum = faultInformationMapper.getSystemFaultSum(startDate, endDate);
         //查询子系统设备数
         List<FaultSystemDeviceSumDTO> systemDeviceSum = faultInformationMapper.getSystemDeviceSum();
         if(ObjectUtil.isNotEmpty(systemDeviceSum)){
@@ -626,34 +627,38 @@ public class FaultInformationService {
                 faultSystemReliabilityDTO.setSystemName(faultSystemDeviceSumDTO.getSystemName());
                 faultSystemReliabilityDTO.setSubSystemCode(faultSystemDeviceSumDTO.getSystemCode());
                 //计划时长
-                planTime =faultSystemDeviceSumDTO.getDeviceNumber()*time;
-                faultSystemReliabilityDTO.setScheduledRuntime(planTime);
+                planTime = Double.valueOf(faultSystemDeviceSumDTO.getDeviceNumber()*time);
                 actualTime = planTime;
                 if(ObjectUtil.isNotEmpty(systemFaultSum)){
                     //遍历故障时间
-                    for (FaultSystemTimeDTO faultSystemTimeDTO : systemFaultSum) {
+                    for (FaultSystemTimesDTO faultSystemTimeDTO : systemFaultSum) {
                         if(ObjectUtil.isNotEmpty(faultSystemTimeDTO.getSubSystemCode())) {
                             //实际时长
                             if (faultSystemTimeDTO.getSubSystemCode().equals(faultSystemDeviceSumDTO.getSystemCode())) {
                                 if (ObjectUtil.isNotEmpty(faultSystemTimeDTO.getRepairTime())) {
-                                    Integer repairTime = Integer.valueOf(faultSystemTimeDTO.getRepairTime());
+                                    Double repairTime = faultSystemTimeDTO.getRepairTime();
                                     actualTime = planTime - repairTime;
-                                    faultSystemReliabilityDTO.setActualRuntime(actualTime);
+                                    Double d = new BigDecimal(actualTime /60).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
+                                    faultSystemReliabilityDTO.setActualRuntime(d);
                                 } else {
-                                    actualTime = planTime;
-                                    faultSystemReliabilityDTO.setActualRuntime(actualTime);
+                                    Double d = new BigDecimal(actualTime /60).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
+                                    faultSystemReliabilityDTO.setActualRuntime(d);
                                 }
                             } else {
-                                faultSystemReliabilityDTO.setActualRuntime(actualTime);
+                                Double d = new BigDecimal(actualTime /60).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
+                                faultSystemReliabilityDTO.setActualRuntime(d);
                             }
                         }
 
                     }
                 }
+                planTime = planTime/60;
+                Double plan = new BigDecimal(planTime).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
+                faultSystemReliabilityDTO.setScheduledRuntime(plan);
                 if (planTime <= 0 || actualTime <= 0) {
                     faultSystemReliabilityDTO.setReliability("0");
                 } else {
-                    Integer d = new BigDecimal(faultSystemReliabilityDTO.getActualRuntime() * 100 /planTime).setScale(1, BigDecimal.ROUND_HALF_UP).intValue();
+                    Double d = new BigDecimal(faultSystemReliabilityDTO.getActualRuntime() * 100 /planTime).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
                     faultSystemReliabilityDTO.setReliability(d + "%");
                 }
                 reliabilityList.add(faultSystemReliabilityDTO);

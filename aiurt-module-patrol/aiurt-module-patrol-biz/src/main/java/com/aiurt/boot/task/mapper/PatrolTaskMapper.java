@@ -364,4 +364,11 @@ public interface PatrolTaskMapper extends BaseMapper<PatrolTask> {
      * @return
      */
     List<LineOrStationDTO> selectSystem(@Param("id") String id);
+
+    /**
+     * 班组权限查询
+     * @param id
+     * @return
+     */
+    List<LineOrStationDTO> selectDepart(@Param("id") String id);
 }

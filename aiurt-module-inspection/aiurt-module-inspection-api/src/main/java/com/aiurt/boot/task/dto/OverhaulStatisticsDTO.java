@@ -153,6 +153,8 @@ public class OverhaulStatisticsDTO {
     private java.util.Date endDate;
 
 
+    private List<String> orgCodeList;
+
     /**名称集合*/
     @TableField(exist = false)
     @ApiModelProperty(value = "名称集合")

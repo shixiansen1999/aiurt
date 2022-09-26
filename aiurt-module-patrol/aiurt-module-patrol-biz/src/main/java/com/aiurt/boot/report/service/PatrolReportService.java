@@ -12,6 +12,7 @@ import com.aiurt.boot.report.model.PatrolReport;
 import com.aiurt.boot.report.model.PatrolReportModel;
 import com.aiurt.boot.report.model.dto.LineOrStationDTO;
 import com.aiurt.boot.report.model.dto.MonthDTO;
+import com.aiurt.boot.report.utils.PatrolDateUtils;
 import com.aiurt.boot.screen.service.PatrolScreenService;
 import com.aiurt.boot.task.entity.PatrolTaskDevice;
 import com.aiurt.boot.task.mapper.PatrolTaskDeviceMapper;
@@ -267,7 +268,9 @@ public class PatrolReportService {
             return 0;
         }
         if (endTime == true) {
-            DateUtil.weekCount(new Date(), new Date());
+             boolean sameDate = PatrolDateUtils.isSameDate(start, end);
+             Integer weekNumber = PatrolDateUtils.countTwoDayWeek(start, end, sameDate);
+             return  weekNumber;
         }
         return 1;
     }
@@ -405,59 +408,68 @@ public class PatrolReportService {
              * 子系统故障列表报表导出
              *
              * @param request
-             * @return
-             */
-    public ModelAndView reportSystemExport (HttpServletRequest request, String lineCode, List < String > stationCode, String startTime, String endTime){
-        ModelAndView mv = new ModelAndView(new JeecgEntityExcelView());
-        List<FailureReport> failureReportList = this.getFailureReport(lineCode, stationCode, startTime, endTime);
-        if (CollectionUtil.isNotEmpty(failureReportList)) {
-            //导出文件名称
-            mv.addObject(NormalExcelConstants.FILE_NAME, "子系统故障报表");
-            //excel注解对象Class
-            mv.addObject(NormalExcelConstants.CLASS, FailureReport.class);
-            //自定义表格参数
-            mv.addObject(NormalExcelConstants.PARAMS, new ExportParams("统计分析-子系统故障报表", "子系统故障报表"));
-            //导出数据列表
-            mv.addObject(NormalExcelConstants.DATA_LIST, failureReportList);
+                 * @return
+                 */
+        public ModelAndView reportSystemExport (HttpServletRequest request, String lineCode, List < String > stationCode, String startTime, String endTime){
+            ModelAndView mv = new ModelAndView(new JeecgEntityExcelView());
+            List<FailureReport> failureReportList = this.getFailureReport(lineCode, stationCode, startTime, endTime);
+            if (CollectionUtil.isNotEmpty(failureReportList)) {
+                //导出文件名称
+                mv.addObject(NormalExcelConstants.FILE_NAME, "子系统故障报表");
+                //excel注解对象Class
+                mv.addObject(NormalExcelConstants.CLASS, FailureReport.class);
+                //自定义表格参数
+                mv.addObject(NormalExcelConstants.PARAMS, new ExportParams("统计分析-子系统故障报表", "子系统故障报表"));
+                //导出数据列表
+                mv.addObject(NormalExcelConstants.DATA_LIST, failureReportList);
+            }
+            return mv;
         }
-        return mv;
-    }
-    /**
-     * 班组故障列表报表导出
-     *
-     * @param request
-     * @return
-     */
-    public ModelAndView reportOrgExport (HttpServletRequest request, String lineCode, List <String> stationCode, String startTime, String endTime, List < String > systemCode){
-        ModelAndView mv = new ModelAndView(new JeecgEntityExcelView());
-        List<FailureOrgReport> failureOrgReport = this.getFailureOrgReport(lineCode, stationCode, startTime, endTime, systemCode);
-        if (CollectionUtil.isNotEmpty(failureOrgReport)) {
-            //导出文件名称
-            mv.addObject(NormalExcelConstants.FILE_NAME, "班组故障报表");
-            //excel注解对象Class
-            mv.addObject(NormalExcelConstants.CLASS, FailureOrgReport.class);
-            //自定义表格参数
-            mv.addObject(NormalExcelConstants.PARAMS, new ExportParams("统计分析-班组故障报表", "班组故障报表"));
-            //导出数据列表
-            mv.addObject(NormalExcelConstants.DATA_LIST, failureOrgReport);
-        }
-        return mv;
-    }
+        /**
+         * 班组故障列表报表导出
+         *
+         * @param request
+         * @return
+         */
+        public ModelAndView reportOrgExport (HttpServletRequest request, String lineCode, List <String> stationCode, String startTime, String endTime, List < String > systemCode){
+            ModelAndView mv = new ModelAndView(new JeecgEntityExcelView());
+            List<FailureOrgReport> failureOrgReport = this.getFailureOrgReport(lineCode, stationCode, startTime, endTime, systemCode);
+            if (CollectionUtil.isNotEmpty(failureOrgReport)) {
+                //导出文件名称
+                mv.addObject(NormalExcelConstants.FILE_NAME, "班组故障报表");
+                //excel注解对象Class
+                mv.addObject(NormalExcelConstants.CLASS, FailureOrgReport.class);
+                //自定义表格参数
+                mv.addObject(NormalExcelConstants.PARAMS, new ExportParams("统计分析-班组故障报表", "班组故障报表"));
+                //导出数据列表
+                mv.addObject(NormalExcelConstants.DATA_LIST, failureOrgReport);
+            }
+            return mv;
+     }
 
-    public List<LineOrStationDTO> selectStation (String lineCode){
-        LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        List<LineOrStationDTO> station = patrolTaskMapper.selectStation(sysUser.getId(), lineCode);
-        return station;
-    }
+        public List<LineOrStationDTO> selectStation (String lineCode){
+            LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+            List<LineOrStationDTO> station = patrolTaskMapper.selectStation(sysUser.getId(), lineCode);
+            return station;
+       }
 
-    public List<LineOrStationDTO> selectLine () {
+        public List<LineOrStationDTO> selectLine () {
+            LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+            List<LineOrStationDTO> line = patrolTaskMapper.selectLine(sysUser.getId());
+            List<LineOrStationDTO> list = line.stream()
+                    .collect(Collectors.collectingAndThen(Collectors.toCollection(
+                            () -> new TreeSet<>(Comparator.comparing(LineOrStationDTO::getCode))), ArrayList::new));
+            return list;
+       }
+        public List<LineOrStationDTO> selectSystem () {
+            LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+            List<LineOrStationDTO> system = patrolTaskMapper.selectSystem(sysUser.getId());
+            return system;
+       }
+
+    public List<LineOrStationDTO> selectDepart () {
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        List<LineOrStationDTO> line = patrolTaskMapper.selectLine(sysUser.getId());
-        return line;
-    }
-    public List<LineOrStationDTO> selectSystem () {
-        LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        List<LineOrStationDTO> system = patrolTaskMapper.selectSystem(sysUser.getId());
-        return system;
+        List<LineOrStationDTO> lineOrStationDTOS = patrolTaskMapper.selectDepart(sysUser.getId());
+        return lineOrStationDTOS;
     }
         }
