@@ -128,6 +128,154 @@ public class PatrolDateUtils {
     }
 
     /**
+     * 计算周数
+     * @param startDate
+     * @param endDate
+     * @return
+     */
+    public static long countTwoDayWeek(String startDate, String endDate)
+    {
+
+        String today= DateUtil.today();
+        Date s = DateUtil.parse(startDate, "yyyy-MM");
+        Date e = DateUtil.parse(endDate, "yyyy-MM");
+        Date n = DateUtil.parse(today, "yyyy-MM");
+        Date start = DateUtil.parse(startDate, "yyyy-MM-dd");
+        Date end = DateUtil.parse(endDate, "yyyy-MM-dd");
+        int startMonth = DateUtil.month(start)+1;
+        int endMonth = DateUtil.month(end)+1;
+        //开始时间大于等于当前时间
+        if(s.after(n)||s.equals(n))
+        {
+            return  0;
+        }
+        //开始时间小于当前时间
+        else
+        {
+            //结束时间小于当前时间
+            if(e.before(n))
+            {
+                int startYear = DateUtil.year(start);
+                int endYear = DateUtil.year(end);
+                DateTime dateTime = DateUtil.lastMonth();
+                int lastMonth = DateUtil.month(dateTime)+1;
+                //结束年份大于开始年份
+                if(endYear>startYear) {
+                    //结束月份大于开始月份
+                    if(endMonth>startMonth)
+                    {
+                        //开始时间的周一
+                        DateTime startMonday = DateUtil.beginOfWeek(start);
+                        //结束时间的周日
+                        DateTime endSunday = DateUtil.endOfWeek(end);
+                        long betweenDay = DateUtil.between(startMonday, endSunday, DateUnit.DAY)+1;
+                        System.out.println(betweenDay/7);
+                        return betweenDay/7;
+                    }
+                    //结束月份小于等于开始月份
+                    else
+                    {
+                        //开始时间的周一
+                        DateTime startMonday = DateUtil.beginOfWeek(start);
+                        //结束时间的周日
+                        DateTime endSunday = DateUtil.endOfWeek(end);
+                        long betweenDay = DateUtil.between(startMonday, endSunday, DateUnit.DAY)+1;
+                        System.out.println(betweenDay/7);
+                        return betweenDay/7;
+                    }
+                }
+                //结束年份小于等于开始年份
+                else {
+                    //结束月份大于开始月份
+                    if(endMonth>startMonth)
+                    {
+                        //开始时间的周一
+                        DateTime startMonday = DateUtil.beginOfWeek(start);
+                        //结束时间的周日
+                        DateTime endSunday = DateUtil.endOfWeek(end);
+                        long betweenDay = DateUtil.between(startMonday, endSunday, DateUnit.DAY)+1;
+                        System.out.println(betweenDay/7);
+                        return betweenDay/7;
+                    }
+                    //结束月份小于等于开始月份
+                    else
+                    {
+                        //开始时间的周一
+                        DateTime startMonday = DateUtil.beginOfWeek(start);
+                        //结束时间的周日
+                        DateTime endSunday = DateUtil.endOfWeek(end);
+                        long betweenDay = DateUtil.between(startMonday, endSunday, DateUnit.DAY)+1;
+                        System.out.println(betweenDay/7);
+                        return betweenDay/7;
+                    }
+                }
+            }
+            //结束时间大于等于当前时间
+            if(e.equals(n)||e.after(n))
+            {
+                int startYear = DateUtil.year(start);
+                int endYear = DateUtil.year(end);
+                DateTime dateTime = DateUtil.lastMonth();
+                int lastMonth = DateUtil.month(dateTime)+1;
+                //结束年份大于开始年份
+                if(endYear>startYear) {
+                    //结束月份大于开始月份
+                    if(endMonth>startMonth)
+                    {
+                        //开始时间的周一
+                        DateTime startMonday = DateUtil.beginOfWeek(start);
+                        //当前时间的上周日
+                        Date nowSunday = DateUtil.endOfWeek(new Date());
+                        DateTime nowLastSunday = DateUtil.offsetDay(nowSunday, -7);
+                        long betweenDay = DateUtil.between(startMonday, nowLastSunday, DateUnit.DAY)+1;
+                        System.out.println(betweenDay/7);
+                        return betweenDay/7;
+                    }
+                    //结束月份小于等于开始月份
+                    else
+                    {
+                        //开始时间的周一
+                        DateTime startMonday = DateUtil.beginOfWeek(start);
+                        //结束时间的周日
+                        DateTime endSunday = DateUtil.endOfWeek(end);
+                        long betweenDay = DateUtil.between(startMonday, endSunday, DateUnit.DAY)+1;
+                        System.out.println(betweenDay/7);
+                        return betweenDay/7;
+                    }
+                }
+                //结束年份小于等于开始年份
+                else
+                {
+                    //结束月份大于开始月份
+                    if(endMonth>startMonth)
+                    {
+                        //开始时间的周一
+                        DateTime startMonday = DateUtil.beginOfWeek(start);
+                        //当前时间的上周日
+                        Date nowSunday = DateUtil.endOfWeek(new Date());
+                        DateTime nowLastSunday = DateUtil.offsetDay(nowSunday, -7);
+                        long betweenDay = DateUtil.between(startMonday, nowLastSunday, DateUnit.DAY)+1;
+                        System.out.println(betweenDay/7);
+                        return betweenDay/7;
+
+                    }
+                    //结束月份小于等于开始月份
+                    else
+                    {
+                        Date startMonday = DateUtil.beginOfWeek(start);
+                        DateTime endSunday = DateUtil.endOfWeek(end);
+                        long betweenDay = DateUtil.between(startMonday, endSunday, DateUnit.DAY)+1;
+                        System.out.println(betweenDay/7);
+                        return betweenDay/7;
+                    }
+                }
+            }
+        }
+        return 0;
+
+    }
+
+    /**
      * 比较两个日期：相等（0）、之前（1）、之后（2）
      * @param tagDateTime
      * @return

@@ -158,7 +158,7 @@ public class PatrolReportService {
                                 String completionRated = String.format("%.2f", fave);
                                 patrolReport.setAwmPatrolNumber(completionRated);
                             } else {
-                                Integer weekNumber = getWeekNumber(startDate, endDate);
+                                long weekNumber = getWeekNumber(startDate, endDate);
                                 if (weekNumber == 0) {
                                     patrolReport.setAwmPatrolNumber("-");
                                 } else {
@@ -303,7 +303,6 @@ public class PatrolReportService {
             //结束时间大于等于当前时间
             if(e.equals(n)||e.after(n))
             {
-                //结束月份大于开始月份
                 int startYear = DateUtil.year(start);
                 int endYear = DateUtil.year(end);
                 DateTime dateTime = DateUtil.lastMonth();
@@ -314,7 +313,7 @@ public class PatrolReportService {
                    // System.out.println("结束时间大于等于当前时间，结束年份大于开始年份，月数:"+monthNumber);
                     return monthNumber;
                 }
-                //结束年份小于开始年份
+                //结束年份小于等于开始年份
                 else
                 {
                     int monthNumber = lastMonth-startMonth+1;
@@ -326,49 +325,9 @@ public class PatrolReportService {
         return 0;
     }
 
-    public Integer getWeekNumber(String start, String end) {
-        boolean endTime = DateUtil.isSameDay(new Date(), DateUtil.parseDate(end));
-        DateTime nowStart = DateUtil.beginOfWeek(new Date());
-        DateTime endDayMonday = DateUtil.beginOfWeek(DateUtil.parseDate(end));
-        //判断当前时间的周一与结束时间的周一是否相等，即是否同一周
-        boolean nowIsEndTime = DateUtil.isSameDay(nowStart, endDayMonday);
-        //判断开始时间在当前时间之前、之后、相等
-        Integer calendarBefore = PatrolDateUtils.belongCalendarBefore(start);
-        //判断结束时间在当前时间之前、之后、相等
-        Integer calendarEnd = PatrolDateUtils.belongCalendarBefore(end);
-        if (calendarBefore==2) {
-            return 0;
-        }
-        else if (calendarBefore==0) {
-            return  0;
-        }
-        else if (calendarBefore==1) {
-            DateTime day = DateUtil.beginOfWeek(DateUtil.parse(start));
-            //判断开始时间与当前时间是否是同一周
-            boolean beforeStartDay = DateUtil.isSameDay(nowStart, day);
-            //判断结束时间与当前时间是否是同一周
-            boolean beforeEndDay = DateUtil.isSameDay(endDayMonday, day);
-            if(beforeStartDay==true)
-            {
-                return  0;
-            }
-            //开始和结束不是同一周
-            else if(beforeStartDay==false&&beforeEndDay==false)
-            {
-                boolean sameDate = PatrolDateUtils.isSameDate(start, end);
-                Integer weekNumber = PatrolDateUtils.countTwoDayWeek(start, end, sameDate);
-                return  weekNumber;
-            }
-            //开始不是，结束时间是同一周
-            else if(beforeStartDay==false&&nowIsEndTime==true)
-            {
-                DateTime lastDay = DateUtil.offsetDay( DateUtil.parseDate(end), -7);
-                boolean sameDate = PatrolDateUtils.isSameDate(start, DateUtil.formatTime(lastDay));
-                Integer weekNumber = PatrolDateUtils.countTwoDayWeek(start, end, sameDate);
-                return  weekNumber;
-            }
-        }
-            return 0;
+    public long getWeekNumber(String start, String end) {
+         long weekNumber = PatrolDateUtils.countTwoDayWeek(start, end);
+         return weekNumber;
     }
 
     public ModelAndView reportExport(HttpServletRequest request, PatrolReportModel reportReqVO) {
