@@ -12,7 +12,10 @@ import org.springframework.format.annotation.DateTimeFormat;
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.util.Date;
-
+/**
+ * @author JB
+ * @Description:
+ */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

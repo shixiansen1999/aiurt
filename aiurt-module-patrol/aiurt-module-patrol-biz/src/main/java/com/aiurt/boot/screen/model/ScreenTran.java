@@ -9,7 +9,8 @@ import java.util.Date;
 import java.util.List;
 
 /**
- * 业务层封装的传输实体
+ * @author JB
+ * @Description: 业务层封装的传输实体
  */
 @Data
 @NoArgsConstructor

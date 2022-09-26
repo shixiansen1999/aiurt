@@ -19,6 +19,10 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Date;
 
+/**
+ * @author JB
+ * @Description: 大屏巡视模块控制层
+ */
 @Api(tags = "巡检首页统计")
 @RestController
 @RequestMapping("/patrolStatistics")

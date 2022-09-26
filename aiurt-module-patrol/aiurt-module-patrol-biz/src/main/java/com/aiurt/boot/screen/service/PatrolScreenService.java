@@ -26,6 +26,10 @@ import java.time.ZoneId;
 import java.util.*;
 import java.util.stream.Collectors;
 
+/**
+ * @author JB
+ * @Description: 大屏巡视模块业务层
+ */
 @Service
 public class PatrolScreenService {
     @Autowired

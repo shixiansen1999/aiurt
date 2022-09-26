@@ -13,6 +13,10 @@ import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.util.Date;
 
+/**
+ * @author JB
+ * @Description:
+ */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -63,7 +67,6 @@ public class IndexTaskDTO implements Serializable {
      * 巡检结果：0异常、1正常
      */
     @ApiModelProperty(value = "巡检结果：0异常、1正常")
-//    @NotNull(message = "任务的异常状态不能为空")
     private Integer state;
     /**
      * 站点编号

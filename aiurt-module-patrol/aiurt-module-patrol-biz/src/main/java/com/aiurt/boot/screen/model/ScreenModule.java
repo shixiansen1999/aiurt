@@ -7,7 +7,10 @@ import lombok.experimental.Accessors;
 
 import java.util.Date;
 import java.util.List;
-
+/**
+ * @author JB
+ * @Description:
+ */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

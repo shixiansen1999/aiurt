@@ -7,7 +7,8 @@ import com.aiurt.boot.screen.constant.ScreenConstant;
 import java.util.Date;
 
 /**
- * 大屏巡视模块获取本周、上周、本月、上月的时间工具类
+ * @author JB
+ * @Description: 大屏巡视模块获取本周、上周、本月、上月的时间工具类
  */
 public class ScreenDateUtil {
 

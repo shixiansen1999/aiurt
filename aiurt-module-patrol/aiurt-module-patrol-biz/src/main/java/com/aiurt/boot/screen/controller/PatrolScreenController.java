@@ -20,7 +20,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
-
+/**
+ * @author JB
+ * @Description: 大屏巡视模块控制层
+ */
 @Api(tags = "大屏巡视模块")
 @RestController
 @RequestMapping("/patrolScreen")

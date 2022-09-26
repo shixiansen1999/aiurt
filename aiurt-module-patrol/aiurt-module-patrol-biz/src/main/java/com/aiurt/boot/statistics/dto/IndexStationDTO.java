@@ -9,7 +9,8 @@ import lombok.experimental.Accessors;
 import java.io.Serializable;
 
 /**
- * 首页巡检的站点DTO
+ * @author JB
+ * @Description: 大屏巡视模块-重要数据展示对象首页巡检的站点DTO
  */
 @Data
 @NoArgsConstructor
