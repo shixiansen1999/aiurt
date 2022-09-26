@@ -1,7 +1,6 @@
 package com.aiurt.modules.largescream.service;
 
 import cn.hutool.core.collection.CollUtil;
-import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.convert.Convert;
 import cn.hutool.core.date.DateUnit;
 import cn.hutool.core.date.DateUtil;
@@ -28,7 +27,6 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -305,6 +303,11 @@ public class FaultInformationService {
     }
 
     public List<FaultDataStatisticsDTO> getYearFault(FaultDataStatisticsDTO faultDataStatisticsDTO) {
+        //先获取用户管理的专业，根据专业筛选
+        LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        List<CsUserMajorModel> majorByUserId = sysBaseAPI.getMajorByUserId(sysUser.getId());
+        List<String> majorCodes = majorByUserId.stream().map(CsUserMajorModel::getMajorCode).collect(Collectors.toList());
+        faultDataStatisticsDTO.setMajorCodes(majorCodes);
         int month = 12;
         List<FaultDataStatisticsDTO> dtoList = new ArrayList<>();
         for (int i = 0; i < month ; i++) {
@@ -324,6 +327,11 @@ public class FaultInformationService {
     }
 
     public List<FaultDataStatisticsDTO> getSystemYearFault(FaultDataStatisticsDTO faultDataStatisticsDTO) {
+        //先获取用户管理的专业，根据专业筛选
+        LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        List<CsUserMajorModel> majorByUserId = sysBaseAPI.getMajorByUserId(sysUser.getId());
+        List<String> majorCodes = majorByUserId.stream().map(CsUserMajorModel::getMajorCode).collect(Collectors.toList());
+
         List<FaultDataStatisticsDTO> dtoList = new ArrayList<>();
         String firstDay = null;
         String lastDay = null;
@@ -337,7 +345,7 @@ public class FaultInformationService {
             faultDataStatisticsDTO.setLastDay(lastDay);
         }
 
-        List<FaultDataStatisticsDTO> allSystemCode = faultInformationMapper.getAllSystemCode();
+        List<FaultDataStatisticsDTO> allSystemCode = faultInformationMapper.getAllSystemCode(majorCodes);
         for (int i = 0; i < allSystemCode.size(); i++) {
             faultDataStatisticsDTO.setSubSystemCode(allSystemCode.get(i).getSubSystemCode());
             Integer yearFault = faultInformationMapper.getYearFault(faultDataStatisticsDTO);
@@ -352,6 +360,12 @@ public class FaultInformationService {
     }
 
     public FaultDataStatisticsDTO getFaultAnalysis(FaultDataStatisticsDTO faultDataStatisticsDTO) {
+        //先获取用户管理的专业，根据专业筛选
+        LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        List<CsUserMajorModel> majorByUserId = sysBaseAPI.getMajorByUserId(sysUser.getId());
+        List<String> majorCodes = majorByUserId.stream().map(CsUserMajorModel::getMajorCode).collect(Collectors.toList());
+        faultDataStatisticsDTO.setMajorCodes(majorCodes);
+
         if (faultDataStatisticsDTO.getBoardTimeType() != null) {
             String dateTime = FaultLargeDateUtil.getDateTime(faultDataStatisticsDTO.getBoardTimeType());
             String[] split = dateTime.split("~");

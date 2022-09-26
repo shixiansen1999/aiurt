@@ -260,10 +260,28 @@
         <if test="condition.status != null">
             and status  = #{condition.status}
         </if>
+        <if test="condition.majorCodes != null and condition.majorCodes.size() != 0">
+            and major_code in
+            <foreach collection="condition.majorCodes" index="index" item="item" open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+        </if>
     </select>
 
     <select id="getAllSystemCode" resultType="com.aiurt.modules.fault.dto.FaultDataStatisticsDTO">
-        select system_code as subSystemCode ,system_name as subSystemName  from cs_subsystem where del_flag = 0
+        SELECT
+                system_code AS subSystemCode,
+                system_name AS subSystemName
+        FROM
+                cs_subsystem
+        WHERE
+                del_flag = 0
+        <if test="majorCodes != null and majorCodes.size() != 0">
+            and major_code in
+            <foreach collection="majorCodes" index="index" item="item" open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+        </if>
     </select>
 
 

@@ -5,7 +5,6 @@ import com.aiurt.modules.fault.dto.*;
 import com.aiurt.modules.fault.entity.Fault;
 import com.aiurt.modules.largescream.model.FaultDurationTask;
 import com.aiurt.modules.largescream.model.FaultScreenModule;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.Date;
@@ -157,9 +156,9 @@ public interface FaultInformationMapper {
     Integer getYearFault(@Param("condition")FaultDataStatisticsDTO condition);
 
     /**
-     * 所有子系统
+     * 拥有的专业下的所有子系统
      */
-    List<FaultDataStatisticsDTO> getAllSystemCode();
+    List<FaultDataStatisticsDTO> getAllSystemCode(@Param("majorCodes") List<String> majorCodes);
 
     /**
      * 班组画像维修工时

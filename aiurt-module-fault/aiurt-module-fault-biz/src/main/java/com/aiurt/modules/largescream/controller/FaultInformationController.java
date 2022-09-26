@@ -1,19 +1,13 @@
 package com.aiurt.modules.largescream.controller;
 
 import com.aiurt.common.aspect.annotation.AutoLog;
-import com.aiurt.modules.fault.dto.FaultDataStatisticsDTO;
-import com.aiurt.modules.fault.dto.FaultLargeCountDTO;
-import com.aiurt.modules.fault.dto.FaultLargeInfoDTO;
-import com.aiurt.modules.fault.dto.FaultLargeLineInfoDTO;
 import com.aiurt.modules.fault.dto.*;
 import com.aiurt.modules.largescream.service.FaultInformationService;
-import com.baomidou.mybatisplus.core.metadata.IPage;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import lombok.extern.slf4j.Slf4j;
 import org.jeecg.common.api.vo.Result;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;

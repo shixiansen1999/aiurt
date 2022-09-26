@@ -427,14 +427,13 @@ public class BigscreenPlanService {
                 }
             }
         }
-        List<String> collect1 = teamPortraitDTOS.stream().map(TeamPortraitDTO::getTeamId).collect(Collectors.toList());
         if (CollUtil.isNotEmpty(teamPortraitDTOS)) {
             int i = 0;
             for (TeamPortraitDTO teamPortraitDTO : teamPortraitDTOS) {
                 //找到当前班组关联的工区信息
                 List<TeamPortraitDTO> workAreaById = bigScreenPlanMapper.getWorkAreaByCode(teamPortraitDTO.getTeamCode());
                 if (CollUtil.isNotEmpty(workAreaById)) {
-                    List<String> teamLineName = workAreaById.stream().map(TeamPortraitDTO::getTeamLeaderName).collect(Collectors.toList());
+                    List<String> teamLineName = workAreaById.stream().map(TeamPortraitDTO::getTeamLineName).collect(Collectors.toList());
                     teamPortraitDTO.setTeamLineName(CollUtil.join(teamLineName, ","));
 
                     List<String> position = workAreaById.stream().map(TeamPortraitDTO::getPosition).collect(Collectors.toList());
