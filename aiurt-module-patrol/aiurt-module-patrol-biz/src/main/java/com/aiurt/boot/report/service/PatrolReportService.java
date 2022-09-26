@@ -56,23 +56,19 @@ public class PatrolReportService {
     public Page<PatrolReport> getTaskDate(Page<PatrolReport> pageList, PatrolReportModel report) {
         String startDate = report.getStartDate();
         String endDate = report.getEndDate();
+        PatrolReportModel orgCodeName = new PatrolReportModel();
         LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         List<SysDepartModel> userSysDepart = sysBaseAPI.getUserSysDepart(user.getId());
         List<String> orgList = userSysDepart.stream().map(SysDepartModel::getOrgCode).collect(Collectors.toList());
-        //        if(CollUtil.isEmpty(orgList))
-//        {
-//            report.setOrgCode("null");
-//        }
-//        else
-//        {
-//            report.setOrgList(orgList);
-//        }
-        List<String> orgs = new ArrayList<>();
-        orgs.add("A06A01A01A02");
-        orgs.add("A06A01A01A01");
-        report.setOrgList(orgs);
-        PatrolReportModel orgCodeName = new PatrolReportModel();
-        orgCodeName.setOrgList(orgs);
+        if(CollUtil.isEmpty(orgList))
+        {
+            report.setOrgCode("null");
+        }
+        else
+        {
+            report.setOrgList(orgList);
+            orgCodeName.setOrgList(orgList);
+        }
         orgCodeName.setOrgCode(report.getOrgCode());
         PatrolReportModel omitModel = new PatrolReportModel();
         PatrolReportModel avgWeekOmit = new PatrolReportModel();
@@ -219,6 +215,7 @@ public class PatrolReportService {
     public PatrolReport setZero(PatrolReport report) {
         PatrolReport patrolReport = new PatrolReport();
         patrolReport.setTaskId(report.getTaskId());
+        patrolReport.setOrgCode(report.getOrgCode());
         patrolReport.setOrgName(report.getOrgName());
         patrolReport.setTaskTotal(0);
         patrolReport.setCompletionRate("-");
@@ -270,7 +267,7 @@ public class PatrolReportService {
             return 0;
         }
         if (endTime == true) {
-
+            DateUtil.weekCount(new Date(), new Date());
         }
         return 1;
     }
