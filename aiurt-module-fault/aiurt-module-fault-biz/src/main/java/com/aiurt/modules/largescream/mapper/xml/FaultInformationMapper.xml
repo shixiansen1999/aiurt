@@ -248,7 +248,7 @@
         <if test="condition.lastDay != null and condition.lastDay != ''">
             and DATE_FORMAT(approval_pass_time ,'%Y-%m-%d') &lt;= DATE_FORMAT(#{condition.lastDay},'%Y-%m-%d')
         </if>
-        <if test="condition.lineCode != null">
+        <if test="condition.lineCode != null and condition.lineCode != ''">
             and line_code  = #{condition.lineCode}
         </if>
         <if test="condition.subSystemCode != null and condition.subSystemCode != ''">
