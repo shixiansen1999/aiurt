@@ -135,7 +135,7 @@
                 and f.status = 12
             </if>
             <if test=" condition.todaySolve != null and condition.todaySolve !=''">
-                and f.approval_pass_time  &gt;= #{condition.todayStartDate}  and f.approval_pass_time &lt;= #{condition.todayEndDate}
+                and f.end_time  &gt;= #{condition.todayStartDate}  and f.end_time &lt;= #{condition.todayEndDate}
             </if>
         </where>
     </select>
@@ -166,7 +166,7 @@
                 and f.status = 12
             </if>
             <if test=" condition.weekSolve != null and condition.weekSolve !=''">
-                and f.approval_pass_time  &gt;= #{condition.startDate}  and f.approval_pass_time &lt;= #{condition.endDate}
+                and f.end_time  &gt;= #{condition.startDate}  and f.end_time &lt;= #{condition.endDate}
             </if>
             <if test="condition.todayAdd != null and condition.todayAdd !=''">
                 and f.happen_time  &gt;= #{condition.todayStartDate}  and f.happen_time &lt;= #{condition.todayEndDate}
@@ -175,7 +175,7 @@
                 and f.status = 12
             </if>
             <if test=" condition.todaySolve != null and condition.todaySolve !=''">
-                and f.approval_pass_time  &gt;= #{condition.todayStartDate}  and f.approval_pass_time &lt;= #{condition.todayEndDate}
+                and f.end_time  &gt;= #{condition.todayStartDate}  and f.end_time &lt;= #{condition.todayEndDate}
             </if>
         </where>
     </select>
