@@ -179,7 +179,7 @@
 
 <select id="getUserList" resultType="com.aiurt.boot.index.dto.TeamUserDTO">
     SELECT
-    su.id,
+    su.id as userId,
     su.realname,
     su.avatar,
     su.job_grade,
