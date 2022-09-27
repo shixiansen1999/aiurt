@@ -331,7 +331,7 @@ public class BigscreenPlanService {
         List<SysDepartModel> teamBylineAndMajors = sysBaseAPI.getTeamBylineAndMajors(lineCode);
 
         if (CollUtil.isNotEmpty(teamBylineAndMajors)) {
-            teamBylineAndMajors.parallelStream().forEach(teamBylineAndMajor -> {
+            teamBylineAndMajors.stream().forEach(teamBylineAndMajor -> {
                 PlanIndexDTO planIndexDTO = new PlanIndexDTO();
 
                 // 查询已完成数量、未完成数量
