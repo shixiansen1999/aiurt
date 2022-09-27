@@ -101,7 +101,7 @@ public class WeaverSSOServiceImpl implements IWeaverSSOService {
         //对秘钥进行加密传输，防止篡改数据
         String encryptSecret = rsa.encryptBase64(secret, CharsetUtil.CHARSET_UTF_8, KeyType.PublicKey);
 
-        String url = String.format("http://%s%s", weaverIp, registUrl);
+        String url = String.format("http://%s%s", weaverIp, applytokenUrl);
         HttpHeaders headers = new HttpHeaders();
         headers.add("appid", appId);
         headers.add("secret", encryptSecret);
