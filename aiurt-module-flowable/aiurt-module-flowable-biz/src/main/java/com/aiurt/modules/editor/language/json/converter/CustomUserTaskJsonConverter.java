@@ -2,7 +2,9 @@ package com.aiurt.modules.editor.language.json.converter;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.map.MapUtil;
+import cn.hutool.core.util.StrUtil;
 import com.aiurt.modules.utils.ExtensionPropertiesUtil;
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -83,6 +85,13 @@ public class CustomUserTaskJsonConverter  extends UserTaskJsonConverter {
 
              // usetask属性修改
             Map<String, List<ExtensionAttribute>> attributes = baseElement.getAttributes();
+            log.info("处理自定义属性:{}",JSON.toJSONString(attributes));
+            attributes.forEach((key,list)->{
+                ExtensionAttribute extensionAttribute = list.get(0);
+                ObjectNode objectNode = super.objectMapper.createObjectNode();
+                objectNode.put(extensionAttribute.getName(), extensionAttribute.getValue());
+                propertiesNode.put(extensionAttribute.getName(),  extensionAttribute.getValue());
+            });
 
             Map<String, List<ExtensionElement>> extensionElements = baseElement.getExtensionElements();
             //  自定义属性:操作按钮
@@ -193,14 +202,12 @@ public class CustomUserTaskJsonConverter  extends UserTaskJsonConverter {
                 }
             }
 
-            /*JsonNode variableList = JsonConverterUtil.getProperty("variableList", elementNode);
-
-            if (Objects.nonNull(variableList)) {
-                String json = objectMapper.writeValueAsString(variableList);
-                log.info("json->{}",json);
-                ExtensionElement ee = buildElement(variableList, json, "variableList", FORM_VARIABLE);
-                userTask.addExtensionElement(ee);
-            }*/
+            // 表单页面 类型
+            addCustomAttibute(elementNode, userTask, "formData.formType");
+            // 表单url
+            addCustomAttibute(elementNode, userTask, "formData.formUrl");
+            // 流程变量
+            addCustomAttibute(elementNode, userTask, "flowable.formtaskVariables");
 
             JsonNode deptPostList = JsonConverterUtil.getProperty("deptPostList", elementNode);
 
@@ -231,6 +238,16 @@ public class CustomUserTaskJsonConverter  extends UserTaskJsonConverter {
                 });
                 userTask.addExtensionElement(ee);
             }
+        }
+    }
+
+    private void addCustomAttibute(JsonNode elementNode, UserTask userTask, String s) {
+        String formType = JsonConverterUtil.getPropertyValueAsString(s, elementNode);
+        if (StrUtil.isNotBlank(formType)) {
+            ExtensionAttribute attribute = new ExtensionAttribute();
+            attribute.setName(s);
+            attribute.setValue(formType);
+            userTask.addAttribute(attribute);
         }
     }
 
