@@ -153,7 +153,7 @@ public class FaultInformationService {
                 faultScreenModule.setStartDate(null);
                 faultScreenModule.setEndDate(null);
                 faultScreenModule.setTodayStartDate(DateUtil.beginOfDay(new Date()));
-                faultScreenModule.setTodayStartDate(DateUtil.endOfDay(new Date()));
+                faultScreenModule.setTodayEndDate(DateUtil.endOfDay(new Date()));
                 faultScreenModule.setTodaySolve(1);
                 faultScreenModule.setLineCode(lineCode);
                 faultScreenModule.setMajors(majors);
