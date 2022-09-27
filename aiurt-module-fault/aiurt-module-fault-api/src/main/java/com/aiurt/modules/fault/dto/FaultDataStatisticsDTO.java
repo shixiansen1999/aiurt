@@ -69,6 +69,18 @@ public class FaultDataStatisticsDTO extends DictEntity implements Serializable {
     @ApiModelProperty("未完成故障数量百分比")
     private BigDecimal undoneFaultNum;
 
+    @ApiModelProperty("报修故障数量")
+    private BigDecimal repairFaults;
+
+    @ApiModelProperty("自检故障数量")
+    private BigDecimal selfCheckFaults;
+
+    @ApiModelProperty("已完成故障数量")
+    private BigDecimal completedFaults;
+
+    @ApiModelProperty("未完成故障数量")
+    private BigDecimal undoneFaults;
+
     @ApiModelProperty("类型:1：本周，2：上周，3：本月， 4：上月")
     private Integer boardTimeType;
 

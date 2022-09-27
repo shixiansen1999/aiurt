@@ -384,25 +384,33 @@ public class FaultInformationService {
             BigDecimal selfCheckFault= new BigDecimal(faultInformationMapper.getYearFault(faultDataStatisticsDTO));
             BigDecimal selfCheckFaultNum = selfCheckFault.divide(total, 3, BigDecimal.ROUND_HALF_UP);
             faultDataStatisticsDTO.setSelfCheckFaultNum(selfCheckFaultNum.multiply(new BigDecimal(100)));
+            faultDataStatisticsDTO.setSelfCheckFaults(selfCheckFault);
             //报修数量
             BigDecimal repairFault = total.subtract(selfCheckFault);
             BigDecimal repairFaultNum = repairFault.divide(total, 3, BigDecimal.ROUND_HALF_UP);
             faultDataStatisticsDTO.setRepairFaultNum(repairFaultNum.multiply(new BigDecimal(100)));
+            faultDataStatisticsDTO.setRepairFaults(repairFault);
             //已完成数量
             faultDataStatisticsDTO.setFaultModeCode(null);
             faultDataStatisticsDTO.setStatus(FaultStatusEnum.Close.getStatus());
             BigDecimal completedFault = new BigDecimal(faultInformationMapper.getYearFault(faultDataStatisticsDTO));
             BigDecimal completedFaultNum =  completedFault.divide(total, 3, BigDecimal.ROUND_HALF_UP);
             faultDataStatisticsDTO.setCompletedFaultNum(completedFaultNum.multiply(new BigDecimal(100)));
+            faultDataStatisticsDTO.setCompletedFaults(completedFault);
             //未完成数量
             BigDecimal undoneFault = total.subtract(completedFault);
             BigDecimal undoneFaultNum = undoneFault.divide(total, 3, BigDecimal.ROUND_HALF_UP);
             faultDataStatisticsDTO.setUndoneFaultNum(undoneFaultNum.multiply(new BigDecimal(100)));
+            faultDataStatisticsDTO.setUndoneFaults(undoneFault);
         } else {
             faultDataStatisticsDTO.setSelfCheckFaultNum(new BigDecimal(0));
             faultDataStatisticsDTO.setRepairFaultNum(new BigDecimal(0));
             faultDataStatisticsDTO.setCompletedFaultNum(new BigDecimal(0));
             faultDataStatisticsDTO.setUndoneFaultNum(new BigDecimal(0));
+            faultDataStatisticsDTO.setSelfCheckFaults(new BigDecimal(0));
+            faultDataStatisticsDTO.setRepairFaults(new BigDecimal(0));
+            faultDataStatisticsDTO.setCompletedFaults(new BigDecimal(0));
+            faultDataStatisticsDTO.setUndoneFaults(new BigDecimal(0));
         }
 
         return faultDataStatisticsDTO;
