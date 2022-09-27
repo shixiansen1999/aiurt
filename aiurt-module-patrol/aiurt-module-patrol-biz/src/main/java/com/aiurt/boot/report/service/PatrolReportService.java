@@ -348,20 +348,18 @@ public class PatrolReportService {
     public ModelAndView reportExport(HttpServletRequest request, PatrolReportModel reportReqVO) {
 
         ModelAndView mv = new ModelAndView(new JeecgEntityExcelView());
-        //获取数据
-        String[] strings = new String[]{"orgName", "taskTotal"};
-        Page<PatrolReport> page = new Page<>(reportReqVO.getPageNo(), reportReqVO.getPageSize());
-        IPage<PatrolReport> report = this.getTaskDate(page, reportReqVO);
-        List<PatrolReport> reportData = report.getRecords();
-        if (CollUtil.isNotEmpty(reportData)) {
+        Page<PatrolReport> page = new Page<PatrolReport>(1, 9999);
+        IPage<PatrolReport> report = this.getTaskDate(page,reportReqVO);
+        List<PatrolReport> failureReports = report.getRecords();
+        if (CollectionUtil.isNotEmpty(failureReports)) {
             //导出文件名称
             mv.addObject(NormalExcelConstants.FILE_NAME, "巡视报表");
             //excel注解对象Class
             mv.addObject(NormalExcelConstants.CLASS, PatrolReport.class);
             //自定义表格参数
-            mv.addObject(NormalExcelConstants.PARAMS);
+            mv.addObject(NormalExcelConstants.PARAMS, new ExportParams("统计分析-巡视报表", "巡视报表"));
             //导出数据列表
-            mv.addObject(NormalExcelConstants.DATA_LIST, reportData);
+            mv.addObject(NormalExcelConstants.DATA_LIST, failureReports);
         }
         return mv;
     }
