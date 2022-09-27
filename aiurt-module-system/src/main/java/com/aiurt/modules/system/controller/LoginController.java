@@ -525,9 +525,6 @@ public class LoginController {
 		obj.put("sysAllDictItems", sysDictService.queryAllDictItems());
 		result.setResult(obj);
 		result.success("登录成功");
-		// 设置泛微token
-		WeaverSsoRestultDTO serviceToken = weaverSSOService.getToken();
-		obj.put("weaverToken", serviceToken);
 		return result;
 	}
 
@@ -874,6 +871,13 @@ public class LoginController {
 
 		String encryptUserid = rsa1.encryptBase64("1",CharsetUtil.CHARSET_UTF_8,KeyType.PublicKey);
 		System.out.println(encryptUserid);
+	}
+
+	@GetMapping("/getWeaverToken")
+	@ApiOperation("获取泛微token信息")
+	public Result<WeaverSsoRestultDTO> getWeaverToken() {
+		WeaverSsoRestultDTO serviceToken = weaverSSOService.getToken();
+		return Result.OK(serviceToken);
 	}
 
 }
