@@ -152,7 +152,7 @@
         left join cs_station ct on ct.station_code = f.station_code
         left join sys_user s on s.username = f.appoint_user_name
         <where>
-            status > 2
+            f.status > 2
             <if test="condition.lineCode != null and condition.lineCode != ''">
                 and f.line_code  = #{condition.lineCode}
             </if>
