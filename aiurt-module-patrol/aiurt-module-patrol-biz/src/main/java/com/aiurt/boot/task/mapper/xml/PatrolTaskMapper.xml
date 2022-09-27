@@ -687,7 +687,7 @@ GROUP BY
 	(
 	count( pt.id ) - count( pt.STATUS = 7 OR NULL )) AS notInspectedNumber,
 	CONCAT(
-   cast(count( pt.STATUS = 7 OR NULL )/count( pt.id ) as   decimal(10,   2))*100,
+   cast(count( pt.STATUS = 7 OR NULL )/count( pt.id )*100 as   decimal(10,   2)),
     '%'
   ) AS completionRate,
     GROUP_CONCAT(pt.id) as taskId,
