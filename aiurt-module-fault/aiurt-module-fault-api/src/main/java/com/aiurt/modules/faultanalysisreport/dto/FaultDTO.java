@@ -102,6 +102,10 @@ public class FaultDTO extends DictEntity implements Serializable {
     @Length(max = 255, message = "故障现象长度不能超过255")
     private String faultPhenomenon;
 
+    /**故障分析*/
+    @ApiModelProperty(value = "故障分析")
+    private String faultAnalysis;
+
     /**维修完成时间*/
     @Excel(name = "维修完成时间", width = 15, format = "yyyy-MM-dd HH:mm:ss")
     @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
