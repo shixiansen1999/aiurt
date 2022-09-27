@@ -22,6 +22,7 @@ import com.aiurt.boot.task.dto.PatrolTaskUserContentDTO;
 import com.aiurt.boot.task.dto.SubsystemDTO;
 import com.aiurt.boot.task.entity.PatrolTask;
 import com.aiurt.boot.task.param.PatrolTaskParam;
+import com.aiurt.common.util.IpUtils;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -288,7 +289,7 @@ public interface PatrolTaskMapper extends BaseMapper<PatrolTask> {
      * @param endTime
      * @return
      */
-    List<FailureReport> getFailureReport(@Param("id")String id,@Param("lineCode") String lineCode,@Param("stationCode") List<String> stationCode,@Param("startTime") String startTime, @Param("endTime")String endTime);
+    IPage<FailureReport> getFailureReport(Page<FailureReport>page,@Param("id")String id,@Param("lineCode") String lineCode,@Param("stationCode") List<String> stationCode,@Param("startTime") String startTime, @Param("endTime")String endTime);
 
     /**
      * 查询数量
@@ -319,7 +320,7 @@ public interface PatrolTaskMapper extends BaseMapper<PatrolTask> {
      * @param stationCode
      * @return
      */
-    List<MonthDTO> selectMonth(@Param("id")String id,@Param("lineCode") String lineCode,@Param("stationCode") String stationCode);
+    List<MonthDTO> selectMonth(@Param("id")String id,@Param("lineCode") String lineCode,@Param("stationCode") List<String> stationCode);
 
     /**
      *查询班组报表
@@ -331,7 +332,7 @@ public interface PatrolTaskMapper extends BaseMapper<PatrolTask> {
      * @param systemCode
      * @return
      */
-    List<FailureOrgReport> getOrgReport(@Param("ids")List<String> ids, @Param("lineCode") String lineCode, @Param("stationCode") List<String> stationCode, @Param("startTime") String startTime, @Param("endTime")String endTime, @Param("systemCode")  List<String> systemCode);
+    IPage<FailureOrgReport> getOrgReport(Page<FailureOrgReport> page, @Param("ids")List<String> ids, @Param("lineCode") String lineCode, @Param("stationCode") List<String> stationCode, @Param("startTime") String startTime, @Param("endTime")String endTime, @Param("systemCode")  List<String> systemCode);
 
     /**
      * 查询班组时间
@@ -341,7 +342,7 @@ public interface PatrolTaskMapper extends BaseMapper<PatrolTask> {
      * @param systemCode
      * @return
      */
-    List<MonthDTO> selectMonthOrg(@Param("orgCodes") List<String> orgCodes,@Param("lineCode") String lineCode,@Param("stationCode") String stationCode,@Param("systemCode") String systemCode);
+    List<MonthDTO> selectMonthOrg(@Param("orgCodes") List<String> orgCodes,@Param("lineCode") String lineCode,@Param("stationCode") List<String> stationCode,@Param("systemCode") List<String> systemCode);
 
     /**
      * 权限查询

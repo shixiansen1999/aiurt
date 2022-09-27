@@ -350,7 +350,7 @@ public class PatrolReportService {
         }
         return mv;
     }
-     public List<FailureReport> getFailureReport(String lineCode, List<String> stationCode, String startTime, String endTime) {
+     public IPage<FailureReport> getFailureReport(Page<FailureReport>page,String lineCode, List<String> stationCode, String startTime, String endTime) {
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         SimpleDateFormat mm = new SimpleDateFormat("yyyy-MM");
         if (ObjectUtil.isEmpty(startTime) && ObjectUtil.isEmpty(endTime)) {
@@ -361,18 +361,11 @@ public class PatrolReportService {
         }else if (ObjectUtil.isEmpty(lineCode)&& CollectionUtil.isEmpty(stationCode)){
             stationCode = this.selectStation(null).stream().map(LineOrStationDTO::getCode).collect(Collectors.toList());
         }
-        List<FailureReport> failureReportIPage = patrolTaskMapper.getFailureReport(sysUser.getId(), lineCode, stationCode, startTime, endTime);
+        IPage<FailureReport> failureReportIPage = patrolTaskMapper.getFailureReport(page,sysUser.getId(), lineCode, stationCode, startTime, endTime);
         String finalStartTime = startTime;
         String finalEndTime = endTime;
-           for (FailureReport failureReport : failureReportIPage) {
-            if (failureReport.getLastMonthNum() != 0) {
-        double sub = NumberUtil.sub(failureReport.getMonthNum(), failureReport.getLastMonthNum());
-        BigDecimal div = NumberUtil.div(sub, NumberUtil.round(failureReport.getLastMonthNum(), 2));
-        failureReport.setLastMonthStr(NumberUtil.round(NumberUtil.mul(div, 100), 2).toString() + "%");
-             } else {
-        failureReport.setLastMonthStr(NumberUtil.mul(NumberUtil.round(failureReport.getMonthNum(), 2), 100).toString() + "%");
         List<String> finalStationCode = stationCode;
-        failureReportIPage.forEach(f -> {
+        failureReportIPage.getRecords().forEach(f -> {
             if (f.getLastMonthNum() != 0) {
                 double sub = NumberUtil.sub(f.getMonthNum(), f.getLastMonthNum());
                 BigDecimal div = NumberUtil.div(sub, NumberUtil.round(f.getLastMonthNum(), 2));
@@ -395,25 +388,36 @@ public class PatrolReportService {
             int s1 = num1.stream().reduce(Integer::sum).orElse(0);
             f.setAverageResolution(f.getResolvedNum() == 0 ? 0 : s1 / f.getResolvedNum());
         });
-    }
-}
         return failureReportIPage;
     }
 
-    public List<MonthDTO> getMonthNum(String lineCode, String stationCode) {
+    public List<MonthDTO> getMonthNum(String lineCode, List<String> stationCode) {
+        if (ObjectUtil.isNotEmpty(lineCode)&& CollectionUtil.isEmpty(stationCode)){
+            stationCode= this.selectStation(lineCode).stream().map(LineOrStationDTO::getCode).collect(Collectors.toList());
+        }else if (ObjectUtil.isEmpty(lineCode)&& CollectionUtil.isEmpty(stationCode)){
+            stationCode = this.selectStation(null).stream().map(LineOrStationDTO::getCode).collect(Collectors.toList());
+        }
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         List<MonthDTO> monthDTOS = patrolTaskMapper.selectMonth(sysUser.getId(), lineCode, stationCode);
         return monthDTOS;
     }
-    public List<MonthDTO> getMonthOrgNum(String lineCode, String stationCode, String systemCode) {
+    public List<MonthDTO> getMonthOrgNum(String lineCode, List<String> stationCode, List<String> systemCode) {
         LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         List<SysDepartModel> userSysDepart = sysBaseAPI.getUserSysDepart(user.getId());
         List<String> orgCodes = userSysDepart.stream().map(SysDepartModel::getOrgCode).collect(Collectors.toList());
+        if (ObjectUtil.isNotEmpty(lineCode)&& CollectionUtil.isEmpty(stationCode)){
+            stationCode= this.selectStation(lineCode).stream().map(LineOrStationDTO::getCode).collect(Collectors.toList());
+        }else if (ObjectUtil.isEmpty(lineCode)&& CollectionUtil.isEmpty(stationCode)){
+            stationCode = this.selectStation(null).stream().map(LineOrStationDTO::getCode).collect(Collectors.toList());
+        }
+        if ( CollectionUtil.isEmpty(systemCode)){
+            systemCode = this.selectSystem().stream().map(LineOrStationDTO::getCode).collect(Collectors.toList());
+        }
         List<MonthDTO> monthDTOS = patrolTaskMapper.selectMonthOrg(orgCodes, lineCode, stationCode, systemCode);
         return monthDTOS;
     }
 
-    public List<FailureOrgReport> getFailureOrgReport(String lineCode, List<String> stationCode, String startTime, String endTime, List<String> systemCode) {
+    public IPage<FailureOrgReport> getFailureOrgReport(Page<FailureOrgReport> page,String lineCode, List<String> stationCode, String startTime, String endTime, List<String> systemCode) {
         LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         List<SysDepartModel> userSysDepart = sysBaseAPI.getUserSysDepart(user.getId());
         List<String> ids =userSysDepart.stream().map(SysDepartModel::getId).collect(Collectors.toList());
@@ -429,11 +433,11 @@ public class PatrolReportService {
         if ( CollectionUtil.isEmpty(systemCode)){
             systemCode = this.selectSystem().stream().map(LineOrStationDTO::getCode).collect(Collectors.toList());
         }
-        List<FailureOrgReport> orgReport = patrolTaskMapper.getOrgReport(ids,lineCode,stationCode,startTime,endTime,systemCode);
+        IPage<FailureOrgReport> orgReport = patrolTaskMapper.getOrgReport(page,ids,lineCode,stationCode,startTime,endTime,systemCode);
         String finalStartTime = startTime;
         String finalEndTime = endTime;
         List<String> finalStationCode = stationCode;
-        orgReport.forEach(f -> {
+        orgReport.getRecords().forEach(f -> {
             if (f.getLastMonthNum() != 0) {
                 double sub = NumberUtil.sub(f.getMonthNum(), f.getLastMonthNum());
                 BigDecimal div = NumberUtil.div(sub, NumberUtil.round(f.getLastMonthNum(), 2));
@@ -467,8 +471,10 @@ public class PatrolReportService {
                  */
         public ModelAndView reportSystemExport (HttpServletRequest request, String lineCode, List < String > stationCode, String startTime, String endTime){
             ModelAndView mv = new ModelAndView(new JeecgEntityExcelView());
-            List<FailureReport> failureReportList = this.getFailureReport(lineCode, stationCode, startTime, endTime);
-            if (CollectionUtil.isNotEmpty(failureReportList)) {
+            Page<FailureReport> page = new Page<FailureReport>(1, 9999);
+            IPage<FailureReport> failureReportList = this.getFailureReport(page,lineCode, stationCode, startTime, endTime);
+            List<FailureReport> failureReports = failureReportList.getRecords();
+            if (CollectionUtil.isNotEmpty(failureReports)) {
                 //导出文件名称
                 mv.addObject(NormalExcelConstants.FILE_NAME, "子系统故障报表");
                 //excel注解对象Class
@@ -476,7 +482,7 @@ public class PatrolReportService {
                 //自定义表格参数
                 mv.addObject(NormalExcelConstants.PARAMS, new ExportParams("统计分析-子系统故障报表", "子系统故障报表"));
                 //导出数据列表
-                mv.addObject(NormalExcelConstants.DATA_LIST, failureReportList);
+                mv.addObject(NormalExcelConstants.DATA_LIST, failureReports);
             }
             return mv;
         }
@@ -488,8 +494,10 @@ public class PatrolReportService {
          */
         public ModelAndView reportOrgExport (HttpServletRequest request, String lineCode, List <String> stationCode, String startTime, String endTime, List < String > systemCode){
             ModelAndView mv = new ModelAndView(new JeecgEntityExcelView());
-            List<FailureOrgReport> failureOrgReport = this.getFailureOrgReport(lineCode, stationCode, startTime, endTime, systemCode);
-            if (CollectionUtil.isNotEmpty(failureOrgReport)) {
+            Page<FailureOrgReport> page = new Page<FailureOrgReport>(1, 9999);
+            IPage<FailureOrgReport> failureOrgReport = this.getFailureOrgReport(page,lineCode, stationCode, startTime, endTime, systemCode);
+            List<FailureOrgReport> failureOrgReports = failureOrgReport.getRecords();
+            if (CollectionUtil.isNotEmpty(failureOrgReports)) {
                 //导出文件名称
                 mv.addObject(NormalExcelConstants.FILE_NAME, "班组故障报表");
                 //excel注解对象Class
@@ -497,7 +505,7 @@ public class PatrolReportService {
                 //自定义表格参数
                 mv.addObject(NormalExcelConstants.PARAMS, new ExportParams("统计分析-班组故障报表", "班组故障报表"));
                 //导出数据列表
-                mv.addObject(NormalExcelConstants.DATA_LIST, failureOrgReport);
+                mv.addObject(NormalExcelConstants.DATA_LIST, failureOrgReports);
             }
             return mv;
      }
