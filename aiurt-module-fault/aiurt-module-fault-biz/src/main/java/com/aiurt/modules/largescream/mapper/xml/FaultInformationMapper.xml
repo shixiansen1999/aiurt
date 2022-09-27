@@ -73,6 +73,7 @@
     <select id="queryLargeFaultInformationTodayAdd" resultType="com.aiurt.modules.fault.entity.Fault">
         select * from fault
         <where>
+            status > 2
             <if test="todayStartDate!=null and todayEndDate!=null">
                 and happen_time  &gt;= #{todayStartDate}  and happen_time &lt;= #{todayEndDate}
             </if>
@@ -91,6 +92,7 @@
     <select id="queryFaultDataInformationWeekAdd" resultType="com.aiurt.modules.fault.entity.Fault">
         select * from fault
         <where>
+            status > 2
             <if test="weekStartDate!=null and weekEndDate!=null">
                 and happen_time  &gt;= #{weekStartDate}  and happen_time &lt;= #{weekEndDate}
             </if>
@@ -131,6 +133,9 @@
             <if test="condition.todayAdd != null and condition.todayAdd !=''">
                 and f.happen_time  &gt;= #{condition.todayStartDate}  and f.happen_time &lt;= #{condition.todayEndDate}
             </if>
+            <if test="condition.todayAdd != null and condition.todayAdd !=''">
+                and f.status > 2
+            </if>
             <if test="condition.todaySolve != null and condition.todaySolve !=''">
                 and f.status = 12
             </if>
@@ -147,6 +152,7 @@
         left join cs_station ct on ct.station_code = f.station_code
         left join sys_user s on s.username = f.appoint_user_name
         <where>
+            status > 2
             <if test="condition.lineCode != null and condition.lineCode != ''">
                 and f.line_code  = #{condition.lineCode}
             </if>
@@ -159,8 +165,14 @@
             <if test="condition.unSo !=null and condition.unSo !=''">
                 and f.status != 12
             </if>
+            <if test="condition.unSo !=null and condition.unSo !=''">
+                and f.status > 2
+            </if>
             <if test="condition.weekAdd != null and condition.weekAdd !=''">
                 and f.happen_time  &gt;= #{condition.startDate}  and f.happen_time &lt;= #{condition.endDate}
+            </if>
+            <if test="condition.weekAdd != null and condition.weekAdd !=''">
+                and f.status > 2
             </if>
             <if test="condition.weekSolve != null and condition.weekSolve !=''">
                 and f.status = 12
@@ -170,6 +182,9 @@
             </if>
             <if test="condition.todayAdd != null and condition.todayAdd !=''">
                 and f.happen_time  &gt;= #{condition.todayStartDate}  and f.happen_time &lt;= #{condition.todayEndDate}
+            </if>
+            <if test="condition.todayAdd != null and condition.todayAdd !=''">
+                and f.status > 2
             </if>
             <if test="condition.todaySolve != null and condition.todaySolve !=''">
                 and f.status = 12
@@ -343,6 +358,7 @@
     <select id="queryFaultDataInformation" resultType="com.aiurt.modules.fault.entity.Fault">
         select * from fault
         <where>
+            status > 2
             <if test="lineCode != null and lineCode != ''">
                 and line_code  = #{lineCode}
             </if>
