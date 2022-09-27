@@ -106,11 +106,11 @@ public class PatrolReportService {
         List<PatrolReport> omitList = patrolTaskMapper.getReportOmitList(omitModel);
         List<PatrolReport> avgWeekOmitList = patrolTaskMapper.getReportOmitList(avgWeekOmit);
         List<PatrolReport> avgMonthOmitList = patrolTaskMapper.getReportOmitList(avgMonthOmit);
-        Integer faultNumber = 0;
         for (PatrolReport patrolReport : list) {
             //计算完成率、巡检总数、未完成、完成数、异常任务数、故障数量
             if (CollUtil.isNotEmpty(reportList)) {
                 for (PatrolReport d : reportList) {
+                    Integer faultNumber = 0;
                     List<String> taskIds = Arrays.asList(d.getTaskId().split(","));
                     if (CollUtil.isNotEmpty(taskIds)) {
                         //计算故障数量
@@ -121,11 +121,12 @@ public class PatrolReportService {
                             }
                         }
                     }
-                    patrolReport.setFaultNumber(faultNumber);
+                   d.setFaultNumber(faultNumber);
                     if (patrolReport.getOrgCode().equals(d.getOrgCode())) {
                         BeanUtils.copyProperties(d, patrolReport);
                     }
                 }
+
             } else {
                 PatrolReport patrolReport1 = setZero(patrolReport);
                 BeanUtils.copyProperties(patrolReport1, patrolReport);
