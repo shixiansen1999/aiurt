@@ -389,6 +389,9 @@
                     #{item}
                 </foreach>
             </if>
+            <if test="condition.orgCode!=null ">
+                and t2.org_code = #{condition.orgCode}
+            </if>
             <if test="condition.subsystemCode!=null ">
                 and t4.subsystem_code = #{condition.subsystemCode}
             </if>
@@ -470,6 +473,9 @@
                 <foreach collection="condition.orgCodeList" index="index" item="item" open="(" close=")" separator=",">
                     #{item}
                 </foreach>
+            </if>
+            <if test="condition.orgCode!=null ">
+                and t3.org_code = #{condition.orgCode}
             </if>
             <if test="condition.subsystemCode!=null ">
                 and t5.subsystem_code = #{condition.subsystemCode}
