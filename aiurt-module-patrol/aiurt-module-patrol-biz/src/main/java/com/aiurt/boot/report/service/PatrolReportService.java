@@ -64,6 +64,7 @@ public class PatrolReportService {
         if(CollUtil.isEmpty(orgList))
         {
             report.setOrgCode("null");
+            orgCodeName.setOrgCode("null");
         }
         else
         {
@@ -91,7 +92,7 @@ public class PatrolReportService {
             //推算前四周的日期范围
             String thisOmitDate = getThisOmitWeekDate();
             avgWeekOmit.setStartDate(thisOmitDate.split("~")[0]);
-            avgWeekOmit.setEndDate(thisOmitDate.split("~")[0]);
+            avgWeekOmit.setEndDate(thisOmitDate.split("~")[1]);
             //推算12个月的日期范围
             String yearDate = getThisOmitYearDate();
             avgMonthOmit.setStartDate(yearDate.split("~")[0]);
@@ -103,6 +104,7 @@ public class PatrolReportService {
             omitModel.setStartDate(omitStartTime);
             omitModel.setEndDate(omitEndTime);
         }
+        //
         List<PatrolReport> list = patrolTaskMapper.getReportTaskList(pageList, orgCodeName);
         List<PatrolReport> reportList = patrolTaskMapper.getTasks(report);
         List<PatrolReport> omitList = patrolTaskMapper.getReportOmitList(omitModel);
@@ -147,12 +149,12 @@ public class PatrolReportService {
             if (CollUtil.isNotEmpty(avgWeekOmitList)) {
                 for (PatrolReport d : avgWeekOmitList) {
                     if (patrolReport.getOrgCode().equals(d.getOrgCode())) {
-                        if (ObjectUtil.isNull(patrolReport.getMissInspectedNumber())||patrolReport.getMissInspectedNumber() == 0) {
+                        if (ObjectUtil.isNull(d.getMissInspectedNumber())||d.getMissInspectedNumber() == 0) {
                             patrolReport.setAwmPatrolNumber("-");
                         } else {
                             //是否是默认
                             if (isNullDate == true) {
-                                double avg = patrolReport.getMissInspectedNumber() / 4;
+                                double avg = NumberUtil.div(d.getMissInspectedNumber() , 4);
                                 BigDecimal b = new BigDecimal(avg);
                                 double fave = b.setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
                                 String completionRated = String.format("%.2f", fave);
@@ -162,7 +164,7 @@ public class PatrolReportService {
                                 if (weekNumber == 0) {
                                     patrolReport.setAwmPatrolNumber("-");
                                 } else {
-                                    double avg = patrolReport.getMissInspectedNumber() / weekNumber;
+                                    double avg = NumberUtil.div(d.getMissInspectedNumber() , weekNumber);
                                     BigDecimal b = new BigDecimal(avg);
                                     double fave = b.setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
                                     String completionRated = String.format("%.2f", fave);
@@ -180,12 +182,12 @@ public class PatrolReportService {
             if (CollUtil.isNotEmpty(avgMonthOmitList)) {
                 for (PatrolReport d : avgWeekOmitList) {
                     if (patrolReport.getOrgCode().equals(d.getOrgCode())) {
-                        if (ObjectUtil.isNull(patrolReport.getMissInspectedNumber())||patrolReport.getMissInspectedNumber() == 0) {
+                        if (ObjectUtil.isNull(d.getMissInspectedNumber())||d.getMissInspectedNumber() == 0) {
                             patrolReport.setAmmPatrolNumber("-");
                         } else {
                             //是否是默认
                             if (isNullDate == true) {
-                                double avg = patrolReport.getMissInspectedNumber() / 12;
+                                double avg = NumberUtil.div(d.getMissInspectedNumber() , 12);
                                 BigDecimal b = new BigDecimal(avg);
                                 double fave = b.setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
                                 String completionRated = String.format("%.2f", fave);
@@ -195,7 +197,7 @@ public class PatrolReportService {
                                 if (weekNumber == 0) {
                                     patrolReport.setAmmPatrolNumber("-");
                                 } else {
-                                    double avg = patrolReport.getMissInspectedNumber() / weekNumber;
+                                    double avg = NumberUtil.div(d.getMissInspectedNumber() , weekNumber);
                                     BigDecimal b = new BigDecimal(avg);
                                     double fave = b.setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
                                     String completionRated = String.format("%.2f", fave);
@@ -246,7 +248,7 @@ public class PatrolReportService {
         }
         DateTime lastSunday = DateUtil.offsetDay(end, -7);
         String thisOmitDate = DateUtil.format(start, "yyyy-MM-dd 00:00:00") + "~" + DateUtil.format(lastSunday, "yyyy-MM-dd 23:59:59");
-        return thisOmitDate;
+            return thisOmitDate;
     }
 
     public String getThisOmitYearDate() {

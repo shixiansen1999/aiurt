@@ -58,7 +58,7 @@ public class PatrolReport {
      */
     @ApiModelProperty("漏巡视数")
     @Excel(name = "漏巡视数", width = 15)
-    private Integer missInspectedNumber;
+    private float missInspectedNumber;
     /**
      * 平均每周漏巡视数
      */
