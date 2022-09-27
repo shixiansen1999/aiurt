@@ -334,7 +334,15 @@ public class PatrolReportService {
 
     public long getWeekNumber(String start, String end) {
          long weekNumber = PatrolDateUtils.countTwoDayWeek(start, end);
-         return weekNumber;
+         DateTime time = DateUtil.parse(end);
+         Date startTime = DateUtil.beginOfWeek(new Date());
+         Date endTime = DateUtil.beginOfWeek(time);
+         boolean sameWeek = DateUtil.isSameDay(startTime, endTime);
+         if(sameWeek==true)
+         {
+             weekNumber=weekNumber-1;
+         }
+        return weekNumber;
     }
 
     public ModelAndView reportExport(HttpServletRequest request, PatrolReportModel reportReqVO) {
