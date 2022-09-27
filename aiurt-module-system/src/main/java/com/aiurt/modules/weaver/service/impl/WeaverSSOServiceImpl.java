@@ -80,6 +80,10 @@ public class WeaverSSOServiceImpl implements IWeaverSSOService {
 
     @Override
     public WeaverSsoRestultDTO getToken() {
+        String tokenResult = redisTemplate.opsForValue().get("weaver：token");
+        if (StrUtil.isNotBlank(tokenResult)) {
+            return JSONObject.parseObject(tokenResult, WeaverSsoRestultDTO.class);
+        }
         // 从系统缓存或者数据库中获取ECOLOGY系统公钥和Secret信息
         String secret = redisTemplate.opsForValue().get("WEAVER:SERVER_SECRET");
         String spk = redisTemplate.opsForValue().get("WEAVER:SERVER_PUBLIC_KEY");
@@ -119,6 +123,8 @@ public class WeaverSSOServiceImpl implements IWeaverSSOService {
         String encryptUserid = rsa.encryptBase64("1", CharsetUtil.CHARSET_UTF_8, KeyType.PublicKey);
         weaverSsoRestultDTO.setUserid(encryptUserid);
         weaverSsoRestultDTO.setAppid(appId);
+
+        redisTemplate.opsForValue().set("weaver：token", JSONObject.toJSONString(weaverSsoRestultDTO), time, TimeUnit.SECONDS);
 
         return weaverSsoRestultDTO;
 
