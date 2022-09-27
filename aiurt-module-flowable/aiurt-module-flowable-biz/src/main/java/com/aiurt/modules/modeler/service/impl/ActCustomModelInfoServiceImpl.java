@@ -47,6 +47,7 @@ public class ActCustomModelInfoServiceImpl extends ServiceImpl<ActCustomModelInf
         }
         Model model = flowableBpmnService.createInitBpmn(actCustomModelInfo, user);
         actCustomModelInfo.setModelId(model.getId());
+        actCustomModelInfo.setStatus(ModelFormStatusEnum.CG.getStatus());
         saveOrUpdate(actCustomModelInfo);
         return actCustomModelInfo;
     }
@@ -60,8 +61,7 @@ public class ActCustomModelInfoServiceImpl extends ServiceImpl<ActCustomModelInf
         if (CollectionUtils.isNotEmpty(idList)) {
             String id = idList.get(0);
             ActCustomModelInfo modelInfo = this.getById(id);
-            if (modelInfo.getStatus().equals(ModelFormStatusEnum.CG.getStatus())
-                    && modelInfo.getExtendStatus().equals(ModelFormStatusEnum.CG.getStatus())) {
+            if (modelInfo.getStatus().equals(ModelFormStatusEnum.CG.getStatus())) {
                 this.removeById(id);
                 String modelId = modelInfo.getModelId();
                 modelService.deleteModel(modelId);
