@@ -735,7 +735,7 @@ GROUP BY
 </select>
     <select id="getReportOmitList" resultType="com.aiurt.boot.report.model.PatrolReport">
     select
-	count( pt.omit_status = 0 OR NULL ) AS missInspectedNumber,
+	count( pt.omit_status = 1 OR NULL ) AS missInspectedNumber,
 	pto.org_code
 FROM
 	patrol_task pt
