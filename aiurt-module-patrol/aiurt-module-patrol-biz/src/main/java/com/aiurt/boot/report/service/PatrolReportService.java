@@ -78,8 +78,9 @@ public class PatrolReportService {
         BeanUtils.copyProperties(report, omitModel);
         BeanUtils.copyProperties(report, avgWeekOmit);
         BeanUtils.copyProperties(report, avgMonthOmit);
+        boolean webDate = webDefaultDate(report.getStartDate(), report.getEndDate());
         boolean isNullDate = false;
-        if (ObjectUtil.isEmpty(report.getStartDate())) {
+        if (webDate==true) {
             isNullDate = true;
             //本周的周一和周日
             String thisWeek = getThisWeek(new Date());
@@ -98,14 +99,6 @@ public class PatrolReportService {
             avgMonthOmit.setStartDate(yearDate.split("~")[0]);
             avgMonthOmit.setEndDate(yearDate.split("~")[1]);
         } else {
-            //时间不为空，推算漏检日期范围
-//            String omitStartTime = screenService.getOmitDateScope(DateUtil.parse(report.getStartDate())).split("~")[0];
-//            String omitEndTime =null;
-//            if(ObjectUtil.isNotEmpty(report.getEndDate()))
-//            {
-//                 omitEndTime = screenService.getOmitDateScope(DateUtil.parse(report.getEndDate())).split("~")[1];
-//            }
-
             omitModel.setStartDate(report.getStartDate());
             omitModel.setEndDate(report.getEndDate());
         }
@@ -241,6 +234,23 @@ public class PatrolReportService {
         DateTime end = DateUtil.endOfWeek(date);
         String thisWeek = DateUtil.format(start, "yyyy-MM-dd 00:00:00") + "~" + DateUtil.format(end, "yyyy-MM-dd 23:59:59");
         return thisWeek;
+    }
+
+    public static boolean webDefaultDate(String startDate,String endDate) {
+        DateTime webStart = DateUtil.beginOfWeek(DateUtil.parse(startDate));
+        DateTime webEnd = DateUtil.endOfWeek(DateUtil.parse(endDate));
+        DateTime start = DateUtil.beginOfWeek(new Date());
+        DateTime end = DateUtil.endOfWeek(new Date());
+        boolean startIsSame = DateUtil.isSameDay(webStart, start);
+        boolean endIsSame = DateUtil.isSameDay(webEnd, end);
+        if(startIsSame==true&&endIsSame==true)
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
     }
 
     public String getThisOmitWeekDate() {
