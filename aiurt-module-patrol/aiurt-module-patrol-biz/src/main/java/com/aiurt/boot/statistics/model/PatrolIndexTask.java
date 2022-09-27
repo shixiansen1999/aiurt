@@ -1,7 +1,5 @@
 package com.aiurt.boot.statistics.model;
 
-import com.aiurt.boot.statistics.dto.IndexOrgDTO;
-import com.aiurt.boot.statistics.dto.IndexUserDTO;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
@@ -11,8 +9,11 @@ import lombok.experimental.Accessors;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.io.Serializable;
-import java.util.List;
 
+/**
+ * @author JB
+ * @Description:
+ */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

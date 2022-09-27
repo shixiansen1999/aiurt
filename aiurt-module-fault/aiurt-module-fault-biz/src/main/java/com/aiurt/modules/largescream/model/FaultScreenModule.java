@@ -57,4 +57,8 @@ public class FaultScreenModule {
      * 线路
      */
     private String lineCode;
+    /**
+     * 组织机构编号
+     */
+    private List<String> majors;
 }

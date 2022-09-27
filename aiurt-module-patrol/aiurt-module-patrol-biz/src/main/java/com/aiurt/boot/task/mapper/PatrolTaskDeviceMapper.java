@@ -178,13 +178,6 @@ public interface PatrolTaskDeviceMapper extends BaseMapper<PatrolTaskDevice> {
     PatrolTaskDevice getTodaySubmit(@Param("date") Date date,@Param("taskId") String taskId,@Param("taskDeviceCode") String taskDeviceCode);
 
     /**
-     * 根据任务id,查询该任务下的异常单号
-     * @param taskId
-     * @return
-     */
-    List<PatrolTaskDevice> getTaskAbnormal(String taskId);
-
-    /**
      *
      * @param taskId
      * @return

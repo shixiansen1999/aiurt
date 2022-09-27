@@ -9,7 +9,8 @@ import java.util.Date;
 import java.util.List;
 
 /**
- * 业务层封装的传输实体
+ * @author JB
+ * @Description: 业务层封装的传输实体
  */
 @Data
 @NoArgsConstructor
@@ -24,6 +25,10 @@ public class ScreenTran {
      * 结束时间
      */
     private Date endTime;
+    /**
+     * 作废状态
+     */
+    private Integer discardStatus;
     /**
      * 组织机构编号
      */

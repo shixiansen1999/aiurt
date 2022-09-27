@@ -1,5 +1,6 @@
 package com.aiurt.modules.modeler.entity;
 
+import com.aiurt.common.aspect.annotation.Dict;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
@@ -87,11 +88,13 @@ public class ActCustomModelInfo implements Serializable {
 	/**流程分类编码*/
 	@Excel(name = "流程分类编码", width = 15)
     @ApiModelProperty(value = "流程分类编码")
+    @Dict(dictTable = "act_custom_classify", dicCode = "scode", dicText = "sname")
     private String classifyCode;
 
 	/**流程图Model状态*/
 	@Excel(name = "流程图Model状态", width = 15)
     @ApiModelProperty(value = "流程图Model状态")
+    @Dict(dicCode = "act_model_status")
     private Integer status;
 	/**默认路由表单/业务表单的URL*/
 	@Excel(name = "默认路由表单/业务表单的URL", width = 15)

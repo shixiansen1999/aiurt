@@ -11,7 +11,6 @@ import com.aiurt.boot.statistics.model.*;
 import com.aiurt.boot.task.entity.PatrolTask;
 import com.aiurt.boot.task.entity.PatrolTaskUser;
 import com.aiurt.boot.task.mapper.*;
-import com.aiurt.boot.task.service.IPatrolTaskService;
 import com.aiurt.common.exception.AiurtBootException;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -32,12 +31,14 @@ import java.time.ZoneId;
 import java.util.*;
 import java.util.stream.Collectors;
 
+/**
+ * @author JB
+ * @Description: 首页巡视模块业务层
+ */
 @Service
 public class PatrolStatisticsService {
     @Autowired
     private ISysBaseAPI sysBaseApi;
-    @Autowired
-    private IPatrolTaskService patrolTaskService;
     @Autowired
     private PatrolTaskMapper patrolTaskMapper;
     @Autowired
@@ -87,7 +88,7 @@ public class PatrolStatisticsService {
         List<Date> endList = this.getOmitDateScope(endDate);
         Date startTime = startList.stream().min(Comparator.comparingLong(Date::getTime)).get();
         Date endTime = endList.stream().max(Comparator.comparingLong(Date::getTime)).get();
-        // 漏检任务列表
+////         漏检任务列表
 //        List<PatrolTask> omitList = patrolTaskService.lambdaQuery().eq(PatrolTask::getDelFlag, 0)
 //                .between(PatrolTask::getPatrolDate, startTime, endTime).list();
         List<PatrolTask> omitList = patrolTaskMapper.getOverviewInfo(startTime, endTime, departList);
@@ -180,9 +181,9 @@ public class PatrolStatisticsService {
         });
 
         // 任务下的巡视人员
-        Map<String, Set<String>> userMap = new HashMap<>();
+        Map<String, Set<String>> userMap = new HashMap<>(16);
         // 巡视人员对应的组织机构
-        Map<String, Set<String>> orgMap = new HashMap<>();
+        Map<String, Set<String>> orgMap = new HashMap<>(16);
         taskCodeSet.stream().forEach(code -> {
             LambdaQueryWrapper<PatrolTaskUser> userWrapper = Wrappers.<PatrolTaskUser>lambdaQuery()
                     .select(PatrolTaskUser::getUserId, PatrolTaskUser::getUserName)

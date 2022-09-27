@@ -1,19 +1,13 @@
 package com.aiurt.modules.largescream.controller;
 
 import com.aiurt.common.aspect.annotation.AutoLog;
-import com.aiurt.modules.fault.dto.FaultDataStatisticsDTO;
-import com.aiurt.modules.fault.dto.FaultLargeCountDTO;
-import com.aiurt.modules.fault.dto.FaultLargeInfoDTO;
-import com.aiurt.modules.fault.dto.FaultLargeLineInfoDTO;
 import com.aiurt.modules.fault.dto.*;
 import com.aiurt.modules.largescream.service.FaultInformationService;
-import com.baomidou.mybatisplus.core.metadata.IPage;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import lombok.extern.slf4j.Slf4j;
 import org.jeecg.common.api.vo.Result;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
@@ -149,8 +143,8 @@ public class FaultInformationController {
     @AutoLog(value = "大屏-故障数据分析-故障数据统计详情", operateType = 1, operateTypeAlias = "查询", permissionUrl = "")
     @ApiOperation(value = "大屏-故障数据分析-故障数据统计详情", notes = "大屏-故障数据分析-故障数据统计详情")
     @RequestMapping(value = "/getLargeFaultDataDatails", method = RequestMethod.GET)
-    public Result<List<FaultLargeInfoDTO>> getLargeFaultDataDatails(@ApiParam(name = "boardTimeType", value = "1:本周 2:上周 3:本月 4:上月",defaultValue = "1") @RequestParam("boardTimeType")Integer boardTimeType,
-                                                                @ApiParam(name = "faultModule", value = "故障数据统计详情模块：1:故障总数 2:未修复故障数 3:本周增加 4:本周修复 5:今日增加 6:今日修复") @RequestParam("faultModule")Integer faultModule,
+    public Result<List<FaultLargeInfoDTO>> getLargeFaultDataDatails(@ApiParam(name = "boardTimeType", value = "1:本周 2:上周 3:本月 4:上月",defaultValue = "1") @RequestParam(value="boardTimeType",required = false)Integer boardTimeType,
+                                                                @ApiParam(name = "faultModule", value = "故障数据统计详情模块：1:故障总数 2:未修复故障数 3:本周增加 4:本周修复 5:今日增加 6:今日修复",defaultValue = "1") @RequestParam(value="faultModule",required = false)Integer faultModule,
                                                                 @ApiParam(name = "lineCode",value = "线路")@RequestParam(value = "lineCode",required = false)String lineCode){
         List<FaultLargeInfoDTO> largeFaultDataDatails = faultInformationService.getLargeFaultDataDatails(boardTimeType,faultModule, lineCode);
         return Result.ok(largeFaultDataDatails);

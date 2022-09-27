@@ -58,7 +58,7 @@ public class PositionPanelController {
     }
 
     /**
-     *  编辑
+     *  根据线路站点编辑
      *
      * @param positionPanel
      * @return

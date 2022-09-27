@@ -6,7 +6,10 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
-
+/**
+ * @author JB
+ * @Description: 大屏巡视模块-巡视数据统计对象
+ */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

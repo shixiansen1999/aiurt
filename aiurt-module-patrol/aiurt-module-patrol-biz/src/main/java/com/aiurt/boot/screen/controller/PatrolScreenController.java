@@ -1,6 +1,5 @@
 package com.aiurt.boot.screen.controller;
 
-import com.aiurt.boot.api.PatrolApi;
 import com.aiurt.boot.screen.model.ScreenImportantData;
 import com.aiurt.boot.screen.model.ScreenStatistics;
 import com.aiurt.boot.screen.model.ScreenStatisticsGraph;
@@ -20,10 +19,11 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.math.BigDecimal;
 import java.util.List;
-import java.util.Map;
-
+/**
+ * @author JB
+ * @Description: 大屏巡视模块控制层
+ */
 @Api(tags = "大屏巡视模块")
 @RestController
 @RequestMapping("/patrolScreen")

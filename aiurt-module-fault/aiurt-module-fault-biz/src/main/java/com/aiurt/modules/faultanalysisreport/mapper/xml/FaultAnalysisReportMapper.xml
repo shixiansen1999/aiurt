@@ -154,10 +154,12 @@
     f.station_code,
     f.station_position_code,
     f.fault_phenomenon,
-    f.happen_time
+    f.happen_time,
+    frr.fault_analysis
     FROM
     fault f
-    where f.id = #{id}
+    left join fault_repair_record frr on frr.fault_code =  f.`code`
+    where frr.del_flag = 0 and f.id = #{id}
     </select>
 
 <select id="readOne" resultType="com.aiurt.modules.faultanalysisreport.entity.FaultAnalysisReport">

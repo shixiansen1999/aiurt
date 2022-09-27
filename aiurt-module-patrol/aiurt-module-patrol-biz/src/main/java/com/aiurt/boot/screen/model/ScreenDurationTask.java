@@ -5,6 +5,10 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
 
+/**
+ * @author JB
+ * @Description:
+ */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

@@ -18,7 +18,7 @@ import java.util.List;
 @Component
 public interface BigScreenPlanMapper {
 
-    List<TeamPortraitDTO> getAllSysDepart();
+    List<TeamPortraitDTO> getAllSysDepart(@Param("majorCodes")List<String> majorCodes);
 
     List<TeamPortraitDTO> getWorkAreaByCode(@Param("teamCode") String teamCode);
 

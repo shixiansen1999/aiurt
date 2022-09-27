@@ -9,7 +9,8 @@ import lombok.experimental.Accessors;
 import java.io.Serializable;
 
 /**
- * 首页巡检的巡检用户DTO
+ * @author JB
+ * @Description: 首页巡检的巡检用户DTO
  */
 @Data
 @NoArgsConstructor

@@ -8,7 +8,10 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
 import org.springframework.format.annotation.DateTimeFormat;
-
+/**
+ * @author JB
+ * @Description: 大屏巡视模块-巡视数据统计任务列表对象
+ */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

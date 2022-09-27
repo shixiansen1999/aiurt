@@ -4,9 +4,12 @@ import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateField;
 import cn.hutool.core.date.DateUnit;
 import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.util.CharsetUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.RandomUtil;
 import cn.hutool.core.util.StrUtil;
+import cn.hutool.crypto.asymmetric.KeyType;
+import cn.hutool.crypto.asymmetric.RSA;
 import com.aiurt.common.api.dto.LogDTO;
 import com.aiurt.common.constant.CacheConstant;
 import com.aiurt.common.constant.CommonConstant;
@@ -19,6 +22,8 @@ import com.aiurt.modules.system.service.*;
 import com.aiurt.modules.system.service.impl.SysBaseApiImpl;
 import com.aiurt.modules.system.service.impl.ThirdAppWechatEnterpriseServiceImpl;
 import com.aiurt.modules.system.util.RandImageUtil;
+import com.aiurt.modules.weaver.service.IWeaverSSOService;
+import com.aiurt.modules.weaver.service.entity.WeaverSsoRestultDTO;
 import com.alibaba.fastjson.JSONObject;
 import com.aliyuncs.exceptions.ClientException;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -37,6 +42,7 @@ import org.jeecg.modules.base.service.BaseCommonService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
@@ -76,6 +82,9 @@ public class LoginController {
 
 	@Autowired
 	private ThirdAppWechatEnterpriseServiceImpl wechatEnterpriseService;
+
+	@Autowired
+	private IWeaverSSOService weaverSSOService;
 
 	@ApiOperation("登录接口")
 	@RequestMapping(value = "/login", method = RequestMethod.POST)
@@ -845,6 +854,30 @@ public class LoginController {
 		//redisUtil.set(CommonConstant.PREFIX_USER_DEPARTMENT_IDS + sysUser.getId(), sysUser.getDepartmentIds());
 		//redisUtil.set(CommonConstant.PREFIX_USER_SYSTEM_CODES + sysUser.getId(), sysUser.getSystemCodes());
 
+	}
+
+
+	public static void main(String[] args) {
+		//获取当前系统RSA加密的公钥
+		RSA rsa = new RSA();
+		String publicKey = rsa.getPublicKeyBase64();
+		String privateKey = rsa.getPrivateKeyBase64();
+
+
+		RSA rsa1 = new RSA(null,"MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAtp6TEWlM6HZQk3wcAODWcsQdIXKL+JBwaUKeu7JR3+PPhAmwvKMXgB3pj+UpK50ycyPISgj5WMRCMquOXa8KjQmNSmm3hG99sSIVnyTXpx/opGlzDQih4utg0MYE08a575Hi3wvrbbGHHgHNFUPL8WqyqSJlj95QVwp1aqFP9FEWg5Sh4Ps1zX58i5XFH/TLFYiI4OeAALKSpbfcBaAsNN7noKsL4iS4gVVnd6tqlt3ubUuzYQ7Q0uQBfNa5GtA2PbirA56ue12Lqh1y5HhnLp+aH9+/ga7HWuhWFtSyXtrK2SD3WGXhUIrXFlpgqj0cPBik4HT8S0yJ7wdy/Oa7EQIDAQAB");
+		//对秘钥进行加密传输，防止篡改数据
+		String encryptSecret = rsa1.encryptBase64("cadfb4a6-404b-4a8b-9552-55bc56141875", CharsetUtil.CHARSET_UTF_8, KeyType.PublicKey);
+		//System.out.println(encryptSecret);
+
+		String encryptUserid = rsa1.encryptBase64("1",CharsetUtil.CHARSET_UTF_8,KeyType.PublicKey);
+		System.out.println(encryptUserid);
+	}
+
+	@GetMapping("/getWeaverToken")
+	@ApiOperation("获取泛微token信息")
+	public Result<WeaverSsoRestultDTO> getWeaverToken() {
+		WeaverSsoRestultDTO serviceToken = weaverSSOService.getToken();
+		return Result.OK(serviceToken);
 	}
 
 }

@@ -22,6 +22,8 @@ import com.aiurt.modules.device.entity.Device;
 import com.aiurt.modules.device.entity.DeviceType;
 import com.aiurt.modules.device.mapper.DeviceMapper;
 import com.aiurt.modules.device.service.IDeviceTypeService;
+import com.aiurt.modules.major.entity.CsMajor;
+import com.aiurt.modules.major.service.ICsMajorService;
 import com.aiurt.modules.message.entity.SysMessageTemplate;
 import com.aiurt.modules.message.handle.impl.EmailSendMsgHandle;
 import com.aiurt.modules.message.service.ISysMessageTemplateService;
@@ -156,6 +158,9 @@ public class SysBaseApiImpl implements ISysBaseAPI {
     private WorkAreaMapper workAreaMapper;
     @Autowired
     private IWorkAreaService workAreaService;
+
+    @Autowired
+    private ICsMajorService majorService;
 
 
     @Override
@@ -1644,5 +1649,14 @@ public class SysBaseApiImpl implements ISysBaseAPI {
         }
     }
 
-
+    @Override
+    public JSONObject getCsMajorByCode(String majorCode) {
+        LambdaQueryWrapper<CsMajor> wrapper =  new LambdaQueryWrapper<>();
+        wrapper.eq(CsMajor::getMajorCode, majorCode).last("limit 1");
+        CsMajor csMajor = majorService.getBaseMapper().selectOne(wrapper);
+        if (Objects.isNull(csMajor)) {
+            return null;
+        }
+        return JSONObject.parseObject(JSONObject.toJSONString(csMajor));
+    }
 }

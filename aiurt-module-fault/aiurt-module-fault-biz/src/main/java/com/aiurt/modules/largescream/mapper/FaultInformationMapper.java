@@ -3,6 +3,7 @@ package com.aiurt.modules.largescream.mapper;
 
 import com.aiurt.modules.fault.dto.*;
 import com.aiurt.modules.fault.entity.Fault;
+import com.aiurt.modules.largescream.model.FaultDurationTask;
 import com.aiurt.modules.largescream.model.FaultScreenModule;
 import org.apache.ibatis.annotations.Param;
 
@@ -19,7 +20,7 @@ public interface FaultInformationMapper {
      * @param lineCode
      * @return
      */
-    List<Fault> queryLargeFaultInformation(@Param("startDate") Date startDate, @Param("endDate") Date endDate,@Param("lineCode") String lineCode);
+    List<Fault> queryLargeFaultInformation(@Param("startDate") Date startDate, @Param("endDate") Date endDate,@Param("lineCode") String lineCode,@Param("majors") List<String> majors);
 
     /**
      * 故障信息统计详情未解决
@@ -35,7 +36,7 @@ public interface FaultInformationMapper {
      * @param lineCode
      * @return
      */
-    List<Fault> queryFaultDataInformation(@Param("lineCode") String lineCode);
+    List<Fault> queryFaultDataInformation(@Param("lineCode") String lineCode,@Param("majors") List<String> majors);
 
     /**
      * 故障信息统计当天已解决
@@ -44,7 +45,7 @@ public interface FaultInformationMapper {
      * @param lineCode
      * @return
      */
-    List<Fault> queryLargeFaultInformationTodaySolve(@Param("todayStartDate") Date todayStartDate,@Param("todayEndDate") Date todayEndDate,@Param("lineCode") String lineCode);
+    List<Fault> queryLargeFaultInformationTodaySolve(@Param("todayStartDate") Date todayStartDate,@Param("todayEndDate") Date todayEndDate,@Param("lineCode") String lineCode,@Param("majors") List<String> majors);
 
     /**
      * 故障数据统计本周已解决
@@ -53,7 +54,7 @@ public interface FaultInformationMapper {
      * @param lineCode
      * @return
      */
-    List<Fault> queryFaultDataInformationWeekSolve(@Param("weekStartDate") Date weekStartDate,@Param("weekEndDate") Date weekEndDate,@Param("lineCode") String lineCode);
+    List<Fault> queryFaultDataInformationWeekSolve(@Param("weekStartDate") Date weekStartDate,@Param("weekEndDate") Date weekEndDate,@Param("lineCode") String lineCode,@Param("majors") List<String> majors);
 
     /**
      * 故障信息统计当天新增
@@ -62,7 +63,7 @@ public interface FaultInformationMapper {
      * @param lineCode
      * @return
      */
-    List<Fault> queryLargeFaultInformationTodayAdd(@Param("todayStartDate") Date todayStartDate,@Param("todayEndDate") Date todayEndDate,@Param("lineCode") String lineCode);
+    List<Fault> queryLargeFaultInformationTodayAdd(@Param("todayStartDate") Date todayStartDate,@Param("todayEndDate") Date todayEndDate,@Param("lineCode") String lineCode,@Param("majors") List<String> majors);
 
     /**
      * 故障数据统计本周新增
@@ -71,7 +72,7 @@ public interface FaultInformationMapper {
      * @param lineCode
      * @return
      */
-    List<Fault> queryFaultDataInformationWeekAdd(@Param("weekStartDate") Date weekStartDate,@Param("weekEndDate") Date weekEndDate,@Param("lineCode") String lineCode);
+    List<Fault> queryFaultDataInformationWeekAdd(@Param("weekStartDate") Date weekStartDate,@Param("weekEndDate") Date weekEndDate,@Param("lineCode") String lineCode,@Param("majors") List<String> majors);
 
     /**
      * 故障统计详情
@@ -95,14 +96,14 @@ public interface FaultInformationMapper {
      * @param lineCode
      * @return
      */
-    List<FaultLargeInfoDTO> getLargeFaultInfo(@Param("startDate") Date startDate, @Param("endDate") Date endDate,@Param("lineCode") String lineCode);
+    List<FaultLargeInfoDTO> getLargeFaultInfo(@Param("startDate") Date startDate, @Param("endDate") Date endDate,@Param("lineCode") String lineCode,@Param("majors") List<String> majors);
 
     /**
      * 故障数据统计列表
      * @param lineCode
      * @return
      */
-    List<FaultDataAnalysisInfoDTO> getLargeFaultDataInfo(@Param("startDate") Date startDate, @Param("endDate") Date endDate,@Param("lineCode") String lineCode);
+    List<FaultDataAnalysisInfoDTO> getLargeFaultDataInfo(@Param("startDate") Date startDate, @Param("endDate") Date endDate,@Param("lineCode") String lineCode,@Param("majors") List<String> majors);
 
 
     /**
@@ -111,7 +112,7 @@ public interface FaultInformationMapper {
      * @param endDate
      * @return
      */
-    List<Fault> getLargeLineFaultInfo(@Param("startDate") Date startDate, @Param("endDate") Date endDate);
+    List<Fault> getLargeLineFaultInfo(@Param("startDate") Date startDate, @Param("endDate") Date endDate,@Param("majors") List<String> majors);
 
     /**
      * 获取子系统下故障维修时长
@@ -119,22 +120,22 @@ public interface FaultInformationMapper {
      * @param lineCode
      * @return
      */
-    List<FaultSystemTimeDTO> getLargeFaultTime(@Param("month") String month, @Param("lineCode") String lineCode);
+    List<FaultSystemTimeDTO> getLargeFaultTime(@Param("month") String month, @Param("lineCode") String lineCode,@Param("majors") List<String> majors);
 
     /**
-     * 按系统分类获取子系统下故障维修时长
+     * 按系统分类获取子系统下故障维修时长总数
      * @param startDate
      * @param endDate
      * @return
      */
-    List<FaultSystemTimeDTO> getSystemFaultSum(@Param("startDate") Date startDate, @Param("endDate") Date endDate);
+    List<FaultSystemTimesDTO> getSystemFaultSum(@Param("startDate") Date startDate, @Param("endDate") Date endDate,@Param("majors") List<String> majors);
 
 
     /**
-     * 按系统分类获取子系统下设备使用年限
+     * 按系统分类获取专业下设备数
      * @return
      */
-    List<FaultSystemDeviceSumDTO> getSystemDeviceSum();
+    List<FaultSystemDeviceSumDTO> getSystemDeviceSum(@Param("majors") List<String> majors);
 
 
     /**
@@ -145,7 +146,7 @@ public interface FaultInformationMapper {
      * @param lineCode
      * @return
      */
-    List<FaultTimeoutLevelDTO> getFaultData(@Param("level") Integer level,@Param("startDate") Date startDate, @Param("endDate") Date endDate ,@Param("lineCode") String lineCode);
+    List<FaultTimeoutLevelDTO> getFaultData(@Param("level") Integer level,@Param("startDate") Date startDate, @Param("endDate") Date endDate ,@Param("lineCode") String lineCode,@Param("majors") List<String> majors);
 
 
     /**
@@ -155,7 +156,15 @@ public interface FaultInformationMapper {
     Integer getYearFault(@Param("condition")FaultDataStatisticsDTO condition);
 
     /**
-     * 所有子系统
+     * 拥有的专业下的所有子系统
      */
-    List<FaultDataStatisticsDTO> getAllSystemCode();
+    List<FaultDataStatisticsDTO> getAllSystemCode(@Param("majorCodes") List<String> majorCodes);
+
+    /**
+     * 班组画像维修工时
+     * @param startTime
+     * @param endTime
+     * @return
+     */
+    List<FaultDurationTask> getFaultUserDuration(@Param("startTime") Date startTime, @Param("endTime") Date endTime);
 }

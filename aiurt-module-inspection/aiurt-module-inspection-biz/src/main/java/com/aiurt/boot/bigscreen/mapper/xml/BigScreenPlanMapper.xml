@@ -3,12 +3,32 @@
 <mapper namespace="com.aiurt.boot.bigscreen.mapper.BigScreenPlanMapper">
 
 <select id="getAllSysDepart" resultType="com.aiurt.boot.index.dto.TeamPortraitDTO">
-    select sd.id as teamId,sd.org_code as teamCode ,sd.depart_name as teamName,su.realname as teamLeaderName,sd.parent_id  from sys_depart sd left join sys_user su on sd.manager_id = su.id where sd.del_flag = 0
-    </select>
+    SELECT
+            sd.id AS teamId,
+            sd.org_code AS teamCode,
+            sd.depart_name AS teamName,
+            su.realname AS teamLeaderName,
+            sd.parent_id
+    FROM
+            work_area wa
+                    LEFT JOIN work_area_org wao ON wao.work_area_code = wa.`code`
+                    LEFT JOIN sys_depart sd ON sd.org_code = wao.org_code
+                    LEFT JOIN sys_user su ON sd.manager_id = su.id
+    WHERE
+            sd.del_flag = 0
+    <if test="majorCodes != null and majorCodes.size() != 0">
+        and wa.major_code in
+        <foreach collection="majorCodes" index="index" item="item" open="(" close=")" separator=",">
+            #{item}
+        </foreach>
+    </if>
+</select>
 
 <select id="getWorkAreaByCode" resultType="com.aiurt.boot.index.dto.TeamPortraitDTO">
     SELECT
     wa.position AS position,
+    wa.name as siteName,
+    wa.code as workAreaCode,
     (
     SELECT
     GROUP_CONCAT( cl.line_name )
@@ -38,7 +58,6 @@
     WHERE
             sr.del_flag = 0
       AND  DATE_FORMAT(sr.date ,'%Y-%m-%d') = DATE_FORMAT(#{today},'%Y-%m-%d')
-
     <if test="userList != null and userList.size() != 0">
         and sr.user_id in
         <foreach collection="userList" item="item" index="index" open="(" close=")" separator=",">
@@ -58,10 +77,11 @@
     a.end_time
     from
     fault_repair_record a
+    LEFT JOIN fault f ON f.`code` = a.fault_code
     LEFT JOIN sys_user su on a.appoint_user_name = su.username
     where 1=1
-    AND  DATE_FORMAT(a.create_time ,'%Y-%m-%d') &gt;= DATE_FORMAT(#{beginDate},'%Y-%m-%d')
-    AND  DATE_FORMAT(a.create_time ,'%Y-%m-%d') &lt;= DATE_FORMAT(#{endDate},'%Y-%m-%d')
+    AND  DATE_FORMAT(f.approval_pass_time ,'%Y-%m-%d') &gt;= DATE_FORMAT(#{beginDate},'%Y-%m-%d')
+    AND  DATE_FORMAT(f.approval_pass_time ,'%Y-%m-%d') &lt;= DATE_FORMAT(#{endDate},'%Y-%m-%d')
     <if test="userList != null and userList.size() != 0">
         AND  su.id in
         <foreach collection="userList" item="item" index="index" open="(" close=")" separator=",">
@@ -159,7 +179,7 @@
 
 <select id="getUserList" resultType="com.aiurt.boot.index.dto.TeamUserDTO">
     SELECT
-    su.id,
+    su.id as userId,
     su.realname,
     su.avatar,
     su.job_grade,
@@ -194,7 +214,7 @@
     rt.begin_time,
     IF
     ( 1 = rt.is_receipt, rt.receipt_time, IF ( 1 = rt.is_confirm, rt.confirm_time, rt.submit_time ) )
-    )) inspecitonTotalTime
+    )) time
     FROM
     repair_pool rp
     LEFT JOIN repair_task rt ON rp.`code` = rt.`code` LEFT JOIN repair_task_user rts ON rts.repair_task_code = rt.`code`
@@ -219,7 +239,7 @@
     rt.begin_time,
     IF
     ( 1 = rt.is_receipt, rt.receipt_time, IF ( 1 = rt.is_confirm, rt.confirm_time, rt.submit_time ) )
-    )) faultTotalTime
+    )) time
     FROM
     repair_task_peer_rel rtpr
     LEFT JOIN repair_task_device_rel rtdr ON rtpr.repair_task_device_code = rtdr.`code`

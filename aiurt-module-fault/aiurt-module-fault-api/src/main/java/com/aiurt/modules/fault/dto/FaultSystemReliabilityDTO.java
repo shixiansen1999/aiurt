@@ -27,10 +27,10 @@ public class FaultSystemReliabilityDTO implements Serializable {
     private String  reliability;
 
     @ApiModelProperty(value = "计划运行时间")
-    private Integer  scheduledRuntime;
+    private Double  scheduledRuntime;
 
     @ApiModelProperty(value = "实际运行时间")
-    private Integer actualRuntime;
+    private Double actualRuntime;
 
     /**专业子系统编码*/
     @ApiModelProperty(value = "专业子系统编码")

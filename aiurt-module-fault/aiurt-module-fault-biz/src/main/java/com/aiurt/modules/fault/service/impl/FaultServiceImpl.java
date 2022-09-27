@@ -782,7 +782,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
                 malfunctionDTO.setDelFlag(0);
                 malfunctionList.add(malfunctionDTO);
 
-                //
+                // 报废记录
                 SparePartScrapDTO sparePartScrapDTO = new SparePartScrapDTO();
                 sparePartScrapDTO.setNumber("1");
                 sparePartScrapDTO.setMaterialCode("");
@@ -952,6 +952,11 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
      */
     @Override
     public KnowledgeDTO queryKnowledge(FaultKnowledgeBase faultKnowledgeBase) {
+        String deviceCode = faultKnowledgeBase.getDeviceCode();
+        if (StrUtil.isBlank(deviceCode)) {
+            log.info("设备编码有空, 不推荐使用故障知识库");
+            return new KnowledgeDTO();
+        }
         String faultPhenomenon = faultKnowledgeBase.getFaultPhenomenon();
         log.info("分词解析前数据：{}",faultPhenomenon);
 

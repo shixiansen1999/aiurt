@@ -258,9 +258,8 @@ public class ActCustomClassifyController extends BaseController<ActCustomClassif
 		List<ActCustomClassify> departList = actCustomClassifyService.getBaseMapper().selectList(null);
 		List<SelectTable> treeList = departList.stream().map(entity -> {
 			SelectTable table = new SelectTable();
-			table.setValue(entity.getId());
+			table.setValue(entity.getScode());
 			table.setLabel(entity.getSname());
-			table.setIsOrg(true);
 			table.setKey(entity.getId());
 			table.setParentValue(StrUtil.isBlank(entity.getPid()) ? "-9999" : entity.getPid());
 			return table;
@@ -273,7 +272,7 @@ public class ActCustomClassifyController extends BaseController<ActCustomClassif
 				parent = new SelectTable();
 				root.put(item.getParentValue(), parent);
 			}
-			SelectTable table = root.get(item.getValue());
+			SelectTable table = root.get(item.getKey());
 			if (Objects.nonNull(table)) {
 				item.setChildren(table.getChildren());
 			}

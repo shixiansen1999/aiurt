@@ -153,9 +153,18 @@ public class OverhaulStatisticsDTO {
     private java.util.Date endDate;
 
 
+    private List<String> orgCodeList;
+
     /**名称集合*/
     @TableField(exist = false)
     @ApiModelProperty(value = "名称集合")
     private List<OverhaulStatisticsDTO> nameList;
+
+    @ApiModelProperty("分页参数")
+    private Integer pageNo;
+
+
+    @ApiModelProperty("分页参数")
+    private Integer pageSize;
 
 }

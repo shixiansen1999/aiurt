@@ -10,6 +10,12 @@
             <if test="lineCode != null and lineCode !=''">
                 and line_code  = #{lineCode}
             </if>
+            <if test="majors != null and majors.size>0 ">
+                and major_code in
+                <foreach collection="majors" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
         </where>
     </select>
 
@@ -36,6 +42,12 @@
             <if test="lineCode != null and lineCode !=''">
                 and line_code  = #{lineCode}
             </if>
+            <if test="majors != null and majors.size>0 ">
+                and major_code in
+                <foreach collection="majors" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
         </where>
     </select>
 
@@ -49,17 +61,30 @@
             <if test="lineCode != null and lineCode !=''">
                 and line_code  = #{lineCode}
             </if>
+            <if test="majors != null and majors.size>0 ">
+                and major_code in
+                <foreach collection="majors" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
         </where>
     </select>
 
     <select id="queryLargeFaultInformationTodayAdd" resultType="com.aiurt.modules.fault.entity.Fault">
         select * from fault
         <where>
+            status > 2
             <if test="todayStartDate!=null and todayEndDate!=null">
                 and happen_time  &gt;= #{todayStartDate}  and happen_time &lt;= #{todayEndDate}
             </if>
             <if test="lineCode != null and lineCode !=''">
                 and line_code  = #{lineCode}
+            </if>
+            <if test="majors != null and majors.size>0 ">
+                and major_code in
+                <foreach collection="majors" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
             </if>
         </where>
     </select>
@@ -67,11 +92,18 @@
     <select id="queryFaultDataInformationWeekAdd" resultType="com.aiurt.modules.fault.entity.Fault">
         select * from fault
         <where>
+            status > 2
             <if test="weekStartDate!=null and weekEndDate!=null">
                 and happen_time  &gt;= #{weekStartDate}  and happen_time &lt;= #{weekEndDate}
             </if>
             <if test="lineCode != null and lineCode !=''">
                 and line_code  = #{lineCode}
+            </if>
+            <if test="majors != null and majors.size>0 ">
+                and major_code in
+                <foreach collection="majors" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
             </if>
         </where>
     </select>
@@ -89,17 +121,26 @@
             <if test="condition.lineCode != null and condition.lineCode != ''">
                 and f.line_code  = #{condition.lineCode}
             </if>
+            <if test="condition.majors != null and condition.majors.size>0 ">
+                and f.major_code in
+                <foreach collection="condition.majors" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
             <if test="condition.unSo !=null and condition.unSo !=''">
                 and f.status != 12
             </if>
             <if test="condition.todayAdd != null and condition.todayAdd !=''">
                 and f.happen_time  &gt;= #{condition.todayStartDate}  and f.happen_time &lt;= #{condition.todayEndDate}
             </if>
+            <if test="condition.todayAdd != null and condition.todayAdd !=''">
+                and f.status > 2
+            </if>
             <if test="condition.todaySolve != null and condition.todaySolve !=''">
                 and f.status = 12
             </if>
             <if test=" condition.todaySolve != null and condition.todaySolve !=''">
-                and f.approval_pass_time  &gt;= #{condition.todayStartDate}  and f.approval_pass_time &lt;= #{condition.todayEndDate}
+                and f.end_time  &gt;= #{condition.todayStartDate}  and f.end_time &lt;= #{condition.todayEndDate}
             </if>
         </where>
     </select>
@@ -111,29 +152,45 @@
         left join cs_station ct on ct.station_code = f.station_code
         left join sys_user s on s.username = f.appoint_user_name
         <where>
+            f.status > 2
             <if test="condition.lineCode != null and condition.lineCode != ''">
                 and f.line_code  = #{condition.lineCode}
+            </if>
+            <if test="condition.majors != null and condition.majors.size>0 ">
+                and f.major_code in
+                <foreach collection="condition.majors" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
             </if>
             <if test="condition.unSo !=null and condition.unSo !=''">
                 and f.status != 12
             </if>
+            <if test="condition.unSo !=null and condition.unSo !=''">
+                and f.status > 2
+            </if>
             <if test="condition.weekAdd != null and condition.weekAdd !=''">
                 and f.happen_time  &gt;= #{condition.startDate}  and f.happen_time &lt;= #{condition.endDate}
+            </if>
+            <if test="condition.weekAdd != null and condition.weekAdd !=''">
+                and f.status > 2
             </if>
             <if test="condition.weekSolve != null and condition.weekSolve !=''">
                 and f.status = 12
             </if>
             <if test=" condition.weekSolve != null and condition.weekSolve !=''">
-                and f.approval_pass_time  &gt;= #{condition.startDate}  and f.approval_pass_time &lt;= #{condition.endDate}
+                and f.end_time  &gt;= #{condition.startDate}  and f.end_time &lt;= #{condition.endDate}
             </if>
             <if test="condition.todayAdd != null and condition.todayAdd !=''">
                 and f.happen_time  &gt;= #{condition.todayStartDate}  and f.happen_time &lt;= #{condition.todayEndDate}
+            </if>
+            <if test="condition.todayAdd != null and condition.todayAdd !=''">
+                and f.status > 2
             </if>
             <if test="condition.todaySolve != null and condition.todaySolve !=''">
                 and f.status = 12
             </if>
             <if test=" condition.todaySolve != null and condition.todaySolve !=''">
-                and f.approval_pass_time  &gt;= #{condition.todayStartDate}  and f.approval_pass_time &lt;= #{condition.todayEndDate}
+                and f.end_time  &gt;= #{condition.todayStartDate}  and f.end_time &lt;= #{condition.todayEndDate}
             </if>
         </where>
     </select>
@@ -151,6 +208,12 @@
             <if test="lineCode != null and lineCode != ''">
                 and f.line_code  = #{lineCode}
             </if>
+            <if test="majors != null and majors.size>0 ">
+                and f.major_code in
+                <foreach collection="majors" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
         </where>
     </select>
 
@@ -167,6 +230,12 @@
             <if test="startDate!=null and endDate!=null">
                 and f.approval_pass_time  &gt;= #{startDate}  and f.approval_pass_time &lt;= #{endDate}
             </if>
+            <if test="majors != null and majors.size>0 ">
+                and f.major_code in
+                <foreach collection="majors" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
         </where>
     </select>
 
@@ -177,18 +246,24 @@
             <if test="startDate!=null and endDate!=null">
                 and f.approval_pass_time  &gt;= #{startDate}  and f.approval_pass_time &lt;= #{endDate}
             </if>
+            <if test="majors != null and majors.size>0 ">
+                and f.major_code in
+                <foreach collection="majors" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
         </where>
     </select>
 
     <select id="getYearFault" resultType="java.lang.Integer">
         select count(*) from fault where 1=1
         <if test="condition.firstDay != null and condition.firstDay != ''">
-            and DATE_FORMAT(create_time ,'%Y-%m-%d') &gt;= DATE_FORMAT(#{condition.firstDay},'%Y-%m-%d')
+            and DATE_FORMAT(approval_pass_time ,'%Y-%m-%d') &gt;= DATE_FORMAT(#{condition.firstDay},'%Y-%m-%d')
         </if>
         <if test="condition.lastDay != null and condition.lastDay != ''">
-            and DATE_FORMAT(create_time ,'%Y-%m-%d') &lt;= DATE_FORMAT(#{condition.lastDay},'%Y-%m-%d')
+            and DATE_FORMAT(approval_pass_time ,'%Y-%m-%d') &lt;= DATE_FORMAT(#{condition.lastDay},'%Y-%m-%d')
         </if>
-        <if test="condition.lineCode != null">
+        <if test="condition.lineCode != null and condition.lineCode != ''">
             and line_code  = #{condition.lineCode}
         </if>
         <if test="condition.subSystemCode != null and condition.subSystemCode != ''">
@@ -200,10 +275,28 @@
         <if test="condition.status != null">
             and status  = #{condition.status}
         </if>
+        <if test="condition.majorCodes != null and condition.majorCodes.size() != 0">
+            and major_code in
+            <foreach collection="condition.majorCodes" index="index" item="item" open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+        </if>
     </select>
 
     <select id="getAllSystemCode" resultType="com.aiurt.modules.fault.dto.FaultDataStatisticsDTO">
-        select system_code as subSystemCode ,system_name as subSystemName  from cs_subsystem where del_flag = 0
+        SELECT
+                system_code AS subSystemCode,
+                system_name AS subSystemName
+        FROM
+                cs_subsystem
+        WHERE
+                del_flag = 0
+        <if test="majorCodes != null and majorCodes.size() != 0">
+            and major_code in
+            <foreach collection="majorCodes" index="index" item="item" open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+        </if>
     </select>
 
 
@@ -218,36 +311,62 @@
             <if test="lineCode != null and lineCode != ''">
                 and f.line_code  = #{lineCode}
             </if>
+            <if test="majors != null and majors.size>0 ">
+                and f.major_code in
+                <foreach collection="majors" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
         </where>
         group by f.sub_system_code,f.line_Code
     </select>
 
-    <select id="getSystemFaultSum" resultType="com.aiurt.modules.fault.dto.FaultSystemTimeDTO">
+    <select id="getSystemFaultSum" resultType="com.aiurt.modules.fault.dto.FaultSystemTimesDTO">
         select cs.system_name,f.sub_system_code,f.line_code,f.happen_time,f.end_time,
-        sum(TIMESTAMPDIFF(HOUR,f.happen_time,f.end_time)) as repairTime  from fault f
+        sum(TIMESTAMPDIFF(minute,f.happen_time,f.end_time)) as repairTime  from fault f
         left join cs_subSystem cs on f.sub_system_code = cs.system_code
         <where>
             <if test="startDate!=null and endDate!=null">
                 and f.approval_pass_time  &gt;= #{startDate}  and f.approval_pass_time &lt;= #{endDate}
+            </if>
+            <if test="majors != null and majors.size>0 ">
+                and f.major_code in
+                <foreach collection="majors" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
             </if>
         </where>
         group by f.sub_system_code
     </select>
 
     <select id="getSystemDeviceSum" resultType="com.aiurt.modules.fault.dto.FaultSystemDeviceSumDTO">
-        select cs.system_name,d.system_code,d.code,d.name,count(code) as deviceNumber
+        select cs.system_name,d.system_code,d.code,d.major_code,d.name,count(code) as deviceNumber
         from device d
         left join cs_subSystem cs on d.system_code = cs.system_code
-        where
+        <where>
             d.scrap_flag = 0
+            <if test="majors != null and majors.size>0 ">
+                and d.major_code in
+                <foreach collection="majors" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
         group by d.system_code
     </select>
 
     <select id="queryFaultDataInformation" resultType="com.aiurt.modules.fault.entity.Fault">
         select * from fault
         <where>
+            status > 2
             <if test="lineCode != null and lineCode != ''">
                 and line_code  = #{lineCode}
+            </if>
+            <if test="majors != null and majors.size>0 ">
+                and major_code in
+                <foreach collection="majors" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
             </if>
         </where>
     </select>
@@ -275,6 +394,25 @@
             <if test="startDate!=null and endDate!=null">
                 and approval_pass_time  &gt;= #{startDate}  and approval_pass_time &lt;= #{endDate}
             </if>
+            <if test="majors != null and majors.size>0 ">
+                and major_code in
+                <foreach collection="majors" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
         </where>
+    </select>
+
+    <select id="getFaultUserDuration" resultType="com.aiurt.modules.largescream.model.FaultDurationTask">
+        select s.id,s.realname, fr.appoint_user_name,f.approval_pass_time,fr.recevice_time,fr.end_time,fr.assign_time,
+        sum(TIMESTAMPDIFF(second,IFNULL(fr.recevice_time,fr.assign_time),fr.end_time)) as duration from  fault_repair_record  fr
+        left join sys_user s on s.username = fr.appoint_user_name
+        left join  fault f on f.code = fr.fault_code
+        <where>
+        <if test="startTime != null and endTime != null">
+            AND f.approval_pass_time BETWEEN #{startTime} AND #{endTime}
+        </if>
+        </where>
+        group by fr.appoint_user_name
     </select>
 </mapper>

@@ -3,7 +3,6 @@ package com.aiurt.boot.report.model;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
-import java.util.Date;
 import java.util.List;
 
 /**
@@ -17,31 +16,34 @@ public class PatrolReportModel {
     /**
      * 线路code
      */
+    @ApiModelProperty("线路code")
     private String lineCode;
 
     /**
      * 站点code
      */
+    @ApiModelProperty("站点code")
     private String stationCode;
     /**
      * 班组code
      */
+    @ApiModelProperty("班组code")
     private String orgCode;
     /**
      * 子系统code
      */
+    @ApiModelProperty("子系统code")
     private String subsystemCode;
     /**
      * 开始日期
      */
-    private Date startDate;
+    @ApiModelProperty("开始日期")
+    private String startDate;
     /**
      * 结束时间
      */
-    private Date endDate;
-    /**
-     * 结束时间
-     */
+    @ApiModelProperty("结束时间")
+    private String endDate;
     private List<String> orgList;
     @ApiModelProperty("分页参数")
     private Integer pageNo;

@@ -401,3 +401,6 @@ aiurt:
     key: ddb048301e3d8a730dbe7cbe5d90a6fd
     # 城市编码
     city: 220100
+robot:
+  wsdl:
+    address: http://2.0.1.16:11456?wsdl

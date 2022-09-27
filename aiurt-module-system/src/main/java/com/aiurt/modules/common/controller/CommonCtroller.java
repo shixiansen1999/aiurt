@@ -321,22 +321,18 @@ public class CommonCtroller {
     @GetMapping("/system/queryMajorAndSystemTree")
     @ApiOperation("查询专业系统树")
     public Result<List<SelectTable>> queryMajorAndSystemTree() {
-        LambdaQueryWrapper<CsMajor> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(CsMajor::getDelFlag, 0);
+        LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        List<CsUserMajorModel> majorModelList = csUserMajorService.getMajorByUserId(loginUser.getId());
 
-        //todo 查询当前人员所管辖的专业。
-        List<CsMajor> csMajorList = csMajorService.getBaseMapper().selectList(queryWrapper);
+        List<CsUserSubsystemModel> subsystemModelList = csUserSubsystemService.getSubsystemByUserId(loginUser.getId());
+        Map<String, List<CsUserSubsystemModel>> map = subsystemModelList.stream().collect(Collectors.groupingBy(CsUserSubsystemModel::getMajorCode));
 
-        List<CsSubsystem> csSubsystemList = csSubsystemService.getBaseMapper().selectList(null);
-        Map<String, List<CsSubsystem>> map = csSubsystemList.stream().collect(Collectors.groupingBy(CsSubsystem::getMajorCode));
-
-        List<SelectTable> tableList = csMajorList.stream().map(csMajor -> {
+        List<SelectTable> tableList = majorModelList.stream().map(csMajor -> {
             SelectTable table = new SelectTable();
             table.setLabel(csMajor.getMajorName());
             table.setValue(csMajor.getMajorCode());
-            table.setKey(csMajor.getId());
-
-            List<CsSubsystem> csList = map.getOrDefault(csMajor.getMajorCode(), Collections.emptyList());
+            table.setKey(csMajor.getMajorId());
+            List<CsUserSubsystemModel> csList = map.getOrDefault(csMajor.getMajorCode(), Collections.emptyList());
             List<SelectTable> list = csList.stream().map(subsystem -> {
                 SelectTable selectTable = new SelectTable();
                 selectTable.setLabel(subsystem.getSystemName());

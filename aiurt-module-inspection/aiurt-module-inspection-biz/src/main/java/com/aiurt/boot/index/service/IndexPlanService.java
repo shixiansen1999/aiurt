@@ -9,10 +9,7 @@ import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.api.PatrolApi;
 import com.aiurt.boot.constant.DictConstant;
 import com.aiurt.boot.constant.InspectionConstant;
-import com.aiurt.boot.index.dto.DayTodoDTO;
-import com.aiurt.boot.index.dto.PlanIndexDTO;
-import com.aiurt.boot.index.dto.TaskDetailsDTO;
-import com.aiurt.boot.index.dto.TaskDetailsReq;
+import com.aiurt.boot.index.dto.*;
 import com.aiurt.boot.index.mapper.IndexPlanMapper;
 import com.aiurt.boot.manager.InspectionManager;
 import com.aiurt.boot.plan.dto.RepairPoolDetailsDTO;
@@ -129,11 +126,23 @@ public class IndexPlanService {
      * @param queryWrapper
      */
     public void doQuery(Date startDate, Date endDate, Integer isAllData, LambdaQueryWrapper<RepairPool> queryWrapper) {
-        queryWrapper.ge(RepairPool::getStartTime, DateUtil.beginOfDay(startDate));
-        queryWrapper.le(RepairPool::getStartTime, DateUtil.endOfDay(endDate));
+        if (ObjectUtil.isEmpty(startDate) || ObjectUtil.isEmpty(endDate)) {
+            return;
+        }
+
+        // 用于判断是否是一整月的查询
+        // 如果是一整个月查询，那么返回的dayBegin是这个月的第一周的开始时间，dayEnd是这个月最后一周的结束时间
+        JudgeIsMonthQuery judgeIsMonthQuery = new JudgeIsMonthQuery(startDate, endDate).invoke();
+        startDate = judgeIsMonthQuery.getDayBegin();
+        endDate = judgeIsMonthQuery.getDayEnd();
+
+        queryWrapper.ge(RepairPool::getStartTime, startDate);
+        queryWrapper.le(RepairPool::getStartTime, endDate);
         queryWrapper.isNotNull(RepairPool::getStartTime);
         // 默认按照管理的组织机构进行数据过滤
-        if (ObjectUtil.isEmpty(isAllData) || (ObjectUtil.isNotEmpty(isAllData) && isAllData.equals(InspectionConstant.IS_ALL_DATA_0))) {
+        if (ObjectUtil.isEmpty(isAllData)
+                || (ObjectUtil.isNotEmpty(isAllData)
+                && isAllData.equals(InspectionConstant.IS_ALL_DATA_0))) {
             List<String> codeByOrgCode = getCodeByOrgCode();
             if (CollUtil.isNotEmpty(codeByOrgCode)) {
                 queryWrapper.in(RepairPool::getCode, codeByOrgCode);
@@ -163,6 +172,13 @@ public class IndexPlanService {
             taskDetailsReq.setIsAllData(InspectionConstant.IS_ALL_DATA_0);
         }
         List<String> codeByOrgCode = getCodeByOrgCode();
+
+        // 用于判断是否是一整月的查询
+        // 如果是一整个月查询，那么返回的dayBegin是这个月的第一周的开始时间，dayEnd是这个月最后一周的结束时间
+        JudgeIsMonthQuery judgeIsMonthQuery = new JudgeIsMonthQuery(taskDetailsReq.getStartTime(), taskDetailsReq.getEndTime()).invoke();
+        taskDetailsReq.setStartTime(judgeIsMonthQuery.getDayBegin());
+        taskDetailsReq.setEndTime(judgeIsMonthQuery.getDayEnd());
+
         List<TaskDetailsDTO> detailsDTOList = indexPlanMapper.getGropuByData(taskDetailsReq.getType(), page, taskDetailsReq, codeByOrgCode);
 
         // 查询出符合条件的检修详情数据
@@ -364,7 +380,9 @@ public class IndexPlanService {
         Page<RepairPoolDetailsDTO> page = new Page<>(taskDetailsReq.getPageNo(), taskDetailsReq.getPageSize());
         if (ObjectUtil.isEmpty(taskDetailsReq.getType())
                 || ObjectUtil.isEmpty(taskDetailsReq)
-                || StrUtil.isEmpty(taskDetailsReq.getStationCode())) {
+                || StrUtil.isEmpty(taskDetailsReq.getStationCode())
+                || ObjectUtil.isEmpty(taskDetailsReq.getStartTime())
+                || ObjectUtil.isEmpty(taskDetailsReq.getEndTime())) {
             return new Page<>();
         }
 
@@ -373,6 +391,13 @@ public class IndexPlanService {
             taskDetailsReq.setIsAllData(InspectionConstant.IS_ALL_DATA_0);
         }
         List<String> codeByOrgCode = getCodeByOrgCode();
+
+        // 用于判断是否是一整月的查询
+        // 如果是一整个月查询，那么返回的dayBegin是这个月的第一周的开始时间，dayEnd是这个月最后一周的结束时间
+        JudgeIsMonthQuery judgeIsMonthQuery = new JudgeIsMonthQuery(taskDetailsReq.getStartTime(), taskDetailsReq.getEndTime()).invoke();
+        taskDetailsReq.setStartTime(judgeIsMonthQuery.getDayBegin());
+        taskDetailsReq.setEndTime(judgeIsMonthQuery.getDayEnd());
+
         List<RepairPoolDetailsDTO> maintenancDataByStationCode = indexPlanMapper.getMaintenancDataByStationCode(page, taskDetailsReq.getType(), taskDetailsReq, codeByOrgCode);
         if (CollUtil.isNotEmpty(maintenancDataByStationCode)) {
             for (RepairPoolDetailsDTO repairPool : maintenancDataByStationCode) {
@@ -441,4 +466,5 @@ public class IndexPlanService {
         }
         return page.setRecords(result);
     }
+
 }

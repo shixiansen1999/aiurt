@@ -7,6 +7,7 @@ import lombok.Data;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.util.List;
 
 /**
  * @author LKJ
@@ -70,5 +71,7 @@ public class FaultDataStatisticsDTO extends DictEntity implements Serializable {
 
     @ApiModelProperty("类型:1：本周，2：上周，3：本月， 4：上月")
     private Integer boardTimeType;
+
+    private List<String> majorCodes;
 
 }

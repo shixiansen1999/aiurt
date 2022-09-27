@@ -102,12 +102,8 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
             }
             //站点
             if (e.getSiteCode() != null) {
-                String[] split2 = e.getSiteCode().split(",");
-                List<String> list2 = Arrays.asList(split2);
-                list2.forEach(q -> {
-                    List<StationDTO> dtoList = repairTaskMapper.selectStationList(q);
-                    e.setSiteName(manager.translateStation(dtoList));
-                });
+                String Str = e.getSiteCode();
+                e.setSiteName(manager.translateStation(Str));
             }
             //专业
             if (e.getMajorCode() != null) {

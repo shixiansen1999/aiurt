@@ -11,6 +11,9 @@ import com.aiurt.modules.fault.mapper.FaultMapper;
 import com.aiurt.modules.fault.mapper.FaultRepairParticipantsMapper;
 import com.aiurt.modules.fault.mapper.FaultRepairRecordMapper;
 import com.aiurt.modules.index.mapper.FaultCountMapper;
+import com.aiurt.modules.largescream.mapper.FaultInformationMapper;
+import com.aiurt.modules.largescream.model.FaultDurationTask;
+import com.aiurt.modules.largescream.util.FaultLargeDateUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.system.api.ISysBaseAPI;
@@ -18,6 +21,7 @@ import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -29,7 +33,8 @@ import java.util.stream.Collectors;
  */
 @Service
 public class DailyFaultApiImpl implements DailyFaultApi {
-
+    @Autowired
+    private ISysBaseAPI sysBaseApi;
     @Autowired
     private FaultCountMapper faultCountMapper;
     @Autowired
@@ -40,6 +45,8 @@ public class DailyFaultApiImpl implements DailyFaultApi {
     private FaultRepairRecordMapper recordMapper;
     @Autowired
     private ISysBaseAPI sysBaseAPI;
+    @Autowired
+    private FaultInformationMapper faultInformationMapper;
 
     @Override
     public Map<String, Integer> getDailyFaultNum(Integer year, Integer month) {
@@ -87,6 +94,39 @@ public class DailyFaultApiImpl implements DailyFaultApi {
              }
         }
         return   CollUtil.join(faultNames, "。");
+    }
+
+    /**
+     * 班组画像获取维修工时
+     * @param type
+     * @param teamId
+     * @return
+     */
+    @Override
+    public Map<String, BigDecimal> getFaultUserHours(int type, String teamId) {
+        Map<String, BigDecimal> userDurationMap = new HashMap<>();
+        // 班组的人员
+        List<LoginUser> userList = sysBaseApi.getUserPersonnel(teamId);
+        String dateTime = FaultLargeDateUtil.getDateTime(type);
+        Date startTime = DateUtil.parse(dateTime.split("~")[0]);
+        Date endTime = DateUtil.parse(dateTime.split("~")[1]);
+
+        // 获取维修人员在指定时间范围内的任务时长(单位秒)
+        List<FaultDurationTask> faultUserDuration = faultInformationMapper.getFaultUserDuration(startTime, endTime);
+        Map<String, Long> durationMap = faultUserDuration.stream().collect(Collectors.toMap(k -> k.getId(),
+                v -> ObjectUtil.isEmpty(v.getDuration()) ? 0L : v.getDuration(), (a, b) -> a));
+        userList.stream().forEach(l -> {
+            String userId = l.getId();
+            Long timeOne = durationMap.get(userId);
+            if (ObjectUtil.isEmpty(timeOne)) {
+                timeOne = 0L;
+            }
+            double time = 1.0 * (timeOne) / 3600;
+            // 展示需要以小时数展示，并保留两位小数
+            BigDecimal decimal = new BigDecimal(time).setScale(2, BigDecimal.ROUND_HALF_UP);
+            userDurationMap.put(userId, decimal);
+        });
+        return userDurationMap;
     }
 
     /**
@@ -143,4 +183,5 @@ public class DailyFaultApiImpl implements DailyFaultApi {
         }
         return map;
     }
+
 }

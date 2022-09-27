@@ -1,5 +1,6 @@
 package com.aiurt.modules.situation.service.impl;
 
+import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.util.oConvertUtils;
 import com.aiurt.modules.situation.entity.SysAnnouncement;
@@ -63,9 +64,13 @@ public class SysInfoListServiceImpl extends ServiceImpl<SysInfoListMapper, SysAn
             exportList = pageList;
         }
         exportList.forEach(s->{
-            LoginUser userByName = iSysBaseAPI.getUserByName(s.getSender());
-            s.setSender(userByName.getRealname());
-            getUserNames(s);
+            if (ObjectUtil.isNotNull(s.getSender())) {
+                LoginUser userByName = iSysBaseAPI.getUserByName(s.getSender());
+                if (ObjectUtil.isNotNull(userByName)) {
+                    s.setSender(userByName.getRealname());
+                    getUserNames(s);
+                }
+            }
         });
         // Step.3 AutoPoi 导出Excel
         ModelAndView mv = new ModelAndView(new JeecgEntityExcelView());

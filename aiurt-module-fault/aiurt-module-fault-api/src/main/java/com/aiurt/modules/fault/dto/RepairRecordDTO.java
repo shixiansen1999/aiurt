@@ -123,4 +123,6 @@ public class RepairRecordDTO implements Serializable {
     @ApiModelProperty(value = "签名路径")
     private String signPath;
 
+    @ApiModelProperty(value = "工作票号")
+    private String workTicketCode;
 }

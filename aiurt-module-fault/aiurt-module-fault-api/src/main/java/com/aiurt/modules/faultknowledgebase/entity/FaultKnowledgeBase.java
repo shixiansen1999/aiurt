@@ -176,4 +176,8 @@ public class FaultKnowledgeBase implements Serializable {
     @TableField(exist = false)
     private List<String> idList;
 
+    @ApiModelProperty(value = "设备编码")
+    @TableField(exist = false)
+    private String deviceCode;
+
 }
