@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.aiurt.modules.robot.mapper.TaskPointRelMapper">
+
+    <select id="queryPointByTaskPathId" resultType="com.aiurt.modules.robot.dto.AreaPointDTO">
+    SELECT
+	ppi.point_id AS id,
+	ppi.point_name AS NAME,
+	ppi.area_id AS pid,
+	1 AS isPoint
+    FROM
+	task_point_rel tpr
+	LEFT JOIN patrol_point_info ppi ON tpr.point_id = ppi.point_id
+	<where>
+        <if test="taskPathId!=null and taskPathId!=''">
+            tpr.task_path_id = #{taskPathId}
+        </if>
+    </where>
+    </select>
+</mapper>

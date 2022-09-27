@@ -1,6 +1,8 @@
 
 package com.aiurt.modules.robot.robotdata.wsdl;
 
+import lombok.Data;
+
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
@@ -48,6 +50,7 @@ import javax.xml.bind.annotation.XmlType;
     "flirUser",
     "flirPassword"
 })
+@Data
 public class RobotInfo {
 
     @XmlElement(name = "RobotName", required = true)
