@@ -59,6 +59,7 @@ public class PatrolScreenService {
             return new ScreenImportantData(0L, 0L, 0L);
         }
         ScreenModule module = new ScreenModule();
+        module.setDiscardStatus(PatrolConstant.TASK_UNDISCARD);
         module.setOrgCodes(orgCodes);
         module.setStartTime(startTime);
         module.setEndTime(endTime);
@@ -103,6 +104,7 @@ public class PatrolScreenService {
             return new ScreenStatistics(0L, 0L, 0L, 0L, 0L, 0L);
         }
         ScreenModule module = new ScreenModule();
+        module.setDiscardStatus(PatrolConstant.TASK_UNDISCARD);
         module.setOrgCodes(orgCodes);
         module.setStartTime(startTime);
         module.setEndTime(endTime);
@@ -120,6 +122,7 @@ public class PatrolScreenService {
                 .collect(Collectors.toList());
         if (!ScreenConstant.THIS_WEEK.equals(timeType) && !ScreenConstant.THIS_MONTH.equals(timeType)) {
             ScreenModule todayModule = new ScreenModule();
+            todayModule.setDiscardStatus(PatrolConstant.TASK_UNDISCARD);
             todayModule.setStartTime(DateUtil.parse(DateUtil.format(today, "yyyy-MM-dd 00:00:00")));
             todayModule.setEndTime(DateUtil.parse(DateUtil.format(today, "yyyy-MM-dd 23:59:59")));
             todayModule.setOrgCodes(orgCodes);
@@ -206,6 +209,7 @@ public class PatrolScreenService {
             return new ArrayList<>();
         }
         ScreenTran tran = new ScreenTran();
+        tran.setDiscardStatus(PatrolConstant.TASK_UNDISCARD);
         tran.setStartTime(startTime);
         tran.setEndTime(endTime);
         tran.setOrgCodes(orgCodes);
@@ -245,6 +249,7 @@ public class PatrolScreenService {
             return page;
         }
         ScreenModule moduleType = new ScreenModule();
+        moduleType.setDiscardStatus(PatrolConstant.TASK_UNDISCARD);
         moduleType.setOrgCodes(orgCodes);
 
         String dateTime = ScreenDateUtil.getDateTime(timeType);

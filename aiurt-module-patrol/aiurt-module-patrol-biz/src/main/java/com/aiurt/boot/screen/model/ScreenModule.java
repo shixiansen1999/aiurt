@@ -7,6 +7,7 @@ import lombok.experimental.Accessors;
 
 import java.util.Date;
 import java.util.List;
+
 /**
  * @author JB
  * @Description:
@@ -36,6 +37,10 @@ public class ScreenModule {
      * 异常状态
      */
     private Integer abnormal;
+    /**
+     * 作废状态
+     */
+    private Integer discardStatus;
     /**
      * 当天日期
      */
