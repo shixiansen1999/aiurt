@@ -99,10 +99,15 @@ public class PatrolReportService {
             avgMonthOmit.setEndDate(yearDate.split("~")[1]);
         } else {
             //时间不为空，推算漏检日期范围
-            String omitStartTime = screenService.getOmitDateScope(DateUtil.parse(report.getStartDate())).split("~")[0];
-            String omitEndTime = screenService.getOmitDateScope(DateUtil.parse(report.getEndDate())).split("~")[1];
-            omitModel.setStartDate(omitStartTime);
-            omitModel.setEndDate(omitEndTime);
+//            String omitStartTime = screenService.getOmitDateScope(DateUtil.parse(report.getStartDate())).split("~")[0];
+//            String omitEndTime =null;
+//            if(ObjectUtil.isNotEmpty(report.getEndDate()))
+//            {
+//                 omitEndTime = screenService.getOmitDateScope(DateUtil.parse(report.getEndDate())).split("~")[1];
+//            }
+
+            omitModel.setStartDate(report.getStartDate());
+            omitModel.setEndDate(report.getEndDate());
         }
         //
         List<PatrolReport> list = patrolTaskMapper.getReportTaskList(pageList, orgCodeName);

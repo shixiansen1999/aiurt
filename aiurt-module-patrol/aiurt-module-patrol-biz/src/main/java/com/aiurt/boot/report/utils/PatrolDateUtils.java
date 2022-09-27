@@ -140,12 +140,13 @@ public class PatrolDateUtils {
         Date s = DateUtil.parse(startDate, "yyyy-MM");
         Date e = DateUtil.parse(endDate, "yyyy-MM");
         Date n = DateUtil.parse(today, "yyyy-MM");
+        Date todayDate = DateUtil.date();
         Date start = DateUtil.parse(startDate, "yyyy-MM-dd");
         Date end = DateUtil.parse(endDate, "yyyy-MM-dd");
         int startMonth = DateUtil.month(start)+1;
         int endMonth = DateUtil.month(end)+1;
         //开始时间大于等于当前时间
-        if(s.after(n)||s.equals(n))
+        if(start.after(todayDate)||start.equals(DateUtil.date()))
         {
             return  0;
         }
@@ -153,7 +154,7 @@ public class PatrolDateUtils {
         else
         {
             //结束时间小于当前时间
-            if(e.before(n))
+            if(end.before(todayDate))
             {
                 int startYear = DateUtil.year(start);
                 int endYear = DateUtil.year(end);
@@ -211,7 +212,7 @@ public class PatrolDateUtils {
                 }
             }
             //结束时间大于等于当前时间
-            if(e.equals(n)||e.after(n))
+            if(end.equals(DateUtil.date())||end.after(todayDate))
             {
                 int startYear = DateUtil.year(start);
                 int endYear = DateUtil.year(end);
