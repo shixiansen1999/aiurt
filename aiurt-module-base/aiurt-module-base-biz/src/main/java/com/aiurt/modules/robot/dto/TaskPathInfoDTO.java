@@ -16,4 +16,12 @@ public class TaskPathInfoDTO extends TaskPathInfo {
     private String robotName;
     @ApiModelProperty(value = "机器人id")
     private java.lang.String robotId;
+
+    @Override
+    public String toString() {
+        return "TaskPathInfoDTO{" +
+                "robotName='" + robotName + '\'' +
+                ", robotId='" + robotId + '\'' +
+                '}';
+    }
 }

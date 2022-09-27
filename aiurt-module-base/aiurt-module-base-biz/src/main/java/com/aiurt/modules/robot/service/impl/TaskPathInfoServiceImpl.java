@@ -70,14 +70,12 @@ public class TaskPathInfoServiceImpl extends ServiceImpl<TaskPathInfoMapper, Tas
         List<com.aiurt.modules.robot.taskdata.wsdl.TaskPathInfo> infos = taskPathInfo.getInfos();
         TaskPathInfo taskInfo = null;
         for (com.aiurt.modules.robot.taskdata.wsdl.TaskPathInfo info : infos) {
-            taskInfo = TaskPathInfo
-                    .builder()
-                    .taskPathId(info.getTaskPathId())
-                    .taskPathName(info.getTaskPathName())
-                    .taskPathType(info.getTaskPathType())
-                    .finishAction(info.getFinishAction())
-                    .createTime(StrUtil.isNotEmpty(info.getCreateTime()) ? DateUtil.parse(info.getCreateTime()) : new Date())
-                    .build();
+            taskInfo = new TaskPathInfo();
+            taskInfo.setTaskPathId(info.getTaskPathId());
+            taskInfo.setTaskPathName(info.getTaskPathName());
+            taskInfo.setTaskPathType(info.getTaskPathType());
+            taskInfo.setFinishAction(info.getFinishAction());
+            taskInfo.setCreateTime(StrUtil.isNotEmpty(info.getCreateTime()) ? DateUtil.parse(info.getCreateTime()) : new Date());
             result.add(taskInfo);
         }
 
