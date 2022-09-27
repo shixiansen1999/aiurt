@@ -517,6 +517,9 @@
         <if test="condition.startTime != null and condition.endTime != null">
             AND pt.patrol_date BETWEEN #{condition.startTime} AND #{condition.endTime}
         </if>
+        <if test="condition.startTime != null">
+            AND pt.discard_status = #{condition.discardStatus}
+        </if>
         <if test="condition.orgCodes != null and condition.orgCodes.size>0 ">
             AND pt.`code` IN(
                 select distinct task_code from patrol_task_organization where del_flag = 0

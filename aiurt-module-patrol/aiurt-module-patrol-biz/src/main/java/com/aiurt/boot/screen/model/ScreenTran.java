@@ -26,6 +26,10 @@ public class ScreenTran {
      */
     private Date endTime;
     /**
+     * 作废状态
+     */
+    private Integer discardStatus;
+    /**
      * 组织机构编号
      */
     private List<String> orgCodes;

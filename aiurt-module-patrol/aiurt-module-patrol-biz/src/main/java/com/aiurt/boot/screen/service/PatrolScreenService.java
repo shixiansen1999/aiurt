@@ -164,6 +164,7 @@ public class PatrolScreenService {
             return new ArrayList<>();
         }
         ScreenTran tran = new ScreenTran();
+        tran.setDiscardStatus(PatrolConstant.TASK_UNDISCARD);
         tran.setStartTime(startTime);
         tran.setEndTime(endTime);
         tran.setOrgCodes(orgCodes);
@@ -173,9 +174,9 @@ public class PatrolScreenService {
         // 字典翻译
         Map<String, String> statusItems = sysBaseApi.getDictItems(PatrolDictCode.TASK_STATUS)
                 .stream().collect(Collectors.toMap(k -> k.getValue(), v -> v.getText(), (a, b) -> a));
-        Map<String, String> omitItems = sysBaseApi.getDictItems(PatrolDictCode.TASK_STATUS)
+        Map<String, String> omitItems = sysBaseApi.getDictItems(PatrolDictCode.OMIT_STATUS)
                 .stream().collect(Collectors.toMap(k -> k.getValue(), v -> v.getText(), (a, b) -> a));
-        Map<String, String> abnormalItems = sysBaseApi.getDictItems(PatrolDictCode.TASK_STATUS)
+        Map<String, String> abnormalItems = sysBaseApi.getDictItems(PatrolDictCode.ABNORMAL_STATE)
                 .stream().collect(Collectors.toMap(k -> k.getValue(), v -> v.getText(), (a, b) -> a));
         for (ScreenStatisticsTask task : list) {
             String statusName = statusItems.get(String.valueOf(task.getStatus()));
@@ -295,9 +296,9 @@ public class PatrolScreenService {
         // 字典翻译
         Map<String, String> statusItems = sysBaseApi.getDictItems(PatrolDictCode.TASK_STATUS)
                 .stream().collect(Collectors.toMap(k -> k.getValue(), v -> v.getText(), (a, b) -> a));
-        Map<String, String> omitItems = sysBaseApi.getDictItems(PatrolDictCode.TASK_STATUS)
+        Map<String, String> omitItems = sysBaseApi.getDictItems(PatrolDictCode.OMIT_STATUS)
                 .stream().collect(Collectors.toMap(k -> k.getValue(), v -> v.getText(), (a, b) -> a));
-        Map<String, String> abnormalItems = sysBaseApi.getDictItems(PatrolDictCode.TASK_STATUS)
+        Map<String, String> abnormalItems = sysBaseApi.getDictItems(PatrolDictCode.ABNORMAL_STATE)
                 .stream().collect(Collectors.toMap(k -> k.getValue(), v -> v.getText(), (a, b) -> a));
         for (ScreenStatisticsTask task : pageList.getRecords()) {
             String statusName = statusItems.get(String.valueOf(task.getStatus()));
