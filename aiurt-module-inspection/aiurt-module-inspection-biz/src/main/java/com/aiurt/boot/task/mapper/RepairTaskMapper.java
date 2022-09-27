@@ -175,7 +175,11 @@ public interface RepairTaskMapper extends BaseMapper<RepairTask> {
 
     List<OverhaulStatisticsDTO> readTeamList(@Param("pageList") Page<OverhaulStatisticsDTO> pageList,@Param("condition") OverhaulStatisticsDTO condition);
 
+    List<OverhaulStatisticsDTO> readTeamLists(@Param("condition") OverhaulStatisticsDTO condition);
+
     List<OverhaulStatisticsDTO> readNameList(@Param("condition") OverhaulStatisticsDTO condition);
+
+    List<OverhaulStatisticsDTO> readNameLists(@Param("condition") OverhaulStatisticsDTO condition);
 
     List<Integer> getStatus(String id);
 

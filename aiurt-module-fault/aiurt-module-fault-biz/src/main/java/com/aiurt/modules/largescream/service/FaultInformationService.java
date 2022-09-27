@@ -153,7 +153,7 @@ public class FaultInformationService {
                 faultScreenModule.setStartDate(null);
                 faultScreenModule.setEndDate(null);
                 faultScreenModule.setTodayStartDate(DateUtil.beginOfDay(new Date()));
-                faultScreenModule.setTodayStartDate(DateUtil.endOfDay(new Date()));
+                faultScreenModule.setTodayEndDate(DateUtil.endOfDay(new Date()));
                 faultScreenModule.setTodaySolve(1);
                 faultScreenModule.setLineCode(lineCode);
                 faultScreenModule.setMajors(majors);
@@ -269,7 +269,7 @@ public class FaultInformationService {
             List<FaultSystemTimeDTO> systemlist = new ArrayList<>();
             //月份故障单
             FaultMonthTimeDTO faultMonthTimeDTO = new FaultMonthTimeDTO();
-            //获取最近半年月份，上一个开始
+            //获取最近半年月份，上一个月往前推半年
             String month = FaultLargeDateUtil.getLast12Months(i);
             String substring = month.substring(5,7);
             String changmonth = substring+"月";
@@ -416,10 +416,7 @@ public class FaultInformationService {
      */
     public FaultDataAnalysisCountDTO queryLargeFaultDataCount(Integer boardTimeType,String lineCode){
         FaultDataAnalysisCountDTO result = new FaultDataAnalysisCountDTO();
-//        String dateTime1 = FaultLargeDateUtil.getDateTime(boardTimeType);
-//        String[] split1 = dateTime1.split("~");
-//        Date startDate = DateUtil.parse(split1[0]);
-//        Date endDate = DateUtil.parse(split1[1]);
+
         //获取本周或本月时间
         String dateTime = FaultLargeDateUtil.getDateTime(boardTimeType);
         String[] split = dateTime.split("~");
@@ -545,7 +542,7 @@ public class FaultInformationService {
                 faultScreenModule.setStartDate(null);
                 faultScreenModule.setEndDate(null);
                 faultScreenModule.setTodayStartDate(DateUtil.beginOfDay(new Date()));
-                faultScreenModule.setTodayStartDate(DateUtil.endOfDay(new Date()));
+                faultScreenModule.setTodayEndDate(DateUtil.endOfDay(new Date()));
                 faultScreenModule.setTodaySolve(1);
                 faultScreenModule.setLineCode(lineCode);
                 faultScreenModule.setMajors(majors);

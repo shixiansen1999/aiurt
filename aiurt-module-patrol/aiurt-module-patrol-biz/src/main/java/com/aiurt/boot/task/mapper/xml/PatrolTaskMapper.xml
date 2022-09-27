@@ -735,7 +735,7 @@ GROUP BY
 </select>
     <select id="getReportOmitList" resultType="com.aiurt.boot.report.model.PatrolReport">
     select
-	count( pt.omit_status = 0 OR NULL ) AS missInspectedNumber,
+	count( pt.omit_status = 1 OR NULL ) AS missInspectedNumber,
 	pto.org_code
 FROM
 	patrol_task pt
@@ -869,8 +869,11 @@ GROUP BY
         <if test="lineCode != null">
             AND c.line_code = #{lineCode}
         </if>
-        <if test="stationCode != null">
-            AND c.station_code = #{stationCode}
+        <if test="stationCode != null and stationCode.size>0 ">
+            AND c.station_code IN
+            <foreach collection="stationCode" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
         </if>
         WHERE a.del_flag=0
           AND a.id in(select system_id from cs_user_subsystem where user_id = #{id})
@@ -941,11 +944,17 @@ GROUP BY
         <if test="lineCode != null">
             AND c.line_code = #{lineCode}
         </if>
-        <if test="stationCode != null">
-            AND c.station_code = #{stationCode}
+        <if test="stationCode != null and stationCode.size>0 ">
+            AND c.station_code IN
+            <foreach collection="stationCode" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
         </if>
-        <if test="systemCode != null">
-            AND c.sub_system_code = #{systemCode}
+        <if test="systemCode != null and systemCode.size>0 ">
+            AND c.sub_system_code IN
+            <foreach collection="systemCode" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
         </if>
         WHERE a.del_flag=0
         <if test="orgCodes != null and orgCodes.size>0 ">

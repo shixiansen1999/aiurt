@@ -64,11 +64,28 @@ public class OverhaulStatisticsService{
         List<OverhaulStatisticsDTO> nameList = repairTaskMapper.readNameList(condition);
         if (CollectionUtil.isNotEmpty(nameList)){
             nameList.forEach(q->{
-                //查询已完成的人员信息
-                condition.setStatus(8L);
-                condition.setTaskId(q.getTaskId());
-                List<OverhaulStatisticsDTO> readNameList = repairTaskMapper.readNameList(condition);
+                OverhaulStatisticsDTO overhaulStatisticsDTO = new OverhaulStatisticsDTO();
 
+                //姓名
+                String userId = q.getUserId();
+                q.setUserName(repairTaskMapper.getRealName(userId));
+
+                //班组编码
+                String orgCode = repairTaskMapper.getOrgCode(userId);
+                String id = q.getId();
+                q.setOrgCodeId(orgCode+id);
+                q.setOrgCode(orgCode);
+
+                //查询已完成的班组信息
+                overhaulStatisticsDTO.setStatus(8L);
+                if (q.getTaskId()!=null){
+                    overhaulStatisticsDTO.setTaskId(q.getTaskId());
+                }  if (q.getOrgCode()!=null){
+                    overhaulStatisticsDTO.setOrgCode(q.getOrgCode());
+                }if (q.getUserId()!=null){
+                    overhaulStatisticsDTO.setUserId(q.getUserId());
+                }
+                List<OverhaulStatisticsDTO> readNameList = repairTaskMapper.readNameLists(overhaulStatisticsDTO);
                 //已完成数
                 int size5 = readNameList.size();
                 q.setCompletedNumber(Integer.valueOf(size5).longValue());
@@ -85,23 +102,19 @@ public class OverhaulStatisticsService{
                 long count = CollUtil.isNotEmpty(status1) ? status1.stream().filter(InspectionConstant.NO_RESULT_STATUS::equals).count() : 0L;
                 q.setAbnormalNumber(count);
 
-                //姓名
-                String userId = q.getUserId();
-                q.setUserName(repairTaskMapper.getRealName(userId));
-
-                //班组编码
-                String orgCode = repairTaskMapper.getOrgCode(userId);
-                String id = q.getId();
-                q.setOrgCodeId(orgCode+id);
-                q.setOrgCode(orgCode);
             });
         }
         if (CollectionUtil.isNotEmpty(statisticsDTOList)){
+            OverhaulStatisticsDTO overhaulStatisticsDTO = new OverhaulStatisticsDTO();
             statisticsDTOList.forEach(e->{
                 //查询已完成的班组信息
-                condition.setStatus(8L);
-                condition.setTaskId(e.getTaskId());
-                List<OverhaulStatisticsDTO> dtoList = repairTaskMapper.readTeamList(null,condition);
+                overhaulStatisticsDTO.setStatus(8L);
+                if (e.getTaskId()!=null){
+                    overhaulStatisticsDTO.setTaskId(e.getTaskId());
+                }  if (e.getOrgCode()!=null){
+                    overhaulStatisticsDTO.setOrgCode(e.getOrgCode());
+                }
+                List<OverhaulStatisticsDTO> dtoList = repairTaskMapper.readTeamLists(overhaulStatisticsDTO);
 
                 //已完成数
                 int size2 = dtoList.size();
