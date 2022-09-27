@@ -78,9 +78,9 @@ public class PatrolReportService {
         BeanUtils.copyProperties(report, omitModel);
         BeanUtils.copyProperties(report, avgWeekOmit);
         BeanUtils.copyProperties(report, avgMonthOmit);
-        boolean webDate = webDefaultDate(report.getStartDate(), report.getEndDate());
+
         boolean isNullDate = false;
-        if (webDate==true) {
+        if (ObjectUtil.isEmpty(report.getStartDate())) {
             isNullDate = true;
             //本周的周一和周日
             String thisWeek = getThisWeek(new Date());
