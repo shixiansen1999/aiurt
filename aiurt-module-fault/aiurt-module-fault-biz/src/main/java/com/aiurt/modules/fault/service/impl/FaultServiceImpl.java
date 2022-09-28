@@ -645,11 +645,13 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
                             .newSparePartName(sparepart.getNewSparePartName())
                             .oldSparePartCode(sparepart.getOldSparePartCode())
                             .oldSparePartName(sparepart.getOldSparePartName())
-                            .deviceCode(sparepart.getDeviceName())
+                            .deviceCode(sparepart.getDeviceCode())
+                            .deviceName(sparepart.getDeviceName())
                             .specifications(sparepart.getSpecifications())
                             .newSparePartNum(sparepart.getNewSparePartNum())
                             .id(sparepart.getId())
                             .repairRecordId(sparepart.getRepairRecordId())
+                            .outOrderId(sparepart.getOutOrderId())
                             .build();
                     return build;
                 }).collect(Collectors.toList());
@@ -735,22 +737,30 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
             sparePartService.saveOrUpdateBatch(sparePartList);
         }
 
-        LambdaUpdateWrapper<DeviceChangeSparePart> delete = new LambdaUpdateWrapper<>();
-        delete.eq(DeviceChangeSparePart::getCode, faultCode);
-        sparePartService.remove(delete);
-
+        // 不能简单删除， 对比，修改出库的实际使用数量
         List<DeviceChangeDTO> deviceChangeList = repairRecordDTO.getDeviceChangeList();
-        List<SparePartReplaceDTO> list = new ArrayList<>();
-        List<SparePartMalfunctionDTO> malfunctionList = new ArrayList<>();
-        List<SparePartScrapDTO> sparePartScrapList = new ArrayList<>();
+
         if (CollectionUtil.isNotEmpty(deviceChangeList)) {
+            LambdaQueryWrapper<DeviceChangeSparePart> dataWrapper = new LambdaQueryWrapper<>();
+            dataWrapper.eq(DeviceChangeSparePart::getCode, faultCode);
+            List<DeviceChangeSparePart> oneSourceList = sparePartService.list(dataWrapper);
+            // key-> 出库单id_物资编码， value： 使用的数量
+            oneSourceList.stream().collect(Collectors.toMap(sparepart-> {return String.format("%s_%s", sparepart.getOutOrderId(),sparepart.getNewSparePartCode());},
+                    DeviceChangeSparePart::getNewSparePartNum, (t1,t2)->t1));
+
+
+
             List<DeviceChangeSparePart> sparePartList = deviceChangeList.stream().map(deviceChangeDTO -> {
+                // 出库单
                 String outOrderId = deviceChangeDTO.getOutOrderId();
+                // 物资编码
+                String newSparePartCode = deviceChangeDTO.getNewSparePartCode();
+
                 DeviceChangeSparePart build = DeviceChangeSparePart.builder()
                         .code(faultCode)
                         .consumables("0")
                         .deviceCode(deviceChangeDTO.getDeviceCode())
-                        .newSparePartCode(deviceChangeDTO.getNewSparePartCode())
+                        .newSparePartCode(newSparePartCode)
                         .newSparePartNum(deviceChangeDTO.getNewSparePartNum())
                         .repairRecordId(deviceChangeDTO.getId())
                         .id(deviceChangeDTO.getId())
@@ -759,58 +769,6 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
                         .delFlag(CommonConstant.DEL_FLAG_0)
                         .outOrderId(outOrderId)
                         .build();
-
-                // 备件更换记录表
-                SparePartReplaceDTO replaceDTO = new SparePartReplaceDTO();
-                replaceDTO.setMaintenanceRecord(faultCode);
-                replaceDTO.setMaterialsCode(deviceChangeDTO.getNewSparePartCode());
-                replaceDTO.setOutOrderId(outOrderId);
-                replaceDTO.setSubassemblyCode(deviceChangeDTO.getOldSparePartCode());
-                replaceDTO.setSubassemblyCode(deviceChangeDTO.getNewSparePartCode());
-                list.add(replaceDTO);
-                // 备件故障记录表
-                SparePartMalfunctionDTO malfunctionDTO = new SparePartMalfunctionDTO();
-                malfunctionDTO.setOutOrderId(outOrderId);
-                malfunctionDTO.setMaintenanceRecord(faultCode);
-                malfunctionDTO.setMalfunctionDeviceCode(deviceChangeDTO.getDeviceCode());
-                malfunctionDTO.setMalfunctionType(1);
-                malfunctionDTO.setDescription("");
-                malfunctionDTO.setReplaceNumber(deviceChangeDTO.getNewSparePartNum());
-                malfunctionDTO.setOrgId(loginUser.getOrgId());
-                malfunctionDTO.setMaintainUserId(loginUser.getId());
-                malfunctionDTO.setMaintainTime(new Date());
-                malfunctionDTO.setDelFlag(0);
-                malfunctionList.add(malfunctionDTO);
-
-                // 报废记录
-                SparePartScrapDTO sparePartScrapDTO = new SparePartScrapDTO();
-                sparePartScrapDTO.setNumber("1");
-                sparePartScrapDTO.setMaterialCode("");
-                sparePartScrapDTO.setWarehouseCode("");
-                sparePartScrapDTO.setOutOrderId("");
-                sparePartScrapDTO.setNum(0);
-                sparePartScrapDTO.setScrapTime(new Date());
-                sparePartScrapDTO.setReason("");
-                sparePartScrapDTO.setCreateBy("");
-                sparePartScrapDTO.setStatus(0);
-                sparePartScrapDTO.setLineCode("");
-                sparePartScrapDTO.setStationCode("");
-                sparePartScrapDTO.setOrgId("");
-                sparePartScrapDTO.setKeepPerson("");
-                sparePartScrapDTO.setScrapReason("");
-                sparePartScrapDTO.setRepairTime(new Date());
-                sparePartScrapDTO.setScrapDepart("");
-                sparePartScrapDTO.setBuyTime(new Date());
-                sparePartScrapDTO.setDelFlag(0);
-                sparePartScrapDTO.setUpdateBy("");
-                sparePartScrapDTO.setCreateTime(new Date());
-                sparePartScrapDTO.setUpdateTime(new Date());
-                sparePartScrapDTO.setConfirmTime(new Date());
-                sparePartScrapDTO.setConfirmId("");
-                sparePartScrapDTO.setConfirmName("");
-                sparePartScrapDTO.setSysOrgCode("");
-                sparePartScrapList.add(sparePartScrapDTO);
-
                 return build;
             }).collect(Collectors.toList());
 
@@ -891,6 +849,69 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         if (flag.equals(approvalStatus)) {
             fault.setStatus(FaultStatusEnum.Close.getStatus());
             // 修改备件, 更改状态
+
+            // 1.插入数据 ：需要往spare_part_malfunction备件履历表、spare_part_replace备件更换记录表、备件报废表spare_part_scrap插入数据
+            List<SparePartReplaceDTO> list = new ArrayList<>();
+            List<SparePartMalfunctionDTO> malfunctionList = new ArrayList<>();
+            List<SparePartScrapDTO> sparePartScrapList = new ArrayList<>();
+            LambdaQueryWrapper<DeviceChangeSparePart> dataWrapper = new LambdaQueryWrapper<>();
+            dataWrapper.eq(DeviceChangeSparePart::getCode, faultCode);
+            List<DeviceChangeSparePart> oneSourceList = sparePartService.list(dataWrapper);
+            if (CollectionUtil.isNotEmpty(oneSourceList)) {
+                oneSourceList.stream().forEach(deviceChangeDTO->{
+                    // 备件更换记录表
+                    String outOrderId = deviceChangeDTO.getOutOrderId();
+                    SparePartReplaceDTO replaceDTO = new SparePartReplaceDTO();
+                    replaceDTO.setMaintenanceRecord(faultCode);
+                    replaceDTO.setMaterialsCode(deviceChangeDTO.getNewSparePartCode());
+                    replaceDTO.setOutOrderId(outOrderId);
+                    replaceDTO.setSubassemblyCode(deviceChangeDTO.getOldSparePartCode());
+                    replaceDTO.setSubassemblyCode(deviceChangeDTO.getNewSparePartCode());
+                    list.add(replaceDTO);
+                    // 备件故障记录表
+                    SparePartMalfunctionDTO malfunctionDTO = new SparePartMalfunctionDTO();
+                    malfunctionDTO.setOutOrderId(outOrderId);
+                    malfunctionDTO.setMaintenanceRecord(faultCode);
+                    malfunctionDTO.setMalfunctionDeviceCode(deviceChangeDTO.getDeviceCode());
+                    malfunctionDTO.setMalfunctionType(1);
+                    malfunctionDTO.setDescription("");
+                    malfunctionDTO.setReplaceNumber(deviceChangeDTO.getNewSparePartNum());
+                    malfunctionDTO.setOrgId(loginUser.getOrgId());
+                    malfunctionDTO.setMaintainUserId(loginUser.getId());
+                    malfunctionDTO.setMaintainTime(new Date());
+                    malfunctionDTO.setDelFlag(0);
+                    malfunctionList.add(malfunctionDTO);
+
+                    // 报废记录
+                    SparePartScrapDTO sparePartScrapDTO = new SparePartScrapDTO();
+                    sparePartScrapDTO.setNumber("1");
+                    sparePartScrapDTO.setMaterialCode("");
+                    sparePartScrapDTO.setWarehouseCode("");
+                    sparePartScrapDTO.setOutOrderId("");
+                    sparePartScrapDTO.setNum(0);
+                    sparePartScrapDTO.setScrapTime(new Date());
+                    sparePartScrapDTO.setReason("");
+                    sparePartScrapDTO.setCreateBy("");
+                    sparePartScrapDTO.setStatus(0);
+                    sparePartScrapDTO.setLineCode("");
+                    sparePartScrapDTO.setStationCode("");
+                    sparePartScrapDTO.setOrgId("");
+                    sparePartScrapDTO.setKeepPerson("");
+                    sparePartScrapDTO.setScrapReason("");
+                    sparePartScrapDTO.setRepairTime(new Date());
+                    sparePartScrapDTO.setScrapDepart("");
+                    sparePartScrapDTO.setBuyTime(new Date());
+                    sparePartScrapDTO.setDelFlag(0);
+                    sparePartScrapDTO.setUpdateBy("");
+                    sparePartScrapDTO.setCreateTime(new Date());
+                    sparePartScrapDTO.setUpdateTime(new Date());
+                    sparePartScrapDTO.setConfirmTime(new Date());
+                    sparePartScrapDTO.setConfirmId("");
+                    sparePartScrapDTO.setConfirmName("");
+                    sparePartScrapDTO.setSysOrgCode("");
+                    sparePartScrapList.add(sparePartScrapDTO);
+                });
+            }
             saveLog(loginUser,"维修结果审核通过", faultCode, FaultStatusEnum.Close.getStatus(), null);
         }else {
             fault.setStatus(FaultStatusEnum.REPAIR.getStatus());
