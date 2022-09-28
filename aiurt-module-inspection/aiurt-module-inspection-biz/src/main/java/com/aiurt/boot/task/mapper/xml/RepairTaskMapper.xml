@@ -355,7 +355,7 @@
         where  rt.is_receipt = 1 and rt.is_confirm =1 and rt.code = #{code}
     </select>
 
-    <select id="readTeamList" resultType="com.aiurt.boot.task.dto.OverhaulStatisticsDTO">
+    <select id="readTeamList" resultType="com.aiurt.boot.task.dto.OverhaulStatisticsDTOS">
 	    SELECT
            t1.id as taskId,
            t2.id as id,
@@ -408,7 +408,7 @@
     </select>
 
 
-    <select id="readTeamLists" resultType="com.aiurt.boot.task.dto.OverhaulStatisticsDTO">
+    <select id="readTeamLists" resultType="com.aiurt.boot.task.dto.OverhaulStatisticsDTOS">
         SELECT
         t1.id as taskId,
         t2.id as id,
@@ -561,7 +561,7 @@
         </foreach>
     </select>
 
-    <select id="selectDepart" resultType="com.aiurt.boot.task.dto.OverhaulStatisticsDTO">
+    <select id="selectDepart" resultType="com.aiurt.boot.task.dto.OverhaulStatisticsDTOS">
         select
         a.org_code as orgCode,
         a.depart_name as orgName
