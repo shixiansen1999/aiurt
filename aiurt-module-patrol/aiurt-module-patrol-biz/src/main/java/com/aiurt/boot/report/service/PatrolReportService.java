@@ -138,7 +138,6 @@ public class PatrolReportService {
                                 patrolReport.setAmmPatrolNumber("-");
                             } else {
                                 long weekNumber = getWeekNumber(omitModel.getStartDate(), omitModel.getEndDate());
-                                long monthNumber = getMonthNumber(omitModel.getStartDate(), omitModel.getEndDate());
                                 if (weekNumber == 0) {
                                     patrolReport.setAwmPatrolNumber("-");
                                 } else {
@@ -148,10 +147,11 @@ public class PatrolReportService {
                                     String completionRated = String.format("%.2f", fave);
                                     patrolReport.setAwmPatrolNumber(completionRated);
                                 }
+                                long monthNumber = getMonthNumber(omitModel.getStartDate(), omitModel.getEndDate());
                                 if (monthNumber == 0) {
                                     patrolReport.setAmmPatrolNumber("-");
                                 } else {
-                                    double avg = NumberUtil.div(d.getMissInspectedNumber() , weekNumber);
+                                    double avg = NumberUtil.div(d.getMissInspectedNumber() , monthNumber);
                                     BigDecimal b = new BigDecimal(avg);
                                     double fave = b.setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
                                     String completionRated = String.format("%.2f", fave);
