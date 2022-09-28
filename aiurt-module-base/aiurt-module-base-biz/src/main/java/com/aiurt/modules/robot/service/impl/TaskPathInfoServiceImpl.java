@@ -4,14 +4,17 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
+import com.aiurt.modules.robot.constant.RobotConstant;
 import com.aiurt.modules.robot.dto.TaskPathInfoDTO;
 import com.aiurt.modules.robot.entity.TaskPathInfo;
 import com.aiurt.modules.robot.mapper.TaskPathInfoMapper;
+import com.aiurt.modules.robot.robotdata.service.RobotDataService;
 import com.aiurt.modules.robot.service.ITaskPathInfoService;
 import com.aiurt.modules.robot.service.ITaskPointRelService;
 import com.aiurt.modules.robot.taskdata.service.TaskDataService;
 import com.aiurt.modules.robot.taskdata.wsdl.TaskInfo;
 import com.aiurt.modules.robot.taskdata.wsdl.TaskPathInfos;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -39,6 +42,9 @@ public class TaskPathInfoServiceImpl extends ServiceImpl<TaskPathInfoMapper, Tas
     private TaskDataService taskDataService;
     @Resource
     private ITaskPointRelService taskPointRelService;
+    @Resource
+    private RobotDataService robotDataService;
+
 
     /**
      * 任务模板列表分页查询
@@ -82,6 +88,16 @@ public class TaskPathInfoServiceImpl extends ServiceImpl<TaskPathInfoMapper, Tas
             result.add(taskInfo);
         }
 
+        // 再次检查需要同步的任务模板数据是否为空
+        if (CollUtil.isEmpty(result)) {
+            return;
+        }
+
+        // 删除系统上的任务模板数据
+        LambdaQueryWrapper<TaskPathInfo> lam = new LambdaQueryWrapper<>();
+        lam.notIn(TaskPathInfo::getTaskPathId, result.stream().map(TaskPathInfo::getTaskPathId).collect(Collectors.toList()));
+        baseMapper.delete(lam);
+
         // 批量更新任务模板信息
         saveOrUpdateBatch(result);
 
@@ -98,9 +114,24 @@ public class TaskPathInfoServiceImpl extends ServiceImpl<TaskPathInfoMapper, Tas
      */
     @Override
     public int startTaskByPathId(String taskPathId) {
-        TaskInfo taskInfo = taskDataService.startTaskByPathId(taskPathId);
+        // 1、查找任务模板对应的点位信息,点位信息对应的机器人
+        List<String> robotIpList = baseMapper.queryRobotIpByTaskPathId(taskPathId);
+        if (CollUtil.isEmpty(robotIpList)) {
+            return RobotConstant.RESULT_ERROR_1;
+        }
 
-        return 0;
+        // 2、将对应的机器人控制模式一一设为任务模式
+        robotIpList.forEach(robotIp -> {
+            int result = robotDataService.setControlMode(robotIp, RobotConstant.CONTROL_TYPE_0);
+            if (result == RobotConstant.RESULT_ERROR_1) {
+                log.error("机器人ip为{}设置控制模式失败", robotIp);
+            }
+        });
+
+        // 3、下发任务
+        TaskInfo taskInfo = taskDataService.startTaskByPathId(taskPathId);
+        return ObjectUtil.isNotEmpty(taskInfo) ? taskInfo.getResult() : RobotConstant.RESULT_ERROR_1;
     }
+
 
 }

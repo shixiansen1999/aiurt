@@ -76,36 +76,48 @@ public class PatrolAreaInfoServiceImpl extends ServiceImpl<PatrolAreaInfoMapper,
         // 远程巡检区域数据
         PatrolAreaInfos patrolAreaInfo = taskDataService.getPatrolAreaInfo();
 
-        if (ObjectUtil.isNotEmpty(patrolAreaInfo) && CollUtil.isNotEmpty(patrolAreaInfo.getInfos())) {
-            // 目的是系统中的巡检区域名称不为空的，则不需要同步远程的巡检区域名称
-            List<PatrolAreaInfo> patrolAreaInfos = baseMapper.selectList(new LambdaQueryWrapper<PatrolAreaInfo>().isNotNull(PatrolAreaInfo::getAreaName));
-            Map<String, String> areaMap = Optional.ofNullable(patrolAreaInfos)
-                    .orElse(CollUtil.newArrayList())
-                    .stream().collect(Collectors.toMap(PatrolAreaInfo::getAreaId, PatrolAreaInfo::getAreaName));
-
-            // 查询机器人ip对应的机器人id映射关系
-            Map<String, String> map = robotInfoService.queryRobotIpMappingId();
-
-            // 封装数据到list集合中，以便批量更新
-            List<PatrolAreaInfo> result = CollUtil.newArrayList();
-            List<com.aiurt.modules.robot.taskdata.wsdl.PatrolAreaInfo> infos = patrolAreaInfo.getInfos();
-            PatrolAreaInfo p = null;
-            for (com.aiurt.modules.robot.taskdata.wsdl.PatrolAreaInfo info : infos) {
-                p = PatrolAreaInfo
-                        .builder()
-                        .areaId(info.getAreaId())
-                        .areaName(isExistAreaName(areaMap, info.getAreaId()) ? areaMap.get(info.getAreaId()) : info.getAreaName())
-                        .pid(info.getParentId())
-                        .robotId(map.get(info.getRobotIp()))
-                        .build();
-                result.add(p);
-            }
-
-
-            // 批量更新巡检区域
-            saveOrUpdateBatch(result);
+        if (ObjectUtil.isEmpty(patrolAreaInfo) || CollUtil.isEmpty(patrolAreaInfo.getInfos())) {
+            return;
         }
+
+        // 目的是系统中的巡检区域名称不为空的，则不需要同步远程的巡检区域名称
+        List<PatrolAreaInfo> patrolAreaInfos = baseMapper.selectList(new LambdaQueryWrapper<PatrolAreaInfo>().isNotNull(PatrolAreaInfo::getAreaName));
+        Map<String, String> areaMap = Optional.ofNullable(patrolAreaInfos)
+                .orElse(CollUtil.newArrayList())
+                .stream().collect(Collectors.toMap(PatrolAreaInfo::getAreaId, PatrolAreaInfo::getAreaName));
+
+        // 查询机器人ip对应的机器人id映射关系
+        Map<String, String> map = robotInfoService.queryRobotIpMappingId(CollUtil.newArrayList());
+
+        // 封装数据到list集合中，以便批量更新
+        List<PatrolAreaInfo> result = CollUtil.newArrayList();
+        List<com.aiurt.modules.robot.taskdata.wsdl.PatrolAreaInfo> infos = patrolAreaInfo.getInfos();
+        PatrolAreaInfo p = null;
+        for (com.aiurt.modules.robot.taskdata.wsdl.PatrolAreaInfo info : infos) {
+            p = PatrolAreaInfo
+                    .builder()
+                    .areaId(info.getAreaId())
+                    .areaName(isExistAreaName(areaMap, info.getAreaId()) ? areaMap.get(info.getAreaId()) : info.getAreaName())
+                    .pid(info.getParentId())
+                    .robotId(map.get(info.getRobotIp()))
+                    .build();
+            result.add(p);
+        }
+
+        // 再次检查需要更新的数据是否为空
+        if (CollUtil.isEmpty(result)) {
+            return;
+        }
+
+        // 删除原来的巡检区域数据
+        LambdaQueryWrapper<PatrolAreaInfo> patrolAreaInfoLambda = new LambdaQueryWrapper<>();
+        patrolAreaInfoLambda.notIn(PatrolAreaInfo::getAreaId, result.stream().map(PatrolAreaInfo::getAreaId).collect(Collectors.toList()));
+        baseMapper.delete(patrolAreaInfoLambda);
+
+        // 批量更新巡检区域
+        saveOrUpdateBatch(result);
     }
+
 
     /**
      * 编辑巡检点位

@@ -13,6 +13,7 @@ import org.jeecg.common.api.vo.Result;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.util.List;
 
 /**
@@ -51,8 +52,8 @@ public class PatrolAreaInfoController extends BaseController<PatrolAreaInfo, IPa
      */
     @AutoLog(value = "编辑巡检区域")
     @ApiOperation(value = "编辑巡检区域", notes = "编辑巡检区域")
-    @RequestMapping(value = "/edit", method = {RequestMethod.PUT, RequestMethod.POST})
-    public Result<String> edit(@RequestBody PatrolAreaInfo patrolAreaInfo) {
+    @PostMapping(value = "/edit")
+    public Result<String> edit(@Valid @RequestBody PatrolAreaInfo patrolAreaInfo) {
         patrolAreaInfoService.updatePoint(patrolAreaInfo);
         return Result.OK("编辑成功!");
     }

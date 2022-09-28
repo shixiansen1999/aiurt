@@ -11,6 +11,8 @@ import org.jeecg.common.api.vo.Result;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
+
 /**
  * @Description: patrol_point_info
  * @Author: aiurt
@@ -33,8 +35,8 @@ public class PatrolPointInfoController extends BaseController<PatrolPointInfo, I
      */
     @AutoLog(value = "编辑巡检点位")
     @ApiOperation(value = "编辑巡检点位", notes = "编辑巡检点位")
-    @RequestMapping(value = "/edit", method = {RequestMethod.PUT, RequestMethod.POST})
-    public Result<String> edit(@RequestBody PatrolPointInfo patrolPointInfo) {
+    @PostMapping(value = "/edit")
+    public Result<String> edit(@Valid @RequestBody PatrolPointInfo patrolPointInfo) {
         patrolPointInfoService.updateById(patrolPointInfo);
         return Result.OK("编辑成功!");
     }

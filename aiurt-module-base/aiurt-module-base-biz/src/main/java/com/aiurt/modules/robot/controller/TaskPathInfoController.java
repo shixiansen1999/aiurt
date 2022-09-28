@@ -2,8 +2,8 @@ package com.aiurt.modules.robot.controller;
 
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.system.base.controller.BaseController;
+import com.aiurt.modules.robot.constant.RobotConstant;
 import com.aiurt.modules.robot.dto.TaskPathInfoDTO;
-import com.aiurt.modules.robot.entity.RobotInfo;
 import com.aiurt.modules.robot.entity.TaskPathInfo;
 import com.aiurt.modules.robot.service.ITaskPathInfoService;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -77,8 +77,10 @@ public class TaskPathInfoController extends BaseController<TaskPathInfo, ITaskPa
     @ApiOperation(value = "立即执行", notes = "根据任务模板id给机器人发任务")
     @GetMapping(value = "/startTaskByPathId")
     @ApiImplicitParam(name = "taskPathId", value = "任务模板id", required = true, example = "37c01ba77569a6ec6", dataTypeClass = String.class)
-    public Result<RobotInfo> startTaskByPathId(@RequestParam(name = "taskPathId") String taskPathId) {
+    public Result<?> startTaskByPathId(@RequestParam(name = "taskPathId") String taskPathId) {
         int result = taskPathInfoService.startTaskByPathId(taskPathId);
-        return result == 0 ? Result.OK("执行成功") : Result.error("执行失败");
+        return result == RobotConstant.RESULT_SUCCESS_0 ? Result.OK("任务发送成功") : Result.error("任务发送失败");
     }
+
+
 }

@@ -34,4 +34,6 @@ public interface ITaskPathInfoService extends IService<TaskPathInfo> {
      * @return 0成功，1失败
      */
     int startTaskByPathId(String taskPathId);
+
+
 }

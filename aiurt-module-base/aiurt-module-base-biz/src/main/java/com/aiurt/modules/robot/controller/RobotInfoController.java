@@ -71,7 +71,7 @@ public class RobotInfoController extends BaseController<RobotInfo, IRobotInfoSer
      */
     @AutoLog(value = "编辑机器人")
     @ApiOperation(value = "编辑机器人", notes = "编辑机器人")
-    @RequestMapping(value = "/edit", method = {RequestMethod.PUT, RequestMethod.POST})
+    @PostMapping(value = "/edit")
     public Result<String> edit(@Valid @RequestBody RobotInfo robotInfo) {
         robotInfoService.updateRobotById(robotInfo);
         return Result.OK("编辑成功!");
