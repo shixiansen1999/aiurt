@@ -5,6 +5,7 @@ import com.aiurt.modules.sparepart.dto.SparePartMalfunctionDTO;
 import com.aiurt.modules.sparepart.dto.SparePartReplaceDTO;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * @Description
@@ -28,9 +29,9 @@ public interface ISparePartBaseApi {
     void updateSparePartReplace(List<SparePartReplaceDTO> replaceList);
 
     /**
-     * 更新出库单
+     * 更新出库单, 更新实际使用的数量
      */
-
+    void updateSparePartOutOrder(Map<String, Integer> updateMap);
 
     /**
      * 备件-》组件， 组件报废
