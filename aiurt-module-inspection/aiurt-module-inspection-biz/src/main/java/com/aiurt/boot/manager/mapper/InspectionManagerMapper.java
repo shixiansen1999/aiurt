@@ -46,6 +46,14 @@ public interface InspectionManagerMapper {
      * @return
      */
     List<String> translateOrg(List<String> codeList);
+
+    /**
+     * 翻译站点信息
+     * @param codeList
+     * @return
+     */
+    List<String> translateStationList(List<String> codeList);
+
     /**
      * 翻译站点信息
      * @param
