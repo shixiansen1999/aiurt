@@ -880,4 +880,11 @@ public class LoginController {
 		return Result.OK(serviceToken);
 	}
 
+	@GetMapping("/getSsoToken")
+	@ApiOperation("获取泛微token信息")
+	public Result<String> getSsoToken() {
+		String ssoToken = weaverSSOService.ssoToken();
+		return Result.OK(ssoToken);
+	}
+
 }

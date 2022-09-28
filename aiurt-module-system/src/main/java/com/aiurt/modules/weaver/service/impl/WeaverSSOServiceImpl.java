@@ -7,6 +7,7 @@ import cn.hutool.crypto.asymmetric.RSA;
 import com.aiurt.modules.weaver.service.IWeaverSSOService;
 import com.aiurt.modules.weaver.service.entity.WeaverSsoRestultDTO;
 import com.alibaba.fastjson.JSONObject;
+import liquibase.pro.packaged.J;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -14,6 +15,8 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.concurrent.TimeUnit;
@@ -128,5 +131,22 @@ public class WeaverSSOServiceImpl implements IWeaverSSOService {
 
         return weaverSsoRestultDTO;
 
+    }
+
+    @Override
+    public String ssoToken() {
+        String url = "/ssologin/getToken";
+        url = String.format("http://%s%s", weaverIp, url);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Content-Type", "application/x-www-form-urlencoded");
+        JSONObject req = new JSONObject();
+        MultiValueMap<String, String> paramMap = new LinkedMultiValueMap();
+        paramMap.add("appid", "aiurtplatform");
+        paramMap.add("loginid", "sysadmin");
+        HttpEntity httpEntity = new HttpEntity(paramMap, headers);
+        String result = restTemplate.postForObject(url,httpEntity, String.class);
+        log.info("请求的token:{}", result);
+        return result;
     }
 }
