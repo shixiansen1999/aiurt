@@ -360,7 +360,7 @@
            t1.id as taskId,
            t2.id as id,
            t1.code as taskCode,
-           TIMESTAMPDIFF(MINUTE,t1.start_time,t1.end_time) as maintenanceDuration,
+           ifnull(TIMESTAMPDIFF(MINUTE,t1.start_time,t1.end_time),0)as maintenanceDuration,
            t1.start_time as startDate,
            t1.end_time as endDate,
 		   t2.org_code as orgCode,
@@ -444,7 +444,7 @@
             t1.id as taskId,
             t2.id as id,
             t1.code as taskCode,
-            TIMESTAMPDIFF(MINUTE,t1.start_time,t1.end_time) as maintenanceDuration,
+            ifnull(TIMESTAMPDIFF(MINUTE,t1.start_time,t1.end_time),0)as maintenanceDuration,
             t1.start_time as startDate,
             t1.end_time as endDate,
             t2.user_id as userId,
@@ -548,5 +548,28 @@
 
     <select id="getRealName" resultType="java.lang.String">
         select realname from sys_user where id = #{id}
+    </select>
+
+    <select id="realNameList" resultType="com.aiurt.boot.task.dto.OverhaulStatisticsDTO">
+        select
+        id as userId,
+        realname as userName
+        from sys_user
+        where    1=1 and  org_code in
+        <foreach collection="condition.orgCodeList" index="index" item="item" open="(" close=")" separator=",">
+            #{item}
+        </foreach>
+    </select>
+
+    <select id="selectDepart" resultType="com.aiurt.boot.task.dto.OverhaulStatisticsDTO">
+        select
+        a.org_code as orgCode,
+        a.depart_name as orgName
+        from
+        sys_depart a
+        where
+        a.manager_id = #{id}
+        and a.org_category in (3,4,5)
+
     </select>
 </mapper>

@@ -6,7 +6,6 @@ import cn.hutool.core.util.NumberUtil;
 import com.aiurt.boot.constant.InspectionConstant;
 import com.aiurt.boot.manager.InspectionManager;
 import com.aiurt.boot.task.dto.OverhaulStatisticsDTO;
-import com.aiurt.boot.task.entity.RepairTask;
 import com.aiurt.boot.task.mapper.RepairTaskMapper;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.system.api.ISysBaseAPI;
@@ -57,24 +56,34 @@ public class OverhaulStatisticsService{
         {
             condition.setOrgCodeList(collect1);
         }
-        //查询班组的信息
+
+        //查询管理负责人检修班组的信息
         List<OverhaulStatisticsDTO> statisticsDTOList = repairTaskMapper.readTeamList(pageList,condition);
 
-        //查询人员信息
+        //查询班组下所有人员
+        List<OverhaulStatisticsDTO> dtoList1 = repairTaskMapper.realNameList(condition);
+
+        //查询班组下检修人员
         List<OverhaulStatisticsDTO> nameList = repairTaskMapper.readNameList(condition);
-        if (CollectionUtil.isNotEmpty(nameList)){
-            nameList.forEach(q->{
+        nameList.addAll(dtoList1);
+
+        //去重处理
+        ArrayList<OverhaulStatisticsDTO> distinct = CollectionUtil.distinct(nameList);
+
+        if (CollectionUtil.isNotEmpty(distinct)){
+            distinct.forEach(q->{
                 OverhaulStatisticsDTO overhaulStatisticsDTO = new OverhaulStatisticsDTO();
 
-                //姓名
-                String userId = q.getUserId();
-                q.setUserName(repairTaskMapper.getRealName(userId));
-
-                //班组编码
-                String orgCode = repairTaskMapper.getOrgCode(userId);
-                String id = q.getId();
-                q.setOrgCodeId(orgCode+id);
-                q.setOrgCode(orgCode);
+                if (q.getUserId()!=null){
+                    //姓名
+                    String userId = q.getUserId();
+                    q.setUserName(repairTaskMapper.getRealName(userId));
+                    //班组编码
+                    String orgCode = repairTaskMapper.getOrgCode(userId);
+                    String id = q.getId();
+                    q.setOrgCodeId(orgCode+id);
+                    q.setOrgCode(orgCode);
+                }
 
                 //查询已完成的班组信息
                 overhaulStatisticsDTO.setStatus(8L);
@@ -90,18 +99,24 @@ public class OverhaulStatisticsService{
                 int size5 = readNameList.size();
                 q.setCompletedNumber(Integer.valueOf(size5).longValue());
 
-                //未完成数
-                long l = q.getTaskTotal()-Integer.valueOf(size5).longValue();
-                q.setNotCompletedNumber(l);
-
+                if (q.getTaskTotal()!=null){
+                    //未完成数
+                    long l = q.getTaskTotal()-Integer.valueOf(size5).longValue();
+                    q.setNotCompletedNumber(l);
+                }else {
+                    q.setNotCompletedNumber(0L);
+                }
                 //完成率
                 getCompletionRate(q, size5);
 
                 //异常数量
-                List<Integer> status1 = repairTaskMapper.getStatus(q.getTaskId());
-                long count = CollUtil.isNotEmpty(status1) ? status1.stream().filter(InspectionConstant.NO_RESULT_STATUS::equals).count() : 0L;
-                q.setAbnormalNumber(count);
-
+                if (q.getTaskId()!=null) {
+                    List<Integer> status1 = repairTaskMapper.getStatus(q.getTaskId());
+                    long count = CollUtil.isNotEmpty(status1) ? status1.stream().filter(InspectionConstant.NO_RESULT_STATUS::equals).count() : 0L;
+                    q.setAbnormalNumber(count);
+                }else {
+                    q.setAbnormalNumber(0L);
+                }
             });
         }
         if (CollectionUtil.isNotEmpty(statisticsDTOList)){
@@ -136,24 +151,30 @@ public class OverhaulStatisticsService{
                 e.setAbnormalNumber(count);
 
                 //人员是否属于该班组
-                List<OverhaulStatisticsDTO> collect = nameList.stream().filter(y -> y.getOrgCode().equals(e.getOrgCode())).collect(Collectors.toList());
+                List<OverhaulStatisticsDTO> collect = distinct.stream().filter(y -> y.getOrgCode().equals(e.getOrgCode())).collect(Collectors.toList());
                 e.setNameList(collect);
 
                 //父级编码id
-                e.setOrgCodeId(e.getOrgCode());
+                if (e.getOrgCode()!=null){
+                    e.setOrgCodeId(e.getOrgCode());
+                }
             });
         }
         return pageList.setRecords(statisticsDTOList);
     }
 
     private void getCompletionRate(OverhaulStatisticsDTO e, int size2) {
-        double div = NumberUtil.div(size2, e.getTaskTotal().longValue());
-        double i = div*100;
-        if (i==0){
-            e.setCompletionRate("0");
+        if (size2!=0 && e.getTaskTotal()!=null){
+            double div = NumberUtil.div(size2, e.getTaskTotal().longValue());
+            double i = div*100;
+            if (i==0){
+                e.setCompletionRate("0");
+            }else {
+                String string = NumberUtil.round(i, 2).toString();
+                e.setCompletionRate(string);
+            }
         }else {
-            String string = NumberUtil.round(i, 2).toString();
-            e.setCompletionRate(string);
+            e.setCompletionRate("0");
         }
     }
 
