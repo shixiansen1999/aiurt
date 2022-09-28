@@ -6,13 +6,13 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import lombok.Builder;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
+import lombok.*;
 import lombok.experimental.Accessors;
 import org.jeecgframework.poi.excel.annotation.Excel;
 import org.springframework.format.annotation.DateTimeFormat;
 
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Size;
 import java.io.Serializable;
 
 /**
@@ -22,11 +22,13 @@ import java.io.Serializable;
  * @Version: V1.0
  */
 @Data
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 @TableName("patrol_area_info")
 @Accessors(chain = true)
 @EqualsAndHashCode(callSuper = false)
 @ApiModel(value="patrol_area_info对象", description="patrol_area_info")
-@Builder
 public class PatrolAreaInfo extends DictEntity implements Serializable {
     private static final long serialVersionUID = 1L;
 
@@ -37,6 +39,8 @@ public class PatrolAreaInfo extends DictEntity implements Serializable {
 	/**区域名称*/
 	@Excel(name = "区域名称", width = 15)
     @ApiModelProperty(value = "区域名称")
+    @NotBlank(message = "区域名称不能为空")
+    @Size(max = 255, message = "区域名称长度不能超过255个字符")
     private java.lang.String areaName;
 	/**所属父区域id*/
 	@Excel(name = "所属父区域id", width = 15)

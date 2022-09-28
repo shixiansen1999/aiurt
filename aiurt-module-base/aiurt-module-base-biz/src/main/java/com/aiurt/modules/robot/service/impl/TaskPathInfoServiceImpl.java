@@ -10,6 +10,7 @@ import com.aiurt.modules.robot.mapper.TaskPathInfoMapper;
 import com.aiurt.modules.robot.service.ITaskPathInfoService;
 import com.aiurt.modules.robot.service.ITaskPointRelService;
 import com.aiurt.modules.robot.taskdata.service.TaskDataService;
+import com.aiurt.modules.robot.taskdata.wsdl.TaskInfo;
 import com.aiurt.modules.robot.taskdata.wsdl.TaskPathInfos;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -70,12 +71,14 @@ public class TaskPathInfoServiceImpl extends ServiceImpl<TaskPathInfoMapper, Tas
         List<com.aiurt.modules.robot.taskdata.wsdl.TaskPathInfo> infos = taskPathInfo.getInfos();
         TaskPathInfo taskInfo = null;
         for (com.aiurt.modules.robot.taskdata.wsdl.TaskPathInfo info : infos) {
-            taskInfo = new TaskPathInfo();
-            taskInfo.setTaskPathId(info.getTaskPathId());
-            taskInfo.setTaskPathName(info.getTaskPathName());
-            taskInfo.setTaskPathType(info.getTaskPathType());
-            taskInfo.setFinishAction(info.getFinishAction());
-            taskInfo.setCreateTime(StrUtil.isNotEmpty(info.getCreateTime()) ? DateUtil.parse(info.getCreateTime()) : new Date());
+            taskInfo = TaskPathInfo
+                    .builder()
+                    .taskPathId(info.getTaskPathId())
+                    .taskPathName(info.getTaskPathName())
+                    .taskPathType(info.getTaskPathType())
+                    .finishAction(info.getFinishAction())
+                    .createTime(StrUtil.isNotEmpty(info.getCreateTime()) ? DateUtil.parse(info.getCreateTime()) : new Date())
+                    .build();
             result.add(taskInfo);
         }
 
@@ -85,6 +88,19 @@ public class TaskPathInfoServiceImpl extends ServiceImpl<TaskPathInfoMapper, Tas
         // 更新关联的点位数据
         Map<String, List<String>> taskPointRelMap = infos.stream().collect(Collectors.toMap(com.aiurt.modules.robot.taskdata.wsdl.TaskPathInfo::getTaskPathId, com.aiurt.modules.robot.taskdata.wsdl.TaskPathInfo::getPointList));
         taskPointRelService.handleTaskPointRel(taskPointRelMap);
+    }
+
+    /**
+     * 根据任务模板id给机器人发任务
+     *
+     * @param taskPathId 任务模板id
+     * @return 0成功，1失败
+     */
+    @Override
+    public int startTaskByPathId(String taskPathId) {
+        TaskInfo taskInfo = taskDataService.startTaskByPathId(taskPathId);
+
+        return 0;
     }
 
 }

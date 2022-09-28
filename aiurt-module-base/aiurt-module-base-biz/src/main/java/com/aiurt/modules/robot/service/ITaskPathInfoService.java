@@ -27,4 +27,11 @@ public interface ITaskPathInfoService extends IService<TaskPathInfo> {
      * 同步机器人任务模板
      */
     void synchronizeTaskPathInfo();
+
+    /**
+     * 根据任务模板id给机器人发任务
+     * @param taskPathId 任务模板id
+     * @return 0成功，1失败
+     */
+    int startTaskByPathId(String taskPathId);
 }
