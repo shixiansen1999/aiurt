@@ -633,8 +633,8 @@
         count( c.id) AS failureNum,
         count( c.id AND c.fault_mode_code = 1 OR NOT NULL ) AS repairNum,
         count( c.id AND c.fault_mode_code = 0 OR NOT NULL ) AS selfInspectionNum,
-        count( c.id AND c.end_time is NOT NULL OR not null ) AS resolvedNum,
-        count( c.id AND c.end_time is null OR not NULL ) AS unResolvedNum,
+        count( c.id AND c.end_time is NOT NULL and c.status = 12 OR not null ) AS resolvedNum,
+        count( c.id AND  c.status &lt;> 12 OR not NULL ) AS unResolvedNum,
         (SELECT COUNT(id) FROM fault WHERE a.system_code = sub_system_code and `status` >0 AND DATE_FORMAT(happen_time, '%Y-%m') =  DATE_FORMAT( #{endTime}, '%Y-%m')
         <if test="lineCode != null">
             AND line_code = #{lineCode}
@@ -935,8 +935,8 @@ GROUP BY
             count( c.id) AS failureNum,
             count( c.id AND c.fault_mode_code = 1 OR NOT NULL ) AS repairNum,
             count( c.id AND c.fault_mode_code = 0 OR NOT NULL ) AS selfInspectionNum,
-            count( c.id AND c.end_time is NOT NULL OR not null ) AS resolvedNum,
-            count( c.id AND c.end_time is null OR not NULL ) AS unResolvedNum,
+            count( c.id AND c.end_time is NOT NULL and c.status = 12 OR not null ) AS resolvedNum,
+            count( c.id AND  c.status &lt;> 12 OR not NULL ) AS unResolvedNum,
             (SELECT COUNT(id) FROM fault WHERE a.org_code = sys_org_code and `status` >0 AND DATE_FORMAT(happen_time, '%Y-%m') =  DATE_FORMAT( #{startTime}, '%Y-%m')
         <if test="lineCode != null">
         AND line_code = #{lineCode}
