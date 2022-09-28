@@ -2,6 +2,7 @@ package com.aiurt.boot.overhaulstatistics.controller;
 
 import com.aiurt.boot.overhaulstatistics.service.OverhaulStatisticsService;
 import com.aiurt.boot.task.dto.OverhaulStatisticsDTO;
+import com.aiurt.boot.task.dto.OverhaulStatisticsDTOS;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -40,12 +41,12 @@ public class OverhaulStatisticsController {
     @AutoLog(value = "检修-统计分析查询", operateType = 1, operateTypeAlias = "检修-统计分析查询")
     @ApiOperation(value = "检修-统计分析查询", notes = "检修-统计分析查询")
     @RequestMapping(value = "/getOverhaulList", method = RequestMethod.GET)
-    public Result<IPage<OverhaulStatisticsDTO>> getOverhaulList(OverhaulStatisticsDTO condition,
+    public Result<IPage<OverhaulStatisticsDTOS>> getOverhaulList(OverhaulStatisticsDTOS condition,
                                                                 @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
                                                                 @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
                                                                  HttpServletRequest req) {
-        Page<OverhaulStatisticsDTO> pageList = new Page<>(pageNo, pageSize);
-        Page<OverhaulStatisticsDTO> overhaulList = overhaulStatisticsService.getOverhaulList(pageList, condition);
+        Page<OverhaulStatisticsDTOS> pageList = new Page<>(pageNo, pageSize);
+        Page<OverhaulStatisticsDTOS> overhaulList = overhaulStatisticsService.getOverhaulList(pageList, condition);
         return Result.OK(overhaulList);
     }
 
@@ -58,7 +59,7 @@ public class OverhaulStatisticsController {
     @AutoLog(value = "统计分析-检修报表导出")
     @ApiOperation(value = "统计分析-检修报表导出", notes = "统计分析-检修报表导出")
     @GetMapping(value = "/reportExport")
-    public ModelAndView reportExport(HttpServletRequest request, OverhaulStatisticsDTO overhaulStatisticsDTO) {
+    public ModelAndView reportExport(HttpServletRequest request, OverhaulStatisticsDTOS overhaulStatisticsDTO) {
         return overhaulStatisticsService.reportExport(request, overhaulStatisticsDTO);
     }
 }
