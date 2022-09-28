@@ -55,8 +55,6 @@ public class PatrolReportService {
     private PatrolScreenService screenService;
 
     public Page<PatrolReport> getTaskDate(Page<PatrolReport> pageList, PatrolReportModel report) {
-        String startDate = report.getStartDate();
-        String endDate = report.getEndDate();
         PatrolReportModel orgCodeName = new PatrolReportModel();
         LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         List<SysDepartModel> userSysDepart = sysBaseAPI.getUserSysDepart(user.getId());
@@ -73,12 +71,8 @@ public class PatrolReportService {
         }
         orgCodeName.setOrgCode(report.getOrgCode());
         PatrolReportModel omitModel = new PatrolReportModel();
-        PatrolReportModel avgWeekOmit = new PatrolReportModel();
-        PatrolReportModel avgMonthOmit = new PatrolReportModel();
         BeanUtils.copyProperties(report, omitModel);
-        BeanUtils.copyProperties(report, avgWeekOmit);
-        BeanUtils.copyProperties(report, avgMonthOmit);
-        //是否默认
+        //是否默认查本周
         boolean isNullDate = false;
         if (ObjectUtil.isEmpty(report.getStartDate())) {
             isNullDate = true;
@@ -90,24 +84,23 @@ public class PatrolReportService {
             String date = screenService.getOmitDateScope(new Date());
             omitModel.setStartDate(date.split("~")[0]);
             omitModel.setEndDate(date.split("~")[1]);
-            //推算前四周的日期范围
-            avgWeekOmit.setOrgCode("null");
-            //推算12个月的日期范围
-            avgMonthOmit.setOrgCode("null");
         } else {
+
+            boolean isNowWeek = isNowWeekDate(report.getStartDate(), report.getEndDate());
+            isNullDate = isNowWeek;
             String start = screenService.getOmitDateScope(DateUtil.parse(report.getStartDate()));
             String end = screenService.getOmitDateScope(DateUtil.parse(report.getEndDate()));
             omitModel.setStartDate(start.split("~")[0]);
             omitModel.setEndDate(end.split("~")[1]);
         }
-        //
+        //只查组织机构，做主数据返回，为了条件查询不影响组织机构显示
         List<PatrolReport> list = patrolTaskMapper.getReportTaskList(pageList, orgCodeName);
+        //计算完成率、巡检总数、未完成、完成数、异常任务数
         List<PatrolReport> reportList = patrolTaskMapper.getTasks(report);
+        //计算漏巡视数
         List<PatrolReport> omitList = patrolTaskMapper.getReportOmitList(omitModel);
-        List<PatrolReport> avgWeekOmitList = patrolTaskMapper.getReportOmitList(avgWeekOmit);
-        List<PatrolReport> avgMonthOmitList = patrolTaskMapper.getReportOmitList(avgMonthOmit);
         for (PatrolReport patrolReport : list) {
-            //计算完成率、巡检总数、未完成、完成数、异常任务数、故障数量
+            //计算完成率、巡检总数、未完成、完成数、异常任务数
             if (CollUtil.isNotEmpty(reportList)) {
                 for (PatrolReport d : reportList) {
                     Integer faultNumber = 0;
@@ -126,34 +119,26 @@ public class PatrolReportService {
                         BeanUtils.copyProperties(d, patrolReport);
                     }
                 }
-
             } else {
                 PatrolReport patrolReport1 = setZero(patrolReport);
                 BeanUtils.copyProperties(patrolReport1, patrolReport);
             }
-            //计算漏巡视数
+            //计算漏巡视数、计算平均周漏巡视数和平均每月漏数巡视数
             if (CollUtil.isNotEmpty(omitList)) {
-
                 for (PatrolReport d : omitList) {
                     if (patrolReport.getOrgCode().equals(d.getOrgCode())) {
-                        patrolReport.setMissInspectedNumber(d.getMissInspectedNumber());
-                    }
-                }
-            } else {
-                patrolReport.setMissInspectedNumber(0);
-            }
-            //计算平均周漏巡视数
-            if (CollUtil.isNotEmpty(avgWeekOmitList)) {
-                for (PatrolReport d : avgWeekOmitList) {
-                    if (patrolReport.getOrgCode().equals(d.getOrgCode())) {
                         if (ObjectUtil.isNull(d.getMissInspectedNumber())||d.getMissInspectedNumber() == 0) {
+                            patrolReport.setMissInspectedNumber(0);
                             patrolReport.setAwmPatrolNumber("-");
+                            patrolReport.setAmmPatrolNumber("-");
                         } else {
-                            //是否是默认
+                            //是否是默认，是，本周不算
                             if (isNullDate == true) {
                                 patrolReport.setAwmPatrolNumber("-");
+                                patrolReport.setAmmPatrolNumber("-");
                             } else {
-                                long weekNumber = getWeekNumber(startDate, endDate);
+                                long weekNumber = getWeekNumber(omitModel.getStartDate(), omitModel.getEndDate());
+                                long monthNumber = getMonthNumber(omitModel.getStartDate(), omitModel.getEndDate());
                                 if (weekNumber == 0) {
                                     patrolReport.setAwmPatrolNumber("-");
                                 } else {
@@ -163,27 +148,7 @@ public class PatrolReportService {
                                     String completionRated = String.format("%.2f", fave);
                                     patrolReport.setAwmPatrolNumber(completionRated);
                                 }
-                            }
-                        }
-
-                    }
-                }
-            } else {
-                patrolReport.setAwmPatrolNumber("-");
-            }
-            //计算平均每月漏巡视数
-            if (CollUtil.isNotEmpty(avgMonthOmitList)) {
-                for (PatrolReport d : avgWeekOmitList) {
-                    if (patrolReport.getOrgCode().equals(d.getOrgCode())) {
-                        if (ObjectUtil.isNull(d.getMissInspectedNumber())||d.getMissInspectedNumber() == 0) {
-                            patrolReport.setAmmPatrolNumber("-");
-                        } else {
-                            //是否是默认
-                            if (isNullDate == true) {
-                                patrolReport.setAmmPatrolNumber("-");
-                            } else {
-                                long weekNumber = getMonthNumber(startDate, endDate);
-                                if (weekNumber == 0) {
+                                if (monthNumber == 0) {
                                     patrolReport.setAmmPatrolNumber("-");
                                 } else {
                                     double avg = NumberUtil.div(d.getMissInspectedNumber() , weekNumber);
@@ -198,6 +163,30 @@ public class PatrolReportService {
                     }
                 }
             } else {
+                patrolReport.setMissInspectedNumber(0);
+                patrolReport.setAwmPatrolNumber("-");
+                patrolReport.setAmmPatrolNumber("-");
+            }
+            if(ObjectUtil.isNull(patrolReport.getTaskId()))
+            {
+                patrolReport.setOrgCode(patrolReport.getOrgCode());
+                patrolReport.setOrgName(patrolReport.getOrgName());
+                patrolReport.setTaskTotal(0);
+                patrolReport.setAbnormalNumber(0);
+                patrolReport.setMissInspectedNumber(0);
+                patrolReport.setCompletionRate("-");
+                patrolReport.setAwmPatrolNumber("-");
+                patrolReport.setAmmPatrolNumber("-");
+                patrolReport.setFaultNumber(0);
+                patrolReport.setInspectedNumber(0);
+                patrolReport.setNotInspectedNumber(0);
+            }
+            if(ObjectUtil.isNull(patrolReport.getAwmPatrolNumber()))
+            {  patrolReport.setAwmPatrolNumber("-");
+
+            }
+            if(ObjectUtil.isNull(patrolReport.getAmmPatrolNumber()))
+            {
                 patrolReport.setAmmPatrolNumber("-");
             }
         }
@@ -214,6 +203,7 @@ public class PatrolReportService {
         patrolReport.setAbnormalNumber(0);
         patrolReport.setMissInspectedNumber(0);
         patrolReport.setAwmPatrolNumber("-");
+        patrolReport.setAmmPatrolNumber("-");
         patrolReport.setFaultNumber(0);
         patrolReport.setInspectedNumber(0);
         patrolReport.setNotInspectedNumber(0);
@@ -227,7 +217,7 @@ public class PatrolReportService {
         return thisWeek;
     }
 
-    public static boolean webDefaultDate(String startDate,String endDate) {
+    public static boolean isNowWeekDate(String startDate,String endDate) {
         DateTime webStart = DateUtil.beginOfWeek(DateUtil.parse(startDate));
         DateTime webEnd = DateUtil.endOfWeek(DateUtil.parse(endDate));
         DateTime start = DateUtil.beginOfWeek(new Date());
@@ -244,30 +234,6 @@ public class PatrolReportService {
         }
     }
 
-    public String getThisOmitWeekDate() {
-        Date start = DateUtil.beginOfWeek(new Date());
-        DateTime end = DateUtil.endOfWeek(new Date());
-        for (int i = 0; i < 4; i++) {
-            Date date = DateUtil.offsetDay(start, -7);
-            start = date;
-
-        }
-        DateTime lastSunday = DateUtil.offsetDay(end, -7);
-        String thisOmitDate = DateUtil.format(start, "yyyy-MM-dd 00:00:00") + "~" + DateUtil.format(lastSunday, "yyyy-MM-dd 23:59:59");
-            return thisOmitDate;
-    }
-
-    public String getThisOmitYearDate() {
-        Calendar c = Calendar.getInstance();
-        c.setTime(new Date());
-        c.add(Calendar.YEAR, -1);
-        Date date2 = DateUtil.date(c.getTime());
-        Date lastYearFirstDay = DateUtil.beginOfMonth(date2);
-        Date lastDay = DateUtil.lastMonth();
-        Date lastMonday = DateUtil.endOfMonth(lastDay);
-        String thisOmitDate = DateUtil.format(lastYearFirstDay, "yyyy-MM-dd 00:00:00") + "~" + DateUtil.format(lastMonday, "yyyy-MM-dd 23:59:59");
-        return thisOmitDate;
-    }
     public long getMonthNumber(String startDate, String endDate) {
         String today= DateUtil.today();
         Date s = DateUtil.parse(startDate, "yyyy-MM");
