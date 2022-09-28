@@ -1,6 +1,8 @@
 package com.aiurt.modules.manage.entity;
 
+import com.aiurt.common.aspect.annotation.Dict;
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -83,5 +85,13 @@ public class ActCustomVersion implements Serializable {
     @ApiModelProperty(value = "发布时间")
     private Date deployTime;
 
+	@TableField(exist = false)
 	private String bpmxml;
+
+	@ApiModelProperty(value = "版本号")
+	private Integer version;
+
+    @ApiModelProperty(value = "激活状态")
+    @Dict(dicCode = "act_version_status")
+	private Integer status;
 }

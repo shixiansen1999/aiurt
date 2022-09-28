@@ -280,9 +280,7 @@ public class FlowableBpmnServiceImpl implements IFlowableBpmnService {
 
         // 查询流程定义
         ProcessDefinition definition = repositoryService.createProcessDefinitionQuery().deploymentId(deploy.getId()).singleResult();
-        // 已发布
-        modelInfo.setStatus(ModelFormStatusEnum.YFB.getStatus());
-        modelInfoService.updateById(modelInfo);
+
 
         //  todo 保存其他的属性
 
@@ -303,10 +301,15 @@ public class FlowableBpmnServiceImpl implements IFlowableBpmnService {
                     .mainVersion("1")
                     .modelId(modelId)
                     .deployTime(new Date())
+                    .status(1)
+                    .version(definitionList.size())
                     .build();
             versionService.save(actCustomVersion);
         }
 
+        // 已发布
+        modelInfo.setStatus(ModelFormStatusEnum.YFB.getStatus());
+        modelInfoService.updateById(modelInfo);
         if (CollUtil.isNotEmpty(actCustomTaskExtList)) {
             actCustomTaskExtList.forEach(t -> t.setProcessDefinitionId(definition.getId()));
             taskExtService.saveBatch(actCustomTaskExtList);
@@ -345,21 +348,33 @@ public class FlowableBpmnServiceImpl implements IFlowableBpmnService {
     private ActCustomTaskExt buildTaskExt(UserTask userTask) {
         ActCustomTaskExt flowTaskExt = new ActCustomTaskExt();
         flowTaskExt.setTaskId(userTask.getId());
-        String formKey = userTask.getFormKey();
-        //  todo 表单属性
-        if (StrUtil.isNotBlank(formKey)) {
-            TaskInfoVo taskInfoVo = JSON.parseObject(formKey, TaskInfoVo.class);
-            flowTaskExt.setGroupType(taskInfoVo.getGroupType());
+
+         //属性
+        Map<String, List<ExtensionAttribute>> taskAttributeMap = userTask.getAttributes();
+        // 处理表单属性
+        JSONObject form = new JSONObject();
+        JSONObject variable = new JSONObject();
+        taskAttributeMap.forEach((key,list)->{
+            ExtensionAttribute extensionAttribute = list.get(0);
+            if (StrUtil.startWith(extensionAttribute.getName(), "formData")) {
+                form.put(extensionAttribute.getName().replaceAll("formData\\.", ""), extensionAttribute.getValue());
+            }else if (StrUtil.startWith(extensionAttribute.getName(), "flowable")) {
+                variable.put(extensionAttribute.getName().replaceAll("flowable\\.", ""), extensionAttribute.getValue());
+            }
+        });
+
+        if (variable.size()>0) {
+            flowTaskExt.setVariableListJson(JSONObject.toJSONString(variable));
         }
+        if (variable.size()>0){
+            flowTaskExt.setFormJson(JSONObject.toJSONString(form));
+        }
+
         Map<String, List<ExtensionElement>> extensionMap = userTask.getExtensionElements();
         if (MapUtil.isNotEmpty(extensionMap)) {
             List<JSONObject> operationList = this.buildOperationListExtensionElement(extensionMap);
             if (CollUtil.isNotEmpty(operationList)) {
                 flowTaskExt.setOperationListJson(JSON.toJSONString(operationList));
-            }
-            List<JSONObject> variableList = this.buildVariableListExtensionElement(extensionMap);
-            if (CollUtil.isNotEmpty(variableList)) {
-                flowTaskExt.setVariableListJson(JSON.toJSONString(variableList));
             }
             // todo 多实例
             /*JSONObject assigneeListObject = this.buildAssigneeListExtensionElement(extensionMap);
@@ -404,6 +419,19 @@ public class FlowableBpmnServiceImpl implements IFlowableBpmnService {
      * @return
      */
     private List<JSONObject> buildOperationListExtensionElement(Map<String, List<ExtensionElement>> extensionMap) {
+        List<ExtensionElement> formOperationElements = extensionMap.get("formOperation");
+        if (CollUtil.isNotEmpty(formOperationElements)) {
+            List<JSONObject> list = new ArrayList<>();
+            for (ExtensionElement e : formOperationElements) {
+                JSONObject json = new JSONObject();
+                json.put("id", e.getAttributeValue(null, "id"));
+                json.put("label", e.getAttributeValue(null, "label"));
+                json.put("type", e.getAttributeValue(null, "type"));
+                json.put("showOrder", e.getAttributeValue(null, "showOrder"));
+                list.add(json);
+            }
+            return list;
+        }
         return null;
     }
 

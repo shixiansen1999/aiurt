@@ -200,6 +200,8 @@ public class CustomUserTaskJsonConverter  extends UserTaskJsonConverter {
             addCustomAttibute(elementNode, userTask, "formData.formType");
             // 表单url
             addCustomAttibute(elementNode, userTask, "formData.formUrl");
+            // 业务处理
+            addCustomAttibute(elementNode, userTask, "formData.service");
             // 流程变量
             addCustomAttibute(elementNode, userTask, "flowable.formtaskVariables");
 
