@@ -913,7 +913,7 @@ GROUP BY
                COUNT(c.id and  DATE_FORMAT(c.happen_time, '%m') ='12' or not NULL ) as december
         FROM cs_subsystem a
                  LEFT JOIN fault c ON a.system_code = c.sub_system_code
-            and c.`status` >0  AND DATE_ADD(c.approval_pass_time,INTERVAL 1 YEAR) > NOW()
+            and c.`status` >0  AND DATE_ADD(c.happen_time,INTERVAL 1 YEAR) > NOW()
         <if test="lineCode != null">
             AND c.line_code = #{lineCode}
         </if>
@@ -1048,7 +1048,7 @@ GROUP BY
         COUNT(c.id and  DATE_FORMAT(c.happen_time, '%m') ='12' or not NULL ) as december
         FROM sys_depart a
         LEFT JOIN fault c ON a.org_code = c.sys_org_code
-        and c.`status` >0  AND DATE_ADD(c.approval_pass_time,INTERVAL 1 YEAR) > NOW()
+        and c.`status` >0  AND DATE_ADD(c.happen_time,INTERVAL 1 YEAR) > NOW()
         <if test="lineCode != null">
             AND c.line_code = #{lineCode}
         </if>
