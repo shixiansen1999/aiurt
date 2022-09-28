@@ -26,5 +26,8 @@ public class DayTodoDTO {
     private String currDate;
     @ApiModelProperty("代办事项")
     List<DailySchedule> dailyScheduleList;
+    @ApiModelProperty("是否有日程0无1有")
+    private Integer isAgenda;
+
 
 }

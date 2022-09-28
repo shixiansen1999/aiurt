@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.validation.Valid;
 import java.util.List;
 
 /**
@@ -57,7 +58,7 @@ public class RobotInfoController extends BaseController<RobotInfo, IRobotInfoSer
     @AutoLog(value = "添加机器人")
     @ApiOperation(value = "添加机器人", notes = "添加机器人")
     @PostMapping(value = "/add")
-    public Result<String> add(@RequestBody RobotInfo robotInfo) {
+    public Result<String> add(@Valid @RequestBody RobotInfo robotInfo) {
         robotInfoService.saveRobot(robotInfo);
         return Result.OK("添加成功！");
     }
@@ -70,8 +71,8 @@ public class RobotInfoController extends BaseController<RobotInfo, IRobotInfoSer
      */
     @AutoLog(value = "编辑机器人")
     @ApiOperation(value = "编辑机器人", notes = "编辑机器人")
-    @RequestMapping(value = "/edit", method = {RequestMethod.PUT, RequestMethod.POST})
-    public Result<String> edit(@RequestBody RobotInfo robotInfo) {
+    @PostMapping(value = "/edit")
+    public Result<String> edit(@Valid @RequestBody RobotInfo robotInfo) {
         robotInfoService.updateRobotById(robotInfo);
         return Result.OK("编辑成功!");
     }

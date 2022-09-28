@@ -749,7 +749,7 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
             }
         }
         if (examineDTO.getStatus().equals(InspectionConstant.IS_EFFECT) && repairTask.getIsReceipt().equals(InspectionConstant.NO_IS_EFFECT)) {
-            setId(examineDTO, repairTask1, loginUser, userById, repairTask.getRepairPoolId());
+            repairTask1.setStatus(InspectionConstant.COMPLETED);
         }
     }
 
@@ -779,7 +779,6 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
 
         // 待执行状态才可以执行
         if (InspectionConstant.PENDING.equals(repairTask.getStatus())) {
-            repairTask.setConfirmTime(new Date());
             repairTask.setStatus(InspectionConstant.IN_EXECUTION);
             repairTaskMapper.updateById(repairTask);
 
@@ -1436,10 +1435,6 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
 
         // 待确认状态才可以确认
         if (InspectionConstant.TO_BE_CONFIRMED.equals(repairTask.getStatus())) {
-            repairTask.setConfirmTime(new Date());
-            LoginUser loginUser = manager.checkLogin();
-            repairTask.setConfirmUserId(loginUser.getId());
-            repairTask.setConfirmUserName(loginUser.getRealname());
             repairTask.setStatus(InspectionConstant.PENDING);
             repairTaskMapper.updateById(repairTask);
 

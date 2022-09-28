@@ -435,6 +435,9 @@ public class PatrolReportService {
         LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         List<SysDepartModel> userSysDepart = sysBaseAPI.getUserSysDepart(user.getId());
         List<String> ids =userSysDepart.stream().map(SysDepartModel::getId).collect(Collectors.toList());
+        if (CollectionUtil.isEmpty(ids)){
+            return null;
+        }
         SimpleDateFormat mm= new SimpleDateFormat("yyyy-MM");
         if (ObjectUtil.isEmpty(startTime) && ObjectUtil.isEmpty(endTime)){
             startTime = mm.format(new Date())+"-01"; endTime = mm.format(new Date())+"-31";

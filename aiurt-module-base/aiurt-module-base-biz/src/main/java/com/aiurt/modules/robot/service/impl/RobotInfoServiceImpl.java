@@ -92,20 +92,52 @@ public class RobotInfoServiceImpl extends ServiceImpl<RobotInfoMapper, RobotInfo
     /**
      * 查询机器人ip对应的机器人id映射关系
      *
-     * @return ip对应的id映射表
+     * @param robotIpList 机器人ip集合，如果为空则是查询全部机器人数据
+     * @return ip对应的id映射表 [key机器人ip,value机器人id]
      */
     @Override
-    public Map<String, String> queryRobotIpMappingId() {
+    public Map<String, String> queryRobotIpMappingId(List<String> robotIpList) {
         LambdaQueryWrapper<RobotInfo> lam = new LambdaQueryWrapper<>();
         lam.isNotNull(RobotInfo::getRobotIp);
+        if (CollUtil.isNotEmpty(robotIpList)) {
+            lam.eq(RobotInfo::getRobotIp, robotIpList);
+        }
         List<RobotInfo> robotInfos = baseMapper.selectList(lam);
+
+        // 没有数据直接返回
         if (CollUtil.isEmpty(robotInfos)) {
             return CollUtil.newHashMap();
         }
 
         // 将list转成map[key机器人ip,value机器人id]
-        Map<String, String> ipMap = robotInfos.stream().collect(Collectors.toMap(RobotInfo::getRobotIp, RobotInfo::getRobotId));
-        return MapUtil.isNotEmpty(ipMap) ? ipMap : CollUtil.newHashMap();
+        Map<String, String> robotIpMap = robotInfos.stream().collect(Collectors.toMap(RobotInfo::getRobotIp, RobotInfo::getRobotId));
+        return MapUtil.isNotEmpty(robotIpMap) ? robotIpMap : CollUtil.newHashMap();
+    }
+
+    /**
+     * 查询机器人id对应的机器人ip映射关系
+     *
+     * @param robotIdList 机器人id集合,如果为空则是查询全部机器人数据
+     * @return id对应的ip映射表 [key机器人Id,value机器人ip]
+     */
+    @Override
+    public Map<String, String> queryIdMappingRobotIp(List<String> robotIdList) {
+        // 查询机器人数据
+        LambdaQueryWrapper<RobotInfo> lam = new LambdaQueryWrapper<>();
+        lam.isNotNull(RobotInfo::getRobotIp);
+        if (CollUtil.isNotEmpty(robotIdList)) {
+            lam.eq(RobotInfo::getRobotId, robotIdList);
+        }
+        List<RobotInfo> robotInfos = baseMapper.selectList(lam);
+
+        // 没有数据直接返回
+        if (CollUtil.isEmpty(robotInfos)) {
+            return CollUtil.newHashMap();
+        }
+
+        // 将list转成map[key机器人id,value机器人ip]
+        Map<String, String> robotIdMap = robotInfos.stream().collect(Collectors.toMap(RobotInfo::getRobotId, RobotInfo::getRobotIp));
+        return MapUtil.isNotEmpty(robotIdMap) ? robotIdMap : CollUtil.newHashMap();
     }
 
 

@@ -1,6 +1,8 @@
 
 package com.aiurt.modules.robot.taskdata.wsdl;
 
+import io.swagger.annotations.ApiModelProperty;
+
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
@@ -50,35 +52,44 @@ import javax.xml.bind.annotation.XmlType;
 })
 public class TaskExcuteData {
 
-    // 机器人Ip
     @XmlElement(name = "RobotIp", required = true)
+    @ApiModelProperty("机器人Ip")
     protected String robotIp;
-    // 任务类型
+
     @XmlElement(name = "TaskType", required = true)
+    @ApiModelProperty("任务类型")
     protected String taskType;
-    // 任务Id
+
     @XmlElement(name = "TaskId", required = true)
+    @ApiModelProperty("任务Id")
     protected String taskId;
-    // 任务名称
+
     @XmlElement(name = "TaskName", required = true)
+    @ApiModelProperty("任务名称")
     protected String taskName;
-    // 当前巡检点名称
+
     @XmlElement(name = "PatrolDeviceName", required = true)
+    @ApiModelProperty("当前巡检点名称")
     protected String patrolDeviceName;
-    // 当前巡检点Id
+
     @XmlElement(name = "PatrolDeviceId", required = true)
+    @ApiModelProperty("当前巡检点Id")
     protected String patrolDeviceId;
-    // 点位总数
+
     @XmlElement(name = "TotalDeviceSize")
+    @ApiModelProperty("点位总数")
     protected int totalDeviceSize;
-    // 异常数量
+
     @XmlElement(name = "ErrorDeviceSize")
+    @ApiModelProperty("异常数量")
     protected int errorDeviceSize;
-    // 已完成数量
+
     @XmlElement(name = "FinishDeviceSize")
+    @ApiModelProperty("已完成数量")
     protected int finishDeviceSize;
-    // 完成进度
+
     @XmlElement(name = "TaskFinishPercentage")
+    @ApiModelProperty("完成进度")
     protected int taskFinishPercentage;
 
     /**

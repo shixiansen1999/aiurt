@@ -186,4 +186,8 @@ public interface RepairTaskMapper extends BaseMapper<RepairTask> {
     String getOrgCode(String id);
 
     String getRealName(String id);
+
+    List<OverhaulStatisticsDTO> realNameList(@Param("condition") OverhaulStatisticsDTO condition);
+
+    List<OverhaulStatisticsDTO> selectDepart(@Param("id") String id);
 }

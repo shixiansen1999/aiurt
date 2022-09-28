@@ -52,6 +52,7 @@ public class RobotInfo extends DictEntity implements Serializable {
      */
     @Excel(name = "机器人名称", width = 15)
     @ApiModelProperty(value = "机器人名称", required = true, example = "GZRobot01")
+    @NotBlank(message = "机器人名称不能为空")
     @Size(max = 255, message = "机器人名称长度不能超过255个字符")
     private java.lang.String robotName;
     /**

@@ -27,4 +27,11 @@
 	tpr.task_path_id
 	) as t1 ON t1.id = tpi.task_path_id
     </select>
+	<select id="queryRobotIpByTaskPathId" resultType="java.lang.String">
+	SELECT DISTINCT ri.robot_ip
+    FROM  task_point_rel tpr
+	LEFT JOIN patrol_point_info ppi ON ppi.point_id = tpr.point_id
+	LEFT JOIN robot_info ri ON ri.robot_id = ppi.robot_id
+	where tpr.task_path_id = #{taskPathId} and ri.robot_ip is not null
+	</select>
 </mapper>
