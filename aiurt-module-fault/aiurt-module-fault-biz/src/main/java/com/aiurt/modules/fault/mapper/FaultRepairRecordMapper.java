@@ -18,6 +18,6 @@ public interface FaultRepairRecordMapper extends BaseMapper<FaultRepairRecord> {
 
     List<RepairRecordDetailDTO> queryRecordByFaultCode(@Param("faultCode") String faultCode);
 
-    @Select("select`name` from device_type where `code` = #{deviceTypeCode} ")
+    @Select("select `name` from device_type where (`code` = #{deviceTypeCode} or id = #{deviceTypeCode} ) limit 1")
     String queryDeviceTypeName(@Param("deviceTypeCode") String deviceTypeCode);
 }
