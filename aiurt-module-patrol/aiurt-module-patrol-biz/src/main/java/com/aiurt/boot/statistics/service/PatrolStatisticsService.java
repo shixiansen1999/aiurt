@@ -239,7 +239,13 @@ public class PatrolStatisticsService {
      */
     public IPage<IndexTaskInfo> getIndexTaskList(Page<IndexTaskInfo> page, IndexTaskDTO indexTaskDTO) {
 
-        if (!PatrolConstant.OMIT_STATUS.equals(indexTaskDTO.getOmitStatus())) {
+        Integer omitStatus = indexTaskDTO.getOmitStatus();
+        if (ObjectUtil.isNotEmpty(omitStatus) && PatrolConstant.OMIT_STATUS.equals(omitStatus)) {
+            Date startDate = this.getOmitDateScope(indexTaskDTO.getStartDate()).stream().min(Comparator.comparingLong(Date::getTime)).get();
+            Date endDate = this.getOmitDateScope(indexTaskDTO.getEndDate()).stream().max(Comparator.comparingLong(Date::getTime)).get();
+            indexTaskDTO.setStartDate(startDate);
+            indexTaskDTO.setEndDate(endDate);
+        } else {
             indexTaskDTO.setOmitStatus(null);
         }
 
