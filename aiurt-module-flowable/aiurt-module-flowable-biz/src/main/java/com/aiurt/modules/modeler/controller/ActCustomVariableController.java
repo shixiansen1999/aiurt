@@ -17,6 +17,8 @@ import org.springframework.web.bind.annotation.*;
 import javax.validation.Valid;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * @Description: 流程变量
@@ -50,8 +52,21 @@ public class ActCustomVariableController extends BaseController<ActCustomVariabl
 		wrapper.eq(ActCustomVariable::getModelId, modelId).eq(ActCustomVariable::getVariableType,
 				variableType);
 		// 需要默认添加两个变量
-		//
 		List<ActCustomVariable> list = actCustomVariableService.list(wrapper);
+		// list
+		Set<String> variableNameSet = list.stream().map(ActCustomVariable::getVariableName).collect(Collectors.toSet());
+		if (variableType == 1) {
+			if (!variableNameSet.contains("operationType")) {
+				ActCustomVariable actCustomVariable = new ActCustomVariable();
+				actCustomVariable.setVariableName("operationType");
+				actCustomVariable.setShowName("审批类型");
+				actCustomVariable.setVariableType(1);
+				actCustomVariable.setModelId(modelId);
+				actCustomVariable.setType("1");
+				actCustomVariableService.save(actCustomVariable);
+				list.add(actCustomVariable);
+			}
+		}
 		return Result.OK(list);
 	}
 
