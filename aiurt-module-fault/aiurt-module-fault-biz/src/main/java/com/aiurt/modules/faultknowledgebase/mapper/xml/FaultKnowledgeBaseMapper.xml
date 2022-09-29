@@ -132,4 +132,15 @@
         and device_type_code =#{deviceTypeCode}
     </if>
     </select>
+
+<select id="getAllDeviceAssembly" resultType="com.aiurt.modules.faultknowledgebase.dto.DeviceAssemblyDTO">
+    select id,material_code,material_name,device_type_code from device_assembly where  del_flag = 0
+    <if test="collect != null and collect.size() != 0">
+        and device_type_code in
+        <foreach collection="collect" index="index" item="item" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </if>
+    group by material_code
+    </select>
 </mapper>

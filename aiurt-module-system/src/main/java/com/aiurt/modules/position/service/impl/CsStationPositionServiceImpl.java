@@ -1,5 +1,6 @@
 package com.aiurt.modules.position.service.impl;
 
+import cn.hutool.core.collection.CollUtil;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.modules.position.entity.CsLine;
 import com.aiurt.modules.position.entity.CsStation;
@@ -43,10 +44,12 @@ public class CsStationPositionServiceImpl extends ServiceImpl<CsStationPositionM
     @Override
     public List<CsStationPosition> readAll(Page<CsStationPosition> page, CsStationPosition csStationPosition){
         List<CsStationPosition> csStationPositions = csStationPositionMapper.queryCsStationPositionAll(page, csStationPosition);
-        for (CsStationPosition stationPosition : csStationPositions) {
-            if (stationPosition.getLevel().equals(2)) {
-                CsStationPosition result = this.getById(stationPosition.getId());
-                stationPosition.setPositionPhoneNum(result.getPositionPhoneNum());
+        if (CollUtil.isNotEmpty(csStationPositions)) {
+            for (CsStationPosition stationPosition : csStationPositions) {
+                if (stationPosition.getLevel().equals(2)) {
+                    CsStationPosition result = this.getById(stationPosition.getId());
+                    stationPosition.setPositionPhoneNum(result.getPositionPhoneNum());
+                }
             }
         }
         return csStationPositions;
