@@ -1,5 +1,7 @@
 package com.aiurt.modules.robot.entity;
 
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModel;
@@ -33,6 +35,7 @@ public class PatrolPointInfo implements Serializable {
 	/**巡检点位id*/
 	@Excel(name = "巡检点位id", width = 15)
     @ApiModelProperty(value = "巡检点位id")
+    @TableId(type = IdType.ASSIGN_ID)
     private java.lang.String pointId;
 	/**巡检点位名称*/
 	@Excel(name = "巡检点位名称", width = 15)

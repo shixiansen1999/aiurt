@@ -1,5 +1,7 @@
 package com.aiurt.modules.robot.entity;
 
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModel;
@@ -31,6 +33,7 @@ public class TaskPathInfo implements Serializable {
 	/**任务模板id*/
 	@Excel(name = "任务模板id", width = 15)
     @ApiModelProperty(value = "任务模板id")
+    @TableId(type = IdType.ASSIGN_ID)
     private java.lang.String taskPathId;
 	/**任务模板名称*/
 	@Excel(name = "任务模板名称", width = 15)
