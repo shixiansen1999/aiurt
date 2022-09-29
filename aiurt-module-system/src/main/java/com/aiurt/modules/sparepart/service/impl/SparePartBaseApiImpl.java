@@ -6,6 +6,7 @@ import com.aiurt.modules.sparepart.dto.SparePartReplaceDTO;
 import com.aiurt.modules.sparepart.mapper.SparePartOutOrderMapper;
 import org.jeecg.common.system.api.ISparePartBaseApi;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Map;
@@ -14,6 +15,7 @@ import java.util.Objects;
 /**
  * @author fgw
  */
+@Service
 public class SparePartBaseApiImpl implements ISparePartBaseApi {
 
     @Autowired
