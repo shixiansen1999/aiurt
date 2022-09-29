@@ -42,17 +42,14 @@ import com.aiurt.modules.workarea.mapper.WorkAreaMapper;
 import com.aiurt.modules.workarea.service.IWorkAreaService;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.google.common.base.Joiner;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.dto.OnlineAuthDTO;
@@ -1374,7 +1371,7 @@ public class SysBaseApiImpl implements ISysBaseAPI {
     }
 
     @Override
-    public List<DeviceTypeTable> selectList(String majorCode, String systemCode, List<String> deviceCode) {
+    public List<DeviceTypeTable> selectList(String majorCode, String systemCode, String deviceCode) {
 
         QueryWrapper<DeviceType> deviceTypeQueryWrapper = new QueryWrapper<DeviceType>();
         deviceTypeQueryWrapper.eq("del_flag", CommonConstant.DEL_FLAG_0);
@@ -1388,13 +1385,11 @@ public class SysBaseApiImpl implements ISysBaseAPI {
 
         //所选故障的设备类型集合
         ArrayList<String> arrayList = new ArrayList<>();
-        if (CollectionUtils.isNotEmpty(deviceCode)) {
-            for (int i = 0; i < deviceCode.size(); i++) {
-                String s = deviceCode.get(i);
-                String[] split = s.split(",");
-                List<String> deviceCodes = Arrays.asList(split);
-                arrayList.addAll(deviceCodes);
-            }
+        if (StrUtil.isNotEmpty(deviceCode)) {
+            String[] split = deviceCode.split(",");
+            List<String> deviceCodes = Arrays.asList(split);
+            arrayList.addAll(deviceCodes);
+
             LambdaQueryWrapper<Device> queryWrapper = new LambdaQueryWrapper<>();
             List<Device> devices = deviceMapper.selectList(queryWrapper.in(Device::getCode, arrayList));
             List<String> collect = devices.stream().map(Device::getDeviceTypeCode).collect(Collectors.toList());

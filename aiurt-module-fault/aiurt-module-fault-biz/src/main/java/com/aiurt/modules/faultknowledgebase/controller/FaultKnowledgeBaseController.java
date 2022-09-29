@@ -1,5 +1,7 @@
 package com.aiurt.modules.faultknowledgebase.controller;
 
+import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.aspect.annotation.PermissionData;
 import com.aiurt.common.system.base.controller.BaseController;
@@ -37,12 +39,9 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.Base64;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
- /**
+/**
  * @Description: 故障知识库
  * @Author: aiurt
  * @Date:   2022-06-24
@@ -325,7 +324,7 @@ public class FaultKnowledgeBaseController extends BaseController<FaultKnowledgeB
 	 })
 	 public Result<List<DeviceTypeTable>> getDeviceType(@RequestParam(name="majorCode",required = false) String majorCode,
 													  @RequestParam(name="systemCode",required = false) String systemCode,
-														@RequestParam(name="deviceCode",required = false) List<String> deviceCode) {
+														@RequestParam(name="deviceCode",required = false) String deviceCode) {
 		 List<DeviceTypeTable> deviceTypes = iSysBaseAPI.selectList(majorCode, systemCode,deviceCode);
 		 return Result.OK(deviceTypes);
 	 }
@@ -340,8 +339,28 @@ public class FaultKnowledgeBaseController extends BaseController<FaultKnowledgeB
 	 @ApiResponses({
 			 @ApiResponse(code = 200, message = "OK", response = DeviceAssemblyDTO.class)
 	 })
-	 public Result<List<DeviceAssemblyDTO>> getDeviceAssembly(@RequestParam(name="deviceTypeCode",required = false) String deviceTypeCode) {
-		 List<DeviceAssemblyDTO> deviceAssembly = faultKnowledgeBaseMapper.getDeviceAssembly(deviceTypeCode);
-		 return Result.OK(deviceAssembly);
+	 public Result<List<DeviceAssemblyDTO>> getDeviceAssembly(@RequestParam(name="deviceTypeCode",required = false) String deviceTypeCode,
+															  @RequestParam(name="majorCode",required = false) String majorCode,
+															  @RequestParam(name="systemCode",required = false) String systemCode) {
+		 if (StrUtil.isNotEmpty(deviceTypeCode)) {
+			 List<DeviceAssemblyDTO> deviceAssembly = faultKnowledgeBaseMapper.getDeviceAssembly(deviceTypeCode);
+			 return Result.OK(deviceAssembly);
+		 } else {
+		 	//如果没有传入具体设备分类，则查该专业子系统下的所有设备分类的设备组件
+			 if (StrUtil.isNotEmpty(majorCode)&&StrUtil.isNotEmpty(systemCode)) {
+				 List<DeviceTypeTable> deviceTypes = iSysBaseAPI.selectList(majorCode, systemCode, null);
+				 if (CollUtil.isNotEmpty(deviceTypes)) {
+					 List<DeviceAssemblyDTO> deviceAssemblyDTOS = new ArrayList<>();
+					 for (DeviceTypeTable deviceType : deviceTypes) {
+						 List<DeviceAssemblyDTO> deviceAssembly = faultKnowledgeBaseMapper.getDeviceAssembly(deviceType.getCode());
+						 deviceAssemblyDTOS.addAll(deviceAssembly);
+					 }
+					 return Result.OK(deviceAssemblyDTOS);
+				 }
+				 return Result.OK(new ArrayList<>());
+			 } else {
+				 return Result.OK(new ArrayList<>());
+			 }
+		 }
 	 }
  }
