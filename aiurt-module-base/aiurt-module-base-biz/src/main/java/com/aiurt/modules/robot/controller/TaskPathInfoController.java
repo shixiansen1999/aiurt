@@ -10,6 +10,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.jeecg.common.api.vo.Result;
@@ -82,5 +83,39 @@ public class TaskPathInfoController extends BaseController<TaskPathInfo, ITaskPa
         return result == RobotConstant.RESULT_SUCCESS_0 ? Result.OK("任务发送成功") : Result.error("任务发送失败");
     }
 
+    /**
+     * 当前机器人执行的任务
+     *
+     * @param robotIp 机器人ip
+     * @return
+     */
+    @AutoLog(value = "当前机器人执行的任务")
+    @ApiOperation(value = "当前机器人执行的任务", notes = "当前机器人执行的任务")
+    @GetMapping(value = "/getTaskExcuteData")
+    @ApiImplicitParam(name = "robotIp", value = "机器人ip", required = true, example = "192.168.1.10", dataTypeClass = String.class)
+    public Result<com.aiurt.modules.robot.taskdata.wsdl.TaskExcuteData> getTaskExcuteData(@RequestParam(name = "robotIp") String robotIp) {
+        com.aiurt.modules.robot.taskdata.wsdl.TaskExcuteData result = taskPathInfoService.getTaskExcuteData(robotIp);
+        return Result.OK(result);
+    }
+
+    /**
+     * 机器人任务操作
+     *
+     * @param robotIp         机器人ip
+     * @param controlTaskType 机器人任务操作类型
+     * @return
+     */
+    @AutoLog(value = "机器人任务操作")
+    @ApiOperation(value = "机器人任务操作", notes = "机器人任务操作")
+    @GetMapping(value = "/robotControlTask")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "robotIp", value = "机器人ip", required = true, example = "192.168.1.10", dataTypeClass = String.class),
+            @ApiImplicitParam(name = "controlTaskType", value = "机器人任务操作类型", required = true, example = "CancelTask，PauseTask，ResumeTask，ChargeTask", dataTypeClass = String.class)
+    })
+    public Result<?> robotControlTask(@RequestParam(name = "robotIp") String robotIp,
+                                      @RequestParam(name = "controlTaskType") String controlTaskType) {
+        int result = taskPathInfoService.robotControlTask(robotIp, controlTaskType);
+        return result == RobotConstant.CONTROL_TYPE_0 ? Result.OK("操作成功") : Result.error("操作失败");
+    }
 
 }

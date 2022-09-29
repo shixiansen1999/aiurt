@@ -1,32 +1,27 @@
 package com.aiurt.modules.robot.controller;
 
-import java.util.Arrays;
-import java.util.Date;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
+import com.aiurt.common.aspect.annotation.AutoLog;
+import com.aiurt.common.system.base.controller.BaseController;
 import com.aiurt.modules.robot.dto.TaskFinishDTO;
-import com.aiurt.modules.robot.taskfinish.service.TaskFinishService;
-import com.aiurt.modules.robot.vo.TaskFinishInfoVO;
-import io.swagger.annotations.ApiParam;
-import org.jeecg.common.api.vo.Result;
-import org.jeecg.common.system.query.QueryGenerator;
 import com.aiurt.modules.robot.entity.TaskFinishInfo;
 import com.aiurt.modules.robot.service.ITaskFinishInfoService;
-
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.aiurt.modules.robot.vo.TaskFinishInfoVO;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import lombok.extern.slf4j.Slf4j;
-
-import com.aiurt.common.system.base.controller.BaseController;
+import org.jeecg.common.api.vo.Result;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import com.aiurt.common.aspect.annotation.AutoLog;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.util.Arrays;
+import java.util.Date;
 
 /**
  * @Description: task_finish_info
@@ -41,8 +36,6 @@ import com.aiurt.common.aspect.annotation.AutoLog;
 public class TaskFinishInfoController extends BaseController<TaskFinishInfo, ITaskFinishInfoService> {
     @Autowired
     private ITaskFinishInfoService taskFinishInfoService;
-    @Autowired
-    private TaskFinishService taskFinishService;
 
     /**
      * 机器人巡检任务列表查询
@@ -63,19 +56,6 @@ public class TaskFinishInfoController extends BaseController<TaskFinishInfo, ITa
         return Result.OK(pageList);
     }
 
-//    /**
-//     * 刷新同步巡检任务数据
-//     *
-//     * @param taskFinishInfo
-//     * @return
-//     */
-//    @AutoLog(value = "刷新同步巡检任务数据")
-//    @ApiOperation(value = "刷新同步巡检任务数据", notes = "刷新同步巡检任务数据")
-//    @PostMapping(value = "/add")
-//    public Result<String> add(@RequestBody TaskFinishInfo taskFinishInfo) {
-//        taskFinishInfoService.save(taskFinishInfo);
-//        return Result.OK("添加成功！");
-//    }
 
     /**
      * 刷新同步巡检任务数据

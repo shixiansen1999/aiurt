@@ -107,4 +107,19 @@ public class RobotInfoController extends BaseController<RobotInfo, IRobotInfoSer
         return Result.OK(robotInfo);
     }
 
+//    /**
+//     * 机器人高清相机控制
+//     *
+//     * @param robotIp
+//     * @return
+//     */
+//    @AutoLog(value = "机器人高清相机控制")
+//    @ApiOperation(value = "机器人高清相机控制", notes = "机器人高清相机控制")
+//    @GetMapping(value = "/robotCameraControl")
+//    @ApiImplicitParam(name = "robotIp", value = "机器人id", required = true, example = "192.168.1.10", dataTypeClass = String.class)
+//    public Result<RobotInfo> robotCameraControl(@RequestParam(name = "robotIp") String robotIp) {
+//        int result = robotInfoService.robotCameraControl(robotIp);
+//        return result == RobotConstant.CONTROL_TYPE_0 ? Result.OK("操作成功") : Result.error("操作失败");
+//    }
+
 }

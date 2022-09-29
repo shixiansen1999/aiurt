@@ -55,8 +55,8 @@ public class TaskExcuteDataController extends BaseController<TaskExcuteData, ITa
     @AutoLog(value = "同步机器人当前执行任务信息")
     @ApiOperation(value = "同步机器人当前执行任务信息", notes = "同步机器人当前执行任务信息")
     @GetMapping(value = "/synchronizeTaskExcuteData")
-    @ApiImplicitParam(name = "robotId", value = "机器人id", required = false, example = "1542055710727028737", dataTypeClass = String.class)
-    public Result<?> synchronizeTaskExcuteData(@RequestParam(name = "robotId", required = false) String robotId) {
+    @ApiImplicitParam(name = "robotId", value = "机器人id", required = true, example = "1542055710727028737", dataTypeClass = String.class)
+    public Result<?> synchronizeTaskExcuteData(@RequestParam(name = "robotId") String robotId) {
         taskExcuteDataService.synchronizeTaskExcuteData(CollUtil.newArrayList(robotId));
         return Result.OK("同步机器人当前执行任务信息成功");
     }

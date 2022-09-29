@@ -35,5 +35,18 @@ public interface ITaskPathInfoService extends IService<TaskPathInfo> {
      */
     int startTaskByPathId(String taskPathId);
 
+    /**
+     * 当前机器人执行的任务
+     * @param robotIp 机器人ip
+     * @return
+     */
+    com.aiurt.modules.robot.taskdata.wsdl.TaskExcuteData getTaskExcuteData(String robotIp);
 
+    /**
+     * 机器人任务操作
+     * @param robotIp 机器人ip
+     * @param controlTaskType 机器人任务操作类型
+     * @return
+     */
+    int robotControlTask(String robotIp,String controlTaskType);
 }

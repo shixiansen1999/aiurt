@@ -22,6 +22,7 @@ import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.servlet.NoHandlerFoundException;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.xml.ws.WebServiceException;
 import java.net.ConnectException;
 
 /**
@@ -208,8 +209,19 @@ public class AiurtBootExceptionHandler {
      * @return
      */
     @ExceptionHandler(ConnectException.class)
-    public Result<?> handleBindException(ConnectException e) {
+    public Result<?> handleConnectException(ConnectException e) {
         log.error(e.getMessage(), e);
         return Result.error("连接异常,尝试开启VPN后重试");
+    }
+    /**
+     * webservice连接异常处理
+     *
+     * @param e
+     * @return
+     */
+    @ExceptionHandler(WebServiceException.class)
+    public Result<?> handleWebServiceException(WebServiceException e) {
+        log.error(e.getMessage(), e);
+        return Result.error("远程机器人连接超时");
     }
 }

@@ -3,10 +3,7 @@ package com.aiurt.modules.robot.robotdata.service.impl;
 
 import com.aiurt.common.util.webservice.WebServiceUtils;
 import com.aiurt.modules.robot.robotdata.service.RobotDataService;
-import com.aiurt.modules.robot.robotdata.wsdl.ConnectInfos;
-import com.aiurt.modules.robot.robotdata.wsdl.RobotGasInfos;
-import com.aiurt.modules.robot.robotdata.wsdl.RobotInfos;
-import com.aiurt.modules.robot.robotdata.wsdl.ServicePortType;
+import com.aiurt.modules.robot.robotdata.wsdl.*;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -77,5 +74,60 @@ public class RobotDataServiceImpl implements RobotDataService {
     public RobotGasInfos getRobotGasInfo(boolean needAll) {
         RobotGasInfos robotGasInfo = WebServiceUtils.getWebService(ServicePortType.class, address).getRobotGasInfo(needAll);
         return robotGasInfo;
+    }
+
+    /**
+     * 机器人高清相机控制
+     *
+     * @param type
+     * @return
+     */
+    @Override
+    public int robotCameraControl(CameraControlType type) {
+        return 0;
+    }
+
+    /**
+     * 机器人高清相机补光灯控制
+     *
+     * @param type
+     * @return
+     */
+    @Override
+    public int robotLightControl(LightControlType type) {
+        return 0;
+    }
+
+    /**
+     * 机器人高清相机雨刷控制
+     *
+     * @param type
+     * @return
+     */
+    @Override
+    public int getTaskFinishInfoByTime(WiperControlType type) {
+        return 0;
+    }
+
+    /**
+     * 机器人红外相机控制
+     *
+     * @param type
+     * @return
+     */
+    @Override
+    public int robotFlirControl(FilrControlType type) {
+        return 0;
+    }
+
+    /**
+     * 机器人云台控制
+     *
+     * @param type
+     * @return
+     */
+    @Override
+    public int robotYuntaiControl(YuntaiControlType type) {
+        return 0;
     }
 }

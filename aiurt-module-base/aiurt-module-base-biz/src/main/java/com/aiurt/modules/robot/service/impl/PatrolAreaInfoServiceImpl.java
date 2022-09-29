@@ -82,9 +82,7 @@ public class PatrolAreaInfoServiceImpl extends ServiceImpl<PatrolAreaInfoMapper,
 
         // 目的是系统中的巡检区域名称不为空的，则不需要同步远程的巡检区域名称
         List<PatrolAreaInfo> patrolAreaInfos = baseMapper.selectList(new LambdaQueryWrapper<PatrolAreaInfo>().isNotNull(PatrolAreaInfo::getAreaName));
-        Map<String, String> areaMap = Optional.ofNullable(patrolAreaInfos)
-                .orElse(CollUtil.newArrayList())
-                .stream().collect(Collectors.toMap(PatrolAreaInfo::getAreaId, PatrolAreaInfo::getAreaName));
+        Map<String, String> areaMap = Optional.ofNullable(patrolAreaInfos).orElse(CollUtil.newArrayList()).stream().collect(Collectors.toMap(PatrolAreaInfo::getAreaId, PatrolAreaInfo::getAreaName));
 
         // 查询机器人ip对应的机器人id映射关系
         Map<String, String> map = robotInfoService.queryRobotIpMappingId(CollUtil.newArrayList());
@@ -110,14 +108,11 @@ public class PatrolAreaInfoServiceImpl extends ServiceImpl<PatrolAreaInfoMapper,
         }
 
         // 删除原来的巡检区域数据
-        LambdaQueryWrapper<PatrolAreaInfo> patrolAreaInfoLambda = new LambdaQueryWrapper<>();
-        patrolAreaInfoLambda.notIn(PatrolAreaInfo::getAreaId, result.stream().map(PatrolAreaInfo::getAreaId).collect(Collectors.toList()));
-        baseMapper.delete(patrolAreaInfoLambda);
+        deleteOldPatrolArea(result);
 
         // 批量更新巡检区域
         saveOrUpdateBatch(result);
     }
-
 
     /**
      * 编辑巡检点位
@@ -171,5 +166,14 @@ public class PatrolAreaInfoServiceImpl extends ServiceImpl<PatrolAreaInfoMapper,
         return MapUtil.isNotEmpty(areaMap) && StrUtil.isNotEmpty(areaMap.get(areaId));
     }
 
-
+    /**
+     * 删除原来的巡检区域数据
+     *
+     * @param result
+     */
+    public void deleteOldPatrolArea(List<PatrolAreaInfo> result) {
+        LambdaQueryWrapper<PatrolAreaInfo> patrolAreaInfoLambda = new LambdaQueryWrapper<>();
+        patrolAreaInfoLambda.notIn(PatrolAreaInfo::getAreaId, result.stream().map(PatrolAreaInfo::getAreaId).collect(Collectors.toList()));
+        baseMapper.delete(patrolAreaInfoLambda);
+    }
 }

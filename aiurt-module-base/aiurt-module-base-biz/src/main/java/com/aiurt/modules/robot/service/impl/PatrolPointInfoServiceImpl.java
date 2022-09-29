@@ -48,9 +48,7 @@ public class PatrolPointInfoServiceImpl extends ServiceImpl<PatrolPointInfoMappe
 
         // 目的是系统中的巡检点位名称不为空的，则不需要同步远程的巡检区域名称
         List<PatrolPointInfo> patrolPointInfos = baseMapper.selectList(new LambdaQueryWrapper<PatrolPointInfo>().isNotNull(PatrolPointInfo::getPointName));
-        Map<String, String> pointMap = Optional.ofNullable(patrolPointInfos)
-                .orElse(CollUtil.newArrayList())
-                .stream().collect(Collectors.toMap(PatrolPointInfo::getPointId, PatrolPointInfo::getPointName));
+        Map<String, String> pointMap = Optional.ofNullable(patrolPointInfos).orElse(CollUtil.newArrayList()).stream().collect(Collectors.toMap(PatrolPointInfo::getPointId, PatrolPointInfo::getPointName));
 
         // 查询机器人ip对应的机器人id映射关系,[key机器人ip,value机器人id]
         Map<String, String> map = robotInfoService.queryRobotIpMappingId(CollUtil.newArrayList());
@@ -77,12 +75,21 @@ public class PatrolPointInfoServiceImpl extends ServiceImpl<PatrolPointInfoMappe
         }
 
         // 删除原来的巡检区域数据
-        LambdaQueryWrapper<PatrolPointInfo> patrolPointInfoLambda = new LambdaQueryWrapper<>();
-        patrolPointInfoLambda.notIn(PatrolPointInfo::getPointId, result.stream().map(PatrolPointInfo::getPointId).collect(Collectors.toList()));
-        baseMapper.delete(patrolPointInfoLambda);
+        deleteOldPatrolPoint(result);
 
         // 批量更新巡检点位
         saveOrUpdateBatch(result);
+    }
+
+    /**
+     * 删除原来的巡检区域数据
+     *
+     * @param result
+     */
+    public void deleteOldPatrolPoint(List<PatrolPointInfo> result) {
+        LambdaQueryWrapper<PatrolPointInfo> patrolPointInfoLambda = new LambdaQueryWrapper<>();
+        patrolPointInfoLambda.notIn(PatrolPointInfo::getPointId, result.stream().map(PatrolPointInfo::getPointId).collect(Collectors.toList()));
+        baseMapper.delete(patrolPointInfoLambda);
     }
 
     /**
