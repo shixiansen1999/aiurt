@@ -33,4 +33,12 @@ public interface ITaskFinishInfoService extends IService<TaskFinishInfo> {
      * @return
      */
     IPage<TaskFinishInfoVO> queryPageList(Page<TaskFinishInfoVO> page, TaskFinishDTO taskFinishDTO);
+
+    /**
+     * 机器人巡检任务处置
+     *
+     * @param id
+     * @param handleExplain
+     */
+    void taskDispose(String id, String handleExplain);
 }

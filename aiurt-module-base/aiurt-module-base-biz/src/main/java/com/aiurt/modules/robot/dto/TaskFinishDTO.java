@@ -37,6 +37,11 @@ public class TaskFinishDTO {
     @ApiModelProperty(value = "任务状态")
     private String taskStatus;
     /**
+     * 任务结果
+     */
+    @ApiModelProperty(value = "任务结果")
+    private String taskResult;
+    /**
      * 开始时间
      */
     @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd HH:mm:ss")

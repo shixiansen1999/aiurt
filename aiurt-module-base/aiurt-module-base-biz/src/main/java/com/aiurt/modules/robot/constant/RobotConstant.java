@@ -25,4 +25,12 @@ public class RobotConstant {
      * 机器人遥控模式：1遥控模式
      */
     public static final Integer CONTROL_TYPE_1 = 1;
+    /**
+     * 机器人巡检任务处置状态：0未处置
+     */
+    public static final Integer TASK_DISPOSE_0 = 0;
+    /**
+     * 机器人巡检任务处置状态：1已处置
+     */
+    public static final Integer TASK_DISPOSE_1 = 1;
 }

@@ -3,19 +3,28 @@ package com.aiurt.modules.robot.service.impl;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
+import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.modules.api.IBaseApi;
+import com.aiurt.modules.robot.constant.RobotConstant;
+import com.aiurt.modules.robot.constant.RobotDictConstant;
 import com.aiurt.modules.robot.dto.TaskFinishDTO;
+import com.aiurt.modules.robot.entity.TaskExcuteInfo;
 import com.aiurt.modules.robot.entity.TaskFinishInfo;
+import com.aiurt.modules.robot.mapper.TaskExcuteInfoMapper;
 import com.aiurt.modules.robot.mapper.TaskFinishInfoMapper;
 import com.aiurt.modules.robot.service.IRobotInfoService;
 import com.aiurt.modules.robot.service.ITaskFinishInfoService;
 import com.aiurt.modules.robot.taskfinish.service.TaskFinishService;
 import com.aiurt.modules.robot.taskfinish.wsdl.TaskFinishInfos;
 import com.aiurt.modules.robot.vo.TaskFinishInfoVO;
+import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.system.api.ISysBaseAPI;
+import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -34,13 +43,15 @@ import java.util.stream.Collectors;
 @Service
 public class TaskFinishInfoServiceImpl extends ServiceImpl<TaskFinishInfoMapper, TaskFinishInfo> implements ITaskFinishInfoService {
     @Autowired
+    private ISysBaseAPI sysBaseApi;
+    @Autowired
     private TaskFinishService taskFinishService;
     @Autowired
     private IRobotInfoService robotInfoService;
     @Autowired
     private TaskFinishInfoMapper taskFinishInfoMapper;
     @Autowired
-    private ISysBaseAPI sysBaseApi;
+    private TaskExcuteInfoMapper taskExcuteInfoMapper;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -87,11 +98,40 @@ public class TaskFinishInfoServiceImpl extends ServiceImpl<TaskFinishInfoMapper,
         List<String> stationCodes = pageList.getRecords().stream().map(TaskFinishInfoVO::getStationCode).collect(Collectors.toList());
         Map<String, String> lineNames = sysBaseApi.getLineNameByCode(lineCodes);
         Map<String, String> stationNames = sysBaseApi.getStationNameByCode(stationCodes);
+        String normal = "正常";
+        String abnormal = "异常";
+        // 字典翻译
+        Map<String, String> disposeItems = sysBaseApi.getDictItems(RobotDictConstant.ROBOT_DISPOSE)
+                .stream().collect(Collectors.toMap(k -> k.getValue(), v -> v.getText(), (a, b) -> a));
         for (TaskFinishInfoVO infoVO : pageList.getRecords()) {
+            // 任务结果
+            LambdaQueryWrapper<TaskExcuteInfo> wrapper = new LambdaQueryWrapper<>();
+            wrapper.eq(TaskExcuteInfo::getExcuteState, abnormal).last("limit 1");
+            TaskExcuteInfo taskExcuteInfo = taskExcuteInfoMapper.selectOne(wrapper);
+            infoVO.setTaskResult(normal);
+            if (ObjectUtil.isNotEmpty(taskExcuteInfo)) {
+                infoVO.setTaskResult(abnormal);
+            }
+            infoVO.setIsHandleDictName(disposeItems.get(infoVO.getIsHandle()));
             infoVO.setLineName(lineNames.get(infoVO.getLineCode()));
             infoVO.setStationName(stationNames.get(infoVO.getStationCode()));
         }
         return pageList;
+    }
+
+    @Override
+    public void taskDispose(String id, String handleExplain) {
+        LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        if (ObjectUtil.isEmpty(loginUser)) {
+            throw new AiurtBootException("检测到当前为未登录状态，请先登录！");
+        }
+        TaskFinishInfo info = new TaskFinishInfo();
+        info.setId(id);
+        info.setHandleUserId(loginUser.getId());
+        info.setHandleTime(new Date());
+        info.setHandleExplain(handleExplain);
+        info.setIsHandle(RobotConstant.TASK_DISPOSE_1);
+        taskFinishInfoMapper.updateById(info);
     }
 
 }

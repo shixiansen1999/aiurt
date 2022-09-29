@@ -41,4 +41,16 @@ public class TaskFinishInfoVO extends TaskFinishInfo {
     @Excel(name = "站点名称", width = 15)
     @ApiModelProperty(value = "站点名称")
     private String stationName;
+    /**
+     * 任务结果
+     */
+    @Excel(name = "任务结果", width = 15)
+    @ApiModelProperty(value = "任务结果")
+    private String taskResult;
+    /**
+     * 处置状态字典名
+     */
+    @Excel(name = "处置状态字典名", width = 15)
+    @ApiModelProperty(value = "处置状态字典名")
+    private String isHandleDictName;
 }

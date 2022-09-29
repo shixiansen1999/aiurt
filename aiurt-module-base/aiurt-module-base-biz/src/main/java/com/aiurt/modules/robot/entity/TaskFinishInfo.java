@@ -70,20 +70,38 @@ public class TaskFinishInfo implements Serializable {
     @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
     @ApiModelProperty(value = "结束时间")
     private java.util.Date endTime;
+    /**处置人*/
+    @Excel(name = "处置人", width = 15)
+    @ApiModelProperty(value = "处置人")
+    private java.lang.String handleUserId;
+    /**处置时间*/
+    @Excel(name = "处置时间", width = 15)
+    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
+    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
+    @ApiModelProperty(value = "处置时间")
+    private java.util.Date handleTime;
+    /**处置说明*/
+    @Excel(name = "处置说明", width = 15)
+    @ApiModelProperty(value = "处置说明")
+    private java.lang.String handleExplain;
+    /**是否已经处置（0未处置1已处置）*/
+    @Excel(name = "是否已经处置（0未处置1已处置）", width = 15)
+    @ApiModelProperty(value = "是否已经处置（0未处置1已处置）")
+    private java.lang.Integer isHandle;
 	/**创建人*/
     @ApiModelProperty(value = "创建人")
     private java.lang.String createBy;
 	/**创建时间*/
-	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
-    @DateTimeFormat(pattern="yyyy-MM-dd")
+	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
+    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
     @ApiModelProperty(value = "创建时间")
     private java.util.Date createTime;
 	/**修改人*/
     @ApiModelProperty(value = "修改人")
     private java.lang.String updateBy;
 	/**修改时间*/
-	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
-    @DateTimeFormat(pattern="yyyy-MM-dd")
+	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
+    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
     @ApiModelProperty(value = "修改时间")
     private java.util.Date updateTime;
 }

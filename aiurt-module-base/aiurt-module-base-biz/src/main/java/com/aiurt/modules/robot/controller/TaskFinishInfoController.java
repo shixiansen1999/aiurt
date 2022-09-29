@@ -46,6 +46,7 @@ public class TaskFinishInfoController extends BaseController<TaskFinishInfo, ITa
 
     /**
      * 机器人巡检任务列表查询
+     *
      * @param pageNo
      * @param pageSize
      * @param req
@@ -93,17 +94,21 @@ public class TaskFinishInfoController extends BaseController<TaskFinishInfo, ITa
     }
 
     /**
-     * 编辑
+     * 机器人巡检任务处置
      *
-     * @param taskFinishInfo
+     * @param id
+     * @param handleExplain
      * @return
      */
-    @AutoLog(value = "task_finish_info-编辑")
-    @ApiOperation(value = "task_finish_info-编辑", notes = "task_finish_info-编辑")
-    @RequestMapping(value = "/edit", method = {RequestMethod.PUT, RequestMethod.POST})
-    public Result<String> edit(@RequestBody TaskFinishInfo taskFinishInfo) {
-        taskFinishInfoService.updateById(taskFinishInfo);
-        return Result.OK("编辑成功!");
+    @AutoLog(value = "机器人巡检任务处置")
+    @ApiOperation(value = "机器人巡检任务处置", notes = "机器人巡检任务处置")
+    @RequestMapping(value = "/taskDispose", method = {RequestMethod.PUT, RequestMethod.POST})
+    public Result<String> taskDispose(@ApiParam(name = "id", value = "任务记录ID")
+                                      @RequestParam("id") String id,
+                                      @ApiParam(name = "handleExplain", value = "处置说明")
+                                      @RequestParam("handleExplain") String handleExplain) {
+        taskFinishInfoService.taskDispose(id, handleExplain);
+        return Result.OK("任务处置成功!");
     }
 
     /**
