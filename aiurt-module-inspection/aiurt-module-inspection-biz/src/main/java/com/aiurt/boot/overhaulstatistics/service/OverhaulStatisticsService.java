@@ -115,6 +115,10 @@ public class OverhaulStatisticsService{
                     q.setNotCompletedNumber(l);
                 }else {
                     q.setNotCompletedNumber(0L);
+                    q.setTaskTotal(0L);
+                }
+                if (q.getMaintenanceDuration()==null){
+                    q.setMaintenanceDuration(0L);
                 }
                 //完成率
                 getCompletionRate(q, size5);
@@ -151,8 +155,11 @@ public class OverhaulStatisticsService{
                     e.setNotCompletedNumber(l);
                 }else {
                     e.setNotCompletedNumber(0L);
+                    e.setTaskTotal(0L);
                 }
-
+                if (e.getMaintenanceDuration()==null){
+                    e.setMaintenanceDuration(0L);
+                }
                 //完成率
                 getCompletionRate(e, size2);
 
