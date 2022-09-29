@@ -3,6 +3,7 @@ package com.aiurt.modules.dailyschedule.service;
 import com.aiurt.modules.dailyschedule.entity.DailySchedule;
 import com.baomidou.mybatisplus.extension.service.IService;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -16,12 +17,9 @@ public interface IDailyScheduleService extends IService<DailySchedule> {
 
     /**
      * 查询某一天的日程
-     * @param year 年
-     * @param month 月
-     * @param day 日
      * @return
      */
-    List<DailySchedule> queryList(Integer year, Integer month, Integer day);
+    List<DailySchedule> queryList(Date addTime);
 
 
     /**
@@ -31,4 +29,10 @@ public interface IDailyScheduleService extends IService<DailySchedule> {
      * @return Map key：yyyy/MM/dd value: List<DailySchedule>
      */
     Map<String, List<DailySchedule>> queryDailyScheduleList(Integer year, Integer month);
+
+    /**
+     * 查询发送人是自己的数据
+     * @return
+     */
+    List<DailySchedule> queryOwnlist(Date addTime);
 }

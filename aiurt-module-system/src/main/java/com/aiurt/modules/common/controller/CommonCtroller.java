@@ -95,6 +95,9 @@ public class CommonCtroller {
 
         LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
 
+        // 系统管理员不做权限过滤
+        String roleCodes = loginUser.getRoleCodes();
+
         List<CsUserMajorModel> majorModelList = csUserMajorService.getMajorByUserId(loginUser.getId());
 
         List<SelectTable> list = majorModelList.stream().map(csMajor -> {

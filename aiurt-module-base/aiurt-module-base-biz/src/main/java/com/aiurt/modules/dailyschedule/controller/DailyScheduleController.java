@@ -21,13 +21,13 @@ import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.query.QueryGenerator;
 import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 
  /**
@@ -70,12 +70,10 @@ public class DailyScheduleController extends BaseController<DailySchedule, IDail
 	}
 
 
-	 @ApiOperation(value="日程安排-首页", notes="日程安排-首页")
+	 @ApiOperation(value="日程安排-首页-详情", notes="日程安排-首页-详情")
 	 @GetMapping(value = "/queryList")
-	 public Result<List<DailySchedule>> queryList(@ApiParam(value = "年份") @RequestParam(name = "year") Integer year,
-												  @ApiParam(value = "月份") @RequestParam(name = "month") Integer month,
-												  @ApiParam(value = "日") @RequestParam(name = "day") Integer day) {
-		 List<DailySchedule> resultList = dailyScheduleService.queryList(year, month, day);
+	 public Result<List<DailySchedule>> queryList(@ApiParam(value = "日期")@DateTimeFormat(pattern="yyyy-MM-dd") @RequestParam(value = "addTime") Date addTime) {
+		 List<DailySchedule> resultList = dailyScheduleService.queryList(addTime);
 		 return Result.OK(resultList);
 	 }
 	/**
@@ -185,27 +183,11 @@ public class DailyScheduleController extends BaseController<DailySchedule, IDail
 		return Result.OK(dailySchedule);
 	}
 
-    /**
-    * 导出excel
-    *
-    * @param request
-    * @param dailySchedule
-    */
-    @RequestMapping(value = "/exportXls")
-    public ModelAndView exportXls(HttpServletRequest request, DailySchedule dailySchedule) {
-        return super.exportXls(request, dailySchedule, DailySchedule.class, "日程安排");
-    }
-
-    /**
-      * 通过excel导入数据
-    *
-    * @param request
-    * @param response
-    * @return
-    */
-    @RequestMapping(value = "/importExcel", method = RequestMethod.POST)
-    public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) {
-        return super.importExcel(request, response, DailySchedule.class);
-    }
+	@GetMapping(value = "/queryOwnlist")
+	@ApiOperation(value="日程安排-编辑下拉选择", notes="日程安排-编辑下拉选择")
+	public Result<List<DailySchedule>> queryOwnlist(@ApiParam(value = "日期")@DateTimeFormat(pattern="yyyy-MM-dd") @RequestParam(value = "addTime") Date addTime) {
+		List<DailySchedule> list = dailyScheduleService.queryOwnlist(addTime);
+		return Result.OK(list);
+	}
 
 }
