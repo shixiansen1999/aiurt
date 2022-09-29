@@ -71,14 +71,17 @@ public class OverhaulStatisticsService{
         //查询班组下检修人员
         List<OverhaulStatisticsDTO> nameList = repairTaskMapper.readNameList(condition);
 
-        nameList.addAll(dtoList1);
-        statisticsDTOList.addAll(dtoList2);
+        if(CollectionUtil.isNotEmpty(statisticsDTOList)){
+            statisticsDTOList.addAll(dtoList2);
+        }
+        if(CollectionUtil.isNotEmpty(nameList)) {
+            nameList.addAll(dtoList1);
+        }
+        //去重处理
+        ArrayList<OverhaulStatisticsDTOS> distinct1 = CollectionUtil.distinct(CollectionUtil.isNotEmpty(statisticsDTOList) ? statisticsDTOList : dtoList2);
 
         //去重处理
-        ArrayList<OverhaulStatisticsDTOS> distinct1 = CollectionUtil.distinct(statisticsDTOList);
-
-        //去重处理
-        ArrayList<OverhaulStatisticsDTO> distinct = CollectionUtil.distinct(nameList);
+        ArrayList<OverhaulStatisticsDTO> distinct = CollectionUtil.distinct(CollectionUtil.isNotEmpty(nameList) ? nameList : dtoList1);
 
         if (CollectionUtil.isNotEmpty(distinct)){
             distinct.forEach(q->{
@@ -103,6 +106,10 @@ public class OverhaulStatisticsService{
                     overhaulStatisticsDTO.setOrgCode(q.getOrgCode());
                 }if (q.getUserId()!=null){
                     overhaulStatisticsDTO.setUserId(q.getUserId());
+                }if (q.getStartDate()!=null){
+                    overhaulStatisticsDTO.setStartDate(q.getStartDate());
+                }if (q.getEndDate()!=null){
+                    overhaulStatisticsDTO.setEndDate(q.getEndDate());
                 }
                 List<OverhaulStatisticsDTO> readNameList = repairTaskMapper.readNameLists(overhaulStatisticsDTO);
                 //已完成数
@@ -142,6 +149,10 @@ public class OverhaulStatisticsService{
                     overhaulStatisticsDTO.setTaskId(e.getTaskId());
                 }  if (e.getOrgCode()!=null){
                     overhaulStatisticsDTO.setOrgCode(e.getOrgCode());
+                }if (e.getStartDate()!=null){
+                    overhaulStatisticsDTO.setStartDate(e.getStartDate());
+                }if (e.getEndDate()!=null){
+                    overhaulStatisticsDTO.setEndDate(e.getEndDate());
                 }
                 List<OverhaulStatisticsDTOS> dtoList = repairTaskMapper.readTeamLists(overhaulStatisticsDTO);
 
@@ -187,7 +198,7 @@ public class OverhaulStatisticsService{
     }
 
     private void getCompletionRate(OverhaulStatisticsDTO e, int size2) {
-        if (size2!=0 && e.getTaskTotal()!=null){
+        if (size2!=0 && e.getTaskTotal()!=0){
             double div = NumberUtil.div(size2, e.getTaskTotal().longValue());
             double i = div*100;
             if (i==0){
@@ -198,10 +209,11 @@ public class OverhaulStatisticsService{
             }
         }else {
             e.setCompletionRate("0");
+            e.setCompletedNumber(0L);
         }
     }
     private void getCompletionRate(OverhaulStatisticsDTOS e, int size2) {
-        if (size2!=0 && e.getTaskTotal()!=null){
+        if (size2!=0 && e.getTaskTotal()!=0){
             double div = NumberUtil.div(size2, e.getTaskTotal().longValue());
             double i = div*100;
             if (i==0){
@@ -212,6 +224,7 @@ public class OverhaulStatisticsService{
             }
         }else {
             e.setCompletionRate("0");
+            e.setCompletedNumber(0L);
         }
     }
 
