@@ -808,6 +808,11 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
                     }
                 });
             }
+
+            // 删除
+            if (CollectionUtil.isNotEmpty(set)) {
+                sparePartService.removeBatchByIds(set);
+            }
             // 更新备件更换记录
             sparePartService.saveOrUpdateBatch(sparePartList);
             // 更新备件出库未使用的数量
