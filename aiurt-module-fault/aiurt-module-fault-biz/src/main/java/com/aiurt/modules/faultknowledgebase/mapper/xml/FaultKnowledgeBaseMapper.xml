@@ -131,6 +131,7 @@
     <if test="deviceTypeCode != null and deviceTypeCode != ''">
         and device_type_code =#{deviceTypeCode}
     </if>
+    group by material_code
     </select>
 
 <select id="getAllDeviceAssembly" resultType="com.aiurt.modules.faultknowledgebase.dto.DeviceAssemblyDTO">
