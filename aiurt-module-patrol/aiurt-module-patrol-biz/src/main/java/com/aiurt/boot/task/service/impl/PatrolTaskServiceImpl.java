@@ -406,11 +406,19 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
             PatrolTaskUserDTO userDTO = new PatrolTaskUserDTO();
             String organizationName = patrolTaskMapper.getOrgName(code);
             List<PatrolTaskUserContentDTO> user = patrolTaskMapper.getUser(code);
+            userDTO.setOrgCode(code);
             userDTO.setOrganizationName(organizationName);
             userDTO.setUserList(user);
             arrayList.add(userDTO);
         }
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+
+        if (ObjectUtil.isEmpty(sysUser)) {
+            throw new AiurtBootException("检测为未登录状态，请登录系统后操作！");
+        }
+        // 过滤当前用户所在的组织机构数据
+        arrayList = arrayList.stream().filter(l -> l.getOrgCode().equals(sysUser.getOrgCode())).collect(Collectors.toList());
+
         PatrolTask patrolTask = patrolTaskMapper.selectById(orgCoed.getTaskId());
         if (PatrolConstant.TASK_RETURNED.equals(patrolTask.getStatus())) {
             return arrayList;
