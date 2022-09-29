@@ -28,7 +28,9 @@ import com.aiurt.modules.message.entity.SysMessageTemplate;
 import com.aiurt.modules.message.handle.impl.EmailSendMsgHandle;
 import com.aiurt.modules.message.service.ISysMessageTemplateService;
 import com.aiurt.modules.message.websocket.WebSocket;
+import com.aiurt.modules.position.entity.CsLine;
 import com.aiurt.modules.position.entity.CsStation;
+import com.aiurt.modules.position.mapper.CsLineMapper;
 import com.aiurt.modules.position.mapper.CsStationMapper;
 import com.aiurt.modules.quartz.entity.QuartzJob;
 import com.aiurt.modules.quartz.service.IQuartzJobService;
@@ -161,6 +163,8 @@ public class SysBaseApiImpl implements ISysBaseAPI {
 
     @Autowired
     private ICsMajorService majorService;
+    @Autowired
+    private CsLineMapper lineMapper;
 
 
     @Override
@@ -1651,12 +1655,38 @@ public class SysBaseApiImpl implements ISysBaseAPI {
 
     @Override
     public JSONObject getCsMajorByCode(String majorCode) {
-        LambdaQueryWrapper<CsMajor> wrapper =  new LambdaQueryWrapper<>();
+        LambdaQueryWrapper<CsMajor> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(CsMajor::getMajorCode, majorCode).last("limit 1");
         CsMajor csMajor = majorService.getBaseMapper().selectOne(wrapper);
         if (Objects.isNull(csMajor)) {
             return null;
         }
         return JSONObject.parseObject(JSONObject.toJSONString(csMajor));
+    }
+
+    @Override
+    public Map<String, String> getLineNameByCode(List<String> lineCodes) {
+        LambdaQueryWrapper<CsLine> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(CsLine::getDelFlag, CommonConstant.DEL_FLAG_0);
+        if (CollectionUtil.isNotEmpty(lineCodes)) {
+            wrapper.in(CsLine::getLineCode, lineCodes);
+        }
+        List<CsLine> lines = lineMapper.selectList(wrapper);
+        Map<String, String> lineMap = lines.stream()
+                .collect(Collectors.toMap(k -> k.getLineCode(), v -> v.getLineName(), (a, b) -> a));
+        return lineMap;
+    }
+
+    @Override
+    public Map<String, String> getStationNameByCode(List<String> stationCodes) {
+        LambdaQueryWrapper<CsStation> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(CsStation::getDelFlag, CommonConstant.DEL_FLAG_0);
+        if (CollectionUtil.isNotEmpty(stationCodes)) {
+            wrapper.in(CsStation::getStationCode, stationCodes);
+        }
+        List<CsStation> stations = csStationMapper.selectList(wrapper);
+        Map<String, String> stationMap = stations.stream()
+                .collect(Collectors.toMap(k -> k.getStationCode(), v -> v.getStationName(), (a, b) -> a));
+        return stationMap;
     }
 }

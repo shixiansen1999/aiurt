@@ -30,7 +30,10 @@ import lombok.experimental.Accessors;
 @ApiModel(value="task_finish_info对象", description="task_finish_info")
 public class TaskFinishInfo implements Serializable {
     private static final long serialVersionUID = 1L;
-
+    /**主键ID*/
+    @TableId(type = IdType.ASSIGN_ID)
+    @ApiModelProperty(value = "主键ID")
+    private java.lang.String id;
 	/**任务id*/
 	@Excel(name = "任务id", width = 15)
     @ApiModelProperty(value = "任务id")

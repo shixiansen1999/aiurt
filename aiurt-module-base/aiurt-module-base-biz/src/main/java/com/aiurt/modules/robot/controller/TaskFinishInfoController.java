@@ -5,7 +5,9 @@ import java.util.Date;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.aiurt.modules.robot.dto.TaskFinishDTO;
 import com.aiurt.modules.robot.taskfinish.service.TaskFinishService;
+import com.aiurt.modules.robot.vo.TaskFinishInfoVO;
 import io.swagger.annotations.ApiParam;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.query.QueryGenerator;
@@ -32,7 +34,7 @@ import com.aiurt.common.aspect.annotation.AutoLog;
  * @Date: 2022-09-28
  * @Version: V1.0
  */
-@Api(tags = "task_finish_info")
+@Api(tags = "机器人巡检任务")
 @RestController
 @RequestMapping("/robot/taskFinishInfo")
 @Slf4j
@@ -43,24 +45,20 @@ public class TaskFinishInfoController extends BaseController<TaskFinishInfo, ITa
     private TaskFinishService taskFinishService;
 
     /**
-     * 分页列表查询
-     *
-     * @param taskFinishInfo
+     * 机器人巡检任务列表查询
      * @param pageNo
      * @param pageSize
      * @param req
      * @return
      */
-    //@AutoLog(value = "task_finish_info-分页列表查询")
-    @ApiOperation(value = "task_finish_info-分页列表查询", notes = "task_finish_info-分页列表查询")
+    @AutoLog(value = "机器人巡检任务列表查询")
+    @ApiOperation(value = "机器人巡检任务列表查询", notes = "机器人巡检任务列表查询")
     @GetMapping(value = "/list")
-    public Result<IPage<TaskFinishInfo>> queryPageList(TaskFinishInfo taskFinishInfo,
-                                                       @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
-                                                       @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize,
-                                                       HttpServletRequest req) {
-        QueryWrapper<TaskFinishInfo> queryWrapper = QueryGenerator.initQueryWrapper(taskFinishInfo, req.getParameterMap());
-        Page<TaskFinishInfo> page = new Page<TaskFinishInfo>(pageNo, pageSize);
-        IPage<TaskFinishInfo> pageList = taskFinishInfoService.page(page, queryWrapper);
+    public Result<IPage<TaskFinishInfoVO>> queryPageList(@RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
+                                                         @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize,
+                                                         TaskFinishDTO taskFinishDTO, HttpServletRequest req) {
+        Page<TaskFinishInfoVO> page = new Page<TaskFinishInfoVO>(pageNo, pageSize);
+        IPage<TaskFinishInfoVO> pageList = taskFinishInfoService.queryPageList(page, taskFinishDTO);
         return Result.OK(pageList);
     }
 
@@ -142,7 +140,7 @@ public class TaskFinishInfoController extends BaseController<TaskFinishInfo, ITa
      * @param id
      * @return
      */
-    //@AutoLog(value = "task_finish_info-通过id查询")
+    @AutoLog(value = "task_finish_info-通过id查询")
     @ApiOperation(value = "task_finish_info-通过id查询", notes = "task_finish_info-通过id查询")
     @GetMapping(value = "/queryById")
     public Result<TaskFinishInfo> queryById(@RequestParam(name = "id", required = true) String id) {

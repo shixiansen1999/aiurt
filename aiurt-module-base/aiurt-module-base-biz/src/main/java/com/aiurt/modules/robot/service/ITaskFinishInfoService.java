@@ -1,6 +1,10 @@
 package com.aiurt.modules.robot.service;
 
+import com.aiurt.modules.robot.dto.TaskFinishDTO;
 import com.aiurt.modules.robot.entity.TaskFinishInfo;
+import com.aiurt.modules.robot.vo.TaskFinishInfoVO;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 
 import java.util.Date;
@@ -20,4 +24,13 @@ public interface ITaskFinishInfoService extends IService<TaskFinishInfo> {
      * @param endTime
      */
     void synchronizeRobotTask(Date startTime, Date endTime);
+
+    /**
+     * 机器人巡检任务列表查询
+     *
+     * @param page
+     * @param taskFinishDTO
+     * @return
+     */
+    IPage<TaskFinishInfoVO> queryPageList(Page<TaskFinishInfoVO> page, TaskFinishDTO taskFinishDTO);
 }

@@ -2,4 +2,25 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.aiurt.modules.robot.mapper.TaskFinishInfoMapper">
 
+    <select id="queryPageList" resultType="com.aiurt.modules.robot.vo.TaskFinishInfoVO">
+        select tfi.*,
+        ri.line_code,
+        ri.station_code
+        from task_finish_info tfi
+        join robot_info ri on tfi.robot_id = ri.robot_id
+        <where>
+            <if test="condition.lineCode != null and condition.lineCode != ''">
+                ri.line_code = #{condition.lineCode}
+            </if>
+            <if test="condition.stationCode != null and condition.stationCode != ''">
+                and ri.station_code = #{condition.stationCode}
+            </if>
+            <if test="condition.taskStatus != null and condition.taskStatus != ''">
+                and tfi.finish_state like concat('%',#{condition.taskStatus},'%')
+            </if>
+            <if test="condition.startTime != null and condition.endTime != null">
+                and tfi.start_time >= #{condition.startTime} and tfi.end_time &lt;= #{condition.endTime}
+            </if>
+        </where>
+    </select>
 </mapper>

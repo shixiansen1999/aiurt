@@ -1,17 +1,21 @@
 package com.aiurt.modules.robot.service.impl;
 
-import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
+import com.aiurt.modules.api.IBaseApi;
+import com.aiurt.modules.robot.dto.TaskFinishDTO;
 import com.aiurt.modules.robot.entity.TaskFinishInfo;
-import com.aiurt.modules.robot.entity.TaskPathInfo;
 import com.aiurt.modules.robot.mapper.TaskFinishInfoMapper;
 import com.aiurt.modules.robot.service.IRobotInfoService;
 import com.aiurt.modules.robot.service.ITaskFinishInfoService;
 import com.aiurt.modules.robot.taskfinish.service.TaskFinishService;
 import com.aiurt.modules.robot.taskfinish.wsdl.TaskFinishInfos;
+import com.aiurt.modules.robot.vo.TaskFinishInfoVO;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import org.jeecg.common.system.api.ISysBaseAPI;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -33,6 +37,10 @@ public class TaskFinishInfoServiceImpl extends ServiceImpl<TaskFinishInfoMapper,
     private TaskFinishService taskFinishService;
     @Autowired
     private IRobotInfoService robotInfoService;
+    @Autowired
+    private TaskFinishInfoMapper taskFinishInfoMapper;
+    @Autowired
+    private ISysBaseAPI sysBaseApi;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -46,7 +54,6 @@ public class TaskFinishInfoServiceImpl extends ServiceImpl<TaskFinishInfoMapper,
         String formatStartTime = DateUtil.format(startTime, format);
         String formatEndTime = DateUtil.format(endTime, format);
         TaskFinishInfos taskFinishInfos = taskFinishService.getTaskFinishInfoByTime(formatStartTime, formatEndTime);
-        Optional.ofNullable(taskFinishInfos).orElseGet(TaskFinishInfos::new).getInfos();
         List<com.aiurt.modules.robot.taskfinish.wsdl.TaskFinishInfo> infos = Optional.ofNullable(taskFinishInfos)
                 .orElseGet(TaskFinishInfos::new).getInfos();
         List<TaskFinishInfo> list = new ArrayList<>();
@@ -71,6 +78,20 @@ public class TaskFinishInfoServiceImpl extends ServiceImpl<TaskFinishInfoMapper,
         baseMapper.delete(wrapper);
         // 批量更新任务模板信息
         saveOrUpdateBatch(list);
+    }
+
+    @Override
+    public IPage<TaskFinishInfoVO> queryPageList(Page<TaskFinishInfoVO> page, TaskFinishDTO taskFinishDTO) {
+        IPage<TaskFinishInfoVO> pageList = taskFinishInfoMapper.queryPageList(page, taskFinishDTO);
+        List<String> lineCodes = pageList.getRecords().stream().map(TaskFinishInfoVO::getLineCode).collect(Collectors.toList());
+        List<String> stationCodes = pageList.getRecords().stream().map(TaskFinishInfoVO::getStationCode).collect(Collectors.toList());
+        Map<String, String> lineNames = sysBaseApi.getLineNameByCode(lineCodes);
+        Map<String, String> stationNames = sysBaseApi.getStationNameByCode(stationCodes);
+        for (TaskFinishInfoVO infoVO : pageList.getRecords()) {
+            infoVO.setLineName(lineNames.get(infoVO.getLineCode()));
+            infoVO.setStationName(stationNames.get(infoVO.getStationCode()));
+        }
+        return pageList;
     }
 
 }
