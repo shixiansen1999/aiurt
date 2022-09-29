@@ -96,6 +96,20 @@ public class InspectionManager {
     }
 
     /**
+     * 翻译站点信息
+     *
+     * @param codeList code值
+     * @return
+     */
+    public String translateStationList(List<String> codeList) {
+        if (CollUtil.isEmpty(codeList)) {
+            return "";
+        }
+        List<String> nameList = inspectionManagerMapper.translateStationList(codeList);
+        return CollUtil.isNotEmpty(nameList) ? StrUtil.join("；", nameList) : "";
+    }
+
+    /**
      * 翻译站点信息，先在redis里面找，没有再去数据库里面找
      *
      * @param codeList code值

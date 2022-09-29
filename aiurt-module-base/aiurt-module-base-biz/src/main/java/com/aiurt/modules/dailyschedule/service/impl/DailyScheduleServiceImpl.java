@@ -5,6 +5,7 @@ import cn.hutool.core.util.StrUtil;
 import com.aiurt.modules.dailyschedule.entity.DailySchedule;
 import com.aiurt.modules.dailyschedule.mapper.DailyScheduleMapper;
 import com.aiurt.modules.dailyschedule.service.IDailyScheduleService;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.SecurityUtils;
@@ -13,10 +14,7 @@ import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -36,16 +34,13 @@ public class DailyScheduleServiceImpl extends ServiceImpl<DailyScheduleMapper, D
     private ISysBaseAPI sysBaseAPI;
 
     /**
-     *
-     * @param year 年
-     * @param month 月
-     * @param day 日
+     * @param addTime
      * @return
      */
     @Override
-    public List<DailySchedule> queryList(Integer year, Integer month, Integer day) {
+    public List<DailySchedule> queryList(Date addTime) {
         LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        List<DailySchedule> dailyScheduleList = dailyScheduleMapper.queryDailyScheduleList(year, month, day, loginUser.getUsername());
+        List<DailySchedule> dailyScheduleList = dailyScheduleMapper.queryDailyScheduleList(addTime,null,null,null, loginUser.getUsername());
         dealUserInfo(dailyScheduleList);
         return dailyScheduleList;
     }
@@ -59,13 +54,29 @@ public class DailyScheduleServiceImpl extends ServiceImpl<DailyScheduleMapper, D
     @Override
     public Map<String, List<DailySchedule>> queryDailyScheduleList(Integer year, Integer month) {
         LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        List<DailySchedule> dailyScheduleList = dailyScheduleMapper.queryDailyScheduleList(year, month, null, loginUser.getUsername());
+        List<DailySchedule> dailyScheduleList = dailyScheduleMapper.queryDailyScheduleList(null,year, month, null, loginUser.getUsername());
         if (CollUtil.isEmpty(dailyScheduleList)) {
             return new HashMap<>(16);
         }
         dealUserInfo(dailyScheduleList);
         Map<String, List<DailySchedule>> map = dailyScheduleList.stream().collect(Collectors.groupingBy(DailySchedule::getAddTimeAlias));
         return map;
+    }
+
+    /**
+     * 查询发送人是自己的数据
+     * @return
+     */
+    @Override
+    public List<DailySchedule> queryOwnlist(Date addTime) {
+        LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        String username = loginUser.getUsername();
+
+        LambdaQueryWrapper<DailySchedule> wrapper = new LambdaQueryWrapper();
+        wrapper.eq(DailySchedule::getAddTime, addTime).eq(DailySchedule::getAddedUserId, username);
+        List<DailySchedule> list = baseMapper.selectList(wrapper);
+        dealUserInfo(list);
+        return list;
     }
 
     /**
@@ -86,14 +97,15 @@ public class DailyScheduleServiceImpl extends ServiceImpl<DailyScheduleMapper, D
             if (StrUtil.isNotBlank(notifyUserId)) {
                 List<String> userIdList = StrUtil.split(notifyUserId, ',');
                 List<String> userNameList = userIdList.stream().map(id -> {
-                    LoginUser lo = sysBaseAPI.getUserByName(addedUserId);
+                    LoginUser lo = sysBaseAPI.getUserByName(id);
                     if (Objects.nonNull(lo)) {
                         return lo.getRealname();
                     } else {
                         return "";
                     }
+
                 }).collect(Collectors.toList());
-                dailySchedule.setAddedUserName(StrUtil.join(",", userNameList));
+                dailySchedule.setNotifyUserName(StrUtil.join(",", userNameList));
             }
         });
     }

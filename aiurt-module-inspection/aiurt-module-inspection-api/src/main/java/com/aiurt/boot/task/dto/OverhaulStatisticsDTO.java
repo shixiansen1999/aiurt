@@ -167,4 +167,27 @@ public class OverhaulStatisticsDTO {
     @ApiModelProperty("分页参数")
     private Integer pageSize;
 
+    /**
+     * 重写hashCode方法
+     * @return
+     */
+    @Override
+    public int hashCode(){
+        return userId.hashCode();
+    }
+
+    /**
+     * 重写equals方法
+     * @param o
+     * @return
+     */
+    @Override
+    public boolean equals(Object o){
+        if (o instanceof OverhaulStatisticsDTO ){
+            OverhaulStatisticsDTO overhaulStatisticsDTO = (OverhaulStatisticsDTO) o ;
+            return this.getUserId().equals(overhaulStatisticsDTO.getUserId());
+        }
+        return false;
+    }
+
 }

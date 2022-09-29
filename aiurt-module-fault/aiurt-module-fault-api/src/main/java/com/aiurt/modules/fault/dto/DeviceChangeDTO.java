@@ -22,6 +22,8 @@ public class DeviceChangeDTO implements Serializable {
     /**设备id*/
     @ApiModelProperty(value = "设备编码")
     private String deviceCode;
+    @ApiModelProperty(value = "设备编码")
+    private String deviceName;
 
     /**原备件编号*/
     @ApiModelProperty(value = "原组件编号")

@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.aiurt.modules.robot.mapper.PatrolAreaInfoMapper">
+
+    <select id="treelist" resultType="com.aiurt.modules.robot.dto.AreaPointDTO">
+     select area_id as id,area_name as name,pid,0 as isPoint from patrol_area_info
+        <where>
+            <if test="name!=null and name!=''">
+                area_name LIKE CONCAT('%', #{name}, '%')
+            </if>
+        </where>
+     union
+     select point_id as id,point_name as name,area_id as pid,1 as isPoint  from patrol_point_info
+        <where>
+            <if test="name!=null and name!=''">
+                point_name LIKE CONCAT('%', #{name}, '%')
+            </if>
+        </where>
+    </select>
+    <select id="queryAreaByDeviceCode" resultType="java.lang.Integer">
+    select count(*) from patrol_area_info pai where pai.device_code =#{deviceCode}
+    </select>
+    <select id="selectAreaList" resultType="com.aiurt.modules.robot.dto.AreaPointDTO">
+     select area_id as id,area_name as name,pid,0 as isPoint from patrol_area_info
+    </select>
+</mapper>

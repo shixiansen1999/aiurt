@@ -7,8 +7,6 @@ import com.aiurt.boot.report.model.PatrolReportModel;
 import com.aiurt.boot.report.model.dto.LineOrStationDTO;
 import com.aiurt.boot.report.model.dto.MonthDTO;
 import com.aiurt.boot.report.service.PatrolReportService;
-import com.aiurt.boot.screen.model.ScreenStatisticsTask;
-import com.aiurt.boot.standard.dto.PatrolStandardDto;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -127,7 +125,7 @@ public class PatrolReportController {
     @AutoLog(value = "统计报表-巡检报表导出", operateType = 6, operateTypeAlias = "导出")
     @ApiOperation(value = "统计报表-巡检报表导出", notes = "统计报表-巡检报表导出")
     @GetMapping(value = "/reportExport")
-    public ModelAndView export(HttpServletRequest request, PatrolReportModel reportReqVO) {
+    public ModelAndView reportExport(HttpServletRequest request, PatrolReportModel reportReqVO) {
         return reportService.reportExport(request, reportReqVO);
     }
     /**

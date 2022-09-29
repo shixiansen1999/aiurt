@@ -1,5 +1,6 @@
 package com.aiurt.modules.dailyschedule.mapper;
 
+import java.util.Date;
 import java.util.List;
 
 import com.aiurt.modules.dailyschedule.entity.DailySchedule;
@@ -23,6 +24,6 @@ public interface DailyScheduleMapper extends BaseMapper<DailySchedule> {
      * @param userId 用户账号
      * @return
      */
-    List<DailySchedule> queryDailyScheduleList(@Param("year")Integer year, @Param("month")Integer month,
+    List<DailySchedule> queryDailyScheduleList(@Param("addTime") Date addTime, @Param("year")Integer year, @Param("month")Integer month,
                                                @Param("day")Integer day, @Param("userId")String userId);
 }

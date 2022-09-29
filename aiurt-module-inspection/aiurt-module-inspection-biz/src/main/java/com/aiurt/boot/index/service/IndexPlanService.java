@@ -307,6 +307,7 @@ public class IndexPlanService {
                 dayTodoDTO.setInspectionNum(ObjectUtil.isEmpty(inspectionMap.get(currDateStr)) ? 0 : inspectionMap.get(currDateStr));
                 dayTodoDTO.setPatrolNum(ObjectUtil.isEmpty(patrolMap.get(currDateStr)) ? 0 : patrolMap.get(currDateStr));
                 dayTodoDTO.setDailyScheduleList(CollUtil.isEmpty(scheduleMap.get(currDateStr)) ? new ArrayList<>() : scheduleMap.get(currDateStr));
+                dayTodoDTO.setIsAgenda(CollUtil.isEmpty(scheduleMap.get(currDateStr)) ? 0 : 1);
                 result.add(dayTodoDTO);
             }
         }

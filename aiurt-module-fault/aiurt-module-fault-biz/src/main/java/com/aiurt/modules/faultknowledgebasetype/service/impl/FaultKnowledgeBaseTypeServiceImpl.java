@@ -119,6 +119,7 @@ public class FaultKnowledgeBaseTypeServiceImpl extends ServiceImpl<FaultKnowledg
                             selectTable.setLabel(f.getName());
                             selectTable.setValue(f.getCode());
                             selectTable.setPid(f.getPid());
+                            selectTable.setIsBaseType(true);
                             selectTable.setSystemCode(f.getSystemCode());
                             selectTable.setMajorCode(majorDTO.getMajorCode());
                             childrenTress.add(selectTable);

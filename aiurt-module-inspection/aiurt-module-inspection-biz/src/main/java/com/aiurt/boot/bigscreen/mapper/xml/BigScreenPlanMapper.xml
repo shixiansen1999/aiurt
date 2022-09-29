@@ -94,7 +94,7 @@
     SELECT
     sum(
     TIMESTAMPDIFF(
-    MINUTE,
+    SECOND,
     rt.begin_time,
     IF
     ( 1 = rt.is_receipt, rt.receipt_time, IF ( 1 = rt.is_confirm, rt.confirm_time, rt.submit_time ) )
@@ -117,7 +117,7 @@
     SELECT
     sum(
     TIMESTAMPDIFF(
-    MINUTE,
+    SECOND,
     rt.begin_time,
     IF
     ( 1 = rt.is_receipt, rt.receipt_time, IF ( 1 = rt.is_confirm, rt.confirm_time, rt.submit_time ) )

@@ -173,11 +173,11 @@ public interface RepairTaskMapper extends BaseMapper<RepairTask> {
     List<Date> getTaskInspectionTime(String code);
 
 
-    List<OverhaulStatisticsDTO> readTeamList(@Param("pageList") Page<OverhaulStatisticsDTO> pageList,@Param("condition") OverhaulStatisticsDTO condition);
+    List<OverhaulStatisticsDTOS> readTeamList(@Param("pageList") Page<OverhaulStatisticsDTOS> pageList,@Param("condition") OverhaulStatisticsDTOS condition);
 
-    List<OverhaulStatisticsDTO> readTeamLists(@Param("condition") OverhaulStatisticsDTO condition);
+    List<OverhaulStatisticsDTOS> readTeamLists(@Param("condition") OverhaulStatisticsDTOS condition);
 
-    List<OverhaulStatisticsDTO> readNameList(@Param("condition") OverhaulStatisticsDTO condition);
+    List<OverhaulStatisticsDTO> readNameList(@Param("condition") OverhaulStatisticsDTOS condition);
 
     List<OverhaulStatisticsDTO> readNameLists(@Param("condition") OverhaulStatisticsDTO condition);
 
@@ -186,4 +186,8 @@ public interface RepairTaskMapper extends BaseMapper<RepairTask> {
     String getOrgCode(String id);
 
     String getRealName(String id);
+
+    List<OverhaulStatisticsDTO> realNameList(@Param("condition") OverhaulStatisticsDTOS condition);
+
+    List<OverhaulStatisticsDTOS> selectDepart(@Param("id") String id);
 }

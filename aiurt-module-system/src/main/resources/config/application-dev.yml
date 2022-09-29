@@ -404,4 +404,4 @@ aiurt:
 # 机器人wsdl服务地址
 robot:
   wsdl:
-    address: http://2.0.1.16:11456?wsdl
+    address: http://172.16.4.253:11456?wsdl

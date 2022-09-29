@@ -34,10 +34,14 @@ import javax.xml.bind.annotation.XmlType;
 })
 public class TaskInfo {
 
-    // 任务id
+    /**
+     * 任务id
+     */
     @XmlElement(name = "TaskId", required = true)
     protected String taskId;
-    // 操作是否成功0成功，1失败
+    /**
+     * 操作是否成功0成功，1失败
+     */
     @XmlElement(name = "Result")
     protected int result;
 

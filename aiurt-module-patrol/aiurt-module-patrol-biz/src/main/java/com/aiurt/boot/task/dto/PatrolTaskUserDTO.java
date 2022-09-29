@@ -14,6 +14,9 @@ import java.util.List;
  */
 @Data
 public class PatrolTaskUserDTO {
+    @Excel(name = "组织机构编号", width = 15)
+    @ApiModelProperty(value = "组织机构编号")
+    private String orgCode;
     @Excel(name = "组织机构名称", width = 15)
     @ApiModelProperty(value = "组织机构名称")
     private String organizationName;

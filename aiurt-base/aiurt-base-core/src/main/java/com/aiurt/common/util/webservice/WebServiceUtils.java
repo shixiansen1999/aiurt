@@ -20,11 +20,11 @@ public class WebServiceUtils {
     /**
      * 连接超时时长
      */
-    public static final int CXF_CLIENT_CONNECT_TIMEOUT = 30 * 1000;
+    public static final int CXF_CLIENT_CONNECT_TIMEOUT = 5 * 1000;
     /**
      * 请求超时时长
      */
-    public static final int CXF_CLIENT_RECEIVE_TIMEOUT = 180 * 1000;
+    public static final int CXF_CLIENT_RECEIVE_TIMEOUT = 5 * 1000;
 
 
     /**

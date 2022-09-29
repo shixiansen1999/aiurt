@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.aiurt.modules.robot.mapper.TaskPathInfoMapper">
+    <select id="queryPageList" resultType="com.aiurt.modules.robot.dto.TaskPathInfoDTO">
+    SELECT
+	tpi.task_path_id,
+	tpi.task_path_name,
+	tpi.task_path_type,
+	t1.robotName,
+	tpi.create_time
+   FROM
+	task_path_info tpi
+	LEFT JOIN (
+	SELECT
+		tpr.task_path_id as id,
+		GROUP_CONCAT( DISTINCT ri.robot_name SEPARATOR '；' ) AS robotName
+	FROM
+		task_point_rel tpr
+		LEFT JOIN patrol_point_info ppi ON ppi.point_id = tpr.point_id
+		LEFT JOIN robot_info ri ON ri.robot_id = ppi.robot_id
+	<where>
+        <if test="taskPathInfo.robotId!=null and taskPathInfo.robotId!=''">
+            ri.robot_id = #{taskPathInfo.robotId}
+        </if>
+    </where>
+	GROUP BY
+	tpr.task_path_id
+	) as t1 ON t1.id = tpi.task_path_id
+    </select>
+	<select id="queryRobotIpByTaskPathId" resultType="java.lang.String">
+	SELECT DISTINCT ri.robot_ip
+    FROM  task_point_rel tpr
+	LEFT JOIN patrol_point_info ppi ON ppi.point_id = tpr.point_id
+	LEFT JOIN robot_info ri ON ri.robot_id = ppi.robot_id
+	where tpr.task_path_id = #{taskPathId} and ri.robot_ip is not null
+	</select>
+</mapper>

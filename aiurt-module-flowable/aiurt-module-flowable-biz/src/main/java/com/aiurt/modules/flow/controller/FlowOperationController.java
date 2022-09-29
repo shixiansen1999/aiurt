@@ -1,10 +1,14 @@
 package com.aiurt.modules.flow.controller;
 
+import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.aspect.annotation.DisableDataFilter;
+import com.aiurt.modules.constants.FlowConstant;
 import com.aiurt.modules.flow.dto.*;
 import com.aiurt.modules.flow.entity.ActCustomTaskComment;
 import com.aiurt.modules.flow.service.FlowApiService;
 import com.aiurt.modules.flow.service.IActCustomTaskCommentService;
+import com.aiurt.modules.modeler.dto.TaskInfoVo;
+import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -71,19 +75,22 @@ public class FlowOperationController {
     @GetMapping("/viewInitialTaskInfo")
     @ApiOperation(value = "获取开始节点之后的第一个任务节点的数据", notes = "获取开始节点之后的第一个任务节点的数据")
     public Result<TaskInfoDTO> viewInitialTaskInfo(@RequestParam String processDefinitionKey) {
-//        ResponseResult<FlowEntry> flowEntryResult = flowOperationHelper.verifyAndGetFlowEntry(processDefinitionKey);
-//        if (!flowEntryResult.isSuccess()) {
-//            return ResponseResult.errorFrom(flowEntryResult);
-//        }
-//        FlowEntryPublish flowEntryPublish = flowEntryResult.getData().getMainFlowEntryPublish();
-//        String initTaskInfo = flowEntryPublish.getInitTaskInfo();
-//        TaskInfoVo taskInfo = StrUtil.isBlank(initTaskInfo)
-//                ? null : JSON.parseObject(initTaskInfo, TaskInfoVo.class);
-//        if (taskInfo != null) {
-//            String loginName = TokenData.takeFromRequest().getLoginName();
-//            taskInfo.setAssignedMe(StrUtil.equalsAny(
-//                    taskInfo.getAssignee(), loginName, FlowConstant.START_USER_NAME_VAR));
-//        }
+
+        // 招到主版本信息
+        // 查询首页的页面， 以及首页的按钮
+       /* ResponseResult<FlowEntry> flowEntryResult = flowOperationHelper.verifyAndGetFlowEntry(processDefinitionKey);
+        if (!flowEntryResult.isSuccess()) {
+            return ResponseResult.errorFrom(flowEntryResult);
+        }
+        FlowEntryPublish flowEntryPublish = flowEntryResult.getData().getMainFlowEntryPublish();
+        String initTaskInfo = flowEntryPublish.getInitTaskInfo();
+        TaskInfoVo taskInfo = StrUtil.isBlank(initTaskInfo)
+                ? null : JSON.parseObject(initTaskInfo, TaskInfoVo.class);
+        if (taskInfo != null) {
+            String loginName = TokenData.takeFromRequest().getLoginName();
+            taskInfo.setAssignedMe(StrUtil.equalsAny(
+                    taskInfo.getAssignee(), loginName, FlowConstant.START_USER_NAME_VAR));
+        }*/
         return Result.OK(new TaskInfoDTO());
     }
 

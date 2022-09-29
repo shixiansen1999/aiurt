@@ -120,6 +120,10 @@ public class SparePartOutOrderServiceImpl extends ServiceImpl<SparePartOutOrderM
     @Override
     public List<SparePartOutOrder> querySparePartOutOrder(String materialCode) {
 
+        if (StrUtil.isBlank(materialCode)) {
+            return Collections.emptyList();
+        }
+
         // 获取当前登录人所属机构， 根据所属机构擦查询管理二级管理仓库
         LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
 

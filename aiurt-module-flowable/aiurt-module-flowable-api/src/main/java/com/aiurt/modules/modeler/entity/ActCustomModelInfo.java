@@ -113,8 +113,8 @@ public class ActCustomModelInfo implements Serializable {
     @ApiModelProperty(value = "排序")
     private Integer orderNo;
 	/**创建时间*/
-	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
-    @DateTimeFormat(pattern="yyyy-MM-dd")
+	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
+    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
     @ApiModelProperty(value = "创建时间")
     private Date createTime;
 	/**创建人*/
@@ -122,8 +122,8 @@ public class ActCustomModelInfo implements Serializable {
     @ApiModelProperty(value = "创建人")
     private String creator;
 	/**更新时间*/
-	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
-    @DateTimeFormat(pattern="yyyy-MM-dd")
+	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
+    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
     @ApiModelProperty(value = "更新时间")
     private Date updateTime;
 	/**更新人*/
@@ -146,6 +146,8 @@ public class ActCustomModelInfo implements Serializable {
     private String defaultFormId;
 
 	@ApiModelProperty(value = "部署时间")
+    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
+    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
 	private Date deployTime;
 
 	//private String main

@@ -1,15 +1,13 @@
 package com.aiurt.modules.faultknowledgebase.mapper;
 
-import java.util.List;
-
 import com.aiurt.common.aspect.annotation.EnableDataPerm;
 import com.aiurt.modules.faultknowledgebase.dto.DeviceAssemblyDTO;
-import com.aiurt.modules.faultknowledgebase.dto.DeviceTypeDTO;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import org.apache.ibatis.annotations.Param;
 import com.aiurt.modules.faultknowledgebase.entity.FaultKnowledgeBase;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import org.springframework.web.bind.annotation.RequestParam;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import org.apache.ibatis.annotations.Param;
+
+import java.util.List;
 
 /**
  * @Description: 故障知识库
@@ -42,4 +40,5 @@ public interface FaultKnowledgeBaseMapper extends BaseMapper<FaultKnowledgeBase>
     List<DeviceAssemblyDTO> getDeviceAssembly(@Param("deviceTypeCode")String deviceTypeCode);
 
 
+    List<DeviceAssemblyDTO> getAllDeviceAssembly(@Param("collect")List<String> collect);
 }

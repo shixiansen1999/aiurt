@@ -131,11 +131,13 @@ public class FaultRepairRecordServiceImpl extends ServiceImpl<FaultRepairRecordM
                             .newSparePartName(sparepart.getNewSparePartName())
                             .oldSparePartCode(sparepart.getOldSparePartCode())
                             .oldSparePartName(sparepart.getOldSparePartName())
-                            .deviceCode(sparepart.getDeviceName())
+                            .deviceCode(sparepart.getDeviceCode())
                             .specifications(sparepart.getSpecifications())
                             .newSparePartNum(sparepart.getNewSparePartNum())
                             .id(sparepart.getId())
                             .repairRecordId(sparepart.getRepairRecordId())
+                            .outOrderId(sparepart.getOutOrderId())
+                            .deviceName(sparepart.getDeviceName())
                             .build();
                     return build;
                 }).collect(Collectors.toList());

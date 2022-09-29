@@ -1,22 +1,22 @@
 package com.aiurt.modules.position.entity;
 
-import java.io.Serializable;
-import java.util.Date;
-import java.util.List;
-
 import com.aiurt.common.aspect.annotation.Dict;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import lombok.Data;
 import com.fasterxml.jackson.annotation.JsonFormat;
-import org.springframework.format.annotation.DateTimeFormat;
-import org.jeecgframework.poi.excel.annotation.Excel;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
+import org.jeecgframework.poi.excel.annotation.Excel;
+import org.springframework.format.annotation.DateTimeFormat;
+
+import java.io.Serializable;
+import java.util.Date;
+import java.util.List;
 
 /**
  * @Description: cs_station_position
@@ -78,6 +78,11 @@ public class CsStationPosition implements Serializable {
 	@Excel(name = "位置编码", width = 15)
     @ApiModelProperty(value = "位置编码")
     private String positionCode;
+    /**位置电话*/
+    @Excel(name = "位置电话", width = 15)
+    @ApiModelProperty(value = "位置电话")
+    @TableField(exist = false)
+    private String phoneNum;
 	/**位置类型(9:室/10:支柱)*/
 	@Excel(name = "位置类型(9:室/10:支柱)", width = 15)
     @ApiModelProperty(value = "位置类型(9:室/10:支柱)")

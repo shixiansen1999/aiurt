@@ -371,7 +371,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
                 throw new AiurtBootException("小主，该巡检任务不在您的范围之内哦");
             }
             updateWrapper.set(PatrolTask::getStatus, 4)
-                    .set(PatrolTask::getBeginTime,new Date())
+                    .set(PatrolTask::getBeginTime, new Date())
                     .eq(PatrolTask::getId, patrolTaskDTO.getId());
             update(updateWrapper);
         }
@@ -406,11 +406,19 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
             PatrolTaskUserDTO userDTO = new PatrolTaskUserDTO();
             String organizationName = patrolTaskMapper.getOrgName(code);
             List<PatrolTaskUserContentDTO> user = patrolTaskMapper.getUser(code);
+            userDTO.setOrgCode(code);
             userDTO.setOrganizationName(organizationName);
             userDTO.setUserList(user);
             arrayList.add(userDTO);
         }
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+
+        if (ObjectUtil.isEmpty(sysUser)) {
+            throw new AiurtBootException("检测为未登录状态，请登录系统后操作！");
+        }
+        // 过滤当前用户所在的组织机构数据
+        arrayList = arrayList.stream().filter(l -> l.getOrgCode().equals(sysUser.getOrgCode())).collect(Collectors.toList());
+
         PatrolTask patrolTask = patrolTaskMapper.selectById(orgCoed.getTaskId());
         if (PatrolConstant.TASK_RETURNED.equals(patrolTask.getStatus())) {
             return arrayList;
@@ -743,13 +751,14 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
 
     @Override
     public List<PatrolUserInfoDTO> getAssignee(List<String> list) {
-
+        LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        if (ObjectUtil.isEmpty(loginUser)) {
+            throw new AiurtBootException("检测到未登录系统，请登录后操作！");
+        }
         if (CollectionUtil.isEmpty(list)) {
             throw new AiurtBootException("任务编号的集合对象为空！");
         }
         int size = list.size();
-        List<PatrolUserInfoDTO> userInfo = patrolTaskOrganizationMapper.getUserListByTaskCode(list.get(0));
-
         // 获取批量指派时的用户 需要相同的组织机构
         if (size > 1) {
             List<String> orgCode = patrolTaskOrganizationMapper.getOrgCode(list.get(0));
@@ -764,6 +773,9 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
                 }
             }
         }
+        List<PatrolUserInfoDTO> userInfo = patrolTaskOrganizationMapper.getUserListByTaskCode(list.get(0));
+        // 过滤当前登录人所在的组织机构
+        userInfo = userInfo.stream().filter(l -> l.getOrgCode().equals(loginUser.getOrgCode())).collect(Collectors.toList());
         return userInfo;
     }
 

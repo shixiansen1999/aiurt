@@ -28,7 +28,9 @@ import com.aiurt.modules.message.entity.SysMessageTemplate;
 import com.aiurt.modules.message.handle.impl.EmailSendMsgHandle;
 import com.aiurt.modules.message.service.ISysMessageTemplateService;
 import com.aiurt.modules.message.websocket.WebSocket;
+import com.aiurt.modules.position.entity.CsLine;
 import com.aiurt.modules.position.entity.CsStation;
+import com.aiurt.modules.position.mapper.CsLineMapper;
 import com.aiurt.modules.position.mapper.CsStationMapper;
 import com.aiurt.modules.quartz.entity.QuartzJob;
 import com.aiurt.modules.quartz.service.IQuartzJobService;
@@ -40,17 +42,14 @@ import com.aiurt.modules.workarea.mapper.WorkAreaMapper;
 import com.aiurt.modules.workarea.service.IWorkAreaService;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.google.common.base.Joiner;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.dto.OnlineAuthDTO;
@@ -161,6 +160,8 @@ public class SysBaseApiImpl implements ISysBaseAPI {
 
     @Autowired
     private ICsMajorService majorService;
+    @Autowired
+    private CsLineMapper lineMapper;
 
 
     @Override
@@ -1370,7 +1371,7 @@ public class SysBaseApiImpl implements ISysBaseAPI {
     }
 
     @Override
-    public List<DeviceTypeTable> selectList(String majorCode, String systemCode, List<String> deviceCode) {
+    public List<DeviceTypeTable> selectList(String majorCode, String systemCode, String deviceCode) {
 
         QueryWrapper<DeviceType> deviceTypeQueryWrapper = new QueryWrapper<DeviceType>();
         deviceTypeQueryWrapper.eq("del_flag", CommonConstant.DEL_FLAG_0);
@@ -1384,13 +1385,11 @@ public class SysBaseApiImpl implements ISysBaseAPI {
 
         //所选故障的设备类型集合
         ArrayList<String> arrayList = new ArrayList<>();
-        if (CollectionUtils.isNotEmpty(deviceCode)) {
-            for (int i = 0; i < deviceCode.size(); i++) {
-                String s = deviceCode.get(i);
-                String[] split = s.split(",");
-                List<String> deviceCodes = Arrays.asList(split);
-                arrayList.addAll(deviceCodes);
-            }
+        if (StrUtil.isNotEmpty(deviceCode)) {
+            String[] split = deviceCode.split(",");
+            List<String> deviceCodes = Arrays.asList(split);
+            arrayList.addAll(deviceCodes);
+
             LambdaQueryWrapper<Device> queryWrapper = new LambdaQueryWrapper<>();
             List<Device> devices = deviceMapper.selectList(queryWrapper.in(Device::getCode, arrayList));
             List<String> collect = devices.stream().map(Device::getDeviceTypeCode).collect(Collectors.toList());
@@ -1651,12 +1650,38 @@ public class SysBaseApiImpl implements ISysBaseAPI {
 
     @Override
     public JSONObject getCsMajorByCode(String majorCode) {
-        LambdaQueryWrapper<CsMajor> wrapper =  new LambdaQueryWrapper<>();
+        LambdaQueryWrapper<CsMajor> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(CsMajor::getMajorCode, majorCode).last("limit 1");
         CsMajor csMajor = majorService.getBaseMapper().selectOne(wrapper);
         if (Objects.isNull(csMajor)) {
             return null;
         }
         return JSONObject.parseObject(JSONObject.toJSONString(csMajor));
+    }
+
+    @Override
+    public Map<String, String> getLineNameByCode(List<String> lineCodes) {
+        LambdaQueryWrapper<CsLine> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(CsLine::getDelFlag, CommonConstant.DEL_FLAG_0);
+        if (CollectionUtil.isNotEmpty(lineCodes)) {
+            wrapper.in(CsLine::getLineCode, lineCodes);
+        }
+        List<CsLine> lines = lineMapper.selectList(wrapper);
+        Map<String, String> lineMap = lines.stream()
+                .collect(Collectors.toMap(k -> k.getLineCode(), v -> v.getLineName(), (a, b) -> a));
+        return lineMap;
+    }
+
+    @Override
+    public Map<String, String> getStationNameByCode(List<String> stationCodes) {
+        LambdaQueryWrapper<CsStation> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(CsStation::getDelFlag, CommonConstant.DEL_FLAG_0);
+        if (CollectionUtil.isNotEmpty(stationCodes)) {
+            wrapper.in(CsStation::getStationCode, stationCodes);
+        }
+        List<CsStation> stations = csStationMapper.selectList(wrapper);
+        Map<String, String> stationMap = stations.stream()
+                .collect(Collectors.toMap(k -> k.getStationCode(), v -> v.getStationName(), (a, b) -> a));
+        return stationMap;
     }
 }

@@ -453,7 +453,7 @@ public interface ISysBaseAPI extends CommonAPI {
      * @param deviceCode
      * @return
      */
-    List<DeviceTypeTable> selectList(String majorCode, String systemCode, List<String> deviceCode);
+    List<DeviceTypeTable> selectList(String majorCode, String systemCode, String deviceCode);
 
     /**
      * 根据用户账号 查询用户信息
@@ -525,6 +525,7 @@ public interface ISysBaseAPI extends CommonAPI {
      * @return
      */
     List<String> getTeamBylineAndMajor(String lineCode);
+
     /**
      * 通过线路和专业过滤出班组详细信息
      *
@@ -535,6 +536,7 @@ public interface ISysBaseAPI extends CommonAPI {
 
     /**
      * 根据用户id，作为管理负责人条件,获取部门信息
+     *
      * @param userId
      * @return
      */
@@ -542,4 +544,20 @@ public interface ISysBaseAPI extends CommonAPI {
 
 
     JSONObject getCsMajorByCode(String majorCode);
+
+    /**
+     * 根据线路编号获取线路名称,线路编号:线路名称
+     *
+     * @param lineCodes
+     * @return
+     */
+    Map<String, String> getLineNameByCode(List<String> lineCodes);
+
+    /**
+     * 根据站点编号获取线路名称,站点编号:站点名称
+     *
+     * @param stationCodes
+     * @return
+     */
+    Map<String, String> getStationNameByCode(List<String> stationCodes);
 }

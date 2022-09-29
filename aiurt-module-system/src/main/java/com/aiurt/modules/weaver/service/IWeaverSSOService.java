@@ -7,4 +7,6 @@ import com.aiurt.modules.weaver.service.entity.WeaverSsoRestultDTO;
  */
 public interface IWeaverSSOService {
     public WeaverSsoRestultDTO getToken();
+
+    public String ssoToken();
 }

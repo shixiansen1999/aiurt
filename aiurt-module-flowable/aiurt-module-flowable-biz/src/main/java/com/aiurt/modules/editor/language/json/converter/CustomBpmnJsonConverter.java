@@ -11,5 +11,6 @@ public class CustomBpmnJsonConverter extends BpmnJsonConverter {
         CustomUserTaskJsonConverter.customFillTypes(convertersToBpmnMap, convertersToJsonMap);
         CustomCallActivityJsonConverter.customFillTypes(convertersToBpmnMap, convertersToJsonMap);
         CustomSubProcessJsonConverter.customFillTypes(convertersToBpmnMap, convertersToJsonMap);
+        CustomSequenceFlowJsonConverter.fillTypes(convertersToBpmnMap, convertersToJsonMap);
     }
 }
