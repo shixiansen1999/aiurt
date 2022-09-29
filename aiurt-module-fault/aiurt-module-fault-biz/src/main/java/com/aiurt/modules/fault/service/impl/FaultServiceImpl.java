@@ -740,13 +740,15 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
             sparePartService.saveOrUpdateBatch(sparePartList);
         }
 
+        LambdaQueryWrapper<DeviceChangeSparePart> dataWrapper = new LambdaQueryWrapper<>();
+        dataWrapper.eq(DeviceChangeSparePart::getCode, faultCode);
+        List<DeviceChangeSparePart> oneSourceList = sparePartService.list(dataWrapper);
+
         // 不能简单删除， 对比，修改出库的实际使用数量
         List<DeviceChangeDTO> deviceChangeList = repairRecordDTO.getDeviceChangeList();
         Map<String, Integer> updateMap = new HashMap<>();
         if (CollectionUtil.isNotEmpty(deviceChangeList)) {
-            LambdaQueryWrapper<DeviceChangeSparePart> dataWrapper = new LambdaQueryWrapper<>();
-            dataWrapper.eq(DeviceChangeSparePart::getCode, faultCode);
-            List<DeviceChangeSparePart> oneSourceList = sparePartService.list(dataWrapper);
+
             // key-> 主键id_出库单id_物资编码， value： 使用的数量
             Map<String, Integer> map = oneSourceList.stream().collect(Collectors.toMap(sparepart -> {
                 return String.format("%s_%s_%s", sparepart.getId(), sparepart.getOutOrderId(), sparepart.getNewSparePartCode());
@@ -815,9 +817,22 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
             }
             // 更新备件更换记录
             sparePartService.saveOrUpdateBatch(sparePartList);
-            // 更新备件出库未使用的数量
-            sparePartBaseApi.updateSparePartOutOrder(updateMap);
+            //
+        }else {
+            oneSourceList.stream().forEach(deviceChangeSparePart -> {
+                String id = deviceChangeSparePart.getOutOrderId();
+                Integer newSparePartNum = deviceChangeSparePart.getNewSparePartNum();
+                Integer mapNum = updateMap.getOrDefault(id, 0);
+                if (Objects.nonNull(newSparePartNum )) {
+                    updateMap.put(id, mapNum+(0-newSparePartNum));
+                }
+            });
+            // s
+            sparePartService.remove(dataWrapper);
         }
+
+        // 更新备件出库未使用的数量
+        sparePartBaseApi.updateSparePartOutOrder(updateMap);
 
         one.setArriveTime(repairRecordDTO.getArriveTime());
         one.setWorkTicketCode(repairRecordDTO.getWorkTickCode());

@@ -131,9 +131,9 @@
         order by spare_part_out_order.create_time desc
 
     </select>
-    
-    
+
+
     <update id="updateSparePartOutOrderUnused">
-        update spare_part_out_order set unused = (unused + #{num}) where id = #{id}
+        update spare_part_out_order set unused = (unused - #{num}) where id = #{id}
     </update>
 </mapper>
