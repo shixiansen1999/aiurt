@@ -635,7 +635,7 @@
         count( c.id AND c.fault_mode_code = 0 OR NOT NULL ) AS selfInspectionNum,
         count( c.id AND c.end_time is NOT NULL and c.status = 12 OR not null ) AS resolvedNum,
         count( c.id AND  c.status &lt;> 12 OR not NULL ) AS unResolvedNum,
-        (SELECT COUNT(id) FROM fault WHERE a.system_code = sub_system_code and `status` >0 AND DATE_FORMAT(happen_time, '%Y-%m') =  DATE_FORMAT( #{endTime}, '%Y-%m')
+        (SELECT COUNT(id) FROM fault WHERE a.system_code = sub_system_code and `status` >2 AND DATE_FORMAT(happen_time, '%Y-%m') =  DATE_FORMAT( #{endTime}, '%Y-%m')
         <if test="lineCode != null">
             AND line_code = #{lineCode}
         </if>
@@ -645,7 +645,7 @@
                 #{item}
             </foreach>
         </if>) as monthNum,
-        (SELECT COUNT(id) FROM fault WHERE a.system_code = sub_system_code and `status` >0 AND DATE_FORMAT(happen_time, '%Y-%m') =  DATE_FORMAT(date_sub( #{endTime}, interval 1 month), '%Y-%m')
+        (SELECT COUNT(id) FROM fault WHERE a.system_code = sub_system_code and `status` >2 AND DATE_FORMAT(happen_time, '%Y-%m') =  DATE_FORMAT(date_sub( #{endTime}, interval 1 month), '%Y-%m')
         <if test="lineCode != null">
             AND line_code = #{lineCode}
         </if>
@@ -655,7 +655,7 @@
                 #{item}
             </foreach>
         </if>) as lastMonthNum,
-        (SELECT COUNT(id) FROM fault WHERE a.system_code = sub_system_code and `status` >0 AND DATE_FORMAT(happen_time, '%Y') =  DATE_FORMAT(curdate(), '%Y')
+        (SELECT COUNT(id) FROM fault WHERE a.system_code = sub_system_code and `status` >2 AND DATE_FORMAT(happen_time, '%Y') =  DATE_FORMAT(curdate(), '%Y')
         <if test="lineCode != null">
             AND line_code = #{lineCode}
         </if>
@@ -676,7 +676,7 @@
             </foreach>
         </if>) as lastYearNum
         FROM cs_subsystem a
-        LEFT JOIN fault c ON a.system_code = c.sub_system_code and c.`status` >0
+        LEFT JOIN fault c ON a.system_code = c.sub_system_code and c.`status` > 2
         <if test="startTime != null and endTime !=null ">
             and  DATE_FORMAT( c.happen_time, '%Y-%m-%d' ) BETWEEN DATE_FORMAT( #{startTime}, '%Y-%m-%d' )
             AND DATE_FORMAT( #{endTime}, '%Y-%m-%d' )
@@ -913,7 +913,7 @@ GROUP BY
                COUNT(c.id and  DATE_FORMAT(c.happen_time, '%m') ='12' or not NULL ) as december
         FROM cs_subsystem a
                  LEFT JOIN fault c ON a.system_code = c.sub_system_code
-            and c.`status` >0  AND DATE_ADD(c.happen_time,INTERVAL 1 YEAR) > NOW()
+            and c.`status` >2  AND DATE_ADD(c.happen_time,INTERVAL 1 YEAR) > NOW()
         <if test="lineCode != null">
             AND c.line_code = #{lineCode}
         </if>
@@ -937,7 +937,7 @@ GROUP BY
             count( c.id AND c.fault_mode_code = 0 OR NOT NULL ) AS selfInspectionNum,
             count( c.id AND c.end_time is NOT NULL and c.status = 12 OR not null ) AS resolvedNum,
             count( c.id AND  c.status &lt;> 12 OR not NULL ) AS unResolvedNum,
-            (SELECT COUNT(id) FROM fault WHERE a.org_code = sys_org_code and `status` >0 AND DATE_FORMAT(happen_time, '%Y-%m') =  DATE_FORMAT( #{startTime}, '%Y-%m')
+            (SELECT COUNT(id) FROM fault WHERE a.org_code = sys_org_code and `status` >2 AND DATE_FORMAT(happen_time, '%Y-%m') =  DATE_FORMAT( #{startTime}, '%Y-%m')
         <if test="lineCode != null">
         AND line_code = #{lineCode}
     </if>
@@ -953,7 +953,7 @@ GROUP BY
                 #{item}
             </foreach>
         </if>) as monthNum,
-            (SELECT COUNT(id) FROM fault WHERE a.org_code = sys_org_code and `status` >0 AND DATE_FORMAT(happen_time, '%Y-%m') =  DATE_FORMAT(date_sub( #{endTime}, interval 1 month), '%Y-%m')
+            (SELECT COUNT(id) FROM fault WHERE a.org_code = sys_org_code and `status` >2 AND DATE_FORMAT(happen_time, '%Y-%m') =  DATE_FORMAT(date_sub( #{endTime}, interval 1 month), '%Y-%m')
         <if test="lineCode != null">
             AND line_code = #{lineCode}
         </if>
@@ -969,7 +969,7 @@ GROUP BY
                 #{item}
             </foreach>
         </if>) as lastMonthNum,
-            (SELECT COUNT(id) FROM fault WHERE a.org_code = sys_org_code and `status` >0 AND DATE_FORMAT(happen_time, '%Y') =  DATE_FORMAT(curdate(), '%Y')
+            (SELECT COUNT(id) FROM fault WHERE a.org_code = sys_org_code and `status` >2 AND DATE_FORMAT(happen_time, '%Y') =  DATE_FORMAT(curdate(), '%Y')
         <if test="lineCode != null">
             AND line_code = #{lineCode}
         </if>
@@ -985,7 +985,7 @@ GROUP BY
                 #{item}
             </foreach>
         </if>) as yearNum,
-            (SELECT COUNT(id) FROM fault WHERE a.org_code = sys_org_code and `status` >0 AND DATE_FORMAT(happen_time, '%Y') =  DATE_FORMAT(date_sub(curdate(), interval 1 year), '%Y')
+            (SELECT COUNT(id) FROM fault WHERE a.org_code = sys_org_code and `status` >2 AND DATE_FORMAT(happen_time, '%Y') =  DATE_FORMAT(date_sub(curdate(), interval 1 year), '%Y')
         <if test="lineCode != null">
             AND line_code = #{lineCode}
         </if>
@@ -1002,7 +1002,7 @@ GROUP BY
             </foreach>
         </if>) as lastYearNum
         FROM sys_depart a
-                 LEFT JOIN fault c ON a.org_code = c.sys_org_code and c.`status` >0
+                 LEFT JOIN fault c ON a.org_code = c.sys_org_code and c.`status` >2
         <if test="startTime != null and endTime !=null ">
             and  DATE_FORMAT( c.happen_time, '%Y-%m-%d' ) BETWEEN DATE_FORMAT( #{startTime}, '%Y-%m-%d' )
             AND DATE_FORMAT( #{endTime}, '%Y-%m-%d' )
@@ -1048,7 +1048,7 @@ GROUP BY
         COUNT(c.id and  DATE_FORMAT(c.happen_time, '%m') ='12' or not NULL ) as december
         FROM sys_depart a
         LEFT JOIN fault c ON a.org_code = c.sys_org_code
-        and c.`status` >0  AND DATE_ADD(c.happen_time,INTERVAL 1 YEAR) > NOW()
+        and c.`status` >2  AND DATE_ADD(c.happen_time,INTERVAL 1 YEAR) > NOW()
         <if test="lineCode != null">
             AND c.line_code = #{lineCode}
         </if>
