@@ -42,7 +42,14 @@ public class CsStationPositionServiceImpl extends ServiceImpl<CsStationPositionM
      */
     @Override
     public List<CsStationPosition> readAll(Page<CsStationPosition> page, CsStationPosition csStationPosition){
-        return csStationPositionMapper.queryCsStationPositionAll(page,csStationPosition);
+        List<CsStationPosition> csStationPositions = csStationPositionMapper.queryCsStationPositionAll(page, csStationPosition);
+        for (CsStationPosition stationPosition : csStationPositions) {
+            if (stationPosition.getLevel().equals(2)) {
+                CsStationPosition result = this.getById(stationPosition.getId());
+                stationPosition.setPositionPhoneNum(result.getPositionPhoneNum());
+            }
+        }
+        return csStationPositions;
     }
     /**
      * 添加
