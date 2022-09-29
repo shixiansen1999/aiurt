@@ -57,4 +57,11 @@
         </where>
         order by level,sort
     </select>
+
+    <select id="getById" resultType="com.aiurt.modules.position.entity.CsStationPosition">
+         SELECT
+                id,phone_num
+        FROM
+        cs_station where del_flag = 0 and id=#{id}
+    </select>
 </mapper>

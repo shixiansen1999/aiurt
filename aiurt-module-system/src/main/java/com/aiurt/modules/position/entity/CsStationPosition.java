@@ -81,7 +81,8 @@ public class CsStationPosition implements Serializable {
     /**位置电话*/
     @Excel(name = "位置电话", width = 15)
     @ApiModelProperty(value = "位置电话")
-    private String positionPhoneNum;
+    @TableField(exist = false)
+    private String phoneNum;
 	/**位置类型(9:室/10:支柱)*/
 	@Excel(name = "位置类型(9:室/10:支柱)", width = 15)
     @ApiModelProperty(value = "位置类型(9:室/10:支柱)")
