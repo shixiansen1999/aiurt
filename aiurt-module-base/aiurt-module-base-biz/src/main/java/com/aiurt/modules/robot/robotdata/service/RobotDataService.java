@@ -1,9 +1,7 @@
 package com.aiurt.modules.robot.robotdata.service;
 
 
-import com.aiurt.modules.robot.robotdata.wsdl.ConnectInfos;
-import com.aiurt.modules.robot.robotdata.wsdl.RobotGasInfos;
-import com.aiurt.modules.robot.robotdata.wsdl.RobotInfos;
+import com.aiurt.modules.robot.robotdata.wsdl.*;
 
 /**
  * @author wgp
@@ -21,6 +19,7 @@ public interface RobotDataService {
 
     /**
      * 获取机器人台账信息
+     *
      * @return
      */
     RobotInfos getRobotInfo();
@@ -44,8 +43,50 @@ public interface RobotDataService {
 
     /**
      * 机器人监测气体
+     *
      * @param needAll 是否需要所有机器人数据 true是，false否
      * @return RobotGasInfo数组
      */
     RobotGasInfos getRobotGasInfo(boolean needAll);
+
+    /**
+     * 机器人高清相机控制
+     *
+     * @param type
+     * @return
+     */
+    int robotCameraControl(CameraControlType type);
+
+    /**
+     * 机器人高清相机补光灯控制
+     *
+     * @param type
+     * @return
+     */
+    int robotLightControl(LightControlType type);
+
+    /**
+     * 机器人高清相机雨刷控制
+     *
+     * @param type
+     * @return
+     */
+    int getTaskFinishInfoByTime(WiperControlType type);
+
+    /**
+     * 机器人红外相机控制
+     *
+     * @param type
+     * @return
+     */
+    int robotFlirControl(FilrControlType type);
+
+    /**
+     * 机器人云台控制
+     *
+     * @param type
+     * @return
+     */
+    int robotYuntaiControl(YuntaiControlType type);
+
 }

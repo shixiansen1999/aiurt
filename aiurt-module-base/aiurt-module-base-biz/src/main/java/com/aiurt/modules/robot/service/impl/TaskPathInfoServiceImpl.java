@@ -12,6 +12,7 @@ import com.aiurt.modules.robot.robotdata.service.RobotDataService;
 import com.aiurt.modules.robot.service.ITaskPathInfoService;
 import com.aiurt.modules.robot.service.ITaskPointRelService;
 import com.aiurt.modules.robot.taskdata.service.TaskDataService;
+import com.aiurt.modules.robot.taskdata.wsdl.ControlTaskType;
 import com.aiurt.modules.robot.taskdata.wsdl.TaskInfo;
 import com.aiurt.modules.robot.taskdata.wsdl.TaskPathInfos;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -131,6 +132,44 @@ public class TaskPathInfoServiceImpl extends ServiceImpl<TaskPathInfoMapper, Tas
         // 3、下发任务
         TaskInfo taskInfo = taskDataService.startTaskByPathId(taskPathId);
         return ObjectUtil.isNotEmpty(taskInfo) ? taskInfo.getResult() : RobotConstant.RESULT_ERROR_1;
+    }
+
+    /**
+     * 当前机器人执行的任务
+     *
+     * @param robotIp 机器人ip
+     * @return
+     */
+    @Override
+    public com.aiurt.modules.robot.taskdata.wsdl.TaskExcuteData getTaskExcuteData(String robotIp) {
+        if (StrUtil.isEmpty(robotIp)) {
+            return new com.aiurt.modules.robot.taskdata.wsdl.TaskExcuteData();
+        }
+        return taskDataService.getTaskExcuteData(robotIp);
+    }
+
+    /**
+     * 机器人任务操作
+     *
+     * @param robotIp         机器人ip
+     * @param controlTaskType 机器人任务操作类型
+     * @return
+     */
+    @Override
+    public int robotControlTask(String robotIp, String controlTaskType) {
+        if (StrUtil.isEmpty(robotIp) || StrUtil.isEmpty(controlTaskType)) {
+            return RobotConstant.RESULT_ERROR_1;
+        }
+        // 1、关注对应的机器人
+        int state = robotDataService.setCurrentRobot(robotIp);
+
+        if (state == RobotConstant.RESULT_ERROR_1) {
+            return RobotConstant.RESULT_ERROR_1;
+        }
+
+        // 2、下发指令
+        int result = taskDataService.robotControlTask(ControlTaskType.fromValue(controlTaskType));
+        return result;
     }
 
 

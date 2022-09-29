@@ -4,7 +4,6 @@ import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.exception.AiurtBootException;
-import com.aiurt.modules.api.IBaseApi;
 import com.aiurt.modules.robot.constant.RobotConstant;
 import com.aiurt.modules.robot.constant.RobotDictConstant;
 import com.aiurt.modules.robot.dto.TaskFinishDTO;
@@ -17,18 +16,15 @@ import com.aiurt.modules.robot.service.ITaskFinishInfoService;
 import com.aiurt.modules.robot.taskfinish.service.TaskFinishService;
 import com.aiurt.modules.robot.taskfinish.wsdl.TaskFinishInfos;
 import com.aiurt.modules.robot.vo.TaskFinishInfoVO;
-import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
@@ -83,6 +79,7 @@ public class TaskFinishInfoServiceImpl extends ServiceImpl<TaskFinishInfoMapper,
                     .setRobotId(robotIds.get(info.getExcuteRobot()));
             list.add(taskFinishInfo);
         }
+        // todo 处理旧数据
         // 删除系统上的任务模板数据
         LambdaQueryWrapper<TaskFinishInfo> wrapper = new LambdaQueryWrapper<>();
         wrapper.notIn(TaskFinishInfo::getTaskPathId, list.stream().map(TaskFinishInfo::getTaskPathId).collect(Collectors.toList()));

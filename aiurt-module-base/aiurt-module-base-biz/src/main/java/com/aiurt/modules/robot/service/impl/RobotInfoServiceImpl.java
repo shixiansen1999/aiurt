@@ -11,6 +11,7 @@ import com.aiurt.modules.robot.mapper.RobotInfoMapper;
 import com.aiurt.modules.robot.robotdata.service.RobotDataService;
 import com.aiurt.modules.robot.robotdata.wsdl.RobotInfos;
 import com.aiurt.modules.robot.service.IRobotInfoService;
+import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.extern.slf4j.Slf4j;
@@ -151,6 +152,8 @@ public class RobotInfoServiceImpl extends ServiceImpl<RobotInfoMapper, RobotInfo
             throw new AiurtBootException("未接收到参数");
         }
 
+        log.info("添加机器人基础数据： 请求参数：{}", JSON.toJSONString(robotInfo));
+
         // 校验ip是否合法
         checkIpLegal(robotInfo.getRobotIp());
 
@@ -200,12 +203,17 @@ public class RobotInfoServiceImpl extends ServiceImpl<RobotInfoMapper, RobotInfo
      * @param robotInfo 支持同时同步多个
      */
     private void synchronizeRobotData(List<RobotInfo> robotInfo) {
-        if (CollUtil.isNotEmpty(robotInfo)) {
+        if (CollUtil.isEmpty(robotInfo)) {
             return;
         }
 
         // 远程全部机器人信息
-        RobotInfos info = robotDataService.getRobotInfo();
+        RobotInfos info = null;
+        try {
+            info = robotDataService.getRobotInfo();
+        } catch (Exception e) {
+            log.error("远程机器人连接超时,同步数据失败");
+        }
 
         if (ObjectUtil.isEmpty(info) || CollUtil.isEmpty(info.getInfos())) {
             return;
