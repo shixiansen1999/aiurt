@@ -45,8 +45,7 @@
             t2.position_code,
             t2.position_name,
             t2.position_type,
-            t.station_name pUrl,
-            t2.position_phone_num
+            t.station_name pUrl
         FROM
             cs_station_position t2
         LEFT JOIN cs_station t ON t.station_code = t2.staion_code
