@@ -1,13 +1,13 @@
 package com.aiurt.modules.position.mapper;
 
-import java.util.List;
-
 import com.aiurt.modules.position.entity.CsStationPosition;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Component;
+
+import java.util.List;
 
 /**
  * @Description: cs_station_position
@@ -26,4 +26,5 @@ public interface CsStationPositionMapper extends BaseMapper<CsStationPosition> {
      */
     List<CsStationPosition> queryCsStationPositionAll(@Param("page") Page<CsStationPosition> page,@Param("position") CsStationPosition csStationPosition);
 
+    CsStationPosition getById(@Param("id")String id);
 }

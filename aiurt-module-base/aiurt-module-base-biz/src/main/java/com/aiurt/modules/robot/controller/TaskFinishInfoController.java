@@ -65,7 +65,7 @@ public class TaskFinishInfoController extends BaseController<TaskFinishInfo, ITa
     @AutoLog(value = "刷新同步巡检任务数据")
     @ApiOperation(value = "刷新同步巡检任务数据", notes = "刷新同步巡检任务数据")
     @PostMapping(value = "/synchronizeRobotTask")
-    public Result<String> synchronizeRobotTask(@ApiParam(name = "startDate", value = "起始时间")
+    public Result<String> synchronizeRobotTask(@ApiParam(name = "startTime", value = "起始时间")
                                                @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") Date startTime,
                                                @ApiParam(name = "endTime", value = "结束时间")
                                                @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") Date endTime) {

@@ -47,8 +47,8 @@ public class CsStationPositionServiceImpl extends ServiceImpl<CsStationPositionM
         if (CollUtil.isNotEmpty(csStationPositions)) {
             for (CsStationPosition stationPosition : csStationPositions) {
                 if (stationPosition.getLevel().equals(2)) {
-                    CsStationPosition result = this.getById(stationPosition.getId());
-                    stationPosition.setPositionPhoneNum(result.getPositionPhoneNum());
+                    CsStationPosition result = csStationPositionMapper.getById(stationPosition.getId());
+                    stationPosition.setPhoneNum(result.getPhoneNum());
                 }
             }
         }

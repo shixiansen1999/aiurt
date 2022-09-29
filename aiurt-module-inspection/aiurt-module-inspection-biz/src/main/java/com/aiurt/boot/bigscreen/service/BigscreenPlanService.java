@@ -333,6 +333,8 @@ public class BigscreenPlanService {
         if (CollUtil.isNotEmpty(teamBylineAndMajors)) {
             teamBylineAndMajors.stream().forEach(teamBylineAndMajor -> {
                 PlanIndexDTO planIndexDTO = new PlanIndexDTO();
+                planIndexDTO.setFinish(0L);
+                planIndexDTO.setUnfinish(0L);
 
                 // 查询已完成数量、未完成数量
                 planIndexDTO = repairPoolMapper.getNumByTimeAndOrgCode(teamBylineAndMajor.getOrgCode(), time[0], time[1]);

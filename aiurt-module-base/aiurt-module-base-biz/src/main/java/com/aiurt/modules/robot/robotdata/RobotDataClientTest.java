@@ -4,6 +4,8 @@ import cn.hutool.core.util.ObjectUtil;
 import com.aiurt.common.util.webservice.WebServiceUtils;
 import com.aiurt.modules.robot.robotdata.wsdl.*;
 import lombok.extern.slf4j.Slf4j;
+import org.testng.annotations.Test;
+
 import java.util.List;
 
 /**
@@ -17,7 +19,7 @@ public class RobotDataClientTest {
     /**
      * WebService服务地址
      */
-    private static final String ADDRESS = "http://2.0.1.16:11456?wsdl";
+    private static final String ADDRESS = "http://172.16.4.253:11456?wsdl";
     /**
      * 机器人ip
      */
@@ -27,6 +29,7 @@ public class RobotDataClientTest {
     /**
      * 获取机器人系统连接信息
      */
+    @Test
     public void getRobotConnect() {
         ConnectInfos result = WebServiceUtils.getWebService(ServicePortType.class, ADDRESS).getRobotConnect();
         if (ObjectUtil.isNotEmpty(result)) {
@@ -44,6 +47,7 @@ public class RobotDataClientTest {
     /**
      * 设置当前关注的机器人
      */
+    @Test
     public void setCurrentRobot() {
         int result = WebServiceUtils.getWebService(ServicePortType.class, ADDRESS).setCurrentRobot(ROBOT_IP);
         System.out.println(result > 0 ? "设置当前关注的机器人失败" : "设置当前关注的机器人成功");
@@ -53,6 +57,7 @@ public class RobotDataClientTest {
      * 设置当前关注机器人的控制模式
      * ControlType  0任务模式，1遥控模式
      */
+    @Test
     public void setControlMode() {
         int result = WebServiceUtils.getWebService(ServicePortType.class, ADDRESS).setControlMode(ROBOT_IP, 0);
         System.out.println(result > 0 ? "设置当前关注机器人的控制模式失败" : "设置当前关注机器人的控制模式成功");
@@ -62,6 +67,7 @@ public class RobotDataClientTest {
     /**
      * 机器人监测气体
      */
+    @Test
     public void getRobotGasInfo() {
         // 是否需要所有机器人数据:True是，False否
         RobotGasInfos robotGasInfo = WebServiceUtils.getWebService(ServicePortType.class, ADDRESS).getRobotGasInfo(true);

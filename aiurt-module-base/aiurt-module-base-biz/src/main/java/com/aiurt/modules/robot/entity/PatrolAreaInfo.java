@@ -2,6 +2,8 @@ package com.aiurt.modules.robot.entity;
 
 import com.aiurt.common.aspect.annotation.Dict;
 import com.aiurt.modules.basic.entity.DictEntity;
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModel;
@@ -35,6 +37,7 @@ public class PatrolAreaInfo extends DictEntity implements Serializable {
 	/**区域id*/
 	@Excel(name = "区域id", width = 15)
     @ApiModelProperty(value = "区域id")
+    @TableId(type = IdType.ASSIGN_ID)
     private java.lang.String areaId;
 	/**区域名称*/
 	@Excel(name = "区域名称", width = 15)

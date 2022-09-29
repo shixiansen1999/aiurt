@@ -1,5 +1,6 @@
 package com.aiurt.modules.robot.service.impl;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
@@ -78,6 +79,9 @@ public class TaskFinishInfoServiceImpl extends ServiceImpl<TaskFinishInfoMapper,
                     .setFinishState(info.getFinishState())
                     .setRobotId(robotIds.get(info.getExcuteRobot()));
             list.add(taskFinishInfo);
+        }
+        if (CollUtil.isEmpty(list)) {
+            return;
         }
         // todo 处理旧数据
         // 删除系统上的任务模板数据
