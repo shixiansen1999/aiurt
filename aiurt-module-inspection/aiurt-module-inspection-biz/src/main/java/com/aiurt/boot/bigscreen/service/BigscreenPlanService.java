@@ -333,8 +333,6 @@ public class BigscreenPlanService {
         if (CollUtil.isNotEmpty(teamBylineAndMajors)) {
             teamBylineAndMajors.stream().forEach(teamBylineAndMajor -> {
                 PlanIndexDTO planIndexDTO = new PlanIndexDTO();
-                planIndexDTO.setFinish(0L);
-                planIndexDTO.setUnfinish(0L);
 
                 // 查询已完成数量、未完成数量
                 planIndexDTO = repairPoolMapper.getNumByTimeAndOrgCode(teamBylineAndMajor.getOrgCode(), time[0], time[1]);
@@ -356,6 +354,15 @@ public class BigscreenPlanService {
                 } else {
                     double d = new BigDecimal((double) planIndexDTO.getUnfinish() * 100 / planIndexDTO.getSum()).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
                     planIndexDTO.setUnfinishRate(d + "%");
+                }
+
+                // null值默认给0处理
+                if(ObjectUtil.isEmpty(planIndexDTO.getFinish())){
+                    planIndexDTO.setFinish(0L);
+                }
+
+                if(ObjectUtil.isEmpty(planIndexDTO.getUnfinish())){
+                    planIndexDTO.setUnfinish(0L);
                 }
 
                 result.add(planIndexDTO);
