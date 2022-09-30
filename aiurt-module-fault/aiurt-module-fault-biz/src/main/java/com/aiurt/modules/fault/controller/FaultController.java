@@ -111,6 +111,12 @@ public class FaultController extends BaseController<Fault, IFaultService> {
             }
         }
 
+        // 故障等级处理， 不能模糊查询
+        String f = fault.getFaultLevel();
+        if (StrUtil.isNotBlank(f)) {
+            fault.setFaultLevel(null);
+        }
+
         QueryWrapper<Fault> queryWrapper = QueryGenerator.initQueryWrapper(fault, req.getParameterMap());
         Page<Fault> page = new Page<>(pageNo, pageSize);
         //修改查询条件
@@ -123,6 +129,8 @@ public class FaultController extends BaseController<Fault, IFaultService> {
         if (StrUtil.isNotBlank(statusCondition)) {
             queryWrapper.in("status", StrUtil.split(statusCondition, ','));
         }
+        // 故障等级
+        queryWrapper.eq("fault_level", f);
         IPage<Fault> pageList = faultService.page(page, queryWrapper);
 
         List<Fault> records = pageList.getRecords();
