@@ -338,7 +338,7 @@ public class FaultInformationService {
         if (StrUtil.isNotBlank(faultDataStatisticsDTO.getMonth())) {
             String month = faultDataStatisticsDTO.getMonth();
             Integer i = Convert.toInt(month);
-            Map<String, String> map = FaultLargeDateUtil.getMonthFirstAndLast(i+1);
+            Map<String, String> map = FaultLargeDateUtil.getMonthFirstAndLast(i-1);
              firstDay = map.get("firstDay");
              lastDay = map.get("lastDay");
             faultDataStatisticsDTO.setFirstDay(firstDay);
