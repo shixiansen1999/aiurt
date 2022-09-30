@@ -174,7 +174,7 @@ public class PatrolReportService {
                 patrolReport.setTaskTotal(0);
                 patrolReport.setAbnormalNumber(0);
                 patrolReport.setMissInspectedNumber(0);
-                patrolReport.setCompletionRate("-");
+                patrolReport.setCompletionRate("0.00");
                 patrolReport.setAwmPatrolNumber("-");
                 patrolReport.setAmmPatrolNumber("-");
                 patrolReport.setFaultNumber(0);
@@ -199,7 +199,7 @@ public class PatrolReportService {
         patrolReport.setOrgCode(report.getOrgCode());
         patrolReport.setOrgName(report.getOrgName());
         patrolReport.setTaskTotal(0);
-        patrolReport.setCompletionRate("-");
+        patrolReport.setCompletionRate("0.00");
         patrolReport.setAbnormalNumber(0);
         patrolReport.setMissInspectedNumber(0);
         patrolReport.setAwmPatrolNumber("-");
