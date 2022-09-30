@@ -93,8 +93,7 @@ public class OverhaulStatisticsService{
                     q.setUserName(repairTaskMapper.getRealName(userId));
                     //班组编码
                     String orgCode = repairTaskMapper.getOrgCode(userId);
-                    String id = q.getId();
-                    q.setOrgCodeId(orgCode+id);
+                    q.setOrgCodeId(orgCode+userId);
                     q.setOrgCode(orgCode);
                 }
 
