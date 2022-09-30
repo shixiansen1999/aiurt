@@ -1,6 +1,7 @@
 package com.aiurt.modules.faultanalysisreport.service.impl;
 
 import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.core.util.StrUtil;
 import com.aiurt.modules.fault.entity.Fault;
 import com.aiurt.modules.fault.mapper.FaultMapper;
 import com.aiurt.modules.faultanalysisreport.constant.FaultConstant;
@@ -178,6 +179,9 @@ public class FaultAnalysisReportServiceImpl extends ServiceImpl<FaultAnalysisRep
 
     @Override
     public Result<String> addDetail(FaultDTO faultDTO) {
+        if (StrUtil.isEmpty(faultDTO.getCode())) {
+            return Result.OK("故障编号不能为空");
+        }
         FaultAnalysisReport faultAnalysisReport = faultDTO.getFaultAnalysisReport();
         faultAnalysisReport.setStatus(FaultConstant.PENDING);
         faultAnalysisReport.setApprovedResult(FaultConstant.NO_PASS);
