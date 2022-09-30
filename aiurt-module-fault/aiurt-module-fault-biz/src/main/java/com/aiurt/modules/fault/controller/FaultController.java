@@ -130,7 +130,7 @@ public class FaultController extends BaseController<Fault, IFaultService> {
             queryWrapper.in("status", StrUtil.split(statusCondition, ','));
         }
         // 故障等级
-        queryWrapper.eq("fault_level", f);
+        queryWrapper.eq(StrUtil.isNotBlank(f), "fault_level", f);
         IPage<Fault> pageList = faultService.page(page, queryWrapper);
 
         List<Fault> records = pageList.getRecords();
