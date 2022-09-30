@@ -40,4 +40,7 @@ public class CsUserStationModel {
     @Excel(name = "站点编号", width = 15)
     @ApiModelProperty(value = "站点编号")
     private String stationCode;
+
+    @ApiModelProperty(value = "线路")
+    private String lineCode;
 }

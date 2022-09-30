@@ -31,7 +31,9 @@ import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.CsUserMajorModel;
+import org.jeecg.common.system.vo.CsUserStationModel;
 import org.jeecg.common.system.vo.CsUserSubsystemModel;
 import org.jeecg.common.system.vo.LoginUser;
 import org.nlpcn.commons.lang.util.tuples.valueintf.IValue0;
@@ -51,11 +53,10 @@ import java.util.stream.Collectors;
 @RequestMapping("/common")
 public class CommonCtroller {
 
-    @Autowired
-    private ICsMajorService csMajorService;
-
-    @Autowired
-    private ICsSubsystemService csSubsystemService;
+    /**
+     * 系统管理员角色编码
+     */
+    private static final String ADMIN = "admin";
 
     @Autowired
     private IDeviceService deviceService;
@@ -69,7 +70,6 @@ public class CommonCtroller {
     @Autowired
     private ICsStationPositionService stationPositionService;
 
-
     @Autowired
     private ICsUserMajorService csUserMajorService;
 
@@ -78,6 +78,9 @@ public class CommonCtroller {
 
     @Autowired
     private ICommonService commonService;
+
+    @Autowired
+    private ISysBaseAPI sysBaseAPI;
 
 
     public Result<List<Device>> query() {
@@ -95,10 +98,14 @@ public class CommonCtroller {
 
         LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
 
-        // 系统管理员不做权限过滤
+        String userId = loginUser.getId();
         String roleCodes = loginUser.getRoleCodes();
+        // 系统管理员不做权限过滤
+        if (StrUtil.isNotBlank(roleCodes) && roleCodes.indexOf(ADMIN)>-1) {
+            userId = "";
+        }
 
-        List<CsUserMajorModel> majorModelList = csUserMajorService.getMajorByUserId(loginUser.getId());
+        List<CsUserMajorModel> majorModelList = csUserMajorService.getMajorByUserId(userId);
 
         List<SelectTable> list = majorModelList.stream().map(csMajor -> {
             SelectTable table = new SelectTable();
@@ -126,7 +133,13 @@ public class CommonCtroller {
     public Result<List<SelectTable>> querySubSystemByAuth(@RequestParam(value = "majorCode", required = false) String majorCode,
                                                           @RequestParam(value ="majorIds",required = false) List<String> majorIds) {
         LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        List<CsUserSubsystemModel> csMajorList = csUserSubsystemService.getSubsystemByUserId(loginUser.getId());
+        String userId = loginUser.getId();
+        String roleCodes = loginUser.getRoleCodes();
+        // 系统管理员不做权限过滤
+        if (StrUtil.isNotBlank(roleCodes) && roleCodes.indexOf(ADMIN)>-1) {
+            userId = "";
+        }
+        List<CsUserSubsystemModel> csMajorList = csUserSubsystemService.getSubsystemByUserId(userId);
         List<SelectTable> list = new ArrayList<>();
        // SelectTable selectTable = new SelectTable();
        // selectTable.setLabel("无"); selectTable.setValue("无");
@@ -218,15 +231,22 @@ public class CommonCtroller {
     @GetMapping("/position/queryTreeByAuth")
     @ApiOperation("根据个人权限获取位置树")
     public Result<List<SelectTable>> queryPositionTree() {
+        LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        String userId = loginUser.getId();
+        String roleCodes = loginUser.getRoleCodes();
+        // 系统管理员不做权限过滤
+        if (StrUtil.isNotBlank(roleCodes) && roleCodes.indexOf(ADMIN)>-1) {
+            userId = "";
+        }
+
         List<CsLine> lineList = lineService.getBaseMapper().selectList(new LambdaQueryWrapper<CsLine>().eq(CsLine::getDelFlag,0));
 
         Map<String, String> lineMap = lineList.stream().collect(Collectors.toMap(CsLine::getLineCode, CsLine::getLineName, (t1, t2) -> t2));
 
-        LambdaQueryWrapper<CsStation> stationWrapper = new LambdaQueryWrapper<>();
+        // 根据个人
+        List<CsUserStationModel> stationModelList = sysBaseAPI.getStationByUserId(userId);
 
-        List<CsStation> stationList = stationService.getBaseMapper().selectList(stationWrapper.eq(CsStation::getDelFlag,0));
-
-        Map<String, List<CsStation>> stationMap = stationList.stream().collect(Collectors.groupingBy(CsStation::getLineCode));
+        Map<String, List<CsUserStationModel>> stationMap = stationModelList.stream().collect(Collectors.groupingBy(CsUserStationModel::getLineCode));
 
         LambdaQueryWrapper<CsStationPosition> positionWrapper = new LambdaQueryWrapper<>();
 
@@ -242,7 +262,7 @@ public class CommonCtroller {
             table.setLevel(1);
             table.setLineCode(lineCode);
             //
-            List<CsStation> csStationList = stationMap.getOrDefault(lineCode, Collections.emptyList());
+            List<CsUserStationModel> csStationList = stationMap.getOrDefault(lineCode, Collections.emptyList());
 
             List<SelectTable> lv2List = csStationList.stream().map(csStation -> {
                 SelectTable selectTable = new SelectTable();
@@ -325,9 +345,17 @@ public class CommonCtroller {
     @ApiOperation("查询专业系统树")
     public Result<List<SelectTable>> queryMajorAndSystemTree() {
         LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        List<CsUserMajorModel> majorModelList = csUserMajorService.getMajorByUserId(loginUser.getId());
 
-        List<CsUserSubsystemModel> subsystemModelList = csUserSubsystemService.getSubsystemByUserId(loginUser.getId());
+        String userId = loginUser.getId();
+        String roleCodes = loginUser.getRoleCodes();
+        // 系统管理员不做权限过滤
+        if (StrUtil.isNotBlank(roleCodes) && roleCodes.indexOf(ADMIN)>-1) {
+            userId = "";
+        }
+
+        List<CsUserMajorModel> majorModelList = csUserMajorService.getMajorByUserId(userId);
+
+        List<CsUserSubsystemModel> subsystemModelList = csUserSubsystemService.getSubsystemByUserId(userId);
         Map<String, List<CsUserSubsystemModel>> map = subsystemModelList.stream().collect(Collectors.groupingBy(CsUserSubsystemModel::getMajorCode));
 
         List<SelectTable> tableList = majorModelList.stream().map(csMajor -> {

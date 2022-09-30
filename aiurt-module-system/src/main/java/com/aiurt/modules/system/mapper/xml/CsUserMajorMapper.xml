@@ -8,6 +8,9 @@
 
 <select id="getMajorByUserId" resultType="org.jeecg.common.system.vo.CsUserMajorModel">
     select cum.id ,cum.user_id,cum.major_id,cm.major_code ,cm.major_name from cs_user_major cum left join cs_major cm on cm.id = cum.major_id
-    where cm.del_flag = 0 and cum.user_id = #{id}
+    where cm.del_flag = 0
+    <if test="id != null and id != ''">
+        and cum.user_id = #{id}
+    </if>
 </select>
 </mapper>
