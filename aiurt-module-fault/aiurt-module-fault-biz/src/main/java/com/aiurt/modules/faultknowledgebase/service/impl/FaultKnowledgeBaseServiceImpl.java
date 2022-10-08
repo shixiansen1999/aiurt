@@ -99,7 +99,7 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
 
     @Override
     public Result<String> approval(String approvedRemark, Integer approvedResult, String id) {
-        if ( getRole()) {return Result.OK("没有权限");}
+        if ( getRole()) {return Result.error("没有权限");}
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         FaultKnowledgeBase faultKnowledgeBase = new FaultKnowledgeBase();
         faultKnowledgeBase.setId(id);

@@ -119,7 +119,7 @@ public class FaultAnalysisReportServiceImpl extends ServiceImpl<FaultAnalysisRep
 
     @Override
     public Result<String> approval(String approvedRemark, Integer approvedResult, String id) {
-        if ( getRole()) {return Result.OK("没有权限");}
+        if ( getRole()) {return Result.error("没有权限");}
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         FaultAnalysisReport faultAnalysisReport = new FaultAnalysisReport();
         faultAnalysisReport.setId(id);
@@ -180,7 +180,7 @@ public class FaultAnalysisReportServiceImpl extends ServiceImpl<FaultAnalysisRep
     @Override
     public Result<String> addDetail(FaultDTO faultDTO) {
         if (StrUtil.isEmpty(faultDTO.getCode())) {
-            return Result.OK("故障编号不能为空");
+            return Result.error("故障编号不能为空");
         }
         FaultAnalysisReport faultAnalysisReport = faultDTO.getFaultAnalysisReport();
         faultAnalysisReport.setStatus(FaultConstant.PENDING);
@@ -210,7 +210,7 @@ public class FaultAnalysisReportServiceImpl extends ServiceImpl<FaultAnalysisRep
         List<String> rolesByUsername = sysBaseAPI.getRolesByUsername(sysUser.getUsername());
         if (analysisReport.getStatus().equals(FaultConstant.APPROVED)) {
             if (!rolesByUsername.contains(FaultConstant.ADMIN) && !rolesByUsername.contains(FaultConstant.PROFESSIONAL_TECHNICAL_DIRECTOR)) {
-                return Result.OK("没有权限");
+                return Result.error("没有权限");
             }
         }
         this.removeById(id);
@@ -227,7 +227,7 @@ public class FaultAnalysisReportServiceImpl extends ServiceImpl<FaultAnalysisRep
             FaultAnalysisReport analysisReport = this.getById(s);
             if (analysisReport.getStatus().equals(FaultConstant.APPROVED)) {
                 if (!rolesByUsername.contains(FaultConstant.ADMIN) && !rolesByUsername.contains(FaultConstant.PROFESSIONAL_TECHNICAL_DIRECTOR)) {
-                    return Result.OK("没有权限");
+                    return Result.error("没有权限");
                 }
             }
         }
