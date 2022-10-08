@@ -277,26 +277,28 @@ public class FaultInformationService {
             //查询按系统分类好的并计算了故障消耗总时长的记录
             List<FaultSystemTimeDTO> largeFaultTime = faultInformationMapper.getLargeFaultTime(month, lineCode,majors);
                 for (FaultSystemTimeDTO faultSystemTimeDTO : largeFaultTime) {
-                    if (!"0".equals(faultSystemTimeDTO.getRepairTime()) && faultSystemTimeDTO.getRepairTime()!=null) {
+                    if (!"0".equals(faultSystemTimeDTO.getRepairTime()) && faultSystemTimeDTO.getRepairTime() != null) {
                         sum += Integer.parseInt(faultSystemTimeDTO.getRepairTime());
                     }
                     //将故障处理时间为null的改为0
-                    if(faultSystemTimeDTO.getRepairTime()==null){
+                    if (faultSystemTimeDTO.getRepairTime() == null) {
                         faultSystemTimeDTO.setRepairTime("0");
                     }
-                       //将故障处理时间+H
-                        String h = faultSystemTimeDTO.getRepairTime()+"H";
-                        faultSystemTimeDTO.setRepairTime(h);
-                        //将名字改成系统+小时数
-                      String strm = faultSystemTimeDTO.getSystemName().substring(0,faultSystemTimeDTO.getSystemName().length()-2);
-                      String name = strm+" "+faultSystemTimeDTO.getRepairTime();
-                      faultSystemTimeDTO.setSystemName(name);
-                        //将月份内的所有故障处理时间求和
-                        faultMonthTimeDTO.setMonthTime(String.valueOf(sum));
-                        systemlist.add(faultSystemTimeDTO);
+                    //将故障处理时间+H
+                    String h = faultSystemTimeDTO.getRepairTime() + "H";
+                    faultSystemTimeDTO.setRepairTime(h);
+                    //将名字改成系统+小时数
+                    if(ObjectUtil.isNotEmpty(faultSystemTimeDTO.getSystemName())) {
+                        String strm = faultSystemTimeDTO.getSystemName().substring(0, faultSystemTimeDTO.getSystemName().length() - 2);
+                        String name = strm + " " + faultSystemTimeDTO.getRepairTime();
+                        faultSystemTimeDTO.setSystemName(name);
+                    }
+                    //将月份内的所有故障处理时间求和
+                    faultMonthTimeDTO.setMonthTime(String.valueOf(sum));
+                    systemlist.add(faultSystemTimeDTO);
                 }
                 faultMonthTimeDTO.setSysTimeList(systemlist);
-            monthList.add(faultMonthTimeDTO);
+                monthList.add(faultMonthTimeDTO);
         }
 
         return monthList;
