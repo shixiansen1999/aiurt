@@ -31,7 +31,7 @@ public class ReflectionService {
      * @param paramMap 实际参数
      * @throws Exception
      */
-    public void invokeService(String classz, String methodName, Map<String,Object> paramMap) throws Exception {
+    public Object invokeService(String classz, String methodName, Map<String,Object> paramMap) throws Exception {
         if(!applicationContext.containsBean(classz)) {
             throw new RuntimeException("Spring找不到对应的Bean");
         }
@@ -57,6 +57,8 @@ public class ReflectionService {
 
         // 执行方法
         Object invoke = method.invoke(proxyObject, objects.toArray());
+
+        return invoke;
     }
 
     /**

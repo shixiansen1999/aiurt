@@ -75,23 +75,8 @@ public class FlowOperationController {
     @GetMapping("/viewInitialTaskInfo")
     @ApiOperation(value = "获取开始节点之后的第一个任务节点的数据", notes = "获取开始节点之后的第一个任务节点的数据")
     public Result<TaskInfoDTO> viewInitialTaskInfo(@RequestParam String processDefinitionKey) {
-
-        // 招到主版本信息
-        // 查询首页的页面， 以及首页的按钮
-       /* ResponseResult<FlowEntry> flowEntryResult = flowOperationHelper.verifyAndGetFlowEntry(processDefinitionKey);
-        if (!flowEntryResult.isSuccess()) {
-            return ResponseResult.errorFrom(flowEntryResult);
-        }
-        FlowEntryPublish flowEntryPublish = flowEntryResult.getData().getMainFlowEntryPublish();
-        String initTaskInfo = flowEntryPublish.getInitTaskInfo();
-        TaskInfoVo taskInfo = StrUtil.isBlank(initTaskInfo)
-                ? null : JSON.parseObject(initTaskInfo, TaskInfoVo.class);
-        if (taskInfo != null) {
-            String loginName = TokenData.takeFromRequest().getLoginName();
-            taskInfo.setAssignedMe(StrUtil.equalsAny(
-                    taskInfo.getAssignee(), loginName, FlowConstant.START_USER_NAME_VAR));
-        }*/
-        return Result.OK(new TaskInfoDTO());
+        TaskInfoDTO taskInfoDTO = flowApiService.viewInitialTaskInfo(processDefinitionKey);
+        return Result.OK(taskInfoDTO);
     }
 
     /**

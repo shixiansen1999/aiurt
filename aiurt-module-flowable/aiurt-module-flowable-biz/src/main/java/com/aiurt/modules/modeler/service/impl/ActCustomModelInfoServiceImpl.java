@@ -15,6 +15,7 @@ import org.flowable.ui.modeler.domain.Model;
 import org.flowable.ui.modeler.serviceapi.ModelService;
 import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import java.io.UnsupportedEncodingException;
@@ -32,6 +33,7 @@ import java.util.Objects;
 @Service
 public class ActCustomModelInfoServiceImpl extends ServiceImpl<ActCustomModelInfoMapper, ActCustomModelInfo> implements IActCustomModelInfoService {
 
+    @Lazy
     @Autowired
     private IFlowableBpmnService flowableBpmnService;
 

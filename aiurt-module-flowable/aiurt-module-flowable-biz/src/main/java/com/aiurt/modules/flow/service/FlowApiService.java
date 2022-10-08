@@ -246,4 +246,12 @@ public interface FlowApiService {
      * @param processInstanceId
      */
     void deleteProcessInstance(String processInstanceId);
+
+    /**
+     * 获取开始节点之后的第一个任务节点的数据。
+     *
+     * @param processDefinitionKey 流程标识。
+     * @return 任务节点的自定义对象数据。
+     */
+    TaskInfoDTO viewInitialTaskInfo(String processDefinitionKey);
 }

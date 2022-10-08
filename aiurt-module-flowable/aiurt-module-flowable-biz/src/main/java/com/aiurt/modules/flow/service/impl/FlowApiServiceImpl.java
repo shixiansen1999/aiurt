@@ -8,6 +8,7 @@ import cn.hutool.core.lang.Assert;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.exception.AiurtBootException;
+import com.aiurt.common.exception.AiurtErrorEnum;
 import com.aiurt.modules.constants.FlowConstant;
 import com.aiurt.modules.flow.dto.*;
 import com.aiurt.modules.flow.entity.ActCustomTaskComment;
@@ -35,6 +36,7 @@ import org.flowable.engine.history.HistoricProcessInstance;
 import org.flowable.engine.history.HistoricProcessInstanceQuery;
 import org.flowable.engine.impl.bpmn.behavior.ParallelMultiInstanceBehavior;
 import org.flowable.engine.impl.bpmn.behavior.SequentialMultiInstanceBehavior;
+import org.flowable.engine.impl.persistence.entity.ExecutionEntityImpl;
 import org.flowable.engine.repository.ProcessDefinition;
 import org.flowable.engine.runtime.ActivityInstance;
 import org.flowable.engine.runtime.ChangeActivityStateBuilder;
@@ -152,10 +154,10 @@ public class FlowApiServiceImpl implements FlowApiService {
         Task task = BeanUtil.copyProperties(userTask, Task.class);
 
         // 保存中间业务数据，将业务数据id返回
-        String businessKey = saveBusData(result.getId(), task.getTaskDefinitionKey());
+        Object businessKey = saveBusData(result.getId(), task.getTaskDefinitionKey(), busData);
 
         // 启动流程
-        ProcessInstance processInstance = runtimeService.startProcessInstanceByKey(startBpmnDTO.getModelKey(), businessKey, busData);
+      //  ProcessInstance processInstance = runtimeService.startProcessInstanceByKey(startBpmnDTO.getModelKey(), (String) businessKey, busData);
 
         // 完成流程启动后的第一个任务
         if (StrUtil.equalsAny(task.getAssignee(), loginUser.getUsername(), FlowConstant.START_USER_NAME_VAR)) {
@@ -165,7 +167,7 @@ public class FlowApiServiceImpl implements FlowApiService {
             }
             this.completeTask(task, startBpmnDTO.getCustomTaskComment(), startBpmnDTO.getBusData());
         }
-        return processInstance;
+        return new ExecutionEntityImpl();
     }
 
     /**
@@ -190,11 +192,17 @@ public class FlowApiServiceImpl implements FlowApiService {
      * @param taskId
      * @return
      */
-    public String saveBusData(String pProcessDefinitionId, String taskId) {
+    public Object saveBusData(String pProcessDefinitionId, String taskId,  Map<String, Object> busData) {
         List<ActCustomTaskExt> actCustomTaskExts = customTaskExtService.getBaseMapper().selectList(
                 new LambdaQueryWrapper<ActCustomTaskExt>()
                         .eq(ActCustomTaskExt::getProcessDefinitionId, pProcessDefinitionId)
                         .eq(ActCustomTaskExt::getTaskId, taskId));
+        // 数据结构_转为驼峰
+        Map<String, Object> data = new HashMap<>(16);
+        busData.keySet().stream().forEach(key->{
+            String s = StrUtil.toCamelCase(key);
+            data.put(s, busData.get(key));
+        });
 
         if (CollUtil.isNotEmpty(actCustomTaskExts)) {
             JSONObject jsonObject = JSONObject.parseObject(actCustomTaskExts.get(0).getFormJson());
@@ -202,7 +210,7 @@ public class FlowApiServiceImpl implements FlowApiService {
                 List<String> className = StrUtil.split((String) jsonObject.get("className"), '.');
                 try {
                     if (CollUtil.isNotEmpty(className)) {
-                        reflectionService.invokeService(className.get(0), className.get(1), null);
+                       return reflectionService.invokeService(className.get(0), className.get(1), data);
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -1253,6 +1261,31 @@ public class FlowApiServiceImpl implements FlowApiService {
     public List<HistoricActivityInstance> getHistoricActivityInstanceListOrderByStartTime(String processInstanceId) {
         return historyService.createHistoricActivityInstanceQuery()
                 .processInstanceId(processInstanceId).orderByHistoricActivityInstanceStartTime().asc().list();
+    }
+
+    /**
+     * 获取开始节点之后的第一个任务节点的数据。
+     *
+     * @param processDefinitionKey 流程标识。
+     * @return 任务节点的自定义对象数据。
+     */
+    @Override
+    public TaskInfoDTO viewInitialTaskInfo(String processDefinitionKey) {
+        UserTask userTask = flowElementUtil.getFirstUserTaskByModelKey(processDefinitionKey);
+        if (Objects.isNull(userTask)) {
+            throw new AiurtBootException(AiurtErrorEnum.FLOW_TASK_NOT_FOUND.getCode(), AiurtErrorEnum.FLOW_TASK_NOT_FOUND.getMessage());
+        }
+        TaskInfoDTO taskInfoDTO = new TaskInfoDTO();
+        taskInfoDTO.setTaskKey(userTask.getId());
+        taskInfoDTO.setRouterName("/test/test.vue");
+        ProcessDefinition processDefinition = flowElementUtil.getProcessDefinition(processDefinitionKey);
+        ActCustomTaskExt customTaskExt = customTaskExtService.getByProcessDefinitionIdAndTaskId(processDefinition.getId(), userTask.getId());
+        if (Objects.nonNull(customTaskExt)) {
+            String json = customTaskExt.getOperationListJson();
+            List<JSONObject> objectList = JSONObject.parseArray(json, JSONObject.class);
+            taskInfoDTO.setOperationList(objectList);
+        }
+        return taskInfoDTO;
     }
 
     private List<FlowElement> getChildUserTaskList(
