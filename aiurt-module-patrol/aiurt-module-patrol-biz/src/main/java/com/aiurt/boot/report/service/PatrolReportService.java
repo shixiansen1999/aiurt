@@ -140,7 +140,7 @@ public class PatrolReportService {
                             patrolReport.setAmmPatrolNumber("-");
                         } else {
                             //是否是默认，是，本周不算
-                            if (isNullDate == true) {
+                            if (isNullDate) {
                                 patrolReport.setTaskId(d.getTaskId());
                                 patrolReport.setMissInspectedNumber(d.getMissInspectedNumber());
                                 patrolReport.setAwmPatrolNumber("-");
@@ -314,11 +314,8 @@ public class PatrolReportService {
 
     public long getWeekNumber(String start, String end) {
          long weekNumber = PatrolDateUtils.countTwoDayWeek(start, end);
-         DateTime time = DateUtil.parse(end);
-         Date startTime = DateUtil.beginOfWeek(new Date());
-         Date endTime = DateUtil.beginOfWeek(time);
-         boolean sameWeek = DateUtil.isSameDay(startTime, endTime);
-         if(sameWeek==true)
+         boolean sameWeek = isNowWeekDate(start,end);
+        if(sameWeek)
          {
              weekNumber=weekNumber-1;
          }
