@@ -198,9 +198,24 @@ public class PatrolReportService {
             {  patrolReport.setAwmPatrolNumber("-");
 
             }
+            if(ObjectUtil.isNull(patrolReport.getTaskTotal()))
+            {
+                patrolReport.setTaskTotal(0);
+                patrolReport.setNotInspectedNumber(0);
+                patrolReport.setInspectedNumber(0);
+                patrolReport.setCompletionRate("0.00");
+            }
             if(ObjectUtil.isNull(patrolReport.getAmmPatrolNumber()))
             {
                 patrolReport.setAmmPatrolNumber("-");
+            }
+            if(ObjectUtil.isNull(patrolReport.getFaultNumber()))
+            {
+                patrolReport.setFaultNumber(0);
+            }
+            if(ObjectUtil.isNull(patrolReport.getAbnormalNumber()))
+            {
+                patrolReport.setAbnormalNumber(0);
             }
         }
         return pageList.setRecords(list);
