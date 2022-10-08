@@ -25,6 +25,11 @@ public class PatrolReportModel {
     @ApiModelProperty("站点code")
     private String stationCode;
     /**
+     * 站点List
+     */
+    @ApiModelProperty("站点List")
+    private List<String> stationCodeList;
+    /**
      * 班组code
      */
     @ApiModelProperty("班组code")

@@ -69,6 +69,13 @@ public class PatrolReportService {
             report.setOrgList(orgList);
             orgCodeName.setOrgList(orgList);
         }
+        if(ObjectUtil.isNotEmpty(report.getLineCode()))
+        {
+            //查询该线路下，用户所拥有的站点code
+             List<LineOrStationDTO> stationList = selectStation(report.getLineCode());
+             List<String> stationCodeList = stationList.stream().map(LineOrStationDTO::getCode).collect(Collectors.toList());
+             report.setStationCodeList(stationCodeList);
+        }
         orgCodeName.setOrgCode(report.getOrgCode());
         PatrolReportModel omitModel = new PatrolReportModel();
         BeanUtils.copyProperties(report, omitModel);
@@ -134,12 +141,14 @@ public class PatrolReportService {
                         } else {
                             //是否是默认，是，本周不算
                             if (isNullDate == true) {
+                                patrolReport.setTaskId(d.getTaskId());
                                 patrolReport.setMissInspectedNumber(d.getMissInspectedNumber());
                                 patrolReport.setAwmPatrolNumber("-");
                                 patrolReport.setAmmPatrolNumber("-");
                             } else {
                                 long weekNumber = getWeekNumber(omitModel.getStartDate(), omitModel.getEndDate());
                                 if (weekNumber == 0) {
+                                    patrolReport.setTaskId(d.getTaskId());
                                     patrolReport.setMissInspectedNumber(d.getMissInspectedNumber());
                                     patrolReport.setAwmPatrolNumber("-");
                                 } else {
@@ -147,6 +156,7 @@ public class PatrolReportService {
                                     BigDecimal b = new BigDecimal(avg);
                                     double fave = b.setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
                                     String completionRated = String.format("%.2f", fave);
+                                    patrolReport.setTaskId(d.getTaskId());
                                     patrolReport.setMissInspectedNumber(d.getMissInspectedNumber());
                                     patrolReport.setAwmPatrolNumber(completionRated);
                                 }

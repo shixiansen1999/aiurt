@@ -777,6 +777,7 @@ GROUP BY
     <select id="getReportOmitList" resultType="com.aiurt.boot.report.model.PatrolReport">
     select
 	count( pt.omit_status = 1 OR NULL ) AS missInspectedNumber,
+	GROUP_CONCAT(pt.id) as taskId,
 	pto.org_code
 FROM
 	patrol_task pt
@@ -791,7 +792,7 @@ FROM
 	 AND DATE_FORMAT( pt.patrol_date, '%Y-%m-%d' ) BETWEEN DATE_FORMAT( #{condition.startDate}, '%Y-%m-%d' )
 	 AND DATE_FORMAT( #{condition.endDate}, '%Y-%m-%d' )
      </if>
-    <if test="condition.lineCode != null and condition.stationCode != ''">
+    <if test="condition.lineCode != null and condition.stationCode != null">
 	and pt.code in (
 	SELECT pps.task_code
 	FROM patrol_task_station pps
@@ -804,7 +805,10 @@ FROM
 	SELECT pps.task_code
 	FROM patrol_task_station pps
 	LEFT JOIN cs_station cs on pps.station_code = cs.station_code
-	where  cs.line_code = #{condition.lineCode}
+	where  cs.station_code in
+	   <foreach collection="param1.stationCodeList" item="item" open="(" separator="," close=")">
+                #{item}
+       </foreach>
      )
     </if>
      <if test="condition.stationCode != null and condition.lineCode == null">

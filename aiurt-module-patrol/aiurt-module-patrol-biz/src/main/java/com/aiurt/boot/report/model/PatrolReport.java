@@ -24,8 +24,8 @@ public class PatrolReport {
      * 任务id
      */
     private String taskId;
-    /*
-     * 班组
+    /**
+     * 班组名
      */
     @ApiModelProperty("班组名")
     @Excel(name = "班组", width = 15)
