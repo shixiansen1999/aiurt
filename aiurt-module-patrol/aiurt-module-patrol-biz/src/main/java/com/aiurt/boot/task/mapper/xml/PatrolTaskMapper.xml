@@ -1087,13 +1087,23 @@ GROUP BY
     </select>
     <select id="selectDepart" resultType="com.aiurt.boot.report.model.dto.LineOrStationDTO">
        select
+        a.id as id,
         a.org_code as code,
-        a.depart_name as name
+        a.depart_name as name,
+        a.org_category as orgCategory
     from
         sys_depart a
     where
     a.manager_id = #{id}
-	and a.org_category in (3,4,5)
-
     </select>
+    <select id="getUserOrgCategory" resultType="com.aiurt.boot.report.model.dto.LineOrStationDTO">
+        select
+        a.id as id,
+        a.org_code as code,
+        a.depart_name as name
+        from
+        sys_depart a
+        where a.parent_id=#{id}
+        and a.org_category in(3,4,5)
+     </select>
 </mapper>

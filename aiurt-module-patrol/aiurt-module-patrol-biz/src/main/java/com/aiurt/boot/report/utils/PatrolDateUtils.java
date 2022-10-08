@@ -163,7 +163,6 @@ public class PatrolDateUtils {
                         //结束时间的周日
                         DateTime endSunday = DateUtil.endOfWeek(end);
                         long betweenDay = DateUtil.between(startMonday, endSunday, DateUnit.DAY)+1;
-                        System.out.println(betweenDay/7);
                         return betweenDay/7;
                     }
                     //结束月份小于等于开始月份
@@ -174,7 +173,6 @@ public class PatrolDateUtils {
                         //结束时间的周日
                         DateTime endSunday = DateUtil.endOfWeek(end);
                         long betweenDay = DateUtil.between(startMonday, endSunday, DateUnit.DAY)+1;
-                        System.out.println(betweenDay/7);
                         return betweenDay/7;
                     }
                 }
@@ -188,7 +186,6 @@ public class PatrolDateUtils {
                         //结束时间的周日
                         DateTime endSunday = DateUtil.endOfWeek(end);
                         long betweenDay = DateUtil.between(startMonday, endSunday, DateUnit.DAY)+1;
-                        System.out.println(betweenDay/7);
                         return betweenDay/7;
                     }
                     //结束月份小于等于开始月份
@@ -199,7 +196,6 @@ public class PatrolDateUtils {
                         //结束时间的周日
                         DateTime endSunday = DateUtil.endOfWeek(end);
                         long betweenDay = DateUtil.between(startMonday, endSunday, DateUnit.DAY)+1;
-                        System.out.println(betweenDay/7);
                         return betweenDay/7;
                     }
                 }
@@ -220,7 +216,6 @@ public class PatrolDateUtils {
                         Date nowSunday = DateUtil.endOfWeek(new Date());
                         DateTime nowLastSunday = DateUtil.offsetDay(nowSunday, -7);
                         long betweenDay = DateUtil.between(startMonday, nowLastSunday, DateUnit.DAY)+1;
-                        System.out.println(betweenDay/7);
                         return betweenDay/7;
                     }
                     //结束月份小于等于开始月份
@@ -231,7 +226,6 @@ public class PatrolDateUtils {
                         //结束时间的周日
                         DateTime endSunday = DateUtil.endOfWeek(end);
                         long betweenDay = DateUtil.between(startMonday, endSunday, DateUnit.DAY)+1;
-                        System.out.println(betweenDay/7);
                         return betweenDay/7;
                     }
                 }
@@ -247,7 +241,6 @@ public class PatrolDateUtils {
                         Date nowSunday = DateUtil.endOfWeek(new Date());
                         DateTime nowLastSunday = DateUtil.offsetDay(nowSunday, -7);
                         long betweenDay = DateUtil.between(startMonday, nowLastSunday, DateUnit.DAY)+1;
-                        System.out.println(betweenDay/7);
                         return betweenDay/7;
 
                     }
@@ -260,7 +253,6 @@ public class PatrolDateUtils {
                         Date nowSunday = DateUtil.endOfWeek(new Date());
                         DateTime nowLastSunday = DateUtil.offsetDay(nowSunday, -7);
                         long betweenDay = DateUtil.between(startMonday, nowLastSunday, DateUnit.DAY)+1;
-                        System.out.println(betweenDay/7);
                         return betweenDay/7;
                     }
                 }
@@ -283,16 +275,12 @@ public class PatrolDateUtils {
         int result=date.compareTo(fomatDate1);
         //如果日期相等返回0
         if(result==0){
-            System.out.println("两个时间相等");
             return 0;
         }else if(result<0){
             //小于0，参数date1就是在date2之后
-
-            System.out.println("在当前时间之后");
             return 2;
         }else{
             //大于0，参数date1就是在date2之前
-            System.out.println("在当前时间之前");
             return 1;
         }
     }

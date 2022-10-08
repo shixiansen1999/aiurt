@@ -59,10 +59,10 @@ public class PatrolReportService {
         LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         List<SysDepartModel> userSysDepart = sysBaseAPI.getUserSysDepart(user.getId());
         List<String> orgList = userSysDepart.stream().map(SysDepartModel::getOrgCode).collect(Collectors.toList());
+        //当前人无配置班组时，返回空列表
         if(CollUtil.isEmpty(orgList))
         {
-            report.setOrgCode("null");
-            orgCodeName.setOrgCode("null");
+            return  pageList.setRecords(new ArrayList<>());
         }
         else
         {
@@ -146,6 +146,7 @@ public class PatrolReportService {
                                 patrolReport.setAwmPatrolNumber("-");
                                 patrolReport.setAmmPatrolNumber("-");
                             } else {
+                                //计算平均每周漏检数
                                 long weekNumber = getWeekNumber(report.getStartDate(), report.getEndDate());
                                 if (weekNumber == 0) {
                                     patrolReport.setTaskId(d.getTaskId());
@@ -160,6 +161,7 @@ public class PatrolReportService {
                                     patrolReport.setMissInspectedNumber(d.getMissInspectedNumber());
                                     patrolReport.setAwmPatrolNumber(completionRated);
                                 }
+                                //计算平均每每月漏检数
                                 long monthNumber = getMonthNumber(report.getStartDate(), report.getEndDate());
                                 if (monthNumber == 0) {
                                     patrolReport.setAmmPatrolNumber("-");
@@ -290,14 +292,12 @@ public class PatrolReportService {
                 {
 
                     int monthNumber = 12-startMonth+1+endMonth;
-                    //System.out.println("结束时间小于当前时间的,并且结束年份大于开始月份，月数:"+monthNumber);
                     return monthNumber;
                 }
                 //结束月份大于等于开始月份
                 else
                 {
                     int monthNumber = endMonth-startMonth+1;
-                    //System.out.println("结束时间小于当前时间的,并且结束年份等于开始月份，月数:"+monthNumber);
                     return monthNumber;
                 }
 
@@ -312,14 +312,12 @@ public class PatrolReportService {
                 //结束年份大于开始年份
                 if(endYear>startYear) {
                     int monthNumber = lastMonth+12-startMonth+1;
-                   // System.out.println("结束时间大于等于当前时间，结束年份大于开始年份，月数:"+monthNumber);
                     return monthNumber;
                 }
                 //结束年份小于等于开始年份
                 else
                 {
                     int monthNumber = lastMonth-startMonth+1;
-                    //System.out.println("结束时间大于等于当前时间，结束年份小于开始年份，月数:"+monthNumber);
                     return monthNumber;
                 }
             }
@@ -541,6 +539,30 @@ public class PatrolReportService {
     public List<LineOrStationDTO> selectDepart () {
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         List<LineOrStationDTO> lineOrStationDTOS = patrolTaskMapper.selectDepart(sysUser.getId());
-        return lineOrStationDTOS;
-    }
+        //获取自己及管辖的下的班组
+        if (CollUtil.isEmpty(lineOrStationDTOS)) {
+            return CollUtil.newArrayList();
+        } else {
+            List<LineOrStationDTO> list = new ArrayList<>();
+            for (LineOrStationDTO model : lineOrStationDTOS) {
+                if (model.getOrgCategory().equals("3") || model.getOrgCategory().equals("4") || model.getOrgCategory().equals("5")) {
+                    list.add(model);
+                    List<LineOrStationDTO> models = patrolTaskMapper.getUserOrgCategory(model.getId());
+                    if (CollUtil.isNotEmpty(models)) {
+                        list.addAll(models);
+                    }
+                } else {
+                    List<LineOrStationDTO> models = patrolTaskMapper.getUserOrgCategory(model.getId());
+                    if (CollUtil.isNotEmpty(models)) {
+                        list.addAll(models);
+                    }
+                }
+            }
+            if (CollUtil.isEmpty(list)) {
+                return CollUtil.newArrayList();
+            } else {
+                return list;
+            }
         }
+    }
+}

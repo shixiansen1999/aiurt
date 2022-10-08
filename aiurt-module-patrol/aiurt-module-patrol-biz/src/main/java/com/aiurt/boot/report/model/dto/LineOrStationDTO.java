@@ -13,6 +13,8 @@ import lombok.Data;
  */
 @Data
 public class LineOrStationDTO {
+    private String id;
     private String name;
     private String code;
+    private String orgCategory;
 }
