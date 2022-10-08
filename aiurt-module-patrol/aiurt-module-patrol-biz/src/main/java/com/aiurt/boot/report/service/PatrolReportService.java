@@ -59,6 +59,7 @@ public class PatrolReportService {
         LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         List<SysDepartModel> userSysDepart = sysBaseAPI.getUserSysDepart(user.getId());
         List<String> orgList = userSysDepart.stream().map(SysDepartModel::getOrgCode).collect(Collectors.toList());
+        List<String> orgIdList = userSysDepart.stream().map(SysDepartModel::getId).collect(Collectors.toList());
         //当前人无配置班组时，返回空列表
         if(CollUtil.isEmpty(orgList))
         {
@@ -66,8 +67,8 @@ public class PatrolReportService {
         }
         else
         {
-            report.setOrgList(orgList);
-            orgCodeName.setOrgList(orgList);
+            report.setOrgCodeList(orgList);
+            orgCodeName.setOrgIdList(orgIdList);
         }
         if(ObjectUtil.isNotEmpty(report.getLineCode()))
         {

@@ -49,7 +49,8 @@ public class PatrolReportModel {
      */
     @ApiModelProperty("结束时间")
     private String endDate;
-    private List<String> orgList;
+    private List<String> orgCodeList;
+    private List<String> orgIdList;
     @ApiModelProperty("分页参数")
     private Integer pageNo;
     @ApiModelProperty("分页参数")

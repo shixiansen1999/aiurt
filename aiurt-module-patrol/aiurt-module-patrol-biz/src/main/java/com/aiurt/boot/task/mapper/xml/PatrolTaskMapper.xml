@@ -697,23 +697,23 @@
   group by a.id
     </select>
     <select id="getReportTaskList" resultType="com.aiurt.boot.report.model.PatrolReport">
-SELECT
-	( SELECT sd.depart_name FROM sys_depart sd WHERE pto.org_code = sd.org_code ) AS orgName,
-	pto.org_code
-FROM
-	patrol_task pt
-	JOIN patrol_task_organization pto ON pt.`code` = pto.task_code
-	 <if test="condition.orgList != null and condition.orgList.size>0 ">
-	  AND pto.org_code IN
-	    <foreach collection="condition.orgList" item="item" open="(" separator="," close=")">
+   SELECT
+	sd.depart_name AS orgName,
+	sd.org_code AS orgCode
+   FROM
+	sys_depart sd
+  WHERE
+	 <if test="condition.orgIdList != null and condition.orgIdList.size>0 ">
+	 sd.id IN
+	    <foreach collection="condition.orgIdList" item="item" open="(" separator="," close=")">
                     #{item}
          </foreach>
 	 </if>
     <if test="condition.orgCode != null and condition.orgCode != ''">
-    and pto.org_code = #{condition.orgCode}
+    and sd.org_code = #{condition.orgCode}
    </if>
 GROUP BY
-	pto.org_code
+	sd.depart_name,sd.org_code
     </select>
     <select id="getTasks" resultType="com.aiurt.boot.report.model.PatrolReport">
         SELECT
@@ -728,9 +728,9 @@ GROUP BY
         pto.org_code
         FROM patrol_task pt
         JOIN patrol_task_organization pto ON pt.`code` = pto.task_code
-        <if test="condition.orgList != null and condition.orgList.size>0 ">
+        <if test="condition.orgCodeList != null and condition.orgCodeList.size>0 ">
             AND pto.org_code IN
-            <foreach collection="condition.orgList" item="item" open="(" separator="," close=")">
+            <foreach collection="condition.orgCodeList" item="item" open="(" separator="," close=")">
                 #{item}
             </foreach>
         </if>
@@ -782,9 +782,9 @@ GROUP BY
 FROM
 	patrol_task pt
 	JOIN patrol_task_organization pto ON pt.`code` = pto.task_code
-	 <if test="condition.orgList != null and condition.orgList.size>0 ">
+	 <if test="condition.orgCodeList != null and condition.orgCodeList.size>0 ">
 	  AND pto.org_code IN
-	    <foreach collection="condition.orgList" item="item" open="(" separator="," close=")">
+	    <foreach collection="condition.orgCodeList" item="item" open="(" separator="," close=")">
                     #{item}
          </foreach>
 	 </if>
