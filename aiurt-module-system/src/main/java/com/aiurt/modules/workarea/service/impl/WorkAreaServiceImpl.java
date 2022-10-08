@@ -86,7 +86,10 @@ public class WorkAreaServiceImpl extends ServiceImpl<WorkAreaMapper, WorkArea> i
             List<SysDepart> sysDepartList = new ArrayList<>();
             for (String orgCode : orgCodeList) {
                 SysDepart sysDepart = sysDepartMapper.selectOne(new LambdaQueryWrapper<SysDepart>().eq(SysDepart::getOrgCode, orgCode));
-                sysDepartList.add(sysDepart);
+                if(ObjectUtil.isNotEmpty(sysDepart))
+                {
+                    sysDepartList.add(sysDepart);
+                }
             }
             List<String> orgIdList = sysDepartList.stream().map(SysDepart::getId).collect(Collectors.toList());
             w.setOrgIdList(orgIdList);

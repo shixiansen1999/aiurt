@@ -134,17 +134,20 @@ public class PatrolReportService {
                         } else {
                             //是否是默认，是，本周不算
                             if (isNullDate == true) {
+                                patrolReport.setMissInspectedNumber(d.getMissInspectedNumber());
                                 patrolReport.setAwmPatrolNumber("-");
                                 patrolReport.setAmmPatrolNumber("-");
                             } else {
                                 long weekNumber = getWeekNumber(omitModel.getStartDate(), omitModel.getEndDate());
                                 if (weekNumber == 0) {
+                                    patrolReport.setMissInspectedNumber(d.getMissInspectedNumber());
                                     patrolReport.setAwmPatrolNumber("-");
                                 } else {
                                     double avg = NumberUtil.div(d.getMissInspectedNumber() , weekNumber);
                                     BigDecimal b = new BigDecimal(avg);
                                     double fave = b.setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
                                     String completionRated = String.format("%.2f", fave);
+                                    patrolReport.setMissInspectedNumber(d.getMissInspectedNumber());
                                     patrolReport.setAwmPatrolNumber(completionRated);
                                 }
                                 long monthNumber = getMonthNumber(omitModel.getStartDate(), omitModel.getEndDate());
