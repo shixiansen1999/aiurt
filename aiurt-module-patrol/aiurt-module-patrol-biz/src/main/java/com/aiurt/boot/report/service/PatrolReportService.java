@@ -146,7 +146,7 @@ public class PatrolReportService {
                                 patrolReport.setAwmPatrolNumber("-");
                                 patrolReport.setAmmPatrolNumber("-");
                             } else {
-                                long weekNumber = getWeekNumber(omitModel.getStartDate(), omitModel.getEndDate());
+                                long weekNumber = getWeekNumber(report.getStartDate(), report.getEndDate());
                                 if (weekNumber == 0) {
                                     patrolReport.setTaskId(d.getTaskId());
                                     patrolReport.setMissInspectedNumber(d.getMissInspectedNumber());
@@ -160,7 +160,7 @@ public class PatrolReportService {
                                     patrolReport.setMissInspectedNumber(d.getMissInspectedNumber());
                                     patrolReport.setAwmPatrolNumber(completionRated);
                                 }
-                                long monthNumber = getMonthNumber(omitModel.getStartDate(), omitModel.getEndDate());
+                                long monthNumber = getMonthNumber(report.getStartDate(), report.getEndDate());
                                 if (monthNumber == 0) {
                                     patrolReport.setAmmPatrolNumber("-");
                                 } else {
