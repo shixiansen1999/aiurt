@@ -77,8 +77,8 @@ public class FaultCountController {
      * @param endDate
      * @return
      */
-    @AutoLog(value = "首页-故障概况")
-    @ApiOperation(value="故障概况", notes="故障概况")
+    @AutoLog(value = "首页-故障概况统计")
+    @ApiOperation(value="故障概况统计", notes="故障概况统计")
     @GetMapping(value = "/queryFaultCount")
     public Result<FaultIndexDTO> queryFaultCount(@ApiParam(name = "startDate", value = "开始日期") @RequestParam("startDate") @DateTimeFormat(pattern = "yyyy-MM-dd") Date startDate,
                                                 @ApiParam(name = "endDate", value = "结束日期") @RequestParam("endDate") @DateTimeFormat(pattern = "yyyy-MM-dd") Date endDate){

@@ -4,11 +4,9 @@
     <select id="queryFaultCount" parameterType="Date" resultType="com.aiurt.modules.fault.entity.Fault">
         select * from fault
         <where>
-            <if test="startDate != null ">
-                AND <![CDATA[ approval_pass_time >= #{startDate,jdbcType=DATE}  ]]>
-            </if>
-            <if test="endDate != null ">
-                AND <![CDATA[ approval_pass_time <= #{endDate,jdbcType=DATE}  ]]>
+            <if test="startDate!=null and endDate!=null">
+                and date_format(approval_pass_time ,'%Y-%m-%d') &gt;=  date_format(#{startDate},'%Y-%m-%d')
+                and date_format(approval_pass_time ,'%Y-%m-%d') &lt;= date_format(#{endDate},'%Y-%m-%d')
             </if>
         </where>
     </select>
