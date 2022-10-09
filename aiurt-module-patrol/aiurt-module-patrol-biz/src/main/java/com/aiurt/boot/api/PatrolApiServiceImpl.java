@@ -4,6 +4,8 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.aiurt.boot.constant.PatrolConstant;
+import com.aiurt.boot.dto.UserTeamParameter;
+import com.aiurt.boot.dto.UserTeamPatrolDTO;
 import com.aiurt.boot.screen.constant.ScreenConstant;
 import com.aiurt.boot.screen.model.ScreenDurationTask;
 import com.aiurt.boot.screen.utils.ScreenDateUtil;
@@ -21,6 +23,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.LoginUser;
+import org.jeecg.common.system.vo.SysDepartModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -42,6 +45,8 @@ public class PatrolApiServiceImpl implements PatrolApi {
     private PatrolAccompanyMapper patrolAccompanyMapper;
     @Autowired
     private PatrolTaskUserMapper patrolTaskUserMapper;
+    @Autowired
+    private ISysBaseAPI sysBaseAPI;
 
     /**
      * 首页-统计日程的巡视完成数
@@ -147,4 +152,28 @@ public class PatrolApiServiceImpl implements PatrolApi {
         return userDurationMap;
     }
 
+    @Override
+    public Map<String, UserTeamPatrolDTO> getUserHours(UserTeamParameter userTeamParameter)
+    {
+        LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        List<SysDepartModel> userSysDepart = sysBaseAPI.getUserSysDepart(user.getId());
+        List<String> orgCodes = userSysDepart.stream().map(SysDepartModel::getId).collect(Collectors.toList());
+        Map<String, UserTeamPatrolDTO> patrolDTOMap = new HashMap<>();
+        List<LoginUser> useList = sysBaseAPI.getUseList(orgCodes);
+        List<String> useIds = useList.stream().map(LoginUser::getId).collect(Collectors.toList());
+         UserTeamPatrolDTO zero = setZero();
+        for (String useId : useIds) {
+            patrolDTOMap.put(useId,zero);
+        }
+        return patrolDTOMap;
+    }
+    public UserTeamPatrolDTO setZero() {
+        UserTeamPatrolDTO patrolDTO = new UserTeamPatrolDTO();
+        patrolDTO.setMissPatrolNumber(0);
+        patrolDTO.setPlanFinishRate("0");
+        patrolDTO.setWorkHours(0);
+        patrolDTO.setActualFinishTaskNumber(0);
+        patrolDTO.setPlanTaskNumber(0);
+        return patrolDTO;
+    }
 }

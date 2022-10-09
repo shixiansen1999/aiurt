@@ -4,12 +4,10 @@ import com.aiurt.boot.screen.model.ScreenDurationTask;
 import com.aiurt.boot.task.entity.PatrolTask;
 import com.aiurt.boot.task.entity.PatrolTaskUser;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import org.apache.ibatis.annotations.MapKey;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 
 /**
  * @Description: patrol_task_user
@@ -54,4 +52,12 @@ public interface PatrolTaskUserMapper extends BaseMapper<PatrolTaskUser> {
      * @return
      */
     List<ScreenDurationTask> getScreentAccompanyDuration(@Param("startTime") Date startTime, @Param("endTime") Date endTime);
+
+    /**
+     * 查询班组及子级
+     * @param orgCode
+     * @return
+     */
+
+
 }
