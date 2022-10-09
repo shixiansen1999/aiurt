@@ -30,6 +30,11 @@ public class OverhaulStatisticsDTOS {
     @ApiModelProperty(value = "任务编码")
     private String taskCode;
 
+    /**班组id*/
+    @TableField(exist = false)
+    @ApiModelProperty(value = "班组id")
+    private String  orgId;
+
     /**班组编码*/
     @TableField(exist = false)
     @ApiModelProperty(value = "班组编码")
@@ -45,6 +50,11 @@ public class OverhaulStatisticsDTOS {
     @Excel(name = "班组名称", width = 15)
     @ApiModelProperty(value = "班组名称")
     private String orgName;
+
+    /**班组类别*/
+    @TableField(exist = false)
+    @ApiModelProperty(value = "班组类别")
+    private String  orgCategory;
 
     /**用户id*/
     @TableField(exist = false)
