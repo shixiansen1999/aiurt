@@ -1,5 +1,6 @@
 package com.aiurt.boot.bigscreen.mapper;
 
+import com.aiurt.boot.index.dto.TaskUserDTO;
 import com.aiurt.boot.index.dto.TeamPortraitDTO;
 import com.aiurt.boot.index.dto.TeamUserDTO;
 import com.aiurt.boot.index.dto.TeamWorkAreaDTO;
@@ -26,9 +27,9 @@ public interface BigScreenPlanMapper {
 
     List<RepairRecordDetailDTO> getRepairDuration(@Param("userList") List<LoginUser> userList,@Param("beginDate")Date beginDate,@Param("endDate") Date endDate);
 
-    Long getInspecitonTotalTime(@Param("userList")List<LoginUser> userList,@Param("beginDate")Date beginDate,@Param("endDate") Date endDate);
+    List<TaskUserDTO> getInspecitonTotalTime(@Param("userList")List<LoginUser> userList, @Param("beginDate")Date beginDate, @Param("endDate") Date endDate);
 
-    Long getInspecitonTotalTimeByPeer(@Param("userList")List<LoginUser> userList,@Param("beginDate")Date beginDate,@Param("endDate") Date endDate);
+    List<TaskUserDTO> getInspecitonTotalTimeByPeer(@Param("userList")List<LoginUser> userList,@Param("beginDate")Date beginDate,@Param("endDate") Date endDate);
 
     List<TeamPortraitDTO> getWorkAreaById(@Param("teamId")String teamId);
 
