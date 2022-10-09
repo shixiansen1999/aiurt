@@ -106,10 +106,10 @@ public class CommonCtroller {
         }
 
         List<CsUserMajorModel> majorModelList = csUserMajorService.getMajorByUserId(userId);
-        majorModelList.stream().collect(Collectors.toMap(CsUserMajorModel::getMajorCode, ))
-
-        List<SelectTable> list = majorModelList.stream().map(csMajor -> {
+        Map<String, CsUserMajorModel> modelMap = majorModelList.stream().collect(Collectors.toMap(CsUserMajorModel::getMajorCode, t -> t, (t1, t2) -> t1));
+        List<SelectTable> list = modelMap.keySet().stream().map(key -> {
             SelectTable table = new SelectTable();
+            CsUserMajorModel csMajor = modelMap.getOrDefault(key, new CsUserMajorModel());
             table.setLabel(csMajor.getMajorName());
             table.setKey(csMajor.getId());
             table.setValue(csMajor.getMajorCode());
