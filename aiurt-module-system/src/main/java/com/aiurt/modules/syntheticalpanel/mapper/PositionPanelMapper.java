@@ -1,7 +1,7 @@
 package com.aiurt.modules.syntheticalpanel.mapper;
 
 import com.aiurt.modules.position.entity.CsStation;
-import com.aiurt.modules.syntheticalpanel.model.PositionPanel;
+import com.aiurt.modules.syntheticalpanel.model.PositionPanelModel;
 import com.aiurt.modules.system.entity.SysUser;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Component;
@@ -20,7 +20,7 @@ public interface PositionPanelMapper {
      * @param positionPanel
      * @return
      */
-    List<PositionPanel> getAllWorkArea(@Param("positionPanel") PositionPanel positionPanel);
+    List<PositionPanelModel> getAllWorkArea(@Param("positionPanel") PositionPanelModel positionPanel);
 
     /**
      * 查询工区关联的站点
@@ -36,7 +36,7 @@ public interface PositionPanelMapper {
      * @param stationName
      * @return
      */
-    List<PositionPanel>  queryById(@Param("stationName") String stationName);
+    List<PositionPanelModel>  queryById(@Param("stationName") String stationName);
 
     /**
      * 修改
@@ -44,7 +44,7 @@ public interface PositionPanelMapper {
      * @param positionPanel
      * @return
      */
-    void edit(@Param("positionPanel") PositionPanel positionPanel);
+    void edit(@Param("positionPanel") PositionPanelModel positionPanel);
 
     /**
      * 通过名字查询站点信息
@@ -52,7 +52,7 @@ public interface PositionPanelMapper {
      * @param positionPanel
      * @return
      */
-    List<CsStation> getStation(@Param("positionPanel") PositionPanel positionPanel);
+    List<CsStation> getStation(@Param("positionPanel") PositionPanelModel positionPanel);
 
     /**
      * 通过id查询班组人员信息
