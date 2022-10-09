@@ -5,7 +5,7 @@ import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.modules.position.entity.CsStation;
 import com.aiurt.modules.syntheticalpanel.mapper.PositionPanelMapper;
-import com.aiurt.modules.syntheticalpanel.model.PositionPanel;
+import com.aiurt.modules.syntheticalpanel.model.PositionPanelModel;
 import com.aiurt.modules.syntheticalpanel.service.PositionPanelService;
 import com.aiurt.modules.system.entity.SysUser;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,12 +25,12 @@ public class PositionPanelServiceImpl implements PositionPanelService {
     private PositionPanelMapper positionPanelMapper;
 
     @Override
-    public List<PositionPanel> readAll(PositionPanel positionPanel) {
+    public List<PositionPanelModel> readAll(PositionPanelModel positionPanel) {
         //查询工区
-        List<PositionPanel> allWorkArea = positionPanelMapper.getAllWorkArea(positionPanel);
+        List<PositionPanelModel> allWorkArea = positionPanelMapper.getAllWorkArea(positionPanel);
         //查询工区关联的站点
         if (CollectionUtil.isNotEmpty(allWorkArea)) {
-            for (PositionPanel panel : allWorkArea) {
+            for (PositionPanelModel panel : allWorkArea) {
                 List<CsStation> stations = positionPanelMapper.getStations(panel.getCode());
                 panel.setCsStationList(stations);
             }
@@ -39,15 +39,15 @@ public class PositionPanelServiceImpl implements PositionPanelService {
     }
 
     @Override
-    public List<PositionPanel> queryById(String stationName) {
-        List<PositionPanel> positionPanels = new ArrayList<>();
+    public List<PositionPanelModel> queryById(String stationName) {
+        List<PositionPanelModel> positionPanels = new ArrayList<>();
         if (StrUtil.isNotEmpty(stationName)) {
-            List<PositionPanel> list = positionPanelMapper.queryById(stationName);
+            List<PositionPanelModel> list = positionPanelMapper.queryById(stationName);
             if (CollUtil.isNotEmpty(list)) {
                 //去掉没有班组的线路
-                List<PositionPanel> collect = list.stream().filter(p -> p.getOrgCode()!=null).collect(Collectors.toList());
+                List<PositionPanelModel> collect = list.stream().filter(p -> p.getOrgCode()!=null).collect(Collectors.toList());
                 if (CollectionUtil.isNotEmpty(collect)) {
-                    for (PositionPanel panel : collect) {
+                    for (PositionPanelModel panel : collect) {
                         List<SysUser> userById = positionPanelMapper.getUserById(panel.getOrgCode());
                         panel.setUserList(userById);
                     }
@@ -59,7 +59,7 @@ public class PositionPanelServiceImpl implements PositionPanelService {
     }
 
     @Override
-    public void edit(PositionPanel positionPanel) {
+    public void edit(PositionPanelModel positionPanel) {
         List<CsStation> stations = positionPanelMapper.getStation(positionPanel);
         if (CollUtil.isNotEmpty(stations)) {
             for (CsStation csStation : stations) {

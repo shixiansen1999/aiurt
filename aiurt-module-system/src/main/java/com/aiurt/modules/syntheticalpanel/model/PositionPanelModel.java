@@ -20,7 +20,7 @@ import java.util.List;
 @Accessors(chain = true)
 @EqualsAndHashCode(callSuper = false)
 @ApiModel(value="综合看板线路信息", description="综合看板线路信息")
-public class PositionPanel implements Serializable {
+public class PositionPanelModel implements Serializable {
 
     /**id*/
     @ApiModelProperty(value = "id")

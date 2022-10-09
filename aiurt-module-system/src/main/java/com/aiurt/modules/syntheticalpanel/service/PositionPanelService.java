@@ -1,6 +1,6 @@
 package com.aiurt.modules.syntheticalpanel.service;
 
-import com.aiurt.modules.syntheticalpanel.model.PositionPanel;
+import com.aiurt.modules.syntheticalpanel.model.PositionPanelModel;
 
 import java.util.List;
 
@@ -14,7 +14,7 @@ public interface PositionPanelService {
      * @param positionPanel
      * @return List<PositionPanel>
      */
-    List<PositionPanel> readAll(PositionPanel positionPanel);
+    List<PositionPanelModel> readAll(PositionPanelModel positionPanel);
 
     /**
      * 通过名称查询
@@ -22,7 +22,7 @@ public interface PositionPanelService {
      * @param stationName
      * @return
      */
-    List<PositionPanel> queryById(String stationName);
+    List<PositionPanelModel> queryById(String stationName);
 
     /**
      *  编辑
@@ -30,5 +30,5 @@ public interface PositionPanelService {
      * @param positionPanel
      * @return
      */
-    void edit(PositionPanel positionPanel);
+    void edit(PositionPanelModel positionPanel);
 }
