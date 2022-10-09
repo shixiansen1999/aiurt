@@ -1,15 +1,11 @@
 package com.aiurt.modules.config;
 
+import com.aiurt.modules.listener.ProcessStartListener;
 import com.aiurt.modules.listener.SequenceflowTakenListener;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.module.SimpleModule;
-import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import lombok.extern.slf4j.Slf4j;
 import org.flowable.bpmn.converter.BpmnXMLConverter;
 import org.flowable.common.engine.api.delegate.event.FlowableEngineEventType;
 import org.flowable.common.engine.api.delegate.event.FlowableEventListener;
-import org.flowable.common.engine.api.delegate.event.FlowableEventType;
 import org.flowable.editor.language.json.converter.BpmnJsonConverter;
 import org.flowable.spring.SpringProcessEngineConfiguration;
 import org.flowable.spring.boot.EngineConfigurationConfigurer;
@@ -56,9 +52,10 @@ public class FlowBpmnConfig implements EngineConfigurationConfigurer<SpringProce
 
         Map<String, List<FlowableEventListener>> typedEventListeners = new HashMap<>();
         typedEventListeners.put(FlowableEngineEventType.SEQUENCEFLOW_TAKEN.name(), Arrays.asList(new SequenceflowTakenListener()));
+        typedEventListeners.put(FlowableEngineEventType.PROCESS_STARTED.name(), Arrays.asList(new ProcessStartListener()));
         configuration.setTypedEventListeners(typedEventListeners);
+
         //设置字体
-        // 字体
         configuration.setActivityFontName("宋体");
         configuration.setLabelFontName("宋体");
         configuration.setAnnotationFontName("宋体");

@@ -106,6 +106,7 @@ public class CommonCtroller {
         }
 
         List<CsUserMajorModel> majorModelList = csUserMajorService.getMajorByUserId(userId);
+        majorModelList.stream().collect(Collectors.toMap(CsUserMajorModel::getMajorCode, ))
 
         List<SelectTable> list = majorModelList.stream().map(csMajor -> {
             SelectTable table = new SelectTable();

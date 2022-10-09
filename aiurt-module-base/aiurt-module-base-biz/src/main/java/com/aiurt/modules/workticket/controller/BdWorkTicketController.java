@@ -133,7 +133,7 @@ public class BdWorkTicketController extends BaseController<BdWorkTicket, IBdWork
 	 * @param pageSize
 	 * @return
 	 */
-	 @AutoLog(value = "工作票任务-分页列表查询")
+	 @AutoLog(value = "工作票待办任务-分页列表查询")
 	 @ApiOperation(value="工作票任务-分页列表查询", notes="工作票任务-分页列表查询")
 	 @GetMapping(value = "/list")
 	 public Result<?> queryPageList(BdWorkTicket bdWorkTicket,

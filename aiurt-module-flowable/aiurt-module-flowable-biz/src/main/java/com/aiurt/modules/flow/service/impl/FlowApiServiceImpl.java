@@ -188,13 +188,15 @@ public class FlowApiServiceImpl implements FlowApiService {
         // 获取流程启动后的第一个任务。
         Task task = taskService.createTaskQuery().processInstanceId(processInstance.getId()).active().singleResult();
         // 完成流程启动后的第一个任务
-        if (StrUtil.equalsAny(task.getAssignee(), loginUser.getUsername(), FlowConstant.START_USER_NAME_VAR)) {
+        if (StrUtil.equalsAny(task.getAssignee(), loginUser.getUsername(), FlowConstant.START_USER_NAME_VAR)
+                && Objects.nonNull(startBpmnDTO.getFlowTaskCompleteDTO()) && StrUtil.equalsIgnoreCase(startBpmnDTO.getFlowTaskCompleteDTO().getApprovalType(), FlowApprovalType.AGREE)) {
             // 按照规则，调用该方法的用户，就是第一个任务的assignee，因此默认会自动执行complete。
             ActCustomTaskComment flowTaskComment = BeanUtil.copyProperties(startBpmnDTO.getFlowTaskCompleteDTO(), ActCustomTaskComment.class);
             if (ObjectUtil.isNotEmpty(flowTaskComment)) {
                 flowTaskComment.fillWith(task);
             }
-           // this.completeTask(task, flowTaskComment, startBpmnDTO.getBusData());
+            // 不需要保存中间业务数据了
+           this.completeTask(task, flowTaskComment, null);
         }
     }
 
@@ -221,6 +223,10 @@ public class FlowApiServiceImpl implements FlowApiService {
      * @return
      */
     public Object saveBusData(String pProcessDefinitionId, String taskId,  Map<String, Object> busData) {
+        log.info("处理中间业务数据");
+        if (Objects.isNull(busData)) {
+            return "";
+        }
         List<ActCustomTaskExt> actCustomTaskExts = customTaskExtService.getBaseMapper().selectList(
                 new LambdaQueryWrapper<ActCustomTaskExt>()
                         .eq(ActCustomTaskExt::getProcessDefinitionId, pProcessDefinitionId)

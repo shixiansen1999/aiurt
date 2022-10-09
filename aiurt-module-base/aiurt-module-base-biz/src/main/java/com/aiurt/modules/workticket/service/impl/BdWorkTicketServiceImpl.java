@@ -31,24 +31,24 @@ public class BdWorkTicketServiceImpl extends ServiceImpl<BdWorkTicketMapper, BdW
 
     @Override
     public String addOrUpdate(BdWorkTicket bdWorkTicket) {
+        if (StrUtil.isBlank(bdWorkTicket.getWorkTicketCode())) {
+            LocalDate localDate = LocalDate.now();
+            DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyyMMdd");
+            String local = localDate.format(fmt);
+            String key = local;
+            key =  "bd_work_ticket:" + local;
 
-        LocalDate localDate = LocalDate.now();
-        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyyMMdd");
-        String local = localDate.format(fmt);
-        String key = local;
-        key =  "bd_work_ticket:" + local;
+            RedisAtomicLong inc = new RedisAtomicLong(key, redisTemplate.getConnectionFactory());
 
-        RedisAtomicLong inc = new RedisAtomicLong(key, redisTemplate.getConnectionFactory());
+            long increment = inc.getAndIncrement()+1;
 
-        long increment = inc.getAndIncrement()+1;
+            inc.expireAt(getEndTime());
 
-        inc.expireAt(getEndTime());
+            String value = increment>99?String.valueOf(increment):String.format("%02d", increment);
 
-        String value = increment>99?String.valueOf(increment):String.format("%02d", increment);
-
-        String workTicketCode = String.format("%s%s",local,value);
-        bdWorkTicket.setWorkTicketCode(workTicketCode);
-
+            String workTicketCode = String.format("%s%s",local,value);
+            bdWorkTicket.setWorkTicketCode(workTicketCode);
+        }
         boolean b = saveOrUpdate(bdWorkTicket);
         return bdWorkTicket.getId();
     }
