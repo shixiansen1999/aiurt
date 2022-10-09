@@ -587,9 +587,30 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
 
         updateById(fault);
 
-        saveLog(loginUser, "取消挂起", code, FaultStatusEnum.REPAIR.getStatus(), null);
+        //
+        FaultRepairRecord faultRepairRecord = getFaultRepairRecord(code, loginUser);
+
+        Date reqHangupTime = faultRepairRecord.getReqHangupTime();
+
+        long between = DateUtil.between(reqHangupTime, new Date(), DateUnit.SECOND);
+
+
+        saveLog(loginUser, "取消挂起", code, FaultStatusEnum.REPAIR.getStatus(), null, between);
 
         // todo 发送消息
+    }
+
+    private void saveLog(LoginUser loginUser, String context, String faultCode, Integer status, String remark, long between) {
+        OperationProcess operationProcess = OperationProcess.builder()
+                .processLink(context)
+                .processTime(new Date())
+                .faultCode(faultCode)
+                .processPerson(loginUser.getUsername())
+                .processCode(status)
+                .remark(remark)
+                .hangUpTime(between==0?1:between)
+                .build();
+        operationProcessService.save(operationProcess);
     }
 
     /**

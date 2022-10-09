@@ -22,7 +22,6 @@ import com.aiurt.boot.task.dto.PatrolTaskUserContentDTO;
 import com.aiurt.boot.task.dto.SubsystemDTO;
 import com.aiurt.boot.task.entity.PatrolTask;
 import com.aiurt.boot.task.param.PatrolTaskParam;
-import com.aiurt.common.util.IpUtils;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -372,4 +371,11 @@ public interface PatrolTaskMapper extends BaseMapper<PatrolTask> {
      * @return
      */
     List<LineOrStationDTO> selectDepart(@Param("id") String id);
+
+    /**
+     * 获取自己及管辖的班组
+     * @param id
+     * @return
+     */
+    List<LineOrStationDTO> getUserOrgCategory(String id);
 }

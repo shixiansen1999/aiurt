@@ -45,7 +45,7 @@ public class TaskInfoDTO {
      * 动态表单Id。
      */
     @ApiModelProperty(value = "动态表单Id")
-    private Long formId;
+    private String formId;
 
     /**
      * 静态表单路由。

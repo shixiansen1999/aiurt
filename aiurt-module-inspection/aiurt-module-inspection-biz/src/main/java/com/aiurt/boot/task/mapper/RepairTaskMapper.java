@@ -190,4 +190,6 @@ public interface RepairTaskMapper extends BaseMapper<RepairTask> {
     List<OverhaulStatisticsDTO> realNameList(@Param("condition") OverhaulStatisticsDTOS condition);
 
     List<OverhaulStatisticsDTOS> selectDepart(@Param("id") String id);
+
+    List<OverhaulStatisticsDTOS> getUserOrgCategory(@Param("id") String id);
 }

@@ -1,5 +1,6 @@
 package com.aiurt.modules.utils;
 
+import cn.hutool.core.bean.BeanUtil;
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.beanutils.ConvertUtils;
 import org.springframework.aop.support.AopUtils;
@@ -31,7 +32,7 @@ public class ReflectionService {
      * @param paramMap 实际参数
      * @throws Exception
      */
-    public void invokeService(String classz, String methodName, Map<String,Object> paramMap) throws Exception {
+    public Object invokeService(String classz, String methodName, Map<String,Object> paramMap) throws Exception {
         if(!applicationContext.containsBean(classz)) {
             throw new RuntimeException("Spring找不到对应的Bean");
         }
@@ -57,6 +58,8 @@ public class ReflectionService {
 
         // 执行方法
         Object invoke = method.invoke(proxyObject, objects.toArray());
+
+        return invoke;
     }
 
     /**
@@ -66,9 +69,10 @@ public class ReflectionService {
      * @return
      */
     private Method getMethod(Class proxyObject, String methodStr) {
-        Method[] methods = proxyObject.getMethods();
+        Method[] methods = proxyObject.getDeclaredMethods();
 
         for(Method method : methods) {
+            System.out.println(method.getName());
             if(method.getName().equalsIgnoreCase(methodStr)) {
                 return method;
             }
@@ -76,6 +80,8 @@ public class ReflectionService {
 
         return null;
     }
+
+
 
     /**
      * 获取方法实际参数，不支持基本类型
@@ -106,7 +112,8 @@ public class ReflectionService {
                 object = getInstance(parameterType);
 
                 // 赋值
-                BeanUtils.populate(object, paramMap);
+                //BeanUtils.populate(object, paramMap);
+                BeanUtil.copyProperties(paramMap, object);
             }
 
             objectList.add(object);

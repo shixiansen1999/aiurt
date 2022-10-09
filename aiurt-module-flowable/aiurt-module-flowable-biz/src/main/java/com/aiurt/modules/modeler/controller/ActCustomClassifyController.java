@@ -47,7 +47,6 @@ public class ActCustomClassifyController extends BaseController<ActCustomClassif
 	 * @param req
 	 * @return
 	 */
-	//@AutoLog(value = "流程分类-分页列表查询")
 	@ApiOperation(value="流程分类-分页列表查询", notes="流程分类-分页列表查询")
 	@GetMapping(value = "/rootList")
 	public Result<IPage<ActCustomClassify>> queryPageList(ActCustomClassify actCustomClassify,

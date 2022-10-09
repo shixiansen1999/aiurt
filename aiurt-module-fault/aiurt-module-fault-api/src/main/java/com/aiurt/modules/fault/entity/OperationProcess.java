@@ -104,4 +104,7 @@ public class OperationProcess implements Serializable {
 
     @ApiModelProperty(value = "说明")
     private String remark;
+
+    @ApiModelProperty(value = "挂起时间")
+    private Long hangUpTime;
 }

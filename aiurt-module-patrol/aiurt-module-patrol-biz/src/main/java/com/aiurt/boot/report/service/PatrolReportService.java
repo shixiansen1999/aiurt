@@ -59,15 +59,23 @@ public class PatrolReportService {
         LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         List<SysDepartModel> userSysDepart = sysBaseAPI.getUserSysDepart(user.getId());
         List<String> orgList = userSysDepart.stream().map(SysDepartModel::getOrgCode).collect(Collectors.toList());
+        List<String> orgIdList = userSysDepart.stream().map(SysDepartModel::getId).collect(Collectors.toList());
+        //当前人无配置班组时，返回空列表
         if(CollUtil.isEmpty(orgList))
         {
-            report.setOrgCode("null");
-            orgCodeName.setOrgCode("null");
+            return  pageList.setRecords(new ArrayList<>());
         }
         else
         {
-            report.setOrgList(orgList);
-            orgCodeName.setOrgList(orgList);
+            report.setOrgCodeList(orgList);
+            orgCodeName.setOrgIdList(orgIdList);
+        }
+        if(ObjectUtil.isNotEmpty(report.getLineCode()))
+        {
+            //查询该线路下，用户所拥有的站点code
+             List<LineOrStationDTO> stationList = selectStation(report.getLineCode());
+             List<String> stationCodeList = stationList.stream().map(LineOrStationDTO::getCode).collect(Collectors.toList());
+             report.setStationCodeList(stationCodeList);
         }
         orgCodeName.setOrgCode(report.getOrgCode());
         PatrolReportModel omitModel = new PatrolReportModel();
@@ -133,21 +141,29 @@ public class PatrolReportService {
                             patrolReport.setAmmPatrolNumber("-");
                         } else {
                             //是否是默认，是，本周不算
-                            if (isNullDate == true) {
+                            if (isNullDate) {
+                                patrolReport.setTaskId(d.getTaskId());
+                                patrolReport.setMissInspectedNumber(d.getMissInspectedNumber());
                                 patrolReport.setAwmPatrolNumber("-");
                                 patrolReport.setAmmPatrolNumber("-");
                             } else {
-                                long weekNumber = getWeekNumber(omitModel.getStartDate(), omitModel.getEndDate());
+                                //计算平均每周漏检数
+                                long weekNumber = getWeekNumber(report.getStartDate(), report.getEndDate());
                                 if (weekNumber == 0) {
+                                    patrolReport.setTaskId(d.getTaskId());
+                                    patrolReport.setMissInspectedNumber(d.getMissInspectedNumber());
                                     patrolReport.setAwmPatrolNumber("-");
                                 } else {
                                     double avg = NumberUtil.div(d.getMissInspectedNumber() , weekNumber);
                                     BigDecimal b = new BigDecimal(avg);
                                     double fave = b.setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
                                     String completionRated = String.format("%.2f", fave);
+                                    patrolReport.setTaskId(d.getTaskId());
+                                    patrolReport.setMissInspectedNumber(d.getMissInspectedNumber());
                                     patrolReport.setAwmPatrolNumber(completionRated);
                                 }
-                                long monthNumber = getMonthNumber(omitModel.getStartDate(), omitModel.getEndDate());
+                                //计算平均每每月漏检数
+                                long monthNumber = getMonthNumber(report.getStartDate(), report.getEndDate());
                                 if (monthNumber == 0) {
                                     patrolReport.setAmmPatrolNumber("-");
                                 } else {
@@ -174,7 +190,7 @@ public class PatrolReportService {
                 patrolReport.setTaskTotal(0);
                 patrolReport.setAbnormalNumber(0);
                 patrolReport.setMissInspectedNumber(0);
-                patrolReport.setCompletionRate("-");
+                patrolReport.setCompletionRate("0.00");
                 patrolReport.setAwmPatrolNumber("-");
                 patrolReport.setAmmPatrolNumber("-");
                 patrolReport.setFaultNumber(0);
@@ -185,9 +201,24 @@ public class PatrolReportService {
             {  patrolReport.setAwmPatrolNumber("-");
 
             }
+            if(ObjectUtil.isNull(patrolReport.getTaskTotal()))
+            {
+                patrolReport.setTaskTotal(0);
+                patrolReport.setNotInspectedNumber(0);
+                patrolReport.setInspectedNumber(0);
+                patrolReport.setCompletionRate("0.00");
+            }
             if(ObjectUtil.isNull(patrolReport.getAmmPatrolNumber()))
             {
                 patrolReport.setAmmPatrolNumber("-");
+            }
+            if(ObjectUtil.isNull(patrolReport.getFaultNumber()))
+            {
+                patrolReport.setFaultNumber(0);
+            }
+            if(ObjectUtil.isNull(patrolReport.getAbnormalNumber()))
+            {
+                patrolReport.setAbnormalNumber(0);
             }
         }
         return pageList.setRecords(list);
@@ -199,7 +230,7 @@ public class PatrolReportService {
         patrolReport.setOrgCode(report.getOrgCode());
         patrolReport.setOrgName(report.getOrgName());
         patrolReport.setTaskTotal(0);
-        patrolReport.setCompletionRate("-");
+        patrolReport.setCompletionRate("0.00");
         patrolReport.setAbnormalNumber(0);
         patrolReport.setMissInspectedNumber(0);
         patrolReport.setAwmPatrolNumber("-");
@@ -262,14 +293,12 @@ public class PatrolReportService {
                 {
 
                     int monthNumber = 12-startMonth+1+endMonth;
-                    //System.out.println("结束时间小于当前时间的,并且结束年份大于开始月份，月数:"+monthNumber);
                     return monthNumber;
                 }
                 //结束月份大于等于开始月份
                 else
                 {
                     int monthNumber = endMonth-startMonth+1;
-                    //System.out.println("结束时间小于当前时间的,并且结束年份等于开始月份，月数:"+monthNumber);
                     return monthNumber;
                 }
 
@@ -284,14 +313,12 @@ public class PatrolReportService {
                 //结束年份大于开始年份
                 if(endYear>startYear) {
                     int monthNumber = lastMonth+12-startMonth+1;
-                   // System.out.println("结束时间大于等于当前时间，结束年份大于开始年份，月数:"+monthNumber);
                     return monthNumber;
                 }
                 //结束年份小于等于开始年份
                 else
                 {
                     int monthNumber = lastMonth-startMonth+1;
-                    //System.out.println("结束时间大于等于当前时间，结束年份小于开始年份，月数:"+monthNumber);
                     return monthNumber;
                 }
             }
@@ -301,11 +328,8 @@ public class PatrolReportService {
 
     public long getWeekNumber(String start, String end) {
          long weekNumber = PatrolDateUtils.countTwoDayWeek(start, end);
-         DateTime time = DateUtil.parse(end);
-         Date startTime = DateUtil.beginOfWeek(new Date());
-         Date endTime = DateUtil.beginOfWeek(time);
-         boolean sameWeek = DateUtil.isSameDay(startTime, endTime);
-         if(sameWeek==true)
+         boolean sameWeek = isNowWeekDate(start,end);
+        if(sameWeek)
          {
              weekNumber=weekNumber-1;
          }
@@ -516,6 +540,30 @@ public class PatrolReportService {
     public List<LineOrStationDTO> selectDepart () {
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         List<LineOrStationDTO> lineOrStationDTOS = patrolTaskMapper.selectDepart(sysUser.getId());
-        return lineOrStationDTOS;
-    }
+        //获取自己及管辖的下的班组
+        if (CollUtil.isEmpty(lineOrStationDTOS)) {
+            return CollUtil.newArrayList();
+        } else {
+            List<LineOrStationDTO> list = new ArrayList<>();
+            for (LineOrStationDTO model : lineOrStationDTOS) {
+                if (model.getOrgCategory().equals("3") || model.getOrgCategory().equals("4") || model.getOrgCategory().equals("5")) {
+                    list.add(model);
+                    List<LineOrStationDTO> models = patrolTaskMapper.getUserOrgCategory(model.getId());
+                    if (CollUtil.isNotEmpty(models)) {
+                        list.addAll(models);
+                    }
+                } else {
+                    List<LineOrStationDTO> models = patrolTaskMapper.getUserOrgCategory(model.getId());
+                    if (CollUtil.isNotEmpty(models)) {
+                        list.addAll(models);
+                    }
+                }
+            }
+            if (CollUtil.isEmpty(list)) {
+                return CollUtil.newArrayList();
+            } else {
+                return list;
+            }
         }
+    }
+}

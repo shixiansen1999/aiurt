@@ -8,6 +8,8 @@ import com.aiurt.modules.constants.FlowConstant;
 import com.aiurt.modules.manage.entity.ActCustomVersion;
 import com.aiurt.modules.manage.service.IActCustomVersionService;
 import com.aiurt.modules.modeler.dto.OperationList;
+import com.aiurt.modules.modeler.entity.ActCustomModelInfo;
+import com.aiurt.modules.modeler.service.IActCustomModelInfoService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import org.flowable.bpmn.model.*;
 import org.flowable.engine.RepositoryService;
@@ -24,6 +26,7 @@ import java.util.Objects;
 
 /**
  * 流程元素工具
+ * @author fgw
  */
 @Component
 public class FlowElementUtil {
@@ -36,6 +39,9 @@ public class FlowElementUtil {
 
     @Autowired
     private IActCustomVersionService actCustomVersionService;
+
+    @Autowired
+    private IActCustomModelInfoService modelInfoService;
 
 
     /**
@@ -93,13 +99,25 @@ public class FlowElementUtil {
      */
     private Collection<FlowElement> getFlowElementsByModelKey(String modelKey) {
 
-        ProcessDefinition processDefinition = repositoryService.createProcessDefinitionQuery().latestVersion().processDefinitionKey(modelKey).singleResult();
+        // 获取model id
+        LambdaQueryWrapper<ActCustomModelInfo> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(ActCustomModelInfo::getModelKey, modelKey).last("limit 1");
+        ActCustomModelInfo customModelInfo = modelInfoService.getOne(wrapper);
+        if (Objects.isNull(customModelInfo)) {
+             throw new AiurtBootException(AiurtErrorEnum.FLOW_DEFINITION_NOT_FOUND.getMessage());
+        }
 
-        if (Objects.isNull(processDefinition)) {
+        // 获取主版本的流程定义.
+        LambdaQueryWrapper<ActCustomVersion> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(ActCustomVersion::getModelId, customModelInfo.getModelId())
+                .eq(ActCustomVersion::getMainVersion, FlowConstant.MAIN_VERSION_1).last("limit 1");
+        ActCustomVersion customVersion = actCustomVersionService.getOne(queryWrapper);
+
+        if (Objects.isNull(customVersion)) {
             throw new AiurtBootException(AiurtErrorEnum.FLOW_DEFINITION_NOT_FOUND.getCode(), AiurtErrorEnum.FLOW_DEFINITION_NOT_FOUND.getMessage());
         }
 
-        BpmnModel model = repositoryService.getBpmnModel(processDefinition.getId());
+        BpmnModel model = repositoryService.getBpmnModel(customVersion.getProcessDefinitionId());
 
         Collection<FlowElement> flowElements = model.getMainProcess().getFlowElements();
 
@@ -139,14 +157,14 @@ public class FlowElementUtil {
      * @return 流程对象。
      */
     public Result<ProcessDefinition> verifyAndGetFlowEntry(String processDefinitionKey) {
-        List<ProcessDefinition> processList = repositoryService.createProcessDefinitionQuery()
-                .processDefinitionKey(processDefinitionKey)
-                .list();
+        ProcessDefinition processDefinition = getProcessDefinition(processDefinitionKey);
 
-        if (CollUtil.isNotEmpty(processList)) {
+        return Result.OK(processDefinition);
+
+       /* if (CollUtil.isNotEmpty(processList)) {
             for (ProcessDefinition processDefinition : processList) {
                 if (ObjectUtil.isNotEmpty(processDefinition)) {
-                    ActCustomVersion actCustomVersions = actCustomVersionService.getBaseMapper().selectById(
+                    ActCustomVersion actCustomVersions = actCustomVersionService.getBaseMapper().selectOne(
                             new LambdaQueryWrapper<ActCustomVersion>()
                                     .eq(ActCustomVersion::getProcessDefinitionId, processDefinition.getId())
                                     .eq(ActCustomVersion::getMainVersion, FlowConstant.MAIN_VERSION_1));
@@ -155,9 +173,25 @@ public class FlowElementUtil {
                     }
                 }
             }
+        }*/
+    }
+
+    public ProcessDefinition getProcessDefinition(String processDefinitionKey) {
+        LambdaQueryWrapper<ActCustomModelInfo> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(ActCustomModelInfo::getModelKey, processDefinitionKey).last("limit 1");
+        ActCustomModelInfo customModelInfo = modelInfoService.getOne(wrapper);
+        if (Objects.isNull(customModelInfo)) {
+            throw new AiurtBootException(AiurtErrorEnum.FLOW_DEFINITION_NOT_FOUND.getMessage());
         }
 
-        return Result.error(AiurtErrorEnum.FLOW_DEFINITION_NOT_FOUND.getMessage());
+        // 获取主版本的流程定义.
+        LambdaQueryWrapper<ActCustomVersion> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(ActCustomVersion::getModelId, customModelInfo.getModelId())
+                .eq(ActCustomVersion::getMainVersion, FlowConstant.MAIN_VERSION_1).last("limit 1");
+        ActCustomVersion customVersion = actCustomVersionService.getOne(queryWrapper);
+
+        ProcessDefinition processDefinition = repositoryService.createProcessDefinitionQuery().processDefinitionId(customVersion.getProcessDefinitionId()).singleResult();
+        return processDefinition;
     }
 
     /**

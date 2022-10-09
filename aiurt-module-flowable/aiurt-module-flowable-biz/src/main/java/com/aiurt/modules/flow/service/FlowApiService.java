@@ -34,7 +34,7 @@ public interface FlowApiService {
      * @param startBpmnDTO
      * @return
      */
-    public ProcessInstance start(StartBpmnDTO startBpmnDTO);
+    public void start(StartBpmnDTO startBpmnDTO);
 
     /**
      * 启动流程实例，如果当前登录用户为第一个用户任务的指派者，或者Assginee为流程启动人变量时，
@@ -43,7 +43,7 @@ public interface FlowApiService {
      * @param startBpmnDTO 流程定义Id。
      * @return 新启动的流程实例。
      */
-    ProcessInstance startAndTakeFirst(StartBpmnDTO startBpmnDTO);
+    void startAndTakeFirst(StartBpmnDTO startBpmnDTO);
 
     /**
      * 完成任务，同时提交审批数据。
@@ -246,4 +246,18 @@ public interface FlowApiService {
      * @param processInstanceId
      */
     void deleteProcessInstance(String processInstanceId);
+
+    /**
+     * 获取开始节点之后的第一个任务节点的数据。
+     *
+     * @param processDefinitionKey 流程标识。
+     * @return 任务节点的自定义对象数据。
+     */
+    TaskInfoDTO viewInitialTaskInfo(String processDefinitionKey);
+
+    /**
+     * 提交任务
+     * @param taskCompleteDTO
+     */
+    void completeTask(TaskCompleteDTO taskCompleteDTO);
 }

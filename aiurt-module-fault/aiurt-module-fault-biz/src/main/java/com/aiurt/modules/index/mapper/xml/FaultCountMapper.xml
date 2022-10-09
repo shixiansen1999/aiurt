@@ -4,11 +4,9 @@
     <select id="queryFaultCount" parameterType="Date" resultType="com.aiurt.modules.fault.entity.Fault">
         select * from fault
         <where>
-            <if test="startDate != null ">
-                AND <![CDATA[ approval_pass_time >= #{startDate,jdbcType=DATE}  ]]>
-            </if>
-            <if test="endDate != null ">
-                AND <![CDATA[ approval_pass_time <= #{endDate,jdbcType=DATE}  ]]>
+            <if test="startDate!=null and endDate!=null">
+                and date_format(approval_pass_time ,'%Y-%m-%d') &gt;=  date_format(#{startDate},'%Y-%m-%d')
+                and date_format(approval_pass_time ,'%Y-%m-%d') &lt;= date_format(#{endDate},'%Y-%m-%d')
             </if>
         </where>
     </select>
@@ -23,7 +21,8 @@
                 AND status = 12
             </if>
             <if test="faultCountInfoReq.startDate!=null and faultCountInfoReq.endDate!=null">
-                and approval_pass_time  &gt;= #{faultCountInfoReq.startDate}  and approval_pass_time &lt;= #{faultCountInfoReq.endDate}
+                and date_format(approval_pass_time ,'%Y-%m-%d') &gt;=  date_format(#{faultCountInfoReq.startDate},'%Y-%m-%d')
+                and date_format(approval_pass_time ,'%Y-%m-%d') &lt;= date_format(#{faultCountInfoReq.endDate},'%Y-%m-%d')
             </if>
             <if test="faultCountInfoReq.faultLevel != null">
                 and fault_level  = #{faultCountInfoReq.faultLevel}
@@ -50,7 +49,8 @@
                 AND status = 10
             </if>
             <if test="faultCountInfoReq.startDate!=null and faultCountInfoReq.endDate!=null">
-                and approval_pass_time  &gt;= #{faultCountInfoReq.startDate}  and approval_pass_time &lt;= #{faultCountInfoReq.endDate}
+                and date_format(approval_pass_time ,'%Y-%m-%d') &gt;=  date_format(#{faultCountInfoReq.startDate},'%Y-%m-%d')
+                and date_format(approval_pass_time ,'%Y-%m-%d') &lt;= date_format(#{faultCountInfoReq.endDate},'%Y-%m-%d')
             </if>
             <if test="faultCountInfoReq.faultLevel != null">
                 and fault_level  = #{faultCountInfoReq.faultLevel}
@@ -87,7 +87,8 @@
                     and TIMESTAMPDIFF(HOUR,happen_time,now()) &lt;= 24
             </if>
             <if test="faultTimeoutLevelReq.startDate!=null and faultTimeoutLevelReq.endDate!=null">
-                and approval_pass_time  &gt;= #{faultTimeoutLevelReq.startDate}  and approval_pass_time &lt;= #{faultTimeoutLevelReq.endDate}
+                and date_format(approval_pass_time ,'%Y-%m-%d') &gt;=  date_format(#{faultTimeoutLevelReq.startDate},'%Y-%m-%d')
+                and date_format(approval_pass_time ,'%Y-%m-%d') &lt;= date_format(#{faultTimeoutLevelReq.endDate},'%Y-%m-%d')
             </if>
             <if test="faultTimeoutLevelReq.faultLevel != null">
                 and fault_level  = #{faultTimeoutLevelReq.faultLevel}

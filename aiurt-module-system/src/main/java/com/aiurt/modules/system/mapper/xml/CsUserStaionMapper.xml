@@ -7,7 +7,12 @@
     </select>
 
 <select id="getStationByUserId" resultType="org.jeecg.common.system.vo.CsUserStationModel">
-    select cus.id ,cus.user_id,cus.station_id,cs.station_code ,cs.station_name from cs_user_station cus left join cs_station cs on cs.id = cus.station_id
-    where cs.del_flag = 0 and cus.user_id = #{id}
+    select cus.id ,cus.user_id,cus.station_id,cs.station_code ,cs.station_name,cs.line_code
+    from cs_user_station cus
+    left join cs_station cs on cs.id = cus.station_id
+    where cs.del_flag = 0
+    <if test="id != null and id != ''">
+        and cus.user_id = #{id}
+    </if>
     </select>
 </mapper>

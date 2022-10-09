@@ -25,6 +25,11 @@ public class PatrolReportModel {
     @ApiModelProperty("站点code")
     private String stationCode;
     /**
+     * 站点List
+     */
+    @ApiModelProperty("站点List")
+    private List<String> stationCodeList;
+    /**
      * 班组code
      */
     @ApiModelProperty("班组code")
@@ -44,7 +49,8 @@ public class PatrolReportModel {
      */
     @ApiModelProperty("结束时间")
     private String endDate;
-    private List<String> orgList;
+    private List<String> orgCodeList;
+    private List<String> orgIdList;
     @ApiModelProperty("分页参数")
     private Integer pageNo;
     @ApiModelProperty("分页参数")

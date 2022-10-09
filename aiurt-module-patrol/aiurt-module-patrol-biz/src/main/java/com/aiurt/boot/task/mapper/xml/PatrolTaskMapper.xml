@@ -697,100 +697,94 @@
   group by a.id
     </select>
     <select id="getReportTaskList" resultType="com.aiurt.boot.report.model.PatrolReport">
-SELECT
-	( SELECT sd.depart_name FROM sys_depart sd WHERE pto.org_code = sd.org_code ) AS orgName,
-	pto.org_code
-FROM
-	patrol_task pt
-	JOIN patrol_task_organization pto ON pt.`code` = pto.task_code
-	 <if test="condition.orgList != null and condition.orgList.size>0 ">
-	  AND pto.org_code IN
-	    <foreach collection="condition.orgList" item="item" open="(" separator="," close=")">
+   SELECT
+	sd.depart_name AS orgName,
+	sd.org_code AS orgCode
+   FROM
+	sys_depart sd
+  WHERE
+	 <if test="condition.orgIdList != null and condition.orgIdList.size>0 ">
+	 sd.id IN
+	    <foreach collection="condition.orgIdList" item="item" open="(" separator="," close=")">
                     #{item}
          </foreach>
 	 </if>
     <if test="condition.orgCode != null and condition.orgCode != ''">
-    and pto.org_code = #{condition.orgCode}
+    and sd.org_code = #{condition.orgCode}
    </if>
 GROUP BY
-	pto.org_code
+	sd.depart_name,sd.org_code
     </select>
     <select id="getTasks" resultType="com.aiurt.boot.report.model.PatrolReport">
-    SELECT
-	count( pt.id ) AS taskTotal,
-	count( pt.STATUS = 7 OR NULL ) AS inspectedNumber,
-	count( pt.abnormal_state = 0 OR NULL ) AS abnormalNumber,
-	(
-	count( pt.id ) - count( pt.STATUS = 7 OR NULL )) AS notInspectedNumber,
-	CONCAT(
-   cast(count( pt.STATUS = 7 OR NULL )/count( pt.id )*100 as   decimal(10,   2)),
-    '%'
-  ) AS completionRate,
-    GROUP_CONCAT(pt.id) as taskId,
-	GROUP_CONCAT(pt.code) as taskCode,
-	( SELECT sd.depart_name FROM sys_depart sd WHERE pto.org_code = sd.org_code ) AS orgName,
-	pto.org_code
-FROM
-	patrol_task pt
-	JOIN patrol_task_organization pto ON pt.`code` = pto.task_code
-	 <if test="condition.orgList != null and condition.orgList.size>0 ">
-	  AND pto.org_code IN
-	    <foreach collection="condition.orgList" item="item" open="(" separator="," close=")">
-                    #{item}
-         </foreach>
-	 </if>
-	 <if test="condition.startDate != null and condition.endDate != null">
-	 AND DATE_FORMAT( pt.patrol_date, '%Y-%m-%d' ) BETWEEN DATE_FORMAT( #{condition.startDate}, '%Y-%m-%d' )
-	 AND DATE_FORMAT( #{condition.endDate}, '%Y-%m-%d' )
-     </if>
-    <if test="condition.lineCode != null and condition.stationCode != ''">
-	and pt.code in (
-	SELECT pps.task_code
-	FROM patrol_task_station pps
-	LEFT JOIN cs_station cs on pps.station_code = cs.station_code
-	where  pps.station_code = #{condition.stationCode}  and cs.line_code = #{condition.lineCode}
-     )
-    </if>
-    <if test="condition.lineCode != null and condition.stationCode ==null ">
-    and pt.code in (
-	SELECT pps.task_code
-	FROM patrol_task_station pps
-	LEFT JOIN cs_station cs on pps.station_code = cs.station_code
-	where  cs.line_code = #{condition.lineCode}
-     )
-    </if>
-     <if test="condition.stationCode != null and condition.lineCode == null">
-	and pt.code in (
-	SELECT pps.task_code
-	FROM patrol_task_station pps
-	LEFT JOIN cs_station cs on pps.station_code = cs.station_code
-	where  pps.station_code = #{condition.stationCode}
-     )
-    </if>
-    <if test="condition.subsystemCode != null and condition.subsystemCode != ''">
-    and pt.id in(
-        SELECT  pts.task_id
-        FROM patrol_task_standard pts
-        where  pts.subsystem_code = #{condition.subsystemCode}
-    )
-    </if>
-    <if test="condition.orgCode != null and condition.orgCode != ''">
-    and pto.org_code = #{condition.orgCode}
-   </if>
-GROUP BY
-	pto.org_code
-
+        SELECT
+        count( pt.id ) AS taskTotal,
+        count( pt.STATUS = 7 OR NULL ) AS inspectedNumber,
+        count( pt.abnormal_state = 0 OR NULL ) AS abnormalNumber,
+        ( count( pt.id ) - count( pt.STATUS = 7 OR NULL )) AS notInspectedNumber,
+        cast(count( pt.STATUS = 7 OR NULL )/count( pt.id )*100 as decimal(10, 2)) AS completionRate,
+        GROUP_CONCAT(pt.id) as taskId,
+        GROUP_CONCAT(pt.code) as taskCode,
+        ( SELECT sd.depart_name FROM sys_depart sd WHERE pto.org_code = sd.org_code ) AS orgName,
+        pto.org_code
+        FROM patrol_task pt
+        JOIN patrol_task_organization pto ON pt.`code` = pto.task_code
+        <if test="condition.orgCodeList != null and condition.orgCodeList.size>0 ">
+            AND pto.org_code IN
+            <foreach collection="condition.orgCodeList" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        <if test="condition.startDate != null and condition.endDate != null">
+            AND DATE_FORMAT( pt.patrol_date, '%Y-%m-%d' ) BETWEEN DATE_FORMAT( #{condition.startDate}, '%Y-%m-%d' )
+            AND DATE_FORMAT( #{condition.endDate}, '%Y-%m-%d' )
+        </if>
+        <if test="condition.lineCode != null and condition.stationCode != ''">
+            and pt.code in (
+                SELECT pps.task_code
+                FROM patrol_task_station pps
+                LEFT JOIN cs_station cs on pps.station_code = cs.station_code
+                where pps.station_code = #{condition.stationCode} and cs.line_code = #{condition.lineCode}
+            )
+        </if>
+        <if test="condition.lineCode != null and condition.stationCode ==null ">
+            and pt.code in (
+                SELECT pps.task_code
+                FROM patrol_task_station pps
+                LEFT JOIN cs_station cs on pps.station_code = cs.station_code
+                where cs.line_code = #{condition.lineCode}
+            )
+        </if>
+        <if test="condition.stationCode != null and condition.lineCode == null">
+            and pt.code in (
+                SELECT pps.task_code
+                FROM patrol_task_station pps
+                LEFT JOIN cs_station cs on pps.station_code = cs.station_code
+                where pps.station_code = #{condition.stationCode}
+            )
+        </if>
+        <if test="condition.subsystemCode != null and condition.subsystemCode != ''">
+            and pt.id in(
+                SELECT pts.task_id
+                FROM patrol_task_standard pts
+                where pts.subsystem_code = #{condition.subsystemCode}
+            )
+        </if>
+        <if test="condition.orgCode != null and condition.orgCode != ''">
+            and pto.org_code = #{condition.orgCode}
+        </if>
+        GROUP BY pto.org_code
 </select>
     <select id="getReportOmitList" resultType="com.aiurt.boot.report.model.PatrolReport">
     select
 	count( pt.omit_status = 1 OR NULL ) AS missInspectedNumber,
+	GROUP_CONCAT(pt.id) as taskId,
 	pto.org_code
 FROM
 	patrol_task pt
 	JOIN patrol_task_organization pto ON pt.`code` = pto.task_code
-	 <if test="condition.orgList != null and condition.orgList.size>0 ">
+	 <if test="condition.orgCodeList != null and condition.orgCodeList.size>0 ">
 	  AND pto.org_code IN
-	    <foreach collection="condition.orgList" item="item" open="(" separator="," close=")">
+	    <foreach collection="condition.orgCodeList" item="item" open="(" separator="," close=")">
                     #{item}
          </foreach>
 	 </if>
@@ -798,7 +792,7 @@ FROM
 	 AND DATE_FORMAT( pt.patrol_date, '%Y-%m-%d' ) BETWEEN DATE_FORMAT( #{condition.startDate}, '%Y-%m-%d' )
 	 AND DATE_FORMAT( #{condition.endDate}, '%Y-%m-%d' )
      </if>
-    <if test="condition.lineCode != null and condition.stationCode != ''">
+    <if test="condition.lineCode != null and condition.stationCode != null">
 	and pt.code in (
 	SELECT pps.task_code
 	FROM patrol_task_station pps
@@ -811,7 +805,10 @@ FROM
 	SELECT pps.task_code
 	FROM patrol_task_station pps
 	LEFT JOIN cs_station cs on pps.station_code = cs.station_code
-	where  cs.line_code = #{condition.lineCode}
+	where  cs.station_code in
+	   <foreach collection="param1.stationCodeList" item="item" open="(" separator="," close=")">
+                #{item}
+       </foreach>
      )
     </if>
      <if test="condition.stationCode != null and condition.lineCode == null">
@@ -1090,13 +1087,23 @@ GROUP BY
     </select>
     <select id="selectDepart" resultType="com.aiurt.boot.report.model.dto.LineOrStationDTO">
        select
+        a.id as id,
         a.org_code as code,
-        a.depart_name as name
+        a.depart_name as name,
+        a.org_category as orgCategory
     from
         sys_depart a
     where
     a.manager_id = #{id}
-	and a.org_category in (3,4,5)
-
     </select>
+    <select id="getUserOrgCategory" resultType="com.aiurt.boot.report.model.dto.LineOrStationDTO">
+        select
+        a.id as id,
+        a.org_code as code,
+        a.depart_name as name
+        from
+        sys_depart a
+        where a.parent_id=#{id}
+        and a.org_category in(3,4,5)
+     </select>
 </mapper>

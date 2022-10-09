@@ -60,7 +60,7 @@ public class OverhaulStatisticsService{
         }
 
         //查询管理负责人班组的所有信息
-        List<OverhaulStatisticsDTOS> dtoList2 = repairTaskMapper.selectDepart(sysUser.getId());
+        List<OverhaulStatisticsDTOS> dtoList2 = this.selectDepart();
 
         //查询管理负责人检修班组的信息
         List<OverhaulStatisticsDTOS> statisticsDTOList = repairTaskMapper.readTeamList(pageList,condition);
@@ -93,8 +93,7 @@ public class OverhaulStatisticsService{
                     q.setUserName(repairTaskMapper.getRealName(userId));
                     //班组编码
                     String orgCode = repairTaskMapper.getOrgCode(userId);
-                    String id = q.getId();
-                    q.setOrgCodeId(orgCode+id);
+                    q.setOrgCodeId(orgCode+userId);
                     q.setOrgCode(orgCode);
                 }
 
@@ -225,6 +224,36 @@ public class OverhaulStatisticsService{
         }else {
             e.setCompletionRate("0");
             e.setCompletedNumber(0L);
+        }
+    }
+
+    public List<OverhaulStatisticsDTOS> selectDepart () {
+        LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        List<OverhaulStatisticsDTOS> lacerations = repairTaskMapper.selectDepart(sysUser.getId());
+        //获取自己及管辖的下的班组
+        if (CollUtil.isEmpty(lacerations)) {
+            return CollUtil.newArrayList();
+        } else {
+            List<OverhaulStatisticsDTOS> list = new ArrayList<>();
+            for (OverhaulStatisticsDTOS model : lacerations) {
+                if (model.getOrgCategory().equals("3") || model.getOrgCategory().equals("4") || model.getOrgCategory().equals("5")) {
+                    list.add(model);
+                    List<OverhaulStatisticsDTOS> models = repairTaskMapper.getUserOrgCategory(model.getOrgId());
+                    if (CollUtil.isNotEmpty(models)) {
+                        list.addAll(models);
+                    }
+                } else {
+                    List<OverhaulStatisticsDTOS> models = repairTaskMapper.getUserOrgCategory(model.getOrgId());
+                    if (CollUtil.isNotEmpty(models)) {
+                        list.addAll(models);
+                    }
+                }
+            }
+            if (CollUtil.isEmpty(list)) {
+                return CollUtil.newArrayList();
+            } else {
+                return list;
+            }
         }
     }
 

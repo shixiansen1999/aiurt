@@ -15,7 +15,7 @@ import com.aiurt.common.result.LogSubmitCount;
 import com.aiurt.common.result.WorkLogResult;
 import com.aiurt.common.util.RoleAdditionalUtils;
 import com.aiurt.common.util.SysAnnmentTypeEnum;
-import com.aiurt.modules.api.DailyFaultApi;
+import com.aiurt.modules.common.api.DailyFaultApi;
 import com.aiurt.modules.position.entity.CsStation;
 import com.aiurt.modules.worklog.dto.WorkLogDTO;
 import com.aiurt.modules.worklog.dto.WorkLogUserTaskDTO;
