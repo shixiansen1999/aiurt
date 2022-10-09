@@ -374,8 +374,8 @@ public interface PatrolTaskMapper extends BaseMapper<PatrolTask> {
 
     /**
      * 获取自己及管辖的班组
-     * @param id
+     * @param orgCode
      * @return
      */
-    List<LineOrStationDTO> getUserOrgCategory(String id);
+    List<LineOrStationDTO> getUserOrgCategory(String orgCode);
 }

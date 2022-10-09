@@ -401,6 +401,13 @@ public interface ISysBaseAPI extends CommonAPI {
      */
     List<LoginUser> getUserPersonnel(String deptId);
 
+    /**
+     * 根据部门list，查询部门list下的人员信息
+     * @param deptId
+     * @return
+     */
+    List<LoginUser> getUseList(List<String> deptId);
+
 
     /**
      * 更新文件业务数据
