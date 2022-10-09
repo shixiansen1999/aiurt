@@ -1,25 +1,36 @@
 package com.aiurt.modules.config;
 
+import com.aiurt.modules.listener.SequenceflowTakenListener;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
+import lombok.extern.slf4j.Slf4j;
 import org.flowable.bpmn.converter.BpmnXMLConverter;
+import org.flowable.common.engine.api.delegate.event.FlowableEngineEventType;
+import org.flowable.common.engine.api.delegate.event.FlowableEventListener;
+import org.flowable.common.engine.api.delegate.event.FlowableEventType;
 import org.flowable.editor.language.json.converter.BpmnJsonConverter;
 import org.flowable.spring.SpringProcessEngineConfiguration;
 import org.flowable.spring.boot.EngineConfigurationConfigurer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 /**
  * @Description: flowable配置,
  * @Author: fgw
  * @Since:18:44 2022/07/13
  */
+@Slf4j
 @Configuration
 public class FlowBpmnConfig implements EngineConfigurationConfigurer<SpringProcessEngineConfiguration> {
 
-    // 删除， 全局控制，导致其他序列化
+    // 删除， 全局控制，导致其他序列化失败问题
     /*@Bean
     public ObjectMapper objectMapper() {
         ObjectMapper objectMapper = new ObjectMapper();
@@ -39,12 +50,19 @@ public class FlowBpmnConfig implements EngineConfigurationConfigurer<SpringProce
 
     @Override
     public void configure(SpringProcessEngineConfiguration configuration) {
+        log.info("flowable 全局配置初始化........");
         //设置自定义的uuid生成策略
         configuration.setIdGenerator(uuidGenerator());
+
+        Map<String, List<FlowableEventListener>> typedEventListeners = new HashMap<>();
+        typedEventListeners.put(FlowableEngineEventType.SEQUENCEFLOW_TAKEN.name(), Arrays.asList(new SequenceflowTakenListener()));
+        configuration.setTypedEventListeners(typedEventListeners);
+        //设置字体
         // 字体
         configuration.setActivityFontName("宋体");
         configuration.setLabelFontName("宋体");
         configuration.setAnnotationFontName("宋体");
+        log.info("flowable 全局配置初始化结束.");
     }
 
     /**

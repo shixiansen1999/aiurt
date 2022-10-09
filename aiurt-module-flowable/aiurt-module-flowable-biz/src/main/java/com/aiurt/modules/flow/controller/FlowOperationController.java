@@ -1,14 +1,10 @@
 package com.aiurt.modules.flow.controller;
 
-import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.aspect.annotation.DisableDataFilter;
-import com.aiurt.modules.constants.FlowConstant;
 import com.aiurt.modules.flow.dto.*;
 import com.aiurt.modules.flow.entity.ActCustomTaskComment;
 import com.aiurt.modules.flow.service.FlowApiService;
 import com.aiurt.modules.flow.service.IActCustomTaskCommentService;
-import com.aiurt.modules.modeler.dto.TaskInfoVo;
-import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -17,7 +13,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.SecurityUtils;
 import org.flowable.bpmn.converter.BpmnXMLConverter;
 import org.flowable.bpmn.model.BpmnModel;
-import org.flowable.engine.runtime.ProcessInstance;
 import org.flowable.task.api.Task;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.vo.LoginUser;
@@ -62,8 +57,8 @@ public class FlowOperationController {
     @PostMapping("/startAndTakeUserTask")
     @ApiOperation(value = "启动流程", notes = "启动流程")
     public Result<?> startAndTakeUserTask(@RequestBody StartBpmnDTO startBpmnDTO) {
-        ProcessInstance processInstance = flowApiService.startAndTakeFirst(startBpmnDTO);
-        return Result.OK(processInstance);
+        flowApiService.startAndTakeFirst(startBpmnDTO);
+        return Result.OK("启动成功！");
     }
 
     /**
@@ -87,7 +82,8 @@ public class FlowOperationController {
     @DisableDataFilter
     @PostMapping("/submitUserTask")
     @ApiOperation(value = "提交流程的用户任务", notes = "提交流程的用户任务")
-    public Result<?> completeTask() {
+    public Result<?> completeTask(@Valid @RequestBody TaskCompleteDTO taskCompleteDTO) {
+        flowApiService.completeTask(taskCompleteDTO);
         return Result.OK();
     }
 

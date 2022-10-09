@@ -1,4 +1,4 @@
-package com.aiurt.modules.api;
+package com.aiurt.modules.common.api;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.DateTime;

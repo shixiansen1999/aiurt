@@ -10,6 +10,7 @@ import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.exception.AiurtErrorEnum;
 import com.aiurt.modules.constants.FlowConstant;
+import com.aiurt.modules.flow.constants.FlowApprovalType;
 import com.aiurt.modules.flow.dto.*;
 import com.aiurt.modules.flow.entity.ActCustomTaskComment;
 import com.aiurt.modules.flow.service.FlowApiService;
@@ -28,6 +29,7 @@ import org.apache.shiro.SecurityUtils;
 import org.flowable.bpmn.constants.BpmnXMLConstants;
 import org.flowable.bpmn.model.Process;
 import org.flowable.bpmn.model.*;
+import org.flowable.common.engine.impl.identity.Authentication;
 import org.flowable.editor.language.json.converter.util.CollectionUtils;
 import org.flowable.engine.*;
 import org.flowable.engine.delegate.TaskListener;
@@ -47,6 +49,7 @@ import org.flowable.task.api.TaskInfo;
 import org.flowable.task.api.TaskQuery;
 import org.flowable.task.api.history.HistoricTaskInstance;
 import org.flowable.task.api.history.HistoricTaskInstanceQuery;
+import org.flowable.task.service.impl.persistence.entity.TaskEntityImpl;
 import org.flowable.ui.modeler.serviceapi.ModelService;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
@@ -99,22 +102,46 @@ public class FlowApiServiceImpl implements FlowApiService {
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public ProcessInstance start(StartBpmnDTO startBpmnDTO) {
+    public void start(StartBpmnDTO startBpmnDTO) {
         log.info("启动流程请求参数：[{}]", JSON.toJSONString(startBpmnDTO));
         LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         if (Objects.isNull(loginUser)) {
             throw new AiurtBootException("无法启动流程，请重新登录！");
         }
 
-        //todo 判断是否是动态表单
+        // 验证流程定义数据的合法性。
+        Result<ProcessDefinition> processDefinitionResult = flowElementUtil.verifyAndGetFlowEntry(startBpmnDTO.getModelKey());
+        if (!processDefinitionResult.isSuccess()) {
+            throw new AiurtBootException(processDefinitionResult.getMessage());
+        }
 
-        // 保存中间业务数据
+        ProcessDefinition result = processDefinitionResult.getResult();
+        if (result.isSuspended()) {
+            throw new AiurtBootException("当前流程定义已被挂起，不能启动新流程！");
+        }
+        // 设置流程变量
+        Map<String, Object> busData = startBpmnDTO.getBusData();
+        this.initAndGetProcessInstanceVariables(busData);
+
+        // 根据key查询第一个用户任务
+        UserTask userTask = flowElementUtil.getFirstUserTaskByModelKey(startBpmnDTO.getModelKey());
+        // Task task = BeanUtil.copyProperties(userTask, TaskEntityImpl.class);
+
+        // 保存中间业务数据，将业务数据id返回
+        Object businessKey = saveBusData(result.getId(), userTask.getId(), busData);
+
+        String loginName = loginUser.getUsername();
+        Authentication.setAuthenticatedUserId(loginName);
+
         Map<String, Object> variableMap = new HashMap<>();
         variableMap.put(FlowConstant.PROC_INSTANCE_INITIATOR_VAR, loginUser.getUsername());
         variableMap.put(FlowConstant.PROC_INSTANCE_START_USER_NAME_VAR, loginUser.getUsername());
-        ProcessInstance processInstance = runtimeService.startProcessInstanceByKey(startBpmnDTO.getModelKey());
+
         // 启动流程
-        return processInstance;
+        ProcessInstance processInstance = runtimeService.startProcessInstanceByKey(startBpmnDTO.getModelKey(), (String) businessKey, busData);
+
+        log.info("启动流程成功！");
+
     }
 
     /**
@@ -126,7 +153,7 @@ public class FlowApiServiceImpl implements FlowApiService {
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public ProcessInstance startAndTakeFirst(StartBpmnDTO startBpmnDTO) {
+    public void startAndTakeFirst(StartBpmnDTO startBpmnDTO) {
         log.info("启动流程请求参数：[{}]", JSON.toJSONString(startBpmnDTO));
         LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         if (Objects.isNull(loginUser)) {
@@ -139,35 +166,36 @@ public class FlowApiServiceImpl implements FlowApiService {
         }
 
         ProcessDefinition result = processDefinitionResult.getResult();
-        if (!result.isSuspended()) {
+        if (result.isSuspended()) {
             throw new AiurtBootException("当前流程定义已被挂起，不能启动新流程！");
         }
-
-        // todo 判断是否是动态表单
-
         // 设置流程变量
         Map<String, Object> busData = startBpmnDTO.getBusData();
         this.initAndGetProcessInstanceVariables(busData);
 
         // 根据key查询第一个用户任务
         UserTask userTask = flowElementUtil.getFirstUserTaskByModelKey(startBpmnDTO.getModelKey());
-        Task task = BeanUtil.copyProperties(userTask, Task.class);
+       // Task task = BeanUtil.copyProperties(userTask, TaskEntityImpl.class);
 
         // 保存中间业务数据，将业务数据id返回
-        Object businessKey = saveBusData(result.getId(), task.getTaskDefinitionKey(), busData);
+        Object businessKey = saveBusData(result.getId(), userTask.getId(), busData);
 
+        String loginName = loginUser.getUsername();
+        Authentication.setAuthenticatedUserId(loginName);
         // 启动流程
-      //  ProcessInstance processInstance = runtimeService.startProcessInstanceByKey(startBpmnDTO.getModelKey(), (String) businessKey, busData);
+        ProcessInstance processInstance = runtimeService.startProcessInstanceByKey(startBpmnDTO.getModelKey(), (String) businessKey, busData);
 
+        // 获取流程启动后的第一个任务。
+        Task task = taskService.createTaskQuery().processInstanceId(processInstance.getId()).active().singleResult();
         // 完成流程启动后的第一个任务
         if (StrUtil.equalsAny(task.getAssignee(), loginUser.getUsername(), FlowConstant.START_USER_NAME_VAR)) {
             // 按照规则，调用该方法的用户，就是第一个任务的assignee，因此默认会自动执行complete。
-            if (ObjectUtil.isNotEmpty(startBpmnDTO.getCustomTaskComment())) {
-                startBpmnDTO.getCustomTaskComment().fillWith(task);
+            ActCustomTaskComment flowTaskComment = BeanUtil.copyProperties(startBpmnDTO.getFlowTaskCompleteDTO(), ActCustomTaskComment.class);
+            if (ObjectUtil.isNotEmpty(flowTaskComment)) {
+                flowTaskComment.fillWith(task);
             }
-            this.completeTask(task, startBpmnDTO.getCustomTaskComment(), startBpmnDTO.getBusData());
+           // this.completeTask(task, flowTaskComment, startBpmnDTO.getBusData());
         }
-        return new ExecutionEntityImpl();
     }
 
     /**
@@ -204,6 +232,7 @@ public class FlowApiServiceImpl implements FlowApiService {
             data.put(s, busData.get(key));
         });
 
+        // 是否动态表单
         if (CollUtil.isNotEmpty(actCustomTaskExts)) {
             JSONObject jsonObject = JSONObject.parseObject(actCustomTaskExts.get(0).getFormJson());
             if (ObjectUtil.isNotEmpty(jsonObject)) {
@@ -221,25 +250,14 @@ public class FlowApiServiceImpl implements FlowApiService {
     }
 
 
-    /**
-     * 启动流程并提交第一个用户节点
-     *
-     * @param startBpmnDTO 流程定义Id。
-     * @return
-     */
-    @Transactional(rollbackFor = Exception.class)
-    public ProcessInstance startAndCompleteFirst(StartBpmnDTO startBpmnDTO) {
-        log.info("启动流程请求参数：[{}]", JSON.toJSONString(startBpmnDTO));
-        LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        if (Objects.isNull(loginUser)) {
-            throw new AiurtBootException("无法启动流程，请重新登录！");
-        }
-        // 判断是否是动态表单
+    @Override
+    public void completeTask(TaskCompleteDTO taskCompleteDTO) {
+        FlowTaskCompleteCommentDTO flowTaskCompleteDTO = taskCompleteDTO.getFlowTaskCompleteDTO();
 
-        // 保存中间业务数据
+        // 如果是什么
 
-        // 启动流程
-        return null;
+        // 保存数据
+
     }
 
     /**
@@ -252,27 +270,41 @@ public class FlowApiServiceImpl implements FlowApiService {
     @Transactional(rollbackFor = Exception.class)
     @Override
     public void completeTask(Task task, ActCustomTaskComment comment, Map<String, Object> busData) {
+        String processInstanceId = task.getProcessInstanceId();
+        String taskId = task.getId();
         // 获取流程任务
-        Task processInstanceActiveTask = this.getProcessInstanceActiveTask(task.getProcessInstanceId(), task.getId());
+        Task processInstanceActiveTask = this.getProcessInstanceActiveTask(processInstanceId, taskId);
 
         // 验证流程任务的合法性。
         this.verifyAndGetRuntimeTaskInfo(processInstanceActiveTask);
 
         // 流程业务数据状态更改
+        String approvalType = comment.getApprovalType();
+
+        // 判断使保存还是提交
+        if (StrUtil.equalsIgnoreCase(FlowApprovalType.SAVE, approvalType)) {
+            // 数据处理
+            ProcessInstance processInstance = getProcessInstance(processInstanceId);
+            String businessKey = processInstance.getBusinessKey();
+            Object o = saveBusData(processInstanceId, taskId, busData);
+
+
+        }else if (StrUtil.equalsIgnoreCase(FlowApprovalType.AGREE, approvalType)) {
+            // 完成任务
+            taskService.complete(taskId, busData);
+
+            // 驳回
+        }else if (StrUtil.equalsIgnoreCase(FlowApprovalType.REJECT, approvalType)) {
+
+        }
 
         // 判断当前完成执行的任务，是否存在抄送设置
-
         // 增加流程批注数据
         if (comment != null) {
             comment.fillWith(processInstanceActiveTask);
             comment.setCreateRealname(checkLogin().getRealname());
             customTaskCommentService.getBaseMapper().insert(comment);
         }
-
-        // 完成任务
-        taskService.complete(task.getId(), busData);
-
-        // 推送流程消息
     }
 
     /**
@@ -618,9 +650,9 @@ public class FlowApiServiceImpl implements FlowApiService {
         if (!this.isAssigneeOrCandidate(task)) {
             throw new AiurtBootException("数据验证失败，当前用户不是指派人也不是候选人之一！");
         }
-        if (StrUtil.isBlank(task.getFormKey())) {
+        /*if (StrUtil.isBlank(task.getFormKey())) {
             throw new AiurtBootException("数据验证失败，指定任务的formKey属性不存在，请重新修改流程图！");
-        }
+        }*/
     }
 
     /**

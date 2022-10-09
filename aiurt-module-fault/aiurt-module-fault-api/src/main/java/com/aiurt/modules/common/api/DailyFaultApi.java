@@ -1,4 +1,4 @@
-package com.aiurt.modules.api;
+package com.aiurt.modules.common.api;
 
 import org.springframework.stereotype.Service;
 

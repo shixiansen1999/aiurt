@@ -1,4 +1,4 @@
-package com.aiurt.modules.api.controller;
+package com.aiurt.modules.common.api.controller;
 
 import org.jeecg.common.api.dto.OnlineAuthDTO;
 import com.aiurt.common.api.dto.message.*;

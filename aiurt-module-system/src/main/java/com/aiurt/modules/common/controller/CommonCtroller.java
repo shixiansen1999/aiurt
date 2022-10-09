@@ -330,6 +330,7 @@ public class CommonCtroller {
                 selectTable.setValue(csStation.getStationCode());
                 selectTable.setLabel(csStation.getStationName());
                 selectTable.setLevel(2);
+                selectTable.setKey(csStation.getId());
                 selectTable.setLineCode(lineCode);
                 selectTable.setStationCode(csStation.getStationCode());
                 return selectTable;
