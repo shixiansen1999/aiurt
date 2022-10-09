@@ -1,7 +1,5 @@
 package com.aiurt.modules.flow.utils;
 
-import cn.hutool.core.collection.CollUtil;
-import cn.hutool.core.util.ObjectUtil;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.exception.AiurtErrorEnum;
 import com.aiurt.modules.constants.FlowConstant;
@@ -11,6 +9,7 @@ import com.aiurt.modules.modeler.dto.OperationList;
 import com.aiurt.modules.modeler.entity.ActCustomModelInfo;
 import com.aiurt.modules.modeler.service.IActCustomModelInfoService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import lombok.extern.slf4j.Slf4j;
 import org.flowable.bpmn.model.*;
 import org.flowable.engine.RepositoryService;
 import org.flowable.engine.repository.ProcessDefinition;
@@ -21,13 +20,13 @@ import org.springframework.stereotype.Component;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 
 /**
  * 流程元素工具
  * @author fgw
  */
+@Slf4j
 @Component
 public class FlowElementUtil {
 
