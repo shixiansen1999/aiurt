@@ -16,6 +16,10 @@ public class UserTeamParameter {
     @ApiModelProperty(value = "用户Id")
     private String userId;
     @ApiModelProperty(value = "班组List")
+    private String orgId;
+    @ApiModelProperty(value = "班组codeList")
+    private List<String> orgCodeList;
+    @ApiModelProperty(value = "班组IdList")
     private List<String> orgIdList;
     @ApiModelProperty(value = "开始时间")
     private String startDate;

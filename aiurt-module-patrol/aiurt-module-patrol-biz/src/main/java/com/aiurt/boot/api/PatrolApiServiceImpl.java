@@ -162,9 +162,9 @@ public class PatrolApiServiceImpl implements PatrolApi {
     {
         LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         List<SysDepartModel> userSysDepart = sysBaseAPI.getUserSysDepart(user.getId());
-        if(CollUtil.isNotEmpty(userTeamParameter.getOrgIdList()))
+        if(CollUtil.isNotEmpty(userTeamParameter.getOrgCodeList()))
         {
-            userSysDepart=userSysDepart.stream().filter(u->userTeamParameter.getOrgIdList().contains(u.getOrgCode())).collect(Collectors.toList());
+            userSysDepart=userSysDepart.stream().filter(u->userTeamParameter.getOrgCodeList().contains(u.getOrgCode())).collect(Collectors.toList());
         }
         List<String> orgIds = userSysDepart.stream().map(SysDepartModel::getId).collect(Collectors.toList());
         //获取部门list下的人员
@@ -248,7 +248,7 @@ public class PatrolApiServiceImpl implements PatrolApi {
         // 统计部门人员同行人的漏检数
         List<UserTeamPatrolDTO> peopleOmitTaskNumber= patrolTaskUserMapper.getPeopleOmitNumber(useIds,omitModel.getStartDate(),omitModel.getEndDate());
         for (UserTeamPatrolDTO userPatrol : userOmitTaskNumber) {
-            Integer omitNumber = 0;
+            float omitNumber = 0;
             for (UserTeamPatrolDTO peoplePatrol : peopleOmitTaskNumber) {
                 if(userPatrol.getUserId().equals(peoplePatrol.getUserId()))
                 {
@@ -258,6 +258,17 @@ public class PatrolApiServiceImpl implements PatrolApi {
             if(omitNumber!=0)
             {
                 userPatrol.setMissPatrolNumber(omitNumber);
+                double avg = NumberUtil.div(omitNumber, 12) ;
+                BigDecimal b = new BigDecimal(avg);
+                double fave = b.setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
+                String completionRated = String.format("%.1f", fave);
+                float planFinishRate = Float.parseFloat(completionRated);
+                userPatrol.setAvgMissPatrolNumber(planFinishRate);
+            }
+            else
+            {
+                userPatrol.setMissPatrolNumber(0);
+                userPatrol.setAvgMissPatrolNumber(0);
             }
         }
         //额外人员漏检
@@ -289,5 +300,115 @@ public class PatrolApiServiceImpl implements PatrolApi {
         patrolDTO.setActualFinishTaskNumber(0);
         patrolDTO.setPlanTaskNumber(0);
         return patrolDTO;
+    }
+    public UserTeamPatrolDTO setTeamZero(String orgId) {
+        UserTeamPatrolDTO patrolDTO = new UserTeamPatrolDTO();
+        patrolDTO.setOrgId(orgId);
+        patrolDTO.setMissPatrolNumber(0);
+        patrolDTO.setMissPatrolNumber(0);
+        patrolDTO.setPlanFinishRate(0);
+        patrolDTO.setWorkHours(0);
+        patrolDTO.setActualFinishTaskNumber(0);
+        patrolDTO.setPlanTaskNumber(0);
+        return patrolDTO;
+    }
+    @Override
+    public Map<String, UserTeamPatrolDTO> getUserTeamParameter(UserTeamParameter userTeamParameter) {
+        LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        List<SysDepartModel> userSysDepart = sysBaseAPI.getUserSysDepart(user.getId());
+        //条件查询
+        if(CollUtil.isNotEmpty(userTeamParameter.getOrgCodeList()))
+        {
+            userSysDepart = userSysDepart.stream().filter(u->userTeamParameter.getOrgCodeList().contains(u.getOrgCode())).collect(Collectors.toList());
+        }
+        //点击班组，查询
+        if(ObjectUtil.isNotEmpty(userTeamParameter.getOrgId()))
+        {
+            userSysDepart = userSysDepart.stream().filter(u->userTeamParameter.getOrgId().contains(u.getOrgCode())).collect(Collectors.toList());
+        }
+        List<String> orgIds = userSysDepart.stream().map(SysDepartModel::getId).collect(Collectors.toList());
+        List<String> orgCodes = userSysDepart.stream().map(SysDepartModel::getOrgCode).collect(Collectors.toList());
+        List<UserTeamPatrolDTO> userBaseList =new ArrayList<>();
+        for (String orgId : orgIds) {
+            UserTeamPatrolDTO zero = setTeamZero(orgId);
+            userBaseList.add(zero);
+        }
+        for (UserTeamPatrolDTO dto : userBaseList) {
+            //获取部门下的人员
+            List<LoginUser> useList = sysBaseAPI.getUserPersonnel(dto.getOrgId());
+            List<String> useIds = useList.stream().map(LoginUser::getId).collect(Collectors.toList());
+            //计算指派计划巡检数、同行人的计划巡检数
+           List<UserTeamPatrolDTO> userPlanNumber = patrolTaskMapper.getUserPlanNumber(useIds,userTeamParameter.getStartDate(),userTeamParameter.getEndDate());
+            List<UserTeamPatrolDTO> peoplePlanNumber = patrolTaskMapper.getPeoplePlanNumber(useIds,userTeamParameter.getStartDate(),userTeamParameter.getEndDate());
+            //过滤计划数不是同一任务的班组
+            List<String> planTaskIds = peoplePlanNumber.stream().map(UserTeamPatrolDTO::getTaskId).collect(Collectors.toList());
+            List<UserTeamPatrolDTO> notPlanTasks = userPlanNumber.stream().filter(u -> !planTaskIds.contains(u.getTaskId())).collect(Collectors.toList());
+            userPlanNumber.addAll(notPlanTasks);
+            //计算指派实际巡检数、同行人的实际巡检数
+            List<UserTeamPatrolDTO> userNowNumber = patrolTaskMapper.getUserNowNumber(useIds,userTeamParameter.getStartDate(),userTeamParameter.getEndDate());
+            List<UserTeamPatrolDTO> peopleNowNumber = patrolTaskMapper.getPeopleNowNumber(useIds,userTeamParameter.getStartDate(),userTeamParameter.getEndDate());
+            //过滤实际数不是同一任务的班组
+            List<String> nowTaskIds = peopleNowNumber.stream().map(UserTeamPatrolDTO::getTaskId).collect(Collectors.toList());
+            List<UserTeamPatrolDTO> notNowTasks = userPlanNumber.stream().filter(u -> !nowTaskIds.contains(u.getTaskId())).collect(Collectors.toList());
+            userNowNumber.addAll(notNowTasks);
+            if(userPlanNumber.size()!=0)
+            {
+                dto.setPlanTaskNumber(userPlanNumber.size());
+            }
+            if(userNowNumber.size()!=0)
+            {
+                dto.setActualFinishTaskNumber(userNowNumber.size());
+            }
+            if(dto.getPlanTaskNumber()==0||dto.getActualFinishTaskNumber()==0)
+            {
+                dto.setPlanFinishRate(0);
+            }
+            //计算计划完成率
+            else {
+                double avg = NumberUtil.div(dto.getActualFinishTaskNumber(), dto.getPlanTaskNumber()) * 100;
+                BigDecimal b = new BigDecimal(avg);
+                double fave = b.setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
+                String completionRated = String.format("%.2f", fave);
+                float planFinishRate = Float.parseFloat(completionRated);
+                dto.setPlanFinishRate(planFinishRate);
+            }
+            //计算工时
+            if(dto.getWorkHours()!=0)
+            {
+                double ageSum = userNowNumber.stream().mapToDouble(UserTeamPatrolDTO::getWorkHours).sum();
+                double avg = NumberUtil.div(ageSum, 3600);
+                BigDecimal b = new BigDecimal(avg);
+                double fave = b.setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
+                String completionRated = String.format("%.2f", fave);
+                ageSum = Float.parseFloat(completionRated);
+                dto.setWorkHours((float) ageSum);
+
+            }
+
+
+            //计算漏检数（先推算漏检日期）
+            String start = screenService.getOmitDateScope(DateUtil.parse(userTeamParameter.getStartDate()));
+            String end = screenService.getOmitDateScope(DateUtil.parse(userTeamParameter.getEndDate()));
+            //计算指派的漏检数、同行人的漏检数
+            List<UserTeamPatrolDTO> userOmitTasks = patrolTaskMapper.getUserOmitTasksNumber(useIds,start,end);
+            List<UserTeamPatrolDTO> peopleOmitTasks = patrolTaskMapper.getPeopleOmitTasksNumber(useIds,start,end);
+            //过滤漏检数不是同一任务的班组
+            List<String> omitTaskIds = peopleOmitTasks.stream().map(UserTeamPatrolDTO::getTaskId).collect(Collectors.toList());
+            List<UserTeamPatrolDTO> notOmitTaskIds = userOmitTasks.stream().filter(u -> !omitTaskIds.contains(u.getTaskId())).collect(Collectors.toList());
+            userOmitTasks.addAll(notOmitTaskIds);
+            if(userOmitTasks.size()!=0)
+            {
+                dto.setMissPatrolNumber(userOmitTasks.size());
+                //计算平均每月漏检次数
+                double avg = NumberUtil.div(userOmitTasks.size(), 12) ;
+                BigDecimal b = new BigDecimal(avg);
+                double fave = b.setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
+                String completionRated = String.format("%.1f", fave);
+                float planFinishRate = Float.parseFloat(completionRated);
+                dto.setAvgMissPatrolNumber(planFinishRate);
+            }
+        }
+        Map<String, UserTeamPatrolDTO> groupBy = userBaseList.stream().collect(Collectors.toMap(UserTeamPatrolDTO::getUserId,v->v,(a, b) -> a));
+        return groupBy;
     }
 }

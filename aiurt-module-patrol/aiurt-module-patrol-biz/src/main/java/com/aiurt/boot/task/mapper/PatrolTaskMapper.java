@@ -1,5 +1,6 @@
 package com.aiurt.boot.task.mapper;
 
+import com.aiurt.boot.dto.UserTeamPatrolDTO;
 import com.aiurt.boot.report.model.FailureOrgReport;
 import com.aiurt.boot.report.model.FailureReport;
 import com.aiurt.boot.report.model.PatrolReport;
@@ -378,4 +379,58 @@ public interface PatrolTaskMapper extends BaseMapper<PatrolTask> {
      * @return
      */
     List<LineOrStationDTO> getUserOrgCategory(String orgCode);
+
+    /**
+     * 计算指派的计划数
+     * @param useIds
+     * @param startDate
+     * @param endDate
+     * @return
+     */
+    List<UserTeamPatrolDTO> getUserPlanNumber(@Param("useIds")List<String> useIds, @Param("startDate")String startDate, @Param("endDate")String endDate);
+
+    /**
+     * 计算同行人的计划数
+     * @param useIds
+     * @param startDate
+     * @param endDate
+     * @return
+     */
+    List<UserTeamPatrolDTO> getPeoplePlanNumber(@Param("useIds")List<String> useIds, @Param("startDate")String startDate, @Param("endDate")String endDate);
+
+    /**
+     * 计算指派的巡检实际完成数
+     * @param useIds
+     * @param startDate
+     * @param endDate
+     * @return
+     */
+    List<UserTeamPatrolDTO> getUserNowNumber(@Param("useIds")List<String> useIds, @Param("startDate")String startDate, @Param("endDate")String endDate);
+
+    /**
+     * 计算同行人的巡检实际完成数
+     * @param useIds
+     * @param startDate
+     * @param endDate
+     * @return
+     */
+    List<UserTeamPatrolDTO> getPeopleNowNumber(@Param("useIds")List<String> useIds, @Param("startDate")String startDate, @Param("endDate")String endDate);
+
+    /**
+     * 计算指派的漏检数
+     * @param useIds
+     * @param startDate
+     * @param endDate
+     * @return
+     */
+    List<UserTeamPatrolDTO> getUserOmitTasksNumber(@Param("useIds")List<String> useIds, @Param("startDate")String startDate, @Param("endDate")String endDate);
+
+    /**
+     * 计算同行人的漏检数
+     * @param useIds
+     * @param startDate
+     * @param endDate
+     * @return
+     */
+    List<UserTeamPatrolDTO> getPeopleOmitTasksNumber(@Param("useIds")List<String> useIds, @Param("startDate")String startDate, @Param("endDate")String endDate);
 }

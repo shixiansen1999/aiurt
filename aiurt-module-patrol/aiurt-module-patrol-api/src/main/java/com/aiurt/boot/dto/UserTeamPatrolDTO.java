@@ -13,6 +13,10 @@ import lombok.Data;
 public class UserTeamPatrolDTO {
     @ApiModelProperty(value = "用户Id")
     private String userId;
+    @ApiModelProperty(value = "用户Id")
+    private String taskId;
+    @ApiModelProperty(value = "班组Id")
+    private String orgId;
     @ApiModelProperty(value = "巡视工时")
     private float workHours;
     @ApiModelProperty(value = "计划任务数")
@@ -22,6 +26,8 @@ public class UserTeamPatrolDTO {
     @ApiModelProperty(value = "计划完成率")
     private float planFinishRate;
     @ApiModelProperty(value = "漏巡数")
-    private Integer missPatrolNumber;
+    private float missPatrolNumber;
+    @ApiModelProperty(value = "平均每月漏检数")
+    private float avgMissPatrolNumber;
 
 }

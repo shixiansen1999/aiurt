@@ -29,4 +29,10 @@ public interface PatrolApi {
      * @return
      */
     Map<String, UserTeamPatrolDTO> getUserParameter(UserTeamParameter userTeamParameter);
+    /**
+     * 统计报表-班组维度巡检参数接口返回
+     * @param userTeamParameter
+     * @return
+     */
+    Map<String, UserTeamPatrolDTO> getUserTeamParameter(UserTeamParameter userTeamParameter);
 }
