@@ -578,7 +578,9 @@ public class BigscreenPlanService {
             for (TaskUserDTO dto : dtos) {
                 sum = sum.add(dto.getInspecitonTotalTime());
             }
-            teamPortraitDTO.setInspecitonTotalTime(sum);
+            //秒转时
+            BigDecimal decimal = sum.divide(new BigDecimal("3600"),1, BigDecimal.ROUND_HALF_UP);
+            teamPortraitDTO.setInspecitonTotalTime(decimal);
         } else {
             teamPortraitDTO.setInspecitonTotalTime(new BigDecimal(0));
         }

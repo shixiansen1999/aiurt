@@ -59,9 +59,9 @@ public class PersonnelGroupModel implements Serializable {
     @ApiModelProperty("配合施工工时")
     private BigDecimal assortTime;
     @ApiModelProperty("应急处置次数")
-    private BigDecimal EmergencyResponseNum;
+    private BigDecimal emergencyResponseNum;
     @ApiModelProperty("应急处置工时")
-    private BigDecimal EmergencyHandlingHours;
+    private BigDecimal emergencyHandlingHours;
     @ApiModelProperty("培训完成次数")
     private BigDecimal trainFinish;
 }

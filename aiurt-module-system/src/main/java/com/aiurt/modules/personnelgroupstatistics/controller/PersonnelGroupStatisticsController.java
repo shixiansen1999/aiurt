@@ -9,7 +9,11 @@ import com.aiurt.modules.personnelgroupstatistics.service.PersonnelGroupStatisti
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.system.api.ISysBaseAPI;
+import org.jeecg.common.system.vo.LoginUser;
+import org.jeecg.common.system.vo.SysDepartModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -33,6 +37,9 @@ public class PersonnelGroupStatisticsController {
 
     @Autowired
     private PersonnelGroupStatisticsService personnelGroupStatisticsService;
+
+    @Autowired
+    private ISysBaseAPI iSysBaseAPI;
 
     /**
      * 班组统计
@@ -125,5 +132,18 @@ public class PersonnelGroupStatisticsController {
                                           @RequestParam(name = "startTime",required = false) String startTime,
                                           @RequestParam(name = "endTime",required = false) String endTime) {
         return null;
+    }
+
+    /**
+     * 班组下拉框
+     * @param
+     * @return
+     */
+    @AutoLog(value = "统计报表人员报表-班组下拉框", operateType = 1, operateTypeAlias = "查询")
+    @ApiOperation(value = "统计报表人员报表-班组下拉框", notes = "统计报表人员报表-班组下拉框")
+    @GetMapping(value = "/selectDepart")
+    public List<SysDepartModel> selectDepart() {
+        LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        return iSysBaseAPI.getUserSysDepart(sysUser.getId());
     }
 }
