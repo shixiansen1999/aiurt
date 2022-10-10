@@ -19,4 +19,10 @@ public interface ICsUserMajorService extends IService<CsUserMajor> {
      * @return
      */
     List<CsUserMajorModel> getMajorByUserId(String id);
+
+    /**
+     * 查询所有的专业
+     * @return
+     */
+    List<CsUserMajorModel> queryAllMojor();
 }

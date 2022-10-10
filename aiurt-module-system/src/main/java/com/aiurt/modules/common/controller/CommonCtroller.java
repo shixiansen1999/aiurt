@@ -19,10 +19,7 @@ import com.aiurt.modules.subsystem.entity.CsSubsystem;
 import com.aiurt.modules.subsystem.service.ICsSubsystemService;
 import com.aiurt.modules.system.entity.SysDepart;
 import com.aiurt.modules.system.entity.SysUser;
-import com.aiurt.modules.system.service.ICsUserMajorService;
-import com.aiurt.modules.system.service.ICsUserSubsystemService;
-import com.aiurt.modules.system.service.ISysDepartService;
-import com.aiurt.modules.system.service.ISysUserService;
+import com.aiurt.modules.system.service.*;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
@@ -82,6 +79,9 @@ public class CommonCtroller {
     @Autowired
     private ISysBaseAPI sysBaseAPI;
 
+    @Autowired
+    private ICsUserStaionService userStationService;
+
 
     public Result<List<Device>> query() {
         return Result.OK();
@@ -100,18 +100,21 @@ public class CommonCtroller {
 
         String userId = loginUser.getId();
         String roleCodes = loginUser.getRoleCodes();
+
+        List<CsUserMajorModel> majorModelList = Collections.emptyList();
         // 系统管理员不做权限过滤
         if (StrUtil.isNotBlank(roleCodes) && roleCodes.indexOf(ADMIN)>-1) {
-            userId = "";
+            majorModelList = csUserMajorService.queryAllMojor();
+        }else {
+            majorModelList =  csUserMajorService.getMajorByUserId(userId);
         }
 
-        List<CsUserMajorModel> majorModelList = csUserMajorService.getMajorByUserId(userId);
         Map<String, CsUserMajorModel> modelMap = majorModelList.stream().collect(Collectors.toMap(CsUserMajorModel::getMajorCode, t -> t, (t1, t2) -> t1));
         List<SelectTable> list = modelMap.keySet().stream().map(key -> {
             SelectTable table = new SelectTable();
             CsUserMajorModel csMajor = modelMap.getOrDefault(key, new CsUserMajorModel());
             table.setLabel(csMajor.getMajorName());
-            table.setKey(csMajor.getId());
+            table.setKey(csMajor.getMajorId());
             table.setValue(csMajor.getMajorCode());
             return table;
         }).collect(Collectors.toList());
@@ -136,14 +139,16 @@ public class CommonCtroller {
         LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         String userId = loginUser.getId();
         String roleCodes = loginUser.getRoleCodes();
+
+        List<CsUserSubsystemModel> csMajorList = Collections.emptyList();
         // 系统管理员不做权限过滤
         if (StrUtil.isNotBlank(roleCodes) && roleCodes.indexOf(ADMIN)>-1) {
-            userId = "";
+            csMajorList = csUserSubsystemService.queryAllSubsystem();
+        }else {
+            csMajorList = csUserSubsystemService.getSubsystemByUserId(userId);
         }
-        List<CsUserSubsystemModel> csMajorList = csUserSubsystemService.getSubsystemByUserId(userId);
+
         List<SelectTable> list = new ArrayList<>();
-       // SelectTable selectTable = new SelectTable();
-       // selectTable.setLabel("无"); selectTable.setValue("无");
         if (StrUtil.isNotBlank(majorCode)) {
             list = csMajorList.stream().filter(entity -> StrUtil.equalsIgnoreCase(majorCode, entity.getMajorCode())).map(subsystem -> {
                 SelectTable table = new SelectTable();
@@ -167,7 +172,6 @@ public class CommonCtroller {
                 return table;
             }).collect(Collectors.toList());
         }
-       // list.add(0,selectTable);
         return Result.OK(list);
     }
 
@@ -236,16 +240,20 @@ public class CommonCtroller {
         String userId = loginUser.getId();
         String roleCodes = loginUser.getRoleCodes();
         // 系统管理员不做权限过滤
-        if (StrUtil.isNotBlank(roleCodes) && roleCodes.indexOf(ADMIN)>-1) {
-            userId = "";
-        }
+
 
         List<CsLine> lineList = lineService.getBaseMapper().selectList(new LambdaQueryWrapper<CsLine>().eq(CsLine::getDelFlag,0));
 
         Map<String, String> lineMap = lineList.stream().collect(Collectors.toMap(CsLine::getLineCode, CsLine::getLineName, (t1, t2) -> t2));
 
-        // 根据个人
-        List<CsUserStationModel> stationModelList = sysBaseAPI.getStationByUserId(userId);
+        List<CsUserStationModel> stationModelList = Collections.emptyList();
+        // 根据个人管理的站点
+        if (StrUtil.isNotBlank(roleCodes) && roleCodes.indexOf(ADMIN)>-1) {
+            stationModelList = userStationService.queryAllStation();
+        }else {
+            stationModelList = sysBaseAPI.getStationByUserId(userId);
+        }
+
 
         Map<String, List<CsUserStationModel>> stationMap = stationModelList.stream().collect(Collectors.groupingBy(CsUserStationModel::getLineCode));
 
@@ -350,14 +358,20 @@ public class CommonCtroller {
 
         String userId = loginUser.getId();
         String roleCodes = loginUser.getRoleCodes();
+        List<CsUserMajorModel> majorModelList = Collections.emptyList();
+
+        List<CsUserSubsystemModel> subsystemModelList = Collections.emptyList();
         // 系统管理员不做权限过滤
         if (StrUtil.isNotBlank(roleCodes) && roleCodes.indexOf(ADMIN)>-1) {
-            userId = "";
+            majorModelList = csUserMajorService.queryAllMojor();
+
+            subsystemModelList = csUserSubsystemService.queryAllSubsystem();
+        }else {
+            majorModelList = csUserMajorService.getMajorByUserId(userId);
+
+            subsystemModelList =  csUserSubsystemService.getSubsystemByUserId(userId);
         }
 
-        List<CsUserMajorModel> majorModelList = csUserMajorService.getMajorByUserId(userId);
-
-        List<CsUserSubsystemModel> subsystemModelList = csUserSubsystemService.getSubsystemByUserId(userId);
         Map<String, List<CsUserSubsystemModel>> map = subsystemModelList.stream().collect(Collectors.groupingBy(CsUserSubsystemModel::getMajorCode));
 
         List<SelectTable> tableList = majorModelList.stream().map(csMajor -> {
@@ -383,7 +397,8 @@ public class CommonCtroller {
     @ApiOperation("查询线路数据")
     public Result<List<CsLine>> queryLines() {
         LambdaQueryWrapper<CsLine> wrapper = new LambdaQueryWrapper<>();
-        List<CsLine> csLines = lineService.getBaseMapper().selectList(null);
+        wrapper.eq(CsLine::getDelFlag, 0);
+        List<CsLine> csLines = lineService.getBaseMapper().selectList(wrapper);
         return Result.OK(csLines);
     }
 
@@ -394,7 +409,7 @@ public class CommonCtroller {
     })
     public Result<List<CsStation>> queryStationByLineCode(@RequestParam(value = "lineCode") String lineCode) {
         LambdaQueryWrapper<CsStation> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(CsStation::getLineCode, lineCode);
+        wrapper.eq(CsStation::getLineCode, lineCode).eq(CsStation::getDelFlag, 0);
         List<CsStation> stationList = stationService.getBaseMapper().selectList(wrapper);
         return Result.OK(stationList);
     }
