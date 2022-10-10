@@ -21,6 +21,11 @@ public class PersonnelTeamDTO {
     @ApiModelProperty(value = "班组id")
     private String  teamId;
 
+    /**班组编码*/
+    @TableField(exist = false)
+    @ApiModelProperty(value = "班组编码")
+    private String  teamCode;
+
     /**人员id*/
     @TableField(exist = false)
     @ApiModelProperty(value = "人员id")
