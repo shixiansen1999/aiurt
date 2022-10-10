@@ -34,7 +34,7 @@ public interface FlowApiService {
      * @param startBpmnDTO
      * @return
      */
-    public void start(StartBpmnDTO startBpmnDTO);
+    public ProcessInstance start(StartBpmnDTO startBpmnDTO);
 
     /**
      * 启动流程实例，如果当前登录用户为第一个用户任务的指派者，或者Assginee为流程启动人变量时，

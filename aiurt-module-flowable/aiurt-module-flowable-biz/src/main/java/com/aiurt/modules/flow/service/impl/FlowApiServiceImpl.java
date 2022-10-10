@@ -97,7 +97,7 @@ public class FlowApiServiceImpl implements FlowApiService {
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void start(StartBpmnDTO startBpmnDTO) {
+    public ProcessInstance start(StartBpmnDTO startBpmnDTO) {
         log.info("启动流程请求参数：[{}]", JSON.toJSONString(startBpmnDTO));
         LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         if (Objects.isNull(loginUser)) {
@@ -132,10 +132,11 @@ public class FlowApiServiceImpl implements FlowApiService {
         variableMap.put(FlowConstant.PROC_INSTANCE_START_USER_NAME_VAR, loginUser.getUsername());
 
         // 启动流程
-        runtimeService.startProcessInstanceByKey(startBpmnDTO.getModelKey(), (String) businessKey, busData);
+        ProcessInstance processInstance = runtimeService.startProcessInstanceByKey(startBpmnDTO.getModelKey(), (String) businessKey, busData);
 
         log.info("启动流程成功！");
 
+        return processInstance;
     }
 
     /**
