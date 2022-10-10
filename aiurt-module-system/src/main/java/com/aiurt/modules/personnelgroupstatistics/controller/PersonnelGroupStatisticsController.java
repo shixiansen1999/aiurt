@@ -11,9 +11,13 @@ import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.jeecg.common.api.vo.Result;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.ModelAndView;
 
-import java.util.Date;
+import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
 /**
@@ -39,9 +43,9 @@ public class PersonnelGroupStatisticsController {
     @ApiOperation(value="班组统计", notes="班组统计")
     @GetMapping(value = "/groupList")
     @PermissionData(pageComponent = "")
-    public Result<List<PersonnelGroupModel>> queryGroupPageList(@RequestParam(name="departIds")  List<String> departIds,
-                                                           @RequestParam(name="startTime") Date startTime,
-                                                           @RequestParam(name="endTime")  Date endTime) {
+    public Result<List<PersonnelGroupModel>> queryGroupPageList(@RequestParam(name="departIds",required = false)  List<String> departIds,
+                                                           @RequestParam(name="startTime") String startTime,
+                                                           @RequestParam(name="endTime")  String endTime) {
 
 
         return Result.OK(null);
@@ -70,9 +74,9 @@ public class PersonnelGroupStatisticsController {
     @ApiOperation(value="人员统计", notes="人员统计")
     @GetMapping(value = "/userList")
     @PermissionData(pageComponent = "")
-    public Result<List<PersonnelGroupModel>> queryUserPageList(@RequestParam(name="departIds")  List<String> departIds,
-                                                           @RequestParam(name="startTime") Date startTime,
-                                                           @RequestParam(name="endTime")  Date endTime) {
+    public Result<List<PersonnelGroupModel>> queryUserPageList(@RequestParam(name="departIds",required = false)  List<String> departIds,
+                                                           @RequestParam(name="startTime") String startTime,
+                                                           @RequestParam(name="endTime")  String endTime) {
 
         return Result.OK(null);
     }
@@ -89,5 +93,37 @@ public class PersonnelGroupStatisticsController {
     public Result<TeamUserModel> queryUserById(@RequestParam(name="userId",required=true)  String userId) {
 
         return Result.OK(null);
+    }
+
+    /**
+     * 统计报表人员报表-班组列表导出
+     *
+     * @param request
+     * @return
+     */
+    @AutoLog(value = "统计报表人员报表-班组列表导出", operateType = 6, operateTypeAlias = "导出")
+    @ApiOperation(value = "统计报表人员报表-班组列表导出", notes = "统计报表人员报表-班组列表导出")
+    @GetMapping(value = "/reportGroupExport")
+    public ModelAndView reportGroupExport(HttpServletRequest request,
+                                     @RequestParam(name = "departIds",required = false) List<String> departIds,
+                                     @RequestParam(name = "startTime",required = false) String startTime,
+                                     @RequestParam(name = "endTime",required = false) String endTime) {
+        return null;
+    }
+
+    /**
+     * 统计报表人员报表-人员列表导出
+     *
+     * @param request
+     * @return
+     */
+    @AutoLog(value = "统计报表人员报表-人员列表导出", operateType = 6, operateTypeAlias = "导出")
+    @ApiOperation(value = "统计报表人员报表-人员列表导出", notes = "统计报表人员报表-人员列表导出")
+    @GetMapping(value = "/reportUserExport")
+    public ModelAndView reportUserExport(HttpServletRequest request,
+                                          @RequestParam(name = "departIds",required = false) List<String> departIds,
+                                          @RequestParam(name = "startTime",required = false) String startTime,
+                                          @RequestParam(name = "endTime",required = false) String endTime) {
+        return null;
     }
 }
