@@ -742,4 +742,11 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
         List<SelectTable> selectTables = commonService.queryDepartUserTree(subDepIdList, loginUser.getId());
         return selectTables;
     }
+
+    @Override
+    public List<SysUser> querySysUserForWorkTicket() {
+        List<String> role = new ArrayList<>();
+        baseMapper.querySysUserForWorkTicket(role);
+        return null;
+    }
 }

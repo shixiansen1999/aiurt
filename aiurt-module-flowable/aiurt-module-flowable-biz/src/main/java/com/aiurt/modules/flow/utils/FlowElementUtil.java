@@ -282,4 +282,20 @@ public class FlowElementUtil {
         return "";
     }
 
+    /**
+     * 挂起流程定义对象
+     * @param processDefinitionId 流程定义Id
+     */
+    public void suspendProcessDefinition(String  processDefinitionId) {
+        repositoryService.suspendProcessDefinitionById(processDefinitionId);
+    }
+
+    /**
+     * 激活流程定义对象
+     * @param processDefinitionId 流程定义Id
+     */
+    public void activateProcessDefinition(String processDefinitionId) {
+        repositoryService.activateProcessDefinitionById(processDefinitionId);
+    }
+
 }

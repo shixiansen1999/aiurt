@@ -1665,4 +1665,16 @@ public class SysUserController {
         List<SelectTable> tables = sysUserService.queryManageDepartUserTree();
         return Result.OK(tables);
     }
+
+    /**
+     * 工作票查询工作负责人
+     * @return
+     */
+    @GetMapping("/querySysUserForWorkTicket")
+    @ApiOperation("工作票工作负责人查询")
+    public Result<List<SysUser>> querySysUserForWorkTicket() {
+        List<SysUser> result = sysUserService.querySysUserForWorkTicket();
+        return Result.OK(result);
+    }
+
 }

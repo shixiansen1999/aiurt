@@ -270,9 +270,11 @@ public class FlowApiServiceImpl implements FlowApiService {
             // 如果businessKey为空则设置
 
         }else if (StrUtil.equalsIgnoreCase(FlowApprovalType.AGREE, approvalType)) {
+           if (Objects.nonNull(busData)) {
+               busData.put("operationType", approvalType);
+           }
             // 完成任务
             taskService.complete(taskId, busData);
-
             // 驳回
         }else if (StrUtil.equalsIgnoreCase(FlowApprovalType.REJECT, approvalType)) {
 

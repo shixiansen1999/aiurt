@@ -9,6 +9,8 @@ import com.aiurt.modules.workticket.dto.WorkTicketReqDTO;
 import com.aiurt.modules.workticket.dto.WorkTicketResDTO;
 import com.aiurt.modules.workticket.entity.BdWorkTicket;
 import com.aiurt.modules.workticket.service.IBdWorkTicketService;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -21,10 +23,7 @@ import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * @Description: bd_work_ticket
@@ -128,7 +127,25 @@ public class BdWorkTicketController extends BaseController<BdWorkTicket, IBdWork
 		map.keySet().stream().forEach(key->{
 			String s = StrUtil.toUnderlineCase(key);
 			Object o = map.get(key);
+			// 数组转换
 			data.put(s, o);
+			if (StrUtil.equalsIgnoreCase("work_partner", s)) {
+				if (Objects.nonNull(o)) {
+					data.put(s,  JSONObject.parseArray((String) o));
+				}else {
+					data.put(s, Collections.emptyList());
+				}
+
+			}
+
+			if (StrUtil.equalsIgnoreCase("work_start_time", s)) {
+				if (Objects.nonNull(o)) {
+					data.put(s,  JSONObject.parseArray((String) o));
+				}else {
+					data.put(s, Collections.emptyList());
+				}
+			}
+
 		});
 		return Result.OK(data);
 	}
