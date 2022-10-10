@@ -21,7 +21,6 @@ import com.aiurt.modules.modeler.service.IActCustomTaskExtService;
 import com.aiurt.modules.utils.ReflectionService;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.extern.slf4j.Slf4j;
@@ -38,7 +37,6 @@ import org.flowable.engine.history.HistoricProcessInstance;
 import org.flowable.engine.history.HistoricProcessInstanceQuery;
 import org.flowable.engine.impl.bpmn.behavior.ParallelMultiInstanceBehavior;
 import org.flowable.engine.impl.bpmn.behavior.SequentialMultiInstanceBehavior;
-import org.flowable.engine.impl.persistence.entity.ExecutionEntityImpl;
 import org.flowable.engine.repository.ProcessDefinition;
 import org.flowable.engine.runtime.ActivityInstance;
 import org.flowable.engine.runtime.ChangeActivityStateBuilder;
@@ -49,7 +47,6 @@ import org.flowable.task.api.TaskInfo;
 import org.flowable.task.api.TaskQuery;
 import org.flowable.task.api.history.HistoricTaskInstance;
 import org.flowable.task.api.history.HistoricTaskInstanceQuery;
-import org.flowable.task.service.impl.persistence.entity.TaskEntityImpl;
 import org.flowable.ui.modeler.serviceapi.ModelService;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
@@ -125,10 +122,9 @@ public class FlowApiServiceImpl implements FlowApiService {
 
         // 根据key查询第一个用户任务
         UserTask userTask = flowElementUtil.getFirstUserTaskByModelKey(startBpmnDTO.getModelKey());
-        // Task task = BeanUtil.copyProperties(userTask, TaskEntityImpl.class);
 
         // 保存中间业务数据，将业务数据id返回
-        Object businessKey = saveBusData(result.getId(), userTask.getId(), busData);
+        Object businessKey = flowElementUtil.saveBusData(result.getId(), userTask.getId(), busData);
 
         String loginName = loginUser.getUsername();
         Authentication.setAuthenticatedUserId(loginName);
@@ -138,7 +134,7 @@ public class FlowApiServiceImpl implements FlowApiService {
         variableMap.put(FlowConstant.PROC_INSTANCE_START_USER_NAME_VAR, loginUser.getUsername());
 
         // 启动流程
-        ProcessInstance processInstance = runtimeService.startProcessInstanceByKey(startBpmnDTO.getModelKey(), (String) businessKey, busData);
+        runtimeService.startProcessInstanceByKey(startBpmnDTO.getModelKey(), (String) businessKey, busData);
 
         log.info("启动流程成功！");
 
@@ -178,7 +174,7 @@ public class FlowApiServiceImpl implements FlowApiService {
        // Task task = BeanUtil.copyProperties(userTask, TaskEntityImpl.class);
 
         // 保存中间业务数据，将业务数据id返回
-        Object businessKey = saveBusData(result.getId(), userTask.getId(), busData);
+        Object businessKey = flowElementUtil.saveBusData(result.getId(), userTask.getId(), busData);
 
         String loginName = loginUser.getUsername();
         Authentication.setAuthenticatedUserId(loginName);
@@ -214,56 +210,33 @@ public class FlowApiServiceImpl implements FlowApiService {
         busData.put(FlowConstant.PROC_INSTANCE_START_USER_NAME_VAR, loginUser.getUsername());
     }
 
-
     /**
-     * 保存业务数据
-     *
-     * @param pProcessDefinitionId
-     * @param taskId
-     * @return
+     * 提交任务
+     * @param taskCompleteDTO
      */
-    public Object saveBusData(String pProcessDefinitionId, String taskId,  Map<String, Object> busData) {
-        log.info("处理中间业务数据");
-        if (Objects.isNull(busData)) {
-            return "";
-        }
-        List<ActCustomTaskExt> actCustomTaskExts = customTaskExtService.getBaseMapper().selectList(
-                new LambdaQueryWrapper<ActCustomTaskExt>()
-                        .eq(ActCustomTaskExt::getProcessDefinitionId, pProcessDefinitionId)
-                        .eq(ActCustomTaskExt::getTaskId, taskId));
-        // 数据结构_转为驼峰
-        Map<String, Object> data = new HashMap<>(16);
-        busData.keySet().stream().forEach(key->{
-            String s = StrUtil.toCamelCase(key);
-            data.put(s, busData.get(key));
-        });
-
-        // 是否动态表单
-        if (CollUtil.isNotEmpty(actCustomTaskExts)) {
-            JSONObject jsonObject = JSONObject.parseObject(actCustomTaskExts.get(0).getFormJson());
-            if (ObjectUtil.isNotEmpty(jsonObject)) {
-                List<String> className = StrUtil.split((String) jsonObject.get("className"), '.');
-                try {
-                    if (CollUtil.isNotEmpty(className)) {
-                       return reflectionService.invokeService(className.get(0), className.get(1), data);
-                    }
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-        return "";
-    }
-
-
     @Override
     public void completeTask(TaskCompleteDTO taskCompleteDTO) {
+        // 任务id
+        String taskId = taskCompleteDTO.getTaskId();
+        // 流程实例id
+        String processInstanceId = taskCompleteDTO.getProcessInstanceId();
+
         FlowTaskCompleteCommentDTO flowTaskCompleteDTO = taskCompleteDTO.getFlowTaskCompleteDTO();
 
-        // 如果是什么
+        // 获取任务
+        Task task = this.getProcessInstanceActiveTask(processInstanceId, taskId);
+        if (task == null) {
+            throw new AiurtBootException("数据验证失败，请核对指定的任务Id，请刷新后重试！");
+        }
 
-        // 保存数据
+        // 封装 ActCustomTaskComment
+        ActCustomTaskComment flowTaskComment = BeanUtil.copyProperties(flowTaskCompleteDTO, ActCustomTaskComment.class);
+        if (ObjectUtil.isNotEmpty(flowTaskComment)) {
+            flowTaskComment.fillWith(task);
+        }
 
+        // 提交任务
+        completeTask(task, flowTaskComment, taskCompleteDTO.getBusData());
     }
 
     /**
@@ -292,8 +265,11 @@ public class FlowApiServiceImpl implements FlowApiService {
             // 数据处理
             ProcessInstance processInstance = getProcessInstance(processInstanceId);
             String businessKey = processInstance.getBusinessKey();
-            Object o = saveBusData(processInstanceId, taskId, busData);
 
+            // 更新中间业务数据
+            Object o = flowElementUtil.saveBusData(processInstanceId, taskId, busData);
+
+            // 如果businessKey为空则设置
 
         }else if (StrUtil.equalsIgnoreCase(FlowApprovalType.AGREE, approvalType)) {
             // 完成任务
@@ -347,7 +323,9 @@ public class FlowApiServiceImpl implements FlowApiService {
         if (!this.isAssigneeOrCandidate(task)) {
             throw new AiurtBootException("数据验证失败，当前用户不是指派人也不是候选人之一！");
         }
-
+        if (StrUtil.isNotBlank(processDefinitionId)) {
+            processDefinitionId = task.getProcessDefinitionId();
+        }
         ActCustomTaskExt flowTaskExt =
                 customTaskExtService.getByProcessDefinitionIdAndTaskId(processDefinitionId, task.getTaskDefinitionKey());
         if (flowTaskExt != null) {
@@ -1315,7 +1293,7 @@ public class FlowApiServiceImpl implements FlowApiService {
         }
         TaskInfoDTO taskInfoDTO = new TaskInfoDTO();
         taskInfoDTO.setTaskKey(userTask.getId());
-        taskInfoDTO.setRouterName("/test/test.vue");
+        taskInfoDTO.setRouterName("src\\views\\workTicket\\modules\\BdFirstWorkTicket.vue");
         ProcessDefinition processDefinition = flowElementUtil.getProcessDefinition(processDefinitionKey);
         ActCustomTaskExt customTaskExt = customTaskExtService.getByProcessDefinitionIdAndTaskId(processDefinition.getId(), userTask.getId());
         if (Objects.nonNull(customTaskExt)) {
