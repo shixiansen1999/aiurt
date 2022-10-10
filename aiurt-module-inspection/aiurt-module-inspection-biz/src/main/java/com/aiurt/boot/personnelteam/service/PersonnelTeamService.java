@@ -62,17 +62,23 @@ public class PersonnelTeamService implements OverhaulApi {
 
                 //查询人员的计划任务数量
                 List<PersonnelTeamDTO> scheduledTask1 = personnelTeamMapper.getScheduledTask(collect1, null, startDate, endDate,null);
-                Map<String, PersonnelTeamDTO> collect2 = scheduledTask1.stream().collect(Collectors.toMap(PersonnelTeamDTO::getUserId, v -> v));
+
                 //查询人员的完成任务数量
                 List<PersonnelTeamDTO> scheduledTask2 = personnelTeamMapper.getScheduledTask(collect1, 8L, startDate, endDate,null);
-                getNumber(startDate, endDate, map, collect2, scheduledTask2);
+                if (CollectionUtil.isNotEmpty(scheduledTask1) && CollectionUtil.isNotEmpty(scheduledTask2)){
+                    Map<String, PersonnelTeamDTO> collect2 = scheduledTask1.stream().collect(Collectors.toMap(PersonnelTeamDTO::getUserId, v -> v));
+                    getNumber(startDate, endDate, map, collect2, scheduledTask2);
+                }
+
             }else {
                 //查询人员的计划任务数量
                 List<PersonnelTeamDTO> scheduledTask1 = personnelTeamMapper.getScheduledTask(null, null, startDate, endDate, userId);
-                Map<String, PersonnelTeamDTO> collect2 = scheduledTask1.stream().collect(Collectors.toMap(PersonnelTeamDTO::getUserId, v -> v));
                 //查询人员的完成任务数量
                 List<PersonnelTeamDTO> scheduledTask2 = personnelTeamMapper.getScheduledTask(null, 8L, startDate, endDate, userId);
-                getNumber(startDate, endDate, map, collect2, scheduledTask2);
+                if (CollectionUtil.isNotEmpty(scheduledTask1) && CollectionUtil.isNotEmpty(scheduledTask2)){
+                    Map<String, PersonnelTeamDTO> collect2 = scheduledTask1.stream().collect(Collectors.toMap(PersonnelTeamDTO::getUserId, v -> v));
+                    getNumber(startDate, endDate, map, collect2, scheduledTask2);
+                }
             }
 
           return map;
@@ -86,8 +92,10 @@ public class PersonnelTeamService implements OverhaulApi {
             PersonnelTeamDTO personnelTeamDTO = new PersonnelTeamDTO();
             String key = entry.getKey();
 
+            personnelTeamDTO.setUserId(key);
+
             //总工时
-            PersonnelTeamDTO time = personnelTeamMapper.getTime(key, startDate, endDate);
+            PersonnelTeamDTO time = personnelTeamMapper.getUserTime(key, startDate, endDate);
             personnelTeamDTO.setOverhaulWorkingHours(time.getCounter());
 
             PersonnelTeamDTO q = collect3.get(key);
@@ -119,6 +127,7 @@ public class PersonnelTeamService implements OverhaulApi {
         List<SysDepartModel> userSysDepart = sysBaseAPI.getUserSysDepart(sysUser.getId());
         //所属班组id的list集合
         List<String> collect = userSysDepart.stream().map(SysDepartModel::getId).collect(Collectors.toList());
+
 
 
         return map;
