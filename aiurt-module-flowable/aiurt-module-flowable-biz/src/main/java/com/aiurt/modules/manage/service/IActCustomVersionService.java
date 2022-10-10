@@ -22,4 +22,10 @@ public interface IActCustomVersionService extends IService<ActCustomVersion> {
      * @param actCustomVersion
      */
     void activeFlowProcess(ActCustomVersion actCustomVersion);
+
+    /**
+     * 设置主版本
+     * @param actCustomVersion
+     */
+    void updateMainVersion(ActCustomVersion actCustomVersion);
 }

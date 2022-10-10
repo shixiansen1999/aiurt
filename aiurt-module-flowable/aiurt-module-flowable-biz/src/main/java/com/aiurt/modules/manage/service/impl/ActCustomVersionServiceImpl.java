@@ -13,6 +13,7 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import java.util.Objects;
+import java.util.Optional;
 
 /**
  * @Description: 版本管理
@@ -37,7 +38,9 @@ public class ActCustomVersionServiceImpl extends ServiceImpl<ActCustomVersionMap
         // 参数校验
         ActCustomVersion customVersion = vaildEntity(actCustomVersion);
 
-        if (actCustomVersion.getStatus() == 0) {
+        Integer status = Optional.ofNullable(customVersion.getStatus()).orElse(0);
+
+        if (status == 0) {
             throw new AiurtBootException("当前流程发布版本已处于挂起状态！");
         }
 
@@ -58,7 +61,8 @@ public class ActCustomVersionServiceImpl extends ServiceImpl<ActCustomVersionMap
         // 参数校验
         ActCustomVersion customVersion = vaildEntity(actCustomVersion);
 
-        if (actCustomVersion.getStatus() == 1) {
+        Integer status = Optional.ofNullable(customVersion.getStatus()).orElse(1);
+        if (status == 1) {
             throw new AiurtBootException("当前流程发布版本已处于激活状态！");
         }
 
@@ -69,6 +73,17 @@ public class ActCustomVersionServiceImpl extends ServiceImpl<ActCustomVersionMap
 
         // 激活
         flowElementUtil.activateProcessDefinition(customVersion.getProcessDefinitionId());
+    }
+
+
+    /**
+     * 设置主版本
+     *
+     * @param actCustomVersion
+     */
+    @Override
+    public void updateMainVersion(ActCustomVersion actCustomVersion) {
+
     }
 
     /**
