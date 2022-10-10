@@ -75,7 +75,8 @@
     select
     ptu.user_id as userId,
     count( pt.id ) AS planTaskNumber,
-    count( pt.STATUS = 7 OR NULL ) AS actualFinishTaskNumber
+    count( pt.STATUS = 7 OR NULL ) AS actualFinishTaskNumber,
+    SUM(IF(pt.STATUS = 7,TIMESTAMPDIFF( SECOND, pt.begin_time, IF ( 1 = pt.auditor, pt.auditor_time, pt.submit_time ) ), 0))as  workHours
     from patrol_task_user ptu
     JOIN patrol_task pt on pt.`code` = ptu.task_code
     <if test="useIds != null and useIds.size() != 0">
@@ -94,7 +95,8 @@
 select
 pa.user_id as userId,
 count( DISTINCT(pt.id) ) AS planTaskNumber,
-count( DISTINCT(pt.STATUS = 7 OR NULL )) AS actualFinishTaskNumber
+count( DISTINCT(pt.STATUS = 7 OR NULL )) AS actualFinishTaskNumber,
+SUM(IF(pt.STATUS = 7,TIMESTAMPDIFF( SECOND, pt.begin_time, IF ( 1 = pt.auditor, pt.auditor_time, pt.submit_time ) ), 0))as  workHours
 from  patrol_task pt
 JOIN patrol_task_device ptd ON pt.id = ptd.task_id
 AND ptd.del_flag = 0

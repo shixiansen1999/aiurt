@@ -14,7 +14,7 @@ public class UserTeamPatrolDTO {
     @ApiModelProperty(value = "用户Id")
     private String userId;
     @ApiModelProperty(value = "巡视工时")
-    private Integer workHours;
+    private float workHours;
     @ApiModelProperty(value = "计划任务数")
     private float planTaskNumber;
     @ApiModelProperty(value = "实际完成任务数")
