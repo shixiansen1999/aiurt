@@ -84,6 +84,13 @@ public class ActCustomVersionServiceImpl extends ServiceImpl<ActCustomVersionMap
     @Override
     public void updateMainVersion(ActCustomVersion actCustomVersion) {
 
+        ActCustomVersion customVersion = vaildEntity(actCustomVersion);
+
+        Integer version = Optional.ofNullable(customVersion.getVersion()).orElse(1);
+
+        if (version == 1) {
+            throw new AiurtBootException("该版本已经为当前工作流的发布主版本，不能重复设置！");
+        }
     }
 
     /**
