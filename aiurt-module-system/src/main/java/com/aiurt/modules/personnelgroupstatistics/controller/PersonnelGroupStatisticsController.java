@@ -1,11 +1,13 @@
 package com.aiurt.modules.personnelgroupstatistics.controller;
 
+import cn.hutool.core.text.StrSpliter;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.aspect.annotation.PermissionData;
 import com.aiurt.modules.personnelgroupstatistics.model.PersonnelGroupModel;
 import com.aiurt.modules.personnelgroupstatistics.model.TeamPortraitModel;
 import com.aiurt.modules.personnelgroupstatistics.model.TeamUserModel;
 import com.aiurt.modules.personnelgroupstatistics.service.PersonnelGroupStatisticsService;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
@@ -50,12 +52,15 @@ public class PersonnelGroupStatisticsController {
     @ApiOperation(value="班组统计", notes="班组统计")
     @GetMapping(value = "/groupList")
     @PermissionData(pageComponent = "")
-    public Result<List<PersonnelGroupModel>> queryGroupPageList(@RequestParam(name="departIds",required = false)  List<String> departIds,
+    public Result<List<PersonnelGroupModel>> queryGroupPageList(@RequestParam(name="departIds",required = false)  String departIds,
                                                            @RequestParam(name="startTime") String startTime,
-                                                           @RequestParam(name="endTime")  String endTime) {
-
-
-        return Result.OK(null);
+                                                           @RequestParam(name="endTime")  String endTime,
+                                                           @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
+                                                           @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize) {
+        Page<PersonnelGroupModel> page = new Page<>(pageNo, pageSize);
+        List<String> list = StrSpliter.splitTrim(departIds, ",", true);
+        List<PersonnelGroupModel> personnelGroupModels = personnelGroupStatisticsService.queryGroupPageList(list, startTime, endTime, page);
+        return Result.OK(personnelGroupModels);
     }
 
     /**
@@ -67,7 +72,7 @@ public class PersonnelGroupStatisticsController {
     @AutoLog(value = "班组详情-通过id查询", operateType =  1, operateTypeAlias = "查询-通过id查询", permissionUrl = "")
     @ApiOperation(value="班组详情-通过id查询", notes="班组详情-通过id查询")
     @GetMapping(value = "/queryGroupById")
-    public Result<TeamPortraitModel> queryById(@RequestParam(name="departId",required=true)  String departId) {
+    public Result<TeamPortraitModel> queryGroupById(@RequestParam(name="departId",required=true)  String departId) {
 
         return Result.OK(null);
     }
@@ -81,11 +86,15 @@ public class PersonnelGroupStatisticsController {
     @ApiOperation(value="人员统计", notes="人员统计")
     @GetMapping(value = "/userList")
     @PermissionData(pageComponent = "")
-    public Result<List<PersonnelGroupModel>> queryUserPageList(@RequestParam(name="departIds",required = false)  List<String> departIds,
+    public Result<List<PersonnelGroupModel>> queryUserPageList(@RequestParam(name="departIds",required = false)  String departIds,
                                                            @RequestParam(name="startTime") String startTime,
-                                                           @RequestParam(name="endTime")  String endTime) {
-
-        return Result.OK(null);
+                                                           @RequestParam(name="endTime")  String endTime,
+                                                           @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
+                                                           @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize) {
+        Page<PersonnelGroupModel> page = new Page<>(pageNo, pageSize);
+        List<String> list = StrSpliter.splitTrim(departIds, ",", true);
+        List<PersonnelGroupModel> personnelGroupModels = personnelGroupStatisticsService.queryUserPageList(list, startTime, endTime, page);
+        return Result.OK(personnelGroupModels);
     }
 
     /**
@@ -112,7 +121,7 @@ public class PersonnelGroupStatisticsController {
     @ApiOperation(value = "统计报表人员报表-班组列表导出", notes = "统计报表人员报表-班组列表导出")
     @GetMapping(value = "/reportGroupExport")
     public ModelAndView reportGroupExport(HttpServletRequest request,
-                                     @RequestParam(name = "departIds",required = false) List<String> departIds,
+                                     @RequestParam(name = "departIds",required = false) String departIds,
                                      @RequestParam(name = "startTime",required = false) String startTime,
                                      @RequestParam(name = "endTime",required = false) String endTime) {
         return null;
@@ -128,7 +137,7 @@ public class PersonnelGroupStatisticsController {
     @ApiOperation(value = "统计报表人员报表-人员列表导出", notes = "统计报表人员报表-人员列表导出")
     @GetMapping(value = "/reportUserExport")
     public ModelAndView reportUserExport(HttpServletRequest request,
-                                          @RequestParam(name = "departIds",required = false) List<String> departIds,
+                                          @RequestParam(name = "departIds",required = false) String departIds,
                                           @RequestParam(name = "startTime",required = false) String startTime,
                                           @RequestParam(name = "endTime",required = false) String endTime) {
         return null;

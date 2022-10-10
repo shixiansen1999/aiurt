@@ -2,4 +2,53 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.aiurt.modules.personnelgroupstatistics.mapper.PersonnelGroupStatisticsMapper">
 
+<select id="queryGroupPageList" resultType="com.aiurt.modules.personnelgroupstatistics.model.PersonnelGroupModel">
+    select id as teamId ,depart_name as teamName
+    from sys_depart where del_flag = 0
+    and id in
+    <foreach collection="ids" index="index" item="item" open="(" separator="," close=")">
+        #{item}
+    </foreach>
+    </select>
+
+<select id="queryUserPageList" resultType="com.aiurt.modules.personnelgroupstatistics.model.PersonnelGroupModel">
+    select su.id as userId ,su.realname as realname
+    from sys_user su
+    left join sys_depart sd on su.org_id = sd.id
+    where su.del_flag = 0 and sd.del_flag = 0
+    and sd.id in
+    <foreach collection="ids" index="index" item="item" open="(" separator="," close=")">
+        #{item}
+    </foreach>
+    </select>
+
+<select id="userTrainFinishedNum" resultType="com.aiurt.modules.personnelgroupstatistics.model.TrainTaskDTO">
+    select btt.id as taskId ,btt.exam_status as examStatus
+    from bd_train_task btt
+    left join bd_train_task_user bttu on bttu.train_task_id = btt.id
+    where btt.task_state = 7 and bttu.sign_state = 1
+    and bttu.user_id = #{userId}
+    <if test="startTime != null and endTime != null">
+        AND btt.update_time BETWEEN #{startTime} AND #{endTime}
+    </if>
+    </select>
+
+<select id="isExam" resultType="java.lang.Integer">
+    SELECT COUNT(*)
+       FROM bd_exam_record ber
+    left join bd_train_task btt on btt.id = ber.train_task_id
+    where ber.exam_classify = 1 and exam_state = 2
+    and btt.id = #{taskId}
+    and ber.user_id = #{userId}
+    </select>
+
+<select id="groupTrainFinishedNum" resultType="java.lang.Integer">
+    select count(*)
+    from bd_train_task
+    where task_state = 7
+    and task_team_id = #{teamId}
+    <if test="startTime != null and endTime != null">
+        AND update_time BETWEEN #{startTime} AND #{endTime}
+    </if>
+    </select>
 </mapper>

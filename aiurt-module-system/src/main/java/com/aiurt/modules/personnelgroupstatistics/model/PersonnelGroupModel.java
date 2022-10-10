@@ -7,7 +7,6 @@ import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
 
 import java.io.Serializable;
-import java.math.BigDecimal;
 
 /**
  * @author lkj
@@ -30,38 +29,38 @@ public class PersonnelGroupModel implements Serializable {
     @ApiModelProperty(value = "姓名")
     private String realname;
     @ApiModelProperty("检修总工时")
-    private BigDecimal inspecitonTotalTime;
+    private String inspecitonTotalTime;
     @ApiModelProperty("巡检总工时")
-    private BigDecimal patrolTotalTime;
+    private String patrolTotalTime;
     @ApiModelProperty("维修总工时")
-    private BigDecimal faultTotalTime;
+    private String faultTotalTime;
 
     @ApiModelProperty("巡视计划任务数")
-    private BigDecimal patrolScheduledTasks;
+    private String patrolScheduledTasks;
     @ApiModelProperty("巡视实际完成任务数")
-    private BigDecimal patrolCompletedTasks;
+    private String patrolCompletedTasks;
     @ApiModelProperty("检修计划任务数")
-    private BigDecimal inspecitonScheduledTasks;
+    private String inspecitonScheduledTasks;
     @ApiModelProperty("检修实际完成任务数")
-    private BigDecimal inspecitonCompletedTasks;
+    private String inspecitonCompletedTasks;
 
     @ApiModelProperty("巡视计划完成率")
-    private BigDecimal patrolPlanCompletion;
+    private String patrolPlanCompletion;
     @ApiModelProperty("检修计划完成率")
-    private BigDecimal inspecitonPlanCompletion;
+    private String inspecitonPlanCompletion;
     @ApiModelProperty("巡视漏检数")
-    private BigDecimal patrolMissingChecks;
+    private String patrolMissingChecks;
     @ApiModelProperty("检修漏检数")
-    private BigDecimal inspecitonMissingChecks;
+    private String inspecitonMissingChecks;
 
     @ApiModelProperty(value = "配合施工人次")
-    private Integer assortNum;
+    private String assortNum;
     @ApiModelProperty("配合施工工时")
-    private BigDecimal assortTime;
+    private String assortTime;
     @ApiModelProperty("应急处置次数")
-    private BigDecimal emergencyResponseNum;
+    private String emergencyResponseNum;
     @ApiModelProperty("应急处置工时")
-    private BigDecimal emergencyHandlingHours;
+    private String emergencyHandlingHours;
     @ApiModelProperty("培训完成次数")
-    private BigDecimal trainFinish;
+    private String trainFinish;
 }
