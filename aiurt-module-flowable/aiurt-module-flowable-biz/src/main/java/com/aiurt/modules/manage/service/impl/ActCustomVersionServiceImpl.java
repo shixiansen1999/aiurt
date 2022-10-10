@@ -6,6 +6,8 @@ import com.aiurt.modules.flow.utils.FlowElementUtil;
 import com.aiurt.modules.manage.entity.ActCustomVersion;
 import com.aiurt.modules.manage.mapper.ActCustomVersionMapper;
 import com.aiurt.modules.manage.service.IActCustomVersionService;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -86,11 +88,21 @@ public class ActCustomVersionServiceImpl extends ServiceImpl<ActCustomVersionMap
 
         ActCustomVersion customVersion = vaildEntity(actCustomVersion);
 
-        Integer version = Optional.ofNullable(customVersion.getVersion()).orElse(1);
-
-        if (version == 1) {
+        if (StrUtil.equalsIgnoreCase(customVersion.getMainVersion(), "1")) {
             throw new AiurtBootException("该版本已经为当前工作流的发布主版本，不能重复设置！");
         }
+
+        // 设置其他为
+        LambdaUpdateWrapper<ActCustomVersion> updateWrapper = new LambdaUpdateWrapper<>();
+
+        updateWrapper.set(ActCustomVersion::getMainVersion, "0").eq(ActCustomVersion::getModelId, customVersion.getModelId());
+
+        update(updateWrapper);
+
+        // 更新状态
+        customVersion.setMainVersion("1");
+
+        updateById(customVersion);
     }
 
     /**
