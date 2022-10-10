@@ -7,19 +7,15 @@ import com.aiurt.modules.common.entity.SelectTable;
 import com.aiurt.modules.common.service.ICommonService;
 import com.aiurt.modules.device.entity.Device;
 import com.aiurt.modules.device.service.IDeviceService;
-import com.aiurt.modules.major.entity.CsMajor;
-import com.aiurt.modules.major.service.ICsMajorService;
 import com.aiurt.modules.position.entity.CsLine;
 import com.aiurt.modules.position.entity.CsStation;
 import com.aiurt.modules.position.entity.CsStationPosition;
 import com.aiurt.modules.position.service.ICsLineService;
 import com.aiurt.modules.position.service.ICsStationPositionService;
 import com.aiurt.modules.position.service.ICsStationService;
-import com.aiurt.modules.subsystem.entity.CsSubsystem;
-import com.aiurt.modules.subsystem.service.ICsSubsystemService;
-import com.aiurt.modules.system.entity.SysDepart;
-import com.aiurt.modules.system.entity.SysUser;
-import com.aiurt.modules.system.service.*;
+import com.aiurt.modules.system.service.ICsUserMajorService;
+import com.aiurt.modules.system.service.ICsUserStaionService;
+import com.aiurt.modules.system.service.ICsUserSubsystemService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
@@ -33,7 +29,6 @@ import org.jeecg.common.system.vo.CsUserMajorModel;
 import org.jeecg.common.system.vo.CsUserStationModel;
 import org.jeecg.common.system.vo.CsUserSubsystemModel;
 import org.jeecg.common.system.vo.LoginUser;
-import org.nlpcn.commons.lang.util.tuples.valueintf.IValue0;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -41,7 +36,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -278,7 +276,7 @@ public class CommonCtroller {
                 selectTable.setValue(csStation.getStationCode());
                 selectTable.setLabel(csStation.getStationName());
                 selectTable.setLevel(2);
-                selectTable.setId(csStation.getId());
+                selectTable.setId(csStation.getStationId());
                 selectTable.setLineCode(lineCode);
                 selectTable.setStationCode(csStation.getStationCode());
 
