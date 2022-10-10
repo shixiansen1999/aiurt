@@ -72,7 +72,9 @@ public interface FlowApiService {
 
     /**
      * 待办任务
-     *
+     * @param flowTaskReqDTO 查询条件
+     * @param pageNo 分页页码
+     * @param pageSize 分页大小
      * @return
      */
     IPage<FlowTaskDTO> listRuntimeTask(Integer pageNo, Integer pageSize, FlowTaskReqDTO flowTaskReqDTO);

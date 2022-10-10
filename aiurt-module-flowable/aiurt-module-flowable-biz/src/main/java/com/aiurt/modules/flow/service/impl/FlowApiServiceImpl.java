@@ -18,7 +18,6 @@ import com.aiurt.modules.flow.service.IActCustomTaskCommentService;
 import com.aiurt.modules.flow.utils.FlowElementUtil;
 import com.aiurt.modules.modeler.entity.ActCustomTaskExt;
 import com.aiurt.modules.modeler.service.IActCustomTaskExtService;
-import com.aiurt.modules.utils.ReflectionService;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -71,8 +70,7 @@ public class FlowApiServiceImpl implements FlowApiService {
     private RuntimeService runtimeService;
     @Autowired
     private FlowElementUtil flowElementUtil;
-    @Autowired
-    private ReflectionService reflectionService;
+
     @Autowired
     private TaskService taskService;
     @Autowired
@@ -129,7 +127,7 @@ public class FlowApiServiceImpl implements FlowApiService {
         String loginName = loginUser.getUsername();
         Authentication.setAuthenticatedUserId(loginName);
 
-        Map<String, Object> variableMap = new HashMap<>();
+        Map<String, Object> variableMap = new HashMap<>(16);
         variableMap.put(FlowConstant.PROC_INSTANCE_INITIATOR_VAR, loginUser.getUsername());
         variableMap.put(FlowConstant.PROC_INSTANCE_START_USER_NAME_VAR, loginUser.getUsername());
 
@@ -171,7 +169,6 @@ public class FlowApiServiceImpl implements FlowApiService {
 
         // 根据key查询第一个用户任务
         UserTask userTask = flowElementUtil.getFirstUserTaskByModelKey(startBpmnDTO.getModelKey());
-       // Task task = BeanUtil.copyProperties(userTask, TaskEntityImpl.class);
 
         // 保存中间业务数据，将业务数据id返回
         Object businessKey = flowElementUtil.saveBusData(result.getId(), userTask.getId(), busData);
@@ -356,7 +353,7 @@ public class FlowApiServiceImpl implements FlowApiService {
 
         // 对象转换
         IPage<FlowHisTaskDTO> result = new Page<>();
-        List<FlowHisTaskDTO> flowHisTaskDTOS = new ArrayList<>();
+        List<FlowHisTaskDTO> flowHisTaskList = new ArrayList<>();
         List<HistoricTaskInstance> records = hisTaskFinishList.getRecords();
         if (CollUtil.isNotEmpty(records)) {
             records.forEach(re -> {
@@ -376,7 +373,7 @@ public class FlowApiServiceImpl implements FlowApiService {
             List<HistoricProcessInstance> instanceList = this.getHistoricProcessInstanceList(instanceIdSet);
             Map<String, HistoricProcessInstance> instanceMap =
                     instanceList.stream().collect(Collectors.toMap(HistoricProcessInstance::getId, c -> c));
-            flowHisTaskDTOS.forEach(flowHisTaskDTO -> {
+            flowHisTaskList.forEach(flowHisTaskDTO -> {
                 HistoricProcessInstance instance = instanceMap.get(flowHisTaskDTO.getProcessInstanceId());
                 flowHisTaskDTO.setProcessDefinitionKey(instance.getProcessDefinitionKey());
                 flowHisTaskDTO.setProcessDefinitionName(instance.getProcessDefinitionName());
@@ -390,7 +387,7 @@ public class FlowApiServiceImpl implements FlowApiService {
             List<ActCustomTaskComment> commentList = customTaskCommentService.getFlowTaskCommentListByTaskIds(taskIdSet);
             Map<String, List<ActCustomTaskComment>> commentMap =
                     commentList.stream().collect(Collectors.groupingBy(ActCustomTaskComment::getTaskId));
-            flowHisTaskDTOS.forEach(flowHisTaskDTO -> {
+            flowHisTaskList.forEach(flowHisTaskDTO -> {
                 List<ActCustomTaskComment> comments = commentMap.get(flowHisTaskDTO.getId());
                 if (CollUtil.isNotEmpty(comments)) {
                     flowHisTaskDTO.setApprovalType(comments.get(0).getApprovalType());
@@ -399,7 +396,7 @@ public class FlowApiServiceImpl implements FlowApiService {
             });
         }
 
-        result.setRecords(flowHisTaskDTOS);
+        result.setRecords(flowHisTaskList);
         result.setTotal(hisTaskFinishList.getTotal());
         result.setCurrent(hisTaskFinishList.getCurrent());
         result.setPages(hisTaskFinishList.getPages());
@@ -547,7 +544,6 @@ public class FlowApiServiceImpl implements FlowApiService {
             flowTaskVo.setTaskName(task.getName());
             flowTaskVo.setTaskKey(task.getTaskDefinitionKey());
             flowTaskVo.setTaskFormKey(task.getFormKey());
-//            flowTaskVo.setEntryId(flowEntryPublishMap.get(task.getProcessDefinitionId()).getEntryId());
 
             ProcessDefinition processDefinition = definitionMap.get(task.getProcessDefinitionId());
             flowTaskVo.setProcessDefinitionId(processDefinition.getId());
@@ -737,8 +733,8 @@ public class FlowApiServiceImpl implements FlowApiService {
             unfinishedTaskSet.add(unfinishedActivity.getActivityId());
         }
 
-        byte[] bpmnXML = modelService.getBpmnXML(bpmnModel);
-        String modelXml = new String(bpmnXML, StandardCharsets.UTF_8);
+        byte[] bpmnXml = modelService.getBpmnXML(bpmnModel);
+        String modelXml = new String(bpmnXml, StandardCharsets.UTF_8);
         HighLightedNodeDTO highLightedNodeDTO = HighLightedNodeDTO.builder()
                 .finishedTaskSet(finishedTaskSet)
                 .finishedSequenceFlowSet(finishedSequenceFlowSet)
@@ -853,7 +849,7 @@ public class FlowApiServiceImpl implements FlowApiService {
         int count = 0;
 
         // 并行网关节点
-        Map<ActivityInstance, List<ActivityInstance>> parallelGatewayUserTasks = new HashMap<>();
+        Map<ActivityInstance, List<ActivityInstance>> parallelGatewayUserTasks = new HashMap<>(16);
         List<ActivityInstance> userTasks = new ArrayList<>();
         ActivityInstance currActivityInstance = null;
         for (ActivityInstance activityInstance : activityInstances) {
