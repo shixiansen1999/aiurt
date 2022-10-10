@@ -1,7 +1,7 @@
 package com.aiurt.modules.config;
 
 import com.aiurt.modules.listener.ProcessStartListener;
-import com.aiurt.modules.listener.SequenceflowTakenListener;
+import com.aiurt.modules.listener.SequenceFlowTakenListener;
 import lombok.extern.slf4j.Slf4j;
 import org.flowable.bpmn.converter.BpmnXMLConverter;
 import org.flowable.common.engine.api.delegate.event.FlowableEngineEventType;
@@ -51,7 +51,7 @@ public class FlowBpmnConfig implements EngineConfigurationConfigurer<SpringProce
         configuration.setIdGenerator(uuidGenerator());
 
         Map<String, List<FlowableEventListener>> typedEventListeners = new HashMap<>();
-        typedEventListeners.put(FlowableEngineEventType.SEQUENCEFLOW_TAKEN.name(), Arrays.asList(new SequenceflowTakenListener()));
+        typedEventListeners.put(FlowableEngineEventType.SEQUENCEFLOW_TAKEN.name(), Arrays.asList(new SequenceFlowTakenListener()));
         typedEventListeners.put(FlowableEngineEventType.PROCESS_STARTED.name(), Arrays.asList(new ProcessStartListener()));
         configuration.setTypedEventListeners(typedEventListeners);
 

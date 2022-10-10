@@ -94,6 +94,8 @@ public class BdWorkTicketServiceImpl extends ServiceImpl<BdWorkTicketMapper, BdW
         return pageList.setRecords(workTicketResDTOS);
     }
 
+
+
     /**
      * 查询待办事项
      * @param pageList
@@ -106,6 +108,23 @@ public class BdWorkTicketServiceImpl extends ServiceImpl<BdWorkTicketMapper, BdW
         List<BdWorkTicket> bdWorkTicketList = baseMapper.queryPageList(pageList,username, "");
 
         return pageList.setRecords(bdWorkTicketList);
+    }
+
+    /**
+     * 更新状态
+     * @param businessKey 业务数据
+     * @param states 状态值
+     */
+    @Override
+    public void updateState(String businessKey, Integer states) {
+        BdWorkTicket workTicket = baseMapper.selectById(businessKey);
+
+        if (Objects.nonNull(workTicket)) {
+            //更新状态
+            workTicket.setState(states);
+            // 设置签收时间
+            updateById(workTicket);
+        }
     }
 
 

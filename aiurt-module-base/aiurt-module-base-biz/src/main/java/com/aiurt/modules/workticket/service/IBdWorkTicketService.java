@@ -35,4 +35,11 @@ public interface IBdWorkTicketService extends IService<BdWorkTicket> {
      * @return
      */
     Page<BdWorkTicket> queryPageList(Page<BdWorkTicket> pageList, String username);
+
+    /**
+     * 更新状态
+     * @param businessKey 业务数据
+     * @param states 状态值
+     */
+    void updateState(String businessKey, Integer states);
 }
