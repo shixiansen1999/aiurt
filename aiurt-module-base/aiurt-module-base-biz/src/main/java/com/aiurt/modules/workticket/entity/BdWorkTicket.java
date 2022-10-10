@@ -1,6 +1,8 @@
 package com.aiurt.modules.workticket.entity;
 
+import com.aiurt.common.aspect.annotation.Dict;
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -59,6 +61,7 @@ public class BdWorkTicket implements Serializable {
 	/**站所*/
 	@Excel(name = "站所", width = 15)
     @ApiModelProperty(value = "站所")
+    @Dict(dictTable = "cs_station", dicCode = "id" , dicText = "station_name")
     private String station;
 	/**作业地点及内容*/
 	@Excel(name = "作业地点及内容", width = 15)
@@ -111,6 +114,7 @@ public class BdWorkTicket implements Serializable {
 	/**流程实例id*/
 	@Excel(name = "流程实例id", width = 15)
     @ApiModelProperty(value = "流程实例id")
+    @TableField(exist = false)
     private String procInstId;
 	/**已完成断开的断路器和断开的隔离开关*/
 	@Excel(name = "已完成断开的断路器和断开的隔离开关", width = 15)
@@ -284,4 +288,23 @@ public class BdWorkTicket implements Serializable {
 	@Excel(name = "工作条件", width = 15)
     @ApiModelProperty(value = "工作条件")
     private String workCondition;
+
+    /**任务名称*/
+    @TableField(exist = false)
+    @ApiModelProperty(value = "任务名称")
+    private java.lang.String workTicketName;
+    /**线路号*/
+    @TableField(exist = false)
+    @ApiModelProperty(value = "线路号")
+    private java.lang.String lineId;
+    /**类型*/
+    @TableField(exist = false)
+    @ApiModelProperty(value = "类型")
+    private java.lang.String workTicketType;
+
+    @ApiModelProperty(value = "流程任务")
+    @TableField(exist = false)
+    private String taskId;
+
+
 }
