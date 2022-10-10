@@ -180,18 +180,29 @@ public class PatrolApiServiceImpl implements PatrolApi {
             UserTeamPatrolDTO zero = setZero(useId);
             userBaseList.add(zero);
         }
-        //统计部门人员指派的计划数、实际完成数
+        //统计部门人员指派的计划数、实际完成数、巡检工时
         List<UserTeamPatrolDTO> userPlanTaskNumber= patrolTaskUserMapper.getUserPlanNumber(useIds,userTeamParameter.getStartDate(),userTeamParameter.getEndDate());
-        //统计部门人员同行人的计划数、实际完成数
+        //统计部门人员同行人的计划数、实际完成数、巡检工时
         List<UserTeamPatrolDTO> peoplePlanTaskNumber= patrolTaskUserMapper.getPeoplePlanNumber(useIds,userTeamParameter.getStartDate(),userTeamParameter.getEndDate());
+        //合并
         for (UserTeamPatrolDTO userPatrol : userPlanTaskNumber) {
             float planNumber = 0;
             float nowNumber = 0;
+            float workHours = 0;
             for (UserTeamPatrolDTO peoplePatrol : peoplePlanTaskNumber) {
              if(userPatrol.getUserId().equals(peoplePatrol.getUserId()))
              {
                  planNumber= userPatrol.getPlanTaskNumber()+peoplePatrol.getPlanTaskNumber();
                  nowNumber= userPatrol.getActualFinishTaskNumber()+peoplePatrol.getActualFinishTaskNumber();
+                 workHours = userPatrol.getWorkHours()+peoplePatrol.getWorkHours();
+                 if(workHours!=0)
+                 {
+                     double avg = NumberUtil.div(workHours, 3600);
+                     BigDecimal b = new BigDecimal(avg);
+                     double fave = b.setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
+                     String completionRated = String.format("%.2f", fave);
+                     workHours = Float.parseFloat(completionRated);
+                 }
              }
             }
             if(planNumber!=0)
@@ -200,6 +211,10 @@ public class PatrolApiServiceImpl implements PatrolApi {
             } if(nowNumber!=0)
             {
                 userPatrol.setActualFinishTaskNumber(nowNumber);
+            }
+            if(workHours!=0)
+            {
+                userPatrol.setWorkHours(workHours);
             }
         }
         //额外人员
