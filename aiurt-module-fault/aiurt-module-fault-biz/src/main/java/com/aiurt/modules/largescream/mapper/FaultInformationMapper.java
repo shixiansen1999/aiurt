@@ -167,4 +167,51 @@ public interface FaultInformationMapper {
      * @return
      */
     List<FaultDurationTask> getFaultUserDuration(@Param("startTime") Date startTime, @Param("endTime") Date endTime);
+    /**
+     * 班组报表工时
+     * @param orgCodes
+     * @param orgIds
+     * @param teamId
+     * @param startTime
+     * @param endTime
+     * @return
+     */
+    List<FaultReportDTO> getFaultOrgReport(@Param("teamId") List<String> teamId,@Param("startTime") String startTime,@Param("endTime") String endTime, @Param("orgCodes")List<String> orgCodes,@Param("orgIds") List<String> orgIds);
+
+    /**
+     * 查询配合工时
+     * @param orgId
+     * @param startTime
+     * @param endTime
+     * @return
+     */
+    List<String> getConstructionHours(@Param("orgId")String orgId, @Param("startTime") String startTime,@Param("endTime") String endTime);
+
+    /**
+     * 人员报表工时
+     * @param teamId
+     * @param startTime
+     * @param endTime
+     * @param orgCodes
+     * @return
+     */
+    List<FaultReportDTO> getFaultUserReport(@Param("teamId") List<String> teamId,@Param("startTime") String startTime,@Param("endTime") String endTime, @Param("orgCodes")List<String> orgCodes,@Param("userId") String userId);
+
+    /**
+     * 查询配合工时
+     * @param userId
+     * @param startTime
+     * @param endTime
+     * @return
+     */
+    List<String> getUserConstructionHours(@Param("userId") String userId,@Param("startTime") String startTime,@Param("endTime")String endTime);
+
+    /**
+     *
+     * @param userId
+     * @param startTime
+     * @param endTime
+     * @return
+     */
+    Integer getUserConstructorsNum(@Param("userId") String userId,@Param("startTime") String startTime,@Param("endTime")String endTime);
 }

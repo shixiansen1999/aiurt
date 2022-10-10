@@ -2,8 +2,11 @@ package com.aiurt.modules.common.api;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.DateTime;
+import cn.hutool.core.date.DateUnit;
 import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.util.NumberUtil;
 import cn.hutool.core.util.ObjectUtil;
+import com.aiurt.modules.fault.dto.FaultReportDTO;
 import com.aiurt.modules.fault.entity.Fault;
 import com.aiurt.modules.fault.entity.FaultRepairParticipants;
 import com.aiurt.modules.fault.entity.FaultRepairRecord;
@@ -18,10 +21,14 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.LoginUser;
+import org.jeecg.common.system.vo.SysDepartModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.xml.crypto.Data;
 import java.math.BigDecimal;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -127,6 +134,76 @@ public class DailyFaultApiImpl implements DailyFaultApi {
             userDurationMap.put(userId, decimal);
         });
         return userDurationMap;
+    }
+
+    @Override
+    public Map<String, FaultReportDTO> getFaultOrgReport(List<String> teamId, String startTime, String endTime) {
+        Map<String, FaultReportDTO> map = new HashMap<>();
+        LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        List<SysDepartModel> sysDepartModels = sysBaseAPI.getUserSysDepart(sysUser.getId());
+        List<String> orgCodes = sysDepartModels.stream().map(SysDepartModel::getOrgCode).collect(Collectors.toList());
+        List<String> orgIds = sysDepartModels.stream().map(SysDepartModel::getId).collect(Collectors.toList());
+        List<FaultReportDTO> faultReportDTOS = faultInformationMapper.getFaultOrgReport(teamId,startTime,endTime,orgCodes,orgIds);
+        faultReportDTOS.forEach(f->{
+            List<String> str = faultInformationMapper.getConstructionHours(f.getOrgId(),startTime,endTime);
+            List<BigDecimal> doubles = new ArrayList<>();
+            str.forEach(s -> {
+                List<String> str1 = Arrays.asList(s.split(","));
+                str1.forEach(ss->{
+                    List<String> strings = Arrays.asList(ss.split("至"));
+                    SimpleDateFormat format = new SimpleDateFormat("HH:mm");
+                    try {
+                        Date start = format.parse(strings.get(0));
+                        Date end = format.parse(strings.get(1));
+                        Long time = end.getTime() - start.getTime();
+                        BigDecimal decimal = new BigDecimal(time);
+                        doubles.add(NumberUtil.div(decimal,NumberUtil.round((1000*60*60),2)));
+                    } catch (ParseException e) {
+                        e.printStackTrace();
+                    }
+                });
+            });
+            f.setFailureTime(new BigDecimal((1.0 * (f.getNum()) / 3600)).setScale(2, BigDecimal.ROUND_HALF_UP));
+            BigDecimal totalPrice = doubles.stream().map(BigDecimal::abs).reduce(BigDecimal.ZERO, BigDecimal::add);
+            f.setConstructionHours(totalPrice);
+            map.put(f.getOrgId(),f);
+        });
+        return map;
+    }
+
+    @Override
+    public Map<String, FaultReportDTO> getFaultUserReport(List<String> teamId, String startTime, String endTime,String userId) {
+        Map<String, FaultReportDTO> map = new HashMap<>();
+        LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        List<SysDepartModel> sysDepartModels = sysBaseAPI.getUserSysDepart(sysUser.getId());
+        List<String> orgCodes = sysDepartModels.stream().map(SysDepartModel::getOrgCode).collect(Collectors.toList());
+        List<FaultReportDTO> faultReportDTOS = faultInformationMapper.getFaultUserReport(teamId,startTime,endTime,orgCodes,userId);
+        faultReportDTOS.forEach(f->{
+            List<String> str = faultInformationMapper.getUserConstructionHours(f.getUserId(),startTime,endTime);
+            List<BigDecimal> doubles = new ArrayList<>();
+            str.forEach(s -> {
+                List<String> str1 = Arrays.asList(s.split(","));
+                str1.forEach(ss->{
+                    List<String> strings = Arrays.asList(ss.split("至"));
+                    SimpleDateFormat format = new SimpleDateFormat("HH:mm");
+                    try {
+                        Date start = format.parse(strings.get(0));
+                        Date end = format.parse(strings.get(1));
+                        Long time = end.getTime() - start.getTime();
+                        BigDecimal decimal = new BigDecimal(time);
+                        doubles.add(NumberUtil.div(decimal,NumberUtil.round((1000*60*60),2)));
+                    } catch (ParseException e) {
+                        e.printStackTrace();
+                    }
+                });
+            });
+            f.setConstructorsNum(faultInformationMapper.getUserConstructorsNum(f.getUserId(),startTime,endTime));
+            f.setFailureTime(new BigDecimal((1.0 * (f.getNum()) / 3600)).setScale(2, BigDecimal.ROUND_HALF_UP));
+            BigDecimal totalPrice = doubles.stream().map(BigDecimal::abs).reduce(BigDecimal.ZERO, BigDecimal::add);
+            f.setConstructionHours(totalPrice);
+            map.put(f.getUserId(),f);
+        });
+        return map;
     }
 
     /**
