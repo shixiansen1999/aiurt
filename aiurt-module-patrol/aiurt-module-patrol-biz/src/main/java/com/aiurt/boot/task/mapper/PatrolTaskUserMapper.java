@@ -1,5 +1,6 @@
 package com.aiurt.boot.task.mapper;
 
+import com.aiurt.boot.dto.UserTeamPatrolDTO;
 import com.aiurt.boot.screen.model.ScreenDurationTask;
 import com.aiurt.boot.task.entity.PatrolTask;
 import com.aiurt.boot.task.entity.PatrolTaskUser;
@@ -54,10 +55,37 @@ public interface PatrolTaskUserMapper extends BaseMapper<PatrolTaskUser> {
     List<ScreenDurationTask> getScreentAccompanyDuration(@Param("startTime") Date startTime, @Param("endTime") Date endTime);
 
     /**
-     * 查询班组及子级
-     * @param orgCode
+     *  统计指派巡检计划数、实际完成数
+     * @param useIds
+     * @param startDate
+     * @param endDate
      * @return
      */
+    List<UserTeamPatrolDTO> getUserPlanNumber(@Param("useIds")List<String> useIds,@Param("startDate") String startDate, @Param("endDate")String endDate);
 
+    /**
+     * 统计同行人巡检计划数、实际完成数
+     * @param useIds
+     * @param startDate
+     * @param endDate
+     * @return
+     */
+    List<UserTeamPatrolDTO> getPeoplePlanNumber(@Param("useIds")List<String> useIds,@Param("startDate") String startDate, @Param("endDate")String endDate);
+    /**
+     *  统计指派巡检漏检数
+     * @param useIds
+     * @param startDate
+     * @param endDate
+     * @return
+     */
+    List<UserTeamPatrolDTO> getUserOmitNumber(@Param("useIds")List<String> useIds,@Param("startDate") String startDate, @Param("endDate")String endDate);
 
+    /**
+     * 统计同行人巡检漏检数
+     * @param useIds
+     * @param startDate
+     * @param endDate
+     * @return
+     */
+    List<UserTeamPatrolDTO> getPeopleOmitNumber(@Param("useIds")List<String> useIds,@Param("startDate") String startDate, @Param("endDate")String endDate);
 }

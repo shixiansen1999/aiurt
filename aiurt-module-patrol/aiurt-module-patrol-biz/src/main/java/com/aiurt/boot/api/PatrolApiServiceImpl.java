@@ -2,12 +2,14 @@ package com.aiurt.boot.api;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.util.NumberUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.aiurt.boot.constant.PatrolConstant;
 import com.aiurt.boot.dto.UserTeamParameter;
 import com.aiurt.boot.dto.UserTeamPatrolDTO;
 import com.aiurt.boot.screen.constant.ScreenConstant;
 import com.aiurt.boot.screen.model.ScreenDurationTask;
+import com.aiurt.boot.screen.service.PatrolScreenService;
 import com.aiurt.boot.screen.utils.ScreenDateUtil;
 import com.aiurt.boot.standard.entity.PatrolStandard;
 import com.aiurt.boot.standard.mapper.PatrolStandardMapper;
@@ -24,6 +26,7 @@ import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.LoginUser;
 import org.jeecg.common.system.vo.SysDepartModel;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -47,6 +50,8 @@ public class PatrolApiServiceImpl implements PatrolApi {
     private PatrolTaskUserMapper patrolTaskUserMapper;
     @Autowired
     private ISysBaseAPI sysBaseAPI;
+    @Autowired
+    private PatrolScreenService screenService;
 
     /**
      * 首页-统计日程的巡视完成数
@@ -153,24 +158,118 @@ public class PatrolApiServiceImpl implements PatrolApi {
     }
 
     @Override
-    public Map<String, UserTeamPatrolDTO> getUserHours(UserTeamParameter userTeamParameter)
+    public Map<String, UserTeamPatrolDTO> getUserParameter(UserTeamParameter userTeamParameter)
     {
         LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         List<SysDepartModel> userSysDepart = sysBaseAPI.getUserSysDepart(user.getId());
-        List<String> orgCodes = userSysDepart.stream().map(SysDepartModel::getId).collect(Collectors.toList());
-        Map<String, UserTeamPatrolDTO> patrolDTOMap = new HashMap<>();
-        List<LoginUser> useList = sysBaseAPI.getUseList(orgCodes);
-        List<String> useIds = useList.stream().map(LoginUser::getId).collect(Collectors.toList());
-         UserTeamPatrolDTO zero = setZero();
-        for (String useId : useIds) {
-            patrolDTOMap.put(useId,zero);
+        if(CollUtil.isNotEmpty(userTeamParameter.getOrgIdList()))
+        {
+            userSysDepart=userSysDepart.stream().filter(u->userTeamParameter.getOrgIdList().contains(u.getOrgCode())).collect(Collectors.toList());
         }
-        return patrolDTOMap;
+        List<String> orgIds = userSysDepart.stream().map(SysDepartModel::getId).collect(Collectors.toList());
+        //获取部门list下的人员
+        List<LoginUser> useList = sysBaseAPI.getUseList(orgIds);
+        List<String> useIds = useList.stream().map(LoginUser::getId).collect(Collectors.toList());
+        List<UserTeamPatrolDTO> userBaseList =new ArrayList<>();
+        if(ObjectUtil.isNotEmpty(userTeamParameter.getUserId()))
+        {
+            useIds = useIds.stream().filter(u->u.equals(userTeamParameter.getUserId())).collect(Collectors.toList());
+        }
+        for (String useId : useIds) {
+
+            UserTeamPatrolDTO zero = setZero(useId);
+            userBaseList.add(zero);
+        }
+        //统计部门人员指派的计划数、实际完成数
+        List<UserTeamPatrolDTO> userPlanTaskNumber= patrolTaskUserMapper.getUserPlanNumber(useIds,userTeamParameter.getStartDate(),userTeamParameter.getEndDate());
+        //统计部门人员同行人的计划数、实际完成数
+        List<UserTeamPatrolDTO> peoplePlanTaskNumber= patrolTaskUserMapper.getPeoplePlanNumber(useIds,userTeamParameter.getStartDate(),userTeamParameter.getEndDate());
+        for (UserTeamPatrolDTO userPatrol : userPlanTaskNumber) {
+            float planNumber = 0;
+            float nowNumber = 0;
+            for (UserTeamPatrolDTO peoplePatrol : peoplePlanTaskNumber) {
+             if(userPatrol.getUserId().equals(peoplePatrol.getUserId()))
+             {
+                 planNumber= userPatrol.getPlanTaskNumber()+peoplePatrol.getPlanTaskNumber();
+                 nowNumber= userPatrol.getActualFinishTaskNumber()+peoplePatrol.getActualFinishTaskNumber();
+             }
+            }
+            if(planNumber!=0)
+            {
+                userPatrol.setPlanTaskNumber(planNumber);
+            } if(nowNumber!=0)
+            {
+                userPatrol.setActualFinishTaskNumber(nowNumber);
+            }
+        }
+        //额外人员
+        List<UserTeamPatrolDTO> extraList = peoplePlanTaskNumber.stream().filter(p->!userPlanTaskNumber.contains(p)).collect(Collectors.toList());
+        userPlanTaskNumber.addAll(extraList);
+        //计算计划完成率
+        for (UserTeamPatrolDTO userPatrol : userPlanTaskNumber)
+        {
+            if(userPatrol.getPlanTaskNumber()==0||userPatrol.getActualFinishTaskNumber()==0)
+            {
+                userPatrol.setPlanFinishRate(0);
+            }
+            else {
+                double avg = NumberUtil.div(userPatrol.getActualFinishTaskNumber(), userPatrol.getPlanTaskNumber()) * 100;
+                BigDecimal b = new BigDecimal(avg);
+                double fave = b.setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
+                String completionRated = String.format("%.2f", fave);
+                float planFinishRate = Float.parseFloat(completionRated);
+                userPatrol.setPlanFinishRate(planFinishRate);
+            }
+        }
+        //统计部门人员的漏检数
+        UserTeamParameter omitModel = new UserTeamParameter();
+        BeanUtils.copyProperties(userTeamParameter,omitModel);
+        String start = screenService.getOmitDateScope(DateUtil.parse(omitModel.getStartDate()));
+        String end = screenService.getOmitDateScope(DateUtil.parse(omitModel.getEndDate()));
+        omitModel.setStartDate(start.split("~")[0]);
+        omitModel.setEndDate(end.split("~")[1]);
+        // 统计部门人员的指派的漏检数
+        List<UserTeamPatrolDTO> userOmitTaskNumber= patrolTaskUserMapper.getUserOmitNumber(useIds,omitModel.getStartDate(),omitModel.getEndDate());
+        // 统计部门人员同行人的漏检数
+        List<UserTeamPatrolDTO> peopleOmitTaskNumber= patrolTaskUserMapper.getPeopleOmitNumber(useIds,omitModel.getStartDate(),omitModel.getEndDate());
+        for (UserTeamPatrolDTO userPatrol : userOmitTaskNumber) {
+            Integer omitNumber = 0;
+            for (UserTeamPatrolDTO peoplePatrol : peopleOmitTaskNumber) {
+                if(userPatrol.getUserId().equals(peoplePatrol.getUserId()))
+                {
+                    omitNumber= userPatrol.getMissPatrolNumber()+peoplePatrol.getMissPatrolNumber();
+                }
+            }
+            if(omitNumber!=0)
+            {
+                userPatrol.setMissPatrolNumber(omitNumber);
+            }
+        }
+        //额外人员漏检
+        List<UserTeamPatrolDTO> extraOmitList = peopleOmitTaskNumber.stream().filter(p->!userOmitTaskNumber.contains(p)).collect(Collectors.toList());
+        userOmitTaskNumber.addAll(extraOmitList);
+        for (UserTeamPatrolDTO patrolDTO : userBaseList) {
+            for (UserTeamPatrolDTO dto : userPlanTaskNumber) {
+                if (patrolDTO.getUserId().equals(dto.getUserId())) {
+                    BeanUtils.copyProperties(dto, patrolDTO);
+                }
+            }
+            for (UserTeamPatrolDTO omit : userOmitTaskNumber) {
+                if(patrolDTO.getUserId().equals(omit.getUserId()))
+                {
+                   patrolDTO.setMissPatrolNumber(omit.getMissPatrolNumber());
+                }
+            }
+        }
+        Map<String, UserTeamPatrolDTO> groupBy = userBaseList.stream().collect(Collectors.toMap(UserTeamPatrolDTO::getUserId,v->v,(a, b) -> a));
+        return groupBy;
     }
-    public UserTeamPatrolDTO setZero() {
+    public UserTeamPatrolDTO setZero(String userId) {
         UserTeamPatrolDTO patrolDTO = new UserTeamPatrolDTO();
+        patrolDTO.setUserId(userId);
         patrolDTO.setMissPatrolNumber(0);
-        patrolDTO.setPlanFinishRate("0");
+        patrolDTO.setMissPatrolNumber(0);
+        patrolDTO.setPlanFinishRate(0);
         patrolDTO.setWorkHours(0);
         patrolDTO.setActualFinishTaskNumber(0);
         patrolDTO.setPlanTaskNumber(0);

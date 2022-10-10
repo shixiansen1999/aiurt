@@ -28,5 +28,5 @@ public interface PatrolApi {
      * @param userTeamParameter
      * @return
      */
-    Map<String, UserTeamPatrolDTO> getUserHours(UserTeamParameter userTeamParameter);
+    Map<String, UserTeamPatrolDTO> getUserParameter(UserTeamParameter userTeamParameter);
 }

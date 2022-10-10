@@ -403,10 +403,10 @@ public interface ISysBaseAPI extends CommonAPI {
 
     /**
      * 根据部门list，查询部门list下的人员信息
-     * @param deptId
+     * @param deptIds
      * @return
      */
-    List<LoginUser> getUseList(List<String> deptId);
+    List<LoginUser> getUseList(List<String> deptIds);
 
 
     /**

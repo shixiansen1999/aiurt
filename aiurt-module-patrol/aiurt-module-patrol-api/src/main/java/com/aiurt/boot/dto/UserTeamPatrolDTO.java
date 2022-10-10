@@ -11,14 +11,16 @@ import lombok.Data;
  */
 @Data
 public class UserTeamPatrolDTO {
+    @ApiModelProperty(value = "用户Id")
+    private String userId;
     @ApiModelProperty(value = "巡视工时")
     private Integer workHours;
     @ApiModelProperty(value = "计划任务数")
-    private Integer planTaskNumber;
+    private float planTaskNumber;
     @ApiModelProperty(value = "实际完成任务数")
-    private Integer actualFinishTaskNumber;
+    private float actualFinishTaskNumber;
     @ApiModelProperty(value = "计划完成率")
-    private String planFinishRate;
+    private float planFinishRate;
     @ApiModelProperty(value = "漏巡数")
     private Integer missPatrolNumber;
 
