@@ -213,5 +213,5 @@ public interface FaultInformationMapper {
      * @param endTime
      * @return
      */
-    Integer getUserConstructorsNum(@Param("userId") String userId,@Param("startTime") String startTime,@Param("endTime")String endTime);
+    FaultReportDTO getUserConstructorsNum(@Param("userId") String userId,@Param("startTime") String startTime,@Param("endTime")String endTime);
 }

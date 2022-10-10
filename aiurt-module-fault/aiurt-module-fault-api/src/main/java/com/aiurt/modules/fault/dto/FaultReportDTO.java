@@ -23,6 +23,9 @@ public class FaultReportDTO {
     @ApiModelProperty(value = "班组Id")
     String  orgId;
     Long  num;
+    Integer num1;
+    @ApiModelProperty(value = "平均维修时间")
+    String repairTime;
     @ApiModelProperty(value = "故障总工时")
     BigDecimal failureTime;
     @ApiModelProperty(value = "施工人数")

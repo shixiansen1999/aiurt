@@ -446,6 +446,7 @@
     <select id="getFaultOrgReport" resultType="com.aiurt.modules.fault.dto.FaultReportDTO">
         select sd.id as orgId ,
         sum(TIMESTAMPDIFF(second,IFNULL(fr.recevice_time,fr.assign_time),fr.end_time))-sum(IFNUll(op.hang_up_time,'0')) as num,
+        count(fr.id) as num1,
         sum(twl.assort_num) as constructorsNum
         from sys_depart sd
         left join fault_repair_record  fr on sd.org_code = fr.sys_org_code and fr.del_flag = 0
@@ -501,14 +502,17 @@
         group by su.id
     </select>
     <select id="getUserConstructionHours" resultType="java.lang.String">
-        select  assort_time from t_work_log
+        select  assort_time
+        from t_work_log
         where del_flag = 0
           and confirm_status = 1
           and assort_ids LIKE concat('%', #{userId}, '%')
           and date_format(submit_time ,'%Y-%m-%d')  BETWEEN date_format( #{startTime} ,'%Y-%m-%d') AND date_format( #{endTime} ,'%Y-%m-%d')
     </select>
-    <select id="getUserConstructorsNum" resultType="java.lang.Integer">
-        select  sum(assort_num)
+    <select id="getUserConstructorsNum" resultType="com.aiurt.modules.fault.dto.FaultReportDTO">
+        select  sum(assort_num) as constructorsNum,
+                count(id) as num1
+        from t_work_log
         where del_flag = 0
           and confirm_status = 1
           and assort_ids LIKE concat('%', #{userId}, '%')
