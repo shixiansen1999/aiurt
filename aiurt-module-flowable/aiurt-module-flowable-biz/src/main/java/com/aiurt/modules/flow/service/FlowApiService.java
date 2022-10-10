@@ -34,7 +34,7 @@ public interface FlowApiService {
      * @param startBpmnDTO
      * @return
      */
-    public void start(StartBpmnDTO startBpmnDTO);
+    public ProcessInstance start(StartBpmnDTO startBpmnDTO);
 
     /**
      * 启动流程实例，如果当前登录用户为第一个用户任务的指派者，或者Assginee为流程启动人变量时，
@@ -72,7 +72,9 @@ public interface FlowApiService {
 
     /**
      * 待办任务
-     *
+     * @param flowTaskReqDTO 查询条件
+     * @param pageNo 分页页码
+     * @param pageSize 分页大小
      * @return
      */
     IPage<FlowTaskDTO> listRuntimeTask(Integer pageNo, Integer pageSize, FlowTaskReqDTO flowTaskReqDTO);

@@ -548,12 +548,12 @@ public class PatrolReportService {
             for (LineOrStationDTO model : lineOrStationDTOS) {
                 if (model.getOrgCategory().equals("3") || model.getOrgCategory().equals("4") || model.getOrgCategory().equals("5")) {
                     list.add(model);
-                    List<LineOrStationDTO> models = patrolTaskMapper.getUserOrgCategory(model.getId());
+                    List<LineOrStationDTO> models = patrolTaskMapper.getUserOrgCategory(model.getCode());
                     if (CollUtil.isNotEmpty(models)) {
                         list.addAll(models);
                     }
                 } else {
-                    List<LineOrStationDTO> models = patrolTaskMapper.getUserOrgCategory(model.getId());
+                    List<LineOrStationDTO> models = patrolTaskMapper.getUserOrgCategory(model.getCode());
                     if (CollUtil.isNotEmpty(models)) {
                         list.addAll(models);
                     }

@@ -566,17 +566,25 @@ public class BigscreenPlanService {
 
 
         //获取所有检修任务人员总工时和所有同行人总工时
-        Long faultTotalTime1 = bigScreenPlanMapper.getInspecitonTotalTime(userList, timeByType[0], timeByType[1]);
-        Long faultTotalTime2 = bigScreenPlanMapper.getInspecitonTotalTimeByPeer(userList, timeByType[0], timeByType[1]);
-        long time = 0L;
-        if (faultTotalTime1 != null) {
-            time = time + faultTotalTime1;
+        if (CollUtil.isNotEmpty(userList)) {
+
+            List<TaskUserDTO> inspecitonTotalTime = bigScreenPlanMapper.getInspecitonTotalTime(userList, timeByType[0], timeByType[1]);
+            List<TaskUserDTO> inspecitonTotalTimeByPeer = bigScreenPlanMapper.getInspecitonTotalTimeByPeer(userList, timeByType[0], timeByType[1]);
+            List<String> collect = inspecitonTotalTime.stream().map(TaskUserDTO::getTaskId).collect(Collectors.toList());
+            //若同行人和指派人同属一个班组，则该班组只取一次工时，不能累加
+            List<TaskUserDTO> dtos = inspecitonTotalTimeByPeer.stream().filter(t -> !collect.contains(t.getTaskId())).collect(Collectors.toList());
+            dtos.addAll(inspecitonTotalTime);
+            BigDecimal sum = new BigDecimal("0.00");
+            for (TaskUserDTO dto : dtos) {
+                sum = sum.add(dto.getInspecitonTotalTime());
+            }
+            //秒转时
+            BigDecimal decimal = sum.divide(new BigDecimal("3600"),1, BigDecimal.ROUND_HALF_UP);
+            teamPortraitDTO.setInspecitonTotalTime(decimal);
+        } else {
+            teamPortraitDTO.setInspecitonTotalTime(new BigDecimal(0));
         }
-        if (faultTotalTime2 != null) {
-            time = time + faultTotalTime2;
-        }
-        BigDecimal decimal = new BigDecimal(1.0 * time / 3600).setScale(1, BigDecimal.ROUND_HALF_UP);
-        teamPortraitDTO.setInspecitonTotalTime(decimal);
+
     }
 
     /**

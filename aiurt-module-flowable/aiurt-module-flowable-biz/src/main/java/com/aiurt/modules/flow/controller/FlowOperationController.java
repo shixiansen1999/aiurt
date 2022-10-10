@@ -6,9 +6,7 @@ import com.aiurt.modules.flow.entity.ActCustomTaskComment;
 import com.aiurt.modules.flow.service.FlowApiService;
 import com.aiurt.modules.flow.service.IActCustomTaskCommentService;
 import com.baomidou.mybatisplus.core.metadata.IPage;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.SecurityUtils;
 import org.flowable.bpmn.converter.BpmnXMLConverter;
@@ -160,10 +158,15 @@ public class FlowOperationController {
      */
     @GetMapping("/viewRuntimeTaskInfo")
     @ApiOperation(value = "获取流程运行时指定任务的信息", notes = "获取流程运行时指定任务的信息")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "processDefinitionId", value = "流程定义id", required = false, paramType = "query"),
+            @ApiImplicitParam(name = "processInstanceId", value = "流程实例id", required = true, paramType = "query"),
+            @ApiImplicitParam(name = "taskId", value = "任务id", required = true, paramType = "query")
+    })
     public Result<TaskInfoDTO> viewRuntimeTaskInfo(
-            @RequestParam String processDefinitionId,
-            @RequestParam String processInstanceId,
-            @RequestParam String taskId) {
+            @RequestParam(value = "processDefinitionId", required = false) String processDefinitionId,
+            @RequestParam(value = "processInstanceId") String processInstanceId,
+            @RequestParam(value = "taskId") String taskId) {
         TaskInfoDTO taskInfoVo = flowApiService.viewRuntimeTaskInfo(processDefinitionId, processInstanceId, taskId);
         return Result.OK(taskInfoVo);
     }

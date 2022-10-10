@@ -1288,6 +1288,19 @@ public class SysBaseApiImpl implements ISysBaseAPI {
         }
         return list;
     }
+    @Override
+    public List<LoginUser> getUseList(List<String> orgIds) {
+        List<SysUser> userList = userMapper.selectList(new QueryWrapper<SysUser>().in("org_id", orgIds).eq("status", 1).eq("del_flag", 0));
+        List<LoginUser> list = new ArrayList<>();
+        for (SysUser user : userList) {
+            LoginUser loginUser = new LoginUser();
+            loginUser.setId(user.getId());
+            loginUser.setUsername(user.getUsername());
+            loginUser.setRealname(user.getRealname());
+            list.add(loginUser);
+        }
+        return list;
+    }
 
 
     @Override
@@ -1628,12 +1641,12 @@ public class SysBaseApiImpl implements ISysBaseAPI {
             for (SysDepartModel model : sysDepartModels) {
                 if (model.getOrgCategory().equals("3") || model.getOrgCategory().equals("4") || model.getOrgCategory().equals("5")) {
                     list.add(model);
-                    List<SysDepartModel> models = sysDepartMapper.getUserOrgCategory(model.getId());
+                    List<SysDepartModel> models = sysDepartMapper.getUserOrgCategory(model.getOrgCode());
                     if (CollUtil.isNotEmpty(models)) {
                         list.addAll(models);
                     }
                 } else {
-                    List<SysDepartModel> models = sysDepartMapper.getUserOrgCategory(model.getId());
+                    List<SysDepartModel> models = sysDepartMapper.getUserOrgCategory(model.getOrgCode());
                     if (CollUtil.isNotEmpty(models)) {
                         list.addAll(models);
                     }

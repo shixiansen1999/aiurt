@@ -1103,7 +1103,8 @@ GROUP BY
         a.depart_name as name
         from
         sys_depart a
-        where a.parent_id=#{id}
+        where
+        org_code_cc LIKE CONCAT ('%', #{orgCode}, '%' )
         and a.org_category in(3,4,5)
      </select>
 </mapper>

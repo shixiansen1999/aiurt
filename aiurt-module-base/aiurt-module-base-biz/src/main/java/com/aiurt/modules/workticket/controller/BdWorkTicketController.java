@@ -1,5 +1,7 @@
 package com.aiurt.modules.workticket.controller;
 
+import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.system.base.controller.BaseController;
@@ -20,6 +22,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -106,6 +110,27 @@ public class BdWorkTicketController extends BaseController<BdWorkTicket, IBdWork
 			return Result.error("未找到对应数据");
 		}
 		return Result.OK(bdWorkTicket);
+	}
+
+	/**
+	 * 通过id查询
+	 *
+	 * @param id
+	 * @return
+	 */
+	@ApiOperation(value="工作票详情数据", notes="工作票详情数据")
+	@GetMapping(value = "/queryBusData")
+	public Result<Map<String, Object>> queryBusData(@RequestParam(name="id",required=true) String id) {
+		BdWorkTicket bdWorkTicket = bdWorkTicketService.getById(id);
+		Map<String, Object> map = BeanUtil.beanToMap(bdWorkTicket);
+		Map<String, Object> data = new HashMap<>(16);
+		// 驼峰转_
+		map.keySet().stream().forEach(key->{
+			String s = StrUtil.toUnderlineCase(key);
+			Object o = map.get(key);
+			data.put(s, o);
+		});
+		return Result.OK(data);
 	}
 
 	 /**

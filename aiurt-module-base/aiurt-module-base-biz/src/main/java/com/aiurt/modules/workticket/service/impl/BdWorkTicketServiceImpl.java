@@ -90,20 +90,22 @@ public class BdWorkTicketServiceImpl extends ServiceImpl<BdWorkTicketMapper, BdW
             workTicketReqDTO.setProcessName("");
         }
 
-        List<WorkTicketResDTO> workTicketResDTOS =  new ArrayList<>();
-                // baseMapper.historyGet(pageList, workTicketReqDTO);
+        List<WorkTicketResDTO> workTicketResDTOS = baseMapper.historyGet(pageList, workTicketReqDTO);
         return pageList.setRecords(workTicketResDTOS);
     }
 
     /**
-     * 测试
+     * 查询待办事项
      * @param pageList
      * @param username
      * @return
      */
     @Override
     public Page<BdWorkTicket> queryPageList(Page<BdWorkTicket> pageList, String username) {
-        return null;
+
+        List<BdWorkTicket> bdWorkTicketList = baseMapper.queryPageList(pageList,username, "");
+
+        return pageList.setRecords(bdWorkTicketList);
     }
 
 

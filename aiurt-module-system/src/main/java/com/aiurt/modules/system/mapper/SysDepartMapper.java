@@ -109,9 +109,9 @@ public interface SysDepartMapper extends BaseMapper<SysDepart> {
 
 	/**
 	 * 通过id，查询改id的子级
-	 * @param id
+	 * @param orgCode
 	 * @return
 	 */
-	@Select("select * from sys_depart where parent_id=#{id}  and org_category in(3,4,5)")
-	List<SysDepartModel> getUserOrgCategory(@Param("id")String id);
+	@Select("select * from sys_depart where  org_code_cc LIKE CONCAT ('%',#{orgCode},'%' )  and org_category in(3,4,5)")
+	List<SysDepartModel> getUserOrgCategory(@Param("orgCode")String orgCode);
 }

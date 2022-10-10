@@ -2,4 +2,83 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.aiurt.modules.workticket.mapper.BdWorkTicketMapper">
 
+    <select id="queryPageList" resultType="com.aiurt.modules.workticket.entity.BdWorkTicket">
+        SELECT
+            bwt.*,
+            a.ID_ task_id,
+            a.PROC_INST_ID_ proc_inst_id,
+            a.NAME_ work_ticket_name,
+            cl.line_name line_id,
+            arp.NAME_ work_ticket_type
+        FROM
+            act_ru_task a
+        LEFT JOIN act_hi_procinst ahp ON a.PROC_INST_ID_ = ahp.PROC_INST_ID_
+        LEFT JOIN bd_work_ticket bwt ON ahp.BUSINESS_KEY_ = bwt.id
+        Left Join cs_station cs on bwt.station = cs.id
+        LEFT JOIN cs_line cl on cs.line_code = cl.line_code
+        Left join act_re_procdef arp on ahp.PROC_DEF_ID_ = arp.ID_
+    </select>
+
+    <select id="historyGet" resultType="com.aiurt.modules.workticket.dto.WorkTicketResDTO">
+        SELECT
+        bwt.id as id,
+        bwt.work_ticket_code as workTicketCode,
+        arp.NAME_ as processName,
+        bwt.ticket_filler as ticketFiller,
+        bwt.state as state,
+        bwt.work_address_content as workAddressContent,
+        bwt.create_time as createTime,
+        (
+        CASE
+        WHEN bwt.state = 11 THEN
+        bwt.work_leader_message
+        WHEN bwt.state = 12 THEN
+        bwt.signe_user_message
+        WHEN bwt.state = 13 THEN
+        bwt.power_dispatcher_message
+        ELSE
+        ''
+        END
+        ) AS rejectionReason
+        FROM
+        bd_work_ticket bwt
+        LEFT JOIN act_hi_procinst ahp ON bwt.id = ahp.BUSINESS_KEY_
+        LEFT JOIN act_re_procdef arp on arp.ID_ = ahp.PROC_DEF_ID_
+        where 1 =1
+        <if test="workTicketReqDTO.processName!=null and workTicketReqDTO.processName!=''">
+            and arp.NAME_  like concat('%',#{workTicketReqDTO.processName},'%')
+        </if>
+        <if test="workTicketReqDTO.createTime!=null  and workTicketReqDTO.endTime!=null">
+            and bwt.create_time &gt;= #{workTicketReqDTO.createTime}
+            and bwt.create_time &lt;= #{workTicketReqDTO.endTime}
+        </if>
+        <if test="workTicketReqDTO.ticketFiller!=null and workTicketReqDTO.ticketFiller!=''">
+            and bwt.ticket_filler = #{workTicketReqDTO.ticketFiller}
+        </if>
+        <if test="workTicketReqDTO.workLeader!=null and workTicketReqDTO.workLeader!=''">
+            and bwt.work_leader = #{workTicketReqDTO.workLeader}
+        </if>
+        <if test="workTicketReqDTO.signeUser!=null and workTicketReqDTO.signeUser!=''">
+            and bwt.signe_user =#{workTicketReqDTO.signeUser}
+        </if>
+        <if test="workTicketReqDTO.workTicketCode!=null and workTicketReqDTO.workTicketCode!=''">
+            and bwt.work_ticket_code  like concat('%',#{workTicketReqDTO.workTicketCode},'%')
+        </if>
+        <if test="workTicketReqDTO.workAddressContent!=null   and workTicketReqDTO.workAddressContent!=''">
+            and bwt.work_address_content  like concat('%',#{workTicketReqDTO.workAddressContent},'%')
+        </if>
+        <if test="workTicketReqDTO.state!=null and workTicketReqDTO.state!=0">
+            and bwt.state = #{workTicketReqDTO.state}
+        </if>
+        <if test="workTicketReqDTO.stationName != null and workTicketReqDTO.stationName != ''">
+            and bwt.station = #{workTicketReqDTO.stationName}
+        </if>
+        <if test="workTicketReqDTO.workFillerList != null and workTicketReqDTO.workFillerList.size()>0">
+            and bwt.ticket_filler in
+            <foreach collection="workTicketReqDTO.workFillerList" item="item" separator="," open="(" close=")">
+                #{item}
+            </foreach>
+        </if>
+        order by bwt.create_time desc
+    </select>
 </mapper>

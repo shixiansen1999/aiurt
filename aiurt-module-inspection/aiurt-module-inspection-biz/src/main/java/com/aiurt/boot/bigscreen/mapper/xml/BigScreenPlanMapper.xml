@@ -90,52 +90,59 @@
     </if>
     </select>
 
-<select id="getInspecitonTotalTime" resultType="java.lang.Long">
+<select id="getInspecitonTotalTime" resultType="com.aiurt.boot.index.dto.TaskUserDTO">
     SELECT
+    rt.id as taskId,
     sum(
     TIMESTAMPDIFF(
     SECOND,
     rt.begin_time,
     IF
     ( 1 = rt.is_receipt, rt.receipt_time, IF ( 1 = rt.is_confirm, rt.confirm_time, rt.submit_time ) )
-    )) faultTotalTime
+    )) inspecitonTotalTime
     FROM
     repair_pool rp
-    LEFT JOIN repair_task rt ON rp.`code` = rt.`code` LEFT JOIN repair_task_user rts ON rts.repair_task_code = rt.`code`
+    LEFT JOIN repair_task rt ON rp.`code` = rt.`code`
+    LEFT JOIN repair_task_user rts ON rts.repair_task_code = rt.`code`
     where rt.status = 8
+    AND rt.del_flag = 0
     AND  DATE_FORMAT(rp.start_time ,'%Y-%m-%d') &gt;= DATE_FORMAT(#{beginDate},'%Y-%m-%d')
     AND  DATE_FORMAT(rp.end_time ,'%Y-%m-%d') &lt;= DATE_FORMAT(#{endDate},'%Y-%m-%d')
-    <if test="userList != null and userList.size() != 0">
-        AND  rts.user_id in
-        <foreach collection="userList" item="item" index="index" open="(" close=")" separator=",">
-            #{item.id}
-        </foreach>
-    </if>
+    AND  rts.user_id in
+    <foreach collection="userList" item="item" index="index" open="(" close=")" separator=",">
+        #{item.id}
+    </foreach>
+    group by rt.id
     </select>
 
-<select id="getInspecitonTotalTimeByPeer" resultType="java.lang.Long">
+<select id="getInspecitonTotalTimeByPeer" resultType="com.aiurt.boot.index.dto.TaskUserDTO">
     SELECT
+    rt.id,
     sum(
     TIMESTAMPDIFF(
     SECOND,
     rt.begin_time,
     IF
     ( 1 = rt.is_receipt, rt.receipt_time, IF ( 1 = rt.is_confirm, rt.confirm_time, rt.submit_time ) )
-    )) faultTotalTime
+    )) inspecitonTotalTime
     FROM
-    repair_task_peer_rel rtpr
-    LEFT JOIN repair_task_device_rel rtdr ON rtpr.repair_task_device_code = rtdr.`code`
-    LEFT JOIN repair_task rt ON rtdr.repair_task_id = rt.id
-    LEFT JOIN repair_pool rp ON rp.`code` = rt.`code`
-    where rt.status = 8
+    repair_pool rp
+    LEFT JOIN repair_task rt ON rp.`code` = rt.`code`
+    WHERE
+    rt.STATUS = 8
+    AND rt.del_flag = 0
     AND  DATE_FORMAT(rp.start_time ,'%Y-%m-%d') &gt;= DATE_FORMAT(#{beginDate},'%Y-%m-%d')
     AND  DATE_FORMAT(rp.end_time ,'%Y-%m-%d') &lt;= DATE_FORMAT(#{endDate},'%Y-%m-%d')
-    <if test="userList != null and userList.size() != 0">
-        AND  rtpr.user_id in
-        <foreach collection="userList" item="item" index="index" open="(" close=")" separator=",">
-            #{item.id}
-        </foreach>
-    </if>
+    AND rt.id IN
+    ( SELECT rtdr.repair_task_id
+    FROM repair_task_peer_rel rtpr
+    LEFT JOIN repair_task_device_rel rtdr ON rtpr.repair_task_device_code = rtdr.`code`
+    AND rtpr.user_id in
+    <foreach collection="userList" item="item" index="index" open="(" close=")" separator=",">
+        #{item.id}
+    </foreach>
+    GROUP BY rtdr.repair_task_id )
+    GROUP BY rt.id
     </select>
 
 <select id="getWorkAreaById" resultType="com.aiurt.boot.index.dto.TeamPortraitDTO">

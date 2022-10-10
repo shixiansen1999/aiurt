@@ -2,6 +2,7 @@ package com.aiurt.modules.flow.utils;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.exception.AiurtErrorEnum;
 import com.aiurt.modules.constants.FlowConstant;
@@ -9,8 +10,13 @@ import com.aiurt.modules.manage.entity.ActCustomVersion;
 import com.aiurt.modules.manage.service.IActCustomVersionService;
 import com.aiurt.modules.modeler.dto.OperationList;
 import com.aiurt.modules.modeler.entity.ActCustomModelInfo;
+import com.aiurt.modules.modeler.entity.ActCustomTaskExt;
 import com.aiurt.modules.modeler.service.IActCustomModelInfoService;
+import com.aiurt.modules.modeler.service.IActCustomTaskExtService;
+import com.aiurt.modules.utils.ReflectionService;
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import lombok.extern.slf4j.Slf4j;
 import org.flowable.bpmn.model.*;
 import org.flowable.engine.RepositoryService;
 import org.flowable.engine.repository.ProcessDefinition;
@@ -19,15 +25,13 @@ import org.jeecg.common.api.vo.Result;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * 流程元素工具
  * @author fgw
  */
+@Slf4j
 @Component
 public class FlowElementUtil {
 
@@ -43,6 +47,11 @@ public class FlowElementUtil {
     @Autowired
     private IActCustomModelInfoService modelInfoService;
 
+    @Autowired
+    private ReflectionService reflectionService;
+
+    @Autowired
+    private IActCustomTaskExtService customTaskExtService;
 
     /**
      * 获取第一个用户节点, 最近的一个版本
@@ -230,6 +239,47 @@ public class FlowElementUtil {
         EndEvent endEvent = bpmnModel.getMainProcess().findFlowElementsOfType(EndEvent.class, false).get(0);
 
         return endEvent;
+    }
+
+
+    /**
+     * 保存业务数据
+     *
+     * @param pProcessDefinitionId
+     * @param taskId
+     * @return
+     */
+    public Object saveBusData(String pProcessDefinitionId, String taskId,  Map<String, Object> busData) {
+        log.info("处理中间业务数据");
+        if (Objects.isNull(busData)) {
+            return "";
+        }
+        List<ActCustomTaskExt> actCustomTaskExts = customTaskExtService.getBaseMapper().selectList(
+                new LambdaQueryWrapper<ActCustomTaskExt>()
+                        .eq(ActCustomTaskExt::getProcessDefinitionId, pProcessDefinitionId)
+                        .eq(ActCustomTaskExt::getTaskId, taskId));
+        // 数据结构_转为驼峰
+        Map<String, Object> data = new HashMap<>(16);
+        busData.keySet().stream().forEach(key->{
+            String s = StrUtil.toCamelCase(key);
+            data.put(s, busData.get(key));
+        });
+
+        // 是否动态表单
+        if (CollUtil.isNotEmpty(actCustomTaskExts)) {
+            JSONObject jsonObject = JSONObject.parseObject(actCustomTaskExts.get(0).getFormJson());
+            if (ObjectUtil.isNotEmpty(jsonObject)) {
+                List<String> className = StrUtil.split((String) jsonObject.get("className"), '.');
+                try {
+                    if (CollUtil.isNotEmpty(className)) {
+                        return reflectionService.invokeService(className.get(0), className.get(1), data);
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        return "";
     }
 
 }

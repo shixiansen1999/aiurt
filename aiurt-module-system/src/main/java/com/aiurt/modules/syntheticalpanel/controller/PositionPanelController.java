@@ -2,7 +2,7 @@ package com.aiurt.modules.syntheticalpanel.controller;
 
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.aspect.annotation.PermissionData;
-import com.aiurt.modules.syntheticalpanel.model.PositionPanel;
+import com.aiurt.modules.syntheticalpanel.model.PositionPanelModel;
 import com.aiurt.modules.syntheticalpanel.service.PositionPanelService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -38,8 +38,8 @@ public class PositionPanelController {
     @ApiOperation(value="综合大屏线路工区查询", notes="综合大屏线路工区查询")
     @GetMapping(value = "/list")
     @PermissionData(pageComponent = "")
-    public Result<List<PositionPanel>> queryPageList(PositionPanel positionPanel) {
-        List<PositionPanel> positionPanels = positionPanelService.readAll(positionPanel);
+    public Result<List<PositionPanelModel>> queryPageList(PositionPanelModel positionPanel) {
+        List<PositionPanelModel> positionPanels = positionPanelService.readAll(positionPanel);
         return Result.OK(positionPanels);
     }
 
@@ -52,8 +52,8 @@ public class PositionPanelController {
     @AutoLog(value = "综合看板线路站点信息-通过名称查询", operateType =  1, operateTypeAlias = "查询-通过名称查询", permissionUrl = "")
     @ApiOperation(value="综合看板线路站点信息-通过名称查询", notes="综合看板线路站点信息-通过名称查询")
     @PostMapping(value = "/queryById")
-    public Result<List<PositionPanel>> queryById(@RequestParam(name="stationName",required=true)  String stationName) {
-        List<PositionPanel> positionPanels = positionPanelService.queryById(stationName);
+    public Result<List<PositionPanelModel>> queryById(@RequestParam(name="stationName",required=true)  String stationName) {
+        List<PositionPanelModel> positionPanels = positionPanelService.queryById(stationName);
         return Result.OK(positionPanels);
     }
 
@@ -66,7 +66,7 @@ public class PositionPanelController {
     @AutoLog(value = "综合看板线路站点信息-编辑", operateType =  3, operateTypeAlias = "编辑", permissionUrl = "")
     @ApiOperation(value="综合看板线路站点信息-编辑", notes="综合看板线路站点信息-编辑")
     @RequestMapping(value = "/edit", method = {RequestMethod.PUT,RequestMethod.POST})
-    public Result<String> edit(@RequestBody PositionPanel positionPanel) {
+    public Result<String> edit(@RequestBody PositionPanelModel positionPanel) {
         positionPanelService.edit(positionPanel);
         return Result.OK("编辑成功!");
     }

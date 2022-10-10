@@ -22,4 +22,10 @@ public interface ICsUserSubsystemService extends IService<CsUserSubsystem> {
      */
     List<CsUserSubsystemModel> getSubsystemByUserId(String id);
 
+    /**
+     * 查询所有的子系统数据
+     * @return
+     */
+    List<CsUserSubsystemModel> queryAllSubsystem();
+
 }

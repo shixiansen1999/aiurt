@@ -1,5 +1,8 @@
 package com.aiurt.boot.api;
 
+import com.aiurt.boot.dto.UserTeamParameter;
+import com.aiurt.boot.dto.UserTeamPatrolDTO;
+
 import java.math.BigDecimal;
 import java.util.Map;
 
@@ -19,4 +22,11 @@ public interface PatrolApi {
      * 大屏班组画像巡视工时统计，用户ID:巡视时长
      */
     Map<String, BigDecimal> getPatrolUserHours(int type, String teamId);
+
+    /**
+     * 统计报表-人员班组巡检参数接口返回
+     * @param userTeamParameter
+     * @return
+     */
+    Map<String, UserTeamPatrolDTO> getUserParameter(UserTeamParameter userTeamParameter);
 }
