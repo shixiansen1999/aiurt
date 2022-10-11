@@ -465,9 +465,9 @@ public class PatrolReportService {
              * 子系统故障列表报表导出
              *
              * @param request
-                 * @return
+             * @return
                  */
-        public ModelAndView reportSystemExport (HttpServletRequest request, String lineCode, List < String > stationCode, String startTime, String endTime){
+        public ModelAndView reportSystemExport(HttpServletRequest request, String lineCode, List<String> stationCode, String startTime, String endTime,String exportField ){
             ModelAndView mv = new ModelAndView(new JeecgEntityExcelView());
             Page<FailureReport> page = new Page<FailureReport>(1, 9999);
             IPage<FailureReport> failureReportList = this.getFailureReport(page,lineCode, stationCode, startTime, endTime);
@@ -477,6 +477,8 @@ public class PatrolReportService {
                 mv.addObject(NormalExcelConstants.FILE_NAME, "子系统故障报表");
                 //excel注解对象Class
                 mv.addObject(NormalExcelConstants.CLASS, FailureReport.class);
+                //自定义导出字段
+                mv.addObject(NormalExcelConstants.EXPORT_FIELDS,exportField);
                 //自定义表格参数
                 mv.addObject(NormalExcelConstants.PARAMS, new ExportParams("统计分析-子系统故障报表", "子系统故障报表"));
                 //导出数据列表
@@ -488,9 +490,10 @@ public class PatrolReportService {
          * 班组故障列表报表导出
          *
          * @param request
+         * @param exportField
          * @return
          */
-        public ModelAndView reportOrgExport (HttpServletRequest request, String lineCode, List <String> stationCode, String startTime, String endTime, List < String > systemCode){
+        public ModelAndView reportOrgExport(HttpServletRequest request, String lineCode, List<String> stationCode, String startTime, String endTime, List<String> systemCode, String exportField){
             ModelAndView mv = new ModelAndView(new JeecgEntityExcelView());
             Page<FailureOrgReport> page = new Page<FailureOrgReport>(1, 9999);
             IPage<FailureOrgReport> failureOrgReport = this.getFailureOrgReport(page,lineCode, stationCode, startTime, endTime, systemCode);
@@ -500,6 +503,8 @@ public class PatrolReportService {
                 mv.addObject(NormalExcelConstants.FILE_NAME, "班组故障报表");
                 //excel注解对象Class
                 mv.addObject(NormalExcelConstants.CLASS, FailureOrgReport.class);
+                //自定义导出字段
+                mv.addObject(NormalExcelConstants.EXPORT_FIELDS,exportField);
                 //自定义表格参数
                 mv.addObject(NormalExcelConstants.PARAMS, new ExportParams("统计分析-班组故障报表", "班组故障报表"));
                 //导出数据列表

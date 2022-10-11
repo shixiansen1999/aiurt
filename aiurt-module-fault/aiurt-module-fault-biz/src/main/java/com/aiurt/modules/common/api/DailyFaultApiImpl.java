@@ -2,7 +2,6 @@ package com.aiurt.modules.common.api;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.DateTime;
-import cn.hutool.core.date.DateUnit;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.NumberUtil;
 import cn.hutool.core.util.ObjectUtil;
@@ -25,7 +24,6 @@ import org.jeecg.common.system.vo.SysDepartModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import javax.xml.crypto.Data;
 import java.math.BigDecimal;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -204,10 +202,10 @@ public class DailyFaultApiImpl implements DailyFaultApi {
                 });
             });
             FaultReportDTO  fau = faultInformationMapper.getUserConstructorsNum(f.getUserId(),startTime,endTime);
-            if (f.getNum1()==0){
+            if (fau.getNum1()==0){
                 f.setRepairTime("0");
             }else {
-                Long s = (f.getNum()/f.getNum1())/60;
+                Long s = (f.getNum()/fau.getNum1())/60;
                 f.setRepairTime(s.toString());
             }
             f.setConstructorsNum(fau.getConstructorsNum());

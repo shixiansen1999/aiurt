@@ -6,12 +6,12 @@ import cn.hutool.core.convert.Convert;
 import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUnit;
 import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.util.ObjectUtil;
 import com.aiurt.boot.api.OverhaulApi;
 import com.aiurt.boot.api.PatrolApi;
 import com.aiurt.boot.dto.UserTeamParameter;
 import com.aiurt.boot.dto.UserTeamPatrolDTO;
 import com.aiurt.boot.index.dto.TeamWorkAreaDTO;
-import com.aiurt.boot.report.model.PatrolReport;
 import com.aiurt.boot.task.dto.PersonnelTeamDTO;
 import com.aiurt.modules.common.api.DailyFaultApi;
 import com.aiurt.modules.fault.dto.FaultReportDTO;
@@ -79,27 +79,54 @@ public class PersonnelGroupStatisticsServiceImpl implements PersonnelGroupStatis
                 String teamId = model.getTeamId();
                 //获取每一个班组巡检参数数据
                 UserTeamPatrolDTO userTeamPatrolDTO = teamParameter.get(teamId);
-                model.setPatrolTotalTime(Convert.toStr(userTeamPatrolDTO.getWorkHours()));
-                model.setPatrolScheduledTasks(Convert.toStr(userTeamPatrolDTO.getPlanTaskNumber()));
-                model.setPatrolCompletedTasks(Convert.toStr(userTeamPatrolDTO.getActualFinishTaskNumber()));
-                model.setPatrolPlanCompletion(Convert.toStr(userTeamPatrolDTO.getPlanFinishRate())+"%");
-                model.setPatrolMissingChecks(Convert.toStr(userTeamPatrolDTO.getMissPatrolNumber()));
+                if (ObjectUtil.isNotEmpty(userTeamPatrolDTO)) {
+                    model.setPatrolTotalTime(Convert.toStr(userTeamPatrolDTO.getWorkHours()));
+                    model.setPatrolScheduledTasks(Convert.toStr(userTeamPatrolDTO.getPlanTaskNumber()));
+                    model.setPatrolCompletedTasks(Convert.toStr(userTeamPatrolDTO.getActualFinishTaskNumber()));
+                    model.setPatrolPlanCompletion(Convert.toStr(userTeamPatrolDTO.getPlanFinishRate())+"%");
+                    model.setPatrolMissingChecks(Convert.toStr(userTeamPatrolDTO.getMissPatrolNumber()));
+                }else {
+                    model.setPatrolTotalTime("0");
+                    model.setPatrolScheduledTasks("0");
+                    model.setPatrolCompletedTasks("0");
+                    model.setPatrolPlanCompletion("0%");
+                    model.setPatrolMissingChecks("0");
+                }
+
                 //获取每一个班组维修参数数据
                 FaultReportDTO faultReportDTO = faultOrgReport.get(teamId);
-                model.setFaultTotalTime(Convert.toStr(faultReportDTO.getFailureTime()));
-                model.setAssortNum(Convert.toStr(faultReportDTO.getConstructorsNum()));
-                model.setAssortTime(Convert.toStr(faultReportDTO.getConstructionHours()));
+                if (ObjectUtil.isNotEmpty(faultReportDTO)) {
+                    model.setFaultTotalTime(Convert.toStr(faultReportDTO.getFailureTime()));
+                    model.setAssortNum(Convert.toStr(faultReportDTO.getConstructorsNum()));
+                    model.setAssortTime(Convert.toStr(faultReportDTO.getConstructionHours()));
+                }else {
+                    model.setFaultTotalTime("0");
+                    model.setAssortNum("0");
+                    model.setAssortTime("0");
+                }
+
                 //获取每一个班组检修参数数据
                 PersonnelTeamDTO personnelTeamDTO = teamInformation.get(teamId);
-                model.setInspecitonTotalTime(Convert.toStr(personnelTeamDTO.getOverhaulWorkingHours()));
-                model.setInspecitonScheduledTasks(Convert.toStr(personnelTeamDTO.getPlanTaskNumber()));
-                model.setInspecitonCompletedTasks(Convert.toStr(personnelTeamDTO.getCompleteTaskNumber()));
-                model.setInspecitonPlanCompletion(Convert.toStr(personnelTeamDTO.getPlanCompletionRate()+"%"));
-                model.setInspecitonMissingChecks("-");
+                if (ObjectUtil.isNotEmpty(personnelTeamDTO)) {
+                    model.setInspecitonTotalTime(Convert.toStr(personnelTeamDTO.getOverhaulWorkingHours()));
+                    model.setInspecitonScheduledTasks(Convert.toStr(personnelTeamDTO.getPlanTaskNumber()));
+                    model.setInspecitonCompletedTasks(Convert.toStr(personnelTeamDTO.getCompleteTaskNumber()));
+                    model.setInspecitonPlanCompletion(Convert.toStr(personnelTeamDTO.getPlanCompletionRate()+"%"));
+                    model.setInspecitonMissingChecks("-");
+                }else {
+                    model.setInspecitonTotalTime("0");
+                    model.setInspecitonScheduledTasks("0");
+                    model.setInspecitonCompletedTasks("0");
+                    model.setInspecitonPlanCompletion("0%");
+                    model.setInspecitonMissingChecks("-");
+                }
 
                 //培训完成次数
                 Integer integer = personnelGroupStatisticsMapper.groupTrainFinishedNum(model.getTeamId(), startTime, endTime);
                 model.setTrainFinish(Convert.toStr(integer));
+
+                model.setEmergencyResponseNum("0");
+                model.setEmergencyHandlingHours("0");
             }
 
             return page.setRecords(personnelGroupModels);
@@ -130,24 +157,46 @@ public class PersonnelGroupStatisticsServiceImpl implements PersonnelGroupStatis
                 String userId = model.getUserId();
                 //获取每一个人员巡检参数数据
                 UserTeamPatrolDTO userTeamPatrolDTO = userParameter.get(userId);
-                model.setPatrolTotalTime(Convert.toStr(userTeamPatrolDTO.getWorkHours()));
-                model.setPatrolScheduledTasks(Convert.toStr(userTeamPatrolDTO.getPlanTaskNumber()));
-                model.setPatrolCompletedTasks(Convert.toStr(userTeamPatrolDTO.getActualFinishTaskNumber()));
-                model.setPatrolPlanCompletion(Convert.toStr(userTeamPatrolDTO.getPlanFinishRate())+"%");
-                model.setPatrolMissingChecks(Convert.toStr(userTeamPatrolDTO.getMissPatrolNumber()));
+                if (ObjectUtil.isNotEmpty(userTeamPatrolDTO)) {
+                    model.setPatrolTotalTime(Convert.toStr(userTeamPatrolDTO.getWorkHours()));
+                    model.setPatrolScheduledTasks(Convert.toStr(userTeamPatrolDTO.getPlanTaskNumber()));
+                    model.setPatrolCompletedTasks(Convert.toStr(userTeamPatrolDTO.getActualFinishTaskNumber()));
+                    model.setPatrolPlanCompletion(Convert.toStr(userTeamPatrolDTO.getPlanFinishRate()) + "%");
+                    model.setPatrolMissingChecks(Convert.toStr(userTeamPatrolDTO.getMissPatrolNumber()));
+                } else {
+                    model.setPatrolTotalTime("0");
+                    model.setPatrolScheduledTasks("0");
+                    model.setPatrolCompletedTasks("0");
+                    model.setPatrolPlanCompletion("0%");
+                    model.setPatrolMissingChecks("0");
+                }
                 //获取每一个人员维修参数数据
                 FaultReportDTO faultReportDTO = faultUserReport.get(userId);
-                model.setFaultTotalTime(Convert.toStr(faultReportDTO.getFailureTime()));
-                model.setAssortNum(Convert.toStr(faultReportDTO.getConstructorsNum()));
-                model.setAssortTime(Convert.toStr(faultReportDTO.getConstructionHours()));
+                if (ObjectUtil.isNotEmpty(faultReportDTO)) {
+                    model.setFaultTotalTime(Convert.toStr(faultReportDTO.getFailureTime()));
+                    model.setAssortNum(Convert.toStr(faultReportDTO.getConstructorsNum()));
+                    model.setAssortTime(Convert.toStr(faultReportDTO.getConstructionHours()));
+                } else {
+                    model.setFaultTotalTime("0");
+                    model.setAssortNum("0");
+                    model.setAssortTime("0");
+                }
+
                 //获取每一个人员检修参数数据
                 PersonnelTeamDTO personnelTeamDTO = personnelInformation.get(userId);
-                model.setInspecitonTotalTime(Convert.toStr(personnelTeamDTO.getOverhaulWorkingHours()));
-                model.setInspecitonScheduledTasks(Convert.toStr(personnelTeamDTO.getPlanTaskNumber()));
-                model.setInspecitonCompletedTasks(Convert.toStr(personnelTeamDTO.getCompleteTaskNumber()));
-                model.setInspecitonPlanCompletion(Convert.toStr(personnelTeamDTO.getPlanCompletionRate()+"%"));
-                model.setInspecitonMissingChecks("-");
-
+                if (ObjectUtil.isNotEmpty(personnelTeamDTO)) {
+                    model.setInspecitonTotalTime(Convert.toStr(personnelTeamDTO.getOverhaulWorkingHours()));
+                    model.setInspecitonScheduledTasks(Convert.toStr(personnelTeamDTO.getPlanTaskNumber()));
+                    model.setInspecitonCompletedTasks(Convert.toStr(personnelTeamDTO.getCompleteTaskNumber()));
+                    model.setInspecitonPlanCompletion(Convert.toStr(personnelTeamDTO.getPlanCompletionRate() + "%"));
+                    model.setInspecitonMissingChecks("-");
+                } else {
+                    model.setInspecitonTotalTime("0");
+                    model.setInspecitonScheduledTasks("0");
+                    model.setInspecitonCompletedTasks("0");
+                    model.setInspecitonPlanCompletion("0%");
+                    model.setInspecitonMissingChecks("-");
+                }
                 //培训完成次数
                 List<TrainTaskDTO> trainTaskDTOS = personnelGroupStatisticsMapper.userTrainFinishedNum(model.getUserId(), startTime, endTime);
                 int size = trainTaskDTOS.size();
@@ -162,6 +211,9 @@ public class PersonnelGroupStatisticsServiceImpl implements PersonnelGroupStatis
                     }
                 }
                 model.setTrainFinish(Convert.toStr(size));
+
+                model.setEmergencyResponseNum("0");
+                model.setEmergencyHandlingHours("0");
             }
 
             return page.setRecords(personnelModels);
@@ -197,11 +249,27 @@ public class PersonnelGroupStatisticsServiceImpl implements PersonnelGroupStatis
         ///获取当前班组检修参数数据
         Map<String, PersonnelTeamDTO> teamInformation = overhaulApi.teamInformation(lastYear, end,departIds);
 
-        depart.setFaultTotalTime(Convert.toStr(faultOrgReport.get(departId).getFailureTime()));
-        depart.setInspecitonTotalTime(Convert.toStr(teamInformation.get(departId).getOverhaulWorkingHours()));
-        depart.setPatrolTotalTime(Convert.toStr(teamParameter.get(departId).getWorkHours()));
-        depart.setAverageMonthlyResidual(Convert.toStr(teamParameter.get(departId).getAvgMissPatrolNumber()));
-        depart.setAverageFaultTime(Convert.toStr(faultOrgReport.get(departId).getRepairTime()));
+        if (ObjectUtil.isNotEmpty(faultOrgReport.get(departId))) {
+            depart.setFaultTotalTime(Convert.toStr(faultOrgReport.get(departId).getFailureTime()));
+            depart.setAverageFaultTime(Convert.toStr(faultOrgReport.get(departId).getRepairTime()));
+        }else {
+            depart.setFaultTotalTime("0");
+            depart.setAverageFaultTime("0");
+        }
+
+        if (ObjectUtil.isNotEmpty(teamInformation.get(departId))) {
+            depart.setInspecitonTotalTime(Convert.toStr(teamInformation.get(departId).getOverhaulWorkingHours()));
+        }else {
+            depart.setInspecitonTotalTime("0");
+        }
+
+        if (ObjectUtil.isNotEmpty(teamParameter.get(departId))) {
+            depart.setPatrolTotalTime(Convert.toStr(teamParameter.get(departId).getWorkHours()));
+            depart.setAverageMonthlyResidual(Convert.toStr(teamParameter.get(departId).getAvgMissPatrolNumber()));
+        }else {
+            depart.setPatrolTotalTime("0");
+            depart.setAverageMonthlyResidual("0");
+        }
 
         //班组关联工区信息
         List<TeamPortraitModel> workArea = personnelGroupStatisticsMapper.getWorkArea(departId);
@@ -290,12 +358,27 @@ public class PersonnelGroupStatisticsServiceImpl implements PersonnelGroupStatis
 
         TeamUserModel user = personnelGroupStatisticsMapper.getUser(userId);
 
-        user.setFaultTotalTime(Convert.toStr(faultUserReport.get(userId).getFailureTime()));
-        user.setInspecitonTotalTime(Convert.toStr(personnelInformation.get(userId).getOverhaulWorkingHours()));
-        user.setPatrolTotalTime(Convert.toStr(userParameter.get(userId).getWorkHours()));
-        user.setAverageMonthlyResidual(Convert.toStr(userParameter.get(userId).getAvgMissPatrolNumber()));
-        user.setAverageFaultTime(Convert.toStr(faultUserReport.get(userId).getRepairTime()));
+        if (ObjectUtil.isNotEmpty(faultUserReport.get(userId))) {
+            user.setFaultTotalTime(Convert.toStr(faultUserReport.get(userId).getFailureTime()));
+            user.setAverageFaultTime(Convert.toStr(faultUserReport.get(userId).getRepairTime()));
+        }else {
+            user.setFaultTotalTime("0");
+            user.setAverageFaultTime("0");
+        }
 
+        if (ObjectUtil.isNotEmpty(personnelInformation.get(userId))) {
+            user.setInspecitonTotalTime(Convert.toStr(personnelInformation.get(userId).getOverhaulWorkingHours()));
+        }else {
+            user.setInspecitonTotalTime("0");
+        }
+
+        if (ObjectUtil.isNotEmpty(userParameter.get(userId))) {
+            user.setPatrolTotalTime(Convert.toStr(userParameter.get(userId).getWorkHours()));
+            user.setAverageMonthlyResidual(Convert.toStr(userParameter.get(userId).getAvgMissPatrolNumber()));
+        }else {
+            user.setPatrolTotalTime("0");
+            user.setAverageMonthlyResidual("0");
+        }
         List<String> userList = new ArrayList<>();
         userList.add(userId);
         //获取人员维修响应时长
@@ -325,7 +408,7 @@ public class PersonnelGroupStatisticsServiceImpl implements PersonnelGroupStatis
     }
 
     @Override
-    public ModelAndView reportGroupExport(HttpServletRequest request, String startTime, String endTime) {
+    public ModelAndView reportGroupExport(HttpServletRequest request, String startTime, String endTime,String exportField) {
         ModelAndView mv = new ModelAndView(new JeecgEntityExcelView());
         Page<GroupModel> page = new Page<>(1, 9999);
         Page<GroupModel> groupModelPage = this.queryGroupPageList(null, startTime, endTime, page);
@@ -334,7 +417,9 @@ public class PersonnelGroupStatisticsServiceImpl implements PersonnelGroupStatis
             //导出文件名称
             mv.addObject(NormalExcelConstants.FILE_NAME, "班组统计报表");
             //excel注解对象Class
-            mv.addObject(NormalExcelConstants.CLASS, PatrolReport.class);
+            mv.addObject(NormalExcelConstants.CLASS, GroupModel.class);
+            //自定义导出字段
+            mv.addObject(NormalExcelConstants.EXPORT_FIELDS,exportField);
             //自定义表格参数
             mv.addObject(NormalExcelConstants.PARAMS, new ExportParams("统计分析-班组统计报表", "班组统计报表"));
             //导出数据列表
@@ -344,7 +429,7 @@ public class PersonnelGroupStatisticsServiceImpl implements PersonnelGroupStatis
     }
 
     @Override
-    public ModelAndView reportUserExport(HttpServletRequest request, String startTime, String endTime) {
+    public ModelAndView reportUserExport(HttpServletRequest request, String startTime, String endTime,String exportField) {
         ModelAndView mv = new ModelAndView(new JeecgEntityExcelView());
         Page<PersonnelModel> page = new Page<>(1, 9999);
         Page<PersonnelModel> personnelModelPage = this.queryUserPageList(null, startTime, endTime, page);
@@ -353,7 +438,9 @@ public class PersonnelGroupStatisticsServiceImpl implements PersonnelGroupStatis
             //导出文件名称
             mv.addObject(NormalExcelConstants.FILE_NAME, "人员统计报表");
             //excel注解对象Class
-            mv.addObject(NormalExcelConstants.CLASS, PatrolReport.class);
+            mv.addObject(NormalExcelConstants.CLASS, PersonnelModel.class);
+            //自定义导出字段
+            mv.addObject(NormalExcelConstants.EXPORT_FIELDS,exportField);
             //自定义表格参数
             mv.addObject(NormalExcelConstants.PARAMS, new ExportParams("统计分析-人员统计报表", "人员统计报表"));
             //导出数据列表
