@@ -42,4 +42,11 @@ public interface IBdWorkTicketService extends IService<BdWorkTicket> {
      * @param states 状态值
      */
     void updateState(String businessKey, Integer states);
+
+    /**
+     * 权限认证
+     * @param id
+     * @return
+     */
+    Boolean authUpload(String id);
 }

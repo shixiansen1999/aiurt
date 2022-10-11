@@ -16,6 +16,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.List;
 
 /**
  * @Description: bd_work_ticket
@@ -305,6 +306,20 @@ public class BdWorkTicket implements Serializable {
     @ApiModelProperty(value = "流程任务")
     @TableField(exist = false)
     private String taskId;
+
+    @ApiModelProperty(value = "共计人数")
+    @TableField(exist = false)
+    private Integer count;
+
+    @ApiModelProperty(value = "工作组成员")
+    @TableField(exist = false)
+    private List<String> resNames;
+
+    @ApiModelProperty(value = "工作票类型")
+    @TableField(exist = false)
+    private String ticketType;
+
+
 
 
 }

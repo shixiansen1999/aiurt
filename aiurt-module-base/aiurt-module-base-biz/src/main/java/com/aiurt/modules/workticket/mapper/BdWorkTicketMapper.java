@@ -6,6 +6,7 @@ import com.aiurt.modules.workticket.entity.BdWorkTicket;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.annotations.Select;
 
 import java.util.List;
 
@@ -33,4 +34,7 @@ public interface BdWorkTicketMapper extends BaseMapper<BdWorkTicket> {
      * @return
      */
     List<WorkTicketResDTO> historyGet(@Param("pageList") Page<WorkTicketResDTO> pageList, @Param("workTicketReqDTO") WorkTicketReqDTO workTicketReqDTO);
+
+    @Select("select org_id from sys_user where realname =#{realName}")
+    List<String> getTeamIdList(String ticketFiller);
 }

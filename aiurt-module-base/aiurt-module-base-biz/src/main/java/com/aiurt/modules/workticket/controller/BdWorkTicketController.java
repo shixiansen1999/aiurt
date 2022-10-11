@@ -9,7 +9,6 @@ import com.aiurt.modules.workticket.dto.WorkTicketReqDTO;
 import com.aiurt.modules.workticket.dto.WorkTicketResDTO;
 import com.aiurt.modules.workticket.entity.BdWorkTicket;
 import com.aiurt.modules.workticket.service.IBdWorkTicketService;
-import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.annotations.Api;
@@ -193,5 +192,12 @@ public class BdWorkTicketController extends BaseController<BdWorkTicket, IBdWork
 		 pageList = bdWorkTicketService.queryPageList(pageList, sysUser.getUsername());
 		 return Result.OK(pageList);
 	 }
+
+	@GetMapping("/authUpload/{id}")
+	@ApiOperation(value = "权限验证",notes = "权限验证")
+	public Result<Boolean> authUpload(@PathVariable("id") String id) {
+		Boolean bl = bdWorkTicketService.authUpload(id);
+		return Result.OK(bl);
+	}
 
 }

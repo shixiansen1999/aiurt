@@ -780,12 +780,13 @@ public class LoginController {
 		String ticket =(String)redisUtil.get("ticket");
 		if (ObjectUtil.isEmpty(ticket)){
 			Map response1 = RestUtil.get("https://qyapi.weixin.qq.com/cgi-bin/get_jsapi_ticket?access_token="+accessToken);
+			log.info("请求结果:->{}", JSONObject.toJSONString(response1));
 			String ticket1 = (String)response1.get("ticket");
 			Integer expiresIn = (Integer) response1.get("expires_in");
 			Long time = (System.currentTimeMillis() / 1000);
 			String noncestr = "akltasdaWWWWW";
 			String string1 ="jsapi_ticket="+ticket1+"&noncestr="+noncestr+"&timestamp="+time+"&url="+url;
-			System.out.println(string1);
+			log.info("st->{}", string1);
 			String signature = sha1(string1);
 			JSONObject obj = new JSONObject();
 			obj.put("appId","ww19d88c8272303c7b");
