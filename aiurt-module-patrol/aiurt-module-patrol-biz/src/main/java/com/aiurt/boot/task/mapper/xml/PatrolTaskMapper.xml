@@ -1109,19 +1109,15 @@ GROUP BY
      </select>
      <select id="getUserPlanNumber" resultType="com.aiurt.boot.dto.UserTeamPatrolDTO">
     SELECT
-    COUNt(pt.id) as planTaskNumber ,
+    COUNt(pt.id) as planTaskNumber,
 	sd.id AS orgId,
 	pt.id AS taskId
 FROM
 	patrol_task pt
 	JOIN patrol_task_organization pto ON pt.`code` = pto.task_code
 	JOIN sys_depart sd ON sd.org_code = pto.org_code
-	  <if test="useIds != null and useIds.size() != 0">
-    AND sd.id IN
-     <foreach collection="useIds" item="item" open="(" separator="," close=")">
-                #{item}
-     </foreach>
-
+	  <if test="orgId != null and orgId != '' ">
+    AND sd.id = #{orgId}
     </if>
     <if test="startDate != null and startDate != ''">
      and DATE_FORMAT(pt.patrol_date,'%Y-%m-%d') BETWEEN  DATE_FORMAT(#{startDate},'%Y-%m-%d')  and DATE_FORMAT(#{endDate},'%Y-%m-%d')

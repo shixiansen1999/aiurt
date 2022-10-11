@@ -329,7 +329,7 @@ public class PatrolApiServiceImpl implements PatrolApi {
             List<LoginUser> useList = sysBaseAPI.getUserPersonnel(dto.getOrgId());
             List<String> useIds = useList.stream().map(LoginUser::getId).collect(Collectors.toList());
             //计算计划巡检数的计划巡检数
-            UserTeamPatrolDTO userPlanNumber = patrolTaskMapper.getUserPlanNumber(useIds,userTeamParameter.getStartDate(),userTeamParameter.getEndDate());
+            UserTeamPatrolDTO userPlanNumber = patrolTaskMapper.getUserPlanNumber(dto.getOrgId(),userTeamParameter.getStartDate(),userTeamParameter.getEndDate());
             //计算指派实际巡检数、同行人的实际巡检数
             List<UserTeamPatrolDTO> userNowNumber = patrolTaskMapper.getUserNowNumber(useIds,userTeamParameter.getStartDate(),userTeamParameter.getEndDate());
             List<UserTeamPatrolDTO> peopleNowNumber = patrolTaskMapper.getPeopleNowNumber(useIds,userTeamParameter.getStartDate(),userTeamParameter.getEndDate());

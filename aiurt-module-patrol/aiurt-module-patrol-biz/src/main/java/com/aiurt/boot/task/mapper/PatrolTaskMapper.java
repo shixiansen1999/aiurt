@@ -382,12 +382,12 @@ public interface PatrolTaskMapper extends BaseMapper<PatrolTask> {
 
     /**
      * 计算指派的计划数
-     * @param useIds
+     * @param orgId
      * @param startDate
      * @param endDate
      * @return
      */
-    UserTeamPatrolDTO getUserPlanNumber(@Param("useIds")List<String> useIds, @Param("startDate")String startDate, @Param("endDate")String endDate);
+    UserTeamPatrolDTO getUserPlanNumber(@Param("orgId")String orgId, @Param("startDate")String startDate, @Param("endDate")String endDate);
     /**
      * 计算指派的巡检实际完成数
      * @param useIds
