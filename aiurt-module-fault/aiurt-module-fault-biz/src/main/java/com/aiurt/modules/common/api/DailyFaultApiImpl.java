@@ -163,8 +163,12 @@ public class DailyFaultApiImpl implements DailyFaultApi {
                     }
                 });
             });
-            Long s = (f.getNum()/f.getNum1())/60;
-            f.setRepairTime(s.toString());
+            if (f.getNum1()==0){
+                f.setRepairTime("0");
+            }else {
+                Long s = (f.getNum()/f.getNum1())/60;
+                f.setRepairTime(s.toString());
+            }
             f.setFailureTime(new BigDecimal((1.0 * (f.getNum()) / 3600)).setScale(2, BigDecimal.ROUND_HALF_UP));
             BigDecimal totalPrice = doubles.stream().map(BigDecimal::abs).reduce(BigDecimal.ZERO, BigDecimal::add);
             f.setConstructionHours(totalPrice);
@@ -200,8 +204,12 @@ public class DailyFaultApiImpl implements DailyFaultApi {
                 });
             });
             FaultReportDTO  fau = faultInformationMapper.getUserConstructorsNum(f.getUserId(),startTime,endTime);
-            Long s = (f.getNum()/f.getNum1())/60;
-            f.setRepairTime(s.toString());
+            if (f.getNum1()==0){
+                f.setRepairTime("0");
+            }else {
+                Long s = (f.getNum()/f.getNum1())/60;
+                f.setRepairTime(s.toString());
+            }
             f.setConstructorsNum(fau.getConstructorsNum());
             f.setFailureTime(new BigDecimal((1.0 * (f.getNum()) / 3600)).setScale(2, BigDecimal.ROUND_HALF_UP));
             BigDecimal totalPrice = doubles.stream().map(BigDecimal::abs).reduce(BigDecimal.ZERO, BigDecimal::add);
