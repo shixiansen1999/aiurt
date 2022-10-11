@@ -54,6 +54,7 @@ import org.flowable.ui.modeler.serviceapi.ModelService;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.LoginUser;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -570,9 +571,12 @@ public class FlowApiServiceImpl implements FlowApiService {
             flowTaskVo.setProcessDefinitionVersion(processDefinition.getVersion());
             ProcessInstance processInstance = instanceMap.get(task.getProcessInstanceId());
             flowTaskVo.setProcessInstanceId(processInstance.getId());
-            Object initiator = this.getProcessInstanceVariable(
-                    processInstance.getId(), FlowConstant.PROC_INSTANCE_INITIATOR_VAR);
-            flowTaskVo.setProcessInstanceInitiator(initiator.toString());
+            String startUserId = processInstance.getStartUserId();
+
+            LoginUser userByName = sysBaseAPI.getUserByName(startUserId);
+
+            flowTaskVo.setProcessInstanceInitiator(startUserId);
+            flowTaskVo.setProcessInstanceInitiatorName(userByName.getRealname());
             flowTaskVo.setProcessInstanceStartTime(processInstance.getStartTime());
             flowTaskVo.setBusinessKey(processInstance.getBusinessKey());
             flowTaskVoList.add(flowTaskVo);
@@ -1338,6 +1342,12 @@ public class FlowApiServiceImpl implements FlowApiService {
             return Collections.emptyList();
         }
 
+        List<HistoricTaskInfo> historicTaskInfoList = buildHistoricTaskInfo(processInstance);
+        return historicTaskInfoList;
+    }
+
+    @NotNull
+    private List<HistoricTaskInfo> buildHistoricTaskInfo(ProcessInstance processInstance) {
         List<HistoricActivityInstance> list = historyService.createHistoricActivityInstanceQuery().processInstanceId(processInstance.getProcessInstanceId()).orderByHistoricActivityInstanceStartTime().desc().list();
         List<HistoricTaskInfo> historicTaskInfoList = new ArrayList<>();
         Optional.ofNullable(list).orElse(Collections.emptyList()).stream().filter(entity-> StringUtils.equalsIgnoreCase("userTask",entity.getActivityType())).forEach(entity->{
@@ -1385,6 +1395,26 @@ public class FlowApiServiceImpl implements FlowApiService {
             historicTaskInfoList.add(historicTaskInfo);
         });
         return historicTaskInfoList;
+    }
+
+    /**
+     * 根据ProcessInstanceId 获取历史记录
+     *
+     * @param processInstanceId
+     * @return
+     */
+    @Override
+    public List<HistoricTaskInfo> getHistoricLogByProcessInstanceId(String processInstanceId) {
+        ProcessInstance processInstance = runtimeService.createProcessInstanceQuery().processInstanceId(processInstanceId).singleResult();
+
+        if (Objects.isNull(processInstance)) {
+            return Collections.emptyList();
+        }
+
+        List<HistoricTaskInfo> historicTaskInfoList = buildHistoricTaskInfo(processInstance);
+
+        return historicTaskInfoList;
+
     }
 
     private List<FlowElement> getChildUserTaskList(

@@ -314,4 +314,15 @@ public class FlowOperationController {
         List<HistoricTaskInfo> result = flowApiService.getHistoricLog(businessKey);
         return Result.OK(result);
     }
+
+    /**
+     * 根据业务id 获取历史记录
+     * @return
+     */
+    @GetMapping("/getHistoricLogByProcessInstanceId")
+    @ApiOperation(value = "根据ProcessInstanceId 获取历史记录", notes = "根据ProcessInstanceId 获取历史记录")
+    public Result<List<HistoricTaskInfo>> getHistoricLogByProcessInstanceId(@RequestParam(value = "processInstanceId") String processInstanceId) {
+        List<HistoricTaskInfo> result = flowApiService.getHistoricLogByProcessInstanceId(processInstanceId);
+        return Result.OK(result);
+    }
 }
