@@ -1,5 +1,7 @@
 package com.aiurt.modules.stock.controller;
 
+import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.aspect.annotation.PermissionData;
 import com.aiurt.common.constant.CommonConstant;
@@ -75,6 +77,9 @@ public class StockSubmitPlanController {
                                                          HttpServletRequest req) {
         Result<IPage<StockSubmitPlan>> result = new Result<IPage<StockSubmitPlan>>();
         QueryWrapper<StockSubmitPlan> queryWrapper = QueryGenerator.initQueryWrapper(stockSubmitPlan, req.getParameterMap());
+        if(ObjectUtil.isNotEmpty(stockSubmitPlan)&& StrUtil.isNotBlank(stockSubmitPlan.getOrgCode())) {
+            queryWrapper.lambda().eq(StockSubmitPlan::getOrgCode, stockSubmitPlan.getOrgCode());
+        }
         queryWrapper.eq("del_flag", CommonConstant.DEL_FLAG_0);
         queryWrapper.orderByDesc("create_time");
         Page<StockSubmitPlan> page = new Page<StockSubmitPlan>(pageNo, pageSize);
