@@ -36,9 +36,9 @@ public interface PersonnelGroupStatisticsService {
 
     TeamUserModel queryUserById(String userId);
 
-    ModelAndView reportGroupExport(HttpServletRequest request, String startTime, String endTime);
+    ModelAndView reportGroupExport(HttpServletRequest request, String startTime, String endTime,String exportField);
 
-    ModelAndView reportUserExport(HttpServletRequest request,String startTime, String endTime);
+    ModelAndView reportUserExport(HttpServletRequest request,String startTime, String endTime,String exportField);
 
 
 }

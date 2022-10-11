@@ -122,9 +122,10 @@ public class PersonnelGroupStatisticsController {
     @ApiOperation(value = "统计报表人员报表-班组列表导出", notes = "统计报表人员报表-班组列表导出")
     @GetMapping(value = "/reportGroupExport")
     public ModelAndView reportGroupExport(HttpServletRequest request,
+                                     @RequestParam(name = "exportField",required = false) String exportField,
                                      @RequestParam(name = "startTime",required = false) String startTime,
                                      @RequestParam(name = "endTime",required = false) String endTime) {
-        return personnelGroupStatisticsService.reportGroupExport(request,startTime,endTime);
+        return personnelGroupStatisticsService.reportGroupExport(request,startTime,endTime,exportField);
     }
 
     /**
@@ -137,9 +138,10 @@ public class PersonnelGroupStatisticsController {
     @ApiOperation(value = "统计报表人员报表-人员列表导出", notes = "统计报表人员报表-人员列表导出")
     @GetMapping(value = "/reportUserExport")
     public ModelAndView reportUserExport(HttpServletRequest request,
-                                          @RequestParam(name = "startTime",required = false) String startTime,
-                                          @RequestParam(name = "endTime",required = false) String endTime) {
-        return personnelGroupStatisticsService.reportUserExport(request,startTime,endTime);
+                                         @RequestParam(name = "exportField",required = false) String exportField,
+                                         @RequestParam(name = "startTime",required = false) String startTime,
+                                         @RequestParam(name = "endTime",required = false) String endTime) {
+        return personnelGroupStatisticsService.reportUserExport(request,startTime,endTime,exportField);
     }
 
     /**
