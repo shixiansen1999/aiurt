@@ -1108,17 +1108,16 @@ GROUP BY
         and a.org_category in(3,4,5)
      </select>
      <select id="getUserPlanNumber" resultType="com.aiurt.boot.dto.UserTeamPatrolDTO">
-     SELECT
-     SUM(IF(pt.STATUS = 7,TIMESTAMPDIFF( SECOND, pt.begin_time, IF ( 1 = pt.auditor, pt.auditor_time, pt.submit_time ) ), 0))as  workHours,
-	sd.id as orgId,
+    SELECT
+    COUNt(pt.id) as planTaskNumber ,
+	sd.id AS orgId,
 	pt.id AS taskId
 FROM
 	patrol_task pt
-	JOIN patrol_task_user ptu ON pt.`code` = ptu.task_code
-	JOIN sys_user su ON su.id = ptu.user_id
-	JOIN sys_depart sd ON sd.id = su.org_id
+	JOIN patrol_task_organization pto ON pt.`code` = pto.task_code
+	JOIN sys_depart sd ON sd.org_code = pto.org_code
 	  <if test="useIds != null and useIds.size() != 0">
-     and ptu.user_id in
+    AND sd.id IN
      <foreach collection="useIds" item="item" open="(" separator="," close=")">
                 #{item}
      </foreach>
@@ -1127,34 +1126,10 @@ FROM
     <if test="startDate != null and startDate != ''">
      and DATE_FORMAT(pt.patrol_date,'%Y-%m-%d') BETWEEN  DATE_FORMAT(#{startDate},'%Y-%m-%d')  and DATE_FORMAT(#{endDate},'%Y-%m-%d')
     </if>
-	GROUP BY
-	pt.id
-</select>
-<select id="getPeoplePlanNumber" resultType="com.aiurt.boot.dto.UserTeamPatrolDTO">
-    SELECT
-    SUM(IF(pt.STATUS = 7,TIMESTAMPDIFF( SECOND, pt.begin_time, IF ( 1 = pt.auditor, pt.auditor_time, pt.submit_time ) ), 0))as  workHours,
-	sd.id as orgId,
-	pt.id AS taskId
-    FROM
-	patrol_task pt
-    JOIN patrol_task_device ptd ON pt.id = ptd.task_id
-    JOIN patrol_accompany pa ON ptd.patrol_number = pa.task_device_code
-	JOIN sys_user su ON su.id = pa.user_id
-	JOIN sys_depart sd ON sd.id = su.org_id
-	<if test="useIds != null and useIds.size() != 0">
-    AND pa.user_id IN
-     <foreach collection="useIds" item="item" open="(" separator="," close=")">
-                #{item}
-     </foreach>
-    </if>
-	<if test="startDate != null and startDate != ''">
-     and DATE_FORMAT(pt.patrol_date,'%Y-%m-%d') BETWEEN  DATE_FORMAT(#{startDate},'%Y-%m-%d')  and DATE_FORMAT(#{endDate},'%Y-%m-%d')
-    </if>
-	GROUP BY
-	pt.id
 </select>
 <select id="getUserNowNumber" resultType="com.aiurt.boot.dto.UserTeamPatrolDTO">
      SELECT
+    SUM(IF(pt.STATUS = 7,TIMESTAMPDIFF( SECOND, pt.begin_time, IF ( 1 = pt.auditor, pt.auditor_time, pt.submit_time ) ), 0))as  workHours,
 	sd.id as orgId,
 	pt.id AS taskId
 FROM
@@ -1178,6 +1153,7 @@ FROM
 </select>
 <select id="getPeopleNowNumber" resultType="com.aiurt.boot.dto.UserTeamPatrolDTO">
     SELECT
+    SUM(IF(pt.STATUS = 7,TIMESTAMPDIFF( SECOND, pt.begin_time, IF ( 1 = pt.auditor, pt.auditor_time, pt.submit_time ) ), 0))as  workHours,
 	sd.id as orgId,
 	pt.id AS taskId
     FROM

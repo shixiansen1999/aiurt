@@ -387,17 +387,7 @@ public interface PatrolTaskMapper extends BaseMapper<PatrolTask> {
      * @param endDate
      * @return
      */
-    List<UserTeamPatrolDTO> getUserPlanNumber(@Param("useIds")List<String> useIds, @Param("startDate")String startDate, @Param("endDate")String endDate);
-
-    /**
-     * 计算同行人的计划数
-     * @param useIds
-     * @param startDate
-     * @param endDate
-     * @return
-     */
-    List<UserTeamPatrolDTO> getPeoplePlanNumber(@Param("useIds")List<String> useIds, @Param("startDate")String startDate, @Param("endDate")String endDate);
-
+    UserTeamPatrolDTO getUserPlanNumber(@Param("useIds")List<String> useIds, @Param("startDate")String startDate, @Param("endDate")String endDate);
     /**
      * 计算指派的巡检实际完成数
      * @param useIds
