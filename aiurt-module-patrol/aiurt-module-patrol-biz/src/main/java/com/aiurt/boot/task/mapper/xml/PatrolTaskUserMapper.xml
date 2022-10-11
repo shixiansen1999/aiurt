@@ -148,4 +148,53 @@ JOIN patrol_accompany pa ON ptd.patrol_number = pa.task_device_code
      and DATE_FORMAT(pt.patrol_date,'%Y-%m-%d') BETWEEN  DATE_FORMAT(#{startDate},'%Y-%m-%d')  and DATE_FORMAT(#{endDate},'%Y-%m-%d')
     </if>GROUP BY pa.user_id
 </select>
+
+    <select id="getScreenDuration" resultType="com.aiurt.boot.screen.model.ScreenDurationTask">
+        SELECT
+        pt.id,
+        IFNULL(TIMESTAMPDIFF( SECOND, pt.begin_time, IF ( 1 = pt.auditor, pt.auditor_time, pt.submit_time ) ),'0') duration
+        FROM
+        patrol_task pt
+        JOIN patrol_task_user ptu ON pt.`code` = ptu.task_code
+        AND ptu.del_flag = 0
+        WHERE
+        pt.del_flag = 0
+        <if test="startTime != null and endTime != null">
+            AND pt.patrol_date BETWEEN #{startTime} AND #{endTime}
+        </if>
+        <if test="userList != null and userList.size() != 0">
+            and ptu.user_id in
+            <foreach collection="userList" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+
+        </if>
+        GROUP BY
+        pt.id
+    </select>
+
+    <select id="getScreentPeerDuration" resultType="com.aiurt.boot.screen.model.ScreenDurationTask">
+        SELECT
+        pt.id,
+        IFNULL(TIMESTAMPDIFF( SECOND, pt.begin_time, IF ( 1 = pt.auditor, pt.auditor_time, pt.submit_time ) ),'0') duration
+        FROM patrol_task pt
+        JOIN patrol_task_device ptd ON pt.id = ptd.task_id
+        AND ptd.del_flag = 0
+        JOIN patrol_accompany pa ON ptd.patrol_number = pa.task_device_code
+        AND pt.del_flag = 0
+        WHERE
+        pt.del_flag = 0
+        <if test="startTime != null and endTime != null">
+            AND pt.patrol_date BETWEEN #{startTime} AND #{endTime}
+        </if>
+        <if test="userList != null and userList.size() != 0">
+            and pa.user_id in
+            <foreach collection="userList" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+
+        </if>
+        GROUP BY pt.id
+
+    </select>
 </mapper>

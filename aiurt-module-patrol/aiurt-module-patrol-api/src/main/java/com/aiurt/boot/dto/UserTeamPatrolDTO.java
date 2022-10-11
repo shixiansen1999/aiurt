@@ -15,7 +15,7 @@ import java.math.BigDecimal;
 public class UserTeamPatrolDTO {
     @ApiModelProperty(value = "用户Id")
     private String userId;
-    @ApiModelProperty(value = "用户Id")
+    @ApiModelProperty(value = "任务Id")
     private String taskId;
     @ApiModelProperty(value = "班组Id")
     private String orgId;

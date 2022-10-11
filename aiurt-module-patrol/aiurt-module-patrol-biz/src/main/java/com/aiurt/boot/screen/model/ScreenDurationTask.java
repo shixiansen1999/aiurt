@@ -17,5 +17,7 @@ public class ScreenDurationTask {
 
     private String userId;
 
+    private String taskId;
+
     private Long duration;
 }

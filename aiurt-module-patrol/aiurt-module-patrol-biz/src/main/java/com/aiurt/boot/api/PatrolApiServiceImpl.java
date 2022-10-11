@@ -158,6 +158,35 @@ public class PatrolApiServiceImpl implements PatrolApi {
     }
 
     @Override
+    public BigDecimal getPatrolHours(int type, String teamId) {
+        // 班组的人员
+        List<LoginUser> userList = sysBaseApi.getUserPersonnel(teamId);
+        if (CollUtil.isNotEmpty(userList)) {
+            String dateTime = ScreenDateUtil.getDateTime(type);
+            Date startTime = DateUtil.parse(dateTime.split(ScreenConstant.TIME_SEPARATOR)[0]);
+            Date endTime = DateUtil.parse(dateTime.split(ScreenConstant.TIME_SEPARATOR)[1]);
+
+            // 获取巡视人员在指定时间范围内的每一个任务的时长(单位秒)
+            List<ScreenDurationTask> screenDuration = patrolTaskUserMapper.getScreenDuration(startTime, endTime, userList);
+            // 获取同行人在指定时间范围内的每一个任务的任务时长(单位秒)
+            List<ScreenDurationTask> screentPeerDuration = patrolTaskUserMapper.getScreentPeerDuration(startTime, endTime, userList);
+
+            List<String> collect = screenDuration.stream().map(ScreenDurationTask::getTaskId).collect(Collectors.toList());
+            //若同行人和指派人同属一个班组，则该班组只取一次工时，不能累加
+            List<ScreenDurationTask> dtos = screentPeerDuration.stream().filter(t -> !collect.contains(t.getTaskId())).collect(Collectors.toList());
+            dtos.addAll(screenDuration);
+            BigDecimal sum = new BigDecimal("0.00");
+            for (ScreenDurationTask dto : dtos) {
+                sum = sum.add(new BigDecimal(dto.getDuration()));
+            }
+            //秒转时
+            BigDecimal decimal = sum.divide(new BigDecimal("3600"),1, BigDecimal.ROUND_HALF_UP);
+            return decimal;
+        }
+        return new BigDecimal("0.00");
+    }
+
+    @Override
     public Map<String, UserTeamPatrolDTO> getUserParameter(UserTeamParameter userTeamParameter)
     {
         LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();

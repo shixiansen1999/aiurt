@@ -24,6 +24,11 @@ public interface PatrolApi {
     Map<String, BigDecimal> getPatrolUserHours(int type, String teamId);
 
     /**
+     * 大屏班组画像班组巡视总工时统计
+     */
+    BigDecimal getPatrolHours(int type, String teamId);
+
+    /**
      * 统计报表-人员班组巡检参数接口返回
      * @param userTeamParameter
      * @return
