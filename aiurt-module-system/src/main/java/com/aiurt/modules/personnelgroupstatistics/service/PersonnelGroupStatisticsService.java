@@ -1,6 +1,7 @@
 package com.aiurt.modules.personnelgroupstatistics.service;
 
-import com.aiurt.modules.personnelgroupstatistics.model.PersonnelGroupModel;
+import com.aiurt.modules.personnelgroupstatistics.model.GroupModel;
+import com.aiurt.modules.personnelgroupstatistics.model.PersonnelModel;
 import com.aiurt.modules.personnelgroupstatistics.model.TeamPortraitModel;
 import com.aiurt.modules.personnelgroupstatistics.model.TeamUserModel;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -18,7 +19,7 @@ public interface PersonnelGroupStatisticsService {
      * @param endTime
      * @return List<PersonnelGroupModel>
      */
-    List<PersonnelGroupModel> queryGroupPageList(List<String> departIds, String startTime, String endTime, Page<PersonnelGroupModel> page);
+    List<GroupModel> queryGroupPageList(List<String> departIds, String startTime, String endTime, Page<GroupModel> page);
 
     /**
      * 人员统计-查询
@@ -27,7 +28,7 @@ public interface PersonnelGroupStatisticsService {
      * @param endTime
      * @return List<PersonnelGroupModel>
      */
-    List<PersonnelGroupModel> queryUserPageList(List<String> departIds, String startTime, String endTime, Page<PersonnelGroupModel> page);
+    List<PersonnelModel> queryUserPageList(List<String> departIds, String startTime, String endTime, Page<PersonnelModel> page);
 
     TeamPortraitModel queryGroupById(String departId);
 

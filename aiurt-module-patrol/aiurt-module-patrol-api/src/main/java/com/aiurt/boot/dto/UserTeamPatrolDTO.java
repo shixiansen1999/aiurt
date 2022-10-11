@@ -3,6 +3,8 @@ package com.aiurt.boot.dto;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
+import java.math.BigDecimal;
+
 /**
  * @author cgkj0
  * @version 1.0
@@ -18,16 +20,16 @@ public class UserTeamPatrolDTO {
     @ApiModelProperty(value = "班组Id")
     private String orgId;
     @ApiModelProperty(value = "巡视工时")
-    private float workHours;
+    private BigDecimal workHours;
     @ApiModelProperty(value = "计划任务数")
-    private float planTaskNumber;
+    private Integer planTaskNumber;
     @ApiModelProperty(value = "实际完成任务数")
-    private float actualFinishTaskNumber;
+    private Integer actualFinishTaskNumber;
     @ApiModelProperty(value = "计划完成率")
-    private float planFinishRate;
+    private BigDecimal planFinishRate;
     @ApiModelProperty(value = "漏巡数")
-    private float missPatrolNumber;
+    private Integer missPatrolNumber;
     @ApiModelProperty(value = "平均每月漏检数")
-    private float avgMissPatrolNumber;
+    private BigDecimal avgMissPatrolNumber;
 
 }

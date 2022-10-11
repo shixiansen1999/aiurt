@@ -4,8 +4,6 @@ import com.aiurt.common.aspect.annotation.Dict;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
-import java.math.BigDecimal;
-
 /**
  * @author lkj
  * @Title:
@@ -37,20 +35,20 @@ public class TeamUserModel {
     private Integer jobGrade;
 
     @ApiModelProperty("检修总工时")
-    private BigDecimal inspecitonTotalTime;
+    private String inspecitonTotalTime;
 
     @ApiModelProperty("巡检总工时")
-    private BigDecimal patrolTotalTime;
+    private String patrolTotalTime;
 
     @ApiModelProperty("维修总工时")
-    private BigDecimal faultTotalTime;
+    private String faultTotalTime;
 
     @ApiModelProperty("平均维修响应时间")
     private String averageTime;
 
     @ApiModelProperty("平均维修时间")
-    private BigDecimal AverageFaultTime;
+    private String AverageFaultTime;
 
     @ApiModelProperty("月均漏检次数")
-    private BigDecimal AverageMonthlyResidual;
+    private String AverageMonthlyResidual;
 }

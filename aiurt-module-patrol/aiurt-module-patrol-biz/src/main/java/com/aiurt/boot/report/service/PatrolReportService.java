@@ -409,6 +409,9 @@ public class PatrolReportService {
         LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         List<SysDepartModel> userSysDepart = sysBaseAPI.getUserSysDepart(user.getId());
         List<String> orgCodes = userSysDepart.stream().map(SysDepartModel::getOrgCode).collect(Collectors.toList());
+        if (CollectionUtil.isEmpty(orgCodes)){
+            return new ArrayList<MonthDTO>() ;
+        }
         if (ObjectUtil.isNotEmpty(lineCode)&& CollectionUtil.isEmpty(stationCode)){
             stationCode= this.selectStation(lineCode).stream().map(LineOrStationDTO::getCode).collect(Collectors.toList());
         }else if (ObjectUtil.isEmpty(lineCode)&& CollectionUtil.isEmpty(stationCode)){
@@ -426,7 +429,8 @@ public class PatrolReportService {
         List<SysDepartModel> userSysDepart = sysBaseAPI.getUserSysDepart(user.getId());
         List<String> ids =userSysDepart.stream().map(SysDepartModel::getId).collect(Collectors.toList());
         if (CollectionUtil.isEmpty(ids)){
-            return null;
+            IPage<FailureOrgReport> failureOrgReportIPage = (IPage<FailureOrgReport>) new ArrayList<FailureOrgReport>();
+            return failureOrgReportIPage ;
         }
         SimpleDateFormat mm= new SimpleDateFormat("yyyy-MM");
         if (ObjectUtil.isEmpty(startTime) && ObjectUtil.isEmpty(endTime)){

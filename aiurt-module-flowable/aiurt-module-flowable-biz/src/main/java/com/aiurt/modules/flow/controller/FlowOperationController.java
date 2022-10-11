@@ -94,7 +94,7 @@ public class FlowOperationController {
      * @return
      */
     @ApiOperation(value = "我的待办", notes = "我的待办")
-    @GetMapping(value = "/listRuntimeTask")
+    @PostMapping(value = "/listRuntimeTask")
     public Result<IPage<FlowTaskDTO>> listRuntimeTask(@RequestBody FlowTaskReqDTO flowTaskReqDTO,
                                                       @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
                                                       @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize) {

@@ -498,7 +498,7 @@ public class BigscreenPlanService {
                     }
                 }
                 Date[] timeByType = getTimeByType(String.valueOf(type));
-                if (timeByType.length > 0) {
+                if (timeByType.length > 0 && CollUtil.isNotEmpty(userList)) {
                     //获取一周内的班组平均维修响应时间
                     List<RepairRecordDetailDTO> repairDuration = bigScreenPlanMapper.getRepairDuration(userList, timeByType[0], timeByType[1]);
                     long l = 0;
@@ -522,7 +522,7 @@ public class BigscreenPlanService {
                     BigDecimal bigDecimal = new BigDecimal(l);
                     if (size != 0) {
                         BigDecimal bigDecimal1 = new BigDecimal(size);
-                        String s = bigDecimal.divide(bigDecimal1, 0, BigDecimal.ROUND_HALF_UP).toString();
+                        String s = bigDecimal.divide(bigDecimal1, 0).toString();
                         teamPortraitDTO.setAverageTime(s);
                     } else {
                         teamPortraitDTO.setAverageTime("0");

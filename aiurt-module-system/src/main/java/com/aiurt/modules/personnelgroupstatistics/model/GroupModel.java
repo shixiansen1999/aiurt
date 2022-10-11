@@ -15,8 +15,8 @@ import java.io.Serializable;
 @Data
 @Accessors(chain = true)
 @EqualsAndHashCode(callSuper = false)
-@ApiModel(value="人员班组统计报表信息", description="人员班组统计报表信息")
-public class PersonnelGroupModel implements Serializable {
+@ApiModel(value="班组统计报表信息", description="班组统计报表信息")
+public class GroupModel implements Serializable {
 
     @ApiModelProperty("班组id")
     private String teamId;
@@ -24,10 +24,6 @@ public class PersonnelGroupModel implements Serializable {
     private String teamCode;
     @ApiModelProperty("班组名称")
     private String teamName;
-    @ApiModelProperty(value = "用户id")
-    private String userId;
-    @ApiModelProperty(value = "姓名")
-    private String realname;
     @ApiModelProperty("检修总工时")
     private String inspecitonTotalTime;
     @ApiModelProperty("巡检总工时")
