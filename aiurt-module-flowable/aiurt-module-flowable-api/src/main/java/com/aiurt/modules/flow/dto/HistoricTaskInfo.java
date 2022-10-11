@@ -34,6 +34,9 @@ public class HistoricTaskInfo implements Serializable {
     @ApiModelProperty("办理人")
     private String assigne;
 
+    @ApiModelProperty(value = "昵称")
+    private String assignName;
+
     @ApiModelProperty("处理结果")
     private String state;
 

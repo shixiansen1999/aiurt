@@ -291,162 +291,177 @@ public class CustomUserTaskJsonConverter  extends UserTaskJsonConverter {
     }
 
     public static void main(String[] args) {
-        String va = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<bpmn2:definitions xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:bpmn2=\"http://www.omg.org/spec/BPMN/20100524/MODEL\" xmlns:bpmndi=\"http://www.omg.org/spec/BPMN/20100524/DI\" xmlns:dc=\"http://www.omg.org/spec/DD/20100524/DC\" xmlns:di=\"http://www.omg.org/spec/DD/20100524/DI\" xmlns:flowable=\"http://flowable.org/bpmn\" id=\"diagram_test\" targetNamespace=\"http://flowable.org/bpmn\" xsi:schemaLocation=\"http://www.omg.org/spec/BPMN/20100524/MODEL BPMN20.xsd\">\n  <bpmn2:process id=\"zidingyi_code\" name=\"测试\" isExecutable=\"true\">\n    <bpmn2:startEvent id=\"Event_0z2kuz1\">\n      <bpmn2:outgoing>Flow_1xwyk4z</bpmn2:outgoing>\n    </bpmn2:startEvent>\n    <bpmn2:userTask id=\"Activity_0mv4jsh\" name=\"发起人\" flowable:formKey=\"{&#34;routerName&#34;:&#34;/test/test&#34;,&#34;readOnly&#34;:true,&#34;groupType&#34;:&#34;ASSIGNEE&#34;}\">\n      <bpmn2:extensionElements>\n        <flowable:variableList />\n        <flowable:copyItemList />\n        <flowable:operationList>\n          <flowable:formOperation id=\"1659428417427\" label=\"保存\" type=\"save\" showOrder=\"0\" />\n          <flowable:formOperation id=\"1659428436977\" label=\"拒绝\" type=\"refuse\" showOrder=\"0\" />\n        </flowable:operationList>\n      </bpmn2:extensionElements>\n      <bpmn2:incoming>Flow_1xwyk4z</bpmn2:incoming>\n      <bpmn2:outgoing>Flow_0tqr84n</bpmn2:outgoing>\n    </bpmn2:userTask>\n    <bpmn2:sequenceFlow id=\"Flow_1xwyk4z\" sourceRef=\"Event_0z2kuz1\" targetRef=\"Activity_0mv4jsh\" />\n    <bpmn2:userTask id=\"Activity_011h7xn\" name=\"上级领导\" flowable:formKey=\"{&#34;routerName&#34;:&#34;/test/test&#34;,&#34;readOnly&#34;:true,&#34;groupType&#34;:&#34;ASSIGNEE&#34;}\" flowable:assignee=\"${appointedAssignee}\">\n      <bpmn2:extensionElements>\n        <flowable:copyItemList />\n        <flowable:operationList>\n          <flowable:formOperation id=\"1659428455100\" label=\"拒绝\" type=\"refuse\" showOrder=\"0\" />\n        </flowable:operationList>\n        <flowable:variableList>\n          <flowable:formVariable id=\"1554381425178841088\" />\n        </flowable:variableList>\n      </bpmn2:extensionElements>\n      <bpmn2:incoming>Flow_0tqr84n</bpmn2:incoming>\n      <bpmn2:outgoing>Flow_14dbf29</bpmn2:outgoing>\n    </bpmn2:userTask>\n    <bpmn2:sequenceFlow id=\"Flow_0tqr84n\" sourceRef=\"Activity_0mv4jsh\" targetRef=\"Activity_011h7xn\" />\n    <bpmn2:userTask id=\"Activity_1f4tw7v\" name=\"上级部门\" flowable:formKey=\"{&#34;routerName&#34;:&#34;/test/test&#34;,&#34;readOnly&#34;:true,&#34;groupType&#34;:&#34;UP_DEPT_POST_LEADER&#34;}\">\n      <bpmn2:extensionElements>\n        <flowable:variableList>\n          <flowable:formVariable id=\"1554381111751086080\" />\n          <flowable:formVariable id=\"1554381111923052545\" />\n          <flowable:formVariable id=\"1554381425178841088\" />\n        </flowable:variableList>\n        <flowable:copyItemList />\n        <flowable:operationList>\n          <flowable:formOperation id=\"1659428597640\" label=\"同意\" type=\"agree\" showOrder=\"0\" />\n        </flowable:operationList>\n      </bpmn2:extensionElements>\n      <bpmn2:incoming>Flow_14dbf29</bpmn2:incoming>\n      <bpmn2:outgoing>Flow_1hkslp1</bpmn2:outgoing>\n    </bpmn2:userTask>\n    <bpmn2:sequenceFlow id=\"Flow_14dbf29\" sourceRef=\"Activity_011h7xn\" targetRef=\"Activity_1f4tw7v\" />\n    <bpmn2:userTask id=\"Activity_0w57vsj\" name=\"部门\" flowable:formKey=\"{&#34;routerName&#34;:&#34;/test/test&#34;,&#34;readOnly&#34;:true,&#34;groupType&#34;:&#34;USERS&#34;}\" flowable:candidateUsers=\"admin,leaderHR,userA\">\n      <bpmn2:extensionElements>\n        <flowable:operationList>\n          <flowable:formOperation id=\"1659428572985\" label=\"驳回到起点\" type=\"rejectToStart\" showOrder=\"0\" />\n          <flowable:formOperation id=\"1659428576592\" label=\"同意\" type=\"agree\" showOrder=\"0\" />\n        </flowable:operationList>\n        <flowable:variableList />\n        <flowable:copyItemList />\n        <flowable:userCandidateGroups type=\"USERS\" value=\"admin,leaderHR,userA\" />\n      </bpmn2:extensionElements>\n      <bpmn2:incoming>Flow_1hkslp1</bpmn2:incoming>\n      <bpmn2:outgoing>Flow_1ida4o2</bpmn2:outgoing>\n    </bpmn2:userTask>\n    <bpmn2:sequenceFlow id=\"Flow_1hkslp1\" sourceRef=\"Activity_1f4tw7v\" targetRef=\"Activity_0w57vsj\" />\n    <bpmn2:endEvent id=\"Event_0ek55dj\">\n      <bpmn2:incoming>Flow_1wv8xvg</bpmn2:incoming>\n    </bpmn2:endEvent>\n    <bpmn2:userTask id=\"Activity_0ugsf7v\" name=\"真部门\" flowable:formKey=\"{&#34;routerName&#34;:&#34;/test/test&#34;,&#34;readOnly&#34;:true,&#34;groupType&#34;:&#34;DEPT&#34;}\" flowable:candidateGroups=\"1440963592970047488,1440963642542526464\">\n      <bpmn2:extensionElements>\n        <flowable:operationList>\n          <flowable:formOperation id=\"1659430005896\" label=\"拒绝\" type=\"refuse\" showOrder=\"0\" />\n          <flowable:formOperation id=\"1659430010386\" label=\"转办\" type=\"transfer\" showOrder=\"0\" />\n        </flowable:operationList>\n        <flowable:variableList />\n        <flowable:copyItemList />\n        <flowable:userCandidateGroups type=\"DEPT\" value=\"1440963592970047488,1440963642542526464\" />\n      </bpmn2:extensionElements>\n      <bpmn2:incoming>Flow_1ida4o2</bpmn2:incoming>\n      <bpmn2:outgoing>Flow_1wv8xvg</bpmn2:outgoing>\n    </bpmn2:userTask>\n    <bpmn2:sequenceFlow id=\"Flow_1ida4o2\" sourceRef=\"Activity_0w57vsj\" targetRef=\"Activity_0ugsf7v\" />\n    <bpmn2:sequenceFlow id=\"Flow_1wv8xvg\" sourceRef=\"Activity_0ugsf7v\" targetRef=\"Event_0ek55dj\" />\n  </bpmn2:process>\n  <bpmndi:BPMNDiagram id=\"BPMNDiagram_1\">\n    <bpmndi:BPMNPlane id=\"BPMNPlane_1\" bpmnElement=\"test\">\n      <bpmndi:BPMNEdge id=\"Flow_1wv8xvg_di\" bpmnElement=\"Flow_1wv8xvg\">\n        <di:waypoint x=\"980\" y=\"280\" />\n        <di:waypoint x=\"980\" y=\"316\" />\n        <di:waypoint x=\"1020\" y=\"316\" />\n        <di:waypoint x=\"1020\" y=\"352\" />\n      </bpmndi:BPMNEdge>\n      <bpmndi:BPMNEdge id=\"Flow_1ida4o2_di\" bpmnElement=\"Flow_1ida4o2\">\n        <di:waypoint x=\"870\" y=\"240\" />\n        <di:waypoint x=\"930\" y=\"240\" />\n      </bpmndi:BPMNEdge>\n      <bpmndi:BPMNEdge id=\"Flow_1hkslp1_di\" bpmnElement=\"Flow_1hkslp1\">\n        <di:waypoint x=\"710\" y=\"240\" />\n        <di:waypoint x=\"770\" y=\"240\" />\n      </bpmndi:BPMNEdge>\n      <bpmndi:BPMNEdge id=\"Flow_14dbf29_di\" bpmnElement=\"Flow_14dbf29\">\n        <di:waypoint x=\"550\" y=\"240\" />\n        <di:waypoint x=\"610\" y=\"240\" />\n      </bpmndi:BPMNEdge>\n      <bpmndi:BPMNEdge id=\"Flow_0tqr84n_di\" bpmnElement=\"Flow_0tqr84n\">\n        <di:waypoint x=\"390\" y=\"240\" />\n        <di:waypoint x=\"450\" y=\"240\" />\n      </bpmndi:BPMNEdge>\n      <bpmndi:BPMNEdge id=\"Flow_1xwyk4z_di\" bpmnElement=\"Flow_1xwyk4z\">\n        <di:waypoint x=\"238\" y=\"240\" />\n        <di:waypoint x=\"290\" y=\"240\" />\n      </bpmndi:BPMNEdge>\n      <bpmndi:BPMNShape id=\"Event_0z2kuz1_di\" bpmnElement=\"Event_0z2kuz1\">\n        <dc:Bounds x=\"202\" y=\"222\" width=\"36\" height=\"36\" />\n      </bpmndi:BPMNShape>\n      <bpmndi:BPMNShape id=\"Activity_0mv4jsh_di\" bpmnElement=\"Activity_0mv4jsh\">\n        <dc:Bounds x=\"290\" y=\"200\" width=\"100\" height=\"80\" />\n      </bpmndi:BPMNShape>\n      <bpmndi:BPMNShape id=\"Activity_011h7xn_di\" bpmnElement=\"Activity_011h7xn\">\n        <dc:Bounds x=\"450\" y=\"200\" width=\"100\" height=\"80\" />\n      </bpmndi:BPMNShape>\n      <bpmndi:BPMNShape id=\"Activity_1f4tw7v_di\" bpmnElement=\"Activity_1f4tw7v\">\n        <dc:Bounds x=\"610\" y=\"200\" width=\"100\" height=\"80\" />\n      </bpmndi:BPMNShape>\n      <bpmndi:BPMNShape id=\"Activity_0w57vsj_di\" bpmnElement=\"Activity_0w57vsj\">\n        <dc:Bounds x=\"770\" y=\"200\" width=\"100\" height=\"80\" />\n      </bpmndi:BPMNShape>\n      <bpmndi:BPMNShape id=\"Event_0ek55dj_di\" bpmnElement=\"Event_0ek55dj\">\n        <dc:Bounds x=\"1002\" y=\"352\" width=\"36\" height=\"36\" />\n      </bpmndi:BPMNShape>\n      <bpmndi:BPMNShape id=\"Activity_0ugsf7v_di\" bpmnElement=\"Activity_0ugsf7v\">\n        <dc:Bounds x=\"930\" y=\"200\" width=\"100\" height=\"80\" />\n      </bpmndi:BPMNShape>\n    </bpmndi:BPMNPlane>\n  </bpmndi:BPMNDiagram>\n</bpmn2:definitions>\n";
-        System.out.println(va);
+        String va = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><definitions xmlns=\"http://www.omg.org/spec/BPMN/20100524/MODEL\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:flowable=\"http://flowable.org/bpmn\" xmlns:bpmndi=\"http://www.omg.org/spec/BPMN/20100524/DI\" xmlns:omgdc=\"http://www.omg.org/spec/DD/20100524/DC\" xmlns:omgdi=\"http://www.omg.org/spec/DD/20100524/DI\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" targetNamespace=\"http://flowable.org/modeler\" exporter=\"Flowable Open Source Modeler\" exporterVersion=\"6.7.2\">  <process id=\"bd_work_ticket2\" name=\"第二种工作票\" isExecutable=\"true\">    <startEvent id=\"startEvent1\" />    <sequenceFlow id=\"Flow_0spc0yf\" sourceRef=\"startEvent1\" targetRef=\"Activity_0zi21v6\" />    <userTask xmlns:flowable=\"http://flowable.org/bpmn\" id=\"Activity_0zi21v6\" name=\"修改提交\" flowable:formType=\"1\" flowable:formUrl=\"/test/vue\" flowable:service=\"bdWorkTicketServiceImpl.addOrUpdate\" flowable:assignee=\"${startUserName}\">      <extensionElements>        <flowable:formOperation id=\"1665472664181\" label=\"提交\" type=\"1\" showOrder=\"1\" />        <flowable:formOperation id=\"1665472664181\" label=\"保存\" type=\"6\" showOrder=\"2\" />      </extensionElements>      <incoming>Flow_0s1rk8f</incoming>      <incoming>Flow_13t7f6e</incoming>    </userTask>    <sequenceFlow id=\"Flow_0dstjw4\" name=\"提交\" sourceRef=\"Activity_0zi21v6\" targetRef=\"Activity_08cdns0\" flowable:transferType=\"2\" >      <documentation>已提交待审核</documentation>      <extensionElements>        <flowable:property name=\"已提交待审核\" value=\"2\" />\t\t<flowable:service  name=\"BdWorkTicketServiceImpl.updateState\"/>      </extensionElements>    </sequenceFlow>    <userTask id=\"Activity_08cdns0\" name=\"审核\" flowable:formType=\"1\" flowable:formUrl=\"/test\" flowable:service=\"bdWorkTicketServiceImpl.addOrUpdate\" flowable:assignee=\"admin\">      <extensionElements>        <flowable:formOperation id=\"1665472702468\" label=\"提交\" type=\"1\" showOrder=\"1\" />        <flowable:formOperation id=\"1665472702468\" label=\"驳回\" type=\"3\" showOrder=\"2\" />      </extensionElements>      <outgoing>Flow_0s1rk8f</outgoing>    </userTask>    <sequenceFlow id=\"Flow_1cbbs8u\" name=\"审核待签发\" sourceRef=\"Activity_08cdns0\" targetRef=\"Activity_0skgv56\" flowable:transferType=\"2\" >      <documentation>已审核待签发</documentation>      <extensionElements>        <flowable:property name=\"已审核待签发\" value=\"3\" />\t\t<flowable:service  name=\"BdWorkTicketServiceImpl.updateState\"/>      </extensionElements>    </sequenceFlow>    <userTask id=\"Activity_0skgv56\" name=\"签发\" flowable:formType=\"1\" flowable:formUrl=\"/test\" flowable:service=\"bdWorkTicketServiceImpl.addOrUpdate\" flowable:assignee=\"admin\">      <extensionElements>        <flowable:formOperation id=\"1665472789695\" label=\"提交\" type=\"1\" showOrder=\"1\" />        <flowable:formOperation id=\"1665472789695\" label=\"驳回\" type=\"3\" showOrder=\"2\" />      </extensionElements>      <outgoing>Flow_13t7f6e</outgoing>    </userTask>    <sequenceFlow id=\"Flow_11j25sb\" name=\"签发待归档\" sourceRef=\"Activity_0skgv56\" targetRef=\"Activity_1kzyhgs\" flowable:transferType=\"2\" >      <documentation>已签发待归档</documentation>      <extensionElements>        <flowable:property name=\"签发待归档\" value=\"6\" />\t\t<flowable:service  name=\"BdWorkTicketServiceImpl.updateState\"/>      </extensionElements>    </sequenceFlow>    <userTask id=\"Activity_1kzyhgs\" name=\"归档\" flowable:formType=\"1\" flowable:formUrl=\"/test\" flowable:service=\"bdWorkTicketServiceImpl.addOrUpdate\" flowable:assignee=\"admin\">      <extensionElements>        <flowable:formOperation id=\"1665472806261\" label=\"提交\" type=\"1\" showOrder=\"1\" />      </extensionElements>    </userTask>    <sequenceFlow id=\"Flow_1uh9amj\" name=\"归档待完结\" sourceRef=\"Activity_1kzyhgs\" targetRef=\"Activity_1q5553k\" flowable:transferType=\"0\" >      <documentation>已归档待完结</documentation>      <extensionElements>        <flowable:property name=\"已归档待完结\" value=\"7\" />\t\t<flowable:service  name=\"BdWorkTicketServiceImpl.updateState\"/>      </extensionElements>    </sequenceFlow>    <endEvent id=\"Event_1wv5rwj\" />    <sequenceFlow id=\"Flow_020n32j\" name=\"已完结\" sourceRef=\"Activity_1q5553k\" targetRef=\"Event_1wv5rwj\" >      <extensionElements>        <flowable:property name=\"已完结\" value=\"8\" />\t\t<flowable:service  name=\"BdWorkTicketServiceImpl.updateState\"/>      </extensionElements>    </sequenceFlow>    <userTask id=\"Activity_1q5553k\" name=\"完结\" flowable:formType=\"1\" flowable:formUrl=\"/test\" flowable:service=\"bdWorkTicketServiceImpl.addOrUpdate\" flowable:assignee=\"admin\">      <extensionElements>        <flowable:formOperation id=\"1665472817653\" label=\"提交\" type=\"1\" showOrder=\"1\" />      </extensionElements>    </userTask>    <sequenceFlow id=\"Flow_0s1rk8f\" name=\"审核驳回\" sourceRef=\"Activity_08cdns0\" targetRef=\"Activity_0zi21v6\" flowable:transferType=\"0\" >      <documentation>审核驳回</documentation>      <extensionElements>        <flowable:property name=\"审核人驳回\" value=\"11\" />\t\t<flowable:service  name=\"BdWorkTicketServiceImpl.updateState\"/>      </extensionElements>      <conditionExpression xsi:type=\"tFormalExpression\">${operationType}=='rejectToStart'</conditionExpression>    </sequenceFlow>    <sequenceFlow id=\"Flow_13t7f6e\" name=\"签发人驳回\" sourceRef=\"Activity_0skgv56\" targetRef=\"Activity_0zi21v6\" flowable:transferType=\"0\" >      <documentation>签发人驳回</documentation>      <extensionElements>        <flowable:property name=\"签发人驳回\" value=\"12\" />\t\t<flowable:service  name=\"BdWorkTicketServiceImpl.updateState\"/>      </extensionElements>      <conditionExpression xsi:type=\"tFormalExpression\">${operationType}=='rejectToStart'</conditionExpression>    </sequenceFlow>  </process>  <bpmndi:BPMNDiagram id=\"BPMNDiagram_bd_work_ticket2\">    <bpmndi:BPMNPlane id=\"BPMNPlane_bd_work_ticket2\" bpmnElement=\"bd_work_ticket2\">      <bpmndi:BPMNEdge id=\"BPMNEdge_Flow_020n32j\" bpmnElement=\"Flow_020n32j\" flowable:sourceDockerX=\"50.0\" flowable:sourceDockerY=\"40.0\" flowable:targetDockerX=\"18.0\" flowable:targetDockerY=\"18.0\">        <omgdi:waypoint x=\"579.9499999999922\" y=\"90\" />        <omgdi:waypoint x=\"642\" y=\"90\" />        <bpmndi:BPMNLabel>          <omgdc:Bounds x=\"594\" y=\"72\" width=\"34\" height=\"14\" />        </bpmndi:BPMNLabel>      </bpmndi:BPMNEdge>      <bpmndi:BPMNEdge id=\"BPMNEdge_Flow_1uh9amj\" bpmnElement=\"Flow_1uh9amj\" flowable:sourceDockerX=\"50.0\" flowable:sourceDockerY=\"40.0\" flowable:targetDockerX=\"50.0\" flowable:targetDockerY=\"40.0\">        <omgdi:waypoint x=\"419.95000000000005\" y=\"90\" />        <omgdi:waypoint x=\"480\" y=\"90\" />        <bpmndi:BPMNLabel>          <omgdc:Bounds x=\"422\" y=\"72\" width=\"56\" height=\"14\" />        </bpmndi:BPMNLabel>      </bpmndi:BPMNEdge>      <bpmndi:BPMNEdge id=\"BPMNEdge_Flow_11j25sb\" bpmnElement=\"Flow_11j25sb\" flowable:sourceDockerX=\"50.0\" flowable:sourceDockerY=\"40.0\" flowable:targetDockerX=\"50.0\" flowable:targetDockerY=\"40.0\">        <omgdi:waypoint x=\"259.95000000000005\" y=\"90\" />        <omgdi:waypoint x=\"319.9999999999376\" y=\"90\" />        <bpmndi:BPMNLabel>          <omgdc:Bounds x=\"262\" y=\"72\" width=\"55\" height=\"14\" />        </bpmndi:BPMNLabel>      </bpmndi:BPMNEdge>      <bpmndi:BPMNEdge id=\"BPMNEdge_Flow_1cbbs8u\" bpmnElement=\"Flow_1cbbs8u\" flowable:sourceDockerX=\"50.0\" flowable:sourceDockerY=\"40.0\" flowable:targetDockerX=\"50.0\" flowable:targetDockerY=\"40.0\">        <omgdi:waypoint x=\"99.9499999999471\" y=\"90\" />        <omgdi:waypoint x=\"159.99999999998312\" y=\"90\" />        <bpmndi:BPMNLabel>          <omgdc:Bounds x=\"102\" y=\"72\" width=\"56\" height=\"14\" />        </bpmndi:BPMNLabel>      </bpmndi:BPMNEdge>      <bpmndi:BPMNEdge id=\"BPMNEdge_Flow_0dstjw4\" bpmnElement=\"Flow_0dstjw4\" flowable:sourceDockerX=\"50.0\" flowable:sourceDockerY=\"40.0\" flowable:targetDockerX=\"50.0\" flowable:targetDockerY=\"40.0\">        <omgdi:waypoint x=\"-60.050000000052904\" y=\"90\" />        <omgdi:waypoint x=\"-1.6896706256375182e-11\" y=\"90\" />        <bpmndi:BPMNLabel>          <omgdc:Bounds x=\"-41\" y=\"72\" width=\"22\" height=\"14\" />        </bpmndi:BPMNLabel>      </bpmndi:BPMNEdge>      <bpmndi:BPMNEdge id=\"BPMNEdge_Flow_0spc0yf\" bpmnElement=\"Flow_0spc0yf\" flowable:sourceDockerX=\"15.0\" flowable:sourceDockerY=\"15.0\" flowable:targetDockerX=\"50.0\" flowable:targetDockerY=\"40.0\">        <omgdi:waypoint x=\"-215.05000126895308\" y=\"90\" />        <omgdi:waypoint x=\"-160.0000000000022\" y=\"90\" />      </bpmndi:BPMNEdge>      <bpmndi:BPMNEdge id=\"Flow_0s1rk8f_di\" bpmnElement=\"Flow_0s1rk8f\">        <omgdi:waypoint x=\"50\" y=\"50\" />        <omgdi:waypoint x=\"50\" y=\"30\" />        <omgdi:waypoint x=\"-110\" y=\"30\" />        <omgdi:waypoint x=\"-110\" y=\"50\" />        <bpmndi:BPMNLabel>          <omgdc:Bounds x=\"-51\" y=\"12\" width=\"44\" height=\"14\" />        </bpmndi:BPMNLabel>      </bpmndi:BPMNEdge>      <bpmndi:BPMNEdge id=\"Flow_13t7f6e_di\" bpmnElement=\"Flow_13t7f6e\">        <omgdi:waypoint x=\"210\" y=\"130\" />        <omgdi:waypoint x=\"210\" y=\"170\" />        <omgdi:waypoint x=\"-110\" y=\"170\" />        <omgdi:waypoint x=\"-110\" y=\"130\" />        <bpmndi:BPMNLabel>          <omgdc:Bounds x=\"24\" y=\"152\" width=\"54\" height=\"14\" />        </bpmndi:BPMNLabel>      </bpmndi:BPMNEdge>      <bpmndi:BPMNShape id=\"BPMNShape_startEvent1\" bpmnElement=\"startEvent1\">        <omgdc:Bounds x=\"-245\" y=\"75\" width=\"30\" height=\"30\" />      </bpmndi:BPMNShape>      <bpmndi:BPMNShape id=\"BPMNShape_Activity_0zi21v6\" bpmnElement=\"Activity_0zi21v6\">        <omgdc:Bounds x=\"-160\" y=\"50\" width=\"100\" height=\"80\" />      </bpmndi:BPMNShape>      <bpmndi:BPMNShape id=\"BPMNShape_Activity_08cdns0\" bpmnElement=\"Activity_08cdns0\">        <omgdc:Bounds x=\"0\" y=\"50\" width=\"100\" height=\"80\" />      </bpmndi:BPMNShape>      <bpmndi:BPMNShape id=\"BPMNShape_Activity_0skgv56\" bpmnElement=\"Activity_0skgv56\">        <omgdc:Bounds x=\"160\" y=\"50\" width=\"100\" height=\"80\" />      </bpmndi:BPMNShape>      <bpmndi:BPMNShape id=\"BPMNShape_Activity_1kzyhgs\" bpmnElement=\"Activity_1kzyhgs\">        <omgdc:Bounds x=\"320\" y=\"50\" width=\"100\" height=\"80\" />      </bpmndi:BPMNShape>      <bpmndi:BPMNShape id=\"BPMNShape_Event_1wv5rwj\" bpmnElement=\"Event_1wv5rwj\">        <omgdc:Bounds x=\"642\" y=\"72\" width=\"36\" height=\"36\" />      </bpmndi:BPMNShape>      <bpmndi:BPMNShape id=\"BPMNShape_Activity_1q5553k\" bpmnElement=\"Activity_1q5553k\">        <omgdc:Bounds x=\"480\" y=\"50\" width=\"100\" height=\"80\" />      </bpmndi:BPMNShape>    </bpmndi:BPMNPlane>  </bpmndi:BPMNDiagram></definitions>";
+       // System.out.println(va);
 
         va = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-                "<bpmn2:definitions xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:bpmn2=\"http://www.omg.org/spec/BPMN/20100524/MODEL\" xmlns:bpmndi=\"http://www.omg.org/spec/BPMN/20100524/DI\" xmlns:dc=\"http://www.omg.org/spec/DD/20100524/DC\" xmlns:di=\"http://www.omg.org/spec/DD/20100524/DI\" xmlns:flowable=\"http://flowable.org/bpmn\" id=\"diagram_test\" targetNamespace=\"http://flowable.org/bpmn\" xsi:schemaLocation=\"http://www.omg.org/spec/BPMN/20100524/MODEL BPMN20.xsd\">\n" +
-                "  <bpmn2:process id=\"zidingyi_code\" name=\"测试\" isExecutable=\"true\">\n" +
-                "    <bpmn2:startEvent id=\"Event_0z2kuz1\">\n" +
-                "      <bpmn2:outgoing>Flow_1xwyk4z</bpmn2:outgoing>\n" +
-                "    </bpmn2:startEvent>\n" +
-                "    <bpmn2:userTask id=\"Activity_0mv4jsh\" name=\"发起人\" flowable:formKey=\"{&#34;routerName&#34;:&#34;/test/test&#34;,&#34;readOnly&#34;:true,&#34;groupType&#34;:&#34;ASSIGNEE&#34;}\">\n" +
-                "      <bpmn2:extensionElements>\n" +
-                "        <flowable:variableList />\n" +
-                "        <flowable:copyItemList />\n" +
-                "\t  <flowable:formOperation id=\"1659428417427\" label=\"保存\" type=\"save\" showOrder=\"0\" />\n" +
-                "\t  <flowable:formOperation id=\"1659428436977\" label=\"拒绝\" type=\"refuse\" showOrder=\"0\" />\n" +
-                "       \n" +
-                "      </bpmn2:extensionElements>\n" +
-                "      <bpmn2:incoming>Flow_1xwyk4z</bpmn2:incoming>\n" +
-                "      <bpmn2:outgoing>Flow_0tqr84n</bpmn2:outgoing>\n" +
-                "    </bpmn2:userTask>\n" +
-                "    <bpmn2:sequenceFlow id=\"Flow_1xwyk4z\" sourceRef=\"Event_0z2kuz1\" targetRef=\"Activity_0mv4jsh\" />\n" +
-                "    <bpmn2:userTask id=\"Activity_011h7xn\" name=\"上级领导\" flowable:formKey=\"{&#34;routerName&#34;:&#34;/test/test&#34;,&#34;readOnly&#34;:true,&#34;groupType&#34;:&#34;ASSIGNEE&#34;}\" flowable:assignee=\"${appointedAssignee}\">\n" +
-                "      <bpmn2:extensionElements>\n" +
-                "        <flowable:copyItemList />\n" +
-                "        \n" +
-                "          <flowable:formOperation id=\"1659428455100\" label=\"拒绝\" type=\"refuse\" showOrder=\"0\" />\n" +
-                "       \n" +
-                "        <flowable:variableList>\n" +
-                "          <flowable:formVariable id=\"1554381425178841088\" />\n" +
-                "        </flowable:variableList>\n" +
-                "      </bpmn2:extensionElements>\n" +
-                "      <bpmn2:incoming>Flow_0tqr84n</bpmn2:incoming>\n" +
-                "      <bpmn2:outgoing>Flow_14dbf29</bpmn2:outgoing>\n" +
-                "    </bpmn2:userTask>\n" +
-                "    <bpmn2:sequenceFlow id=\"Flow_0tqr84n\" sourceRef=\"Activity_0mv4jsh\" targetRef=\"Activity_011h7xn\" />\n" +
-                "    <bpmn2:userTask id=\"Activity_1f4tw7v\" name=\"上级部门\" flowable:formKey=\"{&#34;routerName&#34;:&#34;/test/test&#34;,&#34;readOnly&#34;:true,&#34;groupType&#34;:&#34;UP_DEPT_POST_LEADER&#34;}\">\n" +
-                "      <bpmn2:extensionElements>\n" +
-                "        <flowable:variableList>\n" +
-                "          <flowable:formVariable id=\"1554381111751086080\" />\n" +
-                "          <flowable:formVariable id=\"1554381111923052545\" />\n" +
-                "          <flowable:formVariable id=\"1554381425178841088\" />\n" +
-                "        </flowable:variableList>\n" +
-                "        <flowable:copyItemList />\n" +
-                "       \n" +
-                "          <flowable:formOperation id=\"1659428597640\" label=\"同意\" type=\"agree\" showOrder=\"0\" />\n" +
-                "       \n" +
-                "      </bpmn2:extensionElements>\n" +
-                "      <bpmn2:incoming>Flow_14dbf29</bpmn2:incoming>\n" +
-                "      <bpmn2:outgoing>Flow_1hkslp1</bpmn2:outgoing>\n" +
-                "    </bpmn2:userTask>\n" +
-                "    <bpmn2:sequenceFlow id=\"Flow_14dbf29\" sourceRef=\"Activity_011h7xn\" targetRef=\"Activity_1f4tw7v\" />\n" +
-                "    <bpmn2:userTask id=\"Activity_0w57vsj\" name=\"部门\" flowable:formKey=\"{&#34;routerName&#34;:&#34;/test/test&#34;,&#34;readOnly&#34;:true,&#34;groupType&#34;:&#34;USERS&#34;}\" flowable:candidateUsers=\"admin,leaderHR,userA\">\n" +
-                "      <bpmn2:extensionElements>\n" +
-                "        \n" +
-                "\t  <flowable:formOperation id=\"1659428572985\" label=\"驳回到起点\" type=\"rejectToStart\" showOrder=\"0\" />\n" +
-                "\t  <flowable:formOperation id=\"1659428576592\" label=\"同意\" type=\"agree\" showOrder=\"0\" />\n" +
-                "       \n" +
-                "        <flowable:variableList />\n" +
-                "        <flowable:copyItemList />\n" +
-                "        <flowable:userCandidateGroups type=\"USERS\" value=\"admin,leaderHR,userA\" />\n" +
-                "      </bpmn2:extensionElements>\n" +
-                "      <bpmn2:incoming>Flow_1hkslp1</bpmn2:incoming>\n" +
-                "      <bpmn2:outgoing>Flow_1ida4o2</bpmn2:outgoing>\n" +
-                "    </bpmn2:userTask>\n" +
-                "    <bpmn2:sequenceFlow id=\"Flow_1hkslp1\" sourceRef=\"Activity_1f4tw7v\" targetRef=\"Activity_0w57vsj\" />\n" +
-                "    <bpmn2:endEvent id=\"Event_0ek55dj\">\n" +
-                "      <bpmn2:incoming>Flow_1wv8xvg</bpmn2:incoming>\n" +
-                "    </bpmn2:endEvent>\n" +
-                "    <bpmn2:userTask id=\"Activity_0ugsf7v\" name=\"真部门\" flowable:formKey=\"{&#34;routerName&#34;:&#34;/test/test&#34;,&#34;readOnly&#34;:true,&#34;groupType&#34;:&#34;DEPT&#34;}\" flowable:candidateGroups=\"1440963592970047488,1440963642542526464\">\n" +
-                "      <bpmn2:extensionElements>\n" +
-                "      \n" +
-                "          <flowable:formOperation id=\"1659430005896\" label=\"拒绝\" type=\"refuse\" showOrder=\"0\" />\n" +
-                "          <flowable:formOperation id=\"1659430010386\" label=\"转办\" type=\"transfer\" showOrder=\"0\" />\n" +
-                "        \n" +
-                "        <flowable:variableList />\n" +
-                "        <flowable:copyItemList />\n" +
-                "        <flowable:userCandidateGroups type=\"DEPT\" value=\"1440963592970047488,1440963642542526464\" />\n" +
-                "      </bpmn2:extensionElements>\n" +
-                "      <bpmn2:incoming>Flow_1ida4o2</bpmn2:incoming>\n" +
-                "      <bpmn2:outgoing>Flow_1wv8xvg</bpmn2:outgoing>\n" +
-                "    </bpmn2:userTask>\n" +
-                "    <bpmn2:sequenceFlow id=\"Flow_1ida4o2\" sourceRef=\"Activity_0w57vsj\" targetRef=\"Activity_0ugsf7v\" />\n" +
-                "    <bpmn2:sequenceFlow id=\"Flow_1wv8xvg\" sourceRef=\"Activity_0ugsf7v\" targetRef=\"Event_0ek55dj\" />\n" +
-                "  </bpmn2:process>\n" +
-                "  <bpmndi:BPMNDiagram id=\"BPMNDiagram_1\">\n" +
-                "    <bpmndi:BPMNPlane id=\"BPMNPlane_1\" bpmnElement=\"test\">\n" +
-                "      <bpmndi:BPMNEdge id=\"Flow_1wv8xvg_di\" bpmnElement=\"Flow_1wv8xvg\">\n" +
-                "        <di:waypoint x=\"980\" y=\"280\" />\n" +
-                "        <di:waypoint x=\"980\" y=\"316\" />\n" +
-                "        <di:waypoint x=\"1020\" y=\"316\" />\n" +
-                "        <di:waypoint x=\"1020\" y=\"352\" />\n" +
-                "      </bpmndi:BPMNEdge>\n" +
-                "      <bpmndi:BPMNEdge id=\"Flow_106rblw_di\" bpmnElement=\"Flow_106rblw\">\n" +
-                "        <omgdi:waypoint x=\"580\" y=\"-150\" />\n" +
-                "        <omgdi:waypoint x=\"650\" y=\"-150\" />\n" +
+                "<definitions xmlns=\"http://www.omg.org/spec/BPMN/20100524/MODEL\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:flowable=\"http://flowable.org/bpmn\" xmlns:bpmndi=\"http://www.omg.org/spec/BPMN/20100524/DI\" xmlns:omgdc=\"http://www.omg.org/spec/DD/20100524/DC\" xmlns:omgdi=\"http://www.omg.org/spec/DD/20100524/DI\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" targetNamespace=\"http://flowable.org/modeler\" exporter=\"Flowable Open Source Modeler\" exporterVersion=\"6.7.2\">\n" +
+                "  <process id=\"bd_work_ticket2\" name=\"第二种工作票\" isExecutable=\"true\">\n" +
+                "    <startEvent id=\"startEvent1\" />\n" +
+                "    <sequenceFlow id=\"Flow_0spc0yf\" sourceRef=\"startEvent1\" targetRef=\"Activity_0zi21v6\" />\n" +
+                "    <userTask xmlns:flowable=\"http://flowable.org/bpmn\" id=\"Activity_0zi21v6\" name=\"修改提交\" flowable:formType=\"1\" flowable:formUrl=\"/test/vue\" flowable:service=\"bdWorkTicketServiceImpl.addOrUpdate\" flowable:assignee=\"${startUserName}\">\n" +
+                "      <extensionElements>\n" +
+                "        <flowable:formOperation id=\"1665472664181\" label=\"提交\" type=\"1\" showOrder=\"1\" />\n" +
+                "        <flowable:formOperation id=\"1665472664181\" label=\"保存\" type=\"6\" showOrder=\"2\" />\n" +
+                "      </extensionElements>\n" +
+                "      <incoming>Flow_0s1rk8f</incoming>\n" +
+                "      <incoming>Flow_13t7f6e</incoming>\n" +
+                "    </userTask>\n" +
+                "    <sequenceFlow id=\"Flow_0dstjw4\" name=\"提交\" sourceRef=\"Activity_0zi21v6\" targetRef=\"Activity_08cdns0\" flowable:transferType=\"2\" >\n" +
+                "      <documentation>已提交待审核</documentation>\n" +
+                "      <extensionElements>\n" +
+                "        <flowable:property name=\"已提交待审核\" value=\"2\" />\n" +
+                "\t\t<flowable:service  name=\"BdWorkTicketServiceImpl.updateState\"/>\n" +
+                "      </extensionElements>\n" +
+                "    </sequenceFlow>\n" +
+                "    <userTask id=\"Activity_08cdns0\" name=\"审核\" flowable:formType=\"1\" flowable:formUrl=\"/test\" flowable:service=\"bdWorkTicketServiceImpl.addOrUpdate\" flowable:assignee=\"admin\">\n" +
+                "      <extensionElements>\n" +
+                "        <flowable:formOperation id=\"1665472702468\" label=\"提交\" type=\"1\" showOrder=\"1\" />\n" +
+                "        <flowable:formOperation id=\"1665472702468\" label=\"驳回\" type=\"3\" showOrder=\"2\" />\n" +
+                "      </extensionElements>\n" +
+                "      <outgoing>Flow_0s1rk8f</outgoing>\n" +
+                "    </userTask>\n" +
+                "    <sequenceFlow id=\"Flow_1cbbs8u\" name=\"审核待签发\" sourceRef=\"Activity_08cdns0\" targetRef=\"Activity_0skgv56\" flowable:transferType=\"2\" >\n" +
+                "      <documentation>已审核待签发</documentation>\n" +
+                "      <extensionElements>\n" +
+                "        <flowable:property name=\"已审核待签发\" value=\"3\" />\n" +
+                "\t\t<flowable:service  name=\"BdWorkTicketServiceImpl.updateState\"/>\n" +
+                "      </extensionElements>\n" +
+                "    </sequenceFlow>\n" +
+                "    <userTask id=\"Activity_0skgv56\" name=\"签发\" flowable:formType=\"1\" flowable:formUrl=\"/test\" flowable:service=\"bdWorkTicketServiceImpl.addOrUpdate\" flowable:assignee=\"admin\">\n" +
+                "      <extensionElements>\n" +
+                "        <flowable:formOperation id=\"1665472789695\" label=\"提交\" type=\"1\" showOrder=\"1\" />\n" +
+                "        <flowable:formOperation id=\"1665472789695\" label=\"驳回\" type=\"3\" showOrder=\"2\" />\n" +
+                "      </extensionElements>\n" +
+                "      <outgoing>Flow_13t7f6e</outgoing>\n" +
+                "    </userTask>\n" +
+                "    <sequenceFlow id=\"Flow_11j25sb\" name=\"签发待归档\" sourceRef=\"Activity_0skgv56\" targetRef=\"Activity_1kzyhgs\" flowable:transferType=\"2\" >\n" +
+                "      <documentation>已签发待归档</documentation>\n" +
+                "      <extensionElements>\n" +
+                "        <flowable:property name=\"签发待归档\" value=\"6\" />\n" +
+                "\t\t<flowable:service  name=\"BdWorkTicketServiceImpl.updateState\"/>\n" +
+                "      </extensionElements>\n" +
+                "    </sequenceFlow>\n" +
+                "    <userTask id=\"Activity_1kzyhgs\" name=\"归档\" flowable:formType=\"1\" flowable:formUrl=\"/test\" flowable:service=\"bdWorkTicketServiceImpl.addOrUpdate\" flowable:assignee=\"admin\">\n" +
+                "      <extensionElements>\n" +
+                "        <flowable:formOperation id=\"1665472806261\" label=\"提交\" type=\"1\" showOrder=\"1\" />\n" +
+                "      </extensionElements>\n" +
+                "    </userTask>\n" +
+                "    <sequenceFlow id=\"Flow_1uh9amj\" name=\"归档待完结\" sourceRef=\"Activity_1kzyhgs\" targetRef=\"Activity_1q5553k\" flowable:transferType=\"0\" >\n" +
+                "      <documentation>已归档待完结</documentation>\n" +
+                "      <extensionElements>\n" +
+                "        <flowable:property name=\"已归档待完结\" value=\"7\" />\n" +
+                "\t\t<flowable:service  name=\"BdWorkTicketServiceImpl.updateState\"/>\n" +
+                "      </extensionElements>\n" +
+                "    </sequenceFlow>\n" +
+                "    <endEvent id=\"Event_1wv5rwj\" />\n" +
+                "    <sequenceFlow id=\"Flow_020n32j\" name=\"已完结\" sourceRef=\"Activity_1q5553k\" targetRef=\"Event_1wv5rwj\" >\n" +
+                "      <extensionElements>\n" +
+                "        <flowable:property name=\"已完结\" value=\"8\" />\n" +
+                "\t\t<flowable:service  name=\"BdWorkTicketServiceImpl.updateState\"/>\n" +
+                "      </extensionElements>\n" +
+                "    </sequenceFlow>\n" +
+                "    <userTask id=\"Activity_1q5553k\" name=\"完结\" flowable:formType=\"1\" flowable:formUrl=\"/test\" flowable:service=\"bdWorkTicketServiceImpl.addOrUpdate\" flowable:assignee=\"admin\">\n" +
+                "      <extensionElements>\n" +
+                "        <flowable:formOperation id=\"1665472817653\" label=\"提交\" type=\"1\" showOrder=\"1\" />\n" +
+                "      </extensionElements>\n" +
+                "    </userTask>\n" +
+                "    <sequenceFlow id=\"Flow_0s1rk8f\" name=\"审核驳回\" sourceRef=\"Activity_08cdns0\" targetRef=\"Activity_0zi21v6\" flowable:transferType=\"0\" >\n" +
+                "      <documentation>审核驳回</documentation>\n" +
+                "      <extensionElements>\n" +
+                "        <flowable:property name=\"审核人驳回\" value=\"11\" />\n" +
+                "\t\t<flowable:service  name=\"BdWorkTicketServiceImpl.updateState\"/>\n" +
+                "      </extensionElements>\n" +
+                "      <conditionExpression xsi:type=\"tFormalExpression\">${operationType}=='rejectToStart'</conditionExpression>\n" +
+                "    </sequenceFlow>\n" +
+                "    <sequenceFlow id=\"Flow_13t7f6e\" name=\"签发人驳回\" sourceRef=\"Activity_0skgv56\" targetRef=\"Activity_0zi21v6\" flowable:transferType=\"0\" >\n" +
+                "      <documentation>签发人驳回</documentation>\n" +
+                "      <extensionElements>\n" +
+                "        <flowable:property name=\"签发人驳回\" value=\"12\" />\n" +
+                "\t\t<flowable:service  name=\"BdWorkTicketServiceImpl.updateState\"/>\n" +
+                "      </extensionElements>\n" +
+                "      <conditionExpression xsi:type=\"tFormalExpression\">${operationType}=='rejectToStart'</conditionExpression>\n" +
+                "    </sequenceFlow>\n" +
+                "  </process>\n" +
+                "  <bpmndi:BPMNDiagram id=\"BPMNDiagram_bd_work_ticket2\">\n" +
+                "    <bpmndi:BPMNPlane id=\"BPMNPlane_bd_work_ticket2\" bpmnElement=\"bd_work_ticket2\">\n" +
+                "      <bpmndi:BPMNEdge id=\"BPMNEdge_Flow_020n32j\" bpmnElement=\"Flow_020n32j\" flowable:sourceDockerX=\"50.0\" flowable:sourceDockerY=\"40.0\" flowable:targetDockerX=\"18.0\" flowable:targetDockerY=\"18.0\">\n" +
+                "        <omgdi:waypoint x=\"579.9499999999922\" y=\"90\" />\n" +
+                "        <omgdi:waypoint x=\"642\" y=\"90\" />\n" +
                 "        <bpmndi:BPMNLabel>\n" +
-                "          <omgdc:Bounds x=\"582\" y=\"-168\" width=\"67\" height=\"14\" />\n" +
+                "          <omgdc:Bounds x=\"594\" y=\"72\" width=\"34\" height=\"14\" />\n" +
                 "        </bpmndi:BPMNLabel>\n" +
                 "      </bpmndi:BPMNEdge>\n" +
-                "      <bpmndi:BPMNEdge id=\"Flow_0xjt9ld_di\" bpmnElement=\"Flow_0xjt9ld\">\n" +
-                "        <omgdi:waypoint x=\"750\" y=\"-150\" />\n" +
-                "        <omgdi:waypoint x=\"822\" y=\"-150\" />\n" +
+                "      <bpmndi:BPMNEdge id=\"BPMNEdge_Flow_1uh9amj\" bpmnElement=\"Flow_1uh9amj\" flowable:sourceDockerX=\"50.0\" flowable:sourceDockerY=\"40.0\" flowable:targetDockerX=\"50.0\" flowable:targetDockerY=\"40.0\">\n" +
+                "        <omgdi:waypoint x=\"419.95000000000005\" y=\"90\" />\n" +
+                "        <omgdi:waypoint x=\"480\" y=\"90\" />\n" +
                 "        <bpmndi:BPMNLabel>\n" +
-                "          <omgdc:Bounds x=\"770\" y=\"-168\" width=\"34\" height=\"14\" />\n" +
+                "          <omgdc:Bounds x=\"422\" y=\"72\" width=\"56\" height=\"14\" />\n" +
                 "        </bpmndi:BPMNLabel>\n" +
                 "      </bpmndi:BPMNEdge>\n" +
-                "      <bpmndi:BPMNEdge id=\"Flow_0iw7o99_di\" bpmnElement=\"Flow_0iw7o99\">\n" +
-                "        <omgdi:waypoint x=\"20\" y=\"-110\" />\n" +
-                "        <omgdi:waypoint x=\"20\" y=\"-60\" />\n" +
-                "        <omgdi:waypoint x=\"-150\" y=\"-60\" />\n" +
-                "        <omgdi:waypoint x=\"-150\" y=\"-110\" />\n" +
+                "      <bpmndi:BPMNEdge id=\"BPMNEdge_Flow_11j25sb\" bpmnElement=\"Flow_11j25sb\" flowable:sourceDockerX=\"50.0\" flowable:sourceDockerY=\"40.0\" flowable:targetDockerX=\"50.0\" flowable:targetDockerY=\"40.0\">\n" +
+                "        <omgdi:waypoint x=\"259.95000000000005\" y=\"90\" />\n" +
+                "        <omgdi:waypoint x=\"319.9999999999376\" y=\"90\" />\n" +
                 "        <bpmndi:BPMNLabel>\n" +
-                "          <omgdc:Bounds x=\"-75\" y=\"-78\" width=\"21\" height=\"14\" />\n" +
+                "          <omgdc:Bounds x=\"262\" y=\"72\" width=\"55\" height=\"14\" />\n" +
                 "        </bpmndi:BPMNLabel>\n" +
                 "      </bpmndi:BPMNEdge>\n" +
-                "      <bpmndi:BPMNEdge id=\"Flow_0l0wfdy_di\" bpmnElement=\"Flow_0l0wfdy\">\n" +
-                "        <omgdi:waypoint x=\"190\" y=\"-190\" />\n" +
-                "        <omgdi:waypoint x=\"190\" y=\"-260\" />\n" +
-                "        <omgdi:waypoint x=\"-160\" y=\"-260\" />\n" +
-                "        <omgdi:waypoint x=\"-160\" y=\"-190\" />\n" +
+                "      <bpmndi:BPMNEdge id=\"BPMNEdge_Flow_1cbbs8u\" bpmnElement=\"Flow_1cbbs8u\" flowable:sourceDockerX=\"50.0\" flowable:sourceDockerY=\"40.0\" flowable:targetDockerX=\"50.0\" flowable:targetDockerY=\"40.0\">\n" +
+                "        <omgdi:waypoint x=\"99.9499999999471\" y=\"90\" />\n" +
+                "        <omgdi:waypoint x=\"159.99999999998312\" y=\"90\" />\n" +
                 "        <bpmndi:BPMNLabel>\n" +
-                "          <omgdc:Bounds x=\"5\" y=\"-278\" width=\"21\" height=\"14\" />\n" +
+                "          <omgdc:Bounds x=\"102\" y=\"72\" width=\"56\" height=\"14\" />\n" +
                 "        </bpmndi:BPMNLabel>\n" +
                 "      </bpmndi:BPMNEdge>\n" +
-                "      <bpmndi:BPMNEdge id=\"Flow_16st22k_di\" bpmnElement=\"Flow_16st22k\">\n" +
-                "        <omgdi:waypoint x=\"360\" y=\"-110\" />\n" +
-                "        <omgdi:waypoint x=\"360\" y=\"-20\" />\n" +
-                "        <omgdi:waypoint x=\"-150\" y=\"-20\" />\n" +
-                "        <omgdi:waypoint x=\"-150\" y=\"-110\" />\n" +
+                "      <bpmndi:BPMNEdge id=\"BPMNEdge_Flow_0dstjw4\" bpmnElement=\"Flow_0dstjw4\" flowable:sourceDockerX=\"50.0\" flowable:sourceDockerY=\"40.0\" flowable:targetDockerX=\"50.0\" flowable:targetDockerY=\"40.0\">\n" +
+                "        <omgdi:waypoint x=\"-60.050000000052904\" y=\"90\" />\n" +
+                "        <omgdi:waypoint x=\"-1.6896706256375182e-11\" y=\"90\" />\n" +
                 "        <bpmndi:BPMNLabel>\n" +
-                "          <omgdc:Bounds x=\"84\" y=\"-38\" width=\"43\" height=\"14\" />\n" +
+                "          <omgdc:Bounds x=\"-41\" y=\"72\" width=\"22\" height=\"14\" />\n" +
+                "        </bpmndi:BPMNLabel>\n" +
+                "      </bpmndi:BPMNEdge>\n" +
+                "      <bpmndi:BPMNEdge id=\"BPMNEdge_Flow_0spc0yf\" bpmnElement=\"Flow_0spc0yf\" flowable:sourceDockerX=\"15.0\" flowable:sourceDockerY=\"15.0\" flowable:targetDockerX=\"50.0\" flowable:targetDockerY=\"40.0\">\n" +
+                "        <omgdi:waypoint x=\"-215.05000126895308\" y=\"90\" />\n" +
+                "        <omgdi:waypoint x=\"-160.0000000000022\" y=\"90\" />\n" +
+                "      </bpmndi:BPMNEdge>\n" +
+                "      <bpmndi:BPMNEdge id=\"Flow_0s1rk8f_di\" bpmnElement=\"Flow_0s1rk8f\">\n" +
+                "        <omgdi:waypoint x=\"50\" y=\"50\" />\n" +
+                "        <omgdi:waypoint x=\"50\" y=\"30\" />\n" +
+                "        <omgdi:waypoint x=\"-110\" y=\"30\" />\n" +
+                "        <omgdi:waypoint x=\"-110\" y=\"50\" />\n" +
+                "        <bpmndi:BPMNLabel>\n" +
+                "          <omgdc:Bounds x=\"-51\" y=\"12\" width=\"44\" height=\"14\" />\n" +
+                "        </bpmndi:BPMNLabel>\n" +
+                "      </bpmndi:BPMNEdge>\n" +
+                "      <bpmndi:BPMNEdge id=\"Flow_13t7f6e_di\" bpmnElement=\"Flow_13t7f6e\">\n" +
+                "        <omgdi:waypoint x=\"210\" y=\"130\" />\n" +
+                "        <omgdi:waypoint x=\"210\" y=\"170\" />\n" +
+                "        <omgdi:waypoint x=\"-110\" y=\"170\" />\n" +
+                "        <omgdi:waypoint x=\"-110\" y=\"130\" />\n" +
+                "        <bpmndi:BPMNLabel>\n" +
+                "          <omgdc:Bounds x=\"24\" y=\"152\" width=\"54\" height=\"14\" />\n" +
                 "        </bpmndi:BPMNLabel>\n" +
                 "      </bpmndi:BPMNEdge>\n" +
                 "      <bpmndi:BPMNShape id=\"BPMNShape_startEvent1\" bpmnElement=\"startEvent1\">\n" +
-                "        <omgdc:Bounds x=\"-295\" y=\"-165\" width=\"30\" height=\"30\" />\n" +
+                "        <omgdc:Bounds x=\"-245\" y=\"75\" width=\"30\" height=\"30\" />\n" +
                 "      </bpmndi:BPMNShape>\n" +
-                "      <bpmndi:BPMNShape id=\"Activity_0artbcb_di\" bpmnElement=\"Activity_0xj0hpi\">\n" +
-                "        <omgdc:Bounds x=\"-200\" y=\"-190\" width=\"100\" height=\"80\" />\n" +
+                "      <bpmndi:BPMNShape id=\"BPMNShape_Activity_0zi21v6\" bpmnElement=\"Activity_0zi21v6\">\n" +
+                "        <omgdc:Bounds x=\"-160\" y=\"50\" width=\"100\" height=\"80\" />\n" +
                 "      </bpmndi:BPMNShape>\n" +
-                "      <bpmndi:BPMNShape id=\"Activity_0xp7sct_di\" bpmnElement=\"Activity_11pm9xw\">\n" +
-                "        <omgdc:Bounds x=\"140\" y=\"-190\" width=\"100\" height=\"80\" />\n" +
+                "      <bpmndi:BPMNShape id=\"BPMNShape_Activity_08cdns0\" bpmnElement=\"Activity_08cdns0\">\n" +
+                "        <omgdc:Bounds x=\"0\" y=\"50\" width=\"100\" height=\"80\" />\n" +
                 "      </bpmndi:BPMNShape>\n" +
-                "      <bpmndi:BPMNShape id=\"Activity_1nunoz9_di\" bpmnElement=\"Activity_1196s41\">\n" +
-                "        <omgdc:Bounds x=\"310\" y=\"-190\" width=\"100\" height=\"80\" />\n" +
+                "      <bpmndi:BPMNShape id=\"BPMNShape_Activity_0skgv56\" bpmnElement=\"Activity_0skgv56\">\n" +
+                "        <omgdc:Bounds x=\"160\" y=\"50\" width=\"100\" height=\"80\" />\n" +
                 "      </bpmndi:BPMNShape>\n" +
-                "      <bpmndi:BPMNShape id=\"Activity_0mpx0ju_di\" bpmnElement=\"Activity_0mpx0ju\">\n" +
-                "        <omgdc:Bounds x=\"480\" y=\"-190\" width=\"100\" height=\"80\" />\n" +
+                "      <bpmndi:BPMNShape id=\"BPMNShape_Activity_1kzyhgs\" bpmnElement=\"Activity_1kzyhgs\">\n" +
+                "        <omgdc:Bounds x=\"320\" y=\"50\" width=\"100\" height=\"80\" />\n" +
                 "      </bpmndi:BPMNShape>\n" +
-                "      <bpmndi:BPMNShape id=\"Activity_1dwzdv9_di\" bpmnElement=\"Activity_02dfl1o\">\n" +
-                "        <omgdc:Bounds x=\"650\" y=\"-190\" width=\"100\" height=\"80\" />\n" +
+                "      <bpmndi:BPMNShape id=\"BPMNShape_Event_1wv5rwj\" bpmnElement=\"Event_1wv5rwj\">\n" +
+                "        <omgdc:Bounds x=\"642\" y=\"72\" width=\"36\" height=\"36\" />\n" +
                 "      </bpmndi:BPMNShape>\n" +
-                "      <bpmndi:BPMNShape id=\"Event_1utosrp_di\" bpmnElement=\"Event_1utosrp\">\n" +
-                "        <omgdc:Bounds x=\"822\" y=\"-168\" width=\"36\" height=\"36\" />\n" +
-                "      </bpmndi:BPMNShape>\n" +
-                "      <bpmndi:BPMNShape id=\"Activity_1y7w3s3_di\" bpmnElement=\"Activity_1lg7rxi\">\n" +
-                "        <omgdc:Bounds x=\"-30\" y=\"-190\" width=\"100\" height=\"80\" />\n" +
+                "      <bpmndi:BPMNShape id=\"BPMNShape_Activity_1q5553k\" bpmnElement=\"Activity_1q5553k\">\n" +
+                "        <omgdc:Bounds x=\"480\" y=\"50\" width=\"100\" height=\"80\" />\n" +
                 "      </bpmndi:BPMNShape>\n" +
                 "    </bpmndi:BPMNPlane>\n" +
                 "  </bpmndi:BPMNDiagram>\n" +

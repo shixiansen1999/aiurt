@@ -273,7 +273,11 @@ public class FlowElementUtil {
         if (CollUtil.isNotEmpty(actCustomTaskExts)) {
             JSONObject jsonObject = JSONObject.parseObject(actCustomTaskExts.get(0).getFormJson());
             if (ObjectUtil.isNotEmpty(jsonObject)) {
-                List<String> className = StrUtil.split((String) jsonObject.get("className"), '.');
+                String service = jsonObject.getString("service");
+                if (StrUtil.isBlank(service)) {
+                    service = jsonObject.getString("className");
+                }
+                List<String> className = StrUtil.split(service, '.');
                 try {
                     if (CollUtil.isNotEmpty(className)) {
                         return reflectionService.invokeService(className.get(0), className.get(1), data);

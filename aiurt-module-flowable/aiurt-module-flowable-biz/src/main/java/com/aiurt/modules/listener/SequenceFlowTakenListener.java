@@ -53,12 +53,22 @@ public class SequenceFlowTakenListener implements FlowableEventListener {
 
         // 解析属性
         List<ExtensionElement> propertyElements = extensionElements.get(PROPERTY);
+        List<ExtensionElement> serviceElements = extensionElements.get("service");
+
+        String serviceName = "";
+        if (CollUtil.isNotEmpty(serviceElements)) {
+            ExtensionElement extensionElement = serviceElements.get(0);
+            serviceName = extensionElement.getAttributeValue(null, "name");
+        }
 
         if (CollUtil.isNotEmpty(propertyElements)) {
 
             ExtensionElement e = propertyElements.get(0);
             String value = e.getAttributeValue(null, "value");
             String service = e.getAttributeValue(null, "service");
+            if (StrUtil.isBlank(service)) {
+                service = serviceName;
+            }
             if (StrUtil.isAllNotBlank(value, service)) {
                 List<String> list = StrUtil.splitTrim(service, '.');
                 if (list.size() == 2) {
