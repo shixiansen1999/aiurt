@@ -24,6 +24,8 @@
         SELECT
         bwt.id as id,
         bwt.work_ticket_code as workTicketCode,
+        (select ID_ from act_ru_task where PROC_INST_ID_ = ahp.PROC_INST_ID_ ) as taskId,
+        (select NAME_ from act_ru_task where PROC_INST_ID_ = ahp.PROC_INST_ID_ ) as taskName,
         arp.NAME_ as processName,
         bwt.ticket_filler as ticketFiller,
         bwt.state as state,
