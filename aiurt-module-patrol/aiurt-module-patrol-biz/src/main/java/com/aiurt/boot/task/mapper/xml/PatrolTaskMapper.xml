@@ -774,6 +774,9 @@ GROUP BY
         </if>
         GROUP BY pto.org_code
 </select>
+<select id="getNowPatrolTasks" resultType="com.aiurt.boot.report.model.PatrolReport">
+
+</select>
     <select id="getReportOmitList" resultType="com.aiurt.boot.report.model.PatrolReport">
     select
 	count( pt.omit_status = 1 OR NULL ) AS missInspectedNumber,
@@ -1100,7 +1103,8 @@ GROUP BY
         select
         a.id as id,
         a.org_code as code,
-        a.depart_name as name
+        a.depart_name as name,
+        a.org_category as orgCategory
         from
         sys_depart a
         where

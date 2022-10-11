@@ -1639,17 +1639,9 @@ public class SysBaseApiImpl implements ISysBaseAPI {
         } else {
             List<SysDepartModel> list = new ArrayList<>();
             for (SysDepartModel model : sysDepartModels) {
-                if (model.getOrgCategory().equals("3") || model.getOrgCategory().equals("4") || model.getOrgCategory().equals("5")) {
-                    list.add(model);
-                    List<SysDepartModel> models = sysDepartMapper.getUserOrgCategory(model.getOrgCode());
-                    if (CollUtil.isNotEmpty(models)) {
-                        list.addAll(models);
-                    }
-                } else {
-                    List<SysDepartModel> models = sysDepartMapper.getUserOrgCategory(model.getOrgCode());
-                    if (CollUtil.isNotEmpty(models)) {
-                        list.addAll(models);
-                    }
+                List<SysDepartModel> models = sysDepartMapper.getUserOrgCategory(model.getOrgCode());
+                if (CollUtil.isNotEmpty(models)) {
+                    list.addAll(models);
                 }
             }
             if (CollUtil.isEmpty(list)) {

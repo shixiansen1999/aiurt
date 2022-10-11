@@ -58,16 +58,16 @@ public class PatrolReportService {
         PatrolReportModel orgCodeName = new PatrolReportModel();
         LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         List<SysDepartModel> userSysDepart = sysBaseAPI.getUserSysDepart(user.getId());
-        List<String> orgList = userSysDepart.stream().map(SysDepartModel::getOrgCode).collect(Collectors.toList());
+        List<String> orgCodeList = userSysDepart.stream().map(SysDepartModel::getOrgCode).collect(Collectors.toList());
         List<String> orgIdList = userSysDepart.stream().map(SysDepartModel::getId).collect(Collectors.toList());
         //当前人无配置班组时，返回空列表
-        if(CollUtil.isEmpty(orgList))
+        if(CollUtil.isEmpty(orgCodeList))
         {
             return  pageList.setRecords(new ArrayList<>());
         }
         else
         {
-            report.setOrgCodeList(orgList);
+            report.setOrgCodeList(orgCodeList);
             orgCodeName.setOrgIdList(orgIdList);
         }
         if(ObjectUtil.isNotEmpty(report.getLineCode()))
@@ -103,8 +103,10 @@ public class PatrolReportService {
         }
         //只查组织机构，做主数据返回，为了条件查询不影响组织机构显示
         List<PatrolReport> list = patrolTaskMapper.getReportTaskList(pageList, orgCodeName);
-        //计算完成率、巡检总数、未完成、完成数、异常任务数
+        //计算巡检总数(到组织)
         List<PatrolReport> reportList = patrolTaskMapper.getTasks(report);
+        //计算完成率、未完成、完成数、异常任务数（到人）
+        //List<PatrolReport> nowList = patrolTaskMapper.getNowPatrolTasks(report);
         //计算漏巡视数
         List<PatrolReport> omitList = patrolTaskMapper.getReportOmitList(omitModel);
         for (PatrolReport patrolReport : list) {
@@ -185,40 +187,25 @@ public class PatrolReportService {
             }
             if(ObjectUtil.isNull(patrolReport.getTaskId()))
             {
-                patrolReport.setOrgCode(patrolReport.getOrgCode());
-                patrolReport.setOrgName(patrolReport.getOrgName());
                 patrolReport.setTaskTotal(0);
                 patrolReport.setAbnormalNumber(0);
+                patrolReport.setCompletionRate("0.00");
+                patrolReport.setFaultNumber(0);
+                patrolReport.setInspectedNumber(0);
+                patrolReport.setNotInspectedNumber(0);
+            }
+            if(ObjectUtil.isNull(patrolReport.getMissInspectedNumber())||patrolReport.getMissInspectedNumber()==0)
+            {
                 patrolReport.setMissInspectedNumber(0);
-                patrolReport.setCompletionRate("0.00");
-                patrolReport.setAwmPatrolNumber("-");
                 patrolReport.setAmmPatrolNumber("-");
-                patrolReport.setFaultNumber(0);
-                patrolReport.setInspectedNumber(0);
-                patrolReport.setNotInspectedNumber(0);
+                patrolReport.setAwmPatrolNumber("-");
             }
-            if(ObjectUtil.isNull(patrolReport.getAwmPatrolNumber()))
-            {  patrolReport.setAwmPatrolNumber("-");
-
-            }
-            if(ObjectUtil.isNull(patrolReport.getTaskTotal()))
+            if(ObjectUtil.isNull(patrolReport.getTaskTotal())||patrolReport.getTaskTotal()==0)
             {
                 patrolReport.setTaskTotal(0);
                 patrolReport.setNotInspectedNumber(0);
                 patrolReport.setInspectedNumber(0);
                 patrolReport.setCompletionRate("0.00");
-            }
-            if(ObjectUtil.isNull(patrolReport.getAmmPatrolNumber()))
-            {
-                patrolReport.setAmmPatrolNumber("-");
-            }
-            if(ObjectUtil.isNull(patrolReport.getFaultNumber()))
-            {
-                patrolReport.setFaultNumber(0);
-            }
-            if(ObjectUtil.isNull(patrolReport.getAbnormalNumber()))
-            {
-                patrolReport.setAbnormalNumber(0);
             }
         }
         return pageList.setRecords(list);
@@ -550,17 +537,9 @@ public class PatrolReportService {
         } else {
             List<LineOrStationDTO> list = new ArrayList<>();
             for (LineOrStationDTO model : lineOrStationDTOS) {
-                if (model.getOrgCategory().equals("3") || model.getOrgCategory().equals("4") || model.getOrgCategory().equals("5")) {
-                    list.add(model);
-                    List<LineOrStationDTO> models = patrolTaskMapper.getUserOrgCategory(model.getCode());
-                    if (CollUtil.isNotEmpty(models)) {
-                        list.addAll(models);
-                    }
-                } else {
-                    List<LineOrStationDTO> models = patrolTaskMapper.getUserOrgCategory(model.getCode());
-                    if (CollUtil.isNotEmpty(models)) {
-                        list.addAll(models);
-                    }
+                List<LineOrStationDTO> models = patrolTaskMapper.getUserOrgCategory(model.getCode());
+                if (CollUtil.isNotEmpty(models)) {
+                    list.addAll(models);
                 }
             }
             if (CollUtil.isEmpty(list)) {
