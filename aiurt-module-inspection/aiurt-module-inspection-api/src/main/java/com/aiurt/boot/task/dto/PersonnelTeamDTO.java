@@ -4,6 +4,8 @@ import com.baomidou.mybatisplus.annotation.TableField;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
+import java.math.BigDecimal;
+
 /**
  * @author zwl
  */
@@ -87,5 +89,10 @@ public class PersonnelTeamDTO {
     @TableField(exist = false)
     @ApiModelProperty(value = "计数器")
     private Long counter;
+
+    /**检修工时*/
+    @TableField(exist = false)
+    @ApiModelProperty(value = "检修工时")
+    private BigDecimal inspecitonTotalTime;
 
 }
