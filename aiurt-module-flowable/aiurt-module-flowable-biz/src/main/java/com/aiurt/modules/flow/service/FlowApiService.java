@@ -262,4 +262,18 @@ public interface FlowApiService {
      * @param taskCompleteDTO
      */
     void completeTask(TaskCompleteDTO taskCompleteDTO);
+
+    /**
+     * 根据业务数据获取历史活动
+     * @param businessKey
+     * @return
+     */
+    List<HistoricTaskInfo> getHistoricLog(String businessKey);
+
+    /**
+     * 根据ProcessInstanceId 获取历史记录
+     * @param processInstanceId
+     * @return
+     */
+    List<HistoricTaskInfo> getHistoricLogByProcessInstanceId(String processInstanceId);
 }

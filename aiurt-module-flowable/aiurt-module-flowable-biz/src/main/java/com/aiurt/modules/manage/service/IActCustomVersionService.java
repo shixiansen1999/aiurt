@@ -11,4 +11,21 @@ import com.baomidou.mybatisplus.extension.service.IService;
  */
 public interface IActCustomVersionService extends IService<ActCustomVersion> {
 
+    /**
+     * 挂起流程
+     * @param actCustomVersion
+     */
+    void suspendFlowProcess(ActCustomVersion actCustomVersion);
+
+    /**
+     * 激活流程
+     * @param actCustomVersion
+     */
+    void activeFlowProcess(ActCustomVersion actCustomVersion);
+
+    /**
+     * 设置主版本
+     * @param actCustomVersion
+     */
+    void updateMainVersion(ActCustomVersion actCustomVersion);
 }

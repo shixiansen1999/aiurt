@@ -8,6 +8,8 @@ import com.aiurt.modules.workticket.mapper.BdWorkTicketMapper;
 import com.aiurt.modules.workticket.service.IBdWorkTicketService;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import org.apache.shiro.SecurityUtils;
+import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.support.atomic.RedisAtomicLong;
@@ -94,6 +96,8 @@ public class BdWorkTicketServiceImpl extends ServiceImpl<BdWorkTicketMapper, BdW
         return pageList.setRecords(workTicketResDTOS);
     }
 
+
+
     /**
      * 查询待办事项
      * @param pageList
@@ -108,6 +112,75 @@ public class BdWorkTicketServiceImpl extends ServiceImpl<BdWorkTicketMapper, BdW
         return pageList.setRecords(bdWorkTicketList);
     }
 
+    /**
+     * 更新状态
+     * @param businessKey 业务数据
+     * @param states 状态值
+     */
+    @Override
+    public void updateState(String businessKey, Integer states) {
+        BdWorkTicket workTicket = baseMapper.selectById(businessKey);
+
+        if (Objects.nonNull(workTicket)) {
+            //更新状态
+            workTicket.setState(states);
+            // 设置签收时间
+            updateById(workTicket);
+        }
+    }
+
+    /**
+     * 权限认证
+     *
+     * @param id
+     * @return
+     */
+    @Override
+    public Boolean authUpload(String id) {
+        if (StrUtil.isBlank(id)) {
+            return Boolean.FALSE;
+        }
+
+        LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        if (Objects.isNull(sysUser)) {
+            return false;
+        }
+
+
+
+        String orgId = sysUser.getOrgId();
+
+        if (StrUtil.isBlank(orgId)) {
+            return Boolean.FALSE;
+        }
+
+        BdWorkTicket bdWorkTicket = baseMapper.selectById(id);
+
+
+        if (Objects.isNull(bdWorkTicket)) {
+            return Boolean.FALSE;
+        }
+
+        String ticketFiller = bdWorkTicket.getTicketFiller();
+
+
+        if (StrUtil.isBlank(ticketFiller)) {
+            return Boolean.FALSE;
+        }
+
+        List<String> teamIdList = getBaseMapper().getTeamIdList(ticketFiller);
+
+        teamIdList = Optional.ofNullable(teamIdList).orElse(Collections.emptyList());
+
+        teamIdList.removeAll(Collections.singleton(null));
+
+
+        if (teamIdList.contains(orgId)) {
+            return Boolean.TRUE;
+        }
+
+        return Boolean.FALSE;
+    }
 
     /**
      * 获取当天的最后时间

@@ -82,6 +82,8 @@ public class FlowTaskDTO {
     @ApiModelProperty(value = "流程实例发起人")
     private String processInstanceInitiator;
 
+    @ApiModelProperty(value = "发起人昵称")
+    private String processInstanceInitiatorName;
     /**
      * 流程实例创建时间。
      */

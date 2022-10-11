@@ -58,16 +58,16 @@ public class PatrolReportService {
         PatrolReportModel orgCodeName = new PatrolReportModel();
         LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         List<SysDepartModel> userSysDepart = sysBaseAPI.getUserSysDepart(user.getId());
-        List<String> orgList = userSysDepart.stream().map(SysDepartModel::getOrgCode).collect(Collectors.toList());
+        List<String> orgCodeList = userSysDepart.stream().map(SysDepartModel::getOrgCode).collect(Collectors.toList());
         List<String> orgIdList = userSysDepart.stream().map(SysDepartModel::getId).collect(Collectors.toList());
         //当前人无配置班组时，返回空列表
-        if(CollUtil.isEmpty(orgList))
+        if(CollUtil.isEmpty(orgCodeList))
         {
             return  pageList.setRecords(new ArrayList<>());
         }
         else
         {
-            report.setOrgCodeList(orgList);
+            report.setOrgCodeList(orgCodeList);
             orgCodeName.setOrgIdList(orgIdList);
         }
         if(ObjectUtil.isNotEmpty(report.getLineCode()))
@@ -103,8 +103,10 @@ public class PatrolReportService {
         }
         //只查组织机构，做主数据返回，为了条件查询不影响组织机构显示
         List<PatrolReport> list = patrolTaskMapper.getReportTaskList(pageList, orgCodeName);
-        //计算完成率、巡检总数、未完成、完成数、异常任务数
+        //计算巡检总数(到组织)
         List<PatrolReport> reportList = patrolTaskMapper.getTasks(report);
+        //计算完成率、未完成、完成数、异常任务数（到人）
+        //List<PatrolReport> nowList = patrolTaskMapper.getNowPatrolTasks(report);
         //计算漏巡视数
         List<PatrolReport> omitList = patrolTaskMapper.getReportOmitList(omitModel);
         for (PatrolReport patrolReport : list) {
@@ -185,40 +187,25 @@ public class PatrolReportService {
             }
             if(ObjectUtil.isNull(patrolReport.getTaskId()))
             {
-                patrolReport.setOrgCode(patrolReport.getOrgCode());
-                patrolReport.setOrgName(patrolReport.getOrgName());
                 patrolReport.setTaskTotal(0);
                 patrolReport.setAbnormalNumber(0);
+                patrolReport.setCompletionRate("0.00");
+                patrolReport.setFaultNumber(0);
+                patrolReport.setInspectedNumber(0);
+                patrolReport.setNotInspectedNumber(0);
+            }
+            if(ObjectUtil.isNull(patrolReport.getMissInspectedNumber())||patrolReport.getMissInspectedNumber()==0)
+            {
                 patrolReport.setMissInspectedNumber(0);
-                patrolReport.setCompletionRate("0.00");
-                patrolReport.setAwmPatrolNumber("-");
                 patrolReport.setAmmPatrolNumber("-");
-                patrolReport.setFaultNumber(0);
-                patrolReport.setInspectedNumber(0);
-                patrolReport.setNotInspectedNumber(0);
+                patrolReport.setAwmPatrolNumber("-");
             }
-            if(ObjectUtil.isNull(patrolReport.getAwmPatrolNumber()))
-            {  patrolReport.setAwmPatrolNumber("-");
-
-            }
-            if(ObjectUtil.isNull(patrolReport.getTaskTotal()))
+            if(ObjectUtil.isNull(patrolReport.getTaskTotal())||patrolReport.getTaskTotal()==0)
             {
                 patrolReport.setTaskTotal(0);
                 patrolReport.setNotInspectedNumber(0);
                 patrolReport.setInspectedNumber(0);
                 patrolReport.setCompletionRate("0.00");
-            }
-            if(ObjectUtil.isNull(patrolReport.getAmmPatrolNumber()))
-            {
-                patrolReport.setAmmPatrolNumber("-");
-            }
-            if(ObjectUtil.isNull(patrolReport.getFaultNumber()))
-            {
-                patrolReport.setFaultNumber(0);
-            }
-            if(ObjectUtil.isNull(patrolReport.getAbnormalNumber()))
-            {
-                patrolReport.setAbnormalNumber(0);
             }
         }
         return pageList.setRecords(list);
@@ -409,6 +396,9 @@ public class PatrolReportService {
         LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         List<SysDepartModel> userSysDepart = sysBaseAPI.getUserSysDepart(user.getId());
         List<String> orgCodes = userSysDepart.stream().map(SysDepartModel::getOrgCode).collect(Collectors.toList());
+        if (CollectionUtil.isEmpty(orgCodes)){
+            return new ArrayList<MonthDTO>() ;
+        }
         if (ObjectUtil.isNotEmpty(lineCode)&& CollectionUtil.isEmpty(stationCode)){
             stationCode= this.selectStation(lineCode).stream().map(LineOrStationDTO::getCode).collect(Collectors.toList());
         }else if (ObjectUtil.isEmpty(lineCode)&& CollectionUtil.isEmpty(stationCode)){
@@ -426,7 +416,8 @@ public class PatrolReportService {
         List<SysDepartModel> userSysDepart = sysBaseAPI.getUserSysDepart(user.getId());
         List<String> ids =userSysDepart.stream().map(SysDepartModel::getId).collect(Collectors.toList());
         if (CollectionUtil.isEmpty(ids)){
-            return null;
+            IPage<FailureOrgReport> failureOrgReportIPage = (IPage<FailureOrgReport>) new ArrayList<FailureOrgReport>();
+            return failureOrgReportIPage ;
         }
         SimpleDateFormat mm= new SimpleDateFormat("yyyy-MM");
         if (ObjectUtil.isEmpty(startTime) && ObjectUtil.isEmpty(endTime)){
@@ -474,9 +465,9 @@ public class PatrolReportService {
              * 子系统故障列表报表导出
              *
              * @param request
-                 * @return
+             * @return
                  */
-        public ModelAndView reportSystemExport (HttpServletRequest request, String lineCode, List < String > stationCode, String startTime, String endTime){
+        public ModelAndView reportSystemExport(HttpServletRequest request, String lineCode, List<String> stationCode, String startTime, String endTime,String exportField ){
             ModelAndView mv = new ModelAndView(new JeecgEntityExcelView());
             Page<FailureReport> page = new Page<FailureReport>(1, 9999);
             IPage<FailureReport> failureReportList = this.getFailureReport(page,lineCode, stationCode, startTime, endTime);
@@ -486,6 +477,8 @@ public class PatrolReportService {
                 mv.addObject(NormalExcelConstants.FILE_NAME, "子系统故障报表");
                 //excel注解对象Class
                 mv.addObject(NormalExcelConstants.CLASS, FailureReport.class);
+                //自定义导出字段
+                mv.addObject(NormalExcelConstants.EXPORT_FIELDS,exportField);
                 //自定义表格参数
                 mv.addObject(NormalExcelConstants.PARAMS, new ExportParams("统计分析-子系统故障报表", "子系统故障报表"));
                 //导出数据列表
@@ -497,9 +490,10 @@ public class PatrolReportService {
          * 班组故障列表报表导出
          *
          * @param request
+         * @param exportField
          * @return
          */
-        public ModelAndView reportOrgExport (HttpServletRequest request, String lineCode, List <String> stationCode, String startTime, String endTime, List < String > systemCode){
+        public ModelAndView reportOrgExport(HttpServletRequest request, String lineCode, List<String> stationCode, String startTime, String endTime, List<String> systemCode, String exportField){
             ModelAndView mv = new ModelAndView(new JeecgEntityExcelView());
             Page<FailureOrgReport> page = new Page<FailureOrgReport>(1, 9999);
             IPage<FailureOrgReport> failureOrgReport = this.getFailureOrgReport(page,lineCode, stationCode, startTime, endTime, systemCode);
@@ -509,6 +503,8 @@ public class PatrolReportService {
                 mv.addObject(NormalExcelConstants.FILE_NAME, "班组故障报表");
                 //excel注解对象Class
                 mv.addObject(NormalExcelConstants.CLASS, FailureOrgReport.class);
+                //自定义导出字段
+                mv.addObject(NormalExcelConstants.EXPORT_FIELDS,exportField);
                 //自定义表格参数
                 mv.addObject(NormalExcelConstants.PARAMS, new ExportParams("统计分析-班组故障报表", "班组故障报表"));
                 //导出数据列表
@@ -546,17 +542,9 @@ public class PatrolReportService {
         } else {
             List<LineOrStationDTO> list = new ArrayList<>();
             for (LineOrStationDTO model : lineOrStationDTOS) {
-                if (model.getOrgCategory().equals("3") || model.getOrgCategory().equals("4") || model.getOrgCategory().equals("5")) {
-                    list.add(model);
-                    List<LineOrStationDTO> models = patrolTaskMapper.getUserOrgCategory(model.getCode());
-                    if (CollUtil.isNotEmpty(models)) {
-                        list.addAll(models);
-                    }
-                } else {
-                    List<LineOrStationDTO> models = patrolTaskMapper.getUserOrgCategory(model.getCode());
-                    if (CollUtil.isNotEmpty(models)) {
-                        list.addAll(models);
-                    }
+                List<LineOrStationDTO> models = patrolTaskMapper.getUserOrgCategory(model.getCode());
+                if (CollUtil.isNotEmpty(models)) {
+                    list.addAll(models);
                 }
             }
             if (CollUtil.isEmpty(list)) {

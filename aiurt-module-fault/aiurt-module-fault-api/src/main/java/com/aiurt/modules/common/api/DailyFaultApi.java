@@ -1,8 +1,10 @@
 package com.aiurt.modules.common.api;
 
+import com.aiurt.modules.fault.dto.FaultReportDTO;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -25,4 +27,13 @@ public interface DailyFaultApi {
      * 大屏班组画像维修工时统计，用户ID:维修时长
      */
     Map<String, BigDecimal> getFaultUserHours(int type, String teamId);
+
+    /**
+     * 报表班组工时统计
+     */
+    Map<String, FaultReportDTO> getFaultOrgReport(List<String> teamId,String startTime,String endTime);
+    /**
+     * 报表人员工时统计
+     */
+    Map<String, FaultReportDTO> getFaultUserReport(List<String> teamId,String startTime,String endTime,String userId);
 }

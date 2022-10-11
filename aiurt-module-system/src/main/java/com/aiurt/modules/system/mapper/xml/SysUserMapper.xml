@@ -210,4 +210,17 @@
 			</foreach>
 		</if>
 	</select>
+
+	<select id="querySysUserForWorkTicket" resultType="com.aiurt.modules.system.entity.SysUser">
+		select distinct a.* from sys_user a
+		Left join sys_user_role b On a.id = b.user_id
+		left join sys_role sr on b.role_id = sr.id
+		where a.del_flag = 0 and a.status = 1
+		<if test="list != null and list.size() != 0">
+			and sr.role_code in
+			<foreach collection="list" item="item" close=")" open="(" separator=",">
+				#{item}
+			</foreach>
+		</if>
+    </select>
 </mapper>

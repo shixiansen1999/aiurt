@@ -94,7 +94,7 @@ public class FlowOperationController {
      * @return
      */
     @ApiOperation(value = "我的待办", notes = "我的待办")
-    @GetMapping(value = "/listRuntimeTask")
+    @PostMapping(value = "/listRuntimeTask")
     public Result<IPage<FlowTaskDTO>> listRuntimeTask(@RequestBody FlowTaskReqDTO flowTaskReqDTO,
                                                       @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
                                                       @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize) {
@@ -310,7 +310,19 @@ public class FlowOperationController {
      */
     @GetMapping("/getHistoricLog")
     @ApiOperation(value = "根据业务id 获取历史记录", notes = "根据业务id 获取历史记录")
-    public Result<?> getHistoricLog(@RequestParam(value = "businessKey") String businessKey) {
-        return null;
+    public Result<List<HistoricTaskInfo>> getHistoricLog(@RequestParam(value = "businessKey") String businessKey) {
+        List<HistoricTaskInfo> result = flowApiService.getHistoricLog(businessKey);
+        return Result.OK(result);
+    }
+
+    /**
+     * 根据业务id 获取历史记录
+     * @return
+     */
+    @GetMapping("/getHistoricLogByProcessInstanceId")
+    @ApiOperation(value = "根据ProcessInstanceId 获取历史记录", notes = "根据ProcessInstanceId 获取历史记录")
+    public Result<List<HistoricTaskInfo>> getHistoricLogByProcessInstanceId(@RequestParam(value = "processInstanceId") String processInstanceId) {
+        List<HistoricTaskInfo> result = flowApiService.getHistoricLogByProcessInstanceId(processInstanceId);
+        return Result.OK(result);
     }
 }

@@ -303,8 +303,14 @@ public interface ISysUserService extends IService<SysUser> {
     List<SysUser> queryManageUser();
 
 	/**
-	 *
+	 * 获取当前班组所管辖部门人员信息树
 	 * @return
 	 */
 	List<SelectTable> queryManageDepartUserTree();
+
+	/**
+	 *
+	 * @return
+	 */
+    List<SysUser> querySysUserForWorkTicket();
 }

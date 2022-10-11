@@ -1,7 +1,7 @@
 package com.aiurt.modules.utils;
 
 import cn.hutool.core.bean.BeanUtil;
-import org.apache.commons.beanutils.BeanUtils;
+import com.alibaba.fastjson.JSONObject;
 import org.apache.commons.beanutils.ConvertUtils;
 import org.springframework.aop.support.AopUtils;
 import org.springframework.context.ApplicationContext;
@@ -72,7 +72,7 @@ public class ReflectionService {
         Method[] methods = proxyObject.getDeclaredMethods();
 
         for(Method method : methods) {
-            System.out.println(method.getName());
+
             if(method.getName().equalsIgnoreCase(methodStr)) {
                 return method;
             }
@@ -113,7 +113,11 @@ public class ReflectionService {
 
                 // 赋值
                 //BeanUtils.populate(object, paramMap);
-                BeanUtil.copyProperties(paramMap, object);
+                // todo 需要转换，暂时不清楚原因
+                JSONObject jsonObject = new JSONObject(paramMap);
+                String s = JSONObject.toJSONString(jsonObject);
+
+                BeanUtil.copyProperties(JSONObject.parseObject(s), object);
             }
 
             objectList.add(object);

@@ -7,6 +7,7 @@ import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Constants;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import liquibase.pro.packaged.P;
 import org.apache.ibatis.annotations.Param;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
@@ -190,4 +191,12 @@ public interface SysUserMapper extends BaseMapper<SysUser> {
 	 * @return
 	 */
 	List<String> getDepartIds(@Param("asList")List<String> asList);
+
+
+	/**
+	 * 根据角色查询用户
+	 * @param role
+	 * @return
+	 */
+    List<SysUser> querySysUserForWorkTicket(@Param("list") List<String> role);
 }

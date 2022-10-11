@@ -141,8 +141,9 @@ public class PatrolReportController {
                                      @RequestParam(name = "lineCode",required = false) String lineCode,
                                      @RequestParam(name = "stationCode",required = false) List<String> stationCode,
                                      @RequestParam(name = "startTime",required = false) String startTime,
-                                     @RequestParam(name = "endTime",required = false) String endTime) {
-        return reportService.reportSystemExport(request,lineCode,stationCode,startTime,endTime);
+                                     @RequestParam(name = "endTime",required = false) String endTime,
+                                     @RequestParam(name = "exportField",required = false)String exportField) {
+        return reportService.reportSystemExport(request,lineCode,stationCode,startTime,endTime,exportField);
     }
         /**
          * 统计分析-班组故障报表导出
@@ -158,8 +159,9 @@ public class PatrolReportController {
                                             @RequestParam(name = "stationCode",required = false) List<String> stationCode,
                                             @RequestParam(name = "systemCode",required = false)  List<String> systemCode,
                                             @RequestParam(name = "startTime",required = false) String startTime,
-                                            @RequestParam(name = "endTime",required = false) String endTime) {
-            return reportService.reportOrgExport(request,lineCode,stationCode,startTime,endTime,systemCode);
+                                            @RequestParam(name = "endTime",required = false) String endTime,
+                                            @RequestParam(name = "exportField",required = false)String exportField) {
+            return reportService.reportOrgExport(request,lineCode,stationCode,startTime,endTime,systemCode,exportField);
 
     }
     /**

@@ -436,10 +436,86 @@
         left join  fault f on f.code = fr.fault_code
         LEFT JOIN operation_process op ON op.fault_code = fr.fault_code
         <where>
+           fr.del_flag = 0
         <if test="startTime != null and endTime != null">
             AND f.approval_pass_time BETWEEN #{startTime} AND #{endTime}
         </if>
         </where>
         group by fr.appoint_user_name
+    </select>
+    <select id="getFaultOrgReport" resultType="com.aiurt.modules.fault.dto.FaultReportDTO">
+        select sd.id as orgId ,
+        ifnull(sum(TIMESTAMPDIFF(second,IFNULL(fr.recevice_time,fr.assign_time),fr.end_time))-sum(IFNUll(op.hang_up_time,'0')),0) as num,
+        count(fr.id) as num1,
+        sum(twl.assort_num) as constructorsNum
+        from sys_depart sd
+        left join fault_repair_record  fr on sd.org_code = fr.sys_org_code and fr.del_flag = 0
+        left join  fault f on f.code = fr.fault_code  AND date_format(f.approval_pass_time ,'%Y-%m-%d') BETWEEN date_format(#{startTime} ,'%Y-%m-%d') AND date_format(#{endTime} ,'%Y-%m-%d')
+        LEFT JOIN operation_process op ON op.fault_code = fr.fault_code
+        left join t_work_log twl on  sd.id = twl.org_id  and date_format(twl.submit_time ,'%Y-%m-%d')  BETWEEN date_format(#{startTime} ,'%Y-%m-%d') AND date_format(#{endTime} ,'%Y-%m-%d') and twl.del_flag = 0 and twl.confirm_status=1
+        where
+        sd.del_flag =0
+        <if test="orgCodes != null and orgCodes.size>0 and teamId == null">
+            and sd.org_code in
+            <foreach collection="orgCodes" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        <if test="teamId != null and teamId.size>0">
+            and sd.id in
+            <foreach collection="teamId" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        group by sd.id
+    </select>
+    <select id="getConstructionHours" resultType="java.lang.String">
+        select  assort_time from t_work_log
+        where del_flag = 0
+        and confirm_status=1
+        and org_id = #{orgId}
+        and date_format(submit_time ,'%Y-%m-%d')  BETWEEN date_format( #{startTime} ,'%Y-%m-%d') AND date_format( #{endTime} ,'%Y-%m-%d')
+    </select>
+    <select id="getFaultUserReport" resultType="com.aiurt.modules.fault.dto.FaultReportDTO">
+        select su.id as userId,
+        ifnull(sum(TIMESTAMPDIFF(second,IFNULL(fr.recevice_time,fr.assign_time),fr.end_time))-sum(IFNUll(op.hang_up_time,'0')),0) as num
+        from sys_user su
+        left join fault_repair_record fr on su.username = fr.appoint_user_name
+        left join  fault f on f.code = fr.fault_code  AND date_format(f.approval_pass_time ,'%Y-%m-%d') BETWEEN date_format( #{startTime} ,'%Y-%m-%d') AND date_format( #{endTime} ,'%Y-%m-%d')
+        LEFT JOIN operation_process op ON op.fault_code = fr.fault_code
+        where su.del_flag =0
+        <if test="userId != null ">
+            AND su.id = #{userId}
+        </if>
+        <if test="orgCodes != null and orgCodes.size>0 and teamId == null">
+            and su.org_code in
+            <foreach collection="orgCodes" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        <if test="teamId != null and teamId.size>0">
+            and su.org_id in
+            <foreach collection="teamId" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        group by su.id
+    </select>
+    <select id="getUserConstructionHours" resultType="java.lang.String">
+        select  assort_time
+        from t_work_log
+        where del_flag = 0
+          and confirm_status = 1
+          and assort_ids LIKE concat('%', #{userId}, '%')
+          and date_format(submit_time ,'%Y-%m-%d')  BETWEEN date_format( #{startTime} ,'%Y-%m-%d') AND date_format( #{endTime} ,'%Y-%m-%d')
+    </select>
+    <select id="getUserConstructorsNum" resultType="com.aiurt.modules.fault.dto.FaultReportDTO">
+        select  sum(assort_num) as constructorsNum,
+                count(id) as num1
+        from t_work_log
+        where del_flag = 0
+          and confirm_status = 1
+          and assort_ids LIKE concat('%', #{userId}, '%')
+          and date_format(submit_time ,'%Y-%m-%d')  BETWEEN date_format( #{startTime} ,'%Y-%m-%d') AND date_format( #{endTime} ,'%Y-%m-%d')
     </select>
 </mapper>

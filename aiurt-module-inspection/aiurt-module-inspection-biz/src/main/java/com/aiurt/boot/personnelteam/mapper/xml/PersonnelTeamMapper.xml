@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.aiurt.boot.personnelteam.mapper.PersonnelTeamMapper">
+
+    <select id="getScheduledTask" resultType="com.aiurt.boot.task.dto.PersonnelTeamDTO">
+        SELECT
+		  t3.user_id as userId,
+		  count(*) AS counter
+		FROM
+	    repair_pool t1
+	    LEFT JOIN repair_task t2 ON t1.id = t2.repair_pool_id
+	    LEFT JOIN repair_task_user t3 ON t2.`code` = t3.repair_task_code
+     <where>
+		t1.del_flag = 0
+	    AND t2.del_flag = 0
+	    AND t3.del_flag = 0
+		 <if test="userIdList!=null and userIdList.size() != 0">
+			 AND t3.user_id  in
+			 <foreach collection="userIdList" item="item" index="index" open="(" close=")" separator=",">
+				 #{item}
+			 </foreach>
+		 </if>
+		 <if test="userId!=null">
+			 AND t3.user_id = #{userId}
+		 </if>
+		 <if test="status!=null">
+            AND t2.status = #{status}
+		 </if>
+		 <if test="startDate!=null and endDate!=null ">
+			 AND DATE_FORMAT(t1.start_time ,'%Y-%m-%d') &gt;= DATE_FORMAT(#{startDate} ,'%Y-%m-%d')
+			 AND DATE_FORMAT(t1.end_time ,'%Y-%m-%d') &lt;= DATE_FORMAT(#{endDate} ,'%Y-%m-%d')
+		 </if>
+	 </where>
+		GROUP BY
+		t3.user_id
+    </select>
+	<select id="getUserTime"  resultType="com.aiurt.boot.task.dto.PersonnelTeamDTO">
+       SELECT
+		t3.user_id AS userId,
+	   ifnull(
+		sum(
+			TIMESTAMPDIFF(
+				HOUR,
+		t2.begin_time,
+			IF
+				( 1 = t2.is_receipt, t2.receipt_time, IF ( 1 = t2.is_confirm, t2.confirm_time, t2.submit_time ) )
+			)),
+		0
+	   ) AS counter
+      FROM
+		repair_pool t1
+		LEFT JOIN repair_task t2 ON t1.id = t2.repair_pool_id
+		LEFT JOIN repair_task_user t3 ON t2.`code` = t3.repair_task_code
+		<where>
+	     t1.del_flag = 0
+	     AND t2.del_flag = 0
+		 AND t3.del_flag = 0
+			<if test="startDate!=null and endDate!=null ">
+				AND DATE_FORMAT(t1.start_time ,'%Y-%m-%d') &gt;= DATE_FORMAT(#{startDate} ,'%Y-%m-%d')
+				AND DATE_FORMAT(t1.end_time ,'%Y-%m-%d') &lt;= DATE_FORMAT(#{endDate} ,'%Y-%m-%d')
+			</if>
+			<if test="userId!=null">
+				AND t3.user_id = #{userId}
+			</if>
+		</where>
+	</select>
+
+    <select id="getTeamTask" resultType="com.aiurt.boot.task.dto.PersonnelTeamDTO">
+		SELECT
+          t3.org_code AS teamCode,
+	      count(*) AS counter
+        FROM
+	      repair_pool t1
+	    LEFT JOIN repair_task t2 ON t1.id = t2.repair_pool_id
+	    LEFT JOIN repair_task_org_rel t3 ON t2.`code` = t3.repair_task_code
+   <where>
+      t1.del_flag = 0
+	  AND t2.del_flag = 0
+	  AND t3.del_flag = 0
+	<if test="teamCodeList != null and teamCodeList.size()!=0">
+		AND t3.org_code  in
+		<foreach collection="teamCodeList" item="item" index="index" open="(" close=")" separator=",">
+			#{item}
+		</foreach>
+	</if>
+	   <if test="startDate!=null and endDate!=null ">
+		   AND DATE_FORMAT(t1.start_time ,'%Y-%m-%d') &gt;= DATE_FORMAT(#{startDate} ,'%Y-%m-%d')
+		   AND DATE_FORMAT(t1.end_time ,'%Y-%m-%d') &lt;= DATE_FORMAT(#{endDate} ,'%Y-%m-%d')
+	   </if>
+  </where>
+		GROUP BY
+		t3.org_code
+	</select>
+
+    <select id="getTeamTime" resultType="com.aiurt.boot.task.dto.PersonnelTeamDTO">
+
+	</select>
+</mapper>

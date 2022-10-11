@@ -24,6 +24,7 @@ public class CustomSequenceFlowJsonConverter extends SequenceFlowJsonConverter {
 
     private static final String CUSTOM_CONDITION = "customCondition";
     private static final String PROPERTY = "property";
+    private static final String SERVICE = "service";
 
     /**
      * 注入自定义CustomUserTaskJsonConverter
@@ -142,13 +143,20 @@ public class CustomSequenceFlowJsonConverter extends SequenceFlowJsonConverter {
         List<ExtensionElement> propertyElements = extensionElements.get(PROPERTY);
 
         if (CollUtil.isNotEmpty(propertyElements)) {
-            ObjectNode parentNode = super.objectMapper.createObjectNode();
             ObjectNode objectNode = super.objectMapper.createObjectNode();
             ExtensionElement e = propertyElements.get(0);
             objectNode.put("value", e.getAttributeValue(null, "value"));
             objectNode.put("service", e.getAttributeValue(null, "service"));
             objectNode.put("name", e.getAttributeValue(null, "name"));
             flowNode.set(PROPERTY, objectNode);
+        }
+
+        List<ExtensionElement> serviceElementList = extensionElements.get(SERVICE);
+        if (CollUtil.isNotEmpty(serviceElementList)) {
+            ObjectNode objectNode = super.objectMapper.createObjectNode();
+            ExtensionElement e = serviceElementList.get(0);
+            objectNode.put("name", e.getAttributeValue(null, "name"));
+            flowNode.set(SERVICE, objectNode);
         }
 
         flowNode.set(EDITOR_SHAPE_PROPERTIES, propertiesNode);

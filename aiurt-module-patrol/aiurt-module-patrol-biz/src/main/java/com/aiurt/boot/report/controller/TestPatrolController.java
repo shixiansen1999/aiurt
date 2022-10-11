@@ -34,4 +34,11 @@ public class TestPatrolController {
          Map<String, UserTeamPatrolDTO> hours = patrolApi.getUserParameter(userTeamParameter);
          return  hours;
     }
+    @AutoLog(value = "统计报表-班组查询", operateType = 1, operateTypeAlias = "查询")
+    @ApiOperation(value = "统计报表-班组查询", notes = "统计报表-班组查询")
+    @RequestMapping(value = "/getUser", method = {RequestMethod.GET, RequestMethod.POST})
+    public Map<String, UserTeamPatrolDTO> getUser(UserTeamParameter userTeamParameter){
+        Map<String, UserTeamPatrolDTO> hours = patrolApi.getUserTeamParameter(userTeamParameter);
+        return  hours;
+    }
 }

@@ -19,6 +19,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.extern.slf4j.Slf4j;
 import org.flowable.bpmn.model.*;
 import org.flowable.engine.RepositoryService;
+import org.flowable.engine.RuntimeService;
 import org.flowable.engine.repository.ProcessDefinition;
 import org.flowable.ui.modeler.serviceapi.ModelService;
 import org.jeecg.common.api.vo.Result;
@@ -52,6 +53,9 @@ public class FlowElementUtil {
 
     @Autowired
     private IActCustomTaskExtService customTaskExtService;
+
+    @Autowired
+    private RuntimeService runtimeService;
 
     /**
      * 获取第一个用户节点, 最近的一个版本
@@ -282,4 +286,30 @@ public class FlowElementUtil {
         return "";
     }
 
+    /**
+     * 挂起流程定义对象
+     * @param processDefinitionId 流程定义Id
+     */
+    public void suspendProcessDefinition(String  processDefinitionId) {
+        repositoryService.suspendProcessDefinitionById(processDefinitionId);
+    }
+
+    /**
+     * 激活流程定义对象
+     * @param processDefinitionId 流程定义Id
+     */
+    public void activateProcessDefinition(String processDefinitionId) {
+        repositoryService.activateProcessDefinitionById(processDefinitionId);
+    }
+
+
+    /**
+     * 为流程实例设置BusinessKey。
+     *
+     * @param processInstanceId 流程实例Id。
+     * @param dataId            通常为主表的主键Id。
+     */
+    public void setBusinessKeyForProcessInstance(String processInstanceId, Object dataId) {
+        runtimeService.updateBusinessKey(processInstanceId, dataId.toString());
+    }
 }

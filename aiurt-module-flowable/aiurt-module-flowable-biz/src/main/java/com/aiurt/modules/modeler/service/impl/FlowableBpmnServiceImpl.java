@@ -203,7 +203,7 @@ public class FlowableBpmnServiceImpl implements IFlowableBpmnService {
         modelInfoLambdaQueryWrapper.eq(ActCustomModelInfo::getModelId, savedModel.getId());
         ActCustomModelInfo modelInfo = modelInfoService.getOne(modelInfoLambdaQueryWrapper);
         modelInfo.setStatus(ModelFormStatusEnum.DFB.getStatus());
-        modelInfo.setExtendStatus(ModelFormStatusEnum.DFB.getStatus());
+        // modelInfo.setExtendStatus(ModelFormStatusEnum.DFB.getStatus());
         modelInfoService.updateById(modelInfo);
         return "保存成功";
     }

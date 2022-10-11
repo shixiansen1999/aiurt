@@ -78,19 +78,40 @@ public class ActCustomVersionController extends BaseController<ActCustomVersion,
 	}
 
 	/**
-	 *  编辑
+	 *  挂起
 	 *
 	 * @param actCustomVersion
 	 * @return
 	 */
-	@AutoLog(value = "版本管理-编辑")
-	@ApiOperation(value="版本管理-编辑", notes="版本管理-编辑")
-	@RequestMapping(value = "/edit", method = {RequestMethod.PUT,RequestMethod.POST})
-	public Result<String> edit(@RequestBody ActCustomVersion actCustomVersion) {
-
-		actCustomVersionService.updateById(actCustomVersion);
-		return Result.OK("编辑成功!");
+	@AutoLog(value = "版本管理-挂起")
+	@ApiOperation(value="版本管理-挂起, 只需要传id", notes="版本管理-挂起,只需要传id")
+	@RequestMapping(value = "/suspendFlowProcess", method = {RequestMethod.PUT})
+	public Result<String> suspendFlowProcess(@RequestBody ActCustomVersion actCustomVersion) {
+		actCustomVersionService.suspendFlowProcess(actCustomVersion);
+		return Result.OK("挂起成功!");
 	}
+
+	 /**
+	  *  激活
+	  *
+	  * @param actCustomVersion
+	  * @return
+	  */
+	 @AutoLog(value = "流程版本管理-激活")
+	 @ApiOperation(value="版本管理-激活, 只需要传id", notes="版本管理-激活,只需要传id")
+	 @RequestMapping(value = "/activeFlowProcess", method = {RequestMethod.PUT})
+	 public Result<String> activeFlowProcess(@RequestBody ActCustomVersion actCustomVersion) {
+		 actCustomVersionService.activeFlowProcess(actCustomVersion);
+		 return Result.OK("激活成功!");
+	 }
+
+	 @AutoLog(value = "设置主版本")
+	 @ApiOperation(value="版本管理-设置主版本, 只需要传id", notes="版本管理-设置主版本,只需要传id")
+	 @RequestMapping(value = "/updateMainVersion", method = {RequestMethod.PUT})
+	 public Result<?> updateMainVersion(@RequestBody ActCustomVersion actCustomVersion) {
+		 actCustomVersionService.updateMainVersion(actCustomVersion);
+		 return Result.OK("设置主版本成功");
+	 }
 
 	/**
 	 *   通过id删除
@@ -113,6 +134,7 @@ public class ActCustomVersionController extends BaseController<ActCustomVersion,
 	  * @return 流程图。
 	  */
 	 @GetMapping("/viewProcessBpmn")
+	 @ApiOperation("流程图")
 	 public Result<String> viewProcessBpmn(@RequestParam String processDefinitionId) throws IOException {
 		 BpmnXMLConverter converter = new BpmnXMLConverter();
 		 BpmnModel bpmnModel = flowableBpmnService.getBpmnModelByDefinitionId(processDefinitionId);
