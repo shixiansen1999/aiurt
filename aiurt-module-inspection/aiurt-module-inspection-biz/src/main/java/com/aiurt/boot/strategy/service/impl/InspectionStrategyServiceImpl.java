@@ -376,6 +376,7 @@ public class InspectionStrategyServiceImpl extends ServiceImpl<InspectionStrateg
                 st.setLineCode(re.getLineCode());
                 arr.add(st);
             });
+            ins.setAddSiteCode(repairPoolStationRels.stream().map(InspectionStrStaRel::getStationCode).collect(Collectors.toList()));
             ins.setSiteCodes(arr);
         }
 
