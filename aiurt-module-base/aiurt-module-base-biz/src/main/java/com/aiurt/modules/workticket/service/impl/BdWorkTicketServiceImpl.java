@@ -1,5 +1,6 @@
 package com.aiurt.modules.workticket.service.impl;
 
+import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.modules.workticket.dto.UploadPictureDTO;
 import com.aiurt.modules.workticket.dto.WorkTicketReqDTO;
@@ -123,12 +124,24 @@ public class BdWorkTicketServiceImpl extends ServiceImpl<BdWorkTicketMapper, BdW
      */
     @Override
     public void updateState(String businessKey, Integer states) {
+        if (StrUtil.isBlank(businessKey)) {
+            return;
+        }
         BdWorkTicket workTicket = baseMapper.selectById(businessKey);
-
+        LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         if (Objects.nonNull(workTicket)) {
             //更新状态
             workTicket.setState(states);
-            // 设置签收时间
+
+
+            // 已审核待签发
+            if (states == 3) {
+                // 设置审批人
+                workTicket.setWorkLeaderSign(loginUser.getRealname());
+                workTicket.setWorkLeaderSignTime(DateUtil.format(new Date(), "yyyy-MM-dd HH:mm:ss"));
+            }else if (states == 6) {
+
+            }
             updateById(workTicket);
         }
     }
