@@ -31,6 +31,17 @@ import java.util.stream.Collectors;
 @RequestMapping("/modeler/actCustomVariable")
 @Slf4j
 public class ActCustomVariableController extends BaseController<ActCustomVariable, IActCustomVariableService> {
+
+	/**
+	 * 内置的流程变量 startUserName
+	 */
+	private static final String  STAR_USER_NAME = "startUserName";
+
+	/**
+	 * 内置的流程变量 operationType
+	 */
+	private static final String OPERATION_TYPE = "operationType";
+
 	@Autowired
 	private IActCustomVariableService actCustomVariableService;
 
@@ -56,10 +67,21 @@ public class ActCustomVariableController extends BaseController<ActCustomVariabl
 		// list
 		Set<String> variableNameSet = list.stream().map(ActCustomVariable::getVariableName).collect(Collectors.toSet());
 		if (variableType == 1) {
-			if (!variableNameSet.contains("operationType")) {
+			if (!variableNameSet.contains(OPERATION_TYPE)) {
 				ActCustomVariable actCustomVariable = new ActCustomVariable();
-				actCustomVariable.setVariableName("operationType");
+				actCustomVariable.setVariableName(OPERATION_TYPE);
 				actCustomVariable.setShowName("审批类型");
+				actCustomVariable.setVariableType(1);
+				actCustomVariable.setModelId(modelId);
+				actCustomVariable.setType("1");
+				actCustomVariableService.save(actCustomVariable);
+				list.add(actCustomVariable);
+			}
+
+			if (!variableNameSet.contains(STAR_USER_NAME)) {
+				ActCustomVariable actCustomVariable = new ActCustomVariable();
+				actCustomVariable.setVariableName(STAR_USER_NAME);
+				actCustomVariable.setShowName("流程启动用户");
 				actCustomVariable.setVariableType(1);
 				actCustomVariable.setModelId(modelId);
 				actCustomVariable.setType("1");

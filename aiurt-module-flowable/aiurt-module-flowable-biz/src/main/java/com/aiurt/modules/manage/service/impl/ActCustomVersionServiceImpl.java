@@ -6,6 +6,8 @@ import com.aiurt.modules.flow.utils.FlowElementUtil;
 import com.aiurt.modules.manage.entity.ActCustomVersion;
 import com.aiurt.modules.manage.mapper.ActCustomVersionMapper;
 import com.aiurt.modules.manage.service.IActCustomVersionService;
+import com.aiurt.modules.modeler.entity.ActCustomModelInfo;
+import com.aiurt.modules.modeler.service.IActCustomModelInfoService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -30,6 +32,10 @@ public class ActCustomVersionServiceImpl extends ServiceImpl<ActCustomVersionMap
     @Lazy
     @Autowired
     private FlowElementUtil flowElementUtil;
+
+    @Lazy
+    @Autowired
+    private IActCustomModelInfoService modelInfoService;
 
     /**
      * 流程版本管理-挂起
@@ -95,7 +101,9 @@ public class ActCustomVersionServiceImpl extends ServiceImpl<ActCustomVersionMap
         // 设置其他为
         LambdaUpdateWrapper<ActCustomVersion> updateWrapper = new LambdaUpdateWrapper<>();
 
-        updateWrapper.set(ActCustomVersion::getMainVersion, "0").eq(ActCustomVersion::getModelId, customVersion.getModelId());
+        String modelId = customVersion.getModelId();
+
+        updateWrapper.set(ActCustomVersion::getMainVersion, "0").eq(ActCustomVersion::getModelId, modelId);
 
         update(updateWrapper);
 
@@ -103,6 +111,12 @@ public class ActCustomVersionServiceImpl extends ServiceImpl<ActCustomVersionMap
         customVersion.setMainVersion("1");
 
         updateById(customVersion);
+
+        // 模板信息
+        LambdaUpdateWrapper<ActCustomModelInfo> wrapper = new LambdaUpdateWrapper<>();
+        wrapper.eq(ActCustomModelInfo::getModelId, modelId).set(ActCustomModelInfo::getExtendStatus, customVersion.getVersion());
+
+        modelInfoService.update(wrapper);
     }
 
     /**

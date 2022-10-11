@@ -2,7 +2,9 @@ package com.aiurt.modules.flow.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateTime;
+import cn.hutool.core.date.DateUnit;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.lang.Assert;
 import cn.hutool.core.util.ObjectUtil;
@@ -23,6 +25,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.SecurityUtils;
 import org.flowable.bpmn.constants.BpmnXMLConstants;
 import org.flowable.bpmn.model.Process;
@@ -41,6 +44,7 @@ import org.flowable.engine.runtime.ActivityInstance;
 import org.flowable.engine.runtime.ChangeActivityStateBuilder;
 import org.flowable.engine.runtime.Execution;
 import org.flowable.engine.runtime.ProcessInstance;
+import org.flowable.identitylink.api.IdentityLink;
 import org.flowable.task.api.Task;
 import org.flowable.task.api.TaskInfo;
 import org.flowable.task.api.TaskQuery;
@@ -55,6 +59,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.nio.charset.StandardCharsets;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
@@ -166,7 +171,8 @@ public class FlowApiServiceImpl implements FlowApiService {
         }
         // 设置流程变量
         Map<String, Object> busData = startBpmnDTO.getBusData();
-        this.initAndGetProcessInstanceVariables(busData);
+        Map<String, Object> variableData = new HashMap<>();
+        this.initAndGetProcessInstanceVariables(variableData);
 
         // 根据key查询第一个用户任务
         UserTask userTask = flowElementUtil.getFirstUserTaskByModelKey(startBpmnDTO.getModelKey());
@@ -177,7 +183,7 @@ public class FlowApiServiceImpl implements FlowApiService {
         String loginName = loginUser.getUsername();
         Authentication.setAuthenticatedUserId(loginName);
         // 启动流程
-        ProcessInstance processInstance = runtimeService.startProcessInstanceByKey(startBpmnDTO.getModelKey(), (String) businessKey, busData);
+        ProcessInstance processInstance = runtimeService.startProcessInstanceByKey(startBpmnDTO.getModelKey(), (String) businessKey, variableData);
 
         // 获取流程启动后的第一个任务。
         Task task = taskService.createTaskQuery().processInstanceId(processInstance.getId()).active().singleResult();
@@ -268,16 +274,25 @@ public class FlowApiServiceImpl implements FlowApiService {
             Object o = flowElementUtil.saveBusData(processInstanceId, taskId, busData);
 
             // 如果businessKey为空则设置
+            if (StrUtil.isBlank(businessKey)) {
+                flowElementUtil.setBusinessKeyForProcessInstance(processInstanceId, o);
+            }
 
         }else if (StrUtil.equalsIgnoreCase(FlowApprovalType.AGREE, approvalType)) {
-           if (Objects.nonNull(busData)) {
+            if (Objects.nonNull(busData)) {
                busData.put("operationType", approvalType);
-           }
+               flowElementUtil.saveBusData(processInstanceId, taskId, busData);
+            }
             // 完成任务
             taskService.complete(taskId, busData);
             // 驳回
         }else if (StrUtil.equalsIgnoreCase(FlowApprovalType.REJECT, approvalType)) {
-
+            if (Objects.nonNull(busData)) {
+                busData.put("operationType", approvalType);
+                flowElementUtil.saveBusData(processInstanceId, taskId, busData);
+            }
+            // 完成任务
+            taskService.complete(taskId, busData);
         }
 
         // 判断当前完成执行的任务，是否存在抄送设置
@@ -1301,6 +1316,75 @@ public class FlowApiServiceImpl implements FlowApiService {
             taskInfoDTO.setOperationList(objectList);
         }
         return taskInfoDTO;
+    }
+
+
+    /**
+     * 根据业务数据获取历史活动
+     *
+     * @param businessKey
+     * @return
+     */
+    @Override
+    public List<HistoricTaskInfo> getHistoricLog(String businessKey) {
+
+        if (Objects.isNull(businessKey)) {
+            return Collections.emptyList();
+        }
+
+        ProcessInstance processInstance = runtimeService.createProcessInstanceQuery().processInstanceBusinessKey(businessKey).singleResult();
+
+        if (Objects.isNull(processInstance)) {
+            return Collections.emptyList();
+        }
+
+        List<HistoricActivityInstance> list = historyService.createHistoricActivityInstanceQuery().processInstanceId(processInstance.getProcessInstanceId()).orderByHistoricActivityInstanceStartTime().desc().list();
+        List<HistoricTaskInfo> historicTaskInfoList = new ArrayList<>();
+        Optional.ofNullable(list).orElse(Collections.emptyList()).stream().filter(entity-> StringUtils.equalsIgnoreCase("userTask",entity.getActivityType())).forEach(entity->{
+            SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            String activityType = entity.getActivityType();
+            String taskName = entity.getActivityName();
+            if (!StringUtils.equalsIgnoreCase(activityType, "userTask")) {
+                taskName = "用户任务";
+            }
+            String endTime = "";
+            if (Objects.nonNull(entity.getEndTime())) {
+                endTime = df.format(entity.getEndTime());
+            }
+            HistoricTaskInfo historicTaskInfo = HistoricTaskInfo.builder()
+                    .id(entity.getId())
+                    .createTime(df.format(entity.getStartTime()))
+                    .endTime(endTime)
+                    .taskName(taskName)
+                    .state(Objects.isNull(entity.getEndTime())? "未完成":"已完成")
+                    .taskId(entity.getTaskId())
+                    .build();
+
+            if (Objects.nonNull(entity.getEndTime())) {
+                historicTaskInfo.setCostTime(DateUtil.between(entity.getStartTime(),entity.getEndTime(), DateUnit.SECOND));
+            }
+
+            LoginUser userByName = null;
+            if (StrUtil.isNotBlank(entity.getAssignee())) {
+                userByName = sysBaseAPI.getUserByName(entity.getAssignee());
+            }
+
+            if (Objects.nonNull(userByName)) {
+                historicTaskInfo.setAssigne(userByName.getRealname());
+            } else {
+                if (StrUtil.isBlank(entity.getAssignee()) && Objects.isNull(entity.getEndTime())) {
+                    List<IdentityLink> links = taskService.getIdentityLinksForTask(entity.getTaskId());
+                    List<String> userNameList = links.stream().map(IdentityLink::getUserId).collect(Collectors.toList());
+                    List<LoginUser> userListByName = null;
+                    if (CollectionUtil.isNotEmpty(userListByName)) {
+                        List<String> collect = userListByName.stream().map(LoginUser::getRealname).collect(Collectors.toList());
+                        historicTaskInfo.setAssigne(StrUtil.join(",", collect));
+                    }
+                }
+            }
+            historicTaskInfoList.add(historicTaskInfo);
+        });
+        return historicTaskInfoList;
     }
 
     private List<FlowElement> getChildUserTaskList(

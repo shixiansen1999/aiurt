@@ -46,6 +46,7 @@ public class SequenceFlowTakenListener implements FlowableEventListener {
 
         FlowElementUtil flowElementUtil = SpringContextUtils.getBean(FlowElementUtil.class);
 
+        // 获取当前节点定义
         FlowElement flowElement = flowElementUtil.getFlowElement(processDefinitionId, id);
 
         Map<String, List<ExtensionElement>> extensionElements = flowElement.getExtensionElements();

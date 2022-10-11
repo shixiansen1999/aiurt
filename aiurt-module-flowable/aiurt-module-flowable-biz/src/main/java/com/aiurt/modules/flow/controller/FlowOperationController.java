@@ -310,7 +310,8 @@ public class FlowOperationController {
      */
     @GetMapping("/getHistoricLog")
     @ApiOperation(value = "根据业务id 获取历史记录", notes = "根据业务id 获取历史记录")
-    public Result<?> getHistoricLog(@RequestParam(value = "businessKey") String businessKey) {
-        return null;
+    public Result<List<HistoricTaskInfo>> getHistoricLog(@RequestParam(value = "businessKey") String businessKey) {
+        List<HistoricTaskInfo> result = flowApiService.getHistoricLog(businessKey);
+        return Result.OK(result);
     }
 }

@@ -17,6 +17,7 @@
         Left Join cs_station cs on bwt.station = cs.id
         LEFT JOIN cs_line cl on cs.line_code = cl.line_code
         Left join act_re_procdef arp on ahp.PROC_DEF_ID_ = arp.ID_
+        order by a.CLAIM_TIME_
     </select>
 
     <select id="historyGet" resultType="com.aiurt.modules.workticket.dto.WorkTicketResDTO">

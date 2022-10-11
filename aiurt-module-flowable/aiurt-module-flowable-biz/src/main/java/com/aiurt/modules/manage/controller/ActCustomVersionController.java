@@ -106,6 +106,7 @@ public class ActCustomVersionController extends BaseController<ActCustomVersion,
 	 }
 
 	 @AutoLog(value = "设置主版本")
+	 @ApiOperation(value="版本管理-设置主版本, 只需要传id", notes="版本管理-设置主版本,只需要传id")
 	 @RequestMapping(value = "/updateMainVersion", method = {RequestMethod.PUT})
 	 public Result<?> updateMainVersion(@RequestBody ActCustomVersion actCustomVersion) {
 		 actCustomVersionService.updateMainVersion(actCustomVersion);

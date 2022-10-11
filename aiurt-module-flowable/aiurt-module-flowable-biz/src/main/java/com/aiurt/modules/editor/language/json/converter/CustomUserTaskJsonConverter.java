@@ -197,13 +197,18 @@ public class CustomUserTaskJsonConverter  extends UserTaskJsonConverter {
             }
 
             // 表单页面 类型
-            addCustomAttibute(elementNode, userTask, "formData.formType");
+            addCustomAttribute(elementNode, userTask, "formData.formType");
+            addCustomAttributeForPrefix(elementNode, userTask, "flowable","formType");
             // 表单url
-            addCustomAttibute(elementNode, userTask, "formData.formUrl");
+            addCustomAttribute(elementNode, userTask, "formData.formUrl");
+            addCustomAttributeForPrefix(elementNode, userTask,"flowable", "formUrl");
             // 业务处理
-            addCustomAttibute(elementNode, userTask, "formData.service");
+            addCustomAttribute(elementNode, userTask, "formData.service");
+            addCustomAttributeForPrefix(elementNode, userTask, "flowable", "service");
+
+            addCustomAttributeForPrefix(elementNode, userTask,"flowable", "formtaskVariables");
             // 流程变量
-            addCustomAttibute(elementNode, userTask, "flowable.formtaskVariables");
+            addCustomAttribute(elementNode, userTask, "flowable.formtaskVariables");
 
             JsonNode deptPostList = JsonConverterUtil.getProperty("deptPostList", elementNode);
 
@@ -237,7 +242,19 @@ public class CustomUserTaskJsonConverter  extends UserTaskJsonConverter {
         }
     }
 
-    private void addCustomAttibute(JsonNode elementNode, UserTask userTask, String s) {
+    private void addCustomAttributeForPrefix(JsonNode elementNode, UserTask userTask, String prefix, String attr) {
+        String formType = JsonConverterUtil.getPropertyValueAsString(attr, elementNode);
+        if (StrUtil.isNotBlank(formType)) {
+            ExtensionAttribute attribute = new ExtensionAttribute();
+            attribute.setName(attr);
+            attribute.setValue(formType);
+            attribute.setNamespacePrefix(prefix);
+            attribute.setNamespace(BpmnXMLConstants.FLOWABLE_EXTENSIONS_NAMESPACE);
+            userTask.addAttribute(attribute);
+        }
+    }
+
+    private void addCustomAttribute(JsonNode elementNode, UserTask userTask, String s) {
         String formType = JsonConverterUtil.getPropertyValueAsString(s, elementNode);
         if (StrUtil.isNotBlank(formType)) {
             ExtensionAttribute attribute = new ExtensionAttribute();
