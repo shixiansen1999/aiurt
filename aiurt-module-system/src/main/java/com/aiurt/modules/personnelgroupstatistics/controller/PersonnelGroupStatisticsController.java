@@ -3,7 +3,8 @@ package com.aiurt.modules.personnelgroupstatistics.controller;
 import cn.hutool.core.text.StrSpliter;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.aspect.annotation.PermissionData;
-import com.aiurt.modules.personnelgroupstatistics.model.PersonnelGroupModel;
+import com.aiurt.modules.personnelgroupstatistics.model.GroupModel;
+import com.aiurt.modules.personnelgroupstatistics.model.PersonnelModel;
 import com.aiurt.modules.personnelgroupstatistics.model.TeamPortraitModel;
 import com.aiurt.modules.personnelgroupstatistics.model.TeamUserModel;
 import com.aiurt.modules.personnelgroupstatistics.service.PersonnelGroupStatisticsService;
@@ -52,14 +53,14 @@ public class PersonnelGroupStatisticsController {
     @ApiOperation(value="班组统计", notes="班组统计")
     @GetMapping(value = "/groupList")
     @PermissionData(pageComponent = "")
-    public Result<List<PersonnelGroupModel>> queryGroupPageList(@RequestParam(name="departIds",required = false)  String departIds,
-                                                           @RequestParam(name="startTime") String startTime,
-                                                           @RequestParam(name="endTime")  String endTime,
-                                                           @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
-                                                           @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize) {
-        Page<PersonnelGroupModel> page = new Page<>(pageNo, pageSize);
+    public Result<List<GroupModel>> queryGroupPageList(@RequestParam(name="departIds",required = false)  String departIds,
+                                                       @RequestParam(name="startTime") String startTime,
+                                                       @RequestParam(name="endTime")  String endTime,
+                                                       @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
+                                                       @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize) {
+        Page<GroupModel> page = new Page<>(pageNo, pageSize);
         List<String> list = StrSpliter.splitTrim(departIds, ",", true);
-        List<PersonnelGroupModel> personnelGroupModels = personnelGroupStatisticsService.queryGroupPageList(list, startTime, endTime, page);
+        List<GroupModel> personnelGroupModels = personnelGroupStatisticsService.queryGroupPageList(list, startTime, endTime, page);
         return Result.OK(personnelGroupModels);
     }
 
@@ -86,14 +87,14 @@ public class PersonnelGroupStatisticsController {
     @ApiOperation(value="人员统计", notes="人员统计")
     @GetMapping(value = "/userList")
     @PermissionData(pageComponent = "")
-    public Result<List<PersonnelGroupModel>> queryUserPageList(@RequestParam(name="departIds",required = false)  String departIds,
-                                                           @RequestParam(name="startTime") String startTime,
-                                                           @RequestParam(name="endTime")  String endTime,
-                                                           @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
-                                                           @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize) {
-        Page<PersonnelGroupModel> page = new Page<>(pageNo, pageSize);
+    public Result<List<PersonnelModel>> queryUserPageList(@RequestParam(name="departIds",required = false)  String departIds,
+                                                          @RequestParam(name="startTime") String startTime,
+                                                          @RequestParam(name="endTime")  String endTime,
+                                                          @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
+                                                          @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize) {
+        Page<PersonnelModel> page = new Page<>(pageNo, pageSize);
         List<String> list = StrSpliter.splitTrim(departIds, ",", true);
-        List<PersonnelGroupModel> personnelGroupModels = personnelGroupStatisticsService.queryUserPageList(list, startTime, endTime, page);
+        List<PersonnelModel> personnelGroupModels = personnelGroupStatisticsService.queryUserPageList(list, startTime, endTime, page);
         return Result.OK(personnelGroupModels);
     }
 

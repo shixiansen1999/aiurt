@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.aiurt.modules.personnelgroupstatistics.mapper.PersonnelGroupStatisticsMapper">
 
-<select id="queryGroupPageList" resultType="com.aiurt.modules.personnelgroupstatistics.model.PersonnelGroupModel">
+<select id="queryGroupPageList" resultType="com.aiurt.modules.personnelgroupstatistics.model.GroupModel">
     select id as teamId ,depart_name as teamName
     from sys_depart where del_flag = 0
     and id in
@@ -11,7 +11,7 @@
     </foreach>
     </select>
 
-<select id="queryUserPageList" resultType="com.aiurt.modules.personnelgroupstatistics.model.PersonnelGroupModel">
+<select id="queryUserPageList" resultType="com.aiurt.modules.personnelgroupstatistics.model.PersonnelModel">
     select su.id as userId ,su.realname as realname
     from sys_user su
     left join sys_depart sd on su.org_id = sd.id
@@ -22,7 +22,7 @@
     </foreach>
     </select>
 
-<select id="userTrainFinishedNum" resultType="com.aiurt.modules.personnelgroupstatistics.model.TrainTaskDTO">
+<select id="userTrainFinishedNum" resultType="com.aiurt.modules.personnelgroupstatistics.dto.TrainTaskDTO">
     select btt.id as taskId ,btt.exam_status as examStatus
     from bd_train_task btt
     left join bd_train_task_user bttu on bttu.train_task_id = btt.id
@@ -50,5 +50,68 @@
     <if test="startTime != null and endTime != null">
         AND update_time BETWEEN #{startTime} AND #{endTime}
     </if>
+    </select>
+
+<select id="getUser" resultType="com.aiurt.modules.personnelgroupstatistics.model.TeamUserModel">
+    select id as userId,realname,avatar,work_no,org_name,job_grade from sys_user where id = #{userId}
+    </select>
+
+<select id="getRepairDuration" resultType="com.aiurt.modules.personnelgroupstatistics.dto.FaultRepairRecordDTO">
+    select
+    a.id,
+    a.appoint_user_name,
+    su.realname as appoint_real_name,
+    if(a.recevice_time is null, a.assign_time, a.recevice_time) as recevice_time,
+    a.start_time,
+    a.end_time
+    from
+    fault_repair_record a
+    LEFT JOIN fault f ON f.`code` = a.fault_code
+    LEFT JOIN sys_user su on a.appoint_user_name = su.username
+    where 1=1
+    AND  DATE_FORMAT(f.approval_pass_time ,'%Y-%m-%d') &gt;= DATE_FORMAT(#{startTime},'%Y-%m-%d')
+    AND  DATE_FORMAT(f.approval_pass_time ,'%Y-%m-%d') &lt;= DATE_FORMAT(#{endTime},'%Y-%m-%d')
+    <if test="userList != null and userList.size() != 0">
+        AND  su.id in
+        <foreach collection="userList" item="item" index="index" open="(" close=")" separator=",">
+            #{item}
+        </foreach>
+    </if>
+
+    </select>
+
+<select id="getDepart" resultType="com.aiurt.modules.personnelgroupstatistics.model.TeamPortraitModel">
+   select sd.id as teamId ,sd.depart_name as teamName,su.realname as teamLeaderName ,su.phone as teamLeaderPhone
+    from sys_depart sd
+    left join sys_user su on sd.manager_id = su.id
+    where sd.id =#{departId}
+    </select>
+
+<select id="getWorkArea" resultType="com.aiurt.modules.personnelgroupstatistics.model.TeamPortraitModel">
+    SELECT
+    wa.position AS position,
+    wa.name as siteName,
+    wa.code as workAreaCode
+    FROM
+    work_area wa
+    LEFT JOIN work_area_org wao ON wa.`code` = wao.work_area_code
+    left join sys_depart sd on wao.org_code = sd.org_code
+    WHERE
+    wa.del_flag = 0 AND wao.del_flag = 0 AND sd.id = #{departId}
+    GROUP BY
+    wa.`code`
+    </select>
+
+<select id="getStationDetails" resultType="com.aiurt.boot.index.dto.TeamWorkAreaDTO">
+    SELECT
+    cs.line_code,
+    cs.line_name,
+    cs.station_code,
+    cs.station_name,
+    cs.sort
+    FROM
+    `work_area_station` was
+    LEFT JOIN cs_station cs ON cs.station_code = was.station_code
+    WHERE was.work_area_code = #{workAreaCode}
     </select>
 </mapper>

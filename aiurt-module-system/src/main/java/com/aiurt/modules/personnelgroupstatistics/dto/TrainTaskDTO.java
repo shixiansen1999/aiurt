@@ -1,4 +1,4 @@
-package com.aiurt.modules.personnelgroupstatistics.model;
+package com.aiurt.modules.personnelgroupstatistics.dto;
 
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
