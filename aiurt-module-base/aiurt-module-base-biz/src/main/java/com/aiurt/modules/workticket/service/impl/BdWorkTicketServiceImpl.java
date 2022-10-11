@@ -129,18 +129,29 @@ public class BdWorkTicketServiceImpl extends ServiceImpl<BdWorkTicketMapper, BdW
         }
         BdWorkTicket workTicket = baseMapper.selectById(businessKey);
         LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        String day = DateUtil.format(new Date(), "yyyy-MM-dd HH:mm:ss");
         if (Objects.nonNull(workTicket)) {
             //更新状态
             workTicket.setState(states);
-
-
-            // 已审核待签发
-            if (states == 3) {
+            // 已审核待签发, 设置审核时间; 审核驳回
+            if (states == 3 || states == 11) {
                 // 设置审批人
                 workTicket.setWorkLeaderSign(loginUser.getRealname());
-                workTicket.setWorkLeaderSignTime(DateUtil.format(new Date(), "yyyy-MM-dd HH:mm:ss"));
-            }else if (states == 6) {
-
+                if (states == 3) {
+                    workTicket.setWorkLeaderSignTime(day);
+                }
+                // 已签发, 设置签发时间,签发人员; 签发驳回,驳回人员 ; 第一种工作票签发
+            }else if (states == 6 || states == 12 || states == 5) {
+                workTicket.setSigneUser(loginUser.getRealname());
+                if (states == 6 || states == 5) {
+                    workTicket.setSigneUserTime(day);
+                }
+                // 确认签字
+            } else if (states == 5  || states == 13) {
+                workTicket.setPowerDispatcherName(loginUser.getRealname());
+                if (states == 5 ) {
+                    workTicket.setPowerDispatcherTime(day);
+                }
             }
             updateById(workTicket);
         }
