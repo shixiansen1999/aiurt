@@ -560,6 +560,10 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
     @CacheEvict(value = {CacheConstant.SYS_USERS_CACHE}, allEntries = true)
     public void editUser(SysUser user) {
         //step.1 修改用户基础信息
+        SysDepart sysDepart= sysDepartMapper.selectById(user.getOrgId());
+        sysDepart = Optional.ofNullable(sysDepart).orElse(new SysDepart());
+        user.setOrgCode(sysDepart.getOrgCode());
+        user.setOrgName(sysDepart.getDepartName());
         this.updateById(user);
         String id = user.getId();
         //step.2 修改角色
