@@ -1,5 +1,6 @@
 package com.aiurt.modules.workticket.controller;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.modules.workticket.entity.BdWorkTicket;
@@ -12,6 +13,7 @@ import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.jeecg.common.system.api.ISysBaseAPI;
+import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -23,6 +25,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Api(tags="工作票打印")
 @Controller
@@ -68,7 +71,7 @@ public class BdWorkTicketPrintController {
             userNameList.add(workLeader);
         }
 
-        /*List<LoginUser> loginUserList = sysBaseAPI.getLoginUserList(userNameList);
+        List<LoginUser> loginUserList = sysBaseAPI.getLoginUserList(userNameList);
         if (CollUtil.isNotEmpty(loginUserList)) {
             List<String> collect = loginUserList.stream().map(LoginUser::getRealname).collect(Collectors.toList());
             workTicket.setWorkLeader(StrUtil.join(",", collect));
@@ -78,13 +81,12 @@ public class BdWorkTicketPrintController {
 
         // 站点
         if (StrUtil.isNotBlank(workTicket.getStation())) {
-            BdStation bdStation = bdStationService.getById(workTicket.getStation());
+            JSONObject bdStation = sysBaseAPI.getCsStationById(workTicket.getStation());
 
             if (Objects.nonNull(bdStation)) {
-                workTicket.setStation(bdStation.getTransformerSubstation());
+                workTicket.setStation(bdStation.getString("stationName"));
             }
-        }*/
-
+        }
 
         String workStartTime = workTicket.getWorkStartTime();
         JSONArray objects = JSONObject.parseArray(workStartTime);
@@ -98,12 +100,7 @@ public class BdWorkTicketPrintController {
         List<String> resNames = new ArrayList();
 
         for (int i = 0; i < jsonArray.size(); i++) {
-            String realName ="";
-            if (StrUtil.isBlank(realName)) {
-                resNames.add(jsonArray.getString(i));
-            } else {
-                resNames.add(realName);
-            }
+            resNames.add(jsonArray.getString(i));
         }
 
         workTicket.setResNames(resNames);//工作组成员名字

@@ -7,6 +7,7 @@ import com.aiurt.modules.basic.entity.SysAttachment;
 import com.aiurt.modules.common.entity.DeviceTypeTable;
 import com.aiurt.modules.position.entity.CsStation;
 import com.alibaba.fastjson.JSONObject;
+import io.swagger.util.Json;
 import org.jeecg.common.api.dto.OnlineAuthDTO;
 import org.jeecg.common.system.vo.*;
 
@@ -550,6 +551,11 @@ public interface ISysBaseAPI extends CommonAPI {
     List<SysDepartModel> getUserSysDepart(String userId);
 
 
+    /**
+     * 根据编码获取专业
+     * @param majorCode
+     * @return
+     */
     JSONObject getCsMajorByCode(String majorCode);
 
     /**
@@ -567,4 +573,19 @@ public interface ISysBaseAPI extends CommonAPI {
      * @return
      */
     Map<String, String> getStationNameByCode(List<String> stationCodes);
+
+
+    /**
+     * 根据用户名或者用户账号查询用户信息
+     * @param userNameList
+     * @return
+     */
+    List<LoginUser> getLoginUserList(List<String> userNameList);
+
+    /**
+     * 根据专业获取id
+     * @param station
+     * @return
+     */
+    JSONObject getCsStationById(String station);
 }
