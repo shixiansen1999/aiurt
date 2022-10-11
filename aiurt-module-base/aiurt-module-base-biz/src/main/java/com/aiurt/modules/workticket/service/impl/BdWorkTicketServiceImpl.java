@@ -1,13 +1,16 @@
 package com.aiurt.modules.workticket.service.impl;
 
 import cn.hutool.core.util.StrUtil;
+import com.aiurt.modules.workticket.dto.UploadPictureDTO;
 import com.aiurt.modules.workticket.dto.WorkTicketReqDTO;
 import com.aiurt.modules.workticket.dto.WorkTicketResDTO;
 import com.aiurt.modules.workticket.entity.BdWorkTicket;
 import com.aiurt.modules.workticket.mapper.BdWorkTicketMapper;
 import com.aiurt.modules.workticket.service.IBdWorkTicketService;
+import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,6 +28,7 @@ import java.util.*;
  * @Date:   2022-10-08
  * @Version: V1.0
  */
+@Slf4j
 @Service
 public class BdWorkTicketServiceImpl extends ServiceImpl<BdWorkTicketMapper, BdWorkTicket> implements IBdWorkTicketService {
 
@@ -180,6 +184,26 @@ public class BdWorkTicketServiceImpl extends ServiceImpl<BdWorkTicketMapper, BdW
         }
 
         return Boolean.FALSE;
+    }
+
+    /**
+     * 上传图片
+     *
+     * @param uploadPictureDTO
+     */
+    @Override
+    public void uploadPicture(UploadPictureDTO uploadPictureDTO) {
+        if (Objects.isNull(uploadPictureDTO) || StrUtil.isBlank(uploadPictureDTO.getId())
+                || Objects.isNull(uploadPictureDTO.getPath())) {
+            return;
+        }
+        log.info("请求参数:{}-{}", uploadPictureDTO.getId(), uploadPictureDTO.getPath());
+
+        BdWorkTicket workTicket = baseMapper.selectById(uploadPictureDTO.getId());
+
+        workTicket.setPicturePath(JSON.toJSONString(uploadPictureDTO.getPath()));
+
+        updateById(workTicket);
     }
 
     /**

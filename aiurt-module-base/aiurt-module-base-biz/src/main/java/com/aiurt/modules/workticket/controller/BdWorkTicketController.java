@@ -5,6 +5,7 @@ import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.system.base.controller.BaseController;
+import com.aiurt.modules.workticket.dto.UploadPictureDTO;
 import com.aiurt.modules.workticket.dto.WorkTicketReqDTO;
 import com.aiurt.modules.workticket.dto.WorkTicketResDTO;
 import com.aiurt.modules.workticket.entity.BdWorkTicket;
@@ -145,6 +146,14 @@ public class BdWorkTicketController extends BaseController<BdWorkTicket, IBdWork
 				}
 			}
 
+			if (StrUtil.equalsIgnoreCase("picture_path", s)) {
+				if (Objects.nonNull(o)) {
+					data.put(s,  JSONObject.parseArray((String) o));
+				}else {
+					data.put(s, Collections.emptyList());
+				}
+			}
+
 		});
 		return Result.OK(data);
 	}
@@ -198,6 +207,14 @@ public class BdWorkTicketController extends BaseController<BdWorkTicket, IBdWork
 	public Result<Boolean> authUpload(@PathVariable("id") String id) {
 		Boolean bl = bdWorkTicketService.authUpload(id);
 		return Result.OK(bl);
+	}
+
+	@PostMapping("upload_picture")
+	@ApiOperation(value = "工作票上传",notes = "工作票上传")
+	public Result<?> uploadPicture(@RequestBody UploadPictureDTO uploadPictureDTO) {
+
+		bdWorkTicketService.uploadPicture(uploadPictureDTO);
+		return Result.OK();
 	}
 
 }
