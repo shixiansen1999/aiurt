@@ -445,7 +445,7 @@
     </select>
     <select id="getFaultOrgReport" resultType="com.aiurt.modules.fault.dto.FaultReportDTO">
         select sd.id as orgId ,
-        sum(TIMESTAMPDIFF(second,IFNULL(fr.recevice_time,fr.assign_time),fr.end_time))-sum(IFNUll(op.hang_up_time,'0')) as num,
+        ifnull(sum(TIMESTAMPDIFF(second,IFNULL(fr.recevice_time,fr.assign_time),fr.end_time))-sum(IFNUll(op.hang_up_time,'0')),0) as num,
         count(fr.id) as num1,
         sum(twl.assort_num) as constructorsNum
         from sys_depart sd
@@ -478,7 +478,7 @@
     </select>
     <select id="getFaultUserReport" resultType="com.aiurt.modules.fault.dto.FaultReportDTO">
         select su.id as userId,
-         sum(TIMESTAMPDIFF(second,IFNULL(fr.recevice_time,fr.assign_time),fr.end_time))-sum(IFNUll(op.hang_up_time,'0')) as num
+        ifnull(sum(TIMESTAMPDIFF(second,IFNULL(fr.recevice_time,fr.assign_time),fr.end_time))-sum(IFNUll(op.hang_up_time,'0')),0) as num
         from sys_user su
         left join fault_repair_record fr on su.username = fr.appoint_user_name
         left join  fault f on f.code = fr.fault_code  AND date_format(f.approval_pass_time ,'%Y-%m-%d') BETWEEN date_format( #{startTime} ,'%Y-%m-%d') AND date_format( #{endTime} ,'%Y-%m-%d')

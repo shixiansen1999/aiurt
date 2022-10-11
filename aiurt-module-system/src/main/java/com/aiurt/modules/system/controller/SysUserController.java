@@ -11,7 +11,6 @@ import com.aiurt.common.util.PasswordUtil;
 import com.aiurt.common.util.RedisUtil;
 import com.aiurt.common.util.oConvertUtils;
 import com.aiurt.modules.common.entity.SelectTable;
-import com.aiurt.modules.device.entity.Device;
 import com.aiurt.modules.major.entity.CsMajor;
 import com.aiurt.modules.major.service.ICsMajorService;
 import com.aiurt.modules.subsystem.entity.CsSubsystem;
@@ -21,7 +20,6 @@ import com.aiurt.modules.system.mapper.*;
 import com.aiurt.modules.system.model.DepartIdModel;
 import com.aiurt.modules.system.model.SysUserSysDepartModel;
 import com.aiurt.modules.system.service.*;
-import com.aiurt.modules.system.vo.DepartAndUserTree;
 import com.aiurt.modules.system.vo.SysDepartUsersVO;
 import com.aiurt.modules.system.vo.SysUserRoleVO;
 import com.alibaba.fastjson.JSON;
@@ -539,7 +537,8 @@ public class SysUserController {
         sysUserService.update(new LambdaUpdateWrapper<SysUser>().in(SysUser::getId,ids.split(","))
                                                                 .eq(SysUser::getDelFlag,0)
                                                                 .set(SysUser::getOrgId,orgId)
-                                                                .set(SysUser::getOrgCode,sysDepart.getOrgCode()));
+                                                                .set(SysUser::getOrgCode,sysDepart.getOrgCode())
+                                                                .set(SysUser::getOrgName,sysDepart.getDepartName()));
         return Result.ok("修改成功!");
     }
     /**

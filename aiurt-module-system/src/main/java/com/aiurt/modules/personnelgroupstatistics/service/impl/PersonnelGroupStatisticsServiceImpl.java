@@ -1,6 +1,7 @@
 package com.aiurt.modules.personnelgroupstatistics.service.impl;
 
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.convert.Convert;
 import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUnit;
@@ -10,6 +11,7 @@ import com.aiurt.boot.api.PatrolApi;
 import com.aiurt.boot.dto.UserTeamParameter;
 import com.aiurt.boot.dto.UserTeamPatrolDTO;
 import com.aiurt.boot.index.dto.TeamWorkAreaDTO;
+import com.aiurt.boot.report.model.PatrolReport;
 import com.aiurt.boot.task.dto.PersonnelTeamDTO;
 import com.aiurt.modules.common.api.DailyFaultApi;
 import com.aiurt.modules.fault.dto.FaultReportDTO;
@@ -26,9 +28,14 @@ import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.LoginUser;
 import org.jeecg.common.system.vo.SysDepartModel;
+import org.jeecgframework.poi.excel.def.NormalExcelConstants;
+import org.jeecgframework.poi.excel.entity.ExportParams;
+import org.jeecgframework.poi.excel.view.JeecgEntityExcelView;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.servlet.ModelAndView;
 
+import javax.servlet.http.HttpServletRequest;
 import java.math.BigDecimal;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -51,12 +58,17 @@ public class PersonnelGroupStatisticsServiceImpl implements PersonnelGroupStatis
     private OverhaulApi overhaulApi;
 
     @Override
-    public List<GroupModel> queryGroupPageList(List<String> departIds, String startTime, String endTime, Page<GroupModel> page) {
+    public Page<GroupModel> queryGroupPageList(List<String> departIds, String startTime, String endTime, Page<GroupModel> page) {
         //获取当前登录用户管辖的班组
         List<String> ids = getDepartIds(departIds);
         if (CollUtil.isNotEmpty(ids)) {
             List<GroupModel> personnelGroupModels = personnelGroupStatisticsMapper.queryGroupPageList(ids, page);
             //获取所有班组巡检参数数据
+            UserTeamParameter userTeamParameter = new UserTeamParameter();
+            userTeamParameter.setStartDate(startTime);
+            userTeamParameter.setEndDate(endTime);
+            userTeamParameter.setOrgIdList(ids);
+            Map<String, UserTeamPatrolDTO> teamParameter = patrolApi.getUserTeamParameter(userTeamParameter);
 
             //获取所有班组维修参数数据
             Map<String, FaultReportDTO> faultOrgReport = dailyFaultApi.getFaultOrgReport(departIds, startTime, endTime);
@@ -66,7 +78,12 @@ public class PersonnelGroupStatisticsServiceImpl implements PersonnelGroupStatis
             for (GroupModel model : personnelGroupModels) {
                 String teamId = model.getTeamId();
                 //获取每一个班组巡检参数数据
-
+                UserTeamPatrolDTO userTeamPatrolDTO = teamParameter.get(teamId);
+                model.setPatrolTotalTime(Convert.toStr(userTeamPatrolDTO.getWorkHours()));
+                model.setPatrolScheduledTasks(Convert.toStr(userTeamPatrolDTO.getPlanTaskNumber()));
+                model.setPatrolCompletedTasks(Convert.toStr(userTeamPatrolDTO.getActualFinishTaskNumber()));
+                model.setPatrolPlanCompletion(Convert.toStr(userTeamPatrolDTO.getPlanFinishRate())+"%");
+                model.setPatrolMissingChecks(Convert.toStr(userTeamPatrolDTO.getMissPatrolNumber()));
                 //获取每一个班组维修参数数据
                 FaultReportDTO faultReportDTO = faultOrgReport.get(teamId);
                 model.setFaultTotalTime(Convert.toStr(faultReportDTO.getFailureTime()));
@@ -85,14 +102,14 @@ public class PersonnelGroupStatisticsServiceImpl implements PersonnelGroupStatis
                 model.setTrainFinish(Convert.toStr(integer));
             }
 
-            return personnelGroupModels;
+            return page.setRecords(personnelGroupModels);
         }else {
-            return CollUtil.newArrayList();
+            return page.setRecords(CollUtil.newArrayList());
         }
     }
 
     @Override
-    public List<PersonnelModel> queryUserPageList(List<String> departIds, String startTime, String endTime, Page<PersonnelModel> page) {
+    public Page<PersonnelModel> queryUserPageList(List<String> departIds, String startTime, String endTime, Page<PersonnelModel> page) {
         //获取当前登录用户管辖的班组
         List<String> ids = getDepartIds(departIds);
         if (CollUtil.isNotEmpty(ids)) {
@@ -147,9 +164,9 @@ public class PersonnelGroupStatisticsServiceImpl implements PersonnelGroupStatis
                 model.setTrainFinish(Convert.toStr(size));
             }
 
-            return personnelModels;
+            return page.setRecords(personnelModels);
         }else {
-            return CollUtil.newArrayList();
+            return page.setRecords(CollUtil.newArrayList());
         }
 
     }
@@ -170,7 +187,11 @@ public class PersonnelGroupStatisticsServiceImpl implements PersonnelGroupStatis
         List<String> departIds = new ArrayList<>();
         departIds.add(departId);
         //获取当前班组巡检参数数据
-
+        UserTeamParameter userTeamParameter = new UserTeamParameter();
+        userTeamParameter.setStartDate(DateUtil.formatDateTime(lastYear));
+        userTeamParameter.setEndDate(DateUtil.formatDateTime(end));
+        userTeamParameter.setOrgId(departId);
+        Map<String, UserTeamPatrolDTO> teamParameter = patrolApi.getUserTeamParameter(userTeamParameter);
         //获取当前班组维修参数数据
         Map<String, FaultReportDTO> faultOrgReport = dailyFaultApi.getFaultOrgReport(departIds, DateUtil.formatDateTime(lastYear), DateUtil.formatDateTime(end));
         ///获取当前班组检修参数数据
@@ -178,8 +199,8 @@ public class PersonnelGroupStatisticsServiceImpl implements PersonnelGroupStatis
 
         depart.setFaultTotalTime(Convert.toStr(faultOrgReport.get(departId).getFailureTime()));
         depart.setInspecitonTotalTime(Convert.toStr(teamInformation.get(departId).getOverhaulWorkingHours()));
-        //depart.setPatrolTotalTime(Convert.toStr(userParameter.get(departId).getWorkHours()));
-        //depart.setAverageMonthlyResidual(Convert.toStr(userParameter.get(departId).getAvgMissPatrolNumber()));
+        depart.setPatrolTotalTime(Convert.toStr(teamParameter.get(departId).getWorkHours()));
+        depart.setAverageMonthlyResidual(Convert.toStr(teamParameter.get(departId).getAvgMissPatrolNumber()));
         depart.setAverageFaultTime(Convert.toStr(faultOrgReport.get(departId).getRepairTime()));
 
         //班组关联工区信息
@@ -301,6 +322,44 @@ public class PersonnelGroupStatisticsServiceImpl implements PersonnelGroupStatis
         String s = bigDecimal.divide(bigDecimal1, 0).toString();
         user.setAverageTime(s);
         return user;
+    }
+
+    @Override
+    public ModelAndView reportGroupExport(HttpServletRequest request, String startTime, String endTime) {
+        ModelAndView mv = new ModelAndView(new JeecgEntityExcelView());
+        Page<GroupModel> page = new Page<>(1, 9999);
+        Page<GroupModel> groupModelPage = this.queryGroupPageList(null, startTime, endTime, page);
+        List<GroupModel> records = groupModelPage.getRecords();
+        if (CollectionUtil.isNotEmpty(records)) {
+            //导出文件名称
+            mv.addObject(NormalExcelConstants.FILE_NAME, "班组统计报表");
+            //excel注解对象Class
+            mv.addObject(NormalExcelConstants.CLASS, PatrolReport.class);
+            //自定义表格参数
+            mv.addObject(NormalExcelConstants.PARAMS, new ExportParams("统计分析-班组统计报表", "班组统计报表"));
+            //导出数据列表
+            mv.addObject(NormalExcelConstants.DATA_LIST, records);
+        }
+        return mv;
+    }
+
+    @Override
+    public ModelAndView reportUserExport(HttpServletRequest request, String startTime, String endTime) {
+        ModelAndView mv = new ModelAndView(new JeecgEntityExcelView());
+        Page<PersonnelModel> page = new Page<>(1, 9999);
+        Page<PersonnelModel> personnelModelPage = this.queryUserPageList(null, startTime, endTime, page);
+        List<PersonnelModel> records = personnelModelPage.getRecords();
+        if (CollectionUtil.isNotEmpty(records)) {
+            //导出文件名称
+            mv.addObject(NormalExcelConstants.FILE_NAME, "人员统计报表");
+            //excel注解对象Class
+            mv.addObject(NormalExcelConstants.CLASS, PatrolReport.class);
+            //自定义表格参数
+            mv.addObject(NormalExcelConstants.PARAMS, new ExportParams("统计分析-人员统计报表", "人员统计报表"));
+            //导出数据列表
+            mv.addObject(NormalExcelConstants.DATA_LIST, records);
+        }
+        return mv;
     }
 
     private List<String> getDepartIds(List<String> departIds) {
