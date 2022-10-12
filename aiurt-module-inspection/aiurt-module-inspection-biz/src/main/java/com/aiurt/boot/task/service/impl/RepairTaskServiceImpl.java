@@ -231,8 +231,8 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
             }
             //提交人名称
             if (e.getOverhaulId() != null) {
-                LoginUser userById = sysBaseApi.getUserById(e.getOverhaulId());
-                e.setOverhaulName(userById.getRealname());
+                String realName = repairTaskMapper.getRealName(e.getOverhaulId());
+                e.setOverhaulName(realName);
             }
             if (e.getDeviceId() != null && CollectionUtil.isNotEmpty(repairTasks)) {
                 //正常项
@@ -325,8 +325,8 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
             }
             //提交人名称
             if (e.getOverhaulId() != null) {
-                LoginUser userById = sysBaseApi.getUserById(e.getOverhaulId());
-                e.setOverhaulName(userById.getUsername());
+                String realName = repairTaskMapper.getRealName(e.getOverhaulId());
+                e.setOverhaulName(realName);
             }
             if (e.getDeviceId() != null && CollectionUtil.isNotEmpty(repairTasks)) {
                 //正常项
@@ -527,8 +527,8 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
         }
         //提交人名称
         if (checkListDTO.getOverhaulId() != null) {
-            LoginUser userById = sysBaseApi.getUserById(checkListDTO.getOverhaulId());
-            checkListDTO.setOverhaulName(userById.getRealname());
+            String realName = repairTaskMapper.getRealName(checkListDTO.getOverhaulId());
+            checkListDTO.setOverhaulName(realName);
         }
 
         //检修位置
@@ -647,9 +647,9 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
             }
             //检修人名称
             if (r.getStaffId() != null) {
-                LoginUser userById = sysBaseApi.getUserById(r.getStaffId());
-                if (ObjectUtil.isNotNull(userById)){
-                    r.setStaffName(userById.getRealname());
+                String realName = repairTaskMapper.getRealName(r.getStaffId());
+                if (ObjectUtil.isNotNull(realName)){
+                    r.setStaffName(realName);
                 }
             }
             //备注
@@ -732,16 +732,16 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
             }
         }
         LoginUser loginUser = manager.checkLogin();
-        LoginUser userById = sysBaseApi.getUserById(loginUser.getId());
+        String realName = repairTaskMapper.getRealName(loginUser.getId());
         RepairTask repairTask1 = new RepairTask();
-        status(examineDTO, loginUser, userById, repairTask1, repairTask.getRepairPoolId());
+        status(examineDTO, loginUser, realName, repairTask1, repairTask.getRepairPoolId());
         if (examineDTO.getStatus().equals(InspectionConstant.IS_EFFECT) && repairTask.getIsReceipt().equals(InspectionConstant.IS_EFFECT)) {
             //修改检修任务状态
             repairTask1.setId(examineDTO.getId());
             repairTask1.setErrorContent(examineDTO.getContent());
             repairTask1.setConfirmTime(new Date());
             repairTask1.setConfirmUserId(loginUser.getId());
-            repairTask1.setConfirmUserName(userById.getRealname());
+            repairTask1.setConfirmUserName(realName);
             repairTask1.setStatus(InspectionConstant.PENDING_RECEIPT);
             repairTaskMapper.updateById(repairTask1);
             // 修改对应检修计划状态
@@ -870,21 +870,21 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
         }
         RepairTask repairTask1 = new RepairTask();
         LoginUser loginUser = manager.checkLogin();
-        LoginUser userById = sysBaseApi.getUserById(loginUser.getId());
-        status(examineDTO, loginUser, userById, repairTask1, repairTask.getRepairPoolId());
+        String realName = repairTaskMapper.getRealName(loginUser.getId());
+        status(examineDTO, loginUser, realName, repairTask1, repairTask.getRepairPoolId());
         if (examineDTO.getStatus().equals(InspectionConstant.IS_EFFECT)) {
-            setId(examineDTO, repairTask1, loginUser, userById, repairTask.getRepairPoolId());
+            setId(examineDTO, repairTask1, loginUser, realName, repairTask.getRepairPoolId());
         }
     }
 
-    private void status(ExamineDTO examineDTO, LoginUser loginUser, LoginUser userById, RepairTask repairTask1, String id) {
+    private void status(ExamineDTO examineDTO, LoginUser loginUser, String realName, RepairTask repairTask1, String id) {
         if (examineDTO.getStatus().equals(InspectionConstant.NO_IS_EFFECT)) {
             //修改检修任务状态
             repairTask1.setId(examineDTO.getId());
             repairTask1.setErrorContent(examineDTO.getContent());
             repairTask1.setConfirmTime(new Date());
             repairTask1.setConfirmUserId(loginUser.getId());
-            repairTask1.setConfirmUserName(userById.getRealname());
+            repairTask1.setConfirmUserName(realName);
             repairTask1.setStatus(InspectionConstant.REJECTED);
             repairTaskMapper.updateById(repairTask1);
 
@@ -898,13 +898,13 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
     }
 
 
-    private void setId(ExamineDTO examineDTO, RepairTask repairTask1, LoginUser loginUser, LoginUser userById, String id) {
+    private void setId(ExamineDTO examineDTO, RepairTask repairTask1, LoginUser loginUser, String realName, String id) {
         //修改检修任务状态
         repairTask1.setId(examineDTO.getId());
         repairTask1.setErrorContent(examineDTO.getContent());
         repairTask1.setReceiptTime(new Date());
         repairTask1.setReceiptUserId(loginUser.getId());
-        repairTask1.setReceiptUserName(userById.getRealname());
+        repairTask1.setReceiptUserName(realName);
         repairTask1.setStatus(InspectionConstant.COMPLETED);
         repairTaskMapper.updateById(repairTask1);
 
