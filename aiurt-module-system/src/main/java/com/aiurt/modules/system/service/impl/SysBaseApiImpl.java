@@ -1698,7 +1698,7 @@ public class SysBaseApiImpl implements ISysBaseAPI {
      */
     @Override
     public List<LoginUser> getLoginUserList(List<String> userNameList) {
-        if (org.jeecg.common.util.oConvertUtils.isEmpty(userNameList)) {
+        if (CollUtil.isEmpty(userNameList)) {
             return Collections.emptyList();
         }
         List<LoginUser> loginUserList = new ArrayList<>();

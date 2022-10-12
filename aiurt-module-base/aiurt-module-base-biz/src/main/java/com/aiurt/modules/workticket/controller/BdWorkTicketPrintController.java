@@ -56,8 +56,6 @@ public class BdWorkTicketPrintController {
 
         BdWorkTicket workTicket = bdWorkTicketService.getById(id);
 
-
-
         if (Objects.isNull(workTicket)) {
             throw new AiurtBootException("数据不存在");
         }
@@ -76,7 +74,7 @@ public class BdWorkTicketPrintController {
             List<String> collect = loginUserList.stream().map(LoginUser::getRealname).collect(Collectors.toList());
             workTicket.setWorkLeader(StrUtil.join(",", collect));
         } else {
-            workTicket.setWorkLeader(workLeader);
+            workTicket.setWorkLeader(StrUtil.join(",", userNameList));
         }
 
         // 站点
