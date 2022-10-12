@@ -163,15 +163,18 @@ public class PersonnelTeamService implements OverhaulApi {
             //获取班组所属用户idMap
             Map<String, PersonnelTeamDTO> collect4 = scheduledTask.stream().collect(Collectors.toMap(PersonnelTeamDTO::getUserId, v -> v));
 
+            //获取班组所属用户idList
+            List<String> collect5 = scheduledTask.stream().map(PersonnelTeamDTO::getUserId).collect(Collectors.toList());
 
-            if (CollectionUtil.isNotEmpty(teamTask)) {
+            if (CollectionUtil.isNotEmpty(collect2)) {
 
                 for (Map.Entry<String, PersonnelTeamDTO> entry : collect2.entrySet()) {
-                    PersonnelTeamDTO personnelTeamDTO = new PersonnelTeamDTO();
 
-                    if (CollectionUtil.isNotEmpty(scheduledTask)) {
+                    if (CollectionUtil.isNotEmpty(collect4)) {
 
                         for (Map.Entry<String, PersonnelTeamDTO> entry1 : collect4.entrySet()) {
+
+                            PersonnelTeamDTO personnelTeamDTO = new PersonnelTeamDTO();
                             //根据用户id查询班组编码
                             LoginUser userById = sysBaseAPI.getUserById(entry1.getKey());
                             String orgCode = userById.getOrgCode();
@@ -192,32 +195,32 @@ public class PersonnelTeamService implements OverhaulApi {
                                 String string = NumberUtil.roundStr(String.valueOf(div), 2);
                                 personnelTeamDTO.setPlanCompletionRate(string);
 
-                                //获取班组所属用户idList
-                                List<String> collect3 = collect1.stream().filter(q -> q.equals(entry1.getKey())).collect(Collectors.toList());
+                                if (CollectionUtil.isNotEmpty(collect5)){
+                                    //过滤掉不是同一班组的人员
+                                    List<String> collect3 = collect5.stream().filter(q -> q.equals(entry1.getKey())).collect(Collectors.toList());
 
-                                if (CollectionUtil.isNotEmpty(collect3)){
-                                    //获取所有检修任务人员总工时和所有同行人总工时
-                                    List<PersonnelTeamDTO> teamTime = personnelTeamMapper.getTeamTime(collect3, startDate, endDate);
-                                    List<PersonnelTeamDTO> teamPeerTime = personnelTeamMapper.getTeamPeerTime(collect3, startDate, endDate);
-                                    List<String> collect = teamTime.stream().map(PersonnelTeamDTO::getTaskId).collect(Collectors.toList());
-                                    //若同行人和指派人同属一个班组，则该班组只取一次工时，不能累加
-                                    List<PersonnelTeamDTO> dtos = teamPeerTime.stream().filter(t -> !collect.contains(t.getTaskId())).collect(Collectors.toList());
-                                    dtos.addAll(teamTime);
-                                    BigDecimal sum = new BigDecimal("0.00");
-                                    for (PersonnelTeamDTO dto : dtos) {
-                                        sum = sum.add(dto.getInspecitonTotalTime());
+                                    if (CollectionUtil.isNotEmpty(collect3)){
+                                        //获取所有检修任务人员总工时和所有同行人总工时
+                                        List<PersonnelTeamDTO> teamTime = personnelTeamMapper.getTeamTime(collect3, startDate, endDate);
+                                        List<PersonnelTeamDTO> teamPeerTime = personnelTeamMapper.getTeamPeerTime(collect3, startDate, endDate);
+                                        List<String> collect = teamTime.stream().map(PersonnelTeamDTO::getTaskId).collect(Collectors.toList());
+                                        //若同行人和指派人同属一个班组，则该班组只取一次工时，不能累加
+                                        List<PersonnelTeamDTO> dtos = teamPeerTime.stream().filter(t -> !collect.contains(t.getTaskId())).collect(Collectors.toList());
+                                        dtos.addAll(teamTime);
+                                        BigDecimal sum = new BigDecimal("0.00");
+                                        for (PersonnelTeamDTO dto : dtos) {
+                                            sum = sum.add(dto.getInspecitonTotalTime());
+                                        }
+                                        //秒转时
+                                        BigDecimal decimal = sum.divide(new BigDecimal("3600"),1, BigDecimal.ROUND_HALF_UP);
+                                        personnelTeamDTO.setOverhaulWorkingHours(decimal.longValue());
+                                    }else {
+                                        personnelTeamDTO.setOverhaulWorkingHours(0L);
                                     }
-                                    //秒转时
-                                    BigDecimal decimal = sum.divide(new BigDecimal("3600"),1, BigDecimal.ROUND_HALF_UP);
-                                    personnelTeamDTO.setOverhaulWorkingHours(decimal.longValue());
-                                }else {
-                                    personnelTeamDTO.setOverhaulWorkingHours(0L);
                                 }
-
                                 personnelTeamDTO.setTeamId(userById.getOrgId());
                                 map.put(userById.getOrgId(), personnelTeamDTO);
                             }
-
                         }
                     }
                 }
