@@ -1,11 +1,20 @@
 package com.aiurt.modules.listener;
 
+import com.aiurt.modules.constants.FlowConstant;
+import com.aiurt.modules.modeler.entity.ActCustomTaskExt;
+import com.aiurt.modules.modeler.service.IActCustomTaskExtService;
+import org.apache.shiro.SecurityUtils;
 import org.flowable.common.engine.api.delegate.event.FlowableEvent;
 import org.flowable.common.engine.api.delegate.event.FlowableEventListener;
 import org.flowable.common.engine.impl.event.FlowableEntityEventImpl;
+import org.flowable.engine.ProcessEngines;
 import org.flowable.task.service.impl.persistence.entity.TaskEntity;
+import org.jeecg.common.system.vo.LoginUser;
+import org.jeecg.common.util.SpringContextUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.Objects;
 
 /**
  * @author fgw
@@ -36,8 +45,44 @@ public class TaskCreateListener implements FlowableEventListener {
         logger.debug("活动启动监听事件,设置办理人员......");
         TaskEntity taskEntity = (TaskEntity) entity;
         String taskId = taskEntity.getId();
+        String processDefinitionId = taskEntity.getProcessDefinitionId();
 
-        // 查询相关配置
+        IActCustomTaskExtService taskExtService = SpringContextUtils.getBean(IActCustomTaskExtService.class);
+
+        ActCustomTaskExt taskExt = taskExtService.getByProcessDefinitionIdAndTaskId(processDefinitionId, taskId);
+
+        LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        //
+        if (Objects.isNull(taskExt) && Objects.nonNull(loginUser)) {
+            // 设置当前登录人员
+            ProcessEngines.getDefaultProcessEngine().getTaskService().setAssignee(taskId, loginUser.getUsername());
+        }
+
+        String groupType = taskExt.getGroupType();
+
+        switch (groupType) {
+            // 角色
+            case "candidateRole":
+                break;
+            // 候选人员
+            case "candidateUsers":
+                break;
+            // 指定人员
+            case "assignee":
+                break;
+            // 机构
+            case "candidateDept":
+                break;
+            // 动态
+            case "dynamic":
+                break;
+            // 流程发起人
+            default:
+                String initiator = ProcessEngines.getDefaultProcessEngine().getRuntimeService()
+                        .getVariable(taskEntity.getProcessInstanceId(), FlowConstant.PROC_INSTANCE_INITIATOR_VAR, String.class);
+                ProcessEngines.getDefaultProcessEngine().getTaskService().setAssignee(taskId, initiator);
+                break;
+        }
     }
 
     /**

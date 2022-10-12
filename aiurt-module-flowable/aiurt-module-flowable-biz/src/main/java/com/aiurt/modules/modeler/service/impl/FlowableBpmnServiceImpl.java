@@ -249,6 +249,8 @@ public class FlowableBpmnServiceImpl implements IFlowableBpmnService {
         // todo
         List<ActCustomTaskExt> actCustomTaskExtList = buildTaskExtList(bpmnModel);
         if (CollUtil.isNotEmpty(actCustomTaskExtList)) {
+            // 不需要操作了
+            /*
             BaseFlowIdentityExtHelper flowIdentityExtHelper = flowCustomExtFactory.getFlowIdentityExtHelper();
             for (ActCustomTaskExt t : actCustomTaskExtList) {
                 UserTask userTask = (UserTask) elementMap.get(t.getTaskId());
@@ -264,14 +266,14 @@ public class FlowableBpmnServiceImpl implements IFlowableBpmnService {
                     flowApiService.addTaskCreateListener(userTask, flowIdentityExtHelper.getDeptPostLeaderListener());
                 } else if (StrUtil.equals(t.getGroupType(), FlowConstant.GROUP_TYPE_POST)) {
                     // todo 没有岗位暂时不处理
-                    /*Assert.notNull(t.getDeptPostListJson());
+                    Assert.notNull(t.getDeptPostListJson());
                     List<FlowTaskPostCandidateGroup> groupDataList =
                             JSON.parseArray(t.getDeptPostListJson(), FlowTaskPostCandidateGroup.class);
                     List<String> candidateGroupList =
                             FlowTaskPostCandidateGroup.buildCandidateGroupList(groupDataList);
-                    userTask.setCandidateGroups(candidateGroupList);*/
+                    userTask.setCandidateGroups(candidateGroupList);
                 }
-            }
+            }*/
         }
 
         // 部署流程
@@ -363,10 +365,32 @@ public class FlowableBpmnServiceImpl implements IFlowableBpmnService {
         // todo
         taskAttributeMap.forEach((key,list)->{
             ExtensionAttribute extensionAttribute = list.get(0);
+            // 页面信息, 比如业务操作接口, 前端url, 前端类型
             if (StrUtil.equalsAnyIgnoreCase(extensionAttribute.getName(),"formType", "formUrl", "service")) {
                 form.put(extensionAttribute.getName(), extensionAttribute.getValue());
+                // 流程变量
             }else if (StrUtil.equalsAnyIgnoreCase(extensionAttribute.getName(), "formtaskVariables")) {
                 variable.put(extensionAttribute.getName(), extensionAttribute.getValue());
+                // 角色
+            } else if (StrUtil.equalsIgnoreCase(extensionAttribute.getName(), "role")) {
+                flowTaskExt.setRoleIds(extensionAttribute.getValue());
+                // 部门
+            } else if (StrUtil.equalsIgnoreCase(extensionAttribute.getName(), "dept")) {
+                flowTaskExt.setDeptIds(extensionAttribute.getValue());
+                // 用户id
+            } else if (StrUtil.equalsIgnoreCase(extensionAttribute.getName(), "user")) {
+                flowTaskExt.setCandidateUsernames(extensionAttribute.getValue());
+                // 动态
+            } else if (StrUtil.equalsIgnoreCase(extensionAttribute.getName(), "dynamicPerson")) {
+                flowTaskExt.setDynamicVariable(extensionAttribute.getValue());
+                flowTaskExt.setGroupType("dynamic");
+            }
+
+            // 设置
+            if (StrUtil.equalsIgnoreCase(extensionAttribute.getName(), "userType")) {
+                if (StrUtil.isNotBlank(extensionAttribute.getValue())) {
+                    flowTaskExt.setGroupType(extensionAttribute.getValue());
+                }
             }
         });
 
