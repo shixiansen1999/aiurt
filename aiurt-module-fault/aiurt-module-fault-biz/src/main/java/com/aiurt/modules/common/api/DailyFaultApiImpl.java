@@ -227,7 +227,7 @@ public class DailyFaultApiImpl implements DailyFaultApi {
             }
             f.setFailureTime(new BigDecimal((1.0 * (f.getNum()) / 3600)).setScale(2, BigDecimal.ROUND_HALF_UP));
             BigDecimal totalPrice = doubles.stream().map(BigDecimal::abs).reduce(BigDecimal.ZERO, BigDecimal::add);
-            f.setConstructionHours(totalPrice);
+            f.setConstructionHours(totalPrice.setScale(2,BigDecimal.ROUND_HALF_UP));
             map.put(f.getOrgId(),f);
         });
         return map;
@@ -271,7 +271,7 @@ public class DailyFaultApiImpl implements DailyFaultApi {
             f.setConstructorsNum(fau.getConstructorsNum());
             f.setFailureTime(new BigDecimal((1.0 * (f.getNum()) / 3600)).setScale(2, BigDecimal.ROUND_HALF_UP));
             BigDecimal totalPrice = doubles.stream().map(BigDecimal::abs).reduce(BigDecimal.ZERO, BigDecimal::add);
-            f.setConstructionHours(totalPrice);
+            f.setConstructionHours(totalPrice.setScale(2,BigDecimal.ROUND_HALF_UP));
             map.put(f.getUserId(),f);
         });
         return map;
