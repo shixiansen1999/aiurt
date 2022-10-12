@@ -3,6 +3,7 @@ package com.aiurt.modules.modeler.controller;
 
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.aspect.annotation.AutoLog;
+import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.modules.modeler.dto.ModelInfoVo;
 import com.aiurt.modules.modeler.service.IFlowableBpmnService;
 import io.swagger.annotations.Api;
@@ -44,6 +45,9 @@ public class BpmnDesignerController {
             @ApiImplicitParam(name = "modelId", value = "流程模板id", required = true, paramType = "path")
     })
     public Result<ModelInfoVo> getBpmnByModelId(@PathVariable String modelId) {
+        if (StrUtil.equalsIgnoreCase("undefined", modelId)) {
+            throw new AiurtBootException("请求参数有误!");
+        }
         ModelInfoVo modelInfoVo = flowableBpmnService.loadBpmnXmlByModelId(modelId);
         return Result.ok(modelInfoVo);
     }

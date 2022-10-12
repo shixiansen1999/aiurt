@@ -178,19 +178,23 @@ public class CustomUserTaskJsonConverter  extends UserTaskJsonConverter {
                 }
             }
 
+            // 选人类型， initiator是为：流程发起人
+            addCustomAttributeForPrefix(elementNode, userTask, "flowable","userType");
+            // 角色
+            addCustomAttributeForPrefix(elementNode, userTask, "flowable","role");
+            // 部门
+            addCustomAttributeForPrefix(elementNode, userTask, "flowable","dept");
+            // 指定人员
+            addCustomAttributeForPrefix(elementNode, userTask, "flowable","user");
+
             // 表单页面 类型
-            // addCustomAttribute(elementNode, userTask, "formData.formType");
             addCustomAttributeForPrefix(elementNode, userTask, "flowable","formType");
             // 表单url
-            // addCustomAttribute(elementNode, userTask, "formData.formUrl");
             addCustomAttributeForPrefix(elementNode, userTask,"flowable", "formUrl");
             // 业务处理
-           // addCustomAttribute(elementNode, userTask, "formData.service");
             addCustomAttributeForPrefix(elementNode, userTask, "flowable", "service");
-
-            addCustomAttributeForPrefix(elementNode, userTask,"flowable", "formtaskVariables");
             // 流程变量
-            // addCustomAttribute(elementNode, userTask, "flowable.formtaskVariables");
+            addCustomAttributeForPrefix(elementNode, userTask,"flowable", "formtaskVariables");
 
             JsonNode deptPostList = JsonConverterUtil.getProperty("deptPostList", elementNode);
 

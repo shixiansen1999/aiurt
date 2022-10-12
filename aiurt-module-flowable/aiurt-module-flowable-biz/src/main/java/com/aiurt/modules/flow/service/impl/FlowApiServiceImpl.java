@@ -711,7 +711,7 @@ public class FlowApiServiceImpl implements FlowApiService {
      */
     @Override
     public HighLightedNodeDTO viewHighlightFlowData(String processInstanceId) {
-
+        log.info("请求参数：{}", processInstanceId);
         HistoricProcessInstance hpi = this.getHistoricProcessInstance(processInstanceId);
         BpmnModel bpmnModel = this.getBpmnModelByDefinitionId(hpi.getProcessDefinitionId());
         //Process对象集合
@@ -1004,7 +1004,7 @@ public class FlowApiServiceImpl implements FlowApiService {
                     .processDefinitionId(historicProcessInstance.getProcessDefinitionId())
                     .endTime(historicProcessInstance.getEndTime())
                     .durationInMillis(historicProcessInstance.getDurationInMillis())
-                    .processInstanceId(historicProcessInstance.getProcessDefinitionId())
+                    .processInstanceId(historicProcessInstance.getId())
                     .processDefinitionKey(historicProcessInstance.getProcessDefinitionKey())
                     .realName(realName)
                     .userName(startUserId).build();
