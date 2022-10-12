@@ -382,6 +382,8 @@ public class FlowApiServiceImpl implements FlowApiService {
                 flowHisTaskDTO.setProcessInstanceStartTime(re.getCreateTime());
                 flowHisTaskDTO.setTaskName(re.getName());
                 flowHisTaskDTO.setFormKey(re.getFormKey());
+                flowHisTaskDTO.setProcessInstanceId(re.getProcessInstanceId());
+                flowHisTaskList.add(flowHisTaskDTO);
             });
         }
 
