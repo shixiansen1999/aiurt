@@ -30,6 +30,9 @@ public class TeamUserModel {
     @ApiModelProperty(value = " 部门name(所属部门)")
     private String orgName;
 
+    @ApiModelProperty(value = "岗位")
+    private String jobName;
+
     @ApiModelProperty(value = "岗位职级：1初级、2中级、3高级、4上岗及以下")
     @Dict(dicCode = "job_grade")
     private Integer jobGrade;
