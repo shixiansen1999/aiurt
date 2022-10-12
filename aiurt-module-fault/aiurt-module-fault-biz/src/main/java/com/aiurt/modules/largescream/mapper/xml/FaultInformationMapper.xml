@@ -573,14 +573,13 @@
         select su.id as userId,
         ifnull(sum(TIMESTAMPDIFF(second,IFNULL(fr.recevice_time,fr.assign_time),fr.end_time))-sum(IFNUll(op.hang_up_time,'0')),0) as num
         from fault_repair_record fr
-        left join  sys_user su on su.username = fr.appoint_user_name
+        left join  sys_user su on su.username = fr.appoint_user_name   AND date_format(fr.end_time ,'%Y-%m-%d') BETWEEN date_format( #{startTime} ,'%Y-%m-%d') AND date_format( #{endTime} ,'%Y-%m-%d')
         left join  fault f on f.code = fr.fault_code
         LEFT JOIN operation_process op ON op.fault_code = fr.fault_code
         where su.del_flag =0
         <if test="userId != null ">
             AND su.id = #{userId}
         </if>
-        AND date_format(f.approval_pass_time ,'%Y-%m-%d') BETWEEN date_format( #{startTime} ,'%Y-%m-%d') AND date_format( #{endTime} ,'%Y-%m-%d')
         group by su.id
     </select>
     <select id="getUserConstructionHours" resultType="java.lang.String">
