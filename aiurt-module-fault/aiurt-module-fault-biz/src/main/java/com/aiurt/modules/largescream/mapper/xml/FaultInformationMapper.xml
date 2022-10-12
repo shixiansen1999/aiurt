@@ -572,26 +572,15 @@
     <select id="getFaultUserReport" resultType="com.aiurt.modules.fault.dto.FaultReportDTO">
         select su.id as userId,
         ifnull(sum(TIMESTAMPDIFF(second,IFNULL(fr.recevice_time,fr.assign_time),fr.end_time))-sum(IFNUll(op.hang_up_time,'0')),0) as num
-        from sys_user su
-        left join fault_repair_record fr on su.username = fr.appoint_user_name
-        left join  fault f on f.code = fr.fault_code  AND date_format(f.approval_pass_time ,'%Y-%m-%d') BETWEEN date_format( #{startTime} ,'%Y-%m-%d') AND date_format( #{endTime} ,'%Y-%m-%d')
+        from fault_repair_record fr
+        left join  sys_user su on su.username = fr.appoint_user_name
+        left join  fault f on f.code = fr.fault_code
         LEFT JOIN operation_process op ON op.fault_code = fr.fault_code
         where su.del_flag =0
         <if test="userId != null ">
             AND su.id = #{userId}
         </if>
-        <if test="orgCodes != null and orgCodes.size>0 and teamId == null">
-            and su.org_code in
-            <foreach collection="orgCodes" item="item" open="(" separator="," close=")">
-                #{item}
-            </foreach>
-        </if>
-        <if test="teamId != null and teamId.size>0">
-            and su.org_id in
-            <foreach collection="teamId" item="item" open="(" separator="," close=")">
-                #{item}
-            </foreach>
-        </if>
+        AND date_format(f.approval_pass_time ,'%Y-%m-%d') BETWEEN date_format( #{startTime} ,'%Y-%m-%d') AND date_format( #{endTime} ,'%Y-%m-%d')
         group by su.id
     </select>
     <select id="getUserConstructionHours" resultType="java.lang.String">

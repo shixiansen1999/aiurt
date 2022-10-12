@@ -239,11 +239,13 @@ public class DailyFaultApiImpl implements DailyFaultApi {
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         List<SysDepartModel> sysDepartModels = sysBaseAPI.getUserSysDepart(sysUser.getId());
         List<String> orgCodes = sysDepartModels.stream().map(SysDepartModel::getOrgCode).collect(Collectors.toList());
-        List<FaultReportDTO> faultReportDTOS = faultInformationMapper.getFaultUserReport(teamId,startTime,endTime,orgCodes,userId);
-        faultReportDTOS.forEach(f->{
-            Long sum = faultInformationMapper.getUserTimes(f.getUserId(),startTime,endTime);
-            f.setNum(f.getNum()+sum);
-            List<String> str = faultInformationMapper.getUserConstructionHours(f.getUserId(),startTime,endTime);
+        List<LoginUser> loginUsers = sysBaseAPI.getUserByDepIds(orgCodes);
+        List<FaultReportDTO> faultReportDTOS = new ArrayList<>();
+        loginUsers.forEach(f->{
+            FaultReportDTO faultReportDTO = faultInformationMapper.getFaultUserReport(teamId,startTime,endTime,orgCodes,f.getId());
+            Long sum = faultInformationMapper.getUserTimes(f.getId(),startTime,endTime);
+            faultReportDTO.setNum(faultReportDTO.getNum()+sum);
+            List<String> str = faultInformationMapper.getUserConstructionHours(f.getId(),startTime,endTime);
             List<BigDecimal> doubles = new ArrayList<>();
             str.forEach(s -> {
                 List<String> str1 = Arrays.asList(s.split(","));
@@ -261,18 +263,18 @@ public class DailyFaultApiImpl implements DailyFaultApi {
                     }
                 });
             });
-            FaultReportDTO  fau = faultInformationMapper.getUserConstructorsNum(f.getUserId(),startTime,endTime);
+            FaultReportDTO  fau = faultInformationMapper.getUserConstructorsNum(f.getId(),startTime,endTime);
             if (fau.getNum1()==0){
-                f.setRepairTime("0");
+                faultReportDTO.setRepairTime("0");
             }else {
-                Long s = (f.getNum()/fau.getNum1())/60;
-                f.setRepairTime(s.toString());
+                Long s = (faultReportDTO.getNum()/fau.getNum1())/60;
+                faultReportDTO.setRepairTime(s.toString());
             }
-            f.setConstructorsNum(fau.getConstructorsNum());
-            f.setFailureTime(new BigDecimal((1.0 * (f.getNum()) / 3600)).setScale(2, BigDecimal.ROUND_HALF_UP));
+            faultReportDTO.setConstructorsNum(fau.getConstructorsNum());
+            faultReportDTO.setFailureTime(new BigDecimal((1.0 * (faultReportDTO.getNum()) / 3600)).setScale(2, BigDecimal.ROUND_HALF_UP));
             BigDecimal totalPrice = doubles.stream().map(BigDecimal::abs).reduce(BigDecimal.ZERO, BigDecimal::add);
-            f.setConstructionHours(totalPrice.setScale(2,BigDecimal.ROUND_HALF_UP));
-            map.put(f.getUserId(),f);
+            faultReportDTO.setConstructionHours(totalPrice.setScale(2,BigDecimal.ROUND_HALF_UP));
+            map.put(f.getId(),faultReportDTO);
         });
         return map;
     }

@@ -219,7 +219,7 @@ public interface FaultInformationMapper {
      * @param orgCodes
      * @return
      */
-    List<FaultReportDTO> getFaultUserReport(@Param("teamId") List<String> teamId,@Param("startTime") String startTime,@Param("endTime") String endTime, @Param("orgCodes")List<String> orgCodes,@Param("userId") String userId);
+   FaultReportDTO getFaultUserReport(@Param("teamId") List<String> teamId,@Param("startTime") String startTime,@Param("endTime") String endTime, @Param("orgCodes")List<String> orgCodes,@Param("userId") String userId);
 
     /**
      * 查询配合工时
