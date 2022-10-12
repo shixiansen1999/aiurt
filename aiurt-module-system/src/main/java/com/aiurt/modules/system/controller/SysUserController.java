@@ -1627,6 +1627,12 @@ public class SysUserController {
         if (StringUtils.isNotBlank(user.getId())) {
             queryWrapper.ne(SysUser::getId, user.getId());
         }
+        if (StringUtils.isNotBlank(user.getUsername())) {
+            queryWrapper.like(SysUser::getUsername, user.getUsername());
+        }
+        if (StringUtils.isNotBlank(user.getRealname())) {
+            queryWrapper.like(SysUser::getRealname, user.getRealname());
+        }
         IPage<SysUser> pageList = sysUserService.page(page, queryWrapper);
         return Result.OK(pageList);
     }
