@@ -703,36 +703,23 @@
    FROM
 	sys_depart sd
   WHERE
-	 <if test="condition.orgIdList != null and condition.orgIdList.size>0 ">
+	 <if test="orgIdList != null and orgIdList.size>0 ">
 	 sd.id IN
-	    <foreach collection="condition.orgIdList" item="item" open="(" separator="," close=")">
+	    <foreach collection="orgIdList" item="item" open="(" separator="," close=")">
                     #{item}
          </foreach>
 	 </if>
-    <if test="condition.orgCode != null and condition.orgCode != ''">
-    and sd.org_code = #{condition.orgCode}
-   </if>
 GROUP BY
 	sd.depart_name,sd.org_code
     </select>
     <select id="getTasks" resultType="com.aiurt.boot.report.model.PatrolReport">
         SELECT
         count( pt.id ) AS taskTotal,
-        count( pt.STATUS = 7 OR NULL ) AS inspectedNumber,
-        count( pt.abnormal_state = 0 OR NULL ) AS abnormalNumber,
-        ( count( pt.id ) - count( pt.STATUS = 7 OR NULL )) AS notInspectedNumber,
-        cast(count( pt.STATUS = 7 OR NULL )/count( pt.id )*100 as decimal(10, 2)) AS completionRate,
-        GROUP_CONCAT(pt.id) as taskId,
-        GROUP_CONCAT(pt.code) as taskCode,
-        ( SELECT sd.depart_name FROM sys_depart sd WHERE pto.org_code = sd.org_code ) AS orgName,
-        pto.org_code
+        GROUP_CONCAT(pt.id) as taskId
         FROM patrol_task pt
         JOIN patrol_task_organization pto ON pt.`code` = pto.task_code
-        <if test="condition.orgCodeList != null and condition.orgCodeList.size>0 ">
-            AND pto.org_code IN
-            <foreach collection="condition.orgCodeList" item="item" open="(" separator="," close=")">
-                #{item}
-            </foreach>
+        <if test="orgCode != null and orgCode != ''">
+            AND pto.org_code = #{orgCode}
         </if>
         <if test="condition.startDate != null and condition.endDate != null">
             AND DATE_FORMAT( pt.patrol_date, '%Y-%m-%d' ) BETWEEN DATE_FORMAT( #{condition.startDate}, '%Y-%m-%d' )
@@ -769,13 +756,7 @@ GROUP BY
                 where pts.subsystem_code = #{condition.subsystemCode}
             )
         </if>
-        <if test="condition.orgCode != null and condition.orgCode != ''">
-            and pto.org_code = #{condition.orgCode}
-        </if>
         GROUP BY pto.org_code
-</select>
-<select id="getNowPatrolTasks" resultType="com.aiurt.boot.report.model.PatrolReport">
-
 </select>
     <select id="getReportOmitList" resultType="com.aiurt.boot.report.model.PatrolReport">
     select

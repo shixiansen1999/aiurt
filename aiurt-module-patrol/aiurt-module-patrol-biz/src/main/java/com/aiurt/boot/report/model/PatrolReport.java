@@ -7,6 +7,8 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
 import org.jeecgframework.poi.excel.annotation.Excel;
 
+import java.math.BigDecimal;
+
 /**
  * @author cgkj0
  * @version 1.0
@@ -25,11 +27,20 @@ public class PatrolReport {
      */
     private String taskId;
     /**
+     * 异常状态：0异常、1正常
+     */
+    private Integer abnormalState;
+    /**
      * 班组名
      */
     @ApiModelProperty("班组名")
     @Excel(name = "班组", width = 15)
     private String orgName;
+    /**
+     * 班组code
+     */
+
+    private String orgId;
     /**
      * 班组code
      */
@@ -64,19 +75,19 @@ public class PatrolReport {
      */
     @ApiModelProperty("平均每周漏巡视数")
     @Excel(name = "平均每周漏巡视数", width = 15)
-    private String awmPatrolNumber;
+    private BigDecimal awmPatrolNumber;
     /**
      * 平均每月漏巡视数
      */
     @ApiModelProperty("平均每月漏巡视数")
     @Excel(name = "平均每月漏巡视数", width = 15)
-    private String ammPatrolNumber;
+    private BigDecimal ammPatrolNumber;
     /**
      * 完成率
      */
     @ApiModelProperty("完成率")
     @Excel(name = "完成率", width = 15)
-    private String completionRate;
+    private BigDecimal completionRate;
     /**
      * 异常数量
      */

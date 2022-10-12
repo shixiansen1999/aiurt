@@ -538,19 +538,9 @@ public class BigscreenPlanService {
 
     public void getTotalTimes(TeamPortraitDTO teamPortraitDTO, List<LoginUser> userList, Integer type, Date[] timeByType) {
         //一位小数点，四舍五入
-        //获取维修工时
-        Map<String, BigDecimal> faultUserHours = dailyFaultApi.getFaultUserHours(type, teamPortraitDTO.getTeamId());
-        if (CollUtil.isNotEmpty(faultUserHours)) {
-            BigDecimal sum = new BigDecimal("0.00");
-            for (Map.Entry<String, BigDecimal> vo : faultUserHours.entrySet()) {
-                BigDecimal value = vo.getValue();
-                sum = sum.add(value);
-            }
-            teamPortraitDTO.setFaultTotalTime(sum.setScale(1, BigDecimal.ROUND_HALF_UP));
-        } else {
-            teamPortraitDTO.setFaultTotalTime(new BigDecimal(0));
-        }
-
+        //获取班组维修总工时
+        BigDecimal faultHours = dailyFaultApi.getFaultHours(type, teamPortraitDTO.getTeamId());
+        teamPortraitDTO.setFaultTotalTime(faultHours);
 
         //获取班组巡检总工时
         BigDecimal patrolHours = patrolApi.getPatrolHours(type, teamPortraitDTO.getTeamId());

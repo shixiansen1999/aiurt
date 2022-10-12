@@ -210,9 +210,14 @@ public class PatrolApiServiceImpl implements PatrolApi {
             userBaseList.add(zero);
         }
         //统计部门人员指派的计划数、实际完成数、巡检工时
-        List<UserTeamPatrolDTO> userPlanTaskNumber= patrolTaskUserMapper.getUserPlanNumber(useIds,userTeamParameter.getStartDate(),userTeamParameter.getEndDate());
+        List<UserTeamPatrolDTO> userPlanTaskNumber= new ArrayList<>() ;
         //统计部门人员同行人的计划数、实际完成数、巡检工时
-        List<UserTeamPatrolDTO> peoplePlanTaskNumber= patrolTaskUserMapper.getPeoplePlanNumber(useIds,userTeamParameter.getStartDate(),userTeamParameter.getEndDate());
+        List<UserTeamPatrolDTO> peoplePlanTaskNumber= new ArrayList<>() ;
+        if(CollUtil.isNotEmpty(useIds))
+        {
+            userPlanTaskNumber.addAll(patrolTaskUserMapper.getUserPlanNumber(useIds,userTeamParameter.getStartDate(),userTeamParameter.getEndDate()));
+            peoplePlanTaskNumber.addAll(patrolTaskUserMapper.getPeoplePlanNumber(useIds,userTeamParameter.getStartDate(),userTeamParameter.getEndDate()));
+        }
         //合并
         for (UserTeamPatrolDTO userPatrol : userPlanTaskNumber) {
             Integer planNumber = 0;
@@ -267,9 +272,14 @@ public class PatrolApiServiceImpl implements PatrolApi {
         omitModel.setStartDate(start.split("~")[0]);
         omitModel.setEndDate(end.split("~")[1]);
         // 统计部门人员的指派的漏检数
-        List<UserTeamPatrolDTO> userOmitTaskNumber= patrolTaskUserMapper.getUserOmitNumber(useIds,omitModel.getStartDate(),omitModel.getEndDate());
+        List<UserTeamPatrolDTO> userOmitTaskNumber= new ArrayList<>();
         // 统计部门人员同行人的漏检数
-        List<UserTeamPatrolDTO> peopleOmitTaskNumber= patrolTaskUserMapper.getPeopleOmitNumber(useIds,omitModel.getStartDate(),omitModel.getEndDate());
+        List<UserTeamPatrolDTO> peopleOmitTaskNumber= new ArrayList<>() ;
+        if(ObjectUtil.isNotEmpty(useIds))
+        {
+            userOmitTaskNumber.addAll(patrolTaskUserMapper.getUserOmitNumber(useIds,omitModel.getStartDate(),omitModel.getEndDate()));
+            peopleOmitTaskNumber.addAll(patrolTaskUserMapper.getPeopleOmitNumber(useIds,omitModel.getStartDate(),omitModel.getEndDate()));
+        }
         for (UserTeamPatrolDTO userPatrol : userOmitTaskNumber) {
             Integer omitNumber = 0;
             for (UserTeamPatrolDTO peoplePatrol : peopleOmitTaskNumber) {
@@ -360,11 +370,16 @@ public class PatrolApiServiceImpl implements PatrolApi {
             //计算计划巡检数的计划巡检数
             UserTeamPatrolDTO userPlanNumber = patrolTaskMapper.getUserPlanNumber(dto.getOrgId(),userTeamParameter.getStartDate(),userTeamParameter.getEndDate());
             //计算指派实际巡检数、同行人的实际巡检数
-            List<UserTeamPatrolDTO> userNowNumber = patrolTaskMapper.getUserNowNumber(useIds,userTeamParameter.getStartDate(),userTeamParameter.getEndDate());
-            List<UserTeamPatrolDTO> peopleNowNumber = patrolTaskMapper.getPeopleNowNumber(useIds,userTeamParameter.getStartDate(),userTeamParameter.getEndDate());
+            List<UserTeamPatrolDTO> userNowNumber = new ArrayList<>() ;
+            List<UserTeamPatrolDTO> peopleNowNumber = new ArrayList<>() ;
+            if(CollUtil.isNotEmpty(useIds))
+            {
+                userNowNumber.addAll(patrolTaskMapper.getUserNowNumber(useIds,userTeamParameter.getStartDate(),userTeamParameter.getEndDate()));
+                peopleNowNumber.addAll(patrolTaskMapper.getPeopleNowNumber(useIds,userTeamParameter.getStartDate(),userTeamParameter.getEndDate()));
+            }
             //过滤实际数不是同一任务的班组
-            List<String> nowTaskIds = peopleNowNumber.stream().map(UserTeamPatrolDTO::getTaskId).collect(Collectors.toList());
-            List<UserTeamPatrolDTO> notNowTasks = userNowNumber.stream().filter(u -> !nowTaskIds.contains(u.getTaskId())).collect(Collectors.toList());
+            List<String> nowTaskIds = userNowNumber.stream().map(UserTeamPatrolDTO::getTaskId).collect(Collectors.toList());
+            List<UserTeamPatrolDTO> notNowTasks = peopleNowNumber.stream().filter(u -> !nowTaskIds.contains(u.getTaskId())).collect(Collectors.toList());
             userNowNumber.addAll(notNowTasks);
             if(userPlanNumber.getPlanTaskNumber()!=0)
             {
@@ -398,8 +413,8 @@ public class PatrolApiServiceImpl implements PatrolApi {
             List<UserTeamPatrolDTO> userOmitTasks = patrolTaskMapper.getUserOmitTasksNumber(useIds,start,end);
             List<UserTeamPatrolDTO> peopleOmitTasks = patrolTaskMapper.getPeopleOmitTasksNumber(useIds,start,end);
             //过滤漏检数不是同一任务的班组
-            List<String> omitTaskIds = peopleOmitTasks.stream().map(UserTeamPatrolDTO::getTaskId).collect(Collectors.toList());
-            List<UserTeamPatrolDTO> notOmitTaskIds = userOmitTasks.stream().filter(u -> !omitTaskIds.contains(u.getTaskId())).collect(Collectors.toList());
+            List<String> omitTaskIds = userOmitTasks.stream().map(UserTeamPatrolDTO::getTaskId).collect(Collectors.toList());
+            List<UserTeamPatrolDTO> notOmitTaskIds = peopleOmitTasks.stream().filter(u -> !omitTaskIds.contains(u.getTaskId())).collect(Collectors.toList());
             userOmitTasks.addAll(notOmitTaskIds);
             if(userOmitTasks.size()!=0)
             {
