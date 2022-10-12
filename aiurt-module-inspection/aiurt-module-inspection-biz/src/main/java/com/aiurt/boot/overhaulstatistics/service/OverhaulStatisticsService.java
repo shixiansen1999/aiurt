@@ -323,6 +323,8 @@ public class OverhaulStatisticsService{
             mv.addObject(NormalExcelConstants.FILE_NAME, "检修报表");
             //excel注解对象Class
             mv.addObject(NormalExcelConstants.CLASS, OverhaulStatisticsDTO.class);
+            //自定义导出列表
+            mv.addObject(NormalExcelConstants.EXPORT_FIELDS,overhaulStatisticsDTO.getExportParameters());
             //自定义表格参数
             mv.addObject(NormalExcelConstants.PARAMS, new ExportParams("统计分析-检修报表", "检修报表"));
             //导出数据列表
