@@ -4,6 +4,7 @@ import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
+import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.modules.major.entity.CsMajor;
 import com.aiurt.modules.major.mapper.CsMajorMapper;
@@ -30,7 +31,9 @@ import com.aiurt.modules.workarea.service.IWorkAreaService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import io.swagger.annotations.ApiOperation;
 import org.apache.shiro.SecurityUtils;
+import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.vo.CsUserMajorModel;
 import org.jeecg.common.system.vo.LoginUser;
 import org.jeecg.common.system.vo.SiteModel;
@@ -38,9 +41,9 @@ import org.jeecg.common.system.vo.SysDepartModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.GetMapping;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -51,6 +54,11 @@ import java.util.stream.Collectors;
  */
 @Service
 public class WorkAreaServiceImpl extends ServiceImpl<WorkAreaMapper, WorkArea> implements IWorkAreaService {
+
+    /**
+     * 系统管理员角色编码
+     */
+    private static final String ADMIN = "admin";
 
     @Autowired
     private WorkAreaMapper workAreaMapper;
@@ -263,5 +271,104 @@ public class WorkAreaServiceImpl extends ServiceImpl<WorkAreaMapper, WorkArea> i
         }
 
         return baseMapper.getTeamBylineAndMajors(lineCodeList,majorList);
+    }
+
+    /**
+     * 查询本工区的站所
+     *
+     * @param param 标志: 1:全部,0:本工区
+     * @return
+     */
+    @Override
+    public List<CsStation> queryOriginStation(String param) {
+        LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        String roleCodes = loginUser.getRoleCodes();
+        // 判断是的为管理员
+        if ((StrUtil.isNotBlank(roleCodes) && roleCodes.indexOf(ADMIN)>-1) || StrUtil.equalsIgnoreCase(param, "1")) {
+            List<CsStation> csStationList = csStationMapper.selectList(new LambdaQueryWrapper<CsStation>().eq(CsStation::getDelFlag, CommonConstant.DEL_FLAG_0));
+            return csStationList;
+        }
+
+        String orgId = loginUser.getOrgId();
+
+        SysDepart sysDepart = sysDepartMapper.selectById(orgId);
+
+        if (Objects.isNull(sysDepart)) {
+            return Collections.emptyList();
+        }
+        // 获取工区
+        List<WorkAreaOrg> workAreaOrgList = workAreaOrgMapper.selectList(new LambdaQueryWrapper<WorkAreaOrg>().eq(WorkAreaOrg::getOrgCode, sysDepart.getOrgCode()).eq(WorkAreaOrg::getDelFlag, CommonConstant.DEL_FLAG_0));
+
+        if (CollUtil.isEmpty(workAreaOrgList)) {
+            return Collections.emptyList();
+        }
+
+        Set<String> set = workAreaOrgList.stream().map(WorkAreaOrg::getWorkAreaCode).collect(Collectors.toSet());
+
+        List<WorkAreaStation> workAreaStationList = workAreaStationMapper.selectList(new LambdaQueryWrapper<WorkAreaStation>().in(WorkAreaStation::getWorkAreaCode, set).eq(WorkAreaStation::getDelFlag, CommonConstant.DEL_FLAG_0));
+
+        if (CollUtil.isEmpty(workAreaStationList)) {
+            return Collections.emptyList();
+        }
+
+        Set<String> stationCodeSet = workAreaStationList.stream().map(WorkAreaStation::getStationCode).collect(Collectors.toSet());
+
+        List<CsStation> csStationList = csStationMapper.selectList(new LambdaQueryWrapper<CsStation>().in(CsStation::getStationCode, stationCodeSet).eq(CsStation::getDelFlag, CommonConstant.DEL_FLAG_0));
+
+        return csStationList;
+    }
+
+    /**
+     * 查询本工区的人员
+     *
+     * @param param 标志: 1:全部,0:本工区
+     * @return
+     */
+    @Override
+    public List<SysUser> queryOriginUser(String param) {
+        LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        String roleCodes = loginUser.getRoleCodes();
+        // 判断是的为管理员
+        if ((StrUtil.isNotBlank(roleCodes) && roleCodes.indexOf(ADMIN)>-1) || StrUtil.equalsIgnoreCase(param, "1")) {
+            List<SysUser> sysUserList = sysUserMapper.selectList(new LambdaQueryWrapper<SysUser>().eq(SysUser::getDelFlag, CommonConstant.DEL_FLAG_0));
+            return sysUserList;
+        }
+
+        String orgId = loginUser.getOrgId();
+
+        SysDepart sysDepart = sysDepartMapper.selectById(orgId);
+
+        if (Objects.isNull(sysDepart)) {
+            return Collections.emptyList();
+        }
+        // 获取工区
+        List<WorkAreaOrg> workAreaOrgList = workAreaOrgMapper.selectList(new LambdaQueryWrapper<WorkAreaOrg>().eq(WorkAreaOrg::getOrgCode, sysDepart.getOrgCode()).eq(WorkAreaOrg::getDelFlag, CommonConstant.DEL_FLAG_0));
+
+        if (CollUtil.isEmpty(workAreaOrgList)) {
+            List<SysUser> sysUserList = sysUserMapper.selectList(new LambdaQueryWrapper<SysUser>().eq(SysUser::getOrgId, orgId).eq(SysUser::getDelFlag, CommonConstant.DEL_FLAG_0));
+
+            return sysUserList;
+        }
+
+        Set<String> set = workAreaOrgList.stream().map(WorkAreaOrg::getWorkAreaCode).collect(Collectors.toSet());
+
+        // 同一工区的
+        List<WorkAreaOrg> orgList = workAreaOrgMapper.selectList(new LambdaQueryWrapper<WorkAreaOrg>().in(WorkAreaOrg::getWorkAreaCode, set).eq(WorkAreaOrg::getDelFlag, CommonConstant.DEL_FLAG_0));
+
+        if (CollUtil.isEmpty(orgList)) {
+            List<SysUser> sysUserList = sysUserMapper.selectList(new LambdaQueryWrapper<SysUser>().eq(SysUser::getOrgId, orgId).eq(SysUser::getDelFlag, CommonConstant.DEL_FLAG_0));
+            return sysUserList;
+        }
+
+        Set<String> orgCodeSet = orgList.stream().map(WorkAreaOrg::getOrgCode).collect(Collectors.toSet());
+        // 查询机构
+        List<SysDepart> departList = sysDepartMapper.selectList(new LambdaQueryWrapper<SysDepart>().in(SysDepart::getOrgCode, orgCodeSet));
+
+        Set<String> orgIdSet = departList.stream().map(SysDepart::getId).collect(Collectors.toSet());
+        orgIdSet.add(orgId);
+
+        List<SysUser> sysUserList = sysUserMapper.selectList(new LambdaQueryWrapper<SysUser>().in(SysUser::getOrgId, orgIdSet).eq(SysUser::getDelFlag, CommonConstant.DEL_FLAG_0));
+
+        return sysUserList;
     }
 }

@@ -2,15 +2,15 @@ package com.aiurt.modules.workarea.controller;
 
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.system.base.controller.BaseController;
+import com.aiurt.modules.position.entity.CsStation;
+import com.aiurt.modules.system.entity.SysUser;
 import com.aiurt.modules.workarea.dto.MajorUserDTO;
 import com.aiurt.modules.workarea.dto.WorkAreaDTO;
 import com.aiurt.modules.workarea.entity.WorkArea;
 import com.aiurt.modules.workarea.service.IWorkAreaService;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.*;
 import lombok.extern.slf4j.Slf4j;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.vo.SysDepartModel;
@@ -141,5 +141,27 @@ public class WorkAreaController extends BaseController<WorkArea, IWorkAreaServic
 	public Result<List<SysDepartModel>> getTeamBylineAndMajors(@ApiParam(name = "lineCode", value = "线路code,多个用,隔开") @RequestParam(value = "lineCode", required = false) String lineCode) {
 		List<SysDepartModel> result = workAreaService.getTeamBylineAndMajors(lineCode);
 		return Result.OK(result);
+	}
+
+
+
+	@ApiOperation("查询本工区的站所")
+	@GetMapping("/queryOriginStation")
+	@ApiImplicitParams({
+			@ApiImplicitParam(name = "param", value = "标志: 1:全部,0:本工区", required = true, paramType = "query")
+	})
+	public Result<List<CsStation>> queryOriginStation(@RequestParam(value = "param", required = true, defaultValue = "1") String param) {
+		List<CsStation> list = workAreaService.queryOriginStation(param);
+		return Result.OK(list);
+	}
+
+	@ApiOperation("查询本工区的人员")
+	@GetMapping("/queryOriginUser")
+	@ApiImplicitParams({
+			@ApiImplicitParam(name = "param", value = "标志: 1:全部,0:本工区", required = true, paramType = "query")
+	})
+	public Result<List<SysUser>> queryOriginUser(@RequestParam(value = "param", required = true, defaultValue = "1") String param) {
+		List<SysUser> list = workAreaService.queryOriginUser(param);
+		return Result.OK(list);
 	}
 }

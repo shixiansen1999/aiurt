@@ -1,5 +1,7 @@
 package com.aiurt.modules.workarea.service;
 
+import com.aiurt.modules.position.entity.CsStation;
+import com.aiurt.modules.system.entity.SysUser;
 import com.aiurt.modules.workarea.dto.MajorUserDTO;
 import com.aiurt.modules.workarea.dto.WorkAreaDTO;
 import com.aiurt.modules.workarea.entity.WorkArea;
@@ -69,4 +71,18 @@ public interface IWorkAreaService extends IService<WorkArea> {
      * @return
      */
     List<SysDepartModel> getTeamBylineAndMajors(String lineCode);
+
+    /**
+     * 查询本工区的站所
+     * @param param 标志: 1:全部,0:本工区
+     * @return
+     */
+    List<CsStation> queryOriginStation(String param);
+
+    /**
+     * 查询本工区的人员
+     * @param param 标志: 1:全部,0:本工区
+     * @return
+     */
+    List<SysUser> queryOriginUser(String param);
 }
