@@ -111,7 +111,7 @@ public class PersonnelGroupStatisticsServiceImpl implements PersonnelGroupStatis
                     model.setInspecitonTotalTime(Convert.toStr(personnelTeamDTO.getOverhaulWorkingHours()));
                     model.setInspecitonScheduledTasks(Convert.toStr(personnelTeamDTO.getPlanTaskNumber()));
                     model.setInspecitonCompletedTasks(Convert.toStr(personnelTeamDTO.getCompleteTaskNumber()));
-                    model.setInspecitonPlanCompletion(Convert.toStr(personnelTeamDTO.getPlanCompletionRate()+"%"));
+                    model.setInspecitonPlanCompletion(Convert.toStr(personnelTeamDTO.getPlanCompletionRate())+"%");
                     model.setInspecitonMissingChecks("-");
                 }else {
                     model.setInspecitonTotalTime("0");
@@ -125,8 +125,8 @@ public class PersonnelGroupStatisticsServiceImpl implements PersonnelGroupStatis
                 Integer integer = personnelGroupStatisticsMapper.groupTrainFinishedNum(model.getTeamId(), startTime, endTime);
                 model.setTrainFinish(Convert.toStr(integer));
 
-                model.setEmergencyResponseNum("0");
-                model.setEmergencyHandlingHours("0");
+                model.setEmergencyResponseNum("-");
+                model.setEmergencyHandlingHours("-");
             }
 
             return page.setRecords(personnelGroupModels);
@@ -161,7 +161,7 @@ public class PersonnelGroupStatisticsServiceImpl implements PersonnelGroupStatis
                     model.setPatrolTotalTime(Convert.toStr(userTeamPatrolDTO.getWorkHours()));
                     model.setPatrolScheduledTasks(Convert.toStr(userTeamPatrolDTO.getPlanTaskNumber()));
                     model.setPatrolCompletedTasks(Convert.toStr(userTeamPatrolDTO.getActualFinishTaskNumber()));
-                    model.setPatrolPlanCompletion(Convert.toStr(userTeamPatrolDTO.getPlanFinishRate()) + "%");
+                    model.setPatrolPlanCompletion(Convert.toStr(userTeamPatrolDTO.getPlanFinishRate())+"%");
                     model.setPatrolMissingChecks(Convert.toStr(userTeamPatrolDTO.getMissPatrolNumber()));
                 } else {
                     model.setPatrolTotalTime("0");
@@ -188,7 +188,7 @@ public class PersonnelGroupStatisticsServiceImpl implements PersonnelGroupStatis
                     model.setInspecitonTotalTime(Convert.toStr(personnelTeamDTO.getOverhaulWorkingHours()));
                     model.setInspecitonScheduledTasks(Convert.toStr(personnelTeamDTO.getPlanTaskNumber()));
                     model.setInspecitonCompletedTasks(Convert.toStr(personnelTeamDTO.getCompleteTaskNumber()));
-                    model.setInspecitonPlanCompletion(Convert.toStr(personnelTeamDTO.getPlanCompletionRate() + "%"));
+                    model.setInspecitonPlanCompletion(Convert.toStr(personnelTeamDTO.getPlanCompletionRate())+"%");
                     model.setInspecitonMissingChecks("-");
                 } else {
                     model.setInspecitonTotalTime("0");
@@ -212,8 +212,8 @@ public class PersonnelGroupStatisticsServiceImpl implements PersonnelGroupStatis
                 }
                 model.setTrainFinish(Convert.toStr(size));
 
-                model.setEmergencyResponseNum("0");
-                model.setEmergencyHandlingHours("0");
+                model.setEmergencyResponseNum("-");
+                model.setEmergencyHandlingHours("-");
             }
 
             return page.setRecords(personnelModels);
@@ -311,27 +311,32 @@ public class PersonnelGroupStatisticsServiceImpl implements PersonnelGroupStatis
         List<LoginUser> users= iSysBaseAPI.getUserPersonnel(departId);
         List<String> list = users.stream().map(LoginUser::getId).collect(Collectors.toList());
         List<FaultRepairRecordDTO> repairDuration = personnelGroupStatisticsMapper.getRepairDuration(list, lastYear, end);
-        long l = 0;
-        for (FaultRepairRecordDTO repairRecordDTO : repairDuration) {
-            // 响应时长： 接收到任务，开始维修时长
-            Date receviceTime = repairRecordDTO.getReceviceTime();
-            Date startTime = repairRecordDTO.getStartTime();
-            Date time = repairRecordDTO.getEndTime();
-            if (Objects.nonNull(startTime) && Objects.nonNull(receviceTime)) {
-                long between = DateUtil.between(receviceTime, startTime, DateUnit.MINUTE);
-                between = between == 0 ? 1 : between;
-                l = l + between;
+        if (CollUtil.isNotEmpty(repairDuration)) {
+            long l = 0;
+            for (FaultRepairRecordDTO repairRecordDTO : repairDuration) {
+                // 响应时长： 接收到任务，开始维修时长
+                Date receviceTime = repairRecordDTO.getReceviceTime();
+                Date startTime = repairRecordDTO.getStartTime();
+                Date time = repairRecordDTO.getEndTime();
+                if (Objects.nonNull(startTime) && Objects.nonNull(receviceTime)) {
+                    long between = DateUtil.between(receviceTime, startTime, DateUnit.MINUTE);
+                    between = between == 0 ? 1 : between;
+                    l = l + between;
+                }
+                if (Objects.nonNull(startTime) && Objects.nonNull(time)) {
+                    long between = DateUtil.between(time, startTime, DateUnit.MINUTE);
+                    between = between == 0 ? 1 : between;
+                    l = l + between;
+                }
             }
-            if (Objects.nonNull(startTime) && Objects.nonNull(time)) {
-                long between = DateUtil.between(time, startTime, DateUnit.MINUTE);
-                between = between == 0 ? 1 : between;
-                l = l + between;
-            }
+            BigDecimal bigDecimal = new BigDecimal(l);
+            BigDecimal bigDecimal1 = new BigDecimal(repairDuration.size());
+            String s = bigDecimal.divide(bigDecimal1, 0).toString();
+            depart.setAverageTime(s);
+        } else {
+            depart.setAverageTime("0");
         }
-        BigDecimal bigDecimal = new BigDecimal(l);
-        BigDecimal bigDecimal1 = new BigDecimal(12);
-        String s = bigDecimal.divide(bigDecimal1, 0).toString();
-        depart.setAverageTime(s);
+
         return depart;
     }
 
@@ -383,27 +388,32 @@ public class PersonnelGroupStatisticsServiceImpl implements PersonnelGroupStatis
         userList.add(userId);
         //获取人员维修响应时长
         List<FaultRepairRecordDTO> repairDuration = personnelGroupStatisticsMapper.getRepairDuration(userList, lastYear, end);
-        long l = 0;
-        for (FaultRepairRecordDTO repairRecordDTO : repairDuration) {
-            // 响应时长： 接收到任务，开始维修时长
-            Date receviceTime = repairRecordDTO.getReceviceTime();
-            Date startTime = repairRecordDTO.getStartTime();
-            Date time = repairRecordDTO.getEndTime();
-            if (Objects.nonNull(startTime) && Objects.nonNull(receviceTime)) {
-                long between = DateUtil.between(receviceTime, startTime, DateUnit.MINUTE);
-                between = between == 0 ? 1 : between;
-                l = l + between;
+        if (CollUtil.isNotEmpty(repairDuration)) {
+            long l = 0;
+            for (FaultRepairRecordDTO repairRecordDTO : repairDuration) {
+                // 响应时长： 接收到任务，开始维修时长
+                Date receviceTime = repairRecordDTO.getReceviceTime();
+                Date startTime = repairRecordDTO.getStartTime();
+                Date time = repairRecordDTO.getEndTime();
+                if (Objects.nonNull(startTime) && Objects.nonNull(receviceTime)) {
+                    long between = DateUtil.between(receviceTime, startTime, DateUnit.MINUTE);
+                    between = between == 0 ? 1 : between;
+                    l = l + between;
+                }
+                if (Objects.nonNull(startTime) && Objects.nonNull(time)) {
+                    long between = DateUtil.between(time, startTime, DateUnit.MINUTE);
+                    between = between == 0 ? 1 : between;
+                    l = l + between;
+                }
             }
-            if (Objects.nonNull(startTime) && Objects.nonNull(time)) {
-                long between = DateUtil.between(time, startTime, DateUnit.MINUTE);
-                between = between == 0 ? 1 : between;
-                l = l + between;
-            }
+            BigDecimal bigDecimal = new BigDecimal(l);
+            BigDecimal bigDecimal1 = new BigDecimal(repairDuration.size());
+            String s = bigDecimal.divide(bigDecimal1, 0).toString();
+            user.setAverageTime(s);
+        }else {
+            user.setAverageTime("0");
         }
-        BigDecimal bigDecimal = new BigDecimal(l);
-        BigDecimal bigDecimal1 = new BigDecimal(12);
-        String s = bigDecimal.divide(bigDecimal1, 0).toString();
-        user.setAverageTime(s);
+
         return user;
     }
 

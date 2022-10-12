@@ -47,7 +47,10 @@ public class PersonnelGroupStatisticsController {
     /**
      * 班组统计
      *
-     * @return
+     * @param departIds 部门id集合字符串
+     * @param startTime 开始时间
+     * @param endTime 结束时间
+     * @return GroupModel
      */
     @AutoLog(value = "班组统计-查询", operateType =  1, operateTypeAlias = "查询", permissionUrl = "")
     @ApiOperation(value="班组统计", notes="班组统计")
@@ -67,8 +70,8 @@ public class PersonnelGroupStatisticsController {
     /**
      * 班组详情
      *
-     * @param departId
-     * @return
+     * @param departId 部门id
+     * @return TeamPortraitModel
      */
     @AutoLog(value = "班组详情-通过id查询", operateType =  1, operateTypeAlias = "查询-通过id查询", permissionUrl = "")
     @ApiOperation(value="班组详情-通过id查询", notes="班组详情-通过id查询")
@@ -80,8 +83,10 @@ public class PersonnelGroupStatisticsController {
 
     /**
      * 人员统计
-     *
-     * @return
+     * @param departIds 部门id集合字符串
+     * @param startTime 开始时间
+     * @param endTime 结束时间
+     * @return Page<PersonnelModel>
      */
     @AutoLog(value = "人员统计-查询", operateType =  1, operateTypeAlias = "查询", permissionUrl = "")
     @ApiOperation(value="人员统计", notes="人员统计")
@@ -101,8 +106,8 @@ public class PersonnelGroupStatisticsController {
     /**
      * 人员详情
      *
-     * @param userId
-     * @return
+     * @param userId 人员id
+     * @return TeamUserModel
      */
     @AutoLog(value = "人员详情-通过id查询", operateType =  1, operateTypeAlias = "查询-通过id查询", permissionUrl = "")
     @ApiOperation(value="人员详情-通过id查询", notes="人员详情-通过id查询")
@@ -115,8 +120,10 @@ public class PersonnelGroupStatisticsController {
     /**
      * 统计报表人员报表-班组列表导出
      *
-     * @param request
-     * @return
+     * @param exportField 自定义导出字段集合合并字符串
+     * @param startTime 开始时间
+     * @param endTime 结束时间
+     * @return ModelAndView
      */
     @AutoLog(value = "统计报表人员报表-班组列表导出", operateType = 6, operateTypeAlias = "导出")
     @ApiOperation(value = "统计报表人员报表-班组列表导出", notes = "统计报表人员报表-班组列表导出")
@@ -131,8 +138,10 @@ public class PersonnelGroupStatisticsController {
     /**
      * 统计报表人员报表-人员列表导出
      *
-     * @param request
-     * @return
+     * @param exportField 自定义导出字段集合合并字符串
+     * @param startTime 开始时间
+     * @param endTime 结束时间
+     * @return ModelAndView
      */
     @AutoLog(value = "统计报表人员报表-人员列表导出", operateType = 6, operateTypeAlias = "导出")
     @ApiOperation(value = "统计报表人员报表-人员列表导出", notes = "统计报表人员报表-人员列表导出")
@@ -146,7 +155,6 @@ public class PersonnelGroupStatisticsController {
 
     /**
      * 班组下拉框
-     * @param
      * @return
      */
     @AutoLog(value = "统计报表人员报表-班组下拉框", operateType = 1, operateTypeAlias = "查询")

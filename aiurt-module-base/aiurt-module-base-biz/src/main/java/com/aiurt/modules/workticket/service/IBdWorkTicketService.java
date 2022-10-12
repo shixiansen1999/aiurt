@@ -1,5 +1,6 @@
 package com.aiurt.modules.workticket.service;
 
+import com.aiurt.modules.workticket.dto.UploadPictureDTO;
 import com.aiurt.modules.workticket.dto.WorkTicketReqDTO;
 import com.aiurt.modules.workticket.dto.WorkTicketResDTO;
 import com.aiurt.modules.workticket.entity.BdWorkTicket;
@@ -49,4 +50,10 @@ public interface IBdWorkTicketService extends IService<BdWorkTicket> {
      * @return
      */
     Boolean authUpload(String id);
+
+    /**
+     * 上传图片
+     * @param uploadPictureDTO
+     */
+    void uploadPicture(UploadPictureDTO uploadPictureDTO);
 }

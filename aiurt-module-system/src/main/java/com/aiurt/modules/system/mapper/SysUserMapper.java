@@ -199,4 +199,11 @@ public interface SysUserMapper extends BaseMapper<SysUser> {
 	 * @return
 	 */
     List<SysUser> querySysUserForWorkTicket(@Param("list") List<String> role);
+
+	/**
+	 * 根据用户名或者用户账号查询用户信息
+	 * @param userNameList
+	 * @return
+	 */
+    List<SysUser> queryUserListByName(@Param("usernameList") List<String> userNameList);
 }

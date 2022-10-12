@@ -262,11 +262,11 @@ public interface PatrolTaskMapper extends BaseMapper<PatrolTask> {
     /**
      * 报表统计-巡检任务查询
      * @param pageList
-     * @param condition
+     * @param orgIdList
      * @return
      */
 
-    List<PatrolReport> getReportTaskList(@Param("pageList")Page<PatrolReport> pageList, @Param("condition")PatrolReportModel condition);
+    List<PatrolReport> getReportTaskList(@Param("pageList")Page<PatrolReport> pageList, @Param("orgIdList")List<String> orgIdList);
 
     /**
      * 报表统计-漏检数查询
@@ -276,9 +276,10 @@ public interface PatrolTaskMapper extends BaseMapper<PatrolTask> {
     /**
      *解决分页问题
      * @param condition
+     * @param orgCode
      * @return
      */
-    List<PatrolReport> getTasks(@Param("condition") PatrolReportModel condition);
+    PatrolReport getTasks(@Param("orgCode")String orgCode,@Param("condition") PatrolReportModel condition);
     List<PatrolReport> getReportOmitList(@Param("condition")PatrolReportModel omitModel);
     /**
      * 报表统计-故障列表
@@ -423,11 +424,4 @@ public interface PatrolTaskMapper extends BaseMapper<PatrolTask> {
      * @return
      */
     List<UserTeamPatrolDTO> getPeopleOmitTasksNumber(@Param("useIds")List<String> useIds, @Param("startDate")String startDate, @Param("endDate")String endDate);
-
-    /**
-     * 计算完成率、未完成、完成数、异常任务数（到人）
-     * @param report
-     * @return
-     */
-    List<PatrolReport> getNowPatrolTasks(PatrolReportModel report);
 }

@@ -177,6 +177,9 @@ public class OverhaulStatisticsDTOS {
     @ApiModelProperty("分页参数")
     private Integer pageSize;
 
+    @ApiModelProperty("导出参数")
+    private String  exportParameters;
+
     /**
      * 重写hashCode方法
      * @return

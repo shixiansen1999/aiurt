@@ -1,13 +1,17 @@
 package com.aiurt.modules.workticket.service.impl;
 
+import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.StrUtil;
+import com.aiurt.modules.workticket.dto.UploadPictureDTO;
 import com.aiurt.modules.workticket.dto.WorkTicketReqDTO;
 import com.aiurt.modules.workticket.dto.WorkTicketResDTO;
 import com.aiurt.modules.workticket.entity.BdWorkTicket;
 import com.aiurt.modules.workticket.mapper.BdWorkTicketMapper;
 import com.aiurt.modules.workticket.service.IBdWorkTicketService;
+import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,6 +29,7 @@ import java.util.*;
  * @Date:   2022-10-08
  * @Version: V1.0
  */
+@Slf4j
 @Service
 public class BdWorkTicketServiceImpl extends ServiceImpl<BdWorkTicketMapper, BdWorkTicket> implements IBdWorkTicketService {
 
@@ -119,12 +124,35 @@ public class BdWorkTicketServiceImpl extends ServiceImpl<BdWorkTicketMapper, BdW
      */
     @Override
     public void updateState(String businessKey, Integer states) {
+        if (StrUtil.isBlank(businessKey)) {
+            return;
+        }
         BdWorkTicket workTicket = baseMapper.selectById(businessKey);
-
+        LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        String day = DateUtil.format(new Date(), "yyyy-MM-dd HH:mm:ss");
         if (Objects.nonNull(workTicket)) {
             //更新状态
             workTicket.setState(states);
-            // 设置签收时间
+            // 已审核待签发, 设置审核时间; 审核驳回
+            if (states == 3 || states == 11) {
+                // 设置审批人
+                workTicket.setWorkLeaderSign(loginUser.getRealname());
+                if (states == 3) {
+                    workTicket.setWorkLeaderSignTime(day);
+                }
+                // 已签发, 设置签发时间,签发人员; 签发驳回,驳回人员 ; 第一种工作票签发
+            }else if (states == 6 || states == 12 || states == 5) {
+                workTicket.setSigneUser(loginUser.getRealname());
+                if (states == 6 || states == 5) {
+                    workTicket.setSigneUserTime(day);
+                }
+                // 确认签字
+            } else if (states == 5  || states == 13) {
+                workTicket.setPowerDispatcherName(loginUser.getRealname());
+                if (states == 5 ) {
+                    workTicket.setPowerDispatcherTime(day);
+                }
+            }
             updateById(workTicket);
         }
     }
@@ -180,6 +208,26 @@ public class BdWorkTicketServiceImpl extends ServiceImpl<BdWorkTicketMapper, BdW
         }
 
         return Boolean.FALSE;
+    }
+
+    /**
+     * 上传图片
+     *
+     * @param uploadPictureDTO
+     */
+    @Override
+    public void uploadPicture(UploadPictureDTO uploadPictureDTO) {
+        if (Objects.isNull(uploadPictureDTO) || StrUtil.isBlank(uploadPictureDTO.getId())
+                || Objects.isNull(uploadPictureDTO.getPath())) {
+            return;
+        }
+        log.info("请求参数:{}-{}", uploadPictureDTO.getId(), uploadPictureDTO.getPath());
+
+        BdWorkTicket workTicket = baseMapper.selectById(uploadPictureDTO.getId());
+
+        workTicket.setPicturePath(JSON.toJSONString(uploadPictureDTO.getPath()));
+
+        updateById(workTicket);
     }
 
     /**

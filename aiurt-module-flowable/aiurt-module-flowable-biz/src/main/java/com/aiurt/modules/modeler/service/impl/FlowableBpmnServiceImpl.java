@@ -129,15 +129,20 @@ public class FlowableBpmnServiceImpl implements IFlowableBpmnService {
      */
     @Override
     public ModelInfoVo loadBpmnXmlByModelId(String modelId) {
-        Model model = modelService.getModel(modelId);
-        byte[] bpmnXML = modelService.getBpmnXML(model);
-        String streamStr = new String(bpmnXML);
-        ModelInfoVo modelInfoVo = new ModelInfoVo();
-        modelInfoVo.setModelId(modelId);
-        modelInfoVo.setModelName(model.getName());
-        modelInfoVo.setModelKey(model.getKey());
-        modelInfoVo.setFileName(model.getName());
-        modelInfoVo.setModelXml(streamStr);
+        ModelInfoVo modelInfoVo = null;
+        try {
+            Model model = modelService.getModel(modelId);
+            byte[] bpmnXML = modelService.getBpmnXML(model);
+            String streamStr = new String(bpmnXML);
+            modelInfoVo = new ModelInfoVo();
+            modelInfoVo.setModelId(modelId);
+            modelInfoVo.setModelName(model.getName());
+            modelInfoVo.setModelKey(model.getKey());
+            modelInfoVo.setFileName(model.getName());
+            modelInfoVo.setModelXml(streamStr);
+        } catch (Exception e) {
+            throw new AiurtBootException("系统中不存在该流程模型，请刷新尝试！");
+        }
         return modelInfoVo;
     }
 
@@ -358,17 +363,17 @@ public class FlowableBpmnServiceImpl implements IFlowableBpmnService {
         // todo
         taskAttributeMap.forEach((key,list)->{
             ExtensionAttribute extensionAttribute = list.get(0);
-            if (StrUtil.startWith(extensionAttribute.getName(), "formData")) {
-                form.put(extensionAttribute.getName().replaceAll("formData\\.", ""), extensionAttribute.getValue());
-            }else if (StrUtil.startWith(extensionAttribute.getName(), "flowable")) {
-                variable.put(extensionAttribute.getName().replaceAll("flowable\\.", ""), extensionAttribute.getValue());
+            if (StrUtil.equalsAnyIgnoreCase(extensionAttribute.getName(),"formType", "formUrl", "service")) {
+                form.put(extensionAttribute.getName(), extensionAttribute.getValue());
+            }else if (StrUtil.equalsAnyIgnoreCase(extensionAttribute.getName(), "formtaskVariables")) {
+                variable.put(extensionAttribute.getName(), extensionAttribute.getValue());
             }
         });
 
         if (variable.size()>0) {
             flowTaskExt.setVariableListJson(JSONObject.toJSONString(variable));
         }
-        if (variable.size()>0){
+        if (form.size()>0){
             flowTaskExt.setFormJson(JSONObject.toJSONString(form));
         }
 

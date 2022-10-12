@@ -1647,6 +1647,7 @@ public class SysBaseApiImpl implements ISysBaseAPI {
             if (CollUtil.isEmpty(list)) {
                 return CollUtil.newArrayList();
             } else {
+                list = list.stream().collect(Collectors.collectingAndThen(Collectors.toCollection(() -> new TreeSet<>(Comparator.comparing(SysDepartModel :: getId))), ArrayList::new));
                 return list;
             }
 
@@ -1688,5 +1689,45 @@ public class SysBaseApiImpl implements ISysBaseAPI {
         Map<String, String> stationMap = stations.stream()
                 .collect(Collectors.toMap(k -> k.getStationCode(), v -> v.getStationName(), (a, b) -> a));
         return stationMap;
+    }
+
+    /**
+     * 根据用户名或者用户账号查询用户信息
+     *
+     * @param userNameList
+     * @return
+     */
+    @Override
+    public List<LoginUser> getLoginUserList(List<String> userNameList) {
+        if (CollUtil.isEmpty(userNameList)) {
+            return Collections.emptyList();
+        }
+        List<LoginUser> loginUserList = new ArrayList<>();
+        List<SysUser> sysUserList = userMapper.queryUserListByName(userNameList);
+        if (CollectionUtil.isEmpty(sysUserList)) {
+            return loginUserList;
+        }
+        sysUserList.forEach(sysUser -> {
+            LoginUser loginUser = new LoginUser();
+            BeanUtils.copyProperties(sysUser, loginUser);
+            loginUserList.add(loginUser);
+        });
+        return loginUserList;
+    }
+
+    /**
+     * 根据专业获取id
+     *
+     * @param station
+     * @return
+     */
+    @Override
+    public JSONObject getCsStationById(String station) {
+        CsStation csStation = csStationMapper.selectById(station);
+
+        if (Objects.isNull(csStation)) {
+            return null;
+        }
+        return JSONObject.parseObject(JSON.toJSONString(csStation));
     }
 }

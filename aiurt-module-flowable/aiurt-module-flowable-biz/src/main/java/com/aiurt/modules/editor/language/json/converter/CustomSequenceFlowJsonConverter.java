@@ -128,6 +128,7 @@ public class CustomSequenceFlowJsonConverter extends SequenceFlowJsonConverter {
             BpmnJsonConverterUtil.convertListenersToJson(sequenceFlow.getExecutionListeners(), true, propertiesNode);
         }
 
+        // 按钮流转条件
         Map<String, List<ExtensionElement>> extensionElements = baseElement.getExtensionElements();
         List<ExtensionElement> customConditionElements = extensionElements.get(CUSTOM_CONDITION);
         if (CollUtil.isNotEmpty(customConditionElements)) {
@@ -146,7 +147,6 @@ public class CustomSequenceFlowJsonConverter extends SequenceFlowJsonConverter {
             ObjectNode objectNode = super.objectMapper.createObjectNode();
             ExtensionElement e = propertyElements.get(0);
             objectNode.put("value", e.getAttributeValue(null, "value"));
-            objectNode.put("service", e.getAttributeValue(null, "service"));
             objectNode.put("name", e.getAttributeValue(null, "name"));
             flowNode.set(PROPERTY, objectNode);
         }
@@ -179,6 +179,7 @@ public class CustomSequenceFlowJsonConverter extends SequenceFlowJsonConverter {
                 SequenceFlow sequenceFlow = (SequenceFlow) flowElement;
                 addExtansionPropertiesElemt(elementNode, sequenceFlow, PROPERTY);
                 addExtansionPropertiesElemt(elementNode, sequenceFlow, CUSTOM_CONDITION);
+                addExtansionPropertiesElemt(elementNode, sequenceFlow, SERVICE);
             }
         } catch (JsonProcessingException e) {
             e.printStackTrace();

@@ -501,6 +501,7 @@ public class BigscreenPlanService {
                 if (timeByType.length > 0 && CollUtil.isNotEmpty(userList)) {
                     //获取一周内的班组平均维修响应时间
                     List<RepairRecordDetailDTO> repairDuration = bigScreenPlanMapper.getRepairDuration(userList, timeByType[0], timeByType[1]);
+                    if (CollUtil.isNotEmpty(repairDuration)) {
                     long l = 0;
                     for (RepairRecordDetailDTO repairRecordDetailDTO : repairDuration) {
                         // 响应时长： 接收到任务，开始维修时长
@@ -520,10 +521,10 @@ public class BigscreenPlanService {
                     }
                     int size = repairDuration.size();
                     BigDecimal bigDecimal = new BigDecimal(l);
-                    if (size != 0) {
-                        BigDecimal bigDecimal1 = new BigDecimal(size);
-                        String s = bigDecimal.divide(bigDecimal1, 0).toString();
-                        teamPortraitDTO.setAverageTime(s);
+
+                    BigDecimal bigDecimal1 = new BigDecimal(size);
+                    String s = bigDecimal.divide(bigDecimal1, 0).toString();
+                    teamPortraitDTO.setAverageTime(s);
                     } else {
                         teamPortraitDTO.setAverageTime("0");
                     }
@@ -537,38 +538,19 @@ public class BigscreenPlanService {
 
     public void getTotalTimes(TeamPortraitDTO teamPortraitDTO, List<LoginUser> userList, Integer type, Date[] timeByType) {
         //一位小数点，四舍五入
-        //获取维修工时
-        Map<String, BigDecimal> faultUserHours = dailyFaultApi.getFaultUserHours(type, teamPortraitDTO.getTeamId());
-        if (CollUtil.isNotEmpty(faultUserHours)) {
-            BigDecimal sum = new BigDecimal("0.00");
-            for (Map.Entry<String, BigDecimal> vo : faultUserHours.entrySet()) {
-                BigDecimal value = vo.getValue();
-                sum = sum.add(value);
-            }
-            teamPortraitDTO.setFaultTotalTime(sum.setScale(1, BigDecimal.ROUND_HALF_UP));
-        } else {
-            teamPortraitDTO.setFaultTotalTime(new BigDecimal(0));
-        }
+        //获取班组维修总工时
+        BigDecimal faultHours = dailyFaultApi.getFaultHours(type, teamPortraitDTO.getTeamId());
+        teamPortraitDTO.setFaultTotalTime(faultHours);
 
+        //获取班组巡检总工时
+        BigDecimal patrolHours = patrolApi.getPatrolHours(type, teamPortraitDTO.getTeamId());
+        teamPortraitDTO.setPatrolTotalTime(patrolHours);
 
-        //获取巡检工时
-        Map<String, BigDecimal> patrolUserHours = patrolApi.getPatrolUserHours(type, teamPortraitDTO.getTeamId());
-        if (CollUtil.isNotEmpty(patrolUserHours)) {
-            BigDecimal sum = new BigDecimal("0.00");
-            for (Map.Entry<String, BigDecimal> vo : patrolUserHours.entrySet()) {
-                BigDecimal value = vo.getValue();
-                sum = sum.add(value);
-            }
-            teamPortraitDTO.setPatrolTotalTime(sum.setScale(1, BigDecimal.ROUND_HALF_UP));
-        } else {
-            teamPortraitDTO.setPatrolTotalTime(new BigDecimal(0));
-        }
-
-
-        //获取所有检修任务人员总工时和所有同行人总工时
+        //获取班组检修总工时
         if (CollUtil.isNotEmpty(userList)) {
-
+            //获取本班组指派人在指定时间范围内的所有任务时长(单位秒)
             List<TaskUserDTO> inspecitonTotalTime = bigScreenPlanMapper.getInspecitonTotalTime(userList, timeByType[0], timeByType[1]);
+            //获取本班组同行人在指定时间范围内的所有任务时长(单位秒)
             List<TaskUserDTO> inspecitonTotalTimeByPeer = bigScreenPlanMapper.getInspecitonTotalTimeByPeer(userList, timeByType[0], timeByType[1]);
             List<String> collect = inspecitonTotalTime.stream().map(TaskUserDTO::getTaskId).collect(Collectors.toList());
             //若同行人和指派人同属一个班组，则该班组只取一次工时，不能累加
@@ -582,7 +564,7 @@ public class BigscreenPlanService {
             BigDecimal decimal = sum.divide(new BigDecimal("3600"),1, BigDecimal.ROUND_HALF_UP);
             teamPortraitDTO.setInspecitonTotalTime(decimal);
         } else {
-            teamPortraitDTO.setInspecitonTotalTime(new BigDecimal(0));
+            teamPortraitDTO.setInspecitonTotalTime(new BigDecimal("0.00"));
         }
 
     }

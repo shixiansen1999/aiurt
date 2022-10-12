@@ -39,6 +39,18 @@ public interface PersonnelTeamMapper {
                                  @Param("startDate") Date startDate,
                                  @Param("endDate") Date endDate);
 
+
+    /**
+     * 查询某一个时间节点的同行人对应的检修任务的总工时
+     * @param userId
+     * @param startDate
+     * @param endDate
+     * @return
+     */
+    PersonnelTeamDTO getUserPeerTime(@Param("userId") String userId,
+                                 @Param("startDate") Date startDate,
+                                 @Param("endDate") Date endDate);
+
     /**
      * 查询某一个时间节点的班组对应的检修任务有多少
      * @param teamCodeList
@@ -55,12 +67,24 @@ public interface PersonnelTeamMapper {
 
     /**
      * 查询某一个时间节点的班组对应的检修任务的总工时
-     * @param teamCode
+     * @param userIdList
      * @param startDate
      * @param endDate
      * @return
      */
-    PersonnelTeamDTO getTeamTime(@Param("teamCode") String teamCode,
+    List<PersonnelTeamDTO> getTeamTime(@Param("userIdList") List<String> userIdList,
+                                 @Param("startDate") Date startDate,
+                                 @Param("endDate") Date endDate);
+
+
+    /**
+     * 查询某一个时间节点的班组对应的检修任务的总工时
+     * @param userIdList
+     * @param startDate
+     * @param endDate
+     * @return
+     */
+    List<PersonnelTeamDTO> getTeamPeerTime(@Param("userIdList") List<String> userIdList,
                                  @Param("startDate") Date startDate,
                                  @Param("endDate") Date endDate);
 }

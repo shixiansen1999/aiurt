@@ -15,7 +15,7 @@
     select su.id as userId ,su.realname as realname
     from sys_user su
     left join sys_depart sd on su.org_id = sd.id
-    where su.del_flag = 0 and sd.del_flag = 0
+    where 1=1
     and sd.id in
     <foreach collection="ids" index="index" item="item" open="(" separator="," close=")">
         #{item}
@@ -53,7 +53,7 @@
     </select>
 
 <select id="getUser" resultType="com.aiurt.modules.personnelgroupstatistics.model.TeamUserModel">
-    select id as userId,realname,avatar,work_no,org_name,job_grade from sys_user where id = #{userId}
+    select id as userId,realname,avatar,work_no,org_name,job_grade,job_name from sys_user where id = #{userId}
     </select>
 
 <select id="getRepairDuration" resultType="com.aiurt.modules.personnelgroupstatistics.dto.FaultRepairRecordDTO">

@@ -93,13 +93,12 @@
 <select id="getInspecitonTotalTime" resultType="com.aiurt.boot.index.dto.TaskUserDTO">
     SELECT
     rt.id as taskId,
-    sum(
     TIMESTAMPDIFF(
     SECOND,
     rt.begin_time,
     IF
     ( 1 = rt.is_receipt, rt.receipt_time, IF ( 1 = rt.is_confirm, rt.confirm_time, rt.submit_time ) )
-    )) inspecitonTotalTime
+    ) inspecitonTotalTime
     FROM
     repair_pool rp
     LEFT JOIN repair_task rt ON rp.`code` = rt.`code`
@@ -117,14 +116,13 @@
 
 <select id="getInspecitonTotalTimeByPeer" resultType="com.aiurt.boot.index.dto.TaskUserDTO">
     SELECT
-    rt.id,
-    sum(
+    rt.id as taskId,
     TIMESTAMPDIFF(
     SECOND,
     rt.begin_time,
     IF
     ( 1 = rt.is_receipt, rt.receipt_time, IF ( 1 = rt.is_confirm, rt.confirm_time, rt.submit_time ) )
-    )) inspecitonTotalTime
+    ) inspecitonTotalTime
     FROM
     repair_pool rp
     LEFT JOIN repair_task rt ON rp.`code` = rt.`code`

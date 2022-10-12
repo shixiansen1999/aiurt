@@ -15,29 +15,58 @@ import java.util.List;
  */
 public interface PersonnelGroupStatisticsService {
     /**
-     * 班组统计-查询
-     * @param departIds
-     * @param startTime
-     * @param endTime
-     * @return List<PersonnelGroupModel>
+     * 班组统计
+     *
+     * @param departIds 部门id集合字符串
+     * @param startTime 开始时间
+     * @param endTime 结束时间
+     * @return GroupModel
      */
     Page<GroupModel> queryGroupPageList(List<String> departIds, String startTime, String endTime, Page<GroupModel> page);
 
     /**
-     * 人员统计-查询
-     * @param departIds
-     * @param startTime
-     * @param endTime
-     * @return List<PersonnelGroupModel>
+     * 人员统计
+     * @param departIds 部门id集合字符串
+     * @param startTime 开始时间
+     * @param endTime 结束时间
+     * @return Page<PersonnelModel>
      */
     Page<PersonnelModel> queryUserPageList(List<String> departIds, String startTime, String endTime, Page<PersonnelModel> page);
 
+    /**
+     * 班组详情
+     *
+     * @param departId 部门id
+     * @return TeamPortraitModel
+     */
     TeamPortraitModel queryGroupById(String departId);
 
+    /**
+     * 人员详情
+     *
+     * @param userId 人员id
+     * @return TeamUserModel
+     */
     TeamUserModel queryUserById(String userId);
 
+    /**
+     * 统计报表人员报表-班组列表导出
+     *
+     * @param exportField 自定义导出字段集合合并字符串
+     * @param startTime 开始时间
+     * @param endTime 结束时间
+     * @return ModelAndView
+     */
     ModelAndView reportGroupExport(HttpServletRequest request, String startTime, String endTime,String exportField);
 
+    /**
+     * 统计报表人员报表-人员列表导出
+     *
+     * @param exportField 自定义导出字段集合合并字符串
+     * @param startTime 开始时间
+     * @param endTime 结束时间
+     * @return ModelAndView
+     */
     ModelAndView reportUserExport(HttpServletRequest request,String startTime, String endTime,String exportField);
 
 
