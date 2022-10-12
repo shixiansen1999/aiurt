@@ -42,7 +42,8 @@
         ELSE
         ''
         END
-        ) AS rejectionReason
+        ) AS rejectionReason,
+        ahp.PROC_INST_ID_ as proInstanceId
         FROM
         bd_work_ticket bwt
         LEFT JOIN act_hi_procinst ahp ON bwt.id = ahp.BUSINESS_KEY_
