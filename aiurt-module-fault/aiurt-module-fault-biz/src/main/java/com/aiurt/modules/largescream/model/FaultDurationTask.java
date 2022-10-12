@@ -11,7 +11,9 @@ import lombok.experimental.Accessors;
 @Accessors(chain = true)
 public class FaultDurationTask {
 
-    private String id;
+    private String userId;
+
+    private String taskId;
 
     private Long duration;
 }

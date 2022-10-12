@@ -29,6 +29,14 @@ public interface DailyFaultApi {
     Map<String, BigDecimal> getFaultUserHours(int type, String teamId);
 
     /**
+     * 大屏班组画像维修总工时统计
+     * @param type
+     * @param teamId
+     * @return
+     */
+    BigDecimal getFaultHours(int type, String teamId);
+
+    /**
      * 报表班组工时统计
      */
     Map<String, FaultReportDTO> getFaultOrgReport(List<String> teamId,String startTime,String endTime);

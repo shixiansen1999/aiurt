@@ -118,20 +118,66 @@ public class DailyFaultApiImpl implements DailyFaultApi {
 
         // 获取维修人员在指定时间范围内的任务时长(单位秒)
         List<FaultDurationTask> faultUserDuration = faultInformationMapper.getFaultUserDuration(startTime, endTime);
-        Map<String, Long> durationMap = faultUserDuration.stream().collect(Collectors.toMap(k -> k.getId(),
+        // 获取参与人员在指定时间范围内的任务时长(单位秒)
+        List<FaultDurationTask> ParticipantsDuration = faultInformationMapper.getFaultParticipantsDuration(startTime, endTime);
+
+        Map<String, Long> durationMap = faultUserDuration.stream().collect(Collectors.toMap(k -> k.getUserId(),
                 v -> ObjectUtil.isEmpty(v.getDuration()) ? 0L : v.getDuration(), (a, b) -> a));
+
+        Map<String, Long> ParticipantsMap = ParticipantsDuration.stream().collect(Collectors.toMap(k -> k.getUserId(),
+                v -> ObjectUtil.isEmpty(v.getDuration()) ? 0L : v.getDuration(), (a, b) -> a));
+
         userList.stream().forEach(l -> {
             String userId = l.getId();
             Long timeOne = durationMap.get(userId);
+            Long timeTwo = ParticipantsMap.get(userId);
             if (ObjectUtil.isEmpty(timeOne)) {
                 timeOne = 0L;
             }
-            double time = 1.0 * (timeOne) / 3600;
+            if (ObjectUtil.isEmpty(timeTwo)) {
+                timeTwo = 0L;
+            }
+            double time = 1.0 * (timeOne+timeTwo) / 3600;
             // 展示需要以小时数展示，并保留两位小数
             BigDecimal decimal = new BigDecimal(time).setScale(2, BigDecimal.ROUND_HALF_UP);
             userDurationMap.put(userId, decimal);
         });
         return userDurationMap;
+    }
+
+    /**
+     * 班组画像获取维修工时（参与人和执行人不是同一个）
+     * @param type
+     * @param teamId
+     * @return
+     */
+    @Override
+    public BigDecimal getFaultHours(int type, String teamId) {
+        // 班组的人员
+        List<LoginUser> userList = sysBaseApi.getUserPersonnel(teamId);
+        if (CollUtil.isNotEmpty(userList)) {
+            String dateTime = FaultLargeDateUtil.getDateTime(type);
+            Date startTime = DateUtil.parse(dateTime.split("~")[0]);
+            Date endTime = DateUtil.parse(dateTime.split("~")[1]);
+
+            // 获取指派人员在指定时间范围内的每一个任务的时长(单位秒)
+            List<FaultDurationTask> faultByIdDuration = faultInformationMapper.getFaultByIdDuration(startTime, endTime, userList);
+            // 获取参与人在指定时间范围内的每一个任务的任务时长(单位秒)
+            List<FaultDurationTask> ParticipantsByIdDuration = faultInformationMapper.getParticipantsDuration(startTime, endTime, userList);
+
+            List<String> collect = faultByIdDuration.stream().map(FaultDurationTask::getTaskId).collect(Collectors.toList());
+            //若参与人和指派人同属一个班组，则该班组只取一次工时，不能累加
+            List<FaultDurationTask> dtos = ParticipantsByIdDuration.stream().filter(t -> !collect.contains(t.getTaskId())).collect(Collectors.toList());
+            dtos.addAll(faultByIdDuration);
+            BigDecimal sum = new BigDecimal("0.00");
+            for (FaultDurationTask dto : dtos) {
+                sum = sum.add(new BigDecimal(dto.getDuration()));
+            }
+            //秒转时
+            BigDecimal decimal = sum.divide(new BigDecimal("3600"), 1, BigDecimal.ROUND_HALF_UP);
+            return decimal;
+        }
+    return new BigDecimal("0.00");
     }
 
     @Override

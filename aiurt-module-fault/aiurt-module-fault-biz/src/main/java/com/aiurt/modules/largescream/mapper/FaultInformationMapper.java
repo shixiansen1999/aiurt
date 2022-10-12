@@ -6,6 +6,7 @@ import com.aiurt.modules.fault.entity.Fault;
 import com.aiurt.modules.largescream.model.FaultDurationTask;
 import com.aiurt.modules.largescream.model.FaultScreenModule;
 import org.apache.ibatis.annotations.Param;
+import org.jeecg.common.system.vo.LoginUser;
 
 import java.util.Date;
 import java.util.List;
@@ -167,6 +168,29 @@ public interface FaultInformationMapper {
      * @return
      */
     List<FaultDurationTask> getFaultUserDuration(@Param("startTime") Date startTime, @Param("endTime") Date endTime);
+
+    /**
+     * 参与人维修工时
+     * @param startTime
+     * @param endTime
+     * @return
+     */
+    List<FaultDurationTask> getFaultParticipantsDuration(@Param("startTime") Date startTime, @Param("endTime") Date endTime);
+
+    /**
+     * 指派人维修工时按任务id计算
+     * @param startTime
+     * @param endTime
+     * @param userList
+     * @return
+     */
+    List<FaultDurationTask> getFaultByIdDuration(@Param("startTime")Date startTime, @Param("endTime")Date endTime,@Param("userList")List<LoginUser> userList );
+
+    List<FaultDurationTask> getParticipantsDuration(@Param("startTime")Date startTime, @Param("endTime")Date endTime,@Param("userList")List<LoginUser> userList );
+
+
+
+
     /**
      * 班组报表工时
      * @param orgCodes

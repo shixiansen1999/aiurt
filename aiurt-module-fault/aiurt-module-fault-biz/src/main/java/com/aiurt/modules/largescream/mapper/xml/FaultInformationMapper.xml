@@ -421,28 +421,120 @@
         </where>
     </select>
 
-    <select id="getFaultUserDuration" resultType="com.aiurt.modules.largescream.model.FaultDurationTask">
-        select s.id,
+    <select id="getFaultParticipantsDuration" resultType="com.aiurt.modules.largescream.model.FaultDurationTask">
+        select s.id as userId,
                s.realname,
-               fr.appoint_user_name,
+               frp.user_name,
                f.approval_pass_time,
                fr.recevice_time,
                fr.end_time,
                fr.assign_time,
                op.hang_up_time,
         sum(TIMESTAMPDIFF(second,IFNULL(fr.recevice_time,fr.assign_time),fr.end_time))-sum(IFNUll(op.hang_up_time,'0')) as duration
-        from  fault_repair_record  fr
-        left join sys_user s on s.username = fr.appoint_user_name
-        left join  fault f on f.code = fr.fault_code
-        LEFT JOIN operation_process op ON op.fault_code = fr.fault_code
+        FROM
+        fault_repair_participants frp
+        LEFT JOIN sys_user s ON s.username = frp.user_name
+        LEFT JOIN fault f ON f.CODE = frp.fault_code
+        LEFT JOIN operation_process op ON op.fault_code = frp.fault_code
+        left join fault_repair_record fr  on fr.id = frp.fault_repair_record_id
         <where>
            fr.del_flag = 0
         <if test="startTime != null and endTime != null">
             AND f.approval_pass_time BETWEEN #{startTime} AND #{endTime}
         </if>
         </where>
-        group by fr.appoint_user_name
+        group by s.id
     </select>
+
+    <select id="getFaultUserDuration" resultType="com.aiurt.modules.largescream.model.FaultDurationTask">
+        select
+        s.id as userId,
+        s.realname,
+        fr.appoint_user_name,
+        f.approval_pass_time,
+        fr.recevice_time,
+        fr.end_time,
+        fr.assign_time,
+        op.hang_up_time,
+        sum(TIMESTAMPDIFF(second,IFNULL(fr.recevice_time,fr.assign_time),fr.end_time))-sum(IFNUll(op.hang_up_time,'0')) as duration
+        from  fault_repair_record  fr
+        left join sys_user s on s.username = fr.appoint_user_name
+        left join  fault f on f.code = fr.fault_code
+        LEFT JOIN operation_process op ON op.fault_code = fr.fault_code
+        <where>
+            fr.del_flag = 0
+            <if test="startTime != null and endTime != null">
+                AND f.approval_pass_time BETWEEN #{startTime} AND #{endTime}
+            </if>
+        </where>
+        group by s.id
+    </select>
+
+    <select id="getFaultByIdDuration" resultType="com.aiurt.modules.largescream.model.FaultDurationTask">
+        select
+        s.id as userId,
+        s.realname,
+        fr.id as taskId,
+        fr.appoint_user_name,
+        f.approval_pass_time,
+        fr.recevice_time,
+        fr.end_time,
+        fr.assign_time,
+        op.hang_up_time,
+        IFNULL(TIMESTAMPDIFF( SECOND, IFNULL( fr.recevice_time, fr.assign_time ), fr.end_time ) - IFNUll( op.hang_up_time, '0' ),'0') AS duration
+        from  fault_repair_record  fr
+        left join sys_user s on s.username = fr.appoint_user_name
+        left join  fault f on f.code = fr.fault_code
+        LEFT JOIN operation_process op ON op.fault_code = fr.fault_code
+        <where>
+            fr.del_flag = 0
+            <if test="startTime != null and endTime != null">
+                AND f.approval_pass_time BETWEEN #{startTime} AND #{endTime}
+            </if>
+            <if test="userList != null and userList.size() != 0">
+                and s.id in
+                <foreach collection="userList" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+        group by fr.id
+    </select>
+
+    <select id="getParticipantsDuration" resultType="com.aiurt.modules.largescream.model.FaultDurationTask">
+        select
+        f.STATUS,
+        fr.id as taskId,
+        s.id as userid,
+        s.realname,
+        frp.user_name,
+        f.approval_pass_time,
+        fr.recevice_time,
+        fr.end_time,
+        fr.assign_time,
+        op.hang_up_time,
+        IFNULL(TIMESTAMPDIFF( SECOND, IFNULL( fr.recevice_time, fr.assign_time ), fr.end_time ) - IFNUll( op.hang_up_time, '0' ),'0') AS duration
+        FROM
+        fault_repair_participants frp
+        LEFT JOIN sys_user s ON s.username = frp.user_name
+        LEFT JOIN fault f ON f.CODE = frp.fault_code
+        LEFT JOIN operation_process op ON op.fault_code = frp.fault_code
+        left join fault_repair_record fr  on fr.id = frp.fault_repair_record_id
+        <where>
+            fr.del_flag = 0
+            <if test="startTime != null and endTime != null">
+                AND f.approval_pass_time BETWEEN #{startTime} AND #{endTime}
+            </if>
+            <if test="userList != null and userList.size() != 0">
+                and s.id in
+                <foreach collection="userList" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+        group by fr.id
+    </select>
+
     <select id="getFaultOrgReport" resultType="com.aiurt.modules.fault.dto.FaultReportDTO">
         select sd.id as orgId ,
         ifnull(sum(TIMESTAMPDIFF(second,IFNULL(fr.recevice_time,fr.assign_time),fr.end_time))-sum(IFNUll(op.hang_up_time,'0')),0) as num,
