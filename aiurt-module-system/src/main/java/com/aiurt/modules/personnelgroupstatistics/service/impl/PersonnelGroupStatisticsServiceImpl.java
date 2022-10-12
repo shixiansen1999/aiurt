@@ -83,13 +83,13 @@ public class PersonnelGroupStatisticsServiceImpl implements PersonnelGroupStatis
                     model.setPatrolTotalTime(Convert.toStr(userTeamPatrolDTO.getWorkHours()));
                     model.setPatrolScheduledTasks(Convert.toStr(userTeamPatrolDTO.getPlanTaskNumber()));
                     model.setPatrolCompletedTasks(Convert.toStr(userTeamPatrolDTO.getActualFinishTaskNumber()));
-                    model.setPatrolPlanCompletion(Convert.toStr(userTeamPatrolDTO.getPlanFinishRate())+"%");
+                    model.setPatrolPlanCompletion(Convert.toStr(userTeamPatrolDTO.getPlanFinishRate()));
                     model.setPatrolMissingChecks(Convert.toStr(userTeamPatrolDTO.getMissPatrolNumber()));
                 }else {
                     model.setPatrolTotalTime("0");
                     model.setPatrolScheduledTasks("0");
                     model.setPatrolCompletedTasks("0");
-                    model.setPatrolPlanCompletion("0%");
+                    model.setPatrolPlanCompletion("0");
                     model.setPatrolMissingChecks("0");
                 }
 
@@ -111,13 +111,13 @@ public class PersonnelGroupStatisticsServiceImpl implements PersonnelGroupStatis
                     model.setInspecitonTotalTime(Convert.toStr(personnelTeamDTO.getOverhaulWorkingHours()));
                     model.setInspecitonScheduledTasks(Convert.toStr(personnelTeamDTO.getPlanTaskNumber()));
                     model.setInspecitonCompletedTasks(Convert.toStr(personnelTeamDTO.getCompleteTaskNumber()));
-                    model.setInspecitonPlanCompletion(Convert.toStr(personnelTeamDTO.getPlanCompletionRate()+"%"));
+                    model.setInspecitonPlanCompletion(Convert.toStr(personnelTeamDTO.getPlanCompletionRate()));
                     model.setInspecitonMissingChecks("-");
                 }else {
                     model.setInspecitonTotalTime("0");
                     model.setInspecitonScheduledTasks("0");
                     model.setInspecitonCompletedTasks("0");
-                    model.setInspecitonPlanCompletion("0%");
+                    model.setInspecitonPlanCompletion("0");
                     model.setInspecitonMissingChecks("-");
                 }
 
@@ -125,8 +125,8 @@ public class PersonnelGroupStatisticsServiceImpl implements PersonnelGroupStatis
                 Integer integer = personnelGroupStatisticsMapper.groupTrainFinishedNum(model.getTeamId(), startTime, endTime);
                 model.setTrainFinish(Convert.toStr(integer));
 
-                model.setEmergencyResponseNum("0");
-                model.setEmergencyHandlingHours("0");
+                model.setEmergencyResponseNum("-");
+                model.setEmergencyHandlingHours("-");
             }
 
             return page.setRecords(personnelGroupModels);
@@ -161,13 +161,13 @@ public class PersonnelGroupStatisticsServiceImpl implements PersonnelGroupStatis
                     model.setPatrolTotalTime(Convert.toStr(userTeamPatrolDTO.getWorkHours()));
                     model.setPatrolScheduledTasks(Convert.toStr(userTeamPatrolDTO.getPlanTaskNumber()));
                     model.setPatrolCompletedTasks(Convert.toStr(userTeamPatrolDTO.getActualFinishTaskNumber()));
-                    model.setPatrolPlanCompletion(Convert.toStr(userTeamPatrolDTO.getPlanFinishRate()) + "%");
+                    model.setPatrolPlanCompletion(Convert.toStr(userTeamPatrolDTO.getPlanFinishRate()));
                     model.setPatrolMissingChecks(Convert.toStr(userTeamPatrolDTO.getMissPatrolNumber()));
                 } else {
                     model.setPatrolTotalTime("0");
                     model.setPatrolScheduledTasks("0");
                     model.setPatrolCompletedTasks("0");
-                    model.setPatrolPlanCompletion("0%");
+                    model.setPatrolPlanCompletion("0");
                     model.setPatrolMissingChecks("0");
                 }
                 //获取每一个人员维修参数数据
@@ -188,13 +188,13 @@ public class PersonnelGroupStatisticsServiceImpl implements PersonnelGroupStatis
                     model.setInspecitonTotalTime(Convert.toStr(personnelTeamDTO.getOverhaulWorkingHours()));
                     model.setInspecitonScheduledTasks(Convert.toStr(personnelTeamDTO.getPlanTaskNumber()));
                     model.setInspecitonCompletedTasks(Convert.toStr(personnelTeamDTO.getCompleteTaskNumber()));
-                    model.setInspecitonPlanCompletion(Convert.toStr(personnelTeamDTO.getPlanCompletionRate() + "%"));
+                    model.setInspecitonPlanCompletion(Convert.toStr(personnelTeamDTO.getPlanCompletionRate()));
                     model.setInspecitonMissingChecks("-");
                 } else {
                     model.setInspecitonTotalTime("0");
                     model.setInspecitonScheduledTasks("0");
                     model.setInspecitonCompletedTasks("0");
-                    model.setInspecitonPlanCompletion("0%");
+                    model.setInspecitonPlanCompletion("0");
                     model.setInspecitonMissingChecks("-");
                 }
                 //培训完成次数
@@ -212,8 +212,8 @@ public class PersonnelGroupStatisticsServiceImpl implements PersonnelGroupStatis
                 }
                 model.setTrainFinish(Convert.toStr(size));
 
-                model.setEmergencyResponseNum("0");
-                model.setEmergencyHandlingHours("0");
+                model.setEmergencyResponseNum("-");
+                model.setEmergencyHandlingHours("-");
             }
 
             return page.setRecords(personnelModels);
