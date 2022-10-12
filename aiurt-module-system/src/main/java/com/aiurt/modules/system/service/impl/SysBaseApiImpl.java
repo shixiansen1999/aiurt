@@ -1647,6 +1647,7 @@ public class SysBaseApiImpl implements ISysBaseAPI {
             if (CollUtil.isEmpty(list)) {
                 return CollUtil.newArrayList();
             } else {
+                list = list.stream().collect(Collectors.collectingAndThen(Collectors.toCollection(() -> new TreeSet<>(Comparator.comparing(SysDepartModel :: getId))), ArrayList::new));
                 return list;
             }
 

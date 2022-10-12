@@ -1,0 +1,328 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.aiurt.boot.report.mapper.ReportMapper">
+    <select id="getUserNowNumber" resultType="com.aiurt.boot.report.model.PatrolReport">
+        SELECT sd.id       as orgId,
+               sd.org_code as orgCode,
+               pt.abnormal_state as abnormalState,
+               pt.id       AS taskId
+                FROM
+                patrol_task pt
+                JOIN
+                patrol_task_user ptu ON pt.`code` = ptu.task_code
+                JOIN sys_user su ON su.id = ptu.user_id
+                JOIN sys_depart sd ON sd.id = su.org_id
+        <if test="useIds != null and useIds.size() != 0">
+            and ptu.user_id in
+            <foreach collection="useIds" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        <if test="condition.startDate != null and condition.startDate != ''">
+            and DATE_FORMAT(pt.patrol_date, '%Y-%m-%d') BETWEEN DATE_FORMAT(#{condition.startDate}, '%Y-%m-%d') and DATE_FORMAT(#{condition.endDate}, '%Y-%m-%d')
+        </if>
+         <if test="condition.lineCode != null and condition.stationCode != ''">
+            and pt.code in (
+                SELECT pps.task_code
+                FROM patrol_task_station pps
+                LEFT JOIN cs_station cs on pps.station_code = cs.station_code
+                where pps.station_code = #{condition.stationCode} and cs.line_code = #{condition.lineCode}
+            )
+        </if>
+        <if test="condition.lineCode != null and condition.stationCode ==null ">
+            and pt.code in (
+                SELECT pps.task_code
+                FROM patrol_task_station pps
+                LEFT JOIN cs_station cs on pps.station_code = cs.station_code
+                where cs.line_code = #{condition.lineCode}
+            )
+        </if>
+        <if test="condition.stationCode != null and condition.lineCode == null">
+            and pt.code in (
+                SELECT pps.task_code
+                FROM patrol_task_station pps
+                LEFT JOIN cs_station cs on pps.station_code = cs.station_code
+                where pps.station_code = #{condition.stationCode}
+            )
+        </if>
+        <if test="condition.subsystemCode != null and condition.subsystemCode != ''">
+            and pt.id in(
+                SELECT pts.task_id
+                FROM patrol_task_standard pts
+                where pts.subsystem_code = #{condition.subsystemCode}
+            )
+        </if>
+        and pt.`status` = 7
+        GROUP BY pt.id
+    </select>
+    <select id="getPeopleNowNumber" resultType="com.aiurt.boot.report.model.PatrolReport">
+      SELECT
+	sd.id as orgId,
+	sd.org_code as orgCode,
+	pt.abnormal_state as abnormalState,
+	pt.id AS taskId
+    FROM
+	patrol_task pt
+    JOIN patrol_task_device ptd ON pt.id = ptd.task_id
+    JOIN patrol_accompany pa ON ptd.patrol_number = pa.task_device_code
+	JOIN sys_user su ON su.id = pa.user_id
+	JOIN sys_depart sd ON sd.id = su.org_id
+   <if test="useIds != null and useIds.size() != 0">
+            AND pa.user_id IN
+            <foreach collection="useIds" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        <if test="condition.startDate != null and condition.startDate != ''">
+            and DATE_FORMAT(pt.patrol_date, '%Y-%m-%d') BETWEEN DATE_FORMAT(#{condition.startDate}, '%Y-%m-%d') and DATE_FORMAT(#{condition.endDate}, '%Y-%m-%d')
+        </if>
+         <if test="condition.lineCode != null and condition.stationCode != ''">
+            and pt.code in (
+                SELECT pps.task_code
+                FROM patrol_task_station pps
+                LEFT JOIN cs_station cs on pps.station_code = cs.station_code
+                where pps.station_code = #{condition.stationCode} and cs.line_code = #{condition.lineCode}
+            )
+        </if>
+        <if test="condition.lineCode != null and condition.stationCode ==null ">
+            and pt.code in (
+                SELECT pps.task_code
+                FROM patrol_task_station pps
+                LEFT JOIN cs_station cs on pps.station_code = cs.station_code
+                where cs.line_code = #{condition.lineCode}
+            )
+        </if>
+        <if test="condition.stationCode != null and condition.lineCode == null">
+            and pt.code in (
+                SELECT pps.task_code
+                FROM patrol_task_station pps
+                LEFT JOIN cs_station cs on pps.station_code = cs.station_code
+                where pps.station_code = #{condition.stationCode}
+            )
+        </if>
+        <if test="condition.subsystemCode != null and condition.subsystemCode != ''">
+            and pt.id in(
+                SELECT pts.task_id
+                FROM patrol_task_standard pts
+                where pts.subsystem_code = #{condition.subsystemCode}
+            )
+        </if>
+    and pt.`status` = 7
+	GROUP BY
+	pt.id
+</select>
+<select id="getUserOmitTasksNumber" resultType="com.aiurt.boot.report.model.PatrolReport">
+    SELECT
+	sd.id as orgId,
+	pt.id AS taskId
+FROM
+	patrol_task pt
+	JOIN patrol_task_user ptu ON pt.`code` = ptu.task_code
+	JOIN sys_user su ON su.id = ptu.user_id
+	JOIN sys_depart sd ON sd.id = su.org_id
+	  <if test="useIds != null and useIds.size() != 0">
+     and ptu.user_id in
+     <foreach collection="useIds" item="item" open="(" separator="," close=")">
+                #{item}
+     </foreach>
+    </if>
+     <if test="condition.startDate != null and condition.startDate != ''">
+            and DATE_FORMAT(pt.patrol_date, '%Y-%m-%d') BETWEEN DATE_FORMAT(#{condition.startDate}, '%Y-%m-%d') and DATE_FORMAT(#{condition.endDate}, '%Y-%m-%d')
+        </if>
+         <if test="condition.lineCode != null and condition.stationCode != ''">
+            and pt.code in (
+                SELECT pps.task_code
+                FROM patrol_task_station pps
+                LEFT JOIN cs_station cs on pps.station_code = cs.station_code
+                where pps.station_code = #{condition.stationCode} and cs.line_code = #{condition.lineCode}
+            )
+        </if>
+        <if test="condition.lineCode != null and condition.stationCode ==null ">
+            and pt.code in (
+                SELECT pps.task_code
+                FROM patrol_task_station pps
+                LEFT JOIN cs_station cs on pps.station_code = cs.station_code
+                where cs.line_code = #{condition.lineCode}
+            )
+        </if>
+        <if test="condition.stationCode != null and condition.lineCode == null">
+            and pt.code in (
+                SELECT pps.task_code
+                FROM patrol_task_station pps
+                LEFT JOIN cs_station cs on pps.station_code = cs.station_code
+                where pps.station_code = #{condition.stationCode}
+            )
+        </if>
+        <if test="condition.subsystemCode != null and condition.subsystemCode != ''">
+            and pt.id in(
+                SELECT pts.task_id
+                FROM patrol_task_standard pts
+                where pts.subsystem_code = #{condition.subsystemCode}
+            )
+        </if>
+         and pt.abnormal_state = 1
+         GROUP BY pt.id
+</select>
+<select id="getPeopleOmitTasksNumber" resultType="com.aiurt.boot.report.model.PatrolReport">
+ SELECT
+	sd.id as orgId,
+	pt.id AS taskId
+    FROM
+	patrol_task pt
+    JOIN patrol_task_device ptd ON pt.id = ptd.task_id
+    JOIN patrol_accompany pa ON ptd.patrol_number = pa.task_device_code
+	JOIN sys_user su ON su.id = pa.user_id
+	JOIN sys_depart sd ON sd.id = su.org_id
+	<if test="useIds != null and useIds.size() != 0">
+    AND pa.user_id IN
+     <foreach collection="useIds" item="item" open="(" separator="," close=")">
+                #{item}
+     </foreach>
+    </if>
+	 <if test="condition.startDate != null and condition.startDate != ''">
+            and DATE_FORMAT(pt.patrol_date, '%Y-%m-%d') BETWEEN DATE_FORMAT(#{condition.startDate}, '%Y-%m-%d') and DATE_FORMAT(#{condition.endDate}, '%Y-%m-%d')
+        </if>
+         <if test="condition.lineCode != null and condition.stationCode != ''">
+            and pt.code in (
+                SELECT pps.task_code
+                FROM patrol_task_station pps
+                LEFT JOIN cs_station cs on pps.station_code = cs.station_code
+                where pps.station_code = #{condition.stationCode} and cs.line_code = #{condition.lineCode}
+            )
+        </if>
+        <if test="condition.lineCode != null and condition.stationCode ==null ">
+            and pt.code in (
+                SELECT pps.task_code
+                FROM patrol_task_station pps
+                LEFT JOIN cs_station cs on pps.station_code = cs.station_code
+                where cs.line_code = #{condition.lineCode}
+            )
+        </if>
+        <if test="condition.stationCode != null and condition.lineCode == null">
+            and pt.code in (
+                SELECT pps.task_code
+                FROM patrol_task_station pps
+                LEFT JOIN cs_station cs on pps.station_code = cs.station_code
+                where pps.station_code = #{condition.stationCode}
+            )
+        </if>
+        <if test="condition.subsystemCode != null and condition.subsystemCode != ''">
+            and pt.id in(
+                SELECT pts.task_id
+                FROM patrol_task_standard pts
+                where pts.subsystem_code = #{condition.subsystemCode}
+            )
+        </if>
+    and pt.abnormal_state = 1
+	GROUP BY
+	pt.id
+</select>
+<select id="getAllUserTask" resultType="com.aiurt.boot.report.model.PatrolReport">
+  SELECT sd.id       as orgId,
+               sd.org_code as orgCode,
+               pt.abnormal_state as abnormalState,
+               pt.id       AS taskId
+                FROM
+                patrol_task pt
+                JOIN
+                patrol_task_user ptu ON pt.`code` = ptu.task_code
+                JOIN sys_user su ON su.id = ptu.user_id
+                JOIN sys_depart sd ON sd.id = su.org_id
+        <if test="useIds != null and useIds.size() != 0">
+            and ptu.user_id in
+            <foreach collection="useIds" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        <if test="condition.startDate != null and condition.startDate != ''">
+            and DATE_FORMAT(pt.patrol_date, '%Y-%m-%d') BETWEEN DATE_FORMAT(#{condition.startDate}, '%Y-%m-%d') and DATE_FORMAT(#{condition.endDate}, '%Y-%m-%d')
+        </if>
+         <if test="condition.lineCode != null and condition.stationCode != ''">
+            and pt.code in (
+                SELECT pps.task_code
+                FROM patrol_task_station pps
+                LEFT JOIN cs_station cs on pps.station_code = cs.station_code
+                where pps.station_code = #{condition.stationCode} and cs.line_code = #{condition.lineCode}
+            )
+        </if>
+        <if test="condition.lineCode != null and condition.stationCode ==null ">
+            and pt.code in (
+                SELECT pps.task_code
+                FROM patrol_task_station pps
+                LEFT JOIN cs_station cs on pps.station_code = cs.station_code
+                where cs.line_code = #{condition.lineCode}
+            )
+        </if>
+        <if test="condition.stationCode != null and condition.lineCode == null">
+            and pt.code in (
+                SELECT pps.task_code
+                FROM patrol_task_station pps
+                LEFT JOIN cs_station cs on pps.station_code = cs.station_code
+                where pps.station_code = #{condition.stationCode}
+            )
+        </if>
+        <if test="condition.subsystemCode != null and condition.subsystemCode != ''">
+            and pt.id in(
+                SELECT pts.task_id
+                FROM patrol_task_standard pts
+                where pts.subsystem_code = #{condition.subsystemCode}
+            )
+        </if>
+        GROUP BY pt.id
+</select>
+<select id="getAllPeopleTask" resultType="com.aiurt.boot.report.model.PatrolReport">
+  SELECT
+	sd.id as orgId,
+	sd.org_code as orgCode,
+	pt.abnormal_state as abnormalState,
+	pt.id AS taskId
+    FROM
+	patrol_task pt
+    JOIN patrol_task_device ptd ON pt.id = ptd.task_id
+    JOIN patrol_accompany pa ON ptd.patrol_number = pa.task_device_code
+	JOIN sys_user su ON su.id = pa.user_id
+	JOIN sys_depart sd ON sd.id = su.org_id
+   <if test="useIds != null and useIds.size() != 0">
+            AND pa.user_id IN
+            <foreach collection="useIds" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        <if test="condition.startDate != null and condition.startDate != ''">
+            and DATE_FORMAT(pt.patrol_date, '%Y-%m-%d') BETWEEN DATE_FORMAT(#{condition.startDate}, '%Y-%m-%d') and DATE_FORMAT(#{condition.endDate}, '%Y-%m-%d')
+        </if>
+         <if test="condition.lineCode != null and condition.stationCode != ''">
+            and pt.code in (
+                SELECT pps.task_code
+                FROM patrol_task_station pps
+                LEFT JOIN cs_station cs on pps.station_code = cs.station_code
+                where pps.station_code = #{condition.stationCode} and cs.line_code = #{condition.lineCode}
+            )
+        </if>
+        <if test="condition.lineCode != null and condition.stationCode ==null ">
+            and pt.code in (
+                SELECT pps.task_code
+                FROM patrol_task_station pps
+                LEFT JOIN cs_station cs on pps.station_code = cs.station_code
+                where cs.line_code = #{condition.lineCode}
+            )
+        </if>
+        <if test="condition.stationCode != null and condition.lineCode == null">
+            and pt.code in (
+                SELECT pps.task_code
+                FROM patrol_task_station pps
+                LEFT JOIN cs_station cs on pps.station_code = cs.station_code
+                where pps.station_code = #{condition.stationCode}
+            )
+        </if>
+        <if test="condition.subsystemCode != null and condition.subsystemCode != ''">
+            and pt.id in(
+                SELECT pts.task_id
+                FROM patrol_task_standard pts
+                where pts.subsystem_code = #{condition.subsystemCode}
+            )
+        </if>
+	GROUP BY
+	pt.id
+</select>
+</mapper>
