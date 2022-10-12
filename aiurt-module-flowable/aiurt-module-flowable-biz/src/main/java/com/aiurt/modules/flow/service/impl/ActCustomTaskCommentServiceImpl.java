@@ -61,6 +61,7 @@ public class ActCustomTaskCommentServiceImpl extends ServiceImpl<ActCustomTaskCo
             flowTaskCommentDTO.setTaskKey(actCustomTaskComment.getTaskKey());
             flowTaskCommentDTO.setTaskName(actCustomTaskComment.getTaskName());
             flowTaskCommentDTO.setApprovalType(actCustomTaskComment.getApprovalType());
+            // todo 类型名称
             flowTaskCommentDTO.setComment(actCustomTaskComment.getComment());
             flowTaskCommentDTO.setDelegateAssginee(actCustomTaskComment.getDelegateAssignee());
             flowTaskCommentDTO.setCustomBusinessData(actCustomTaskComment.getCustomBusinessData());
