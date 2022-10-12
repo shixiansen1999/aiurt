@@ -214,4 +214,31 @@ public interface FaultInformationMapper {
      * @return
      */
     FaultReportDTO getUserConstructorsNum(@Param("userId") String userId,@Param("startTime") String startTime,@Param("endTime")String endTime);
+
+    /**
+     * 指派人
+     * @param orgId
+     * @param startTime
+     * @param endTime
+     * @return
+     */
+    List<UserTimeDTO> getUserTime(@Param("orgId") String orgId,@Param("startTime") String startTime,@Param("endTime")String endTime);
+
+    /**
+     * 参与人
+     * @param orgId
+     * @param startTime
+     * @param endTime
+     * @return
+     */
+    List<UserTimeDTO> getAccompanyTime(@Param("orgId") String orgId,@Param("startTime") String startTime,@Param("endTime") String endTime);
+
+    /**
+     *
+     * @param userId
+     * @param startTime
+     * @param endTime
+     * @return
+     */
+    Long getUserTimes(@Param("userId") String userId,@Param("startTime") String startTime,@Param("endTime") String endTime);
 }

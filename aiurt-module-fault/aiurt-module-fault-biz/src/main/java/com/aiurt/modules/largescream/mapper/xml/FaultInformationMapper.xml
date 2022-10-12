@@ -449,7 +449,8 @@
         count(fr.id) as num1,
         sum(twl.assort_num) as constructorsNum
         from sys_depart sd
-        left join fault_repair_record  fr on sd.org_code = fr.sys_org_code and fr.del_flag = 0
+        left join  sys_user s on  s.org_code = sd.org_code
+        left join fault_repair_record  fr on  s.username = fr.appoint_user_name and fr.del_flag = 0
         left join  fault f on f.code = fr.fault_code  AND date_format(f.approval_pass_time ,'%Y-%m-%d') BETWEEN date_format(#{startTime} ,'%Y-%m-%d') AND date_format(#{endTime} ,'%Y-%m-%d')
         LEFT JOIN operation_process op ON op.fault_code = fr.fault_code
         left join t_work_log twl on  sd.id = twl.org_id  and date_format(twl.submit_time ,'%Y-%m-%d')  BETWEEN date_format(#{startTime} ,'%Y-%m-%d') AND date_format(#{endTime} ,'%Y-%m-%d') and twl.del_flag = 0 and twl.confirm_status=1
@@ -517,5 +518,39 @@
           and confirm_status = 1
           and assort_ids LIKE concat('%', #{userId}, '%')
           and date_format(submit_time ,'%Y-%m-%d')  BETWEEN date_format( #{startTime} ,'%Y-%m-%d') AND date_format( #{endTime} ,'%Y-%m-%d')
+    </select>
+    <select id="getUserTime" resultType="com.aiurt.modules.fault.dto.UserTimeDTO">
+        select s.id as userId, fr.id as frrId,
+               ifnull(sum(TIMESTAMPDIFF(second,IFNULL(fr.recevice_time,fr.assign_time),fr.end_time))-sum(IFNUll(op.hang_up_time,'0')),0) as duration
+        from  sys_user s
+                 left join fault_repair_record  fr on  s.username = fr.appoint_user_name and fr.del_flag = 0
+                 left join  fault f on f.code = fr.fault_code  AND date_format(f.approval_pass_time ,'%Y-%m-%d') BETWEEN date_format(#{startTime} ,'%Y-%m-%d') AND date_format(#{endTime} ,'%Y-%m-%d')
+                 LEFT JOIN operation_process op ON op.fault_code = fr.fault_code
+        where
+           s.del_flag = 0 and s.org_id = #{orgId}
+        group by s.id
+    </select>
+    <select id="getAccompanyTime" resultType="com.aiurt.modules.fault.dto.UserTimeDTO">
+        select s.id as userId, fr.id as frrId,
+               ifnull(sum(TIMESTAMPDIFF(second,IFNULL(fr.recevice_time,fr.assign_time),fr.end_time))-sum(IFNUll(op.hang_up_time,'0')),0) as duration
+        from  sys_user s
+                  left join fault_repair_participants frp on s.username = frp.user_name
+                  left join fault_repair_record  fr on frp.fault_repair_record_id = fr.id  and fr.del_flag = 0
+                  left join  fault f on f.code = fr.fault_code  AND date_format(f.approval_pass_time ,'%Y-%m-%d') BETWEEN date_format(#{startTime} ,'%Y-%m-%d') AND date_format(#{endTime} ,'%Y-%m-%d')
+                  LEFT JOIN operation_process op ON op.fault_code = fr.fault_code
+        where
+            s.del_flag = 0 and s.org_id = #{orgId}
+        group by s.id
+    </select>
+    <select id="getUserTimes" resultType="java.lang.Long">
+        select
+               ifnull(sum(TIMESTAMPDIFF(second,IFNULL(fr.recevice_time,fr.assign_time),fr.end_time))-sum(IFNUll(op.hang_up_time,'0')),0) as duration
+        from  sys_user s
+                  left join fault_repair_participants frp on s.username = frp.user_name
+                  left join fault_repair_record  fr on frp.fault_repair_record_id = fr.id  and fr.del_flag = 0
+                  left join  fault f on f.code = fr.fault_code  AND date_format(f.approval_pass_time ,'%Y-%m-%d') BETWEEN date_format(#{startTime} ,'%Y-%m-%d') AND date_format(#{endTime} ,'%Y-%m-%d')
+                  LEFT JOIN operation_process op ON op.fault_code = fr.fault_code
+        where
+            s.del_flag = 0 and s.id = #{userId}
     </select>
 </mapper>
