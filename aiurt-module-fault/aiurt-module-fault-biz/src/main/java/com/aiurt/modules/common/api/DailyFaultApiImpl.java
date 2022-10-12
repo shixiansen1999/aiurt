@@ -6,6 +6,7 @@ import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.NumberUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.aiurt.modules.fault.dto.FaultReportDTO;
+import com.aiurt.modules.fault.dto.UserTimeDTO;
 import com.aiurt.modules.fault.entity.Fault;
 import com.aiurt.modules.fault.entity.FaultRepairParticipants;
 import com.aiurt.modules.fault.entity.FaultRepairRecord;
@@ -189,6 +190,17 @@ public class DailyFaultApiImpl implements DailyFaultApi {
         List<String> orgIds = sysDepartModels.stream().map(SysDepartModel::getId).collect(Collectors.toList());
         List<FaultReportDTO> faultReportDTOS = faultInformationMapper.getFaultOrgReport(teamId,startTime,endTime,orgCodes,orgIds);
         faultReportDTOS.forEach(f->{
+            //查询指派人任务时长
+            List<UserTimeDTO> dtos = faultInformationMapper.getUserTime(f.getOrgId(),startTime,endTime);
+            //查询参与人任务时长
+            List<UserTimeDTO> userTimeDTOS =faultInformationMapper.getAccompanyTime(f.getOrgId(),startTime,endTime);
+            userTimeDTOS = userTimeDTOS.stream().parallel().filter(a -> dtos.stream().map(UserTimeDTO::getFrrId).collect(Collectors.toList()).contains(a.getFrrId()))
+                    .collect(Collectors.toList());
+            Long sum = userTimeDTOS
+                    .stream().filter(w-> w.getDuration() !=null)
+                    .mapToLong(w -> w.getDuration())
+                    .sum();
+            f.setNum(f.getNum()+sum);
             List<String> str = faultInformationMapper.getConstructionHours(f.getOrgId(),startTime,endTime);
             List<BigDecimal> doubles = new ArrayList<>();
             str.forEach(s -> {
@@ -229,6 +241,8 @@ public class DailyFaultApiImpl implements DailyFaultApi {
         List<String> orgCodes = sysDepartModels.stream().map(SysDepartModel::getOrgCode).collect(Collectors.toList());
         List<FaultReportDTO> faultReportDTOS = faultInformationMapper.getFaultUserReport(teamId,startTime,endTime,orgCodes,userId);
         faultReportDTOS.forEach(f->{
+            Long sum = faultInformationMapper.getUserTimes(f.getUserId(),startTime,endTime);
+            f.setNum(f.getNum()+sum);
             List<String> str = faultInformationMapper.getUserConstructionHours(f.getUserId(),startTime,endTime);
             List<BigDecimal> doubles = new ArrayList<>();
             str.forEach(s -> {
