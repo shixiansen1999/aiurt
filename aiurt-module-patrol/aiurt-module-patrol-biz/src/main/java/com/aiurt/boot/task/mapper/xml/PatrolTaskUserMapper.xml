@@ -151,7 +151,7 @@ JOIN patrol_accompany pa ON ptd.patrol_number = pa.task_device_code
 
     <select id="getScreenDuration" resultType="com.aiurt.boot.screen.model.ScreenDurationTask">
         SELECT
-        pt.id,
+        pt.id as taskId,
         IFNULL(TIMESTAMPDIFF( SECOND, pt.begin_time, IF ( 1 = pt.auditor, pt.auditor_time, pt.submit_time ) ),'0') duration
         FROM
         patrol_task pt
@@ -165,7 +165,7 @@ JOIN patrol_accompany pa ON ptd.patrol_number = pa.task_device_code
         <if test="userList != null and userList.size() != 0">
             and ptu.user_id in
             <foreach collection="userList" item="item" open="(" separator="," close=")">
-                #{item}
+                #{item.id}
             </foreach>
 
         </if>
@@ -175,7 +175,7 @@ JOIN patrol_accompany pa ON ptd.patrol_number = pa.task_device_code
 
     <select id="getScreentPeerDuration" resultType="com.aiurt.boot.screen.model.ScreenDurationTask">
         SELECT
-        pt.id,
+        pt.id as taskId,
         IFNULL(TIMESTAMPDIFF( SECOND, pt.begin_time, IF ( 1 = pt.auditor, pt.auditor_time, pt.submit_time ) ),'0') duration
         FROM patrol_task pt
         JOIN patrol_task_device ptd ON pt.id = ptd.task_id
@@ -190,7 +190,7 @@ JOIN patrol_accompany pa ON ptd.patrol_number = pa.task_device_code
         <if test="userList != null and userList.size() != 0">
             and pa.user_id in
             <foreach collection="userList" item="item" open="(" separator="," close=")">
-                #{item}
+                #{item.id}
             </foreach>
 
         </if>

@@ -116,7 +116,7 @@
 
 <select id="getInspecitonTotalTimeByPeer" resultType="com.aiurt.boot.index.dto.TaskUserDTO">
     SELECT
-    rt.id,
+    rt.id as taskId,
     TIMESTAMPDIFF(
     SECOND,
     rt.begin_time,

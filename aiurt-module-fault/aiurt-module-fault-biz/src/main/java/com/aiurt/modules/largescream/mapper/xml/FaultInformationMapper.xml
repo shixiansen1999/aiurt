@@ -494,7 +494,7 @@
             <if test="userList != null and userList.size() != 0">
                 and s.id in
                 <foreach collection="userList" item="item" open="(" separator="," close=")">
-                    #{item}
+                    #{item.id}
                 </foreach>
             </if>
         </where>
@@ -528,7 +528,7 @@
             <if test="userList != null and userList.size() != 0">
                 and s.id in
                 <foreach collection="userList" item="item" open="(" separator="," close=")">
-                    #{item}
+                    #{item.id}
                 </foreach>
             </if>
         </where>
