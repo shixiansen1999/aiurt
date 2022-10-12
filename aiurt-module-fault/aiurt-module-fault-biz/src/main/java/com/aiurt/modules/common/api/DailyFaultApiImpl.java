@@ -1,6 +1,7 @@
 package com.aiurt.modules.common.api;
 
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.NumberUtil;
@@ -239,8 +240,12 @@ public class DailyFaultApiImpl implements DailyFaultApi {
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         List<SysDepartModel> sysDepartModels = sysBaseAPI.getUserSysDepart(sysUser.getId());
         List<String> orgCodes = sysDepartModels.stream().map(SysDepartModel::getOrgCode).collect(Collectors.toList());
-        List<LoginUser> loginUsers = sysBaseAPI.getUserByDepIds(orgCodes);
-        List<FaultReportDTO> faultReportDTOS = new ArrayList<>();
+        List<LoginUser> loginUsers = new ArrayList<>();
+        if (CollectionUtil.isNotEmpty(teamId)){
+           loginUsers= sysBaseAPI.getUseList(teamId);
+        }else {
+          loginUsers = sysBaseAPI.getUserByDepIds(orgCodes);
+        }
         loginUsers.forEach(f->{
             FaultReportDTO faultReportDTO = faultInformationMapper.getFaultUserReport(teamId,startTime,endTime,orgCodes,f.getId());
             Long sum = faultInformationMapper.getUserTimes(f.getId(),startTime,endTime);
