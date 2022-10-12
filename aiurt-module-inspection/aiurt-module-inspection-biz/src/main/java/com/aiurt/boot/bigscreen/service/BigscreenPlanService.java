@@ -501,6 +501,7 @@ public class BigscreenPlanService {
                 if (timeByType.length > 0 && CollUtil.isNotEmpty(userList)) {
                     //获取一周内的班组平均维修响应时间
                     List<RepairRecordDetailDTO> repairDuration = bigScreenPlanMapper.getRepairDuration(userList, timeByType[0], timeByType[1]);
+                    if (CollUtil.isNotEmpty(repairDuration)) {
                     long l = 0;
                     for (RepairRecordDetailDTO repairRecordDetailDTO : repairDuration) {
                         // 响应时长： 接收到任务，开始维修时长
@@ -520,10 +521,10 @@ public class BigscreenPlanService {
                     }
                     int size = repairDuration.size();
                     BigDecimal bigDecimal = new BigDecimal(l);
-                    if (size != 0) {
-                        BigDecimal bigDecimal1 = new BigDecimal(size);
-                        String s = bigDecimal.divide(bigDecimal1, 0).toString();
-                        teamPortraitDTO.setAverageTime(s);
+
+                    BigDecimal bigDecimal1 = new BigDecimal(size);
+                    String s = bigDecimal.divide(bigDecimal1, 0).toString();
+                    teamPortraitDTO.setAverageTime(s);
                     } else {
                         teamPortraitDTO.setAverageTime("0");
                     }
