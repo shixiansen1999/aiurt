@@ -155,23 +155,25 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                         stringBuffer = stringBuffer.deleteCharAt(stringBuffer.length() - 1);
                     }
                     e.setOverhaulId(stringBuffer.toString());
-                }
-                ArrayList<String> userList = new ArrayList<>();
-                collect.forEach(o -> {
-                    LoginUser userById = sysBaseApi.getUserById(o);
-                    userList.add(userById.getRealname());
-                });
-                if (CollectionUtil.isNotEmpty(userList)) {
-                    StringBuffer stringBuffer = new StringBuffer();
-                    for (String t : userList) {
-                        stringBuffer.append(t);
-                        stringBuffer.append(",");
+
+                    ArrayList<String> userList = new ArrayList<>();
+                    collect.forEach(o -> {
+                        String realName = repairTaskMapper.getRealName(o);
+                        userList.add(realName);
+                    });
+                    if (CollectionUtil.isNotEmpty(userList)) {
+                        StringBuffer stringBuffer1 = new StringBuffer();
+                        for (String t : userList) {
+                            stringBuffer1.append(t);
+                            stringBuffer1.append(",");
+                        }
+                        if (stringBuffer1.length() > 0) {
+                            stringBuffer1 = stringBuffer1.deleteCharAt(stringBuffer1.length() - 1);
+                        }
+                        e.setOverhaulName(stringBuffer1.toString());
                     }
-                    if (stringBuffer.length() > 0) {
-                        stringBuffer = stringBuffer.deleteCharAt(stringBuffer.length() - 1);
-                    }
-                    e.setOverhaulName(stringBuffer.toString());
                 }
+
             }
 
             // 所属周（相对年）
