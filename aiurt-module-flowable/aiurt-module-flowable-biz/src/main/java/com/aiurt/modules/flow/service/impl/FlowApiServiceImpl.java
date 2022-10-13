@@ -294,6 +294,11 @@ public class FlowApiServiceImpl implements FlowApiService {
             }
             // 完成任务
             taskService.complete(taskId, busData);
+        } else if (StrUtil.equalsAnyIgnoreCase(FlowApprovalType.CANCEL, approvalType)) {
+            StopProcessInstanceDTO instanceDTO = new StopProcessInstanceDTO();
+            instanceDTO.setProcessInstanceId(processInstanceId);
+            instanceDTO.setStopReason("作废");
+            stopProcessInstance(instanceDTO);
         }
 
         // 判断当前完成执行的任务，是否存在抄送设置
@@ -1315,10 +1320,15 @@ public class FlowApiServiceImpl implements FlowApiService {
         }
         TaskInfoDTO taskInfoDTO = new TaskInfoDTO();
         taskInfoDTO.setTaskKey(userTask.getId());
-        taskInfoDTO.setRouterName("src\\views\\workTicket\\modules\\BdFirstWorkTicket.vue");
         ProcessDefinition processDefinition = flowElementUtil.getProcessDefinition(processDefinitionKey);
         ActCustomTaskExt customTaskExt = customTaskExtService.getByProcessDefinitionIdAndTaskId(processDefinition.getId(), userTask.getId());
         if (Objects.nonNull(customTaskExt)) {
+            String formJson = customTaskExt.getFormJson();
+            JSONObject jsonObject = JSONObject.parseObject(formJson);
+            taskInfoDTO.setRouterName(jsonObject.getString("formUrl"));
+            if (StrUtil.equalsAnyIgnoreCase(processDefinitionKey, "bd_work_ticket2", "bd_work_titck")) {
+                taskInfoDTO.setRouterName("src\\views\\workTicket\\modules\\BdFirstWorkTicket.vue");
+            }
             String json = customTaskExt.getOperationListJson();
             List<JSONObject> objectList = JSONObject.parseArray(json, JSONObject.class);
             taskInfoDTO.setOperationList(objectList);
