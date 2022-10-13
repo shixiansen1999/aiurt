@@ -279,7 +279,7 @@ public class FlowApiServiceImpl implements FlowApiService {
                 flowElementUtil.setBusinessKeyForProcessInstance(task.getProcessDefinitionId(), o);
             }
 
-        }else if (StrUtil.equalsAnyIgnoreCase(FlowApprovalType.REJECT_TO_STAR, FlowApprovalType.AGREE, approvalType)) {
+        }else if (StrUtil.equalsAnyIgnoreCase(approvalType, FlowApprovalType.REJECT_TO_STAR, FlowApprovalType.AGREE)) {
             if (Objects.nonNull(busData)) {
                busData.put("operationType", approvalType);
                flowElementUtil.saveBusData(task.getProcessDefinitionId(), task.getTaskDefinitionKey(), busData);
@@ -339,7 +339,7 @@ public class FlowApiServiceImpl implements FlowApiService {
         if (!this.isAssigneeOrCandidate(task)) {
             throw new AiurtBootException("数据验证失败，当前用户不是指派人也不是候选人之一！");
         }
-        if (StrUtil.isNotBlank(processDefinitionId)) {
+        if (StrUtil.isBlank(processDefinitionId)) {
             processDefinitionId = task.getProcessDefinitionId();
         }
         ActCustomTaskExt flowTaskExt =

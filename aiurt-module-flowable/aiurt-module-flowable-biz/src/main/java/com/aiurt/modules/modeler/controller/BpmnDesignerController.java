@@ -82,9 +82,7 @@ public class BpmnDesignerController {
             @ApiImplicitParam(name = "modelId", value = "流程模板id", required = true, paramType = "query")
     })
     public Result<?> publishBpmn(@PathVariable String modelId) {
-        if (StrUtil.equalsIgnoreCase(modelId, "e8d5b1e5-3ecd-11ed-9f07-a4ae12f30267")) {
-            return Result.OK("部署成功");
-        }
+
         flowableBpmnService.publishBpmn(modelId);
         return Result.OK("部署成功");
     }
