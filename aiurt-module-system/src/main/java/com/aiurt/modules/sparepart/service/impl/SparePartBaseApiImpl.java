@@ -4,8 +4,12 @@ import java.util.Date;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.constant.CommonConstant;
+import com.aiurt.modules.device.entity.Device;
 import com.aiurt.modules.device.entity.DeviceAssembly;
 import com.aiurt.modules.device.service.IDeviceAssemblyService;
+import com.aiurt.modules.device.service.IDeviceService;
+import com.aiurt.modules.material.entity.MaterialBase;
+import com.aiurt.modules.material.service.IMaterialBaseService;
 import com.aiurt.modules.sparepart.dto.DeviceChangeSparePartDTO;
 import com.aiurt.modules.sparepart.dto.SparePartMalfunctionDTO;
 import com.aiurt.modules.sparepart.dto.SparePartReplaceDTO;
@@ -17,6 +21,8 @@ import com.aiurt.modules.sparepart.service.ISparePartMalfunctionService;
 import com.aiurt.modules.sparepart.service.ISparePartReplaceService;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import liquibase.pro.packaged.I;
 import lombok.extern.slf4j.Slf4j;
 import org.jeecg.common.system.api.ISparePartBaseApi;
@@ -49,6 +55,12 @@ public class SparePartBaseApiImpl implements ISparePartBaseApi {
 
     @Autowired
     private IDeviceAssemblyService deviceAssemblyService;
+
+    @Autowired
+    private IMaterialBaseService materialBaseService;
+
+    @Autowired
+    private IDeviceService deviceService;
 
     /**
      * 更新出库单未使用的数量
@@ -96,48 +108,55 @@ public class SparePartBaseApiImpl implements ISparePartBaseApi {
                 String outOrderId = deviceChange.getOutOrderId();
 
                 String deviceCode = deviceChange.getDeviceCode();
-
+                LambdaQueryWrapper<Device> queryWrapper = new LambdaQueryWrapper<>();
+                queryWrapper.eq(Device::getCode, deviceCode).last("limit 1");
+                Device device = deviceService.getBaseMapper().selectOne(queryWrapper);
+                if (Objects.isNull(device)) {
+                    return;
+                }
                 // 原组件
                 String oldSparePartCode = deviceChange.getOldSparePartCode();
 
                 String newSparePartCode = deviceChange.getNewSparePartCode();
 
+                LambdaQueryWrapper<MaterialBase> wrapper = new LambdaQueryWrapper<>();
+                wrapper.eq(MaterialBase::getCode, newSparePartCode).last("limit 1");
+                MaterialBase materialBase = materialBaseService.getBaseMapper().selectOne(wrapper);
+
+                if (Objects.isNull(materialBase)) {
+                    return;
+                }
+
                 Integer newSparePartNum = Optional.ofNullable(deviceChange.getNewSparePartNum()).orElse(1);
 
                 for (int i = 0; i < newSparePartNum; i++) {
-                    String key = "";
-                   do {
-                       int num = 0;
-                       String number = String.format("%03d", num);
-                       key = newSparePartCode + number;
-                   }while (!assemblyCodeSet.contains(key));
+                   String key = "";
+                    int num = 0;
+                    do {
+                        String number = String.format("%03d", num);
+                        key = newSparePartCode + number;
+                        num = num +1;
+                    }while (assemblyCodeSet.contains(key));
+                    assemblyCodeSet.add(key);
 
                    DeviceAssembly deviceAssembly = new DeviceAssembly();
-                   deviceAssembly.setBaseTypeCode("");
-                   deviceAssembly.setBaseTypeCodeName("");
-                   deviceAssembly.setStatus("");
-                   deviceAssembly.setStatusName("");
-                   deviceAssembly.setCode("");
-                   deviceAssembly.setManufactorCode("");
-                   deviceAssembly.setDeviceCode("");
-                   deviceAssembly.setMaterialName("");
-                   deviceAssembly.setMaterialCode("");
-                   deviceAssembly.setRemark("");
-                   deviceAssembly.setSpecifications("");
+                   deviceAssembly.setBaseTypeCode(materialBase.getBaseTypeCode());
+                   deviceAssembly.setStatus("0");
+                   deviceAssembly.setCode(key);
+                   deviceAssembly.setManufactorCode(materialBase.getManufactorCode());
+                   deviceAssembly.setDeviceCode(deviceCode);
+                   deviceAssembly.setMaterialName(materialBase.getName());
+                   deviceAssembly.setMaterialCode(key);
+                   deviceAssembly.setSpecifications(materialBase.getSpecifications());
                    deviceAssembly.setDelFlag(0);
-                   deviceAssembly.setCreateBy("");
-                   deviceAssembly.setUpdateBy("");
-                   deviceAssembly.setCreateTime(new Date());
-                   deviceAssembly.setUpdateTime(new Date());
+
                    deviceAssembly.setStartDate(new Date());
-                   deviceAssembly.setPath("");
-                   deviceAssembly.setPrice("");
-                   deviceAssembly.setDeviceTypeCode("");
+                   deviceAssembly.setDeviceTypeCode(device.getDeviceTypeCode());
                    deviceAssembly.setBuyDate(new Date());
                    deviceAssembly.setOnlineDate(new Date());
-                   deviceAssembly.setUnit("");
+                   deviceAssembly.setUnit(materialBase.getUnit());
 
-
+                   deviceAssemblyService.save(deviceAssembly);
 
 
                     SparePartReplace replace = new SparePartReplace();
@@ -147,12 +166,15 @@ public class SparePartBaseApiImpl implements ISparePartBaseApi {
                     replace.setDelFlag(CommonConstant.DEL_FLAG_0);
                     // 被替换的组件
                     replace.setReplaceSubassemblyCode(oldSparePartCode);
-                    replace.setSubassemblyCode("");
+                    replace.setSubassemblyCode(key);
                     list.add(replace);
                 }
 
                 if (StrUtil.isNotBlank(oldSparePartCode)) {
-
+                    LambdaUpdateWrapper<DeviceAssembly> updateWrapper = new LambdaUpdateWrapper<>();
+                    updateWrapper.eq(DeviceAssembly::getDeviceCode, deviceCode).eq(DeviceAssembly::getCode, oldSparePartCode)
+                            .set(DeviceAssembly::getDeviceCode, null);
+                    deviceAssemblyService.update(updateWrapper);
                 }
             });
 
