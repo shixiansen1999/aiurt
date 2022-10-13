@@ -1,8 +1,11 @@
 package com.aiurt.modules.sparepart.service.impl;
+import java.util.Date;
 
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.constant.CommonConstant;
+import com.aiurt.modules.device.entity.DeviceAssembly;
+import com.aiurt.modules.device.service.IDeviceAssemblyService;
 import com.aiurt.modules.sparepart.dto.DeviceChangeSparePartDTO;
 import com.aiurt.modules.sparepart.dto.SparePartMalfunctionDTO;
 import com.aiurt.modules.sparepart.dto.SparePartReplaceDTO;
@@ -23,6 +26,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author fgw
@@ -43,6 +47,9 @@ public class SparePartBaseApiImpl implements ISparePartBaseApi {
     @Autowired
     private ISparePartMalfunctionService sparePartMalfunctionService;
 
+    @Autowired
+    private IDeviceAssemblyService deviceAssemblyService;
+
     /**
      * 更新出库单未使用的数量
      * @param updateMap
@@ -56,6 +63,10 @@ public class SparePartBaseApiImpl implements ISparePartBaseApi {
                 }
             });
         }
+    }
+
+    public static void main(String[] args) {
+        System.out.println(String.format("%012d", 1));
     }
 
     /**
@@ -74,12 +85,71 @@ public class SparePartBaseApiImpl implements ISparePartBaseApi {
 
         if (CollectionUtil.isNotEmpty(sparePartList)) {
 
+            List<DeviceAssembly> deviceAssemblyList = deviceAssemblyService.list();
+            Set<String> assemblyCodeSet = deviceAssemblyList.stream().map(DeviceAssembly::getCode).collect(Collectors.toSet());
             // 插入到组件表中
             sparePartList.stream().forEach(deviceChange->{
+
+                // 线处理
+                String faultCode = deviceChange.getCode();
+                // 备件更换记录表
+                String outOrderId = deviceChange.getOutOrderId();
+
+                String deviceCode = deviceChange.getDeviceCode();
+
                 // 原组件
                 String oldSparePartCode = deviceChange.getOldSparePartCode();
 
+                String newSparePartCode = deviceChange.getNewSparePartCode();
 
+                Integer newSparePartNum = Optional.ofNullable(deviceChange.getNewSparePartNum()).orElse(1);
+
+                for (int i = 0; i < newSparePartNum; i++) {
+                    String key = "";
+                   do {
+                       int num = 0;
+                       String number = String.format("%03d", num);
+                       key = newSparePartCode + number;
+                   }while (!assemblyCodeSet.contains(key));
+
+                   DeviceAssembly deviceAssembly = new DeviceAssembly();
+                   deviceAssembly.setBaseTypeCode("");
+                   deviceAssembly.setBaseTypeCodeName("");
+                   deviceAssembly.setStatus("");
+                   deviceAssembly.setStatusName("");
+                   deviceAssembly.setCode("");
+                   deviceAssembly.setManufactorCode("");
+                   deviceAssembly.setDeviceCode("");
+                   deviceAssembly.setMaterialName("");
+                   deviceAssembly.setMaterialCode("");
+                   deviceAssembly.setRemark("");
+                   deviceAssembly.setSpecifications("");
+                   deviceAssembly.setDelFlag(0);
+                   deviceAssembly.setCreateBy("");
+                   deviceAssembly.setUpdateBy("");
+                   deviceAssembly.setCreateTime(new Date());
+                   deviceAssembly.setUpdateTime(new Date());
+                   deviceAssembly.setStartDate(new Date());
+                   deviceAssembly.setPath("");
+                   deviceAssembly.setPrice("");
+                   deviceAssembly.setDeviceTypeCode("");
+                   deviceAssembly.setBuyDate(new Date());
+                   deviceAssembly.setOnlineDate(new Date());
+                   deviceAssembly.setUnit("");
+
+
+
+
+                    SparePartReplace replace = new SparePartReplace();
+                    replace.setMaintenanceRecord(faultCode);
+                    replace.setMaterialsCode(newSparePartCode);
+                    replace.setOutOrderId(outOrderId);
+                    replace.setDelFlag(CommonConstant.DEL_FLAG_0);
+                    // 被替换的组件
+                    replace.setReplaceSubassemblyCode(oldSparePartCode);
+                    replace.setSubassemblyCode("");
+                    list.add(replace);
+                }
 
                 if (StrUtil.isNotBlank(oldSparePartCode)) {
 
@@ -91,16 +161,6 @@ public class SparePartBaseApiImpl implements ISparePartBaseApi {
                 String faultCode = deviceChangeDTO.getCode();
                 // 备件更换记录表
                 String outOrderId = deviceChangeDTO.getOutOrderId();
-                SparePartReplace replace = new SparePartReplace();
-                replace.setMaintenanceRecord(faultCode);
-                replace.setMaterialsCode(deviceChangeDTO.getNewSparePartCode());
-                replace.setOutOrderId(outOrderId);
-                replace.setDelFlag(CommonConstant.DEL_FLAG_0);
-                // 被替换的组件
-                replace.setReplaceSubassemblyCode(deviceChangeDTO.getOldSparePartCode());
-                replace.setSubassemblyCode(deviceChangeDTO.getNewSparePartCode());
-                list.add(replace);
-
                 // 备件故障记录表
                 //
                 String createBy = deviceChangeDTO.getCreateBy();
