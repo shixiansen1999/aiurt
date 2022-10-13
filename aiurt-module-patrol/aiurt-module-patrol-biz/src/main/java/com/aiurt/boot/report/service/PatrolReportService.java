@@ -305,7 +305,7 @@ public class PatrolReportService {
         return weekNumber;
     }
 
-    public ModelAndView reportExport(HttpServletRequest request, PatrolReportModel reportReqVO) {
+    public ModelAndView reportExport(HttpServletRequest request, PatrolReportModel reportReqVO,String exportField) {
 
         ModelAndView mv = new ModelAndView(new JeecgEntityExcelView());
         Page<PatrolReport> page = new Page<PatrolReport>(1, 9999);
@@ -316,6 +316,8 @@ public class PatrolReportService {
             mv.addObject(NormalExcelConstants.FILE_NAME, "巡视报表");
             //excel注解对象Class
             mv.addObject(NormalExcelConstants.CLASS, PatrolReport.class);
+            //自定义导出字段
+            mv.addObject(NormalExcelConstants.EXPORT_FIELDS,exportField);
             //自定义表格参数
             mv.addObject(NormalExcelConstants.PARAMS, new ExportParams("统计分析-巡视报表", "巡视报表"));
             //导出数据列表
