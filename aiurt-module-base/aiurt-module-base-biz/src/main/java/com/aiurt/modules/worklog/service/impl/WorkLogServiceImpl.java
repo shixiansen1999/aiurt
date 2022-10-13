@@ -655,6 +655,9 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
         workLog.setAssortNum(dto.getAssortNum());
         workLog.setAssortUnit(dto.getAssortUnit());
         workLog.setAssortContent(dto.getAssortContent());
+        workLog.setPatrolContent(dto.getPatrolContent());
+        workLog.setRepairContent(dto.getRepairContent());
+        workLog.setFaultContent(dto.getFaultContent());
         depotMapper.updateById(workLog);
         //删除原附件列表
         enclosureMapper.deleteByName(workLog.getId());
