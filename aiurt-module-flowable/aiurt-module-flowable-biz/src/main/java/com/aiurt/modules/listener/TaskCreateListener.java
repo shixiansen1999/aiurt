@@ -55,7 +55,7 @@ public class TaskCreateListener implements FlowableEventListener {
 
         IActCustomTaskExtService taskExtService = SpringContextUtils.getBean(IActCustomTaskExtService.class);
 
-        ActCustomTaskExt taskExt = taskExtService.getByProcessDefinitionIdAndTaskId(processDefinitionId, taskId);
+        ActCustomTaskExt taskExt = taskExtService.getByProcessDefinitionIdAndTaskId(processDefinitionId, taskEntity.getTaskDefinitionKey());
 
         LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         //
@@ -63,7 +63,6 @@ public class TaskCreateListener implements FlowableEventListener {
             // 设置当前登录人员
             ProcessEngines.getDefaultProcessEngine().getTaskService().setAssignee(taskId, loginUser.getUsername());
         }
-
         String groupType = taskExt.getGroupType();
         IFlowUserService flowUserService = SpringContextUtils.getBean(IFlowUserService.class);
         List<String> userNameList = new ArrayList<>();

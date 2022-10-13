@@ -20,4 +20,9 @@ public class GlobalConstants {
      * redis消息通道名称
      */
     public static final String REDIS_TOPIC_NAME="jeecg_redis_topic";
+
+    /**
+     * redis flow事件通道名称
+     */
+    public static final String FLOW_TOPIC_NAME = "flow_event_redis_topic";
 }

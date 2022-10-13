@@ -76,4 +76,7 @@ public class TaskInfoDTO {
      */
     @ApiModelProperty(value = "任务节点的自定义变量列表")
     List<JSONObject> variableList;
+
+    @ApiModelProperty("流程模板key")
+    private String processDefinitionKey;
 }
