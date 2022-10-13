@@ -715,6 +715,7 @@
     <select id="getReportTaskList" resultType="com.aiurt.boot.report.model.PatrolReport">
    SELECT
 	sd.depart_name AS orgName,
+	sd.id AS orgId,
 	sd.org_code AS orgCode
    FROM
 	sys_depart sd

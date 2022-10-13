@@ -165,7 +165,7 @@ public class PatrolReportService {
                 long monthNumber = getMonthNumber(report.getStartDate(), report.getEndDate());
                 if (monthNumber != 0) {
                     BigDecimal avgMissNumber = NumberUtil.div(new BigDecimal(userOmitTasks.size()), new BigDecimal(monthNumber)).setScale(2, BigDecimal.ROUND_HALF_UP);
-                    d.setAwmPatrolNumber(avgMissNumber);
+                    d.setAmmPatrolNumber(avgMissNumber);
                 }
             }
             //获取班组下的全部任务id任务
