@@ -154,6 +154,14 @@ public class BdWorkTicketController extends BaseController<BdWorkTicket, IBdWork
 				}
 			}
 
+			if (StrUtil.equalsIgnoreCase("work_leader", s)) {
+				if (Objects.nonNull(o)) {
+					data.put(s,  JSONObject.parseArray((String) o));
+				}else {
+					data.put(s, Collections.emptyList());
+				}
+			}
+
 		});
 		return Result.OK(data);
 	}

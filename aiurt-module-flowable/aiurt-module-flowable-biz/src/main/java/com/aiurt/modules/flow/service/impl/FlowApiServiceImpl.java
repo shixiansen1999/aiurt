@@ -3,6 +3,7 @@ package com.aiurt.modules.flow.service.impl;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.date.BetweenFormater;
 import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUnit;
 import cn.hutool.core.date.DateUtil;
@@ -15,6 +16,7 @@ import com.aiurt.modules.constants.FlowConstant;
 import com.aiurt.modules.flow.constants.FlowApprovalType;
 import com.aiurt.modules.flow.dto.*;
 import com.aiurt.modules.flow.entity.ActCustomTaskComment;
+import com.aiurt.modules.flow.mapper.ActCustomTaskCommentMapper;
 import com.aiurt.modules.flow.service.FlowApiService;
 import com.aiurt.modules.flow.service.IActCustomTaskCommentService;
 import com.aiurt.modules.flow.utils.FlowElementUtil;
@@ -95,6 +97,9 @@ public class FlowApiServiceImpl implements FlowApiService {
 
     @Autowired
     private ModelService modelService;
+
+    @Autowired
+    private ActCustomTaskCommentMapper actCustomTaskCommentMapper;
 
 
     /**
@@ -1044,6 +1049,8 @@ public class FlowApiServiceImpl implements FlowApiService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void stopProcessInstance(StopProcessInstanceDTO instanceDTO) {
+        ProcessInstance processInstance = getProcessInstance(instanceDTO.getProcessInstanceId());
+        String definitionId = processInstance.getProcessDefinitionId();
         List<Task> list = taskService.createTaskQuery().processInstanceId(instanceDTO.getProcessInstanceId()).active().list();
 
         if (CollUtil.isEmpty(list)) {
@@ -1063,8 +1070,22 @@ public class FlowApiServiceImpl implements FlowApiService {
                     .processInstanceId(instanceDTO.getProcessInstanceId())
                     .moveActivityIdTo(taskDefinitionKey, endEvent.getId())
                     .changeState();
+
+            //
+            // 添加审批意见
+            ActCustomTaskComment actCustomTaskComment = new ActCustomTaskComment(task);
+            actCustomTaskComment.setApprovalType(FlowApprovalType.CANCEL);
+            customTaskCommentService.getBaseMapper().insert(actCustomTaskComment);
         }
 
+        // 暂时处理先
+       if (StrUtil.startWithIgnoreCase(definitionId, "bd_work_ticket2") || StrUtil.startWithIgnoreCase(definitionId, "bd_work_titck")) {
+           String businessKey = processInstance.getBusinessKey();
+           if (StrUtil.isNotBlank(businessKey)) {
+               actCustomTaskCommentMapper.updateWorkticketState(businessKey);
+           }
+
+       }
         // 发送redis事件
     }
 
@@ -1363,42 +1384,31 @@ public class FlowApiServiceImpl implements FlowApiService {
             return Collections.emptyList();
         }
 
-        ProcessInstance processInstance = runtimeService.createProcessInstanceQuery().processInstanceBusinessKey(businessKey).singleResult();
+        HistoricProcessInstance historicProcessInstance = historyService.createHistoricProcessInstanceQuery().processInstanceBusinessKey(businessKey).singleResult();
 
-        if (Objects.isNull(processInstance)) {
+        if (Objects.isNull(historicProcessInstance)) {
             return Collections.emptyList();
         }
 
-        List<HistoricTaskInfo> historicTaskInfoList = buildHistoricTaskInfo(processInstance);
+        List<HistoricTaskInfo> historicTaskInfoList = buildHistoricTaskInfo(historicProcessInstance);
         return historicTaskInfoList;
     }
 
     @NotNull
-    private List<HistoricTaskInfo> buildHistoricTaskInfo(ProcessInstance processInstance) {
-        List<HistoricActivityInstance> list = historyService.createHistoricActivityInstanceQuery().processInstanceId(processInstance.getProcessInstanceId()).orderByHistoricActivityInstanceStartTime().desc().list();
+    private List<HistoricTaskInfo> buildHistoricTaskInfo(HistoricProcessInstance processInstance) {
+        List<HistoricTaskInstance> instanceList = historyService.createHistoricTaskInstanceQuery().processInstanceId(processInstance.getId()).orderByHistoricTaskInstanceStartTime().desc().list();
         List<HistoricTaskInfo> historicTaskInfoList = new ArrayList<>();
-        Optional.ofNullable(list).orElse(Collections.emptyList()).stream().filter(entity-> StringUtils.equalsIgnoreCase("userTask",entity.getActivityType())).forEach(entity->{
-            SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-            String activityType = entity.getActivityType();
-            String taskName = entity.getActivityName();
-            if (!StringUtils.equalsIgnoreCase(activityType, "userTask")) {
-                taskName = "用户任务";
-            }
-            String endTime = "";
-            if (Objects.nonNull(entity.getEndTime())) {
-                endTime = df.format(entity.getEndTime());
-            }
+        instanceList.stream().forEach(entity->{
             HistoricTaskInfo historicTaskInfo = HistoricTaskInfo.builder()
                     .id(entity.getId())
-                    .createTime(df.format(entity.getStartTime()))
-                    .endTime(endTime)
-                    .taskName(taskName)
+                    .createTime(DateUtil.format(entity.getCreateTime(), "yyyy-MM-dd HH:mm:ss"))
+                    .endTime(DateUtil.format(entity.getEndTime(), "yyyy-MM-dd HH:mm:ss"))
+                    .taskName(entity.getName())
                     .state(Objects.isNull(entity.getEndTime())? "未完成":"已完成")
-                    .taskId(entity.getTaskId())
+                    .taskId(entity.getId())
                     .build();
-
             if (Objects.nonNull(entity.getEndTime())) {
-                historicTaskInfo.setCostTime(DateUtil.between(entity.getStartTime(),entity.getEndTime(), DateUnit.SECOND));
+                historicTaskInfo.setCostTime(DateUtil.formatBetween(entity.getCreateTime(),entity.getEndTime(), BetweenFormater.Level.SECOND));
             }
 
             LoginUser userByName = null;
@@ -1408,12 +1418,14 @@ public class FlowApiServiceImpl implements FlowApiService {
 
             if (Objects.nonNull(userByName)) {
                 historicTaskInfo.setAssigne(userByName.getRealname());
+                historicTaskInfo.setAssignName(userByName.getUsername());
             } else {
                 if (StrUtil.isBlank(entity.getAssignee()) && Objects.isNull(entity.getEndTime())) {
-                    List<IdentityLink> links = taskService.getIdentityLinksForTask(entity.getTaskId());
+                    List<IdentityLink> links = taskService.getIdentityLinksForTask(entity.getId());
                     List<String> userNameList = links.stream().map(IdentityLink::getUserId).collect(Collectors.toList());
-                    List<LoginUser> userListByName = null;
+                    List<LoginUser> userListByName = sysBaseAPI.getLoginUserList(userNameList);;
                     if (CollectionUtil.isNotEmpty(userListByName)) {
+                        historicTaskInfo.setAssignName(StrUtil.join(",", userNameList));
                         List<String> collect = userListByName.stream().map(LoginUser::getRealname).collect(Collectors.toList());
                         historicTaskInfo.setAssigne(StrUtil.join(",", collect));
                     }
@@ -1432,13 +1444,17 @@ public class FlowApiServiceImpl implements FlowApiService {
      */
     @Override
     public List<HistoricTaskInfo> getHistoricLogByProcessInstanceId(String processInstanceId) {
-        ProcessInstance processInstance = runtimeService.createProcessInstanceQuery().processInstanceId(processInstanceId).singleResult();
 
-        if (Objects.isNull(processInstance)) {
+
+
+
+        HistoricProcessInstance historicProcessInstance = historyService.createHistoricProcessInstanceQuery().processInstanceId(processInstanceId).singleResult();
+
+        if (Objects.isNull(historicProcessInstance)) {
             return Collections.emptyList();
         }
 
-        List<HistoricTaskInfo> historicTaskInfoList = buildHistoricTaskInfo(processInstance);
+        List<HistoricTaskInfo> historicTaskInfoList = buildHistoricTaskInfo(historicProcessInstance);
 
         return historicTaskInfoList;
 
