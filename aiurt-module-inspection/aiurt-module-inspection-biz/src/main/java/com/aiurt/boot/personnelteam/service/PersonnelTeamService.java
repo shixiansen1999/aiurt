@@ -213,6 +213,9 @@ public class PersonnelTeamService implements OverhaulApi {
 
                     String id = personnelTeamMapper.getId(entry.getKey());
 
+                    personnelTeamDTO.setCompleteTaskNumber(0L);
+                    personnelTeamDTO.setPlanCompletionRate("0");
+                    personnelTeamDTO.setOverhaulWorkingHours(0L);
                     if (CollectionUtil.isNotEmpty(collect4)) {
 
                         for (Map.Entry<String, PersonnelTeamDTO> entry1 : collect4.entrySet()) {
