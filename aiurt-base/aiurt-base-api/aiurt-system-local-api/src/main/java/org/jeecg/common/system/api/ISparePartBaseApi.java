@@ -1,6 +1,7 @@
 package org.jeecg.common.system.api;
 
 
+import com.aiurt.modules.sparepart.dto.DeviceChangeSparePartDTO;
 import com.aiurt.modules.sparepart.dto.SparePartMalfunctionDTO;
 import com.aiurt.modules.sparepart.dto.SparePartReplaceDTO;
 
@@ -17,28 +18,14 @@ public interface ISparePartBaseApi {
 
 
     /**
-     * 更新
-     * @param malfunctionList
-     */
-    void updateSparePartMalfunction(List<SparePartMalfunctionDTO> malfunctionList);
-
-    /**
-     * 更新
-     * @param replaceList
-     */
-    void updateSparePartReplace(List<SparePartReplaceDTO> replaceList);
-
-    /**
      * 更新出库单, 更新实际使用的数量
      */
     void updateSparePartOutOrder(Map<String, Integer> updateMap);
 
     /**
-     * 备件-》组件， 组件报废
+     * 处理备件更换
+     * @param sparePartList
      */
+    void dealChangeSparePart(List<DeviceChangeSparePartDTO> sparePartList);
 
-
-    /**
-     * 报废
-     */
 }
