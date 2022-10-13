@@ -147,6 +147,7 @@ public class BdWorkTicketController extends BaseController<BdWorkTicket, IBdWork
 			}
 
 			if (StrUtil.equalsIgnoreCase("picture_path", s)) {
+
 				if (Objects.nonNull(o)) {
 					data.put(s,  JSONObject.parseArray((String) o));
 				}else {
