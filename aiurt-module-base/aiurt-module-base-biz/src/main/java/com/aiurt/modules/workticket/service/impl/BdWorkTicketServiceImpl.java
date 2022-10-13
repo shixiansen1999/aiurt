@@ -152,9 +152,9 @@ public class BdWorkTicketServiceImpl extends ServiceImpl<BdWorkTicketMapper, BdW
                     workTicket.setWorkLeaderSignTime(day);
                 }
                 // 已签发, 设置签发时间,签发人员; 签发驳回,驳回人员 ; 第一种工作票签发
-            }else if (states == 6 || states == 12 || states == 5) {
+            }else if (states == 6 || states == 12 || states == 4) {
                 workTicket.setSigneUser(loginUser.getRealname());
-                if (states == 6 || states == 5) {
+                if (states == 6 || states == 4) {
                     workTicket.setSigneUserTime(day);
                 }
                 // 确认签字

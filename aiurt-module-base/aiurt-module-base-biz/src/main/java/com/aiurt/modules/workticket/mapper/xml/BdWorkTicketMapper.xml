@@ -34,8 +34,22 @@
         SELECT
         bwt.id as id,
         bwt.work_ticket_code as workTicketCode,
-        (select ID_ from act_ru_task where PROC_INST_ID_ = ahp.PROC_INST_ID_ ) as taskId,
-        (select NAME_ from act_ru_task where PROC_INST_ID_ = ahp.PROC_INST_ID_ ) as taskName,
+        (
+        SELECT
+        ID_
+        FROM
+        act_hi_taskinst
+        WHERE
+        PROC_INST_ID_ = ahp.PROC_INST_ID_ ORDER BY START_TIME_ DESC  LIMIT 1
+        ) AS taskId,
+        (
+        SELECT
+        NAME_
+        FROM
+        act_hi_taskinst
+        WHERE
+        PROC_INST_ID_ = ahp.PROC_INST_ID_ ORDER BY START_TIME_ DESC LIMIT 1
+        ) AS taskName,
         arp.NAME_ as processName,
         bwt.ticket_filler as ticketFiller,
         bwt.state as state,
