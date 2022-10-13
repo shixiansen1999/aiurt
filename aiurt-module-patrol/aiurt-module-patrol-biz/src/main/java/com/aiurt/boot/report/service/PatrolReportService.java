@@ -400,8 +400,7 @@ public class PatrolReportService {
         List<SysDepartModel> userSysDepart = sysBaseAPI.getUserSysDepart(user.getId());
         List<String> ids =userSysDepart.stream().map(SysDepartModel::getId).collect(Collectors.toList());
         if (CollectionUtil.isEmpty(ids)){
-            IPage<FailureOrgReport> failureOrgReportIPage = (IPage<FailureOrgReport>) new ArrayList<FailureOrgReport>();
-            return failureOrgReportIPage ;
+            return page.setRecords(new ArrayList<>()) ;
         }
         SimpleDateFormat mm= new SimpleDateFormat("yyyy-MM");
         if (ObjectUtil.isEmpty(startTime) && ObjectUtil.isEmpty(endTime)){
