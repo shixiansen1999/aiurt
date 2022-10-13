@@ -3,6 +3,7 @@ package com.aiurt.modules.faultknowledgebase.entity;
 import com.aiurt.common.aspect.annotation.Dict;
 import com.aiurt.common.aspect.annotation.MajorFilterColumn;
 import com.aiurt.common.aspect.annotation.SystemFilterColumn;
+import com.aiurt.modules.basic.entity.DictEntity;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
@@ -31,7 +32,7 @@ import java.util.List;
 @Accessors(chain = true)
 @EqualsAndHashCode(callSuper = false)
 @ApiModel(value="fault_knowledge_base对象", description="故障知识库")
-public class FaultKnowledgeBase implements Serializable {
+public class FaultKnowledgeBase extends DictEntity implements Serializable {
     private static final long serialVersionUID = 1L;
 
 	/**主键id*/

@@ -60,6 +60,7 @@ public class InspectionManager {
         }
         return CollUtil.isNotEmpty(nameList) ? StrUtil.join("；", nameList) : "";
     }
+
     /**
      * 翻译专业、专业子系统信息
      *
@@ -129,7 +130,7 @@ public class InspectionManager {
             }
 
             if (StrUtil.isNotEmpty(stationDTO.getStationCode())) {
-                if(ObjectUtil.isNotEmpty(builder)){
+                if (ObjectUtil.isNotEmpty(builder)) {
                     builder.append("/");
                 }
                 String key = "station_code_" + stationDTO.getStationCode();
@@ -138,7 +139,7 @@ public class InspectionManager {
 
 
             if (StrUtil.isNotEmpty(stationDTO.getPositionCode())) {
-                if(ObjectUtil.isNotEmpty(builder)){
+                if (ObjectUtil.isNotEmpty(builder)) {
                     builder.append("/");
                 }
                 String key = "position_code_" + stationDTO.getPositionCode();
@@ -320,11 +321,7 @@ public class InspectionManager {
             manageOrgs = departByUserId.stream().map(CsUserDepartModel::getOrgCode).collect(Collectors.toList());
         }
 
-        // 登录人所在部门
-        if (StrUtil.isNotEmpty(loginUser.getOrgCode())) {
-            manageOrgs.add(loginUser.getOrgCode());
-        }
-
+        // 交集处理
         if (CollUtil.isNotEmpty(manageOrgs)) {
             List<String> finalManageOrgs = manageOrgs;
             Set<String> orgSet = orgCodes.stream().filter(org -> finalManageOrgs.contains(org)).collect(Collectors.toSet());
