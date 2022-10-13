@@ -1049,6 +1049,7 @@ public class FlowApiServiceImpl implements FlowApiService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void stopProcessInstance(StopProcessInstanceDTO instanceDTO) {
+        LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         ProcessInstance processInstance = getProcessInstance(instanceDTO.getProcessInstanceId());
         String definitionId = processInstance.getProcessDefinitionId();
         List<Task> list = taskService.createTaskQuery().processInstanceId(instanceDTO.getProcessInstanceId()).active().list();
@@ -1075,6 +1076,7 @@ public class FlowApiServiceImpl implements FlowApiService {
             // 添加审批意见
             ActCustomTaskComment actCustomTaskComment = new ActCustomTaskComment(task);
             actCustomTaskComment.setApprovalType(FlowApprovalType.CANCEL);
+            actCustomTaskComment.setCreateRealname(loginUser.getUsername());
             customTaskCommentService.getBaseMapper().insert(actCustomTaskComment);
         }
 
