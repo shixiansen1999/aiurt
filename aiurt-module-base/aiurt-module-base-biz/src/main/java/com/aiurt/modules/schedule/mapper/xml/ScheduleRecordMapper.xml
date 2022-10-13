@@ -347,5 +347,31 @@
     GROUP BY
         sd.id
     </select>
-
+    <select id="getTodayOndutyDetailNoPage" resultType="com.aiurt.modules.schedule.dto.SysUserTeamDTO">
+        SELECT
+        sr.user_id AS userId,
+        su.realname AS realName,
+        su.username,
+        su.avatar,
+        su.permit_code,
+        su.salary_code,
+        su.org_name as teamName
+        FROM
+        schedule_record sr
+        INNER JOIN schedule_item si ON sr.item_id = si.id
+        INNER JOIN sys_user su ON sr.user_id = su.id
+        WHERE
+        DATE_FORMAT( sr.date, '%Y-%m-%d' ) =DATE_FORMAT( #{date},'%Y-%m-%d')
+        AND sr.del_flag = 0
+        AND si.del_flag = 0
+        <if test="orgCodes.size()>0  and orgCodes!=null">
+            and su.org_code in
+            <foreach collection="orgCodes" separator="," open="(" close=")" item="org">
+                #{org}
+            </foreach>
+        </if>
+        ORDER BY
+        sr.date,
+        sr.item_id
+    </select>
 </mapper>

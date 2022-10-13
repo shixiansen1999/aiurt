@@ -82,28 +82,40 @@ public interface ScheduleRecordMapper extends BaseMapper<ScheduleRecord> {
 
     /**
      * 查询今日当班人列表
+     *
      * @param page
      * @param orgCode
      * @param orgCodes
      * @param date
      * @return
      */
-    List<SysUserTeamDTO> getTodayOndutyDetail(@Param("page") Page<SysUserTeamDTO> page,@Param("orgCode") String orgCode, @Param("orgCodes") List<String> orgCodes, @Param("date") Date date);
+    List<SysUserTeamDTO> getTodayOndutyDetail(@Param("page") Page<SysUserTeamDTO> page, @Param("orgCode") String orgCode, @Param("orgCodes") List<String> orgCodes, @Param("date") Date date);
 
     /**
      * 查询总人员列表
+     *
      * @param orgCodes
      * @param page
      * @param orgCode
      * @return
      */
-    List<SysUserTeamDTO> getUserByDepIds(@Param("orgCodes") List<String> orgCodes,@Param("page") Page<SysUserTeamDTO> page,@Param("orgCode") String orgCode);
+    List<SysUserTeamDTO> getUserByDepIds(@Param("orgCodes") List<String> orgCodes, @Param("page") Page<SysUserTeamDTO> page, @Param("orgCode") String orgCode);
 
     /**
      * 获取大屏的班组信息-点击总班组数
-     * @param page 分页参数
+     *
+     * @param page     分页参数
      * @param orgCodes 组织机构
      * @return
      */
     List<SysTotalTeamDTO> getTotalTeamDetail(@Param("page") Page<SysTotalTeamDTO> page, @Param("orgCodes") List<String> orgCodes);
+
+    /**
+     * 查询今日当班人列表(无分页)
+     *
+     * @param orgCodes
+     * @param date
+     * @return
+     */
+    List<SysUserTeamDTO> getTodayOndutyDetailNoPage(@Param("orgCodes") List<String> orgCodes, @Param("date") Date date);
 }

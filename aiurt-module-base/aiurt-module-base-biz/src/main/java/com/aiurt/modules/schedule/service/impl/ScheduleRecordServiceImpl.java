@@ -272,4 +272,16 @@ public class ScheduleRecordServiceImpl extends ServiceImpl<ScheduleRecordMapper,
         page.setRecords(result);
         return page;
     }
+
+    /**
+     * 查询今日当班人员信息
+     *
+     * @param orgCodes
+     * @param date
+     * @return
+     */
+    @Override
+    public List<SysUserTeamDTO> getTodayOndutyDetailNoPage(List<String> orgCodes, Date date) {
+        return baseMapper.getTodayOndutyDetailNoPage(orgCodes,date);
+    }
 }

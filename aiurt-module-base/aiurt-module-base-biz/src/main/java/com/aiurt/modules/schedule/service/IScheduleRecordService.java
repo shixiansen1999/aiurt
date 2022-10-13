@@ -10,6 +10,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 import org.jeecg.common.system.vo.LoginUser;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -89,4 +90,12 @@ public interface IScheduleRecordService extends IService<ScheduleRecord> {
      * @return
      */
     IPage<SysTotalTeamDTO> getTotalTeamDetail(Page<SysTotalTeamDTO> page, String lineCode);
+
+    /**
+     * 查询今日当班人员信息
+     * @param orgCodes
+     * @param date
+     * @return
+     */
+    List<SysUserTeamDTO> getTodayOndutyDetailNoPage(List<String> orgCodes, Date date);
 }
