@@ -21,7 +21,6 @@ import com.aiurt.modules.sparepart.dto.SparePartMalfunctionDTO;
 import com.aiurt.modules.sparepart.dto.SparePartReplaceDTO;
 import com.aiurt.modules.sparepart.dto.SparePartScrapDTO;
 import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -34,6 +33,7 @@ import org.ansj.splitWord.analysis.ToAnalysis;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.system.api.ISparePartBaseApi;
 import org.jeecg.common.system.api.ISysBaseAPI;
+import org.jeecg.common.system.vo.CsUserDepartModel;
 import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -1027,8 +1027,18 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
     @Override
     public List<LoginUser> queryUser(String faultCode) {
         LoginUser loginUser = checkLogin();
+        //根据当前登录人所拥有的部门权限查人员
+        List<CsUserDepartModel> departByUserId = sysBaseAPI.getDepartByUserId(loginUser.getId());
 
-        String orgId = loginUser.getOrgId();
+        if (CollectionUtil.isEmpty(departByUserId)) {
+            return Collections.emptyList();
+        }
+
+        List<String> orgCodeList = departByUserId.stream().map(CsUserDepartModel::getOrgCode).collect(Collectors.toList());
+        if (CollectionUtil.isEmpty(orgCodeList)) {
+            return Collections.emptyList();
+        }
+       /* String orgId = loginUser.getOrgId();
 
         if (StrUtil.isBlank(orgId)) {
            return Collections.emptyList();
@@ -1041,7 +1051,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         List<String> orgCodeList = jsonObjects.stream().map(jsonObject -> jsonObject.getString("orgCode")).collect(Collectors.toList());
         if (CollectionUtil.isEmpty(orgCodeList)) {
             return Collections.emptyList();
-        }
+        }*/
         List<LoginUser> loginUserList = sysBaseAPI.getUserByDepIds(orgCodeList);
         return loginUserList;
     }

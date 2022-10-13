@@ -70,4 +70,7 @@ public class ActCustomTaskExt implements Serializable {
     /**表单数据*/
     @ApiModelProperty(value = "表单数据")
     private String formJson;
+
+    @ApiModelProperty(value = "动态选人(流程变量)")
+    private String dynamicVariable;
 }

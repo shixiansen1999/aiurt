@@ -272,17 +272,17 @@ public class FlowApiServiceImpl implements FlowApiService {
             String businessKey = processInstance.getBusinessKey();
 
             // 更新中间业务数据
-            Object o = flowElementUtil.saveBusData(processInstanceId, taskId, busData);
+            Object o = flowElementUtil.saveBusData(task.getProcessDefinitionId(), task.getTaskDefinitionKey(), busData);
 
             // 如果businessKey为空则设置
             if (StrUtil.isBlank(businessKey)) {
-                flowElementUtil.setBusinessKeyForProcessInstance(processInstanceId, o);
+                flowElementUtil.setBusinessKeyForProcessInstance(task.getProcessDefinitionId(), o);
             }
 
-        }else if (StrUtil.equalsIgnoreCase(FlowApprovalType.AGREE, approvalType)) {
+        }else if (StrUtil.equalsAnyIgnoreCase(approvalType, FlowApprovalType.REJECT_TO_STAR, FlowApprovalType.AGREE)) {
             if (Objects.nonNull(busData)) {
                busData.put("operationType", approvalType);
-               flowElementUtil.saveBusData(processInstanceId, taskId, busData);
+               flowElementUtil.saveBusData(task.getProcessDefinitionId(), task.getTaskDefinitionKey(), busData);
             }
             // 完成任务
             taskService.complete(taskId, busData);
@@ -290,7 +290,7 @@ public class FlowApiServiceImpl implements FlowApiService {
         }else if (StrUtil.equalsIgnoreCase(FlowApprovalType.REJECT, approvalType)) {
             if (Objects.nonNull(busData)) {
                 busData.put("operationType", approvalType);
-                flowElementUtil.saveBusData(processInstanceId, taskId, busData);
+                flowElementUtil.saveBusData(task.getProcessDefinitionId(), task.getTaskDefinitionKey(), busData);
             }
             // 完成任务
             taskService.complete(taskId, busData);
@@ -339,7 +339,7 @@ public class FlowApiServiceImpl implements FlowApiService {
         if (!this.isAssigneeOrCandidate(task)) {
             throw new AiurtBootException("数据验证失败，当前用户不是指派人也不是候选人之一！");
         }
-        if (StrUtil.isNotBlank(processDefinitionId)) {
+        if (StrUtil.isBlank(processDefinitionId)) {
             processDefinitionId = task.getProcessDefinitionId();
         }
         ActCustomTaskExt flowTaskExt =
@@ -1027,7 +1027,7 @@ public class FlowApiServiceImpl implements FlowApiService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void stopProcessInstance(StopProcessInstanceDTO instanceDTO) {
-        List<Task> list = taskService.createTaskQuery().processDefinitionId(instanceDTO.getProcessInstanceId()).active().list();
+        List<Task> list = taskService.createTaskQuery().processInstanceId(instanceDTO.getProcessInstanceId()).active().list();
 
         if (CollUtil.isEmpty(list)) {
             throw new AiurtBootException("当前流程尚未开始或已经结束！");
@@ -1047,6 +1047,8 @@ public class FlowApiServiceImpl implements FlowApiService {
                     .moveActivityIdTo(taskDefinitionKey, endEvent.getId())
                     .changeState();
         }
+
+        // 发送redis事件
     }
 
     /**
@@ -1321,6 +1323,7 @@ public class FlowApiServiceImpl implements FlowApiService {
             List<JSONObject> objectList = JSONObject.parseArray(json, JSONObject.class);
             taskInfoDTO.setOperationList(objectList);
         }
+        taskInfoDTO.setProcessDefinitionKey(processDefinitionKey);
         return taskInfoDTO;
     }
 

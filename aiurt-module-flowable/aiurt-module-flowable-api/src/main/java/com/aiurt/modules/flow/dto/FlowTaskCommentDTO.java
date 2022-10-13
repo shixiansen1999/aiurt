@@ -55,7 +55,7 @@ public class FlowTaskCommentDTO {
     /**
      * 批注内容。
      */
-    @ApiModelProperty(value = "批注内容")
+    @ApiModelProperty(value = "审批意见")
     private String comment;
 
     /**

@@ -60,6 +60,8 @@ public final class FlowApprovalType {
      */
     public static final String STOP = "stop";
 
+    public static final String REJECT_TO_STAR = "rejectToStart";
+
     private static final Map<Object, String> DICT_MAP = new HashMap<>(2);
     static {
         DICT_MAP.put(SAVE, "保存");

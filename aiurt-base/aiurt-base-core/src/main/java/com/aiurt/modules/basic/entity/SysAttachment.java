@@ -86,4 +86,9 @@ public class SysAttachment implements Serializable {
 	@Excel(name = "删除标志", width = 15)
     @ApiModelProperty(value = "删除标志")
     private Integer delFlag;
+
+    /**文件大小*/
+    @TableField(exist = false)
+    @ApiModelProperty(value = "文件大小")
+    private Long fileSize;
 }

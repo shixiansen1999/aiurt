@@ -1,5 +1,6 @@
 package com.aiurt.modules.flow.dto;
 
+import com.aiurt.common.aspect.annotation.Dict;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
@@ -43,6 +44,7 @@ public class FlowHisTaskDTO {
      * 审批类型。
      */
     @ApiModelProperty(value = "审批类型")
+    @Dict(dictTable = "act_custom_button", dicText = "button_name", dicCode = "button_code")
     private String approvalType;
 
     /**
@@ -61,6 +63,7 @@ public class FlowHisTaskDTO {
      * 流程发起人。
      */
     @ApiModelProperty(value = "流程发起人")
+    @Dict(dictTable = "sys_user", dicCode = "username", dicText = "realname")
     private String startUser;
 
     /**

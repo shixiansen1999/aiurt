@@ -87,9 +87,7 @@ public class FaultRepairRecordController extends BaseController<FaultRepairRecor
 		 DeviceChangeRecordDTO deviceChangeRecordDTO = faultRepairRecordService.queryDeviceChangeRecord(faultCode);
 	 	return Result.OK(deviceChangeRecordDTO);
 	}
-
-
-
+	
 
 
 }

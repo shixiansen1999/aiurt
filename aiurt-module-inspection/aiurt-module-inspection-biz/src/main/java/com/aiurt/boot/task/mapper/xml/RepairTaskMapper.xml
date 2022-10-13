@@ -407,6 +407,9 @@
                 and DATE_FORMAT(t6.start_time ,'%Y-%m-%d') &gt;= DATE_FORMAT(#{condition.startDate} ,'%Y-%m-%d')
                 and DATE_FORMAT(t6.end_time ,'%Y-%m-%d') &lt;= DATE_FORMAT(#{condition.endDate} ,'%Y-%m-%d')
             </if>
+            <if test="condition.endDate!=null ">
+                and DATE_FORMAT(t6.start_time ,'%Y-%m-%d') &lt;= DATE_FORMAT(#{condition.endDate} ,'%Y-%m-%d')
+            </if>
             <if test="condition.status!=null ">
                 and t1.status = #{condition.status}
             </if>
@@ -436,6 +439,9 @@
             <if test="condition.startDate!=null and condition.endDate!=null ">
                 and DATE_FORMAT(t6.start_time ,'%Y-%m-%d') &gt;= DATE_FORMAT(#{condition.startDate} ,'%Y-%m-%d')
                 and DATE_FORMAT(t6.end_time ,'%Y-%m-%d') &lt;= DATE_FORMAT(#{condition.endDate} ,'%Y-%m-%d')
+            </if>
+            <if test="condition.endDate!=null ">
+                and DATE_FORMAT(t6.start_time ,'%Y-%m-%d') &lt;= DATE_FORMAT(#{condition.endDate} ,'%Y-%m-%d')
             </if>
             <if test="condition.status!=null ">
                 and t1.status = #{condition.status}
@@ -497,6 +503,9 @@
                 and DATE_FORMAT(t6.start_time ,'%Y-%m-%d') &gt;= DATE_FORMAT(#{condition.startDate} ,'%Y-%m-%d')
                 and DATE_FORMAT(t6.end_time ,'%Y-%m-%d') &lt;= DATE_FORMAT(#{condition.endDate} ,'%Y-%m-%d')
             </if>
+            <if test="condition.endDate!=null ">
+                and DATE_FORMAT(t6.start_time ,'%Y-%m-%d') &lt;= DATE_FORMAT(#{condition.endDate} ,'%Y-%m-%d')
+            </if>
             <if test="condition.status!=null ">
                 and t1.status = #{condition.status}
             </if>
@@ -530,6 +539,9 @@
             <if test="condition.startDate!=null and condition.endDate!=null ">
                 and DATE_FORMAT(t6.start_time ,'%Y-%m-%d') &gt;= DATE_FORMAT(#{condition.startDate} ,'%Y-%m-%d')
                 and DATE_FORMAT(t6.end_time ,'%Y-%m-%d') &lt;= DATE_FORMAT(#{condition.endDate} ,'%Y-%m-%d')
+            </if>
+            <if test="condition.endDate!=null ">
+                and DATE_FORMAT(t6.start_time ,'%Y-%m-%d') &lt;= DATE_FORMAT(#{condition.endDate} ,'%Y-%m-%d')
             </if>
             <if test="condition.status!=null ">
                 and t1.status = #{condition.status}

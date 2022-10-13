@@ -193,14 +193,12 @@ public interface FaultInformationMapper {
 
     /**
      * 班组报表工时
-     * @param orgCodes
-     * @param orgIds
-     * @param teamId
+     * @param orgId
      * @param startTime
      * @param endTime
      * @return
      */
-    List<FaultReportDTO> getFaultOrgReport(@Param("teamId") List<String> teamId,@Param("startTime") String startTime,@Param("endTime") String endTime, @Param("orgCodes")List<String> orgCodes,@Param("orgIds") List<String> orgIds);
+    FaultReportDTO getFaultOrgReport(@Param("startTime") String startTime,@Param("endTime") String endTime,@Param("orgId") String orgId);
 
     /**
      * 查询配合工时
@@ -265,4 +263,13 @@ public interface FaultInformationMapper {
      * @return
      */
     Long getUserTimes(@Param("userId") String userId,@Param("startTime") String startTime,@Param("endTime") String endTime);
+
+    /**
+     *
+     * @param startTime
+     * @param endTime
+     * @param orgId
+     * @return
+     */
+    Integer getConstructorsNum(@Param("startTime") String startTime,@Param("endTime") String endTime,@Param("orgId") String orgId);
 }

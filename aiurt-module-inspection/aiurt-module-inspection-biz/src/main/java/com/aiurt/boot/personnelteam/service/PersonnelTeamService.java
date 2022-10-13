@@ -1,6 +1,7 @@
 package com.aiurt.boot.personnelteam.service;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.NumberUtil;
+import cn.hutool.core.util.ObjectUtil;
 import com.aiurt.boot.api.OverhaulApi;
 import com.aiurt.boot.personnelteam.mapper.PersonnelTeamMapper;
 import com.aiurt.boot.task.dto.PersonnelTeamDTO;
@@ -106,18 +107,22 @@ public class PersonnelTeamService implements OverhaulApi {
             PersonnelTeamDTO q = collect3.get(key);
             PersonnelTeamDTO e = entry.getValue();
             //查询人员的计划任务数量
-            Long counter1 = e.getCounter();
-            personnelTeamDTO.setPlanTaskNumber(counter1);
+            if (ObjectUtil.isNotEmpty(e) && ObjectUtil.isNotEmpty(q)) {
+                Long counter1 = e.getCounter();
+                personnelTeamDTO.setPlanTaskNumber(counter1);
 
-            //查询人员的完成任务数量
-            Long counter2 = q.getCounter();
-            personnelTeamDTO.setCompleteTaskNumber(counter2);
+                //查询人员的完成任务数量
+                Long counter2 = q.getCounter();
+                personnelTeamDTO.setCompleteTaskNumber(counter2);
 
-            //计划完成率
-            BigDecimal div = NumberUtil.div(counter2, counter1);
-            String string = NumberUtil.roundStr(String.valueOf(div), 2);
-            personnelTeamDTO.setPlanCompletionRate(string);
+                //计划完成率
+                BigDecimal div = NumberUtil.div(counter2, counter1);
+                String string = NumberUtil.roundStr(String.valueOf(div), 2);
+                personnelTeamDTO.setPlanCompletionRate(string);
 
+            } else {
+                personnelTeamDTO.setPlanCompletionRate("0");
+            }
             map.put(key, personnelTeamDTO);
         }
     }

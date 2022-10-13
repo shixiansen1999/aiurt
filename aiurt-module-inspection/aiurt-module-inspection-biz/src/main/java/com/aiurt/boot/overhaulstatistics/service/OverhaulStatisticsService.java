@@ -59,11 +59,7 @@ public class OverhaulStatisticsService{
         //管理负责人组织机构编码
         List<SysDepartModel> userSysDepart = sysBaseAPI.getUserSysDepart(sysUser.getId());
         List<String> collect1 = userSysDepart.stream().map(SysDepartModel::getOrgCode).collect(Collectors.toList());
-        if(CollUtil.isEmpty(collect1))
-        {
-            condition.setOrgCode("null");
-        }
-        else
+        if(StrUtil.isEmpty(condition.getOrgCode()))
         {
             condition.setOrgCodeList(collect1);
         }
