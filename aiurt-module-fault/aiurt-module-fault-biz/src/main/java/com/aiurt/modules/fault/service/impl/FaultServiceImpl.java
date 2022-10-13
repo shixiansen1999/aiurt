@@ -942,7 +942,11 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
                     BeanUtils.copyProperties(deviceChangeSparePart, dto);
                     dataList.add(dto);
                 });
-                sparePartBaseApi.dealChangeSparePart(dataList);
+                try {
+                    sparePartBaseApi.dealChangeSparePart(dataList);
+                } catch (Exception e) {
+                   log.error(e.getMessage(), e);
+                }
             }
 
             saveLog(loginUser,"维修结果审核通过", faultCode, FaultStatusEnum.Close.getStatus(), null);
