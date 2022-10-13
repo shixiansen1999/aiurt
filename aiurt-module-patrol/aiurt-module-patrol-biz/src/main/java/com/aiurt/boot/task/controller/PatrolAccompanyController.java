@@ -78,7 +78,7 @@ public class PatrolAccompanyController extends BaseController<PatrolAccompany, I
 	 public Result<String> addPatrolAccompany(@RequestBody PatrolAccompanySaveDTO patrolAccompanyList) {
 		 if(patrolAccompanyList.getPatrolNumber()==null)
 		 {
-			 throw new AiurtBootException("小主，该巡检任务不在您的范围之内哦");
+			 throw new AiurtBootException("只有该任务的巡检人才可以填写工单");
 		 }
 		 //获取该任务的指派人
 		 LambdaUpdateWrapper<PatrolTaskDevice> updateWrapper= new LambdaUpdateWrapper<>();

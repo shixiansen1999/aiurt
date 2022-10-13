@@ -1483,7 +1483,7 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
         if (ObjectUtil.isEmpty(repairPool)) {
             throw new AiurtBootException(InspectionConstant.ILLEGAL_OPERATION);
         }
-        if (InspectionConstant.ASSIGNED.equals(repairPool.getStatus())) {
+        if (!InspectionConstant.TO_BE_ASSIGNED.equals(repairPool.getStatus())) {
             throw new AiurtBootException("已指派不允许删除");
         }
 
