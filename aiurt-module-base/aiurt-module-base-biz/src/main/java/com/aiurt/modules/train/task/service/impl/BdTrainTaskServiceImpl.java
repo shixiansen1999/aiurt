@@ -108,6 +108,7 @@ public class BdTrainTaskServiceImpl extends ServiceImpl<BdTrainTaskMapper, BdTra
 	}
 
 	@Override
+	@Transactional
 	public Result<?> edit(BdTrainTaskPage bdTrainTaskPage) {
 		BdTrainTask bdTrainTask = new BdTrainTask();
 		BeanUtils.copyProperties(bdTrainTaskPage, bdTrainTask);
@@ -132,7 +133,20 @@ public class BdTrainTaskServiceImpl extends ServiceImpl<BdTrainTaskMapper, BdTra
 		//发布
 		if (bdTrainTask.getTaskState() == 1) {
 			//复制反馈表
-			this.copyFeedback(bdTrainTask);
+			//获取正在启用的讲师反馈表和对应的问题反馈单选项和问题反馈问题
+			BdTrainQuestionFeedback teacherFeedback = bdTrainTeacherFeedbackRecordMapper.getBdTrainQuestionFeedbackId();
+			if (ObjectUtil.isEmpty(teacherFeedback)) {
+				return Result.error("没有正在启用的讲师反馈表");
+			}
+			teacherFeedback.setTrainTaskId(bdTrainTask.getId());
+			copyDetail(teacherFeedback);
+			//获取正在启用的学员反馈表和对应的问题反馈单选项和问题反馈问题
+			BdTrainQuestionFeedback studentFeedback = bdTrainStudentFeedbackRecordMapper.getBdTrainQuestionFeedbackId();
+			if (ObjectUtil.isEmpty(studentFeedback)) {
+				return Result.error("没有正在启用的学员反馈表");
+			}
+			studentFeedback.setTrainTaskId(bdTrainTask.getId());
+			copyDetail(studentFeedback);
 		}
 		//开始考试
 		if (bdTrainTask.getTaskState() == 4) {
@@ -577,17 +591,7 @@ private void queryBdTrainTask(List<BdTrainTaskUser> userTasks,String uid){
 			bdTrainTask.setTrainingState(4);
 		}
 	}
-	@Override
-	public void copyFeedback(BdTrainTask bdTrainTask) {
-		//获取正在启用的讲师反馈表和对应的问题反馈单选项和问题反馈问题
-		BdTrainQuestionFeedback teacherFeedback = bdTrainTeacherFeedbackRecordMapper.getBdTrainQuestionFeedbackId();
-		teacherFeedback.setTrainTaskId(bdTrainTask.getId());
-		copyDetail(teacherFeedback);
-		//获取正在启用的学员反馈表和对应的问题反馈单选项和问题反馈问题
-		BdTrainQuestionFeedback studentFeedback = bdTrainStudentFeedbackRecordMapper.getBdTrainQuestionFeedbackId();
-		studentFeedback.setTrainTaskId(bdTrainTask.getId());
-		copyDetail(studentFeedback);
-	}
+
 
 	public void copyDetail(BdTrainQuestionFeedback trainQuestionFeedback) {
 		List<BdTrainQuestionFeedbackOptions> feedbackOptions = bdTrainQuestionFeedbackOptionsMapper.selectByMainId(trainQuestionFeedback.getId());

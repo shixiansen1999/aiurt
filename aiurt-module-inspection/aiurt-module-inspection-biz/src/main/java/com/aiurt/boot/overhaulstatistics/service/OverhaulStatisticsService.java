@@ -191,8 +191,9 @@ public class OverhaulStatisticsService{
                 }
                 //人员是否属于该班组
                 List<OverhaulStatisticsDTO> collect = distinct.stream().filter(y -> y.getOrgCode().equals(e.getOrgCode())).collect(Collectors.toList());
-                e.setNameList(collect);
-
+                if (CollectionUtil.isNotEmpty(collect)){
+                    e.setNameList(collect);
+                }
                 List<OverhaulStatisticsDTO> nameList1 = e.getNameList();
                 List<String> collect2 = nameList1.stream().map(OverhaulStatisticsDTO::getUserId).collect(Collectors.toList());
 
