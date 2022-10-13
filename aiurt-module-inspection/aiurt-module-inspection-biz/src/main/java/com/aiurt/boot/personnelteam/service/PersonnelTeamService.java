@@ -130,7 +130,8 @@ public class PersonnelTeamService implements OverhaulApi {
                 //计划完成率
                 if (personnelTeamDTO.getCompleteTaskNumber()!=null && personnelTeamDTO.getPlanTaskNumber()!=null) {
                     BigDecimal div = NumberUtil.div(personnelTeamDTO.getCompleteTaskNumber(), personnelTeamDTO.getPlanTaskNumber());
-                    String string = NumberUtil.roundStr(String.valueOf(div), 2);
+                    BigDecimal multiply = div.multiply(new BigDecimal(100));
+                    String string = NumberUtil.roundStr(String.valueOf(multiply), 2);
                     if (StrUtil.isNotEmpty(string)) {
                         personnelTeamDTO.setPlanCompletionRate(string);
                     } else {
@@ -232,7 +233,8 @@ public class PersonnelTeamService implements OverhaulApi {
 
                                 //计划完成率
                                 BigDecimal div = NumberUtil.div(counter2, counter1);
-                                String string = NumberUtil.roundStr(String.valueOf(div), 2);
+                                BigDecimal multiply = div.multiply(new BigDecimal(100));
+                                String string = NumberUtil.roundStr(String.valueOf(multiply), 2);
                                 personnelTeamDTO.setPlanCompletionRate(string);
 
                                 if (CollectionUtil.isNotEmpty(collect5)){
