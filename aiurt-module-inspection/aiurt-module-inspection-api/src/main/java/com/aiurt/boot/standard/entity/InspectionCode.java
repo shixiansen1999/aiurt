@@ -2,10 +2,7 @@ package com.aiurt.boot.standard.entity;
 
 import com.aiurt.common.aspect.annotation.Dict;
 import com.aiurt.modules.basic.entity.DictEntity;
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableField;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableName;
+import com.baomidou.mybatisplus.annotation.*;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -55,6 +52,7 @@ public class InspectionCode extends DictEntity implements Serializable {
 	/**设备类型code，关联device_type的code*/
 	@Excel(name = "设备类型code，关联device_type的code", width = 15)
     @ApiModelProperty(value = "设备类型code，关联device_type的code")
+    @TableField(updateStrategy = FieldStrategy.IGNORED)
     @Dict(dictTable = "device_type", dicText = "name", dicCode = "code")
     private java.lang.String deviceTypeCode;
 	/**是否与设备相关(0否1是)*/
