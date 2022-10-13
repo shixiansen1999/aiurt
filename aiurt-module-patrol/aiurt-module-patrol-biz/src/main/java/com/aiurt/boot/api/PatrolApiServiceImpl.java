@@ -224,18 +224,30 @@ public class PatrolApiServiceImpl implements PatrolApi {
             Integer nowNumber = 0;
             double workHour=0 ;
             BigDecimal workHours = null;
-            for (UserTeamPatrolDTO peoplePatrol : peoplePlanTaskNumber) {
-             if(userPatrol.getUserId().equals(peoplePatrol.getUserId()))
-             {
-                 planNumber= userPatrol.getPlanTaskNumber()+peoplePatrol.getPlanTaskNumber();
-                 nowNumber= userPatrol.getActualFinishTaskNumber()+peoplePatrol.getActualFinishTaskNumber();
-                 workHour = NumberUtil.add(userPatrol.getWorkHours(), peoplePatrol.getWorkHours()).doubleValue();
-                 //计算工时
-                 if(ObjectUtil.isNotEmpty(workHours))
-                 {
-                      workHours = new BigDecimal(workHour / 3600).setScale(2,BigDecimal.ROUND_HALF_UP);
-                 }
-             }
+            if(CollUtil.isNotEmpty(peoplePlanTaskNumber))
+            {
+                for (UserTeamPatrolDTO peoplePatrol : peoplePlanTaskNumber) {
+                    if(userPatrol.getUserId().equals(peoplePatrol.getUserId()))
+                    {
+                        planNumber= userPatrol.getPlanTaskNumber()+peoplePatrol.getPlanTaskNumber();
+                        nowNumber= userPatrol.getActualFinishTaskNumber()+peoplePatrol.getActualFinishTaskNumber();
+                        workHour = NumberUtil.add(userPatrol.getWorkHours(), peoplePatrol.getWorkHours()).doubleValue();
+                        //计算工时
+                        if(workHour!=0)
+                        {
+                            workHours = new BigDecimal(workHour / 3600).setScale(2,BigDecimal.ROUND_HALF_UP);
+                        }
+                    }
+                }
+            }
+            else
+            {
+                workHour = NumberUtil.add(userPatrol.getWorkHours(), 0).doubleValue();
+                //计算工时
+                if(workHour!=0)
+                {
+                    workHours = new BigDecimal(workHour / 3600).setScale(2,BigDecimal.ROUND_HALF_UP);
+                }
             }
             if(planNumber!=0)
             {
