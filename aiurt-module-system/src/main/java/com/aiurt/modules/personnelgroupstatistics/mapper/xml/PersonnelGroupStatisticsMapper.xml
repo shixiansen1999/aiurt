@@ -15,7 +15,7 @@
     select su.id as userId ,su.realname as realname
     from sys_user su
     left join sys_depart sd on su.org_id = sd.id
-    where 1=1
+    where su.del_flag = 0 and sd.del_flag = 0
     and sd.id in
     <foreach collection="ids" index="index" item="item" open="(" separator="," close=")">
         #{item}
