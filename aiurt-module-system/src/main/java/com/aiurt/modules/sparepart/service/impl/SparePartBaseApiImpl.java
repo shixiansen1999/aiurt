@@ -173,7 +173,7 @@ public class SparePartBaseApiImpl implements ISparePartBaseApi {
                 if (StrUtil.isNotBlank(oldSparePartCode)) {
                     LambdaUpdateWrapper<DeviceAssembly> updateWrapper = new LambdaUpdateWrapper<>();
                     updateWrapper.eq(DeviceAssembly::getDeviceCode, deviceCode).eq(DeviceAssembly::getCode, oldSparePartCode)
-                            .set(DeviceAssembly::getDeviceCode, null);
+                            .set(DeviceAssembly::getStatus, "1");
                     deviceAssemblyService.update(updateWrapper);
                 }
             });
