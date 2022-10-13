@@ -138,6 +138,7 @@ public class PersonnelTeamService implements OverhaulApi {
                 }
             } else {
                 personnelTeamDTO.setPlanCompletionRate("0");
+                personnelTeamDTO.setCompleteTaskNumber(0L);
             }
             map.put(key, personnelTeamDTO);
         }
