@@ -608,6 +608,8 @@
         from t_work_log
         where del_flag = 0
           and confirm_status = 1
+          and assort_time is not null
+          and assort_time != " "
           and assort_ids LIKE concat('%', #{userId}, '%')
           and date_format(submit_time ,'%Y-%m-%d')  BETWEEN date_format( #{startTime} ,'%Y-%m-%d') AND date_format( #{endTime} ,'%Y-%m-%d')
     </select>
