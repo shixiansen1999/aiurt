@@ -724,11 +724,11 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                         .eq(RepairTaskUser::getRepairTaskCode, repairTask.getCode())
                         .eq(RepairTaskUser::getDelFlag, CommonConstant.DEL_FLAG_0));
         if (CollUtil.isEmpty(repairTaskUserss)) {
-            throw new AiurtBootException("小主，该任务没有对应的检修人");
+            throw new AiurtBootException("该任务没有对应的检修人");
         } else {
             List<String> userList = repairTaskUserss.stream().map(RepairTaskUser::getUserId).collect(Collectors.toList());
             if (!userList.contains(manager.checkLogin().getId())) {
-                throw new AiurtBootException("小主，只有该任务的检修人才能审核");
+                throw new AiurtBootException("只有该任务的检修人才能审核");
             }
         }
         LoginUser loginUser = manager.checkLogin();
@@ -768,11 +768,11 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                         .eq(RepairTaskUser::getRepairTaskCode, repairTask.getCode())
                         .eq(RepairTaskUser::getDelFlag, CommonConstant.DEL_FLAG_0));
         if (CollUtil.isEmpty(repairTaskUserss)) {
-            throw new AiurtBootException("小主，该任务没有对应的检修人");
+            throw new AiurtBootException("该任务没有对应的检修人");
         } else {
             List<String> userList = repairTaskUserss.stream().map(RepairTaskUser::getUserId).collect(Collectors.toList());
             if (!userList.contains(manager.checkLogin().getId())) {
-                throw new AiurtBootException("小主，只有该任务的检修人才能执行");
+                throw new AiurtBootException("只有该任务的检修人才能执行");
             }
         }
 
@@ -811,11 +811,11 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                         .eq(RepairTaskUser::getRepairTaskCode, repairTask.getCode())
                         .eq(RepairTaskUser::getDelFlag, CommonConstant.DEL_FLAG_0));
         if (CollUtil.isEmpty(repairTaskUserss)) {
-            throw new AiurtBootException("小主，该任务没有对应的检修人");
+            throw new AiurtBootException("该任务没有对应的检修人");
         } else {
             List<String> userList = repairTaskUserss.stream().map(RepairTaskUser::getUserId).collect(Collectors.toList());
             if (!userList.contains(manager.checkLogin().getId())) {
-                throw new AiurtBootException("小主，只有该任务的检修人才能提交");
+                throw new AiurtBootException("只有该任务的检修人才能提交");
             }
         }
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
@@ -861,11 +861,11 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                         .eq(RepairTaskUser::getRepairTaskCode, repairTask.getCode())
                         .eq(RepairTaskUser::getDelFlag, CommonConstant.DEL_FLAG_0));
         if (CollUtil.isEmpty(repairTaskUserss)) {
-            throw new AiurtBootException("小主，该任务没有对应的检修人");
+            throw new AiurtBootException("该任务没有对应的检修人");
         } else {
             List<String> userList = repairTaskUserss.stream().map(RepairTaskUser::getUserId).collect(Collectors.toList());
             if (!userList.contains(manager.checkLogin().getId())) {
-                throw new AiurtBootException("小主，只有该任务的检修人才能验收");
+                throw new AiurtBootException("只有该任务的检修人才能验收");
             }
         }
         RepairTask repairTask1 = new RepairTask();
@@ -936,10 +936,10 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
         //保留检修人的id
         List<String> userList = repairTaskUserss.stream().map(RepairTaskUser::getUserId).collect(Collectors.toList());
         if (CollUtil.isEmpty(repairTaskUserss)) {
-            throw new AiurtBootException("小主，该任务没有对应的检修人");
+            throw new AiurtBootException("该任务没有对应的检修人");
         } else {
             if (!userList.contains(manager.checkLogin().getId())) {
-                throw new AiurtBootException("小主，只有该任务的检修人才能退回");
+                throw new AiurtBootException("只有该任务的检修人才能退回");
             }
         }
 
@@ -1110,7 +1110,7 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
         // 计划状态是待指派和已退回才能领取
         if (!InspectionConstant.TO_BE_ASSIGNED.equals(repairPool.getStatus())
                 && !InspectionConstant.GIVE_BACK.equals(repairPool.getStatus())) {
-            throw new AiurtBootException("小主，该检修任务已被指派或已被领取");
+            throw new AiurtBootException("该检修任务已被指派或已被领取");
         }
 
         // 当前登录人所属部门是在检修任务的指派部门范围内才可以领取
@@ -1121,13 +1121,13 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
         if (CollUtil.isNotEmpty(repairPoolOrgRels)) {
             List<String> orgList = repairPoolOrgRels.stream().map(RepairPoolOrgRel::getOrgCode).collect(Collectors.toList());
             if (!orgList.contains(manager.checkLogin().getOrgCode())) {
-                throw new AiurtBootException("小主，该检修任务不在您的领取范围之内哦");
+                throw new AiurtBootException("该检修任务不在您的领取范围之内哦");
             }
         }
 
         // 现在的时间大于任务的开始时间才可以进行领取
         if (repairPool.getStartTime() != null && DateUtil.compare(new Date(), repairPool.getStartTime()) < 0) {
-            throw new AiurtBootException("小主莫急，未到检修任务开始时间，暂时无法领取");
+            throw new AiurtBootException("未到检修任务开始时间，暂时无法领取");
         }
     }
 
@@ -1195,13 +1195,13 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
 
                     // 现在的时间大于任务的开始时间才可以进行填单
                     if (DateUtil.compare(new Date(), repairTask.getStartTime()) < 0) {
-                        throw new AiurtBootException("小主莫急，未到检修任务开始时间");
+                        throw new AiurtBootException("未到检修任务开始时间");
                     }
 
                     // 只有任务状态是执行中或已驳回才可以改
                     if (!InspectionConstant.IN_EXECUTION.equals(repairTask.getStatus())
                             && !InspectionConstant.REJECTED.equals(repairTask.getStatus())) {
-                        throw new AiurtBootException("小主，只有任务被驳回或者执行中才可以操作");
+                        throw new AiurtBootException("只有任务被驳回或者执行中才可以操作");
                     }
 
                     // 是任务的检修人才可以填写
@@ -1210,11 +1210,11 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                                     .eq(RepairTaskUser::getRepairTaskCode, repairTask.getCode())
                                     .eq(RepairTaskUser::getDelFlag, CommonConstant.DEL_FLAG_0));
                     if (CollUtil.isEmpty(repairTaskUsers)) {
-                        throw new AiurtBootException("小主，该任务没有对应的检修人");
+                        throw new AiurtBootException("该任务没有对应的检修人");
                     } else {
                         List<String> userList = repairTaskUsers.stream().map(RepairTaskUser::getUserId).collect(Collectors.toList());
                         if (!userList.contains(manager.checkLogin().getId())) {
-                            throw new AiurtBootException("小主，您不是该检修任务的检修人");
+                            throw new AiurtBootException("您不是该检修任务的检修人");
                         }
                     }
                 }
@@ -1428,11 +1428,11 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                         .eq(RepairTaskUser::getRepairTaskCode, repairTask.getCode())
                         .eq(RepairTaskUser::getDelFlag, CommonConstant.DEL_FLAG_0));
         if (CollUtil.isEmpty(repairTaskUsers)) {
-            throw new AiurtBootException("小主，该任务没有对应的检修人");
+            throw new AiurtBootException("该任务没有对应的检修人");
         } else {
             List<String> userList = repairTaskUsers.stream().map(RepairTaskUser::getUserId).collect(Collectors.toList());
             if (!userList.contains(manager.checkLogin().getId())) {
-                throw new AiurtBootException("小主，只有该任务的检修人才能确认");
+                throw new AiurtBootException("只有该任务的检修人才能确认");
             }
         }
 
