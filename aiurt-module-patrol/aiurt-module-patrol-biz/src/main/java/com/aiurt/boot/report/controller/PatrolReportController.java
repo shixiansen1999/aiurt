@@ -125,8 +125,8 @@ public class PatrolReportController {
     @AutoLog(value = "统计报表-巡检报表导出", operateType = 6, operateTypeAlias = "导出")
     @ApiOperation(value = "统计报表-巡检报表导出", notes = "统计报表-巡检报表导出")
     @GetMapping(value = "/reportExport")
-    public ModelAndView reportExport(HttpServletRequest request, PatrolReportModel reportReqVO) {
-        return reportService.reportExport(request, reportReqVO);
+    public ModelAndView reportExport(HttpServletRequest request, PatrolReportModel reportReqVO,String exportField) {
+        return reportService.reportExport(request, reportReqVO,exportField);
     }
     /**
      * 统计分析-子系统故障列表导出

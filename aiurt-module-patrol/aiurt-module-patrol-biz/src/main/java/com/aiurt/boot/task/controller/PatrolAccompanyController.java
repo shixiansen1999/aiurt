@@ -10,6 +10,7 @@ import com.aiurt.boot.task.service.IPatrolTaskDeviceService;
 import com.aiurt.boot.task.service.IPatrolTaskService;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.constant.enums.ModuleType;
+import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.system.base.controller.BaseController;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
@@ -75,6 +76,11 @@ public class PatrolAccompanyController extends BaseController<PatrolAccompany, I
 	 @ApiOperation(value="app填写巡检工单-添加同行人||巡检位置", notes="app填写巡检工单-添加同行人||巡检位置")
 	 @PostMapping(value = "/addPatrolAccompany")
 	 public Result<String> addPatrolAccompany(@RequestBody PatrolAccompanySaveDTO patrolAccompanyList) {
+		 if(patrolAccompanyList.getPatrolNumber()==null)
+		 {
+			 throw new AiurtBootException("小主，该巡检任务不在您的范围之内哦");
+		 }
+		 //获取该任务的指派人
 		 LambdaUpdateWrapper<PatrolTaskDevice> updateWrapper= new LambdaUpdateWrapper<>();
 		 updateWrapper.set(PatrolTaskDevice::getCustomPosition,patrolAccompanyList.getPosition()).eq(PatrolTaskDevice::getPatrolNumber,patrolAccompanyList.getPatrolNumber());
 		 patrolTaskDeviceService.update(updateWrapper);
