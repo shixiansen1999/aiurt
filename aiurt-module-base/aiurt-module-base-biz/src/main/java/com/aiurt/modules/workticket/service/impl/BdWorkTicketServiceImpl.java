@@ -13,6 +13,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.SecurityUtils;
+import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -35,6 +36,9 @@ public class BdWorkTicketServiceImpl extends ServiceImpl<BdWorkTicketMapper, BdW
 
     @Autowired
     private RedisTemplate<String,String> redisTemplate;
+
+    @Autowired
+    private ISysBaseAPI sysBaseAPI;
 
     @Override
     public String addOrUpdate(BdWorkTicket bdWorkTicket) {
@@ -95,6 +99,13 @@ public class BdWorkTicketServiceImpl extends ServiceImpl<BdWorkTicketMapper, BdW
             workTicketReqDTO.setProcessName("第二种工作票");
         } else {
             workTicketReqDTO.setProcessName("");
+        }
+
+        if (StrUtil.isNotBlank(workTicketReqDTO.getTicketFiller())) {
+            LoginUser loginUser = sysBaseAPI.getUserById(workTicketReqDTO.getTicketFiller());
+            if (Objects.nonNull(loginUser)) {
+                workTicketReqDTO.setTicketFiller(loginUser.getRealname());
+            }
         }
 
         List<WorkTicketResDTO> workTicketResDTOS = baseMapper.historyGet(pageList, workTicketReqDTO);
