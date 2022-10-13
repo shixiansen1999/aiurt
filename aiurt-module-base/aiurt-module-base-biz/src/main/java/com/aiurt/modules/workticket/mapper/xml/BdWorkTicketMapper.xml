@@ -17,6 +17,16 @@
         Left Join cs_station cs on bwt.station = cs.id
         LEFT JOIN cs_line cl on cs.line_code = cl.line_code
         Left join act_re_procdef arp on ahp.PROC_DEF_ID_ = arp.ID_
+        where
+        (a.ASSIGNEE_ = #{userName}  OR a.ID_ in (
+        SELECT TASK_ID_
+        FROM act_ru_identitylink ari
+        WHERE
+        ari.TYPE_= 'candidate'
+        AND ari.USER_ID_= #{userName}
+        AND ari.TASK_ID_ = a.ID_
+        AND (a.assignee_ = '' or a.assignee_ is null)
+        ))
         order by a.CREATE_TIME_ desc
     </select>
 
@@ -24,8 +34,22 @@
         SELECT
         bwt.id as id,
         bwt.work_ticket_code as workTicketCode,
-        (select ID_ from act_ru_task where PROC_INST_ID_ = ahp.PROC_INST_ID_ ) as taskId,
-        (select NAME_ from act_ru_task where PROC_INST_ID_ = ahp.PROC_INST_ID_ ) as taskName,
+        (
+        SELECT
+        ID_
+        FROM
+        act_hi_taskinst
+        WHERE
+        PROC_INST_ID_ = ahp.PROC_INST_ID_ ORDER BY START_TIME_ DESC  LIMIT 1
+        ) AS taskId,
+        (
+        SELECT
+        NAME_
+        FROM
+        act_hi_taskinst
+        WHERE
+        PROC_INST_ID_ = ahp.PROC_INST_ID_ ORDER BY START_TIME_ DESC LIMIT 1
+        ) AS taskName,
         arp.NAME_ as processName,
         bwt.ticket_filler as ticketFiller,
         bwt.state as state,

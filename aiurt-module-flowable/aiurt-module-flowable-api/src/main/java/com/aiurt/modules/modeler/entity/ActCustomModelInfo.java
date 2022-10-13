@@ -2,6 +2,7 @@ package com.aiurt.modules.modeler.entity;
 
 import com.aiurt.common.aspect.annotation.Dict;
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -88,7 +89,7 @@ public class ActCustomModelInfo implements Serializable {
 	/**流程分类编码*/
 	@Excel(name = "流程分类编码", width = 15)
     @ApiModelProperty(value = "流程分类编码")
-    @Dict(dictTable = "act_custom_classify", dicCode = "scode", dicText = "sname")
+    @Dict( dicCode = "bpm_process_type")
     private String classifyCode;
 
 	/**流程图Model状态*/
@@ -151,4 +152,8 @@ public class ActCustomModelInfo implements Serializable {
 	private Date deployTime;
 
 	//private String main
+
+    @ApiModelProperty(value = "路由地址")
+    @TableField(exist = false)
+    private String routerName;
 }

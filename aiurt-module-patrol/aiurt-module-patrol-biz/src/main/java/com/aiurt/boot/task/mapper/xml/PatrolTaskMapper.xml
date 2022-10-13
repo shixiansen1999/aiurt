@@ -13,9 +13,17 @@
             between DATE_FORMAT(#{patrolTaskDTO.dateHead}, '%Y-%m-%d')
             and DATE_FORMAT(#{patrolTaskDTO.dateEnd}, '%Y-%m-%d')
         </if>
-        <if test="patrolTaskDTO.loginOrgId != null and patrolTaskDTO.loginOrgId != ''">
-            and t1.CODE IN ( SELECT t2.task_code FROM patrol_task_organization t2 WHERE t2.task_code = t1.CODE AND
-            t2.org_code = #{patrolTaskDTO.loginOrgId})
+           <if test="patrolTaskDTO.userHaveOrgCodeList != null and patrolTaskDTO.userHaveOrgCodeList.size() > 0">
+           and t1.CODE IN
+           (
+           SELECT t2.task_code
+           FROM patrol_task_organization t2
+           WHERE t2.task_code = t1.CODE
+           AND t2.org_code in
+            <foreach collection="patrolTaskDTO.userHaveOrgCodeList" separator="," open="(" close=")" item="item">
+                #{item}
+            </foreach>
+            )
         </if>
         <if test="patrolTaskDTO.status!=null">
             and t1.status = #{patrolTaskDTO.status}
@@ -52,9 +60,17 @@
         from patrol_task t1
         where t1.status in (6,7) and t1.del_flag = 0 and t1.omit_status=0
         and t1.discard_status = 0
-        <if test="patrolTaskDTO.loginOrgId != null and patrolTaskDTO.loginOrgId != ''">
-            and t1.CODE IN ( SELECT t2.task_code FROM patrol_task_organization t2 WHERE t2.task_code = t1.CODE AND
-            t2.org_code = #{patrolTaskDTO.loginOrgId})
+         <if test="patrolTaskDTO.userHaveOrgCodeList != null and patrolTaskDTO.userHaveOrgCodeList.size() > 0">
+           and t1.CODE IN
+           (
+           SELECT t2.task_code
+           FROM patrol_task_organization t2
+           WHERE t2.task_code = t1.CODE
+           AND t2.org_code in
+            <foreach collection="patrolTaskDTO.userHaveOrgCodeList" separator="," open="(" close=")" item="item">
+                #{item}
+            </foreach>
+            )
         </if>
         <if test="patrolTaskDTO.dateScope !=null and patrolTaskDTO.dateScope !=''">
             and DATE_FORMAT(t1.patrol_date, '%Y-%m-%d' )
@@ -699,6 +715,7 @@
     <select id="getReportTaskList" resultType="com.aiurt.boot.report.model.PatrolReport">
    SELECT
 	sd.depart_name AS orgName,
+	sd.id AS orgId,
 	sd.org_code AS orgCode
    FROM
 	sys_depart sd

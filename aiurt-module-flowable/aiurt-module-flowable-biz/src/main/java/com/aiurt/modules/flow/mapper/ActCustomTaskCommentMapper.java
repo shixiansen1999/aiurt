@@ -2,6 +2,7 @@ package com.aiurt.modules.flow.mapper;
 
 import com.aiurt.modules.flow.entity.ActCustomTaskComment;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import org.apache.ibatis.annotations.Param;
 
 
 /**
@@ -12,4 +13,5 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
  */
 public interface ActCustomTaskCommentMapper extends BaseMapper<ActCustomTaskComment> {
 
+    void updateWorkticketState(@Param("id") String id);
 }

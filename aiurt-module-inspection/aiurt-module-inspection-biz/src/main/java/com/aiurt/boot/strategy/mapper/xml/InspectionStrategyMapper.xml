@@ -218,13 +218,13 @@
         </if>
     </select>
     <select id="selectBySite" resultType="java.lang.String">
-     select station_code from cs_station  where  line_code =#{siteCode}
+     select station_code from cs_station  where del_flag =0 and  line_code =#{siteCode}
     </select>
     <select id="systemCodeName" resultType="java.lang.String">
-        select system_name from cs_subsystem where  system_code =#{subsystemCode}
+        select system_name from cs_subsystem where del_flag = 0 and system_code =#{subsystemCode}
     </select>
     <select id="deviceTypeCodeName" resultType="java.lang.String">
-        select  name from device_type where  code =#{deviceTypeCode}
+        select  name from device_type where  del_flag =0  and  code =#{deviceTypeCode}
     </select>
     <select id="statusDesc" resultType="java.lang.String">
         select item_text from sys_dict_item c left join sys_dict a on a.id =c.dict_id

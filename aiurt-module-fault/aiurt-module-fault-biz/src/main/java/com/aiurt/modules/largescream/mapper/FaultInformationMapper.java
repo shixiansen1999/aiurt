@@ -186,6 +186,13 @@ public interface FaultInformationMapper {
      */
     List<FaultDurationTask> getFaultByIdDuration(@Param("startTime")Date startTime, @Param("endTime")Date endTime,@Param("userList")List<LoginUser> userList );
 
+    /**
+     * 参与人维修工时按任务id计算
+     * @param startTime
+     * @param endTime
+     * @param userList
+     * @return
+     */
     List<FaultDurationTask> getParticipantsDuration(@Param("startTime")Date startTime, @Param("endTime")Date endTime,@Param("userList")List<LoginUser> userList );
 
 

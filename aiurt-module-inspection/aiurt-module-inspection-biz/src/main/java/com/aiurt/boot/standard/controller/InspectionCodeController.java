@@ -1,5 +1,7 @@
 package com.aiurt.boot.standard.controller;
 
+import cn.hutool.core.util.ObjectUtil;
+import com.aiurt.boot.constant.InspectionConstant;
 import com.aiurt.boot.manager.dto.InspectionCodeDTO;
 import com.aiurt.boot.standard.entity.InspectionCode;
 import com.aiurt.boot.standard.service.IInspectionCodeService;
@@ -100,6 +102,10 @@ public class InspectionCodeController extends BaseController<InspectionCode, IIn
     @ApiOperation(value = "检修标准表-编辑", notes = "检修标准表-编辑")
     @RequestMapping(value = "/edit", method = {RequestMethod.PUT, RequestMethod.POST})
     public Result<String> edit(@RequestBody InspectionCode inspectionCode) {
+        Integer isAppointDevice = inspectionCode.getIsAppointDevice();
+        if (ObjectUtil.isNotEmpty(isAppointDevice) && InspectionConstant.NO_ISAPPOINT_DEVICE.equals(isAppointDevice)) {
+            inspectionCode.setDeviceTypeCode(null);
+        }
         inspectionCodeService.updateById(inspectionCode);
         return Result.OK("编辑成功!");
     }

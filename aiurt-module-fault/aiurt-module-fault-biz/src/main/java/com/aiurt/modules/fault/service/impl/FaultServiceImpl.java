@@ -856,7 +856,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         sparePartBaseApi.updateSparePartOutOrder(updateMap);
 
         one.setArriveTime(repairRecordDTO.getArriveTime());
-        one.setWorkTicketCode(repairRecordDTO.getWorkTickCode());
+        one.setWorkTicketCode(repairRecordDTO.getWorkTicketCode());
         one.setWorkTickPath(repairRecordDTO.getWorkTickPath());
         // 工作票图片
         one.setSolveStatus(repairRecordDTO.getSolveStatus());

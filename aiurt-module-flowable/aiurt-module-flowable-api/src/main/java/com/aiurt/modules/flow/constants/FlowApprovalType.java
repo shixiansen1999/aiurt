@@ -62,6 +62,11 @@ public final class FlowApprovalType {
 
     public static final String REJECT_TO_STAR = "rejectToStart";
 
+    /**
+     * 作废, 直接到结束节点
+     */
+    public static final String CANCEL = "cancel";
+
     private static final Map<Object, String> DICT_MAP = new HashMap<>(2);
     static {
         DICT_MAP.put(SAVE, "保存");

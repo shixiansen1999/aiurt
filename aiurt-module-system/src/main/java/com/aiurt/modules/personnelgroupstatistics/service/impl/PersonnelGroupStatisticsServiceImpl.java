@@ -73,7 +73,7 @@ public class PersonnelGroupStatisticsServiceImpl implements PersonnelGroupStatis
             //获取所有班组维修参数数据
             Map<String, FaultReportDTO> faultOrgReport = dailyFaultApi.getFaultOrgReport(departIds, startTime, endTime);
             ///获取所有班组检修参数数据
-            Map<String, PersonnelTeamDTO> teamInformation = overhaulApi.teamInformation(DateUtil.parse(startTime, "yyyy-MM-dd HH:mm:ss"), DateUtil.parse(endTime, "yyyy-MM-dd HH:mm:ss"), departIds);
+            Map<String, PersonnelTeamDTO> teamInformation = overhaulApi.teamInformation(DateUtil.parse(startTime, "yyyy-MM-dd"), DateUtil.parse(endTime, "yyyy-MM-dd"), departIds);
 
             for (GroupModel model : personnelGroupModels) {
                 String teamId = model.getTeamId();
@@ -151,7 +151,7 @@ public class PersonnelGroupStatisticsServiceImpl implements PersonnelGroupStatis
             //获取所有人员维修参数数据
             Map<String, FaultReportDTO> faultUserReport = dailyFaultApi.getFaultUserReport(departIds, startTime, endTime, null);
             //获取所有人员检修参数数据
-            Map<String, PersonnelTeamDTO> personnelInformation = overhaulApi.personnelInformation(DateUtil.parse(startTime, "yyyy-MM-dd HH:mm:ss"), DateUtil.parse(endTime, "yyyy-MM-dd HH:mm:ss"), departIds, null);
+            Map<String, PersonnelTeamDTO> personnelInformation = overhaulApi.personnelInformation(DateUtil.parse(startTime, "yyyy-MM-dd"), DateUtil.parse(endTime, "yyyy-MM-dd"), departIds, null);
 
             for (PersonnelModel model : personnelModels) {
                 String userId = model.getUserId();
@@ -247,7 +247,9 @@ public class PersonnelGroupStatisticsServiceImpl implements PersonnelGroupStatis
         //获取当前班组维修参数数据
         Map<String, FaultReportDTO> faultOrgReport = dailyFaultApi.getFaultOrgReport(departIds, DateUtil.formatDateTime(lastYear), DateUtil.formatDateTime(end));
         ///获取当前班组检修参数数据
-        Map<String, PersonnelTeamDTO> teamInformation = overhaulApi.teamInformation(lastYear, end,departIds);
+        String startDate = DateUtil.formatDate(lastYear);
+        String endDate = DateUtil.formatDate(end);
+        Map<String, PersonnelTeamDTO> teamInformation = overhaulApi.teamInformation(DateUtil.parse(startDate), DateUtil.parse(endDate),departIds);
 
         if (ObjectUtil.isNotEmpty(faultOrgReport.get(departId))) {
             depart.setFaultTotalTime(Convert.toStr(faultOrgReport.get(departId).getFailureTime()));
@@ -359,7 +361,9 @@ public class PersonnelGroupStatisticsServiceImpl implements PersonnelGroupStatis
         //获取人员维修参数数据
         Map<String, FaultReportDTO> faultUserReport = dailyFaultApi.getFaultUserReport(null, DateUtil.formatDateTime(lastYear), DateUtil.formatDateTime(end), userId);
         //获取人员检修参数数据
-        Map<String, PersonnelTeamDTO> personnelInformation = overhaulApi.personnelInformation(lastYear, end, null, userId);
+        String startDate = DateUtil.formatDate(lastYear);
+        String endDate = DateUtil.formatDate(end);
+        Map<String, PersonnelTeamDTO> personnelInformation = overhaulApi.personnelInformation(DateUtil.parse(startDate), DateUtil.parse(endDate), null, userId);
 
         TeamUserModel user = personnelGroupStatisticsMapper.getUser(userId);
 

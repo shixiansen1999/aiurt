@@ -1,7 +1,10 @@
 package com.aiurt.modules.modeler.controller;
 
+import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.system.base.controller.BaseController;
+import com.aiurt.modules.flow.dto.TaskInfoDTO;
+import com.aiurt.modules.flow.service.FlowApiService;
 import com.aiurt.modules.modeler.entity.ActCustomModelInfo;
 import com.aiurt.modules.modeler.service.IActCustomModelInfoService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -14,12 +17,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.query.QueryGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * @Description: flowable流程模板定义信息
@@ -35,6 +40,10 @@ public class ActCustomModelInfoController extends BaseController<ActCustomModelI
 
 	@Autowired
 	private IActCustomModelInfoService actCustomModelInfoService;
+
+	@Lazy
+	@Autowired
+	private FlowApiService flowApiService;
 
 	/**
 	 * 分页列表查询
@@ -55,6 +64,24 @@ public class ActCustomModelInfoController extends BaseController<ActCustomModelI
 		QueryWrapper<ActCustomModelInfo> queryWrapper = QueryGenerator.initQueryWrapper(actCustomModelInfo, req.getParameterMap());
 		Page<ActCustomModelInfo> page = new Page<>(pageNo, pageSize);
 		IPage<ActCustomModelInfo> pageList = actCustomModelInfoService.page(page, queryWrapper);
+
+		pageList.getRecords().stream().forEach(modeInfo->{
+
+			try {
+				if (StrUtil.equalsIgnoreCase("3", String.valueOf(modeInfo.getStatus()))) {
+					TaskInfoDTO taskInfoDTO = flowApiService.viewInitialTaskInfo(modeInfo.getModelKey());
+					modeInfo.setRouterName(modeInfo.getBusinessUrl());
+					if (Objects.nonNull(taskInfoDTO)) {
+						String routerName = taskInfoDTO.getRouterName();
+						if (StrUtil.isNotBlank(routerName)) {
+							modeInfo.setRouterName(routerName);
+						}
+					}
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		});
 		return Result.OK(pageList);
 	}
 

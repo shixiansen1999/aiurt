@@ -41,6 +41,6 @@ public class HistoricTaskInfo implements Serializable {
     private String state;
 
     @ApiModelProperty("耗时时间")
-    private Long costTime;
+    private String costTime;
 
 }

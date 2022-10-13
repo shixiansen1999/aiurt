@@ -176,7 +176,7 @@ public class InspectionConstant {
     /**
      * 非法操作
      */
-    public static final String ILLEGAL_OPERATION = "告诉你个秘密，您在非法操作";
+    public static final String ILLEGAL_OPERATION = "非法操作";
     /**
      * 参数不全
      */

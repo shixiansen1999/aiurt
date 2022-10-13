@@ -182,4 +182,21 @@
 		GROUP BY rtdr.repair_task_id )
 		GROUP BY rt.id
 	</select>
+	<select id="getIdList" resultType="java.lang.String">
+		select org_code from sys_depart
+		<where>
+			id in
+		   <foreach collection="idList" item="item" index="index" open="(" close=")" separator=",">
+			   #{item}
+		   </foreach>
+	    </where>
+	</select>
+
+	<select id="getId" resultType="java.lang.String">
+		select id from sys_depart
+		<where>
+			1=1
+			and org_code = #{code}
+		</where>
+	</select>
 </mapper>
