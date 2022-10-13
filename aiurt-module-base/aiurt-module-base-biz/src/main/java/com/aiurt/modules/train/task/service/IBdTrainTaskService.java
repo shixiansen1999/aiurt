@@ -179,12 +179,6 @@ public interface IBdTrainTaskService extends IService<BdTrainTask> {
 	 */
 	Page<BdTrainTaskUser> getUserTasksWeb(Page<BdTrainTaskUser> pageList, String uid, BdTrainTaskUser bdTrainTaskUser);
 
-	/**
-	 *复制反馈表
-	 * @param bdTrainTask
-	 * @return
-	 */
-	void copyFeedback(BdTrainTask bdTrainTask);
 
 	/**
 	 * 获取参训人员
