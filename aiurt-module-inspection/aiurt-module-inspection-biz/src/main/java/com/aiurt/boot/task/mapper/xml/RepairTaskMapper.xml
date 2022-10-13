@@ -28,9 +28,6 @@
             <if test="condition.type!=null ">
                 and t1.type = #{condition.type}
             </if>
-            <if test="condition.weeks!=null ">
-                and t1.weeks = #{condition.weeks}
-            </if>
             <if test="condition.status!=null ">
                 and t1.status = #{condition.status}
             </if>
@@ -42,9 +39,6 @@
             </if>
             <if test="condition.workType!=null ">
                 and t1.work_type = #{condition.workType}
-            </if>
-            <if test="condition.years!=null ">
-                and t1.year = #{condition.years}
             </if>
             <if test="condition.time1!=null and condition.time2!=null ">
                 and DATE_FORMAT(t1.start_time, '%Y-%m-%d') &gt;= DATE_FORMAT(#{condition.time1}, '%Y-%m-%d')
