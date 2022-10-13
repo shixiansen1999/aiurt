@@ -134,6 +134,8 @@ public class CommonController {
             sysAttachment.setFileType(FilenameUtils.getExtension(originalFilename));
             sysAttachment.setType(type);
             sysAttachment.setDelFlag(0);
+            // 返回文件大小
+            sysAttachment.setFileSize(file.getSize());
             sysAttachmentService.save(sysAttachment);
             String filePathId = String.format("%s?fileName=%s", sysAttachment.getId(), originalFilename);
             result.setMessage(filePathId);

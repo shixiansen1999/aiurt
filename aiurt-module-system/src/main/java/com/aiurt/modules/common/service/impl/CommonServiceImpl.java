@@ -2,6 +2,7 @@ package com.aiurt.modules.common.service.impl;
 
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.StrUtil;
+import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.modules.common.entity.SelectTable;
 import com.aiurt.modules.common.service.ICommonService;
 import com.aiurt.modules.system.entity.SysDepart;
@@ -18,7 +19,7 @@ import java.util.stream.Collectors;
 
 /**
  * @author fgw
- * @date  2022-09-19
+ * @date 2022-09-19
  */
 @Slf4j
 @Service
@@ -33,7 +34,8 @@ public class CommonServiceImpl implements ICommonService {
 
     /**
      * 根据机构人员树
-     * @param orgIds 机构id
+     *
+     * @param orgIds       机构id
      * @param ignoreUserId 忽略的用户id
      * @return
      */
@@ -51,7 +53,7 @@ public class CommonServiceImpl implements ICommonService {
             table.setLabel(entity.getDepartName());
             table.setIsOrg(true);
             table.setKey(entity.getOrgCode());
-            table.setParentValue(StrUtil.isBlank(entity.getParentId())?"-9999":entity.getParentId());
+            table.setParentValue(StrUtil.isBlank(entity.getParentId()) ? "-9999" : entity.getParentId());
             return table;
         }).collect(Collectors.toList());
 
@@ -92,6 +94,8 @@ public class CommonServiceImpl implements ICommonService {
             String orgId = child.getValue();
             LambdaQueryWrapper<SysUser> wrapper = new LambdaQueryWrapper<>();
             wrapper.eq(SysUser::getOrgId, orgId);
+            wrapper.eq(SysUser::getDelFlag, CommonConstant.DEL_FLAG_0);
+            wrapper.eq(SysUser::getStatus, CommonConstant.USER_UNFREEZE);
             if (StrUtil.isNotBlank(ignoreUserId)) {
                 wrapper.notIn(SysUser::getId, Collections.singleton(ignoreUserId));
             }
