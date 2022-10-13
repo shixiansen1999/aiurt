@@ -87,4 +87,20 @@ public interface PersonnelTeamMapper {
     List<PersonnelTeamDTO> getTeamPeerTime(@Param("userIdList") List<String> userIdList,
                                  @Param("startDate") Date startDate,
                                  @Param("endDate") Date endDate);
+
+
+    /**
+     * 根据班组id集合查询班组编码集合
+     * @param idList
+     * @return
+     */
+    List<String> getIdList(@Param("idList") List<String> idList);
+
+
+    /**
+     * 根据班组id查询班组编码
+     * @param code
+     * @return
+     */
+    String getId(@Param("code") String code);
 }

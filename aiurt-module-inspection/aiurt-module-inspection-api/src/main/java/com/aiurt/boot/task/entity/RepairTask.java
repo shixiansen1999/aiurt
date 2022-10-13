@@ -285,6 +285,17 @@ public class RepairTask implements Serializable {
     private String time2;
 
 
+    /**所属周开始时间*/
+    @TableField(exist = false)
+    @ApiModelProperty(value = "所属周开始时间")
+    private String weekStartTime;
+
+    /**所属周结束时间*/
+    @TableField(exist = false)
+    @ApiModelProperty(value = "所属周结束时间")
+    private String weekEndTime;
+
+
     /**计划开始时间，精确到分钟*/
     @Excel(name = "开始检修时间", width = 15, format = "yyyy-MM-dd HH:mm")
     @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm")
@@ -331,6 +342,8 @@ public class RepairTask implements Serializable {
     @TableField(exist = false)
     @ApiModelProperty(value = "检修人名称")
     private String overhaulName;
+
+
 
 
 }
