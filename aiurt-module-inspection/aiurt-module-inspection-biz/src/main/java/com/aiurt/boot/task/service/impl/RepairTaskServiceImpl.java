@@ -1535,13 +1535,32 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                         String submitName = repairTaskDeviceRelMapper.getSubmitName(deviceRel.getStaffId());
                         //获取站点名
                         if (ObjectUtil.isNotEmpty(deviceRel.getDeviceCode())) {
+                            String userNameTask =null;
                             String stationCode = repairTaskDeviceRelMapper.getStationCode(deviceRel.getDeviceCode());
                             String stationName = repairTaskDeviceRelMapper.getStationName(stationCode);
-                            String userNameTask = standardRel.getTitle() + "-" + stationName + " 检修人：" + submitName;
+                            if(ObjectUtil.isNull(stationName))
+                            {
+                                 userNameTask = standardRel.getTitle() + "-"  + " 检修人：" + submitName;
+                            }
+                            else
+                            {
+                                userNameTask = standardRel.getTitle() + "-" + stationName + " 检修人：" + submitName;
+                            }
+
                             userTaskName.add(userNameTask);
                         } else {
+                            String userNameTask =null;
                             String stationName = repairTaskDeviceRelMapper.getStationName(deviceRel.getStationCode());
-                            String userNameTask = standardRel.getTitle() + "-" + stationName + " 检修人：" + submitName;
+                            if(ObjectUtil.isNull(stationName))
+                            {
+
+                                userNameTask = standardRel.getTitle() + "-" + " 检修人：" + submitName;
+                            }
+                            else
+                            {
+                                userNameTask = standardRel.getTitle() + "-" + stationName + " 检修人：" + submitName;
+
+                            }
                             userTaskName.add(userNameTask);
                         }
                     }
