@@ -145,6 +145,7 @@ public class BdTrainPlanServiceImpl extends ServiceImpl<BdTrainPlanMapper, BdTra
                 stringBuilder.append(userName).append(",");
             }
             users = stringBuilder.deleteCharAt(stringBuilder.length() - 1).toString();
+            bdTrainPlan.setDeptId(departId);
         }
         messageDTO.setToUser(users);
         messageDTO.setToAll(false);

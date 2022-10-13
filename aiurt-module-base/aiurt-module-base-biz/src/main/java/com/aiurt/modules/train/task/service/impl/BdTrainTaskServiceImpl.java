@@ -108,6 +108,7 @@ public class BdTrainTaskServiceImpl extends ServiceImpl<BdTrainTaskMapper, BdTra
 	}
 
 	@Override
+	@Transactional
 	public Result<?> edit(BdTrainTaskPage bdTrainTaskPage) {
 		BdTrainTask bdTrainTask = new BdTrainTask();
 		BeanUtils.copyProperties(bdTrainTaskPage, bdTrainTask);
