@@ -187,10 +187,15 @@ public class DailyFaultApiImpl implements DailyFaultApi {
         Map<String, FaultReportDTO> map = new HashMap<>();
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         List<SysDepartModel> sysDepartModels = sysBaseAPI.getUserSysDepart(sysUser.getId());
-        List<String> orgCodes = sysDepartModels.stream().map(SysDepartModel::getOrgCode).collect(Collectors.toList());
-        List<String> orgIds = sysDepartModels.stream().map(SysDepartModel::getId).collect(Collectors.toList());
-        List<FaultReportDTO> faultReportDTOS = faultInformationMapper.getFaultOrgReport(teamId,startTime,endTime,orgCodes,orgIds);
-        faultReportDTOS.forEach(f->{
+        List<String> orgIds = new ArrayList<>();
+        if (CollectionUtil.isNotEmpty(teamId)){
+            orgIds = teamId;
+        }else {
+            orgIds= sysDepartModels.stream().map(SysDepartModel::getId).collect(Collectors.toList());
+        }
+        orgIds.forEach(orgId->{
+            FaultReportDTO f = faultInformationMapper.getFaultOrgReport(startTime,endTime,orgId);
+            f.setConstructorsNum(faultInformationMapper.getConstructorsNum(startTime,endTime,orgId));
             //查询指派人任务时长
             List<UserTimeDTO> dtos = faultInformationMapper.getUserTime(f.getOrgId(),startTime,endTime);
             //查询参与人任务时长

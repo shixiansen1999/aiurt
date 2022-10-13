@@ -536,31 +536,28 @@
     </select>
 
     <select id="getFaultOrgReport" resultType="com.aiurt.modules.fault.dto.FaultReportDTO">
-        select sd.id as orgId ,
-        ifnull(sum(TIMESTAMPDIFF(second,IFNULL(fr.recevice_time,fr.assign_time),fr.end_time))-sum(IFNUll(op.hang_up_time,'0')),0) as num,
-        count(fr.id) as num1,
-        sum(twl.assort_num) as constructorsNum
+        select  sys_depart.id as orgId ,aaa.*
+        from
+        (SELECT
+        ifnull(sum(TIMESTAMPDIFF(second,IFNULL(fr.recevice_time,fr.assign_time),fr.end_time))-sum(IFNUll(op.hang_up_time,0)),0) as num,
+        count(fr.id) as num1
         from sys_depart sd
         left join  sys_user s on  s.org_code = sd.org_code
         left join fault_repair_record  fr on  s.username = fr.appoint_user_name and fr.del_flag = 0
-        left join  fault f on f.code = fr.fault_code  AND date_format(f.approval_pass_time ,'%Y-%m-%d') BETWEEN date_format(#{startTime} ,'%Y-%m-%d') AND date_format(#{endTime} ,'%Y-%m-%d')
+        left join  fault f on f.code = fr.fault_code
         LEFT JOIN operation_process op ON op.fault_code = fr.fault_code
-        left join t_work_log twl on  sd.id = twl.org_id  and date_format(twl.submit_time ,'%Y-%m-%d')  BETWEEN date_format(#{startTime} ,'%Y-%m-%d') AND date_format(#{endTime} ,'%Y-%m-%d') and twl.del_flag = 0 and twl.confirm_status=1
         where
         sd.del_flag =0
-        <if test="orgCodes != null and orgCodes.size>0 and teamId == null">
-            and sd.org_code in
-            <foreach collection="orgCodes" item="item" open="(" separator="," close=")">
-                #{item}
-            </foreach>
+        <if test="orgId != null ">
+            and sd.id = #{orgId}
         </if>
-        <if test="teamId != null and teamId.size>0">
-            and sd.id in
-            <foreach collection="teamId" item="item" open="(" separator="," close=")">
-                #{item}
-            </foreach>
+        AND date_format(f.approval_pass_time ,'%Y-%m-%d')  BETWEEN date_format(#{startTime} ,'%Y-%m-%d') AND date_format(#{endTime} ,'%Y-%m-%d')
+        )as aaa, sys_depart
+        WHERE
+        sys_depart.del_flag =0
+        <if test="orgId != null ">
+            and sys_depart.id= #{orgId}
         </if>
-        group by sd.id
     </select>
     <select id="getConstructionHours" resultType="java.lang.String">
         select  assort_time from t_work_log
@@ -570,17 +567,25 @@
         and date_format(submit_time ,'%Y-%m-%d')  BETWEEN date_format( #{startTime} ,'%Y-%m-%d') AND date_format( #{endTime} ,'%Y-%m-%d')
     </select>
     <select id="getFaultUserReport" resultType="com.aiurt.modules.fault.dto.FaultReportDTO">
-        select su.id as userId,
-        ifnull(sum(TIMESTAMPDIFF(second,IFNULL(fr.recevice_time,fr.assign_time),fr.end_time))-sum(IFNUll(op.hang_up_time,'0')),0) as num
-        from sys_user su
+        SELECT sys_user.id as userId,
+        (
+        SELECT
+        ifnull(sum(TIMESTAMPDIFF(second,IFNULL(fr.recevice_time,fr.assign_time),fr.end_time))-sum(IFNUll(op.hang_up_time,0)),0) as num
+        FROM sys_user su
         left join  fault_repair_record fr on su.username = fr.appoint_user_name
-        left join  fault f on f.code = fr.fault_code AND date_format(fr.end_time ,'%Y-%m-%d') BETWEEN date_format( #{startTime} ,'%Y-%m-%d') AND date_format( #{endTime} ,'%Y-%m-%d')
+        left join  fault f on f.code = fr.fault_code
         LEFT JOIN operation_process op ON op.fault_code = fr.fault_code
-        where su.del_flag =0
+        where su.del_flag = 0
         <if test="userId != null ">
             AND su.id = #{userId}
         </if>
-        group by su.id
+        AND date_format(f.approval_pass_time ,'%Y-%m-%d') BETWEEN date_format( #{startTime} ,'%Y-%m-%d') AND date_format( #{endTime} ,'%Y-%m-%d')
+        ) as num
+        from sys_user
+        where  sys_user.del_flag = 0
+        <if test="userId != null ">
+            AND sys_user.id = #{userId}
+        </if>
     </select>
     <select id="getUserConstructionHours" resultType="java.lang.String">
         select  assort_time
@@ -591,7 +596,7 @@
           and date_format(submit_time ,'%Y-%m-%d')  BETWEEN date_format( #{startTime} ,'%Y-%m-%d') AND date_format( #{endTime} ,'%Y-%m-%d')
     </select>
     <select id="getUserConstructorsNum" resultType="com.aiurt.modules.fault.dto.FaultReportDTO">
-        select  sum(assort_num) as constructorsNum,
+        select   count(id) as constructorsNum,
                 count(id) as num1
         from t_work_log
         where del_flag = 0
@@ -600,14 +605,13 @@
           and date_format(submit_time ,'%Y-%m-%d')  BETWEEN date_format( #{startTime} ,'%Y-%m-%d') AND date_format( #{endTime} ,'%Y-%m-%d')
     </select>
     <select id="getUserTime" resultType="com.aiurt.modules.fault.dto.UserTimeDTO">
-        select s.id as userId, fr.id as frrId,
-               ifnull(sum(TIMESTAMPDIFF(second,IFNULL(fr.recevice_time,fr.assign_time),fr.end_time))-sum(IFNUll(op.hang_up_time,'0')),0) as duration
+        select s.id as userId, fr.id as frrId
         from  sys_user s
                  left join fault_repair_record  fr on  s.username = fr.appoint_user_name and fr.del_flag = 0
-                 left join  fault f on f.code = fr.fault_code  AND date_format(f.approval_pass_time ,'%Y-%m-%d') BETWEEN date_format(#{startTime} ,'%Y-%m-%d') AND date_format(#{endTime} ,'%Y-%m-%d')
-                 LEFT JOIN operation_process op ON op.fault_code = fr.fault_code
+                 left join  fault f on f.code = fr.fault_code
         where
            s.del_flag = 0 and s.org_id = #{orgId}
+          AND date_format(f.approval_pass_time ,'%Y-%m-%d') BETWEEN date_format(#{startTime} ,'%Y-%m-%d') AND date_format(#{endTime} ,'%Y-%m-%d')
         group by s.id
     </select>
     <select id="getAccompanyTime" resultType="com.aiurt.modules.fault.dto.UserTimeDTO">
@@ -616,21 +620,34 @@
         from  sys_user s
                   left join fault_repair_participants frp on s.username = frp.user_name
                   left join fault_repair_record  fr on frp.fault_repair_record_id = fr.id  and fr.del_flag = 0
-                  left join  fault f on f.code = fr.fault_code  AND date_format(f.approval_pass_time ,'%Y-%m-%d') BETWEEN date_format(#{startTime} ,'%Y-%m-%d') AND date_format(#{endTime} ,'%Y-%m-%d')
+                  left join  fault f on f.code = fr.fault_code
                   LEFT JOIN operation_process op ON op.fault_code = fr.fault_code
         where
             s.del_flag = 0 and s.org_id = #{orgId}
+          AND date_format(f.approval_pass_time ,'%Y-%m-%d') BETWEEN date_format(#{startTime} ,'%Y-%m-%d') AND date_format(#{endTime} ,'%Y-%m-%d')
         group by s.id
     </select>
     <select id="getUserTimes" resultType="java.lang.Long">
         select
-               ifnull(sum(TIMESTAMPDIFF(second,IFNULL(fr.recevice_time,fr.assign_time),fr.end_time))-sum(IFNUll(op.hang_up_time,'0')),0) as duration
+               ifnull(sum(TIMESTAMPDIFF(second,IFNULL(fr.recevice_time,fr.assign_time),fr.end_time))-sum(IFNUll(op.hang_up_time,0)),0) as duration
         from  sys_user s
                   left join fault_repair_participants frp on s.username = frp.user_name
-                  left join fault_repair_record  fr on frp.fault_repair_record_id = fr.id  and fr.del_flag = 0   AND date_format(fr.end_time ,'%Y-%m-%d') BETWEEN date_format( #{startTime} ,'%Y-%m-%d') AND date_format( #{endTime} ,'%Y-%m-%d')
+                  left join fault_repair_record  fr on frp.fault_repair_record_id = fr.id  and fr.del_flag = 0
                   left join  fault f on f.code = fr.fault_code
                   LEFT JOIN operation_process op ON op.fault_code = fr.fault_code
         where
             s.del_flag = 0 and s.id = #{userId}
+          AND date_format(f.approval_pass_time ,'%Y-%m-%d') BETWEEN date_format( #{startTime} ,'%Y-%m-%d') AND date_format( #{endTime} ,'%Y-%m-%d')
+    </select>
+    <select id="getConstructorsNum" resultType="java.lang.Integer">
+        SELECT
+            COUNT(twl.id) as constructorsNum
+        from sys_depart sd
+                 left join  sys_user s on  s.org_code = sd.org_code
+                 left join t_work_log twl on  s.id in (twl.assort_ids)  and twl.del_flag = 0 and twl.confirm_status=1
+        where
+            sd.del_flag =0
+          and sd.id =#{orgId}
+          and date_format(twl.submit_time ,'%Y-%m-%d')  BETWEEN date_format( #{startTime} ,'%Y-%m-%d') AND date_format( #{endTime} ,'%Y-%m-%d')
     </select>
 </mapper>
