@@ -16,10 +16,8 @@ import com.aiurt.boot.standard.mapper.PatrolStandardMapper;
 import com.aiurt.boot.task.entity.PatrolAccompany;
 import com.aiurt.boot.task.entity.PatrolTask;
 import com.aiurt.boot.task.entity.PatrolTaskDevice;
-import com.aiurt.boot.task.mapper.PatrolAccompanyMapper;
-import com.aiurt.boot.task.mapper.PatrolTaskDeviceMapper;
-import com.aiurt.boot.task.mapper.PatrolTaskMapper;
-import com.aiurt.boot.task.mapper.PatrolTaskUserMapper;
+import com.aiurt.boot.task.entity.PatrolTaskStandard;
+import com.aiurt.boot.task.mapper.*;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import org.apache.shiro.SecurityUtils;
@@ -44,6 +42,8 @@ public class PatrolApiServiceImpl implements PatrolApi {
     private PatrolTaskDeviceMapper patrolTaskDeviceMapper;
     @Autowired
     private PatrolStandardMapper patrolStandardMapper;
+    @Autowired
+    private PatrolTaskStandardMapper taskStandardMapper;
     @Autowired
     private PatrolAccompanyMapper patrolAccompanyMapper;
     @Autowired
@@ -113,7 +113,8 @@ public class PatrolApiServiceImpl implements PatrolApi {
             //获取这个任务下的工单所对应的站点
             for (PatrolTaskDevice patrolTaskDevice : taskDeviceList) {
                 String stationName = patrolTaskDeviceMapper.getLineStationName(patrolTaskDevice.getStationCode());
-                PatrolStandard standardName = patrolStandardMapper.selectById(patrolTaskDevice.getTaskStandardId());
+                PatrolTaskStandard taskStandard = taskStandardMapper.selectById(patrolTaskDevice.getTaskStandardId());
+                PatrolStandard standardName = patrolStandardMapper.selectById(taskStandard.getStandardId());
                 String submitName = patrolTaskDeviceMapper.getSubmitName(patrolTaskDevice.getUserId());
                 String deviceStationName = standardName.getName() + "-" + stationName + " 巡视人：" + submitName;
                 list.add(deviceStationName);
