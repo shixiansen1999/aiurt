@@ -1,8 +1,8 @@
 package com.aiurt.boot.personnelteam.service;
 import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.convert.Convert;
 import cn.hutool.core.util.NumberUtil;
 import cn.hutool.core.util.ObjectUtil;
-import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.api.OverhaulApi;
 import com.aiurt.boot.personnelteam.mapper.PersonnelTeamMapper;
 import com.aiurt.boot.task.dto.PersonnelTeamDTO;
@@ -128,16 +128,12 @@ public class PersonnelTeamService implements OverhaulApi {
                     personnelTeamDTO.setCompleteTaskNumber(0L);
                 }
                 //计划完成率
-                if (personnelTeamDTO.getCompleteTaskNumber()!=null && personnelTeamDTO.getPlanTaskNumber()!=null) {
+                if (personnelTeamDTO.getCompleteTaskNumber() != null && personnelTeamDTO.getPlanTaskNumber() != null && personnelTeamDTO.getPlanTaskNumber() != 0) {
                     BigDecimal div = NumberUtil.div(personnelTeamDTO.getCompleteTaskNumber(), personnelTeamDTO.getPlanTaskNumber());
-                    BigDecimal multiply = div.multiply(new BigDecimal(100));
-                    String string = NumberUtil.roundStr(String.valueOf(multiply), 2);
-                    if (StrUtil.isNotEmpty(string)) {
-                        personnelTeamDTO.setPlanCompletionRate(string);
-                    } else {
-                        personnelTeamDTO.setPlanCompletionRate("0");
-                    }
-                }else {
+                    BigDecimal multiply = div.multiply(new BigDecimal(100)).setScale(2, BigDecimal.ROUND_HALF_UP);
+                    personnelTeamDTO.setPlanCompletionRate(Convert.toStr(multiply));
+
+                } else {
                     personnelTeamDTO.setPlanCompletionRate("0");
                 }
             } else {
@@ -232,10 +228,14 @@ public class PersonnelTeamService implements OverhaulApi {
                                 personnelTeamDTO.setCompleteTaskNumber(counter2);
 
                                 //计划完成率
-                                BigDecimal div = NumberUtil.div(counter2, counter1);
-                                BigDecimal multiply = div.multiply(new BigDecimal(100));
-                                String string = NumberUtil.roundStr(String.valueOf(multiply), 2);
-                                personnelTeamDTO.setPlanCompletionRate(string);
+                                if (counter2 != null && counter1 != null && counter1 != 0) {
+                                    BigDecimal div = NumberUtil.div(counter2, counter1);
+                                    BigDecimal multiply = div.multiply(new BigDecimal(100)).setScale(2, BigDecimal.ROUND_HALF_UP);
+                                    personnelTeamDTO.setPlanCompletionRate(Convert.toStr(multiply));
+                                } else {
+                                    personnelTeamDTO.setPlanCompletionRate("0");
+                                }
+
 
                                 if (CollectionUtil.isNotEmpty(collect5)){
                                     //过滤掉不是同一班组的人员
