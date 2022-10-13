@@ -579,12 +579,15 @@
         id as userId,
         realname as userName
         from sys_user
-        where    1=1 and  org_code in
-        <if test="condition.orgCodeList!=null and condition.orgCodeList.size()!=0" >
-            <foreach collection="condition.orgCodeList" index="index" item="item" open="(" close=")" separator=",">
-                #{item}
-            </foreach>
-        </if>
+        <where>
+            1=1
+            <if test="condition.orgCodeList!=null and condition.orgCodeList.size()!=0" >
+                and  org_code in
+                <foreach collection="condition.orgCodeList" index="index" item="item" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
     </select>
 
     <select id="selectDepart" resultType="com.aiurt.boot.task.dto.OverhaulStatisticsDTOS">
