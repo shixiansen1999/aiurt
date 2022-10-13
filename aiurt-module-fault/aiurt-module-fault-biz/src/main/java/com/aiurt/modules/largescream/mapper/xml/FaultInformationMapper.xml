@@ -576,6 +576,8 @@
     <select id="getConstructionHours" resultType="java.lang.String">
         select  assort_time from t_work_log
         where del_flag = 0
+        and assort_time is not null
+         and assort_time != " "
         and confirm_status=1
         and org_id = #{orgId}
         and date_format(submit_time ,'%Y-%m-%d')  BETWEEN date_format( #{startTime} ,'%Y-%m-%d') AND date_format( #{endTime} ,'%Y-%m-%d')
