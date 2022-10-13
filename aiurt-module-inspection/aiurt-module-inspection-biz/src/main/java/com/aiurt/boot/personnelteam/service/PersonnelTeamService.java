@@ -2,6 +2,7 @@ package com.aiurt.boot.personnelteam.service;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.NumberUtil;
 import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.api.OverhaulApi;
 import com.aiurt.boot.personnelteam.mapper.PersonnelTeamMapper;
 import com.aiurt.boot.task.dto.PersonnelTeamDTO;
@@ -111,19 +112,33 @@ public class PersonnelTeamService implements OverhaulApi {
 
             //查询人员的计划任务数量
             Long counter1 = e.getCounter();
-            personnelTeamDTO.setPlanTaskNumber(counter1);
+            if(counter1!=null){
+                personnelTeamDTO.setPlanTaskNumber(counter1);
+            }else {
+                personnelTeamDTO.setPlanTaskNumber(0L);
+            }
 
             if (ObjectUtil.isNotEmpty(e) && ObjectUtil.isNotEmpty(q)) {
 
                 //查询人员的完成任务数量
                 Long counter2 = q.getCounter();
-                personnelTeamDTO.setCompleteTaskNumber(counter2);
-
+                if (counter2!=null){
+                    personnelTeamDTO.setCompleteTaskNumber(counter2);
+                }else {
+                    personnelTeamDTO.setCompleteTaskNumber(0L);
+                }
                 //计划完成率
-                BigDecimal div = NumberUtil.div(counter2, counter1);
-                String string = NumberUtil.roundStr(String.valueOf(div), 2);
-                personnelTeamDTO.setPlanCompletionRate(string);
-
+                if (personnelTeamDTO.getCompleteTaskNumber()!=null && personnelTeamDTO.getPlanTaskNumber()!=null) {
+                    BigDecimal div = NumberUtil.div(personnelTeamDTO.getCompleteTaskNumber(), personnelTeamDTO.getPlanTaskNumber());
+                    String string = NumberUtil.roundStr(String.valueOf(div), 2);
+                    if (StrUtil.isNotEmpty(string)) {
+                        personnelTeamDTO.setPlanCompletionRate(string);
+                    } else {
+                        personnelTeamDTO.setPlanCompletionRate("0");
+                    }
+                }else {
+                    personnelTeamDTO.setPlanCompletionRate("0");
+                }
             } else {
                 personnelTeamDTO.setPlanCompletionRate("0");
             }
