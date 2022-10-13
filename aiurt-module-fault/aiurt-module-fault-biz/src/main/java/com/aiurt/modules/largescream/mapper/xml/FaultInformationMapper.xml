@@ -4,6 +4,7 @@
     <select id="queryLargeFaultInformation" resultType="com.aiurt.modules.fault.entity.Fault">
         select * from fault
         <where>
+             status > 2
             <if test="startDate!=null and endDate!=null">
                 and date_format(approval_pass_time ,'%Y-%m-%d') &gt;=  date_format(#{startDate},'%Y-%m-%d')
                 and date_format(approval_pass_time ,'%Y-%m-%d') &lt;= date_format(#{endDate},'%Y-%m-%d')
@@ -23,7 +24,7 @@
     <select id="queryLargeFaultInformationUnSo" resultType="com.aiurt.modules.fault.entity.Fault">
         select * from fault
         <where>
-            status != 12
+            status != 12 and status > 2
             <if test="startDate!=null and endDate!=null">
                 and date_format(approval_pass_time ,'%Y-%m-%d') &gt;=  date_format(#{startDate},'%Y-%m-%d')
                 and date_format(approval_pass_time ,'%Y-%m-%d') &lt;= date_format(#{endDate},'%Y-%m-%d')
@@ -121,6 +122,7 @@
         left join cs_station ct on ct.station_code = f.station_code
         left join sys_user s on s.username = f.appoint_user_name
         <where>
+            f.status > 2
             <if test="condition.startDate!=null and condition.endDate!=null">
                 and date_format(f.approval_pass_time ,'%Y-%m-%d') &gt;=  date_format(#{condition.startDate},'%Y-%m-%d')
                 and date_format(f.approval_pass_time ,'%Y-%m-%d') &lt;= date_format(#{condition.endDate},'%Y-%m-%d')
@@ -137,6 +139,9 @@
             <if test="condition.unSo !=null and condition.unSo !=''">
                 and f.status != 12
             </if>
+            <if test="condition.unSo !=null and condition.unSo !=''">
+                and f.status > 2
+            </if>
             <if test="condition.todayAdd != null and condition.todayAdd !=''">
                 and date_format(f.happen_time ,'%Y-%m-%d') &gt;=  date_format(#{condition.todayStartDate},'%Y-%m-%d')
                 and date_format(f.happen_time ,'%Y-%m-%d') &lt;= date_format(#{condition.todayEndDate},'%Y-%m-%d')
@@ -152,6 +157,7 @@
                 and date_format(f.end_time ,'%Y-%m-%d') &lt;= date_format(#{condition.todayEndDate},'%Y-%m-%d')
             </if>
         </where>
+         group by f.id
     </select>
 
     <select id="getLargeFaultDataDatails" resultType="com.aiurt.modules.fault.dto.FaultLargeInfoDTO">
@@ -206,6 +212,7 @@
                 and date_format(f.end_time ,'%Y-%m-%d') &lt;= date_format(#{condition.todayEndDate},'%Y-%m-%d')
             </if>
         </where>
+        group by f.id
     </select>
 
     <select id="getLargeFaultInfo" resultType="com.aiurt.modules.fault.dto.FaultLargeInfoDTO">
@@ -215,6 +222,7 @@
             left join cs_station ct on ct.station_code = f.station_code
             left join sys_user s on s.username = f.appoint_user_name
         <where>
+            f.status > 2
             <if test="startDate!=null and endDate!=null">
                 and date_format(f.approval_pass_time ,'%Y-%m-%d') &gt;=  date_format(#{startDate},'%Y-%m-%d')
                 and date_format(f.approval_pass_time ,'%Y-%m-%d') &lt;= date_format(#{endDate},'%Y-%m-%d')
@@ -229,6 +237,7 @@
                 </foreach>
             </if>
         </where>
+        group by f.id
     </select>
 
     <select id="getLargeFaultDataInfo" resultType="com.aiurt.modules.fault.dto.FaultDataAnalysisInfoDTO">
@@ -238,6 +247,7 @@
         left join cs_station ct on ct.station_code = f.station_code
         left join sys_user s on s.username = f.appoint_user_name
         <where>
+            f.status > 2
             <if test="lineCode != null and lineCode != ''">
                 and f.line_code  = #{lineCode}
             </if>
@@ -252,12 +262,14 @@
                 </foreach>
             </if>
         </where>
+        group by f.id
     </select>
 
     <select id="getLargeLineFaultInfo" resultType="com.aiurt.modules.fault.entity.Fault">
         select * from fault f
         left join cs_line cl on f.line_code = cl.line_code
         <where>
+            f.status > 2
             <if test="startDate!=null and endDate!=null">
                 and date_format(f.approval_pass_time ,'%Y-%m-%d') &gt;=  date_format(#{startDate},'%Y-%m-%d')
                 and date_format(f.approval_pass_time ,'%Y-%m-%d') &lt;= date_format(#{endDate},'%Y-%m-%d')
@@ -321,6 +333,7 @@
         sum(TIMESTAMPDIFF(HOUR,f.happen_time,f.end_time)) as repairTime  from fault f
         left join cs_subSystem cs on f.sub_system_code = cs.system_code
         <where>
+            f.status > 2
             <if test="month!=null">
                 and DATE_FORMAT(f.approval_pass_time,'%Y-%m') = #{month}
             </if>
@@ -342,6 +355,7 @@
         sum(TIMESTAMPDIFF(minute,f.happen_time,f.end_time)) as repairTime  from fault f
         left join cs_subSystem cs on f.sub_system_code = cs.system_code
         <where>
+            f.status > 2
             <if test="startDate!=null and endDate!=null">
                 and date_format(f.approval_pass_time ,'%Y-%m-%d') &gt;=  date_format(#{startDate},'%Y-%m-%d')
                 and date_format(f.approval_pass_time ,'%Y-%m-%d') &lt;= date_format(#{endDate},'%Y-%m-%d')

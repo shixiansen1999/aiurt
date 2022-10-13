@@ -260,9 +260,11 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
 
         }
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+         List<CsUserDepartModel> userDepartModelList = sysBaseAPI.getDepartByUserId(sysUser.getId());
+         List<String> orgCodeList = userDepartModelList.stream().map(CsUserDepartModel::getOrgCode).collect(Collectors.toList());
         boolean admin = SecurityUtils.getSubject().hasRole("admin");
         if (!admin) {
-            patrolTaskDTO.setLoginOrgId(sysUser.getOrgCode());
+            patrolTaskDTO.setUserHaveOrgCodeList(orgCodeList);
         }
         List<PatrolTaskDTO> taskList = patrolTaskMapper.getPatrolTaskPoolList(pageList, patrolTaskDTO);
         taskList.stream().forEach(e -> {
@@ -289,6 +291,8 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
     @Override
     public Page<PatrolTaskDTO> getPatrolTaskList(Page<PatrolTaskDTO> pageList, PatrolTaskDTO patrolTaskDTO) {
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        List<CsUserDepartModel> userDepartModelList = sysBaseAPI.getDepartByUserId(sysUser.getId());
+        List<String> orgCodeList = userDepartModelList.stream().map(CsUserDepartModel::getOrgCode).collect(Collectors.toList());
         if (ObjectUtil.isNotEmpty(patrolTaskDTO.getDateScope())) {
             String[] split = patrolTaskDTO.getDateScope().split(",");
             Date dateHead = DateUtil.parse(split[0], "yyyy-MM-dd");
@@ -299,7 +303,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         }
         boolean admin = SecurityUtils.getSubject().hasRole("admin");
         if (!admin) {
-            patrolTaskDTO.setLoginOrgId(sysUser.getOrgCode());
+            patrolTaskDTO.setUserHaveOrgCodeList(orgCodeList);
         }
         List<PatrolTaskDTO> taskList = patrolTaskMapper.getPatrolTaskList(pageList, patrolTaskDTO);
         taskList.stream().forEach(e -> {
@@ -431,8 +435,8 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         if (PatrolConstant.TASK_RETURNED.equals(patrolTask.getStatus())) {
             return arrayList;
         }
+        List<PatrolTaskUser> patrolTaskUsers = patrolTaskUserMapper.selectList(new LambdaQueryWrapper<PatrolTaskUser>().eq(PatrolTaskUser::getTaskCode, patrolTask.getCode()));
         if (PatrolConstant.TASK_COMMON.equals(patrolTask.getSource())) {
-            List<PatrolTaskUser> patrolTaskUsers = patrolTaskUserMapper.selectList(new LambdaQueryWrapper<PatrolTaskUser>().eq(PatrolTaskUser::getTaskCode, patrolTask.getCode()));
             arrayList.stream().forEach(a -> {
                 List<String> collect = patrolTaskUsers.stream().map(PatrolTaskUser::getUserId).collect(Collectors.toList());
                 List<PatrolTaskUserContentDTO> userList = a.getUserList();
@@ -444,9 +448,11 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         } else {
             if (ObjectUtil.isNull(orgCoed.getIdentity())) {
                 arrayList.stream().forEach(e -> {
+                    List<String> userIdList = patrolTaskUsers.stream().map(PatrolTaskUser::getUserId).collect(Collectors.toList());
                     List<PatrolTaskUserContentDTO> userList = e.getUserList();
-                    List<PatrolTaskUserContentDTO> collect = userList.stream().filter(u -> !u.getId().equals(loginUser.getId())).collect(Collectors.toList());
-                    e.setUserList(collect);
+                    List<PatrolTaskUserContentDTO> list = userList.stream().filter(l -> userIdList.contains(l.getId())).collect(Collectors.toList());
+                    userList.removeAll(list);
+                    e.setUserList(userList);
                 });
                 return arrayList;
             } else {
