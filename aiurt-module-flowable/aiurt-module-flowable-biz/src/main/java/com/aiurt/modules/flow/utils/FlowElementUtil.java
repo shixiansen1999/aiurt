@@ -254,7 +254,7 @@ public class FlowElementUtil {
      * @return
      */
     public Object saveBusData(String pProcessDefinitionId, String taskId,  Map<String, Object> busData) {
-        log.info("处理中间业务数据");
+        log.info("处理中间业务数据:pProcessDefinitionId->{}, taskId->{}, busData->{}", pProcessDefinitionId, taskId, busData);
         if (Objects.isNull(busData)) {
             return "";
         }
@@ -272,6 +272,7 @@ public class FlowElementUtil {
         // 是否动态表单
         if (CollUtil.isNotEmpty(actCustomTaskExts)) {
             JSONObject jsonObject = JSONObject.parseObject(actCustomTaskExts.get(0).getFormJson());
+            //log.info("更新或保存业务接口:->{}", );
             if (ObjectUtil.isNotEmpty(jsonObject)) {
                 String service = jsonObject.getString("service");
                 if (StrUtil.isBlank(service)) {

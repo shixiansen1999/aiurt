@@ -221,6 +221,7 @@ public class FlowApiServiceImpl implements FlowApiService {
      */
     @Override
     public void completeTask(TaskCompleteDTO taskCompleteDTO) {
+        LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         // 任务id
         String taskId = taskCompleteDTO.getTaskId();
         // 流程实例id
@@ -238,6 +239,17 @@ public class FlowApiServiceImpl implements FlowApiService {
         ActCustomTaskComment flowTaskComment = BeanUtil.copyProperties(flowTaskCompleteDTO, ActCustomTaskComment.class);
         if (ObjectUtil.isNotEmpty(flowTaskComment)) {
             flowTaskComment.fillWith(task);
+        }
+        // 设置签收
+        String assignee = task.getAssignee();
+
+        if (StrUtil.isBlank(assignee)) {
+            taskService.setAssignee(taskId, loginUser.getUsername());
+        }
+
+        Date claimTime = task.getClaimTime();
+        if (Objects.isNull(claimTime)) {
+            taskService.claim(taskId, loginUser.getUsername());
         }
 
         // 提交任务
@@ -1327,7 +1339,7 @@ public class FlowApiServiceImpl implements FlowApiService {
             JSONObject jsonObject = JSONObject.parseObject(formJson);
             taskInfoDTO.setRouterName(jsonObject.getString("formUrl"));
             if (StrUtil.equalsAnyIgnoreCase(processDefinitionKey, "bd_work_ticket2", "bd_work_titck")) {
-                taskInfoDTO.setRouterName("src\\views\\workTicket\\modules\\BdFirstWorkTicket.vue");
+                taskInfoDTO.setRouterName("@/views/workTicket/modules/BdFirstWorkTicket.vue");
             }
             String json = customTaskExt.getOperationListJson();
             List<JSONObject> objectList = JSONObject.parseArray(json, JSONObject.class);

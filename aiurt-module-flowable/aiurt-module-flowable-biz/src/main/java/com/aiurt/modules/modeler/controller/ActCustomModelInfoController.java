@@ -66,14 +66,20 @@ public class ActCustomModelInfoController extends BaseController<ActCustomModelI
 		IPage<ActCustomModelInfo> pageList = actCustomModelInfoService.page(page, queryWrapper);
 
 		pageList.getRecords().stream().forEach(modeInfo->{
-			TaskInfoDTO taskInfoDTO = flowApiService.viewInitialTaskInfo(modeInfo.getModelKey());
-			modeInfo.setRouterName(modeInfo.getBusinessUrl());
-			if (Objects.nonNull(taskInfoDTO)) {
-				String routerName = taskInfoDTO.getRouterName();
-				if (StrUtil.isNotBlank(routerName)) {
-					modeInfo.setRouterName(routerName);
-				}
 
+			try {
+				if (StrUtil.equalsIgnoreCase("3", String.valueOf(modeInfo.getStatus()))) {
+					TaskInfoDTO taskInfoDTO = flowApiService.viewInitialTaskInfo(modeInfo.getModelKey());
+					modeInfo.setRouterName(modeInfo.getBusinessUrl());
+					if (Objects.nonNull(taskInfoDTO)) {
+						String routerName = taskInfoDTO.getRouterName();
+						if (StrUtil.isNotBlank(routerName)) {
+							modeInfo.setRouterName(routerName);
+						}
+					}
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
 			}
 		});
 		return Result.OK(pageList);

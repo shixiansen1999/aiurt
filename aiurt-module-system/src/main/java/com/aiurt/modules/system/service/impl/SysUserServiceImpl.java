@@ -750,7 +750,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
     @Override
     public List<SysUser> querySysUserForWorkTicket() {
         List<String> role = new ArrayList<>();
-        baseMapper.querySysUserForWorkTicket(role);
-        return null;
+        List<SysUser> sysUserList = baseMapper.querySysUserForWorkTicket(role);
+        return sysUserList;
     }
 }
