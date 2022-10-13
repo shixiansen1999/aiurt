@@ -1,8 +1,11 @@
 package com.aiurt.modules.listener;
 
+import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.util.StrUtil;
 import com.aiurt.modules.constants.FlowConstant;
 import com.aiurt.modules.modeler.entity.ActCustomTaskExt;
 import com.aiurt.modules.modeler.service.IActCustomTaskExtService;
+import com.aiurt.modules.user.service.IFlowUserService;
 import org.apache.shiro.SecurityUtils;
 import org.flowable.common.engine.api.delegate.event.FlowableEvent;
 import org.flowable.common.engine.api.delegate.event.FlowableEventListener;
@@ -14,6 +17,9 @@ import org.jeecg.common.util.SpringContextUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -59,30 +65,57 @@ public class TaskCreateListener implements FlowableEventListener {
         }
 
         String groupType = taskExt.getGroupType();
-
+        IFlowUserService flowUserService = SpringContextUtils.getBean(IFlowUserService.class);
+        List<String> userNameList = new ArrayList<>();
         switch (groupType) {
             // 角色
             case "candidateRole":
+                String roleIds = taskExt.getRoleIds();
+                userNameList = flowUserService.getUserNameByRoleId(StrUtil.splitTrim(roleIds, ','));
                 break;
-            // 候选人员
+            // 候选人员,指定人员
             case "candidateUsers":
-                break;
-            // 指定人员
             case "assignee":
+                String candidateUsernames = taskExt.getCandidateUsernames();
+                userNameList = flowUserService.getUserNameByUserId(StrUtil.splitTrim(candidateUsernames, ','));
                 break;
             // 机构
             case "candidateDept":
+                String deptIds = taskExt.getDeptIds();
+                userNameList = flowUserService.getUserNameByOrgId(StrUtil.splitTrim(deptIds, ','));
                 break;
             // 动态
             case "dynamic":
+                String dynamicVariable = taskExt.getDynamicVariable();
+                String variable = ProcessEngines.getDefaultProcessEngine().getRuntimeService()
+                        .getVariable(taskEntity.getProcessInstanceId(), dynamicVariable, String.class);
+                if (StrUtil.isNotBlank(variable)) {
+                    userNameList = flowUserService.getUserName(variable);
+                }
                 break;
             // 流程发起人
             default:
                 String initiator = ProcessEngines.getDefaultProcessEngine().getRuntimeService()
                         .getVariable(taskEntity.getProcessInstanceId(), FlowConstant.PROC_INSTANCE_INITIATOR_VAR, String.class);
-                ProcessEngines.getDefaultProcessEngine().getTaskService().setAssignee(taskId, initiator);
+                userNameList.add(initiator);
                 break;
         }
+
+        if (CollectionUtil.isEmpty(userNameList)) {
+            String initiator = ProcessEngines.getDefaultProcessEngine().getRuntimeService()
+                    .getVariable(taskEntity.getProcessInstanceId(), FlowConstant.PROC_INSTANCE_INITIATOR_VAR, String.class);
+            userNameList.add(initiator);
+        }
+
+        if (userNameList.size() ==1) {
+            logger.info("设置办理人:{},{}", taskId, userNameList.get(0));
+            ProcessEngines.getDefaultProcessEngine().getTaskService().setAssignee(taskId, userNameList.get(0));
+        }else {
+            for (String userName : userNameList) {
+                ProcessEngines.getDefaultProcessEngine().getTaskService().addCandidateUser(taskId, userName);
+            }
+        }
+
     }
 
     /**
