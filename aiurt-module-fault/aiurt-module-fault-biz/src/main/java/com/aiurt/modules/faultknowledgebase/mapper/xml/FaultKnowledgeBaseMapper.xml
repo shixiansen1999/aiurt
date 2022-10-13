@@ -100,7 +100,7 @@
                 and a.system_code= #{condition.systemCode}
             </if>
             <if test="condition.knowledgeBaseTypeCode != null and  condition.knowledgeBaseTypeCode != ''">
-                and a.fault_phenomenon = #{condition.knowledgeBaseTypeCode}
+                and a.knowledge_base_type_code = #{condition.knowledgeBaseTypeCode}
             </if>
     ORDER BY a.create_time DESC
     </select>
