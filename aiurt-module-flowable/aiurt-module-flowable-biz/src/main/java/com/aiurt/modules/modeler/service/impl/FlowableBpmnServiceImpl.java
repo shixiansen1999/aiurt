@@ -312,10 +312,13 @@ public class FlowableBpmnServiceImpl implements IFlowableBpmnService {
                     .version(definitionList.size())
                     .build();
             versionService.save(actCustomVersion);
+
+            modelInfo.setExtendStatus(actCustomVersion.getVersion());
         }
 
         // 已发布
         modelInfo.setStatus(ModelFormStatusEnum.YFB.getStatus());
+
         modelInfoService.updateById(modelInfo);
         if (CollUtil.isNotEmpty(actCustomTaskExtList)) {
             actCustomTaskExtList.forEach(t -> t.setProcessDefinitionId(definition.getId()));
