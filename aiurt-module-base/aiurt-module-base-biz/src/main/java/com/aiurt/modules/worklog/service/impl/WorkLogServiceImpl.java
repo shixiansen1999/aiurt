@@ -229,6 +229,9 @@ public class WorkLogServiceImpl extends ServiceImpl<WorkLogMapper, WorkLog> impl
         depot.setAssortUnit(dto.getAssortUnit());
         depot.setAssortNum(dto.getAssortNum());
         depot.setAssortContent(dto.getAssortContent());
+        depot.setPatrolContent(dto.getPatrolContent());
+        depot.setRepairContent(dto.getRepairContent());
+        depot.setFaultContent(dto.getFaultContent());
         depotMapper.insert(depot);
         //插入附件列表
         if (ObjectUtil.isNotEmpty(dto.getUrlList())) {
