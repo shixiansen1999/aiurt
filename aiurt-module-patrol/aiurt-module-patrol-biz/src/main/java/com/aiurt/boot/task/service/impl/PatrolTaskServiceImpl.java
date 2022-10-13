@@ -31,6 +31,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.system.api.ISysBaseAPI;
+import org.jeecg.common.system.vo.CsUserDepartModel;
 import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -411,13 +412,20 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
             userDTO.setUserList(user);
             arrayList.add(userDTO);
         }
-        LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-
-        if (ObjectUtil.isEmpty(sysUser)) {
+        LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        if (ObjectUtil.isEmpty(loginUser)) {
             throw new AiurtBootException("检测为未登录状态，请登录系统后操作！");
         }
-        // 过滤当前用户所在的组织机构数据
-        arrayList = arrayList.stream().filter(l -> l.getOrgCode().equals(sysUser.getOrgCode())).collect(Collectors.toList());
+        // 获取当前登录人的部门权限
+        List<CsUserDepartModel> departList = sysBaseAPI.getDepartByUserId(loginUser.getId());
+        List<String> orgCodes = departList.stream().map(CsUserDepartModel::getOrgCode).collect(Collectors.toList());
+        if (CollectionUtil.isEmpty(orgCodes)) {
+            return new ArrayList<>();
+        }
+//        // 过滤当前用户所在的组织机构数据
+//        arrayList = arrayList.stream().filter(l -> l.getOrgCode().equals(loginUser.getOrgCode())).collect(Collectors.toList());
+        // 根据当前登录人部门权限过滤指派人员
+        arrayList = arrayList.stream().filter(l -> orgCodes.contains(l.getOrgCode())).collect(Collectors.toList());
 
         PatrolTask patrolTask = patrolTaskMapper.selectById(orgCoed.getTaskId());
         if (PatrolConstant.TASK_RETURNED.equals(patrolTask.getStatus())) {
@@ -437,7 +445,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
             if (ObjectUtil.isNull(orgCoed.getIdentity())) {
                 arrayList.stream().forEach(e -> {
                     List<PatrolTaskUserContentDTO> userList = e.getUserList();
-                    List<PatrolTaskUserContentDTO> collect = userList.stream().filter(u -> !u.getId().equals(sysUser.getId())).collect(Collectors.toList());
+                    List<PatrolTaskUserContentDTO> collect = userList.stream().filter(u -> !u.getId().equals(loginUser.getId())).collect(Collectors.toList());
                     e.setUserList(collect);
                 });
                 return arrayList;
@@ -758,6 +766,12 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         if (CollectionUtil.isEmpty(list)) {
             throw new AiurtBootException("任务编号的集合对象为空！");
         }
+        // 获取当前登录人的部门权限
+        List<CsUserDepartModel> departList = sysBaseAPI.getDepartByUserId(loginUser.getId());
+        List<String> orgCodes = departList.stream().map(CsUserDepartModel::getOrgCode).collect(Collectors.toList());
+        if (CollectionUtil.isEmpty(orgCodes)) {
+            return new ArrayList<>();
+        }
         int size = list.size();
         // 获取批量指派时的用户 需要相同的组织机构
         if (size > 1) {
@@ -774,8 +788,10 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
             }
         }
         List<PatrolUserInfoDTO> userInfo = patrolTaskOrganizationMapper.getUserListByTaskCode(list.get(0));
-        // 过滤当前登录人所在的组织机构
-        userInfo = userInfo.stream().filter(l -> l.getOrgCode().equals(loginUser.getOrgCode())).collect(Collectors.toList());
+//        // 根据当前登录人所属部门过滤指派人员
+//        userInfo = userInfo.stream().filter(l -> l.getOrgCode().equals(loginUser.getOrgCode())).collect(Collectors.toList());
+        // 根据当前登录人部门权限过滤指派人员
+        userInfo = userInfo.stream().filter(l -> orgCodes.contains(l.getOrgCode())).collect(Collectors.toList());
         return userInfo;
     }
 
