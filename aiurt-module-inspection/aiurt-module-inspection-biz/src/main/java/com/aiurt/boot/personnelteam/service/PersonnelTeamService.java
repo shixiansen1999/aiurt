@@ -158,9 +158,7 @@ public class PersonnelTeamService implements OverhaulApi {
             //所属班组code的list集合
             List<String> collect1 = userSysDepart.stream().map(SysDepartModel::getOrgCode).collect(Collectors.toList());
 
-
             if (CollectionUtil.isNotEmpty(teamId)){
-
                 //根据班组id查询班组code
                 List<String> codeList = personnelTeamMapper.getIdList(teamId);
 
@@ -179,30 +177,23 @@ public class PersonnelTeamService implements OverhaulApi {
         Map<String,PersonnelTeamDTO> map = new HashMap<>(16);
         //查询班组下的人员信息
         List<LoginUser> useList = sysBaseAPI.getUseList(teamId);
-
         //获取人员id
         List<String> collect1 = useList.stream().map(LoginUser::getId).collect(Collectors.toList());
-
         //查询班组所有的计划任务数
         List<PersonnelTeamDTO> teamTask = personnelTeamMapper.getTeamTask(codeList, null, startDate, endDate);
-
         //获取班组的codeMap
         Map<String, PersonnelTeamDTO> collect2 = teamTask.stream().collect(Collectors.toMap(PersonnelTeamDTO::getTeamCode, v -> v));
 
         if (CollectionUtil.isNotEmpty(collect1)){
             //查询班组所属人员的所有已完成的任务
             List<PersonnelTeamDTO> scheduledTask = personnelTeamMapper.getScheduledTask(collect1, 8L, startDate, endDate,null);
-
             //获取班组所属用户idMap
             Map<String, PersonnelTeamDTO> collect4 = scheduledTask.stream().collect(Collectors.toMap(PersonnelTeamDTO::getUserId, v -> v));
-
             //获取班组所属用户idList
             List<String> collect5 = scheduledTask.stream().map(PersonnelTeamDTO::getUserId).collect(Collectors.toList());
 
             if (CollectionUtil.isNotEmpty(collect2)) {
-
                 for (Map.Entry<String, PersonnelTeamDTO> entry : collect2.entrySet()) {
-
                     PersonnelTeamDTO personnelTeamDTO = new PersonnelTeamDTO();
                     //班组计划任务数量
                     PersonnelTeamDTO value = entry.getValue();
@@ -215,19 +206,15 @@ public class PersonnelTeamService implements OverhaulApi {
                     personnelTeamDTO.setPlanCompletionRate("0");
                     personnelTeamDTO.setOverhaulWorkingHours(0L);
                     if (CollectionUtil.isNotEmpty(collect4)) {
-
                         for (Map.Entry<String, PersonnelTeamDTO> entry1 : collect4.entrySet()) {
-
                             //根据用户id查询班组编码
                             LoginUser userById = sysBaseAPI.getUserById(entry1.getKey());
                             String orgCode = userById.getOrgCode();
                             if (entry.getKey().equals(orgCode)) {
-
                                 //班组完成任务数量
                                 PersonnelTeamDTO value1 = entry1.getValue();
                                 Long counter2 = value1.getCounter();
                                 personnelTeamDTO.setCompleteTaskNumber(counter2);
-
                                 //计划完成率
                                 if (counter2 != null && counter1 != null && counter1 != 0) {
                                     BigDecimal div = NumberUtil.div(counter2, counter1);
@@ -236,8 +223,6 @@ public class PersonnelTeamService implements OverhaulApi {
                                 } else {
                                     personnelTeamDTO.setPlanCompletionRate("0");
                                 }
-
-
                                 if (CollectionUtil.isNotEmpty(collect5)){
                                     //过滤掉不是同一班组的人员
                                     List<String> collect3 = collect5.stream().filter(q -> q.equals(entry1.getKey())).collect(Collectors.toList());
@@ -261,7 +246,6 @@ public class PersonnelTeamService implements OverhaulApi {
                                         personnelTeamDTO.setOverhaulWorkingHours(0L);
                                     }
                                 }
-
                             }
                         }
                     }
