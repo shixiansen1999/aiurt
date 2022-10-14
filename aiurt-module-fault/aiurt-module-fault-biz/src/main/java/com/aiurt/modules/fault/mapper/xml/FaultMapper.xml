@@ -115,6 +115,9 @@
             </foreach>
             )
         </if>
+        <if test="condition.deviceTypeCode != null and condition.deviceTypeCode != ''">
+            and device_type_code = #{condition.deviceTypeCode}
+        </if>
         order by scode desc
     </select>
 

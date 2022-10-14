@@ -1,4 +1,7 @@
 package com.aiurt.modules.sparepart.service.impl;
+import com.aiurt.modules.sparepart.entity.SparePartStockInfo;
+import com.aiurt.modules.sparepart.service.*;
+import com.google.common.collect.Lists;
 import java.util.Date;
 
 import cn.hutool.core.collection.CollectionUtil;
@@ -16,9 +19,8 @@ import com.aiurt.modules.sparepart.dto.SparePartReplaceDTO;
 import com.aiurt.modules.sparepart.dto.SparePartScrapDTO;
 import com.aiurt.modules.sparepart.entity.SparePartMalfunction;
 import com.aiurt.modules.sparepart.entity.SparePartReplace;
+import com.aiurt.modules.sparepart.entity.SparePartScrap;
 import com.aiurt.modules.sparepart.mapper.SparePartOutOrderMapper;
-import com.aiurt.modules.sparepart.service.ISparePartMalfunctionService;
-import com.aiurt.modules.sparepart.service.ISparePartReplaceService;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -62,6 +64,15 @@ public class SparePartBaseApiImpl implements ISparePartBaseApi {
     @Autowired
     private IDeviceService deviceService;
 
+    @Autowired
+    private ISparePartOutOrderService outOrderService;
+
+    @Autowired
+    private ISparePartScrapService sparePartScrapService;
+
+    @Autowired
+    private ISparePartStockInfoService sparePartStockInfoService;
+
     /**
      * 更新出库单未使用的数量
      * @param updateMap
@@ -77,10 +88,6 @@ public class SparePartBaseApiImpl implements ISparePartBaseApi {
         }
     }
 
-    public static void main(String[] args) {
-        System.out.println(String.format("%012d", 1));
-    }
-
     /**
      * 处理备件更换
      *
@@ -93,19 +100,24 @@ public class SparePartBaseApiImpl implements ISparePartBaseApi {
         // spare_part_malfunction备件履历表
         List<SparePartReplace> list = new ArrayList<>();
         List<SparePartMalfunction> malfunctionList = new ArrayList<>();
-        //List<SparePartScrapDTO> sparePartScrapList = new ArrayList<>();
+        List<SparePartScrap> sparePartScrapList = new ArrayList<>();
 
         if (CollectionUtil.isNotEmpty(sparePartList)) {
 
             List<DeviceAssembly> deviceAssemblyList = deviceAssemblyService.list();
             Set<String> assemblyCodeSet = deviceAssemblyList.stream().map(DeviceAssembly::getCode).collect(Collectors.toSet());
             // 插入到组件表中
+
             sparePartList.stream().forEach(deviceChange->{
 
                 // 线处理
                 String faultCode = deviceChange.getCode();
                 // 备件更换记录表
                 String outOrderId = deviceChange.getOutOrderId();
+
+                if (StrUtil.isBlank(outOrderId)) {
+                    outOrderService.getById(outOrderId);
+                }
 
                 String deviceCode = deviceChange.getDeviceCode();
                 LambdaQueryWrapper<Device> queryWrapper = new LambdaQueryWrapper<>();
@@ -129,6 +141,8 @@ public class SparePartBaseApiImpl implements ISparePartBaseApi {
 
                 Integer newSparePartNum = Optional.ofNullable(deviceChange.getNewSparePartNum()).orElse(1);
 
+
+
                 for (int i = 0; i < newSparePartNum; i++) {
                    String key = "";
                     int num = 0;
@@ -138,7 +152,7 @@ public class SparePartBaseApiImpl implements ISparePartBaseApi {
                         num = num +1;
                     }while (assemblyCodeSet.contains(key));
                     assemblyCodeSet.add(key);
-
+                    // 组件
                    DeviceAssembly deviceAssembly = new DeviceAssembly();
                    deviceAssembly.setBaseTypeCode(materialBase.getBaseTypeCode());
                    deviceAssembly.setStatus("0");
@@ -158,7 +172,7 @@ public class SparePartBaseApiImpl implements ISparePartBaseApi {
 
                    deviceAssemblyService.save(deviceAssembly);
 
-
+                    // spare_part_replace备件更换记录表
                     SparePartReplace replace = new SparePartReplace();
                     replace.setMaintenanceRecord(faultCode);
                     replace.setMaterialsCode(newSparePartCode);
@@ -173,8 +187,39 @@ public class SparePartBaseApiImpl implements ISparePartBaseApi {
                 if (StrUtil.isNotBlank(oldSparePartCode)) {
                     LambdaUpdateWrapper<DeviceAssembly> updateWrapper = new LambdaUpdateWrapper<>();
                     updateWrapper.eq(DeviceAssembly::getDeviceCode, deviceCode).eq(DeviceAssembly::getCode, oldSparePartCode)
-                            .set(DeviceAssembly::getStatus, "1");
+                            .set(DeviceAssembly::getStatus, "1").set(DeviceAssembly::getDelFlag, CommonConstant.DEL_FLAG_1);
                     deviceAssemblyService.update(updateWrapper);
+
+                    LambdaQueryWrapper<DeviceAssembly> assemblyLambdaQueryWrapper = new LambdaQueryWrapper<>();
+                    assemblyLambdaQueryWrapper.eq(DeviceAssembly::getDeviceCode, deviceCode)
+                            .eq(DeviceAssembly::getCode, oldSparePartCode).last("limit 1");
+                    DeviceAssembly deviceAssembly = deviceAssemblyService.getBaseMapper().selectOne(assemblyLambdaQueryWrapper);
+
+                    // 查询当前替换人员的仓库.
+                    SparePartStockInfo stockInfo = sparePartStockInfoService.getSparePartStockInfoByUserName(deviceChange.getCreateBy());
+                    if (Objects.nonNull(deviceAssembly)) {
+                        // 备件报废表spare_part_scrap插入数据
+                        SparePartScrap sparePartScrap = new SparePartScrap();
+                        sparePartScrap.setNumber("1");
+                        sparePartScrap.setMaterialCode(deviceAssembly.getMaterialCode());
+                        sparePartScrap.setWarehouseCode(Objects.isNull(stockInfo)?"":stockInfo.getWarehouseCode());
+                        sparePartScrap.setOutOrderId(outOrderId);
+                        sparePartScrap.setName(deviceAssembly.getMaterialName());
+                        sparePartScrap.setNum(1);
+                        sparePartScrap.setScrapTime(deviceChange.getCreateTime());
+                        sparePartScrap.setCreateBy(deviceChange.getCreateBy());
+                        sparePartScrap.setStatus(2);
+                        sparePartScrap.setLineCode(device.getLineCode());
+                        sparePartScrap.setStationCode(device.getStationCode());
+                        sparePartScrap.setKeepPerson(deviceChange.getCreateBy());
+                        sparePartScrap.setBuyTime(deviceAssembly.getBuyDate());
+                        sparePartScrap.setDelFlag(0);
+                        sparePartScrap.setCreateTime(new Date());
+                        sparePartScrap.setMajorCode(device.getMajorCode());
+                        sparePartScrap.setSystemCode(device.getSystemCode());
+                        sparePartScrap.setBaseTypeCode(deviceAssembly.getBaseTypeCode());
+                        sparePartScrapList.add(sparePartScrap);
+                    }
                 }
             });
 
@@ -183,11 +228,9 @@ public class SparePartBaseApiImpl implements ISparePartBaseApi {
                 String faultCode = deviceChangeDTO.getCode();
                 // 备件更换记录表
                 String outOrderId = deviceChangeDTO.getOutOrderId();
-                // 备件故障记录表
-                //
+                // 需要往spare_part_malfunction备件履历表
                 String createBy = deviceChangeDTO.getCreateBy();
                 LoginUser loginUser = sysBaseAPI.getUserByName(createBy);
-
                 SparePartMalfunction sparePartMalfunction = new SparePartMalfunction();
                 sparePartMalfunction.setOutOrderId(outOrderId);
                 sparePartMalfunction.setMaintenanceRecord(faultCode);
@@ -202,6 +245,7 @@ public class SparePartBaseApiImpl implements ISparePartBaseApi {
                 sparePartMalfunction.setMaintainTime(new Date());
                 sparePartMalfunction.setDelFlag(0);
                 malfunctionList.add(sparePartMalfunction);
+
             });
         }
 
@@ -212,6 +256,10 @@ public class SparePartBaseApiImpl implements ISparePartBaseApi {
         // 保存数据
         if (CollectionUtil.isNotEmpty(malfunctionList)) {
             sparePartMalfunctionService.saveBatch(malfunctionList);
+        }
+
+        if (CollectionUtil.isNotEmpty(sparePartScrapList)) {
+            sparePartScrapService.saveBatch(sparePartScrapList);
         }
     }
 

@@ -1,5 +1,7 @@
 package com.aiurt.modules.sparepart.service.impl;
 
+import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.util.StrUtil;
 import com.aiurt.modules.manufactor.entity.CsManufactor;
 import com.aiurt.modules.manufactor.mapper.CsManufactorMapper;
 import com.aiurt.modules.sparepart.entity.SparePartStockInfo;
@@ -8,15 +10,21 @@ import com.aiurt.modules.sparepart.service.ISparePartStockInfoService;
 import com.aiurt.modules.system.entity.SysDepart;
 import com.aiurt.modules.system.service.ISysDepartService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.constant.CommonConstant;
+import org.jeecg.common.system.api.ISysBaseAPI;
+import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * @Description: spare_part_stock_info
@@ -24,12 +32,16 @@ import java.util.List;
  * @Date:   2022-07-20
  * @Version: V1.0
  */
+@Slf4j
 @Service
 public class SparePartStockInfoServiceImpl extends ServiceImpl<SparePartStockInfoMapper, SparePartStockInfo> implements ISparePartStockInfoService {
     @Autowired
     private SparePartStockInfoMapper sparePartStockInfoMapper;
     @Autowired
     private ISysDepartService iSysDepartService;
+
+    @Autowired
+    private ISysBaseAPI sysBaseApi;
     /**
      * 添加
      *
@@ -108,5 +120,35 @@ public class SparePartStockInfoServiceImpl extends ServiceImpl<SparePartStockInf
         sparePartStockInfo.setOrgCode(sysDepart.getOrgCode());
         sparePartStockInfoMapper.updateById(sparePartStockInfo);
         return Result.OK("编辑成功！");
+    }
+
+    /**
+     * 根据用户名查询管理的仓库
+     *
+     * @param userName
+     * @return
+     */
+    @Override
+    public SparePartStockInfo getSparePartStockInfoByUserName(String userName) {
+        if (StrUtil.isBlank(userName)) {
+            return null;
+        }
+        LoginUser loginUser = sysBaseApi.getUserByName(userName);
+
+        if (Objects.isNull(loginUser)) {
+            return null;
+        }
+
+        String orgId = loginUser.getOrgId();
+
+        if (StrUtil.isBlank(orgId)) {
+            log.info("该用户没绑定机构：{}-{}", loginUser.getRealname(), loginUser.getUsername());
+            return null;
+        }
+        // 查询仓库
+        LambdaQueryWrapper<SparePartStockInfo> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(SparePartStockInfo::getOrganizationId, orgId).last("limit 1");
+        SparePartStockInfo stockInfo = baseMapper.selectOne(wrapper);
+        return stockInfo;
     }
 }
