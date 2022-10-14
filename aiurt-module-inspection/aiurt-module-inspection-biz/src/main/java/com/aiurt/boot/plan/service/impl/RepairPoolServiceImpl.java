@@ -675,14 +675,27 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
         if (CollUtil.isNotEmpty(repairPoolOrgRels)) {
             List<String> orgList = repairPoolOrgRels.stream().map(RepairPoolOrgRel::getOrgCode).collect(Collectors.toList());
             if (CollUtil.isNotEmpty(orgList)) {
+                // 当前登录人与计划的部门作交集处理
                 List<String> list = manager.handleMixedOrgCode(orgList);
                 if (CollUtil.isNotEmpty(list)) {
                     String orgStrs = StrUtil.join(",", list);
                     result = manager.queryUserByOrdCode(orgStrs);
+
+                    // todo 过滤不是今日当班的人员
+//                    result = filterNoShiftUser(orgDTOS);
                 }
             }
         }
         return result;
+    }
+
+    /**
+     * @param orgDTOS
+     * @return
+     */
+    private List<OrgDTO> filterNoShiftUser(List<OrgDTO> orgDTOS) {
+
+        return new ArrayList<>();
     }
 
     /**
@@ -1428,7 +1441,7 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
         // 状态为已指派和已退回才能进行修改
         if (!InspectionConstant.TO_BE_ASSIGNED.equals(repairPool.getStatus())
                 && !InspectionConstant.GIVE_BACK.equals(repairPool.getStatus())) {
-            throw new AiurtBootException("状态为已指派和已退回才能进行修改");
+            throw new AiurtBootException("状态为待指派和已退回才能进行修改");
         }
 
         if (CollUtil.isEmpty(repairPoolDTO.getAddStationCode())) {
