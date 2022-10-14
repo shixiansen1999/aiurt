@@ -81,7 +81,7 @@ public class WorkLogJob implements Job {
                 );
             }
         }
-        if(CollUtil.isNotEmpty(workLogList))
+        if(CollUtil.isEmpty(workLogList))
         {
             //获取排班人的用户id
             List<String> notWorkLogUserIds = allUserList.stream().map(ScheduleRecord::getUserId).collect(Collectors.toList());

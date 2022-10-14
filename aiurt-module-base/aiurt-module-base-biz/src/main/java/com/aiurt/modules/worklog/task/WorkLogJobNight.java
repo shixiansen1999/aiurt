@@ -52,7 +52,7 @@ public class WorkLogJobNight implements Job {
         //去重
         List<WorkLog> distinctWorkLogList = workLogList.stream().collect(Collectors.collectingAndThen(Collectors.toCollection(() -> new TreeSet<>(Comparator.comparing(WorkLog:: getSubmitId))), ArrayList::new));
         List<String> distinctWorkLogUserIds = distinctWorkLogList.stream().map(WorkLog::getSubmitId).collect(Collectors.toList());
-        if (CollUtil.isNotEmpty(distinctWorkLogUserIds))
+        if (CollUtil.isEmpty(distinctWorkLogUserIds))
         {
             //获取上报人所在的排班信息
             List<ScheduleRecord> workRecordList = scheduleRecordMapper.selectList(new LambdaQueryWrapper<ScheduleRecord>().in(ScheduleRecord::getUserId, distinctWorkLogUserIds).like(ScheduleRecord::getDate, dateNow).eq(ScheduleRecord::getDelFlag,0));
@@ -82,7 +82,7 @@ public class WorkLogJobNight implements Job {
             }
         }
         //当天这个组织没有人提交工作日志
-        if(CollUtil.isNotEmpty(workLogList))
+        if(CollUtil.isEmpty(workLogList))
         {
             //获取排班人的用户id
             List<String> notWorkLogUserIds = allUserList.stream().map(ScheduleRecord::getUserId).collect(Collectors.toList());
