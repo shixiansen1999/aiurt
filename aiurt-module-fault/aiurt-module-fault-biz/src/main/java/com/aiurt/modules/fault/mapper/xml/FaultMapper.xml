@@ -41,6 +41,14 @@
         <if test="systemCode != null and systemCode != ''">
             and system_code = #{systemCode}
         </if>
+        <if test="deviceCodeList != null and deviceCodeList.size() != 0">
+            and device_type_code in (
+            select device.device_type_code  from device where code in
+                <foreach collection="deviceCodeList" item="item" close=")" open="(" separator=",">
+                    #{item}
+                </foreach>
+            )
+        </if>
     </select>
 
     <select id="pageList" resultType="com.aiurt.modules.faultknowledgebase.entity.FaultKnowledgeBase">
@@ -110,8 +118,6 @@
         <if test="condition.deviceTypeCode != null and condition.deviceTypeCode != ''">
             and device_type_code = #{condition.deviceTypeCode}
         </if>
-
-        order by scode desc
     </select>
 
     <select id="selectBySubSystemCode" resultType="com.aiurt.modules.fault.dto.FaultFrequencyDTO">
