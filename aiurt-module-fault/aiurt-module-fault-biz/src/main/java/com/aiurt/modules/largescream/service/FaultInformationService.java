@@ -299,7 +299,7 @@ public class FaultInformationService {
                         faultSystemTimeDTO.setSystemName(name);
                     }
                     //将月份内的所有故障处理时间求和
-                    faultMonthTimeDTO.setMonthTime(monthTime+"H");
+                    faultMonthTimeDTO.setMonthTime(String.valueOf(monthTime));
                     systemlist.add(faultSystemTimeDTO);
                 }
                 faultMonthTimeDTO.setSysTimeList(systemlist);
