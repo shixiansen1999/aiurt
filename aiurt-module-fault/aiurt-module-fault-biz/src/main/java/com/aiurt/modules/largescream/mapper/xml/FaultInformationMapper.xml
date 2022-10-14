@@ -330,7 +330,7 @@
 
     <select id="getLargeFaultTime" resultType="com.aiurt.modules.fault.dto.FaultSystemTimeDTO">
         select cs.system_name, f.sub_system_code,f.line_code,
-        sum(TIMESTAMPDIFF(HOUR,f.happen_time,f.end_time)) as repairTime  from fault f
+        sum(TIMESTAMPDIFF(minute,f.happen_time,f.approval_pass_time)) as repairTime  from fault f
         left join cs_subSystem cs on f.sub_system_code = cs.system_code
         <where>
             f.status > 2
