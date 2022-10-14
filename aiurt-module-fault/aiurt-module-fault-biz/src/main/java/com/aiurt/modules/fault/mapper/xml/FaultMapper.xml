@@ -147,6 +147,7 @@
         select CONCAT(cs.line_name, '/', cs.station_name) as lineStationName
         from cs_station cs
         where cs.station_code = #{stationCode}
+        and cs.del_flag = 0
     </select>
     <select id="getStatusName" resultType="java.lang.String">
         select sdt.item_text
