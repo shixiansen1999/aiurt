@@ -263,7 +263,7 @@ public class FaultInformationService {
         //获取当前登录人的专业编码
         List<String> majors = getCurrentLoginUserMajors();
 
-        for (int i = 1; i<=6; i++) {
+        for (int i = 0; i<=5; i++) {
             int sum = 0;
             //创建一个新的系统故障单集合
             List<FaultSystemTimeDTO> systemlist = new ArrayList<>();
