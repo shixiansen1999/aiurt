@@ -28,4 +28,11 @@ public interface ISparePartStockInfoService extends IService<SparePartStockInfo>
      * @return
      */
     Result<?> update(SparePartStockInfo sparePartStockInfo);
+
+    /**
+     * 根据用户名查询管理的仓库
+     * @param userName
+     * @return
+     */
+    SparePartStockInfo getSparePartStockInfoByUserName(String userName);
 }

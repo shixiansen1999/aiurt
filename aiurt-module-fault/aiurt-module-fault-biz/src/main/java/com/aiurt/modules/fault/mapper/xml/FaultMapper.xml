@@ -99,6 +99,18 @@
                 #{item}
             </foreach>
         </if>
+        <if test="condition.deviceCodeList != null and condition.deviceCodeList.size() != 0">
+            and device_type_code in (
+            select device.device_type_code  from device where code in
+            <foreach collection="condition.deviceCodeList" item="item" close=")" open="(" separator=",">
+                #{item}
+            </foreach>
+            )
+        </if>
+        <if test="condition.deviceTypeCode != null and condition.deviceTypeCode != ''">
+            and device_type_code = #{condition.deviceTypeCode}
+        </if>
+
         order by scode desc
     </select>
 
