@@ -181,4 +181,8 @@ public class FaultKnowledgeBase extends DictEntity implements Serializable {
     @TableField(exist = false)
     private String deviceCode;
 
+    @ApiModelProperty(value = "设备编码")
+    @TableField(exist = false)
+    private List<String> deviceCodeList;
+
 }

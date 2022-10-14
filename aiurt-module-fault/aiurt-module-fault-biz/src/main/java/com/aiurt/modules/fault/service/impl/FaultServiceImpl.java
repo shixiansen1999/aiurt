@@ -1031,6 +1031,8 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         if (StrUtil.isBlank(faultPhenomenon)) {
             return new KnowledgeDTO();
         }
+        List<String> deviceCodeList = StrUtil.splitTrim(deviceCode, ',');
+        faultKnowledgeBase.setDeviceCodeList(deviceCodeList);
         // 分词
         Result parse = ToAnalysis.parse(faultPhenomenon);
         List<Term> termList = parse.getTerms();
@@ -1053,7 +1055,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
 
 
     @Override
-    public IPage<FaultKnowledgeBase> pageList(Page<FaultKnowledgeBase> page,FaultKnowledgeBase knowledgeBase) {
+    public IPage<FaultKnowledgeBase> pageList(Page<FaultKnowledgeBase> page, FaultKnowledgeBase knowledgeBase) {
         String faultPhenomenon = knowledgeBase.getFaultPhenomenon();
         log.info("分词解析前数据：{}",faultPhenomenon);
         if (StrUtil.isNotBlank(faultPhenomenon)) {
@@ -1070,9 +1072,13 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
             }
         }
         String id = knowledgeBase.getId();
+        String deviceCode = knowledgeBase.getDeviceCode();
 
         if (StrUtil.isNotBlank(id)) {
             knowledgeBase.setIdList(StrUtil.split(id,','));
+        }else if (StrUtil.isNotBlank(deviceCode)){
+            List<String> deviceCodeList = StrUtil.splitTrim(deviceCode, ',');
+            knowledgeBase.setDeviceCodeList(deviceCodeList);
         }
 
 
