@@ -115,7 +115,7 @@ public class CsSubsystemServiceImpl extends ServiceImpl<CsSubsystemMapper, CsSub
     }
 
     @Override
-    public Page<SubsystemFaultDTO> getSubsystemFailureReport(Page<?> page, String time, String subsystemCode, List<String> deviceTypeCode) {
+    public Page<SubsystemFaultDTO> getSubsystemFailureReport(Page<SubsystemFaultDTO> page, String time, String subsystemCode, List<String> deviceTypeCode) {
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         List<String> subSystemCodes = new ArrayList<>();
         if (StringUtils.isNotEmpty(subsystemCode)){
@@ -127,10 +127,12 @@ public class CsSubsystemServiceImpl extends ServiceImpl<CsSubsystemMapper, CsSub
         subSystemCodes.forEach(s -> {
             SubsystemFaultDTO subDTO = csUserSubsystemMapper.getSubsystemFaultDTO(time,s);
             subDTO.setFailureDuration(new BigDecimal((1.0 * ( subDTO.getNum()) / 3600)).setScale(2, BigDecimal.ROUND_HALF_UP));
+            subsystemFaultDTOS.add(subDTO);
             List<String> list = csUserSubsystemMapper.getSubsystemByDeviceType(time,s,deviceTypeCode);
 
         });
-        return null;
+
+        return page.setRecords(subsystemFaultDTOS);
     }
 
     public void insertSystemUser(CsSubsystem csSubsystem){

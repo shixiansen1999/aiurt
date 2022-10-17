@@ -39,5 +39,5 @@ public interface ICsSubsystemService extends IService<CsSubsystem> {
      * @param deviceTypeCode
      * @return
      */
-    IPage<SubsystemFaultDTO> getSubsystemFailureReport(Page<?> page, String time, String subsystemCode, List<String> deviceTypeCode);
+    IPage<SubsystemFaultDTO> getSubsystemFailureReport(Page<SubsystemFaultDTO> page, String time, String subsystemCode, List<String> deviceTypeCode);
 }
