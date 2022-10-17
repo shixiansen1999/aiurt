@@ -98,11 +98,11 @@ public class SparePartStockServiceImpl extends ServiceImpl<SparePartStockMapper,
                 if (CollUtil.isNotEmpty(collect)){
                     collect.forEach(q->{
                         //物资类型的二级库库存
-                        sparePartStockMapper.stockCount(null, q.getBaseTypeCode());
+                        Long aLong2 = sparePartStockMapper.stockCount(null, q.getBaseTypeCode());
                         //物资类型的三级库库存
-                        sparePartStockMapper.sparePartCount(null, q.getBaseTypeCode());
-                        e.setTwoCount(aLong);
-                        e.setThreeCount(aLong1);
+                        Long aLong3 = sparePartStockMapper.sparePartCount(null, q.getBaseTypeCode());
+                        e.setTwoCount(aLong2);
+                        e.setThreeCount(aLong3);
                     });
                     e.setMaterialBaseTypeList(collect);
                 }
