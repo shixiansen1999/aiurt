@@ -30,6 +30,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.shiro.SecurityUtils;
+import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.exception.JeecgBootException;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.DictModel;
@@ -339,11 +340,14 @@ public class BdTrainPlanServiceImpl extends ServiceImpl<BdTrainPlanMapper, BdTra
      */
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public void yearPlanSave(BdTrainPlan bdTrainPlan) {
+    public Result<?> yearPlanSave(BdTrainPlan bdTrainPlan) {
         //保存年计划
         bdTrainPlan.setState(0);
         //通过部门名称获取部门id
         String departId = baseMapper.getDepartIdByDeptName(bdTrainPlan.getDeptName());
+        if (StrUtil.isEmpty(departId)) {
+            return Result.error("不存在"+bdTrainPlan.getDeptName()+"该部门");
+        }
         bdTrainPlan.setDeptId(departId);
         baseMapper.insert(bdTrainPlan);
         String id = bdTrainPlan.getId();
@@ -358,13 +362,16 @@ public class BdTrainPlanServiceImpl extends ServiceImpl<BdTrainPlanMapper, BdTra
                     bdTrainPlanSub.setClassify(Integer.parseInt(collect.get("安全类")));
                 } else if ("制度类".equals(bdTrainPlanSub.getClassifyName())) {
                     bdTrainPlanSub.setClassify(Integer.parseInt(collect.get("制度类")));
-                } else {
+                } else if ("技能类".equals(bdTrainPlanSub.getClassifyName())) {
                     bdTrainPlanSub.setClassify(Integer.parseInt(collect.get("技能类")));
+                } else {
+                    return Result.error("不存在"+bdTrainPlanSub.getClassifyName()+"该分类");
                 }
                 bdTrainPlanSub.setPlanId(id);
                 bdTrainPlanSubMapper.insert(bdTrainPlanSub);
             }
         }
+        return Result.OK("保存成功！");
     }
 
     /**

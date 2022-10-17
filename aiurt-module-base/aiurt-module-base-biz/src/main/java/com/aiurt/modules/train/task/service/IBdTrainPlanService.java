@@ -1,13 +1,12 @@
 package com.aiurt.modules.train.task.service;
 
 
+import com.aiurt.modules.train.task.entity.BdTrainPlan;
+import com.aiurt.modules.train.task.vo.*;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
-import org.apache.ibatis.annotations.Param;
-import org.apache.poi.hssf.usermodel.HSSFWorkbook;
-import com.aiurt.modules.train.task.entity.BdTrainPlan;
-import com.aiurt.modules.train.task.vo.*;
+import org.jeecg.common.api.vo.Result;
 import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
@@ -76,7 +75,7 @@ public interface IBdTrainPlanService extends IService<BdTrainPlan> {
      * 培训年计划保存
      * @param bdTrainPlan
      */
-    void yearPlanSave(BdTrainPlan bdTrainPlan);
+    Result<?> yearPlanSave(BdTrainPlan bdTrainPlan);
 
     /**
      * 培训复核管理-复核

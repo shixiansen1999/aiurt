@@ -19,7 +19,6 @@ import org.hibernate.validator.constraints.Length;
 import org.jeecgframework.poi.excel.annotation.Excel;
 import org.springframework.format.annotation.DateTimeFormat;
 
-import javax.validation.constraints.Digits;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
@@ -344,5 +343,13 @@ public class Fault extends DictEntity implements Serializable {
     @ApiModelProperty(value = "班主负责人")
     @TableField(exist = false)
     private String orgChargeName;
+
+    @ApiModelProperty(value = "是否存在故障分析")
+    @TableField(exist = false)
+    private Boolean isFaultAnalysisReport;
+
+    @ApiModelProperty(value = "是否存在故障知识库")
+    @TableField(exist = false)
+    private Boolean isFaultKnowledgeBase;
 
 }
