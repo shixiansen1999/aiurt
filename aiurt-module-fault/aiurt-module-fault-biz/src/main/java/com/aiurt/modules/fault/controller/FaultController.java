@@ -1,6 +1,5 @@
 package com.aiurt.modules.fault.controller;
 
-import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.aspect.annotation.AutoLog;
@@ -176,9 +175,9 @@ public class FaultController extends BaseController<Fault, IFaultService> {
             Long count = faultRepairRecordService.getBaseMapper().selectCount(lambdaQueryWrapper);
             fault1.setSignAgainFlag(count>0?1:0);
 
-            //判断是否已经进行过故障分析和故障知识库 true为没有 false为有
-            fault1.setIsFaultAnalysisReport(true);
-            fault1.setIsFaultKnowledgeBase(true);
+            //判断是否已经进行过故障分析和故障知识库
+            fault1.setIsFaultAnalysisReport(false);
+            fault1.setIsFaultKnowledgeBase(false);
             String code = fault1.getCode();
             LambdaQueryWrapper<FaultAnalysisReport> faultAnalysisReportWrapper = new LambdaQueryWrapper<>();
             faultAnalysisReportWrapper.eq(FaultAnalysisReport::getFaultCode, code);
@@ -186,20 +185,19 @@ public class FaultController extends BaseController<Fault, IFaultService> {
             FaultAnalysisReport faultAnalysisReport = faultAnalysisReportService.getBaseMapper().selectOne(faultAnalysisReportWrapper);
             //如果存在故障分析则返回true
             if (ObjectUtil.isNotNull(faultAnalysisReport)) {
-                fault1.setIsFaultAnalysisReport(false);
+                fault1.setIsFaultAnalysisReport(true);
                 if (StrUtil.isNotEmpty(faultAnalysisReport.getFaultKnowledgeBaseId())) {
-                    //如果故障分析有同步到知识库则返回false
-                    fault1.setIsFaultKnowledgeBase(false);
-                } else {
-                    LambdaQueryWrapper<FaultKnowledgeBase> faultKnowledgeBaseWrapper = new LambdaQueryWrapper<>();
-                    faultKnowledgeBaseWrapper.like(FaultKnowledgeBase::getFaultCodes, code);
-                    faultKnowledgeBaseWrapper.eq(FaultKnowledgeBase::getDelFlag, 0);
-                    List<FaultKnowledgeBase> faultKnowledgeBases = faultKnowledgeBaseService.getBaseMapper().selectList(faultKnowledgeBaseWrapper);
-                    //如果存在知识库，则返回false
-                    if (CollUtil.isNotEmpty(faultKnowledgeBases)) {
-                        fault1.setIsFaultKnowledgeBase(false);
-                    }
+                    //如果故障分析有同步到知识库则返回true
+                    fault1.setIsFaultKnowledgeBase(true);
                 }
+            }
+            LambdaQueryWrapper<FaultKnowledgeBase> faultKnowledgeBaseWrapper = new LambdaQueryWrapper<>();
+            faultKnowledgeBaseWrapper.like(FaultKnowledgeBase::getFaultCodes, code);
+            faultKnowledgeBaseWrapper.eq(FaultKnowledgeBase::getDelFlag, 0);
+            FaultKnowledgeBase faultKnowledgeBase = faultKnowledgeBaseService.getBaseMapper().selectOne(faultKnowledgeBaseWrapper);
+            //如果存在知识库，则返回true
+            if (ObjectUtil.isNotNull(faultKnowledgeBase)) {
+                fault1.setIsFaultKnowledgeBase(true);
             }
         });
 
