@@ -17,4 +17,30 @@
         and cus.user_id = #{id}
     </if>
 </select>
+    <select id="selectByUserId" resultType="java.lang.String">
+    select  s.system_code from cs_user_subsystem csu
+    left join cs_subsystem s on csu.system_id = s.id
+    where  s.del_flag =0 and csu.user_id = #{id}
+    </select>
+    <select id="getSubsystemFaultDTO" resultType="com.aiurt.modules.subsystem.dto.SubsystemFaultDTO">
+    SELECT s.system_code, s.system_name,aaa.* FROM
+    (SELECT
+    COUNT(fa.id and fl.weight >8 or not null) as seriousFaultNum,
+    COUNT(fa.id and fl.weight &lt; 7 or not null) as commonFaultNum,
+    ifnull(sum(TIMESTAMPDIFF(second,IFNULL(fr.recevice_time,fr.assign_time),fr.end_time))-sum(IFNUll(op.hang_up_time,0)),0) as num
+    FROM cs_subsystem ss
+    LEFT JOIN fault fa on fa.sub_system_code = ss.system_code
+    LEFT JOIN fault_level fl on fa.fault_level = fl.`code` and fl.del_flag = 0
+    left join fault_repair_record  fr on fa.code = fr.fault_code and fr.del_flag = 0
+    LEFT JOIN operation_process op ON op.fault_code = fr.fault_code
+    WHERE
+    ss.del_flag =0
+    AND ss.system_code = #{subsystemCode}
+    AND date_format(fa.approval_pass_time ,'%Y-%m') = date_format( #{time},'%Y-%m') ) as aaa , cs_subsystem s
+    WHERE  s.del_flag =0
+    AND s.system_code = #{subsystemCode}
+    </select>
+    <select id="getSubsystemByDeviceType" resultType="java.lang.String">
+
+    </select>
 </mapper>

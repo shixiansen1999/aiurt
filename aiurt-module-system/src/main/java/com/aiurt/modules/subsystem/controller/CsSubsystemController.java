@@ -5,6 +5,7 @@ import java.util.stream.Collectors;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
+import com.aiurt.boot.report.model.FailureReport;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.aspect.annotation.PermissionData;
 import com.aiurt.common.constant.CommonConstant;
@@ -15,6 +16,7 @@ import com.aiurt.modules.major.service.ICsMajorService;
 import com.aiurt.modules.material.entity.MaterialBaseType;
 import com.aiurt.modules.material.service.IMaterialBaseTypeService;
 import com.aiurt.modules.position.entity.CsStation;
+import com.aiurt.modules.subsystem.dto.SubsystemFaultDTO;
 import com.aiurt.modules.subsystem.entity.CsSubsystem;
 import com.aiurt.modules.subsystem.entity.CsSubsystemUser;
 import com.aiurt.modules.subsystem.mapper.CsSubsystemUserMapper;
@@ -22,6 +24,7 @@ import com.aiurt.modules.subsystem.service.ICsSubsystemService;
 import com.aiurt.modules.system.service.ISysUserService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
@@ -34,8 +37,10 @@ import org.springframework.web.bind.annotation.*;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 
+import javax.servlet.http.HttpServletRequest;
 
- /**
+
+/**
  * @Description: cs_subsystem
  * @Author: jeecg-boot
  * @Date:   2022-06-21
@@ -266,4 +271,23 @@ public class CsSubsystemController  {
 	 }
 
 
+
+	 /**
+	  * 故障报表-子系统分析
+	  * @param
+	  * @return
+	  */
+	 //@AutoLog(value = "查询",operateType = 1,operateTypeAlias = "根据专业查子系统",permissionUrl = "/subsystem/list")
+	 @ApiOperation(value="故障报表-子系统分析", notes="故障报表-子系统分析")
+	 @GetMapping(value = "/csSubsystemFault")
+	 public Result<IPage<SubsystemFaultDTO>> queryCsSubsystemFault(@RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
+																   @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
+																   @RequestParam(name = "subsystemCode",required = false) String subsystemCode,
+																   @RequestParam(name = "deviceTypeCode",required = false) List<String> deviceTypeCode,
+																   @RequestParam(name = "time",required = false) String time,
+																   HttpServletRequest req) {
+		 Page<SubsystemFaultDTO> page = new Page<SubsystemFaultDTO>(pageNo, pageSize);
+		 IPage<SubsystemFaultDTO> pages = csSubsystemService.getSubsystemFailureReport(page,time,subsystemCode,deviceTypeCode);
+		 return Result.ok(pages);
+	 }
 }

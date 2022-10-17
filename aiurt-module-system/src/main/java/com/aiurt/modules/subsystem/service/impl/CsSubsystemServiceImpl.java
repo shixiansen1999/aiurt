@@ -2,23 +2,34 @@ package com.aiurt.modules.subsystem.service.impl;
 
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.modules.position.entity.CsLine;
+import com.aiurt.modules.subsystem.dto.SubsystemFaultDTO;
 import com.aiurt.modules.subsystem.entity.CsSubsystem;
 import com.aiurt.modules.subsystem.entity.CsSubsystemUser;
 import com.aiurt.modules.subsystem.mapper.CsSubsystemMapper;
 import com.aiurt.modules.subsystem.mapper.CsSubsystemUserMapper;
 import com.aiurt.modules.subsystem.service.ICsSubsystemService;
 import com.aiurt.modules.system.entity.SysUser;
+import com.aiurt.modules.system.mapper.CsUserSubsystemMapper;
 import com.aiurt.modules.system.service.ISysUserService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import liquibase.pro.packaged.L;
+import org.apache.commons.lang.StringUtils;
+import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
+import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * @Description: cs_subsystem
@@ -34,6 +45,8 @@ public class CsSubsystemServiceImpl extends ServiceImpl<CsSubsystemMapper, CsSub
     private CsSubsystemUserMapper csSubsystemUserMapper;
     @Autowired
     private ISysUserService sysUserService;
+    @Autowired
+    private CsUserSubsystemMapper csUserSubsystemMapper;
     /**
      * 添加
      *
@@ -100,6 +113,26 @@ public class CsSubsystemServiceImpl extends ServiceImpl<CsSubsystemMapper, CsSub
         insertSystemUser(csSubsystem);
         return Result.OK("编辑成功！");
     }
+
+    @Override
+    public Page<SubsystemFaultDTO> getSubsystemFailureReport(Page<?> page, String time, String subsystemCode, List<String> deviceTypeCode) {
+        LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        List<String> subSystemCodes = new ArrayList<>();
+        if (StringUtils.isNotEmpty(subsystemCode)){
+            subSystemCodes.add(subsystemCode);
+        }else {
+            subSystemCodes = csUserSubsystemMapper.selectByUserId(sysUser.getId());
+        }
+        List<SubsystemFaultDTO> subsystemFaultDTOS = new ArrayList<>();
+        subSystemCodes.forEach(s -> {
+            SubsystemFaultDTO subDTO = csUserSubsystemMapper.getSubsystemFaultDTO(time,s);
+            subDTO.setFailureDuration(new BigDecimal((1.0 * ( subDTO.getNum()) / 3600)).setScale(2, BigDecimal.ROUND_HALF_UP));
+            List<String> list = csUserSubsystemMapper.getSubsystemByDeviceType(time,s,deviceTypeCode);
+
+        });
+        return null;
+    }
+
     public void insertSystemUser(CsSubsystem csSubsystem){
         if(null!=csSubsystem.getSystemUserList()){
             String[] arr = csSubsystem.getSystemUserList().split(",");
