@@ -1,5 +1,6 @@
 package com.aiurt.modules.fault.controller;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.aspect.annotation.AutoLog;
@@ -189,15 +190,16 @@ public class FaultController extends BaseController<Fault, IFaultService> {
                 if (StrUtil.isNotEmpty(faultAnalysisReport.getFaultKnowledgeBaseId())) {
                     //如果故障分析有同步到知识库则返回true
                     fault1.setIsFaultKnowledgeBase(true);
+                } else {
+                    LambdaQueryWrapper<FaultKnowledgeBase> faultKnowledgeBaseWrapper = new LambdaQueryWrapper<>();
+                    faultKnowledgeBaseWrapper.like(FaultKnowledgeBase::getFaultCodes, code);
+                    faultKnowledgeBaseWrapper.eq(FaultKnowledgeBase::getDelFlag, 0);
+                    List<FaultKnowledgeBase> faultKnowledgeBases = faultKnowledgeBaseService.getBaseMapper().selectList(faultKnowledgeBaseWrapper);
+                    //如果存在知识库，则返回true
+                    if (CollUtil.isNotEmpty(faultKnowledgeBases)) {
+                        fault1.setIsFaultKnowledgeBase(true);
+                    }
                 }
-            }
-            LambdaQueryWrapper<FaultKnowledgeBase> faultKnowledgeBaseWrapper = new LambdaQueryWrapper<>();
-            faultKnowledgeBaseWrapper.like(FaultKnowledgeBase::getFaultCodes, code);
-            faultKnowledgeBaseWrapper.eq(FaultKnowledgeBase::getDelFlag, 0);
-            FaultKnowledgeBase faultKnowledgeBase = faultKnowledgeBaseService.getBaseMapper().selectOne(faultKnowledgeBaseWrapper);
-            //如果存在知识库，则返回true
-            if (ObjectUtil.isNotNull(faultKnowledgeBase)) {
-                fault1.setIsFaultKnowledgeBase(true);
             }
         });
 
