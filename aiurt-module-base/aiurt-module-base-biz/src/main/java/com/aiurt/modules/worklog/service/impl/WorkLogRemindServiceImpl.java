@@ -129,7 +129,7 @@ public class WorkLogRemindServiceImpl extends ServiceImpl<WorkLogRemindMapper, W
     }
 
     @Override
-    public List<ScheduleRecord> getOrgUserTodayWork(String dateNow, String orgId) {
+    public List<ScheduleRecord>     getOrgUserTodayWork(String dateNow, String orgId) {
         List<ScheduleRecord> userName = workLogRemindMapper.getOrgUserTodayWork(dateNow,orgId);
         return userName;
     }

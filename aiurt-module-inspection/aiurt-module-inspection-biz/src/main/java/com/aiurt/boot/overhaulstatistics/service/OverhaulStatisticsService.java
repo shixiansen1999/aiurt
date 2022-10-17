@@ -267,7 +267,7 @@ public class OverhaulStatisticsService{
         } else {
             List<OverhaulStatisticsDTOS> list = new ArrayList<>();
             for (OverhaulStatisticsDTOS model : lacerations) {
-                if (model.getOrgCategory().equals("3") || model.getOrgCategory().equals("4") || model.getOrgCategory().equals("5")) {
+                if ("3".equals(model.getOrgCategory()) || "4".equals(model.getOrgCategory()) || "5".equals(model.getOrgCategory())) {
                     list.add(model);
                     List<OverhaulStatisticsDTOS> models = repairTaskMapper.getUserOrgCategory(model.getOrgId());
                     if (CollUtil.isNotEmpty(models)) {

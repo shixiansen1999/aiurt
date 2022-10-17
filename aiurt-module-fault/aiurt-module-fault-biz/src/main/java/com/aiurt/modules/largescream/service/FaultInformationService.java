@@ -259,12 +259,11 @@ public class FaultInformationService {
      */
     public List<FaultMonthTimeDTO> getLargeFaultTime(String lineCode){
         List<FaultMonthTimeDTO> monthList = new ArrayList<>();
-
         //获取当前登录人的专业编码
         List<String> majors = getCurrentLoginUserMajors();
-
         for (int i = 0; i<=5; i++) {
-            int sum = 0;
+            double sum = 0;
+            double monthTime = 0;
             //创建一个新的系统故障单集合
             List<FaultSystemTimeDTO> systemlist = new ArrayList<>();
             //月份故障单
@@ -277,15 +276,21 @@ public class FaultInformationService {
             //查询按系统分类好的并计算了故障消耗总时长的记录
             List<FaultSystemTimeDTO> largeFaultTime = faultInformationMapper.getLargeFaultTime(month, lineCode,majors);
                 for (FaultSystemTimeDTO faultSystemTimeDTO : largeFaultTime) {
+                    Double d =null;
                     if (!"0".equals(faultSystemTimeDTO.getRepairTime()) && faultSystemTimeDTO.getRepairTime() != null) {
-                        sum += Integer.parseInt(faultSystemTimeDTO.getRepairTime());
+                       d = new BigDecimal(Double.valueOf(faultSystemTimeDTO.getRepairTime()) /60).setScale(1, BigDecimal.ROUND_HALF_UP).doubleValue();
+                       sum+=d;
+                       monthTime = new BigDecimal(sum).setScale(1, BigDecimal.ROUND_HALF_UP).doubleValue();
                     }
                     //将故障处理时间为null的改为0
                     if (faultSystemTimeDTO.getRepairTime() == null) {
                         faultSystemTimeDTO.setRepairTime("0");
                     }
                     //将故障处理时间+H
-                    String h = faultSystemTimeDTO.getRepairTime() + "H";
+                    if(d == null){
+                        d=0.0;
+                    }
+                    String h = d + "H";
                     faultSystemTimeDTO.setRepairTime(h);
                     //将名字改成系统+小时数
                     if(ObjectUtil.isNotEmpty(faultSystemTimeDTO.getSystemName())) {
@@ -294,7 +299,7 @@ public class FaultInformationService {
                         faultSystemTimeDTO.setSystemName(name);
                     }
                     //将月份内的所有故障处理时间求和
-                    faultMonthTimeDTO.setMonthTime(String.valueOf(sum));
+                    faultMonthTimeDTO.setMonthTime(String.valueOf(monthTime));
                     systemlist.add(faultSystemTimeDTO);
                 }
                 faultMonthTimeDTO.setSysTimeList(systemlist);
