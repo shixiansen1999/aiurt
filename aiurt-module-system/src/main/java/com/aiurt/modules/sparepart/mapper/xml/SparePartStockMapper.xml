@@ -69,4 +69,56 @@
         </if>
         order by spare_part_stock.create_time desc
     </select>
+
+    <select id="stockCount" resultType="java.lang.Long">
+		SELECT
+			  SUM(stock_level2.num) as sum
+        FROM
+        stock_level2 stock_level2
+        LEFT JOIN stock_level2_info stock_level2i ON stock_level2.warehouse_code = stock_level2i.warehouse_code
+        LEFT JOIN material_base t2 ON stock_level2.material_code = t2.CODE
+        LEFT JOIN cs_major cs_major ON t2.major_code = cs_major.major_code
+        LEFT JOIN cs_subsystem cs_subsystem ON t2.system_code = cs_subsystem.system_code
+        LEFT JOIN material_base_type t5 ON t2.base_type_code = t5.base_type_code
+        <where>
+            stock_level2.del_flag =0
+            <if test="systemCode != null">
+                and cs_subsystem.system_code = #{systemCode}
+            </if>
+            <if test="baseTypeCode != null">
+                and t5.base_type_code = #{baseTypeCode}
+            </if>
+        </where>
+    </select>
+
+    <select id="sparePartCount" resultType="java.lang.Long">
+        SELECT
+			  SUM(spare_part_stock.num) as sum
+        FROM
+        spare_part_stock spare_part_stock
+        LEFT JOIN spare_part_stock_info t1 ON spare_part_stock.warehouse_code = t1.warehouse_code
+        LEFT JOIN material_base t2 ON spare_part_stock.material_code = t2.CODE
+        LEFT JOIN cs_major cs_major ON t2.major_code = cs_major.major_code
+        LEFT JOIN cs_subsystem cs_subsystem ON t2.system_code = cs_subsystem.system_code
+        LEFT JOIN material_base_type t5 ON t2.base_type_code = t5.base_type_code
+        <where>
+            spare_part_stock.del_flag =0
+            <if test="systemCode != null">
+                and cs_subsystem.system_code = #{systemCode}
+            </if>
+            <if test="baseTypeCode != null">
+                and t5.base_type_code = #{baseTypeCode}
+            </if>
+        </where>
+    </select>
+
+    <select id="getSubsystemByUserId" resultType="com.aiurt.modules.sparepart.entity.dto.SparePartStatistics">
+        select cs.system_code as systemCode,cs.system_name as systemName
+        from cs_user_subsystem cus
+        left join cs_subsystem cs on cs.id = cus.system_id
+        where cs.del_flag = 0
+        <if test="id != null and id != ''">
+            and cus.user_id = #{id}
+        </if>
+    </select>
 </mapper>

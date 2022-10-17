@@ -130,6 +130,10 @@ public class MaterialBaseType {
 	@TableField(exist = false)
 	private String byType = "wzfl";
 
+	@ApiModelProperty(value = "数量")
+	@TableField(exist = false)
+	private Long count;
+
 	@ApiModelProperty(value = "父级状态")
 	@TableField(exist = false)
 	private String pStatus ;

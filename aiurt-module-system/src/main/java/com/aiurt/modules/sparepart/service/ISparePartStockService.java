@@ -2,6 +2,7 @@ package com.aiurt.modules.sparepart.service;
 
 import com.aiurt.modules.sparepart.entity.SparePartInOrder;
 import com.aiurt.modules.sparepart.entity.SparePartStock;
+import com.aiurt.modules.sparepart.entity.dto.SparePartStatistics;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 
@@ -28,4 +29,12 @@ public interface ISparePartStockService extends IService<SparePartStock> {
      * @return
      */
     List<SparePartStock> selectLendList(Page page, SparePartStock sparePartStock);
+
+    /**
+     * 备件统计
+     * @param page
+     * @param sparePartStatistics
+     * @return
+     */
+    List<SparePartStatistics> selectSparePartStatistics(Page page, SparePartStatistics sparePartStatistics);
 }
