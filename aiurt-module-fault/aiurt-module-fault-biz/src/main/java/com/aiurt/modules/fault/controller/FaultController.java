@@ -1,5 +1,6 @@
 package com.aiurt.modules.fault.controller;
 
+import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.aspect.annotation.PermissionData;
@@ -13,7 +14,10 @@ import com.aiurt.modules.fault.entity.FaultRepairRecord;
 import com.aiurt.modules.fault.service.IFaultDeviceService;
 import com.aiurt.modules.fault.service.IFaultRepairRecordService;
 import com.aiurt.modules.fault.service.IFaultService;
+import com.aiurt.modules.faultanalysisreport.entity.FaultAnalysisReport;
+import com.aiurt.modules.faultanalysisreport.service.IFaultAnalysisReportService;
 import com.aiurt.modules.faultknowledgebase.entity.FaultKnowledgeBase;
+import com.aiurt.modules.faultknowledgebase.service.IFaultKnowledgeBaseService;
 import com.aiurt.modules.faultlevel.entity.FaultLevel;
 import com.aiurt.modules.faultlevel.service.IFaultLevelService;
 import com.alibaba.fastjson.JSONObject;
@@ -22,7 +26,6 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.annotations.*;
-import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.annotations.Param;
 import org.jeecg.common.api.vo.Result;
@@ -68,6 +71,11 @@ public class FaultController extends BaseController<Fault, IFaultService> {
     @Autowired
     private ISysBaseAPI sysBaseAPI;
 
+    @Autowired
+    private IFaultAnalysisReportService faultAnalysisReportService;
+
+    @Autowired
+    private IFaultKnowledgeBaseService faultKnowledgeBaseService;
     /**
      * 分页列表查询
      *
@@ -166,6 +174,31 @@ public class FaultController extends BaseController<Fault, IFaultService> {
             lambdaQueryWrapper.eq(FaultRepairRecord::getFaultCode, fault1.getCode());
             Long count = faultRepairRecordService.getBaseMapper().selectCount(lambdaQueryWrapper);
             fault1.setSignAgainFlag(count>0?1:0);
+
+            //判断是否已经进行过故障分析和故障知识库
+            fault1.setIsFaultAnalysisReport(false);
+            fault1.setIsFaultKnowledgeBase(false);
+            String code = fault1.getCode();
+            LambdaQueryWrapper<FaultAnalysisReport> faultAnalysisReportWrapper = new LambdaQueryWrapper<>();
+            faultAnalysisReportWrapper.eq(FaultAnalysisReport::getFaultCode, code);
+            faultAnalysisReportWrapper.eq(FaultAnalysisReport::getDelFlag, 0);
+            FaultAnalysisReport faultAnalysisReport = faultAnalysisReportService.getBaseMapper().selectOne(faultAnalysisReportWrapper);
+            //如果存在故障分析则返回true
+            if (ObjectUtil.isNotNull(faultAnalysisReport)) {
+                fault1.setIsFaultAnalysisReport(true);
+                if (StrUtil.isNotEmpty(faultAnalysisReport.getFaultKnowledgeBaseId())) {
+                    //如果故障分析有同步到知识库则返回true
+                    fault1.setIsFaultKnowledgeBase(true);
+                }
+            }
+            LambdaQueryWrapper<FaultKnowledgeBase> faultKnowledgeBaseWrapper = new LambdaQueryWrapper<>();
+            faultKnowledgeBaseWrapper.like(FaultKnowledgeBase::getFaultCodes, code);
+            faultKnowledgeBaseWrapper.eq(FaultKnowledgeBase::getDelFlag, 0);
+            FaultKnowledgeBase faultKnowledgeBase = faultKnowledgeBaseService.getBaseMapper().selectOne(faultKnowledgeBaseWrapper);
+            //如果存在知识库，则返回true
+            if (ObjectUtil.isNotNull(faultKnowledgeBase)) {
+                fault1.setIsFaultKnowledgeBase(true);
+            }
         });
 
         // todo 优化排序

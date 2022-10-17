@@ -297,8 +297,7 @@ public class BdTrainPlanController extends BaseController<BdTrainPlan, IBdTrainP
             @ApiResponse(code = 200, message = "OK", response = BdTrainPlan.class)
     })
     public Result<?> yearPlanSave(@RequestBody BdTrainPlan bdTrainPlan) {
-        bdTrainPlanService.yearPlanSave(bdTrainPlan);
-        return Result.OK("保存成功！");
+        return bdTrainPlanService.yearPlanSave(bdTrainPlan);
     }
 
     /**
