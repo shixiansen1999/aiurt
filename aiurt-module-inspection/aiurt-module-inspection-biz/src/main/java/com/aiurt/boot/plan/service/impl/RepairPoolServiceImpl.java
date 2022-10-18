@@ -1,6 +1,7 @@
 package com.aiurt.boot.plan.service.impl;
 
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
@@ -30,6 +31,8 @@ import com.aiurt.common.exception.AiurtNoDataException;
 import com.aiurt.common.util.DateUtils;
 import com.aiurt.common.util.UpdateHelperUtils;
 import com.aiurt.config.datafilter.object.GlobalThreadLocal;
+import com.aiurt.modules.common.api.IBaseApi;
+import com.aiurt.modules.schedule.dto.SysUserTeamDTO;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -37,8 +40,10 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import lombok.SneakyThrows;
+import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
+import org.jeecg.common.system.vo.CsUserDepartModel;
 import org.jeecg.common.system.vo.LoginUser;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
@@ -63,6 +68,8 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
 
     @Resource
     private ISysBaseAPI sysBaseApi;
+    @Resource
+    private IBaseApi baseApi;
     @Resource
     private InspectionManager manager;
     @Resource
@@ -859,8 +866,18 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
      */
     @Override
     public List<LoginUser> queryUserList(String code) {
+        LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        if (ObjectUtil.isEmpty(loginUser)) {
+            throw new AiurtBootException("检测到未登录系统，请登录后操作！");
+        }
         List<LoginUser> resutlt = new ArrayList<>();
         if (StrUtil.isEmpty(code)) {
+            return resutlt;
+        }
+        // 获取当前登录人的部门权限
+        List<CsUserDepartModel> departList = sysBaseApi.getDepartByUserId(loginUser.getId());
+        List<String> userOrgCodes = departList.stream().map(CsUserDepartModel::getOrgCode).collect(Collectors.toList());
+        if (CollectionUtil.isEmpty(userOrgCodes)) {
             return resutlt;
         }
         // 当前计划关联的组织机构里的人员
@@ -872,6 +889,19 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
         if (CollUtil.isNotEmpty(repairPoolOrgRels)) {
             List<String> orgCodes = repairPoolOrgRels.stream().map(RepairPoolOrgRel::getOrgCode).collect(Collectors.toList());
             resutlt = sysBaseApi.getUserByDepIds(manager.handleMixedOrgCode(orgCodes));
+            // 当前登录人的部门权限和任务的组织机构交集
+            List<String> intersectOrg = CollectionUtil.intersection(userOrgCodes, orgCodes).stream().collect(Collectors.toList());
+            if (CollectionUtil.isEmpty(intersectOrg)) {
+                return resutlt;
+            }
+            // 获取今日当班人员信息
+            List<SysUserTeamDTO> todayOndutyDetail = baseApi.getTodayOndutyDetailNoPage(intersectOrg, new Date());
+            if (CollectionUtil.isEmpty(todayOndutyDetail)) {
+                return resutlt;
+            }
+            List<String> userIds = todayOndutyDetail.stream().map(SysUserTeamDTO::getUserId).collect(Collectors.toList());
+            // 过滤仅在今日当班的待指派人员
+            resutlt = resutlt.stream().filter(l -> userIds.contains(l.getId())).collect(Collectors.toList());
         }
         return resutlt;
     }

@@ -22,7 +22,9 @@ import com.aiurt.boot.task.service.IPatrolTaskService;
 import com.aiurt.boot.utils.PatrolCodeUtil;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.exception.AiurtBootException;
+import com.aiurt.modules.common.api.IBaseApi;
 import com.aiurt.modules.device.entity.Device;
+import com.aiurt.modules.schedule.dto.SysUserTeamDTO;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
@@ -80,6 +82,8 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
     private PatrolManager manager;
     @Autowired
     private ISysBaseAPI sysBaseAPI;
+    @Autowired
+    private IBaseApi baseApi;
 
     @Override
     public IPage<PatrolTaskParam> getTaskList(Page<PatrolTaskParam> page, PatrolTaskParam patrolTaskParam) {
@@ -260,8 +264,8 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
 
         }
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-         List<CsUserDepartModel> userDepartModelList = sysBaseAPI.getDepartByUserId(sysUser.getId());
-         List<String> orgCodeList = userDepartModelList.stream().map(CsUserDepartModel::getOrgCode).collect(Collectors.toList());
+        List<CsUserDepartModel> userDepartModelList = sysBaseAPI.getDepartByUserId(sysUser.getId());
+        List<String> orgCodeList = userDepartModelList.stream().map(CsUserDepartModel::getOrgCode).collect(Collectors.toList());
         boolean admin = SecurityUtils.getSubject().hasRole("admin");
         if (!admin) {
             patrolTaskDTO.setUserHaveOrgCodeList(orgCodeList);
@@ -404,10 +408,10 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
     }
 
     @Override
-    public List<PatrolTaskUserDTO> getPatrolTaskAppointSelect(PatrolOrgDTO orgCoed) {
+    public List<PatrolTaskUserDTO> getPatrolTaskAppointSelect(PatrolOrgDTO orgCode) {
         //查询这个部门的信息人员,传组织机构ids
         List<PatrolTaskUserDTO> arrayList = new ArrayList<>();
-        for (String code : orgCoed.getOrg()) {
+        for (String code : orgCode.getOrg()) {
             PatrolTaskUserDTO userDTO = new PatrolTaskUserDTO();
             String organizationName = patrolTaskMapper.getOrgName(code);
             List<PatrolTaskUserContentDTO> user = patrolTaskMapper.getUser(code);
@@ -420,18 +424,36 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         if (ObjectUtil.isEmpty(loginUser)) {
             throw new AiurtBootException("检测为未登录状态，请登录系统后操作！");
         }
+
         // 获取当前登录人的部门权限
         List<CsUserDepartModel> departList = sysBaseAPI.getDepartByUserId(loginUser.getId());
         List<String> orgCodes = departList.stream().map(CsUserDepartModel::getOrgCode).collect(Collectors.toList());
         if (CollectionUtil.isEmpty(orgCodes)) {
             return new ArrayList<>();
         }
-//        // 过滤当前用户所在的组织机构数据
-//        arrayList = arrayList.stream().filter(l -> l.getOrgCode().equals(loginUser.getOrgCode())).collect(Collectors.toList());
-        // 根据当前登录人部门权限过滤指派人员
-        arrayList = arrayList.stream().filter(l -> orgCodes.contains(l.getOrgCode())).collect(Collectors.toList());
 
-        PatrolTask patrolTask = patrolTaskMapper.selectById(orgCoed.getTaskId());
+        // 当前登录人的部门权限和任务的组织机构交集
+        List<String> intersectOrg = CollectionUtil.intersection(orgCodes, orgCode.getOrg()).stream().collect(Collectors.toList());
+        if (CollectionUtil.isEmpty(intersectOrg)) {
+            return new ArrayList<>();
+        }
+
+        // 获取今日当班的人员
+        List<SysUserTeamDTO> todayOndutyDetail = baseApi.getTodayOndutyDetailNoPage(intersectOrg, new Date());
+        List<String> todayUserId = todayOndutyDetail.stream().map(SysUserTeamDTO::getUserId).collect(Collectors.toList());
+        if (CollectionUtil.isEmpty(todayUserId)) {
+            return new ArrayList<>();
+        }
+        // 根据当班人员过滤待指派人员信息
+        arrayList.stream().forEach(l -> {
+            List<PatrolTaskUserContentDTO> userList = Optional.ofNullable(l.getUserList()).orElseGet(Collections::emptyList);
+            List<PatrolTaskUserContentDTO> newUserList = userList.stream()
+                    .filter(u -> todayUserId.contains(u.getId()))
+                    .collect(Collectors.toList());
+            l.setUserList(newUserList);
+        });
+
+        PatrolTask patrolTask = patrolTaskMapper.selectById(orgCode.getTaskId());
         if (PatrolConstant.TASK_RETURNED.equals(patrolTask.getStatus())) {
             return arrayList;
         }
@@ -446,7 +468,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
             });
             return arrayList;
         } else {
-            if (ObjectUtil.isNull(orgCoed.getIdentity())) {
+            if (ObjectUtil.isNull(orgCode.getIdentity())) {
                 arrayList.stream().forEach(e -> {
                     List<String> userIdList = patrolTaskUsers.stream().map(PatrolTaskUser::getUserId).collect(Collectors.toList());
                     List<PatrolTaskUserContentDTO> userList = e.getUserList();
@@ -772,16 +794,19 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         if (CollectionUtil.isEmpty(list)) {
             throw new AiurtBootException("任务编号的集合对象为空！");
         }
+
         // 获取当前登录人的部门权限
         List<CsUserDepartModel> departList = sysBaseAPI.getDepartByUserId(loginUser.getId());
-        List<String> orgCodes = departList.stream().map(CsUserDepartModel::getOrgCode).collect(Collectors.toList());
-        if (CollectionUtil.isEmpty(orgCodes)) {
+        List<String> loginUserOrgCodes = departList.stream().map(CsUserDepartModel::getOrgCode).collect(Collectors.toList());
+        if (CollectionUtil.isEmpty(loginUserOrgCodes)) {
             return new ArrayList<>();
         }
-        int size = list.size();
+
+        List<String> orgCode = patrolTaskOrganizationMapper.getOrgCode(list.get(0));
+
         // 获取批量指派时的用户 需要相同的组织机构
+        int size = list.size();
         if (size > 1) {
-            List<String> orgCode = patrolTaskOrganizationMapper.getOrgCode(list.get(0));
             for (int i = 1; i < size; i++) {
                 List<String> code = patrolTaskOrganizationMapper.getOrgCode(list.get(i));
                 boolean contains1 = orgCode.containsAll(code);
@@ -793,11 +818,47 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
                 }
             }
         }
+
+        // 获取今日当班的人员
+        List<SysUserTeamDTO> todayOndutyDetail = new ArrayList<>();
+        if (CollectionUtil.isNotEmpty(orgCode)) {
+            // 当前登录人的部门权限和任务的组织机构交集
+            List<String> intersectOrg = CollectionUtil.intersection(loginUserOrgCodes, orgCode).stream().collect(Collectors.toList());
+            if (CollectionUtil.isEmpty(intersectOrg)) {
+                return new ArrayList<>();
+            }
+            todayOndutyDetail = baseApi.getTodayOndutyDetailNoPage(intersectOrg, new Date());
+        }
+        if (CollectionUtil.isEmpty(todayOndutyDetail)) {
+            return new ArrayList<>();
+        }
+
         List<PatrolUserInfoDTO> userInfo = patrolTaskOrganizationMapper.getUserListByTaskCode(list.get(0));
 //        // 根据当前登录人所属部门过滤指派人员
 //        userInfo = userInfo.stream().filter(l -> l.getOrgCode().equals(loginUser.getOrgCode())).collect(Collectors.toList());
         // 根据当前登录人部门权限过滤指派人员
-        userInfo = userInfo.stream().filter(l -> orgCodes.contains(l.getOrgCode())).collect(Collectors.toList());
+        userInfo = userInfo.stream().filter(l -> loginUserOrgCodes.contains(l.getOrgCode())).collect(Collectors.toList());
+
+        // 今日当班的人员的用户id
+        List<String> todayUserId = todayOndutyDetail.stream().map(SysUserTeamDTO::getUserId).collect(Collectors.toList());
+        // 根据今日当班人员过滤指派人员
+        for (PatrolUserInfoDTO user : userInfo) {
+            if (ObjectUtil.isNotEmpty(user.getUserId())) {
+                String separator = ",";
+                String[] ids = StrUtil.split(user.getUserId(), separator);
+                String[] names = StrUtil.split(user.getUserName(), separator);
+                List<String> userId = new LinkedList<>();
+                List<String> userName = new LinkedList<>();
+                for (int i = 0; i < ids.length; i++) {
+                    if (todayUserId.contains(ids[i])) {
+                        userId.add(ids[i]);
+                        userName.add(names[i]);
+                    }
+                }
+                user.setUserId(userId.stream().collect(Collectors.joining(separator)));
+                user.setUserName(userName.stream().collect(Collectors.joining(separator)));
+            }
+        }
         return userInfo;
     }
 

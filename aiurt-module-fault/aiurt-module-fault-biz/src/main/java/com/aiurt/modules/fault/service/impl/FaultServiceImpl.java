@@ -3,12 +3,14 @@ package com.aiurt.modules.fault.service.impl;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateUnit;
 import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.boot.api.InspectionApi;
 import com.aiurt.boot.manager.dto.FaultCallbackDTO;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.modules.basic.entity.CsWork;
+import com.aiurt.modules.common.api.IBaseApi;
 import com.aiurt.modules.fault.dto.*;
 import com.aiurt.modules.fault.entity.*;
 import com.aiurt.modules.fault.enums.FaultStatusEnum;
@@ -17,6 +19,7 @@ import com.aiurt.modules.fault.service.*;
 import com.aiurt.modules.faultknowledgebase.entity.FaultKnowledgeBase;
 import com.aiurt.modules.faultlevel.entity.FaultLevel;
 import com.aiurt.modules.faultlevel.service.IFaultLevelService;
+import com.aiurt.modules.schedule.dto.SysUserTeamDTO;
 import com.aiurt.modules.sparepart.dto.DeviceChangeSparePartDTO;
 import com.aiurt.modules.sparepart.dto.SparePartMalfunctionDTO;
 import com.aiurt.modules.sparepart.dto.SparePartReplaceDTO;
@@ -69,6 +72,8 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
 
     @Autowired
     private ISysBaseAPI sysBaseAPI;
+    @Autowired
+    private IBaseApi baseApi;
 
     @Autowired
     private IDeviceChangeSparePartService sparePartService;
@@ -81,6 +86,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
 
     @Autowired
     private ISparePartBaseApi sparePartBaseApi;
+
     /**
      * 故障上报
      *
@@ -91,7 +97,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
     public String add(Fault fault) {
 
         LoginUser user = checkLogin();
-        log.info("故障上报：操作人员：[{}], 请求参数：{}",user.getRealname(), JSON.toJSONString(fault));
+        log.info("故障上报：操作人员：[{}], 请求参数：{}", user.getRealname(), JSON.toJSONString(fault));
         // 故障编号处理
         String majorCode = fault.getMajorCode();
         StringBuilder builder = new StringBuilder("WX");
@@ -125,13 +131,12 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
             repairRecordService.save(record);
 
             //todo 需要给班组长发送消息
-        }else {
+        } else {
             fault.setStatus(FaultStatusEnum.NEW_FAULT.getStatus());
         }
 
         // 保存故障
         save(fault);
-
 
 
         // 设置故障设备
@@ -222,7 +227,6 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
     }
 
 
-
     /**
      * 作废
      *
@@ -231,7 +235,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void cancel(CancelDTO cancelDTO) {
-        log.info("故障工单作废,请求参数：[{}]",JSON.toJSONString(cancelDTO));
+        log.info("故障工单作废,请求参数：[{}]", JSON.toJSONString(cancelDTO));
 
         LoginUser user = checkLogin();
 
@@ -248,7 +252,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         updateById(fault);
 
         // 记录日志
-        saveLog(user, FaultStatusEnum.CANCEL.getMessage(), fault.getCode(), FaultStatusEnum.CANCEL.getStatus(),cancelDTO.getCancelRemark());
+        saveLog(user, FaultStatusEnum.CANCEL.getMessage(), fault.getCode(), FaultStatusEnum.CANCEL.getStatus(), cancelDTO.getCancelRemark());
 
         // todo 发送消息提醒
     }
@@ -274,7 +278,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
             FaultLevel faultLevel = faultLevelService.getBaseMapper().selectOne(wrapper);
             if (Objects.isNull(faultLevel)) {
                 fault.setWeight(0);
-            }else {
+            } else {
                 String weight = faultLevel.getWeight();
                 if (StrUtil.isNotBlank(weight)) {
                     try {
@@ -282,12 +286,12 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
                     } catch (NumberFormatException e) {
                         fault.setWeight(0);
                     }
-                }else {
+                } else {
                     fault.setWeight(0);
                 }
             }
 
-        }else {
+        } else {
             fault.setWeight(0);
         }
 
@@ -348,10 +352,8 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
 
         // todo 发送消息
         // 日志记录
-        saveLog(user, "指派 " + loginUser.getRealname() , assignDTO.getFaultCode(), FaultStatusEnum.ASSIGN.getStatus(), null);
+        saveLog(user, "指派 " + loginUser.getRealname(), assignDTO.getFaultCode(), FaultStatusEnum.ASSIGN.getStatus(), null);
     }
-
-
 
 
     /**
@@ -437,6 +439,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
 
     /**
      * 拒绝接收指派
+     *
      * @param refuseAssignmentDTO
      */
     @Override
@@ -470,6 +473,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
 
     /**
      * 开始维修
+     *
      * @param code
      */
     @Override
@@ -497,9 +501,9 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
     }
 
 
-
     /**
      * 挂起申请
+     *
      * @param hangUpDTO
      */
     @Override
@@ -531,6 +535,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
 
     /**
      * 审批挂起
+     *
      * @param approvalHangUpDTO
      */
     @Override
@@ -554,7 +559,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
             fault.setStatus(FaultStatusEnum.REPAIR.getStatus());
             //todo
             fault.setApprovalRejection(approvalHangUpDTO.getApprovalRejection());
-            saveLog(user, "挂起审批驳回", approvalHangUpDTO.getFaultCode(), FaultStatusEnum.REPAIR.getStatus(),approvalHangUpDTO.getApprovalRejection());
+            saveLog(user, "挂起审批驳回", approvalHangUpDTO.getFaultCode(), FaultStatusEnum.REPAIR.getStatus(), approvalHangUpDTO.getApprovalRejection());
         }
 
         faultRepairRecord.setApprovalHangUpRemark(approvalHangUpDTO.getApprovalRejection());
@@ -573,6 +578,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
 
     /**
      * 取消挂起
+     *
      * @param code 故障编码
      */
     @Override
@@ -609,13 +615,14 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
                 .processPerson(loginUser.getUsername())
                 .processCode(status)
                 .remark(remark)
-                .hangUpTime(between==0?1:between)
+                .hangUpTime(between == 0 ? 1 : between)
                 .build();
         operationProcessService.save(operationProcess);
     }
 
     /**
      * 查询故障记录详情
+     *
      * @param faultCode 故障编码
      * @return
      */
@@ -632,7 +639,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         FaultRepairRecord repairRecord = repairRecordService.getBaseMapper().selectOne(wrapper);
 
         if (Objects.isNull(repairRecord)) {
-            throw  new AiurtBootException(20001, "没有该维修记录");
+            throw new AiurtBootException(20001, "没有该维修记录");
         }
 
         RepairRecordDTO repairRecordDTO = new RepairRecordDTO();
@@ -695,9 +702,9 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         repairRecordDTO.setKnowledgeId(fault.getKnowledgeId());
         String knowledgeBaseIds = fault.getKnowledgeBaseIds();
         List<String> split = StrUtil.split(knowledgeBaseIds, ',');
-        if(CollectionUtil.isEmpty(split)) {
+        if (CollectionUtil.isEmpty(split)) {
             repairRecordDTO.setTotal(0L);
-        }else {
+        } else {
             repairRecordDTO.setTotal((long) split.size());
         }
         return repairRecordDTO;
@@ -705,6 +712,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
 
     /**
      * 填写维修记录
+     *
      * @param repairRecordDTO 填写维修记录
      */
     @Override
@@ -792,13 +800,13 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
                 // 新增数据
                 if (StrUtil.isNotBlank(dtoId)) {
                     Integer mapNum = updateMap.getOrDefault(dtoId, 0);
-                    updateMap.put(outOrderId, mapNum+newSparePartNum);
-                }else {
+                    updateMap.put(outOrderId, mapNum + newSparePartNum);
+                } else {
                     // 修改数据
                     String key = String.format("%s_%s_%s", dtoId, outOrderId, newSparePartCode);
                     Integer orignNum = map.getOrDefault(key, 0);
                     Integer mapNum = updateMap.getOrDefault(outOrderId, 0);
-                    updateMap.put(outOrderId, (newSparePartNum-orignNum)+mapNum);
+                    updateMap.put(outOrderId, (newSparePartNum - orignNum) + mapNum);
                 }
 
                 DeviceChangeSparePart build = DeviceChangeSparePart.builder()
@@ -822,13 +830,13 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
             Set<String> set = sparePartMap.keySet();
             set.removeAll(recordIdSet);
             if (CollectionUtil.isNotEmpty(set)) {
-                set.stream().forEach(id->{
+                set.stream().forEach(id -> {
                     DeviceChangeSparePart deviceChangeSparePart = sparePartMap.get(id);
                     if (Objects.nonNull(deviceChangeSparePart)) {
                         String outOrderId = deviceChangeSparePart.getOutOrderId();
                         Integer num = Optional.ofNullable(deviceChangeSparePart.getNewSparePartNum()).orElse(0);
                         Integer mapNum = updateMap.getOrDefault(outOrderId, 0);
-                        updateMap.put(outOrderId, mapNum+(0-num));
+                        updateMap.put(outOrderId, mapNum + (0 - num));
                     }
                 });
             }
@@ -840,13 +848,13 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
             // 更新备件更换记录
             sparePartService.saveOrUpdateBatch(sparePartList);
             //
-        }else {
+        } else {
             oneSourceList.stream().forEach(deviceChangeSparePart -> {
                 String id = deviceChangeSparePart.getOutOrderId();
                 Integer newSparePartNum = deviceChangeSparePart.getNewSparePartNum();
                 Integer mapNum = updateMap.getOrDefault(id, 0);
-                if (Objects.nonNull(newSparePartNum )) {
-                    updateMap.put(id, mapNum+(0-newSparePartNum));
+                if (Objects.nonNull(newSparePartNum)) {
+                    updateMap.put(id, mapNum + (0 - newSparePartNum));
                 }
             });
             // s
@@ -912,6 +920,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
 
     /**
      * 审核结果
+     *
      * @param resultDTO 审核结果对象
      */
     @Override
@@ -934,7 +943,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
             LambdaQueryWrapper<DeviceChangeSparePart> dataWrapper = new LambdaQueryWrapper<>();
             dataWrapper.eq(DeviceChangeSparePart::getCode, faultCode);
             List<DeviceChangeSparePart> oneSourceList = sparePartService.list(dataWrapper);
-           // 处理备件
+            // 处理备件
             if (CollectionUtil.isNotEmpty(oneSourceList)) {
                 List<DeviceChangeSparePartDTO> dataList = new ArrayList<>();
                 oneSourceList.stream().forEach(deviceChangeSparePart -> {
@@ -945,14 +954,14 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
                 try {
                     sparePartBaseApi.dealChangeSparePart(dataList);
                 } catch (Exception e) {
-                   log.error(e.getMessage(), e);
+                    log.error(e.getMessage(), e);
                 }
             }
 
-            saveLog(loginUser,"维修结果审核通过", faultCode, FaultStatusEnum.Close.getStatus(), null);
-        }else {
+            saveLog(loginUser, "维修结果审核通过", faultCode, FaultStatusEnum.Close.getStatus(), null);
+        } else {
             fault.setStatus(FaultStatusEnum.REPAIR.getStatus());
-            saveLog(loginUser,"维修结果驳回", faultCode, FaultStatusEnum.REPAIR.getStatus(), resultDTO.getApprovalRejection());
+            saveLog(loginUser, "维修结果驳回", faultCode, FaultStatusEnum.REPAIR.getStatus(), resultDTO.getApprovalRejection());
         }
 
         updateById(fault);
@@ -962,6 +971,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
 
     /**
      * 查询工作类型
+     *
      * @param faultCode
      * @return
      */
@@ -978,6 +988,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
 
     /**
      * 查询人员
+     *
      * @param faultCode
      * @return
      */
@@ -1009,12 +1020,31 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         if (CollectionUtil.isEmpty(orgCodeList)) {
             return Collections.emptyList();
         }*/
+        // 根据故障编号获取故障所属组织机构
+        Fault fault = this.lambdaQuery().eq(Fault::getCode, faultCode).last("limit 1").one();
+        if (ObjectUtil.isEmpty(fault)) {
+            return Collections.emptyList();
+        }
+        // 当前登录人的部门权限和任务的组织机构交集
+        List<String> intersectOrg = CollectionUtil.intersection(orgCodeList, Arrays.asList(fault.getSysOrgCode()))
+                .stream().collect(Collectors.toList());
+        if (CollectionUtil.isEmpty(intersectOrg)) {
+            return Collections.emptyList();
+        }
+        // 获取今日当班人员信息
+        List<SysUserTeamDTO> todayOndutyDetail = baseApi.getTodayOndutyDetailNoPage(intersectOrg, new Date());
+        if (CollectionUtil.isEmpty(todayOndutyDetail)) {
+            return Collections.emptyList();
+        }
+        List<String> userIds = todayOndutyDetail.stream().map(SysUserTeamDTO::getUserId).collect(Collectors.toList());
+
         List<LoginUser> loginUserList = sysBaseAPI.getUserByDepIds(orgCodeList);
+        // 过滤仅在今日当班的待指派人员
+        loginUserList = loginUserList.stream().filter(l -> userIds.contains(l.getId())).collect(Collectors.toList());
         return loginUserList;
     }
 
     /**
-     *
      * @param faultKnowledgeBase
      * @return
      */
@@ -1026,7 +1056,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
             return new KnowledgeDTO();
         }
         String faultPhenomenon = faultKnowledgeBase.getFaultPhenomenon();
-        log.info("分词解析前数据：{}",faultPhenomenon);
+        log.info("分词解析前数据：{}", faultPhenomenon);
 
         if (StrUtil.isBlank(faultPhenomenon)) {
             return new KnowledgeDTO();
@@ -1057,7 +1087,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
     @Override
     public IPage<FaultKnowledgeBase> pageList(Page<FaultKnowledgeBase> page, FaultKnowledgeBase knowledgeBase) {
         String faultPhenomenon = knowledgeBase.getFaultPhenomenon();
-        log.info("分词解析前数据：{}",faultPhenomenon);
+        log.info("分词解析前数据：{}", faultPhenomenon);
         if (StrUtil.isNotBlank(faultPhenomenon)) {
             // 分词
             Result parse = ToAnalysis.parse(faultPhenomenon);
@@ -1075,8 +1105,8 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         String deviceCode = knowledgeBase.getDeviceCode();
 
         if (StrUtil.isNotBlank(id)) {
-            knowledgeBase.setIdList(StrUtil.split(id,','));
-        }else if (StrUtil.isNotBlank(deviceCode)){
+            knowledgeBase.setIdList(StrUtil.split(id, ','));
+        } else if (StrUtil.isNotBlank(deviceCode)) {
             List<String> deviceCodeList = StrUtil.splitTrim(deviceCode, ',');
             knowledgeBase.setDeviceCodeList(deviceCodeList);
         }
@@ -1094,7 +1124,6 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
     }
 
     /**
-     *
      * @param faultCode
      * @param knowledgeId
      */
@@ -1111,7 +1140,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
     public void submitResult(String faultCode) {
         // update status
         LambdaUpdateWrapper<Fault> updateWrapper = new LambdaUpdateWrapper<>();
-        updateWrapper.set(Fault::getStatus,FaultStatusEnum.NEW_FAULT.getStatus()).eq(Fault::getCode, faultCode);
+        updateWrapper.set(Fault::getStatus, FaultStatusEnum.NEW_FAULT.getStatus()).eq(Fault::getCode, faultCode);
         update(updateWrapper);
     }
 
@@ -1165,10 +1194,11 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
 
     /**
      * 保存日志
-     * @param user 用户
-     * @param context 日志内容
+     *
+     * @param user      用户
+     * @param context   日志内容
      * @param faultCode 故障编码
-     * @param status 状态
+     * @param status    状态
      */
     private void saveLog(LoginUser user, String context, String faultCode, int status, String remark) {
         OperationProcess operationProcess = OperationProcess.builder()
@@ -1184,6 +1214,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
 
     /**
      * 设备处理
+     *
      * @param fault
      * @param faultDeviceList 故障设备列表
      */
@@ -1219,6 +1250,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
 
     /**
      * 查询当前人员的维修记录
+     *
      * @param code
      * @param user
      * @return
