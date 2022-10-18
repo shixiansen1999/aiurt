@@ -1,5 +1,6 @@
 package com.aiurt.modules.faultknowledgebasetype.service.impl;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
 import com.aiurt.common.api.CommonAPI;
 import com.aiurt.config.datafilter.object.GlobalThreadLocal;
@@ -13,6 +14,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.shiro.SecurityUtils;
+import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.vo.CsUserMajorModel;
 import org.jeecg.common.system.vo.CsUserSubsystemModel;
 import org.jeecg.common.system.vo.LoginUser;
@@ -146,7 +148,7 @@ public class FaultKnowledgeBaseTypeServiceImpl extends ServiceImpl<FaultKnowledg
     }
 
     @Override
-    public void add(FaultKnowledgeBaseType faultKnowledgeBaseType) {
+    public Result<String> add(FaultKnowledgeBaseType faultKnowledgeBaseType) {
         String pid = "0";
         if ((pid).equals(faultKnowledgeBaseType.getPid())) {
             faultKnowledgeBaseType.setCodeCc("/" + faultKnowledgeBaseType.getCode() + "/");
@@ -155,6 +157,16 @@ public class FaultKnowledgeBaseTypeServiceImpl extends ServiceImpl<FaultKnowledg
             faultKnowledgeBaseType.setCodeCc(f.getCodeCc() + faultKnowledgeBaseType.getCode() + "/");
         }
         faultKnowledgeBaseType.setDelFlag(0);
+
+        LambdaQueryWrapper<FaultKnowledgeBaseType> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(FaultKnowledgeBaseType::getName,faultKnowledgeBaseType.getName());
+        queryWrapper.eq(FaultKnowledgeBaseType::getDelFlag,0);
+        List<FaultKnowledgeBaseType> faultKnowledgeBaseTypes = this.baseMapper.selectList(queryWrapper);
+        if (CollUtil.isNotEmpty(faultKnowledgeBaseTypes)) {
+            return Result.error("已存在该知识库类别名称");
+        }
         faultKnowledgeBaseTypeMapper.insert(faultKnowledgeBaseType);
+
+        return Result.OK("添加成功！");
     }
 }
