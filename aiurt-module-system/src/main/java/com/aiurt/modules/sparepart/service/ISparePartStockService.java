@@ -31,10 +31,17 @@ public interface ISparePartStockService extends IService<SparePartStock> {
     List<SparePartStock> selectLendList(Page page, SparePartStock sparePartStock);
 
     /**
-     * 备件统计
+     * 备件类型数量统计分析表
      * @param page
      * @param sparePartStatistics
      * @return
      */
     List<SparePartStatistics> selectSparePartStatistics(Page page, SparePartStatistics sparePartStatistics);
+
+    /**
+     * 备件类型数量消耗态势
+     * @param sparePartStatistics
+     * @return
+     */
+    List<SparePartStatistics> selectConsume(SparePartStatistics sparePartStatistics);
 }

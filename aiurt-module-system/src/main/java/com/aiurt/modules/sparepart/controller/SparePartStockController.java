@@ -196,16 +196,15 @@ public class SparePartStockController extends BaseController<SparePartStock, ISp
 	 }
 
 	 /**
-	  * 备件统计
-	  *
+	  * 备件类型数量统计分析表
 	  * @param sparePartStatistics
 	  * @param pageNo
 	  * @param pageSize
 	  * @param req
 	  * @return
 	  */
-	 @AutoLog(value = "备件统计",operateType = 1,operateTypeAlias = "备件统计",permissionUrl = "/sparepart/sparePartStock/list")
-	 @ApiOperation(value="备件统计", notes="备件统计")
+	 @AutoLog(value = "备件类型数量统计分析表",operateType = 1,operateTypeAlias = "备件类型数量统计分析表",permissionUrl = "/sparepart/sparePartStock/list")
+	 @ApiOperation(value="备件类型数量统计分析表", notes="备件类型数量统计分析表")
 	 @GetMapping(value = "/selectSparePartStatistics")
 	 public Result<IPage<SparePartStatistics>> selectSparePartStatistics(SparePartStatistics sparePartStatistics,
 																	@RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
@@ -216,5 +215,18 @@ public class SparePartStockController extends BaseController<SparePartStock, ISp
 		 sparePartStatisticsList = sparePartStatisticsList.stream().distinct().collect(Collectors.toList());
 		 page.setRecords(sparePartStatisticsList);
 		 return Result.OK(page);
+	 }
+
+	 /**
+	  * 备件类型数量消耗态势
+	  * @param sparePartStatistics
+	  * @return
+	  */
+	 @AutoLog(value = "备件类型数量消耗态势",operateType = 1,operateTypeAlias = "备件类型数量消耗态势",permissionUrl = "/sparepart/sparePartStock/list")
+	 @ApiOperation(value="备件类型数量消耗态势", notes="备件类型数量消耗态势")
+	 @GetMapping(value = "/selectSparePartStatistics")
+	 public Result<?> selectSparePartStatistics(SparePartStatistics sparePartStatistics){
+		 List<SparePartStatistics> sparePartStatisticsList = sparePartStockService.selectConsume(sparePartStatistics);
+		 return Result.OK(sparePartStatisticsList);
 	 }
 }
