@@ -172,7 +172,7 @@ public class DeviceServiceImpl extends ServiceImpl<DeviceMapper, Device> impleme
 			}
 		}
 		if(code != null && !"".equals(code)){
-			queryWrapper.eq("code", code);
+			queryWrapper.like("code", code);
 		}
 		if(name != null && !"".equals(name)){
 			queryWrapper.like("name", name);
