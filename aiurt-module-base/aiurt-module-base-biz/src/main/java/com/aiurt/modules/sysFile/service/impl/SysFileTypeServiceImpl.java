@@ -1,5 +1,6 @@
 package com.aiurt.modules.sysFile.service.impl;
 
+import cn.hutool.core.collection.CollUtil;
 import com.aiurt.modules.sysFile.entity.SysFileRole;
 import com.aiurt.modules.sysFile.entity.SysFileType;
 import com.aiurt.modules.sysFile.mapper.SysFileTypeMapper;
@@ -11,6 +12,7 @@ import com.aiurt.modules.sysFile.vo.SimpUserVO;
 import com.aiurt.modules.sysFile.vo.SysFileTypeDetailVO;
 import com.aiurt.modules.sysFile.vo.SysFileTypeTreeVO;
 import com.aiurt.common.exception.AiurtBootException;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -42,6 +44,8 @@ public class SysFileTypeServiceImpl extends ServiceImpl<SysFileTypeMapper, SysFi
 //	private final ISysUserService userService;
     @Autowired
     private ISysBaseAPI iSysBaseAPI;
+    @Autowired
+    private SysFileTypeMapper sysFileTypeMapper;
 
 	@Override
 	public Result<List<SysFileTypeTreeVO>> tree(String userId) {
@@ -59,7 +63,11 @@ public class SysFileTypeServiceImpl extends ServiceImpl<SysFileTypeMapper, SysFi
 	@Override
 	public Result<?> add(HttpServletRequest req, SysFileTypeParam param) {
 		SysFileType type = new SysFileType();
-
+		List<SysFileType> sysFileTypeList = sysFileTypeMapper.selectList(new LambdaQueryWrapper<SysFileType>().eq(SysFileType::getGrade, param.getGrade()).eq(SysFileType::getName, param.getName()));
+		if(CollUtil.isNotEmpty(sysFileTypeList))
+		{
+			throw new AiurtBootException("添加分类未成功,同级已添加该分类名称");
+		}
 		type.setGrade(param.getGrade()).setName(param.getName()).setDelFlag(0).setParentId(param.getParentId());
 		if (!this.save(type)) {
 			throw new AiurtBootException("添加分类未成功,请稍后重试");
