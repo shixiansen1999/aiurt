@@ -1810,10 +1810,10 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
             }
             for (RepairTask repairTask : taskList) {
                 //获取当前用户作为领取/指派人，当天，已提交的工单
-                RepairTaskDeviceRel deviceRelList = repairTaskDeviceRelMapper.getTodaySubmit(new Date(), repairTask.getId(), null);
+                List<RepairTaskDeviceRel> deviceRelList = repairTaskDeviceRelMapper.getTodaySubmit(new Date(), repairTask.getId(), null);
                 if(ObjectUtil.isNotEmpty(deviceRelList))
                 {
-                    taskDeviceRelList.add(deviceRelList);
+                    taskDeviceRelList.addAll(deviceRelList);
                 }
 
             }
@@ -1821,10 +1821,10 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
             List<RepairTaskPeerRel> relList = repairTaskPeerRelMapper.selectList(new LambdaQueryWrapper<RepairTaskPeerRel>().eq(RepairTaskPeerRel::getUserId, sysUser.getId()));
             //获取单号信息
             for (RepairTaskPeerRel taskPeerRel : relList) {
-                RepairTaskDeviceRel deviceRelList = repairTaskDeviceRelMapper.getTodaySubmit(new Date(), null, taskPeerRel.getRepairTaskDeviceCode());
+                List<RepairTaskDeviceRel> deviceRelList = repairTaskDeviceRelMapper.getTodaySubmit(new Date(), null, taskPeerRel.getRepairTaskDeviceCode());
                 if(ObjectUtil.isNotEmpty(deviceRelList))
                 {
-                    oldTaskDeviceRelList.add(deviceRelList);
+                    oldTaskDeviceRelList.addAll(deviceRelList);
                 }
             }
             taskDeviceRelList.addAll(oldTaskDeviceRelList);
