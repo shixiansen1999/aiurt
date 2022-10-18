@@ -277,8 +277,8 @@ public class SysUserController {
             } else {
                 SysUser user = JSON.parseObject(jsonObject.toJSONString(), SysUser.class);
                 user.setUpdateTime(new Date());
-                //String passwordEncode = PasswordUtil.encrypt(user.getUsername(), user.getPassword(), sysUser.getSalt());
-                user.setPassword(sysUser.getPassword());
+                String passwordEncode = PasswordUtil.encrypt(user.getUsername(), user.getPassword(), sysUser.getSalt());
+                user.setPassword(passwordEncode);
                 // 修改用户走一个service 保证事务
                 sysUserService.editUser(user);
                 result.success("修改成功!");
