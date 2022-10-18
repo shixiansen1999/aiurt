@@ -5,6 +5,7 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * @author fgw
@@ -35,4 +36,7 @@ public class DeviceDTO implements Serializable {
 
     @ApiModelProperty(value = "设备名称")
     private String name;
+
+    @ApiModelProperty(value = "设备编号列表")
+    private List<String> deviceCodes;
 }

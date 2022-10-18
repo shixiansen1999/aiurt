@@ -181,47 +181,7 @@ public class CommonCtroller {
     @GetMapping("/device/queryDevice")
     @ApiOperation("查询设备")
     public Result<List<SelectTable>> queryDevice(DeviceDTO deviceDTO) {
-        LambdaQueryWrapper<Device> queryWrapper = new LambdaQueryWrapper<>();
-        //todo 查询当前人员所管辖的站所
-
-        if (StrUtil.isNotBlank(deviceDTO.getLineCode())) {
-            queryWrapper.eq(Device::getLineCode, deviceDTO.getLineCode());
-        }
-
-        if (StrUtil.isNotBlank(deviceDTO.getDeviceTypeCode())) {
-            queryWrapper.eq(Device::getDeviceTypeCode, deviceDTO.getDeviceTypeCode());
-        }
-
-        if (StrUtil.isNotBlank(deviceDTO.getMajorCode())) {
-            queryWrapper.eq(Device::getMajorCode, deviceDTO.getMajorCode());
-        }
-
-        if (StrUtil.isNotBlank(deviceDTO.getSystemCode())) {
-            queryWrapper.eq(Device::getSystemCode, deviceDTO.getSystemCode());
-        }
-
-        if (StrUtil.isNotBlank(deviceDTO.getStationCode())) {
-            queryWrapper.eq(Device::getStationCode, deviceDTO.getStationCode());
-        }
-
-        if (StrUtil.isNotBlank(deviceDTO.getPositionCode())) {
-            queryWrapper.eq(Device::getPositionCode, deviceDTO.getPositionCode());
-        }
-
-        if (StrUtil.isNotBlank(deviceDTO.getName())) {
-            queryWrapper.like(Device::getName, deviceDTO.getName());
-        }
-
-        queryWrapper.eq(Device::getDelFlag, 0);
-        List<Device> csMajorList = deviceService.getBaseMapper().selectList(queryWrapper);
-
-        List<SelectTable> list = csMajorList.stream().map(device -> {
-            SelectTable table = new SelectTable();
-            table.setLabel(String.format("%s(%s)", device.getName(), device.getCode()));
-            table.setValue(device.getCode());
-            return table;
-        }).collect(Collectors.toList());
-
+        List<SelectTable> list = commonService.queryDevice(deviceDTO);
         return Result.OK(list);
     }
 

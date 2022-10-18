@@ -1,10 +1,14 @@
 package com.aiurt.modules.common.service.impl;
 
 import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.constant.CommonConstant;
+import com.aiurt.modules.common.dto.DeviceDTO;
 import com.aiurt.modules.common.entity.SelectTable;
 import com.aiurt.modules.common.service.ICommonService;
+import com.aiurt.modules.device.entity.Device;
+import com.aiurt.modules.device.service.IDeviceService;
 import com.aiurt.modules.system.entity.SysDepart;
 import com.aiurt.modules.system.entity.SysUser;
 import com.aiurt.modules.system.service.ISysDepartService;
@@ -31,6 +35,9 @@ public class CommonServiceImpl implements ICommonService {
 
     @Autowired
     private ISysDepartService sysDepartService;
+
+    @Autowired
+    private IDeviceService deviceService;
 
     /**
      * 根据机构人员树
@@ -78,6 +85,55 @@ public class CommonServiceImpl implements ICommonService {
         }
         dealUser(resultList, ignoreUserId);
         return resultList;
+    }
+
+    @Override
+    public List<SelectTable> queryDevice(DeviceDTO deviceDTO) {
+        LambdaQueryWrapper<Device> queryWrapper = new LambdaQueryWrapper<>();
+        //todo 查询当前人员所管辖的站所
+        if (ObjectUtil.isNotEmpty(deviceDTO)) {
+            if (StrUtil.isNotBlank(deviceDTO.getLineCode())) {
+                queryWrapper.eq(Device::getLineCode, deviceDTO.getLineCode());
+            }
+
+            if (StrUtil.isNotBlank(deviceDTO.getDeviceTypeCode())) {
+                queryWrapper.eq(Device::getDeviceTypeCode, deviceDTO.getDeviceTypeCode());
+            }
+
+            if (StrUtil.isNotBlank(deviceDTO.getMajorCode())) {
+                queryWrapper.eq(Device::getMajorCode, deviceDTO.getMajorCode());
+            }
+
+            if (StrUtil.isNotBlank(deviceDTO.getSystemCode())) {
+                queryWrapper.eq(Device::getSystemCode, deviceDTO.getSystemCode());
+            }
+
+            if (StrUtil.isNotBlank(deviceDTO.getStationCode())) {
+                queryWrapper.eq(Device::getStationCode, deviceDTO.getStationCode());
+            }
+
+            if (StrUtil.isNotBlank(deviceDTO.getPositionCode())) {
+                queryWrapper.eq(Device::getPositionCode, deviceDTO.getPositionCode());
+            }
+
+            if (StrUtil.isNotBlank(deviceDTO.getName())) {
+                queryWrapper.like(Device::getName, deviceDTO.getName());
+            }
+            if (CollectionUtil.isNotEmpty(deviceDTO.getDeviceCodes())) {
+                queryWrapper.in(Device::getCode, deviceDTO.getDeviceCodes());
+            }
+        }
+        queryWrapper.eq(Device::getDelFlag, 0);
+        List<Device> csMajorList = deviceService.getBaseMapper().selectList(queryWrapper);
+
+        List<SelectTable> list = csMajorList.stream().map(device -> {
+            SelectTable table = new SelectTable();
+            table.setLabel(String.format("%s(%s)", device.getName(), device.getCode()));
+            table.setValue(device.getCode());
+            return table;
+        }).collect(Collectors.toList());
+
+        return list;
     }
 
     private void dealUser(List<SelectTable> children, String ignoreUserId) {

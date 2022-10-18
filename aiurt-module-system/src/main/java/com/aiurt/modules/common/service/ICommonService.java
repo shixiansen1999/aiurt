@@ -1,5 +1,6 @@
 package com.aiurt.modules.common.service;
 
+import com.aiurt.modules.common.dto.DeviceDTO;
 import com.aiurt.modules.common.entity.SelectTable;
 
 import java.util.List;
@@ -17,4 +18,11 @@ public interface ICommonService {
      * @return
      */
     public List<SelectTable> queryDepartUserTree(List<String> orgIds, String ignoreUserId);
+
+    /**
+     * 查询设备
+     * @param deviceDTO
+     * @return
+     */
+    List<SelectTable> queryDevice(DeviceDTO deviceDTO);
 }
