@@ -175,7 +175,7 @@ public interface PatrolTaskDeviceMapper extends BaseMapper<PatrolTaskDevice> {
      * @param taskDeviceCode
      * @return
      */
-    PatrolTaskDevice getTodaySubmit(@Param("date") Date date,@Param("taskId") String taskId,@Param("taskDeviceCode") String taskDeviceCode);
+    List<PatrolTaskDevice> getTodaySubmit(@Param("date") Date date,@Param("taskId") String taskId,@Param("taskDeviceCode") String taskDeviceCode);
 
     /**
      *

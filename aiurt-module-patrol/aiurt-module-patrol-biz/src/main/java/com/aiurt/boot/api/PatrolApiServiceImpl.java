@@ -96,18 +96,18 @@ public class PatrolApiServiceImpl implements PatrolApi {
             List<PatrolTaskDevice> taskDeviceList = new ArrayList<>();
             for (PatrolTask task : taskList) {
                 //获取当前用户的任务中，获取当天，已提交的所有的工单
-                PatrolTaskDevice devices = patrolTaskDeviceMapper.getTodaySubmit(new Date(), task.getId(), null);
+                List<PatrolTaskDevice> devices = patrolTaskDeviceMapper.getTodaySubmit(new Date(), task.getId(), null);
                 if (ObjectUtil.isNotEmpty(devices)) {
-                    taskDeviceList.add(devices);
+                    taskDeviceList.addAll(devices);
                 }
             }
             //获取当前用户作为同行人参与的单号
             List<PatrolAccompany> accompanyList = patrolAccompanyMapper.selectList(new LambdaQueryWrapper<PatrolAccompany>().eq(PatrolAccompany::getUserId, sysUser.getId()));
             //获取当前用户参与的单号，并且当天，已提交
             for (PatrolAccompany accompany : accompanyList) {
-                PatrolTaskDevice devices = patrolTaskDeviceMapper.getTodaySubmit(new Date(), null, accompany.getTaskDeviceCode());
+                List<PatrolTaskDevice> devices = patrolTaskDeviceMapper.getTodaySubmit(new Date(), null, accompany.getTaskDeviceCode());
                 if (ObjectUtil.isNotEmpty(devices)) {
-                    taskDeviceList.add(devices);
+                    taskDeviceList.addAll(devices);
                 }
             }
             //获取这个任务下的工单所对应的站点

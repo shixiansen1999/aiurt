@@ -58,5 +58,5 @@ public interface RepairTaskDeviceRelMapper extends BaseMapper<RepairTaskDeviceRe
      * @param taskDeviceCode
      * @return
      */
-    RepairTaskDeviceRel getTodaySubmit(@Param("date")Date date, @Param("taskId")String taskId,@Param("taskDeviceCode")String taskDeviceCode);
+    List<RepairTaskDeviceRel> getTodaySubmit(@Param("date")Date date, @Param("taskId")String taskId,@Param("taskDeviceCode")String taskDeviceCode);
 }
