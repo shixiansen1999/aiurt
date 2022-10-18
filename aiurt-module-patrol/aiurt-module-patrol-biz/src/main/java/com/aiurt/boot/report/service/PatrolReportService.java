@@ -235,7 +235,7 @@ public class PatrolReportService {
     }
 
     public long getMonthNumber(String startDate, String endDate) {
-        String today= DateUtil.today();
+        String today = DateUtil.format(new Date(), "yyyy-MM");
         Date s = DateUtil.parse(startDate, "yyyy-MM");
         Date e = DateUtil.parse(endDate, "yyyy-MM");
         Date n = DateUtil.parse(today, "yyyy-MM");
@@ -247,24 +247,28 @@ public class PatrolReportService {
         if(s.after(n)||s.equals(n))
         {
             return 0;
-           // System.out.println("开始时间大于当前时间");
         }
         //开始时间小于当前时间
         else
         {
-            //结束时间小于当前时间
+            //结束时间小于当前时间（不是当月）
             if(e.before(n))
             {
                 int startYear = DateUtil.year(start);
                 int endYear = DateUtil.year(end);
-                //结束月份大于开始月份
+                //结束年份大于开始年份
                 if(endYear>startYear)
                 {
-
-                    int monthNumber = 12-startMonth+1+endMonth;
+                    int year = endYear - startYear ;
+                    int yearMonth=0;
+                    if(year>=2)
+                    {
+                        yearMonth=(year-1)*12;
+                    }
+                    int monthNumber = 12-startMonth+1+endMonth+yearMonth;
                     return monthNumber;
                 }
-                //结束月份大于等于开始月份
+                //结束年份小于等于开始年份
                 else
                 {
                     int monthNumber = endMonth-startMonth+1;
@@ -277,11 +281,18 @@ public class PatrolReportService {
             {
                 int startYear = DateUtil.year(start);
                 int endYear = DateUtil.year(end);
+                int nowYear = DateUtil.year(new Date());
                 DateTime dateTime = DateUtil.lastMonth();
                 int lastMonth = DateUtil.month(dateTime)+1;
                 //结束年份大于开始年份
                 if(endYear>startYear) {
-                    int monthNumber = lastMonth+12-startMonth+1;
+                    int year = nowYear - startYear ;
+                    int yearMonth=0;
+                    if(year>=2)
+                    {
+                        yearMonth=(year-1)*12;
+                    }
+                    int monthNumber = lastMonth+12-startMonth+1+yearMonth;
                     return monthNumber;
                 }
                 //结束年份小于等于开始年份
@@ -297,11 +308,6 @@ public class PatrolReportService {
 
     public long getWeekNumber(String start, String end) {
          long weekNumber = PatrolDateUtils.countTwoDayWeek(start, end);
-         boolean sameWeek = isNowWeekDate(start,end);
-        if(sameWeek)
-         {
-             weekNumber=weekNumber-1;
-         }
         return weekNumber;
     }
 

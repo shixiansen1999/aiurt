@@ -4,7 +4,6 @@ import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUnit;
 import cn.hutool.core.date.DateUtil;
 
-import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 
@@ -15,47 +14,6 @@ import java.util.Date;
  * @desc
  */
 public class PatrolDateUtils {
-    /**
-     *   判断是否是同一周
-     */
-    public static boolean isSameDate(String date1, String date2)
-    {
-        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
-        Date d1 = null;
-        Date d2 = null;
-        try
-        {
-            d1 = format.parse(date1);
-            d2 = format.parse(date2);
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace();
-        }
-        Calendar cal1 = Calendar.getInstance();
-        Calendar cal2 = Calendar.getInstance();
-        cal1.setFirstDayOfWeek(Calendar.MONDAY);//西方周日为一周的第一天，咱得将周一设为一周第一天
-        cal2.setFirstDayOfWeek(Calendar.MONDAY);
-        cal1.setTime(d1);
-        cal2.setTime(d2);
-        int subYear = cal1.get(Calendar.YEAR) - cal2.get(Calendar.YEAR);
-        if (subYear == 0)// subYear==0,说明是同一年
-        {
-            if (cal1.get(Calendar.WEEK_OF_YEAR) == cal2.get(Calendar.WEEK_OF_YEAR))
-                return true;
-        }
-        else if (subYear == 1 && cal2.get(Calendar.MONTH) == 11) //subYear==1,说明cal比cal2大一年;java的一月用"0"标识，那么12月用"11"
-        {
-            if (cal1.get(Calendar.WEEK_OF_YEAR) == cal2.get(Calendar.WEEK_OF_YEAR))
-                return true;
-        }
-        else if (subYear == -1 && cal1.get(Calendar.MONTH) == 11)//subYear==-1,说明cal比cal2小一年
-        {
-            if (cal1.get(Calendar.WEEK_OF_YEAR) == cal2.get(Calendar.WEEK_OF_YEAR))
-                return true;
-        }
-        return false;
-    }
 
     /**
      * 计算周数
@@ -135,126 +93,115 @@ public class PatrolDateUtils {
      */
     public static long countTwoDayWeek(String startDate, String endDate)
     {
-        Date todayDate = DateUtil.date();
+        String nowDay = DateUtil.format(new Date(), "yyyy-MM-dd");
+        Date todayDate = DateUtil.parse(nowDay);
         Date start = DateUtil.parse(startDate, "yyyy-MM-dd");
         Date end = DateUtil.parse(endDate, "yyyy-MM-dd");
-        int startMonth = DateUtil.month(start)+1;
-        int endMonth = DateUtil.month(end)+1;
         //开始时间大于等于当前时间
-        if(start.after(todayDate)||start.equals(DateUtil.date()))
-        {
-            return  0;
+        if (start.after(todayDate) || start.equals(todayDate)) {
+            return 0;
         }
         //开始时间小于当前时间
-        else
-        {
+        else {
             //结束时间小于当前时间
-            if(end.before(todayDate))
-            {
+            if (end.before(todayDate)) {
                 int startYear = DateUtil.year(start);
                 int endYear = DateUtil.year(end);
                 //结束年份大于开始年份
-                if(endYear>startYear) {
-                    //结束月份大于开始月份
-                    if(endMonth>startMonth)
-                    {
-                        //开始时间的周一
-                        DateTime startMonday = DateUtil.beginOfWeek(start);
+                if (endYear > startYear) {
+                    //当前时间的周一
+                    Date nowMonday = DateUtil.beginOfWeek(new Date());
+                    //结束时间的周一
+                    Date endMonday = DateUtil.beginOfWeek(end);
+                    //同一天
+                    boolean endSameTime = DateUtil.isSameTime(nowMonday, endMonday);
+                    //开始时间的周一
+                    DateTime startMonday = DateUtil.beginOfWeek(start);
+                    long betweenDay = 0;
+                    if (endSameTime) {
+                        //当前时间的周日
+                        Date nowSunday = DateUtil.endOfWeek(new Date());
+                        //上周日
+                        DateTime endSunday = DateUtil.offsetWeek(nowSunday, -1);
+                        betweenDay = DateUtil.between(startMonday, endSunday, DateUnit.DAY) + 1;
+                    } else {
                         //结束时间的周日
                         DateTime endSunday = DateUtil.endOfWeek(end);
-                        long betweenDay = DateUtil.between(startMonday, endSunday, DateUnit.DAY)+1;
-                        return betweenDay/7;
+                        betweenDay = DateUtil.between(startMonday, endSunday, DateUnit.DAY) + 1;
                     }
-                    //结束月份小于等于开始月份
-                    else
-                    {
-                        //开始时间的周一
-                        DateTime startMonday = DateUtil.beginOfWeek(start);
-                        //结束时间的周日
-                        DateTime endSunday = DateUtil.endOfWeek(end);
-                        long betweenDay = DateUtil.between(startMonday, endSunday, DateUnit.DAY)+1;
-                        return betweenDay/7;
-                    }
+                    return betweenDay / 7;
                 }
                 //结束年份小于等于开始年份
                 else {
-                    //结束月份大于开始月份
-                    if(endMonth>startMonth)
-                    {
-                        //开始时间的周一
-                        DateTime startMonday = DateUtil.beginOfWeek(start);
-                        //结束时间的周日
-                        DateTime endSunday = DateUtil.endOfWeek(end);
-                        long betweenDay = DateUtil.between(startMonday, endSunday, DateUnit.DAY)+1;
-                        return betweenDay/7;
+                    //当前时间的周一
+                    Date nowMonday = DateUtil.beginOfWeek(new Date());
+                    //开始时间的周一
+                    DateTime startMonday = DateUtil.beginOfWeek(start);
+                    //结束时间的周一
+                    Date endMonday = DateUtil.beginOfWeek(end);
+                    //同一天
+                    boolean startSameTime = DateUtil.isSameTime(nowMonday, startMonday);
+                    boolean endSameTime = DateUtil.isSameTime(nowMonday, endMonday);
+                    //开始时间、结束时间都是同一天
+                    if (startSameTime && endSameTime) {
+                        return 0;
                     }
-                    //结束月份小于等于开始月份
-                    else
-                    {
-                        //开始时间的周一
-                        DateTime startMonday = DateUtil.beginOfWeek(start);
+                    //开始时间、结束时间都不是同一天
+                    if (!startSameTime && !endSameTime) {
                         //结束时间的周日
                         DateTime endSunday = DateUtil.endOfWeek(end);
-                        long betweenDay = DateUtil.between(startMonday, endSunday, DateUnit.DAY)+1;
-                        return betweenDay/7;
+                        long betweenDay = DateUtil.between(startMonday, endSunday, DateUnit.DAY) + 1;
+                        return betweenDay / 7;
+                    } else {
+                        //当前时间的周日
+                        Date nowSunday = DateUtil.endOfWeek(new Date());
+                        //上周日
+                        DateTime endSunday = DateUtil.offsetWeek(nowSunday, -1);
+                        long betweenDay = DateUtil.between(startMonday, endSunday, DateUnit.DAY) + 1;
+                        return betweenDay / 7;
                     }
                 }
             }
-            //结束时间大于等于当前时间
-            if(end.equals(DateUtil.date())||end.after(todayDate))
-            {
-                int startYear = DateUtil.year(start);
-                int endYear = DateUtil.year(end);
-                //结束年份大于开始年份
-                if(endYear>startYear) {
-                    //结束月份大于开始月份
-                    if(endMonth>startMonth)
-                    {
-                        //开始时间的周一
-                        DateTime startMonday = DateUtil.beginOfWeek(start);
-                        //当前时间的上周日
-                        Date nowSunday = DateUtil.endOfWeek(new Date());
-                        DateTime nowLastSunday = DateUtil.offsetDay(nowSunday, -7);
-                        long betweenDay = DateUtil.between(startMonday, nowLastSunday, DateUnit.DAY)+1;
-                        return betweenDay/7;
-                    }
-                    //结束月份小于等于开始月份
-                    else
-                    {
-                        //开始时间的周一
-                        DateTime startMonday = DateUtil.beginOfWeek(start);
-                        //结束时间的周日
-                        DateTime endSunday = DateUtil.endOfWeek(end);
-                        long betweenDay = DateUtil.between(startMonday, endSunday, DateUnit.DAY)+1;
-                        return betweenDay/7;
-                    }
+            //结束时间等于当前时间
+            if (end.equals(todayDate)) {
+                //当前时间的周一
+                Date nowMonday = DateUtil.beginOfWeek(new Date());
+                //开始时间的周一
+                DateTime startMonday = DateUtil.beginOfWeek(start);
+                //同一天
+                boolean startSameTime = DateUtil.isSameTime(nowMonday, startMonday);
+                long betweenDay = 0;
+                //同一天
+                if (startSameTime) {
+                    return betweenDay;
+                } else {
+                    //当前时间的上周日
+                    Date nowSunday = DateUtil.endOfWeek(new Date());
+                    DateTime nowLastSunday = DateUtil.offsetDay(nowSunday, -7);
+                    betweenDay = DateUtil.between(startMonday, nowLastSunday, DateUnit.DAY) + 1;
+                    return betweenDay/7;
                 }
-                //结束年份小于等于开始年份
-                else
-                {
-                    //结束月份大于开始月份
-                    if(endMonth>startMonth)
-                    {
-                        //开始时间的周一
-                        DateTime startMonday = DateUtil.beginOfWeek(start);
-                        //当前时间的上周日
-                        Date nowSunday = DateUtil.endOfWeek(new Date());
-                        DateTime nowLastSunday = DateUtil.offsetDay(nowSunday, -7);
-                        long betweenDay = DateUtil.between(startMonday, nowLastSunday, DateUnit.DAY)+1;
-                        return betweenDay/7;
 
-                    }
-                    //结束月份小于等于开始月份
-                    else
-                    {
-                        //开始时间的周一
-                        DateTime startMonday = DateUtil.beginOfWeek(start);
-                        //当前时间的上周日
-                        Date nowSunday = DateUtil.endOfWeek(new Date());
-                        DateTime nowLastSunday = DateUtil.offsetDay(nowSunday, -7);
-                        long betweenDay = DateUtil.between(startMonday, nowLastSunday, DateUnit.DAY)+1;
-                        return betweenDay/7;
-                    }
+            }
+            //结束时间大于当前时间
+            if(end.after(todayDate))
+            {
+                //当前时间的周一
+                Date nowMonday = DateUtil.beginOfWeek(new Date());
+                //开始时间的周一
+                DateTime startMonday = DateUtil.beginOfWeek(start);
+                //同一天
+                boolean startSameTime = DateUtil.isSameTime(nowMonday, startMonday);
+                long betweenDay = 0;
+                //同一天
+                if (startSameTime) {
+                    return betweenDay;
+                } else {
+                    //当前时间的上周日
+                    Date nowSunday = DateUtil.endOfWeek(new Date());
+                    DateTime nowLastSunday = DateUtil.offsetDay(nowSunday, -7);
+                    betweenDay = DateUtil.between(startMonday, nowLastSunday, DateUnit.DAY) + 1;
+                    return betweenDay/7;
                 }
             }
         }
