@@ -231,7 +231,7 @@ public class PersonnelGroupStatisticsServiceImpl implements PersonnelGroupStatis
         DateTime start = DateUtil.beginOfMonth(date);
         DateTime end = DateUtil.endOfMonth(date);
         //获取一年前的开始时间
-        DateTime lastYear = DateUtil.offsetMonth(start, -12);
+        DateTime lastYear = DateUtil.offsetMonth(start, -11);
 
         //班组信息
         TeamPortraitModel depart = personnelGroupStatisticsMapper.getDepart(departId);
@@ -350,7 +350,7 @@ public class PersonnelGroupStatisticsServiceImpl implements PersonnelGroupStatis
         DateTime start = DateUtil.beginOfMonth(date);
         DateTime end = DateUtil.endOfMonth(date);
         //获取一年前的开始时间
-        DateTime lastYear = DateUtil.offsetMonth(start, -12);
+        DateTime lastYear = DateUtil.offsetMonth(start, -11);
 
         //获取人员巡检参数数据
         UserTeamParameter userTeamParameter = new UserTeamParameter();
