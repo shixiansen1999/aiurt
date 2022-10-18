@@ -135,7 +135,7 @@ public class FaultKnowledgeBaseTypeController extends BaseController<FaultKnowle
 		LambdaQueryWrapper<FaultKnowledgeBase> queryWrapper = new LambdaQueryWrapper<>();
 		List<FaultKnowledgeBase> faultKnowledgeBases = faultKnowledgeBaseMapper.selectList(queryWrapper
 				.eq(FaultKnowledgeBase::getKnowledgeBaseTypeCode,  byId.getCode()).eq(FaultKnowledgeBase::getDelFlag,0));
-		if (CollectionUtils.isEmpty(faultKnowledgeBases)) {
+		if (CollectionUtils.isNotEmpty(faultKnowledgeBases)) {
 			return Result.OK("该分类已经被使用，不可删除!");
 		}
 		faultKnowledgeBaseTypeService.removeById(id);
