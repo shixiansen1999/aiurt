@@ -93,11 +93,14 @@ public class PatrolAccompanyController extends BaseController<PatrolAccompany, I
 		 }
 		 for(PatrolAccompanyDTO accompany:patrolAccompanyList.getAccompanyDTOList())
 		{
-			PatrolAccompany patrolAccompany = new PatrolAccompany();
-			BeanUtils.copyProperties(accompany,patrolAccompany);
-			patrolAccompany.setDelFlag(0);
-			patrolAccompany.setTaskDeviceCode(patrolAccompanyList.getPatrolNumber());
-			patrolAccompanyService.save(patrolAccompany);
+			if(accompany.getUserId()!=null && accompany.getUsername()!=null)
+			{
+				PatrolAccompany patrolAccompany = new PatrolAccompany();
+				BeanUtils.copyProperties(accompany,patrolAccompany);
+				patrolAccompany.setDelFlag(0);
+				patrolAccompany.setTaskDeviceCode(patrolAccompanyList.getPatrolNumber());
+				patrolAccompanyService.save(patrolAccompany);
+			}
 		}
 
 		 return Result.OK("添加成功！");
