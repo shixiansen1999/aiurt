@@ -1,5 +1,6 @@
 package com.aiurt.modules.fault.controller;
 
+import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.aspect.annotation.AutoLog;
@@ -181,7 +182,7 @@ public class FaultController extends BaseController<Fault, IFaultService> {
             String code = fault1.getCode();
             LambdaQueryWrapper<FaultAnalysisReport> faultAnalysisReportWrapper = new LambdaQueryWrapper<>();
             faultAnalysisReportWrapper.eq(FaultAnalysisReport::getFaultCode, code);
-            faultAnalysisReportWrapper.eq(FaultAnalysisReport::getDelFlag, 0);
+            faultAnalysisReportWrapper.eq(FaultAnalysisReport::getDelFlag, 0).last("limit 1");
             FaultAnalysisReport faultAnalysisReport = faultAnalysisReportService.getBaseMapper().selectOne(faultAnalysisReportWrapper);
             //如果存在故障分析则返回true
             if (ObjectUtil.isNotNull(faultAnalysisReport)) {
@@ -193,7 +194,7 @@ public class FaultController extends BaseController<Fault, IFaultService> {
             }
             LambdaQueryWrapper<FaultKnowledgeBase> faultKnowledgeBaseWrapper = new LambdaQueryWrapper<>();
             faultKnowledgeBaseWrapper.like(FaultKnowledgeBase::getFaultCodes, code);
-            faultKnowledgeBaseWrapper.eq(FaultKnowledgeBase::getDelFlag, 0);
+            faultKnowledgeBaseWrapper.eq(FaultKnowledgeBase::getDelFlag, 0).last("limit 1");
             FaultKnowledgeBase faultKnowledgeBase = faultKnowledgeBaseService.getBaseMapper().selectOne(faultKnowledgeBaseWrapper);
             //如果存在知识库，则返回true
             if (ObjectUtil.isNotNull(faultKnowledgeBase)) {
