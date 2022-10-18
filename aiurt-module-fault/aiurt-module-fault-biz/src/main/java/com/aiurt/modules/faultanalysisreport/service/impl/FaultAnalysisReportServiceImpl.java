@@ -182,6 +182,13 @@ public class FaultAnalysisReportServiceImpl extends ServiceImpl<FaultAnalysisRep
         if (StrUtil.isEmpty(faultDTO.getCode())) {
             return Result.error("故障编号不能为空");
         }
+        LambdaQueryWrapper<FaultAnalysisReport> faultAnalysisReportWrapper = new LambdaQueryWrapper<>();
+        faultAnalysisReportWrapper.eq(FaultAnalysisReport::getFaultCode, faultDTO.getCode());
+        faultAnalysisReportWrapper.eq(FaultAnalysisReport::getDelFlag, 0);
+        FaultAnalysisReport analysisReport = this.getBaseMapper().selectOne(faultAnalysisReportWrapper);
+        if (ObjectUtil.isNotNull(analysisReport)) {
+            return Result.error("已存在该故障的故障分析");
+        }
         FaultAnalysisReport faultAnalysisReport = faultDTO.getFaultAnalysisReport();
         faultAnalysisReport.setStatus(FaultConstant.PENDING);
         faultAnalysisReport.setApprovedResult(FaultConstant.NO_PASS);

@@ -348,8 +348,4 @@ public class Fault extends DictEntity implements Serializable {
     @TableField(exist = false)
     private Boolean isFaultAnalysisReport;
 
-    @ApiModelProperty(value = "是否存在故障知识库")
-    @TableField(exist = false)
-    private Boolean isFaultKnowledgeBase;
-
 }
