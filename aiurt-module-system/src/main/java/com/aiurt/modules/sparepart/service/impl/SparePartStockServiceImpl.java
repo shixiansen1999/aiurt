@@ -1,6 +1,5 @@
 package com.aiurt.modules.sparepart.service.impl;
 
-import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.NumberUtil;
@@ -8,27 +7,20 @@ import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.api.CommonAPI;
 import com.aiurt.modules.material.entity.MaterialBaseType;
 import com.aiurt.modules.material.service.IMaterialBaseTypeService;
-import com.aiurt.modules.sparepart.entity.SparePartInOrder;
 import com.aiurt.modules.sparepart.entity.SparePartStock;
 import com.aiurt.modules.sparepart.entity.dto.SparePartStatistics;
 import com.aiurt.modules.sparepart.mapper.SparePartLendStockMapper;
 import com.aiurt.modules.sparepart.mapper.SparePartStockMapper;
 import com.aiurt.modules.sparepart.service.ISparePartStockService;
-import com.aiurt.modules.subsystem.entity.CsSubsystem;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.shiro.SecurityUtils;
-import org.jeecg.common.system.vo.CsUserSubsystemModel;
 import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.text.CollationElementIterator;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -131,6 +123,12 @@ public class SparePartStockServiceImpl extends ServiceImpl<SparePartStockMapper,
             }
         }
         return subsystemByUserId;
+    }
+
+    @Override
+    public List<SparePartStatistics> selectConsume(SparePartStatistics sparePartStatistics) {
+
+        return null;
     }
 
     private void getJudge( SparePartStatistics e ,MaterialBaseType q, Long aLong, Long aLong1, Long aLong4,Long aLong5,Long aLong6,Long aLong7,Long aLong8){
