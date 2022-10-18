@@ -276,9 +276,11 @@ public class SysUserController {
                 result.error500("未找到对应实体");
             } else {
                 SysUser user = JSON.parseObject(jsonObject.toJSONString(), SysUser.class);
+                //用户名不能修改
+                user.setUsername(sysUser.getUsername());
                 user.setUpdateTime(new Date());
-                String passwordEncode = PasswordUtil.encrypt(user.getUsername(), user.getPassword(), sysUser.getSalt());
-                user.setPassword(passwordEncode);
+                //String passwordEncode = PasswordUtil.encrypt(user.getUsername(), user.getPassword(), sysUser.getSalt());
+                user.setPassword(sysUser.getPassword());
                 // 修改用户走一个service 保证事务
                 sysUserService.editUser(user);
                 result.success("修改成功!");
