@@ -77,8 +77,7 @@ public class FaultKnowledgeBaseTypeController extends BaseController<FaultKnowle
 	@ApiOperation(value="故障知识分类-添加", notes="故障知识分类-添加")
 	@PostMapping(value = "/add")
 	public Result<String> add(@RequestBody FaultKnowledgeBaseType faultKnowledgeBaseType) {
-		faultKnowledgeBaseTypeService.add(faultKnowledgeBaseType);
-		return Result.OK("添加成功！");
+		return faultKnowledgeBaseTypeService.add(faultKnowledgeBaseType);
 	}
 
 	/**
