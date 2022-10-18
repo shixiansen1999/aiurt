@@ -834,8 +834,6 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         }
 
         List<PatrolUserInfoDTO> userInfo = patrolTaskOrganizationMapper.getUserListByTaskCode(list.get(0));
-//        // 根据当前登录人所属部门过滤指派人员
-//        userInfo = userInfo.stream().filter(l -> l.getOrgCode().equals(loginUser.getOrgCode())).collect(Collectors.toList());
         // 根据当前登录人部门权限过滤指派人员
         userInfo = userInfo.stream().filter(l -> loginUserOrgCodes.contains(l.getOrgCode())).collect(Collectors.toList());
 
@@ -859,6 +857,8 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
                 user.setUserName(userName.stream().collect(Collectors.joining(separator)));
             }
         }
+        // 再过滤掉人员为空的记录
+        userInfo = userInfo.stream().filter(l -> StrUtil.isNotBlank(l.getUserId())).collect(Collectors.toList());
         return userInfo;
     }
 
