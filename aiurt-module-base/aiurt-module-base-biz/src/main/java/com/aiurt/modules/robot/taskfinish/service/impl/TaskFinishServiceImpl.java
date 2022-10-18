@@ -3,9 +3,7 @@ package com.aiurt.modules.robot.taskfinish.service.impl;
 
 import com.aiurt.common.util.webservice.WebServiceUtils;
 import com.aiurt.modules.robot.taskfinish.service.TaskFinishService;
-import com.aiurt.modules.robot.taskfinish.wsdl.ServicePortType;
-import com.aiurt.modules.robot.taskfinish.wsdl.TaskExcuteInfos;
-import com.aiurt.modules.robot.taskfinish.wsdl.TaskFinishInfos;
+import com.aiurt.modules.robot.taskfinish.wsdl.*;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 

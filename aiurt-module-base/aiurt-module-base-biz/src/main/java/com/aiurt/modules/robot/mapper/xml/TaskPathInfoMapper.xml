@@ -10,7 +10,7 @@
 	tpi.create_time
    FROM
 	task_path_info tpi
-	LEFT JOIN (
+	INNER JOIN (
 	SELECT
 		tpr.task_path_id as id,
 		GROUP_CONCAT( DISTINCT ri.robot_name SEPARATOR '；' ) AS robotName
@@ -26,6 +26,7 @@
 	GROUP BY
 	tpr.task_path_id
 	) as t1 ON t1.id = tpi.task_path_id
+	order by create_time desc
     </select>
 	<select id="queryRobotIpByTaskPathId" resultType="java.lang.String">
 	SELECT DISTINCT ri.robot_ip

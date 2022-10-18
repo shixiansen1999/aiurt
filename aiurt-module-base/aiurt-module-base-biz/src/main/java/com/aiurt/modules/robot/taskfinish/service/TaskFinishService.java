@@ -1,8 +1,7 @@
 package com.aiurt.modules.robot.taskfinish.service;
 
 
-import com.aiurt.modules.robot.taskfinish.wsdl.TaskExcuteInfos;
-import com.aiurt.modules.robot.taskfinish.wsdl.TaskFinishInfos;
+import com.aiurt.modules.robot.taskfinish.wsdl.*;
 
 /**
  * @author wgp

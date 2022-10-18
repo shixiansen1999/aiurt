@@ -34,22 +34,22 @@ public class TaskPathInfo implements Serializable {
 	@Excel(name = "任务模板id", width = 15)
     @ApiModelProperty(value = "任务模板id")
     @TableId(type = IdType.ASSIGN_ID)
-    private java.lang.String taskPathId;
+    private String taskPathId;
 	/**任务模板名称*/
 	@Excel(name = "任务模板名称", width = 15)
     @ApiModelProperty(value = "任务模板名称")
-    private java.lang.String taskPathName;
+    private String taskPathName;
 	/**任务模板类型*/
 	@Excel(name = "任务模板类型", width = 15)
     @ApiModelProperty(value = "任务模板类型")
-    private java.lang.String taskPathType;
+    private String taskPathType;
 	/**完成动作(0 自动充电，1 原地待命)*/
 	@Excel(name = "完成动作(0 自动充电，1 原地待命)", width = 15)
     @ApiModelProperty(value = "完成动作(0 自动充电，1 原地待命)")
-    private java.lang.Integer finishAction;
+    private Integer finishAction;
 	/**创建人*/
     @ApiModelProperty(value = "创建人")
-    private java.lang.String createBy;
+    private String createBy;
 	/**创建时间*/
 	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
     @DateTimeFormat(pattern="yyyy-MM-dd")
@@ -57,7 +57,7 @@ public class TaskPathInfo implements Serializable {
     private java.util.Date createTime;
 	/**修改人*/
     @ApiModelProperty(value = "修改人")
-    private java.lang.String updateBy;
+    private String updateBy;
 	/**修改时间*/
 	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
     @DateTimeFormat(pattern="yyyy-MM-dd")

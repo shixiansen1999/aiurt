@@ -25,6 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -57,7 +58,7 @@ public class TaskPathInfoServiceImpl extends ServiceImpl<TaskPathInfoMapper, Tas
     @Override
     public IPage<TaskPathInfoDTO> queryPageList(Page<TaskPathInfoDTO> page, TaskPathInfoDTO taskPathInfo) {
         return page.setRecords(baseMapper.queryPageList(page, taskPathInfo));
-    }
+}
 
     /**
      * 同步机器人任务模板
@@ -122,7 +123,8 @@ public class TaskPathInfoServiceImpl extends ServiceImpl<TaskPathInfoMapper, Tas
         }
 
         // 2、将对应的机器人控制模式一一设为任务模式
-        robotIpList.forEach(robotIp -> {
+        new HashSet<>(robotIpList).forEach(robotIp -> {
+            robotDataService.setCurrentRobot(robotIp);
             int result = robotDataService.setControlMode(robotIp, RobotConstant.CONTROL_TYPE_0);
             if (result == RobotConstant.RESULT_ERROR_1) {
                 log.error("机器人ip为{}设置控制模式失败", robotIp);
@@ -156,8 +158,8 @@ public class TaskPathInfoServiceImpl extends ServiceImpl<TaskPathInfoMapper, Tas
      * @return
      */
     @Override
-    public int robotControlTask(String robotIp, String controlTaskType) {
-        if (StrUtil.isEmpty(robotIp) || StrUtil.isEmpty(controlTaskType)) {
+    public int robotControlTask(String robotIp, ControlTaskType controlTaskType) {
+        if (StrUtil.isEmpty(robotIp) || ObjectUtil.isEmpty(controlTaskType)) {
             return RobotConstant.RESULT_ERROR_1;
         }
         // 1、关注对应的机器人
@@ -168,7 +170,7 @@ public class TaskPathInfoServiceImpl extends ServiceImpl<TaskPathInfoMapper, Tas
         }
 
         // 2、下发指令
-        int result = taskDataService.robotControlTask(ControlTaskType.fromValue(controlTaskType));
+        int result = taskDataService.robotControlTask(controlTaskType);
         return result;
     }
 

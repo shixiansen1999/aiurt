@@ -1,5 +1,6 @@
 package com.aiurt.modules.robot.controller;
 
+
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.system.base.controller.BaseController;
 import com.aiurt.modules.robot.dto.AreaPointDTO;
@@ -10,9 +11,9 @@ import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.jeecg.common.api.vo.Result;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import javax.annotation.Resource;
 import javax.validation.Valid;
 import java.util.List;
 
@@ -27,7 +28,7 @@ import java.util.List;
 @RequestMapping("/robot/patrolAreaInfo")
 @Slf4j
 public class PatrolAreaInfoController extends BaseController<PatrolAreaInfo, IPatrolAreaInfoService> {
-    @Autowired
+    @Resource
     private IPatrolAreaInfoService patrolAreaInfoService;
 
     /**
@@ -39,6 +40,7 @@ public class PatrolAreaInfoController extends BaseController<PatrolAreaInfo, IPa
     @AutoLog(value = "巡检区域和点位树形查询")
     @ApiOperation(value = "巡检区域和点位树形查询", notes = "巡检区域和点位树形查询")
     @GetMapping(value = "/treelist")
+    @ApiImplicitParam(name = "name", value = "区域名称或点位名称", required = false, example = "牵引变压器区域", dataTypeClass = String.class)
     public Result<List<AreaPointDTO>> treelist(@RequestParam(name = "name", required = false) String name) {
         List<AreaPointDTO> result = patrolAreaInfoService.treelist(name);
         return Result.OK(result);

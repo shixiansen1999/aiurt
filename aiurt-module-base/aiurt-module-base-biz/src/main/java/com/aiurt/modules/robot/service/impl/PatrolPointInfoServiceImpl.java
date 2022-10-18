@@ -1,11 +1,14 @@
 package com.aiurt.modules.robot.service.impl;
 
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.map.MapUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
+import com.aiurt.modules.robot.entity.PatrolAreaInfo;
 import com.aiurt.modules.robot.entity.PatrolPointInfo;
 import com.aiurt.modules.robot.mapper.PatrolPointInfoMapper;
+import com.aiurt.modules.robot.service.IPatrolAreaInfoService;
 import com.aiurt.modules.robot.service.IPatrolPointInfoService;
 import com.aiurt.modules.robot.service.IRobotInfoService;
 import com.aiurt.modules.robot.taskdata.service.TaskDataService;
@@ -15,6 +18,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -33,6 +37,8 @@ public class PatrolPointInfoServiceImpl extends ServiceImpl<PatrolPointInfoMappe
     private TaskDataService taskDataService;
     @Resource
     private IRobotInfoService robotInfoService;
+    @Resource
+    private IPatrolAreaInfoService patrolAreaInfoService;
 
     /**
      * 同步巡检点位
@@ -79,6 +85,41 @@ public class PatrolPointInfoServiceImpl extends ServiceImpl<PatrolPointInfoMappe
 
         // 批量更新巡检点位
         saveOrUpdateBatch(result);
+    }
+
+    /**
+     * 根据巡视点位ID获取设备编号,若参数为空获取全部，K:V(点位ID：设备编号)
+     *
+     * @param points
+     * @return
+     */
+    @Override
+    public Map<String, String> getDeviceCodeByPointId(List<String> points) {
+        List<PatrolPointInfo> pointInfos = null;
+        if (CollectionUtil.isNotEmpty(points)) {
+            LambdaQueryWrapper<PatrolPointInfo> wrapper = new LambdaQueryWrapper<>();
+            wrapper.in(PatrolPointInfo::getPointId, points);
+            pointInfos = this.list(wrapper);
+        } else {
+            pointInfos = this.list();
+        }
+        List<String> areaIds = pointInfos.stream().map(PatrolPointInfo::getAreaId).collect(Collectors.toList());
+        if (CollectionUtil.isEmpty(pointInfos) || CollectionUtil.isEmpty(areaIds)) {
+            return new HashMap<>(16);
+        }
+
+        List<PatrolAreaInfo> areaInfos = patrolAreaInfoService.lambdaQuery().in(PatrolAreaInfo::getAreaId, areaIds).list();
+        Map<String, String> areaDeviceMap = areaInfos.stream().filter(l -> ObjectUtil.isNotEmpty(l.getDeviceCode()))
+                .collect(Collectors.toMap(k -> k.getAreaId(), v -> v.getDeviceCode(), (a, b) -> StrUtil.isNotBlank(a) ? a : b));
+
+        Map<String, String> pointDeviceMap = new HashMap<>(16);
+        for (PatrolPointInfo pointInfo : pointInfos) {
+            String pointId = pointInfo.getPointId();
+            if (StrUtil.isNotEmpty(pointId)) {
+                pointDeviceMap.put(pointId, areaDeviceMap.get(pointInfo.getAreaId()));
+            }
+        }
+        return pointDeviceMap;
     }
 
     /**

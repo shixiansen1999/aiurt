@@ -36,32 +36,32 @@ public class PatrolPointInfo implements Serializable {
 	@Excel(name = "巡检点位id", width = 15)
     @ApiModelProperty(value = "巡检点位id")
     @TableId(type = IdType.ASSIGN_ID)
-    private java.lang.String pointId;
+    private String pointId;
 	/**巡检点位名称*/
 	@Excel(name = "巡检点位名称", width = 15)
     @ApiModelProperty(value = "巡检点位名称")
     @NotBlank(message = "巡检点位名称不能为空")
     @Size(max = 255, message = "巡检点位名称长度不能超过255个字符")
-    private java.lang.String pointName;
+    private String pointName;
 	/**巡检点位类型*/
 	@Excel(name = "巡检点位类型", width = 15)
     @ApiModelProperty(value = "巡检点位类型")
-    private java.lang.String pointType;
+    private String pointType;
 	/**机器人id*/
 	@Excel(name = "机器人id", width = 15)
     @ApiModelProperty(value = "机器人id")
-    private java.lang.String robotId;
+    private String robotId;
 	/**所属区域id*/
 	@Excel(name = "所属区域id", width = 15)
     @ApiModelProperty(value = "所属区域id")
-    private java.lang.String areaId;
+    private String areaId;
 	/**所属停靠点id*/
 	@Excel(name = "所属停靠点id", width = 15)
     @ApiModelProperty(value = "所属停靠点id")
-    private java.lang.String dockId;
+    private String dockId;
 	/**创建人*/
     @ApiModelProperty(value = "创建人")
-    private java.lang.String createBy;
+    private String createBy;
 	/**创建时间*/
 	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
     @DateTimeFormat(pattern="yyyy-MM-dd")
@@ -69,7 +69,7 @@ public class PatrolPointInfo implements Serializable {
     private java.util.Date createTime;
 	/**修改人*/
     @ApiModelProperty(value = "修改人")
-    private java.lang.String updateBy;
+    private String updateBy;
 	/**修改时间*/
 	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
     @DateTimeFormat(pattern="yyyy-MM-dd")

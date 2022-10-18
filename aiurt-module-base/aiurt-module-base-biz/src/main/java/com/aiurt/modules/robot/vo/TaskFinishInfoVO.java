@@ -1,5 +1,6 @@
 package com.aiurt.modules.robot.vo;
 
+
 import com.aiurt.modules.robot.entity.TaskFinishInfo;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
@@ -53,4 +54,16 @@ public class TaskFinishInfoVO extends TaskFinishInfo {
     @Excel(name = "处置状态字典名", width = 15)
     @ApiModelProperty(value = "处置状态字典名")
     private String isHandleDictName;
+    /**
+     * 任务状态字典名
+     */
+    @Excel(name = "任务状态字典名", width = 15)
+    @ApiModelProperty(value = "任务状态字典名")
+    private String finishStateDictName;
+    /**
+     * 机器人名称
+     */
+    @Excel(name = "机器人名称", width = 15)
+    @ApiModelProperty(value = "机器人名称")
+    private String robotName;
 }

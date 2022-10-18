@@ -1,5 +1,6 @@
 package com.aiurt.modules.robot.mapper;
 
+
 import com.aiurt.modules.robot.dto.TaskFinishDTO;
 import com.aiurt.modules.robot.entity.TaskFinishInfo;
 import com.aiurt.modules.robot.vo.TaskFinishInfoVO;
@@ -22,5 +23,5 @@ public interface TaskFinishInfoMapper extends BaseMapper<TaskFinishInfo> {
      * @param taskFinishDTO
      * @return
      */
-    IPage<TaskFinishInfoVO> queryPageList(Page<TaskFinishInfoVO> page,@Param("condition") TaskFinishDTO taskFinishDTO);
+    IPage<TaskFinishInfoVO> queryPageList(Page<TaskFinishInfoVO> page, @Param("condition") TaskFinishDTO taskFinishDTO);
 }

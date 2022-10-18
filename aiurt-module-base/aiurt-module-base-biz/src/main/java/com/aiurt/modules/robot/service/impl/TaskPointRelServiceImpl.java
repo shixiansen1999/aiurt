@@ -11,6 +11,7 @@ import com.aiurt.modules.robot.service.ITaskPointRelService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,6 +32,7 @@ import java.util.stream.Collectors;
 public class TaskPointRelServiceImpl extends ServiceImpl<TaskPointRelMapper, TaskPointRel> implements ITaskPointRelService {
 
     @Resource
+    @Lazy
     private IPatrolAreaInfoService patrolAreaInfoService;
 
     /**

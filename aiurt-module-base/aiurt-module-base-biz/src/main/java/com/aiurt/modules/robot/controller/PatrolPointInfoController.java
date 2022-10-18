@@ -1,16 +1,18 @@
 package com.aiurt.modules.robot.controller;
 
+
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.system.base.controller.BaseController;
 import com.aiurt.modules.robot.entity.PatrolPointInfo;
 import com.aiurt.modules.robot.service.IPatrolPointInfoService;
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.jeecg.common.api.vo.Result;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import javax.annotation.Resource;
 import javax.validation.Valid;
 
 /**
@@ -24,7 +26,7 @@ import javax.validation.Valid;
 @RequestMapping("/robot/patrolPointInfo")
 @Slf4j
 public class PatrolPointInfoController extends BaseController<PatrolPointInfo, IPatrolPointInfoService> {
-    @Autowired
+    @Resource
     private IPatrolPointInfoService patrolPointInfoService;
 
     /**
@@ -51,11 +53,9 @@ public class PatrolPointInfoController extends BaseController<PatrolPointInfo, I
     @AutoLog(value = "通过id查询巡检点位")
     @ApiOperation(value = "通过id查询巡检点位", notes = "通过id查询巡检点位")
     @GetMapping(value = "/queryById")
-    public Result<PatrolPointInfo> queryById(@RequestParam(name = "id", required = true) String id) {
+    @ApiImplicitParam(name = "id", value = "巡检点位id", required = true, example = "a001_10", dataTypeClass = String.class)
+    public Result<PatrolPointInfo> queryById(@RequestParam(name = "id") String id) {
         PatrolPointInfo patrolPointInfo = patrolPointInfoService.getById(id);
-        if (patrolPointInfo == null) {
-            return Result.error("未找到对应数据");
-        }
         return Result.OK(patrolPointInfo);
     }
 

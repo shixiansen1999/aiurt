@@ -1,6 +1,5 @@
 package com.aiurt.modules.robot.robotdata.service;
 
-
 import com.aiurt.modules.robot.robotdata.wsdl.*;
 
 /**
@@ -71,7 +70,7 @@ public interface RobotDataService {
      * @param type
      * @return
      */
-    int getTaskFinishInfoByTime(WiperControlType type);
+    int robotWiperControl(WiperControlType type);
 
     /**
      * 机器人红外相机控制
@@ -89,4 +88,11 @@ public interface RobotDataService {
      */
     int robotYuntaiControl(YuntaiControlType type);
 
+    /**
+     * 获取当前关注机器人的控制模式
+     *
+     * @param robotIp 机器人ip
+     * @return 0任务模式，1遥控模式
+     */
+    int getControlMode(String robotIp);
 }

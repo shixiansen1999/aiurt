@@ -23,7 +23,7 @@ public class RobotDataClientTest {
     /**
      * 机器人ip
      */
-    private static final String ROBOT_IP = "192.168.1.10";
+    private static final String ROBOT_IP = "192.168.0.3";
 
 
     /**
@@ -50,7 +50,7 @@ public class RobotDataClientTest {
     @Test
     public void setCurrentRobot() {
         int result = WebServiceUtils.getWebService(ServicePortType.class, ADDRESS).setCurrentRobot(ROBOT_IP);
-        System.out.println(result > 0 ? "设置当前关注的机器人失败" : "设置当前关注的机器人成功");
+        System.out.println(result != 0 ? "设置当前关注的机器人失败" : "设置当前关注的机器人成功");
     }
 
     /**
@@ -89,6 +89,12 @@ public class RobotDataClientTest {
                 System.out.println();
             }
         }
+    }
+
+    @Test
+    public void robotCameraControl() {
+        int result = WebServiceUtils.getWebService(ServicePortType.class, ADDRESS).robotCameraControl(CameraControlType.FOCUS_FAR);
+        System.out.println(result == 0 ? "成功" : "失败");
     }
 
 

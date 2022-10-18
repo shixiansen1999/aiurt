@@ -4,7 +4,6 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.map.MapUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
-import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.modules.robot.dto.AreaPointDTO;
 import com.aiurt.modules.robot.entity.PatrolAreaInfo;
 import com.aiurt.modules.robot.manager.AreaPointTreeUtils;
@@ -17,6 +16,8 @@ import com.aiurt.modules.robot.taskdata.wsdl.PatrolAreaInfos;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.extern.slf4j.Slf4j;
+import org.jeecg.common.exception.JeecgBootException;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -38,6 +39,7 @@ public class PatrolAreaInfoServiceImpl extends ServiceImpl<PatrolAreaInfoMapper,
     @Resource
     private TaskDataService taskDataService;
     @Resource
+    @Lazy
     private IPatrolPointInfoService pointInfoService;
     @Resource
     private IRobotInfoService robotInfoService;
@@ -145,12 +147,12 @@ public class PatrolAreaInfoServiceImpl extends ServiceImpl<PatrolAreaInfoMapper,
      */
     private void checkDeviceBind(PatrolAreaInfo patrolAreaInfo) {
         if (ObjectUtil.isEmpty(patrolAreaInfo)) {
-            throw new AiurtBootException("巡检区域不存在");
+            throw new JeecgBootException("巡检区域不存在");
         }
         if (StrUtil.isNotEmpty(patrolAreaInfo.getDeviceCode())) {
             int result = baseMapper.queryAreaByDeviceCode(patrolAreaInfo.getDeviceCode());
             if (result > 0) {
-                throw new AiurtBootException("设备已被其他区域绑定,请更换设备后重试");
+                throw new JeecgBootException("设备已被其他区域绑定,请更换设备后重试");
             }
         }
     }

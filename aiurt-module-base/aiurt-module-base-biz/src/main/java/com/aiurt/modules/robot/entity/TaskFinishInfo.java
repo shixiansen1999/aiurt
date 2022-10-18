@@ -1,21 +1,19 @@
 package com.aiurt.modules.robot.entity;
 
-import java.io.Serializable;
-import java.io.UnsupportedEncodingException;
-import java.util.Date;
-import java.math.BigDecimal;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import lombok.Data;
 import com.fasterxml.jackson.annotation.JsonFormat;
-import org.springframework.format.annotation.DateTimeFormat;
-import org.jeecgframework.poi.excel.annotation.Excel;
-import com.aiurt.common.aspect.annotation.Dict;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
+import org.jeecgframework.poi.excel.annotation.Excel;
+import org.springframework.format.annotation.DateTimeFormat;
+
+import java.io.Serializable;
+import java.util.Date;
 
 /**
  * @Description: task_finish_info
@@ -33,75 +31,75 @@ public class TaskFinishInfo implements Serializable {
     /**主键ID*/
     @TableId(type = IdType.ASSIGN_ID)
     @ApiModelProperty(value = "主键ID")
-    private java.lang.String id;
+    private String id;
 	/**任务id*/
 	@Excel(name = "任务id", width = 15)
     @ApiModelProperty(value = "任务id")
-    private java.lang.String taskId;
+    private String taskId;
 	/**任务名称*/
 	@Excel(name = "任务名称", width = 15)
     @ApiModelProperty(value = "任务名称")
-    private java.lang.String taskName;
+    private String taskName;
 	/**任务类型*/
 	@Excel(name = "任务类型", width = 15)
     @ApiModelProperty(value = "任务类型")
-    private java.lang.String taskType;
+    private String taskType;
 	/**任务模板id*/
 	@Excel(name = "任务模板id", width = 15)
     @ApiModelProperty(value = "任务模板id")
-    private java.lang.String taskPathId;
+    private String taskPathId;
 	/**机器人id*/
 	@Excel(name = "机器人id", width = 15)
     @ApiModelProperty(value = "机器人id")
-    private java.lang.String robotId;
-	/**任务状态*/
-	@Excel(name = "任务状态", width = 15)
-    @ApiModelProperty(value = "任务状态")
-    private java.lang.String finishState;
+    private String robotId;
+	/**任务状态 0：等待执行，1：已完成，2：故障未执行/中止，3：任务超期，4：挂牌未执行，5：正在执行，6：取消任务，7：已下发等待执行，8：暂停任务*/
+	@Excel(name = "任务状态 0：等待执行，1：已完成，2：故障未执行/中止，3：任务超期，4：挂牌未执行，5：正在执行，6：取消任务，7：已下发等待执行，8：暂停任务", width = 15)
+    @ApiModelProperty(value = "任务状态 0：等待执行，1：已完成，2：故障未执行/中止，3：任务超期，4：挂牌未执行，5：正在执行，6：取消任务，7：已下发等待执行，8：暂停任务")
+    private String finishState;
 	/**开始时间*/
 	@Excel(name = "开始时间", width = 15, format = "yyyy-MM-dd HH:mm:ss")
 	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
     @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
     @ApiModelProperty(value = "开始时间")
-    private java.util.Date startTime;
+    private Date startTime;
 	/**结束时间*/
 	@Excel(name = "结束时间", width = 15, format = "yyyy-MM-dd HH:mm:ss")
 	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
     @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
     @ApiModelProperty(value = "结束时间")
-    private java.util.Date endTime;
+    private Date endTime;
     /**处置人*/
     @Excel(name = "处置人", width = 15)
     @ApiModelProperty(value = "处置人")
-    private java.lang.String handleUserId;
+    private String handleUserId;
     /**处置时间*/
     @Excel(name = "处置时间", width = 15)
     @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
     @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
     @ApiModelProperty(value = "处置时间")
-    private java.util.Date handleTime;
+    private Date handleTime;
     /**处置说明*/
     @Excel(name = "处置说明", width = 15)
     @ApiModelProperty(value = "处置说明")
-    private java.lang.String handleExplain;
+    private String handleExplain;
     /**是否已经处置（0未处置1已处置）*/
     @Excel(name = "是否已经处置（0未处置1已处置）", width = 15)
     @ApiModelProperty(value = "是否已经处置（0未处置1已处置）")
-    private java.lang.Integer isHandle;
+    private Integer isHandle;
 	/**创建人*/
     @ApiModelProperty(value = "创建人")
-    private java.lang.String createBy;
+    private String createBy;
 	/**创建时间*/
 	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
     @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
     @ApiModelProperty(value = "创建时间")
-    private java.util.Date createTime;
+    private Date createTime;
 	/**修改人*/
     @ApiModelProperty(value = "修改人")
-    private java.lang.String updateBy;
+    private String updateBy;
 	/**修改时间*/
 	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
     @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
     @ApiModelProperty(value = "修改时间")
-    private java.util.Date updateTime;
+    private Date updateTime;
 }

@@ -84,7 +84,7 @@ public class RobotDataServiceImpl implements RobotDataService {
      */
     @Override
     public int robotCameraControl(CameraControlType type) {
-        return 0;
+        return WebServiceUtils.getWebService(ServicePortType.class, address).robotCameraControl(type);
     }
 
     /**
@@ -95,7 +95,7 @@ public class RobotDataServiceImpl implements RobotDataService {
      */
     @Override
     public int robotLightControl(LightControlType type) {
-        return 0;
+        return WebServiceUtils.getWebService(ServicePortType.class, address).robotLightControl(type);
     }
 
     /**
@@ -105,8 +105,8 @@ public class RobotDataServiceImpl implements RobotDataService {
      * @return
      */
     @Override
-    public int getTaskFinishInfoByTime(WiperControlType type) {
-        return 0;
+    public int robotWiperControl(WiperControlType type) {
+        return WebServiceUtils.getWebService(ServicePortType.class, address).robotWiperControl(type);
     }
 
     /**
@@ -117,7 +117,7 @@ public class RobotDataServiceImpl implements RobotDataService {
      */
     @Override
     public int robotFlirControl(FilrControlType type) {
-        return 0;
+        return WebServiceUtils.getWebService(ServicePortType.class, address).robotFlirControl(type);
     }
 
     /**
@@ -128,6 +128,17 @@ public class RobotDataServiceImpl implements RobotDataService {
      */
     @Override
     public int robotYuntaiControl(YuntaiControlType type) {
-        return 0;
+        return WebServiceUtils.getWebService(ServicePortType.class, address).robotYuntaiControl(type);
+    }
+
+    /**
+     * 获取当前关注机器人的控制模式
+     *
+     * @param robotIp 机器人ip
+     * @return 0任务模式，1遥控模式
+     */
+    @Override
+    public int getControlMode(String robotIp) {
+        return WebServiceUtils.getWebService(ServicePortType.class, address).getControlMode(robotIp);
     }
 }

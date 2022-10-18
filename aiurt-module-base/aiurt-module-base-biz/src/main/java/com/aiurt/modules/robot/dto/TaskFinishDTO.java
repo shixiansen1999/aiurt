@@ -22,6 +22,11 @@ import java.util.Date;
 @ApiModel(value = "TaskFinishDTO", description = "机器人巡检任务查询DTO")
 public class TaskFinishDTO {
     /**
+     * 线路id
+     */
+    @ApiModelProperty(value = "线路id")
+    private String lineId;
+    /**
      * 线路编号
      */
     @ApiModelProperty(value = "线路编号")
@@ -44,15 +49,15 @@ public class TaskFinishDTO {
     /**
      * 开始时间
      */
-    @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd HH:mm:ss")
-    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd")
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
     @ApiModelProperty(value = "开始时间")
     private Date startTime;
     /**
      * 结束时间
      */
-    @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd HH:mm:ss")
-    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd")
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
     @ApiModelProperty(value = "结束时间")
     private Date endTime;
 }

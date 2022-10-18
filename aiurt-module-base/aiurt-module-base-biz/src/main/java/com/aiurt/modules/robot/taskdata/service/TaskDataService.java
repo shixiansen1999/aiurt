@@ -1,5 +1,6 @@
 package com.aiurt.modules.robot.taskdata.service;
 
+
 import com.aiurt.modules.robot.taskdata.wsdl.*;
 
 /**

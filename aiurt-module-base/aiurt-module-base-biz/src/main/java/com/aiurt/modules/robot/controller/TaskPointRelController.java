@@ -1,9 +1,8 @@
 package com.aiurt.modules.robot.controller;
 
+
 import com.aiurt.common.aspect.annotation.AutoLog;
-import com.aiurt.common.system.base.controller.BaseController;
 import com.aiurt.modules.robot.dto.AreaPointDTO;
-import com.aiurt.modules.robot.entity.TaskPointRel;
 import com.aiurt.modules.robot.service.ITaskPointRelService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
@@ -24,11 +23,11 @@ import java.util.List;
  * @Date: 2022-09-27
  * @Version: V1.0
  */
-@Api(tags = "task_point_rel")
+@Api(tags = "任务模板与点位关联")
 @RestController
 @RequestMapping("/robot/taskPointRel")
 @Slf4j
-public class TaskPointRelController extends BaseController<TaskPointRel, ITaskPointRelService> {
+public class TaskPointRelController  {
     @Autowired
     private ITaskPointRelService taskPointRelService;
 

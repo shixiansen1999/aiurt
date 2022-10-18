@@ -1,6 +1,8 @@
 
 package com.aiurt.modules.robot.taskdata.wsdl;
 
+import com.aiurt.common.aspect.annotation.Dict;
+import com.aiurt.modules.basic.entity.DictEntity;
 import io.swagger.annotations.ApiModelProperty;
 
 import javax.xml.bind.annotation.XmlAccessType;
@@ -50,14 +52,16 @@ import javax.xml.bind.annotation.XmlType;
     "finishDeviceSize",
     "taskFinishPercentage"
 })
-public class TaskExcuteData {
+public class TaskExcuteData extends DictEntity {
 
     @XmlElement(name = "RobotIp", required = true)
     @ApiModelProperty("机器人Ip")
+    @Dict(dictTable = "robot_info", dicText = "robot_name", dicCode = "robot_ip")
     protected String robotIp;
 
     @XmlElement(name = "TaskType", required = true)
     @ApiModelProperty("任务类型")
+    @Dict(dicCode = "robot_task_type")
     protected String taskType;
 
     @XmlElement(name = "TaskId", required = true)

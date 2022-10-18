@@ -3,6 +3,7 @@ package com.aiurt.modules.robot.taskdata.service.impl;
 import com.aiurt.common.util.webservice.WebServiceUtils;
 import com.aiurt.modules.robot.taskdata.service.TaskDataService;
 import com.aiurt.modules.robot.taskdata.wsdl.*;
+import com.aiurt.modules.robot.taskdata.wsdl.ControlTaskType;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 

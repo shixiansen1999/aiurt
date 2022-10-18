@@ -35,78 +35,78 @@ public class TaskExcuteData implements Serializable {
      */
     @TableId(type = IdType.ASSIGN_ID)
     @ApiModelProperty(value = "id")
-    private java.lang.String id;
+    private String id;
     /**
      * task_id
      */
     @Excel(name = "task_id", width = 15)
     @ApiModelProperty(value = "task_id")
-    private java.lang.String taskId;
+    private String taskId;
     /**
      * 任务名称
      */
     @Excel(name = "任务名称", width = 15)
     @ApiModelProperty(value = "任务名称")
-    private java.lang.String taskName;
+    private String taskName;
     /**
      * 任务类型
      */
     @Excel(name = "任务类型", width = 15)
     @ApiModelProperty(value = "任务类型")
-    private java.lang.String taskType;
+    private String taskType;
     /**
      * 任务状态
      */
     @Excel(name = "任务状态", width = 15)
     @ApiModelProperty(value = "任务状态")
-    private java.lang.Integer taskStatus;
+    private Integer taskStatus;
     /**
      * 机器人id
      */
     @Excel(name = "机器人id", width = 15)
     @ApiModelProperty(value = "机器人id")
-    private java.lang.String robotId;
+    private String robotId;
     /**
      * 当前巡检点Id
      */
     @Excel(name = "当前巡检点Id", width = 15)
     @ApiModelProperty(value = "当前巡检点Id")
-    private java.lang.String patrolDeviceId;
+    private String patrolDeviceId;
     /**
      * 当前巡检点名称
      */
     @Excel(name = "当前巡检点名称", width = 15)
     @ApiModelProperty(value = "当前巡检点名称")
-    private java.lang.String patrolDeviceName;
+    private String patrolDeviceName;
     /**
      * 异常数量
      */
     @Excel(name = "异常数量", width = 15)
     @ApiModelProperty(value = "异常数量")
-    private java.lang.Integer errorDeviceSize;
+    private Integer errorDeviceSize;
     /**
      * 已完成数量
      */
     @Excel(name = "已完成数量", width = 15)
     @ApiModelProperty(value = "已完成数量")
-    private java.lang.Integer finishDeviceSize;
+    private Integer finishDeviceSize;
     /**
      * 完成进度
      */
     @Excel(name = "完成进度", width = 15)
     @ApiModelProperty(value = "完成进度")
-    private java.lang.Integer taskFinishPercentage;
+    private Integer taskFinishPercentage;
     /**
      * 点位总数
      */
     @Excel(name = "点位总数", width = 15)
     @ApiModelProperty(value = "点位总数")
-    private java.lang.Integer totalDeviceSize;
+    private Integer totalDeviceSize;
     /**
      * 创建人
      */
     @ApiModelProperty(value = "创建人")
-    private java.lang.String createBy;
+    private String createBy;
     /**
      * 创建时间
      */
@@ -118,7 +118,7 @@ public class TaskExcuteData implements Serializable {
      * 修改人
      */
     @ApiModelProperty(value = "修改人")
-    private java.lang.String updateBy;
+    private String updateBy;
     /**
      * 修改时间
      */

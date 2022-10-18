@@ -1,11 +1,11 @@
 package com.aiurt.modules.robot.controller;
 
+
 import com.aiurt.common.aspect.annotation.AutoLog;
-import com.aiurt.common.system.base.controller.BaseController;
 import com.aiurt.modules.robot.constant.RobotConstant;
 import com.aiurt.modules.robot.dto.TaskPathInfoDTO;
-import com.aiurt.modules.robot.entity.TaskPathInfo;
 import com.aiurt.modules.robot.service.ITaskPathInfoService;
+import com.aiurt.modules.robot.taskdata.wsdl.ControlTaskType;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.annotations.Api;
@@ -31,7 +31,7 @@ import javax.annotation.Resource;
 @RestController
 @RequestMapping("/robot/taskPathInfo")
 @Slf4j
-public class TaskPathInfoController extends BaseController<TaskPathInfo, ITaskPathInfoService> {
+public class TaskPathInfoController {
     @Resource
     private ITaskPathInfoService taskPathInfoService;
 
@@ -92,7 +92,7 @@ public class TaskPathInfoController extends BaseController<TaskPathInfo, ITaskPa
     @AutoLog(value = "当前机器人执行的任务")
     @ApiOperation(value = "当前机器人执行的任务", notes = "当前机器人执行的任务")
     @GetMapping(value = "/getTaskExcuteData")
-    @ApiImplicitParam(name = "robotIp", value = "机器人ip", required = true, example = "192.168.1.10", dataTypeClass = String.class)
+    @ApiImplicitParam(name = "robotIp", value = "机器人ip", required = true, example = "192.168.0.3", dataTypeClass = String.class)
     public Result<com.aiurt.modules.robot.taskdata.wsdl.TaskExcuteData> getTaskExcuteData(@RequestParam(name = "robotIp") String robotIp) {
         com.aiurt.modules.robot.taskdata.wsdl.TaskExcuteData result = taskPathInfoService.getTaskExcuteData(robotIp);
         return Result.OK(result);
@@ -109,11 +109,11 @@ public class TaskPathInfoController extends BaseController<TaskPathInfo, ITaskPa
     @ApiOperation(value = "机器人任务操作", notes = "机器人任务操作")
     @GetMapping(value = "/robotControlTask")
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "robotIp", value = "机器人ip", required = true, example = "192.168.1.10", dataTypeClass = String.class),
-            @ApiImplicitParam(name = "controlTaskType", value = "机器人任务操作类型", required = true, example = "CancelTask，PauseTask，ResumeTask，ChargeTask", dataTypeClass = String.class)
+            @ApiImplicitParam(name = "robotIp", value = "机器人ip", required = true, example = "192.168.0.3", dataTypeClass = String.class),
+            @ApiImplicitParam(name = "controlTaskType", value = "机器人任务操作类型(CancelTask，PauseTask，ResumeTask，ChargeTask)", required = true, example = "CancelTask", dataTypeClass = String.class)
     })
     public Result<?> robotControlTask(@RequestParam(name = "robotIp") String robotIp,
-                                      @RequestParam(name = "controlTaskType") String controlTaskType) {
+                                      @RequestParam(name = "controlTaskType") ControlTaskType controlTaskType) {
         int result = taskPathInfoService.robotControlTask(robotIp, controlTaskType);
         return result == RobotConstant.CONTROL_TYPE_0 ? Result.OK("操作成功") : Result.error("操作失败");
     }

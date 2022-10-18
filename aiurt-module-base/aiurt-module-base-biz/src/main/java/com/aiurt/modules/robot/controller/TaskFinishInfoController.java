@@ -1,5 +1,6 @@
 package com.aiurt.modules.robot.controller;
 
+
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.system.base.controller.BaseController;
 import com.aiurt.modules.robot.dto.TaskFinishDTO;
@@ -16,10 +17,8 @@ import org.jeecg.common.api.vo.Result;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.util.Arrays;
 import java.util.Date;
 
@@ -83,7 +82,7 @@ public class TaskFinishInfoController extends BaseController<TaskFinishInfo, ITa
     @AutoLog(value = "机器人巡检任务处置")
     @ApiOperation(value = "机器人巡检任务处置", notes = "机器人巡检任务处置")
     @RequestMapping(value = "/taskDispose", method = {RequestMethod.PUT, RequestMethod.POST})
-    public Result<String> taskDispose(@ApiParam(name = "id", value = "任务记录ID")
+    public Result<String> taskDispose(@ApiParam(name = "id", value = "记录ID")
                                       @RequestParam("id") String id,
                                       @ApiParam(name = "handleExplain", value = "处置说明")
                                       @RequestParam("handleExplain") String handleExplain) {
@@ -130,33 +129,8 @@ public class TaskFinishInfoController extends BaseController<TaskFinishInfo, ITa
     @GetMapping(value = "/queryById")
     public Result<TaskFinishInfo> queryById(@RequestParam(name = "id", required = true) String id) {
         TaskFinishInfo taskFinishInfo = taskFinishInfoService.getById(id);
-        if (taskFinishInfo == null) {
-            return Result.error("未找到对应数据");
-        }
         return Result.OK(taskFinishInfo);
     }
 
-    /**
-     * 导出excel
-     *
-     * @param request
-     * @param taskFinishInfo
-     */
-    @RequestMapping(value = "/exportXls")
-    public ModelAndView exportXls(HttpServletRequest request, TaskFinishInfo taskFinishInfo) {
-        return super.exportXls(request, taskFinishInfo, TaskFinishInfo.class, "task_finish_info");
-    }
-
-    /**
-     * 通过excel导入数据
-     *
-     * @param request
-     * @param response
-     * @return
-     */
-    @RequestMapping(value = "/importExcel", method = RequestMethod.POST)
-    public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) {
-        return super.importExcel(request, response, TaskFinishInfo.class);
-    }
 
 }

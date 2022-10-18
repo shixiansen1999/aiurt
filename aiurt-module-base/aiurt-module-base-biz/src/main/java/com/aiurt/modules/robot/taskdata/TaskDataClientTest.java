@@ -2,8 +2,9 @@ package com.aiurt.modules.robot.taskdata;
 
 import cn.hutool.core.util.ObjectUtil;
 import com.aiurt.common.util.webservice.WebServiceUtils;
-import com.aiurt.modules.robot.taskdata.wsdl.*;
+import com.aiurt.modules.robot.taskdata.wsdl.TaskPathInfos;
 import lombok.extern.slf4j.Slf4j;
+import com.aiurt.modules.robot.taskdata.wsdl.*;
 
 import java.util.List;
 

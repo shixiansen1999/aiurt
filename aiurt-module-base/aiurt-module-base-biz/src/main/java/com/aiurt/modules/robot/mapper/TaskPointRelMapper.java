@@ -1,5 +1,6 @@
 package com.aiurt.modules.robot.mapper;
 
+
 import com.aiurt.modules.robot.dto.AreaPointDTO;
 import com.aiurt.modules.robot.entity.TaskPointRel;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;

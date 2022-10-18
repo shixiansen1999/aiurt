@@ -9,4 +9,8 @@ public class RobotDictConstant {
      * 机器人巡检任务处置状态字典编号
      */
     public static final String ROBOT_DISPOSE = "robot_dispose";
+    /**
+     * 机器人巡检任务状态字典编号
+     */
+    public static final String ROBOT_TASK_STATE = "robot_task_state";
 }

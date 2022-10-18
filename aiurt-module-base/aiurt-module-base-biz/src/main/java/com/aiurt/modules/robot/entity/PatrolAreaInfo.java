@@ -1,5 +1,6 @@
 package com.aiurt.modules.robot.entity;
 
+
 import com.aiurt.common.aspect.annotation.Dict;
 import com.aiurt.modules.basic.entity.DictEntity;
 import com.baomidou.mybatisplus.annotation.IdType;
@@ -38,30 +39,30 @@ public class PatrolAreaInfo extends DictEntity implements Serializable {
 	@Excel(name = "区域id", width = 15)
     @ApiModelProperty(value = "区域id")
     @TableId(type = IdType.ASSIGN_ID)
-    private java.lang.String areaId;
+    private String areaId;
 	/**区域名称*/
 	@Excel(name = "区域名称", width = 15)
     @ApiModelProperty(value = "区域名称")
     @NotBlank(message = "区域名称不能为空")
     @Size(max = 255, message = "区域名称长度不能超过255个字符")
-    private java.lang.String areaName;
+    private String areaName;
 	/**所属父区域id*/
 	@Excel(name = "所属父区域id", width = 15)
     @ApiModelProperty(value = "所属父区域id")
-    private java.lang.String pid;
+    private String pid;
 	/**机器人id*/
 	@Excel(name = "机器人id", width = 15)
     @ApiModelProperty(value = "机器人id")
     @Dict(dictTable = "robot_info", dicText = "robot_name", dicCode = "robot_id")
-    private java.lang.String robotId;
+    private String robotId;
 	/**设备编码*/
 	@Excel(name = "设备编码", width = 15)
     @ApiModelProperty(value = "设备编码")
-    @Dict(dictTable = "device", dicText = "name", dicCode = "code")
-    private java.lang.String deviceCode;
+    @Dict(dictTable = "bd_device_archives", dicText = "name", dicCode = "device_code")
+    private String deviceCode;
 	/**创建人*/
     @ApiModelProperty(value = "创建人")
-    private java.lang.String createBy;
+    private String createBy;
 	/**创建时间*/
 	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
     @DateTimeFormat(pattern="yyyy-MM-dd")
@@ -69,7 +70,7 @@ public class PatrolAreaInfo extends DictEntity implements Serializable {
     private java.util.Date createTime;
 	/**修改人*/
     @ApiModelProperty(value = "修改人")
-    private java.lang.String updateBy;
+    private String updateBy;
 	/**修改时间*/
 	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
     @DateTimeFormat(pattern="yyyy-MM-dd")

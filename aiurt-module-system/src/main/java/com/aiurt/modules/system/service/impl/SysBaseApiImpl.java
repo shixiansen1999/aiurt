@@ -1730,4 +1730,37 @@ public class SysBaseApiImpl implements ISysBaseAPI {
         }
         return JSONObject.parseObject(JSON.toJSONString(csStation));
     }
+
+    @Override
+    public Map<String, String> getDeviceNameByCode(List<String> deviceCodes) {
+        return null;
+    }
+
+    @Override
+    public String getLineCodeById(String lineId) {
+        return null;
+    }
+
+//    @Override
+//    public Map<String, String> getDeviceNameByCode(List<String> deviceCodes) {
+//        LambdaQueryWrapper<BdDeviceArchives> wrapper = new LambdaQueryWrapper<>();
+//        if (CollectionUtil.isNotEmpty(deviceCodes)) {
+//            wrapper.in(BdDeviceArchives::getDeviceCode, deviceCodes);
+//        }
+//        List<BdDeviceArchives> device = bdDeviceArchivesMapper.selectList(wrapper);
+//        Map<String, String> deviceMap = device.stream()
+//                .filter(l -> ObjectUtil.isNotEmpty(l.getName()))
+//                .collect(Collectors.toMap(k -> k.getDeviceCode(), v -> v.getName(), (a, b) -> a));
+//        return deviceMap;
+//    }
+
+//    @Override
+//    public String getLineCodeById(String lineId) {
+//        BdLine line = lineMapper.selectById(lineId);
+//        String lineCode = null;
+//        if (ObjectUtil.isNotEmpty(line)) {
+//            lineCode = line.getCode();
+//        }
+//        return lineCode;
+//    }
 }

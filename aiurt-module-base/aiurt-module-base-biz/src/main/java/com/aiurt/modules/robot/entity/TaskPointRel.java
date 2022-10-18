@@ -33,18 +33,18 @@ public class TaskPointRel implements Serializable {
 	/**id*/
 	@TableId(type = IdType.ASSIGN_ID)
     @ApiModelProperty(value = "id")
-    private java.lang.String id;
+    private String id;
 	/**任务模板id*/
 	@Excel(name = "任务模板id", width = 15)
     @ApiModelProperty(value = "任务模板id")
-    private java.lang.String taskPathId;
+    private String taskPathId;
 	/**巡检点位id*/
 	@Excel(name = "巡检点位id", width = 15)
     @ApiModelProperty(value = "巡检点位id")
-    private java.lang.String pointId;
+    private String pointId;
 	/**创建人*/
     @ApiModelProperty(value = "创建人")
-    private java.lang.String createBy;
+    private String createBy;
 	/**创建时间*/
 	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
     @DateTimeFormat(pattern="yyyy-MM-dd")
@@ -52,7 +52,7 @@ public class TaskPointRel implements Serializable {
     private java.util.Date createTime;
 	/**修改人*/
     @ApiModelProperty(value = "修改人")
-    private java.lang.String updateBy;
+    private String updateBy;
 	/**修改时间*/
 	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd")
     @DateTimeFormat(pattern="yyyy-MM-dd")

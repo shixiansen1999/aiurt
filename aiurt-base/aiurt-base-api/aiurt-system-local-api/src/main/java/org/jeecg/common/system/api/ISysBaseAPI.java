@@ -588,4 +588,20 @@ public interface ISysBaseAPI extends CommonAPI {
      * @return
      */
     JSONObject getCsStationById(String station);
+
+    /**
+     * 根据设备编号获取设备名称,设备编号:设备名称
+     *
+     * @param deviceCodes
+     * @return
+     */
+    Map<String, String> getDeviceNameByCode(List<String> deviceCodes);
+
+    /**
+     * 根据线路Id获取线路编号
+     *
+     * @param lineId
+     * @return
+     */
+    String getLineCodeById(String lineId);
 }

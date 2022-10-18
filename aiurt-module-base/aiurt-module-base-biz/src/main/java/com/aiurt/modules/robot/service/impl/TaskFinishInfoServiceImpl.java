@@ -1,10 +1,10 @@
 package com.aiurt.modules.robot.service.impl;
 
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
-import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.modules.robot.constant.RobotConstant;
 import com.aiurt.modules.robot.constant.RobotDictConstant;
 import com.aiurt.modules.robot.dto.TaskFinishDTO;
@@ -13,21 +13,25 @@ import com.aiurt.modules.robot.entity.TaskFinishInfo;
 import com.aiurt.modules.robot.mapper.TaskExcuteInfoMapper;
 import com.aiurt.modules.robot.mapper.TaskFinishInfoMapper;
 import com.aiurt.modules.robot.service.IRobotInfoService;
+import com.aiurt.modules.robot.service.ITaskExcuteInfoService;
 import com.aiurt.modules.robot.service.ITaskFinishInfoService;
 import com.aiurt.modules.robot.taskfinish.service.TaskFinishService;
 import com.aiurt.modules.robot.taskfinish.wsdl.TaskFinishInfos;
 import com.aiurt.modules.robot.vo.TaskFinishInfoVO;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.apache.shiro.SecurityUtils;
+import org.jeecg.common.exception.JeecgBootException;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.LoginUser;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.Resource;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -39,15 +43,17 @@ import java.util.stream.Collectors;
  */
 @Service
 public class TaskFinishInfoServiceImpl extends ServiceImpl<TaskFinishInfoMapper, TaskFinishInfo> implements ITaskFinishInfoService {
-    @Autowired
+    @Resource
     private ISysBaseAPI sysBaseApi;
-    @Autowired
+    @Resource
     private TaskFinishService taskFinishService;
-    @Autowired
+    @Resource
     private IRobotInfoService robotInfoService;
-    @Autowired
+    @Resource
+    private ITaskExcuteInfoService taskExcuteInfoService;
+    @Resource
     private TaskFinishInfoMapper taskFinishInfoMapper;
-    @Autowired
+    @Resource
     private TaskExcuteInfoMapper taskExcuteInfoMapper;
 
     @Override
@@ -55,7 +61,7 @@ public class TaskFinishInfoServiceImpl extends ServiceImpl<TaskFinishInfoMapper,
     public void synchronizeRobotTask(Date startTime, Date endTime) {
         if (ObjectUtil.isEmpty(startTime) || ObjectUtil.isEmpty(endTime)) {
             Date now = new Date();
-            startTime = DateUtil.offsetHour(now, -1);
+            startTime = DateUtil.parse(DateUtil.format(now, "yyyy-MM-dd 00:00:00"));
             endTime = now;
         }
         String format = "yyyy-MM-dd HH:mm:ss";
@@ -66,7 +72,7 @@ public class TaskFinishInfoServiceImpl extends ServiceImpl<TaskFinishInfoMapper,
                 .orElseGet(TaskFinishInfos::new).getInfos();
         List<TaskFinishInfo> list = new ArrayList<>();
         // 获取所有机器人的id
-        Map<String, String> robotIds = robotInfoService.queryIdMappingRobotIp(new ArrayList<>());
+        Map<String, String> robotIds = robotInfoService.queryRobotIpMappingId(new ArrayList<>());
         TaskFinishInfo taskFinishInfo = null;
         for (com.aiurt.modules.robot.taskfinish.wsdl.TaskFinishInfo info : infos) {
             taskFinishInfo = new TaskFinishInfo();
@@ -83,37 +89,74 @@ public class TaskFinishInfoServiceImpl extends ServiceImpl<TaskFinishInfoMapper,
         if (CollUtil.isEmpty(list)) {
             return;
         }
-        // todo 处理旧数据
-        // 删除系统上的任务模板数据
-        LambdaQueryWrapper<TaskFinishInfo> wrapper = new LambdaQueryWrapper<>();
-        wrapper.notIn(TaskFinishInfo::getTaskPathId, list.stream().map(TaskFinishInfo::getTaskPathId).collect(Collectors.toList()));
-        baseMapper.delete(wrapper);
-        // 批量更新任务模板信息
-        saveOrUpdateBatch(list);
+        // taskId能唯一确定一条记录
+        List<String> taskIds = list.stream().map(TaskFinishInfo::getTaskId).collect(Collectors.toList());
+        QueryWrapper<TaskFinishInfo> queryWrapper = new QueryWrapper<>();
+        queryWrapper.lambda().in(TaskFinishInfo::getTaskId, taskIds);
+        // 数据库已有的数据
+        List<TaskFinishInfo> oldInfos = taskFinishInfoMapper.selectList(queryWrapper);
+        if (CollectionUtil.isNotEmpty(oldInfos)) {
+            // 需要更新的字段
+            for (TaskFinishInfo info : list) {
+                TaskFinishInfo oldInfo = oldInfos.stream().filter(l -> info.getTaskId().equals(l.getTaskId())).findAny().orElse(null);
+                if (ObjectUtil.isNotEmpty(info) && ObjectUtil.isNotEmpty(oldInfo)) {
+                    oldInfo.setTaskName(info.getTaskName());
+                    oldInfo.setTaskType(info.getTaskType());
+                    oldInfo.setTaskPathId(info.getTaskPathId());
+                    oldInfo.setStartTime(info.getStartTime());
+                    oldInfo.setEndTime(info.getEndTime());
+                    oldInfo.setFinishState(info.getFinishState());
+                    oldInfo.setRobotId(info.getRobotId());
+                    // 把更新后的对象属性拷贝回新的数据列表中
+                    BeanUtils.copyProperties(oldInfo, info);
+                }
+            }
+        }
+        this.saveOrUpdateBatch(list);
+
+        // 同步任务的巡检记录
+        List<TaskExcuteInfo> excuteInfos = new ArrayList<>();
+        list.stream().forEach(l -> {
+            List<TaskExcuteInfo> taskExcuteInfos = taskExcuteInfoService.getSynchronizeRobotTaskExcuteInfo(l.getTaskId());
+            excuteInfos.addAll(taskExcuteInfos);
+        });
+        taskExcuteInfoService.synchronizeRobotTaskExcuteInfo(excuteInfos);
     }
 
     @Override
     public IPage<TaskFinishInfoVO> queryPageList(Page<TaskFinishInfoVO> page, TaskFinishDTO taskFinishDTO) {
+        // 前端只能传线路id
+        if (ObjectUtil.isNotEmpty(taskFinishDTO) && ObjectUtil.isNotEmpty(taskFinishDTO.getLineId())) {
+            String lineCode = sysBaseApi.getLineCodeById(taskFinishDTO.getLineId());
+            taskFinishDTO.setLineCode(lineCode);
+        }
         IPage<TaskFinishInfoVO> pageList = taskFinishInfoMapper.queryPageList(page, taskFinishDTO);
         List<String> lineCodes = pageList.getRecords().stream().map(TaskFinishInfoVO::getLineCode).collect(Collectors.toList());
         List<String> stationCodes = pageList.getRecords().stream().map(TaskFinishInfoVO::getStationCode).collect(Collectors.toList());
+
         Map<String, String> lineNames = sysBaseApi.getLineNameByCode(lineCodes);
         Map<String, String> stationNames = sysBaseApi.getStationNameByCode(stationCodes);
         String normal = "正常";
         String abnormal = "异常";
+
         // 字典翻译
-        Map<String, String> disposeItems = sysBaseApi.getDictItems(RobotDictConstant.ROBOT_DISPOSE)
+        Map<String, String> stateItems = sysBaseApi.queryDictItemsByCode(RobotDictConstant.ROBOT_TASK_STATE)
+                .stream().collect(Collectors.toMap(k -> k.getValue(), v -> v.getText(), (a, b) -> a));
+        Map<String, String> disposeItems = sysBaseApi.queryDictItemsByCode(RobotDictConstant.ROBOT_DISPOSE)
                 .stream().collect(Collectors.toMap(k -> k.getValue(), v -> v.getText(), (a, b) -> a));
         for (TaskFinishInfoVO infoVO : pageList.getRecords()) {
             // 任务结果
             LambdaQueryWrapper<TaskExcuteInfo> wrapper = new LambdaQueryWrapper<>();
-            wrapper.eq(TaskExcuteInfo::getExcuteState, abnormal).last("limit 1");
+            wrapper.eq(TaskExcuteInfo::getTaskId, infoVO.getTaskId())
+                    .eq(TaskExcuteInfo::getExcuteState, abnormal)
+                    .last("limit 1");
             TaskExcuteInfo taskExcuteInfo = taskExcuteInfoMapper.selectOne(wrapper);
             infoVO.setTaskResult(normal);
             if (ObjectUtil.isNotEmpty(taskExcuteInfo)) {
                 infoVO.setTaskResult(abnormal);
             }
-            infoVO.setIsHandleDictName(disposeItems.get(infoVO.getIsHandle()));
+            infoVO.setFinishStateDictName(stateItems.get(infoVO.getFinishState()));
+            infoVO.setIsHandleDictName(disposeItems.get(String.valueOf(infoVO.getIsHandle())));
             infoVO.setLineName(lineNames.get(infoVO.getLineCode()));
             infoVO.setStationName(stationNames.get(infoVO.getStationCode()));
         }
@@ -124,10 +167,12 @@ public class TaskFinishInfoServiceImpl extends ServiceImpl<TaskFinishInfoMapper,
     public void taskDispose(String id, String handleExplain) {
         LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         if (ObjectUtil.isEmpty(loginUser)) {
-            throw new AiurtBootException("检测到当前为未登录状态，请先登录！");
+            throw new JeecgBootException("检测到当前为未登录状态，请先登录！");
         }
-        TaskFinishInfo info = new TaskFinishInfo();
-        info.setId(id);
+        TaskFinishInfo info = this.getById(id);
+        if (ObjectUtil.isEmpty(info)) {
+            throw new JeecgBootException("未找到id为【" + id + "】的记录！");
+        }
         info.setHandleUserId(loginUser.getId());
         info.setHandleTime(new Date());
         info.setHandleExplain(handleExplain);

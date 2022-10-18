@@ -1,7 +1,10 @@
 package com.aiurt.modules.robot.service;
 
+
 import com.aiurt.modules.robot.dto.TaskPathInfoDTO;
 import com.aiurt.modules.robot.entity.TaskPathInfo;
+import com.aiurt.modules.robot.taskdata.wsdl.ControlTaskType;
+import com.aiurt.modules.robot.taskdata.wsdl.TaskExcuteData;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
@@ -40,7 +43,7 @@ public interface ITaskPathInfoService extends IService<TaskPathInfo> {
      * @param robotIp 机器人ip
      * @return
      */
-    com.aiurt.modules.robot.taskdata.wsdl.TaskExcuteData getTaskExcuteData(String robotIp);
+    TaskExcuteData getTaskExcuteData(String robotIp);
 
     /**
      * 机器人任务操作
@@ -48,5 +51,5 @@ public interface ITaskPathInfoService extends IService<TaskPathInfo> {
      * @param controlTaskType 机器人任务操作类型
      * @return
      */
-    int robotControlTask(String robotIp,String controlTaskType);
+    int robotControlTask(String robotIp, ControlTaskType controlTaskType);
 }

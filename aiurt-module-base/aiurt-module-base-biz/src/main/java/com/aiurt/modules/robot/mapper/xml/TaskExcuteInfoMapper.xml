@@ -1,5 +1,31 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.aiurt.modules.robot.mapper.TaskExcuteInfoMapper">
-
+    <select id="getPatrolListPage" resultType="com.aiurt.modules.robot.dto.TaskPatrolDTO">
+        select tei.*,bda.name,
+               ri.robot_name as robotName,
+               ppi.point_name as pointName,
+               ppi.point_type as pointType,
+               bda.id as deviceId,
+               bda.type_id ,
+               bda.line_id,
+               bda.station_id
+        from task_excute_info tei
+                 left join task_finish_info tfi on tei.task_id = tfi.task_id
+                 left join robot_info ri on ri.robot_id = tfi.robot_id
+                 left join patrol_point_info ppi on ppi.point_id = tei.point_id
+                 left join  bd_device_archives bda on bda.device_code = tei.device
+        <where>
+            <if test="taskId != null and taskId != ''">
+                tei.task_id =#{taskId}
+            </if>
+        <if test="device != null and device != ''">
+           and tei.device =#{device}
+        </if>
+        <if test="excuteState != null and excuteState != ''">
+            and tei.excute_state =#{excuteState}
+        </if>
+        </where>
+        ORDER BY excute_time DESC
+    </select>
 </mapper>
