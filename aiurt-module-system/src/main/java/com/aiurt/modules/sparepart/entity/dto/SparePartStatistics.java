@@ -16,12 +16,23 @@ import java.util.List;
 @Data
 public class SparePartStatistics {
 
+    /**主键id*/
+    @ApiModelProperty(value = "主键id")
+    @TableField(exist = false)
+    private  String  id;
+
 
     /**子系统编码*/
     @Excel(name = "子系统编码", width = 15)
     @ApiModelProperty(value = "子系统编码")
     @TableField(exist = false)
     private String systemCode;
+
+    /**物资分类编码*/
+    @Excel(name = "物资分类编码", width = 15)
+    @ApiModelProperty(value = "物资分类编码")
+    private  String  baseTypeCode;
+
 
     /**子系统名称*/
     @Excel(name = "子系统名称", width = 15)
@@ -38,6 +49,46 @@ public class SparePartStatistics {
     @ApiModelProperty(value = "三级库数量")
     @TableField(exist = false)
     private Long threeCount;
+
+    /**上两年度总消耗量*/
+    @ApiModelProperty(value = "上两年度总消耗量")
+    @TableField(exist = false)
+    private Long twoTotalConsumption;
+
+    /**上两年度月均消耗量*/
+    @ApiModelProperty(value = "上两年度月均消耗量")
+    @TableField(exist = false)
+    private String twoMonthConsumption;
+
+    /**上年度总消耗量*/
+    @ApiModelProperty(value = "上年度总消耗量")
+    @TableField(exist = false)
+    private Long lastYearConsumption;
+
+    /**上年度月均消耗量*/
+    @ApiModelProperty(value = "上年度月均消耗量")
+    @TableField(exist = false)
+    private String lastYearMonthConsumption;
+
+    /**本年度总消耗量*/
+    @ApiModelProperty(value = "本年度总消耗量")
+    @TableField(exist = false)
+    private Long thisYearConsumption;
+
+    /**本年度月均消耗量*/
+    @ApiModelProperty(value = "本年度月均消耗量")
+    @TableField(exist = false)
+    private String thisYearMonthConsumption;
+
+    /**上个月的消耗量*/
+    @ApiModelProperty(value = "上个月的消耗量")
+    @TableField(exist = false)
+    private Long lastMonthConsumption;
+
+    /**本月的消耗量*/
+    @ApiModelProperty(value = "本月的消耗量")
+    @TableField(exist = false)
+    private Long thisMonthConsumption;
 
     /**子系统人员*/
     @ApiModelProperty(value = "子系统下的物资分类")

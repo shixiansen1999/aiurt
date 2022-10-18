@@ -113,12 +113,41 @@
     </select>
 
     <select id="getSubsystemByUserId" resultType="com.aiurt.modules.sparepart.entity.dto.SparePartStatistics">
-        select cs.system_code as systemCode,cs.system_name as systemName
+        select cs.system_code as systemCode,cs.system_name as systemName,cs.id as id
         from cs_user_subsystem cus
         left join cs_subsystem cs on cs.id = cus.system_id
         where cs.del_flag = 0
         <if test="id != null and id != ''">
             and cus.user_id = #{id}
         </if>
+        <if test="systemCode != null and systemCode != ''">
+            and cs.system_code = #{systemCode}
+        </if>
+    </select>
+
+    <select id="timeCount" resultType="java.lang.Long">
+        SELECT
+          SUM(spare_part_out_order.num) as sum
+        FROM
+        spare_part_out_order spare_part_out_order
+        LEFT JOIN material_base t1 ON spare_part_out_order.material_code = t1.CODE
+        LEFT JOIN cs_major cs_major ON t1.major_code = cs_major.major_code
+        LEFT JOIN cs_subsystem cs_subsystem ON t1.system_code = cs_subsystem.system_code
+        LEFT JOIN material_base_type t4 ON t1.base_type_code = t4.base_type_code
+        <where>
+                spare_part_out_order.del_flag =0
+            <if test="systemCode != null">
+                and cs_subsystem.system_code = #{systemCode}
+            </if>
+            <if test="baseTypeCode != null">
+                and t4.base_type_code = #{baseTypeCode}
+            </if>
+            <if test="year != null">
+                and YEAR(spare_part_out_order.confirm_time) = #{year}
+            </if>
+            <if test="month != null">
+                and MONTH(spare_part_out_order.confirm_time) = #{month}
+            </if>
+        </where>
     </select>
 </mapper>

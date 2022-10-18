@@ -130,9 +130,55 @@ public class MaterialBaseType {
 	@TableField(exist = false)
 	private String byType = "wzfl";
 
-	@ApiModelProperty(value = "数量")
+	/**子系统名称*/
+	@ApiModelProperty(value = "二级库数量")
 	@TableField(exist = false)
-	private Long count;
+	private Long twoCount;
+
+	/**子系统名称*/
+	@ApiModelProperty(value = "三级库数量")
+	@TableField(exist = false)
+	private Long threeCount;
+
+	/**上两年度总消耗量*/
+	@ApiModelProperty(value = "上两年度总消耗量")
+	@TableField(exist = false)
+	private Long twoTotalConsumption;
+
+	/**上两年度月均消耗量*/
+	@ApiModelProperty(value = "上两年度月均消耗量")
+	@TableField(exist = false)
+	private String twoMonthConsumption;
+
+	/**上年度总消耗量*/
+	@ApiModelProperty(value = "上年度总消耗量")
+	@TableField(exist = false)
+	private Long lastYearConsumption;
+
+	/**上年度月均消耗量*/
+	@ApiModelProperty(value = "上年度月均消耗量")
+	@TableField(exist = false)
+	private String lastYearMonthConsumption;
+
+	/**本年度总消耗量*/
+	@ApiModelProperty(value = "本年度总消耗量")
+	@TableField(exist = false)
+	private Long thisYearConsumption;
+
+	/**本年度月均消耗量*/
+	@ApiModelProperty(value = "本年度月均消耗量")
+	@TableField(exist = false)
+	private String thisYearMonthConsumption;
+
+	/**上个月的消耗量*/
+	@ApiModelProperty(value = "上个月的消耗量")
+	@TableField(exist = false)
+	private Long lastMonthConsumption;
+
+	/**本月的消耗量*/
+	@ApiModelProperty(value = "本月的消耗量")
+	@TableField(exist = false)
+	private Long thisMonthConsumption;
 
 	@ApiModelProperty(value = "父级状态")
 	@TableField(exist = false)

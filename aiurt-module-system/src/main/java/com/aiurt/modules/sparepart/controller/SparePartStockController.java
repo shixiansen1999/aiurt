@@ -10,6 +10,7 @@ import cn.hutool.core.util.ObjectUtil;
 import com.aiurt.common.aspect.annotation.PermissionData;
 import com.aiurt.modules.sparepart.entity.SparePartInOrder;
 import com.aiurt.modules.sparepart.entity.SparePartStockInfo;
+import com.aiurt.modules.sparepart.entity.dto.SparePartStatistics;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.query.QueryGenerator;
@@ -192,5 +193,28 @@ public class SparePartStockController extends BaseController<SparePartStock, ISp
 		 sparePartStock.setNum(999);
 		 List<SparePartStock> list = sparePartStockService.selectList(null, sparePartStock);
 		 return Result.OK(list);
+	 }
+
+	 /**
+	  * 备件统计
+	  *
+	  * @param sparePartStatistics
+	  * @param pageNo
+	  * @param pageSize
+	  * @param req
+	  * @return
+	  */
+	 @AutoLog(value = "备件统计",operateType = 1,operateTypeAlias = "备件统计",permissionUrl = "/sparepart/sparePartStock/list")
+	 @ApiOperation(value="备件统计", notes="备件统计")
+	 @GetMapping(value = "/selectSparePartStatistics")
+	 public Result<IPage<SparePartStatistics>> selectSparePartStatistics(SparePartStatistics sparePartStatistics,
+																	@RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
+																	@RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
+																	HttpServletRequest req) {
+		 Page<SparePartStatistics> page = new Page<SparePartStatistics>(pageNo, pageSize);
+		 List<SparePartStatistics> sparePartStatisticsList = sparePartStockService.selectSparePartStatistics(page, sparePartStatistics);
+		 sparePartStatisticsList = sparePartStatisticsList.stream().distinct().collect(Collectors.toList());
+		 page.setRecords(sparePartStatisticsList);
+		 return Result.OK(page);
 	 }
 }

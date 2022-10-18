@@ -6,7 +6,6 @@ import com.aiurt.modules.sparepart.entity.dto.SparePartStatistics;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.ibatis.annotations.Param;
-import org.jeecg.common.system.vo.CsUserSubsystemModel;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -41,8 +40,22 @@ public interface SparePartStockMapper extends BaseMapper<SparePartStock> {
     /**
      * 根据userId查询子系统
      * @param id
+     * @param systemCode
      * @return
      */
-    List<SparePartStatistics> getSubsystemByUserId(Page page,@Param("id") String id);
+    List<SparePartStatistics> getSubsystemByUserId(Page page,@Param("id") String id,@Param("systemCode") String systemCode);
+
+    /**
+     * 查询年度消耗量
+     * @param systemCode
+     * @param baseTypeCode
+     * @param year
+     * @param month
+     * @return
+     */
+    Long timeCount(@Param("systemCode") String systemCode,
+                   @Param("baseTypeCode") String baseTypeCode ,
+                   @Param("year") Integer year,
+                   @Param("month") Integer month);
 
 }
