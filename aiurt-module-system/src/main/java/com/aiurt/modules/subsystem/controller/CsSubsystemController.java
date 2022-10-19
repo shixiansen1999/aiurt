@@ -17,6 +17,7 @@ import com.aiurt.modules.material.entity.MaterialBaseType;
 import com.aiurt.modules.material.service.IMaterialBaseTypeService;
 import com.aiurt.modules.position.entity.CsStation;
 import com.aiurt.modules.subsystem.dto.SubsystemFaultDTO;
+import com.aiurt.modules.subsystem.dto.YearFaultDTO;
 import com.aiurt.modules.subsystem.entity.CsSubsystem;
 import com.aiurt.modules.subsystem.entity.CsSubsystemUser;
 import com.aiurt.modules.subsystem.mapper.CsSubsystemUserMapper;
@@ -36,6 +37,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -273,21 +275,72 @@ public class CsSubsystemController  {
 
 
 	 /**
-	  * 故障报表-子系统分析
+	  * 统计报表-子系统分析
 	  * @param
 	  * @return
 	  */
 	 //@AutoLog(value = "查询",operateType = 1,operateTypeAlias = "根据专业查子系统",permissionUrl = "/subsystem/list")
-	 @ApiOperation(value="故障报表-子系统分析", notes="故障报表-子系统分析")
+	 @ApiOperation(value="统计报表-子系统分析", notes="统计报表-子系统分析")
 	 @GetMapping(value = "/csSubsystemFault")
-	 public Result<IPage<SubsystemFaultDTO>> queryCsSubsystemFault(@RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
+	 public Result<Page<SubsystemFaultDTO>> queryCsSubsystemFault(@RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
 																   @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
-																   @RequestParam(name = "subsystemCode",required = false) String subsystemCode,
+																   SubsystemFaultDTO subsystemCode,
 																   @RequestParam(name = "deviceTypeCode",required = false) List<String> deviceTypeCode,
 																   @RequestParam(name = "time",required = false) String time,
 																   HttpServletRequest req) {
 		 Page<SubsystemFaultDTO> page = new Page<SubsystemFaultDTO>(pageNo, pageSize);
-		 IPage<SubsystemFaultDTO> pages = csSubsystemService.getSubsystemFailureReport(page,time,subsystemCode,deviceTypeCode);
-		 return Result.ok(pages);
+		 page= csSubsystemService.getSubsystemFailureReport(page,time,subsystemCode,deviceTypeCode);
+		 return Result.ok(page);
 	 }
+	/**
+	 * 统计报表-子系统分析-年次数据图
+	 * @param
+	 * @return
+	 */
+	//@AutoLog(value = "查询",operateType = 1,operateTypeAlias = "根据专业查子系统",permissionUrl = "/subsystem/list")
+	@ApiOperation(value="统计报表-子系统分析-年次数据图", notes="统计报表-子系统分析-年次数据图")
+	@GetMapping(value = "/yearNumFault")
+	public Result<List<YearFaultDTO>> yearFault() {
+		List<YearFaultDTO> pages = csSubsystemService.yearFault();
+		return Result.ok(pages);
+	}
+	/**
+	 * 统计报表-子系统分析-年分钟数据图
+	 * @param
+	 * @return
+	 */
+	//@AutoLog(value = "查询",operateType = 1,operateTypeAlias = "根据专业查子系统",permissionUrl = "/subsystem/list")
+	@ApiOperation(value="统计报表-子系统分析-年分钟数据图", notes="统计报表-子系统分析-年分钟数据图")
+	@GetMapping(value = "/yearMinuteFault")
+	public Result<List<YearFaultDTO>> yearMinuteFault() {
+		List<YearFaultDTO> pages = csSubsystemService.yearMinuteFault();
+		return Result.ok(pages);
+	}
+	/**
+	 * 统计报表-子系统分析-下拉框
+	 * @param
+	 * @return
+	 */
+	//@AutoLog(value = "查询",operateType = 1,operateTypeAlias = "根据专业查子系统",permissionUrl = "/subsystem/list")
+	@ApiOperation(value="统计报表-子系统分析-下拉框", notes="统计报表-子系统分析-下拉框")
+	@GetMapping(value = "/DeviceTypeComboBox")
+	public Result<List<SubsystemFaultDTO>> DeviceTypeComboBox(@RequestParam(name = "subsystemCode",required = false) String subsystemCode) {
+		List<SubsystemFaultDTO> pages = csSubsystemService.deviceTypeCodeByNameDTO(subsystemCode);
+		return Result.ok(pages);
+	}
+	/**
+	 * 统计报表-子系统分析导出
+	 *
+	 * @param request
+	 * @return
+	 */
+	@ApiOperation(value = "统计报表-子系统分析导出", notes = "统计报表-子系统分析导出")
+	@GetMapping(value = "/reportSubSystemExport")
+	public ModelAndView reportExport(HttpServletRequest request,
+									 SubsystemFaultDTO subsystemCode,
+									 @RequestParam(name = "deviceTypeCode",required = false) List<String> deviceTypeCode,
+									 @RequestParam(name = "time",required = false) String time,
+									 @RequestParam(name = "exportField",required = false)String exportField) {
+		return csSubsystemService.reportSystemExport(request,subsystemCode,deviceTypeCode,time,exportField);
+	}
 }

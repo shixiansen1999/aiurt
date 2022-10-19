@@ -17,17 +17,18 @@
         and cus.user_id = #{id}
     </if>
 </select>
-    <select id="selectByUserId" resultType="java.lang.String">
-    select  s.system_code from cs_user_subsystem csu
+    <select id="selectByUserId" resultType="com.aiurt.modules.subsystem.dto.SubsystemFaultDTO">
+    select  s.system_code,s.system_name from cs_user_subsystem csu
     left join cs_subsystem s on csu.system_id = s.id
     where  s.del_flag =0 and csu.user_id = #{id}
     </select>
     <select id="getSubsystemFaultDTO" resultType="com.aiurt.modules.subsystem.dto.SubsystemFaultDTO">
-    SELECT s.system_code, s.system_name,aaa.* FROM
-    (SELECT
+    SELECT
+    uuid() as id,
     COUNT(fa.id and fl.weight >8 or not null) as seriousFaultNum,
     COUNT(fa.id and fl.weight &lt; 7 or not null) as commonFaultNum,
-    ifnull(sum(TIMESTAMPDIFF(second,IFNULL(fr.recevice_time,fr.assign_time),fr.end_time))-sum(IFNUll(op.hang_up_time,0)),0) as num
+    IFNULL(sum(TIMESTAMPDIFF(second,IFNULL(fr.recevice_time,fr.assign_time),fr.end_time))
+    -(SELECT SUM(IFNUll(op.hang_up_time,0))FROM operation_process op  WHERE op.fault_code = fa.`code`),0) as num
     FROM cs_subsystem ss
     LEFT JOIN fault fa on fa.sub_system_code = ss.system_code
     LEFT JOIN fault_level fl on fa.fault_level = fl.`code` and fl.del_flag = 0
@@ -36,11 +37,134 @@
     WHERE
     ss.del_flag =0
     AND ss.system_code = #{subsystemCode}
-    AND date_format(fa.approval_pass_time ,'%Y-%m') = date_format( #{time},'%Y-%m') ) as aaa , cs_subsystem s
-    WHERE  s.del_flag =0
-    AND s.system_code = #{subsystemCode}
+    AND date_format(fa.approval_pass_time ,'%Y-%m') = date_format( #{time},'%Y-%m')
     </select>
-    <select id="getSubsystemByDeviceType" resultType="java.lang.String">
+
+    <select id="getSubsystemByDeviceType" resultType="com.aiurt.modules.subsystem.dto.SubsystemFaultDTO">
+        SELECT
+               uuid() as id,
+        COUNT(fa.id and fl.weight >8 or not null) as seriousFaultNum,
+        COUNT(fa.id and fl.weight  &lt; 7 or not null ) as commonFaultNum
+        FROM   fault fa
+        LEFT JOIN fault_device fd on  fd.fault_code =fa.`code`
+        LEFT JOIN  device de on fd.device_code = de.`code`
+        LEFT JOIN fault_level fl on fa.fault_level = fl.`code`
+        WHERE
+        fd.del_flag =0   and fl.del_flag = 0
+        AND fa.sub_system_code = #{subsystemCode}
+        and de.device_type_code = #{deviceTypeCode}
+        AND date_format(fa.approval_pass_time ,'%Y-%m') = date_format( #{time},'%Y-%m')
+    </select>
+    <select id="getNum" resultType="java.lang.Long">
+       select sum(aa.num) from (SELECT
+            ifnull(sum(TIMESTAMPDIFF(second,IFNULL(fr.recevice_time,fr.assign_time),fr.end_time))-sum(IFNUll(op.hang_up_time,0)),0) as num
+        FROM  device de
+                  LEFT JOIN fault_device fd on de.`code` = fd.device_code
+                  LEFT JOIN fault fa on  fd.fault_code =fa.`code`
+                  left join fault_repair_record  fr on fa.code = fr.fault_code
+                  LEFT JOIN operation_process op ON op.fault_code = fr.fault_code
+        WHERE
+            fd.del_flag =0     and fr.del_flag = 0
+          AND fa.sub_system_code = #{subsystemCode}
+          and de.device_type_code = #{deviceTypeCode}
+          AND date_format(fa.approval_pass_time ,'%Y-%m') = date_format( #{time},'%Y-%m')
+        group by fa.id) aa
+    </select>
+    <select id="getYearNumFault" resultType="com.aiurt.modules.subsystem.dto.YearFaultDTO">
+        select a.system_name as name,a.system_code as code,
+        COUNT(c.id and  DATE_FORMAT(c.happen_time, '%m') ='01' or not NULL ) as january,
+        COUNT(c.id and  DATE_FORMAT(c.happen_time, '%m') ='02' or not NULL ) as  february,
+        COUNT(c.id and  DATE_FORMAT(c.happen_time, '%m') ='03' or not NULL ) as march,
+        COUNT(c.id and  DATE_FORMAT(c.happen_time, '%m') ='04' or not NULL ) as april,
+        COUNT(c.id and  DATE_FORMAT(c.happen_time, '%m') ='05' or not NULL ) as may,
+        COUNT(c.id and  DATE_FORMAT(c.happen_time, '%m') ='06' or not NULL ) as june,
+        COUNT(c.id and  DATE_FORMAT(c.happen_time, '%m') ='07' or not NULL ) as july,
+        COUNT(c.id and  DATE_FORMAT(c.happen_time, '%m') ='08' or not NULL ) as august,
+        COUNT(c.id and  DATE_FORMAT(c.happen_time, '%m') ='09' or not NULL ) as september,
+        COUNT(c.id and  DATE_FORMAT(c.happen_time, '%m') ='10' or not NULL ) as october,
+        COUNT(c.id and  DATE_FORMAT(c.happen_time, '%m') ='11' or not NULL ) as november,
+        COUNT(c.id and  DATE_FORMAT(c.happen_time, '%m') ='12' or not NULL ) as december
+        FROM cs_subsystem a
+        LEFT JOIN fault c ON a.system_code = c.sub_system_code
+        and c.`status` >2  AND DATE_ADD(c.happen_time,INTERVAL 1 YEAR) > NOW()
+        WHERE a.del_flag=0
+        AND a.id in(select system_id from cs_user_subsystem where user_id = #{id})
+        GROUP BY  a.system_name
+    </select>
+    <select id="getDeviceTypeYearFault" resultType="com.aiurt.modules.subsystem.dto.YearFaultDTO">
+        select
+            COUNT(c.id and  DATE_FORMAT(c.happen_time, '%m') ='01' or not NULL ) as january,
+            COUNT(c.id and  DATE_FORMAT(c.happen_time, '%m') ='02' or not NULL ) as  february,
+            COUNT(c.id and  DATE_FORMAT(c.happen_time, '%m') ='03' or not NULL ) as march,
+            COUNT(c.id and  DATE_FORMAT(c.happen_time, '%m') ='04' or not NULL ) as april,
+            COUNT(c.id and  DATE_FORMAT(c.happen_time, '%m') ='05' or not NULL ) as may,
+            COUNT(c.id and  DATE_FORMAT(c.happen_time, '%m') ='06' or not NULL ) as june,
+            COUNT(c.id and  DATE_FORMAT(c.happen_time, '%m') ='07' or not NULL ) as july,
+            COUNT(c.id and  DATE_FORMAT(c.happen_time, '%m') ='08' or not NULL ) as august,
+            COUNT(c.id and  DATE_FORMAT(c.happen_time, '%m') ='09' or not NULL ) as september,
+            COUNT(c.id and  DATE_FORMAT(c.happen_time, '%m') ='10' or not NULL ) as october,
+            COUNT(c.id and  DATE_FORMAT(c.happen_time, '%m') ='11' or not NULL ) as november,
+            COUNT(c.id and  DATE_FORMAT(c.happen_time, '%m') ='12' or not NULL ) as december
+        FROM  fault c
+                  LEFT JOIN fault_device fd on fd.fault_code = c.`code` and fd.del_flag = 0
+                  LEFT JOIN device d on d.`code` =fd.device_code and d.del_flag =0
+        WHERE
+            c.`status` >2  AND DATE_ADD(c.happen_time,INTERVAL 1 YEAR) > NOW()
+          AND c.sub_system_code = #{code}
+          and d.device_type_code = #{deviceTypeCode}
 
     </select>
+    <select id="getSubsystemByDeviceTypeCode" resultType="com.aiurt.modules.subsystem.dto.SubsystemFaultDTO">
+        select code as deviceTypeCode,name as deviceTypeName from device_type
+        where del_flag = 0
+        <if test="deviceTypeCode != null ">
+            and code in
+            <foreach collection="deviceTypeCode" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        <if test="deviceTypeCode == null ">
+            and system_code = #{subsystemCode}
+        </if>
+    </select>
+    <select id="sysTemYearFault" resultType="com.aiurt.modules.subsystem.dto.ListDTO">
+        SELECT
+            a.system_name AS NAME,
+            a.system_code AS CODE,
+            sum( TIMESTAMPDIFF( SECOND,IFNULL( fr.recevice_time, fr.assign_time ), fr.end_time)) as num,
+            date_format(c.approval_pass_time, '%c') MONTH
+        FROM
+            cs_subsystem a
+                LEFT JOIN fault c ON a.system_code = c.sub_system_code
+                AND c.`status` > 2
+                AND DATE_ADD( c.approval_pass_time, INTERVAL 1 YEAR ) > NOW()
+                LEFT JOIN fault_repair_record fr ON fr.fault_code = c.`code`
+        WHERE
+            a.del_flag = 0
+         and  a.system_code = #{code}
+        GROUP BY
+            date_format(c.approval_pass_time, '%c'),
+            a.system_code
+    </select>
+    <select id="deviceTypeFault" resultType="com.aiurt.modules.subsystem.dto.ListDTO">
+        SELECT
+            a.`code`,a.name,
+            sum( TIMESTAMPDIFF( SECOND,IFNULL( fr.recevice_time, fr.assign_time ), fr.end_time)) as num,
+            date_format(c.approval_pass_time, '%c') MONTH
+        FROM
+            device a
+                LEFT JOIN fault_device fd on fd.device_code =a.`code`
+                LEFT JOIN fault c ON c.`code` =fd.fault_code
+                AND c.`status` > 2
+                AND DATE_ADD( c.approval_pass_time, INTERVAL 1 YEAR ) > NOW()
+                LEFT JOIN fault_repair_record fr ON fr.fault_code = c.`code`
+        WHERE
+            a.del_flag = 0
+          and  a.system_code = #{code}
+          and a.device_type_code = #{deviceTypeCode}
+        GROUP BY
+            date_format(c.approval_pass_time, '%c'),
+            a.`code`
+    </select>
+
 </mapper>

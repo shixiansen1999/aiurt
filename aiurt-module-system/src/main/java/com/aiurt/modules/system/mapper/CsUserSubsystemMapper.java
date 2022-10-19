@@ -2,7 +2,10 @@ package com.aiurt.modules.system.mapper;
 
 import java.util.List;
 
+import com.aiurt.modules.subsystem.dto.ListDTO;
 import com.aiurt.modules.subsystem.dto.SubsystemFaultDTO;
+import com.aiurt.modules.subsystem.dto.YearFaultDTO;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.ibatis.annotations.Param;
 import com.aiurt.modules.system.entity.CsUserSubsystem;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
@@ -25,10 +28,12 @@ public interface CsUserSubsystemMapper extends BaseMapper<CsUserSubsystem> {
 
     /**
      * 根据用户Id获取子系统
+     *
+     * @param page
      * @param id
      * @return
      */
-    List<String> selectByUserId(@Param("id") String id);
+    List<SubsystemFaultDTO> selectByUserId(Page<SubsystemFaultDTO> page, @Param("id") String id);
 
     /**
      *
@@ -40,10 +45,57 @@ public interface CsUserSubsystemMapper extends BaseMapper<CsUserSubsystem> {
 
     /**
      * 查询
+     * @param subsystemCode
+     * @param deviceTypeCode
+     * @return
+     */
+    List<SubsystemFaultDTO> getSubsystemByDeviceTypeCode( @Param("subsystemCode") String subsystemCode,@Param("deviceTypeCode") List<String> deviceTypeCode);
+
+    /**
+     *  设备类型数据
      * @param time
      * @param subsystemCode
      * @param deviceTypeCode
      * @return
      */
-    List<String> getSubsystemByDeviceType(@Param("time") String time, @Param("subsystemCode") String subsystemCode,@Param("deviceTypeCode") List<String> deviceTypeCode);
+    SubsystemFaultDTO getSubsystemByDeviceType(@Param("time") String time,@Param("subsystemCode") String subsystemCode, @Param("deviceTypeCode") String deviceTypeCode);
+
+    /**
+     * 查询次数
+     * @param time
+     * @param subsystemCode
+     * @param deviceTypeCode
+     * @return
+     */
+    Long getNum(@Param("time") String time,@Param("subsystemCode") String subsystemCode, @Param("deviceTypeCode") String deviceTypeCode);
+
+    /**
+     * 年次数
+     * @param id
+     * @return
+     */
+    List<YearFaultDTO> getYearNumFault(@Param("id") String id);
+
+    /**
+     * 设备类型年次数
+     * @param code
+     * @param deviceTypeCode
+     * @return
+     */
+    YearFaultDTO getDeviceTypeYearFault(@Param("code") String code,@Param("deviceTypeCode") String deviceTypeCode);
+
+    /**
+     * 年分钟
+     * @param code
+     * @return
+     */
+    List<ListDTO> sysTemYearFault(@Param("code") String code);
+
+    /**
+     *
+     * @param code
+     * @param deviceTypeCode
+     * @return
+     */
+    List<ListDTO> deviceTypeFault(@Param("code")String code,@Param("deviceTypeCode") String deviceTypeCode);
 }

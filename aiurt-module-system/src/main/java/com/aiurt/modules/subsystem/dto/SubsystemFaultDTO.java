@@ -3,8 +3,10 @@ package com.aiurt.modules.subsystem.dto;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import org.jeecgframework.poi.excel.annotation.Excel;
+import org.jeecgframework.poi.excel.annotation.ExcelCollection;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 /**
  * @projectName: aiurt-platform
@@ -17,7 +19,7 @@ import java.math.BigDecimal;
  */
 @Data
 public class SubsystemFaultDTO {
-
+    String id;
     @ApiModelProperty(value = "子系统名称")
     @Excel(name = "子系统名称", width = 15)
     private String systemName;
@@ -39,4 +41,8 @@ public class SubsystemFaultDTO {
     @Excel(name = "故障时长", width = 15)
     private BigDecimal failureDuration;
     Long num;
+    String name;
+    String code;
+ //   @ExcelCollection(name = "设备类型", orderNum = "4")
+    List<SubsystemFaultDTO> deviceTypeList;
 }
