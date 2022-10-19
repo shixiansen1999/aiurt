@@ -200,15 +200,15 @@
         monthPl.protective_measure as protectiveMeasure,
         staff.realname as staffName,
         monthPl.coordination_department_id as coordinationDepartmentId,
-        station.name as qingDianStationName,
+        station.station_name as qingDianStationName,
         monthPl.assist_station_ids as assistStationIds,
-        secstation.name as xiaoDianStationName,
+        secstation.station_name as xiaoDianStationName,
         monthPl.large_appliances as largeAppliances
 
         from bd_operate_plan_declaration_form_month as monthPl
         left join sys_user as staff on monthPl.charge_staff_id = staff.id
-        left join bd_station as station on monthPl.first_station_id = station.id
-        left join bd_station as secstation on monthPl.second_station_id = secstation.id
+        left join cs_station as station on monthPl.first_station_id = station.id
+        left join cs_station as secstation on monthPl.second_station_id = secstation.id
         <where>
 
 
@@ -219,9 +219,10 @@
                 and monthPl.first_station_id
                 in (
                 select station_in.id
-                from bd_station as station_in
+                from cs_station as station_in
+                left join cs_line line on line.line_code = station_in.line_code
                 where
-                station_in.line_id = #{line_id}
+                line.id = #{line_id}
                 )
             </if>
 
@@ -288,8 +289,8 @@
                month.assist_station_manager_ids as assistStationManagerIds,
                month.power_supply_requirement   as powerSupplyRequirement,
                month.coordination_department_id as coordinationDepartmentid,
-               fstation.name                    as firstStationId,
-               sstation.name                    as secondStationId,
+               fstation.station_name                    as firstStationId,
+               sstation.station_name                    as secondStationId,
                staff.realname                   as chargeStaffId,
                lineStaffID.realname             as lineStaffID,
                dispatchStaffID.realname         as dispatchStaffID
@@ -299,13 +300,13 @@
                  left join sys_user as staff
                            on
                                month.charge_staff_id = staff.id
-                 left join bd_station as station
+                 left join cs_station as station
                            on
                                month.first_station_id = station.id
-                 left join bd_station as fstation
+                 left join cs_station as fstation
                            on
                                month.first_station_id = fstation.id
-                 left join bd_station as sstation
+                 left join cs_station as sstation
                            on
                                month.second_station_id = sstation.id
                  left join sys_user as lineStaffID
@@ -404,8 +405,8 @@
         month.assist_station_manager_ids as assistStationManagerIds,
         month.power_supply_requirement as powerSupplyRequirement,
         month.coordination_department_id as coordinationDepartmentid,
-        fstation.name as firstStationId,
-        sstation.name as secondStationId,
+        fstation.station_name as firstStationId,
+        sstation.station_name as secondStationId,
         staff.realname as chargeStaffId,
         month.change_reason as rejectedReason
 
@@ -416,15 +417,15 @@
         on
         month.charge_staff_id = staff.id
 
-        left join bd_station as station
+        left join cs_station as station
         on
         month.first_station_id = station.id
 
-        left join bd_station as fstation
+        left join cs_station as fstation
         on
         month.first_station_id = fstation.id
 
-        left join bd_station as sstation
+        left join cs_station as sstation
         on
         month.second_station_id = sstation.id
 
@@ -437,9 +438,10 @@
                 and month.first_station_id
                 in (
                 select station_in.id
-                from bd_station as station_in
+                from cs_station as station_in
+                left join cs_line line on line.line_code = station_in.line_code
                 where
-                station_in.line_id = #{line_id}
+                line.id = #{line_id}
                 ) and month.form_status between 0 and 1
             </if>
 
