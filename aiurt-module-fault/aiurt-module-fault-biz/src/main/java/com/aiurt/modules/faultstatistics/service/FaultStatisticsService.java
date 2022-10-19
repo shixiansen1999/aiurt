@@ -96,15 +96,11 @@ public class FaultStatisticsService {
     }
 
     private void subList(FaultStatisticsDTO faultStatisticsDTO, List<FaultFrequencyDTO> sub) {
-        List<String> collect = sub.stream().map(FaultFrequencyDTO::getSubSystemCode).collect(Collectors.toList());
-        String string5 = this.translateMajor(collect, FaultConstant.SUBSYSTEM);
-        String[] split4 = string5.split("；");
-        List<String> list4 = Arrays.asList(split4);
-        for (int i = 0; i < sub.size(); i++) {
-            String string = list4.get(i);
-            FaultFrequencyDTO faultFrequencyDTO = sub.get(i);
-            faultFrequencyDTO.setSubSystemName(string);
-        }
+          sub.forEach(e->{
+            List<String> list = Arrays.asList(e.getSubSystemCode());
+            String string5 = this.translateMajor(list, FaultConstant.SUBSYSTEM);
+            e.setSubSystemName(string5);
+        });
         faultStatisticsDTO.setFaultFrequencyDTOList(sub);
     }
 
