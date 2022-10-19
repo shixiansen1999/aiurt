@@ -4,6 +4,7 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.map.MapUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
+import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.util.encryption.CryptoUtils;
 import com.aiurt.modules.robot.constant.RobotConstant;
 import com.aiurt.modules.robot.entity.IpMapping;
@@ -21,7 +22,6 @@ import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.extern.slf4j.Slf4j;
-import org.jeecg.common.exception.JeecgBootException;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -98,7 +98,7 @@ public class RobotInfoServiceImpl extends ServiceImpl<RobotInfoMapper, RobotInfo
         // 校验机器人是否存在
         RobotInfo robotInfo = baseMapper.selectById(id);
         if (ObjectUtil.isEmpty(robotInfo)) {
-            throw new JeecgBootException("删除失败，机器人信息不存在");
+            throw new AiurtBootException("删除失败，机器人信息不存在");
         }
 
         // 查询是否有关联信息，有则无法删除
@@ -119,7 +119,7 @@ public class RobotInfoServiceImpl extends ServiceImpl<RobotInfoMapper, RobotInfo
         // 机器人点位关联数据
         Long patrolPointNum = patrolPointInfoMapper.selectCount(new LambdaQueryWrapper<com.aiurt.modules.robot.entity.PatrolPointInfo>().eq(com.aiurt.modules.robot.entity.PatrolPointInfo::getRobotId, id));
         if (taskNum > 0 || patrolPointNum > 0) {
-            throw new JeecgBootException("该机器人存在关联数据，无法删除");
+            throw new AiurtBootException("该机器人存在关联数据，无法删除");
         }
     }
 
@@ -232,7 +232,7 @@ public class RobotInfoServiceImpl extends ServiceImpl<RobotInfoMapper, RobotInfo
     @Override
     public int getControlMode(String robotIp) {
         if (StrUtil.isEmpty(robotIp)) {
-            throw new JeecgBootException("机器人ip参数为空");
+            throw new AiurtBootException("机器人ip参数为空");
         }
         return robotDataService.getControlMode(robotIp);
     }
@@ -321,7 +321,7 @@ public class RobotInfoServiceImpl extends ServiceImpl<RobotInfoMapper, RobotInfo
      */
     private void checkCreateOrUpdate(RobotInfo robotInfo) {
         if (ObjectUtil.isEmpty(robotInfo)) {
-            throw new JeecgBootException("未接收到参数");
+            throw new AiurtBootException("未接收到参数");
         }
 
         log.info("添加机器人基础数据： 请求参数：{}", JSON.toJSONString(robotInfo));
@@ -351,7 +351,7 @@ public class RobotInfoServiceImpl extends ServiceImpl<RobotInfoMapper, RobotInfo
             lam.ne(RobotInfo::getRobotId, robotId);
         }
         if (baseMapper.selectCount(lam) > 0) {
-            throw new JeecgBootException("机器人ip已被其他机器人使用，请更换机器人ip");
+            throw new AiurtBootException("机器人ip已被其他机器人使用，请更换机器人ip");
         }
     }
 
@@ -365,7 +365,7 @@ public class RobotInfoServiceImpl extends ServiceImpl<RobotInfoMapper, RobotInfo
             return;
         }
         if (!AreaPointTreeUtils.ipCheck(robotIp)) {
-            throw new JeecgBootException("非法机器人ip");
+            throw new AiurtBootException("非法机器人ip");
         }
     }
 

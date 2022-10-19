@@ -38,15 +38,15 @@ public class TaskPatrolDTO extends TaskExcuteInfo {
     private String deviceId;
 
     @ApiModelProperty(value = "设备类型")
-    @Dict(dictTable = "bd_device_type", dicText = "name", dicCode = "id")
+    @Dict(dictTable = "device_type", dicText = "name", dicCode = "id")
     private String typeId;
 
     @ApiModelProperty(value = "线路")
-    @Dict(dictTable = "bd_line", dicText = "name", dicCode = "id")
+    @Dict(dictTable = "cs_line", dicText = "line_name", dicCode = "id")
     private String lineId;
 
     @ApiModelProperty(value = "站点")
-    @Dict(dictTable = "bd_station", dicText = "name", dicCode = "id")
+    @Dict(dictTable = "cd_station", dicText = "station_name", dicCode = "id")
     private String stationId;
 
 

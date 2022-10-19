@@ -1,12 +1,12 @@
 package com.aiurt.modules.robot.service.impl;
 
 import cn.hutool.core.collection.CollectionUtil;
+import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.modules.robot.dto.TaskRepairInfoDTO;
 import com.aiurt.modules.robot.entity.TaskRepairInfo;
 import com.aiurt.modules.robot.mapper.TaskRepairInfoMapper;
 import com.aiurt.modules.robot.service.ITaskRepairInfoService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import org.jeecg.common.exception.JeecgBootException;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -31,7 +31,7 @@ public class TaskRepairInfoServiceImpl extends ServiceImpl<TaskRepairInfoMapper,
         String taskId = taskRepairInfoDTO.getTaskId();
         List<String> repairCodes = taskRepairInfoDTO.getRepairCodes();
         if (CollectionUtil.isEmpty(repairCodes)) {
-            throw new JeecgBootException("报修编码为空!");
+            throw new AiurtBootException("报修编码为空!");
         }
         List<TaskRepairInfo> list = new ArrayList<>();
         Set<String> codes = new HashSet<>(repairCodes);

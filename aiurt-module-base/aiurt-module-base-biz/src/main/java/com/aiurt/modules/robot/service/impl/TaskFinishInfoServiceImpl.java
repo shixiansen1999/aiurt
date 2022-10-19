@@ -5,6 +5,7 @@ import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
+import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.modules.robot.constant.RobotConstant;
 import com.aiurt.modules.robot.constant.RobotDictConstant;
 import com.aiurt.modules.robot.dto.TaskFinishDTO;
@@ -24,7 +25,6 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.apache.shiro.SecurityUtils;
-import org.jeecg.common.exception.JeecgBootException;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.BeanUtils;
@@ -167,11 +167,11 @@ public class TaskFinishInfoServiceImpl extends ServiceImpl<TaskFinishInfoMapper,
     public void taskDispose(String id, String handleExplain) {
         LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         if (ObjectUtil.isEmpty(loginUser)) {
-            throw new JeecgBootException("检测到当前为未登录状态，请先登录！");
+            throw new AiurtBootException("检测到当前为未登录状态，请先登录！");
         }
         TaskFinishInfo info = this.getById(id);
         if (ObjectUtil.isEmpty(info)) {
-            throw new JeecgBootException("未找到id为【" + id + "】的记录！");
+            throw new AiurtBootException("未找到id为【" + id + "】的记录！");
         }
         info.setHandleUserId(loginUser.getId());
         info.setHandleTime(new Date());

@@ -2,6 +2,7 @@ package com.aiurt.modules.robot.service.impl;
 
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
+import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.modules.robot.entity.IpMapping;
 import com.aiurt.modules.robot.manager.AreaPointTreeUtils;
 import com.aiurt.modules.robot.mapper.IpMappingMapper;
@@ -9,7 +10,6 @@ import com.aiurt.modules.robot.service.IIpMappingService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.apache.commons.lang.StringUtils;
 import org.jeecg.common.api.vo.Result;
-import org.jeecg.common.exception.JeecgBootException;
 import org.springframework.stereotype.Service;
 
 /**
@@ -98,7 +98,7 @@ public class IpMappingServiceImpl extends ServiceImpl<IpMappingMapper, IpMapping
      */
     private void checkCreateOrUpdate(IpMapping ipMapping) {
         if (ObjectUtil.isEmpty(ipMapping)) {
-            throw new JeecgBootException("参数为空");
+            throw new AiurtBootException("参数为空");
         }
         checkIpLegal(ipMapping.getOutsideIp());
         checkIpLegal(ipMapping.getInsideIp());
@@ -114,7 +114,7 @@ public class IpMappingServiceImpl extends ServiceImpl<IpMappingMapper, IpMapping
             return;
         }
         if (!AreaPointTreeUtils.ipCheck(robotIp)) {
-            throw new JeecgBootException("非法ip地址");
+            throw new AiurtBootException("非法ip地址");
         }
     }
 }
