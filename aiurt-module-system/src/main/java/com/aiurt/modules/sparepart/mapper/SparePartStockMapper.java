@@ -27,7 +27,7 @@ public interface SparePartStockMapper extends BaseMapper<SparePartStock> {
      * @param baseTypeCode
      * @return
      */
-    Long stockCount(@Param("systemCode") String systemCode, @Param("baseTypeCode") String baseTypeCode);
+    Long stockCount(@Param("systemCode") List<String> systemCode, @Param("baseTypeCode") List<String> baseTypeCode);
 
     /**
      * 三级库的库存量
@@ -35,7 +35,7 @@ public interface SparePartStockMapper extends BaseMapper<SparePartStock> {
      * @param baseTypeCode
      * @return
      */
-    Long sparePartCount(@Param("systemCode") String systemCode, @Param("baseTypeCode") String baseTypeCode);
+    Long sparePartCount(@Param("systemCode") List<String> systemCode, @Param("baseTypeCode") List<String> baseTypeCode);
 
     /**
      * 根据userId查询子系统
@@ -43,7 +43,7 @@ public interface SparePartStockMapper extends BaseMapper<SparePartStock> {
      * @param systemCode
      * @return
      */
-    List<SparePartStatistics> getSubsystemByUserId(Page page,@Param("id") String id,@Param("systemCode") String systemCode);
+    List<SparePartStatistics> getSubsystemByUserId(Page page,@Param("id") String id,@Param("systemCode") List<String> systemCode);
 
     /**
      * 查询年度消耗量
@@ -53,8 +53,8 @@ public interface SparePartStockMapper extends BaseMapper<SparePartStock> {
      * @param month
      * @return
      */
-    Long timeCount(@Param("systemCode") String systemCode,
-                   @Param("baseTypeCode") String baseTypeCode ,
+    Long timeCount(@Param("systemCode") List<String> systemCode,
+                   @Param("baseTypeCode") List<String> baseTypeCode ,
                    @Param("year") Integer year,
                    @Param("month") Integer month);
 

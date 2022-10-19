@@ -7,6 +7,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import cn.hutool.core.util.ObjectUtil;
+import com.aiurt.boot.task.dto.OverhaulStatisticsDTOS;
 import com.aiurt.common.aspect.annotation.PermissionData;
 import com.aiurt.modules.sparepart.entity.SparePartInOrder;
 import com.aiurt.modules.sparepart.entity.SparePartStockInfo;
@@ -229,5 +230,18 @@ public class SparePartStockController extends BaseController<SparePartStock, ISp
 	 public Result<?> selectConsume(SparePartConsume sparePartConsume){
 		 List<SparePartConsume> sparePartConsumeList = sparePartStockService.selectConsume(sparePartConsume);
 		 return Result.OK(sparePartConsumeList);
+	 }
+
+	 /**
+	  * 统计分析-检修报表导出
+	  *
+	  * @param request
+	  * @return
+	  */
+	 @AutoLog(value = "备件统计-报表导出",operateType = 1,operateTypeAlias = "备件统计-报表导出",permissionUrl = "/sparepart/sparePartStock/list")
+	 @ApiOperation(value = "备件统计-报表导出", notes = "备件统计-报表导出")
+	 @GetMapping(value = "/reportExport")
+	 public ModelAndView reportExport(HttpServletRequest request, SparePartStatistics sparePartStatistics) {
+		 return sparePartStockService.reportExport(request,sparePartStatistics);
 	 }
 }
