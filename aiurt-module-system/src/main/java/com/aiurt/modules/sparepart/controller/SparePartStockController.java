@@ -10,6 +10,7 @@ import cn.hutool.core.util.ObjectUtil;
 import com.aiurt.common.aspect.annotation.PermissionData;
 import com.aiurt.modules.sparepart.entity.SparePartInOrder;
 import com.aiurt.modules.sparepart.entity.SparePartStockInfo;
+import com.aiurt.modules.sparepart.entity.dto.SparePartConsume;
 import com.aiurt.modules.sparepart.entity.dto.SparePartStatistics;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
@@ -219,14 +220,14 @@ public class SparePartStockController extends BaseController<SparePartStock, ISp
 
 	 /**
 	  * 备件类型数量消耗态势
-	  * @param sparePartStatistics
+	  * @param sparePartConsume
 	  * @return
 	  */
 	 @AutoLog(value = "备件类型数量消耗态势",operateType = 1,operateTypeAlias = "备件类型数量消耗态势",permissionUrl = "/sparepart/sparePartStock/list")
 	 @ApiOperation(value="备件类型数量消耗态势", notes="备件类型数量消耗态势")
-	 @GetMapping(value = "/selectSparePartStatistics")
-	 public Result<?> selectSparePartStatistics(SparePartStatistics sparePartStatistics){
-		 List<SparePartStatistics> sparePartStatisticsList = sparePartStockService.selectConsume(sparePartStatistics);
-		 return Result.OK(sparePartStatisticsList);
+	 @GetMapping(value = "/selectConsume")
+	 public Result<?> selectConsume(SparePartConsume sparePartConsume){
+		 List<SparePartConsume> sparePartConsumeList = sparePartStockService.selectConsume(sparePartConsume);
+		 return Result.OK(sparePartConsumeList);
 	 }
 }
