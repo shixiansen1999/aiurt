@@ -443,13 +443,12 @@
                fr.recevice_time,
                fr.end_time,
                fr.assign_time,
-               op.hang_up_time,
-        sum(TIMESTAMPDIFF(second,IFNULL(fr.recevice_time,fr.assign_time),fr.end_time))-sum(IFNUll(op.hang_up_time,'0')) as duration
+        sum(TIMESTAMPDIFF(second,IFNULL(fr.recevice_time,fr.assign_time),fr.end_time))-(SELECT SUM(IFNUll(op.hang_up_time,0))
+        FROM operation_process op  WHERE op.fault_code = frp.`fault_code`) as duration
         FROM
         fault_repair_participants frp
         LEFT JOIN sys_user s ON s.username = frp.user_name
         LEFT JOIN fault f ON f.CODE = frp.fault_code
-        LEFT JOIN operation_process op ON op.fault_code = frp.fault_code
         left join fault_repair_record fr  on fr.id = frp.fault_repair_record_id
         <where>
            fr.del_flag = 0
@@ -469,12 +468,11 @@
         fr.recevice_time,
         fr.end_time,
         fr.assign_time,
-        op.hang_up_time,
-        sum(TIMESTAMPDIFF(second,IFNULL(fr.recevice_time,fr.assign_time),fr.end_time))-sum(IFNUll(op.hang_up_time,'0')) as duration
+        sum(TIMESTAMPDIFF(second,IFNULL(fr.recevice_time,fr.assign_time),fr.end_time))-(SELECT SUM(IFNUll(op.hang_up_time,0))
+        FROM operation_process op  WHERE op.fault_code = fr.`fault_code`) as duration
         from  fault_repair_record  fr
         left join sys_user s on s.username = fr.appoint_user_name
         left join  fault f on f.code = fr.fault_code
-        LEFT JOIN operation_process op ON op.fault_code = fr.fault_code
         <where>
             fr.del_flag = 0
             <if test="startTime != null and endTime != null">
