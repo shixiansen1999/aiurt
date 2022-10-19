@@ -49,6 +49,7 @@ public interface ITaskExcuteInfoService extends IService<TaskExcuteInfo> {
      * @param taskExcuteInfos
      */
     void synchronizeRobotTaskExcuteInfo(List<TaskExcuteInfo> taskExcuteInfos);
+
 //    // 需要下载图片的
 //    List<TaskExcuteInfo> synchronizeRobotTaskExcuteInfo(List<TaskExcuteInfo> taskExcuteInfos);
 
