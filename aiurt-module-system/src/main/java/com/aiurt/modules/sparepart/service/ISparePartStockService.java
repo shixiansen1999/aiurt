@@ -6,7 +6,9 @@ import com.aiurt.modules.sparepart.entity.dto.SparePartConsume;
 import com.aiurt.modules.sparepart.entity.dto.SparePartStatistics;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
+import org.springframework.web.servlet.ModelAndView;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
 /**
@@ -45,4 +47,12 @@ public interface ISparePartStockService extends IService<SparePartStock> {
      * @return
      */
     List<SparePartConsume> selectConsume(SparePartConsume sparePartConsume);
+
+    /**
+     * 备件报表导出
+     * @param request
+     * @param sparePartStatistics
+     * @return
+     */
+    ModelAndView reportExport(HttpServletRequest request, SparePartStatistics sparePartStatistics);
 }
