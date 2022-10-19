@@ -1,6 +1,7 @@
 package com.aiurt.modules.system.controller;
 
 import cn.hutool.core.io.IoUtil;
+import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.constant.CommonConstant;
@@ -35,8 +36,13 @@ import org.springframework.web.servlet.ModelAndView;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.util.Objects;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * <p>
@@ -58,23 +64,24 @@ public class CommonController {
     /**
      * 本地：local minio：minio 阿里：alioss
      */
-    @Value(value="${jeecg.uploadType}")
+    @Value(value = "${jeecg.uploadType}")
     private String uploadType;
 
     @Autowired
     private ISysAttachmentService sysAttachmentService;
 
     /**
-     * @Author 政辉
      * @return
+     * @Author 政辉
      */
     @GetMapping("/403")
-    public Result<?> noauth()  {
+    public Result<?> noauth() {
         return Result.error("没有权限，请联系管理员授权");
     }
 
     /**
      * 文件上传统一方法
+     *
      * @param request
      * @param response
      * @return
@@ -83,8 +90,8 @@ public class CommonController {
     @ApiOperation("文件上传")
     @AutoLog("文件上传")
     @ApiImplicitParams({
-            @ApiImplicitParam(name="biz",value="业务路径",required=false,paramType="query"),
-            @ApiImplicitParam(name="file",value="文件",required=true,paramType="form")
+            @ApiImplicitParam(name = "biz", value = "业务路径", required = false, paramType = "query"),
+            @ApiImplicitParam(name = "file", value = "文件", required = true, paramType = "form")
     })
     public Result<?> upload(HttpServletRequest request, HttpServletResponse response) {
         Result<SysAttachment> result = new Result<>();
@@ -101,29 +108,29 @@ public class CommonController {
         MultipartHttpServletRequest multipartRequest = (MultipartHttpServletRequest) request;
         // 获取上传文件对象
         MultipartFile file = multipartRequest.getFile("file");
-        if(oConvertUtils.isEmpty(bizPath)){
-            if(CommonConstant.UPLOAD_TYPE_OSS.equals(uploadType)){
+        if (oConvertUtils.isEmpty(bizPath)) {
+            if (CommonConstant.UPLOAD_TYPE_OSS.equals(uploadType)) {
                 //未指定目录，则用阿里云默认目录 upload
                 bizPath = "upload";
-            }else{
+            } else {
                 bizPath = "";
             }
         }
-        if(CommonConstant.UPLOAD_TYPE_LOCAL.equals(uploadType)){
+        if (CommonConstant.UPLOAD_TYPE_LOCAL.equals(uploadType)) {
             //update-begin-author:lvdandan date:20200928 for:修改JEditor编辑器本地上传
-            savePath = this.uploadLocal(file,bizPath);
+            savePath = this.uploadLocal(file, bizPath);
             //update-begin-author:lvdandan date:20200928 for:修改JEditor编辑器本地上传
-        }else{
+        } else {
             //update-begin-author:taoyan date:20200814 for:文件上传改造
             savePath = CommonUtils.upload(file, bizPath, uploadType);
             //update-end-author:taoyan date:20200814 for:文件上传改造
             if (StrUtil.isBlank(savePath)) {
                 // 上传失败后
                 type = CommonConstant.UPLOAD_TYPE_LOCAL;
-                savePath = this.uploadLocal(file,bizPath);
+                savePath = this.uploadLocal(file, bizPath);
             }
         }
-        if(oConvertUtils.isNotEmpty(savePath)){
+        if (oConvertUtils.isNotEmpty(savePath)) {
 
             // 文件名称
             String originalFilename = file.getOriginalFilename();
@@ -142,7 +149,7 @@ public class CommonController {
             result.setSuccess(true);
             sysAttachment.setSplicFilePath(filePathId);
             result.setResult(sysAttachment);
-        }else {
+        } else {
             result.setMessage("上传失败！");
             result.setSuccess(false);
         }
@@ -151,15 +158,16 @@ public class CommonController {
 
     /**
      * 本地文件上传
-     * @param mf 文件
-     * @param bizPath  自定义路径
+     *
+     * @param mf      文件
+     * @param bizPath 自定义路径
      * @return
      */
-    private String uploadLocal(MultipartFile mf,String bizPath){
+    private String uploadLocal(MultipartFile mf, String bizPath) {
         try {
             String ctxPath = uploadpath;
             String fileName = null;
-            File file = new File(ctxPath + File.separator + bizPath + File.separator );
+            File file = new File(ctxPath + File.separator + bizPath + File.separator);
             if (!file.exists()) {
                 // 创建文件根目录
                 file.mkdirs();
@@ -167,18 +175,18 @@ public class CommonController {
             // 获取文件名
             String orgName = mf.getOriginalFilename();
             orgName = CommonUtils.getFileName(orgName);
-            if(orgName.indexOf(".")!=-1){
+            if (orgName.indexOf(".") != -1) {
                 fileName = orgName.substring(0, orgName.lastIndexOf(".")) + "_" + System.currentTimeMillis() + orgName.substring(orgName.lastIndexOf("."));
-            }else{
-                fileName = orgName+ "_" + System.currentTimeMillis();
+            } else {
+                fileName = orgName + "_" + System.currentTimeMillis();
             }
             String savePath = file.getPath() + File.separator + fileName;
             File savefile = new File(savePath);
             FileCopyUtils.copy(mf.getBytes(), savefile);
             String dbpath = null;
-            if(oConvertUtils.isNotEmpty(bizPath)){
+            if (oConvertUtils.isNotEmpty(bizPath)) {
                 dbpath = bizPath + File.separator + fileName;
-            }else{
+            } else {
                 dbpath = fileName;
             }
             if (dbpath.contains("\\")) {
@@ -206,14 +214,14 @@ public class CommonController {
         // ISO-8859-1 ==> UTF-8 进行编码转换
         String imgPath = extractPathFromPattern(request);
         String fileName = request.getParameter("fileName");
-        if(oConvertUtils.isEmpty(imgPath) || imgPath=="null"){
+        if (oConvertUtils.isEmpty(imgPath) || imgPath == "null") {
             return;
         }
         // 其余处理略
         InputStream inputStream = null;
         OutputStream outputStream = null;
 
-        imgPath = imgPath.replace("..", "").replace("../","");
+        imgPath = imgPath.replace("..", "").replace("../", "");
         if (imgPath.endsWith(",")) {
             imgPath = imgPath.substring(0, imgPath.length() - 1);
         }
@@ -229,9 +237,9 @@ public class CommonController {
             fileName = sysAttachment.getFileName();
         }
         // minio存储
-        if (StrUtil.equalsIgnoreCase("minio",sysAttachment.getType())) {
+        if (StrUtil.equalsIgnoreCase("minio", sysAttachment.getType())) {
             try (
-                    InputStream inputStream1 = MinioUtil.getMinioFile("platform",sysAttachment.getFilePath());
+                    InputStream inputStream1 = MinioUtil.getMinioFile("platform", sysAttachment.getFilePath());
                     OutputStream outputStream1 = response.getOutputStream()) {
 
                 response.setContentType("application/force-download");
@@ -242,14 +250,14 @@ public class CommonController {
                 response.setContentType("application/json;charset=UTF-8");
                 throw new AiurtBootException("文件下载失败！文件不存在或已经被删除。");
             }
-        }else{
+        } else {
             try {
 
                 String filePath = uploadpath + File.separator + sysAttachment.getFilePath();
                 File file = new File(filePath);
-                if(!file.exists()){
+                if (!file.exists()) {
                     response.setStatus(404);
-                    throw new RuntimeException("文件["+imgPath+"]不存在..");
+                    throw new RuntimeException("文件[" + imgPath + "]不存在..");
                 }
 
 
@@ -307,9 +315,9 @@ public class CommonController {
 
 
     /**
-     * @功能：pdf预览Iframe
      * @param modelAndView
      * @return
+     * @功能：pdf预览Iframe
      */
     @RequestMapping("/pdf/pdfPreviewIframe")
     public ModelAndView pdfPreviewIframe(ModelAndView modelAndView) {
@@ -318,8 +326,9 @@ public class CommonController {
     }
 
     /**
-     *  把指定URL后的字符串全部截断当成参数
-     *  这么做是为了防止URL中包含中文或者特殊字符（/等）时，匹配不了的问题
+     * 把指定URL后的字符串全部截断当成参数
+     * 这么做是为了防止URL中包含中文或者特殊字符（/等）时，匹配不了的问题
+     *
      * @param request
      * @return
      */
@@ -356,7 +365,7 @@ public class CommonController {
             headers.set("X-Access-Token", token);
             // 发送请求
             String httpURL = URLDecoder.decode(url, "UTF-8");
-            ResponseEntity<String> response = RestUtil.request(httpURL, method, headers , variables, params, String.class);
+            ResponseEntity<String> response = RestUtil.request(httpURL, method, headers, variables, params, String.class);
             // 封装返回结果
             Result<Object> result = new Result<>();
             int statusCode = response.getStatusCodeValue();
@@ -378,4 +387,109 @@ public class CommonController {
         }
     }
 
+    /**
+     * 通过链接将图片保存到本地
+     *
+     * @param bizPath       自定义路径
+     * @param remoteFileUrl 图片链接
+     * @return
+     */
+    private String remoteUploadLocal(String remoteFileUrl, String bizPath) {
+        if (StrUtil.isEmpty(remoteFileUrl)) {
+            return "";
+        }
+        InputStream is = null;
+        OutputStream os = null;
+        try {
+            // 转义url
+            String newUrl = escapeUrl(remoteFileUrl);
+            // 发送远程请求获取图片资源
+            URL url = new URL(newUrl);
+            HttpURLConnection httpURLConnection = (HttpURLConnection) url.openConnection();
+            httpURLConnection.setConnectTimeout(5 * 1000);
+            httpURLConnection.connect();
+
+            // 输入流
+            is = httpURLConnection.getInputStream();
+            // 1K的数据缓冲
+            byte[] bs = new byte[1024];
+            // 读取到的数据长度
+            int len;
+
+            String ctxPath = uploadpath;
+            File file = new File("/opt/upFiles" + File.separator + bizPath + File.separator);
+            if (!file.exists()) {
+                // 创建文件根目录
+                file.mkdirs();
+            }
+
+            // 获取文件名
+            String fileName = remoteFileUrl.substring(remoteFileUrl.lastIndexOf("/") + 1);
+
+            os = new FileOutputStream(file.getPath() + "\\" + fileName);
+            // 开始读取
+            while ((len = is.read(bs)) != -1) {
+                os.write(bs, 0, len);
+            }
+            String dbpath = null;
+            if (oConvertUtils.isNotEmpty(bizPath)) {
+                dbpath = bizPath + File.separator + fileName;
+            } else {
+                dbpath = fileName;
+            }
+            if (dbpath.contains("\\")) {
+                dbpath = dbpath.replace("\\", "/");
+            }
+            return dbpath;
+        } catch (IOException e) {
+            log.error(e.getMessage(), e);
+        } finally {
+            // 完毕，关闭所有链接
+            try {
+                if (os != null) {
+                    os.close();
+                }
+                if (is != null) {
+                    is.close();
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return "";
+    }
+
+    private String escapeUrl(String remoteFileUrl) throws UnsupportedEncodingException {
+        // 先替换空格
+        remoteFileUrl = remoteFileUrl.replaceAll(" ", "%20");
+
+        // 中文正则
+        String pattern = "[\u4e00-\u9fa5]+";
+
+        // 匹配
+        Pattern r = Pattern.compile(pattern);
+        Matcher m = r.matcher(remoteFileUrl);
+        StringBuffer stringBuffer = new StringBuffer();
+        // m.find()查找
+        while (m.find()) {
+            // m.start()连续中文的字符串的开始下标， m.end()连续中文的字符串的最后一个字符下标
+            String substring = remoteFileUrl.substring(m.start(), m.end());
+            // m.group()获取字符
+            String group = m.group();
+            // 中文转义
+            String encode = URLEncoder.encode(group, "utf-8");
+            m.appendReplacement(stringBuffer, group.replace(substring, encode));
+        }
+        m.appendTail(stringBuffer);
+        return ObjectUtil.isNotEmpty(stringBuffer) ? stringBuffer.toString() : remoteFileUrl;
+    }
+
+    public static void main(String[] args) {
+        CommonController commonController = new CommonController();
+        String remoteFileUrl = "https://guide-blog-images.oss-cn-shenzhen.aliyuncs.com/github/javaguide/system-design/framework/spring/jvme0c60b4606711fc4a0b6faf03230247a.png";
+
+        String path = commonController.remoteUploadLocal(remoteFileUrl, "");
+
+        System.out.println(path);
+    }
 }

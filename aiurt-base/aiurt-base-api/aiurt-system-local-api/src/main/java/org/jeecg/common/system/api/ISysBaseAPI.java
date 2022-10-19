@@ -604,4 +604,12 @@ public interface ISysBaseAPI extends CommonAPI {
      * @return
      */
     String getLineCodeById(String lineId);
+    /**
+     * 通过链接将图片保存到本地
+     *
+     * @param bizPath       自定义路径
+     * @param remoteFileUrl 图片链接
+     * @return
+     */
+    String remoteUploadLocal(String remoteFileUrl, String bizPath);
 }

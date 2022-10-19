@@ -58,6 +58,7 @@ import org.jeecg.common.system.query.QueryGenerator;
 import org.jeecg.common.system.vo.*;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.util.AntPathMatcher;
@@ -65,10 +66,16 @@ import org.springframework.util.PathMatcher;
 
 import javax.annotation.Resource;
 import javax.sql.DataSource;
+import java.io.*;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.net.URLEncoder;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
@@ -80,6 +87,8 @@ import java.util.stream.Collectors;
 @Slf4j
 @Service
 public class SysBaseApiImpl implements ISysBaseAPI {
+    @Value(value = "${jeecg.path.upload}")
+    private String uploadpath;
     /**
      * 当前系统数据库类型
      */
@@ -1288,6 +1297,7 @@ public class SysBaseApiImpl implements ISysBaseAPI {
         }
         return list;
     }
+
     @Override
     public List<LoginUser> getUseList(List<String> orgIds) {
         List<SysUser> userList = userMapper.selectList(new QueryWrapper<SysUser>().in("org_id", orgIds).eq("status", 1).eq("del_flag", 0));
@@ -1647,7 +1657,7 @@ public class SysBaseApiImpl implements ISysBaseAPI {
             if (CollUtil.isEmpty(list)) {
                 return CollUtil.newArrayList();
             } else {
-                list = list.stream().collect(Collectors.collectingAndThen(Collectors.toCollection(() -> new TreeSet<>(Comparator.comparing(SysDepartModel :: getId))), ArrayList::new));
+                list = list.stream().collect(Collectors.collectingAndThen(Collectors.toCollection(() -> new TreeSet<>(Comparator.comparing(SysDepartModel::getId))), ArrayList::new));
                 return list;
             }
 
@@ -1739,6 +1749,97 @@ public class SysBaseApiImpl implements ISysBaseAPI {
     @Override
     public String getLineCodeById(String lineId) {
         return null;
+    }
+
+    @Override
+    public String remoteUploadLocal(String remoteFileUrl, String bizPath) {
+        if (StrUtil.isEmpty(remoteFileUrl)) {
+            return "";
+        }
+        InputStream is = null;
+        OutputStream os = null;
+        try {
+            // 转义url
+            String newUrl = escapeUrl(remoteFileUrl);
+            // 发送远程请求获取图片资源
+            URL url = new URL(newUrl);
+            HttpURLConnection httpURLConnection = (HttpURLConnection) url.openConnection();
+            httpURLConnection.setConnectTimeout(5 * 1000);
+            httpURLConnection.connect();
+
+            // 输入流
+            is = httpURLConnection.getInputStream();
+            // 1K的数据缓冲
+            byte[] bs = new byte[1024];
+            // 读取到的数据长度
+            int len;
+
+            String ctxPath = uploadpath;
+            File file = new File(ctxPath + File.separator + bizPath + File.separator);
+            if (!file.exists()) {
+                // 创建文件根目录
+                file.mkdirs();
+            }
+
+            // 获取文件名
+            String fileName = remoteFileUrl.substring(remoteFileUrl.lastIndexOf("/") + 1);
+
+            os = new FileOutputStream(file.getPath() + "\\" + fileName);
+            // 开始读取
+            while ((len = is.read(bs)) != -1) {
+                os.write(bs, 0, len);
+            }
+            String dbpath = null;
+            if (oConvertUtils.isNotEmpty(bizPath)) {
+                dbpath = bizPath + File.separator + fileName;
+            } else {
+                dbpath = fileName;
+            }
+            if (dbpath.contains("\\")) {
+                dbpath = dbpath.replace("\\", "/");
+            }
+            return dbpath;
+        } catch (IOException e) {
+            log.error(e.getMessage(), e);
+        } finally {
+            // 完毕，关闭所有链接
+            try {
+                if (os != null) {
+                    os.close();
+                }
+                if (is != null) {
+                    is.close();
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return "";
+    }
+
+    private String escapeUrl(String remoteFileUrl) throws UnsupportedEncodingException {
+        // 先替换空格
+        remoteFileUrl = remoteFileUrl.replaceAll(" ", "%20");
+
+        // 中文正则
+        String pattern = "[\u4e00-\u9fa5]+";
+
+        // 匹配
+        Pattern r = Pattern.compile(pattern);
+        Matcher m = r.matcher(remoteFileUrl);
+        StringBuffer stringBuffer = new StringBuffer();
+        // m.find()查找
+        while (m.find()) {
+            // m.start()连续中文的字符串的开始下标， m.end()连续中文的字符串的最后一个字符下标
+            String substring = remoteFileUrl.substring(m.start(), m.end());
+            // m.group()获取字符
+            String group = m.group();
+            // 中文转义
+            String encode = URLEncoder.encode(group, "utf-8");
+            m.appendReplacement(stringBuffer, group.replace(substring, encode));
+        }
+        m.appendTail(stringBuffer);
+        return ObjectUtil.isNotEmpty(stringBuffer) ? stringBuffer.toString() : remoteFileUrl;
     }
 
 //    @Override
