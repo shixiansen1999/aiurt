@@ -22,6 +22,10 @@ public class BusMessageDTO extends MessageDTO implements Serializable {
      */
     private String busId;
 
+    /**
+     * 消息内容类型对应sys_announcement_type表的id
+     */
+    private Integer announcementTypeId;
     public BusMessageDTO(){
 
     }

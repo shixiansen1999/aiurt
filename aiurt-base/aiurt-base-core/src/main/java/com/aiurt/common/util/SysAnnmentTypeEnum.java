@@ -32,6 +32,9 @@ public enum SysAnnmentTypeEnum {
      */
     WORKLOG("worklog", "component",""),
 
+    BDOPERATEPLANDECLARATIONFORM("planFromSearch", "component", "prodManage/weekAuditing"),
+
+
     /**
      * 工作流跳转链接我的办公
      */

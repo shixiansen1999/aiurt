@@ -1,0 +1,594 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.aiurt.modules.weeklyPlan.mapper.BdOperatePlanDeclarationFormMapper">
+
+    <select id="queryConstructionTypeList" resultType="com.aiurt.modules.weeklyPlan.dto.BdConstructionTypeDTO">
+        SELECT id AS id, work_name AS name FROM cs_work;
+    </select>
+
+    <select id="queryStaffByTeamId" resultType="com.aiurt.modules.weeklyPlan.dto.BdStaffInfoReturnTypeDTO">
+        SELECT distinct bs.id AS id,
+               bs.realname AS name,
+               sur.role_id AS roleId,
+               bs.org_id AS teamId,
+               bs.phone AS phoneNo
+        FROM sys_user AS bs LEFT JOIN sys_user_role AS sur on bs.id = sur.user_id
+        WHERE bs.org_id
+        IN (SELECT distinct id FROM sys_depart WHERE FIND_IN_SET(id,get_team_child(#{teamID}))>0)
+    </select>
+
+    <select id="queryStaffByRoleType" resultType="com.aiurt.modules.weeklyPlan.dto.BdStaffInfoReturnTypeDTO">
+        SELECT distinct bs.id AS id,
+               bs.realname AS name,
+               sur.role_id AS roleId,
+               bs.org_id AS teamId,
+               bs.phone AS phoneNo
+        FROM sys_user AS bs
+            LEFT JOIN sys_user_role AS sur on bs.id = sur.user_id
+            LEFT JOIN sys_user_depart AS sud on bs.id = sud.user_id
+        <where>
+            sur.role_id = #{roleType}
+            <if test='deptID!="0" and deptID!=null and deptID!=""'>
+                AND bs.org_id IN (SELECT dep_id FROM sys_user_depart sud left join cs_user_major cum on sud.user_id = cum.user_id WHERE cum.major_id=#{deptID})
+            </if>
+        </where>
+    </select>
+
+    <select id="queryStaffByRoleName" resultType="com.aiurt.modules.weeklyPlan.dto.BdStaffInfoReturnTypeDTO">
+        SELECT distinct bs.id AS id,
+        bs.realname AS name,
+        sur.role_id AS roleId,
+        bs.org_id AS teamId,
+        bs.phone AS phoneNo,
+        FROM sys_user_role AS sur
+        LEFT JOIN sys_user AS bs on bs.id = sur.user_id
+        LEFT JOIN sys_user_depart AS sud on bs.id = sud.user_id
+        left join sys_role rol on rol.id = sur.role_id
+        <where>
+            rol.role_name = #{roleName}
+            <if test='deptID!="0" and deptID!=null and deptID!=""'>
+                AND bs.org_id IN (SELECT dep_id FROM sys_user_depart sud left join cs_user_major cum on sud.user_id = cum.user_id WHERE cum.major_id=#{deptID})
+            </if>
+        </where>
+    </select>
+
+    <select id="queryStations" resultType="com.aiurt.modules.weeklyPlan.dto.BdStationReturnTypeDTO">
+        SELECT cs.id AS id,
+               cs.station_name AS name,
+               cs.line_code AS lineID,
+               cs.sort AS indexID
+        FROM cs_station cs
+        left join cs_line cl on cl.line_code = cs.line_code
+        left join sys_depart sd on cs.sys_org_code = sd.org_code
+        <where>
+            sd.id = #{teamId}
+        </where>
+        ORDER BY cs.sort
+    </select>
+
+    <select id="queryLines" resultType="com.aiurt.modules.weeklyPlan.dto.BdLineDTO">
+        SELECT id,
+               line_name,
+               line_code
+        FROM cs_line
+        where 1=1
+        <if test="idList !=null and idList.size()>0">
+            and id IN
+            <foreach collection="idList" item="item" index="index" open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+        </if>
+        ORDER BY id
+    </select>
+
+    <select id="queryStaffNameById" resultType="java.lang.String">
+        SELECT name FROM work_area WHERE id=#{staffID}
+    </select>
+
+    <select id="queryStationNameById" resultType="java.lang.String">
+        SELECT station_name FROM cs_station WHERE id=#{stationID}
+    </select>
+
+    <select id="queryUserInfo" resultType="com.aiurt.modules.weeklyPlan.dto.BdUserInfoDTO">
+        SELECT
+            su.id AS id,
+            su.realname AS NAME,
+            su.org_id AS teamID,
+            sd.depart_name AS teamName,
+            sud.depart_id AS deptID,
+            sud.depart_id AS deptName,
+            sur.role_id AS roleID,
+            sr.role_name AS roleName
+        FROM sys_user AS su
+                 LEFT JOIN sys_depart sd ON su.org_id = sd.id
+                 LEFT JOIN cs_user_depart sud ON su.id = sud.user_id
+                 LEFT JOIN sys_user_role sur ON su.id = sur.user_id
+                 LEFT JOIN sys_role sr ON sur.role_id = sr.id
+        WHERE su.id=#{userID}
+    </select>
+
+    <select id="queryAllStations" resultType="com.aiurt.modules.weeklyPlan.dto.BdStationReturnTypeDTO">
+        SELECT a.id AS id,
+               a.station_name AS name,
+               a.line_code AS lineID,
+               a.sort AS indexID,
+               b.line_name as lineName,
+               csp.pid
+        FROM cs_station a
+        left join cs_line b on a.line_code = b.line_code
+        left join cs_station_position csp on a.station_code = csp.staion_code
+        where 1=1
+        <if test="positionList!=null">
+            and a.station_code in
+            <foreach collection="positionList" open="(" separator="," close=")" item="id">
+                #{id}
+            </foreach>
+        </if>
+        <if test="pid!=null and pid!=''">
+            AND csp.pid = #{pid}
+        </if>
+        ORDER BY a.station_code
+
+    </select>
+
+    <select id="checkChargeStaffIfConflict" resultType="java.lang.Integer">
+        SELECT id AS id FROM bd_operate_plan_declaration_form
+        WHERE charge_staff_id=#{chargeStaffId} AND task_date=#{taskDate} AND form_status!=2
+        LIMIT 1
+    </select>
+
+    <select id="checkFormIfEdited" resultType="java.lang.Integer">
+        SELECT id AS id FROM bd_operate_plan_declaration_form
+        WHERE change_correlation=#{changeCorrelation}
+        LIMIT 1
+    </select>
+
+    <select id="queryPages"
+            resultType="com.aiurt.modules.weeklyPlan.dto.BdOperatePlanDeclarationFormReturnTypeDTO">
+        SELECT bd.id AS id,
+            bd.nature AS nature,
+            bd.type AS type,
+            bd.department_id AS departmentName,
+            bd.form_status AS formStatus,
+            bd.apply_form_status AS applyFormStatus,
+            bd.task_date AS taskDate,
+            bd.task_time AS taskTime,
+            bd.task_range AS taskRange,
+            bd.power_supply_requirement AS powerSupplyRequirement,
+            bd.task_content AS taskContent,
+            bd.protective_measure AS protectiveMeasure,
+            <!--bs1.realname AS chargeStaffName,-->
+            CONCAT(IFNULL(bs1.identity_number,''), IFNULL(bs1.realname, ''), IFNULL(bs1.phone, '')) AS chargeStaffName,
+            bs2.realname AS lineStaffName,
+            bs3.realname AS dispatchStaffName,
+            st1.name AS firstStationName,
+            st2.name AS secondStationName,
+            bd.large_appliances AS largeAppliances,
+            bd.remark AS remark,
+            st1.line_id AS lineID,
+            bd.assist_station_ids AS assistStationName,
+            bd.assist_station_ids AS assistStationIds,
+            bd.coordination_department_id AS coordinationDepartmentId,
+            bd.task_staff_num AS taskStaffNum,
+            bd.weekday AS weekday,
+            bd.assist_station_manager_names AS assistStationManagerNames,
+            bd.assist_station_manager_ids AS assistStationManagerIds,
+            bd.plan_change AS planChange,
+            bd.dispatch_form_status AS dispatchFormStatus,
+            bd.line_form_status AS lineFormStatus,
+            bd.manager_form_status AS managerFormStatus,
+            bd.director_form_status AS directorFormStatus,
+            bd.line_staff_id AS lineStaffId,
+            bd.dispatch_staff_id AS dispatchStaffId,
+            bd.manager_staff_id AS managerStaffId,
+            bd.director_staff_id AS directorStaffId,
+            bd.charge_staff_id AS chargeStaffId,
+            bd.apply_staff_id AS applyStaffId,
+            bd.change_correlation AS changeCorrelation,
+            bs4.realname as applyStaffName,
+            bd.create_time as createTime,
+            bs1.phone,bd.reason,st3.name AS substationName,
+            bs1.identity_number as identityNumber
+        FROM bd_operate_plan_declaration_form AS bd
+            LEFT JOIN sys_user AS bs1 ON bd.charge_staff_id = bs1.id
+            LEFT JOIN sys_user AS bs2 ON bd.line_staff_id = bs2.id
+            LEFT JOIN sys_user AS bs3 ON bd.dispatch_staff_id = bs3.id
+            LEFT JOIN sys_user AS bs4 ON bd.apply_staff_id = bs4.id
+            LEFT JOIN cs_station AS st1 ON bd.first_station_id = st1.id
+            LEFT JOIN cs_station AS st2 ON bd.second_station_id = st2.id
+            LEFT JOIN cs_station AS st3 ON bd.substation_id = st3.id
+            LEFT JOIN work_area AS si1 ON bd.site_id = si1.id
+            <where>
+                1=1
+                <if test="queryPagesParams.firstStationId!='' and queryPagesParams.firstStationId!=null">
+                    AND bd.first_station_id = #{queryPagesParams.firstStationId}
+                </if>
+                <if test="queryPagesParams.taskContent!=null and queryPagesParams.taskContent!=''">
+                    AND bd.task_content = #{queryPagesParams.taskContent}
+                </if>
+                 <if test="queryPagesParams.isChange eq '1'.toString()">
+                     <!--AND (bd.apply_form_status = 1 OR bd.form_status != 0 OR bd.change_correlation != 0)-->
+                 </if>
+                 <if test="queryPagesParams.isChange eq '2'.toString()">
+                    AND bd.form_status != 3 AND bd.form_status != 4 AND bd.form_status != 2
+                 </if>
+                 <if test="queryPagesParams.chargeStaffId!=null and queryPagesParams.chargeStaffId!='' and queryPagesParams.chargeStaffId!='0'.toString()">
+                    AND bd.charge_staff_id = #{queryPagesParams.chargeStaffId}
+                 </if>
+                <if test="queryPagesParams.secondStationId!=null and queryPagesParams.secondStationId!='' and queryPagesParams.secondStationId!='0'.toString()">
+                    AND bd.second_station_id = #{queryPagesParams.secondStationId}
+                </if>
+                <if test="queryPagesParams.powerSupplyRequirement!=null and queryPagesParams.powerSupplyRequirement!=''">
+                    AND bd.power_supply_requirement LIKE CONCAT('%',#{queryPagesParams.powerSupplyRequirement},'%')
+                </if>
+                <if test="queryPagesParams.formStatus!=null and queryPagesParams.formStatus!='-1'.toString()">
+                    AND bd.form_status = #{queryPagesParams.formStatus, jdbcType=DECIMAL}
+                </if>
+
+                <if test="queryPagesParams.formStatusList!=null and queryPagesParams.formStatusList.size()>0">
+                    AND bd.form_status in
+                    <foreach collection="queryPagesParams.formStatusList" item="item" index="index" open="(" close=")" separator=",">
+                        #{item}
+                    </foreach>
+                </if>
+
+                <if test="queryPagesParams.lineFormStatus!=null and queryPagesParams.lineFormStatus!='-1'.toString()">
+                    AND bd.line_form_status = #{queryPagesParams.lineFormStatus, jdbcType=DECIMAL}
+                </if>
+                <if test="queryPagesParams.dispatchFormStatus!=null and queryPagesParams.dispatchFormStatus!='-1'.toString()">
+                    AND bd.dispatch_form_status = #{queryPagesParams.dispatchFormStatus, jdbcType=DECIMAL}
+                </if>
+                <if test="queryPagesParams.directorFormStatus!=null and queryPagesParams.directorFormStatus!='-1'.toString()">
+                    AND bd.director_form_status = #{queryPagesParams.directorFormStatus, jdbcType=DECIMAL}
+                </if>
+                <if test="queryPagesParams.managerFormStatus!=null and queryPagesParams.managerFormStatus!='-1'.toString()">
+                    AND bd.manager_form_status = #{queryPagesParams.managerFormStatus, jdbcType=DECIMAL}
+                </if>
+                <if test="queryPagesParams.roleId!=null and queryPagesParams.roleId!='f6817f48af4fb3af11b9e8bf182f618b' and queryPagesParams.roleId!='' and queryPagesParams.roleId!='0'.toString()">
+                    <if test="queryPagesParams.staffID!=null and queryPagesParams.staffID!='0'.toString() and queryPagesParams.staffID!='' and queryPagesParams.staffID!='0'.toString()">
+
+                        <if test='!(queryPagesParams.roleId eq "1392313109028872199")'>
+                            <if test='queryPagesParams.roleId eq "1392313109028872194"'>
+                                <!--- AND (bd.line_staff_id = #{queryPagesParams.staffID} OR bd.charge_staff_id = #{queryPagesParams.staffID} OR bd.apply_staff_id = #{queryPagesParams.staffID}) -->
+                            </if>
+                            <if test='queryPagesParams.roleId eq "1393531024349736962"'>
+                                AND (bd.dispatch_staff_id = #{queryPagesParams.staffID} OR bd.charge_staff_id = #{queryPagesParams.staffID} OR bd.apply_staff_id = #{queryPagesParams.staffID})
+                            </if>
+                            <if test='queryPagesParams.roleId eq "1393530834351960066"'>
+                                AND (bd.director_staff_id = #{queryPagesParams.staffID} OR bd.charge_staff_id = #{queryPagesParams.staffID} OR bd.apply_staff_id = #{queryPagesParams.staffID})
+                            </if>
+                            <if test='queryPagesParams.roleId eq "1393530645335650305"'>
+                                AND (bd.manager_staff_id = #{queryPagesParams.staffID} OR bd.charge_staff_id = #{queryPagesParams.staffID} OR bd.apply_staff_id = #{queryPagesParams.staffID})
+                            </if>
+                            <if test='queryPagesParams.roleId != "1392313109028872194" and queryPagesParams.roleId != "1393531024349736962" and queryPagesParams.roleId != "1393530834351960066" and queryPagesParams.roleId != "1393530645335650305"
+                                and queryPagesParams.roleId != "1393527706235842562" and queryPagesParams.roleId != "1392314605636231169"'>
+                                AND (bd.charge_staff_id = #{queryPagesParams.staffID} OR bd.apply_staff_id = #{queryPagesParams.staffID})
+                            </if>
+                            <if test='queryPagesParams.roleId eq "1393527706235842562" or queryPagesParams.roleId eq "1392314605636231169"'>
+                                <choose>
+                                    <when test="queryPagesParams.teamIdList != null">
+                                        AND (bs4.org_id in
+                                        <foreach collection="queryPagesParams.teamIdList" open="(" separator="," close=")" item="id">
+                                            #{id}
+                                        </foreach>)
+                                    </when>
+                                </choose>
+                            </if>
+                        </if>
+
+                    </if>
+                </if>
+                <choose>
+                    <when test="queryPagesParams.lineID==null or queryPagesParams.lineID=='0'.toString() or queryPagesParams.lineID==''">
+                        AND st1.line_code in ('1','2','15','17','21')
+                    </when>
+                    <otherwise>
+                        AND st1.line_code = #{queryPagesParams.lineID}
+                    </otherwise>
+                </choose>
+                <!--<if test="queryPagesParams.lineID!=null and queryPagesParams.lineID!='0'.toString() and queryPagesParams.lineID!=''">
+                    AND st1.line_id = #{queryPagesParams.lineID}
+                </if>-->
+                <if test="queryPagesParams.beginDate != null">
+                    AND bd.task_date &gt;= #{queryPagesParams.beginDate}
+                </if>
+                <if test="queryPagesParams.endDate != null">
+                    AND bd.task_date &lt;= #{queryPagesParams.endDate}
+                </if>
+
+                <if test="busId != null and busId != ''">
+                     and bd.id = #{busId}
+                </if>
+            </where>
+        ORDER BY bd.task_date desc, bd.form_status asc, bd.id desc
+    </select>
+    <select id="queryStationNamesById" resultType="java.lang.String">
+        SELECT
+        GROUP_CONCAT( cs_station.station_name SEPARATOR ',' )
+        FROM
+        cs_station
+        WHERE 1=1
+        <if test="parseID !=null and parseID.length>0">
+            and id IN
+            <foreach collection="parseID" item="id" index="index" open="(" close=")" separator=",">
+                #{id}
+            </foreach>
+        </if>
+    </select>
+    <select id="queryFormInfoById"
+            resultType="com.aiurt.modules.weeklyPlan.dto.BdOperatePlanDeclarationFormReturnTypeDTO">
+        SELECT bd.id AS id,
+        bd.nature AS nature,
+        bd.type AS type,
+        bd.department_id AS departmentName,
+        bd.form_status AS formStatus,
+        bd.task_date AS taskDate,
+        bd.task_time AS taskTime,
+        bd.task_range AS taskRange,
+        bd.power_supply_requirement AS powerSupplyRequirement,
+        bd.task_content AS taskContent,
+        bd.protective_measure AS protectiveMeasure,
+        <!--bs1.realname AS chargeStaffName,-->
+        CONCAT(IFNULL(bs1.identity_number, ''), IFNULL(bs1.realname, ''), IFNULL(bs1.phone, '')) as chargeStaffName,
+        bs2.realname AS lineStaffName,
+        bs3.realname AS dispatchStaffName,
+        bs4.realname AS directorStaffName,
+        bs5.realname AS managerStaffName,
+        st1.station_name AS firstStationName,
+        st2.station_name AS secondStationName,
+        bd.large_appliances AS largeAppliances,
+        bd.remark AS remark,
+        st1.line_id AS lineID,
+        bd.assist_station_ids AS assistStationName,
+        bd.assist_station_ids AS assistStationIds,
+        bd.coordination_department_id AS coordinationDepartmentId,
+        bd.task_staff_num AS taskStaffNum,
+        bd.weekday AS weekday,
+        bd.assist_station_manager_names AS assistStationManagerNames,
+        bd.assist_station_manager_ids AS assistStationManagerIds,
+        bd.plan_change AS planChange,
+        bd.dispatch_form_status AS dispatchFormStatus,
+        bd.line_form_status AS lineFormStatus,
+        bd.manager_form_status AS managerFormStatus,
+        bd.director_form_status AS directorFormStatus,
+        bd.line_staff_id AS lineStaffId,
+        bd.dispatch_staff_id AS dispatchStaffId,
+        bd.manager_staff_id AS managerStaffId,
+        bd.director_staff_id AS directorStaffId,
+        bd.charge_staff_id AS chargeStaffId,
+        bd.apply_staff_id AS applyStaffId,
+        bd.first_station_id AS firstStationId,
+        bd.second_station_id AS secondStationId,
+        bd.substation_id AS substationId,
+        bd.picture AS picture,
+        bd.code AS code,
+        bd.voice AS voice,
+        bd.rejected_reason AS rejectedReason,
+        bd.site_id AS siteId,
+        si1.station_name AS siteName,
+        st3.station_name AS substationName
+        FROM bd_operate_plan_declaration_form AS bd
+        LEFT JOIN sys_user AS bs1 ON bd.charge_staff_id = bs1.id
+        LEFT JOIN sys_user AS bs2 ON bd.line_staff_id = bs2.id
+        LEFT JOIN sys_user AS bs3 ON bd.dispatch_staff_id = bs3.id
+        LEFT JOIN sys_user AS bs4 ON bd.director_staff_id = bs4.id
+        LEFT JOIN sys_user AS bs5 ON bd.manager_staff_id = bs5.id
+        LEFT JOIN cs_station AS st1 ON bd.first_station_id = st1.id
+        LEFT JOIN cs_station AS st2 ON bd.second_station_id = st2.id
+        LEFT JOIN cs_station AS st3 ON bd.substation_id = st3.id
+        LEFT JOIN work_area AS si1 ON si1.id = bd.site_id
+        WHERE bd.id = #{id}
+    </select>
+
+    <select id="queryStaffNamesByIds" resultType="java.lang.String">
+        SELECT
+        GROUP_CONCAT( sys_user.realname SEPARATOR ',' )
+        FROM
+        sys_user
+        WHERE
+        <if test="parseID !=null and parseID.length>0">
+            id IN
+            <foreach collection="array" item="id" index="index" open="(" close=")" separator=",">
+                #{id}
+            </foreach>
+        </if>
+    </select>
+
+    <select id="queryStaffIdByName" resultType="java.lang.String">
+        SELECT
+            sys_user.id
+        FROM
+            sys_user
+        WHERE
+            CONCAT(card_code, realname, phone) = #{realName}
+    </select>
+
+    <update id="updateBusAnnouncement" parameterType="string">
+        update sys_announcement_send
+        set read_flag = '1'
+        where id in
+        <foreach collection="idList" open="(" separator="," close=")" item="id">
+            #{id}
+        </foreach>
+    </update>
+
+    <select id="queryBusAnnouncement" resultType="string">
+        select b.id
+        from sys_announcement a
+        inner join sys_announcement_send b on a.id = b.annt_id
+        inner join sys_user c on c.id = b.user_id
+        where a.bus_id = #{busId} and a.bus_type = #{busType}
+        <if test="username != '' and username != null" >
+            and c.username = #{username}
+        </if>
+    </select>
+
+    <select id="queryUsernameByLineallpeople" resultType="string">
+        select a.username
+        from sys_user a
+                 left join sys_user_role b on a.id = b.user_id
+                 left join sys_role c on c.id = b.role_id
+        where c.role_code = 'line_all_people'
+    </select>
+
+    <select id="queryLineStaff" resultType="com.aiurt.modules.weeklyPlan.dto.BdStaffInfoReturnTypeDTO">
+        select a.id, a.realname as name, d.line_id as lineId
+        from sys_user a
+                 inner join sys_user_role b on a.id = b.user_id
+                 inner join sys_role c on c.id = b.role_id
+                 inner join sys_depart d on d.id = a.org_id
+        where c.role_code = 'line_people'
+    </select>
+
+    <select id="queryListByDate" resultType="com.aiurt.modules.weeklyPlan.dto.BdOperatePlanDeclarationReturnDTO">
+        SELECT
+            t.charge_staff_id as chargeStaffId,
+            t.task_range,
+            t.task_content,
+            t1.realname chargeStaffName
+        FROM
+            bd_operate_plan_declaration_form t
+            LEFT JOIN sys_user t1  on t1.id=t.charge_staff_id
+        WHERE
+            t.form_status = 1
+            AND t.task_date = #{taskDate}
+    </select>
+    <select id="readAll" resultType="com.aiurt.modules.weeklyPlan.dto.ProductPlanDTO">
+        SELECT
+            t.id,
+            t.type,
+            t.department_id departmentName,
+            t.date_time dateTime,
+            t.task_date taskDate,
+            t.task_time taskTime,
+            t.task_range taskRange,
+            t.power_supply_requirement powerRequirement,
+            t.task_content taskContent,
+            t.protective_measure protectiveMeasure,
+            t.charge_staff_id chargeStaffId,
+            s.realname chargeStaffName,
+            t.coordination_department_id coordinationDepartment,
+            t.first_station_id firstStationId,
+            t1.station_name firstStationName,
+            t.second_station_id secondStationId,
+            t2.station_name secondStationName,
+            t.substation_id,
+            t3.station_name subStationName,
+            t.assist_station_ids assistStationId,
+            t.task_staff_num taskStaffNum,
+            t.large_appliances largeAppliances,
+            t.remark,
+            t.weekday,
+            t.picture,
+            t.voice,
+            t.form_status formStatus,
+            t.apply_staff_id applyStaffId,
+            s1.realname applyStaffName,
+            t.line_staff_id lineStaffId,
+            s2.realname lineStaffName,
+            t.dispatch_staff_id dispatchStaffId,
+            s3.realname dispatchStaffName,
+            t.dispatch_form_status dispatchFormStatus,
+            t.line_form_status lineFormStatus,
+            t.assist_station_manager_names assistStationManagerNames,
+            t.plan_change planChange,
+            t.change_correlation changeCorrelation,
+            t.site_id siteId,
+            t4.`name` siteName,
+            t.nature
+        FROM
+            bd_operate_plan_declaration_form t
+            LEFT JOIN sys_user s ON s.id = t.charge_staff_id
+            LEFT JOIN cs_station t1 ON t1.id = t.first_station_id
+            LEFT JOIN cs_station t2 ON t2.id = t.second_station_id
+            LEFT JOIN cs_station t3 ON t3.id = t.substation_id
+            LEFT JOIN sys_user s1 ON s1.id = t.apply_staff_id
+            LEFT JOIN sys_user s2 ON s2.id = t.line_staff_id
+            LEFT JOIN sys_user s3 ON s3.id = t.dispatch_staff_id
+            LEFT JOIN work_area t4 ON t4.id = t.site_id
+            <if test="lineID != '' and lineID != null" >
+                and (t1.line_code =#{lineID} or t2.line_code =#{lineID} or t3.line_code =#{lineID})
+            </if>
+            <if test="beginDate != null">
+                AND t.task_date &gt;= #{beginDate}
+            </if>
+            <if test="endDate != null">
+                AND t.task_date &lt;= #{endDate}
+            </if>
+            <if test="chargeStaffName!=null and chargeStaffName!=''">
+                AND s.realname LIKE CONCAT('%',#{chargeStaffName},'%')
+            </if>
+            <if test="powerRequirement!=null and powerRequirement!=''">
+                AND t.power_supply_requirement LIKE CONCAT('%',#{powerRequirement},'%')
+            </if>
+      UNION ALL
+        SELECT
+            m.id,
+            m.type,
+            m.department_id departmentName,
+            m.date_time dateTime,
+            m.task_date taskDate,
+            m.task_time taskTime,
+            m.task_range taskRange,
+            m.power_supply_requirement powerRequirement,
+            m.task_content taskContent,
+            m.protective_measure protectiveMeasure,
+            m.charge_staff_id chargeStaffId,
+            s.realname chargeStaffName,
+            m.coordination_department_id coordinationDepartment,
+            m.first_station_id firstStationId,
+            t1.station_name firstStationName,
+            m.second_station_id secondStationId,
+            t2.station_name secondStationName,
+            m.substation_id,
+            t3.station_name subStationName,
+            m.assist_station_ids assistStationId,
+            m.task_staff_num taskStaffNum,
+            m.large_appliances largeAppliances,
+            m.remark,
+            m.weekday,
+            m.picture,
+            m.voice,
+            m.form_status formStatus,
+            m.apply_staff_id applyStaffId,
+            s1.realname applyStaffName,
+            m.line_staff_id lineStaffId,
+            s2.realname lineStaffName,
+            m.dispatch_staff_id dispatchStaffId,
+            s3.realname dispatchStaffName,
+            m.dispatch_form_status dispatchFormStatus,
+            m.line_form_status lineFormStatus,
+            m.assist_station_manager_names assistStationManagerNames,
+            m.plan_change planChange,
+            m.change_correlation changeCorrelation,
+            m.site_id siteId,
+            t4.`name` siteName,
+            m.nature
+        FROM
+            bd_operate_plan_declaration_form_month m
+            LEFT JOIN sys_user s ON s.id = m.charge_staff_id
+            LEFT JOIN cs_station t1 ON t1.id = m.first_station_id
+            LEFT JOIN cs_station t2 ON t2.id = m.second_station_id
+            LEFT JOIN cs_station t3 ON t3.id = m.substation_id
+            LEFT JOIN sys_user s1 ON s1.id = m.apply_staff_id
+            LEFT JOIN sys_user s2 ON s2.id = m.line_staff_id
+            LEFT JOIN sys_user s3 ON s3.id = m.dispatch_staff_id
+            LEFT JOIN work_area t4 ON t4.id = m.site_id
+            <if test="lineID != '' and lineID != null" >
+                and (t1.line_code =#{lineID} or t2.line_code =#{lineID} or t3.line_code =#{lineID})
+            </if>
+            <if test="beginDate != null">
+                AND m.task_date &gt;= #{beginDate}
+            </if>
+            <if test="endDate != null">
+                AND m.task_date &lt;= #{endDate}
+            </if>
+            <if test="chargeStaffName!=null and chargeStaffName!=''">
+                AND s.realname LIKE CONCAT('%',#{chargeStaffName},'%')
+            </if>
+            <if test="powerRequirement!=null and powerRequirement!=''">
+                AND m.power_supply_requirement LIKE CONCAT('%',#{powerRequirement},'%')
+            </if>
+
+    </select>
+</mapper>

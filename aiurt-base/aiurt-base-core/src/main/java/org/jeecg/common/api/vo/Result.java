@@ -55,6 +55,12 @@ public class Result<T> implements Serializable {
 	@ApiModelProperty(value = "时间戳")
 	private long timestamp = System.currentTimeMillis();
 
+	/**
+	 * 错误码
+	 */
+	@ApiModelProperty(value = "错误码")
+	private Integer errCode;
+
 	public Result() {
 	}
 

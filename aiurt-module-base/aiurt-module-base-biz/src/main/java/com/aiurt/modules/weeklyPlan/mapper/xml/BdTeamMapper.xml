@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.aiurt.modules.weeklyPlan.mapper.BdTeamMapper">
+    <select id="queryTeamById" resultType="com.aiurt.modules.weeklyPlan.dto.TeamByIdDTO" parameterType="string">
+        SELECT a.id,a.dept_id as deptId,a.parent_id as parentId,a.name,a.remark,a.type,a.attendance_place,a.clock_way,a.schedule_number,
+        (
+        SELECT
+        NAME
+        FROM
+        bd_team
+        WHERE
+        id = a.parent_id
+        ) AS parentName,
+        a.line_id as lineId,
+        a.subsystem
+        FROM
+        bd_team a
+        <where>
+            <if test="id!=null and id!=''">
+                a.id = #{id}
+            </if>
+        </where>
+    </select>
+    <select id="queryManagedTeam" resultType="com.aiurt.modules.weeklyPlan.entity.BdTeam">
+        select *
+        from bd_team t
+        where find_in_set(id,get_team_child(#{id}))&gt;0
+        union all
+		select *
+        from bd_team t where t.`name`='外委单位'
+        order by id
+    </select>
+
+    <select id="queryByUserId" resultType="integer">
+        select team_id from sys_user
+        where id = #{userId}
+    </select>
+</mapper>
