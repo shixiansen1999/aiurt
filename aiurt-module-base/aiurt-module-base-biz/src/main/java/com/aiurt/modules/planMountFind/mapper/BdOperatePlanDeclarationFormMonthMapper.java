@@ -85,7 +85,7 @@ public interface BdOperatePlanDeclarationFormMonthMapper extends BaseMapper<BdOp
      * @param staffID    用户id
      * @return List<ExcelExportDTO>
      */
-    List<ExcelExportDTO> exportExcel(String start_time, String end_time, String line_id, String roleType, String staffID);
+    List<ExcelExportDTO> exportExcel(@Param("start_time") String start_time, @Param("end_time") String end_time,@Param("line_id")  String line_id, @Param("roleType") String roleType, @Param("staffID") String staffID);
 
     /**
      * @param id 数据行id
@@ -121,7 +121,8 @@ public interface BdOperatePlanDeclarationFormMonthMapper extends BaseMapper<BdOp
      * @param formStatus         审核状态
      * @return Integer
      */
-    Integer insertOperate_plan_state_change_monthByID(int id, String remark, int dispatchStaffId, String changeReason, Integer lineFormStatus, Integer dispatchFormStatus, int formStatus);
+    Integer insertOperate_plan_state_change_monthByID(@Param("id") int id, @Param("remark")String remark, @Param("dispatchStaffId")int dispatchStaffId,@Param("changeReason") String changeReason,
+                                                      @Param("lineFormStatus")Integer lineFormStatus, @Param("dispatchFormStatus")Integer dispatchFormStatus, @Param("formStatus")int formStatus);
 
     /**
      * @param LineFormStatus     线路负责人状态
@@ -133,7 +134,8 @@ public interface BdOperatePlanDeclarationFormMonthMapper extends BaseMapper<BdOp
      * @param changeReason       意见
      * @return Integer
      */
-    Integer updateBd_operate_plan_declaration_form_monthByID(int LineFormStatus, int DispatchFormStatus, String Voice, String Picture, int PlanChange, String id, String changeReason);
+    Integer updateBd_operate_plan_declaration_form_monthByID(@Param("LineFormStatus")int LineFormStatus, @Param("DispatchFormStatus")int DispatchFormStatus, @Param("Voice")String Voice,@Param("Picture") String Picture,
+                                                             @Param("PlanChange")int PlanChange, @Param("id")String id,@Param("changeReason") String changeReason);
 
     /**
      * 根据id查询角色类型(sys_user表中可能此功能不可用)
@@ -154,7 +156,7 @@ public interface BdOperatePlanDeclarationFormMonthMapper extends BaseMapper<BdOp
      * @param staffID    员工信息
      * @return Page<getAllByDateDTO>
      */
-    Page<getAllByDateDTO> ApproveQuery(String start_time, String end_time, String line_id, Page page, String roleType, String staffID, String busId);
+    Page<getAllByDateDTO> ApproveQuery(@Param("start_time") String start_time, @Param("end_time") String end_time, @Param("line_id") String line_id, @Param("page") Page page, @Param("roleType") String roleType, @Param("staffID") String staffID,@Param("busId")  String busId);
 
     /**
      * 取消按钮

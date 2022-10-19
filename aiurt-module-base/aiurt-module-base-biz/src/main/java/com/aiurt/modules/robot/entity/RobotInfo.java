@@ -67,7 +67,7 @@ public class RobotInfo extends DictEntity implements Serializable {
      */
     @Excel(name = "线路编码", width = 15)
     @ApiModelProperty(value = "线路编码", required = true, example = "06")
-    @Dict(dictTable = "bd_line", dicText = "name", dicCode = "code")
+    @Dict(dictTable = "cs_line", dicText = "line_name", dicCode = "line_code")
     @NotBlank(message = "线路不能为空")
     @Size(max = 64, message = "线路编码长度不能超过64个字符")
     private String lineCode;
@@ -76,7 +76,7 @@ public class RobotInfo extends DictEntity implements Serializable {
      */
     @Excel(name = "站点编码", width = 15)
     @ApiModelProperty(value = "站点编码", required = true, example = "03102")
-    @Dict(dictTable = "bd_station", dicText = "name", dicCode = "code")
+    @Dict(dictTable = "cs_station", dicText = "station_name", dicCode = "station_code")
     @NotBlank(message = "站点不能为空")
     @Size(max = 64, message = "站点编码长度不能超过64个字符")
     private String stationCode;

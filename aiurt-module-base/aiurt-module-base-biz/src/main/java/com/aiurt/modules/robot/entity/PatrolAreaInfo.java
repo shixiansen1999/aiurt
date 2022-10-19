@@ -58,7 +58,7 @@ public class PatrolAreaInfo extends DictEntity implements Serializable {
 	/**设备编码*/
 	@Excel(name = "设备编码", width = 15)
     @ApiModelProperty(value = "设备编码")
-    @Dict(dictTable = "bd_device_archives", dicText = "name", dicCode = "device_code")
+    @Dict(dictTable = "device", dicText = "name", dicCode = "code")
     private String deviceCode;
 	/**创建人*/
     @ApiModelProperty(value = "创建人")

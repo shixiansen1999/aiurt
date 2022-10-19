@@ -55,8 +55,8 @@ public class BdOperatePlanDeclarationFormMonthController extends BaseController<
      * @param req                               用于接收请求信息的req
      * @return 月计划表里的数据.
      */
-    @AutoLog(value = "bd_operate_plan_declaration_form_month-分页列表查询")
-    @ApiOperation(value = "bd_operate_plan_declaration_form_month-分页列表查询", notes = "bd_operate_plan_declaration_form_month-分页列表查询")
+    @AutoLog(value = "月计划-分页列表查询")
+    @ApiOperation(value = "月计划-分页列表查询", notes = "月计划-分页列表查询")
     @GetMapping(value = "/list")
     public Result<?> queryPageList(
             BdOperatePlanDeclarationFormMonth bdOperatePlanDeclarationFormMonth,
@@ -87,8 +87,8 @@ public class BdOperatePlanDeclarationFormMonthController extends BaseController<
      * @param bdOperatePlanDeclarationFormMonth 用于接收添加信息的实体. (怎么这哥们那都能用到?)
      * @return 返回是否添加成功
      */
-    @AutoLog(value = "bd_operate_plan_declaration_form_month-添加")
-    @ApiOperation(value = "bd_operate_plan_declaration_form_month-添加", notes = "bd_operate_plan_declaration_form_month-添加")
+    @AutoLog(value = "月计划-添加")
+    @ApiOperation(value = "月计划-添加", notes = "月计划-添加")
     @PostMapping(value = "/add")
     public Result<?> add(@RequestBody BdOperatePlanDeclarationFormMonth bdOperatePlanDeclarationFormMonth) {
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
@@ -132,8 +132,8 @@ public class BdOperatePlanDeclarationFormMonthController extends BaseController<
      * @param bdOperatePlanDeclarationFormMonth 用于接收参数的实体.
      * @return 是否编辑成功.
      */
-    @AutoLog(value = "bd_operate_plan_declaration_form_month-编辑")
-    @ApiOperation(value = "bd_operate_plan_declaration_form_month-编辑", notes = "bd_operate_plan_declaration_form_month-编辑")
+    @AutoLog(value = "月计划-编辑")
+    @ApiOperation(value = "月计划-编辑", notes = "月计划-编辑")
     @PutMapping(value = "/edit")
     public Result<?> edit(@RequestBody BdOperatePlanDeclarationFormMonth bdOperatePlanDeclarationFormMonth) {
         bdOperatePlanDeclarationFormMonthService.updateById(bdOperatePlanDeclarationFormMonth);
@@ -147,8 +147,8 @@ public class BdOperatePlanDeclarationFormMonthController extends BaseController<
      * @param id 数据行id ,月计划表里的.
      * @return 返回是否删除成功.
      */
-    @AutoLog(value = "bd_operate_plan_declaration_form_month-通过id删除")
-    @ApiOperation(value = "bd_operate_plan_declaration_form_month-通过id删除", notes = "bd_operate_plan_declaration_form_month-通过id删除")
+    @AutoLog(value = "月计划-通过id删除")
+    @ApiOperation(value = "月计划-通过id删除", notes = "月计划-通过id删除")
     @DeleteMapping(value = "/delete")
     public Result<?> delete(@RequestParam(name = "id", required = true) String id) {
         bdOperatePlanDeclarationFormMonthService.removeById(id);
@@ -161,8 +161,8 @@ public class BdOperatePlanDeclarationFormMonthController extends BaseController<
      * @param ids 传入的id们.大概有很多个id一起传进来.
      * @return 返回是否批量删除成功.
      */
-    @AutoLog(value = "bd_operate_plan_declaration_form_month-批量删除")
-    @ApiOperation(value = "bd_operate_plan_declaration_form_month-批量删除", notes = "bd_operate_plan_declaration_form_month-批量删除")
+    @AutoLog(value = "月计划-批量删除")
+    @ApiOperation(value = "月计划-批量删除", notes = "月计划-批量删除")
     @DeleteMapping(value = "/deleteBatch")
     public Result<?> deleteBatch(@RequestParam(name = "ids", required = true) String ids) {
         this.bdOperatePlanDeclarationFormMonthService.removeByIds(Arrays.asList(ids.split(",")));
@@ -219,6 +219,8 @@ public class BdOperatePlanDeclarationFormMonthController extends BaseController<
      *
      * @return 作业类别-下拉框接口
      */
+    @AutoLog(value = "月计划作业类别-查询", operateType =  1, operateTypeAlias = "查询", permissionUrl = "")
+    @ApiOperation(value="月计划作业类别", notes="月计划作业类别")
     @GetMapping("/queryAllContruction")
     public Result<?> queryAllContruction() {
         return Result.OK(bdOperatePlanDeclarationFormMonthService.queryAllContruction());
@@ -265,6 +267,8 @@ public class BdOperatePlanDeclarationFormMonthController extends BaseController<
      *
      * @return 登录人TeamID信息接口
      */
+    @AutoLog(value = "月计划查询登录人TeamID信息-查询", operateType =  1, operateTypeAlias = "查询", permissionUrl = "")
+    @ApiOperation(value="月计划查询登录人TeamID信息", notes="月计划查询登录人TeamID信息")
     @GetMapping("/getTeamId")
     public Result<?> getTeamId() {
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
@@ -289,6 +293,8 @@ public class BdOperatePlanDeclarationFormMonthController extends BaseController<
      * @param id 数据行id
      * @return 返回一行月计划表中的数据
      */
+    @AutoLog(value = "月计划通过id查询-查询", operateType =  1, operateTypeAlias = "查询", permissionUrl = "")
+    @ApiOperation(value="月计划通过id查询", notes="月计划通过id查询")
     @GetMapping("/queryById")
     public Result<?> queryByID(@RequestParam(name = "id") String id) {
         return Result.OK(bdOperatePlanDeclarationFormMonthService.queryByID(id));
@@ -335,6 +341,8 @@ public class BdOperatePlanDeclarationFormMonthController extends BaseController<
      *
      * @return 当前登录人的角色类型
      */
+    @AutoLog(value = "月计划获取当前登录人roletype-查询", operateType =  1, operateTypeAlias = "查询", permissionUrl = "")
+    @ApiOperation(value="月计划获取当前登录人roletype", notes="月计划获取当前登录人roletype")
     @GetMapping("/getRoleTypeByID")
     public Result<?> getRoleTypeByID() {
         return Result.OK(bdOperatePlanDeclarationFormMonthService.getRoleTypeByID());
@@ -356,6 +364,8 @@ public class BdOperatePlanDeclarationFormMonthController extends BaseController<
      *
      * @return 当前登陆人id
      */
+    @AutoLog(value = "月计划当前登陆人id-查询", operateType =  1, operateTypeAlias = "查询", permissionUrl = "")
+    @ApiOperation(value="月计划当前登陆人id", notes="月计划当前登陆人id")
     @GetMapping("/getUserID")
     public Result<?> getUserID() {
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
@@ -375,8 +385,8 @@ public class BdOperatePlanDeclarationFormMonthController extends BaseController<
      * @param staffID                           当前登录人id
      * @return 月计划表中的数据, 以分页
      */
-    @AutoLog(value = "bd_operate_plan_declaration_form_month-分页列表查询")
-    @ApiOperation(value = "bd_operate_plan_declaration_form_month-分页列表查询", notes = "bd_operate_plan_declaration_form_month-分页列表查询")
+    @AutoLog(value = "月计划审批查询接口-分页列表查询")
+    @ApiOperation(value = "月计划审批查询接口-分页列表查询", notes = "月计划审批查询接口-分页列表查询")
     @GetMapping(value = "/ApproveQuery")
     public Result<?> ApproveQuery(
             BdOperatePlanDeclarationFormMonth bdOperatePlanDeclarationFormMonth,
