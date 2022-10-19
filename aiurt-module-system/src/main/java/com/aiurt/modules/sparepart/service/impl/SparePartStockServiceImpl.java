@@ -8,6 +8,7 @@ import com.aiurt.common.api.CommonAPI;
 import com.aiurt.modules.material.entity.MaterialBaseType;
 import com.aiurt.modules.material.service.IMaterialBaseTypeService;
 import com.aiurt.modules.sparepart.entity.SparePartStock;
+import com.aiurt.modules.sparepart.entity.dto.SparePartConsume;
 import com.aiurt.modules.sparepart.entity.dto.SparePartStatistics;
 import com.aiurt.modules.sparepart.mapper.SparePartLendStockMapper;
 import com.aiurt.modules.sparepart.mapper.SparePartStockMapper;
@@ -21,6 +22,9 @@ import org.springframework.stereotype.Service;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -126,8 +130,11 @@ public class SparePartStockServiceImpl extends ServiceImpl<SparePartStockMapper,
     }
 
     @Override
-    public List<SparePartStatistics> selectConsume(SparePartStatistics sparePartStatistics) {
-
+    public List<SparePartConsume> selectConsume(SparePartConsume sparePartConsume) {
+        switch (sparePartConsume.getType()) {
+            case "1":
+                break;
+        }
         return null;
     }
 
@@ -193,6 +200,15 @@ public class SparePartStockServiceImpl extends ServiceImpl<SparePartStockMapper,
         e.setThisYearMonthConsumption(e.getThisYearConsumption()==0 ? "0" : div3.toString());
         q.setThisYearMonthConsumption(q.getThisYearConsumption()==0 ? "0" : div33.toString());
 
+    }
+
+    public static String getLast12Months(int i) {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM");
+        Calendar c = Calendar.getInstance();
+        c.setTime(new Date());
+        c.add(Calendar.MONTH, -i);
+        Date m = c.getTime();
+        return sdf.format(m);
     }
 
 }

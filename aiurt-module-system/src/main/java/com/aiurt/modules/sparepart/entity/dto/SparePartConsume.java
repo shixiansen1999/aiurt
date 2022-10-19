@@ -17,6 +17,10 @@ public class SparePartConsume {
     @TableField(exist = false)
     private String month;
 
+    @ApiModelProperty(value = "1-4:近半年，近一年，近两年，近三年")
+    @TableField(exist = false)
+    private String type;
+
     @ApiModelProperty(value = "季度")
     @TableField(exist = false)
     private String quarter;

@@ -2,6 +2,7 @@ package com.aiurt.modules.sparepart.service;
 
 import com.aiurt.modules.sparepart.entity.SparePartInOrder;
 import com.aiurt.modules.sparepart.entity.SparePartStock;
+import com.aiurt.modules.sparepart.entity.dto.SparePartConsume;
 import com.aiurt.modules.sparepart.entity.dto.SparePartStatistics;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
@@ -40,8 +41,8 @@ public interface ISparePartStockService extends IService<SparePartStock> {
 
     /**
      * 备件类型数量消耗态势
-     * @param sparePartStatistics
+     * @param sparePartConsume
      * @return
      */
-    List<SparePartStatistics> selectConsume(SparePartStatistics sparePartStatistics);
+    List<SparePartConsume> selectConsume(SparePartConsume sparePartConsume);
 }
