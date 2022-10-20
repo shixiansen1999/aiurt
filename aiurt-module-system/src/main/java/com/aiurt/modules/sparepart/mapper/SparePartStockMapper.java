@@ -8,6 +8,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Component;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -39,11 +40,12 @@ public interface SparePartStockMapper extends BaseMapper<SparePartStock> {
 
     /**
      * 根据userId查询子系统
+     * @param pageList
      * @param id
      * @param systemCode
      * @return
      */
-    List<SparePartStatistics> getSubsystemByUserId(Page page,@Param("id") String id,@Param("systemCode") List<String> systemCode);
+    List<SparePartStatistics> getSubsystemByUserId(Page<SparePartStatistics> pageList,@Param("id") String id,@Param("systemCode") List<String> systemCode);
 
     /**
      * 查询年度消耗量
@@ -57,5 +59,10 @@ public interface SparePartStockMapper extends BaseMapper<SparePartStock> {
                    @Param("baseTypeCode") List<String> baseTypeCode ,
                    @Param("year") Integer year,
                    @Param("month") Integer month);
+
+    Long getTimeCount(@Param("systemCode") List<String> systemCode,
+                   @Param("baseTypeCode") List<String> baseTypeCode ,
+                   @Param("startDate") Date startDate,
+                   @Param("endDate") Date endDate);
 
 }

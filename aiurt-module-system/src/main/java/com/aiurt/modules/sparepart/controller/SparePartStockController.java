@@ -9,6 +9,7 @@ import javax.servlet.http.HttpServletResponse;
 import cn.hutool.core.util.ObjectUtil;
 import com.aiurt.boot.task.dto.OverhaulStatisticsDTOS;
 import com.aiurt.common.aspect.annotation.PermissionData;
+import com.aiurt.modules.material.entity.MaterialBaseType;
 import com.aiurt.modules.sparepart.entity.SparePartInOrder;
 import com.aiurt.modules.sparepart.entity.SparePartStockInfo;
 import com.aiurt.modules.sparepart.entity.dto.SparePartConsume;
@@ -212,11 +213,9 @@ public class SparePartStockController extends BaseController<SparePartStock, ISp
 																	@RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
 																	@RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
 																	HttpServletRequest req) {
-		 Page<SparePartStatistics> page = new Page<SparePartStatistics>(pageNo, pageSize);
-		 List<SparePartStatistics> sparePartStatisticsList = sparePartStockService.selectSparePartStatistics(page, sparePartStatistics);
-		 sparePartStatisticsList = sparePartStatisticsList.stream().distinct().collect(Collectors.toList());
-		 page.setRecords(sparePartStatisticsList);
-		 return Result.OK(page);
+		 Page<SparePartStatistics> pageList = new Page<>(pageNo, pageSize);
+		 Page<SparePartStatistics> sparePartStatisticsPage = sparePartStockService.selectSparePartStatistics(pageList, sparePartStatistics);
+		 return Result.OK(sparePartStatisticsPage);
 	 }
 
 	 /**
@@ -228,7 +227,7 @@ public class SparePartStockController extends BaseController<SparePartStock, ISp
 	 @ApiOperation(value="备件类型数量消耗态势", notes="备件类型数量消耗态势")
 	 @GetMapping(value = "/selectConsume")
 	 public Result<?> selectConsume(SparePartConsume sparePartConsume){
-		 List<SparePartConsume> sparePartConsumeList = sparePartStockService.selectConsume(sparePartConsume);
+		 List<MaterialBaseType> sparePartConsumeList = sparePartStockService.selectConsume(sparePartConsume);
 		 return Result.OK(sparePartConsumeList);
 	 }
 

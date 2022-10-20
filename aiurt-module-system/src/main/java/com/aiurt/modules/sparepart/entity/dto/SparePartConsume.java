@@ -17,6 +17,16 @@ public class SparePartConsume {
     @TableField(exist = false)
     private String month;
 
+    /**子系统编码*/
+    @ApiModelProperty(value = "子系统编码")
+    @TableField(exist = false)
+    private String systemCode;
+
+    /**物资分类编码*/
+    @ApiModelProperty(value = "备件类型编码")
+    @TableField(exist = false)
+    private  String  baseTypeCode;
+
     @ApiModelProperty(value = "1-4:近半年，近一年，近两年，近三年")
     @TableField(exist = false)
     private String type;

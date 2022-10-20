@@ -4,6 +4,7 @@ import com.aiurt.common.aspect.annotation.DeptFilterColumn;
 import com.aiurt.common.aspect.annotation.Dict;
 import com.aiurt.common.aspect.annotation.MajorFilterColumn;
 import com.aiurt.common.aspect.annotation.SystemFilterColumn;
+import com.aiurt.modules.sparepart.entity.dto.SparePartConsume;
 import com.baomidou.mybatisplus.annotation.*;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
@@ -183,4 +184,8 @@ public class MaterialBaseType {
 	@ApiModelProperty(value = "父级状态")
 	@TableField(exist = false)
 	private String pStatus ;
+
+	@ApiModelProperty(value = "月份数量消耗数据")
+	@TableField(exist = false)
+	private List<SparePartConsume> sparePartConsumeList ;
 }

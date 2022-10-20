@@ -1,5 +1,7 @@
 package com.aiurt.modules.sparepart.service;
 
+import com.aiurt.boot.task.dto.OverhaulStatisticsDTOS;
+import com.aiurt.modules.material.entity.MaterialBaseType;
 import com.aiurt.modules.sparepart.entity.SparePartInOrder;
 import com.aiurt.modules.sparepart.entity.SparePartStock;
 import com.aiurt.modules.sparepart.entity.dto.SparePartConsume;
@@ -35,18 +37,18 @@ public interface ISparePartStockService extends IService<SparePartStock> {
 
     /**
      * 备件类型数量统计分析表
-     * @param page
+     * @param pageList
      * @param sparePartStatistics
      * @return
      */
-    List<SparePartStatistics> selectSparePartStatistics(Page page, SparePartStatistics sparePartStatistics);
+    Page<SparePartStatistics> selectSparePartStatistics(Page<SparePartStatistics> pageList, SparePartStatistics sparePartStatistics);
 
     /**
      * 备件类型数量消耗态势
      * @param sparePartConsume
      * @return
      */
-    List<SparePartConsume> selectConsume(SparePartConsume sparePartConsume);
+    List<MaterialBaseType> selectConsume(SparePartConsume sparePartConsume);
 
     /**
      * 备件报表导出
