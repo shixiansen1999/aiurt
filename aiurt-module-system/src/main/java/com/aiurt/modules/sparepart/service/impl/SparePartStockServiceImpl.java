@@ -227,214 +227,228 @@ public class SparePartStockServiceImpl extends ServiceImpl<SparePartStockMapper,
         }
         List<MaterialBaseType> materialBaseTypeList = iMaterialBaseTypeService.list(queryWrapper);
         List<MaterialBaseType> materialBaseTypeLitres = iMaterialBaseTypeService.treeList(materialBaseTypeList,"0");
+
         switch (sparePartConsume.getType()) {
             case "1":
-                for (int i = 1; i<=6; i++) {
+                /*for (int i = 1; i<=6; i++) {
                     getLast12Months(sparePartConsume, list1, subsystemByUserId, materialBaseTypeLitres, i);
-                }
-                break;
-            case "2":
-                for (int i = 1; i<=12; i++) {
-                    getLast12Months(sparePartConsume, list1, subsystemByUserId, materialBaseTypeLitres, i);
-                }
-                break;
-            case "3":
-                   getTime(8,list1, subsystemByUserId, materialBaseTypeLitres);
-                break;
-            default:
-                   getTime(12,list1, subsystemByUserId, materialBaseTypeLitres);
-        }
+                }*/
 
-        return materialBaseTypeLitres;
+                return getTimeCount(materialBaseTypeLitres, list1, 6, subsystemByUserId);
+            case "2":
+              /*  for (int i = 1; i<=12; i++) {
+                    getLast12Months(sparePartConsume, list1, subsystemByUserId, materialBaseTypeLitres, i);
+                }
+                break;*/
+                return getTimeCount(materialBaseTypeLitres, list1, 12, subsystemByUserId);
+            case "3":
+                return getTime(8, list1, subsystemByUserId, materialBaseTypeLitres);
+            case "4":
+                return getTime(12,list1, subsystemByUserId, materialBaseTypeLitres);
+            default:
+                return materialBaseTypeLitres;
+        }
     }
 
-    private void getTime (Integer integer,
+    private List<MaterialBaseType> getTime (Integer integer,
                           List<String> list1,
                           List<SparePartStatistics> subsystemByUserId,
                           List<MaterialBaseType> materialBaseTypeLitres){
         DateTime date = new DateTime();
-        for (int i = 0; i<integer; i++) {
-            if (i==0){
-                String last12Months = getLast12Months(1);
-                String substrings = last12Months.substring(0,4);
-                DateTime parse = DateUtil.parse(last12Months,"yyyy-MM");
-                int quarter = parse.quarter();
-                String string = Convert.digitToChinese(quarter);
-                //开始
-                DateTime dateTime = DateUtil.beginOfQuarter(parse);
-                //结束
-                DateTime dateTime1 = DateUtil.endOfQuarter(parse);
+        List<MaterialBaseType> materialBaseTypes = new ArrayList<>();
+        for (SparePartStatistics e : subsystemByUserId) {
+            List<MaterialBaseType> collect = materialBaseTypeLitres.stream().filter(materialBaseType -> e.getSystemCode().equals(materialBaseType.getSystemCode())).collect(Collectors.toList());
+            if (CollUtil.isNotEmpty(collect)) {
+                for (int i = 0; i<integer; i++) {
+                    if (i==0){
+                        String last12Months = getLast12Months(1);
+                        String substrings = last12Months.substring(0,4);
+                        DateTime parse = DateUtil.parse(last12Months,"yyyy-MM");
+                        int quarter = parse.quarter();
+                        String string = Convert.numberToChinese(Convert.toDouble(quarter),false);
+                        //开始
+                        DateTime dateTime = DateUtil.beginOfQuarter(parse);
+                        //结束
+                        DateTime dateTime1 = DateUtil.endOfQuarter(parse);
 
-                if (parse.equals(dateTime1) || parse.before(dateTime1)){
-                    for (SparePartStatistics e : subsystemByUserId) {
-                        List<MaterialBaseType> collect = materialBaseTypeLitres.stream().filter(materialBaseType -> e.getSystemCode().equals(materialBaseType.getSystemCode())).collect(Collectors.toList());
-                        if (CollUtil.isNotEmpty(collect)) {
-                            for(MaterialBaseType q : collect){
-                                List<MaterialBaseType> materialBaseTypeList = q.getMaterialBaseTypeList();
+                        if (parse.equals(dateTime1) || parse.before(dateTime1)){
+                            addDetail(collect,substrings,string,list1,dateTime,parse);
+                        }else {
+                            addDetail(collect,substrings,string,list1,dateTime,dateTime1);
+                        }
+                        date = DateUtil.offsetMonth(parse, -3);
+                    }else if (i==(integer-1)){
+                        String last12Months = getLast12Months(3*(i+1));
+                        String substrings = last12Months.substring(0,4);
+                        DateTime parse = DateUtil.parse(last12Months,"yyyy-MM");
+                        int quarter = parse.quarter();
+                        String string = Convert.numberToChinese(Convert.toDouble(quarter),false);
+                        //开始
+                        DateTime dateTime = DateUtil.beginOfQuarter(parse);
+                        //结束
+                        DateTime dateTime1 = DateUtil.endOfQuarter(parse);
 
-                                if (CollUtil.isEmpty(q.getSparePartConsumeList())) {
-                                    List<SparePartConsume> list = new ArrayList<>();
-                                    SparePartConsume sparePartConsume1 = new SparePartConsume();
-                                    sparePartConsume1.setQuarter(substrings+"年"+"第"+string+"季度");
-                                    q.setMaterialBaseTypeList(null);
-                                    List<String> list3 = new ArrayList<>();
-                                    list3.add(q.getBaseTypeCode());
-                                    Long timeCount = sparePartStockMapper.getTimeCount(null, CollectionUtil.isNotEmpty(list1) ? list1 : list3, dateTime, parse);
-                                    if (timeCount!=null){
-                                        sparePartConsume1.setCount(timeCount);
-                                    }else {
-                                        sparePartConsume1.setCount(0L);
-                                    }
-                                    list.add(sparePartConsume1);
-                                    q.setSparePartConsumeList(list);
-                                } else {
-                                    List<SparePartConsume> sparePartConsumeList = q.getSparePartConsumeList();
-                                    SparePartConsume sparePartConsume1 = new SparePartConsume();
-                                    sparePartConsume1.setQuarter(substrings+"年"+"第"+string+"季度");
-                                    q.setMaterialBaseTypeList(null);
-                                    List<String> list3 = new ArrayList<>();
-                                    list3.add(q.getBaseTypeCode());
-                                    Long timeCount = sparePartStockMapper.getTimeCount(null, CollectionUtil.isNotEmpty(list1) ? list1 : list3, dateTime, parse);
-                                    if (timeCount!=null){
-                                        sparePartConsume1.setCount(timeCount);
-                                    }else {
-                                        sparePartConsume1.setCount(0L);
-                                    }
-                                    sparePartConsumeList.add(sparePartConsume1);
-                                }
-                            }
+
+                        if (parse.equals(dateTime) || parse.after(dateTime)){
+                            addDetail(collect,substrings,string,list1,parse,dateTime1);
+                        }else {
+                            addDetail(collect,substrings,string,list1,dateTime,dateTime1);
                         }
-                    }
-                }else {
-                    for (SparePartStatistics e : subsystemByUserId) {
-                        List<MaterialBaseType> collect = materialBaseTypeLitres.stream().filter(materialBaseType -> e.getSystemCode().equals(materialBaseType.getSystemCode())).collect(Collectors.toList());
-                        if (CollUtil.isNotEmpty(collect)) {
-                            for(MaterialBaseType q : collect){
-                                List<SparePartConsume> list = new ArrayList<>();
-                                SparePartConsume sparePartConsume1 = new SparePartConsume();
-                                sparePartConsume1.setQuarter(substrings+"年"+"第"+string+"季度");
-                                list.add(sparePartConsume1);
-                                q.setMaterialBaseTypeList(null);
-                                List<String> list3 = new ArrayList<>();
-                                list3.add(q.getBaseTypeCode());
-                                Long timeCount = sparePartStockMapper.getTimeCount(null, CollectionUtil.isNotEmpty(list1) ? list1 : list3, dateTime, dateTime1);
-                                if (timeCount!=null){
-                                    sparePartConsume1.setCount(timeCount);
-                                }else {
-                                    sparePartConsume1.setCount(0L);
-                                }
-                                q.setSparePartConsumeList(list);
-                            }
-                        }
+                    } else {
+                        String last12Months = DateUtil.format(date, "yyyy-MM");
+                        String substrings = last12Months.substring(0,4);
+                        DateTime parse = DateUtil.parse(last12Months,"yyyy-MM");
+                        int quarter = parse.quarter();
+                        String string = Convert.numberToChinese(Convert.toDouble(quarter),false);
+                        //开始
+                        DateTime dateTime = DateUtil.beginOfQuarter(parse);
+                        //结束
+                        DateTime dateTime1 = DateUtil.endOfQuarter(parse);
+
+                        addDetail(collect,substrings,string,list1,dateTime,dateTime1);
+                        date = DateUtil.offsetMonth(parse, -3);
                     }
                 }
-                date = DateUtil.offsetMonth(parse, -3);
-            }else if (i==(integer-1)){
-                String last12Months = getLast12Months(1);
-                String substrings = last12Months.substring(0,4);
-                DateTime parse = DateUtil.parse(last12Months,"yyyy-MM");
-                int quarter = parse.quarter();
-                String string = Convert.digitToChinese(quarter);
-                //开始
-                DateTime dateTime = DateUtil.beginOfQuarter(parse);
-                //结束
-                DateTime dateTime1 = DateUtil.endOfQuarter(parse);
+                materialBaseTypes.addAll(collect);
+            }
+        }
+        return materialBaseTypes;
+    }
 
 
-                if (parse.equals(dateTime) || parse.after(dateTime)){
-                    for (SparePartStatistics e : subsystemByUserId) {
-                        List<MaterialBaseType> collect = materialBaseTypeLitres.stream().filter(materialBaseType -> e.getSystemCode().equals(materialBaseType.getSystemCode())).collect(Collectors.toList());
-                        if (CollUtil.isNotEmpty(collect)) {
-                            for(MaterialBaseType q : collect){
-                                List<SparePartConsume> list = new ArrayList<>();
-                                SparePartConsume sparePartConsume1 = new SparePartConsume();
-                                sparePartConsume1.setQuarter(substrings+"年"+"第"+string+"季度");
-                                list.add(sparePartConsume1);
-                                q.setMaterialBaseTypeList(null);
-                                List<String> list3 = new ArrayList<>();
-                                list3.add(q.getBaseTypeCode());
-                                Long timeCount = sparePartStockMapper.getTimeCount(null, CollectionUtil.isNotEmpty(list1) ? list1 : list3, parse, dateTime1);
-                                if (timeCount!=null){
-                                    sparePartConsume1.setCount(timeCount);
-                                }else {
-                                    sparePartConsume1.setCount(0L);
-                                }
-                                q.setSparePartConsumeList(list);
-                            }
-                        }
-                    }
-                }else {
-                    for (SparePartStatistics e : subsystemByUserId) {
-                        List<MaterialBaseType> collect = materialBaseTypeLitres.stream().filter(materialBaseType -> e.getSystemCode().equals(materialBaseType.getSystemCode())).collect(Collectors.toList());
-                        if (CollUtil.isNotEmpty(collect)) {
-                            for(MaterialBaseType q : collect){
-                                List<SparePartConsume> list = new ArrayList<>();
-                                SparePartConsume sparePartConsume1 = new SparePartConsume();
-                                sparePartConsume1.setQuarter(substrings+"年"+"第"+string+"季度");
-                                list.add(sparePartConsume1);
-                                q.setMaterialBaseTypeList(null);
-                                List<String> list3 = new ArrayList<>();
-                                list3.add(q.getBaseTypeCode());
-                                Long timeCount = sparePartStockMapper.getTimeCount(null, CollectionUtil.isNotEmpty(list1) ? list1 : list3, dateTime, dateTime1);
-                                if (timeCount!=null){
-                                    sparePartConsume1.setCount(timeCount);
-                                }else {
-                                    sparePartConsume1.setCount(0L);
-                                }
-                                q.setSparePartConsumeList(list);
-                            }
-                        }
-                    }
+    private void addDetail(List<MaterialBaseType> collect,String substrings,String string,List<String> list1,DateTime begin,DateTime end) {
+        for(MaterialBaseType q : collect){
+            //子集全部集合
+            List<MaterialBaseType> materialBaseTypeList = new ArrayList<>();
+            if (CollUtil.isNotEmpty(q.getMaterialBaseTypeList())) {
+                getAllSubset(materialBaseTypeList, q.getMaterialBaseTypeList());
+            }
+            if (CollUtil.isEmpty(q.getSparePartConsumeList())) {
+                List<SparePartConsume> list = new ArrayList<>();
+                SparePartConsume sparePartConsume1 = new SparePartConsume();
+                sparePartConsume1.setQuarter(substrings+"年"+"第"+string+"季度");
+                q.setMaterialBaseTypeList(null);
+                List<String> list3 = new ArrayList<>();
+                list3.add(q.getBaseTypeCode());
+                Long timeCount = sparePartStockMapper.getTimeCount(null, CollectionUtil.isNotEmpty(list1) ? list1 : list3, begin, end);
+                //子集的数据
+                Long subjectCount = 0L;
+                if (CollUtil.isNotEmpty(materialBaseTypeList)) {
+                    List<String> collect1 = materialBaseTypeList.stream().map(MaterialBaseType::getBaseTypeCode).collect(Collectors.toList());
+                    subjectCount = subjectCount + sparePartStockMapper.getTimeCount(null, CollectionUtil.isNotEmpty(list1) ? list1 : collect1, begin, end);
                 }
+
+                if (timeCount!=null){
+                    sparePartConsume1.setCount(timeCount+subjectCount);
+                }else {
+                    sparePartConsume1.setCount(subjectCount);
+                }
+                list.add(sparePartConsume1);
+                q.setSparePartConsumeList(list);
             } else {
-                String last12Months = DateUtil.format(date, "yyyy-MM");
-                String substrings = last12Months.substring(0,4);
-                DateTime parse = DateUtil.parse(last12Months,"yyyy-MM");
-                int quarter = parse.quarter();
-                String string = Convert.digitToChinese(quarter);
-                //开始
-                DateTime dateTime = DateUtil.beginOfQuarter(parse);
-                //结束
-                DateTime dateTime1 = DateUtil.endOfQuarter(parse);
-
-
-                for (SparePartStatistics e : subsystemByUserId) {
-                    List<MaterialBaseType> collect = materialBaseTypeLitres.stream().filter(materialBaseType -> e.getSystemCode().equals(materialBaseType.getSystemCode())).collect(Collectors.toList());
-                    if (CollUtil.isNotEmpty(collect)) {
-                        for(MaterialBaseType q : collect){
-                            List<SparePartConsume> list = new ArrayList<>();
-                            SparePartConsume sparePartConsume1 = new SparePartConsume();
-                            sparePartConsume1.setQuarter(substrings+"年"+"第"+string+"季度");
-                            list.add(sparePartConsume1);
-                            q.setMaterialBaseTypeList(null);
-                            List<String> list3 = new ArrayList<>();
-                            list3.add(q.getBaseTypeCode());
-                            Long timeCount = sparePartStockMapper.getTimeCount(null, CollectionUtil.isNotEmpty(list1) ? list1 : list3, dateTime, dateTime1);
-                            if (timeCount!=null){
-                                sparePartConsume1.setCount(timeCount);
-                            }else {
-                                sparePartConsume1.setCount(0L);
-                            }
-                            q.setSparePartConsumeList(list);
-                        }
-                    }
+                List<SparePartConsume> sparePartConsumeList = q.getSparePartConsumeList();
+                SparePartConsume sparePartConsume1 = new SparePartConsume();
+                sparePartConsume1.setQuarter(substrings+"年"+"第"+string+"季度");
+                q.setMaterialBaseTypeList(null);
+                List<String> list3 = new ArrayList<>();
+                list3.add(q.getBaseTypeCode());
+                Long timeCount = sparePartStockMapper.getTimeCount(null, CollectionUtil.isNotEmpty(list1) ? list1 : list3, begin, end);
+                //子集的数据
+                Long subjectCount = 0L;
+                if (CollUtil.isNotEmpty(materialBaseTypeList)) {
+                    List<String> collect1 = materialBaseTypeList.stream().map(MaterialBaseType::getBaseTypeCode).collect(Collectors.toList());
+                    subjectCount = subjectCount + sparePartStockMapper.getTimeCount(null, CollectionUtil.isNotEmpty(list1) ? list1 : collect1, begin, end);
                 }
+                if (timeCount!=null){
+                    sparePartConsume1.setCount(timeCount+subjectCount);
+                }else {
+                    sparePartConsume1.setCount(subjectCount);
+                }
+                sparePartConsumeList.add(sparePartConsume1);
             }
         }
     }
 
-    private void getLast12Months(SparePartConsume sparePartConsume, List<String> list1, List<SparePartStatistics> subsystemByUserId, List<MaterialBaseType> materialBaseTypeLitres, int i) {
+    private List<MaterialBaseType> getLast12Months(SparePartConsume sparePartConsume, List<String> list1, List<SparePartStatistics> subsystemByUserId, List<MaterialBaseType> materialBaseTypeLitres, int i) {
         String last12Months = getLast12Months(i);
         String substrings = last12Months.substring(0,4);
         String substring = last12Months.substring(5,7);
         sparePartConsume.setMonth(last12Months);
-        this.getCount(subsystemByUserId,materialBaseTypeLitres,list1,substrings,substring);
+        return  this.getCount(subsystemByUserId,materialBaseTypeLitres,list1,substrings,substring);
+    }
+    private List<MaterialBaseType> getTimeCount(List<MaterialBaseType> materialBaseTypeLitres,List<String> list1,Integer integer,List<SparePartStatistics> subsystemByUserId){
+        List<MaterialBaseType> materialBaseTypes = new ArrayList<>();
+        if (CollectionUtil.isNotEmpty(subsystemByUserId)){
+            for (SparePartStatistics e : subsystemByUserId) {
+                List<MaterialBaseType> collect = materialBaseTypeLitres.stream().filter(materialBaseType -> e.getSystemCode().equals(materialBaseType.getSystemCode())).collect(Collectors.toList());
+                if (CollUtil.isNotEmpty(collect)) {
+                    for(MaterialBaseType q : collect){
+                        for (int i = 1; i<=integer; i++) {
+                            String last12Months = getLast12Months(i);
+                            String substrings = last12Months.substring(0,4);
+                            String substring = last12Months.substring(5,7);
+
+                            //子集全部集合
+                            List<MaterialBaseType> materialBaseTypeList = new ArrayList<>();
+                            if (CollUtil.isNotEmpty(q.getMaterialBaseTypeList())) {
+                                getAllSubset(materialBaseTypeList, q.getMaterialBaseTypeList());
+                            }
+                            if (CollUtil.isEmpty(q.getSparePartConsumeList())) {
+                                List<SparePartConsume> list = new ArrayList<>();
+                                SparePartConsume sparePartConsume = new SparePartConsume();
+                                sparePartConsume.setMonth(substring);
+                                list.add(sparePartConsume);
+                                q.setMaterialBaseTypeList(null);
+                                List<String> list3 = new ArrayList<>();
+                                list3.add(q.getBaseTypeCode());
+                                Long aLong = sparePartStockMapper.timeCount(null, CollectionUtil.isNotEmpty(list1) ? list1 : list3, Integer.valueOf(substrings), Integer.valueOf(substring));
+                                //子集的数据
+                                Long subjectCount = 0L;
+                                if (CollUtil.isNotEmpty(materialBaseTypeList)) {
+                                    List<String> collect1 = materialBaseTypeList.stream().map(MaterialBaseType::getBaseTypeCode).collect(Collectors.toList());
+                                    subjectCount = subjectCount + sparePartStockMapper.timeCount(null, CollectionUtil.isNotEmpty(list1) ? list1 : collect1, Integer.valueOf(substrings), Integer.valueOf(substring));
+                                }
+                                if (aLong!=null){
+                                    sparePartConsume.setCount(aLong+subjectCount);
+                                }else {
+                                    sparePartConsume.setCount(subjectCount);
+                                }
+                                q.setSparePartConsumeList(list);
+                            } else {
+                                List<SparePartConsume> sparePartConsumeList = q.getSparePartConsumeList();
+                                SparePartConsume sparePartConsume = new SparePartConsume();
+                                sparePartConsume.setMonth(substring);
+                                q.setMaterialBaseTypeList(null);
+                                List<String> list3 = new ArrayList<>();
+                                list3.add(q.getBaseTypeCode());
+                                Long aLong = sparePartStockMapper.timeCount(null, CollectionUtil.isNotEmpty(list1) ? list1 : list3, Integer.valueOf(substrings), Integer.valueOf(substring));
+                                //子集的数据
+                                Long subjectCount = 0L;
+                                if (CollUtil.isNotEmpty(materialBaseTypeList)) {
+                                    List<String> collect1 = materialBaseTypeList.stream().map(MaterialBaseType::getBaseTypeCode).collect(Collectors.toList());
+                                    subjectCount = subjectCount + sparePartStockMapper.timeCount(null, CollectionUtil.isNotEmpty(list1) ? list1 : collect1, Integer.valueOf(substrings), Integer.valueOf(substring));
+                                }
+                                if (aLong!=null){
+                                    sparePartConsume.setCount(aLong+subjectCount);
+                                }else {
+                                    sparePartConsume.setCount(subjectCount);
+                                }
+                                sparePartConsumeList.add(sparePartConsume);
+                            }
+                        }
+                    }
+                    materialBaseTypes.addAll(collect);
+                }
+            }
+        }
+        return materialBaseTypes;
     }
 
-    private void getCount( List<SparePartStatistics> subsystemByUserId,
+    private List<MaterialBaseType> getCount( List<SparePartStatistics> subsystemByUserId,
                            List<MaterialBaseType> materialBaseTypeLitres,
                            List<String> list1, String substrings, String substring
                            ){
+        List<MaterialBaseType> materialBaseTypes = new ArrayList<>();
             if (CollectionUtil.isNotEmpty(subsystemByUserId)){
                 for (SparePartStatistics e : subsystemByUserId) {
                     List<MaterialBaseType> collect = materialBaseTypeLitres.stream().filter(materialBaseType -> e.getSystemCode().equals(materialBaseType.getSystemCode())).collect(Collectors.toList());
@@ -455,9 +469,11 @@ public class SparePartStockServiceImpl extends ServiceImpl<SparePartStockMapper,
                             }
                             q.setSparePartConsumeList(list);
                         }
+                        materialBaseTypes.addAll(collect);
                     }
                 }
             }
+        return materialBaseTypes;
     }
 
 
