@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.aiurt.modules.subsystem.dto.ListDTO;
 import com.aiurt.modules.subsystem.dto.SubsystemFaultDTO;
+import com.aiurt.modules.subsystem.dto.SystemByCodeDTO;
 import com.aiurt.modules.subsystem.dto.YearFaultDTO;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.ibatis.annotations.Param;
@@ -92,10 +93,24 @@ public interface CsUserSubsystemMapper extends BaseMapper<CsUserSubsystem> {
     List<ListDTO> sysTemYearFault(@Param("code") String code);
 
     /**
-     *
+     * 设备类型数据查询
      * @param code
      * @param deviceTypeCode
      * @return
      */
     List<ListDTO> deviceTypeFault(@Param("code")String code,@Param("deviceTypeCode") String deviceTypeCode);
+
+    /**
+     * 根据code查询
+     * @param subsystemCode
+     * @return
+     */
+    SystemByCodeDTO getSystemByCodeDTO(@Param("subsystemCode") String subsystemCode);
+
+    /**
+     * 查询备件跟换次数
+     * @param subsystemCode
+     * @return
+     */
+    Integer getReplacementNum(String subsystemCode);
 }

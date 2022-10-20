@@ -166,5 +166,29 @@
             date_format(c.approval_pass_time, '%c'),
             a.`code`
     </select>
+    <select id="getSystemByCodeDTO" resultType="com.aiurt.modules.subsystem.dto.SystemByCodeDTO">
+        select s.system_name,s.system_code,s.description,
+            count(fr.end_time or not null) as repairNum,
+            fr.end_time as repairTime
+        from cs_subsystem s
+        left join fault f on f.sub_system_code=s.system_code
+        left join fault_repair_record fr on fr.fault_code = f.code  and fr.del_flag=0
+        where  s.del_flag =0 and s.system_code = #{subsystemCode}
+        ORDER BY fr.end_time
+    </select>
+    <select id="getReplacementNum" resultType="java.lang.Integer">
+        SELECT
+            IFNULL(SUM(t6.new_spare_part_num),0)  as sum
+        FROM
+            spare_part_out_order spare_part_out_order
+                LEFT JOIN material_base t1 ON spare_part_out_order.material_code = t1.CODE
+                LEFT JOIN cs_major cs_major ON t1.major_code = cs_major.major_code
+                LEFT JOIN cs_subsystem cs_subsystem ON t1.system_code = cs_subsystem.system_code
+                LEFT JOIN material_base_type t4 ON t1.base_type_code = t4.base_type_code
+                LEFT JOIN device_change_spare_part t6 ON t6.out_order_id = spare_part_out_order.id
+        where
+            spare_part_out_order.del_flag =0
+          and cs_subsystem.system_code = #{subsystemCode}
+    </select>
 
 </mapper>

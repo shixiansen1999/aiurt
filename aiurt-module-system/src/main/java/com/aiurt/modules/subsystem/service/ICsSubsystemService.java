@@ -1,6 +1,7 @@
 package com.aiurt.modules.subsystem.service;
 
 import com.aiurt.modules.subsystem.dto.SubsystemFaultDTO;
+import com.aiurt.modules.subsystem.dto.SystemByCodeDTO;
 import com.aiurt.modules.subsystem.dto.YearFaultDTO;
 import com.aiurt.modules.subsystem.entity.CsSubsystem;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -73,4 +74,11 @@ public interface ICsSubsystemService extends IService<CsSubsystem> {
      * @return
      */
     ModelAndView reportSystemExport(HttpServletRequest request, SubsystemFaultDTO subsystemCode, List<String> deviceTypeCode, String time, String exportField);
+
+    /**
+     * 根据code查询
+     * @param subsystemCode
+     * @return
+     */
+    SystemByCodeDTO csSubsystemByCode(String subsystemCode);
 }

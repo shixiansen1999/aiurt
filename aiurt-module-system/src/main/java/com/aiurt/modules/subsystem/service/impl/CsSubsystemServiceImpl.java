@@ -8,6 +8,7 @@ import com.aiurt.boot.task.dto.OverhaulStatisticsDTOS;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.modules.subsystem.dto.ListDTO;
 import com.aiurt.modules.subsystem.dto.SubsystemFaultDTO;
+import com.aiurt.modules.subsystem.dto.SystemByCodeDTO;
 import com.aiurt.modules.subsystem.dto.YearFaultDTO;
 import com.aiurt.modules.subsystem.entity.CsSubsystem;
 import com.aiurt.modules.subsystem.entity.CsSubsystemUser;
@@ -296,6 +297,13 @@ public class CsSubsystemServiceImpl extends ServiceImpl<CsSubsystemMapper, CsSub
             mv.addObject(NormalExcelConstants.DATA_LIST, dtos);
         }
         return mv;
+    }
+
+    @Override
+    public SystemByCodeDTO csSubsystemByCode(String subsystemCode) {
+        SystemByCodeDTO systemByCodeDTO= csUserSubsystemMapper.getSystemByCodeDTO(subsystemCode);
+        systemByCodeDTO.setReplacementNum(csUserSubsystemMapper.getReplacementNum(subsystemCode));
+        return systemByCodeDTO;
     }
 
     public void insertSystemUser(CsSubsystem csSubsystem){

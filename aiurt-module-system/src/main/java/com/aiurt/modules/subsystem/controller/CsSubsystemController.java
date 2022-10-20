@@ -17,6 +17,7 @@ import com.aiurt.modules.material.entity.MaterialBaseType;
 import com.aiurt.modules.material.service.IMaterialBaseTypeService;
 import com.aiurt.modules.position.entity.CsStation;
 import com.aiurt.modules.subsystem.dto.SubsystemFaultDTO;
+import com.aiurt.modules.subsystem.dto.SystemByCodeDTO;
 import com.aiurt.modules.subsystem.dto.YearFaultDTO;
 import com.aiurt.modules.subsystem.entity.CsSubsystem;
 import com.aiurt.modules.subsystem.entity.CsSubsystemUser;
@@ -326,6 +327,18 @@ public class CsSubsystemController  {
 	@GetMapping(value = "/DeviceTypeComboBox")
 	public Result<List<SubsystemFaultDTO>> DeviceTypeComboBox(@RequestParam(name = "subsystemCode",required = false) String subsystemCode) {
 		List<SubsystemFaultDTO> pages = csSubsystemService.deviceTypeCodeByNameDTO(subsystemCode);
+		return Result.ok(pages);
+	}
+	/**
+	 * 统计报表-子系统分析-根据查询子系统
+	 * @param
+	 * @return
+	 */
+	//@AutoLog(value = "查询",operateType = 1,operateTypeAlias = "根据专业查子系统",permissionUrl = "/subsystem/list")
+	@ApiOperation(value="统计报表-子系统分析-根据查询子系统", notes="统计报表-子系统分析-根据查询子系统")
+	@GetMapping(value = "/csSubsystemByCode")
+	public Result<SystemByCodeDTO> csSubsystemByCode(@RequestParam(name = "subsystemCode") String subsystemCode) {
+		SystemByCodeDTO pages = csSubsystemService.csSubsystemByCode(subsystemCode);
 		return Result.ok(pages);
 	}
 	/**
