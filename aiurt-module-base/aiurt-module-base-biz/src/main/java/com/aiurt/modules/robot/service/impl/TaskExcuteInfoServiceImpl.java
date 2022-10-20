@@ -87,6 +87,7 @@ public class TaskExcuteInfoServiceImpl extends ServiceImpl<TaskExcuteInfoMapper,
 
     /**
      * 同步任务完成数据信息
+     *
      * @param taskExcuteInfos
      */
     @Override
@@ -101,35 +102,53 @@ public class TaskExcuteInfoServiceImpl extends ServiceImpl<TaskExcuteInfoMapper,
         this.saveBatch(taskExcuteInfos);
     }
 
-//    @Override
-//    @Transactional(rollbackFor = Exception.class)
-//    public  List<TaskExcuteInfo> synchronizeRobotTaskExcuteInfo(List<TaskExcuteInfo> taskExcuteInfos) {
-//        List<String> taskIds = taskExcuteInfos.stream().map(TaskExcuteInfo::getTaskId).collect(Collectors.toList());
-//        // 需要下载图片的数据集合
-//        List<TaskExcuteInfo> list= new ArrayList<>();
-//        if (CollectionUtil.isNotEmpty(taskIds)) {
-//            QueryWrapper<TaskExcuteInfo> wrapper = new QueryWrapper<>();
-//            wrapper.lambda().eq(TaskExcuteInfo::getTaskId, taskIds);
-//            List<TaskExcuteInfo> localInfos = this.list(wrapper);
-//            for (TaskExcuteInfo taskExcuteInfo : taskExcuteInfos) {
-//                String targetId = taskExcuteInfo.getTargetId();
-//                // 根据巡检结果id查询一条记录
-//                TaskExcuteInfo localExcuteInfo = localInfos.stream().filter(l -> targetId.equals(l.getTargetId())).findAny().orElse(null);
-//                if (ObjectUtil.isNotEmpty(localExcuteInfo)) {
-//                    taskExcuteInfo.setId(localExcuteInfo.getId());
-//                    // 本地数据的图片地址为空，远程同步的数据不为空时
-//                    if (StrUtil.isEmpty(localExcuteInfo.getHdPicture()) && StrUtil.isNotEmpty(taskExcuteInfo.getHdPicture())) {
-//                        list.add(taskExcuteInfo);
-//                    }
-//                } else {
-//                    // 本地不存在的新数据,记录图片地址
-//                    list.add(taskExcuteInfo);
-//                }
-//            }
-//        }
-//        this.saveOrUpdateBatch(taskExcuteInfos);
-//        return list;
-//    }
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void synchronizeTaskExcuteInfo(List<TaskExcuteInfo> taskExcuteInfos) {
+        List<String> taskIds = taskExcuteInfos.stream().map(TaskExcuteInfo::getTaskId).collect(Collectors.toList());
+        if (CollUtil.isEmpty(taskIds) || CollUtil.isEmpty(taskExcuteInfos)) {
+            return;
+        }
+
+        // 需要下载图片的数据集合
+        List<TaskExcuteInfo> list = new ArrayList<>();
+
+        // 查询本地存在的任务记录
+        QueryWrapper<TaskExcuteInfo> wrapper = new QueryWrapper<>();
+        wrapper.lambda().in(TaskExcuteInfo::getTaskId, taskIds);
+        List<TaskExcuteInfo> localInfos = this.list(wrapper);
+
+        // 遍历远程任务数据taskExcuteInfos
+        for (TaskExcuteInfo taskExcuteInfo : taskExcuteInfos) {
+            String targetId = taskExcuteInfo.getTargetId();
+            // 根据巡检结果id查询一条记录
+            TaskExcuteInfo localExcuteInfo = localInfos.stream().filter(l -> targetId.equals(l.getTargetId())).findAny().orElse(null);
+
+            // 本地不存在的新数据,记录图片地址
+            if (ObjectUtil.isEmpty(localExcuteInfo)) {
+                list.add(taskExcuteInfo);
+                continue;
+            }
+
+            // 将本地记录的id字段值赋值给新记录的id
+            taskExcuteInfo.setId(localExcuteInfo.getId());
+            // 本地数据的图片地址为空，远程同步的数据不为空时
+            if (StrUtil.isEmpty(localExcuteInfo.getHdPicture()) && StrUtil.isNotEmpty(taskExcuteInfo.getHdPicture())) {
+                list.add(taskExcuteInfo);
+            }
+        }
+
+        // 更新不需要下载图片的记录
+        this.saveOrUpdateBatch(taskExcuteInfos);
+
+        // 更新需要下载图片的记录
+        if (CollUtil.isNotEmpty(list)) {
+            list.forEach(l -> {
+                l.setHdPicture(sysBaseApi.remoteUploadLocal(l.getHdPicture(), ""));
+            });
+            this.saveOrUpdateBatch(list);
+        }
+    }
 
     @Override
     public List<DeviceInfoVO> getDeviceInfo(String taskId) {
@@ -178,7 +197,7 @@ public class TaskExcuteInfoServiceImpl extends ServiceImpl<TaskExcuteInfoMapper,
         String regIpAndPort = "((2[0-4]\\d|25[0-5]|[01]?\\d\\d?)\\.){3}(2[0-4]\\d|25[0-5]|[01]?\\d\\d?\\:(\\d+))";
 
         // 判空
-        if ( ObjectUtil.isEmpty(record) || StrUtil.isEmpty(record.getHdPicture())) {
+        if (ObjectUtil.isEmpty(record) || StrUtil.isEmpty(record.getHdPicture())) {
             return;
         }
 
@@ -197,7 +216,7 @@ public class TaskExcuteInfoServiceImpl extends ServiceImpl<TaskExcuteInfoMapper,
 
         // 根据旧的ip去获取映射表，如果有对应的外网地址映射才进入
         String oldIp = oldIpAndPort.substring(0, oldIpAndPort.indexOf(":"));
-        String oldPort = oldIpAndPort.substring(oldIpAndPort.indexOf(":")+1);
+        String oldPort = oldIpAndPort.substring(oldIpAndPort.indexOf(":") + 1);
 
         // 图片地址外网转换
         LambdaQueryWrapper<IpMapping> lam = new LambdaQueryWrapper<>();

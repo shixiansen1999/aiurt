@@ -50,8 +50,14 @@ public interface ITaskExcuteInfoService extends IService<TaskExcuteInfo> {
      */
     void synchronizeRobotTaskExcuteInfo(List<TaskExcuteInfo> taskExcuteInfos);
 
-//    // 需要下载图片的
-//    List<TaskExcuteInfo> synchronizeRobotTaskExcuteInfo(List<TaskExcuteInfo> taskExcuteInfos);
+    // 需要下载图片的
+
+    /**
+     * 同步巡视任务的巡视记录（图片保存到本地）
+     * @param taskExcuteInfos
+     * @return
+     */
+    void synchronizeTaskExcuteInfo(List<TaskExcuteInfo> taskExcuteInfos);
 
     /**
      * 根据taskId查询设备信息
