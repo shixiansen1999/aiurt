@@ -76,7 +76,7 @@ public class OperationProcess implements Serializable {
 
 	@ApiModelProperty("处理时长")
     @TableField(exist = false)
-	private String processingTime;
+	private String processingTime = "";
 
 	/**创建时间*/
 	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
