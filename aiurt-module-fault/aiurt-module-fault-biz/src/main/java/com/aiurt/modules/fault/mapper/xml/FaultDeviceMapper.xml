@@ -23,6 +23,6 @@
         LEFT JOIN cs_line cl on b.line_code = cl.line_code
         LEFT JOIN cs_station cs on b.station_code = cs.station_code
         LEFT JOIN cs_station_position csp on csp.position_code = b.position_code
-        where a.fault_code = #{faultCode}
+        where a.fault_code = #{faultCode} AND cl.del_flag =0 and cs.del_flag =0 AND b.del_flag =0
     </select>
 </mapper>
