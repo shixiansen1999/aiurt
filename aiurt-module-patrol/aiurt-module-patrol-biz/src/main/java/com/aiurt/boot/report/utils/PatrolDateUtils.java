@@ -4,6 +4,8 @@ import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUnit;
 import cn.hutool.core.date.DateUtil;
 
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.Calendar;
 import java.util.Date;
 
@@ -14,76 +16,6 @@ import java.util.Date;
  * @desc
  */
 public class PatrolDateUtils {
-
-    /**
-     * 计算周数
-     * @param startDate
-     * @param endDate
-     * @return
-     */
-    public static Integer countTwoDayWeek(String startDate, String endDate,boolean sameDate)
-    {
-
-        Date start = DateUtil.parse(startDate);
-        DateTime end = DateUtil.parse(endDate);
-        Calendar cal=Calendar.getInstance();
-        cal.setTime(start);
-        long time1=cal.getTimeInMillis();
-        cal.setTime(end);
-        long time2=cal.getTimeInMillis();
-        long between_days=(time2-time1)/(1000*3600*24);
-        Double days=Double.parseDouble(String.valueOf(between_days));
-        if((days/7)>0 && (days/7)<=1&&sameDate==true){
-            //不满一周的按一周算
-            return 1;
-        }
-        else if((days/7)>0 && (days/7)<=1&&sameDate==false)
-        {
-            return  1+1;
-        }
-        else if(sameDate==false){
-            int weekNumber= 2;
-            //周一是相等
-            DateTime startThisMonDay = DateUtil.beginOfWeek(start);
-            DateTime endThisMonDay = DateUtil.beginOfWeek(end);
-
-            DateTime stayDay = DateUtil.offsetDay(startThisMonDay, 7);
-            DateTime endDay = DateUtil.offsetDay(endThisMonDay, -7);
-            //开始时间的下周一与结束时间的周一是否是同一天
-            boolean nowIsMonDay = DateUtil.isSameDay(endThisMonDay, stayDay);
-            //开始时间的下周一与结束时间的上周一，是否是同一天
-            boolean sameTime = DateUtil.isSameDay(stayDay, endDay);
-            //本周一不是当前，开始和结束的周一是同一天
-            if(sameTime==true&&nowIsMonDay==false)
-            {
-                return  weekNumber+1;
-            }
-            if(nowIsMonDay==true)
-            {
-                return  weekNumber;
-            }
-            if(sameTime==false&&nowIsMonDay==false)
-            {
-                Date day = DateUtil.endOfWeek(endDay);
-                DateTime lastDay = DateUtil.offsetDay(day, 1);
-                long betweenDay = DateUtil.between(stayDay, lastDay, DateUnit.DAY);
-                Long number = betweenDay/7;
-                return weekNumber+number.intValue();
-            }
-            else
-            {
-                return null;
-            }
-
-        }
-        else if((days/7)==0){
-            return 0;
-        }else{
-            //负数返还null
-            return null;
-        }
-
-    }
 
     /**
      * 计算周数
@@ -210,25 +142,262 @@ public class PatrolDateUtils {
     }
 
     /**
-     * 比较两个日期：相等（0）、之前（1）、之后（2）
-     * @param tagDateTime
+     * 推算平均每周的漏检数的时间范围
+     * @param startDate
+     * @param endDate
      * @return
      */
-    public static Integer belongCalendarBefore(String tagDateTime) {
-        Date fomatDate1=DateUtil.parse(tagDateTime,"yyyy-MM-dd");
-        String today= DateUtil.today();
-        Date date = DateUtil.parse(today);
-        //比较两个日期
-        int result=date.compareTo(fomatDate1);
-        //如果日期相等返回0
-        if(result==0){
-            return 0;
-        }else if(result<0){
-            //小于0，参数date1就是在date2之后
-            return 2;
-        }else{
-            //大于0，参数date1就是在date2之前
-            return 1;
+    public static String startEndDateWeek(String startDate, String endDate) {
+        Date todayDate = DateUtil.date();
+        Date start = DateUtil.parse(startDate, "yyyy-MM-dd");
+        Date end = DateUtil.parse(endDate, "yyyy-MM-dd");
+        int startMonth = DateUtil.month(start) + 1;
+        int endMonth = DateUtil.month(end) + 1;
+        //开始时间大于等于当前时间
+        String thisWeek = DateUtil.format(start, "yyyy-MM-dd 00:00:00") + "~" + DateUtil.format(end, "yyyy-MM-dd 23:59:59");
+        if (start.after(todayDate) || start.equals(DateUtil.date())) {
+            return thisWeek;
+        }
+        //开始时间小于当前时间
+        else {
+            //结束时间小于当前时间
+            if (end.before(todayDate)) {
+                int startYear = DateUtil.year(start);
+                int endYear = DateUtil.year(end);
+                //结束年份大于开始年份
+                if (endYear > startYear) {
+                    //当前时间的周一
+                    Date nowMonday = DateUtil.beginOfWeek(new Date());
+                    //结束时间的周一
+                    Date endMonday = DateUtil.beginOfWeek(end);
+                    //同一天
+                    boolean endSameTime = DateUtil.isSameTime(nowMonday, endMonday);
+                    if (endSameTime) {
+                        //当前时间的周日
+                        Date nowSunday = DateUtil.endOfWeek(new Date());
+                        //上周的周日
+                        Date endSunday = DateUtil.offsetWeek(nowSunday, -1);
+                        //推算开始时间的漏检日期
+                        String startDateScope = getOmitDateScope(start);
+                        String s = startDateScope.split("~")[0];
+                        //推算结束时间的漏检日期
+                        String endDateScope = getOmitDateScope(endSunday);
+                        String e = endDateScope.split("~")[1];
+                        //拼接返回
+                        thisWeek = DateUtil.format(DateUtil.parse(s), "yyyy-MM-dd 00:00:00") + "~" + DateUtil.format(DateUtil.parse(e), "yyyy-MM-dd 23:59:59");
+                        return thisWeek;
+                    } else {
+                        //推算开始时间的漏检日期
+                        String startDateScope = getOmitDateScope(start);
+                        String s = startDateScope.split("~")[0];
+                        //推算结束时间的漏检日期
+                        String endDateScope = getOmitDateScope(end);
+                        String e = endDateScope.split("~")[1];
+                        //拼接返回
+                        thisWeek = DateUtil.format(DateUtil.parse(s), "yyyy-MM-dd 00:00:00") + "~" + DateUtil.format(DateUtil.parse(e), "yyyy-MM-dd 23:59:59");
+                        return thisWeek;
+                    }
+
+                }
+                //结束年份小于等于开始年份
+                else {
+                    //结束月份大于开始月份
+                    if (endMonth > startMonth) {
+                        //当前时间的周一
+                        Date nowMonday = DateUtil.beginOfWeek(new Date());
+                        //结束时间的周一
+                        Date endMonday = DateUtil.beginOfWeek(end);
+                        //同一天
+                        boolean endSameTime = DateUtil.isSameTime(nowMonday, endMonday);
+                        if (endSameTime) {
+                            return thisWeek;
+                        } else {
+                            //推算开始时间的漏检日期
+                            String startDateScope = getOmitDateScope(start);
+                            String s = startDateScope.split("~")[0];
+                            //推算结束时间的漏检日期
+                            String endDateScope = getOmitDateScope(end);
+                            String e = endDateScope.split("~")[1];
+                            //拼接返回
+                            thisWeek = DateUtil.format(DateUtil.parse(s), "yyyy-MM-dd 00:00:00") + "~" + DateUtil.format(DateUtil.parse(e), "yyyy-MM-dd 23:59:59");
+                            return thisWeek;
+                        }
+
+                    }
+                    //结束月份小于等于开始月份
+                    else {
+                        //当前时间的周一
+                        Date nowMonday = DateUtil.beginOfWeek(new Date());
+                        //开始、结束时间的周一
+                        Date startMonday = DateUtil.beginOfWeek(start);
+                        Date endMonday = DateUtil.beginOfWeek(end);
+                        //同一天
+                        boolean startSameTime = DateUtil.isSameTime(nowMonday, startMonday);
+                        boolean endSameTime = DateUtil.isSameTime(nowMonday, endMonday);
+                        //都是周一
+                        if (startSameTime && endSameTime) {
+                            return thisWeek;
+                        }
+                        //开始时间不是周一,结束时间是
+                        if (!startSameTime && endSameTime) {
+                            //当前时间的周日
+                            Date nowSunday = DateUtil.endOfWeek(new Date());
+                            //上周的周日
+                            Date endSunday = DateUtil.offsetWeek(nowSunday, -1);
+                            //推算开始时间的漏检日期
+                            String startDateScope = getOmitDateScope(start);
+                            String s = startDateScope.split("~")[0];
+                            //推算结束时间的漏检日期
+                            String endDateScope = getOmitDateScope(endSunday);
+                            String e = endDateScope.split("~")[1];
+                            //拼接返回
+                            thisWeek = DateUtil.format(DateUtil.parse(s), "yyyy-MM-dd 00:00:00") + "~" + DateUtil.format(DateUtil.parse(e), "yyyy-MM-dd 23:59:59");
+                            return thisWeek;
+                        }
+                        //都不是
+                        else {   //推算开始时间的漏检日期
+                            String startDateScope = getOmitDateScope(start);
+                            String s = startDateScope.split("~")[0];
+                            //推算结束时间的漏检日期
+                            String endDateScope = getOmitDateScope(end);
+                            String e = endDateScope.split("~")[1];
+                            //拼接返回
+                            thisWeek = DateUtil.format(DateUtil.parse(s), "yyyy-MM-dd 00:00:00") + "~" + DateUtil.format(DateUtil.parse(e), "yyyy-MM-dd 23:59:59");
+                            return thisWeek;
+                        }
+                    }
+                }
+            }
+            //结束时间大于等于当前时间
+            else {
+                int startYear = DateUtil.year(start);
+                int endYear = DateUtil.year(end);
+                //结束年份大于开始年份
+                if (endYear > startYear) {
+                    //当前时间的周一
+                    Date nowMonday = DateUtil.beginOfWeek(new Date());
+                    //开始时间的周一
+                    Date startMonday = DateUtil.beginOfWeek(start);
+                    //同一天
+                    boolean startSameTime = DateUtil.isSameTime(nowMonday, startMonday);
+                    if (startSameTime) {
+                        return thisWeek;
+                    } else {
+                        //推算开始时间的漏检日期
+                        String startDateScope = getOmitDateScope(start);
+                        String s = startDateScope.split("~")[0];
+                        Date endSunday = DateUtil.endOfWeek(new Date());
+                        Date lastEndSunday = DateUtil.offsetWeek(endSunday, -1);
+                        //推算结束时间的漏检日期
+                        String endDateScope = getOmitDateScope(lastEndSunday);
+                        String e = endDateScope.split("~")[1];
+                        //拼接返回
+                        thisWeek = DateUtil.format(DateUtil.parse(s), "yyyy-MM-dd 00:00:00") + "~" + DateUtil.format(DateUtil.parse(e), "yyyy-MM-dd 23:59:59");
+                        return thisWeek;
+                    }
+                } else {
+                    //推算开始时间的漏检日期
+                    String startDateScope = getOmitDateScope(start);
+                    String s = startDateScope.split("~")[0];
+                    //推算当前时间的漏检日期
+                    //当前时间的周日
+                    Date nowSunday = DateUtil.endOfWeek(new Date());
+                    //上周的周日
+                    Date endSunday = DateUtil.offsetWeek(nowSunday, -1);
+                    String endDateScope = getOmitDateScope(endSunday);
+                    String e = endDateScope.split("~")[1];
+                    //拼接返回
+                    thisWeek = DateUtil.format(DateUtil.parse(s), "yyyy-MM-dd 00:00:00") + "~" + DateUtil.format(DateUtil.parse(e), "yyyy-MM-dd 23:59:59");
+                    return thisWeek;
+                }
+            }
+
+        }
+
+    }
+
+    /**
+     * 推算平均每月的漏检数的时间范围
+     * @param startDate
+     * @param endDate
+     * @return
+     */
+
+    public static String startEndDateMonth(String startDate, String endDate) {
+        String today = DateUtil.format(new Date(), "yyyy-MM");
+        Date s = DateUtil.parse(startDate, "yyyy-MM");
+        Date e = DateUtil.parse(endDate, "yyyy-MM");
+        Date n = DateUtil.parse(today, "yyyy-MM");
+        Date start = DateUtil.parse(startDate, "yyyy-MM-dd");
+        Date end = DateUtil.parse(endDate, "yyyy-MM-dd");
+        String thisWeek = DateUtil.format(start, "yyyy-MM-dd 00:00:00") + "~" + DateUtil.format(end, "yyyy-MM-dd 23:59:59");
+        //开始时间大于等于当前时间
+        if(s.after(n)||s.equals(n))
+        {
+            return thisWeek;
+        }
+        //开始时间小于当前时间
+        else
+        {
+            //获取当月的一号
+            Date firstDay = DateUtil.beginOfMonth(new Date());
+            //开始时间大于当月一号
+            if(start.after(firstDay))
+            {
+                return thisWeek;
+            }
+            //开始时间小于当月一号
+            else
+            {
+                //结束时间大于当月一号
+                if(end.after(firstDay))
+                {
+                    //获取上个月最后一天
+                    Date lastMonthDay = DateUtil.offsetDay(firstDay,-1);
+                    //推算开始时间的漏检日期
+                    String startDateScope = getOmitDateScope(start);
+                    String startOmitDate = startDateScope.split("~")[0];
+                    //推算结束时间的漏检日期
+                    String endDateScope = getOmitDateScope(lastMonthDay);
+                    String endOmitDate = endDateScope.split("~")[1];
+                    //拼接返回
+                    thisWeek = DateUtil.format(DateUtil.parse(startOmitDate), "yyyy-MM-dd 00:00:00") + "~" + DateUtil.format(DateUtil.parse(endOmitDate), "yyyy-MM-dd 23:59:59");
+                    return thisWeek;
+                }
+                //结束时间小于当月一号
+                else
+                {
+                    //推算开始时间的漏检日期
+                    String startDateScope = getOmitDateScope(start);
+                    String startOmitDate = startDateScope.split("~")[0];
+                    //推算结束时间的漏检日期
+                    String endDateScope = getOmitDateScope(end);
+                    String endOmitDate = endDateScope.split("~")[1];
+                    //拼接返回
+                    thisWeek = DateUtil.format(DateUtil.parse(startOmitDate), "yyyy-MM-dd 00:00:00") + "~" + DateUtil.format(DateUtil.parse(endOmitDate), "yyyy-MM-dd 23:59:59");
+                    return thisWeek;
+                }
+            }
+
+        }
+    }
+
+    public static String getOmitDateScope(Date date) {
+        // 参数日期所在周的周一
+        Date monday = DateUtil.beginOfWeek(date);
+        ZoneId zoneId = ZoneId.systemDefault();
+        LocalDate localDate = monday.toInstant().atZone(zoneId).toLocalDate();
+        if (Calendar.FRIDAY == DateUtil.dayOfWeek(date) || Calendar.SATURDAY == DateUtil.dayOfWeek(date)
+                || Calendar.SUNDAY == DateUtil.dayOfWeek(date)) {
+            // 周一往后3天，星期四
+            Date thursday = Date.from(localDate.plusDays(3).atStartOfDay().atZone(zoneId).toInstant());
+            return DateUtil.format(monday, "yyyy-MM-dd 00:00:00").concat("~").concat(DateUtil.format(thursday, "yyyy-MM-dd 23:59:59"));
+        } else {
+            // 周一往前3天，星期五
+            Date friday = Date.from(localDate.minusDays(3).atStartOfDay().atZone(zoneId).toInstant());
+            // 周一往前1天，星期天
+            Date sunday = Date.from(localDate.minusDays(1).atStartOfDay().atZone(zoneId).toInstant());
+            return DateUtil.format(friday, "yyyy-MM-dd 00:00:00").concat("~").concat(DateUtil.format(sunday, "yyyy-MM-dd 23:59:59"));
         }
     }
 }
