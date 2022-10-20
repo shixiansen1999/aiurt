@@ -75,14 +75,11 @@
 			  nullif (SUM(stock_level2.num),0) as sum
         FROM
         stock_level2 stock_level2
-        LEFT JOIN stock_level2_info stock_level2i ON stock_level2.warehouse_code = stock_level2i.warehouse_code
-        LEFT JOIN material_base t2 ON stock_level2.material_code = t2.CODE
-        LEFT JOIN cs_subsystem cs_subsystem ON t2.system_code = cs_subsystem.system_code
-        LEFT JOIN material_base_type t5 ON t2.base_type_code = t5.base_type_code
+        LEFT JOIN material_base_type t5 ON stock_level2.base_type_code = t5.base_type_code
         <where>
             stock_level2.del_flag =0
             <if test="systemCode != null and systemCode.size()!=0">
-                and cs_subsystem.system_code in
+                and t5.system_code in
                 <foreach collection="systemCode" index="index" item="item" open="(" close=")" separator=",">
                     #{item}
                 </foreach>
@@ -101,15 +98,11 @@
 			  nullif (SUM(spare_part_stock.num),0) as sum
         FROM
         spare_part_stock spare_part_stock
-        LEFT JOIN spare_part_stock_info t1 ON spare_part_stock.warehouse_code = t1.warehouse_code
-        LEFT JOIN material_base t2 ON spare_part_stock.material_code = t2.CODE
-        LEFT JOIN cs_major cs_major ON t2.major_code = cs_major.major_code
-        LEFT JOIN cs_subsystem cs_subsystem ON t2.system_code = cs_subsystem.system_code
-        LEFT JOIN material_base_type t5 ON t2.base_type_code = t5.base_type_code
+        LEFT JOIN material_base_type t5 ON spare_part_stock.material_code = t5.base_type_code
         <where>
             spare_part_stock.del_flag =0
             <if test="systemCode != null and systemCode.size()!=0">
-                and cs_subsystem.system_code in
+                and t5.system_code in
                 <foreach collection="systemCode" index="index" item="item" open="(" close=")" separator=",">
                     #{item}
                 </foreach>
@@ -144,15 +137,12 @@
          nullif (SUM(t6.new_spare_part_num),0) as sum
         FROM
         spare_part_out_order spare_part_out_order
-        LEFT JOIN material_base t1 ON spare_part_out_order.material_code = t1.CODE
-        LEFT JOIN cs_major cs_major ON t1.major_code = cs_major.major_code
-        LEFT JOIN cs_subsystem cs_subsystem ON t1.system_code = cs_subsystem.system_code
-        LEFT JOIN material_base_type t4 ON t1.base_type_code = t4.base_type_code
+        LEFT JOIN material_base_type t4 ON spare_part_out_order.material_code = t4.base_type_code
         LEFT JOIN device_change_spare_part t6 ON t6.out_order_id = spare_part_out_order.id
         <where>
                 spare_part_out_order.del_flag =0
             <if test="systemCode != null and systemCode.size()!=0">
-                and cs_subsystem.system_code in
+                and t4.system_code in
                 <foreach collection="systemCode" index="index" item="item" open="(" close=")" separator=",">
                     #{item}
                 </foreach>
@@ -177,15 +167,12 @@
         SUM(t6.new_spare_part_num) as sum
         FROM
         spare_part_out_order spare_part_out_order
-        LEFT JOIN material_base t1 ON spare_part_out_order.material_code = t1.CODE
-        LEFT JOIN cs_major cs_major ON t1.major_code = cs_major.major_code
-        LEFT JOIN cs_subsystem cs_subsystem ON t1.system_code = cs_subsystem.system_code
-        LEFT JOIN material_base_type t4 ON t1.base_type_code = t4.base_type_code
+        LEFT JOIN material_base_type t4 ON spare_part_out_order.material_code = t4.base_type_code
         LEFT JOIN device_change_spare_part t6 ON t6.out_order_id = spare_part_out_order.id
         <where>
             spare_part_out_order.del_flag =0
             <if test="systemCode != null and systemCode.size()!=0">
-                and cs_subsystem.system_code in
+                and t4.system_code in
                 <foreach collection="systemCode" index="index" item="item" open="(" close=")" separator=",">
                     #{item}
                 </foreach>
