@@ -1742,16 +1742,6 @@ public class SysBaseApiImpl implements ISysBaseAPI {
     }
 
     @Override
-    public Map<String, String> getDeviceNameByCode(List<String> deviceCodes) {
-        return null;
-    }
-
-    @Override
-    public String getLineCodeById(String lineId) {
-        return null;
-    }
-
-    @Override
     public String remoteUploadLocal(String remoteFileUrl, String bizPath) {
         if (StrUtil.isEmpty(remoteFileUrl)) {
             return "";
@@ -1842,26 +1832,26 @@ public class SysBaseApiImpl implements ISysBaseAPI {
         return ObjectUtil.isNotEmpty(stringBuffer) ? stringBuffer.toString() : remoteFileUrl;
     }
 
-//    @Override
-//    public Map<String, String> getDeviceNameByCode(List<String> deviceCodes) {
-//        LambdaQueryWrapper<BdDeviceArchives> wrapper = new LambdaQueryWrapper<>();
-//        if (CollectionUtil.isNotEmpty(deviceCodes)) {
-//            wrapper.in(BdDeviceArchives::getDeviceCode, deviceCodes);
-//        }
-//        List<BdDeviceArchives> device = bdDeviceArchivesMapper.selectList(wrapper);
-//        Map<String, String> deviceMap = device.stream()
-//                .filter(l -> ObjectUtil.isNotEmpty(l.getName()))
-//                .collect(Collectors.toMap(k -> k.getDeviceCode(), v -> v.getName(), (a, b) -> a));
-//        return deviceMap;
-//    }
+    @Override
+    public Map<String, String> getDeviceNameByCode(List<String> deviceCodes) {
+        LambdaQueryWrapper<Device> wrapper = new LambdaQueryWrapper<>();
+        if (CollectionUtil.isNotEmpty(deviceCodes)) {
+            wrapper.in(Device::getCode, deviceCodes);
+        }
+        List<Device> device = deviceMapper.selectList(wrapper);
+        Map<String, String> deviceMap = device.stream()
+                .filter(l -> ObjectUtil.isNotEmpty(l.getName()))
+                .collect(Collectors.toMap(k -> k.getCode(), v -> v.getName(), (a, b) -> a));
+        return deviceMap;
+    }
 
-//    @Override
-//    public String getLineCodeById(String lineId) {
-//        BdLine line = lineMapper.selectById(lineId);
-//        String lineCode = null;
-//        if (ObjectUtil.isNotEmpty(line)) {
-//            lineCode = line.getCode();
-//        }
-//        return lineCode;
-//    }
+    @Override
+    public String getLineCodeById(String lineId) {
+        CsLine line = lineMapper.selectById(lineId);
+        String lineCode = null;
+        if (ObjectUtil.isNotEmpty(line)) {
+            lineCode = line.getLineCode();
+        }
+        return lineCode;
+    }
 }

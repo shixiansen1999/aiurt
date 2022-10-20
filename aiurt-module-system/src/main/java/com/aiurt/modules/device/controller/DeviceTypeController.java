@@ -345,4 +345,18 @@ public class DeviceTypeController extends BaseController<DeviceType, IDeviceType
 		return Result.OK(deviceType);
 	}
 
+	/**
+	 * 查询所有设备类型
+	 * @return
+	 */
+    @AutoLog(value = "查询",operateType = 1,operateTypeAlias = "查询所有设备类型")
+    @ApiOperation(value="查询所有设备类型", notes="查询所有设备类型")
+    @GetMapping(value = "/getDeviceTypeList")
+    public List<DeviceType> getDeviceTypeList() {
+        LambdaQueryWrapper<DeviceType> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(DeviceType::getDelFlag ,CommonConstant.DEL_FLAG_0);
+        List<DeviceType> list = deviceTypeService.list(wrapper);
+        return list;
+    }
+
 }

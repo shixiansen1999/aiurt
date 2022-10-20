@@ -46,7 +46,7 @@ public class TaskPatrolDTO extends TaskExcuteInfo {
     private String lineCode;
 
     @ApiModelProperty(value = "站点")
-    @Dict(dictTable = "cd_station", dicText = "station_name", dicCode = "station_code")
+    @Dict(dictTable = "cs_station", dicText = "station_name", dicCode = "station_code")
     private String stationCode;
 
 
