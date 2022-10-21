@@ -47,18 +47,20 @@ public interface PatrolPlanMapper extends BaseMapper<PatrolPlan> {
     /**
      * 查询详情
      * @param id
+     * @param code
      * @return
      */
     PatrolPlanDto selectId(@Param("id")String id,@Param("code") String code);
   /**
    * 查询周期
    * @param id
+   * @param code
    * @return
    */
   List<Integer> selectWeek(@Param("id")String id,@Param("code") String code);
 
     /**
-     *
+     *根据code查询
      * @param code
      * @return
      */
@@ -77,26 +79,37 @@ public interface PatrolPlanMapper extends BaseMapper<PatrolPlan> {
      */
     void deleteIdorCode(@Param("id")String id);
 
-    /**
-     *
-     * @param planStandardCode
-     * @return
-     */
+  /**
+   * 根据code查询
+   * @param planStandardCode
+   * @param planId
+   * @return
+   */
     String byCode(@Param("planStandardCode")String planStandardCode,@Param("planId") String planId);
 
-    /**
-     *
-     * @param standardCode
-     * @return
-     */
+  /**
+   * 分页查询详情
+   * @param page
+   * @param standardCode
+   * @param planId
+   * @return
+   */
     IPage<Device> viewDetails(@Param("page")Page<Device> page,@Param("standardCode")String standardCode,@Param("planId")String planId);
+
+  /**
+   * 查询详情集合
+   * @param standardCode
+   * @param planId
+   * @return
+   */
     List<Device> viewDetails(@Param("standardCode")String standardCode,@Param("planId")String planId);
   /**
    * 查询哪个星期
    * @param id
+   * @param code
    * @return
    */
-  List<Integer> selectTime(String id, String code);
+  List<Integer> selectTime(@Param("id") String id, @Param("code") String code);
   /**
    * 查询编码信息
    * @param planId
@@ -107,10 +120,10 @@ public interface PatrolPlanMapper extends BaseMapper<PatrolPlan> {
   List<PatrolPlanDto> selectCodeList(@Param("planId")String planId, @Param("majorCode")String majorCode, @Param("subsystemCode")String subsystemCode);
   /**
    * 翻译专业信息
-   * @param codeList
+   * @param list
    * @return
    */
-  List<MajorDTO> translateMajor(List<String> codeList);
+  List<MajorDTO> translateMajor(@Param("list") List<String> list);
 
   /**
    * 翻译子系统信息
@@ -134,6 +147,9 @@ public interface PatrolPlanMapper extends BaseMapper<PatrolPlan> {
    * @param page
    * @param majorCode
    * @param subsystemCode
+   * @param name
+   * @param code
+   * @param deviceTypeCode
    * @return
    */
     IPage<Device> deviceList(Page<Device> page, @Param("siteCodes")List<String> siteCodes,@Param("subsystemCode") String subsystemCode, @Param("majorCode")String majorCode,@Param("deviceTypeCode")String deviceTypeCode,@Param("code") String code,@Param("name") String name);

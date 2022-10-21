@@ -64,7 +64,9 @@ public interface IPatrolPlanService extends IService<PatrolPlan> {
 
     /**
      * 查询指定设备
+     * @param page
      * @param standardCode
+     * @param planId
      * @return
      */
     IPage<Device> viewDetails(Page<Device> page,String standardCode, String planId);
@@ -86,8 +88,8 @@ public interface IPatrolPlanService extends IService<PatrolPlan> {
     List<StandardDTO> selectPlanStandard(String planId, String majorCode, String subsystemCode);
     /**
      * 带条件查询设备
-     * @param
-     * @param
+     * @param page
+     * @param deviceListDTO
      * @return
      */
     IPage<Device> deviceList(Page<Device> page, DeviceListDTO deviceListDTO);
