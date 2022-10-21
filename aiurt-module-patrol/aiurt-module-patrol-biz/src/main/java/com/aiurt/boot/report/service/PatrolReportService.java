@@ -78,7 +78,11 @@ public class PatrolReportService {
              report.setStationCodeList(stationCodeList);
         }
         PatrolReportModel omitModel = new PatrolReportModel();
+        PatrolReportModel omitModelWeek = new PatrolReportModel();
+        PatrolReportModel omitModelMonth = new PatrolReportModel();
         BeanUtils.copyProperties(report, omitModel);
+        BeanUtils.copyProperties(report, omitModelWeek);
+        BeanUtils.copyProperties(report, omitModelMonth);
         //是否默认查本周
         boolean isNullDate = false;
         if (ObjectUtil.isEmpty(report.getStartDate())) {
@@ -145,26 +149,31 @@ public class PatrolReportService {
                  List<PatrolReport> abnormalList = userNowNumber.stream().filter(u -> u.getAbnormalNumber() != null && u.getAbnormalNumber() == 1).collect(Collectors.toList());
                  d.setAbnormalNumber(abnormalList.size());
             }
-            //计算指派的漏检数、同行人的漏检数
-            List<PatrolReport> userOmitTasks = reportMapper.getUserOmitTasksNumber(useIds,omitModel);
-            List<PatrolReport> peopleOmitTasks = reportMapper.getPeopleOmitTasksNumber(useIds,omitModel);
-            //过滤漏检数不是同一任务的班组
-                List<String> omitTaskIds = userOmitTasks.stream().map(PatrolReport::getTaskId).collect(Collectors.toList());
-                List<PatrolReport> notOmitTaskIds = peopleOmitTasks.stream().filter(u -> !omitTaskIds.contains(u.getTaskId())).collect(Collectors.toList());
-                userOmitTasks.addAll(notOmitTaskIds);
+            //获取漏检数
+             List<PatrolReport> userOmitTasks = allOmitNumber(useIds, omitModel);
             if (!isNullDate)
                 {
                     d.setMissInspectedNumber(userOmitTasks.size());
                 //计算平均每周漏检数
                 long weekNumber = getWeekNumber(report.getStartDate(), report.getEndDate());
+                    String dateWeek = PatrolDateUtils.startEndDateWeek(report.getStartDate(), report.getEndDate());
+                    //获取这个时间范围内的漏检数
+                    omitModelWeek.setStartDate(dateWeek.split("~")[0]);
+                    omitModelWeek.setEndDate(dateWeek.split("~")[1]);
+                    List<PatrolReport> userOmitTasksWeek = allOmitNumber(useIds, omitModelWeek);
                 if (weekNumber != 0) {
-                    BigDecimal avgMissNumber = NumberUtil.div(new BigDecimal(userOmitTasks.size()), new BigDecimal(weekNumber)).setScale(2, BigDecimal.ROUND_HALF_UP);
+                    BigDecimal avgMissNumber = NumberUtil.div(new BigDecimal(userOmitTasksWeek.size()), new BigDecimal(weekNumber)).setScale(2, BigDecimal.ROUND_HALF_UP);
                     d.setAwmPatrolNumber(avgMissNumber);
                 }
                 //计算平均每每月漏检数
-                long monthNumber = getMonthNumber(report.getStartDate(), report.getEndDate());
+                    long monthNumber = getMonthNumber(report.getStartDate(), report.getEndDate());
+                    String dateMonth = PatrolDateUtils.startEndDateWeek(report.getStartDate(), report.getEndDate());
+                    //获取这个时间范围内的漏检数
+                    omitModelMonth.setStartDate(dateMonth.split("~")[0]);
+                    omitModelMonth.setEndDate(dateMonth.split("~")[1]);
+                    List<PatrolReport> userOmitTasksMonth = allOmitNumber(useIds, omitModelMonth);
                 if (monthNumber != 0) {
-                    BigDecimal avgMissNumber = NumberUtil.div(new BigDecimal(userOmitTasks.size()), new BigDecimal(monthNumber)).setScale(2, BigDecimal.ROUND_HALF_UP);
+                    BigDecimal avgMissNumber = NumberUtil.div(new BigDecimal(userOmitTasksMonth.size()), new BigDecimal(monthNumber)).setScale(2, BigDecimal.ROUND_HALF_UP);
                     d.setAmmPatrolNumber(avgMissNumber);
                 }
             }
@@ -209,7 +218,22 @@ public class PatrolReportService {
         return patrolReport;
     }
 
-
+public List<PatrolReport> allOmitNumber(List<String>useIds,PatrolReportModel omitModel)
+{
+    //计算指派的漏检数、同行人的漏检数
+    List<PatrolReport> userOmitTasks = reportMapper.getUserOmitTasksNumber(useIds,omitModel);
+    List<PatrolReport> peopleOmitTasks = reportMapper.getPeopleOmitTasksNumber(useIds,omitModel);
+    if(CollUtil.isEmpty(useIds))
+    {
+        userOmitTasks = new ArrayList<>();
+        peopleOmitTasks = new ArrayList<>();
+    }
+    //过滤漏检数不是同一任务的班组
+    List<String> omitTaskIds = userOmitTasks.stream().map(PatrolReport::getTaskId).collect(Collectors.toList());
+    List<PatrolReport> notOmitTaskIds = peopleOmitTasks.stream().filter(u -> !omitTaskIds.contains(u.getTaskId())).collect(Collectors.toList());
+    userOmitTasks.addAll(notOmitTaskIds);
+    return userOmitTasks;
+}
     public static String getThisWeek(Date date) {
         DateTime start = DateUtil.beginOfWeek(date);
         DateTime end = DateUtil.endOfWeek(date);
