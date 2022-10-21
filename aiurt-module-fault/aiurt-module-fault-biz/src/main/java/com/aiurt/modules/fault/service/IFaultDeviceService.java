@@ -13,5 +13,10 @@ import java.util.List;
  */
 public interface IFaultDeviceService extends IService<FaultDevice> {
 
+    /**
+     *  根据维修编号查询故障维修记录
+     * @param faultCode
+     * @return
+     */
     public List<FaultDevice> queryByFaultCode(String faultCode);
 }

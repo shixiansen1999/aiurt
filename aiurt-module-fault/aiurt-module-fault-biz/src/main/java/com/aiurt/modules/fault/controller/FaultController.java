@@ -142,6 +142,13 @@ public class FaultController extends BaseController<Fault, IFaultService> {
         IPage<Fault> pageList = faultService.page(page, queryWrapper);
 
         List<Fault> records = pageList.getRecords();
+        dealResult(records);
+
+        // todo 优化排序
+        return Result.OK(pageList);
+    }
+
+    private void dealResult(List<Fault> records) {
         records.stream().forEach(fault1 -> {
             List<FaultDevice> faultDeviceList = faultDeviceService.queryByFaultCode(fault1.getCode());
             // 权重登记
@@ -187,9 +194,6 @@ public class FaultController extends BaseController<Fault, IFaultService> {
                 fault1.setIsFaultAnalysisReport(true);
             }
         });
-
-        // todo 优化排序
-        return Result.OK(pageList);
     }
 
     /**

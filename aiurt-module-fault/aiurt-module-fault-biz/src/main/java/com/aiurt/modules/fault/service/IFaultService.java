@@ -23,6 +23,7 @@ public interface IFaultService extends IService<Fault> {
     /**
      * 故障上报
      * @param fault 故障对象
+     * @return 故障编码
      */
     String add(Fault fault);
 
