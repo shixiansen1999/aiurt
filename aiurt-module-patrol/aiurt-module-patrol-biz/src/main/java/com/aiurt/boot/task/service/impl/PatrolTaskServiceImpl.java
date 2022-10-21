@@ -493,8 +493,6 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
             patrolTaskDTO.setDateEnd(dateEnd);
 
         }
-        //  LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        //  patrolTaskDTO.setLoginOrgId(sysUser.getOrgCode());
         List<PatrolTaskDTO> taskDTOList = patrolTaskMapper.getPatrolTaskManualList(pageList, patrolTaskDTO);
         taskDTOList.stream().forEach(e -> {
             String userName = patrolTaskMapper.getUserName(e.getBackId());
@@ -1039,35 +1037,8 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
                 .set(PatrolTask::getType, patrolTaskManualDTO.getType())
                 .set(PatrolTask::getName, patrolTaskManualDTO.getName()).set(PatrolTask::getPatrolDate, patrolTaskManualDTO.getPatrolDate()).eq(PatrolTask::getId, patrolTaskManualDTO.getId());
         patrolTaskMapper.update(new PatrolTask(), updateWrapper);
-        //先删除
-        List<PatrolTaskOrganization> list = patrolTaskOrganizationMapper.selectList(new LambdaQueryWrapper<PatrolTaskOrganization>().eq(PatrolTaskOrganization::getTaskCode, patrolTaskManualDTO.getCode()));
-        if (CollUtil.isNotEmpty(list)) {
-            patrolTaskOrganizationMapper.deleteBatchIds(list);
-        }
-        //后保存组织信息
-        String taskCode = patrolTaskManualDTO.getCode();
-        List<String> orgCodeList = patrolTaskManualDTO.getOrgCodeList();
-        orgCodeList.stream().forEach(o -> {
-            PatrolTaskOrganization organization = new PatrolTaskOrganization();
-            organization.setTaskCode(taskCode);
-            organization.setDelFlag(0);
-            organization.setOrgCode(o);
-            patrolTaskOrganizationMapper.insert(organization);
-        });
-        //先删除
-        List<PatrolTaskStation> stationList = patrolTaskStationMapper.selectList(new LambdaQueryWrapper<PatrolTaskStation>().eq(PatrolTaskStation::getTaskCode, patrolTaskManualDTO.getCode()));
-        if (CollUtil.isNotEmpty(stationList)) {
-            patrolTaskStationMapper.deleteBatchIds(stationList);
-        }
-        //后保存站点信息
-        List<String> stationCodeList = patrolTaskManualDTO.getStationCodeList();
-        stationCodeList.stream().forEach(s -> {
-            PatrolTaskStation station = new PatrolTaskStation();
-            station.setDelFlag(0);
-            station.setStationCode(s);
-            station.setTaskCode(taskCode);
-            patrolTaskStationMapper.insert(station);
-        });
+        //删除、保存站点、组织
+        saveOrgStation(patrolTaskManualDTO);
         //删除巡检任务标准表的信息
         List<PatrolTaskStandard> taskStandardList = patrolTaskStandardMapper.selectList(new LambdaQueryWrapper<PatrolTaskStandard>().eq(PatrolTaskStandard::getTaskId, patrolTaskManualDTO.getId()));
         if (CollUtil.isNotEmpty(taskStandardList)) {
@@ -1138,7 +1109,39 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
             }
         });
     }
-
+    @Transactional(rollbackFor = Exception.class)
+    public void saveOrgStation(PatrolTaskManualDTO patrolTaskManualDTO)
+    {
+        //先删除
+        List<PatrolTaskOrganization> list = patrolTaskOrganizationMapper.selectList(new LambdaQueryWrapper<PatrolTaskOrganization>().eq(PatrolTaskOrganization::getTaskCode, patrolTaskManualDTO.getCode()));
+        if (CollUtil.isNotEmpty(list)) {
+            patrolTaskOrganizationMapper.deleteBatchIds(list);
+        }
+        //后保存组织信息
+        String taskCode = patrolTaskManualDTO.getCode();
+        List<String> orgCodeList = patrolTaskManualDTO.getOrgCodeList();
+        orgCodeList.stream().forEach(o -> {
+            PatrolTaskOrganization organization = new PatrolTaskOrganization();
+            organization.setTaskCode(taskCode);
+            organization.setDelFlag(0);
+            organization.setOrgCode(o);
+            patrolTaskOrganizationMapper.insert(organization);
+        });
+        //先删除
+        List<PatrolTaskStation> stationList = patrolTaskStationMapper.selectList(new LambdaQueryWrapper<PatrolTaskStation>().eq(PatrolTaskStation::getTaskCode, patrolTaskManualDTO.getCode()));
+        if (CollUtil.isNotEmpty(stationList)) {
+            patrolTaskStationMapper.deleteBatchIds(stationList);
+        }
+        //后保存站点信息
+        List<String> stationCodeList = patrolTaskManualDTO.getStationCodeList();
+        stationCodeList.stream().forEach(s -> {
+            PatrolTaskStation station = new PatrolTaskStation();
+            station.setDelFlag(0);
+            station.setStationCode(s);
+            station.setTaskCode(taskCode);
+            patrolTaskStationMapper.insert(station);
+        });
+    }
     @Override
     public String getLineCode(String stationCode) {
         return patrolTaskMapper.getLineCode(stationCode);
