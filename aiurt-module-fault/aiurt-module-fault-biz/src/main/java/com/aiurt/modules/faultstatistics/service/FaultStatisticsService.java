@@ -46,6 +46,8 @@ public class FaultStatisticsService {
         LambdaQueryWrapper<Fault> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.ge(Fault::getHappenTime, DateUtil.beginOfDay(startDate));
         queryWrapper.le(Fault::getHappenTime, DateUtil.endOfDay(endDate));
+        queryWrapper.ne(Fault::getFaultModeCode, 1);
+        queryWrapper.ne(Fault::getStatus, 1);
         List<Fault> faultList = faultMapper.selectList(queryWrapper);
 
         //故障单总数
