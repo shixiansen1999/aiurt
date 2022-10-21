@@ -49,10 +49,10 @@ public interface PatrolTaskMapper extends BaseMapper<PatrolTask> {
     List<PatrolTaskDTO> getPatrolTaskPoolList(@Param("pageList") Page<PatrolTaskDTO> pageList, @Param("patrolTaskDTO") PatrolTaskDTO patrolTaskDTO);
 
     /**
-     * app-巡检任务列表
-     *
+     *  app-巡检任务列表
+     * @param pageList
      * @param patrolTaskDTO
-     * @return author hlq
+     * @return
      */
     List<PatrolTaskDTO> getPatrolTaskList(@Param("pageList") Page<PatrolTaskDTO> pageList, @Param("patrolTaskDTO") PatrolTaskDTO patrolTaskDTO);
 
@@ -181,9 +181,9 @@ public interface PatrolTaskMapper extends BaseMapper<PatrolTask> {
 
     /**
      * 获取首页巡检的巡视列表
-     *
      * @param page
      * @param condition
+     * @param regexp
      * @param departList
      * @return
      */
@@ -201,9 +201,9 @@ public interface PatrolTaskMapper extends BaseMapper<PatrolTask> {
 
     /**
      * 获取首页的日程的巡检列表
-     *
      * @param page
      * @param indexScheduleDTO
+     * @param departList
      * @return
      */
     IPage<ScheduleTask> getScheduleList(Page<ScheduleTask> page, @Param("condition") IndexScheduleDTO indexScheduleDTO, @Param("departList") List<CsUserDepartModel> departList);
@@ -280,9 +280,17 @@ public interface PatrolTaskMapper extends BaseMapper<PatrolTask> {
      * @return
      */
     PatrolReport getTasks(@Param("orgCode")String orgCode,@Param("condition") PatrolReportModel condition);
+
+    /**
+     * 获取漏巡列表
+     * @param omitModel
+     * @return
+     */
     List<PatrolReport> getReportOmitList(@Param("condition")PatrolReportModel omitModel);
+
     /**
      * 报表统计-故障列表
+     * @param page
      * @param id
      * @param lineCode
      * @param stationCode
@@ -295,6 +303,7 @@ public interface PatrolTaskMapper extends BaseMapper<PatrolTask> {
     /**
      * 查询数量
      * @param code
+     * @param orgCode
      * @param lineCode
      * @param stationCode
      * @param startTime
@@ -306,6 +315,7 @@ public interface PatrolTaskMapper extends BaseMapper<PatrolTask> {
     /**
      * 查询时间
      * @param code
+     * @param orgCode
      * @param lineCode
      * @param stationCode
      * @param startTime
@@ -324,7 +334,8 @@ public interface PatrolTaskMapper extends BaseMapper<PatrolTask> {
     List<MonthDTO> selectMonth(@Param("id")String id,@Param("lineCode") String lineCode,@Param("stationCode") List<String> stationCode);
 
     /**
-     *查询班组报表
+     * 查询班组报表
+     * @param page
      * @param ids
      * @param lineCode
      * @param stationCode
