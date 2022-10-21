@@ -1,4 +1,4 @@
-package com.aiurt.modules.planMountFind.entity;
+package com.aiurt.modules.planmountfind.entity;
 
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;

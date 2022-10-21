@@ -1,7 +1,7 @@
-package com.aiurt.modules.planMountFind.mapper;
+package com.aiurt.modules.planmountfind.mapper;
 
-import com.aiurt.modules.planMountFind.dto.*;
-import com.aiurt.modules.planMountFind.entity.BdOperatePlanDeclarationFormMonth;
+import com.aiurt.modules.planmountfind.dto.*;
+import com.aiurt.modules.planmountfind.entity.BdOperatePlanDeclarationFormMonth;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.ibatis.annotations.Param;

@@ -1,7 +1,7 @@
-package com.aiurt.modules.planMountFind.service;
+package com.aiurt.modules.planmountfind.service;
 
-import com.aiurt.modules.planMountFind.dto.*;
-import com.aiurt.modules.planMountFind.entity.BdOperatePlanDeclarationFormMonth;
+import com.aiurt.modules.planmountfind.dto.*;
+import com.aiurt.modules.planmountfind.entity.BdOperatePlanDeclarationFormMonth;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 import org.springframework.web.servlet.ModelAndView;

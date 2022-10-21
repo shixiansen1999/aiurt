@@ -1,4 +1,4 @@
-package com.aiurt.modules.planMountFind.dto;
+package com.aiurt.modules.planmountfind.dto;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;

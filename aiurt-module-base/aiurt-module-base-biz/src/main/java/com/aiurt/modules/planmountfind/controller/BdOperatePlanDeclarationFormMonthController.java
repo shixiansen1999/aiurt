@@ -1,9 +1,9 @@
-package com.aiurt.modules.planMountFind.controller;
+package com.aiurt.modules.planmountfind.controller;
 
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.system.base.controller.BaseController;
-import com.aiurt.modules.planMountFind.entity.BdOperatePlanDeclarationFormMonth;
-import com.aiurt.modules.planMountFind.service.IBdOperatePlanDeclarationFormMonthService;
+import com.aiurt.modules.planmountfind.entity.BdOperatePlanDeclarationFormMonth;
+import com.aiurt.modules.planmountfind.service.IBdOperatePlanDeclarationFormMonthService;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
