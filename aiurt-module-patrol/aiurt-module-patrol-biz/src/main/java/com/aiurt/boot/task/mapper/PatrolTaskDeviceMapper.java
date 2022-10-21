@@ -26,7 +26,7 @@ public interface PatrolTaskDeviceMapper extends BaseMapper<PatrolTaskDevice> {
 
     /**
      * PC巡检任务池详情-巡检工单
-     *
+     * @param page
      * @param patrolTaskDeviceParam
      * @return
      */
@@ -178,7 +178,7 @@ public interface PatrolTaskDeviceMapper extends BaseMapper<PatrolTaskDevice> {
     PatrolTaskDevice getTodaySubmit(@Param("date") Date date,@Param("taskId") String taskId,@Param("taskDeviceCode") String taskDeviceCode);
 
     /**
-     *
+     *获取故障列表
      * @param taskId
      * @return
      */
