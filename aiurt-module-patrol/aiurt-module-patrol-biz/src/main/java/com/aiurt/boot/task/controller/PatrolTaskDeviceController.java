@@ -1,21 +1,19 @@
 package com.aiurt.boot.task.controller;
 
+import cn.hutool.core.collection.CollUtil;
 import com.aiurt.boot.constant.PatrolConstant;
 import com.aiurt.boot.manager.PatrolManager;
 import com.aiurt.boot.task.dto.PatrolCheckResultDTO;
 import com.aiurt.boot.task.dto.PatrolCheckResultStatusDTO;
 import com.aiurt.boot.task.dto.PatrolTaskDeviceDTO;
-import com.aiurt.boot.task.entity.PatrolCheckResult;
-import com.aiurt.boot.task.entity.PatrolTaskDevice;
-import com.aiurt.boot.task.entity.PatrolTaskFault;
-import com.aiurt.boot.task.service.IPatrolCheckResultService;
-import com.aiurt.boot.task.service.IPatrolTaskDeviceService;
-import com.aiurt.boot.task.service.IPatrolTaskFaultService;
-import com.aiurt.boot.task.service.IPatrolTaskService;
+import com.aiurt.boot.task.dto.PatrolTaskDeviceRequest;
+import com.aiurt.boot.task.entity.*;
+import com.aiurt.boot.task.service.*;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.constant.enums.ModuleType;
 import com.aiurt.common.system.base.controller.BaseController;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -25,6 +23,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -47,6 +46,8 @@ public class PatrolTaskDeviceController extends BaseController<PatrolTaskDevice,
 	private IPatrolCheckResultService patrolCheckResultService;
 	@Autowired
 	private IPatrolTaskService patrolTaskService;
+	@Autowired
+	private IPatrolTaskUserService patrolTaskUserService;
 	@Autowired
 	private  PatrolManager manager;
 
@@ -107,6 +108,40 @@ public class PatrolTaskDeviceController extends BaseController<PatrolTaskDevice,
 	 	List<PatrolCheckResultDTO> patrolTaskCheck = patrolTaskDeviceService.getPatrolTaskCheck(patrolTaskDevice,checkDetail);
 		 return Result.OK(patrolTaskCheck);
 	 }
+	/**
+	 * app巡检任务执行中-检查
+	 * @return
+	 */
+	@AutoLog(value = "巡检任务表-app巡检任务执行中-检查修改状态", operateType = 3, operateTypeAlias = "修改", module = ModuleType.PATROL,permissionUrl = "/Inspection/pool")
+	@ApiOperation(value = "巡检任务表-app巡检任务执行中-检查修改状态", notes = "巡检任务表-app巡检任务执行中-检查修改状态")
+		@PostMapping(value = "/patrolTaskDeviceCheckStatus")
+	public Result<?> patrolTaskDeviceCheckStatus(@RequestBody PatrolTaskDeviceRequest taskDeviceRequest) {
+		PatrolTaskDevice device = patrolTaskDeviceService.getById(taskDeviceRequest.getTaskDeviceId());
+		PatrolTask patrolTask = patrolTaskService.getById(device.getTaskId());
+		List<PatrolTaskUser> taskUsers = patrolTaskUserService.list(new LambdaQueryWrapper<PatrolTaskUser>().eq(PatrolTaskUser::getTaskCode, patrolTask.getCode()));
+		taskUsers = taskUsers.stream().filter(f->f.getUserId().equals(taskDeviceRequest.getUserId())).collect(Collectors.toList());
+		if(CollUtil.isNotEmpty(taskUsers))
+		{
+			if (!PatrolConstant.TASK_AUDIT.equals(patrolTask.getStatus()) && !PatrolConstant.TASK_COMPLETE.equals(patrolTask.getStatus())) {
+				LambdaUpdateWrapper<PatrolTaskDevice> updateWrapper = new LambdaUpdateWrapper<>();
+				updateWrapper.set(PatrolTaskDevice::getStatus, 1)
+						.set(PatrolTaskDevice::getCheckTime, null)
+						.eq(PatrolTaskDevice::getTaskId, device.getTaskId())
+						.eq(PatrolTaskDevice::getId, device.getId());
+				if (device.getStartTime() == null) {
+					updateWrapper.set(PatrolTaskDevice::getStartTime, LocalDateTime.now());
+				}
+				patrolTaskDeviceService.update(new PatrolTaskDevice(), updateWrapper);
+				return Result.OK("更新成功");
+			}
+		}
+		else
+		{
+			return  Result.error("该单号只能巡视人能更新");
+		}
+		return Result.ok();
+	}
+
 
 	/**
 	 * app巡检任务-巡检清单列表-填写工单检查状态数量统计（已检数、未检数）

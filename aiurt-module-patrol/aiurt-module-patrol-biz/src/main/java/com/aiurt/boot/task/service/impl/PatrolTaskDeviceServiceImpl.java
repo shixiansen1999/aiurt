@@ -453,7 +453,7 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
             //更新任务状态（将未开始改为执行中）、添加开始检查时间(判断是否已经有了，有就不更新)，传任务主键id,巡检工单主键
             String taskDeviceId = patrolTaskDevice.getId();
             PatrolTaskDevice device = patrolTaskDeviceMapper.selectOne(new LambdaQueryWrapper<PatrolTaskDevice>().eq(PatrolTaskDevice::getId, patrolTaskDevice.getId()));
-            if (ObjectUtil.isNull(checkDetail)) {
+            if (ObjectUtil.isNull(checkDetail)&&patrolTaskDevice.getStatus()!=2) {
                 if (!PatrolConstant.TASK_AUDIT.equals(patrolTask.getStatus()) && !PatrolConstant.TASK_COMPLETE.equals(patrolTask.getStatus())) {
                     LambdaUpdateWrapper<PatrolTaskDevice> updateWrapper = new LambdaUpdateWrapper<>();
                     updateWrapper.set(PatrolTaskDevice::getStatus, 1)
