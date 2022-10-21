@@ -25,6 +25,7 @@ public interface FaultInformationMapper {
      * @param startDate
      * @param endDate
      * @param lineCode
+     * @param majors
      * @return
      */
     List<Fault> queryLargeFaultInformation(@Param("startDate") Date startDate, @Param("endDate") Date endDate,@Param("lineCode") String lineCode,@Param("majors") List<String> majors);
@@ -260,7 +261,7 @@ public interface FaultInformationMapper {
     List<String> getUserConstructionHours(@Param("userId") String userId,@Param("startTime") String startTime,@Param("endTime")String endTime);
 
     /**
-     *
+     *获取用户施工次数
      * @param userId
      * @param startTime
      * @param endTime
