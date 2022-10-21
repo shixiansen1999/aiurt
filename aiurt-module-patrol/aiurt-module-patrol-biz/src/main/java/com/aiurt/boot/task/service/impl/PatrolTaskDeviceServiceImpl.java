@@ -85,10 +85,6 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
                 Date checkTime = patrolTaskDeviceForDeviceParam.getCheckTime();
                 if (ObjectUtil.isNotEmpty(startTime) && ObjectUtil.isNotEmpty(checkTime)) {
                     long duration = DateUtil.between(startTime, checkTime, DateUnit.MINUTE);
-//                    long second = DateUtil.between(startTime, checkTime, DateUnit.SECOND);
-//                    if (second % 60 > 0) {
-//                        duration += 1;
-//                    }
                     patrolTaskDeviceForDeviceParam.setDuration(DateUtils.getTimeByMinute(duration));
                 }
                 // 查询同行人信息
@@ -181,7 +177,7 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
             PatrolTask patrolTask = patrolTaskMapper.selectById(e.getTaskId());
             List<PatrolTaskUser> userList = patrolTaskUserMapper.selectList(new LambdaQueryWrapper<PatrolTaskUser>().eq(PatrolTaskUser::getTaskCode, patrolTask.getCode()));
             List<PatrolTaskUser> showButton = userList.stream().filter(u -> u.getUserId().equals(sysUser.getId())).collect(Collectors.toList());
-            if (showButton.size() > 0||SecurityUtils.getSubject().hasRole("admin")) {
+            if (showButton.size() > 0 || SecurityUtils.getSubject().hasRole(PatrolConstant.MANAGER)) {
                 e.setShowEditButton(1);
             } else {
                 e.setShowEditButton(0);
@@ -265,10 +261,6 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
         Date checkTime = taskDeviceParam.getCheckTime();
         if (ObjectUtil.isNotEmpty(startTime) && ObjectUtil.isNotEmpty(checkTime)) {
             long duration = DateUtil.between(startTime, checkTime, DateUnit.MINUTE);
-//            long second = DateUtil.between(startTime, checkTime, DateUnit.SECOND);
-//            if (second % 60 > 0) {
-//                duration += 1;
-//            }
             taskDeviceParam.setDuration(DateUtils.getTimeByMinute(duration));
         }
         StationDTO stationDTO = new StationDTO();
@@ -295,7 +287,7 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
             if (ObjectUtil.isNotNull(c.getDictCode())) {
                 List<DictModel> list = sysBaseApi.getDictItems(c.getDictCode());
                 list.stream().forEach(l -> {
-                    if (2 == c.getInputType()) {
+                    if (PatrolConstant.DEVICE_INP_TYPE.equals(c.getInputType())) {
                         if (l.getValue().equals(c.getOptionValue())) {
                             c.setCheckDictName(l.getTitle());
                         }
@@ -352,7 +344,13 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
         return tree;
     }
 
-    // 递归获取子树
+    /**
+     * 递归获取子树
+     *
+     * @param list
+     * @param parentId
+     * @return
+     */
     public List<PatrolCheckResultDTO> buildTree(List<PatrolCheckResultDTO> list, String parentId) {
         List<PatrolCheckResultDTO> tree = new ArrayList<>();
         for (PatrolCheckResultDTO dept : list) {
@@ -460,8 +458,7 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
                             .set(PatrolTaskDevice::getCheckTime, null)
                             .eq(PatrolTaskDevice::getTaskId, patrolTaskDevice.getTaskId())
                             .eq(PatrolTaskDevice::getId, patrolTaskDevice.getId());
-                    if(device.getStartTime()==null)
-                    {
+                    if (device.getStartTime() == null) {
                         updateWrapper.set(PatrolTaskDevice::getStartTime, LocalDateTime.now());
                     }
                     patrolTaskDeviceMapper.update(new PatrolTaskDevice(), updateWrapper);
@@ -474,7 +471,7 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
                     List<DictModel> list = sysBaseApi.getDictItems(e.getDictCode());
                     e.setList(list);
                     list.stream().forEach(l -> {
-                        if (2 == e.getInputType()) {
+                        if (PatrolConstant.DEVICE_INP_TYPE.equals(e.getInputType())) {
                             if (l.getValue().equals(e.getOptionValue())) {
                                 e.setCheckDictName(l.getTitle());
                             }

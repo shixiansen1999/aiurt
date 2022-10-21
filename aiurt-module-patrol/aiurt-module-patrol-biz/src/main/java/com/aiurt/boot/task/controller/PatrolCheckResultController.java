@@ -1,6 +1,7 @@
 package com.aiurt.boot.task.controller;
 
 import cn.hutool.core.util.ObjectUtil;
+import com.aiurt.boot.constant.PatrolConstant;
 import com.aiurt.boot.task.dto.PatrolCheckDTO;
 import com.aiurt.boot.task.entity.PatrolCheckResult;
 import com.aiurt.boot.task.service.IPatrolCheckResultService;
@@ -72,7 +73,9 @@ public class PatrolCheckResultController extends BaseController<PatrolCheckResul
 											HttpServletRequest req) {
 		 LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
 		 LambdaUpdateWrapper<PatrolCheckResult> updateWrapper= new LambdaUpdateWrapper<>();
-		 if(!"null".equals(checkResult)&&ObjectUtil.isNotEmpty(checkResult))
+		 //前端会传null字符串进来
+		 String a ="null";
+		 if(!a.equals(checkResult)&&ObjectUtil.isNotEmpty(checkResult))
 		 {
 			 updateWrapper.set(PatrolCheckResult::getCheckResult,checkResult).set(PatrolCheckResult::getUserId,sysUser.getId()).eq(PatrolCheckResult::getId,id);
 
@@ -100,11 +103,11 @@ public class PatrolCheckResultController extends BaseController<PatrolCheckResul
 		 LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
 		 if(ObjectUtil.isNotEmpty(patrolCheckDTO.getInputType()))
 		 {
-			 if(2==patrolCheckDTO.getInputType())
+			 if(PatrolConstant.DEVICE_INP_TYPE.equals(patrolCheckDTO.getInputType()))
 		 	{
 				updateWrapper.set(PatrolCheckResult::getOptionValue,patrolCheckDTO.getOptionValue()).set(PatrolCheckResult::getUserId,sysUser.getId()).eq(PatrolCheckResult::getId,patrolCheckDTO.getId());
 			 }
-			 if(3==patrolCheckDTO.getInputType())
+			 if(PatrolConstant.DEVICE_OUT.equals(patrolCheckDTO.getInputType()))
 			 {
 			 	if(ObjectUtil.isNotEmpty(patrolCheckResult.getRegular()))
 				{
