@@ -35,9 +35,9 @@ public class TeamPortraitModel {
     private String jurisdiction;
 
     @ApiModelProperty("平均维修时间")
-    private String AverageFaultTime;
+    private String averageFaultTime;
     @ApiModelProperty("月均漏检次数")
-    private String AverageMonthlyResidual;
+    private String averageMonthlyResidual;
 
 
     private String position;
