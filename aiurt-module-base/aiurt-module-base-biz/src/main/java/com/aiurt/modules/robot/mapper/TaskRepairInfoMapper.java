@@ -2,6 +2,7 @@ package com.aiurt.modules.robot.mapper;
 
 import com.aiurt.modules.robot.entity.TaskRepairInfo;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
@@ -13,6 +14,6 @@ import java.util.List;
  */
 public interface TaskRepairInfoMapper extends BaseMapper<TaskRepairInfo> {
 
-    List<TaskRepairInfo> queryByTaskId(String taskId);
+    List<TaskRepairInfo> queryByTaskId(@Param("taskId") String taskId);
 
 }

@@ -1,5 +1,7 @@
 package com.aiurt.modules.device.controller;
 
+import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.aspect.annotation.PermissionData;
 import com.aiurt.common.constant.CommonConstant;
@@ -83,15 +85,19 @@ public class DeviceController {
                                                @RequestParam(name = "name", required = false) String name,
                                                @RequestParam(name = "status", required = false) String status,
                                                @RequestParam(name = "scode", required = false) String scode,
+                                               @RequestParam(name = "deviceCodes",required = false) String deviceCodes,
                                                HttpServletRequest req) {
-        return getList(pageNo, pageSize, positionCodeCc, temporary, majorCode, systemCode, deviceTypeCode, code, name, status, scode);
+        return getList(pageNo, pageSize, positionCodeCc, temporary, majorCode, systemCode, deviceTypeCode, code, name, status, scode,deviceCodes);
     }
 
     public Result<IPage<Device>> getList(Integer pageNo, Integer pageSize, String positionCodeCc, String temporary, String majorCode,
-                             String systemCode, String deviceTypeCode, String code, String name, String status, String scode){
+                             String systemCode, String deviceTypeCode, String code, String name, String status, String scode,String deviceCodes){
         Result<IPage<Device>> result = new Result<IPage<Device>>();
         Page<Device> page = new Page<Device>(pageNo, pageSize);
         QueryWrapper<Device> queryWrapper = deviceService.getQueryWrapper(scode,positionCodeCc, temporary, majorCode, systemCode, deviceTypeCode, code, name, status);
+        if (StrUtil.isNotEmpty(deviceCodes)) {
+            queryWrapper.lambda().in(Device::getCode, StrUtil.split(deviceCodes,','));
+        }
         IPage<Device> pageList = deviceService.page(page, queryWrapper);
         List<Device> records = pageList.getRecords();
         if(records != null && records.size()>0){
@@ -144,7 +150,7 @@ public class DeviceController {
             @RequestParam(name = "status", required = false) String status,
             @RequestParam(name = "scode", required = false) String scode,
             HttpServletRequest req) {
-        return getList(pageNo, pageSize, positionCodeCc, temporary, majorCode, systemCode, deviceTypeCode, code, name, status, scode);
+        return getList(pageNo, pageSize, positionCodeCc, temporary, majorCode, systemCode, deviceTypeCode, code, name, status, scode,null);
     }
 
     @AutoLog(value = "设备管理-设备主数据-列表查询", operateType = 1, operateTypeAlias = "查询", permissionUrl = "/equipmentData/masterData")
