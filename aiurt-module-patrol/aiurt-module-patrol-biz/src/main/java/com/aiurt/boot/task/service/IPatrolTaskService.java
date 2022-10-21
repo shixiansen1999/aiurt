@@ -51,22 +51,22 @@ public interface IPatrolTaskService extends IService<PatrolTask> {
 
     /**
      * app巡检任务-指派人员查询
-     *
      * @param orgCoed
+     * @return
      */
     List<PatrolTaskUserDTO> getPatrolTaskAppointSelect(PatrolOrgDTO orgCoed);
 
     /**
      * PC巡检任务池列表
-     *
      * @param page
+     * @param patrolTaskParam
      * @return
      */
     IPage<PatrolTaskParam> getTaskList(Page<PatrolTaskParam> page, PatrolTaskParam patrolTaskParam);
 
     /**
-     * PC巡检任务池详情-基本信息
-     *
+     *  PC巡检任务池详情-基本信息
+     * @param patrolTaskParam
      * @return
      */
     PatrolTaskParam selectBasicInfo(PatrolTaskParam patrolTaskParam);
@@ -97,15 +97,18 @@ public interface IPatrolTaskService extends IService<PatrolTask> {
 
     /**
      * 根据任务记录ID获取专业子系统的联动信息
-     *
      * @param id
+     * @return
      */
     List<MajorDTO> getMajorSubsystemGanged(String id);
 
     /**
-     * PC巡检任务列表-任务审核
-     *
+     *  PC巡检任务列表-任务审核
      * @param code
+     * @param auditStatus
+     * @param auditReason
+     * @param remark
+     * @return
      */
     int taskAudit(String code, Integer auditStatus, String auditReason, String remark);
 
@@ -151,8 +154,8 @@ public interface IPatrolTaskService extends IService<PatrolTask> {
 
     /**
      * 巡检漏检任务处理-重新生成任务
-     *
      * @param patrolRebuildDTO
+     * @return
      */
     String rebuildTask(PatrolRebuildDTO patrolRebuildDTO);
 
