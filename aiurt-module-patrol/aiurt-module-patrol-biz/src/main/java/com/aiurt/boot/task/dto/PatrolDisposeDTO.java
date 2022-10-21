@@ -10,6 +10,9 @@ import org.springframework.format.annotation.DateTimeFormat;
 
 import java.util.Date;
 
+/**
+ * @author cgkj0
+ */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

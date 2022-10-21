@@ -12,6 +12,9 @@ import org.jeecg.common.system.vo.DictModel;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * @author cgkj0
+ */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

@@ -14,6 +14,9 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * @author cgkj0
+ */
 @Data
 @Accessors(chain = true)
 @ApiModel(value = "巡检指派信息", description = "巡检指派信息")

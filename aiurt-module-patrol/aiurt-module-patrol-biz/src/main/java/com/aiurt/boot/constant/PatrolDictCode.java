@@ -2,6 +2,7 @@ package com.aiurt.boot.constant;
 
 /**
  * 巡视模块字典code
+ * @author cgkj0
  */
 public interface PatrolDictCode {
     /**
