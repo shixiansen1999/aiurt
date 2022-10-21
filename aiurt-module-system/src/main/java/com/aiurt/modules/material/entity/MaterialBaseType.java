@@ -185,7 +185,11 @@ public class MaterialBaseType {
 	@TableField(exist = false)
 	private String pStatus ;
 
-	@ApiModelProperty(value = "月份数量消耗数据")
+	@ApiModelProperty(value = "月份季度数量消耗数据")
 	@TableField(exist = false)
 	private List<SparePartConsume> sparePartConsumeList ;
+
+	@ApiModelProperty(value = "个数")
+	@TableField(exist = false)
+	private Long count;
 }

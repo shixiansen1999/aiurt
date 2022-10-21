@@ -57,6 +57,8 @@ import java.util.stream.Collectors;
 @Service
 public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements IFaultService {
 
+    private static final String SELF_FAULT_MODE_CODE = "0";
+
 
     @Autowired
     private IFaultDeviceService faultDeviceService;
@@ -111,7 +113,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         String faultModeCode = fault.getFaultModeCode();
 
         // 自报自修跳过
-        if (StrUtil.equalsIgnoreCase(faultModeCode, "0")) {
+        if (StrUtil.equalsIgnoreCase(faultModeCode, SELF_FAULT_MODE_CODE)) {
             fault.setAppointUserName(user.getUsername());
             fault.setStatus(FaultStatusEnum.REPAIR.getStatus());
             // 方便统计
@@ -633,7 +635,8 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         Fault fault = isExist(faultCode);
 
         LambdaQueryWrapper<FaultRepairRecord> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(FaultRepairRecord::getFaultCode, faultCode)//.eq(FaultRepairRecord::getAppointUserName, loginUser.getUsername())
+        wrapper.eq(FaultRepairRecord::getFaultCode, faultCode)
+                //.eq(FaultRepairRecord::getAppointUserName, loginUser.getUsername())
                 .eq(FaultRepairRecord::getDelFlag, CommonConstant.DEL_FLAG_0)
                 .orderByDesc(FaultRepairRecord::getCreateTime).last("limit 1");
         FaultRepairRecord repairRecord = repairRecordService.getBaseMapper().selectOne(wrapper);
@@ -730,8 +733,6 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
 
         String userIds = repairRecordDTO.getUsers();
 
-        // todo 删除本次的备件更换信息
-
         // 删除参与人员
         repairParticipantsService.removeByRecordId(one.getId());
 
@@ -751,32 +752,79 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         fault.setDeviceCodes(repairRecordDTO.getDeviceCodes());
         dealDevice(fault, repairRecordDTO.getDeviceList());
 
-        // todo 计算库存
-        List<DeviceChangeDTO> consumableList = repairRecordDTO.getConsumableList();
-        if (CollectionUtil.isNotEmpty(consumableList)) {
-            List<DeviceChangeSparePart> sparePartList = consumableList.stream().map(deviceChangeDTO -> {
-                DeviceChangeSparePart build = DeviceChangeSparePart.builder()
-                        .code(faultCode)
-                        .consumables("1")
-                        .deviceCode(deviceChangeDTO.getDeviceCode())
-                        .newSparePartCode(deviceChangeDTO.getNewSparePartCode())
-                        .newSparePartNum(deviceChangeDTO.getNewSparePartNum())
-                        .repairRecordId(deviceChangeDTO.getId())
-                        .id(deviceChangeDTO.getId())
-                        .delFlag(CommonConstant.DEL_FLAG_0)
-                        .build();
-                return build;
-            }).collect(Collectors.toList());
-            sparePartService.saveOrUpdateBatch(sparePartList);
+        Map<String, Integer> updateMap = buildSparePartNumMap(repairRecordDTO, faultCode);
+
+        // 更新备件出库未使用的数量
+        sparePartBaseApi.updateSparePartOutOrder(updateMap);
+
+        one.setArriveTime(repairRecordDTO.getArriveTime());
+        one.setWorkTicketCode(repairRecordDTO.getWorkTicketCode());
+        one.setWorkTickPath(repairRecordDTO.getWorkTickPath());
+        // 工作票图片
+        one.setSolveStatus(repairRecordDTO.getSolveStatus());
+        one.setUnSloveRemark(repairRecordDTO.getUnSloveRemark());
+        one.setFilePath(repairRecordDTO.getFilePath());
+        one.setFaultAnalysis(repairRecordDTO.getFaultAnalysis());
+        one.setMaintenanceMeasures(repairRecordDTO.getMaintenanceMeasures());
+
+        // 如果是提交未解决, 0
+        Integer assignFlag = repairRecordDTO.getAssignFlag();
+        // 解决状态，1已解决， 0为解决
+        Integer solveStatus = repairRecordDTO.getSolveStatus();
+        Integer flag = 1;
+        // 未解决，需要重新指派
+        if (!flag.equals(solveStatus) && flag.equals(assignFlag)) {
+            // 重新指派
+            fault.setStatus(FaultStatusEnum.APPROVAL_PASS.getStatus());
+            one.setEndTime(new Date());
+        }
+        // 已解决
+        if (flag.equals(solveStatus)) {
+            fault.setStatus(FaultStatusEnum.RESULT_CONFIRM.getStatus());
+            fault.setEndTime(new Date());
+            fault.setDuration(DateUtil.between(fault.getReceiveTime(), fault.getEndTime(), DateUnit.MINUTE));
+            one.setEndTime(new Date());
         }
 
+        // 使用的解决方案
+        fault.setKnowledgeId(repairRecordDTO.getKnowledgeId());
+
+        one.setKnowledgeId(repairRecordDTO.getKnowledgeId());
+        one.setSignPath(repairRecordDTO.getSignPath());
+
+
+        repairRecordService.updateById(one);
+
+        updateById(fault);
+
+
+        // 备件更换记录
+     /*   sparePartBaseApi.updateSparePartReplace(list);
+
+        sparePartBaseApi.updateSparePartMalfunction(malfunctionList);*/
+
+
+        saveLog(loginUser, "填写维修记录", faultCode, FaultStatusEnum.REPAIR.getStatus(), null);
+
+        // todo 发送消息
+
+
+    }
+
+    /**
+     *  统计实际的出库量以及更新故障组件更换记录device_change_spare_part
+     * @param repairRecordDTO
+     * @param faultCode
+     * @return
+     */
+    private Map<String, Integer> buildSparePartNumMap(RepairRecordDTO repairRecordDTO, String faultCode) {
         LambdaQueryWrapper<DeviceChangeSparePart> dataWrapper = new LambdaQueryWrapper<>();
         dataWrapper.eq(DeviceChangeSparePart::getCode, faultCode);
         List<DeviceChangeSparePart> oneSourceList = sparePartService.list(dataWrapper);
 
         // 不能简单删除， 对比，修改出库的实际使用数量
         List<DeviceChangeDTO> deviceChangeList = repairRecordDTO.getDeviceChangeList();
-        Map<String, Integer> updateMap = new HashMap<>();
+        Map<String, Integer> updateMap = new HashMap<>(16);
         if (CollectionUtil.isNotEmpty(deviceChangeList)) {
 
             // key-> 主键id_出库单id_物资编码， value： 使用的数量
@@ -860,62 +908,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
             // s
             sparePartService.remove(dataWrapper);
         }
-
-        // 更新备件出库未使用的数量
-        sparePartBaseApi.updateSparePartOutOrder(updateMap);
-
-        one.setArriveTime(repairRecordDTO.getArriveTime());
-        one.setWorkTicketCode(repairRecordDTO.getWorkTicketCode());
-        one.setWorkTickPath(repairRecordDTO.getWorkTickPath());
-        // 工作票图片
-        one.setSolveStatus(repairRecordDTO.getSolveStatus());
-        one.setUnSloveRemark(repairRecordDTO.getUnSloveRemark());
-        one.setFilePath(repairRecordDTO.getFilePath());
-        one.setFaultAnalysis(repairRecordDTO.getFaultAnalysis());
-        one.setMaintenanceMeasures(repairRecordDTO.getMaintenanceMeasures());
-
-        // 如果是提交未解决, 0
-        Integer assignFlag = repairRecordDTO.getAssignFlag();
-        // 解决状态，1已解决， 0为解决
-        Integer solveStatus = repairRecordDTO.getSolveStatus();
-        Integer flag = 1;
-        // 未解决，需要重新指派
-        if (!flag.equals(solveStatus) && flag.equals(assignFlag)) {
-            // 重新指派
-            fault.setStatus(FaultStatusEnum.APPROVAL_PASS.getStatus());
-            one.setEndTime(new Date());
-        }
-        // 已解决
-        if (flag.equals(solveStatus)) {
-            fault.setStatus(FaultStatusEnum.RESULT_CONFIRM.getStatus());
-            fault.setEndTime(new Date());
-            fault.setDuration(DateUtil.between(fault.getReceiveTime(), fault.getEndTime(), DateUnit.MINUTE));
-            one.setEndTime(new Date());
-        }
-
-        // 使用的解决方案
-        fault.setKnowledgeId(repairRecordDTO.getKnowledgeId());
-
-        one.setKnowledgeId(repairRecordDTO.getKnowledgeId());
-        one.setSignPath(repairRecordDTO.getSignPath());
-
-
-        repairRecordService.updateById(one);
-
-        updateById(fault);
-
-
-        // 备件更换记录
-     /*   sparePartBaseApi.updateSparePartReplace(list);
-
-        sparePartBaseApi.updateSparePartMalfunction(malfunctionList);*/
-
-
-        saveLog(loginUser, "填写维修记录", faultCode, FaultStatusEnum.REPAIR.getStatus(), null);
-
-        // todo 发送消息
-
-
+        return updateMap;
     }
 
     /**
@@ -1006,20 +999,7 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         if (CollectionUtil.isEmpty(orgCodeList)) {
             return Collections.emptyList();
         }
-       /* String orgId = loginUser.getOrgId();
 
-        if (StrUtil.isBlank(orgId)) {
-           return Collections.emptyList();
-        }
-        List<JSONObject> jsonObjects = sysBaseAPI.queryDepartsByIds(orgId);
-        if (CollectionUtil.isEmpty(jsonObjects)) {
-            return Collections.emptyList();
-        }
-
-        List<String> orgCodeList = jsonObjects.stream().map(jsonObject -> jsonObject.getString("orgCode")).collect(Collectors.toList());
-        if (CollectionUtil.isEmpty(orgCodeList)) {
-            return Collections.emptyList();
-        }*/
         // 根据故障编号获取故障所属组织机构
         Fault fault = this.lambdaQuery().eq(Fault::getCode, faultCode).last("limit 1").one();
         if (ObjectUtil.isEmpty(fault)) {
@@ -1257,7 +1237,8 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
      */
     private FaultRepairRecord getFaultRepairRecord(String code, LoginUser user) {
         LambdaQueryWrapper<FaultRepairRecord> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(FaultRepairRecord::getFaultCode, code)//.eq(FaultRepairRecord::getAppointUserName, user.getUsername())
+        wrapper.eq(FaultRepairRecord::getFaultCode, code)
+                //.eq(FaultRepairRecord::getAppointUserName, user.getUsername())
                 .eq(FaultRepairRecord::getDelFlag, CommonConstant.DEL_FLAG_0)
                 .orderByDesc(FaultRepairRecord::getCreateTime).last("limit 1");
         return repairRecordService.getBaseMapper().selectOne(wrapper);

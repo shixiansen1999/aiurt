@@ -45,7 +45,7 @@ public interface FaultMapper extends BaseMapper<Fault> {
      List<String> queryKnowledge(FaultKnowledgeBase faultKnowledgeBase);
 
      /**
-      *
+      * 分页查询
       * @param page
       * @param knowledgeBase
       * @return
