@@ -203,7 +203,7 @@ public class PersonnelGroupStatisticsServiceImpl implements PersonnelGroupStatis
                 for (TrainTaskDTO trainTaskDTO : trainTaskDTOS) {
                     String examStatus = trainTaskDTO.getExamStatus();
                     //当有考试的时候需要判断用户是否完成考试，如果没有完成考试则不算完成培训任务
-                    if (examStatus.equals("1")) {
+                    if ("1".equals(examStatus)) {
                         Integer exam = personnelGroupStatisticsMapper.isExam(trainTaskDTO.getTaskId(), model.getUserId());
                         if (exam == 0) {
                             size = size - 1;
@@ -274,45 +274,56 @@ public class PersonnelGroupStatisticsServiceImpl implements PersonnelGroupStatis
         }
 
         //班组关联工区信息
-        List<TeamPortraitModel> workArea = personnelGroupStatisticsMapper.getWorkArea(departId);
-        List<String> position = workArea.stream().map(TeamPortraitModel::getPosition).collect(Collectors.toList());
-        List<String> siteName = workArea.stream().map(TeamPortraitModel::getSiteName).collect(Collectors.toList());
-
-        StringBuilder jurisdiction = new StringBuilder();
-        for (TeamPortraitModel portraitDTO : workArea) {
-            jurisdiction.append(portraitDTO.getSiteName()).append(":");
-            //获取工区管辖范围
-            List<TeamWorkAreaDTO> stationDetails = personnelGroupStatisticsMapper.getStationDetails(portraitDTO.getWorkAreaCode());
-            if (CollUtil.isNotEmpty(stationDetails)) {
-                List<String> line = stationDetails.stream().map(TeamWorkAreaDTO::getLineCode).collect(Collectors.toList());
-                if (CollUtil.isNotEmpty(line)) {
-                    for (String s : line) {
-                        List<TeamWorkAreaDTO> collect = stationDetails.stream().filter(t -> t.getLineCode().equals(s)).collect(Collectors.toList());
-                        jurisdiction.append(collect.get(0).getLineName())
-                                .append(collect.get(0).getStationName())
-                                .append(collect.get(collect.size() - 1).getStationName())
-                                .append(collect.size()).append("站，");
-                    }
-                    if (jurisdiction.length() > 0) {
-                        // 截取字符，去调最后一个，
-                        jurisdiction.deleteCharAt(jurisdiction.length() - 1);
-                    }
-                }
-            }
-            jurisdiction.append("共").append(stationDetails.size()).append("站；");
-        }
-        if (jurisdiction.length() > 0) {
-            // 截取字符,去掉最后一个；
-            jurisdiction.deleteCharAt(jurisdiction.length() - 1);
-        }
-        depart.setPositionName(CollUtil.join(position, ","));
-        depart.setSiteName(CollUtil.join(siteName, ","));
-        depart.setJurisdiction(jurisdiction.toString());
+        getWorkAreaInformation(departId, depart);
 
         //获取班组维修响应时长
         List<LoginUser> users= iSysBaseAPI.getUserPersonnel(departId);
         List<String> list = users.stream().map(LoginUser::getId).collect(Collectors.toList());
         List<FaultRepairRecordDTO> repairDuration = personnelGroupStatisticsMapper.getRepairDuration(list, lastYear, end);
+        getAverageTime(repairDuration, depart);
+        return depart;
+    }
+
+    public void getWorkAreaInformation(String departId,TeamPortraitModel depart) {
+        List<TeamPortraitModel> workArea = personnelGroupStatisticsMapper.getWorkArea(departId);
+        if (CollUtil.isNotEmpty(workArea)) {
+            List<String> position = workArea.stream().map(TeamPortraitModel::getPosition).collect(Collectors.toList());
+            List<String> siteName = workArea.stream().map(TeamPortraitModel::getSiteName).collect(Collectors.toList());
+
+            StringBuilder jurisdiction = new StringBuilder();
+            for (TeamPortraitModel portraitDTO : workArea) {
+                jurisdiction.append(portraitDTO.getSiteName()).append(":");
+                //获取工区管辖范围
+                List<TeamWorkAreaDTO> stationDetails = personnelGroupStatisticsMapper.getStationDetails(portraitDTO.getWorkAreaCode());
+                if (CollUtil.isNotEmpty(stationDetails)) {
+                    List<String> line = stationDetails.stream().map(TeamWorkAreaDTO::getLineCode).collect(Collectors.toList());
+                    if (CollUtil.isNotEmpty(line)) {
+                        for (String s : line) {
+                            List<TeamWorkAreaDTO> collect = stationDetails.stream().filter(t -> t.getLineCode().equals(s)).collect(Collectors.toList());
+                            jurisdiction.append(collect.get(0).getLineName())
+                                    .append(collect.get(0).getStationName())
+                                    .append(collect.get(collect.size() - 1).getStationName())
+                                    .append(collect.size()).append("站，");
+                        }
+                        if (jurisdiction.length() > 0) {
+                            // 截取字符，去调最后一个，
+                            jurisdiction.deleteCharAt(jurisdiction.length() - 1);
+                        }
+                    }
+                }
+                jurisdiction.append("共").append(stationDetails.size()).append("站；");
+            }
+            if (jurisdiction.length() > 0) {
+                // 截取字符,去掉最后一个；
+                jurisdiction.deleteCharAt(jurisdiction.length() - 1);
+            }
+            depart.setPositionName(CollUtil.join(position, ","));
+            depart.setSiteName(CollUtil.join(siteName, ","));
+            depart.setJurisdiction(jurisdiction.toString());
+        }
+    }
+
+    public void getAverageTime(List<FaultRepairRecordDTO> repairDuration,TeamPortraitModel depart) {
         if (CollUtil.isNotEmpty(repairDuration)) {
             long l = 0;
             for (FaultRepairRecordDTO repairRecordDTO : repairDuration) {
@@ -338,8 +349,6 @@ public class PersonnelGroupStatisticsServiceImpl implements PersonnelGroupStatis
         } else {
             depart.setAverageTime("0");
         }
-
-        return depart;
     }
 
     @Override
