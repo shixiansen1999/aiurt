@@ -1,5 +1,6 @@
 package com.aiurt.common.aspect;
 
+import cn.hutool.core.util.StrUtil;
 import com.aiurt.modules.basic.entity.DictEntity;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
@@ -131,7 +132,7 @@ public class DictAspect {
 
                             List<String> dataList;
                             String dictCode = code;
-                            if (!StringUtils.isEmpty(table)) {
+                            if (StrUtil.isNotBlank(table)) {
                                 dictCode = String.format("%s,%s,%s", table, text, code);
                             }
                             dataList = dataListMap.computeIfAbsent(dictCode, k -> new ArrayList<>());
@@ -157,7 +158,7 @@ public class DictAspect {
                         String table = field.getAnnotation(Dict.class).dictTable();
 
                         String fieldDictCode = code;
-                        if (!StringUtils.isEmpty(table)) {
+                        if (StrUtil.isNotBlank(table)) {
                             fieldDictCode = String.format("%s,%s,%s", table, text, code);
                         }
 
@@ -220,7 +221,7 @@ public class DictAspect {
 
                         List<String> dataList;
                         String dictCode = code;
-                        if (!StringUtils.isEmpty(table)) {
+                        if (StrUtil.isNotBlank(table)) {
                             dictCode = String.format("%s,%s,%s", table, text, code);
                         }
                         dataList = dataListMap.computeIfAbsent(dictCode, k -> new ArrayList<>());
@@ -242,7 +243,7 @@ public class DictAspect {
                     String table = field.getAnnotation(Dict.class).dictTable();
 
                     String fieldDictCode = code;
-                    if (!StringUtils.isEmpty(table)) {
+                    if (StrUtil.isNotBlank(table)) {
                         fieldDictCode = String.format("%s,%s,%s", table, text, code);
                     }
 

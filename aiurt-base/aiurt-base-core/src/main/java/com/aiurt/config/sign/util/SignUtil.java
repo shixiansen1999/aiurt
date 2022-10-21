@@ -1,5 +1,6 @@
 package com.aiurt.config.sign.util;
 
+import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.constant.SymbolConstant;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.util.oConvertUtils;
@@ -28,13 +29,13 @@ public class SignUtil {
      * @return 验证签名结果
      */
     public static boolean verifySign(SortedMap<String, String> params,String headerSign) {
-        if (params == null || StringUtils.isEmpty(headerSign)) {
+        if (params == null || StrUtil.isEmpty(headerSign)) {
             return false;
         }
         // 把参数加密
         String paramsSign = getParamsSign(params);
         log.info("Param Sign : {}", paramsSign);
-        return !StringUtils.isEmpty(paramsSign) && headerSign.equals(paramsSign);
+        return !StrUtil.isEmpty(paramsSign) && headerSign.equals(paramsSign);
     }
 
     /**

@@ -88,17 +88,17 @@ public class Swagger2Config implements WebMvcConfigurer {
     SecurityScheme securityScheme() {
         return new ApiKey(CommonConstant.X_ACCESS_TOKEN, CommonConstant.X_ACCESS_TOKEN, "header");
     }
-    /**
+   /* *//**
      * JWT token
      * @return
-     */
+     *//*
     private List<Parameter> setHeaderToken() {
         ParameterBuilder tokenPar = new ParameterBuilder();
         List<Parameter> pars = new ArrayList<>();
         tokenPar.name(CommonConstant.X_ACCESS_TOKEN).description("token").modelRef(new ModelRef("string")).parameterType("header").required(false).build();
         pars.add(tokenPar.build());
         return pars;
-    }
+    }*/
 
     /**
      * api文档的详细信息函数,注意这里的注解引用的是哪个

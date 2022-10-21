@@ -1,5 +1,6 @@
 package com.aiurt.config.shiro;
 
+import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.util.oConvertUtils;
 import com.aiurt.config.shiro.filters.CustomShiroFilterFactoryBean;
 import com.aiurt.config.shiro.filters.JwtFilter;
@@ -252,7 +253,7 @@ public class ShiroConfig {
             redisManager.setPort(lettuceConnectionFactory.getPort());
             redisManager.setDatabase(lettuceConnectionFactory.getDatabase());
             redisManager.setTimeout(0);
-            if (!StringUtils.isEmpty(lettuceConnectionFactory.getPassword())) {
+            if (StrUtil.isNotBlank(lettuceConnectionFactory.getPassword())) {
                 redisManager.setPassword(lettuceConnectionFactory.getPassword());
             }
             manager = redisManager;
