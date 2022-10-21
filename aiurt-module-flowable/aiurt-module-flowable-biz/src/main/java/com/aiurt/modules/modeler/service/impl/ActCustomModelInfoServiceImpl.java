@@ -91,7 +91,6 @@ public class ActCustomModelInfoServiceImpl extends ServiceImpl<ActCustomModelInf
         } catch (UnsupportedEncodingException e) {
            log.error(e.getMessage());
         }
-        //actCustomModelInfo.setBpmnXML(streamStr);
         return actCustomModelInfo;
     }
 }

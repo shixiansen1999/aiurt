@@ -26,5 +26,10 @@ public interface IActCustomModelInfoService extends IService<ActCustomModelInfo>
      */
     void deleteById(List<String> idList);
 
+    /**
+     * 根据modelid查询模板信息
+     * @param modelId
+     * @return
+     */
     ActCustomModelInfo queryByModelId(String modelId);
 }

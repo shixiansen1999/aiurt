@@ -19,26 +19,13 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * @Description: flowable配置,
+ * @Description: flowable配置, 全局控制，导致其他序列化失败问题不能初始化ObjectMapper
  * @Author: fgw
  * @Since:18:44 2022/07/13
  */
 @Slf4j
 @Configuration
 public class FlowBpmnConfig implements EngineConfigurationConfigurer<SpringProcessEngineConfiguration> {
-
-    // 删除， 全局控制，导致其他序列化失败问题
-    /*@Bean
-    public ObjectMapper objectMapper() {
-        ObjectMapper objectMapper = new ObjectMapper();
-        SimpleModule simpleModule = new SimpleModule();
-        simpleModule.addSerializer(Long.class, ToStringSerializer.instance);
-        simpleModule.addSerializer(Long.TYPE, ToStringSerializer.instance);
-        objectMapper.registerModule(simpleModule);
-        // 既然
-        objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-        return new ObjectMapper();
-    }*/
 
     @Bean
     public UuidGenerator uuidGenerator() {
@@ -51,7 +38,7 @@ public class FlowBpmnConfig implements EngineConfigurationConfigurer<SpringProce
         //设置自定义的uuid生成策略
         configuration.setIdGenerator(uuidGenerator());
 
-        Map<String, List<FlowableEventListener>> typedEventListeners = new HashMap<>();
+        Map<String, List<FlowableEventListener>> typedEventListeners = new HashMap<>(16);
         typedEventListeners.put(FlowableEngineEventType.SEQUENCEFLOW_TAKEN.name(), Arrays.asList(new SequenceFlowTakenListener()));
         typedEventListeners.put(FlowableEngineEventType.TASK_CREATED.name(), Arrays.asList(new TaskCreateListener()));
         typedEventListeners.put(FlowableEngineEventType.PROCESS_STARTED.name(), Arrays.asList(new ProcessStartListener()));

@@ -34,7 +34,8 @@ public interface FlowUserMapper {
     List<String> getUserNameByOrgId(@Param("orgIdList")List<String> orgIdList);
 
     /**
-     *
+     * 根据用户名或者账号或者用户id 获取用户账号
+     * @param name  用户名或者账号或者用户id
      * @return
      */
     List<String> getUserName(@Param("name") String name);

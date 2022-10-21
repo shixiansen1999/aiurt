@@ -142,7 +142,6 @@ public class ActCustomClassifyController extends BaseController<ActCustomClassif
       * @param req
       * @return
       */
-	//@AutoLog(value = "流程分类-获取子数据")
 	@ApiOperation(value="流程分类-获取子数据", notes="流程分类-获取子数据")
 	@GetMapping(value = "/childList")
 	public Result<IPage<ActCustomClassify>> queryPageList(ActCustomClassify actCustomClassify,HttpServletRequest req) {
@@ -160,7 +159,6 @@ public class ActCustomClassifyController extends BaseController<ActCustomClassif
       * @param parentIds
       * @return
       */
-	//@AutoLog(value = "流程分类-批量获取子数据")
     @ApiOperation(value="流程分类-批量获取子数据", notes="流程分类-批量获取子数据")
     @GetMapping("/getChildListBatch")
     public Result getChildListBatch(@RequestParam("parentIds") String parentIds) {
@@ -240,7 +238,6 @@ public class ActCustomClassifyController extends BaseController<ActCustomClassif
 	 * @param id
 	 * @return
 	 */
-	//@AutoLog(value = "流程分类-通过id查询")
 	@ApiOperation(value="流程分类-通过id查询", notes="流程分类-通过id查询")
 	@GetMapping(value = "/queryById")
 	public Result<ActCustomClassify> queryById(@RequestParam(name="id",required=true) String id) {

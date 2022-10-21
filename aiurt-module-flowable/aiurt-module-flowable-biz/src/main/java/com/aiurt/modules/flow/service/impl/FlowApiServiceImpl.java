@@ -177,7 +177,7 @@ public class FlowApiServiceImpl implements FlowApiService {
         }
         // 设置流程变量
         Map<String, Object> busData = startBpmnDTO.getBusData();
-        Map<String, Object> variableData = new HashMap<>();
+        Map<String, Object> variableData = new HashMap<>(16);
         this.initAndGetProcessInstanceVariables(variableData);
 
         // 根据key查询第一个用户任务

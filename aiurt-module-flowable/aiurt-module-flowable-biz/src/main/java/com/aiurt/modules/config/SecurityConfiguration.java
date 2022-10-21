@@ -8,14 +8,18 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 
 /**
  * 为了绕过授权，需要添加一个自定义授权配置绕过Flowable的默认idm授权，创建一个授权配置类“SecurityConfiguration”,该类在什么位置都可以，不用覆盖原有授权配置类
+ * @author fgw
  */
 @Configuration
 public class SecurityConfiguration {
+
+    /**
+     * Order配置说明
+     *      这个地方相同会报错
+     *     这个地方如果大于则该配置在FlowableUiSecurityAutoConfiguratio中对应项后加载，不能起到绕过授权作用
+     *     所以这个地方-1让该配置项在FlowableUiSecurityAutoConfiguratio中对应配置项前加载，以跳过授权
+     */
     @Configuration(proxyBeanMethods = false)
-    //Order配置说明
-    // 这个地方相同会报错
-    //这个地方如果大于则该配置在FlowableUiSecurityAutoConfiguratio中对应项后加载，不能起到绕过授权作用
-    //所以这个地方-1让该配置项在FlowableUiSecurityAutoConfiguratio中对应配置项前加载，以跳过授权
     @Order(SecurityConstants.FORM_LOGIN_SECURITY_ORDER - 1)
     public static class FormLoginWebSecurityConfigurerAdapter extends WebSecurityConfigurerAdapter {
         @Override
@@ -27,6 +31,7 @@ public class SecurityConfiguration {
                     //为了简单起见，简单粗暴方式直接放行modeler下面所有请求
                     .authorizeRequests().antMatchers("/modeler/**").permitAll();
 
+            // 跨域
             http.headers().frameOptions().disable();
         }
     }

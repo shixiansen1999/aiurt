@@ -149,7 +149,6 @@ public class ActCustomModelInfoController extends BaseController<ActCustomModelI
 	 * @param id
 	 * @return
 	 */
-	//@AutoLog(value = "flowable流程模板定义信息-通过id查询")
 	@ApiOperation(value="flowable流程模板定义信息-通过id查询", notes="flowable流程模板定义信息-通过id查询")
 	@GetMapping(value = "/queryById")
 	public Result<ActCustomModelInfo> queryById(@RequestParam(name="id",required=true) String id) {

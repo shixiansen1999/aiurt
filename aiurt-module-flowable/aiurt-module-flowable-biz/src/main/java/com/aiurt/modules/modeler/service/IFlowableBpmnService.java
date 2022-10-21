@@ -21,6 +21,7 @@ public interface IFlowableBpmnService {
      * 创建初始化BPMN模型
      *
      * @param modelInfo 参数
+     * @param user 用户对象
      * @return
      */
     Model createInitBpmn(ActCustomModelInfo modelInfo, LoginUser user);

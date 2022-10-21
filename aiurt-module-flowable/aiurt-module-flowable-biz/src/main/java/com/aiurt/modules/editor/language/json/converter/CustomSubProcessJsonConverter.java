@@ -37,7 +37,8 @@ public class CustomSubProcessJsonConverter extends SubProcessJsonConverter {
         FlowElement flowElement = super.convertJsonToElement(elementNode, modelNode, shapeMap, converterContext);
         GraphicInfo graphicInfo = model.getGraphicInfo(BpmnJsonConverterUtil.getElementId(elementNode));
         if (STENCIL_COLLAPSED_SUB_PROCESS.equals(BpmnJsonConverterUtil.getStencilId(elementNode))){
-            graphicInfo.setExpanded(false); //default is null!
+            //default is null!
+            graphicInfo.setExpanded(false);
         } else {
             graphicInfo.setExpanded(true);
         }

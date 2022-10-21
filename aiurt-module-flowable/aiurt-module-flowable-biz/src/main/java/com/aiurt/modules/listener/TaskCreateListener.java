@@ -111,7 +111,6 @@ public class TaskCreateListener implements FlowableEventListener {
             ProcessEngines.getDefaultProcessEngine().getTaskService().setAssignee(taskId, userNameList.get(0));
         }else {
             for (String userName : userNameList) {
-                // ProcessEngines.getDefaultProcessEngine().getTaskService().addUserIdentityLink(taskId, userName, "candidate");
                 ProcessEngines.getDefaultProcessEngine().getTaskService().addCandidateUser(taskId, userName);
             }
         }

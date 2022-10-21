@@ -272,7 +272,7 @@ public class FlowElementUtil {
         // 是否动态表单
         if (CollUtil.isNotEmpty(actCustomTaskExts)) {
             JSONObject jsonObject = JSONObject.parseObject(actCustomTaskExts.get(0).getFormJson());
-            //log.info("更新或保存业务接口:->{}", );
+            log.info("更新或保存业务接口:->{}", jsonObject);
             if (ObjectUtil.isNotEmpty(jsonObject)) {
                 String service = jsonObject.getString("service");
                 if (StrUtil.isBlank(service)) {

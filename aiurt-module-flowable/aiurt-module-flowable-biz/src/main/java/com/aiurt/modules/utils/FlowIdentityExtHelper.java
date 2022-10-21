@@ -54,53 +54,26 @@ public class FlowIdentityExtHelper implements BaseFlowIdentityExtHelper {
     @Override
     public Set<String> getUsernameListByRoleIds(Set<String> roleIdSet) {
         Set<String> usernameSet = new HashSet<>();
-       /* Set<Long> roleIdSet2 = roleIdSet.stream().map(Long::valueOf).collect(Collectors.toSet());
-        SysUser filter = new SysUser();
-        filter.setUserStatus(SysUserStatus.STATUS_NORMAL);
-        for (Long roleId : roleIdSet2) {
-            List<SysUser> userList = sysUserService.getSysUserListByRoleId(roleId, filter, null);
-            this.extractAndAppendUsernameList(usernameSet, userList);
-        }*/
+
         return usernameSet;
     }
 
     @Override
     public Set<String> getUsernameListByDeptIds(Set<String> deptIdSet) {
         Set<String> usernameSet = new HashSet<>();
-        /*Set<Long> deptIdSet2 = deptIdSet.stream().map(Long::valueOf).collect(Collectors.toSet());
-        for (Long deptId : deptIdSet2) {
-            SysUser filter = new SysUser();
-            filter.setDeptId(deptId);
-            filter.setUserStatus(SysUserStatus.STATUS_NORMAL);
-            List<SysUser> userList = sysUserService.getSysUserList(filter, null);
-            this.extractAndAppendUsernameList(usernameSet, userList);
-        }*/
         return usernameSet;
     }
 
     @Override
     public Set<String> getUsernameListByPostIds(Set<String> postIdSet) {
         Set<String> usernameSet = new HashSet<>();
-        /*Set<Long> postIdSet2 = postIdSet.stream().map(Long::valueOf).collect(Collectors.toSet());
-        SysUser filter = new SysUser();
-        filter.setUserStatus(SysUserStatus.STATUS_NORMAL);
-        for (Long postId : postIdSet2) {
-            List<SysUser> userList = sysUserService.getSysUserListByPostId(postId, filter, null);
-            this.extractAndAppendUsernameList(usernameSet, userList);
-        }*/
         return usernameSet;
     }
 
     @Override
     public Set<String> getUsernameListByDeptPostIds(Set<String> deptPostIdSet) {
         Set<String> usernameSet = new HashSet<>();
-       /* Set<Long> deptPostIdSet2 = deptPostIdSet.stream().map(Long::valueOf).collect(Collectors.toSet());
-        SysUser filter = new SysUser();
-        filter.setUserStatus(SysUserStatus.STATUS_NORMAL);
-        for (Long deptPostId : deptPostIdSet2) {
-            List<SysUser> userList = sysUserService.getSysUserListByDeptPostId(deptPostId, filter, null);
-            this.extractAndAppendUsernameList(usernameSet, userList);
-        }*/
+
         return usernameSet;
     }
 
@@ -115,8 +88,7 @@ public class FlowIdentityExtHelper implements BaseFlowIdentityExtHelper {
             return new HashMap<>(1);
         }
         Map<String, String> resultMap = new HashMap<>(loginNameSet.size());
-       /* List<SysUser> userList = sysUserService.getInList("loginName", loginNameSet);
-        userList.forEach(user -> resultMap.put(user.getLoginName(), user.getShowName()));*/
+
         return resultMap;
     }
 

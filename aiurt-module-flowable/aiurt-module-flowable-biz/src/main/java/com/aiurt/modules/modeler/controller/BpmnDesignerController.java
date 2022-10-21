@@ -45,7 +45,7 @@ public class BpmnDesignerController {
             @ApiImplicitParam(name = "modelId", value = "流程模板id", required = true, paramType = "path")
     })
     public Result<ModelInfoVo> getBpmnByModelId(@PathVariable String modelId) {
-        if (StrUtil.equalsIgnoreCase("undefined", modelId)) {
+        if (StrUtil.isNullOrUndefined(modelId)) {
             throw new AiurtBootException("请求参数有误!");
         }
         ModelInfoVo modelInfoVo = flowableBpmnService.loadBpmnXmlByModelId(modelId);
