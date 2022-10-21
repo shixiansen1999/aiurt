@@ -166,14 +166,18 @@
             a.`code`
     </select>
     <select id="getSystemByCodeDTO" resultType="com.aiurt.modules.subsystem.dto.SystemByCodeDTO">
-        select s.system_name,s.system_code,s.description,
-            count(fr.end_time or not null) as repairNum,
-            fr.end_time as repairTime
-        from cs_subsystem s
-        left join fault f on f.sub_system_code=s.system_code
-        left join fault_repair_record fr on fr.fault_code = f.code  and fr.del_flag=0
-        where  s.del_flag =0 and s.system_code = #{subsystemCode}
-        ORDER BY fr.end_time
+        SELECT aa.system_name,aa.system_code,aa.description,
+               SUM(aa.repairNum) as repairNum,
+               aa.repairTime FROM (
+              select s.system_name,s.system_code,s.description,
+                     count(fr.end_time or not null) as repairNum,
+                     fr.end_time as repairTime
+              from cs_subsystem s
+                       left join fault f on f.sub_system_code=s.system_code
+                       left join fault_repair_record fr on fr.fault_code = f.code  and fr.del_flag=0
+              where  s.del_flag =0 and s.system_code = #{subsystemCode}
+              GROUP BY fr.id
+              ORDER BY fr.end_time desc)aa
     </select>
     <select id="getReplacementNum" resultType="java.lang.Integer">
         SELECT
