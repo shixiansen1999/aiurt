@@ -161,4 +161,8 @@ public interface PatrolConstant {
      * 工单-数据填写类型：选择型
      */
     Integer DEVICE_INP_TYPE = 2;
+    /**
+     * 工单-数据填写类型：输入型
+     */
+    Integer DEVICE_OUT = 3;
 }
