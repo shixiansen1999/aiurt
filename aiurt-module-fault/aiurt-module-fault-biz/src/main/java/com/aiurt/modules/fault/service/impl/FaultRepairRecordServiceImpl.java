@@ -1,5 +1,6 @@
 package com.aiurt.modules.fault.service.impl;
 
+import cn.hutool.core.date.BetweenFormater;
 import cn.hutool.core.date.DateUnit;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.StrUtil;
@@ -72,12 +73,8 @@ public class FaultRepairRecordServiceImpl extends ServiceImpl<FaultRepairRecordM
         Date endTime = fault.getEndTime();
         if (Objects.nonNull(endTime) && Objects.nonNull(receiveTime)) {
             recordDetailDTO.setEndTime(endTime);
-            long between = DateUtil.between(receiveTime, endTime, DateUnit.MINUTE);
-            between = between == 0? 1: between;
-            long day = between / (24 * 60);
-            long hours = between % (24 * 60) / 60;
-            long min = between % (24 * 60) % 60;
-            recordDetailDTO.setRecoveryDuration(day+"天"+hours+"小时"+min + "分");
+            long between = DateUtil.between(receiveTime, endTime, DateUnit.MS);
+            recordDetailDTO.setRecoveryDuration(DateUtil.formatBetween(between, BetweenFormater.Level.SECOND));
         }
         // 故障历史
         recordDetailDTO.setStatus(fault.getStatus());

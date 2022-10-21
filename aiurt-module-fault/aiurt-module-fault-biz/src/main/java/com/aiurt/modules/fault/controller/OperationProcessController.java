@@ -1,5 +1,5 @@
 package com.aiurt.modules.fault.controller;
-
+import cn.hutool.core.date.BetweenFormater;
 import cn.hutool.core.date.DateUnit;
 import cn.hutool.core.date.DateUtil;
 import com.aiurt.common.aspect.annotation.AutoLog;
@@ -71,7 +71,7 @@ public class OperationProcessController extends BaseController<OperationProcess,
 
 			if (i+1< list.size()) {
 				OperationProcess process2 = list.get(i + 1);
-				long between = DateUtil.between(process2.getProcessTime(), process.getProcessTime(), DateUnit.MINUTE);
+				long between = DateUtil.between(process2.getProcessTime(), process.getProcessTime(), DateUnit.MS);
 				dealTime(process, between);
 			}
 		}
@@ -81,11 +81,9 @@ public class OperationProcessController extends BaseController<OperationProcess,
 	}
 
 	private void dealTime(OperationProcess process, long between) {
-		between = between == 0 ? 1 : between;
-		long day = between / (24 * 60);
-		long hours = between % (24 * 60) / 60;
-		long min = between % (24 * 60) % 60;
-		process.setProcessingTime(day+"天"+hours+"小时"+ (min==0?1:min) + "分");
+
+		process.setProcessingTime(DateUtil.formatBetween(between, BetweenFormater.Level.SECOND));
+
 	}
 
 }
