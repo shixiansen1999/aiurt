@@ -17,6 +17,7 @@ import java.util.List;
  */
 @Data
 public class YearFaultDTO {
+    private String id;
     private String code;
     private String name;
     @ApiModelProperty(value = "一月")

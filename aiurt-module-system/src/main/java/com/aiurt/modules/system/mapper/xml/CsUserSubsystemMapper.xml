@@ -33,7 +33,6 @@
     LEFT JOIN fault fa on fa.sub_system_code = ss.system_code
     LEFT JOIN fault_level fl on fa.fault_level = fl.`code` and fl.del_flag = 0
     left join fault_repair_record  fr on fa.code = fr.fault_code and fr.del_flag = 0
-    LEFT JOIN operation_process op ON op.fault_code = fr.fault_code
     WHERE
     ss.del_flag =0
     AND ss.system_code = #{subsystemCode}
@@ -57,12 +56,12 @@
     </select>
     <select id="getNum" resultType="java.lang.Long">
        select sum(aa.num) from (SELECT
-            ifnull(sum(TIMESTAMPDIFF(second,IFNULL(fr.recevice_time,fr.assign_time),fr.end_time))-sum(IFNUll(op.hang_up_time,0)),0) as num
+          IFNULL(sum(TIMESTAMPDIFF(second,IFNULL(fr.recevice_time,fr.assign_time),fr.end_time))
+         -(SELECT SUM(IFNUll(op.hang_up_time,0))FROM operation_process op  WHERE op.fault_code = fa.`code`),0) as num
         FROM  device de
                   LEFT JOIN fault_device fd on de.`code` = fd.device_code
                   LEFT JOIN fault fa on  fd.fault_code =fa.`code`
                   left join fault_repair_record  fr on fa.code = fr.fault_code
-                  LEFT JOIN operation_process op ON op.fault_code = fr.fault_code
         WHERE
             fd.del_flag =0     and fr.del_flag = 0
           AND fa.sub_system_code = #{subsystemCode}
@@ -71,7 +70,7 @@
         group by fa.id) aa
     </select>
     <select id="getYearNumFault" resultType="com.aiurt.modules.subsystem.dto.YearFaultDTO">
-        select a.system_name as name,a.system_code as code,
+        select a.system_name as name,a.system_code as code, a.id,
         COUNT(c.id and  DATE_FORMAT(c.happen_time, '%m') ='01' or not NULL ) as january,
         COUNT(c.id and  DATE_FORMAT(c.happen_time, '%m') ='02' or not NULL ) as  february,
         COUNT(c.id and  DATE_FORMAT(c.happen_time, '%m') ='03' or not NULL ) as march,
@@ -193,7 +192,7 @@
     <select id="selectSubSystem" resultType="com.aiurt.modules.subsystem.dto.SubsystemFaultDTO">
         select s.system_name,s.system_code,s.id
         from  cs_subsystem s
-        where s.del_flag =0 and s.system_code = #{subsystemCode}
+        where s.del_flag =0 and s.system_code = #{subsystemCode.systemCode}
     </select>
 
 </mapper>
