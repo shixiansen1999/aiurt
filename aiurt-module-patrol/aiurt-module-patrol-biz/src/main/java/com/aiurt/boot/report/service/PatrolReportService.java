@@ -267,6 +267,7 @@ public List<PatrolReport> allOmitNumber(List<String>useIds,PatrolReportModel omi
         Date end = DateUtil.parse(endDate, "yyyy-MM-dd");
         int startMonth = DateUtil.month(start)+1;
         int endMonth = DateUtil.month(end)+1;
+        Integer passYear=2;
         //开始时间大于等于当前时间
         if(s.after(n)||s.equals(n))
         {
@@ -285,7 +286,7 @@ public List<PatrolReport> allOmitNumber(List<String>useIds,PatrolReportModel omi
                 {
                     int year = endYear - startYear ;
                     int yearMonth=0;
-                    if(year>=2)
+                    if(year>=passYear)
                     {
                         yearMonth=(year-1)*12;
                     }
@@ -312,7 +313,7 @@ public List<PatrolReport> allOmitNumber(List<String>useIds,PatrolReportModel omi
                 if(endYear>startYear) {
                     int year = nowYear - startYear ;
                     int yearMonth=0;
-                    if(year>=2)
+                    if(year>=passYear)
                     {
                         yearMonth=(year-1)*12;
                     }
