@@ -1,4 +1,5 @@
 package com.aiurt.modules.sysFile.controller;
+import cn.hutool.core.util.StrUtil;
 import com.aiurt.modules.sysFile.constant.PatrolConstant;
 import com.aiurt.modules.sysFile.entity.SysFile;
 import com.aiurt.modules.sysFile.entity.SysFileType;
@@ -124,14 +125,9 @@ public class SysFileController {
 
 		if (StringUtils.isNotBlank(sysFile.getCreateByName())) {
 			// todo 后期修改
-			List<LoginUser> list = new ArrayList<>();
-//			List<LoginUser> list = sysUserService.list(new LambdaQueryWrapper<SysUser>()
-//					.like(SysUser::getRealname, sysFile.getCreateByName())
-//					.select(SysUser::getId)
-//					.eq(SysUser::getDelFlag, CommonConstant.DEL_FLAG_0));
-			if (CollectionUtils.isNotEmpty(list)) {
-				List<String> collect = list.stream().map(LoginUser::getId).collect(Collectors.toList());
-				queryWrapper.in(SysFile::getCreateBy, collect);
+			String userName1 = iSysBaseAPI.getUserName(sysFile.getCreateByName());
+			if (StrUtil.isNotEmpty(userName1)) {
+				queryWrapper.eq(SysFile::getCreateBy, userName1);
 			} else {
 				queryWrapper.eq(SysFile::getId, -1);
 			}

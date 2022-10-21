@@ -1725,6 +1725,11 @@ public class SysBaseApiImpl implements ISysBaseAPI {
         return loginUserList;
     }
 
+    @Override
+    public String getUserName(String realName) {
+        return userMapper.getUserName(realName);
+    }
+
     /**
      * 根据专业获取id
      *

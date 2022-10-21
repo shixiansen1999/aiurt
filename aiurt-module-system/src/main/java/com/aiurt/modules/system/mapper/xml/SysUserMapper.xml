@@ -242,4 +242,8 @@
 			)
 		</if>
 	</select>
+
+	<select id="getUserName" resultType="java.lang.String">
+		select username from sys_user where del_flag = 0 and realname =#{realName}
+	</select>
 </mapper>

@@ -583,6 +583,13 @@ public interface ISysBaseAPI extends CommonAPI {
     List<LoginUser> getLoginUserList(List<String> userNameList);
 
     /**
+     * 根据用户姓名查询用户账号
+     * @param realName
+     * @return
+     */
+    String getUserName(String realName);
+
+    /**
      * 根据专业获取id
      * @param station
      * @return
