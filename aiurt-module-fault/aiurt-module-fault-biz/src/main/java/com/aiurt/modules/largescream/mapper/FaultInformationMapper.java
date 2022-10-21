@@ -12,8 +12,12 @@ import java.util.Date;
 import java.util.List;
 
 /**
- * @author qkx
+ * 故障信息
+ *
+ * @author: qkx
+ * @date: 2022-09-13 14:37
  */
+
 public interface FaultInformationMapper {
 
     /**
@@ -21,7 +25,6 @@ public interface FaultInformationMapper {
      * @param startDate
      * @param endDate
      * @param lineCode
-     * @param majors
      * @return
      */
     List<Fault> queryLargeFaultInformation(@Param("startDate") Date startDate, @Param("endDate") Date endDate,@Param("lineCode") String lineCode,@Param("majors") List<String> majors);
@@ -31,13 +34,12 @@ public interface FaultInformationMapper {
      * @param startDate
      * @param endDate
      * @param lineCode
-     * @param majors
      * @return
      */
     List<Fault> queryLargeFaultInformationUnSo(@Param("startDate") Date startDate, @Param("endDate") Date endDate,@Param("lineCode") String lineCode);
 
     /**
-     * 数据分析-故障数据统计总数和未解决
+     *  数据分析-故障数据统计总数和未解决
      * @param lineCode
      * @param majors
      * @return
@@ -109,7 +111,6 @@ public interface FaultInformationMapper {
      */
     List<FaultLargeInfoDTO> getLargeFaultInfo(@Param("startDate") Date startDate, @Param("endDate") Date endDate,@Param("lineCode") String lineCode,@Param("majors") List<String> majors);
 
-
     /**
      * 故障数据统计列表
      * @param startDate
@@ -130,7 +131,6 @@ public interface FaultInformationMapper {
      */
     List<Fault> getLargeLineFaultInfo(@Param("startDate") Date startDate, @Param("endDate") Date endDate,@Param("majors") List<String> majors);
 
-
     /**
      * 获取子系统下故障维修时长
      * @param month
@@ -139,7 +139,6 @@ public interface FaultInformationMapper {
      * @return
      */
     List<FaultSystemTimeDTO> getLargeFaultTime(@Param("month") String month, @Param("lineCode") String lineCode,@Param("majors") List<String> majors);
-
 
     /**
      * 按系统分类获取子系统下故障维修时长总数
@@ -160,7 +159,7 @@ public interface FaultInformationMapper {
 
 
     /**
-     *故障超时等级详情
+     * 故障超时等级详情
      * @param level
      * @param startDate
      * @param endDate
@@ -177,7 +176,6 @@ public interface FaultInformationMapper {
      * @return
      */
     Integer getYearFault(@Param("condition")FaultDataStatisticsDTO condition);
-
 
     /**
      * 拥有的专业下的所有子系统
@@ -262,7 +260,7 @@ public interface FaultInformationMapper {
     List<String> getUserConstructionHours(@Param("userId") String userId,@Param("startTime") String startTime,@Param("endTime")String endTime);
 
     /**
-     *查询数量
+     *
      * @param userId
      * @param startTime
      * @param endTime

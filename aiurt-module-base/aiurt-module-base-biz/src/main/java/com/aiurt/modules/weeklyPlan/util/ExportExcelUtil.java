@@ -1,7 +1,7 @@
-package com.aiurt.modules.weeklyPlan.util;
+package com.aiurt.modules.weeklyplan.util;
 
 import cn.hutool.core.util.ObjectUtil;
-import com.aiurt.modules.weeklyPlan.dto.BdOperatePlanDeclarationFormReturnTypeDTO;
+import com.aiurt.modules.weeklyplan.dto.BdOperatePlanDeclarationFormReturnTypeDTO;
 import org.apache.poi.hssf.usermodel.*;
 import org.apache.poi.ss.usermodel.BorderStyle;
 import org.apache.poi.ss.usermodel.HorizontalAlignment;

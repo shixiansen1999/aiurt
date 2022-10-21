@@ -1,13 +1,13 @@
-package com.aiurt.modules.weeklyPlan.service.impl;
+package com.aiurt.modules.weeklyplan.service.impl;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.api.vo.TreeEntity;
-import com.aiurt.modules.weeklyPlan.entity.BdSite;
-import com.aiurt.modules.weeklyPlan.entity.BdTeam;
-import com.aiurt.modules.weeklyPlan.mapper.BdSiteMapper;
-import com.aiurt.modules.weeklyPlan.mapper.BdTeamMapper;
-import com.aiurt.modules.weeklyPlan.service.IBdSiteService;
+import com.aiurt.modules.weeklyplan.entity.BdSite;
+import com.aiurt.modules.weeklyplan.entity.BdTeam;
+import com.aiurt.modules.weeklyplan.mapper.BdSiteMapper;
+import com.aiurt.modules.weeklyplan.mapper.BdTeamMapper;
+import com.aiurt.modules.weeklyplan.service.IBdSiteService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;

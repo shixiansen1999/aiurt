@@ -7,6 +7,12 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * 日待办故障数
+ *
+ * @author: qkx
+ * @date: 2022-09-09 15:11
+ */
 @Service
 public interface DailyFaultApi {
     /**
@@ -25,6 +31,9 @@ public interface DailyFaultApi {
 
     /**
      * 大屏班组画像维修工时统计，用户ID:维修时长
+     * @param type
+     * @param teamId
+     * @return
      */
     Map<String, BigDecimal> getFaultUserHours(int type, String teamId);
 

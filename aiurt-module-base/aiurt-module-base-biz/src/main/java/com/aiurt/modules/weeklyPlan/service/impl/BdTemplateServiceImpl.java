@@ -1,8 +1,8 @@
-package com.aiurt.modules.weeklyPlan.service.impl;
+package com.aiurt.modules.weeklyplan.service.impl;
 
-import com.aiurt.modules.weeklyPlan.entity.BdTemplate;
-import com.aiurt.modules.weeklyPlan.mapper.BdTemplateMapper;
-import com.aiurt.modules.weeklyPlan.service.IBdTemplateService;
+import com.aiurt.modules.weeklyplan.entity.BdTemplate;
+import com.aiurt.modules.weeklyplan.mapper.BdTemplateMapper;
+import com.aiurt.modules.weeklyplan.service.IBdTemplateService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;

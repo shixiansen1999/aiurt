@@ -1,4 +1,4 @@
-package com.aiurt.modules.weeklyPlan.service.impl;
+package com.aiurt.modules.weeklyplan.service.impl;
 
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.convert.Convert;
@@ -9,12 +9,12 @@ import com.aiurt.common.api.dto.message.BusMessageDTO;
 import com.aiurt.common.util.SysAnnmentTypeEnum;
 import com.aiurt.modules.planMountFind.dto.BdStationCopyDTO;
 import com.aiurt.modules.planMountFind.mapper.BdOperatePlanDeclarationFormMonthMapper;
-import com.aiurt.modules.weeklyPlan.dto.*;
-import com.aiurt.modules.weeklyPlan.entity.*;
-import com.aiurt.modules.weeklyPlan.mapper.*;
-import com.aiurt.modules.weeklyPlan.service.*;
-import com.aiurt.modules.weeklyPlan.util.ExportExcelUtil;
-import com.aiurt.modules.weeklyPlan.util.ImportExcelUtil;
+import com.aiurt.modules.weeklyplan.dto.*;
+import com.aiurt.modules.weeklyplan.entity.*;
+import com.aiurt.modules.weeklyplan.mapper.*;
+import com.aiurt.modules.weeklyplan.service.*;
+import com.aiurt.modules.weeklyplan.util.ExportExcelUtil;
+import com.aiurt.modules.weeklyplan.util.ImportExcelUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;

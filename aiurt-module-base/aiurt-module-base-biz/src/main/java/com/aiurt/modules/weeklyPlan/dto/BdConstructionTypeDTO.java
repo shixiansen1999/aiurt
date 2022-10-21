@@ -1,4 +1,4 @@
-package com.aiurt.modules.weeklyPlan.dto;
+package com.aiurt.modules.weeklyplan.dto;
 
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;

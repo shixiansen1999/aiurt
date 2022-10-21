@@ -754,7 +754,7 @@ public class StatisticalServiceImpl extends ServiceImpl<PatrolTaskMapper, Patrol
     }
 
     @Override
-    public List<RepairTaskVo> getWeeklyPlanRepair(String lineCode, DateTime now) {
+    public List<RepairTaskVo> getweeklyplanRepair(String lineCode, DateTime now) {
         DateTime startTime = DateUtil.beginOfWeek(now);
         DateTime endTime = DateUtil.endOfWeek(now);
         List<RepairTaskVo> list = repairTaskMapper.getRepairTaskVos2(lineCode, startTime, endTime);

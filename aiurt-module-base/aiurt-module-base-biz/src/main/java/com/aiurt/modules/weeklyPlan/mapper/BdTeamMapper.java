@@ -1,7 +1,7 @@
-package com.aiurt.modules.weeklyPlan.mapper;
+package com.aiurt.modules.weeklyplan.mapper;
 
-import com.aiurt.modules.weeklyPlan.dto.TeamByIdDTO;
-import com.aiurt.modules.weeklyPlan.entity.BdTeam;
+import com.aiurt.modules.weeklyplan.dto.TeamByIdDTO;
+import com.aiurt.modules.weeklyplan.entity.BdTeam;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Component;

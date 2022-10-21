@@ -1,6 +1,6 @@
-package com.aiurt.modules.weeklyPlan.dto;
+package com.aiurt.modules.weeklyplan.dto;
 
-import com.aiurt.modules.weeklyPlan.entity.BdLine;
+import com.aiurt.modules.weeklyplan.entity.BdLine;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;

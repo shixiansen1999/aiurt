@@ -1,4 +1,4 @@
-package com.aiurt.modules.weeklyPlan.dto;
+package com.aiurt.modules.weeklyplan.dto;
 
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.fasterxml.jackson.annotation.JsonFormat;

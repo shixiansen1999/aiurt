@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.aiurt.modules.weeklyPlan.mapper.BdOperatePlanDeclarationFormMapper">
+<mapper namespace="com.aiurt.modules.weeklyplan.mapper.BdOperatePlanDeclarationFormMapper">
 
-    <select id="queryConstructionTypeList" resultType="com.aiurt.modules.weeklyPlan.dto.BdConstructionTypeDTO">
+    <select id="queryConstructionTypeList" resultType="com.aiurt.modules.weeklyplan.dto.BdConstructionTypeDTO">
         SELECT id AS id, work_name AS name FROM cs_work;
     </select>
 
-    <select id="queryStaffByTeamId" resultType="com.aiurt.modules.weeklyPlan.dto.BdStaffInfoReturnTypeDTO">
+    <select id="queryStaffByTeamId" resultType="com.aiurt.modules.weeklyplan.dto.BdStaffInfoReturnTypeDTO">
         SELECT distinct bs.id AS id,
                bs.realname AS name,
                sur.role_id AS roleId,
@@ -17,7 +17,7 @@
         IN (SELECT distinct id FROM sys_depart WHERE FIND_IN_SET(id,get_team_child(#{teamID}))>0)
     </select>
 
-    <select id="queryStaffByRoleType" resultType="com.aiurt.modules.weeklyPlan.dto.BdStaffInfoReturnTypeDTO">
+    <select id="queryStaffByRoleType" resultType="com.aiurt.modules.weeklyplan.dto.BdStaffInfoReturnTypeDTO">
         SELECT distinct bs.id AS id,
                bs.realname AS name,
                sur.role_id AS roleId,
@@ -34,7 +34,7 @@
         </where>
     </select>
 
-    <select id="queryStaffByRoleName" resultType="com.aiurt.modules.weeklyPlan.dto.BdStaffInfoReturnTypeDTO">
+    <select id="queryStaffByRoleName" resultType="com.aiurt.modules.weeklyplan.dto.BdStaffInfoReturnTypeDTO">
         SELECT distinct bs.id AS id,
         bs.realname AS name,
         sur.role_id AS roleId,
@@ -52,7 +52,7 @@
         </where>
     </select>
 
-    <select id="queryStations" resultType="com.aiurt.modules.weeklyPlan.dto.BdStationReturnTypeDTO">
+    <select id="queryStations" resultType="com.aiurt.modules.weeklyplan.dto.BdStationReturnTypeDTO">
         SELECT cs.id AS id,
                cs.station_name AS name,
                cs.line_code AS lineID,
@@ -66,7 +66,7 @@
         ORDER BY cs.sort
     </select>
 
-    <select id="queryLines" resultType="com.aiurt.modules.weeklyPlan.dto.BdLineDTO">
+    <select id="queryLines" resultType="com.aiurt.modules.weeklyplan.dto.BdLineDTO">
         SELECT id,
                line_name,
                line_code
@@ -89,7 +89,7 @@
         SELECT station_name FROM cs_station WHERE id=#{stationID}
     </select>
 
-    <select id="queryUserInfo" resultType="com.aiurt.modules.weeklyPlan.dto.BdUserInfoDTO">
+    <select id="queryUserInfo" resultType="com.aiurt.modules.weeklyplan.dto.BdUserInfoDTO">
         SELECT
             su.id AS id,
             su.realname AS NAME,
@@ -107,7 +107,7 @@
         WHERE su.id=#{userID}
     </select>
 
-    <select id="queryAllStations" resultType="com.aiurt.modules.weeklyPlan.dto.BdStationReturnTypeDTO">
+    <select id="queryAllStations" resultType="com.aiurt.modules.weeklyplan.dto.BdStationReturnTypeDTO">
         SELECT a.id AS id,
                a.station_name AS name,
                a.line_code AS lineID,
@@ -144,7 +144,7 @@
     </select>
 
     <select id="queryPages"
-            resultType="com.aiurt.modules.weeklyPlan.dto.BdOperatePlanDeclarationFormReturnTypeDTO">
+            resultType="com.aiurt.modules.weeklyplan.dto.BdOperatePlanDeclarationFormReturnTypeDTO">
         SELECT bd.id AS id,
             bd.nature AS nature,
             bd.type AS type,
@@ -316,7 +316,7 @@
         </if>
     </select>
     <select id="queryFormInfoById"
-            resultType="com.aiurt.modules.weeklyPlan.dto.BdOperatePlanDeclarationFormReturnTypeDTO">
+            resultType="com.aiurt.modules.weeklyplan.dto.BdOperatePlanDeclarationFormReturnTypeDTO">
         SELECT bd.id AS id,
         bd.nature AS nature,
         bd.type AS type,
@@ -431,7 +431,7 @@
         where c.role_code = 'line_all_people'
     </select>
 
-    <select id="queryLineStaff" resultType="com.aiurt.modules.weeklyPlan.dto.BdStaffInfoReturnTypeDTO">
+    <select id="queryLineStaff" resultType="com.aiurt.modules.weeklyplan.dto.BdStaffInfoReturnTypeDTO">
         select a.id, a.realname as name, d.line_id as lineId
         from sys_user a
                  inner join sys_user_role b on a.id = b.user_id
@@ -440,7 +440,7 @@
         where c.role_code = 'line_people'
     </select>
 
-    <select id="queryListByDate" resultType="com.aiurt.modules.weeklyPlan.dto.BdOperatePlanDeclarationReturnDTO">
+    <select id="queryListByDate" resultType="com.aiurt.modules.weeklyplan.dto.BdOperatePlanDeclarationReturnDTO">
         SELECT
             t.charge_staff_id as chargeStaffId,
             t.task_range,
@@ -453,7 +453,7 @@
             t.form_status = 1
             AND t.task_date = #{taskDate}
     </select>
-    <select id="readAll" resultType="com.aiurt.modules.weeklyPlan.dto.ProductPlanDTO">
+    <select id="readAll" resultType="com.aiurt.modules.weeklyplan.dto.ProductPlanDTO">
         SELECT
             t.id,
             t.type,

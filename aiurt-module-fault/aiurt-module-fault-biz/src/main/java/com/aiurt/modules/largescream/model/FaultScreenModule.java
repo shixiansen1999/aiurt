@@ -8,6 +8,13 @@ import lombok.experimental.Accessors;
 import java.util.Date;
 import java.util.List;
 
+/**
+ * 大屏传参实体
+ *
+ * @author: qkx
+ * @date: 2022-09-13 14:37
+ */
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

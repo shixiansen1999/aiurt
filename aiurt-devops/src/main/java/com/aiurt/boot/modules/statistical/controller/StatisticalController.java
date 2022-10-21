@@ -715,15 +715,15 @@ public class StatisticalController {
      * @author niuzeyu
      */
     @ApiOperation(value = "检修数据统计-本周计划", notes = "本周计划 ")
-    @GetMapping(value = "/getWeeklyPlanRepair")
-    public Result<List<RepairTaskVo>> getWeeklyPlanRepair(@RequestParam(value = "lineCode", required = false) String lineCode,
+    @GetMapping(value = "/getweeklyplanRepair")
+    public Result<List<RepairTaskVo>> getweeklyplanRepair(@RequestParam(value = "lineCode", required = false) String lineCode,
                                                           @RequestParam(value = "week", required = false) boolean week) {
         Result<List<RepairTaskVo>> result = new Result<>();
         DateTime now = DateTime.now();
         if (week) {
             now = DateUtil.lastWeek();
         }
-        List<RepairTaskVo> list = statisticalService.getWeeklyPlanRepair(lineCode, now);
+        List<RepairTaskVo> list = statisticalService.getweeklyplanRepair(lineCode, now);
         result.setResult(list);
         return result;
     }

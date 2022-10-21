@@ -13,7 +13,19 @@ import org.apache.ibatis.annotations.Param;
 import java.util.Date;
 import java.util.List;
 
+/**
+ * 首页故障概况
+ *
+ * @author: qkx
+ * @date: 2022年09月05日 15:51
+ */
 public interface FaultCountMapper extends BaseMapper<FaultIndexDTO> {
+    /**
+     * 故障统计
+     * @param startDate
+     * @param endDate
+     * @return
+     */
     List<Fault> queryFaultCount(@Param("startDate") Date startDate, @Param("endDate") Date endDate);
 
 

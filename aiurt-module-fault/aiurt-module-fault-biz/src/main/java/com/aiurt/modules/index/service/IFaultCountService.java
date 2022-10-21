@@ -13,6 +13,12 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * 首页故障概况
+ *
+ * @author: qkx
+ * @date: 2022年09月05日 15:51
+ */
 public interface IFaultCountService{
     /**
      * 首页故障统计

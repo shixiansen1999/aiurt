@@ -1,4 +1,4 @@
-package com.aiurt.modules.weeklyPlan.entity;
+package com.aiurt.modules.weeklyplan.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;

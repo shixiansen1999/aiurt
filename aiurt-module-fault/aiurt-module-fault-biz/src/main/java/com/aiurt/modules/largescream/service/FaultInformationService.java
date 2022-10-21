@@ -43,9 +43,6 @@ public class FaultInformationService {
     private FaultInformationMapper faultInformationMapper;
 
     @Resource
-    private ISysBaseAPI sysBaseAPI;
-
-    @Resource
     private IFaultDeviceService faultDeviceService;
 
     @Autowired
@@ -163,7 +160,7 @@ public class FaultInformationService {
         List<FaultLargeInfoDTO> largeFaultInfo = faultInformationMapper.getLargeFaultDatails(faultScreenModule);
         largeFaultInfo.stream().forEach(l -> {
             // 字典翻译
-            String statusName = sysBaseAPI.getDictItems(FaultDictCodeConstant.FAULT_STATUS).stream()
+            String statusName = sysBaseApi.getDictItems(FaultDictCodeConstant.FAULT_STATUS).stream()
                     .filter(item -> item.getValue().equals(String.valueOf(l.getStatus())))
                     .map(DictModel::getText).collect(Collectors.joining());
             l.setStatusName(statusName);
@@ -189,7 +186,7 @@ public class FaultInformationService {
         List<FaultLargeInfoDTO> largeFaultInfo = faultInformationMapper.getLargeFaultInfo(startDate, endDate, lineCode,majors);
         largeFaultInfo.stream().forEach(l -> {
             // 字典翻译
-            String statusName = sysBaseAPI.getDictItems(FaultDictCodeConstant.FAULT_STATUS).stream()
+            String statusName = sysBaseApi.getDictItems(FaultDictCodeConstant.FAULT_STATUS).stream()
                     .filter(item -> item.getValue().equals(String.valueOf(l.getStatus())))
                     .map(DictModel::getText).collect(Collectors.joining());
             l.setStatusName(statusName);
@@ -204,7 +201,7 @@ public class FaultInformationService {
      * @return
      */
     public List<FaultLargeLineInfoDTO> getLargeLineFaultInfo(Integer boardTimeType){
-        List<FaultLargeLineInfoDTO> largeLineInfoDTOS = new ArrayList<>();
+        List<FaultLargeLineInfoDTO> largeLineInfoDtos = new ArrayList<>();
         String dateTime = FaultLargeDateUtil.getDateTime(boardTimeType);
         String[] split = dateTime.split("~");
         Date startDate = DateUtil.parse(split[0]);
@@ -247,9 +244,9 @@ public class FaultInformationService {
                     Integer d = new BigDecimal((Integer) faultLargeLineInfoDTO.getSolve() * 100 / faultLargeLineInfoDTO.getSum()).setScale(1, BigDecimal.ROUND_HALF_UP).intValue();
                     faultLargeLineInfoDTO.setSolveRate(d + "%");
                 }
-                largeLineInfoDTOS.add(faultLargeLineInfoDTO);
+            largeLineInfoDtos.add(faultLargeLineInfoDTO);
             }
-       return largeLineInfoDTOS;
+       return largeLineInfoDtos;
     }
 
 
@@ -314,7 +311,7 @@ public class FaultInformationService {
     public List<FaultDataStatisticsDTO> getYearFault(FaultDataStatisticsDTO faultDataStatisticsDTO) {
         //先获取用户管理的专业，根据专业筛选
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        List<CsUserMajorModel> majorByUserId = sysBaseAPI.getMajorByUserId(sysUser.getId());
+        List<CsUserMajorModel> majorByUserId = sysBaseApi.getMajorByUserId(sysUser.getId());
         List<String> majorCodes = majorByUserId.stream().map(CsUserMajorModel::getMajorCode).collect(Collectors.toList());
         faultDataStatisticsDTO.setMajorCodes(majorCodes);
         int month = 12;
@@ -338,7 +335,7 @@ public class FaultInformationService {
     public List<FaultDataStatisticsDTO> getSystemYearFault(FaultDataStatisticsDTO faultDataStatisticsDTO) {
         //先获取用户管理的专业，根据专业筛选
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        List<CsUserMajorModel> majorByUserId = sysBaseAPI.getMajorByUserId(sysUser.getId());
+        List<CsUserMajorModel> majorByUserId = sysBaseApi.getMajorByUserId(sysUser.getId());
         List<String> majorCodes = majorByUserId.stream().map(CsUserMajorModel::getMajorCode).collect(Collectors.toList());
 
         List<FaultDataStatisticsDTO> dtoList = new ArrayList<>();
@@ -371,7 +368,7 @@ public class FaultInformationService {
     public FaultDataStatisticsDTO getFaultAnalysis(FaultDataStatisticsDTO faultDataStatisticsDTO) {
         //先获取用户管理的专业，根据专业筛选
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        List<CsUserMajorModel> majorByUserId = sysBaseAPI.getMajorByUserId(sysUser.getId());
+        List<CsUserMajorModel> majorByUserId = sysBaseApi.getMajorByUserId(sysUser.getId());
         List<String> majorCodes = majorByUserId.stream().map(CsUserMajorModel::getMajorCode).collect(Collectors.toList());
         faultDataStatisticsDTO.setMajorCodes(majorCodes);
 
@@ -569,12 +566,12 @@ public class FaultInformationService {
         List<FaultLargeInfoDTO> largeFaultDataInfo = faultInformationMapper.getLargeFaultDataDatails(faultScreenModule);
         largeFaultDataInfo.stream().forEach(l -> {
             // 字典翻译
-            String statusName = sysBaseAPI.getDictItems(FaultDictCodeConstant.FAULT_STATUS).stream()
+            String statusName = sysBaseApi.getDictItems(FaultDictCodeConstant.FAULT_STATUS).stream()
                     .filter(item -> item.getValue().equals(String.valueOf(l.getStatus())))
                     .map(DictModel::getText).collect(Collectors.joining());
             l.setStatusName(statusName);
 
-            String faultModeName = sysBaseAPI.getDictItems(FaultDictCodeConstant.FAULT_MODE_CODE).stream()
+            String faultModeName = sysBaseApi.getDictItems(FaultDictCodeConstant.FAULT_MODE_CODE).stream()
                     .filter(item -> item.getValue().equals(String.valueOf(l.getFaultModeCode())))
                     .map(DictModel::getText).collect(Collectors.joining());
             l.setFaultModeName(faultModeName);
@@ -600,12 +597,12 @@ public class FaultInformationService {
         List<FaultDataAnalysisInfoDTO> largeFaultDataInfo = faultInformationMapper.getLargeFaultDataInfo(startDate,endDate,lineCode,majors);
         largeFaultDataInfo.stream().forEach(l -> {
             // 字典翻译
-            String statusName = sysBaseAPI.getDictItems(FaultDictCodeConstant.FAULT_STATUS).stream()
+            String statusName = sysBaseApi.getDictItems(FaultDictCodeConstant.FAULT_STATUS).stream()
                     .filter(item -> item.getValue().equals(String.valueOf(l.getStatus())))
                     .map(DictModel::getText).collect(Collectors.joining());
             l.setStatusName(statusName);
 
-            String faultModeName = sysBaseAPI.getDictItems(FaultDictCodeConstant.FAULT_MODE_CODE).stream()
+            String faultModeName = sysBaseApi.getDictItems(FaultDictCodeConstant.FAULT_MODE_CODE).stream()
                     .filter(item -> item.getValue().equals(String.valueOf(l.getFaultModeCode())))
                     .map(DictModel::getText).collect(Collectors.joining());
             l.setFaultModeName(faultModeName);
@@ -747,7 +744,8 @@ public class FaultInformationService {
                     faultSystemReliabilityDTO.setActualRuntime(d);
                 }
                 planTime = planTime/60;
-                Double plan = BigDecimal.valueOf(planTime).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
+                Double plan =null;
+                plan = new BigDecimal(planTime).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
                 faultSystemReliabilityDTO.setScheduledRuntime(plan);
                 if (planTime <= 0 || actualTime <= 0) {
                     faultSystemReliabilityDTO.setReliability("0");

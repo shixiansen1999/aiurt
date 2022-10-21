@@ -1,6 +1,6 @@
-package com.aiurt.modules.weeklyPlan.service;
+package com.aiurt.modules.weeklyplan.service;
 
-import com.aiurt.modules.weeklyPlan.entity.BdOverhaulReport;
+import com.aiurt.modules.weeklyplan.entity.BdOverhaulReport;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 import org.jeecg.common.api.vo.Result;

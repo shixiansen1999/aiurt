@@ -1,15 +1,15 @@
-package com.aiurt.modules.weeklyPlan.service.impl;
+package com.aiurt.modules.weeklyplan.service.impl;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
-import com.aiurt.modules.weeklyPlan.entity.BdOverhaulDeviceReport;
-import com.aiurt.modules.weeklyPlan.entity.BdOverhaulReport;
-import com.aiurt.modules.weeklyPlan.mapper.BdOverhaulDeviceReportMapper;
-import com.aiurt.modules.weeklyPlan.mapper.BdOverhaulReportMapper;
-import com.aiurt.modules.weeklyPlan.mapper.BdSparesListMapper;
-import com.aiurt.modules.weeklyPlan.service.IBdOverhaulReportService;
+import com.aiurt.modules.weeklyplan.entity.BdOverhaulDeviceReport;
+import com.aiurt.modules.weeklyplan.entity.BdOverhaulReport;
+import com.aiurt.modules.weeklyplan.mapper.BdOverhaulDeviceReportMapper;
+import com.aiurt.modules.weeklyplan.mapper.BdOverhaulReportMapper;
+import com.aiurt.modules.weeklyplan.mapper.BdSparesListMapper;
+import com.aiurt.modules.weeklyplan.service.IBdOverhaulReportService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;

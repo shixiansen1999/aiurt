@@ -1,12 +1,12 @@
-package com.aiurt.modules.weeklyPlan.controller;
+package com.aiurt.modules.weeklyplan.controller;
 
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.system.base.controller.BaseController;
-import com.aiurt.modules.weeklyPlan.dto.*;
-import com.aiurt.modules.weeklyPlan.entity.BdOperatePlanDeclarationForm;
-import com.aiurt.modules.weeklyPlan.entity.BdOperatePlanStateChange;
-import com.aiurt.modules.weeklyPlan.entity.BdStation;
-import com.aiurt.modules.weeklyPlan.service.IBdOperatePlanDeclarationFormService;
+import com.aiurt.modules.weeklyplan.dto.*;
+import com.aiurt.modules.weeklyplan.entity.BdOperatePlanDeclarationForm;
+import com.aiurt.modules.weeklyplan.entity.BdOperatePlanStateChange;
+import com.aiurt.modules.weeklyplan.entity.BdStation;
+import com.aiurt.modules.weeklyplan.service.IBdOperatePlanDeclarationFormService;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -32,7 +32,7 @@ import java.util.Set;
  */
 @Api(tags="周计划表")
 @RestController
-@RequestMapping("/weeklyPlan/bdOperatePlanDeclarationForm")
+@RequestMapping("/weeklyplan/bdOperatePlanDeclarationForm")
 @Slf4j
 public class BdOperatePlanDeclarationFormController extends BaseController<BdOperatePlanDeclarationForm, IBdOperatePlanDeclarationFormService> {
 	@Autowired

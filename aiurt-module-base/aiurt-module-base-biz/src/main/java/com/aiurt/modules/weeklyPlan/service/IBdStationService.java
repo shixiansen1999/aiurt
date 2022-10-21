@@ -1,6 +1,6 @@
-package com.aiurt.modules.weeklyPlan.service;
+package com.aiurt.modules.weeklyplan.service;
 
-import com.aiurt.modules.weeklyPlan.entity.BdStation;
+import com.aiurt.modules.weeklyplan.entity.BdStation;
 import com.baomidou.mybatisplus.extension.service.IService;
 import org.jeecg.common.api.vo.Result;
 

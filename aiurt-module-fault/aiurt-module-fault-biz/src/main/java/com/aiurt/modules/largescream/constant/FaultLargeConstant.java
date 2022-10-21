@@ -1,6 +1,10 @@
 package com.aiurt.modules.largescream.constant;
+
 /**
- * @author qkx
+ * 时间查找类型
+ *
+ * @author: qkx
+ * @date: 2022-09-13 14:37
  */
 public interface FaultLargeConstant {
     /**

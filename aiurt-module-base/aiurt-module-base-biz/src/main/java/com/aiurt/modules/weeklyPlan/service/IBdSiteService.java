@@ -1,6 +1,6 @@
-package com.aiurt.modules.weeklyPlan.service;
+package com.aiurt.modules.weeklyplan.service;
 
-import com.aiurt.modules.weeklyPlan.entity.BdSite;
+import com.aiurt.modules.weeklyplan.entity.BdSite;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;

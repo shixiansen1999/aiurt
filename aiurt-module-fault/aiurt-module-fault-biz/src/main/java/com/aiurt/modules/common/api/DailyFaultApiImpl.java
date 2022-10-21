@@ -51,8 +51,6 @@ public class DailyFaultApiImpl implements DailyFaultApi {
     @Autowired
     private FaultRepairRecordMapper recordMapper;
     @Autowired
-    private ISysBaseAPI sysBaseAPI;
-    @Autowired
     private FaultInformationMapper faultInformationMapper;
 
     @Override
@@ -94,7 +92,7 @@ public class DailyFaultApiImpl implements DailyFaultApi {
              {
                  Fault fault = faultMapper.selectOne(new LambdaQueryWrapper<Fault>().eq(Fault::getCode, record.getFaultCode()));
                  String stationName = faultMapper.getStationName(fault.getStationCode());
-                 LoginUser loginUser = sysBaseAPI.queryUser(fault.getAppointUserName());
+                 LoginUser loginUser = sysBaseApi.queryUser(fault.getAppointUserName());
                  String faultStatus = faultMapper.getStatusName(fault.getStatus());
                  String faultName = stationName+" "+fault.getFaultPhenomenon()+" "+loginUser.getRealname()+"-"+faultStatus;
                  faultNames.add(faultName);
@@ -111,7 +109,7 @@ public class DailyFaultApiImpl implements DailyFaultApi {
      */
     @Override
     public Map<String, BigDecimal> getFaultUserHours(int type, String teamId) {
-        Map<String, BigDecimal> userDurationMap = new HashMap<>();
+        Map<String, BigDecimal> userDurationMap = new HashMap<>(32);
         // 班组的人员
         List<LoginUser> userList = sysBaseApi.getUserPersonnel(teamId);
         String dateTime = FaultLargeDateUtil.getDateTime(type);
@@ -121,18 +119,18 @@ public class DailyFaultApiImpl implements DailyFaultApi {
         // 获取维修人员在指定时间范围内的任务时长(单位秒)
         List<FaultDurationTask> faultUserDuration = faultInformationMapper.getFaultUserDuration(startTime, endTime);
         // 获取参与人员在指定时间范围内的任务时长(单位秒)
-        List<FaultDurationTask> ParticipantsDuration = faultInformationMapper.getFaultParticipantsDuration(startTime, endTime);
+        List<FaultDurationTask> participantsDuration = faultInformationMapper.getFaultParticipantsDuration(startTime, endTime);
 
         Map<String, Long> durationMap = faultUserDuration.stream().collect(Collectors.toMap(k -> k.getUserId(),
                 v -> ObjectUtil.isEmpty(v.getDuration()) ? 0L : v.getDuration(), (a, b) -> a));
 
-        Map<String, Long> ParticipantsMap = ParticipantsDuration.stream().collect(Collectors.toMap(k -> k.getUserId(),
+        Map<String, Long> participantsMap = participantsDuration.stream().collect(Collectors.toMap(k -> k.getUserId(),
                 v -> ObjectUtil.isEmpty(v.getDuration()) ? 0L : v.getDuration(), (a, b) -> a));
 
         userList.stream().forEach(l -> {
             String userId = l.getId();
             Long timeOne = durationMap.get(userId);
-            Long timeTwo = ParticipantsMap.get(userId);
+            Long timeTwo = participantsMap.get(userId);
             if (ObjectUtil.isEmpty(timeOne)) {
                 timeOne = 0L;
             }
@@ -165,11 +163,11 @@ public class DailyFaultApiImpl implements DailyFaultApi {
             // 获取指派人员在指定时间范围内的每一个任务的时长(单位秒)
             List<FaultDurationTask> faultByIdDuration = faultInformationMapper.getFaultByIdDuration(startTime, endTime, userList);
             // 获取参与人在指定时间范围内的每一个任务的任务时长(单位秒)
-            List<FaultDurationTask> ParticipantsByIdDuration = faultInformationMapper.getParticipantsDuration(startTime, endTime, userList);
+            List<FaultDurationTask> participantsByIdDuration = faultInformationMapper.getParticipantsDuration(startTime, endTime, userList);
 
             List<String> collect = faultByIdDuration.stream().map(FaultDurationTask::getTaskId).collect(Collectors.toList());
             //若参与人和指派人同属一个班组，则该班组只取一次工时，不能累加
-            List<FaultDurationTask> dtos = ParticipantsByIdDuration.stream().filter(t -> !collect.contains(t.getTaskId())).collect(Collectors.toList());
+            List<FaultDurationTask> dtos = participantsByIdDuration.stream().filter(t -> !collect.contains(t.getTaskId())).collect(Collectors.toList());
             dtos.addAll(faultByIdDuration);
             BigDecimal sum = new BigDecimal("0.00");
             for (FaultDurationTask dto : dtos) {
@@ -184,9 +182,9 @@ public class DailyFaultApiImpl implements DailyFaultApi {
 
     @Override
     public Map<String, FaultReportDTO> getFaultOrgReport(List<String> teamId, String startTime, String endTime) {
-        Map<String, FaultReportDTO> map = new HashMap<>();
+        Map<String, FaultReportDTO> map = new HashMap<>(32);
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        List<SysDepartModel> sysDepartModels = sysBaseAPI.getUserSysDepart(sysUser.getId());
+        List<SysDepartModel> sysDepartModels = sysBaseApi.getUserSysDepart(sysUser.getId());
         List<String> orgIds = new ArrayList<>();
         if (CollectionUtil.isNotEmpty(teamId)){
             orgIds = teamId;
@@ -199,10 +197,10 @@ public class DailyFaultApiImpl implements DailyFaultApi {
             //查询指派人任务时长
             List<UserTimeDTO> dtos = faultInformationMapper.getUserTime(f.getOrgId(),startTime,endTime);
             //查询参与人任务时长
-            List<UserTimeDTO> userTimeDTOS =faultInformationMapper.getAccompanyTime(f.getOrgId(),startTime,endTime);
-            userTimeDTOS = userTimeDTOS.stream().parallel().filter(a -> dtos.stream().map(UserTimeDTO::getFrrId).collect(Collectors.toList()).contains(a.getFrrId()))
+            List<UserTimeDTO> userTimeDtos =faultInformationMapper.getAccompanyTime(f.getOrgId(),startTime,endTime);
+            userTimeDtos = userTimeDtos.stream().parallel().filter(a -> dtos.stream().map(UserTimeDTO::getFrrId).collect(Collectors.toList()).contains(a.getFrrId()))
                     .collect(Collectors.toList());
-            Long sum = userTimeDTOS
+            Long sum = userTimeDtos
                     .stream().filter(w-> w.getDuration() !=null)
                     .mapToLong(w -> w.getDuration())
                     .sum();
@@ -241,15 +239,15 @@ public class DailyFaultApiImpl implements DailyFaultApi {
 
     @Override
     public Map<String, FaultReportDTO> getFaultUserReport(List<String> teamId, String startTime, String endTime,String userId) {
-        Map<String, FaultReportDTO> map = new HashMap<>();
+        Map<String, FaultReportDTO> map = new HashMap<>(32);
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        List<SysDepartModel> sysDepartModels = sysBaseAPI.getUserSysDepart(sysUser.getId());
+        List<SysDepartModel> sysDepartModels = sysBaseApi.getUserSysDepart(sysUser.getId());
         List<String> orgCodes = sysDepartModels.stream().map(SysDepartModel::getOrgCode).collect(Collectors.toList());
         List<LoginUser> loginUsers = new ArrayList<>();
         if (CollectionUtil.isNotEmpty(teamId)){
-           loginUsers= sysBaseAPI.getUseList(teamId);
+           loginUsers= sysBaseApi.getUseList(teamId);
         }else {
-          loginUsers = sysBaseAPI.getUserByDepIds(orgCodes);
+          loginUsers = sysBaseApi.getUserByDepIds(orgCodes);
         }
         loginUsers.forEach(f->{
             FaultReportDTO faultReportDTO = faultInformationMapper.getFaultUserReport(teamId,startTime,endTime,orgCodes,f.getId());

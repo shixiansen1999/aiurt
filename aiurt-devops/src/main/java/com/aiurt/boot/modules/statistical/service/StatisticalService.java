@@ -125,7 +125,7 @@ public interface StatisticalService {
 
     List<PatrolTaskVO> getPlanPatrol(String lineCode, String departId, DateTime now);
 
-    List<RepairTaskVo> getWeeklyPlanRepair(String lineCode, DateTime now);
+    List<RepairTaskVo> getweeklyplanRepair(String lineCode, DateTime now);
 
     IPage getFaultTotalDetail(String lineCode, Integer pageNo, Integer pageSize, Date startTime, Date endTime);
 

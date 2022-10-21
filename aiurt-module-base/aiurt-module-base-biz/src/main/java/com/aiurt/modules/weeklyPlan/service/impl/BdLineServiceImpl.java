@@ -1,9 +1,9 @@
-package com.aiurt.modules.weeklyPlan.service.impl;
+package com.aiurt.modules.weeklyplan.service.impl;
 
 import cn.hutool.core.convert.Convert;
-import com.aiurt.modules.weeklyPlan.entity.BdLine;
-import com.aiurt.modules.weeklyPlan.mapper.BdLineMapper;
-import com.aiurt.modules.weeklyPlan.service.IBdLineService;
+import com.aiurt.modules.weeklyplan.entity.BdLine;
+import com.aiurt.modules.weeklyplan.mapper.BdLineMapper;
+import com.aiurt.modules.weeklyplan.service.IBdLineService;
 import com.alibaba.fastjson.JSONArray;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;

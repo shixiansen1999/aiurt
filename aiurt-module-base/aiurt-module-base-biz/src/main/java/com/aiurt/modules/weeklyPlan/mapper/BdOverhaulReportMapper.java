@@ -1,6 +1,6 @@
-package com.aiurt.modules.weeklyPlan.mapper;
+package com.aiurt.modules.weeklyplan.mapper;
 
-import com.aiurt.modules.weeklyPlan.entity.BdOverhaulReport;
+import com.aiurt.modules.weeklyplan.entity.BdOverhaulReport;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.ibatis.annotations.Param;

@@ -1,6 +1,6 @@
-package com.aiurt.modules.weeklyPlan.mapper;
+package com.aiurt.modules.weeklyplan.mapper;
 
-import com.aiurt.modules.weeklyPlan.entity.BdSite;
+import com.aiurt.modules.weeklyplan.entity.BdSite;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Component;

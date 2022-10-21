@@ -1,6 +1,6 @@
-package com.aiurt.modules.weeklyPlan.service;
+package com.aiurt.modules.weeklyplan.service;
 
-import com.aiurt.modules.weeklyPlan.entity.BdLine;
+import com.aiurt.modules.weeklyplan.entity.BdLine;
 import com.baomidou.mybatisplus.extension.service.IService;
 
 import java.util.List;

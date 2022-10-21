@@ -1,9 +1,9 @@
-package com.aiurt.modules.weeklyPlan.controller;
+package com.aiurt.modules.weeklyplan.controller;
 
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.system.base.controller.BaseController;
-import com.aiurt.modules.weeklyPlan.entity.BdTemplate;
-import com.aiurt.modules.weeklyPlan.service.IBdTemplateService;
+import com.aiurt.modules.weeklyplan.entity.BdTemplate;
+import com.aiurt.modules.weeklyplan.service.IBdTemplateService;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -28,7 +28,7 @@ import java.util.List;
  */
 @Api(tags="周计划模板表")
 @RestController
-@RequestMapping("/weeklyPlan/bdTemplate")
+@RequestMapping("/weeklyplan/bdTemplate")
 @Slf4j
 public class BdTemplateController extends BaseController<BdTemplate, IBdTemplateService> {
 	@Autowired
