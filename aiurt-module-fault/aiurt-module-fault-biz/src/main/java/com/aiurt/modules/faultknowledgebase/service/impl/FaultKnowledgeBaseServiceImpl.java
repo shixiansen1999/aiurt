@@ -39,7 +39,7 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
     @Autowired
     private FaultKnowledgeBaseMapper faultKnowledgeBaseMapper;
     @Resource
-    private ISysBaseAPI sysBaseAPI;
+    private ISysBaseAPI sysBaseApi;
     @Autowired
     private FaultKnowledgeBaseTypeMapper faultKnowledgeBaseTypeMapper;
     @Autowired
@@ -52,7 +52,7 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
         LambdaQueryWrapper<FaultKnowledgeBase> queryWrapper = new LambdaQueryWrapper<>();
         List<FaultKnowledgeBase> bases = faultKnowledgeBaseMapper.selectList(queryWrapper.eq(FaultKnowledgeBase::getDelFlag, "0"));
         List<String> ids = bases.stream().map(FaultKnowledgeBase::getId).distinct().collect(Collectors.toList());
-        List<String> rolesByUsername = sysBaseAPI.getRolesByUsername(sysUser.getUsername());
+        List<String> rolesByUsername = sysBaseApi.getRolesByUsername(sysUser.getUsername());
         //根据用户角色是否显示未通过的知识库
         if (!rolesByUsername.contains(FaultConstant.ADMIN)&&!rolesByUsername.contains(FaultConstant.MAINTENANCE_WORKER)&&!rolesByUsername.contains(FaultConstant.PROFESSIONAL_TECHNICAL_DIRECTOR)) {
             faultKnowledgeBase.setApprovedResult(FaultConstant.PASSED);
@@ -119,7 +119,7 @@ public class FaultKnowledgeBaseServiceImpl extends ServiceImpl<FaultKnowledgeBas
 
     public boolean getRole() {
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        List<String> rolesByUsername = sysBaseAPI.getRolesByUsername(sysUser.getUsername());
+        List<String> rolesByUsername = sysBaseApi.getRolesByUsername(sysUser.getUsername());
         if (!rolesByUsername.contains(FaultConstant.ADMIN)&&!rolesByUsername.contains(FaultConstant.MAINTENANCE_WORKER)&&!rolesByUsername.contains(FaultConstant.PROFESSIONAL_TECHNICAL_DIRECTOR)) {
             return true;
         }

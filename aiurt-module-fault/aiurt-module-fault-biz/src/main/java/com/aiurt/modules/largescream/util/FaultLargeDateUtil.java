@@ -6,15 +6,15 @@ import com.aiurt.modules.largescream.constant.FaultLargeConstant;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
-
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
 /**
  * 大屏巡视模块获取本周、上周、本月、上月的时间工具类
+ */
+/**
+ * @author qkx
  */
 public class FaultLargeDateUtil {
     /**

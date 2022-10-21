@@ -1,5 +1,7 @@
 package com.aiurt.modules.largescream.util;
 
+import cn.hutool.core.date.DateUtil;
+
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
@@ -16,7 +18,7 @@ public class DateTimeutil {
         return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
     }
 
-    //获取当天的开始时间
+    /**获取当天的开始时间*/
     public static String getDayBegin() {
         Calendar cal = new GregorianCalendar();
         cal.set(Calendar.HOUR_OF_DAY, 0);
@@ -26,7 +28,7 @@ public class DateTimeutil {
         return sdf().format(cal.getTime());
     }
 
-    //获取当天的结束时间
+    /**获取当天的结束时间*/
     public static String getDayEnd() {
         Calendar cal = new GregorianCalendar();
         cal.set(Calendar.HOUR_OF_DAY, 23);
@@ -35,7 +37,7 @@ public class DateTimeutil {
         return sdf().format(cal.getTime());
     }
 
-    //获取昨天的开始时间
+    /**获取昨天的开始时间*/
     public static String getBeginDayOfYesterday() {
         Calendar cal = new GregorianCalendar();
         cal.set(Calendar.HOUR_OF_DAY, 0);
@@ -46,7 +48,7 @@ public class DateTimeutil {
         return sdf().format(cal.getTime());
     }
 
-    //获取昨天的结束时间
+    /**获取昨天的结束时间*/
     public static String getEndDayOfYesterDay() {
         Calendar cal = new GregorianCalendar();
         cal.set(Calendar.HOUR_OF_DAY, 23);
@@ -56,31 +58,31 @@ public class DateTimeutil {
         return sdf().format(cal.getTime());
     }
 
-    // 获得本周一0点时间
+     /**获得本周一0点时间*/
     public static String getTimesWeekmorning() {
         SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd 00:00:00");
         Calendar c = Calendar.getInstance();
-        int day_of_week = c.get(Calendar.DAY_OF_WEEK) - 1;
-        if (day_of_week == 0) {
-            day_of_week = 7;
+        int dayOfWeek = c.get(Calendar.DAY_OF_WEEK) - 1;
+        if (dayOfWeek == 0) {
+            dayOfWeek = 7;
         }
-        c.add(Calendar.DATE, -day_of_week + 1);
+        c.add(Calendar.DATE, -dayOfWeek + 1);
         return format.format(c.getTime());
     }
 
-    // 获得本周日24点时间
+     /**获得本周日24点时间*/
     public static String getTimesWeeknight() {
         SimpleDateFormat formatDate = new SimpleDateFormat("yyyy-MM-dd 23:59:59");
         Calendar c = Calendar.getInstance();
-        int day_of_week = c.get(Calendar.DAY_OF_WEEK) - 1;
-        if (day_of_week == 0){
-            day_of_week = 7;
+        int dayOfWeek = c.get(Calendar.DAY_OF_WEEK) - 1;
+        if (dayOfWeek == 0){
+            dayOfWeek = 7;
         }
-        c.add(Calendar.DATE, -day_of_week + 7);
+        c.add(Calendar.DATE, -dayOfWeek + 7);
         return formatDate.format(c.getTime());
     }
 
-    //根据当前日期获得最近n周的日期区间（不包含本周）
+    /**根据当前日期获得最近n周的日期区间（不包含本周）*/
     public static String getFromToDate(SimpleDateFormat sdf, Date date, int n, int option, int k) {
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(date);
@@ -88,10 +90,11 @@ public class DateTimeutil {
         int offset = 0 == option ? 1 - dayOfWeek : 7 - dayOfWeek;
         int amount = 0 == option ? offset - (n - 1  + k) * 7 : offset - k * 7;
         calendar.add(Calendar.DATE, amount);
-        return sdf.format(calendar.getTime());
+        Date time = calendar.getTime();
+        return DateUtil.format(time, "yyyy-MM-dd");
     }
 
-    // 获取上周的开始时间
+     /**获取上周的开始时间*/
     public static String getBeginDayOfLastWeek() {
         //上周日期
         SimpleDateFormat sdf = sdf();
@@ -110,7 +113,7 @@ public class DateTimeutil {
         return sdf.format(calendar.getTime());
     }
 
-    // 获取上周的结束时间
+     /**获取上周的结束时间*/
     public static String getEndDayOfLastWeek() {
         //上周日期
         SimpleDateFormat sdf = sdf();
@@ -128,7 +131,7 @@ public class DateTimeutil {
         return sdf.format(calendar.getTime());
     }
 
-    // 获得本月第一天0点时间
+    /**获得本月第一天0点时间*/
     public static String getTimesMonthmorning() {
         Calendar cal = Calendar.getInstance();
         cal.set(cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(Calendar.DAY_OF_MONTH), 0, 0, 0);
@@ -136,7 +139,7 @@ public class DateTimeutil {
         return sdf().format(cal.getTime());
     }
 
-    // 获得本月最后一天24点时间
+    /**获得本月最后一天24点时间*/
     public static String getTimesMonthnight() {
         Calendar cal = Calendar.getInstance();
         cal.set(cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(Calendar.DAY_OF_MONTH), 23, 59, 59);
@@ -145,33 +148,37 @@ public class DateTimeutil {
         return sdf().format(cal.getTime());
     }
 
-    // 获得上月第一天0点时间
+     /**获得上月第一天0点时间*/
     public static String getTimesLastMonthmorning() {
         //上月日期
         Calendar c=Calendar.getInstance();
         c.add(Calendar.MONTH, -1);
         SimpleDateFormat sdf = sdf();
-        String gtimelast = sdf.format(c.getTime()); //上月
+        //上月
+        String gtimelast = sdf.format(c.getTime());
         int lastMonthMaxDay=c.getActualMaximum(Calendar.DAY_OF_MONTH);
         c.set(c.get(Calendar.YEAR), c.get(Calendar.MONTH), lastMonthMaxDay, 23, 59, 59);
 
         //按格式输出
         SimpleDateFormat sdf2 = new SimpleDateFormat("yyyy-MM-01 00:00:00");
-        String gtime = sdf2.format(c.getTime()); //上月第一天
+        //上月第一天
+        String gtime = sdf2.format(c.getTime());
         return gtime;
     }
-    // 获得上月最后一天24点时间
+     /**获得上月最后一天24点时间*/
     public static String getTimesLastMonthnight() {
         //上月日期
         Calendar c=Calendar.getInstance();
         c.add(Calendar.MONTH, -1);
         SimpleDateFormat sdf = sdf();
-        String gtimelast = sdf.format(c.getTime()); //上月
+        //上月
+        String gtimelast = sdf.format(c.getTime());
         int lastMonthMaxDay=c.getActualMaximum(Calendar.DAY_OF_MONTH);
         c.set(c.get(Calendar.YEAR), c.get(Calendar.MONTH), lastMonthMaxDay, 23, 59, 59);
 
         //按格式输出
-        String gtime = sdf.format(c.getTime()); //上月最后一天
+        //上月最后一天
+        String gtime = sdf.format(c.getTime());
         return gtime;
     }
 }

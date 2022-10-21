@@ -1,6 +1,7 @@
 package com.aiurt.modules.faultanalysisreport.constant;
 /**
  * 2022/6/29
+ * @author: lkj
  * 常用常量
  */
 public class FaultConstant {

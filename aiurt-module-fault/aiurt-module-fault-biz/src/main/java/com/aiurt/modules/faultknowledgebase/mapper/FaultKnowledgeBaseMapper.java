@@ -17,12 +17,14 @@ import java.util.List;
  */
 @EnableDataPerm
 public interface FaultKnowledgeBaseMapper extends BaseMapper<FaultKnowledgeBase> {
+
     /**
      * 分页查询故障知识库
      * @param page
      * @param condition
-     * @return List<FaultAnalysisReport>
-     * */
+     * @param ids
+     * @return
+     */
     List<FaultKnowledgeBase> readAll(@Param("page")Page<FaultKnowledgeBase> page, @Param("condition")FaultKnowledgeBase condition,@Param("ids") List<String> ids);
 
     /**
@@ -40,5 +42,10 @@ public interface FaultKnowledgeBaseMapper extends BaseMapper<FaultKnowledgeBase>
     List<DeviceAssemblyDTO> getDeviceAssembly(@Param("deviceTypeCode")String deviceTypeCode);
 
 
+    /**
+     * 获取设备组件
+     * @param collect
+     * @return
+     */
     List<DeviceAssemblyDTO> getAllDeviceAssembly(@Param("collect")List<String> collect);
 }

@@ -16,6 +16,8 @@ import java.util.List;
 public interface IFaultKnowledgeBaseTypeService extends IService<FaultKnowledgeBaseType> {
     /**
      * 知识库类别树
+     * @param majorCode
+     * @param systemCode
      * @return
      */
     List<MajorDTO> faultKnowledgeBaseTypeTreeList(String majorCode,String systemCode);

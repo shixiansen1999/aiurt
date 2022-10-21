@@ -89,19 +89,7 @@ public class FaultKnowledgeBaseTypeServiceImpl extends ServiceImpl<FaultKnowledg
                         //获取子节点
                         List<FaultKnowledgeBaseType> baseTypeList = faultKnowledgeBaseTypes.stream().filter(f -> f.getSystemCode().equals(csUserSubsystemModel.getSystemCode()) && f.getMajorCode().equals(majorDTO.getMajorCode())).collect(Collectors.toList());
                         if (CollectionUtils.isNotEmpty(baseTypeList)) {
-                            List<SelectTableDTO> childrenTress = new ArrayList<>();
-                            baseTypeList.forEach(f->{
-                                SelectTableDTO selectTable = new SelectTableDTO();
-                                selectTable.setId(f.getId());
-                                selectTable.setKey(f.getId().toString());
-                                selectTable.setLabel(f.getName());
-                                selectTable.setValue(f.getCode());
-                                selectTable.setPid(f.getPid());
-                                selectTable.setIsBaseType(true);
-                                selectTable.setSystemCode(f.getSystemCode());
-                                selectTable.setMajorCode(majorDTO.getMajorCode());
-                                childrenTress.add(selectTable);
-                            });
+                            List<SelectTableDTO> childrenTress = getDetail(majorDTO, baseTypeList);
                             treeRes.addAll(getTreeRes(childrenTress, "0"));
                         }
                         selectTableDTO.setChildren(treeRes);
@@ -113,19 +101,7 @@ public class FaultKnowledgeBaseTypeServiceImpl extends ServiceImpl<FaultKnowledg
                     //获取子节点
                     List<FaultKnowledgeBaseType> baseTypeList = faultKnowledgeBaseTypes.stream().filter(f -> f.getMajorCode().equals(majorDTO.getMajorCode())).filter(f->f.getSystemCode().isEmpty()).collect(Collectors.toList());
                     if (CollectionUtils.isNotEmpty(baseTypeList)) {
-                        List<SelectTableDTO> childrenTress = new ArrayList<>();
-                        baseTypeList.forEach(f->{
-                            SelectTableDTO selectTable = new SelectTableDTO();
-                            selectTable.setId(f.getId());
-                            selectTable.setKey(f.getId().toString());
-                            selectTable.setLabel(f.getName());
-                            selectTable.setValue(f.getCode());
-                            selectTable.setPid(f.getPid());
-                            selectTable.setIsBaseType(true);
-                            selectTable.setSystemCode(f.getSystemCode());
-                            selectTable.setMajorCode(majorDTO.getMajorCode());
-                            childrenTress.add(selectTable);
-                        });
+                        List<SelectTableDTO> childrenTress = getDetail(majorDTO, baseTypeList);
                         List<SelectTableDTO> treeRes = getTreeRes(childrenTress, "0");
                         majorDTO.setChildren(treeRes);
                     }
@@ -135,6 +111,22 @@ public class FaultKnowledgeBaseTypeServiceImpl extends ServiceImpl<FaultKnowledg
         }
         GlobalThreadLocal.setDataFilter(b);
         return null;
+    }
+
+    private List<SelectTableDTO> getDetail(MajorDTO majorDTO, List<FaultKnowledgeBaseType> baseTypeList) {
+        List<SelectTableDTO> childrenTress = new ArrayList<>();
+        baseTypeList.forEach(f->{
+            SelectTableDTO selectTable = new SelectTableDTO();
+            selectTable.setId(f.getId());
+            selectTable.setKey(f.getId().toString());
+            selectTable.setLabel(f.getName());
+            selectTable.setValue(f.getCode());
+            selectTable.setPid(f.getPid());
+            selectTable.setIsBaseType(true);
+            selectTable.setSystemCode(f.getSystemCode());
+            selectTable.setMajorCode(majorDTO.getMajorCode());
+            childrenTress.add(selectTable);
+        });
     }
 
     List<SelectTableDTO> getTreeRes(List<SelectTableDTO> children, String pid){

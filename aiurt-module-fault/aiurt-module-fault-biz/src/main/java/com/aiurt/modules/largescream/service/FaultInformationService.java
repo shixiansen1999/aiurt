@@ -158,6 +158,7 @@ public class FaultInformationService {
                 faultScreenModule.setLineCode(lineCode);
                 faultScreenModule.setMajors(majors);
                 break;
+            default:
         }
         List<FaultLargeInfoDTO> largeFaultInfo = faultInformationMapper.getLargeFaultDatails(faultScreenModule);
         largeFaultInfo.stream().forEach(l -> {
@@ -261,7 +262,8 @@ public class FaultInformationService {
         List<FaultMonthTimeDTO> monthList = new ArrayList<>();
         //获取当前登录人的专业编码
         List<String> majors = getCurrentLoginUserMajors();
-        for (int i = 0; i<=5; i++) {
+        int x = 5;
+        for (int i = 0; i<=x; i++) {
             double sum = 0;
             double monthTime = 0;
             //创建一个新的系统故障单集合
@@ -562,6 +564,7 @@ public class FaultInformationService {
                 faultScreenModule.setLineCode(lineCode);
                 faultScreenModule.setMajors(majors);
                 break;
+            default:
         }
         List<FaultLargeInfoDTO> largeFaultDataInfo = faultInformationMapper.getLargeFaultDataDatails(faultScreenModule);
         largeFaultDataInfo.stream().forEach(l -> {
@@ -629,7 +632,8 @@ public class FaultInformationService {
         List<String> majors = getCurrentLoginUserMajors();
 
         Integer level = null;
-        for (int i = 1; i <=3 ; i++) {
+        int y = 3;
+        for (int i = 1; i <=y ; i++) {
              level = i;
             //创建一个新的超时故障单集合
             List<FaultTimeoutLevelDTO> faultTimeOutList = new ArrayList<>();
@@ -743,7 +747,7 @@ public class FaultInformationService {
                     faultSystemReliabilityDTO.setActualRuntime(d);
                 }
                 planTime = planTime/60;
-                Double plan = new BigDecimal(planTime).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
+                Double plan = BigDecimal.valueOf(planTime).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
                 faultSystemReliabilityDTO.setScheduledRuntime(plan);
                 if (planTime <= 0 || actualTime <= 0) {
                     faultSystemReliabilityDTO.setReliability("0");

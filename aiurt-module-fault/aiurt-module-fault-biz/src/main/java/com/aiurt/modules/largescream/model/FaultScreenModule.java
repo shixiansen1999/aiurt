@@ -12,6 +12,9 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Accessors(chain = true)
+/**
+ * @author qkx
+ */
 public class FaultScreenModule {
     /**
      * 开始时间

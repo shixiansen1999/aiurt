@@ -136,7 +136,7 @@ public class FaultKnowledgeBaseController extends BaseController<FaultKnowledgeB
 		return Result.OK("编辑成功!");
 	}
 
-	 //list转string
+	 /**list转string*/
 	 private void getFaultCodeList(FaultKnowledgeBase faultKnowledgeBase) {
 		 List<String> faultCodeList = faultKnowledgeBase.getFaultCodeList();
 		 if (CollectionUtils.isNotEmpty(faultCodeList)) {
@@ -240,7 +240,6 @@ public class FaultKnowledgeBaseController extends BaseController<FaultKnowledgeB
 	@ApiOperation(value="故障知识库-通过excel导入数据", notes="故障知识库-通过excel导入数据")
     @RequestMapping(value = "/importExcel", method = RequestMethod.POST)
     public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) {
-       // return super.importExcel(request, response, FaultKnowledgeBase.class);
 		MultipartHttpServletRequest multipartRequest = (MultipartHttpServletRequest) request;
 		Map<String, MultipartFile> fileMap = multipartRequest.getFileMap();
 		for (Map.Entry<String, MultipartFile> entity : fileMap.entrySet()) {

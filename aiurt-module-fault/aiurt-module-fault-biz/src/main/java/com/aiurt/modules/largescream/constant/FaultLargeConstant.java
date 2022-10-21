@@ -1,5 +1,7 @@
 package com.aiurt.modules.largescream.constant;
-
+/**
+ * @author qkx
+ */
 public interface FaultLargeConstant {
     /**
      * 本周

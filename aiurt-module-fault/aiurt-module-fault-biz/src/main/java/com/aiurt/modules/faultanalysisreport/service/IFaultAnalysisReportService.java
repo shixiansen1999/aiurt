@@ -25,6 +25,7 @@ public interface IFaultAnalysisReportService extends IService<FaultAnalysisRepor
     /**
      * 故障分析通过id查询详情
      * @param id
+     * @param faultCode
      * @return IPage<FaultAnalysisReport>
      */
     FaultAnalysisReport readOne(String id,String faultCode);
@@ -86,5 +87,9 @@ public interface IFaultAnalysisReportService extends IService<FaultAnalysisRepor
     Result<String> deleteBatch(String ids);
 
 
+    /**
+     * 判断角色
+     * @return
+     */
     boolean getRole();
 }
