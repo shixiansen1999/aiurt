@@ -167,6 +167,7 @@ public class CsSubsystemServiceImpl extends ServiceImpl<CsSubsystemMapper, CsSub
             List<YearFaultDTO> years = new ArrayList<>();
             list.forEach(l->{
                 YearFaultDTO year = csUserSubsystemMapper.getDeviceTypeYearFault(y.getCode(),l.getDeviceTypeCode());
+                year.setId(l.getId());
                 year.setCode(l.getDeviceTypeCode());
                 year.setName(l.getDeviceTypeName());
                 years.add(year);
@@ -191,6 +192,7 @@ public class CsSubsystemServiceImpl extends ServiceImpl<CsSubsystemMapper, CsSub
           strings.forEach(s->{
               List<ListDTO> system = csUserSubsystemMapper.sysTemYearFault(s.getSystemCode());
               YearFaultDTO yearFaultDTO = new YearFaultDTO();
+              yearFaultDTO.setId(s.getId());
               yearFaultDTO.setName(s.getSystemName());yearFaultDTO.setCode(s.getSystemCode());
               system.forEach(sys->{
                   if (ObjectUtils.isNotEmpty(sys.getMonth())) {
@@ -225,6 +227,7 @@ public class CsSubsystemServiceImpl extends ServiceImpl<CsSubsystemMapper, CsSub
               List<YearFaultDTO> yearFaultDTOList =new ArrayList<>();
               list.forEach(l->{
                   YearFaultDTO devDTO = new YearFaultDTO();
+                  devDTO.setId(l.getId());
                   devDTO.setCode(l.getDeviceTypeCode());devDTO.setName(l.getDeviceTypeName());
                   List<ListDTO> listDTOS = csUserSubsystemMapper.deviceTypeFault(s.getSystemCode(),l.getDeviceTypeCode());
                   listDTOS.forEach(ld->{

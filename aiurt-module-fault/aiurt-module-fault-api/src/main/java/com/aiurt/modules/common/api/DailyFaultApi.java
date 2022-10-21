@@ -38,10 +38,20 @@ public interface DailyFaultApi {
 
     /**
      * 报表班组工时统计
+     * @param teamId
+     * @param startTime
+     * @param endTime
+     * @return
      */
     Map<String, FaultReportDTO> getFaultOrgReport(List<String> teamId,String startTime,String endTime);
+
     /**
      * 报表人员工时统计
+     * @param teamId
+     * @param startTime
+     * @param endTime
+     * @param userId
+     * @return
      */
     Map<String, FaultReportDTO> getFaultUserReport(List<String> teamId,String startTime,String endTime,String userId);
 }

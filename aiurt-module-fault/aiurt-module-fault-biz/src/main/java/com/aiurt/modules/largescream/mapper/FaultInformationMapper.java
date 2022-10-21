@@ -289,7 +289,7 @@ public interface FaultInformationMapper {
     List<UserTimeDTO> getAccompanyTime(@Param("orgId") String orgId,@Param("startTime") String startTime,@Param("endTime") String endTime);
 
     /**
-     *获取时长
+     * 查询人员用时
      * @param userId
      * @param startTime
      * @param endTime
@@ -298,7 +298,7 @@ public interface FaultInformationMapper {
     Long getUserTimes(@Param("userId") String userId,@Param("startTime") String startTime,@Param("endTime") String endTime);
 
     /**
-     *获取施工人数
+     * 查询施工次数
      * @param startTime
      * @param endTime
      * @param orgId

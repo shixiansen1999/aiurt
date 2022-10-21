@@ -37,7 +37,7 @@ public interface CsUserSubsystemMapper extends BaseMapper<CsUserSubsystem> {
     List<SubsystemFaultDTO> selectByUserId(Page<SubsystemFaultDTO> page, @Param("id") String id);
 
     /**
-     *
+     * 查询
      * @param time
      * @param subsystemCode
      * @return
