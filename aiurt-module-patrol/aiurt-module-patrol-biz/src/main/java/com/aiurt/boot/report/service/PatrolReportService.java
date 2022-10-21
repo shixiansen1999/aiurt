@@ -51,14 +51,14 @@ public class PatrolReportService {
     @Autowired
     private PatrolTaskDeviceMapper patrolTaskDeviceMapper;
     @Autowired
-    private ISysBaseAPI sysBaseAPI;
+    private ISysBaseAPI sysBaseApi;
     @Autowired
     private PatrolScreenService screenService;
     @Autowired
     private ReportMapper reportMapper;
     public Page<PatrolReport> getTaskDate(Page<PatrolReport> pageList, PatrolReportModel report) {
         LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        List<SysDepartModel> userSysDepart = sysBaseAPI.getUserSysDepart(user.getId());
+        List<SysDepartModel> userSysDepart = sysBaseApi.getUserSysDepart(user.getId());
         if(ObjectUtil.isNotEmpty(report.getOrgCode()))
         {
             userSysDepart = userSysDepart.stream().filter(u->report.getOrgCode().contains(u.getOrgCode())).collect(Collectors.toList());
@@ -113,7 +113,7 @@ public class PatrolReportService {
         }
         for (PatrolReport d : list) {
             //获取部门下的人员
-            List<LoginUser> useList = sysBaseAPI.getUserPersonnel(d.getOrgId());
+            List<LoginUser> useList = sysBaseApi.getUserPersonnel(d.getOrgId());
             List<String> useIds = useList.stream().map(LoginUser::getId).collect(Collectors.toList());
             //计算巡检总数(到组织)
             PatrolReport planNumber = patrolTaskMapper.getTasks(d.getOrgCode(),report);
@@ -267,6 +267,7 @@ public List<PatrolReport> allOmitNumber(List<String>useIds,PatrolReportModel omi
         Date end = DateUtil.parse(endDate, "yyyy-MM-dd");
         int startMonth = DateUtil.month(start)+1;
         int endMonth = DateUtil.month(end)+1;
+        Integer passYear=2;
         //开始时间大于等于当前时间
         if(s.after(n)||s.equals(n))
         {
@@ -285,7 +286,7 @@ public List<PatrolReport> allOmitNumber(List<String>useIds,PatrolReportModel omi
                 {
                     int year = endYear - startYear ;
                     int yearMonth=0;
-                    if(year>=2)
+                    if(year>=passYear)
                     {
                         yearMonth=(year-1)*12;
                     }
@@ -312,7 +313,7 @@ public List<PatrolReport> allOmitNumber(List<String>useIds,PatrolReportModel omi
                 if(endYear>startYear) {
                     int year = nowYear - startYear ;
                     int yearMonth=0;
-                    if(year>=2)
+                    if(year>=passYear)
                     {
                         yearMonth=(year-1)*12;
                     }
@@ -408,7 +409,7 @@ public List<PatrolReport> allOmitNumber(List<String>useIds,PatrolReportModel omi
     }
     public List<MonthDTO> getMonthOrgNum(String lineCode, List<String> stationCode, List<String> systemCode) {
         LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        List<SysDepartModel> userSysDepart = sysBaseAPI.getUserSysDepart(user.getId());
+        List<SysDepartModel> userSysDepart = sysBaseApi.getUserSysDepart(user.getId());
         List<String> orgCodes = userSysDepart.stream().map(SysDepartModel::getOrgCode).collect(Collectors.toList());
         if (CollectionUtil.isEmpty(orgCodes)){
             return new ArrayList<MonthDTO>() ;
@@ -427,7 +428,7 @@ public List<PatrolReport> allOmitNumber(List<String>useIds,PatrolReportModel omi
 
     public IPage<FailureOrgReport> getFailureOrgReport(Page<FailureOrgReport> page,String lineCode, List<String> stationCode, String startTime, String endTime, List<String> systemCode) {
         LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        List<SysDepartModel> userSysDepart = sysBaseAPI.getUserSysDepart(user.getId());
+        List<SysDepartModel> userSysDepart = sysBaseApi.getUserSysDepart(user.getId());
         List<String> ids =userSysDepart.stream().map(SysDepartModel::getId).collect(Collectors.toList());
         if (CollectionUtil.isEmpty(ids)){
             return page.setRecords(new ArrayList<>()) ;
@@ -548,13 +549,13 @@ public List<PatrolReport> allOmitNumber(List<String>useIds,PatrolReportModel omi
 
     public List<LineOrStationDTO> selectDepart () {
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        List<LineOrStationDTO> lineOrStationDTOS = patrolTaskMapper.selectDepart(sysUser.getId());
+        List<LineOrStationDTO> lineOrStationDTOList = patrolTaskMapper.selectDepart(sysUser.getId());
         //获取自己及管辖的下的班组
-        if (CollUtil.isEmpty(lineOrStationDTOS)) {
+        if (CollUtil.isEmpty(lineOrStationDTOList)) {
             return CollUtil.newArrayList();
         } else {
             List<LineOrStationDTO> list = new ArrayList<>();
-            for (LineOrStationDTO model : lineOrStationDTOS) {
+            for (LineOrStationDTO model : lineOrStationDTOList) {
                 List<LineOrStationDTO> models = patrolTaskMapper.getUserOrgCategory(model.getCode());
                 if (CollUtil.isNotEmpty(models)) {
                     list.addAll(models);
