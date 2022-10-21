@@ -46,8 +46,7 @@ public class FaultStatisticsService {
         LambdaQueryWrapper<Fault> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.ge(Fault::getHappenTime, DateUtil.beginOfDay(startDate));
         queryWrapper.le(Fault::getHappenTime, DateUtil.endOfDay(endDate));
-        queryWrapper.ne(Fault::getFaultModeCode, 1);
-        queryWrapper.ne(Fault::getStatus, 1);
+        queryWrapper.ne(Fault::getStatus, FaultConstant.FAULT_REVIEWED);
         List<Fault> faultList = faultMapper.selectList(queryWrapper);
 
         //故障单总数
@@ -82,17 +81,17 @@ public class FaultStatisticsService {
             //根据次数排序
             List<FaultFrequencyDTO> number = ListUtil.sortByProperty(dtoList, "number");
 
-            if (number.size()>=5){
+            List<FaultFrequencyDTO> sub;
+            if (number.size()>=FaultConstant.FAULT_SIZE){
                 //截取后五个值
-                List<FaultFrequencyDTO> sub = ListUtil.sub(number, number.size()-5, number.size());
+                sub = ListUtil.sub(number, number.size() - FaultConstant.FAULT_SIZE, number.size());
                 //子系统
-                subList(faultStatisticsDTO, sub);
             }else {
                 //截取总数的值
-                List<FaultFrequencyDTO> sub = ListUtil.sub(number, 0,Integer.parseInt(String.valueOf(number.size())));
+                sub = ListUtil.sub(number, FaultConstant.FAULT_START, Integer.parseInt(String.valueOf(number.size())));
                 //子系统
-                subList(faultStatisticsDTO, sub);
             }
+            subList(faultStatisticsDTO, sub);
         }
         return faultStatisticsDTO;
     }
