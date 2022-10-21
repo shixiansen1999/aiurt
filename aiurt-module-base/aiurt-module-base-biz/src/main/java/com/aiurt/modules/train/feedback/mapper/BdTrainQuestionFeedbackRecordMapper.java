@@ -12,11 +12,16 @@ import com.aiurt.modules.train.feedback.entity.BdTrainQuestionFeedbackRecord;
 public interface BdTrainQuestionFeedbackRecordMapper extends BaseMapper<BdTrainQuestionFeedbackRecord> {
 
     /**
-     * 获取学生反馈副表
+     * 获取讲师反馈副表
      * @param taskId
      * @return
      */
     BdTrainQuestionFeedbackRecord getTeacherFeedBack(String taskId);
 
+    /**
+     * 获取学生反馈副表
+     * @param taskId
+     * @return
+     */
     BdTrainQuestionFeedbackRecord getStudentFeedBack(String taskId);
 }

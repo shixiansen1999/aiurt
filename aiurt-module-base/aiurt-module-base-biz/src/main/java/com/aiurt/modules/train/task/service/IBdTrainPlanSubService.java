@@ -1,11 +1,9 @@
 package com.aiurt.modules.train.task.service;
 
 
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.aiurt.modules.train.task.entity.BdTrainPlanSub;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.aiurt.modules.train.task.entity.BdTrainPlanSub;
-import com.aiurt.modules.train.task.entity.BdTrainTask;
 
 import java.util.List;
 
@@ -17,10 +15,19 @@ import java.util.List;
  */
 public interface IBdTrainPlanSubService extends IService<BdTrainPlanSub> {
 
-    //
+
+    /**
+     * 删除
+     * @param id
+     */
     void deleteByPlanId(String id);
 
-    //查询子计划
+    /**
+     * 查询子计划
+     * @param id
+     * @return
+     */
+
     List<BdTrainPlanSub> getByPlanId(String id);
 
     /**

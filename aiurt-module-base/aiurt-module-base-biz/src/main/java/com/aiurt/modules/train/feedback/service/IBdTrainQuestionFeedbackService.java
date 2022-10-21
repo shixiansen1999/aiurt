@@ -1,12 +1,11 @@
 package com.aiurt.modules.train.feedback.service;
 
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.aiurt.modules.train.feedback.entity.BdTrainQuestionFeedbackQues;
-import com.aiurt.modules.train.feedback.entity.BdTrainQuestionFeedbackOptions;
 import com.aiurt.modules.train.feedback.entity.BdTrainQuestionFeedback;
-import com.baomidou.mybatisplus.extension.service.IService;
+import com.aiurt.modules.train.feedback.entity.BdTrainQuestionFeedbackOptions;
+import com.aiurt.modules.train.feedback.entity.BdTrainQuestionFeedbackQues;
 import com.aiurt.modules.train.feedback.vo.BdTrainQuestionFeedbackPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.baomidou.mybatisplus.extension.service.IService;
 
 import java.io.Serializable;
 import java.util.Collection;
@@ -51,6 +50,8 @@ public interface IBdTrainQuestionFeedbackService extends IService<BdTrainQuestio
 	public void delBatchMain (Collection<? extends Serializable> idList);
 	/**
 	 * 查询
+	 * @param page
+	 * @param bdTrainQuestionFeedback
 	 * @return
 	 */
 	Page<BdTrainQuestionFeedback> queryPageList(Page<BdTrainQuestionFeedback> page, BdTrainQuestionFeedback bdTrainQuestionFeedback);

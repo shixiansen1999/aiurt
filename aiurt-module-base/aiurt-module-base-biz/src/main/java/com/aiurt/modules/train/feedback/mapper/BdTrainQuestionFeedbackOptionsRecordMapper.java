@@ -13,5 +13,10 @@ import java.util.List;
  */
 public interface BdTrainQuestionFeedbackOptionsRecordMapper extends BaseMapper<BdTrainQuestionFeedbackOptionsRecord> {
 
+     /**
+      * 查询
+      * @param id
+      * @return
+      */
      List<BdTrainQuestionFeedbackOptionsRecord> selectByMainId(String id);
 }

@@ -38,22 +38,30 @@ public interface IBdTrainTaskService extends IService<BdTrainTask> {
 	/**
 	 * 修改
 	 * @param bdTrainTaskPage
+	 * @return
 	 */
 	Result<?> edit(BdTrainTaskPage bdTrainTaskPage);
 	/**
 	 * 删除一对多
 	 * @param id
+	 * @return
 	 */
 	public void delMain (String id);
 
 	/**
 	 * 批量删除一对多
 	 * @param idList
+	 * @return
 	 */
 	public void delBatchMain (Collection<? extends Serializable> idList);
+
 	/**
 	 * 培训记录查询
+	 * @param pageList
 	 * @param userId
+	 * @param signState
+	 * @param startDate
+	 * @param taskName
 	 * @return
 	 */
 	Page<TrainQueryTableDTO> trainQueryTable(Page<TrainQueryTableDTO> pageList, String userId,Integer signState,String startDate,String taskName);
@@ -66,28 +74,33 @@ public interface IBdTrainTaskService extends IService<BdTrainTask> {
 	/**
 	 * 查询签到人员
 	 * @param trainTaskId
+	 * @param pageList
+	 * @param signState
 	 * @return
 	 */
 	Page<SignPeopleDTO> querySignPeople (Page<SignPeopleDTO> pageList,String trainTaskId,Integer signState);
 	/**
 	 * 补签
 	 * @param signPeopleDTO
+	 * @reutrn
 	 */
 	void repairSing (SignPeopleDTO signPeopleDTO);
+
 	/**
 	 * 根据讲师id获取培训任务
+	 * @param pageList
 	 * @param id
 	 * @param taskName
-	 * @param pageList
-	 * @return List<BdTrainTask>
-	 * @autor lkj
-	 * */
+	 * @param taskId
+	 * @return
+	 */
 	Page<BdTrainTask> getTaskById(Page<BdTrainTask> pageList,String id, String taskName,String taskId);
 
 
 	/**
 	 * 根据讲师id获取培训任务
 	 * @param pageList
+	 * @param condition
 	 * @return List<BdTrainTask>
 	 * @autor lkj
 	 * */
@@ -106,6 +119,7 @@ public interface IBdTrainTaskService extends IService<BdTrainTask> {
 	 * @param id
 	 * @param taskName
 	 * @param pageList
+	 * @param taskId
 	 * @return
 	 * @autor lkj
 	 */
@@ -123,16 +137,22 @@ public interface IBdTrainTaskService extends IService<BdTrainTask> {
 
 	/**
 	 * 学生培训任务-反馈详情
+	 *  @param id
+	 *  @param userId
 	 * @return
 	 */
 	FeedBackDetailsDTO feedBackDetails(String id,String userId);
 	/**
 	 * 查询成绩汇总表
+	 *  @param trainTaskId
 	 * @return
 	 */
 	BdTrainTaskDTO queryResults(String trainTaskId);
+
 	/**
 	 * 讲师反馈表
+	 * @param trainTaskId
+	 * @param userId
 	 * @return
 	 */
 	TeacherFeedbackDTO instructorFeedback(String trainTaskId,String userId);

@@ -14,10 +14,16 @@ import java.util.List;
  */
 public interface IBdTrainTaskSignService extends IService<BdTrainTaskSign> {
 
+	/**
+	 * 查询
+	 * @param mainId
+	 * @return
+	 */
 	public List<BdTrainTaskSign> selectByMainId(String mainId);
 	/**
 	 * 培训签到记录查询
 	 * @param id
+	 * @return
 	 */
 	List<BdTrainSignDTO> getById(String id);
 

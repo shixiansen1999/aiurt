@@ -26,6 +26,7 @@ public interface BdQuestionMapper extends BaseMapper<BdQuestion> {
     /**
      * 查询考试习题信息
      * @param condition
+     * @param pageList
      * @return
      */
     List<BdQuestion> list(@Param("pageList") Page<BdQuestion> pageList ,@Param("condition") BdQuestion condition);
@@ -38,14 +39,37 @@ public interface BdQuestionMapper extends BaseMapper<BdQuestion> {
      */
     List<BdQuestion> contentList(String id);
 
+    /**
+     * 查询
+     * @param id
+     * @return
+     */
     BdQuestion bdQuestion  (@Param("id") String id);
 
+    /**
+     * 查询
+     * @param id
+     * @return
+     */
     List<BdQuestionOptions> lists (@Param("id") String id);
 
+    /**
+     * 查询
+     * @param id
+     * @return
+     */
     List<BdQuestionOptionsAtt> listss (@Param("id") String id);
 
+    /**
+     * 删除
+     * @param id
+     */
     void deletequestionoptionsatt(@Param("id") String id);
 
+    /**
+     * 删除
+     * @param id
+     */
     void deletquestionoptions(@Param("id") String id);
     /**
      * 查询考试习题id

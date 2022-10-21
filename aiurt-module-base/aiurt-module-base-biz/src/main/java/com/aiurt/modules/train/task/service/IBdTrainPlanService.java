@@ -43,7 +43,7 @@ public interface IBdTrainPlanService extends IService<BdTrainPlan> {
     IPage<ReportVO> report(Page<ReportVO> page, ReportReqVO reportReqVO);
 
     /**
-     *
+     *查询
      * @param reportReqVO
      * @return
      */
@@ -52,6 +52,7 @@ public interface IBdTrainPlanService extends IService<BdTrainPlan> {
     /**
      * 培训报表导出
      * @param request
+     * @param reportReqVO
      * @return
      */
     ModelAndView reportExport(HttpServletRequest request, ReportReqVO reportReqVO);
@@ -67,6 +68,7 @@ public interface IBdTrainPlanService extends IService<BdTrainPlan> {
     /**
      * 培训年计划导入
      * @param request
+     * @throws IOException
      * @return
      */
     BdTrainPlan yearPlanImport(HttpServletRequest request) throws IOException;
@@ -74,6 +76,7 @@ public interface IBdTrainPlanService extends IService<BdTrainPlan> {
     /**
      * 培训年计划保存
      * @param bdTrainPlan
+     * @return
      */
     Result<?> yearPlanSave(BdTrainPlan bdTrainPlan);
 

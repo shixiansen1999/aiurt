@@ -3,10 +3,9 @@ package com.aiurt.modules.train.quzrtz.job;
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.aiurt.modules.train.eaxm.constans.ExamConstans;
-import com.aiurt.modules.train.exam.entity.BdExamRecord;
-import com.aiurt.modules.train.exam.entity.BdExamRecordDetail;
 import com.aiurt.modules.train.eaxm.mapper.BdExamRecordDetailMapper;
 import com.aiurt.modules.train.eaxm.mapper.BdExamRecordMapper;
+import com.aiurt.modules.train.exam.entity.BdExamRecord;
 import com.aiurt.modules.train.question.entity.BdQuestion;
 import com.aiurt.modules.train.question.mapper.BdQuestionMapper;
 import com.aiurt.modules.train.task.entity.BdTrainMakeupExamRecord;
@@ -29,6 +28,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+/**
+ * @author admin
+ */
 @Service
 public class SampleJob implements Job {
 

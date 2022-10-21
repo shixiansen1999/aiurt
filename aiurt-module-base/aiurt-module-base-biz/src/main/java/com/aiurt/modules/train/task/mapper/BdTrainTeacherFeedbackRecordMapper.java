@@ -14,15 +14,18 @@ import java.util.List;
  * @Version: V1.0
  */
 public interface BdTrainTeacherFeedbackRecordMapper extends BaseMapper<BdTrainTeacherFeedbackRecord> {
+
     /**
      * 获取讲师反馈表
      * @param userId
      * @param taskId
+     * @return
      */
     List<BdTrainTeacherFeedbackRecord> getTeacherFeedbackRecord(@Param("userId") String userId, @Param("taskId") String taskId);
 
     /**
      * 获取问题反馈主表id
+     *  @return
      * */
     BdTrainQuestionFeedback getBdTrainQuestionFeedbackId();
 
@@ -42,5 +45,10 @@ public interface BdTrainTeacherFeedbackRecordMapper extends BaseMapper<BdTrainTe
      */
     List<BdTrainTeacherFeedbackRecord> getAnswerTeacherFeedbackRecordEvaluate(@Param("userId") String userId, @Param("taskId") String taskId);
 
+    /**
+     * 查询
+     * @param taskId
+     * @return
+     */
     BdTrainQuestionFeedback getFeedbackId(String taskId);
 }

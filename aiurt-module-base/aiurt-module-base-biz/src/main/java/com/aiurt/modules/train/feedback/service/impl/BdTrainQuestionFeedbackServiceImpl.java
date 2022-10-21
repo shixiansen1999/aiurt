@@ -40,7 +40,7 @@ public class BdTrainQuestionFeedbackServiceImpl extends ServiceImpl<BdTrainQuest
 	private BdTrainQuestionFeedbackOptionsMapper bdTrainQuestionFeedbackOptionsMapper;
 
 	@Override
-	@Transactional
+	@Transactional(rollbackFor = Exception.class)
 	public void saveMain(BdTrainQuestionFeedback bdTrainQuestionFeedback, List<BdTrainQuestionFeedbackQues> bdTrainQuestionFeedbackQuesList,List<BdTrainQuestionFeedbackOptions> bdTrainQuestionFeedbackOptionsList) {
 		bdTrainQuestionFeedbackMapper.insert(bdTrainQuestionFeedback);
 		if(bdTrainQuestionFeedbackQuesList!=null && bdTrainQuestionFeedbackQuesList.size()>0) {
@@ -75,7 +75,7 @@ public class BdTrainQuestionFeedbackServiceImpl extends ServiceImpl<BdTrainQuest
 	}
 
 	@Override
-	@Transactional
+	@Transactional(rollbackFor = Exception.class)
 	public void updateMain(BdTrainQuestionFeedback bdTrainQuestionFeedback,List<BdTrainQuestionFeedbackQues> bdTrainQuestionFeedbackQuesList,List<BdTrainQuestionFeedbackOptions> bdTrainQuestionFeedbackOptionsList) {
 		bdTrainQuestionFeedbackMapper.updateById(bdTrainQuestionFeedback);
 
@@ -108,7 +108,7 @@ public class BdTrainQuestionFeedbackServiceImpl extends ServiceImpl<BdTrainQuest
 	}
 
 	@Override
-	@Transactional
+	@Transactional(rollbackFor = Exception.class)
 	public void delMain(String id) {
 		BdTrainQuestionFeedback bdTrainQuestionFeedback = new BdTrainQuestionFeedback();
 		bdTrainQuestionFeedback.setIdel(1);
@@ -116,7 +116,7 @@ public class BdTrainQuestionFeedbackServiceImpl extends ServiceImpl<BdTrainQuest
 	}
 
 	@Override
-	@Transactional
+	@Transactional(rollbackFor = Exception.class)
 	public void delBatchMain(Collection<? extends Serializable> idList) {
 		BdTrainQuestionFeedback bdTrainQuestionFeedback = new BdTrainQuestionFeedback();
 		bdTrainQuestionFeedback.setIdel(1);

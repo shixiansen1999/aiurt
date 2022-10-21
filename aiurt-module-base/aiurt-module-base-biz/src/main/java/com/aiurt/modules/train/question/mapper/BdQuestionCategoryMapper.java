@@ -22,6 +22,10 @@ public interface BdQuestionCategoryMapper extends BaseMapper<BdQuestionCategory>
 	 */
 	void updateTreeNodeStatus(@Param("id") String id,@Param("status") String status);
 
+	/**
+	 * 树code
+	 * @return
+	 */
     List<TreeNode> queryPageList();
 
 }

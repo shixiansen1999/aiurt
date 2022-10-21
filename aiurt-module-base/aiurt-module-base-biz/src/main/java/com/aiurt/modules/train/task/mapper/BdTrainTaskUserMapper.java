@@ -21,13 +21,15 @@ public interface BdTrainTaskUserMapper extends BaseMapper<BdTrainTaskUser> {
      * @return
      */
     List<BdTrainTaskUser> taskUserList(String taskId);
+
     /**
      * 获取学生培训任务
+     * @param pageList
      * @param id
      * @param taskName
-     * @param pageList
+     * @param taskId
      * @return
-     * */
+     */
     List<BdTrainTaskUser> getUserTasks(@Param("pageList") Page<BdTrainTaskUser> pageList, @Param("id")String id, @Param("taskName")String taskName,@Param("taskId") String taskId);
 
     /**
@@ -68,5 +70,8 @@ public interface BdTrainTaskUserMapper extends BaseMapper<BdTrainTaskUser> {
      */
     void deleteByMainId(@Param("mainId") String mainId);
 
+    /**
+     * 查询
+     */
     void getUserListById();
 }

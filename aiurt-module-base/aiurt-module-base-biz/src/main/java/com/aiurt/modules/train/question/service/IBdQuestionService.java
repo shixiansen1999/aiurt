@@ -18,6 +18,7 @@ public interface IBdQuestionService extends IService<BdQuestion> {
     /**
      * 查询习题信息
      * @param condition
+     * @param pageList
      * @return
      */
     Page<BdQuestion> queryPageList(Page<BdQuestion> pageList,BdQuestion condition);
@@ -37,6 +38,11 @@ public interface IBdQuestionService extends IService<BdQuestion> {
     void updateBdQuestion(BdQuestion bdQuestion);
 
 
+    /**
+     * 查询
+     * @param id
+     * @return
+     */
     BdQuestion bdQuestion  (@Param("id") String id);
 
     /**

@@ -51,21 +51,25 @@ public interface BdTrainTaskMapper extends BaseMapper<BdTrainTask> {
      */
     List<BdTrainTask> queryList(@Param("pageList") Page<BdTrainTask> pageList,@Param("condition") BdTrainTask bdTrainTask,@Param("uid") String uid,@Param("startTime") String startTime);
 
-    /**
-     * 获取讲师培训任务
-     * @param id
-     * @param taskName
-     * @param pageList
-     * @return
-     * */
+
+ /**
+  * 获取讲师培训任务
+  * @param pageList
+  * @param id
+  * @param taskName
+  * @param taskId
+  * @return
+  */
     List<BdTrainTask> getTaskById(@Param("pageList") Page<BdTrainTask> pageList,@Param("id") String id, @Param("taskName") String taskName,@Param("taskId") String taskId);
 
 
-    /**
-     * 获取讲师培训任务
-     * @param pageList
-     * @return
-     * */
+ /**
+  * 获取讲师培训任务
+  * @param pageList
+  * @param condition
+  * @param date
+  * @return
+  */
     List<BdTrainTask> getTaskByIds(@Param("pageList") Page<BdTrainTask> pageList,@Param("condition") BdTrainTask condition,@Param("date")Date date);
 
 
@@ -91,34 +95,106 @@ public interface BdTrainTaskMapper extends BaseMapper<BdTrainTask> {
      */
     Date getCompleteTime(@Param("id") String id, @Param("trainTaskId") String trainTaskId);
 
+ /**
+  * 查询
+  * @param pageList
+  * @param userId
+  * @param signState
+  * @param startTime
+  * @param taskName
+  * @return
+  */
     public Page<TrainQueryTableDTO> selectByUserId (@Param("pageList") Page<TrainQueryTableDTO> pageList, @Param("userId")String userId,@Param("signState") Integer signState,@Param("startTime") String startTime,@Param("taskName") String taskName);
 
+ /**
+  * 查询
+  * @param id
+  * @return
+  */
     public BdTrainTaskDTO studentTrainingDetails(@Param("id")String id);
 
+ /**
+  * 查询
+  * @param id
+  * @param userId
+  * @return
+  */
     public FeedBackDetailsDTO feedBackDetails (@Param("id")String id, @Param("userId")String userId);
 
+ /**
+  * 查询
+  * @param id
+  * @param userId
+  * @return
+  */
     List<QuestionDTO> selectTrainList(@Param("id")String id,@Param("userId")String userId);
 
+ /**
+  * 查询
+  * @param trainTaskId
+  * @return
+  */
     public BdTrainTaskDTO selectTrainTaskId(@Param("trainTaskId")String trainTaskId);
 
+ /**
+  * 查询
+  * @param examPaperId
+  * @param trainTaskId
+  * @return
+  */
     List<TranscriptDTO> selectTranscriptList (@Param("examPaperId")String examPaperId,@Param("trainTaskId")String trainTaskId);
 
+ /**
+  * 查询
+  * @param trainTaskId
+  * @return
+  */
     public TeacherFeedbackDTO instructorFeedback(@Param("trainTaskId")String trainTaskId);
+
+ /**
+  * 查询
+  * @param id
+  * @param userId
+  * @return
+  */
     List<String> selectClassifyName(@Param("id")String id, @Param("userId")String userId);
+
+ /**
+  * 查询
+  * @param id
+  * @param userId
+  * @return
+  */
     List<String> selectTeacherClassifyName(@Param("id")String id, @Param("userId")String userId);
 
+ /**
+  * 查询
+  * @param trainTaskId
+  * @param userId
+  * @return
+  */
     List<QuestionDTO>selectquestionList(@Param("trainTaskId")String trainTaskId,@Param("userId")String userId);
-    /**
-     * 查询签到人员
-     * @param trainTaskId
-     * @return
-      */
+
+ /**
+  * 查询签到人员
+  * @param pageList
+  * @param trainTaskId
+  * @param signState
+  * @return
+  */
     Page<SignPeopleDTO> querySignPeople(@Param("pageList") Page<SignPeopleDTO> pageList,@Param("trainTaskId")String trainTaskId,@Param("signState") Integer signState);
     /**
      * 补签
      * @param signPeopleDTO
      */
     void  updateSign(@Param("signPeopleDTO") SignPeopleDTO signPeopleDTO);
+
+ /**
+  * 查询
+  * @param trainTaskId
+  * @param signTime
+  * @return
+  */
     BdTrainTaskSign getSignNumber(@Param("trainTaskId")String trainTaskId, @Param("signTime") String signTime);
     /**
      * 培训台账-获取培训任务列表
@@ -134,6 +210,12 @@ public interface BdTrainTaskMapper extends BaseMapper<BdTrainTask> {
      * @return
      */
     BdTrainTask queryStudentList(@Param("id") String id);
+
+ /**
+  * 查询
+  * @param trainTaskId
+  * @return
+  */
     List<TranscriptDTO> selectTranscripts(@Param("trainTaskId")String trainTaskId);
 
    /**

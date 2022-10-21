@@ -26,7 +26,7 @@ public interface BdTrainQuestionFeedbackOptionsMapper extends BaseMapper<BdTrain
 	 */
 	public List<BdTrainQuestionFeedbackOptions> selectByMainId(@Param("mainId") String mainId);
 	/**
-	 *
+	 *查询
 	 * @param bdTrainQuestionFeedbackOptionsId
 	 * @return
 	 */

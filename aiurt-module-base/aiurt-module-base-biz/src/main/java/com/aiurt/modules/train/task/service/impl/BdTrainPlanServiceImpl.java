@@ -129,17 +129,6 @@ public class BdTrainPlanServiceImpl extends ServiceImpl<BdTrainPlanMapper, BdTra
             //推送给系统管理员
             users = "admin";
         } else {
-           /* List<String> list = new ArrayList<>();
-            List<SysDepartModel> departsById= baseMapper.getDepartIdsByTeamId(departId);
-            getAllDepart(departsById, list);
-            //根据组织机构id查询用户
-            for (String s : list) {
-                //根据组织机构id查询用户
-                List<String> userNames = baseMapper.getUserByTeamId(s);
-                for (String userName : userNames) {
-                    stringBuilder.append(userName).append(",");
-                }
-            }*/
             //根据组织机构id查询用户
             List<String> userNames = baseMapper.getUserByTeamId(departId);
             for (String userName : userNames) {
@@ -191,11 +180,6 @@ public class BdTrainPlanServiceImpl extends ServiceImpl<BdTrainPlanMapper, BdTra
         for (ReportVO reportVO : list) {
             reportVO.setExamPassRate(reportVO.getExamPassRate()==null?"0%":reportVO.getExamPassRate());
             reportVO.setTrainRate(reportVO.getTrainRate()==null?"0%":reportVO.getTrainRate());
-            //处理培训部门
-//            SysDepartModel sysDepartModel = sysBaseAPI.selectAllById(reportVO.getTaskTeamId());
-//            if (ObjectUtil.isNotNull(sysDepartModel)) {
-//                reportVO.setSysOrgCode(sysDepartModel.getDepartName());
-//            }
             //根据培训任务id查询培训人员
             int trainNum = bdTrainTaskSignMapper.getByTaskId(reportVO.getTrainTaskId());
             //应到人数
@@ -391,7 +375,7 @@ public class BdTrainPlanServiceImpl extends ServiceImpl<BdTrainPlanMapper, BdTra
                 //将返回的是否及格字段置为空，不显示
                 l.setIsPass("");
             }
-            if(l.getTaskState().equals("5"))
+            if("5".equals(l.getTaskState()))
             {
                 l.setReviewDisplayStatus(1);
             }
@@ -402,7 +386,7 @@ public class BdTrainPlanServiceImpl extends ServiceImpl<BdTrainPlanMapper, BdTra
             {
                 l.setReviewDisplayStatus(0);
             }
-            if(l.getExamClassify().equals("0")&&l.getIsRelease()==2)
+            if("0".equals(l.getExamClassify())&&l.getIsRelease()==2)
             {
                 l.setReviewDisplayStatus(1);
             }
@@ -595,14 +579,12 @@ public class BdTrainPlanServiceImpl extends ServiceImpl<BdTrainPlanMapper, BdTra
         df.setMaximumFractionDigits(scale);
         //模式 例如四舍五入
         df.setRoundingMode(RoundingMode.HALF_UP);
-        double accuracy_num = (num / total) * 100;
-        return df.format(accuracy_num) + "%";
+        double accuracyNum = (num / total) * 100;
+        return df.format(accuracyNum) + "%";
     }
 
     public static String dateHandler(String year, Integer quarter) {
         String desc = QuarterEnmu.getByCode(quarter);
-        //判断是否为闰年
-        // boolean isLeapYear = DateUtil.isLeapYear(Integer.parseInt(year));
         switch (Objects.requireNonNull(desc)) {
             case "第一季度":
                 return year + "-01-01 00:00:00," + year + "-03-31 00:00:00";

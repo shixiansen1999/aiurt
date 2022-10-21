@@ -15,16 +15,19 @@ import java.util.List;
 public interface BdTrainQuestionFeedbackQuesMapper extends BaseMapper<BdTrainQuestionFeedbackQues> {
 
 	/**
+	 * 删除
 	 * @param mainId
 	 * @return
 	 */
 	public boolean deleteByMainId(@Param("mainId") String mainId);
 	/**
+	 * 查询
 	 * @param mainId
 	 * @return
 	 */
 	public List<BdTrainQuestionFeedbackQues> selectByMainId(@Param("mainId") String mainId);
 	/**
+	 * 查询
 	 * @param trainQuestionFeedbackQuesId
 	 * @return
 	 */

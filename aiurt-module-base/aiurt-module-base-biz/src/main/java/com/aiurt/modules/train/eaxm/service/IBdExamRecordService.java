@@ -39,6 +39,7 @@ public interface IBdExamRecordService extends IService<BdExamRecord> {
      * 考试详情
      * @param examPaperId
      * @param trainTaskId
+     * @param examClassify
      * @param id
      * @return
      */
@@ -48,6 +49,7 @@ public interface IBdExamRecordService extends IService<BdExamRecord> {
     /**
      * 提交
      * @param bdExamRecord
+     * @return
      */
     void addBdQuestionCategory(BdExamRecord bdExamRecord);
 
@@ -68,11 +70,13 @@ public interface IBdExamRecordService extends IService<BdExamRecord> {
      */
     Page<BdExamRecord> lecturerList(Page<BdExamRecord> pageList,@Param("condition") BdExamRecord condition);
 
+
     /**
      * 核对讲师考试信息
      * @param id
      * @param exemplify
      * @param state
+     * @param taskId
      * @return
      */
     BdExamPaper lecturerReadOne (@Param("id") String id,@Param("exemplify") Integer exemplify,@Param("state") Integer state,@Param("taskId") String taskId);
@@ -86,10 +90,11 @@ public interface IBdExamRecordService extends IService<BdExamRecord> {
      */
     Page<BdExamRecord> recordList (Page<BdExamRecord> pageList,@Param("condition") BdExamRecord condition);
 
-
     /**
      * 查询考试结果列表
      * @param id
+     * @param examPaperId
+     * @param examClassify
      * @return
      */
     List<BdTrainTaskUser> resultList (@Param("id") String id,@Param("examPaperId") String examPaperId ,@Param("examClassify") Integer examClassify);
@@ -114,8 +119,11 @@ public interface IBdExamRecordService extends IService<BdExamRecord> {
      */
     void addList(@Param ("bdAchievementDTOList") List<BdAchievementDTO> bdAchievementDTOList);
 
+
     /**
-     *考试详情
+     * 考试详情
+     * @param examPaperId
+     * @param trainTaskId
      * @return
      */
     ExamDetailsDTO examDetails(String examPaperId,String trainTaskId);

@@ -90,7 +90,7 @@ public class BdTrainTaskServiceImpl extends ServiceImpl<BdTrainTaskMapper, BdTra
 	}
 
 	@Override
-	@Transactional
+	@Transactional(rollbackFor = Exception.class)
 	public void updateMain(BdTrainTask bdTrainTask,List<BdTrainTaskSign> bdTrainTaskSignList) {
 		bdTrainTaskMapper.updateById(bdTrainTask);
 
@@ -108,7 +108,7 @@ public class BdTrainTaskServiceImpl extends ServiceImpl<BdTrainTaskMapper, BdTra
 	}
 
 	@Override
-	@Transactional
+	@Transactional(rollbackFor = Exception.class)
 	public Result<?> edit(BdTrainTaskPage bdTrainTaskPage) {
 		BdTrainTask bdTrainTask = new BdTrainTask();
 		BeanUtils.copyProperties(bdTrainTaskPage, bdTrainTask);
@@ -171,7 +171,7 @@ public class BdTrainTaskServiceImpl extends ServiceImpl<BdTrainTaskMapper, BdTra
 	}
 
 	@Override
-	@Transactional
+	@Transactional(rollbackFor = Exception.class)
 	public void delMain(String id) {
 		BdTrainTask bdTrainTask = this.getById(id);
 		Integer taskState = bdTrainTask.getTaskState();
@@ -183,7 +183,7 @@ public class BdTrainTaskServiceImpl extends ServiceImpl<BdTrainTaskMapper, BdTra
 	}
 
 	@Override
-	@Transactional
+	@Transactional(rollbackFor = Exception.class)
 	public void delBatchMain(Collection<? extends Serializable> idList) {
 		for(Serializable id:idList) {
 			BdTrainTask bdTrainTask = this.getById(id);
@@ -208,8 +208,8 @@ public class BdTrainTaskServiceImpl extends ServiceImpl<BdTrainTaskMapper, BdTra
 
 	@Override
 	public Page<SignPeopleDTO> querySignPeople(Page<SignPeopleDTO> pageList, String trainTaskId, Integer signState) {
-		Page<SignPeopleDTO> List = bdTrainTaskMapper.querySignPeople(pageList,trainTaskId,signState);
-		return List;
+		Page<SignPeopleDTO> list = bdTrainTaskMapper.querySignPeople(pageList,trainTaskId,signState);
+		return list;
 	}
 
 	@Override
@@ -249,18 +249,6 @@ public class BdTrainTaskServiceImpl extends ServiceImpl<BdTrainTaskMapper, BdTra
 		if (CollectionUtil.isNotEmpty(trainTasks)) {
 			for (BdTrainTask bdTrainTask : trainTasks) {
 				String trainTaskId = bdTrainTask.getId();
-				/*QRCodeWriter qrCodeWriter = new QRCodeWriter();
-				//生成二维码
-				try {
-					BitMatrix bitMatrix = qrCodeWriter.encode(trainTaskId, BarcodeFormat.QR_CODE, 200, 200);
-					ByteArrayOutputStream pngOutputStream = new ByteArrayOutputStream();
-					MatrixToImageWriter.writeToStream(bitMatrix, "PNG", pngOutputStream);
-					bdTrainTask.setPngData(pngOutputStream.toByteArray());
-				} catch (WriterException e) {
-					e.printStackTrace();
-				} catch (IOException e) {
-					e.printStackTrace();
-				}*/
 				String teamName = bdTrainTaskMapper.getTeamName(bdTrainTask.getTaskTeamId());
 				//获取状态
 				getTrainingState(bdTrainTask);
@@ -570,7 +558,9 @@ private void queryBdTrainTask(List<BdTrainTaskUser> userTasks,String uid){
 		}
 	}
 }
-	//获取状态
+	/**
+	 * 获取状态
+	 * */
 	private void getTrainingStateWeb(BdTrainTask bdTrainTask) {
 		Integer taskState = bdTrainTask.getTaskState();
 		//0：未开始,培训任务状态：1（已发布）

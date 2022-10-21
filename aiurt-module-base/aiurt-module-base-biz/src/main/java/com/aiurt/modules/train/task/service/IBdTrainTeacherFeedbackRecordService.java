@@ -15,6 +15,7 @@ public interface IBdTrainTeacherFeedbackRecordService extends IService<BdTrainTe
      *获取讲师评估
      * @param userId
      * @param taskId
+     * @return
      */
     BdTrainQuestionFeedback getTeacherFeedbackRecord(String userId, String taskId);
 

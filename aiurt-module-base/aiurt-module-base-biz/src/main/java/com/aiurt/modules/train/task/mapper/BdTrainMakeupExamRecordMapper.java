@@ -16,15 +16,37 @@ import java.util.List;
  */
 public interface BdTrainMakeupExamRecordMapper extends BaseMapper<BdTrainMakeupExamRecord> {
 
-    //分页列表查询
+    /**
+     * 分页列表查询
+     *
+     * @param page
+     * @param bdTrainMakeupExamRecord
+     * @return
+     */
     List<BdTrainMakeupExamRecord> getList(Page<BdTrainMakeupExamRecord> page, @Param("bdTrainMakeupExamRecord") BdTrainMakeupExamRecord bdTrainMakeupExamRecord);
 
-    //查询最近一次补考时间
+    /**
+     * 查询最近一次补考时间
+     *
+     * @param trainTaskId
+     * @return
+     */
     String getLastMakeUpTime(String trainTaskId);
 
-    //查询最近一次定时任务id
+    /**
+     * 查询最近一次定时任务id
+     *
+     * @param trainTaskId
+     * @param userId
+     * @return
+     */
     String getQuartzJobIdById(String userId,String trainTaskId);
 
-    //根据id查定时任务
+    /**
+     * 根据id查定时任务
+     *
+     * @param id
+     * @return
+     */
     QuartzJobDTO getQuartzJobDTO(String id);
 }

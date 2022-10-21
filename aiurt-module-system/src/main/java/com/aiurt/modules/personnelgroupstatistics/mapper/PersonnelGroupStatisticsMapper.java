@@ -23,6 +23,7 @@ public interface PersonnelGroupStatisticsMapper {
      * 获取班组集合
      *
      * @param ids 部门id集合字符串
+     * @param page
      * @return  List<GroupModel>
      */
     List<GroupModel> queryGroupPageList(@Param("ids") List<String> ids, Page<GroupModel> page);
@@ -31,6 +32,7 @@ public interface PersonnelGroupStatisticsMapper {
      * 获取人员集合
      *
      * @param ids 部门id集合字符串
+     * @param page
      * @return  List<PersonnelModel>
      */
     List<PersonnelModel> queryUserPageList(@Param("ids")List<String> ids, Page<PersonnelModel> page);

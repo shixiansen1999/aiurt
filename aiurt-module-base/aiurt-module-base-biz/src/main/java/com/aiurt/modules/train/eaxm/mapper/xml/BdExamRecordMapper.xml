@@ -419,7 +419,7 @@
     <update id="updatedAchievementDOList">
             update  bd_exam_record set score = nullif (#{condition.score},null ),is_pass = #{condition.isPass},exam_state=#{condition.examState} where id = #{condition.recordId}
     </update>
-    <update id="UpdateById">
+    <update id="updateByRecordId">
         UPDATE bd_exam_record  SET train_task_id= #{bdExamRecord.trainTaskId},
                                    exam_time= #{bdExamRecord.examTime},
                                    is_release=#{bdExamRecord.isRelease},

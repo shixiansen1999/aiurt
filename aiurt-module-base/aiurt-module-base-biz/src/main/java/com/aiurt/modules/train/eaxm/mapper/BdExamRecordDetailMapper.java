@@ -15,13 +15,36 @@ import java.util.List;
  */
 public interface BdExamRecordDetailMapper extends BaseMapper<BdExamRecordDetail> {
 
-
-    //获取考试详情根据简答题类型、考试记录id
+    /**
+     *  获取考试详情根据简答题类型、考试记录id
+     * @param shortQuesReqVo
+     * @param date
+     * @return
+     */
     BdExamRecordDetail getByQuTypeAndExamRecordId(@Param("shortQuesReqVo") ShortQuesReqVo shortQuesReqVo,@Param("date") String date);
 
+    /**
+     * 获取考试答题记录
+     * @param examRecordId
+     * @param questionId
+     * @param date
+     * @return
+     */
     List<BdExamRecordDetail> getAnswerList(@Param("examRecordId")String examRecordId,@Param("questionId")String questionId,@Param("date")String date);
 
+    /**
+     * 通过记录id查询
+     * @param id
+     * @param date
+     * @param number
+     * @return
+     */
     List<BdExamRecordDetail> getByExamRecordId(@Param("id")String id,@Param("date")String date,@Param("number")Integer number);
 
+    /**
+     * 通过id获取详情
+     * @param id
+     * @return
+     */
     List<String> getDetailById(@Param("id")String id);
 }

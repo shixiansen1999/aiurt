@@ -104,7 +104,7 @@ public class BdTrainMakeupExamRecordServiceImpl extends ServiceImpl<BdTrainMakeu
             bdExamRecord.setExamTime(bdTrainMakeupExamRecord.getMakeupTime());
             bdExamRecord.setExamPaperId(bdTrainMakeupExamRecord.getExamPaperId());
             bdExamRecord.setTrainTaskId(bdTrainMakeupExamRecord.getTrainTaskId());
-            bdExamRecordMapper.UpdateById(bdExamRecord);
+            bdExamRecordMapper.updateByRecordId(bdExamRecord);
         }
         //定时开始考试
         QuartzJobDTO quartzJobStart = new QuartzJobDTO();

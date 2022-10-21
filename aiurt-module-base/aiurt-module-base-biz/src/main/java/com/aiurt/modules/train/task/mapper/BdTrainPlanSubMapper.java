@@ -16,10 +16,17 @@ import java.util.List;
  */
 public interface BdTrainPlanSubMapper extends BaseMapper<BdTrainPlanSub> {
 
-    //根据年计划删除子计划
+    /**
+     * 根据年计划删除子计划
+     * @param id
+     */
     void deleteByPlanId(String id);
 
-    //查询子计划
+    /**
+     * 查询子计划
+     * @param id
+     * @return
+     */
     List<BdTrainPlanSub> getByPlanId(String id);
 
     /**

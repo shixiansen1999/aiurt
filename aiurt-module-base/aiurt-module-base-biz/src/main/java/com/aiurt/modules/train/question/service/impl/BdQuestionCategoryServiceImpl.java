@@ -85,9 +85,11 @@ public class BdQuestionCategoryServiceImpl extends ServiceImpl<BdQuestionCategor
                     BdQuestionCategory bdQuestionCategory = this.getById(idVal);
                     String pidVal = bdQuestionCategory.getPid();
                     //查询此节点上一级是否还有其他子节点
-                    List<BdQuestionCategory> dataList = baseMapper.selectList(new QueryWrapper<BdQuestionCategory>().eq("pid", pidVal).notIn("id",Arrays.asList(idArr)));
-                    if((dataList == null || dataList.size()==0) && !Arrays.asList(idArr).contains(pidVal)
-                            && !sb.toString().contains(pidVal)){
+                    List<BdQuestionCategory> dataList = baseMapper.selectList(new QueryWrapper<BdQuestionCategory>().eq("pid", pidVal).notIn("id", Arrays.asList(idArr)));
+                    boolean b = !Arrays.asList(idArr).contains(pidVal);
+                    boolean c = !sb.toString().contains(pidVal);
+                    boolean a = dataList == null || dataList.size() == 0;
+                    if( a && b && c){
                         //如果当前节点原本有子节点 现在木有了，更新状态
                         sb.append(pidVal).append(",");
                     }

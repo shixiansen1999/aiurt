@@ -1,9 +1,8 @@
 package com.aiurt.modules.train.task.service;
 
+import com.aiurt.modules.train.task.entity.BdTrainMakeupExamRecord;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import org.jeecg.common.api.vo.Result;
-import com.aiurt.modules.train.task.entity.BdTrainMakeupExamRecord;
 import com.baomidou.mybatisplus.extension.service.IService;
 
 import java.text.ParseException;
@@ -25,10 +24,12 @@ public interface IBdTrainMakeupExamRecordService extends IService<BdTrainMakeupE
      */
     IPage<BdTrainMakeupExamRecord> getList(Page<BdTrainMakeupExamRecord> page, BdTrainMakeupExamRecord bdTrainMakeupExamRecord);
 
+
     /**
      * 批准补考
      * @param id
-     * @return
+     * @param makeUpTime
+     * @throws ParseException
      */
     void makeUp(String id,String makeUpTime) throws ParseException;
 

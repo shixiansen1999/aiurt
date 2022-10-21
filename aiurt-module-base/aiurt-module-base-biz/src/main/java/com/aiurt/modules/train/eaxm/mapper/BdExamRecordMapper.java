@@ -32,6 +32,7 @@ public interface BdExamRecordMapper extends BaseMapper<BdExamRecord> {
      * 查询考试记录状态
      * @param userId
      * @param trainTaskId
+     * @param examPaperId
      * @return
      */
     String selectOnes(@Param("userId") String userId,@Param("trainTaskId") String trainTaskId,@Param("examPaperId") String examPaperId);
@@ -41,6 +42,7 @@ public interface BdExamRecordMapper extends BaseMapper<BdExamRecord> {
      * 查询考试补考记录状态
      * @param userId
      * @param trainTaskId
+     * @param examPaperId
      * @return
      */
     String selectOness(@Param("userId") String userId,@Param("trainTaskId") String trainTaskId,@Param("examPaperId") String examPaperId);
@@ -49,6 +51,7 @@ public interface BdExamRecordMapper extends BaseMapper<BdExamRecord> {
      * 查询补考记录
      * @param userId
      * @param trainTaskId
+     * @param examPaperId
      * @return
      */
     List<BdTrainMakeupExamRecord> excretory(@Param("userId") String userId, @Param("trainTaskId") String trainTaskId ,@Param("examPaperId") String examPaperId);
@@ -68,12 +71,27 @@ public interface BdExamRecordMapper extends BaseMapper<BdExamRecord> {
      * @param trainTaskId
      * @param userId
      * @param id
+     * @param examClassify
      * @return
      */
     BdExamRecord readOne(@Param("examPaperId") String examPaperId,@Param("trainTaskId") String trainTaskId,@Param("examClassify") Integer examClassify,@Param("userId") String userId,@Param("id") String id);
 
+    /**
+     * 查询
+     * @param examPaperId
+     * @param trainTaskId
+     * @param examClassify
+     * @param userId
+     * @param id
+     * @return
+     */
     BdExamRecord readOness(@Param("examPaperId") String examPaperId,@Param("trainTaskId") String trainTaskId,@Param("examClassify") Integer examClassify,@Param("userId") String userId,@Param("id") String id);
 
+    /**
+     * 查询
+     * @param id
+     * @return
+     */
     List<String> listId(@Param("id") String  id);
 
     /**
@@ -121,22 +139,44 @@ public interface BdExamRecordMapper extends BaseMapper<BdExamRecord> {
 
     /**
      * 根据用户id查询分数
+     *
      * @param id
      * @param traintaskid
+     * @param examClassify
+     * @param examPaperId
      * @return
      */
-    BdTrainTaskUser resultLists (@Param("id") String id,@Param("traintaskid") String traintaskid,@Param("examClassify") Integer examClassify,@Param("examPaperId") String examPaperId);
+    BdTrainTaskUser resultLists(@Param("id") String id, @Param("traintaskid") String traintaskid, @Param("examClassify") Integer examClassify, @Param("examPaperId") String examPaperId);
 
+    /**
+     * 根据用户id查询分数
+     * @param id
+     * @param traintaskid
+     * @param examClassify
+     * @param examPaperId
+     * @return
+     */
     BdTrainTaskUser resultListss (@Param("id") String id,@Param("traintaskid") String traintaskid,@Param("examClassify") Integer examClassify,@Param("examPaperId") String examPaperId);
     /**
      * 查询参考人数
      * @param id
+     * @param takeId
      * @return
      */
     List <String> bdExamPaper (@Param("id") String id,@Param("takeId") String takeId);
-    //实际参加考试人员姓名
+
+    /**
+     * 实际参加考试人员姓名
+     * @param trainTaskId
+     * @return
+     */
     List <String> bdExamPaperName(@Param("trainTaskId")String trainTaskId);
-    //应该参加
+
+    /**
+     * 应该参加
+     * @param trainTaskId
+     * @return
+     */
     List<String>  actualReferenceNames(@Param("trainTaskId")String trainTaskId);
 
     /**
@@ -159,11 +199,19 @@ public interface BdExamRecordMapper extends BaseMapper<BdExamRecord> {
      */
     void updatedAchievementDOList(@Param ("condition") BdAchievementDTO condition);
 
+    /**
+     * 考试详细信息
+     * @param examPaperId
+     * @param trainTaskId
+     * @return
+     */
     ExamDetailsDTO examDetails (@Param("examPaperId")String examPaperId,@Param("trainTaskId")String trainTaskId);
 
 
     /**
-     * 根据培训任务id获取考试人员
+     * 考试人员
+     * @param taskId
+     * @return
      */
     List<BdExamRecord> examUserList(@Param("taskId") String taskId);
 
@@ -179,6 +227,8 @@ public interface BdExamRecordMapper extends BaseMapper<BdExamRecord> {
      * 获取考生记录
      * @param examPaperId
      * @param userId
+     * @param examClassify
+     * @param taskId
      * @return
      */
     List<BdExamRecord> getRecordList(@Param("examPaperId")String examPaperId, @Param("userId")String userId,@Param("examClassify")String examClassify,@Param("taskId")String taskId);
@@ -207,5 +257,5 @@ public interface BdExamRecordMapper extends BaseMapper<BdExamRecord> {
      * 跟新补考数据
      * @param bdExamRecord
      */
-      void UpdateById(@Param ("bdExamRecord") BdExamRecord bdExamRecord);
+      void updateByRecordId(@Param ("bdExamRecord") BdExamRecord bdExamRecord);
 }

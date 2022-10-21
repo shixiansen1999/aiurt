@@ -452,8 +452,8 @@ public class BdTrainTaskController {
 									  @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
 									  @RequestParam(name="pageSize", defaultValue="10") Integer pageSize){
 		 Page<SignPeopleDTO> pageList = new Page<>(pageNo, pageSize);
-		 Page<SignPeopleDTO>List=  bdTrainTaskService.querySignPeople(pageList,trainTaskId,signState);
-		 return Result.OK(List);
+		 Page<SignPeopleDTO> list=  bdTrainTaskService.querySignPeople(pageList,trainTaskId,signState);
+		 return Result.OK(list);
 	 }
 	 /**
 	  * 补签
@@ -613,7 +613,8 @@ public class BdTrainTaskController {
       MultipartHttpServletRequest multipartRequest = (MultipartHttpServletRequest) request;
       Map<String, MultipartFile> fileMap = multipartRequest.getFileMap();
       for (Map.Entry<String, MultipartFile> entity : fileMap.entrySet()) {
-          MultipartFile file = entity.getValue();// 获取上传文件对象
+		  // 获取上传文件对象
+          MultipartFile file = entity.getValue();
           ImportParams params = new ImportParams();
           params.setTitleRows(2);
           params.setHeadRows(1);

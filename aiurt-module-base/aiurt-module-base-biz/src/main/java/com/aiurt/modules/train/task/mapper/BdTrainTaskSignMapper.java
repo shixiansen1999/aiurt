@@ -14,14 +14,41 @@ import java.util.List;
  */
 public interface BdTrainTaskSignMapper extends BaseMapper<BdTrainTaskSign> {
 
+	/**
+	 * 删除
+	 * @param mainId
+	 * @return
+	 */
 	public boolean deleteByMainId(@Param("mainId") String mainId);
 
+	/**
+	 * 查询
+	 * @param mainId
+	 * @return
+	 */
 	public List<BdTrainTaskSign> selectByMainId(@Param("mainId") String mainId);
-	//根据培训任务id查询培训人员
+
+	/**
+	 * 根据培训任务id查询培训人员
+	 * @param trainTaskId
+	 * @return
+	 */
+
     int getByTaskId(String trainTaskId);
 
-    //根据培训任务id查询已签到的培训人员
+	/**
+	 * 根据培训任务id查询已签到的培训人员
+	 * @param trainTaskId
+	 * @return
+	 */
+
 	int getSignByTaskId(String trainTaskId);
 
+	/**
+	 * 查询
+	 * @param trainTaskId
+	 * @param userId
+	 * @return
+	 */
 	BdTrainTaskSign getSign(@Param("trainTaskId") String trainTaskId, @Param("userId") String userId);
 }

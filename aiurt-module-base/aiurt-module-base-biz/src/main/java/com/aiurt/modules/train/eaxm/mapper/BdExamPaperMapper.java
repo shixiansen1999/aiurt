@@ -35,6 +35,9 @@ public interface BdExamPaperMapper extends BaseMapper<BdExamPaper> {
      * 试卷答案
      *
      * @param condition
+     * @param examRecordId
+     * @param queId
+     * @param date
      * @return
      */
     String getExamineAnswer(@Param("condition") BdExamPaper condition, @Param("examRecordId") String examRecordId, @Param("queId") String queId,@Param("date") String date);
