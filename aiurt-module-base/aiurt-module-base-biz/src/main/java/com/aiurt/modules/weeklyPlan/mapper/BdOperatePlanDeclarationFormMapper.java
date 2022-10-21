@@ -20,21 +20,21 @@ public interface BdOperatePlanDeclarationFormMapper extends BaseMapper<BdOperate
 
     List<BdConstructionTypeDTO> queryConstructionTypeList();
 
-    List<BdStaffInfoReturnTypeDTO> queryStaffByTeamId(String teamID);
+    List<BdStaffInfoReturnTypeDTO> queryStaffByTeamId(String teamId);
 
-    List<BdStaffInfoReturnTypeDTO> queryStaffByRoleType(String roleType, String deptID);
+    List<BdStaffInfoReturnTypeDTO> queryStaffByRoleType(String roleType, String deptId);
 
-    List<BdStaffInfoReturnTypeDTO> queryStaffByRoleName(@Param("roleName") String roleName,@Param("deptID") String deptID);
+    List<BdStaffInfoReturnTypeDTO> queryStaffByRoleName(@Param("roleName") String roleName,@Param("deptId") String deptId);
 
-    List<BdStationReturnTypeDTO> queryStations(Integer teamID);
+    List<BdStationReturnTypeDTO> queryStations(Integer teamId);
 
     List<BdLineDTO> queryLines(List<Integer> idList);
 
-    String queryStaffNameById(String staffID);
+    String queryStaffNameById(String staffId);
 
-    String queryStationNameById(String stationID);
+    String queryStationNameById(String stationId);
 
-    List<BdUserInfoDTO> queryUserInfo(String userID);
+    List<BdUserInfoDTO> queryUserInfo(String userId);
 
     List<BdStationReturnTypeDTO> queryAllStations(@Param("positionList")List<String> positionList,@Param("pid")String pid);
 
@@ -46,29 +46,52 @@ public interface BdOperatePlanDeclarationFormMapper extends BaseMapper<BdOperate
             @Param("queryPagesParams") QueryPagesParams queryPagesParams,
             @Param("busId") String busId);
 
-    String queryStationNamesById(@Param("parseID")String[] parseID);
+    String queryStationNamesById(@Param("parseID")String[] parseId);
 
     BdOperatePlanDeclarationFormReturnTypeDTO queryFormInfoById(Integer id);
 
-    String queryStaffNamesByIds(String[] parseID);
+    String queryStaffNamesByIds(String[] parseId);
 
     String queryStaffIdByName(String realName);
 
-    //修改发送的信息
+    /**
+     * 修改发送的信息
+     * @param idList
+     */
     void updateBusAnnouncement(@Param("idList")List<String> idList);
 
-    //查询发送的消息
+    /**
+     * 查询发送的消息
+     * @param busId
+     * @param busType
+     * @param username
+     * @return
+     */
     List<String> queryBusAnnouncement(@Param("busId")String busId, @Param("busType")String busType, @Param("username")String username);
 
-    //查询所有总线路负责人
+    /**
+     * 查询所有总线路负责人
+     * @return
+     */
     List<String> queryUsernameByLineallpeople();
 
-    //查询班组下 线路负责人角色
+    /**
+     * 查询班组下 线路负责人角色
+     * @return
+     */
     List<BdStaffInfoReturnTypeDTO> queryLineStaff();
 
-    //根据作业时间查询已同意的周计划
+    /**
+     * 根据作业时间查询已同意的周计划
+     * @param taskDate
+     * @return
+     */
     List<BdOperatePlanDeclarationReturnDTO> queryListByDate(String taskDate);
 
-    //查询周、月生产计划
+    /**
+     * 查询周、月生产计划
+     * @param dto
+     * @return
+     */
     List<ProductPlanDTO> readAll(ProductPlanDTO dto);
 }

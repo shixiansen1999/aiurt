@@ -29,6 +29,12 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+
+/**
+ * @author Lai W.
+ *
+ * @version 1.0
+ */
 @Component
 public class ImportExcelUtil {
 
@@ -41,7 +47,7 @@ public class ImportExcelUtil {
     @Autowired
     private BdSiteMapper bdSiteMapper;
     @Autowired
-    private ISysBaseAPI baseAPI;
+    private ISysBaseAPI baseApi;
 
 
     SimpleDateFormat fday=new SimpleDateFormat("yyyy-MM-dd");
@@ -50,7 +56,7 @@ public class ImportExcelUtil {
     public String lineId="线路负责人";
     public String dispatchId="生产调度";
 
-    private String titleRow[] = {"序号","作业性质","作业类别","作业单位","作业时间","线路作业范围","供电要求","作业内容","防护措施","施工负责人","配合部门","请点车站","销点车站","辅站","作业人数","大中型器具"};
+    private String[] titleRow = {"序号","作业性质","作业类别","作业单位","作业时间","线路作业范围","供电要求","作业内容","防护措施","施工负责人","配合部门","请点车站","销点车站","辅站","作业人数","大中型器具"};
 
     public List<BdOperatePlanDeclarationForm> importToExcelOperate(MultipartFile[] importExcel) throws Exception {
         try {
@@ -114,11 +120,11 @@ public class ImportExcelUtil {
                             break;
                         }
                         //序号行去掉
-                        if(cellText.equals("序号")) {
+                        if(("序号").equals(cellText)) {
                             break;
                         }
                         //空行去掉
-                        if(cellText.equals("")) {
+                        if(("").equals(cellText)) {
                             break;
                         }
                     }
@@ -167,7 +173,7 @@ public class ImportExcelUtil {
                         case 13:
                             //辅站
                             cellText = removeBlank(cellText);
-                            if(!cellText.equals("")&&!cellText.equals("无")) {
+                            if(!("").equals(cellText)&&!("无").equals(cellText)) {
                                 newOp.setAssistStationIds(getStationIds(cellText,line));
                                 newOp.setAssistStationManagerIds(getStaffIds(cellText));
                             }
@@ -192,6 +198,7 @@ public class ImportExcelUtil {
 
                             resultFinal.add(newOp);
                             break;
+                        default:
                     }
                     startI++;
                 }
@@ -248,8 +255,9 @@ public class ImportExcelUtil {
         }
         // 一周的第几天
         int w = cal.get(Calendar.DAY_OF_WEEK) - 1;
-        if (w < 0)
+        if (w < 0){
             w = 0;
+        }
         return w;
     }
 
@@ -260,7 +268,7 @@ public class ImportExcelUtil {
      */
     private String getStationIdByLineId(String cellText, int line) {
         BdStation b = new BdStation();
-        QueryWrapper<BdStation> queryWrapper = QueryGenerator.initQueryWrapper(b, new HashMap<>());
+        QueryWrapper<BdStation> queryWrapper = QueryGenerator.initQueryWrapper(b, new HashMap<>(32));
         queryWrapper.eq("name",cellText);
         queryWrapper.eq("line_id", line);
         List<BdStation> bdStations = bdStationMapper.selectList(queryWrapper);
@@ -278,7 +286,7 @@ public class ImportExcelUtil {
      */
     private String getStationId(String cellText, int line) {
         BdStation b = new BdStation();
-        QueryWrapper<BdStation> queryWrapper = QueryGenerator.initQueryWrapper(b, new HashMap<>());
+        QueryWrapper<BdStation> queryWrapper = QueryGenerator.initQueryWrapper(b, new HashMap<>(32));
         queryWrapper.eq("name",cellText);
         List<BdStation> bdStations = bdStationMapper.selectList(queryWrapper);
         if(bdStations != null && bdStations.size()>0){
@@ -298,7 +306,7 @@ public class ImportExcelUtil {
     }
 
 
-    public String getWrongMessage(String engineerStaffId,String lineStaffId,String dispatchStaffId,MultipartFile importExcel[]) throws Exception {
+    public String getWrongMessage(String engineerStaffId,String lineStaffId,String dispatchStaffId,MultipartFile[] importExcel) throws Exception {
         try {
             int line = 0;
             String newDate = "";
@@ -347,11 +355,11 @@ public class ImportExcelUtil {
                             break;
                         }
                         //序号行去掉
-                        if(cellText.equals("序号")) {
+                        if(("序号").equals(cellText)) {
                             break;
                         }
                         //空行去掉
-                        if(cellText.equals("")) {
+                        if(("").equals(cellText)) {
                             break;
                         }
                     }
@@ -380,32 +388,35 @@ public class ImportExcelUtil {
                             break;
                         case 9:
                             newOp.setChargeStaffId(getChargeStaffId(cellText));
-                            if(getChargeStaffId(cellText) == null || getChargeStaffId(cellText).equals("0"))
+                            if(getChargeStaffId(cellText) == null || ("0").equals(getChargeStaffId(cellText))){
                                 return newDate+"的序号"+num+"的施工负责人解析出错";
+                            }
                             break;
                         case 10:
                             newOp.setCoordinationDepartmentId(cellText);
                             break;
                         case 11:
                             newOp.setFirstStationId(getStationId(cellText,line));
-                            if(getStationId(cellText,line) == null || getStationId(cellText,line).equals("-1"))
+                            if(getStationId(cellText,line) == null || ("-1").equals(getStationId(cellText,line))){
                                 return newDate+"的序号"+num+"的请点车站解析出错";
+                            }
                             break;
                         case 12:
                             newOp.setSecondStationId(getStationId(cellText,line));
-                            if(getStationId(cellText,line) == null || getStationId(cellText,line).equals("-1"))
+                            if(getStationId(cellText,line) == null || ("-1").equals(getStationId(cellText,line))){
                                 return newDate+"的序号"+num+"的销点车站解析出错";
+                            }
                             break;
                         case 13:
                             //辅站
                             cellText = removeBlank(cellText);
-                            if(!cellText.equals("")&&!cellText.equals("无")) {
+                            if(!("").equals(cellText)&&!("无").equals(cellText)) {
                                 newOp.setAssistStationIds(getStationIds(cellText,line));
-                                if(getStationIds(cellText,line).equals("解析辅站失败")) {
+                                if(("解析辅站失败").equals(getStationIds(cellText,line))) {
                                     return newDate+"的序号"+num+"的辅站解析出错";
                                 }
                                 newOp.setAssistStationManagerIds(getStaffIds(cellText));
-                                if(getStaffIds(cellText).equals("解析辅站负责人失败")) {
+                                if(("解析辅站负责人失败").equals(getStaffIds(cellText))) {
                                     return newDate+"的序号"+num+"的辅站负责人解析出错";
                                 }
                             }
@@ -420,6 +431,7 @@ public class ImportExcelUtil {
                         case 15:
                             break;
                         //匹配字目
+                        default:
                     }
                     startI++;
                 }
@@ -433,8 +445,9 @@ public class ImportExcelUtil {
 
 
     public String getStationIds(String cellText,Integer line) {
-        if(cellText.equals("")||cellText.equals("无"))
+        if(cellText.equals("")||("无").equals(cellText)){
             return "";
+        }
         String result = "";
         String[] sourceStrArray = cellText.split(",");
         for (int i = 0; i < sourceStrArray.length; i++) {
@@ -443,7 +456,7 @@ public class ImportExcelUtil {
                 separate  = sourceStrArray[i].indexOf("：");
             }
             String station = getStationId(sourceStrArray[i].substring(0, separate),line);
-            if(station == null || station.equals("-1")) {
+            if(station == null || ("-1").equals(station)) {
                 return "解析辅站失败";
             }
             if(i==0) {
@@ -457,8 +470,9 @@ public class ImportExcelUtil {
 
     public String getStaffIds(String cellText) {
         String result = "";
-        if(cellText.equals("")||cellText.equals("无"))
+        if(("").equals(cellText)||("无").equals(cellText)){
             return "";
+        }
         String[] sourceStrArray;
         int spt = cellText.indexOf(",");
         if(spt<0) {

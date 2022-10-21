@@ -116,7 +116,9 @@ public class BdSparesList implements Serializable {
     @TableField(exist = false)
     private Integer isOutOfStock;
 
-    // 阈值
+    /**
+     * 阈值
+     */
     @ApiModelProperty(value = "0表示低于限定值备件，1表示高于限定值备件")
     @TableField(exist = false)
     private Integer threshold;

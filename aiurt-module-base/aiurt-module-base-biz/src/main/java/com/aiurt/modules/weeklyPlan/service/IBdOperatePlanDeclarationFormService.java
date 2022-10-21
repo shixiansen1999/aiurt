@@ -29,33 +29,33 @@ public interface IBdOperatePlanDeclarationFormService extends IService<BdOperate
 
     /**
      * 通过teamId获取组内和管辖组内成员
-     * @param teamID Team ID.
+     * @param teamId Team ID.
      * @return List of Staff Info RetrunType DTO.
      */
-    List<BdStaffInfoReturnTypeDTO> getMemberByTeamId(String teamID);
+    List<BdStaffInfoReturnTypeDTO> getMemberByTeamId(String teamId);
 
     /**
      * 通过toleType和deptID获取用户信息
      * @param roleType  Role type.
-     * @param deptID Department ID.
+     * @param deptId Department ID.
      * @return List of Staff Info ReturnType DTO.
      */
-    List<BdStaffInfoReturnTypeDTO> getStaffsByRoleType(String roleType, String deptID);
+    List<BdStaffInfoReturnTypeDTO> getStaffsByRoleType(String roleType, String deptId);
 
     /**
      * 通过 角色 和deptID获取用户信息
      * @param roleName
-     * @param deptID
+     * @param deptId
      * @return
      */
-    List<BdStaffInfoReturnTypeDTO> getStaffsByRoleName(@Param("roleName") String roleName,@Param("deptID")  String deptID);
+    List<BdStaffInfoReturnTypeDTO> getStaffsByRoleName(@Param("roleName") String roleName,@Param("deptId")  String deptId);
 
     /**
      * 通过teamID获取车站列表
      * @param teamID Team ID.
      * @return List of Station Info ReturnType DTO.
      */
-    List<BdStationReturnTypeDTO> getStationList(Integer teamID);
+    List<BdStationReturnTypeDTO> getStationList(Integer teamId);
 
     /**
      * 将传入的requestBody增加参数和条件判断.
@@ -91,10 +91,10 @@ public interface IBdOperatePlanDeclarationFormService extends IService<BdOperate
     List<BdStation> getStations();
 
 
-
     /**
      * 检查施工负责人时间是否冲突.
-     * @return true/false for result.
+     * @param declarationForm
+     * @return
      */
     Boolean checkChargeStaffIfConflict(BdOperatePlanDeclarationForm declarationForm);
 
@@ -107,10 +107,11 @@ public interface IBdOperatePlanDeclarationFormService extends IService<BdOperate
 
     /**
      * 分页列表查询改进版.
-     * @param queryPagesParams 参数DTO.
-     * @param pageNo page Number.
-     * @param pageSize page Size.
-     * @return Current page.
+     * @param queryPagesParams
+     * @param pageNo
+     * @param pageSize
+     * @param busId
+     * @return
      */
     Page<BdOperatePlanDeclarationFormReturnTypeDTO> queryPages(QueryPagesParams queryPagesParams,
                                                                Integer pageNo, Integer pageSize, String busId);
@@ -131,20 +132,27 @@ public interface IBdOperatePlanDeclarationFormService extends IService<BdOperate
 
     /**
      * 导出周计划表
-     * @param record 查询出来的数据.
-     * @param response Http response.
+     * @param record 查询出来的数据
+     * @param response
+     * @param queryPagesParams
      */
     void exportExcel(List<BdOperatePlanDeclarationFormReturnTypeDTO> record,
                      HttpServletResponse response, QueryPagesParams queryPagesParams);
 
     /**
      * 导出变更计划表.
-     * @param record 查询出来的数据.
-     * @param response Http response.
+     * @param record
+     * @param response
+     * @param queryPagesParams
      */
     void exportExcelChangeable(List<BdOperatePlanDeclarationFormReturnTypeDTO> record,
                                HttpServletResponse response, QueryPagesParams queryPagesParams);
 
+    /**
+     * 导入
+     * @param excel
+     * @return
+     */
     List<BdOperatePlanDeclarationForm> importExcel(MultipartFile excel);
 
     /**
@@ -184,6 +192,7 @@ public interface IBdOperatePlanDeclarationFormService extends IService<BdOperate
 
     /**
      * 重新申请
+     * @param id
      */
     void reapply(Integer id);
 
@@ -202,9 +211,9 @@ public interface IBdOperatePlanDeclarationFormService extends IService<BdOperate
 
 
     /**
-     *  根据作业时间查询已同意的周计划.
-     * @param
-     * @return Result.
+     * 根据作业时间查询已同意的周计划.
+     * @param taskDate
+     * @return
      */
     List<BdOperatePlanDeclarationReturnDTO> queryListByDate(String taskDate);
 }

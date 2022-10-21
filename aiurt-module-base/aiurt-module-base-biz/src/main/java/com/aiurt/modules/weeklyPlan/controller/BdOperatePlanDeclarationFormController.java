@@ -38,7 +38,7 @@ public class BdOperatePlanDeclarationFormController extends BaseController<BdOpe
 	@Autowired
 	private IBdOperatePlanDeclarationFormService bdOperatePlanDeclarationFormService;
 	@Autowired
-	private ISysBaseAPI sysBaseAPI;
+	private ISysBaseAPI sysBaseApi;
 
 	 /**
 	  * 获取施工类型
@@ -64,26 +64,25 @@ public class BdOperatePlanDeclarationFormController extends BaseController<BdOpe
 	@ApiOperation(value = "周计划表-获取组内和管辖组内用户", notes = "周计划表-获取组内和管辖组内用户-施工负责人")
 	@GetMapping(value = "/getMemberByTeamId")
 	@Cacheable(value = {"weeklyStaffsByTeam"})
-	public Result<List<BdStaffInfoReturnTypeDTO>> getMemberByTeamId(@RequestParam(name = "teamID") String teamID) {
-		List<BdStaffInfoReturnTypeDTO> resultBuffer = bdOperatePlanDeclarationFormService.getMemberByTeamId(teamID);
+	public Result<List<BdStaffInfoReturnTypeDTO>> getMemberByTeamId(@RequestParam(name = "teamId") String teamId) {
+		List<BdStaffInfoReturnTypeDTO> resultBuffer = bdOperatePlanDeclarationFormService.getMemberByTeamId(teamId);
 		return Result.OK("获取组内和管辖组内用户成功", resultBuffer);
 	}
 
 	 /**
 	  * 通过roleType和deptID获取用户
 	  * @param roleType the Role Type
-	  * @param deptID the Department ID
+	  * @param deptId the Department ID
 	  * @return A list of BdStaffInfoReturnTypeDTO.
 	  */
 	@AutoLog(value = "周计划表-通过roleType和deptID获取用户",operateType = 1,operateTypeAlias = "查询",permissionUrl = "/production/plan")
 	@ApiOperation(value = "周计划表-通过roleType和deptID获取用户")
 	@GetMapping(value = "/getStaffsByRoleType")
-	/*@Cacheable(value = {"weeklyStaffsByRole"})*/
 	public Result<List<BdStaffInfoReturnTypeDTO>> getStaffsByRoleType(@RequestParam(name = "roleType") String roleType,
-										 @RequestParam(name = "deptID") String deptID) {
+										 @RequestParam(name = "deptId") String deptId) {
 		Result<List<BdStaffInfoReturnTypeDTO>> result = new Result<>();
 		List<BdStaffInfoReturnTypeDTO> resultBuffer =
-				bdOperatePlanDeclarationFormService.getStaffsByRoleType(roleType, deptID);
+				bdOperatePlanDeclarationFormService.getStaffsByRoleType(roleType, deptId);
 		return Result.OK("通过角色类型和专业获取用户成功", resultBuffer);
 	}
 
@@ -96,12 +95,11 @@ public class BdOperatePlanDeclarationFormController extends BaseController<BdOpe
 	@AutoLog(value = "周计划表-通过角色和deptID获取用户",operateType = 1,operateTypeAlias = "查询",permissionUrl = "/production/plan")
 	@ApiOperation(value = "周计划表-通过角色和deptID获取用户")
 	@GetMapping(value = "/getStaffsByRoleName")
-	/*@Cacheable(value = {"weeklyStaffsByRole"})*/
 	public Result<List<BdStaffInfoReturnTypeDTO>> getStaffsByRole(@RequestParam(name = "roleName") String roleName,
-																	  @RequestParam(name = "deptID") String deptID) {
+																	  @RequestParam(name = "deptId") String deptId) {
 		Result<List<BdStaffInfoReturnTypeDTO>> result = new Result<>();
 		List<BdStaffInfoReturnTypeDTO> resultBuffer =
-				bdOperatePlanDeclarationFormService.getStaffsByRoleName(roleName, deptID);
+				bdOperatePlanDeclarationFormService.getStaffsByRoleName(roleName, deptId);
 		return Result.OK("通过角色类型和专业获取用户成功", resultBuffer);
 	}
 
@@ -114,7 +112,6 @@ public class BdOperatePlanDeclarationFormController extends BaseController<BdOpe
 	@AutoLog(value = "周计划表-获取车站列表",operateType = 1,operateTypeAlias = "查询",permissionUrl = "/production/plan")
 	@ApiOperation(value = "周计划表-获取车站列表", notes = "周计划表-获取车站列表-请点销点车站")
 	@GetMapping(value = "/getStations")
-	/*@Cacheable(value = {"weeklyStations"})*/
 	public Result<List<BdStation>> getStationList() {
 		List<BdStation> resultBuffer = bdOperatePlanDeclarationFormService.getStations();
 		return Result.OK("获取车站列表成功", resultBuffer);
@@ -126,7 +123,6 @@ public class BdOperatePlanDeclarationFormController extends BaseController<BdOpe
 	@AutoLog(value = "周计划表-获取地铁线路",operateType = 1,operateTypeAlias = "查询",permissionUrl = "/production/plan")
 	@ApiOperation(value = "周计划表-获取地铁线路", notes = "周计划表-获取地铁线路")
 	@GetMapping(value = "/getLines")
-	/*@Cacheable(value = {"weeklyLines"})*/
 	public Result<List<BdLineDTO>> getLines() {
 		List<BdLineDTO> resultBuffer = bdOperatePlanDeclarationFormService.getLines();
 		return Result.OK("获取线路成功", resultBuffer);
@@ -235,8 +231,8 @@ public class BdOperatePlanDeclarationFormController extends BaseController<BdOpe
 		try {
 			//只有 工班长、工作负责人、驻班工程师 有权限添加生产计划
 			LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-			Set<String> roleSet = sysBaseAPI.getUserRoleSet(sysUser.getUsername());
-			long count = roleSet.stream().filter(s -> s.equals("foreman") || s.equals("on_duty_engineer") || s.equals("conscientious")).count();
+			Set<String> roleSet = sysBaseApi.getUserRoleSet(sysUser.getUsername());
+			long count = roleSet.stream().filter(s -> ("foreman").equals(s) || ("on_duty_engineer").equals(s) || ("conscientious").equals(s)).count();
 			if(count == 0){
 				return Result.error("您没有权限添加生产计划");
 			}else{

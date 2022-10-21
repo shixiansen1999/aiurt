@@ -128,11 +128,13 @@ public class ExportExcelUtil {
         int orderNum = 1;
 
         try {
-            HSSFRow firstRow = sheet.createRow(0);    //创建第一行
+            //创建第一行
+            HSSFRow firstRow = sheet.createRow(0);
             HSSFCell cell = firstRow.createCell(0);
             cell.setCellValue(sheetName);
             cell.setCellStyle(styleTitle);
-            for (short columnIndex = 1; columnIndex < SPARE_REPORT_OPERATE_PLAN.length; columnIndex++) {  //遍历表头
+            //遍历表头
+            for (short columnIndex = 1; columnIndex < SPARE_REPORT_OPERATE_PLAN.length; columnIndex++) {
                 cell = firstRow.createCell(columnIndex);
                 cell.setCellValue("");
                 cell.setCellStyle(styleTitle);
@@ -161,7 +163,8 @@ public class ExportExcelUtil {
 
                     cell.setCellValue(weekValue);
                     cell.setCellStyle(styleTime);
-                    for (short columnIndex = 1; columnIndex < SPARE_REPORT_OPERATE_PLAN.length; columnIndex++) {  //遍历表头
+                    //遍历表头
+                    for (short columnIndex = 1; columnIndex < SPARE_REPORT_OPERATE_PLAN.length; columnIndex++) {
                         cell = newRow.createCell(columnIndex);
 //                            cell.setCellValue(jsonObject.getString(keys[columnIndex]));
                         cell.setCellValue("");
@@ -171,7 +174,8 @@ public class ExportExcelUtil {
                     sheet.addMergedRegion(craRow);
                     rowId++;
                     newRow = sheet.createRow(rowId+1);
-                    for (short columnIndex = 1; columnIndex < titleRow.length; columnIndex++) {  //遍历表头
+                    //遍历表头
+                    for (short columnIndex = 1; columnIndex < titleRow.length; columnIndex++) {
                         cell = newRow.createCell(columnIndex);
 //                            cell.setCellValue(jsonObject.getString(keys[columnIndex]));
                         cell.setCellValue(titleRow[columnIndex]);
@@ -183,7 +187,8 @@ public class ExportExcelUtil {
                     cell = newRow.createCell(0);
                     cell.setCellValue(orderNum);
                     cell.setCellStyle(styleData);
-                    for (short columnIndex = 1; columnIndex < SPARE_REPORT_OPERATE_PLAN.length; columnIndex++) {  //遍历表头
+                    //遍历表头
+                    for (short columnIndex = 1; columnIndex < SPARE_REPORT_OPERATE_PLAN.length; columnIndex++) {
                         cell = newRow.createCell(columnIndex);
                         //写入值
                         System.out.println("-------------------------------" + getByString(returnTypeDTO, keys[columnIndex]));
@@ -294,11 +299,13 @@ public class ExportExcelUtil {
         int orderNum = 1;
 
         try {
-            HSSFRow firstRow = sheet.createRow(0);    //创建第一行
+            //创建第一行
+            HSSFRow firstRow = sheet.createRow(0);
             HSSFCell cell = firstRow.createCell(0);
             cell.setCellValue(sheetName);
             cell.setCellStyle(styleTitle);
-            for (short columnIndex = 1; columnIndex < SPARE_REPORT_OPERATE_PLAN2.length+1; columnIndex++) {  //遍历表头
+            //遍历表头
+            for (short columnIndex = 1; columnIndex < SPARE_REPORT_OPERATE_PLAN2.length+1; columnIndex++) {
                 cell = firstRow.createCell(columnIndex);
                 cell.setCellValue("");
                 cell.setCellStyle(styleTitle);
@@ -324,7 +331,8 @@ public class ExportExcelUtil {
                     cell.setCellValue(weekValue);
                     cell.setCellStyle(styleWeek);
                     //这个是为了让右边框变黑
-                    for (short columnIndex = 1; columnIndex < SPARE_REPORT_OPERATE_PLAN2.length+1; columnIndex++) {  //遍历表头
+                    //遍历表头
+                    for (short columnIndex = 1; columnIndex < SPARE_REPORT_OPERATE_PLAN2.length+1; columnIndex++) {
                         cell = newRow.createCell(columnIndex);
                         cell.setCellValue("");
                         cell.setCellStyle(styleWeek);
@@ -333,7 +341,8 @@ public class ExportExcelUtil {
                     sheet.addMergedRegion(craRow);
                     rowId++;
                     newRow = sheet.createRow(rowId+1);
-                    for (short columnIndex = 0; columnIndex < titleRow.length; columnIndex++) {  //遍历表头
+                    //遍历表头
+                    for (short columnIndex = 0; columnIndex < titleRow.length; columnIndex++) {
                         if(columnIndex!=0) {
                             cell = newRow.createCell(columnIndex+1);
                             cell.setCellValue(titleRow[columnIndex]);
@@ -359,7 +368,8 @@ public class ExportExcelUtil {
                         cell = newRow.createCell(1);
                         cell.setCellValue("变更前");
                         cell.setCellStyle(styleData);
-                        for (short columnIndex = 2; columnIndex < SPARE_REPORT_OPERATE_PLAN2.length+1; columnIndex++) {  //遍历表头
+                        //遍历表头
+                        for (short columnIndex = 2; columnIndex < SPARE_REPORT_OPERATE_PLAN2.length+1; columnIndex++) {
                             cell = newRow.createCell(columnIndex);
                             cell.setCellValue(" ");
                             cell.setCellStyle(styleData);
@@ -372,7 +382,8 @@ public class ExportExcelUtil {
                         orderNum++;
                         CellRangeAddress craRow = new CellRangeAddress(rowId, rowId+1, 0, 0);
                         sheet.addMergedRegion(craRow);
-                        for (short columnIndex = 2; columnIndex < SPARE_REPORT_OPERATE_PLAN2.length+1; columnIndex++) {  //遍历表头
+                        //遍历表头
+                        for (short columnIndex = 2; columnIndex < SPARE_REPORT_OPERATE_PLAN2.length+1; columnIndex++) {
                             cell = newRow.createCell(columnIndex);
                             cell.setCellValue(getByString(returnTypeDTO, keys[columnIndex-1]) == null ? "" :
                                     getByString(returnTypeDTO, keys[columnIndex-1]));
@@ -387,7 +398,8 @@ public class ExportExcelUtil {
                         cell = newRow.createCell(1);
                         cell.setCellValue("变更前");
                         cell.setCellStyle(styleData);
-                        for (short columnIndex = 2; columnIndex < SPARE_REPORT_OPERATE_PLAN2.length+1; columnIndex++) {  //遍历表头
+                        //遍历表头
+                        for (short columnIndex = 2; columnIndex < SPARE_REPORT_OPERATE_PLAN2.length+1; columnIndex++) {
                             cell = newRow.createCell(columnIndex);
                             cell.setCellValue(getByString(returnTypeDTO, keys[columnIndex-1]) == null ? "" :
                                     getByString(returnTypeDTO, keys[columnIndex-1]));
@@ -398,7 +410,8 @@ public class ExportExcelUtil {
                         cell = newRow.createCell(1);
                         cell.setCellValue("变更后");
                         cell.setCellStyle(styleData);
-                        for (short columnIndex = 2; columnIndex < SPARE_REPORT_OPERATE_PLAN2.length+1; columnIndex++) {  //遍历表头
+                        //遍历表头
+                        for (short columnIndex = 2; columnIndex < SPARE_REPORT_OPERATE_PLAN2.length+1; columnIndex++) {
                             cell = newRow.createCell(columnIndex);
                             cell.setCellValue(" ");
                             cell.setCellStyle(styleData);
@@ -423,7 +436,8 @@ public class ExportExcelUtil {
                             CellRangeAddress craRow = new CellRangeAddress(rowId, rowId+1, 0, 0);
                             sheet.addMergedRegion(craRow);
                         }
-                        for (short columnIndex = 2; columnIndex < SPARE_REPORT_OPERATE_PLAN2.length+1; columnIndex++) {  //遍历表头
+                        //遍历表头
+                        for (short columnIndex = 2; columnIndex < SPARE_REPORT_OPERATE_PLAN2.length+1; columnIndex++) {
                             cell = newRow.createCell(columnIndex);
                             cell.setCellValue(getByString(returnTypeDTO, keys[columnIndex-1]) == null ? "" :
                                     getByString(returnTypeDTO, keys[columnIndex-1]));
@@ -434,7 +448,8 @@ public class ExportExcelUtil {
                 }
             }
             //底边签字项目（倒数第二行）
-            HSSFRow lastRow = sheet.createRow(rowId+1);    //创建第一行
+            // 创建第一行
+            HSSFRow lastRow = sheet.createRow(rowId+1);
             cell = lastRow.createCell(0);
             cell.setCellValue("审批流程");
             cell.setCellStyle(styleApproval);
@@ -442,7 +457,8 @@ public class ExportExcelUtil {
 
             cell.setCellValue("（1）申报原因：");
             cell.setCellStyle(styleApproval);
-            for (short columnIndex = 2; columnIndex < 5; columnIndex++) {  //遍历表头
+            //遍历表头
+            for (short columnIndex = 2; columnIndex < 5; columnIndex++) {
                 cell = lastRow.createCell(columnIndex);
 //                    cell.setCellValue(jsonObject.getString(keys[columnIndex]));
                 cell.setCellValue("");
@@ -454,7 +470,8 @@ public class ExportExcelUtil {
             cell = lastRow.createCell(5);
             cell.setCellValue("（2）申报确认");
             cell.setCellStyle(styleApproval);
-            for (short columnIndex = 6; columnIndex < 9; columnIndex++) {  //遍历表头
+            //遍历表头
+            for (short columnIndex = 6; columnIndex < 9; columnIndex++) {
                 cell = lastRow.createCell(columnIndex);
 //                    cell.setCellValue(jsonObject.getString(keys[columnIndex]));
                 cell.setCellValue("");
@@ -466,7 +483,8 @@ public class ExportExcelUtil {
             cell = lastRow.createCell(9);
             cell.setCellValue("（3）冲突检测、审批");
             cell.setCellStyle(styleApproval);
-            for (short columnIndex = 10; columnIndex < 16; columnIndex++) {  //遍历表头
+            //遍历表头
+            for (short columnIndex = 10; columnIndex < 16; columnIndex++) {
                 cell = lastRow.createCell(columnIndex);
 //                    cell.setCellValue(jsonObject.getString(keys[columnIndex]));
                 cell.setCellValue("");
@@ -476,7 +494,8 @@ public class ExportExcelUtil {
             sheet.addMergedRegion(cralast);
             //最后一行
             rowId++;
-            lastRow = sheet.createRow(rowId+1);    //创建最后一行
+            //创建最后一行
+            lastRow = sheet.createRow(rowId+1);
             cell = lastRow.createCell(0);
             cell.setCellValue("");
             cell.setCellStyle(styleTitle);
@@ -486,7 +505,8 @@ public class ExportExcelUtil {
             //
             cell.setCellValue("申报人签字确认：\n" + "申报部门负责人签字确认：");
             cell.setCellStyle(styleApproval);
-            for (short columnIndex = 2; columnIndex < 5; columnIndex++) {  //遍历表头
+            //遍历表头
+            for (short columnIndex = 2; columnIndex < 5; columnIndex++) {
                 cell = lastRow.createCell(columnIndex);
 //                    cell.setCellValue(jsonObject.getString(keys[columnIndex]));
                 cell.setCellValue("");
@@ -498,7 +518,8 @@ public class ExportExcelUtil {
             cell = lastRow.createCell(5);
             cell.setCellValue("申报公司负责人签字确认：");
             cell.setCellStyle(styleApproval);
-            for (short columnIndex = 6; columnIndex < 9; columnIndex++) {  //遍历表头
+            //遍历表头
+            for (short columnIndex = 6; columnIndex < 9; columnIndex++) {
                 cell = lastRow.createCell(columnIndex);
 //                    cell.setCellValue(jsonObject.getString(keys[columnIndex]));
                 cell.setCellValue("");
@@ -510,7 +531,8 @@ public class ExportExcelUtil {
             cell = lastRow.createCell(9);
             cell.setCellValue("施工管理工程师签字确认：");
             cell.setCellStyle(styleApproval);
-            for (short columnIndex = 10; columnIndex < 16; columnIndex++) {  //遍历表头
+            //遍历表头
+            for (short columnIndex = 10; columnIndex < 16; columnIndex++) {
                 cell = lastRow.createCell(columnIndex);
 //                    cell.setCellValue(jsonObject.getString(keys[columnIndex]));
                 cell.setCellValue("");
@@ -572,6 +594,7 @@ public class ExportExcelUtil {
             }
             case "largeAppliances": return returnTypeDTO.getLargeAppliances();
             /*case "siteName": return returnTypeDTO.getSiteName();*/
+            default:
         }
         return "";
     }

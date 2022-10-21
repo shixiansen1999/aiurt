@@ -33,6 +33,6 @@ public class BdLineServiceImpl extends ServiceImpl<BdLineMapper, BdLine> impleme
     @Autowired
     private BdLineMapper bdLineMapper;
     @Autowired
-    private ISysBaseAPI sysBaseAPI;
+    private ISysBaseAPI sysBaseApi;
 
 }

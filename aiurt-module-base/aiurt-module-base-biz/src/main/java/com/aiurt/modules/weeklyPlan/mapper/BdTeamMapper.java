@@ -26,16 +26,15 @@ public interface BdTeamMapper extends BaseMapper<BdTeam> {
 
     /**
      * 管辖班组列表
+     * @param id
      * @return
      */
     List<BdTeam> queryManagedTeam(Integer id);
 
 
-
-
-
     /**
      * 根据用户查询班组id
+     * @param userId
      * @return
      */
     Integer queryByUserId(String userId);

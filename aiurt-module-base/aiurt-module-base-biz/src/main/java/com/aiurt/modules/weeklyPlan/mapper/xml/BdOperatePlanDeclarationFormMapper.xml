@@ -14,7 +14,7 @@
                bs.phone AS phoneNo
         FROM sys_user AS bs LEFT JOIN sys_user_role AS sur on bs.id = sur.user_id
         WHERE bs.org_id
-        IN (SELECT distinct id FROM sys_depart WHERE FIND_IN_SET(id,get_team_child(#{teamID}))>0)
+        IN (SELECT distinct id FROM sys_depart WHERE FIND_IN_SET(id,get_team_child(#{teamId}))>0)
     </select>
 
     <select id="queryStaffByRoleType" resultType="com.aiurt.modules.weeklyplan.dto.BdStaffInfoReturnTypeDTO">
@@ -28,8 +28,8 @@
             LEFT JOIN sys_user_depart AS sud on bs.id = sud.user_id
         <where>
             sur.role_id = #{roleType}
-            <if test='deptID!="0" and deptID!=null and deptID!=""'>
-                AND bs.org_id IN (SELECT dep_id FROM sys_user_depart sud left join cs_user_major cum on sud.user_id = cum.user_id WHERE cum.major_id=#{deptID})
+            <if test='deptId!="0" and deptId!=null and deptId!=""'>
+                AND bs.org_id IN (SELECT dep_id FROM sys_user_depart sud left join cs_user_major cum on sud.user_id = cum.user_id WHERE cum.major_id=#{deptId})
             </if>
         </where>
     </select>
@@ -46,8 +46,8 @@
         left join sys_role rol on rol.id = sur.role_id
         <where>
             rol.role_name = #{roleName}
-            <if test='deptID!="0" and deptID!=null and deptID!=""'>
-                AND bs.org_id IN (SELECT dep_id FROM sys_user_depart sud left join cs_user_major cum on sud.user_id = cum.user_id WHERE cum.major_id=#{deptID})
+            <if test='deptId!="0" and deptId!=null and deptId!=""'>
+                AND bs.org_id IN (SELECT dep_id FROM sys_user_depart sud left join cs_user_major cum on sud.user_id = cum.user_id WHERE cum.major_id=#{deptId})
             </if>
         </where>
     </select>
@@ -82,11 +82,11 @@
     </select>
 
     <select id="queryStaffNameById" resultType="java.lang.String">
-        SELECT name FROM work_area WHERE id=#{staffID}
+        SELECT name FROM work_area WHERE id=#{staffId}
     </select>
 
     <select id="queryStationNameById" resultType="java.lang.String">
-        SELECT station_name FROM cs_station WHERE id=#{stationID}
+        SELECT station_name FROM cs_station WHERE id=#{stationId}
     </select>
 
     <select id="queryUserInfo" resultType="com.aiurt.modules.weeklyplan.dto.BdUserInfoDTO">
@@ -104,7 +104,7 @@
                  LEFT JOIN cs_user_depart sud ON su.id = sud.user_id
                  LEFT JOIN sys_user_role sur ON su.id = sur.user_id
                  LEFT JOIN sys_role sr ON sur.role_id = sr.id
-        WHERE su.id=#{userID}
+        WHERE su.id=#{userId}
     </select>
 
     <select id="queryAllStations" resultType="com.aiurt.modules.weeklyplan.dto.BdStationReturnTypeDTO">
@@ -308,9 +308,9 @@
         FROM
         cs_station
         WHERE 1=1
-        <if test="parseID !=null and parseID.length>0">
+        <if test="parseId !=null and parseId.length>0">
             and id IN
-            <foreach collection="parseID" item="id" index="index" open="(" close=")" separator=",">
+            <foreach collection="parseId" item="id" index="index" open="(" close=")" separator=",">
                 #{id}
             </foreach>
         </if>
@@ -386,7 +386,7 @@
         FROM
         sys_user
         WHERE
-        <if test="parseID !=null and parseID.length>0">
+        <if test="parseId !=null and parseId.length>0">
             id IN
             <foreach collection="array" item="id" index="index" open="(" close=")" separator=",">
                 #{id}
