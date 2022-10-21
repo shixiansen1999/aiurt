@@ -152,4 +152,13 @@ public interface PatrolConstant {
      * 巡检检查结果异常状态
      */
     Integer NOT_CHECK_RESULT = 0;
+    /**
+     * 巡检检查结果异常状态
+     */
+    String MANAGER = "admin";
+
+    /**
+     * 工单-数据填写类型：选择型
+     */
+    Integer DEVICE_INP_TYPE = 2;
 }

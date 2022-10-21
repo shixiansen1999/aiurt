@@ -1,6 +1,5 @@
 package com.aiurt.boot.task.service;
 
-import com.aiurt.boot.task.dto.PatrolBillDTO;
 import com.aiurt.boot.task.dto.PatrolCheckResultDTO;
 import com.aiurt.boot.task.dto.PatrolStationDTO;
 import com.aiurt.boot.task.dto.PatrolTaskDeviceDTO;
@@ -25,6 +24,7 @@ public interface IPatrolTaskDeviceService extends IService<PatrolTaskDevice> {
     /**
      * PC巡检任务池详情-巡检工单
      *
+     * @param page
      * @param patrolTaskDeviceParam
      * @return
      */
@@ -60,6 +60,7 @@ public interface IPatrolTaskDeviceService extends IService<PatrolTaskDevice> {
      * app巡检任务执行中-检查
      *
      * @param patrolTaskDevice
+     * @param checkDetail
      * @return
      */
     List<PatrolCheckResultDTO> getPatrolTaskCheck(PatrolTaskDevice patrolTaskDevice, Integer checkDetail);
