@@ -18,13 +18,13 @@
     </if>
 </select>
     <select id="selectByUserId" resultType="com.aiurt.modules.subsystem.dto.SubsystemFaultDTO">
-    select  s.system_code,s.system_name from cs_user_subsystem csu
+    select  s.system_code,s.system_name,s.id from cs_user_subsystem csu
     left join cs_subsystem s on csu.system_id = s.id
     where  s.del_flag =0 and csu.user_id = #{id}
     </select>
     <select id="getSubsystemFaultDTO" resultType="com.aiurt.modules.subsystem.dto.SubsystemFaultDTO">
     SELECT
-    uuid() as id,
+
     COUNT(fa.id and fl.weight >8 or not null) as seriousFaultNum,
     COUNT(fa.id and fl.weight &lt; 7 or not null) as commonFaultNum,
     IFNULL(sum(TIMESTAMPDIFF(second,IFNULL(fr.recevice_time,fr.assign_time),fr.end_time))
@@ -42,7 +42,7 @@
 
     <select id="getSubsystemByDeviceType" resultType="com.aiurt.modules.subsystem.dto.SubsystemFaultDTO">
         SELECT
-               uuid() as id,
+
         COUNT(fa.id and fl.weight >8 or not null) as seriousFaultNum,
         COUNT(fa.id and fl.weight  &lt; 7 or not null ) as commonFaultNum
         FROM   fault fa
@@ -115,7 +115,7 @@
 
     </select>
     <select id="getSubsystemByDeviceTypeCode" resultType="com.aiurt.modules.subsystem.dto.SubsystemFaultDTO">
-        select code as deviceTypeCode,name as deviceTypeName from device_type
+        select code as deviceTypeCode,name as deviceTypeName,id from device_type
         where del_flag = 0
         <if test="deviceTypeCode != null ">
             and code in
@@ -189,6 +189,11 @@
         where
             spare_part_out_order.del_flag =0
           and cs_subsystem.system_code = #{subsystemCode}
+    </select>
+    <select id="selectSubSystem" resultType="com.aiurt.modules.subsystem.dto.SubsystemFaultDTO">
+        select s.system_name,s.system_code,s.id
+        from  cs_subsystem s
+        where s.del_flag =0 and s.system_code = #{subsystemCode}
     </select>
 
 </mapper>

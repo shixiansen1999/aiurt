@@ -113,4 +113,11 @@ public interface CsUserSubsystemMapper extends BaseMapper<CsUserSubsystem> {
      * @return
      */
     Integer getReplacementNum(String subsystemCode);
+
+    /**
+     * 查询子系统名称code id
+     * @param subsystemCode
+     * @return
+     */
+    SubsystemFaultDTO selectSubSystem(@Param("subsystemCode")SubsystemFaultDTO subsystemCode);
 }
