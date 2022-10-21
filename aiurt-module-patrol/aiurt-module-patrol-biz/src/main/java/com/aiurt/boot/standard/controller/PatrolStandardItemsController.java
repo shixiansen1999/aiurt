@@ -171,7 +171,7 @@ public class PatrolStandardItemsController extends BaseController<PatrolStandard
 		patrolStandardItems.setId(id); patrolStandardItems.setDelFlag(1);
 		PatrolStandardItems patrolStandardItem = patrolStandardItemsService.getById(id);
 		if ("0".equals(patrolStandardItem.getParentId())){
-			patrolStandardItemsMapper.updatPId(id);
+			patrolStandardItemsMapper.updatPid(id);
 		}
 		patrolStandardItemsService.updateById(patrolStandardItems);
 		return Result.OK("删除成功!");

@@ -45,33 +45,6 @@ public class PatrolTaskDeviceController extends BaseController<PatrolTaskDevice,
 	private IPatrolTaskFaultService patrolTaskFaultService;
 	@Autowired
 	private IPatrolCheckResultService patrolCheckResultService;
-	@Autowired
-	private IPatrolTaskService patrolTaskService;
-	@Autowired
-	private  PatrolManager manager;
-
-    /**
-     * 分页列表查询
-     *
-     * @param patrolTaskDevice
-     * @param pageNo
-     * @param pageSize
-     * @param req
-     * @return
-     */
-    /*//@AutoLog(value = "patrol_task_device-分页列表查询")
-    @ApiOperation(value = "patrol_task_device-分页列表查询", notes = "patrol_task_device-分页列表查询")
-    @GetMapping(value = "/list")
-    public Result<IPage<PatrolTaskDevice>> queryPageList(PatrolTaskDevice patrolTaskDevice,
-                                                         @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
-                                                         @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize,
-                                                         HttpServletRequest req) {
-        QueryWrapper<PatrolTaskDevice> queryWrapper = QueryGenerator.initQueryWrapper(patrolTaskDevice, req.getParameterMap());
-        Page<PatrolTaskDevice> page = new Page<PatrolTaskDevice>(pageNo, pageSize);
-        IPage<PatrolTaskDevice> pageList = patrolTaskDeviceService.page(page, queryWrapper);
-        return Result.OK(pageList);
-    }*/
-
     /**
      * app巡检任务-巡检清单列表（巡检工单列表）
      * @return

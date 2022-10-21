@@ -49,8 +49,6 @@ public class PatrolApiServiceImpl implements PatrolApi {
     @Autowired
     private PatrolTaskUserMapper patrolTaskUserMapper;
     @Autowired
-    private ISysBaseAPI sysBaseAPI;
-    @Autowired
     private PatrolScreenService screenService;
 
     /**
@@ -191,14 +189,14 @@ public class PatrolApiServiceImpl implements PatrolApi {
     public Map<String, UserTeamPatrolDTO> getUserParameter(UserTeamParameter userTeamParameter)
     {
         LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        List<SysDepartModel> userSysDepart = sysBaseAPI.getUserSysDepart(user.getId());
+        List<SysDepartModel> userSysDepart = sysBaseApi.getUserSysDepart(user.getId());
         if(CollUtil.isNotEmpty(userTeamParameter.getOrgIdList()))
         {
             userSysDepart=userSysDepart.stream().filter(u->userTeamParameter.getOrgIdList().contains(u.getId())).collect(Collectors.toList());
         }
         List<String> orgIds = userSysDepart.stream().map(SysDepartModel::getId).collect(Collectors.toList());
         //获取部门list下的人员
-        List<LoginUser> useList = sysBaseAPI.getUseList(orgIds);
+        List<LoginUser> useList = sysBaseApi.getUseList(orgIds);
         List<String> useIds = useList.stream().map(LoginUser::getId).collect(Collectors.toList());
         List<UserTeamPatrolDTO> userBaseList =new ArrayList<>();
         if(ObjectUtil.isNotEmpty(userTeamParameter.getUserId()))
@@ -359,7 +357,7 @@ public class PatrolApiServiceImpl implements PatrolApi {
     @Override
     public Map<String, UserTeamPatrolDTO> getUserTeamParameter(UserTeamParameter userTeamParameter) {
         LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        List<SysDepartModel> userSysDepart = sysBaseAPI.getUserSysDepart(user.getId());
+        List<SysDepartModel> userSysDepart = sysBaseApi.getUserSysDepart(user.getId());
         //条件查询
         if(CollUtil.isNotEmpty(userTeamParameter.getOrgIdList()))
         {
@@ -378,7 +376,7 @@ public class PatrolApiServiceImpl implements PatrolApi {
         }
         for (UserTeamPatrolDTO dto : userBaseList) {
             //获取部门下的人员
-            List<LoginUser> useList = sysBaseAPI.getUserPersonnel(dto.getOrgId());
+            List<LoginUser> useList = sysBaseApi.getUserPersonnel(dto.getOrgId());
             List<String> useIds = useList.stream().map(LoginUser::getId).collect(Collectors.toList());
             //计算计划巡检数的计划巡检数
             UserTeamPatrolDTO userPlanNumber = patrolTaskMapper.getUserPlanNumber(dto.getOrgId(),userTeamParameter.getStartDate(),userTeamParameter.getEndDate());

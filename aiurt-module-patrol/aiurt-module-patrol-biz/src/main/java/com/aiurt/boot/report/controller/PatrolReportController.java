@@ -79,8 +79,8 @@ public class PatrolReportController {
     @RequestMapping(value = "/monthReport", method = {RequestMethod.GET})
     public Result<List<MonthDTO>> getMonthNum(@RequestParam(name = "lineCode",required = false) String lineCode,
                                                    @RequestParam(name = "stationCode",required = false) List<String> stationCode) {
-        List<MonthDTO> monthDTOS = reportService.getMonthNum(lineCode,stationCode);
-        return Result.ok(monthDTOS);
+        List<MonthDTO> monthDtos = reportService.getMonthNum(lineCode,stationCode);
+        return Result.ok(monthDtos);
     }
     /**
      * 统计报表-子系统故障列表-年图数据
@@ -93,8 +93,8 @@ public class PatrolReportController {
     public Result<List<MonthDTO>> getMonthOrgNum(@RequestParam(name = "lineCode",required = false) String lineCode,
                                                  @RequestParam(name = "stationCode",required = false) List<String> stationCode,
                                                  @RequestParam(name = "systemCode",required = false) List<String> systemCode) {
-        List<MonthDTO> monthDTOS = reportService.getMonthOrgNum(lineCode,stationCode,systemCode);
-        return Result.ok(monthDTOS);
+        List<MonthDTO> monthDtos = reportService.getMonthOrgNum(lineCode,stationCode,systemCode);
+        return Result.ok(monthDtos);
     }
     /**
      * 统计报表-班组故障列表

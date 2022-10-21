@@ -28,7 +28,7 @@ public interface PatrolStandardItemsMapper extends BaseMapper<PatrolStandardItem
      * 逻辑删除父级下面所有子集
      * @param id
      */
-    void updatPId(@Param("id") String id);
+    void updatPid(@Param("id") String id);
 
     /**
      * 查询数据字典

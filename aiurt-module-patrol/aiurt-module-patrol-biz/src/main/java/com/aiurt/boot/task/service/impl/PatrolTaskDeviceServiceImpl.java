@@ -62,7 +62,7 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
     @Autowired
     private PatrolTaskUserMapper patrolTaskUserMapper;
     @Autowired
-    private ISysBaseAPI sysBaseAPI;
+    private ISysBaseAPI sysBaseApi;
     @Autowired
     private PatrolManager manager;
     @Autowired
@@ -146,12 +146,12 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
             String positions = manager.translateStation(codeList);
             if (ObjectUtil.isNotEmpty(e.getDeviceCode())) {
                 e.setDevicePosition(positions);
-                List<StationDTO> stationDTOS = new ArrayList<>();
+                List<StationDTO> stationDtos = new ArrayList<>();
                 StationDTO station = new StationDTO();
                 station.setLineCode(e.getLineCode());
                 station.setStationCode(e.getStationCode());
-                stationDTOS.add(station);
-                String stationName = manager.translateStation(stationDTOS);
+                stationDtos.add(station);
+                String stationName = manager.translateStation(stationDtos);
                 e.setStationName(stationName);
             } else {
                 if (ObjectUtil.isNotEmpty(e.getCustomPosition())) {
@@ -293,7 +293,7 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
         List<PatrolCheckResultDTO> checkResultList = patrolCheckResultMapper.getListByTaskDeviceId(taskDeviceParam.getId());
         checkResultList.stream().forEach(c -> {
             if (ObjectUtil.isNotNull(c.getDictCode())) {
-                List<DictModel> list = sysBaseAPI.getDictItems(c.getDictCode());
+                List<DictModel> list = sysBaseApi.getDictItems(c.getDictCode());
                 list.stream().forEach(l -> {
                     if (2 == c.getInputType()) {
                         if (l.getValue().equals(c.getOptionValue())) {
@@ -471,7 +471,7 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
             checkResultList.stream().forEach(e ->
             {
                 if (ObjectUtil.isNotNull(e.getDictCode())) {
-                    List<DictModel> list = sysBaseAPI.getDictItems(e.getDictCode());
+                    List<DictModel> list = sysBaseApi.getDictItems(e.getDictCode());
                     e.setList(list);
                     list.stream().forEach(l -> {
                         if (2 == e.getInputType()) {

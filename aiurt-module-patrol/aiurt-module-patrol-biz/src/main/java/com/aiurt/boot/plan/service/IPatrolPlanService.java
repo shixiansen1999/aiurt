@@ -90,7 +90,7 @@ public interface IPatrolPlanService extends IService<PatrolPlan> {
      * @param
      * @return
      */
-    IPage<Device> deviceList(Page<Device> page, DeviceListDTO deviceListDOT);
+    IPage<Device> deviceList(Page<Device> page, DeviceListDTO deviceListDTO);
 
     /**
      *

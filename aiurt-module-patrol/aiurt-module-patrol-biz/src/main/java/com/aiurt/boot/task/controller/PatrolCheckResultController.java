@@ -72,7 +72,7 @@ public class PatrolCheckResultController extends BaseController<PatrolCheckResul
 											HttpServletRequest req) {
 		 LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
 		 LambdaUpdateWrapper<PatrolCheckResult> updateWrapper= new LambdaUpdateWrapper<>();
-		 if(!checkResult.equals("null")&&ObjectUtil.isNotEmpty(checkResult))
+		 if(!"null".equals(checkResult)&&ObjectUtil.isNotEmpty(checkResult))
 		 {
 			 updateWrapper.set(PatrolCheckResult::getCheckResult,checkResult).set(PatrolCheckResult::getUserId,sysUser.getId()).eq(PatrolCheckResult::getId,id);
 

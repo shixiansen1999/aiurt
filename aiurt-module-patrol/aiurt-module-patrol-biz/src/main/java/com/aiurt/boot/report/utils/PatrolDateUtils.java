@@ -41,18 +41,21 @@ public class PatrolDateUtils {
         int subYear = cal1.get(Calendar.YEAR) - cal2.get(Calendar.YEAR);
         if (subYear == 0)// subYear==0,说明是同一年
         {
-            if (cal1.get(Calendar.WEEK_OF_YEAR) == cal2.get(Calendar.WEEK_OF_YEAR))
+            if (cal1.get(Calendar.WEEK_OF_YEAR) == cal2.get(Calendar.WEEK_OF_YEAR)) {
                 return true;
+            }
         }
         else if (subYear == 1 && cal2.get(Calendar.MONTH) == 11) //subYear==1,说明cal比cal2大一年;java的一月用"0"标识，那么12月用"11"
         {
-            if (cal1.get(Calendar.WEEK_OF_YEAR) == cal2.get(Calendar.WEEK_OF_YEAR))
+            if (cal1.get(Calendar.WEEK_OF_YEAR) == cal2.get(Calendar.WEEK_OF_YEAR)) {
                 return true;
+            }
         }
         else if (subYear == -1 && cal1.get(Calendar.MONTH) == 11)//subYear==-1,说明cal比cal2小一年
         {
-            if (cal1.get(Calendar.WEEK_OF_YEAR) == cal2.get(Calendar.WEEK_OF_YEAR))
+            if (cal1.get(Calendar.WEEK_OF_YEAR) == cal2.get(Calendar.WEEK_OF_YEAR)) {
                 return true;
+            }
         }
         return false;
     }
@@ -73,8 +76,8 @@ public class PatrolDateUtils {
         long time1=cal.getTimeInMillis();
         cal.setTime(end);
         long time2=cal.getTimeInMillis();
-        long between_days=(time2-time1)/(1000*3600*24);
-        Double days=Double.parseDouble(String.valueOf(between_days));
+        long betweenDays=(time2-time1)/(1000*3600*24);
+        Double days=Double.parseDouble(String.valueOf(betweenDays));
         if((days/7)>0 && (days/7)<=1&&sameDate==true){
             //不满一周的按一周算
             return 1;

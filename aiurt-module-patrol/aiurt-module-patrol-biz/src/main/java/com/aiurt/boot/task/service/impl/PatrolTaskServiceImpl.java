@@ -81,7 +81,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
     @Autowired
     private PatrolManager manager;
     @Autowired
-    private ISysBaseAPI sysBaseAPI;
+    private ISysBaseAPI sysBaseApi;
     @Autowired
     private IBaseApi baseApi;
 
@@ -264,7 +264,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
 
         }
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        List<CsUserDepartModel> userDepartModelList = sysBaseAPI.getDepartByUserId(sysUser.getId());
+        List<CsUserDepartModel> userDepartModelList = sysBaseApi.getDepartByUserId(sysUser.getId());
         List<String> orgCodeList = userDepartModelList.stream().map(CsUserDepartModel::getOrgCode).collect(Collectors.toList());
         boolean admin = SecurityUtils.getSubject().hasRole("admin");
         if (!admin) {
@@ -295,7 +295,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
     @Override
     public Page<PatrolTaskDTO> getPatrolTaskList(Page<PatrolTaskDTO> pageList, PatrolTaskDTO patrolTaskDTO) {
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        List<CsUserDepartModel> userDepartModelList = sysBaseAPI.getDepartByUserId(sysUser.getId());
+        List<CsUserDepartModel> userDepartModelList = sysBaseApi.getDepartByUserId(sysUser.getId());
         List<String> orgCodeList = userDepartModelList.stream().map(CsUserDepartModel::getOrgCode).collect(Collectors.toList());
         if (ObjectUtil.isNotEmpty(patrolTaskDTO.getDateScope())) {
             String[] split = patrolTaskDTO.getDateScope().split(",");
@@ -426,7 +426,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         }
 
         // 获取当前登录人的部门权限
-        List<CsUserDepartModel> departList = sysBaseAPI.getDepartByUserId(loginUser.getId());
+        List<CsUserDepartModel> departList = sysBaseApi.getDepartByUserId(loginUser.getId());
         List<String> orgCodes = departList.stream().map(CsUserDepartModel::getOrgCode).collect(Collectors.toList());
         if (CollectionUtil.isEmpty(orgCodes)) {
             return new ArrayList<>();
@@ -796,7 +796,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         }
 
         // 获取当前登录人的部门权限
-        List<CsUserDepartModel> departList = sysBaseAPI.getDepartByUserId(loginUser.getId());
+        List<CsUserDepartModel> departList = sysBaseApi.getDepartByUserId(loginUser.getId());
         List<String> loginUserOrgCodes = departList.stream().map(CsUserDepartModel::getOrgCode).collect(Collectors.toList());
         if (CollectionUtil.isEmpty(loginUserOrgCodes)) {
             return new ArrayList<>();

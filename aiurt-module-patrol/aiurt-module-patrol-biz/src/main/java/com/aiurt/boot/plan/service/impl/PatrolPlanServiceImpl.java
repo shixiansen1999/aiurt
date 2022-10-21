@@ -76,8 +76,8 @@ public class PatrolPlanServiceImpl extends ServiceImpl<PatrolPlanMapper, PatrolP
         List <PatrolPlanDto> list1 =list.getRecords();
         list1.forEach(l->{
             List<String> strings = Arrays.asList(l.getSiteCode().split(";"));
-            List<StationDTO> stationDTOS = baseMapper.selectStations(strings);
-            l.setSiteName(patrolManager.translateStation(stationDTOS));
+            List<StationDTO> stationDtos = baseMapper.selectStations(strings);
+            l.setSiteName(patrolManager.translateStation(stationDtos));
         });
         return list;
     }
@@ -218,8 +218,8 @@ public class PatrolPlanServiceImpl extends ServiceImpl<PatrolPlanMapper, PatrolP
         PatrolPlanDto patrolPlanDto = baseMapper.selectId(id, code);
         if (ObjectUtil.isNotNull(patrolPlanDto.getSiteCode())) {
             patrolPlanDto.setSiteCodes(Arrays.asList(patrolPlanDto.getSiteCode().split(",")));
-            List<StationDTO>stationDTOS=baseMapper.selectStations(patrolPlanDto.getSiteCodes());
-            patrolPlanDto.setSiteName(patrolManager.translateStation(stationDTOS));
+            List<StationDTO>stationDtos=baseMapper.selectStations(patrolPlanDto.getSiteCodes());
+            patrolPlanDto.setSiteName(patrolManager.translateStation(stationDtos));
         }
         if (ObjectUtil.isNotNull(patrolPlanDto.getMechanismCode())) {
             patrolPlanDto.setMechanismCodes(Arrays.asList(patrolPlanDto.getMechanismCode().split(",")));
@@ -288,8 +288,8 @@ public class PatrolPlanServiceImpl extends ServiceImpl<PatrolPlanMapper, PatrolP
 
     @Override
     public IPage<Device> viewDetails(Page<Device> page, String standardCode, String planId) {
-        IPage<Device> deviceIPage = baseMapper.viewDetails(page, standardCode, planId);
-        List<Device> records = deviceIPage.getRecords();
+        IPage<Device> deviceIpage = baseMapper.viewDetails(page, standardCode, planId);
+        List<Device> records = deviceIpage.getRecords();
         if (records != null && records.size() > 0) {
             for (Device d : records) {
                 //线路
@@ -311,7 +311,7 @@ public class PatrolPlanServiceImpl extends ServiceImpl<PatrolPlanMapper, PatrolP
                 d.setPositionCodeCcName(positionCodeCcName);
             }
         }
-        return deviceIPage;
+        return deviceIpage;
     }
 
     @Override
@@ -350,8 +350,8 @@ public class PatrolPlanServiceImpl extends ServiceImpl<PatrolPlanMapper, PatrolP
 
     @Override
     public IPage<Device> deviceList(Page<Device> page, DeviceListDTO deviceListDTO) {
-        IPage<Device> deviceIPage = baseMapper.deviceList(page, deviceListDTO.getSiteCodes(), deviceListDTO.getSubsystemCode(), deviceListDTO.getMajorCode(), deviceListDTO.getDeviceTypeCode(), deviceListDTO.getDeviceCode(), deviceListDTO.getDeviceName());
-        List<Device> records = deviceIPage.getRecords();
+        IPage<Device> deviceIpage = baseMapper.deviceList(page, deviceListDTO.getSiteCodes(), deviceListDTO.getSubsystemCode(), deviceListDTO.getMajorCode(), deviceListDTO.getDeviceTypeCode(), deviceListDTO.getDeviceCode(), deviceListDTO.getDeviceName());
+        List<Device> records = deviceIpage.getRecords();
         if (records != null && records.size() > 0) {
             for (Device d : records) {
                 //线路
@@ -376,7 +376,7 @@ public class PatrolPlanServiceImpl extends ServiceImpl<PatrolPlanMapper, PatrolP
         if(CollUtil.isEmpty(deviceListDTO.getSiteCodes())){
             records = new ArrayList<>();
         }
-        return deviceIPage;
+        return deviceIpage;
     }
 
     @Override

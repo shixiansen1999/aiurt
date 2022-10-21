@@ -51,14 +51,14 @@ public class PatrolReportService {
     @Autowired
     private PatrolTaskDeviceMapper patrolTaskDeviceMapper;
     @Autowired
-    private ISysBaseAPI sysBaseAPI;
+    private ISysBaseAPI sysBaseApi;
     @Autowired
     private PatrolScreenService screenService;
     @Autowired
     private ReportMapper reportMapper;
     public Page<PatrolReport> getTaskDate(Page<PatrolReport> pageList, PatrolReportModel report) {
         LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        List<SysDepartModel> userSysDepart = sysBaseAPI.getUserSysDepart(user.getId());
+        List<SysDepartModel> userSysDepart = sysBaseApi.getUserSysDepart(user.getId());
         if(ObjectUtil.isNotEmpty(report.getOrgCode()))
         {
             userSysDepart = userSysDepart.stream().filter(u->report.getOrgCode().contains(u.getOrgCode())).collect(Collectors.toList());
@@ -109,7 +109,7 @@ public class PatrolReportService {
         }
         for (PatrolReport d : list) {
             //获取部门下的人员
-            List<LoginUser> useList = sysBaseAPI.getUserPersonnel(d.getOrgId());
+            List<LoginUser> useList = sysBaseApi.getUserPersonnel(d.getOrgId());
             List<String> useIds = useList.stream().map(LoginUser::getId).collect(Collectors.toList());
             //计算巡检总数(到组织)
             PatrolReport planNumber = patrolTaskMapper.getTasks(d.getOrgCode(),report);
@@ -336,11 +336,11 @@ public class PatrolReportService {
         }else if (ObjectUtil.isEmpty(lineCode)&& CollectionUtil.isEmpty(stationCode)){
             stationCode = this.selectStation(null).stream().map(LineOrStationDTO::getCode).collect(Collectors.toList());
         }
-        IPage<FailureReport> failureReportIPage = patrolTaskMapper.getFailureReport(page,sysUser.getId(), lineCode, stationCode, startTime, endTime);
+        IPage<FailureReport> failureReportIpage = patrolTaskMapper.getFailureReport(page,sysUser.getId(), lineCode, stationCode, startTime, endTime);
         String finalStartTime = startTime;
         String finalEndTime = endTime;
         List<String> finalStationCode = stationCode;
-        failureReportIPage.getRecords().forEach(f -> {
+        failureReportIpage.getRecords().forEach(f -> {
             if (f.getLastMonthNum() != 0) {
                 double sub = NumberUtil.sub(f.getMonthNum(), f.getLastMonthNum());
                 BigDecimal div = NumberUtil.div(sub, NumberUtil.round(f.getLastMonthNum(), 2));
@@ -363,7 +363,7 @@ public class PatrolReportService {
             int s1 = num1.stream().reduce(Integer::sum).orElse(0);
             f.setAverageResolution(f.getResolvedNum() == 0 ? 0 : s1 / f.getResolvedNum());
         });
-        return failureReportIPage;
+        return failureReportIpage;
     }
 
     public List<MonthDTO> getMonthNum(String lineCode, List<String> stationCode) {
@@ -373,12 +373,12 @@ public class PatrolReportService {
             stationCode = this.selectStation(null).stream().map(LineOrStationDTO::getCode).collect(Collectors.toList());
         }
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        List<MonthDTO> monthDTOS = patrolTaskMapper.selectMonth(sysUser.getId(), lineCode, stationCode);
-        return monthDTOS;
+        List<MonthDTO> monthDtos = patrolTaskMapper.selectMonth(sysUser.getId(), lineCode, stationCode);
+        return monthDtos;
     }
     public List<MonthDTO> getMonthOrgNum(String lineCode, List<String> stationCode, List<String> systemCode) {
         LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        List<SysDepartModel> userSysDepart = sysBaseAPI.getUserSysDepart(user.getId());
+        List<SysDepartModel> userSysDepart = sysBaseApi.getUserSysDepart(user.getId());
         List<String> orgCodes = userSysDepart.stream().map(SysDepartModel::getOrgCode).collect(Collectors.toList());
         if (CollectionUtil.isEmpty(orgCodes)){
             return new ArrayList<MonthDTO>() ;
@@ -391,13 +391,13 @@ public class PatrolReportService {
         if ( CollectionUtil.isEmpty(systemCode)){
             systemCode = this.selectSystem().stream().map(LineOrStationDTO::getCode).collect(Collectors.toList());
         }
-        List<MonthDTO> monthDTOS = patrolTaskMapper.selectMonthOrg(orgCodes, lineCode, stationCode, systemCode);
-        return monthDTOS;
+        List<MonthDTO> monthDtos = patrolTaskMapper.selectMonthOrg(orgCodes, lineCode, stationCode, systemCode);
+        return monthDtos;
     }
 
     public IPage<FailureOrgReport> getFailureOrgReport(Page<FailureOrgReport> page,String lineCode, List<String> stationCode, String startTime, String endTime, List<String> systemCode) {
         LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        List<SysDepartModel> userSysDepart = sysBaseAPI.getUserSysDepart(user.getId());
+        List<SysDepartModel> userSysDepart = sysBaseApi.getUserSysDepart(user.getId());
         List<String> ids =userSysDepart.stream().map(SysDepartModel::getId).collect(Collectors.toList());
         if (CollectionUtil.isEmpty(ids)){
             return page.setRecords(new ArrayList<>()) ;
@@ -518,13 +518,13 @@ public class PatrolReportService {
 
     public List<LineOrStationDTO> selectDepart () {
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        List<LineOrStationDTO> lineOrStationDTOS = patrolTaskMapper.selectDepart(sysUser.getId());
+        List<LineOrStationDTO> lineOrStationDtos = patrolTaskMapper.selectDepart(sysUser.getId());
         //获取自己及管辖的下的班组
-        if (CollUtil.isEmpty(lineOrStationDTOS)) {
+        if (CollUtil.isEmpty(lineOrStationDtos)) {
             return CollUtil.newArrayList();
         } else {
             List<LineOrStationDTO> list = new ArrayList<>();
-            for (LineOrStationDTO model : lineOrStationDTOS) {
+            for (LineOrStationDTO model : lineOrStationDtos) {
                 List<LineOrStationDTO> models = patrolTaskMapper.getUserOrgCategory(model.getCode());
                 if (CollUtil.isNotEmpty(models)) {
                     list.addAll(models);
