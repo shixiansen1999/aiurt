@@ -501,39 +501,43 @@ public class BigscreenPlanService {
                 if (timeByType.length > 0 && CollUtil.isNotEmpty(userList)) {
                     //获取一周内的班组平均维修响应时间
                     List<RepairRecordDetailDTO> repairDuration = bigScreenPlanMapper.getRepairDuration(userList, timeByType[0], timeByType[1]);
-                    if (CollUtil.isNotEmpty(repairDuration)) {
-                    long l = 0;
-                    for (RepairRecordDetailDTO repairRecordDetailDTO : repairDuration) {
-                        // 响应时长： 接收到任务，开始维修时长
-                        Date receviceTime = repairRecordDetailDTO.getReceviceTime();
-                        Date startTime = repairRecordDetailDTO.getStartTime();
-                        Date time = repairRecordDetailDTO.getEndTime();
-                        if (Objects.nonNull(startTime) && Objects.nonNull(receviceTime)) {
-                            long between = DateUtil.between(receviceTime, startTime, DateUnit.MINUTE);
-                            between = between == 0 ? 1 : between;
-                            l = l + between;
-                        }
-                        if (Objects.nonNull(startTime) && Objects.nonNull(time)) {
-                            long between = DateUtil.between(time, startTime, DateUnit.MINUTE);
-                            between = between == 0 ? 1 : between;
-                            l = l + between;
-                        }
-                    }
-                    int size = repairDuration.size();
-                    BigDecimal bigDecimal = new BigDecimal(l);
-
-                    BigDecimal bigDecimal1 = new BigDecimal(size);
-                    String s = bigDecimal.divide(bigDecimal1, 0).toString();
-                    teamPortraitDTO.setAverageTime(s);
-                    } else {
-                        teamPortraitDTO.setAverageTime("0");
-                    }
+                    getAverageTime(repairDuration, teamPortraitDTO);
                     //获取总工时
                     getTotalTimes(teamPortraitDTO, userList, type, timeByType);
                 }
             }
         }
         return teamPortraitDTOS;
+    }
+
+    public void getAverageTime( List<RepairRecordDetailDTO> repairDuration,TeamPortraitDTO teamPortraitDTO) {
+        if (CollUtil.isNotEmpty(repairDuration)) {
+            long l = 0;
+            for (RepairRecordDetailDTO repairRecordDetailDTO : repairDuration) {
+                // 响应时长： 接收到任务，开始维修时长
+                Date receviceTime = repairRecordDetailDTO.getReceviceTime();
+                Date startTime = repairRecordDetailDTO.getStartTime();
+                Date time = repairRecordDetailDTO.getEndTime();
+                if (Objects.nonNull(startTime) && Objects.nonNull(receviceTime)) {
+                    long between = DateUtil.between(receviceTime, startTime, DateUnit.MINUTE);
+                    between = between == 0 ? 1 : between;
+                    l = l + between;
+                }
+                if (Objects.nonNull(startTime) && Objects.nonNull(time)) {
+                    long between = DateUtil.between(time, startTime, DateUnit.MINUTE);
+                    between = between == 0 ? 1 : between;
+                    l = l + between;
+                }
+            }
+            int size = repairDuration.size();
+            BigDecimal bigDecimal = new BigDecimal(l);
+
+            BigDecimal bigDecimal1 = new BigDecimal(size);
+            String s = bigDecimal.divide(bigDecimal1, 0).toString();
+            teamPortraitDTO.setAverageTime(s);
+        } else {
+            teamPortraitDTO.setAverageTime("0");
+        }
     }
 
     public void getTotalTimes(TeamPortraitDTO teamPortraitDTO, List<LoginUser> userList, Integer type, Date[] timeByType) {
@@ -598,8 +602,8 @@ public class BigscreenPlanService {
         Map<String, BigDecimal> patrolUserHours = patrolApi.getPatrolUserHours(type, teamId);
         //获取检修任务人员个人总工时和同行人个人总工时
         Date[] timeByType = getTimeByType(String.valueOf(type));
-        Map<String, Long> collect1 = new HashMap<>();
-        Map<String, Long> collect2 = new HashMap<>();
+        Map<String, Long> collect1 = new HashMap<>(16);
+        Map<String, Long> collect2 = new HashMap<>(16);
 
         if (timeByType.length > 0) {
             List<TeamUserDTO> reconditionTime = bigScreenPlanMapper.getReconditionTime(userList, timeByType[0], timeByType[1]);
