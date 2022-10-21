@@ -127,6 +127,7 @@ public class FaultKnowledgeBaseTypeServiceImpl extends ServiceImpl<FaultKnowledg
             selectTable.setMajorCode(majorDTO.getMajorCode());
             childrenTress.add(selectTable);
         });
+        return childrenTress;
     }
 
     List<SelectTableDTO> getTreeRes(List<SelectTableDTO> children, String pid){
