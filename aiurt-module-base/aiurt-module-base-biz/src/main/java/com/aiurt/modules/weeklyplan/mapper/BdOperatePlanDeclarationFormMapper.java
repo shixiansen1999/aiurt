@@ -17,25 +17,76 @@ import java.util.List;
  * @Version: V1.0
  */
 public interface BdOperatePlanDeclarationFormMapper extends BaseMapper<BdOperatePlanDeclarationForm> {
-
+    /**
+     * 查找施工类型
+     * @return
+     */
     List<BdConstructionTypeDTO> queryConstructionTypeList();
 
+    /**
+     * 根据组织id查找人员
+     * @param teamId
+     * @return
+     */
     List<BdStaffInfoReturnTypeDTO> queryStaffByTeamId(String teamId);
 
+    /**
+     * 根据权限类型查找人员
+     * @param roleType
+     * @param deptId
+     * @return
+     */
     List<BdStaffInfoReturnTypeDTO> queryStaffByRoleType(String roleType, String deptId);
 
+    /**
+     * 根据权限名称查找人员
+     * @param roleName
+     * @param deptId
+     * @return
+     */
     List<BdStaffInfoReturnTypeDTO> queryStaffByRoleName(@Param("roleName") String roleName,@Param("deptId") String deptId);
 
+    /**
+     * 查找站点
+     * @param teamId
+     * @return
+     */
     List<BdStationReturnTypeDTO> queryStations(Integer teamId);
 
+    /**
+     * 查找线路
+     * @param idList
+     * @return
+     */
     List<BdLineDTO> queryLines(List<Integer> idList);
 
+    /**
+     * 查找人员名称
+     * @param staffId
+     * @return
+     */
     String queryStaffNameById(String staffId);
 
+    /**
+     * 查找站点名称
+     * @param stationId
+     * @return
+     */
     String queryStationNameById(String stationId);
 
+    /**
+     * 查找用户信息
+     * @param userId
+     * @return
+     */
     List<BdUserInfoDTO> queryUserInfo(String userId);
 
+    /**
+     * 查找所有的站点
+     * @param positionList
+     * @param pid
+     * @return
+     */
     List<BdStationReturnTypeDTO> queryAllStations(@Param("positionList")List<String> positionList,@Param("pid")String pid);
 
     Integer checkChargeStaffIfConflict(String chargeStaffId, Date taskDate);

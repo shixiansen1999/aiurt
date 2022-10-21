@@ -445,7 +445,7 @@ public class ImportExcelUtil {
 
 
     public String getStationIds(String cellText,Integer line) {
-        if(cellText.equals("")||("无").equals(cellText)){
+        if(("").equals(cellText)||("无").equals(cellText)){
             return "";
         }
         String result = "";

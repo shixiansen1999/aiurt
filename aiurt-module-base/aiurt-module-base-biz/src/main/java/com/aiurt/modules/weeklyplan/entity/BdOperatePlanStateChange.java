@@ -24,7 +24,7 @@ import java.io.Serializable;
 @EqualsAndHashCode(callSuper = false)
 @ApiModel(value = "bd_operate_plan_state_change对象", description = "周计划变更计划表")
 public class BdOperatePlanStateChange implements Serializable {
-    private static final long serialVisionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
     @TableId(type = IdType.AUTO)
     @ApiModelProperty(value = "计划令变更计划表")

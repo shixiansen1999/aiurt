@@ -24,7 +24,7 @@ import java.io.Serializable;
 @EqualsAndHashCode(callSuper = false)
 @ApiModel(value = "bd_template 对象", description = "周计划模板表")
 public class BdTemplate implements Serializable {
-    private static final long serialVisionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
     @TableId(type = IdType.AUTO)
     @ApiModelProperty(value = "周计划模板表")

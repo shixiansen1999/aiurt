@@ -104,7 +104,8 @@ public class BdOperatePlanDeclarationFormServiceImpl
         Date applyDate = new Date();
 
         //检查计划是否已经被更改过.
-        if (declarationForm.getPlanChange() == 3 && declarationForm.getChangeCorrelation() != 0) {
+        int num = 3;
+        if (declarationForm.getPlanChange() == num && declarationForm.getChangeCorrelation() != 0) {
             if (checkFormIfEdited(declarationForm)) {
                 throw new RuntimeException("Alrightly Edited");
             }
@@ -146,7 +147,7 @@ public class BdOperatePlanDeclarationFormServiceImpl
         this.save(declarationForm);
 
         //发送消息,草稿保存不发送消息
-        if(ObjectUtil.isNotEmpty(declarationForm.getFormStatus()) && declarationForm.getFormStatus() != 3){
+        if(ObjectUtil.isNotEmpty(declarationForm.getFormStatus()) && declarationForm.getFormStatus() != num){
             if (declarationForm.getPlanChange() == 0) {
                 this.sendMessage(String.valueOf(declarationForm.getId()), sysUser.getUsername(), declarationForm.getLineStaffId(),
                         "你有新的待审批周计划", 13, 1, true);
@@ -167,7 +168,8 @@ public class BdOperatePlanDeclarationFormServiceImpl
      * @param isLineallpeople 是否是总线路负责人，true是false否
      */
     private void sendMessage(String busId, String fromUser, String toUserId, String content, int typeId, int afterStatus, boolean isLineallpeople){
-        if(ObjectUtil.isNotEmpty(toUserId) && afterStatus != 2){
+        int num = 2;
+        if(ObjectUtil.isNotEmpty(toUserId) && afterStatus != num){
             //发送消息
             BusMessageDTO busMessageDTO = new BusMessageDTO();
             busMessageDTO.setBusType(SysAnnmentTypeEnum.BDOPERATEPLANDECLARATIONFORM.getType());
@@ -593,7 +595,8 @@ public class BdOperatePlanDeclarationFormServiceImpl
                 this.getById(bdOperatePlanStateChange.getBdOperatePlanDeclarationFormId());
         //检查审批状态
         Result<?> result = checkUpdateConflict(declarationForm, bdOperatePlanStateChange);
-        if (result.getErrCode() != null && result.getErrCode() == 600) {
+        int num = 600;
+        if (result.getErrCode() != null && result.getErrCode() == num) {
             return result;
         }
 

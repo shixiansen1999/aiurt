@@ -57,7 +57,7 @@ public class BdOperatePlanDeclarationFormController extends BaseController<BdOpe
 
 	 /**
 	  * 通过teamId获取组内和管辖组内成员-施工负责人
-	  * @param teamID Team ID.
+	  * @param teamId Team ID.
 	  * @return A list of BdStaffInfoReturnTypeDTO.
 	  */
 	@AutoLog(value = "周计划表-获取组内和管辖组内用户",operateType = 1,operateTypeAlias = "查询",permissionUrl = "/production/plan")
@@ -89,7 +89,7 @@ public class BdOperatePlanDeclarationFormController extends BaseController<BdOpe
 	/**
 	 * 通过roleName和deptID获取用户
 	 *
-	 * @param deptID the Department ID
+	 * @param deptId the Department ID
 	 * @return A list of BdStaffInfoReturnTypeDTO.
 	 */
 	@AutoLog(value = "周计划表-通过角色和deptID获取用户",operateType = 1,operateTypeAlias = "查询",permissionUrl = "/production/plan")
