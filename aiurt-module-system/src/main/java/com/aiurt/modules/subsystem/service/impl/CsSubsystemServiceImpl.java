@@ -128,7 +128,7 @@ public class CsSubsystemServiceImpl extends ServiceImpl<CsSubsystemMapper, CsSub
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         List<SubsystemFaultDTO> subSystemCodes = new ArrayList<>();
         if (ObjectUtils.isNotEmpty(subsystemCode.getSystemCode())){
-            subSystemCodes.add(subsystemCode);
+            subSystemCodes.add(csUserSubsystemMapper.selectSubSystem(subsystemCode));
         }else {
             subSystemCodes = csUserSubsystemMapper.selectByUserId(page,sysUser.getId());
         }
@@ -136,7 +136,7 @@ public class CsSubsystemServiceImpl extends ServiceImpl<CsSubsystemMapper, CsSub
         subSystemCodes.forEach(s -> {
             SubsystemFaultDTO subDTO = csUserSubsystemMapper.getSubsystemFaultDTO(time,s.getSystemCode());
             subDTO.setFailureNum(subDTO.getCommonFaultNum()+subDTO.getSeriousFaultNum());
-            subDTO.setSystemCode(s.getSystemCode());subDTO.setSystemName(s.getSystemName());
+            subDTO.setSystemCode(s.getSystemCode());subDTO.setSystemName(s.getSystemName());subDTO.setId(s.getId());
             subDTO.setCode(subDTO.getSystemCode());subDTO.setName(subDTO.getSystemName());
             subDTO.setFailureDuration(new BigDecimal((1.0 * ( subDTO.getNum()) / 3600)).setScale(2, BigDecimal.ROUND_HALF_UP));
             List<SubsystemFaultDTO> list = csUserSubsystemMapper.getSubsystemByDeviceTypeCode(s.getSystemCode(),deviceTypeCode);
@@ -148,7 +148,7 @@ public class CsSubsystemServiceImpl extends ServiceImpl<CsSubsystemMapper, CsSub
                 deviceType.setFailureDuration(new BigDecimal((1.0 * (num==null?0:num) / 3600)).setScale(2, BigDecimal.ROUND_HALF_UP));
                 deviceType.setDeviceTypeCode(l.getDeviceTypeCode());
                 deviceType.setDeviceTypeName(l.getDeviceTypeName());
-                deviceType.setName(l.getDeviceTypeName());deviceType.setCode(l.getDeviceTypeCode());
+                deviceType.setName(l.getDeviceTypeName());deviceType.setCode(l.getDeviceTypeCode());deviceType.setId(l.getId());
                 deviceTypeList.add(deviceType);
             });
             subDTO.setDeviceTypeList(deviceTypeList);
