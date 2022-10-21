@@ -71,21 +71,27 @@
     </select>
 
     <select id="stockCount" resultType="java.lang.Long">
-		SELECT
-        ifnull (SUM(stock_level2.num),0) as sum
+        SELECT
+        ifnull (SUM( stock_level2.num ),0) AS sum
         FROM
         stock_level2 stock_level2
-        LEFT JOIN material_base_type t5 ON stock_level2.base_type_code = t5.base_type_code
+        LEFT JOIN material_base mb ON stock_level2.material_code = mb.
+        CODE LEFT JOIN stock_level2_info stock_level2i ON stock_level2.warehouse_code = stock_level2i.warehouse_code
+        AND stock_level2i.del_flag = 0
+        LEFT JOIN cs_major cm ON mb.major_code = cm.major_code
+        AND cm.del_flag = 0
+        LEFT JOIN cs_subsystem cs ON mb.system_code = cs.system_code
+        AND cs.del_flag = 0
         <where>
-            stock_level2.del_flag =0
+            stock_level2.del_flag = 0
             <if test="systemCode != null and systemCode.size()!=0">
-                and t5.system_code in
+                and stock_level2.system_code in
                 <foreach collection="systemCode" index="index" item="item" open="(" close=")" separator=",">
                     #{item}
                 </foreach>
             </if>
             <if test="baseTypeCode != null and baseTypeCode.size()!=0">
-                and t5.base_type_code in
+                and mb.base_type_code in
                 <foreach collection="baseTypeCode" index="index" item="item" open="(" close=")" separator=",">
                     #{item}
                 </foreach>
@@ -95,14 +101,26 @@
 
     <select id="sparePartCount" resultType="java.lang.Long">
         SELECT
-        ifnull (SUM(spare_part_stock.num),0) as sum
+        ifnull (SUM( spare_part_stock.num ),0) AS sum
         FROM
         spare_part_stock spare_part_stock
-        LEFT JOIN material_base_type t5 ON spare_part_stock.material_code = t5.base_type_code
+        LEFT JOIN spare_part_stock_info t1 ON spare_part_stock.warehouse_code = t1.warehouse_code
+        LEFT JOIN material_base t2 ON spare_part_stock.material_code = t2.
+        CODE LEFT JOIN cs_major cs_major ON t2.major_code = cs_major.major_code
+        LEFT JOIN cs_subsystem cs_subsystem ON t2.system_code = cs_subsystem.system_code
+        LEFT JOIN material_base_type t5 ON t2.base_type_code = t5.base_type_code
+        LEFT JOIN sys_depart sys_depart ON sys_depart.id = spare_part_stock.org_id
+        LEFT JOIN sys_dict AS dict1 ON dict1.dict_code = 'material_type'
+        LEFT JOIN sys_dict_item AS d1 ON d1.item_value = t2.type
+        AND dict1.id = d1.dict_id
+        LEFT JOIN cs_manufactor t7 ON t7.id = t2.manufactor_code
+        LEFT JOIN sys_dict AS dict3 ON dict3.dict_code = 'materian_unit'
+        LEFT JOIN sys_dict_item AS d3 ON d3.item_value = t2.unit
+        AND dict3.id = d3.dict_id
         <where>
-            spare_part_stock.del_flag =0
+            spare_part_stock.del_flag = 0
             <if test="systemCode != null and systemCode.size()!=0">
-                and t5.system_code in
+                and cs_subsystem.system_code in
                 <foreach collection="systemCode" index="index" item="item" open="(" close=")" separator=",">
                     #{item}
                 </foreach>

@@ -163,25 +163,25 @@ public class SparePartStockServiceImpl extends ServiceImpl<SparePartStockMapper,
                         }
                         //物资类型的二级库库存
                         Long aLong2 = sparePartStockMapper.stockCount(null, CollectionUtil.isNotEmpty(list1) ? list1:list3);
-                        long l = aLong2!=null ? aLong2 + l1 :0L;
+                        long l = aLong2==null ? l1 :aLong2+l1;
                         //物资类型的三级库库存
                         Long aLong3 = sparePartStockMapper.sparePartCount(null, CollectionUtil.isNotEmpty(list1) ? list1:list3);
-                        long l8 = aLong3!=null ? aLong3 + l2 : 0L;
+                        long l8 = aLong3==null ? l2 : aLong3 + l2;
                         //上两年度的总消耗量
                         Long aLong9 = sparePartStockMapper.timeCount(null, CollectionUtil.isNotEmpty(list1) ? list1:list3, DateUtil.date().year() - 2,null);
-                        long l9 = aLong9!=null ? aLong9 + l3 : 0L;
+                        long l9 = aLong9==null ? l3 : aLong9 + l3;
                         //上年度的总消耗量
                         Long aLong10 = sparePartStockMapper.timeCount(null, CollectionUtil.isNotEmpty(list1) ? list1:list3, DateUtil.date().year() - 1,null);
-                        long l10 = aLong10!=null ? aLong10 + l4 : 0L;
+                        long l10 = aLong10==null ? l4 : aLong10 + l4 ;
                         //本年度的总消耗量
                         Long aLong11 = sparePartStockMapper.timeCount(null, CollectionUtil.isNotEmpty(list1) ? list1:list3, DateUtil.date().year(),null);
-                        long l11 = aLong11!=null ? aLong11 + l5 : 0L;
+                        long l11 = aLong11==null ? l5 : aLong11 + l5;
                         //上个月的消耗量
                         Long aLong12 = sparePartStockMapper.timeCount(null, CollectionUtil.isNotEmpty(list1) ? list1:list3, DateUtil.date().year(), DateUtil.date().month() - 1);
-                        long l12 = aLong12!=null ? aLong12+l6 : 0L;
+                        long l12 = aLong12==null ? l6 : aLong12+l6;
                         //本月的消耗量
                         Long aLong13 = sparePartStockMapper.timeCount(null, CollectionUtil.isNotEmpty(list1) ? list1:list3, DateUtil.date().year(), DateUtil.date().month());
-                        long l13 = aLong13!=null ? aLong13+l7 : 0L;
+                        long l13 = aLong13==null ? l7 : aLong13+l7;
                         SparePartStatistics sparePartStatistics1 = new SparePartStatistics();
                         this.getJudge(sparePartStatistics1,q,l,l8,l9,l10,l11,l12,l13);
                     }
