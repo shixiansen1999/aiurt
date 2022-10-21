@@ -26,14 +26,14 @@ import java.util.Arrays;
  * @Date:   2022-04-18
  * @Version: V1.0
  */
-@Api(tags="bd_question_options")
+@Api(tags="习题选项")
 @RestController
 @RequestMapping("/questionoptions/bdQuestionOptions")
 @Slf4j
 public class BdQuestionOptionsController extends BaseController<BdQuestionOptions, IBdQuestionOptionsService> {
 	@Autowired
 	private IBdQuestionOptionsService bdQuestionOptionsService;
-	
+
 	/**
 	 * 分页列表查询
 	 *
@@ -55,7 +55,7 @@ public class BdQuestionOptionsController extends BaseController<BdQuestionOption
 		IPage<BdQuestionOptions> pageList = bdQuestionOptionsService.page(page, queryWrapper);
 		return Result.OK(pageList);
 	}
-	
+
 	/**
 	 *   添加
 	 *
@@ -69,7 +69,7 @@ public class BdQuestionOptionsController extends BaseController<BdQuestionOption
 		bdQuestionOptionsService.save(bdQuestionOptions);
 		return Result.OK("添加成功！");
 	}
-	
+
 	/**
 	 *  编辑
 	 *
@@ -83,7 +83,7 @@ public class BdQuestionOptionsController extends BaseController<BdQuestionOption
 		bdQuestionOptionsService.updateById(bdQuestionOptions);
 		return Result.OK("编辑成功!");
 	}
-	
+
 	/**
 	 *   通过id删除
 	 *
@@ -97,7 +97,7 @@ public class BdQuestionOptionsController extends BaseController<BdQuestionOption
 		bdQuestionOptionsService.removeById(id);
 		return Result.OK("删除成功!");
 	}
-	
+
 	/**
 	 *  批量删除
 	 *
@@ -111,7 +111,7 @@ public class BdQuestionOptionsController extends BaseController<BdQuestionOption
 		this.bdQuestionOptionsService.removeByIds(Arrays.asList(ids.split(",")));
 		return Result.OK("批量删除成功!");
 	}
-	
+
 	/**
 	 * 通过id查询
 	 *

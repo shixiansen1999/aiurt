@@ -31,7 +31,7 @@ import java.util.*;
  * @Date:   2022-10-08
  * @Version: V1.0
  */
-@Api(tags="bd_work_ticket")
+@Api(tags="工作票")
 @RestController
 @RequestMapping("/workticket/bdWorkTicket")
 @Slf4j

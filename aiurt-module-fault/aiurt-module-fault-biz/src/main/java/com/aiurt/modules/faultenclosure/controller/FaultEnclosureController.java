@@ -42,7 +42,7 @@ import com.aiurt.common.aspect.annotation.AutoLog;
  * @Date:   2022-06-24
  * @Version: V1.0
  */
-@Api(tags="fault_enclosure")
+@Api(tags="故障-附件表")
 @RestController
 @RequestMapping("/faultenclosure/faultEnclosure")
 @Slf4j

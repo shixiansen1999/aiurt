@@ -26,14 +26,14 @@ import java.util.Arrays;
  * @Date:   2022-05-23
  * @Version: V1.0
  */
-@Api(tags="bd_train_question_feedback_record")
+@Api(tags="问题反馈表记录表")
 @RestController
 @RequestMapping("/feedback/bdTrainQuestionFeedbackRecord")
 @Slf4j
 public class BdTrainQuestionFeedbackRecordController extends BaseController<BdTrainQuestionFeedbackRecord, IBdTrainQuestionFeedbackRecordService> {
 	@Autowired
 	private IBdTrainQuestionFeedbackRecordService bdTrainQuestionFeedbackRecordService;
-	
+
 	/**
 	 * 分页列表查询
 	 *
@@ -55,7 +55,7 @@ public class BdTrainQuestionFeedbackRecordController extends BaseController<BdTr
 		IPage<BdTrainQuestionFeedbackRecord> pageList = bdTrainQuestionFeedbackRecordService.page(page, queryWrapper);
 		return Result.OK(pageList);
 	}
-	
+
 	/**
 	 *   添加
 	 *
@@ -69,7 +69,7 @@ public class BdTrainQuestionFeedbackRecordController extends BaseController<BdTr
 		bdTrainQuestionFeedbackRecordService.save(bdTrainQuestionFeedbackRecord);
 		return Result.OK("添加成功！");
 	}
-	
+
 	/**
 	 *  编辑
 	 *
@@ -83,7 +83,7 @@ public class BdTrainQuestionFeedbackRecordController extends BaseController<BdTr
 		bdTrainQuestionFeedbackRecordService.updateById(bdTrainQuestionFeedbackRecord);
 		return Result.OK("编辑成功!");
 	}
-	
+
 	/**
 	 *   通过id删除
 	 *
@@ -97,7 +97,7 @@ public class BdTrainQuestionFeedbackRecordController extends BaseController<BdTr
 		bdTrainQuestionFeedbackRecordService.removeById(id);
 		return Result.OK("删除成功!");
 	}
-	
+
 	/**
 	 *  批量删除
 	 *
@@ -111,7 +111,7 @@ public class BdTrainQuestionFeedbackRecordController extends BaseController<BdTr
 		this.bdTrainQuestionFeedbackRecordService.removeByIds(Arrays.asList(ids.split(",")));
 		return Result.OK("批量删除成功!");
 	}
-	
+
 	/**
 	 * 通过id查询
 	 *
