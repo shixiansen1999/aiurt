@@ -3,12 +3,14 @@ package com.aiurt.modules.sparepart.service.impl;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.collection.ListUtil;
 import cn.hutool.core.convert.Convert;
 import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.NumberUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.api.CommonAPI;
+import com.aiurt.modules.fault.dto.FaultFrequencyDTO;
 import com.aiurt.modules.material.entity.MaterialBaseType;
 import com.aiurt.modules.material.service.IMaterialBaseTypeService;
 import com.aiurt.modules.sparepart.entity.SparePartStock;
@@ -35,6 +37,7 @@ import java.math.RoundingMode;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * @Description: spare_part_stock
@@ -217,7 +220,7 @@ public class SparePartStockServiceImpl extends ServiceImpl<SparePartStockMapper,
         }
         //根据用户id查询对应的子系统
         List<SparePartStatistics> subsystemByUserId =  CollectionUtil.isNotEmpty(list) ?
-                sparePartStockMapper.getSubsystemByUserId(null, null,list):
+                sparePartStockMapper.getSubsystemByUserId(null, user.getId(),list):
                 sparePartStockMapper.getSubsystemByUserId(null, user.getId(),null);
         //查询子系统和所对应的物资类型
         LambdaQueryWrapper<MaterialBaseType> queryWrapper = new LambdaQueryWrapper<>();
@@ -229,22 +232,64 @@ public class SparePartStockServiceImpl extends ServiceImpl<SparePartStockMapper,
         List<MaterialBaseType> materialBaseTypeLitres = iMaterialBaseTypeService.treeList(materialBaseTypeList,"0");
 
         switch (sparePartConsume.getType()) {
+            // TODO: 1表示类型为近半年 横坐标为月份（半年有6个月份）
             case "1":
-                /*for (int i = 1; i<=6; i++) {
-                    getLast12Months(sparePartConsume, list1, subsystemByUserId, materialBaseTypeLitres, i);
-                }*/
-
-                return getTimeCount(materialBaseTypeLitres, list1, 6, subsystemByUserId);
-            case "2":
-              /*  for (int i = 1; i<=12; i++) {
-                    getLast12Months(sparePartConsume, list1, subsystemByUserId, materialBaseTypeLitres, i);
+                List<MaterialBaseType> timeCount = getTimeCount(materialBaseTypeLitres, list1, 6, subsystemByUserId);
+                timeCount.forEach(e->{
+                    List<SparePartConsume> sparePartConsumeList = e.getSparePartConsumeList();
+                    long sum = sparePartConsumeList.stream().mapToLong(SparePartConsume::getCount).sum();
+                    e.setCount(sum);
+                });
+                List<MaterialBaseType> count = ListUtil.sortByProperty(timeCount, "count");
+                if (StrUtil.isNotBlank(sparePartConsume.getSystemCode())&&StrUtil.isNotBlank(sparePartConsume.getBaseTypeCode())){
+                    return timeCount;
+                }else {
+                    return ListUtil.sub(count, count.size() <= 5 ? 0 : count.size() - 5, count.size());
                 }
-                break;*/
-                return getTimeCount(materialBaseTypeLitres, list1, 12, subsystemByUserId);
+                // TODO: 2表示类型为近一年 横坐标为月份（一年有12个月份）
+            case "2":
+                List<MaterialBaseType> timeCount1 = getTimeCount(materialBaseTypeLitres, list1, 12, subsystemByUserId);
+                timeCount1.forEach(e->{
+                    List<SparePartConsume> sparePartConsumeList = e.getSparePartConsumeList();
+                    long sum = sparePartConsumeList.stream().mapToLong(SparePartConsume::getCount).sum();
+                    e.setCount(sum);
+                });
+                List<MaterialBaseType> count1 = ListUtil.sortByProperty(timeCount1, "count");
+                if (StrUtil.isNotBlank(sparePartConsume.getSystemCode())&&StrUtil.isNotBlank(sparePartConsume.getBaseTypeCode())){
+                    return timeCount1;
+                }else {
+                    return ListUtil.sub(count1, count1.size() <= 5 ? 0 : count1.size() - 5, count1.size());
+                }
+                // TODO: 3表示类型为近两年 横坐标为季度（两年有8个季度）
             case "3":
-                return getTime(8, list1, subsystemByUserId, materialBaseTypeLitres);
+                List<MaterialBaseType> time = getTime(8, list1, subsystemByUserId, materialBaseTypeLitres);
+                time.forEach(e->{
+                    List<SparePartConsume> sparePartConsumeList = e.getSparePartConsumeList();
+                    long sum = sparePartConsumeList.stream().mapToLong(SparePartConsume::getCount).sum();
+                    e.setCount(sum);
+                });
+                List<MaterialBaseType> count2 = ListUtil.sortByProperty(time, "count");
+                if (StrUtil.isNotBlank(sparePartConsume.getSystemCode())&&StrUtil.isNotBlank(sparePartConsume.getBaseTypeCode())){
+                    return time;
+                }else {
+                    return ListUtil.sub(count2, count2.size() <= 5 ? 0 : count2.size() - 5, count2.size());
+                }
+
+                // TODO: 4表示类型为近三年 横坐标为季度（三年有12个季度）
             case "4":
-                return getTime(12,list1, subsystemByUserId, materialBaseTypeLitres);
+                List<MaterialBaseType> time1 = getTime(12, list1, subsystemByUserId, materialBaseTypeLitres);
+                time1.forEach(e->{
+                    List<SparePartConsume> sparePartConsumeList = e.getSparePartConsumeList();
+                    long sum = sparePartConsumeList.stream().mapToLong(SparePartConsume::getCount).sum();
+                    e.setCount(sum);
+                });
+                List<MaterialBaseType> count3 = ListUtil.sortByProperty(time1, "count");
+                if (StrUtil.isNotBlank(sparePartConsume.getSystemCode())&&StrUtil.isNotBlank(sparePartConsume.getBaseTypeCode())){
+                    return time1;
+                }else {
+                    return ListUtil.sub(count3, count3.size() <= 5 ? 0 : count3.size() - 5, count3.size());
+                }
+
             default:
                 return materialBaseTypeLitres;
         }
@@ -369,13 +414,6 @@ public class SparePartStockServiceImpl extends ServiceImpl<SparePartStockMapper,
         }
     }
 
-    private List<MaterialBaseType> getLast12Months(SparePartConsume sparePartConsume, List<String> list1, List<SparePartStatistics> subsystemByUserId, List<MaterialBaseType> materialBaseTypeLitres, int i) {
-        String last12Months = getLast12Months(i);
-        String substrings = last12Months.substring(0,4);
-        String substring = last12Months.substring(5,7);
-        sparePartConsume.setMonth(last12Months);
-        return  this.getCount(subsystemByUserId,materialBaseTypeLitres,list1,substrings,substring);
-    }
     private List<MaterialBaseType> getTimeCount(List<MaterialBaseType> materialBaseTypeLitres,List<String> list1,Integer integer,List<SparePartStatistics> subsystemByUserId){
         List<MaterialBaseType> materialBaseTypes = new ArrayList<>();
         if (CollectionUtil.isNotEmpty(subsystemByUserId)){
@@ -443,39 +481,6 @@ public class SparePartStockServiceImpl extends ServiceImpl<SparePartStockMapper,
         }
         return materialBaseTypes;
     }
-
-    private List<MaterialBaseType> getCount( List<SparePartStatistics> subsystemByUserId,
-                           List<MaterialBaseType> materialBaseTypeLitres,
-                           List<String> list1, String substrings, String substring
-                           ){
-        List<MaterialBaseType> materialBaseTypes = new ArrayList<>();
-            if (CollectionUtil.isNotEmpty(subsystemByUserId)){
-                for (SparePartStatistics e : subsystemByUserId) {
-                    List<MaterialBaseType> collect = materialBaseTypeLitres.stream().filter(materialBaseType -> e.getSystemCode().equals(materialBaseType.getSystemCode())).collect(Collectors.toList());
-                    if (CollUtil.isNotEmpty(collect)) {
-                        for(MaterialBaseType q : collect){
-                            List<SparePartConsume> list = new ArrayList<>();
-                            SparePartConsume sparePartConsume = new SparePartConsume();
-                            sparePartConsume.setMonth(substring);
-                            list.add(sparePartConsume);
-                            q.setMaterialBaseTypeList(null);
-                            List<String> list3 = new ArrayList<>();
-                            list3.add(q.getBaseTypeCode());
-                            Long aLong = sparePartStockMapper.timeCount(null, CollectionUtil.isNotEmpty(list1) ? list1:list3,Integer.valueOf(substrings),Integer.valueOf(substring));
-                            if (aLong!=null){
-                                sparePartConsume.setCount(aLong);
-                            }else {
-                                sparePartConsume.setCount(0L);
-                            }
-                            q.setSparePartConsumeList(list);
-                        }
-                        materialBaseTypes.addAll(collect);
-                    }
-                }
-            }
-        return materialBaseTypes;
-    }
-
 
     private void getJudge( SparePartStatistics e ,MaterialBaseType q, Long aLong, Long aLong1, Long aLong4,Long aLong5,Long aLong6,Long aLong7,Long aLong8){
         if (aLong4 != null) {
