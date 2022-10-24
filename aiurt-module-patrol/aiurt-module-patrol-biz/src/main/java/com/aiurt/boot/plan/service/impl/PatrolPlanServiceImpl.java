@@ -385,7 +385,6 @@ public class PatrolPlanServiceImpl extends ServiceImpl<PatrolPlanMapper, PatrolP
             throw new AiurtBootException("计划主键ID为空！");
         }
         PatrolPlan patrolPlan = patrolPlanMapper.selectById(planId);
-//        String planCode = patrolPlan.getCode();
 
         if (0 == status) {
             // 判断计划的策略是否为空

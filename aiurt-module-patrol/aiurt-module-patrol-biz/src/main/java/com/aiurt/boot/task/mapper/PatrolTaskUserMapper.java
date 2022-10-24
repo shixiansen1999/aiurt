@@ -18,7 +18,11 @@ import java.util.List;
  * @Version: V1.0
  */
 public interface PatrolTaskUserMapper extends BaseMapper<PatrolTaskUser> {
-
+    /**
+     * 根据用户id获取用户姓名
+     * @param userId
+     * @return
+     */
     String getUsername(@Param("userId") String userId);
 
     /**
@@ -89,19 +93,21 @@ public interface PatrolTaskUserMapper extends BaseMapper<PatrolTaskUser> {
      * @return
      */
     List<UserTeamPatrolDTO> getPeopleOmitNumber(@Param("useIds")List<String> useIds,@Param("startDate") String startDate, @Param("endDate")String endDate);
+
     /**
      * 获取本班组指派人在指定时间范围内的所有任务时长(单位秒)
-     *
      * @param startTime
      * @param endTime
+     * @param userList
      * @return
      */
     List<ScreenDurationTask> getScreenDuration(@Param("startTime")Date startTime, @Param("endTime")Date endTime,@Param("userList")List<LoginUser> userList );
+
     /**
      * 获取本班组同行人在指定时间范围内的所有任务时长(单位秒)
-     *
      * @param startTime
      * @param endTime
+     * @param userList
      * @return
      */
     List<ScreenDurationTask> getScreentPeerDuration(@Param("startTime")Date startTime, @Param("endTime")Date endTime,@Param("userList")List<LoginUser> userList );

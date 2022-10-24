@@ -18,11 +18,28 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
  */
 @EnableDataPerm
 public interface PatrolTaskOrganizationMapper extends BaseMapper<PatrolTaskOrganization> {
-
+    /**
+     * 根据任务编号查询组织机构信息
+     *
+     * @param taskCode
+     * @return
+     */
     List<PatrolTaskOrganizationDTO> selectOrgByTaskCode(@Param("taskCode") String taskCode);
 
+    /**
+     * 根据任务编码获取该任务包含组织机构下的人员信息
+     *
+     * @param code
+     * @return
+     */
     List<PatrolUserInfoDTO> getUserListByTaskCode(@Param("code") String code);
 
+    /**
+     * 根据任务编号获取组织机构编号
+     *
+     * @param taskCode
+     * @return
+     */
     List<String> getOrgCode(@Param("taskCode") String taskCode);
 
     /**

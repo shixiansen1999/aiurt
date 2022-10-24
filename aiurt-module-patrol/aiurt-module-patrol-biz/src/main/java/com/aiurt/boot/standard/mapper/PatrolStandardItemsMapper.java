@@ -14,7 +14,11 @@ import java.util.List;
  * @Version: V1.0
  */
 public interface PatrolStandardItemsMapper extends BaseMapper<PatrolStandardItems> {
-
+    /**
+     * 根据巡检标准表ID获取巡检标准项目列表
+     * @param id
+     * @return
+     */
     List<PatrolStandardItems> selectItemList(String id);
 
     /**

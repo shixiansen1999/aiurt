@@ -34,7 +34,7 @@ public class PatrolCheckResultDTO extends PatrolCheckResult {
      * 子节点
      */
     @ApiModelProperty(value = "子节点")
-    List<PatrolCheckResultDTO> children = new ArrayList<>();
+    List<PatrolCheckResultDTO> children;
     /**
      * 附件信息
      */

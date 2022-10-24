@@ -40,8 +40,20 @@ public interface PatrolPlanMapper extends BaseMapper<PatrolPlan> {
      * @param id
      */
     void updates(@Param("id")String id);
-    List<String> getMajorInfoByPlanId(@Param("planId") String planId);
 
+  /**
+   * 根据任务id获取任务的专业信息
+   *
+   * @param planId
+   * @return
+   */
+  List<String> getMajorInfoByPlanId(@Param("planId") String planId);
+
+  /**
+   * 根据计划id获取任务的子系统信息
+   * @param planId
+   * @return
+   */
     List<String> getSubsystemInfoByPlanId(@Param("planId") String planId);
 
     /**
