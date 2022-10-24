@@ -38,13 +38,13 @@ public class BdTeam implements Serializable {
      */
     @TableId(type = IdType.AUTO)
     @ApiModelProperty(value = "ID")
-    private Integer id;
+    private String id;
     /**
      * 上级ID
      */
     @Excel(name = "上级ID", width = 15)
     @ApiModelProperty(value = "上级ID")
-    private Integer parentId;
+    private String parentId;
     /**
      * 父ID 数据字典使用
      */

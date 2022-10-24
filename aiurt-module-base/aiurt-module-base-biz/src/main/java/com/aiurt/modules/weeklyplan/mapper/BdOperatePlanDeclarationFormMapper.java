@@ -89,14 +89,36 @@ public interface BdOperatePlanDeclarationFormMapper extends BaseMapper<BdOperate
      */
     List<BdStationReturnTypeDTO> queryAllStations(@Param("positionList")List<String> positionList,@Param("pid")String pid);
 
+    /**
+     * 查询施工负责人
+     * @param chargeStaffId
+     * @param taskDate
+     * @return
+     */
     Integer checkChargeStaffIfConflict(String chargeStaffId, Date taskDate);
 
+    /**
+     * 查询变更关联的周计划令
+     * @param changeCorrelation
+     * @return
+     */
     Integer checkFormIfEdited(Integer changeCorrelation);
 
+    /**
+     * 分页查询
+     * @param queryPagesParams
+     * @param busId
+     * @return
+     */
     List<BdOperatePlanDeclarationFormReturnTypeDTO> queryPages(
             @Param("queryPagesParams") QueryPagesParams queryPagesParams,
             @Param("busId") String busId);
 
+    /**
+     * 查询站点名称
+     * @param parseId
+     * @return
+     */
     String queryStationNamesById(@Param("parseID")String[] parseId);
 
     BdOperatePlanDeclarationFormReturnTypeDTO queryFormInfoById(Integer id);

@@ -71,7 +71,7 @@ public class QueryPagesParams {
     private List<BdLine> bdLineList;
 
     @ApiModelProperty(value = "管辖班组id集合")
-    private List<Integer> teamIdList;
+    private List<String> teamIdList;
 
     @ApiModelProperty(value = "周计划申请状态(多状态逗号分割)")
     private String formStatuses;
