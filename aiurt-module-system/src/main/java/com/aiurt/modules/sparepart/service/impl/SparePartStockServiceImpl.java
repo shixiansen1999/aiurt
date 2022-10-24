@@ -10,7 +10,6 @@ import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.NumberUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.api.CommonAPI;
-import com.aiurt.modules.fault.dto.FaultFrequencyDTO;
 import com.aiurt.modules.material.entity.MaterialBaseType;
 import com.aiurt.modules.material.service.IMaterialBaseTypeService;
 import com.aiurt.modules.sparepart.entity.SparePartStock;
@@ -37,7 +36,6 @@ import java.math.RoundingMode;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * @Description: spare_part_stock
@@ -192,6 +190,11 @@ public class SparePartStockServiceImpl extends ServiceImpl<SparePartStockMapper,
         return pageList.setRecords(subsystemByUserId);
     }
 
+    /**
+     * 递归遍历所有的子集，一直到没有子集为止
+     * @param list1
+     * @param list2
+     */
     private void getAllSubset(List<MaterialBaseType> list1, List<MaterialBaseType> list2){
         list1.addAll(list2);
         for (MaterialBaseType materialBaseType : list2) {
@@ -232,66 +235,39 @@ public class SparePartStockServiceImpl extends ServiceImpl<SparePartStockMapper,
         List<MaterialBaseType> materialBaseTypeLitres = iMaterialBaseTypeService.treeList(materialBaseTypeList,"0");
 
         switch (sparePartConsume.getType()) {
-            // TODO: 1表示类型为近半年 横坐标为月份（半年有6个月份）
+                 // TODO: 1表示类型为近半年 横坐标为月份（半年有6个月份）
             case "1":
                 List<MaterialBaseType> timeCount = getTimeCount(materialBaseTypeLitres, list1, 6, subsystemByUserId);
-                timeCount.forEach(e->{
-                    List<SparePartConsume> sparePartConsumeList = e.getSparePartConsumeList();
-                    long sum = sparePartConsumeList.stream().mapToLong(SparePartConsume::getCount).sum();
-                    e.setCount(sum);
-                });
-                List<MaterialBaseType> count = ListUtil.sortByProperty(timeCount, "count");
-                if (StrUtil.isNotBlank(sparePartConsume.getSystemCode())&&StrUtil.isNotBlank(sparePartConsume.getBaseTypeCode())){
-                    return timeCount;
-                }else {
-                    return ListUtil.sub(count, count.size() <= 5 ? 0 : count.size() - 5, count.size());
-                }
+                return this.getList(timeCount, sparePartConsume);
                 // TODO: 2表示类型为近一年 横坐标为月份（一年有12个月份）
             case "2":
                 List<MaterialBaseType> timeCount1 = getTimeCount(materialBaseTypeLitres, list1, 12, subsystemByUserId);
-                timeCount1.forEach(e->{
-                    List<SparePartConsume> sparePartConsumeList = e.getSparePartConsumeList();
-                    long sum = sparePartConsumeList.stream().mapToLong(SparePartConsume::getCount).sum();
-                    e.setCount(sum);
-                });
-                List<MaterialBaseType> count1 = ListUtil.sortByProperty(timeCount1, "count");
-                if (StrUtil.isNotBlank(sparePartConsume.getSystemCode())&&StrUtil.isNotBlank(sparePartConsume.getBaseTypeCode())){
-                    return timeCount1;
-                }else {
-                    return ListUtil.sub(count1, count1.size() <= 5 ? 0 : count1.size() - 5, count1.size());
-                }
+                return this.getList(timeCount1, sparePartConsume);
                 // TODO: 3表示类型为近两年 横坐标为季度（两年有8个季度）
             case "3":
                 List<MaterialBaseType> time = getTime(8, list1, subsystemByUserId, materialBaseTypeLitres);
-                time.forEach(e->{
-                    List<SparePartConsume> sparePartConsumeList = e.getSparePartConsumeList();
-                    long sum = sparePartConsumeList.stream().mapToLong(SparePartConsume::getCount).sum();
-                    e.setCount(sum);
-                });
-                List<MaterialBaseType> count2 = ListUtil.sortByProperty(time, "count");
-                if (StrUtil.isNotBlank(sparePartConsume.getSystemCode())&&StrUtil.isNotBlank(sparePartConsume.getBaseTypeCode())){
-                    return time;
-                }else {
-                    return ListUtil.sub(count2, count2.size() <= 5 ? 0 : count2.size() - 5, count2.size());
-                }
-
+                return this.getList(time, sparePartConsume);
                 // TODO: 4表示类型为近三年 横坐标为季度（三年有12个季度）
             case "4":
                 List<MaterialBaseType> time1 = getTime(12, list1, subsystemByUserId, materialBaseTypeLitres);
-                time1.forEach(e->{
-                    List<SparePartConsume> sparePartConsumeList = e.getSparePartConsumeList();
-                    long sum = sparePartConsumeList.stream().mapToLong(SparePartConsume::getCount).sum();
-                    e.setCount(sum);
-                });
-                List<MaterialBaseType> count3 = ListUtil.sortByProperty(time1, "count");
-                if (StrUtil.isNotBlank(sparePartConsume.getSystemCode())&&StrUtil.isNotBlank(sparePartConsume.getBaseTypeCode())){
-                    return time1;
-                }else {
-                    return ListUtil.sub(count3, count3.size() <= 5 ? 0 : count3.size() - 5, count3.size());
-                }
+                return this.getList(time1, sparePartConsume);
 
             default:
                 return materialBaseTypeLitres;
+        }
+    }
+
+    private List<MaterialBaseType> getList(List<MaterialBaseType> time, SparePartConsume sparePartConsume){
+        time.forEach(e->{
+            List<SparePartConsume> sparePartConsumeList = e.getSparePartConsumeList();
+            long sum = sparePartConsumeList.stream().mapToLong(SparePartConsume::getCount).sum();
+            e.setCount(sum);
+        });
+        List<MaterialBaseType> count2 = ListUtil.sortByProperty(time, "count");
+        if (StrUtil.isNotBlank(sparePartConsume.getSystemCode())&&StrUtil.isNotBlank(sparePartConsume.getBaseTypeCode())){
+            return time;
+        }else {
+            return ListUtil.sub(count2, count2.size() <= 5 ? 0 : count2.size() - 5, count2.size());
         }
     }
 
