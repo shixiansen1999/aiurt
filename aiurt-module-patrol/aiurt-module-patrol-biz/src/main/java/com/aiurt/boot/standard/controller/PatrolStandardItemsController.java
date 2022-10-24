@@ -50,7 +50,6 @@ public class PatrolStandardItemsController extends BaseController<PatrolStandard
 	 * @param req
 	 * @return
 	 */
-	//@AutoLog(value = "patrol_standard_items-分页列表查询")
 	@ApiOperation(value="patrol_standard_items-分页列表查询", notes="patrol_standard_items-分页列表查询")
 	@GetMapping(value = "/list")
 	public Result<IPage<PatrolStandardItems>> queryPageList(PatrolStandardItems patrolStandardItems,
