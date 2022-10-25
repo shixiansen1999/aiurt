@@ -330,7 +330,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
         userByRoleId.getRecords().forEach(l -> {
             List<String> majorIds = csUserMajorMapper.getMajorIds(l.getId());
             l.setMajorIds(majorIds);
-            SysDepartModel departByOrgCode = iSysBaseAPI.getDepartByOrgCode(l.getOrgCode());
+            SysDepartModel departByOrgCode = iSysBaseAPI.selectAllById(l.getOrgId());
             if(ObjectUtil.isNotNull(departByOrgCode)){
                 l.setOrgName(departByOrgCode.getDepartName());
             }
