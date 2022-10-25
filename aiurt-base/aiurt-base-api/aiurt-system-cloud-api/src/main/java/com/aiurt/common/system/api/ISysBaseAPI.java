@@ -558,12 +558,14 @@ public interface ISysBaseAPI extends CommonAPI {
 
     /**
      * 定时任务
+     * @param quartzJobDTO
      */
     @GetMapping(value = "/sys/api/saveAndScheduleJob")
     void saveAndScheduleJob(QuartzJobDTO quartzJobDTO);
 
     /**
      * 定时任务
+     * @param quartzJobDTO
      */
     @GetMapping(value = "/sys/api/deleteAndStopJob")
     void deleteAndStopJob(QuartzJobDTO quartzJobDTO);
