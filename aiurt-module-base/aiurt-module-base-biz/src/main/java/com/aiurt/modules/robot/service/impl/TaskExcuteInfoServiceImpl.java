@@ -27,10 +27,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -152,11 +149,11 @@ public class TaskExcuteInfoServiceImpl extends ServiceImpl<TaskExcuteInfoMapper,
 
     @Override
     public List<DeviceInfoVO> getDeviceInfo(String taskId) {
-        List<TaskExcuteInfo> excuteInfos = this.lambdaQuery().eq(TaskExcuteInfo::getTaskId, taskId)
-                .select(TaskExcuteInfo::getDevice).list();
+        List<TaskExcuteInfo> excuteInfos = this.lambdaQuery().eq(TaskExcuteInfo::getTaskId, taskId).list();
         List<String> deviceCodes = excuteInfos.stream()
-                .distinct()
+                .filter(l -> StrUtil.isNotEmpty(l.getDevice()))
                 .map(TaskExcuteInfo::getDevice)
+                .distinct()
                 .collect(Collectors.toList());
         List<DeviceInfoVO> list = new ArrayList<>();
 
