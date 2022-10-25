@@ -1,5 +1,8 @@
 package com.aiurt.common.api.vo;
 
+/**
+ * @author: jeecg-boot
+ */
 public final class ResponseUtils {
 
     public static <T> ResponseBean<T> writeSuccessResult() {

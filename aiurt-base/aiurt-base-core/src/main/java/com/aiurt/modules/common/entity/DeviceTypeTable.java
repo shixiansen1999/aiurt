@@ -11,6 +11,9 @@ import org.jeecgframework.poi.excel.annotation.Excel;
 
 import java.io.Serializable;
 import java.util.List;
+/**
+ * @author zwl
+ */
 @Data
 @ApiModel("设备分类下拉列表")
 public class DeviceTypeTable implements Serializable {

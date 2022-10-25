@@ -1,5 +1,8 @@
 package com.aiurt.common.enums;
 
+/**
+ * @author: zwl
+ */
 public enum FundingInfoEnum {
     ZIZHUTONGZHI(1),
     YEWUBAIKE(2),

@@ -9,6 +9,10 @@ import java.util.Date;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * @Description: SecurityTools
+ * @author: jeecg-boot
+ */
 public class DataValidateUtils {
     /**
      * 判断输入的文本是否 是 是或否

@@ -3,6 +3,8 @@ package com.aiurt.common.result;
 import lombok.Data;
 
 /**
+ * @Author WangHongTao
+ * @Date 2021/11/9
  * 查询备件结果集
  */
 @Data

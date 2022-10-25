@@ -62,7 +62,6 @@ public class BaseCommonServiceImpl implements BaseCommonService {
             try {
                 user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
             } catch (Exception e) {
-                //e.printStackTrace();
             }
         }
         if(user!=null){

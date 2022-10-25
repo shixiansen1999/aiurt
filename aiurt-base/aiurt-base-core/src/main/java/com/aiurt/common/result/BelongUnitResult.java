@@ -5,7 +5,10 @@ import lombok.Data;
 import org.jeecgframework.poi.excel.annotation.Excel;
 
 /**
- * 委外人员
+ * @Description 字典值类
+ * @Author scott
+ * @Date 2019-4-20
+ * @Version V1.0
  */
 @Data
 public class BelongUnitResult {

@@ -115,7 +115,6 @@ public class BaseController<T, S extends IService<T>> {
             Map<String, Object> map = new HashMap<>(5);
             ExportParams  exportParams=new ExportParams(title + "报表", "导出人:" + sysUser.getRealname(), title+i,upLoadPath);
             exportParams.setType(ExcelType.XSSF);
-            //map.put("title",exportParams);
             //表格Title
             map.put(NormalExcelConstants.PARAMS,exportParams);
             //表格对应实体

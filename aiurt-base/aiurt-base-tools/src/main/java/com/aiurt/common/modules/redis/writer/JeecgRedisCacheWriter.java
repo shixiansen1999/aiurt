@@ -230,7 +230,9 @@ public class JeecgRedisCacheWriter implements RedisCacheWriter {
         return (name + "~lock").getBytes(StandardCharsets.UTF_8);
     }
 
-    //update-begin-author:zyf date:20220216 for:升级springboot版本到2.4.0+以后需要实现的方法*
+    /**
+     * 升级springboot版本到2.4.0+以后需要实现的方法
+     */
     private final CacheStatisticsCollector statistics = CacheStatisticsCollector.create();
     @Override
     public CacheStatistics getCacheStatistics(String cacheName) {

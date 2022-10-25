@@ -73,7 +73,7 @@ public class HttpRequestDeviceUtils {
         String via = request.getHeader("Via");
         String userAgent = request.getHeader("user-agent");
 
-        for (int i = 0;!mobileFlag && userAgent!=null && !userAgent.trim().equals("") && i < mobileUserAgents.length; i++) {
+        for (int i = 0; userAgent != null && !userAgent.trim().equals("") && i < mobileUserAgents.length; i++) {
             if(userAgent.contains(mobileUserAgents[i])){
                 mobileFlag = true;
                 break;

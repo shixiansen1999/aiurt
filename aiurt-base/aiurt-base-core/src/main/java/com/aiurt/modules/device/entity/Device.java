@@ -168,8 +168,9 @@ public class Device extends DictEntity {
 	@TableField(exist = false)
 	private  String  orgCodeName;
 
-	/**临时设备(是/否（默认否）1是,0:否)*/
-//	@Excel(name = "临时设备(是/否（默认否）1是,0:否)", width = 15)
+	/**
+	 * 临时设备(是/否（默认否）1是,0:否)
+	 */
 	@ApiModelProperty(value = "临时设备(是/否（默认否）1是,0:否)")
 	@Dict(dicCode = "device_temporary")
 	private  String  temporary;
@@ -182,7 +183,10 @@ public class Device extends DictEntity {
 	/**设备复用类型(1:多线路复用/0:多站点复用)*/
 //	@Excel(name = "设备复用类型(1:多线路复用/0:多站点复用)", width = 15)
 	@ApiModelProperty(value = "设备复用类型(1:多线路复用/0:多站点复用)")
-//	@Dict(dicCode = "device_reuse_type")
+
+	/**
+	 * 设备复用类型
+	 */
 	private  String  reuseType;
 	@Excel(name = "设备复用类型", width = 15)
 	@ApiModelProperty(value = "设备复用类型(1:多线路复用/0:多站点复用)")
@@ -262,8 +266,9 @@ public class Device extends DictEntity {
 	@ApiModelProperty(value = "技术参数")
 	private  String  technicalParameter;
 
-	/**状态 0-停用 1-正常*/
-//	@Excel(name = "状态 0-停用 1-正常", width = 15)
+	/**
+	 * 状态 0-停用 1-正常
+	 */
 	@ApiModelProperty(value = "状态 0-停用 1-正常")
 	@Dict(dicCode = "device_status")
 	private  Integer  status;
@@ -279,15 +284,17 @@ public class Device extends DictEntity {
 	@TableField(exist = false)
 	private  String  statusDesc;
 
-	/**设备分类*/
-//	@Excel(name = "设备分类", width = 15)
+	/**
+	 * 设备分类
+	 */
 	@ApiModelProperty(value = "设备分类")
 	@TableField(exist = false)
 	private String typeName;
 
-	/**删除状态 0-未删除 1-已删除*/
-//	@Excel(name = "删除状态 0-未删除 1-已删除", width = 15)
-    @ApiModelProperty(value = "删除状态 0-未删除 1-已删除")
+	/**
+	 * 删除状态 0-未删除 1-已删除
+	 */
+	@ApiModelProperty(value = "删除状态 0-未删除 1-已删除")
 	@TableLogic
 	private  Integer  delFlag;
 
@@ -295,25 +302,29 @@ public class Device extends DictEntity {
 	@TableField(exist = false)
 	private  String  delFlagName;
 
-	/**创建人*/
-//	@Excel(name = "创建人", width = 15)
-    @ApiModelProperty(value = "创建人")
+	/**
+	 * 创建人
+	 */
+	@ApiModelProperty(value = "创建人")
 	private  String  createBy;
 
-	/**修改人*/
-//	@Excel(name = "修改人", width = 15)
-    @ApiModelProperty(value = "修改人")
+	/**
+	 * 修改人
+	 */
+	@ApiModelProperty(value = "修改人")
 	private  String  updateBy;
 
-	/**创建时间 CURRENT_TIMESTAMP*/
-//	@Excel(name = "创建时间 CURRENT_TIMESTAMP", width = 20, format = "yyyy-MM-dd HH:mm:ss")
+	/**
+	 * 创建时间
+	 */
 	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
     @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
     @ApiModelProperty(value = "创建时间 CURRENT_TIMESTAMP")
 	private  java.util.Date  createTime;
 
-	/**修改时间 根据当前时间戳更新*/
-//	@Excel(name = "修改时间 根据当前时间戳更新", width = 20, format = "yyyy-MM-dd HH:mm:ss")
+	/**
+	 * 修改时间 根据当前时间戳更新
+	 */
 	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
     @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
     @ApiModelProperty(value = "修改时间 根据当前时间戳更新")
@@ -323,15 +334,17 @@ public class Device extends DictEntity {
 	@TableField(exist = false)
 	private List<DeviceAssembly> deviceAssemblyList;
 
-	/**报废时间 CURRENT_TIMESTAMP*/
-	//	@Excel(name = "创建时间 CURRENT_TIMESTAMP", width = 20, format = "yyyy-MM-dd HH:mm:ss")
+	/**
+	 * 报废时间
+	 */
 	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
 	@DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
 	@ApiModelProperty(value = "报废时间 CURRENT_TIMESTAMP")
 	private  java.util.Date  scrapTime;
 
-	/**报废状态 0-未报废 1-已报废*/
-	//	@Excel(name = "报废状态 0-未报废 1-已报废", width = 15)
+	/**
+	 * 报废状态 0-未报废 1-已报废
+	 */
 	@ApiModelProperty(value = "报废状态 0-未报废 1-已报废")
 	@Dict(dicCode = "device_scrap_flag")
 	private  Integer  scrapFlag;

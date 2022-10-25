@@ -1,7 +1,8 @@
 package com.aiurt.common.exception;
 
 /**
- *
+ * @Description: 自定义返回值
+ * @author: aiurt
  */
 public enum AiurtErrorEnum {
 

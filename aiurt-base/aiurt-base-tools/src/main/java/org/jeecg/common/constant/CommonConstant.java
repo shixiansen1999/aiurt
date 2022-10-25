@@ -1,5 +1,8 @@
 package org.jeecg.common.constant;
 
+/**
+ * @author zwl
+ */
 public interface CommonConstant {
 
 	/**

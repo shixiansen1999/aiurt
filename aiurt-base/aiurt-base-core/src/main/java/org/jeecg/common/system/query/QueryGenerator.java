@@ -249,12 +249,10 @@ public class QueryGenerator {
 			// 将现有排序 _ 前端传递排序条件{....,column: 'column1,column2',order: 'desc'} 翻译成sql "column1,column2 desc"
 			// 修改为 _ 前端传递排序条件{....,column: 'column1,column2',order: 'desc'} 翻译成sql "column1 desc,column2 desc"
 			if (order.toUpperCase().indexOf(ORDER_TYPE_ASC)>=0) {
-				//queryWrapper.orderByAsc(oConvertUtils.camelToUnderline(column));
 				String columnStr = oConvertUtils.camelToUnderline(column);
 				String[] columnArray = columnStr.split(",");
 				queryWrapper.orderByAsc(Arrays.asList(columnArray));
 			} else {
-				//queryWrapper.orderByDesc(oConvertUtils.camelToUnderline(column));
 				String columnStr = oConvertUtils.camelToUnderline(column);
 				String[] columnArray = columnStr.split(",");
 				queryWrapper.orderByDesc(Arrays.asList(columnArray));
@@ -1132,7 +1130,6 @@ public class QueryGenerator {
 				//e.printStackTrace();
 			}
 
-			//如果为空，则去父类查找字段
 			if (field == null) {
 				List<Field> allFields = getClassFields(clazz);
 				List<Field> searchFields = allFields.stream().filter(a -> a.getName().equals(name)).collect(Collectors.toList());

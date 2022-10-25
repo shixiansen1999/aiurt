@@ -7,6 +7,9 @@ import lombok.Data;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * @author zwl
+ */
 @Data
 @ApiModel("下列列表")
 public class SelectTable {

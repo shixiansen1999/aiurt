@@ -5,6 +5,10 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import org.jeecgframework.poi.excel.annotation.Excel;
 
+/**
+ * @Author zwl
+ * @Date 2022/10/25
+ */
 @Data
 public class SparePartResult {
 

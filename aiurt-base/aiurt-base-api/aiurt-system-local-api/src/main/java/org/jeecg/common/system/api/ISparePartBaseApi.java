@@ -19,6 +19,7 @@ public interface ISparePartBaseApi {
 
     /**
      * 更新出库单, 更新实际使用的数量
+     * @param updateMap
      */
     void updateSparePartOutOrder(Map<String, Integer> updateMap);
 

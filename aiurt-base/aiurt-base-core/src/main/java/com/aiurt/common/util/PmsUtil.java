@@ -50,7 +50,6 @@ public class PmsUtil {
                 } else {
                     bw.write(s);
                 }
-                //bw.newLine();
                 bw.write("\r\n");
             }
             //释放资源

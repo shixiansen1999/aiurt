@@ -85,7 +85,7 @@ public class CryptoUtils {
      * @throws Exception
      */
     public static String signBySHA1WithDSA(String privateKeyText, String msg) throws Exception {
-        return doSign(privateKeyText, msg, Algorithm.DSA, Algorithm.SHA1WithDSA);
+        return doSign(privateKeyText, msg, Algorithm.DSA, Algorithm.SHA1_WITH_DSA);
     }
 
     /**
@@ -97,7 +97,7 @@ public class CryptoUtils {
      * @throws Exception
      */
     public static String signBySHA1WithRSA(String privateKeyText, String msg) throws Exception {
-        return doSign(privateKeyText, msg, Algorithm.RSA_ECB_PKCS1, Algorithm.SHA1WithRSA);
+        return doSign(privateKeyText, msg, Algorithm.RSA_ECB_PKCS1, Algorithm.SHA1_WITH_RSA);
     }
 
     /**
@@ -109,7 +109,7 @@ public class CryptoUtils {
      * @throws Exception
      */
     public static String signBySHA256WithRSA(String privateKeyText, String msg) throws Exception {
-        return doSign(privateKeyText, msg, Algorithm.RSA_ECB_PKCS1, Algorithm.SHA256WithRSA);
+        return doSign(privateKeyText, msg, Algorithm.RSA_ECB_PKCS1, Algorithm.SHA256_WITH_RSA);
     }
 
     /**
@@ -122,7 +122,7 @@ public class CryptoUtils {
      * @throws Exception
      */
     public static boolean verifyBySHA1WithDSA(String publicKeyText, String msg, String signatureText) throws Exception {
-        return doVerify(publicKeyText, msg, signatureText, Algorithm.DSA, Algorithm.SHA1WithDSA);
+        return doVerify(publicKeyText, msg, signatureText, Algorithm.DSA, Algorithm.SHA1_WITH_DSA);
     }
 
     /**
@@ -135,7 +135,7 @@ public class CryptoUtils {
      * @throws Exception
      */
     public static boolean verifyBySHA1WithRSA(String publicKeyText, String msg, String signatureText) throws Exception {
-        return doVerify(publicKeyText, msg, signatureText, Algorithm.RSA_ECB_PKCS1, Algorithm.SHA1WithRSA);
+        return doVerify(publicKeyText, msg, signatureText, Algorithm.RSA_ECB_PKCS1, Algorithm.SHA1_WITH_RSA);
     }
 
     /**
@@ -148,7 +148,7 @@ public class CryptoUtils {
      * @throws Exception
      */
     public static boolean verifyBySHA256WithRSA(String publicKeyText, String msg, String signatureText) throws Exception {
-        return doVerify(publicKeyText, msg, signatureText, Algorithm.RSA_ECB_PKCS1, Algorithm.SHA256WithRSA);
+        return doVerify(publicKeyText, msg, signatureText, Algorithm.RSA_ECB_PKCS1, Algorithm.SHA256_WITH_RSA);
     }
 
     /**
@@ -366,9 +366,9 @@ public class CryptoUtils {
          * 以下为签名算法
          */
         public static final Algorithm DSA = new Algorithm("DSA", 1024);
-        public static final Algorithm SHA1WithDSA = new Algorithm("SHA256WithRSA", 1024);
-        public static final Algorithm SHA1WithRSA = new Algorithm("SHA1WithRSA", 2048);
-        public static final Algorithm SHA256WithRSA = new Algorithm("SHA256WithRSA", 2048);
+        public static final Algorithm SHA1_WITH_DSA = new Algorithm("SHA256WithRSA", 1024);
+        public static final Algorithm SHA1_WITH_RSA = new Algorithm("SHA1WithRSA", 2048);
+        public static final Algorithm SHA256_WITH_RSA = new Algorithm("SHA256WithRSA", 2048);
 
         private String name;
         private String transformation;

@@ -10,10 +10,11 @@ import java.util.Locale;
 
 /**
  * 时间工具类
+ * @author zwl
  */
 public class TimeUtil {
-    private final static SimpleDateFormat shortSdf = new SimpleDateFormat("yyyy-MM-dd");
-    private final static SimpleDateFormat longSdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+    private final static SimpleDateFormat SHORT_SDF = new SimpleDateFormat("yyyy-MM-dd");
+    private final static SimpleDateFormat LONG_SDF = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
     /**
      * 获得本周的第一天，周一
@@ -24,8 +25,9 @@ public class TimeUtil {
         Calendar c = Calendar.getInstance();
         c.setFirstDayOfWeek(Calendar.MONDAY);
         try {
-            c.set(Calendar.DAY_OF_WEEK, Calendar.MONDAY);//周一
-            c.setTime(longSdf.parse(shortSdf.format(c.getTime()) + " 00:00:00"));
+            //周一
+            c.set(Calendar.DAY_OF_WEEK, Calendar.MONDAY);
+            c.setTime(LONG_SDF.parse(SHORT_SDF.format(c.getTime()) + " 00:00:00"));
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -41,8 +43,9 @@ public class TimeUtil {
         Calendar c = Calendar.getInstance();
         c.setFirstDayOfWeek(Calendar.MONDAY);
         try {
-            c.set(Calendar.DAY_OF_WEEK, Calendar.SUNDAY);//周日
-            c.setTime(longSdf.parse(shortSdf.format(c.getTime()) + " 23:59:59"));
+            //周日
+            c.set(Calendar.DAY_OF_WEEK, Calendar.SUNDAY);
+            c.setTime(LONG_SDF.parse(SHORT_SDF.format(c.getTime()) + " 23:59:59"));
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -82,7 +85,8 @@ public class TimeUtil {
         }
         long diff = endTime.getTime() - startTime.getTime();
         long days = diff / (1000 * 60 * 60 * 24);
-        long hours = (diff - days * (1000 * 60 * 60 * 24)) / (1000 * 60 * 60); //获取时
+        //获取时
+        long hours = (diff - days * (1000 * 60 * 60 * 24)) / (1000 * 60 * 60);
         long minutes = (diff - days * (1000 * 60 * 60 * 24) - hours * (1000 * 60 * 60)) / (1000 * 60);
         long s = (diff / 1000 - days * 24 * 60 * 60 - hours * 60 * 60 - minutes * 60);
         return days + "天" + hours + "时" + minutes + "分" + s + "秒";
@@ -128,7 +132,7 @@ public class TimeUtil {
         date.set(Calendar.SECOND, 0);
         date.set(Calendar.MILLISECOND, 0);
         try {
-            date.setTime(longSdf.parse(shortSdf.format(date.getTime()) + " 00:00:00"));
+            date.setTime(LONG_SDF.parse(SHORT_SDF.format(date.getTime()) + " 00:00:00"));
         } catch (ParseException e) {
             e.printStackTrace();
         }

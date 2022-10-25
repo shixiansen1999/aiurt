@@ -6,7 +6,9 @@ import cn.hutool.core.util.StrUtil;
 import java.util.Arrays;
 import java.util.Optional;
 
-
+/**
+ * @author: zwl
+ */
 public enum FaultLevelEnum {
 
     PTGZ(1, "普通故障"),

@@ -1,5 +1,8 @@
 package com.aiurt.common.enums;
 
+/**
+ * @author: zwl
+ */
 public enum ReportTypeEnums {
     PER_SCHOOL(1, "学前教育资助申报"),
     COMPULSORY(2, "义务教育资助申报"),

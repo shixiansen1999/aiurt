@@ -5,6 +5,9 @@ import cn.hutool.core.util.StrUtil;
 import java.util.Arrays;
 import java.util.Optional;
 
+/**
+ * @author: zwl
+ */
 public enum  WorkLogCheckStatusEnum {
     WSH(0, "未审阅"),
     YSH(1, "已审阅");

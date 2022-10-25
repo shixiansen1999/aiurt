@@ -473,11 +473,13 @@ public interface ISysBaseAPI extends CommonAPI {
 
     /**
      * 定时任务
+     * @param quartzJobDTO
      */
     void saveAndScheduleJob(QuartzJobDTO quartzJobDTO);
 
     /**
      * 定时任务
+     * @param quartzJobDTO
      */
     void deleteAndStopJob(QuartzJobDTO quartzJobDTO);
 
@@ -523,6 +525,8 @@ public interface ISysBaseAPI extends CommonAPI {
 
     /**
      * 根据线路编号集合查询对应的站点编号集合
+     * @param lineCodes
+     * @return
      */
     List<String> getStationCodeByLineCode(List<String> lineCodes);
 

@@ -102,8 +102,6 @@ public class FreemarkerParseFactory {
         } catch (Exception e) {
             log.error(e.getMessage(), e.fillInStackTrace());
             log.error("发送一次的模板key:{ " + tplName + " }");
-            //System.err.println(e.getMessage());
-            //System.err.println("模板名:{ "+ tplName +" }");
             throw new RuntimeException("解析SQL模板异常");
         }
     }
@@ -135,8 +133,6 @@ public class FreemarkerParseFactory {
         } catch (Exception e) {
             log.error(e.getMessage(), e.fillInStackTrace());
             log.error("发送一次的模板key:{ " + tplContent + " }");
-            //System.err.println(e.getMessage());
-            //System.err.println("模板内容:{ "+ tplContent +" }");
             throw new RuntimeException("解析SQL模板异常");
         }
     }
