@@ -430,7 +430,7 @@ public class ScheduleController {
     @RequestMapping(value = "/downloadScheduleExcel", method = RequestMethod.GET)
     public void downloadScheduleExcel(HttpServletResponse response, HttpServletRequest request) throws IOException {
         //获取输入流，原始模板位置
-        ClassPathResource classPathResource =  new ClassPathResource("template/排班表导入模板.xlsx");
+        ClassPathResource classPathResource =  new ClassPathResource("templates/排班表导入模板.xlsx");
         InputStream bis = classPathResource.getInputStream();
         BufferedOutputStream out = new BufferedOutputStream(response.getOutputStream());
         int len = 0;
