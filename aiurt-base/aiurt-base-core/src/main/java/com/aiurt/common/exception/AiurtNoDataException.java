@@ -22,10 +22,6 @@ public class AiurtNoDataException extends RuntimeException {
         this.data = data;
     }
 
-    public static long getSerialVersionUID() {
-        return serialVersionUID;
-    }
-
     public List<String> getData() {
         return data;
     }
