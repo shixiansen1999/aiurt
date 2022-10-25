@@ -1,10 +1,10 @@
-package com.aiurt.modules.AppUser.service;
+package com.aiurt.modules.appuser.service;
 
 
 import com.aiurt.common.enums.StatusEnum;
 import com.aiurt.common.util.DateUtils;
-import com.aiurt.modules.AppUser.entity.UserParam;
-import com.aiurt.modules.AppUser.entity.UserStatusVo;
+import com.aiurt.modules.appuser.entity.UserParam;
+import com.aiurt.modules.appuser.entity.UserStatusVo;
 import com.aiurt.modules.system.entity.SysAbout;
 import com.aiurt.modules.system.entity.SysHelp;
 import com.aiurt.modules.system.entity.SysUser;

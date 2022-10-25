@@ -1,4 +1,4 @@
-package com.aiurt.modules.AppUser.entity;
+package com.aiurt.modules.appuser.entity;
 
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;

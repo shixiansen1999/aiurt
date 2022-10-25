@@ -1,9 +1,9 @@
-package com.aiurt.modules.AppUser.controller;
+package com.aiurt.modules.appuser.controller;
 
 import com.aiurt.common.aspect.annotation.AutoLog;
-import com.aiurt.modules.AppUser.entity.UserParam;
-import com.aiurt.modules.AppUser.entity.UserStatusVo;
-import com.aiurt.modules.AppUser.service.AppUserService;
+import com.aiurt.modules.appuser.entity.UserParam;
+import com.aiurt.modules.appuser.entity.UserStatusVo;
+import com.aiurt.modules.appuser.service.AppUserService;
 import com.aiurt.modules.system.entity.SysAbout;
 import com.aiurt.modules.system.entity.SysHelp;
 import com.aiurt.modules.system.entity.SysUser;
