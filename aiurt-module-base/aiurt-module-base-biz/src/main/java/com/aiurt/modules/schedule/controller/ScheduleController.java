@@ -432,6 +432,8 @@ public class ScheduleController {
         //获取输入流，原始模板位置
         ClassPathResource classPathResource =  new ClassPathResource("templates/排班表导入模板.xlsx");
         InputStream bis = classPathResource.getInputStream();
+        //设置发送到客户端的响应的内容类型
+        response.setContentType("tapplication/vnd.ms-excel;charset=utf-8");
         BufferedOutputStream out = new BufferedOutputStream(response.getOutputStream());
         int len = 0;
         while ((len = bis.read()) != -1) {
