@@ -688,8 +688,8 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
                     String orgStrs = StrUtil.join(",", list);
                     result = manager.queryUserByOrdCode(orgStrs);
 
-                    // todo 过滤不是今日当班的人员
-//                    result = filterNoShiftUser(orgDTOS);
+                    // 过滤不是今日当班的人员
+                    result = filterNoShiftUser(result, list);
                 }
             }
         }
@@ -698,11 +698,26 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
 
     /**
      * @param orgDTOS
+     * @param orgCodes
      * @return
      */
-    private List<OrgDTO> filterNoShiftUser(List<OrgDTO> orgDTOS) {
-
-        return new ArrayList<>();
+    private List<OrgDTO> filterNoShiftUser(List<OrgDTO> orgDTOS, List<String> orgCodes) {
+        // 获取今日当班人员信息
+        List<SysUserTeamDTO> todayOndutyDetail = baseApi.getTodayOndutyDetailNoPage(orgCodes, new Date());
+        if (CollectionUtil.isEmpty(orgDTOS) || CollectionUtil.isEmpty(todayOndutyDetail)) {
+            return orgDTOS;
+        }
+        List<String> userIds = todayOndutyDetail.stream().map(SysUserTeamDTO::getUserId).collect(Collectors.toList());
+        // 获取仅在今日值班的人员
+        for (OrgDTO dto : orgDTOS) {
+            List<LoginUser> list = Optional.ofNullable(dto.getUsers())
+                    .orElseGet(Collections::emptyList)
+                    .stream()
+                    .filter(l -> userIds.contains(l.getId()))
+                    .collect(Collectors.toList());
+            dto.setUsers(list);
+        }
+        return orgDTOS;
     }
 
     /**
