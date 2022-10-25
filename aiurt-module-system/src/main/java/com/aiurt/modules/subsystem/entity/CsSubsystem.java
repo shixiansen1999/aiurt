@@ -62,6 +62,10 @@ public class CsSubsystem implements Serializable {
 	@Excel(name = "说明", width = 15)
     @ApiModelProperty(value = "说明")
     private String description;
+    /**子系统概况*/
+    @Excel(name = "子系统概况", width = 15)
+    @ApiModelProperty(value = "子系统概况")
+    private String generalSituation;
 	/**删除标志，0未删除，1已删除*/
 	@Excel(name = "删除标志，0未删除，1已删除", width = 15)
     @ApiModelProperty(value = "删除标志，0未删除，1已删除")
