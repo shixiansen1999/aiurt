@@ -30,5 +30,10 @@ public interface ISparePartReturnOrderService extends IService<SparePartReturnOr
      * @return
      */
     Result<?> update(SparePartReturnOrder sparePartReturnOrder);
+
+    /**
+     * 修改订单
+     * @param sparePartOutOrder
+     */
     void updateOrder(SparePartOutOrder sparePartOutOrder);
 }

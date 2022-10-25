@@ -65,7 +65,6 @@ public class SparePartStockController extends BaseController<SparePartStock, ISp
 								   @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
 								   @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
 								   HttpServletRequest req) {
-		//QueryWrapper<SparePartStock> queryWrapper = QueryGenerator.initQueryWrapper(sparePartStock, req.getParameterMap());
 		LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
 		if(ObjectUtil.isNotNull(sparePartStock.getModule())){
 			sparePartStock.setOrgId(user.getOrgId());
@@ -113,7 +112,6 @@ public class SparePartStockController extends BaseController<SparePartStock, ISp
 														@RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
 														@RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
 														HttpServletRequest req) {
-		 //QueryWrapper<SparePartStock> queryWrapper = QueryGenerator.initQueryWrapper(sparePartStock, req.getParameterMap());
 		 LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
 		 if(ObjectUtil.isNotNull(sparePartStock.getModule())){
 			 sparePartStock.setOrgId(user.getOrgId());

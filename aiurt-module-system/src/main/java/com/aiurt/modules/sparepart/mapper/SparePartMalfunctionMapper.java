@@ -17,5 +17,10 @@ import java.util.List;
  */
 @Component
 public interface SparePartMalfunctionMapper extends BaseMapper<SparePartMalfunction> {
+    /**
+     * 读取所有
+     * @param sparePartMalfunction
+     * @return
+     */
     List<SparePartMalfunction> readAll(@Param("malfunction") SparePartMalfunction sparePartMalfunction);
 }

@@ -62,7 +62,7 @@ public class CasClientController {
 		log.info("Rest api login.");
 		try {
 			String validateUrl = prefixUrl+"/p3/serviceValidate";
-			String res = CASServiceUtil.getSTValidate(validateUrl, ticket, service);
+			String res = CASServiceUtil.getStValidate(validateUrl, ticket, service);
 			log.info("res."+res);
 			final String error = XmlUtils.getTextForElement(res, "authenticationFailure");
 			if(StringUtils.isNotEmpty(error)) {
@@ -102,7 +102,6 @@ public class CasClientController {
 			result.success("登录成功");
 
 		} catch (Exception e) {
-			//e.printStackTrace();
 			result.error500(e.getMessage());
 		}
 		return new HttpEntity<>(result);

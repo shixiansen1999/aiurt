@@ -47,7 +47,7 @@ public class SparePartBaseApiImpl implements ISparePartBaseApi {
     private SparePartOutOrderMapper sparePartOutOrderMapper;
 
     @Autowired
-    private ISysBaseAPI sysBaseAPI;
+    private ISysBaseAPI sysBaseApi;
 
     @Autowired
     private ISparePartReplaceService partReplaceService;
@@ -230,7 +230,7 @@ public class SparePartBaseApiImpl implements ISparePartBaseApi {
                 String outOrderId = deviceChangeDTO.getOutOrderId();
                 // 需要往spare_part_malfunction备件履历表
                 String createBy = deviceChangeDTO.getCreateBy();
-                LoginUser loginUser = sysBaseAPI.getUserByName(createBy);
+                LoginUser loginUser = sysBaseApi.getUserByName(createBy);
                 SparePartMalfunction sparePartMalfunction = new SparePartMalfunction();
                 sparePartMalfunction.setOutOrderId(outOrderId);
                 sparePartMalfunction.setMaintenanceRecord(faultCode);

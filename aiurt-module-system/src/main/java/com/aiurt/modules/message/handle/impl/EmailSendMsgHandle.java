@@ -22,7 +22,7 @@ public class EmailSendMsgHandle implements ISendMsgHandle {
     }
 
     @Override
-    public void SendMsg(String es_receiver, String es_title, String es_content) {
+    public void sendMsg(String esReceiver, String esTitle, String esContent) {
         JavaMailSender mailSender = (JavaMailSender) SpringContextUtils.getBean("mailSender");
         MimeMessage message = mailSender.createMimeMessage();
         MimeMessageHelper helper = null;
@@ -36,9 +36,9 @@ public class EmailSendMsgHandle implements ISendMsgHandle {
             helper = new MimeMessageHelper(message, true);
             // 设置发送方邮箱地址
             helper.setFrom(emailFrom);
-            helper.setTo(es_receiver);
-            helper.setSubject(es_title);
-            helper.setText(es_content, true);
+            helper.setTo(esReceiver);
+            helper.setSubject(esTitle);
+            helper.setText(esContent, true);
             mailSender.send(message);
         } catch (MessagingException e) {
             e.printStackTrace();

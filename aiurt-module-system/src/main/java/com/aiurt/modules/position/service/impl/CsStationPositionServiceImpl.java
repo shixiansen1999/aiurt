@@ -71,7 +71,7 @@ public class CsStationPositionServiceImpl extends ServiceImpl<CsStationPositionM
         if (!positionList.isEmpty()) {
             return Result.error("三级名称重复，请重新填写！");
         }*/
-        //编码不能重复，判断数据库中是否存在，如不存在则可继续添加
+        /*编码不能重复，判断数据库中是否存在，如不存在则可继续添加*/
         List<CsLine> list = csLineMapper.selectCode(csStationPosition.getPositionCode());
         if (!list.isEmpty()) {
             return Result.error("编码重复，请重新填写！");

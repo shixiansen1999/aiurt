@@ -20,5 +20,11 @@ import java.util.List;
 @Component
 @EnableDataPerm
 public interface SparePartLendMapper extends BaseMapper<SparePartLend> {
+    /**
+     * 读取所有
+     * @param page
+     * @param sparePartLend
+     * @return
+     */
     List<SparePartLend> readAll(Page page, @Param("lend") SparePartLend sparePartLend);
 }

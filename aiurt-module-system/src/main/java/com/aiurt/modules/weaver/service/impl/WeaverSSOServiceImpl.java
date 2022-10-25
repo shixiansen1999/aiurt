@@ -29,8 +29,8 @@ import java.util.concurrent.TimeUnit;
 @Service
 public class WeaverSSOServiceImpl implements IWeaverSSOService {
 
-    private static final String registUrl = "/api/ec/dev/auth/regist";
-    private static final String applytokenUrl = "/api/ec/dev/auth/applytoken";
+    private static final String REGIST_URL = "/api/ec/dev/auth/regist";
+    private static final String APPLY_TOKEN_URL = "/api/ec/dev/auth/applytoken";
 
     @Autowired
     private RedisTemplate<String,String> redisTemplate;
@@ -59,7 +59,7 @@ public class WeaverSSOServiceImpl implements IWeaverSSOService {
         // 客户端RSA公钥
         redisTemplate.opsForValue().set("WEAVER:LOCAL_PUBLIC_KEY", publicKey);
 
-        String url = String.format("http://%s%s", weaverIp, registUrl);
+        String url = String.format("http://%s%s", weaverIp, REGIST_URL);
         HttpHeaders headers = new HttpHeaders();
         headers.add("appid", appId);
         headers.add("cpk", publicKey);
@@ -104,7 +104,7 @@ public class WeaverSSOServiceImpl implements IWeaverSSOService {
         //对秘钥进行加密传输，防止篡改数据
         String encryptSecret = rsa.encryptBase64(secret, CharsetUtil.CHARSET_UTF_8, KeyType.PublicKey);
 
-        String url = String.format("http://%s%s", weaverIp, applytokenUrl);
+        String url = String.format("http://%s%s", weaverIp, APPLY_TOKEN_URL);
         HttpHeaders headers = new HttpHeaders();
         headers.add("appid", appId);
         headers.add("secret", encryptSecret);

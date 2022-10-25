@@ -78,7 +78,7 @@ public class DeviceTypeController extends BaseController<DeviceType, IDeviceType
 		 majorList.forEach(one -> {
 			 DeviceType major = setEntity(one.getId(),"zy",one.getMajorCode(),one.getMajorName(),null,null,null,one.getMajorCode(),null,"-",null);
 			 List<CsSubsystem> sysList = systemList.stream().filter(system-> system.getMajorCode().equals(one.getMajorCode())).collect(Collectors.toList());
-			 List<DeviceType> majorDeviceType = deviceTypeTree.stream().filter(type-> one.getMajorCode().equals(type.getMajorCode()) && (null==type.getSystemCode() || "".equals(type.getSystemCode())) && type.getPid().equals("0")).collect(Collectors.toList());
+			 List<DeviceType> majorDeviceType = deviceTypeTree.stream().filter(type-> one.getMajorCode().equals(type.getMajorCode()) && (null==type.getSystemCode() || "".equals(type.getSystemCode())) && ("0").equals(type.getPid())).collect(Collectors.toList());
 			 List<DeviceType> twoList = new ArrayList<>();
 			 if(level>2) {
 				//添加设备类型数据
@@ -196,15 +196,6 @@ public class DeviceTypeController extends BaseController<DeviceType, IDeviceType
 		if(null != deviceType.getMajorCode() && !"".equals(deviceType.getMajorCode())){
 			queryWrapper.eq(DeviceType::getMajorCode, deviceType.getMajorCode());
 		}
-		/*if(null != deviceType.getPid() && !"".equals(deviceType.getPid())){
-            queryWrapper.apply("find_in_set(pid,"+deviceType.getPid()+")");
-            //queryWrapper.eq(DeviceType::getPid, deviceType.getPid());
-			if(null != deviceType.getSystemCode() && !"".equals(deviceType.getSystemCode())){
-				queryWrapper.eq(DeviceType::getSystemCode, deviceType.getSystemCode());
-			}else{
-				queryWrapper.isNull(DeviceType::getSystemCode);
-			}
-		}*/
 		if(null != deviceType.getSystemCode() && !"".equals(deviceType.getSystemCode())){
 			queryWrapper.eq(DeviceType::getSystemCode, deviceType.getSystemCode());
 		}
@@ -224,9 +215,9 @@ public class DeviceTypeController extends BaseController<DeviceType, IDeviceType
 				type.setIsHaveDevice(0);
 			}
 			//查询上级节点
-			if(!type.getPid().equals("0")){
+			if(!("0").equals(type.getPid())){
 				type.setPUrl(deviceTypeService.getById(type.getPid()).getName());
-			}else if(null!=type.getMajorCode() && null!= type.getSystemCode() && type.getPid().equals("0")){
+			}else if(null!=type.getMajorCode() && null!= type.getSystemCode() && ("0").equals(type.getPid())){
 				LambdaQueryWrapper<CsSubsystem> wrapper = new LambdaQueryWrapper();
 				wrapper.eq(CsSubsystem::getSystemCode,type.getSystemCode());
 				wrapper.eq(CsSubsystem::getDelFlag, CommonConstant.DEL_FLAG_0);

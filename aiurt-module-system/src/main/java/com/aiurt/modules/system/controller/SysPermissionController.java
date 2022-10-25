@@ -24,6 +24,7 @@ import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.SecurityUtils;
+import org.apache.shiro.authz.annotation.RequiresRoles;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.vo.LoginUser;
 import org.jeecg.modules.base.service.BaseCommonService;
@@ -272,7 +273,6 @@ public class SysPermissionController {
             if (isApp != null) {
                 query.eq("is_app", isApp);
             }
-            //query.eq(SysPermission::getStatus, "1");
             List<SysPermission> allAuthList = sysPermissionService.list(query);
             JSONArray allauthjsonArray = new JSONArray();
             this.getAllAuthJsonArray(allauthjsonArray, allAuthList);
@@ -343,7 +343,7 @@ public class SysPermissionController {
      * @param permission
      * @return
      */
-    //@RequiresRoles({ "admin" })
+    /*@RequiresRoles({ "admin" })*/
     @AutoLog(value = "菜单管理-添加菜单")
     @RequestMapping(value = "/add", method = RequestMethod.POST)
     public Result<SysPermission> add(@RequestBody SysPermission permission) {
@@ -365,7 +365,7 @@ public class SysPermissionController {
      * @param permission
      * @return
      */
-    //@RequiresRoles({ "admin" })
+    /*@RequiresRoles({ "admin" })*/
     @AutoLog(value = "菜单管理-编辑菜单")
     @RequestMapping(value = "/edit", method = {RequestMethod.PUT, RequestMethod.POST})
     public Result<SysPermission> edit(@RequestBody SysPermission permission) {
@@ -387,7 +387,7 @@ public class SysPermissionController {
      * @param id
      * @return
      */
-    //@RequiresRoles({ "admin" })
+    /*@RequiresRoles({ "admin" })*/
     @RequestMapping(value = "/delete", method = RequestMethod.DELETE)
     public Result<SysPermission> delete(@RequestParam(name = "id", required = true) String id) {
         Result<SysPermission> result = new Result<>();
@@ -407,7 +407,7 @@ public class SysPermissionController {
      * @param ids
      * @return
      */
-    //@RequiresRoles({ "admin" })
+    /*@RequiresRoles({ "admin" })*/
     @RequestMapping(value = "/deleteBatch", method = RequestMethod.DELETE)
     public Result<SysPermission> deleteBatch(@RequestParam(name = "ids", required = true) String ids) {
         Result<SysPermission> result = new Result<>();
@@ -452,7 +452,7 @@ public class SysPermissionController {
             List<TreeModel> treeList = new ArrayList<>();
             getTreeModelList(treeList, list, null);
 
-            Map<String, Object> resMap = new HashMap<String, Object>();
+            Map<String, Object> resMap = new HashMap<String, Object>(32);
             // 全部树节点数据
             resMap.put("treeList", treeList);
             // 全部树ids
@@ -498,7 +498,7 @@ public class SysPermissionController {
         Result<List<String>> result = new Result<>();
         try {
             List<SysRolePermission> list = sysRolePermissionService.list(new QueryWrapper<SysRolePermission>().lambda().eq(SysRolePermission::getRoleId, roleId));
-            result.setResult(list.stream().map(SysRolePermission -> String.valueOf(SysRolePermission.getPermissionId())).collect(Collectors.toList()));
+            result.setResult(list.stream().map(sysRolePermission -> String.valueOf(sysRolePermission.getPermissionId())).collect(Collectors.toList()));
             result.setSuccess(true);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
@@ -512,7 +512,7 @@ public class SysPermissionController {
      * @return
      */
     @RequestMapping(value = "/saveRolePermission", method = RequestMethod.POST)
-    //@RequiresRoles({ "admin" })
+    /*@RequiresRoles({ "admin" })*/
     public Result<String> saveRolePermission(@RequestBody JSONObject json) {
         long start = System.currentTimeMillis();
         Result<String> result = new Result<>();
@@ -701,9 +701,6 @@ public class SysPermissionController {
         JSONObject json = new JSONObject();
         // 类型(0：一级菜单 1：子菜单 2：按钮)
         if (permission.getMenuType().equals(CommonConstant.MENU_TYPE_2)) {
-            //json.put("action", permission.getPerms());
-            //json.put("type", permission.getPermsType());
-            //json.put("describe", permission.getName());
             return null;
         } else if (permission.getMenuType().equals(CommonConstant.MENU_TYPE_0) || permission.getMenuType().equals(CommonConstant.MENU_TYPE_1)) {
             json.put("id", permission.getId());
@@ -715,7 +712,7 @@ public class SysPermissionController {
                 json.put("route", "0");
             }
 
-            if (isWWWHttpUrl(permission.getUrl())) {
+            if (isWwwHttpUrl(permission.getUrl())) {
                 json.put("path", Md5Util.md5Encode(permission.getUrl(), "utf-8"));
             } else {
                 json.put("path", permission.getUrl());
@@ -793,7 +790,7 @@ public class SysPermissionController {
                     meta.put("icon", permission.getIcon());
                 }
             }
-            if (isWWWHttpUrl(permission.getUrl())) {
+            if (isWwwHttpUrl(permission.getUrl())) {
                 meta.put("url", permission.getUrl());
             }
             // update-begin--Author:sunjianlei  Date:20210918 for：新增适配vue3项目的隐藏tab功能
@@ -813,7 +810,7 @@ public class SysPermissionController {
      *
      * @return
      */
-    private boolean isWWWHttpUrl(String url) {
+    private boolean isWwwHttpUrl(String url) {
         if (url != null && (url.startsWith("http://") || url.startsWith("https://") || url.startsWith("{{"))) {
             return true;
         }
@@ -862,7 +859,7 @@ public class SysPermissionController {
      * @param sysPermissionDataRule
      * @return
      */
-    //@RequiresRoles({ "admin" })
+    /*@RequiresRoles({ "admin" })*/
     @RequestMapping(value = "/addPermissionRule", method = RequestMethod.POST)
     public Result<SysPermissionDataRule> addPermissionRule(@RequestBody SysPermissionDataRule sysPermissionDataRule) {
         Result<SysPermissionDataRule> result = new Result<SysPermissionDataRule>();
@@ -877,7 +874,7 @@ public class SysPermissionController {
         return result;
     }
 
-    //@RequiresRoles({ "admin" })
+    /*@RequiresRoles({ "admin" })*/
     @RequestMapping(value = "/editPermissionRule", method = {RequestMethod.PUT, RequestMethod.POST})
     public Result<SysPermissionDataRule> editPermissionRule(@RequestBody SysPermissionDataRule sysPermissionDataRule) {
         Result<SysPermissionDataRule> result = new Result<SysPermissionDataRule>();
@@ -897,7 +894,7 @@ public class SysPermissionController {
      * @param id
      * @return
      */
-    //@RequiresRoles({ "admin" })
+    /*@RequiresRoles({ "admin" })*/
     @RequestMapping(value = "/deletePermissionRule", method = RequestMethod.DELETE)
     public Result<SysPermissionDataRule> deletePermissionRule(@RequestParam(name = "id", required = true) String id) {
         Result<SysPermissionDataRule> result = new Result<SysPermissionDataRule>();
@@ -941,7 +938,7 @@ public class SysPermissionController {
         Result<List<String>> result = new Result<>();
         try {
             List<SysDepartPermission> list = sysDepartPermissionService.list(new QueryWrapper<SysDepartPermission>().lambda().eq(SysDepartPermission::getDepartId, departId));
-            result.setResult(list.stream().map(SysDepartPermission -> String.valueOf(SysDepartPermission.getPermissionId())).collect(Collectors.toList()));
+            result.setResult(list.stream().map(sysDepartPermission -> String.valueOf(sysDepartPermission.getPermissionId())).collect(Collectors.toList()));
             result.setSuccess(true);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
@@ -955,7 +952,7 @@ public class SysPermissionController {
      * @return
      */
     @RequestMapping(value = "/saveDepartPermission", method = RequestMethod.POST)
-    //@RequiresRoles({ "admin" })
+    /*@RequiresRoles({ "admin" })*/
     public Result<String> saveDepartPermission(@RequestBody JSONObject json) {
         long start = System.currentTimeMillis();
         Result<String> result = new Result<>();

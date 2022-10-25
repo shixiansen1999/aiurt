@@ -34,6 +34,19 @@ public interface IDeviceService extends IService<Device> {
      */
     String getCodeByCc(String deviceTypeCodeCc);
 
+    /**
+     * 查找设备
+     * @param stationCode
+     * @param positionCodeCc
+     * @param temporary
+     * @param majorCode
+     * @param systemCode
+     * @param deviceTypeCode
+     * @param code
+     * @param name
+     * @param status
+     * @return
+     */
     QueryWrapper<Device> getQueryWrapper(String stationCode,String positionCodeCc, String temporary, String majorCode, String systemCode, String deviceTypeCode, String code, String name, String status);
 
 }

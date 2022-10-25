@@ -45,7 +45,6 @@ public class SysAttachmentController extends BaseController<SysAttachment, ISysA
 	 * @param req
 	 * @return
 	 */
-	//@AutoLog(value = "sys_attachment-分页列表查询")
 	@ApiOperation(value="sys_attachment-分页列表查询", notes="sys_attachment-分页列表查询")
 	@GetMapping(value = "/list")
 	public Result<IPage<SysAttachment>> queryPageList(SysAttachment sysAttachment,
@@ -120,7 +119,6 @@ public class SysAttachmentController extends BaseController<SysAttachment, ISysA
 	 * @param id
 	 * @return
 	 */
-	//@AutoLog(value = "sys_attachment-通过id查询")
 	@ApiOperation(value="sys_attachment-通过id查询", notes="sys_attachment-通过id查询")
 	@GetMapping(value = "/queryById")
 	public Result<SysAttachment> queryById(@RequestParam(name="id",required=true) String id) {

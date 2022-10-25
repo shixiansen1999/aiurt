@@ -659,7 +659,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
         List<Object> departAndUserTrees = new ArrayList<>();
         sysDeparts.forEach(s -> {
             Map<String, Object> map = new LinkedHashMap<>();
-            if (s.getParentId().equals("")) {
+            if (("").equals(s.getParentId())) {
                 map.put("id", s.getId());
                 map.put("parentId", s.getParentId());
                 map.put("departName", s.getDepartName());

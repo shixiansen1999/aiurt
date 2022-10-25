@@ -46,7 +46,7 @@ public class CsStationPositionController  {
 	@Autowired
 	private ICsLineService csLineService;
 	@Autowired
-	private ISysBaseAPI sysBaseAPI;
+	private ISysBaseAPI sysBaseApi;
 	@Autowired
 	private IDeviceService deviceService;
 	 /**
@@ -217,14 +217,14 @@ public class CsStationPositionController  {
 	 @GetMapping(value = "/getSort")
 	 public Result<?> getSort(String level,String code) {
 	 	Integer sort = 1;
-	 	 if(null!=level && level.equals("1")){
+	 	 if(null!=level && ("1").equals(level)){
 			 LambdaQueryWrapper<CsLine> wrapper = new LambdaQueryWrapper<>();
 			 wrapper.orderByDesc(CsLine::getSort);
 			 List<CsLine> list = csLineService.list(wrapper.eq(CsLine::getDelFlag, CommonConstant.DEL_FLAG_0));
 			 if(!list.isEmpty()){
 				 sort = list.get(0).getSort()+1;
 			 }
-		 }else if(null!=level && level.equals("2")){
+		 }else if(null!=level && ("2").equals(level)){
 			 LambdaQueryWrapper<CsStation> wrapper = new LambdaQueryWrapper<>();
 			 wrapper.orderByDesc(CsStation::getSort);
 			 wrapper.eq(CsStation::getDelFlag, CommonConstant.DEL_FLAG_0);
@@ -233,7 +233,7 @@ public class CsStationPositionController  {
 			 if(!list.isEmpty()){
 				 sort = list.get(0).getSort()+1;
 			 }
-		 }else if(null!=level && level.equals("3")){
+		 }else if(null!=level && ("3").equals(level)){
 			 LambdaQueryWrapper<CsStationPosition> wrapper = new LambdaQueryWrapper<>();
 			 wrapper.orderByDesc(CsStationPosition::getSort);
 			 wrapper.eq(CsStationPosition::getStaionCode,code);

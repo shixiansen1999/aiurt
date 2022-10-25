@@ -107,12 +107,12 @@ public class SparePartInOrderServiceImpl extends ServiceImpl<SparePartInOrderMap
     @Transactional(rollbackFor = Exception.class)
     public Result<?> batchStorage(List<SparePartInOrder>  sparePartInOrder) {
         //查询状态为“已确认”的数据数量
-        Long confirmedNum = sparePartInOrder.stream().filter(order -> order.getStatus().equals("1")).count();
+        Long confirmedNum = sparePartInOrder.stream().filter(order -> ("1").equals(order.getStatus())).count();
         if(sparePartInOrder.size() == confirmedNum){
             return Result.error("勾选备件已入库，不用重复操作！");
         }
         //查询状态为“待确认”的数据
-        sparePartInOrder.stream().filter(order -> order.getStatus().equals("0")).forEach(order -> {
+        sparePartInOrder.stream().filter(order -> ("0").equals(order.getStatus())).forEach(order -> {
             confirm(order);
         });
         return Result.OK("操作成功！");

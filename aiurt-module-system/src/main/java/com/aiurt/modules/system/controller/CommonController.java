@@ -18,7 +18,6 @@ import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FilenameUtils;
 import org.jeecg.common.api.vo.Result;
-import org.jeecg.common.exception.JeecgBootException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
@@ -290,7 +289,7 @@ public class CommonController {
         String filePath = uploadpath + File.separator + imgPath;
         File file = new File(filePath);
         if (!file.exists()) {
-            throw new JeecgBootException("文件不存在..");
+            throw new AiurtBootException("文件不存在..");
         }
         if (StrUtil.isBlank(fileName)) {
             fileName = file.getName();
@@ -309,7 +308,7 @@ public class CommonController {
         } catch (IOException e) {
             log.error("预览文件失败" + e.getMessage());
             response.setContentType("application/json;charset=UTF-8");
-            throw new JeecgBootException("文件下载失败！文件不存在或已经被删除。");
+            throw new AiurtBootException("文件下载失败！文件不存在或已经被删除。");
         }
     }
 
@@ -364,8 +363,8 @@ public class CommonController {
             HttpHeaders headers = new HttpHeaders();
             headers.set("X-Access-Token", token);
             // 发送请求
-            String httpURL = URLDecoder.decode(url, "UTF-8");
-            ResponseEntity<String> response = RestUtil.request(httpURL, method, headers, variables, params, String.class);
+            String httpUrl = URLDecoder.decode(url, "UTF-8");
+            ResponseEntity<String> response = RestUtil.request(httpUrl, method, headers, variables, params, String.class);
             // 封装返回结果
             Result<Object> result = new Result<>();
             int statusCode = response.getStatusCodeValue();
@@ -405,12 +404,12 @@ public class CommonController {
             String newUrl = escapeUrl(remoteFileUrl);
             // 发送远程请求获取图片资源
             URL url = new URL(newUrl);
-            HttpURLConnection httpURLConnection = (HttpURLConnection) url.openConnection();
-            httpURLConnection.setConnectTimeout(5 * 1000);
-            httpURLConnection.connect();
+            HttpURLConnection httpUrlConnection = (HttpURLConnection) url.openConnection();
+            httpUrlConnection.setConnectTimeout(5 * 1000);
+            httpUrlConnection.connect();
 
             // 输入流
-            is = httpURLConnection.getInputStream();
+            is = httpUrlConnection.getInputStream();
             // 1K的数据缓冲
             byte[] bs = new byte[1024];
             // 读取到的数据长度

@@ -7,5 +7,9 @@ import com.aiurt.modules.basic.dto.WeatherDetailDTO;
  */
 public interface ISystemIndexService {
 
+    /**
+     * 获取天气信息
+     * @return
+     */
     public WeatherDetailDTO getWeatherInfo();
 }

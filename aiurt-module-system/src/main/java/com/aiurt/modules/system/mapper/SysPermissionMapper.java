@@ -28,6 +28,7 @@ public interface SysPermissionMapper extends BaseMapper<SysPermission> {
 	/**
 	 * 根据用户查询用户权限
      * @param username 用户账户名称
+	 * @param isApp
      * @return List<SysPermission>
 	 */
 	public List<SysPermission> queryByUser(@Param("username") String username,@Param("isApp") Integer isApp);

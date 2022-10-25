@@ -19,5 +19,11 @@ import java.util.List;
 @Component
 @EnableDataPerm
 public interface SparePartScrapMapper extends BaseMapper<SparePartScrap> {
+    /**
+     * 查询所有数据
+     * @param page
+     * @param sparePartScrap
+     * @return
+     */
     List<SparePartScrap> readAll(Page page, @Param("scrap") SparePartScrap sparePartScrap);
 }

@@ -44,7 +44,6 @@ public class WorkAreaStationController extends BaseController<WorkAreaStation, I
 	 * @param req
 	 * @return
 	 */
-	//@AutoLog(value = "work_area_station-分页列表查询")
 	@ApiOperation(value="work_area_station-分页列表查询", notes="work_area_station-分页列表查询")
 	@GetMapping(value = "/list")
 	public Result<IPage<WorkAreaStation>> queryPageList(WorkAreaStation workAreaStation,
@@ -119,7 +118,6 @@ public class WorkAreaStationController extends BaseController<WorkAreaStation, I
 	 * @param id
 	 * @return
 	 */
-	//@AutoLog(value = "work_area_station-通过id查询")
 	@ApiOperation(value="work_area_station-通过id查询", notes="work_area_station-通过id查询")
 	@GetMapping(value = "/queryById")
 	public Result<WorkAreaStation> queryById(@RequestParam(name="id",required=true) String id) {

@@ -17,5 +17,11 @@ import java.util.List;
  */
 @Component
 public interface SparePartLendStockMapper extends BaseMapper<SparePartStock> {
+    /**
+     * 读取所有
+     * @param page
+     * @param sparePartStock
+     * @return
+     */
     List<SparePartStock> readAll(Page page, @Param("stock") SparePartStock sparePartStock);
 }

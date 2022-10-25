@@ -3,6 +3,7 @@ package com.aiurt.modules.oss.controller;
 import javax.servlet.http.HttpServletRequest;
 
 
+import org.apache.shiro.authz.annotation.RequiresRoles;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.query.QueryGenerator;
 import com.aiurt.modules.oss.entity.OSSFile;
@@ -46,7 +47,7 @@ public class OSSFileController {
 
 	@ResponseBody
 	@PostMapping("/upload")
-	//@RequiresRoles("admin")
+	/*@RequiresRoles("admin")*/
 	public Result upload(@RequestParam("file") MultipartFile multipartFile) {
 		Result result = new Result();
 		try {

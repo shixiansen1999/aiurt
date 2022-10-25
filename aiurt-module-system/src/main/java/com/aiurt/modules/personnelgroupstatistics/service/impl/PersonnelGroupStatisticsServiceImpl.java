@@ -49,7 +49,7 @@ public class PersonnelGroupStatisticsServiceImpl implements PersonnelGroupStatis
     @Autowired
     private PersonnelGroupStatisticsMapper personnelGroupStatisticsMapper;
     @Autowired
-    private ISysBaseAPI iSysBaseAPI;
+    private ISysBaseAPI iSysBaseApi;
     @Autowired
     private PatrolApi patrolApi;
     @Autowired
@@ -198,9 +198,9 @@ public class PersonnelGroupStatisticsServiceImpl implements PersonnelGroupStatis
                     model.setInspecitonMissingChecks("-");
                 }
                 //培训完成次数
-                List<TrainTaskDTO> trainTaskDTOS = personnelGroupStatisticsMapper.userTrainFinishedNum(model.getUserId(), startTime, endTime);
-                int size = trainTaskDTOS.size();
-                for (TrainTaskDTO trainTaskDTO : trainTaskDTOS) {
+                List<TrainTaskDTO> trainTaskDtos = personnelGroupStatisticsMapper.userTrainFinishedNum(model.getUserId(), startTime, endTime);
+                int size = trainTaskDtos.size();
+                for (TrainTaskDTO trainTaskDTO : trainTaskDtos) {
                     String examStatus = trainTaskDTO.getExamStatus();
                     //当有考试的时候需要判断用户是否完成考试，如果没有完成考试则不算完成培训任务
                     if ("1".equals(examStatus)) {
@@ -277,7 +277,7 @@ public class PersonnelGroupStatisticsServiceImpl implements PersonnelGroupStatis
         getWorkAreaInformation(departId, depart);
 
         //获取班组维修响应时长
-        List<LoginUser> users= iSysBaseAPI.getUserPersonnel(departId);
+        List<LoginUser> users= iSysBaseApi.getUserPersonnel(departId);
         List<String> list = users.stream().map(LoginUser::getId).collect(Collectors.toList());
         List<FaultRepairRecordDTO> repairDuration = personnelGroupStatisticsMapper.getRepairDuration(list, lastYear, end);
         getAverageTime(repairDuration, depart);
@@ -474,7 +474,7 @@ public class PersonnelGroupStatisticsServiceImpl implements PersonnelGroupStatis
 
     private List<String> getDepartIds(List<String> departIds) {
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        List<SysDepartModel> userSysDepart = iSysBaseAPI.getUserSysDepart(sysUser.getId());
+        List<SysDepartModel> userSysDepart = iSysBaseApi.getUserSysDepart(sysUser.getId());
         List<String> ids = new ArrayList<>();
         if (CollUtil.isNotEmpty(departIds)) {
             ids.addAll(departIds);

@@ -20,6 +20,12 @@ import java.util.List;
 @Component
 @EnableDataPerm
 public interface SparePartStockMapper extends BaseMapper<SparePartStock> {
+    /**
+     * 查询所有数据
+     * @param page
+     * @param sparePartStock
+     * @return
+     */
     List<SparePartStock> readAll(Page page, @Param("stock") SparePartStock sparePartStock);
 
     /**

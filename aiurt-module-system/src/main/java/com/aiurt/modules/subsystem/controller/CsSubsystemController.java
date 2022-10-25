@@ -61,7 +61,7 @@ public class CsSubsystemController  {
 	@Autowired
 	private ICsMajorService csMajorService;
 	@Autowired
-	private ISysBaseAPI sysBaseAPI;
+	private ISysBaseAPI sysBaseApi;
 	@Autowired
 	private IMaterialBaseTypeService materialBaseTypeService;
 	 @Autowired
@@ -123,16 +123,16 @@ public class CsSubsystemController  {
 			 if(!userList.isEmpty()){
 				 for(CsSubsystemUser systemUser:userList){
 					 userNames += systemUser.getUsername() + ",";
-					 LoginUser user = sysBaseAPI.getUserById(systemUser.getUserId()+"");
+					 LoginUser user = sysBaseApi.getUserById(systemUser.getUserId()+"");
 					 if(null!=user){
 						 realNames += user.getRealname() + ",";
 					 }
 				 }
 			 }
-			 if(!realNames.equals("")){
+			 if(!("").equals(realNames)){
 				 system.setSystemUserName(realNames.substring(0,realNames.length()-1));
 			 }
-			 if(!userNames.equals("")){
+			 if(!("").equals(userNames)){
 				 system.setSystemUserList(userNames.substring(0,userNames.length()-1));
 			 }
 		 });
@@ -248,7 +248,6 @@ public class CsSubsystemController  {
 	  * @param majorIds
 	  * @return
 	  */
-	 //@AutoLog(value = "查询",operateType = 1,operateTypeAlias = "根据专业查子系统",permissionUrl = "/subsystem/list")
 	 @ApiOperation(value="根据专业id查子系统", notes="根据专业id查子系统")
 	 @GetMapping(value = "/queryCsSubsystemBy")
 	 public Result<?> queryCsSubsystemBy(@RequestParam(name="majorIds",required=false) String majorIds) {
@@ -280,7 +279,6 @@ public class CsSubsystemController  {
 	  * @param
 	  * @return
 	  */
-	 //@AutoLog(value = "查询",operateType = 1,operateTypeAlias = "根据专业查子系统",permissionUrl = "/subsystem/list")
 	 @ApiOperation(value="统计报表-子系统分析", notes="统计报表-子系统分析")
 	 @GetMapping(value = "/csSubsystemFault")
 	 public Result<Page<SubsystemFaultDTO>> queryCsSubsystemFault(@RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
@@ -298,7 +296,6 @@ public class CsSubsystemController  {
 	 * @param
 	 * @return
 	 */
-	//@AutoLog(value = "查询",operateType = 1,operateTypeAlias = "根据专业查子系统",permissionUrl = "/subsystem/list")
 	@ApiOperation(value="统计报表-子系统分析-年次数据图", notes="统计报表-子系统分析-年次数据图")
 	@GetMapping(value = "/yearNumFault")
 	public Result<List<YearFaultDTO>> yearFault() {
@@ -310,7 +307,6 @@ public class CsSubsystemController  {
 	 * @param
 	 * @return
 	 */
-	//@AutoLog(value = "查询",operateType = 1,operateTypeAlias = "根据专业查子系统",permissionUrl = "/subsystem/list")
 	@ApiOperation(value="统计报表-子系统分析-年分钟数据图", notes="统计报表-子系统分析-年分钟数据图")
 	@GetMapping(value = "/yearMinuteFault")
 	public Result<List<YearFaultDTO>> yearMinuteFault() {
@@ -322,10 +318,9 @@ public class CsSubsystemController  {
 	 * @param
 	 * @return
 	 */
-	//@AutoLog(value = "查询",operateType = 1,operateTypeAlias = "根据专业查子系统",permissionUrl = "/subsystem/list")
 	@ApiOperation(value="统计报表-子系统分析-下拉框", notes="统计报表-子系统分析-下拉框")
 	@GetMapping(value = "/DeviceTypeComboBox")
-	public Result<List<SubsystemFaultDTO>> DeviceTypeComboBox(@RequestParam(name = "subsystemCode",required = false) String subsystemCode) {
+	public Result<List<SubsystemFaultDTO>> deviceTypeComboBox(@RequestParam(name = "subsystemCode",required = false) String subsystemCode) {
 		List<SubsystemFaultDTO> pages = csSubsystemService.deviceTypeCodeByNameDTO(subsystemCode);
 		return Result.ok(pages);
 	}
@@ -334,7 +329,6 @@ public class CsSubsystemController  {
 	 * @param
 	 * @return
 	 */
-	//@AutoLog(value = "查询",operateType = 1,operateTypeAlias = "根据专业查子系统",permissionUrl = "/subsystem/list")
 	@ApiOperation(value="统计报表-子系统分析-根据查询子系统", notes="统计报表-子系统分析-根据查询子系统")
 	@GetMapping(value = "/csSubsystemByCode")
 	public Result<SystemByCodeDTO> csSubsystemByCode(@RequestParam(name = "subsystemCode") String subsystemCode) {

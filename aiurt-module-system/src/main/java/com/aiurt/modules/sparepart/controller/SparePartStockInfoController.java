@@ -177,27 +177,27 @@ public class SparePartStockInfoController extends BaseController<SparePartStockI
 	@ApiOperation(value = "系统管理-基础数据-备件仓库-下拉列表查询", notes = "系统管理-基础数据-备件仓库-下拉列表查询")
 	@GetMapping(value = "/selectListAuth")
 	@PermissionData(pageComponent = "manage/StockSparePartList")
-	public Result<List<SparePartStockInfo>> selectList(SparePartStockInfo SparePartStockInfo,
+	public Result<List<SparePartStockInfo>> selectList(SparePartStockInfo sparePartStockInfo,
 													HttpServletRequest req) {
 		Result<List<SparePartStockInfo>> result = new Result<List<SparePartStockInfo>>();
 		QueryWrapper<SparePartStockInfo> queryWrapper = new QueryWrapper<>();
-		if(SparePartStockInfo.getWarehouseName() != null && !"".equals(SparePartStockInfo.getWarehouseName())){
-			queryWrapper.like("warehouse_name",SparePartStockInfo.getWarehouseName());
+		if(sparePartStockInfo.getWarehouseName() != null && !"".equals(sparePartStockInfo.getWarehouseName())){
+			queryWrapper.like("warehouse_name",sparePartStockInfo.getWarehouseName());
 		}
-		if(SparePartStockInfo.getWarehouseCode() != null && !"".equals(SparePartStockInfo.getWarehouseCode())){
-			queryWrapper.like("warehouse_code",SparePartStockInfo.getWarehouseCode());
+		if(sparePartStockInfo.getWarehouseCode() != null && !"".equals(sparePartStockInfo.getWarehouseCode())){
+			queryWrapper.like("warehouse_code",sparePartStockInfo.getWarehouseCode());
 		}
-		if(SparePartStockInfo.getOrganizationId() != null && !"".equals(SparePartStockInfo.getOrganizationId())){
-			queryWrapper.like("organization_id",SparePartStockInfo.getOrganizationId());
+		if(sparePartStockInfo.getOrganizationId() != null && !"".equals(sparePartStockInfo.getOrganizationId())){
+			queryWrapper.like("organization_id",sparePartStockInfo.getOrganizationId());
 		}
-		if(SparePartStockInfo.getWarehouseStatus() != null && !"".equals(SparePartStockInfo.getWarehouseStatus())){
-			queryWrapper.like("warehouse_status",SparePartStockInfo.getWarehouseStatus());
+		if(sparePartStockInfo.getWarehouseStatus() != null && !"".equals(sparePartStockInfo.getWarehouseStatus())){
+			queryWrapper.like("warehouse_status",sparePartStockInfo.getWarehouseStatus());
 		}
 		queryWrapper.eq("del_flag", CommonConstant.DEL_FLAG_0);
 		queryWrapper.orderByDesc("create_time");
-		List<SparePartStockInfo> SparePartStockInfos = sparePartStockInfoService.list(queryWrapper);
+		List<SparePartStockInfo> sparePartStockInfos = sparePartStockInfoService.list(queryWrapper);
 		result.setSuccess(true);
-		result.setResult(SparePartStockInfos);
+		result.setResult(sparePartStockInfos);
 		return result;
 	}
 }

@@ -47,6 +47,7 @@ public interface ISysUserDepartService extends IService<SysUserDepart> {
 	 * 用户组件数据查询
 	 * @param departId
 	 * @param username
+	 * @param realname
 	 * @param pageSize
 	 * @param pageNo
 	 * @return

@@ -20,7 +20,20 @@ import java.util.List;
 @Component
 @EnableDataPerm
 public interface SparePartOutOrderMapper extends BaseMapper<SparePartOutOrder> {
+    /**
+     * 查询所有数据
+     * @param page
+     * @param sparePartOutOrder
+     * @return
+     */
     List<SparePartOutOrder> readAll(Page page, @Param("out") SparePartOutOrder sparePartOutOrder);
+
+    /**
+     * 查询已出库的物资编号
+     * @param page
+     * @param sparePartOutOrder
+     * @return
+     */
     List<SparePartOutOrder> selectMaterial(Page page, @Param("out") SparePartOutOrder sparePartOutOrder);
 
     /**

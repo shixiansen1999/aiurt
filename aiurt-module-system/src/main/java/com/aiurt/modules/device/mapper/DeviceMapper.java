@@ -19,13 +19,25 @@ public interface DeviceMapper extends BaseMapper<Device> {
 
 //    String selectNameByCode(String code);
 
-
+    /**
+     * 获取设备Id
+     * @param id
+     * @return
+     */
     Device getById(String id);
 
     /**
      * 大屏
+     * @param map
+     * @return
      */
     Integer getDeviceNum(Map map);
 
+    /**
+     * 获取设备
+     * @param stationCode
+     * @param systemCode
+     * @return
+     */
     List<Device> queryDeviceByStationCodeAndSystemCode(@Param("stationCode") String stationCode, @Param("systemCode") String systemCode);
 }

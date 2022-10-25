@@ -17,5 +17,9 @@ import java.util.List;
 @Component
 @EnableDataPerm
 public interface DeviceTypeMapper extends BaseMapper<DeviceType> {
+    /**
+     * 读取所有
+     * @return
+     */
     List<DeviceType> readAll();
 }

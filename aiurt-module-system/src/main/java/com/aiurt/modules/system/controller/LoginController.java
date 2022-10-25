@@ -84,7 +84,7 @@ public class LoginController {
 	private ThirdAppWechatEnterpriseServiceImpl wechatEnterpriseService;
 
 	@Autowired
-	private IWeaverSSOService weaverSSOService;
+	private IWeaverSSOService weaverSsoService;
 
 	@ApiOperation("登录接口")
 	@RequestMapping(value = "/login", method = RequestMethod.POST)
@@ -553,8 +553,8 @@ public class LoginController {
 		Result<String> res = new Result<String>();
 		try {
 			//生成验证码
-			final String BASE_CHECK_CODES = "1234567890";
-			String code = RandomUtil.randomString(BASE_CHECK_CODES,4);
+			final String baseCheckCodes = "1234567890";
+			String code = RandomUtil.randomString(baseCheckCodes,4);
 
 			//存到redis中
 			String lowerCaseCode = code.toLowerCase();
@@ -766,7 +766,7 @@ public class LoginController {
 		result.setResult(obj);
 		result.success("登录成功");
 		result.getResult().put("role", "1");
-		ISysBaseAPI sysBaseAPI =SpringContextUtils.getBean(ISysBaseAPI.class);
+		ISysBaseAPI sysBaseApi =SpringContextUtils.getBean(ISysBaseAPI.class);
 		//sysBaseAPI.addLog("用户名: " + username + ",登录成功！", CommonConstant.LOG_TYPE_1, null);
 		req.getSession().setAttribute("username", req.getParameter("username"));
 		return result;
@@ -877,14 +877,14 @@ public class LoginController {
 	@GetMapping("/getWeaverToken")
 	@ApiOperation("获取泛微token信息")
 	public Result<WeaverSsoRestultDTO> getWeaverToken() {
-		WeaverSsoRestultDTO serviceToken = weaverSSOService.getToken();
+		WeaverSsoRestultDTO serviceToken = weaverSsoService.getToken();
 		return Result.OK(serviceToken);
 	}
 
 	@GetMapping("/getSsoToken")
 	@ApiOperation("获取泛微token信息")
 	public Result<String> getSsoToken() {
-		String ssoToken = weaverSSOService.ssoToken();
+		String ssoToken = weaverSsoService.ssoToken();
 		return Result.OK(ssoToken);
 	}
 

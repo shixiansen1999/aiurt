@@ -17,5 +17,11 @@ import java.util.List;
  */
 @EnableDataPerm
 public interface StockInOrderLevel2Mapper extends BaseMapper<StockInOrderLevel2> {
+    /**
+     * 分页列表
+     * @param page
+     * @param stockInOrderLevel2
+     * @return
+     */
     List<StockInOrderLevel2> pageList(Page<StockInOrderLevel2> page, @Param("condition") StockInOrderLevel2 stockInOrderLevel2);
 }

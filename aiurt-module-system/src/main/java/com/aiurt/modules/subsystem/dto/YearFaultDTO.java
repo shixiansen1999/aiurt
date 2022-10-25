@@ -45,5 +45,5 @@ public class YearFaultDTO {
     @ApiModelProperty(value = "十二月")
     private String december = "0";
 
-    List<YearFaultDTO> yearFaultDTOS;
+    List<YearFaultDTO> yearFaultDtos;
 }

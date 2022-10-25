@@ -114,14 +114,15 @@ public interface SysDictMapper extends BaseMapper<SysDict> {
 	 */
 	List<DictModelMany> queryManyDictByKeys(@Param("dictCodeList") List<String> dictCodeList, @Param("keys") List<String> keys);
 
-    /**
-     * 通过查询指定table的 text code key 获取字典值
-     * @param table
-     * @param text
-     * @param code
-     * @param key
-     * @return String
-     */
+	/**
+	 * 通过查询指定table的 text code key 获取字典值
+	 * @param table
+	 * @param text
+	 * @param code
+	 * @param key
+	 * @param delFlag
+	 * @return String
+	 */
 	@Deprecated
 	public String queryTableDictTextByKey(@Param("table") String table,@Param("text") String text,@Param("code") String code,@Param("key") String key, @Param("delFlag") Long delFlag );
 

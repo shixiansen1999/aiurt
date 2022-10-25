@@ -47,10 +47,11 @@ public interface ISparePartApplyService extends IService<SparePartApply> {
      * @return
      */
     String getStockOutCode();
+
     /**
      * 导出excel
-     *
      * @param ids
+     * @return
      */
     List<SparePartApply> exportXls(List<String> ids);
 

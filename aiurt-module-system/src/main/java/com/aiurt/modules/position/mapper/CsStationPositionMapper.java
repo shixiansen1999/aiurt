@@ -26,5 +26,10 @@ public interface CsStationPositionMapper extends BaseMapper<CsStationPosition> {
      */
     List<CsStationPosition> queryCsStationPositionAll(@Param("page") Page<CsStationPosition> page,@Param("position") CsStationPosition csStationPosition);
 
+    /**
+     * 查询
+     * @param id
+     * @return
+     */
     CsStationPosition getById(@Param("id")String id);
 }

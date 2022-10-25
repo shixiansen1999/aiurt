@@ -44,13 +44,13 @@ public class SysUserDepartServiceImpl extends ServiceImpl<SysUserDepartMapper, S
 	 */
 	@Override
 	public List<DepartIdModel> queryDepartIdsOfUser(String userId) {
-		LambdaQueryWrapper<SysUserDepart> queryUDep = new LambdaQueryWrapper<SysUserDepart>();
+		LambdaQueryWrapper<SysUserDepart> queryUdep = new LambdaQueryWrapper<SysUserDepart>();
 		LambdaQueryWrapper<SysDepart> queryDep = new LambdaQueryWrapper<SysDepart>();
 		try {
-			queryUDep.eq(SysUserDepart::getUserId, userId);
+			queryUdep.eq(SysUserDepart::getUserId, userId);
 			List<String> depIdList = new ArrayList<>();
 			List<DepartIdModel> depIdModelList = new ArrayList<>();
-			List<SysUserDepart> userDepList = this.list(queryUDep);
+			List<SysUserDepart> userDepList = this.list(queryUdep);
 			if(userDepList != null && userDepList.size() > 0) {
 			for(SysUserDepart userDepart : userDepList) {
 					depIdList.add(userDepart.getDepId());
@@ -78,10 +78,10 @@ public class SysUserDepartServiceImpl extends ServiceImpl<SysUserDepartMapper, S
 	 */
 	@Override
 	public List<SysUser> queryUserByDepId(String depId) {
-		LambdaQueryWrapper<SysUserDepart> queryUDep = new LambdaQueryWrapper<SysUserDepart>();
-		queryUDep.eq(SysUserDepart::getDepId, depId);
+		LambdaQueryWrapper<SysUserDepart> queryUdep = new LambdaQueryWrapper<SysUserDepart>();
+		queryUdep.eq(SysUserDepart::getDepId, depId);
 		List<String> userIdList = new ArrayList<>();
-		List<SysUserDepart> uDepList = this.list(queryUDep);
+		List<SysUserDepart> uDepList = this.list(queryUdep);
 		if(uDepList != null && uDepList.size() > 0) {
 			for(SysUserDepart uDep : uDepList) {
 				userIdList.add(uDep.getUserId());

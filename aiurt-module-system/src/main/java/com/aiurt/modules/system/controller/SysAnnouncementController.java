@@ -489,15 +489,15 @@ public class SysAnnouncementController {
     public ModelAndView showContent(ModelAndView modelAndView, @PathVariable("id") String id, HttpServletRequest request) {
         SysAnnouncement announcement = sysAnnouncementService.getById(id);
         if (announcement != null) {
-            boolean tokenOK = false;
+            boolean tokenOk = false;
             try {
                 // 验证Token有效性
-                tokenOK = TokenUtils.verifyToken(request, sysBaseApi, redisUtil);
+				tokenOk = TokenUtils.verifyToken(request, sysBaseApi, redisUtil);
             } catch (Exception ignored) {
             }
             // 判断是否传递了Token，并且Token有效，如果传了就不做查看限制，直接返回
             // 如果Token无效，就做查看限制：只能查看已发布的
-            if (tokenOK || ANNOUNCEMENT_SEND_STATUS_1.equals(announcement.getSendStatus())) {
+            if (tokenOk || ANNOUNCEMENT_SEND_STATUS_1.equals(announcement.getSendStatus())) {
                 modelAndView.addObject("data", announcement);
                 modelAndView.setViewName("announcement/showContent");
                 return modelAndView;

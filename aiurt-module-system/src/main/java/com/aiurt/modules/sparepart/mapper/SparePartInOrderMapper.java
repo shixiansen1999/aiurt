@@ -19,5 +19,11 @@ import java.util.List;
 @Component
 @EnableDataPerm
 public interface SparePartInOrderMapper extends BaseMapper<SparePartInOrder> {
+    /**
+     * 读取所有
+     * @param page
+     * @param sparePartInOrder
+     * @return
+     */
     List<SparePartInOrder> readAll(Page page,@Param("order") SparePartInOrder sparePartInOrder);
 }

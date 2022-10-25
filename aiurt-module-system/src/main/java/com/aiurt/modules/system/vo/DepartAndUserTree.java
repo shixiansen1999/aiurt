@@ -16,7 +16,7 @@ import java.util.List;
  */
 @Data
 public class DepartAndUserTree {
-    String Id;
+    String id;
     String parentId;
     String departName;
     List<SysUser> users;

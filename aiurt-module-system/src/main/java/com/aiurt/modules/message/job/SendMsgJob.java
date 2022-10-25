@@ -61,7 +61,7 @@ public class SendMsgJob implements Job {
 			try {
                 //update-begin---author:wangshuai ---date:20220323  for：[issues/I4X698]模板管理发送消息出现NullPointerException 錯誤------------
                 if(null != sendMsgHandle){
-                    sendMsgHandle.SendMsg(sysMessage.getEsReceiver(), sysMessage.getEsTitle(),
+                    sendMsgHandle.sendMsg(sysMessage.getEsReceiver(), sysMessage.getEsTitle(),
                             sysMessage.getEsContent().toString());
                     //发送消息成功
                     sysMessage.setEsSendStatus(SendMsgStatusEnum.SUCCESS.getCode());

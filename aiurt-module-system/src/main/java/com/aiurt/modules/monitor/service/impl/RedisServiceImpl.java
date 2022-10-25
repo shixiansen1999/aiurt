@@ -109,11 +109,11 @@ public class RedisServiceImpl implements RedisService {
 				jo.put("value",map.get("dbSize"));
 			}else{
 				map = getMemoryInfo();
-				Integer used_memory = Integer.valueOf(map.get("used_memory").toString());
-				jo.put("value",used_memory/1000);
+				Integer usedMemory = Integer.valueOf(map.get("used_memory").toString());
+				jo.put("value",usedMemory/1000);
 			}
-			String create_time = DateUtil.formatTime(DateUtil.date((Long) map.get("create_time")-(4-i)*1000));
-			jo.put("name",create_time);
+			String createTime = DateUtil.formatTime(DateUtil.date((Long) map.get("create_time")-(4-i)*1000));
+			jo.put("name",createTime);
 			json.add(jo);
 		}
 		mapJson.put("data",json);

@@ -18,5 +18,11 @@ import java.util.Map;
  */
 @EnableDataPerm
 public interface StockLevel2CheckMapper extends BaseMapper<StockLevel2Check> {
+    /**
+     * 分页查询
+     * @param page
+     * @param stockLevel2Check
+     * @return
+     */
     List<StockLevel2Check> pageList(Page<StockLevel2Check> page, @Param("condition") StockLevel2Check stockLevel2Check);
 }

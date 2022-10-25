@@ -202,7 +202,7 @@ public class SysDepartTreeModel implements Serializable{
         this.parentId = parentId;
     }
 
-    public static long getSerialVersionUID() {
+    public static long getSerialVersionUid() {
         return serialVersionUID;
     }
 

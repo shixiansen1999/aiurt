@@ -43,6 +43,8 @@ public class SubsystemFaultDTO {
     Long num;
     String name;
     String code;
- //   @ExcelCollection(name = "设备类型", orderNum = "4")
+    /**
+     * 设备类型
+     */
     List<SubsystemFaultDTO> deviceTypeList;
 }

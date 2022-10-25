@@ -12,8 +12,12 @@ import java.io.Serializable;
 @Data
 public class EnumTypeVO implements Serializable {
     private static final long serialVersionUID = 1L;
-    //类型编号
+    /**
+     * 类型编号
+     */
     private Integer code;
-    //类型描述
+    /**
+     * 类型描述
+     */
     private String name;
 }

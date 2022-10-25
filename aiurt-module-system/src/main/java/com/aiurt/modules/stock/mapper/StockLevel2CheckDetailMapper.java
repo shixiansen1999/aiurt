@@ -15,5 +15,11 @@ import java.util.List;
  * @Version: V1.0
  */
 public interface StockLevel2CheckDetailMapper extends BaseMapper<StockLevel2CheckDetail> {
+    /**
+     * 分页查询
+     * @param page
+     * @param stockLevel2CheckDetail
+     * @return
+     */
     List<StockLevel2CheckDetail> pageList(Page<StockLevel2CheckDetail> page, @Param("condition") StockLevel2CheckDetail stockLevel2CheckDetail);
 }

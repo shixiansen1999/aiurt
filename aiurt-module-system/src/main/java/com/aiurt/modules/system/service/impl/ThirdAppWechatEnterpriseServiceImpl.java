@@ -73,9 +73,9 @@ public class ThirdAppWechatEnterpriseServiceImpl implements IThirdAppService {
 
     @Override
     public String getAccessToken() {
-        String CORP_ID = thirdAppConfig.getWechatEnterprise().getClientId();
-        String SECRET = thirdAppConfig.getWechatEnterprise().getClientSecret();
-        AccessToken accessToken = JwAccessTokenAPI.getAccessToken(CORP_ID, SECRET);
+        String corpId = thirdAppConfig.getWechatEnterprise().getClientId();
+        String secret = thirdAppConfig.getWechatEnterprise().getClientSecret();
+        AccessToken accessToken = JwAccessTokenAPI.getAccessToken(corpId, secret);
         if (accessToken != null) {
             return accessToken.getAccesstoken();
         }
@@ -85,14 +85,14 @@ public class ThirdAppWechatEnterpriseServiceImpl implements IThirdAppService {
 
     /** 获取APPToken，新版企业微信的秘钥是分开的 */
     public String getAppAccessToken() {
-        String CORP_ID = thirdAppConfig.getWechatEnterprise().getClientId();
-        String SECRET = thirdAppConfig.getWechatEnterprise().getAgentAppSecret();
+        String corpId = thirdAppConfig.getWechatEnterprise().getClientId();
+        String secret = thirdAppConfig.getWechatEnterprise().getAgentAppSecret();
         // 如果没有配置APP秘钥，就说明是老企业，可以通用秘钥
-        if (oConvertUtils.isEmpty(SECRET)) {
-            SECRET = thirdAppConfig.getWechatEnterprise().getClientSecret();
+        if (oConvertUtils.isEmpty(secret)) {
+            secret = thirdAppConfig.getWechatEnterprise().getClientSecret();
         }
 
-        AccessToken accessToken = JwAccessTokenAPI.getAccessToken(CORP_ID, SECRET);
+        AccessToken accessToken = JwAccessTokenAPI.getAccessToken(corpId, secret);
         if (accessToken != null) {
             return accessToken.getAccesstoken();
         }
@@ -463,6 +463,8 @@ public class ThirdAppWechatEnterpriseServiceImpl implements IThirdAppService {
                     break;
                 case 60104:
                     msg = "手机号码已存在";
+                    break;
+                default:
                     break;
             }
             String str = String.format("用户 %s(%s) 同步失败！错误码：%s——%s", sysUser.getUsername(), sysUser.getRealname(), errCode, msg);

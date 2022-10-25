@@ -22,14 +22,14 @@ import org.springframework.stereotype.Service;
 import java.util.Date;
 import java.util.List;
 
+/**
+ * @author fgw
+ */
+
 @Service
 public class AppUserService {
     @Autowired
     private ISysUserService userService;
-  /*  @Autowired
-    private IScheduleRecordService recordService;
-    @Autowired
-    private IScheduleItemService itemService;*/
     @Autowired
     private ISysAboutService aboutService;
     @Autowired
@@ -63,29 +63,6 @@ public class AppUserService {
             wrapper.eq("date_format(date,'%Y-%m-%d')", DateUtils.formatDate(new Date(), "yyyy-MM-dd"));
             wrapper.eq("user_id", loginUser.getId());
             wrapper.eq("del_flag", StatusEnum.ZERO.getCode());
-           /* ScheduleRecord record = recordService.getOne(wrapper);
-            UserStatusVo vo = new UserStatusVo();
-            if (record != null && record.getItemId() != null) {
-                ScheduleItem item = itemService.getById(record.getItemId());
-                if (item != null) {
-                    // todo 有bug
-                    String startTime = DateUtils.formatDate(item.getStartTime(), "HH:mm:ss");
-                    String endTime = DateUtils.formatDate(item.getEndTime(), "HH:mm:ss");
-                    String today = DateUtils.formatDate(new Date(), "yyyy-MM-dd");
-                    Calendar c1 = Calendar.getInstance();
-                    Calendar c2 = Calendar.getInstance();
-                    c1.setTime(DateUtils.parseDate(today + " " + startTime, "yyyy-MM-dd HH:mm:ss"));
-                    c2.setTime(DateUtils.parseDate(today + " " + endTime, "yyyy-MM-dd HH:mm:ss"));
-                    if (startTime.equals(endTime) || item.getEndTime().before(item.getStartTime())) {
-                        c2.add(Calendar.DAY_OF_YEAR, 1);
-                    }
-                    Date date = new Date();
-                    if (c1.getTime().before(date) && c2.getTime().after(date)) {
-                        vo.setStatusName(item.getName());
-                        vo.setStatusColor(item.getColor());
-                    }
-                }
-            }*/
             result.setResult(null);
             result.success("状态获取成功");
         } catch (Exception e) {

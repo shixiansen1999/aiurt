@@ -25,6 +25,7 @@ public interface IStockLevel2CheckService extends IService<StockLevel2Check> {
     /**
      * 新增获取提报计划编号
      * @return
+     * @throws ParseException
      */
     StockLevel2Check getStockCheckCode() throws ParseException;
 

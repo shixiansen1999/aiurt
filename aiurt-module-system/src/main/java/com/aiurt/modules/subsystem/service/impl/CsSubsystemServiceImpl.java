@@ -132,7 +132,7 @@ public class CsSubsystemServiceImpl extends ServiceImpl<CsSubsystemMapper, CsSub
         }else {
             subSystemCodes = csUserSubsystemMapper.selectByUserId(page,sysUser.getId());
         }
-        List<SubsystemFaultDTO> subsystemFaultDTOS = new ArrayList<>();
+        List<SubsystemFaultDTO> subsystemFaultDtos = new ArrayList<>();
         subSystemCodes.forEach(s -> {
             SubsystemFaultDTO subDTO = csUserSubsystemMapper.getSubsystemFaultDTO(time,s.getSystemCode());
             subDTO.setFailureNum(subDTO.getCommonFaultNum()+subDTO.getSeriousFaultNum());
@@ -152,17 +152,17 @@ public class CsSubsystemServiceImpl extends ServiceImpl<CsSubsystemMapper, CsSub
                 deviceTypeList.add(deviceType);
             });
             subDTO.setDeviceTypeList(deviceTypeList);
-            subsystemFaultDTOS.add(subDTO);
+            subsystemFaultDtos.add(subDTO);
         });
 
-        return page.setRecords(subsystemFaultDTOS);
+        return page.setRecords(subsystemFaultDtos);
     }
 
     @Override
     public List<YearFaultDTO> yearFault() {
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        List<YearFaultDTO> yearFaultDTOS = csUserSubsystemMapper.getYearNumFault(sysUser.getId());
-        yearFaultDTOS.forEach(y->{
+        List<YearFaultDTO> yearFaultDtos = csUserSubsystemMapper.getYearNumFault(sysUser.getId());
+        yearFaultDtos.forEach(y->{
             List<SubsystemFaultDTO> list = csUserSubsystemMapper.getSubsystemByDeviceTypeCode(y.getCode(),null);
             List<YearFaultDTO> years = new ArrayList<>();
             list.forEach(l->{
@@ -172,9 +172,9 @@ public class CsSubsystemServiceImpl extends ServiceImpl<CsSubsystemMapper, CsSub
                 year.setName(l.getDeviceTypeName());
                 years.add(year);
             });
-            y.setYearFaultDTOS(years);
+            y.setYearFaultDtos(years);
         });
-        return yearFaultDTOS;
+        return yearFaultDtos;
     }
 
     @Override
@@ -188,7 +188,7 @@ public class CsSubsystemServiceImpl extends ServiceImpl<CsSubsystemMapper, CsSub
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         Page<SubsystemFaultDTO> page = new Page<SubsystemFaultDTO>(1, 999);
         List<SubsystemFaultDTO> strings = csUserSubsystemMapper.selectByUserId(page, sysUser.getId());
-        List<YearFaultDTO> yearFaultDTOS = new ArrayList<>();
+        List<YearFaultDTO> yearFaultDtos = new ArrayList<>();
           strings.forEach(s->{
               List<ListDTO> system = csUserSubsystemMapper.sysTemYearFault(s.getSystemCode());
               YearFaultDTO yearFaultDTO = new YearFaultDTO();
@@ -229,8 +229,8 @@ public class CsSubsystemServiceImpl extends ServiceImpl<CsSubsystemMapper, CsSub
                   YearFaultDTO devDTO = new YearFaultDTO();
                   devDTO.setId(l.getId());
                   devDTO.setCode(l.getDeviceTypeCode());devDTO.setName(l.getDeviceTypeName());
-                  List<ListDTO> listDTOS = csUserSubsystemMapper.deviceTypeFault(s.getSystemCode(),l.getDeviceTypeCode());
-                  listDTOS.forEach(ld->{
+                  List<ListDTO> listDtos = csUserSubsystemMapper.deviceTypeFault(s.getSystemCode(),l.getDeviceTypeCode());
+                  listDtos.forEach(ld->{
                       if (ObjectUtils.isNotEmpty(ld.getMonth())) {
                           if (ld.getMonth() == 1) {
                               devDTO.setJanuary(new BigDecimal(Long.valueOf(devDTO.getJanuary())).add( new BigDecimal((1.0 * (ld.getNum() == null ? 0 : ld.getNum()) / 60))).setScale(0, BigDecimal.ROUND_HALF_UP).toString());
@@ -261,10 +261,10 @@ public class CsSubsystemServiceImpl extends ServiceImpl<CsSubsystemMapper, CsSub
                   });
                   yearFaultDTOList.add(devDTO);
               });
-              yearFaultDTO.setYearFaultDTOS(yearFaultDTOList);
-             yearFaultDTOS.add(yearFaultDTO);
+              yearFaultDTO.setYearFaultDtos(yearFaultDTOList);
+              yearFaultDtos.add(yearFaultDTO);
           });
-        return yearFaultDTOS;
+        return yearFaultDtos;
     }
 
     @Override

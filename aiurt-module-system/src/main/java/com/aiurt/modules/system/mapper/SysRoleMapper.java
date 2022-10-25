@@ -18,8 +18,10 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 public interface SysRoleMapper extends BaseMapper<SysRole> {
 
     /**
+     * 删除角色与用户关系
      * @Description: 删除角色与用户关系
      * @Author scott
+     * @param roleId
      * @Date 2019/12/13 16:12
      */
     @Delete("delete from sys_user_role where role_id = #{roleId}")
@@ -27,6 +29,7 @@ public interface SysRoleMapper extends BaseMapper<SysRole> {
 
 
     /**
+     * 删除角色与权限关系
      * @Description: 删除角色与权限关系
      * @Author scott
      * @param roleId

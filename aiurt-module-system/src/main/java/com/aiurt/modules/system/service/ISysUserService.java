@@ -175,7 +175,8 @@ public interface ISysUserService extends IService<SysUser> {
 
 	/**
 	 * 根据手机号获取用户名和密码
-     * @param phone 手机号
+	 * @param phone
+	 * @return
 	 */
 	public SysUser getUserByPhone(String phone);
 
@@ -309,7 +310,7 @@ public interface ISysUserService extends IService<SysUser> {
 	List<SelectTable> queryManageDepartUserTree();
 
 	/**
-	 *
+	 * 根据角色查询用户
 	 * @return
 	 */
     List<SysUser> querySysUserForWorkTicket();

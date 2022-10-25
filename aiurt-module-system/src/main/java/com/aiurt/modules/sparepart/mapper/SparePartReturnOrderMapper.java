@@ -18,5 +18,11 @@ import org.springframework.stereotype.Component;
 @Component
 @EnableDataPerm
 public interface SparePartReturnOrderMapper extends BaseMapper<SparePartReturnOrder> {
+    /**
+     * 查询所有数据
+     * @param page
+     * @param sparePartReturnOrder
+     * @return
+     */
     List<SparePartReturnOrder> readAll(Page page, @Param("order") SparePartReturnOrder sparePartReturnOrder);
 }

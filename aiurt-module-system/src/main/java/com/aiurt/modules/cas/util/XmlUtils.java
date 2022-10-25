@@ -218,7 +218,7 @@ public final class XmlUtils {
         }
 
         @Override
-        public void startElement(final String namespaceURI, final String localName, final String qName,
+        public void startElement(final String namespaceUrl, final String localName, final String qName,
                 final Attributes attributes) throws SAXException {
             if ("attributes".equals(localName)) {
                 this.foundAttributes = true;
@@ -236,7 +236,7 @@ public final class XmlUtils {
         }
 
         @Override
-        public void endElement(final String namespaceURI, final String localName, final String qName)
+        public void endElement(final String namespaceUrl, final String localName, final String qName)
                 throws SAXException {
             if ("attributes".equals(localName)) {
                 this.foundAttributes = false;

@@ -227,9 +227,6 @@ public class SysBaseApiImpl implements ISysBaseAPI {
                 //通过自定义URL匹配规则 获取菜单（实现通过菜单配置数据权限规则，实际上针对获取数据接口进行数据规则控制）
                 String userMatchUrl = UrlMatchEnum.getMatchResultByUrl(requestPath);
                 LambdaQueryWrapper<SysPermission> queryQserMatch = new LambdaQueryWrapper<SysPermission>();
-                // update-begin-author:taoyan date:20211027 for: online菜单如果配置成一级菜单 权限查询不到 取消menuType = 1
-                //queryQserMatch.eq(SysPermission::getMenuType, 1);
-                // update-end-author:taoyan date:20211027 for: online菜单如果配置成一级菜单 权限查询不到 取消menuType = 1
                 queryQserMatch.eq(SysPermission::getDelFlag, 0);
                 queryQserMatch.eq(SysPermission::getUrl, userMatchUrl);
                 if (oConvertUtils.isNotEmpty(userMatchUrl)) {
@@ -251,7 +248,6 @@ public class SysBaseApiImpl implements ISysBaseAPI {
                 // update-begin--Author:scott Date:20191119 for：数据权限规则编码不规范，项目存在相同包名和类名 #722
                 List<SysPermissionDataRule> temp = sysPermissionDataRuleService.queryPermissionDataRules(username, sysPermission.getId());
                 if (temp != null && temp.size() > 0) {
-                    //dataRules.addAll(temp);
                     dataRules = oConvertUtils.entityListToModelList(temp, SysPermissionDataRuleModel.class);
                 }
                 // update-end--Author:scott Date:20191119 for：数据权限规则编码不规范，项目存在相同包名和类名 #722
@@ -297,7 +293,6 @@ public class SysBaseApiImpl implements ISysBaseAPI {
         List<String> sysMultiOrgCode = new ArrayList<String>();
         if (list == null || list.size() == 0) {
             //当前用户无部门
-            //sysMultiOrgCode.add("0");
         } else if (list.size() == 1) {
             sysMultiOrgCode.add(list.get(0).getOrgCode());
         } else {
@@ -919,10 +914,7 @@ public class SysBaseApiImpl implements ISysBaseAPI {
         Set<String> permissionSet = new HashSet<>();
         List<SysPermission> permissionList = sysPermissionMapper.queryByUser(username, null);
         for (SysPermission po : permissionList) {
-//			// TODO URL规则有问题？
-//			if (oConvertUtils.isNotEmpty(po.getUrl())) {
-//				permissionSet.add(po.getUrl());
-//			}
+			// TODO URL规则有问题？
             if (oConvertUtils.isNotEmpty(po.getPerms())) {
                 permissionSet.add(po.getPerms());
             }
@@ -1156,7 +1148,7 @@ public class SysBaseApiImpl implements ISysBaseAPI {
     @Override
     public void sendEmailMsg(String email, String title, String content) {
         EmailSendMsgHandle emailHandle = new EmailSendMsgHandle();
-        emailHandle.SendMsg(email, title, content);
+        emailHandle.sendMsg(email, title, content);
     }
 
     /**
@@ -1758,12 +1750,12 @@ public class SysBaseApiImpl implements ISysBaseAPI {
             String newUrl = escapeUrl(remoteFileUrl);
             // 发送远程请求获取图片资源
             URL url = new URL(newUrl);
-            HttpURLConnection httpURLConnection = (HttpURLConnection) url.openConnection();
-            httpURLConnection.setConnectTimeout(5 * 1000);
-            httpURLConnection.connect();
+            HttpURLConnection httpUrlConnection = (HttpURLConnection) url.openConnection();
+            httpUrlConnection.setConnectTimeout(5 * 1000);
+            httpUrlConnection.connect();
 
             // 输入流
-            is = httpURLConnection.getInputStream();
+            is = httpUrlConnection.getInputStream();
             // 1K的数据缓冲
             byte[] bs = new byte[1024];
             // 读取到的数据长度

@@ -20,6 +20,7 @@ public interface PersonnelGroupStatisticsService {
      * @param departIds 部门id集合字符串
      * @param startTime 开始时间
      * @param endTime 结束时间
+     * @param page
      * @return GroupModel
      */
     Page<GroupModel> queryGroupPageList(List<String> departIds, String startTime, String endTime, Page<GroupModel> page);
@@ -29,6 +30,7 @@ public interface PersonnelGroupStatisticsService {
      * @param departIds 部门id集合字符串
      * @param startTime 开始时间
      * @param endTime 结束时间
+     * @param page
      * @return Page<PersonnelModel>
      */
     Page<PersonnelModel> queryUserPageList(List<String> departIds, String startTime, String endTime, Page<PersonnelModel> page);
@@ -55,6 +57,7 @@ public interface PersonnelGroupStatisticsService {
      * @param exportField 自定义导出字段集合合并字符串
      * @param startTime 开始时间
      * @param endTime 结束时间
+     * @param request
      * @return ModelAndView
      */
     ModelAndView reportGroupExport(HttpServletRequest request, String startTime, String endTime,String exportField);
@@ -65,6 +68,7 @@ public interface PersonnelGroupStatisticsService {
      * @param exportField 自定义导出字段集合合并字符串
      * @param startTime 开始时间
      * @param endTime 结束时间
+     * @param request
      * @return ModelAndView
      */
     ModelAndView reportUserExport(HttpServletRequest request,String startTime, String endTime,String exportField);

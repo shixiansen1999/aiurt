@@ -89,7 +89,6 @@ public class SparePartApplyController extends BaseController<SparePartApply, ISp
 													   @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
 													   @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
 													   HttpServletRequest req) {
-		//QueryWrapper<SparePartApply> queryWrapper = QueryGenerator.initQueryWrapper(sparePartApply, req.getParameterMap());
 		Page<SparePartApply> page = new Page<SparePartApply>(pageNo, pageSize);
 		List<SparePartApply> list = sparePartApplyService.selectList(page, sparePartApply);
 		List<SparePartApplyMaterial> applyMaterials = sparePartApplyMaterialService.selectList();

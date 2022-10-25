@@ -371,8 +371,8 @@ public class SysUserController {
         LambdaQueryWrapper<SysUser> lambdaQueryWrapper = new LambdaQueryWrapper<>();
         lambdaQueryWrapper.eq(SysUser::getUsername, userName).last("limit 1");
         SysUser sysUser = sysUserService.getBaseMapper().selectOne(lambdaQueryWrapper);
-        ISysBaseAPI sysBaseAPI = SpringContextUtils.getBean(ISysBaseAPI.class);
-        LoginUser loginUser = sysBaseAPI.getUserByName(userName);
+        ISysBaseAPI sysBaseApi = SpringContextUtils.getBean(ISysBaseAPI.class);
+        LoginUser loginUser = sysBaseApi.getUserByName(userName);
         if (sysUser == null) {
             result.error500("该用户不存在！");
         } else {

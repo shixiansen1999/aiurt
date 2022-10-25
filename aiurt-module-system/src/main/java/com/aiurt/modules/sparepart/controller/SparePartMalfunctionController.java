@@ -66,7 +66,6 @@ public class SparePartMalfunctionController extends BaseController<SparePartMalf
 								   @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
 								   @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
 								   HttpServletRequest req) {
-		//QueryWrapper<SparePartMalfunction> queryWrapper = QueryGenerator.initQueryWrapper(sparePartMalfunction, req.getParameterMap());
 		LambdaQueryWrapper<SparePartMalfunction> queryWrapper = new LambdaQueryWrapper<>();
 		if(ObjectUtils.isNotEmpty(sparePartMalfunction.getMaintainTimeBegin()) && ObjectUtils.isNotEmpty(sparePartMalfunction.getMaintainTimeEnd())){
 			queryWrapper.ge(SparePartMalfunction::getMaintainTime,sparePartMalfunction.getMaintainTimeBegin()+" 00:00:00");

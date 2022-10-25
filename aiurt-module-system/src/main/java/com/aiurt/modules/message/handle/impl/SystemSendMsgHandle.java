@@ -17,12 +17,12 @@ public class SystemSendMsgHandle implements ISendMsgHandle {
     public static final String FROM_USER="system";
 
     @Override
-    public void SendMsg(String es_receiver, String es_title, String es_content) {
-        if(oConvertUtils.isEmpty(es_receiver)){
+    public void sendMsg(String esReceiver, String esTitle, String esContent) {
+        if(oConvertUtils.isEmpty(esReceiver)){
             throw  new AiurtBootException("被发送人不能为空");
         }
-        ISysBaseAPI sysBaseAPI = SpringContextUtils.getBean(ISysBaseAPI.class);
-        MessageDTO messageDTO = new MessageDTO(FROM_USER,es_receiver,es_title,es_content);
-        sysBaseAPI.sendSysAnnouncement(messageDTO);
+        ISysBaseAPI sysBaseApi = SpringContextUtils.getBean(ISysBaseAPI.class);
+        MessageDTO messageDTO = new MessageDTO(FROM_USER,esReceiver,esTitle,esContent);
+        sysBaseApi.sendSysAnnouncement(messageDTO);
     }
 }

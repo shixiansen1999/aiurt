@@ -20,6 +20,7 @@ public interface IStockInOrderLevel2Service extends IService<StockInOrderLevel2>
     /**
      * 新增获取入库编号
      * @return
+     * @throws ParseException
      */
     StockInOrderLevel2 getInOrderCode() throws ParseException;
 
@@ -40,7 +41,9 @@ public interface IStockInOrderLevel2Service extends IService<StockInOrderLevel2>
      * 提交
      * @param status
      * @param code
+     * @param stockInOrderLevel2
      * @return
+     * @throws ParseException
      */
     boolean submitInOrderStatus(String status,String code, StockInOrderLevel2 stockInOrderLevel2) throws ParseException;
 

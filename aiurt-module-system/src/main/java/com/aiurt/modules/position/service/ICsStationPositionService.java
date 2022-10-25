@@ -17,6 +17,7 @@ public interface ICsStationPositionService extends IService<CsStationPosition> {
     /**
      * 查询列表
      * @param page
+     * @param csStationPosition
      * @return
      */
     List<CsStationPosition> readAll(Page<CsStationPosition> page,CsStationPosition csStationPosition);

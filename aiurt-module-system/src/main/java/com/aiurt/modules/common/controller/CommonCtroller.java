@@ -42,6 +42,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+/**
+ * @author fgw
+ */
+
 @Slf4j
 @Api(tags = "共用模块")
 @RestController
@@ -75,7 +79,7 @@ public class CommonCtroller {
     private ICommonService commonService;
 
     @Autowired
-    private ISysBaseAPI sysBaseAPI;
+    private ISysBaseAPI sysBaseApi;
 
     @Autowired
     private ICsUserStaionService userStationService;
@@ -209,7 +213,7 @@ public class CommonCtroller {
         if (StrUtil.isNotBlank(roleCodes) && roleCodes.indexOf(ADMIN)>-1) {
             stationModelList = userStationService.queryAllStation();
         }else {
-            stationModelList = sysBaseAPI.getStationByUserId(userId);
+            stationModelList = sysBaseApi.getStationByUserId(userId);
         }
 
 

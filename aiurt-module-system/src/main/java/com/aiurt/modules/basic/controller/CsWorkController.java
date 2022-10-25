@@ -42,7 +42,6 @@ public class CsWorkController extends BaseController<CsWork, ICsWorkService> {
 	 * @param req
 	 * @return
 	 */
-	//@AutoLog(value = "作业类型-分页列表查询")
 	@ApiOperation(value="作业类型-分页列表查询", notes="作业类型-分页列表查询")
 	@GetMapping(value = "/list")
 	public Result<IPage<CsWork>> queryPageList(CsWork csWork,
@@ -123,7 +122,6 @@ public class CsWorkController extends BaseController<CsWork, ICsWorkService> {
 	 * @param id
 	 * @return
 	 */
-	//@AutoLog(value = "作业类型-通过id查询")
 	@ApiOperation(value="作业类型-通过id查询", notes="作业类型-通过id查询")
 	@GetMapping(value = "/queryById")
 	public Result<CsWork> queryById(@RequestParam(name="id",required=true) String id) {

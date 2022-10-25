@@ -286,10 +286,10 @@ public class SysDictServiceImpl extends ServiceImpl<SysDictMapper, SysDict> impl
 	 * @return
 	 */
 	private String getFilterSql(String table, String text, String code, String condition, String keyword){
-		String keywordSql = null, filterSql = "", sql_where = " where ";
+		String keywordSql = null, filterSql = "", sqlWhere = " where ";
 		// update-begin-author:sunjianlei date:20220112 for: 【JTC-631】判断如果 table 携带了 where 条件，那么就使用 and 查询，防止报错
 		if (table.toLowerCase().contains(" where ")) {
-			sql_where = " and ";
+			sqlWhere = " and ";
 		}
 		// update-end-author:sunjianlei date:20220112 for: 【JTC-631】判断如果 table 携带了 where 条件，那么就使用 and 查询，防止报错
 		if(oConvertUtils.isNotEmpty(keyword)){
@@ -304,11 +304,11 @@ public class SysDictServiceImpl extends ServiceImpl<SysDictMapper, SysDict> impl
 			}
 		}
 		if(oConvertUtils.isNotEmpty(condition) && oConvertUtils.isNotEmpty(keywordSql)){
-			filterSql+= sql_where + condition + " and " + keywordSql;
+			filterSql+= sqlWhere + condition + " and " + keywordSql;
 		}else if(oConvertUtils.isNotEmpty(condition)){
-			filterSql+= sql_where + condition;
+			filterSql+= sqlWhere + condition;
 		}else if(oConvertUtils.isNotEmpty(keywordSql)){
-			filterSql+= sql_where + keywordSql;
+			filterSql+= sqlWhere + keywordSql;
 		}
 		return filterSql;
 	}

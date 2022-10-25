@@ -28,6 +28,17 @@ import org.springframework.stereotype.Component;
 @Component
 @EnableDataPerm
 public interface StockOutOrderLevel2Mapper extends BaseMapper<StockOutOrderLevel2> {
+    /**
+     * 分页查询
+     * @param page
+     * @param stockInOrderLevel2
+     * @return
+     */
     List<StockOutOrderLevel2> pageList(Page<StockOutOrderLevel2> page, @Param("condition") StockOutOrderLevel2 stockInOrderLevel2);
+
+    /**
+     * 查询所有
+     * @return
+     */
     List<StockOutOrderLevel2> selectListAll();
 }

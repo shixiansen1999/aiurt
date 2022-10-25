@@ -3,6 +3,10 @@ package com.aiurt.modules.appuser.entity;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
+/**
+ * @author fgw
+ */
+
 @Data
 public class UserStatusVo {
     @ApiModelProperty(value = "人员状态")

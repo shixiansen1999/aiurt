@@ -52,7 +52,7 @@ public class SparePartStockServiceImpl extends ServiceImpl<SparePartStockMapper,
     @Autowired
     private IMaterialBaseTypeService iMaterialBaseTypeService;
     @Autowired
-    private CommonAPI commonAPI;
+    private CommonAPI commonApi;
     /**
      * 查询列表
      * @param page

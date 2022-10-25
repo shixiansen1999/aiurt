@@ -136,8 +136,10 @@ public class StockInOrderLevel2ServiceImpl extends ServiceImpl<StockInOrderLevel
 		List<StockIncomingMaterials> stockIncomingMaterialsList = stockIncomingMaterialsService.list(new QueryWrapper<StockIncomingMaterials>().eq("in_order_code",code).eq("del_flag", CommonConstant.DEL_FLAG_0));
 		if(stockIncomingMaterialsList != null && stockIncomingMaterialsList.size()>0){
 			for(StockIncomingMaterials stockIncomingMaterials : stockIncomingMaterialsList){
-				String materialCode = stockIncomingMaterials.getMaterialCode();//物资编号
-				Integer number = stockIncomingMaterials.getNumber();//数量
+				//物资编号
+				String materialCode = stockIncomingMaterials.getMaterialCode();
+				//数量
+				Integer number = stockIncomingMaterials.getNumber();
 				StockLevel2 stockLevel2 = stockLevel2Service.getOne(new QueryWrapper<StockLevel2>().eq("material_code",materialCode).eq("warehouse_code",warehouseCode).eq("del_flag", CommonConstant.DEL_FLAG_0));
 				if(stockLevel2 != null){
 					Integer num = stockLevel2.getNum();
@@ -277,10 +279,8 @@ public class StockInOrderLevel2ServiceImpl extends ServiceImpl<StockInOrderLevel
 						MaterialBase materialBase = materialBaseService.getOne(new QueryWrapper<MaterialBase>().eq("code",wzcode));
 						materialBase = materialBaseService.translate(materialBase);
 						CsMajor csMajor = csMajorService.getOne(new QueryWrapper<CsMajor>().eq("major_code",materialBase.getMajorCode()).eq("del_flag", CommonConstant.DEL_FLAG_0));
-//						String zyname = sysBaseApi.translateDictFromTable("cs_major", "major_name", "major_code", materialBase.getMajorCode());
 						String zyname = csMajor==null?"":csMajor.getMajorName();
 						CsSubsystem csSubsystem = csSubsystemService.getOne(new QueryWrapper<CsSubsystem>().eq("system_code",materialBase.getSystemCode()).eq("del_flag", CommonConstant.DEL_FLAG_0));
-//						String zxyname = sysBaseApi.translateDictFromTable("cs_subsystem", "system_name", "system_code", materialBase.getSystemCode());
 						String zxyname = csSubsystem==null?"":csSubsystem.getSystemName();
 						String wztype = materialBase.getType()==null?"":materialBase.getType().toString();
 						String wztypename = sysBaseApi.translateDict("material_type",wztype);

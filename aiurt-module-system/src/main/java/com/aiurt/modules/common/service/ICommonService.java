@@ -12,6 +12,7 @@ import java.util.List;
 public interface ICommonService {
 
     /**
+     *根据机构人员树
      *
      * @param orgIds 机构id
      * @param ignoreUserId 忽略的用户id

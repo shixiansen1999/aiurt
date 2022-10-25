@@ -99,7 +99,6 @@ public class SparePartReturnOrderServiceImpl extends ServiceImpl<SparePartReturn
         sparePartInOrder.setConfirmStatus(CommonConstant.SPARE_PART_IN_ORDER_CONFRM_STATUS_1);
         sparePartInOrder.setConfirmId(user.getUsername());
         sparePartInOrder.setConfirmTime(date);
-        //sparePartInOrder.setOutOrderCode(orderCode);
         sparePartInOrderService.save(sparePartInOrder);
 
         return Result.OK("操作成功！");

@@ -73,7 +73,6 @@ public class SparePartReturnOrderController extends BaseController<SparePartRetu
 															 @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
 															 @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
 															 HttpServletRequest req) {
-		//QueryWrapper<SparePartReturnOrder> queryWrapper = QueryGenerator.initQueryWrapper(sparePartReturnOrder, req.getParameterMap());
 		Page<SparePartReturnOrder> page = new Page<SparePartReturnOrder>(pageNo, pageSize);
 		List<SparePartReturnOrder> list = sparePartReturnOrderService.selectList(page, sparePartReturnOrder);
 		page.setRecords(list);

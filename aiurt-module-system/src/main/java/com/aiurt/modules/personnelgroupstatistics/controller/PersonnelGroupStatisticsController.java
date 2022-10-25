@@ -42,7 +42,7 @@ public class PersonnelGroupStatisticsController {
     private PersonnelGroupStatisticsService personnelGroupStatisticsService;
 
     @Autowired
-    private ISysBaseAPI iSysBaseAPI;
+    private ISysBaseAPI iSysBaseApi;
 
     /**
      * 班组统计
@@ -162,6 +162,6 @@ public class PersonnelGroupStatisticsController {
     @GetMapping(value = "/selectDepart")
     public List<SysDepartModel> selectDepart() {
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        return iSysBaseAPI.getUserSysDepart(sysUser.getId());
+        return iSysBaseApi.getUserSysDepart(sysUser.getId());
     }
 }

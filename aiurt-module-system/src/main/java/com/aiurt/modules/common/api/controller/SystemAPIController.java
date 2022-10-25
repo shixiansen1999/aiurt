@@ -160,12 +160,6 @@ public class SystemAPIController {
     /** 查询所有的父级字典，按照create_time排序 */
     @GetMapping("/queryAllDict")
     List<DictModel> queryAllDict(){
-//        try{
-//            //睡10秒，gateway网关5秒超时，会触发熔断降级操作
-//            Thread.sleep(10000);
-//        }catch (Exception e){
-//            e.printStackTrace();
-//        }
 
         log.info("--我是jeecg-system服务节点，微服务接口queryAllDict被调用--");
         return sysBaseApi.queryAllDict();

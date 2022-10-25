@@ -1,5 +1,6 @@
 package com.aiurt.modules.quartz.controller;
 
+import org.apache.shiro.authz.annotation.RequiresRoles;
 import org.jeecg.common.api.vo.Result;
 import com.aiurt.common.constant.CommonConstant;
 import org.jeecg.common.system.query.QueryGenerator;
@@ -76,7 +77,6 @@ public class QuartzJobController {
 	 * @param quartzJob
 	 * @return
 	 */
-	//@RequiresRoles("admin")
 	@RequestMapping(value = "/add", method = RequestMethod.POST)
 	public Result<?> add(@RequestBody QuartzJob quartzJob) {
 		quartzJobService.saveAndScheduleJob(quartzJob);
@@ -89,7 +89,6 @@ public class QuartzJobController {
 	 * @param quartzJob
 	 * @return
 	 */
-	//@RequiresRoles("admin")
 	@RequestMapping(value = "/edit", method ={RequestMethod.PUT, RequestMethod.POST})
 	public Result<?> eidt(@RequestBody QuartzJob quartzJob) {
 		try {
@@ -107,7 +106,6 @@ public class QuartzJobController {
 	 * @param id
 	 * @return
 	 */
-	//@RequiresRoles("admin")
 	@RequestMapping(value = "/delete", method = RequestMethod.DELETE)
 	public Result<?> delete(@RequestParam(name = "id", required = true) String id) {
 		QuartzJob quartzJob = quartzJobService.getById(id);
@@ -125,7 +123,6 @@ public class QuartzJobController {
 	 * @param ids
 	 * @return
 	 */
-	//@RequiresRoles("admin")
 	@RequestMapping(value = "/deleteBatch", method = RequestMethod.DELETE)
 	public Result<?> deleteBatch(@RequestParam(name = "ids", required = true) String ids) {
 		if (ids == null || "".equals(ids.trim())) {
@@ -144,7 +141,6 @@ public class QuartzJobController {
 	 * @param id
 	 * @return
 	 */
-	//@RequiresRoles("admin")
 	@GetMapping(value = "/pause")
 	@ApiOperation(value = "停止定时任务")
 	public Result<Object> pauseJob(@RequestParam(name = "id") String id) {
@@ -162,7 +158,6 @@ public class QuartzJobController {
 	 * @param id
 	 * @return
 	 */
-	//@RequiresRoles("admin")
 	@GetMapping(value = "/resume")
 	@ApiOperation(value = "启动定时任务")
 	public Result<Object> resumeJob(@RequestParam(name = "id") String id) {
@@ -171,7 +166,6 @@ public class QuartzJobController {
 			return Result.error("定时任务不存在！");
 		}
 		quartzJobService.resumeJob(job);
-		//scheduler.resumeJob(JobKey.jobKey(job.getJobClassName().trim()));
 		return Result.ok("启动定时任务成功");
 	}
 
@@ -262,7 +256,6 @@ public class QuartzJobController {
 	 * @param id
 	 * @return
 	 */
-	//@RequiresRoles("admin")
 	@GetMapping("/execute")
 	public Result<?> execute(@RequestParam(name = "id", required = true) String id) {
 		QuartzJob quartzJob = quartzJobService.getById(id);
@@ -272,7 +265,6 @@ public class QuartzJobController {
 		try {
 			quartzJobService.execute(quartzJob);
 		} catch (Exception e) {
-			//e.printStackTrace();
 			log.info("定时任务 立即执行失败>>"+e.getMessage());
 			return Result.error("执行失败!");
 		}

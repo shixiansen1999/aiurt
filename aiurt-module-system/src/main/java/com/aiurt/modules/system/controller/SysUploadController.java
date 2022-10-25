@@ -51,16 +51,16 @@ public class SysUploadController {
         // 获取文件名
         String orgName = file.getOriginalFilename();
         orgName = CommonUtils.getFileName(orgName);
-        String file_url =  MinioUtil.upload(file,bizPath);
-        if(oConvertUtils.isEmpty(file_url)){
+        String fileUrl =  MinioUtil.upload(file,bizPath);
+        if(oConvertUtils.isEmpty(fileUrl)){
             return Result.error("上传失败,请检查配置信息是否正确!");
         }
         //保存文件信息
         OSSFile minioFile = new OSSFile();
         minioFile.setFileName(orgName);
-        minioFile.setUrl(file_url);
+        minioFile.setUrl(fileUrl);
         ossFileService.save(minioFile);
-        result.setMessage(file_url);
+        result.setMessage(fileUrl);
         result.setSuccess(true);
         return result;
     }

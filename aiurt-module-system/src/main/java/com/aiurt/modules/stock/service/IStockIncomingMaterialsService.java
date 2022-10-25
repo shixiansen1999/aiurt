@@ -10,5 +10,10 @@ import com.baomidou.mybatisplus.extension.service.IService;
  * @Version: V1.0
  */
 public interface IStockIncomingMaterialsService extends IService<StockIncomingMaterials> {
+    /**
+     * 获取名称
+     * @param stockIncomingMaterials
+     * @return
+     */
     String getCcName(StockIncomingMaterials stockIncomingMaterials);
 }

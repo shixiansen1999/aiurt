@@ -64,7 +64,6 @@ public class SparePartScrapController extends BaseController<SparePartScrap, ISp
 								   @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
 								   @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
 								   HttpServletRequest req) {
-		//QueryWrapper<SparePartScrap> queryWrapper = QueryGenerator.initQueryWrapper(sparePartScrap, req.getParameterMap());
 		Page<SparePartScrap> page = new Page<SparePartScrap>(pageNo, pageSize);
 		List<SparePartScrap> list = sparePartScrapService.selectList(page, sparePartScrap);
 		page.setRecords(list);

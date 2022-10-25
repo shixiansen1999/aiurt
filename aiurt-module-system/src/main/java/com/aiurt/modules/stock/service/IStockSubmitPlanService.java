@@ -23,6 +23,7 @@ public interface IStockSubmitPlanService extends IService<StockSubmitPlan> {
     /**
      * 新增获取提报计划编号
      * @return
+     * @throws ParseException
      */
     StockSubmitPlan getSubmitPlanCode() throws ParseException;
 

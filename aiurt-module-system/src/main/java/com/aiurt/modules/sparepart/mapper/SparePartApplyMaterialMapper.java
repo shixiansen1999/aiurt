@@ -18,5 +18,9 @@ import java.util.List;
  */
 @Component
 public interface SparePartApplyMaterialMapper extends BaseMapper<SparePartApplyMaterial> {
+    /**
+     * 读取所有
+     * @return
+     */
     List<SparePartApplyMaterial> readAll();
 }

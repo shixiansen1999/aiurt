@@ -54,7 +54,7 @@ public class SparePartLendController extends BaseController<SparePartLend, ISpar
 	 @Autowired
 	 private ISysDepartService sysDepartService;
 	 @Autowired
-	 private ISysBaseAPI sysBaseAPI;
+	 private ISysBaseAPI sysBaseApi;
 	/**
 	 * 分页列表查询
 	 *
@@ -72,15 +72,9 @@ public class SparePartLendController extends BaseController<SparePartLend, ISpar
 								   @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
 								   @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
 								   HttpServletRequest req) {
-		//QueryWrapper<SparePartLend> queryWrapper = QueryGenerator.initQueryWrapper(sparePartLend, req.getParameterMap());
 		Page<SparePartLend> page = new Page<SparePartLend>(pageNo, pageSize);
 		List<SparePartLend> list = sparePartLendService.selectList(page, sparePartLend);
 		list = list.stream().distinct().collect(Collectors.toList());
-		/*list.forEach(lend -> {
-			lend.setCreateDeptName(null!=sysBaseAPI.getDepartByOrgCode(lend.getCreateOrgCode())?sysBaseAPI.getDepartByOrgCode(lend.getCreateOrgCode()).getDepartName():null);
-			lend.setLendDeptName(null!=sysBaseAPI.getDepartByOrgCode(lend.getExitOrgCode())?sysBaseAPI.getDepartByOrgCode(lend.getExitOrgCode()).getDepartName():null);
-			lend.setReturnDeptName(null!=sysBaseAPI.getDepartByOrgCode(lend.getEntryOrgCode())?sysBaseAPI.getDepartByOrgCode(lend.getEntryOrgCode()).getDepartName():null);
-		});*/
 		page.setRecords(list);
 		return Result.OK(page);
 	}
