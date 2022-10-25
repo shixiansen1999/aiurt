@@ -5,8 +5,11 @@ import com.aiurt.common.system.base.controller.BaseController;
 import com.aiurt.modules.weeklyplan.dto.*;
 import com.aiurt.modules.weeklyplan.entity.BdOperatePlanDeclarationForm;
 import com.aiurt.modules.weeklyplan.entity.BdOperatePlanStateChange;
+import com.aiurt.modules.weeklyplan.entity.BdSite;
 import com.aiurt.modules.weeklyplan.entity.BdStation;
 import com.aiurt.modules.weeklyplan.service.IBdOperatePlanDeclarationFormService;
+import com.aiurt.modules.weeklyplan.service.IBdSiteService;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -39,6 +42,8 @@ public class BdOperatePlanDeclarationFormController extends BaseController<BdOpe
 	private IBdOperatePlanDeclarationFormService bdOperatePlanDeclarationFormService;
 	@Autowired
 	private ISysBaseAPI sysBaseApi;
+	@Autowired
+	private IBdSiteService bdSiteService;
 
 	 /**
 	  * 获取施工类型
@@ -414,5 +419,20 @@ public class BdOperatePlanDeclarationFormController extends BaseController<BdOpe
 	public Result<?> isApprove(@RequestParam(name = "id", required = false) Integer id) {
 		IsApproveDTO isApproveDTO = bdOperatePlanDeclarationFormService.isApprove(id);
 		return Result.OK(isApproveDTO);
+	}
+
+	/**
+	 * 获取当前用户管辖班组下工区
+	 * @param pageNo
+	 * @param pageSize
+	 * @return
+	 */
+	@AutoLog(value = "获取当前用户管辖班组下工区")
+	@ApiOperation(value = "获取当前用户管辖班组下工区", notes = "获取当前用户管辖班组下工区")
+	@GetMapping(value = "/querySiteByTeam")
+	public Result<?> querySiteByTeam(@RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
+									 @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize) {
+		IPage<BdSite> bdSiteIPage = bdSiteService.querySiteByTeam(new Page<BdSite>(pageNo, pageSize));
+		return Result.OK(bdSiteIPage);
 	}
 }

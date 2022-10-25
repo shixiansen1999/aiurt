@@ -79,8 +79,8 @@ public class BdOperatePlanDeclarationFormServiceImpl
     }
 
     @Override
-    public List<BdStaffInfoReturnTypeDTO> getStaffsByRoleType(String roleName, String deptId) {
-        return baseMapper.queryStaffByRoleType(roleName, deptId);
+    public List<BdStaffInfoReturnTypeDTO> getStaffsByRoleType(String roleType, String deptId) {
+        return baseMapper.queryStaffByRoleType(roleType, deptId);
     }
 
     @Override
@@ -128,15 +128,15 @@ public class BdOperatePlanDeclarationFormServiceImpl
         }
 
         //提前转换辅站负责人id->name
-        if (declarationForm.getAssistStationManagerNames() == null
+        if (ObjectUtil.isNull(declarationForm.getAssistStationManagerNames())
                 || ("").equals(declarationForm.getAssistStationManagerNames())
-                && declarationForm.getAssistStationManagerIds() != null) {
+                && ObjectUtil.isNotNull(declarationForm.getAssistStationManagerIds())) {
             if(!"".equals(declarationForm.getAssistStationManagerIds())){
                 declarationForm.setAssistStationManagerNames(getNamesByIds(declarationForm.getAssistStationManagerIds()));
             }
-        } else if (declarationForm.getAssistStationManagerNames() == null
+        } else if (ObjectUtil.isNull(declarationForm.getAssistStationManagerNames())
                 || ("").equals(declarationForm.getAssistStationManagerNames())
-                && declarationForm.getAssistStationManagerIds() == null){
+                && ObjectUtil.isNull(declarationForm.getAssistStationManagerIds())){
             declarationForm.setAssistStationManagerNames("无");
         }
         this.save(declarationForm);
@@ -528,7 +528,7 @@ public class BdOperatePlanDeclarationFormServiceImpl
                 return DateUtil.format(datea, "HH:mm") + " -次日 " + DateUtil.format(dateb, "HH:mm");
             }
         }catch (Exception e){
-            if(taskTime.contains("次日")){
+            if(taskTime.contains(MagicWords.NEXT_DAY)){
                 return taskTime;
             }else{
                 return "";
@@ -632,20 +632,20 @@ public class BdOperatePlanDeclarationFormServiceImpl
             typeId = 46;
         }
         try {//todo 1234
-            if (("1392313109028872194").equals(bdOperatePlanStateChange.getRoleId()) || ("1392313109028872199").equals(bdOperatePlanStateChange.getRoleId())) {
+            if ((MagicWords.NUM_1).equals(bdOperatePlanStateChange.getRoleId()) || (MagicWords.NUM_2).equals(bdOperatePlanStateChange.getRoleId())) {
                 this.sendMessage(String.valueOf(declarationForm.getId()), sysUser.getUsername(), declarationForm.getDispatchStaffId(),
                         content, typeId, afterStatus, false);
                 declarationForm.setLineFormStatus(afterStatus);
                 declarationForm.setActualLineStaffId(sysUser.getId());
-            } else if (("1393531024349736962").equals(bdOperatePlanStateChange.getRoleId())) {
+            } else if ((MagicWords.NUM_3).equals(bdOperatePlanStateChange.getRoleId())) {
                 this.sendMessage(String.valueOf(declarationForm.getId()), sysUser.getUsername(), declarationForm.getDirectorStaffId(),
                         content, 43, afterStatus, false);
                 declarationForm.setDispatchFormStatus(afterStatus);
-            } else if (("1393530834351960066").equals(bdOperatePlanStateChange.getRoleId())) {
+            } else if ((MagicWords.NUM_4).equals(bdOperatePlanStateChange.getRoleId())) {
                 this.sendMessage(String.valueOf(declarationForm.getId()), sysUser.getUsername(), declarationForm.getManagerStaffId(),
                         content, 44, afterStatus, false);
                 declarationForm.setDirectorFormStatus(afterStatus);
-            } else if (("1393530645335650305").equals(bdOperatePlanStateChange.getRoleId())) {
+            } else if ((MagicWords.NUM_5).equals(bdOperatePlanStateChange.getRoleId())) {
                 declarationForm.setManagerFormStatus(afterStatus);
             } else {
                 return Result.error(600, "请检查账户角色和部门，没有权限审批！");
@@ -655,7 +655,7 @@ public class BdOperatePlanDeclarationFormServiceImpl
         }
 
         //一人拒绝则直接驳回
-        if (afterStatus == 2) {
+        if (MagicWords.STATUS_2.equals(afterStatus)) {
             declarationForm.setFormStatus(2);
             declarationForm.setRejectedReason(bdOperatePlanStateChange.getChangeReason());
             /*sysBaseAPI.sendSysAnnouncement(new MessageDTO(
@@ -718,7 +718,7 @@ public class BdOperatePlanDeclarationFormServiceImpl
         //修改
         bdOperatePlanDeclarationFormMapper.updateById(bdOperatePlanDeclarationForm);
 
-        if(bdOperatePlanDeclarationForm.getFormStatus() != 3){
+        if( !MagicWords.STATUS_3.equals(bdOperatePlanDeclarationForm.getFormStatus())){
             //1是申请计划，2修改，不传,驳回也不传
             if(ObjectUtil.isNotEmpty(bdOperatePlanDeclarationForm.getIsApply())){
                 if(bdOperatePlanDeclarationForm.getIsApply() == 1){
@@ -726,7 +726,7 @@ public class BdOperatePlanDeclarationFormServiceImpl
                     LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
                     this.sendMessage(String.valueOf(bdOperatePlanDeclarationForm.getId()), sysUser.getUsername(), bdOperatePlanDeclarationForm.getLineStaffId(),
                             "你有新的待审批周计划", 13, 1, true);
-                }else if(bdOperatePlanDeclarationForm.getIsApply() == 2){
+                }else if( MagicWords.STATUS_2.equals(bdOperatePlanDeclarationForm.getIsApply())){
                     //修改主页消息提醒
                     readMessage(Convert.toStr(bdOperatePlanDeclarationForm.getId()), SysAnnmentTypeEnum.BDOPERATEPLANDECLARATIONFORM.getType(), null);
                     //申请计划
@@ -740,7 +740,7 @@ public class BdOperatePlanDeclarationFormServiceImpl
             }
         }
         //点击“取消计划”按钮
-        if(bdOperatePlanDeclarationForm.getFormStatus() == 4){
+        if(MagicWords.STATUS_4.equals(bdOperatePlanDeclarationForm.getFormStatus())){
             //取消检修任务
             bdOverhaulReportService.cancelTask(bdOperatePlanDeclarationForm.getId()+"");
         }
@@ -788,15 +788,15 @@ public class BdOperatePlanDeclarationFormServiceImpl
 
         if (declarationForm.getFormStatus() == 1) {
             return Result.error(600, "计划已被通过，不可继续审批");
-        } else if (declarationForm.getFormStatus() == 2) {
+        } else if (MagicWords.STATUS_2.equals(declarationForm.getFormStatus())) {
             return Result.error(600, "计划已被驳回，不可继续审批");
         } else {//todo 1234
-            if (("1392313109028872194").equals(planStateChange.getRoleId())) {
+            if (MagicWords.NUM_1.equals(planStateChange.getRoleId())) {
                 if (declarationForm.getDispatchFormStatus() != null
                         &&  !falseStatus.equals(declarationForm.getDispatchFormStatus())) {
                     return Result.error(600, "生产调度已审批，不可二次操作");
                 }
-            } else if (("1393531024349736962").equals(planStateChange.getRoleId())) {
+            } else if (MagicWords.NUM_3.equals(planStateChange.getRoleId())) {
                 if (declarationForm.getLineFormStatus() == null
                         ||  !trueStatus.equals(declarationForm.getLineFormStatus())) {
                     return Result.error(600, "线路负责人未同意，不可继续审批");
@@ -804,7 +804,7 @@ public class BdOperatePlanDeclarationFormServiceImpl
                         &&  !falseStatus.equals(declarationForm.getDirectorFormStatus())) {
                     return Result.error(600, "分部主任已审批，不可二次操作");
                 }
-            } else if (("1393530834351960066").equals(planStateChange.getRoleId())) {
+            } else if (MagicWords.NUM_4.equals(planStateChange.getRoleId())) {
                 if (declarationForm.getDispatchFormStatus() == null
                         ||  !trueStatus.equals(declarationForm.getDispatchFormStatus())) {
                     return Result.error(600, "生产调度未同意，不可继续审批");
@@ -813,7 +813,7 @@ public class BdOperatePlanDeclarationFormServiceImpl
                         && declarationForm.getManagerFormStatus() != falseStatus) {
                     return Result.error(600, "公司经理已审批，不可二次操作");
                 }*/
-            } else if (("1393530645335650305").equals(planStateChange.getRoleId())) {
+            } else if (MagicWords.NUM_5.equals(planStateChange.getRoleId())) {
                 if (declarationForm.getDispatchFormStatus() == null
                         ||  !trueStatus.equals(declarationForm.getDirectorFormStatus())) {
                     return Result.error(600, "分部主任未同意，不可继续审批");
@@ -859,7 +859,7 @@ public class BdOperatePlanDeclarationFormServiceImpl
     public void reapply(Integer id) {
         BdOperatePlanDeclarationForm operatePlanDeclarationForm = bdOperatePlanDeclarationFormMapper.selectById(id);
         //不是草稿保存状态，才修改
-        if(operatePlanDeclarationForm.getFormStatus() != 3){
+        if(!MagicWords.STATUS_3.equals(operatePlanDeclarationForm.getFormStatus())){
             operatePlanDeclarationForm.setFormStatus(0);
             operatePlanDeclarationForm.setDispatchFormStatus(0);
             operatePlanDeclarationForm.setLineFormStatus(0);

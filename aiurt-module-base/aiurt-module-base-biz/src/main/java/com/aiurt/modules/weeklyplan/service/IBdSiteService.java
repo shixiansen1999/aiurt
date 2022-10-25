@@ -47,4 +47,12 @@ public interface IBdSiteService extends IService<BdSite> {
     //查询系统所有的生产调度
     List<TeamStaffDTO> getAllPro();
      */
+    //获取当前用户管辖班组下工区
+
+    /**
+     * 获取当前用户管辖班组下工区
+     * @param page
+     * @return
+     */
+    IPage<BdSite> querySiteByTeam(Page<BdSite> page);
 }

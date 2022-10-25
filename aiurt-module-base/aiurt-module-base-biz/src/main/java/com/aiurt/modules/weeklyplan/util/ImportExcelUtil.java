@@ -1,10 +1,7 @@
 package com.aiurt.modules.weeklyplan.util;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
-import com.aiurt.modules.weeklyplan.entity.BdLine;
-import com.aiurt.modules.weeklyplan.entity.BdOperatePlanDeclarationForm;
-import com.aiurt.modules.weeklyplan.entity.BdSite;
-import com.aiurt.modules.weeklyplan.entity.BdStation;
+import com.aiurt.modules.weeklyplan.entity.*;
 import com.aiurt.modules.weeklyplan.mapper.BdLineMapper;
 import com.aiurt.modules.weeklyplan.mapper.BdOperatePlanDeclarationFormMapper;
 import com.aiurt.modules.weeklyplan.mapper.BdSiteMapper;
@@ -445,7 +442,7 @@ public class ImportExcelUtil {
 
 
     public String getStationIds(String cellText,Integer line) {
-        if(("").equals(cellText)||("无").equals(cellText)){
+        if(("").equals(cellText)|| MagicWords.HAVE.equals(cellText)){
             return "";
         }
         String result = "";
@@ -470,7 +467,7 @@ public class ImportExcelUtil {
 
     public String getStaffIds(String cellText) {
         String result = "";
-        if(("").equals(cellText)||("无").equals(cellText)){
+        if(("").equals(cellText)||MagicWords.HAVE.equals(cellText)){
             return "";
         }
         String[] sourceStrArray;

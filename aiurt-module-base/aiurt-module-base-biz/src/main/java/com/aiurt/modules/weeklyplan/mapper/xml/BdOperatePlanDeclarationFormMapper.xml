@@ -13,8 +13,9 @@
                bs.org_id AS teamId,
                bs.phone AS phoneNo
         FROM sys_user AS bs LEFT JOIN sys_user_role AS sur on bs.id = sur.user_id
+                            LEFT JOIN sys_depart sd on bs.org_id =sd.id
         WHERE bs.org_id
-        IN (SELECT distinct id FROM sys_depart WHERE FIND_IN_SET(id,get_team_child(#{teamId}))>0)
+        IN (SELECT distinct id FROM sys_depart WHERE FIND_IN_SET(id,#{teamId}))
     </select>
 
     <select id="queryStaffByRoleType" resultType="com.aiurt.modules.weeklyplan.dto.BdStaffInfoReturnTypeDTO">
@@ -158,15 +159,14 @@
             bd.power_supply_requirement AS powerSupplyRequirement,
             bd.task_content AS taskContent,
             bd.protective_measure AS protectiveMeasure,
-            <!--bs1.realname AS chargeStaffName,-->
-            CONCAT(IFNULL(bs1.identity_number,''), IFNULL(bs1.realname, ''), IFNULL(bs1.phone, '')) AS chargeStaffName,
+            CONCAT(IFNULL(bs1.card_code,''), IFNULL(bs1.realname, ''), IFNULL(bs1.phone, '')) AS chargeStaffName,
             bs2.realname AS lineStaffName,
             bs3.realname AS dispatchStaffName,
-            st1.name AS firstStationName,
-            st2.name AS secondStationName,
+            st1.station_name AS firstStationName,
+            st2.station_name AS secondStationName,
             bd.large_appliances AS largeAppliances,
             bd.remark AS remark,
-            st1.line_id AS lineID,
+            cl1.id AS lineID,
             bd.assist_station_ids AS assistStationName,
             bd.assist_station_ids AS assistStationIds,
             bd.coordination_department_id AS coordinationDepartmentId,
@@ -188,8 +188,8 @@
             bd.change_correlation AS changeCorrelation,
             bs4.realname as applyStaffName,
             bd.create_time as createTime,
-            bs1.phone,bd.reason,st3.name AS substationName,
-            bs1.identity_number as identityNumber
+            bs1.phone,bd.reason,st3.station_name AS substationName,
+            bs1.card_code as identityNumber
         FROM bd_operate_plan_declaration_form AS bd
             LEFT JOIN sys_user AS bs1 ON bd.charge_staff_id = bs1.id
             LEFT JOIN sys_user AS bs2 ON bd.line_staff_id = bs2.id
@@ -198,6 +198,9 @@
             LEFT JOIN cs_station AS st1 ON bd.first_station_id = st1.id
             LEFT JOIN cs_station AS st2 ON bd.second_station_id = st2.id
             LEFT JOIN cs_station AS st3 ON bd.substation_id = st3.id
+            LEFT JOIN cs_line cl1 on st1.line_code = cl1.line_code
+            LEFT JOIN cs_line cl2 on st2.line_code = cl2.line_code
+            LEFT JOIN cs_line cl3 on st3.line_code = cl3.line_code
             LEFT JOIN work_area AS si1 ON bd.site_id = si1.id
             <where>
                 1=1
@@ -281,10 +284,10 @@
                 </if>
                 <choose>
                     <when test="queryPagesParams.lineID==null or queryPagesParams.lineID=='0'.toString() or queryPagesParams.lineID==''">
-                        AND st1.line_code in ('1','2','15','17','21')
+                        AND cl1.id in ('1','1542420008938577921','1542710958252453889','1542716994245894146','1544551872243822594')
                     </when>
                     <otherwise>
-                        AND st1.line_code = #{queryPagesParams.lineID}
+                        AND cl1.id = #{queryPagesParams.lineID}
                     </otherwise>
                 </choose>
                 <!--<if test="queryPagesParams.lineID!=null and queryPagesParams.lineID!='0'.toString() and queryPagesParams.lineID!=''">
@@ -330,7 +333,7 @@
         bd.task_content AS taskContent,
         bd.protective_measure AS protectiveMeasure,
         <!--bs1.realname AS chargeStaffName,-->
-        CONCAT(IFNULL(bs1.identity_number, ''), IFNULL(bs1.realname, ''), IFNULL(bs1.phone, '')) as chargeStaffName,
+        CONCAT(IFNULL(bs1.card_code, ''), IFNULL(bs1.realname, ''), IFNULL(bs1.phone, '')) as chargeStaffName,
         bs2.realname AS lineStaffName,
         bs3.realname AS dispatchStaffName,
         bs4.realname AS directorStaffName,
@@ -339,7 +342,7 @@
         st2.station_name AS secondStationName,
         bd.large_appliances AS largeAppliances,
         bd.remark AS remark,
-        st1.line_id AS lineID,
+        cl1.id AS lineID,
         bd.assist_station_ids AS assistStationName,
         bd.assist_station_ids AS assistStationIds,
         bd.coordination_department_id AS coordinationDepartmentId,
@@ -366,7 +369,7 @@
         bd.voice AS voice,
         bd.rejected_reason AS rejectedReason,
         bd.site_id AS siteId,
-        si1.station_name AS siteName,
+        st1.station_name AS siteName,
         st3.station_name AS substationName
         FROM bd_operate_plan_declaration_form AS bd
         LEFT JOIN sys_user AS bs1 ON bd.charge_staff_id = bs1.id
@@ -377,6 +380,9 @@
         LEFT JOIN cs_station AS st1 ON bd.first_station_id = st1.id
         LEFT JOIN cs_station AS st2 ON bd.second_station_id = st2.id
         LEFT JOIN cs_station AS st3 ON bd.substation_id = st3.id
+        LEFT JOIN cs_line cl1 on st1.line_code = cl1.line_code
+        LEFT JOIN cs_line cl2 on st2.line_code = cl2.line_code
+        LEFT JOIN cs_line cl3 on st3.line_code = cl3.line_code
         LEFT JOIN work_area AS si1 ON si1.id = bd.site_id
         WHERE bd.id = #{id}
     </select>
@@ -506,9 +512,12 @@
             LEFT JOIN sys_user s1 ON s1.id = t.apply_staff_id
             LEFT JOIN sys_user s2 ON s2.id = t.line_staff_id
             LEFT JOIN sys_user s3 ON s3.id = t.dispatch_staff_id
+            LEFT JOIN cs_line cl1 on t1.line_code = cl1.line_code
+            LEFT JOIN cs_line cl2 on t2.line_code = cl2.line_code
+            LEFT JOIN cs_line cl3 on t3.line_code = cl3.line_code
             LEFT JOIN work_area t4 ON t4.id = t.site_id
             <if test="lineID != '' and lineID != null" >
-                and (t1.line_code =#{lineID} or t2.line_code =#{lineID} or t3.line_code =#{lineID})
+                and (cl1.id =#{lineID} or cl2.id =#{lineID} or cl3.id =#{lineID})
             </if>
             <if test="beginDate != null">
                 AND t.task_date &gt;= #{beginDate}
@@ -574,9 +583,12 @@
             LEFT JOIN sys_user s1 ON s1.id = m.apply_staff_id
             LEFT JOIN sys_user s2 ON s2.id = m.line_staff_id
             LEFT JOIN sys_user s3 ON s3.id = m.dispatch_staff_id
+            LEFT JOIN cs_line cl1 on t1.line_code = cl1.line_code
+            LEFT JOIN cs_line cl2 on t2.line_code = cl2.line_code
+            LEFT JOIN cs_line cl3 on t3.line_code = cl3.line_code
             LEFT JOIN work_area t4 ON t4.id = m.site_id
             <if test="lineID != '' and lineID != null" >
-                and (t1.line_code =#{lineID} or t2.line_code =#{lineID} or t3.line_code =#{lineID})
+                and (cl1.id =#{lineID} or cl2.id =#{lineID} or cl3.id =#{lineID})
             </if>
             <if test="beginDate != null">
                 AND m.task_date &gt;= #{beginDate}

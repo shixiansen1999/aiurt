@@ -33,4 +33,24 @@ import java.util.stream.Collectors;
 @Service
 public class BdSiteServiceImpl extends ServiceImpl<BdSiteMapper, BdSite> implements IBdSiteService {
 
+    @Autowired
+    private BdTeamMapper bdTeamMapper;
+    @Autowired
+    private BdSiteMapper bdSiteMapper;
+    @Autowired
+    private ISysBaseAPI sysBaseAPI;
+    @Override
+    public IPage<BdSite> querySiteByTeam(Page<BdSite> page) {
+        //查询登录人
+        LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        String teamId = bdTeamMapper.queryByUserId(sysUser.getId());
+        List<BdTeam> bdTeamList = bdTeamMapper.queryManagedTeam(teamId);
+        bdTeamList = bdTeamList.stream().distinct().collect(Collectors.toList());
+        List<String> teamIdList = bdTeamList.stream().map(s -> s.getId()).collect(Collectors.toList());
+
+        //按管辖班组查询用户表
+        QueryWrapper<BdSite> queryWrapper = new QueryWrapper<>();
+        queryWrapper.in("team_id", teamIdList);
+        return bdSiteMapper.selectPage(page, queryWrapper);
+    }
 }

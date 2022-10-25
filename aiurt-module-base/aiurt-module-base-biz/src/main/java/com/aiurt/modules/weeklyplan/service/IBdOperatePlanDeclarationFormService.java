@@ -51,8 +51,8 @@ public interface IBdOperatePlanDeclarationFormService extends IService<BdOperate
     List<BdStaffInfoReturnTypeDTO> getStaffsByRoleName(@Param("roleName") String roleName,@Param("deptId")  String deptId);
 
     /**
-     * 通过teamID获取车站列表
-     * @param teamID Team ID.
+     * 通过teamId获取车站列表
+     * @param teamId Team ID.
      * @return List of Station Info ReturnType DTO.
      */
     List<BdStationReturnTypeDTO> getStationList(Integer teamId);
@@ -188,6 +188,10 @@ public interface IBdOperatePlanDeclarationFormService extends IService<BdOperate
      */
     void edit(BdOperatePlanDeclarationForm bdOperatePlanDeclarationForm);
 
+    /**
+     * 查找线路负责人
+     * @return
+     */
     List<BdStaffInfoReturnTypeDTO> queryLineStaff();
 
     /**
