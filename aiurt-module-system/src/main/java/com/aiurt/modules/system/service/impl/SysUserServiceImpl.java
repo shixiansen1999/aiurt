@@ -1,5 +1,6 @@
 package com.aiurt.modules.system.service.impl;
 
+import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.constant.CacheConstant;
 import com.aiurt.common.constant.CommonConstant;
@@ -21,7 +22,9 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.LoginUser;
+import org.jeecg.common.system.vo.SysDepartModel;
 import org.jeecg.common.system.vo.SysUserCacheInfo;
 import org.jeecg.modules.base.service.BaseCommonService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -80,7 +83,8 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
     private CsUserMajorMapper csUserMajorMapper;
     @Autowired
     private CsUserSubsystemMapper csUserSubsystemMapper;
-
+    @Autowired
+    private ISysBaseAPI iSysBaseAPI;
     @Lazy
     @Autowired
     private ICommonService commonService;
@@ -326,6 +330,10 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
         userByRoleId.getRecords().forEach(l -> {
             List<String> majorIds = csUserMajorMapper.getMajorIds(l.getId());
             l.setMajorIds(majorIds);
+            SysDepartModel departByOrgCode = iSysBaseAPI.getDepartByOrgCode(l.getOrgCode());
+            if(ObjectUtil.isNotNull(departByOrgCode)){
+                l.setOrgName(departByOrgCode.getDepartName());
+            }
         });
         return userByRoleId;
     }
