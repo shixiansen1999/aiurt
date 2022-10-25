@@ -141,10 +141,64 @@ public class TaskExcuteInfoServiceImpl extends ServiceImpl<TaskExcuteInfoMapper,
         // 更新需要下载图片的记录
         if (CollUtil.isNotEmpty(list)) {
             list.forEach(l -> {
-                l.setHdPicture(sysBaseApi.remoteUploadLocal(l.getHdPicture(), ""));
+                String newHdPictureUrl = ipAddressConvert(l.getHdPicture());
+                l.setHdPicture(sysBaseApi.remoteUploadLocal(newHdPictureUrl, ""));
             });
             this.saveOrUpdateBatch(list);
         }
+    }
+
+    private String ipAddressConvert(String hdPicture) {
+        //匹配ip+port的正则表达式
+        String regIpAndPort = "((2[0-4]\\d|25[0-5]|[01]?\\d\\d?)\\.){3}(2[0-4]\\d|25[0-5]|[01]?\\d\\d?\\:(\\d+))";
+
+        // 判空
+        if (StrUtil.isEmpty(hdPicture)) {
+            return hdPicture;
+        }
+
+        // 匹配图片地址上面的ip+port
+        Pattern pattern = Pattern.compile(regIpAndPort);
+        Matcher matcher = pattern.matcher(hdPicture);
+        String oldIpAndPort = "";
+        while (matcher.find()) {
+            oldIpAndPort = matcher.group();
+        }
+
+        // 没有匹配到ip+port，则直接返回
+        if (StrUtil.isEmpty(oldIpAndPort)) {
+            return hdPicture;
+        }
+
+        // 根据旧的ip去获取映射表，如果有对应的外网地址映射才进入
+        String oldIp = oldIpAndPort.substring(0, oldIpAndPort.indexOf(":"));
+        String oldPort = oldIpAndPort.substring(oldIpAndPort.indexOf(":") + 1);
+
+        // 图片地址外网转换
+        LambdaQueryWrapper<IpMapping> lam = new LambdaQueryWrapper<>();
+        lam.eq(IpMapping::getIsMapping, RobotConstant.IS_MAPPING_1);
+        lam.in(IpMapping::getInsideIp, oldIp);
+        lam.in(IpMapping::getInsidePort, oldPort);
+        List<IpMapping> ipList = ipMappingService.getBaseMapper().selectList(lam);
+
+        // 没有对应外网映射地址
+        if (CollUtil.isEmpty(ipList)) {
+            return hdPicture;
+        }
+
+        IpMapping newIpMapping = ipList.get(0);
+        String newIp = newIpMapping.getOutsideIp();
+        Integer newPort = newIpMapping.getOutsidePort();
+
+        // 没有对应的外网ip+port
+        if (StrUtil.isEmpty(newIp) || ObjectUtil.isEmpty(newPort)) {
+            return hdPicture;
+        }
+
+        String newIpAndPort = newIp + ":" + newPort;
+        String result = hdPicture.replaceAll(regIpAndPort, newIpAndPort);
+
+        return result;
     }
 
     @Override

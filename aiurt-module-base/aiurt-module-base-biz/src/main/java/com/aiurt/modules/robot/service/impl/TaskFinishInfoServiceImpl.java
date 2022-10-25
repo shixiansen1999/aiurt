@@ -120,7 +120,7 @@ public class TaskFinishInfoServiceImpl extends ServiceImpl<TaskFinishInfoMapper,
             List<TaskExcuteInfo> taskExcuteInfos = taskExcuteInfoService.getSynchronizeRobotTaskExcuteInfo(l.getTaskId());
             excuteInfos.addAll(taskExcuteInfos);
         });
-        taskExcuteInfoService.synchronizeRobotTaskExcuteInfo(excuteInfos);
+        taskExcuteInfoService.synchronizeTaskExcuteInfo(excuteInfos);
     }
 
     @Override
