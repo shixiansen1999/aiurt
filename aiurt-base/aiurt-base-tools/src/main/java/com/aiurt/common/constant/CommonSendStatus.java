@@ -7,9 +7,18 @@ package com.aiurt.common.constant;
  */
 public interface CommonSendStatus {
 
-	public static final String UNPUBLISHED_STATUS_0 = "0";	//未发布
+	/**
+	 * 未发布
+	 */
+	public static final String UNPUBLISHED_STATUS_0 = "0";
 
-	public static final String PUBLISHED_STATUS_1 = "1";		//已发布
+	/**
+	 * 已发布
+	 */
+	public static final String PUBLISHED_STATUS_1 = "1";
 
-	public static final String REVOKE_STATUS_2 = "2";			//撤销
+	/**
+	 * 撤销
+	 */
+	public static final String REVOKE_STATUS_2 = "2";
 }

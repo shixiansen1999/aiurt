@@ -58,8 +58,6 @@ public class XlsExport {
         this.workbook = new HSSFWorkbook();
         this.sheet = workbook.createSheet();
         this.sheet.setDefaultColumnWidth((short) 15);
-//        this.sheet.setDefaultColumnWidth(15);
-        //设置边框
         this.hstyle = workbook.createCellStyle();
         hstyle.setVerticalAlignment(VerticalAlignment.CENTER);
         hstyle.setBorderTop(BorderStyle.THIN);
@@ -98,8 +96,9 @@ public class XlsExport {
             throw new RuntimeException("写入Excel文件出错!", e);
         } finally {
             try {
-                if (fOut != null)
+                if (fOut != null){
                     fOut.close();
+                }
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -118,8 +117,9 @@ public class XlsExport {
             throw new RuntimeException("写入Excel文件出错了!", e);
         } finally {
             try {
-                if (os != null)
+                if (os != null){
                     os.close();
+                }
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -158,8 +158,6 @@ public class XlsExport {
         cell.setCellType(CellType.STRING);
         //统一格式 代码
         cell.setCellStyle(this.hstyle);
-        //统一格式代码end
-        // cell.setEncoding(XLS_ENCODING);
         cell.setCellValue(value);
     }
 
@@ -186,21 +184,24 @@ public class XlsExport {
             HSSFCell cell = this.row.createCell((short) index);
             cell.setCellValue(value);
             cell.setCellStyle(cStyle);
+            // 设置cell样式为定制的日期格式
             cStyle.setDataFormat(HSSFDataFormat
-                    .getBuiltinFormat(XlsFormatEm.DATE.getPattern())); // 设置cell样式为定制的日期格式
-            cell.setCellStyle(cStyle); // 设置该cell日期的显示格式
+                    .getBuiltinFormat(XlsFormatEm.DATE.getPattern()));
+            // 设置该cell日期的显示格式
+            cell.setCellStyle(cStyle);
         }
     }
     public void setCell(int index, Date value) {
         if (value != null) {
             HSSFCell cell = this.row.createCell((short) index);
-            // cell.setEncoding(XLS_ENCODING);
             cell.setCellValue(value);
-            HSSFCellStyle cellStyle = workbook.createCellStyle(); // 建立新的cell样式
+            // 建立新的cell样式
+            HSSFCellStyle cellStyle = workbook.createCellStyle();
+            // 设置cell样式为定制的日期格式
             cellStyle.setDataFormat(HSSFDataFormat
-                    .getBuiltinFormat(XlsFormatEm.DATE.getPattern())); // 设置cell样式为定制的日期格式
-
-            cell.setCellStyle(cellStyle); // 设置该cell日期的显示格式
+                    .getBuiltinFormat(XlsFormatEm.DATE.getPattern()));
+            // 设置该cell日期的显示格式
+            cell.setCellStyle(cellStyle);
         }
     }
 
@@ -214,10 +215,13 @@ public class XlsExport {
         HSSFCell cell = this.row.createCell((short) index);
         cell.setCellType(CellType.NUMERIC);
         cell.setCellValue(value);
-        HSSFCellStyle cellStyle = workbook.createCellStyle(); // 建立新的cell样式
+        // 建立新的cell样式
+        HSSFCellStyle cellStyle = workbook.createCellStyle();
         HSSFDataFormat format = workbook.createDataFormat();
-        cellStyle.setDataFormat(format.getFormat(formatEm.getPattern())); // 设置cell样式为定制的浮点数格式
-        cell.setCellStyle(cellStyle); // 设置该cell浮点数的显示格式
+        // 设置cell样式为定制的浮点数格式
+        cellStyle.setDataFormat(format.getFormat(formatEm.getPattern()));
+        // 设置该cell浮点数的显示格式
+        cell.setCellStyle(cellStyle);
     }
 
     public void setCell(int index, double value) {

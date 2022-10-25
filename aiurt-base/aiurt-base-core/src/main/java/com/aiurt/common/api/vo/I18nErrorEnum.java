@@ -1,5 +1,9 @@
 package com.aiurt.common.api.vo;
 
+/**
+ * 返回值枚举类
+ * @author: jeecg-boot
+ */
 public enum I18nErrorEnum {
 
     //通用成功返回

@@ -115,7 +115,7 @@ public class StockOutOrderLevel2ServiceImpl extends ServiceImpl<StockOutOrderLev
 	public void confirmOutOrder(SparePartApply sparePartApply, StockOutOrderLevel2 stockOutOrderLevel2) throws ParseException {
         String warehouseCode = stockOutOrderLevel2.getWarehouseCode();
         List<StockLevel2Check> stockLevel2CheckList = iStockLevel2CheckService.list(new QueryWrapper<StockLevel2Check>().eq("del_flag", CommonConstant.DEL_FLAG_0)
-                .eq("warehouse_code",warehouseCode).ne("status",CommonConstant.StOCK_LEVEL2_CHECK_STATUS_5));
+                .eq("warehouse_code",warehouseCode).ne("status",CommonConstant.STOCK_LEVEL2_CHECK_STATUS_5));
 		String orderCode = sparePartApply.getOrderCode();
 		List<StockOutboundMaterials> stockOutboundMaterials = sparePartApply.getStockOutboundMaterialsList();
 		//1. 修改二级库出库表的信息（出库时间、出库操作用户、备注）stock_out_order_level2

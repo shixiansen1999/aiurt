@@ -13,7 +13,7 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 /**
- * wgp
+ * @Author wgp
  */
 public class TreeUtils {
 
@@ -45,7 +45,8 @@ public class TreeUtils {
         )).map((menu) -> {
             menu.setChildren(getChildrens(menu, treeList));
             return menu;
-        }).sorted((menu1, menu2) -> {   //排序
+            //排序
+        }).sorted((menu1, menu2) -> {
             return (menu1.getSort() == null ? 0 : menu1.getSort()) - (menu2.getSort() == null ? 0 : menu2.getSort());
         }).collect(Collectors.toList());
         // 查询子菜单
@@ -91,7 +92,8 @@ public class TreeUtils {
         }).map((menu) -> {
             menu.setChildren(getChildrens(menu, treeList));
             return menu;
-        }).sorted((menu1, menu2) -> {   //排序
+            //排序
+        }).sorted((menu1, menu2) -> {
             return (menu1.getSort() == null ? 0 : menu1.getSort()) - (menu2.getSort() == null ? 0 : menu2.getSort());
         }).collect(Collectors.toList());
         // 查询子菜单

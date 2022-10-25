@@ -6,6 +6,9 @@ import cn.hutool.core.util.StrUtil;
 import java.util.Arrays;
 import java.util.Optional;
 
+/**
+ * @author: zwl
+ */
 public enum WorkLogConfirmStatusEnum {
     WQR(0, "未确认"),
     YQR(1, "已确认");

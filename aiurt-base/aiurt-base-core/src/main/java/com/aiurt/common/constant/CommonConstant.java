@@ -474,11 +474,11 @@ public interface CommonConstant {
  /**
   * 二级库盘点状态执行中-4
   */
- public static final String StOCK_LEVEL2_CHECK_STATUS_4 = "4";
+ public static final String STOCK_LEVEL2_CHECK_STATUS_4 = "4";
  /**
   * 二级库盘点状态已完成-5
   */
- public static final String StOCK_LEVEL2_CHECK_STATUS_5 = "5";
+ public static final String STOCK_LEVEL2_CHECK_STATUS_5 = "5";
  /**
   * 备件报废状态 待确认-2
   */

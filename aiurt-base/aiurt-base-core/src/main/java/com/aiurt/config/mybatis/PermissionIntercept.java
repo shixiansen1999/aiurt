@@ -33,16 +33,6 @@ import java.util.Properties;
  * @date 2022/5/2614:20 该插件使用于使用 PageHelper.startPage(pageNo, pageSize);
  */
 @Slf4j
-//@Component
-//@Intercepts({@Signature(
-//        type = Executor.class,
-//        method = "query",
-//        args = {MappedStatement.class, Object.class, RowBounds.class, ResultHandler.class}
-//), @Signature(
-//        type = Executor.class,
-//        method = "query",
-//        args = {MappedStatement.class, Object.class, RowBounds.class, ResultHandler.class, CacheKey.class, BoundSql.class}
-//)})
 public class PermissionIntercept implements Interceptor {
     @Override
     public Object intercept(Invocation invocation) throws Throwable {

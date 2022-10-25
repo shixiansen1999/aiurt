@@ -2,6 +2,10 @@ package com.aiurt.common.api.vo;
 
 import com.alibaba.fastjson.JSON;
 
+/**
+ * 状态码
+ * @author: jeecg-boot
+ */
 public class ResponseBean<T> {
 
     private int code;

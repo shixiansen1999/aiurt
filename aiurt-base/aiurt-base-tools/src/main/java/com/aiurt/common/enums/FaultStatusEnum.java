@@ -6,8 +6,10 @@ import cn.hutool.core.util.StrUtil;
 import java.util.Arrays;
 import java.util.Optional;
 
+/**
+ * @author: zwl
+ */
 public enum FaultStatusEnum {
-
     XINBAOXIU(0, "新报修"),
     WEIXIUZHONG(1, "维修中"),
     WUXIAOZHI(3, "无效值"),

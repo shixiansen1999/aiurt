@@ -216,7 +216,6 @@ public class ReflectHelper {
         Field[] fields = o.getClass().getDeclaredFields();
         String[] fieldNames = new String[fields.length];
         for (int i = 0; i < fields.length; i++) {
-            //log.info(fields[i].getType());
             fieldNames[i] = fields[i].getName();
         }
         return fieldNames;

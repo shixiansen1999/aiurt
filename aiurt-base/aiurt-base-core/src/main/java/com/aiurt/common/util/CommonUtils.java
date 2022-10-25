@@ -211,7 +211,6 @@ public class CommonUtils {
         try {
             return getDatabaseTypeByDataSource(dataSource);
         } catch (SQLException e) {
-            //e.printStackTrace();
             log.warn(e.getMessage(),e);
             return "";
         }

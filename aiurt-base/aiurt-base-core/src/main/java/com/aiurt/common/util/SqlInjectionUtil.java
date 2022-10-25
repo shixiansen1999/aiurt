@@ -142,7 +142,6 @@ public class SqlInjectionUtil {
      * @param value
      * @return
      */
-	//@Deprecated
 	public static void specialFilterContentForOnlineReport(String value) {
 		String specialXssStr = " exec | insert | delete | update | drop | chr | mid | master | truncate | char | declare |";
 		String[] xssArr = specialXssStr.split("\\|");

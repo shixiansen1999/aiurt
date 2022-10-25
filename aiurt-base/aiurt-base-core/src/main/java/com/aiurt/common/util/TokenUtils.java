@@ -58,7 +58,6 @@ public class TokenUtils {
 
         // 查询用户信息
         LoginUser user = TokenUtils.getLoginUser(username, commonApi, redisUtil);
-        //LoginUser user = commonApi.getUserByName(username);
         if (user == null) {
             throw new Aiurt401Exception("用户不存在!");
         }

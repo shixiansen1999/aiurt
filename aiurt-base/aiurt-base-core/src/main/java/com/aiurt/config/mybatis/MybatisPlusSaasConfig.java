@@ -69,7 +69,6 @@ public class MybatisPlusSaasConfig {
             }
         }));
         // 添加权限过滤插件，权限过滤插件需要在分页插件之前执行
-//        interceptor.addInnerInterceptor(new DataPermissionInterceptor( new CustomizeDataPermissionHandler()));
         interceptor.addInnerInterceptor(new PaginationInnerInterceptor());
         return interceptor;
     }

@@ -40,7 +40,6 @@ public class DynamicDBUtil {
         String dbPassword = dbSource.getDbPassword();
         dataSource.setDriverClassName(driverClassName);
         dataSource.setUrl(url);
-        //dataSource.setValidationQuery("SELECT 1 FROM DUAL");
         dataSource.setTestWhileIdle(true);
         dataSource.setTestOnBorrow(false);
         dataSource.setTestOnReturn(false);

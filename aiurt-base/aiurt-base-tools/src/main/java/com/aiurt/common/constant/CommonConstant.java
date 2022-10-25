@@ -1,5 +1,8 @@
 package com.aiurt.common.constant;
 
+/**
+ * @author: zwl
+ */
 public interface CommonConstant {
 
 	/**

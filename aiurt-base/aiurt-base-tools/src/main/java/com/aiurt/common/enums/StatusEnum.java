@@ -1,5 +1,8 @@
 package com.aiurt.common.enums;
 
+/**
+ * @author: zwl
+ */
 public enum StatusEnum {
     ZERO(0),
     ONE(1),

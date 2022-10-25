@@ -128,7 +128,7 @@ public class StockInOrderLevel2ServiceImpl extends ServiceImpl<StockInOrderLevel
 	public boolean submitInOrderStatus(String status, String code, StockInOrderLevel2 stockInOrderLevel2) throws ParseException {
 		String warehouseCode = stockInOrderLevel2.getWarehouseCode();
 		List<StockLevel2Check> stockLevel2CheckList = iStockLevel2CheckService.list(new QueryWrapper<StockLevel2Check>().eq("del_flag", CommonConstant.DEL_FLAG_0)
-				.eq("warehouse_code",warehouseCode).ne("status",CommonConstant.StOCK_LEVEL2_CHECK_STATUS_5));
+				.eq("warehouse_code",warehouseCode).ne("status",CommonConstant.STOCK_LEVEL2_CHECK_STATUS_5));
 		stockInOrderLevel2.setStatus(status);
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
 		Date stockInTime = sdf.parse(sdf.format(new Date()));

@@ -81,16 +81,7 @@ public class RedisConfig extends CachingConfigurerSupport {
         RedisCacheConfiguration config = RedisCacheConfiguration.defaultCacheConfig().entryTtl(Duration.ofHours(6));
         RedisCacheConfiguration redisCacheConfiguration = config.serializeKeysWith(RedisSerializationContext.SerializationPair.fromSerializer(new StringRedisSerializer()))
 															.serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(jackson2JsonRedisSerializer));
-															//.disableCachingNullValues();
-
-		// 以锁写入的方式创建RedisCacheWriter对象
-		//update-begin-author:taoyan date:20210316 for:注解CacheEvict根据key删除redis支持通配符*
 		RedisCacheWriter writer = new JeecgRedisCacheWriter(factory, Duration.ofMillis(50L));
-		//RedisCacheWriter.lockingRedisCacheWriter(factory);
-		// 创建默认缓存配置对象
-		/* 默认配置，设置缓存有效期 1小时*/
-		//RedisCacheConfiguration defaultCacheConfig = RedisCacheConfiguration.defaultCacheConfig().entryTtl(Duration.ofHours(1));
-		// 自定义配置test:demo 的超时时间为 5分钟
 		RedisCacheManager cacheManager = RedisCacheManager.builder(writer).cacheDefaults(redisCacheConfiguration)
             .withInitialCacheConfigurations(singletonMap(CacheConstant.SYS_DICT_TABLE_CACHE,
                 RedisCacheConfiguration.defaultCacheConfig().entryTtl(Duration.ofMinutes(10)).disableCachingNullValues()

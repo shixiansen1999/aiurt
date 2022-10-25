@@ -121,7 +121,7 @@ public class StockLevel2CheckDetailController {
             List<StockLevel2CheckDetail> stockLevel2CheckDetailList = stockLevel2Checkold.getStockLevel2CheckDetailList();
             StockLevel2Check stockLevel2Check = iStockLevel2CheckService.getOne(new QueryWrapper<StockLevel2Check>().eq("del_flag", CommonConstant.DEL_FLAG_0).eq("stock_check_code",stockCheckCode));
             stockLevel2Check.setCheckEndTime(sdf.parse(sdf.format(new Date())));
-            stockLevel2Check.setStatus(CommonConstant.StOCK_LEVEL2_CHECK_STATUS_5);
+            stockLevel2Check.setStatus(CommonConstant.STOCK_LEVEL2_CHECK_STATUS_5);
             int count = 0;
             if(stockLevel2CheckDetailList != null && stockLevel2CheckDetailList.size()>0){
                 for(StockLevel2CheckDetail stockLevel2CheckDetail : stockLevel2CheckDetailList){

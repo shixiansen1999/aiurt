@@ -35,8 +35,6 @@ public class QuartzUtils {
 	                          Map<String, Object> dataMap) {
 		try {
 			// 获取调度任务工厂
-			//Scheduler scheduler = schedulerFactory.getScheduler();
-			// 创建一个JobDetail
 			JobDataMap jobDataMap = new JobDataMap(dataMap);
 			JobDetail job = JobBuilder.newJob(jobClass)
 					.withIdentity(jobName, jobGroupName)
@@ -93,8 +91,6 @@ public class QuartzUtils {
 	 */
 	public  void removeJob(String jobName, String jobGroupName, String triggerName, String triggerGroupName) {
 		try {
-			//Scheduler scheduler = schedulerFactory.getScheduler();
-			// 找到对应的触发器
 			TriggerKey triggerKey = TriggerKey.triggerKey(triggerName, triggerGroupName);
 			// 停止触发器
 			scheduler.pauseTrigger(triggerKey);
@@ -112,7 +108,6 @@ public class QuartzUtils {
 	 */
 	public  void startJobs() {
 		try {
-			//Scheduler scheduler = schedulerFactory.getScheduler();
 			scheduler.start();
 		} catch (Exception e) {
 			throw new RuntimeException(e);
@@ -124,7 +119,6 @@ public class QuartzUtils {
 	 */
 	public  void shutdownJobs() {
 		try {
-			//Scheduler scheduler = schedulerFactory.getScheduler();
 			if (!scheduler.isShutdown()) {
 				scheduler.shutdown();
 			}
@@ -138,8 +132,6 @@ public class QuartzUtils {
 	 */
 	public  boolean checkJobsRunStatus(String triggerName, String triggerGroupName) {
 		try {
-			//Scheduler scheduler = schedulerFactory.getScheduler();
-			// 找到对应的触发器
 			TriggerKey triggerKey = TriggerKey.triggerKey(triggerName, triggerGroupName);
 			Trigger.TriggerState triggerState = scheduler.getTriggerState(triggerKey);
 			String state = triggerState.name();

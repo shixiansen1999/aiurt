@@ -2,6 +2,10 @@ package com.aiurt.common.result;
 
 import lombok.Data;
 
+/**
+ * @Author zwl
+ * @Date 2022/10/25
+ */
 @Data
 public class LogResult {
 

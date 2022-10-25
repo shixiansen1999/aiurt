@@ -136,7 +136,6 @@ public class OssBootUtil {
             }
             PutObjectResult result = ossClient.putObject(newBucket, fileUrl.toString(), file.getInputStream());
             // 设置权限(公开读)
-//            ossClient.setBucketAcl(newBucket, CannedAccessControlList.PublicRead);
             if (result != null) {
                 log.info("------OSS文件上传成功------" + fileUrl);
             }

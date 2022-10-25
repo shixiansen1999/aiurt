@@ -1,5 +1,8 @@
 package com.aiurt.common.enums;
 
+/**
+ * @author: zwl
+ */
 public enum IssuanceEnum {
     YOUJIAO("幼教"),
     YIJIAO("义教"),
