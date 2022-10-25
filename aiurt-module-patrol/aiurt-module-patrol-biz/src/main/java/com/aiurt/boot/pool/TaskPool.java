@@ -26,6 +26,9 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.*;
 import java.util.stream.Collectors;
 
+/**
+ * @author cgkj0
+ */
 @Slf4j
 @Component
 public class TaskPool implements Job {
@@ -182,8 +185,8 @@ public class TaskPool implements Job {
 //        saveRelationData(task, plan);
 //        log.info("任务与标准关联表信息添加完毕！");
 
-        // 生成巡检单，即巡检任务与标准以及设备关联表数据
         log.info("添加任务与标准以及设备的关联表信息...");
+        // 生成巡检单，即巡检任务与标准以及设备关联表数据
         copyPatrolBill(task, plan);
         log.info("任务与标准以及设备的关联表信息添加完毕！...");
     }

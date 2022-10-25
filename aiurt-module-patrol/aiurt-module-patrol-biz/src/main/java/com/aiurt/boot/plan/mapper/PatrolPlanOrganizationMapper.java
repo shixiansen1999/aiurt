@@ -14,6 +14,10 @@ import java.util.List;
  * @Version: V1.0
  */
 public interface PatrolPlanOrganizationMapper extends BaseMapper<PatrolPlanOrganization> {
-
+    /**
+     * 通过计划编号查询组织结构
+     * @param planCode
+     * @return
+     */
     List<PatrolPlanOrganizationParam> selectOrgByPlanCode(@Param("planCode") String planCode);
 }

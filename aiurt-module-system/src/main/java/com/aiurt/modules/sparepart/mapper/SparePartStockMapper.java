@@ -48,7 +48,7 @@ public interface SparePartStockMapper extends BaseMapper<SparePartStock> {
     List<SparePartStatistics> getSubsystemByUserId(Page<SparePartStatistics> pageList,@Param("id") String id,@Param("systemCode") List<String> systemCode);
 
     /**
-     * 查询年度消耗量
+     * 查询年度消耗量(根据年月)
      * @param systemCode
      * @param baseTypeCode
      * @param year
@@ -60,9 +60,18 @@ public interface SparePartStockMapper extends BaseMapper<SparePartStock> {
                    @Param("year") Integer year,
                    @Param("month") Integer month);
 
+    /**
+     *
+     * 查询年度消耗量(根据时间节点)
+     * @param systemCode
+     * @param baseTypeCode
+     * @param startDate
+     * @param endDate
+     * @return
+     */
     Long getTimeCount(@Param("systemCode") List<String> systemCode,
-                   @Param("baseTypeCode") List<String> baseTypeCode ,
-                   @Param("startDate") Date startDate,
-                   @Param("endDate") Date endDate);
+                      @Param("baseTypeCode") List<String> baseTypeCode ,
+                      @Param("startDate") Date startDate,
+                      @Param("endDate") Date endDate);
 
 }

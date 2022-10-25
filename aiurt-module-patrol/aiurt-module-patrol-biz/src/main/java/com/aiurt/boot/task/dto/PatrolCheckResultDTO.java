@@ -12,6 +12,9 @@ import org.jeecg.common.system.vo.DictModel;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * @author cgkj0
+ */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -31,7 +34,7 @@ public class PatrolCheckResultDTO extends PatrolCheckResult {
      * 子节点
      */
     @ApiModelProperty(value = "子节点")
-    List<PatrolCheckResultDTO> children = new ArrayList<>();
+    List<PatrolCheckResultDTO> children;
     /**
      * 附件信息
      */

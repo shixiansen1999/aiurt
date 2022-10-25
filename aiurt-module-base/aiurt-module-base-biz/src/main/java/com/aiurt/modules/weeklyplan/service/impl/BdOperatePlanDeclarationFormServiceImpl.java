@@ -1,5 +1,6 @@
 package com.aiurt.modules.weeklyplan.service.impl;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.convert.Convert;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
@@ -93,7 +94,7 @@ public class BdOperatePlanDeclarationFormServiceImpl
     }
 
     @Override
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public BdOperatePlanDeclarationForm convertRequestBody(BdOperatePlanDeclarationForm declarationForm) {
         Date applyDate = new Date();
 
@@ -202,16 +203,25 @@ public class BdOperatePlanDeclarationFormServiceImpl
     @Override
     public List<BdLineDTO> getLines() {
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-        Integer teamId = bdTeamMapper.queryByUserId(sysUser.getId());
-        List<BdTeam> teamList = bdTeamMapper.queryManagedTeam(teamId);
+        String teamId = bdTeamMapper.queryByUserId(sysUser.getId());
         List<Integer> idList = new ArrayList<>();
+        if(ObjectUtil.isNotEmpty(teamId)){
+            List<BdTeam> teamList = bdTeamMapper.queryManagedTeam(teamId);
+           if(CollUtil.isNotEmpty(teamList)){
+             teamList.forEach(s -> {
+                 if(ObjectUtil.isNotEmpty(s.getLineId())){
+                     List<String> ids = Arrays.asList(s.getLineId().split(","));
+                     if(CollUtil.isNotEmpty(ids)){
+                         ids.forEach(id -> idList.add(Convert.toInt(id)));
+                     }
+                 }
 
-        teamList.forEach(s -> {
-            List<String> ids = Arrays.asList(s.getLineId().split(","));
-            ids.forEach(id -> idList.add(Convert.toInt(id)));
-        });
+             });
+           }
+        }
+        List<BdLineDTO> result = baseMapper.queryLines(idList.stream().distinct().collect(Collectors.toList()));
 
-        return baseMapper.queryLines(idList.stream().distinct().collect(Collectors.toList()));
+        return result;
     }
 
     @Override
@@ -301,7 +311,7 @@ public class BdOperatePlanDeclarationFormServiceImpl
     public List<BdStation> getStations() {
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         //当前用户管辖班组
-        Integer teamId = bdTeamMapper.queryByUserId(sysUser.getId());
+        String teamId = bdTeamMapper.queryByUserId(sysUser.getId());
         List<BdLine> lineList = bdLineService.list();
         // 查询当前班组关联的工区信息
         LambdaQueryWrapper<BdSite> queryWrapper = new LambdaQueryWrapper();
@@ -322,8 +332,8 @@ public class BdOperatePlanDeclarationFormServiceImpl
         List<BdStation> allStationList =  bdStationService.list();
 
         allStationList.forEach(all->{
-            List<BdStationReturnTypeDTO> BdStation = nowList.stream().filter(station->null!=station.getPid() &&station.getPid().equals(all.getId()) ).collect(Collectors.toList());
-            if(!BdStation.isEmpty()){
+            List<BdStationReturnTypeDTO> bdStation = nowList.stream().filter(station->null!=station.getPid() &&station.getPid().equals(all.getId()) ).collect(Collectors.toList());
+            if(!bdStation.isEmpty()){
                 newStationList.add(all);
             }
         });
@@ -377,7 +387,7 @@ public class BdOperatePlanDeclarationFormServiceImpl
         //查询当前登录账号的角色是否为“调度员”、“生产调度”
         roleList = roleList.stream().filter(s -> s.contains("dispatch") || s.contains("production_scheduling") ).collect(Collectors.toList());
         if(roleList.isEmpty()){
-            Integer teamId = bdTeamMapper.queryByUserId(sysUser.getId());
+            String teamId = bdTeamMapper.queryByUserId(sysUser.getId());
             List<BdTeam> bdTeamList = bdTeamMapper.queryManagedTeam(teamId);
             queryPagesParams.setTeamIdList(bdTeamList.stream().map(s -> s.getId()).collect(Collectors.toList()));
         }else{
@@ -460,7 +470,7 @@ public class BdOperatePlanDeclarationFormServiceImpl
         if(queryPagesParams.getIsChange() == 0){
             //管辖班组
             LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-            Integer teamId = bdTeamMapper.queryByUserId(sysUser.getId());
+            String teamId = bdTeamMapper.queryByUserId(sysUser.getId());
             List<BdTeam> bdTeamList = bdTeamMapper.queryManagedTeam(teamId);
             queryPagesParams.setTeamIdList(bdTeamList.stream().map(s -> s.getId()).collect(Collectors.toList()));
         }
@@ -489,7 +499,7 @@ public class BdOperatePlanDeclarationFormServiceImpl
         return list;
     }
 
-    public String StringNoNull(String str){
+    public String stringNoNull(String str){
         if(ObjectUtil.isEmpty(str)){
            return "";
         }
@@ -740,7 +750,7 @@ public class BdOperatePlanDeclarationFormServiceImpl
     public List<BdStaffInfoReturnTypeDTO> queryLineStaff() {
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         //查询当前登录人班组
-        Integer teamId = bdTeamMapper.queryByUserId(sysUser.getId());
+        String teamId = bdTeamMapper.queryByUserId(sysUser.getId());
         TeamByIdDTO teamByIdDTO = bdTeamMapper.queryTeamById(Convert.toStr(teamId));
 
         //当前登录人线路集合

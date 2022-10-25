@@ -14,6 +14,10 @@ import java.util.List;
  * @Version: V1.0
  */
 public interface PatrolPlanStationMapper extends BaseMapper<PatrolPlanStation> {
-
+    /**
+     * 根据巡检计划编号查询站点信息
+     * @param planCode
+     * @return
+     */
     List<PatrolPlanStationParam> selectStationByPlanCode(@Param("planCode") String planCode);
 }

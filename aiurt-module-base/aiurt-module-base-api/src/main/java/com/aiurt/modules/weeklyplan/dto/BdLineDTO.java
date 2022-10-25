@@ -12,11 +12,11 @@ import lombok.Data;
 public class BdLineDTO {
 
     @ApiModelProperty(value = "ID")
-    private Integer id;
+    private String id;
 
     @ApiModelProperty(value = "线路名称")
-    private String name;
+    private String lineName;
 
     @ApiModelProperty(value = "线路编码")
-    private String code;
+    private String lineCode;
 }

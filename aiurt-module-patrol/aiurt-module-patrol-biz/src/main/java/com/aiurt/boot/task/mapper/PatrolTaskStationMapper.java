@@ -19,14 +19,36 @@ import java.util.List;
  */
 public interface PatrolTaskStationMapper extends BaseMapper<PatrolTaskStation> {
 
+    /**
+     * 站点信息
+     * @param taskCode
+     * @return
+     */
     List<PatrolTaskStationDTO> selectStationByTaskCode(@Param("taskCode") String taskCode);
 
+    /**
+     * 获取线路列表
+     * @return
+     */
     List<LineDTO> getLineList();
 
+    /**
+     * 获取站点列表
+     * @return
+     */
     List<StationDTO> getStationList();
 
+    /**
+     * 获取位置列表
+     * @return
+     */
     List<StationPositionDTO> getStationPositionList();
 
+    /**
+     * 获取线路code
+     * @param sc
+     * @return
+     */
     String getLineStaionCode(String sc);
 
     /**

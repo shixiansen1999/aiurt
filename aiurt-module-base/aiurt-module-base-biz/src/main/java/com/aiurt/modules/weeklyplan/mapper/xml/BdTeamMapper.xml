@@ -2,19 +2,17 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.aiurt.modules.weeklyplan.mapper.BdTeamMapper">
     <select id="queryTeamById" resultType="com.aiurt.modules.weeklyplan.dto.TeamByIdDTO" parameterType="string">
-        SELECT a.id,a.dept_id as deptId,a.parent_id as parentId,a.name,a.remark,a.type,a.attendance_place,a.clock_way,a.schedule_number,
+        SELECT a.id as deptId,a.parent_id as parentId,a.depart_name,a.org_type,
         (
         SELECT
-        NAME
+        depart_name
         FROM
-        bd_team
+        sys_depart
         WHERE
         id = a.parent_id
-        ) AS parentName,
-        a.line_id as lineId,
-        a.subsystem
+        ) AS parentName
         FROM
-        bd_team a
+        sys_depart a
         <where>
             <if test="id!=null and id!=''">
                 a.id = #{id}
@@ -23,16 +21,16 @@
     </select>
     <select id="queryManagedTeam" resultType="com.aiurt.modules.weeklyplan.entity.BdTeam">
         select *
-        from bd_team t
-        where find_in_set(id,get_team_child(#{id}))&gt;0
+        from sys_depart t
+        where find_in_set(id,#{id})&gt;0
         union all
 		select *
-        from bd_team t where t.`name`='外委单位'
+        from sys_depart t where t.depart_name='外委单位'
         order by id
     </select>
 
-    <select id="queryByUserId" resultType="integer">
-        select team_id from sys_user
+    <select id="queryByUserId" resultType="string">
+        select org_id from sys_user
         where id = #{userId}
     </select>
 </mapper>

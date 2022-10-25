@@ -8,6 +8,9 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import org.jeecgframework.poi.excel.annotation.Excel;
 
+/**
+ * @author cgkj0
+ */
 @Data
 @EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor

@@ -100,7 +100,7 @@ public class PatrolStandardItems implements Serializable {
     @DateTimeFormat(pattern="yyyy-MM-dd")
     @ApiModelProperty(value = "更新时间")
     private java.util.Date updateTime;
-	//存放子集
+    /**存放子集*/
     @ApiModelProperty(value = "存放子集集合")
     @TableField(exist = false)
     private List<PatrolStandardItems> children;

@@ -14,9 +14,18 @@ import java.util.List;
  * @Version: V1.0
  */
 public interface PatrolCheckResultMapper extends BaseMapper<PatrolCheckResult> {
-
+    /**
+     * 根据任务设备表id查找巡检结果
+     * @param taskDeviceId
+     * @return
+     */
     List<PatrolCheckResultDTO> getListByTaskDeviceId(@Param("taskDeviceId") String taskDeviceId);
 
+    /**
+     * 批量添加巡检结果
+     * @param resultList
+     * @return
+     */
     int addResultList(@Param("list") List<PatrolCheckResult> resultList);
 
     /**

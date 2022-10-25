@@ -29,7 +29,7 @@ public interface BdTeamMapper extends BaseMapper<BdTeam> {
      * @param id
      * @return
      */
-    List<BdTeam> queryManagedTeam(Integer id);
+    List<BdTeam> queryManagedTeam(String id);
 
 
     /**
@@ -37,6 +37,6 @@ public interface BdTeamMapper extends BaseMapper<BdTeam> {
      * @param userId
      * @return
      */
-    Integer queryByUserId(String userId);
+    String queryByUserId(String userId);
 
 }

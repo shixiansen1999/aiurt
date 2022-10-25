@@ -1,13 +1,8 @@
 package com.aiurt.modules.weeklyplan.dto;
 
-import com.baomidou.mybatisplus.annotation.TableField;
-import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import org.jeecgframework.poi.excel.annotation.Excel;
-import org.springframework.format.annotation.DateTimeFormat;
-
-import java.util.Date;
 
 /**
  * @author Lai W.

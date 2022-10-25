@@ -32,6 +32,9 @@ import java.math.BigDecimal;
 import java.util.*;
 import java.util.stream.Collectors;
 
+/**
+ * @author cgkj0
+ */
 @Service
 public class PatrolApiServiceImpl implements PatrolApi {
     @Autowired
@@ -60,7 +63,7 @@ public class PatrolApiServiceImpl implements PatrolApi {
      */
     @Override
     public Map<String, Integer> getPatrolFinishNumber(int year, int month) {
-        Map<String, Integer> map = new HashMap<>();
+        Map<String, Integer> map = new HashMap<>(16);
         Calendar instance = Calendar.getInstance();
         instance.set(year, month - 1, 1);
         // 所在月的第一天
@@ -123,7 +126,7 @@ public class PatrolApiServiceImpl implements PatrolApi {
 
     @Override
     public Map<String, BigDecimal> getPatrolUserHours(int type, String teamId) {
-        Map<String, BigDecimal> userDurationMap = new HashMap<>();
+        Map<String, BigDecimal> userDurationMap = new HashMap<>(16);
         // 班组的人员
         List<LoginUser> userList = sysBaseApi.getUserPersonnel(teamId);
         String dateTime = ScreenDateUtil.getDateTime(type);

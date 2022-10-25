@@ -7,6 +7,9 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
 
+/**
+ * @author cgkj0
+ */
 @Data
 @Accessors(chain = true)
 @ApiModel(value = "巡检指派用户信息对象", description = "巡检指派用户信息对象")

@@ -71,13 +71,14 @@
                line_name,
                line_code
         FROM cs_line
-        where 1=1
+        <where>
         <if test="idList !=null and idList.size()>0">
             and id IN
             <foreach collection="idList" item="item" index="index" open="(" close=")" separator=",">
                 #{item}
             </foreach>
         </if>
+        </where>
         ORDER BY id
     </select>
 

@@ -9,6 +9,9 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
 import org.jeecgframework.poi.excel.annotation.Excel;
 
+/**
+ * @author cgkj0
+ */
 @Data
 @Accessors(chain = true)
 @EqualsAndHashCode(callSuper = false)

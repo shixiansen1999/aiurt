@@ -30,7 +30,7 @@ public class ExportExcelUtil {
     private static final String[] SPARE_REPORT_OPERATE_PLAN2 = new String[]{"id","nature","type","departmentName","taskTime","taskRange",
             "powerSupplyRequirement","taskContent","protectiveMeasure","chargeStaffName","coordinationDepartmentId","firstStationName",
             "secondStationName","assistStationName","taskStaffNum","largeAppliances"};
-    private static final Hashtable<String, String> weekDayHash = initWeekHash();
+    private static final Hashtable<String, String> WEEk_DAY_HASH = initWeekHash();
 
     private static Hashtable<String, String> initWeekHash() {
         Hashtable<String, String> result = new Hashtable<>();
@@ -155,7 +155,7 @@ public class ExportExcelUtil {
                         String[] dateList = date.split("-");
                         weekValue = data.get(dataRow).getWeekday().toString();
                         date = dateList[0] + "年" + dateList[1] + "月" + dateList[2] + "日";
-                        weekValue = date + " (星期" + weekDayHash.get(weekValue) + ")";
+                        weekValue = date + " (星期" + WEEk_DAY_HASH.get(weekValue) + ")";
                     }
                     orderNum = 1;
                     HSSFRow newRow=sheet.createRow(rowId + 1);
@@ -323,7 +323,7 @@ public class ExportExcelUtil {
                         String[] dateList = date.split("-");
                         weekValue = data.get(dataRow).getWeekday().toString();
                         date = dateList[0] + "年" + dateList[1] + "月" + dateList[2] + "日";
-                        weekValue = date + " (星期" + weekDayHash.get(weekValue) + ")";
+                        weekValue = date + " (星期" + WEEk_DAY_HASH.get(weekValue) + ")";
                     }
                     orderNum = 1;
                     HSSFRow newRow=sheet.createRow(rowId+1);

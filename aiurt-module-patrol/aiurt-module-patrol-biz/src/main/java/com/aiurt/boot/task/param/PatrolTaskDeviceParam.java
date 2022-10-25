@@ -15,6 +15,9 @@ import org.springframework.format.annotation.DateTimeFormat;
 import java.util.Date;
 import java.util.List;
 
+/**
+ * @author cgkj0
+ */
 @Data
 @EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
