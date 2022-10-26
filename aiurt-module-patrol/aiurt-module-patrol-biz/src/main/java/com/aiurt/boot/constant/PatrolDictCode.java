@@ -17,4 +17,8 @@ public interface PatrolDictCode {
      * 巡视任务异常状态字典编码
      */
     String ABNORMAL_STATE = "patrol_abnormal_state";
+    /**
+     * 巡视项字典编号
+     */
+    String ITEM_REQUIRED = "patrol_item_required";
 }

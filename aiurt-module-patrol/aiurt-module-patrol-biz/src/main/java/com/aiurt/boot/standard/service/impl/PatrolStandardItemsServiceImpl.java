@@ -4,6 +4,8 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.lang.tree.Tree;
 import cn.hutool.core.lang.tree.TreeNodeConfig;
 import cn.hutool.core.lang.tree.TreeUtil;
+import cn.hutool.core.util.StrUtil;
+import com.aiurt.boot.constant.PatrolDictCode;
 import com.aiurt.boot.standard.dto.PatrolStandardItemsDTO;
 import com.aiurt.boot.standard.dto.SysDictDTO;
 import com.aiurt.boot.standard.entity.PatrolStandardItems;
@@ -17,11 +19,13 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.github.xiaoymin.knife4j.core.util.CollectionUtils;
+import org.jeecg.common.system.api.ISysBaseAPI;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -39,10 +43,17 @@ private  PatrolStandardItemsMapper patrolStandardItemsMapper;
 private  PatrolTaskDeviceMapper patrolTaskDeviceMapper;
 @Autowired
 private PatrolTaskStandardMapper patrolTaskStandardMapper;
+@Autowired
+private ISysBaseAPI sysBaseApi;
     @Override
     public List<PatrolStandardItems> queryPageList(String id) {
         //1.查询表中未删除的所有的数据
         List<PatrolStandardItems> allList = baseMapper.selectItemList(id);
+        // 字典翻译
+        Map<String, String> requiredItems = sysBaseApi.getDictItems(PatrolDictCode.ITEM_REQUIRED)
+                .stream().filter(l-> StrUtil.isNotEmpty(l.getText()))
+                .collect(Collectors.toMap(k -> k.getValue(), v -> v.getText(), (a, b) -> a));
+        allList.stream().forEach(l -> l.setRequiredDictName(requiredItems.get(String.valueOf(l.getRequired()))));
         //2.找到所有根节点 ParentId=0
         List<PatrolStandardItems> rooList = allList.stream().filter(r -> "0".equals(r.getParentId())).collect(Collectors.toList());
         //3.找到所有非根节点

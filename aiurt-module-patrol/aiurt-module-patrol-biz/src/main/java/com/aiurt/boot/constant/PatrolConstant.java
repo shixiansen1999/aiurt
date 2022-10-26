@@ -156,7 +156,10 @@ public interface PatrolConstant {
      * 巡检检查结果异常状态
      */
     String MANAGER = "admin";
-
+    /**
+     * 数据填写类型：1无
+     */
+    Integer INPUT_TYPE_1 = 1;
     /**
      * 工单-数据填写类型：选择型
      */
@@ -165,4 +168,12 @@ public interface PatrolConstant {
      * 工单-数据填写类型：输入型
      */
     Integer DEVICE_OUT = 3;
+    /**
+     * 巡视项检查值是否必填：0否
+     */
+    Integer REQUIRED_0 = 0;
+    /**
+     * 巡视项检查值是否必填：1是
+     */
+    Integer REQUIRED_1 = 0;
 }
