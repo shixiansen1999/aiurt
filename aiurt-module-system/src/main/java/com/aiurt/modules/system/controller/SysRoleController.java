@@ -95,7 +95,6 @@ public class SysRoleController {
 	@AutoLog(value = "角色管理-添加角色")
 	@ApiOperation(value="角色管理-添加角色", notes="角色管理-添加角色")
 	@RequestMapping(value = "/add", method = RequestMethod.POST)
-	//@RequiresRoles({"admin"})
 	public Result<SysRole> add(@RequestBody SysRole role) {
 		Result<SysRole> result = new Result<SysRole>();
 		try {
@@ -114,7 +113,6 @@ public class SysRoleController {
 	 * @param role
 	 * @return
 	 */
-	//@RequiresRoles({"admin"})
 	@AutoLog(value = "角色管理-编辑角色")
 	@ApiOperation(value="角色管理-编辑角色", notes="角色管理-编辑角色")
 	@RequestMapping(value = "/edit",method = {RequestMethod.PUT,RequestMethod.POST})
@@ -140,7 +138,6 @@ public class SysRoleController {
 	 * @param id
 	 * @return
 	 */
-	//@RequiresRoles({"admin"})
 	@AutoLog(value = "角色管理-通过id删除")
 	@ApiOperation(value="角色管理-通过id删除", notes="角色管理-通过id删除")
 	@RequestMapping(value = "/delete", method = RequestMethod.DELETE)
@@ -154,7 +151,6 @@ public class SysRoleController {
 	 * @param ids
 	 * @return
 	 */
-	//@RequiresRoles({"admin"})
 	@AutoLog(value = "角色管理-批量删除")
 	@ApiOperation(value="角色管理-批量删除", notes="角色管理-批量删除")
 	@RequestMapping(value = "/deleteBatch", method = RequestMethod.DELETE)
@@ -311,7 +307,7 @@ public class SysRoleController {
 					.eq(SysRolePermission::getRoleId,roleId);
 			SysRolePermission sysRolePermission = sysRolePermissionService.getOne(query);
 			if(sysRolePermission==null) {
-				//return Result.error("未找到角色菜单配置信息");
+
 			}else {
 				String drChecked = sysRolePermission.getDataRuleIds();
 				if(oConvertUtils.isNotEmpty(drChecked)) {

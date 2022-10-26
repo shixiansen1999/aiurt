@@ -33,7 +33,6 @@ public class FindsDepartsChildrenUtil {
      */
     public static List<SysDepartTreeModel> wrapTreeDataToTreeList(List<SysDepart> recordList) {
         // 在该方法每请求一次,都要对全局list集合进行一次清理
-        //idList.clear();
         List<DepartIdModel> idList = new ArrayList<DepartIdModel>();
         List<SysDepartTreeModel> records = new ArrayList<>();
         for (int i = 0; i < recordList.size(); i++) {
@@ -60,7 +59,6 @@ public class FindsDepartsChildrenUtil {
      */
     public static List<DepartIdModel> wrapTreeDataToDepartIdTreeList(List<SysDepart> recordList) {
         // 在该方法每请求一次,都要对全局list集合进行一次清理
-        //idList.clear();
         List<DepartIdModel> idList = new ArrayList<DepartIdModel>();
         List<SysDepartTreeModel> records = new ArrayList<>();
         for (int i = 0; i < recordList.size(); i++) {

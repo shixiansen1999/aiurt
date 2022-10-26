@@ -7,13 +7,11 @@ import org.apache.commons.lang.math.RandomUtils;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
-/**
- * @author fgw
- */
 
 /**
  * 填值规则Demo：生成订单号
  * 【测试示例】
+ * @author fgw
  */
 public class OrderNumberRule implements IFillRuleHandler {
 

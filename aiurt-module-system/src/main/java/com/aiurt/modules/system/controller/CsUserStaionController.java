@@ -59,7 +59,6 @@ public class CsUserStaionController extends BaseController<CsUserStaion, ICsUser
 	 * @param req
 	 * @return
 	 */
-	//@AutoLog(value = "用户站点表-分页列表查询")
 	@ApiOperation(value="用户站点表-分页列表查询", notes="用户站点表-分页列表查询")
 	@GetMapping(value = "/list")
 	public Result<IPage<CsUserStaion>> queryPageList(CsUserStaion csUserStaion,
@@ -134,7 +133,6 @@ public class CsUserStaionController extends BaseController<CsUserStaion, ICsUser
 	 * @param id
 	 * @return
 	 */
-	//@AutoLog(value = "用户站点表-通过id查询")
 	@ApiOperation(value="用户站点表-通过id查询", notes="用户站点表-通过id查询")
 	@GetMapping(value = "/queryById")
 	public Result<CsUserStaion> queryById(@RequestParam(name="id",required=true) String id) {

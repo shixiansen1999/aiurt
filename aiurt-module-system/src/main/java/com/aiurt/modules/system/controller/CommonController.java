@@ -100,7 +100,8 @@ public class CommonController {
         String type = uploadType;
 
         //LOWCOD-2580 sys/common/upload接口存在任意文件上传漏洞
-        if (oConvertUtils.isNotEmpty(bizPath) && (bizPath.contains("../") || bizPath.contains("..\\"))) {
+        boolean d =oConvertUtils.isNotEmpty(bizPath) && (bizPath.contains("../") || bizPath.contains("..\\"));
+        if (d) {
             throw new AiurtBootException("上传目录bizPath，格式非法！");
         }
 
@@ -297,7 +298,8 @@ public class CommonController {
         try (
                 OutputStream outputStream = response.getOutputStream();
                 InputStream inputStream = new BufferedInputStream(new FileInputStream(filePath))) {
-            response.setContentType("application/force-download");// 设置强制下载不打开
+            // 设置强制下载不打开
+            response.setContentType("application/force-download");
             response.addHeader("Content-Disposition", "attachment;fileName=" + new String(fileName.getBytes("UTF-8"), "iso-8859-1"));
             byte[] buf = new byte[1024];
             int len;
@@ -344,7 +346,7 @@ public class CommonController {
      * @return
      */
     @RequestMapping("/transitRESTful")
-    public Result transitRESTful(@RequestParam("url") String url, HttpServletRequest request) {
+    public Result transitRestful(@RequestParam("url") String url, HttpServletRequest request) {
         try {
             ServletServerHttpRequest httpRequest = new ServletServerHttpRequest(request);
             // 中转请求method、body

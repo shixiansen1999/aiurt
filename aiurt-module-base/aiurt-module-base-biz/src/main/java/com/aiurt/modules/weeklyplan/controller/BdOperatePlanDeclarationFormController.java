@@ -432,7 +432,7 @@ public class BdOperatePlanDeclarationFormController extends BaseController<BdOpe
 	@GetMapping(value = "/querySiteByTeam")
 	public Result<?> querySiteByTeam(@RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
 									 @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize) {
-		IPage<BdSite> bdSiteIPage = bdSiteService.querySiteByTeam(new Page<BdSite>(pageNo, pageSize));
-		return Result.OK(bdSiteIPage);
+		IPage<BdSite> bdSiteIpage = bdSiteService.querySiteByTeam(new Page<BdSite>(pageNo, pageSize));
+		return Result.OK(bdSiteIpage);
 	}
 }

@@ -65,7 +65,7 @@ public class ImportExcelUtil {
             int lineId = 0;
 
             String lineName = "";
-            String newDate = "";
+            StringBuilder newDate = new StringBuilder();
             int startI = 0;
             List<BdOperatePlanDeclarationForm> resultFinal = new ArrayList<>();
             InputStream ips = importExcel[0].getInputStream();
@@ -105,14 +105,14 @@ public class ImportExcelUtil {
                             int dayb = cellText.indexOf("日");
 
                             if((monthb-yearb)==2) {
-                                newDate = cellText.substring(0, 4)+"-0"+cellText.substring(yearb+1, monthb);
+                                newDate =newDate.append(cellText.substring(0, 4)+"-0"+cellText.substring(yearb+1, monthb)) ;
                             }else {
-                                newDate = cellText.substring(0, 4)+"-"+cellText.substring(yearb+1, monthb);
+                                newDate = newDate.append(cellText.substring(0, 4)+"-"+cellText.substring(yearb+1, monthb));
                             }
                             if((dayb-monthb)==2) {
-                                newDate = newDate+"-0"+cellText.substring(monthb+1, dayb);
+                                newDate =newDate.append(newDate+"-0"+cellText.substring(monthb+1, dayb)) ;
                             }else {
-                                newDate = newDate+"-"+cellText.substring(monthb+1, dayb);
+                                newDate =newDate.append(newDate+"-"+cellText.substring(monthb+1, dayb)) ;
                             }
                             break;
                         }
@@ -125,8 +125,8 @@ public class ImportExcelUtil {
                             break;
                         }
                     }
-                    newOp.setTaskDate(new Timestamp(fday.parse(newDate).getTime()));
-                    newOp.setWeekday(this.dateToWeek(newDate));
+                    newOp.setTaskDate(new Timestamp(fday.parse(String.valueOf(newDate)).getTime()));
+                    newOp.setWeekday(this.dateToWeek(String.valueOf(newDate)));
                     switch (startI) {
                         case 0:
                             break;
@@ -306,7 +306,7 @@ public class ImportExcelUtil {
     public String getWrongMessage(String engineerStaffId,String lineStaffId,String dispatchStaffId,MultipartFile[] importExcel) throws Exception {
         try {
             int line = 0;
-            String newDate = "";
+            StringBuilder newDate = new StringBuilder();
             int startI = 0;
             InputStream ips = importExcel[0].getInputStream();
             XSSFWorkbook wb = new XSSFWorkbook(ips);
@@ -340,14 +340,14 @@ public class ImportExcelUtil {
                             int dayb = cellText.indexOf("日");
 
                             if((monthb-yearb)==2) {
-                                newDate = cellText.substring(0, 4)+"-0"+cellText.substring(yearb+1, monthb);
+                                newDate =newDate.append( cellText.substring(0, 4)+"-0"+cellText.substring(yearb+1, monthb));
                             }else {
-                                newDate = cellText.substring(0, 4)+"-"+cellText.substring(yearb+1, monthb);
+                                newDate = newDate.append(cellText.substring(0, 4)+"-"+cellText.substring(yearb+1, monthb));
                             }
                             if((dayb-monthb)==2) {
-                                newDate = newDate+"-0"+cellText.substring(monthb+1, dayb);
+                                newDate =newDate.append(newDate+"-0"+cellText.substring(monthb+1, dayb)) ;
                             }else {
-                                newDate = newDate+"-"+cellText.substring(monthb+1, dayb);
+                                newDate =newDate.append(newDate+"-"+cellText.substring(monthb+1, dayb)) ;
                             }
                             break;
                         }
@@ -362,7 +362,7 @@ public class ImportExcelUtil {
                     }
                     //
                     System.out.println(newDate);
-                    newOp.setTaskDate(new Timestamp(fday.parse(newDate).getTime()));
+                    newOp.setTaskDate(new Timestamp(fday.parse(String.valueOf(newDate)).getTime()));
                     switch (startI) {
                         case 0:
                             num = cellText;
@@ -445,7 +445,7 @@ public class ImportExcelUtil {
         if(("").equals(cellText)|| MagicWords.HAVE.equals(cellText)){
             return "";
         }
-        String result = "";
+        StringBuilder result = new StringBuilder();
         String[] sourceStrArray = cellText.split(",");
         for (int i = 0; i < sourceStrArray.length; i++) {
             int separate  = sourceStrArray[i].indexOf(":");
@@ -457,16 +457,16 @@ public class ImportExcelUtil {
                 return "解析辅站失败";
             }
             if(i==0) {
-                result = station+"";
+                result =result.append(station+"") ;
             }else {
-                result = result+","+station;
+                result =result.append(result+","+station) ;
             }
         }
-        return result;
+        return String.valueOf(result);
     }
 
     public String getStaffIds(String cellText) {
-        String result = "";
+        StringBuilder result = new StringBuilder();
         if(("").equals(cellText)||MagicWords.HAVE.equals(cellText)){
             return "";
         }
@@ -487,12 +487,12 @@ public class ImportExcelUtil {
                 return "解析辅站负责人失败";
             }
             if(i==0) {
-                result = staff+"";
+                result =result.append(staff+"") ;
             }else {
-                result = result+","+staff;
+                result =result.append( result+","+staff);
             }
         }
-        return result;
+        return String.valueOf(result);
     }
 
 

@@ -6,10 +6,11 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import com.aiurt.common.util.RedisUtil;
+import org.ehcache.impl.internal.util.ServiceUtil;
 import org.jeecg.common.api.vo.Result;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.system.util.JwtUtil;
-import com.aiurt.modules.cas.util.CASServiceUtil;
+import com.aiurt.modules.cas.util.CasServiceUtil;
 import com.aiurt.modules.cas.util.XmlUtils;
 import com.aiurt.modules.system.entity.SysDepart;
 import org.apache.commons.lang.StringUtils;
@@ -62,7 +63,7 @@ public class CasClientController {
 		log.info("Rest api login.");
 		try {
 			String validateUrl = prefixUrl+"/p3/serviceValidate";
-			String res = CASServiceUtil.getStValidate(validateUrl, ticket, service);
+			String res = CasServiceUtil.getStValidate(validateUrl, ticket, service);
 			log.info("res."+res);
 			final String error = XmlUtils.getTextForElement(res, "authenticationFailure");
 			if(StringUtils.isNotEmpty(error)) {

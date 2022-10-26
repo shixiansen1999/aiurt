@@ -138,7 +138,6 @@ public class SysPermissionServiceImpl extends ServiceImpl<SysPermissionMapper, S
 	 */
 	@Override
 	@CacheEvict(value = CacheConstant.SYS_DATA_PERMISSIONS_CACHE,allEntries=true)
-	//@CacheEvict(value = CacheConstant.SYS_DATA_PERMISSIONS_CACHE,allEntries=true,condition="#sysPermission.menuType==2")
 	public void deletePermissionLogical(String id) throws AiurtBootException {
 		SysPermission sysPermission = this.getById(id);
 		if(sysPermission==null) {
@@ -198,7 +197,8 @@ public class SysPermissionServiceImpl extends ServiceImpl<SysPermissionMapper, S
 
 			//如果当前菜单的父菜单变了，则需要修改新父菜单和老父菜单的，叶子节点状态
 			String pid = sysPermission.getParentId();
-			if((oConvertUtils.isNotEmpty(pid) && !pid.equals(p.getParentId())) || oConvertUtils.isEmpty(pid)&&oConvertUtils.isNotEmpty(p.getParentId())) {
+			boolean f = (oConvertUtils.isNotEmpty(pid) && !pid.equals(p.getParentId())) || oConvertUtils.isEmpty(pid)&&oConvertUtils.isNotEmpty(p.getParentId());
+			if(f) {
 				//a.设置新的父菜单不为叶子节点
 				this.sysPermissionMapper.setMenuLeaf(pid, 0);
 				//b.判断老的菜单下是否还有其他子菜单，没有的话则设置为叶子节点

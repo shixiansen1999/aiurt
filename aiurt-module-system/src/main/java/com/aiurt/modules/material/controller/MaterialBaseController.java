@@ -335,7 +335,9 @@ public class MaterialBaseController {
                 List<DeviceAssembly> deviceAssemblyList = iDeviceAssemblyService.list(new QueryWrapper<DeviceAssembly>().eq("material_code",code));
                 //是否有对应的设备类型在使用该物资
                 List<DeviceCompose> deviceComposeList = iDeviceComposeService.list(new QueryWrapper<DeviceCompose>().eq("material_code",code));
-                if((deviceComposeList != null && deviceComposeList.size()>0) || (deviceAssemblyList != null && deviceAssemblyList.size()>0)){
+                boolean f = (deviceComposeList != null && deviceComposeList.size()>0);
+                boolean d = (deviceAssemblyList != null && deviceAssemblyList.size()>0);
+                if( f||d ){
                     res += materialBase.getCode() + ",";
                 }else{
                     iMaterialBaseService.removeById(materialBase);

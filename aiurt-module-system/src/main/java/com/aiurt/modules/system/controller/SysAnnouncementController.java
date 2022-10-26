@@ -15,7 +15,7 @@ import com.aiurt.modules.system.service.ISysAnnouncementService;
 import com.aiurt.modules.system.service.impl.SysBaseApiImpl;
 import com.aiurt.modules.system.service.impl.ThirdAppDingtalkServiceImpl;
 import com.aiurt.modules.system.service.impl.ThirdAppWechatEnterpriseServiceImpl;
-import com.aiurt.modules.system.util.XSSUtils;
+import com.aiurt.modules.system.util.XssUtils;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -98,18 +98,7 @@ public class SysAnnouncementController {
 		QueryWrapper<SysAnnouncement> queryWrapper = QueryGenerator.initQueryWrapper(sysAnnouncement, req.getParameterMap());
 		Page<SysAnnouncement> page = new Page<SysAnnouncement>(pageNo,pageSize);
 
-		//update-begin-author:lvdandan date:20211229 for: sqlserver mssql-jdbc 8.2.2.jre8版本下系统公告列表查询报错 查询SQL中生成了两个create_time DESC；故注释此段代码
 		//排序逻辑 处理
-//		String column = req.getParameter("column");
-//		String order = req.getParameter("order");
-//		if(oConvertUtils.isNotEmpty(column) && oConvertUtils.isNotEmpty(order)) {
-//			if("asc".equals(order)) {
-//				queryWrapper.orderByAsc(oConvertUtils.camelToUnderline(column));
-//			}else {
-//				queryWrapper.orderByDesc(oConvertUtils.camelToUnderline(column));
-//			}
-//		}
-		//update-end-author:lvdandan date:20211229 for: sqlserver mssql-jdbc 8.2.2.jre8版本下系统公告列表查询报错 查询SQL中生成了两个create_time DESC；故注释此段代码
 		IPage<SysAnnouncement> pageList = sysAnnouncementService.page(page, queryWrapper);
 		result.setSuccess(true);
 		result.setResult(pageList);
@@ -126,7 +115,7 @@ public class SysAnnouncementController {
 		Result<SysAnnouncement> result = new Result<SysAnnouncement>();
 		try {
 			// update-begin-author:liusq date:20210804 for:标题处理xss攻击的问题
-			String title = XSSUtils.striptXSS(sysAnnouncement.getTitile());
+			String title = XssUtils.striptXss(sysAnnouncement.getTitile());
 			sysAnnouncement.setTitile(title);
 			// update-end-author:liusq date:20210804 for:标题处理xss攻击的问题
 			sysAnnouncement.setDelFlag(CommonConstant.DEL_FLAG_0.toString());
@@ -154,7 +143,7 @@ public class SysAnnouncementController {
 			result.error500("未找到对应实体");
 		}else {
 			// update-begin-author:liusq date:20210804 for:标题处理xss攻击的问题
-			String title = XSSUtils.striptXSS(sysAnnouncement.getTitile());
+			String title = XssUtils.striptXss(sysAnnouncement.getTitile());
 			sysAnnouncement.setTitile(title);
 			// update-end-author:liusq date:20210804 for:标题处理xss攻击的问题
 			boolean ok = sysAnnouncementService.upDateAnnouncement(sysAnnouncement);

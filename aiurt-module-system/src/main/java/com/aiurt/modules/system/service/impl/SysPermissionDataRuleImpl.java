@@ -88,7 +88,8 @@ public class SysPermissionDataRuleImpl extends ServiceImpl<SysPermissionDataRule
 	public void savePermissionDataRule(SysPermissionDataRule sysPermissionDataRule) {
 		this.save(sysPermissionDataRule);
 		SysPermission permission = sysPermissionMapper.selectById(sysPermissionDataRule.getPermissionId());
-		if(permission!=null && (permission.getRuleFlag()==null || permission.getRuleFlag().equals(CommonConstant.RULE_FLAG_0))) {
+		boolean f =permission!=null && (permission.getRuleFlag()==null || permission.getRuleFlag().equals(CommonConstant.RULE_FLAG_0));
+		if(f) {
 			permission.setRuleFlag(CommonConstant.RULE_FLAG_1);
 			sysPermissionMapper.updateById(permission);
 		}

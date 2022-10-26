@@ -20,7 +20,7 @@ import org.apache.http.impl.client.HttpClients;
  * @Description: CASServiceUtil
  * @author: jeecg-boot
  */
-public class CASServiceUtil {
+public class CasServiceUtil {
 
 	public static void main(String[] args) {
 		String serviceUrl = "https://cas.8f8.com.cn:8443/cas/p3/serviceValidate";

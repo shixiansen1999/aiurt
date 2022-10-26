@@ -60,7 +60,6 @@ public class CsUserDepartController extends BaseController<CsUserDepart, ICsUser
 	 * @param req
 	 * @return
 	 */
-	//@AutoLog(value = "用户部门权限表-分页列表查询")
 	@ApiOperation(value="用户部门权限表-分页列表查询", notes="用户部门权限表-分页列表查询")
 	@GetMapping(value = "/list")
 	public Result<IPage<CsUserDepart>> queryPageList(CsUserDepart csUserDepart,
@@ -135,7 +134,6 @@ public class CsUserDepartController extends BaseController<CsUserDepart, ICsUser
 	 * @param id
 	 * @return
 	 */
-	//@AutoLog(value = "用户部门权限表-通过id查询")
 	@ApiOperation(value="用户部门权限表-通过id查询", notes="用户部门权限表-通过id查询")
 	@GetMapping(value = "/queryById")
 	public Result<CsUserDepart> queryById(@RequestParam(name="id",required=true) String id) {

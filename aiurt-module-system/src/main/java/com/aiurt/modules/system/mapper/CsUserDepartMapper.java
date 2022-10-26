@@ -16,6 +16,11 @@ import java.util.List;
  */
 public interface CsUserDepartMapper extends BaseMapper<CsUserDepart> {
 
+    /**
+     * 获取部门id
+     * @param userId
+     * @return
+     */
     List<String> getDepartIds(@Param("userId") String userId);
 
     /**

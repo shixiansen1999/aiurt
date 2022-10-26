@@ -21,29 +21,29 @@ public class YearFaultDTO {
     private String code;
     private String name;
     @ApiModelProperty(value = "一月")
-    private String january = "0";
+    private String january ;
     @ApiModelProperty(value = "二月")
-    private String february = "0";
+    private String february ;
     @ApiModelProperty(value = "三月")
-    private String march = "0";
+    private String march ;
     @ApiModelProperty(value = "四月")
-    private String april = "0";
+    private String april ;
     @ApiModelProperty(value = "五月")
-    private String may = "0";
+    private String may ;
     @ApiModelProperty(value = "六月")
-    private String june = "0";
+    private String june ;
     @ApiModelProperty(value = "七月")
-    private String july = "0";
+    private String july ;
     @ApiModelProperty(value = "八月")
-    private String august = "0";
+    private String august ;
     @ApiModelProperty(value = "九月")
-    private String september = "0";
+    private String september ;
     @ApiModelProperty(value = "十月")
-    private String october = "0";
+    private String october ;
     @ApiModelProperty(value = "十一月")
-    private String november = "0";
+    private String november ;
     @ApiModelProperty(value = "十二月")
-    private String december = "0";
+    private String december ;
 
     List<YearFaultDTO> yearFaultDtos;
 }

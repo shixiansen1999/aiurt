@@ -23,7 +23,7 @@ import java.util.Set;
 @Slf4j
 @RestController
 @RequestMapping("/sys/api")
-public class SystemAPIController {
+public class SystemApiController {
 
     @Autowired
     private SysBaseApiImpl sysBaseApi;

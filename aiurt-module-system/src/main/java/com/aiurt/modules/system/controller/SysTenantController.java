@@ -40,7 +40,6 @@ public class SysTenantController {
      * @param req
      * @return
      */
-   // @PermissionData(pageComponent = "system/TenantList")
 	@RequestMapping(value = "/list", method = RequestMethod.GET)
 	public Result<IPage<SysTenant>> queryPageList(SysTenant sysTenant, @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
                                                   @RequestParam(name="pageSize", defaultValue="10") Integer pageSize, HttpServletRequest req) {

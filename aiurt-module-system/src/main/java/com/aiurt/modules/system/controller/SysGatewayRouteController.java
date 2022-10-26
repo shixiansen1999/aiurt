@@ -66,7 +66,6 @@ public class SysGatewayRouteController extends BaseController<SysGatewayRoute, I
      * @param id
      * @return
      */
-    //@RequiresRoles({"admin"})
     @RequestMapping(value = "/delete", method = RequestMethod.DELETE)
     public Result<?> delete(@RequestParam(name = "id", required = true) String id) {
         sysGatewayRouteService.deleteById(id);

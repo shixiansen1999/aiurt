@@ -22,6 +22,9 @@ public interface ICsUserStaionService extends IService<CsUserStaion> {
      */
     List<CsUserStationModel> getStationByUserId(String id);
 
-
+    /**
+     * 获取所有站点
+     * @return
+     */
     List<CsUserStationModel> queryAllStation();
 }

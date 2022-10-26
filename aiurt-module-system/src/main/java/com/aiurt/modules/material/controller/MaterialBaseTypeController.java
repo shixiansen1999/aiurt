@@ -383,7 +383,8 @@ public class MaterialBaseTypeController {
                 String baseTypeCode = materialBaseType.getBaseTypeCode();
                 List<MaterialBase> materialBaseList = iMaterialBaseService.list(new QueryWrapper<MaterialBase>().eq("base_type_code",baseTypeCode).eq("del_flag",0));
                 List<MaterialBaseType> materialBaseTypeList = iMaterialBaseTypeService.list(new QueryWrapper<MaterialBaseType>().eq("pid",id));
-                if((materialBaseList != null && materialBaseList.size()>0) || (materialBaseTypeList != null && materialBaseTypeList.size()>0)){
+                boolean a = (materialBaseList != null && materialBaseList.size()>0) || (materialBaseTypeList != null && materialBaseTypeList.size()>0);
+                if(a){
                     res += "baseTypeCode,";
                 }else{
                     iMaterialBaseTypeService.removeById(materialBaseType);

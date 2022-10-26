@@ -84,7 +84,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
     @Autowired
     private CsUserSubsystemMapper csUserSubsystemMapper;
     @Autowired
-    private ISysBaseAPI iSysBaseAPI;
+    private ISysBaseAPI iSysBaseApi;
     @Lazy
     @Autowired
     private ICommonService commonService;
@@ -205,10 +205,6 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
         Set<String> permissionSet = new HashSet<>();
         List<SysPermission> permissionList = sysPermissionMapper.queryByUser(username, null);
         for (SysPermission po : permissionList) {
-//			// TODO URL规则有问题？
-//			if (oConvertUtils.isNotEmpty(po.getUrl())) {
-//				permissionSet.add(po.getUrl());
-//			}
             if (oConvertUtils.isNotEmpty(po.getPerms())) {
                 permissionSet.add(po.getPerms());
             }
@@ -247,7 +243,6 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
         List<String> sysMultiOrgCode = new ArrayList<String>();
         if (list == null || list.size() == 0) {
             //当前用户无部门
-            //sysMultiOrgCode.add("0");
         } else if (list.size() == 1) {
             sysMultiOrgCode.add(list.get(0).getOrgCode());
         } else {
@@ -330,7 +325,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
         userByRoleId.getRecords().forEach(l -> {
             List<String> majorIds = csUserMajorMapper.getMajorIds(l.getId());
             l.setMajorIds(majorIds);
-            SysDepartModel departByOrgCode = iSysBaseAPI.selectAllById(l.getOrgId());
+            SysDepartModel departByOrgCode = iSysBaseApi.selectAllById(l.getOrgId());
             if(ObjectUtil.isNotNull(departByOrgCode)){
                 l.setOrgName(departByOrgCode.getDepartName());
             }

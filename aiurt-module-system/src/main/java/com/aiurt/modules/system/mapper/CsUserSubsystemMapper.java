@@ -19,6 +19,11 @@ import org.jeecg.common.system.vo.CsUserSubsystemModel;
  * @Version: V1.0
  */
 public interface CsUserSubsystemMapper extends BaseMapper<CsUserSubsystem> {
+    /**
+     * 获取子系统
+     * @param userId
+     * @return
+     */
     List<String> getSubsystemIds(@Param("userId") String userId);
     /**
      * 根据用户id获取站点

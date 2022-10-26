@@ -14,6 +14,11 @@ import org.jeecg.common.system.vo.CsUserMajorModel;
  * @Version: V1.0
  */
 public interface CsUserMajorMapper extends BaseMapper<CsUserMajor> {
+    /**
+     * 获取专业id
+     * @param userId
+     * @return
+     */
     List<String> getMajorIds(@Param("userId") String userId);
 
     /**

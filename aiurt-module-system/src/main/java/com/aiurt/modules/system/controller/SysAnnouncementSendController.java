@@ -83,10 +83,6 @@ public class SysAnnouncementSendController {
 			}
 		}
 		IPage<SysAnnouncementSend> pageList = sysAnnouncementSendService.page(page, queryWrapper);
-		//log.info("查询当前页："+pageList.getCurrent());
-		//log.info("查询当前页数量："+pageList.getSize());
-		//log.info("查询结果数量："+pageList.getRecords().size());
-		//log.info("数据总数："+pageList.getTotal());
 		result.setSuccess(true);
 		result.setResult(pageList);
 		return result;

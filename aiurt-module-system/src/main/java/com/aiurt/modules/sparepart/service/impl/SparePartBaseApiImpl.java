@@ -101,15 +101,11 @@ public class SparePartBaseApiImpl implements ISparePartBaseApi {
         List<SparePartReplace> list = new ArrayList<>();
         List<SparePartMalfunction> malfunctionList = new ArrayList<>();
         List<SparePartScrap> sparePartScrapList = new ArrayList<>();
-
         if (CollectionUtil.isNotEmpty(sparePartList)) {
-
             List<DeviceAssembly> deviceAssemblyList = deviceAssemblyService.list();
             Set<String> assemblyCodeSet = deviceAssemblyList.stream().map(DeviceAssembly::getCode).collect(Collectors.toSet());
             // 插入到组件表中
-
             sparePartList.stream().forEach(deviceChange->{
-
                 // 线处理
                 String faultCode = deviceChange.getCode();
                 // 备件更换记录表
@@ -118,7 +114,6 @@ public class SparePartBaseApiImpl implements ISparePartBaseApi {
                 if (StrUtil.isBlank(outOrderId)) {
                     outOrderService.getById(outOrderId);
                 }
-
                 String deviceCode = deviceChange.getDeviceCode();
                 LambdaQueryWrapper<Device> queryWrapper = new LambdaQueryWrapper<>();
                 queryWrapper.eq(Device::getCode, deviceCode).last("limit 1");
@@ -128,21 +123,14 @@ public class SparePartBaseApiImpl implements ISparePartBaseApi {
                 }
                 // 原组件
                 String oldSparePartCode = deviceChange.getOldSparePartCode();
-
                 String newSparePartCode = deviceChange.getNewSparePartCode();
-
                 LambdaQueryWrapper<MaterialBase> wrapper = new LambdaQueryWrapper<>();
                 wrapper.eq(MaterialBase::getCode, newSparePartCode).last("limit 1");
                 MaterialBase materialBase = materialBaseService.getBaseMapper().selectOne(wrapper);
-
                 if (Objects.isNull(materialBase)) {
                     return;
                 }
-
                 Integer newSparePartNum = Optional.ofNullable(deviceChange.getNewSparePartNum()).orElse(1);
-
-
-
                 for (int i = 0; i < newSparePartNum; i++) {
                    String key = "";
                     int num = 0;
@@ -163,15 +151,12 @@ public class SparePartBaseApiImpl implements ISparePartBaseApi {
                    deviceAssembly.setMaterialCode(key);
                    deviceAssembly.setSpecifications(materialBase.getSpecifications());
                    deviceAssembly.setDelFlag(0);
-
                    deviceAssembly.setStartDate(new Date());
                    deviceAssembly.setDeviceTypeCode(device.getDeviceTypeCode());
                    deviceAssembly.setBuyDate(new Date());
                    deviceAssembly.setOnlineDate(new Date());
                    deviceAssembly.setUnit(materialBase.getUnit());
-
                    deviceAssemblyService.save(deviceAssembly);
-
                     // spare_part_replace备件更换记录表
                     SparePartReplace replace = new SparePartReplace();
                     replace.setMaintenanceRecord(faultCode);
@@ -183,18 +168,15 @@ public class SparePartBaseApiImpl implements ISparePartBaseApi {
                     replace.setSubassemblyCode(key);
                     list.add(replace);
                 }
-
                 if (StrUtil.isNotBlank(oldSparePartCode)) {
                     LambdaUpdateWrapper<DeviceAssembly> updateWrapper = new LambdaUpdateWrapper<>();
                     updateWrapper.eq(DeviceAssembly::getDeviceCode, deviceCode).eq(DeviceAssembly::getCode, oldSparePartCode)
                             .set(DeviceAssembly::getStatus, "1").set(DeviceAssembly::getDelFlag, CommonConstant.DEL_FLAG_1);
                     deviceAssemblyService.update(updateWrapper);
-
                     LambdaQueryWrapper<DeviceAssembly> assemblyLambdaQueryWrapper = new LambdaQueryWrapper<>();
                     assemblyLambdaQueryWrapper.eq(DeviceAssembly::getDeviceCode, deviceCode)
                             .eq(DeviceAssembly::getCode, oldSparePartCode).last("limit 1");
                     DeviceAssembly deviceAssembly = deviceAssemblyService.getBaseMapper().selectOne(assemblyLambdaQueryWrapper);
-
                     // 查询当前替换人员的仓库.
                     SparePartStockInfo stockInfo = sparePartStockInfoService.getSparePartStockInfoByUserName(deviceChange.getCreateBy());
                     if (Objects.nonNull(deviceAssembly)) {
@@ -222,7 +204,6 @@ public class SparePartBaseApiImpl implements ISparePartBaseApi {
                     }
                 }
             });
-
             sparePartList.stream().forEach(deviceChangeDTO->{
                 // 线处理
                 String faultCode = deviceChangeDTO.getCode();
@@ -245,23 +226,17 @@ public class SparePartBaseApiImpl implements ISparePartBaseApi {
                 sparePartMalfunction.setMaintainTime(new Date());
                 sparePartMalfunction.setDelFlag(0);
                 malfunctionList.add(sparePartMalfunction);
-
             });
         }
-
         if (CollectionUtil.isNotEmpty(list)) {
             partReplaceService.saveBatch(list);
         }
-
         // 保存数据
         if (CollectionUtil.isNotEmpty(malfunctionList)) {
             sparePartMalfunctionService.saveBatch(malfunctionList);
         }
-
         if (CollectionUtil.isNotEmpty(sparePartScrapList)) {
             sparePartScrapService.saveBatch(sparePartScrapList);
         }
     }
-
-
 }

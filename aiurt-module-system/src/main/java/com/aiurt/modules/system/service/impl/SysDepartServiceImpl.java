@@ -79,7 +79,6 @@ public class SysDepartServiceImpl extends ServiceImpl<SysDepartMapper, SysDepart
 	 * queryTreeList 对应 queryTreeList 查询所有的部门数据,以树结构形式响应给前端
 	 */
 	@Override
-//	@Cacheable(value = CacheConstant.SYS_DEPARTS_CACHE)
 	public List<SysDepartTreeModel> queryTreeList() {
 		LambdaQueryWrapper<SysDepart> query = new LambdaQueryWrapper<SysDepart>();
 		query.eq(SysDepart::getDelFlag, CommonConstant.DEL_FLAG_0.toString());
@@ -120,7 +119,6 @@ public class SysDepartServiceImpl extends ServiceImpl<SysDepartMapper, SysDepart
 	 * 机构树
 	 * @return
 	 */
-	//@Cacheable(value = CacheConstant.SYS_DEPART_IDS_CACHE)
 	@Override
 	public List<DepartIdModel> queryDepartIdTreeList() {
 		LambdaQueryWrapper<SysDepart> query = new LambdaQueryWrapper<SysDepart>();
@@ -300,7 +298,6 @@ public class SysDepartServiceImpl extends ServiceImpl<SysDepartMapper, SysDepart
 		idList.add(id);
 		this.checkChildrenExists(id, idList);
 		//清空部门树内存
-		//FindsDepartsChildrenUtil.clearDepartIdModel();
 		boolean ok = this.removeByIds(idList);
 		//根据部门id获取部门角色id
 		List<String> roleIdList = new ArrayList<>();
@@ -406,14 +403,14 @@ public class SysDepartServiceImpl extends ServiceImpl<SysDepartMapper, SysDepart
 	 */
 	private String getMinLengthNode(String[] str){
 		int min =str[0].length();
-		String orgCode = str[0];
+		StringBuilder orgCode = new StringBuilder(str[0]);
 		for(int i =1;i<str.length;i++){
 			if(str[i].length()<=min){
 				min = str[i].length();
-				orgCode = orgCode+","+str[i];
+				orgCode =orgCode.append(orgCode+","+str[i]) ;
 			}
 		}
-		return orgCode;
+		return String.valueOf(orgCode);
 	}
     /**
      * 获取部门树信息根据关键字
@@ -470,7 +467,6 @@ public class SysDepartServiceImpl extends ServiceImpl<SysDepartMapper, SysDepart
 			SysDepart depart = list.get(i);
             SysDepartTreeModel treeModel = new SysDepartTreeModel(depart);
             //TODO 异步树加载key拼接__+时间戳,以便于每次展开节点会刷新数据
-			//treeModel.setKey(treeModel.getKey()+"__"+System.currentTimeMillis());
 			treeModel.setKey(treeModel.getKey());
             Integer count=this.baseMapper.queryCountByPid(depart.getId());
             if(count>0){

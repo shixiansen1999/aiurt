@@ -53,7 +53,6 @@ public class SysDataSourceController extends BaseController<SysDataSource, ISysD
      */
     @AutoLog(value = "多数据源管理-分页列表查询")
     @ApiOperation(value = "多数据源管理-分页列表查询", notes = "多数据源管理-分页列表查询")
-    //@RequiresRoles("admin")
     @GetMapping(value = "/list")
     public Result<?> queryPageList(
             SysDataSource sysDataSource,

@@ -14,6 +14,11 @@ import org.jeecg.common.system.vo.CsUserStationModel;
  * @Version: V1.0
  */
 public interface CsUserStaionMapper extends BaseMapper<CsUserStaion> {
+    /**
+     * 获取站点
+     * @param userId
+     * @return
+     */
     List<String> getStaionIds(@Param("userId") String userId);
 
     /**

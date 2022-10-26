@@ -5,7 +5,7 @@ import com.aiurt.modules.weaver.service.entity.WeaverSsoRestultDTO;
 /**
  * @author fgw
  */
-public interface IWeaverSSOService {
+public interface IWeaverSsoService {
 
     /**
      * 获取token， header

@@ -77,8 +77,6 @@ public class RandImageUtil {
         //删除 \r\n
         base64 = base64.replaceAll("\n", "").replaceAll("\r", "");
 
-        //写到指定位置
-        //ImageIO.write(bufferedImage, "png", new File(""));
 
         return BASE64_PRE+base64;
     }
@@ -111,13 +109,9 @@ public class RandImageUtil {
         }
         // 取随机产生的认证码
         for (int i = 0; i < resultCode.length(); i++) {
-            // 将认证码显示到图象中,调用函数出来的颜色相同，可能是因为种子太接近，所以只能直接生成
-            // graphics.setColor(new Color(20 + random.nextInt(130), 20 + random
-            // .nextInt(130), 20 + random.nextInt(130)));
             // 设置字体颜色
             graphics.setColor(Color.BLACK);
             // 设置字体样式
-//			graphics.setFont(new Font("Arial Black", Font.ITALIC, 18));
             graphics.setFont(new Font("Times New Roman", Font.BOLD, 24));
             // 设置字符，字符间距，上边距
             graphics.drawString(String.valueOf(resultCode.charAt(i)), (23 * i) + 8, 26);

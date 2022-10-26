@@ -186,7 +186,6 @@ public class SysDepartPermissionController extends BaseController<SysDepartPermi
 				 .eq(SysDepartPermission::getDepartId,departId);
 			SysDepartPermission sysDepartPermission = sysDepartPermissionService.getOne(query);
 			if(sysDepartPermission==null) {
-			 //return Result.error("未找到角色菜单配置信息");
 			}else {
 				String drChecked = sysDepartPermission.getDataRuleIds();
 				if(oConvertUtils.isNotEmpty(drChecked)) {

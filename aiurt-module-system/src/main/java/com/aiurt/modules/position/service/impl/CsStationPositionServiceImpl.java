@@ -63,14 +63,6 @@ public class CsStationPositionServiceImpl extends ServiceImpl<CsStationPositionM
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Result<?> add(CsStationPosition csStationPosition) {
-        //名称不能重复，判断数据库中是否存在，如不存在则可继续添加 update 20220721 去掉第三级的名称重复判断
-       /* LambdaQueryWrapper<CsStationPosition> nameWrapper = new LambdaQueryWrapper<>();
-        nameWrapper.eq(CsStationPosition::getPositionName, csStationPosition.getPositionName());
-        nameWrapper.eq(CsStationPosition::getDelFlag, CommonConstant.DEL_FLAG_0);
-        List<CsStationPosition> positionList = csStationPositionMapper.selectList(nameWrapper);
-        if (!positionList.isEmpty()) {
-            return Result.error("三级名称重复，请重新填写！");
-        }*/
         /*编码不能重复，判断数据库中是否存在，如不存在则可继续添加*/
         List<CsLine> list = csLineMapper.selectCode(csStationPosition.getPositionCode());
         if (!list.isEmpty()) {
@@ -97,28 +89,11 @@ public class CsStationPositionServiceImpl extends ServiceImpl<CsStationPositionM
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Result<?> update(CsStationPosition csStationPosition) {
-        //名称不能重复，判断数据库中是否存在，如不存在则可继续添加 update 20220721 去掉第三级的名称重复判断
-       /* LambdaQueryWrapper<CsStationPosition> nameWrapper = new LambdaQueryWrapper<>();
-        nameWrapper.eq(CsStationPosition::getPositionName, csStationPosition.getPositionName());
-        nameWrapper.eq(CsStationPosition::getDelFlag, CommonConstant.DEL_FLAG_0);
-        List<CsStationPosition> positionList = csStationPositionMapper.selectList(nameWrapper);
-        if (!positionList.isEmpty() && !positionList.get(0).getId().equals(csStationPosition.getId())) {
-            return Result.error("三级名称重复，请重新填写！");
-        }*/
         //编码不能重复，判断数据库中是否存在，如不存在则可继续添加
         List<CsLine> list = csLineMapper.selectCode(csStationPosition.getPositionCode());
         if (!list.isEmpty() && !list.get(0).getId().equals(csStationPosition.getId())) {
             return Result.error("编码重复，请重新填写！");
         }
-
-        //根据Station_code查询所属线路code
-/*        LambdaQueryWrapper<CsStation> stationWrapper = new LambdaQueryWrapper<>();
-        stationWrapper.eq(CsStation::getStationCode,csStationPosition.getStaionCode());
-        stationWrapper.eq(CsStation::getDelFlag, 0);
-        CsStation sta = csStationMapper.selectOne(stationWrapper);
-        csStationPosition.setLineCode(sta.getLineCode());*/
-        //拼接position_code_cc
-/*        csStationPosition.setPositionCodeCc("/"+sta.getLineCode()+"/"+csStationPosition.getStaionCode()+"/"+csStationPosition.getPositionCode());*/
         csStationPositionMapper.updateById(csStationPosition);
         return Result.OK("编辑成功！");
     }

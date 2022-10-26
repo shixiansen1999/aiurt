@@ -4,8 +4,8 @@ import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.util.CommonUtils;
 import com.aiurt.common.util.MinioUtil;
 import com.aiurt.common.util.oConvertUtils;
-import com.aiurt.modules.oss.entity.OSSFile;
-import com.aiurt.modules.oss.service.IOSSFileService;
+import com.aiurt.modules.oss.entity.OssFile;
+import com.aiurt.modules.oss.service.IossFileService;
 import lombok.extern.slf4j.Slf4j;
 import org.jeecg.common.api.vo.Result;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,7 +26,7 @@ import javax.servlet.http.HttpServletRequest;
 @RequestMapping("/sys/upload")
 public class SysUploadController {
     @Autowired
-    private IOSSFileService ossFileService;
+    private IossFileService ossFileService;
 
     /**
      * 上传
@@ -38,7 +38,8 @@ public class SysUploadController {
         String bizPath = request.getParameter("biz");
 
         //LOWCOD-2580 sys/common/upload接口存在任意文件上传漏洞
-        if (oConvertUtils.isNotEmpty(bizPath) && (bizPath.contains("../") || bizPath.contains("..\\"))) {
+        boolean f = oConvertUtils.isNotEmpty(bizPath) && (bizPath.contains("../") || bizPath.contains("..\\"));
+        if (f) {
             throw new AiurtBootException("上传目录bizPath，格式非法！");
         }
 
@@ -56,7 +57,7 @@ public class SysUploadController {
             return Result.error("上传失败,请检查配置信息是否正确!");
         }
         //保存文件信息
-        OSSFile minioFile = new OSSFile();
+        OssFile minioFile = new OssFile();
         minioFile.setFileName(orgName);
         minioFile.setUrl(fileUrl);
         ossFileService.save(minioFile);

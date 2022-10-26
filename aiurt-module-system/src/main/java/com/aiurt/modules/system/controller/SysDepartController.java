@@ -107,10 +107,6 @@ public class SysDepartController {
 		Result<List<SysDepartTreeModel>> result = new Result<>();
 		try {
 			// 从内存中读取
-//			List<SysDepartTreeModel> list =FindsDepartsChildrenUtil.getSysDepartTreeList();
-//			if (CollectionUtils.isEmpty(list)) {
-//				list = sysDepartService.queryTreeList();
-//			}
 			if(oConvertUtils.isNotEmpty(ids)){
 				List<SysDepartTreeModel> departList = sysDepartService.queryTreeList(ids);
 				result.setResult(departList);
@@ -187,8 +183,6 @@ public class SysDepartController {
 			sysDepart.setCreateBy(username);
 			sysDepartService.saveDepartData(sysDepart, username);
 			//清除部门树内存
-			// FindsDepartsChildrenUtil.clearSysDepartTreeList();
-			// FindsDepartsChildrenUtil.clearDepartIdModel();
 			result.success("添加成功！");
 		} catch (Exception e) {
 			log.error(e.getMessage(),e);
@@ -203,7 +197,6 @@ public class SysDepartController {
 	 * @param sysDepart
 	 * @return
 	 */
-	//@RequiresRoles({"admin"})
 	@ApiOperation(value="部门管理-编辑部门", notes="部门管理-编辑部门")
 	@RequestMapping(value = "/edit", method = {RequestMethod.PUT,RequestMethod.POST})
 	@CacheEvict(value= {CacheConstant.SYS_DEPARTS_CACHE,CacheConstant.SYS_DEPART_IDS_CACHE}, allEntries=true)
@@ -219,8 +212,6 @@ public class SysDepartController {
 			// TODO 返回false说明什么？
 			if (ok) {
 				//清除部门树内存
-				//FindsDepartsChildrenUtil.clearSysDepartTreeList();
-				//FindsDepartsChildrenUtil.clearDepartIdModel();
 				result.success("修改成功!");
 			}
 		}
@@ -232,7 +223,6 @@ public class SysDepartController {
     * @param id
     * @return
     */
-	//@RequiresRoles({"admin"})
 	 @ApiOperation(value="部门管理-通过id删除", notes="部门管理-通过id删除")
     @RequestMapping(value = "/delete", method = RequestMethod.DELETE)
 	@CacheEvict(value= {CacheConstant.SYS_DEPARTS_CACHE,CacheConstant.SYS_DEPART_IDS_CACHE}, allEntries=true)
@@ -246,8 +236,6 @@ public class SysDepartController {
            boolean ok = sysDepartService.delete(id);
            if(ok) {
 	            //清除部门树内存
-	   		   //FindsDepartsChildrenUtil.clearSysDepartTreeList();
-	   		   // FindsDepartsChildrenUtil.clearDepartIdModel();
                result.success("删除成功!");
            }
        }
@@ -261,7 +249,6 @@ public class SysDepartController {
 	 * @param ids
 	 * @return
 	 */
-	//@RequiresRoles({"admin"})
 	@ApiOperation(value="部门管理-批量删除", notes="部门管理-批量删除")
 	@RequestMapping(value = "/deleteBatch", method = RequestMethod.DELETE)
 	@CacheEvict(value= {CacheConstant.SYS_DEPARTS_CACHE,CacheConstant.SYS_DEPART_IDS_CACHE}, allEntries=true)
@@ -361,7 +348,6 @@ public class SysDepartController {
      * @param response
      * @return
      */
-    //@RequiresRoles({"admin"})
     @RequestMapping(value = "/importExcel", method = RequestMethod.POST)
 	@CacheEvict(value= {CacheConstant.SYS_DEPARTS_CACHE,CacheConstant.SYS_DEPART_IDS_CACHE}, allEntries=true)
     public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) {

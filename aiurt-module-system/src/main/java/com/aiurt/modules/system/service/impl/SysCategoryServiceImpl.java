@@ -170,8 +170,9 @@ public class SysCategoryServiceImpl extends ServiceImpl<SysCategoryMapper, SysCa
 				queryWrapper.eq(SysCategory::getPid,metaPid);
 				queryWrapper.notIn(SysCategory::getId,Arrays.asList(idArr));
 				List<SysCategory> dataList = this.baseMapper.selectList(queryWrapper);
-				if((dataList == null || dataList.size()==0) && !Arrays.asList(idArr).contains(metaPid)
-						&& !sb.toString().contains(metaPid)){
+				boolean f = (dataList == null || dataList.size()==0) && !Arrays.asList(idArr).contains(metaPid)
+						&& !sb.toString().contains(metaPid);
+				if(f){
 					//如果当前节点原本有子节点 现在木有了，更新状态
 					sb.append(metaPid).append(",");
 				}

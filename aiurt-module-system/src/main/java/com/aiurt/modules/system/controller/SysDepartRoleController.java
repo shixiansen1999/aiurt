@@ -81,16 +81,6 @@ public class SysDepartRoleController extends BaseController<SysDepartRole, ISysD
 		Page<SysDepartRole> page = new Page<SysDepartRole>(pageNo, pageSize);
 		LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
 		List<String> deptIds = null;
-//		if(oConvertUtils.isEmpty(deptId)){
-//			if(oConvertUtils.isNotEmpty(user.getUserIdentity()) && user.getUserIdentity().equals(CommonConstant.USER_IDENTITY_2) ){
-//				deptIds = sysDepartService.getMySubDepIdsByDepId(user.getDepartIds());
-//			}else{
-//				return Result.ok(null);
-//			}
-//		}else{
-//			deptIds = sysDepartService.getSubDepIdsByDepId(deptId);
-//		}
-//		queryWrapper.in("depart_id",deptIds);
 
 		//我的部门，选中部门只能看当前部门下的角色
 		queryWrapper.eq("depart_id",deptId);
@@ -104,7 +94,6 @@ public class SysDepartRoleController extends BaseController<SysDepartRole, ISysD
 	 * @param sysDepartRole
 	 * @return
 	 */
-	//@RequiresRoles({"admin"})
 	@ApiOperation(value="部门角色-添加", notes="部门角色-添加")
 	@PostMapping(value = "/add")
 	public Result<?> add(@RequestBody SysDepartRole sysDepartRole) {
@@ -118,7 +107,6 @@ public class SysDepartRoleController extends BaseController<SysDepartRole, ISysD
 	 * @param sysDepartRole
 	 * @return
 	 */
-	//@RequiresRoles({"admin"})
 	@ApiOperation(value="部门角色-编辑", notes="部门角色-编辑")
 	@RequestMapping(value = "/edit", method = {RequestMethod.PUT,RequestMethod.POST})
 	public Result<?> edit(@RequestBody SysDepartRole sysDepartRole) {
@@ -132,7 +120,6 @@ public class SysDepartRoleController extends BaseController<SysDepartRole, ISysD
 	 * @param id
 	 * @return
 	 */
-	//@RequiresRoles({"admin"})
 	@AutoLog(value = "部门角色-通过id删除")
 	@ApiOperation(value="部门角色-通过id删除", notes="部门角色-通过id删除")
 	@DeleteMapping(value = "/delete")
@@ -147,7 +134,6 @@ public class SysDepartRoleController extends BaseController<SysDepartRole, ISysD
 	 * @param ids
 	 * @return
 	 */
-	//@RequiresRoles({"admin"})
 	@AutoLog(value = "部门角色-批量删除")
 	@ApiOperation(value="部门角色-批量删除", notes="部门角色-批量删除")
 	@DeleteMapping(value = "/deleteBatch")
@@ -189,7 +175,6 @@ public class SysDepartRoleController extends BaseController<SysDepartRole, ISysD
 	  * @param json
 	  * @return
 	  */
-	 //@RequiresRoles({"admin"})
 	 @RequestMapping(value = "/deptRoleUserAdd", method = RequestMethod.POST)
 	 public Result<?> deptRoleAdd(@RequestBody JSONObject json) {
 		 String newRoleId = json.getString("newRoleId");
@@ -241,7 +226,7 @@ public class SysDepartRoleController extends BaseController<SysDepartRole, ISysD
 					 .eq(SysDepartRolePermission::getRoleId,roleId);
 			 SysDepartRolePermission sysRolePermission = sysDepartRolePermissionService.getOne(query);
 			 if(sysRolePermission==null) {
-				 //return Result.error("未找到角色菜单配置信息");
+
 			 }else {
 				 String drChecked = sysRolePermission.getDataRuleIds();
 				 if(oConvertUtils.isNotEmpty(drChecked)) {

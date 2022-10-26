@@ -51,11 +51,12 @@ public interface ISysPermissionService extends IService<SysPermission> {
      */
 	public void editPermission(SysPermission sysPermission) throws AiurtBootException;
 
-    /**
-     * 获取登录用户拥有的权限
-     * @param username 用户名
-     * @return
-     */
+	/**
+	 * 获取登录用户拥有的权限
+	 * @param username
+	 * @param isApp
+	 * @return
+	 */
 	public List<SysPermission> queryByUser( String username, Integer isApp);
 
 	/**

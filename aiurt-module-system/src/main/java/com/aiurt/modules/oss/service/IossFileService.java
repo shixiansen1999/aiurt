@@ -2,7 +2,7 @@ package com.aiurt.modules.oss.service;
 
 import java.io.IOException;
 
-import com.aiurt.modules.oss.entity.OSSFile;
+import com.aiurt.modules.oss.entity.OssFile;
 import com.baomidou.mybatisplus.extension.service.IService;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -10,7 +10,7 @@ import org.springframework.web.multipart.MultipartFile;
  * @Description: OOS云存储service接口
  * @author: jeecg-boot
  */
-public interface IOSSFileService extends IService<OSSFile> {
+public interface IossFileService extends IService<OssFile> {
 
     /**
      * oss文件上传
@@ -24,6 +24,6 @@ public interface IOSSFileService extends IService<OSSFile> {
      * @param ossFile OSSFile对象
      * @return
      */
-	boolean delete(OSSFile ossFile);
+	boolean delete(OssFile ossFile);
 
 }

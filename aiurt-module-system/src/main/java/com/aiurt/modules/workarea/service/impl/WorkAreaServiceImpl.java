@@ -284,7 +284,8 @@ public class WorkAreaServiceImpl extends ServiceImpl<WorkAreaMapper, WorkArea> i
         LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         String roleCodes = loginUser.getRoleCodes();
         // 判断是的为管理员
-        if ((StrUtil.isNotBlank(roleCodes) && roleCodes.indexOf(ADMIN)>-1) || StrUtil.equalsIgnoreCase(param, "1")) {
+        boolean f = (StrUtil.isNotBlank(roleCodes) && roleCodes.indexOf(ADMIN)>-1) || StrUtil.equalsIgnoreCase(param, "1");
+        if (f) {
             List<CsStation> csStationList = csStationMapper.selectList(new LambdaQueryWrapper<CsStation>().eq(CsStation::getDelFlag, CommonConstant.DEL_FLAG_0));
             return csStationList;
         }
@@ -329,7 +330,8 @@ public class WorkAreaServiceImpl extends ServiceImpl<WorkAreaMapper, WorkArea> i
         LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         String roleCodes = loginUser.getRoleCodes();
         // 判断是的为管理员
-        if ((StrUtil.isNotBlank(roleCodes) && roleCodes.indexOf(ADMIN)>-1) || StrUtil.equalsIgnoreCase(param, "1")) {
+        boolean f = (StrUtil.isNotBlank(roleCodes) && roleCodes.indexOf(ADMIN)>-1) || StrUtil.equalsIgnoreCase(param, "1");
+        if (f) {
             List<SysUser> sysUserList = sysUserMapper.selectList(new LambdaQueryWrapper<SysUser>().eq(SysUser::getDelFlag, CommonConstant.DEL_FLAG_0));
             return sysUserList;
         }

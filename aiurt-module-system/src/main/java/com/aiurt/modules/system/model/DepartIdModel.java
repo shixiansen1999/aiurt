@@ -68,7 +68,7 @@ public class DepartIdModel implements Serializable {
         this.children = children;
     }
 
-    public static long getSerialVersionUID() {
+    public static long getSerialVersionUid() {
         return serialVersionUID;
     }
 

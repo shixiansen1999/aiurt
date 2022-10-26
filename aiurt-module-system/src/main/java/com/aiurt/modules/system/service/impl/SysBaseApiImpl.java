@@ -862,7 +862,8 @@ public class SysBaseApiImpl implements ISysBaseAPI {
         List<SysUserDepart> userDepartList = sysUserDepartService.list(new QueryWrapper<SysUserDepart>().eq("user_id", userId));
         if (userDepartList != null) {
             //查找所属公司
-            String orgCodes = "";
+//            String orgCodes = "";
+            StringBuilder orgCodes = new StringBuilder();
             for (SysUserDepart userDepart : userDepartList) {
                 //查询所属公司编码
                 SysDepart depart = sysDepartService.getById(userDepart.getDepId());
@@ -871,13 +872,13 @@ public class SysBaseApiImpl implements ISysBaseAPI {
                 if (depart != null && depart.getOrgCode() != null) {
                     compyOrgCode = depart.getOrgCode().substring(0, length);
                     if (orgCodes.indexOf(compyOrgCode) == -1) {
-                        orgCodes = orgCodes + "," + compyOrgCode;
+                        orgCodes =orgCodes.append(orgCodes + "," + compyOrgCode) ;
                     }
                 }
             }
             if (oConvertUtils.isNotEmpty(orgCodes)) {
-                orgCodes = orgCodes.substring(1);
-                List<String> listIds = departMapper.getSubDepIdsByOrgCodes(orgCodes.split(","));
+                orgCodes = new StringBuilder(orgCodes.substring(1));
+                List<String> listIds = departMapper.getSubDepIdsByOrgCodes(orgCodes.toString().split(","));
                 List<SysUserDepart> userList = sysUserDepartService.list(new QueryWrapper<SysUserDepart>().in("dep_id", listIds));
                 for (SysUserDepart userDepart : userList) {
                     if (!userIds.contains(userDepart.getUserId())) {

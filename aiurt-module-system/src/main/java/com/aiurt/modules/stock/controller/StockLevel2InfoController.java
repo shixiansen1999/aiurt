@@ -250,7 +250,8 @@ public class StockLevel2InfoController {
                 String code = stockLevel2Info.getWarehouseCode();
                 List<StockInOrderLevel2> stockInOrderLevel2 = iStockInOrderLevel2Service.list(new QueryWrapper<StockInOrderLevel2>().eq("warehouse_code",code).eq("del_flag", CommonConstant.DEL_FLAG_0));
                 List<StockLevel2> stockLevel2s = iStockLevel2Service.list(new QueryWrapper<StockLevel2>().eq("warehouse_code",code).eq("del_flag", CommonConstant.DEL_FLAG_0));
-                if((stockInOrderLevel2 != null && stockInOrderLevel2.size()>0) || (stockLevel2s != null && stockLevel2s.size()>0)){
+                boolean a =(stockInOrderLevel2 != null && stockInOrderLevel2.size()>0) || (stockLevel2s != null && stockLevel2s.size()>0);
+                if(a){
                     res += stockLevel2Info.getWarehouseCode() + ",";
                 }else{
                     iStockLevel2InfoService.removeById(stockLevel2Info);

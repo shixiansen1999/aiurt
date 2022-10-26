@@ -22,7 +22,7 @@ import com.aiurt.modules.system.service.*;
 import com.aiurt.modules.system.service.impl.SysBaseApiImpl;
 import com.aiurt.modules.system.service.impl.ThirdAppWechatEnterpriseServiceImpl;
 import com.aiurt.modules.system.util.RandImageUtil;
-import com.aiurt.modules.weaver.service.IWeaverSSOService;
+import com.aiurt.modules.weaver.service.IWeaverSsoService;
 import com.aiurt.modules.weaver.service.entity.WeaverSsoRestultDTO;
 import com.alibaba.fastjson.JSONObject;
 import com.aliyuncs.exceptions.ClientException;
@@ -42,7 +42,6 @@ import org.jeecg.modules.base.service.BaseCommonService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
@@ -84,7 +83,7 @@ public class LoginController {
 	private ThirdAppWechatEnterpriseServiceImpl wechatEnterpriseService;
 
 	@Autowired
-	private IWeaverSSOService weaverSsoService;
+	private IWeaverSsoService weaverSsoService;
 
 	@ApiOperation("登录接口")
 	@RequestMapping(value = "/login", method = RequestMethod.POST)
@@ -402,9 +401,6 @@ public class LoginController {
 			}
 			//验证码10分钟内有效
 			redisUtil.set(mobile, captcha, 600);
-			//update-begin--Author:scott  Date:20190812 for：issues#391
-			//result.setResult(captcha);
-			//update-end--Author:scott  Date:20190812 for：issues#391
 			result.setSuccess(true);
 
 		} catch (ClientException e) {
@@ -473,22 +469,6 @@ public class LoginController {
 			sysUser.setOrgName(depart.getDepartName());
 		}
 
-		/*if (departs == null || departs.size() == 0) {
-			obj.put("multi_depart", 0);
-		} else if (departs.size() == 1) {
-			sysUserService.updateUserDepart(username, departs.get(0).getOrgCode());
-			obj.put("multi_depart", 1);
-		} else {
-			//查询当前是否有登录部门
-			// update-begin--Author:wangshuai Date:20200805 for：如果用戶为选择部门，数据库为存在上一次登录部门，则取一条存进去
-			SysUser sysUserById = sysUserService.getById(sysUser.getId());
-			if(oConvertUtils.isEmpty(sysUserById.getOrgCode())){
-				sysUserService.updateUserDepart(username, departs.get(0).getOrgCode());
-			}
-			// update-end--Author:wangshuai Date:20200805 for：如果用戶为选择部门，数据库为存在上一次登录部门，则取一条存进去
-			obj.put("multi_depart", 2);
-		}*/
-		// update-begin--Author:sunjianlei Date:20210802 for：获取用户租户信息
 		String tenantIds = sysUser.getRelTenantIds();
 		if (oConvertUtils.isNotEmpty(tenantIds)) {
 			List<Integer> tenantIdList = new ArrayList<>();
@@ -608,21 +588,6 @@ public class LoginController {
 				sysUser.setOrgName(sysDepart.getDepartName());
 			}
 		}
-//		String orgCode = sysUser.getOrgCode();
-//		if(oConvertUtils.isEmpty(orgCode)) {
-//			//如果当前用户无选择部门 查看部门关联信息
-//			List<SysDepart> departs = sysDepartService.queryUserDeparts(sysUser.getId());
-//			//update-begin-author:taoyan date:20220117 for: JTC-1068【app】新建用户，没有设置部门及角色，点击登录提示暂未归属部，一直在登录页面 使用手机号登录 可正常
-//			if (departs == null || departs.size() == 0) {
-//				/*result.error500("用户暂未归属部门,不可登录!");
-//				return result;*/
-//			}else{
-//				orgCode = departs.get(0).getOrgCode();
-//				sysUser.setOrgCode(orgCode);
-//				this.sysUserService.updateUserDepart(username, orgCode);
-//			}
-//			//update-end-author:taoyan date:20220117 for: JTC-1068【app】新建用户，没有设置部门及角色，点击登录提示暂未归属部，一直在登录页面 使用手机号登录 可正常
-//		}
 		JSONObject obj = new JSONObject();
 		//用户登录信息
 		obj.put("userInfo", sysUser);
@@ -743,9 +708,9 @@ public class LoginController {
 		String password = sysUser.getPassword();
 		System.out.println(username+":"+password);
 		// 生成token
-		String token = org.jeecg.common.system.util.JwtUtil.sign(username, password);
+		String token = JwtUtil.sign(username, password);
 		// 设置token缓存有效时间
-		putReids(sysUser, token, org.jeecg.common.system.util.JwtUtil.EXPIRE_TIME * 2 / 1000);
+		putReids(sysUser, token, JwtUtil.EXPIRE_TIME * 2 / 1000);
 		// 获取用户部门信息
 		JSONObject obj = new JSONObject();
 		List<String> roleList = new ArrayList<String>();
@@ -767,7 +732,6 @@ public class LoginController {
 		result.success("登录成功");
 		result.getResult().put("role", "1");
 		ISysBaseAPI sysBaseApi =SpringContextUtils.getBean(ISysBaseAPI.class);
-		//sysBaseAPI.addLog("用户名: " + username + ",登录成功！", CommonConstant.LOG_TYPE_1, null);
 		req.getSession().setAttribute("username", req.getParameter("username"));
 		return result;
 	}
@@ -824,7 +788,7 @@ public class LoginController {
 	@RequestMapping(value = "/queryAccordingToken", method = RequestMethod.GET)
 	private Result<?> queryAccordingToken(HttpServletRequest req,
 										  @RequestParam(name = "token") String token){
-		String username = org.jeecg.common.system.util.JwtUtil.getUsername(token);
+		String username =JwtUtil.getUsername(token);
 		ISysUserService sysUserService =SpringContextUtils.getBean(ISysUserService.class);
 		SysUser sysUser = sysUserService.getUserByName(username);
 		if (sysUser != null) {
@@ -868,7 +832,6 @@ public class LoginController {
 		RSA rsa1 = new RSA(null,"MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAtp6TEWlM6HZQk3wcAODWcsQdIXKL+JBwaUKeu7JR3+PPhAmwvKMXgB3pj+UpK50ycyPISgj5WMRCMquOXa8KjQmNSmm3hG99sSIVnyTXpx/opGlzDQih4utg0MYE08a575Hi3wvrbbGHHgHNFUPL8WqyqSJlj95QVwp1aqFP9FEWg5Sh4Ps1zX58i5XFH/TLFYiI4OeAALKSpbfcBaAsNN7noKsL4iS4gVVnd6tqlt3ubUuzYQ7Q0uQBfNa5GtA2PbirA56ue12Lqh1y5HhnLp+aH9+/ga7HWuhWFtSyXtrK2SD3WGXhUIrXFlpgqj0cPBik4HT8S0yJ7wdy/Oa7EQIDAQAB");
 		//对秘钥进行加密传输，防止篡改数据
 		String encryptSecret = rsa1.encryptBase64("cadfb4a6-404b-4a8b-9552-55bc56141875", CharsetUtil.CHARSET_UTF_8, KeyType.PublicKey);
-		//System.out.println(encryptSecret);
 
 		String encryptUserid = rsa1.encryptBase64("1",CharsetUtil.CHARSET_UTF_8,KeyType.PublicKey);
 		System.out.println(encryptUserid);

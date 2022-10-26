@@ -426,7 +426,6 @@ public class SysPermissionTree implements Serializable {
 		this.status = status;
 	}
 
-	/*update_begin author:wuxianquan date:20190908 for:get set方法 */
 	public boolean isInternalOrExternal() {
 		return internalOrExternal;
 	}

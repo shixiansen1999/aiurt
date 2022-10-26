@@ -15,7 +15,7 @@ import org.jeecgframework.poi.excel.annotation.Excel;
 @TableName("oss_file")
 @EqualsAndHashCode(callSuper = false)
 @Accessors(chain = true)
-public class OSSFile extends BaseEntity {
+public class OssFile extends BaseEntity {
 
 	private static final long serialVersionUID = 1L;
 

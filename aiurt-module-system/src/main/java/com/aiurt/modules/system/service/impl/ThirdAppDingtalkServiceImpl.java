@@ -90,7 +90,6 @@ public class ThirdAppDingtalkServiceImpl implements IThirdAppService {
         return null;
     }
 
-    // update：2022-1-21，updateBy：sunjianlei; for 【JTC-704】【钉钉】部门同步成功，实际没成，后台提示ip白名单
     @Override
     public SyncInfoVo syncLocalDepartmentToThirdApp(String ids) {
         SyncInfoVo syncInfo = new SyncInfoVo();
