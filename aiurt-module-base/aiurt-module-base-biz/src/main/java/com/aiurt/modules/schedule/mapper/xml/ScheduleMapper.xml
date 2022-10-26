@@ -2,4 +2,11 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.aiurt.modules.schedule.mapper.ScheduleMapper">
 
+<select id="getUser" resultType="org.jeecg.common.system.vo.LoginUser">
+    select id,org_id from sys_user where del_flag = 0 and realname = #{realName} and work_no =#{workNo}
+    </select>
+
+<select id="getDepartByName" resultType="org.jeecg.common.system.vo.SysDepartModel">
+    select id,parent_id,depart_name from sys_depart where del_flag = 0 and depart_name = #{departName}
+    </select>
 </mapper>

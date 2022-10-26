@@ -3,10 +3,10 @@ package com.aiurt.modules.schedule.service;
 import com.aiurt.modules.schedule.entity.Schedule;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-
 import com.baomidou.mybatisplus.extension.service.IService;
+import org.jeecg.common.api.vo.Result;
 
-import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 import java.util.Map;
 
@@ -19,5 +19,5 @@ import java.util.Map;
 public interface IScheduleService extends IService<Schedule> {
     public IPage<Schedule> getList(Schedule schedule, Page<Schedule> page);
 
-    void importScheduleExcel(List<Map<Integer, String>> scheduleDate, HttpServletRequest request);
+    Result<?> importScheduleExcel(List<Map<Integer, String>> scheduleDate, HttpServletResponse response);
 }

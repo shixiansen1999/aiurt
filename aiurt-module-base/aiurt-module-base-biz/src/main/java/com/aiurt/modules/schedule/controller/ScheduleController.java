@@ -2,15 +2,16 @@ package com.aiurt.modules.schedule.controller;
 
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.StrUtil;
-import com.aiurt.modules.schedule.mapper.ScheduleRecordMapper;
-import com.aiurt.modules.schedule.service.*;
-import com.aiurt.modules.schedule.entity.*;
-import com.aiurt.modules.schedule.model.ScheduleUser;
-import com.aiurt.modules.schedule.vo.RecordParam;
-import com.aiurt.modules.schedule.vo.ScheduleRecordVo;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.util.DateUtils;
 import com.aiurt.common.util.oConvertUtils;
+import com.aiurt.modules.schedule.entity.*;
+import com.aiurt.modules.schedule.mapper.ScheduleRecordMapper;
+import com.aiurt.modules.schedule.model.ScheduleUser;
+import com.aiurt.modules.schedule.service.*;
+import com.aiurt.modules.schedule.util.ImportExcelUtil;
+import com.aiurt.modules.schedule.vo.RecordParam;
+import com.aiurt.modules.schedule.vo.ScheduleRecordVo;
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
@@ -355,10 +356,9 @@ public class ScheduleController {
             String nameAndType[] = file.getOriginalFilename().split("\\.");
             String type = nameAndType[1];
             // todo 后期修改
-            List<Map<Integer, String>> scheduleDate = new ArrayList<>();
-//            List<Map<Integer, String>> scheduleDate = ImportExcelUtil.readExcelContentByList(inputStream, type, 0, 0);
-            scheduleService.importScheduleExcel(scheduleDate, request);
-            return Result.ok("文件导入成功！");
+            //List<Map<Integer, String>> scheduleDate = new ArrayList<>();
+            List<Map<Integer, String>> scheduleDate = ImportExcelUtil.readExcelContentByList(inputStream, type, 0, 0);
+            return scheduleService.importScheduleExcel(scheduleDate, response);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
             return Result.error("文件导入失败:" + e.getMessage());
