@@ -472,8 +472,13 @@ public class PatrolTaskDeviceServiceImpl extends ServiceImpl<PatrolTaskDeviceMap
                 }
             }
             List<PatrolCheckResultDTO> checkResultList = patrolCheckResultMapper.getCheckResult(taskDeviceId);
+            // 字典翻译
+            Map<String, String> requiredItems = sysBaseApi.getDictItems(PatrolDictCode.ITEM_REQUIRED)
+                    .stream().filter(l-> StrUtil.isNotEmpty(l.getText()))
+                    .collect(Collectors.toMap(k -> k.getValue(), v -> v.getText(), (a, b) -> a));
             checkResultList.stream().forEach(e ->
             {
+                e.setRequiredDictName(requiredItems.get(String.valueOf(e.getRequired())));
                 if (ObjectUtil.isNotNull(e.getDictCode())) {
                     List<DictModel> list = sysBaseApi.getDictItems(e.getDictCode());
                     e.setList(list);
