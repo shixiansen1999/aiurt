@@ -190,7 +190,7 @@ public class SparePartBaseApiImpl implements ISparePartBaseApi {
                         sparePartScrap.setNum(1);
                         sparePartScrap.setScrapTime(deviceChange.getCreateTime());
                         sparePartScrap.setCreateBy(deviceChange.getCreateBy());
-                        sparePartScrap.setStatus(2);
+                        sparePartScrap.setStatus(1);
                         sparePartScrap.setLineCode(device.getLineCode());
                         sparePartScrap.setStationCode(device.getStationCode());
                         sparePartScrap.setKeepPerson(deviceChange.getCreateBy());
