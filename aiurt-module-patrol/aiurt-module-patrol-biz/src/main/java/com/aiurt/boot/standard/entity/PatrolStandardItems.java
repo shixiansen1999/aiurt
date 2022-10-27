@@ -87,6 +87,7 @@ public class PatrolStandardItems implements Serializable {
     /**检查值是否必填字典名：0否、1是*/
     @Excel(name = "检查值是否必填字典名：0否、1是", width = 15)
     @ApiModelProperty(value = "检查值是否必填字典名：0否、1是")
+    @TableField(exist = false)
     private java.lang.String requiredDictName;
 	/**删除状态： 0未删除 1已删除*/
 	@Excel(name = "删除状态： 0未删除 1已删除", width = 15)
