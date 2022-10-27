@@ -20,6 +20,7 @@ import com.aiurt.modules.subsystem.service.ICsSubsystemService;
 import com.aiurt.modules.system.service.impl.SysBaseApiImpl;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import liquibase.pro.packaged.S;
 import org.apache.poi.hssf.usermodel.HSSFCellStyle;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
@@ -298,11 +299,24 @@ public class StockSubmitPlanServiceImpl extends ServiceImpl<StockSubmitPlanMappe
 						ifImport = false;
 						break;
 					}
+					index++;
 				}
 				if(index >= 5){
 					StockSubmitMaterials stockSubmitMaterials = new StockSubmitMaterials();
 					//物资编码
-					String code = row.getCell(1).getStringCellValue()==null?"":row.getCell(1).getStringCellValue();
+					String code = null;
+					Cell cell = row.getCell(1);
+					CellType cellType = cell.getCellTypeEnum();
+					// 如果是字符串，直接赋值，如果是数值，获取后进行转换
+					if (CellType.STRING.equals(cellType)) {
+						code = row.getCell(1).getStringCellValue();
+					} else if (CellType.NUMERIC.equals(cellType)) {
+						double numericCellValue = row.getCell(1).getNumericCellValue();
+						int num = (int)numericCellValue;
+						// 然后自己转化为字符串，并赋值给value
+						code = String.valueOf(num);
+					}
+				//row.getCell(1).getStringCellValue()==null?"":row.getCell(1).getStringCellValue();
 					if ("".equals(code)) {
 						errorStrs.add("第 " + index + " 行：物资编码为空，忽略导入。");
 						ifAdd = false;
