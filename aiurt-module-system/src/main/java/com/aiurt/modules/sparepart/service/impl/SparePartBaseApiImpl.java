@@ -169,10 +169,7 @@ public class SparePartBaseApiImpl implements ISparePartBaseApi {
                     list.add(replace);
                 }
                 if (StrUtil.isNotBlank(oldSparePartCode)) {
-                    LambdaUpdateWrapper<DeviceAssembly> updateWrapper = new LambdaUpdateWrapper<>();
-                    updateWrapper.eq(DeviceAssembly::getDeviceCode, deviceCode).eq(DeviceAssembly::getCode, oldSparePartCode)
-                            .set(DeviceAssembly::getStatus, "1").set(DeviceAssembly::getDelFlag, CommonConstant.DEL_FLAG_1);
-                    deviceAssemblyService.update(updateWrapper);
+
                     LambdaQueryWrapper<DeviceAssembly> assemblyLambdaQueryWrapper = new LambdaQueryWrapper<>();
                     assemblyLambdaQueryWrapper.eq(DeviceAssembly::getDeviceCode, deviceCode)
                             .eq(DeviceAssembly::getCode, oldSparePartCode).last("limit 1");
@@ -180,6 +177,11 @@ public class SparePartBaseApiImpl implements ISparePartBaseApi {
                     // 查询当前替换人员的仓库.
                     SparePartStockInfo stockInfo = sparePartStockInfoService.getSparePartStockInfoByUserName(deviceChange.getCreateBy());
                     if (Objects.nonNull(deviceAssembly)) {
+                        // 更新状态
+                        deviceAssembly.setDelFlag(CommonConstant.DEL_FLAG_1);
+                        deviceAssembly.setStatus("1");
+                        deviceAssemblyService.updateById(deviceAssembly);
+
                         // 备件报废表spare_part_scrap插入数据
                         SparePartScrap sparePartScrap = new SparePartScrap();
                         sparePartScrap.setNumber("1");

@@ -1,9 +1,11 @@
 package com.aiurt.modules.online.page.controller;
 
 import com.aiurt.common.aspect.annotation.AutoLog;
+import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.system.base.controller.BaseController;
 import com.aiurt.modules.online.page.entity.ActCustomPage;
 import com.aiurt.modules.online.page.service.IActCustomPageService;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -17,8 +19,9 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Arrays;
+import java.util.List;
 
- /**
+/**
  * @Description: 设计表单
  * @Author: aiurt
  * @Date:   2022-10-26
@@ -124,5 +127,17 @@ public class ActCustomPageController extends BaseController<ActCustomPage, IActC
 			return Result.error("未找到对应数据");
 		}
 		return Result.OK(actCustomPage);
+	}
+
+	@GetMapping(value = "/queryList")
+	@ApiOperation("查询表单list")
+	public Result<List<ActCustomPage>> queryList(@RequestParam(value = "pageName",required = false) String pageName) {
+		LambdaQueryWrapper<ActCustomPage> wrapper = new LambdaQueryWrapper<>();
+
+		wrapper.eq(ActCustomPage::getDelFlag, CommonConstant.DEL_FLAG_0);
+
+		List<ActCustomPage> actCustomPageList = actCustomPageService.getBaseMapper().selectList(wrapper);
+
+		return Result.OK(actCustomPageList);
 	}
 }

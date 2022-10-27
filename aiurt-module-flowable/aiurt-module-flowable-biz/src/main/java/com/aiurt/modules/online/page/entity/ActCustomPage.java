@@ -5,10 +5,7 @@ import java.util.Date;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableField;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableName;
+import com.baomidou.mybatisplus.annotation.*;
 import com.baomidou.mybatisplus.extension.handlers.JacksonTypeHandler;
 import lombok.Data;
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -75,4 +72,11 @@ public class ActCustomPage implements Serializable {
 	@Excel(name = "版本号", width = 15)
     @ApiModelProperty(value = "版本号")
     private Integer pageVersion;
+
+    /**
+     * 删除状态 0-未删除 1-已删除
+     */
+    @ApiModelProperty(value = "删除状态 0-未删除 1-已删除")
+    @TableLogic
+    private  Integer  delFlag;
 }

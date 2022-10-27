@@ -1,7 +1,6 @@
 package com.aiurt.modules.subsystem.dto;
 
 import io.swagger.annotations.ApiModelProperty;
-import liquibase.pro.packaged.S;
 import lombok.Data;
 
 import java.util.List;

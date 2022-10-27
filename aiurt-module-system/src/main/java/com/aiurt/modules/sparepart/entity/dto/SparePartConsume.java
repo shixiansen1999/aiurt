@@ -2,7 +2,6 @@ package com.aiurt.modules.sparepart.entity.dto;
 
 import com.baomidou.mybatisplus.annotation.TableField;
 import io.swagger.annotations.ApiModelProperty;
-import liquibase.change.core.LoadDataChange;
 import lombok.Data;
 
 /**

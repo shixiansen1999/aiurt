@@ -6,7 +6,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import com.aiurt.common.util.RedisUtil;
-import org.ehcache.impl.internal.util.ServiceUtil;
 import org.jeecg.common.api.vo.Result;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.system.util.JwtUtil;
