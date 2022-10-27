@@ -1,9 +1,9 @@
-package com.aiurt.modules.page.controller;
+package com.aiurt.modules.online.page.controller;
 
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.system.base.controller.BaseController;
-import com.aiurt.modules.page.entity.ActCustomPage;
-import com.aiurt.modules.page.service.IActCustomPageService;
+import com.aiurt.modules.online.page.entity.ActCustomPage;
+import com.aiurt.modules.online.page.service.IActCustomPageService;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -64,6 +64,7 @@ public class ActCustomPageController extends BaseController<ActCustomPage, IActC
 	@ApiOperation(value="设计表单-添加", notes="设计表单-添加")
 	@PostMapping(value = "/add")
 	public Result<String> add(@RequestBody ActCustomPage actCustomPage) {
+		actCustomPage.setPageVersion(1);
 		actCustomPageService.save(actCustomPage);
 		return Result.OK("添加成功！");
 	}
@@ -78,7 +79,8 @@ public class ActCustomPageController extends BaseController<ActCustomPage, IActC
 	@ApiOperation(value="设计表单-编辑", notes="设计表单-编辑")
 	@RequestMapping(value = "/edit", method = {RequestMethod.PUT,RequestMethod.POST})
 	public Result<String> edit(@RequestBody ActCustomPage actCustomPage) {
-		actCustomPageService.updateById(actCustomPage);
+
+		actCustomPageService.edit(actCustomPage);
 		return Result.OK("编辑成功!");
 	}
 

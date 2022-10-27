@@ -1,7 +1,7 @@
-package com.aiurt.modules.page.service;
+package com.aiurt.modules.online.page.service;
 
 
-import com.aiurt.modules.page.entity.ActCustomPage;
+import com.aiurt.modules.online.page.entity.ActCustomPage;
 import com.baomidou.mybatisplus.extension.service.IService;
 
 /**
@@ -12,4 +12,9 @@ import com.baomidou.mybatisplus.extension.service.IService;
  */
 public interface IActCustomPageService extends IService<ActCustomPage> {
 
+    /**
+     * 编辑菜单
+     * @param actCustomPage
+     */
+    void edit(ActCustomPage actCustomPage);
 }

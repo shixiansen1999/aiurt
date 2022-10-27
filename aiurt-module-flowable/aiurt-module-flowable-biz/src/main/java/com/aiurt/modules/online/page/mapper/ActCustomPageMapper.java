@@ -1,7 +1,7 @@
-package com.aiurt.modules.page.mapper;
+package com.aiurt.modules.online.page.mapper;
 
 
-import com.aiurt.modules.page.entity.ActCustomPage;
+import com.aiurt.modules.online.page.entity.ActCustomPage;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
 /**

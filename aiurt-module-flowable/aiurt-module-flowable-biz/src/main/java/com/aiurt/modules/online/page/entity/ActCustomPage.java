@@ -1,10 +1,15 @@
-package com.aiurt.modules.page.entity;
+package com.aiurt.modules.online.page.entity;
 
 import java.io.Serializable;
 import java.util.Date;
+
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.baomidou.mybatisplus.extension.handlers.JacksonTypeHandler;
 import lombok.Data;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -21,11 +26,12 @@ import lombok.experimental.Accessors;
  * @Version: V1.0
  */
 @Data
-@TableName("act_custom_page")
+@TableName(value = "act_custom_page", autoResultMap = true)
 @Accessors(chain = true)
 @EqualsAndHashCode(callSuper = false)
 @ApiModel(value="act_custom_page对象", description="设计表单")
 public class ActCustomPage implements Serializable {
+
     private static final long serialVersionUID = 1L;
 
 	/**主键*/
@@ -58,11 +64,13 @@ public class ActCustomPage implements Serializable {
 	/**表单全局属性*/
 	@Excel(name = "表单全局属性", width = 15)
     @ApiModelProperty(value = "表单全局属性")
-    private String pageJson;
+    @TableField(typeHandler = JacksonTypeHandler.class)
+    private JSONObject pageJson;
 	/**表单属性*/
 	@Excel(name = "表单属性", width = 15)
     @ApiModelProperty(value = "表单属性")
-    private String pageContentJson;
+    @TableField(typeHandler = JacksonTypeHandler.class)
+    private JSONArray pageContentJson;
 	/**版本号*/
 	@Excel(name = "版本号", width = 15)
     @ApiModelProperty(value = "版本号")
