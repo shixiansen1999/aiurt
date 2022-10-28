@@ -48,10 +48,10 @@ public interface RepairTaskMapper extends BaseMapper<RepairTask> {
 
     /**
      * 检修任务清单查询
-     * @param condition
+     * @param taskId
      * @return
      */
-    List<RepairTaskDTO> selectTaskList(@Param("condition") RepairTaskDTO condition);
+    List<RepairTaskDTO> selectTaskList(@Param("taskId") String taskId);
 
     /**
      * 检修任务详情
