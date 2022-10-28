@@ -23,6 +23,8 @@ import com.aiurt.modules.flow.service.IActCustomTaskCommentService;
 import com.aiurt.modules.flow.utils.FlowElementUtil;
 import com.aiurt.modules.modeler.entity.ActCustomTaskExt;
 import com.aiurt.modules.modeler.service.IActCustomTaskExtService;
+import com.aiurt.modules.online.businessdata.entity.ActCustomBusinessData;
+import com.aiurt.modules.online.businessdata.service.IActCustomBusinessDataService;
 import com.aiurt.modules.online.page.entity.ActCustomPage;
 import com.aiurt.modules.online.page.service.IActCustomPageService;
 import com.alibaba.fastjson.JSON;
@@ -106,6 +108,9 @@ public class FlowApiServiceImpl implements FlowApiService {
 
     @Autowired
     private IActCustomPageService pageService;
+
+    @Autowired
+    private IActCustomBusinessDataService businessDataService;
 
 
     /**
@@ -282,6 +287,9 @@ public class FlowApiServiceImpl implements FlowApiService {
         // 获取流程任务
         Task processInstanceActiveTask = this.getProcessInstanceActiveTask(processInstanceId, taskId);
 
+        // 数据处理
+        ProcessInstance processInstance = getProcessInstance(processInstanceId);
+
         // 验证流程任务的合法性。
         this.verifyAndGetRuntimeTaskInfo(processInstanceActiveTask);
 
@@ -290,8 +298,7 @@ public class FlowApiServiceImpl implements FlowApiService {
 
         // 判断使保存还是提交
         if (StrUtil.equalsIgnoreCase(FlowApprovalType.SAVE, approvalType)) {
-            // 数据处理
-            ProcessInstance processInstance = getProcessInstance(processInstanceId);
+
             String businessKey = processInstance.getBusinessKey();
 
             // 更新中间业务数据
@@ -331,6 +338,16 @@ public class FlowApiServiceImpl implements FlowApiService {
             comment.setCreateRealname(checkLogin().getRealname());
             customTaskCommentService.getBaseMapper().insert(comment);
         }
+        // 保存每个节点的业务数据
+        ActCustomBusinessData.builder()
+                .taksId(taskId)
+                .processDefinitionKey(processInstance.getProcessDefinitionKey())
+                .processDefinitionId(processInstance.getProcessDefinitionId())
+                .taskDefinitionKey(task.getTaskDefinitionKey())
+                
+                .taskName(task.getName())
+                .processInstanceId(processInstanceId)
+                .build();
     }
 
     /**

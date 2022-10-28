@@ -6,13 +6,22 @@ package com.aiurt.modules.common.constant;
  * @date 2022-10-21 12:12
  */
 public interface FlowModelAttConstant {
+
+    String FLOWABLE = "flowable";
+
     /**
      * 页面类型1：静态， 0：动态
      */
     String FORM_TYPE = "formType";
 
+    /**
+     *
+     */
     String STATIC_FORM_TYPE = "1";
 
+    /**
+     *
+     */
     String DYNAMIC_FORM_TYPE = "0";
 
     /**
@@ -20,6 +29,9 @@ public interface FlowModelAttConstant {
      */
     String FORM_URL = "formUrl";
 
+    /**
+     *
+     */
     String FORM_DYNAMIC_URL = "formDynamicUrl";
 
     /**

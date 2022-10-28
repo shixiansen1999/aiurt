@@ -1,13 +1,13 @@
 package com.aiurt.modules.online.businessdata.entity;
 
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
+import lombok.*;
 import lombok.experimental.Accessors;
 import org.jeecgframework.poi.excel.annotation.Excel;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -22,9 +22,12 @@ import java.util.Date;
  * @Version: V1.0
  */
 @Data
-@TableName("act_custom_business_data")
+@Builder
 @Accessors(chain = true)
+@NoArgsConstructor
+@AllArgsConstructor
 @EqualsAndHashCode(callSuper = false)
+@TableName("act_custom_business_data")
 @ApiModel(value="act_custom_business_data对象", description="流程中间业务数据")
 public class ActCustomBusinessData implements Serializable {
     private static final long serialVersionUID = 1L;
@@ -88,4 +91,7 @@ public class ActCustomBusinessData implements Serializable {
 	@Excel(name = "任务id", width = 15)
     @ApiModelProperty(value = "任务id")
     private String taksId;
+
+
+	// private JSONObject data;
 }

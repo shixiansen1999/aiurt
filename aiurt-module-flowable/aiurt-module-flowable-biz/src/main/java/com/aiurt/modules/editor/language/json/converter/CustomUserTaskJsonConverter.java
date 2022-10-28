@@ -2,6 +2,7 @@ package com.aiurt.modules.editor.language.json.converter;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
+import com.aiurt.modules.common.constant.FlowModelAttConstant;
 import com.aiurt.modules.utils.ExtensionPropertiesUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
@@ -150,21 +151,21 @@ public class CustomUserTaskJsonConverter  extends UserTaskJsonConverter {
             }
 
             // 选人类型， initiator是为：流程发起人, data
-            addCustomAttributeForPrefix(elementNode, userTask, "flowable","userType");
+            addCustomAttributeForPrefix(elementNode, userTask, FlowModelAttConstant.FLOWABLE, FlowModelAttConstant.USER_TYPE);
             // 角色
-            addCustomAttributeForPrefix(elementNode, userTask, "flowable","role");
+            addCustomAttributeForPrefix(elementNode, userTask, FlowModelAttConstant.FLOWABLE, FlowModelAttConstant.ROLE);
             // 部门
-            addCustomAttributeForPrefix(elementNode, userTask, "flowable","dept");
+            addCustomAttributeForPrefix(elementNode, userTask, FlowModelAttConstant.FLOWABLE, FlowModelAttConstant.DEPT);
             // 指定人员
-            addCustomAttributeForPrefix(elementNode, userTask, "flowable","user");
+            addCustomAttributeForPrefix(elementNode, userTask, FlowModelAttConstant.FLOWABLE, FlowModelAttConstant.USER);
 
             // 动态人员
-            addCustomAttributeForPrefix(elementNode, userTask, "flowable", "dynamicPerson");
+            addCustomAttributeForPrefix(elementNode, userTask, FlowModelAttConstant.FLOWABLE, FlowModelAttConstant.DYNAMIC_PERSON);
             // 人员类型: fixed ,dynim
-            addCustomAttributeForPrefix(elementNode, userTask, "flowable", "dataType");
+            addCustomAttributeForPrefix(elementNode, userTask, FlowModelAttConstant.FLOWABLE, "dataType");
 
             // 表单页面 类型
-            addCustomAttributeForPrefix(elementNode, userTask, "flowable","formType");
+            addCustomAttributeForPrefix(elementNode, userTask,  FlowModelAttConstant.FLOWABLE, FlowModelAttConstant.FORM_TYPE);
             // 表单设计器
             addCustomAttributeForPrefix(elementNode, userTask, "flowable","formDynamicUrl");
             // 表单url
