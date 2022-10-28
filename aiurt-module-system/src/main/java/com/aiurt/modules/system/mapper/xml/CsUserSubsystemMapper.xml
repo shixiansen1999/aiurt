@@ -58,7 +58,7 @@
                                           LEFT JOIN fault_device fd on de.`code` = fd.device_code
                                           LEFT JOIN fault fa on  fd.fault_code =fa.`code`
         WHERE
-            fd.del_flag =0     and fr.del_flag = 0
+            fd.del_flag =0
           AND fa.sub_system_code = #{subsystemCode}
           and de.device_type_code = #{deviceTypeCode}
           AND date_format(fa.approval_pass_time ,'%Y-%m') = date_format( #{time},'%Y-%m')

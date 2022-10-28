@@ -138,14 +138,14 @@ public class CsSubsystemServiceImpl extends ServiceImpl<CsSubsystemMapper, CsSub
             subDTO.setFailureNum(subDTO.getCommonFaultNum()+subDTO.getSeriousFaultNum());
             subDTO.setSystemCode(s.getSystemCode());subDTO.setSystemName(s.getSystemName());subDTO.setId(s.getId());
             subDTO.setCode(subDTO.getSystemCode());subDTO.setName(subDTO.getSystemName());
-            subDTO.setFailureDuration(new BigDecimal((1.0 * ( subDTO.getNum()) / 3600)).setScale(2, BigDecimal.ROUND_HALF_UP));
+            subDTO.setFailureDuration(new BigDecimal((1.0 * ( subDTO.getNum()) / 60)).setScale(2, BigDecimal.ROUND_HALF_UP));
             List<SubsystemFaultDTO> list = csUserSubsystemMapper.getSubsystemByDeviceTypeCode(s.getSystemCode(),deviceTypeCode);
             List<SubsystemFaultDTO> deviceTypeList = new ArrayList<>();
             list.forEach(l->{
                 SubsystemFaultDTO deviceType = csUserSubsystemMapper.getSubsystemByDeviceType(time,s.getSystemCode(),l.getDeviceTypeCode());
                 Long num = csUserSubsystemMapper.getNum(time,s.getSystemCode(),l.getDeviceTypeCode());
                 deviceType.setFailureNum(deviceType.getCommonFaultNum()+deviceType.getSeriousFaultNum());
-                deviceType.setFailureDuration(new BigDecimal((1.0 * (num==null?0:num) / 3600)).setScale(2, BigDecimal.ROUND_HALF_UP));
+                deviceType.setFailureDuration(new BigDecimal((1.0 * (num==null?0:num) / 60)).setScale(2, BigDecimal.ROUND_HALF_UP));
                 deviceType.setDeviceTypeCode(l.getDeviceTypeCode());
                 deviceType.setDeviceTypeName(l.getDeviceTypeName());
                 deviceType.setName(l.getDeviceTypeName());deviceType.setCode(l.getDeviceTypeCode());deviceType.setId(l.getId());
@@ -197,29 +197,29 @@ public class CsSubsystemServiceImpl extends ServiceImpl<CsSubsystemMapper, CsSub
               system.forEach(sys->{
                   if (ObjectUtils.isNotEmpty(sys.getMonth())) {
                       if (sys.getMonth() == 1) {
-                          yearFaultDTO.setJanuary(new BigDecimal((1.0 * (sys.getNum() == null ? 0 : sys.getNum()) / 60)).setScale(0, BigDecimal.ROUND_HALF_UP).toString());
+                          yearFaultDTO.setJanuary(new BigDecimal((1.0 * (sys.getNum() == null ? 0 : sys.getNum()))).setScale(0, BigDecimal.ROUND_HALF_UP).toString());
                       } else if (sys.getMonth() == 2) {
-                          yearFaultDTO.setFebruary(new BigDecimal((1.0 * (sys.getNum() == null ? 0 : sys.getNum()) / 60)).setScale(0, BigDecimal.ROUND_HALF_UP).toString());
+                          yearFaultDTO.setFebruary(new BigDecimal((1.0 * (sys.getNum() == null ? 0 : sys.getNum()))).setScale(0, BigDecimal.ROUND_HALF_UP).toString());
                       } else if (sys.getMonth() == 3) {
-                          yearFaultDTO.setMarch(new BigDecimal((1.0 * (sys.getNum() == null ? 0 : sys.getNum()) / 60)).setScale(0, BigDecimal.ROUND_HALF_UP).toString());
+                          yearFaultDTO.setMarch(new BigDecimal((1.0 * (sys.getNum() == null ? 0 : sys.getNum()) )).setScale(0, BigDecimal.ROUND_HALF_UP).toString());
                       } else if (sys.getMonth() == 4) {
-                          yearFaultDTO.setApril(new BigDecimal((1.0 * (sys.getNum() == null ? 0 : sys.getNum()) / 60)).setScale(0, BigDecimal.ROUND_HALF_UP).toString());
+                          yearFaultDTO.setApril(new BigDecimal((1.0 * (sys.getNum() == null ? 0 : sys.getNum()) )).setScale(0, BigDecimal.ROUND_HALF_UP).toString());
                       } else if (sys.getMonth() == 5) {
-                          yearFaultDTO.setMay(new BigDecimal((1.0 * (sys.getNum() == null ? 0 : sys.getNum()) / 60)).setScale(0, BigDecimal.ROUND_HALF_UP).toString());
+                          yearFaultDTO.setMay(new BigDecimal((1.0 * (sys.getNum() == null ? 0 : sys.getNum()) )).setScale(0, BigDecimal.ROUND_HALF_UP).toString());
                       } else if (sys.getMonth() == 6) {
-                          yearFaultDTO.setJune(new BigDecimal((1.0 * (sys.getNum() == null ? 0 : sys.getNum()) / 60)).setScale(0, BigDecimal.ROUND_HALF_UP).toString());
+                          yearFaultDTO.setJune(new BigDecimal((1.0 * (sys.getNum() == null ? 0 : sys.getNum()) )).setScale(0, BigDecimal.ROUND_HALF_UP).toString());
                       } else if (sys.getMonth() == 7) {
-                          yearFaultDTO.setJuly(new BigDecimal((1.0 * (sys.getNum() == null ? 0 : sys.getNum()) / 60)).setScale(0, BigDecimal.ROUND_HALF_UP).toString());
+                          yearFaultDTO.setJuly(new BigDecimal((1.0 * (sys.getNum() == null ? 0 : sys.getNum()) )).setScale(0, BigDecimal.ROUND_HALF_UP).toString());
                       } else if (sys.getMonth() == 8) {
-                          yearFaultDTO.setAugust(new BigDecimal((1.0 * (sys.getNum() == null ? 0 : sys.getNum()) / 60)).setScale(0, BigDecimal.ROUND_HALF_UP).toString());
+                          yearFaultDTO.setAugust(new BigDecimal((1.0 * (sys.getNum() == null ? 0 : sys.getNum()) )).setScale(0, BigDecimal.ROUND_HALF_UP).toString());
                       } else if (sys.getMonth() == 9) {
-                          yearFaultDTO.setSeptember(new BigDecimal((1.0 * (sys.getNum() == null ? 0 : sys.getNum()) / 60)).setScale(0, BigDecimal.ROUND_HALF_UP).toString());
+                          yearFaultDTO.setSeptember(new BigDecimal((1.0 * (sys.getNum() == null ? 0 : sys.getNum()) )).setScale(0, BigDecimal.ROUND_HALF_UP).toString());
                       } else if (sys.getMonth() == 10) {
-                          yearFaultDTO.setOctober(new BigDecimal((1.0 * (sys.getNum() == null ? 0 : sys.getNum()) / 60)).setScale(0, BigDecimal.ROUND_HALF_UP).toString());
+                          yearFaultDTO.setOctober(new BigDecimal((1.0 * (sys.getNum() == null ? 0 : sys.getNum()) )).setScale(0, BigDecimal.ROUND_HALF_UP).toString());
                       } else if (sys.getMonth() == 11) {
-                          yearFaultDTO.setNovember(new BigDecimal((1.0 * (sys.getNum() == null ? 0 : sys.getNum()) / 60)).setScale(0, BigDecimal.ROUND_HALF_UP).toString());
+                          yearFaultDTO.setNovember(new BigDecimal((1.0 * (sys.getNum() == null ? 0 : sys.getNum()) )).setScale(0, BigDecimal.ROUND_HALF_UP).toString());
                       } else if (sys.getMonth() == 12) {
-                          yearFaultDTO.setDecember(new BigDecimal((1.0 * (sys.getNum() == null ? 0 : sys.getNum()) / 60)).setScale(0, BigDecimal.ROUND_HALF_UP).toString());
+                          yearFaultDTO.setDecember(new BigDecimal((1.0 * (sys.getNum() == null ? 0 : sys.getNum()) )).setScale(0, BigDecimal.ROUND_HALF_UP).toString());
                       }
                   }
               });
@@ -233,29 +233,29 @@ public class CsSubsystemServiceImpl extends ServiceImpl<CsSubsystemMapper, CsSub
                   listDtos.forEach(ld->{
                       if (ObjectUtils.isNotEmpty(ld.getMonth())) {
                           if (ld.getMonth() == 1) {
-                              devDTO.setJanuary(new BigDecimal(Long.valueOf(devDTO.getJanuary())).add( new BigDecimal((1.0 * (ld.getNum() == null ? 0 : ld.getNum()) / 60))).setScale(0, BigDecimal.ROUND_HALF_UP).toString());
+                              devDTO.setJanuary(new BigDecimal(Long.valueOf(devDTO.getJanuary())).add( new BigDecimal((1.0 * (ld.getNum() == null ? 0 : ld.getNum()) ))).setScale(0, BigDecimal.ROUND_HALF_UP).toString());
                           } else if (ld.getMonth() == 2) {
-                              devDTO.setFebruary(new BigDecimal(Long.valueOf(devDTO.getFebruary())).add( new BigDecimal((1.0 * (ld.getNum() == null ? 0 : ld.getNum()) / 60))).setScale(0, BigDecimal.ROUND_HALF_UP).toString());
+                              devDTO.setFebruary(new BigDecimal(Long.valueOf(devDTO.getFebruary())).add( new BigDecimal((1.0 * (ld.getNum() == null ? 0 : ld.getNum()) ))).setScale(0, BigDecimal.ROUND_HALF_UP).toString());
                           } else if (ld.getMonth() == 3) {
-                              devDTO.setMarch(new BigDecimal(Long.valueOf(devDTO.getMarch())).add( new BigDecimal((1.0 * (ld.getNum() == null ? 0 : ld.getNum()) / 60))).setScale(0, BigDecimal.ROUND_HALF_UP).toString());
+                              devDTO.setMarch(new BigDecimal(Long.valueOf(devDTO.getMarch())).add( new BigDecimal((1.0 * (ld.getNum() == null ? 0 : ld.getNum()) ))).setScale(0, BigDecimal.ROUND_HALF_UP).toString());
                           } else if (ld.getMonth() == 4) {
-                              devDTO.setApril(new BigDecimal(Long.valueOf(devDTO.getApril())).add( new BigDecimal((1.0 * (ld.getNum() == null ? 0 : ld.getNum()) / 60))).setScale(0, BigDecimal.ROUND_HALF_UP).toString());
+                              devDTO.setApril(new BigDecimal(Long.valueOf(devDTO.getApril())).add( new BigDecimal((1.0 * (ld.getNum() == null ? 0 : ld.getNum()) ))).setScale(0, BigDecimal.ROUND_HALF_UP).toString());
                           } else if (ld.getMonth() == 5) {
-                              devDTO.setMay(new BigDecimal(Long.valueOf(devDTO.getMay())).add( new BigDecimal((1.0 * (ld.getNum() == null ? 0 : ld.getNum()) / 60))).setScale(0, BigDecimal.ROUND_HALF_UP).toString());
+                              devDTO.setMay(new BigDecimal(Long.valueOf(devDTO.getMay())).add( new BigDecimal((1.0 * (ld.getNum() == null ? 0 : ld.getNum()) ))).setScale(0, BigDecimal.ROUND_HALF_UP).toString());
                           } else if (ld.getMonth() == 6) {
-                              devDTO.setJune(new BigDecimal(Long.valueOf(devDTO.getJune())).add( new BigDecimal((1.0 * (ld.getNum() == null ? 0 : ld.getNum()) / 60))).setScale(0, BigDecimal.ROUND_HALF_UP).toString());
+                              devDTO.setJune(new BigDecimal(Long.valueOf(devDTO.getJune())).add( new BigDecimal((1.0 * (ld.getNum() == null ? 0 : ld.getNum()) ))).setScale(0, BigDecimal.ROUND_HALF_UP).toString());
                           } else if (ld.getMonth() == 7) {
-                              devDTO.setJuly(new BigDecimal(Long.valueOf(devDTO.getJuly())).add( new BigDecimal((1.0 * (ld.getNum() == null ? 0 : ld.getNum()) / 60))).setScale(0, BigDecimal.ROUND_HALF_UP).toString());
+                              devDTO.setJuly(new BigDecimal(Long.valueOf(devDTO.getJuly())).add( new BigDecimal((1.0 * (ld.getNum() == null ? 0 : ld.getNum()) ))).setScale(0, BigDecimal.ROUND_HALF_UP).toString());
                           } else if (ld.getMonth() == 8) {
-                              devDTO.setAugust(new BigDecimal(Long.valueOf(devDTO.getAugust())).add( new BigDecimal((1.0 * (ld.getNum() == null ? 0 : ld.getNum()) / 60))).setScale(0, BigDecimal.ROUND_HALF_UP).toString());
+                              devDTO.setAugust(new BigDecimal(Long.valueOf(devDTO.getAugust())).add( new BigDecimal((1.0 * (ld.getNum() == null ? 0 : ld.getNum()) ))).setScale(0, BigDecimal.ROUND_HALF_UP).toString());
                           } else if (ld.getMonth() == 9) {
-                              devDTO.setSeptember(new BigDecimal(Long.valueOf(devDTO.getSeptember())).add( new BigDecimal((1.0 * (ld.getNum() == null ? 0 : ld.getNum()) / 60))).setScale(0, BigDecimal.ROUND_HALF_UP).toString());
+                              devDTO.setSeptember(new BigDecimal(Long.valueOf(devDTO.getSeptember())).add( new BigDecimal((1.0 * (ld.getNum() == null ? 0 : ld.getNum()) ))).setScale(0, BigDecimal.ROUND_HALF_UP).toString());
                           } else if (ld.getMonth() == 10) {
-                              devDTO.setOctober(new BigDecimal(Long.valueOf(devDTO.getOctober())).add( new BigDecimal((1.0 * (ld.getNum() == null ? 0 : ld.getNum()) / 60))).setScale(0, BigDecimal.ROUND_HALF_UP).toString());
+                              devDTO.setOctober(new BigDecimal(Long.valueOf(devDTO.getOctober())).add( new BigDecimal((1.0 * (ld.getNum() == null ? 0 : ld.getNum()) ))).setScale(0, BigDecimal.ROUND_HALF_UP).toString());
                           } else if (ld.getMonth() == 11) {
-                              devDTO.setNovember(new BigDecimal(Long.valueOf(devDTO.getNovember())).add( new BigDecimal((1.0 * (ld.getNum() == null ? 0 : ld.getNum()) / 60))).setScale(0, BigDecimal.ROUND_HALF_UP).toString());
+                              devDTO.setNovember(new BigDecimal(Long.valueOf(devDTO.getNovember())).add( new BigDecimal((1.0 * (ld.getNum() == null ? 0 : ld.getNum()) ))).setScale(0, BigDecimal.ROUND_HALF_UP).toString());
                           } else if (ld.getMonth() == 12) {
-                              devDTO.setDecember(new BigDecimal(Long.valueOf(devDTO.getDecember())).add( new BigDecimal((1.0 * (ld.getNum() == null ? 0 : ld.getNum()) / 60))).setScale(0, BigDecimal.ROUND_HALF_UP).toString());
+                              devDTO.setDecember(new BigDecimal(Long.valueOf(devDTO.getDecember())).add( new BigDecimal((1.0 * (ld.getNum() == null ? 0 : ld.getNum()) ))).setScale(0, BigDecimal.ROUND_HALF_UP).toString());
                           }
                       }
                   });
