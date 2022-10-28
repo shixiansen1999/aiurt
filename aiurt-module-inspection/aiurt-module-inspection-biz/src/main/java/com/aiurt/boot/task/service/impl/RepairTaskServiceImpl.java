@@ -656,7 +656,7 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
         List<RepairTaskDTO> repairTaskDTOList = repairTaskMapper.selectCodeList(taskId, null, null);
         List<String> majorCodes1 = new ArrayList<>();
         List<String> systemCode = new ArrayList<>();
-        Map<String, String> map = new HashMap<>();
+        Map<String, String> map = new HashMap<>(16);
         if (CollectionUtil.isNotEmpty(repairTaskDTOList)) {
             repairTaskDTOList.forEach(e -> {
                 String majorCode = e.getMajorCode();
