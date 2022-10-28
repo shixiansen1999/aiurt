@@ -44,4 +44,10 @@ public interface ISparePartLendService extends IService<SparePartLend> {
      * @return
      */
     Result<?> backConfirm(SparePartLend sparePartLend);
+
+    /**
+     * 校验
+     * @return
+     */
+    Result<?> check();
 }

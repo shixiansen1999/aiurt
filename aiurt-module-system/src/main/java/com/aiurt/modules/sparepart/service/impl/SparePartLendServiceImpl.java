@@ -2,6 +2,7 @@ package com.aiurt.modules.sparepart.service.impl;
 
 import com.aiurt.common.constant.CacheConstant;
 import com.aiurt.common.constant.CommonConstant;
+import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.modules.sparepart.entity.*;
 import com.aiurt.modules.sparepart.mapper.SparePartLendMapper;
 import com.aiurt.modules.sparepart.mapper.SparePartStockInfoMapper;
@@ -194,5 +195,16 @@ public class SparePartLendServiceImpl extends ServiceImpl<SparePartLendMapper, S
         sparePartOutOrder.setSysOrgCode(sysUserMapper.selectOne(new LambdaQueryWrapper<SysUser>().eq(SysUser::getUsername,partLend.getBackPerson())).getOrgCode());
         sparePartOutOrderService.save(sparePartOutOrder);
         return Result.OK("操作成功！");
+    }
+
+    @Override
+    public Result<?> check() {
+        LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        //查询借入仓库
+        SparePartStockInfo sparePartStockInfo = sparePartStockInfoMapper.selectOne(new LambdaQueryWrapper<SparePartStockInfo>().eq(SparePartStockInfo::getOrganizationId,user.getOrgId()).eq(SparePartStockInfo::getDelFlag, CommonConstant.DEL_FLAG_0));
+        if(sparePartStockInfo==null){
+            throw new AiurtBootException("当前所在班组没有备件仓库");
+        }
+        return Result.ok("成功");
     }
 }

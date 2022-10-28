@@ -222,7 +222,7 @@ public class StockLevel2CheckController {
     @AutoLog(value = "二级库管理-二级库盘点管理-导出", operateType = 6, operateTypeAlias = "导出", permissionUrl = "/secondLevelWarehouse/StockLevel2CheckList")
     @ApiOperation(value = "导出", notes = "导出")
     @GetMapping(value = "/export")
-    public void eqFaultAnaExport(@RequestParam(name = "ids", defaultValue = "") String ids,
+    public void eqFaultAnaExport(@RequestParam(name = "ids") String ids,
                                          HttpServletRequest request,
                                          HttpServletResponse response) {
         iStockLevel2CheckService.eqExport(ids, request, response);

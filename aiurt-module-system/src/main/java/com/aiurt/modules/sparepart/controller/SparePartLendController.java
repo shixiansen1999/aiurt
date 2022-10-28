@@ -113,6 +113,17 @@ public class SparePartLendController extends BaseController<SparePartLend, ISpar
 		return sparePartLendService.add(sparePartLend);
 	}
 
+	 /**
+	  *   验证
+	  * @param
+	  * @return
+	  */
+	 @AutoLog(value = "校验",operateType = 3,operateTypeAlias = "添加备件校验",permissionUrl = "/sparepart/sparePartLend/list")
+	 @ApiOperation(value="spare_part_lend-添加 -校验", notes="spare_part_lend-添加-校验")
+	 @PostMapping(value = "/check")
+	 public Result<?> check() {
+		 return sparePartLendService.check();
+	 }
 	/**
 	 *  借出确认
 	 *
