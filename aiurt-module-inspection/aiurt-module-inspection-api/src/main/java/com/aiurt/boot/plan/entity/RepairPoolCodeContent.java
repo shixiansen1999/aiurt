@@ -116,4 +116,12 @@ public class RepairPoolCodeContent implements Serializable {
     @TableField(exist = false)
     @ApiModelProperty(value = "数据填写类型")
     private java.lang.String statusItemName;
+
+    @Excel(name = "检查值是否必填：0否 1是", width = 15)
+    @ApiModelProperty(value = "检查值是否必填：0否 1是")
+    private java.lang.Integer inspectionType;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "检查值是否必填名称")
+    private java.lang.String inspectionTypeName;
 }

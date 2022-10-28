@@ -271,6 +271,307 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
     }
 
     @Override
+    public List<RepairTaskDTO> selectTaskList( RepairTaskDTO condition) {
+        List<RepairTaskDTO> repairTasks = repairTaskMapper.selectTaskList(condition);
+        repairTasks.forEach(e -> {
+            //查询同行人
+            List<RepairTaskPeerRel> repairTaskPeer = repairTaskPeerRelMapper.selectList(
+                    new LambdaQueryWrapper<RepairTaskPeerRel>()
+                            .eq(RepairTaskPeerRel::getRepairTaskDeviceCode, e.getOverhaulCode()));
+            //名称集合
+            List<String> collect3 = repairTaskPeer.stream().map(RepairTaskPeerRel::getRealName).collect(Collectors.toList());
+            if (CollectionUtil.isNotEmpty(collect3)) {
+                StringBuffer stringBuffer = new StringBuffer();
+                for (String t : collect3) {
+                    stringBuffer.append(t);
+                    stringBuffer.append(",");
+                }
+                if (stringBuffer.length() > 0) {
+                    stringBuffer = stringBuffer.deleteCharAt(stringBuffer.length() - 1);
+                }
+                e.setPeerName(stringBuffer.toString());
+            }
+            //专业
+            e.setMajorName(manager.translateMajor(Arrays.asList(e.getMajorCode()), InspectionConstant.MAJOR));
+
+            //子系统
+            e.setSystemName(manager.translateMajor(Arrays.asList(e.getSystemCode()), InspectionConstant.SUBSYSTEM));
+
+            //根据设备编码翻译设备名称和设备类型名称
+            List<RepairDeviceDTO> repairDeviceDTOList = manager.queryDeviceByCodes(Arrays.asList(e.getEquipmentCode()));
+            repairDeviceDTOList.forEach(q -> {
+                //设备名称
+                e.setEquipmentName(q.getName());
+                //设备类型名称
+                e.setDeviceTypeName(q.getDeviceTypeName());
+            });
+            //检修单名称
+            if(e.getIsAppointDevice() == 1){
+                e.setResultName(e.getOverhaulStandardName()+"("+e.getEquipmentName()+")");
+            }else{
+                e.setResultName(e.getOverhaulStandardName());
+            }
+
+            //设备位置
+            if (e.getEquipmentCode() != null) {
+                List<StationDTO> stationDTOList = repairTaskMapper.selectStationLists(e.getEquipmentCode());
+                e.setEquipmentLocation(manager.translateStation(stationDTOList));
+            }
+            //提交人名称
+            if (e.getOverhaulId() != null) {
+                String realName = repairTaskMapper.getRealName(e.getOverhaulId());
+                e.setOverhaulName(realName);
+            }
+            if (e.getDeviceId() != null && CollectionUtil.isNotEmpty(repairTasks)) {
+                //正常项
+                List<RepairTaskResult> repairTaskResults = repairTaskMapper.selectSingle(e.getDeviceId(), InspectionConstant.RESULT_STATUS);
+                e.setNormal(Integer.toString(repairTaskResults.size()));
+                //异常项
+                List<RepairTaskResult> repairTaskResults1 = repairTaskMapper.selectSingle(e.getDeviceId(), InspectionConstant.NO_RESULT_STATUS);
+                e.setAbnormal(Integer.toString(repairTaskResults1.size()));
+            }
+            //检修任务状态
+            if (e.getStartTime() == null) {
+                e.setTaskStatusName("未开始");
+                e.setTaskStatus("0");
+                e.setNormal("-");
+                e.setAbnormal("-");
+            }
+            if (e.getStartTime() != null) {
+                e.setTaskStatusName("进行中");
+                e.setTaskStatus("1");
+            }
+            if (e.getIsSubmit() != null && e.getIsSubmit().equals(InspectionConstant.IS_EFFECT)) {
+                e.setTaskStatusName("已提交");
+                e.setTaskStatus("2");
+            }
+            //未开始的数量
+            long count1 = repairTasks.stream().filter(repairTaskDTO -> repairTaskDTO.getStartTime() == null).count();
+            e.setNotStarted((int) count1);
+            //进行中的数量
+            long count2 = repairTasks.stream().filter(repairTaskDTO -> repairTaskDTO.getStartTime() != null && repairTaskDTO.getIsSubmit() != null && repairTaskDTO.getIsSubmit().equals(InspectionConstant.NO_IS_EFFECT)).count();
+            e.setHaveInHand((int) count2);
+            //已提交的数量
+            long count3 = repairTasks.stream().filter(repairTaskDTO -> repairTaskDTO.getIsSubmit() != null && repairTaskDTO.getIsSubmit().equals(InspectionConstant.IS_EFFECT)).count();
+            e.setSubmitted((int) count3);
+        });
+        return repairTasks;
+    }
+    @Override
+    public CheckListDTO selectRepairTaskInfo( String taskId,String stationCode,String deviceId) {
+        CheckListDTO checkListDTO = repairTaskMapper.selectRepairTaskInfo(taskId,stationCode,deviceId);
+
+        // 检修时长格式化
+        if (ObjectUtil.isNotEmpty(checkListDTO)) {
+            Integer duration = checkListDTO.getDuration();
+            if (duration != null) {
+                checkListDTO.setDurationName(DateUtils.getTimeByMinute(duration));
+            }
+        }
+        if (ObjectUtil.isNotEmpty(checkListDTO)) {
+            if (checkListDTO.getDeviceId() != null && ObjectUtil.isNotNull(checkListDTO)) {
+                List<RepairTaskResult> repairTaskResults = repairTaskMapper.selectSingle(checkListDTO.getDeviceId(), 1);
+                if (CollUtil.isNotEmpty(repairTaskResults)) {
+                    checkListDTO.setNormal(repairTaskResults.size());
+                }
+                List<RepairTaskResult> repairTaskResults1 = repairTaskMapper.selectSingle(checkListDTO.getDeviceId(), 2);
+                if (CollUtil.isNotEmpty(repairTaskResults1)) {
+                    checkListDTO.setAbnormal(repairTaskResults1.size());
+                }
+
+            }
+            //检修单名称
+            if (checkListDTO.getResultCode() != null) {
+                checkListDTO.setResultName("检修单" + checkListDTO.getResultCode());
+
+                //同行人列表
+                List<RepairTaskPeerRel> repairTaskPeer = repairTaskPeerRelMapper.selectList(
+                        new LambdaQueryWrapper<RepairTaskPeerRel>()
+                                .eq(RepairTaskPeerRel::getRepairTaskDeviceCode, checkListDTO.getResultCode()));
+                if (CollectionUtil.isNotEmpty(repairTaskPeer)) {
+                    List<ColleaguesDTO> realList = new ArrayList<>();
+                    repairTaskPeer.forEach(p -> {
+                        ColleaguesDTO colleaguesDTO = new ColleaguesDTO();
+                        colleaguesDTO.setRealId(p.getUserId());
+                        colleaguesDTO.setRealName(p.getRealName());
+                        realList.add(colleaguesDTO);
+                    });
+                    checkListDTO.setRealList(realList);
+                }
+
+                //组织机构
+                LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+                if (sysUser.getOrgCode() != null) {
+                    String s = manager.translateOrg(Arrays.asList(sysUser.getOrgCode()));
+                    checkListDTO.setOrganization(s);
+                }
+
+                //同行人名称
+                List<String> collect3 = repairTaskPeer.stream().map(RepairTaskPeerRel::getRealName).collect(Collectors.toList());
+                if (CollectionUtil.isNotEmpty(collect3)) {
+                    StringBuffer stringBuffer = new StringBuffer();
+                    for (String t : collect3) {
+                        stringBuffer.append(t);
+                        stringBuffer.append(",");
+                    }
+                    if (stringBuffer.length() > 0) {
+                        stringBuffer = stringBuffer.deleteCharAt(stringBuffer.length() - 1);
+                    }
+                    checkListDTO.setPeer(stringBuffer.toString());
+                }
+            }
+
+            //专业
+            checkListDTO.setMajorName(manager.translateMajor(Arrays.asList(checkListDTO.getMajorCode()), InspectionConstant.MAJOR));
+
+            //子系统
+            checkListDTO.setSystemName(manager.translateMajor(Arrays.asList(checkListDTO.getSystemCode()), InspectionConstant.SUBSYSTEM));
+
+            if (checkListDTO.getEquipmentCode() != null) {
+                //根据设备编码翻译设备名称和设备类型名称
+                List<RepairDeviceDTO> repairDeviceDTOList = manager.queryDeviceByCodes(Arrays.asList(checkListDTO.getEquipmentCode()));
+                //设备位置
+                List<StationDTO> stationDTOList = repairTaskMapper.selectStationLists(checkListDTO.getEquipmentCode());
+                repairDeviceDTOList.forEach(q -> {
+                    //设备名称
+                    checkListDTO.setEquipmentName(q.getName());
+                    //设备类型名称
+                    checkListDTO.setDeviceTypeName(q.getDeviceTypeName());
+                    //设备类型编码
+                    checkListDTO.setDeviceTypeCode(q.getDeviceTypeCode());
+                    //设备id
+                    checkListDTO.setEquipmentId(q.getDeviceId());
+                    //设备专业
+                    checkListDTO.setDeviceMajorName(q.getMajorName());
+                    //设备专业编码
+                    checkListDTO.setDeviceMajorCode(q.getMajorCode());
+                    //设备子系统
+                    checkListDTO.setDeviceSystemName(q.getSubsystemName());
+                    //设备子系统编码
+                    checkListDTO.setDeviceSystemCode(q.getSubsystemCode());
+                    //线路编码
+                    checkListDTO.setLineCode(q.getLineCode());
+                    //位置编码
+                    checkListDTO.setPositionCode(q.getPositionCode());
+                    //站点编码
+                    checkListDTO.setSiteCode(q.getStationCode());
+                });
+                checkListDTO.setEquipmentLocation(manager.translateStation(stationDTOList));
+
+                //站点位置
+                List<StationDTO> stationDTOList1 = new ArrayList<>();
+                stationDTOList1.forEach(e -> {
+                    e.setStationCode(checkListDTO.getStationCode());
+                    e.setLineCode(checkListDTO.getLineCode());
+                    e.setPositionCode(checkListDTO.getPositionCode());
+                });
+                String station = manager.translateStation(stationDTOList);
+                checkListDTO.setSitePosition(station);
+            }
+            if (checkListDTO.getEquipmentCode() == null) {
+                //设备专业
+                checkListDTO.setDeviceMajorName(manager.translateMajor(Arrays.asList(checkListDTO.getMajorCode()), InspectionConstant.MAJOR));
+                //设备专业编码
+                checkListDTO.setDeviceMajorCode(checkListDTO.getMajorCode());
+                //设备子系统
+                checkListDTO.setDeviceSystemName(manager.translateMajor(Arrays.asList(checkListDTO.getSystemCode()), InspectionConstant.SUBSYSTEM));
+                //设备子系统编码
+                checkListDTO.setDeviceSystemCode(checkListDTO.getSystemCode());
+                //根据站点编码翻译站点名称
+                if (checkListDTO.getStationCode() != null && checkListDTO.getLineCode() != null) {
+                    String string1 = manager.translateLine(checkListDTO.getLineCode()) + "/" + manager.translateStation(checkListDTO.getStationCode());
+                    checkListDTO.setStationsName(string1);
+                    checkListDTO.setSiteCode(checkListDTO.getStationCode());
+                }
+            }
+            //提交人名称
+            if (checkListDTO.getOverhaulId() != null) {
+                String realName = repairTaskMapper.getRealName(checkListDTO.getOverhaulId());
+                checkListDTO.setOverhaulName(realName);
+            }
+
+            //检修位置
+            if (checkListDTO.getSpecificLocation() != null) {
+                List<StationDTO> stationDTOList = new ArrayList<>();
+                stationDTOList.forEach(e -> {
+                    e.setStationCode(checkListDTO.getStationCode());
+                    e.setLineCode(checkListDTO.getLineCode());
+                    e.setPositionCode(checkListDTO.getPositionCode());
+                });
+                String station = manager.translateStation(stationDTOList);
+                if (station != null) {
+                    String string = checkListDTO.getSpecificLocation() + station;
+                    checkListDTO.setMaintenancePosition(string);
+                } else {
+                    checkListDTO.setMaintenancePosition(checkListDTO.getSpecificLocation());
+                }
+
+            }
+            //构造树形
+            List<RepairTaskResult> repairTaskResults = selectCodeContentList(checkListDTO.getDeviceId());
+            checkListDTO.setRepairTaskResultList(repairTaskResults);
+            List<RepairTaskResult> repairTaskResultList = checkListDTO.getRepairTaskResultList();
+            ArrayList<String> list = new ArrayList<>();
+            int sum1 = InspectionConstant.NO_IS_EFFECT;
+            int sum2 = InspectionConstant.NO_IS_EFFECT;
+            int sum3 = InspectionConstant.NO_IS_EFFECT;
+            long count1 = InspectionConstant.NO_IS_EFFECT;
+            long count2 = InspectionConstant.NO_IS_EFFECT;
+            long count3 = InspectionConstant.NO_IS_EFFECT;
+            if (CollectionUtil.isNotEmpty(repairTaskResultList)) {
+                for (RepairTaskResult r : repairTaskResultList) {
+                    List<RepairTaskResult> children = r.getChildren();
+                    //获取检修单的检修结果子
+                    list.add(r.getId());
+                    if (CollectionUtil.isNotEmpty(children)) {
+                        List<String> collect = children.stream().map(RepairTaskResult::getId).collect(Collectors.toList());
+                        if (CollectionUtil.isNotEmpty(collect)) {
+                            list.addAll(collect);
+                        }
+                    }
+                    //检查项的数量父级
+                    count1 = repairTaskResultList.stream().filter(repairTaskResult -> repairTaskResult.getType().equals(InspectionConstant.IS_EFFECT)).count();
+                    //已检修的数量父级
+                    count2 = repairTaskResultList.stream().filter(repairTaskResult -> repairTaskResult.getStatus() != null && repairTaskResult.getType().equals(InspectionConstant.IS_EFFECT)).count();
+                    //待检修的数量父级
+                    count3 = repairTaskResultList.stream().filter(repairTaskResult -> repairTaskResult.getStatus() == null && repairTaskResult.getType().equals(InspectionConstant.IS_EFFECT)).count();
+                    checkListDTO.setMaintenanceItemsQuantity((int) count1);
+                    checkListDTO.setOverhauledQuantity((int) count2);
+                    checkListDTO.setToBeOverhauledQuantity((int) count3);
+                    if (CollectionUtils.isNotEmpty(children)) {
+                        //检查项的数量子级
+                        long count11 = children.stream().filter(repairTaskResult -> repairTaskResult.getType().equals(InspectionConstant.IS_EFFECT)).count();
+                        sum1 = sum1 + (int) count11;
+                        //已检修的数量子级
+                        long count22 = children.stream().filter(repairTaskResult -> repairTaskResult.getStatus() != null && repairTaskResult.getType().equals(InspectionConstant.IS_EFFECT)).count();
+                        sum2 = sum2 + (int) count22;
+                        //待检修的数量子级
+                        long count33 = children.stream().filter(repairTaskResult -> repairTaskResult.getStatus() == null && repairTaskResult.getType().equals(InspectionConstant.IS_EFFECT)).count();
+                        sum3 = sum3 + (int) count33;
+                    }
+                }
+                ;
+                sum1 = sum1 + (int) count1;
+                sum2 = sum2 + (int) count2;
+                sum3 = sum3 + (int) count3;
+                checkListDTO.setMaintenanceItemsQuantity(sum1);
+                checkListDTO.setOverhauledQuantity(sum2);
+                checkListDTO.setToBeOverhauledQuantity(sum3);
+                if (CollectionUtils.isNotEmpty(list)) {
+                    List<RepairTaskEnclosure> repairTaskDevice = repairTaskEnclosureMapper.selectList(
+                            new LambdaQueryWrapper<RepairTaskEnclosure>()
+                                    .in(RepairTaskEnclosure::getRepairTaskResultId, list));
+                    if (CollectionUtils.isNotEmpty(repairTaskDevice)) {
+                        //获取检修单的检修结果的附件
+                        checkListDTO.setEnclosureUrl(repairTaskDevice.stream().map(RepairTaskEnclosure::getUrl).collect(Collectors.toList()));
+                    }
+                }
+
+            }
+        }
+        return checkListDTO;
+    }
+    @Override
     public Page<RepairTaskDTO> repairSelectTaskletForDevice(Page<RepairTaskDTO> pageList, RepairTaskDTO condition) {
         List<RepairTaskDTO> repairTasks = repairTaskMapper.selectTaskletForDevice(pageList, condition);
         repairTasks.forEach(e -> {
@@ -626,6 +927,9 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
 
             //检查项类型
             r.setTypeName(sysBaseApi.translateDict(DictConstant.INSPECTION_PROJECT, String.valueOf(r.getType())));
+
+            //检查值是否必填
+            r.setInspectionTypeName(sysBaseApi.translateDict(DictConstant.INSPECTION_VALUE, String.valueOf(r.getInspectionType())));
 
             //父级名称
             if (r.getPid() != null) {

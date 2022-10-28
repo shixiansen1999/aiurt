@@ -42,6 +42,22 @@ public interface IRepairTaskService extends IService<RepairTask> {
     Page<RepairTaskDTO> selectTasklet(Page<RepairTaskDTO> pageList, RepairTaskDTO condition);
 
     /**
+     * 检修清单列表
+     * @param condition
+     * @return
+     */
+    List<RepairTaskDTO> selectTaskList( RepairTaskDTO condition);
+
+    /**
+     * 检修任务详情
+     * @param taskId
+     * @param stationCode
+     * @param deviceId
+     * @return
+     */
+    CheckListDTO selectRepairTaskInfo( String taskId,String stationCode,String deviceId);
+
+    /**
      * 设备台账-检修履历
      *
      * @param pageList

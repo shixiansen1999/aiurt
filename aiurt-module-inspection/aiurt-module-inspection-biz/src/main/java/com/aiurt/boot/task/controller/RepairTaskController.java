@@ -14,10 +14,7 @@ import com.aiurt.common.system.base.controller.BaseController;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
+import io.swagger.annotations.*;
 import lombok.extern.slf4j.Slf4j;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.query.QueryGenerator;
@@ -111,6 +108,38 @@ public class RepairTaskController extends BaseController<RepairTask, IRepairTask
         Page<RepairTaskDTO> repairTaskPage = repairTaskService.selectTasklet(pageList, condition);
         return Result.OK(repairTaskPage);
     }
+
+    /**
+     * 检修清单查询
+     * @param condition
+     * @return
+     */
+    @AutoLog(value = "检修任务-检修清单查询", operateType =  1, operateTypeAlias = "检修清单查询", module = ModuleType.INSPECTION)
+    @ApiOperation(value = "检修任务-检修清单查询", notes = "检修任务-检修清单查询")
+    @GetMapping(value = "/repairSelectTaskList")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "OK", response = RepairTaskDTO.class)
+    })
+    public Result<List<RepairTaskDTO>> repairSelectTasklet(RepairTaskDTO condition) {
+        List<RepairTaskDTO> repairTaskPage = repairTaskService.selectTaskList(condition);
+        return Result.OK(repairTaskPage);
+    }
+
+    @AutoLog(value = "检修任务-检修任务管理详情", operateType =  1, operateTypeAlias = "检修任务详情", module = ModuleType.INSPECTION)
+    @ApiOperation(value = "检修任务-检修任务管理详情", notes = "检修任务-检修任务管理详情")
+    @GetMapping(value = "/SelectRepairTaskInfo")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "OK", response = CheckListDTO.class)
+    })
+    public Result<CheckListDTO> selectRepairTaskInfo(String taskId,
+                                                           @ApiParam(name = "stationCode", value = "站点") @RequestParam(value="stationCode",required = false)String stationCode,
+                                                           @ApiParam(name = "deviceId",value = "检修单")@RequestParam(value = "deviceId",required = false)String deviceId
+    ) {
+        CheckListDTO checkListDto = repairTaskService.selectRepairTaskInfo(taskId,stationCode,deviceId);
+        return Result.OK(checkListDto);
+    }
+
+
 
     /**
      * 检修任务清单查询

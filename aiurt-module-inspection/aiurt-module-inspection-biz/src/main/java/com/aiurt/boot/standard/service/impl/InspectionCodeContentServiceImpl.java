@@ -281,6 +281,7 @@ public class InspectionCodeContentServiceImpl extends ServiceImpl<InspectionCode
             result.forEach(r -> {
                 r.setTypeName(sysBaseApi.translateDict(DictConstant.INSPECTION_PROJECT, String.valueOf(r.getType())));
                 r.setStatusItemName(sysBaseApi.translateDict(DictConstant.INSPECTION_STATUS_ITEM, String.valueOf(r.getStatusItem())));
+                r.setInspectionTypeName(sysBaseApi.translateDict(DictConstant.INSPECTION_VALUE,String.valueOf(r.getInspectionType())));
             });
         }
 

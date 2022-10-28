@@ -22,6 +22,11 @@ public class CheckListDTO {
     @ApiModelProperty(value = "检修单id")
     private String deviceId;
 
+    /**检修任务id*/
+    @TableField(exist = false)
+    @ApiModelProperty(value = "检修任务id")
+    private String taskId;
+
     /**检修结果id*/
     @TableField(exist = false)
     @ApiModelProperty(value = "检修结果id")
@@ -238,4 +243,14 @@ public class CheckListDTO {
     @TableField(exist = false)
     @ApiModelProperty(value = "站点编码")
     private String siteCode;
+
+    /**检查项内容*/
+    @TableField(exist = false)
+    @ApiModelProperty(value = "检查项内容")
+    private String repairContent;
+
+    /**检测值*/
+    @TableField(exist = false)
+    @ApiModelProperty(value = "检测值")
+    private String inspeciontValue;
 }

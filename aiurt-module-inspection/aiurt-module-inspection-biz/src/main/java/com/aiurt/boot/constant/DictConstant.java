@@ -64,6 +64,10 @@ public class DictConstant {
      */
     public static final String INSPECTION_PROJECT = "inspection_project";
     /**
+     * 检修标准-检查值-是否必填
+     */
+    public static final String INSPECTION_VALUE = "inspection_value";
+    /**
      * 	检修管理-手工下发任务状态
      */
     public static final String 	INSPECTION_MANUAL_TASK = "inspection_manual_task";

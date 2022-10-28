@@ -53,6 +53,12 @@ public class InspectionCodeContent implements Serializable {
 	@Excel(name = "检查项类型，是否是检查项：0否 1是", width = 15)
     @ApiModelProperty(value = "检查项类型，是否是检查项：0否 1是")
     private java.lang.Integer type;
+    /**
+     * 检查值是否必填：0否1是
+     */
+    @Excel(name = "检查值是否必填：0否 1是", width = 15)
+    @ApiModelProperty(value = "检查值是否必填：0否 1是")
+    private java.lang.Integer inspectionType;
 	/**数据字典：1 开关项、2 选择项、3 输入项*/
 	@Excel(name = "数据字典：1 开关项、2 选择项、3 输入项", width = 15)
     @TableField(updateStrategy = FieldStrategy.IGNORED)
@@ -109,4 +115,8 @@ public class InspectionCodeContent implements Serializable {
     @TableField(exist = false)
     @ApiModelProperty(value = "数据填写类型")
     private java.lang.String statusItemName;
+
+    @TableField(exist = false)
+    @ApiModelProperty(value = "检查值是否必填名称")
+    private java.lang.String inspectionTypeName;
 }

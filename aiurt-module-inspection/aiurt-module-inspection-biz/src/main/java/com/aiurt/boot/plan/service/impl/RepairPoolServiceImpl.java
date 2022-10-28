@@ -290,6 +290,7 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
             result.forEach(r -> {
                 r.setTypeName(sysBaseApi.translateDict(DictConstant.INSPECTION_PROJECT, String.valueOf(r.getType())));
                 r.setStatusItemName(sysBaseApi.translateDict(DictConstant.INSPECTION_STATUS_ITEM, String.valueOf(r.getStatusItem())));
+                r.setInspectionTypeName(sysBaseApi.translateDict(DictConstant.INSPECTION_VALUE, String.valueOf(r.getInspectionType())));
             });
         }
 
@@ -820,6 +821,7 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
                 repairTaskResult.setType(repairPoolCodeContent.getType());
                 repairTaskResult.setCode(repairPoolCodeContent.getCode());
                 repairTaskResult.setPid(repairPoolCodeContent.getPid());
+                repairTaskResult.setInspectionType(repairPoolCodeContent.getInspectionType());
 
                 // 插入检修结果表
                 repairTaskResultMapper.insert(repairTaskResult);

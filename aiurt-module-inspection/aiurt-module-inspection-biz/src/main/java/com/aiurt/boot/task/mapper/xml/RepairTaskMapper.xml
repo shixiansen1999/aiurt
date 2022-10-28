@@ -113,6 +113,89 @@
         order by t2.update_time desc,t2.create_time desc
     </select>
 
+    <select id="selectTaskList" resultType="com.aiurt.boot.task.dto.RepairTaskDTO">
+        SELECT
+        t1.id as taskId,
+        t1.code as taskCode,
+        t2.id as deviceId,
+        t3.id as standardId,
+        t2.code as overhaulCode,
+        t3.major_code as majorCode,
+        t3.subsystem_code as systemCode,
+        t3.device_type_code as deviceTypeCode,
+        t2.device_code as equipmentCode,
+        t2.submit_time as submitTime,
+        t2.start_time as startTime,
+        t2.is_submit as isSubmit,
+        t2.staff_id as overhaulId,
+        t3.title as overhaulStandardName,
+        t3.is_appoint_device as isAppointDevice,
+        t1.status as maintenanceTaskStatus
+        FROM
+        repair_task t1
+        LEFT JOIN repair_task_device_rel t2 ON t1.id = t2.repair_task_id
+        LEFT JOIN repair_task_standard_rel t3 ON t2.task_standard_rel_id = t3.id
+        <where>
+            t1.del_flag = 0
+            AND t2.del_flag = 0
+            <if test="condition.taskId !=null ">
+                AND t1.id = #{condition.taskId}
+            </if>
+            <if test="condition.equipmentName !=null ">
+                AND ( SELECT NAME FROM device WHERE CODE = t2.device_code ) LIKE CONCAT ('%', #{condition.equipmentName}, '%')
+            </if>
+            <if test="condition.search !=null ">
+                AND (
+                (( SELECT NAME FROM device WHERE CODE = t2.device_code ) LIKE CONCAT ('%', #{condition.search}, '%'))
+                or (t2.device_code LIKE CONCAT  ('%', #{condition.search}, '%'))
+                or (t2.code LIKE CONCAT ('%', #{condition.search}, '%'))
+                )
+            </if>
+        </where>
+        order by t2.update_time desc,t2.create_time desc
+    </select>
+
+    <select id="selectRepairTaskInfo" resultType="com.aiurt.boot.task.dto.CheckListDTO">
+        SELECT
+        rtdr.id as deviceId,
+        rtdr.duration as duration,
+        rtdr.device_code as equipmentCode,
+        rtdr.start_time as startTime,
+        rtdr.end_time as endTime,
+        rtdr.line_code as lineCode,
+        rtdr.position_code as positionCode,
+        rtdr.specific_location as specificLocation,
+        rtdr.staff_id as overhaulId,
+        rtdr.code as resultCode,
+        rtdr.fault_code as faultCode,
+        rtdr.repair_task_id as taskId,
+        rtdr.station_code as stationCode,
+        rtdr.CODE as resultCode,
+        rtsr.id as standardId,
+        rtsr.major_code as majorCode,
+        rtsr.subsystem_code as systemCode,
+        rtsr.device_type_code as deviceTypeCode
+        FROM
+            repair_task_device_rel rtdr
+                LEFT JOIN repair_task rt ON rt.id = rtdr.repair_task_id
+                LEFT JOIN repair_task_standard_rel rtsr on rtsr.id = rtdr.task_standard_rel_id
+        <where>
+            rtdr.del_flag = 0
+            AND rt.del_flag = 0
+            <if test="taskId !=null ">
+                AND rtdr.repair_task_id = #{taskId}
+            </if>
+            <if test="stationCode !=null ">
+                AND rtdr.station_code = #{stationCode}
+            </if>
+            <if test="deviceId !=null ">
+                AND rtdr.id = #{deviceId}
+            </if>
+        </where>
+        group by rtdr.id
+
+    </select>
+
     <select id="selectTaskletForDevice" resultType="com.aiurt.boot.task.dto.RepairTaskDTO">
         SELECT
         t1.id as taskId,

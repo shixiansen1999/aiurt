@@ -47,6 +47,22 @@ public interface RepairTaskMapper extends BaseMapper<RepairTask> {
     List<RepairTaskDTO> selectTasklet(@Param("pageList") Page<RepairTaskDTO> pageList, @Param("condition") RepairTaskDTO condition);
 
     /**
+     * 检修任务清单查询
+     * @param condition
+     * @return
+     */
+    List<RepairTaskDTO> selectTaskList(@Param("condition") RepairTaskDTO condition);
+
+    /**
+     * 检修任务详情
+     * @param taskId
+     * @param stationCode
+     * @param deviceId
+     * @return
+     */
+    CheckListDTO selectRepairTaskInfo(@Param("taskId") String taskId,@Param("stationCode") String stationCode,@Param("deviceId") String deviceId);
+
+    /**
      * 设备台账-检修履历
      *
      * @param pageList

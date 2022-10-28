@@ -107,6 +107,16 @@ public class RepairTaskResult implements Serializable {
     @ApiModelProperty(value = "检测值")
     private java.lang.Integer inspeciontValue;
 
+    /**检测值是否必填*/
+    @Excel(name = "检测值是否必填", width = 15)
+    @ApiModelProperty(value = "检测值是否必填")
+    private java.lang.Integer inspectionType;
+
+    /**检测值是否必填名称*/
+    @TableField(exist = false)
+    @ApiModelProperty(value = "检测值是否必填名称")
+    private String inspectionTypeName;
+
     /**检测值名称*/
     @TableField(exist = false)
     @ApiModelProperty(value = "检测值名称")
