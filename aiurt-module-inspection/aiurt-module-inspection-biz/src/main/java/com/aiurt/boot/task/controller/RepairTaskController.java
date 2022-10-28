@@ -110,18 +110,18 @@ public class RepairTaskController extends BaseController<RepairTask, IRepairTask
     }
 
     /**
-     * 检修清单查询
-     * @param condition
+     * 检修单信息下拉查询
+     * @param taskId
      * @return
      */
-    @AutoLog(value = "检修任务-检修清单查询", operateType =  1, operateTypeAlias = "检修清单查询", module = ModuleType.INSPECTION)
-    @ApiOperation(value = "检修任务-检修清单查询", notes = "检修任务-检修清单查询")
+    @AutoLog(value = "检修任务-检修单信息下拉查询", operateType =  1, operateTypeAlias = "检修单信息下拉查询", module = ModuleType.INSPECTION)
+    @ApiOperation(value = "检修任务-检修单信息下拉查询", notes = "检修任务-检修单信息下拉查询")
     @GetMapping(value = "/repairSelectTaskList")
     @ApiResponses({
             @ApiResponse(code = 200, message = "OK", response = RepairTaskDTO.class)
     })
-    public Result<List<RepairTaskDTO>> repairSelectTasklet(RepairTaskDTO condition) {
-        List<RepairTaskDTO> repairTaskPage = repairTaskService.selectTaskList(condition);
+    public Result<List<RepairTaskDTO>> repairSelectTasklet(String taskId) {
+        List<RepairTaskDTO> repairTaskPage = repairTaskService.selectTaskList(taskId);
         return Result.OK(repairTaskPage);
     }
 

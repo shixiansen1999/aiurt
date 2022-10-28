@@ -43,10 +43,10 @@ public interface IRepairTaskService extends IService<RepairTask> {
 
     /**
      * 检修清单列表
-     * @param condition
+     * @param taskId
      * @return
      */
-    List<RepairTaskDTO> selectTaskList( RepairTaskDTO condition);
+    List<RepairTaskDTO> selectTaskList( String taskId);
 
     /**
      * 检修任务详情

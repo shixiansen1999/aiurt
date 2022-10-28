@@ -271,8 +271,8 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
     }
 
     @Override
-    public List<RepairTaskDTO> selectTaskList( RepairTaskDTO condition) {
-        List<RepairTaskDTO> repairTasks = repairTaskMapper.selectTaskList(condition);
+    public List<RepairTaskDTO> selectTaskList( String taskId) {
+        List<RepairTaskDTO> repairTasks = repairTaskMapper.selectTaskList(taskId);
         repairTasks.forEach(e -> {
             //查询同行人
             List<RepairTaskPeerRel> repairTaskPeer = repairTaskPeerRelMapper.selectList(
