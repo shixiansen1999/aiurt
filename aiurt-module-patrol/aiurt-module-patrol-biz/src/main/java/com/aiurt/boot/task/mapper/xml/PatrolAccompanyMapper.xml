@@ -7,4 +7,6 @@
 SELECT *
 from patrol_accompany
 where task_device_code = #{id}
+and user_id is not null
+and username is not null
 </select></mapper>
