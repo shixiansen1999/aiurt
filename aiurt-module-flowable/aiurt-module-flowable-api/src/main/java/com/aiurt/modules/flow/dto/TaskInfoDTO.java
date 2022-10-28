@@ -1,5 +1,6 @@
 package com.aiurt.modules.flow.dto;
 
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -41,11 +42,20 @@ public class TaskInfoDTO {
     @ApiModelProperty(value = "是否分配给当前登录用户的标记")
     private Boolean assignedMe;
 
+    @ApiModelProperty(value = "表单类型， 0是动态， 1：静态页面")
+    private String formType;
+
     /**
      * 动态表单Id。
      */
     @ApiModelProperty(value = "动态表单Id")
-    private String formId;
+    private String pageId;
+
+    @ApiModelProperty(value = "表单全局属性")
+    private JSONObject pageJSon;
+
+    @ApiModelProperty(value = "表单属性")
+    private JSONArray pageContentJson;
 
     /**
      * 静态表单路由。

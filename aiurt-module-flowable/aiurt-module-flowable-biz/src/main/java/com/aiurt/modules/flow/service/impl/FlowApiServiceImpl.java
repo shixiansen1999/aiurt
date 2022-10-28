@@ -12,6 +12,7 @@ import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.exception.AiurtErrorEnum;
+import com.aiurt.modules.common.constant.FlowModelAttConstant;
 import com.aiurt.modules.constants.FlowConstant;
 import com.aiurt.modules.flow.constants.FlowApprovalType;
 import com.aiurt.modules.flow.dto.*;
@@ -22,6 +23,8 @@ import com.aiurt.modules.flow.service.IActCustomTaskCommentService;
 import com.aiurt.modules.flow.utils.FlowElementUtil;
 import com.aiurt.modules.modeler.entity.ActCustomTaskExt;
 import com.aiurt.modules.modeler.service.IActCustomTaskExtService;
+import com.aiurt.modules.online.page.entity.ActCustomPage;
+import com.aiurt.modules.online.page.service.IActCustomPageService;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -100,6 +103,9 @@ public class FlowApiServiceImpl implements FlowApiService {
 
     @Autowired
     private ActCustomTaskCommentMapper actCustomTaskCommentMapper;
+
+    @Autowired
+    private IActCustomPageService pageService;
 
 
     /**
@@ -1360,9 +1366,29 @@ public class FlowApiServiceImpl implements FlowApiService {
         if (Objects.nonNull(customTaskExt)) {
             String formJson = customTaskExt.getFormJson();
             JSONObject jsonObject = JSONObject.parseObject(formJson);
-            taskInfoDTO.setRouterName(jsonObject.getString("formUrl"));
-            if (StrUtil.equalsAnyIgnoreCase(processDefinitionKey, "bd_work_ticket2", "bd_work_titck")) {
-                taskInfoDTO.setRouterName("@/views/workTicket/modules/BdFirstWorkTicket.vue");
+            // 表单类型
+            String formType = jsonObject.getString(FlowModelAttConstant.FORM_TYPE);
+            // 表单设计
+            if (StrUtil.equalsIgnoreCase(formType, FlowModelAttConstant.DYNAMIC_FORM_TYPE)) {
+                String formDynamicUrl = jsonObject.getString(FlowModelAttConstant.FORM_DYNAMIC_URL);
+                if (StrUtil.isNotBlank(formDynamicUrl)) {
+                    ActCustomPage customPage = pageService.getById(formDynamicUrl);
+                    if (Objects.nonNull(customPage)) {
+                        taskInfoDTO.setPageId(formDynamicUrl);
+                        taskInfoDTO.setPageContentJson(customPage.getPageContentJson());
+                        taskInfoDTO.setPageJSon(customPage.getPageJson());
+                    }
+                }
+                taskInfoDTO.setFormType(FlowModelAttConstant.DYNAMIC_FORM_TYPE);
+
+            }else {
+                // 定制表单
+                taskInfoDTO.setFormType(FlowModelAttConstant.STATIC_FORM_TYPE);
+                // 判断是否是表单设计器，
+                taskInfoDTO.setRouterName(jsonObject.getString("formUrl"));
+                if (StrUtil.equalsAnyIgnoreCase(processDefinitionKey, "bd_work_ticket2", "bd_work_titck")) {
+                    taskInfoDTO.setRouterName("@/views/workTicket/modules/BdFirstWorkTicket.vue");
+                }
             }
             String json = customTaskExt.getOperationListJson();
             List<JSONObject> objectList = JSONObject.parseArray(json, JSONObject.class);

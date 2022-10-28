@@ -165,6 +165,8 @@ public class CustomUserTaskJsonConverter  extends UserTaskJsonConverter {
 
             // 表单页面 类型
             addCustomAttributeForPrefix(elementNode, userTask, "flowable","formType");
+            // 表单设计器
+            addCustomAttributeForPrefix(elementNode, userTask, "flowable","formDynamicUrl");
             // 表单url
             addCustomAttributeForPrefix(elementNode, userTask,"flowable", "formUrl");
             // 业务处理
