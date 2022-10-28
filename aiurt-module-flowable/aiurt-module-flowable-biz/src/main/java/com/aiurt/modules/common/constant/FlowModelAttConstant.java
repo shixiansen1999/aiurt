@@ -11,10 +11,16 @@ public interface FlowModelAttConstant {
      */
     String FORM_TYPE = "formType";
 
+    String STATIC_FORM_TYPE = "1";
+
+    String DYNAMIC_FORM_TYPE = "0";
+
     /**
      * 页面url
      */
     String FORM_URL = "formUrl";
+
+    String FORM_DYNAMIC_URL = "formDynamicUrl";
 
     /**
      * 业务操作接口

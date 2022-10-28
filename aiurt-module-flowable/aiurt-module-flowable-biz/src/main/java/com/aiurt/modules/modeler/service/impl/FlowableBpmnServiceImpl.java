@@ -325,7 +325,8 @@ public class FlowableBpmnServiceImpl implements IFlowableBpmnService {
         taskAttributeMap.forEach((key,list)->{
             ExtensionAttribute extensionAttribute = list.get(0);
             // 页面信息, 比如业务操作接口, 前端url, 前端类型
-            if (StrUtil.equalsAnyIgnoreCase(extensionAttribute.getName(), FlowModelAttConstant.FORM_TYPE, FlowModelAttConstant.FORM_URL, FlowModelAttConstant.SERVICE)) {
+            if (StrUtil.equalsAnyIgnoreCase(extensionAttribute.getName(), FlowModelAttConstant.FORM_TYPE,
+                    FlowModelAttConstant.FORM_URL, FlowModelAttConstant.SERVICE, FlowModelAttConstant.FORM_DYNAMIC_URL)) {
                 form.put(extensionAttribute.getName(), extensionAttribute.getValue());
                 // 流程变量
             }else if (StrUtil.equalsAnyIgnoreCase(extensionAttribute.getName(), FlowModelAttConstant.FORM_TASK_VARIABLES)) {
