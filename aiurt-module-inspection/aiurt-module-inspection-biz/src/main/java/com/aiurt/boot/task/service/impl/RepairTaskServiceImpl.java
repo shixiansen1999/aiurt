@@ -22,6 +22,7 @@ import com.aiurt.boot.plan.mapper.RepairPoolStationRelMapper;
 import com.aiurt.boot.plan.service.IRepairPoolService;
 import com.aiurt.boot.task.dto.CheckListDTO;
 import com.aiurt.boot.task.dto.RepairTaskDTO;
+import com.aiurt.boot.task.dto.RepairTaskStationDTO;
 import com.aiurt.boot.task.dto.WriteMonadDTO;
 import com.aiurt.boot.task.entity.*;
 import com.aiurt.boot.task.mapper.*;
@@ -305,7 +306,7 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                 //设备类型名称
                 e.setDeviceTypeName(q.getDeviceTypeName());
             });
-            //检修单名称
+            //检修单名称：检修标准title+设备名称
             if(e.getIsAppointDevice() == 1){
                 e.setResultName(e.getOverhaulStandardName()+"("+e.getEquipmentName()+")");
             }else{
@@ -357,6 +358,14 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
         });
         return repairTasks;
     }
+
+    @Override
+    public List<RepairTaskStationDTO> repairTaskStationList(String taskId) {
+        List<RepairTaskStationDTO> repairTaskStationDTOS = repairTaskMapper.repairTaskStationList(taskId);
+        return repairTaskStationDTOS;
+    }
+
+
     @Override
     public CheckListDTO selectRepairTaskInfo( String taskId,String stationCode,String deviceId) {
         CheckListDTO checkListDTO = repairTaskMapper.selectRepairTaskInfo(taskId,stationCode,deviceId);

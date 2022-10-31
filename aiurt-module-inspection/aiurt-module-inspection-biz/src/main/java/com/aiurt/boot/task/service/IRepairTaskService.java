@@ -6,6 +6,7 @@ import com.aiurt.boot.manager.dto.MajorDTO;
 import com.aiurt.boot.manager.dto.OrgDTO;
 import com.aiurt.boot.task.dto.CheckListDTO;
 import com.aiurt.boot.task.dto.RepairTaskDTO;
+import com.aiurt.boot.task.dto.RepairTaskStationDTO;
 import com.aiurt.boot.task.dto.WriteMonadDTO;
 import com.aiurt.boot.task.entity.RepairTask;
 import com.aiurt.boot.task.entity.RepairTaskDeviceRel;
@@ -47,6 +48,13 @@ public interface IRepairTaskService extends IService<RepairTask> {
      * @return
      */
     List<RepairTaskDTO> selectTaskList( String taskId);
+
+    /**
+     * 站点下拉列表
+     * @param taskId
+     * @return
+     */
+    List<RepairTaskStationDTO> repairTaskStationList(String taskId);
 
     /**
      * 检修任务详情
