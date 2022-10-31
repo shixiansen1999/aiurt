@@ -58,7 +58,7 @@ public interface RepairTaskMapper extends BaseMapper<RepairTask> {
      * @param taskId
      * @return
      */
-    List<RepairTaskDTO> selectTaskList(@Param("taskId") String taskId);
+    List<RepairTaskDTO> selectTaskList(@Param("taskId") String taskId,@Param("stationCode") String stationCode);
 
     /**
      * 检修任务详情

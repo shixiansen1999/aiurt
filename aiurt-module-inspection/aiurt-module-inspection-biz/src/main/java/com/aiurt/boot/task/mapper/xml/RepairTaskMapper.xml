@@ -157,6 +157,9 @@
             <if test="taskId !=null ">
                 AND t1.id = #{taskId}
             </if>
+            <if test="stationCode !=null ">
+                AND t2.station_code = #{stationCode}
+            </if>
         </where>
         order by t2.update_time desc,t2.create_time desc
     </select>

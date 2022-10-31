@@ -121,8 +121,10 @@ public class RepairTaskController extends BaseController<RepairTask, IRepairTask
     @ApiResponses({
             @ApiResponse(code = 200, message = "OK", response = RepairTaskDTO.class)
     })
-    public Result<List<RepairTaskDTO>> repairSelectTasklet(String taskId) {
-        List<RepairTaskDTO> repairTaskPage = repairTaskService.selectTaskList(taskId);
+    public Result<List<RepairTaskDTO>> repairSelectTasklet(@ApiParam(name = "taskId", value = "任务id")
+                                                               @RequestParam(value = "taskId", required = true)String taskId,
+                                                           @ApiParam(name = "stationCode", value = "站点") @RequestParam(value="stationCode",required = true)String stationCode) {
+        List<RepairTaskDTO> repairTaskPage = repairTaskService.selectTaskList(taskId,stationCode);
         return Result.OK(repairTaskPage);
     }
 
@@ -150,8 +152,8 @@ public class RepairTaskController extends BaseController<RepairTask, IRepairTask
             @ApiResponse(code = 200, message = "OK", response = CheckListDTO.class)
     })
     public Result<CheckListDTO> selectRepairTaskInfo(String taskId,
-                                                           @ApiParam(name = "stationCode", value = "站点") @RequestParam(value="stationCode",required = false)String stationCode,
-                                                           @ApiParam(name = "deviceId",value = "检修单")@RequestParam(value = "deviceId",required = false)String deviceId
+                                                           @ApiParam(name = "stationCode", value = "站点") @RequestParam(value="stationCode",required = true)String stationCode,
+                                                           @ApiParam(name = "deviceId",value = "检修单")@RequestParam(value = "deviceId",required = true)String deviceId
     ) {
         CheckListDTO checkListDto = repairTaskService.selectRepairTaskInfo(taskId,stationCode,deviceId);
         return Result.OK(checkListDto);

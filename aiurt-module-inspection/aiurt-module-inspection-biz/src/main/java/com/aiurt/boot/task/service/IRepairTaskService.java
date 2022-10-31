@@ -47,7 +47,7 @@ public interface IRepairTaskService extends IService<RepairTask> {
      * @param taskId
      * @return
      */
-    List<RepairTaskDTO> selectTaskList( String taskId);
+    List<RepairTaskDTO> selectTaskList( String taskId,String stationCode);
 
     /**
      * 站点下拉列表
