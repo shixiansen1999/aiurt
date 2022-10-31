@@ -236,4 +236,15 @@ public class RepairTaskDTO {
     @ApiModelProperty(value = "检修任务状态")
     @TableField(exist = false)
     private Integer maintenanceTaskStatus;
+
+    /**检修结果 1.正常 2.异常*/
+    @Excel(name = "检修结果 1.正常 2.异常", width = 15)
+    @ApiModelProperty(value = "检修结果 1.正常 2.异常")
+    @TableField(exist = false)
+    private java.lang.Integer statusCode;
+
+    /**检修结果名称*/
+    @TableField(exist = false)
+    @ApiModelProperty(value = "检修结果名称")
+    private String statusName;
 }

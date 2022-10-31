@@ -54,7 +54,7 @@ public interface RepairTaskMapper extends BaseMapper<RepairTask> {
     List<RepairTaskStationDTO> repairTaskStationList(@Param("taskId") String taskId);
 
     /**
-     * 站点下拉查询
+     * 维修单下拉查询
      * @param taskId
      * @return
      */
