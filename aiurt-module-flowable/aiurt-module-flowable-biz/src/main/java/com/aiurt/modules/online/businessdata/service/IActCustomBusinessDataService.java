@@ -11,4 +11,13 @@ import com.baomidou.mybatisplus.extension.service.IService;
  */
 public interface IActCustomBusinessDataService extends IService<ActCustomBusinessData> {
 
+    /**
+     *
+     * @param processInstanceId
+     * @return
+     */
+    ActCustomBusinessData queryByProcessInstanceId(String processInstanceId, String taskId);
+
+
+
 }

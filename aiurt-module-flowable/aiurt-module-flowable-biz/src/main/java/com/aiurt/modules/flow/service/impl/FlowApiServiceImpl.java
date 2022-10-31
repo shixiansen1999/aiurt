@@ -29,6 +29,8 @@ import com.aiurt.modules.online.page.entity.ActCustomPage;
 import com.aiurt.modules.online.page.service.IActCustomPageService;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.extern.slf4j.Slf4j;
@@ -204,9 +206,13 @@ public class FlowApiServiceImpl implements FlowApiService {
 
         // 获取流程启动后的第一个任务。
         Task task = taskService.createTaskQuery().processInstanceId(processInstance.getId()).active().singleResult();
+        // 保存数据
+        if (Objects.nonNull(busData)) {
+            saveData(task, busData, processInstance.getProcessInstanceId(), task.getId(), processInstance);
+        }
+
         // 完成流程启动后的第一个任务
-        if (StrUtil.equalsAny(task.getAssignee(), loginUser.getUsername(), FlowConstant.START_USER_NAME_VAR)
-                && Objects.nonNull(startBpmnDTO.getFlowTaskCompleteDTO()) && StrUtil.equalsIgnoreCase(startBpmnDTO.getFlowTaskCompleteDTO().getApprovalType(), FlowApprovalType.AGREE)) {
+        if (Objects.nonNull(startBpmnDTO.getFlowTaskCompleteDTO())) {
             // 按照规则，调用该方法的用户，就是第一个任务的assignee，因此默认会自动执行complete。
             ActCustomTaskComment flowTaskComment = BeanUtil.copyProperties(startBpmnDTO.getFlowTaskCompleteDTO(), ActCustomTaskComment.class);
             if (ObjectUtil.isNotEmpty(flowTaskComment)) {
@@ -338,16 +344,38 @@ public class FlowApiServiceImpl implements FlowApiService {
             comment.setCreateRealname(checkLogin().getRealname());
             customTaskCommentService.getBaseMapper().insert(comment);
         }
-        // 保存每个节点的业务数据
-        ActCustomBusinessData.builder()
-                .taksId(taskId)
-                .processDefinitionKey(processInstance.getProcessDefinitionKey())
-                .processDefinitionId(processInstance.getProcessDefinitionId())
-                .taskDefinitionKey(task.getTaskDefinitionKey())
-                
-                .taskName(task.getName())
-                .processInstanceId(processInstanceId)
-                .build();
+
+        if (Objects.nonNull(busData)) {
+            saveData(task, busData, processInstanceId, taskId, processInstance);
+        }
+
+
+    }
+
+    private void saveData(Task task, Map<String, Object> busData, String processInstanceId, String taskId, ProcessInstance processInstance) {
+        // 判断是否存在
+        boolean exists = businessDataService.getBaseMapper().exists(new LambdaQueryWrapper<ActCustomBusinessData>()
+                .eq(ActCustomBusinessData::getTaksId, taskId).eq(ActCustomBusinessData::getProcessInstanceId, processInstanceId));
+
+        if (exists) {
+            //
+            LambdaUpdateWrapper<ActCustomBusinessData> updateWrapper = new LambdaUpdateWrapper();
+            updateWrapper.set(ActCustomBusinessData::getData, new JSONObject(busData)).eq(ActCustomBusinessData::getTaksId, taskId)
+                    .eq(ActCustomBusinessData::getProcessInstanceId, processInstanceId);
+            businessDataService.update(updateWrapper);
+        }else {
+            // 保存每个节点的业务数据
+            ActCustomBusinessData data = ActCustomBusinessData.builder()
+                    .taksId(taskId)
+                    .processDefinitionKey(processInstance.getProcessDefinitionKey())
+                    .processDefinitionId(processInstance.getProcessDefinitionId())
+                    .taskDefinitionKey(task.getTaskDefinitionKey())
+                    .data(new JSONObject(busData))
+                    .taskName(task.getName())
+                    .processInstanceId(processInstanceId)
+                    .build();
+            businessDataService.save(data);
+        }
     }
 
     /**
@@ -395,6 +423,32 @@ public class FlowApiServiceImpl implements FlowApiService {
             }
             if (StrUtil.isNotBlank(flowTaskExt.getVariableListJson())) {
                 taskInfoDTO.setVariableList(JSON.parseArray(flowTaskExt.getVariableListJson(), JSONObject.class));
+            }
+            String formJson = flowTaskExt.getFormJson();
+            if (StrUtil.isNotBlank(formJson)) {
+                // 表单类型
+                JSONObject jsonObject = JSONObject.parseObject(formJson);
+                String formType = jsonObject.getString(FlowModelAttConstant.FORM_TYPE);
+                // 中间业务数据
+                // 表单设计
+                if (StrUtil.equalsIgnoreCase(formType, FlowModelAttConstant.DYNAMIC_FORM_TYPE)) {
+                    String formDynamicUrl = jsonObject.getString(FlowModelAttConstant.FORM_DYNAMIC_URL);
+                    if (StrUtil.isNotBlank(formDynamicUrl)) {
+                        ActCustomPage customPage = pageService.getById(formDynamicUrl);
+                        if (Objects.nonNull(customPage)) {
+                            taskInfoDTO.setPageId(formDynamicUrl);
+                            taskInfoDTO.setPageContentJson(customPage.getPageContentJson());
+                            taskInfoDTO.setPageJSon(customPage.getPageJson());
+                        }
+                    }
+                    taskInfoDTO.setFormType(FlowModelAttConstant.DYNAMIC_FORM_TYPE);
+
+                }else {
+                    // 定制表单
+                    taskInfoDTO.setFormType(FlowModelAttConstant.STATIC_FORM_TYPE);
+                    // 判断是否是表单设计器，
+                    taskInfoDTO.setRouterName(jsonObject.getString("formUrl"));
+                }
             }
         }
         return taskInfoDTO;
