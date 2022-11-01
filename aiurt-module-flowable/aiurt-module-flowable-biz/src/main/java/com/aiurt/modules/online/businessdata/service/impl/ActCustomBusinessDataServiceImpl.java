@@ -25,8 +25,22 @@ public class ActCustomBusinessDataServiceImpl extends ServiceImpl<ActCustomBusin
     @Override
     public ActCustomBusinessData queryByProcessInstanceId(String processInstanceId, String taskId) {
         LambdaQueryWrapper<ActCustomBusinessData> lambdaQueryWrapper = new LambdaQueryWrapper<>();
-        // lambdaQueryWrapper.eq()
+        lambdaQueryWrapper.eq(ActCustomBusinessData::getProcessInstanceId, processInstanceId).eq(ActCustomBusinessData::getTaksId, taskId);
 
-        return null;
+        boolean exists = baseMapper.exists(lambdaQueryWrapper);
+
+        // 存在
+        if (exists) {
+            lambdaQueryWrapper.last("limit 1").orderByDesc(ActCustomBusinessData::getCreateTime);
+            ActCustomBusinessData actCustomBusinessData = baseMapper.selectOne(lambdaQueryWrapper);
+            return actCustomBusinessData;
+        }
+
+        lambdaQueryWrapper.clear();
+
+        lambdaQueryWrapper.eq(ActCustomBusinessData::getProcessInstanceId, processInstanceId).last("limit 1")
+                .orderByDesc(ActCustomBusinessData::getCreateTime);
+        ActCustomBusinessData actCustomBusinessData = baseMapper.selectOne(lambdaQueryWrapper);
+        return actCustomBusinessData;
     }
 }
