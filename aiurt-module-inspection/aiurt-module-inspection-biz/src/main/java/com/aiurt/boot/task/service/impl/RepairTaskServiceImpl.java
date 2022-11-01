@@ -391,15 +391,20 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                 if(ObjectUtil.isNotEmpty(checkListDTO.getAbnormal())){
                     //异常
                     checkListDTO.setStatusName(sysBaseApi.translateDict(DictConstant.OVERHAUL_RESULT, String.valueOf(InspectionConstant.NO_RESULT_STATUS)));
-                }else{
+                }
+                if(ObjectUtil.isEmpty(checkListDTO.getAbnormal()) & ObjectUtil.isNotEmpty(checkListDTO.getNormal())){
                     //正常
                     checkListDTO.setStatusName(sysBaseApi.translateDict(DictConstant.OVERHAUL_RESULT, String.valueOf(InspectionConstant.RESULT_STATUS)));
+                }
+                if(ObjectUtil.isEmpty(checkListDTO.getAbnormal()) & ObjectUtil.isEmpty(checkListDTO.getNormal()) ){
+                    //都为空则显示null
+                    checkListDTO.setStatusName(null);
                 }
 
             }
             //检修单名称
             if (checkListDTO.getResultCode() != null) {
-                checkListDTO.setResultName("单号" + checkListDTO.getResultCode());
+                checkListDTO.setResultName( checkListDTO.getResultCode());
 
                 //同行人列表
                 List<RepairTaskPeerRel> repairTaskPeer = repairTaskPeerRelMapper.selectList(
