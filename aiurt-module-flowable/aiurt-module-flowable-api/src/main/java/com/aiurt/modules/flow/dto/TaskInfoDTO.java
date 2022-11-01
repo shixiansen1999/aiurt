@@ -92,5 +92,8 @@ public class TaskInfoDTO {
 
 
     @ApiModelProperty(value = "流程模板key")
-    private JSONObject data;
+    private JSONObject busData;
+
+    @ApiModelProperty(value = "流程名称")
+    private String processName;
 }
