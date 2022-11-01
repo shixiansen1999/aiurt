@@ -314,4 +314,11 @@ public interface ISysUserService extends IService<SysUser> {
 	 * @return
 	 */
     List<SysUser> querySysUserForWorkTicket();
+
+	/**
+	 * 查询角色ID
+	 * @param names
+	 * @return
+	 */
+	List<String> getSysRole(String names);
 }

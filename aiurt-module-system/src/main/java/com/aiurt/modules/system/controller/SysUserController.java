@@ -22,6 +22,7 @@ import com.aiurt.modules.system.model.DepartIdModel;
 import com.aiurt.modules.system.model.SysUserSysDepartModel;
 import com.aiurt.modules.system.service.*;
 import com.aiurt.modules.system.vo.SysDepartUsersVO;
+import com.aiurt.modules.system.vo.SysUserImportVO;
 import com.aiurt.modules.system.vo.SysUserRoleVO;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
@@ -641,6 +642,7 @@ public class SysUserController {
      * @param response
      * @return
      */
+    @ApiOperation(value = "用户管理-导入excel", notes = "用户管理-导入excel")
     @RequestMapping(value = "/importExcel", method = RequestMethod.POST)
     public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) throws IOException {
         MultipartHttpServletRequest multipartRequest = (MultipartHttpServletRequest) request;
@@ -657,40 +659,59 @@ public class SysUserController {
             params.setNeedSave(true);
             try {
                 List<SysUser> listSysUsers = ExcelImportUtil.importExcel(file.getInputStream(), SysUser.class, params);
+                listSysUsers =  listSysUsers.stream().filter(item ->item.getUsername() != null).collect(Collectors.toList());
+                List<SysUserImportVO> importVOS = ExcelImportUtil.importExcel(file.getInputStream(), SysUserImportVO.class, params);
+                importVOS=  importVOS.stream().filter(item ->item.getUsername() != null).collect(Collectors.toList());
                 for (int i = 0; i < listSysUsers.size(); i++) {
                     SysUser sysUserExcel = listSysUsers.get(i);
+                    SysUserImportVO importVO = importVOS.get(i);
+                    SysDepart sysDepart = sysDepartService.getOne(new QueryWrapper<SysDepart>().lambda().eq(SysDepart::getDepartName,importVO.getBuName()).eq(SysDepart::getDelFlag,0));
                     if (StringUtils.isBlank(sysUserExcel.getPassword())) {
                         // 密码默认为 “123456”
                         sysUserExcel.setPassword("123456");
                     }
                     // 密码加密加盐
                     String salt = oConvertUtils.randomGen(8);
+                    if (sysDepart==null){
+                        errorMessage.add(importVO.getBuName()+"部门不存在,忽略导入");
+                        errorLines++;
+                        break;
+                    }
+                    SysUser sysUser = sysUserService.getOne(new QueryWrapper<SysUser>().lambda().eq(SysUser::getUsername,sysUserExcel.getUsername()).eq(SysUser::getDelFlag,0));
+                    if (sysUser!=null){
+                        errorMessage.add(sysUserExcel.getUsername()+"用户名已经存在，忽略导入");
+                        errorLines++;
+                        break;
+                    }
+                    SysUser sysUser1 = sysUserService.getOne(new QueryWrapper<SysUser>().lambda().eq(SysUser::getWorkNo,sysUserExcel.getWorkNo()).eq(SysUser::getDelFlag,0));
+                    if (sysUser1!=null){
+                        errorMessage.add(sysUserExcel.getWorkNo()+"工号已经存在，忽略导入");
+                        errorLines++;
+                        break;
+                    }
+                    SysUser sysUser2 = sysUserService.getOne(new QueryWrapper<SysUser>().lambda().eq(SysUser::getPhone,sysUserExcel.getPhone()).eq(SysUser::getDelFlag,0));
+                    if (sysUser2!=null){
+                        errorMessage.add(sysUserExcel.getPhone()+"手机号已经存在，忽略导入");
+                        errorLines++;
+                        break;
+                    }
+                    sysUserExcel.setOrgCode(sysDepart.getOrgCode());
+                    sysUserExcel.setOrgId(sysDepart.getId());
+                    sysUserExcel.setOrgName(sysDepart.getDepartName());
                     sysUserExcel.setSalt(salt);
+                    sysUserExcel.setDelFlag(0);
+                    sysUserExcel.setStatus(1);
                     String passwordEncode = PasswordUtil.encrypt(sysUserExcel.getUsername(), sysUserExcel.getPassword(), salt);
                     sysUserExcel.setPassword(passwordEncode);
-                    try {
-                        sysUserService.save(sysUserExcel);
-                        successLines++;
-                    } catch (Exception e) {
-                        errorLines++;
-                        String message = e.getMessage().toLowerCase();
-                        int lineNumber = i + 1;
-                        // 通过索引名判断出错信息
-                        if (message.contains(CommonConstant.SQL_INDEX_UNIQ_SYS_USER_USERNAME)) {
-                            errorMessage.add("第 " + lineNumber + " 行：用户名已经存在，忽略导入。");
-                        } else if (message.contains(CommonConstant.SQL_INDEX_UNIQ_SYS_USER_WORK_NO)) {
-                            errorMessage.add("第 " + lineNumber + " 行：工号已经存在，忽略导入。");
-                        } else if (message.contains(CommonConstant.SQL_INDEX_UNIQ_SYS_USER_PHONE)) {
-                            errorMessage.add("第 " + lineNumber + " 行：手机号已经存在，忽略导入。");
-                        } else if (message.contains(CommonConstant.SQL_INDEX_UNIQ_SYS_USER_EMAIL)) {
-                            errorMessage.add("第 " + lineNumber + " 行：电子邮件已经存在，忽略导入。");
-                        } else if (message.contains(CommonConstant.SQL_INDEX_UNIQ_SYS_USER)) {
-                            errorMessage.add("第 " + lineNumber + " 行：违反表唯一性约束。");
-                        } else {
-                            errorMessage.add("第 " + lineNumber + " 行：未知错误，忽略导入");
-                            log.error(e.getMessage(), e);
+                    List<String> roleIds = sysUserService.getSysRole(importVO.getNames());
+                    if (oConvertUtils.isNotEmpty(roleIds)) {
+                        for (String roleId : roleIds) {
+                            SysUserRole userRole = new SysUserRole(sysUserExcel.getId(), roleId);
+                            sysUserRoleMapper.insert(userRole);
                         }
                     }
+                    sysUserService.save(sysUserExcel);
+                    successLines++;
                     // 批量将部门和用户信息建立关联关系
                     String departIds = sysUserExcel.getDepartIds();
                     if (StringUtils.isNotBlank(departIds)) {
@@ -1658,7 +1679,7 @@ public class SysUserController {
     @ApiOperation(value = "下载用户导入模板", notes = "下载用户导入模板")
     @RequestMapping(value = "/downloadExcel", method = RequestMethod.GET)
     public void downloadExcel(HttpServletResponse response, HttpServletRequest request) throws IOException {
-        ClassPathResource classPathResource = new ClassPathResource("templates/sysUser.xlsx");
+        ClassPathResource classPathResource = new ClassPathResource("templates/sysUser.xls");
         InputStream bis = classPathResource.getInputStream();
         BufferedOutputStream out = new BufferedOutputStream(response.getOutputStream());
         int len = 0;
