@@ -6,7 +6,9 @@ import com.aiurt.modules.system.service.ISysUserPositionService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.system.vo.LoginUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -41,7 +43,9 @@ public class SysUserPositionController {
     public Result<SysUserPosition> add(@RequestBody SysUserPosition sysUserPosition) {
         Result<SysUserPosition> result = new Result<SysUserPosition>();
         try {
+            LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
             sysUserPosition.setUploadTime(new Date());
+            sysUserPosition.setSysOrgCode(sysUser.getOrgCode());
             sysUserPositionService.save(sysUserPosition);
             result.success("添加成功！");
         } catch (Exception e) {

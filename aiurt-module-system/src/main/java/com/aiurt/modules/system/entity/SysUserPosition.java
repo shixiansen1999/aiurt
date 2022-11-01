@@ -55,9 +55,9 @@ public class SysUserPosition {
     @ApiModelProperty(value = "修改时间")
     private java.util.Date updateTime;
     /**
-     * 所属部门
+     * 当前登录人所属部门
      */
-    @ApiModelProperty(value = "所属部门")
+    @ApiModelProperty(value = "当前登录人所属部门")
     private String sysOrgCode;
     /**
      * SSID（WiFi标识）
