@@ -185,11 +185,14 @@
         rtsr.id as standardId,
         rtsr.major_code as majorCode,
         rtsr.subsystem_code as systemCode,
-        rtsr.device_type_code as deviceTypeCode
+        rtsr.device_type_code as deviceTypeCode,
+        rtdr.submit_time as submitTime,
+        rtr.status as statusCode
         FROM
             repair_task_device_rel rtdr
                 LEFT JOIN repair_task rt ON rt.id = rtdr.repair_task_id
                 LEFT JOIN repair_task_standard_rel rtsr on rtsr.id = rtdr.task_standard_rel_id
+                 LEFT JOIN repair_task_result rtr on rtr.task_device_rel_id = rtdr.id
         <where>
             rtdr.del_flag = 0
             AND rt.del_flag = 0

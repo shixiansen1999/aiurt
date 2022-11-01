@@ -274,9 +274,6 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
     @Override
     public List<RepairTaskDTO> selectTaskList( String taskId,String stationCode) {
         List<RepairTaskDTO> repairTasks = repairTaskMapper.selectTaskList(taskId,stationCode);
-
-
-
         repairTasks.forEach(e -> {
             //查询同行人
             List<RepairTaskPeerRel> repairTaskPeer = repairTaskPeerRelMapper.selectList(
@@ -395,6 +392,9 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                 }
 
             }
+            //检修结果
+            checkListDTO.setStatusName(sysBaseApi.translateDict(DictConstant.OVERHAUL_RESULT, String.valueOf(checkListDTO.getStatusCode())));
+
             //检修单名称
             if (checkListDTO.getResultCode() != null) {
                 checkListDTO.setResultName("单号" + checkListDTO.getResultCode());
