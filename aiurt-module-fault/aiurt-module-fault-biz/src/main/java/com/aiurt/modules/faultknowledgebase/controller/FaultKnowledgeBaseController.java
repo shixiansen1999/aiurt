@@ -361,4 +361,18 @@ public class FaultKnowledgeBaseController extends BaseController<FaultKnowledgeB
 			 }
 		 }
 	 }
+
+
+	/**
+	 * 导出excel
+	 *
+	 * @param request
+	 * @param faultKnowledgeBase
+	 */
+	@AutoLog(value = "故障知识库-故障知识库分页列表-导出excel", operateType =  6, operateTypeAlias = "导出excel", permissionUrl = "/fault/faultKnowledgeBaseList")
+	@ApiOperation(value="故障知识库-导出excel", notes="故障知识库-导出excel")
+	@RequestMapping(value = "/exportTemplateXl")
+	public ModelAndView exportTemplateXl(HttpServletRequest request, FaultKnowledgeBase faultKnowledgeBase) {
+		return super.exportTemplateXls(request, faultKnowledgeBase, FaultKnowledgeBase.class, "故障知识库");
+	}
  }
