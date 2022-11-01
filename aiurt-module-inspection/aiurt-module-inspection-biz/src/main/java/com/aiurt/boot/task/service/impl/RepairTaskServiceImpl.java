@@ -295,9 +295,6 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
             //专业
             e.setMajorName(manager.translateMajor(Arrays.asList(e.getMajorCode()), InspectionConstant.MAJOR));
 
-            //检修结果
-            e.setStatusName(sysBaseApi.translateDict(DictConstant.OVERHAUL_RESULT, String.valueOf(e.getStatusCode())));
-
             //子系统
             e.setSystemName(manager.translateMajor(Arrays.asList(e.getSystemCode()), InspectionConstant.SUBSYSTEM));
 
@@ -364,8 +361,8 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
 
     @Override
     public List<RepairTaskStationDTO> repairTaskStationList(String taskId) {
-        List<RepairTaskStationDTO> repairTaskStationDTOS = repairTaskMapper.repairTaskStationList(taskId);
-        return repairTaskStationDTOS;
+        List<RepairTaskStationDTO> repairTaskStationDtos = repairTaskMapper.repairTaskStationList(taskId);
+        return repairTaskStationDtos;
     }
 
 
@@ -390,11 +387,16 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                 if (CollUtil.isNotEmpty(repairTaskResults1)) {
                     checkListDTO.setAbnormal(repairTaskResults1.size());
                 }
+                //检修结果
+                if(ObjectUtil.isNotEmpty(checkListDTO.getAbnormal())){
+                    //异常
+                    checkListDTO.setStatusName(sysBaseApi.translateDict(DictConstant.OVERHAUL_RESULT, String.valueOf(InspectionConstant.NO_RESULT_STATUS)));
+                }else{
+                    //正常
+                    checkListDTO.setStatusName(sysBaseApi.translateDict(DictConstant.OVERHAUL_RESULT, String.valueOf(InspectionConstant.RESULT_STATUS)));
+                }
 
             }
-            //检修结果
-            checkListDTO.setStatusName(sysBaseApi.translateDict(DictConstant.OVERHAUL_RESULT, String.valueOf(checkListDTO.getStatusCode())));
-
             //检修单名称
             if (checkListDTO.getResultCode() != null) {
                 checkListDTO.setResultName("单号" + checkListDTO.getResultCode());
@@ -474,8 +476,8 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                 checkListDTO.setEquipmentLocation(manager.translateStation(stationDTOList));
 
                 //站点位置
-                List<StationDTO> stationDTOList1 = new ArrayList<>();
-                stationDTOList1.forEach(e -> {
+                List<StationDTO> stationDtoList1 = new ArrayList<>();
+                stationDtoList1.forEach(e -> {
                     e.setStationCode(checkListDTO.getStationCode());
                     e.setLineCode(checkListDTO.getLineCode());
                     e.setPositionCode(checkListDTO.getPositionCode());
@@ -816,8 +818,8 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
             checkListDTO.setEquipmentLocation(manager.translateStation(stationDTOList));
 
             //站点位置
-            List<StationDTO> stationDTOList1 = new ArrayList<>();
-            stationDTOList1.forEach(e -> {
+            List<StationDTO> stationDtoList1 = new ArrayList<>();
+            stationDtoList1.forEach(e -> {
                 e.setStationCode(checkListDTO.getStationCode());
                 e.setLineCode(checkListDTO.getLineCode());
                 e.setPositionCode(checkListDTO.getPositionCode());

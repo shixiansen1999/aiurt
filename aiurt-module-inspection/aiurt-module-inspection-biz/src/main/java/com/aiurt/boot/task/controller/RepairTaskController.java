@@ -363,7 +363,6 @@ public class RepairTaskController extends BaseController<RepairTask, IRepairTask
      * @param id
      * @return
      */
-    //@AutoLog(value = "repair_task-通过id查询")
     @ApiOperation(value = "repair_task-通过id查询", notes = "repair_task-通过id查询")
     @GetMapping(value = "/queryById")
     public Result<RepairTask> queryById(@RequestParam(name = "id", required = true) String id) {
