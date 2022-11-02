@@ -296,7 +296,7 @@ public class SparePartStockServiceImpl extends ServiceImpl<SparePartStockMapper,
             if (CollUtil.isNotEmpty(collect)) {
                 for (int i = 0; i<integer; i++) {
                     if (i==0){
-                        String last12Months = getLast12Months(1);
+                        String last12Months = getLast12Months(3);
                         String substrings = last12Months.substring(0,4);
                         DateTime parse = DateUtil.parse(last12Months,"yyyy-MM");
                         int quarter = parse.quarter();
