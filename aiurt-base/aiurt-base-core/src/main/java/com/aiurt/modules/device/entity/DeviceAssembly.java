@@ -159,4 +159,17 @@ public class DeviceAssembly extends DictEntity {
 	@ApiModelProperty(value = "单位")
 	private  String  unit;
 
+	/**
+	 * 是否是易耗品：0否1是
+	 */
+	@Excel(name = "是否是易耗品：0否 1是", width = 15)
+	@ApiModelProperty(value = "是否是易耗品：0否 1是 默认为0")
+	@Dict(dicCode = "consumables_type")
+	private java.lang.Integer consumablesType = 0;
+
+	@Excel(name = "是否是易耗品：0否 1是", width = 15)
+	@TableField(exist = false)
+	@ApiModelProperty(value = "是否是易耗品名称")
+	private java.lang.String consumablesName;
+
 }

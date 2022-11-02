@@ -55,6 +55,7 @@ public class DeviceAssemblyServiceImpl extends ServiceImpl<DeviceAssemblyMapper,
                 deviceAssembly.setDeviceTypeCode(device.getDeviceTypeCode()==null?"":device.getDeviceTypeCode());
                 deviceAssembly.setUnit(materialBase.getUnit()==null?"":materialBase.getUnit());
                 deviceAssembly.setMaterialName(materialBase.getName());
+                deviceAssembly.setConsumablesType(materialBase.getConsumablesType());
                 deviceAssemblyList.add(deviceAssembly);
             }
         }
