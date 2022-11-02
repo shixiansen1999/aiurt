@@ -12,7 +12,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -25,17 +27,13 @@ public class PositionPanelServiceImpl implements PositionPanelService {
     private PositionPanelMapper positionPanelMapper;
 
     @Override
-    public List<PositionPanelModel> readAll(PositionPanelModel positionPanel) {
+    public List<CsStation> readAll(PositionPanelModel positionPanel) {
         //查询工区
         List<PositionPanelModel> allWorkArea = positionPanelMapper.getAllWorkArea(positionPanel);
+        List<String> workAreaCodes = Optional.ofNullable(allWorkArea).orElse(Collections.emptyList()).stream().map(PositionPanelModel::getCode).collect(Collectors.toList());
         //查询工区关联的站点
-        if (CollectionUtil.isNotEmpty(allWorkArea)) {
-            for (PositionPanelModel panel : allWorkArea) {
-                List<CsStation> stations = positionPanelMapper.getStations(panel.getCode());
-                panel.setCsStationList(stations);
-            }
-        }
-        return allWorkArea;
+        List<CsStation> stations = positionPanelMapper.getStations(workAreaCodes);
+        return stations;
     }
 
     @Override

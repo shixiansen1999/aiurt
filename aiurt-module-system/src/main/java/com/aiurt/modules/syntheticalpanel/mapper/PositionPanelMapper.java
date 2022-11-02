@@ -25,10 +25,10 @@ public interface PositionPanelMapper {
     /**
      * 查询工区关联的站点
      *
-     * @param code
+     * @param workAreaCodes
      * @return
      */
-    List<CsStation> getStations(@Param("code") String code);
+    List<CsStation> getStations(@Param("workAreaCodes") List<String> workAreaCodes);
 
     /**
      * 通过站点名称查询班组信息
