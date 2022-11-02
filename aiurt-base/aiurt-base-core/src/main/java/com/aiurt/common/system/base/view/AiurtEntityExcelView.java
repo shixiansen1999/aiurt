@@ -7,18 +7,15 @@ import com.aiurt.common.api.CommonAPI;
 import com.aiurt.common.aspect.annotation.Dict;
 import com.aiurt.common.system.base.entity.ExcelTemplateExportEntity;
 import com.aiurt.common.util.oConvertUtils;
-import org.apache.poi.hssf.usermodel.HSSFRichTextString;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddressList;
-import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 import org.apache.poi.xssf.usermodel.*;
 import org.jeecg.common.system.vo.DictModel;
 import org.jeecg.common.util.SpringContextUtils;
 import org.jeecgframework.poi.excel.annotation.Excel;
 import org.jeecgframework.poi.excel.def.NormalExcelConstants;
 import org.jeecgframework.poi.excel.entity.ExportParams;
-import org.jeecgframework.poi.excel.entity.enmus.ExcelType;
 import org.jeecgframework.poi.excel.view.MiniAbstractExcelView;
 import org.jeecgframework.poi.util.PoiPublicUtil;
 import org.springframework.stereotype.Controller;
@@ -37,19 +34,20 @@ public class AiurtEntityExcelView extends MiniAbstractExcelView {
 
     @Override
     protected void renderMergedOutputModel(Map<String, Object> model, HttpServletRequest request, HttpServletResponse response) throws Exception {
-        String codedFileName = "临时模板";
+
         Workbook workbook = null;
 
         // 需要导出的字段
         String[] exportFields = null;
-        Object exportFieldStr = model.get("exportFields");
+        Object exportFieldStr = model.get(NormalExcelConstants.EXPORT_FIELDS);
         if (exportFieldStr != null && exportFieldStr != "") {
             exportFields = exportFieldStr.toString().split(",");
         }
-        ExportParams entity = (ExportParams) model.get("params");
+        ExportParams entity = (ExportParams) model.get(NormalExcelConstants.PARAMS);
         // 实体
         Class pojoClass = (Class) model.get(NormalExcelConstants.CLASS);
 
+        String codedFileName = entity.getTitle();
         // 创建workbook
 
         workbook = new XSSFWorkbook();
@@ -77,7 +75,7 @@ public class AiurtEntityExcelView extends MiniAbstractExcelView {
                 fileds = null;
             }
         }
-        //
+        // todo
         List<ExcelTemplateExportEntity> list = new ArrayList<>();
         int j = 0;
         for (int i = 0; i < fileds.length; i++) {
@@ -107,37 +105,47 @@ public class AiurtEntityExcelView extends MiniAbstractExcelView {
             }
         }
 
-        // 创建 row
-        //
-
         Row row = sheet.createRow(0);
         for (ExcelTemplateExportEntity exportEntity : list) {
             Cell cell = row.createCell(exportEntity.getIndex());
-            RichTextString Rtext;
+            String name = exportEntity.getName();
+            int length = name.getBytes().length;
+            RichTextString Rtext = new XSSFRichTextString(name);
 
-                Rtext = new XSSFRichTextString(exportEntity.getName());
+            sheet.setColumnWidth(exportEntity.getIndex(), length*256);
 
             cell.setCellValue(Rtext);
             cell.setCellType(CellType.STRING);
             List<DictModel> modelList = exportEntity.getDictModelList();
             if (CollectionUtil.isNotEmpty(modelList)) {
+                //将新建的sheet页隐藏掉, 下拉值太多，需要创建隐藏页面
+                int sheetTotal = workbook.getNumberOfSheets();
+                String hiddenSheetName = name + "_hiddenSheet";
+                List<String> collect = modelList.stream().map(DictModel::getText).collect(Collectors.toList());
+                Sheet hiddenSheet = workbook.getSheet(hiddenSheetName);
+                if (hiddenSheet == null) {
+                    hiddenSheet = workbook.createSheet(hiddenSheetName);
+                    //写入下拉数据到新的sheet页中
+                    for (int i = 0; i < collect.size(); i++) {
+                        Row hiddenRow = hiddenSheet.createRow(i);
+                        Cell  hiddenCell = hiddenRow.createCell(0);
+                        hiddenCell.setCellValue(collect.get(i));
+                    }
+                    workbook.setSheetHidden(sheetTotal, true);
+                }
+
+                // 下拉数据
                 CellRangeAddressList cellRangeAddressList = new CellRangeAddressList(1, 65535, exportEntity.getIndex(), exportEntity.getIndex());
                 //  生成下拉框内容
-                //格式是HSSF
-                //DVConstraint dvConstraint = DVConstraint.createExplicitListConstraint(strings);
-                //HSSFDataValidation validation = new HSSFDataValidation(cellRangeAddressList, dvConstraint);
-                //格式是XSSF
-                List<String> collect = modelList.stream().map(DictModel::getText).collect(Collectors.toList());
-                String[] nums = collect.toArray(new String[collect.size()]);
-
-                XSSFDataValidationConstraint constraint = new XSSFDataValidationConstraint(nums);
-                XSSFDataValidationHelper dvHelper = new XSSFDataValidationHelper((XSSFSheet) sheet);
+                String strFormula = hiddenSheetName + "!$A$1:$A$65535";
+                // 根据隐藏页面创建下拉列表
+                XSSFDataValidationConstraint constraint = new XSSFDataValidationConstraint(DataValidationConstraint.ValidationType.LIST, strFormula);
+                XSSFDataValidationHelper dvHelper = new XSSFDataValidationHelper((XSSFSheet) hiddenSheet);
                 DataValidation validation = dvHelper.createValidation(constraint, cellRangeAddressList);
                 //  对sheet页生效
                 sheet.addValidationData(validation);
             }
         }
-       // row.setHeight(10);
 
         if (model.containsKey("fileName")) {
             codedFileName = (String)model.get("fileName");
