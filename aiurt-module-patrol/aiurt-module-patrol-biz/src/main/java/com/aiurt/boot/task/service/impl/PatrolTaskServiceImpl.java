@@ -977,7 +977,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
                         taskDevice.setTaskStandardId(taskStandard.getId());
                         // 巡检单号
                         String billCode = PatrolCodeUtil.getBillCode();
-                        taskDevice.setDeviceCode(billCode);
+                        taskDevice.setPatrolNumber(billCode);
                         // 设备编号
                         taskDevice.setDeviceCode(d.getDeviceCode());
                         // 线路编号
