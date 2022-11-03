@@ -5,6 +5,7 @@ import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.constant.CommonConstant;
+import com.aiurt.common.constant.SymbolConstant;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.util.*;
 import com.aiurt.modules.basic.entity.SysAttachment;
@@ -175,7 +176,7 @@ public class CommonController {
             // 获取文件名
             String orgName = mf.getOriginalFilename();
             orgName = CommonUtils.getFileName(orgName);
-            if (orgName.indexOf(".") != -1) {
+            if (orgName.indexOf(SymbolConstant.SPOT) != -1) {
                 fileName = orgName.substring(0, orgName.lastIndexOf(".")) + "_" + System.currentTimeMillis() + orgName.substring(orgName.lastIndexOf("."));
             } else {
                 fileName = orgName + "_" + System.currentTimeMillis();
@@ -189,7 +190,7 @@ public class CommonController {
             } else {
                 dbpath = fileName;
             }
-            if (dbpath.contains("\\")) {
+            if (dbpath.contains(SymbolConstant.DOUBLE_BACKSLASH)) {
                 dbpath = dbpath.replace("\\", "/");
             }
             return dbpath;
@@ -214,7 +215,8 @@ public class CommonController {
         // ISO-8859-1 ==> UTF-8 进行编码转换
         String imgPath = extractPathFromPattern(request);
         String fileName = request.getParameter("fileName");
-        if (oConvertUtils.isEmpty(imgPath) || imgPath == "null") {
+        String nul = "null";
+        if (oConvertUtils.isEmpty(imgPath) || imgPath == nul) {
             return;
         }
         // 其余处理略
@@ -222,7 +224,7 @@ public class CommonController {
         OutputStream outputStream = null;
 
         imgPath = imgPath.replace("..", "").replace("../", "");
-        if (imgPath.endsWith(",")) {
+        if (imgPath.endsWith(SymbolConstant.COMMA)) {
             imgPath = imgPath.substring(0, imgPath.length() - 1);
         }
 
@@ -237,7 +239,8 @@ public class CommonController {
             fileName = sysAttachment.getFileName();
         }
         // minio存储
-        if (StrUtil.equalsIgnoreCase("minio", sysAttachment.getType())) {
+        String m = "minio";
+        if (StrUtil.equalsIgnoreCase(m, sysAttachment.getType())) {
             try (
                     InputStream inputStream1 = MinioUtil.getMinioFile("platform", sysAttachment.getFilePath());
                     OutputStream outputStream1 = response.getOutputStream()) {
@@ -438,7 +441,7 @@ public class CommonController {
             } else {
                 dbpath = fileName;
             }
-            if (dbpath.contains("\\")) {
+            if (dbpath.contains(SymbolConstant.DOUBLE_BACKSLASH)) {
                 dbpath = dbpath.replace("\\", "/");
             }
             return dbpath;

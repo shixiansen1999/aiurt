@@ -22,6 +22,7 @@
             #{item}
         </foreach>
     </if>
+    group by teamId
 </select>
 
 <select id="getWorkAreaByCode" resultType="com.aiurt.boot.index.dto.TeamPortraitDTO">

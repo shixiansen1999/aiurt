@@ -76,7 +76,8 @@ public class SysAnnouncementSendController {
 		SqlInjectionUtil.filterContent(order);
 
 		if(oConvertUtils.isNotEmpty(column) && oConvertUtils.isNotEmpty(order)) {
-			if("asc".equals(order)) {
+			String a = "asc";
+			if(a.equals(order)) {
 				queryWrapper.orderByAsc(oConvertUtils.camelToUnderline(column));
 			}else {
 				queryWrapper.orderByDesc(oConvertUtils.camelToUnderline(column));

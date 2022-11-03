@@ -3,6 +3,7 @@ package com.aiurt.modules.system.service.impl;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.constant.FillRuleConstant;
+import com.aiurt.common.constant.SymbolConstant;
 import com.aiurt.common.util.FillRuleUtil;
 import com.aiurt.common.util.YouBianCodeUtil;
 import com.aiurt.common.util.oConvertUtils;
@@ -482,7 +483,7 @@ public class SysDepartServiceImpl extends ServiceImpl<SysDepartMapper, SysDepart
 	@Override
 	public JSONObject queryAllParentIdByDepartId(String departId) {
 		JSONObject result = new JSONObject();
-		for (String id : departId.split(",")) {
+		for (String id : departId.split(SymbolConstant.COMMA)) {
 			JSONObject all = this.queryAllParentId("id", id);
 			result.put(id, all);
 		}
@@ -492,7 +493,7 @@ public class SysDepartServiceImpl extends ServiceImpl<SysDepartMapper, SysDepart
 	@Override
 	public JSONObject queryAllParentIdByOrgCode(String orgCode) {
 		JSONObject result = new JSONObject();
-		for (String code : orgCode.split(",")) {
+		for (String code : orgCode.split(SymbolConstant.COMMA)) {
 			JSONObject all = this.queryAllParentId("org_code", code);
 			result.put(code, all);
 		}

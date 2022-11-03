@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 /**
  * GPS、wifi定位数据上报
+ * @author hlq
  */
 @Service
 public class SysUserPositionServiceImpl extends ServiceImpl<SysUserPositionMapper, SysUserPosition> implements ISysUserPositionService {

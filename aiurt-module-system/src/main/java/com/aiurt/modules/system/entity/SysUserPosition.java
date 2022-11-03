@@ -16,6 +16,7 @@ import java.util.Date;
 
 /**
  * GPS、wifi定位数据上报
+ * @author hlq
  */
 @Data
 @TableName("sys_user_position")

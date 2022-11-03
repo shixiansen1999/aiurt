@@ -123,11 +123,12 @@ public class RandImageUtil {
 
     private static Color getRandColor(int fc, int bc) { // 取得给定范围随机颜色
         final Random random = new Random();
-        if (fc > 255) {
-            fc = 255;
+        int num = 255;
+        if (fc > num) {
+            fc = num;
         }
-        if (bc > 255) {
-            bc = 255;
+        if (bc > num) {
+            bc = num;
         }
 
         final int r = fc + random.nextInt(bc - fc);

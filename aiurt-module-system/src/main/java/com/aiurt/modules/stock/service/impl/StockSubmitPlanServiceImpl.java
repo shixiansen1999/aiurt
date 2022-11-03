@@ -316,7 +316,6 @@ public class StockSubmitPlanServiceImpl extends ServiceImpl<StockSubmitPlanMappe
 						// 然后自己转化为字符串，并赋值给value
 						code = String.valueOf(num);
 					}
-				//row.getCell(1).getStringCellValue()==null?"":row.getCell(1).getStringCellValue();
 					if ("".equals(code)) {
 						errorStrs.add("第 " + index + " 行：物资编码为空，忽略导入。");
 						ifAdd = false;

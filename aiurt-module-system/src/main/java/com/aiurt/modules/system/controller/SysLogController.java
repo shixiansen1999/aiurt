@@ -103,7 +103,8 @@ public class SysLogController {
 		if(ids==null || "".equals(ids.trim())) {
 			result.error500("参数不识别！");
 		}else {
-			if("allclear".equals(ids)) {
+			String a = "allclear";
+			if(a.equals(ids)) {
 				this.sysLogService.removeAll();
 				result.success("清除成功!");
 			}

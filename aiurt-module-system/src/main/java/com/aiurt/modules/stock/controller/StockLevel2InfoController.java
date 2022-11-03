@@ -3,6 +3,7 @@ package com.aiurt.modules.stock.controller;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.aspect.annotation.PermissionData;
 import com.aiurt.common.constant.CommonConstant;
+import com.aiurt.common.constant.SymbolConstant;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.modules.device.entity.DeviceAssembly;
 import com.aiurt.modules.device.entity.DeviceCompose;
@@ -257,7 +258,7 @@ public class StockLevel2InfoController {
                     iStockLevel2InfoService.removeById(stockLevel2Info);
                 }
             }
-            if(res.contains(",")){
+            if(res.contains(SymbolConstant.COMMA)){
                 res = res.substring(0,res.length()-1);
                 res += "的二级库已被其他模块引用无法删除，其余二级库删除成功!";
             }else{
