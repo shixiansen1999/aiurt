@@ -2,6 +2,7 @@ package com.aiurt.modules.system.service.impl;
 
 import com.aiurt.common.constant.CacheConstant;
 import com.aiurt.common.constant.CommonConstant;
+import com.aiurt.common.constant.SymbolConstant;
 import org.jeecg.common.system.query.QueryGenerator;
 import org.jeecg.common.system.vo.DictModel;
 import org.jeecg.common.system.vo.DictModelMany;
@@ -168,7 +169,8 @@ public class SysDictServiceImpl extends ServiceImpl<SysDictMapper, SysDict> impl
 	public List<DictModel> queryTableDictTextByKeys(String table, String text, String code, List<String> keys) {
 		//update-begin-author:taoyan date:20220113 for: @dict注解支持 dicttable 设置where条件
 		String filterSql = null;
-		if(table.toLowerCase().indexOf("where")>0){
+		String w = "where";
+		if(table.toLowerCase().indexOf(w)>0){
 			String[] arr = table.split(" (?i)where ");
 			table = arr[0];
 			filterSql = arr[1];
@@ -284,13 +286,14 @@ public class SysDictServiceImpl extends ServiceImpl<SysDictMapper, SysDict> impl
 	private String getFilterSql(String table, String text, String code, String condition, String keyword){
 		String keywordSql = null, filterSql = "", sqlWhere = " where ";
 		// update-begin-author:sunjianlei date:20220112 for: 【JTC-631】判断如果 table 携带了 where 条件，那么就使用 and 查询，防止报错
-		if (table.toLowerCase().contains(" where ")) {
+		String w = " where ";
+		if (table.toLowerCase().contains(w)) {
 			sqlWhere = " and ";
 		}
 		// update-end-author:sunjianlei date:20220112 for: 【JTC-631】判断如果 table 携带了 where 条件，那么就使用 and 查询，防止报错
 		if(oConvertUtils.isNotEmpty(keyword)){
 			// 判断是否是多选
-			if (keyword.contains(",")) {
+			if (keyword.contains(SymbolConstant.COMMA)) {
                 //update-begin--author:scott--date:20220105--for：JTC-529【表单设计器】 编辑页面报错，in参数采用双引号导致 ----
 				String inKeywords = "'" + String.join("','", keyword.split(",")) + "'";
                 //update-end--author:scott--date:20220105--for：JTC-529【表单设计器】 编辑页面报错，in参数采用双引号导致----
@@ -352,7 +355,7 @@ public class SysDictServiceImpl extends ServiceImpl<SysDictMapper, SysDict> impl
 	@Override
 	public List<DictModel> getDictItems(String dictCode) {
 		List<DictModel> ls;
-		if (dictCode.contains(",")) {
+		if (dictCode.contains(SymbolConstant.COMMA)) {
 			//关联表字典（举例：sys_user,realname,id）
 			String[] params = dictCode.split(",");
 			if (params.length < 3) {
@@ -381,7 +384,7 @@ public class SysDictServiceImpl extends ServiceImpl<SysDictMapper, SysDict> impl
 
 	@Override
 	public List<DictModel> loadDict(String dictCode, String keyword, Integer pageSize) {
-		if (dictCode.contains(",")) {
+		if (dictCode.contains(SymbolConstant.COMMA)) {
 			//update-begin-author:taoyan date:20210329 for: 下拉搜索不支持表名后加查询条件
 			String[] params = dictCode.split(",");
 			String condition = null;

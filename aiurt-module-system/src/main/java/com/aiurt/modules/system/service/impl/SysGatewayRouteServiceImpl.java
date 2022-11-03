@@ -73,7 +73,8 @@ public class SysGatewayRouteServiceImpl extends ServiceImpl<SysGatewayRouteMappe
             }
             route.setFilters(filters);
             route.setUri(json.getString("uri"));
-            if (json.get("status") == null) {
+            String s = "status";
+            if (json.get(s) == null) {
                 route.setStatus(1);
             } else {
                 route.setStatus(json.getInteger("status"));

@@ -1,5 +1,6 @@
 package com.aiurt.modules.quartz.controller;
 
+import com.aiurt.common.constant.SymbolConstant;
 import org.apache.shiro.authz.annotation.RequiresRoles;
 import org.jeecg.common.api.vo.Result;
 import com.aiurt.common.constant.CommonConstant;
@@ -128,7 +129,7 @@ public class QuartzJobController {
 		if (ids == null || "".equals(ids.trim())) {
 			return Result.error("参数不识别！");
 		}
-		for (String id : Arrays.asList(ids.split(","))) {
+		for (String id : Arrays.asList(ids.split(SymbolConstant.COMMA))) {
 			QuartzJob job = quartzJobService.getById(id);
 			quartzJobService.deleteAndStopJob(job);
 		}

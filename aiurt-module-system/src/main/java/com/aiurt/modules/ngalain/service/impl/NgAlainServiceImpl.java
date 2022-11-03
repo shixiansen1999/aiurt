@@ -1,5 +1,6 @@
 package com.aiurt.modules.ngalain.service.impl;
 
+import com.aiurt.common.constant.SymbolConstant;
 import com.aiurt.common.util.oConvertUtils;
 import com.aiurt.modules.system.entity.SysPermission;
 import com.alibaba.fastjson.JSONArray;
@@ -173,7 +174,7 @@ public class NgAlainServiceImpl implements NgAlainService {
      */
     private String urlToRouteName(String url) {
         if(oConvertUtils.isNotEmpty(url)) {
-            if(url.startsWith("/")) {
+            if(url.startsWith(SymbolConstant.SINGLE_SLASH)) {
                 url = url.substring(1);
             }
             url = url.replace("/", "-");

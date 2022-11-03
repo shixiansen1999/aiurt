@@ -3,6 +3,7 @@ package com.aiurt.modules.material.controller;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.aspect.annotation.PermissionData;
 import com.aiurt.common.constant.CommonConstant;
+import com.aiurt.common.constant.SymbolConstant;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.modules.major.entity.CsMajor;
 import com.aiurt.modules.major.service.ICsMajorService;
@@ -390,7 +391,7 @@ public class MaterialBaseTypeController {
                     iMaterialBaseTypeService.removeById(materialBaseType);
                 }
             }
-            if(res.contains(",")){
+            if(res.contains(SymbolConstant.COMMA)){
                 res = res.substring(0,res.length()-1);
                 res += "的物资分类因为正在使用中无法删除，其余物资分类删除成功!";
             }else{

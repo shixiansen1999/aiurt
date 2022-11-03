@@ -3,6 +3,7 @@ package com.aiurt.modules.system.controller;
 
 import com.aiurt.common.constant.CacheConstant;
 import com.aiurt.common.constant.CommonConstant;
+import com.aiurt.common.constant.SymbolConstant;
 import org.jeecg.common.system.query.QueryGenerator;
 import org.jeecg.common.system.vo.DictModel;
 import org.jeecg.common.system.vo.DictQuery;
@@ -276,7 +277,7 @@ public class SysDictController {
 		}
 		//update-end-author:taoyan date:20220317 for: VUEN-222【安全机制】字典接口、online报表、online图表等接口，加一些安全机制
 		try {
-			if(dictCode.indexOf(",")!=-1) {
+			if(dictCode.indexOf(SymbolConstant.COMMA)!=-1) {
 				String[] params = dictCode.split(",");
 				if(params.length!=3) {
 					result.error500("字典Code格式不正确！");

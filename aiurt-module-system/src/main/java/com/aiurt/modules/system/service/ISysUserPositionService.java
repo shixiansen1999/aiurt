@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.extension.service.IService;
 
 /**
  * GPS、wifi定位数据上报
+ * @author hlq
  */
 public interface ISysUserPositionService extends IService<SysUserPosition> {
 

@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
 /**
  * GPS、wifi定位数据上报
+ * @author hlq
  */
 public interface SysUserPositionMapper extends BaseMapper<SysUserPosition> {
 

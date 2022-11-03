@@ -6,6 +6,7 @@ import cn.hutool.core.util.RandomUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.constant.CommonConstant;
+import com.aiurt.common.constant.SymbolConstant;
 import com.aiurt.common.system.util.JwtUtil;
 import com.aiurt.common.util.ImportExcelUtil;
 import com.aiurt.common.util.PasswordUtil;
@@ -660,11 +661,11 @@ public class SysUserController {
             try {
                 List<SysUser> listSysUsers = ExcelImportUtil.importExcel(file.getInputStream(), SysUser.class, params);
                 listSysUsers =  listSysUsers.stream().filter(item ->item.getUsername() != null).collect(Collectors.toList());
-                List<SysUserImportVO> importVOS = ExcelImportUtil.importExcel(file.getInputStream(), SysUserImportVO.class, params);
-                importVOS=  importVOS.stream().filter(item ->item.getUsername() != null).collect(Collectors.toList());
+                List<SysUserImportVO> importVos = ExcelImportUtil.importExcel(file.getInputStream(), SysUserImportVO.class, params);
+                importVos=  importVos.stream().filter(item ->item.getUsername() != null).collect(Collectors.toList());
                 for (int i = 0; i < listSysUsers.size(); i++) {
                     SysUser sysUserExcel = listSysUsers.get(i);
-                    SysUserImportVO importVO = importVOS.get(i);
+                    SysUserImportVO importVO = importVos.get(i);
                     SysDepart sysDepart = sysDepartService.getOne(new QueryWrapper<SysDepart>().lambda().eq(SysDepart::getDepartName,importVO.getBuName()).eq(SysDepart::getDelFlag,0));
                     if (StringUtils.isBlank(sysUserExcel.getPassword())) {
                         // 密码默认为 “123456”
@@ -1332,7 +1333,7 @@ public class SysUserController {
             }
             query.eq(SysUser::getDelFlag, CommonConstant.DEL_FLAG_0);
             if (oConvertUtils.isNotEmpty(username)) {
-                if (username.contains(",")) {
+                if (username.contains(SymbolConstant.COMMA)) {
                     query.in(SysUser::getUsername, username.split(","));
                 } else {
                     query.eq(SysUser::getUsername, username);

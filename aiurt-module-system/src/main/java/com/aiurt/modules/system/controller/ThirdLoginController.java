@@ -164,7 +164,8 @@ public class ThirdLoginController {
 	public Result<String> checkPassword(@RequestBody JSONObject json) {
 		Result<String> result = new Result<>();
 		Object operateCode = redisUtil.get(CommonConstant.THIRD_LOGIN_CODE);
-		if(operateCode==null || !operateCode.toString().equals(json.getString("operateCode"))){
+		String op = "operateCode";
+		if(operateCode==null || !operateCode.toString().equals(json.getString(op))){
 			result.setSuccess(false);
 			result.setMessage("校验失败");
 			return result;

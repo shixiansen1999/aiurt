@@ -2,6 +2,7 @@ package com.aiurt.modules.system.util;
 
 import java.util.List;
 
+import com.aiurt.common.constant.SymbolConstant;
 import com.aiurt.common.util.oConvertUtils;
 import com.aiurt.modules.system.entity.SysPermission;
 
@@ -24,7 +25,7 @@ public class PermissionDataUtil {
 		// 组件
 		if (oConvertUtils.isNotEmpty(permission.getComponent())) {
 			String component = permission.getComponent();
-			if (component.startsWith("/")) {
+			if (component.startsWith(SymbolConstant.SINGLE_SLASH)) {
 				component = component.substring(1);
 			}
 			if (component.startsWith("views/")) {
@@ -45,7 +46,7 @@ public class PermissionDataUtil {
 			if (url.endsWith(".vue")) {
 				url = url.replace(".vue", "");
 			}
-			if (!url.startsWith("http") && !url.startsWith("/")&&!url.trim().startsWith("{{")) {
+			if (!url.startsWith("http") && !url.startsWith(SymbolConstant.SINGLE_SLASH)&&!url.trim().startsWith("{{")) {
 				url = "/" + url;
 			}
 			permission.setUrl(url);

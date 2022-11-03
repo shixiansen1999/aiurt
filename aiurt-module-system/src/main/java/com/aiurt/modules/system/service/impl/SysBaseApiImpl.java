@@ -7,10 +7,7 @@ import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.api.dto.message.*;
 import com.aiurt.common.api.dto.quartz.QuartzJobDTO;
 import com.aiurt.common.aspect.UrlMatchEnum;
-import com.aiurt.common.constant.CacheConstant;
-import com.aiurt.common.constant.CommonConstant;
-import com.aiurt.common.constant.DataBaseConstant;
-import com.aiurt.common.constant.WebsocketConst;
+import com.aiurt.common.constant.*;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.util.SysAnnmentTypeEnum;
 import com.aiurt.common.util.YouBianCodeUtil;
@@ -1783,7 +1780,7 @@ public class SysBaseApiImpl implements ISysBaseAPI {
             } else {
                 dbpath = fileName;
             }
-            if (dbpath.contains("\\")) {
+            if (dbpath.contains(SymbolConstant.DOUBLE_BACKSLASH)) {
                 dbpath = dbpath.replace("\\", "/");
             }
             return dbpath;

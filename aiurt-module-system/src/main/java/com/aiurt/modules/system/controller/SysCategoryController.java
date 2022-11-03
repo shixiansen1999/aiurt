@@ -463,7 +463,8 @@ public class SysCategoryController {
 	 public Result<List<DictModel>> loadAllData(@RequestParam(name="code",required = true) String code) {
 		 Result<List<DictModel>> result = new Result<List<DictModel>>();
 		 LambdaQueryWrapper<SysCategory> query = new LambdaQueryWrapper<SysCategory>();
-		 if(oConvertUtils.isNotEmpty(code) && !"0".equals(code)){
+		 String a = "0";
+		 if(oConvertUtils.isNotEmpty(code) && !a.equals(code)){
 			 query.likeRight(SysCategory::getCode,code);
 		 }
 		 List<SysCategory> list = this.sysCategoryService.list(query);

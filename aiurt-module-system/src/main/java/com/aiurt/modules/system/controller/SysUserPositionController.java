@@ -19,6 +19,7 @@ import java.util.Date;
 
 /**
  * GPS、wifi定位数据上报
+ * @author hlq
  */
 @Slf4j
 @Api(tags = "GPS、wifi定位数据上报")
