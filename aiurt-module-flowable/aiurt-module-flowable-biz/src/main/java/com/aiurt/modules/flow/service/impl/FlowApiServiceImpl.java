@@ -206,6 +206,10 @@ public class FlowApiServiceImpl implements FlowApiService {
 
         // 获取流程启动后的第一个任务。
         Task task = taskService.createTaskQuery().processInstanceId(processInstance.getId()).active().singleResult();
+
+        // 设置办理人
+        task.setAssignee(loginName);
+
         // 保存数据
         if (Objects.nonNull(busData)) {
             saveData(task, busData, processInstance.getProcessInstanceId(), task.getId(), processInstance);
@@ -315,7 +319,7 @@ public class FlowApiServiceImpl implements FlowApiService {
                 flowElementUtil.setBusinessKeyForProcessInstance(task.getProcessInstanceId(), o);
             }
 
-        }else if (StrUtil.equalsAnyIgnoreCase(approvalType, FlowApprovalType.REJECT_TO_STAR, FlowApprovalType.AGREE)) {
+        }else if (StrUtil.equalsAnyIgnoreCase(approvalType, FlowApprovalType.REJECT_TO_STAR, FlowApprovalType.AGREE, FlowApprovalType.REFUSE)) {
             if (Objects.nonNull(busData)) {
                busData.put("operationType", approvalType);
                flowElementUtil.saveBusData(task.getProcessDefinitionId(), task.getTaskDefinitionKey(), busData);
@@ -331,10 +335,19 @@ public class FlowApiServiceImpl implements FlowApiService {
             // 完成任务
             taskService.complete(taskId, busData);
         } else if (StrUtil.equalsAnyIgnoreCase(FlowApprovalType.CANCEL, approvalType)) {
+
+            // 作废
             StopProcessInstanceDTO instanceDTO = new StopProcessInstanceDTO();
             instanceDTO.setProcessInstanceId(processInstanceId);
             instanceDTO.setStopReason("作废");
             stopProcessInstance(instanceDTO);
+        }else if (StrUtil.equalsAnyIgnoreCase(FlowApprovalType.REJECT_FIRST_USER_TASK, approvalType)) {
+            // 驳回到第一个用户任务
+            RejectToStartDTO rejectToStartDTO = new RejectToStartDTO();
+            rejectToStartDTO.setTaskId(taskId);
+            rejectToStartDTO.setProcessInstanceId(processInstanceId);
+            rejectToStartDTO.setBusData(busData);
+            rejectToStart(rejectToStartDTO);
         }
 
         // 判断当前完成执行的任务，是否存在抄送设置
@@ -348,8 +361,6 @@ public class FlowApiServiceImpl implements FlowApiService {
         if (Objects.nonNull(busData)) {
             saveData(task, busData, processInstanceId, taskId, processInstance);
         }
-
-
     }
 
     private void saveData(Task task, Map<String, Object> busData, String processInstanceId, String taskId, ProcessInstance processInstance) {
@@ -1172,6 +1183,32 @@ public class FlowApiServiceImpl implements FlowApiService {
         // 发送redis事件
     }
 
+    // 驳回到第一个用户任务
+    public void rejectToStart(RejectToStartDTO instanceDTO) {
+        LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        String processInstanceId = instanceDTO.getProcessInstanceId();
+
+        ProcessInstance processInstance = getProcessInstance(processInstanceId);
+
+        if (Objects.isNull(processInstance)) {
+            throw new AiurtBootException("流程实例不存在！请刷新。");
+        }
+
+        UserTask firstUserTask = flowElementUtil.getFirstUserTaskByDefinitionId(processInstance.getProcessDefinitionId());
+
+        Task task = taskService.createTaskQuery().taskId(instanceDTO.getTaskId()).singleResult();
+
+        // 流程跳转, flowable 已提供
+        runtimeService.createChangeActivityStateBuilder()
+                .processInstanceId(instanceDTO.getProcessInstanceId())
+                .moveActivityIdTo(task.getTaskDefinitionKey(), firstUserTask.getId())
+                .changeState();
+
+        ActCustomTaskComment actCustomTaskComment = new ActCustomTaskComment(task);
+        actCustomTaskComment.setApprovalType(FlowApprovalType.REJECT_TO_STAR);
+        actCustomTaskComment.setCreateRealname(loginUser.getUsername());
+        customTaskCommentService.getBaseMapper().insert(actCustomTaskComment);
+    }
     /**
      * 删除流程
      *
