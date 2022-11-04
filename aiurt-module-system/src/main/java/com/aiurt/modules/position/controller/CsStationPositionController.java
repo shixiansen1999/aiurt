@@ -39,6 +39,9 @@ import io.swagger.annotations.ApiOperation;
 @RequestMapping("/position")
 @Slf4j
 public class CsStationPositionController  {
+	public static final String LEVEL_1 = "1";
+	 public static final String LEVEL_2 = "2";
+	 public static final String LEVEL_3 = "3";
 	@Autowired
 	private ICsStationPositionService csStationPositionService;
 	@Autowired
@@ -217,14 +220,14 @@ public class CsStationPositionController  {
 	 @GetMapping(value = "/getSort")
 	 public Result<?> getSort(String level,String code) {
 	 	Integer sort = 1;
-	 	 if(null!=level && ("1").equals(level)){
+	 	 if(null!=level && (LEVEL_1).equals(level)){
 			 LambdaQueryWrapper<CsLine> wrapper = new LambdaQueryWrapper<>();
 			 wrapper.orderByDesc(CsLine::getSort);
 			 List<CsLine> list = csLineService.list(wrapper.eq(CsLine::getDelFlag, CommonConstant.DEL_FLAG_0));
 			 if(!list.isEmpty()){
 				 sort = list.get(0).getSort()+1;
 			 }
-		 }else if(null!=level && ("2").equals(level)){
+		 }else if(null!=level && (LEVEL_2).equals(level)){
 			 LambdaQueryWrapper<CsStation> wrapper = new LambdaQueryWrapper<>();
 			 wrapper.orderByDesc(CsStation::getSort);
 			 wrapper.eq(CsStation::getDelFlag, CommonConstant.DEL_FLAG_0);
@@ -233,7 +236,7 @@ public class CsStationPositionController  {
 			 if(!list.isEmpty()){
 				 sort = list.get(0).getSort()+1;
 			 }
-		 }else if(null!=level && ("3").equals(level)){
+		 }else if(null!=level && (LEVEL_3).equals(level)){
 			 LambdaQueryWrapper<CsStationPosition> wrapper = new LambdaQueryWrapper<>();
 			 wrapper.orderByDesc(CsStationPosition::getSort);
 			 wrapper.eq(CsStationPosition::getStaionCode,code);

@@ -30,6 +30,7 @@ import lombok.extern.slf4j.Slf4j;
 @Service("redisService")
 @Slf4j
 public class RedisServiceImpl implements RedisService {
+	public static final String TYPE_3 = "3";
 
 	@Resource
 	private RedisConnectionFactory redisConnectionFactory;
@@ -88,7 +89,7 @@ public class RedisServiceImpl implements RedisService {
 	public Map<String, JSONArray> getMapForReport(String type)  throws RedisConnectException {
 		Map<String,JSONArray> mapJson=new HashMap(5);
 		JSONArray json = new JSONArray();
-		if("3".equals(type)){
+		if(TYPE_3.equals(type)){
 			List<RedisInfo> redisInfo = getRedisInfo();
 			for(RedisInfo info:redisInfo){
 				Map<String, Object> map= Maps.newHashMap();
@@ -101,7 +102,8 @@ public class RedisServiceImpl implements RedisService {
 			mapJson.put("data",json);
 			return mapJson;
 		}
-		for(int i = 0; i < 5; i++){
+		int num = 5;
+		for(int i = 0; i < num; i++){
 			JSONObject jo = new JSONObject();
 			Map<String, Object> map;
 			if("1".equals(type)){

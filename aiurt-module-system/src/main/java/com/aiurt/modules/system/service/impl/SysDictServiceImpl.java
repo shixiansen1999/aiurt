@@ -43,6 +43,8 @@ import java.util.stream.Collectors;
 @Service
 @Slf4j
 public class SysDictServiceImpl extends ServiceImpl<SysDictMapper, SysDict> implements ISysDictService {
+	public static final int LENGTH_3 = 3;
+	public static final int LENGTH_4 = 4;
 
     @Autowired
     private SysDictMapper sysDictMapper;
@@ -358,18 +360,18 @@ public class SysDictServiceImpl extends ServiceImpl<SysDictMapper, SysDict> impl
 		if (dictCode.contains(SymbolConstant.COMMA)) {
 			//关联表字典（举例：sys_user,realname,id）
 			String[] params = dictCode.split(",");
-			if (params.length < 3) {
+			if (params.length < LENGTH_3) {
 				// 字典Code格式不正确
 				return null;
 			}
 			//SQL注入校验（只限制非法串改数据库）
 			final String[] sqlInjCheck = {params[0], params[1], params[2]};
 			SqlInjectionUtil.filterContent(sqlInjCheck);
-			if (params.length == 4) {
+			if (params.length == LENGTH_4) {
 				// SQL注入校验（查询条件SQL 特殊check，此方法仅供此处使用）
 				SqlInjectionUtil.specialFilterContent(params[3]);
 				ls = this.queryTableDictItemsByCodeAndFilter(params[0], params[1], params[2], params[3]);
-			} else if (params.length == 3) {
+			} else if (params.length == LENGTH_3) {
 				ls = this.queryTableDictItemsByCode(params[0], params[1], params[2]);
 			} else {
 				// 字典Code格式不正确
@@ -388,10 +390,10 @@ public class SysDictServiceImpl extends ServiceImpl<SysDictMapper, SysDict> impl
 			//update-begin-author:taoyan date:20210329 for: 下拉搜索不支持表名后加查询条件
 			String[] params = dictCode.split(",");
 			String condition = null;
-			if (params.length != 3 && params.length != 4) {
+			if (params.length != LENGTH_3 && params.length != LENGTH_4) {
 				// 字典Code格式不正确
 				return null;
-			} else if (params.length == 4) {
+			} else if (params.length == LENGTH_4) {
 				condition = params[3];
 				// update-begin-author:taoyan date:20220314 for: online表单下拉搜索框表字典配置#{sys_org_code}报错 #3500
 				if(condition.indexOf("#{")>=0){

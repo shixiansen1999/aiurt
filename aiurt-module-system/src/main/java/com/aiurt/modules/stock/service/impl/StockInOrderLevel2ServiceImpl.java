@@ -230,7 +230,8 @@ public class StockInOrderLevel2ServiceImpl extends ServiceImpl<StockInOrderLevel
 				String statusname = sysBaseApi.translateDict("stock_in_order_level2_status",statuscode);
 				excel.createRow(rowIndex++);
 				excel.setCell(0, "基本信息");
-				for(int i = 1; i<10; i++){
+				int num = 10;
+				for(int i = 1; i<num; i++){
 					excel.setCell(i, "");
 				}
 				excel.createRow(rowIndex++);
@@ -259,7 +260,7 @@ public class StockInOrderLevel2ServiceImpl extends ServiceImpl<StockInOrderLevel
 				excel.setCell(9, "");
 				excel.createRow(rowIndex++);
 				excel.setCell(0, "提报物资清单");
-				for(int i = 1; i<10; i++){
+				for(int i = 1; i<num; i++){
 					excel.setCell(i, "");
 				}
 				excel.createRow(rowIndex++);
