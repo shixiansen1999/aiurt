@@ -184,5 +184,8 @@ public class MaterialBase extends DictEntity {
 	@ApiModelProperty(value = "默认0")
 	@TableField(exist = false)
 	private  Integer  defaultValue = 0;
+	@ApiModelProperty(value = "添加个数")
+	@TableField(exist = false)
+	private Integer addNumber;
 
 }

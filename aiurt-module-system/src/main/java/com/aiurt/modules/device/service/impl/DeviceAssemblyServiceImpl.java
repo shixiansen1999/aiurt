@@ -9,10 +9,12 @@ import com.aiurt.modules.material.entity.MaterialBase;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -30,33 +32,64 @@ public class DeviceAssemblyServiceImpl extends ServiceImpl<DeviceAssemblyMapper,
     @Override
     public List<DeviceAssembly> fromMaterialToAssembly(List<MaterialBase> materialBaseList) {
         List<DeviceAssembly> deviceAssemblyList = new ArrayList<>();
-        if(materialBaseList != null && materialBaseList.size()>0){
-            for(MaterialBase materialBase : materialBaseList){
-                DeviceAssembly deviceAssembly = new DeviceAssembly();
-                DeviceAssembly deviceAssemblyOld = deviceAssemblyMapper.selectOne(new LambdaQueryWrapper<DeviceAssembly>().likeRight(DeviceAssembly::getCode, materialBase.getCode())
-                        .eq(DeviceAssembly::getDelFlag, 0).orderByDesc(DeviceAssembly::getCreateTime).last("limit 1"));
-                String code = materialBase.getCode();
-                String format = "";
-                if(deviceAssemblyOld != null){
-                    String codeold = deviceAssemblyOld.getCode();
-                    String numstr = codeold.substring(codeold.length()-3);
-                    format = String.format("%03d", Long.parseLong(numstr) + 1);
-                }else{
-                    format = "001";
+
+        if(materialBaseList != null && materialBaseList.size()>0) {
+            for (MaterialBase materialBase : materialBaseList) {
+                if (ObjectUtils.isNotEmpty(materialBase.getAddNumber())) {
+                    for (int i = 0; i < materialBase.getAddNumber(); i++) {
+                        DeviceAssembly deviceAssembly = new DeviceAssembly();
+                        DeviceAssembly deviceAssemblyOld = deviceAssemblyMapper.selectOne(new LambdaQueryWrapper<DeviceAssembly>().likeRight(DeviceAssembly::getCode, materialBase.getCode())
+                                .eq(DeviceAssembly::getDelFlag, 0).orderByDesc(DeviceAssembly::getCreateTime).last("limit 1"));
+                        String code = materialBase.getCode();
+                        String format = "";
+                        if (deviceAssemblyOld != null) {
+                            String codeold = deviceAssemblyOld.getCode();
+                            String numstr = codeold.substring(codeold.length() - 3);
+                            format = String.format("%03d", Long.parseLong(numstr) + 1 +materialBase.getAddNumber() - i-1);
+                        } else {
+                            format = "001";
+                        }
+                        Device device = deviceService.getOne(new QueryWrapper<Device>().eq("code", materialBase.getDeviceCode()));
+                        deviceAssembly.setDeviceCode(materialBase.getDeviceCode() == null ? "" : materialBase.getDeviceCode());
+                        deviceAssembly.setCode(code + format);
+                        deviceAssembly.setSpecifications(materialBase.getSpecifications() == null ? "" : materialBase.getSpecifications());
+                        deviceAssembly.setMaterialCode(materialBase.getCode() == null ? "" : materialBase.getCode());
+                        deviceAssembly.setBaseTypeCode(materialBase.getBaseTypeCode() == null ? "" : materialBase.getBaseTypeCode());
+                        deviceAssembly.setManufactorCode(materialBase.getManufactorCode() == null ? "" : materialBase.getManufactorCode());
+                        deviceAssembly.setPrice(materialBase.getPrice() == null ? "" : materialBase.getPrice());
+                        deviceAssembly.setDeviceTypeCode(device.getDeviceTypeCode() == null ? "" : device.getDeviceTypeCode());
+                        deviceAssembly.setUnit(materialBase.getUnit() == null ? "" : materialBase.getUnit());
+                        deviceAssembly.setMaterialName(materialBase.getName());
+                        deviceAssembly.setConsumablesType(materialBase.getConsumablesType());
+                        deviceAssemblyList.add(deviceAssembly);
+                    }
+                } else {
+                    DeviceAssembly deviceAssembly = new DeviceAssembly();
+                    DeviceAssembly deviceAssemblyOld = deviceAssemblyMapper.selectOne(new LambdaQueryWrapper<DeviceAssembly>().likeRight(DeviceAssembly::getCode, materialBase.getCode())
+                            .eq(DeviceAssembly::getDelFlag, 0).orderByDesc(DeviceAssembly::getCreateTime).last("limit 1"));
+                    String code = materialBase.getCode();
+                    String format = "";
+                    if (deviceAssemblyOld != null) {
+                        String codeold = deviceAssemblyOld.getCode();
+                        String numstr = codeold.substring(codeold.length() - 3);
+                        format = String.format("%03d", Long.parseLong(numstr) + 1);
+                    } else {
+                        format = "001";
+                    }
+                    Device device = deviceService.getOne(new QueryWrapper<Device>().eq("code", materialBase.getDeviceCode()));
+                    deviceAssembly.setDeviceCode(materialBase.getDeviceCode() == null ? "" : materialBase.getDeviceCode());
+                    deviceAssembly.setCode(code + format);
+                    deviceAssembly.setSpecifications(materialBase.getSpecifications() == null ? "" : materialBase.getSpecifications());
+                    deviceAssembly.setMaterialCode(materialBase.getCode() == null ? "" : materialBase.getCode());
+                    deviceAssembly.setBaseTypeCode(materialBase.getBaseTypeCode() == null ? "" : materialBase.getBaseTypeCode());
+                    deviceAssembly.setManufactorCode(materialBase.getManufactorCode() == null ? "" : materialBase.getManufactorCode());
+                    deviceAssembly.setPrice(materialBase.getPrice() == null ? "" : materialBase.getPrice());
+                    deviceAssembly.setDeviceTypeCode(device.getDeviceTypeCode() == null ? "" : device.getDeviceTypeCode());
+                    deviceAssembly.setUnit(materialBase.getUnit() == null ? "" : materialBase.getUnit());
+                    deviceAssembly.setMaterialName(materialBase.getName());
+                    deviceAssembly.setConsumablesType(materialBase.getConsumablesType());
+                    deviceAssemblyList.add(deviceAssembly);
                 }
-                Device device = deviceService.getOne(new QueryWrapper<Device>().eq("code",materialBase.getDeviceCode()));
-                deviceAssembly.setDeviceCode(materialBase.getDeviceCode()==null?"":materialBase.getDeviceCode());
-                deviceAssembly.setCode(code + format);
-                deviceAssembly.setSpecifications(materialBase.getSpecifications()==null?"":materialBase.getSpecifications());
-                deviceAssembly.setMaterialCode(materialBase.getCode()==null?"":materialBase.getCode());
-                deviceAssembly.setBaseTypeCode(materialBase.getBaseTypeCode()==null?"":materialBase.getBaseTypeCode());
-                deviceAssembly.setManufactorCode(materialBase.getManufactorCode()==null?"":materialBase.getManufactorCode());
-                deviceAssembly.setPrice(materialBase.getPrice()==null?"":materialBase.getPrice());
-                deviceAssembly.setDeviceTypeCode(device.getDeviceTypeCode()==null?"":device.getDeviceTypeCode());
-                deviceAssembly.setUnit(materialBase.getUnit()==null?"":materialBase.getUnit());
-                deviceAssembly.setMaterialName(materialBase.getName());
-                deviceAssembly.setConsumablesType(materialBase.getConsumablesType());
-                deviceAssemblyList.add(deviceAssembly);
             }
         }
         return deviceAssemblyList;
