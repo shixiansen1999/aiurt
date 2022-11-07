@@ -296,7 +296,7 @@ public class SparePartStockServiceImpl extends ServiceImpl<SparePartStockMapper,
             if (CollUtil.isNotEmpty(collect)) {
                 for (int i = 0; i<integer; i++) {
                     if (i==0){
-                        String last12Months = getLast12Months(1);
+                        String last12Months = getLast12Months(3);
                         String substrings = last12Months.substring(0,4);
                         DateTime parse = DateUtil.parse(last12Months,"yyyy-MM");
                         int quarter = parse.quarter();
@@ -370,13 +370,13 @@ public class SparePartStockServiceImpl extends ServiceImpl<SparePartStockMapper,
             if (CollUtil.isEmpty(q.getSparePartConsumeList())) {
                 List<SparePartConsume> list = new ArrayList<>();
                 SparePartConsume sparePartConsume1 = new SparePartConsume();
-                this.getSubject(q,substrings,string,list1,begin,end,materialBaseTypeList);
+                this.getSubject(sparePartConsume1,q,substrings,string,list1,begin,end,materialBaseTypeList);
                 list.add(sparePartConsume1);
                 q.setSparePartConsumeList(list);
             } else {
                 List<SparePartConsume> sparePartConsumeList = q.getSparePartConsumeList();
                 SparePartConsume sparePartConsume1 = new SparePartConsume();
-                this.getSubject(q,substrings,string,list1,begin,end,materialBaseTypeList);
+                this.getSubject(sparePartConsume1,q,substrings,string,list1,begin,end,materialBaseTypeList);
                 sparePartConsumeList.add(sparePartConsume1);
             }
         }
@@ -392,15 +392,16 @@ public class SparePartStockServiceImpl extends ServiceImpl<SparePartStockMapper,
      * @param end
      * @param materialBaseTypeList
      */
-    private void getSubject(MaterialBaseType q,
+    private void getSubject(
+                            SparePartConsume sparePartConsume,
+                            MaterialBaseType q,
                             String substrings,
                             String string,
                             List<String> list1,
                             DateTime begin,
                             DateTime end,
                             List<MaterialBaseType> materialBaseTypeList){
-        SparePartConsume sparePartConsume1 = new SparePartConsume();
-        sparePartConsume1.setQuarter(substrings+"年"+"第"+string+"季度");
+        sparePartConsume.setQuarter(substrings+"年"+"第"+string+"季度");
         q.setMaterialBaseTypeList(null);
         List<String> list3 = new ArrayList<>();
         list3.add(q.getBaseTypeCode());
@@ -412,9 +413,9 @@ public class SparePartStockServiceImpl extends ServiceImpl<SparePartStockMapper,
             subjectCount = subjectCount + sparePartStockMapper.getTimeCount(null, CollectionUtil.isNotEmpty(list1) ? list1 : collect1, begin, end);
         }
         if (timeCount!=null){
-            sparePartConsume1.setCount(timeCount+subjectCount);
+            sparePartConsume.setCount(timeCount+subjectCount);
         }else {
-            sparePartConsume1.setCount(subjectCount);
+            sparePartConsume.setCount(subjectCount);
         }
     }
 

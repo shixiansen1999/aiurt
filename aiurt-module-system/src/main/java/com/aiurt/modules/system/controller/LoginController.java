@@ -13,6 +13,7 @@ import cn.hutool.crypto.asymmetric.RSA;
 import com.aiurt.common.api.dto.LogDTO;
 import com.aiurt.common.constant.CacheConstant;
 import com.aiurt.common.constant.CommonConstant;
+import com.aiurt.common.constant.SymbolConstant;
 import com.aiurt.common.system.util.JwtUtil;
 import com.aiurt.common.util.*;
 import com.aiurt.common.util.encryption.EncryptedString;
@@ -376,7 +377,8 @@ public class LoginController {
 				result = sysUserService.checkUserIsEffective(sysUser);
 				if(!result.isSuccess()) {
 					String message = result.getMessage();
-					if("该用户不存在，请注册".equals(message)){
+					String e = "该用户不存在，请注册";
+					if(e.equals(message)){
 						result.error500("该用户不存在或未绑定手机号");
 					}
 					return result;
@@ -472,7 +474,7 @@ public class LoginController {
 		String tenantIds = sysUser.getRelTenantIds();
 		if (oConvertUtils.isNotEmpty(tenantIds)) {
 			List<Integer> tenantIdList = new ArrayList<>();
-			for(String id: tenantIds.split(",")){
+			for(String id: tenantIds.split(SymbolConstant.COMMA)){
 				tenantIdList.add(Integer.valueOf(id));
 			}
 			// 该方法仅查询有效的租户，如果返回0个就说明所有的租户均无效。

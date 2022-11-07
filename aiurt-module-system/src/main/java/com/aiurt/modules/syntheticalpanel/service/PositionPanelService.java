@@ -1,5 +1,6 @@
 package com.aiurt.modules.syntheticalpanel.service;
 
+import com.aiurt.modules.position.entity.CsStation;
 import com.aiurt.modules.syntheticalpanel.model.PositionPanelModel;
 
 import java.util.List;
@@ -14,7 +15,7 @@ public interface PositionPanelService {
      * @param positionPanel
      * @return List<PositionPanel>
      */
-    List<PositionPanelModel> readAll(PositionPanelModel positionPanel);
+    List<CsStation> readAll(PositionPanelModel positionPanel);
 
     /**
      * 通过名称查询

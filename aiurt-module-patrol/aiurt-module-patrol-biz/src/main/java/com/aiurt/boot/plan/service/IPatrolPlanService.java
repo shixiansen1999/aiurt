@@ -95,9 +95,10 @@ public interface IPatrolPlanService extends IService<PatrolPlan> {
     IPage<Device> deviceList(Page<Device> page, DeviceListDTO deviceListDTO);
 
     /**
-     *
+     * 修改状态
      * @param planId
      * @param status
+     * @return
      */
     int modefy(String planId, Integer status);
 }

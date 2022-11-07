@@ -1,5 +1,6 @@
 package com.aiurt.common.system.base.controller;
 
+import com.aiurt.common.system.base.view.AiurtEntityExcelView;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -204,4 +205,29 @@ public class BaseController<T, S extends IService<T>> {
         }
         return Result.error("文件导入失败！");
     }
+
+    /**
+     * 导出模板
+     * @param exportFields 自定义导出列，逗号隔开
+     * @param clazz 实体类
+     * @param title 文件名称
+     * @return
+     */
+    protected ModelAndView exportTemplateXls(String exportFields, Class<T> clazz, String title) {
+
+        // Step.1 AutoPoi 导出Excel
+        ModelAndView mv = new ModelAndView(new AiurtEntityExcelView());
+        //此处设置的filename无效 ,前端会重更新设置一下
+        mv.addObject(NormalExcelConstants.CLASS, clazz);
+        // 自定义导出列
+        mv.addObject(NormalExcelConstants.EXPORT_FIELDS, exportFields);
+        //update-begin--Author:liusq  Date:20210126 for：图片导出报错，ImageBasePath未设置--------------------
+        ExportParams  exportParams = new ExportParams();
+        exportParams.setTitle(title);
+        exportParams.setImageBasePath(upLoadPath);
+        //update-end--Author:liusq  Date:20210126 for：图片导出报错，ImageBasePath未设置----------------------
+        mv.addObject(NormalExcelConstants.PARAMS, exportParams);
+        return mv;
+    }
+
 }

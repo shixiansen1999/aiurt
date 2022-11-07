@@ -840,7 +840,8 @@ public class ThirdAppWechatEnterpriseServiceImpl implements IThirdAppService {
         JSONObject response = JwUserAPI.getUserInfoByCode(code, accessToken);
         if (response != null) {
             log.info("response: " + response.toJSONString());
-            if (response.getIntValue("errcode") == 0) {
+            String e = "errcode";
+            if (response.getIntValue(e) == 0) {
                 return response.getString("UserId");
             }
         }

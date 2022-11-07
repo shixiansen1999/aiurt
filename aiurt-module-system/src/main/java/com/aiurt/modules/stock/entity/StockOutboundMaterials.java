@@ -167,4 +167,10 @@ public class StockOutboundMaterials extends DictEntity {
 	@ApiModelProperty(value = " 单价")
 	@TableField(exist = false)
 	private  String  price;
+
+	@Excel(name = "是否是易耗品：0否 1是", width = 15)
+	@ApiModelProperty(value = "是否是易耗品：0否 1是 默认为0")
+	@Dict(dicCode = "consumables_type")
+	@TableField(exist = false)
+	private java.lang.Integer consumablesType = 0;
 }

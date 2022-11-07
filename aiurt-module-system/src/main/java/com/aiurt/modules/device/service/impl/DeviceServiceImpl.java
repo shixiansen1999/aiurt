@@ -2,6 +2,7 @@ package com.aiurt.modules.device.service.impl;
 
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.constant.CommonConstant;
+import com.aiurt.common.constant.SymbolConstant;
 import com.aiurt.modules.device.entity.Device;
 import com.aiurt.modules.device.entity.DeviceAssembly;
 import com.aiurt.modules.device.entity.DeviceType;
@@ -65,7 +66,7 @@ public class DeviceServiceImpl extends ServiceImpl<DeviceMapper, Device> impleme
 		//设备复用类型
 		String reuseType = device.getReuseType()==null?"":device.getReuseType();
 		String reuseTypeName = "";
-		if(!"".equals(reuseType) && reuseType.contains(",")){
+		if(!"".equals(reuseType) && reuseType.contains(SymbolConstant.COMMA)){
 			String[] split = reuseType.split(",");
 			for(String s : split){
 				reuseTypeName += sysBaseApi.translateDict("device_reuse_type",s)==null?"":sysBaseApi.translateDict("device_reuse_type",s) + ",";

@@ -5,6 +5,7 @@ import com.aiurt.boot.manager.dto.ExamineDTO;
 import com.aiurt.boot.manager.dto.MajorDTO;
 import com.aiurt.boot.task.dto.CheckListDTO;
 import com.aiurt.boot.task.dto.RepairTaskDTO;
+import com.aiurt.boot.task.dto.RepairTaskStationDTO;
 import com.aiurt.boot.task.entity.RepairTask;
 import com.aiurt.boot.task.entity.RepairTaskEnclosure;
 import com.aiurt.boot.task.service.IRepairTaskService;
@@ -120,9 +121,28 @@ public class RepairTaskController extends BaseController<RepairTask, IRepairTask
     @ApiResponses({
             @ApiResponse(code = 200, message = "OK", response = RepairTaskDTO.class)
     })
-    public Result<List<RepairTaskDTO>> repairSelectTasklet(String taskId) {
-        List<RepairTaskDTO> repairTaskPage = repairTaskService.selectTaskList(taskId);
+    public Result<List<RepairTaskDTO>> repairSelectTasklet(@ApiParam(name = "taskId", value = "任务id")
+                                                               @RequestParam(value = "taskId", required = true)String taskId,
+                                                           @ApiParam(name = "stationCode", value = "站点") @RequestParam(value="stationCode",required = true)String stationCode) {
+        List<RepairTaskDTO> repairTaskPage = repairTaskService.selectTaskList(taskId,stationCode);
         return Result.OK(repairTaskPage);
+    }
+
+    /**
+     * 站点信息下拉查询
+     * @param taskId
+     * @return
+     */
+    @AutoLog(value = "检修任务-站点信息下拉查询", operateType =  1, operateTypeAlias = "站点信息下拉查询", module = ModuleType.INSPECTION)
+    @ApiOperation(value = "检修任务-站点信息下拉查询", notes = "检修任务-站点信息下拉查询")
+    @GetMapping(value = "/repairTaskStationList")
+    @ApiResponses({
+            @ApiResponse(code = 200, message = "OK", response = RepairTaskDTO.class)
+    })
+    public Result<List<RepairTaskStationDTO>> repairTaskStationList(@ApiParam(name = "taskId", value = "任务id")
+                                                                        @RequestParam(value = "taskId", required = true)String taskId) {
+        List<RepairTaskStationDTO> repairTaskStations= repairTaskService.repairTaskStationList(taskId);
+        return Result.OK(repairTaskStations);
     }
 
     @AutoLog(value = "检修任务-检修任务管理详情", operateType =  1, operateTypeAlias = "检修任务详情", module = ModuleType.INSPECTION)
@@ -132,8 +152,8 @@ public class RepairTaskController extends BaseController<RepairTask, IRepairTask
             @ApiResponse(code = 200, message = "OK", response = CheckListDTO.class)
     })
     public Result<CheckListDTO> selectRepairTaskInfo(String taskId,
-                                                           @ApiParam(name = "stationCode", value = "站点") @RequestParam(value="stationCode",required = false)String stationCode,
-                                                           @ApiParam(name = "deviceId",value = "检修单")@RequestParam(value = "deviceId",required = false)String deviceId
+                                                           @ApiParam(name = "stationCode", value = "站点") @RequestParam(value="stationCode",required = true)String stationCode,
+                                                           @ApiParam(name = "deviceId",value = "检修单")@RequestParam(value = "deviceId",required = true)String deviceId
     ) {
         CheckListDTO checkListDto = repairTaskService.selectRepairTaskInfo(taskId,stationCode,deviceId);
         return Result.OK(checkListDto);
@@ -343,7 +363,6 @@ public class RepairTaskController extends BaseController<RepairTask, IRepairTask
      * @param id
      * @return
      */
-    //@AutoLog(value = "repair_task-通过id查询")
     @ApiOperation(value = "repair_task-通过id查询", notes = "repair_task-通过id查询")
     @GetMapping(value = "/queryById")
     public Result<RepairTask> queryById(@RequestParam(name = "id", required = true) String id) {

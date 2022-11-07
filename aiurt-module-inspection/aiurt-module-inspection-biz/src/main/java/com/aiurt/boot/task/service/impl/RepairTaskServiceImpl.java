@@ -22,6 +22,7 @@ import com.aiurt.boot.plan.mapper.RepairPoolStationRelMapper;
 import com.aiurt.boot.plan.service.IRepairPoolService;
 import com.aiurt.boot.task.dto.CheckListDTO;
 import com.aiurt.boot.task.dto.RepairTaskDTO;
+import com.aiurt.boot.task.dto.RepairTaskStationDTO;
 import com.aiurt.boot.task.dto.WriteMonadDTO;
 import com.aiurt.boot.task.entity.*;
 import com.aiurt.boot.task.mapper.*;
@@ -271,8 +272,8 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
     }
 
     @Override
-    public List<RepairTaskDTO> selectTaskList( String taskId) {
-        List<RepairTaskDTO> repairTasks = repairTaskMapper.selectTaskList(taskId);
+    public List<RepairTaskDTO> selectTaskList( String taskId,String stationCode) {
+        List<RepairTaskDTO> repairTasks = repairTaskMapper.selectTaskList(taskId,stationCode);
         repairTasks.forEach(e -> {
             //查询同行人
             List<RepairTaskPeerRel> repairTaskPeer = repairTaskPeerRelMapper.selectList(
@@ -305,7 +306,7 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                 //设备类型名称
                 e.setDeviceTypeName(q.getDeviceTypeName());
             });
-            //检修单名称
+            //检修单名称：检修标准title+设备名称
             if(e.getIsAppointDevice() == 1){
                 e.setResultName(e.getOverhaulStandardName()+"("+e.getEquipmentName()+")");
             }else{
@@ -357,6 +358,14 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
         });
         return repairTasks;
     }
+
+    @Override
+    public List<RepairTaskStationDTO> repairTaskStationList(String taskId) {
+        List<RepairTaskStationDTO> repairTaskStationDtos = repairTaskMapper.repairTaskStationList(taskId);
+        return repairTaskStationDtos;
+    }
+
+
     @Override
     public CheckListDTO selectRepairTaskInfo( String taskId,String stationCode,String deviceId) {
         CheckListDTO checkListDTO = repairTaskMapper.selectRepairTaskInfo(taskId,stationCode,deviceId);
@@ -378,11 +387,24 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                 if (CollUtil.isNotEmpty(repairTaskResults1)) {
                     checkListDTO.setAbnormal(repairTaskResults1.size());
                 }
+                //检修结果
+                if(ObjectUtil.isNotEmpty(checkListDTO.getAbnormal())){
+                    //异常
+                    checkListDTO.setStatusName(sysBaseApi.translateDict(DictConstant.OVERHAUL_RESULT, String.valueOf(InspectionConstant.NO_RESULT_STATUS)));
+                }
+                if(ObjectUtil.isEmpty(checkListDTO.getAbnormal()) & ObjectUtil.isNotEmpty(checkListDTO.getNormal())){
+                    //正常
+                    checkListDTO.setStatusName(sysBaseApi.translateDict(DictConstant.OVERHAUL_RESULT, String.valueOf(InspectionConstant.RESULT_STATUS)));
+                }
+                if(ObjectUtil.isEmpty(checkListDTO.getAbnormal()) & ObjectUtil.isEmpty(checkListDTO.getNormal()) ){
+                    //都为空则显示null
+                    checkListDTO.setStatusName(null);
+                }
 
             }
             //检修单名称
             if (checkListDTO.getResultCode() != null) {
-                checkListDTO.setResultName("检修单" + checkListDTO.getResultCode());
+                checkListDTO.setResultName( checkListDTO.getResultCode());
 
                 //同行人列表
                 List<RepairTaskPeerRel> repairTaskPeer = repairTaskPeerRelMapper.selectList(
@@ -459,8 +481,8 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
                 checkListDTO.setEquipmentLocation(manager.translateStation(stationDTOList));
 
                 //站点位置
-                List<StationDTO> stationDTOList1 = new ArrayList<>();
-                stationDTOList1.forEach(e -> {
+                List<StationDTO> stationDtoList1 = new ArrayList<>();
+                stationDtoList1.forEach(e -> {
                     e.setStationCode(checkListDTO.getStationCode());
                     e.setLineCode(checkListDTO.getLineCode());
                     e.setPositionCode(checkListDTO.getPositionCode());
@@ -801,8 +823,8 @@ public class RepairTaskServiceImpl extends ServiceImpl<RepairTaskMapper, RepairT
             checkListDTO.setEquipmentLocation(manager.translateStation(stationDTOList));
 
             //站点位置
-            List<StationDTO> stationDTOList1 = new ArrayList<>();
-            stationDTOList1.forEach(e -> {
+            List<StationDTO> stationDtoList1 = new ArrayList<>();
+            stationDtoList1.forEach(e -> {
                 e.setStationCode(checkListDTO.getStationCode());
                 e.setLineCode(checkListDTO.getLineCode());
                 e.setPositionCode(checkListDTO.getPositionCode());

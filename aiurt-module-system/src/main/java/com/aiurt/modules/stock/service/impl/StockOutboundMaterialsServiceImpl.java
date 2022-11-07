@@ -70,6 +70,7 @@ public class StockOutboundMaterialsServiceImpl extends ServiceImpl<StockOutbound
         materials.setManufactorCodeName(csname);
         materials.setSpecifications(materialBase.getSpecifications());
         materials.setPrice(materialBase.getPrice());
+        materials.setConsumablesType(materialBase.getConsumablesType());
         return materials;
     }
 }

@@ -220,7 +220,8 @@ public final class XmlUtils {
         @Override
         public void startElement(final String namespaceUrl, final String localName, final String qName,
                 final Attributes attributes) throws SAXException {
-            if ("attributes".equals(localName)) {
+            String a = "attributes";
+            if (a.equals(localName)) {
                 this.foundAttributes = true;
             } else if (this.foundAttributes) {
                 this.value = new StringBuilder();
@@ -238,7 +239,8 @@ public final class XmlUtils {
         @Override
         public void endElement(final String namespaceUrl, final String localName, final String qName)
                 throws SAXException {
-            if ("attributes".equals(localName)) {
+            String a = "attributes";
+            if (a.equals(localName)) {
                 this.foundAttributes = false;
                 this.currentAttribute = null;
             } else if (this.foundAttributes) {

@@ -3,6 +3,7 @@ package com.aiurt.modules.system.controller;
 import cn.hutool.core.util.ObjectUtil;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.constant.CommonConstant;
+import com.aiurt.common.constant.SymbolConstant;
 import com.aiurt.common.constant.enums.RoleIndexConfigEnum;
 import com.aiurt.common.util.Md5Util;
 import com.aiurt.common.util.oConvertUtils;
@@ -576,7 +577,8 @@ public class SysPermissionController {
         jsonArray = jsonArray.stream().map(obj -> {
             JSONObject returnObj = new JSONObject();
             JSONObject jsonObj = (JSONObject) obj;
-            if (jsonObj.containsKey("children")) {
+            String c = "children";
+            if (jsonObj.containsKey(c)) {
                 JSONArray childrens = jsonObj.getJSONArray("children");
                 childrens = childrens.stream().filter(arrObj -> !"true".equals(((JSONObject) arrObj).getString("hidden"))).collect(Collectors.toCollection(JSONArray::new));
                 if (childrens == null || childrens.size() == 0) {
@@ -821,7 +823,7 @@ public class SysPermissionController {
      */
     private String urlToRouteName(String url) {
         if (oConvertUtils.isNotEmpty(url)) {
-            if (url.startsWith("/")) {
+            if (url.startsWith(SymbolConstant.SINGLE_SLASH)) {
                 url = url.substring(1);
             }
             url = url.replace("/", "-");

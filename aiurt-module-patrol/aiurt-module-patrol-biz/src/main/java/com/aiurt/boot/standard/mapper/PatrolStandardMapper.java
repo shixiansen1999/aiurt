@@ -23,10 +23,12 @@ public interface PatrolStandardMapper extends BaseMapper<PatrolStandard> {
      * @return
      */
     List<PatrolStandardDto> pageList (@Param("page") Page page, @Param("patrolStandard") PatrolStandard patrolStandard);
+
     /**
      * 分页查询
      * @param page
      * @param patrolStandard
+     * @param stations
      * @return
      */
     List<PatrolStandardDto> pageLists (@Param("page") Page page, @Param("patrolStandard") PatrolStandardDto patrolStandard,List<String>stations);
@@ -34,6 +36,7 @@ public interface PatrolStandardMapper extends BaseMapper<PatrolStandard> {
     /**
      * 获取分类
      * @param professionCode
+     * @param subsystemCode
      * @return
      */
     List<InspectionStandardDto> list(@Param("professionCode")String professionCode, @Param("subsystemCode") String subsystemCode);

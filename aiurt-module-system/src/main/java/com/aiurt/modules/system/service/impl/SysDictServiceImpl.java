@@ -2,6 +2,7 @@ package com.aiurt.modules.system.service.impl;
 
 import com.aiurt.common.constant.CacheConstant;
 import com.aiurt.common.constant.CommonConstant;
+import com.aiurt.common.constant.SymbolConstant;
 import org.jeecg.common.system.query.QueryGenerator;
 import org.jeecg.common.system.vo.DictModel;
 import org.jeecg.common.system.vo.DictModelMany;
@@ -42,6 +43,8 @@ import java.util.stream.Collectors;
 @Service
 @Slf4j
 public class SysDictServiceImpl extends ServiceImpl<SysDictMapper, SysDict> implements ISysDictService {
+	public static final int LENGTH_3 = 3;
+	public static final int LENGTH_4 = 4;
 
     @Autowired
     private SysDictMapper sysDictMapper;
@@ -168,7 +171,8 @@ public class SysDictServiceImpl extends ServiceImpl<SysDictMapper, SysDict> impl
 	public List<DictModel> queryTableDictTextByKeys(String table, String text, String code, List<String> keys) {
 		//update-begin-author:taoyan date:20220113 for: @dict注解支持 dicttable 设置where条件
 		String filterSql = null;
-		if(table.toLowerCase().indexOf("where")>0){
+		String w = "where";
+		if(table.toLowerCase().indexOf(w)>0){
 			String[] arr = table.split(" (?i)where ");
 			table = arr[0];
 			filterSql = arr[1];
@@ -284,13 +288,14 @@ public class SysDictServiceImpl extends ServiceImpl<SysDictMapper, SysDict> impl
 	private String getFilterSql(String table, String text, String code, String condition, String keyword){
 		String keywordSql = null, filterSql = "", sqlWhere = " where ";
 		// update-begin-author:sunjianlei date:20220112 for: 【JTC-631】判断如果 table 携带了 where 条件，那么就使用 and 查询，防止报错
-		if (table.toLowerCase().contains(" where ")) {
+		String w = " where ";
+		if (table.toLowerCase().contains(w)) {
 			sqlWhere = " and ";
 		}
 		// update-end-author:sunjianlei date:20220112 for: 【JTC-631】判断如果 table 携带了 where 条件，那么就使用 and 查询，防止报错
 		if(oConvertUtils.isNotEmpty(keyword)){
 			// 判断是否是多选
-			if (keyword.contains(",")) {
+			if (keyword.contains(SymbolConstant.COMMA)) {
                 //update-begin--author:scott--date:20220105--for：JTC-529【表单设计器】 编辑页面报错，in参数采用双引号导致 ----
 				String inKeywords = "'" + String.join("','", keyword.split(",")) + "'";
                 //update-end--author:scott--date:20220105--for：JTC-529【表单设计器】 编辑页面报错，in参数采用双引号导致----
@@ -352,21 +357,21 @@ public class SysDictServiceImpl extends ServiceImpl<SysDictMapper, SysDict> impl
 	@Override
 	public List<DictModel> getDictItems(String dictCode) {
 		List<DictModel> ls;
-		if (dictCode.contains(",")) {
+		if (dictCode.contains(SymbolConstant.COMMA)) {
 			//关联表字典（举例：sys_user,realname,id）
 			String[] params = dictCode.split(",");
-			if (params.length < 3) {
+			if (params.length < LENGTH_3) {
 				// 字典Code格式不正确
 				return null;
 			}
 			//SQL注入校验（只限制非法串改数据库）
 			final String[] sqlInjCheck = {params[0], params[1], params[2]};
 			SqlInjectionUtil.filterContent(sqlInjCheck);
-			if (params.length == 4) {
+			if (params.length == LENGTH_4) {
 				// SQL注入校验（查询条件SQL 特殊check，此方法仅供此处使用）
 				SqlInjectionUtil.specialFilterContent(params[3]);
 				ls = this.queryTableDictItemsByCodeAndFilter(params[0], params[1], params[2], params[3]);
-			} else if (params.length == 3) {
+			} else if (params.length == LENGTH_3) {
 				ls = this.queryTableDictItemsByCode(params[0], params[1], params[2]);
 			} else {
 				// 字典Code格式不正确
@@ -381,14 +386,14 @@ public class SysDictServiceImpl extends ServiceImpl<SysDictMapper, SysDict> impl
 
 	@Override
 	public List<DictModel> loadDict(String dictCode, String keyword, Integer pageSize) {
-		if (dictCode.contains(",")) {
+		if (dictCode.contains(SymbolConstant.COMMA)) {
 			//update-begin-author:taoyan date:20210329 for: 下拉搜索不支持表名后加查询条件
 			String[] params = dictCode.split(",");
 			String condition = null;
-			if (params.length != 3 && params.length != 4) {
+			if (params.length != LENGTH_3 && params.length != LENGTH_4) {
 				// 字典Code格式不正确
 				return null;
-			} else if (params.length == 4) {
+			} else if (params.length == LENGTH_4) {
 				condition = params[3];
 				// update-begin-author:taoyan date:20220314 for: online表单下拉搜索框表字典配置#{sys_org_code}报错 #3500
 				if(condition.indexOf("#{")>=0){

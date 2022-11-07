@@ -212,4 +212,11 @@ public interface SysUserMapper extends BaseMapper<SysUser> {
 	 * @return
 	 */
 	String getUserName(@Param("realName") String realName);
+
+	/**
+	 * 查询 角色Id
+	 * @param list
+	 * @return
+	 */
+    List<String> getSysRole(@Param("list") List<String>list);
 }

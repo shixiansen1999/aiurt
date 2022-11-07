@@ -1,6 +1,7 @@
 package com.aiurt.modules.system.service.impl;
 
 import com.aiurt.common.constant.FillRuleConstant;
+import com.aiurt.common.constant.SymbolConstant;
 import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.util.FillRuleUtil;
 import com.aiurt.common.util.oConvertUtils;
@@ -43,7 +44,8 @@ public class SysCategoryServiceImpl extends ServiceImpl<SysCategoryMapper, SysCa
 			if(!ISysCategoryService.ROOT_PID_VALUE.equals(categoryPid)){
 				SysCategory parent = baseMapper.selectById(categoryPid);
 				parentCode = parent.getCode();
-				if(parent!=null && !"1".equals(parent.getHasChild())){
+				String one = "1";
+				if(parent!=null && !one.equals(parent.getHasChild())){
 					parent.setHasChild("1");
 					baseMapper.updateById(parent);
 				}
@@ -66,7 +68,8 @@ public class SysCategoryServiceImpl extends ServiceImpl<SysCategoryMapper, SysCa
 		}else{
 			//如果当前节点父ID不为空 则设置父节点的hasChild 为1
 			SysCategory parent = baseMapper.selectById(sysCategory.getPid());
-			if(parent!=null && !"1".equals(parent.getHasChild())){
+			String one = "1";
+			if(parent!=null && !one.equals(parent.getHasChild())){
 				parent.setHasChild("1");
 				baseMapper.updateById(parent);
 			}
@@ -178,7 +181,7 @@ public class SysCategoryServiceImpl extends ServiceImpl<SysCategoryMapper, SysCa
 				}
 			}
 		}
-		if(sb.toString().endsWith(",")){
+		if(sb.toString().endsWith(SymbolConstant.COMMA)){
 			sb = sb.deleteCharAt(sb.length() - 1);
 		}
 		return sb.toString();

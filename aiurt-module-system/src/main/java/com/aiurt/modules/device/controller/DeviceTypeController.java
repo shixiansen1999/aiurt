@@ -48,6 +48,8 @@ import java.util.stream.Collectors;
 @RequestMapping("/deviceType")
 @Slf4j
 public class DeviceTypeController extends BaseController<DeviceType, IDeviceTypeService> {
+	public static final int LEVEL_2 =2;
+	public static final String PID_0 = "0";
 	@Autowired
 	@Lazy
 	private IDeviceTypeService deviceTypeService;
@@ -80,14 +82,14 @@ public class DeviceTypeController extends BaseController<DeviceType, IDeviceType
 			 List<CsSubsystem> sysList = systemList.stream().filter(system-> system.getMajorCode().equals(one.getMajorCode())).collect(Collectors.toList());
 			 List<DeviceType> majorDeviceType = deviceTypeTree.stream().filter(type-> one.getMajorCode().equals(type.getMajorCode()) && (null==type.getSystemCode() || "".equals(type.getSystemCode())) && ("0").equals(type.getPid())).collect(Collectors.toList());
 			 List<DeviceType> twoList = new ArrayList<>();
-			 if(level>2) {
+			 if(level>LEVEL_2) {
 				//添加设备类型数据
 				twoList.addAll(majorDeviceType);
 			 }
 			 //判断是否有子系统数据
 			 sysList.forEach(two ->{
 				 DeviceType system = setEntity(two.getId()+"","zxt",two.getSystemCode(),two.getSystemName(),null,null,null,two.getMajorCode(),two.getSystemCode(),one.getMajorName(),null);
-				 if(level>2) {
+				 if(level>LEVEL_2) {
 					 List<DeviceType> sysDeviceType = deviceTypeTree.stream().filter(type -> system.getMajorCode().equals(type.getMajorCode()) && (null != type.getSystemCode() && !"".equals(type.getSystemCode()) && system.getSystemCode().equals(type.getSystemCode()))).collect(Collectors.toList());
 					 system.setChildren(sysDeviceType);
 				 }
@@ -215,9 +217,9 @@ public class DeviceTypeController extends BaseController<DeviceType, IDeviceType
 				type.setIsHaveDevice(0);
 			}
 			//查询上级节点
-			if(!("0").equals(type.getPid())){
+			if(!(PID_0).equals(type.getPid())){
 				type.setPUrl(deviceTypeService.getById(type.getPid()).getName());
-			}else if(null!=type.getMajorCode() && null!= type.getSystemCode() && ("0").equals(type.getPid())){
+			}else if(null!=type.getMajorCode() && null!= type.getSystemCode() && (PID_0).equals(type.getPid())){
 				LambdaQueryWrapper<CsSubsystem> wrapper = new LambdaQueryWrapper();
 				wrapper.eq(CsSubsystem::getSystemCode,type.getSystemCode());
 				wrapper.eq(CsSubsystem::getDelFlag, CommonConstant.DEL_FLAG_0);

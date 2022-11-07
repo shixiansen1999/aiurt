@@ -60,7 +60,10 @@ public final class FlowApprovalType {
      */
     public static final String STOP = "stop";
 
+    // 拒绝
     public static final String REJECT_TO_STAR = "rejectToStart";
+
+    public static final String REJECT_FIRST_USER_TASK = "reject_first_user_task";
 
     /**
      * 作废, 直接到结束节点

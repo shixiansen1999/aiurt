@@ -129,6 +129,18 @@ public class MaterialBase extends DictEntity {
 	@ApiModelProperty(value = " 单价")
 	private  String  price;
 
+	/**
+	 * 是否是易耗品：0否1是
+	 */
+	@Excel(name = "是否是易耗品：0否 1是", width = 15)
+	@ApiModelProperty(value = "是否是易耗品：0否 1是 默认为0")
+	@Dict(dicCode = "consumables_type")
+	private java.lang.Integer consumablesType = 0;
+
+	@TableField(exist = false)
+	@ApiModelProperty(value = "是否是易耗品名称")
+	private java.lang.String consumablesName;
+
 	/**所属部门编码*/
 	@Excel(name = "所属部门编码", width = 15)
 	@ApiModelProperty(value = "所属部门编码")
@@ -172,5 +184,8 @@ public class MaterialBase extends DictEntity {
 	@ApiModelProperty(value = "默认0")
 	@TableField(exist = false)
 	private  Integer  defaultValue = 0;
+	@ApiModelProperty(value = "添加个数")
+	@TableField(exist = false)
+	private Integer addNumber;
 
 }

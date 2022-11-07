@@ -2,6 +2,7 @@ package com.aiurt.modules.syntheticalpanel.controller;
 
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.aspect.annotation.PermissionData;
+import com.aiurt.modules.position.entity.CsStation;
 import com.aiurt.modules.syntheticalpanel.model.PositionPanelModel;
 import com.aiurt.modules.syntheticalpanel.service.PositionPanelService;
 import io.swagger.annotations.Api;
@@ -38,8 +39,8 @@ public class PositionPanelController {
     @ApiOperation(value="综合大屏线路工区查询", notes="综合大屏线路工区查询")
     @GetMapping(value = "/list")
     @PermissionData(pageComponent = "")
-    public Result<List<PositionPanelModel>> queryPageList(PositionPanelModel positionPanel) {
-        List<PositionPanelModel> positionPanels = positionPanelService.readAll(positionPanel);
+    public Result<List<CsStation>> queryPageList(PositionPanelModel positionPanel) {
+        List<CsStation> positionPanels = positionPanelService.readAll(positionPanel);
         return Result.OK(positionPanels);
     }
 

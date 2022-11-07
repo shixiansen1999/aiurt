@@ -164,7 +164,8 @@ public class StockSubmitPlanServiceImpl extends ServiceImpl<StockSubmitPlanMappe
 				String statusname = sysBaseApi.translateDict("stock_submit_plan_status",statuscode);
 				excel.createRow(rowIndex++);
 				excel.setCell(0, "基本信息");
-				for(int i = 1; i<11; i++){
+				int num = 11;
+				for(int i = 1; i<num; i++){
 					excel.setCell(i, "");
 				}
 				excel.createRow(rowIndex++);
@@ -195,7 +196,7 @@ public class StockSubmitPlanServiceImpl extends ServiceImpl<StockSubmitPlanMappe
 				excel.setCell(10, "");
 				excel.createRow(rowIndex++);
 				excel.setCell(0, "提报物资清单");
-				for(int i = 1; i<11; i++){
+				for(int i = 1; i<num; i++){
 					excel.setCell(i, "");
 				}
 				excel.createRow(rowIndex++);
@@ -316,7 +317,6 @@ public class StockSubmitPlanServiceImpl extends ServiceImpl<StockSubmitPlanMappe
 						// 然后自己转化为字符串，并赋值给value
 						code = String.valueOf(num);
 					}
-				//row.getCell(1).getStringCellValue()==null?"":row.getCell(1).getStringCellValue();
 					if ("".equals(code)) {
 						errorStrs.add("第 " + index + " 行：物资编码为空，忽略导入。");
 						ifAdd = false;

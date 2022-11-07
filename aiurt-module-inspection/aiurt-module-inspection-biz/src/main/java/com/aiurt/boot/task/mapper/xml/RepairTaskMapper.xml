@@ -113,6 +113,21 @@
         order by t2.update_time desc,t2.create_time desc
     </select>
 
+    <select id="repairTaskStationList" resultType="com.aiurt.boot.task.dto.RepairTaskStationDTO">
+        SELECT
+            distinct t1.station_code,
+            t3.station_name
+        FROM
+            repair_task_station_rel t1
+                LEFT JOIN repair_task t2 ON t1.repair_task_code = t2.CODE
+                LEFT JOIN cs_station t3 ON t3.station_code = t1.station_code
+        <where>
+            <if test="taskId !=null ">
+                AND t2.id = #{taskId}
+            </if>
+        </where>
+    </select>
+
     <select id="selectTaskList" resultType="com.aiurt.boot.task.dto.RepairTaskDTO">
         SELECT
         t1.id as taskId,
@@ -120,6 +135,7 @@
         t2.id as deviceId,
         t3.id as standardId,
         t2.code as overhaulCode,
+        t2.duration as duration,
         t3.major_code as majorCode,
         t3.subsystem_code as systemCode,
         t3.device_type_code as deviceTypeCode,
@@ -140,6 +156,9 @@
             AND t2.del_flag = 0
             <if test="taskId !=null ">
                 AND t1.id = #{taskId}
+            </if>
+            <if test="stationCode !=null ">
+                AND t2.station_code = #{stationCode}
             </if>
         </where>
         order by t2.update_time desc,t2.create_time desc
@@ -164,11 +183,14 @@
         rtsr.id as standardId,
         rtsr.major_code as majorCode,
         rtsr.subsystem_code as systemCode,
-        rtsr.device_type_code as deviceTypeCode
+        rtsr.device_type_code as deviceTypeCode,
+        rtdr.submit_time as submitTime,
+        rtr.status as statusCode
         FROM
             repair_task_device_rel rtdr
                 LEFT JOIN repair_task rt ON rt.id = rtdr.repair_task_id
                 LEFT JOIN repair_task_standard_rel rtsr on rtsr.id = rtdr.task_standard_rel_id
+                 LEFT JOIN repair_task_result rtr on rtr.task_device_rel_id = rtdr.id
         <where>
             rtdr.del_flag = 0
             AND rt.del_flag = 0

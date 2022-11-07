@@ -21,12 +21,14 @@ import java.util.List;
  **/
 @Component("dictQueryBlackListHandler")
 public class DictQueryBlackListHandler extends AbstractQueryBlackListHandler {
+    public static final int LENGTH_3 = 3;
+    public static final int LENGTH_4 = 4;
 
     @Override
     protected List<QueryTable> getQueryTableInfo(String dictCodeString) {
         if (dictCodeString != null && dictCodeString.indexOf(SymbolConstant.COMMA) > 0) {
             String[] arr = dictCodeString.split(SymbolConstant.COMMA);
-            if (arr.length != 3 && arr.length != 4) {
+            if (arr.length != LENGTH_3 && arr.length != LENGTH_4) {
                 return null;
             }
             String tableName = getTableName(arr[0]);

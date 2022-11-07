@@ -175,7 +175,8 @@ public class StockLevel2CheckServiceImpl extends ServiceImpl<StockLevel2CheckMap
 				SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
 				excel.createRow(rowIndex++);
 				excel.setCell(0, "基本信息");
-				for(int i = 1; i<11; i++){
+				int num = 11;
+				for(int i = 1; i<num; i++){
 					excel.setCell(i, "");
 				}
 				excel.createRow(rowIndex++);
@@ -216,7 +217,7 @@ public class StockLevel2CheckServiceImpl extends ServiceImpl<StockLevel2CheckMap
 				excel.setCell(10, "");
 				excel.createRow(rowIndex++);
 				excel.setCell(0, "物资盘点结果清单");
-				for(int i = 1; i<11; i++){
+				for(int i = 1; i<num; i++){
 					excel.setCell(i, "");
 				}
 				excel.createRow(rowIndex++);

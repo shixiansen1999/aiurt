@@ -47,6 +47,13 @@ public class CheckListDTO {
     @ApiModelProperty(value = "提交人名称")
     private String overhaulName;
 
+    /**提交时间*/
+    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm")
+    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm")
+    @ApiModelProperty(value = "提交时间")
+    @TableField(exist = false)
+    private java.util.Date submitTime;
+
     /**设备id*/
     @TableField(exist = false)
     @ApiModelProperty(value = "设备id")
@@ -253,4 +260,15 @@ public class CheckListDTO {
     @TableField(exist = false)
     @ApiModelProperty(value = "检测值")
     private String inspeciontValue;
+
+    /**检修结果 1.正常 2.异常*/
+    @Excel(name = "检修结果 1.正常 2.异常", width = 15)
+    @ApiModelProperty(value = "检修结果 1.正常 2.异常")
+    @TableField(exist = false)
+    private java.lang.Integer statusCode;
+
+    /**检修结果名称*/
+    @TableField(exist = false)
+    @ApiModelProperty(value = "检修结果名称")
+    private String statusName;
 }

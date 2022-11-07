@@ -29,6 +29,8 @@ import com.aiurt.modules.online.page.entity.ActCustomPage;
 import com.aiurt.modules.online.page.service.IActCustomPageService;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.extern.slf4j.Slf4j;
@@ -204,9 +206,17 @@ public class FlowApiServiceImpl implements FlowApiService {
 
         // 获取流程启动后的第一个任务。
         Task task = taskService.createTaskQuery().processInstanceId(processInstance.getId()).active().singleResult();
+
+        // 设置办理人
+        task.setAssignee(loginName);
+
+        // 保存数据
+        if (Objects.nonNull(busData)) {
+            saveData(task, busData, processInstance.getProcessInstanceId(), task.getId(), processInstance);
+        }
+
         // 完成流程启动后的第一个任务
-        if (StrUtil.equalsAny(task.getAssignee(), loginUser.getUsername(), FlowConstant.START_USER_NAME_VAR)
-                && Objects.nonNull(startBpmnDTO.getFlowTaskCompleteDTO()) && StrUtil.equalsIgnoreCase(startBpmnDTO.getFlowTaskCompleteDTO().getApprovalType(), FlowApprovalType.AGREE)) {
+        if (Objects.nonNull(startBpmnDTO.getFlowTaskCompleteDTO())) {
             // 按照规则，调用该方法的用户，就是第一个任务的assignee，因此默认会自动执行complete。
             ActCustomTaskComment flowTaskComment = BeanUtil.copyProperties(startBpmnDTO.getFlowTaskCompleteDTO(), ActCustomTaskComment.class);
             if (ObjectUtil.isNotEmpty(flowTaskComment)) {
@@ -305,11 +315,11 @@ public class FlowApiServiceImpl implements FlowApiService {
             Object o = flowElementUtil.saveBusData(task.getProcessDefinitionId(), task.getTaskDefinitionKey(), busData);
 
             // 如果businessKey为空则设置
-            if (StrUtil.isBlank(businessKey)) {
-                flowElementUtil.setBusinessKeyForProcessInstance(task.getProcessDefinitionId(), o);
+            if (StrUtil.isNotBlank(businessKey)) {
+                flowElementUtil.setBusinessKeyForProcessInstance(task.getProcessInstanceId(), o);
             }
 
-        }else if (StrUtil.equalsAnyIgnoreCase(approvalType, FlowApprovalType.REJECT_TO_STAR, FlowApprovalType.AGREE)) {
+        }else if (StrUtil.equalsAnyIgnoreCase(approvalType, FlowApprovalType.REJECT_TO_STAR, FlowApprovalType.AGREE, FlowApprovalType.REFUSE)) {
             if (Objects.nonNull(busData)) {
                busData.put("operationType", approvalType);
                flowElementUtil.saveBusData(task.getProcessDefinitionId(), task.getTaskDefinitionKey(), busData);
@@ -325,10 +335,19 @@ public class FlowApiServiceImpl implements FlowApiService {
             // 完成任务
             taskService.complete(taskId, busData);
         } else if (StrUtil.equalsAnyIgnoreCase(FlowApprovalType.CANCEL, approvalType)) {
+
+            // 作废
             StopProcessInstanceDTO instanceDTO = new StopProcessInstanceDTO();
             instanceDTO.setProcessInstanceId(processInstanceId);
             instanceDTO.setStopReason("作废");
             stopProcessInstance(instanceDTO);
+        }else if (StrUtil.equalsAnyIgnoreCase(FlowApprovalType.REJECT_FIRST_USER_TASK, approvalType)) {
+            // 驳回到第一个用户任务
+            RejectToStartDTO rejectToStartDTO = new RejectToStartDTO();
+            rejectToStartDTO.setTaskId(taskId);
+            rejectToStartDTO.setProcessInstanceId(processInstanceId);
+            rejectToStartDTO.setBusData(busData);
+            rejectToStart(rejectToStartDTO);
         }
 
         // 判断当前完成执行的任务，是否存在抄送设置
@@ -338,16 +357,36 @@ public class FlowApiServiceImpl implements FlowApiService {
             comment.setCreateRealname(checkLogin().getRealname());
             customTaskCommentService.getBaseMapper().insert(comment);
         }
-        // 保存每个节点的业务数据
-        ActCustomBusinessData.builder()
-                .taksId(taskId)
-                .processDefinitionKey(processInstance.getProcessDefinitionKey())
-                .processDefinitionId(processInstance.getProcessDefinitionId())
-                .taskDefinitionKey(task.getTaskDefinitionKey())
-                
-                .taskName(task.getName())
-                .processInstanceId(processInstanceId)
-                .build();
+
+        if (Objects.nonNull(busData)) {
+            saveData(task, busData, processInstanceId, taskId, processInstance);
+        }
+    }
+
+    private void saveData(Task task, Map<String, Object> busData, String processInstanceId, String taskId, ProcessInstance processInstance) {
+        // 判断是否存在
+        boolean exists = businessDataService.getBaseMapper().exists(new LambdaQueryWrapper<ActCustomBusinessData>()
+                .eq(ActCustomBusinessData::getTaksId, taskId).eq(ActCustomBusinessData::getProcessInstanceId, processInstanceId));
+
+        if (exists) {
+            // mybatis 不支持json 数据更新；Cannot create a JSON value from a string with CHARACTER SET 'binary'.
+            LambdaUpdateWrapper<ActCustomBusinessData> updateWrapper = new LambdaUpdateWrapper();
+            updateWrapper.set(ActCustomBusinessData::getData, JSONObject.toJSONString(busData)).eq(ActCustomBusinessData::getTaksId, taskId)
+                    .eq(ActCustomBusinessData::getProcessInstanceId, processInstanceId);
+            businessDataService.update(updateWrapper);
+        }else {
+            // 保存每个节点的业务数据
+            ActCustomBusinessData data = ActCustomBusinessData.builder()
+                    .taksId(taskId)
+                    .processDefinitionKey(processInstance.getProcessDefinitionKey())
+                    .processDefinitionId(processInstance.getProcessDefinitionId())
+                    .taskDefinitionKey(task.getTaskDefinitionKey())
+                    .data(new JSONObject(busData))
+                    .taskName(task.getName())
+                    .processInstanceId(processInstanceId)
+                    .build();
+            businessDataService.save(data);
+        }
     }
 
     /**
@@ -377,8 +416,13 @@ public class FlowApiServiceImpl implements FlowApiService {
     @Override
     public TaskInfoDTO viewRuntimeTaskInfo(String processDefinitionId, String processInstanceId, String taskId) {
         TaskInfoDTO taskInfoDTO = new TaskInfoDTO();
+
         Task task = this.getProcessInstanceActiveTask(processInstanceId, taskId);
-        if (task == null) {
+
+        ProcessInstance processInstance = getProcessInstance(processInstanceId);
+
+
+        if (task == null || Objects.isNull(processInstance)) {
             throw new AiurtBootException("数据验证失败，指定的任务Id，请刷新后重试！");
         }
         if (!this.isAssigneeOrCandidate(task)) {
@@ -387,6 +431,7 @@ public class FlowApiServiceImpl implements FlowApiService {
         if (StrUtil.isBlank(processDefinitionId)) {
             processDefinitionId = task.getProcessDefinitionId();
         }
+
         ActCustomTaskExt flowTaskExt =
                 customTaskExtService.getByProcessDefinitionIdAndTaskId(processDefinitionId, task.getTaskDefinitionKey());
         if (flowTaskExt != null) {
@@ -396,7 +441,31 @@ public class FlowApiServiceImpl implements FlowApiService {
             if (StrUtil.isNotBlank(flowTaskExt.getVariableListJson())) {
                 taskInfoDTO.setVariableList(JSON.parseArray(flowTaskExt.getVariableListJson(), JSONObject.class));
             }
+            String formJson = flowTaskExt.getFormJson();
+            if (StrUtil.isNotBlank(formJson)) {
+                // 表单类型
+                JSONObject jsonObject = JSONObject.parseObject(formJson);
+                String formType = jsonObject.getString(FlowModelAttConstant.FORM_TYPE);
+                // 中间业务数据
+                // 表单设计
+                if (StrUtil.equalsIgnoreCase(formType, FlowModelAttConstant.DYNAMIC_FORM_TYPE)) {
+                    setPageAttr(taskInfoDTO, jsonObject);
+
+                }else {
+                    // 定制表单
+                    taskInfoDTO.setFormType(FlowModelAttConstant.STATIC_FORM_TYPE);
+                    // 判断是否是表单设计器，
+                    taskInfoDTO.setRouterName(jsonObject.getString("formUrl"));
+                }
+            }
+
+            ActCustomBusinessData actCustomBusinessData = businessDataService.queryByProcessInstanceId(processInstanceId, taskId);
+
+            taskInfoDTO.setBusData(actCustomBusinessData.getData());
         }
+
+        taskInfoDTO.setTaskKey(task.getTaskDefinitionKey());
+        taskInfoDTO.setProcessName(processInstance.getProcessDefinitionName());
         return taskInfoDTO;
     }
 
@@ -1114,6 +1183,32 @@ public class FlowApiServiceImpl implements FlowApiService {
         // 发送redis事件
     }
 
+    // 驳回到第一个用户任务
+    public void rejectToStart(RejectToStartDTO instanceDTO) {
+        LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        String processInstanceId = instanceDTO.getProcessInstanceId();
+
+        ProcessInstance processInstance = getProcessInstance(processInstanceId);
+
+        if (Objects.isNull(processInstance)) {
+            throw new AiurtBootException("流程实例不存在！请刷新。");
+        }
+
+        UserTask firstUserTask = flowElementUtil.getFirstUserTaskByDefinitionId(processInstance.getProcessDefinitionId());
+
+        Task task = taskService.createTaskQuery().taskId(instanceDTO.getTaskId()).singleResult();
+
+        // 流程跳转, flowable 已提供
+        runtimeService.createChangeActivityStateBuilder()
+                .processInstanceId(instanceDTO.getProcessInstanceId())
+                .moveActivityIdTo(task.getTaskDefinitionKey(), firstUserTask.getId())
+                .changeState();
+
+        ActCustomTaskComment actCustomTaskComment = new ActCustomTaskComment(task);
+        actCustomTaskComment.setApprovalType(FlowApprovalType.REJECT_TO_STAR);
+        actCustomTaskComment.setCreateRealname(loginUser.getUsername());
+        customTaskCommentService.getBaseMapper().insert(actCustomTaskComment);
+    }
     /**
      * 删除流程
      *
@@ -1372,6 +1467,7 @@ public class FlowApiServiceImpl implements FlowApiService {
      */
     @Override
     public TaskInfoDTO viewInitialTaskInfo(String processDefinitionKey) {
+
         UserTask userTask = flowElementUtil.getFirstUserTaskByModelKey(processDefinitionKey);
         if (Objects.isNull(userTask)) {
             throw new AiurtBootException(AiurtErrorEnum.FLOW_TASK_NOT_FOUND.getCode(), AiurtErrorEnum.FLOW_TASK_NOT_FOUND.getMessage());
@@ -1387,17 +1483,7 @@ public class FlowApiServiceImpl implements FlowApiService {
             String formType = jsonObject.getString(FlowModelAttConstant.FORM_TYPE);
             // 表单设计
             if (StrUtil.equalsIgnoreCase(formType, FlowModelAttConstant.DYNAMIC_FORM_TYPE)) {
-                String formDynamicUrl = jsonObject.getString(FlowModelAttConstant.FORM_DYNAMIC_URL);
-                if (StrUtil.isNotBlank(formDynamicUrl)) {
-                    ActCustomPage customPage = pageService.getById(formDynamicUrl);
-                    if (Objects.nonNull(customPage)) {
-                        taskInfoDTO.setPageId(formDynamicUrl);
-                        taskInfoDTO.setPageContentJson(customPage.getPageContentJson());
-                        taskInfoDTO.setPageJSon(customPage.getPageJson());
-                    }
-                }
-                taskInfoDTO.setFormType(FlowModelAttConstant.DYNAMIC_FORM_TYPE);
-
+                setPageAttr(taskInfoDTO, jsonObject);
             }else {
                 // 定制表单
                 taskInfoDTO.setFormType(FlowModelAttConstant.STATIC_FORM_TYPE);
@@ -1411,8 +1497,22 @@ public class FlowApiServiceImpl implements FlowApiService {
             List<JSONObject> objectList = JSONObject.parseArray(json, JSONObject.class);
             taskInfoDTO.setOperationList(objectList);
         }
+        taskInfoDTO.setProcessName(processDefinition.getName());
         taskInfoDTO.setProcessDefinitionKey(processDefinitionKey);
         return taskInfoDTO;
+    }
+
+    private void setPageAttr(TaskInfoDTO taskInfoDTO, JSONObject jsonObject) {
+        String formDynamicUrl = jsonObject.getString(FlowModelAttConstant.FORM_DYNAMIC_URL);
+        if (StrUtil.isNotBlank(formDynamicUrl)) {
+            ActCustomPage customPage = pageService.getById(formDynamicUrl);
+            if (Objects.nonNull(customPage)) {
+                taskInfoDTO.setPageId(formDynamicUrl);
+                taskInfoDTO.setPageContentJson(customPage.getPageContentJson());
+                taskInfoDTO.setPageJSon(customPage.getPageJson());
+            }
+        }
+        taskInfoDTO.setFormType(FlowModelAttConstant.DYNAMIC_FORM_TYPE);
     }
 
 
