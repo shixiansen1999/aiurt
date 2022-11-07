@@ -797,7 +797,7 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         List<CsUserDepartModel> departList = sysBaseApi.getDepartByUserId(loginUser.getId());
         List<String> loginUserOrgCodes = departList.stream().map(CsUserDepartModel::getOrgCode).collect(Collectors.toList());
         if (CollectionUtil.isEmpty(loginUserOrgCodes)) {
-            return new ArrayList<>();
+            return Collections.emptyList();
         }
 
         List<String> orgCode = patrolTaskOrganizationMapper.getOrgCode(list.get(0));
@@ -823,12 +823,12 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
             // 当前登录人的部门权限和任务的组织机构交集
             List<String> intersectOrg = CollectionUtil.intersection(loginUserOrgCodes, orgCode).stream().collect(Collectors.toList());
             if (CollectionUtil.isEmpty(intersectOrg)) {
-                return new ArrayList<>();
+                return Collections.emptyList();
             }
             todayOndutyDetail = baseApi.getTodayOndutyDetailNoPage(intersectOrg, new Date());
         }
         if (CollectionUtil.isEmpty(todayOndutyDetail)) {
-            return new ArrayList<>();
+            return Collections.emptyList();
         }
 
         List<PatrolUserInfoDTO> userInfo = patrolTaskOrganizationMapper.getUserListByTaskCode(list.get(0));

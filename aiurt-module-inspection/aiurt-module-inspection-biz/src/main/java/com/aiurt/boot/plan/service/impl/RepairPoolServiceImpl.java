@@ -905,18 +905,18 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
 
         if (CollUtil.isNotEmpty(repairPoolOrgRels)) {
             List<String> orgCodes = repairPoolOrgRels.stream().map(RepairPoolOrgRel::getOrgCode).collect(Collectors.toList());
-            resutlt = sysBaseApi.getUserByDepIds(manager.handleMixedOrgCode(orgCodes));
             // 当前登录人的部门权限和任务的组织机构交集
             List<String> intersectOrg = CollectionUtil.intersection(userOrgCodes, orgCodes).stream().collect(Collectors.toList());
             if (CollectionUtil.isEmpty(intersectOrg)) {
-                return resutlt;
+                return Collections.emptyList();
             }
             // 获取今日当班人员信息
             List<SysUserTeamDTO> todayOndutyDetail = baseApi.getTodayOndutyDetailNoPage(intersectOrg, new Date());
             if (CollectionUtil.isEmpty(todayOndutyDetail)) {
-                return resutlt;
+                return Collections.emptyList();
             }
             List<String> userIds = todayOndutyDetail.stream().map(SysUserTeamDTO::getUserId).collect(Collectors.toList());
+            resutlt = sysBaseApi.getUserByDepIds(manager.handleMixedOrgCode(orgCodes));
             // 过滤仅在今日当班的待指派人员
             resutlt = resutlt.stream().filter(l -> userIds.contains(l.getId())).collect(Collectors.toList());
         }
