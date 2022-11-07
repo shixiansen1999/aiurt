@@ -1021,6 +1021,9 @@ public class FaultServiceImpl extends ServiceImpl<FaultMapper, Fault> implements
         List<LoginUser> loginUserList = sysBaseAPI.getUserByDepIds(orgCodeList);
         // 过滤仅在今日当班的待指派人员
         loginUserList = loginUserList.stream().filter(l -> userIds.contains(l.getId())).collect(Collectors.toList());
+        if (CollectionUtil.isEmpty(loginUserList)) {
+            throw new AiurtBootException("您没有指派当前任务人员的权限或当前暂无排班人员!");
+        }
         return loginUserList;
     }
 
