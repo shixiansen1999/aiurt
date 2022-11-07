@@ -1,5 +1,6 @@
 package com.aiurt.boot.task.controller;
 
+import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.aiurt.boot.constant.PatrolConstant;
 import com.aiurt.boot.task.dto.*;
@@ -11,6 +12,7 @@ import com.aiurt.boot.task.service.IPatrolTaskService;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.aspect.annotation.PermissionData;
 import com.aiurt.common.constant.enums.ModuleType;
+import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.system.base.controller.BaseController;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -24,9 +26,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @Description: patrol_task
@@ -160,6 +161,9 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
     @PermissionData(pageComponent = "pollingCheck/PatrolPoolList")
     public Result<?> getAssignee(@ApiParam(name = "code", value = "任务编号集合") @RequestParam("code") List<String> list) {
         List<PatrolUserInfoDTO> userInfo = patrolTaskService.getAssignee(list);
+        if (CollectionUtil.isEmpty(userInfo)) {
+            throw new AiurtBootException("您没有指派当前任务人员的权限或当前暂无排班人员!");
+        }
         return Result.OK(userInfo);
     }
 
@@ -438,6 +442,11 @@ public class PatrolTaskController extends BaseController<PatrolTask, IPatrolTask
     @PostMapping(value = "/patrolTaskAppointSelect")
     public Result<?> patrolTaskAppointSelect(@RequestBody PatrolOrgDTO orgCoed, HttpServletRequest req) {
         List<PatrolTaskUserDTO> patrolTaskUserDto = patrolTaskService.getPatrolTaskAppointSelect(orgCoed);
+        patrolTaskUserDto = Optional.ofNullable(patrolTaskUserDto).orElseGet(Collections::emptyList).stream()
+                .filter(l -> ObjectUtil.isNotEmpty(l.getUserList())).collect(Collectors.toList());
+        if(ObjectUtil.isEmpty(patrolTaskUserDto)){
+            throw new AiurtBootException("您没有指派当前任务人员的权限或当前暂无排班人员!");
+        }
         return Result.OK(patrolTaskUserDto);
     }
 

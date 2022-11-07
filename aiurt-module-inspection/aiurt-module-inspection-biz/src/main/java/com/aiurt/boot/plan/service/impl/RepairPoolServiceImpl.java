@@ -920,9 +920,6 @@ public class RepairPoolServiceImpl extends ServiceImpl<RepairPoolMapper, RepairP
             // 过滤仅在今日当班的待指派人员
             resutlt = resutlt.stream().filter(l -> userIds.contains(l.getId())).collect(Collectors.toList());
         }
-        if (CollectionUtil.isEmpty(resutlt)) {
-            throw new AiurtBootException("您没有指派当前任务人员的权限或当前暂无排班人员!");
-        }
         return resutlt;
     }
 

@@ -857,9 +857,6 @@ public class PatrolTaskServiceImpl extends ServiceImpl<PatrolTaskMapper, PatrolT
         }
         // 再过滤掉人员为空的记录
         userInfo = userInfo.stream().filter(l -> StrUtil.isNotBlank(l.getUserId())).collect(Collectors.toList());
-        if (CollectionUtil.isEmpty(userInfo)) {
-            throw new AiurtBootException("您没有指派当前任务人员的权限或当前暂无排班人员!");
-        }
         return userInfo;
     }
 

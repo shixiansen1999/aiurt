@@ -1,5 +1,6 @@
 package com.aiurt.boot.plan.controller;
 
+import cn.hutool.core.collection.CollectionUtil;
 import com.aiurt.boot.manager.dto.MajorDTO;
 import com.aiurt.boot.plan.dto.*;
 import com.aiurt.boot.plan.entity.RepairPool;
@@ -10,6 +11,7 @@ import com.aiurt.boot.plan.service.IRepairPoolService;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.aspect.annotation.LimitSubmit;
 import com.aiurt.common.constant.enums.ModuleType;
+import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.system.base.controller.BaseController;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import io.swagger.annotations.*;
@@ -162,6 +164,9 @@ public class RepairPoolController extends BaseController<RepairPool, IRepairPool
     @GetMapping(value = "/queryUserList")
     public Result<List<LoginUser>> queryUserList(@RequestParam @ApiParam(name = "code", required = true, value = "检修计划code") String code) {
         List<LoginUser> loginUserList = repairPoolService.queryUserList(code);
+        if (CollectionUtil.isEmpty(loginUserList)) {
+            throw new AiurtBootException("您没有指派当前任务人员的权限或当前暂无排班人员!");
+        }
         return Result.OK(loginUserList);
     }
 

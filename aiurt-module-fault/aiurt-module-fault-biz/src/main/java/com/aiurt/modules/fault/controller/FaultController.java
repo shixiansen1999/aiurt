@@ -1,10 +1,12 @@
 package com.aiurt.modules.fault.controller;
 
+import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.aspect.annotation.PermissionData;
 import com.aiurt.common.constant.enums.ModuleType;
+import com.aiurt.common.exception.AiurtBootException;
 import com.aiurt.common.system.base.controller.BaseController;
 import com.aiurt.modules.basic.entity.CsWork;
 import com.aiurt.modules.fault.dto.*;
@@ -503,7 +505,9 @@ public class FaultController extends BaseController<Fault, IFaultService> {
     public Result<List<LoginUser>> queryUser(@Param(value = "faultCode") String faultCode) {
 
         List<LoginUser> list = faultService.queryUser(faultCode);
-
+        if (CollectionUtil.isEmpty(list)) {
+            throw new AiurtBootException("您没有指派当前任务人员的权限或当前暂无排班人员!");
+        }
         return Result.OK(list);
     }
 

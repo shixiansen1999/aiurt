@@ -1,9 +1,12 @@
 package com.aiurt.boot.plan.app;
 
+import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.util.ObjectUtil;
 import com.aiurt.boot.manager.dto.OrgDTO;
 import com.aiurt.boot.plan.service.IRepairPoolService;
 import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.constant.enums.ModuleType;
+import com.aiurt.common.exception.AiurtBootException;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -15,7 +18,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * @author wgp
@@ -41,6 +47,11 @@ public class AppRepairPoolController {
     @GetMapping(value = "/queryUserDownList")
     public Result<List<OrgDTO>> queryUserDownList(@RequestParam @ApiParam(value = "检修计划id", name = "id", required = true) String id) {
         List<OrgDTO> result = repairPoolService.queryUserDownList(id);
+        result = Optional.ofNullable(result).orElseGet(Collections::emptyList).stream()
+                .filter(l -> ObjectUtil.isNotEmpty(l.getUsers())).collect(Collectors.toList());
+        if(CollectionUtil.isEmpty(result)){
+            throw new AiurtBootException("您没有指派当前任务人员的权限或当前暂无排班人员!");
+        }
         return Result.OK(result);
     }
 
