@@ -1,10 +1,5 @@
 package com.aiurt.modules.major.entity;
 
-import java.io.Serializable;
-import java.util.Date;
-import java.util.List;
-
-import com.aiurt.common.aspect.annotation.MajorFilterColumn;
 import com.aiurt.common.aspect.annotation.DeptFilterColumn;
 import com.aiurt.common.aspect.annotation.MajorFilterColumn;
 import com.aiurt.modules.device.entity.DeviceType;
@@ -14,14 +9,18 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import lombok.Data;
 import com.fasterxml.jackson.annotation.JsonFormat;
-import org.springframework.format.annotation.DateTimeFormat;
-import org.jeecgframework.poi.excel.annotation.Excel;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
+import org.jeecgframework.poi.excel.annotation.Excel;
+import org.springframework.format.annotation.DateTimeFormat;
+
+import java.io.Serializable;
+import java.util.Date;
+import java.util.List;
 
 /**
  * @Description: cs_major
@@ -51,7 +50,6 @@ public class CsMajor implements Serializable {
     @ApiModelProperty(value = "专业名称")
     private String majorName;
 	/**说明*/
-	@Excel(name = "说明", width = 15)
     @ApiModelProperty(value = "说明")
     private String remark;
 	/**创建人*/
@@ -75,7 +73,6 @@ public class CsMajor implements Serializable {
     @ApiModelProperty(value = "更新人")
     private String updateBy;
 	/**删除标志*/
-	@Excel(name = "删除标志", width = 15)
     @ApiModelProperty(value = "删除标志")
     private Integer delFlag;
     /**与专业关联的子系统*/
@@ -91,7 +88,6 @@ public class CsMajor implements Serializable {
     @TableField(exist = false)
     private String byType = "zy";
     /**设备类型子集*/
-    @Excel(name = "设备类型子集", width = 15)
     @ApiModelProperty(value = "设备类型子集")
     @TableField(exist = false)
     private List<DeviceType> deviceTypeChildren;
