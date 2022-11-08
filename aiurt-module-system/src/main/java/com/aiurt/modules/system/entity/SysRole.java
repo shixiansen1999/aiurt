@@ -39,18 +39,18 @@ public class SysRole implements Serializable {
     private String id;
 
     /**
-     * 角色名称
-     */
-    @ApiModelProperty(value = "角色名称")
-    @Excel(name="角色名",width=15)
-    private String roleName;
-
-    /**
      * 角色编码
      */
     @ApiModelProperty(value = "角色编码")
     @Excel(name="角色编码",width=15)
     private String roleCode;
+
+    /**
+     * 角色名称
+     */
+    @ApiModelProperty(value = "角色名称")
+    @Excel(name="角色名称",width=15)
+    private String roleName;
 
     /**
      * 描述
