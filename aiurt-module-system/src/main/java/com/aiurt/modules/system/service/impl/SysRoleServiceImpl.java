@@ -1,5 +1,6 @@
 package com.aiurt.modules.system.service.impl;
 
+import cn.hutool.core.util.StrUtil;
 import org.jeecg.common.api.vo.Result;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.util.ImportExcelUtil;
@@ -43,12 +44,19 @@ public class SysRoleServiceImpl extends ServiceImpl<SysRoleMapper, SysRole> impl
         // 去除 listSysRoles 中重复的数据
         for (int i = 0; i < listSysRoles.size(); i++) {
             String roleCodeI =((SysRole)listSysRoles.get(i)).getRoleCode();
+            String roleName = ((SysRole) listSysRoles.get(i)).getRoleName();
             for (int j = i + 1; j < listSysRoles.size(); j++) {
                 String roleCodeJ =((SysRole)listSysRoles.get(j)).getRoleCode();
                 // 发现重复数据
                 if (roleCodeI.equals(roleCodeJ)) {
                     errorStrs.add("第 " + (j + 1) + " 行的 roleCode 值：" + roleCodeI + " 已存在，忽略导入");
                     listSysRoles.remove(j);
+                    break;
+                }if (StrUtil.isBlank(roleCodeI)){
+                    errorStrs.add("第 " + (j + 1) + " 行的 roleCode 值：" + roleCodeI + "为空！，忽略导入");
+                    break;
+                }if (StrUtil.isBlank(roleName)){
+                    errorStrs.add("第 " + (j + 1) + " 行的 roleName 值：" + roleName + "为空！，忽略导入");
                     break;
                 }
             }
