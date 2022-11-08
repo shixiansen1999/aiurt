@@ -760,6 +760,6 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
     @Override
     public List<String> getSysRole(String names) {
         List<String> role = baseMapper.getSysRole(Arrays.asList(names.split(",")));
-        return null;
+        return role;
     }
 }

@@ -5,6 +5,7 @@ import com.aiurt.common.aspect.annotation.PermissionData;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.constant.SymbolConstant;
 import com.aiurt.common.exception.AiurtBootException;
+import com.aiurt.common.util.oConvertUtils;
 import com.aiurt.modules.major.entity.CsMajor;
 import com.aiurt.modules.major.service.ICsMajorService;
 import com.aiurt.modules.material.entity.MaterialBase;
@@ -13,6 +14,7 @@ import com.aiurt.modules.material.service.IMaterialBaseService;
 import com.aiurt.modules.material.service.IMaterialBaseTypeService;
 import com.aiurt.modules.subsystem.entity.CsSubsystem;
 import com.aiurt.modules.subsystem.service.ICsSubsystemService;
+import com.aiurt.modules.system.entity.SysUser;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -20,13 +22,29 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.system.query.QueryGenerator;
+import org.jeecg.common.system.vo.LoginUser;
+import org.jeecgframework.poi.excel.def.NormalExcelConstants;
+import org.jeecgframework.poi.excel.entity.ExportParams;
+import org.jeecgframework.poi.excel.entity.ImportParams;
+import org.jeecgframework.poi.excel.view.JeecgEntityExcelView;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.multipart.MultipartHttpServletRequest;
+import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.BufferedOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -400,5 +418,81 @@ public class MaterialBaseTypeController {
             result.success(res);
         }
         return result;
+    }
+    /**
+     * 导出excel
+     *
+     * @param request
+     */
+    @ApiOperation(value = "导出excel", notes = "导出excel")
+    @RequestMapping(value = "/exportXls")
+    public ModelAndView exportXls(MaterialBaseType materialBaseType,
+
+                                  @RequestParam(name = "majorCode", required = false) String majorCode,
+                                  @RequestParam(name = "systemCode", required = false) String systemCode,
+                                  @RequestParam(name = "baseTypeCode", required = false) String baseTypeCode,
+                                  @RequestParam(name = "baseTypeName", required = false) String baseTypeName,
+                                  @RequestParam(name = "status", required = false) String status,
+                                  HttpServletRequest req, HttpServletRequest request) {
+        ModelAndView mv = new ModelAndView(new JeecgEntityExcelView());
+        Result<IPage<MaterialBaseType>>s  = this.queryPageList(materialBaseType,1,9999,majorCode,systemCode,baseTypeCode,baseTypeName,status,request);
+        IPage<MaterialBaseType>IPages=s.getResult();
+        List<MaterialBaseType>list =IPages.getRecords();
+        //导出文件名称
+        mv.addObject(NormalExcelConstants.FILE_NAME, "物资分类");
+        mv.addObject(NormalExcelConstants.CLASS, MaterialBaseType.class);
+        LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        ExportParams exportParams = new ExportParams("物资分类列表数据", "导出人:" + user.getRealname(), "导出信息");
+        mv.addObject(NormalExcelConstants.PARAMS, exportParams);
+        mv.addObject(NormalExcelConstants.DATA_LIST, list);
+        return mv;
+    }
+    @AutoLog(value = "下载物资分类导入模板")
+    @ApiOperation(value = "下载物资分类导入模板", notes = "下载物资分类导入模板")
+    @RequestMapping(value = "/downloadExcel", method = RequestMethod.GET)
+    public void downloadExcel(HttpServletResponse response, HttpServletRequest request) throws IOException {
+        ClassPathResource classPathResource = new ClassPathResource("templates/materialBaseType.xlsx");
+        InputStream bis = classPathResource.getInputStream();
+        BufferedOutputStream out = new BufferedOutputStream(response.getOutputStream());
+        int len = 0;
+        while ((len = bis.read()) != -1) {
+            out.write(len);
+            out.flush();
+        }
+        out.close();
+    }
+    /**
+     * 通过excel导入数据
+     * @param request
+     * @param response
+     * @return
+     */
+    @AutoLog(value = "系统管理-基础数据管理-物资主数据-导入", operateType = 5, operateTypeAlias = "导入", permissionUrl = "/manage/MainMaterialClassification")
+    @RequestMapping(value = "/importExcel", method = RequestMethod.POST)
+    public Result importExcel(HttpServletRequest request, HttpServletResponse response,
+                                 @RequestParam(name = "id", required = false) String id) {
+        MultipartHttpServletRequest multipartRequest = (MultipartHttpServletRequest) request;
+        Map<String, MultipartFile> fileMap = multipartRequest.getFileMap();
+        for (Map.Entry<String, MultipartFile> entity : fileMap.entrySet()) {
+            // 获取上传文件对象
+            MultipartFile file = entity.getValue();
+            ImportParams params = new ImportParams();
+            params.setTitleRows(1);
+            params.setHeadRows(1);
+            params.setNeedSave(true);
+            try {
+                return iMaterialBaseTypeService.importExcelMaterial(file, params,id);
+            } catch (Exception e) {
+                log.error(e.getMessage(), e);
+                return Result.error("文件导入失败:" + e.getMessage());
+            } finally {
+                try {
+                    file.getInputStream().close();
+                } catch (IOException e) {
+                    log.error(e.getMessage(), e);
+                }
+            }
+        }
+        return Result.error("文件导入失败！");
     }
 }

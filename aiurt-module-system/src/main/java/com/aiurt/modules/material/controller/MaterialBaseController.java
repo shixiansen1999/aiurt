@@ -26,17 +26,23 @@ import org.apache.poi.xssf.usermodel.XSSFCell;
 import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.apache.shiro.SecurityUtils;
 import org.apache.xmlbeans.impl.validator.ValidatorUtil;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.query.QueryGenerator;
+import org.jeecg.common.system.vo.LoginUser;
+import org.jeecgframework.poi.excel.def.NormalExcelConstants;
+import org.jeecgframework.poi.excel.entity.ExportParams;
 import org.jeecgframework.poi.excel.entity.ImportParams;
 import org.jeecg.common.system.query.QueryGenerator;
+import org.jeecgframework.poi.excel.view.JeecgEntityExcelView;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -353,6 +359,32 @@ public class MaterialBaseController {
             result.success(res);
         }
         return result;
+    }
+    /**
+     * 导出excel
+     */
+    @ApiOperation(value = "导出excel", notes = "导出excel")
+    @RequestMapping(value = "/exportXls")
+    public ModelAndView exportXls(MaterialBase materialBase,
+                                  @RequestParam(name = "majorCode", required = false) String majorCode,
+                                  @RequestParam(name = "systemCode", required = false) String systemCode,
+                                  @RequestParam(name = "baseTypeCode", required = false) String baseTypeCode,
+                                  @RequestParam(name = "code", required = false) String code,
+                                  @RequestParam(name = "name", required = false) String name,
+                                  @RequestParam(name = "type", required = false) String type,
+                                  HttpServletRequest req) {
+        ModelAndView mv = new ModelAndView(new JeecgEntityExcelView());
+        Result<IPage<MaterialBase>>s  = this.queryPageList(materialBase,1,9999,majorCode,systemCode,baseTypeCode,code,name,type,req);
+        IPage<MaterialBase>IPages=s.getResult();
+        List<MaterialBase>list =IPages.getRecords();
+        //导出文件名称
+        mv.addObject(NormalExcelConstants.FILE_NAME, "物资主数据");
+        mv.addObject(NormalExcelConstants.CLASS, MaterialBase.class);
+        LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        ExportParams exportParams = new ExportParams("物资主数据列表数据", "导出人:" + user.getRealname(), "导出信息");
+        mv.addObject(NormalExcelConstants.PARAMS, exportParams);
+        mv.addObject(NormalExcelConstants.DATA_LIST, list);
+        return mv;
     }
 
     /**

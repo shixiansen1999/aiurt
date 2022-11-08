@@ -2,7 +2,11 @@ package com.aiurt.modules.material.service;
 
 import com.aiurt.modules.material.entity.MaterialBaseType;
 import com.baomidou.mybatisplus.extension.service.IService;
+import org.jeecg.common.api.vo.Result;
+import org.jeecgframework.poi.excel.entity.ImportParams;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 /**
  * @Description: 设备
@@ -25,4 +29,13 @@ public interface IMaterialBaseTypeService extends IService<MaterialBaseType> {
      * @return
      */
     String getCcStr(MaterialBaseType materialBaseType);
+
+    /**
+     * 导入
+     * @param file
+     * @param params
+     * @param id
+     * @return
+     */
+    Result importExcelMaterial(MultipartFile file, ImportParams params, String id) throws Exception;
 }
