@@ -270,6 +270,6 @@ public interface SysDictMapper extends BaseMapper<SysDict> {
 	 * @param tableName
 	 * @return
 	 */
-	@Select("select count(*) from information_schema.COLUMNS where TABLE_NAME = #{tableName} and COLLATION_NAME = 'del_flag'")
+	@Select("select count(*) from information_schema.COLUMNS where TABLE_NAME = #{tableName} and COLUMN_NAME = 'del_flag'")
 	Long isExistDelFlag(@Param("tableName") String tableName);
 }
