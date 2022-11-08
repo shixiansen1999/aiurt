@@ -467,7 +467,8 @@ public class MaterialBaseTypeController {
      * @param response
      * @return
      */
-    @AutoLog(value = "系统管理-基础数据管理-物资主数据-导入", operateType = 5, operateTypeAlias = "导入", permissionUrl = "/manage/MainMaterialClassification")
+    @AutoLog(value = "系统管理-基础数据管理-物资分类-导入", operateType = 5, operateTypeAlias = "导入", permissionUrl = "/manage/MainMaterialClassification")
+    @ApiOperation(value = "物资分类导入", notes = "物资分类导入")
     @RequestMapping(value = "/importExcel", method = RequestMethod.POST)
     public Result importExcel(HttpServletRequest request, HttpServletResponse response,
                                  @RequestParam(name = "id", required = false) String id) {
