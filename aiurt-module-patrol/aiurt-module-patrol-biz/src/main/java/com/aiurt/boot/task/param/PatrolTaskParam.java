@@ -25,10 +25,10 @@ import java.util.List;
 @AllArgsConstructor
 public class PatrolTaskParam extends PatrolTask {
     /**
-     * 巡检任务池请求标识，1标识巡检任务池请求
+     * 接口请求标识，1标识巡检任务池请求，2标识巡视任务列表
      */
-    @Excel(name = "巡检任务池请求标识，若为任务池列表查询，则值传1", width = 15)
-    @ApiModelProperty(value = "巡检任务池请求标识，若为任务池列表查询，则值传1")
+    @Excel(name = "接口请求标识，1标识巡检任务池请求，2标识巡视任务列表", width = 15)
+    @ApiModelProperty(value = "接口请求标识，1标识巡检任务池请求，2标识巡视任务列表")
     private Integer identify;
     /**
      * 任务状态数组
