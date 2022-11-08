@@ -255,6 +255,8 @@ public class CsMajorController extends BaseController<CsMajor, ICsMajorService> 
      * @param request
      * @return
      */
+    @AutoLog(value = "专业导出")
+    @ApiOperation(value = "专业导出", notes = "专业导出")
     @RequestMapping(value = "/exportXls")
     public ModelAndView exportXls(CsMajor csMajor, HttpServletRequest request) {
         // Step.1 组装查询条件

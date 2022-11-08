@@ -369,7 +369,7 @@ public class CsSubsystemController  {
 	 * @throws IOException
 	 */
 	@AutoLog(value = "下载子系统导入模板")
-	@ApiOperation(value = "下载专业导入模板", notes = "下载子系统导入模板")
+	@ApiOperation(value = "下载子系统导入模板", notes = "下载子系统导入模板")
 	@RequestMapping(value = "/downloadExcel", method = RequestMethod.GET)
 	public void downloadExcel(HttpServletResponse response, HttpServletRequest request) throws IOException {
 		ClassPathResource classPathResource = new ClassPathResource("templates/子系统导入模板.xls");
@@ -389,6 +389,8 @@ public class CsSubsystemController  {
 	 * @param request
 	 * @return
 	 */
+	@AutoLog(value = "子系统导出")
+	@ApiOperation(value = "子系统导出", notes = "子系统导出")
 	@RequestMapping(value = "/exportXls")
 	public ModelAndView exportXls(@RequestParam(name="systemName", required = false) String systemName, HttpServletRequest request) {
 		// Step.1 组装查询条件
