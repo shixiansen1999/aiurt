@@ -186,9 +186,13 @@
             AND DATE_FORMAT( #{patrolTask.submitDateEnd}, '%Y-%m-%d')
         </if>
         <if test="patrolTask.patrolDate != null and patrolTask.patrolDate != null">
-            AND DATE_FORMAT( pt.patrol_date, '%Y-%m-%d' ) = DATE_FORMAT(#{patrolTask.patrolDate}, '%Y-%m-%d' )
+            AND DATE_FORMAT(pt.patrol_date, '%Y-%m-%d') = DATE_FORMAT(#{patrolTask.patrolDate}, '%Y-%m-%d')
         </if>
-        order by pt.create_time desc
+        order by
+        <if test='patrolTask.identify != null and patrolTask.identify == "2"'>
+            pt.`status` asc,
+        </if>
+        pt.create_time desc
     </select>
     <select id="getUserName" resultType="java.lang.String">
         select realname
