@@ -213,7 +213,7 @@ public class BaseController<T, S extends IService<T>> {
      * @param title 文件名称
      * @return
      */
-    protected ModelAndView exportTemplateXls(String exportFields, Class<T> clazz, String title) {
+    protected ModelAndView exportTemplateXls(String exportFields, Class<?> clazz, String title) {
 
         // Step.1 AutoPoi 导出Excel
         ModelAndView mv = new ModelAndView(new AiurtEntityExcelView());
@@ -238,7 +238,7 @@ public class BaseController<T, S extends IService<T>> {
      * @param remark 备注说明（excel第二行）
      * @return
      */
-    protected ModelAndView exportTemplateXls(String exportFields, Class<T> clazz, String title, String remark) {
+    protected ModelAndView exportTemplateXls(String exportFields, Class<?> clazz, String title, String remark) {
 
         // Step.1 AutoPoi 导出Excel
         ModelAndView mv = new ModelAndView(new AiurtEntityExcelView());
