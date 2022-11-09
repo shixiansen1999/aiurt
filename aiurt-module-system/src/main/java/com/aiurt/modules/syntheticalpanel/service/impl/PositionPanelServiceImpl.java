@@ -28,11 +28,7 @@ public class PositionPanelServiceImpl implements PositionPanelService {
 
     @Override
     public List<CsStation> readAll(PositionPanelModel positionPanel) {
-        //查询工区
-        List<PositionPanelModel> allWorkArea = positionPanelMapper.getAllWorkArea(positionPanel);
-        List<String> workAreaCodes = Optional.ofNullable(allWorkArea).orElse(Collections.emptyList()).stream().map(PositionPanelModel::getCode).collect(Collectors.toList());
-        //查询工区关联的站点
-        List<CsStation> stations = positionPanelMapper.getStations(workAreaCodes);
+        List<CsStation> stations = positionPanelMapper.getStations();
         return stations;
     }
 

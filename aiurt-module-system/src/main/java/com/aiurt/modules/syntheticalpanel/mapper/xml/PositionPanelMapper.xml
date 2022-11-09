@@ -36,12 +36,6 @@
     LEFT JOIN work_area wa ON wa.`code` = work_area_code
     WHERE
     cs.del_flag = 0
-    <if test="workAreaCodes != null and workAreaCodes.size() != 0">
-        AND was.work_area_code in
-        <foreach collection="workAreaCodes" index="index" item="item" open="(" separator="," close=")">
-            #{item}
-        </foreach>
-    </if>
     </select>
 
 <select id="queryById" resultType="com.aiurt.modules.syntheticalpanel.model.PositionPanelModel">
