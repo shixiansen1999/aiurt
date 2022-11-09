@@ -47,12 +47,14 @@ public class WorkLogJobNight implements Job {
         String dateNow= DateUtil.today();
         //根据部门id,获取部门下的当天上班的人员
         List<ScheduleRecord> allUserList =workLogRemindService.getOrgUserTodayWork(dateNow,dto.getOrgId());
-        //查询当天这个部门下的上报人员
+        //查询当天这个部门下的已提交工作日志的人员
         List<WorkLog> workLogList = workLogService.list(new LambdaQueryWrapper<WorkLog>().like(WorkLog::getSubmitTime, dateNow).eq(WorkLog::getOrgId,dto.getOrgId()));
-        //去重
+        //去重（因为上报没有限制，人可以提交多次）
         List<WorkLog> distinctWorkLogList = workLogList.stream().collect(Collectors.collectingAndThen(Collectors.toCollection(() -> new TreeSet<>(Comparator.comparing(WorkLog:: getSubmitId))), ArrayList::new));
+        //拿到提交人的id集合
         List<String> distinctWorkLogUserIds = distinctWorkLogList.stream().map(WorkLog::getSubmitId).collect(Collectors.toList());
-        if (CollUtil.isEmpty(distinctWorkLogUserIds))
+        //当天有人排班，并上报了
+        if (CollUtil.isNotEmpty(distinctWorkLogUserIds))
         {
             //获取上报人所在的排班信息
             List<ScheduleRecord> workRecordList = scheduleRecordMapper.selectList(new LambdaQueryWrapper<ScheduleRecord>().in(ScheduleRecord::getUserId, distinctWorkLogUserIds).like(ScheduleRecord::getDate, dateNow).eq(ScheduleRecord::getDelFlag,0));
@@ -89,6 +91,7 @@ public class WorkLogJobNight implements Job {
             String[] userIds = notWorkLogUserIds.toArray(new String[0]);
             List<LoginUser> loginUsers = iSysBaseAPI.queryAllUserByIds(userIds);
             List<String> userName = loginUsers.stream().map(LoginUser::getUsername).collect(Collectors.toList());
+            //当天有人排班，但没有提交工作日志，就发送消息
             if (CollectionUtils.isNotEmpty(userName)){
                 //发消息提醒
                 userName.forEach(

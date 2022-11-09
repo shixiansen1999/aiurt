@@ -106,14 +106,14 @@ public class MaterialBaseServiceImpl extends ServiceImpl<MaterialBaseMapper, Mat
 
 	@Override
 	public Result importExcelMaterial(MultipartFile file, ImportParams params) throws Exception {
-		List<Object> listMaterial = ExcelImportUtil.importExcel(file.getInputStream(), MaterialBase.class, params);
+		List<MaterialBase> listMaterial = ExcelImportUtil.importExcel(file.getInputStream(), MaterialBase.class, params);
 		List<String> errorStrs = new ArrayList<>();
 		// 去掉 sql 中的重复数据
 		Integer errorLines=0;
 		Integer successLines=0;
 		for (int i = 0; i < listMaterial.size(); i++) {
 			try {
-				MaterialBase materialBase = (MaterialBase) listMaterial.get(i);
+				MaterialBase materialBase = listMaterial.get(i);
 				String finalstr = "";
 				//专业
 				String majorCodeName = materialBase.getMajorCodeName()==null?"":materialBase.getMajorCodeName();
@@ -157,9 +157,6 @@ public class MaterialBaseServiceImpl extends ServiceImpl<MaterialBaseMapper, Mat
 						}else{
 							materialBase.setBaseTypeCode(materialBaseType.getBaseTypeCode());
 						}
-						finalstr = csMajor.getMajorCode() + csSubsystem.getSystemCode() + materialBaseType.getBaseTypeCode();
-						String newBaseCode = getNewBaseCode(finalstr);
-						materialBase.setCode(newBaseCode);
 						MaterialBaseType materialBaseTypefinal = materialBaseTypeService.getOne(new QueryWrapper<MaterialBaseType>().eq("base_type_code",materialBaseType.getBaseTypeCode()));
 						String typeCodeCc = materialBaseTypeService.getCcStr(materialBaseTypefinal);
 						materialBase.setBaseTypeCodeCc(typeCodeCc);
@@ -171,6 +168,23 @@ public class MaterialBaseServiceImpl extends ServiceImpl<MaterialBaseMapper, Mat
 					errorStrs.add("第 " + i + " 行：物资名称为空，忽略导入。");
 					continue;
 				}
+				String type = materialBase.getType()==null?"":materialBase.getType();
+				if ("".equals(type)) {
+					errorStrs.add("第 " + i + " 行：物资类型为空，忽略导入。");
+					continue;
+				}else {
+					if (type.equals("通用类")){
+						materialBase.setType("2");
+					}else if (type.equals("专用类")){
+							materialBase.setType("1");
+						}else if (type.equals("AFC类")){
+							materialBase.setType("3");
+						}else {
+						errorStrs.add("第 " + i + " 行：物资类型不存在，忽略导入。");
+						continue;
+					}
+				}
+
 				//生产厂商
 				String manufactorCodeName = materialBase.getManufactorCodeName()==null?"":materialBase.getManufactorCodeName();
 				CsManufactor csManufactor = csManufactorService.getOne(new QueryWrapper<CsManufactor>().eq("name",manufactorCodeName).eq("del_flag",0));
