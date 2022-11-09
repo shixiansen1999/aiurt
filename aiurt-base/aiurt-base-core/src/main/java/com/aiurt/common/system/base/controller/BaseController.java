@@ -207,7 +207,7 @@ public class BaseController<T, S extends IService<T>> {
     }
 
     /**
-     * 导出模板
+     * 导出模板，无注释说明
      * @param exportFields 自定义导出列，逗号隔开
      * @param clazz 实体类
      * @param title 文件名称
@@ -225,6 +225,32 @@ public class BaseController<T, S extends IService<T>> {
         ExportParams  exportParams = new ExportParams();
         exportParams.setTitle(title);
         exportParams.setImageBasePath(upLoadPath);
+        //update-end--Author:liusq  Date:20210126 for：图片导出报错，ImageBasePath未设置----------------------
+        mv.addObject(NormalExcelConstants.PARAMS, exportParams);
+        return mv;
+    }
+
+    /**
+     * 导出模板，注释说明，
+     * @param exportFields 自定义导出列，逗号隔开
+     * @param clazz 实体类
+     * @param title 文件名称， 标题
+     * @param remark 备注说明（excel第二行）
+     * @return
+     */
+    protected ModelAndView exportTemplateXls(String exportFields, Class<T> clazz, String title, String remark) {
+
+        // Step.1 AutoPoi 导出Excel
+        ModelAndView mv = new ModelAndView(new AiurtEntityExcelView());
+        //此处设置的filename无效 ,前端会重更新设置一下
+        mv.addObject(NormalExcelConstants.CLASS, clazz);
+        // 自定义导出列
+        mv.addObject(NormalExcelConstants.EXPORT_FIELDS, exportFields);
+        //update-begin--Author:liusq  Date:20210126 for：图片导出报错，ImageBasePath未设置--------------------
+        ExportParams  exportParams = new ExportParams();
+        exportParams.setTitle(title);
+        exportParams.setImageBasePath(upLoadPath);
+        mv.addObject("remark", remark);
         //update-end--Author:liusq  Date:20210126 for：图片导出报错，ImageBasePath未设置----------------------
         mv.addObject(NormalExcelConstants.PARAMS, exportParams);
         return mv;

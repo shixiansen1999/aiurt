@@ -9,6 +9,7 @@ import com.aiurt.common.system.base.entity.ExcelTemplateExportEntity;
 import com.aiurt.common.util.oConvertUtils;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.ss.util.CellRangeAddressList;
 import org.apache.poi.xssf.usermodel.*;
 import org.jeecg.common.system.vo.DictModel;
@@ -46,6 +47,12 @@ public class AiurtEntityExcelView extends MiniAbstractExcelView {
         ExportParams entity = (ExportParams) model.get(NormalExcelConstants.PARAMS);
         // 实体
         Class pojoClass = (Class) model.get(NormalExcelConstants.CLASS);
+
+        String remark = null;
+        Object o = model.get("remark");
+        if (Objects.nonNull(o)) {
+            remark = (String) o;
+        }
 
         String codedFileName = entity.getTitle();
         // 创建workbook
@@ -105,7 +112,38 @@ public class AiurtEntityExcelView extends MiniAbstractExcelView {
             }
         }
 
-        Row row = sheet.createRow(0);
+        // 样式
+        CellStyle style = workbook.createCellStyle();
+        // 左右居中
+        style.setAlignment(HorizontalAlignment.CENTER);
+
+        // 标题
+        Row titleRow = sheet.createRow(0);
+        Cell titleRowCell = titleRow.createCell(0);
+        titleRowCell.setCellValue(codedFileName);
+        titleRowCell.setCellStyle(style);
+        // 合并单元格,合并后的内容取决于合并区域的左上角单元格的值
+        CellRangeAddress region = new CellRangeAddress(0,0,0,list.size()-1);
+        sheet.addMergedRegion(region);
+
+        CellStyle wrapStyle = workbook.createCellStyle();
+        // 左右居中
+        wrapStyle.setWrapText(true);
+        int rowListIndex = 1;
+        if (StrUtil.isNotBlank(remark)) {
+            // 说明
+            Row remarkRow = sheet.createRow(1);
+            Cell remarkRowCell = remarkRow.createCell(0);
+            // 自动换行
+            remarkRowCell.setCellValue(remark);
+            remarkRow.setHeight((short) 1500);
+            remarkRowCell.setCellStyle(wrapStyle);
+            CellRangeAddress cellAddresses = new CellRangeAddress(1, 1, 0, list.size() - 1);
+            sheet.addMergedRegion(cellAddresses);
+            rowListIndex = 2;
+        }
+
+        Row row = sheet.createRow(rowListIndex);
         for (ExcelTemplateExportEntity exportEntity : list) {
             Cell cell = row.createCell(exportEntity.getIndex());
             String name = exportEntity.getName();
@@ -115,7 +153,7 @@ public class AiurtEntityExcelView extends MiniAbstractExcelView {
             sheet.setColumnWidth(exportEntity.getIndex(), length*256);
 
             cell.setCellValue(Rtext);
-            cell.setCellType(CellType.STRING);
+           // cell.getCellStyle.set(CellType.STRING);
             List<DictModel> modelList = exportEntity.getDictModelList();
             if (CollectionUtil.isNotEmpty(modelList)) {
                 //将新建的sheet页隐藏掉, 下拉值太多，需要创建隐藏页面
@@ -135,8 +173,8 @@ public class AiurtEntityExcelView extends MiniAbstractExcelView {
                 }
 
                 // 下拉数据
-                CellRangeAddressList cellRangeAddressList = new CellRangeAddressList(1, 65535, exportEntity.getIndex(), exportEntity.getIndex());
-                //  生成下拉框内容
+                CellRangeAddressList cellRangeAddressList = new CellRangeAddressList(rowListIndex, 65535, exportEntity.getIndex(), exportEntity.getIndex());
+                //  生成下拉框内容名称
                 String strFormula = hiddenSheetName + "!$A$1:$A$65535";
                 // 根据隐藏页面创建下拉列表
                 XSSFDataValidationConstraint constraint = new XSSFDataValidationConstraint(DataValidationConstraint.ValidationType.LIST, strFormula);
