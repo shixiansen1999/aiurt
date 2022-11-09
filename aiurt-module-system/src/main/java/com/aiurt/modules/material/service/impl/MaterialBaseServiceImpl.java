@@ -187,12 +187,12 @@ public class MaterialBaseServiceImpl extends ServiceImpl<MaterialBaseMapper, Mat
 
 				//生产厂商
 				String manufactorCodeName = materialBase.getManufactorCodeName()==null?"":materialBase.getManufactorCodeName();
-				CsManufactor csManufactor = csManufactorService.getOne(new QueryWrapper<CsManufactor>().eq("name",manufactorCodeName).eq("del_flag",0));
+				CsManufactor csManufactor = csManufactorService.getOne(new QueryWrapper<CsManufactor>().eq("name",manufactorCodeName).eq("del_flag",0).last("limit 1"));
 				if(!"".equals(manufactorCodeName) && csManufactor == null){
 					errorStrs.add("第 " + i + " 行：无法根据生产厂商名称找到对应数据，忽略导入。");
 					continue;
 				}else{
-					materialBase.setManufactorCode(csManufactor.getCode());
+					materialBase.setManufactorCode(csManufactor.getId());
 				}
 				//单位
 				String unit = materialBase.getUnit()==null?"":materialBase.getUnit();
