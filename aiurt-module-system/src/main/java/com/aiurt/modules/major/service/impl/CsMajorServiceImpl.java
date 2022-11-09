@@ -1,8 +1,8 @@
 package com.aiurt.modules.major.service.impl;
 
 import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.core.util.StrUtil;
 import com.aiurt.common.constant.CommonConstant;
-import com.aiurt.common.util.PmsUtil;
 import com.aiurt.modules.major.entity.CsMajor;
 import com.aiurt.modules.major.entity.vo.CsMajorImportVO;
 import com.aiurt.modules.major.mapper.CsMajorMapper;
@@ -12,6 +12,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import org.apache.commons.io.FilenameUtils;
 import org.jeecg.common.api.vo.Result;
 import org.jeecgframework.poi.excel.ExcelImportUtil;
 import org.jeecgframework.poi.excel.entity.ImportParams;
@@ -24,7 +25,6 @@ import org.springframework.web.multipart.MultipartHttpServletRequest;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -112,6 +112,10 @@ public class CsMajorServiceImpl extends ServiceImpl<CsMajorMapper, CsMajor> impl
         for (Map.Entry<String, MultipartFile> entity : fileMap.entrySet()) {
             // 获取上传文件对象
             MultipartFile file = entity.getValue();
+            String type = FilenameUtils.getExtension(file.getOriginalFilename());
+            if (!StrUtil.equalsAny(type, true, "xls", "xlsx")) {
+               return imporReturnRes(errorLines, successLines, errorMessage,false);
+            }
             ImportParams params = new ImportParams();
             params.setTitleRows(1);
             params.setHeadRows(1);
@@ -178,37 +182,50 @@ public class CsMajorServiceImpl extends ServiceImpl<CsMajorMapper, CsMajor> impl
                 }
             }
         }
-        return imporReturnRes(errorLines, successLines, errorMessage);
+        return imporReturnRes(errorLines, successLines, errorMessage,true);
     }
 
-    public static Result<?> imporReturnRes(int errorLines,int successLines,List<String> errorMessage) throws IOException {
-        if (errorLines != 0) {
+    public static Result<?> imporReturnRes(int errorLines,int successLines,List<String> errorMessage,boolean isType) throws IOException {
+        if(isType)
+        {
+            if (errorLines != 0) {
+                JSONObject result = new JSONObject(5);
+                result.put("isSucceed", false);
+                result.put("errorCount", errorLines);
+                result.put("successCount", successLines);
+                int totalCount = successLines + errorLines;
+                result.put("totalCount", totalCount);
+                Result res = Result.ok(result);
+                res.setMessage("文件失败，数据有错误。");
+                res.setCode(200);
+                return res;
+            } else {
+                //是否成功
+                JSONObject result = new JSONObject(5);
+                result.put("isSucceed", false);
+                result.put("errorCount", errorLines);
+                result.put("successCount", successLines);
+                int totalCount = successLines + errorLines;
+                result.put("totalCount", totalCount);
+                Result res = Result.ok(result);
+                res.setMessage("文件导入成功！");
+                res.setCode(200);
+                return res;
+            }
+        }
+        else
+        {
             JSONObject result = new JSONObject(5);
-            result.put("isAllImport", false);
+            result.put("isSucceed", false);
             result.put("errorCount", errorLines);
             result.put("successCount", successLines);
             int totalCount = successLines + errorLines;
             result.put("totalCount", totalCount);
             Result res = Result.ok(result);
-            res.setMessage("文件失败，数据有错误。");
+            res.setMessage("导入失败，文件类型不对。");
             res.setCode(200);
             return res;
-        } else {
-            JSONObject result = new JSONObject(5);
-            int totalCount = successLines + errorLines;
-            result.put("totalCount", totalCount);
-            result.put("errorCount", errorLines);
-            result.put("successCount", successLines);
-            result.put("msg", "总上传行数：" + totalCount + "，已导入行数：" + successLines + "，错误行数：" + errorLines);
-            String fileUrl = PmsUtil.saveErrorTxtByList(errorMessage, "userImportExcelErrorLog");
-            int lastIndex = fileUrl.lastIndexOf(File.separator);
-            String fileName = fileUrl.substring(lastIndex + 1);
-            result.put("fileUrl", "/sys/common/static/" + fileUrl);
-            result.put("fileName", fileName);
-            Result res = Result.ok(result);
-            res.setCode(201);
-            res.setMessage("文件导入成功，但有错误。");
-            return res;
         }
+
     }
 }
