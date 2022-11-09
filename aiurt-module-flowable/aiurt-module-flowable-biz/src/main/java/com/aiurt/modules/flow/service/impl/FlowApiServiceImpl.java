@@ -310,15 +310,14 @@ public class FlowApiServiceImpl implements FlowApiService {
         if (StrUtil.equalsIgnoreCase(FlowApprovalType.SAVE, approvalType)) {
 
             String businessKey = processInstance.getBusinessKey();
-
             // 更新中间业务数据
-            Object o = flowElementUtil.saveBusData(task.getProcessDefinitionId(), task.getTaskDefinitionKey(), busData);
-
-            // 如果businessKey为空则设置
-            if (StrUtil.isNotBlank(businessKey)) {
-                flowElementUtil.setBusinessKeyForProcessInstance(task.getProcessInstanceId(), o);
+            if (Objects.nonNull(busData)) {
+                Object o = flowElementUtil.saveBusData(task.getProcessDefinitionId(), task.getTaskDefinitionKey(), busData);
+                // 如果businessKey为空则设置
+                if (StrUtil.isBlank(businessKey)) {
+                    flowElementUtil.setBusinessKeyForProcessInstance(task.getProcessInstanceId(), o);
+                }
             }
-
         }else if (StrUtil.equalsAnyIgnoreCase(approvalType, FlowApprovalType.REJECT_TO_STAR, FlowApprovalType.AGREE, FlowApprovalType.REFUSE)) {
             if (Objects.nonNull(busData)) {
                busData.put("operationType", approvalType);
