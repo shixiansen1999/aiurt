@@ -37,6 +37,11 @@ public class ScheduleRule {
     @ApiModelProperty(value = "名称")
 	private  String  name;
 
+    /**天数*/
+    @Excel(name = "周期（天数）", width = 15)
+    @ApiModelProperty(value = "周期（天数）")
+    private  Integer  days;
+
 	/**删除标志*/
 	@Excel(name = "删除标志", width = 15)
     @ApiModelProperty(value = "删除标志")

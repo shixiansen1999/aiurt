@@ -15,6 +15,6 @@ import java.util.List;
 public interface IScheduleRuleItemService extends IService<ScheduleRuleItem> {
     List<ScheduleRuleItem> getDetailRuleItems(Integer ruleId);
 
-    public List<ScheduleRuleItem> getByRuleId(Integer ruleId);
+    List<ScheduleRuleItem> getByRuleId(Integer ruleId);
 
 }

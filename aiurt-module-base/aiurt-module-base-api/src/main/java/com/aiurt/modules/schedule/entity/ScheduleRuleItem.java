@@ -81,6 +81,28 @@ public class ScheduleRuleItem {
     private String color;
 
 
+    /**开始时间*/
+    @JsonFormat(timezone = "GMT+8",pattern = "HH:mm")
+    @DateTimeFormat(pattern="HH:mm")
+    @ApiModelProperty(value = "开始时间")
+    @TableField(exist = false)
+    private  Date  startTime;
+
+    /**结束时间*/
+    @JsonFormat(timezone = "GMT+8",pattern = "HH:mm")
+    @DateTimeFormat(pattern="HH:mm")
+    @ApiModelProperty(value = "结束时间")
+    @TableField(exist = false)
+    private  Date  endTime;
+
+
+    /**时间标记*/
+    @Excel(name = "时间标记（0无，1跨日 非字典值）", width = 15)
+    @ApiModelProperty(value = "时间标记（0无，1跨日 非字典值）")
+    @TableField(exist = false)
+    private  String  timeId;
+
+
     private static final String ID = "id";
     private static final String RULE_ID = "rule_id";
     private static final String ITEM_ID = "item_id";

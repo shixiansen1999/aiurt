@@ -1,4 +1,6 @@
 package com.aiurt.modules.schedule.controller;
+import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.util.StrUtil;
 import com.aiurt.modules.schedule.service.IScheduleRuleItemService;
 import com.aiurt.modules.schedule.service.IScheduleRuleService;
 import com.aiurt.modules.schedule.entity.ScheduleRule;
@@ -79,7 +81,11 @@ public class ScheduleRuleController {
             String way = "";
             for (int i = 0; i < scheduleRuleItems.size(); i++) {
                 keys[i] = i;
-                way = way + scheduleRuleItems.get(i).getItemName() + "|";
+                String format1 = DateUtil.format(scheduleRuleItems.get(i).getStartTime(), "HH:mm");
+                String format2 = DateUtil.format(scheduleRuleItems.get(i).getEndTime(), "HH:mm");
+                String string = StrUtil.isNotBlank(scheduleRuleItems.get(i).getTimeId()) ? scheduleRuleItems.get(i).getTimeId() : "0";
+                String string1 = "1".equals(string) ? "次日" : "";
+                way = way + scheduleRuleItems.get(i).getItemName() + "（"+format1+"-"+ string1 +format2+"）"+ "|";
             }
             temp.setKeys(keys);
             temp.setWay(way);
