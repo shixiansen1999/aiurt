@@ -51,6 +51,7 @@ public class CsSubsystemDTO implements Serializable {
     private String systemUserName;
 
     /**子系统概况*/
+    @Excel(name = "系统概况", width = 15)
     @ApiModelProperty(value = "系统概况")
     private String generalSituation;
 

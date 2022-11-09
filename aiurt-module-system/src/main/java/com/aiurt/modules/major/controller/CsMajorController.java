@@ -10,6 +10,7 @@ import com.aiurt.common.aspect.annotation.AutoLog;
 import com.aiurt.common.aspect.annotation.PermissionData;
 import com.aiurt.common.constant.CommonConstant;
 import com.aiurt.common.system.base.controller.BaseController;
+import com.aiurt.common.system.base.view.AiurtEntityExcelView;
 import com.aiurt.common.util.ImportExcelUtil;
 import com.aiurt.modules.device.entity.DeviceType;
 import com.aiurt.modules.device.service.IDeviceTypeService;
@@ -38,7 +39,6 @@ import org.jeecgframework.poi.excel.entity.ImportParams;
 import org.jeecgframework.poi.excel.view.JeecgEntityExcelView;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -47,9 +47,7 @@ import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.BufferedOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -236,16 +234,12 @@ public class CsMajorController extends BaseController<CsMajor, ICsMajorService> 
     @AutoLog(value = "下载专业导入模板")
     @ApiOperation(value = "下载专业导入模板", notes = "下载专业导入模板")
     @RequestMapping(value = "/downloadExcel", method = RequestMethod.GET)
-    public void downloadExcel(HttpServletResponse response, HttpServletRequest request) throws IOException {
-        ClassPathResource classPathResource = new ClassPathResource("templates/csMajor.xlsx");
-        InputStream bis = classPathResource.getInputStream();
-        BufferedOutputStream out = new BufferedOutputStream(response.getOutputStream());
-        int len = 0;
-        while ((len = bis.read()) != -1) {
-            out.write(len);
-            out.flush();
-        }
-        out.close();
+    public ModelAndView downloadExcel(HttpServletResponse response, HttpServletRequest request) throws IOException {
+        ModelAndView mv = new ModelAndView(new AiurtEntityExcelView());
+        mv.addObject(NormalExcelConstants.CLASS, CsMajor.class);
+        ExportParams  exportParams=new ExportParams("专业信息导入模板","0");
+        mv.addObject(NormalExcelConstants.PARAMS, exportParams);
+        return mv;
     }
 
     /**
@@ -286,7 +280,6 @@ public class CsMajorController extends BaseController<CsMajor, ICsMajorService> 
     @Transactional(rollbackFor = Exception.class)
     @RequestMapping(value = "/importExcel", method = RequestMethod.POST)
     public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) throws IOException {
-
         MultipartHttpServletRequest multipartRequest = (MultipartHttpServletRequest) request;
         Map<String, MultipartFile> fileMap = multipartRequest.getFileMap();
         // 错误信息
@@ -306,25 +299,21 @@ public class CsMajorController extends BaseController<CsMajor, ICsMajorService> 
                     if (ObjectUtil.isNull(csMajorImportVO.getMajorCode())) {
                         errorMessage.add("专业编码为必填项，忽略导入");
                         errorLines++;
-                        break;
                     } else {
                         CsMajor csMajor = csMajorService.getOne(new QueryWrapper<CsMajor>().lambda().eq(CsMajor::getMajorCode, csMajorImportVO.getMajorCode()).eq(CsMajor::getDelFlag, 0));
                         if (csMajor != null) {
                             errorMessage.add(csMajorImportVO.getMajorCode() + "专业编码已经存在，忽略导入");
                             errorLines++;
-                            break;
                         }
                     }
                     if (ObjectUtil.isNull(csMajorImportVO.getMajorName())) {
                         errorMessage.add("专业名称为必填项，忽略导入");
                         errorLines++;
-                        break;
                     } else {
-                        CsMajor csMajor = csMajorService.getOne(new QueryWrapper<CsMajor>().lambda().eq(CsMajor::getMajorCode, csMajorImportVO.getMajorName()).eq(CsMajor::getDelFlag, 0));
+                        CsMajor csMajor = csMajorService.getOne(new QueryWrapper<CsMajor>().lambda().eq(CsMajor::getMajorName, csMajorImportVO.getMajorName()).eq(CsMajor::getDelFlag, 0));
                         if (csMajor != null) {
                             errorMessage.add(csMajorImportVO.getMajorCode() + "专业名称已经存在，忽略导入");
                             errorLines++;
-                            break;
                         }
                     }
                     CsMajor csMajor = new CsMajor();
